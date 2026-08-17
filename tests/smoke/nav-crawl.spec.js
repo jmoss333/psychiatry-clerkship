@@ -46,6 +46,19 @@ async function loadNav(request, baseURL) {
   return items;
 }
 
+async function loadProjectedLibraryRefs(request, baseURL) {
+  const resp = await request.get(new URL('/', baseURL).href);
+  if (!resp.ok()) throw new Error(`GET index → ${resp.status()}`);
+  const html = await resp.text();
+  const prefix = 'var FD_CURRICULUM=';
+  const suffix = ';\n  var FD_TOPIC_META=';
+  const start = html.indexOf(prefix);
+  const end = html.indexOf(suffix, start);
+  if (start < 0 || end < 0) throw new Error('built Front Door curriculum payload is missing');
+  const curriculum = JSON.parse(html.slice(start + prefix.length, end));
+  return curriculum.libraryColumns.flatMap(column => column.refs).slice().sort();
+}
+
 async function waitForContent(page) {
   await page.waitForFunction(
     () => {
@@ -60,8 +73,9 @@ async function waitForContent(page) {
 
 // ── Test 1: HTTP layer ────────────────────────────────────────────────────────
 
-test('nav items: HTTP 200 + non-empty content', async ({ request, baseURL }) => {
+test('nav items: exact inventory + HTTP 200 + non-empty content', async ({ request, baseURL }, testInfo) => {
   const items = await loadNav(request, baseURL);
+  expect(items).toHaveLength(testInfo.project.name === 'nav-res' ? 106 : 98);
   const failures = [];
   const rows = [];
 
@@ -104,6 +118,29 @@ test('nav items: HTTP 200 + non-empty content', async ({ request, baseURL }) => 
       failures.map(f => `  ✗ ${f}`).join('\n'),
     );
   }
+});
+
+// The HTTP crawl above intentionally remains broader than the Front Door Library: nav.json
+// includes case-of-the-week and other routed surfaces that are not placed in Library columns.
+// This separate rendered contract catches either kind of regression without conflating the
+// audited 98/106 route inventory with the audited 81/90 Library projection.
+test('Front Door Library exactly matches the projected placed refs', async ({ page, request, baseURL }, testInfo) => {
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  await page.locator('.fd-role').first().click();
+  await page.locator('[data-fd-week="0"]').click();
+
+  await expect(page.locator('.fd-library')).toBeVisible();
+  await expect(page.locator('.fd-fallback[role="alert"]')).toHaveCount(0);
+
+  const expected = await loadProjectedLibraryRefs(request, baseURL);
+  const rendered = await page.locator('.fd-collink[data-fd-open]').evaluateAll(controls => (
+    controls.map(control => control.getAttribute('data-fd-open')).sort()
+  ));
+  const expectedCount = testInfo.project.name === 'nav-res' ? 90 : 81;
+
+  expect(new Set(expected).size).toBe(expectedCount);
+  expect(new Set(rendered).size).toBe(expectedCount);
+  expect(rendered).toEqual(expected);
 });
 
 // ── Test 2: SPA render sample ─────────────────────────────────────────────────

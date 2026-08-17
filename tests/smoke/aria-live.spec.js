@@ -25,3 +25,19 @@ test('tool page exposes a skip link as first focusable', async ({ page }) => {
   const focused = await page.evaluate(() => document.activeElement && document.activeElement.className);
   expect(focused).toContain('skip-link');
 });
+
+test('Front Door route changes announce the loaded resource through #routeStatus', async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('cw_rotation_start', '2026-08-17');
+    localStorage.setItem('cw_frontdoor_v1', JSON.stringify({
+      role: 'staff', tab: 'library', viewWeek: 1,
+    }));
+  });
+  await page.goto('/?tab=library');
+  const target = page.locator('.fd-collink[data-fd-open]').first();
+  const title = (await target.locator('.fd-collink__label').innerText()).trim();
+  await target.click();
+
+  await expect(page.locator('#routeStatus[aria-live="polite"]')).toHaveText(`${title} loaded`);
+  await expect(page.locator('.fd-reader')).toBeVisible();
+});

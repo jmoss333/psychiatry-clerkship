@@ -78,6 +78,15 @@ test('the sheet traps focus and returns it to the invoker that opened it', async
   await expect(captureLauncher(page)).toBeFocused();
 });
 
+test('the capture sheet renders the exact no-PHI warning', async ({ page }) => {
+  await page.setViewportSize(PHONE);
+  await page.goto('/');
+  await captureLauncher(page).click();
+  await expect(page.locator('.cap-warn')).toHaveText(
+    'The question, not the patient. No names, initials, room or bed numbers, dates, or MRNs — write what you want to understand, not who you saw. Stays on this device.',
+  );
+});
+
 test('a saved question survives reload and reaches the home triage card', async ({ page }) => {
   await page.setViewportSize(PHONE);
   await page.goto('/');

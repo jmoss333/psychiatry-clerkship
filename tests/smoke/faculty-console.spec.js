@@ -878,7 +878,7 @@ test.describe('learner preview protocol', () => {
     await page.unroute('**/tools/question-bank-practice.html', questionHandler);
   });
 
-  test('reports an unknown tool not_found without falling back to Home', async ({ page }) => {
+  test('reports an unknown tool not_found without falling back to Today', async ({ page }) => {
     await installLearnerPreviewHarness(page);
     const url = learnerPreviewUrl({
       tool: 'unknown-faculty-preview.html',
@@ -887,8 +887,8 @@ test.describe('learner preview protocol', () => {
 
     await page.goto(url.href);
 
-    await expect(page.locator('#content [role="alert"]')).toContainText('Preview route unavailable');
-    await expect(page.locator('#content')).not.toContainText('Today / Progress');
+    await expect(page.locator('#content [role="alert"]')).toContainText('Tool unavailable');
+    await expect(page.locator('#content')).not.toContainText('Good morning');
     await expect.poll(() => learnerPreviewStatuses(page)).toEqual([
       expectedLearnerPreviewStatus(
         'tool',
@@ -1077,7 +1077,7 @@ test.describe('learner preview protocol', () => {
     }
   });
 
-  test('locks a ready page against sidebar, mode, message, and history navigation', async ({ page }) => {
+  test('locks a ready page against Front Door tabs, search, safety, Reader links, messages, and history', async ({ page }) => {
     await installLearnerPreviewHarness(page);
     const url = learnerPreviewUrl({
       page: 't_mood.md',
@@ -1088,16 +1088,20 @@ test.describe('learner preview protocol', () => {
       expectedLearnerPreviewStatus('page', 'page:t_mood.md', 'ready'),
     ]);
 
+    const storageBefore = await page.evaluate(() => ({
+      progress: localStorage.getItem('cw_progress_v1'),
+      frontdoor: localStorage.getItem('cw_frontdoor_v1'),
+      rotation: localStorage.getItem('cw_rotation_start'),
+    }));
     await page.evaluate(() => {
-      document.querySelector('.navitem[data-f="t_anxiety.md"]').click();
-      document.querySelector('#mPath').click();
+      document.querySelector('[data-fd-tab="library"]').click();
+      document.querySelector('[data-fd-search]').click();
+      document.querySelector('.fd-safetybtn[data-fd-safety]').click();
+      document.querySelector('#content a[href^="?tool="]').click();
       window.postMessage({ type: 'openPage', f: 't_psychosis.md' }, location.origin);
       window.postMessage({ type: 'openLibrary' }, location.origin);
       history.pushState({}, '', '?page=t_anxiety.md');
       window.dispatchEvent(new PopStateEvent('popstate'));
-      const search = document.querySelector('#search');
-      search.value = 'psychosis';
-      search.dispatchEvent(new Event('input', { bubbles: true }));
       window.postMessage({ type: 'search', q: 'psychosis' }, location.origin);
     });
 
@@ -1108,13 +1112,19 @@ test.describe('learner preview protocol', () => {
       'Open the full page from the faculty console to navigate elsewhere',
     );
     expect(await notice.evaluate(node => !document.querySelector('#content').contains(node))).toBe(true);
+    await expect(page.locator('.fd-search, .fd-sheet')).toHaveCount(0);
     expect(page.url()).toBe(url.href);
+    expect(await page.evaluate(() => ({
+      progress: localStorage.getItem('cw_progress_v1'),
+      frontdoor: localStorage.getItem('cw_frontdoor_v1'),
+      rotation: localStorage.getItem('cw_rotation_start'),
+    }))).toEqual(storageBefore);
     expect(await learnerPreviewStatuses(page)).toEqual([
       expectedLearnerPreviewStatus('page', 'page:t_mood.md', 'ready'),
     ]);
   });
 
-  test('blocks parent-document companion links from leaving a ready page', async ({ page }) => {
+  test('blocks parent-document Reader links from leaving a ready page', async ({ page }) => {
     await installLearnerPreviewHarness(page);
     const url = learnerPreviewUrl({
       page: 't_mood.md',
@@ -1125,10 +1135,9 @@ test.describe('learner preview protocol', () => {
       expectedLearnerPreviewStatus('page', 'page:t_mood.md', 'ready'),
     ]);
 
-    await page.locator('#modeCompanion .mc-toggle').click();
-    const companionTool = page.locator('#modeCompanion .mc-item.is-tool').first();
-    await expect(companionTool).toBeVisible();
-    await companionTool.click();
+    const readerTool = page.locator('#content a[href^="?tool="]:visible').first();
+    await expect(readerTool).toBeVisible();
+    await readerTool.click();
 
     await expect(page.locator('#content h1')).toHaveText('Mood Disorders on the Inpatient Unit');
     await expect(page.locator('#faculty-preview-lock-notice')).toHaveText(
@@ -1163,7 +1172,7 @@ test.describe('learner preview protocol', () => {
     ))).toBe(true);
   });
 
-  test('keeps the exact-question iframe and route when Practice Questions is opened again', async ({ page }) => {
+  test('keeps the exact-question iframe and route through Front Door lock attempts', async ({ page }) => {
     await installLearnerPreviewHarness(page);
     await page.route('**/question_bank.json', route => route.fulfill({
       status: 200,
@@ -1186,7 +1195,9 @@ test.describe('learner preview protocol', () => {
     await page.evaluate(() => {
       window.__facultyExactQuestionFrame = document.querySelector('.toolframe');
       window.__facultyExactQuestionWindow = window.__facultyExactQuestionFrame.contentWindow;
-      document.querySelector('.navitem[data-f="question-bank-practice.html"]').click();
+      document.querySelector('[data-fd-tab="library"]').click();
+      document.querySelector('[data-fd-search]').click();
+      document.querySelector('.fd-safetybtn[data-fd-safety]').click();
     });
 
     expect(await page.evaluate(() => (
@@ -1200,13 +1211,7 @@ test.describe('learner preview protocol', () => {
     await expect(page.locator('#faculty-preview-lock-notice')).toHaveText(
       'Open the full page from the faculty console to navigate elsewhere',
     );
-    await page.locator('#modeCompanion .mc-toggle').click();
-    await page.locator('#modeCompanion [data-mc-mode="shelf"]').click();
-    const shelfQuestionBank = page.locator(
-      '#modeCompanion .mc-item.is-tool[href="?tool=question-bank-practice.html"]',
-    );
-    await expect(shelfQuestionBank).toBeVisible();
-    await shelfQuestionBank.click();
+    await expect(page.locator('.fd-search, .fd-sheet')).toHaveCount(0);
     expect(await page.evaluate(() => (
       document.querySelector('.toolframe') === window.__facultyExactQuestionFrame
       && document.querySelector('.toolframe').contentWindow === window.__facultyExactQuestionWindow
@@ -1246,9 +1251,13 @@ test.describe.serial('faculty unified attestation workspace', () => {
     await expect(frame).toHaveAttribute('title', 'Live learner preview for Synthetic mood disorders page');
     await expect(frame).toHaveAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms');
     await expect(frame).toHaveAttribute('referrerpolicy', 'no-referrer');
-    await expect(frame).toHaveAttribute('src', new RegExp(
-      '^http://localhost:4200/\\?page=t_mood\\.md&reviewKey=page%3At_mood\\.md&reviewToken=[0-9a-f]{32}$',
-    ));
+    const frameUrl = new URL(await frame.getAttribute('src'));
+    expect(frameUrl.origin).toBe(new URL(MS3_URL).origin);
+    expect(frameUrl.pathname).toBe('/');
+    expect([...frameUrl.searchParams.keys()]).toEqual(['page', 'reviewKey', 'reviewToken']);
+    expect(frameUrl.searchParams.get('page')).toBe('t_mood.md');
+    expect(frameUrl.searchParams.get('reviewKey')).toBe('page:t_mood.md');
+    expect(frameUrl.searchParams.get('reviewToken')).toMatch(/^[0-9a-f]{32}$/);
 
     await expect(page.getByRole('tab')).toHaveCount(0);
     await expect(page.getByText('Mark all', { exact: false })).toHaveCount(0);
@@ -1311,9 +1320,15 @@ test.describe.serial('faculty unified attestation workspace', () => {
 
     await expect(page.locator('#selected-item-type')).toHaveText('Tool');
     await expect(page.locator('#preview-status-label')).toHaveText('Ready');
-    await expect(page.locator('#learner-preview-frame')).toHaveAttribute('src', new RegExp(
-      '^http://localhost:4200/\\?tool=mse\\.html&reviewKey=tool%3Amse\\.html&reviewToken=[0-9a-f]{32}$',
-    ));
+    const toolPreviewSrc = await page.locator('#learner-preview-frame').getAttribute('src');
+    const toolPreviewUrl = new URL(toolPreviewSrc);
+    const learnerBase = new URL(MS3_URL);
+    expect(toolPreviewUrl.origin).toBe(learnerBase.origin);
+    expect(toolPreviewUrl.pathname).toBe(learnerBase.pathname);
+    expect([...toolPreviewUrl.searchParams.keys()]).toEqual(['tool', 'reviewKey', 'reviewToken']);
+    expect(toolPreviewUrl.searchParams.get('tool')).toBe('mse.html');
+    expect(toolPreviewUrl.searchParams.get('reviewKey')).toBe('tool:mse.html');
+    expect(toolPreviewUrl.searchParams.get('reviewToken')).toMatch(/^[0-9a-f]{32}$/);
     await page.locator('#review-complete-item').check();
     await page.locator('#review-content-accuracy').check();
     await page.locator('#review-content-interactions').check();
@@ -1693,7 +1708,7 @@ test.describe.serial('faculty unified attestation workspace', () => {
     await page.locator('#review-item-selector').selectOption('page:t_mood.md');
     await expect(page.locator('#preview-status-label')).toHaveText('Ready');
     const lockedSrc = await page.locator('#learner-preview-frame').getAttribute('src');
-    await page.frameLocator('#learner-preview-frame').locator('.navitem[data-f="t_anxiety.md"]').click();
+    await page.frameLocator('#learner-preview-frame').locator('[data-fd-tab="library"]').click();
     await expect(page.frameLocator('#learner-preview-frame').locator('#content h1')).toHaveText(
       'Mood Disorders on the Inpatient Unit',
     );
@@ -1899,11 +1914,20 @@ test.describe.serial('faculty unified attestation workspace', () => {
       'originalityAndNoPhi',
       'commit',
     ]) expect(fullUrl).not.toContain(privateValue);
+    await fullPage.evaluate(() => {
+      localStorage.setItem('cw_rotation_start', '2026-08-17');
+      localStorage.setItem('cw_frontdoor_v1', JSON.stringify({
+        role: 'staff', tab: 'library', viewWeek: 1,
+      }));
+    });
+    await fullPage.goto(`${MS3_URL}/?page=t_mood.md`);
     await expect(fullPage.locator('#faculty-preview-lock-notice')).toHaveCount(0);
-    await expect(fullPage.locator('#content h1')).toHaveText('Mood Disorders on the Inpatient Unit');
-    await fullPage.locator('.navitem[data-f="t_anxiety.md"]').click();
-    await expect(fullPage.locator('#content h1')).toContainText('Anxiety');
-    await fullPage.locator('.navitem[data-f="t_mood.md"]').click();
+    await expect(fullPage.locator('.fd-article__h1')).toHaveText('Mood');
+    await fullPage.locator('[data-fd-tab="library"]').click();
+    await fullPage.locator('.fd-collink[data-fd-open="t_anxiety.md"]').click();
+    await expect(fullPage.locator('.fd-article__h1')).toContainText('Anxiety');
+    await fullPage.locator('[data-fd-tab="library"]').click();
+    await fullPage.locator('.fd-collink[data-fd-open="t_mood.md"]').click();
     const externalPromise = fullPage.waitForEvent('popup');
     await fullPage.locator('#content').getByRole('link', {
       name: 'Mental Status Exam tool',
@@ -1911,8 +1935,9 @@ test.describe.serial('faculty unified attestation workspace', () => {
     const externalTool = await externalPromise;
     await expect(externalTool).toHaveURL(`${MS3_URL}/tools/mse.html`);
     await externalTool.close();
-    // The study-export surface lives on the Progress view since the Today/Progress split.
-    await fullPage.locator('.navitem[data-f="__progress__"]').click();
+    // The study-export surface lives in the internal Progress Reader reached from Today.
+    await fullPage.locator('[data-fd-home]').first().click();
+    await fullPage.locator('[data-fd-progress]').click();
     await expect(fullPage.locator('[data-act="studyexport"]')).toBeVisible();
     const [download] = await Promise.all([
       fullPage.waitForEvent('download', { timeout: 5_000 }),

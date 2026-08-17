@@ -127,14 +127,20 @@ function mobileFrontDoorCss() {
   return frontdoorCss.slice(start, end);
 }
 
+function mobileRuleHas(selector, declaration) {
+  const rules = [...mobileFrontDoorCss().matchAll(/([^{}]+)\{([^{}]*)\}/g)];
+  return rules.some(([, selectorList, body]) => (
+    selectorList.split(',').map(part => part.trim()).includes(selector)
+    && body.split(';').map(part => part.trim()).includes(declaration)
+  ));
+}
+
 test('mobile collapsed search control has a 44px minimum width as well as height', () => {
-  const mobile = mobileFrontDoorCss();
-  assert.match(mobile, /\.fd-searchbtn[^{}]*\{[^}]*min-width:44px/,
-    'the collapsed mobile search icon needs a 44px width');
+  assert.equal(mobileRuleHas('.fd-searchbtn', 'min-width:44px'), true,
+    'the exact collapsed search base selector needs a 44px mobile width');
 });
 
 test('mobile Reader back control has a 44px minimum width as well as height', () => {
-  const mobile = mobileFrontDoorCss();
-  assert.match(mobile, /\.fd-actionbar \.fd-btn--ghost[^{}]*\{[^}]*min-width:44px/,
-    'the fixed Reader back control needs a 44px width');
+  assert.equal(mobileRuleHas('.fd-actionbar .fd-btn--ghost', 'min-width:44px'), true,
+    'the exact fixed Reader back base selector needs a 44px mobile width');
 });
