@@ -3,11 +3,11 @@
 The complete contract between `frontdoor.css` and the markup that tasks 3–9 emit.
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(196 distinct `fd-*` selector names, 13 `is-*` state classes). Every class below has a rule in that file unless
+(198 distinct `fd-*` selector names, 13 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **Why this file exists.** The implementation plan names 39 contract classes. The stylesheet styles
-196. The remaining 157 are `__element` and `--modifier` names introduced while porting the
+198. The remaining 159 are `__element` and `--modifier` names introduced while porting the
 prototype's inline styles into a stylesheet — a renderer briefed only on the 39 would emit markup
 that misses most of the CSS, and the failure is silent: the page renders, tests pass, the surface
 just looks wrong. Read the surface you are building before writing its markup.
@@ -418,6 +418,8 @@ independent states on the child. A current *and* done item carries both.
       .fd-step__text
     .fd-doccallout
     .fd-sheet__attribution
+    .fd-sheet__pending                 (non-reviewed, valid 3–5-step protocol only)
+    .fd-sheet__failure    [role=alert] (missing/malformed protocol data only)
     .fd-btn.fd-btn--ghost           ("Open the full page →")
     ── item-preview variant ──
     .fd-chip / .fd-attested
@@ -438,6 +440,12 @@ independent states on the child. A current *and* done item carries both.
 | `.fd-sheet__body` | The scroll container (`flex:1; overflow-y:auto`). |
 | `.fd-doccallout` | Amber "Document:" callout. Border is derived via `color-mix` from the two olive tokens. |
 | `.fd-sheet__attribution` | "✓ From: … · faculty-attested". |
+| `.fd-sheet__pending` | Affirmative not-yet-reviewed state for a valid 3–5-step protocol; mutually exclusive with attribution and failure. |
+| `.fd-sheet__failure` | Fail-closed alert with an owner-controlled sentence; protocol steps and documentation remain absent. |
+
+At the mobile breakpoint, primary actions, navigation controls, dialog close/back controls, and
+icon-sized controls have a minimum 44px hit target. Icon-sized controls also have a 44px minimum
+width; desktop dimensions remain unchanged.
 
 ⚠ `.fd-nudge` inverts by construction: it paints `--fd-text` as its background and `--fd-bg` as its
 text, so it stays a high-contrast slab in both themes. Do not override its colours.

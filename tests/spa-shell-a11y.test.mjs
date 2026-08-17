@@ -17,6 +17,18 @@ const fdWire = fs.readFileSync(
   path.join(repo, '13_Faculty_Resources', '_automation', 'site_build', 'frontdoor', 'fd_wire.js'),
   'utf8',
 );
+const fdSearch = fs.readFileSync(
+  path.join(repo, '13_Faculty_Resources', '_automation', 'site_build', 'frontdoor', 'fd_search.js'),
+  'utf8',
+);
+const fdSheet = fs.readFileSync(
+  path.join(repo, '13_Faculty_Resources', '_automation', 'site_build', 'frontdoor', 'fd_sheet.js'),
+  'utf8',
+);
+const frontdoorCss = fs.readFileSync(
+  path.join(repo, '13_Faculty_Resources', '_automation', 'site_build', 'frontdoor', 'frontdoor.css'),
+  'utf8',
+);
 
 test('one route live region stays mounted for every Front Door breakpoint', () => {
   assert.match(shell, /id="routeStatus"[^>]*aria-live="polite"/);
@@ -60,4 +72,50 @@ test('the live controller restores only connected dialog invokers', () => {
   assert.match(body, /el&&el\.isConnected!==false&&el\.focus/);
   assert.match(fdWire, /else if\(!afterOverlay&&beforeHadOverlay\) restoreInvoker\(\)/,
     'focus restoration occurs only on the final overlay close transition');
+});
+
+test('search and sheet are labelled modal dialogs', () => {
+  assert.match(fdSearch, /class="fd-search" role="dialog" aria-modal="true" aria-label="Search"/);
+  assert.match(fdSheet,
+    /class="fd-sheet" role="dialog" aria-modal="true" aria-label="'\+fdEsc\(title\)\+'"/);
+});
+
+test('nested dialog keyboard order traps focus, closes search first, then restores once', () => {
+  const dialogStart = fdWire.indexOf('function dialog()');
+  const dialogEnd = fdWire.indexOf('function focusDialog()', dialogStart);
+  const dialog = fdWire.slice(dialogStart, dialogEnd);
+  assert.ok(dialog.indexOf('if(state.searchOpen)') < dialog.indexOf('if(state.sheet)'),
+    'search is the topmost dialog when search and a sheet are both present');
+
+  const keyStart = fdWire.indexOf('function keyHandler(');
+  const keyEnd = fdWire.indexOf('function popstateHandler(', keyStart);
+  const keyHandler = fdWire.slice(keyStart, keyEnd);
+  assert.ok(keyHandler.indexOf('fdTrapFocus(event,d)') < keyHandler.indexOf("event.key==='Escape'"),
+    'Tab is trapped in the active dialog before Escape handling runs');
+  assert.match(fdWire, /else if\(!afterOverlay&&beforeHadOverlay\) restoreInvoker\(\)/,
+    'the original invoker is restored only after the final nested overlay closes');
+});
+
+test('mobile primary and dialog controls have 44px minimum hit targets', () => {
+  const start = frontdoorCss.indexOf('@media (max-width:999px)');
+  const end = frontdoorCss.indexOf('/* ═══ Keyframes', start);
+  assert.ok(start > -1 && end > start, 'the mobile Front Door block must exist');
+  const mobile = frontdoorCss.slice(start, end);
+  for (const selector of [
+    '.fd-btn', '.fd-tab', '.fd-setup__back', '.fd-reader__back', '.fd-result',
+    '.fd-searchpanel__esc', '.fd-sheet__back', '.fd-sheet__close',
+    '.fd-nudge__go', '.fd-nudge__dismiss', '.fd-themebtn',
+  ]) {
+    const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    assert.match(mobile, new RegExp(`${escaped}[^{}]*\\{[^}]*min-height:44px`),
+      `${selector} needs a 44px mobile hit target`);
+  }
+  for (const selector of [
+    '.fd-setup__back', '.fd-searchpanel__esc', '.fd-sheet__close',
+    '.fd-nudge__dismiss', '.fd-themebtn',
+  ]) {
+    const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    assert.match(mobile, new RegExp(`${escaped}[^{}]*\\{[^}]*min-width:44px`),
+      `${selector} is icon-sized and needs a 44px mobile width`);
+  }
 });

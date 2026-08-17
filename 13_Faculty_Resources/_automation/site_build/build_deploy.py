@@ -411,6 +411,14 @@ common.apply_contrast_fix(
 _QV=common.quiz_cache_bust(OUT+"/tools/quizzes.json")   # content-hash cache-bust (reproducible)
 common.apply_full_page_pass(OUT, cache_bust=_QV)
 
+# The governed shell itself is a required risk-work surface because it renders the Safety Kit.
+# Expand only after shared snippets: a marker introduced by a snippet must participate in the
+# exactly-one count rather than arriving after an apparently clean early check. Unlike optional
+# tool/page loops, zero or duplicate shell markers are both fatal; resident inherits this checked
+# artifact and receives its own final-marker postcondition below.
+_crisis.inject_required_html_file(OUT+"/index.html", _crisis_data, "Front Door shell index")
+print("crisis block injected: shell index")
+
 
 open(OUT+"/favicon.svg","w",encoding="utf-8").write('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="#9f3f2a"/><text x="32" y="45" font-family="Georgia,serif" font-size="40" fill="#fff" text-anchor="middle">\u03c8</text></svg>')
 open(OUT+"/robots.txt","w",encoding="utf-8").write("User-agent: *\nDisallow: /\n")
@@ -425,6 +433,9 @@ from media_guard import strip_missing_media
 strip_missing_media(OUT)
 
 common.build_search_index(nav, OUT, label="ms3")
+
+# Final shell postcondition after every MS3 index transform and before page/static QA.
+_crisis.assert_no_html_marker_file(OUT+"/index.html", "final Front Door shell index")
 
 # Postcondition gate (architecture review rec 1.3): prove every shipped page actually
 # received the chrome/dark transforms rather than silently missing them.

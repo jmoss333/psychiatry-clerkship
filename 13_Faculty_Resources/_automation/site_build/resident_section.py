@@ -4,6 +4,7 @@ import os, shutil, json, re, glob, sys
 # Extracted 2026-07-26; before that this file carried its own drifted copies of the
 # tokenizer, synonym table, tool keywords, index builder, and skip-link injection.
 import common
+import crisis_block as _crisis
 import frontdoor_catalog
 from pathlib import Path
 
@@ -281,6 +282,10 @@ strip_missing_media(OUT)
 
 # ---- resident search index: same engine, same synonyms, same tool keywords as MS3 ----
 common.build_search_index(nav, OUT, label="resident")
+
+# Resident starts from the expanded MS3 artifact, then rebrands and replaces its Front Door
+# payload. Prove none of those later transforms reacquired an unexpanded shell marker.
+_crisis.assert_no_html_marker_file(OUT+"/index.html", "final resident Front Door shell index")
 
 # Postcondition gate (architecture review rec 1.3): the rp-* tools used to bypass the
 # page pass entirely and ship degraded. This makes that impossible to reintroduce.

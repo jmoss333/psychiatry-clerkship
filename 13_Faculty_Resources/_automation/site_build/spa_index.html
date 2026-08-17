@@ -548,6 +548,7 @@
   <main id="content" class="fd-main" tabindex="-1"><div class="skel" role="status" aria-label="Loading"><div class="bar title"></div><div class="bar"></div><div class="bar short"></div><div class="bar"></div></div></main>
   <div id="fdCaptureMount"></div>
   <div id="fdOverlayMount"></div>
+  <template id="fdCrisisTemplate"><!-- crisis-block-html --></template>
   <div id="fdNudgeMount"></div>
 </div>
 <script>
@@ -555,6 +556,7 @@
      governed-content contracts, but never create a second navigation tree or controller. */
   var contentEl=document.getElementById('content');
   var currentItem=null; var GOVERNANCE={status:'loading',items:{}}; var governanceFocusSlug=''; var SCROLL={};
+  var FD_PROTOCOL_FAILURE_COPY='This safety protocol is unavailable right now—do not rely on this page for clinical guidance; use the crisis resources below and contact your supervising clinician.';
   /* Fetch and capture callbacks live in this script; the Front Door controller is installed by
      the following IIFE. Keep one shared dispatcher that is safe until that controller is ready. */
   var specialRefresh=function(){};
@@ -1502,6 +1504,8 @@
   var fdChromeMount=document.getElementById('fdChromeMount');
   var fdCaptureMount=document.getElementById('fdCaptureMount');
   var fdOverlayMount=document.getElementById('fdOverlayMount');
+  var fdCrisisTemplate=document.getElementById('fdCrisisTemplate');
+  var fdCrisisHtml=fdCrisisTemplate?fdCrisisTemplate.innerHTML:'';
   var fdNudgeMount=document.getElementById('fdNudgeMount');
   var fdController=null;
 
@@ -1528,6 +1532,8 @@
     }
     if(typeof out.viewWeek!=='number')out.viewWeek=(typeof out.week==='number'?out.week:1);
     out.role=fdRoleName(out.role)||out.role;
+    out.crisisHtml=fdCrisisHtml;
+    if(typeof FD_PROTOCOL_FAILURE_COPY==='string')out.protocolFailureCopy=FD_PROTOCOL_FAILURE_COPY;
     var wk=fdItemsForWeek(FD_INDEX,out.week), progress=fdTodayProgress(wk,out.done);
     out.ringPct=progress.pct;
     return out;

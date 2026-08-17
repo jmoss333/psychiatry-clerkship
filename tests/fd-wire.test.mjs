@@ -633,6 +633,68 @@ test('nested overlay replacement focuses each new dialog and restores the stable
   assert.equal(disconnectedOpener.focused, undefined, 'detached opener is skipped without throwing');
 });
 
+test('runtime nested sheet then search unwinds one layer per Escape and restores once', () => {
+  let currentDialog = null;
+  const focusOrder = [];
+  function dialogFor(identity) {
+    const control = {
+      tagName: identity === 'search' ? 'INPUT' : 'BUTTON',
+      isContentEditable: false,
+      isConnected: true,
+      getAttribute() { return null; },
+      focus() { focusOrder.push(identity); },
+    };
+    return {
+      identity,
+      control,
+      querySelector: (selector) => selector === '.fd-searchpanel__input' && identity === 'search'
+        ? control : null,
+      querySelectorAll: () => [control],
+    };
+  }
+  function render(next) {
+    if (currentDialog) currentDialog.control.isConnected = false;
+    const identity = next.searchOpen ? 'search' : next.sheet ? `sheet:${next.sheet}` : null;
+    currentDialog = identity ? dialogFor(identity) : null;
+  }
+
+  const originalInvoker = actionTarget({ 'data-fd-safety': '' });
+  const h = fakeHarness({ ...roleContext }, {
+    F,
+    render,
+    querySelector: () => currentDialog,
+  });
+  h.rootHandlers.click({ target: originalInvoker, preventDefault() {} });
+  assert.equal(h.controller.getState().sheet, 'kit');
+  assert.deepEqual(focusOrder, ['sheet:kit']);
+
+  const sheetControl = currentDialog.control;
+  h.windowHandlers.keydown({
+    key: 'k', metaKey: true, target: sheetControl, preventDefault() {},
+  });
+  assert.equal(h.controller.getState().sheet, 'kit', 'opening search preserves the underlying sheet');
+  assert.equal(h.controller.getState().searchOpen, true);
+  assert.deepEqual(focusOrder, ['sheet:kit', 'search']);
+
+  const searchControl = currentDialog.control;
+  h.windowHandlers.keydown({ key: 'Escape', target: searchControl, preventDefault() {} });
+  assert.equal(h.controller.getState().searchOpen, false);
+  assert.equal(h.controller.getState().sheet, 'kit', 'first Escape closes only search');
+  assert.equal(currentDialog.identity, 'sheet:kit');
+  assert.deepEqual(focusOrder, ['sheet:kit', 'search', 'sheet:kit'],
+    'the still-open sheet receives focus after search closes');
+  assert.equal(originalInvoker.focused, undefined,
+    'the original invoker is not restored while a nested dialog remains');
+
+  h.windowHandlers.keydown({
+    key: 'Escape', target: currentDialog.control, preventDefault() {},
+  });
+  assert.equal(h.controller.getState().sheet, null);
+  assert.equal(currentDialog, null);
+  assert.equal(originalInvoker.focused, 1,
+    'the original invoker is restored exactly once after the final dialog closes');
+});
+
 test('destination renders before resource and Progress effects mount into the fresh host', () => {
   const order = [];
   const requests = [];

@@ -506,6 +506,8 @@
 .fd-sheet__intro{margin:0 0 14px;font-size:13px;color:var(--fd-text-mid)}
 .fd-sheet__note{margin:12px 0 0;font-size:12px;color:var(--fd-text-dim)}
 .fd-sheet__attribution{font-size:12px;color:var(--fd-teal-deep);font-weight:600}
+.fd-sheet__pending{margin:12px 0 0;font-size:12px;color:var(--fd-olive-deep);font-weight:600}
+.fd-sheet__failure{margin:0 0 14px;padding:12px 15px;border:1px solid var(--fd-danger);border-radius:10px;background:var(--fd-danger-wash);color:var(--fd-text);font-size:13px;line-height:1.55}
 .fd-sheet__lead{margin:0 0 16px;font-size:14.5px;line-height:1.65;color:var(--fd-text)}
 
 .fd-kitrow{
@@ -610,6 +612,9 @@
 @media (max-width:999px){
   .fd-btn--primary,.fd-safetybtn,.fd-weekpill,.fd-searchbtn,.fd-weekgrid__browse{min-height:44px}
   .fd-role,.fd-weektile,.fd-kitrow,.fd-step,.fd-pick,.fd-setupcta{min-height:44px}
+  .fd-btn,.fd-tab,.fd-setup__back,.fd-reader__back,.fd-result,.fd-searchpanel__esc,
+  .fd-sheet__back,.fd-sheet__close,.fd-nudge__go,.fd-nudge__dismiss,.fd-themebtn{min-height:44px}
+  .fd-setup__back,.fd-searchpanel__esc,.fd-sheet__close,.fd-nudge__dismiss,.fd-themebtn{min-width:44px}
   .fd-article{padding:24px 20px}
   .fd-weekgrid{grid-template-columns:repeat(2,1fr)}
   /* The reader's desktop primary/ghost actions -- CLASS-INVENTORY.md's Reader section always
