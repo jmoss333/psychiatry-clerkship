@@ -98,6 +98,56 @@ function liveStateSource() {
   return shellSrc.slice(start, end);
 }
 
+function failureCopyGlobalSource() {
+  const start = shellSrc.indexOf('var FD_PROTOCOL_FAILURE_COPY=');
+  const end = shellSrc.indexOf('\n', start);
+  assert.ok(start > -1 && end > start, 'failure-copy global must remain executable');
+  return shellSrc.slice(start, end + 1);
+}
+
+function crisisTemplateInitSource() {
+  const start = shellSrc.indexOf('var fdCrisisTemplate=document.getElementById');
+  const end = shellSrc.indexOf('var fdNudgeMount=', start);
+  assert.ok(start > -1 && end > start, 'crisis-template initialization must remain executable');
+  return shellSrc.slice(start, end);
+}
+
+function minimalTemplateDocument(templateHtml) {
+  const template = { innerHTML: templateHtml };
+  return {
+    getElementById(id) {
+      return id === 'fdCrisisTemplate' ? template : null;
+    },
+  };
+}
+
+function liveShellBoundary(index, topicMeta, templateHtml) {
+  const boundary = new Function('fdSheet', 'index', 'topicMeta', 'document', `
+    ${failureCopyGlobalSource()}
+    var FD_INDEX=index;
+    ${crisisTemplateInitSource()}
+    function fdClone(value){var out={};for(var key in value){out[key]=value[key];}return out;}
+    function progLoad(){return {};}
+    function srsState(){return {stats:{streak:0}};}
+    function fdProgressDoneMap(){return {};}
+    function LS(){return '';}
+    function rotationWeek(){return 1;}
+    function fdRoleName(id){return id||'';}
+    function fdItemsForWeek(){return [];}
+    function fdTodayProgress(){return {pct:0};}
+    ${liveStateSource()}
+    return function(state){
+      var live=fdLiveState(state);
+      return {
+        copy:FD_PROTOCOL_FAILURE_COPY,
+        live:live,
+        html:fdSheet(index,topicMeta,live)
+      };
+    };
+  `)(F.fdSheet, index, topicMeta, minimalTemplateDocument(templateHtml));
+  return boundary;
+}
+
 // ---- the kit list ---------------------------------------------------------------------------
 
 test('the kit variant renders every kit row, in curriculum order, with its subtitle', () => {
@@ -220,21 +270,31 @@ test('the ‹ kit back affordance appears only when the protocol was reached fro
 
 // ---- the attested affordance: only when the review actually happened ---------------------------
 
-test('an attested protocol shows the faculty-attested attribution', () => {
-  const html = F.fdSheet(REAL_INDEX, REAL_META, {
-    sheet: 'delirium.md', crisisHtml: SYNTHETIC_CRISIS_HTML,
+test('the live shell boundary renders a valid reviewed protocol without failure copy', () => {
+  const crisisHtml = canonicalCrisisHtml();
+  const rendered = liveShellBoundary(REAL_INDEX, REAL_META, crisisHtml)({
+    sheet: 'delirium.md', week: 1, done: {},
   });
+  const html = rendered.html;
   assert.equal(REAL_META['delirium.md'].facultyReview.status, 'reviewed', 'fixture premise');
+  assert.equal(html.includes(rendered.copy), false,
+    'valid reviewed data must not render the owner-approved failure copy');
+  assert.doesNotMatch(html, /class="fd-sheet__failure"/);
   assert.match(html, /<div class="fd-sheet__attribution">✓ From: delirium\.md · faculty-attested<\/div>/);
   assert.doesNotMatch(html, /fd-sheet__pending|Not yet faculty-reviewed/);
-  assert.equal(html.split(SYNTHETIC_CRISIS_HTML).length - 1, 1,
-    'the canonical build-injected crisis block appears once in a protocol sheet');
+  assert.equal(html.split(crisisHtml).length - 1, 1,
+    'the template-derived canonical crisis block appears once in a protocol sheet');
 });
 
-test('a non-reviewed non-empty protocol shows an affirmative pending-review state', () => {
-  const html = F.fdSheet(FIX_INDEX, FIX_META, {
-    sheet: 'evil.md', crisisHtml: SYNTHETIC_CRISIS_HTML,
+test('the live shell boundary renders a valid pending protocol without failure copy', () => {
+  const crisisHtml = canonicalCrisisHtml();
+  const rendered = liveShellBoundary(FIX_INDEX, FIX_META, crisisHtml)({
+    sheet: 'evil.md', week: 1, done: {},
   });
+  const html = rendered.html;
+  assert.equal(html.includes(rendered.copy), false,
+    'valid pending data must not render the owner-approved failure copy');
+  assert.doesNotMatch(html, /class="fd-sheet__failure"/);
   assert.doesNotMatch(html, /faculty-attested/,
     'facultyReview.status is not "reviewed"; asserting review that did not happen is worse than no pill');
   assert.doesNotMatch(html, /fd-sheet__attribution/);
@@ -242,7 +302,8 @@ test('a non-reviewed non-empty protocol shows an affirmative pending-review stat
   assert.match(html,
     /<p class="fd-sheet__pending">Not yet faculty-reviewed · From: evil\.md<\/p>/,
     'absence of the attested treatment is not an observable pending-review state');
-  assert.equal(html.split(SYNTHETIC_CRISIS_HTML).length - 1, 1);
+  assert.equal(html.split(crisisHtml).length - 1, 1,
+    'the template-derived canonical crisis block appears once in a protocol sheet');
 });
 
 test('missing or malformed protocol data fails closed with only the supplied owner copy', () => {
@@ -305,40 +366,11 @@ test('missing protocol data cannot render until the owner-controlled sentence is
   );
 });
 
-test('live shell global supplies the approved failure alert and canonical crisis resources', () => {
-  const declaration = shellSrc.match(
-    /^\s*var FD_PROTOCOL_FAILURE_COPY='(?:\\.|[^'\\])*';\s*$/m,
-  );
-  assert.ok(declaration,
-    'the controlled browser global must own the approved failure copy exactly once');
-  assert.equal((shellSrc.match(/var FD_PROTOCOL_FAILURE_COPY=/g) || []).length, 1,
-    'failure copy must have one production definition');
-
+test('the live shell template boundary limits failure copy to malformed data and retains canonical crisis resources', () => {
   const crisisHtml = canonicalCrisisHtml();
-  const boundary = new Function('fdSheet', 'index', 'topicMeta', 'crisisHtml', `
-    ${declaration[0]}
-    var FD_INDEX=index, fdCrisisHtml=crisisHtml;
-    function fdClone(value){var out={};for(var key in value){out[key]=value[key];}return out;}
-    function progLoad(){return {};}
-    function srsState(){return {stats:{streak:0}};}
-    function fdProgressDoneMap(){return {};}
-    function LS(){return '';}
-    function rotationWeek(){return 1;}
-    function fdRoleName(id){return id||'';}
-    function fdItemsForWeek(){return [];}
-    function fdTodayProgress(){return {pct:0};}
-    ${liveStateSource()}
-    return function(state){
-      var live=fdLiveState(state);
-      return {
-        copy:FD_PROTOCOL_FAILURE_COPY,
-        live:live,
-        html:fdSheet(index,topicMeta,live)
-      };
-    };
-  `)(F.fdSheet, FIX_INDEX, undefined, crisisHtml);
-
-  const rendered = boundary({ sheet: 'bare.md', week: 1, done: {} });
+  const rendered = liveShellBoundary(FIX_INDEX, undefined, crisisHtml)({
+    sheet: 'bare.md', week: 1, done: {},
+  });
   assert.equal(rendered.live.protocolFailureCopy, rendered.copy,
     'the browser global must flow through fdLiveState into the renderer');
   assert.equal(
@@ -352,7 +384,7 @@ test('live shell global supplies the approved failure alert and canonical crisis
   assert.ok(alert, 'missing protocol must render the fail-closed alert');
   assert.equal(alert[1], rendered.copy, 'rendered alert must carry the exact approved sentence');
   assert.ok(rendered.html.includes(crisisHtml),
-    'the actual build-rendered crisis block must remain in the failure surface');
+    'the actual template-derived crisis block must remain in the failure surface');
   for (const resource of readJson('../crisis_resources.json').resources) {
     assert.ok(rendered.html.includes(resource.contact),
       `failure surface omitted canonical crisis resource "${resource.id}"`);

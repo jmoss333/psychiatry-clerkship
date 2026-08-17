@@ -124,6 +124,49 @@ alternate-contact formatting variants across every Front Door module; and the ex
 Command-K search → first Escape/refocus sheet → second Escape/one invoker restore sequence. The
 full root and both sequential builds were rerun after these fixes.
 
+## Independent-review round 2 — executable shell boundary
+
+The second review found two test-quality gaps rather than a production defect. The earlier
+boundary assigned `fdCrisisHtml` directly and therefore could not catch a wrong template ID, null
+lookup, or broken `.innerHTML` propagation. Its valid reviewed and pending fixtures also bypassed
+the production failure-copy input, so they did not prove the warning remained exclusive to the
+malformed branch.
+
+The replacement uses one reusable minimal template DOM and executes the actual production global,
+template lookup/`.innerHTML` initialization, `fdLiveState`, and `fdSheet`. One live reviewed case,
+one live pending case, and one malformed case traverse that same boundary. The valid cases prove
+the owner-approved warning is absent; the malformed case proves the exact approved warning and
+every canonical build-rendered crisis resource remain present.
+
+Because production already behaved correctly, the new tests began as characterization GREEN:
+
+```bash
+node --test tests/fd-sheet.test.mjs
+# 40 passed, 0 failed
+```
+
+Two reversible mutations then proved the assertions have teeth:
+
+1. Changing only the production template lookup ID made all three live-boundary tests fail: both
+   valid cases rendered zero template-derived crisis blocks, and the malformed case lost its
+   canonical crisis block (`0/3` passed). The lookup was immediately restored.
+2. Inverting only the production missing-protocol branch made both valid cases render the
+   owner-approved failure copy (`0/2` passed). The branch was immediately restored.
+
+After restoration, `git status` showed no production change. Fresh round-2 verification was:
+
+```bash
+node --test tests/crisis-block.test.mjs tests/fd-sheet.test.mjs tests/fd-wire.test.mjs tests/spa-shell-a11y.test.mjs
+# 110 passed, 0 failed
+
+node --test tests/*.test.mjs
+# 1053 passed, 0 failed (authorized loopback run)
+
+bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh ms3
+bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res
+# both OK; static QA hard failures 0; 105 media files, no LFS pointer stubs
+```
+
 ## Frozen palette and boundaries
 
 No palette value changed, and this report makes no WCAG-AA claim. `fd-contrast` remains green with
