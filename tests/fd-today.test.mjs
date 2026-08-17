@@ -108,6 +108,12 @@ test('the week-complete kicker appears only at 100%', () => {
   assert.match(complete, /Week 1 complete/);
 });
 
+test('a completed Continue card previews Path with view-week, never setup-week', () => {
+  const html = F.fdToday(IDX, s({ done: { 'a.md': true, 't.html': true } }));
+  assert.match(html, /data-fd-tab="path" data-fd-view-week="2"/);
+  assert.doesNotMatch(html, /data-fd-week=/);
+});
+
 test('a done item carries .is-done on both the check and the title', () => {
   const html = F.fdToday(IDX, s({ done: { 'a.md': true } }));
   assert.match(html, /class="fd-check is-done" data-fd-toggle="a\.md"/);

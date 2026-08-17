@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Behavior tests for the six-registry Draft-07 schema gate."""
+"""Behavior tests for the seven-registry Draft-07 schema gate."""
 
 import json
 import shutil
@@ -21,6 +21,7 @@ PAIRS = (
     ("family_systems_scenarios.json", "family_systems_scenarios.schema.json"),
     ("evidence_registry.json", "evidence_registry.schema.json"),
     ("tool_registry.json", "tool_registry.schema.json"),
+    ("curriculum.json", "curriculum.schema.json"),
 )
 
 
@@ -60,7 +61,7 @@ class RegistrySchemaGateTests(unittest.TestCase):
             shutil.copy2(ROOT / schema, destination / schema)
         return temporary
 
-    def test_all_six_current_document_schema_pairs_pass(self) -> None:
+    def test_all_seven_current_document_schema_pairs_pass(self) -> None:
         result = run_validator(ROOT)
 
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
@@ -341,6 +342,56 @@ class RegistrySchemaGateTests(unittest.TestCase):
 
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn("question_bank.json: OK", result.stdout)
+
+    def test_curriculum_rejects_an_unknown_root_property(self) -> None:
+        with self.make_registry_copy() as temporary:
+            root = Path(temporary)
+            document = json.loads((root / "curriculum.json").read_text(encoding="utf-8"))
+            document["unreviewedRoot"] = True
+            (root / "curriculum.json").write_text(json.dumps(document), encoding="utf-8")
+
+            result = run_validator(root)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("curriculum.json: INVALID at /", result.stdout)
+        self.assertIn("unreviewedRoot", result.stdout)
+
+    def test_curriculum_rejects_a_missing_required_root_property(self) -> None:
+        with self.make_registry_copy() as temporary:
+            root = Path(temporary)
+            document = json.loads((root / "curriculum.json").read_text(encoding="utf-8"))
+            del document["synonyms"]
+            (root / "curriculum.json").write_text(json.dumps(document), encoding="utf-8")
+
+            result = run_validator(root)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("curriculum.json: INVALID at /", result.stdout)
+        self.assertIn("synonyms", result.stdout)
+
+    def test_curriculum_rejects_malformed_synonyms(self) -> None:
+        with self.make_registry_copy() as temporary:
+            root = Path(temporary)
+            document = json.loads((root / "curriculum.json").read_text(encoding="utf-8"))
+            document["synonyms"] = {"withdrawal": ["detox"]}
+            (root / "curriculum.json").write_text(json.dumps(document), encoding="utf-8")
+
+            result = run_validator(root)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("curriculum.json: INVALID at /synonyms/withdrawal", result.stdout)
+
+    def test_curriculum_rejects_an_invalid_library_accent(self) -> None:
+        with self.make_registry_copy() as temporary:
+            root = Path(temporary)
+            document = json.loads((root / "curriculum.json").read_text(encoding="utf-8"))
+            document["libraryColumns"][0]["accent"] = "unreviewed"
+            (root / "curriculum.json").write_text(json.dumps(document), encoding="utf-8")
+
+            result = run_validator(root)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("curriculum.json: INVALID at /libraryColumns/0/accent", result.stdout)
 
 
 if __name__ == "__main__":

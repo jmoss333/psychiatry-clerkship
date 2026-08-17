@@ -45,7 +45,7 @@ var FD_TODAY_DAYNAMES=['Sunday','Monday','Tuesday','Wednesday','Thursday','Frida
 function fdTodayProgress(items, doneMap){
   var done=0, next=null, d=doneMap||{}, list=items||[];
   for(var i=0;i<list.length;i++){
-    if(d[list[i].ref]) done++;
+    if(d[list[i].ref]===true) done++;
     else if(!next) next=list[i];
   }
   return { done: done, total: list.length, pct: list.length?Math.round(done*100/list.length):0, next: next };
@@ -85,7 +85,7 @@ function fdTodayProgress(items, doneMap){
    of the row markup (found in Task 5 review -- fdRow and fd_path.js's old fdPathDetailRow were
    identical but for this one class token). */
 function fdRow(it, idx, doneMap, compact){
-  var on=!!(doneMap||{})[it.ref];
+  var on=(doneMap||{})[it.ref]===true;
   var titleCls=on?'fd-row__title is-done':'fd-row__title';
   var checkCls=on?'fd-check is-done':'fd-check';
   var typeCls=(it.kind==='tool')?'fd-chip is-tool':'fd-chip';
@@ -108,10 +108,9 @@ function fdRow(it, idx, doneMap, compact){
 
 /* The Continue card. When the week is finished (progress.next is null but the week had items)
    the button re-targets to a preview of next week instead of an item, so it carries data-fd-tab
-   + data-fd-week together rather than data-fd-open -- both are Task 3's existing attributes,
-   reused in combination rather than inventing a new one; neither is used alone for this button so
-   there is no collision with the setup wizard's plain data-fd-week or the tab row's plain
-   data-fd-tab. Math.min(6, week+1) matches the prototype's own formula, quirk included: at week 6
+   + data-fd-view-week rather than data-fd-open. The view attribute is intentionally distinct from
+   setup-only data-fd-week, so the two actions cannot collide. Math.min(6, week+1) matches the
+   prototype's own formula, quirk included: at week 6
    it previews week 6 again (there is no week 7) -- not fixed here since it is not called out as a
    deviation and the design's behaviour, absent such a note, is the spec. */
 function fdContinue(state, wk, progress){
@@ -126,11 +125,11 @@ function fdContinue(state, wk, progress){
   } else {
     var previewN=Math.min(6, state.week+1);
     titleText='Preview Week '+previewN;
-    openAttrs=' data-fd-tab="path" data-fd-week="'+fdEsc(previewN)+'"';
+    openAttrs=' data-fd-tab="path" data-fd-view-week="'+fdEsc(previewN)+'"';
   }
   var done=state.done||{}, leftMin=0;
   for(var i=0;i<wk.items.length;i++){
-    if(!done[wk.items[i].ref]&&typeof wk.items[i].minutes==='number') leftMin+=wk.items[i].minutes;
+    if(done[wk.items[i].ref]!==true&&typeof wk.items[i].minutes==='number') leftMin+=wk.items[i].minutes;
   }
   var leftLabel=leftMin>0?('~'+leftMin+' min left'):'';
   return '<button type="button" class="fd-continue"'+openAttrs+'>'+
@@ -240,7 +239,7 @@ function fdToday(index, state){
      case (every week but 5 and 6, and after the exam), and ' '+'' would leave a trailing space on
      the subhead for all of them. tests/fd-state.test.mjs pins the fragment's shape at one end and
      tests/fd-today.test.mjs pins this joined output at the other. */
-  var countdown=fdExamCountdown(st.week, nowMs);
+  var countdown=fdExamCountdown(st.week, nowMs, st.rotationStart);
   if(countdown) sub+=' '+countdown;
 
   var out='<section class="fd-today">';

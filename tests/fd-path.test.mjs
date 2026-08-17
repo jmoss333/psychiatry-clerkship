@@ -69,10 +69,10 @@ const BASE_STATE = { week: 2, viewWeek: 2, done: {} };
 const s = (over) => Object.assign({}, BASE_STATE, over);
 
 // Row extraction: each timeline row is exactly one <button>...spans...</button> with no nested
-// button, so a non-greedy match up to the first </button> after the data-fd-week attribute
+// button, so a non-greedy match up to the first </button> after the data-fd-view-week attribute
 // safely captures just that row.
 function rowFor(html, n) {
-  const m = html.match(new RegExp('<button type="button" class="([^"]*)" data-fd-week="' + n + '">([\\s\\S]*?)</button>'));
+  const m = html.match(new RegExp('<button type="button" class="([^"]*)" data-fd-view-week="' + n + '">([\\s\\S]*?)</button>'));
   if (!m) throw new Error('no timeline row for week ' + n);
   return { cls: m[1], body: m[2] };
 }
@@ -86,6 +86,12 @@ test('all six timeline rows render, each carrying its connector line (including 
   const lines = html.match(/class="fd-timeline__line"/g) || [];
   assert.equal(lines.length, 6, '.fd-timeline__line must be emitted on every row, last included');
   for (let n = 1; n <= 6; n++) assert.ok(rowFor(html, n), 'row ' + n + ' must be findable');
+});
+
+test('Path emits view-week actions only, reserving setup-week for setup', () => {
+  const html = F.fdPath(IDX, s({}));
+  assert.equal((html.match(/data-fd-view-week=/g) || []).length, 6);
+  assert.doesNotMatch(html, /data-fd-week=/);
 });
 
 // ---- dot state: is-current only on state.week; is-done only when actually complete ----

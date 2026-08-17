@@ -42,6 +42,7 @@ the intended route.
 
 Exits non-zero and prints every violation.
 Usage:  python3 validate_curriculum.py [curriculum.json] [site_manifest.json]
+        [topic_meta.json] [evidence_registry.json]
 """
 import ast
 import json
@@ -119,12 +120,21 @@ EXTRA_SHIPPED = extra_shipped_slugs()
 # ships to both site builds unrebranded, so the front-door analogue of tests/shell-copy.test.mjs's
 # audience-token scan applies here too — mirrors AUDIENCE_TOKEN_RE in that file.
 ROLE_AUDIENCE_TOKEN_RE = re.compile(r"MS3|clerkship|student|shelf|resident|UNE|MMC|Sanford", re.IGNORECASE)
+SAFETY_KIT_REFS = (
+    "pg_suicide.md",
+    "agitation.md",
+    "exp_consult.md",
+    "t_sud.md",
+    "delirium.md",
+)
 
 
 def main(argv):
     cur_path = argv[0] if len(argv) > 0 else os.path.join(REPO, "curriculum.json")
     man_path = argv[1] if len(argv) > 1 else os.path.join(
         REPO, "13_Faculty_Resources", "_automation", "site_build", "site_manifest.json")
+    topic_path = argv[2] if len(argv) > 2 else os.path.join(REPO, "topic_meta.json")
+    evidence_path = argv[3] if len(argv) > 3 else os.path.join(REPO, "evidence_registry.json")
 
     if not os.path.exists(cur_path):
         print("curriculum.json not found at %s — nothing to validate (skipping)." % cur_path)
@@ -132,6 +142,8 @@ def main(argv):
 
     cur = json.load(open(cur_path, encoding="utf-8"))
     man = json.load(open(man_path, encoding="utf-8"))
+    topic_meta = json.load(open(topic_path, encoding="utf-8"))
+    evidence_registry = json.load(open(evidence_path, encoding="utf-8"))
 
     tool_slugs = {e[1] for e in man.get("tools", [])}
     md_slugs = {e[1] for e in man.get("md", [])}
@@ -249,14 +261,14 @@ def main(argv):
         bad("library", "shipped slug '%s' appears in no column and no libraryExclude entry"
             % ref)
 
-    # ---- safety kit refs resolve ----
-    # Membership and order only. The steps themselves are attested content in
-    # topic_meta.json (safetySteps/safetyDoc), so the failure modes left here are a kit
-    # entry naming a page the build does not ship, or one missing its subtitle.
+    # ---- safety kit: five reviewed, high-safety protocols with canonical evidence ----
     kit = cur.get("safetyKit")
     if not isinstance(kit, list):
         bad("safetyKit", "must be a list")
         kit = []
+    if len(kit) != len(SAFETY_KIT_REFS):
+        bad("safetyKit", "must contain exactly 5 current protocols (got %d)" % len(kit))
+    kit_refs = []
     for ent in kit:
         if not isinstance(ent, dict):
             bad("safetyKit", "each entry must be an object")
@@ -267,8 +279,50 @@ def main(argv):
         if not isinstance(ref, str):
             bad("safetyKit", "entry ref must be a string (got %r)" % (ref,))
             continue
+        kit_refs.append(ref)
         if ref not in shipped:
             bad("safetyKit", "ref '%s' is not a shipped slug" % ref)
+    if len(set(kit_refs)) != len(kit_refs):
+        bad("safetyKit", "protocol refs must be unique")
+    if tuple(kit_refs) != SAFETY_KIT_REFS:
+        bad("safetyKit", "must list the current five protocols in canonical order: %s"
+            % ", ".join(SAFETY_KIT_REFS))
+
+    sources = evidence_registry.get("sources", []) if isinstance(evidence_registry, dict) else []
+    evidence_ids = {
+        source.get("id") for source in sources
+        if isinstance(source, dict) and isinstance(source.get("id"), str)
+    }
+    for ref in SAFETY_KIT_REFS:
+        meta = topic_meta.get(ref) if isinstance(topic_meta, dict) else None
+        if not isinstance(meta, dict):
+            bad("safetyKit %s" % ref, "missing topic_meta record")
+            continue
+        if meta.get("safetyLevel") != "high":
+            bad("safetyKit %s" % ref, "safetyLevel must be 'high'")
+        faculty = meta.get("facultyReview")
+        if not isinstance(faculty, dict) or faculty.get("status") != "reviewed":
+            bad("safetyKit %s" % ref, "facultyReview.status must be 'reviewed'")
+        steps = meta.get("safetySteps")
+        if not isinstance(steps, list):
+            bad("safetyKit %s" % ref, "safetySteps must be a list of 3 to 5 non-empty steps")
+        else:
+            if len(steps) < 3 or len(steps) > 5:
+                bad("safetyKit %s" % ref, "safetySteps must contain 3 to 5 steps (got %d)"
+                    % len(steps))
+            for index, step in enumerate(steps):
+                if not isinstance(step, str) or not step.strip():
+                    bad("safetyKit %s" % ref,
+                        "safetySteps[%d] must be a non-empty string" % index)
+        if not isinstance(meta.get("safetyDoc"), str) or not meta.get("safetyDoc", "").strip():
+            bad("safetyKit %s" % ref, "safetyDoc must be a non-empty documentation line")
+        refs = meta.get("evidenceIds")
+        if not isinstance(refs, list) or not refs:
+            bad("safetyKit %s" % ref, "evidenceIds must include a canonical evidence ID")
+        elif not any(isinstance(evidence_id, str) and evidence_id in evidence_ids
+                     for evidence_id in refs):
+            bad("safetyKit %s" % ref,
+                "evidenceIds contains no canonical evidence ID (got %r)" % refs)
 
     # ---- roles: id/name/desc non-empty, and the displayed text is audience-neutral ----
     # curriculum.json is one document read by both site builds, so a role's displayed name/desc

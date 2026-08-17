@@ -29,6 +29,9 @@ const make = new Function('localStorage', `
     FD_STORE: FD_STORE,
     fdLoad: fdLoad,
     fdSave: fdSave,
+    fdProgressDoneMap: fdProgressDoneMap,
+    fdProgressToggle: fdProgressToggle,
+    fdRotationStartForWeek: fdRotationStartForWeek,
     fdExamCountdown: fdExamCountdown,
     fdDailyPick: fdDailyPick,
     fdRingStep: fdRingStep,
@@ -71,6 +74,14 @@ test('fdSave persists only whitelisted keys, never done/streak/week', () => {
   assert.equal(out.done, undefined);
   assert.equal(out.streak, undefined);
   assert.equal(out.week, undefined);
+});
+
+test('fdRotationStartForWeek derives the first rotation Monday from the selected week', () => {
+  const { fdRotationStartForWeek } = make(memStorage());
+  const now = new Date(2026, 7, 12, 9, 0, 0).getTime(); // Wednesday of week 6
+  assert.equal(fdRotationStartForWeek(6, now), '2026-07-06');
+  assert.equal(fdRotationStartForWeek(1, now), '2026-08-10');
+  assert.equal(fdRotationStartForWeek(0, now), '');
 });
 
 // ---- exam countdown -----------------------------------------------------------------
@@ -202,6 +213,12 @@ test('an unparseable cw_shelf_date falls back rather than emitting NaN', () => {
   const { fdExamCountdown } = make(ls);
   assert.equal(fdExamCountdown(6, new Date(2026, 7, 12, 9, 0, 0).getTime()),
     '· exam in ~2 days');
+});
+
+test('a usable legacy non-Monday rotation start drives the fallback countdown', () => {
+  const { fdExamCountdown } = make(memStorage());
+  const wed = new Date(2026, 7, 12, 9, 0, 0).getTime();
+  assert.equal(fdExamCountdown(6, wed, '2026-07-07'), '· exam in ~3 days');
 });
 
 // shelfDaysUntil() in phase_policy.js is the repo's ONE local-midnight parse site; the

@@ -30,6 +30,42 @@ function fdSave(o){
   try{ localStorage.setItem(FD_STORE, JSON.stringify(out)); }catch(_){ }
 }
 
+/* cw_progress_v1 predates Front Door and stores objects, not booleans. Renderers receive the
+   small boolean projection below; writes retain the legacy {done,at} entry so the old shell's
+   progLoad()/entry.done contract continues to read every learner's saved progress. */
+function fdProgressDoneMap(raw){
+  var out={}, src=raw||{}, entry;
+  if(typeof src!=='object') return out;
+  for(var ref in src){
+    if(Object.prototype.hasOwnProperty.call(src, ref)){
+      entry=src[ref];
+      if(entry&&typeof entry==='object'&&typeof entry.done==='boolean') out[ref]=entry.done;
+    }
+  }
+  return out;
+}
+
+function fdProgressToggle(raw, ref, done, nowMs){
+  var out={}, src=raw||{};
+  if(src&&typeof src==='object'){
+    for(var key in src){
+      if(Object.prototype.hasOwnProperty.call(src, key)) out[key]=src[key];
+    }
+  }
+  if(done) out[ref]={done:true,at:localDayStr(nowMs)};
+  else delete out[ref];
+  return out;
+}
+
+/* Recover a rotation's first Monday from a selected week without rewriting an older stored
+   start date. A zero means browsing rather than a rotation. */
+function fdRotationStartForWeek(selectedWeek, nowMs){
+  if(typeof selectedWeek!=='number'||selectedWeek<1||selectedWeek>6||selectedWeek%1!==0) return '';
+  var d=new Date(nowMs||Date.now());
+  d.setDate(d.getDate()-((d.getDay()+6)%7)-((selectedWeek-1)*7));
+  return localDayStr(d.getTime());
+}
+
 /* Weeks 5-6 carry a countdown to the exam. Returns '' for every other week so callers can
    concatenate unconditionally.
 
@@ -47,19 +83,20 @@ function fdSave(o){
    Once the exam is behind us there is nothing to count down to, so we return '' rather than a
    negative day count or a wrapped-around next Friday.
 
-   The no-stored-date fallback assumes cw_rotation_start is Monday-aligned — idx above is only a
-   true offset-from-Monday if the rotation actually started on one. This holds because rotations
-   always begin on a Monday (confirmed by the repo owner, 2026-08-15). If a non-Monday
-   cw_rotation_start were ever written, the fallback would drift: the countdown would rise as
-   time advances rather than fall, the same failure mode the wall-calendar formula above had. */
-function fdExamCountdown(week, nowMs){
+   For a legacy stored rotation start that is not Monday-aligned, the fallback derives the fixed
+   week-six Friday offset from that actual start rather than treating its weekday as Monday. */
+function fdExamCountdown(week, nowMs, rotationStart){
   if(week!==5&&week!==6) return '';
   var stored=null;
   try{ stored=localStorage.getItem('cw_shelf_date'); }catch(_){ }
   var days=shelfDaysUntil(stored, nowMs);
   if(days===null){
-    var idx=(new Date(nowMs||Date.now()).getDay()+6)%7;
-    days=(6-week)*7+(4-idx);
+    var fromStart=shelfDaysUntil(rotationStart, nowMs);
+    if(fromStart!==null) days=39+fromStart;
+    else {
+      var idx=(new Date(nowMs||Date.now()).getDay()+6)%7;
+      days=(6-week)*7+(4-idx);
+    }
   }
   if(days<0) return '';
   if(days===0) return '· exam day — good luck';
@@ -71,7 +108,7 @@ function fdExamCountdown(week, nowMs){
 function fdDailyPick(candidates, doneMap, nowMs){
   var pool=[], done=doneMap||{};
   for(var i=0;i<(candidates||[]).length;i++){
-    if(!done[candidates[i].ref]) pool.push(candidates[i]);
+    if(done[candidates[i].ref]!==true) pool.push(candidates[i]);
   }
   if(!pool.length) return null;
   return pool[localDayIndex(nowMs)%pool.length];

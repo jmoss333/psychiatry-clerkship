@@ -43,8 +43,7 @@ function fdPathDotCls(isDone, isNow){
 /* One timeline row. .fd-timeline__line is emitted unconditionally on every row, including the
    last -- frontdoor.css hides it there via :last-child, and skipping it in markup instead
    would break the spine on any row the CSS selector does not happen to cover (CLASS-INVENTORY
-   ⚠). data-fd-week carries the row's week number, reusing the established convention rather
-   than inventing a Path-specific attribute. */
+   ⚠). data-fd-view-week carries the row's browsing target; data-fd-week remains setup-only. */
 function fdPathTimelineRow(index, w, state){
   var items=fdItemsForWeek(index, w.n);
   var progress=fdTodayProgress(items, state.done);
@@ -53,7 +52,7 @@ function fdPathTimelineRow(index, w, state){
   var isDone=progress.total>0&&progress.pct===100;
   var rowCls=isSel?'fd-timeline__row is-sel':'fd-timeline__row';
   var nLabel='Week '+fdEsc(w.n)+(isNow?' · you are here':'');
-  return '<button type="button" class="'+rowCls+'" data-fd-week="'+fdEsc(w.n)+'">'+
+  return '<button type="button" class="'+rowCls+'" data-fd-view-week="'+fdEsc(w.n)+'">'+
     '<span class="fd-timeline__gutter">'+
       '<span class="'+fdPathDotCls(isDone, isNow)+'"></span>'+
       '<span class="fd-timeline__line"></span>'+

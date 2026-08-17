@@ -3,6 +3,7 @@
   "title": "curriculum.json — front door structure",
   "type": "object",
   "required": ["weeks", "libraryColumns", "libraryExclude", "safetyKit", "roles", "synonyms"],
+  "additionalProperties": false,
   "properties": {
     "_note": { "type": "string" },
     "weeks": {
