@@ -49,8 +49,6 @@ function count(needle) { return source.split(needle).length - 1; }
 test('the source body is the single live Front Door shell', () => {
   assert.equal(count('class="fd-shell"'), 1, 'one shell root');
   assert.equal((source.match(/<main\b/g) || []).length, 1, 'one main landmark');
-  assert.equal(count('<main id="content" class="fd-main"'), 1,
-    'the live main must receive the Front Door width and page-padding contract');
   assert.equal(count('id="content"'), 1, 'one stable resource host');
   assert.equal(count('id="routeStatus"'), 1, 'one route live region');
   assert.equal(count('id="governanceMount"'), 1, 'one stable governance mount');

@@ -213,6 +213,7 @@ internal Progress. These are part of the same shipped class contract:
 | `.fd-due` | Due-review button; contains `.fd-due__label`, `.fd-due__breakdown`, and `.fd-due__action`. |
 | `.fd-resume` | Session-resume section; `.fd-resume__link` is the query-preserving link. |
 | `.fd-capture-launch` | Full-width capture-dialog launcher. |
+| `.fd-capture-launch--global` | Stable learner-route launcher hook; positioning comes from `#fdCaptureMount`. *(no rule)* |
 | `.fd-capture` | Today triage section; contains `.fd-capture__head`, `.fd-capture__new`, `.fd-capture__purpose`, `.fd-capture__item`, `.fd-capture__question`, `.fd-capture__action`, and `.fd-capture__copy`. |
 | `.fd-progresscard` | Internal-Progress entry; contains `.fd-progresscard__title` and `.fd-progresscard__meta`. |
 | `.fd-progress-reader` | Reader modifier for the internal Progress surface. |

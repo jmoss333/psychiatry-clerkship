@@ -174,3 +174,110 @@ listener/action vocabulary, canonical store allow-list, preview query contract, 
 resource identity checks for each audience. Reviewers could then detect a duplicated boot,
 unexpected storage fork, or preview-policy drift from one deterministic artifact before browser
 testing begins.
+
+## Review-remediation round — 2026-08-17
+
+Status: COMPLETE
+
+An independent runtime review of Task 5 required changes before acceptance. This round started
+from the requested clean Task 5 commit `eda84723c1b34c90f8ca00c479c7f4dcfe966d94` and used new
+behavioral tests before production edits. In plain language, completion now updates everywhere on
+the same click; old bookmarked route names reach the right Front Door view; the page keeps its
+layout, capture control, title, and keyboard focus across navigation; and shared Progress wording
+now makes sense on both learner sites.
+
+### Remediation RED evidence
+
+The consolidated focused Node run initially reported 103 tests, 96 passing and seven failing.
+Those failures covered legacy-alias state/initial/delegated routing, replacement-theme focus,
+Week-to-setup focus, capture-versus-search modal arbitration, and shared Progress copy. The first
+real-Chromium matrix then exposed the remaining runtime-only failures. Each review finding had a
+direct failing contract before its production change:
+
+1. Completion remained one action behind, the two same-ref completion controls could cross-match,
+   and mobile lost its required child `<span>`. The failing runtime test also pinned desktop,
+   mobile, rail, persisted reload, and exact article/iframe identity through mark and unmark.
+2. `__home__`, `__path__`, and `__start__` could become fake resource requests or mixed
+   setup/Reader state. Pure/runtime tests failed across initial URL, delegated action/link,
+   same-origin message, popstate, reload, Back, and Forward while retaining an unrelated `case`
+   query and the last real `cw_last` bookmark. `__progress__` remained canonical.
+3. Today, Reader, Progress, placement, and plan mutations could drop `.fd-main`; unscoped legacy
+   `main`/`aside` rules also leaked into the new shell. A Chromium computed-style and DOM-class
+   contract failed before scoping the old rules and preserving the main class.
+4. Capture was not a stable learner-route control. The six-route/two-breakpoint smoke matrix failed
+   before the persistent launcher landed. A separate Reader → Today → save regression proved the
+   stale bug directly: the new capture inherited `orientation.md` instead of `ctx: null`, even
+   though `cw_last` correctly remained `orientation.md`.
+5. Theme and Week rerenders lost ordinary focus, and capture plus Command/Control-K produced two
+   dialogs. Focus/controller tests failed for the replacement theme button and setup heading; a
+   deterministic browser RED observed two dialogs plus `.fd-search`. The final modal regression
+   also pins one Escape closing only capture and restoring its connected invoker.
+6. Browser titles stayed stale across tabs, successful resources, Progress, placement, and saved
+   plan. The Chromium title matrix failed before title ownership was added to each successful
+   destination without changing faculty-preview receipts or query state.
+7. Shared learner-visible Progress/plan text still contained `clerkship`, `Shelf`, and
+   `shelf-blueprint` wording. The expanded semantic copy extraction failed until those phrases
+   became resident-neutral `learning activity`/`exam` copy while the machine schema stayed exactly
+   `clerkship-study-v2`.
+
+Artifact self-review then caught one more active-surface remnant: phase policy still said “Set an
+exam date on Start-here.” Its behavioral suite produced the expected 35/36 RED before the label was
+changed to “Set an exam date in Progress”; the focused phase/copy rerun passed 43/43.
+
+### Implemented remediation
+
+- Completion derives from the just-patched controller state, updates desktop and mobile controls
+  by both ref and scope, refreshes the rail immediately, preserves the mobile span, and never
+  replaces the mounted article or iframe.
+- All legacy aliases normalize through one route decision. Home maps to Today, Path to Path, and
+  completed Start to internal Progress; incomplete Start remains on the appropriate role/week
+  setup screen. Normalization uses replace-history, preserves unrelated query parameters, and
+  never fetches or bookmarks a special slug.
+- The stable `<main id="content">` retains `.fd-main` through every base/internal mutation. Old
+  sidebar/main CSS is limited to direct `.layout` children so it cannot restyle Front Door rails.
+- One stable global capture launcher remains present on Today, Path, Library, Reader, and Progress
+  at both breakpoints, while Today alone retains capture triage and faculty preview exposes no
+  launcher. Special views explicitly own `currentItem`, so capture context is never inherited from
+  a prior Reader and the real learner bookmark remains unchanged.
+- Theme restores focus to the replacement theme control; Week focuses the setup heading; the
+  independent capture sheet suppresses Front Door modal shortcuts and owns the top-layer Escape.
+- Learner titles reset for tabs/setup and update after successful resources plus Progress,
+  placement/results, and plan. Faculty-preview title/query/status/preflight behavior is unchanged.
+- Shared Progress, plan, export, blueprint, and phase-policy prose is audience-neutral. The
+  coordinated storage/export identifiers, including `cw_shelf_date` and schema
+  `clerkship-study-v2`, are deliberately unchanged.
+- The stale `fd_wire.js` comment now describes the active single controller, and the stable
+  capture modifier was added to the class inventory without changing the 196-class count.
+
+### Final review GREEN evidence
+
+- Focused controller/resource/shell/capture/copy suites: 98/98; phase-policy plus copy: 43/43.
+- Registry/topic/curriculum/attestation/tool-governance/common validators all pass; common
+  injection remains 53/53. Tool governance remains MS3 22 / resident 24 with the same five-file
+  legacy metadata warning.
+- `_prototypes/sp-interview/tests/run-all.sh`: `ALL SUITES PASSED`.
+- Authorized full root suite: 1040/1040. The sandbox-only run reproduced exactly the eight known
+  `listen EPERM 127.0.0.1` launcher failures; the authorized loopback run had zero failures.
+- Fresh Chromium against the built artifacts: MS3 runtime plus capture 27/27; resident runtime
+  7/7 and the same resident six-route/two-breakpoint capture matrix 20/20.
+- Sequential final publication gates passed after the last copy fix. MS3: 81 placed refs, 22
+  governed tools, 105 real LFS media files, hard QA 0, soft 7. Resident: 90 placed refs, 24
+  governed tools, 105 real LFS media files, hard QA 0, soft 10. Search quality passed 9/9 for each.
+- Resident artifact inspection confirms the MMC header/title rebrand, stable capture launcher,
+  neutral learning-activity/exam prose, Progress phase destination, and unchanged
+  `clerkship-study-v2` machine schema.
+
+### Files and boundaries
+
+Production changes are limited to `frontdoor/fd_wire.js`, `phase_policy.js`, and `spa_index.html`.
+Contract/test documentation changes are limited to `CLASS-INVENTORY.md`, `fd-shell-boot`,
+`fd-wire`, `phase-policy`, `shell-copy`, Playwright config, rewritten ward-capture smoke, and the
+new runtime smoke suite. This report is the only ignored SDD artifact force-added with the round.
+
+No crisis data/copy, clinical facts, faculty content or approval state, historical
+`reviewed.json`, palette/contrast contract, media/LFS objects, generated `_build`, credentials,
+or PHI changed. `tests/fd-contrast.test.mjs` remains byte-exact and all 11 inherited light-mode
+palette-debt values remain unchanged. Task 6 safety/copy scope remains unopened. The residual risk
+is the intentionally
+deferred full Task 7 browser-journey/Ubuntu visual-baseline refresh; this round ran a compact real
+browser action matrix on both built audiences but did not regenerate visual baselines.

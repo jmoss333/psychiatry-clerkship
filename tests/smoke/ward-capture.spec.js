@@ -1,33 +1,50 @@
 import { test, expect } from '@playwright/test';
 
-// Ward question capture: the affordance must be reachable on EVERY route at EVERY breakpoint.
-// That is the whole reason there are two mount points — .mobile-chrome is display:none above
-// 820px, aside#side goes off-canvas + inert below it, and .tl-dock/.tl-bar are torn down by
-// __clearDock() on every show() and never remount on the special or tool branches. Those four
-// route classes are exactly what T9 walks.
+// Ward question capture: one stable Front Door launcher must remain reachable on every learner
+// surface and breakpoint. Today alone also owns the triage card; navigation may replace #content
+// but must never replace the launcher mount.
 //
 // No page.route in this file. The config sets serviceWorkers:'block' for every project except
 // the dedicated `offline` one, but route interception is blind once a SW controls the page, so
 // the two must never be combined here.
 
 const ROUTES = [
-  ['home (special branch)', '/?page=__home__'],
-  ['markdown page', '/?page=t_mood.md'],
-  ['tool route', '/?tool=review.html'],
+  ['Today tab', '/'],
   ['Path tab', '/?tab=path'],
+  ['Library tab', '/?tab=library'],
+  ['markdown Reader', '/?page=orientation.md'],
+  ['tool Reader', '/?tool=question-bank-practice.html'],
+  ['internal Progress', '/?page=__progress__'],
 ];
 
 const PHONE = { width: 390, height: 844 };
 const NARROW = { width: 320, height: 844 };
 const DESKTOP = { width: 1280, height: 800 };
+const captureLauncher = (page) => page.locator('.fd-capture-launch--global[data-capture-open]');
+
+async function seedCompleteSetup(page) {
+  await page.addInitScript(() => {
+    const now = new Date();
+    now.setHours(12, 0, 0, 0);
+    now.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+    const start = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    localStorage.setItem('cw_rotation_start', start);
+    localStorage.setItem('cw_frontdoor_v1', JSON.stringify({
+      role: 'staff', tab: 'today', viewWeek: 1, autoAdvance: false,
+    }));
+  });
+}
+
+test.beforeEach(async ({ page }) => seedCompleteSetup(page));
 
 test.describe('capture affordance is route- and breakpoint-persistent', () => {
   for (const [label, url] of ROUTES) {
     test(`T9 mobile: capture button is usable on ${label}`, async ({ page }) => {
       await page.setViewportSize(PHONE);
       await page.goto(url);
-      const btn = page.locator('#captureBtnMobile');
+      const btn = captureLauncher(page);
       await expect(btn).toBeVisible();
+      await expect(btn).toHaveCount(1);
       await expect(btn).toHaveAttribute('aria-expanded', 'false');
       await btn.click();
       await expect(page.locator('.cap-sheet')).toBeVisible();
@@ -39,10 +56,9 @@ test.describe('capture affordance is route- and breakpoint-persistent', () => {
     test(`T9 desktop: capture button is usable on ${label}`, async ({ page }) => {
       await page.setViewportSize(DESKTOP);
       await page.goto(url);
-      // The mobile mount is inside a display:none ancestor at this width — that is by design.
-      await expect(page.locator('#captureBtnMobile')).toBeHidden();
-      const btn = page.locator('#captureBtnDesk');
+      const btn = captureLauncher(page);
       await expect(btn).toBeVisible();
+      await expect(btn).toHaveCount(1);
       await btn.click();
       await expect(page.locator('.cap-sheet')).toBeVisible();
       await page.locator('#capCancel').click();
@@ -53,34 +69,55 @@ test.describe('capture affordance is route- and breakpoint-persistent', () => {
 
 test('the sheet traps focus and returns it to the invoker that opened it', async ({ page }) => {
   await page.setViewportSize(PHONE);
-  await page.goto('/?page=__home__');
-  await page.locator('#captureBtnMobile').click();
+  await page.goto('/');
+  await captureLauncher(page).click();
   await expect(page.locator('#capText')).toBeFocused();
   // Escape closes and focus goes back to the recorded invoker, not to <body>.
   await page.keyboard.press('Escape');
   await expect(page.locator('.cap-sheet')).toHaveCount(0);
-  await expect(page.locator('#captureBtnMobile')).toBeFocused();
+  await expect(captureLauncher(page)).toBeFocused();
 });
 
 test('a saved question survives reload and reaches the home triage card', async ({ page }) => {
   await page.setViewportSize(PHONE);
-  await page.goto('/?page=__home__');
-  await page.locator('#captureBtnMobile').click();
+  await page.goto('/');
+  await captureLauncher(page).click();
   await page.locator('#capText').fill('why clozapine and not another antipsychotic');
   await page.locator('#capSave').click();
   // list inside the sheet updates without a reload
   await expect(page.locator('.cap-list li')).toHaveCount(1);
   await page.locator('#capCancel').click();
   await page.reload();
-  const card = page.locator('.hm-sec', { hasText: 'Questions from the unit' });
+  const card = page.locator('.fd-capture', { hasText: 'Questions from the unit' });
   await expect(card).toBeVisible();
   await expect(card).toContainText('why clozapine and not another antipsychotic');
 });
 
+test('Today capture clears a prior Reader context without corrupting the learner bookmark', async ({ page }) => {
+  await page.setViewportSize(PHONE);
+  await page.goto('/?page=orientation.md');
+  await expect(page.locator('.fd-article')).toBeVisible();
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('cw_last'))).toBe('orientation.md');
+
+  await page.locator('[data-fd-home]').first().click();
+  await expect(page.locator('.fd-today')).toBeVisible();
+  // Use the pre-cutover-compatible hook here so the RED run reaches the stale-context bug;
+  // the route matrix above independently requires the new stable launcher class.
+  await page.locator('[data-capture-open]').first().click();
+  await page.locator('#capText').fill('what should I review after rounds');
+  await page.locator('#capSave').click();
+
+  const saved = await page.evaluate(() => {
+    const items = JSON.parse(localStorage.getItem('cw_capture_v1')).items;
+    return { ctx: items[items.length - 1].ctx, bookmark: localStorage.getItem('cw_last') };
+  });
+  expect(saved).toEqual({ ctx: null, bookmark: 'orientation.md' });
+});
+
 test('the interstitial holds a save that looks like it carries patient details', async ({ page }) => {
   await page.setViewportSize(PHONE);
-  await page.goto('/?page=__home__');
-  await page.locator('#captureBtnMobile').click();
+  await page.goto('/');
+  await captureLauncher(page).click();
   // capture-local ward-location rule: the shared PHI_PATTERNS deliberately do not carry it
   await page.locator('#capText').fill('the guy in room 302 keeps refusing meds why');
   await page.locator('#capSave').click();
@@ -98,8 +135,8 @@ test('the interstitial holds a save that looks like it carries patient details',
 
 test('a legitimate clinical question full of numbers is not held', async ({ page }) => {
   await page.setViewportSize(PHONE);
-  await page.goto('/?page=__home__');
-  await page.locator('#captureBtnMobile').click();
+  await page.goto('/');
+  await captureLauncher(page).click();
   await page.locator('#capText').fill('why do we stop clozapine at QTc over 500');
   await page.locator('#capSave').click();
   await expect(page.locator('.cap-phi')).toHaveCount(0);
@@ -108,8 +145,8 @@ test('a legitimate clinical question full of numbers is not held', async ({ page
 
 test('T12: a capture is never exported with the study data', async ({ page }) => {
   await page.setViewportSize(DESKTOP);
-  await page.goto('/?page=__home__');
-  await page.locator('#captureBtnDesk').click();
+  await page.goto('/');
+  await captureLauncher(page).click();
   await page.locator('#capText').fill('why clozapine here');
   await page.locator('#capSave').click();
   await page.locator('#capCancel').click();
@@ -130,18 +167,20 @@ test('T12: a capture is never exported with the study data', async ({ page }) =>
   expect(payload).not.toContain('why clozapine here');
 });
 
-// T10 guard: the mobile mount replaced an empty 44x44 spacer in .mobile-chrome's third grid
-// column, so it must not introduce horizontal overflow at the narrowest supported width, and
-// must not join .tl-bar (whose data-tool item counts are pinned in visual-regression.spec.js).
-test('T10: the mobile mount adds no horizontal overflow and stays out of .tl-bar', async ({ page }) => {
+test('T10: the stable launcher adds no horizontal overflow and stays outside the Reader action bar', async ({ page }) => {
   await page.setViewportSize(NARROW);
   await page.goto('/?page=t_mood.md');
-  await expect(page.locator('#captureBtnMobile')).toBeVisible();
-  await expect(page.locator('.tl-bar #captureBtnMobile')).toHaveCount(0);
-  await expect(page.locator('.tl-bar__item[data-tool]')).toHaveCount(3);
+  await expect(captureLauncher(page)).toBeVisible();
+  await expect(page.locator('.fd-actionbar .fd-capture-launch--global')).toHaveCount(0);
   const widths = await page.evaluate(() => ({
     scroll: document.documentElement.scrollWidth,
     client: document.documentElement.clientWidth,
   }));
   expect(widths.scroll).toBeLessThanOrEqual(widths.client);
+});
+
+test('faculty exact-revision preview never exposes the learner capture launcher', async ({ page }) => {
+  await page.setViewportSize(DESKTOP);
+  await page.goto('/?page=orientation.md&reviewKey=page%3Aorientation.md&reviewToken=0123456789abcdef0123456789abcdef');
+  await expect(captureLauncher(page)).toHaveCount(0);
 });

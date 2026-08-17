@@ -143,7 +143,8 @@ test('phasePolicy is "unset" (cap 12, no daysToShelf) when cw_shelf_date is abse
   assert.equal(p.phase, 'unset');
   assert.equal(p.newPerDayCap, 12);
   assert.equal(p.daysToShelf, null);
-  assert.ok(p.label.includes('Start-here'), `unset label should point to Start-here: "${p.label}"`);
+  assert.ok(p.label.includes('Progress'), `unset label should point to Progress: "${p.label}"`);
+  assert.ok(!p.label.includes('Start-here'), `unset label must not point to the retired Start-here surface: "${p.label}"`);
 });
 
 test('phasePolicy is "unset" (cap 12) when cw_shelf_date is an invalid string ("banana")', () => {

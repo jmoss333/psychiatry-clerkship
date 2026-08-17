@@ -60,9 +60,37 @@ function extractShellCopy() {
   assert.ok(capAria, 'capture textarea aria-label not found in spa_index.html');
   strings['capture textarea aria-label'] = capAria[1];
 
-  const capBtn = shell.match(/class="fd-capture-launch"[^>]*>([^<]*)</);
+  const capBtn = shell.match(/class="[^"]*\bfd-capture-launch\b[^"]*"[^>]*>([^<]*)</);
   assert.ok(capBtn, 'Front Door capture button label not found in spa_index.html');
   strings['Front Door capture button'] = capBtn[1];
+
+  // Shared Progress + plan prose. These internal views replaced the retired Start-here surface
+  // and now ship byte-identically to both audiences, so their learner-visible phrases belong in
+  // the same audience-neutral extraction as the header and capture copy. Match each semantic
+  // role rather than dumping identifiers: cw_shelf_date and clerkship-study-v2 are intentionally
+  // stable machine contracts, not visible prose.
+  const progressBlueprint = shell.match(/<div class="sub"[^>]*>(Answer practice questions[^<]*)<\/div>/);
+  assert.ok(progressBlueprint, 'Progress blueprint explainer not found in spa_index.html');
+  strings['Progress blueprint explainer'] = progressBlueprint[1];
+
+  const progressExport = shell.match(/<div class="sub"[^>]*>(Export your anonymous learning activity[^<]*)<\/div>/);
+  assert.ok(progressExport, 'Progress export explainer not found in spa_index.html');
+  strings['Progress export explainer'] = progressExport[1];
+
+  const planUnset = shell.match(/return '(<div class="sub"[^']*Set an? [^']*)'; var days=/);
+  assert.ok(planUnset, 'plan unset-date guidance not found in spa_index.html');
+  strings['plan unset-date guidance'] = planUnset[1].replace(/<[^>]*>/g, '');
+
+  const planPast = shell.match(/if\(days<0\) return '(<div class="sub"[^']*)'/);
+  assert.ok(planPast, 'plan past-date guidance not found in spa_index.html');
+  strings['plan past-date guidance'] = planPast[1].replace(/<[^>]*>/g, '');
+
+  const planNear = shell.match(/var msg=days<=14\?\('([^']*)'/);
+  const planSteady = shell.match(/practice daily\.'\):\('([^']*)'/);
+  assert.ok(planNear, 'plan near-exam guidance not found in spa_index.html');
+  assert.ok(planSteady, 'plan steady-exam guidance not found in spa_index.html');
+  strings['plan near-exam guidance'] = planNear[1];
+  strings['plan steady-exam guidance'] = planSteady[1];
 
   // sw_register.js update-toast copy: innerHTML/textContent literals + the dismiss aria-label.
   // Extracted by role rather than a blanket string dump, so code identifiers (function names,
@@ -147,6 +175,11 @@ test('shared shell copy has zero RESIDENT_REBRAND needle collisions', () => {
       );
     }
   }
+});
+
+test('the anonymous export keeps the coordinated clerkship-study-v2 machine schema', () => {
+  const shell = fs.readFileSync(path.join(BUILD_DIR, 'spa_index.html'), 'utf8');
+  assert.match(shell, /schema:'clerkship-study-v2'/);
 });
 
 // Positive-content pin: prove extractPhasePolicyLabels() reassembles the FULL text of the

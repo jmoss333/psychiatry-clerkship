@@ -1,9 +1,7 @@
-/* Front door route, action, and resource controller. This file is injected after every pure
-   renderer, but the current shell deliberately does not call fdWire yet. Keeping installation
-   opt-in lets this controller be verified before the later atomic shell cutover.
-
-   fdResolveState, fdDispatch, and fdResourceRequest are pure. Browser effects live in fdWire and
-   fdOpenResource behind explicit options so the same decisions can be tested without a DOM. */
+/* Front door route, action, and resource controller. The governed shell installs exactly one
+   fdWire instance after the pure renderers. fdResolveState, fdDispatch, and fdResourceRequest are
+   pure; browser effects live in fdWire and fdOpenResource behind explicit options so the same
+   decisions can be tested without a DOM. */
 
 var FD_HANDLED_ATTRS=[
   'data-fd-open','data-fd-sheet','data-fd-safety','data-fd-toggle','data-fd-tab',
@@ -50,6 +48,40 @@ function fdClone(o){
   return out;
 }
 
+function fdIsLegacyRouteAlias(ref){
+  return ref==='__home__'||ref==='__path__'||ref==='__start__';
+}
+
+function fdLegacyRouteResult(ref, context, state){
+  var c=context||{}, s=state||{};
+  if(ref==='__home__'){
+    return {
+      patch:{tab:'today',openId:null,searchOpen:false,sheet:null},
+      route:fdRouteForTab('today',c.search),history:'replace',effect:null
+    };
+  }
+  if(ref==='__path__'){
+    return {
+      patch:{tab:'path',openId:null,searchOpen:false,sheet:null},
+      route:fdRouteForTab('path',c.search),history:'replace',effect:null
+    };
+  }
+  if(ref==='__start__'){
+    if(s.screen==='app'){
+      return {
+        patch:{tab:'today',openId:'__progress__',fromTab:'today',searchOpen:false,sheet:null},
+        route:fdRouteForRef('__progress__',c.search),history:'replace',
+        effect:{type:'open-progress'}
+      };
+    }
+    return {
+      patch:{tab:'today',openId:null,searchOpen:false,sheet:null},
+      route:fdRouteForTab('today',c.search),history:'replace',effect:null
+    };
+  }
+  return null;
+}
+
 function fdResolveState(url, stored){
   var src=stored||{}, out={};
   if(typeof src.role==='string'&&src.role) out.role=src.role;
@@ -62,16 +94,16 @@ function fdResolveState(url, stored){
   else out.viewWeek=1;
   out.autoAdvance=src.autoAdvance!==false;
 
-  var parsed;
+  var parsed, routedRef=null;
   try{ parsed=new URL(String(url||''),'https://frontdoor.invalid/'); }catch(_){ parsed=null; }
   if(parsed){
     var routedTab=parsed.searchParams.get('tab');
-    var routedRef=parsed.searchParams.get('page')||parsed.searchParams.get('tool');
+    routedRef=parsed.searchParams.get('page')||parsed.searchParams.get('tool');
     if(routedTab&&fdValidTab(routedTab)){
       out.tab=routedTab;
       delete out.openId;
     }
-    if(routedRef){
+    if(routedRef&&!fdIsLegacyRouteAlias(routedRef)){
       out.fromTab=out.tab;
       out.openId=routedRef;
     }
@@ -84,6 +116,22 @@ function fdResolveState(url, stored){
   if(!out.role) out.screen='setup-role';
   else if(src.rotationStart||typeof out.week==='number'||src.browsing||out.tab==='library') out.screen='app';
   else out.screen='setup-week';
+  if(routedRef&&fdIsLegacyRouteAlias(routedRef)){
+    if(routedRef==='__home__'){
+      out.tab='today';
+      delete out.openId;
+    } else if(routedRef==='__path__'){
+      out.tab='path';
+      delete out.openId;
+    } else if(out.screen==='app'){
+      out.tab='today';
+      out.fromTab='today';
+      out.openId='__progress__';
+    } else {
+      out.tab='today';
+      delete out.openId;
+    }
+  }
   return out;
 }
 
@@ -207,6 +255,7 @@ function fdDispatch(attrs, context, state){
   }
   if(fdOwn(a,'data-fd-open')){
     ref=String(a['data-fd-open']||'');
+    if(fdIsLegacyRouteAlias(ref)) return fdLegacyRouteResult(ref,c,s);
     if(fdOwn(a,'data-fd-sheet')){
       return {
         patch:{sheet:'item:'+ref,sheetFrom:null,stepsDone:{},searchOpen:false},
@@ -526,6 +575,10 @@ function fdWire(root, initialState, opts){
     if(o.facultyPreview!==undefined) return !!o.facultyPreview;
     return typeof facultyPreviewRequest!=='undefined'&&!!facultyPreviewRequest;
   }
+  function externalModalOpen(){
+    if(typeof o.externalModalOpen==='function') return !!o.externalModalOpen();
+    return !!o.externalModalOpen;
+  }
   function lockPreview(){
     if(o.facultyPreviewLock){ o.facultyPreviewLock(); return; }
     if(typeof showFacultyPreviewLockNotice==='function') showFacultyPreviewLockNotice();
@@ -557,6 +610,13 @@ function fdWire(root, initialState, opts){
   function currentRoute(){
     if(!win||!win.location) return '/';
     return (win.location.pathname||'/')+(win.location.search||'');
+  }
+  function currentRoutedRef(){
+    if(!win||!win.location) return '';
+    try{
+      var params=new URLSearchParams(win.location.search||'');
+      return params.get('page')||params.get('tool')||'';
+    }catch(_){ return ''; }
   }
   function sameRoute(route){
     if(!route||!win||!win.location) return false;
@@ -682,6 +742,20 @@ function fdWire(root, initialState, opts){
       else if(typeof navClick==='function') navClick('__progress__');
     }
   }
+  function focusPostTransition(before, result, changedBase){
+    var effect=result&&result.effect;
+    if(effect&&effect.type==='set-theme'){
+      var themeControl=root&&root.querySelector?root.querySelector('[data-fd-theme]'):null;
+      if(themeControl&&themeControl.focus) try{themeControl.focus();}catch(_){}
+      return;
+    }
+    if(changedBase&&state.screen&&state.screen.indexOf('setup-')===0){
+      var heading=root&&root.querySelector?root.querySelector('.fd-setup .fd-h1'):null;
+      if(!heading) heading=freshResourceHost();
+      if(heading&&heading.setAttribute) heading.setAttribute('tabindex','-1');
+      if(heading&&heading.focus) try{heading.focus({preventScroll:true});}catch(_){try{heading.focus();}catch(__){}}
+    }
+  }
   function apply(result, invoker, fromHistory){
     if(destroyed) return state;
     if(previewActive()&&meaningfulResult(result)){
@@ -712,6 +786,7 @@ function fdWire(root, initialState, opts){
     if(changedBase) render(state,detail);
     else renderTransient(state,detail);
     fdApplyEffect(result.effect,fromHistory,generation);
+    focusPostTransition(before,result,changedBase);
     if(afterOverlay&&afterOverlay!==beforeOverlay) focusDialog();
     else if(!afterOverlay&&beforeHadOverlay) restoreInvoker();
     return state;
@@ -753,6 +828,7 @@ function fdWire(root, initialState, opts){
     }
   }
   function keyHandler(event){
+    if(externalModalOpen()) return;
     var d=dialog();
     if(d&&fdTrapFocus(event,d)) return;
     if(event.key==='Escape'&&(state.searchOpen||state.sheet)){
@@ -826,6 +902,17 @@ function fdWire(root, initialState, opts){
       }
     }
     state=merged;
+    var legacyRef=currentRoutedRef();
+    var legacyResult=fdIsLegacyRouteAlias(legacyRef)?fdLegacyRouteResult(
+      legacyRef,{search:win.location.search||''},state
+    ):null;
+    if(legacyResult){
+      var legacyPatch=legacyResult.patch||{};
+      for(var legacyKey in legacyPatch){
+        if(fdOwn(legacyPatch,legacyKey)) state[legacyKey]=legacyPatch[legacyKey];
+      }
+      routeTo(legacyResult.route,true);
+    }
     /* Setup is canonical controller state, not history-owned state. If Back reaches an older
        reader snapshot after Change week, retire that entry in place instead of combining a
        page URL/openId with a setup surface. Route extras such as case/scenario still survive. */
@@ -844,7 +931,9 @@ function fdWire(root, initialState, opts){
       baseChanged:true,preserveResource:false,effect:null
     });
     fdSave(state);
-    if(state.openId==='__progress__'){
+    if(legacyResult&&legacyResult.effect){
+      fdApplyEffect(legacyResult.effect,true,generation);
+    } else if(state.openId==='__progress__'){
       fdApplyEffect({type:'open-progress'},true,generation);
     } else if(state.openId){
       var opener=o.openResource||fdOpenResource;
@@ -865,7 +954,12 @@ function fdWire(root, initialState, opts){
     win.addEventListener('popstate',popstateHandler);
   }
   if(!previewActive()&&win&&win.history&&win.history.replaceState){
-    replaceHistorySnapshot();
+    var initialLegacyRef=currentRoutedRef();
+    var initialLegacy=fdIsLegacyRouteAlias(initialLegacyRef)?fdLegacyRouteResult(
+      initialLegacyRef,{search:win.location.search||''},state
+    ):null;
+    if(initialLegacy) routeTo(initialLegacy.route,true);
+    else replaceHistorySnapshot();
   }
 
   return {

@@ -22,9 +22,9 @@
   *,*::before,*::after{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:17px;line-height:1.6}
   .layout{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
-  aside{background:var(--bg-alt);border-right:1px solid var(--border);padding:18px 14px;overflow-y:auto;position:sticky;top:0;height:100vh}
-  aside h1{font-family:var(--font-head);font-size:1.05rem;color:var(--primary-dark);margin:0 0 2px;padding-right:74px;white-space:nowrap}
-  aside .by{font-size:.78rem;color:var(--text-light);margin-bottom:14px}
+  .layout>aside{background:var(--bg-alt);border-right:1px solid var(--border);padding:18px 14px;overflow-y:auto;position:sticky;top:0;height:100vh}
+  .layout>aside h1{font-family:var(--font-head);font-size:1.05rem;color:var(--primary-dark);margin:0 0 2px;padding-right:74px;white-space:nowrap}
+  .layout>aside .by{font-size:.78rem;color:var(--text-light);margin-bottom:14px}
   .themebtn{position:absolute;top:16px;right:14px;width:34px;height:34px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--text-mid);cursor:pointer;font-size:1rem;line-height:1;display:flex;align-items:center;justify-content:center}
   .themebtn:hover{border-color:var(--accent);color:var(--accent-dark)}
   /* Collapsible sidebar (desktop only — the ≤820px drawer keeps the full sidebar).
@@ -35,8 +35,8 @@
   @media(min-width:821px){
     .layout{transition:grid-template-columns .25s ease}
     html[data-side=rail] .layout{grid-template-columns:56px 1fr}
-    html[data-side=rail] aside{padding:14px 10px}
-    html[data-side=rail] aside>*:not(.side-rail){display:none}
+    html[data-side=rail] .layout>aside{padding:14px 10px}
+    html[data-side=rail] .layout>aside>*:not(.side-rail){display:none}
     html[data-side=rail] .side-rail{display:flex;flex-direction:column;align-items:center;gap:10px}
   }
   .rail-expand{width:36px;height:36px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--accent-dark);cursor:pointer;font-size:.92rem;font-weight:800;line-height:1;display:flex;align-items:center;justify-content:center;font-family:var(--font-body)}
@@ -78,7 +78,7 @@
   .navitem.on{background:var(--accent);color:#fff}
   .navitem .tool-tag{flex:0 0 auto;font-size:.6rem;background:var(--accent-dark);color:#fff;border-radius:999px;padding:1px 6px;vertical-align:middle}
   .navitem.on .tool-tag{background:#fff;color:var(--accent-dark)}
-  main{padding:0}
+  .layout>main{padding:0}
   .banner{background:var(--warning-light);border-bottom:1px solid var(--border);color:var(--text);font-size:.82rem;padding:8px 34px 8px 28px;position:relative}
   .banner.hide{display:none}
   .bannerx{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:none;background:transparent;color:var(--text);cursor:pointer;font-size:1.05rem;line-height:1;opacity:.55;padding:2px 6px}
@@ -288,7 +288,7 @@
   @media(max-width:820px){
     :root{--mobile-bottom-clearance:calc(84px + env(safe-area-inset-bottom,0px))}
     .layout{grid-template-columns:1fr}
-    main,#content{min-width:0}
+    .layout>main,#content{min-width:0}
     .mobile-chrome{position:sticky;top:0;z-index:18;display:grid;grid-template-columns:minmax(44px,auto) minmax(0,1fr) minmax(44px,auto);align-items:center;gap:8px;min-height:56px;padding:calc(6px + env(safe-area-inset-top,0px)) 12px 6px;background:var(--bg);border-bottom:1px solid var(--border)}
     .menubtn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:44px;min-height:44px;border:none;border-radius:9px;padding:8px 12px;background:var(--primary-dark);color:#fff;font:inherit;font-weight:700;cursor:pointer}
     .menubtn span{display:none}
@@ -302,9 +302,9 @@
     .mobile-chrome-capture:focus-visible{outline:none;box-shadow:0 0 0 3px var(--surface),0 0 0 5px var(--accent)}
     .capture-desk{display:none}
     .side-collapse{display:none}
-    aside{position:fixed;left:0;top:0;width:84%;max-width:300px;z-index:20;height:100vh;height:100dvh;padding-bottom:18px;overflow-y:auto;overscroll-behavior:contain;transform:translateX(-100%);transition:transform .2s;box-shadow:0 0 30px rgba(0,0,0,.2)}
-    body.has-tlbar aside{padding-bottom:calc(var(--mobile-bottom-clearance) + 18px)}
-    aside.open{transform:translateX(0)}
+    .layout>aside{position:fixed;left:0;top:0;width:84%;max-width:300px;z-index:20;height:100vh;height:100dvh;padding-bottom:18px;overflow-y:auto;overscroll-behavior:contain;transform:translateX(-100%);transition:transform .2s;box-shadow:0 0 30px rgba(0,0,0,.2)}
+    body.has-tlbar .layout>aside{padding-bottom:calc(var(--mobile-bottom-clearance) + 18px)}
+    .layout>aside.open{transform:translateX(0)}
     body.has-tlbar #content{padding-bottom:var(--mobile-bottom-clearance)}
   }
 </style>
@@ -359,13 +359,17 @@
   .capture-desk{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;min-height:38px;margin:0 0 12px;border:1px dashed var(--border);border-radius:9px;background:transparent;color:var(--text-mid);font-family:var(--font-body);font-size:.8rem;font-weight:600;cursor:pointer}
   .capture-desk:hover{border-style:solid;color:var(--primary-dark);border-color:var(--primary-dark)}
   .capture-desk:focus-visible{outline:none;box-shadow:0 0 0 3px var(--surface),0 0 0 5px var(--accent)}
-  .cap-backdrop{position:fixed;inset:0;z-index:49;background:rgba(47,41,36,.4)}
-  .cap-sheet{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:50;width:min(520px,calc(100vw - 24px));max-height:min(80vh,720px);overflow-y:auto;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;box-shadow:0 12px 40px rgba(59,51,44,.26);font-family:var(--font-body)}
+  .cap-backdrop{position:fixed;inset:0;z-index:130;background:rgba(47,41,36,.4)}
+  .cap-sheet{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:131;width:min(520px,calc(100vw - 24px));max-height:min(80vh,720px);overflow-y:auto;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;box-shadow:0 12px 40px rgba(59,51,44,.26);font-family:var(--font-body)}
   .cap-sheet h2{font-family:var(--font-head);font-size:1.02rem;color:var(--primary-dark);margin:0 0 4px}
   .cap-warn{font-size:.82rem;color:var(--text-mid);margin:0 0 10px;line-height:1.45}
   .cap-warn strong{color:var(--text)}
   .cap-sheet textarea{width:100%;box-sizing:border-box;min-height:96px;resize:vertical;border:1px solid var(--border);border-radius:9px;padding:10px;font:inherit;font-size:.9rem;color:var(--text);background:var(--bg)}
   .cap-sheet textarea:focus-visible{outline:none;box-shadow:0 0 0 3px var(--surface),0 0 0 5px var(--accent)}
+  #fdCaptureMount{position:fixed;right:20px;bottom:20px;z-index:55;width:min(230px,calc(100vw - 40px))}
+  #fdCaptureMount:empty{display:none}
+  #fdCaptureMount .fd-capture-launch{margin:0}
+  @media(max-width:999px){#fdCaptureMount{right:12px;bottom:calc(78px + env(safe-area-inset-bottom,0px));width:min(210px,calc(100vw - 24px))}}
   .cap-disclose{font-size:.76rem;color:var(--text-light);margin:8px 0 0}
   .cap-acts{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0 0}
   .cap-btn{border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:8px;padding:8px 14px;font:inherit;font-size:.84rem;font-weight:600;cursor:pointer}
@@ -542,6 +546,7 @@
   <div id="governanceMount"></div>
   <span id="routeStatus" class="vh-live" aria-live="polite"></span>
   <main id="content" class="fd-main" tabindex="-1"><div class="skel" role="status" aria-label="Loading"><div class="bar title"></div><div class="bar"></div><div class="bar short"></div><div class="bar"></div></div></main>
+  <div id="fdCaptureMount"></div>
   <div id="fdOverlayMount"></div>
   <div id="fdNudgeMount"></div>
 </div>
@@ -951,6 +956,21 @@
     h+='</div></div></details>'; return h;
   }
   function pageTitle(it){ return it ? (it.t+' \u2014 MS3 Psychiatry Clerkship') : 'Inpatient Psychiatry \u2014 MS3 Clerkship'; }
+  function setLearnerTitle(item){ if(!facultyPreviewRequest)document.title=pageTitle(item); }
+  function fdSpecialItemForState(state){
+    var s=state||{};
+    if(s.screen&&s.screen.indexOf('setup-')===0)return {f:'__start__',t:'Setup',k:'special'};
+    if(s.openId==='__progress__')return {f:'__progress__',t:'Progress',k:'special'};
+    if(s.openId)return null;
+    if(s.tab==='path')return {f:'__path__',t:'Path',k:'special'};
+    if(s.tab==='library')return {f:'__library__',t:'Library',k:'special'};
+    return {f:'__home__',t:'Today',k:'special'};
+  }
+  function fdAdoptSpecialContext(state){
+    var item=fdSpecialItemForState(state);
+    if(item){currentItem=item;setLearnerTitle(item);}
+    return item;
+  }
   var routeAnnounced=false;
   function announceRoute(item){
     var rs=document.getElementById('routeStatus');
@@ -1058,9 +1078,8 @@
   function capWrite(d){ try{ localStorage.setItem('cw_capture_v1',JSON.stringify(d)); return true; }catch(_){ return false; } }
   function capEraseAll(){ try{ localStorage.removeItem('cw_capture_v1'); }catch(_){ } }
   function capCtx(){
-    /* null on special routes. __afterContent (which writes cw_last) never fires on the special
-       branch, so on __home__ cw_last still holds the PREVIOUS page — a stale slug is worse than
-       none, because triage would route the learner somewhere they never asked about. */
+    /* null on every Front Door special route. The learner bookmark intentionally remains the
+       previous real page, so capture context must consult currentItem rather than stale cw_last. */
     try{ if(!currentItem||currentItem.k==='special')return null; return currentItem.f||null; }catch(_){ return null; }
   }
   function capEvict(items){
@@ -1104,7 +1123,7 @@
   }
   function capKeydown(e){
     if(!capSheet)return;
-    if(e.key==='Escape'){ e.preventDefault(); capClose(); return; }
+    if(e.key==='Escape'){ e.preventDefault(); if(e.stopPropagation)e.stopPropagation(); capClose(); return; }
     if(e.key!=='Tab')return;
     var f=capFocusables(); if(!f.length)return;
     var first=f[0], last=f[f.length-1];
@@ -1402,7 +1421,7 @@
     h+='<div class="hm-sec fd-examdate"><h2>Exam date</h2><div class="sub">Used only on this device to guide pacing.</div><div class="fd-examdate__row"><input id="fdExamDate" type="date" value="'+esc(LS('cw_shelf_date')||'')+'" aria-label="Exam date"><button type="button" class="hm-btn" data-progress-action="save-exam">Save date</button></div></div>';
     var mb=masteryByBlueprint(); var mbStarted=mb.filter(function(x){return x.score!=null;});
     h+='<div class="hm-sec"><h2>Mastery by blueprint <span style="font-weight:400;color:var(--text-light)">· from your practice</span></h2>';
-    if(!mbStarted.length){ h+='<div class="sub" style="margin:0 0 8px">Answer practice questions (or topic quizzes) and this fills in — one bar per shelf-blueprint area.</div>'; }
+    if(!mbStarted.length){ h+='<div class="sub" style="margin:0 0 8px">Answer practice questions (or topic quizzes) and this fills in — one bar per exam blueprint area.</div>'; }
     h+='<div class="hm-bars">';
     mb.forEach(function(x){ var pc=(x.score==null)?0:x.score; var lab=(x.score==null)?'not started':(x.score+'%'+(x.conf==='low'?' · few':'')); h+='<div class="brow"><span class="lab">'+esc(x.label)+'</span><span class="track"><span class="fill" style="width:'+pc+'%"></span></span><span class="pc">'+lab+'</span></div>'; });
     h+='</div></div>';
@@ -1432,7 +1451,7 @@
         h+='</div>';
       }
     }
-    h+='<div class="hm-sec"><h2>Help evaluate this site <span style="font-weight:400;color:var(--text-light)">· optional</span></h2><div class="sub" style="margin:0 0 8px">Export your anonymous learning activity for the clerkship study — no name and no patient information, only what you reviewed and answered on this site.</div><button class="hm-li" data-act="studyexport"><span class="t">Export my anonymous progress</span><span class="sec">Export ↓</span></button><div id="studyMsg" class="hm-empty" style="margin-top:6px"></div></div>';
+    h+='<div class="hm-sec"><h2>Help evaluate this site <span style="font-weight:400;color:var(--text-light)">· optional</span></h2><div class="sub" style="margin:0 0 8px">Export your anonymous learning activity for this site evaluation — no name and no patient information, only what you reviewed and answered on this site.</div><button class="hm-li" data-act="studyexport"><span class="t">Export my anonymous progress</span><span class="sec">Export ↓</span></button><div id="studyMsg" class="hm-empty" style="margin-top:6px"></div></div>';
     h+='</div>'; return h;
   };
 
@@ -1451,9 +1470,9 @@
   function ptLabels(cats){ return cats.map(function(c){return SHELF_LABEL[c]||c;}).join(', '); }
   function masteryBarsHtml(mb){ var h='<div class="hm-bars">'; mb.forEach(function(x){ var pc=(x.score==null)?0:x.score; var lab=(x.score==null)?'not started':(x.score+'%'+(x.conf==='low'?' · few':'')); h+='<div class="brow"><span class="lab">'+esc(x.label)+'</span><span class="track"><span class="fill" style="width:'+pc+'%"></span></span><span class="pc">'+lab+'</span></div>'; }); return h+'</div>'; }
   function buildPlan(){ var mb=masteryByBlueprint(), weak={}; mb.forEach(function(x){ if(x.score==null||(x.score<70&&x.miss>0)) weak[x.c]=1; }); var weeks=WEEK_MAP.map(function(wm){ return {week:wm.w,title:wm.title,page:wm.page,allCats:wm.cats,focus:wm.cats.filter(function(c){return weak[c];})}; }); return {generatedAt:new Date().toISOString(),shelfDate:(LS('cw_shelf_date')||''),weeks:weeks}; }
-  function shelfIntensityHtml(shelf){ if(!shelf) return '<div class="sub" style="margin:0 0 10px">Set a shelf/exam date on <button class="hm-inl" data-pt="start">Start-here</button> to tune intensity.</div>'; var days=shelfDaysUntil(shelf); if(days==null)return ''; if(days<0) return '<div class="sub" style="margin:0 0 10px">Shelf date passed — use this plan for review.</div>'; var msg=days<=14?('Shelf in '+days+' day'+(days===1?'':'s')+' — compress: hit each week’s focus areas and practice daily.'):('Shelf in '+days+' days — steady pace through the weeks.'); return '<div class="sub" style="margin:0 0 10px">'+msg+'</div>'; }
+  function shelfIntensityHtml(shelf){ if(!shelf) return '<div class="sub" style="margin:0 0 10px">Set an exam date in <button class="hm-inl" data-pt="start">Progress</button> to adjust intensity.</div>'; var days=shelfDaysUntil(shelf); if(days==null)return ''; if(days<0) return '<div class="sub" style="margin:0 0 10px">Exam date passed — use this plan for review.</div>'; var msg=days<=14?('Exam in '+days+' day'+(days===1?'':'s')+' — compress: hit each week’s focus areas and practice daily.'):('Exam in '+days+' days — steady pace through the weeks.'); return '<div class="sub" style="margin:0 0 10px">'+msg+'</div>'; }
   function renderPlanCards(plan){ var h=shelfIntensityHtml(plan.shelfDate); plan.weeks.forEach(function(wk){ h+='<div class="wd-card" style="margin:0 0 12px"><h3 style="text-transform:none;letter-spacing:0;font-size:.95rem;color:var(--text);margin:0 0 6px">'+esc(wk.title)+'</h3>'; if(wk.focus&&wk.focus.length){ h+='<div class="sub" style="margin:0 0 8px">Focus first: <strong>'+esc(ptLabels(wk.focus))+'</strong></div>'; wk.focus.forEach(function(c){ h+='<button class="hm-li" data-practice="'+c+'" style="border-bottom:none"><span class="t">Practice '+esc(SHELF_LABEL[c]||c)+'</span><span class="sec">→</span></button>'; }); } else { h+='<div class="sub" style="margin:0 0 4px">On track — maintain.</div>'; } h+='<button class="hm-li" data-f="'+wk.page+'" style="border-bottom:none"><span class="t">Open '+esc(wk.title.split(' — ')[0])+'</span><span class="sec">read →</span></button></div>'; }); return h; }
-  function startPretest(){ if(contentEl){ contentEl.className=''; } contentEl.innerHTML='<article class="fd-reader fd-progress-reader"><button type="button" class="fd-reader__back" data-progress-action="progress">‹ Progress</button><div class="hm" id="ptRoot"><h1>2-minute placement</h1><p class="sub">Loading…</p></div></article>'; var go=function(pool){ PRETEST_POOL=pool; ptAnswers={}; renderPretestForm(); }; if(PRETEST_POOL){ go(PRETEST_POOL); return; } fetch('pretest_pool.json').then(function(r){return r.ok?r.json():{items:[]};}).then(function(d){ go((d&&d.items)||[]); }).catch(function(){ go([]); }); }
+  function startPretest(){ currentItem={f:'__placement__',t:'2-minute placement',k:'special'};setLearnerTitle(currentItem);if(contentEl){ contentEl.className='fd-main'; } contentEl.innerHTML='<article class="fd-reader fd-progress-reader"><button type="button" class="fd-reader__back" data-progress-action="progress">‹ Progress</button><div class="hm" id="ptRoot"><h1>2-minute placement</h1><p class="sub">Loading…</p></div></article>'; var go=function(pool){ PRETEST_POOL=pool; ptAnswers={}; renderPretestForm(); }; if(PRETEST_POOL){ go(PRETEST_POOL); return; } fetch('pretest_pool.json').then(function(r){return r.ok?r.json():{items:[]};}).then(function(d){ go((d&&d.items)||[]); }).catch(function(){ go([]); }); }
   function renderPretestForm(){ var root=document.getElementById('ptRoot'); if(!root)return; var items=PRETEST_POOL||[]; if(!items.length){ root.innerHTML='<h1>Placement unavailable</h1><p class="sub">The question pool didn’t load — browse the library or follow the path instead.</p>'; return; } var h='<h1>2-minute placement</h1><p class="sub">One question per topic area — pick the best answer. This points you at weak spots; it’s a starting estimate, not a grade.</p>'; items.forEach(function(it,qi){ h+='<div class="pt-q" data-qi="'+qi+'"><div class="pt-stem">'+(qi+1)+'. '+esc(it.stem)+'</div>'; (it.options||[]).forEach(function(o){ h+='<button class="pt-opt" data-qi="'+qi+'" data-key="'+esc(o.key)+'"><b>'+esc(o.key)+'.</b> '+esc(o.t)+'</button>'; }); h+='</div>'; }); h+='<div style="margin-top:6px"><button class="hm-btn" data-pt="submit">See my results</button> <span id="ptCount" class="hm-empty"></span></div>'; root.innerHTML=h; updatePtCount(); }
   function updatePtCount(){ var el=document.getElementById('ptCount'); if(!el)return; var n=0,t=(PRETEST_POOL||[]).length,k; for(k in ptAnswers){ if(ptAnswers.hasOwnProperty(k))n++; } el.textContent=n+' of '+t+' answered'; }
   function submitPretest(){ var items=PRETEST_POOL||[], answers=[], byCat={}, qb={}; try{qb=JSON.parse(localStorage.getItem('cw_qb_v1')||'{}');}catch(_){qb={};} items.forEach(function(it,qi){ var k=ptAnswers[qi]; if(!k)return; var opt=null; (it.options||[]).forEach(function(o){if(o.key===k)opt=o;}); var correct=!!(opt&&opt.c); answers.push({id:it.id,cat:it.cat,correct:correct}); if(!byCat[it.cat])byCat[it.cat]={n:0,correct:0}; byCat[it.cat].n++; if(correct)byCat[it.cat].correct++; var prior=qb[it.id]; if(!prior||prior.source==='pretest'){ qb[it.id]={correct:correct,pages:it.pages||[],cat:it.cat,confidence:null,source:'pretest',at:new Date().toISOString().slice(0,10)}; } });
@@ -1462,12 +1481,13 @@
        with a cold pretest snapshot on every retake. A pretest answer may replace nothing,
        or an older pretest record; genuine practice history always wins. The attempt itself
        is still fully recorded in cw_pretest_v1 for the plan. */ try{localStorage.setItem('cw_qb_v1',JSON.stringify(qb));}catch(_){ } try{localStorage.setItem('cw_pretest_v1',JSON.stringify({takenAt:new Date().toISOString(),answers:answers,byCat:byCat}));}catch(_){ } var plan=buildPlan(); try{localStorage.setItem('cw_plan_v1',JSON.stringify(plan));}catch(_){ } renderPretestResults(plan); }
-  function renderPretestResults(plan){ var root=document.getElementById('ptRoot'); if(!root)return; var mb=masteryByBlueprint(); var h='<h1>Your placement</h1><p class="sub">A starting estimate from your answers — it refines as you practice. Weak areas are flagged in your plan below.</p>'; h+='<div class="hm-sec"><h2>Mastery by blueprint</h2>'+masteryBarsHtml(mb)+'</div>'; h+='<div class="hm-sec"><h2>Your personalized 6-week plan</h2>'+renderPlanCards(plan)+'</div>'; h+='<div class="hm-sec"><button class="hm-li" data-pt="pretest" style="border-bottom:none"><span class="t">Retake the placement</span><span class="sec">↻</span></button></div>'; root.innerHTML=h; }
-  function renderStoredPlan(){ var plan=null; try{plan=JSON.parse(localStorage.getItem('cw_plan_v1')||'null');}catch(_){ } if(!plan){ startPretest(); return; } if(contentEl){ contentEl.className=''; } contentEl.innerHTML='<article class="fd-reader fd-progress-reader"><button type="button" class="fd-reader__back" data-progress-action="progress">‹ Progress</button><div class="hm" id="planRoot"><h1>Your 6-week plan</h1><p class="sub">Personalized from your placement — the week order is fixed; your weak areas are flagged to hit first.</p><div class="hm-sec">'+renderPlanCards(plan)+'</div><div class="hm-sec"><button class="hm-li" data-pt="pretest" style="border-bottom:none"><span class="t">Retake the placement</span><span class="sec">↻</span></button></div></div></article>'; }
+  function renderPretestResults(plan){ var root=document.getElementById('ptRoot'); if(!root)return; currentItem={f:'__placement_results__',t:'Your placement',k:'special'};setLearnerTitle(currentItem);var mb=masteryByBlueprint(); var h='<h1>Your placement</h1><p class="sub">A starting estimate from your answers — it refines as you practice. Weak areas are flagged in your plan below.</p>'; h+='<div class="hm-sec"><h2>Mastery by blueprint</h2>'+masteryBarsHtml(mb)+'</div>'; h+='<div class="hm-sec"><h2>Your personalized 6-week plan</h2>'+renderPlanCards(plan)+'</div>'; h+='<div class="hm-sec"><button class="hm-li" data-pt="pretest" style="border-bottom:none"><span class="t">Retake the placement</span><span class="sec">↻</span></button></div>'; root.innerHTML=h; }
+  function renderStoredPlan(){ var plan=null; try{plan=JSON.parse(localStorage.getItem('cw_plan_v1')||'null');}catch(_){ } if(!plan){ startPretest(); return; } currentItem={f:'__plan__',t:'Your 6-week plan',k:'special'};setLearnerTitle(currentItem);if(contentEl){ contentEl.className='fd-main'; } contentEl.innerHTML='<article class="fd-reader fd-progress-reader"><button type="button" class="fd-reader__back" data-progress-action="progress">‹ Progress</button><div class="hm" id="planRoot"><h1>Your 6-week plan</h1><p class="sub">Personalized from your placement — the week order is fixed; your weak areas are flagged to hit first.</p><div class="hm-sec">'+renderPlanCards(plan)+'</div><div class="hm-sec"><button class="hm-li" data-pt="pretest" style="border-bottom:none"><span class="t">Retake the placement</span><span class="sec">↻</span></button></div></div></article>'; }
   /* ===== Governed Front Door live shell ===== */
   var FD_INDEX=fdBuildIndex(FD_CURRICULUM,FD_TOPIC_META,FD_TOOL_REGISTRY,FD_SITE_MANIFEST);
   var fdApp=document.getElementById('fdApp');
   var fdChromeMount=document.getElementById('fdChromeMount');
+  var fdCaptureMount=document.getElementById('fdCaptureMount');
   var fdOverlayMount=document.getElementById('fdOverlayMount');
   var fdNudgeMount=document.getElementById('fdNudgeMount');
   var fdController=null;
@@ -1484,7 +1504,7 @@
 
   function fdLiveState(state){
     var out=fdClone(state||{}), raw=progLoad(), s=srsState();
-    out.done=fdProgressDoneMap(raw);
+    out.done=(state&&state.done&&typeof state.done==='object')?fdClone(state.done):fdProgressDoneMap(raw);
     out.progressRaw=raw;
     out.nowMs=Date.now();
     out.rotationStart=LS('cw_rotation_start')||'';
@@ -1520,10 +1540,14 @@
     var sess=null;
     try{ sess=(typeof sessLoad==='function')?sessLoad('qbank'):null; }catch(_){ sess=null; }
     var inserted=fdDueRow(dueBreakdown())+fdResumeCard(sess);
-    if(!facultyPreviewRequest){
-      inserted+='<button type="button" class="fd-capture-launch" data-capture-open aria-haspopup="dialog">+ Capture a question</button>'+fdCaptureTriage(fdCaptureRows());
-    }
+    if(!facultyPreviewRequest)inserted+=fdCaptureTriage(fdCaptureRows());
     return html.replace('<div class="fd-today__main">','<div class="fd-today__main">'+inserted);
+  }
+
+  function fdRenderCapture(state){
+    if(!fdCaptureMount)return;
+    fdCaptureMount.innerHTML=state&&state.screen==='app'&&!facultyPreviewRequest?
+      '<button type="button" class="fd-capture-launch fd-capture-launch--global" data-capture-open aria-haspopup="dialog" aria-expanded="false">+ Capture a question</button>':'';
   }
 
   function fdProgressMarkup(state){
@@ -1563,8 +1587,10 @@
 
   function fdRender(state){
     var app=state.screen==='app';
+    fdAdoptSpecialContext(state);
     if(fdChromeMount)fdChromeMount.innerHTML=app?fdHeader(fdLiveState(state)):'';
-    if(contentEl){ contentEl.className=''; contentEl.innerHTML=fdBaseMarkup(state); }
+    if(contentEl){ contentEl.className='fd-main'; contentEl.innerHTML=fdBaseMarkup(state); }
+    fdRenderCapture(state);
     fdRenderOverlays(state);
     if(app&&!state.openId)announceRoute({f:'__'+(state.tab||'today')+'__',t:(state.tab==='path'?'Path':(state.tab==='library'?'Library':'Today')),k:'special'});
   }
@@ -1575,9 +1601,19 @@
     live.ref=state.openId;
     temp.innerHTML=fdReader(FD_INDEX,live,'');
     var fresh=temp.querySelectorAll('[data-fd-toggle]'), current=contentEl.querySelectorAll('[data-fd-toggle]');
+    function completionScope(control){
+      var node=control;
+      while(node){
+        if(node.classList&&node.classList.contains('fd-actionbar'))return 'mobile';
+        if(node.classList&&node.classList.contains('fd-article__actions'))return 'desktop';
+        node=node.parentNode;
+      }
+      return '';
+    }
     for(var i=0;i<current.length;i++){
       for(var j=0;j<fresh.length;j++){
-        if(current[i].getAttribute('data-fd-toggle')===fresh[j].getAttribute('data-fd-toggle')){
+        if(current[i].getAttribute('data-fd-toggle')===fresh[j].getAttribute('data-fd-toggle')&&
+            completionScope(current[i])===completionScope(fresh[j])){
           current[i].setAttribute('aria-pressed',fresh[j].getAttribute('aria-pressed'));
           current[i].innerHTML=fresh[j].innerHTML;
           break;
@@ -1600,7 +1636,8 @@
     if(d.preserveResource){
       if(surfaces.completion)fdPatchCompletion(state);
     } else if(surfaces.base||surfaces.completion){
-      if(contentEl)contentEl.innerHTML=fdBaseMarkup(state);
+      fdAdoptSpecialContext(state);
+      if(contentEl){contentEl.className='fd-main';contentEl.innerHTML=fdBaseMarkup(state);}
     }
     fdRenderOverlays(state);
   }
@@ -1608,7 +1645,8 @@
   function fdOpenProgress(state,opts){
     var host=(opts&&opts.host)||contentEl;
     currentItem={f:'__progress__',t:'Progress',k:'special'};
-    if(host)host.innerHTML=fdProgressMarkup(state);
+    setLearnerTitle(currentItem);
+    if(host){if(host===contentEl)host.className='fd-main';host.innerHTML=fdProgressMarkup(state);}
     announceRoute(currentItem);
     return true;
   }
@@ -1645,6 +1683,7 @@
             body.appendChild(fb);
           }
         }
+        if(!facultyPreviewRequest)setLearnerTitle(currentItem);
         announceRoute(currentItem); focusGovernanceNotice({fromHistory:!!options.fromHistory});
       }
       return ok;
@@ -1745,7 +1784,8 @@
   fdStored.rotationStart=fdRotation;
   if(fdWeek>=1&&fdWeek<=6)fdStored.week=fdWeek;
   var fdRouteParams=new URLSearchParams(location.search);
-  if((fdRouteParams.get('page')||fdRouteParams.get('tool'))&&!fdStored.role){
+  var fdIncomingRef=fdRouteParams.get('page')||fdRouteParams.get('tool')||'';
+  if(fdIncomingRef&&!fdIsLegacyRouteAlias(fdIncomingRef)&&!fdStored.role){
     fdStored.role=(FD_ROLES[0]&&FD_ROLES[0].id)||'reader';
     fdStored.browsing=true;
   }
@@ -1757,6 +1797,7 @@
     window:window,document:document,index:FD_INDEX,roles:FD_ROLES,rotationStart:fdRotation,
     render:fdRender,renderTransient:fdRenderTransient,resourceHost:function(){return contentEl;},
     openResource:fdOpenResourceLive,openProgress:fdOpenProgress,
+    externalModalOpen:function(){return !!capSheet;},
     facultyPreview:function(){return !!facultyPreviewRequest;},
     facultyPreviewLock:showFacultyPreviewLockNotice,
     synonyms:FD_CURRICULUM.synonyms||{}

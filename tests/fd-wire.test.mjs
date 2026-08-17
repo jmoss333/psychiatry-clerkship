@@ -52,6 +52,44 @@ test('URL page/tool/tab values beat persisted Front Door state', () => {
   assert.equal(tab.openId, undefined, 'a routed tab must not resume a stale stored reader');
 });
 
+test('legacy special-route aliases resolve to canonical Front Door state without becoming resources', () => {
+  const complete = {
+    role: 'first-role', roles: [{ id: 'first-role' }], rotationStart: '2026-08-17',
+    week: 1, tab: 'library', openId: 'old.md', fromTab: 'library',
+  };
+
+  const home = F.fdResolveState('/?page=__home__&case=c1', complete);
+  assert.equal(home.screen, 'app');
+  assert.equal(home.tab, 'today');
+  assert.equal(home.openId, undefined);
+
+  const path = F.fdResolveState('/?page=__path__&case=c1', complete);
+  assert.equal(path.screen, 'app');
+  assert.equal(path.tab, 'path');
+  assert.equal(path.openId, undefined);
+
+  const start = F.fdResolveState('/?page=__start__&case=c1', complete);
+  assert.equal(start.screen, 'app');
+  assert.equal(start.openId, '__progress__');
+  assert.equal(start.fromTab, 'today');
+
+  const roleSetup = F.fdResolveState('/?page=__start__&case=c1', {
+    roles: [{ id: 'first-role' }],
+  });
+  assert.equal(roleSetup.screen, 'setup-role');
+  assert.equal(roleSetup.openId, undefined);
+  assert.equal(roleSetup.tab, 'today');
+
+  const weekSetup = F.fdResolveState('/?page=__start__&case=c1', {
+    role: 'first-role', roles: [{ id: 'first-role' }],
+  });
+  assert.equal(weekSetup.screen, 'setup-week');
+  assert.equal(weekSetup.openId, undefined);
+  assert.equal(weekSetup.tab, 'today');
+
+  assert.equal(F.fdResolveState('/?page=__progress__&case=c1', complete).openId, '__progress__');
+});
+
 test('a bare URL restores stored state and defaults to Today with autoAdvance true', () => {
   assert.deepEqual(F.fdResolveState('/', {
     role: 'first-role', tab: 'path', openId: 'saved.md', fromTab: 'library',
@@ -248,7 +286,7 @@ test('Tab trapping wraps at both ends of a dialog', () => {
   assert.equal(prevented, 2);
 });
 
-test('fdWire registers and destroys one delegated click/input/keydown/popstate listener while remaining opt-in', () => {
+test('fdWire registers and destroys one delegated click/input/keydown/popstate listener for the live shell', () => {
   const rootCalls = [];
   const windowCalls = [];
   const rootRemoves = [];
@@ -312,6 +350,7 @@ function fakeHarness(initial, options = {}) {
     openProgress: options.openProgress,
     facultyPreview: options.facultyPreview,
     facultyPreviewLock: options.facultyPreviewLock,
+    externalModalOpen: options.externalModalOpen,
   });
   return { root, rootHandlers, fakeWindow, windowHandlers, controller };
 }
@@ -371,6 +410,65 @@ test('runtime theme toggling writes cw_theme and updates data-theme without relo
   h.rootHandlers.click({ target: actionTarget({ 'data-fd-theme': '' }), preventDefault() {} });
   assert.equal(dataTheme, 'light');
   assert.equal(ls.dump().cw_theme, 'light');
+});
+
+test('theme rerender moves focus to the corresponding live theme control', () => {
+  let replacement = null;
+  const invoker = actionTarget({ 'data-fd-theme': '' });
+  const h = fakeHarness({ ...roleContext, screen: 'app' }, {
+    F,
+    querySelector: (selector) => selector === '[data-fd-theme]' ? replacement : null,
+    renderTransient: (_next, detail) => {
+      if (detail.effect?.type === 'set-theme') {
+        invoker.isConnected = false;
+        replacement = actionTarget({ 'data-fd-theme': '' });
+      }
+    },
+    document: { documentElement: {
+      getAttribute: () => 'light', setAttribute() {},
+    } },
+  });
+  h.rootHandlers.click({ target: invoker, preventDefault() {} });
+  assert.equal(replacement.focused, 1,
+    'the header replacement, not the disconnected old button, receives focus');
+});
+
+test('the Week control focuses the newly rendered setup heading', () => {
+  let heading = null;
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'today' }, {
+    F,
+    querySelector: (selector) => selector === '.fd-setup .fd-h1' ? heading : null,
+    render: (next) => {
+      if (next.screen === 'setup-week') {
+        heading = { isConnected: true, focus() { this.focused = (this.focused || 0) + 1; } };
+      }
+    },
+  });
+  h.rootHandlers.click({
+    target: actionTarget({ 'data-fd-change-week': '' }), preventDefault() {},
+  });
+  assert.equal(h.controller.getState().screen, 'setup-week');
+  assert.equal(heading.focused, 1);
+});
+
+test('Command-K is ignored while the independent capture dialog is open', () => {
+  let captureOpen = true;
+  const h = fakeHarness({ ...roleContext, screen: 'app', searchOpen: false }, {
+    F, externalModalOpen: () => captureOpen,
+  });
+  h.windowHandlers.keydown({
+    key: 'k', metaKey: true,
+    target: { tagName: 'BUTTON', isContentEditable: false }, preventDefault() {},
+  });
+  assert.equal(h.controller.getState().searchOpen, false,
+    'a second modal must not open above capture');
+  captureOpen = false;
+  h.windowHandlers.keydown({
+    key: 'k', ctrlKey: true,
+    target: { tagName: 'BUTTON', isContentEditable: false }, preventDefault() {},
+  });
+  assert.equal(h.controller.getState().searchOpen, true,
+    'the shortcut remains available as soon as capture closes');
 });
 
 test('runtime autoAdvance opens the next unread resource after recording progress', () => {
@@ -844,6 +942,74 @@ function memoryHistory(location) {
     },
   };
 }
+
+test('initial legacy aliases replace only the route portion and never call the resource opener', () => {
+  const cases = [
+    ['__home__', '/?case=c1', 'today', null],
+    ['__path__', '?tab=path&case=c1', 'path', null],
+    ['__start__', '?page=__progress__&case=c1', 'today', '__progress__'],
+  ];
+  for (const [alias, expectedRoute, expectedTab, expectedOpen] of cases) {
+    const location = {
+      href: `https://example.test/?page=${alias}&case=c1`, pathname: '/',
+      search: `?page=${alias}&case=c1`,
+    };
+    const memory = memoryHistory(location);
+    const opened = [];
+    const resolved = F.fdResolveState(location.href, {
+      ...roleContext, roles: [{ id: 'first-role' }], rotationStart: '2026-08-17',
+      screen: 'app', tab: 'library',
+    });
+    const h = fakeHarness(resolved, {
+      F, location, history: memory.history,
+      openResource: (ref) => { opened.push(ref); },
+      openProgress: () => {},
+    });
+    memory.bind(h.windowHandlers.popstate);
+    assert.equal(memory.entries.length, 1);
+    assert.equal(memory.entries[0].route, expectedRoute);
+    assert.equal(h.controller.getState().tab, expectedTab);
+    assert.equal(h.controller.getState().openId ?? null, expectedOpen);
+    assert.deepEqual(opened, [], `${alias} must never be fetched as content`);
+  }
+});
+
+test('delegated and popstate aliases normalize with replace history and no invalid resource open', () => {
+  const ls = memStorage({ cw_last: 'real-page.md' });
+  const LocalF = make(ls);
+  const location = {
+    href: 'https://example.test/?page=real-page.md&case=c1', pathname: '/',
+    search: '?page=real-page.md&case=c1',
+  };
+  const memory = memoryHistory(location);
+  const opened = [];
+  const h = fakeHarness({
+    ...roleContext, screen: 'app', tab: 'library', openId: 'real-page.md', fromTab: 'library',
+  }, {
+    F: LocalF, location, history: memory.history,
+    openResource: (ref) => { opened.push(ref); }, openProgress: () => {},
+  });
+  memory.bind(h.windowHandlers.popstate);
+
+  h.rootHandlers.click({
+    target: actionTarget({ 'data-fd-open': '__path__' }), preventDefault() {},
+  });
+  assert.equal(location.search, '?tab=path&case=c1');
+  assert.equal(memory.entries.length, 1, 'legacy dispatch replaces rather than pushes');
+  assert.equal(h.controller.getState().tab, 'path');
+  assert.equal(h.controller.getState().openId, null);
+
+  location.href = 'https://example.test/?page=__home__&case=c1';
+  location.search = '?page=__home__&case=c1';
+  h.windowHandlers.popstate({ state: { fd: true, state: {
+    tab: 'library', openId: '__home__', fromTab: 'library',
+  } } });
+  assert.equal(location.search, '?case=c1');
+  assert.equal(h.controller.getState().tab, 'today');
+  assert.equal(h.controller.getState().openId, null);
+  assert.deepEqual(opened, []);
+  assert.equal(ls.getItem('cw_last'), 'real-page.md');
+});
 
 test('history snapshots restore Today/page/Today across Back and Forward without duplicate pushes', () => {
   const location = {
