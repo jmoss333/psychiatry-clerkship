@@ -29,6 +29,15 @@ const frontdoorCss = fs.readFileSync(
   path.join(repo, '13_Faculty_Resources', '_automation', 'site_build', 'frontdoor', 'frontdoor.css'),
   'utf8',
 );
+const shellCss = shell.slice(shell.indexOf('<style>'), shell.indexOf('</style>'));
+
+function cssRuleHas(css, selector, declaration) {
+  const rules = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)];
+  return rules.some(([, selectorList, body]) => (
+    selectorList.split(',').map(part => part.trim()).includes(selector)
+    && body.split(';').map(part => part.trim()).includes(declaration)
+  ));
+}
 
 test('one route live region stays mounted for every Front Door breakpoint', () => {
   assert.match(shell, /id="routeStatus"[^>]*aria-live="polite"/);
@@ -143,4 +152,12 @@ test('mobile collapsed search control has a 44px minimum width as well as height
 test('mobile Reader back control has a 44px minimum width as well as height', () => {
   assert.equal(mobileRuleHas('.fd-actionbar .fd-btn--ghost', 'min-width:44px'), true,
     'the exact fixed Reader back base selector needs a 44px mobile width');
+});
+
+test('live Front Door Reader exposes the existing wide-table scroll cue', () => {
+  assert.equal(cssRuleHas(
+    shellCss,
+    '.fd-article__body .table-scroll.is-scrollable .table-scroll-hint',
+    'display:block',
+  ), true, 'the live Reader must share the legacy visible-scroll-cue rule');
 });
