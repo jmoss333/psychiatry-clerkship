@@ -119,3 +119,22 @@ test('mobile primary and dialog controls have 44px minimum hit targets', () => {
       `${selector} is icon-sized and needs a 44px mobile width`);
   }
 });
+
+function mobileFrontDoorCss() {
+  const start = frontdoorCss.indexOf('@media (max-width:999px)');
+  const end = frontdoorCss.indexOf('/* ═══ Keyframes', start);
+  assert.ok(start > -1 && end > start, 'the mobile Front Door block must exist');
+  return frontdoorCss.slice(start, end);
+}
+
+test('mobile collapsed search control has a 44px minimum width as well as height', () => {
+  const mobile = mobileFrontDoorCss();
+  assert.match(mobile, /\.fd-searchbtn[^{}]*\{[^}]*min-width:44px/,
+    'the collapsed mobile search icon needs a 44px width');
+});
+
+test('mobile Reader back control has a 44px minimum width as well as height', () => {
+  const mobile = mobileFrontDoorCss();
+  assert.match(mobile, /\.fd-actionbar \.fd-btn--ghost[^{}]*\{[^}]*min-width:44px/,
+    'the fixed Reader back control needs a 44px width');
+});
