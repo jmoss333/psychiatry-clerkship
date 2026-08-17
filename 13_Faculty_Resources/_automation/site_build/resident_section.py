@@ -126,30 +126,36 @@ open(OUT.rstrip("/\\")+".source-map.json","w",encoding="utf-8").write(json.dumps
 # or the build aborts (previously six bare replace() calls that silently no-oped
 # after any shell reword, reverting resident branding to MS3 text).
 RESIDENT_REBRAND=[
- ('<div class="by">MS3 Clerkship · Joshua Moss, MD</div>','<div class="by">Resident Rotation · Sanford BHU · Joshua Moss, MD</div>'),
- ('<h1>Inpatient Psychiatry</h1>','<h1>MMC Psychiatry</h1>'),
+ ('<span class="fd-brand__name">Inpatient Psychiatry</span>','<span class="fd-brand__name">MMC Psychiatry</span>'),
+ ('<span class="fd-setup__brand-name">Inpatient Psychiatry</span>','<span class="fd-setup__brand-name">MMC Psychiatry</span>'),
  ('MS3 Psychiatry Clerkship','MMC Psychiatry Residency'),
  ('MS3 Clerkship','Resident Rotation'),
- ('Private teaching site for the MS3 inpatient psychiatry rotation. Educational use; fictional composites only, no PHI. Some pages are pending faculty review.',
-  'Private teaching site for the MMC general-psychiatry resident inpatient rotation at the Sanford Behavioral Health Unit. Educational use; fictional composites only, no PHI. Pending faculty attestation.'),
  ('A private learning hub for the third-year inpatient psychiatry clerkship.',
   'A private learning hub for the MMC general-psychiatry resident inpatient rotation (Sanford BHU).'),
 ]
 ix=open(OUT+"/index.html",encoding="utf-8").read()
 ix=common.apply_verified_replacements(ix, RESIDENT_REBRAND, label="resident index rebrand")
-open(OUT+"/index.html","w",encoding="utf-8").write(ix)
-
-# ---- rebrand learning-path (Path-mode home) ----
-lp=OUT+"/tools/learning-path.html"
-if not os.path.exists(lp):
-    print("BUILD ABORTED — resident rebrand target missing:",lp)
+_resident_shell_required=(
+ '<span class="fd-brand__name">MMC Psychiatry</span>',
+ '<span class="fd-setup__brand-name">MMC Psychiatry</span>',
+ '<title>Inpatient Psychiatry — Resident Rotation</title>',
+ 'MMC Psychiatry Residency',
+ 'A private learning hub for the MMC general-psychiatry resident inpatient rotation (Sanford BHU).',
+)
+_resident_shell_stale=(
+ '<span class="fd-brand__name">Inpatient Psychiatry</span>',
+ '<span class="fd-setup__brand-name">Inpatient Psychiatry</span>',
+ 'MS3 Psychiatry Clerkship',
+ 'MS3 Clerkship',
+)
+_missing_shell=[needle for needle in _resident_shell_required if needle not in ix]
+_stale_shell=[needle for needle in _resident_shell_stale if needle in ix]
+if _missing_shell or _stale_shell:
+    print("BUILD ABORTED — resident Front Door branding assertion failed")
+    for needle in _missing_shell: print("   - missing:",repr(needle))
+    for needle in _stale_shell: print("   - stale:",repr(needle))
     raise SystemExit(1)
-s=open(lp,encoding="utf-8").read()
-s=common.apply_verified_replacements(s,[
- ("Inpatient Psychiatry — Learning Path","MMC Psychiatry — Learning Path"),
- ("MS3 Clerkship · Joshua Moss, MD","Resident Rotation · Joshua Moss, MD"),
-],label="resident learning-path rebrand")
-open(lp,"w",encoding="utf-8").write(s)
+open(OUT+"/index.html","w",encoding="utf-8").write(ix)
 
 # ---- resident-level reasoning cases: same tool, harder audience-specific payload ----
 _resident_reasoning=os.path.join(LIB,"reasoning_cases_resident.json")
@@ -194,8 +200,7 @@ nav=[
    {"t":"Welcome — Resident Rotation","f":"welcome.md","k":"md"},
    {"t":"4-Week Rotation Plan","f":"rotation.md","k":"md"},
    {"t":"Core Reading List","f":"core_readings.md","k":"md"},
-   {"t":"Supervision, EPAs & Teaching","f":"supervision_teaching.md","k":"md"},
-   {"t":"Learning Path","f":"learning-path.html","k":"tool","hidden":True}]},
+   {"t":"Supervision, EPAs & Teaching","f":"supervision_teaching.md","k":"md"}]},
  {"section":"Start the Encounter","items":[{"t":"Interview & MSE","f":"pg_interview.md","k":"md"},{"t":"Mental Status Exam","f":"mse.html","k":"tool"},{"t":"The Interview Circle","f":"interview-circle.html","k":"tool"},{"t":"The Interview Room — AI Standardized Patient","f":"sp-interview.html","k":"tool"},{"t":"Screeners: PHQ-9 & GAD-7","f":"screeners.html","k":"tool"}]},
  {"section":"Understand the Problem","items":[{"t":"Differential Dx Scaffolds","f":"ddx.md","k":"md"},{"t":"Diagnostic Reasoning Workbench","f":"diagnostic-reasoning.html","k":"tool"},{"t":"Formulation & DDx","f":"pg_formulation.md","k":"md"},{"t":"Case Formulation","f":"case_formulation.md","k":"md"},{"t":"Medical Workup & Mimics","f":"medical_workup.md","k":"md"},{"t":"Mood","f":"t_mood.md","k":"md"},{"t":"Psychosis","f":"t_psychosis.md","k":"md"},{"t":"Anxiety/Trauma/OCD","f":"t_anxiety.md","k":"md"},{"t":"Personality","f":"t_personality.md","k":"md"},{"t":"Substance Use","f":"t_sud.md","k":"md"},{"t":"Geriatric","f":"t_geri.md","k":"md"},{"t":"Perinatal","f":"t_perinatal.md","k":"md"},{"t":"Neurodevelopmental Disorders","f":"t_neurodev.md","k":"md"},{"t":"Eating Disorders","f":"t_eating.md","k":"md"}]},
  {"section":"Assess Safety and Acuity","pinned":True,"items":[{"t":"Suicide Risk & Safety","f":"pg_suicide.md","k":"md"},{"t":"Suicide Risk & Safety Planning","f":"suicide.md","k":"md"},{"t":"Columbia C-SSRS Screener","f":"cssrs.html","k":"tool"},{"t":"Violence Risk","f":"violence.md","k":"md"},{"t":"Violence Risk (FRST)","f":"violence.html","k":"tool"},{"t":"Agitation & Restraint","f":"agitation.md","k":"md"},{"t":"Agitation Ladder — PRN Trainer","f":"rp-agitation.html","k":"tool"},{"t":"Catatonia","f":"catatonia.md","k":"md"},{"t":"Bush-Francis Catatonia Scale (BFCRS)","f":"bfcrs.html","k":"tool"},{"t":"Hyperthermia & Toxidromes","f":"toxidromes.md","k":"md"},{"t":"Delirium","f":"delirium.md","k":"md"},{"t":"Withdrawal: CIWA-Ar/COWS","f":"withdrawal.html","k":"tool"},{"t":"Decisional Capacity","f":"capacity.html","k":"tool"},{"t":"Consult Questions: Capacity, Delirium, Catatonia, Withdrawal","f":"exp_consult.md","k":"md"},{"t":"C-L: Emergencies, Tox & Capacity (Numbers)","f":"cl_reference.md","k":"md"},{"t":"Inpatient Systems & Med-Legal","f":"systems_medlegal.md","k":"md"}]},

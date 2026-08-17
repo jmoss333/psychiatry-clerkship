@@ -14,7 +14,7 @@ const ROUTES = [
   ['home (special branch)', '/?page=__home__'],
   ['markdown page', '/?page=t_mood.md'],
   ['tool route', '/?tool=review.html'],
-  ['learning path', '/?page=__path__'],
+  ['Path tab', '/?tab=path'],
 ];
 
 const PHONE = { width: 390, height: 844 };

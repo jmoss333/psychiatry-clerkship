@@ -394,7 +394,7 @@ class ShippedSetTest(unittest.TestCase):
 
     def test_extras_cover_the_per_site_tools_and_resident_only_pages(self):
         extras = validate_curriculum.EXTRA_SHIPPED
-        for slug in ("learning-path.html", "orientation-video.html", "rp-agitation.html",
+        for slug in ("orientation-video.html", "rp-agitation.html",
                      "rp-brief-psych.html", "rp-canon-quiz.html", "rotation.md",
                      "adv_psychopharm.md", "systems_medlegal.md", "supervision_teaching.md",
                      "canon_200.md", "cl_reference.md"):

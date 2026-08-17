@@ -136,13 +136,9 @@ test.describe('mobile shell ergonomics', () => {
     await expect(page.locator('.tl-sheet')).toHaveCount(0);
     await expect(more).toBeFocused();
 
-    await page.locator('#menuBtn').click();
-    await expect(page.locator('#side')).toHaveClass(/open/);
-    await page.locator('#mPath').click();
-    await expect(page.locator('#mobileTitle')).toHaveText('Learning Path');
-    await expect(page.locator('#side')).not.toHaveClass(/open/);
-    await expect(page.locator('#drawerBackdrop')).toBeHidden();
-    await expect(page.locator('.tl-bar')).toHaveCount(0);
+    await page.locator('[data-fd-tab="path"]').click();
+    await expect(page.locator('.fd-path')).toBeVisible();
+    await expect(page.locator('[data-fd-tab="path"]')).toHaveAttribute('aria-current', 'page');
   });
 
   test('reflows contextual tools when a phone becomes narrower', async ({ page, baseURL }) => {

@@ -163,9 +163,9 @@ def quiz_cache_bust(quizzes_path):
 # ---------------------------------------------------------------------------
 # Tool search keywords — union of the two forked tables, per key.
 #
-# Neither side was a superset: MS3 was richer for 12 of the 15 keys that
-# differed, but `learning-path.html`, `review.html`, and `shelf-mode.html` each
-# had resident-only terms ("rotation", "board review") that MS3 lacked. Union
+# Neither side was a superset: MS3 was richer for most keys that differed, but
+# `review.html` and `shelf-mode.html` had resident-only terms ("rotation",
+# "board review") that MS3 lacked. Union
 # preserves both. Resident-only tools (rp-*) are included and are simply never
 # referenced by the MS3 nav, so they cost that build nothing.
 #
@@ -193,7 +193,6 @@ _TOOLKW_MS3 = {
     "feedback.html": "feedback improve library suggest resource report broken link error confusing helpful rating comment survey suggestion box contact",
     "decision-aids.html": "algorithms decision aids visual trees flowchart rule out first move escalation ladder agitation restraint nms serotonin syndrome hyperthermia alcohol withdrawal timeline delirium tremens ciwa score bands catatonia psychosis differential dark mode",
     "bfcrs.html": "bush francis catatonia rating scale bfcrs bfcsi catatonia screening immobility stupor mutism posturing catalepsy waxy flexibility negativism mitgehen gegenhalten echopraxia lorazepam challenge severity score",
-    "learning-path.html": "learning path home dashboard six week progress streak daily review study plan start here",
     "question-bank-practice.html": "practice questions question bank comat shelf exam vignette single best answer sba two-tier confidence calibration trap feedback spaced repetition category filter mood psychosis anxiety substance neurocognitive pharmacology safety personality relational ethics",
 }
 
@@ -212,7 +211,6 @@ _TOOLKW_RES = {
     "bfcrs.html": "bush francis catatonia rating scale immobility mutism posturing waxy flexibility lorazepam challenge",
     "review.html": "daily review spaced repetition srs flashcards retention due cards streak board review test enhanced learning forgetting curve",
     "feedback.html": "feedback improve library suggest resource report broken link error confusing helpful comment suggestion box",
-    "learning-path.html": "learning path home dashboard rotation progress daily review",
     "rp-agitation.html": "agitation ladder prn trainer restraint de-escalation seclusion intramuscular haloperidol lorazepam olanzapine decision escalation",
     "rp-brief-psych.html": "five good minutes brief psychotherapy coach supportive bedside therapeutic conversation skills",
     "rp-canon-quiz.html": "canon quiz 200 paper spine landmark trials evidence self test board review recall",
@@ -554,6 +552,7 @@ SNIPPET_MARKERS = {
     "/*__FD_STATE__*/": "frontdoor/fd_state.js",
     "/*__FD_DATA__*/": "frontdoor/fd_data.js",
     "/*__FD_TODAY__*/": "frontdoor/fd_today.js",
+    "/*__FD_DUE__*/": "frontdoor/fd_due.js",
     "/*__FD_SHELL__*/": "frontdoor/fd_shell.js",
     "/*__FD_PATH__*/": "frontdoor/fd_path.js",
     "/*__FD_LIBRARY__*/": "frontdoor/fd_library.js",

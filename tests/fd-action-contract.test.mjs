@@ -32,7 +32,7 @@ test('every data-fd attribute emitted after Task 3 has one controller meaning', 
   assert.deepEqual(emitted, [
     'data-fd-back', 'data-fd-change-week', 'data-fd-close-nudge',
     'data-fd-close-search', 'data-fd-close-sheet', 'data-fd-home', 'data-fd-open',
-    'data-fd-role', 'data-fd-safety', 'data-fd-search', 'data-fd-setweek',
+    'data-fd-progress', 'data-fd-role', 'data-fd-safety', 'data-fd-search', 'data-fd-setweek',
     'data-fd-sheet', 'data-fd-step', 'data-fd-tab', 'data-fd-theme', 'data-fd-toggle',
     'data-fd-view-week', 'data-fd-week',
   ]);
@@ -66,12 +66,11 @@ test('fd_wire stays ES5, audience-neutral, and introduces no unnamespaced storag
   for (const key of storageKeys) assert.match(key, /^(?:cw_|rp_)/, key);
 });
 
-test('FD_WIRE is registered and injected last while the legacy shell boot remains active', () => {
+test('FD_WIRE is registered, injected last, and activated as the sole shell controller', () => {
   assert.equal(shell.split('/*__FD_WIRE__*/').length - 1, 1);
   assert.ok(shell.indexOf('/*__FD_WIRE__*/') > shell.indexOf('/*__FD_SHEET__*/'));
   assert.match(common, /"\/\*__FD_WIRE__\*\/"\s*:\s*"frontdoor\/fd_wire\.js"/);
-  assert.match(shell, /fetch\('nav\.json'\)/, 'the existing navigation boot remains live');
-  assert.match(shell, /<aside id="side">/, 'the existing sidebar remains in the body');
-  assert.doesNotMatch(shell, /fdWire\s*\(/,
-    'Task 4 injects the opt-in initializer but must not activate the visual controller');
+  assert.doesNotMatch(shell, /fetch\('nav\.json'\)|<aside id="side">/);
+  assert.equal((shell.match(/=fdWire\(/g) || []).length, 1);
+  assert.match(shell, /renderTransient:fdRenderTransient/);
 });

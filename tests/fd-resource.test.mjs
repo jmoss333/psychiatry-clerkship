@@ -4,6 +4,8 @@ import test from 'node:test';
 
 const wire = readFileSync(new URL(
   '../13_Faculty_Resources/_automation/site_build/frontdoor/fd_wire.js', import.meta.url), 'utf8');
+const shell = readFileSync(new URL(
+  '../13_Faculty_Resources/_automation/site_build/spa_index.html', import.meta.url), 'utf8');
 
 function make(overrides = {}) {
   const globals = {
@@ -204,4 +206,106 @@ test('an active faculty preview delegates to the existing governed show path unc
   assert.equal(calls[0][1].fromHistory, false);
   assert.match(calls[0][1].toolExtra, /reviewKey=tool%3Apractice\.html/);
   assert.match(calls[0][1].toolExtra, /reviewToken=token/);
+});
+
+test('initial faculty tool preview reaches governed preflight, iframe load, and ready receipt without bookmarking', async () => {
+  const previewStart = shell.indexOf('function loadFacultyPreviewTool(item,opts,bar)');
+  const previewEnd = shell.indexOf('/* Shared PHI heuristic', previewStart);
+  const liveStart = shell.indexOf('function fdOpenResourceLive(ref,opts)');
+  const liveEnd = shell.indexOf('function specialRefresh()', liveStart);
+  assert.ok(previewStart > -1 && previewEnd > previewStart, 'faculty preview functions moved');
+  assert.ok(liveStart > -1 && liveEnd > liveStart, 'live resource adapter moved');
+  const previewCode = shell.slice(previewStart, previewEnd);
+  const liveCode = shell.slice(liveStart, liveEnd);
+
+  const writes = [];
+  const statuses = [];
+  const preflights = [];
+  let frame = null;
+  const contentEl = {
+    innerHTML: '',
+    classList: { add() {}, remove() {}, toggle() {} },
+    appendChild(node) { frame = node; },
+    querySelector() { return null; },
+  };
+  const globals = {
+    FD_INDEX: {
+      byRef: {
+        'practice.html': { ref: 'practice.html', kind: 'tool', title: 'Practice' },
+      },
+      weeks: [],
+    },
+    contentEl,
+    localStorage: { setItem(key, value) { writes.push([key, value]); } },
+    fetch(url, options) {
+      preflights.push([url, options]);
+      return Promise.resolve({ ok: true, url });
+    },
+    location: {
+      href: 'https://clerkship.test/?tool=practice.html',
+      origin: 'https://clerkship.test',
+      pathname: '/',
+      search: '?tool=practice.html',
+    },
+    document: {
+      createElement(tag) {
+        assert.equal(tag, 'iframe');
+        const listeners = {};
+        return {
+          listeners,
+          addEventListener(type, listener) { listeners[type] = listener; },
+        };
+      },
+    },
+    window: { scrollTo() {} },
+    postFacultyPreviewStatus(status, surface) { statuses.push([status, surface]); },
+  };
+  // Execute the shipped resource controller and the shell's real preview/resource adapters
+  // together. This catches ordering bugs that either unit in isolation cannot observe.
+  // eslint-disable-next-line no-new-func
+  const harness = new Function('g', `
+    var toolExtraFromParams=function(sp){
+      var out=''; sp.forEach(function(value,key){
+        if(['tool','page','tab'].indexOf(key)<0)out+='&'+encodeURIComponent(key)+'='+encodeURIComponent(value);
+      }); return out;
+    };
+    var toolFrameSuffixWithGovernance=function(extra){
+      var sp=new URLSearchParams(String(extra||'').replace(/^&/,''));
+      sp.set('governed','1'); return '?'+sp.toString();
+    };
+    var FD_INDEX=g.FD_INDEX, contentEl=g.contentEl, localStorage=g.localStorage;
+    var fetch=g.fetch, location=g.location, document=g.document, window=g.window;
+    var facultyPreviewRequest={surface:'tool',reviewKey:'tool:practice.html',reviewToken:'${'a'.repeat(32)}'};
+    var currentItem=null, currentToolFrame=null, fdController={getState:function(){return {tab:'today'};}};
+    var renderGovernanceNotice=function(){return '<div>governed</div>';};
+    var facultyPreviewMatchesItem=function(item){return item&&item.k==='tool'&&item.f==='practice.html';};
+    var showFacultyPreviewLockNotice=function(){throw new Error('matching preview was locked');};
+    var postFacultyPreviewStatus=g.postFacultyPreviewStatus;
+    var setRoute=function(){}, skel=function(){return '<p>loading</p>';};
+    var failFacultyPreviewTool=function(){throw new Error('preview failed');};
+    var marked={parse:function(s){return s;}}, TOPIC_META={}, buildTpl=function(){return '';};
+    var makeCollapsible=function(){}, enhanceTables=function(){}, buildReviewLedger=function(){return '';};
+    var installTitleReviewButton=function(){return null;}, announceRoute=function(){}, focusGovernanceNotice=function(){};
+    ${wire}
+    ${previewCode}
+    ${liveCode}
+    return {
+      open:function(){return fdOpenResourceLive('practice.html',{
+        search:'?tool=practice.html&reviewKey=tool%3Apractice.html&reviewToken=${'a'.repeat(32)}',
+        isCurrent:function(){return true;}
+      });},
+      current:function(){return currentItem;}
+    };
+  `)(globals);
+
+  assert.equal(await harness.open(), true);
+  for (let i = 0; i < 5 && !frame; i += 1) await Promise.resolve();
+  assert.equal(preflights.length, 1, 'the exact governed tool must be preflighted once');
+  assert.ok(frame, 'the governed tool iframe must mount after preflight');
+  assert.match(frame.src, /^tools\/practice\.html\?/);
+  assert.match(frame.src, /governed=1/);
+  frame.listeners.load();
+  assert.deepEqual(statuses, [['ready', 'tool']]);
+  assert.deepEqual(harness.current(), { f: 'practice.html', t: 'Practice', k: 'tool' });
+  assert.deepEqual(writes, [], 'faculty preview must not mutate the learner cw_last bookmark');
 });

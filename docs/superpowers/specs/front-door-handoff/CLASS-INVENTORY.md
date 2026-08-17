@@ -3,11 +3,11 @@
 The complete contract between `frontdoor.css` and the markup that tasks 3–9 emit.
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(176 distinct `fd-*` selector names, 13 `is-*` state classes). Every class below has a rule in that file unless
+(196 distinct `fd-*` selector names, 13 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **Why this file exists.** The implementation plan names 39 contract classes. The stylesheet styles
-176. The remaining 137 are `__element` and `--modifier` names introduced while porting the
+196. The remaining 157 are `__element` and `--modifier` names introduced while porting the
 prototype's inline styles into a stylesheet — a renderer briefed only on the 39 would emit markup
 that misses most of the CSS, and the failure is silent: the page renders, tests pass, the surface
 just looks wrong. Read the surface you are building before writing its markup.
@@ -204,6 +204,19 @@ ancestor; there is no modifier class for it.
 | `.fd-continue__kicker.is-complete` | Switches teal → terracotta when the week is finished. |
 | `.fd-ring.is-celebrating` | One-shot pulse on week completion. |
 | `.fd-list` | Supplies the 8px gap between `.fd-row`s — rows have no sibling margin. |
+
+Task 5 composes device-local activity around the pure Today renderer and reuses the Reader for
+internal Progress. These are part of the same shipped class contract:
+
+| Class | Element / notes |
+|---|---|
+| `.fd-due` | Due-review button; contains `.fd-due__label`, `.fd-due__breakdown`, and `.fd-due__action`. |
+| `.fd-resume` | Session-resume section; `.fd-resume__link` is the query-preserving link. |
+| `.fd-capture-launch` | Full-width capture-dialog launcher. |
+| `.fd-capture` | Today triage section; contains `.fd-capture__head`, `.fd-capture__new`, `.fd-capture__purpose`, `.fd-capture__item`, `.fd-capture__question`, `.fd-capture__action`, and `.fd-capture__copy`. |
+| `.fd-progresscard` | Internal-Progress entry; contains `.fd-progresscard__title` and `.fd-progresscard__meta`. |
+| `.fd-progress-reader` | Reader modifier for the internal Progress surface. |
+| `.fd-examdate__row` | Device-local exam-date control row inside Progress. |
 
 ⚠ **`.fd-ring` needs `--fd-ring-pct` set inline** (e.g. `style="--fd-ring-pct:62%"`). It defaults to
 `0%`, so a ring rendered without it silently shows an empty track. This is the one custom property

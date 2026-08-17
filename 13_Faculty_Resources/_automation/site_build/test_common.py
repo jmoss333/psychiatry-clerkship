@@ -440,6 +440,7 @@ class TestSharedSnippets(unittest.TestCase):
         markers = [
             ("/*__FD_DATA__*/", "function fdEsc("),
             ("/*__FD_TODAY__*/", "function fdTodayProgress("),
+            ("/*__FD_DUE__*/", "function fdDueRow("),
             ("/*__FD_SHELL__*/", "function fdKeyAction("),
             ("/*__FD_PATH__*/", "function fdPath("),
             ("/*__FD_LIBRARY__*/", "function fdLibrary("),

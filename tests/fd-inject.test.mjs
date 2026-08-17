@@ -7,7 +7,7 @@ const src = readFileSync(new URL(SHELL, import.meta.url), 'utf8');
 
 const ORDER = [
   '/*__PHASE_POLICY__*/', '/*__FD_STATE__*/', '/*__FD_DATA__*/', '/*__FD_TODAY__*/',
-  '/*__FD_SHELL__*/', '/*__FD_PATH__*/', '/*__FD_LIBRARY__*/', '/*__FD_READER__*/',
+  '/*__FD_DUE__*/', '/*__FD_SHELL__*/', '/*__FD_PATH__*/', '/*__FD_LIBRARY__*/', '/*__FD_READER__*/',
   '/*__FD_SEARCH__*/', '/*__FD_SHEET__*/',
 ];
 

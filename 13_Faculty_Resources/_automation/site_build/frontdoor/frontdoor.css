@@ -555,6 +555,46 @@
 .fd-nudge__dismiss{flex:0 0 auto;width:28px;height:28px;border-radius:7px;background:none;border:none;color:var(--fd-line-hover);font-size:13px;cursor:pointer}
 .fd-nudge__dismiss:hover{color:var(--fd-bg)}
 
+/* Task 5 governed runtime rows */
+.fd-due,.fd-resume__link,.fd-progresscard{
+  display:flex;align-items:center;gap:12px;width:100%;text-align:left;
+  border:1px solid var(--fd-line);border-radius:12px;background:var(--fd-surface);
+  color:var(--fd-text);font:inherit;text-decoration:none;padding:13px 15px;
+}
+.fd-due,.fd-progresscard{cursor:pointer}
+.fd-due{border-left:3px solid var(--fd-terracotta);margin:0 0 12px}
+.fd-due:hover,.fd-resume__link:hover,.fd-progresscard:hover{
+  border-color:var(--fd-line-hover);background:var(--fd-callout);
+}
+.fd-due__label,.fd-progresscard__title{font-size:14px;font-weight:700}
+.fd-due__breakdown,.fd-progresscard__meta{font-size:12px;color:var(--fd-text-dim)}
+.fd-due__action{margin-left:auto;font-size:12.5px;font-weight:700;color:var(--fd-terracotta-dark)}
+.fd-resume{margin:0 0 14px}
+.fd-resume .fd-sectionhead{margin-bottom:8px}
+.fd-resume__link{justify-content:space-between;font-size:13.5px;color:var(--fd-teal-deep)}
+.fd-progresscard{justify-content:space-between;margin:16px 0}
+.fd-progresscard__meta{margin-left:auto}
+
+.fd-capture-launch,.fd-capture__new,.fd-capture__copy,.fd-capture__action{
+  min-height:44px;border:1px solid var(--fd-line);border-radius:10px;background:var(--fd-surface);
+  color:var(--fd-text-mid);font:inherit;font-size:13px;font-weight:600;cursor:pointer;
+}
+.fd-capture-launch{width:100%;margin:0 0 12px;padding:10px 14px;border-style:dashed;color:var(--fd-teal-deep)}
+.fd-capture{margin:0 0 16px;padding:15px;border:1px solid var(--fd-line);border-radius:12px;background:var(--fd-callout)}
+.fd-capture__head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.fd-capture__head .fd-sectionhead{margin:0}
+.fd-capture__new{padding:8px 12px;color:var(--fd-teal-deep)}
+.fd-capture__purpose{margin:8px 0 12px;font-size:12px;line-height:1.5;color:var(--fd-text-dim)}
+.fd-capture__item{padding:11px 0;border-top:1px solid var(--fd-line)}
+.fd-capture__question{margin:0 0 8px;font-size:13.5px;line-height:1.5;color:var(--fd-text)}
+.fd-capture__action{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:9px 11px;margin-top:6px;text-align:left}
+.fd-capture__action:hover,.fd-capture__new:hover,.fd-capture__copy:hover,.fd-capture-launch:hover{border-color:var(--fd-line-hover);background:var(--fd-selected)}
+.fd-capture__copy{width:100%;padding:9px 12px;margin-top:10px;color:var(--fd-teal-deep)}
+.fd-progress-reader{max-width:940px;margin:0 auto}
+.fd-progress-reader > .hm{max-width:none;padding:0}
+.fd-examdate__row{display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap}
+.fd-examdate__row input{min-height:44px;padding:8px 10px;border:1px solid var(--fd-line);border-radius:8px;background:var(--fd-surface);color:var(--fd-text);font:inherit}
+
 /* ═══ Desktop ════════════════════════════════════════════════════════════════
  * The design's rails appear at and above 1000px — the same threshold the prototype's
  * `desk` flag uses (window.innerWidth >= 1000).
@@ -582,6 +622,8 @@
    * .fd-article is unique to the Reader surface (frontdoor.css has exactly one other rule for
    * it, the padding line just above). Do not broaden this to a bare `.fd-tip` selector. */
   .fd-article .fd-tip{display:none}
+  .fd-due,.fd-resume__link,.fd-progresscard{min-height:44px;flex-wrap:wrap}
+  .fd-due__action,.fd-progresscard__meta{margin-left:0;flex:0 0 100%}
 }
 
 /* ═══ Keyframes ══════════════════════════════════════════════════════════════

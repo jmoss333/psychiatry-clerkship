@@ -83,7 +83,6 @@ def write_synthetic_repository(root: Path) -> None:
                 slug: ledger_entry
                 for slug in (
                     "base.html",
-                    "learning-path.html",
                     "orientation-video.html",
                     "rp-agitation.html",
                     "rp-brief-psych.html",
@@ -95,7 +94,6 @@ def write_synthetic_repository(root: Path) -> None:
     )
     sources = {
         "synthetic/base.html": b'<!-- [CLERKSHIP-META v1] tool="synthetic-base" audience="trainee" -->\n',
-        "01_Six_Week_Curriculum/learning-path.html": b'<!-- [RC-META] tool="synthetic-path" audience="trainee" -->\n',
         "_prototypes/orientation-video/orientation-video.html": b'<!-- [RC-META] tool="synthetic-video" audience="trainee" -->\n',
         "_prototypes/agitation-trainer/rp-agitation.html": b'<!-- [RC-META] tool="synthetic-a" audience="trainee" -->\n',
         "_prototypes/brief-psych/rp-brief-psych.html": b'<!-- [RC-META] tool="synthetic-b" audience="trainee" -->\n',
@@ -474,7 +472,7 @@ class RepositoryProducerTests(unittest.TestCase):
         self.assertEqual(set(first), {"schemaVersion", "contract", "items"})
         self.assertEqual(
             [item["id"] for item in first["items"]],
-            ["tools/base", "tools/learning-path", "tools/orientation-video"],
+            ["tools/base", "tools/orientation-video"],
         )
         self.assertEqual(
             governance.canonical_json_bytes(first), governance.canonical_json_bytes(second)
@@ -483,8 +481,7 @@ class RepositoryProducerTests(unittest.TestCase):
         self.assertEqual(
             warnings,
             [
-                "legacy metadata warning: 01_Six_Week_Curriculum/learning-path.html, "
-                "_prototypes/orientation-video/orientation-video.html"
+                "legacy metadata warning: _prototypes/orientation-video/orientation-video.html"
             ],
         )
         serialized = governance.canonical_json_bytes(first).decode("utf-8")
@@ -504,8 +501,8 @@ class RepositoryProducerTests(unittest.TestCase):
         ):
             diagnostics, documents = governance.validate_repository(ROOT)
 
-        self.assertEqual(len(documents["ms3"]["items"]), 23)
-        self.assertEqual(len(documents["resident"]["items"]), 25)
+        self.assertEqual(len(documents["ms3"]["items"]), 22)
+        self.assertEqual(len(documents["resident"]["items"]), 24)
         self.assertEqual(len(diagnostics), 1)
         self.assertTrue(diagnostics[0].startswith("legacy metadata warning: "))
 
@@ -556,7 +553,7 @@ class RepositoryProducerTests(unittest.TestCase):
         ):
             with self.assertRaisesRegex(
                 governance.GovernanceError,
-                r"tool-governance.json: ms3 item count must equal 23",
+                r"tool-governance.json: ms3 item count must equal 22",
             ):
                 governance.build_governance_document(
                     ROOT, "ms3", enforce_expected_count=True
@@ -577,7 +574,7 @@ class RepositoryProducerTests(unittest.TestCase):
                 )
             (tools / "extra.HTML").write_text("<!doctype html>\n", encoding="utf-8")
 
-            with patch.object(governance, "EXPECTED_TOOL_COUNTS", {"ms3": 3, "resident": 5}):
+            with patch.object(governance, "EXPECTED_TOOL_COUNTS", {"ms3": 2, "resident": 5}):
                 with self.assertRaisesRegex(
                     governance.GovernanceError,
                     r"tool-governance.json: noncanonical HTML filename",
@@ -599,8 +596,8 @@ class RepositoryProducerTests(unittest.TestCase):
 
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn("tool governance OK", result.stdout)
-        self.assertIn("ms3: 23 item(s)", result.stdout)
-        self.assertIn("resident: 25 item(s)", result.stdout)
+        self.assertIn("ms3: 22 item(s)", result.stdout)
+        self.assertIn("resident: 24 item(s)", result.stdout)
 
     def test_atomic_output_rejects_an_unpinned_contract_descriptor(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

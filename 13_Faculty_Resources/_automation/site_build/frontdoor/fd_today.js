@@ -189,6 +189,13 @@ function fdKitCard(k){
   '</button>';
 }
 
+function fdProgressAccess(){
+  return '<button type="button" class="fd-progresscard" data-fd-progress>'+
+    '<span class="fd-progresscard__title">Progress &amp; mastery</span>'+
+    '<span class="fd-progresscard__meta">Coverage · blueprint · calibration →</span>'+
+  '</button>';
+}
+
 /* Week-relevant tools first, then the rest of the library's tools (sorted by ref for
    determinism, matching fdLibraryOnlyReads' own tie-break) fill out to 5. The prototype pins two
    tools by an id this repo's data does not carry, so this is a re-derivation from the join index
@@ -259,6 +266,8 @@ function fdToday(index, state){
 
   var daily=fdDailyPick(fdLibraryOnlyReads(idx), st.done, nowMs);
   if(daily) out+=fdPick(daily);
+
+  out+=fdProgressAccess();
 
   var quickTools=fdQuickTools(idx, wItems);
 

@@ -30,10 +30,8 @@
  *   - a shipped file that is a Git-LFS pointer stub instead of real bytes
  *   - a duplicate (or missing) item id in question_bank.json
  *   - a relative/root-local <script src> whose shipped target is absent
- *   - a shell (index.html) literal map (LAB/ICON/PRACTICE_LABELS/PAGE_TOOLS/
- *     PRACTICE_PAGE_TOOLS/DASH_CONFIG) referencing a tool file the build doesn't ship
- *   - a shell CASE_TITLES/FAMILY_SCENARIO_TITLES id missing from communication_cases.json
- *     / family_systems_scenarios.json
+ *   - a live shell (index.html) literal tool map (PRACTICE_LABELS/
+ *     PRACTICE_PAGE_TOOLS) referencing a tool file the build doesn't ship
  *   - a `?page=`/`?tool=` reference in shipped content/*.md that doesn't resolve
  *   - a soft-finding class (see qa-baseline.json) whose count exceeds its baseline
  *   - reviewed.json (the raw internal review ledger) shipped to the learner output
@@ -487,25 +485,22 @@ if (!existsSync(srcMapPath)) {
 }
 
 /* ---------- 7b. shell-reference integrity scan (HARD) ----------
- * index.html (the SPA shell) carries several hand-maintained literal maps that point at
- * shipped tool files, communication-case ids, and family-scenario ids. Earlier tasks in
- * this branch (sp-interview.html, one-patient-six-weeks.html) added entries to these maps
- * by hand — nothing upstream verifies the entries still resolve once shipped. This section
- * closes that gap: a tool filename, case id, scenario id, or `?page=`/`?tool=` reference
+ * index.html (the SPA shell) retains two hand-maintained literal maps that point at shipped
+ * tool files. Earlier tasks in this branch (sp-interview.html, one-patient-six-weeks.html)
+ * added entries to these maps by hand — nothing upstream verifies the entries still resolve
+ * once shipped. This section closes that gap: a tool filename or `?page=`/`?tool=` reference
  * the build ships but doesn't back with a real file is a dead end a student can click into.
  *
  * Extraction approach (fragile by construction — flagged here on purpose): the shell
  * literals are ordinary JS object literals baked into index.html, not JSON, so a real
  * parser isn't available without adding a dependency this dependency-free gate deliberately
  * avoids. `extractVarBlock` isolates each `var NAME={...};` block with a quote-aware brace
- * counter (needed because DASH_CONFIG nests a per-mode object inside the outer one);
- * regexes then pull `'*.html'` string literals or bare-identifier object keys out of that
- * block. This breaks if the build ever reformats these vars — e.g. switches `var` to
- * `const`/`let`, quotes the CASE_TITLES/FAMILY_SCENARIO_TITLES keys, or a label string
- * picks up an unescaped matching quote. The `shell literal map "X" not found` HARD failure
+ * counter; a regex then pulls `'*.html'` string literals out of that block. This breaks if
+ * the build ever reformats these vars — e.g. switches `var` to `const`/`let` or a label
+ * string picks up an unescaped matching quote. The `shell literal map "X" not found` HARD failure
  * below is the tripwire for that regression class: it means the scan went blind, not that
  * the shell is fine — treat it as a bug in this section, not a pass. Also note: the
- * `'*.html'`/bare-key regexes read raw characters, not tokens — a quoted `'*.html'`-looking
+ * The `'*.html'` regex reads raw characters, not tokens — a quoted `'*.html'`-looking
  * string or a `word:'...'`-looking fragment sitting inside a "//" or block-comment inside
  * one of these var blocks would be picked up as a phantom reference. No such comment
  * exists in these blocks today (verified) — flagged here as a known blind spot, not a bug.
@@ -518,12 +513,12 @@ if (!existsSync(srcMapPath)) {
  * Tri-state presence gate (added after CI caught this scan hard-failing the SP-interview
  * contract suite's synthetic fixture sites, whose stub index.html deliberately carries
  * none of these maps — it's testing the checker's *other* rules, not the real shell):
- *   - all 8 maps present  → scan runs normally (the real shell always carries all 8).
- *   - zero of 8 present   → this isn't a shell that's supposed to have these maps at all
+ *   - both maps present   → scan runs normally (the live shell always carries both).
+ *   - zero maps present   → this isn't a shell that's supposed to have these maps at all
  *     (a test fixture, a non-SPA site) — section 7b is skipped entirely (a, b, and c) with
  *     an I() note, not a HARD failure.
- *   - some but not all present → real drift or regex rot on an actual shell (which always
- *     ships all 8 together) — kept as HARD failures per missing map, unchanged. Do NOT
+ *   - one map present → real drift or regex rot on an actual shell (which always ships both)
+ *     — kept as a HARD failure for the missing map. Do NOT
  *     special-case known fixtures by path/name; the all-or-nothing marker count is the
  *     only signal used, so a real shell that loses a map still fails loudly.
  */
@@ -548,15 +543,13 @@ const SHELL_REF_ALLOWLIST = new Set([
     return null; // ran off the end without closing — extraction failed
   };
   const htmlNamesIn = (block) => new Set([...block.matchAll(/(['"])([^'"]+\.html)\1/g)].map(m => m[2]));
-  const bareKeysIn = (block) => new Set([...block.matchAll(/([A-Za-z_$][\w$]*)\s*:\s*'/g)].map(m => m[1]));
-  const TOOL_MAP_VARS = ['LAB', 'ICON', 'PRACTICE_LABELS', 'PAGE_TOOLS', 'PRACTICE_PAGE_TOOLS', 'DASH_CONFIG'];
-  const ALL_SHELL_MAP_VARS = [...TOOL_MAP_VARS, 'CASE_TITLES', 'FAMILY_SCENARIO_TITLES'];
+  const TOOL_MAP_VARS = ['PRACTICE_LABELS', 'PRACTICE_PAGE_TOOLS'];
 
   const shellHtml = existsSync(shellPath) ? readFileSync(shellPath, 'utf8') : null;
   if (shellHtml === null) {
     H('index.html missing from built site (shell-reference scan cannot run)');
   } else {
-    const presentMapVars = ALL_SHELL_MAP_VARS.filter(v => shellHtml.includes(`var ${v}=`));
+    const presentMapVars = TOOL_MAP_VARS.filter(v => shellHtml.includes(`var ${v}=`));
     if (presentMapVars.length === 0) {
       I('no shell literal maps in index.html — 7b scan skipped (fixture or non-SPA site)');
     } else {
@@ -576,22 +569,7 @@ const SHELL_REF_ALLOWLIST = new Set([
           H(`shell references missing tool "${name}" (in ${[...vars].sort().join(', ')}) — index.html`);
       }
 
-      // (b) CASE_TITLES / FAMILY_SCENARIO_TITLES ids must exist in the shipped case/scenario data.
-      const idBlockCheck = (varName, dataFile, dataKey) => {
-        const block = extractVarBlock(shellHtml, varName);
-        if (block === null) { H(`shell literal map "${varName}" not found in index.html (extraction failed — see comment above)`); return; }
-        const target = p(dataFile);
-        if (!existsSync(target) || !parsed[target]) { H(`${dataFile} not found or unparsable in built site (cannot verify ${varName} ids)`); return; }
-        const knownIds = new Set((parsed[target][dataKey] || []).map(x => x && x.id).filter(Boolean));
-        for (const id of bareKeysIn(block)) {
-          if (knownIds.has(id) || SHELL_REF_ALLOWLIST.has(id)) continue;
-          H(`shell ${varName} references missing id "${id}" — not in ${dataFile}`);
-        }
-      };
-      idBlockCheck('CASE_TITLES', 'communication_cases.json', 'cases');
-      idBlockCheck('FAMILY_SCENARIO_TITLES', 'family_systems_scenarios.json', 'scenarios');
-
-      // (c) `?page=`/`?tool=` references in shipped content/*.md must resolve to a shipped
+      // (b) `?page=`/`?tool=` references in shipped content/*.md must resolve to a shipped
       // content slug / tool file. Target is read up to the next &, quote, close-paren, or
       // whitespace, so both markdown `(...)` links and raw `href="..."` attributes match. A
       // trailing `#fragment` (e.g. `?page=shelf.md#section`) is stripped after decoding —

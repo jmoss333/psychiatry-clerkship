@@ -18,8 +18,7 @@ build. The guard therefore reasons about the union of three enumerable sets:
 
   1. site_manifest.json — 21 tools + 67 markdown pages, shipped to both sites.
   2. SITE_EXTRAS in validate_tool_governance.py — the per-site tools the build
-     copies outside the manifest: learning-path.html (both sites),
-     orientation-video.html (ms3), rp-agitation.html / rp-brief-psych.html /
+     copies outside the manifest: orientation-video.html (ms3), rp-agitation.html / rp-brief-psych.html /
      rp-canon-quiz.html (resident). Read from that module rather than restated
      here, so the two can never disagree.
   3. The literal RES_EXTRA entries in site_build/resident_section.py — the
