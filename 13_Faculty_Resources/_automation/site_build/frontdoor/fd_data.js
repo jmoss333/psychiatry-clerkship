@@ -77,11 +77,35 @@ function fdCtaList(cta){
 /* A page with no topic_meta entry still has to render -- the Library carries every shipped page
    and not all of them are topic-template pages. Degrade to a titled row rather than throwing:
    renderHome()'s history in this repo is that one unguarded throw blanks the whole surface. */
-function fdMakeItem(ref, kind, topicMeta, toolIndex, titleIndex){
+function fdMakeItem(ref, kind, topicMeta, toolIndex, titleIndex, caseIndex){
   var m=topicMeta[ref]||{};
   var t=toolIndex[ref]||null;
   var fr=m.facultyReview||{};
   var isTool=(kind==='tool')||fdIsTool(ref);
+  var cw=m.clinicalWorkflow||null;
+  /* clinicalWorkflow.actions are cta by another name -- same {label, href} shape, same
+     destinations, and the deleted shell merged them into one deduped list for exactly that
+     reason (its buildPracticeTools kept a `seen` map keyed by href). Merged HERE, at the join,
+     rather than in the renderer, so there is one list to render, dedupe and site-filter instead
+     of two that can disagree. Authored `cta` comes first because it is the field a faculty
+     author edits directly; workflow actions are attached to the workflow prose. */
+  var cta=fdCtaList(m.cta).concat(fdCtaList(cw&&cw.actions));
+  var seen={}, merged=[];
+  for(var ci=0;ci<cta.length;ci++){
+    if(Object.prototype.hasOwnProperty.call(seen, 'h:'+cta[ci].href)) continue;
+    seen['h:'+cta[ci].href]=1;
+    merged.push(cta[ci]);
+  }
+  /* Spoken drills. The id IS the payload -- communication_cases.json owns the title, and a case
+     id the shipped pack does not carry is dropped rather than labelled with its own slug: the
+     drill link would open communication-practice.html at a case that is not there. */
+  var cases=[], cids=(m.communicationCases&&m.communicationCases.length)?m.communicationCases:[];
+  for(var k=0;k<cids.length;k++){
+    var title=(caseIndex||{})[cids[k]];
+    if(!title) continue;
+    cases.push({ id: cids[k], title: title,
+      href: '?tool=communication-practice.html&case='+encodeURIComponent(cids[k]) });
+  }
   return {
     ref: ref,
     kind: isTool?'tool':'read',
@@ -97,12 +121,83 @@ function fdMakeItem(ref, kind, topicMeta, toolIndex, titleIndex){
     toolRef: (m.relatedTools&&m.relatedTools.length)?m.relatedTools[0]:null,
     risk: (t&&t.riskLevel)||m.safetyLevel||null,
     /* Filtered to what THIS site ships by fdBuildIndex's last pass -- see there. */
-    cta: fdCtaList(m.cta),
+    cta: merged,
+    cant: (typeof m.cant==='string')?m.cant:'',
+    stages: (m.workflowStages&&m.workflowStages.length)?m.workflowStages:[],
+    workflow: fdWorkflowRows(cw),
+    ruleOut: (m.ruleOut&&m.ruleOut.length)?m.ruleOut:[],
+    firstMove: (typeof m.firstMove==='string')?m.firstMove:'',
+    cases: cases,
+    quiz: fdQuiz(m),
     href: (isTool?'?tool=':'?page=')+ref
   };
 }
 
-function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
+/* ---- the rest of the topic template -----------------------------------------------------------
+   Six more authored fields the front door dropped at the swap and this restores. They are read
+   here rather than in the renderer so the reader gets ONE shape, exactly like `cta`:
+
+     cant            one "can't miss" sentence
+     stages          workflowStages -- the ordered stage chips
+     workflow        clinicalWorkflow's seven prose fields (its `actions` fold into `cta`, below)
+     ruleOut/firstMove  the rule-out chips and the first move under them
+     cases           communicationCases -- spoken-drill ids
+     quiz            the page's own question
+
+   *** FOUR HARDCODED MAPS FROM THE DELETED SHELL ARE DELIBERATELY NOT RESTORED. *** It carried
+   PRACTICE_LABELS/LAB (tool titles), PRACTICE_SAFE/SAFE (which tools are safety tools),
+   PRACTICE_PAGE_TOOLS/PAGE_TOOLS (which tools belong to a page) and PRACTICE_CASE_LABELS/
+   CASE_TITLES (drill titles) -- each declared TWICE in that file, and each a second source of
+   truth for something a registry already owns. The front-door index owns all four properly:
+   titles come from site_manifest via titleIndex, `risk` from tool_registry's riskLevel,
+   page->tool from topic_meta's relatedTools, and drill titles from communication_cases.json,
+   build-injected as FD_COMMUNICATION_CASES. The deleted CASE_TITLES had drifted to 10 of the 12
+   real cases, which is what a second copy always does eventually. */
+function fdWorkflowFields(){
+  return [['ask','What to ask'],['mse','MSE focus'],['safety','Safety'],['say','What to say'],
+          ['collateral','Family/collateral'],['rounds','Rounds'],['exam','Exam focus']];
+}
+
+/* The deleted shell's WF_STAGE_LABELS, unchanged -- workflowStages is a controlled vocabulary
+   (topic_meta.schema.json) and these are its display names. A stage the map does not know renders
+   its own slug rather than being dropped: an unknown code means the vocabulary grew, and showing
+   it is more honest than hiding it. */
+var FD_STAGE_LABELS={encounter:'Encounter',diagnosis:'Diagnosis',safety:'Safety',
+  treatment:'Treatment',communication:'Communication',family:'Family',team:'Team',exam:'Exam'};
+
+/* clinicalWorkflow's seven prose fields as [label, value] pairs, in the deleted shell's order --
+   which is the order of an encounter, not alphabetical, and is worth preserving for that reason.
+   Only the fields that carry text. `actions` is NOT here: it is a link list, and it is merged
+   into the item's cta so the two cannot render the same href twice. */
+function fdWorkflowRows(cw){
+  var fields=fdWorkflowFields(), out=[];
+  if(!cw||typeof cw!=='object') return out;
+  for(var i=0;i<fields.length;i++){
+    var v=cw[fields[i][0]];
+    if(typeof v==='string'&&v) out.push({ label: fields[i][1], value: v });
+  }
+  return out;
+}
+
+/* A page's quiz, or null. Shape-checked rather than trusted: the renderer builds one button per
+   option and reads `c` for correctness, so a quiz with no options array would render a question
+   nobody can answer. topicHasQuiz() in the shell applies the SAME test -- that is not a
+   coincidence and must not drift, because it is what decides whether an SRS card is seeded. */
+function fdQuiz(m){
+  var q=m&&m.quiz;
+  if(!q||typeof q.q!=='string'||!q.q) return null;
+  if(!q.o||!q.o.length) return null;
+  var opts=[];
+  for(var i=0;i<q.o.length;i++){
+    var o=q.o[i];
+    if(!o||typeof o.t!=='string') continue;
+    opts.push({ text:o.t, correct: !!o.c });
+  }
+  if(!opts.length) return null;
+  return { q:q.q, options:opts, why:(typeof q.why==='string')?q.why:'' };
+}
+
+function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest, communicationCases){
   var meta=topicMeta||{}, cur=curriculum||{};
   var toolIndex={}, list=(toolRegistry&&toolRegistry.tools)||[];
   for(var i=0;i<list.length;i++){ toolIndex[list[i].file]=list[i]; }
@@ -114,9 +209,16 @@ function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
     for(var e=0;e<groups[g].length;e++){ titleIndex[groups[g][e][1]]=groups[g][e][2]; }
   }
 
+  /* communication_cases.json, build-injected. id -> title, and nothing else: this index exists to
+     label a drill link, not to hold a second copy of the pack. */
+  var caseIndex={}, cases=(communicationCases&&communicationCases.cases)||[];
+  for(var cc=0;cc<cases.length;cc++){
+    if(cases[cc]&&cases[cc].id&&cases[cc].title) caseIndex[cases[cc].id]=cases[cc].title;
+  }
+
   var byRef={};
   function ensure(ref, kind){
-    if(!byRef[ref]) byRef[ref]=fdMakeItem(ref, kind, meta, toolIndex, titleIndex);
+    if(!byRef[ref]) byRef[ref]=fdMakeItem(ref, kind, meta, toolIndex, titleIndex, caseIndex);
     return byRef[ref];
   }
 

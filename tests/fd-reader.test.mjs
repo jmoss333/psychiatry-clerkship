@@ -539,3 +539,216 @@ test('cta labels ship to both sites unrebranded', () => {
   const block = html.slice(html.indexOf('<div class="fd-ctas">'), html.indexOf('fd-article__source'));
   assert.doesNotMatch(block, AUDIENCE_TOKEN_RE);
 });
+
+// ---- the topic template ----------------------------------------------------------------------
+// Six authored fields restored from the deleted shell's buildTpl/buildWorkflow/buildPracticeTools
+// and its `minitree` markup. `cta` was only the one anyone happened to notice.
+
+const TPL_META = Object.assign({}, FIX_META, {
+  'a.md': Object.assign({}, FIX_META['a.md'], {
+    cant: 'Never assume the agitation is psychiatric.',
+    workflowStages: ['encounter', 'safety', 'not_a_real_stage'],
+    clinicalWorkflow: {
+      ask: 'What changed today?',
+      mse: 'Level of arousal.',
+      safety: 'Check the vitals first.',
+      actions: [{ label: 'Open the workflow tool', href: '?tool=tool.html&resume=1' }],
+    },
+    ruleOut: ['Delirium', 'Hypoglycaemia'],
+    firstMove: 'Vitals and a glucose.',
+    communicationCases: ['case_a', 'case_missing'],
+    quiz: {
+      q: 'What is the first move?',
+      o: [{ t: 'Vitals', c: true }, { t: 'Restraints' }],
+      why: 'Vitals come first because reversible causes are common.',
+    },
+    cta: [{ label: 'Open the Decision Aids', href: '?tool=decision-aids.html' }],
+  }),
+});
+const TPL_CUR = JSON.parse(JSON.stringify(FIX_CUR));
+TPL_CUR.libraryColumns[0].refs.push('decision-aids.html');
+const TPL_MAN = JSON.parse(JSON.stringify(FIX_MAN));
+TPL_MAN.tools.push(['src/decision-aids.html', 'decision-aids.html', 'Decision Aids']);
+const TPL_CASES = { cases: [{ id: 'case_a', title: 'Ask About Suicide Directly' }] };
+const TPL_IDX = F.fdBuildIndex(TPL_CUR, TPL_META, FIX_TOOLS, TPL_MAN, TPL_CASES);
+const tpl = (over) => F.fdReader(TPL_IDX, s(over || {}), '');
+
+test('the can\'t-miss line renders, escaped, and only when authored', () => {
+  assert.match(tpl(), /<div class="fd-cantmiss">.*Never assume the agitation is psychiatric\./);
+  assert.doesNotMatch(F.fdReader(IDX, s({}), ''), /fd-cantmiss/);
+});
+
+test('workflow stages render their display names, and an unknown code shows its own slug', () => {
+  const html = tpl();
+  assert.match(html, /<span class="fd-workflow__stage">Encounter<\/span>/);
+  assert.match(html, /<span class="fd-workflow__stage">Safety<\/span>/);
+  assert.match(html, /<span class="fd-workflow__stage">not_a_real_stage<\/span>/,
+    'an unknown stage means the vocabulary grew; showing it beats hiding it');
+});
+
+test('the workflow grid renders only the authored fields, in encounter order', () => {
+  const html = tpl();
+  assert.match(html, /<div class="fd-workflow__k">What to ask<\/div><div class="fd-workflow__v">What changed today\?<\/div>/);
+  assert.doesNotMatch(html, /What to say/, 'an unauthored field renders no empty cell');
+  // Scoped to the grid: "Safety" is also a STAGE chip above it, and the chip comes first.
+  const grid = html.slice(html.indexOf('fd-workflow__grid'), html.indexOf('</section>'));
+  assert.ok(grid.indexOf('What to ask') < grid.indexOf('MSE focus'));
+  assert.ok(grid.indexOf('MSE focus') < grid.indexOf('>Safety<'),
+    'the field order is the order of an encounter, not alphabetical');
+});
+
+test('a page with stages but no workflow prose still renders the block, and vice versa', () => {
+  const stagesOnly = { 'a.md': { workflowStages: ['team'] } };
+  assert.match(F.fdReader(F.fdBuildIndex(FIX_CUR, stagesOnly, FIX_TOOLS, FIX_MAN), s({}), ''),
+    /fd-workflow__stage">Team</);
+  const proseOnly = { 'a.md': { clinicalWorkflow: { rounds: 'One line for rounds.' } } };
+  const html = F.fdReader(F.fdBuildIndex(FIX_CUR, proseOnly, FIX_TOOLS, FIX_MAN), s({}), '');
+  assert.match(html, /One line for rounds\./);
+  assert.doesNotMatch(html, /fd-workflow__stages/);
+});
+
+test('rule-out chips render over the first move, with the decision-aids link', () => {
+  const html = tpl();
+  assert.match(html, /Rule out first → first move/);
+  assert.match(html, /<span class="fd-minitree__c">Delirium<\/span>/);
+  assert.match(html, /<b>First move · <\/b>Vitals and a glucose\./);
+  assert.match(html, /href="\?tool=decision-aids\.html">See the visual decision aids →/);
+});
+
+test('the decision-aids link is omitted when this site does not ship the tool', () => {
+  // A hardcoded link to an unshipped slug is the same dead end the cta site filter prevents.
+  const html = F.fdReader(F.fdBuildIndex(FIX_CUR, TPL_META, FIX_TOOLS, FIX_MAN, TPL_CASES), s({}), '');
+  assert.match(html, /fd-minitree__c/, 'precondition: the block itself still renders');
+  assert.doesNotMatch(html, /decision-aids/);
+});
+
+test('spoken drills render with the pack\'s title, and an unknown case id is dropped', () => {
+  const html = tpl();
+  assert.match(html, /<div class="fd-practice__label">Spoken drills<\/div>/);
+  assert.match(html, /class="fd-cta is-drill" href="\?tool=communication-practice\.html&amp;case=case_a">Ask About Suicide Directly/);
+  assert.doesNotMatch(html, /case_missing/,
+    'a case the shipped pack does not carry would open the tool at a case that is not there');
+});
+
+test('clinicalWorkflow.actions are merged into the same deduped row as cta', () => {
+  const html = tpl();
+  assert.match(html, /Open the Decision Aids/);
+  assert.match(html, /Open the workflow tool/);
+  assert.equal((html.match(/class="fd-practice"/g) || []).length, 1, 'one practice surface, not two');
+});
+
+test('a cta and a workflow action naming the same href render once', () => {
+  const dup = { 'a.md': {
+    cta: [{ label: 'From cta', href: '?page=b.md' }],
+    clinicalWorkflow: { actions: [{ label: 'From workflow', href: '?page=b.md' }] },
+  } };
+  const html = F.fdReader(F.fdBuildIndex(FIX_CUR, dup, FIX_TOOLS, FIX_MAN), s({}), '');
+  assert.match(html, /From cta/, 'authored cta wins — it is the field an author edits directly');
+  assert.doesNotMatch(html, /From workflow/);
+});
+
+test('Try-it-now claims its own href, so a bare cta to the same tool does not repeat it', () => {
+  const dup = { 'a.md': { relatedTools: ['tool.html'],
+    cta: [{ label: 'Also the tool', href: '?tool=tool.html' },
+          { label: 'The tool at a case', href: '?tool=tool.html&case=x' }] } };
+  const html = F.fdReader(F.fdBuildIndex(FIX_CUR, dup, FIX_TOOLS, FIX_MAN), s({}), '');
+  assert.match(html, /fd-trynow/);
+  assert.doesNotMatch(html, /Also the tool/, 'the headline button already goes there');
+  assert.match(html, /The tool at a case/, 'a case-specific href is a different destination');
+});
+
+test('a link to a high-risk tool is marked from the registry, not a hardcoded list', () => {
+  const meta = { 'a.md': { cta: [{ label: 'Open the screen', href: '?tool=t.html' }] } };
+  const cur = JSON.parse(JSON.stringify(FIX_CUR));
+  cur.libraryColumns[0].refs.push('t.html');
+  const man = JSON.parse(JSON.stringify(FIX_MAN));
+  man.tools.push(['src/t.html', 't.html', 'T']);
+  const high = { tools: [{ file: 't.html', title: 'T', riskLevel: 'high' }] };
+  const low = { tools: [{ file: 't.html', title: 'T', riskLevel: 'low' }] };
+  assert.match(F.fdReader(F.fdBuildIndex(cur, meta, high, man), s({}), ''), /fd-cta is-safety/);
+  assert.doesNotMatch(F.fdReader(F.fdBuildIndex(cur, meta, low, man), s({}), ''), /is-safety/);
+});
+
+test('the blocks appear in the deleted panel\'s own section order', () => {
+  const html = tpl();
+  const at = (n) => html.indexOf(n);
+  assert.ok(at('fd-keypoints') < at('fd-cantmiss'));
+  assert.ok(at('fd-cantmiss') < at('fd-workflow'));
+  assert.ok(at('fd-workflow') < at('fd-minitree'));
+  assert.ok(at('fd-minitree') < at('fd-quiz'));
+  assert.ok(at('fd-quiz') < at('fd-practice'));
+  assert.ok(at('fd-practice') < at('fd-article__source'));
+});
+
+test('every restored block escapes its faculty-authored text', () => {
+  const hostile = { 'a.md': {
+    cant: '<img src=x onerror=1>',
+    workflowStages: ['<b>stage</b>'],
+    clinicalWorkflow: { ask: '<script>a()</script>' },
+    ruleOut: ['<script>b()</script>'], firstMove: '<script>c()</script>',
+    quiz: { q: '<script>d()</script>', o: [{ t: '<script>e()</script>', c: true }], why: '<script>f()</script>' },
+  } };
+  const idx = F.fdBuildIndex(FIX_CUR, hostile, FIX_TOOLS, FIX_MAN);
+  for (const state of [s({}), s({ quiz: { picked: 0 } })]) {
+    const html = F.fdReader(idx, state, '');
+    assert.doesNotMatch(html, /<img src=x/);
+    assert.doesNotMatch(html, /<script>/);
+    assert.match(html, /&lt;script&gt;/);
+  }
+});
+
+test('a page carrying none of the six renders none of the blocks', () => {
+  const html = F.fdReader(IDX, s({ ref: 'b.md' }), '');
+  for (const c of ['fd-cantmiss', 'fd-workflow', 'fd-minitree', 'fd-quiz', 'fd-practice']) {
+    assert.doesNotMatch(html, new RegExp(c), c);
+  }
+});
+
+// ---- the quiz -----------------------------------------------------------------------------
+
+test('an unanswered quiz shows the question and options, and NO explanation', () => {
+  const html = tpl();
+  assert.match(html, /<h2 class="fd-quiz__lbl">Test yourself<\/h2>/);
+  assert.match(html, /<button type="button" class="fd-quiz__o" data-fd-quiz="0">Vitals<\/button>/);
+  assert.doesNotMatch(html, /Vitals come first/,
+    'present-but-hidden markup is one CSS edit away from being the answer key');
+  assert.doesNotMatch(html, /aria-disabled/);
+});
+
+test('answering reveals the correct option, marks a wrong pick, and shows why', () => {
+  const html = tpl({ quiz: { picked: 1 } });
+  assert.match(html, /class="fd-quiz__o is-correct" data-fd-quiz="0" aria-disabled="true"/);
+  assert.match(html, /class="fd-quiz__o is-wrong" data-fd-quiz="1" aria-disabled="true"/);
+  assert.match(html, /<p class="fd-quiz__fb" role="status"><b>Why: <\/b>Vitals come first/);
+});
+
+test('a correct pick is marked correct and nothing is marked wrong', () => {
+  const html = tpl({ quiz: { picked: 0 } });
+  assert.match(html, /is-correct/);
+  assert.doesNotMatch(html, /is-wrong/);
+});
+
+test('the graded state reaches the accessible name, not colour alone', () => {
+  const html = tpl({ quiz: { picked: 1 } });
+  assert.match(html, /Vitals<span class="fd-vh">, correct answer<\/span>/);
+  assert.match(html, /Restraints<span class="fd-vh">, your answer, incorrect<\/span>/);
+});
+
+test('the options stay focusable — aria-disabled, never disabled', () => {
+  const html = tpl({ quiz: { picked: 0 } });
+  assert.doesNotMatch(html, /\sdisabled[\s>]/,
+    'grading re-renders; a disabled twin cannot take focus back');
+});
+
+test('a malformed quiz renders nothing rather than a question nobody can answer', () => {
+  for (const quiz of [{ q: 'Q' }, { q: 'Q', o: [] }, { o: [{ t: 'a', c: true }] }, { q: '', o: [{ t: 'a' }] }]) {
+    const idx = F.fdBuildIndex(FIX_CUR, { 'a.md': { quiz } }, FIX_TOOLS, FIX_MAN);
+    assert.doesNotMatch(F.fdReader(idx, s({}), ''), /fd-quiz/, JSON.stringify(quiz));
+  }
+});
+
+test('a quiz with no `why` renders no empty explanation', () => {
+  const idx = F.fdBuildIndex(FIX_CUR, { 'a.md': { quiz: { q: 'Q', o: [{ t: 'a', c: true }] } } },
+    FIX_TOOLS, FIX_MAN);
+  assert.doesNotMatch(F.fdReader(idx, s({ quiz: { picked: 0 } }), ''), /fd-quiz__fb/);
+});

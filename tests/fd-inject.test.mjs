@@ -38,7 +38,7 @@ test('markers appear in dependency order', () => {
 
 test('the shell declares the data needles the build replaces', () => {
   for (const n of ['FD_CURRICULUM', 'FD_TOPIC_META', 'FD_TOOL_REGISTRY',
-                   'FD_SITE_MANIFEST', 'FD_ROLES']) {
+                   'FD_SITE_MANIFEST', 'FD_ROLES', 'FD_COMMUNICATION_CASES']) {
     assert.equal(src.split('var ' + n + '=').length - 1, 1,
       `exactly one 'var ${n}=' declaration, for build_deploy.py to replace`);
   }

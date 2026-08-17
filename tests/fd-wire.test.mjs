@@ -722,3 +722,130 @@ test('the link branch runs LAST, after every data-fd-* control has had its chanc
   assert.ok(body.indexOf('FD_CLICK_SELECTOR') < body.indexOf("closest('a[href]')"),
     'a front-door control must never be shadowed by the link handler');
 });
+
+// ---- "Test yourself" grading (Plan 3 Task 7, template restore) --------------------------------
+// Ported from the deleted shell's `.tyo` handler. cw_quiz_v1's {seen, wrong, last} shape is read
+// by masteryByBlueprint() to fold page questions into blueprint accuracy, so it is a contract with
+// Progress, not a private store.
+
+function makeQuizClick(item, storage) {
+  const store = storage || {};
+  const applied = [];
+  // eslint-disable-next-line no-new-func
+  const fn = new Function('localStorage', 'Date', 'store', 'item', 'applied', `
+    ${read('phase_policy.js')}
+    ${read('frontdoor/fd_data.js')}
+    ${read('frontdoor/fd_sheet.js')}
+    ${wireSrc}
+    function fdIndexSafe(){ var b={}; b[item.ref]=item; return { byRef:b, weeks:[], columns:[], kit:[] }; }
+    function fdCurrentState(){ return { openId:item.ref, tab:'today', nowMs:Date.now() }; }
+    function fdRerender(){ applied.push('rerender'); }
+    function fdRestoreActivated(k){ applied.push('focus:'+k); }
+    return {
+      click: function(i){ fdActionClick({
+        hasAttribute: function(n){ return n==='data-fd-quiz'; },
+        getAttribute: function(n){ return n==='data-fd-quiz'? String(i) : null; },
+      }); },
+      answered: function(){ return FD_TRANSIENT.quiz; },
+      selector: FD_ACTION_SELECTOR,
+      focusNames: fdFocusKey({ hasAttribute:function(n){ return n==='data-fd-quiz'; },
+                               getAttribute:function(){ return '2'; } }),
+    };
+  `);
+  const ls = {
+    getItem: (k) => (k in store ? store[k] : null),
+    setItem: (k, v) => { store[k] = String(v); },
+    removeItem: (k) => { delete store[k]; },
+  };
+  const api = fn(ls, Date, store, item, applied);
+  api.store = store;
+  api.applied = applied;
+  return api;
+}
+
+const QUIZ_ITEM = {
+  ref: 'a.md',
+  quiz: { q: 'Q?', options: [{ text: 'right', correct: true }, { text: 'wrong', correct: false }], why: 'because' },
+};
+
+test('a correct answer bumps seen and not wrong', () => {
+  const api = makeQuizClick(QUIZ_ITEM);
+  api.click(0);
+  const e = JSON.parse(api.store.cw_quiz_v1)['a.md'];
+  assert.equal(e.seen, 1);
+  assert.equal(e.wrong, 0);
+  assert.match(e.last, /^\d{4}-\d{2}-\d{2}$/);
+  assert.deepEqual(api.answered(), { picked: 0 });
+});
+
+test('a wrong answer bumps both', () => {
+  const api = makeQuizClick(QUIZ_ITEM);
+  api.click(1);
+  const e = JSON.parse(api.store.cw_quiz_v1)['a.md'];
+  assert.equal(e.seen, 1);
+  assert.equal(e.wrong, 1);
+});
+
+test('a second click cannot double-count — the guard is state, not the attribute', () => {
+  // The rendered options carry aria-disabled, not disabled, so a second click really can arrive.
+  const api = makeQuizClick(QUIZ_ITEM);
+  api.click(1);
+  api.click(0);
+  api.click(1);
+  const e = JSON.parse(api.store.cw_quiz_v1)['a.md'];
+  assert.equal(e.seen, 1, 'graded once per render');
+  assert.deepEqual(api.answered(), { picked: 1 }, 'and the first answer is the one that stands');
+});
+
+test('it accumulates across visits rather than overwriting', () => {
+  const store = { cw_quiz_v1: JSON.stringify({ 'a.md': { seen: 3, wrong: 2, last: '2026-01-01' } }) };
+  const api = makeQuizClick(QUIZ_ITEM, store);
+  api.click(1);
+  const e = JSON.parse(api.store.cw_quiz_v1)['a.md'];
+  assert.equal(e.seen, 4);
+  assert.equal(e.wrong, 3);
+});
+
+test('an out-of-range or unparseable option index writes nothing', () => {
+  for (const i of [9, -1, 'x']) {
+    const api = makeQuizClick(QUIZ_ITEM);
+    api.click(i);
+    assert.equal(api.store.cw_quiz_v1, undefined, String(i));
+    assert.equal(api.answered(), null);
+  }
+});
+
+test('a page with no quiz writes nothing', () => {
+  const api = makeQuizClick({ ref: 'a.md', quiz: null });
+  api.click(0);
+  assert.equal(api.store.cw_quiz_v1, undefined);
+});
+
+test('grading re-renders and puts focus back on the option that was clicked', () => {
+  const api = makeQuizClick(QUIZ_ITEM);
+  api.click(1);
+  assert.deepEqual(api.applied, ['rerender', 'focus:[data-fd-quiz="1"]'],
+    'fdRerender does not run fdFocusAfterRender, so focus is restored here or not at all');
+});
+
+test('data-fd-quiz is an ACTION, not a state patch, and is focus-keyable', () => {
+  const api = makeQuizClick(QUIZ_ITEM);
+  assert.match(api.selector, /\[data-fd-quiz\]/,
+    'it writes a learner store; fdDispatch returns patches over routed state and must not');
+  assert.equal(api.focusNames, '[data-fd-quiz="2"]',
+    'fdFocusKey must find the re-rendered twin for the paths that DO go through fdApply');
+});
+
+test('the answer does not travel to the next page', () => {
+  // FD_TRANSIENT is not reset by fdApply (only popstate calls fdResetTransient), so without the
+  // explicit clear the next page would show whichever option shares the index as answered.
+  assert.match(wireSrc, /if\(next\.openId!==before\.openId\) FD_TRANSIENT\.quiz=null;/);
+});
+
+test('fdResetTransient still covers every FD_TRANSIENT key, quiz included', () => {
+  const reset = wireSrc.match(/function fdResetTransient\(\)\{[\s\S]*?\n\}/)[0];
+  const decl = wireSrc.match(/var FD_TRANSIENT=\{[\s\S]*?\};/)[0];
+  for (const k of decl.match(/(\w+):/g).map((m) => m.slice(0, -1))) {
+    assert.match(reset, new RegExp(`FD_TRANSIENT\\.${k}=`), `${k} is never reset`);
+  }
+});

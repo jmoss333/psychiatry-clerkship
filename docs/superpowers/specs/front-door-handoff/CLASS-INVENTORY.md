@@ -390,10 +390,36 @@ it; just don't expect it to paint anything.
         .fd-keypoints__label
         .fd-keypoints__item ×N
           .fd-keypoints__bullet
+      ── the topic template (topic_meta fields; each block omitted when unauthored) ──
+      .fd-cantmiss                          `cant`
+        .fd-cantmiss__ico / .fd-cantmiss__tx
+      .fd-workflow    <section>             `workflowStages` + `clinicalWorkflow`
+        .fd-workflow__head
+          .fd-workflow__title <h2>
+          .fd-workflow__stages
+            .fd-workflow__stage ×N
+        .fd-workflow__grid
+          .fd-workflow__step ×N
+            .fd-workflow__k / .fd-workflow__v
+      .fd-minitree                          `ruleOut` + `firstMove`
+        .fd-minitree__lbl
+        .fd-minitree__ro
+          .fd-minitree__c ×N
+        .fd-minitree__fm
+        .fd-minitree__link                  (only when this site ships decision-aids.html)
+      .fd-quiz        <section>             `quiz`
+        .fd-quiz__lbl <h2>
+        .fd-quiz__q
+        .fd-quiz__o   <button> ×N           + .is-correct | .is-wrong, aria-disabled once answered
+          .fd-vh                            (graded rows only — ", correct answer" / ", your answer, incorrect")
+        .fd-quiz__fb                        role="status"; rendered ONLY once answered
+      ── end topic template ──
       .fd-trynow      <button>
         .fd-trynow__icon / .fd-trynow__title / .fd-trynow__sub
-      .fd-ctas                              (topic_meta `cta` — omitted entirely when there is none)
-        .fd-cta       <a href>  ×N
+      .fd-practice                          (the one deduped action surface)
+        .fd-practice__label ×1–2            ("Spoken drills" / "Practice and tools")
+        .fd-ctas ×1–2
+          .fd-cta     <a href>  ×N          + .is-safety | .is-drill
       .fd-article__source
         <span>Source:</span> .fd-src
       .fd-article__actions                (≥1000px)
@@ -424,7 +450,24 @@ it; just don't expect it to paint anything.
 | `.fd-prevnext__btn.is-next` | Right-aligns the next button's contents. |
 | `.fd-article__actions` | Desktop-only primary/ghost pair. **Always emit it** (no `desk` JS branch) — `.fd-actionbar` at the bottom of this tree is the mobile equivalent; the breakpoint hides this one and shows that one, never both. |
 | `.fd-tip` (Reader instance) | The `←`/`→`/`1`/`2`/`3` keyboard hint. Hidden below 1000px via the descendant selector `.fd-article .fd-tip` — **do not** hide the bare `.fd-tip` class, which would also blank the wizard's `.fd-tip--setup` line (§2). |
-| `.fd-ctas` / `.fd-cta` | `topic_meta.json`'s authored `cta` list — 104 faculty-written links across 65 topics. Not in the prototype (its fixture data carried none); the chip shape borrows `.fd-btn--accent` and the colour pair borrows `.fd-trynow__title`, both stated in the CSS. Wraps, because a page can author four. |
+| **Topic template** (`.fd-cantmiss` · `.fd-workflow` · `.fd-minitree` · `.fd-quiz`) | The six authored `topic_meta` fields the front-door swap dropped, restored from the deleted shell's `buildTpl` / `buildWorkflow` / `minitree` markup. **Not in the prototype** — its fixture data carried none of these fields — so the *dimensions* are transcribed from that stylesheet and only the *colours* are re-expressed as `--fd-*`; the one-to-one token map is at the head of the CSS block. Rendered **inline**, not inside the deleted `<details>` accordion: the front-door reader *is* the topic page, and content nobody opens is barely less dropped than content nobody renders. |
+| `.fd-workflow__grid` | One column below 1000px, two at and above. The deleted rule was an unconditional `repeat(2,…)`, which put two ~160px columns on a 320px phone. |
+| `.fd-quiz__o` | A real `<button>`. Once answered it carries **`aria-disabled`, never `disabled`** — grading re-renders the article, and a `disabled` twin cannot take focus back, dropping a keyboard user to `<body>` at the moment they want to read the result. The double-count guard is `fd_wire.js`'s state check. Correct/wrong reach the accessible name as `.fd-vh` suffixes; the border and wash are colour, and colour alone is not a state. |
+| `.fd-quiz__fb` | `role="status"`, and rendered **only after answering**. Present-but-hidden markup is one CSS edit away from being the answer key, and `why` names the correct option in plain words. |
+| `.fd-practice` / `.fd-practice__label` / `.fd-ctas` / `.fd-cta` | The one action surface: authored `cta` (104 links across 65 topics), `clinicalWorkflow.actions` (162 more, merged at the join), and `communicationCases` spoken drills. Chip shape borrows `.fd-btn--accent`, colour pair borrows `.fd-trynow__title`. `.is-safety` comes from **`tool_registry`'s `riskLevel`**, `.is-drill` from `communication_cases.json` — the deleted shell hand-maintained both as literal maps, plus two more (tool titles, page→tool), each declared twice in that file and each already owned by a registry. |
+
+⚠ **One deduped action surface, not four.** `.fd-practice` merges authored `cta`,
+`clinicalWorkflow.actions` and the spoken drills through a single `seen` map keyed by **href** —
+the deleted `buildPracticeTools`' own mechanism, and the whole reason it was one function. The map
+is seeded with `.fd-trynow`'s `?tool=<toolRef>`, so the headline tool button and a bare `cta` to
+the same tool cannot both render. A **case-specific** href to that same tool is *not* a duplicate —
+different destination — and href-keyed dedupe gets that right by construction. Adding a fifth
+source of links means adding it to that merge, never rendering a second row.
+
+⚠ **No `mode`.** The deleted panel ordered its tools and wrote a "Why today" line from the
+dashboard mode companion, which Task 3 deleted. Ordering is now **authored order**, which is a
+source of truth where the mode ordering was a derived one whose source is gone. Do not reintroduce
+a mode ordering without reintroducing its source.
 
 ⚠ **`.fd-cta` is an `<a href>`, never a `data-fd-open` button.** 16 of the authored hrefs carry a
 `&case=` / `&scenario=` suffix, and `data-fd-open` transports a **ref only** — dispatching one

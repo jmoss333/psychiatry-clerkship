@@ -189,6 +189,102 @@ function fdReaderTryNow(item, index){
   '</button>';
 }
 
+/* ---- the topic template ----------------------------------------------------------------------
+   Six authored fields the swap dropped, restored from the deleted shell's buildTpl/buildWorkflow/
+   buildPracticeTools and its `minitree` markup (spa_index.html @098ad50:743-1050). Read from
+   there, not reinvented -- the field order inside the workflow grid is the order of an encounter
+   and the "Rule out first → first move" framing is the teaching, not decoration.
+
+   ---- What changed on the way across, and why ------------------------------------------------
+   1. NOT INSIDE A <details>. The deleted panel was a collapsed "On the Unit Practice and Tools"
+      accordion sitting beside the markdown body, because the old shell's reading pane was the
+      markdown and this was an extra. In the front door the reader IS the topic page, and content
+      nobody opens is barely less dropped than content nobody renders. The blocks are inline, in
+      the deleted panel's own section order.
+   2. NO MODE. practiceModeCfg/sortPracticeTools/sortPracticeCases/practiceModeText and the
+      `.tpl-chip mode` row all read the dashboard mode companion, which Task 3 deleted and the
+      plan does not restore. Ordering is therefore authored order -- which is a source of truth,
+      where the mode ordering was a derived one whose source is gone.
+   3. THE TOOLS SECTION IS ONE DEDUPED ROW, not four. The deleted shell merged relatedTools,
+      PAGE_TOOLS, cta, clinicalWorkflow.actions and communicationCases through a single `seen`
+      map keyed by href, and that dedupe is the whole reason it was one function. cta and
+      clinicalWorkflow.actions are merged in fd_data.js; .fd-trynow's own href seeds the map here
+      so the headline tool button and a bare cta to the same tool cannot both render. A
+      case-specific href is NOT a duplicate of the bare tool -- different destination -- and the
+      href-keyed dedupe gets that right by construction.
+   4. FOUR HARDCODED MAPS ARE GONE (see fd_data.js's note): tool titles, safety-tool set,
+      page->tool map, drill titles. All four now come from the registries the index already
+      joins.
+
+   Everything below is escaped. All of it is faculty-authored free text. */
+
+/* "Can't miss." One sentence, and the reason the block is loud. */
+function fdReaderCantMiss(item){
+  if(!item.cant) return '';
+  return '<div class="fd-cantmiss">'+
+    '<span class="fd-cantmiss__ico" aria-hidden="true">⚠</span>'+
+    '<span class="fd-cantmiss__tx"><b>Can’t miss. </b>'+fdEsc(item.cant)+'</span>'+
+  '</div>';
+}
+
+/* Stage chips + the seven-field grid. Emitted together when either half exists, exactly as
+   buildWorkflow did -- a page can carry stages with no prose and vice versa, and both are worth
+   showing. The heading is the deleted shell's own "On the unit". */
+function fdReaderWorkflow(item){
+  var stages=item.stages||[], rows=item.workflow||[];
+  if(!stages.length&&!rows.length) return '';
+  var out='<section class="fd-workflow"><div class="fd-workflow__head">'+
+    '<h2 class="fd-workflow__title">On the unit</h2>';
+  if(stages.length){
+    out+='<div class="fd-workflow__stages">';
+    for(var s=0;s<stages.length;s++){
+      out+='<span class="fd-workflow__stage">'+fdEsc(FD_STAGE_LABELS[stages[s]]||stages[s])+'</span>';
+    }
+    out+='</div>';
+  }
+  out+='</div>';
+  if(rows.length){
+    out+='<div class="fd-workflow__grid">';
+    for(var i=0;i<rows.length;i++){
+      out+='<div class="fd-workflow__step">'+
+        '<div class="fd-workflow__k">'+fdEsc(rows[i].label)+'</div>'+
+        '<div class="fd-workflow__v">'+fdEsc(rows[i].value)+'</div>'+
+      '</div>';
+    }
+    out+='</div>';
+  }
+  out+='</section>';
+  return out;
+}
+
+/* ruleOut chips over firstMove. The trailing "See the visual decision aids →" link is the deleted
+   shell's, kept and made routable: it is the one place a student is told the algorithms exist at
+   the moment they are deciding. Rendered only when the tool is actually in this site's index --
+   both sites ship decision-aids.html today, but a hardcoded link to an unshipped slug is exactly
+   the dead end the cta site filter exists to prevent. */
+var FD_DECISION_AIDS_REF='decision-aids.html';
+function fdReaderRuleOut(item, index){
+  var ro=item.ruleOut||[];
+  if(!ro.length&&!item.firstMove) return '';
+  var out='<div class="fd-minitree"><div class="fd-minitree__lbl">Rule out first → first move</div>';
+  if(ro.length){
+    out+='<div class="fd-minitree__ro">';
+    for(var i=0;i<ro.length;i++){
+      out+='<span class="fd-minitree__c">'+fdEsc(ro[i])+'</span>';
+    }
+    out+='</div>';
+  }
+  if(item.firstMove){
+    out+='<div class="fd-minitree__fm"><b>First move · </b>'+fdEsc(item.firstMove)+'</div>';
+  }
+  if(((index&&index.byRef)||{})[FD_DECISION_AIDS_REF]){
+    out+='<a class="fd-minitree__link" href="?tool='+FD_DECISION_AIDS_REF+'">'+
+      'See the visual decision aids →</a>';
+  }
+  out+='</div>';
+  return out;
+}
+
 /* ---- authored calls-to-action ---------------------------------------------------------------
    topic_meta.json's `cta` list, joined and site-filtered by fd_data.js's fdCtaList/fdBuildIndex.
    This is faculty-AUTHORED navigation, not decoration: 104 links across 65 topics, and 16 of them
@@ -209,15 +305,110 @@ function fdReaderTryNow(item, index){
    that interception the link still works, as a full page load.
 
    Both label and href are faculty-authored free text reaching innerHTML, so both go through
-   fdEsc -- the href in particular, since a `"` in it would otherwise close the attribute. */
-function fdReaderCtas(item){
-  var list=(item&&item.cta)||[];
-  if(!list.length) return '';
-  var out='<div class="fd-ctas">';
+   fdEsc -- the href in particular, since a `"` in it would otherwise close the attribute.
+
+   Since the template restore this is the whole PRACTICE surface, not just `cta`: authored cta,
+   clinicalWorkflow's action links (merged at the join), and the spoken drills. Deduped by href
+   through one `seen` map, the deleted buildPracticeTools' own mechanism, seeded with
+   .fd-trynow's href so the headline tool button is not repeated by a bare cta to the same tool. */
+function fdReaderCtaLink(label, href, cls){
+  return '<a class="fd-cta'+(cls?(' '+cls):'')+'" href="'+fdEsc(href)+'">'+fdEsc(label)+' →</a>';
+}
+
+/* `is-safety` on a link to a tool the registry marks high-risk. It is the one modifier the
+   deleted shell's PRACTICE_SAFE map encoded by hand; here it is read from tool_registry's
+   riskLevel through the index, so a tool reclassified in the registry changes appearance without
+   anybody editing a literal. */
+function fdReaderCtaClass(ref, index){
+  var t=((index&&index.byRef)||{})[ref];
+  return (t&&t.risk==='high')?'is-safety':'';
+}
+
+function fdReaderCtas(item, index){
+  var list=(item&&item.cta)||[], drills=(item&&item.cases)||[];
+  if(!list.length&&!drills.length) return '';
+  var seen={}, out='';
+  /* .fd-trynow renders `?tool=<toolRef>`; claim that href so the two surfaces cannot both show it.
+     A case-specific href to the same tool is a different destination and is NOT claimed. */
+  if(item.toolRef) seen['h:?tool='+item.toolRef]=1;
+
+  var rows='';
   for(var i=0;i<list.length;i++){
-    out+='<a class="fd-cta" href="'+fdEsc(list[i].href)+'">'+fdEsc(list[i].label)+' →</a>';
+    var key='h:'+list[i].href;
+    if(Object.prototype.hasOwnProperty.call(seen, key)) continue;
+    seen[key]=1;
+    rows+=fdReaderCtaLink(list[i].label, list[i].href, fdReaderCtaClass(list[i].ref, index));
   }
-  out+='</div>';
+
+  var drillRows='';
+  for(var d=0;d<drills.length;d++){
+    var dkey='h:'+drills[d].href;
+    if(Object.prototype.hasOwnProperty.call(seen, dkey)) continue;
+    seen[dkey]=1;
+    drillRows+=fdReaderCtaLink(drills[d].title, drills[d].href, 'is-drill');
+  }
+
+  /* Two labelled groups rather than the deleted shell's per-link "Spoken drill" kicker: the
+     kicker existed because the drills sat in the same undifferentiated row as everything else.
+     With a group heading it would say the same thing twice. */
+  if(drillRows){
+    out+='<div class="fd-practice__label">Spoken drills</div>'+
+      '<div class="fd-ctas">'+drillRows+'</div>';
+  }
+  if(rows){
+    if(drillRows) out+='<div class="fd-practice__label">Practice and tools</div>';
+    out+='<div class="fd-ctas">'+rows+'</div>';
+  }
+  return out?('<div class="fd-practice">'+out+'</div>'):'';
+}
+
+/* ---- Test yourself ----------------------------------------------------------------------------
+   The page's own question, from topic_meta.quiz. Restored from the deleted shell's `tyourself`
+   markup and its `.tyo` click handler (spa_index.html @098ad50:1107).
+
+   *** THIS BLOCK CLOSES A LIVE BUG, it is not only a gap. *** topicHasQuiz() still seeds an SRS
+   card (`TOPIC#<slug>`) for every page carrying a quiz -- 42 of them -- and Daily Review grades
+   those cards by opening the page's question. With no question on the page the card came due and
+   could never be answered, so a student accrued permanently unanswerable due cards. Rendering the
+   question is what closes the loop; fd_wire.js's handler is the other half.
+
+   State is a PARAMETER, not something this file reads: `answered` is {picked:<index>} once the
+   student has chosen, and null before. Whichever option is correct is revealed on ALL options at
+   that point (the deleted handler did the same), because the teaching is in seeing which one was
+   right, not only in being told you were wrong.
+
+   *** aria-disabled, NOT disabled, once answered. *** Grading re-renders the whole article, so a
+   `disabled` twin cannot take focus back and a keyboard user is dropped to <body> at the exact
+   moment they want to read what happened. The guard against double-counting is fd_wire.js's state
+   check, not the attribute. `aria-disabled` is the true statement either way: the control is still
+   there, still focusable, and no longer does anything.
+
+   The correct/wrong states reach the accessible name too, as visually-hidden suffixes -- the
+   border and wash are colour, and colour alone is not a state (WCAG 1.4.1). Same .fd-vh idiom the
+   rail rows use. */
+function fdReaderQuiz(item, answered){
+  var q=item&&item.quiz;
+  if(!q) return '';
+  var a=answered||null, done=!!(a&&typeof a.picked==='number');
+  var out='<section class="fd-quiz"><h2 class="fd-quiz__lbl">Test yourself</h2>'+
+    '<p class="fd-quiz__q">'+fdEsc(q.q)+'</p>';
+  for(var i=0;i<q.options.length;i++){
+    var o=q.options[i], cls='fd-quiz__o', suffix='';
+    if(done){
+      if(o.correct){ cls+=' is-correct'; suffix='<span class="fd-vh">, correct answer</span>'; }
+      else if(a.picked===i){ cls+=' is-wrong'; suffix='<span class="fd-vh">, your answer, incorrect</span>'; }
+    }
+    out+='<button type="button" class="'+cls+'" data-fd-quiz="'+i+'"'+
+      (done?' aria-disabled="true"':'')+'>'+fdEsc(o.text)+suffix+'</button>';
+  }
+  /* The explanation is rendered only once answered — present-but-hidden markup is one CSS edit
+     away from being the answer key, and `why` names the correct option in plain words.
+     role="status" because it appears in place after a click that moved no focus: without it the
+     one piece of teaching in the block is silent to a screen-reader user. */
+  if(done&&q.why){
+    out+='<p class="fd-quiz__fb" role="status"><b>Why: </b>'+fdEsc(q.why)+'</p>';
+  }
+  out+='</section>';
   return out;
 }
 
@@ -346,7 +537,8 @@ function fdReader(index, state, bodyHtml){
   var st=state||{};
   var item=(idx.byRef&&idx.byRef[st.ref])|| {
     ref: st.ref||'', kind:'read', title: st.ref||'', minutes:null, summary:'',
-    points:[], attested:false, toolRef:null, risk:null, cta:[], href:'',
+    points:[], attested:false, toolRef:null, risk:null, cta:[], cant:'', stages:[],
+    workflow:[], ruleOut:[], firstMove:'', cases:[], quiz:null, href:'',
   };
 
   var hasWeek=(typeof st.week==='number')&&!isNaN(st.week);
@@ -383,10 +575,20 @@ function fdReader(index, state, bodyHtml){
      the caller has none, e.g. a render taken before Plan 3 wires marked() in. */
   if(bodyHtml) article+='<div class="fd-article__body">'+bodyHtml+'</div>';
   article+=fdReaderKeyPoints(item.points);
+  /* The topic template, in the deleted panel's own section order: what you cannot miss, what to
+     do on the unit, what to rule out first, then test yourself. It follows the markdown body and
+     the key points -- read the page, then the bedside scaffold -- and precedes the tool
+     affordances, which are where you GO next rather than what you need here. */
+  article+=fdReaderCantMiss(item);
+  article+=fdReaderWorkflow(item);
+  article+=fdReaderRuleOut(item, idx);
+  article+=fdReaderQuiz(item, st.quiz);
   article+=fdReaderTryNow(item, idx);
   /* After Try-it-now and before the Source line: both are "where to go next" affordances, and the
-     single relatedTools[0] button reads as the headline one while the authored list is the rest. */
-  article+=fdReaderCtas(item);
+     single relatedTools[0] button reads as the headline one while the authored list is the rest.
+     fdReaderCtas seeds its dedupe map with Try-it-now's href, so the two cannot show one tool
+     twice -- pass the index, which is where riskLevel for the is-safety modifier comes from. */
+  article+=fdReaderCtas(item, idx);
   article+='<div class="fd-article__source"><span>Source:</span>'+
     '<span class="fd-src">'+fdEsc(item.ref)+'</span></div>';
   article+=fdReaderActions(item, doneLabel, backLabel, isDone);

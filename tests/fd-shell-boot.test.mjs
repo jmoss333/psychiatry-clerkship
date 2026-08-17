@@ -228,6 +228,7 @@ function makeRender(sabotage) {
     var FD_TOPIC_META=${JSON.stringify(META_FIXTURE)};
     var FD_TOOL_REGISTRY=${JSON.stringify(REGISTRY_FIXTURE)};
     var FD_SITE_MANIFEST=${JSON.stringify(MANIFEST_FIXTURE)};
+    var FD_COMMUNICATION_CASES={cases:[{id:'case_001',title:'A drill'}]};
     var FD_ROLES=${JSON.stringify(ROLES_FIXTURE)};
     var FD_BODY={};
     function fdFetchBody(){}
@@ -379,7 +380,8 @@ test('a broken index degrades every surface rather than throwing out of fdRender
     ${read('frontdoor/fd_sheet.js')}
     ${read('frontdoor/fd_wire.js')}
     var FD_CURRICULUM=null, FD_TOPIC_META=null, FD_TOOL_REGISTRY=null,
-        FD_SITE_MANIFEST=null, FD_ROLES=${JSON.stringify(ROLES_FIXTURE)};
+        FD_SITE_MANIFEST=null, FD_ROLES=${JSON.stringify(ROLES_FIXTURE)},
+        FD_COMMUNICATION_CASES=null;
     var FD_BODY={};
     function fdFetchBody(){}
     // The one first-script global fdRender reads directly. null = an ordinary learner session;

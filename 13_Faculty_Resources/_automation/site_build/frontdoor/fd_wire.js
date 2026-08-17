@@ -279,7 +279,7 @@ function fdKeyPatch(action, state){
    because the wizard is a transition, not a place -- a reload mid-wizard drops a student into
    the app, where fd_today.js's own "30-second setup" card offers the same question again. */
 var FD_TRANSIENT={ setup:'', searchOpen:false, query:'', sheet:null, sheetFrom:null,
-                   stepsDone:{}, nudgeRef:'' };
+                   stepsDone:{}, nudgeRef:'', quiz:null };
 
 /* Restore EVERY transient field to its starting value -- the single place that knows what
    "no overlays, no wizard" is. It exists because the first version of popstate reset a subset
@@ -292,7 +292,7 @@ var FD_TRANSIENT={ setup:'', searchOpen:false, query:'', sheet:null, sheetFrom:n
 function fdResetTransient(){
   FD_TRANSIENT.setup=''; FD_TRANSIENT.searchOpen=false; FD_TRANSIENT.query='';
   FD_TRANSIENT.sheet=null; FD_TRANSIENT.sheetFrom=null; FD_TRANSIENT.stepsDone={};
-  FD_TRANSIENT.nudgeRef='';
+  FD_TRANSIENT.nudgeRef=''; FD_TRANSIENT.quiz=null;
   FD_SHEET_INVOKER=null; FD_SEARCH_INVOKER=null;
 }
 
@@ -329,7 +329,11 @@ var FD_CLICK_SELECTOR='[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd
                      match that scan from inside a comment. Do not rename it apart. */
 var FD_CAPTURE_SELECTOR='[data-fd-capture],[data-cap-open],[data-cap-review],[data-cap-drop],'+
   '[data-cap-copy]';
-var FD_ACTION_SELECTOR='[data-fd-practice],[data-fd-studyexport]';
+/*     data-fd-quiz    grading is two acts and neither is a state patch: it writes cw_quiz_v1 (the
+                       store masteryByBlueprint reads) and it sets a transient per-render answer.
+                       fdDispatch returns patches over routed state and has no business writing a
+                       learner store. */
+var FD_ACTION_SELECTOR='[data-fd-practice],[data-fd-studyexport],[data-fd-quiz]';
 
 /* The three DOM contexts that disambiguate a reused attribute -- see the header. Each names the
    element the emitting module actually renders, so the ambiguity is resolved against the class
@@ -729,8 +733,8 @@ function fdRestoreFocus(inv, owned){
    silently send focus to the wrong control. */
 function fdFocusKey(el){
   if(!el||!el.getAttribute||!el.hasAttribute) return '';
-  var names=['data-fd-toggle','data-fd-step','data-fd-safety','data-fd-open','data-fd-week',
-             'data-fd-setweek','data-fd-tab','data-fd-role','data-fd-search',
+  var names=['data-fd-toggle','data-fd-step','data-fd-quiz','data-fd-safety','data-fd-open',
+             'data-fd-week','data-fd-setweek','data-fd-tab','data-fd-role','data-fd-search',
              'data-fd-change-week','data-fd-home','data-fd-back'];
   for(var i=0;i<names.length;i++){
     if(el.hasAttribute(names[i])){
@@ -923,6 +927,10 @@ function fdApply(patch){
     tab: (p.tab!==undefined)?(fdNormTab(p.tab)||'today'):before.tab
   };
   var routed=(next.openId!==before.openId)||(next.tab!==before.tab);
+  /* A quiz answer belongs to the page it was answered on. It is not in FD_PERSIST and it is not
+     reset by fdResetTransient on this path (only popstate calls that), so without this it would
+     travel to the next page and mark whichever option shares its index as answered. */
+  if(next.openId!==before.openId) FD_TRANSIENT.quiz=null;
   if(routed) fdRoute(next, false);
   fdRerender();
   if(routed){
@@ -1020,9 +1028,63 @@ function fdCaptureClick(el){
   }
 }
 
+/* ---- "Test yourself" -----------------------------------------------------------------------
+   Ported from the deleted shell's `.tyo` handler (spa_index.html @098ad50, inside the contentEl
+   click listener). Same three effects, same store shape:
+     - reveal which option was correct, and mark the picked one if it was not;
+     - bump cw_quiz_v1[<slug>] = {seen, wrong, last} -- the shape masteryByBlueprint() reads to
+       fold page questions into blueprint accuracy. Changing it silently changes Progress;
+     - once per render only.
+
+   Three deliberate differences from the deleted handler:
+   1. The answered flag is TRANSIENT STATE, not a `data-done` attribute on the DOM node. fdMount
+      replaces #content wholesale, so an attribute written onto the rendered markup is erased by
+      the very re-render that shows the result -- the old shell got away with it because it
+      mutated classes in place and never re-rendered.
+   2. The options stay FOCUSABLE and carry aria-disabled rather than `disabled`. Grading
+      re-renders, so a `disabled` twin cannot take focus back and the keyboard user is dropped to
+      <body> at the moment they most want to read what happened. The guard against
+      double-counting is the state check below, not the attribute.
+   3. The explanation is rendered only after answering (fd_reader.js), so it is never sitting in
+      the DOM as an answer key.
+
+   Deliberately NOT done: seedSRS() is not called here. Seeding belongs to marking a page read,
+   which is where it already happens, and answering a question is not a statement that the page
+   has been worked through. */
+function fdQuizClick(el){
+  var picked=parseInt(el.getAttribute('data-fd-quiz'), 10);
+  if(isNaN(picked)) return;
+  if(FD_TRANSIENT.quiz&&typeof FD_TRANSIENT.quiz.picked==='number') return;   /* already graded */
+  var st=fdCurrentState(), ref=st.openId;
+  var item=(fdIndexSafe().byRef||{})[ref];
+  var quiz=item&&item.quiz;
+  if(!quiz||!quiz.options[picked]) return;
+
+  FD_TRANSIENT.quiz={ picked: picked };
+  var right=!!quiz.options[picked].correct;
+  try{
+    var all=JSON.parse(localStorage.getItem('cw_quiz_v1')||'{}');
+    var e=all[ref]||{seen:0, wrong:0};
+    e.seen=(e.seen||0)+1;
+    if(!right) e.wrong=(e.wrong||0)+1;
+    /* localDayStr (phase_policy.js), not the deleted handler's UTC toISOString().slice(0,10):
+       every other date this shell writes is the LOCAL day, and a stamp that flips at 8pm Eastern
+       is the drift class fd_wire.js:398 already records for cw_progress_v1. */
+    e.last=localDayStr(Date.now());
+    all[ref]=e;
+    localStorage.setItem('cw_quiz_v1', JSON.stringify(all));
+  }catch(_){ }
+  fdRerender();
+  /* fdRerender does not run fdFocusAfterRender, so focus is restored here or not at all. The twin
+     is found by the same attribute the click came from -- which is why data-fd-quiz is in
+     fdFocusKey's list too, for the paths that DO go through fdApply. */
+  fdRestoreActivated('[data-fd-quiz="'+picked+'"]');
+}
+
 /* The two Progress actions. Neither is a state patch: one writes a handoff key and then routes,
    the other downloads a file and writes its own status line into #studyMsg. */
 function fdActionClick(el){
+  if(el.hasAttribute('data-fd-quiz')){ fdQuizClick(el); return; }
   var cat=el.getAttribute('data-fd-practice');
   if(cat){
     /* Read and REMOVED by question-bank-practice.html on load, so it is a one-shot handoff, not

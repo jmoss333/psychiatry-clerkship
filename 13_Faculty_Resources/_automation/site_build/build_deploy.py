@@ -429,9 +429,15 @@ print("retired-qb injection:",len(_retired_ids),"id(s)")
 _curriculum=json.load(open(CURRICULUM,encoding="utf-8"))
 _fd_topic_meta=json.load(open(OUT+"/topic_meta.json",encoding="utf-8"))
 _fd_tool_registry=json.load(open(OUT+"/tool_registry.json",encoding="utf-8"))
+# The spoken-drill pack. Injected, not fetched: the reader needs a drill's TITLE at first paint,
+# and 51 topics carry communicationCases. Audience-neutral — one file, both sites — so it rides
+# along through resident_section.py's copytree with no needle to swap, exactly like
+# FD_TOOL_REGISTRY and FD_SITE_MANIFEST.
+_fd_comm_cases=json.load(open(OUT+"/communication_cases.json",encoding="utf-8"))
 _FD_NEEDLES=[
     ("var FD_CURRICULUM={};","FD_CURRICULUM",common.fd_curriculum_for_site(_curriculum,"ms3")),
     ("var FD_TOPIC_META={};","FD_TOPIC_META",_fd_topic_meta),
+    ("var FD_COMMUNICATION_CASES={};","FD_COMMUNICATION_CASES",_fd_comm_cases),
     ("var FD_TOOL_REGISTRY={};","FD_TOOL_REGISTRY",_fd_tool_registry),
     ("var FD_SITE_MANIFEST={};","FD_SITE_MANIFEST",_manifest),
     ("var FD_ROLES=[];","FD_ROLES",_curriculum["roles"]["ms3"]),

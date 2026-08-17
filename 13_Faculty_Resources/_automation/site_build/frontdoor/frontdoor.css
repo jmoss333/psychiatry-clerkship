@@ -621,6 +621,74 @@
 .fd-trynow__title{display:block;font-size:13.5px;font-weight:700;color:var(--fd-teal-deep)}
 .fd-trynow__sub{display:block;font-size:12px;color:var(--fd-text-mid)}
 
+/* ═══ Topic template ═════════════════════════════════════════════════════════
+ *
+ * The six authored blocks the swap dropped, restored from the deleted shell (spa_index.html
+ * @098ad50:256-296 for the rules below). Not in the prototype -- its fixture data carried none of
+ * these fields -- so the DIMENSIONS are transcribed from that stylesheet and only the COLOURS are
+ * re-expressed as front-door tokens, one old token to one new one:
+ *   --border      -> --fd-line          --surface     -> --fd-surface
+ *   --bg-alt      -> --fd-callout       --text        -> --fd-text
+ *   --text-light  -> --fd-text-dim      --text-mid    -> --fd-text-mid
+ *   --accent*     -> --fd-teal*         --danger*     -> --fd-danger / --fd-danger-wash
+ *   --primary-dark-> --fd-terracotta-dark
+ * The old file's rem sizes are converted at its own 16px root (.72rem -> 11.5px) so the blocks
+ * sit on this stylesheet's px scale rather than introducing a second unit.
+ */
+
+/* "Can't miss." Danger wash with a left rule -- the loudest thing on a topic page, deliberately. */
+.fd-cantmiss{
+  display:flex;gap:11px;margin:0 0 16px;padding:12px 15px;
+  background:var(--fd-danger-wash);border-left:3px solid var(--fd-danger);border-radius:0 10px 10px 0;
+}
+.fd-cantmiss__ico{color:var(--fd-danger);flex:0 0 auto;font-size:16px;line-height:1.4}
+.fd-cantmiss__tx{font-size:14.5px;line-height:1.55;color:var(--fd-text)}
+.fd-cantmiss__tx b{color:var(--fd-danger)}
+
+/* "On the unit" -- stage chips over the seven-field grid. */
+.fd-workflow{border:1px solid var(--fd-line);border-radius:12px;background:var(--fd-surface);padding:14px 16px;margin:0 0 16px}
+.fd-workflow__head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px;flex-wrap:wrap}
+.fd-workflow__title{margin:0;font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--fd-terracotta-dark)}
+.fd-workflow__stages{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}
+.fd-workflow__stage{font-size:11.5px;font-weight:700;color:var(--fd-teal-deep);background:var(--fd-teal-wash);border:1px solid var(--fd-line);border-radius:999px;padding:4px 8px}
+/* Two columns above the breakpoint, one below -- the deleted rule was an unconditional
+ * repeat(2,...), which put two 160px columns on a 320px phone. */
+.fd-workflow__grid{display:grid;grid-template-columns:1fr;gap:9px}
+.fd-workflow__step{border:1px solid var(--fd-line);border-radius:10px;background:var(--fd-callout);padding:10px 12px}
+.fd-workflow__k{font-size:11px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--fd-text-dim);margin-bottom:5px}
+.fd-workflow__v{font-size:14.5px;line-height:1.5;color:var(--fd-text)}
+
+/* "Rule out first → first move." */
+.fd-minitree{border:1px solid var(--fd-line);border-radius:12px;padding:13px 15px;margin:0 0 16px;background:var(--fd-surface)}
+.fd-minitree__lbl{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--fd-text-dim);margin-bottom:8px}
+.fd-minitree__ro{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.fd-minitree__c{font-size:13px;background:var(--fd-danger-wash);color:var(--fd-danger);border:1px solid var(--fd-danger);border-radius:999px;padding:3px 9px}
+.fd-minitree__fm{background:var(--fd-teal-wash);border-left:3px solid var(--fd-teal);border-radius:8px;padding:8px 11px;font-size:14.5px;line-height:1.5;color:var(--fd-text)}
+.fd-minitree__fm b{color:var(--fd-teal-deep)}
+.fd-minitree__link{display:inline-block;margin-top:8px;font-size:13.5px;color:var(--fd-teal-deep);font-weight:600}
+
+/* "Test yourself." .fd-quiz__o is a real <button>, disabled once answered. The correct/wrong
+ * states are carried by BOTH colour and a border, never colour alone (WCAG 1.4.1) -- and the
+ * explanation below them names the right answer in words, which is the non-visual channel. */
+.fd-quiz{border:1px solid var(--fd-line);border-radius:12px;padding:14px 16px;margin:0 0 16px;background:var(--fd-surface)}
+.fd-quiz__lbl{margin:0 0 8px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--fd-terracotta-dark)}
+.fd-quiz__q{margin:0 0 10px;font-family:Georgia,'Times New Roman',serif;font-size:17px;line-height:1.4;color:var(--fd-text)}
+.fd-quiz__o{
+  display:block;width:100%;text-align:left;border:1px solid var(--fd-line);
+  background:var(--fd-callout);border-radius:9px;padding:9px 12px;margin:6px 0;
+  cursor:pointer;font:inherit;font-size:14.5px;line-height:1.5;color:var(--fd-text);
+}
+.fd-quiz__o:hover:not([aria-disabled="true"]){border-color:var(--fd-line-hover)}
+.fd-quiz__o[aria-disabled="true"]{cursor:default}
+.fd-quiz__o.is-correct{border-color:var(--fd-success);background:var(--fd-teal-wash);color:var(--fd-text)}
+.fd-quiz__o.is-wrong{border-color:var(--fd-danger);background:var(--fd-danger-wash);color:var(--fd-text)}
+.fd-quiz__fb{margin:8px 0 0;padding:10px 12px;border-radius:8px;background:var(--fd-callout);font-size:13.5px;line-height:1.55;color:var(--fd-text-mid)}
+
+/* The practice surface: one deduped set of links, optionally split into a drills group. */
+.fd-practice{margin:0 0 18px}
+.fd-practice__label{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--fd-text-dim);margin:0 0 8px}
+.fd-practice .fd-ctas + .fd-practice__label{margin-top:14px}
+
 /* Authored calls-to-action (topic_meta.json's `cta`) -- 104 faculty-written links across 65
  * topics. No prototype equivalent: its fixture data carried none, so the values below are derived
  * from this stylesheet rather than transcribed. Each borrows a stated precedent so the row cannot
@@ -631,7 +699,8 @@
  *                                   are the same kind of "go and do this" affordance
  *   hover                           the same color-mix toward --fd-teal .fd-trynow uses
  * They wrap: a page can author four, and a phone is 320px wide. */
-.fd-ctas{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px}
+.fd-ctas{display:flex;flex-wrap:wrap;gap:8px;margin:0}
+.fd-ctas:last-child{margin-bottom:0}
 .fd-cta{
   display:inline-block;padding:8px 14px;border-radius:9px;
   background:var(--fd-teal-wash);border:1px solid var(--fd-teal);
@@ -643,6 +712,21 @@
   background:color-mix(in srgb,var(--fd-teal-wash) 88%,var(--fd-teal));
   color:var(--fd-teal-deep);text-decoration:none;
 }
+/* A link to a tool tool_registry marks high-risk. Terracotta rather than danger red: it marks a
+ * safety INSTRUMENT, not a warning, and the danger palette is spoken for by .fd-cantmiss and the
+ * governance alert. The deleted shell encoded this set as a hand-written map; it now comes from
+ * the registry. */
+.fd-cta.is-safety{
+  background:var(--fd-selected);border-color:var(--fd-terracotta);color:var(--fd-terracotta-dark);
+}
+.fd-cta.is-safety:hover{background:color-mix(in srgb,var(--fd-selected) 88%,var(--fd-terracotta));color:var(--fd-terracotta-dark)}
+/* A spoken drill -- a rehearsal, not a reference. Olive, the same register the "Document:" callout
+ * uses for "there is a thing for you to produce here". */
+.fd-cta.is-drill{
+  background:var(--fd-olive-wash);border-color:color-mix(in srgb,var(--fd-olive) 60%,var(--fd-olive-wash));
+  color:var(--fd-olive-deep);
+}
+.fd-cta.is-drill:hover{background:color-mix(in srgb,var(--fd-olive-wash) 88%,var(--fd-olive));color:var(--fd-olive-deep)}
 
 .fd-prevnext{display:flex;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--fd-line)}
 .fd-prevnext__btn{
@@ -849,6 +933,9 @@
   .fd-railnav{display:block}
   .fd-actionbar,.fd-actionbar__spacer{display:none}
   .fd-quicktools--pills{display:none}
+  /* The deleted stylesheet made this grid two columns unconditionally, which put two ~160px
+     columns on a 320px phone. It earns the second column here instead. */
+  .fd-workflow__grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 
 /* Mobile primary actions keep a 44px minimum hit target. */
@@ -864,6 +951,10 @@
      would leave it 32px wide and short of the target on its narrow axis. */
   .fd-themebtn{min-width:44px;min-height:44px}
   .fd-role,.fd-weektile,.fd-kitrow,.fd-step,.fd-pick,.fd-setupcta{min-height:44px}
+  /* The quiz options and the practice links are primary actions on a topic page. .fd-cta needs
+     flex to centre its label once a min-height stretches the box. */
+  .fd-quiz__o{min-height:44px}
+  .fd-cta{display:inline-flex;align-items:center;min-height:44px}
   .fd-article{padding:24px 20px}
   .fd-weekgrid{grid-template-columns:repeat(2,1fr)}
   /* The reader's desktop primary/ghost actions -- CLASS-INVENTORY.md's Reader section always

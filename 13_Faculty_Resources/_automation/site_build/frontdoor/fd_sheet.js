@@ -113,7 +113,8 @@ function fdSheetWeekOf(index, ref){
 function fdSheetMissingItem(ref){
   return {
     ref: ref||'', kind:'read', title: ref||'', minutes:null, summary:'',
-    points:[], attested:false, toolRef:null, risk:null, cta:[], href:'',
+    points:[], attested:false, toolRef:null, risk:null, cta:[], cant:'', stages:[],
+    workflow:[], ruleOut:[], firstMove:'', cases:[], quiz:null, href:'',
   };
 }
 

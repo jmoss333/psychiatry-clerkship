@@ -1167,6 +1167,11 @@
      own dependencies, so no other test sees a wrong page order. */
   var FD_CURRICULUM={};
   var FD_TOPIC_META={};
+  /* communication_cases.json — the 12 spoken-drill cases, id -> title. Injected rather than
+     fetched because the reader needs a drill's TITLE at first paint; a fetch would render 51
+     topics' drill links as raw ids until it landed. Audience-neutral: one file, both sites, so
+     resident_section.py has no needle to swap for it. */
+  var FD_COMMUNICATION_CASES={};
   var FD_TOOL_REGISTRY={};
   var FD_SITE_MANIFEST={};
   var FD_ROLES=[];
@@ -1251,7 +1256,8 @@
   var FD_INDEX_CACHE=null;
   function fdIndex(){
     if(!FD_INDEX_CACHE){
-      FD_INDEX_CACHE=fdBuildIndex(FD_CURRICULUM, FD_TOPIC_META, FD_TOOL_REGISTRY, FD_SITE_MANIFEST);
+      FD_INDEX_CACHE=fdBuildIndex(FD_CURRICULUM, FD_TOPIC_META, FD_TOOL_REGISTRY, FD_SITE_MANIFEST,
+        FD_COMMUNICATION_CASES);
     }
     return FD_INDEX_CACHE;
   }
@@ -1561,7 +1567,8 @@
            fd_state.js). Mapped here, at one site, rather than letting two names for the same thing
            travel across the module boundary. */
         body+=fdSurface('reader', function(){
-          return fdReader(idx, {ref:st.openId, week:st.week, fromTab:st.fromTab, done:st.done},
+          return fdReader(idx, {ref:st.openId, week:st.week, fromTab:st.fromTab, done:st.done,
+            quiz:st.quiz},
             (FD_BODY||{})[st.openId]||'');
         });
       } else if(st.tab==='path'){

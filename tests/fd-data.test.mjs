@@ -318,3 +318,113 @@ test('the legacy form is exact — a path with a query or a subdirectory is not 
     assert.deepEqual(F.fdBuildIndex(CTA_CUR, meta, FIX_TOOLS, FIX_MAN).byRef['a.md'].cta, [], href);
   }
 });
+
+// ---- the rest of the topic template ----------------------------------------------------------
+
+const TPL_CASES = { cases: [{ id: 'c1', title: 'A drill title' }, { id: 'c2', title: 'Another' }] };
+
+test('the six restored fields reach the item shape', () => {
+  const meta = { 'a.md': {
+    cant: 'One sentence.',
+    workflowStages: ['encounter'],
+    clinicalWorkflow: { ask: 'A?', rounds: 'R.' },
+    ruleOut: ['X'], firstMove: 'Y',
+    communicationCases: ['c1'],
+    quiz: { q: 'Q', o: [{ t: 'a', c: true }, { t: 'b' }], why: 'W' },
+  } };
+  const i = F.fdBuildIndex(FIX_CUR, meta, FIX_TOOLS, FIX_MAN, TPL_CASES).byRef['a.md'];
+  assert.equal(i.cant, 'One sentence.');
+  assert.deepEqual(i.stages, ['encounter']);
+  assert.deepEqual(i.workflow, [{ label: 'What to ask', value: 'A?' }, { label: 'Rounds', value: 'R.' }]);
+  assert.deepEqual(i.ruleOut, ['X']);
+  assert.equal(i.firstMove, 'Y');
+  assert.deepEqual(i.cases, [{ id: 'c1', title: 'A drill title',
+    href: '?tool=communication-practice.html&case=c1' }]);
+  assert.deepEqual(i.quiz, { q: 'Q', options: [{ text: 'a', correct: true }, { text: 'b', correct: false }], why: 'W' });
+});
+
+test('a page carrying none of them gets empty values, never undefined', () => {
+  const i = F.fdBuildIndex(FIX_CUR, FIX_META, FIX_TOOLS, FIX_MAN, TPL_CASES).byRef['b.md'];
+  assert.equal(i.cant, '');
+  assert.deepEqual(i.stages, []);
+  assert.deepEqual(i.workflow, []);
+  assert.deepEqual(i.ruleOut, []);
+  assert.equal(i.firstMove, '');
+  assert.deepEqual(i.cases, []);
+  assert.equal(i.quiz, null);
+});
+
+test('workflow rows keep encounter order and drop non-string fields', () => {
+  const meta = { 'a.md': { clinicalWorkflow: { exam: 'E', ask: 'A', safety: '', mse: 42,
+    actions: [{ label: 'L', href: '?page=b.md' }] } } };
+  const i = F.fdBuildIndex(FIX_CUR, meta, FIX_TOOLS, FIX_MAN, TPL_CASES).byRef['a.md'];
+  assert.deepEqual(i.workflow.map((r) => r.label), ['What to ask', 'Exam focus']);
+  assert.deepEqual(i.cta.map((c) => c.href), ['?page=b.md'],
+    'actions are links, not prose — they belong in cta, not the grid');
+});
+
+test('clinicalWorkflow.actions merge into cta, authored cta first, deduped by href', () => {
+  const meta = { 'a.md': {
+    cta: [{ label: 'Authored', href: '?page=b.md' }],
+    clinicalWorkflow: { actions: [{ label: 'Same href', href: '?page=b.md' },
+                                  { label: 'Different', href: '?tool=t.html' }] },
+  } };
+  const cur = JSON.parse(JSON.stringify(FIX_CUR));
+  cur.libraryColumns[0].refs.push('t.html');
+  const cta = F.fdBuildIndex(cur, meta, FIX_TOOLS, FIX_MAN, TPL_CASES).byRef['a.md'].cta;
+  assert.deepEqual(cta.map((c) => c.label), ['Authored', 'Different']);
+});
+
+test('a communicationCase the shipped pack does not carry is dropped', () => {
+  const meta = { 'a.md': { communicationCases: ['c1', 'ghost_001'] } };
+  const i = F.fdBuildIndex(FIX_CUR, meta, FIX_TOOLS, FIX_MAN, TPL_CASES).byRef['a.md'];
+  assert.deepEqual(i.cases.map((c) => c.id), ['c1'],
+    'the drill link would open communication-practice.html at a case that is not there');
+});
+
+test('a missing communication pack degrades to no drills rather than throwing', () => {
+  const meta = { 'a.md': { communicationCases: ['c1'] } };
+  for (const pack of [undefined, null, {}, { cases: [] }]) {
+    assert.deepEqual(F.fdBuildIndex(FIX_CUR, meta, FIX_TOOLS, FIX_MAN, pack).byRef['a.md'].cases, []);
+  }
+});
+
+test('fdQuiz rejects the shapes that would render an unanswerable question', () => {
+  const bad = [{ q: 'Q' }, { q: 'Q', o: [] }, { o: [{ t: 'a' }] }, { q: '', o: [{ t: 'a' }] },
+               { q: 'Q', o: [{ c: true }] }];
+  for (const quiz of bad) {
+    assert.equal(F.fdBuildIndex(FIX_CUR, { 'a.md': { quiz } }, FIX_TOOLS, FIX_MAN).byRef['a.md'].quiz,
+      null, JSON.stringify(quiz));
+  }
+});
+
+test('fdQuiz agrees with the shell\'s own topicHasQuiz gate on the LIVE data', () => {
+  // topicHasQuiz() decides whether an SRS card is seeded and review.html applies the same test to
+  // decide whether it can serve one. A page that seeds a card but renders no question, or renders
+  // one nobody seeded, is a loop that does not close.
+  const idx = F.fdBuildIndex(CUR, META, TOOLS, MAN, readJson('../communication_cases.json'));
+  let n = 0;
+  for (const ref of Object.keys(META)) {
+    if (ref.charAt(0) === '_') continue;
+    const m = META[ref];
+    const shellSaysYes = !!(m.quiz && m.quiz.q && m.quiz.o && m.quiz.o.length);
+    const item = idx.byRef[ref];
+    if (!item) continue;                    // not shipped on this projection
+    assert.equal(!!item.quiz, shellSaysYes, `${ref}: the two gates disagree`);
+    if (shellSaysYes) n += 1;
+  }
+  assert.ok(n >= 40, `expected the quiz-bearing corpus, got ${n}`);
+});
+
+test('every real communicationCases id resolves against the shipped pack', () => {
+  const pack = readJson('../communication_cases.json');
+  const idx = F.fdBuildIndex(CUR, META, TOOLS, MAN, pack);
+  let n = 0;
+  for (const ref of Object.keys(idx.byRef)) {
+    const authored = (META[ref] && META[ref].communicationCases) || [];
+    assert.equal(idx.byRef[ref].cases.length, authored.length,
+      `${ref}: a drill id was dropped — it names a case the pack does not carry`);
+    n += authored.length;
+  }
+  assert.ok(n > 50, `expected the authored drill corpus, got ${n}`);
+});
