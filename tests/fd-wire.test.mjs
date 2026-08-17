@@ -18,6 +18,7 @@ const make = new Function('localStorage', `${phase}\n${state}\n${data}\n${today}
   fdDispatch: fdDispatch,
   fdIsTypingTarget: fdIsTypingTarget,
   fdTrapFocus: fdTrapFocus,
+  fdOpenResource: fdOpenResource,
   fdWire: fdWire,
 };`);
 
@@ -222,15 +223,26 @@ test('Tab trapping wraps at both ends of a dialog', () => {
   assert.equal(prevented, 2);
 });
 
-test('fdWire registers one delegated click/input/keydown/popstate listener and remains opt-in', () => {
+test('fdWire registers and destroys one delegated click/input/keydown/popstate listener while remaining opt-in', () => {
   const rootCalls = [];
   const windowCalls = [];
-  const root = { addEventListener: (type, fn) => rootCalls.push([type, fn]) };
-  const fakeWindow = { addEventListener: (type, fn) => windowCalls.push([type, fn]) };
+  const rootRemoves = [];
+  const windowRemoves = [];
+  const root = {
+    addEventListener: (type, fn) => rootCalls.push([type, fn]),
+    removeEventListener: (type, fn) => rootRemoves.push([type, fn]),
+  };
+  const fakeWindow = {
+    addEventListener: (type, fn) => windowCalls.push([type, fn]),
+    removeEventListener: (type, fn) => windowRemoves.push([type, fn]),
+    location: { href: 'https://example.test/', search: '', pathname: '/' },
+  };
   const controller = F.fdWire(root, { ...roleContext }, { window: fakeWindow, render: () => {} });
   assert.deepEqual(rootCalls.map(([type]) => type), ['click', 'input']);
   assert.deepEqual(windowCalls.map(([type]) => type), ['keydown', 'popstate']);
-  assert.equal(typeof controller.destroy, 'function');
+  controller.destroy();
+  assert.deepEqual(rootRemoves, rootCalls);
+  assert.deepEqual(windowRemoves, windowCalls);
 });
 
 function actionTarget(attrs, extra = {}) {
@@ -251,11 +263,13 @@ function fakeHarness(initial, options = {}) {
     addEventListener(type, fn) { rootHandlers[type] = fn; },
     removeEventListener() {},
     querySelector: options.querySelector || (() => null),
+    matches: options.matches || (() => false),
   };
   const fakeWindow = {
     addEventListener(type, fn) { windowHandlers[type] = fn; },
     removeEventListener() {},
     location: options.location || { href: 'https://example.test/', search: '', pathname: '/' },
+    history: options.history,
   };
   const controller = options.F.fdWire(root, initial, {
     window: fakeWindow,
@@ -268,6 +282,10 @@ function fakeHarness(initial, options = {}) {
     clearTimer: options.clearTimer,
     index: options.index || { byRef: {}, weeks: [] },
     synonyms: {},
+    resourceHost: options.resourceHost,
+    openProgress: options.openProgress,
+    facultyPreview: options.facultyPreview,
+    facultyPreviewLock: options.facultyPreviewLock,
   });
   return { root, rootHandlers, fakeWindow, windowHandlers, controller };
 }
@@ -404,4 +422,264 @@ test('nudge timers auto-dismiss after exactly 8 seconds', () => {
   assert.equal(h.controller.getState().nudge, 'risk.md');
   scheduled.fn();
   assert.equal(h.controller.getState().nudge, null);
+});
+
+test('live search keeps focus and caret across real input-node replacement for multiple characters', () => {
+  let currentInput;
+  function replacement(value) {
+    return {
+      tagName: 'INPUT', isContentEditable: false, value,
+      selectionStart: value.length, selectionEnd: value.length, selectionDirection: 'none',
+      matches: (selector) => selector === '.fd-searchpanel__input',
+      focus() { this.focused = (this.focused || 0) + 1; },
+      setSelectionRange(start, end, direction) {
+        this.selectionStart = start; this.selectionEnd = end; this.selectionDirection = direction;
+      },
+    };
+  }
+  currentInput = replacement('');
+  const h = fakeHarness({ ...roleContext, searchOpen: true, query: '' }, {
+    F,
+    querySelector: (selector) => selector === '.fd-searchpanel__input' ? currentInput : null,
+    render: (next) => { currentInput = replacement(next.query || ''); },
+  });
+  const first = currentInput;
+  first.value = 'a'; first.selectionStart = 1; first.selectionEnd = 1;
+  h.rootHandlers.input({ target: first });
+  assert.notEqual(currentInput, first);
+  assert.equal(currentInput.focused, 1);
+  assert.deepEqual([currentInput.selectionStart, currentInput.selectionEnd], [1, 1]);
+
+  const second = currentInput;
+  second.value = 'ab'; second.selectionStart = 2; second.selectionEnd = 2;
+  h.rootHandlers.input({ target: second });
+  assert.notEqual(currentInput, second);
+  assert.equal(currentInput.value, 'ab');
+  assert.equal(currentInput.focused, 1);
+  assert.deepEqual([currentInput.selectionStart, currentInput.selectionEnd], [2, 2]);
+});
+
+test('nested overlay replacement focuses each new dialog and restores the stable root opener', () => {
+  let currentDialog = null;
+  const focused = [];
+  function dialogFor(identity) {
+    const control = {
+      tagName: identity === 'search' ? 'INPUT' : 'BUTTON',
+      isContentEditable: false, isConnected: true,
+      matches: (selector) => identity === 'search' && selector === '.fd-searchpanel__input',
+      focus() { focused.push(identity); },
+    };
+    return {
+      control,
+      querySelector: (selector) => selector === '.fd-searchpanel__input' && identity === 'search'
+        ? control : null,
+      querySelectorAll: () => [control],
+    };
+  }
+  function render(next) {
+    if (currentDialog) currentDialog.control.isConnected = false;
+    const identity = next.searchOpen ? 'search' : next.sheet ? `sheet:${next.sheet}` : null;
+    currentDialog = identity ? dialogFor(identity) : null;
+  }
+  const opener = actionTarget({ 'data-fd-search': '' });
+  const h = fakeHarness({ ...roleContext }, {
+    F, render, querySelector: () => currentDialog,
+    searchResults: () => [{ kind: 'item', item: { ref: 'preview.md' } }],
+  });
+  h.rootHandlers.click({ target: opener, preventDefault() {} });
+  const replacedSearchInput = currentDialog.control;
+  h.windowHandlers.keydown({ key: 'Enter', target: replacedSearchInput, preventDefault() {} });
+  assert.deepEqual(focused, ['search', 'sheet:item:preview.md']);
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-close-sheet': '' }), preventDefault() {} });
+  assert.equal(opener.focused, 1);
+
+  focused.length = 0;
+  const kitOpener = actionTarget({ 'data-fd-safety': '' });
+  h.rootHandlers.click({ target: kitOpener, preventDefault() {} });
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-safety': 'risk.md' }), preventDefault() {} });
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-safety': '' }), preventDefault() {} });
+  assert.deepEqual(focused, ['sheet:kit', 'sheet:risk.md', 'sheet:kit']);
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-close-sheet': '' }), preventDefault() {} });
+  assert.equal(kitOpener.focused, 1);
+
+  const disconnectedOpener = actionTarget({ 'data-fd-search': '' });
+  h.rootHandlers.click({ target: disconnectedOpener, preventDefault() {} });
+  disconnectedOpener.isConnected = false;
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-close-search': '' }), preventDefault() {} });
+  assert.equal(disconnectedOpener.focused, undefined, 'detached opener is skipped without throwing');
+});
+
+test('destination renders before resource and Progress effects mount into the fresh host', () => {
+  const order = [];
+  const requests = [];
+  let host = { name: 'old', innerHTML: '' };
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'today' }, {
+    F,
+    render: () => { order.push('render'); host = { name: 'fresh', innerHTML: '' }; },
+    querySelector: (selector) => selector === '#content' ? host : null,
+    openResource: (ref, opts) => {
+      requests.push([ref, opts]);
+      order.push(`resource:${ref}:${opts.host && opts.host.name}`);
+      opts.host.innerHTML = '<iframe></iframe>';
+    },
+    openProgress: () => { order.push('progress'); },
+  });
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-open': 'tool.html' }), preventDefault() {} });
+  assert.deepEqual(order, ['render', 'resource:tool.html:fresh']);
+  assert.equal(host.innerHTML, '<iframe></iframe>');
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-open': 'new.md' }), preventDefault() {} });
+  assert.equal(requests[0][1].isCurrent(), false, 'new navigation invalidates the old resource');
+  assert.equal(requests[1][1].isCurrent(), true);
+  order.length = 0;
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-progress': '' }), preventDefault() {} });
+  assert.deepEqual(order, ['render', 'progress']);
+});
+
+test('Escape closes search even when its focused input owns typing-shortcut suppression', () => {
+  const h = fakeHarness({ ...roleContext, screen: 'app', searchOpen: true, query: 'abc' }, { F });
+  let prevented = 0;
+  h.windowHandlers.keydown({
+    key: 'Escape', target: { tagName: 'INPUT', isContentEditable: false },
+    preventDefault() { prevented += 1; },
+  });
+  assert.equal(h.controller.getState().searchOpen, false);
+  assert.equal(h.controller.getState().query, '');
+  assert.equal(prevented, 1);
+});
+
+test('faculty preview rejects controller actions before state, render, route, resource, or storage changes', () => {
+  const ls = memStorage();
+  const LocalF = make(ls);
+  const renders = [];
+  const routes = [];
+  const opened = [];
+  let locks = 0;
+  const initial = {
+    ...roleContext, screen: 'app', tab: 'today', openId: 'locked.md', fromTab: 'today',
+    searchOpen: false, sheet: null,
+  };
+  const h = fakeHarness(initial, {
+    F: LocalF, render: (next) => renders.push({ ...next }), route: (route) => routes.push(route),
+    openResource: (ref) => opened.push(ref), facultyPreview: true,
+    facultyPreviewLock: () => { locks += 1; },
+    index: { byRef: {}, weeks: [{ n: 2, items: [{ ref: 'locked.md' }, { ref: 'next.md' }] }] },
+  });
+  for (const attrs of [
+    { 'data-fd-tab': 'path' }, { 'data-fd-open': 'other.md' }, { 'data-fd-search': '' },
+    { 'data-fd-safety': '' }, { 'data-fd-home': '' },
+  ]) {
+    h.rootHandlers.click({ target: actionTarget(attrs), preventDefault() {} });
+  }
+  const keyTarget = { tagName: 'BUTTON', isContentEditable: false };
+  for (const key of ['ArrowRight', '2', '/']) {
+    h.windowHandlers.keydown({ key, target: keyTarget, preventDefault() {} });
+  }
+  assert.deepEqual(h.controller.getState(), initial);
+  assert.deepEqual(renders, []);
+  assert.deepEqual(routes, []);
+  assert.deepEqual(opened, []);
+  assert.deepEqual(ls.dump(), {});
+  assert.equal(locks, 8);
+
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-theme': '' }), preventDefault() {} });
+  assert.equal(ls.getItem('cw_theme'), 'dark', 'legacy preview still permits its theme toggle');
+  assert.equal(locks, 8);
+});
+
+test('faculty preview popstate locks only after the pinned exact-revision route changes', () => {
+  let locks = 0;
+  const location = {
+    href: 'https://example.test/?page=locked.md&reviewKey=page%3Alocked.md',
+    pathname: '/', search: '?page=locked.md&reviewKey=page%3Alocked.md',
+  };
+  const h = fakeHarness({ ...roleContext, openId: 'locked.md' }, {
+    F, location, facultyPreview: true, facultyPreviewLock: () => { locks += 1; },
+  });
+  h.windowHandlers.popstate({ state: null });
+  assert.equal(locks, 0, 'same exact-revision route remains allowed');
+  location.href = 'https://example.test/?page=other.md';
+  location.search = '?page=other.md';
+  h.windowHandlers.popstate({ state: null });
+  assert.equal(locks, 1, 'leaving the exact revision invokes the legacy lock');
+});
+
+function memoryHistory(location) {
+  const entries = [];
+  let position = -1;
+  let popstate;
+  function applyUrl(route) {
+    const next = new URL(route, location.href);
+    location.href = next.href; location.pathname = next.pathname; location.search = next.search;
+  }
+  return {
+    entries,
+    history: {
+      replaceState(state, _title, route) {
+        applyUrl(route);
+        if (position < 0) { entries.push({ state, route }); position = 0; }
+        else entries[position] = { state, route };
+      },
+      pushState(state, _title, route) {
+        applyUrl(route);
+        entries.splice(position + 1);
+        entries.push({ state, route }); position += 1;
+      },
+    },
+    bind(fn) { popstate = fn; },
+    go(delta) {
+      position += delta;
+      const entry = entries[position];
+      applyUrl(entry.route);
+      popstate({ state: entry.state });
+    },
+  };
+}
+
+test('history snapshots restore Today/page/Today across Back and Forward without duplicate pushes', () => {
+  const location = {
+    href: 'https://example.test/?case=c1', pathname: '/', search: '?case=c1',
+  };
+  const memory = memoryHistory(location);
+  const opened = [];
+  const h = fakeHarness({
+    ...roleContext, screen: 'app', tab: 'today', openId: null, fromTab: 'today',
+  }, {
+    F, location, history: memory.history,
+    openResource: (ref) => { opened.push(ref); return Promise.resolve(true); },
+  });
+  memory.bind(h.windowHandlers.popstate);
+  assert.equal(memory.entries.length, 1, 'current entry receives replaceState on installation');
+  assert.equal(memory.entries[0].state.fd, true);
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-open': 'page.md' }), preventDefault() {} });
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-home': '' }), preventDefault() {} });
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-home': '' }), preventDefault() {} });
+  assert.deepEqual(memory.entries.map((entry) => entry.route), [
+    '/?case=c1', '?page=page.md&case=c1', '/?case=c1',
+  ]);
+  memory.go(-1);
+  assert.equal(h.controller.getState().openId, 'page.md');
+  memory.go(-1);
+  assert.equal(h.controller.getState().openId, null, 'bare Today clears the stale resource');
+  assert.equal(h.controller.getState().tab, 'today');
+  memory.go(1);
+  assert.equal(h.controller.getState().openId, 'page.md');
+  memory.go(1);
+  assert.equal(h.controller.getState().openId, null);
+  assert.deepEqual(opened, ['page.md', 'page.md', 'page.md']);
+});
+
+test('popstate Progress uses the internal Progress path and never generic resource loading', () => {
+  const opened = [];
+  const progress = [];
+  const location = {
+    href: 'https://example.test/?page=__progress__', pathname: '/', search: '?page=__progress__',
+  };
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'today' }, {
+    F, location, openResource: (ref) => opened.push(ref), openProgress: () => progress.push('open'),
+  });
+  h.windowHandlers.popstate({
+    state: { fd: true, state: { ...roleContext, screen: 'app', tab: 'today', openId: '__progress__' } },
+  });
+  assert.deepEqual(progress, ['open']);
+  assert.deepEqual(opened, []);
 });

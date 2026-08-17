@@ -120,3 +120,126 @@ Generate a small build-time action-contract receipt from rendered `data-fd-*` at
 controller semantic table. Hashing that receipt per audience would make a newly emitted but
 unwired action fail before cutover and give reviewers a one-line proof that both sites share the
 same interaction vocabulary.
+
+---
+
+## Review remediation — 2026-08-17
+
+Status: COMPLETE
+
+### Plain outcome
+
+The dormant controller is now hardened for the later cutover. Faculty preview rejects prohibited
+actions before they can change state or storage; pages and tools mount only after the fresh
+destination exists; late page responses cannot replace a newer route; browser Back and Forward
+restore meaningful state; search and nested dialogs retain correct keyboard focus; and markdown
+gets one owned page title. The currently visible legacy shell is still the only active shell.
+
+### Genuine RED evidence
+
+Starting from clean review HEAD `162b93ebaa2e379460bd0b17dadb28e65a670678`, the regression tests
+were written before the production fixes. The first focused run produced 27 passes and 9 intended
+failures:
+
+- duplicate markdown title (`2 !== 1`);
+- late markdown response returned true and overwrote the new route;
+- replacement search input did not regain focus/caret;
+- nested overlay close did not restore the original opener;
+- resource effect received the old/undefined host before render;
+- Escape in a focused search input did not close search;
+- preview actions changed state/rendered before the lock;
+- no initial `history.replaceState` snapshot existed; and
+- Progress popstate used the generic resource path.
+
+Exact command:
+
+```bash
+node --test tests/fd-wire.test.mjs tests/fd-resource.test.mjs
+# RED: 27 passed, 9 failed
+```
+
+During exact legacy comparison, one more regression was added before its production adjustment:
+
+```bash
+node --test --test-name-pattern="faculty preview popstate|faculty preview rejects" \
+  tests/fd-wire.test.mjs
+# RED: 1 passed, 1 failed — same exact-revision popstate incorrectly showed the lock
+```
+
+That comparison resolved the only apparent policy ambiguity: theme remains allowed during faculty
+preview, and a same exact-revision popstate remains allowed. Tab/resource/search/safety/Home and
+global navigation shortcuts remain locked before mutation. A popstate that leaves the pinned
+revision uses the existing lock path.
+
+### Per-finding GREEN evidence
+
+1. **Preview lock:** a table-driven controller test covers tab, resource open, search, safety,
+   Home, Arrow, digit, and slash actions. It asserts unchanged state, render, route, resource, and
+   storage; it separately pins the allowed `cw_theme` toggle and exact-revision popstate behavior.
+2. **Lifecycle/currentness:** tool mounting records `render` before resource open and verifies the
+   fresh `#content` host. Deferred markdown resolves stale and returns false without replacing the
+   new host. Progress click and popstate use the internal Progress adapter only.
+3. **History:** an in-memory history test verifies initialization with `replaceState`, meaningful
+   snapshots, preserved `case=c1`, no duplicate Today push, and Today -> page -> Today across Back
+   and Forward with stale `openId` cleared.
+4. **Live search:** a real replacement-node harness types multiple characters and proves the new
+   input regains focus and the exact selection range after each whole-shell render.
+5. **Escape:** focused search-input Escape closes search before typing-control shortcut suppression;
+   the global digit/arrow/slash suppression contract remains green.
+6. **Nested focus:** search -> preview and Kit <-> protocol replace DOM nodes, focus each new
+   dialog, skip disconnected nested nodes, and restore the stable connected root opener only on
+   final close.
+7. **Headings:** real `# Source Heading` markdown produces only the Reader/manifest H1 while
+   retaining the introduction, later H2, and body.
+
+Focused final verification:
+
+```bash
+node --test tests/fd-wire.test.mjs tests/fd-resource.test.mjs \
+  tests/fd-action-contract.test.mjs tests/parallel-ceilings.test.mjs
+# 44 passed, 0 failed
+
+node --check 13_Faculty_Resources/_automation/site_build/frontdoor/fd_wire.js
+# passed
+
+python3 13_Faculty_Resources/_automation/site_build/test_common.py
+# 53 passed, 0 failed
+```
+
+The sandboxed full root suite first reproduced the approved baseline limitation: 1,011 passed and
+8 localhost launcher tests failed with loopback `EPERM`. The authorized loopback rerun passed.
+After the final exact-preview adjustment, the definitive root result was 1,020/1,020.
+
+Sequential publication gates were rerun after all production changes:
+
+```bash
+bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh ms3
+bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res
+```
+
+- MS3: PASS, static QA hard failures 0, LFS preflight 105 media files/no pointer stubs.
+- Resident: PASS, static QA hard failures 0, LFS preflight 105 media files/no pointer stubs.
+- The existing metadata/computed-key notices remain soft baseline advisories.
+
+### Exact review-fix files
+
+- `13_Faculty_Resources/_automation/site_build/frontdoor/fd_wire.js`
+- `tests/fd-resource.test.mjs`
+- `tests/fd-wire.test.mjs`
+- `.superpowers/sdd/2026-08-17-front-door-audited-continuation/task-4-report.md`
+
+No Task 5 shell, activation call, marker/ceiling, palette, `_build` output, media, clinical/crisis
+content, or unrelated source is part of this fix. Listener destruction, ES5 style,
+audience-neutral logic, namespaced storage, governed preview/resource helpers, and the live legacy
+boot remain pinned by tests.
+
+### Residual risk and next option
+
+Residual risk remains the intentional Task 4 boundary: the controller is still dormant, so its
+complete browser journey cannot run against the production shell until Task 5 atomically mounts
+it. The concrete next best option is an independent review of this fix commit, followed by Task 5
+as a separate rollback-sized commit with both audience browser journeys.
+
+An innovative follow-up would add a deterministic navigation-generation trace in non-production
+browser tests. By deliberately resolving page fetches in shuffled order, it could continuously
+prove that only the latest route may write the Reader host as future resource types are added.

@@ -103,7 +103,11 @@ function fdExtraSearch(search){
   return q?'&'+q:'';
 }
 
-function fdRouteForTab(tab){ return tab==='today'?'/':('?tab='+encodeURIComponent(tab)); }
+function fdRouteForTab(tab, search){
+  var params=fdParamsWithoutRoute(search), extra=params.toString();
+  if(tab==='today') return extra?('/?'+extra):'/';
+  return '?tab='+encodeURIComponent(tab)+(extra?'&'+extra:'');
+}
 
 function fdRouteForRef(ref, search){
   var key=/\.html$/.test(String(ref||''))?'tool':'page';
@@ -151,19 +155,23 @@ function fdDispatch(attrs, context, state){
   if(fdOwn(a,'data-fd-view-week')){
     n=fdNumberAttr(a,'data-fd-view-week');
     if(n===null) return {patch:{},route:null,effect:null};
-    return {patch:{tab:'path',viewWeek:n,openId:null},route:'?tab=path',effect:null};
+    return {
+      patch:{tab:'path',viewWeek:n,openId:null},
+      route:fdRouteForTab('path',c.search),effect:null
+    };
   }
   if(fdOwn(a,'data-fd-week')){
     n=fdNumberAttr(a,'data-fd-week');
     if(n===0){
       return {
         patch:{week:null,tab:'library',viewWeek:1,screen:'app',openId:null},
-        route:'?tab=library',effect:{type:'browse-without-rotation'}
+        route:fdRouteForTab('library',c.search),effect:{type:'browse-without-rotation'}
       };
     }
     if(n===null||n<1||n>6) return {patch:{},route:null,effect:null};
     return {
-      patch:{week:n,viewWeek:n,tab:'today',screen:'app',openId:null},route:'/',
+      patch:{week:n,viewWeek:n,tab:'today',screen:'app',openId:null},
+      route:fdRouteForTab('today',c.search),
       effect:{type:'set-rotation',start:fdRotationStartForWeek(n,c.nowMs)}
     };
   }
@@ -232,7 +240,7 @@ function fdDispatch(attrs, context, state){
       tab=fdValidTab(s.fromTab)?s.fromTab:'today';
       patch.openId=null;
       patch.tab=tab;
-      return {patch:patch,route:fdRouteForTab(tab),effect:effect};
+      return {patch:patch,route:fdRouteForTab(tab,c.search),effect:effect};
     }
     return {patch:patch,route:null,effect:effect};
   }
@@ -241,7 +249,8 @@ function fdDispatch(attrs, context, state){
     tab=String(a['data-fd-tab']||'');
     if(!fdValidTab(tab)) return {patch:{},route:null,effect:null};
     return {
-      patch:{tab:tab,openId:null,searchOpen:false},route:fdRouteForTab(tab),effect:null
+      patch:{tab:tab,openId:null,searchOpen:false},
+      route:fdRouteForTab(tab,c.search),effect:null
     };
   }
   if(fdOwn(a,'data-fd-role')){
@@ -260,10 +269,13 @@ function fdDispatch(attrs, context, state){
       return {patch:{role:null,screen:'setup-role'},route:null,effect:null};
     }
     tab=fdValidTab(s.fromTab)?s.fromTab:(fdValidTab(s.tab)?s.tab:'today');
-    return {patch:{openId:null,tab:tab},route:fdRouteForTab(tab),effect:null};
+    return {patch:{openId:null,tab:tab},route:fdRouteForTab(tab,c.search),effect:null};
   }
   if(fdOwn(a,'data-fd-home')){
-    return {patch:{tab:'today',openId:null,searchOpen:false,sheet:null},route:'/',effect:null};
+    return {
+      patch:{tab:'today',openId:null,searchOpen:false,sheet:null},
+      route:fdRouteForTab('today',c.search),effect:null
+    };
   }
   if(fdOwn(a,'data-fd-search')){
     return {patch:{searchOpen:true},route:null,effect:{type:'focus-search'}};
@@ -277,7 +289,7 @@ function fdDispatch(attrs, context, state){
     tab=fdValidTab(s.tab)?s.tab:'today';
     return {
       patch:{openId:'__progress__',fromTab:tab,searchOpen:false,sheet:null},
-      route:'?page=__progress__',effect:{type:'open-progress'}
+      route:fdRouteForRef('__progress__',c.search),effect:{type:'open-progress'}
     };
   }
   if(fdOwn(a,'data-fd-theme')){
@@ -365,11 +377,14 @@ function fdOpenResource(ref, opts){
   state.ref=ref;
   if(!state.fromTab) state.fromTab=state.tab||'today';
 
+  function current(){ return !o.isCurrent||o.isCurrent(ref)!==false; }
   function mount(body){
+    if(!current()) return false;
     if(host) host.innerHTML=renderReader(index,state,bar+body);
     return true;
   }
   function fail(){
+    if(!current()) return false;
     if(host){
       host.innerHTML='<div class="fd-fallback" role="alert"><h1>Page unavailable</h1>'+
         '<p>This resource could not load. Check your connection and try again.</p></div>';
@@ -393,13 +408,15 @@ function fdOpenResource(ref, opts){
     if(!response||!response.ok) throw new Error('resource unavailable');
     return response.text();
   }).then(function(markdown){
+    if(!current()) return false;
     var split=String(markdown||'').indexOf('\n## ');
     var head=split>-1?String(markdown).slice(0,split):String(markdown||'');
     var rest=split>-1?String(markdown).slice(split):'';
     var clean=head.replace(/^[ \t]*(Generated|Audience):.*$/gim,'')
       .replace(/\n{3,}/g,'\n\n')+rest;
+    clean=clean.replace(/^\uFEFF?(?:[ \t]*\r?\n)*[ \t]*#[ \t]+[^\r\n]*(?:\r?\n|$)/,'');
     var ok=mount(parser(clean));
-    if(o.previewStatus) o.previewStatus('ready','page');
+    if(ok&&o.previewStatus) o.previewStatus('ready','page');
     return ok;
   }).catch(function(){ return fail(); });
 }
@@ -457,12 +474,19 @@ function fdAttrsFromTarget(target){
 function fdWire(root, initialState, opts){
   var o=opts||{}, win=o.window||(typeof window!=='undefined'?window:null);
   var doc=o.document||(typeof document!=='undefined'?document:null);
-  var state=fdClone(initialState||{}), invokers=[], nudgeTimer=null;
+  var state=fdClone(initialState||{}), invokers=[], nudgeTimer=null, navGeneration=0;
   var render=o.render||function(){};
   var setTimer=o.setTimer||(typeof setTimeout==='function'?setTimeout:null);
   var clearTimer=o.clearTimer||(typeof clearTimeout==='function'?clearTimeout:null);
   var index=o.index||fdDefaultIndex();
+  var previewRouteBase=previewActive()?currentRoute():null;
 
+  function overlayIdentity(value){
+    var s=value||{};
+    if(s.searchOpen) return 'search';
+    if(s.sheet) return 'sheet:'+s.sheet;
+    return '';
+  }
   function dialog(){
     if(!root||!root.querySelector) return null;
     if(state.searchOpen) return root.querySelector('.fd-search[role="dialog"]');
@@ -476,8 +500,52 @@ function fdWire(root, initialState, opts){
     if(first&&first.focus) try{first.focus();}catch(_){}
   }
   function restoreInvoker(){
-    var el=invokers.pop();
-    if(el&&el.isConnected!==false&&el.focus) try{el.focus();}catch(_){}
+    while(invokers.length){
+      var el=invokers.pop();
+      if(el&&el.isConnected!==false&&el.focus){
+        try{el.focus();}catch(_){}
+        return;
+      }
+    }
+  }
+  function previewActive(){
+    if(typeof o.facultyPreview==='function') return !!o.facultyPreview();
+    if(o.facultyPreview!==undefined) return !!o.facultyPreview;
+    return typeof facultyPreviewRequest!=='undefined'&&!!facultyPreviewRequest;
+  }
+  function lockPreview(){
+    if(o.facultyPreviewLock){ o.facultyPreviewLock(); return; }
+    if(typeof showFacultyPreviewLockNotice==='function') showFacultyPreviewLockNotice();
+  }
+  function meaningfulResult(result){
+    var r=result||{}, patch=r.patch||{};
+    for(var k in patch){ if(fdOwn(patch,k)) return true; }
+    return !!r.route||!!(r.effect&&r.effect.type&&r.effect.type!=='set-theme');
+  }
+  function historySnapshot(){
+    var keys=['role','tab','viewWeek','openId','fromTab','week','autoAdvance','screen'];
+    var snap={};
+    for(var i=0;i<keys.length;i++){
+      if(state[keys[i]]!==undefined) snap[keys[i]]=state[keys[i]];
+    }
+    return {fd:true,state:snap};
+  }
+  function currentRoute(){
+    if(!win||!win.location) return '/';
+    return (win.location.pathname||'/')+(win.location.search||'');
+  }
+  function sameRoute(route){
+    if(!route||!win||!win.location) return false;
+    try{
+      var next=new URL(route,win.location.href||'https://frontdoor.invalid/');
+      return next.pathname+(next.search||'')===currentRoute();
+    }catch(_){ return route===currentRoute(); }
+  }
+  function freshResourceHost(){
+    if(typeof o.resourceHost==='function') return o.resourceHost(state);
+    if(o.resourceHost) return o.resourceHost;
+    if(root&&root.matches&&root.matches('#content')) return root;
+    return root&&root.querySelector?root.querySelector('#content'):null;
   }
   function currentTheme(){
     if(doc&&doc.documentElement&&doc.documentElement.getAttribute){
@@ -490,17 +558,13 @@ function fdWire(root, initialState, opts){
     catch(_){ return {}; }
   }
   function routeTo(route){
-    if(!route) return;
-    if(o.route){ o.route(route); return; }
-    if(typeof facultyPreviewRequest!=='undefined'&&facultyPreviewRequest){
-      if(typeof showFacultyPreviewLockNotice==='function') showFacultyPreviewLockNotice();
-      return;
-    }
+    if(!route||sameRoute(route)) return;
+    if(o.route){ o.route(route,historySnapshot()); return; }
     if(win&&win.history&&win.history.pushState){
-      try{ win.history.pushState({},'',route); }catch(_){}
+      try{ win.history.pushState(historySnapshot(),'',route); }catch(_){}
     }
   }
-  function fdApplyEffect(effect, fromHistory){
+  function fdApplyEffect(effect, fromHistory, generation){
     if(!effect) return;
     if(effect.type==='set-rotation'){
       try{ localStorage.setItem('cw_rotation_start',effect.start); }catch(_){}
@@ -511,7 +575,10 @@ function fdWire(root, initialState, opts){
         var progressOpener=o.openResource||fdOpenResource;
         progressOpener(effect.openRef,{
           index:index,state:state,search:(win&&win.location&&win.location.search)||'',
-          fromHistory:!!fromHistory
+          fromHistory:!!fromHistory,host:freshResourceHost(),
+          isCurrent:function(){
+            return generation===navGeneration&&state.openId===effect.openRef;
+          }
         });
       }
     } else if(effect.type==='set-theme'){
@@ -527,26 +594,38 @@ function fdWire(root, initialState, opts){
       var opener=o.openResource||fdOpenResource;
       opener(effect.ref,{
         index:index,state:state,search:(win&&win.location&&win.location.search)||'',
-        fromHistory:!!fromHistory
+        fromHistory:!!fromHistory,host:freshResourceHost(),
+        isCurrent:function(){ return generation===navGeneration&&state.openId===effect.ref; }
       });
     } else if(effect.type==='open-progress'){
-      if(o.openProgress) o.openProgress();
+      if(o.openProgress) o.openProgress(state,{fromHistory:!!fromHistory,host:freshResourceHost()});
       else if(typeof navClick==='function') navClick('__progress__');
     }
   }
   function apply(result, invoker, fromHistory){
-    var beforeOverlay=!!(state.searchOpen||state.sheet);
+    if(previewActive()&&meaningfulResult(result)){
+      lockPreview();
+      return state;
+    }
+    var beforeOverlay=overlayIdentity(state);
     var patch=result.patch||{};
-    var opening=(!state.searchOpen&&patch.searchOpen===true)||(!state.sheet&&!!patch.sheet);
-    var closing=(state.searchOpen&&patch.searchOpen===false)||(state.sheet&&patch.sheet===null);
-    if(opening&&invoker) invokers.push(invoker);
+    var beforeHadOverlay=!!beforeOverlay;
+    if(!beforeHadOverlay&&invoker) invokers.push(invoker);
     for(var k in patch){ if(fdOwn(patch,k)) state[k]=patch[k]; }
+    var afterOverlay=overlayIdentity(state);
+    if(!afterOverlay&&!beforeHadOverlay&&invokers.length) invokers.pop();
+    var generation=navGeneration;
+    if(result.route||result.effect&&(result.effect.type==='open-resource'||
+        result.effect.type==='open-progress'||result.effect.openRef)){
+      navGeneration++;
+      generation=navGeneration;
+    }
     fdSave(state);
     if(!fromHistory) routeTo(result.route);
-    fdApplyEffect(result.effect,fromHistory);
     render(state);
-    if(opening) focusDialog();
-    else if(closing&&beforeOverlay) restoreInvoker();
+    fdApplyEffect(result.effect,fromHistory,generation);
+    if(afterOverlay&&afterOverlay!==beforeOverlay) focusDialog();
+    else if(!afterOverlay&&beforeHadOverlay) restoreInvoker();
     return state;
   }
   function context(extra){
@@ -569,12 +648,26 @@ function fdWire(root, initialState, opts){
   function inputHandler(event){
     var target=event.target;
     if(!target||!target.matches||!target.matches('.fd-searchpanel__input')) return;
+    var start=target.selectionStart, end=target.selectionEnd;
+    var direction=target.selectionDirection;
     state.query=String(target.value||'');
     render(state);
+    var fresh=root&&root.querySelector?root.querySelector('.fd-searchpanel__input'):null;
+    if(fresh&&fresh.focus){
+      try{fresh.focus();}catch(_){}
+      if(fresh.setSelectionRange&&typeof start==='number'&&typeof end==='number'){
+        try{fresh.setSelectionRange(start,end,direction||'none');}catch(_){}
+      }
+    }
   }
   function keyHandler(event){
     var d=dialog();
     if(d&&fdTrapFocus(event,d)) return;
+    if(event.key==='Escape'&&(state.searchOpen||state.sheet)){
+      if(event.preventDefault) event.preventDefault();
+      apply(fdDispatch({close:true},context(),state),event.target,false);
+      return;
+    }
     if(event.key==='Enter'&&state.searchOpen&&fdIsTypingTarget(event.target)){
       var searcher=o.searchResults||fdSearchResults;
       var results=searcher(index,state.query||'',o.synonyms||{},state)||[];
@@ -609,18 +702,44 @@ function fdWire(root, initialState, opts){
     if(event.preventDefault) event.preventDefault();
     apply(fdDispatch(attrs,context(),state),event.target,false);
   }
-  function popstateHandler(){
+  function popstateHandler(event){
     if(!win||!win.location) return;
-    var merged=fdClone(state);
-    merged.roles=o.roles||merged.roles;
-    merged.rotationStart=o.rotationStart||merged.rotationStart;
-    state=fdResolveState(win.location.href,merged);
+    if(previewActive()){
+      if(currentRoute()!==previewRouteBase) lockPreview();
+      return;
+    }
+    var merged=fdClone(state), snap=event&&event.state&&event.state.fd&&event.state.state;
+    merged.searchOpen=false;
+    merged.query='';
+    merged.sheet=null;
+    merged.sheetFrom=null;
+    merged.stepsDone={};
+    if(snap){
+      delete merged.openId;
+      for(var key in snap){ if(fdOwn(snap,key)) merged[key]=snap[key]; }
+    } else {
+      merged.roles=o.roles||merged.roles;
+      merged.rotationStart=o.rotationStart||merged.rotationStart;
+      merged=fdResolveState(win.location.href,merged);
+      var params=new URLSearchParams(win.location.search||'');
+      if(!params.get('page')&&!params.get('tool')&&!params.get('tab')){
+        merged.tab='today';
+        delete merged.openId;
+      }
+    }
+    state=merged;
+    navGeneration++;
+    var generation=navGeneration;
     render(state);
     fdSave(state);
-    if(state.openId){
+    if(state.openId==='__progress__'){
+      fdApplyEffect({type:'open-progress'},true,generation);
+    } else if(state.openId){
       var opener=o.openResource||fdOpenResource;
       opener(state.openId,{
-        index:index,state:state,search:win.location.search||'',fromHistory:true
+        index:index,state:state,search:win.location.search||'',fromHistory:true,
+        host:freshResourceHost(),
+        isCurrent:function(){ return generation===navGeneration; }
       });
     }
   }
@@ -632,6 +751,9 @@ function fdWire(root, initialState, opts){
   if(win&&win.addEventListener){
     win.addEventListener('keydown',keyHandler);
     win.addEventListener('popstate',popstateHandler);
+  }
+  if(!previewActive()&&win&&win.history&&win.history.replaceState){
+    try{ win.history.replaceState(historySnapshot(),'',currentRoute()); }catch(_){}
   }
 
   return {

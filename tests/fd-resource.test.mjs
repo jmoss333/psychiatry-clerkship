@@ -65,8 +65,8 @@ test('fdOpenResource fetches markdown, parses it, and renders the Reader', async
   const F = make();
   const result = await F.fdOpenResource('page.md', {
     index, state: { tab: 'today', week: 1, done: {} }, host,
-    fetcher: async (url) => { calls.push(['fetch', url]); return { ok: true, text: async () => '# Body' }; },
-    parseMarkdown: (text) => { calls.push(['parse', text]); return '<h1>Body</h1>'; },
+    fetcher: async (url) => { calls.push(['fetch', url]); return { ok: true, text: async () => 'Body' }; },
+    parseMarkdown: (text) => { calls.push(['parse', text]); return '<p>Body</p>'; },
     governanceNotice: (legacy) => { calls.push(['governance', legacy.f]); return '<div>reviewed</div>'; },
     renderReader: (_index, readerState, body) => {
       calls.push(['reader', readerState.ref, body]);
@@ -75,11 +75,64 @@ test('fdOpenResource fetches markdown, parses it, and renders the Reader', async
     facultyPreviewMatches: () => true,
   });
   assert.equal(result, true);
-  assert.equal(host.innerHTML, '<article><div>reviewed</div><h1>Body</h1></article>');
+  assert.equal(host.innerHTML, '<article><div>reviewed</div><p>Body</p></article>');
   assert.deepEqual(calls, [
-    ['governance', 'page.md'], ['fetch', 'content/page.md'], ['parse', '# Body'],
-    ['reader', 'page.md', '<div>reviewed</div><h1>Body</h1>'],
+    ['governance', 'page.md'], ['fetch', 'content/page.md'], ['parse', 'Body'],
+    ['reader', 'page.md', '<div>reviewed</div><p>Body</p>'],
   ]);
+});
+
+test('fdOpenResource strips only the leading source H1 so Reader owns the single title path', async () => {
+  const host = { innerHTML: '' };
+  const parsed = [];
+  await make().fdOpenResource('page.md', {
+    index: {
+      byRef: { 'page.md': { ref: 'page.md', kind: 'read', title: 'Manifest Title' } }, weeks: [],
+    },
+    state: { tab: 'today' }, host,
+    fetcher: async () => ({
+      ok: true,
+      text: async () => '# Source Heading\nIntro stays.\n\n## Subsequent heading\nBody stays.',
+    }),
+    parseMarkdown: (markdown) => {
+      parsed.push(markdown);
+      return markdown.replace(/^# (.*)$/gm, '<h1>$1</h1>')
+        .replace(/^## (.*)$/gm, '<h2>$1</h2>')
+        .replace(/^(Intro stays\.|Body stays\.)$/gm, '<p>$1</p>');
+    },
+    governanceNotice: () => '',
+    renderReader: (_index, _state, body) => `<article><h1>Manifest Title</h1>${body}</article>`,
+    facultyPreviewMatches: () => true,
+  });
+  assert.equal((host.innerHTML.match(/<h1>/g) || []).length, 1);
+  assert.match(host.innerHTML, /<h1>Manifest Title<\/h1>/);
+  assert.match(host.innerHTML, /<h2>Subsequent heading<\/h2>/);
+  assert.match(host.innerHTML, /Intro stays\./);
+  assert.match(host.innerHTML, /Body stays\./);
+  assert.equal(parsed[0], 'Intro stays.\n\n## Subsequent heading\nBody stays.');
+});
+
+test('a late markdown response cannot overwrite a newer navigation generation', async () => {
+  let resolveText;
+  let current = 'old.md';
+  const host = { innerHTML: '' };
+  const F = make();
+  const old = F.fdOpenResource('old.md', {
+    index: { byRef: { 'old.md': { ref: 'old.md', kind: 'read', title: 'Old' } }, weeks: [] },
+    state: {}, host,
+    fetcher: async () => ({
+      ok: true, text: () => new Promise((resolve) => { resolveText = resolve; }),
+    }),
+    parseMarkdown: (markdown) => `<p>${markdown}</p>`, governanceNotice: () => '',
+    renderReader: (_index, _state, body) => body, facultyPreviewMatches: () => true,
+    isCurrent: () => current === 'old.md',
+  });
+  while (!resolveText) await Promise.resolve();
+  current = 'new.md';
+  host.innerHTML = '<p>new route</p>';
+  resolveText('late old route');
+  assert.equal(await old, false);
+  assert.equal(host.innerHTML, '<p>new route</p>');
 });
 
 test('tools render the governed iframe through the Reader with preserved query state', async () => {
