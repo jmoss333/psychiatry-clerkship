@@ -99,6 +99,11 @@ function liveStateSource() {
 }
 
 function failureCopyGlobalSource() {
+  const assignments = shellSrc.match(
+    /(?:^|[;\n])\s*(?:var\s+)?FD_PROTOCOL_FAILURE_COPY\s*=(?!=)/g,
+  ) || [];
+  assert.equal(assignments.length, 1,
+    'failure-copy global must have exactly one production assignment');
   const start = shellSrc.indexOf('var FD_PROTOCOL_FAILURE_COPY=');
   const end = shellSrc.indexOf('\n', start);
   assert.ok(start > -1 && end > start, 'failure-copy global must remain executable');

@@ -167,6 +167,41 @@ bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res
 # both OK; static QA hard failures 0; 105 media files, no LFS pointer stubs
 ```
 
+## Independent-review round 3 — unique failure-copy assignment
+
+The third review identified one remaining test regression: the executable shell harness extracted
+only the first `FD_PROTOCOL_FAILURE_COPY` declaration. A later declaration or reassignment could
+therefore control real browser output while the harness continued executing and hashing the first
+value.
+
+The gap was reproduced before changing the helper. A temporary later production reassignment made
+the browser source contain two assignments, but the old targeted live-boundary run still passed
+`3/3`. After restoring the source, `failureCopyGlobalSource()` was tightened to require exactly one
+production declaration/assignment before returning the executable fragment. It does not replace
+the rendered three-branch assertions; it gates the same real global → template DOM → live state →
+renderer path.
+
+The identical temporary reassignment was then replayed. All three live-boundary tests rejected the
+source with the intended `2 !== 1` assignment-count failure (`0/3` passed), proving a later value
+that controls browser output cannot hide behind the first extracted declaration. Production was
+restored again, and the targeted run returned to `3/3`.
+
+Fresh round-3 gates after restoration:
+
+```bash
+node --test tests/crisis-block.test.mjs tests/fd-sheet.test.mjs tests/fd-wire.test.mjs tests/spa-shell-a11y.test.mjs
+# 110 passed, 0 failed
+
+node --test tests/*.test.mjs
+# 1053 passed, 0 failed (authorized loopback run)
+
+bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh ms3
+bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res
+# both OK; static QA hard failures 0; 105 media files, no LFS pointer stubs
+```
+
+Round 3 changes only this report and `tests/fd-sheet.test.mjs`; no production change remains.
+
 ## Frozen palette and boundaries
 
 No palette value changed, and this report makes no WCAG-AA claim. `fd-contrast` remains green with
