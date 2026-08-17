@@ -261,6 +261,52 @@ def main(argv):
         bad("library", "shipped slug '%s' appears in no column and no libraryExclude entry"
             % ref)
 
+    # ---- site library overlays: additions point to existing columns and stay unique ----
+    # The shared columns remain the MS3 baseline. Resident-only pages/tools are named here,
+    # not duplicated with titles or kinds: those come from each completed site's nav.
+    site_library = cur.get("siteLibrary")
+    if not isinstance(site_library, dict):
+        bad("siteLibrary", "must be an object with ms3 and resident entries")
+        site_library = {}
+    column_names = {column.get("name") for column in columns if isinstance(column, dict)}
+    for site in ("ms3", "resident"):
+        overlay = site_library.get(site)
+        if not isinstance(overlay, dict):
+            bad("siteLibrary", "'%s' must be an object" % site)
+            continue
+        additions = overlay.get("additions")
+        if not isinstance(additions, list):
+            bad("siteLibrary %s" % site, "'additions' must be a list")
+            additions = []
+        added_refs = set()
+        for addition in additions:
+            if not isinstance(addition, dict):
+                bad("siteLibrary %s" % site, "each addition must be an object")
+                continue
+            column = addition.get("column")
+            if column not in column_names:
+                bad("siteLibrary %s" % site, "addition names unknown column '%s'" % column)
+            refs = addition.get("refs")
+            if not isinstance(refs, list):
+                bad("siteLibrary %s" % site, "addition refs must be a list")
+                continue
+            for ref in refs:
+                if not isinstance(ref, str):
+                    bad("siteLibrary %s" % site, "addition ref must be a string (got %r)" % ref)
+                    continue
+                if ref in added_refs:
+                    bad("siteLibrary %s" % site, "duplicate addition ref '%s'" % ref)
+                added_refs.add(ref)
+        exclusions = overlay.get("exclusions")
+        if not isinstance(exclusions, list):
+            bad("siteLibrary %s" % site, "'exclusions' must be a list")
+            continue
+        if len(set(ref for ref in exclusions if isinstance(ref, str))) != len(exclusions):
+            bad("siteLibrary %s" % site, "exclusion refs must be unique strings")
+        for ref in exclusions:
+            if not isinstance(ref, str):
+                bad("siteLibrary %s" % site, "exclusion ref must be a string (got %r)" % ref)
+
     # ---- safety kit: five reviewed, high-safety protocols with canonical evidence ----
     kit = cur.get("safetyKit")
     if not isinstance(kit, list):

@@ -5,6 +5,7 @@ from pathlib import Path
 # see common.py's module docstring. resident_section.py imports the same module,
 # so these no longer exist as two drifting copies.
 import common
+import frontdoor_catalog
 # Session-portable paths (fixed 2026-07-01): derive from this script's own location instead of a
 # hard-coded sandbox mount, so the build runs under any Cowork session or the real filesystem.
 HERE=os.path.dirname(os.path.abspath(__file__))
@@ -15,6 +16,7 @@ SPA=os.path.join(HERE,"spa_index.html")                   # SPA shell (co-locate
 MARKED=os.path.join(HERE,"marked.min.js")                 # vendored marked (co-located)
 MANIFEST=os.path.join(HERE,"site_manifest.json")          # content/tool build manifest
 CLINICAL_CSS=os.path.join(HERE,"clinical-warm.css")       # shared dark-mode tokens
+FRONTDOOR_CSS=os.path.join(HERE,"frontdoor","frontdoor.css")
 
 def _relpath(p):
     for base in (LIB,HERE):
@@ -37,7 +39,7 @@ def _copy_required(src,dst,missing):
     else:
         missing.append(src)
 
-_bootstrap_missing=[p for p in [MANIFEST,SPA,MARKED,CLINICAL_CSS] if not os.path.exists(p)]
+_bootstrap_missing=[p for p in [MANIFEST,SPA,MARKED,CLINICAL_CSS,FRONTDOOR_CSS] if not os.path.exists(p)]
 _abort_missing(_bootstrap_missing)
 if os.path.exists(OUT): shutil.rmtree(OUT)
 os.makedirs(OUT+"/content"); os.makedirs(OUT+"/tools")
@@ -359,7 +361,22 @@ _missing_req=[]
 _copy_required(SPA, OUT+"/index.html", _missing_req)
 _copy_required(MARKED, OUT+"/marked.min.js", _missing_req)  # vendored (ward-wifi: no CDN dependency)
 _copy_required(CLINICAL_CSS, OUT+"/clinical-warm.css", _missing_req)  # shared dark-mode tokens (linked into tools below)
+_copy_required(FRONTDOOR_CSS, OUT+"/frontdoor.css", _missing_req)
 _abort_missing(_missing_req)
+
+# Front Door modules stay dormant in this task, but their data is made site-specific now.
+# Build after nav finalization so titles/kinds come from this site's actual browse catalog.
+try:
+    _fd_payload=frontdoor_catalog.build_frontdoor_payload(
+        "ms3", json.load(open(LIB+"/curriculum.json",encoding="utf-8")), nav)
+    frontdoor_catalog.inject_frontdoor_payload(
+        OUT+"/index.html", _fd_payload,
+        json.load(open(OUT+"/topic_meta.json",encoding="utf-8")),
+        json.load(open(OUT+"/tool_registry.json",encoding="utf-8")))
+except ValueError as _fd_error:
+    print("BUILD ABORTED — Front Door payload:", _fd_error)
+    raise SystemExit(1)
+print("frontdoor payload:",sum(len(c["refs"]) for c in _fd_payload["curriculum"]["libraryColumns"]),"placed refs (ms3)")
 
 # ---- retired-bank-ids injection (shell calibration parity) ----
 # The shell counts confidently-wrong items straight from cw_qb_v1; the practice tool

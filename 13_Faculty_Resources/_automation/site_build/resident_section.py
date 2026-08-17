@@ -4,6 +4,7 @@ import os, shutil, json, re, glob, sys
 # Extracted 2026-07-26; before that this file carried its own drifted copies of the
 # tokenizer, synonym table, tool keywords, index builder, and skip-link injection.
 import common
+import frontdoor_catalog
 from pathlib import Path
 
 # Session-portable paths (fixed 2026-07-01): derive from this script's own location.
@@ -252,6 +253,21 @@ import cotw_meta as _cotw_meta
 _cm_add,_cm_skip,_cm_prune,_cm_untagged=_cotw_meta.inject(OUT,_cotw_weeks,"res")
 print("cotw topic_meta: %d derived, %d hand-written kept, %d ms3 keys pruned"%(_cm_add,_cm_skip,_cm_prune))
 if _cm_untagged: print("  NOTE no 'blueprint' in cotw_registry.json (case absent from the crosswalk): "+", ".join(_cm_untagged))
+
+# The resident build begins as a copy of MS3, so replace every Front Door global only after
+# resident extras, nav metadata, and topic-meta overlays are all complete. Reusing the copied
+# MS3 literals would silently hide resident-only browse paths behind student data.
+try:
+    _fd_payload=frontdoor_catalog.build_frontdoor_payload(
+        "resident", json.load(open(LIB+"/curriculum.json",encoding="utf-8")), nav)
+    frontdoor_catalog.inject_frontdoor_payload(
+        OUT+"/index.html", _fd_payload,
+        json.load(open(OUT+"/topic_meta.json",encoding="utf-8")),
+        json.load(open(OUT+"/tool_registry.json",encoding="utf-8")))
+except ValueError as _fd_error:
+    print("BUILD ABORTED — Front Door payload:", _fd_error)
+    raise SystemExit(1)
+print("frontdoor payload:",sum(len(c["refs"]) for c in _fd_payload["curriculum"]["libraryColumns"]),"placed refs (resident)")
 # ---------- MEDIA GUARD: drop <video> embeds whose asset was never exported (resident build) ----------
 # Resident inherits ms3's already-guarded pages via copytree, but re-writes some content from
 # source and adds its own media — so guard the final OUT before indexing.

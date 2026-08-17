@@ -435,6 +435,25 @@ class TestSharedSnippets(unittest.TestCase):
         self.assertIn("var FD_STORE='cw_frontdoor_v1';", t)
         self.assertNotIn("/*__FD_STATE__*/", t)
 
+    def test_every_frontdoor_snippet_expands(self):
+        """All Front Door markers resolve through the frontdoor subdirectory."""
+        markers = [
+            ("/*__FD_DATA__*/", "function fdEsc("),
+            ("/*__FD_TODAY__*/", "function fdTodayProgress("),
+            ("/*__FD_SHELL__*/", "function fdKeyAction("),
+            ("/*__FD_PATH__*/", "function fdPath("),
+            ("/*__FD_LIBRARY__*/", "function fdLibrary("),
+            ("/*__FD_READER__*/", "function fdReaderNeighbours("),
+            ("/*__FD_SEARCH__*/", "function fdExpandQuery("),
+            ("/*__FD_SHEET__*/", "function fdSheet("),
+        ]
+        for marker, needle in markers:
+            p = self._page("<script>\n%s\n</script>" % marker)
+            self.assertTrue(common.inject_shared_snippets(p), marker)
+            t = open(p, encoding="utf-8").read()
+            self.assertIn(needle, t, marker)
+            self.assertNotIn(marker, t, marker)
+
     def test_all_snippet_signatures_are_short_and_unique(self):
         # Whole-line signatures are exact-substring dup-probes (common.py _snippet_signature);
         # long ones silently degrade to no-ops when the file is rewrapped. Cap them.

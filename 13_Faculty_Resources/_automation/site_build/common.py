@@ -552,6 +552,14 @@ SNIPPET_MARKERS = {
     "/*__PHASE_POLICY__*/": "phase_policy.js",
     "/*__SESS_CAPSULE__*/": "sess_capsule.js",
     "/*__FD_STATE__*/": "frontdoor/fd_state.js",
+    "/*__FD_DATA__*/": "frontdoor/fd_data.js",
+    "/*__FD_TODAY__*/": "frontdoor/fd_today.js",
+    "/*__FD_SHELL__*/": "frontdoor/fd_shell.js",
+    "/*__FD_PATH__*/": "frontdoor/fd_path.js",
+    "/*__FD_LIBRARY__*/": "frontdoor/fd_library.js",
+    "/*__FD_READER__*/": "frontdoor/fd_reader.js",
+    "/*__FD_SEARCH__*/": "frontdoor/fd_search.js",
+    "/*__FD_SHEET__*/": "frontdoor/fd_sheet.js",
 }
 
 

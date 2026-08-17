@@ -119,6 +119,10 @@ def _curriculum(items):
         ],
         "roles": {"ms3": [], "resident": []},
         "synonyms": {},
+        "siteLibrary": {
+            "ms3": {"additions": [], "exclusions": []},
+            "resident": {"additions": [], "exclusions": []},
+        },
     }
 
 
@@ -293,6 +297,30 @@ class LibraryTotalityTest(unittest.TestCase):
             self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
             self.assertNotIn("Traceback", r.stderr)
             self.assertIn("must be a string", r.stdout)
+
+
+class SiteLibraryTest(unittest.TestCase):
+    def test_rejects_a_site_addition_for_an_unknown_column(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            cur = _curriculum([])
+            cur["siteLibrary"]["resident"]["additions"] = [
+                {"column": "Missing column", "refs": ["mse.html"]}
+            ]
+            c, m = _write(tmp, cur)
+            r = _run(c, m)
+            self.assertEqual(r.returncode, 1)
+            self.assertIn("Missing column", r.stdout)
+
+    def test_rejects_a_duplicate_site_addition_ref(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            cur = _curriculum([])
+            cur["siteLibrary"]["resident"]["additions"] = [
+                {"column": "Tools", "refs": ["mse.html", "mse.html"]}
+            ]
+            c, m = _write(tmp, cur)
+            r = _run(c, m)
+            self.assertEqual(r.returncode, 1)
+            self.assertIn("duplicate", r.stdout)
 
 
 class ShippedSetTest(unittest.TestCase):
