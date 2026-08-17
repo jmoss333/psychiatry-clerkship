@@ -3,11 +3,11 @@
 The complete contract between `frontdoor.css` and the markup that tasks 3–9 emit.
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(175 `fd-*` classes, 13 `is-*` state classes). Every class below has a rule in that file unless
+(176 distinct `fd-*` selector names, 13 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **Why this file exists.** The implementation plan names 39 contract classes. The stylesheet styles
-172. The remaining 133 are `__element` and `--modifier` names introduced while porting the
+176. The remaining 137 are `__element` and `--modifier` names introduced while porting the
 prototype's inline styles into a stylesheet — a renderer briefed only on the 39 would emit markup
 that misses most of the CSS, and the failure is silent: the page renders, tests pass, the surface
 just looks wrong. Read the surface you are building before writing its markup.
@@ -25,13 +25,14 @@ just looks wrong. Read the surface you are building before writing its markup.
 
 | Class | Element | Notes |
 |---|---|---|
-| `.fd-shell` | outermost wrapper | **Required.** Paints `--fd-bg`/`--fd-text`, sets the font stack, and scopes three descendant rules: `a` / `a:hover` colours, `*{box-sizing:border-box}`, and the single `:focus-visible` outline. Anything rendered outside `.fd-shell` loses all four. |
+| `.fd-shell` | outermost wrapper | **Required.** Paints `--fd-bg`/`--fd-text`, sets the font stack, and scopes three descendant rules: `a` / `a:hover` colours, `*{box-sizing:border-box}`, and its `:focus-visible` outline. Non-overlay content outside `.fd-shell` loses all four. |
 | `.fd-main` | `<main>` | `max-width:1200px`, page padding. Sibling of `.fd-header`, child of `.fd-shell`. |
 
 ⚠ **The four overlay surfaces are portalled outside `.fd-shell`** (`.fd-search`, `.fd-sheet`,
 `.fd-sheetbackdrop`, `.fd-nudge`) — they are `position:fixed` and listed *separately* in the
-reduced-motion block for exactly that reason. They still work outside `.fd-shell`, but they do
-**not** inherit its font stack or `:focus-visible` rule. Render them inside `.fd-shell` if you can.
+reduced-motion block for exactly that reason. They still do **not** inherit its font stack, links,
+or box sizing, but `.fd-search`, `.fd-sheet`, and `.fd-nudge` receive their own token-based
+`:focus-visible` rule. Render them inside `.fd-shell` if you can.
 
 ⚠ **Responsive visibility is done in CSS, not JS.** Do not conditionally render these — always emit
 them and let the breakpoint decide:

@@ -64,3 +64,15 @@ keyboard, routing, and persisted-theme behavior.
 Once the controller exists, add a small development-only accessibility contract harness that opens
 each overlay and verifies its computed accessible name, focus containment, and focus return in one
 browser journey.
+
+## Round 1 remediation
+
+Reviewer follow-up found stale CLASS-INVENTORY counts and obsolete comments after Task 3. The
+count was independently recomputed from comment-stripped `frontdoor.css` as 176 distinct `fd-*`
+selector names. A new RED test failed with `175 !== 176`; after the inventory correction, it
+compares the documented count to the parsed stylesheet so future drift fails the focused suite.
+
+The same round strengthens the reader typography and portal-focus tests to require non-empty,
+token-based declarations, including outline and outline-offset. It also corrects the reader's
+stale comments: `.fd-article__body` is styled and documented, and done rail rows now announce a
+visually hidden `Completed` suffix without `aria-pressed`.

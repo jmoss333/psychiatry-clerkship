@@ -28,18 +28,11 @@
    entities and print literal tags instead of rendering them. Do not "fix" this by wrapping it in
    fdEsc.
 
-   *** .fd-article__body has NO rule in frontdoor.css / CLASS-INVENTORY.md. *** Neither the
-   prototype nor CLASS-INVENTORY's Reader section models a container for real long-form page
-   content -- the prototype only ever shows a one-paragraph summary (.fd-article__lead), because
-   its fixture data never included a full markdown body. bodyHtml needs *some* element to live
-   in, so this file names one following the file's own established `.fd-article__X` convention
-   (matching .fd-article__head/__h1/__lead/__source/__actions), placed in natural reading order
-   right after the lead paragraph. This is flagged to the controller rather than silently
-   invented as final: per the repo's "stop and tell me rather than invent a class" rule, adding
-   the matching frontdoor.css rule is left for whoever wires bodyHtml in for real (Plan 3, which
-   already owns the marked() integration and is not bound by Plan 2's CLASS-INVENTORY freeze) --
-   until then this container is real markup with no bespoke styling, which is a plain-text-looking
-   render, not a broken one.
+   *** .fd-article__body is the long-form content container. *** It follows the file's established
+   `.fd-article__X` convention (matching .fd-article__head/__h1/__lead/__source/__actions) and
+   sits in natural reading order after the lead. Task 3 defines its readable 16.5px/1.72/62ch
+   treatment, descendant typography, and CLASS-INVENTORY entry so rendered markdown is not left
+   with plain-text defaults.
 
    The mobile action bar (.fd-actionbar) is emitted as a SIBLING of the animated .fd-reader
    element, never a descendant -- CLASS-INVENTORY's ⚠ trap, design handoff §6. .fd-reader carries
@@ -226,10 +219,8 @@ function fdReaderPrevNext(neighbours){
    The other half of fd_sheet.js's treatment -- aria-pressed on the button -- deliberately does NOT
    apply here: this row is a NAVIGATION control (data-fd-open, "go to that page"), not a toggle, and
    aria-pressed would announce it as a toggle button the click does not toggle. That would trade one
-   false statement for another. Known residue, flagged rather than papered over: a done rail row is
-   now distinguishable from an unread one by dot colour ALONE (frontdoor.css:427), so its state is
-   still not in the a11y tree. Fixing that properly needs a text affordance in the accessible name
-   (or a visually-hidden class), and frontdoor.css is frozen for this plan -- see the fix report. */
+   false statement for another. A done rail row adds a visually-hidden `Completed` suffix, so its
+   state is announced without misrepresenting a navigation control as a toggle. */
 function fdReaderRailRow(it, curRef, doneMap){
   var isCur=(it.ref===curRef);
   var isDone=!!(doneMap||{})[it.ref];
