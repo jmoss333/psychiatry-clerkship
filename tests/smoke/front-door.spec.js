@@ -283,3 +283,52 @@ test('390x844 reduced-motion Reader keeps fixed 44px actions during scroll witho
   expect(widths.scroll).toBeLessThanOrEqual(widths.client);
   await expectHealthy(page);
 });
+
+test('wide interview table remains accessible and contained in the live Reader', async ({ page }, testInfo) => {
+  await page.setViewportSize(PHONE);
+  await seedApp(page, testInfo, { state: { tab: 'library' } });
+  await page.goto('/?page=pg_interview.md');
+  await expect(page.locator('.fd-reader .fd-article__body')).toBeVisible();
+  await expect(page.locator('.fd-fallback[role="alert"]')).toHaveCount(0);
+
+  const tableSection = page.locator('.fd-article__body .sec-c').filter({
+    has: page.locator('.table-scroll-viewport'),
+  }).first();
+  await expect(tableSection).toBeVisible();
+  const tableHeader = tableSection.locator('.sec-h button');
+  await expect(tableHeader).toHaveCount(1);
+  await tableHeader.click();
+  await expect(tableSection).toHaveClass(/open/);
+
+  const viewport = tableSection.locator('.table-scroll-viewport');
+  const shell = tableSection.locator('.table-scroll');
+  await expect(shell).toHaveClass(/is-scrollable/);
+  await expect(viewport).toHaveAttribute('role', 'region');
+  await expect(viewport).toHaveAttribute('tabindex', '0');
+  await expect(viewport).toHaveAttribute('aria-label', 'MSE Structure table');
+  await expect(viewport.locator('table')).toBeVisible();
+  const scroll = await viewport.evaluate(element => {
+    const before = element.scrollLeft;
+    element.scrollLeft = Math.min(16, element.scrollWidth - element.clientWidth);
+    return {
+      before,
+      after: element.scrollLeft,
+      clientWidth: element.clientWidth,
+      scrollWidth: element.scrollWidth,
+      overflowX: getComputedStyle(element).overflowX,
+    };
+  });
+  expect(scroll.scrollWidth).toBeGreaterThan(scroll.clientWidth);
+  expect(scroll.overflowX).toMatch(/^(auto|scroll)$/);
+  expect(scroll.after).toBeGreaterThan(scroll.before);
+  await expect(shell.locator('.table-scroll-hint')).toBeVisible();
+
+  const widths = await page.locator('#content').evaluate(element => ({
+    content: element.clientWidth,
+    document: document.documentElement.clientWidth,
+    scroll: document.documentElement.scrollWidth,
+  }));
+  expect(widths.content).toBeLessThanOrEqual(widths.document);
+  expect(widths.scroll).toBeLessThanOrEqual(widths.document);
+  await expectHealthy(page);
+});

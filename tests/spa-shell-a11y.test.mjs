@@ -32,7 +32,8 @@ const frontdoorCss = fs.readFileSync(
 const shellCss = shell.slice(shell.indexOf('<style>'), shell.indexOf('</style>'));
 
 function cssRuleHas(css, selector, declaration) {
-  const rules = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)];
+  const flattened = css.replace(/@media[^{}]*\{/g, '');
+  const rules = [...flattened.matchAll(/([^{}]+)\{([^{}]*)\}/g)];
   return rules.some(([, selectorList, body]) => (
     selectorList.split(',').map(part => part.trim()).includes(selector)
     && body.split(';').map(part => part.trim()).includes(declaration)
@@ -154,10 +155,43 @@ test('mobile Reader back control has a 44px minimum width as well as height', ()
     'the exact fixed Reader back base selector needs a 44px mobile width');
 });
 
-test('live Front Door Reader exposes the existing wide-table scroll cue', () => {
-  assert.equal(cssRuleHas(
-    shellCss,
-    '.fd-article__body .table-scroll.is-scrollable .table-scroll-hint',
-    'display:block',
-  ), true, 'the live Reader must share the legacy visible-scroll-cue rule');
+test('live Front Door Reader shares every existing wide-table mechanic', () => {
+  const contracts = [
+    ['.fd-article__body table', [
+      'border-collapse:collapse', 'width:100%', 'margin:1em 0', 'font-size:.92rem',
+    ]],
+    ['.fd-article__body .table-scroll', ['position:relative', 'margin:1em 0']],
+    ['.fd-article__body .table-scroll-viewport', [
+      'overflow-x:auto', '-webkit-overflow-scrolling:touch', 'border:1px solid var(--border)',
+      'border-radius:10px', 'background:var(--surface)',
+    ]],
+    ['.fd-article__body .table-scroll table', [
+      'width:max-content', 'min-width:100%', 'margin:0',
+    ]],
+    ['.fd-article__body .table-scroll.is-scrollable .table-scroll-hint', ['display:block']],
+    ['.fd-article__body .table-scroll.is-scrollable::after', [
+      'content:""', 'position:absolute', 'right:1px', 'bottom:1px', 'width:28px',
+      'height:calc(100% - 24px)', 'pointer-events:none',
+      'background:linear-gradient(90deg,transparent,var(--surface))',
+    ]],
+    ['.fd-article__body .table-scroll th', ['min-width:9rem']],
+    ['.fd-article__body .table-scroll td', ['min-width:9rem']],
+    ['.fd-article__body .table-scroll th:first-child', ['min-width:7rem']],
+    ['.fd-article__body .table-scroll td:first-child', ['min-width:7rem']],
+    ['.fd-article__body th', [
+      'border:1px solid var(--border)', 'padding:7px 10px', 'text-align:left',
+      'vertical-align:top',
+    ]],
+    ['.fd-article__body td', [
+      'border:1px solid var(--border)', 'padding:7px 10px', 'text-align:left',
+      'vertical-align:top',
+    ]],
+    ['.fd-article__body th', ['background:var(--primary-light)']],
+  ];
+  for (const [selector, declarations] of contracts) {
+    for (const declaration of declarations) {
+      assert.equal(cssRuleHas(shellCss, selector, declaration), true,
+        `${selector} must share ${declaration}`);
+    }
+  }
 });
