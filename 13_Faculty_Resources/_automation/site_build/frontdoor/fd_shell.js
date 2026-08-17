@@ -31,10 +31,15 @@
    (this file touches neither DOM nor storage), so the caller resolves the current theme and the
    button's label/pressed state can never disagree with the document. */
 
+/* A LABELLED landmark, not a bare <nav>. The page ships two navigation regions -- this row and
+   the reader's desktop rail (.fd-railnav) -- and an unlabelled <nav> is announced as just
+   "navigation", so a screen-reader user listing landmarks gets two identical entries and no way
+   to tell which is the section switcher. aria-current="page" below marks the active one; the two
+   together are what make the row usable without sight. */
 function fdTabs(tab){
   var cur=(tab==='path'||tab==='library')?tab:'today';
   var defs=[{id:'today',label:'Today'},{id:'path',label:'Path'},{id:'library',label:'Library'}];
-  var out='<nav class="fd-tabs">';
+  var out='<nav class="fd-tabs" aria-label="Sections">';
   for(var i=0;i<defs.length;i++){
     var t=defs[i];
     var active=(t.id===cur);

@@ -72,7 +72,7 @@ const FIX_INDEX = F.fdBuildIndex(FIX_CUR, FIX_META, { tools: [] }, FIX_MAN);
 
 test('the kit variant renders every kit row, in curriculum order, with its subtitle', () => {
   const html = F.fdSheet(REAL_INDEX, REAL_META, { sheet: 'kit' });
-  assert.match(html, /<span class="fd-sheet__title">Safety kit<\/span>/);
+  assert.match(html, /<span class="fd-sheet__title" id="fdSheetTitle">Safety kit<\/span>/);
   assert.equal(html.split('class="fd-kitrow"').length - 1, KIT_REFS.length);
   let cursor = -1;
   for (const k of REAL_CUR.safetyKit) {
@@ -130,7 +130,7 @@ test('the Document callout carries topic_meta.safetyDoc', () => {
 
 test('the protocol title and the open-page button come from the page the ref names', () => {
   const html = F.fdSheet(REAL_INDEX, REAL_META, { sheet: 'pg_suicide.md' });
-  assert.match(html, /<span class="fd-sheet__title">Suicide Risk &amp; Safety Card<\/span>/);
+  assert.match(html, /<span class="fd-sheet__title" id="fdSheetTitle">Suicide Risk &amp; Safety Card<\/span>/);
   assert.match(html, /class="fd-btn fd-btn--ghost"[^>]*data-fd-open="pg_suicide\.md"/);
 });
 
@@ -249,7 +249,7 @@ test('an attested item preview shows the .fd-attested pill', () => {
 test('the item preview renders chip, lead, source chip, primary open button and the close note', () => {
   const html = F.fdSheet(REAL_INDEX, REAL_META, { sheet: 'item:pg_suicide.md' });
   const item = REAL_INDEX.byRef['pg_suicide.md'];
-  assert.match(html, /<span class="fd-sheet__title">Suicide Risk &amp; Safety Card<\/span>/);
+  assert.match(html, /<span class="fd-sheet__title" id="fdSheetTitle">Suicide Risk &amp; Safety Card<\/span>/);
   assert.match(html, /<span class="fd-chip">read<\/span>/);
   assert.match(html, new RegExp(`<p class="fd-sheet__lead">${F.fdEsc(item.summary).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}</p>`));
   assert.match(html, /<span class="fd-src">pg_suicide\.md<\/span>/);
@@ -272,7 +272,7 @@ test('the item preview names the week the item belongs to, and omits it when the
 
 test('an item preview for a ref the index does not carry degrades to a titled shell, not a throw', () => {
   const html = F.fdSheet(REAL_INDEX, REAL_META, { sheet: 'item:not_a_page.md' });
-  assert.match(html, /<span class="fd-sheet__title">not_a_page\.md<\/span>/);
+  assert.match(html, /<span class="fd-sheet__title" id="fdSheetTitle">not_a_page\.md<\/span>/);
   assert.match(html, /data-fd-open="not_a_page\.md"/);
 });
 
@@ -280,7 +280,7 @@ test('an item preview for a ref the index does not carry degrades to a titled sh
 
 test('the backdrop is a separate sibling element emitted BEFORE the sheet', () => {
   const html = F.fdSheet(REAL_INDEX, REAL_META, { sheet: 'kit' });
-  assert.match(html, /^<div class="fd-sheetbackdrop" data-fd-close-sheet><\/div><aside class="fd-sheet">/,
+  assert.match(html, /^<div class="fd-sheetbackdrop" data-fd-close-sheet><\/div><aside class="fd-sheet" role="dialog" aria-modal="true" aria-labelledby="fdSheetTitle" tabindex="-1">/,
     'the sheet uses two elements (backdrop + panel); only the search overlay merges them');
 });
 

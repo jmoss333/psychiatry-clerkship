@@ -954,6 +954,20 @@
      would leave it 32px wide and short of the target on its narrow axis. */
   .fd-themebtn{min-width:44px;min-height:44px}
   .fd-role,.fd-weektile,.fd-kitrow,.fd-step,.fd-pick,.fd-setupcta{min-height:44px}
+  /* Three more mobile primary actions, by the same definition as the row above. Measured in a
+     browser at 375px before and after, so the comment says what each line actually does:
+       .fd-sheet__close   32x32 -> 44x44. A real change, and the one that mattered most: it is the
+                          primary action of a modal opened in the middle of a risk moment.
+       .fd-capturebtn     41 -> 44. Authored at min-height:40px; the extra pixel is the border.
+       .fd-tab            44 -> 44. A NO-OP TODAY, kept deliberately: the tab row is the whole
+                          section switcher on a phone (there is no rail below 1000px), and it only
+                          reaches 44 by accident of .fd-tabs' flex stretch over its own 4px top
+                          padding. A font-size or padding change would drop it below target
+                          silently. This makes the target a floor rather than a coincidence, and
+                          tests/spa-shell-a11y.test.mjs pins it. */
+  .fd-tab{min-height:44px}
+  .fd-sheet__close{width:44px;height:44px}
+  .fd-capturebtn{min-height:44px}
   /* The quiz options and the practice links are primary actions on a topic page. .fd-cta needs
      flex to centre its label once a min-height stretches the box. */
   .fd-quiz__o{min-height:44px}

@@ -82,6 +82,12 @@
 
 var FD_SHEET_ITEM_PREFIX='item:';
 
+/* The panel's accessible name is its own title, addressed by id. A fixed id is safe because the
+   sheet is a SINGLETON: fdSheet() renders at most one panel, into the #fdSheet mount, and the
+   whole panel is rebuilt on every variant change (kit -> protocol -> kit), so two elements can
+   never carry this id at once. */
+var FD_SHEET_TITLE_ID='fdSheetTitle';
+
 /* The kit entry ({item, sub}) for a ref, or null when the ref names no protocol. Membership of
    index.kit -- curriculum.json's safetyKit, in order -- is what makes a ref a protocol; a page
    that merely happens to carry safetySteps is not one. */
@@ -124,7 +130,7 @@ function fdSheetHead(title, hasBack){
      carries. Rendered only for a protocol reached FROM the kit -- the label names a specific place
      to return to, so a protocol opened from a kit card or a search hit shows nothing here. */
   if(hasBack) out+='<button type="button" class="fd-sheet__back" data-fd-safety>‹ kit</button>';
-  out+='<span class="fd-sheet__title">'+fdEsc(title)+'</span>';
+  out+='<span class="fd-sheet__title" id="'+FD_SHEET_TITLE_ID+'">'+fdEsc(title)+'</span>';
   out+='<button type="button" class="fd-sheet__close" data-fd-close-sheet '+
     'title="Close — you’ll land exactly where you were">✕</button>';
   out+='</div>';
@@ -330,9 +336,20 @@ function fdSheet(index, topicMeta, state, crisisHtml){
 
   /* Two elements, not one: .fd-sheetbackdrop is a separate sibling emitted BEFORE the panel and
      carries the click-to-close. Only the search overlay merges scrim and layout into one element
-     (CLASS-INVENTORY's ⚠ trap -- do not mirror one pattern onto the other). */
+     (CLASS-INVENTORY's ⚠ trap -- do not mirror one pattern onto the other).
+
+     *** DIALOG SEMANTICS AND THE TAB TRAP SHIP TOGETHER. DO NOT SPLIT THEM. ***
+     aria-modal="true" is a PROMISE to assistive tech that everything outside this panel is inert.
+     Making that promise without a keyboard trap is strictly worse than making no promise at all: a
+     screen-reader user is told the background is unavailable while Tab still walks them straight
+     into it, silently, with no announcement that they have left. Plan 3 Task 4 therefore added the
+     focus move and the announcement but deliberately NO role/aria-modal, and left a runtime
+     tabindex="-1" in fdFocusSheet() as the stopgap. Task 8 closes both halves in one change: the
+     role, aria-modal, the label and the now-static tabindex are here; fdTrapTab()/fdTrapIndex() in
+     fd_wire.js hold Tab inside the panel. If either half is ever removed, remove the other. */
   return '<div class="fd-sheetbackdrop" data-fd-close-sheet></div>'+
-    '<aside class="fd-sheet">'+
+    '<aside class="fd-sheet" role="dialog" aria-modal="true" '+
+      'aria-labelledby="'+FD_SHEET_TITLE_ID+'" tabindex="-1">'+
       fdSheetHead(title, hasBack)+
       '<div class="fd-sheet__body">'+body+'</div>'+
     '</aside>';

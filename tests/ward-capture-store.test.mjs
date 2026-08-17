@@ -162,29 +162,38 @@ test('T11b: focus return is guarded on the recorded invoker still being connecte
   assert.match(close, /aria-expanded','false'/, 'both invokers are reset on close');
 });
 
-test('T12a: the triage card offers Review only for quiz-bearing pages', () => {
-  const card = slice(shell, 'function capTriageHtml(', 'function capTriageClick(');
-  assert.match(card, /topicHasQuiz\(hit\.f\)/,
-    'a quizless page would make seedSRS a silent no-op — do not render the control');
-  assert.ok(!/data-f="/.test(card),
-    'triage controls must use data-cap-* only; data-f would hit the generic .hm-li branch and '
-    + 'navigate without marking the capture triaged');
-});
-
-test('T12b: the triage card degrades explicitly when the search index is unavailable', () => {
-  const card = slice(shell, 'function capTriageHtml(', 'function capTriageClick(');
-  assert.match(card, /if\(!SI\)/);
-  assert.match(card, /Matching is unavailable right now/);
-});
-
-test('the search-index fetch re-renders home, so the degraded state cannot stick', () => {
-  const fetchLine = shell.split('\n').find((l) => l.includes("fetch('search-index.json')"));
-  assert.ok(fetchLine, 'search-index fetch still present');
-  // specialRefresh() is the dual-root successor of capHomeRefresh() (Today/Progress split) —
-  // same contract: re-render the live special view so the degraded triage state corrects.
-  assert.match(fetchLine, /specialRefresh\(\)/,
-    'SI===null also means "not yet resolved" — without this the triage card paints its degraded '
-    + 'state on every cold load and never corrects');
+// ---- T12a / T12b / the search-index fetch: MOVED, not lost -------------------------------------
+// All three pinned capTriageHtml(), the home triage CARD. Plan 3 Task 3 deleted it along with
+// renderHome, and Task 5 rebuilt the surface as fdCaptureTriage() in frontdoor/fd_due.js, fed by
+// fdCaptureState() in fd_wire.js. tests/fd-due.test.mjs pins the successor and pins it BETTER,
+// because that module is pure and can be executed rather than string-scanned:
+//   T12a (Review only for quiz-bearing pages)  -> fd-due "a matched question offers Open, and
+//        Review only when the page has a servable quiz", which builds both cases and checks the
+//        rendered controls; plus "triage controls carry data-cap-* only, never data-fd-open",
+//        which restates T12a's second clause and cites it by name.
+//   T12b (explicit degraded branch)            -> fd-due "the degraded branch is explicit, and
+//        only shows when matching actually failed" — and it is now a BETTER contract: the old card
+//        keyed on `!SI`, which conflated "index not loaded yet" with "matcher broken", so it
+//        painted the degraded state on every cold load.
+//   the search-index fetch re-render           -> nothing, because the fetch is gone. The ~475 KB
+//        search-index.json download went with the sidebar; the front door's index is
+//        build-injected (FD_SITE_MANIFEST + FD_TOPIC_META) and fdCaptureState() matches through
+//        fdSearchResults(), so there is no asynchronous window for a degraded state to stick in.
+// What is kept here is the retirement itself, as a pin rather than a comment: reintroducing that
+// fetch would reintroduce the cold-load degradation the front door was built to remove.
+test('the legacy search-index fetch stays retired', () => {
+  // Anchored on the FETCH CALL, not the bare filename: spa_index.html's own comment explains why
+  // the download was retired, and banning the string would ban the explanation. (This suite's
+  // sibling in Task 1 shipped exactly that bug in the other direction — a guard satisfied by the
+  // comment naming the file it was supposed to inject.)
+  assert.doesNotMatch(shell, /fetch\(['"]search-index\.json['"]\)/,
+    'the front door ships its index inlined; a re-added fetch brings back the cold-load window '
+    + 'in which the capture triage card had to render a degraded state');
+  assert.doesNotMatch(shell, /\bvar SI=/,
+    'the legacy TF-IDF index variable went with the fetch');
+  assert.doesNotMatch(shell, /function capTriageHtml\(/,
+    'the triage card lives in frontdoor/fd_due.js (fdCaptureTriage) — a second one here would be '
+    + 'a second renderer of the same surface');
 });
 
 test('the capture key is a string literal at every call site', () => {
@@ -197,10 +206,30 @@ test('the capture key is a string literal at every call site', () => {
   for (const arg of calls) assert.match(arg, /^'cw_capture_v1'/);
 });
 
-test('the capture mounts are removed entirely in a faculty preview', () => {
-  const wire = slice(shell, '(function capWire(', '/* ---------- Search');
-  assert.match(wire, /facultyPreviewRequest/,
-    'preview is a reviewer surface, not a learner session — it must not offer to write learner state');
-  assert.match(wire, /removeChild/,
-    'remove rather than disable, so nothing focusable is left in the preview tab order');
+// REPOINTED (Plan 3 Task 8, bucket (a)). Rule 1 of the two the deleted capWire() enforced: on a
+// faculty-preview route the capture affordance is REMOVED, not disabled — a capture control in a
+// reviewer's frame offers to write LEARNER state from a reviewer's seat, and a disabled-but-
+// focusable control still sits in the preview's tab order. capWire() used removeChild() on two
+// mounts it had already rendered; the front door never renders the control in the first place,
+// which is the same rule enforced one step earlier. Three legs, because the rule only holds if all
+// three connect: the flag is read, it reaches the renderer, and the renderer honours it.
+test('the capture entry point is never rendered in a faculty preview', () => {
+  // (1) the flag is composed into state, from the shell's own faculty-preview request
+  assert.match(shell, /st\.preview=!!facultyPreviewRequest;/,
+    'fdCurrentState must carry the preview flag — no renderer can reach facultyPreviewRequest');
+  // (2) Today passes it to the button renderer
+  const todaySrc = readFileSync(new URL(
+    '../13_Faculty_Resources/_automation/site_build/frontdoor/fd_today.js', import.meta.url), 'utf8');
+  assert.match(todaySrc, /fdCaptureButton\(st\.preview\)/);
+  // (3) the renderer omits the control entirely, executed for real rather than string-scanned
+  const dueSrc = readFileSync(new URL(
+    '../13_Faculty_Resources/_automation/site_build/frontdoor/fd_due.js', import.meta.url), 'utf8');
+  // eslint-disable-next-line no-new-func
+  const fdCaptureButton = new Function(`${dueSrc}\nreturn fdCaptureButton;`)();
+  assert.equal(fdCaptureButton(true), '',
+    'a preview must get NO markup — not a disabled button, which is still focusable');
+  const live = fdCaptureButton(false);
+  assert.match(live, /data-fd-capture/, 'and a learner session must still get the control');
+  assert.match(live, /aria-haspopup="dialog" aria-expanded="false"/,
+    'matching what capOpen()/capClose() maintain');
 });

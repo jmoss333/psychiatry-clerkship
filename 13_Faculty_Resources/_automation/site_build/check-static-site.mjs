@@ -486,134 +486,146 @@ if (!existsSync(srcMapPath)) {
     H(`orphaned source page (not wired into build): ${o} — register it in build_deploy.py or rename it out of the content convention`);
 }
 
-/* ---------- 7b. shell-reference integrity scan (HARD) ----------
- * index.html (the SPA shell) carries several hand-maintained literal maps that point at
- * shipped tool files, communication-case ids, and family-scenario ids. Earlier tasks in
- * this branch (sp-interview.html, one-patient-six-weeks.html) added entries to these maps
- * by hand — nothing upstream verifies the entries still resolve once shipped. This section
- * closes that gap: a tool filename, case id, scenario id, or `?page=`/`?tool=` reference
- * the build ships but doesn't back with a real file is a dead end a student can click into.
+/* ---------- 7b. front-door reference integrity scan (HARD) ----------
+ * WHAT THIS SECTION USED TO BE, AND WHY IT WAS REWRITTEN (Plan 3 Task 8).
+ * Until the front-door swap, index.html carried eight hand-maintained literal maps (LAB, ICON,
+ * PRACTICE_LABELS, PAGE_TOOLS, PRACTICE_PAGE_TOOLS, DASH_CONFIG, CASE_TITLES,
+ * FAMILY_SCENARIO_TITLES) naming tool files and case/scenario ids, and this section parsed them
+ * out with a brace counter and two raw-character regexes to check the targets existed. Plan 3
+ * Task 3 deleted all eight. That turned the section's "zero of 8 maps present → skip" branch —
+ * written for the SP-interview suite's synthetic fixture sites — into a silent skip on the REAL
+ * production shell, taking check (c) (content route references) down with it: a whole integrity
+ * check reporting nothing but an I() note, on both live sites.
  *
- * Extraction approach (fragile by construction — flagged here on purpose): the shell
- * literals are ordinary JS object literals baked into index.html, not JSON, so a real
- * parser isn't available without adding a dependency this dependency-free gate deliberately
- * avoids. `extractVarBlock` isolates each `var NAME={...};` block with a quote-aware brace
- * counter (needed because DASH_CONFIG nests a per-mode object inside the outer one);
- * regexes then pull `'*.html'` string literals or bare-identifier object keys out of that
- * block. This breaks if the build ever reformats these vars — e.g. switches `var` to
- * `const`/`let`, quotes the CASE_TITLES/FAMILY_SCENARIO_TITLES keys, or a label string
- * picks up an unescaped matching quote. The `shell literal map "X" not found` HARD failure
- * below is the tripwire for that regression class: it means the scan went blind, not that
- * the shell is fine — treat it as a bug in this section, not a pass. Also note: the
- * `'*.html'`/bare-key regexes read raw characters, not tokens — a quoted `'*.html'`-looking
- * string or a `word:'...'`-looking fragment sitting inside a "//" or block-comment inside
- * one of these var blocks would be picked up as a phantom reference. No such comment
- * exists in these blocks today (verified) — flagged here as a known blind spot, not a bug.
+ * The replacement checks the shell's actual reference sources, which are no longer hand-typed
+ * literals but the six build-injected JSON payloads the front door reads (build_deploy.py's
+ * FD_* injection). That is a strictly better subject in three ways: it is real JSON, so a real
+ * parser replaces the brace counter and the raw-character regexes it needed; the payloads ARE the
+ * site's index, so a dangling ref here is a dead end in the Library, Path, Today and search all at
+ * once; and it is per-site, so the resident build is checked against its own payloads.
  *
- * Escape hatch: a specific reference that's a genuine, reviewed exception (not a bug) can
- * be listed here instead of fixed, with a comment explaining why. Empty as of this task —
- * the (a)/(b)/(c) checks below found zero pre-existing violations against the current
- * build, so nothing needed it.
+ * (a) FD_CURRICULUM — every ref in weeks[].items[], libraryColumns[].refs[] and safetyKit[] must
+ *     be a shipped content/*.md or tools/*.html. These are what fdBuildIndex() turns into
+ *     index.byRef, which every front-door surface reads; a ref with no file is a card that opens
+ *     nothing.
+ * (b) FD_SITE_MANIFEST + FD_TOOL_REGISTRY — every registered slug must exist on disk. The
+ *     manifest is the registry of shipped pages (build_deploy.py's source→slug map) and the
+ *     registry is what the governance projection is keyed on, so a stale entry here means a
+ *     governance record for a page nobody can open.
+ * (c) `?page=`/`?tool=` references inside shipped content/*.md — UNCHANGED, and deliberately
+ *     HOISTED OUT of the payload gate. It never depended on the shell's literals at all; it was
+ *     only nested inside that branch by accident of authorship, which is how it came to be skipped
+ *     when they were deleted. It now runs unconditionally, including on fixture sites (where
+ *     content/ is empty and the loop is a no-op).
  *
- * Tri-state presence gate (added after CI caught this scan hard-failing the SP-interview
- * contract suite's synthetic fixture sites, whose stub index.html deliberately carries
- * none of these maps — it's testing the checker's *other* rules, not the real shell):
- *   - all 8 maps present  → scan runs normally (the real shell always carries all 8).
- *   - zero of 8 present   → this isn't a shell that's supposed to have these maps at all
- *     (a test fixture, a non-SPA site) — section 7b is skipped entirely (a, b, and c) with
- *     an I() note, not a HARD failure.
- *   - some but not all present → real drift or regex rot on an actual shell (which always
- *     ships all 8 together) — kept as HARD failures per missing map, unchanged. Do NOT
- *     special-case known fixtures by path/name; the all-or-nothing marker count is the
- *     only signal used, so a real shell that loses a map still fails loudly.
+ * Tri-state presence gate, same shape and same reason as before (the SP-interview contract suite's
+ * fixture index.html carries no FD_* payloads and is testing this checker's OTHER rules):
+ *   - all 3 scanned payloads present → scan runs.
+ *   - zero present → fixture or non-SPA site; (a) and (b) skip with an I() note.
+ *   - some but not all → real drift on an actual shell → HARD per missing payload.
+ * A payload that is present but unparseable is a HARD failure, never a skip: it means the scan
+ * went blind, and it also means the browser's own `var FD_X={...}` would be a syntax error.
+ *
+ * Escape hatch: a genuine, reviewed exception can be listed in SHELL_REF_ALLOWLIST with a comment.
+ * Empty as of this task — the checks below found zero violations against both live builds.
  */
 const SHELL_REF_ALLOWLIST = new Set([
   // 'tool-name.html',   // example shape — reason it's allowlisted instead of fixed
 ]);
 {
-  const extractVarBlock = (src, varName) => {
+  // The payloads are emitted by build_deploy.py as `var NAME=<json>;` on one line, with `</`
+  // escaped to `<\/` so a JSON string containing "</script>" cannot close the inline script.
+  // Reverse that one escape and hand the rest to JSON.parse — no hand-rolled parsing.
+  const readPayload = (src, varName) => {
     const marker = `var ${varName}=`;
     const start = src.indexOf(marker);
-    if (start === -1) return null;
-    let i = src.indexOf('{', start);
-    if (i === -1) return null;
-    let depth = 0, inStr = null;
-    for (; i < src.length; i++) {
-      const c = src[i];
-      if (inStr) { if (c === '\\') { i++; continue; } if (c === inStr) inStr = null; continue; }
-      if (c === "'" || c === '"') { inStr = c; continue; }
-      if (c === '{') depth++;
-      else if (c === '}') { depth--; if (depth === 0) return src.slice(start, i + 1); }
-    }
-    return null; // ran off the end without closing — extraction failed
+    if (start === -1) return undefined;
+    const from = start + marker.length;
+    const end = src.indexOf(';\n', from);
+    if (end === -1) return null;
+    try { return JSON.parse(src.slice(from, end).replace(/<\\\//g, '</')); }
+    catch (e) { return { __parseError: e.message }; }
   };
-  const htmlNamesIn = (block) => new Set([...block.matchAll(/(['"])([^'"]+\.html)\1/g)].map(m => m[2]));
-  const bareKeysIn = (block) => new Set([...block.matchAll(/([A-Za-z_$][\w$]*)\s*:\s*'/g)].map(m => m[1]));
-  const TOOL_MAP_VARS = ['LAB', 'ICON', 'PRACTICE_LABELS', 'PAGE_TOOLS', 'PRACTICE_PAGE_TOOLS', 'DASH_CONFIG'];
-  const ALL_SHELL_MAP_VARS = [...TOOL_MAP_VARS, 'CASE_TITLES', 'FAMILY_SCENARIO_TITLES'];
 
   const shellHtml = existsSync(shellPath) ? readFileSync(shellPath, 'utf8') : null;
   if (shellHtml === null) {
-    H('index.html missing from built site (shell-reference scan cannot run)');
+    H('index.html missing from built site (front-door reference scan cannot run)');
   } else {
-    const presentMapVars = ALL_SHELL_MAP_VARS.filter(v => shellHtml.includes(`var ${v}=`));
-    if (presentMapVars.length === 0) {
-      I('no shell literal maps in index.html — 7b scan skipped (fixture or non-SPA site)');
+    const WANTED = ['FD_CURRICULUM', 'FD_SITE_MANIFEST', 'FD_TOOL_REGISTRY'];
+    const payloads = new Map(WANTED.map(v => [v, readPayload(shellHtml, v)]));
+    const present = WANTED.filter(v => payloads.get(v) !== undefined);
+
+    if (present.length === 0) {
+      I('no front-door data payloads in index.html — 7b (a)/(b) skipped (fixture or non-SPA site)');
     } else {
-      // (a) tool filenames referenced across the six shell maps must exist in tools/.
-      const toolRefs = new Map(); // toolName -> Set(varName it was found in)
-      for (const varName of TOOL_MAP_VARS) {
-        const block = extractVarBlock(shellHtml, varName);
-        if (block === null) { H(`shell literal map "${varName}" not found in index.html (extraction failed — see comment above)`); continue; }
-        for (const name of htmlNamesIn(block)) {
-          if (!toolRefs.has(name)) toolRefs.set(name, new Set());
-          toolRefs.get(name).add(varName);
-        }
-      }
-      for (const [name, vars] of [...toolRefs].sort((a, b) => a[0].localeCompare(b[0]))) {
-        if (SHELL_REF_ALLOWLIST.has(name)) continue;
-        if (!existsSync(p('tools', name)))
-          H(`shell references missing tool "${name}" (in ${[...vars].sort().join(', ')}) — index.html`);
+      for (const v of WANTED) {
+        const data = payloads.get(v);
+        if (data === undefined) { H(`front-door payload "${v}" missing from index.html (the other ${present.length} are present — real drift, not a fixture)`); continue; }
+        if (data === null) { H(`front-door payload "${v}" is not terminated by ";\\n" in index.html (extraction failed — this scan is blind, treat as a bug in section 7b)`); continue; }
+        if (data.__parseError) H(`front-door payload "${v}" is not valid JSON: ${data.__parseError} — the browser would fail to parse it too`);
       }
 
-      // (b) CASE_TITLES / FAMILY_SCENARIO_TITLES ids must exist in the shipped case/scenario data.
-      const idBlockCheck = (varName, dataFile, dataKey) => {
-        const block = extractVarBlock(shellHtml, varName);
-        if (block === null) { H(`shell literal map "${varName}" not found in index.html (extraction failed — see comment above)`); return; }
-        const target = p(dataFile);
-        if (!existsSync(target) || !parsed[target]) { H(`${dataFile} not found or unparsable in built site (cannot verify ${varName} ids)`); return; }
-        const knownIds = new Set((parsed[target][dataKey] || []).map(x => x && x.id).filter(Boolean));
-        for (const id of bareKeysIn(block)) {
-          if (knownIds.has(id) || SHELL_REF_ALLOWLIST.has(id)) continue;
-          H(`shell ${varName} references missing id "${id}" — not in ${dataFile}`);
-        }
+      const contentSetB = new Set(contentFiles);
+      const toolSetB = new Set(toolFiles);
+      const refExists = (ref) => (String(ref).endsWith('.md') ? contentSetB.has(ref) : toolSetB.has(ref));
+      const checkRef = (ref, where) => {
+        if (!ref || SHELL_REF_ALLOWLIST.has(ref)) return;
+        if (!refExists(ref)) H(`front-door ${where} references missing file "${ref}" — index.html`);
       };
-      idBlockCheck('CASE_TITLES', 'communication_cases.json', 'cases');
-      idBlockCheck('FAMILY_SCENARIO_TITLES', 'family_systems_scenarios.json', 'scenarios');
 
-      // (c) `?page=`/`?tool=` references in shipped content/*.md must resolve to a shipped
-      // content slug / tool file. Target is read up to the next &, quote, close-paren, or
-      // whitespace, so both markdown `(...)` links and raw `href="..."` attributes match. A
-      // trailing `#fragment` (e.g. `?page=shelf.md#section`) is stripped after decoding —
-      // without it, a future in-page anchor link would false-positive as a missing file.
-      // decodeURIComponent throws on a malformed `%` escape; caught below and reported as
-      // a finding, not an uncaught crash of the whole gate.
-      const contentSetC = new Set(contentFiles);
-      const toolSetC = new Set(toolFiles);
-      const ROUTE_REF = /\?(page|tool)=([^&"')\s]+)/g;
-      for (const f of contentFiles) {
-        const text = readFileSync(p('content', f), 'utf8');
-        for (const m of text.matchAll(ROUTE_REF)) {
-          const kind = m[1];
-          let target;
-          try { target = decodeURIComponent(m[2]); }
-          catch (e) { H(`content/${f} → ?${kind}= reference has an undecodable target "${m[2]}" (${e.message})`); continue; }
-          target = target.replace(/#.*$/, '');
-          if (SHELL_REF_ALLOWLIST.has(target)) continue;
-          const ok = kind === 'page' ? contentSetC.has(target) : toolSetC.has(target);
-          if (!ok) H(`content/${f} → ?${kind}= references missing ${kind === 'page' ? 'content page' : 'tool'}: ${target}`);
+      // (a) curriculum refs: the whole of index.byRef comes from these three lists.
+      const curriculum = payloads.get('FD_CURRICULUM');
+      if (curriculum && !curriculum.__parseError) {
+        for (const w of curriculum.weeks || [])
+          for (const it of w.items || []) checkRef(it && it.ref, `FD_CURRICULUM week ${w.n}`);
+        // A column ref is either a bare slug or a per-site {ref, title} object (Task 6's per-site
+        // column scoping), and fd_data.js reads both shapes — so this must too, or the titled
+        // entries silently go unchecked while the scan still reports success.
+        for (const col of curriculum.libraryColumns || []) {
+          for (const entry of col.refs || []) {
+            const ref = (entry && typeof entry === 'object') ? entry.ref : entry;
+            if (typeof ref !== 'string' || !ref) { H(`FD_CURRICULUM column "${col.name}" carries a ref that is neither a slug nor a {ref,title} object — index.html`); continue; }
+            checkRef(ref, `FD_CURRICULUM column "${col.name}"`);
+          }
         }
+        for (const k of curriculum.safetyKit || []) checkRef(k && k.ref, 'FD_CURRICULUM safetyKit');
       }
+
+      // (b) registered slugs: [sourcePath, slug, title] triples for md/tools, {file} for the registry.
+      const manifest = payloads.get('FD_SITE_MANIFEST');
+      if (manifest && !manifest.__parseError) {
+        for (const row of manifest.md || []) checkRef(row && row[1], 'FD_SITE_MANIFEST md');
+        for (const row of manifest.tools || []) checkRef(row && row[1], 'FD_SITE_MANIFEST tools');
+      }
+      const registry = payloads.get('FD_TOOL_REGISTRY');
+      if (registry && !registry.__parseError) {
+        for (const t of registry.tools || []) checkRef(t && t.file, 'FD_TOOL_REGISTRY');
+      }
+    }
+  }
+
+  // (c) `?page=`/`?tool=` references in shipped content/*.md must resolve to a shipped content
+  // slug / tool file. HOISTED: this check has never depended on anything in the shell, and
+  // nesting it under the shell-map gate is what silently switched it off when the maps were
+  // deleted. Target is read up to the next &, quote, close-paren, or whitespace, so both markdown
+  // `(...)` links and raw `href="..."` attributes match. A trailing `#fragment` (e.g.
+  // `?page=shelf.md#section`) is stripped after decoding — without it, a future in-page anchor
+  // link would false-positive as a missing file. decodeURIComponent throws on a malformed `%`
+  // escape; caught below and reported as a finding, not an uncaught crash of the whole gate.
+  const contentSetC = new Set(contentFiles);
+  const toolSetC = new Set(toolFiles);
+  const ROUTE_REF = /\?(page|tool)=([^&"')\s]+)/g;
+  for (const f of contentFiles) {
+    const text = readFileSync(p('content', f), 'utf8');
+    for (const m of text.matchAll(ROUTE_REF)) {
+      const kind = m[1];
+      let target;
+      try { target = decodeURIComponent(m[2]); }
+      catch (e) { H(`content/${f} → ?${kind}= reference has an undecodable target "${m[2]}" (${e.message})`); continue; }
+      target = target.replace(/#.*$/, '');
+      if (SHELL_REF_ALLOWLIST.has(target)) continue;
+      const ok = kind === 'page' ? contentSetC.has(target) : toolSetC.has(target);
+      if (!ok) H(`content/${f} → ?${kind}= references missing ${kind === 'page' ? 'content page' : 'tool'}: ${target}`);
     }
   }
 }

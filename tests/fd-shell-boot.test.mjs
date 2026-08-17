@@ -135,17 +135,28 @@ test('SURVIVOR: marked rendering of markdown pages — consumer: the reader pane
     'marked.parse without the library is a runtime throw on the first page opened');
 });
 
-test('SURVIVOR: SRS / question-bank helpers — consumer: Task 5 ports their surfaces', () => {
+test('SURVIVOR: SRS / question-bank helpers — consumer: the due row and the done map', () => {
   assert.match(source, /function srsState\(\)\{/, 'reads cw_srs_v1');
-  assert.match(source, /function dueBreakdown\(\)\{/, 'the due row Task 5 ports is built from it');
-  // sessLoad() reaches the page through the SESS_CAPSULE marker, not as literal text here — and
-  // its only CALL site was renderHome's resume row, which this task deleted. So the thing to pin
-  // is the marker: lose it and Task 5 has no qbank resume capsule to port a surface for.
-  assert.equal(source.split('/*__SESS_CAPSULE__*/').length - 1, 1,
-    'exactly one SESS_CAPSULE marker — sessLoad()/the qbank resume capsule arrive through it, and '
-    + 'Task 5 ports the resume row that calls it');
+  assert.match(source, /function dueBreakdown\(\)\{/, 'the due row Task 5 ported is built from it');
   assert.match(source, /function progLoad\(\)\{/,
     "cw_progress_v1 IS the front door's done map — fd_state.js persists no copy of it, by design");
+
+  // *** THE SESS_CAPSULE SURVIVOR WAS RESOLVED AS A RETIREMENT (Plan 3 Task 8). ***
+  // Task 3 preserved the marker on the expectation, written into this test, that "Task 5 ports the
+  // resume row that calls it". Task 5 ported the tool surface, the due row, the capture triage,
+  // Progress and the A2HS line — but no resume row, and neither did Tasks 6 or 7. sessLoad(),
+  // sessSave() and sessClear() therefore had zero callers in this page, and the marker was pasting
+  // an unreachable snippet into every build of both sites. The snippet is untouched and still live
+  // in question-bank-practice.html (tests/sess-capsule.test.mjs), so a student's in-progress qbank
+  // session still resumes when they reopen the TOOL; what is gone is the shell's shortcut to it.
+  // Reversing this is one line — re-add the marker — which is the point of pinning the absence
+  // here rather than deleting the assertion: a re-add is a decision someone makes on purpose.
+  assert.equal(source.split('/*__SESS_CAPSULE__*/').length - 1, 0,
+    'the SESS_CAPSULE marker is retired from the shell — restoring it means restoring a caller too, '
+    + 'or it injects dead code again');
+  assert.doesNotMatch(source, /\bsessLoad\(|\bsessSave\(|\bsessClear\(/,
+    'and no shell code may call the capsule helpers while the marker is absent — they would be '
+    + 'undefined at runtime');
 });
 
 test('SURVIVOR: ward-capture store — consumer: Task 5 ports its triage surface', () => {

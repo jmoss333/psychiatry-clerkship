@@ -660,16 +660,12 @@ function fdFocusSearch(){
    protocol moved no focus, said nothing, and returned nothing on close. For a student using a
    screen reader that is silence on the surface where silence costs most.
 
-   *** SCOPE LINE, DELIBERATE. *** What is here is the EVENT half: move focus in, restore it on
-   close, announce the open. The MARKUP half -- role="dialog", aria-modal, aria-labelledby on
-   .fd-sheet -- lives in fd_sheet.js and is already named in the plan's Task 8 step 3, so it is
-   not taken here. Two consequences worth stating rather than discovering:
-     - There is no Tab TRAP. A trap belongs with aria-modal, not before it: trapping Tab inside a
-       region the a11y tree has not been told is modal leaves a user held somewhere they were
-       never told they were. Escape closes, and the close button is reachable, so nobody is stuck.
-     - fdFocusSheet sets tabindex="-1" at runtime because the panel needs to be focusable and its
-       markup does not say so. That line should MOVE INTO fd_sheet.js when Task 8 adds the dialog
-       role, not be duplicated there. */
+   The MARKUP half -- role="dialog", aria-modal, aria-labelledby and the panel's tabindex="-1" --
+   lives in fd_sheet.js. Plan 3 Task 4 shipped this event half alone and deliberately withheld the
+   trap, because trapping Tab inside a region the a11y tree has not been told is modal holds a user
+   somewhere they were never told they were. Task 8 landed the two together: fdTrapTab() below is
+   the keyboard counterpart of that aria-modal promise, and the runtime tabindex line that used to
+   sit in fdFocusSheet() moved into the markup rather than being duplicated there. */
 
 /* The live region the shell already owns. Deliberately NOT announceRoute(), which also moves
    focus to #content -- calling it for a sheet would fight the focus move two lines later. */
@@ -687,12 +683,65 @@ function fdFocusSheet(announce){
   try{
     var panel=document.querySelector(FD_SEL_SHEET);
     if(!panel) return;
-    panel.setAttribute('tabindex', '-1');
+    /* No setAttribute('tabindex','-1') here any more: fd_sheet.js emits it. A runtime copy would
+       be a second writer of the same attribute, and the markup is where a reviewer looks to see
+       whether the panel is focusable at all. */
     panel.focus();
     if(!announce) return;
     var title=panel.querySelector('.fd-sheet__title');
     if(title) fdSay(title.textContent+' opened');
   }catch(_){ }
+}
+
+/* ---- the Tab trap ---------------------------------------------------------------------------
+   The keyboard half of .fd-sheet's aria-modal promise (see fd_sheet.js). The DECISION is pure and
+   lives here on its own so it can be tested without a DOM -- tests/spa-shell-a11y.test.mjs runs
+   every branch -- and fdTrapTab() below does nothing but read the DOM, ask this, and act.
+
+   Arguments are what the DOM can answer: how many tabbable elements the panel holds, where the
+   active one sits among them (-1 when it is not one of them), whether the active element IS the
+   panel, and the shift key. Returns an index into that list, FD_TRAP_PANEL to send focus to the
+   panel itself, or null for "do not intercept -- the browser's own Tab order is correct here".
+
+   Forward Tab off the panel is deliberately NOT intercepted: the panel precedes its children in
+   document order, so the browser already lands on the first control. Backward Tab off the panel
+   IS intercepted -- unhandled it would step out of the dialog into the page behind it, which is
+   the exact escape aria-modal says cannot happen. */
+var FD_TRAP_PANEL=-1;
+function fdTrapIndex(count, idx, shift, onPanel){
+  if(!count) return FD_TRAP_PANEL;          /* an empty panel still holds focus */
+  if(onPanel) return shift?(count-1):null;
+  if(idx<0) return shift?(count-1):0;       /* focus escaped the panel: pull it back */
+  if(shift&&idx===0) return count-1;
+  if(!shift&&idx===count-1) return 0;
+  return null;
+}
+
+/* Tabbable, in DOM order. [tabindex="-1"] is excluded because that is precisely the marker for
+   "focusable by script, not by Tab" -- which is what the panel itself carries. Hidden controls are
+   skipped via offsetParent (the same visibility probe fdFindVisible/capClose already use), so a
+   control inside a collapsed region cannot become a dead stop in the cycle. */
+var FD_TABBABLE='a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),'+
+  'textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+function fdTrapTabbables(panel){
+  var out=[], all=panel.querySelectorAll(FD_TABBABLE), i;
+  for(i=0;i<all.length;i++){ if(all[i].offsetParent!==null) out.push(all[i]); }
+  return out;
+}
+
+/* Returns true when it handled the key, so the listener can stop. */
+function fdTrapTab(ev){
+  try{
+    var panel=document.querySelector(FD_SEL_SHEET);
+    if(!panel) return false;
+    var items=fdTrapTabbables(panel), active=document.activeElement, i, idx=-1;
+    for(i=0;i<items.length;i++){ if(items[i]===active){ idx=i; break; } }
+    var target=fdTrapIndex(items.length, idx, !!ev.shiftKey, active===panel);
+    if(target===null) return false;
+    ev.preventDefault();
+    (target===FD_TRAP_PANEL?panel:items[target]).focus();
+    return true;
+  }catch(_){ return false; }
 }
 
 function fdFocusLost(){
@@ -1150,6 +1199,12 @@ function fdWire(){
     /* A surface opened from the keyboard has no invoking control, so closing it falls back to
        #content rather than restoring focus to whatever was last clicked, possibly minutes ago. */
     FD_LAST_INVOKER=null;
+    /* The Tab trap runs FIRST, before the typing bail and before any state is composed. The
+       aria-modal promise on .fd-sheet has to hold for every Tab, including one pressed inside a
+       control the `typing` guard would otherwise wave past -- a guard written to stop "1" from
+       switching tabs must not become the hole the trap leaks out of. fdTrapTab is a no-op with no
+       sheet on screen, so this costs one failed querySelector on every other keystroke. */
+    if(key==='Tab'&&fdTrapTab(ev)) return;
     /* Bail before composing state for the overwhelmingly common case: a keystroke inside an
        input that cannot mean anything. Escape and Enter survive because the search panel needs
        them even while the caret is in its box. */

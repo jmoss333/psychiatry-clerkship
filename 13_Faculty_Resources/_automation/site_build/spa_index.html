@@ -1100,8 +1100,18 @@
   /*__CALIB_LOG__*/
 
   /*__PHASE_POLICY__*/
+  /* Injected for localDayStr/localDayIndex/shelfDaysUntil, which fd_state.js and fd_wire.js call.
+     phasePolicy() itself arrives with them and now has NO caller in this page: Plan 3 Task 3
+     deleted renderHome()'s rotation-phase chip and nothing replaced it. It is still live in
+     review.html (tests/phase-wiring.test.mjs), so the snippet is not dead — only this consumer's
+     use of that one function is. Kept because the other three are load-bearing here. */
 
-  /*__SESS_CAPSULE__*/
+  /* RETIRED (Plan 3 Task 8): /*__SESS_CAPSULE__*\/ was injected here for the home "Resume question
+     bank" row, which Task 3 deleted with renderHome(). sessLoad/sessSave/sessClear had zero
+     callers in this page afterwards, so the marker was pasting ~35 lines of unreachable code into
+     every build of both sites. The snippet itself is untouched and still live in
+     question-bank-practice.html, where tests/sess-capsule.test.mjs pins both its behaviour and its
+     wiring. tests/resume-card.test.mjs, which existed only for this consumer, went with it. */
 
   /* ---- calib panel ---- */
   /* Metacognition panel (phase 1): swaps in for the legacy calibrationSummary() card on

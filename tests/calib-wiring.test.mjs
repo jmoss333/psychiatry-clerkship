@@ -194,28 +194,38 @@ test('spa_index.html exportStudy forwards the calibration ledger via calibRead()
     'exportStudy must not reference the cw_calib_v1 literal directly — only calibRead() may');
 });
 
-test('spa_index.html renderProgress swaps in renderCalibPanel() and falls back to calibrationSummary() only when it is empty', () => {
+// REPOINTED (Plan 3 Task 8, bucket (b) — the logic never left spa_index.html, its host did).
+// window.renderProgress was deleted with the sidebar-era shell in Task 3; Task 5 restored the
+// Progress surface as fdProgress(idx, state), which is the front door's own renderer for the same
+// page (?page=__progress__). renderCalibPanel()/calibrationSummary() were never moved into a
+// frontdoor/ module — they read four learner stores directly and fdProgress composes them, which
+// is why that surface is deliberately NOT a module (its own comment says so). So this stays a
+// spa_index.html scan; only the enclosing function's name and brace shape changed.
+test('spa_index.html fdProgress swaps in renderCalibPanel() and falls back to calibrationSummary() only when it is empty', () => {
   const startMarker = '/* ---- calib panel ---- */';
   const endMarker = '/* ---- end calib panel ---- */';
   assert.ok(spaSrc.includes(startMarker) && spaSrc.includes(endMarker),
     'calib-panel slice markers must both be present');
-  // The calibration card lives on the Progress view since the Today/Progress split —
-  // renderHome must NOT carry it (Today is the action half; analytics render on Progress).
-  const renderProgressMatch = spaSrc.match(/window\.renderProgress=function\(\)\{[\s\S]*?\n  \};/);
-  assert.ok(renderProgressMatch, 'window.renderProgress function not found');
-  const body = renderProgressMatch[0];
+  const fdProgressMatch = spaSrc.match(/function fdProgress\(idx, state\)\{[\s\S]*?\n  \}/);
+  assert.ok(fdProgressMatch, 'fdProgress(idx, state) not found in spa_index.html');
+  const body = fdProgressMatch[0];
   assert.match(body, /var calPanel=\(typeof renderCalibPanel==='function'\)\?renderCalibPanel\(\):''/,
-    'renderProgress must call renderCalibPanel() defensively (typeof guard)');
-  assert.match(body, /if\(calPanel\)\{ h\+=calPanel; \}/,
-    'renderProgress must use the panel output when non-empty');
-  assert.match(body, /else\{ var cal=calibrationSummary\(\);/,
-    'renderProgress must fall back to the legacy calibrationSummary() card when the panel is empty');
-  const renderHomeMatch = spaSrc.match(/window\.renderHome=function\(\)\{[\s\S]*?\n  \};/);
-  assert.ok(renderHomeMatch, 'window.renderHome function not found');
-  // Pin the swap-in CALL (var calPanel=...), not the bare identifier — a renderHome comment
-  // legitimately cites renderCalibPanel()'s docs and must not trip this.
-  assert.doesNotMatch(renderHomeMatch[0], /var calPanel=/,
-    'renderHome must not render the calibration panel — it moved to renderProgress');
+    'fdProgress must call renderCalibPanel() defensively (typeof guard)');
+  assert.match(body, /if\(calPanel\)\{ out\+=calPanel; \}/,
+    'fdProgress must use the panel output when non-empty');
+  assert.match(body, /else \{\s*\n\s*var cal=calibrationSummary\(\);/,
+    'fdProgress must fall back to the legacy calibrationSummary() card when the panel is empty');
+  // The calibration card belongs to Progress, not to Today: the front door's Today surface is the
+  // action half and analytics render on Progress. renderHome (the old dual-purpose renderer) is
+  // gone, so the pin is now "exactly one caller", which says the same thing without naming a
+  // function that no longer exists — and catches a second call site anywhere, not just on Today.
+  const swapIns = (spaSrc.match(/var calPanel=/g) || []).length;
+  assert.equal(swapIns, 1,
+    `the calibration panel must be swapped in at exactly one site (fdProgress), found ${swapIns}`);
+  const fdTodaySrc = fs.readFileSync(
+    path.join(repo, '13_Faculty_Resources/_automation/site_build/frontdoor/fd_today.js'), 'utf8');
+  assert.doesNotMatch(fdTodaySrc, /renderCalibPanel|calibrationSummary/,
+    'Today must not render the calibration card — it lives on Progress');
 });
 
 // Every file this repo's build treats as shipped source (git-tracked .html/.js). Untracked
