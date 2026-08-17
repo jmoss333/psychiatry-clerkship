@@ -516,3 +516,53 @@ test('fd_sheet.js hand-maintains no crisis number of its own', () => {
   // make impossible.
   assert.doesNotMatch(sheetSrc, /\b988\b|741741|568-1112|\b911\b/);
 });
+
+// ---- the failed-load line ----------------------------------------------------------------------
+// Copy is the repo owner's, verbatim. An empty protocol body used to render honestly but SILENTLY,
+// which reads as "nothing to do here" rather than "this did not load".
+
+const FAILED_COPY = 'Steps didn’t load. Reload, or open the full page.';
+
+test('a protocol whose topicMeta never arrived says the steps did not load', () => {
+  for (const ref of KIT_REFS) {
+    const html = F.fdSheet(REAL_INDEX, undefined, { sheet: ref });
+    assert.match(html, /<p class="fd-sheet__failed">/, ref);
+    assert.ok(html.includes(FAILED_COPY), `${ref}: the copy is the owner's, verbatim`);
+  }
+});
+
+test('it also covers a reviewed page whose safetySteps were emptied', () => {
+  const html = F.fdSheet(FIX_INDEX, FIX_META, { sheet: 'bare.md' });
+  assert.ok(html.includes(FAILED_COPY));
+});
+
+test('it makes no clinical claim and no attestation claim, and ships to both sites', () => {
+  const html = F.fdSheet(REAL_INDEX, undefined, { sheet: KIT_REFS[0] });
+  assert.doesNotMatch(html, /faculty-attested/);
+  assert.doesNotMatch(html, /fd-sheet__attribution|fd-sheet__pending/,
+    'a body that did not load is not evidence about anybody\'s review');
+  const line = html.match(/<p class="fd-sheet__failed">([^<]*)</)[1];
+  assert.doesNotMatch(line, AUDIENCE_TOKEN_RE);
+});
+
+test('a protocol WITH content never shows it', () => {
+  for (const ref of KIT_REFS) {
+    assert.doesNotMatch(F.fdSheet(REAL_INDEX, REAL_META, { sheet: ref }), /fd-sheet__failed/, ref);
+  }
+  // doc line but no steps is still content: the sheet has something to show.
+  const meta = { 'evil.md': { safetyDoc: 'Document the thing', facultyReview: { status: 'reviewed' } } };
+  const idx = F.fdBuildIndex(FIX_CUR, meta, { tools: [] }, FIX_MAN);
+  assert.doesNotMatch(F.fdSheet(idx, meta, { sheet: 'evil.md' }), /fd-sheet__failed/);
+});
+
+test('it sits where the steps would have been, above the crisis block and the way out', () => {
+  const html = F.fdSheet(REAL_INDEX, undefined, { sheet: KIT_REFS[0] }, CRISIS);
+  assert.ok(html.indexOf('fd-sheet__body') < html.indexOf('fd-sheet__failed'));
+  assert.ok(html.indexOf('fd-sheet__failed') < html.indexOf('fd-sheet__crisis'));
+  assert.ok(html.indexOf('fd-sheet__crisis') < html.indexOf('Open the full page'));
+});
+
+test('the kit list and the item preview never show it', () => {
+  assert.doesNotMatch(F.fdSheet(REAL_INDEX, undefined, { sheet: 'kit' }), /fd-sheet__failed/);
+  assert.doesNotMatch(F.fdSheet(REAL_INDEX, undefined, { sheet: 'item:pg_suicide.md' }), /fd-sheet__failed/);
+});

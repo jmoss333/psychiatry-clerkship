@@ -300,3 +300,21 @@ test('the site filter drops nothing on TODAY\'s data, and the reason is stated',
   assert.equal(ms3.byRef['cl_reference.md'], undefined,
     'precondition: MS3 ships neither the host page nor its target');
 });
+
+test('the legacy tools/<slug>.html href form is normalised to the routable one', () => {
+  // Restored from the deleted shell's ctaHref(). It survives in exactly one place:
+  // resident_section.py synthesises two resident-only CTAs with it. Left as a raw path the link
+  // would leave the shell and load the tool standalone — no chrome, no governance notice, no way
+  // back — so the href is REWRITTEN, not merely recognised.
+  const meta = { 'a.md': { cta: [{ label: 'Open the trainer', href: 'tools/t.html' }] } };
+  assert.deepEqual(F.fdBuildIndex(CTA_CUR, meta, FIX_TOOLS, FIX_MAN).byRef['a.md'].cta,
+    [{ label: 'Open the trainer', href: '?tool=t.html', ref: 't.html' }]);
+});
+
+test('the legacy form is exact — a path with a query or a subdirectory is not it', () => {
+  const cases = ['tools/t.html?case=x', 'tools/sub/t.html', 'tools/t.htm', '../tools/t.html'];
+  for (const href of cases) {
+    const meta = { 'a.md': { cta: [{ label: 'L', href }] } };
+    assert.deepEqual(F.fdBuildIndex(CTA_CUR, meta, FIX_TOOLS, FIX_MAN).byRef['a.md'].cta, [], href);
+  }
+});

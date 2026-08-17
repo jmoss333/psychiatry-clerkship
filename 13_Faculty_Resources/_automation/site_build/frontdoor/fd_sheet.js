@@ -193,6 +193,19 @@ function fdSheetProtocolBody(entry, topicMeta, stepsDone, crisisHtml){
   var meta=(topicMeta||{})[item.ref]||{};
   var steps=meta.safetySteps||[];
   var out='';
+  /* *** THE FAILED-LOAD LINE. Copy is the repo owner's, verbatim; do not reword it. ***
+     An empty protocol body used to render honestly but SILENTLY: no steps, no doc line, no
+     attribution — which reads as "nothing to do here" rather than "this did not load", on the one
+     surface where that distinction costs most. Two shapes produce it and both are real: topicMeta
+     arriving undefined (a build-injection failure), and a reviewed page whose safetySteps array
+     was emptied by an unrelated edit.
+     It names the failure, makes no clinical claim of any kind, and points at the two exits the
+     sheet already has — reload, and the "Open the full page →" button below. Rendered exactly
+     where the steps would have been, so the eye lands on it in their place. The crisis block still
+     renders underneath, because that is the one thing that stays true when nothing else loaded. */
+  if(!steps.length&&!meta.safetyDoc){
+    out+='<p class="fd-sheet__failed">Steps didn’t load. Reload, or open the full page.</p>';
+  }
   if(steps.length){
     /* Wrapper carries only the 16px gap down to the callout (the prototype's own step container).
        The steps stay siblings of each other inside it, so the + rule above still applies. */

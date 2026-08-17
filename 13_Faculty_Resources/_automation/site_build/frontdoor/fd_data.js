@@ -25,14 +25,34 @@ function fdIsTool(ref){ return /\.html$/.test(ref); }
    The ref is derived for exactly one reason -- the membership filter at the bottom of
    fdBuildIndex -- and the href is what actually ships to the browser. */
 var FD_CTA_HREF_RE=/^\?(page|tool)=([^&#]+)/;
+/* The LEGACY authored form, restored from the deleted shell's ctaHref(): a bare `tools/<slug>.html`
+   path. It survives in exactly one place -- resident_section.py synthesises two resident-only CTAs
+   with it ("Open the Agitation Ladder trainer", "Open Five Good Minutes"). All 104 checked-in cta
+   hrefs and all 162 clinicalWorkflow.actions hrefs use the query form. Normalised rather than
+   merely recognised: left as a raw path the link would leave the shell and load the tool
+   standalone, without the front door's chrome, its governance notice, or a way back. */
+var FD_CTA_LEGACY_RE=/^tools\/([^\/?#]+\.html)$/;
 
-/* The slug a cta href names, or '' for a form this shell does not route (an absolute URL, a bare
-   fragment, a query that names neither page nor tool). '' means "not ours" and the entry is
-   dropped rather than rendered as a link the front door cannot honour. */
+/* {ref, href} for a cta href, or null for a form this shell does not route (an absolute URL, a
+   bare fragment, a query that names neither page nor tool). null means "not ours" and the entry is
+   dropped rather than rendered as a link the front door cannot honour. The returned href is the
+   ROUTABLE one -- identical to the input except for the legacy form above. */
+function fdCtaHref(href){
+  var s=String(href===null||href===undefined?'':href);
+  var legacy=FD_CTA_LEGACY_RE.exec(s);
+  if(legacy) return { ref: legacy[1], href: '?tool='+legacy[1] };
+  var m=FD_CTA_HREF_RE.exec(s);
+  if(!m) return null;
+  var ref;
+  try{ ref=decodeURIComponent(m[2]); }catch(_){ ref=m[2]; }
+  return { ref: ref, href: s };
+}
+
+/* The slug alone, '' when the href is not routable. Kept as its own name because the workflow and
+   drill renderers ask only this question. */
 function fdCtaRef(href){
-  var m=FD_CTA_HREF_RE.exec(String(href===null||href===undefined?'':href));
-  if(!m) return '';
-  try{ return decodeURIComponent(m[2]); }catch(_){ return m[2]; }
+  var r=fdCtaHref(href);
+  return r?r.ref:'';
 }
 
 /* topic_meta authors write `cta` as either one {label, href} object or an array of them (43 and
@@ -47,9 +67,9 @@ function fdCtaList(cta){
     if(!e||typeof e!=='object') continue;
     if(typeof e.label!=='string'||!e.label) continue;
     if(typeof e.href!=='string'||!e.href) continue;
-    var ref=fdCtaRef(e.href);
-    if(!ref) continue;
-    out.push({ label:e.label, href:e.href, ref:ref });
+    var r=fdCtaHref(e.href);
+    if(!r) continue;
+    out.push({ label:e.label, href:r.href, ref:r.ref });
   }
   return out;
 }

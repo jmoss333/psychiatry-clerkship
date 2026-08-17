@@ -536,6 +536,7 @@ wrong place, with no error.
     .fd-kitrow <button> ×N
       .fd-kitrow__dot / .fd-kitrow__title / .fd-kitrow__sub
     ── protocol variant ──
+    .fd-sheet__failed               (steps AND doc both absent — where the steps would have been)
     .fd-step  <button> ×N
       .fd-check                     (20px here — see Shared)
       .fd-step__text
@@ -564,6 +565,7 @@ wrong place, with no error.
 | `.fd-doccallout` | Amber "Document:" callout. Border is derived via `color-mix` from the two olive tokens. |
 | `.fd-sheet__attribution` | "✓ From: … · faculty-attested". |
 | `.fd-sheet__pending` | The affirmative counterpart: "Not yet faculty-reviewed — verify with faculty." Rendered **exactly when** `attested` is false *and* the protocol body is non-empty, i.e. under the same content gate as the attribution — the absence of a teal line is only legible to someone who has already seen one. Olive, not danger: this is provenance, not a hazard, and the danger register belongs to the pending-HIGH governance alert, which means something else. |
+| `.fd-sheet__failed` | *"Steps didn't load. Reload, or open the full page."* — the repo owner's copy, verbatim; **do not reword it**, it is safety-surface wording. Rendered when a protocol has neither steps nor a doc line, in the position the steps would have occupied. Body-text size (it is the only thing in the panel at that moment) and `--fd-text-mid`, not the danger palette — a load failure is not a clinical hazard. |
 | `.fd-sheet__crisis` | Host for the build-injected crisis-contact block. Supplies the `--cw-*` custom properties that markup was written against, mapped onto front-door tokens, so it stops falling back to its light-mode hexes inside a dark sheet. |
 
 ⚠ **`.fd-sheet__crisis` is OUTSIDE the attestation content gate, on purpose.** The attribution and

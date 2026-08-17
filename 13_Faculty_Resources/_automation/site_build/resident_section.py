@@ -177,9 +177,11 @@ ix=open(OUT+"/index.html",encoding="utf-8").read()
 ix=common.apply_verified_replacements(ix, RESIDENT_REBRAND, label="resident index rebrand")
 
 # ---- front-door per-site data: the two needles that differ by audience ----
-# FD_TOPIC_META/FD_TOOL_REGISTRY/FD_SITE_MANIFEST are audience-neutral and rode along
-# unchanged via the copytree above (same reasoning as RETIRED_QB_IDS / clinical-warm.css /
-# frontdoor.css). Two are per-site and get their own verified swap here, same shape as
+# FD_TOOL_REGISTRY/FD_SITE_MANIFEST are audience-neutral and ride along unchanged via the
+# copytree above (same reasoning as RETIRED_QB_IDS / clinical-warm.css / frontdoor.css).
+# FD_TOPIC_META used to be listed here as audience-neutral too and IS NOT — it is re-injected
+# further down, after the two blocks that patch OUT/topic_meta.json; see that block.
+# Two more are per-site and get their own verified swap here, same shape as
 # RESIDENT_REBRAND above: each needle is the exact statement build_deploy.py baked in for ms3
 # (reconstructed via common.fd_statement / common.fd_curriculum_for_site so this script never
 # has to read build_deploy.py's output to know what it wrote), and a missing/duplicated needle
@@ -314,6 +316,35 @@ import cotw_meta as _cotw_meta
 _cm_add,_cm_skip,_cm_prune,_cm_untagged=_cotw_meta.inject(OUT,_cotw_weeks,"res")
 print("cotw topic_meta: %d derived, %d hand-written kept, %d ms3 keys pruned"%(_cm_add,_cm_skip,_cm_prune))
 if _cm_untagged: print("  NOTE no 'blueprint' in cotw_registry.json (case absent from the crosswalk): "+", ".join(_cm_untagged))
+
+# ---------- FD_TOPIC_META: re-inject, because it is NOT audience-neutral any more ----------
+# The block at the top of this file that swaps FD_ROLES/FD_CURRICULUM says FD_TOPIC_META "rode
+# along unchanged via the copytree". That was true until the two patches above: _addcta gives the
+# resident site its own CTAs on agitation.md / brief_psychotherapy.md, and cotw_meta.inject swaps
+# the whole Case-of-the-Week key set. Both write OUT/topic_meta.json.
+#
+# The pre-front-door shell FETCHED topic_meta.json at runtime, so it saw those patches. The front
+# door reads the build-injected FD_TOPIC_META literal instead, so without this the resident site
+# renders MS3's metadata — the two resident tool CTAs never appear, and the cotw keys are the ms3
+# ones. Found once cta rendering went live (Plan 3 Task 7); before that the field was dead on both
+# sites and the drift was invisible.
+#
+# Placed HERE, after every writer of OUT/topic_meta.json, not with the other two needles at the
+# top — a swap done before _addcta would be overwritten by nothing and simply be wrong.
+# The needle is reconstructed from MS3's own copy (the untouched build output this run copied
+# from), never read back out of index.html: build_deploy.py injected exactly that value, since
+# nothing in that script writes OUT/topic_meta.json after the injection. Missing or duplicated
+# aborts rather than shipping ms3's metadata under the resident site's name.
+_ix=open(OUT+"/index.html",encoding="utf-8").read()
+_fd_tm_needle=common.fd_statement("FD_TOPIC_META",
+    json.load(open(MS3+"/topic_meta.json",encoding="utf-8")))
+if _ix.count(_fd_tm_needle)!=1:
+    print("BUILD ABORTED — FD_TOPIC_META needle missing or duplicated in ms3-built index.html")
+    raise SystemExit(1)
+_ix=_ix.replace(_fd_tm_needle, common.fd_statement("FD_TOPIC_META",
+    json.load(open(OUT+"/topic_meta.json",encoding="utf-8"))))
+open(OUT+"/index.html","w",encoding="utf-8").write(_ix)
+print("front-door topic_meta: resident (%d key(s))"%len(json.load(open(OUT+"/topic_meta.json",encoding="utf-8"))))
 # ---------- MEDIA GUARD: drop <video> embeds whose asset was never exported (resident build) ----------
 # Resident inherits ms3's already-guarded pages via copytree, but re-writes some content from
 # source and adds its own media — so guard the final OUT before indexing.

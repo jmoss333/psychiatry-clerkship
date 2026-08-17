@@ -800,6 +800,12 @@
  * in the same visual register as the pending-HIGH governance alert, which means something else. */
 .fd-sheet__pending{margin:12px 0 0;font-size:12.5px;font-weight:600;color:var(--fd-olive-deep)}
 
+/* "Steps didn't load. Reload, or open the full page." — rendered where the steps would have been.
+ * Body-text size, not a dim footnote: it is the only thing in the panel at that moment and it has
+ * to be the thing that is read. --fd-text-mid rather than the danger palette, because a load
+ * failure is not a clinical hazard and the red register belongs to risk. */
+.fd-sheet__failed{margin:0 0 16px;font-size:14px;line-height:1.55;color:var(--fd-text-mid)}
+
 /* Host for the build-injected crisis-contact block (crisis_block.py's render_html). That markup
  * carries its own inline styles against --cw-* custom properties WITH light-mode hex fallbacks,
  * which is right for a self-contained single-file tool and wrong inside a themed shell -- left
