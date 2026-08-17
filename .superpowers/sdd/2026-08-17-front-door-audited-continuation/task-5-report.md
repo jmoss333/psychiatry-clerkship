@@ -366,3 +366,76 @@ Potential innovative follow-up: add a tiny development-only continuity observer 
 current controller generation, launcher node identity, and last refresh reason. It could turn a
 future cross-script callback or accidental node replacement into an immediate deterministic test
 receipt without exposing learner data.
+
+## Review-remediation Round 3 — 2026-08-17
+
+Status: COMPLETE
+
+This final narrow review started from the requested clean commit
+`8323b2091ba33b19c5fb9c59499931385fc438c4` and closed one confirmed focus-continuity defect. In
+plain language, the Capture dialog now keeps the keyboard inside itself while its saved-question
+list and Today page refresh, and closing a dialog opened from the Today card returns the learner to
+the newly rendered equivalent `+ Capture` button instead of dropping focus on the page.
+
+### Round 3 RED evidence
+
+- Three new built-browser behaviors were added before production code. The authorized Chromium
+  matrix produced the expected 0/6 RED across MS3 and resident: save followed by Escape did not
+  focus the recreated Today-card launcher; Delete left the textarea unfocused and the next Tab
+  outside the modal; Erase All did the same. The first sandbox attempt could not launch Chromium
+  because macOS denied its MachPort rendezvous, so it was not counted as behavioral evidence.
+- The card test proves the original `.fd-capture__new` node is disconnected by the successful
+  Today refresh, the replacement is a different live node, the textarea remains focused after
+  save, and Escape must focus that replacement. The mutation tests focus the real Delete and Erase
+  All controls, then require `#capText` plus a subsequent Tab inside `.cap-sheet`.
+- Each case also checks for one global launcher and no browser page error or error-console entry.
+  The mutation cases retain exact connected-global-launcher focus on close.
+
+### Implemented Round 3 remediation
+
+- One `capRefreshAfterMutation` path now owns save, delete, and erase refreshes. It rebuilds the
+  in-dialog list, performs the existing controller-aware special refresh, and restores focus to
+  the still-mounted textarea in a `finally` block. No new controller, listener, dialog policy, or
+  storage path was introduced.
+- `capClose` still prefers the exact connected invoker. When the recorded invoker is specifically
+  a disconnected Today-card capture button, it resolves the current semantic equivalent before
+  using the existing main-region fallback. If the card no longer exists, the fallback behavior is
+  unchanged. The stale two-invoker comment now describes the actual global-versus-recreated-card
+  lifecycle.
+
+### Round 3 GREEN evidence
+
+- Focused source-level resource/controller/shell/capture/copy tests: 74/74.
+- Focused rebuilt-artifact Chromium cases: 6/6 across `nav-ms3` and `nav-res`. The wider runtime
+  plus retained ward-capture matrix passed 44/44, covering immediate capture/search updates,
+  exact global-launcher identity, route/breakpoint persistence, PHI interstitial, Reader-to-Today
+  null context with preserved `cw_last`, export exclusion, faculty-preview hiding, Home aliases,
+  modal arbitration, and document titles.
+- The authorized full root suite passed 1041/1041 in each sequential publication gate. The initial
+  sandbox-only MS3 gate reproduced exactly the eight known `listen EPERM 127.0.0.1` launcher
+  failures while its other 1033 tests passed; the authorized rerun had zero failures.
+- All registry, topic metadata/safety, attestation, curriculum, tool-governance, and common
+  injection validators passed, including schema 21/21, topic safety 6/6, attestation 27/27,
+  curriculum 46/46, tool governance 27/27, and common 53/53. The five-file legacy metadata warning
+  is unchanged.
+- `_prototypes/sp-interview/tests/run-all.sh` ended `ALL SUITES PASSED`.
+- Sequential builds passed: MS3 remains 81 placed refs and 22 governed tools with QA hard 0 / soft
+  7; resident remains 90 placed refs and 24 governed tools with QA hard 0 / soft 10. Both passed
+  search quality 9/9 and LFS inspection with 105 real media files and no pointer stubs.
+
+### Round 3 files, boundaries, and residual risk
+
+Production changes are limited to `spa_index.html`; behavioral coverage is limited to the existing
+`frontdoor-runtime.spec.js`; this report is the only SDD artifact updated. No crisis or clinical
+copy/data, faculty content or approval state, historical `reviewed.json`, palette/contrast values,
+media/LFS objects, generated `_build`, credentials, PHI, Task 6 policy, route/storage schema, or
+faculty-preview contract changed. There was no push, merge, deploy, dependency change, or visual
+baseline regeneration. The known Task 7 full-journey/Ubuntu visual-baseline work remains the only
+deferred residual risk.
+
+Concrete next option: accept this rollback-sized focus fix and proceed to Task 6 without reopening
+Task 5 state, routing, or capture-data behavior.
+
+Potential innovative follow-up: give refreshable controls an audience-neutral semantic focus key
+that the shell can resolve after any render. That could generalize this safe card-invoker recovery
+to future dynamically rendered controls without retaining stale DOM nodes or learner data.

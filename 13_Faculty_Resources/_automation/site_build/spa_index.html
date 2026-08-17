@@ -1140,10 +1140,12 @@
     document.removeEventListener('keydown',capKeydown,true);
     var opens=document.querySelectorAll('.capture-open,[data-capture-open]');
     for(var i=0;i<opens.length;i++)opens[i].setAttribute('aria-expanded','false');
-    /* Two-invoker focus return. There are two mount points and the viewport can cross 820px while
-       the dialog is open, so the recorded invoker may be display:none by the time we close. Same
-       guard shape as closeSheet's, which spa-shell-a11y.test.mjs pins. */
+    /* The global launcher remains mounted, while a Today-card launcher can be recreated by a
+       capture refresh. Resolve that semantic equivalent before falling back to the main region. */
     var inv=capInvoker; capInvoker=null;
+    if(inv && !inv.isConnected && inv.matches && inv.matches('.fd-capture__new[data-capture-open]')){
+      inv=document.querySelector('.fd-capture__new[data-capture-open]');
+    }
     if(inv && inv.isConnected && inv.offsetParent!==null){ try{ inv.focus(); return; }catch(_){ } }
     if(contentEl){ try{ contentEl.focus({preventScroll:true}); }catch(_){ } }
   }
@@ -1158,6 +1160,14 @@
   function capRenderBody(){
     if(!capSheet)return;
     var body=capSheet.querySelector('#capListWrap'); if(body)body.innerHTML=capListHtml();
+  }
+  function capRefreshAfterMutation(){
+    capRenderBody();
+    try{ specialRefresh(); }
+    finally{
+      var ta=capSheet&&capSheet.querySelector('#capText');
+      if(ta){ try{ ta.focus(); }catch(_){ } }
+    }
   }
   function capOpen(invoker){
     if(capSheet)return;
@@ -1189,9 +1199,9 @@
       if(t.id==='capSave'){ capSave(false); return; }
       if(t.id==='capHoldEdit'){ var hold=capSheet.querySelector('#capHold'); if(hold)hold.innerHTML=''; var tx=capSheet.querySelector('#capText'); if(tx)tx.focus(); return; }
       if(t.id==='capHoldSave'){ capSave(true); return; }
-      if(t.id==='capEraseAll'){ if(window.confirm('Erase all saved questions on this device?')){ capEraseAll(); capRenderBody(); specialRefresh(); } return; }
+      if(t.id==='capEraseAll'){ if(window.confirm('Erase all saved questions on this device?')){ capEraseAll(); capRefreshAfterMutation(); } return; }
       var del=t.getAttribute&&t.getAttribute('data-cap-del');
-      if(del){ capRemove(del); capRenderBody(); specialRefresh(); return; }
+      if(del){ capRemove(del); capRefreshAfterMutation(); return; }
     });
   }
   function capSave(force){
@@ -1207,7 +1217,7 @@
       return;
     }
     if(hold)hold.innerHTML='';
-    if(capAdd(text)){ ta.value=''; capRenderBody(); specialRefresh(); try{ ta.focus(); }catch(_){ } }
+    if(capAdd(text)){ ta.value=''; capRefreshAfterMutation(); }
     else { var err=document.createElement('p'); err.className='cap-err';
       err.textContent="Couldn't save on this device. Use “Ask my attending” on the home screen to copy your questions out before you close this tab.";
       if(hold)hold.appendChild(err); }

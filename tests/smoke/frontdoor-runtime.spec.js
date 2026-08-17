@@ -223,6 +223,120 @@ test('capture refreshes Today and search matches without replacing its live laun
   expect(runtimeErrors).toEqual([]);
 });
 
+test('Today card capture restores focus to its recreated launcher after save', async ({ page }) => {
+  const runtimeErrors = [];
+  page.on('pageerror', (error) => runtimeErrors.push(`pageerror: ${error.message}`));
+  page.on('console', (message) => {
+    if (message.type() === 'error') runtimeErrors.push(`console: ${message.text()}`);
+  });
+  await page.setViewportSize(DESKTOP);
+  await seedCompleteSetup(page, {
+    storage: {
+      cw_capture_v1: {
+        v: 1,
+        items: [{
+          id: 'c_existing', text: 'psychosis', at: 1, ctx: null, triaged: false,
+        }],
+      },
+    },
+  });
+  await page.goto('/');
+
+  const cardLauncher = page.locator('.fd-capture__new[data-capture-open]');
+  await expect(cardLauncher).toHaveCount(1);
+  await page.evaluate(() => {
+    window.__captureCardLauncher = document.querySelector('.fd-capture__new[data-capture-open]');
+  });
+  await cardLauncher.click();
+  await page.locator('#capText').fill('orientation packet');
+  await page.locator('#capSave').click();
+
+  await expect(page.locator('#capText')).toBeFocused();
+  await expect(page.locator('.fd-capture')).toContainText('orientation packet');
+  expect(await page.evaluate(() => {
+    const current = document.querySelector('.fd-capture__new[data-capture-open]');
+    return !window.__captureCardLauncher.isConnected && current !== window.__captureCardLauncher;
+  })).toBe(true);
+
+  await page.keyboard.press('Escape');
+  await expect(page.locator('.fd-capture__new[data-capture-open]')).toBeFocused();
+  await expect(page.locator(CAPTURE)).toHaveCount(1);
+  expect(runtimeErrors).toEqual([]);
+});
+
+test('capture delete keeps focus and the next Tab inside the dialog after refresh', async ({ page }) => {
+  const runtimeErrors = [];
+  page.on('pageerror', (error) => runtimeErrors.push(`pageerror: ${error.message}`));
+  page.on('console', (message) => {
+    if (message.type() === 'error') runtimeErrors.push(`console: ${message.text()}`);
+  });
+  await page.setViewportSize(DESKTOP);
+  await seedCompleteSetup(page, {
+    storage: {
+      cw_capture_v1: {
+        v: 1,
+        items: [
+          { id: 'c_delete', text: 'psychosis', at: 1, ctx: null, triaged: false },
+          { id: 'c_keep', text: 'orientation packet', at: 2, ctx: null, triaged: false },
+        ],
+      },
+    },
+  });
+  await page.goto('/');
+
+  const launcher = page.locator(CAPTURE);
+  await launcher.click();
+  const deleteButton = page.locator('.cap-list li', { hasText: 'psychosis' }).locator('[data-cap-del]');
+  await deleteButton.focus();
+  await expect(deleteButton).toBeFocused();
+  await deleteButton.click();
+
+  await expect.soft(page.locator('#capText')).toBeFocused();
+  await page.keyboard.press('Tab');
+  expect.soft(await page.evaluate(() => Boolean(document.activeElement?.closest('.cap-sheet')))).toBe(true);
+  await expect(page.locator('.cap-list li')).toHaveCount(1);
+  await page.keyboard.press('Escape');
+  await expect(launcher).toBeFocused();
+  await expect(page.locator(CAPTURE)).toHaveCount(1);
+  expect(runtimeErrors).toEqual([]);
+});
+
+test('capture erase-all keeps focus and the next Tab inside the dialog after refresh', async ({ page }) => {
+  const runtimeErrors = [];
+  page.on('pageerror', (error) => runtimeErrors.push(`pageerror: ${error.message}`));
+  page.on('console', (message) => {
+    if (message.type() === 'error') runtimeErrors.push(`console: ${message.text()}`);
+  });
+  await page.setViewportSize(DESKTOP);
+  await seedCompleteSetup(page, {
+    storage: {
+      cw_capture_v1: {
+        v: 1,
+        items: [{ id: 'c_erase', text: 'psychosis', at: 1, ctx: null, triaged: false }],
+      },
+    },
+  });
+  await page.goto('/');
+
+  const launcher = page.locator(CAPTURE);
+  await launcher.click();
+  const eraseButton = page.locator('#capEraseAll');
+  await eraseButton.focus();
+  await expect(eraseButton).toBeFocused();
+  page.once('dialog', (dialog) => dialog.accept());
+  await eraseButton.click();
+
+  await expect.soft(page.locator('#capText')).toBeFocused();
+  await page.keyboard.press('Tab');
+  expect.soft(await page.evaluate(() => Boolean(document.activeElement?.closest('.cap-sheet')))).toBe(true);
+  await expect(page.locator('.fd-capture')).toHaveCount(0);
+  await page.keyboard.press('Escape');
+  await expect(launcher).toBeFocused();
+  await expect(page.locator(CAPTURE)).toHaveCount(1);
+  expect(await page.evaluate(() => localStorage.getItem('cw_capture_v1'))).toBeNull();
+  expect(runtimeErrors).toEqual([]);
+});
+
 test('legacy Start keeps incomplete role/week setup canonical across reload and history', async ({ page }) => {
   await page.setViewportSize(DESKTOP);
   await page.goto('/?page=__start__&case=setup');
