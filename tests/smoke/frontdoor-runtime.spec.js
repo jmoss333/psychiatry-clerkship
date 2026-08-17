@@ -223,6 +223,61 @@ test('capture refreshes Today and search matches without replacing its live laun
   expect(runtimeErrors).toEqual([]);
 });
 
+test('slow search hydration preserves capture focus while revealing same-session matches', async ({ page }) => {
+  const runtimeErrors = [];
+  page.on('pageerror', (error) => runtimeErrors.push(`pageerror: ${error.message}`));
+  page.on('console', (message) => {
+    if (message.type() === 'error') runtimeErrors.push(`console: ${message.text()}`);
+  });
+  let releaseIndex;
+  let indexWasRequested = false;
+  const indexRelease = new Promise((resolve) => { releaseIndex = resolve; });
+  await page.route('**/search-index.json', async (route) => {
+    indexWasRequested = true;
+    await indexRelease;
+    await route.continue();
+  });
+  await page.setViewportSize(DESKTOP);
+  await seedCompleteSetup(page);
+  await page.goto('/');
+  await expect.poll(() => indexWasRequested).toBe(true);
+
+  const launcher = page.locator(CAPTURE);
+  await launcher.click();
+  await page.locator('#capText').fill('psychosis');
+  await page.locator('#capSave').click();
+  await expect(page.locator('#capText')).toBeFocused();
+  const triage = page.locator('.fd-capture', { hasText: 'Questions from the unit' });
+  await expect(triage).toContainText('psychosis');
+  await expect(triage.locator('[data-cap-open]')).toHaveCount(0);
+  await page.evaluate((selector) => {
+    window.__hydrationFocus = document.activeElement;
+    window.__hydrationLauncher = document.querySelector(selector);
+  }, CAPTURE);
+
+  const indexResponse = page.waitForResponse((response) => (
+    new URL(response.url()).pathname.endsWith('/search-index.json') && response.ok()
+  ));
+  releaseIndex();
+  await indexResponse;
+  await expect(triage.locator('[data-cap-open]')).toHaveAttribute('data-cap-ref', 't_psychosis.md');
+  expect.soft(await page.evaluate(() => {
+    const active = document.activeElement;
+    return active === window.__hydrationFocus
+      && active.isConnected
+      && Boolean(active.closest('.cap-sheet'));
+  })).toBe(true);
+
+  await page.keyboard.press('Tab');
+  expect.soft(await page.evaluate(() => Boolean(document.activeElement?.closest('.cap-sheet')))).toBe(true);
+  await page.keyboard.press('Escape');
+  expect(await page.evaluate(() => (
+    document.activeElement === window.__hydrationLauncher && window.__hydrationLauncher.isConnected
+  ))).toBe(true);
+  await expect(launcher).toHaveCount(1);
+  expect(runtimeErrors).toEqual([]);
+});
+
 test('Today card capture restores focus to its recreated launcher after save', async ({ page }) => {
   const runtimeErrors = [];
   page.on('pageerror', (error) => runtimeErrors.push(`pageerror: ${error.message}`));

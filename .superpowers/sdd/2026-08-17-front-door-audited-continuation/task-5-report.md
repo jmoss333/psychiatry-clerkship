@@ -439,3 +439,67 @@ Task 5 state, routing, or capture-data behavior.
 Potential innovative follow-up: give refreshable controls an audience-neutral semantic focus key
 that the shell can resolve after any render. That could generalize this safe card-invoker recovery
 to future dynamically rendered controls without retaining stale DOM nodes or learner data.
+
+## Review-remediation Round 4 — 2026-08-17
+
+Status: COMPLETE
+
+This final asynchronous-focus review started from the requested clean commit
+`d030dc1cea0383d37f867615cfb5da89ca79a431`. In plain language, a slow search-index response can
+now improve a captured question's Today-card actions without silently moving the learner's
+keyboard focus out of the open Capture dialog.
+
+### Round 4 RED evidence
+
+- A real-browser test holds `search-index.json` at the request boundary, opens Capture, saves the
+  known indexed question `psychosis` while matching is unavailable, and proves the unmatched card
+  and focused textarea before releasing the response. This uses an explicit promise-controlled
+  route rather than a timeout or timing race.
+- The unmodified built artifacts then produced the expected 0/2 RED across MS3 and resident. Once
+  hydration added the same-session matching action, the exact connected textarea was no longer
+  active inside `.cap-sheet`, and the next Tab also landed outside the modal on both sites. Match
+  hydration itself succeeded and there were no page errors or error-console entries.
+
+### Implemented Round 4 remediation
+
+- The existing controller-aware `specialRefresh` dispatcher now records an active connected
+  capture-sheet element before rendering and restores that exact element in a `finally` block when
+  it remains connected inside the same sheet. This covers search/topic hydration and future users
+  of the one shared refresh path without adding a refresh, controller, or listener.
+- Round 3's mutation helper remains unchanged: it still selects `#capText` only when save, delete,
+  or erase has replaced list content. No focus trap policy, route, storage, capture data, or
+  matching behavior changed.
+
+### Round 4 GREEN evidence
+
+- Focused source-level resource/controller/shell/capture/copy tests: 74/74.
+- The deterministic rebuilt-artifact hydration test passed 2/2 across `nav-ms3` and `nav-res`:
+  matching appeared in the same session, the exact textarea remained connected and focused, the
+  next Tab stayed within `.cap-sheet`, Escape restored the exact connected global launcher, one
+  launcher remained, and browser error collection stayed empty.
+- The wider runtime plus retained ward-capture matrix passed 46/46, including Round 3 card/global,
+  delete/erase, aliases, PHI/context/export, faculty-preview, modal, layout, and title contracts.
+- Each sequential authorized publication gate passed the full root suite at 1041/1041. MS3 remains
+  81 placed refs / 22 governed tools / QA hard 0 soft 7; resident remains 90 placed refs / 24
+  governed tools / QA hard 0 soft 10. Both passed search quality 9/9 and LFS inspection with 105
+  real media files and no pointer stubs.
+- Registry, topic metadata/safety, attestation, curriculum, tool-governance, and common injection
+  validators all passed with their prior counts. The five-file legacy metadata warning is
+  unchanged. `_prototypes/sp-interview/tests/run-all.sh` ended `ALL SUITES PASSED`.
+
+### Round 4 files, boundaries, and residual risk
+
+Production changes are limited to `spa_index.html`; browser coverage is limited to
+`frontdoor-runtime.spec.js`; this report is the only SDD artifact updated. No crisis or clinical
+copy/data, faculty content or approval state, historical `reviewed.json`, palette/contrast values,
+media/LFS objects, generated `_build`, credentials, PHI, Task 6 dialog policy, route/storage
+schema, or faculty-preview behavior changed. There was no push, merge, deploy, dependency change,
+or visual-baseline regeneration. The known Task 7 full-journey/Ubuntu visual-baseline work remains
+the deferred residual risk.
+
+Concrete next option: accept this shared refresh-boundary fix and proceed to Task 6 without further
+Task 5 capture-focus changes.
+
+Potential innovative follow-up: add a development-only focus-continuity assertion around every
+asynchronous shell hydration callback. It could fail immediately when an open modal loses its
+active descendant, while logging only element semantics and never learner-entered content.

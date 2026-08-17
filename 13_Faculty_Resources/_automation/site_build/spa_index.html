@@ -1816,9 +1816,16 @@
   });
   specialRefresh=function(){
     if(!fdController)return;
-    var state=fdController.getState();
-    if(state.openId==='__progress__'&&contentEl.querySelector('#pgRoot'))fdOpenProgress(state,{host:contentEl});
-    else if(!state.openId&&state.tab==='today')fdRender(state);
+    var capActive=capSheet&&capSheet.contains(document.activeElement)?document.activeElement:null;
+    try{
+      var state=fdController.getState();
+      if(state.openId==='__progress__'&&contentEl.querySelector('#pgRoot'))fdOpenProgress(state,{host:contentEl});
+      else if(!state.openId&&state.tab==='today')fdRender(state);
+    }finally{
+      if(capActive&&capActive.isConnected&&capSheet&&capSheet.contains(capActive)){
+        try{ capActive.focus(); }catch(_){ }
+      }
+    }
   };
   fdApp.addEventListener('click',fdAuxClick);
   window.addEventListener('message',fdAuxMessage);
