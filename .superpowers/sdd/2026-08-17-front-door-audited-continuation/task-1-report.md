@@ -92,3 +92,13 @@ payload without changing the live shell.
 Add a small build-time report that prints each safety-kit protocol's evidence ID and review date
 next to this validator's pass line, giving faculty a readable release receipt without duplicating
 clinical content.
+
+## Round 1 review follow-up
+
+Finding: two remaining validator descriptions still said "six" after curriculum became the
+seventh registry/schema pair.
+
+Fix: updated the `validate_root()` docstring and `--root` help text to say "seven".
+
+Evidence: `python3 13_Faculty_Resources/_automation/test_validate_registry_schemas.py` passed
+21/21 tests after the wording-only correction.

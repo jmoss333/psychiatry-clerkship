@@ -179,7 +179,7 @@ def schema_reference_error(schema):
 
 
 def validate_root(root: Path) -> tuple[list[str], bool]:
-    """Return deterministic diagnostics for the six fixed registry/schema pairs."""
+    """Return deterministic diagnostics for the seven fixed registry/schema pairs."""
     diagnostics = []
     has_errors = False
     for document_name, schema_name in PAIRS:
@@ -247,7 +247,7 @@ def main() -> int:
         "--root",
         type=Path,
         default=Path(__file__).resolve().parents[2],
-        help="repository root containing the six fixed registry/schema pairs",
+        help="repository root containing the seven fixed registry/schema pairs",
     )
     args = parser.parse_args()
 
