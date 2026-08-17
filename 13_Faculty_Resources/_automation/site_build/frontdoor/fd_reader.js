@@ -239,6 +239,7 @@ function fdReaderRailRow(it, curRef, doneMap){
   return '<button type="button" class="'+rowCls+'" data-fd-open="'+fdEsc(it.ref)+'">'+
     '<span class="'+dotCls+'" aria-hidden="true">✓</span>'+
     '<span class="'+titleCls+'">'+fdEsc(it.title)+'</span>'+
+    (isDone?'<span class="fd-visually-hidden">Completed</span>':'')+
   '</button>';
 }
 
@@ -280,9 +281,9 @@ function fdReaderActions(item, doneLabel, backLabel, isDone){
    assertion tests/fd-reader.test.mjs pins hardest). CLASS-INVENTORY's ⚠ trap: the primary
    button's label MUST be wrapped in a bare <span> (`.fd-actionbar .fd-btn--primary span` supplies
    the overflow ellipsis) -- a text-only child overflows uncontained on narrow screens. */
-function fdReaderActionBar(item, doneLabel, isDone){
+function fdReaderActionBar(item, doneLabel, isDone, backLabel){
   return '<div class="fd-actionbar">'+
-    '<button type="button" class="fd-btn fd-btn--ghost" data-fd-back>‹</button>'+
+    '<button type="button" class="fd-btn fd-btn--ghost" data-fd-back aria-label="Back to '+fdEsc(backLabel)+'">‹</button>'+
     '<button type="button" class="fd-btn fd-btn--primary" data-fd-toggle="'+fdEsc(item.ref)+'" '+
       'aria-pressed="'+(isDone?'true':'false')+'">'+
       '<span>'+fdEsc(doneLabel)+'</span></button>'+
@@ -346,6 +347,6 @@ function fdReader(index, state, bodyHtml){
   out+='</div>';
   out+='<div class="fd-actionbar__spacer"></div>';
   out+='</article>';
-  out+=fdReaderActionBar(item, doneLabel, isDone);
+  out+=fdReaderActionBar(item, doneLabel, isDone, backLabel);
   return out;
 }

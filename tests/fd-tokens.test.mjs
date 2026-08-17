@@ -100,3 +100,16 @@ test('animations are disabled under prefers-reduced-motion', () => {
   assert.match(fd, /@media\s*\(prefers-reduced-motion:\s*reduce\)/,
     'the source prototype ships no reduced-motion handling; this repo requires it');
 });
+
+test('reader body gives rendered long-form content a readable token-based type scale', () => {
+  assert.match(fd, /\.fd-article__body\s*\{[^}]*font-size:\s*16\.5px[^}]*line-height:\s*1\.72[^}]*max-width:\s*62ch/s);
+  for (const descendant of ['h2', 'h3', 'ul', 'ol', 'li', 'a', 'code', 'blockquote']) {
+    assert.match(fd, new RegExp(`\\.fd-article__body\\s+${descendant}\\s*\\{`),
+      `rendered article ${descendant} elements need their own reader treatment`);
+  }
+});
+
+test('portalled overlays retain a visible keyboard focus indicator', () => {
+  assert.match(fd, /\.fd-search\s+:focus-visible\s*,\s*\.fd-sheet\s+:focus-visible\s*,\s*\.fd-nudge\s+:focus-visible/s,
+    'overlays may mount outside .fd-shell and need their own focus-visible rule');
+});

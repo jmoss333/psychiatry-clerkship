@@ -280,7 +280,7 @@ test('an item preview for a ref the index does not carry degrades to a titled sh
 
 test('the backdrop is a separate sibling element emitted BEFORE the sheet', () => {
   const html = F.fdSheet(REAL_INDEX, REAL_META, { sheet: 'kit' });
-  assert.match(html, /^<div class="fd-sheetbackdrop" data-fd-close-sheet><\/div><aside class="fd-sheet">/,
+  assert.match(html, /^<div class="fd-sheetbackdrop" data-fd-close-sheet><\/div><aside class="fd-sheet"(?:\s|>)/,
     'the sheet uses two elements (backdrop + panel); only the search overlay merges them');
 });
 
@@ -312,6 +312,21 @@ test('the nudge omits the minute clause when the page carries no read time', () 
   const html = F.fdNudge({ ref: 'x.md', title: 'X', minutes: null });
   assert.match(html, /“X” is the full read\.</);
   assert.doesNotMatch(html, /min/);
+});
+
+test('the sheet and its icon-only controls expose modal and action semantics', () => {
+  const sheet = F.fdSheet(REAL_INDEX, REAL_META, { sheet: 'kit' });
+  assert.match(sheet,
+    /^<div class="fd-sheetbackdrop" data-fd-close-sheet><\/div><aside class="fd-sheet" role="dialog" aria-modal="true" aria-label="Safety kit">/,
+    'the mount-ready sheet panel is itself the labelled modal dialog');
+  assert.match(sheet,
+    /class="fd-sheet__close" data-fd-close-sheet aria-label="Close side sheet"/,
+    'the close glyph needs an explicit accessible name');
+
+  const nudge = F.fdNudge(REAL_INDEX.byRef['delirium.md']);
+  assert.match(nudge,
+    /class="fd-nudge__dismiss" data-fd-close-nudge aria-label="Dismiss alert">✕<\/button>/,
+    'the nudge dismiss glyph needs an explicit accessible name');
 });
 
 test('the nudge escapes the item title and renders nothing without an item', () => {

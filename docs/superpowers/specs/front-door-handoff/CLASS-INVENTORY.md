@@ -3,7 +3,7 @@
 The complete contract between `frontdoor.css` and the markup that tasks 3–9 emit.
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(172 `fd-*` classes, 13 `is-*` state classes). Every class below has a rule in that file unless
+(175 `fd-*` classes, 13 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **Why this file exists.** The implementation plan names 39 contract classes. The stylesheet styles
@@ -111,6 +111,7 @@ under `@media (pointer:coarse)`. Do not add padding or resize it to hit 44px —
     .fd-header__actions
       .fd-weekpill         <button>
       .fd-safetybtn        <button>
+      .fd-themebtn         <button>          (compact labelled theme toggle)
   .fd-tabs                 <nav>
     .fd-tab                <button> ×3
 ```
@@ -120,6 +121,7 @@ under `@media (pointer:coarse)`. Do not add padding or resize it to hit 44px —
 | `.fd-header` | `position:sticky; top:0; z-index:40`. |
 | `.fd-header__bar` | The 1200px-capped flex row. `.fd-header` alone has no max-width. |
 | `.fd-header__actions` | `margin-left:auto` — this is what pushes the right group over. |
+| `.fd-themebtn` | Compact icon-only header theme toggle; `aria-label` names the action. |
 | `.fd-tab.is-active` | Bold + teal + teal underline. |
 
 ⚠ `.fd-tabs` is a **sibling** of `.fd-header__bar` inside `.fd-header`, not a child of it.
@@ -296,6 +298,7 @@ it; just don't expect it to paint anything.
         .fd-eyebrow / .fd-article__dot / .fd-article__meta / .fd-attested
       .fd-article__h1
       .fd-article__lead
+      .fd-article__body                  (rendered long-form content)
       .fd-keypoints
         .fd-keypoints__label
         .fd-keypoints__item ×N
@@ -317,6 +320,7 @@ it; just don't expect it to paint anything.
         .fd-railnav__row <button> ×N      + .is-current
           .fd-railnav__dot                + .is-done
           .fd-railnav__title              + .is-done
+          .fd-visually-hidden             (done rows only: "Completed")
   .fd-actionbar__spacer                   (below 1000px)
 .fd-actionbar                             (below 1000px, fixed)
   .fd-btn.fd-btn--ghost
@@ -327,6 +331,8 @@ it; just don't expect it to paint anything.
 | Class | Notes |
 |---|---|
 | `.fd-reader.is-nav-next` / `.is-nav-prev` | Slide-in direction. **Same element as `.fd-reader`.** |
+| `.fd-article__body` | Long-form markdown typography: 16.5px, 1.72 line-height, 62ch measure. |
+| `.fd-visually-hidden` | Accessible completion suffix on done rail rows; never use `aria-pressed` for navigation. |
 | `.fd-prevnext__btn.is-next` | Right-aligns the next button's contents. |
 | `.fd-article__actions` | Desktop-only primary/ghost pair. **Always emit it** (no `desk` JS branch) — `.fd-actionbar` at the bottom of this tree is the mobile equivalent; the breakpoint hides this one and shows that one, never both. |
 | `.fd-tip` (Reader instance) | The `←`/`→`/`1`/`2`/`3` keyboard hint. Hidden below 1000px via the descendant selector `.fd-article .fd-tip` — **do not** hide the bare `.fd-tip` class, which would also blank the wizard's `.fd-tip--setup` line (§2). |

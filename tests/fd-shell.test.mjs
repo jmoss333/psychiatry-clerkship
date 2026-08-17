@@ -99,6 +99,13 @@ test('the header renders the safety button and the week pill', () => {
   assert.match(html, /Week 4/);
 });
 
+test('the compact header theme toggle has an explicit accessible name', () => {
+  const html = F.fdHeader({ tab: 'today', week: 1 });
+  assert.match(html,
+    /<button type="button" class="fd-themebtn" data-fd-theme aria-label="Toggle color theme">/,
+    'the sidebar toggle will retire, so the header replacement must be identifiable to assistive tech');
+});
+
 test('the header says exam, never the site-specific word', () => {
   assert.doesNotMatch(F.fdHeader({ week: 6 }), /MS3|clerkship|student|shelf|resident/i);
 });

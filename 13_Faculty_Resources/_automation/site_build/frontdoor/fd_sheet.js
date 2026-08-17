@@ -118,7 +118,7 @@ function fdSheetHead(title, hasBack){
   if(hasBack) out+='<button type="button" class="fd-sheet__back" data-fd-safety>‹ kit</button>';
   out+='<span class="fd-sheet__title">'+fdEsc(title)+'</span>';
   out+='<button type="button" class="fd-sheet__close" data-fd-close-sheet '+
-    'title="Close — you’ll land exactly where you were">✕</button>';
+    'aria-label="Close side sheet" title="Close — you’ll land exactly where you were">✕</button>';
   out+='</div>';
   return out;
 }
@@ -278,7 +278,7 @@ function fdSheet(index, topicMeta, state){
      carries the click-to-close. Only the search overlay merges scrim and layout into one element
      (CLASS-INVENTORY's ⚠ trap -- do not mirror one pattern onto the other). */
   return '<div class="fd-sheetbackdrop" data-fd-close-sheet></div>'+
-    '<aside class="fd-sheet">'+
+    '<aside class="fd-sheet" role="dialog" aria-modal="true" aria-label="'+fdEsc(title)+'">'+
       fdSheetHead(title, hasBack)+
       '<div class="fd-sheet__body">'+body+'</div>'+
     '</aside>';
@@ -294,6 +294,6 @@ function fdNudge(item){
   return '<div class="fd-nudge">'+
     '<span class="fd-nudge__text">“'+fdEsc(item.title)+'” is the full read'+mins+'.</span>'+
     '<button type="button" class="fd-nudge__go" data-fd-open="'+fdEsc(item.ref)+'">Read it</button>'+
-    '<button type="button" class="fd-nudge__dismiss" data-fd-close-nudge>✕</button>'+
+    '<button type="button" class="fd-nudge__dismiss" data-fd-close-nudge aria-label="Dismiss alert">✕</button>'+
   '</div>';
 }

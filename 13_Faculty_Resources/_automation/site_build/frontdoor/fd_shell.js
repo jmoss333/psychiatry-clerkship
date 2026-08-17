@@ -54,6 +54,7 @@ function fdHeader(state){
     '<button type="button" class="fd-weekpill" data-fd-change-week title="Change week">'+
     weekLabel+' ▾</button>'+
     '<button type="button" class="fd-safetybtn" data-fd-safety>✚ Safety</button>'+
+    '<button type="button" class="fd-themebtn" data-fd-theme aria-label="Toggle color theme">◐</button>'+
     '</div>';
   out+='</div>';
   out+=fdTabs(s.tab);

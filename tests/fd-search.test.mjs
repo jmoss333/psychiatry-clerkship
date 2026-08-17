@@ -134,10 +134,10 @@ test('empty query never throws on a missing index (undefined defaults like every
 
 test('renders the panel skeleton with input, esc button, and footer copy', () => {
   const html = F.fdSearchOverlay(REAL_INDEX, '', SYN, {});
-  assert.match(html, /<div class="fd-search">/);
+  assert.match(html, /^<div class="fd-search"(?:\s|>)/);
   assert.match(html, /<div class="fd-searchpanel">/);
   assert.match(html, /<input type="text" class="fd-searchpanel__input" value=""/);
-  assert.match(html, /<button type="button" class="fd-searchpanel__esc" data-fd-close-search>esc<\/button>/);
+  assert.match(html, /<button type="button" class="fd-searchpanel__esc" data-fd-close-search(?:\s[^>]*)?>esc<\/button>/);
   assert.match(html, /<div class="fd-searchpanel__foot">↵ opens as a side sheet/);
 });
 
@@ -171,6 +171,15 @@ test('no-results empty state only replaces results for a non-empty query that ma
 test('empty query never shows the no-results state (defaults always populate it)', () => {
   const html = F.fdSearchOverlay(REAL_INDEX, '', SYN, {});
   assert.doesNotMatch(html, /fd-searchpanel__empty/);
+});
+
+test('the search overlay is a labelled modal dialog and its close control is named', () => {
+  const html = F.fdSearchOverlay(REAL_INDEX, '', SYN, {});
+  assert.match(html, /^<div class="fd-search" role="dialog" aria-modal="true" aria-label="Search">/,
+    'the full-screen search host is the modal surface');
+  assert.match(html,
+    /class="fd-searchpanel__esc" data-fd-close-search aria-label="Close search">esc<\/button>/,
+    'the keyboard-looking close control must retain an explicit name');
 });
 
 // ---- purity / audience-neutral / no raw hex ---------------------------------------------------
