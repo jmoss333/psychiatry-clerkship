@@ -139,7 +139,7 @@ test('role, tab, back, home, search, change-week, progress, theme, and step are 
   assert.equal(F.fdDispatch({ 'data-fd-home': '' }, {}, roleContext).route, '/');
   assert.deepEqual(F.fdDispatch({ 'data-fd-search': '' }, {}, roleContext).patch, { searchOpen: true });
   assert.deepEqual(F.fdDispatch({ 'data-fd-change-week': '' }, {}, roleContext).patch,
-    { screen: 'setup-week', searchOpen: false, sheet: null });
+    { screen: 'setup-week', openId: null, searchOpen: false, sheet: null });
   assert.equal(F.fdDispatch({ 'data-fd-progress': '' }, {}, roleContext).effect.type, 'open-progress');
   assert.deepEqual(F.fdDispatch({ 'data-fd-theme': '' }, { theme: 'dark' }, roleContext).effect,
     { type: 'set-theme', theme: 'light' });
@@ -274,6 +274,7 @@ function fakeHarness(initial, options = {}) {
   const controller = options.F.fdWire(root, initial, {
     window: fakeWindow,
     render: options.render || (() => {}),
+    renderTransient: options.renderTransient,
     searchResults: options.searchResults,
     openResource: options.openResource,
     route: options.route,
@@ -535,6 +536,190 @@ test('destination renders before resource and Progress effects mount into the fr
   assert.deepEqual(order, ['render', 'progress']);
 });
 
+test('transient chrome and completion renders preserve one live resource node without reopening it', () => {
+  const ls = memStorage();
+  const LocalF = make(ls);
+  const fullRenders = [];
+  const transientRenders = [];
+  const openCalls = [];
+  let scheduled;
+  let resourceNode = null;
+  let articleNode = null;
+  let host = { innerHTML: '', article: null };
+  let searchInput = null;
+  const completionChrome = {
+    desktopDone: false, mobileDone: false, railCount: 0, completedSuffixHidden: true,
+  };
+  function updateSearch(next) {
+    if (next.searchOpen) {
+      searchInput = {
+        tagName: 'INPUT', isContentEditable: false, value: next.query || '',
+        selectionStart: (next.query || '').length, selectionEnd: (next.query || '').length,
+        selectionDirection: 'none',
+        matches: (selector) => selector === '.fd-searchpanel__input',
+        focus() {}, setSelectionRange() {},
+      };
+    } else searchInput = null;
+  }
+  const h = fakeHarness({
+    ...roleContext, screen: 'app', tab: 'today', openId: null, done: {}, autoAdvance: false,
+  }, {
+    F: LocalF,
+    index: { byRef: {}, weeks: [{ n: 2, items: [{ ref: 'live.html' }] }] },
+    render(next) {
+      fullRenders.push({ ...next });
+      host = { innerHTML: '', article: null };
+      resourceNode = null;
+      articleNode = null;
+      updateSearch(next);
+    },
+    renderTransient(next, detail) {
+      transientRenders.push({ state: { ...next }, detail });
+      if (detail.surfaces.completion) {
+        const count = Object.keys(next.done || {}).length;
+        completionChrome.desktopDone = next.done?.['live.html'] === true;
+        completionChrome.mobileDone = next.done?.['live.html'] === true;
+        completionChrome.railCount = count;
+        completionChrome.completedSuffixHidden = count === 0;
+      }
+      updateSearch(next);
+    },
+    querySelector: (selector) => {
+      if (selector === '#content') return host;
+      if (selector === '.fd-searchpanel__input') return searchInput;
+      return null;
+    },
+    openResource(ref, opts) {
+      openCalls.push([ref, opts]);
+      resourceNode = { kind: 'iframe', session: 'in-progress' };
+      articleNode = { kind: 'article', iframe: resourceNode };
+      opts.host.article = articleNode;
+    },
+    document: { documentElement: {
+      getAttribute: () => 'light', setAttribute() {},
+    } },
+    setTimer: (fn, delay) => { scheduled = { fn, delay }; return 1; },
+    clearTimer() {},
+  });
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-open': 'live.html' }), preventDefault() {} });
+  const liveNode = resourceNode;
+  const liveArticle = articleNode;
+  const liveHost = host;
+  assert.equal(openCalls.length, 1);
+
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-theme': '' }), preventDefault() {} });
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-search': '' }), preventDefault() {} });
+  searchInput.value = 'ab'; searchInput.selectionStart = 2; searchInput.selectionEnd = 2;
+  h.rootHandlers.input({ target: searchInput });
+  h.windowHandlers.keydown({ key: 'Escape', target: searchInput, preventDefault() {} });
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-safety': '' }), preventDefault() {} });
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-close-sheet': '' }), preventDefault() {} });
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-safety': 'risk.md' }), preventDefault() {} });
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-close-sheet': '' }), preventDefault() {} });
+  assert.equal(scheduled.delay, 8000);
+  scheduled.fn();
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-toggle': 'live.html' }), preventDefault() {} });
+
+  assert.equal(fullRenders.length, 1, 'only the initial resource navigation replaces the base');
+  assert.equal(host, liveHost);
+  assert.equal(resourceNode, liveNode);
+  assert.equal(articleNode, liveArticle);
+  assert.equal(host.article, liveArticle);
+  assert.equal(host.article.iframe, liveNode);
+  assert.equal(openCalls.length, 1, 'the iframe is never reloaded to preserve it');
+  const theme = transientRenders.find(({ detail }) => detail.effect?.type === 'set-theme');
+  assert.deepEqual(theme.detail.surfaces,
+    { base: false, overlay: false, completion: false, chrome: true });
+  assert.equal(theme.detail.preserveResource, true);
+  assert.equal(theme.detail.effect.theme, 'dark',
+    'transient renderer consumes the requested theme instead of rereading old document state');
+  const search = transientRenders.find(({ detail }) => detail.effect?.type === 'search-input');
+  assert.equal(search.detail.surfaces.overlay, true);
+  assert.equal(search.detail.preserveResource, true);
+  const sheet = transientRenders.find(({ detail }) => detail.effect?.type === 'open-sheet');
+  assert.equal(sheet.detail.surfaces.overlay, true);
+  assert.equal(sheet.detail.preserveResource, true);
+  const nudge = transientRenders.find(({ detail }) => detail.effect?.type === 'nudge-timeout');
+  const dismissed = transientRenders.find(({ detail }) => detail.effect?.type === 'nudge-dismiss');
+  assert.equal(nudge.detail.surfaces.overlay, true);
+  assert.equal(dismissed.detail.surfaces.overlay, true);
+  assert.equal(dismissed.detail.preserveResource, true);
+  const completion = transientRenders.find(({ detail }) => detail.effect?.type === 'toggle-progress');
+  assert.equal(completion.state.done['live.html'], true);
+  assert.equal(completion.detail.surfaces.completion, true);
+  assert.equal(completion.detail.baseChanged, false);
+  assert.equal(completion.detail.preserveResource, true);
+  assert.deepEqual(completionChrome, {
+    desktopDone: true, mobileDone: true, railCount: 1, completedSuffixHidden: false,
+  });
+});
+
+test('the permitted faculty-preview theme transition preserves the exact governed resource node', () => {
+  const ls = memStorage();
+  const LocalF = make(ls);
+  const liveNode = { kind: 'governed-preview-iframe', session: 'exact-revision' };
+  const host = { resource: liveNode };
+  let fullRenders = 0;
+  let transientRenders = 0;
+  let historyWrites = 0;
+  const h = fakeHarness({
+    ...roleContext, screen: 'app', tab: 'today', openId: 'locked.html', fromTab: 'today',
+  }, {
+    F: LocalF, facultyPreview: true,
+    render: () => { fullRenders += 1; host.resource = { replaced: true }; },
+    renderTransient: () => { transientRenders += 1; },
+    querySelector: (selector) => selector === '#content' ? host : null,
+    document: { documentElement: {
+      getAttribute: () => 'light', setAttribute() {},
+    } },
+    history: {
+      replaceState() { historyWrites += 1; }, pushState() { historyWrites += 1; },
+    },
+  });
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-theme': '' }), preventDefault() {} });
+  assert.equal(fullRenders, 0);
+  assert.equal(transientRenders, 1);
+  assert.equal(host.resource, liveNode);
+  assert.equal(ls.getItem('cw_theme'), 'dark');
+  assert.equal(historyWrites, 0, 'faculty preview owns its exact route without controller history writes');
+});
+
+test('same-tab Path changes use an explicit base-without-resource transient detail contract', () => {
+  const details = [];
+  let fullRenders = 0;
+  const location = {
+    href: 'https://example.test/?tab=path&case=c1', pathname: '/', search: '?tab=path&case=c1',
+  };
+  const h = fakeHarness({
+    ...roleContext, screen: 'app', tab: 'path', viewWeek: 2, openId: null,
+  }, {
+    F, location, render: () => { fullRenders += 1; },
+    renderTransient: (_state, detail) => { details.push(detail); },
+  });
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-view-week': '3' }), preventDefault() {} });
+  h.controller.dispatch({ 'data-fd-setweek': '4' }, {
+    nowMs: new Date(2026, 7, 12, 9, 0, 0).getTime(),
+  });
+  assert.equal(fullRenders, 0);
+  assert.deepEqual(details.map((detail) => ({
+    kind: detail.kind,
+    changed: detail.changed,
+    surfaces: detail.surfaces,
+    preserveResource: detail.preserveResource,
+  })), [
+    {
+      kind: 'transient', changed: ['viewWeek'],
+      surfaces: { base: true, overlay: false, completion: false, chrome: false },
+      preserveResource: false,
+    },
+    {
+      kind: 'transient', changed: ['week', 'viewWeek'],
+      surfaces: { base: true, overlay: false, completion: false, chrome: true },
+      preserveResource: false,
+    },
+  ]);
+});
+
 test('Escape closes search even when its focused input owns typing-shortcut suppression', () => {
   const h = fakeHarness({ ...roleContext, screen: 'app', searchOpen: true, query: 'abc' }, { F });
   let prevented = 0;
@@ -666,6 +851,208 @@ test('history snapshots restore Today/page/Today across Back and Forward without
   memory.go(1);
   assert.equal(h.controller.getState().openId, null);
   assert.deepEqual(opened, ['page.md', 'page.md', 'page.md']);
+});
+
+test('history snapshots own only route-local state and Back keeps the newer canonical rotation', () => {
+  const ls = memStorage();
+  const LocalF = make(ls);
+  const location = {
+    href: 'https://example.test/?tab=path&case=c1', pathname: '/', search: '?tab=path&case=c1',
+  };
+  const memory = memoryHistory(location);
+  const h = fakeHarness({
+    ...roleContext, screen: 'app', tab: 'path', viewWeek: 2, openId: null,
+    autoAdvance: false,
+  }, { F: LocalF, location, history: memory.history });
+  memory.bind(h.windowHandlers.popstate);
+  assert.deepEqual(memory.entries[0].state.state,
+    { tab: 'path', viewWeek: 2, openId: null });
+  for (const forbidden of ['role', 'week', 'screen', 'autoAdvance']) {
+    assert.equal(forbidden in memory.entries[0].state.state, false);
+  }
+
+  h.controller.dispatch({ 'data-fd-setweek': '4' }, {
+    nowMs: new Date(2026, 7, 12, 9, 0, 0).getTime(),
+  });
+  assert.equal(memory.entries.length, 1, 'route-less viewWeek change replaces the current snapshot');
+  assert.equal(memory.entries[0].state.state.viewWeek, 4);
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-open': 'page.md' }), preventDefault() {} });
+  memory.go(-1);
+  const restored = h.controller.getState();
+  assert.equal(restored.tab, 'path');
+  assert.equal(restored.viewWeek, 4);
+  assert.equal(restored.week, 4, 'canonical week is not rolled back by route history');
+  assert.equal(restored.role, 'first-role');
+  assert.equal(restored.screen, 'app');
+  assert.equal(restored.autoAdvance, false);
+  assert.equal(ls.getItem('cw_rotation_start'), '2026-07-20');
+  assert.equal(location.search, '?tab=path&case=c1');
+});
+
+test('same-route Home replaces a bare restored-reader snapshot before later Back navigation', () => {
+  const location = { href: 'https://example.test/', pathname: '/', search: '' };
+  const memory = memoryHistory(location);
+  const h = fakeHarness({
+    ...roleContext, screen: 'app', tab: 'today', openId: 'saved.md', fromTab: 'today',
+  }, { F, location, history: memory.history });
+  memory.bind(h.windowHandlers.popstate);
+  assert.equal(memory.entries[0].state.state.openId, 'saved.md');
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-home': '' }), preventDefault() {} });
+  assert.equal(memory.entries.length, 1);
+  assert.equal(memory.entries[0].state.state.openId, null,
+    'same bare URL now owns Today rather than the restored reader fallback');
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-open': 'other.md' }), preventDefault() {} });
+  memory.go(-1);
+  assert.equal(h.controller.getState().tab, 'today');
+  assert.equal(h.controller.getState().openId, null);
+});
+
+test('an older sparse route snapshot cannot inherit newer viewWeek or fromTab values', () => {
+  const location = { href: 'https://example.test/', pathname: '/', search: '' };
+  const memory = memoryHistory(location);
+  const h = fakeHarness({
+    ...roleContext, screen: 'app', tab: 'today', openId: null,
+  }, { F, location, history: memory.history });
+  memory.bind(h.windowHandlers.popstate);
+  assert.deepEqual(memory.entries[0].state.state, { tab: 'today', openId: null });
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-view-week': '4' }), preventDefault() {} });
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-open': 'page.md' }), preventDefault() {} });
+  assert.equal(h.controller.getState().viewWeek, 4);
+  assert.equal(h.controller.getState().fromTab, 'path');
+  memory.go(-2);
+  const restored = h.controller.getState();
+  assert.equal(restored.tab, 'today');
+  assert.equal(restored.openId, null);
+  assert.equal('viewWeek' in restored, false);
+  assert.equal('fromTab' in restored, false);
+});
+
+test('destroy invalidates pending resource success and failure before either can reuse the host', async () => {
+  const host = { innerHTML: '<p>reused host</p>' };
+  let releaseSuccess;
+  let releaseFailure;
+  let currentness;
+  let success;
+  let failure;
+  const index = {
+    byRef: { 'pending.md': { ref: 'pending.md', kind: 'read', title: 'Pending' } }, weeks: [],
+  };
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'today' }, {
+    F, index, querySelector: (selector) => selector === '#content' ? host : null,
+    openResource(ref, opts) {
+      currentness = opts.isCurrent;
+      const common = {
+        ...opts, index, state: h.controller.getState(), host,
+        parseMarkdown: (text) => `<p>${text}</p>`, governanceNotice: () => '',
+        renderReader: (_index, _state, body) => body, facultyPreviewMatches: () => true,
+      };
+      success = F.fdOpenResource(ref, {
+        ...common,
+        fetcher: () => new Promise((resolve) => { releaseSuccess = resolve; }),
+      });
+      failure = F.fdOpenResource(ref, {
+        ...common,
+        fetcher: () => new Promise((_resolve, reject) => { releaseFailure = reject; }),
+      });
+    },
+  });
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-open': 'pending.md' }), preventDefault() {} });
+  assert.equal(currentness(), true);
+  h.controller.destroy();
+  assert.equal(currentness(), false);
+  releaseSuccess({ ok: true, text: async () => 'late success' });
+  releaseFailure(new Error('late failure'));
+  assert.deepEqual(await Promise.all([success, failure]), [false, false]);
+  assert.equal(host.innerHTML, '<p>reused host</p>');
+});
+
+test('destroy cancels an already-scheduled nudge render even if its callback races cleanup', () => {
+  let scheduled;
+  let transientRenders = 0;
+  let cleared = 0;
+  const h = fakeHarness({
+    ...roleContext, screen: 'app', tab: 'today', openId: 'live.html', sheet: 'risk.md', done: {},
+  }, {
+    F, renderTransient: () => { transientRenders += 1; },
+    setTimer: (fn) => { scheduled = fn; return 17; },
+    clearTimer: (id) => { assert.equal(id, 17); cleared += 1; },
+  });
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-close-sheet': '' }), preventDefault() {} });
+  assert.equal(h.controller.getState().nudge, 'risk.md');
+  assert.equal(transientRenders, 1);
+  h.controller.destroy();
+  assert.equal(cleared, 1);
+  scheduled();
+  assert.equal(h.controller.getState().nudge, 'risk.md');
+  assert.equal(transientRenders, 1, 'racing callback does not touch the retired controller DOM');
+});
+
+test('reopening the same resource invalidates the older same-ref request generation', () => {
+  const requests = [];
+  let host = { innerHTML: '' };
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'today' }, {
+    F,
+    render: () => { host = { innerHTML: '' }; },
+    querySelector: (selector) => selector === '#content' ? host : null,
+    openResource: (ref, opts) => { requests.push([ref, opts]); },
+  });
+  const open = () => h.rootHandlers.click({
+    target: actionTarget({ 'data-fd-open': 'same.md' }), preventDefault() {},
+  });
+  open();
+  assert.equal(requests[0][1].isCurrent(), true);
+  open();
+  assert.equal(requests.length, 2);
+  assert.equal(requests[0][1].isCurrent(), false);
+  assert.equal(requests[1][1].isCurrent(), true);
+});
+
+test('change-week clears the base resource and invalidates its late markdown response', async () => {
+  let oldHost = { innerHTML: '' };
+  let currentHost = oldHost;
+  let release;
+  let rejectFailure;
+  let pending;
+  let pendingFailure;
+  let currentness;
+  const index = {
+    byRef: { 'pending.md': { ref: 'pending.md', kind: 'read', title: 'Pending' } }, weeks: [],
+  };
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'today' }, {
+    F, index,
+    render: (next) => {
+      currentHost = { innerHTML: next.screen === 'setup-week' ? '<p>setup surface</p>' : '' };
+    },
+    querySelector: (selector) => selector === '#content' ? currentHost : null,
+    openResource(ref, opts) {
+      oldHost = opts.host;
+      currentness = opts.isCurrent;
+      pending = F.fdOpenResource(ref, {
+        ...opts, index, state: h.controller.getState(),
+        fetcher: () => new Promise((resolve) => { release = resolve; }),
+        parseMarkdown: (text) => `<p>${text}</p>`, governanceNotice: () => '',
+        renderReader: (_index, _state, body) => body, facultyPreviewMatches: () => true,
+      });
+      pendingFailure = F.fdOpenResource(ref, {
+        ...opts, index, state: h.controller.getState(),
+        fetcher: () => new Promise((_resolve, reject) => { rejectFailure = reject; }),
+        parseMarkdown: (text) => `<p>${text}</p>`, governanceNotice: () => '',
+        renderReader: (_index, _state, body) => body, facultyPreviewMatches: () => true,
+      });
+    },
+  });
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-open': 'pending.md' }), preventDefault() {} });
+  assert.equal(currentness(), true);
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-change-week': '' }), preventDefault() {} });
+  assert.equal(h.controller.getState().screen, 'setup-week');
+  assert.equal(h.controller.getState().openId, null);
+  assert.equal(currentness(), false);
+  release({ ok: true, text: async () => 'late old page' });
+  rejectFailure(new Error('late old failure'));
+  assert.equal(await pending, false);
+  assert.equal(await pendingFailure, false);
+  assert.equal(oldHost.innerHTML, '');
+  assert.equal(currentHost.innerHTML, '<p>setup surface</p>');
 });
 
 test('popstate Progress uses the internal Progress path and never generic resource loading', () => {

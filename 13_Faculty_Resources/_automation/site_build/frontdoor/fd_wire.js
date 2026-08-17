@@ -282,7 +282,7 @@ function fdDispatch(attrs, context, state){
   }
   if(fdOwn(a,'data-fd-change-week')){
     return {
-      patch:{screen:'setup-week',searchOpen:false,sheet:null},route:null,effect:null
+      patch:{screen:'setup-week',openId:null,searchOpen:false,sheet:null},route:null,effect:null
     };
   }
   if(fdOwn(a,'data-fd-progress')){
@@ -475,7 +475,11 @@ function fdWire(root, initialState, opts){
   var o=opts||{}, win=o.window||(typeof window!=='undefined'?window:null);
   var doc=o.document||(typeof document!=='undefined'?document:null);
   var state=fdClone(initialState||{}), invokers=[], nudgeTimer=null, navGeneration=0;
+  var destroyed=false;
   var render=o.render||function(){};
+  var renderTransient=o.renderTransient||function(next,detail){
+    if(!detail.preserveResource) render(next,detail);
+  };
   var setTimer=o.setTimer||(typeof setTimeout==='function'?setTimeout:null);
   var clearTimer=o.clearTimer||(typeof clearTimeout==='function'?clearTimeout:null);
   var index=o.index||fdDefaultIndex();
@@ -523,12 +527,23 @@ function fdWire(root, initialState, opts){
     return !!r.route||!!(r.effect&&r.effect.type&&r.effect.type!=='set-theme');
   }
   function historySnapshot(){
-    var keys=['role','tab','viewWeek','openId','fromTab','week','autoAdvance','screen'];
+    var keys=['tab','viewWeek','openId','fromTab'];
     var snap={};
     for(var i=0;i<keys.length;i++){
       if(state[keys[i]]!==undefined) snap[keys[i]]=state[keys[i]];
     }
     return {fd:true,state:snap};
+  }
+  function historyValue(){
+    try{ return JSON.stringify(historySnapshot().state); }
+    catch(_){ return ''; }
+  }
+  function replaceHistorySnapshot(){
+    if(!win||!win.history||!win.history.replaceState) return false;
+    try{
+      win.history.replaceState(historySnapshot(),'',currentRoute());
+      return true;
+    }catch(_){ return false; }
   }
   function currentRoute(){
     if(!win||!win.location) return '/';
@@ -558,11 +573,50 @@ function fdWire(root, initialState, opts){
     catch(_){ return {}; }
   }
   function routeTo(route){
-    if(!route||sameRoute(route)) return;
-    if(o.route){ o.route(route,historySnapshot()); return; }
+    if(!route||sameRoute(route)) return false;
+    if(o.route){ o.route(route,historySnapshot()); return true; }
     if(win&&win.history&&win.history.pushState){
-      try{ win.history.pushState(historySnapshot(),'',route); }catch(_){}
+      try{ win.history.pushState(historySnapshot(),'',route); return true; }catch(_){}
     }
+    return false;
+  }
+  function baseValue(value, key){
+    var raw=value&&value[key];
+    if(key==='openId') return raw||null;
+    return raw||'';
+  }
+  function baseChanged(before, after){
+    var keys=['openId','tab','screen'];
+    for(var i=0;i<keys.length;i++){
+      if(baseValue(before,keys[i])!==baseValue(after,keys[i])) return true;
+    }
+    return false;
+  }
+  function transitionDetail(before, patch, effect, changedBase){
+    var changed=[], surfaces={base:false,overlay:false,completion:false,chrome:false};
+    var overlayKeys={searchOpen:true,query:true,sheet:true,sheetFrom:true,stepsDone:true,nudge:true};
+    var actionKeys={done:true,justDone:true};
+    for(var key in patch){
+      if(fdOwn(patch,key)&&before[key]!==state[key]){
+        changed.push(key);
+        if(overlayKeys[key]) surfaces.overlay=true;
+        else if(actionKeys[key]) surfaces.completion=true;
+        else surfaces.base=true;
+        if(key==='week'||key==='role') surfaces.chrome=true;
+      }
+    }
+    var type=effect&&effect.type;
+    if(type==='set-theme') surfaces.chrome=true;
+    if(type==='focus-search'||type==='open-sheet'||type==='open-protocol'||
+        type==='nudge-timeout'||type==='search-input') surfaces.overlay=true;
+    if(type==='toggle-progress') surfaces.completion=true;
+    if(type==='set-rotation'||type==='browse-without-rotation') surfaces.base=true;
+    var preserve=!!before.openId&&before.openId===state.openId&&!changedBase;
+    if(surfaces.completion&&!preserve) surfaces.base=true;
+    return {
+      kind:changedBase?'base':'transient',changed:changed,surfaces:surfaces,
+      baseChanged:changedBase,preserveResource:preserve,effect:effect||null
+    };
   }
   function fdApplyEffect(effect, fromHistory, generation){
     if(!effect) return;
@@ -577,7 +631,7 @@ function fdWire(root, initialState, opts){
           index:index,state:state,search:(win&&win.location&&win.location.search)||'',
           fromHistory:!!fromHistory,host:freshResourceHost(),
           isCurrent:function(){
-            return generation===navGeneration&&state.openId===effect.openRef;
+            return !destroyed&&generation===navGeneration&&state.openId===effect.openRef;
           }
         });
       }
@@ -587,15 +641,21 @@ function fdWire(root, initialState, opts){
     } else if(effect.type==='nudge-timeout'&&setTimer){
       if(nudgeTimer&&clearTimer) clearTimer(nudgeTimer);
       nudgeTimer=setTimer(function(){
+        if(destroyed) return;
+        var before=fdClone(state);
         state.nudge=null;
-        render(state);
+        renderTransient(state,transitionDetail(
+          before,{nudge:null},{type:'nudge-dismiss'},false
+        ));
       },effect.delay);
     } else if(effect.type==='open-resource'){
       var opener=o.openResource||fdOpenResource;
       opener(effect.ref,{
         index:index,state:state,search:(win&&win.location&&win.location.search)||'',
         fromHistory:!!fromHistory,host:freshResourceHost(),
-        isCurrent:function(){ return generation===navGeneration&&state.openId===effect.ref; }
+        isCurrent:function(){
+          return !destroyed&&generation===navGeneration&&state.openId===effect.ref;
+        }
       });
     } else if(effect.type==='open-progress'){
       if(o.openProgress) o.openProgress(state,{fromHistory:!!fromHistory,host:freshResourceHost()});
@@ -603,26 +663,34 @@ function fdWire(root, initialState, opts){
     }
   }
   function apply(result, invoker, fromHistory){
+    if(destroyed) return state;
     if(previewActive()&&meaningfulResult(result)){
       lockPreview();
       return state;
     }
-    var beforeOverlay=overlayIdentity(state);
+    var before=fdClone(state), beforeOverlay=overlayIdentity(state);
+    var beforeHistory=historyValue();
     var patch=result.patch||{};
     var beforeHadOverlay=!!beforeOverlay;
     if(!beforeHadOverlay&&invoker) invokers.push(invoker);
     for(var k in patch){ if(fdOwn(patch,k)) state[k]=patch[k]; }
     var afterOverlay=overlayIdentity(state);
     if(!afterOverlay&&!beforeHadOverlay&&invokers.length) invokers.pop();
+    var changedBase=baseChanged(before,state);
+    var detail=transitionDetail(before,patch,result.effect,changedBase);
     var generation=navGeneration;
-    if(result.route||result.effect&&(result.effect.type==='open-resource'||
+    if(changedBase||result.route||result.effect&&(result.effect.type==='open-resource'||
         result.effect.type==='open-progress'||result.effect.openRef)){
       navGeneration++;
       generation=navGeneration;
     }
     fdSave(state);
-    if(!fromHistory) routeTo(result.route);
-    render(state);
+    if(!fromHistory){
+      var pushed=routeTo(result.route);
+      if(!pushed&&beforeHistory!==historyValue()) replaceHistorySnapshot();
+    }
+    if(changedBase) render(state,detail);
+    else renderTransient(state,detail);
     fdApplyEffect(result.effect,fromHistory,generation);
     if(afterOverlay&&afterOverlay!==beforeOverlay) focusDialog();
     else if(!afterOverlay&&beforeHadOverlay) restoreInvoker();
@@ -646,12 +714,16 @@ function fdWire(root, initialState, opts){
     apply(fdDispatch(attrs,context({inSheet:!!state.sheet}),state),target,false);
   }
   function inputHandler(event){
+    if(destroyed) return;
     var target=event.target;
     if(!target||!target.matches||!target.matches('.fd-searchpanel__input')) return;
     var start=target.selectionStart, end=target.selectionEnd;
     var direction=target.selectionDirection;
+    var before=fdClone(state);
     state.query=String(target.value||'');
-    render(state);
+    renderTransient(state,transitionDetail(
+      before,{query:state.query},{type:'search-input'},false
+    ));
     var fresh=root&&root.querySelector?root.querySelector('.fd-searchpanel__input'):null;
     if(fresh&&fresh.focus){
       try{fresh.focus();}catch(_){}
@@ -703,7 +775,7 @@ function fdWire(root, initialState, opts){
     apply(fdDispatch(attrs,context(),state),event.target,false);
   }
   function popstateHandler(event){
-    if(!win||!win.location) return;
+    if(destroyed||!win||!win.location) return;
     if(previewActive()){
       if(currentRoute()!==previewRouteBase) lockPreview();
       return;
@@ -715,7 +787,10 @@ function fdWire(root, initialState, opts){
     merged.sheetFrom=null;
     merged.stepsDone={};
     if(snap){
-      delete merged.openId;
+      var routeKeys=['tab','viewWeek','openId','fromTab'];
+      for(var routeIndex=0;routeIndex<routeKeys.length;routeIndex++){
+        delete merged[routeKeys[routeIndex]];
+      }
       for(var key in snap){ if(fdOwn(snap,key)) merged[key]=snap[key]; }
     } else {
       merged.roles=o.roles||merged.roles;
@@ -730,7 +805,11 @@ function fdWire(root, initialState, opts){
     state=merged;
     navGeneration++;
     var generation=navGeneration;
-    render(state);
+    render(state,{
+      kind:'base',changed:[],
+      surfaces:{base:true,overlay:true,completion:true,chrome:false},
+      baseChanged:true,preserveResource:false,effect:null
+    });
     fdSave(state);
     if(state.openId==='__progress__'){
       fdApplyEffect({type:'open-progress'},true,generation);
@@ -739,7 +818,7 @@ function fdWire(root, initialState, opts){
       opener(state.openId,{
         index:index,state:state,search:win.location.search||'',fromHistory:true,
         host:freshResourceHost(),
-        isCurrent:function(){ return generation===navGeneration; }
+        isCurrent:function(){ return !destroyed&&generation===navGeneration; }
       });
     }
   }
@@ -753,13 +832,16 @@ function fdWire(root, initialState, opts){
     win.addEventListener('popstate',popstateHandler);
   }
   if(!previewActive()&&win&&win.history&&win.history.replaceState){
-    try{ win.history.replaceState(historySnapshot(),'',currentRoute()); }catch(_){}
+    replaceHistorySnapshot();
   }
 
   return {
     getState:function(){ return state; },
     dispatch:function(attrs,c){ return apply(fdDispatch(attrs,context(c),state),null,false); },
     destroy:function(){
+      if(destroyed) return;
+      destroyed=true;
+      navGeneration++;
       if(root&&root.removeEventListener){
         root.removeEventListener('click',clickHandler);
         root.removeEventListener('input',inputHandler);

@@ -243,3 +243,136 @@ as a separate rollback-sized commit with both audience browser journeys.
 An innovative follow-up would add a deterministic navigation-generation trace in non-production
 browser tests. By deliberately resolving page fetches in shuffled order, it could continuously
 prove that only the latest route may write the Reader host as future resource types are added.
+
+---
+
+## Review remediation — Round 2 — 2026-08-17
+
+Status: COMPLETE
+
+### Plain outcome
+
+The dormant controller now treats a loaded article or tool as a live surface, not disposable
+markup. Opening Search, changing theme, using safety sheets, dismissing a nudge, or marking an item
+complete updates only the requested chrome while preserving the exact article and in-progress
+iframe objects. Browser history no longer rolls global rotation/setup choices backward, and a
+retired controller or replaced base surface cannot write a late page or error into a reused host.
+
+### Starting state and genuine RED evidence
+
+- Verified clean starting HEAD `b1152e948730a310cf9974dad33e332acbadcd28`.
+- Tests were changed before production code.
+- After correcting one test fixture so it reached an assertion rather than dereferencing a missing
+  replacement input, the core Round 2 regression command produced seven intentional behavioral
+  failures out of seven:
+
+```bash
+node --test --test-name-pattern="transient chrome|faculty-preview theme|same-tab Path|history snapshots own|same-route Home|destroy invalidates|change-week clears" \
+  tests/fd-wire.test.mjs
+# RED: 0 passed, 7 failed
+```
+
+The failures proved: eight full renders instead of one; preview theme replacing the governed
+resource; no Path transient detail; canonical role/week/screen/autoAdvance leaking into history;
+same-route Home retaining `saved.md`; `destroy()` leaving a request current; and change-week
+retaining `openId`.
+
+Two contract-tightening regressions were then observed before their production change:
+
+```bash
+node --test --test-name-pattern="transient chrome|same-tab Path|destroy cancels|same resource|change-week clears|faculty-preview theme" \
+  tests/fd-wire.test.mjs
+# RED: 4 passed, 2 failed
+```
+
+Those failures renamed narrow `actionbar` scope to all completion-dependent chrome and proved a
+week change must update the header Week pill. Finally, an older sparse history entry inherited
+newer `viewWeek/fromTab`; its focused regression failed 0/1 before all four route-local keys were
+cleared ahead of snapshot merge.
+
+### Per-finding GREEN evidence
+
+1. **Transient render survival:** normalized base identity is `screen|tab|openId`. Only a change to
+   that identity uses full `render`. Same-base actions use
+   `renderTransient(state, detail)`, where detail is pinned as:
+
+   ```text
+   {kind, changed, surfaces:{base,overlay,completion,chrome},
+    baseChanged, preserveResource, effect}
+   ```
+
+   The test preserves the identical host, article object, iframe object, and iframe session across
+   theme, Search open/type/close, Kit/protocol open/close, nudge creation/dismissal, and a
+   non-auto-advance completion toggle. The resource opener remains called once. Completion scope
+   updates desktop and mobile controls, rail count, and Completed-suffix state. Same-tab Path
+   `viewWeek` marks base only; set-week marks base plus chrome. Faculty-preview theme preserves the
+   exact governed iframe, writes `cw_theme`, and makes no history write. Because transient render
+   precedes the theme effect, Task 5 must consume `detail.effect.theme`, which is explicitly tested.
+2. **History ownership:** snapshots contain only `tab`, `viewWeek`, `openId`, and `fromTab` when
+   present. Route-less or same-route changes replace the current snapshot only when those values
+   change. Path week 2 -> set week 4 -> page -> Back retains canonical week 4, role, screen,
+   autoAdvance, and matching `cw_rotation_start`, while preserving `case=c1`. Bare restored
+   `saved.md` -> Home -> other page -> Back remains Today. Popstate clears all four route-local
+   keys before merging, so older sparse entries cannot inherit newer values.
+3. **Destroy lifecycle:** `destroy()` is idempotent, marks the controller destroyed, advances the
+   navigation generation, removes listeners, and clears its nudge timer. Deferred markdown success
+   and failure both return false without mounting or rendering fallback into a reused host. A
+   racing cleared-timer callback is also inert.
+4. **Base invalidation:** generation advances for normalized base changes in addition to routed or
+   resource effects. Change-week clears `openId`; a late success and late failure from the prior
+   resource are both suppressed. Reopening the same ref invalidates the older same-ref request.
+
+The seven Round 1 fixes remain covered in the same focused run: preview lock/exactness, render-first
+resource mounting, later-navigation staleness, stateful Back/Forward and internal Progress,
+multi-character Search caret, Escape ordering, nested focus restoration, and leading-H1 removal.
+
+### Final GREEN gates
+
+```bash
+node --test tests/fd-wire.test.mjs tests/fd-resource.test.mjs \
+  tests/fd-action-contract.test.mjs tests/parallel-ceilings.test.mjs
+# 54 passed, 0 failed
+
+node --check 13_Faculty_Resources/_automation/site_build/frontdoor/fd_wire.js
+# passed
+
+python3 13_Faculty_Resources/_automation/site_build/test_common.py
+# 53 passed, 0 failed
+
+node --test tests/*.test.mjs
+# authorized loopback run: 1030 passed, 0 failed
+```
+
+Sequential publication gates were rerun after the last controller change:
+
+```bash
+bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh ms3
+bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res
+```
+
+- MS3: PASS, static QA hard failures 0, 105 LFS media files, no pointer stubs.
+- Resident: PASS, static QA hard failures 0, 105 LFS media files, no pointer stubs.
+- Existing metadata and computed-key notices remain soft baseline advisories.
+
+### Exact Round 2 files and boundaries
+
+- `13_Faculty_Resources/_automation/site_build/frontdoor/fd_wire.js`
+- `tests/fd-wire.test.mjs`
+- `.superpowers/sdd/2026-08-17-front-door-audited-continuation/task-4-report.md`
+
+No Task 5 shell/activation, marker/ceiling, palette, `_build` output, media, clinical/crisis copy,
+or unrelated source changed. The controller remains ES5-style, audience-neutral, namespaced, and
+behaviorally inactive behind the live legacy shell.
+
+### Residual risk, next option, and innovative follow-up
+
+Residual risk remains at the intentional cutover boundary: Task 5 must provide a real
+`renderTransient` adapter on stable header/main/overlay mounts. When `preserveResource=true`, that
+adapter must not replace `#content`, `.fd-reader`, or `.fd-article`; it must patch completion
+controls and use `detail.effect.theme` rather than rereading the pre-effect document theme.
+
+The concrete next best option is independent review of this Round 2 commit, followed by Task 5's
+atomic cutover with browser assertions for article/iframe identity and every completion-control
+copy. An innovative follow-up is a randomized async lifecycle harness that shuffles success,
+failure, destroy, same-ref reopen, and history events and proves only the current generation may
+write the stable Reader host.
