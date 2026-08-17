@@ -152,6 +152,28 @@ test('role, tab, back, home, search, change-week, progress, theme, and step are 
     'item:scale.html');
 });
 
+test('change-week uses a reader origin only while a reader is open', () => {
+  const reader = F.fdDispatch({ 'data-fd-change-week': '' }, { search: '?case=c1' }, {
+    ...roleContext, tab: 'library', fromTab: 'path', openId: 'pending.md',
+  });
+  assert.deepEqual(reader, {
+    patch: {
+      screen: 'setup-week', tab: 'path', openId: null, searchOpen: false, sheet: null,
+    },
+    route: '?tab=path&case=c1', history: 'replace', effect: null,
+  });
+
+  const tabOnly = F.fdDispatch({ 'data-fd-change-week': '' }, { search: '?case=c1' }, {
+    ...roleContext, tab: 'library', fromTab: 'today', openId: null,
+  });
+  assert.deepEqual(tabOnly, {
+    patch: {
+      screen: 'setup-week', tab: 'library', openId: null, searchOpen: false, sheet: null,
+    },
+    route: '?tab=library&case=c1', history: 'replace', effect: null,
+  });
+});
+
 test('Escape close order and explicit close actions are deterministic', () => {
   const both = { ...roleContext, searchOpen: true, sheet: 'kit', query: 'abc' };
   assert.deepEqual(F.fdDispatch({ close: true }, {}, both).patch,

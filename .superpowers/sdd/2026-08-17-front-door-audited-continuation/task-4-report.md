@@ -489,3 +489,42 @@ An innovative follow-up would add a small history-fuzz model that generates page
 Back, and Forward sequences while asserting two invariants after every event: canonical rotation
 fields never come from history, and a non-app screen never owns a reader route. That would turn
 the edge case found in this review into a reusable state-machine safety net.
+
+---
+
+## Review remediation — Round 4 — 2026-08-17
+
+**Status: COMPLETE**
+
+Plain outcome: Change week now returns to a reader's valid originating tab only while a reader is
+actually open. On an ordinary Library, Path, or Today view, it preserves the active valid tab and
+replaces the current history entry while retaining non-route query parameters.
+
+### Genuine RED and GREEN evidence
+
+- Verified the clean starting HEAD `f6d1b3e19e9b1ab8543f7c881b5994131145cf72`.
+- Added both required branches before production code: an open reader returns to Path, while the
+  tab-only state `{tab:'library', fromTab:'today', openId:null}` stays on Library with
+  `?tab=library&case=c1` and replace history.
+- Targeted RED: 41 passed, 1 failed. The reader-origin branch already passed; the tab-only branch
+  incorrectly selected Today and `/?case=c1`.
+- The production fix is one conditional refinement: `fromTab` is eligible only when `openId` is
+  truthy; otherwise the current valid tab wins, with Today as the existing fallback.
+- Targeted GREEN: 42 passed, 0 failed. Focused front-door suite: 58 passed, 0 failed. Syntax check
+  passed. Common injector suite: 53 passed, 0 failed. Full root suite with approved loopback:
+  1,034 passed, 0 failed.
+- Sequential MS3 then resident publication gates passed with zero hard failures. Both LFS
+  preflights found 105 media files and no pointer stubs. Existing soft advisories were unchanged.
+
+### Exact scope and handoff
+
+Round 4 changes only `fd_wire.js`, its focused controller test, and this report. It does not touch
+or activate Task 5, the legacy shell, `_build`, media, clinical/crisis material, palette, or any
+unrelated source. The controller remains dormant and all prior review contracts remain covered by
+the green suites.
+
+Residual risk is limited to the dormant-controller boundary already documented above. The next
+best option is the independent final Task 4 review before Task 5's atomic cutover. An innovative
+follow-up is to generate the Change-week tab-selection truth table from the action contract, so
+future combinations of `openId`, `fromTab`, and `tab` are tested mechanically rather than through
+individually discovered regressions.

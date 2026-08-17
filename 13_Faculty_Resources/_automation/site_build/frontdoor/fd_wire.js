@@ -281,7 +281,7 @@ function fdDispatch(attrs, context, state){
     return {patch:{searchOpen:true},route:null,effect:{type:'focus-search'}};
   }
   if(fdOwn(a,'data-fd-change-week')){
-    tab=fdValidTab(s.fromTab)?s.fromTab:(fdValidTab(s.tab)?s.tab:'today');
+    tab=s.openId&&fdValidTab(s.fromTab)?s.fromTab:(fdValidTab(s.tab)?s.tab:'today');
     return {
       patch:{screen:'setup-week',tab:tab,openId:null,searchOpen:false,sheet:null},
       route:fdRouteForTab(tab,c.search),history:'replace',effect:null
