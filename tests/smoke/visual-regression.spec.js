@@ -33,6 +33,12 @@ async function waitForStableFrontDoor(page, surface) {
   await page.evaluate(() => document.fonts && document.fonts.ready);
 }
 
+async function waitForStableReader(page) {
+  await waitForStableFrontDoor(page, '.fd-reader .fd-article__body');
+  await expect(page.locator('.fd-reader .governance-notice.reviewed-receipt')).toBeVisible();
+  await expect(page.locator('.fd-reader .governance-notice.unavailable')).toHaveCount(0);
+}
+
 for (const viewport of VIEWPORTS) {
   test.describe(`resident Front Door visual @ ${viewport.label}`, () => {
     test.use({ viewport: { width: viewport.width, height: viewport.height } });
@@ -47,7 +53,7 @@ for (const viewport of VIEWPORTS) {
     test('Reader first viewport', async ({ page, baseURL }) => {
       await seedResident(page, 'library');
       await page.goto(`${baseURL}/?page=t_mood.md`, { waitUntil: 'domcontentloaded' });
-      await waitForStableFrontDoor(page, '.fd-reader .fd-article__body');
+      await waitForStableReader(page);
       await expect(page).toHaveScreenshot(`front-door-reader-${viewport.label}.png`);
     });
   });

@@ -191,3 +191,94 @@ four new Front Door baselines before any merge decision.
 Have the Ubuntu workflow emit a tiny machine-readable visual receipt containing each semantic
 baseline name, viewport, frozen clock, seed-state hash, and screenshot SHA-256. Reviewers could
 then detect stale state or accidental local-platform images before looking at pixel diffs.
+
+## Final-review Round 1 — browser coverage gaps
+
+Status: COMPLETE LOCALLY — all three Important test gaps reproduced and closed; one separate live
+CSS defect received its own rollback-sized production commit
+
+### 1. Sampled routes now reject the real Front Door fallback
+
+The former sample check looked only for legacy `.error` markup or fewer than 80 characters. A
+temporary request failure for sampled `t_mood.md` rendered the real
+`.fd-fallback[role="alert"]` with 84 characters, yet the old test passed 1/1. The fallback check
+now runs immediately after every sampled route settles and before the tool early-return branch.
+Under the identical request mutation, the repaired test failed with
+`t_mood.md: Front Door fallback rendered`; after removing the mutation, the focused MS3/resident
+run passed 2/2.
+
+### 2. Live Reader wide-table accessibility was restored
+
+The functional learner suite now opens `pg_interview.md` at 390x844 and proves the actual table:
+
+- lives in the current `.fd-article__body` Reader with no fallback;
+- opens through its section button;
+- is an overflowing `.table-scroll.is-scrollable` region;
+- carries `role="region"`, `tabindex="0"`, and `aria-label="MSE Structure table"`;
+- exposes its visible scroll cue; and
+- remains contained within the document width.
+
+The first live run was genuine RED on both audiences: all region/label/tabindex/containment checks
+passed, but the existing cue was hidden. Root-cause tracing found that the unchanged
+`display:block` rule was scoped only to legacy `.md-body`, while Front Door mounts the same table
+under `.fd-article__body`. A focused exact-selector source contract independently failed 0/1.
+
+Commit `9696f45 fix(frontdoor): restore wide-table scroll cues` makes only one selector-list
+compatibility change so the existing cue rule also matches `.fd-article__body`; it changes no
+style value, palette, markup, content, or other layout rule. That patch was intentionally treated
+as partial after a fresh controller probe showed the live viewport still had
+`overflowX: visible`, `clientWidth: 308`, `scrollWidth: 328`, and an immovable `scrollLeft: 0`.
+The raw live table also lacked the shared border, padding, header background, and spacing rules.
+
+The strengthened browser test then failed 0/2 because the region could not scroll internally,
+and an exact selector-parser test for every shared table mechanic failed 0/1. Commit
+`dd750ee fix(frontdoor): contain live reader tables` extends only the existing selector lists to
+the live `.fd-article__body` wrapper: shell positioning/margin, viewport overflow/touch/border/
+background, max-content table sizing/margin, overflow gradient, base cells and header, and mobile
+cell widths. It changes no CSS value, palette, markup, or content. The parser passed 1/1 and rebuilt
+Chromium passed 2/2 across MS3 and resident, proving computed horizontal overflow is scrollable,
+`scrollLeft` actually changes, the cue is visible, keyboard semantics remain exact, and the page
+itself stays contained.
+
+### 3. Reader visuals now wait for stable governance
+
+The Reader screenshot readiness path now requires the visible reviewed receipt for `t_mood.md`
+and zero unavailable notices, in addition to the Reader body, no Front Door fallback, and loaded
+fonts. A screenshot-free deferred-governance mutation proved the gap and the fix:
+
+- old helper: returned while the unavailable notice was visible (`1/1` false-green
+  characterization);
+- repaired helper with governance held: timed out waiting for the reviewed receipt (`0/1`),
+  proving it refuses the unstable frame;
+- delayed response released: waited for the reviewed receipt, observed zero unavailable notices,
+  and passed `1/1`.
+
+The temporary mutation test was removed. The visual project still lists exactly four tests and
+the same four semantic names. No visual comparison ran and no baseline PNG was created.
+
+### Round 1 GREEN evidence
+
+```text
+Sequential MS3 build: OK; root 1061/1061; QA hard 0 / soft 7 / info 4;
+                      LFS 105 real files / 0 pointers
+Sequential resident build: OK; root 1061/1061; QA hard 0 / soft 10 / info 6;
+                           LFS 105 real files / 0 pointers
+Full learner Chromium projects: 168/168 passed in 20.4s
+  nav-ms3: 97/97 (10 files)
+  nav-res: 71/71 (7 files)
+Fresh authorized root suite: 1061/1061 passed
+Visual list: 4 tests / 1 file; no execution or snapshot update
+```
+
+The ordinary sandbox root invocation again produced only the known eight loopback `listen EPERM`
+failures (`1053 passed, 8 failed`); the authorized loopback run passed 1061/1061. Ports 4300 and
+4301 were controlled local build servers; the pre-existing port-4200 process remained untouched.
+
+Round 1's final test/report-only boundary is `tests/smoke/nav-crawl.spec.js`,
+`tests/smoke/visual-regression.spec.js`, and this report. The wide-table browser test is already in
+the separate `dd750ee` production/focused-test commit with `spa_index.html`,
+`tests/spa-shell-a11y.test.mjs`, and `tests/smoke/front-door.spec.js`; the earlier cue-only
+`9696f45` commit contains only `spa_index.html` and its focused source contract. No clinical fact,
+governance record, faculty decision, crisis-resource value, credential, PHI, media object, or
+generated `_build` output was committed. Nothing was pushed, dispatched, merged, or deployed; the
+Ubuntu four-baseline handoff remains.

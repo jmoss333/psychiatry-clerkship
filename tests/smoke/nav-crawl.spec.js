@@ -160,6 +160,13 @@ test('SPA: sample pages render real content', async ({ page, request, baseURL })
     );
     await waitForContent(page);
 
+    const fallback = page.locator('.fd-fallback[role="alert"]');
+    if (await fallback.isVisible().catch(() => false)) {
+      const text = await fallback.innerText().catch(() => 'Front Door fallback');
+      failures.push(`${it.f}: Front Door fallback rendered — "${text.trim().slice(0, 80)}"`);
+      continue;
+    }
+
     if (it.k === 'tool') {
       const iframe = page.locator('#content iframe.toolframe');
       const visible = await iframe.isVisible({ timeout: 8_000 }).catch(() => false);
