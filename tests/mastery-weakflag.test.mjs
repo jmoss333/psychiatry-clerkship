@@ -30,17 +30,30 @@ const shelfOrderSrc = extract(/var SHELF_ORDER=\[[^\]]*\];/, 'SHELF_ORDER litera
 const shelfLabelSrc = extract(/var SHELF_LABEL=\{[^}]*\};/, 'SHELF_LABEL literal');
 const blueprintOfSrc = extract(/function blueprintOf\(file\)\{[\s\S]*?\n  \}/, 'blueprintOf()');
 const masterySrc = extract(/function masteryByBlueprint\(\)\{[\s\S]*?\n  \}/, 'masteryByBlueprint()');
-const buildPlanSrc = extract(/function buildPlan\(\)\{[^\n]*\}/, 'buildPlan()');
-const weekMapSrc = extract(/var WEEK_MAP=\[[\s\S]*?\];/, 'WEEK_MAP literal');
+const planFromMasterySrc = extract(/function fdPlanFromMastery\(index,masteryRows,generatedAt,shelfDate\)\{[\s\S]*?\n  \}/, 'fdPlanFromMastery()');
 
 const CATS = ['mood', 'psychosis', 'anxiety', 'substance', 'neurocog', 'pharm',
   'safety', 'personality', 'childdev', 'otherdx', 'ethics', 'relational'];
+const INDEX = {
+  path: { id: 'ms3-six-week', weekCount: 6 },
+  weeks: [
+    { n: 1, title: 'Foundations & the MSE', focusCategories: ['safety'] },
+    { n: 2, title: 'Mood, Psychosis & Pharm',
+      focusCategories: ['mood', 'psychosis', 'pharm', 'neurocog'] },
+    { n: 3, title: 'Psychotherapy & Personality',
+      focusCategories: ['personality', 'anxiety', 'relational'] },
+    { n: 4, title: 'Family Systems & EE', focusCategories: ['relational'] },
+    { n: 5, title: 'Acute & Emergency',
+      focusCategories: ['safety', 'neurocog', 'substance'] },
+    { n: 6, title: 'Integration & Exam', focusCategories: ['otherdx', 'ethics'] },
+  ],
+};
 
 // Runs the real sources with a synthetic cw_qb_v1 and returns {mb, plan}.
 function run(qbRecords) {
   const topicMeta = {};
   for (const c of CATS) topicMeta[`t_${c}.md`] = { shelfBlueprint: [c] };
-  const harness = new Function('qbJson', 'TOPIC_META', `
+  const harness = new Function('qbJson', 'TOPIC_META', 'INDEX', `
     var localStorage={getItem:function(k){return k==='cw_qb_v1'?qbJson:null;}};
     function srsState(){return null;}
     function LS(){return '';}
@@ -48,11 +61,11 @@ function run(qbRecords) {
     ${shelfLabelSrc}
     ${blueprintOfSrc}
     ${masterySrc}
-    ${weekMapSrc}
-    ${buildPlanSrc}
-    return {mb:masteryByBlueprint(), plan:buildPlan()};
+    ${planFromMasterySrc}
+    var mb=masteryByBlueprint();
+    return {mb:mb, plan:fdPlanFromMastery(INDEX,mb,'2026-08-18T12:00:00.000Z','')};
   `);
-  return harness(JSON.stringify(qbRecords), topicMeta);
+  return harness(JSON.stringify(qbRecords), topicMeta, INDEX);
 }
 
 function perfectPretest() {
@@ -75,6 +88,10 @@ test('a perfect one-item-per-category pretest flags ZERO categories weak', () =>
   // And the Progress "weakest areas" predicate (score<70 && miss>0) matches nothing.
   const weakCats = mb.filter((x) => x.score != null && x.score < 70 && x.miss > 0);
   assert.deepEqual(weakCats, []);
+  assert.equal(plan.pathId, 'ms3-six-week');
+  assert.equal(plan.weekCount, 6);
+  assert.equal(plan.weeks[0].title, 'Week 1 — Foundations & the MSE');
+  assert.deepEqual(plan.weeks[1].allCats, ['mood', 'psychosis', 'pharm', 'neurocog']);
 });
 
 test('a missed pretest item still flags exactly that category weak', () => {
