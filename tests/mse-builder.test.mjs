@@ -14,8 +14,9 @@ function make() {
   const logic = source.slice(start, end);
   assert.match(logic, /var MSE_CONFLICTS\s*=/, 'the approved pair registry must exist');
   assert.match(logic, /function applyMseSelection\(/, 'the pure selection boundary must exist');
+  assert.match(logic, /function mseReplacementMessage\(/, 'the replacement copy helper must exist');
   // eslint-disable-next-line no-new-func
-  return new Function(`${logic}\nreturn {DOMAINS:DOMAINS,MSE_CONFLICTS:MSE_CONFLICTS,applyMseSelection:applyMseSelection};`)();
+  return new Function(`${logic}\nreturn {DOMAINS:DOMAINS,MSE_CONFLICTS:MSE_CONFLICTS,applyMseSelection:applyMseSelection,mseReplacementMessage:mseReplacementMessage};`)();
 }
 
 const APPROVED_PAIRS = {
@@ -118,4 +119,17 @@ test('unknown selections and malformed conflict entries fail soft', () => {
   assert.doesNotThrow(() => F.applyMseSelection(
     { cognition: ['oriented x3'] }, 'cognition', 'oriented x4', false,
   ));
+});
+
+test('replacement copy is deterministic for one or several cleared findings', () => {
+  const F = make();
+  assert.equal(
+    F.mseReplacementMessage('active SI', ['no SI/HI']),
+    'Active SI replaced no SI/HI because these findings conflict.',
+  );
+  assert.equal(
+    F.mseReplacementMessage('no SI/HI', ['passive SI', 'active SI', 'homicidal ideation']),
+    'No SI/HI replaced passive SI, active SI, and homicidal ideation because these findings conflict.',
+  );
+  assert.equal(F.mseReplacementMessage('active SI', []), '');
 });
