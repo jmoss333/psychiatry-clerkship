@@ -1638,12 +1638,30 @@
     }
   }
 
+  /* Tool width is a transient shell preference. Patch only classes and aria state so the live
+     iframe, its contentWindow, learner inputs, scroll position, and focused toggle all survive. */
+  function fdPatchToolLayout(state){
+    if(!contentEl)return;
+    var reader=contentEl.querySelector('.fd-reader--tool');
+    /* Faculty preview owns its audited full-width tool surface. A learner preference may still
+       exist in the shared store, but it must not decorate or alter that review-only DOM. */
+    var expanded=!!reader&&!facultyPreviewRequest&&state&&state.toolExpanded===true;
+    if(expanded)contentEl.classList.add('is-tool-expanded');
+    else contentEl.classList.remove('is-tool-expanded');
+    if(!reader)return;
+    if(expanded)reader.classList.add('is-tool-expanded');
+    else reader.classList.remove('is-tool-expanded');
+    var control=reader.querySelector('[data-fd-expand-tool]');
+    if(control)control.setAttribute('aria-pressed',expanded?'true':'false');
+  }
+
   function fdRender(state,detail){
     var app=state.screen==='app',hydrate=detail&&detail.kind==='hydrate';
     fdPrepareRoute(state,detail);
     fdAdoptSpecialContext(state);
     if(!hydrate&&fdChromeMount)fdChromeMount.innerHTML=app?fdHeader(fdLiveState(state)):'';
     if(contentEl){ contentEl.className='fd-main'; contentEl.innerHTML=fdBaseMarkup(state); }
+    fdPatchToolLayout(state);
     fdRenderCapture(state);
     fdRenderOverlays(state);
     if(app&&!state.openId)announceRoute(fdSpecialItemForState(state));
@@ -1693,6 +1711,7 @@
       fdAdoptSpecialContext(state);
       if(contentEl){contentEl.className='fd-main';contentEl.innerHTML=fdBaseMarkup(state);}
     }
+    if(surfaces.layout)fdPatchToolLayout(state);
     fdRenderOverlays(state);
   }
 

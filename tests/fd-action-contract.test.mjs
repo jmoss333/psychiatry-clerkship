@@ -31,7 +31,7 @@ test('every data-fd attribute emitted after Task 3 has one controller meaning', 
   const emitted = emittedAttributes();
   assert.deepEqual(emitted, [
     'data-fd-back', 'data-fd-change-week', 'data-fd-close-nudge',
-    'data-fd-close-search', 'data-fd-close-sheet', 'data-fd-home', 'data-fd-open',
+    'data-fd-close-search', 'data-fd-close-sheet', 'data-fd-expand-tool', 'data-fd-home', 'data-fd-open',
     'data-fd-progress', 'data-fd-role', 'data-fd-safety', 'data-fd-search', 'data-fd-setweek',
     'data-fd-sheet', 'data-fd-step', 'data-fd-tab', 'data-fd-theme', 'data-fd-toggle',
     'data-fd-view-week', 'data-fd-week',

@@ -81,7 +81,7 @@ namespace rule (`check-static-site.mjs:345` hard-fails any key in `index.html` n
 | `done` (map id→bool) | `cw_progress_v1` (`progLoad`/`progSave`) | **Reuse** |
 | `streak`, `lastDay` | `cw_srs_v1.stats.streak` | **Reuse** |
 | `week` | `cw_rotation_start` → `rotationWeek()`; `cw_start_week` manual override | **Reuse** |
-| `role`, `tab`, `viewWeek`, `openId`, `fromTab`, `scrollPos` | none | **New** → `cw_frontdoor_v1` |
+| `role`, `tab`, `viewWeek`, `openId`, `fromTab`, `scrollPos`, `toolExpanded` | none | **New** → `cw_frontdoor_v1` |
 
 The daily pick needs no persisted field: it derives from the local day index, so it is already
 stable within a day and caching it would only add a staleness bug.

@@ -8,7 +8,7 @@ var FD_HANDLED_ATTRS=[
   'data-fd-week','data-fd-view-week','data-fd-setweek','data-fd-role','data-fd-step',
   'data-fd-back','data-fd-home','data-fd-search','data-fd-change-week','data-fd-progress',
   'data-fd-theme','data-fd-close-search','data-fd-close-sheet','data-fd-close-nudge',
-  'data-fd-try-now'
+  'data-fd-try-now','data-fd-expand-tool'
 ];
 
 var FD_ACTION_SEMANTICS={
@@ -31,7 +31,8 @@ var FD_ACTION_SEMANTICS={
   'data-fd-close-search':'close search dialog',
   'data-fd-close-sheet':'close side sheet',
   'data-fd-close-nudge':'dismiss protocol nudge',
-  'data-fd-try-now':'preview related tool'
+  'data-fd-try-now':'preview related tool',
+  'data-fd-expand-tool':'toggle saved tool workspace width'
 };
 
 function fdActionSemantic(attr){
@@ -93,6 +94,7 @@ function fdResolveState(url, stored){
   else if(typeof out.week==='number'&&!isNaN(out.week)) out.viewWeek=out.week;
   else out.viewWeek=1;
   out.autoAdvance=src.autoAdvance!==false;
+  if(src.toolExpanded!==undefined) out.toolExpanded=src.toolExpanded===true;
 
   var parsed, routedRef=null;
   try{ parsed=new URL(String(url||''),'https://frontdoor.invalid/'); }catch(_){ parsed=null; }
@@ -266,6 +268,14 @@ function fdDispatch(attrs, context, state){
     return {
       patch:{openId:ref,fromTab:tab,searchOpen:false,sheet:null},
       route:fdRouteForRef(ref,c.search),effect:{type:'open-resource',ref:ref}
+    };
+  }
+
+  if(fdOwn(a,'data-fd-expand-tool')){
+    if(!fdIsTool(s.openId||'')) return {patch:{},route:null,effect:null};
+    return {
+      patch:{toolExpanded:s.toolExpanded!==true},route:null,
+      effect:{type:'toggle-tool-layout'}
     };
   }
 
@@ -518,7 +528,7 @@ var FD_ACTION_SELECTOR='[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-f
   '[data-fd-week],[data-fd-view-week],[data-fd-setweek],[data-fd-role],[data-fd-step],'+
   '[data-fd-back],[data-fd-home],[data-fd-search],[data-fd-change-week],[data-fd-progress],'+
   '[data-fd-theme],[data-fd-close-search],[data-fd-close-sheet],[data-fd-close-nudge],'+
-  '[data-fd-try-now]';
+  '[data-fd-try-now],[data-fd-expand-tool]';
 
 function fdAttrsFromTarget(target){
   var out={};
@@ -671,13 +681,14 @@ function fdWire(root, initialState, opts){
     return false;
   }
   function transitionDetail(before, patch, effect, changedBase){
-    var changed=[], surfaces={base:false,overlay:false,completion:false,chrome:false};
+    var changed=[], surfaces={base:false,overlay:false,completion:false,chrome:false,layout:false};
     var overlayKeys={searchOpen:true,query:true,sheet:true,sheetFrom:true,stepsDone:true,nudge:true};
     var actionKeys={done:true,justDone:true};
     for(var key in patch){
       if(fdOwn(patch,key)&&before[key]!==state[key]){
         changed.push(key);
-        if(overlayKeys[key]) surfaces.overlay=true;
+        if(key==='toolExpanded') surfaces.layout=true;
+        else if(overlayKeys[key]) surfaces.overlay=true;
         else if(actionKeys[key]) surfaces.completion=true;
         else surfaces.base=true;
         if(key==='week'||key==='role') surfaces.chrome=true;
@@ -688,6 +699,7 @@ function fdWire(root, initialState, opts){
     if(type==='focus-search'||type==='open-sheet'||type==='open-protocol'||
         type==='nudge-timeout'||type==='search-input') surfaces.overlay=true;
     if(type==='toggle-progress') surfaces.completion=true;
+    if(type==='toggle-tool-layout') surfaces.layout=true;
     if(type==='set-rotation'||type==='browse-without-rotation') surfaces.base=true;
     var preserve=!!before.openId&&before.openId===state.openId&&!changedBase;
     if(surfaces.completion&&!preserve) surfaces.base=true;

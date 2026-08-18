@@ -9,7 +9,7 @@
    no const/let/arrow functions/template literals -- matches the other frontdoor/ modules.
 
    Pure: fdReader(index, state, bodyHtml) -> string. No DOM, no browser storage, no clock access
-   -- state arrives fully resolved. state = {ref, week, fromTab, done, desk}. `desk` is accepted
+   -- state arrives fully resolved. state = {ref, week, fromTab, done, desk, toolExpanded}. `desk` is accepted
    (the interface brief's shape) but never read: the desktop primary/ghost pair
    (.fd-article__actions) and the mobile fixed bar (.fd-actionbar) are BOTH always emitted,
    unconditionally, with frontdoor.css's existing 1000px breakpoint deciding which one shows --
@@ -281,6 +281,15 @@ function fdReaderActionBar(item, doneLabel, isDone, backLabel){
   '</div>';
 }
 
+/* A view-mode toggle, not a disclosure: the tool stays mounted in both states. The label is
+   deliberately stable while aria-pressed carries the state, following the ARIA toggle-button
+   contract. It sits outside the iframe so every governed tool shares one implementation. */
+function fdReaderToolToggle(expanded){
+  return '<button type="button" class="fd-btn fd-btn--ghost" data-fd-expand-tool '+
+    'aria-pressed="'+(expanded?'true':'false')+'" aria-controls="fd-tool-region">'+
+    '<span>Expand tool</span><span aria-hidden="true">↗</span></button>';
+}
+
 function fdReader(index, state, bodyHtml){
   var idx=index||{byRef:{}, weeks:[]};
   var st=state||{};
@@ -288,6 +297,10 @@ function fdReader(index, state, bodyHtml){
     ref: st.ref||'', kind:'read', title: st.ref||'', minutes:null, summary:'',
     points:[], attested:false, toolRef:null, risk:null, href:'',
   };
+  /* Direct .html routes such as orientation-video.html can be intentionally absent from the
+     Library projection while still being governed tool routes. Extension inference keeps the
+     shared control literal across all tools instead of silently treating those routes as reads. */
+  var isTool=item.kind==='tool'||fdIsTool(item.ref||st.ref);
 
   var hasWeek=(typeof st.week==='number')&&!isNaN(st.week);
   var weekItems=hasWeek?fdItemsForWeek(idx, st.week):[];
@@ -302,9 +315,9 @@ function fdReader(index, state, bodyHtml){
   var backLabel=fdReaderBackLabel(st.fromTab);
   var doneLabel=fdReaderDoneLabel(isDone, nextAfter, backLabel);
 
-  var kindLabel=(item.kind==='tool')?'Interactive tool':'Reading';
+  var kindLabel=isTool?'Interactive tool':'Reading';
   var eyebrowText=inWeek?('Week '+fdEsc(st.week)+' · '+kindLabel):kindLabel;
-  var metaText=(item.kind==='tool')?'self-paced':((typeof item.minutes==='number')?(item.minutes+' min'):'');
+  var metaText=isTool?'self-paced':((typeof item.minutes==='number')?(item.minutes+' min'):'');
 
   /* The "·" dot only separates the eyebrow from the meta text, so it is emitted only when there
      IS meta text -- a read with no topic_meta.read entry has metaText==='', and a dot with
@@ -321,7 +334,8 @@ function fdReader(index, state, bodyHtml){
     '<p class="fd-article__lead">'+fdEsc(item.summary)+'</p>';
   /* bodyHtml: verbatim, unescaped -- see header comment. Omitted entirely (no empty wrapper) when
      the caller has none, e.g. a render taken before Plan 3 wires marked() in. */
-  if(bodyHtml) article+='<div class="fd-article__body">'+bodyHtml+'</div>';
+  if(bodyHtml) article+='<div class="fd-article__body"'+
+    (isTool?' id="fd-tool-region"':'')+'>'+bodyHtml+'</div>';
   article+=fdReaderKeyPoints(item.points);
   article+=fdReaderTryNow(item, idx);
   article+='<div class="fd-article__source"><span>Source:</span>'+
@@ -330,8 +344,14 @@ function fdReader(index, state, bodyHtml){
   article+=fdReaderPrevNext(neighbours);
   article+='</div>'; /* .fd-article */
 
-  var out='<article class="fd-reader">';
-  out+='<button type="button" class="fd-reader__back" data-fd-back>‹ '+fdEsc(backLabel)+'</button>';
+  var expanded=isTool&&st.toolExpanded===true;
+  var out='<article class="fd-reader'+(isTool?' fd-reader--tool':'')+
+    (expanded?' is-tool-expanded':'')+'">';
+  var back='<button type="button" class="fd-reader__back" data-fd-back>‹ '+
+    fdEsc(backLabel)+'</button>';
+  if(isTool){
+    out+='<div class="fd-reader__toolbar">'+back+fdReaderToolToggle(expanded)+'</div>';
+  } else out+=back;
   out+='<div class="fd-reader__cols">';
   out+=article;
   if(inWeek) out+=fdReaderRailNav(weekItems, st, st.week);

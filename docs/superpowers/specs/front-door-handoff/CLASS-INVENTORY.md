@@ -3,11 +3,11 @@
 The complete contract between `frontdoor.css` and the markup that tasks 3–9 emit.
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(198 distinct `fd-*` selector names, 13 `is-*` state classes). Every class below has a rule in that file unless
+(200 distinct `fd-*` selector names, 14 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **Why this file exists.** The implementation plan names 39 contract classes. The stylesheet styles
-198. The remaining 159 are `__element` and `--modifier` names introduced while porting the
+200. The remaining 161 are `__element` and `--modifier` names introduced while porting the
 prototype's inline styles into a stylesheet — a renderer briefed only on the 39 would emit markup
 that misses most of the CSS, and the failure is silent: the page renders, tests pass, the surface
 just looks wrong. Read the surface you are building before writing its markup.
@@ -306,7 +306,11 @@ it; just don't expect it to paint anything.
 
 ```
 .fd-reader                              + .is-nav-next | .is-nav-prev
-  .fd-reader__back   <button>
+  [tool only, same element] &.fd-reader--tool  + &.is-tool-expanded
+    .fd-reader__toolbar
+      .fd-reader__back   <button>
+      .fd-btn.fd-btn--ghost[data-fd-expand-tool]  <button> (≥1000px)
+  [read only] .fd-reader__back   <button>
   .fd-reader__cols
     .fd-article
       .fd-article__head
@@ -346,6 +350,8 @@ it; just don't expect it to paint anything.
 | Class | Notes |
 |---|---|
 | `.fd-reader.is-nav-next` / `.is-nav-prev` | Slide-in direction. **Same element as `.fd-reader`.** |
+| `.fd-reader--tool.is-tool-expanded` | Tool-only wide workspace state. The same state is mirrored on `.fd-main`; neither class is applied to reads. |
+| `.fd-reader__toolbar` | Tool-only row containing Back and the stable `Expand tool` toggle. The toggle is hidden below 1000px while its saved preference remains intact. |
 | `.fd-article__body` | Long-form markdown typography: 16.5px, 1.72 line-height, 62ch measure. |
 | `.fd-visually-hidden` | Accessible completion suffix on done rail rows; never use `aria-pressed` for navigation. |
 | `.fd-prevnext__btn.is-next` | Right-aligns the next button's contents. |
@@ -471,6 +477,7 @@ differ. `.fd-sheet__back` is rendered only for a protocol reached from the kit.
 | `.is-safety` | `.fd-result__dot` | search hit is a safety protocol |
 | `.is-next` | `.fd-prevnext__btn` | right-aligned variant |
 | `.is-nav-next` / `.is-nav-prev` | `.fd-reader` | slide direction |
+| `.is-tool-expanded` | `.fd-main`, `.fd-reader--tool` | saved desktop tool workspace width |
 
 ## Keyframes
 
