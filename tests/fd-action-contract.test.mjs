@@ -14,6 +14,7 @@ const make = new Function(`${wire}\nreturn {
   semantic: fdActionSemantic,
 };`);
 const F = make();
+const NON_ACTION_ATTRS = new Set(['data-fd-fallback']);
 
 function emittedAttributes() {
   const found = new Set();
@@ -24,7 +25,7 @@ function emittedAttributes() {
     const src = readFileSync(new URL(name, frontdoor), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
     for (const match of src.matchAll(/data-fd-[a-z-]+/g)) found.add(match[0]);
   }
-  return [...found].sort();
+  return [...found].filter((attr) => !NON_ACTION_ATTRS.has(attr)).sort();
 }
 
 test('every data-fd attribute emitted after Task 3 has one controller meaning', () => {

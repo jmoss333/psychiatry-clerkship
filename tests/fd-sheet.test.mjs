@@ -141,7 +141,8 @@ function liveShellBoundary(index, topicMeta, templateHtml) {
     function srsState(){return {stats:{streak:0}};}
     function fdProgressDoneMap(){return {};}
     function LS(){return '';}
-    function rotationWeek(){return 1;}
+    function fdFindWeek(index,n){for(var i=0;i<index.weeks.length;i++){if(index.weeks[i].n===n)return index.weeks[i];}return null;}
+    function fdRotationWeek(){return null;}
     function fdRoleName(id){return id||'';}
     function fdItemsForWeek(){return [];}
     function fdTodayProgress(){return {pct:0};}

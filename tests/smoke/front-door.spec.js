@@ -11,6 +11,9 @@ function audience(testInfo) {
     role: resident ? 'pgy1' : 'student',
     libraryCount: resident ? 90 : 81,
     residentRef: resident ? 'rp-agitation.html' : null,
+    weekCount: resident ? 4 : 6,
+    pathHeading: resident ? 'Your 4-week path' : 'Your 6-week path',
+    pathId: resident ? 'resident-four-week' : 'ms3-six-week',
   };
 }
 
@@ -55,6 +58,7 @@ test('first run reaches Today; browse mode exposes the exact audience Library', 
   await expect(page.getByRole('heading', { name: "Who's this for?" })).toBeVisible();
   await page.locator(`[data-fd-role="${site.role}"]`).click();
   await expect(page.getByRole('heading', { name: 'Where in the rotation?' })).toBeFocused();
+  await expect(page.locator('.fd-weektile[data-fd-week]')).toHaveCount(site.weekCount);
   await page.locator('[data-fd-week="1"]').click();
   await expect(page.locator('.fd-today')).toBeVisible();
   await expect(page.locator('[data-fd-tab="today"]')).toHaveAttribute('aria-current', 'page');
@@ -73,6 +77,25 @@ test('first run reaches Today; browse mode exposes the exact audience Library', 
   expect(refs).toHaveLength(site.libraryCount);
   expect(new Set(refs).size).toBe(site.libraryCount);
   expect(refs.includes('rp-agitation.html')).toBe(Boolean(site.residentRef));
+  await expectHealthy(page);
+});
+
+test('Path projects each audience duration without mobile overflow', async ({ page }, testInfo) => {
+  const site = audience(testInfo);
+  await page.setViewportSize(PHONE);
+  await seedApp(page, testInfo);
+  await page.goto('/');
+  await page.locator('[data-fd-change-week]').click();
+  const setupOverflow = await page.locator('.fd-setup').evaluate((el) => el.scrollWidth <= el.clientWidth);
+  expect(setupOverflow).toBe(true);
+  await page.locator('[data-fd-week="1"]').click();
+  await page.locator('[data-fd-tab="path"]').click();
+  await expect(page.getByRole('heading', { name: site.pathHeading })).toBeVisible();
+  await expect(page.locator('.fd-timeline__row')).toHaveCount(site.weekCount);
+  expect(await page.locator('.fd-path').evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
+  expect(await page.content()).toContain(site.pathId);
+  const retired = await page.request.get('/tools/learning-path.html');
+  expect(retired.status()).toBe(404);
   await expectHealthy(page);
 });
 

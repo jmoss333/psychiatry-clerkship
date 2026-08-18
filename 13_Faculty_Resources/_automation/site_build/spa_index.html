@@ -1437,22 +1437,6 @@
   }
   /* ---- end calib panel ---- */
 
-  /* "Mon Aug 10 · Week 2 · Ward" — the Today header context stamp (design 2a). Week is
-     COMPUTED from cw_rotation_start (a date, set on Start-here) so it advances on its own;
-     the legacy static cw_start_week pick is honored as a fallback for learners who set it
-     before the date field existed (that key no longer has a writer). Sentinels: 0 = date set
-     but rotation not started yet, 7 = past week 6 — both suppress the Week part rather than
-     falling back to a stale static pick. */
-  function rotationWeek(){
-    /* Date parsing goes through the injected shelfDaysUntil() — the one legal local-midnight
-       parse site (the phase-chip contract bans inline midnight-suffix date parses here).
-       For a past start date, -shelfDaysUntil(start) is exactly the full days elapsed. */
-    if(typeof shelfDaysUntil!=='function')return null;
-    var du=shelfDaysUntil(LS('cw_rotation_start')||'');
-    if(du==null)return null;
-    if(du>0)return 0;
-    var wk=Math.floor(-du/7)+1; return wk<=6?wk:7;
-  }
   /* Progress is an internal Reader surface. Everything here derives from device-local activity;
      the export section is the only way any of it leaves the browser. */
   window.renderProgress=function(){
@@ -1554,11 +1538,17 @@
     out.nowMs=Date.now();
     out.rotationStart=LS('cw_rotation_start')||'';
     out.streak=(s&&s.stats&&typeof s.stats.streak==='number')?s.stats.streak:0;
-    if(typeof out.week!=='number'||out.week<1||out.week>6){
-      var computed=rotationWeek();
-      if(computed>=1&&computed<=6)out.week=computed;
+    var current=fdFindWeek(FD_INDEX,out.week);
+    if(!current){
+      var computed=fdRotationWeek(out.rotationStart,FD_INDEX.weeks,out.nowMs);
+      if(fdFindWeek(FD_INDEX,computed))out.week=computed;
+      else delete out.week;
     }
-    if(typeof out.viewWeek!=='number')out.viewWeek=(typeof out.week==='number'?out.week:1);
+    if(!fdFindWeek(FD_INDEX,out.viewWeek)){
+      out.viewWeek=fdFindWeek(FD_INDEX,out.week)
+        ?out.week
+        :((FD_INDEX.weeks[0]||{}).n);
+    }
     out.role=fdRoleName(out.role)||out.role;
     out.crisisHtml=fdCrisisHtml;
     if(typeof FD_PROTOCOL_FAILURE_COPY==='string')out.protocolFailureCopy=FD_PROTOCOL_FAILURE_COPY;
@@ -1845,10 +1835,10 @@
   TOPIC_META=FD_TOPIC_META;
   var fdStored=fdLoad();
   var fdRotation=LS('cw_rotation_start')||'';
-  var fdWeek=rotationWeek();
+  var fdWeek=fdRotationWeek(fdRotation,FD_INDEX.weeks,Date.now());
   fdStored.roles=FD_ROLES;
   fdStored.rotationStart=fdRotation;
-  if(fdWeek>=1&&fdWeek<=6)fdStored.week=fdWeek;
+  if(fdFindWeek(FD_INDEX,fdWeek))fdStored.week=fdWeek;
   var fdRouteParams=new URLSearchParams(location.search);
   var fdIncomingRef=fdRouteParams.get('page')||fdRouteParams.get('tool')||'';
   if(fdIncomingRef&&!fdIsLegacyRouteAlias(fdIncomingRef)&&!fdStored.role){

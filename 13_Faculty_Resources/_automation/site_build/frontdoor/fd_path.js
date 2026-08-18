@@ -1,4 +1,4 @@
-/* Path -- the six-week timeline (left column) and the selected week's detail card (right
+/* Path -- the projected learning-path timeline (left column) and the selected week's detail card (right
    column). See CLASS-INVENTORY.md section 4 and the prototype's Path section
    (Front-Door-Hi-Fi-v2.dc.html, search "══", line 287) for the markup this ports.
 
@@ -71,9 +71,8 @@ function fdPathTimelineRow(index, w, state){
 function fdPathDetail(index, state){
   var idx=index||{weeks:[]};
   var weeks=idx.weeks||[];
-  var fallbackN=weeks.length?weeks[0].n:1;
-  var viewN=(typeof state.viewWeek==='number'&&!isNaN(state.viewWeek))?state.viewWeek:fallbackN;
-  var wk=fdFindWeek(idx, viewN);
+  var wk=fdFindWeek(idx,state.viewWeek)||weeks[0]||null;
+  var viewN=wk?wk.n:null;
   var items=fdItemsForWeek(idx, viewN);
   var isCurrent=(typeof state.week==='number'&&!isNaN(state.week))&&state.week===viewN;
 
@@ -98,8 +97,12 @@ function fdPath(index, state){
   var st=state||{};
   var idx=index||{weeks:[]};
   var weeks=idx.weeks||[];
+  if(!weeks.length){
+    return '<div class="fd-fallback" data-fd-fallback="path" role="alert">'+
+      'This section could not load. Try reloading, or use another tab.</div>';
+  }
   var out='<section class="fd-path">';
-  out+='<h1 class="fd-path__h1">The six weeks</h1>';
+  out+='<h1 class="fd-path__h1">Your '+fdEsc(fdPathWeekCount(idx))+'-week path</h1>';
   out+='<div class="fd-path__cols">';
   out+='<div class="fd-timeline">';
   for(var i=0;i<weeks.length;i++){ out+=fdPathTimelineRow(idx, weeks[i], st); }

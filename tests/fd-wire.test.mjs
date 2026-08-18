@@ -34,6 +34,7 @@ function memStorage(seed = {}) {
 }
 
 const F = make(memStorage());
+const FOUR_INDEX = { weeks: [1, 2, 3, 4].map((n) => ({ n, items: [] })) };
 const roleContext = {
   roles: [{ id: 'first-role' }, { id: 'second-role' }],
   role: 'first-role',
@@ -157,21 +158,27 @@ test('routed tool actions preserve case, scenario, resume, and faculty-preview p
 
 test('view-week previews only; setup-week and set-week return Monday-aligned writes', () => {
   const nowMs = new Date(2026, 7, 12, 9, 0, 0).getTime();
-  assert.deepEqual(F.fdDispatch({ 'data-fd-view-week': '5' }, { nowMs }, roleContext), {
-    patch: { tab: 'path', viewWeek: 5, openId: null },
+  const weekContext = { nowMs, index: FOUR_INDEX };
+  assert.deepEqual(F.fdDispatch({ 'data-fd-view-week': '4' }, weekContext, roleContext), {
+    patch: { tab: 'path', viewWeek: 4, openId: null },
     route: '?tab=path',
     effect: null,
   });
   for (const attr of ['data-fd-week', 'data-fd-setweek']) {
-    const out = F.fdDispatch({ [attr]: '4' }, { nowMs }, roleContext);
+    const out = F.fdDispatch({ [attr]: '4' }, weekContext, roleContext);
     assert.equal(out.patch.week, 4);
     assert.equal(out.patch.viewWeek, 4);
     assert.deepEqual(out.effect, { type: 'set-rotation', start: '2026-07-20' });
   }
-  const browse = F.fdDispatch({ 'data-fd-week': '0' }, { nowMs }, roleContext);
+  const browse = F.fdDispatch({ 'data-fd-week': '0' }, weekContext, roleContext);
   assert.deepEqual(browse.effect, { type: 'browse-without-rotation' });
   assert.equal(browse.patch.tab, 'library');
   assert.equal(browse.patch.week, null);
+  assert.equal(browse.patch.viewWeek, 1);
+  for (const attr of ['data-fd-week', 'data-fd-view-week', 'data-fd-setweek']) {
+    assert.deepEqual(F.fdDispatch({ [attr]: '5' }, weekContext, roleContext),
+      { patch: {}, route: null, effect: null });
+  }
 });
 
 test('role, tab, back, home, search, change-week, progress, theme, tool layout, and step are pinned', () => {
@@ -360,7 +367,7 @@ function fakeHarness(initial, options = {}) {
     document: options.document,
     setTimer: options.setTimer,
     clearTimer: options.clearTimer,
-    index: options.index || { byRef: {}, weeks: [] },
+    index: options.index || { byRef: {}, weeks: FOUR_INDEX.weeks },
     synonyms: {},
     resourceHost: options.resourceHost,
     openProgress: options.openProgress,

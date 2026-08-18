@@ -58,45 +58,66 @@ function fdProgressToggle(raw, ref, done, nowMs){
   return out;
 }
 
-/* Recover a rotation's first Monday from a selected week without rewriting an older stored
+function fdStateHasWeek(weeks, n){
+  var list=weeks||[];
+  if(typeof n!=='number'||isNaN(n)||n%1!==0) return false;
+  for(var i=0;i<list.length;i++){ if(list[i]&&list[i].n===n) return true; }
+  return false;
+}
+
+function fdRotationWeek(rotationStart, weeks, nowMs){
+  var list=weeks||[];
+  if(!list.length||typeof shelfDaysUntil!=='function') return null;
+  var du=shelfDaysUntil(rotationStart||'',nowMs);
+  if(du===null) return null;
+  if(du>0) return 0;
+  var position=Math.floor(-du/7)+1;
+  if(position<=list.length) return list[position-1].n;
+  return list[list.length-1].n+1;
+}
+
+/* Recover a rotation's first Monday from a selected path week without rewriting an older stored
    start date. A zero means browsing rather than a rotation. */
-function fdRotationStartForWeek(selectedWeek, nowMs){
-  if(typeof selectedWeek!=='number'||selectedWeek<1||selectedWeek>6||selectedWeek%1!==0) return '';
+function fdRotationStartForWeek(selectedWeek, weeks, nowMs){
+  if(!fdStateHasWeek(weeks,selectedWeek)) return '';
   var d=new Date(nowMs||Date.now());
   d.setDate(d.getDate()-((d.getDay()+6)%7)-((selectedWeek-1)*7));
   return localDayStr(d.getTime());
 }
 
-/* Weeks 5-6 carry a countdown to the exam. Returns '' for every other week so callers can
-   concatenate unconditionally.
+/* The final two path weeks carry a countdown to the exam. Returns '' for every other week so
+   callers can concatenate unconditionally.
 
    The stored cw_shelf_date wins whenever it is set: it is the actual date, and it is what the
    phase chip already counts against (phasePolicy), so the two surfaces cannot disagree.
 
-   Without a stored date we fall back to the rotation grid, anchored to the FRIDAY OF WEEK 6 —
+   Without a stored date we fall back to the rotation grid, anchored to the Friday of the final
+   path week —
    not to "the next Friday on the wall calendar". The wall-calendar form shipped in the
    prototype and is wrong: on the Saturday of week 5 it counted to the *following* week's
    Friday and then added another 7, yielding 13 where the real answer is 6 — so moving one day
    forward in time made the countdown grow, and past the exam it counted toward a phantom
    second one. Anchoring to a fixed point on the grid makes the value fall by exactly one per
-   day. idx is the day's offset from Monday (Mon=0 … Sun=6); the exam sits at idx 4 of week 6.
+   day. idx is the day's offset from Monday (Mon=0 … Sun=6); the exam sits at idx 4 of the final
+   path week.
 
    Once the exam is behind us there is nothing to count down to, so we return '' rather than a
    negative day count or a wrapped-around next Friday.
 
    For a legacy stored rotation start that is not Monday-aligned, the fallback derives the fixed
-   week-six Friday offset from that actual start rather than treating its weekday as Monday. */
-function fdExamCountdown(week, nowMs, rotationStart){
-  if(week!==5&&week!==6) return '';
+   final-week Friday offset from that actual start rather than treating its weekday as Monday. */
+function fdExamCountdown(week, weeks, nowMs, rotationStart){
+  var list=weeks||[], last=list.length?list[list.length-1].n:null;
+  if(last===null||!fdStateHasWeek(list,week)||week<last-1) return '';
   var stored=null;
   try{ stored=localStorage.getItem('cw_shelf_date'); }catch(_){ }
   var days=shelfDaysUntil(stored, nowMs);
   if(days===null){
     var fromStart=shelfDaysUntil(rotationStart, nowMs);
-    if(fromStart!==null) days=39+fromStart;
+    if(fromStart!==null) days=((last-1)*7+4)+fromStart;
     else {
       var idx=(new Date(nowMs||Date.now()).getDay()+6)%7;
-      days=(6-week)*7+(4-idx);
+      days=(last-week)*7+(4-idx);
     }
   }
   if(days<0) return '';

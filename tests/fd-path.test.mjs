@@ -64,6 +64,8 @@ const FIX_META = {};
 const FIX_TOOLS = { tools: [{ file: 'w5b.html', title: 'Title w5b.html', category: 'acute-safety', riskLevel: 'moderate' }] };
 const FIX_MAN = buildManifest(WEEK_DEFS);
 const IDX = F.fdBuildIndex(FIX_CUR, FIX_META, FIX_TOOLS, FIX_MAN);
+const FOUR_INDEX = F.fdBuildIndex(buildCurriculum(WEEK_DEFS.slice(0, 4)), FIX_META, FIX_TOOLS,
+  buildManifest(WEEK_DEFS.slice(0, 4)));
 
 const BASE_STATE = { week: 2, viewWeek: 2, done: {} };
 const s = (over) => Object.assign({}, BASE_STATE, over);
@@ -92,6 +94,18 @@ test('Path emits view-week actions only, reserving setup-week for setup', () => 
   const html = F.fdPath(IDX, s({}));
   assert.equal((html.match(/data-fd-view-week=/g) || []).length, 6);
   assert.doesNotMatch(html, /data-fd-week=/);
+});
+
+test('Path renders the projected path length and falls back only to an actual first week', () => {
+  const fourHtml = F.fdPath(FOUR_INDEX, { week: 2, viewWeek: 2, done: {} });
+  assert.match(fourHtml, /<h1 class="fd-path__h1">Your 4-week path<\/h1>/);
+  assert.equal((fourHtml.match(/data-fd-view-week=/g) || []).length, 4);
+  const invalid = F.fdPath(FOUR_INDEX, { week: 2, viewWeek: 99, done: {} });
+  assert.match(invalid, /<span class="fd-eyebrow">Week 1<\/span>/);
+  assert.doesNotMatch(invalid, /Week 99/);
+  const empty = F.fdPath({ path: { id: '', weekCount: 0 }, weeks: [] },
+    { week: null, viewWeek: null, done: {} });
+  assert.match(empty, /class="fd-fallback"[^>]*role="alert"/);
 });
 
 // ---- dot state: is-current only on state.week; is-done only when actually complete ----

@@ -19,7 +19,7 @@ test('the canonical phase-policy snippet remains injected once with no local clo
 
 test('the old renderHome phase chip is retired, and Today uses the Front Door countdown', () => {
   assert.doesNotMatch(shell, /window\.renderHome|\/\* ---- phase chip ---- \*\/|class="hm-phase"/);
-  assert.match(today, /var countdown=fdExamCountdown\(st\.week, nowMs, st\.rotationStart\)/);
+  assert.match(today, /var countdown=fdExamCountdown\(st\.week,idx\.weeks,nowMs,st\.rotationStart\)/);
   assert.match(today, /if\(countdown\) sub\+=' '\+countdown/);
 });
 
