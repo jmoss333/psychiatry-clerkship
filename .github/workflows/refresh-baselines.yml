@@ -11,8 +11,8 @@ name: Refresh visual baselines
 # How to run:
 #   GitHub → Actions tab → "Refresh visual baselines" → Run workflow → pick branch
 #
-# The job builds the sites, runs Playwright with --update-snapshots, and commits
-# the updated PNGs back to the same branch. CI is skipped on that commit.
+# The job builds the sites, forces Playwright to rewrite all four snapshots, and
+# commits the updated PNGs back to the same branch. CI is skipped on that commit.
 
 on:
   workflow_dispatch:
@@ -74,7 +74,9 @@ jobs:
       - name: Regenerate baselines
         run: |
           cd tests/smoke
-          npx playwright test --project=visual --update-snapshots
+          # `changed` (the bare flag's default) rewrites only screenshots that fail
+          # the normal comparison threshold. A refresh must replace every baseline.
+          npx playwright test visual-regression.spec.js --project=visual --update-snapshots=all
 
       - name: Commit updated baselines
         run: |
