@@ -1440,6 +1440,7 @@
   /* Progress is an internal Reader surface. Everything here derives from device-local activity;
      the export section is the only way any of it leaves the browser. */
   window.renderProgress=function(){
+    if(!fdActivePathValid(FD_INDEX)) return fdPathFallback('progress');
     var scan=navScan();
     var rev=0, tot=0; for(var _ck in scan.cov){ rev+=scan.cov[_ck].done; tot+=scan.cov[_ck].tot; }
     var pct=tot?Math.round(rev/tot*100):0;
@@ -1490,7 +1491,8 @@
   function ptLabels(cats){ return cats.map(function(c){return SHELF_LABEL[c]||c;}).join(', '); }
   function masteryBarsHtml(mb){ var h='<div class="hm-bars">'; mb.forEach(function(x){ var pc=(x.score==null)?0:x.score; var lab=(x.score==null)?'not started':(x.score+'%'+(x.conf==='low'?' · few':'')); h+='<div class="brow"><span class="lab">'+esc(x.label)+'</span><span class="track"><span class="fill" style="width:'+pc+'%"></span></span><span class="pc">'+lab+'</span></div>'; }); return h+'</div>'; }
   function fdPlanFromMastery(index,masteryRows,generatedAt,shelfDate){
-    var weak={},rows=masteryRows||[],weeks=(index&&index.weeks)||[];
+    if(!fdActivePathValid(index)) return null;
+    var weak={},rows=masteryRows||[],weeks=index.weeks;
     for(var i=0;i<rows.length;i++){
       if(rows[i].score==null||(rows[i].score<70&&rows[i].miss>0)) weak[rows[i].c]=1;
     }
@@ -1523,8 +1525,9 @@
   }
 
   function fdPlanMatches(index,plan){
-    var weeks=(index&&index.weeks)||[],path=index&&index.path;
-    if(!path||!plan||typeof plan!=='object'||plan.pathId!==path.id||
+    if(!fdActivePathValid(index)) return false;
+    var weeks=index.weeks,path=index.path;
+    if(!plan||typeof plan!=='object'||plan.pathId!==path.id||
        path.weekCount!==weeks.length||plan.weekCount!==weeks.length||!Array.isArray(plan.weeks)||
        plan.weeks.length!==weeks.length) return false;
     for(var i=0;i<weeks.length;i++){
@@ -1552,6 +1555,7 @@
 
   function fdLoadPlan(index){
     var plan=null,placement=null;
+    if(!fdActivePathValid(index)) return null;
     try{plan=JSON.parse(localStorage.getItem('cw_plan_v1')||'null');}catch(_){plan=null;}
     if(fdPlanMatches(index,plan)) return plan;
     try{placement=JSON.parse(localStorage.getItem('cw_pretest_v1')||'null');}catch(_){placement=null;}
@@ -1573,9 +1577,9 @@
        write here used to overwrite real practice records — confidence, two-tier results —
        with a cold pretest snapshot on every retake. A pretest answer may replace nothing,
        or an older pretest record; genuine practice history always wins. The attempt itself
-       is still fully recorded in cw_pretest_v1 for the plan. */ try{localStorage.setItem('cw_qb_v1',JSON.stringify(qb));}catch(_){ } try{localStorage.setItem('cw_pretest_v1',JSON.stringify({takenAt:new Date().toISOString(),answers:answers,byCat:byCat}));}catch(_){ } var plan=buildPlan(); try{localStorage.setItem('cw_plan_v1',JSON.stringify(plan));}catch(_){ } renderPretestResults(plan); }
-  function renderPretestResults(plan){ var root=document.getElementById('ptRoot'); if(!root)return; currentItem={f:'__placement_results__',t:'Your placement',k:'special'};setLearnerTitle(currentItem);var mb=masteryByBlueprint(),duration=fdPathWeekCount(FD_INDEX)+'-week'; var h='<h1>Your placement</h1><p class="sub">A starting estimate from your answers — it refines as you practice. Weak areas are flagged in your plan below.</p>'; h+='<div class="hm-sec"><h2>Mastery by blueprint</h2>'+masteryBarsHtml(mb)+'</div>'; h+='<div class="hm-sec"><h2>Your personalized '+duration+' plan</h2>'+renderPlanCards(plan)+'</div>'; h+='<div class="hm-sec"><button class="hm-li" data-pt="pretest" style="border-bottom:none"><span class="t">Retake the placement</span><span class="sec">↻</span></button></div>'; root.innerHTML=h; }
-  function renderStoredPlan(){ var plan=fdLoadPlan(FD_INDEX),duration=fdPathWeekCount(FD_INDEX)+'-week'; if(!plan){ startPretest(); return; } currentItem={f:'__plan__',t:'Your '+duration+' plan',k:'special'};setLearnerTitle(currentItem);if(contentEl){ contentEl.className='fd-main'; } contentEl.innerHTML='<article class="fd-reader fd-progress-reader"><button type="button" class="fd-reader__back" data-progress-action="progress">‹ Progress</button><div class="hm" id="planRoot"><h1>Your '+duration+' plan</h1><p class="sub">Personalized from your placement — the week order is fixed; your weak areas are flagged to hit first.</p><div class="hm-sec">'+renderPlanCards(plan)+'</div><div class="hm-sec"><button class="hm-li" data-pt="pretest" style="border-bottom:none"><span class="t">Retake the placement</span><span class="sec">↻</span></button></div></div></article>'; }
+       is still fully recorded in cw_pretest_v1 for the plan. */ try{localStorage.setItem('cw_qb_v1',JSON.stringify(qb));}catch(_){ } try{localStorage.setItem('cw_pretest_v1',JSON.stringify({takenAt:new Date().toISOString(),answers:answers,byCat:byCat}));}catch(_){ } var plan=buildPlan(); if(!plan){ renderPretestResults(null); return; } try{localStorage.setItem('cw_plan_v1',JSON.stringify(plan));}catch(_){ } renderPretestResults(plan); }
+  function renderPretestResults(plan){ var root=document.getElementById('ptRoot'); if(!root)return; if(!fdActivePathValid(FD_INDEX)){ root.innerHTML=fdPathFallback('plan'); return; } currentItem={f:'__placement_results__',t:'Your placement',k:'special'};setLearnerTitle(currentItem);var mb=masteryByBlueprint(),duration=fdPathWeekCount(FD_INDEX)+'-week'; var h='<h1>Your placement</h1><p class="sub">A starting estimate from your answers — it refines as you practice. Weak areas are flagged in your plan below.</p>'; h+='<div class="hm-sec"><h2>Mastery by blueprint</h2>'+masteryBarsHtml(mb)+'</div>'; h+='<div class="hm-sec"><h2>Your personalized '+duration+' plan</h2>'+renderPlanCards(plan)+'</div>'; h+='<div class="hm-sec"><button class="hm-li" data-pt="pretest" style="border-bottom:none"><span class="t">Retake the placement</span><span class="sec">↻</span></button></div>'; root.innerHTML=h; }
+  function renderStoredPlan(){ if(!fdActivePathValid(FD_INDEX)){ if(contentEl){ contentEl.className='fd-main'; contentEl.innerHTML='<article class="fd-reader fd-progress-reader">'+fdPathFallback('plan')+'</article>'; } return; } var plan=fdLoadPlan(FD_INDEX),duration=fdPathWeekCount(FD_INDEX)+'-week'; if(!plan){ startPretest(); return; } currentItem={f:'__plan__',t:'Your '+duration+' plan',k:'special'};setLearnerTitle(currentItem);if(contentEl){ contentEl.className='fd-main'; } contentEl.innerHTML='<article class="fd-reader fd-progress-reader"><button type="button" class="fd-reader__back" data-progress-action="progress">‹ Progress</button><div class="hm" id="planRoot"><h1>Your '+duration+' plan</h1><p class="sub">Personalized from your placement — the week order is fixed; your weak areas are flagged to hit first.</p><div class="hm-sec">'+renderPlanCards(plan)+'</div><div class="hm-sec"><button class="hm-li" data-pt="pretest" style="border-bottom:none"><span class="t">Retake the placement</span><span class="sec">↻</span></button></div></div></article>'; }
   /* ===== Governed Front Door live shell ===== */
   var FD_INDEX=fdBuildIndex(FD_CURRICULUM,FD_TOPIC_META,FD_TOOL_REGISTRY,FD_SITE_MANIFEST);
   var fdApp=document.getElementById('fdApp');
@@ -1669,8 +1673,12 @@
 
   function fdBaseMarkup(state){
     var live=fdLiveState(state);
+    if(!fdActivePathValid(FD_INDEX)){
+      if(state.openId==='__progress__') return fdProgressMarkup(state);
+      return fdPathFallback(state.screen==='setup-week'?'setup':'frontdoor');
+    }
     if(state.screen==='setup-role') return fdSurface('reader',function(){ return fdSetupRole(FD_ROLES); });
-    if(state.screen==='setup-week') return fdSurface('reader',function(){ return fdSetupWeek(FD_INDEX.weeks,fdRoleName(state.role)); });
+    if(state.screen==='setup-week') return fdSurface('reader',function(){ return fdSetupWeek(FD_INDEX,fdRoleName(state.role)); });
     if(state.openId==='__progress__') return fdProgressMarkup(state);
     if(state.openId){
       return fdSurface('reader',function(){

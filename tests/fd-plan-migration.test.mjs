@@ -7,6 +7,8 @@ import { fileURLToPath } from 'node:url';
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SPA = '13_Faculty_Resources/_automation/site_build/spa_index.html';
 const source = fs.readFileSync(path.join(repo, SPA), 'utf8');
+const dataSource = fs.readFileSync(path.join(repo,
+  '13_Faculty_Resources/_automation/site_build/frontdoor/fd_data.js'), 'utf8');
 
 function extract(re, label) {
   const m = source.match(re);
@@ -15,6 +17,7 @@ function extract(re, label) {
 }
 
 const shelfOrderSrc = extract(/var SHELF_ORDER=\[[^\]]*\];/, 'SHELF_ORDER literal');
+const activePathValidSrc = dataSource.match(/function fdActivePathValid\(index\)\{[\s\S]*?\n\}/)[0];
 const planFromMasterySrc = extract(/function fdPlanFromMastery\(index,masteryRows,generatedAt,shelfDate\)\{[\s\S]*?\n  \}/, 'fdPlanFromMastery()');
 const sameStringsSrc = extract(/function fdSameStrings\(a,b\)\{[\s\S]*?\n  \}/, 'fdSameStrings()');
 const planMatchesSrc = extract(/function fdPlanMatches\(index,plan\)\{[\s\S]*?\n  \}/, 'fdPlanMatches()');
@@ -24,10 +27,21 @@ const loadPlanSrc = extract(/function fdLoadPlan\(index\)\{[\s\S]*?\n  \}/, 'fdL
 
 function memStorage(seed = {}) {
   const map = new Map(Object.entries(seed));
+  const operations = [];
   return {
-    getItem: (key) => (map.has(key) ? map.get(key) : null),
-    setItem: (key, value) => map.set(key, String(value)),
-    removeItem: (key) => map.delete(key),
+    operations,
+    getItem: (key) => {
+      operations.push(['get', key]);
+      return map.has(key) ? map.get(key) : null;
+    },
+    setItem: (key, value) => {
+      operations.push(['set', key]);
+      map.set(key, String(value));
+    },
+    removeItem: (key) => {
+      operations.push(['remove', key]);
+      map.delete(key);
+    },
   };
 }
 
@@ -37,6 +51,7 @@ function make(localStorage, FD_INDEX, masteryRows) {
     function LS(k){ return localStorage.getItem(k); }
     function masteryByBlueprint(){ return masteryRows; }
     ${shelfOrderSrc}
+    ${activePathValidSrc}
     ${planFromMasterySrc}
     ${sameStringsSrc}
     ${planMatchesSrc}
@@ -150,4 +165,32 @@ test('placement usability rejects corrupt, empty, and malformed records', () => 
   assert.equal(F.fdPlacementUsable({
     answers: [{ id: 'pt', cat: 'safety', correct: 'false' }], byCat: {},
   }), false);
+});
+
+test('an invalid active path cannot create or replace a stored plan', () => {
+  const placement = JSON.stringify({
+    takenAt: NOW,
+    answers: [{ id: 'pt_safety', cat: 'safety', correct: false }],
+    byCat: { safety: { n: 1, correct: 0 } },
+  });
+  const savedPlan = '{"keep":"this exact value"}';
+  const invalidIndexes = [
+    { path: { id: 'resident-four-week', weekCount: 0 }, weeks: [] },
+    { path: { id: '', weekCount: 4 }, weeks: RES_INDEX.weeks },
+    { path: { id: 'resident-four-week', weekCount: 6 }, weeks: RES_INDEX.weeks },
+    { path: { id: 'resident-four-week', weekCount: 4 }, weeks: RES_INDEX.weeks.map((week, i) => (
+      i === 1 ? { ...week, n: 4 } : week
+    )) },
+  ];
+  for (const index of invalidIndexes) {
+    const { storage, F } = planHarness({ cw_plan_v1: savedPlan, cw_pretest_v1: placement }, index, rows);
+    assert.equal(F.fdPlanFromMastery(index, rows, NOW, ''), null);
+    assert.equal(F.buildPlan(), null);
+    storage.operations.length = 0;
+    assert.equal(F.fdLoadPlan(index), null);
+    assert.equal(storage.getItem('cw_plan_v1'), savedPlan,
+      'an invalid path must leave the learner\'s saved plan byte-for-byte unchanged');
+    assert.deepEqual(storage.operations, [['get', 'cw_plan_v1']],
+      'the assertion may read the saved plan, but fdLoadPlan must not touch any storage key');
+  }
 });

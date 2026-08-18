@@ -38,8 +38,10 @@ const WEEK_DEFS = [
 
 function buildCurriculum(weekDefs) {
   return {
+    path: { id: 'fixture-path', weekCount: weekDefs.length },
     weeks: weekDefs.map((w) => ({
       n: w.n, title: w.title, theme: w.theme,
+      focusCategories: [],
       items: w.refs.map(([ref, kind]) => ({ ref, kind })),
     })),
     libraryColumns: [], libraryExclude: [], safetyKit: [],

@@ -97,10 +97,7 @@ function fdPath(index, state){
   var st=state||{};
   var idx=index||{weeks:[]};
   var weeks=idx.weeks||[];
-  if(!weeks.length){
-    return '<div class="fd-fallback" data-fd-fallback="path" role="alert">'+
-      'This section could not load. Try reloading, or use another tab.</div>';
-  }
+  if(!fdActivePathValid(idx)) return fdPathFallback('path');
   var out='<section class="fd-path">';
   out+='<h1 class="fd-path__h1">Your '+fdEsc(fdPathWeekCount(idx))+'-week path</h1>';
   out+='<div class="fd-path__cols">';

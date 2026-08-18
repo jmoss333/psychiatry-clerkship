@@ -14,7 +14,8 @@ const make = new Function(`
   ${src}
   return { fdEsc: fdEsc, fdBuildIndex: fdBuildIndex, fdItemsForWeek: fdItemsForWeek,
            fdFindWeek: fdFindWeek, fdLibraryOnlyReads: fdLibraryOnlyReads,
-           fdPathWeekCount: fdPathWeekCount, fdNextWeek: fdNextWeek };
+           fdPathWeekCount: fdPathWeekCount, fdNextWeek: fdNextWeek,
+           fdActivePathValid: fdActivePathValid };
 `);
 const F = make();
 
@@ -63,6 +64,20 @@ test('fdEsc escapes every character that could break out of markup', () => {
 test('fdEsc coerces null and undefined to an empty string rather than printing them', () => {
   assert.equal(F.fdEsc(null), '');
   assert.equal(F.fdEsc(undefined), '');
+});
+
+test('active-path validity requires an identified, ordered, count-matched week sequence', () => {
+  const valid = { path: { id: 'fixture', weekCount: 2 }, weeks: [
+    { n: 1, title: 'One', focusCategories: [] },
+    { n: 2, title: 'Two', focusCategories: ['mood'] },
+  ] };
+  assert.equal(F.fdActivePathValid(valid), true);
+  for (const invalid of [
+    { path: { id: '', weekCount: 2 }, weeks: valid.weeks },
+    { path: { id: 'fixture', weekCount: 0 }, weeks: [] },
+    { path: { id: 'fixture', weekCount: 1 }, weeks: valid.weeks },
+    { path: { id: 'fixture', weekCount: 2 }, weeks: [valid.weeks[1], valid.weeks[0]] },
+  ]) assert.equal(F.fdActivePathValid(invalid), false);
 });
 
 test('an item joins minutes, summary, points and attestation from topic_meta', () => {

@@ -19,6 +19,8 @@ import { fileURLToPath } from 'node:url';
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SPA = '13_Faculty_Resources/_automation/site_build/spa_index.html';
 const source = fs.readFileSync(path.join(repo, SPA), 'utf8');
+const dataSource = fs.readFileSync(path.join(repo,
+  '13_Faculty_Resources/_automation/site_build/frontdoor/fd_data.js'), 'utf8');
 
 function extract(re, label) {
   const m = source.match(re);
@@ -28,6 +30,7 @@ function extract(re, label) {
 
 const shelfOrderSrc = extract(/var SHELF_ORDER=\[[^\]]*\];/, 'SHELF_ORDER literal');
 const shelfLabelSrc = extract(/var SHELF_LABEL=\{[^}]*\};/, 'SHELF_LABEL literal');
+const activePathValidSrc = dataSource.match(/function fdActivePathValid\(index\)\{[\s\S]*?\n\}/)[0];
 const blueprintOfSrc = extract(/function blueprintOf\(file\)\{[\s\S]*?\n  \}/, 'blueprintOf()');
 const masterySrc = extract(/function masteryByBlueprint\(\)\{[\s\S]*?\n  \}/, 'masteryByBlueprint()');
 const planFromMasterySrc = extract(/function fdPlanFromMastery\(index,masteryRows,generatedAt,shelfDate\)\{[\s\S]*?\n  \}/, 'fdPlanFromMastery()');
@@ -59,6 +62,7 @@ function run(qbRecords) {
     function LS(){return '';}
     ${shelfOrderSrc}
     ${shelfLabelSrc}
+    ${activePathValidSrc}
     ${blueprintOfSrc}
     ${masterySrc}
     ${planFromMasterySrc}
