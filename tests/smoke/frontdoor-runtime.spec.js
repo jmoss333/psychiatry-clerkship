@@ -34,7 +34,8 @@ async function seedCompleteSetup(page, extra = {}) {
   }, extra);
 }
 
-test('completion updates desktop, mobile, and an available rail immediately without replacing the governed tool', async ({ page }) => {
+test('completion updates desktop, mobile, and the audience-correct rail immediately without replacing the governed tool', async ({ page }, testInfo) => {
+  const resident = testInfo.project.name === 'nav-res';
   await page.setViewportSize(DESKTOP);
   await seedCompleteSetup(page);
   await page.goto('/?tool=question-bank-practice.html&case=completion');
@@ -55,7 +56,9 @@ test('completion updates desktop, mobile, and an available rail immediately with
   await expect(mobile).toHaveAttribute('aria-pressed', 'true');
   await expect(mobile.locator(':scope > span')).toHaveCount(1);
   const railLabel = page.locator('.fd-railnav__label');
-  if (await railLabel.count()) {
+  if (resident) {
+    await expect(railLabel).toHaveCount(0);
+  } else {
     await expect(railLabel).toContainText('1 of 9 done');
     await expect(page.locator('.fd-railnav__row[data-fd-open="question-bank-practice.html"] .fd-visually-hidden'))
       .toHaveText('Completed');
@@ -81,7 +84,9 @@ test('completion updates desktop, mobile, and an available rail immediately with
   await expect(desktop).toHaveAttribute('aria-pressed', 'false');
   await expect(mobile).toHaveAttribute('aria-pressed', 'false');
   await expect(mobile.locator(':scope > span')).toHaveCount(1);
-  if (await railLabel.count()) {
+  if (resident) {
+    await expect(railLabel).toHaveCount(0);
+  } else {
     await expect(railLabel).toContainText('0 of 9 done');
     await expect(page.locator('.fd-railnav__row[data-fd-open="question-bank-practice.html"] .fd-visually-hidden'))
       .toHaveCount(0);
@@ -551,7 +556,9 @@ test('fd-main and Reader rail styles survive Today, Reader, Progress, placement,
   await expect(page.locator('.fd-article')).toBeVisible();
   await expect(main).toHaveClass(/\bfd-main\b/);
   const rail = page.locator('.fd-railnav');
-  if (await rail.count()) {
+  if (testInfo.project.name === 'nav-res') {
+    await expect(rail).toHaveCount(0);
+  } else {
     await expect(rail).toBeVisible();
     expect(await rail.evaluate((node) => {
       const css = getComputedStyle(node);
