@@ -188,6 +188,51 @@ test('T10: the stable launcher adds no horizontal overflow and stays outside the
   expect(widths.scroll).toBeLessThanOrEqual(widths.client);
 });
 
+test('the global launcher occupies its own layout row instead of covering learner content', async ({ page }) => {
+  const cases = [
+    { label: 'Today', url: '/', ready: '.fd-today' },
+    { label: 'Reader', url: '/?page=t_mood.md', ready: '.fd-reader .fd-article__body' },
+  ];
+  for (const viewport of [NARROW, PHONE, DESKTOP]) {
+    await page.setViewportSize(viewport);
+    for (const surface of cases) {
+      await page.goto(surface.url);
+      await expect(page.locator(surface.ready)).toBeVisible();
+      await expect(captureLauncher(page)).toBeVisible();
+      const geometry = await page.evaluate(() => {
+        const mount = document.querySelector('#fdCaptureMount');
+        const button = mount.querySelector('.fd-capture-launch--global');
+        const content = document.querySelector('#content');
+        const mountBox = mount.getBoundingClientRect();
+        const buttonBox = button.getBoundingClientRect();
+        const contentBox = content.getBoundingClientRect();
+        const overlaps = buttonBox.left < contentBox.right && buttonBox.right > contentBox.left
+          && buttonBox.top < contentBox.bottom && buttonBox.bottom > contentBox.top;
+        return {
+          position: getComputedStyle(mount).position,
+          mountBottom: mountBox.bottom,
+          buttonTop: buttonBox.top,
+          buttonWidth: buttonBox.width,
+          buttonHeight: buttonBox.height,
+          contentTop: contentBox.top,
+          overlaps,
+          scrollWidth: document.documentElement.scrollWidth,
+          clientWidth: document.documentElement.clientWidth,
+        };
+      });
+      expect(['static', 'relative'], `${viewport.width}px ${surface.label} mount position`)
+        .toContain(geometry.position);
+      expect(geometry.overlaps, `${viewport.width}px ${surface.label} content overlap`).toBe(false);
+      expect(geometry.mountBottom, `${viewport.width}px ${surface.label} mount order`)
+        .toBeLessThanOrEqual(geometry.contentTop + 0.5);
+      expect(geometry.buttonTop).toBeGreaterThanOrEqual(0);
+      expect(geometry.buttonWidth).toBeGreaterThanOrEqual(44);
+      expect(geometry.buttonHeight).toBeGreaterThanOrEqual(44);
+      expect(geometry.scrollWidth).toBeLessThanOrEqual(geometry.clientWidth);
+    }
+  }
+});
+
 test('faculty exact-revision preview never exposes the learner capture launcher', async ({ page }) => {
   await page.setViewportSize(DESKTOP);
   await page.goto('/?page=orientation.md&reviewKey=page%3Aorientation.md&reviewToken=0123456789abcdef0123456789abcdef');

@@ -109,6 +109,7 @@
   .governance-notice.pending-high .pgfb-b{margin-top:10px;background:var(--surface);color:var(--danger);border-color:var(--danger)}
   .governance-notice.pending-compact{border:1px solid var(--warning);background:var(--warning-light);color:var(--text)}
   .governance-notice.reviewed-receipt{display:inline-block;font-size:.76rem;font-weight:700;color:var(--accent-dark);background:var(--accent-light);border:1px solid var(--accent-border);border-radius:999px;padding:3px 11px}
+  .governance-notice.reviewed-receipt time{white-space:nowrap}
   .governance-notice.unavailable{border:1px dashed var(--text-light);background:var(--bg-alt);color:var(--text-mid);font-weight:600}
   #content.toolmode .governance-notice{margin:0;border-radius:0}
   .governance-badge{display:inline-block;flex:0 0 auto;border:1px solid currentColor;border-radius:999px;padding:1px 6px;font-size:.58rem;font-weight:800;line-height:1.35;color:var(--warning);background:var(--warning-light);vertical-align:middle;margin-left:5px}
@@ -366,10 +367,10 @@
   .cap-warn strong{color:var(--text)}
   .cap-sheet textarea{width:100%;box-sizing:border-box;min-height:96px;resize:vertical;border:1px solid var(--border);border-radius:9px;padding:10px;font:inherit;font-size:.9rem;color:var(--text);background:var(--bg)}
   .cap-sheet textarea:focus-visible{outline:none;box-shadow:0 0 0 3px var(--surface),0 0 0 5px var(--accent)}
-  #fdCaptureMount{position:fixed;right:20px;bottom:20px;z-index:55;width:min(230px,calc(100vw - 40px))}
+  #fdCaptureMount{width:100%;max-width:1200px;margin:12px auto 0;padding:0 20px;display:flex;justify-content:flex-end}
   #fdCaptureMount:empty{display:none}
-  #fdCaptureMount .fd-capture-launch{margin:0}
-  @media(max-width:999px){#fdCaptureMount{right:12px;bottom:calc(78px + env(safe-area-inset-bottom,0px));width:min(210px,calc(100vw - 24px))}}
+  #fdCaptureMount .fd-capture-launch{width:min(230px,100%);margin:0}
+  @media(max-width:999px){#fdCaptureMount .fd-capture-launch{width:min(210px,100%)}}
   .cap-disclose{font-size:.76rem;color:var(--text-light);margin:8px 0 0}
   .cap-acts{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0 0}
   .cap-btn{border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:8px;padding:8px 14px;font:inherit;font-size:.84rem;font-weight:600;cursor:pointer}
@@ -545,8 +546,8 @@
   <div id="fdChromeMount"></div>
   <div id="governanceMount"></div>
   <span id="routeStatus" class="vh-live" aria-live="polite"></span>
-  <main id="content" class="fd-main" tabindex="-1"><div class="skel" role="status" aria-label="Loading"><div class="bar title"></div><div class="bar"></div><div class="bar short"></div><div class="bar"></div></div></main>
   <div id="fdCaptureMount"></div>
+  <main id="content" class="fd-main" tabindex="-1"><div class="skel" role="status" aria-label="Loading"><div class="bar title"></div><div class="bar"></div><div class="bar short"></div><div class="bar"></div></div></main>
   <div id="fdOverlayMount"></div>
   <template id="fdCrisisTemplate"><!-- crisis-block-html --></template>
   <div id="fdNudgeMount"></div>
@@ -713,7 +714,7 @@
         +(entry.reason?'<span>'+esc(entry.reason)+'</span>':'')
         +'</div>';
     }
-    return '<div class="governance-notice reviewed-receipt">Reviewed by '+esc(entry.reviewer||'faculty')+(entry.reviewedAt?(' · '+esc(entry.reviewedAt)):'')+'</div>';
+    return '<div class="governance-notice reviewed-receipt">Reviewed by '+esc(entry.reviewer||'faculty')+(entry.reviewedAt?(' · <time datetime="'+esc(entry.reviewedAt)+'">'+esc(entry.reviewedAt)+'</time>'):'')+'</div>';
   }
   /* Nav/search rows carry only the compact {status,riskKind,riskLevel} triplet baked into
      nav.json/search-index.json at build time (Task 3) — independent of the GOVERNANCE fetch
@@ -976,14 +977,41 @@
     if(item){currentItem=item;setLearnerTitle(item);}
     return item;
   }
-  var routeAnnounced=false;
+  var activeRouteIdentity='',pendingRouteFocus=false;
+  function fdRouteIdentity(ref){
+    var route='';
+    try{route=(location.pathname||'/')+(location.search||'');}catch(_){route='';}
+    return String(ref||'')+'|'+route;
+  }
+  function fdStateRouteRef(state){
+    var s=state||{};
+    if(s.openId)return String(s.openId);
+    var special=fdSpecialItemForState(s);
+    return special&&special.f?String(special.f):'';
+  }
+  function fdPrepareRoute(state,detail){
+    var next=fdRouteIdentity(fdStateRouteRef(state));
+    if(!activeRouteIdentity){activeRouteIdentity=next;pendingRouteFocus=false;return;}
+    if(next!==activeRouteIdentity){
+      pendingRouteFocus=!!(detail&&detail.baseChanged);
+      activeRouteIdentity=next;
+    }
+  }
   function announceRoute(item){
     var rs=document.getElementById('routeStatus');
     if(rs){ rs.textContent=!item?'':((item.f==='__home__'?'Today':(item.f==='__progress__'?'Progress':(item.f==='__start__'?'Start here':(item.f==='__path__'?'Path':item.t))))+' loaded'); }
-    // Skip the focus move on the very first render so initial keyboard position
-    // (nav/search) is not stolen; announce-only is correct for page load.
-    if(routeAnnounced){ try{ contentEl.focus({preventScroll:true}); }catch(_){ try{ contentEl.focus(); }catch(__){ } } }
-    routeAnnounced=true;
+    var routeIdentity=fdRouteIdentity(item&&item.f);
+    /* Resource completion can be the first announcement after a parameter-only route change.
+       Treat that URL/ref change as navigation even when it did not require a new base scaffold. */
+    if(!activeRouteIdentity)activeRouteIdentity=routeIdentity;
+    else if(routeIdentity!==activeRouteIdentity){
+      pendingRouteFocus=true;
+      activeRouteIdentity=routeIdentity;
+    }
+    if(pendingRouteFocus&&routeIdentity===activeRouteIdentity){
+      try{ contentEl.focus({preventScroll:true}); }catch(_){ try{ contentEl.focus(); }catch(__){ } }
+      pendingRouteFocus=false;
+    }
   }
   function setRoute(it, replace, opts){ if(facultyPreviewRequest){restoreFacultyPreviewRoute();document.title=pageTitle(it);return;} var extra=(it&&it.k==='tool'&&opts&&opts.toolExtra)?opts.toolExtra:''; var q = it ? ((it.k==='tool'?'?tool=':'?page=')+encodeURIComponent(it.f)+extra) : location.pathname; try{ if(replace) history.replaceState({f:it&&it.f},'',q); else if(location.search!==q) history.pushState({f:it&&it.f},'',q); }catch(_){ } document.title=pageTitle(it); }
   function failFacultyPreviewTool(item,status){
@@ -1610,14 +1638,15 @@
     }
   }
 
-  function fdRender(state){
-    var app=state.screen==='app';
+  function fdRender(state,detail){
+    var app=state.screen==='app',hydrate=detail&&detail.kind==='hydrate';
+    fdPrepareRoute(state,detail);
     fdAdoptSpecialContext(state);
-    if(fdChromeMount)fdChromeMount.innerHTML=app?fdHeader(fdLiveState(state)):'';
+    if(!hydrate&&fdChromeMount)fdChromeMount.innerHTML=app?fdHeader(fdLiveState(state)):'';
     if(contentEl){ contentEl.className='fd-main'; contentEl.innerHTML=fdBaseMarkup(state); }
     fdRenderCapture(state);
     fdRenderOverlays(state);
-    if(app&&!state.openId)announceRoute({f:'__'+(state.tab||'today')+'__',t:(state.tab==='path'?'Path':(state.tab==='library'?'Library':'Today')),k:'special'});
+    if(app&&!state.openId)announceRoute(fdSpecialItemForState(state));
   }
 
   function fdPatchCompletion(state){
@@ -1820,17 +1849,58 @@
     facultyPreviewLock:showFacultyPreviewLockNotice,
     synonyms:FD_CURRICULUM.synonyms||{}
   });
+  function fdHydrationFocusSnapshot(){
+    var active=document.activeElement;
+    if(!active||active===document.body||active===document.documentElement)return null;
+    var classes=[],attrs=[],i,name,value;
+    if(active.classList){
+      for(i=0;i<active.classList.length;i++){
+        value=active.classList[i];
+        if(/^(fd-|cap-)/.test(value))classes.push('.'+value);
+      }
+    }
+    for(i=0;active.attributes&&i<active.attributes.length;i++){
+      name=active.attributes[i].name;
+      if(name==='id'||name==='href'||name==='data-capture-open'||/^data-(fd|cap)-/.test(name)){
+        value=String(active.attributes[i].value||'').replace(/\\/g,'\\\\').replace(/"/g,'\\"');
+        attrs.push('['+name+'="'+value+'"]');
+      }
+    }
+    var selector=String(active.tagName||'').toLowerCase()+classes.join('')+attrs.join('');
+    var matches=[];
+    try{matches=document.querySelectorAll(selector);}catch(_){matches=[];}
+    var index=0;
+    for(i=0;i<matches.length;i++){if(matches[i]===active){index=i;break;}}
+    return {
+      node:active,selector:selector,index:index,
+      start:typeof active.selectionStart==='number'?active.selectionStart:null,
+      end:typeof active.selectionEnd==='number'?active.selectionEnd:null,
+      direction:active.selectionDirection||'none'
+    };
+  }
+  function fdRestoreHydrationFocus(snapshot){
+    if(!snapshot)return;
+    var target=snapshot.node;
+    if(!target||!target.isConnected){
+      var matches=[];
+      try{matches=document.querySelectorAll(snapshot.selector);}catch(_){matches=[];}
+      target=matches[snapshot.index]||matches[0]||null;
+    }
+    if(!target||!target.focus)return;
+    try{target.focus({preventScroll:true});}catch(_){try{target.focus();}catch(__){return;}}
+    if(snapshot.start!==null&&target.setSelectionRange){
+      try{target.setSelectionRange(snapshot.start,snapshot.end,snapshot.direction);}catch(_){ }
+    }
+  }
   specialRefresh=function(){
     if(!fdController)return;
-    var capActive=capSheet&&capSheet.contains(document.activeElement)?document.activeElement:null;
+    var focusSnapshot=fdHydrationFocusSnapshot();
     try{
       var state=fdController.getState();
       if(state.openId==='__progress__'&&contentEl.querySelector('#pgRoot'))fdOpenProgress(state,{host:contentEl});
-      else if(!state.openId&&state.tab==='today')fdRender(state);
+      else if(!state.openId&&state.tab==='today')fdRender(state,{kind:'hydrate',baseChanged:false});
     }finally{
-      if(capActive&&capActive.isConnected&&capSheet&&capSheet.contains(capActive)){
-        try{ capActive.focus(); }catch(_){ }
-      }
+      fdRestoreHydrationFocus(focusSnapshot);
     }
   };
   fdApp.addEventListener('click',fdAuxClick);

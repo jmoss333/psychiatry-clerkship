@@ -282,3 +282,126 @@ the separate `dd750ee` production/focused-test commit with `spa_index.html`,
 governance record, faculty decision, crisis-resource value, credential, PHI, media object, or
 generated `_build` output was committed. Nothing was pushed, dispatched, merged, or deployed; the
 Ubuntu four-baseline handoff remains.
+
+## Ubuntu visual-baseline review remediation — Round 2
+
+Status: COMPLETE LOCALLY — the first Ubuntu baselines were rejected after direct inspection; all
+three Important visual/runtime defects and the one Minor receipt-wrap defect have genuine RED/GREEN
+coverage. The four currently tracked PNGs remain intentionally unapproved until the Ubuntu workflow
+regenerates them from this repaired source.
+
+### 1. Narrow headers reflow instead of colliding
+
+Both 390px Ubuntu images showed the brand, search field, shortcut hint, and Week control painting
+over one another. A real-browser regression that inspects the painted bounds of each control failed
+on MS3 and resident before production changes. It now exercises Today and Reader at 320, 360, 390,
+561, 600, 601, 640, and 641px, plus the longer browse-mode `Set week` state at 601 and 641px,
+and proves that:
+
+- brand, search, Week, Safety, and theme controls do not intersect;
+- every control stays inside the viewport and is at least 44 by 44px;
+- the brand name plus search icon remain visible and the search label retains at least 44px;
+- the keyboard shortcut hides only at the narrow breakpoint;
+- the header ends before main content and the document does not overflow.
+
+The shell now uses a two-row grid at 640px and below: brand/search remain in row one and the three
+utilities occupy a right-aligned second row. The search icon no longer flex-collapses, and the brand
+receives the same mobile touch-height contract as the other controls. A stale one-row assertion was
+removed only after the stronger multi-width/multi-surface test was green. Independent review then
+found a 561px readability cliff: the old flex row left only 14.8px of MS3 search label visible while
+restoring the shortcut. The widened regression failed 0/2 before the breakpoint moved from 560 to
+600px. A second boundary review then reproduced a subtler false green at 601px: the normal fixture
+showed the short `Week 1` label, while browse mode's canonical `Set week` label compressed Search
+below the 44px readability contract. The explicit browse-mode fixture failed 0/2 before the final
+breakpoint moved to 640px and passed across both audiences afterward; 641px remains the proven
+single-row boundary.
+
+### 2. Same-route hydration no longer steals initial focus
+
+The Today desktop image contained a page-sized blue focus ring because asynchronous topic/search
+hydration rendered Today a second time and the old boolean announcement state mistook that refresh
+for navigation. A delayed-search-index browser test failed before the fix with `#content` focused
+and `:focus-visible` immediately after hydration.
+
+The first repair distinguished same-route hydration from a real route, but independent review found
+two false-green edges: hydration still detached an already-focused header or Today control, and Back
+from a still-loading resource could be mistaken for the previously announced route. Both reproduced
+across MS3 and resident (`0/4`) before the final production change.
+
+The runtime now records the active route as ref plus pathname/query and carries an explicit pending
+navigation-focus state until that route actually renders. The hydration path is explicitly tagged,
+does not replace the chrome, and restores the semantic identity, selection, and focus of any Today,
+search, or capture control whose subtree must refresh. The final tests prove:
+
+- first load leaves main unfocused;
+- the exact focused Search node remains connected across search-index hydration;
+- a recreated Today Capture control regains focus after topic metadata hydration;
+- Back from a held `welcome.md` response focuses the restored Today main; and
+- releasing and fully settling the stale response cannot remount Reader or displace Today.
+
+### 3. Capture occupies layout space instead of covering content
+
+The Ubuntu images also showed the fixed global Capture launcher covering Today cards and Reader
+text. Browser geometry reproduced real overlap at 320, 390, and 1280px. The stable mount now appears
+immediately before main as an in-flow, right-aligned utility row. Its existing launcher node,
+delegated click handler, focus-return contract, every-route visibility, 44px target, and Reader
+action-bar separation remain unchanged; no capture JavaScript changed.
+
+The repaired test proves the launcher and content never overlap on Today or Reader at all three
+widths, the mount precedes main, the target remains usable, and no horizontal overflow is added.
+
+### 4. Reviewed dates stay readable on mobile
+
+The mobile Reader receipt split the ISO date after `2026-07-`. The date is now emitted as semantic
+`<time datetime="YYYY-MM-DD">` markup with only that date kept on one line. Source and real-browser
+tests prove the exact receipt contract, one rendered date fragment, and unchanged reviewer/date
+meaning at a real 320px viewport; the rest of a long receipt remains free to wrap.
+
+### Round 2 RED and GREEN evidence
+
+```text
+RED source:  spa-shell accessibility 11 passed / 1 failed (brand touch height)
+RED browser: 5 failed / 0 passed across the two audiences
+             (header x2, hydration focus x2, capture overlap x1)
+RED receipt: surface governance 26 passed / 1 failed (semantic nonbreaking date)
+Independent-focus RED: 0/4 (focused hydration x2, interrupted Back x2)
+Breakpoint-cliff RED: 0/2 at 561-600px
+Browse-boundary RED: 0/2 at 601/641px with the canonical Set week state
+
+GREEN initial visual browser: 5/5
+GREEN independent focus browser: 4/4
+GREEN final responsive/focus/receipt browser: 8/8
+GREEN focused source: fd shell/wire/accessibility/governance 102/102
+Full learner Chromium projects: 175/175 passed, 0 failed/skipped/errors
+  nav-ms3: exact crawl 98/98
+  nav-res: exact crawl 106/106
+Sequential MS3 build: OK; root 1062/1062; QA hard 0 / soft 7 / info 4;
+                      81 placed refs / 22 governed tools; LFS 105 / 0 pointers
+Sequential resident build: OK; root 1062/1062; QA hard 0 / soft 10 / info 6;
+                           90 placed refs / 24 governed tools; LFS 105 / 0 pointers
+```
+
+A fresh-origin resident browser-plugin inspection at 390px independently showed two clean header
+rows, visible brand/search content, an in-flow Capture row above content, `BODY` retaining initial
+focus, no document overflow, and zero console warnings/errors. A previously opened origin had a
+service-worker-cached old stylesheet; the fresh origin and both rebuilt Playwright projects avoid
+that stale-cache false signal.
+
+### Round 2 exact boundary and handoff
+
+Production changes are limited to `frontdoor/frontdoor.css` and `spa_index.html`. The class
+inventory documents the corrected in-flow Capture contract. Focused regressions live in
+`front-door.spec.js`, `frontdoor-runtime.spec.js`, `governance-warnings.spec.js`,
+`ward-capture.spec.js`, `fd-shell-boot.test.mjs`, `spa-shell-a11y.test.mjs`, and
+`surface-governance-ui.test.mjs`, plus this report. No clinical fact, crisis data, governance
+record, faculty decision, palette value, media, credential, PHI, or generated `_build` output
+changed.
+
+The concrete next step is to commit and push this rollback-sized repair, dispatch **Refresh visual
+baselines** on Ubuntu/Chromium, inspect all four replacement images, and explicitly rerun hosted CI
+because the baseline workflow's generated commit uses `[skip ci]`. Do not merge until that visual
+review and CI run are green.
+
+Potential follow-up: add a test-only `data-fd-ready` receipt that becomes stable only when resource,
+governance, metadata hydration, and post-processing have settled. Screenshot readiness and future
+artifact receipts could share that one deterministic signal rather than assembling separate waits.

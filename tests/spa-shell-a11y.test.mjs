@@ -150,6 +150,11 @@ test('mobile collapsed search control has a 44px minimum width as well as height
     'the exact collapsed search base selector needs a 44px mobile width');
 });
 
+test('mobile brand control has a 44px minimum touch height', () => {
+  assert.equal(mobileRuleHas('.fd-brand', 'min-height:44px'), true,
+    'the exact mobile brand selector needs a 44px minimum height');
+});
+
 test('mobile Reader back control has a 44px minimum width as well as height', () => {
   assert.equal(mobileRuleHas('.fd-actionbar .fd-btn--ghost', 'min-width:44px'), true,
     'the exact fixed Reader back base selector needs a 44px mobile width');

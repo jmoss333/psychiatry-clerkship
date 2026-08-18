@@ -72,6 +72,9 @@ test('the fixed fail-safe copy is present verbatim, with no live-region role', (
 
 test('the reviewed receipt carries no live-region role (it would render on nearly every route change)', () => {
   assert.match(source, /'<div class="governance-notice reviewed-receipt">Reviewed by '/);
+  assert.match(source, /<time datetime="'\+esc\(entry\.reviewedAt\)\+'">'\+esc\(entry\.reviewedAt\)\+'<\/time>/,
+    'the receipt date must be a semantic, unbreakable unit');
+  assert.match(source, /\.governance-notice\.reviewed-receipt time\{white-space:nowrap\}/);
 });
 
 test('pending-high is an alert section; pending-compact is a status div', () => {
@@ -250,7 +253,7 @@ test('renderGovernanceNotice renders a low-emphasis reviewer/date receipt for re
     },
   });
   const out = renderGovernanceNotice({ f: 'welcome.md', k: 'md' });
-  assert.equal(out, '<div class="governance-notice reviewed-receipt">Reviewed by Synthetic Reviewer, MD · 2026-07-26</div>');
+  assert.equal(out, '<div class="governance-notice reviewed-receipt">Reviewed by Synthetic Reviewer, MD · <time datetime="2026-07-26">2026-07-26</time></div>');
 });
 
 test('renderGovernanceNotice escapes faculty-authored free text (warning and reason)', () => {

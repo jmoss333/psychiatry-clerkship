@@ -278,6 +278,108 @@ test('slow search hydration preserves capture focus while revealing same-session
   expect(runtimeErrors).toEqual([]);
 });
 
+test('same-route data hydration preserves focused header and Today controls', async ({ page }) => {
+  let releaseIndex, releaseMeta;
+  let indexWasRequested = false, metaWasRequested = false;
+  const indexRelease = new Promise((resolve) => { releaseIndex = resolve; });
+  const metaRelease = new Promise((resolve) => { releaseMeta = resolve; });
+  await page.route('**/topic_meta.json', async (route) => {
+    metaWasRequested = true;
+    await metaRelease;
+    await route.continue();
+  });
+  await page.route('**/search-index.json', async (route) => {
+    indexWasRequested = true;
+    await indexRelease;
+    await route.continue();
+  });
+  await page.setViewportSize(DESKTOP);
+  await seedCompleteSetup(page, {
+    storage: {
+      cw_capture_v1: {
+        v: 1,
+        items: [{ id: 'c_hydration', text: 'psychosis', at: 1, ctx: null, triaged: false }],
+      },
+    },
+  });
+  await page.goto('/');
+  await expect(page.locator('.fd-today')).toBeVisible();
+  await expect.poll(() => indexWasRequested).toBe(true);
+  await expect.poll(() => metaWasRequested).toBe(true);
+  expect(await page.evaluate(() => (
+    document.activeElement !== document.querySelector('#content')
+      && !document.querySelector('#content').matches(':focus-visible')
+  ))).toBe(true);
+
+  const search = page.locator('[data-fd-search]');
+  await search.focus();
+  await page.evaluate(() => { window.__hydrationSearch = document.activeElement; });
+
+  const indexResponse = page.waitForResponse(response => (
+    new URL(response.url()).pathname.endsWith('/search-index.json') && response.ok()
+  ));
+  releaseIndex();
+  await indexResponse;
+  await expect.poll(() => page.evaluate(() => Boolean(
+    window.SI && window.SI.postings && Object.keys(window.SI.postings).length,
+  ))).toBe(true);
+  expect(await page.evaluate(() => (
+    window.__hydrationSearch.isConnected
+      && document.activeElement === window.__hydrationSearch
+  ))).toBe(true);
+
+  const capture = page.locator('.fd-capture__new[data-capture-open]');
+  await capture.focus();
+  const metaResponse = page.waitForResponse(response => (
+    new URL(response.url()).pathname.endsWith('/topic_meta.json') && response.ok()
+  ));
+  releaseMeta();
+  await metaResponse;
+  await expect.poll(() => page.evaluate(() => Boolean(
+    window.TOPIC_META && Object.keys(window.TOPIC_META).length,
+  ))).toBe(true);
+  await expect(page.locator('.fd-capture__new[data-capture-open]')).toBeFocused();
+});
+
+test('Back from an interrupted resource load still focuses the restored route', async ({ page }) => {
+  let releaseResource;
+  let resourceWasRequested = false;
+  const resourceRelease = new Promise((resolve) => { releaseResource = resolve; });
+  await page.route('**/content/welcome.md', async (route) => {
+    resourceWasRequested = true;
+    await resourceRelease;
+    await route.continue();
+  });
+  await page.setViewportSize(DESKTOP);
+  await seedCompleteSetup(page);
+  await page.goto('/');
+  await expect(page.locator('.fd-today')).toBeVisible();
+
+  await page.locator('.fd-today [data-fd-open="welcome.md"]').first().click();
+  await expect.poll(() => resourceWasRequested).toBe(true);
+  await expect(page).toHaveURL(/\?page=welcome\.md/);
+  await expect(page.locator('.fd-reader')).toBeVisible();
+
+  await page.evaluate(() => history.back());
+  await expect(page).not.toHaveURL(/\?page=welcome\.md/);
+  await expect(page.locator('.fd-today')).toBeVisible();
+  await expect(page.locator('#content')).toBeFocused();
+
+  const staleResponseFinished = page.waitForResponse((response) => (
+    new URL(response.url()).pathname.endsWith('/content/welcome.md')
+  ));
+  releaseResource();
+  const staleResponse = await staleResponseFinished;
+  await staleResponse.finished();
+  await page.evaluate(() => new Promise((resolve) => {
+    requestAnimationFrame(() => requestAnimationFrame(resolve));
+  }));
+  await expect(page).not.toHaveURL(/\?page=welcome\.md/);
+  await expect(page.locator('.fd-today')).toBeVisible();
+  await expect(page.locator('.fd-reader')).toHaveCount(0);
+  await expect(page.locator('#content')).toBeFocused();
+});
+
 test('Today card capture restores focus to its recreated launcher after save', async ({ page }) => {
   const runtimeErrors = [];
   page.on('pageerror', (error) => runtimeErrors.push(`pageerror: ${error.message}`));

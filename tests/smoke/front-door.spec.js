@@ -22,6 +22,7 @@ async function seedApp(page, testInfo, extra = {}) {
   const site = audience(testInfo);
   await freezeTime(page);
   await page.addInitScript(({ role, state, storage }) => {
+    if (sessionStorage.getItem('__fd_test_preserve_seed') === '1') return;
     localStorage.setItem('cw_rotation_start', '2026-08-17');
     localStorage.setItem('cw_frontdoor_v1', JSON.stringify({
       role, tab: 'today', viewWeek: 1, ...state,
@@ -239,19 +240,6 @@ test('390x844 reduced-motion Reader keeps fixed 44px actions during scroll witho
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await seedApp(page, testInfo, { state: { tab: 'library' } });
   await page.goto('/?page=t_mood.md');
-  const header = await page.evaluate(() => {
-    const rect = selector => {
-      const box = document.querySelector(selector).getBoundingClientRect();
-      return { left: box.left, right: box.right };
-    };
-    return {
-      brand: rect('.fd-brand'),
-      search: rect('.fd-searchbtn'),
-      actions: rect('.fd-header__actions'),
-    };
-  });
-  expect(header.search.left).toBeGreaterThanOrEqual(header.brand.right);
-  expect(header.search.right).toBeLessThanOrEqual(header.actions.left);
   const bar = page.locator('.fd-actionbar');
   await expect(bar).toBeVisible();
 
@@ -282,6 +270,127 @@ test('390x844 reduced-motion Reader keeps fixed 44px actions during scroll witho
   }));
   expect(widths.scroll).toBeLessThanOrEqual(widths.client);
   await expectHealthy(page);
+});
+
+test('320-641px header controls remain distinct, readable, and fully tappable', async ({ page }, testInfo) => {
+  await seedApp(page, testInfo);
+  const cases = [
+    { url: '/', ready: '.fd-today' },
+    { url: '/?page=t_mood.md', ready: '.fd-reader .fd-article__body' },
+  ];
+
+  for (const width of [320, 360, 390, 561, 600, 601, 640, 641]) {
+    await page.setViewportSize({ width, height: 844 });
+    for (const surface of cases) {
+      await page.goto(surface.url);
+      await expect(page.locator(surface.ready)).toBeVisible();
+
+      const geometry = await page.evaluate(() => {
+        const selectors = [
+          '.fd-brand', '.fd-searchbtn', '.fd-weekpill', '.fd-safetybtn', '.fd-themebtn',
+        ];
+        const visible = element => {
+          const style = getComputedStyle(element);
+          const box = element.getBoundingClientRect();
+          return style.display !== 'none' && style.visibility !== 'hidden'
+            && box.width > 0 && box.height > 0;
+        };
+        const paintedRect = selector => {
+          const root = document.querySelector(selector);
+          const nodes = [root, ...root.querySelectorAll('*')].filter(visible);
+          const boxes = nodes.map(node => node.getBoundingClientRect());
+          return {
+            left: Math.min(...boxes.map(box => box.left)),
+            right: Math.max(...boxes.map(box => box.right)),
+            top: Math.min(...boxes.map(box => box.top)),
+            bottom: Math.max(...boxes.map(box => box.bottom)),
+            width: root.getBoundingClientRect().width,
+            height: root.getBoundingClientRect().height,
+          };
+        };
+        const controls = Object.fromEntries(selectors.map(selector => [selector, paintedRect(selector)]));
+        const intersections = [];
+        for (let i = 0; i < selectors.length; i += 1) {
+          for (let j = i + 1; j < selectors.length; j += 1) {
+            const a = controls[selectors[i]];
+            const b = controls[selectors[j]];
+            if (a.left < b.right - 0.5 && a.right > b.left + 0.5
+                && a.top < b.bottom - 0.5 && a.bottom > b.top + 0.5) {
+              intersections.push([selectors[i], selectors[j]]);
+            }
+          }
+        }
+        const header = document.querySelector('.fd-header').getBoundingClientRect();
+        const main = document.querySelector('#content').getBoundingClientRect();
+        const brandName = document.querySelector('.fd-brand__name').getBoundingClientRect();
+        const searchIcon = document.querySelector('.fd-searchbtn svg').getBoundingClientRect();
+        const searchLabel = document.querySelector('.fd-searchbtn__label').getBoundingClientRect();
+        const shortcut = document.querySelector('.fd-kbd');
+        return {
+          controls,
+          intersections,
+          headerBottom: header.bottom,
+          mainTop: main.top,
+          brandNameWidth: brandName.width,
+          searchIconWidth: searchIcon.width,
+          searchLabelWidth: searchLabel.width,
+          shortcutDisplay: getComputedStyle(shortcut).display,
+          viewportWidth: innerWidth,
+          scrollWidth: document.documentElement.scrollWidth,
+        };
+      });
+
+      expect(geometry.intersections, `${width}px ${surface.url} header collisions`).toEqual([]);
+      for (const [selector, box] of Object.entries(geometry.controls)) {
+        expect.soft(box.width, `${width}px ${surface.url} ${selector} width`).toBeGreaterThanOrEqual(44);
+        expect.soft(box.height, `${width}px ${surface.url} ${selector} height`).toBeGreaterThanOrEqual(44);
+        expect.soft(box.left, `${width}px ${surface.url} ${selector} left edge`).toBeGreaterThanOrEqual(0);
+        expect.soft(box.right, `${width}px ${surface.url} ${selector} right edge`)
+          .toBeLessThanOrEqual(geometry.viewportWidth);
+      }
+      expect.soft(geometry.brandNameWidth).toBeGreaterThan(0);
+      expect.soft(geometry.searchIconWidth).toBeGreaterThan(0);
+      expect.soft(geometry.searchLabelWidth).toBeGreaterThanOrEqual(44);
+      expect.soft(geometry.shortcutDisplay).toBe(width <= 640 ? 'none' : 'block');
+      expect.soft(geometry.headerBottom).toBeLessThanOrEqual(geometry.mainTop + 0.5);
+      expect.soft(geometry.scrollWidth).toBeLessThanOrEqual(geometry.viewportWidth);
+      await expectHealthy(page);
+    }
+  }
+
+  const role = audience(testInfo).role;
+  for (const width of [601, 641]) {
+    await page.setViewportSize({ width, height: 844 });
+    await page.evaluate((browseRole) => {
+      sessionStorage.setItem('__fd_test_preserve_seed', '1');
+      localStorage.removeItem('cw_rotation_start');
+      localStorage.setItem('cw_frontdoor_v1', JSON.stringify({
+        screen: 'app', role: browseRole, tab: 'library', viewWeek: 1, browsing: true,
+      }));
+    }, role);
+    await page.goto('/?tab=library');
+    await expect(page.locator('.fd-library')).toBeVisible();
+    await expect(page.locator('.fd-weekpill')).toContainText('Set week');
+    const browseHeader = await page.evaluate(() => {
+      const selectors = ['.fd-brand', '.fd-searchbtn', '.fd-header__actions'];
+      const boxes = selectors.map(selector => document.querySelector(selector).getBoundingClientRect());
+      return {
+        collisions: boxes.some((a, index) => boxes.slice(index + 1).some(b => (
+          a.left < b.right - 0.5 && a.right > b.left + 0.5
+            && a.top < b.bottom - 0.5 && a.bottom > b.top + 0.5
+        ))),
+        labelWidth: document.querySelector('.fd-searchbtn__label').getBoundingClientRect().width,
+        shortcutDisplay: getComputedStyle(document.querySelector('.fd-kbd')).display,
+        scrollWidth: document.documentElement.scrollWidth,
+        viewportWidth: innerWidth,
+      };
+    });
+    expect.soft(browseHeader.collisions).toBe(false);
+    expect.soft(browseHeader.labelWidth).toBeGreaterThanOrEqual(44);
+    expect.soft(browseHeader.shortcutDisplay).toBe(width <= 640 ? 'none' : 'block');
+    expect.soft(browseHeader.scrollWidth).toBeLessThanOrEqual(browseHeader.viewportWidth);
+    await expectHealthy(page);
+  }
 });
 
 test('wide interview table remains accessible and contained in the live Reader', async ({ page }, testInfo) => {

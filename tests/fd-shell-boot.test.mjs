@@ -69,7 +69,7 @@ test('the retired sidebar, legacy search/nav boot, companion, and dashboard are 
 });
 
 test('fdRender guards every live surface independently', () => {
-  assert.equal((source.match(/function fdRender\(state\)/g) || []).length, 1);
+  assert.equal((source.match(/function fdRender\(state,detail\)/g) || []).length, 1);
   for (const surface of ['today', 'path', 'library', 'reader', 'progress']) {
     assert.match(source, new RegExp(`fdSurface\\('${surface}'`),
       `${surface} must have its own guarded render`);
@@ -77,6 +77,9 @@ test('fdRender guards every live surface independently', () => {
   assert.match(source, /function fdRenderTransient\(state,detail\)/);
   assert.match(source, /d\.preserveResource/);
   assert.match(source, /d\.effect&&d\.effect\.theme/);
+  assert.match(source, /hydrate=detail&&detail\.kind==='hydrate'/);
+  assert.match(source, /if\(!hydrate&&fdChromeMount\)/,
+    'background hydration must not replace focused header controls');
 });
 
 test('one live controller owns stable delegated navigation', () => {

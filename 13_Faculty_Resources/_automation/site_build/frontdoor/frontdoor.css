@@ -135,6 +135,7 @@
   border:1.5px solid var(--fd-line-strong);border-radius:999px;
   color:var(--fd-text-dim);font-size:13px;cursor:text;min-width:0;
 }
+.fd-searchbtn svg{flex:0 0 auto}
 .fd-searchbtn:hover{border-color:var(--fd-line-hover)}
 .fd-searchbtn__label{flex:1;text-align:left;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .fd-kbd{font-size:10.5px;font-weight:600;border:1px solid var(--fd-line-strong);border-radius:5px;padding:1px 6px;color:var(--fd-text-dim);flex:0 0 auto}
@@ -610,7 +611,7 @@
 
 /* Mobile primary actions keep a 44px minimum hit target. */
 @media (max-width:999px){
-  .fd-btn--primary,.fd-safetybtn,.fd-weekpill,.fd-searchbtn,.fd-weekgrid__browse{min-height:44px}
+  .fd-brand,.fd-btn--primary,.fd-safetybtn,.fd-weekpill,.fd-searchbtn,.fd-weekgrid__browse{min-height:44px}
   .fd-searchbtn,.fd-actionbar .fd-btn--ghost{min-width:44px}
   .fd-role,.fd-weektile,.fd-kitrow,.fd-step,.fd-pick,.fd-setupcta{min-height:44px}
   .fd-btn,.fd-tab,.fd-setup__back,.fd-reader__back,.fd-result,.fd-searchpanel__esc,
@@ -630,6 +631,21 @@
   .fd-article .fd-tip{display:none}
   .fd-due,.fd-resume__link,.fd-progresscard{min-height:44px;flex-wrap:wrap}
   .fd-due__action,.fd-progresscard__meta{margin-left:0;flex:0 0 100%}
+}
+
+/* A narrow header cannot safely compress the full brand, search field, and three utility controls
+ * into one row. Keep the useful labels visible and reflow utilities below them instead. */
+@media (max-width:640px){
+  .fd-header__bar{
+    padding:10px 12px 0;display:grid;grid-template-columns:minmax(0,1fr) 96px;
+    column-gap:8px;row-gap:6px;
+  }
+  .fd-brand{min-width:0}
+  .fd-brand__name{overflow:hidden;text-overflow:ellipsis}
+  .fd-searchbtn{width:96px;max-width:none;justify-self:end;padding:8px 10px}
+  .fd-searchbtn__label{min-width:0}
+  .fd-kbd{display:none}
+  .fd-header__actions{grid-column:1/-1;margin-left:0;justify-content:flex-end}
 }
 
 /* ═══ Keyframes ══════════════════════════════════════════════════════════════

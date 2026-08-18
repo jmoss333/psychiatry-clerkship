@@ -125,6 +125,7 @@ test.describe('risk-aware review status (shared shell)', () => {
   });
 
   test('reviewed item shows a reviewer/date receipt', async ({ page, request, baseURL }) => {
+    await page.setViewportSize({ width: 320, height: 844 });
     const items = await loadPlacedNavItems(page, request, baseURL);
     const target = findItem(
       items,
@@ -136,6 +137,13 @@ test.describe('risk-aware review status (shared shell)', () => {
 
     const receipt = page.locator('.fd-article__body > .governance-notice.reviewed-receipt');
     await expect(receipt).toContainText(/Reviewed by .+ · \d{4}-\d{2}-\d{2}/);
+    const date = receipt.locator('time');
+    await expect(date).toHaveAttribute('datetime', /^\d{4}-\d{2}-\d{2}$/);
+    expect(await date.evaluate(element => {
+      const range = document.createRange();
+      range.selectNodeContents(element);
+      return range.getClientRects().length;
+    })).toBe(1);
   });
 
   test('an aborted governance.json request stays usable and never implies review', async ({
