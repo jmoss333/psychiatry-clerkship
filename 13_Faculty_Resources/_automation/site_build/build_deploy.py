@@ -5,6 +5,7 @@ from pathlib import Path
 # see common.py's module docstring. resident_section.py imports the same module,
 # so these no longer exist as two drifting copies.
 import common
+import frontdoor_catalog
 # Session-portable paths (fixed 2026-07-01): derive from this script's own location instead of a
 # hard-coded sandbox mount, so the build runs under any Cowork session or the real filesystem.
 HERE=os.path.dirname(os.path.abspath(__file__))
@@ -15,6 +16,7 @@ SPA=os.path.join(HERE,"spa_index.html")                   # SPA shell (co-locate
 MARKED=os.path.join(HERE,"marked.min.js")                 # vendored marked (co-located)
 MANIFEST=os.path.join(HERE,"site_manifest.json")          # content/tool build manifest
 CLINICAL_CSS=os.path.join(HERE,"clinical-warm.css")       # shared dark-mode tokens
+FRONTDOOR_CSS=os.path.join(HERE,"frontdoor","frontdoor.css")
 
 def _relpath(p):
     for base in (LIB,HERE):
@@ -37,7 +39,7 @@ def _copy_required(src,dst,missing):
     else:
         missing.append(src)
 
-_bootstrap_missing=[p for p in [MANIFEST,SPA,MARKED,CLINICAL_CSS] if not os.path.exists(p)]
+_bootstrap_missing=[p for p in [MANIFEST,SPA,MARKED,CLINICAL_CSS,FRONTDOOR_CSS] if not os.path.exists(p)]
 _abort_missing(_bootstrap_missing)
 if os.path.exists(OUT): shutil.rmtree(OUT)
 os.makedirs(OUT+"/content"); os.makedirs(OUT+"/tools")
@@ -63,7 +65,6 @@ _required=[os.path.join(LIB,src) for src,_,_ in tools]+[
     os.path.join(LIB,src) for src,_ in tool_assets
 ]+[
     LIB+"/07_Evidence_and_Reading/Landmark_Trials/quizzes.json",
-    LIB+"/01_Six_Week_Curriculum/learning-path.html",
     LIB+"/question_bank.json",
 ]+[os.path.join(LIB,"_prototypes","agitation-trainer","vendor",f) for f in ["react.min.js","react-dom.min.js"]]
 _abort_missing([p for p in _required if not os.path.exists(p)])
@@ -174,7 +175,6 @@ for _jn, _fallback in [
 # question_bank.json: served at site root so both qbank-attest.html and question-bank-practice.html can fetch ../question_bank.json
 _missing_req=[]
 _copy_required(LIB+"/question_bank.json", OUT+"/question_bank.json", _missing_req)
-_copy_required(LIB+"/01_Six_Week_Curriculum/learning-path.html", OUT+"/tools/learning-path.html", _missing_req)
 _abort_missing(_missing_req)
 
 # ---- diagnostic pretest pool (adaptive engine v2): 1 attested, scoreable item per
@@ -316,7 +316,7 @@ def _tool(f,t=None,hidden=None):
     return dict({"t":t or _tool_titles.get(f,f),"f":f,"k":"tool"},**({"hidden":True} if (hidden if hidden is not None else f in HIDDEN_TOOLS) else {}))
 _week_items=[_md(t,f,True) for f,t in [("week%d.md"%i,["Week 1 — Foundations","Week 2 — Mood/Psychosis/Pharm","Week 3 — Psychotherapy/Personality","Week 4 — Family/Systems/EE","Week 5 — Acute/Emergency","Week 6 — Integration/Exam"][i-1]) for i in range(1,7)]]
 nav=[
- {"section":"Orientation","pinned":True,"items":[_md("Welcome to the Rotation","welcome.md"),_md("Orientation Packet","orientation.md"),_md("Core Reading List","core_readings.md"),_tool("learning-path.html","Learning Path",True),_tool("orientation-video.html","Orientation Video",True)]+_week_items},
+ {"section":"Orientation","pinned":True,"items":[_md("Welcome to the Rotation","welcome.md"),_md("Orientation Packet","orientation.md"),_md("Core Reading List","core_readings.md"),_tool("orientation-video.html","Orientation Video",True)]+_week_items},
  {"section":"Start the Encounter","items":[_md("Interview & MSE","pg_interview.md"),_tool("mse.html","Mental Status Exam"),_tool("interview-circle.html","The Interview Circle"),_tool("sp-interview.html","The Interview Room — AI Standardized Patient"),_tool("screeners.html","Screeners: PHQ-9 & GAD-7")]},
  {"section":"Understand the Problem","items":[_md("Differential Dx Scaffolds","ddx.md"),_tool("diagnostic-reasoning.html","Diagnostic Reasoning Workbench"),_md("Formulation & DDx","pg_formulation.md"),_md("Case Formulation","case_formulation.md"),_md("Medical Workup & Mimics","medical_workup.md"),_md("Mood","t_mood.md"),_md("Psychosis","t_psychosis.md"),_md("Anxiety/Trauma/OCD","t_anxiety.md"),_md("Personality","t_personality.md"),_md("Substance Use","t_sud.md"),_md("Geriatric","t_geri.md"),_md("Perinatal","t_perinatal.md"),_md("Neurodevelopmental Disorders","t_neurodev.md"),_md("Eating Disorders","t_eating.md"),_md("Neurocognitive (Dementia)","t_neurocog.md"),_md("Somatic Symptom & Related","t_somatic.md"),_md("Sleep-Wake Disorders","t_sleep.md"),_md("Dissociative Disorders","t_dissociative.md"),_md("Sexual, Paraphilic & Gender","t_sexual.md"),_md("Impulse-Control & Conduct","t_impulse.md"),_md("Adjustment Disorders","t_adjustment.md"),_md("Culture, Disparities & Formulation","cultural_psychiatry.md")]},
  {"section":"Assess Safety and Acuity","pinned":True,"items":[_md("Suicide Risk & Safety","pg_suicide.md"),_md("Suicide Risk & Safety Planning","suicide.md"),_tool("cssrs.html","Columbia C-SSRS Screener"),_md("Violence Risk","violence.md"),_tool("violence.html","Violence Risk (FRST)"),_md("Agitation & Restraint","agitation.md"),_md("Catatonia","catatonia.md"),_tool("bfcrs.html","Bush-Francis Catatonia Scale (BFCRS)"),_md("Hyperthermia & Toxidromes","toxidromes.md"),_md("Delirium","delirium.md"),_tool("withdrawal.html","Withdrawal: CIWA-Ar/COWS"),_tool("capacity.html","Decisional Capacity"),_md("Consult Questions: Capacity, Delirium, Catatonia, Withdrawal","exp_consult.md"),_md("Ethics & the Law: Confidentiality, Tarasoff, Reporting","ethics_legal.md")]},
@@ -359,7 +359,22 @@ _missing_req=[]
 _copy_required(SPA, OUT+"/index.html", _missing_req)
 _copy_required(MARKED, OUT+"/marked.min.js", _missing_req)  # vendored (ward-wifi: no CDN dependency)
 _copy_required(CLINICAL_CSS, OUT+"/clinical-warm.css", _missing_req)  # shared dark-mode tokens (linked into tools below)
+_copy_required(FRONTDOOR_CSS, OUT+"/frontdoor.css", _missing_req)
 _abort_missing(_missing_req)
+
+# Front Door modules stay dormant in this task, but their data is made site-specific now.
+# Build after nav finalization so titles/kinds come from this site's actual browse catalog.
+try:
+    _fd_payload=frontdoor_catalog.build_frontdoor_payload(
+        "ms3", json.load(open(LIB+"/curriculum.json",encoding="utf-8")), nav)
+    frontdoor_catalog.inject_frontdoor_payload(
+        OUT+"/index.html", _fd_payload,
+        json.load(open(OUT+"/topic_meta.json",encoding="utf-8")),
+        json.load(open(OUT+"/tool_registry.json",encoding="utf-8")))
+except ValueError as _fd_error:
+    print("BUILD ABORTED — Front Door payload:", _fd_error)
+    raise SystemExit(1)
+print("frontdoor payload:",sum(len(c["refs"]) for c in _fd_payload["curriculum"]["libraryColumns"]),"placed refs (ms3)")
 
 # ---- retired-bank-ids injection (shell calibration parity) ----
 # The shell counts confidently-wrong items straight from cw_qb_v1; the practice tool
@@ -396,6 +411,14 @@ common.apply_contrast_fix(
 _QV=common.quiz_cache_bust(OUT+"/tools/quizzes.json")   # content-hash cache-bust (reproducible)
 common.apply_full_page_pass(OUT, cache_bust=_QV)
 
+# The governed shell itself is a required risk-work surface because it renders the Safety Kit.
+# Expand only after shared snippets: a marker introduced by a snippet must participate in the
+# exactly-one count rather than arriving after an apparently clean early check. Unlike optional
+# tool/page loops, zero or duplicate shell markers are both fatal; resident inherits this checked
+# artifact and receives its own final-marker postcondition below.
+_crisis.inject_required_html_file(OUT+"/index.html", _crisis_data, "Front Door shell index")
+print("crisis block injected: shell index")
+
 
 open(OUT+"/favicon.svg","w",encoding="utf-8").write('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="#9f3f2a"/><text x="32" y="45" font-family="Georgia,serif" font-size="40" fill="#fff" text-anchor="middle">\u03c8</text></svg>')
 open(OUT+"/robots.txt","w",encoding="utf-8").write("User-agent: *\nDisallow: /\n")
@@ -410,6 +433,9 @@ from media_guard import strip_missing_media
 strip_missing_media(OUT)
 
 common.build_search_index(nav, OUT, label="ms3")
+
+# Final shell postcondition after every MS3 index transform and before page/static QA.
+_crisis.assert_no_html_marker_file(OUT+"/index.html", "final Front Door shell index")
 
 # Postcondition gate (architecture review rec 1.3): prove every shipped page actually
 # received the chrome/dark transforms rather than silently missing them.

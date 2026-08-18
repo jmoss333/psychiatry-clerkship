@@ -14,7 +14,7 @@ function phasePolicy(nowMs){
   var shelf=null;
   try{ shelf=localStorage.getItem('cw_shelf_date'); }catch(_){ }
   var days=shelfDaysUntil(shelf, nowMs);
-  if(days===null) return {phase:'unset',daysToShelf:null,newPerDayCap:12,label:'Set an exam date on Start-here to guide pacing.'};
+  if(days===null) return {phase:'unset',daysToShelf:null,newPerDayCap:12,label:'Set an exam date in Progress to guide pacing.'};
   if(days<0)  return {phase:'post',daysToShelf:days,newPerDayCap:12,label:'Exam date passed — review mode.'};
   if(days<=7) return {phase:'taper',daysToShelf:days,newPerDayCap:5,label:'Exam in '+days+' day'+(days===1?'':'s')+' — taper new cards, review daily.'};
   if(days<=14)return {phase:'consolidate',daysToShelf:days,newPerDayCap:8,label:'Exam in '+days+' days — consolidate: fewer new cards, more retrieval.'};

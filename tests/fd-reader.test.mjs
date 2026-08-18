@@ -186,6 +186,13 @@ test('the mobile action bar\'s primary label is wrapped in a bare <span>', () =>
     /fd-btn fd-btn--primary" data-fd-toggle="a\.md" aria-pressed="(?:true|false)"><span>[^<]*<\/span><\/button>/);
 });
 
+test('the icon-only mobile back control has an explicit accessible name', () => {
+  const html = F.fdReader(IDX, s({ ref: 'a.md' }), '');
+  const bar = html.slice(html.indexOf('class="fd-actionbar"'));
+  assert.match(bar, /class="fd-btn fd-btn--ghost" data-fd-back aria-label="Back to Today">‹<\/button>/,
+    'the compact mobile back glyph needs the same destination name as the visible desktop control');
+});
+
 // ---- prev/next footer -----------------------------------------------------------------------
 
 test('the prev/next footer carries no breakpoint class or style in the markup', () => {
@@ -301,6 +308,18 @@ test('the done toggles carry aria-pressed in both states, and the rail row carri
 
   assert.doesNotMatch(done, /class="fd-railnav__row[^"]*"[^>]*aria-pressed/,
     'the rail row navigates; it is not a toggle');
+});
+
+test('only completed rail rows announce their completion status', () => {
+  const unread = F.fdReader(IDX, s({ ref: 'a.md', week: 1, done: {} }), '');
+  assert.doesNotMatch(unread, /fd-visually-hidden">Completed<\/span>/,
+    'an unread navigation target must not be announced as complete');
+
+  const done = F.fdReader(IDX, s({ ref: 'a.md', week: 1, done: { 'b.md': true } }), '');
+  assert.match(done,
+    /<span class="fd-railnav__title is-done">Page B<\/span><span class="fd-visually-hidden">Completed<\/span>/,
+    'a completed navigation target needs a screen-reader-only status, not aria-pressed');
+  assert.doesNotMatch(done, /class="fd-railnav__row[^"]*"[^>]*aria-pressed/);
 });
 
 test('the currently-open row carries is-current, and only that row', () => {

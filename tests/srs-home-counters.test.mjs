@@ -10,10 +10,6 @@ const source = readFileSync(new URL(
   '../13_Faculty_Resources/_automation/site_build/spa_index.html',
   import.meta.url,
 ), 'utf8');
-const lpSource = readFileSync(new URL(
-  '../01_Six_Week_Curriculum/learning-path.html',
-  import.meta.url,
-), 'utf8');
 
 function slice(src, startMarker, endMarker) {
   const a = src.indexOf(startMarker);
@@ -107,17 +103,4 @@ test('dueBreakdown buckets by prefix; dueCount reports Daily-Review-servable onl
   assert.equal(b.fam.due, 1);
   assert.equal(b.other.due, 1);
   assert.deepEqual(srs.dueCount(), { due: 2, overdue: 1 });
-});
-
-test('learning-path srsDue counts only Daily-Review-servable prefixes', () => {
-  const lpCode = slice(lpSource, 'function srsDue(', 'function srsLabel(');
-  // eslint-disable-next-line no-new-func
-  const srsDue = new Function('localStorage', `${lpCode} return srsDue();`);
-  const ls = memStorage();
-  ls.setItem('cw_srs_v1', JSON.stringify({ v: 1, cards: {
-    'deck#0#1': { due: Date.now() - 1000 },
-    'QB#qb_moo_001': { due: Date.now() - 1000 },
-    'FAM#x#y': { due: Date.now() - 1000 },
-  } }));
-  assert.deepEqual(srsDue(ls), { due: 1, started: true });
 });

@@ -37,6 +37,9 @@
  * reach the 3:1 non-text contrast bar without ceasing to be hairlines, so the focus ring is
  * where the keyboard-accessibility weight actually sits. */
 .fd-shell :focus-visible{outline:2px solid var(--fd-focus);outline-offset:2px;border-radius:4px}
+.fd-search :focus-visible,.fd-sheet :focus-visible,.fd-nudge :focus-visible{outline:2px solid var(--fd-focus);outline-offset:2px;border-radius:4px}
+
+.fd-visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 
 .fd-h1{margin:0 0 6px;font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:30px;line-height:1.2;letter-spacing:.2px;color:var(--fd-text)}
 .fd-sub{margin:0 0 24px;font-size:14.5px;color:var(--fd-text-mid)}
@@ -132,6 +135,7 @@
   border:1.5px solid var(--fd-line-strong);border-radius:999px;
   color:var(--fd-text-dim);font-size:13px;cursor:text;min-width:0;
 }
+.fd-searchbtn svg{flex:0 0 auto}
 .fd-searchbtn:hover{border-color:var(--fd-line-hover)}
 .fd-searchbtn__label{flex:1;text-align:left;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .fd-kbd{font-size:10.5px;font-weight:600;border:1px solid var(--fd-line-strong);border-radius:5px;padding:1px 6px;color:var(--fd-text-dim);flex:0 0 auto}
@@ -149,6 +153,8 @@
   font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap;box-shadow:var(--fd-shadow-sm);
 }
 .fd-safetybtn:hover{background:var(--fd-danger-dark);border-color:var(--fd-danger-dark)}
+.fd-themebtn{width:34px;height:34px;padding:0;border-radius:50%;background:var(--fd-surface);border:1.5px solid var(--fd-line-strong);color:var(--fd-text-mid);font:inherit;font-size:16px;cursor:pointer}
+.fd-themebtn:hover{border-color:var(--fd-teal);color:var(--fd-teal-deep);background:var(--fd-teal-wash)}
 
 .fd-tabs{max-width:1200px;margin:0 auto;padding:4px 20px 0;display:flex;gap:2px}
 .fd-tab{
@@ -373,6 +379,15 @@
 .fd-article__meta{font-size:11.5px;font-weight:600;color:var(--fd-text-dim)}
 .fd-article__h1{margin:0 0 14px;font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:29px;line-height:1.22;letter-spacing:.2px;color:var(--fd-text)}
 .fd-article__lead{margin:0 0 18px;font-size:16.5px;line-height:1.72;color:var(--fd-text);max-width:62ch}
+.fd-article__body{font-size:16.5px;line-height:1.72;max-width:62ch;color:var(--fd-text)}
+.fd-article__body h2{margin:30px 0 12px;font-family:Georgia,'Times New Roman',serif;font-size:24px;line-height:1.3;color:var(--fd-text)}
+.fd-article__body h3{margin:24px 0 10px;font-size:18px;line-height:1.4;color:var(--fd-text)}
+.fd-article__body ul{margin:0 0 18px;padding-left:1.35em}
+.fd-article__body ol{margin:0 0 18px;padding-left:1.35em}
+.fd-article__body li{margin:6px 0}
+.fd-article__body a{color:var(--fd-teal-deep);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:2px}
+.fd-article__body code{font-family:'SF Mono',Monaco,Consolas,monospace;font-size:.88em;background:var(--fd-chip);border-radius:4px;padding:1px 4px;color:var(--fd-text)}
+.fd-article__body blockquote{margin:20px 0;padding:4px 0 4px 16px;border-left:3px solid var(--fd-teal);color:var(--fd-text-mid)}
 .fd-article__source{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--fd-text-dim);padding:10px 0;border-top:1px solid var(--fd-line)}
 .fd-article__actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
 
@@ -492,6 +507,8 @@
 .fd-sheet__intro{margin:0 0 14px;font-size:13px;color:var(--fd-text-mid)}
 .fd-sheet__note{margin:12px 0 0;font-size:12px;color:var(--fd-text-dim)}
 .fd-sheet__attribution{font-size:12px;color:var(--fd-teal-deep);font-weight:600}
+.fd-sheet__pending{margin:12px 0 0;font-size:12px;color:var(--fd-olive-deep);font-weight:600}
+.fd-sheet__failure{margin:0 0 14px;padding:12px 15px;border:1px solid var(--fd-danger);border-radius:10px;background:var(--fd-danger-wash);color:var(--fd-text);font-size:13px;line-height:1.55}
 .fd-sheet__lead{margin:0 0 16px;font-size:14.5px;line-height:1.65;color:var(--fd-text)}
 
 .fd-kitrow{
@@ -541,6 +558,46 @@
 .fd-nudge__dismiss{flex:0 0 auto;width:28px;height:28px;border-radius:7px;background:none;border:none;color:var(--fd-line-hover);font-size:13px;cursor:pointer}
 .fd-nudge__dismiss:hover{color:var(--fd-bg)}
 
+/* Task 5 governed runtime rows */
+.fd-due,.fd-resume__link,.fd-progresscard{
+  display:flex;align-items:center;gap:12px;width:100%;text-align:left;
+  border:1px solid var(--fd-line);border-radius:12px;background:var(--fd-surface);
+  color:var(--fd-text);font:inherit;text-decoration:none;padding:13px 15px;
+}
+.fd-due,.fd-progresscard{cursor:pointer}
+.fd-due{border-left:3px solid var(--fd-terracotta);margin:0 0 12px}
+.fd-due:hover,.fd-resume__link:hover,.fd-progresscard:hover{
+  border-color:var(--fd-line-hover);background:var(--fd-callout);
+}
+.fd-due__label,.fd-progresscard__title{font-size:14px;font-weight:700}
+.fd-due__breakdown,.fd-progresscard__meta{font-size:12px;color:var(--fd-text-dim)}
+.fd-due__action{margin-left:auto;font-size:12.5px;font-weight:700;color:var(--fd-terracotta-dark)}
+.fd-resume{margin:0 0 14px}
+.fd-resume .fd-sectionhead{margin-bottom:8px}
+.fd-resume__link{justify-content:space-between;font-size:13.5px;color:var(--fd-teal-deep)}
+.fd-progresscard{justify-content:space-between;margin:16px 0}
+.fd-progresscard__meta{margin-left:auto}
+
+.fd-capture-launch,.fd-capture__new,.fd-capture__copy,.fd-capture__action{
+  min-height:44px;border:1px solid var(--fd-line);border-radius:10px;background:var(--fd-surface);
+  color:var(--fd-text-mid);font:inherit;font-size:13px;font-weight:600;cursor:pointer;
+}
+.fd-capture-launch{width:100%;margin:0 0 12px;padding:10px 14px;border-style:dashed;color:var(--fd-teal-deep)}
+.fd-capture{margin:0 0 16px;padding:15px;border:1px solid var(--fd-line);border-radius:12px;background:var(--fd-callout)}
+.fd-capture__head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.fd-capture__head .fd-sectionhead{margin:0}
+.fd-capture__new{padding:8px 12px;color:var(--fd-teal-deep)}
+.fd-capture__purpose{margin:8px 0 12px;font-size:12px;line-height:1.5;color:var(--fd-text-dim)}
+.fd-capture__item{padding:11px 0;border-top:1px solid var(--fd-line)}
+.fd-capture__question{margin:0 0 8px;font-size:13.5px;line-height:1.5;color:var(--fd-text)}
+.fd-capture__action{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:9px 11px;margin-top:6px;text-align:left}
+.fd-capture__action:hover,.fd-capture__new:hover,.fd-capture__copy:hover,.fd-capture-launch:hover{border-color:var(--fd-line-hover);background:var(--fd-selected)}
+.fd-capture__copy{width:100%;padding:9px 12px;margin-top:10px;color:var(--fd-teal-deep)}
+.fd-progress-reader{max-width:940px;margin:0 auto}
+.fd-progress-reader > .hm{max-width:none;padding:0}
+.fd-examdate__row{display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap}
+.fd-examdate__row input{min-height:44px;padding:8px 10px;border:1px solid var(--fd-line);border-radius:8px;background:var(--fd-surface);color:var(--fd-text);font:inherit}
+
 /* ═══ Desktop ════════════════════════════════════════════════════════════════
  * The design's rails appear at and above 1000px — the same threshold the prototype's
  * `desk` flag uses (window.innerWidth >= 1000).
@@ -554,8 +611,12 @@
 
 /* Mobile primary actions keep a 44px minimum hit target. */
 @media (max-width:999px){
-  .fd-btn--primary,.fd-safetybtn,.fd-weekpill,.fd-searchbtn,.fd-weekgrid__browse{min-height:44px}
+  .fd-brand,.fd-btn--primary,.fd-safetybtn,.fd-weekpill,.fd-searchbtn,.fd-weekgrid__browse{min-height:44px}
+  .fd-searchbtn,.fd-actionbar .fd-btn--ghost{min-width:44px}
   .fd-role,.fd-weektile,.fd-kitrow,.fd-step,.fd-pick,.fd-setupcta{min-height:44px}
+  .fd-btn,.fd-tab,.fd-setup__back,.fd-reader__back,.fd-result,.fd-searchpanel__esc,
+  .fd-sheet__back,.fd-sheet__close,.fd-nudge__go,.fd-nudge__dismiss,.fd-themebtn{min-height:44px}
+  .fd-setup__back,.fd-searchpanel__esc,.fd-sheet__close,.fd-nudge__dismiss,.fd-themebtn{min-width:44px}
   .fd-article{padding:24px 20px}
   .fd-weekgrid{grid-template-columns:repeat(2,1fr)}
   /* The reader's desktop primary/ghost actions -- CLASS-INVENTORY.md's Reader section always
@@ -568,6 +629,23 @@
    * .fd-article is unique to the Reader surface (frontdoor.css has exactly one other rule for
    * it, the padding line just above). Do not broaden this to a bare `.fd-tip` selector. */
   .fd-article .fd-tip{display:none}
+  .fd-due,.fd-resume__link,.fd-progresscard{min-height:44px;flex-wrap:wrap}
+  .fd-due__action,.fd-progresscard__meta{margin-left:0;flex:0 0 100%}
+}
+
+/* A narrow header cannot safely compress the full brand, search field, and three utility controls
+ * into one row. Keep the useful labels visible and reflow utilities below them instead. */
+@media (max-width:640px){
+  .fd-header__bar{
+    padding:10px 12px 0;display:grid;grid-template-columns:minmax(0,1fr) 96px;
+    column-gap:8px;row-gap:6px;
+  }
+  .fd-brand{min-width:0}
+  .fd-brand__name{overflow:hidden;text-overflow:ellipsis}
+  .fd-searchbtn{width:96px;max-width:none;justify-self:end;padding:8px 10px}
+  .fd-searchbtn__label{min-width:0}
+  .fd-kbd{display:none}
+  .fd-header__actions{grid-column:1/-1;margin-left:0;justify-content:flex-end}
 }
 
 /* ═══ Keyframes ══════════════════════════════════════════════════════════════

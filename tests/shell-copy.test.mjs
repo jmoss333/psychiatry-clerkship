@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const BUILD_DIR = path.join(ROOT, '13_Faculty_Resources', '_automation', 'site_build');
 
-// Offline-shell copy (A2HS sentence + service-worker update toast) is the first shell text
+// Front Door, capture, phase-policy, and service-worker copy ships
 // that ships identically to BOTH sites — unlike page content, it is never routed through
 // resident_section.py's RESIDENT_REBRAND rewrite. That makes two failure modes possible that
 // no other test catches:
@@ -23,13 +23,9 @@ const AUDIENCE_TOKEN_RE = /MS3|clerkship|student|shelf|resident|UNE|MMC|Sanford/
 function extractShellCopy() {
   const shell = fs.readFileSync(path.join(BUILD_DIR, 'spa_index.html'), 'utf8');
   const swRegister = fs.readFileSync(path.join(BUILD_DIR, 'sw_register.js'), 'utf8');
+  const fdDue = fs.readFileSync(path.join(BUILD_DIR, 'frontdoor', 'fd_due.js'), 'utf8');
 
   const strings = {};
-
-  // Start-page A2HS sentence (renderStart output).
-  const a2hs = shell.match(/<p class="sub st-a2hs">([^<]*)<\/p>/);
-  assert.ok(a2hs, 'A2HS sentence not found in spa_index.html renderStart output');
-  strings['A2HS sentence'] = a2hs[1];
 
   // Ward question-capture copy (P1 warning, P2 interstitial, P3 disclosure, P4 clipboard stamp).
   // These are the whole PHI enforcement surface — there is no automated PHI check in build or CI —
@@ -56,17 +52,45 @@ function extractShellCopy() {
 
   // Home triage-card framing. Same contract as the sheet copy above — it restates the no-PHI
   // norm on the one capture surface that previously carried none, so it belongs in this set.
-  const capPurpose = shell.match(/var CAP_PURPOSE='([^']*)'/);
-  assert.ok(capPurpose, 'capture home-card purpose line not found in spa_index.html');
+  const capPurpose = fdDue.match(/var FD_CAPTURE_PURPOSE='([^']*)'/);
+  assert.ok(capPurpose, 'capture home-card purpose line not found in fd_due.js');
   strings['capture home-card purpose'] = capPurpose[1];
 
   const capAria = shell.match(/aria-label="(Your question[^"]*)"/);
   assert.ok(capAria, 'capture textarea aria-label not found in spa_index.html');
   strings['capture textarea aria-label'] = capAria[1];
 
-  const capBtn = shell.match(/id="captureBtnDesk"[^>]*>([^<]*)</);
-  assert.ok(capBtn, 'desktop capture button label not found in spa_index.html');
-  strings['capture desktop button'] = capBtn[1];
+  const capBtn = shell.match(/class="[^"]*\bfd-capture-launch\b[^"]*"[^>]*>([^<]*)</);
+  assert.ok(capBtn, 'Front Door capture button label not found in spa_index.html');
+  strings['Front Door capture button'] = capBtn[1];
+
+  // Shared Progress + plan prose. These internal views replaced the retired Start-here surface
+  // and now ship byte-identically to both audiences, so their learner-visible phrases belong in
+  // the same audience-neutral extraction as the header and capture copy. Match each semantic
+  // role rather than dumping identifiers: cw_shelf_date and clerkship-study-v2 are intentionally
+  // stable machine contracts, not visible prose.
+  const progressBlueprint = shell.match(/<div class="sub"[^>]*>(Answer practice questions[^<]*)<\/div>/);
+  assert.ok(progressBlueprint, 'Progress blueprint explainer not found in spa_index.html');
+  strings['Progress blueprint explainer'] = progressBlueprint[1];
+
+  const progressExport = shell.match(/<div class="sub"[^>]*>(Export your anonymous learning activity[^<]*)<\/div>/);
+  assert.ok(progressExport, 'Progress export explainer not found in spa_index.html');
+  strings['Progress export explainer'] = progressExport[1];
+
+  const planUnset = shell.match(/return '(<div class="sub"[^']*Set an? [^']*)'; var days=/);
+  assert.ok(planUnset, 'plan unset-date guidance not found in spa_index.html');
+  strings['plan unset-date guidance'] = planUnset[1].replace(/<[^>]*>/g, '');
+
+  const planPast = shell.match(/if\(days<0\) return '(<div class="sub"[^']*)'/);
+  assert.ok(planPast, 'plan past-date guidance not found in spa_index.html');
+  strings['plan past-date guidance'] = planPast[1].replace(/<[^>]*>/g, '');
+
+  const planNear = shell.match(/var msg=days<=14\?\('([^']*)'/);
+  const planSteady = shell.match(/practice daily\.'\):\('([^']*)'/);
+  assert.ok(planNear, 'plan near-exam guidance not found in spa_index.html');
+  assert.ok(planSteady, 'plan steady-exam guidance not found in spa_index.html');
+  strings['plan near-exam guidance'] = planNear[1];
+  strings['plan steady-exam guidance'] = planSteady[1];
 
   // sw_register.js update-toast copy: innerHTML/textContent literals + the dismiss aria-label.
   // Extracted by role rather than a blanket string dump, so code identifiers (function names,
@@ -129,7 +153,7 @@ function extractResidentRebrandNeedles() {
   return needles;
 }
 
-test('shared shell copy (A2HS sentence + SW toast + capture) is audience-neutral', () => {
+test('shared Front Door, SW, phase, and capture copy is audience-neutral', () => {
   const strings = extractShellCopy();
   for (const [label, value] of Object.entries(strings)) {
     assert.doesNotMatch(
@@ -151,6 +175,11 @@ test('shared shell copy has zero RESIDENT_REBRAND needle collisions', () => {
       );
     }
   }
+});
+
+test('the anonymous export keeps the coordinated clerkship-study-v2 machine schema', () => {
+  const shell = fs.readFileSync(path.join(BUILD_DIR, 'spa_index.html'), 'utf8');
+  assert.match(shell, /schema:'clerkship-study-v2'/);
 });
 
 // Positive-content pin: prove extractPhasePolicyLabels() reassembles the FULL text of the

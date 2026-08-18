@@ -7,7 +7,7 @@
     "test:nav": "playwright test --project=nav-ms3 --project=nav-res",
     "test:lfs": "playwright test --project=lfs",
     "test:visual": "playwright test --project=visual",
-    "update-baselines": "playwright test --project=visual --update-snapshots"
+    "update-baselines": "playwright test visual-regression.spec.js --project=visual --update-snapshots=all"
   },
   "devDependencies": {
     "@playwright/test": "1.62.1"

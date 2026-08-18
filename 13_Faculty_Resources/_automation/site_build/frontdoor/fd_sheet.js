@@ -7,12 +7,12 @@
    arrow functions or template literals -- matches the other frontdoor/ modules.
 
    Pure: fdSheet(index, topicMeta, state) -> string and fdNudge(item) -> string. No DOM, no browser
-   storage, no clock access. state = {sheet, sheetFrom, stepsDone, done}; `done` is accepted (the
-   interface brief's shape) but never read here -- whether a protocol's page is unread is what
-   decides if the CALLER raises fdNudge at all, not anything this renderer draws. This module is a
-   pure renderer of already-resolved state: it draws whichever surface state.sheet names and does
-   no event handling. The data-fd-* attributes it emits are read by the wiring layer a later plan
-   brings, not by anything here.
+   storage, no clock access. Protocol state also carries the shell's build-injected `crisisHtml`
+   and an owner-approved `protocolFailureCopy`; `done` is accepted (the interface brief's shape)
+   but never read here -- whether a protocol's page is unread is what decides if the CALLER raises
+   fdNudge at all, not anything this renderer draws. This module is a pure renderer of
+   already-resolved state: it draws whichever surface state.sheet names and does no event
+   handling. The data-fd-* attributes it emits are read by the wiring layer, not by anything here.
 
    *** The single rule this file exists to keep: protocol content comes only from topic_meta. ***
    Steps render from topicMeta[ref].safetySteps and the Document callout from
@@ -32,10 +32,12 @@
    of facultyReview.status === 'reviewed', and it gates BOTH attested affordances:
      - protocol view: the teal .fd-sheet__attribution line ("✓ From: … · faculty-attested").
      - item preview: the .fd-attested pill.
-   Neither has a "probably reviewed" middle state. Where a protocol is not attested this file still
-   shows its provenance -- the same ref, in the neutral dim .fd-sheet__note -- because naming the
-   source is a true statement, while the teal ✓ treatment reads as an endorsement and would be a
-   false one. A pill asserting a review that did not happen is worse than no pill.
+   Neither has a "probably reviewed" middle state. Where a structurally valid 3–5-step protocol is
+   not attested this file still shows its provenance -- the same ref, in the explicit
+   .fd-sheet__pending state -- because naming the source is a true statement, while the teal ✓
+   treatment reads as an endorsement and would be a false one. Missing, malformed, or wrong-length
+   protocol data renders neither state; it takes the owner-controlled failure path instead. A pill
+   asserting a review that did not happen is worse than no pill.
 
    ---- Attributes: reused conventions, one addition -------------------------------------------
      - data-fd-safety (bare)     -- open the kit. fd_shell.js's .fd-safetybtn already means exactly
@@ -118,7 +120,7 @@ function fdSheetHead(title, hasBack){
   if(hasBack) out+='<button type="button" class="fd-sheet__back" data-fd-safety>‹ kit</button>';
   out+='<span class="fd-sheet__title">'+fdEsc(title)+'</span>';
   out+='<button type="button" class="fd-sheet__close" data-fd-close-sheet '+
-    'title="Close — you’ll land exactly where you were">✕</button>';
+    'aria-label="Close side sheet" title="Close — you’ll land exactly where you were">✕</button>';
   out+='</div>';
   return out;
 }
@@ -175,46 +177,54 @@ function fdSheetStep(text, i, stepsDone){
   '</button>';
 }
 
-/* Every value below is read from topicMeta[ref]; nothing is defaulted to a literal. A kit page
-   with no safetySteps renders no steps and a page with no safetyDoc renders no callout, rather
-   than either being filled in from anywhere else -- an empty protocol is an honest render, an
-   invented one is not. In this repo every safetyKit ref names a real page, so the "Open the full
-   page →" button is unconditional (the prototype gated it on `page`, since two of its five
-   protocols pointed at nothing). */
-function fdSheetProtocolBody(entry, topicMeta, stepsDone){
+/* Classify before rendering so reviewed, pending, and failed-load states are mutually exclusive.
+   Runtime checks remain strict even though the build validator rejects malformed current kit
+   data: an interrupted payload or stale browser artifact must fail closed too. */
+function fdSheetProtocolData(entry, topicMeta){
   var item=entry.item;
   var meta=(topicMeta||{})[item.ref]||{};
-  var steps=meta.safetySteps||[];
-  var out='';
-  if(steps.length){
-    /* Wrapper carries only the 16px gap down to the callout (the prototype's own step container).
-       The steps stay siblings of each other inside it, so the + rule above still applies. */
-    out+='<div style="margin-bottom:16px">';
-    for(var i=0;i<steps.length;i++){ out+=fdSheetStep(steps[i], i, stepsDone); }
-    out+='</div>';
+  var sourceSteps=meta.safetySteps;
+  var doc=(typeof meta.safetyDoc==='string')?meta.safetyDoc:'';
+  if(!Array.isArray(sourceSteps)||sourceSteps.length<3||sourceSteps.length>5||!doc.trim()){
+    return {kind:'missing'};
   }
-  if(meta.safetyDoc){
-    out+='<div class="fd-doccallout"><b>Document:</b> '+fdEsc(meta.safetyDoc)+'</div>';
+  var steps=[];
+  for(var i=0;i<sourceSteps.length;i++){
+    if(typeof sourceSteps[i]!=='string'||!sourceSteps[i].trim())return {kind:'missing'};
+    steps.push(sourceSteps[i]);
   }
-  /* Provenance attaches to CONTENT, so it is gated on there being some: with no steps and no doc
-     line, the attribution would be the entire body, and "✓ From: p.md · faculty-attested" above an
-     empty sheet reads as "attested — nothing to do" rather than "the content did not load". That
-     is a failure presenting as a success, on the surface where that costs most. Both shapes that
-     produce it are real: a reviewed kit page whose safetySteps array was emptied by an unrelated
-     edit, and topicMeta arriving undefined -- exactly what a Plan-3 injection failure looks like.
-     With no content there is nothing to attribute, so neither arm renders.
+  return {kind:item.attested===true?'reviewed':'pending',steps:steps,doc:doc};
+}
 
-     Within that gate, see the header note on over-claiming: the teal ✓ line only where the review
-     is actually recorded, and the neutral dim source line otherwise. */
-  if(steps.length||meta.safetyDoc){
-    if(item.attested){
-      out+='<div class="fd-sheet__attribution">✓ From: '+fdEsc(item.ref)+' · faculty-attested</div>';
-    } else {
-      out+='<p class="fd-sheet__note">From: '+fdEsc(item.ref)+'</p>';
-    }
+function fdSheetProtocolFailure(copy, crisisHtml){
+  if(typeof copy!=='string'||!copy.trim()){
+    throw new Error('Owner-approved protocol failure copy is required');
+  }
+  return '<p class="fd-sheet__failure" role="alert">'+fdEsc(copy)+'</p>'+String(crisisHtml||'');
+}
+
+/* Every clinical value below is read from topicMeta[ref]; the crisis block is a trusted build
+   artifact passed through the shell's inert template. Neither is defaulted to clinical text. */
+function fdSheetProtocolBody(entry, topicMeta, stepsDone, crisisHtml, failureCopy){
+  var item=entry.item;
+  var protocol=fdSheetProtocolData(entry,topicMeta);
+  if(protocol.kind==='missing')return fdSheetProtocolFailure(failureCopy,crisisHtml);
+  var steps=protocol.steps;
+  var out='';
+  /* Wrapper carries only the 16px gap down to the callout (the prototype's own step container).
+     The steps stay siblings of each other inside it, so the + rule above still applies. */
+  out+='<div style="margin-bottom:16px">';
+  for(var i=0;i<steps.length;i++){ out+=fdSheetStep(steps[i], i, stepsDone); }
+  out+='</div>';
+  out+='<div class="fd-doccallout"><b>Document:</b> '+fdEsc(protocol.doc)+'</div>';
+  if(protocol.kind==='reviewed'){
+    out+='<div class="fd-sheet__attribution">✓ From: '+fdEsc(item.ref)+' · faculty-attested</div>';
+  } else {
+    out+='<p class="fd-sheet__pending">Not yet faculty-reviewed · From: '+fdEsc(item.ref)+'</p>';
   }
   out+='<button type="button" class="fd-btn fd-btn--ghost" style="margin-top:16px" '+
     'data-fd-open="'+fdEsc(item.ref)+'">Open the full page →</button>';
+  out+=String(crisisHtml||'');
   return out;
 }
 
@@ -271,14 +281,16 @@ function fdSheet(index, topicMeta, state){
     if(!entry) return '';
     title=entry.item.title;
     hasBack=(st.sheetFrom==='kit');
-    body=fdSheetProtocolBody(entry, topicMeta, st.stepsDone);
+    body=fdSheetProtocolBody(
+      entry, topicMeta, st.stepsDone, st.crisisHtml, st.protocolFailureCopy
+    );
   }
 
   /* Two elements, not one: .fd-sheetbackdrop is a separate sibling emitted BEFORE the panel and
      carries the click-to-close. Only the search overlay merges scrim and layout into one element
      (CLASS-INVENTORY's ⚠ trap -- do not mirror one pattern onto the other). */
   return '<div class="fd-sheetbackdrop" data-fd-close-sheet></div>'+
-    '<aside class="fd-sheet">'+
+    '<aside class="fd-sheet" role="dialog" aria-modal="true" aria-label="'+fdEsc(title)+'">'+
       fdSheetHead(title, hasBack)+
       '<div class="fd-sheet__body">'+body+'</div>'+
     '</aside>';
@@ -294,6 +306,6 @@ function fdNudge(item){
   return '<div class="fd-nudge">'+
     '<span class="fd-nudge__text">“'+fdEsc(item.title)+'” is the full read'+mins+'.</span>'+
     '<button type="button" class="fd-nudge__go" data-fd-open="'+fdEsc(item.ref)+'">Read it</button>'+
-    '<button type="button" class="fd-nudge__dismiss" data-fd-close-nudge>✕</button>'+
+    '<button type="button" class="fd-nudge__dismiss" data-fd-close-nudge aria-label="Dismiss alert">✕</button>'+
   '</div>';
 }

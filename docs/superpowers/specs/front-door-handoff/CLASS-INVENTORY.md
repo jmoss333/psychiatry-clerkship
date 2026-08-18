@@ -3,11 +3,11 @@
 The complete contract between `frontdoor.css` and the markup that tasks 3–9 emit.
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(172 `fd-*` classes, 13 `is-*` state classes). Every class below has a rule in that file unless
+(198 distinct `fd-*` selector names, 13 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **Why this file exists.** The implementation plan names 39 contract classes. The stylesheet styles
-172. The remaining 133 are `__element` and `--modifier` names introduced while porting the
+198. The remaining 159 are `__element` and `--modifier` names introduced while porting the
 prototype's inline styles into a stylesheet — a renderer briefed only on the 39 would emit markup
 that misses most of the CSS, and the failure is silent: the page renders, tests pass, the surface
 just looks wrong. Read the surface you are building before writing its markup.
@@ -25,13 +25,14 @@ just looks wrong. Read the surface you are building before writing its markup.
 
 | Class | Element | Notes |
 |---|---|---|
-| `.fd-shell` | outermost wrapper | **Required.** Paints `--fd-bg`/`--fd-text`, sets the font stack, and scopes three descendant rules: `a` / `a:hover` colours, `*{box-sizing:border-box}`, and the single `:focus-visible` outline. Anything rendered outside `.fd-shell` loses all four. |
+| `.fd-shell` | outermost wrapper | **Required.** Paints `--fd-bg`/`--fd-text`, sets the font stack, and scopes three descendant rules: `a` / `a:hover` colours, `*{box-sizing:border-box}`, and its `:focus-visible` outline. Non-overlay content outside `.fd-shell` loses all four. |
 | `.fd-main` | `<main>` | `max-width:1200px`, page padding. Sibling of `.fd-header`, child of `.fd-shell`. |
 
 ⚠ **The four overlay surfaces are portalled outside `.fd-shell`** (`.fd-search`, `.fd-sheet`,
 `.fd-sheetbackdrop`, `.fd-nudge`) — they are `position:fixed` and listed *separately* in the
-reduced-motion block for exactly that reason. They still work outside `.fd-shell`, but they do
-**not** inherit its font stack or `:focus-visible` rule. Render them inside `.fd-shell` if you can.
+reduced-motion block for exactly that reason. They still do **not** inherit its font stack, links,
+or box sizing, but `.fd-search`, `.fd-sheet`, and `.fd-nudge` receive their own token-based
+`:focus-visible` rule. Render them inside `.fd-shell` if you can.
 
 ⚠ **Responsive visibility is done in CSS, not JS.** Do not conditionally render these — always emit
 them and let the breakpoint decide:
@@ -111,6 +112,7 @@ under `@media (pointer:coarse)`. Do not add padding or resize it to hit 44px —
     .fd-header__actions
       .fd-weekpill         <button>
       .fd-safetybtn        <button>
+      .fd-themebtn         <button>          (compact labelled theme toggle)
   .fd-tabs                 <nav>
     .fd-tab                <button> ×3
 ```
@@ -118,8 +120,9 @@ under `@media (pointer:coarse)`. Do not add padding or resize it to hit 44px —
 | Class | Notes |
 |---|---|
 | `.fd-header` | `position:sticky; top:0; z-index:40`. |
-| `.fd-header__bar` | The 1200px-capped flex row. `.fd-header` alone has no max-width. |
-| `.fd-header__actions` | `margin-left:auto` — this is what pushes the right group over. |
+| `.fd-header__bar` | The 1200px-capped flex row; at 640px and below it becomes a two-row grid so brand/search and utilities cannot collide. `.fd-header` alone has no max-width. |
+| `.fd-header__actions` | `margin-left:auto` in the flex layout; at 640px and below it spans grid row two, resets the margin, and aligns right. |
+| `.fd-themebtn` | Compact icon-only header theme toggle; `aria-label` names the action. |
 | `.fd-tab.is-active` | Bold + teal + teal underline. |
 
 ⚠ `.fd-tabs` is a **sibling** of `.fd-header__bar` inside `.fd-header`, not a child of it.
@@ -201,6 +204,20 @@ ancestor; there is no modifier class for it.
 | `.fd-continue__kicker.is-complete` | Switches teal → terracotta when the week is finished. |
 | `.fd-ring.is-celebrating` | One-shot pulse on week completion. |
 | `.fd-list` | Supplies the 8px gap between `.fd-row`s — rows have no sibling margin. |
+
+Task 5 composes device-local activity around the pure Today renderer and reuses the Reader for
+internal Progress. These are part of the same shipped class contract:
+
+| Class | Element / notes |
+|---|---|
+| `.fd-due` | Due-review button; contains `.fd-due__label`, `.fd-due__breakdown`, and `.fd-due__action`. |
+| `.fd-resume` | Session-resume section; `.fd-resume__link` is the query-preserving link. |
+| `.fd-capture-launch` | Full-width capture-dialog launcher. |
+| `.fd-capture-launch--global` | Stable learner-route launcher hook; its in-flow utility-row positioning comes from `#fdCaptureMount`, so it cannot cover Reader or Today content. *(no rule)* |
+| `.fd-capture` | Today triage section; contains `.fd-capture__head`, `.fd-capture__new`, `.fd-capture__purpose`, `.fd-capture__item`, `.fd-capture__question`, `.fd-capture__action`, and `.fd-capture__copy`. |
+| `.fd-progresscard` | Internal-Progress entry; contains `.fd-progresscard__title` and `.fd-progresscard__meta`. |
+| `.fd-progress-reader` | Reader modifier for the internal Progress surface. |
+| `.fd-examdate__row` | Device-local exam-date control row inside Progress. |
 
 ⚠ **`.fd-ring` needs `--fd-ring-pct` set inline** (e.g. `style="--fd-ring-pct:62%"`). It defaults to
 `0%`, so a ring rendered without it silently shows an empty track. This is the one custom property
@@ -296,6 +313,7 @@ it; just don't expect it to paint anything.
         .fd-eyebrow / .fd-article__dot / .fd-article__meta / .fd-attested
       .fd-article__h1
       .fd-article__lead
+      .fd-article__body                  (rendered long-form content)
       .fd-keypoints
         .fd-keypoints__label
         .fd-keypoints__item ×N
@@ -317,6 +335,7 @@ it; just don't expect it to paint anything.
         .fd-railnav__row <button> ×N      + .is-current
           .fd-railnav__dot                + .is-done
           .fd-railnav__title              + .is-done
+          .fd-visually-hidden             (done rows only: "Completed")
   .fd-actionbar__spacer                   (below 1000px)
 .fd-actionbar                             (below 1000px, fixed)
   .fd-btn.fd-btn--ghost
@@ -327,6 +346,8 @@ it; just don't expect it to paint anything.
 | Class | Notes |
 |---|---|
 | `.fd-reader.is-nav-next` / `.is-nav-prev` | Slide-in direction. **Same element as `.fd-reader`.** |
+| `.fd-article__body` | Long-form markdown typography: 16.5px, 1.72 line-height, 62ch measure. |
+| `.fd-visually-hidden` | Accessible completion suffix on done rail rows; never use `aria-pressed` for navigation. |
 | `.fd-prevnext__btn.is-next` | Right-aligns the next button's contents. |
 | `.fd-article__actions` | Desktop-only primary/ghost pair. **Always emit it** (no `desk` JS branch) — `.fd-actionbar` at the bottom of this tree is the mobile equivalent; the breakpoint hides this one and shows that one, never both. |
 | `.fd-tip` (Reader instance) | The `←`/`→`/`1`/`2`/`3` keyboard hint. Hidden below 1000px via the descendant selector `.fd-article .fd-tip` — **do not** hide the bare `.fd-tip` class, which would also blank the wizard's `.fd-tip--setup` line (§2). |
@@ -397,6 +418,8 @@ independent states on the child. A current *and* done item carries both.
       .fd-step__text
     .fd-doccallout
     .fd-sheet__attribution
+    .fd-sheet__pending                 (non-reviewed, valid 3–5-step protocol only)
+    .fd-sheet__failure    [role=alert] (missing/malformed protocol data only)
     .fd-btn.fd-btn--ghost           ("Open the full page →")
     ── item-preview variant ──
     .fd-chip / .fd-attested
@@ -417,6 +440,12 @@ independent states on the child. A current *and* done item carries both.
 | `.fd-sheet__body` | The scroll container (`flex:1; overflow-y:auto`). |
 | `.fd-doccallout` | Amber "Document:" callout. Border is derived via `color-mix` from the two olive tokens. |
 | `.fd-sheet__attribution` | "✓ From: … · faculty-attested". |
+| `.fd-sheet__pending` | Affirmative not-yet-reviewed state for a valid 3–5-step protocol; mutually exclusive with attribution and failure. |
+| `.fd-sheet__failure` | Fail-closed alert with an owner-controlled sentence; protocol steps and documentation remain absent. |
+
+At the mobile breakpoint, primary actions, navigation controls, dialog close/back controls, and
+icon-sized controls have a minimum 44px hit target. Icon-sized controls also have a 44px minimum
+width; desktop dimensions remain unchanged.
 
 ⚠ `.fd-nudge` inverts by construction: it paints `--fd-text` as its background and `--fd-bg` as its
 text, so it stays a high-contrast slab in both themes. Do not override its colours.

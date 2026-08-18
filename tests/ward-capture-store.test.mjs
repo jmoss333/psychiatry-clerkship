@@ -14,6 +14,10 @@ const phi = readFileSync(new URL(
   '../13_Faculty_Resources/_automation/site_build/phi_heuristic.js',
   import.meta.url,
 ), 'utf8');
+const due = readFileSync(new URL(
+  '../13_Faculty_Resources/_automation/site_build/frontdoor/fd_due.js',
+  import.meta.url,
+), 'utf8');
 
 function slice(src, startMarker, endMarker) {
   const a = src.indexOf(startMarker);
@@ -163,18 +167,22 @@ test('T11b: focus return is guarded on the recorded invoker still being connecte
 });
 
 test('T12a: the triage card offers Review only for quiz-bearing pages', () => {
-  const card = slice(shell, 'function capTriageHtml(', 'function capTriageClick(');
-  assert.match(card, /topicHasQuiz\(hit\.f\)/,
+  const rows = slice(shell, 'function fdCaptureRows(', 'function fdTodayLive(');
+  assert.match(rows, /hasQuiz:topicHasQuiz\(hit\.f\)/,
+    'the runtime adapter must normalize quiz availability before pure rendering');
+  assert.match(due, /if\(match\.hasQuiz\)/,
     'a quizless page would make seedSRS a silent no-op — do not render the control');
-  assert.ok(!/data-f="/.test(card),
+  assert.ok(!/data-f="/.test(due),
     'triage controls must use data-cap-* only; data-f would hit the generic .hm-li branch and '
     + 'navigate without marking the capture triaged');
 });
 
-test('T12b: the triage card degrades explicitly when the search index is unavailable', () => {
-  const card = slice(shell, 'function capTriageHtml(', 'function capTriageClick(');
-  assert.match(card, /if\(!SI\)/);
-  assert.match(card, /Matching is unavailable right now/);
+test('T12b: unavailable matching preserves untriaged captures and safe actions', () => {
+  const rows = slice(shell, 'function fdCaptureRows(', 'function fdTodayLive(');
+  assert.match(rows, /results=SI\?runSearch\(item\.text\):\[\]/,
+    'an unavailable index yields no match instead of throwing or dropping a capture');
+  assert.match(due, /data-cap-drop=/);
+  assert.match(due, /data-cap-copy="1"/);
 });
 
 test('the search-index fetch re-renders home, so the degraded state cannot stick', () => {
@@ -198,9 +206,9 @@ test('the capture key is a string literal at every call site', () => {
 });
 
 test('the capture mounts are removed entirely in a faculty preview', () => {
-  const wire = slice(shell, '(function capWire(', '/* ---------- Search');
-  assert.match(wire, /facultyPreviewRequest/,
+  const today = slice(shell, 'function fdTodayLive(', 'function fdProgressMarkup(');
+  assert.match(today, /if\(!facultyPreviewRequest\)/,
     'preview is a reviewer surface, not a learner session — it must not offer to write learner state');
-  assert.match(wire, /removeChild/,
-    'remove rather than disable, so nothing focusable is left in the preview tab order');
+  assert.match(today, /data-capture-open/,
+    'the guarded branch must own the capture launcher itself, leaving no focusable preview control');
 });

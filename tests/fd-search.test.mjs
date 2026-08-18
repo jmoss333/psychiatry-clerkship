@@ -18,17 +18,20 @@ const BUILD = '../13_Faculty_Resources/_automation/site_build';
 const read = (p) => readFileSync(new URL(`${BUILD}/${p}`, import.meta.url), 'utf8');
 const searchSrc = read('frontdoor/fd_search.js');
 
-// eslint-disable-next-line no-new-func
-const make = new Function(`
-  ${read('phase_policy.js')}
-  ${read('frontdoor/fd_state.js')}
-  ${read('frontdoor/fd_data.js')}
-  ${searchSrc}
-  return {
-    fdExpandQuery: fdExpandQuery, fdSearchResults: fdSearchResults,
-    fdSearchOverlay: fdSearchOverlay, fdBuildIndex: fdBuildIndex,
-  };
-`);
+function make(governanceBadge) {
+  // eslint-disable-next-line no-new-func
+  return new Function('governanceBadge', `
+    ${read('phase_policy.js')}
+    ${read('frontdoor/fd_state.js')}
+    ${read('frontdoor/fd_data.js')}
+    ${searchSrc}
+    return {
+      fdExpandQuery: fdExpandQuery, fdSearchResults: fdSearchResults,
+      fdSearchOverlay: fdSearchOverlay, fdSearchResultRow: fdSearchResultRow,
+      fdBuildIndex: fdBuildIndex,
+    };
+  `)(governanceBadge || function () { return ''; });
+}
 const F = make();
 
 const AUDIENCE_TOKEN_RE = /MS3|clerkship|student|shelf|resident|UNE|MMC|Sanford/i;
@@ -134,10 +137,10 @@ test('empty query never throws on a missing index (undefined defaults like every
 
 test('renders the panel skeleton with input, esc button, and footer copy', () => {
   const html = F.fdSearchOverlay(REAL_INDEX, '', SYN, {});
-  assert.match(html, /<div class="fd-search">/);
+  assert.match(html, /^<div class="fd-search"(?:\s|>)/);
   assert.match(html, /<div class="fd-searchpanel">/);
   assert.match(html, /<input type="text" class="fd-searchpanel__input" value=""/);
-  assert.match(html, /<button type="button" class="fd-searchpanel__esc" data-fd-close-search>esc<\/button>/);
+  assert.match(html, /<button type="button" class="fd-searchpanel__esc" data-fd-close-search(?:\s[^>]*)?>esc<\/button>/);
   assert.match(html, /<div class="fd-searchpanel__foot">↵ opens as a side sheet/);
 });
 
@@ -156,6 +159,38 @@ test('an item result carries data-fd-open plus the data-fd-sheet modifier -- nev
   assert.match(html, /<button type="button" class="fd-result" data-fd-open="mse\.html" data-fd-sheet>/);
 });
 
+test('search rows pass projected governance to the shared badge helper between title and meta', () => {
+  const calls = [];
+  const G = make((triplet) => {
+    calls.push(triplet);
+    if (!triplet || triplet.status === 'reviewed') return '';
+    return triplet.riskLevel === 'high'
+      ? '<span class="governance-badge high">Pending review · High risk</span>'
+      : '<span class="governance-badge">Pending review</span>';
+  });
+  const high = G.fdSearchResultRow({
+    item: { ref: 'high.html', kind: 'tool', title: 'High item', governance: { status: 'pending', riskKind: 'clinical', riskLevel: 'high' } },
+    kind: 'item', meta: 'tool',
+  });
+  const ordinary = G.fdSearchResultRow({
+    item: { ref: 'ordinary.md', kind: 'read', title: 'Ordinary item', governance: { status: 'pending', riskKind: 'general', riskLevel: 'low' } },
+    kind: 'item', meta: 'read',
+  });
+  const reviewed = G.fdSearchResultRow({
+    item: { ref: 'reviewed.md', kind: 'read', title: 'Reviewed item', governance: { status: 'reviewed', riskKind: 'general', riskLevel: 'low' } },
+    kind: 'item', meta: 'read',
+  });
+
+  assert.deepEqual(calls, [
+    { status: 'pending', riskKind: 'clinical', riskLevel: 'high' },
+    { status: 'pending', riskKind: 'general', riskLevel: 'low' },
+    { status: 'reviewed', riskKind: 'general', riskLevel: 'low' },
+  ]);
+  assert.match(high, /fd-result__title">High item<\/span><span class="governance-badge high">Pending review · High risk<\/span><span class="fd-result__meta">tool<\/span>/);
+  assert.match(ordinary, /fd-result__title">Ordinary item<\/span><span class="governance-badge">Pending review<\/span><span class="fd-result__meta">read<\/span>/);
+  assert.doesNotMatch(reviewed, /governance-badge/);
+});
+
 test('result dot classes: is-safety for protocols, is-tool for tool items, bare for reads', () => {
   const html = F.fdSearchOverlay(REAL_INDEX, '', SYN, {});
   assert.match(html, /<span class="fd-result__dot is-safety"><\/span>/, 'at least one protocol dot');
@@ -171,6 +206,15 @@ test('no-results empty state only replaces results for a non-empty query that ma
 test('empty query never shows the no-results state (defaults always populate it)', () => {
   const html = F.fdSearchOverlay(REAL_INDEX, '', SYN, {});
   assert.doesNotMatch(html, /fd-searchpanel__empty/);
+});
+
+test('the search overlay is a labelled modal dialog and its close control is named', () => {
+  const html = F.fdSearchOverlay(REAL_INDEX, '', SYN, {});
+  assert.match(html, /^<div class="fd-search" role="dialog" aria-modal="true" aria-label="Search">/,
+    'the full-screen search host is the modal surface');
+  assert.match(html,
+    /class="fd-searchpanel__esc" data-fd-close-search aria-label="Close search">esc<\/button>/,
+    'the keyboard-looking close control must retain an explicit name');
 });
 
 // ---- purity / audience-neutral / no raw hex ---------------------------------------------------

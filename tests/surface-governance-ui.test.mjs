@@ -18,6 +18,18 @@ const source = readFileSync(new URL(
   '../13_Faculty_Resources/_automation/site_build/spa_index.html',
   import.meta.url,
 ), 'utf8');
+const wire = readFileSync(new URL(
+  '../13_Faculty_Resources/_automation/site_build/frontdoor/fd_wire.js', import.meta.url,
+), 'utf8');
+const dataModule = readFileSync(new URL(
+  '../13_Faculty_Resources/_automation/site_build/frontdoor/fd_data.js', import.meta.url,
+), 'utf8');
+const libraryModule = readFileSync(new URL(
+  '../13_Faculty_Resources/_automation/site_build/frontdoor/fd_library.js', import.meta.url,
+), 'utf8');
+const searchModule = readFileSync(new URL(
+  '../13_Faculty_Resources/_automation/site_build/frontdoor/fd_search.js', import.meta.url,
+), 'utf8');
 
 function slice(startMarker, endMarker) {
   const a = source.indexOf(startMarker);
@@ -48,11 +60,10 @@ test('governance state loading matches the specified fetch/then/catch contract e
   );
 });
 
-test('renderGovernanceNotice(item) is defined and used for both the tool and page branches', () => {
+test('renderGovernanceNotice(item) is defined and passed into the shared resource adapter', () => {
   assert.match(source, /function renderGovernanceNotice\(item\)\{/);
-  const calls = (source.match(/renderGovernanceNotice\(item\)/g) || []).length;
-  // 1 definition + tool branch + md/page branch
-  assert.equal(calls, 3, `expected renderGovernanceNotice(item) at exactly 3 sites, found ${calls}`);
+  assert.match(source, /governanceNotice:renderGovernanceNotice/);
+  assert.match(wire, /var bar=governance\(legacy\)\|\|''/);
 });
 
 test('the fixed fail-safe copy is present verbatim, with no live-region role', () => {
@@ -61,6 +72,9 @@ test('the fixed fail-safe copy is present verbatim, with no live-region role', (
 
 test('the reviewed receipt carries no live-region role (it would render on nearly every route change)', () => {
   assert.match(source, /'<div class="governance-notice reviewed-receipt">Reviewed by '/);
+  assert.match(source, /<time datetime="'\+esc\(entry\.reviewedAt\)\+'">'\+esc\(entry\.reviewedAt\)\+'<\/time>/,
+    'the receipt date must be a semantic, unbreakable unit');
+  assert.match(source, /\.governance-notice\.reviewed-receipt time\{white-space:nowrap\}/);
 });
 
 test('pending-high is an alert section; pending-compact is a status div', () => {
@@ -75,8 +89,10 @@ test('the unguarded toolFrameSuffix helper is fully retired in favor of the gove
 });
 
 test('both the normal and faculty-preview tool iframes add governed=1', () => {
-  const callSites = (source.match(/toolFrameSuffixWithGovernance\(opts&&opts\.toolExtra\)/g) || []).length;
-  assert.equal(callSites, 2, 'the plain iframe src and the faculty-preview frame.src must both route through the governed helper');
+  assert.match(source, /toolFrameSuffixWithGovernance\(opts&&opts\.toolExtra\)/,
+    'faculty preview must keep the audited governed suffix');
+  assert.match(wire, /suffix=toolFrameSuffixWithGovernance\(toolExtra\)/,
+    'normal Front Door resource loading must keep the governed suffix');
 });
 
 test('warning prose is never derived from topic_meta.facultyReview', () => {
@@ -85,11 +101,13 @@ test('warning prose is never derived from topic_meta.facultyReview', () => {
   assert.doesNotMatch(noticeBlock, /TOPIC_META/);
 });
 
-test('nav and search rows render the governance badge from their own triplet', () => {
+test('Front Door index and both live browse renderers preserve the shared governance badge contract', () => {
   assert.match(source, /function governanceBadge\(triplet\)\{/);
   assert.match(source, /Pending review · High risk/);
-  assert.match(source, /governanceBadge\(it\.governance\)/, 'nav item builder must pass its own triplet');
-  assert.match(source, /governanceBadge\(r\.d\.governance\)/, 'search result builder must pass its own triplet');
+  assert.match(dataModule, /risk: \(t&&t\.riskLevel\)\|\|m\.safetyLevel\|\|null/);
+  assert.match(libraryModule, /governanceBadge\(item\.governance\)/);
+  assert.match(searchModule, /governanceBadge\(it\.governance\)/);
+  assert.match(source, /governanceNotice:renderGovernanceNotice/);
 });
 
 test('focus handling skips faculty-preview initialization and browser-history restoration', () => {
@@ -98,21 +116,19 @@ test('focus handling skips faculty-preview initialization and browser-history re
   assert.match(focusFn, /if\(opts&&opts\.fromHistory\)return;/);
 });
 
-test('focusGovernanceNotice runs immediately after announceRoute in both branches, so it wins any focus race', () => {
-  const occurrences = (source.match(/focusGovernanceNotice\(opts\)/g) || []).length;
-  // 1 definition (function focusGovernanceNotice(opts){) + tool branch call + md/page branch call
-  assert.equal(occurrences, 3, `expected 1 definition + 2 call sites, found ${occurrences}`);
-  const orderedCalls = (source.match(/announceRoute\(item\);\s*focusGovernanceNotice\(opts\)/g) || []).length;
-  assert.equal(orderedCalls, 2, 'both call sites must run focusGovernanceNotice(opts) immediately after announceRoute(item)');
+test('focusGovernanceNotice runs after resource mount and respects history restoration', () => {
+  assert.match(source, /announceRoute\(currentItem\); focusGovernanceNotice\(\{fromHistory:!!options\.fromHistory\}\)/);
+  assert.match(source, /announceRoute\(item\); focusGovernanceNotice\(opts\)/,
+    'the exact faculty-preview page path retains its focus order');
 });
 
 test('rerenderCurrent is defined and never replays a full route (no content refetch, no iframe reload)', () => {
   assert.match(source, /function rerenderCurrent\(\)\{\s*refreshGovernanceNotice\(\);\s*\}/);
 });
 
-test('route announcements are untouched: the spa-shell-a11y contract (>=5 announceRoute calls) stays intact', () => {
+test('route announcements cover tabs, Progress, and resources', () => {
   const calls = (source.match(/announceRoute\(/g) || []).length;
-  assert.ok(calls >= 5, `special, tool, md, and path branches must all still announce (found ${calls})`);
+  assert.ok(calls >= 3, `tabs, Progress, and resources must all still announce (found ${calls})`);
 });
 
 test('no inline midnight-parse idiom was introduced anywhere, including in new comments', () => {
@@ -237,7 +253,7 @@ test('renderGovernanceNotice renders a low-emphasis reviewer/date receipt for re
     },
   });
   const out = renderGovernanceNotice({ f: 'welcome.md', k: 'md' });
-  assert.equal(out, '<div class="governance-notice reviewed-receipt">Reviewed by Synthetic Reviewer, MD · 2026-07-26</div>');
+  assert.equal(out, '<div class="governance-notice reviewed-receipt">Reviewed by Synthetic Reviewer, MD · <time datetime="2026-07-26">2026-07-26</time></div>');
 });
 
 test('renderGovernanceNotice escapes faculty-authored free text (warning and reason)', () => {

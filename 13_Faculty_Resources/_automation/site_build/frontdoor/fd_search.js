@@ -199,6 +199,7 @@ function fdSearchResultRow(r){
   return '<button type="button" class="fd-result"'+openAttrs+'>'+
     '<span class="'+dotCls+'"></span>'+
     '<span class="fd-result__title">'+fdEsc(it.title)+'</span>'+
+    governanceBadge(it.governance)+
     '<span class="fd-result__meta">'+fdEsc(r.meta)+'</span>'+
   '</button>';
 }
@@ -208,7 +209,7 @@ function fdSearchOverlay(index, query, synonyms, state){
   var trimmed=q.trim();
   var results=fdSearchResults(index, q, synonyms, state);
 
-  var out='<div class="fd-search">';
+  var out='<div class="fd-search" role="dialog" aria-modal="true" aria-label="Search">';
   out+='<div class="fd-searchpanel">';
   out+='<div class="fd-searchpanel__head">';
   out+='<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" '+
@@ -216,7 +217,7 @@ function fdSearchOverlay(index, query, synonyms, state){
     '<path d="M21 21l-4-4"></path></svg>';
   out+='<input type="text" class="fd-searchpanel__input" value="'+fdEsc(q)+'" '+
     'placeholder="Symptom, drug, tool, or task…">';
-  out+='<button type="button" class="fd-searchpanel__esc" data-fd-close-search>esc</button>';
+  out+='<button type="button" class="fd-searchpanel__esc" data-fd-close-search aria-label="Close search">esc</button>';
   out+='</div>';
   out+='<div class="fd-searchpanel__body">';
   /* Empty-state only replaces the results when the user actually typed something and it matched

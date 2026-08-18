@@ -28,9 +28,24 @@ import validate_curriculum  # noqa: E402  (path set above)
 
 MANIFEST = {
     "tools": [["src/a.html", "mse.html", "Mental Status Exam"]],
-    "md": [["src/b.md", "welcome.md", "Welcome to the Rotation"]],
+    "md": [
+        ["src/b.md", "welcome.md", "Welcome to the Rotation"],
+        ["src/pg_suicide.md", "pg_suicide.md", "Suicide Safety"],
+        ["src/agitation.md", "agitation.md", "Agitation"],
+        ["src/exp_consult.md", "exp_consult.md", "Capacity"],
+        ["src/t_sud.md", "t_sud.md", "Withdrawal"],
+        ["src/delirium.md", "delirium.md", "Delirium"],
+    ],
 }
-MANIFEST_SLUGS = {"mse.html", "welcome.md"}
+MANIFEST_SLUGS = {"mse.html", "welcome.md", "pg_suicide.md", "agitation.md",
+                  "exp_consult.md", "t_sud.md", "delirium.md"}
+SAFETY_REFS = (
+    "pg_suicide.md",
+    "agitation.md",
+    "exp_consult.md",
+    "t_sud.md",
+    "delirium.md",
+)
 
 # Keep the two manifest slugs out of this list: the totality tests below assert on
 # exactly those, and blanket-excluding them would hide what they are checking.
@@ -38,21 +53,50 @@ EXTRA_EXCLUDES = [
     {"ref": slug, "reason": "outside this fixture — a build extra, not a manifest page"}
     for slug in sorted(validate_curriculum.EXTRA_SHIPPED - MANIFEST_SLUGS)
 ]
+FIXTURE_SAFETY_EXCLUDES = [
+    {"ref": ref, "reason": "outside this fixture — supplied only for safety-kit validation"}
+    for ref in SAFETY_REFS
+]
 
 
-def _write(tmp, curriculum):
+def _topic_meta():
+    return {
+        ref: {
+            "safetyLevel": "high",
+            "facultyReview": {"status": "reviewed"},
+            "evidenceIds": ["evidence-ok"],
+            "safetySteps": ["one", "two", "three"],
+            "safetyDoc": "what happened and what was done",
+        }
+        for ref in SAFETY_REFS
+    }
+
+
+def _evidence_registry():
+    return {"sources": [{"id": "evidence-ok"}]}
+
+
+def _write(tmp, curriculum, topic_meta=None, evidence_registry=None):
     cpath = os.path.join(tmp, "curriculum.json")
     mpath = os.path.join(tmp, "site_manifest.json")
+    tpath = os.path.join(tmp, "topic_meta.json")
+    epath = os.path.join(tmp, "evidence_registry.json")
     with open(cpath, "w", encoding="utf-8") as fh:
         json.dump(curriculum, fh)
     with open(mpath, "w", encoding="utf-8") as fh:
         json.dump(MANIFEST, fh)
+    with open(tpath, "w", encoding="utf-8") as fh:
+        json.dump(_topic_meta() if topic_meta is None else topic_meta, fh)
+    with open(epath, "w", encoding="utf-8") as fh:
+        json.dump(_evidence_registry() if evidence_registry is None else evidence_registry, fh)
     return cpath, mpath
 
 
-def _run(cpath, mpath):
+def _run(cpath, mpath, tpath=None, epath=None):
+    tpath = tpath or os.path.join(os.path.dirname(cpath), "topic_meta.json")
+    epath = epath or os.path.join(os.path.dirname(cpath), "evidence_registry.json")
     return subprocess.run(
-        [sys.executable, VALIDATOR, cpath, mpath],
+        [sys.executable, VALIDATOR, cpath, mpath, tpath, epath],
         capture_output=True, text=True,
     )
 
@@ -68,10 +112,17 @@ def _curriculum(items):
             {"name": "Tools", "accent": "tool", "refs": ["mse.html"]},
             {"name": "Topics", "accent": "topic", "refs": ["welcome.md"]},
         ],
-        "libraryExclude": list(EXTRA_EXCLUDES),
-        "safetyKit": [],
+        "libraryExclude": list(EXTRA_EXCLUDES) + list(FIXTURE_SAFETY_EXCLUDES),
+        "safetyKit": [
+            {"ref": ref, "sub": "Protocol " + str(index + 1)}
+            for index, ref in enumerate(SAFETY_REFS)
+        ],
         "roles": {"ms3": [], "resident": []},
         "synonyms": {},
+        "siteLibrary": {
+            "ms3": {"additions": [], "exclusions": []},
+            "resident": {"additions": [], "exclusions": []},
+        },
     }
 
 
@@ -175,7 +226,7 @@ class LibraryTotalityTest(unittest.TestCase):
     def _cur(self, columns, exclude):
         c = _curriculum([])
         c["libraryColumns"] = columns
-        c["libraryExclude"] = list(exclude) + EXTRA_EXCLUDES
+        c["libraryExclude"] = list(exclude) + EXTRA_EXCLUDES + FIXTURE_SAFETY_EXCLUDES
         return c
 
     def test_accepts_full_coverage(self):
@@ -248,6 +299,91 @@ class LibraryTotalityTest(unittest.TestCase):
             self.assertIn("must be a string", r.stdout)
 
 
+class SiteLibraryTest(unittest.TestCase):
+    def test_rejects_a_site_addition_for_an_unknown_column(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            cur = _curriculum([])
+            cur["siteLibrary"]["resident"]["additions"] = [
+                {"column": "Missing column", "refs": ["mse.html"]}
+            ]
+            c, m = _write(tmp, cur)
+            r = _run(c, m)
+            self.assertEqual(r.returncode, 1)
+            self.assertIn("Missing column", r.stdout)
+
+    def test_rejects_a_duplicate_site_addition_ref(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            cur = _curriculum([])
+            cur["siteLibrary"]["resident"]["additions"] = [
+                {"column": "Tools", "refs": ["mse.html", "mse.html"]}
+            ]
+            c, m = _write(tmp, cur)
+            r = _run(c, m)
+            self.assertEqual(r.returncode, 1)
+            self.assertIn("duplicate", r.stdout)
+
+    def test_rejects_a_site_addition_for_an_unknown_slug(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            cur = _curriculum([])
+            cur["siteLibrary"]["resident"]["additions"] = [
+                {"column": "Tools", "refs": ["ghost.md"]}
+            ]
+            c, m = _write(tmp, cur)
+            r = _run(c, m)
+            self.assertEqual(r.returncode, 1)
+            self.assertIn("ghost.md", r.stdout)
+            self.assertIn("not shipped on resident", r.stdout)
+
+    def test_rejects_a_site_exclusion_for_an_unknown_slug(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            cur = _curriculum([])
+            cur["siteLibrary"]["resident"]["exclusions"] = ["ghost.md"]
+            c, m = _write(tmp, cur)
+            r = _run(c, m)
+            self.assertEqual(r.returncode, 1)
+            self.assertIn("ghost.md", r.stdout)
+            self.assertIn("not shipped on resident", r.stdout)
+
+    def test_rejects_resident_addition_of_an_ms3_only_extra(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            cur = _curriculum([])
+            cur["siteLibrary"]["resident"]["additions"] = [
+                {"column": "Tools", "refs": ["orientation-video.html"]}
+            ]
+            c, m = _write(tmp, cur)
+            r = _run(c, m)
+            self.assertEqual(r.returncode, 1)
+            self.assertIn("orientation-video.html", r.stdout)
+            self.assertIn("not shipped on resident", r.stdout)
+
+    def test_rejects_ms3_addition_of_a_resident_only_extra(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            cur = _curriculum([])
+            cur["siteLibrary"]["ms3"]["additions"] = [
+                {"column": "Tools", "refs": ["rp-agitation.html"]}
+            ]
+            c, m = _write(tmp, cur)
+            r = _run(c, m)
+            self.assertEqual(r.returncode, 1)
+            self.assertIn("rp-agitation.html", r.stdout)
+            self.assertIn("not shipped on ms3", r.stdout)
+
+    def test_rejects_cross_site_exclusions(self):
+        cases = (
+            ("resident", "orientation-video.html"),
+            ("ms3", "rp-agitation.html"),
+        )
+        for site, ref in cases:
+            with self.subTest(site=site, ref=ref), tempfile.TemporaryDirectory() as tmp:
+                cur = _curriculum([])
+                cur["siteLibrary"][site]["exclusions"] = [ref]
+                c, m = _write(tmp, cur)
+                r = _run(c, m)
+                self.assertEqual(r.returncode, 1)
+                self.assertIn(ref, r.stdout)
+                self.assertIn("not shipped on " + site, r.stdout)
+
+
 class ShippedSetTest(unittest.TestCase):
     """The shipped set is manifest + build extras, not the manifest alone.
 
@@ -258,7 +394,7 @@ class ShippedSetTest(unittest.TestCase):
 
     def test_extras_cover_the_per_site_tools_and_resident_only_pages(self):
         extras = validate_curriculum.EXTRA_SHIPPED
-        for slug in ("learning-path.html", "orientation-video.html", "rp-agitation.html",
+        for slug in ("orientation-video.html", "rp-agitation.html",
                      "rp-brief-psych.html", "rp-canon-quiz.html", "rotation.md",
                      "adv_psychopharm.md", "systems_medlegal.md", "supervision_teaching.md",
                      "canon_200.md", "cl_reference.md"):
@@ -294,46 +430,99 @@ class ShippedSetTest(unittest.TestCase):
 
 
 class SafetyKitTest(unittest.TestCase):
-    def _cur(self, kit):
-        c = _curriculum([])
-        c["libraryColumns"] = [
-            {"name": "Tools", "accent": "tool", "refs": ["mse.html"]},
-            {"name": "Topics", "accent": "topic", "refs": ["welcome.md"]},
-        ]
-        c["safetyKit"] = kit
-        return c
-
-    def test_accepts_kit_refs_that_are_shipped(self):
+    def _run(self, mutate=None, topic_meta=None, evidence_registry=None):
+        cur = _curriculum([])
+        if mutate:
+            mutate(cur)
         with tempfile.TemporaryDirectory() as tmp:
-            c, m = _write(tmp, self._cur(
-                [{"ref": "welcome.md", "sub": "Screen · stratify · plan"}]))
-            r = _run(c, m)
-            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+            c, m = _write(tmp, cur, topic_meta, evidence_registry)
+            return _run(c, m)
 
-    def test_rejects_a_kit_ref_that_is_not_shipped(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            c, m = _write(tmp, self._cur(
-                [{"ref": "ghost.md", "sub": "nope"}]))
-            r = _run(c, m)
-            self.assertEqual(r.returncode, 1)
-            self.assertIn("ghost.md", r.stdout)
+    def test_accepts_the_current_five_reviewed_protocols(self):
+        r = self._run()
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
 
-    def test_rejects_a_kit_entry_with_an_empty_sub(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            c, m = _write(tmp, self._cur(
-                [{"ref": "welcome.md", "sub": "   "}]))
-            r = _run(c, m)
-            self.assertEqual(r.returncode, 1)
-            self.assertIn("sub", r.stdout)
+    def test_rejects_the_wrong_number_of_protocols(self):
+        r = self._run(lambda c: c.__setitem__("safetyKit", c["safetyKit"][:-1]))
+        self.assertEqual(r.returncode, 1)
+        self.assertIn("exactly 5", r.stdout)
 
-    def test_rejects_a_non_string_kit_ref_without_crashing(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            c, m = _write(tmp, self._cur(
-                [{"ref": {"nested": "dict"}, "sub": "n/a"}]))
-            r = _run(c, m)
-            self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
-            self.assertNotIn("Traceback", r.stderr)
-            self.assertIn("must be a string", r.stdout)
+    def test_rejects_a_duplicate_protocol_ref(self):
+        r = self._run(lambda c: c["safetyKit"].__setitem__(1, c["safetyKit"][0]))
+        self.assertEqual(r.returncode, 1)
+        self.assertIn("unique", r.stdout)
+
+    def test_rejects_a_non_current_protocol_ref(self):
+        def replace_ref(cur):
+            cur["safetyKit"][4] = {"ref": "welcome.md", "sub": "Not a protocol"}
+        r = self._run(replace_ref)
+        self.assertEqual(r.returncode, 1)
+        self.assertIn("current five", r.stdout)
+
+    def test_rejects_a_non_high_safety_protocol(self):
+        meta = _topic_meta()
+        meta[SAFETY_REFS[0]]["safetyLevel"] = "moderate"
+        r = self._run(topic_meta=meta)
+        self.assertEqual(r.returncode, 1)
+        self.assertIn("safetyLevel", r.stdout)
+
+    def test_rejects_a_protocol_with_no_evidence_ids(self):
+        meta = _topic_meta()
+        meta[SAFETY_REFS[0]]["evidenceIds"] = []
+        r = self._run(topic_meta=meta)
+        self.assertEqual(r.returncode, 1)
+        self.assertIn("evidenceIds", r.stdout)
+
+    def test_rejects_a_protocol_with_an_unknown_evidence_id(self):
+        meta = _topic_meta()
+        meta[SAFETY_REFS[0]]["evidenceIds"] = ["unknown-evidence"]
+        r = self._run(topic_meta=meta)
+        self.assertEqual(r.returncode, 1)
+        self.assertIn("unknown-evidence", r.stdout)
+
+    def test_rejects_a_protocol_missing_safety_steps(self):
+        meta = _topic_meta()
+        del meta[SAFETY_REFS[0]]["safetySteps"]
+        r = self._run(topic_meta=meta)
+        self.assertEqual(r.returncode, 1)
+        self.assertIn("safetySteps", r.stdout)
+
+    def test_rejects_a_protocol_with_too_few_safety_steps(self):
+        meta = _topic_meta()
+        meta[SAFETY_REFS[0]]["safetySteps"] = ["one", "two"]
+        r = self._run(topic_meta=meta)
+        self.assertEqual(r.returncode, 1)
+        self.assertIn("3 to 5", r.stdout)
+
+    def test_rejects_a_protocol_with_too_many_safety_steps(self):
+        meta = _topic_meta()
+        meta[SAFETY_REFS[0]]["safetySteps"] = ["one", "two", "three", "four", "five", "six"]
+        r = self._run(topic_meta=meta)
+        self.assertEqual(r.returncode, 1)
+        self.assertIn("3 to 5", r.stdout)
+
+    def test_rejects_a_protocol_missing_a_documentation_line(self):
+        meta = _topic_meta()
+        del meta[SAFETY_REFS[0]]["safetyDoc"]
+        r = self._run(topic_meta=meta)
+        self.assertEqual(r.returncode, 1)
+        self.assertIn("safetyDoc", r.stdout)
+
+    def test_rejects_a_protocol_without_reviewed_faculty_status(self):
+        meta = _topic_meta()
+        meta[SAFETY_REFS[0]]["facultyReview"]["status"] = "draft"
+        r = self._run(topic_meta=meta)
+        self.assertEqual(r.returncode, 1)
+        self.assertIn("facultyReview", r.stdout)
+
+    def test_reports_multiple_protocol_violations_in_one_run(self):
+        meta = _topic_meta()
+        meta[SAFETY_REFS[0]]["safetyLevel"] = "moderate"
+        del meta[SAFETY_REFS[1]]["safetyDoc"]
+        r = self._run(topic_meta=meta)
+        self.assertEqual(r.returncode, 1)
+        self.assertIn(SAFETY_REFS[0], r.stdout)
+        self.assertIn(SAFETY_REFS[1], r.stdout)
 
 
 class RolesTest(unittest.TestCase):

@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Render the shared crisis-contact block from crisis_resources.json.
 
-Single source of truth for 988 and the other crisis contacts shipped on safety
-surfaces of BOTH sites. Content pages carry only the marker `<!-- crisis-block -->`;
-the build replaces it with the rendered block, so no number is ever hand-maintained
-in a content page.
+Single source of truth for crisis contacts shipped on safety surfaces of BOTH sites.
+Content pages carry only the marker `<!-- crisis-block -->`; tools and the governed
+shell carry `<!-- crisis-block-html -->`. The build replaces those markers with the
+rendered block, so no contact is ever hand-maintained in a learner-facing source.
 
 Why derived-and-vendored rather than imported live from the ReConnect Psychiatry
 System (the upstream steward for this data): Netlify checks out only this repo, so
@@ -133,6 +133,41 @@ def inject_html(text, data):
     if HTML_MARKER not in text:
         return text, False
     return text.replace(HTML_MARKER, render_html(data)), True
+
+
+def inject_required_html_file(path, data, label):
+    """Strictly expand the one required HTML marker in a built artifact.
+
+    Optional tool markers continue to use ``inject_html``. The shell is different: it
+    is a required safety surface, so zero or duplicate markers are both build errors.
+    """
+    with open(path, encoding="utf-8") as handle:
+        source = handle.read()
+    count = source.count(HTML_MARKER)
+    if count != 1:
+        raise SystemExit(
+            "%s: expected exactly one %s marker (found %d)"
+            % (label, HTML_MARKER, count)
+        )
+    rendered, injected = inject_html(source, data)
+    if not injected or HTML_MARKER in rendered:
+        raise SystemExit("%s: crisis marker did not expand cleanly" % label)
+    with open(path, "w", encoding="utf-8") as handle:
+        handle.write(rendered)
+    return rendered
+
+
+def assert_no_html_marker_file(path, label):
+    """Hard-fail when a final built shell retains or reacquires an HTML marker."""
+    with open(path, encoding="utf-8") as handle:
+        source = handle.read()
+    count = source.count(HTML_MARKER)
+    if count:
+        raise SystemExit(
+            "%s: expected no unexpanded %s markers (found %d)"
+            % (label, HTML_MARKER, count)
+        )
+    return source
 
 
 if __name__ == "__main__":
