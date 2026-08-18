@@ -343,6 +343,46 @@ test('a tool item shows "Interactive tool" and "self-paced" rather than read min
   assert.match(html, /fd-article__meta">self-paced</);
 });
 
+test('tool Readers emit one stable expansion toggle while reading Readers emit none', () => {
+  const focused = F.fdReader(IDX, s({ ref: 'tool.html', week: 1, toolExpanded: false }),
+    '<iframe class="toolframe"></iframe>');
+  const expanded = F.fdReader(IDX, s({ ref: 'tool.html', week: 1, toolExpanded: true }),
+    '<iframe class="toolframe"></iframe>');
+  const reading = F.fdReader(IDX, s({ ref: 'a.md', toolExpanded: true }), '<p>Read</p>');
+
+  assert.equal((focused.match(/data-fd-expand-tool/g) || []).length, 1);
+  assert.match(focused,
+    /data-fd-expand-tool aria-pressed="false" aria-controls="fd-tool-region"[^>]*>[^<]*(?:<[^>]+>)*Expand tool/);
+  assert.match(focused, /class="fd-reader fd-reader--tool"/);
+  assert.doesNotMatch(focused, /fd-reader fd-reader--tool is-tool-expanded/);
+  assert.match(focused, /id="fd-tool-region"/);
+
+  assert.equal((expanded.match(/data-fd-expand-tool/g) || []).length, 1);
+  assert.match(expanded,
+    /data-fd-expand-tool aria-pressed="true" aria-controls="fd-tool-region"/);
+  assert.match(expanded, /class="fd-reader fd-reader--tool is-tool-expanded"/);
+  assert.match(expanded, />Expand tool<\/span>/,
+    'aria-pressed toggles keep the visible and accessible label stable');
+
+  assert.doesNotMatch(reading, /data-fd-expand-tool|fd-reader--tool|fd-tool-region/,
+    'a related Try-now tool must not turn the reading page itself into a tool');
+});
+
+test('direct unindexed html routes still render as tools with the expansion control', () => {
+  const empty = { byRef: {}, weeks: [] };
+  for (const ref of ['orientation-video.html', 'feedback.html', 'rp-agitation.html']) {
+    const html = F.fdReader(empty, {
+      ref, week: null, fromTab: 'library', done: {}, toolExpanded: false,
+    }, '<iframe class="toolframe"></iframe>');
+    assert.match(html, /fd-eyebrow">Interactive tool</, ref);
+    assert.match(html, /data-fd-expand-tool aria-pressed="false"/, ref);
+    assert.match(html, /id="fd-tool-region"/, ref);
+  }
+  assert.doesNotMatch(F.fdReader(empty, {
+    ref: 'unindexed.md', week: null, fromTab: 'library', done: {}, toolExpanded: true,
+  }, '<p>Read</p>'), /data-fd-expand-tool|fd-reader--tool/);
+});
+
 test('the source chip shows the item\'s ref', () => {
   assert.match(F.fdReader(IDX, s({ ref: 'a.md' }), ''),
     /<span>Source:<\/span><span class="fd-src">a\.md<\/span>/);

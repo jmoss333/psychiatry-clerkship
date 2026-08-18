@@ -82,6 +82,42 @@ test('fdRender guards every live surface independently', () => {
     'background hydration must not replace focused header controls');
 });
 
+test('faculty preview ignores the learner tool-width preference', () => {
+  const start = source.indexOf('function fdPatchToolLayout(state)');
+  const end = source.indexOf('function fdRender(state,detail)', start);
+  assert.ok(start > -1 && end > start, 'tool layout patch moved');
+  const classes = new Set(['fd-main', 'is-tool-expanded']);
+  const readerClasses = new Set(['fd-reader', 'fd-reader--tool', 'is-tool-expanded']);
+  const control = {
+    pressed: 'true',
+    setAttribute(name, value) { if (name === 'aria-pressed') this.pressed = value; },
+  };
+  const reader = {
+    classList: {
+      add(name) { readerClasses.add(name); },
+      remove(name) { readerClasses.delete(name); },
+    },
+    querySelector(selector) { return selector === '[data-fd-expand-tool]' ? control : null; },
+  };
+  const contentEl = {
+    classList: {
+      add(name) { classes.add(name); },
+      remove(name) { classes.delete(name); },
+    },
+    querySelector(selector) { return selector === '.fd-reader--tool' ? reader : null; },
+  };
+  // Execute the shipped patch function against the loading Reader that exists immediately
+  // before the audited faculty-preview handoff replaces it.
+  // eslint-disable-next-line no-new-func
+  const patchLayout = new Function('contentEl', 'facultyPreviewRequest',
+    `${source.slice(start, end)}; return fdPatchToolLayout;`)(contentEl, { surface: 'tool' });
+  patchLayout({ toolExpanded: true });
+
+  assert.equal(classes.has('is-tool-expanded'), false);
+  assert.equal(readerClasses.has('is-tool-expanded'), false);
+  assert.equal(control.pressed, 'false');
+});
+
 test('one live controller owns stable delegated navigation', () => {
   assert.equal((source.match(/=fdWire\(/g) || []).length, 1, 'exactly one controller install');
   assert.match(source, /getState:function\(\)\{ return fdController\.getState\(\); \}/,

@@ -41,15 +41,21 @@ const roleContext = {
 };
 
 test('URL page/tool/tab values beat persisted Front Door state', () => {
-  const stored = { role: 'first-role', tab: 'library', openId: 'old.md', fromTab: 'today', week: 2 };
+  const stored = {
+    role: 'first-role', tab: 'library', openId: 'old.md', fromTab: 'today', week: 2,
+    toolExpanded: true,
+  };
   assert.deepEqual(F.fdResolveState('/?page=new.md', stored), {
     role: 'first-role', tab: 'library', openId: 'new.md', fromTab: 'library',
-    week: 2, viewWeek: 2, autoAdvance: true, screen: 'app',
+    week: 2, viewWeek: 2, autoAdvance: true, toolExpanded: true, screen: 'app',
   });
   assert.equal(F.fdResolveState('/?tool=drill.html&case=a', stored).openId, 'drill.html');
   const tab = F.fdResolveState('/?tab=path', stored);
   assert.equal(tab.tab, 'path');
   assert.equal(tab.openId, undefined, 'a routed tab must not resume a stale stored reader');
+  assert.equal(F.fdResolveState('/', { ...stored, toolExpanded: 'true' }).toolExpanded, false,
+    'only the literal persisted boolean enables the wide layout');
+  assert.equal(F.fdResolveState('/', { ...stored, toolExpanded: false }).toolExpanded, false);
 });
 
 test('legacy special-route aliases resolve to canonical Front Door state without becoming resources', () => {
@@ -168,7 +174,7 @@ test('view-week previews only; setup-week and set-week return Monday-aligned wri
   assert.equal(browse.patch.week, null);
 });
 
-test('role, tab, back, home, search, change-week, progress, theme, and step are pinned', () => {
+test('role, tab, back, home, search, change-week, progress, theme, tool layout, and step are pinned', () => {
   assert.deepEqual(F.fdDispatch({ 'data-fd-role': 'second-role' }, {}, roleContext).patch,
     { role: 'second-role', screen: 'setup-week' });
   assert.deepEqual(F.fdDispatch({ 'data-fd-tab': 'library' }, {}, roleContext).patch,
@@ -184,6 +190,16 @@ test('role, tab, back, home, search, change-week, progress, theme, and step are 
   assert.equal(F.fdDispatch({ 'data-fd-progress': '' }, {}, roleContext).effect.type, 'open-progress');
   assert.deepEqual(F.fdDispatch({ 'data-fd-theme': '' }, { theme: 'dark' }, roleContext).effect,
     { type: 'set-theme', theme: 'light' });
+  assert.deepEqual(F.fdDispatch({ 'data-fd-expand-tool': '' }, {}, {
+    ...roleContext, openId: 'practice.html', toolExpanded: false,
+  }), {
+    patch: { toolExpanded: true }, route: null,
+    effect: { type: 'toggle-tool-layout' },
+  });
+  assert.deepEqual(F.fdDispatch({ 'data-fd-expand-tool': '' }, {}, {
+    ...roleContext, openId: 'reading.md', toolExpanded: false,
+  }), { patch: {}, route: null, effect: null },
+  'a synthetic action cannot widen an ordinary reading');
   assert.deepEqual(F.fdDispatch({ 'data-fd-step': '2' }, {}, { ...roleContext, stepsDone: { 2: true } }).patch,
     { stepsDone: { 2: false } });
   assert.equal(F.fdDispatch({ 'data-fd-try-now': 'scale.html' }, {}, roleContext).patch.sheet,
@@ -311,7 +327,7 @@ test('fdWire registers and destroys one delegated click/input/keydown/popstate l
 function actionTarget(attrs, extra = {}) {
   return {
     tagName: 'BUTTON', isContentEditable: false, isConnected: true,
-    closest(selector) { return selector === '[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],[data-fd-week],[data-fd-view-week],[data-fd-setweek],[data-fd-role],[data-fd-step],[data-fd-back],[data-fd-home],[data-fd-search],[data-fd-change-week],[data-fd-progress],[data-fd-theme],[data-fd-close-search],[data-fd-close-sheet],[data-fd-close-nudge],[data-fd-try-now]' ? this : null; },
+    closest(selector) { return selector === '[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],[data-fd-week],[data-fd-view-week],[data-fd-setweek],[data-fd-role],[data-fd-step],[data-fd-back],[data-fd-home],[data-fd-search],[data-fd-change-week],[data-fd-progress],[data-fd-theme],[data-fd-close-search],[data-fd-close-sheet],[data-fd-close-nudge],[data-fd-try-now],[data-fd-expand-tool]' ? this : null; },
     hasAttribute(name) { return Object.hasOwn(attrs, name); },
     getAttribute(name) { return Object.hasOwn(attrs, name) ? attrs[name] : null; },
     focus() { this.focused = (this.focused || 0) + 1; },
@@ -354,6 +370,50 @@ function fakeHarness(initial, options = {}) {
   });
   return { root, rootHandlers, fakeWindow, windowHandlers, controller };
 }
+
+test('delegated tool expansion persists as a layout-only transient without routing or reopening', () => {
+  const storage = memStorage();
+  const LocalF = make(storage);
+  const fullRenders = [];
+  const transientRenders = [];
+  const historyCalls = [];
+  const opened = [];
+  const h = fakeHarness({
+    ...roleContext, screen: 'app', tab: 'today', openId: 'practice.html',
+    fromTab: 'today', toolExpanded: false,
+  }, {
+    F: LocalF,
+    render: (...args) => fullRenders.push(args),
+    renderTransient: (...args) => transientRenders.push(args),
+    openResource: (...args) => opened.push(args),
+    index: { byRef: { 'practice.html': { ref: 'practice.html', kind: 'tool' } }, weeks: [] },
+    history: {
+      replaceState: (...args) => historyCalls.push(['replace', ...args]),
+      pushState: (...args) => historyCalls.push(['push', ...args]),
+    },
+  });
+  const initialHistoryCalls = historyCalls.length;
+  const button = actionTarget({ 'data-fd-expand-tool': '' });
+
+  h.rootHandlers.click({ target: button, preventDefault() {} });
+  assert.equal(h.controller.getState().toolExpanded, true);
+  assert.equal(JSON.parse(storage.dump().cw_frontdoor_v1).toolExpanded, true);
+  assert.equal(fullRenders.length, 0, 'layout preference must not rebuild the Reader');
+  assert.equal(opened.length, 0, 'layout preference must not reopen the live iframe');
+  assert.equal(historyCalls.length, initialHistoryCalls, 'layout preference is not a route');
+  assert.equal(transientRenders.length, 1);
+  assert.equal(transientRenders[0][1].preserveResource, true);
+  assert.equal(transientRenders[0][1].surfaces.layout, true);
+  assert.deepEqual(transientRenders[0][1].changed, ['toolExpanded']);
+
+  h.rootHandlers.click({ target: button, preventDefault() {} });
+  assert.equal(h.controller.getState().toolExpanded, false);
+  assert.equal(JSON.parse(storage.dump().cw_frontdoor_v1).toolExpanded, false);
+  assert.equal(fullRenders.length, 0);
+  assert.equal(opened.length, 0);
+  assert.equal(historyCalls.length, initialHistoryCalls);
+  assert.equal(transientRenders.length, 2);
+});
 
 test('live search input rerenders and Enter previews the first result as a sheet', () => {
   const renders = [];
@@ -814,7 +874,7 @@ test('transient chrome and completion renders preserve one live resource node wi
   assert.equal(openCalls.length, 1, 'the iframe is never reloaded to preserve it');
   const theme = transientRenders.find(({ detail }) => detail.effect?.type === 'set-theme');
   assert.deepEqual(theme.detail.surfaces,
-    { base: false, overlay: false, completion: false, chrome: true });
+    { base: false, overlay: false, completion: false, chrome: true, layout: false });
   assert.equal(theme.detail.preserveResource, true);
   assert.equal(theme.detail.effect.theme, 'dark',
     'transient renderer consumes the requested theme instead of rereading old document state');
@@ -894,12 +954,12 @@ test('same-tab Path changes use an explicit base-without-resource transient deta
   })), [
     {
       kind: 'transient', changed: ['viewWeek'],
-      surfaces: { base: true, overlay: false, completion: false, chrome: false },
+      surfaces: { base: true, overlay: false, completion: false, chrome: false, layout: false },
       preserveResource: false,
     },
     {
       kind: 'transient', changed: ['week', 'viewWeek'],
-      surfaces: { base: true, overlay: false, completion: false, chrome: true },
+      surfaces: { base: true, overlay: false, completion: false, chrome: true, layout: false },
       preserveResource: false,
     },
   ]);

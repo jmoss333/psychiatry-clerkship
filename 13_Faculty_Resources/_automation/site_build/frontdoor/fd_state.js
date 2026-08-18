@@ -15,8 +15,9 @@ var FD_STORE='cw_frontdoor_v1';
 
 /* Persisted keys are ONLY those with no existing home. done lives in cw_progress_v1,
    streak in cw_srs_v1.stats, and the rotation week in cw_rotation_start/cw_start_week —
-   copying them here would create two sources that silently desync. */
-var FD_KEYS=['role','tab','viewWeek','openId','fromTab','scrollPos'];
+   copying them here would create two sources that silently desync. toolExpanded is shell layout,
+   not clinical progress or route state, so this store is its single home. */
+var FD_KEYS=['role','tab','viewWeek','openId','fromTab','scrollPos','toolExpanded'];
 
 function fdLoad(){
   try{ return JSON.parse(localStorage.getItem(FD_STORE)||'{}')||{}; }catch(_){ return {}; }

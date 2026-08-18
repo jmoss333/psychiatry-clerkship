@@ -59,8 +59,14 @@ test('fdLoad returns an empty object rather than throwing on malformed JSON', ()
 test('fdSave round-trips through fdLoad', () => {
   const ls = memStorage();
   const { fdSave, fdLoad } = make(ls);
-  fdSave({ role: 'ms3', tab: 'path', viewWeek: 4 });
-  assert.deepEqual(fdLoad(), { role: 'ms3', tab: 'path', viewWeek: 4 });
+  fdSave({ role: 'ms3', tab: 'path', viewWeek: 4, toolExpanded: true });
+  assert.deepEqual(fdLoad(), {
+    role: 'ms3', tab: 'path', viewWeek: 4, toolExpanded: true,
+  });
+
+  fdSave({ role: 'ms3', tab: 'path', viewWeek: 4, toolExpanded: false });
+  assert.equal(fdLoad().toolExpanded, false,
+    'the focused preference must overwrite an earlier expanded preference');
 });
 
 test('fdSave persists only whitelisted keys, never done/streak/week', () => {
