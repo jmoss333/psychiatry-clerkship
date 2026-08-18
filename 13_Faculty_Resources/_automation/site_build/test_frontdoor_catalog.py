@@ -45,7 +45,27 @@ def _catalog(refs, governance_by_ref=None):
 def _curriculum():
     shared = ["shared-%02d.md" % number for number in range(1, 82)]
     return {
-        "weeks": [],
+        "learningPaths": {
+            "ms3": {"id": "ms3-six-week", "weeks": [
+                {"n": n, "title": "M%d" % n, "theme": "MT%d" % n,
+                 "focusCategories": ["safety"],
+                 "items": ([{"ref": self_ref, "kind": "read"}] if n == 1 else [])}
+                for n, self_ref in [(1, "shared-01.md"), (2, "shared-02.md"),
+                                    (3, "shared-03.md"), (4, "shared-04.md"),
+                                    (5, "shared-05.md"), (6, "shared-06.md")]
+            ]},
+            "resident": {"id": "resident-four-week", "weeks": [
+                {"n": 1, "title": "R1", "theme": "RT1",
+                 "focusCategories": ["safety"],
+                 "items": [{"ref": "rp-canon-quiz.html", "kind": "tool"}]},
+                {"n": 2, "title": "R2", "theme": "RT2",
+                 "focusCategories": ["mood"], "items": []},
+                {"n": 3, "title": "R3", "theme": "RT3",
+                 "focusCategories": ["ethics"], "items": []},
+                {"n": 4, "title": "R4", "theme": "RT4",
+                 "focusCategories": ["relational"], "items": []},
+            ]},
+        },
         "libraryColumns": [
             {"name": "Core", "accent": "topic", "refs": shared},
         ],
@@ -87,6 +107,36 @@ class FrontdoorCatalogTest(unittest.TestCase):
         self.assertTrue(all(isinstance(ref, str)
                             for column in resident["curriculum"]["libraryColumns"]
                             for ref in column["refs"]))
+        self.assertEqual(ms3["curriculum"]["path"],
+                         {"id": "ms3-six-week", "weekCount": 6})
+        self.assertEqual(resident["curriculum"]["path"],
+                         {"id": "resident-four-week", "weekCount": 4})
+        self.assertEqual(len(ms3["curriculum"]["weeks"]), 6)
+        self.assertEqual(len(resident["curriculum"]["weeks"]), 4)
+        self.assertNotIn("learningPaths", ms3["curriculum"])
+        self.assertNotIn("learningPaths", resident["curriculum"])
+        self.assertIn("rp-canon-quiz.html", {
+            entry[1] for group in resident["manifest"].values() for entry in group})
+
+    def test_projection_rejects_a_missing_site_path_wrong_id_missing_catalog_ref_or_kind_mismatch(self):
+        cases = (
+            ("missing", lambda c: c["learningPaths"].pop("resident"),
+             self.resident_catalog, "learningPaths.resident"),
+            ("id", lambda c: c["learningPaths"]["resident"].update({"id": "wrong"}),
+             self.resident_catalog, "resident-four-week"),
+            ("catalog", lambda c: c["learningPaths"]["resident"]["weeks"][0].update(
+                {"items": [{"ref": "missing.md", "kind": "read"}]}),
+             self.resident_catalog, "missing.md"),
+            ("kind", lambda c: c["learningPaths"]["resident"]["weeks"][0].update(
+                {"items": [{"ref": "rp-canon-quiz.html", "kind": "read"}]}),
+             self.resident_catalog, "rp-canon-quiz.html"),
+        )
+        for label, mutate, catalog, message in cases:
+            with self.subTest(label=label):
+                curriculum = copy.deepcopy(self.curriculum)
+                mutate(curriculum)
+                with self.assertRaisesRegex(ValueError, message):
+                    build_frontdoor_payload("resident", curriculum, catalog)
 
     def test_resident_extra_titles_and_kinds_come_from_final_catalog(self):
         payload = build_frontdoor_payload("resident", self.curriculum, self.resident_catalog)

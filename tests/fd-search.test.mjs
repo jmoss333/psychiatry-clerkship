@@ -41,7 +41,12 @@ const REAL_CUR = readJson('../curriculum.json');
 const REAL_META = readJson('../topic_meta.json');
 const REAL_TOOLS = readJson('../tool_registry.json');
 const REAL_MAN = readJson('../13_Faculty_Resources/_automation/site_build/site_manifest.json');
-const REAL_INDEX = F.fdBuildIndex(REAL_CUR, REAL_META, REAL_TOOLS, REAL_MAN);
+const REAL_MS3_CUR = {
+  ...REAL_CUR,
+  path: { id: 'ms3-six-week', weekCount: 6 },
+  weeks: REAL_CUR.learningPaths.ms3.weeks,
+};
+const REAL_INDEX = F.fdBuildIndex(REAL_MS3_CUR, REAL_META, REAL_TOOLS, REAL_MAN);
 const SYN = REAL_CUR.synonyms;
 
 // ---- fdExpandQuery -- pinned test code from task-8-brief.md, verbatim -------------------------

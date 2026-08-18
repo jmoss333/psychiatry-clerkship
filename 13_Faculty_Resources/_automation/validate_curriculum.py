@@ -132,6 +132,14 @@ SAFETY_KIT_REFS = (
     "t_sud.md",
     "delirium.md",
 )
+PATH_CONTRACT = {
+    "ms3": ("ms3-six-week", 6),
+    "resident": ("resident-four-week", 4),
+}
+FOCUS_CATEGORIES = frozenset({
+    "anxiety", "childdev", "ethics", "mood", "neurocog", "otherdx",
+    "personality", "pharm", "psychosis", "relational", "safety", "substance",
+})
 
 
 def main(argv):
@@ -168,58 +176,69 @@ def main(argv):
     def bad(where, msg):
         errs.append("%s: %s" % (where, msg))
 
-    # ---- weeks are exactly 1..6, each present once ----
-    weeks = cur.get("weeks")
-    if not isinstance(weeks, list):
-        bad("weeks", "must be a list")
-        weeks = []
-    seen_n = []
-    for idx, w in enumerate(weeks):
-        if not isinstance(w, dict):
-            continue
-        n = w.get("n")
-        # bool is a subclass of int in Python, so isinstance(True, int) is True —
-        # exclude it explicitly or a week with "n": true would silently count as week 1.
-        if isinstance(n, bool) or not isinstance(n, int):
-            bad("weeks", "week at index %d has a missing or non-integer 'n' (got %r)" % (idx, n))
-            continue
-        seen_n.append(n)
-    if sorted(seen_n) != [1, 2, 3, 4, 5, 6]:
-        bad("weeks", "week numbers must be exactly 1..6 with no gaps or duplicates, got %s"
-            % sorted(seen_n))
+    # ---- each audience path has the exact count, categories, and site-shipped refs ----
+    paths = cur.get("learningPaths")
+    if not isinstance(paths, dict):
+        bad("learningPaths", "must be an object with ms3 and resident entries")
+        paths = {}
 
-    # ---- every item ref is shipped, and kind agrees with slug type ----
-    for w in weeks:
-        if not isinstance(w, dict):
-            bad("weeks", "each week must be an object")
+    path_totals = {}
+    for site, (expected_id, expected_count) in PATH_CONTRACT.items():
+        path = paths.get(site)
+        label = "learningPaths.%s" % site
+        if not isinstance(path, dict):
+            bad(label, "must be an object")
             continue
-        label = "week %s" % w.get("n")
-        for field in ("title", "theme"):
-            if not isinstance(w.get(field), str) or not w.get(field):
-                bad(label, "'%s' must be a non-empty string" % field)
-        items = w.get("items")
-        if not isinstance(items, list):
-            bad(label, "'items' must be a list")
-            continue
-        seen_refs = set()
-        for it in items:
-            if not isinstance(it, dict):
-                bad(label, "each item must be an object")
+        if path.get("id") != expected_id:
+            bad(label, "id must be '%s'" % expected_id)
+        weeks = path.get("weeks") if isinstance(path.get("weeks"), list) else []
+        numbers = [w.get("n") for w in weeks if isinstance(w, dict)
+                   and isinstance(w.get("n"), int) and not isinstance(w.get("n"), bool)]
+        if numbers != list(range(1, expected_count + 1)):
+            bad(label, "week numbers must be exactly 1..%d in order, got %r" %
+                (expected_count, numbers))
+        for index, week in enumerate(weeks):
+            week_label = "%s week %s" % (label,
+                                           week.get("n") if isinstance(week, dict) else index + 1)
+            if not isinstance(week, dict):
+                bad(week_label, "must be an object")
                 continue
-            ref, kind = it.get("ref"), it.get("kind")
-            if not isinstance(ref, str):
-                bad(label, "item ref must be a string (got %r)" % (ref,))
+            for field in ("title", "theme"):
+                if not isinstance(week.get(field), str) or not week.get(field).strip():
+                    bad(week_label, "'%s' must be a non-empty string" % field)
+            focus = week.get("focusCategories")
+            if not isinstance(focus, list) or not focus:
+                bad(week_label, "focusCategories must be a non-empty list")
+                focus = []
+            if len({value for value in focus if isinstance(value, str)}) != len(focus):
+                bad(week_label, "focusCategories must contain unique strings")
+            for value in focus:
+                if value not in FOCUS_CATEGORIES:
+                    bad(week_label, "unknown focus category %r" % value)
+            items = week.get("items")
+            if not isinstance(items, list):
+                bad(week_label, "items must be a list")
                 continue
-            if ref in seen_refs:
-                bad(label, "duplicate ref '%s' within the week" % ref)
-            seen_refs.add(ref)
-            if ref not in shipped:
-                bad(label, "ref '%s' is not a shipped slug" % ref)
-                continue
-            expected = "tool" if ref in tool_slugs else "read"
-            if kind != expected:
-                bad(label, "ref '%s' has kind '%s' but the build ships it as '%s'"
-                    % (ref, kind, expected))
+            seen_refs = set()
+            for item in items:
+                if not isinstance(item, dict):
+                    bad(week_label, "each item must be an object")
+                    continue
+                ref, kind = item.get("ref"), item.get("kind")
+                if not isinstance(ref, str):
+                    bad(week_label, "item ref must be a string (got %r)" % (ref,))
+                    continue
+                if ref in seen_refs:
+                    bad(week_label, "duplicate ref '%s' within the week" % ref)
+                seen_refs.add(ref)
+                if ref not in site_shipped[site]:
+                    bad(week_label, "ref '%s' is not shipped on %s" % (ref, site))
+                    continue
+                expected_kind = "tool" if ref in tool_slugs else "read"
+                if kind != expected_kind:
+                    bad(week_label, "ref '%s' has kind '%s' but the build ships it as '%s'" %
+                        (ref, kind, expected_kind))
+        path_totals[site] = sum(len(w.get("items", [])) for w in weeks if isinstance(w, dict))
 
     # ---- library totality: every shipped slug is placed or explicitly excluded ----
     # The front-door analogue of the build's orphaned-source check. Once the sidebar is
@@ -421,9 +440,10 @@ def main(argv):
             print("  -", e)
         return 1
 
-    total = sum(len(w.get("items", [])) for w in weeks if isinstance(w, dict))
-    print("curriculum.json OK — 6 weeks, %d week items, %d pages placed, %d excluded."
-          % (total, len(placed), len(excluded)))
+    print("curriculum.json OK — ms3 6 weeks/%d items; resident 4 weeks/%d items; "
+          "%d pages placed, %d excluded." %
+          (path_totals.get("ms3", 0), path_totals.get("resident", 0),
+           len(placed), len(excluded)))
     return 0
 
 

@@ -67,7 +67,13 @@ function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
   for(var w=0;w<cw.length;w++){
     var items=[], src=cw[w].items||[];
     for(var j=0;j<src.length;j++){ items.push(ensure(src[j].ref, src[j].kind)); }
-    weeks.push({ n: cw[w].n, title: cw[w].title, theme: cw[w].theme, items: items });
+    weeks.push({
+      n:cw[w].n,
+      title:cw[w].title,
+      theme:cw[w].theme,
+      focusCategories:(cw[w].focusCategories||[]).slice(),
+      items:items
+    });
   }
 
   var columns=[], cc=cur.libraryColumns||[];
@@ -80,7 +86,13 @@ function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
   var kit=[], ck=cur.safetyKit||[];
   for(var k=0;k<ck.length;k++){ kit.push({ item: ensure(ck[k].ref, null), sub: ck[k].sub }); }
 
-  return { byRef: byRef, weeks: weeks, columns: columns, kit: kit };
+  var sourcePath=cur.path||{};
+  var pathInfo={
+    id:(typeof sourcePath.id==='string')?sourcePath.id:'',
+    weekCount:weeks.length
+  };
+
+  return { byRef:byRef, path:pathInfo, weeks:weeks, columns:columns, kit:kit };
 }
 
 function fdItemsForWeek(index, n){
@@ -95,6 +107,18 @@ function fdItemsForWeek(index, n){
 function fdFindWeek(index, n){
   var weeks=(index&&index.weeks)||[];
   for(var i=0;i<weeks.length;i++){ if(weeks[i].n===n) return weeks[i]; }
+  return null;
+}
+
+function fdPathWeekCount(index){
+  return index&&index.weeks&&index.weeks.length?index.weeks.length:0;
+}
+
+function fdNextWeek(index, n){
+  var weeks=(index&&index.weeks)||[];
+  for(var i=0;i<weeks.length;i++){
+    if(weeks[i].n===n) return (i+1<weeks.length)?weeks[i+1]:null;
+  }
   return null;
 }
 

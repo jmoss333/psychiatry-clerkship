@@ -52,6 +52,27 @@ def run_validator(
     )
 
 
+def audience_path_document(document: dict) -> dict:
+    """Convert the legacy fixture into the required two-audience path shape."""
+    if "learningPaths" in document:
+        return document
+    weeks = document.pop("weeks")
+    for week in weeks:
+        week["focusCategories"] = ["safety"]
+    document["learningPaths"] = {
+        "ms3": {"id": "ms3-six-week", "weeks": weeks},
+        "resident": {
+            "id": "resident-four-week",
+            "weeks": [
+                {"n": n, "title": f"R{n}", "theme": f"RT{n}",
+                 "focusCategories": ["safety"], "items": []}
+                for n in range(1, 5)
+            ],
+        },
+    }
+    return document
+
+
 class RegistrySchemaGateTests(unittest.TestCase):
     def make_registry_copy(self) -> tempfile.TemporaryDirectory[str]:
         temporary = tempfile.TemporaryDirectory()
@@ -355,6 +376,35 @@ class RegistrySchemaGateTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("curriculum.json: INVALID at /", result.stdout)
         self.assertIn("unreviewedRoot", result.stdout)
+
+    def test_curriculum_accepts_exact_audience_paths(self) -> None:
+        with self.make_registry_copy() as temporary:
+            root = Path(temporary)
+            document = audience_path_document(json.loads(
+                (root / "curriculum.json").read_text(encoding="utf-8")))
+            (root / "curriculum.json").write_text(json.dumps(document), encoding="utf-8")
+            result = run_validator(root)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_curriculum_rejects_wrong_path_count_id_and_focus_category(self) -> None:
+        mutations = {
+            "resident-count": lambda d: d["learningPaths"]["resident"]["weeks"].append(
+                {"n": 5, "title": "R5", "theme": "RT5",
+                 "focusCategories": ["safety"], "items": []}),
+            "ms3-id": lambda d: d["learningPaths"]["ms3"].update({"id": "wrong"}),
+            "focus": lambda d: d["learningPaths"]["resident"]["weeks"][0].update(
+                {"focusCategories": ["not-a-blueprint"]}),
+        }
+        for label, mutate in mutations.items():
+            with self.subTest(label=label), self.make_registry_copy() as temporary:
+                root = Path(temporary)
+                document = audience_path_document(json.loads(
+                    (root / "curriculum.json").read_text(encoding="utf-8")))
+                mutate(document)
+                (root / "curriculum.json").write_text(json.dumps(document), encoding="utf-8")
+                result = run_validator(root)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertNotIn("Traceback", result.stderr)
 
     def test_curriculum_rejects_a_missing_required_root_property(self) -> None:
         with self.make_registry_copy() as temporary:

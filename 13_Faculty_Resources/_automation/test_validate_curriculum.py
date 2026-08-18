@@ -101,10 +101,21 @@ def _run(cpath, mpath, tpath=None, epath=None):
     )
 
 
+def _weeks(count, first_items=None):
+    return [
+        {"n": n, "title": "T%d" % n, "theme": "Th%d" % n,
+         "focusCategories": ["safety"],
+         "items": list(first_items or []) if n == 1 else []}
+        for n in range(1, count + 1)
+    ]
+
+
 def _curriculum(items):
     return {
-        "weeks": [{"n": n, "title": "T%d" % n, "theme": "Th%d" % n,
-                   "items": items if n == 1 else []} for n in range(1, 7)],
+        "learningPaths": {
+            "ms3": {"id": "ms3-six-week", "weeks": _weeks(6, items)},
+            "resident": {"id": "resident-four-week", "weeks": _weeks(4)},
+        },
         # Default coverage keeps the fixture VALID under the totality check. Tests that
         # exercise column behaviour overwrite both keys wholesale (see LibraryTotalityTest._cur),
         # so this default never masks what they assert.
@@ -144,6 +155,7 @@ class ValidateCurriculumTest(unittest.TestCase):
             ]))
             r = _run(c, m)
             self.assertEqual(r.returncode, 1)
+            self.assertIn("learningPaths.ms3 week 1", r.stdout)
             self.assertIn("does-not-exist.md", r.stdout)
 
     def test_rejects_kind_that_disagrees_with_the_slug_type(self):
@@ -153,16 +165,82 @@ class ValidateCurriculumTest(unittest.TestCase):
             ]))
             r = _run(c, m)
             self.assertEqual(r.returncode, 1)
+            self.assertIn("learningPaths.ms3 week 1", r.stdout)
             self.assertIn("kind", r.stdout)
+
+    def test_rejects_resident_only_ref_on_ms3_path(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            cur = _curriculum([])
+            cur["learningPaths"]["ms3"]["weeks"][0]["items"] = [
+                {"ref": "rp-canon-quiz.html", "kind": "tool"}]
+            c, m = _write(tmp, cur)
+            result = _run(c, m)
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn("ms3", result.stdout)
+        self.assertIn("rp-canon-quiz.html", result.stdout)
+
+    def test_accepts_resident_only_ref_on_resident_path(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            cur = _curriculum([])
+            cur["learningPaths"]["resident"]["weeks"][0]["items"] = [
+                {"ref": "rp-canon-quiz.html", "kind": "tool"}]
+            c, m = _write(tmp, cur)
+            result = _run(c, m)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_rejects_ms3_only_ref_on_resident_path(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            cur = _curriculum([])
+            cur["learningPaths"]["resident"]["weeks"][0]["items"] = [
+                {"ref": "orientation-video.html", "kind": "tool"}]
+            c, m = _write(tmp, cur)
+            result = _run(c, m)
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn("resident", result.stdout)
+        self.assertIn("orientation-video.html", result.stdout)
 
     def test_rejects_a_missing_or_duplicated_week_number(self):
         with tempfile.TemporaryDirectory() as tmp:
             cur = _curriculum([{"ref": "welcome.md", "kind": "read"}])
-            cur["weeks"][5]["n"] = 5  # now 1,2,3,4,5,5 — week 6 missing
+            cur["learningPaths"]["ms3"]["weeks"][5]["n"] = 5
             c, m = _write(tmp, cur)
             r = _run(c, m)
             self.assertEqual(r.returncode, 1)
+            self.assertIn("learningPaths.ms3", r.stdout)
             self.assertIn("week", r.stdout.lower())
+
+    def test_rejects_resident_path_with_wrong_week_count_or_gap(self):
+        for label, mutate in (
+            ("count", lambda c: c["learningPaths"]["resident"]["weeks"].pop()),
+            ("gap", lambda c: c["learningPaths"]["resident"]["weeks"].__setitem__(2,
+                dict(c["learningPaths"]["resident"]["weeks"][2], n=4))),
+        ):
+            with self.subTest(label=label), tempfile.TemporaryDirectory() as tmp:
+                cur = _curriculum([])
+                mutate(cur)
+                c, m = _write(tmp, cur)
+                r = _run(c, m)
+                self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+                self.assertIn("learningPaths.resident", r.stdout)
+
+    def test_rejects_duplicate_ref_bad_kind_and_unknown_category_with_path_labels(self):
+        mutations = (
+            ("duplicate", lambda c: c["learningPaths"]["resident"]["weeks"][0].update(
+                {"items": [{"ref": "rp-canon-quiz.html", "kind": "tool"},
+                           {"ref": "rp-canon-quiz.html", "kind": "tool"}]})),
+            ("kind", lambda c: c["learningPaths"]["resident"]["weeks"][0].update(
+                {"items": [{"ref": "rp-canon-quiz.html", "kind": "read"}]})),
+            ("category", lambda c: c["learningPaths"]["resident"]["weeks"][0].update(
+                {"focusCategories": ["unknown"]})),
+        )
+        for label, mutate in mutations:
+            with self.subTest(label=label), tempfile.TemporaryDirectory() as tmp:
+                cur = _curriculum([])
+                mutate(cur)
+                c, m = _write(tmp, cur)
+                r = _run(c, m)
+                self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+                self.assertIn("learningPaths.resident week 1", r.stdout)
 
     def test_reports_every_violation_not_just_the_first(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -172,38 +250,39 @@ class ValidateCurriculumTest(unittest.TestCase):
             ]))
             r = _run(c, m)
             self.assertEqual(r.returncode, 1)
+            self.assertIn("learningPaths.ms3 week 1", r.stdout)
             self.assertIn("nope-one.md", r.stdout)
             self.assertIn("nope-two.md", r.stdout)
 
     def test_rejects_a_week_missing_its_n_field_without_crashing(self):
         with tempfile.TemporaryDirectory() as tmp:
             cur = _curriculum([{"ref": "welcome.md", "kind": "read"}])
-            del cur["weeks"][0]["n"]
+            del cur["learningPaths"]["ms3"]["weeks"][0]["n"]
             c, m = _write(tmp, cur)
             r = _run(c, m)
             self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
             self.assertNotIn("Traceback", r.stderr)
-            self.assertIn("missing or non-integer", r.stdout)
+            self.assertIn("learningPaths.ms3", r.stdout)
 
     def test_rejects_a_week_with_a_null_n_without_crashing(self):
         with tempfile.TemporaryDirectory() as tmp:
             cur = _curriculum([{"ref": "welcome.md", "kind": "read"}])
-            cur["weeks"][0]["n"] = None
+            cur["learningPaths"]["ms3"]["weeks"][0]["n"] = None
             c, m = _write(tmp, cur)
             r = _run(c, m)
             self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
             self.assertNotIn("Traceback", r.stderr)
-            self.assertIn("missing or non-integer", r.stdout)
+            self.assertIn("learningPaths.ms3", r.stdout)
 
     def test_rejects_a_boolean_n_instead_of_treating_true_as_week_1(self):
         with tempfile.TemporaryDirectory() as tmp:
             cur = _curriculum([{"ref": "welcome.md", "kind": "read"}])
-            cur["weeks"][0]["n"] = True
+            cur["learningPaths"]["ms3"]["weeks"][0]["n"] = True
             c, m = _write(tmp, cur)
             r = _run(c, m)
             self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
             self.assertNotIn("Traceback", r.stderr)
-            self.assertIn("missing or non-integer", r.stdout)
+            self.assertIn("learningPaths.ms3", r.stdout)
 
     def test_rejects_a_non_string_ref_in_a_week_item_without_crashing(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -213,6 +292,7 @@ class ValidateCurriculumTest(unittest.TestCase):
             r = _run(c, m)
             self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
             self.assertNotIn("Traceback", r.stderr)
+            self.assertIn("learningPaths.ms3 week 1", r.stdout)
             self.assertIn("must be a string", r.stdout)
 
 

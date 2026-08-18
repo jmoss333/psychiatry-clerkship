@@ -1,11 +1,15 @@
 {
   "_note": "Front door structure ONLY — week ordering, library columns, safety-kit membership, per-site roles, search synonyms. Facts about an item (minutes, summary, key points, attestation) live in topic_meta.json and join at render time; never duplicate them here. Validated by 13_Faculty_Resources/_automation/validate_curriculum.py.",
-  "weeks": [
-    {
-      "n": 1,
-      "title": "Foundations & the MSE",
-      "theme": "Orientation · interviewing · MSE",
-      "items": [
+  "learningPaths": {
+    "ms3": {
+      "id": "ms3-six-week",
+      "weeks": [
+        {
+          "n": 1,
+          "title": "Foundations & the MSE",
+          "theme": "Orientation · interviewing · MSE",
+          "focusCategories": ["safety"],
+          "items": [
         { "ref": "welcome.md", "kind": "read" },
         { "ref": "pg_interview.md", "kind": "read" },
         { "ref": "pg_suicide.md", "kind": "read" },
@@ -15,50 +19,54 @@
         { "ref": "doc_oral.md", "kind": "read" },
         { "ref": "mse.html", "kind": "tool" },
         { "ref": "question-bank-practice.html", "kind": "tool" }
-      ]
-    },
-    {
-      "n": 2,
-      "title": "Mood, Psychosis & Pharm",
-      "theme": "Dx frameworks · the top-10 drugs",
-      "items": [
+          ]
+        },
+        {
+          "n": 2,
+          "title": "Mood, Psychosis & Pharm",
+          "theme": "Dx frameworks · the top-10 drugs",
+          "focusCategories": ["mood", "psychosis", "pharm", "neurocog"],
+          "items": [
         { "ref": "t_mood.md", "kind": "read" },
         { "ref": "t_psychosis.md", "kind": "read" },
         { "ref": "psychopharm_primer.md", "kind": "read" },
         { "ref": "ddx.md", "kind": "read" },
         { "ref": "question-bank-practice.html", "kind": "tool" }
-      ]
-    },
-    {
-      "n": 3,
-      "title": "Psychotherapy & Personality",
-      "theme": "Alliance · brief therapy · PDs",
-      "items": [
+          ]
+        },
+        {
+          "n": 3,
+          "title": "Psychotherapy & Personality",
+          "theme": "Alliance · brief therapy · PDs",
+          "focusCategories": ["personality", "anxiety", "relational"],
+          "items": [
         { "ref": "t_personality.md", "kind": "read" },
         { "ref": "exp_tx.md", "kind": "read" },
         { "ref": "brief_psychotherapy.md", "kind": "read" },
         { "ref": "reflection.html", "kind": "tool" },
         { "ref": "question-bank-practice.html", "kind": "tool" }
-      ]
-    },
-    {
-      "n": 4,
-      "title": "Family Systems & EE",
-      "theme": "Family meetings · collateral",
-      "items": [
+          ]
+        },
+        {
+          "n": 4,
+          "title": "Family Systems & EE",
+          "theme": "Family meetings · collateral",
+          "focusCategories": ["relational"],
+          "items": [
         { "ref": "exp_family.md", "kind": "read" },
         { "ref": "family_modalities.md", "kind": "read" },
         { "ref": "family_playbook.md", "kind": "read" },
         { "ref": "collateral_workflow.md", "kind": "read" },
         { "ref": "family-systems.html", "kind": "tool" },
         { "ref": "question-bank-practice.html", "kind": "tool" }
-      ]
-    },
-    {
-      "n": 5,
-      "title": "Acute & Emergency",
-      "theme": "Safety · agitation · withdrawal",
-      "items": [
+          ]
+        },
+        {
+          "n": 5,
+          "title": "Acute & Emergency",
+          "theme": "Safety · agitation · withdrawal",
+          "focusCategories": ["safety", "neurocog", "substance"],
+          "items": [
         { "ref": "suicide.md", "kind": "read" },
         { "ref": "agitation.md", "kind": "read" },
         { "ref": "delirium.md", "kind": "read" },
@@ -67,13 +75,14 @@
         { "ref": "withdrawal.html", "kind": "tool" },
         { "ref": "capacity.html", "kind": "tool" },
         { "ref": "question-bank-practice.html", "kind": "tool" }
-      ]
-    },
-    {
-      "n": 6,
-      "title": "Integration & Exam",
-      "theme": "Exam · OSCE · putting it together",
-      "items": [
+          ]
+        },
+        {
+          "n": 6,
+          "title": "Integration & Exam",
+          "theme": "Exam · OSCE · putting it together",
+          "focusCategories": ["otherdx", "ethics"],
+          "items": [
         { "ref": "shelf.md", "kind": "read" },
         { "ref": "osce.md", "kind": "read" },
         { "ref": "cases.md", "kind": "read" },
@@ -81,9 +90,79 @@
         { "ref": "oral.html", "kind": "tool" },
         { "ref": "one-patient-six-weeks.html", "kind": "tool" },
         { "ref": "question-bank-practice.html", "kind": "tool" }
+          ]
+        }
+      ]
+    },
+    "resident": {
+      "id": "resident-four-week",
+      "weeks": [
+        {
+          "n": 1,
+          "title": "Foundations and safety",
+          "theme": "Interview · MSE · acute risk · bedside syndromes",
+          "focusCategories": ["safety", "neurocog", "substance"],
+          "items": [
+            { "ref": "pg_interview.md", "kind": "read" },
+            { "ref": "mse.html", "kind": "tool" },
+            { "ref": "pg_suicide.md", "kind": "read" },
+            { "ref": "agitation.md", "kind": "read" },
+            { "ref": "violence.html", "kind": "tool" },
+            { "ref": "delirium.md", "kind": "read" },
+            { "ref": "withdrawal.html", "kind": "tool" },
+            { "ref": "bfcrs.html", "kind": "tool" },
+            { "ref": "capacity.html", "kind": "tool" }
+          ]
+        },
+        {
+          "n": 2,
+          "title": "Diagnosis and psychopharmacology",
+          "theme": "Diagnostic reasoning · major syndromes · medication decisions",
+          "focusCategories": ["mood", "psychosis", "pharm", "substance"],
+          "items": [
+            { "ref": "diagnostic-reasoning.html", "kind": "tool" },
+            { "ref": "t_mood.md", "kind": "read" },
+            { "ref": "t_psychosis.md", "kind": "read" },
+            { "ref": "t_sud.md", "kind": "read" },
+            { "ref": "psychopharm_primer.md", "kind": "read" },
+            { "ref": "adv_psychopharm.md", "kind": "read" },
+            { "ref": "med_monitoring.md", "kind": "read" },
+            { "ref": "interaction-cards.html", "kind": "tool" }
+          ]
+        },
+        {
+          "n": 3,
+          "title": "Systems, med-legal, and disposition",
+          "theme": "Consultation · collateral · family systems · defensible transitions",
+          "focusCategories": ["ethics", "relational"],
+          "items": [
+            { "ref": "systems_medlegal.md", "kind": "read" },
+            { "ref": "cl_reference.md", "kind": "read" },
+            { "ref": "exp_consult.md", "kind": "read" },
+            { "ref": "collateral_workflow.md", "kind": "read" },
+            { "ref": "family-systems.html", "kind": "tool" },
+            { "ref": "exp_family.md", "kind": "read" },
+            { "ref": "doc_oral.md", "kind": "read" }
+          ]
+        },
+        {
+          "n": 4,
+          "title": "Integration, supervision, and scholarship",
+          "theme": "Formulation · rounds · EPAs · evidence retrieval",
+          "focusCategories": ["otherdx", "ethics", "relational"],
+          "items": [
+            { "ref": "case_formulation.md", "kind": "read" },
+            { "ref": "oral.html", "kind": "tool" },
+            { "ref": "supervision_teaching.md", "kind": "read" },
+            { "ref": "evidence_inpatient.md", "kind": "read" },
+            { "ref": "landmark_trials.md", "kind": "read" },
+            { "ref": "canon_200.md", "kind": "read" },
+            { "ref": "rp-canon-quiz.html", "kind": "tool" }
+          ]
+        }
       ]
     }
-  ],
+  },
   "libraryColumns": [
     {
       "name": "Interactive tools",
