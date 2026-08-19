@@ -1925,6 +1925,69 @@
   var fdEditionBootLocation=null;
   var fdEditionBootState='pending';
   var fdEditionStartupTeardowns=[];
+  var fdEditionStartupStorage=null;
+  var fdEditionStartupStorageDirty=false;
+  var fdEditionStartupHistory=null;
+  var fdEditionStartupHistoryDirty=false;
+  function fdEditionCheckpointStorage(storage){
+    var keyMethod=fdEditionStudentMethod(storage,'key');
+    var removeMethod=fdEditionStudentMethod(storage,'removeItem');
+    var values=Object.create(null),keys=[],length,key,stored;
+    if(!keyMethod||!removeMethod||!fdEditionStudentMethod(storage,'setItem'))return null;
+    try{length=storage.length;}catch(ignoreLength){return null;}
+    if(typeof length!=='number'||length<0||length%1!==0)return null;
+    for(var i=0;i<length;i++){
+      try{key=Function.prototype.call.call(keyMethod,storage,i);}catch(ignoreKey){return null;}
+      if(typeof key!=='string'||Object.prototype.hasOwnProperty.call(values,key))return null;
+      stored=fdEditionStudentRead(storage,key);
+      if(!stored.ok||typeof stored.value!=='string')return null;
+      keys.push(key);values[key]=stored.value;
+    }
+    return {storage:storage,keyMethod:keyMethod,removeMethod:removeMethod,keys:keys,values:values};
+  }
+  function fdEditionRestoreStorage(checkpoint){
+    var current=[],length,key,i,ok=true;
+    if(!checkpoint)return false;
+    try{length=checkpoint.storage.length;}catch(ignoreLength){return false;}
+    if(typeof length!=='number'||length<0||length%1!==0)return false;
+    for(i=0;i<length;i++){
+      try{key=Function.prototype.call.call(checkpoint.keyMethod,checkpoint.storage,i);}
+      catch(ignoreKey){return false;}
+      if(typeof key!=='string')return false;
+      current.push(key);
+    }
+    for(i=current.length-1;i>=0;i--){
+      if(!Object.prototype.hasOwnProperty.call(checkpoint.values,current[i])){
+        try{Function.prototype.call.call(checkpoint.removeMethod,checkpoint.storage,current[i]);}
+        catch(ignoreRemove){ok=false;}
+      }
+    }
+    for(i=0;i<checkpoint.keys.length;i++){
+      key=checkpoint.keys[i];
+      if(!fdEditionStudentWrite(checkpoint.storage,key,checkpoint.values[key]))ok=false;
+    }
+    return ok;
+  }
+  function fdEditionCheckpointHistory(windowValue){
+    var historyValue,locationValue,replaceMethod,state,path,search;
+    try{historyValue=windowValue&&windowValue.history;locationValue=windowValue&&windowValue.location;}
+    catch(ignoreBoundary){return null;}
+    replaceMethod=fdEditionStudentMethod(historyValue,'replaceState');
+    if(!locationValue)return {history:null,replaceMethod:null,state:null,url:''};
+    try{state=historyValue&&historyValue.state;path=locationValue.pathname;search=locationValue.search;}
+    catch(ignoreSnapshot){return null;}
+    if(typeof path!=='string'||typeof search!=='string')return null;
+    return {history:historyValue,replaceMethod:replaceMethod,state:state,url:path+search};
+  }
+  function fdEditionRestoreHistory(checkpoint){
+    if(!checkpoint)return false;
+    if(!checkpoint.history||!checkpoint.replaceMethod)return true;
+    try{
+      Function.prototype.call.call(checkpoint.replaceMethod,checkpoint.history,
+        checkpoint.state,'',checkpoint.url);
+      return true;
+    }catch(ignoreRestore){return false;}
+  }
   function fdEditionTrackListener(target,type,handler,capture){
     var registration=fdEditionRuntimeListen(target,type,handler,capture);
     if(!registration.ok)return false;
@@ -1939,6 +2002,10 @@
   }
   function fdEditionRuntimeFallback(receipt,state){
     fdEditionCleanupWiring();
+    if(fdEditionStartupHistoryDirty)fdEditionRestoreHistory(fdEditionStartupHistory);
+    if(fdEditionStartupStorageDirty)fdEditionRestoreStorage(fdEditionStartupStorage);
+    fdEditionStartupHistoryDirty=false;
+    fdEditionStartupStorageDirty=false;
     FD_INDEX=FD_CANONICAL_INDEX;
     TOPIC_META=FD_TOPIC_META;
     fdEditionRuntimeRemoveBusy(fdApp);
@@ -1976,6 +2043,14 @@
     fdInitial=fdResolveState(location.href,fdStored);
     fdInitial.done=fdProgressDoneMap(progLoad());
     fdInitial.rotationStart=fdRotation;
+    var fdCheckpointStorage=fdEditionBootStorage;
+    if(!fdCheckpointStorage)try{fdCheckpointStorage=window.localStorage;}catch(ignoreCheckpointStorage){ }
+    fdEditionStartupStorage=fdEditionCheckpointStorage(fdCheckpointStorage);
+    fdEditionStartupHistory=fdEditionCheckpointHistory(window);
+    if(!fdEditionStartupStorage||!fdEditionStartupHistory){
+      fdEditionRuntimeFallback(fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'),fdInitial);
+      return;
+    }
     if(FD_RUNTIME_WIRING_OK!==true||!fdEditionRuntimeShellReady(fdApp)){
       fdEditionRuntimeFallback(fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'),fdInitial);
       return;
@@ -2008,17 +2083,15 @@
     fdEditionRuntimeFallback(fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'),fdInitial);
     return;
   }
-  if(result.mode==='active'&&result.needsCommit&&
-     !fdEditionAcceptFirst(fdEditionBootStorage,result.active)){
-    fdEditionRuntimeFallback(fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'),fdInitial);
-    return;
+  if(result.mode==='active'&&result.needsCommit){
+    fdEditionStartupStorageDirty=true;
+    if(!fdEditionAcceptFirst(fdEditionBootStorage,result.active)){
+      fdEditionRuntimeFallback(fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'),fdInitial);
+      return;
+    }
   }
   try{fdRender(fdInitial);}
   catch(ignoreFirstRender){
-    fdEditionRuntimeFallback(fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'),fdInitial);
-    return;
-  }
-  if(!fdController.commitStartup()){
     fdEditionRuntimeFallback(fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'),fdInitial);
     return;
   }
@@ -2076,12 +2149,6 @@
       fdRestoreHydrationFocus(focusSnapshot);
     }
   };
-  if(fdInitial.openId==='__progress__')fdOpenProgress(fdInitial,{host:contentEl});
-  else if(fdInitial.openId)fdOpenResourceLive(fdInitial.openId,{
-    state:fdInitial,search:location.search,host:contentEl,
-    getState:function(){ return fdController.getState(); },
-    isCurrent:function(ref){return fdController.getState().openId===ref;}
-  });
   function fdRecoverCommittedEdition(candidate){
     var state;
     try{
@@ -2090,11 +2157,32 @@
         function(index,recoveryState){FD_INDEX=index;fdRender(recoveryState);return true;});
     }catch(ignoreRecovery){ return false; }
   }
-  if(result.mode==='switch-required'){
-    if(!fdEditionRuntimeMountSwitch(fdEditionMount,result,fdEditionBootStorage,
-       fdEditionBootLocation,fdEditionInputs.hashCleared,fdRecoverCommittedEdition))
-      fdEditionRuntimeMountError(fdEditionMount,fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'));
-  }else if(result.mode==='rejected') fdEditionRuntimeMountError(fdEditionMount,result.receipt);
+  try{
+    if(fdInitial.openId==='__progress__')fdOpenProgress(fdInitial,{host:contentEl});
+    else if(fdInitial.openId){
+      fdEditionStartupStorageDirty=true;
+      fdOpenResourceLive(fdInitial.openId,{
+        state:fdInitial,search:location.search,host:contentEl,
+        getState:function(){ return fdController.getState(); },
+        isCurrent:function(ref){return fdController.getState().openId===ref;}
+      });
+    }
+    if(result.mode==='switch-required'){
+      if(!fdEditionRuntimeMountSwitch(fdEditionMount,result,fdEditionBootStorage,
+         fdEditionBootLocation,fdEditionInputs.hashCleared,fdRecoverCommittedEdition))throw new Error('edition mount');
+    }else if(result.mode==='rejected'&&!fdEditionRuntimeMountError(fdEditionMount,result.receipt))
+      throw new Error('edition alert');
+    fdEditionStartupStorageDirty=true;
+    fdEditionStartupHistoryDirty=true;
+    if(!fdController.commitStartup())throw new Error('startup commit');
+  }catch(ignoreFinalStartup){
+    fdEditionRuntimeFallback(fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'),fdInitial);
+    return;
+  }
+  fdEditionStartupStorage=null;
+  fdEditionStartupHistory=null;
+  fdEditionStartupStorageDirty=false;
+  fdEditionStartupHistoryDirty=false;
   fdEditionBootState='started';
   }
 

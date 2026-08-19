@@ -987,7 +987,6 @@ function fdWire(root, initialState, opts){
   function commitStartup(){
     if(destroyed) return false;
     if(startupCommitted) return true;
-    startupCommitted=true;
     try{
       if(!previewActive()&&win&&win.history&&win.history.replaceState){
         var initialLegacyRef=currentRoutedRef();
@@ -995,11 +994,12 @@ function fdWire(root, initialState, opts){
           initialLegacyRef,{search:win.location.search||''},state
         ):null;
         if(initialLegacy){
-          routeTo(initialLegacy.route,true);
+          if(!routeTo(initialLegacy.route,true)) return false;
           fdSave(state);
         }
-        else replaceHistorySnapshot();
+        else if(!replaceHistorySnapshot()) return false;
       }
+      startupCommitted=true;
       return true;
     }catch(ignoreInitialCommit){ return false; }
   }

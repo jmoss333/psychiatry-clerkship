@@ -42,7 +42,7 @@ const VALID_PLACEMENT = {
 };
 
 async function installEditionRuntimeProbe(page, options = {}) {
-  await page.addInitScript(({ editionKey, localKey, logKey, throwHistory, listenerFault }) => {
+  await page.addInitScript(({ editionKey, localKey, logKey, throwHistory, listenerFault, startupFault }) => {
     const originalSetItem = Storage.prototype.setItem;
     const originalReplaceState = History.prototype.replaceState;
     const originalAddEventListener = EventTarget.prototype.addEventListener;
@@ -131,13 +131,39 @@ async function installEditionRuntimeProbe(page, options = {}) {
     History.prototype.replaceState = function replaceState(state, title, url) {
       record(['history', String(url)]);
       if (throwHistory && location.hash) throw new Error('private history failure');
+      if (startupFault === 'commit-history' && location.search.includes('startup-fault')
+        && !location.hash && state?.fd === true) {
+        throw new Error('private final startup commit failure');
+      }
       return originalReplaceState.call(this, state, title, url);
     };
+    let progressMounts = 0;
+    let resourceMountFaults = 0;
     Object.defineProperty(Element.prototype, 'innerHTML', {
       configurable: innerHtml.configurable,
       enumerable: innerHtml.enumerable,
       get: innerHtml.get,
       set(value) {
+        if (this.id === 'content' && typeof value === 'string'
+          && location.search.includes('startup-fault') && value.includes('id="pgRoot"')) {
+          progressMounts += 1;
+          if ((startupFault === 'progress-first' && progressMounts === 1)
+            || (startupFault === 'progress-second' && progressMounts === 2)) {
+            throw new Error('private initial progress mount failure');
+          }
+        }
+        if (this.id === 'content' && location.search.includes('startup-fault-resource')
+          && startupFault === 'resource-open' && typeof value === 'string'
+          && (value.includes('<iframe class="toolframe"')
+            || (resourceMountFaults === 1 && value.includes('Page unavailable')))) {
+          resourceMountFaults += 1;
+          throw new Error('private initial resource opening failure');
+        }
+        if (this.id === 'governanceMount' && location.search.includes('startup-fault-edition-dialog')
+          && startupFault === 'edition-dialog' && typeof value === 'string'
+          && value.includes('<dialog class="fd-edition-switch"')) {
+          throw new Error('private edition dialog insertion failure');
+        }
         if (this.id === 'content' && typeof value === 'string'
           && /fd-(?:today|path|library|reader|setup)/.test(value) && !value.includes('skel')) {
           record(['render-sync', value.includes('fd-today') ? 'today' : 'other']);
@@ -173,6 +199,7 @@ async function installEditionRuntimeProbe(page, options = {}) {
     logKey: EDITION_WRITE_LOG,
     throwHistory: options.throwHistory === true,
     listenerFault: options.listenerFault || '',
+    startupFault: options.startupFault || '',
   });
 }
 
@@ -202,6 +229,29 @@ async function localStorageSnapshot(page) {
     Array.from({ length: localStorage.length }, (_, index) => localStorage.key(index))
       .sort().map((key) => [key, localStorage.getItem(key)]),
   ));
+}
+
+async function expectAtomicStartupFailure(page, {
+  before, expectedSearch, selectedTitle, pageErrors,
+}) {
+  await expect(page.locator('.fd-edition-error[role="alert"]')).toContainText('EDITION_RUNTIME');
+  await expect(page.locator('#fdApp')).not.toHaveAttribute('aria-busy', 'true');
+  expect(await localStorageSnapshot(page)).toEqual(before);
+  expect(new URL(page.url()).search).toBe(expectedSearch);
+  expect(await page.evaluate(() => history.state)).toBeNull();
+  expect(await page.evaluate(() => window.__fdActiveStartupListeners())).toEqual([]);
+  expect(await page.evaluate((title) => window.__fdMeaningfulRenders.every(
+    ({ rows, firstTitle }) => rows !== 1 || firstTitle !== title,
+  ), selectedTitle)).toBe(true);
+  expect(await page.evaluate(() => {
+    window.__fdStartupListenerFires = [];
+    window.dispatchEvent(new Event('resize'));
+    window.dispatchEvent(new PopStateEvent('popstate'));
+    document.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    document.querySelector('#fdApp')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    return window.__fdStartupListenerFires;
+  })).toEqual([]);
+  expect(pageErrors).toEqual([]);
 }
 
 async function seedEditionLearner(page) {
@@ -891,6 +941,107 @@ test('a legacy route followed by auxiliary failure leaves storage and history at
   expect(await page.evaluate((selectedTitle) => window.__fdMeaningfulRenders.every(
     ({ rows, firstTitle }) => rows !== 1 || firstTitle !== selectedTitle,
   ), incoming.selectedTitle)).toBe(true);
+  expect(pageErrors).toEqual([]);
+});
+
+for (const [label, startupFault] of [
+  ['first', 'progress-first'],
+  ['second', 'progress-second'],
+]) {
+  test(`a ${label} initial Progress mount failure rolls back first acceptance and legacy startup`, async ({ page }, testInfo) => {
+    const pageErrors = [];
+    page.on('pageerror', (error) => pageErrors.push(error.message));
+    await installEditionRuntimeProbe(page, { startupFault });
+    const incoming = await createSyntheticEdition(testInfo, 1);
+    await page.goto('/');
+    await seedEditionLearner(page);
+    const before = await localStorageSnapshot(page);
+    await resetEditionWriteLog(page);
+    const expectedSearch = `?page=__start__&case=startup-fault-${startupFault}`;
+
+    await page.goto(`${expectedSearch}#edition=${incoming.payload}`);
+    await expectAtomicStartupFailure(page, {
+      before, expectedSearch, selectedTitle: incoming.selectedTitle, pageErrors,
+    });
+    expect((await editionEvents(page)).filter(([kind]) => kind === 'history')).toHaveLength(1);
+  });
+}
+
+test('a synchronous initial resource-opening failure unwinds without bookmark or edition residue', async ({ page }, testInfo) => {
+  const pageErrors = [];
+  page.on('pageerror', (error) => pageErrors.push(error.message));
+  await installEditionRuntimeProbe(page, { startupFault: 'resource-open' });
+  const incoming = await createSyntheticEdition(testInfo, 1);
+  await page.goto('/');
+  await seedEditionLearner(page);
+  await page.evaluate(() => localStorage.setItem('cw_last', 'orientation.md'));
+  const before = await localStorageSnapshot(page);
+  await resetEditionWriteLog(page);
+  const expectedSearch = '?tool=question-bank-practice.html&case=startup-fault-resource';
+
+  await page.goto(`${expectedSearch}#edition=${incoming.payload}`);
+  await expectAtomicStartupFailure(page, {
+    before, expectedSearch, selectedTitle: incoming.selectedTitle, pageErrors,
+  });
+  await expect(page.locator('.fd-article iframe')).toHaveCount(0);
+  expect((await editionEvents(page)).filter(([kind]) => kind === 'history')).toHaveLength(1);
+});
+
+test('a switch-dialog insertion failure preserves the stored edition and uncommitted legacy route', async ({ page }, testInfo) => {
+  const pageErrors = [];
+  page.on('pageerror', (error) => pageErrors.push(error.message));
+  await installEditionRuntimeProbe(page, { startupFault: 'edition-dialog' });
+  const active = await createSyntheticEdition(testInfo, 1);
+  const candidate = await createSyntheticEdition(testInfo, 2);
+  await page.goto('/');
+  await seedEditionLearner(page);
+  await page.goto(`/?case=edition-active-before-mount-fault#edition=${active.payload}`);
+  await expect(page.locator('.fd-today .fd-list .fd-row__title')).toHaveText(active.selectedTitle);
+  const before = await localStorageSnapshot(page);
+  await resetEditionWriteLog(page);
+  const expectedSearch = '?page=__start__&case=startup-fault-edition-dialog';
+
+  await page.goto(`${expectedSearch}#edition=${candidate.payload}`);
+  await expectAtomicStartupFailure(page, {
+    before, expectedSearch, selectedTitle: active.selectedTitle, pageErrors,
+  });
+  await expect(page.locator('dialog.fd-edition-switch')).toHaveCount(0);
+  expect(await editionWrites(page)).toEqual([]);
+  expect((await editionEvents(page)).filter(([kind]) => kind === 'history')).toHaveLength(1);
+});
+
+test('a final startup history failure rolls back first acceptance after every earlier phase succeeds', async ({ page }, testInfo) => {
+  const pageErrors = [];
+  page.on('pageerror', (error) => pageErrors.push(error.message));
+  await installEditionRuntimeProbe(page, { startupFault: 'commit-history' });
+  const incoming = await createSyntheticEdition(testInfo, 1);
+  await page.goto('/');
+  await seedEditionLearner(page);
+  const before = await localStorageSnapshot(page);
+  await resetEditionWriteLog(page);
+  const expectedSearch = '?case=startup-fault-final-commit';
+
+  await page.goto(`${expectedSearch}#edition=${incoming.payload}`);
+  await expectAtomicStartupFailure(page, {
+    before, expectedSearch, selectedTitle: incoming.selectedTitle, pageErrors,
+  });
+  expect((await editionEvents(page)).filter(([kind]) => kind === 'history')).toHaveLength(3);
+});
+
+test('first acceptance through legacy Start commits once after both Progress mounts', async ({ page }, testInfo) => {
+  const pageErrors = [];
+  page.on('pageerror', (error) => pageErrors.push(error.message));
+  await installEditionRuntimeProbe(page);
+  const incoming = await createSyntheticEdition(testInfo, 1);
+  await page.goto('/');
+  await seedEditionLearner(page);
+  await resetEditionWriteLog(page);
+
+  await page.goto(`/?page=__start__&case=edition-start-control#edition=${incoming.payload}`);
+  await expect(page).toHaveURL(/\/\?page=__progress__&case=edition-start-control$/);
+  await expect(page.locator('#pgRoot')).toBeVisible();
+  expect((await editionWrites(page)).map(([key]) => key)).toEqual([LOCAL_EDITION_KEY, EDITION_KEY]);
+  expect(await page.evaluate(() => window.__fdActiveStartupListeners().length)).toBe(8);
   expect(pageErrors).toEqual([]);
 });
 
