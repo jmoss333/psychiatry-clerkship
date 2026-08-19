@@ -17,7 +17,7 @@ const HTML_SOURCE = new URL(
 );
 const API_NAMES = [
   'fdCuratorNewDraft', 'fdCuratorReduce', 'fdCuratorValidateStep',
-  'fdCuratorApplyAction',
+  'fdCuratorApplyAction', 'fdCuratorMount',
   'fdCuratorBuildConfig', 'fdCuratorNextEditionNumber',
   'fdCuratorDraftStorage', 'fdCuratorImportEnvelope', 'fdCuratorReadImportFile',
   'fdCuratorImportTransactions',
@@ -27,11 +27,12 @@ function loadApi() {
   const contract = readFileSync(CONTRACT_SOURCE, 'utf8');
   const curator = readFileSync(CURATOR_SOURCE, 'utf8');
   return new Function(
-    'TextEncoder', 'TextDecoder', 'atob', 'btoa',
-    `${contract}\n${curator}\nreturn {${API_NAMES.map((name) =>
+    'TextEncoder', 'TextDecoder', 'atob', 'btoa', 'localStorage',
+    `function fdEsc(value){return String(value);}\n${contract}\n${curator}\nreturn {${API_NAMES.map((name) =>
       `${name}:typeof ${name}==='function'?${name}:null`).join(',')},` +
-      'fdEditionCreateEnvelope,fdEditionCanonicalJson};',
-  )(TextEncoder, TextDecoder, atob, btoa);
+      'fdEditionCreateEnvelope,fdEditionCanonicalJson,' +
+      'setCuratorProjector:function(projector){fdCuratorProjectDraft=projector;}};',
+  )(TextEncoder, TextDecoder, atob, btoa, null);
 }
 
 const F = loadApi();
@@ -557,6 +558,85 @@ test('action application invalidates pending imports only for semantic draft cha
   const revoked = Proxy.revocable({}, {});
   revoked.revoke();
   assert.doesNotThrow(() => dispatch(revoked.proxy));
+});
+
+test('preview sequencing invalidates older success and error work on every invocation', async () => {
+  const harness = loadApi();
+  const pending = [];
+  harness.setCuratorProjector(draft => new Promise(resolve => {
+    pending.push({ title: draft.config.card.title, resolve });
+  }));
+  const preview = { innerHTML: '' };
+  const root = {
+    querySelector(selector) { return selector === '#curatorPreviewBody' ? preview : null; },
+    querySelectorAll() { return []; },
+    addEventListener() {},
+  };
+  const app = harness.fdCuratorMount(root, index(), context());
+  const placeholder = '<p class="panel-note">Preview is read-only and updates from the validated curriculum and schedule.</p>';
+  const incomplete = '<p class="panel-note">Complete the current fields to update this read-only preview.</p>';
+  const staleSuccess = {
+    ok: true,
+    index: {
+      weeks: [{ n: 1, items: [{ title: 'STALE PREVIEW', editionPriority: 'required' }] }],
+      columns: [],
+    },
+  };
+
+  assert.equal(preview.innerHTML, placeholder);
+  app.dispatch({ type: 'GO_TO_STEP', step: 2 });
+  app.dispatch({ type: 'SET_CARD_FIELD', field: 'title', value: 'Newest preview request' });
+  assert.equal(pending.length, 2);
+  pending[1].resolve({ ok: false, index: null });
+  await Promise.resolve();
+  assert.equal(preview.innerHTML, incomplete, 'the newest error result owns the preview');
+  pending[0].resolve(staleSuccess);
+  await Promise.resolve();
+  assert.equal(preview.innerHTML, incomplete, 'an older success cannot beat the newest error');
+
+  app.dispatch({ type: 'SET_CARD_FIELD', field: 'title', value: 'Will be imported away' });
+  assert.equal(pending.length, 3);
+  app.dispatch({ type: 'GO_TO_STEP', step: 1 });
+  assert.equal(preview.innerHTML, placeholder);
+  pending[2].resolve(staleSuccess);
+  await Promise.resolve();
+  assert.equal(preview.innerHTML, placeholder, 'a non-preview render invalidates pending work');
+  assert.doesNotMatch(preview.innerHTML, /STALE PREVIEW/);
+});
+
+test('generation actions inspect only private trusted snapshots', async () => {
+  const reduce = fn('fdCuratorReduce');
+  const apply = fn('fdCuratorApplyAction');
+  const draft = draftWithCard(completeConfig('ms3', 1));
+  const expected = fn('fdCuratorBuildConfig')(draft, index(), context());
+  const trusted = await F.fdEditionCreateEnvelope(
+    expected.value, index(), context(), webcrypto.subtle,
+  );
+  let getterReads = 0;
+  const accessorResult = {};
+  Object.defineProperty(accessorResult, 'ok', {
+    enumerable: true,
+    get() { getterReads += 1; return true; },
+  });
+  const inheritedResult = Object.create(trusted);
+  const extraFieldResult = { ...trusted, extra: true };
+  const revoked = Proxy.revocable({}, {});
+  revoked.revoke();
+
+  for (const hostile of [accessorResult, inheritedResult, extraFieldResult, revoked.proxy]) {
+    let reduced;
+    assert.doesNotThrow(() => {
+      reduced = reduce(draft, { type: 'GENERATION_SUCCEEDED', result: hostile }, index(), context());
+    });
+    assert.deepEqual(reduced, draft);
+    let applied;
+    assert.doesNotThrow(() => {
+      applied = apply(draft, { type: 'GENERATION_SUCCEEDED', result: hostile }, index(), context());
+    });
+    assert.deepEqual(applied.state, draft);
+    assert.equal(applied.changed, false);
+  }
+  assert.equal(getterReads, 0, 'the reducer must not read result.ok or any hostile member');
 });
 
 test('accepts only the exact current full config as a successful generation', async () => {

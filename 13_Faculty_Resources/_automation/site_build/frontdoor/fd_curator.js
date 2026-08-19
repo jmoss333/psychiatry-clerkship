@@ -540,7 +540,7 @@ function fdCuratorReduce(draft,action,index,siteContext){
     i=items[itemIndex].order; items[itemIndex].order=items[otherIndex].order; items[otherIndex].order=i;
     return fdCuratorPathChanged(next,weekCount);
   }
-  if(action.type==='GENERATION_SUCCEEDED'&&action.result&&action.result.ok===true){
+  if(action.type==='GENERATION_SUCCEEDED'){
     snapshot=typeof fdEditionTrustedSnapshot==='function'?fdEditionTrustedSnapshot(action.result):null;
     if(!snapshot||!snapshot.envelope||!snapshot.config||!snapshot.fingerprint) return next;
     expected=fdCuratorBuildConfig(next,index,siteContext);
@@ -878,13 +878,13 @@ function fdCuratorMount(root,index,siteContext){
   var subtle=typeof crypto!=='undefined'&&crypto?crypto.subtle:null;
   var buttons,i,save,continueButton,importInput,previewSequence=0;
   function refreshPreview(){
-    var preview=root.querySelector('#curatorPreviewBody'),sequence;
+    var sequence=++previewSequence;
+    var preview=root.querySelector('#curatorPreviewBody');
     if(!preview) return;
     if(state.step!==2&&state.step!==3){
       preview.innerHTML='<p class="panel-note">Preview is read-only and updates from the validated curriculum and schedule.</p>';
       return;
     }
-    sequence=++previewSequence;
     preview.innerHTML='<p class="panel-note">Updating the validated student preview…</p>';
     fdCuratorProjectDraft(state,index,siteContext,subtle).then(function(result){
       if(sequence!==previewSequence) return;

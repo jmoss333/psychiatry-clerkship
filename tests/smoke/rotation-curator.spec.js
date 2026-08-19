@@ -386,6 +386,15 @@ test('navigation and schedule no-ops preserve a pending valid import', async ({ 
 
   const outcome = await page.evaluate(async pendingText => {
     const input = document.querySelector('#curatorImportFile');
+    const observed = [];
+    const root = document.querySelector('#root');
+    for (const type of ['change', 'click', 'input']) {
+      root.addEventListener(type, event => {
+        if (event.target.matches('[data-curator-path-week], [data-curator-path-up], [data-curator-path-priority], [data-curator-path-rationale]')) {
+          observed.push(type);
+        }
+      }, true);
+    }
     let resolveImport;
     Object.defineProperty(input, 'files', {
       configurable: true,
@@ -397,24 +406,38 @@ test('navigation and schedule no-ops preserve a pending valid import', async ({ 
     input.dispatchEvent(new Event('change', { bubbles: true }));
 
     document.querySelector('[data-curator-step="3"]').click();
-    const first = document.querySelector('[data-curator-instance]');
-    const week = first.querySelector('[data-curator-path-week]');
+    let first = document.querySelector('[data-curator-week] [data-curator-instance]');
+    const firstId = first.getAttribute('data-curator-instance');
+    let week = first.querySelector('[data-curator-path-week]');
+    const currentWeek = week.value;
     week.dispatchEvent(new Event('change', { bubbles: true }));
-    first.querySelector('[data-curator-path-up]').dispatchEvent(
+    const weekWasReplaced = !week.isConnected;
+    first = document.querySelector(`[data-curator-instance="${firstId}"]`);
+    week = first.querySelector('[data-curator-path-week]');
+    const currentWeekPreserved = first.isConnected && week.value === currentWeek;
+    let up = document.querySelector(
+      `[data-curator-week="${currentWeek}"] [data-curator-instance]:first-child [data-curator-path-up]`,
+    );
+    const boundaryId = up.getAttribute('data-curator-path-up');
+    up.dispatchEvent(
       new MouseEvent('click', { bubbles: true }),
     );
-    const weekItems = [...document.querySelectorAll(
-      `[data-curator-week="${week.value}"] [data-curator-instance]`,
-    )];
-    weekItems.at(-1).querySelector('[data-curator-path-down]').dispatchEvent(
-      new MouseEvent('click', { bubbles: true }),
-    );
+    const upWasReplaced = !up.isConnected;
+    up = document.querySelector(`[data-curator-path-up="${boundaryId}"]`);
+    const boundaryPreserved = up.isConnected && up.disabled;
 
     document.querySelector('[data-curator-step="2"]').click();
-    const priority = document.querySelector('[data-curator-path-priority]');
-    const rationale = document.querySelector('[data-curator-path-rationale]');
+    let priority = document.querySelector('[data-curator-path-priority]');
+    const placementId = priority.getAttribute('data-curator-path-priority');
+    const currentPriority = priority.value;
     priority.dispatchEvent(new Event('change', { bubbles: true }));
+    const priorityWasReplaced = !priority.isConnected;
+    priority = document.querySelector(`[data-curator-path-priority="${placementId}"]`);
+    const priorityPreserved = priority.isConnected && priority.value === currentPriority;
+    const rationale = document.querySelector(`[data-curator-path-rationale="${placementId}"]`);
+    const currentRationale = rationale.value;
     rationale.dispatchEvent(new Event('input', { bubbles: true }));
+    const rationaleObserved = rationale.isConnected && rationale.value === currentRationale;
     const bogus = document.createElement('button');
     bogus.setAttribute('data-curator-path-remove', 'core:missing.md:1');
     document.querySelector('#root').appendChild(bogus);
@@ -426,10 +449,61 @@ test('navigation and schedule no-ops preserve a pending valid import', async ({ 
       if (document.querySelector('#curatorTitle').value === 'No-op import wins') break;
       await new Promise(resolve => setTimeout(resolve, 5));
     }
-    return document.querySelector('#curatorTitle').value;
+    return {
+      title: document.querySelector('#curatorTitle').value,
+      weekWasReplaced, currentWeekPreserved, upWasReplaced, boundaryPreserved,
+      priorityWasReplaced, priorityPreserved, rationaleObserved, observed,
+    };
   }, pending);
 
-  expect(outcome).toBe('No-op import wins');
+  expect(outcome).toEqual({
+    title: 'No-op import wins',
+    weekWasReplaced: true,
+    currentWeekPreserved: true,
+    upWasReplaced: true,
+    boundaryPreserved: true,
+    priorityWasReplaced: true,
+    priorityPreserved: true,
+    rationaleObserved: true,
+    observed: ['change', 'click', 'change', 'input'],
+  });
+  await expect(page.locator('#curatorGenerate')).toBeDisabled();
+});
+
+test('an imported Step 1 draft cancels an older delayed preview', async ({ page }) => {
+  await page.goto(TOOL);
+  const imported = await backupText(page, 'Imported while preview waited', 10);
+  await page.evaluate(() => {
+    window.__releaseStalePreview = null;
+    fdCuratorProjectDraft = () => new Promise(resolve => {
+      window.__releaseStalePreview = () => resolve({
+        ok: true,
+        index: {
+          weeks: [{
+            n: 1,
+            items: [{ title: 'STALE PRE-IMPORT CONTENT', editionPriority: 'required' }],
+          }],
+          columns: [],
+        },
+      });
+    });
+  });
+  await page.locator('[data-curator-step="2"]').click();
+  await expect(page.locator('#curatorPreviewBody')).toContainText('Updating the validated student preview');
+  await page.locator('#curatorImportFile').setInputFiles({
+    name: 'imported.json', mimeType: 'application/json', buffer: Buffer.from(imported),
+  });
+  await expect(page.locator('#curatorTitle')).toHaveValue('Imported while preview waited');
+  await expect(page.locator('#curatorPreviewBody')).toHaveText(
+    'Preview is read-only and updates from the validated curriculum and schedule.',
+  );
+  await page.evaluate(() => window.__releaseStalePreview());
+  await page.waitForTimeout(30);
+  await expect(page.locator('#curatorTitle')).toHaveValue('Imported while preview waited');
+  await expect(page.locator('#curatorPreviewBody')).toHaveText(
+    'Preview is read-only and updates from the validated curriculum and schedule.',
+  );
+  await expect(page.locator('#curatorPreviewBody')).not.toContainText('STALE PRE-IMPORT CONTENT');
   await expect(page.locator('#curatorGenerate')).toBeDisabled();
 });
 
