@@ -22,6 +22,8 @@ const MS3_BUILD = path.join(
 const RESIDENT_BUILD = path.join(
   ROOT, '13_Faculty_Resources/_automation/site_build/resident_section.py',
 );
+const SMOKE_SPEC = path.join(ROOT, 'tests/smoke/rotation-curator.spec.js');
+const SMOKE_CONFIG = path.join(ROOT, 'tests/smoke/playwright.config.js');
 
 const source = fs.existsSync(SOURCE_PATH) ? fs.readFileSync(SOURCE_PATH, 'utf8') : '';
 const moduleBody = fs.existsSync(MODULE_PATH) ? fs.readFileSync(MODULE_PATH, 'utf8') : '';
@@ -99,6 +101,26 @@ test('declares seven replaceable payload values and expands curator modules in d
     assert.ok(source.indexOf(marker) > previous, `${marker} must preserve dependency order`);
     previous = source.indexOf(marker);
   }
+});
+
+test('bounds the canonical topic metadata dose waiver to its one injected assignment', () => {
+  assert.doesNotMatch(source, /QA-ALLOW-DOSE(?!-(?:START|END))/);
+  const start = '/* QA-ALLOW-DOSE-START: canonical-topic-meta */';
+  const end = '/* QA-ALLOW-DOSE-END: canonical-topic-meta */';
+  assert.equal(source.split(start).length - 1, 1);
+  assert.equal(source.split(end).length - 1, 1);
+  assert.match(
+    source,
+    /\/\* QA-ALLOW-DOSE-START: canonical-topic-meta \*\/\s*var FD_TOPIC_META=\{\};\s*\/\* QA-ALLOW-DOSE-END: canonical-topic-meta \*\//,
+  );
+});
+
+test('wires a real built-page curator contract into both CI smoke projects', () => {
+  assert.ok(fs.existsSync(SMOKE_SPEC), 'built rotation curator smoke contract must exist');
+  const smoke = fs.readFileSync(SMOKE_SPEC, 'utf8');
+  const config = fs.readFileSync(SMOKE_CONFIG, 'utf8');
+  assert.match(smoke, /\/tools\/rotation-curator\.html/);
+  assert.equal(config.split("'rotation-curator.spec.js'").length - 1, 2);
 });
 
 test('initial reducer keeps audience and duration locked while publication stays unavailable', () => {

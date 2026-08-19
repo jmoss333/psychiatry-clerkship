@@ -67,6 +67,69 @@ const readJSON = (f) => JSON.parse(readFileSync(f, 'utf8'));
 const listHtml = (dir) => existsSync(dir) ? readdirSync(dir).filter(f => f.endsWith('.html')) : [];
 const DOSE = /\b\d+(?:\.\d+)?\s?(?:mg|mcg|mL|mg\/kg)\b/i;
 const CDN_HOST = /\b(?:cdnjs\.cloudflare\.com|unpkg\.com|jsdelivr\.net)\b/i;
+const DOSE_WAIVER_PREFIX = 'QA-ALLOW-DOSE';
+
+/* Return the zero-based line numbers that are allowed to bypass dose scanning.
+ * Waivers are deliberately fail-closed: an annotation is accepted only when its
+ * exact sentinel pair encloses one expected line in one approved file. Any stray,
+ * duplicated, nested, malformed, or relocated sentinel is a hard failure and
+ * waives nothing. The canonical-topic-meta context additionally parses the exact
+ * FD_TOPIC_META JSON assignment so a future editor default can never hide here. */
+function doseWaiverLines(filename, lines) {
+  const waived = new Set();
+  const contexts = [
+    {
+      name: 'canonical-topic-meta',
+      filename: 'rotation-curator.html',
+      validate(line) {
+        const match = line.match(/^\s*var FD_TOPIC_META=(\{.*\});\s*$/);
+        if (!match) return false;
+        try {
+          const value = JSON.parse(match[1]);
+          return value !== null && typeof value === 'object' && !Array.isArray(value);
+        } catch {
+          return false;
+        }
+      },
+    },
+    {
+      // Pre-existing reviewed instrument copy also needs a line-bounded exception;
+      // unlike the old file-wide marker, this can never hide a future second dose.
+      name: 'validated-instrument-line',
+      filename: 'bfcrs.html',
+      validate(line) { return DOSE.test(line); },
+    },
+  ];
+  const knownSentinels = new Set();
+
+  for (const context of contexts) {
+    const startText = `/* ${DOSE_WAIVER_PREFIX}-START: ${context.name} */`;
+    const endText = `/* ${DOSE_WAIVER_PREFIX}-END: ${context.name} */`;
+    knownSentinels.add(startText);
+    knownSentinels.add(endText);
+    const starts = [], ends = [];
+    lines.forEach((line, index) => {
+      if (line.trim() === startText) starts.push(index);
+      if (line.trim() === endText) ends.push(index);
+    });
+    if (!starts.length && !ends.length) continue;
+    const valid = filename === context.filename
+      && starts.length === 1
+      && ends.length === 1
+      && ends[0] === starts[0] + 2
+      && context.validate(lines[starts[0] + 1]);
+    if (valid) waived.add(starts[0] + 1);
+    else H(`invalid dose-waiver sentinel in ${filename}: ${context.name} must bound one approved line`);
+  }
+
+  lines.forEach((line) => {
+    if (!line.includes(DOSE_WAIVER_PREFIX)) return;
+    if (!knownSentinels.has(line.trim())) {
+      H(`invalid dose-waiver sentinel in ${filename}: unrecognized or legacy annotation`);
+    }
+  });
+  return waived;
+}
 
 /* classify(msg): map a soft-finding message to a stable class for the ratchet (section 9).
  * Regexes are ordered most-specific first and matched against the literal S() message
@@ -292,15 +355,16 @@ for (const f of toolFiles) {
   if (!/<title>/i.test(html)) H(`tool missing <title>: ${f}`);
   if (!/name=["']viewport["']/i.test(html)) H(`tool missing viewport meta: ${f}`);
   // Dose-literal rule scope: HARD for the new education/trainer layer (rp-*, *-trainer)
-  // that must never read like an order set; SOFT elsewhere (validated instruments like
-  // BFCRS/CIWA legitimately carry standard doses). A reviewed file may opt out of the
-  // soft warning with a `QA-ALLOW-DOSE` comment marker.
+  // that must never read like an order set; SOFT elsewhere. Only an exact, approved,
+  // line-bounded sentinel may waive scanning; malformed annotations waive nothing.
   const doseHard = /^rp-/.test(f) || /-trainer\.html$/.test(f);
-  const doseAllow = /QA-ALLOW-DOSE/.test(html);
-  html.split('\n').forEach((line, i) => {
+  const htmlLines = html.split('\n');
+  const doseWaivers = doseWaiverLines(f, htmlLines);
+  htmlLines.forEach((line, i) => {
+    if (doseWaivers.has(i)) return;
     if (!DOSE.test(line)) return;
     const msg = `dose literal in ${f}:${i + 1} → "${line.trim().slice(0, 70)}"`;
-    if (doseHard) H(msg); else if (!doseAllow) S(msg + ' (validated-instrument? add QA-ALLOW-DOSE or route to LOCAL_POLICY)');
+    if (doseHard) H(msg); else S(msg + ' (validated instrument? use an approved line sentinel or route to LOCAL_POLICY)');
   });
   // Sanctioned localStorage namespaces: cw_* (shared hub) and rp_* (resident platform).
   const keys = [...html.matchAll(/localStorage\.(?:getItem|setItem|removeItem)\(\s*['"]([^'"]+)['"]/g)].map(m => m[1]);

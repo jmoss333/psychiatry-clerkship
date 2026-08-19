@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
 <!-- [RC-META] tool="Bush-Francis Catatonia Rating Scale" version="1.1" built="2026-07-07" category="acute-safety" audience="trainee,ms3" settings="inpatient" time="10min" summary="Interactive Bush-Francis Catatonia Rating Scale (BFCRS): 23 items with operational 0-3 anchors, live screening count (items 1-14, positive if >=2 scored >=1), severity total /69, and a lorazepam-challenge prompt when the screen is positive. Educational; fictional composites only; no PHI." -->
-<!-- QA-ALLOW-DOSE: BFCRS teaching page names a standard lorazepam challenge range as a recognition/escalation prompt, not an order set. -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex,nofollow">
@@ -186,7 +185,9 @@ function App(){
           e("div",{className:"sevcap"},"Independent of the screen — track it to follow response."))),
       positive? e("div",{className:"lorcallout"},
         e("span",{className:"flask"},"⚗"),
+/* QA-ALLOW-DOSE-START: validated-instrument-line */
         e("span",null, e("b",null,"Screen positive → consider a lorazepam challenge. "),"e.g., 1–2 mg IV/IM, reassess in 1–2 h. Hold antipsychotics until catatonia is excluded (malignant catatonia / NMS risk). Escalate per protocol.")) : null
+/* QA-ALLOW-DOSE-END: validated-instrument-line */
     ),
     e("div",{className:"heatwrap"},
       e("div",{className:"eyebrow2",style:{margin:"0 0 8px 2px"}},"All 23 items"),

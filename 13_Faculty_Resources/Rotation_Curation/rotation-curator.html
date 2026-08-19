@@ -6,7 +6,6 @@
   <meta name="robots" content="noindex,nofollow">
   <title>Faculty rotation edition builder</title>
   <!-- [CLERKSHIP-META v1] tool="Rotation Edition Curator" version="1.0" built="2026-08-19" category="faculty-curation" audience="faculty" settings="self-study" time="20min" clinicalClaim="false" summary="Arrange an audience-locked curriculum and bounded local orientation into an account-free edition link." -->
-  <!-- QA-ALLOW-DOSE: FD_TOPIC_META is the read-only canonical site payload; this curator source adds no dose or local clinical directive. -->
   <style>
     :root {
       color-scheme: light;
@@ -281,7 +280,9 @@
 
   <script>
     var FD_CURRICULUM={};
+    /* QA-ALLOW-DOSE-START: canonical-topic-meta */
     var FD_TOPIC_META={};
+    /* QA-ALLOW-DOSE-END: canonical-topic-meta */
     var FD_TOOL_REGISTRY={};
     var FD_SITE_MANIFEST={};
     var FD_ROLES=[];
