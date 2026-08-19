@@ -25,6 +25,7 @@ var FD_EDITION_DANGEROUS=(function(){
   keys.__proto__=true; keys.constructor=true; keys.prototype=true;
   return keys;
 }());
+var FD_EDITION_MAX_ARRAY_ITEMS=FD_EDITION_RULES.maxConfigBytes;
 var FD_EDITION_CONFIG_FIELDS=['audience','pathId','editionNumber','createdAgainstCoreRevision','card','pathItems','localOrientation','changeNote'];
 var FD_EDITION_CARD_FIELDS=['title','locationName','locationCode','curatorName','curatorRole','rotationStart','rotationEnd','lastVerified'];
 var FD_EDITION_PATH_FIELDS=['instanceId','ref','week','order','priority','rationale'];
@@ -51,17 +52,21 @@ function fdEditionAllowedMap(fields){
   return map;
 }
 
+function fdEditionOwnKeys(value){
+  return Reflect.ownKeys(value);
+}
+
 function fdEditionReadObject(value,fields,path,errors){
-  var out={},allowed=fdEditionAllowedMap(fields),keys,i,key,descriptor;
+  var out={},allowed=fdEditionAllowedMap(fields),present=Object.create(null),keys,i,key,descriptor;
   if(!fdEditionObject(value)){
     errors.push(fdEditionFinding('EDITION_SCHEMA',path,'An object with the required fields is required.'));
     return null;
   }
-  try{ keys=Object.keys(value); }
+  try{ keys=fdEditionOwnKeys(value); }
   catch(ignore){ errors.push(fdEditionFinding('EDITION_SCHEMA',path,'The object could not be read safely.')); return null; }
   for(i=0;i<keys.length;i++){
     key=keys[i];
-    if(FD_EDITION_DANGEROUS[key]||!allowed[key]){
+    if(typeof key!=='string'||FD_EDITION_DANGEROUS[key]||!allowed[key]){
       errors.push(fdEditionFinding('EDITION_SCHEMA',path,'Only documented fields are allowed.'));
       continue;
     }
@@ -71,10 +76,11 @@ function fdEditionReadObject(value,fields,path,errors){
       errors.push(fdEditionFinding('EDITION_SCHEMA',path,'Fields must be plain data values.'));
       continue;
     }
+    present[key]=true;
     out[key]=descriptor.value;
   }
   for(i=0;i<fields.length;i++){
-    if(!Object.prototype.hasOwnProperty.call(value,fields[i])){
+    if(!present[fields[i]]){
       errors.push(fdEditionFinding('EDITION_SCHEMA',path,'All required fields must be present.'));
     }
   }
@@ -91,27 +97,45 @@ function fdEditionString(value,path,errors){
 }
 
 function fdEditionArray(value,path,errors){
-  var keys,out,i,key,descriptor;
+  var keys,out,i,key,descriptor,lengthDescriptor,length,data=Object.create(null);
   if(!Array.isArray(value)){
     errors.push(fdEditionFinding('EDITION_SCHEMA',path,'A list is required.'));
     return [];
   }
-  try{ keys=Object.keys(value); }
+  try{ lengthDescriptor=Object.getOwnPropertyDescriptor(value,'length'); }
+  catch(ignoreLength){ lengthDescriptor=null; }
+  if(!lengthDescriptor||!Object.prototype.hasOwnProperty.call(lengthDescriptor,'value')||
+     typeof lengthDescriptor.value!=='number'||!isFinite(lengthDescriptor.value)||
+     Math.floor(lengthDescriptor.value)!==lengthDescriptor.value||lengthDescriptor.value<0){
+    errors.push(fdEditionFinding('EDITION_SCHEMA',path,'The list length is invalid.'));
+    return [];
+  }
+  length=lengthDescriptor.value;
+  if(length>FD_EDITION_MAX_ARRAY_ITEMS){
+    errors.push(fdEditionFinding('EDITION_SIZE',path,'The list is too large to process safely.'));
+    return [];
+  }
+  try{ keys=fdEditionOwnKeys(value); }
   catch(ignoreKeys){ errors.push(fdEditionFinding('EDITION_SCHEMA',path,'The list could not be read safely.')); return []; }
   for(i=0;i<keys.length;i++){
     key=keys[i];
-    if(!/^(?:0|[1-9][0-9]*)$/.test(key)||Number(key)>=value.length){
+    if(key==='length') continue;
+    if(typeof key!=='string'||!/^(?:0|[1-9][0-9]*)$/.test(key)||Number(key)>=length){
       errors.push(fdEditionFinding('EDITION_SCHEMA',path,'Lists must not contain named fields.'));
+      continue;
     }
+    try{ descriptor=Object.getOwnPropertyDescriptor(value,key); }
+    catch(ignoreDescriptor){ descriptor=null; }
+    if(!descriptor||!Object.prototype.hasOwnProperty.call(descriptor,'value'))
+      errors.push(fdEditionFinding('EDITION_SCHEMA',path,'Lists must contain plain data values.'));
+    else data[key]=descriptor.value;
   }
   out=[];
-  for(i=0;i<value.length;i++){
-    try{ descriptor=Object.getOwnPropertyDescriptor(value,String(i)); }
-    catch(ignoreDescriptor){ descriptor=null; }
-    if(!descriptor||!Object.prototype.hasOwnProperty.call(descriptor,'value')){
+  for(i=0;i<length;i++){
+    if(!Object.prototype.hasOwnProperty.call(data,String(i))){
       errors.push(fdEditionFinding('EDITION_SCHEMA',path,'Lists must contain plain data values.'));
       out.push(undefined);
-    }else out.push(descriptor.value);
+    }else out.push(data[String(i)]);
   }
   return out;
 }
@@ -206,7 +230,7 @@ function fdEditionNormalizeConfig(config){
 function fdEditionCanonicalJson(value){
   var seen=[];
   function encode(current,depth){
-    var keys,out,i,key;
+    var keys,out,i,key,descriptor,lengthDescriptor,length,data;
     if(depth>64) throw new Error('Canonical JSON depth is invalid.');
     if(current===null) return 'null';
     if(typeof current==='string'||typeof current==='boolean') return JSON.stringify(current);
@@ -218,16 +242,43 @@ function fdEditionCanonicalJson(value){
     if(seen.indexOf(current)!==-1) throw new Error('Canonical JSON cycle is invalid.');
     seen.push(current);
     if(Array.isArray(current)){
-      out=[];
-      for(i=0;i<current.length;i++) out.push(encode(current[i],depth+1));
+      try{ lengthDescriptor=Object.getOwnPropertyDescriptor(current,'length'); }
+      catch(ignoreLength){ lengthDescriptor=null; }
+      if(!lengthDescriptor||!Object.prototype.hasOwnProperty.call(lengthDescriptor,'value')||
+         lengthDescriptor.value>FD_EDITION_MAX_ARRAY_ITEMS) throw new Error('Canonical JSON array is invalid.');
+      length=lengthDescriptor.value; data=Object.create(null); out=[];
+      try{ keys=fdEditionOwnKeys(current); }
+      catch(ignoreArrayKeys){ throw new Error('Canonical JSON array is invalid.'); }
+      for(i=0;i<keys.length;i++){
+        key=keys[i];
+        if(key==='length') continue;
+        if(typeof key!=='string'||!/^(?:0|[1-9][0-9]*)$/.test(key)||Number(key)>=length)
+          throw new Error('Canonical JSON array key is invalid.');
+        try{ descriptor=Object.getOwnPropertyDescriptor(current,key); }
+        catch(ignoreArrayDescriptor){ descriptor=null; }
+        if(!descriptor||!Object.prototype.hasOwnProperty.call(descriptor,'value'))
+          throw new Error('Canonical JSON array value is invalid.');
+        data[key]=descriptor.value;
+      }
+      for(i=0;i<length;i++){
+        if(!Object.prototype.hasOwnProperty.call(data,String(i))) throw new Error('Canonical JSON sparse array is invalid.');
+        out.push(encode(data[String(i)],depth+1));
+      }
       seen.pop();
       return '['+out.join(',')+']';
     }
-    keys=Object.keys(current).sort(); out=[];
+    try{ keys=fdEditionOwnKeys(current); }
+    catch(ignoreObjectKeys){ throw new Error('Canonical JSON object is invalid.'); }
+    for(i=0;i<keys.length;i++) if(typeof keys[i]!=='string') throw new Error('Canonical JSON symbol key is invalid.');
+    keys.sort(); out=[];
     for(i=0;i<keys.length;i++){
       key=keys[i];
       if(FD_EDITION_DANGEROUS[key]) throw new Error('Canonical JSON key is invalid.');
-      out.push(JSON.stringify(key)+':'+encode(current[key],depth+1));
+      try{ descriptor=Object.getOwnPropertyDescriptor(current,key); }
+      catch(ignoreObjectDescriptor){ descriptor=null; }
+      if(!descriptor||!descriptor.enumerable||!Object.prototype.hasOwnProperty.call(descriptor,'value'))
+        throw new Error('Canonical JSON object value is invalid.');
+      out.push(JSON.stringify(key)+':'+encode(descriptor.value,depth+1));
     }
     seen.pop();
     return '{'+out.join(',')+'}';
@@ -257,11 +308,16 @@ function fdEditionBase64urlDecode(text,maxBytes){
 }
 
 function fdEditionDigest(preDigestObject,subtle){
-  var bytes;
-  if(!subtle||typeof subtle.digest!=='function') return Promise.reject(new Error('SHA-256 is unavailable.'));
+  var bytes,digestMethod,request;
+  try{ digestMethod=subtle&&subtle.digest; }
+  catch(ignoreMethod){ return Promise.reject(new Error('SHA-256 is unavailable.')); }
+  if(typeof digestMethod!=='function') return Promise.reject(new Error('SHA-256 is unavailable.'));
   try{ bytes=new TextEncoder().encode(fdEditionCanonicalJson(preDigestObject)); }
   catch(error){ return Promise.reject(new Error('Digest input is invalid.')); }
-  return subtle.digest('SHA-256',bytes).then(function(buffer){
+  try{ request=digestMethod.call(subtle,'SHA-256',bytes); }
+  catch(ignoreDigest){ return Promise.reject(new Error('SHA-256 is unavailable.')); }
+  return Promise.resolve(request).then(function(buffer){
+    if(!(buffer instanceof ArrayBuffer)||buffer.byteLength!==32) throw new Error('SHA-256 result is invalid.');
     return 'sha256-'+fdEditionBase64urlEncode(new Uint8Array(buffer));
   },function(){ throw new Error('SHA-256 is unavailable.'); });
 }
@@ -302,16 +358,32 @@ function fdEditionValidDate(value){
   return date.getUTCFullYear()===Number(match[0])&&date.getUTCMonth()===Number(match[1])-1&&date.getUTCDate()===Number(match[2]);
 }
 
+function fdEditionTextLength(value){
+  return Array.from(value).length;
+}
+
 function fdEditionCheckLabel(value,path,errors){
-  fdEditionAdd(errors,!value||value.length>FD_EDITION_RULES.maxTitle,'EDITION_SCHEMA',path,'Text must contain 1 to 100 characters.');
+  fdEditionAdd(errors,!value||fdEditionTextLength(value)>FD_EDITION_RULES.maxTitle,'EDITION_SCHEMA',path,'Text must contain 1 to 100 characters.');
 }
 
 function fdEditionCheckRationale(value,path,errors){
-  fdEditionAdd(errors,value.length>FD_EDITION_RULES.maxRationale,'EDITION_SCHEMA',path,'Text must contain at most 280 characters.');
+  fdEditionAdd(errors,fdEditionTextLength(value)>FD_EDITION_RULES.maxRationale,'EDITION_SCHEMA',path,'Text must contain at most 280 characters.');
 }
 
 function fdEditionCheckIdentifier(value,path,errors){
   fdEditionAdd(errors,!value||value.length>160||!/^[\x21-\x7E]+$/.test(value),'EDITION_SCHEMA',path,'The identifier must use 1 to 160 visible ASCII characters.');
+}
+
+function fdEditionHostnameValid(hostname){
+  var labels,i;
+  if(!hostname) return false;
+  if(/^\[[0-9a-f:.]+\]$/i.test(hostname)) return true;
+  if(hostname.length>253) return false;
+  labels=hostname.split('.');
+  for(i=0;i<labels.length;i++){
+    if(!labels[i]||labels[i].length>63||!/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/i.test(labels[i])) return false;
+  }
+  return true;
 }
 
 function fdEditionCheckPriority(value,path,errors){
@@ -319,15 +391,18 @@ function fdEditionCheckPriority(value,path,errors){
 }
 
 function fdEditionCheckUrl(value,path,errors){
-  fdEditionAdd(errors,value.length>FD_EDITION_RULES.maxUrl,'EDITION_URL',path,'URLs must contain at most 2048 characters.');
+  var parsed=null;
+  try{ parsed=new URL(value); }catch(ignoreUrl){ parsed=null; }
+  fdEditionAdd(errors,fdEditionTextLength(value)>FD_EDITION_RULES.maxUrl,'EDITION_URL',path,'URLs must contain at most 2048 characters.');
   fdEditionAdd(errors,!/^https:\/\/[^\s]+$/i.test(value),'EDITION_URL',path,'Only absolute HTTPS URLs are allowed.');
+  fdEditionAdd(errors,!parsed||parsed.protocol!=='https:'||!fdEditionHostnameValid(parsed.hostname)||parsed.username!==''||parsed.password!=='','EDITION_URL',path,'The HTTPS URL must contain a valid hostname and no embedded credentials.');
   fdEditionAdd(errors,/[\u0000-\u001f\u007f]/.test(value)||/^https:\/\/[^/\s@]+@/i.test(value),'EDITION_URL',path,'URLs must not contain control characters or embedded credentials.');
   fdEditionAdd(errors,/^(?:javascript|data|vbscript|blob):/i.test(value),'EDITION_URL',path,'Executable and embedded-data URL schemes are not allowed.');
 }
 
 function fdEditionScreenText(value,path,errors,warnings){
-  var blocking=/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]|<\/?[a-z][^>]*>|\bon[a-z]+\s*=|(?:javascript|data|vbscript|blob):|\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b|\b(?:pager\s*[:#-]?\s*\d{4,}|(?:call|phone|tel(?:ephone)?)?\s*\+?\d[\d(). -]{6,}\d)\b|\b(?:password|passcode|credential|username|login|api[_ -]?key|secret|token)\s*[:=]\s*\S+|\b(?:access|door|badge)\s+code\s*[:=]\s*\S+|\bpin\s*[:=]\s*\d+|\b\d+(?:\.\d+)?\s*(?:mg|mcg|g|ml|units?)\b/i;
-  var advisory=/\b(?:patient\s+(?:identifier|name|record)|credentials?|protocols?|dos(?:e|ing|age)|medication)\b/i;
+  var blocking=/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]|<\/?[a-z][^>]*>|\bon[a-z]+\s*=|(?:javascript|data|vbscript|blob):|\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b|\b(?:pager\s*[:#-]?\s*\d{4,}|(?:call|phone|tel(?:ephone)?)?\s*\+?\d[\d(). -]{6,}\d)\b|\b(?:password|passcode|credential|username|login|api[_ -]?key|secret|token)\s*(?::|=|\bis\b|\bare\b)\s*\S+|\b(?:access|door|badge)\s+code\s*(?::|=|\bis\b|\bare\b)\s*\S+|\bpin\s*(?::|=|\bis\b)\s*\d+|\b\d+(?:\.\d+)?\s*(?:mg|mcg|\u00b5g|g|ml|milligrams?|micrograms?|grams?|millilit(?:er|re)s?|units?|iu)\b/i;
+  var advisory=/\b(?:patient\s+(?:identifier|name|record)|credentials?|password|passcode|username|login|api[_ -]?key|secret|token|(?:access|door|badge)\s+code|pin|protocols?|dos(?:e|ing|age)|medication)\b/i;
   if(blocking.test(value)) errors.push(fdEditionFinding('EDITION_TEXT_RISK',path,'Text must not contain direct contact, access, credential, dose, control, HTML, event-handler, or executable content.'));
   else if(advisory.test(value)) warnings.push(fdEditionFinding('EDITION_TEXT_RISK',path,'Review this text for sensitive identifiers, credentials, protocols, or dosing details before publication.',false));
 }
@@ -384,7 +459,7 @@ function fdEditionValidateConfig(config,index,siteContext){
   if(value.localOrientation){
     for(i=0;i<8;i++){
       key=FD_EDITION_ORIENTATION_FIELDS[i];
-      fdEditionAdd(errors,value.localOrientation[key].length>FD_EDITION_RULES.maxOrientation,'EDITION_SCHEMA','/config/localOrientation/'+key,'Orientation text must contain at most 600 characters.');
+      fdEditionAdd(errors,fdEditionTextLength(value.localOrientation[key])>FD_EDITION_RULES.maxOrientation,'EDITION_SCHEMA','/config/localOrientation/'+key,'Orientation text must contain at most 600 characters.');
       humanTexts.push([value.localOrientation[key],'/config/localOrientation/'+key]);
     }
     fdEditionAdd(errors,value.localOrientation.checklist.length>FD_EDITION_RULES.maxChecklist,'EDITION_SIZE','/config/localOrientation/checklist','At most 24 checklist items are allowed.');
@@ -459,8 +534,10 @@ function fdEditionValidateEnvelope(envelope,index,siteContext,subtle){
 
 function fdEditionDecodePayload(payload,index,siteContext,subtle,totalUrlLength){
   var bytes,text,envelope;
-  if(typeof totalUrlLength!=='number'||!isFinite(totalUrlLength)||totalUrlLength<0||totalUrlLength>FD_EDITION_RULES.maxUrlChars)
+  if(typeof totalUrlLength!=='number'||!isFinite(totalUrlLength)||Math.floor(totalUrlLength)!==totalUrlLength||totalUrlLength<0||totalUrlLength>FD_EDITION_RULES.maxUrlChars)
     return Promise.resolve(fdEditionFailure('EDITION_URL','/','The complete edition URL must contain at most 16000 characters.'));
+  if(typeof payload==='string'&&(payload.length>totalUrlLength||payload.length>FD_EDITION_RULES.maxUrlChars))
+    return Promise.resolve(fdEditionFailure('EDITION_URL','/','The edition payload length must fit within the complete URL limit.'));
   try{
     bytes=fdEditionBase64urlDecode(payload,FD_EDITION_RULES.maxUrlChars);
     text=new TextDecoder('utf-8',{fatal:true}).decode(bytes);

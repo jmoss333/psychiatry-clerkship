@@ -124,6 +124,14 @@ test('hand-authored valid and boundary-invalid documents have schema/browser par
       d.config.localOrientation.checklist = Array.from({ length: 24 }, (_, i) => ({ id: `local:check:${i}`, label: 'Synthetic', priority: 'required' }));
       d.config.localOrientation.resources = Array.from({ length: 12 }, (_, i) => ({ id: `local:resource:${i}`, title: 'Synthetic', url: 'https://example.edu/r', priority: 'optional', week: 1, rationale: '' }));
     }, true],
+    ['valid astral title boundary', (d) => { d.config.card.title = '\u{1F9E0}'.repeat(100); }, true],
+    ['invalid astral title boundary', (d) => { d.config.card.title = '\u{1F9E0}'.repeat(101); }, false],
+    ['valid astral rationale boundary', (d) => { d.config.pathItems[0].rationale = '\u{1F9E0}'.repeat(280); }, true],
+    ['invalid astral rationale boundary', (d) => { d.config.pathItems[0].rationale = '\u{1F9E0}'.repeat(281); }, false],
+    ['valid astral orientation boundary', (d) => { d.config.localOrientation.firstDayArrival = '\u{1F9E0}'.repeat(600); }, true],
+    ['invalid astral orientation boundary', (d) => { d.config.localOrientation.firstDayArrival = '\u{1F9E0}'.repeat(601); }, false],
+    ['valid astral URL boundary', (d) => { d.config.localOrientation.contacts[0].directoryUrl = `https://example.edu/${'\u{1F9E0}'.repeat(2028)}`; }, true],
+    ['invalid astral URL boundary', (d) => { d.config.localOrientation.contacts[0].directoryUrl = `https://example.edu/${'\u{1F9E0}'.repeat(2029)}`; }, false],
     ['resident path and week four', (d) => {
       d.config.audience = 'resident'; d.config.pathId = 'resident-four-week';
       d.config.pathItems[0].week = 4; d.config.localOrientation.resources[0].week = 4;

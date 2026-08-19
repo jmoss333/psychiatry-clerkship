@@ -107,6 +107,88 @@ test('rejects unknown, dangerous, and unexpected nested keys before canonicaliza
   }
 });
 
+test('rejects non-enumerable and symbol fields while leaving accessors uninvoked', () => {
+  const hiddenCases = [
+    () => {
+      const c = fixture('valid-ms3.json').config;
+      Object.defineProperty(c.card, 'hiddenField', { value: 'private-value', enumerable: false });
+      return c;
+    },
+    () => {
+      const c = fixture('valid-ms3.json').config;
+      c.card[Symbol('hidden-field')] = 'private-value';
+      return c;
+    },
+    () => {
+      const c = fixture('valid-ms3.json').config;
+      Object.defineProperty(c.pathItems, 'hiddenField', { value: 'private-value', enumerable: false });
+      return c;
+    },
+    () => {
+      const c = fixture('valid-ms3.json').config;
+      c.pathItems[Symbol('hidden-field')] = 'private-value';
+      return c;
+    }
+  ];
+  for (const make of hiddenCases) {
+    const result = F.fdEditionNormalizeConfig(make());
+    assert.equal(result.ok, false);
+    assert.ok(result.errors.some((finding) => finding.code === 'EDITION_SCHEMA'));
+    assertPrivateSafe(result, 'private-value');
+  }
+
+  let getterReads = 0;
+  const accessorConfig = fixture('valid-ms3.json').config;
+  Object.defineProperty(accessorConfig.card, 'title', {
+    enumerable: false,
+    get() { getterReads += 1; return 'Synthetic'; }
+  });
+  const accessorResult = F.fdEditionNormalizeConfig(accessorConfig);
+  assert.equal(accessorResult.ok, false);
+  assert.equal(getterReads, 0);
+});
+
+test('rejects oversized sparse arrays before attacker-sized descriptor iteration', () => {
+  const config = fixture('valid-ms3.json').config;
+  let descriptorReads = 0;
+  const sparse = new Proxy(new Array(100_000), {
+    getOwnPropertyDescriptor(target, key) {
+      if (key !== 'length') descriptorReads += 1;
+      return Reflect.getOwnPropertyDescriptor(target, key);
+    }
+  });
+  config.pathItems = sparse;
+  const result = F.fdEditionNormalizeConfig(config);
+  assert.equal(result.ok, false);
+  assert.ok(result.errors.some((finding) => finding.code === 'EDITION_SIZE'));
+  assert.ok(descriptorReads < 100, `descriptor reads: ${descriptorReads}`);
+});
+
+test('canonicalization rejects hidden fields, accessors, symbols, and oversized sparse arrays', () => {
+  const hidden = { safe: 'value' };
+  Object.defineProperty(hidden, 'hiddenField', { value: 'private-value', enumerable: false });
+  assert.throws(() => F.fdEditionCanonicalJson(hidden), /canonical/i);
+
+  const symbolic = { safe: 'value', [Symbol('hidden')]: 'private-value' };
+  assert.throws(() => F.fdEditionCanonicalJson(symbolic), /canonical/i);
+
+  let getterReads = 0;
+  const accessor = {};
+  Object.defineProperty(accessor, 'safe', { enumerable: true, get() { getterReads += 1; return 'value'; } });
+  assert.throws(() => F.fdEditionCanonicalJson(accessor), /canonical/i);
+  assert.equal(getterReads, 0);
+
+  let descriptorReads = 0;
+  const sparse = new Proxy(new Array(100_000), {
+    getOwnPropertyDescriptor(target, key) {
+      if (key !== 'length') descriptorReads += 1;
+      return Reflect.getOwnPropertyDescriptor(target, key);
+    }
+  });
+  assert.throws(() => F.fdEditionCanonicalJson(sparse), /canonical/i);
+  assert.ok(descriptorReads < 100, `descriptor reads: ${descriptorReads}`);
+});
+
 test('validates audience-correct MS3 and resident configs', () => {
   for (const name of ['valid-ms3.json', 'valid-resident.json']) {
     const config = fixture(name).config;
@@ -192,6 +274,8 @@ test('blocks unsafe URLs and sensitive or executable text without echoing it', (
   const base = fixture('valid-ms3.json').config;
   const cases = [
     ['http://unsafe.example/private', 'EDITION_URL'],
+    ['https://?x', 'EDITION_URL'],
+    ['https://example..edu/private', 'EDITION_URL'],
     ['https://example.edu/private\u0007', 'EDITION_URL'],
     ['https://person@example.edu/private', 'EDITION_URL'],
     ['javascript:alert(1)', 'EDITION_TEXT_RISK'],
@@ -225,6 +309,34 @@ test('advises on ambiguous sensitive topics without claiming privacy clearance',
   assert.ok(result.warnings.length > 0);
   assert.ok(result.warnings.every((finding) => finding.blocking === false));
   assert.doesNotMatch(JSON.stringify(result.warnings), /PHI[- ]free|verified identity|signature/i);
+});
+
+test('blocks assignment verbs and broad medication dose units without echoing synthetic values', () => {
+  const base = fixture('valid-ms3.json').config;
+  for (const unsafe of ['door code is 4321', 'password is example-only', 'Take 5 milligrams now']) {
+    const config = clone(base);
+    config.localOrientation.firstDayArrival = unsafe;
+    const result = F.fdEditionValidateConfig(config, indexFor(base), context('ms3', base.createdAgainstCoreRevision));
+    assert.equal(result.ok, false, unsafe);
+    assert.ok(result.errors.some((finding) => finding.code === 'EDITION_TEXT_RISK'));
+    assertPrivateSafe(result, unsafe);
+  }
+});
+
+test('advises on ambiguous credential, access, and dose terms', () => {
+  const base = fixture('valid-ms3.json').config;
+  for (const ambiguous of [
+    'Review password handling with a supervisor.',
+    'Review the access code process with a supervisor.',
+    'Review dose guidance with a supervisor.'
+  ]) {
+    const config = clone(base);
+    config.changeNote = ambiguous;
+    const result = F.fdEditionValidateConfig(config, indexFor(base), context('ms3', base.createdAgainstCoreRevision));
+    assert.equal(result.ok, true, ambiguous);
+    assert.ok(result.warnings.some((finding) => finding.code === 'EDITION_TEXT_RISK'), ambiguous);
+    assertPrivateSafe(result, ambiguous);
+  }
 });
 
 test('canonical JSON sorts recursive object keys and preserves array order', () => {
@@ -314,6 +426,37 @@ test('validates envelope digest, audience, schema version, and missing crypto sa
   assert.ok(codes(noSubtle).includes('EDITION_DIGEST'));
 });
 
+test('normalizes synchronous, rejected, and malformed crypto outcomes to safe digest failures', async () => {
+  const config = fixture('valid-ms3.json').config;
+  const idx = indexFor(config);
+  const ctx = context('ms3', config.createdAgainstCoreRevision);
+  const valid = await F.fdEditionCreateEnvelope(config, idx, ctx, webcrypto.subtle);
+  const failures = [
+    { digest() { throw new Error('synthetic failure detail'); } },
+    { digest() { return Promise.reject(new Error('synthetic failure detail')); } },
+    { digest() { return Promise.resolve(new ArrayBuffer(31)); } },
+    { digest() { return Promise.resolve('malformed fulfillment'); } }
+  ];
+
+  for (const subtle of failures) {
+    let digestPromise;
+    assert.doesNotThrow(() => {
+      digestPromise = F.fdEditionDigest({ format: 'synthetic' }, subtle);
+    });
+    await assert.rejects(digestPromise, /SHA-256|Digest/i);
+
+    const created = await F.fdEditionCreateEnvelope(config, idx, ctx, subtle);
+    assert.equal(created.ok, false);
+    assert.ok(created.errors.some((finding) => finding.code === 'EDITION_DIGEST'));
+    assertPrivateSafe(created, 'synthetic failure detail');
+
+    const validated = await F.fdEditionValidateEnvelope(valid.envelope, idx, ctx, subtle);
+    assert.equal(validated.ok, false);
+    assert.ok(validated.errors.some((finding) => finding.code === 'EDITION_DIGEST'));
+    assertPrivateSafe(validated, 'synthetic failure detail');
+  }
+});
+
 test('digest equality requires exact 32-byte digests and fingerprints use first 30 bits', () => {
   const abc = 'sha256-ungWv48Bz-pBQUDeXa4iI7ADYaOWF3qctBD_YfIAFa0';
   assert.equal(F.fdEditionDigestEqual(abc, abc), true);
@@ -331,7 +474,11 @@ test('payload decoding rejects malformed UTF-8, trailing parameters, oversize UR
 
   const cases = [
     [made.payload, 16001, 'EDITION_URL'],
-    [`${made.payload}&other=1`, 100, 'EDITION_SCHEMA'],
+    [made.payload, -1, 'EDITION_URL'],
+    [made.payload, 1.5, 'EDITION_URL'],
+    [made.payload, made.payload.length - 1, 'EDITION_URL'],
+    ['A'.repeat(16001), 1, 'EDITION_URL'],
+    [`${made.payload}&other=1`, made.payload.length + 20, 'EDITION_SCHEMA'],
     [F.fdEditionBase64urlEncode(new Uint8Array([0xc3, 0x28])), 100, 'EDITION_SCHEMA'],
     [F.fdEditionBase64urlEncode(new TextEncoder().encode('{"schemaVersion":1} trailing')), 100, 'EDITION_SCHEMA']
   ];
