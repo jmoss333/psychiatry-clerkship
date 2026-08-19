@@ -162,6 +162,128 @@ test('startup journal reverses repeated owned writes by exact post-value', () =>
   assert.equal(storage.snapshot().cw_last, 'welcome.md');
 });
 
+test('startup journal collapses A to B to C ownership before comparing concurrent bytes', () => {
+  for (const [concurrent, expected] of [['B', 'B'], ['C', 'A'], ['D', 'D']]) {
+    const storage = recordingStorage({ cw_plan_v1: 'A' });
+    const journal = F.fdEditionStartupJournal(storage, ['cw_plan_v1']);
+    F.fdEditionStartupJournalRun(journal, ['cw_plan_v1'], () => storage.setItem('cw_plan_v1', 'B'));
+    F.fdEditionStartupJournalRun(journal, ['cw_plan_v1'], () => storage.setItem('cw_plan_v1', 'C'));
+
+    storage.setItem('cw_plan_v1', concurrent);
+    assert.equal(F.fdEditionStartupJournalRollback(journal), true);
+    assert.equal(storage.snapshot().cw_plan_v1, expected, `concurrent ${concurrent}`);
+  }
+});
+
+test('startup journal never follows an intermediate value through set delete set', () => {
+  const storage = recordingStorage({ cw_plan_v1: 'A' });
+  const journal = F.fdEditionStartupJournal(storage, ['cw_plan_v1']);
+  F.fdEditionStartupJournalRun(journal, ['cw_plan_v1'], () => storage.setItem('cw_plan_v1', 'B'));
+  F.fdEditionStartupJournalRun(journal, ['cw_plan_v1'], () => storage.removeItem('cw_plan_v1'));
+  F.fdEditionStartupJournalRun(journal, ['cw_plan_v1'], () => storage.setItem('cw_plan_v1', 'C'));
+
+  storage.removeItem('cw_plan_v1');
+  assert.equal(F.fdEditionStartupJournalRollback(journal), true);
+  assert.equal(storage.snapshot().cw_plan_v1, undefined);
+});
+
+test('startup journal never follows an intermediate value through delete restore', () => {
+  const storage = recordingStorage({ cw_frontdoor_v1: 'A' });
+  const journal = F.fdEditionStartupJournal(storage, ['cw_frontdoor_v1']);
+  F.fdEditionStartupJournalRun(journal, ['cw_frontdoor_v1'], () => storage.removeItem('cw_frontdoor_v1'));
+  F.fdEditionStartupJournalRun(journal, ['cw_frontdoor_v1'], () => storage.setItem('cw_frontdoor_v1', 'A'));
+
+  storage.removeItem('cw_frontdoor_v1');
+  assert.equal(F.fdEditionStartupJournalRollback(journal), true);
+  assert.equal(storage.snapshot().cw_frontdoor_v1, undefined);
+});
+
+test('startup journal isolates one conflicted key while rolling back other keys', () => {
+  const storage = recordingStorage({ cw_plan_v1: 'A', cw_last: 'X' });
+  const journal = F.fdEditionStartupJournal(storage, ['cw_plan_v1', 'cw_last']);
+  F.fdEditionStartupJournalRun(journal, ['cw_plan_v1', 'cw_last'], () => {
+    storage.setItem('cw_plan_v1', 'B');
+    storage.setItem('cw_last', 'Y');
+  });
+  F.fdEditionStartupJournalRun(journal, ['cw_plan_v1', 'cw_last'], () => {
+    storage.setItem('cw_plan_v1', 'C');
+    storage.setItem('cw_last', 'Z');
+  });
+
+  storage.setItem('cw_plan_v1', 'B');
+  assert.equal(F.fdEditionStartupJournalRollback(journal), true);
+  assert.deepEqual(storage.snapshot(), { cw_plan_v1: 'B', cw_last: 'X' });
+});
+
+test('startup journal abandons a key after an accessor or storage failure', () => {
+  const accessorStorage = {};
+  Object.defineProperty(accessorStorage, 'getItem', { get() { return () => null; } });
+  accessorStorage.setItem = () => {};
+  accessorStorage.removeItem = () => {};
+  assert.equal(F.fdEditionStartupJournal(accessorStorage, ['cw_plan_v1']), null);
+
+  const values = new Map([['cw_plan_v1', 'A']]);
+  let readCount = 0;
+  let failReadAt = 0;
+  const storage = {
+    getItem(key) {
+      readCount += 1;
+      if (readCount === failReadAt) throw new Error('read failure');
+      return values.has(key) ? values.get(key) : null;
+    },
+    setItem(key, value) { values.set(key, value); },
+    removeItem(key) { values.delete(key); },
+  };
+  const journal = F.fdEditionStartupJournal(storage, ['cw_plan_v1']);
+  F.fdEditionStartupJournalRun(journal, ['cw_plan_v1'], () => storage.setItem('cw_plan_v1', 'B'));
+  failReadAt = readCount + 2;
+  assert.equal(F.fdEditionStartupJournalRun(
+    journal, ['cw_plan_v1'], () => storage.setItem('cw_plan_v1', 'C'),
+  ).ok, false);
+  storage.setItem('cw_plan_v1', 'B');
+  assert.equal(F.fdEditionStartupJournalRollback(journal), false);
+  assert.equal(values.get('cw_plan_v1'), 'B');
+
+  const readFailureValues = new Map([['cw_last', 'A']]);
+  let failRollbackRead = false;
+  const readFailing = {
+    getItem(key) {
+      if (failRollbackRead) throw new Error('rollback read failure');
+      return readFailureValues.has(key) ? readFailureValues.get(key) : null;
+    },
+    setItem(key, value) { readFailureValues.set(key, value); },
+    removeItem(key) { readFailureValues.delete(key); },
+  };
+  const readFailureJournal = F.fdEditionStartupJournal(readFailing, ['cw_last']);
+  F.fdEditionStartupJournalRun(
+    readFailureJournal, ['cw_last'], () => readFailing.setItem('cw_last', 'B'),
+  );
+  failRollbackRead = true;
+  assert.equal(F.fdEditionStartupJournalRollback(readFailureJournal), false);
+  assert.equal(readFailureValues.get('cw_last'), 'B');
+
+  for (const original of ['A', null]) {
+    const owned = new Map(original === null ? [] : [['cw_last', original]]);
+    let failRestore = false;
+    const failing = {
+      getItem(key) { return owned.has(key) ? owned.get(key) : null; },
+      setItem(key, value) {
+        if (failRestore && original !== null) throw new Error('set failure');
+        owned.set(key, value);
+      },
+      removeItem(key) {
+        if (failRestore && original === null) throw new Error('remove failure');
+        owned.delete(key);
+      },
+    };
+    const ownedJournal = F.fdEditionStartupJournal(failing, ['cw_last']);
+    F.fdEditionStartupJournalRun(ownedJournal, ['cw_last'], () => failing.setItem('cw_last', 'B'));
+    failRestore = true;
+    assert.equal(F.fdEditionStartupJournalRollback(ownedJournal), false);
+    assert.equal(owned.get('cw_last'), 'B');
+  }
+});
+
 function protectedSnapshot(storage) {
   const snapshot = storage.snapshot();
   return Object.fromEntries(Object.entries(snapshot).filter(([key]) =>

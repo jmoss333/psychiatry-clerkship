@@ -435,6 +435,37 @@ test('delayed startup fallback preserves concurrent core and unrelated storage',
   await other.close();
 });
 
+test('browser startup journal preserves an intermediate concurrent plan value per key', async ({ page, context }) => {
+  await page.goto('/');
+  await page.addScriptTag({ content: EDITION_STUDENT_SOURCE });
+  await page.evaluate(() => {
+    localStorage.setItem('cw_plan_v1', 'plan-A');
+    localStorage.setItem('cw_frontdoor_v1', 'frontdoor-A');
+    window.__fdRoundTwoJournal = fdEditionStartupJournal(
+      localStorage, ['cw_plan_v1', 'cw_frontdoor_v1'],
+    );
+    fdEditionStartupJournalRun(window.__fdRoundTwoJournal, ['cw_plan_v1'], () => {
+      localStorage.setItem('cw_plan_v1', 'plan-B');
+    });
+    fdEditionStartupJournalRun(window.__fdRoundTwoJournal, ['cw_frontdoor_v1'], () => {
+      localStorage.setItem('cw_frontdoor_v1', 'frontdoor-B');
+    });
+    fdEditionStartupJournalRun(window.__fdRoundTwoJournal, ['cw_plan_v1'], () => {
+      localStorage.setItem('cw_plan_v1', 'plan-C');
+    });
+  });
+
+  const other = await context.newPage();
+  await other.goto('/nav.json');
+  await other.evaluate(() => localStorage.setItem('cw_plan_v1', 'plan-B'));
+  expect(await page.evaluate(() => fdEditionStartupJournalRollback(window.__fdRoundTwoJournal))).toBe(true);
+  expect(await page.evaluate(() => ({
+    plan: localStorage.getItem('cw_plan_v1'),
+    frontdoor: localStorage.getItem('cw_frontdoor_v1'),
+  }))).toEqual({ plan: 'plan-B', frontdoor: 'frontdoor-A' });
+  await other.close();
+});
+
 async function resetEditionWriteLog(page) {
   await page.evaluate((logKey) => {
     sessionStorage.setItem(logKey, '[]');

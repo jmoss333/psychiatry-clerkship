@@ -248,7 +248,10 @@ function fdEditionStartupJournal(storage,allowedKeys){
     if(typeof key!=='string'||!key||Object.prototype.hasOwnProperty.call(allowed,key)) return null;
     allowed[key]=true;
   }
-  return {storage:storage,get:get,set:set,remove:remove,allowed:allowed,operations:[]};
+  return {
+    storage:storage,get:get,set:set,remove:remove,allowed:allowed,
+    records:Object.create(null),order:[],blocked:Object.create(null),failed:false
+  };
 }
 
 function fdEditionStartupJournalValue(journal,key){
@@ -258,42 +261,56 @@ function fdEditionStartupJournalValue(journal,key){
 }
 
 function fdEditionStartupJournalRun(journal,keys,operation){
-  var before=[],after=[],seen=Object.create(null),i,key,value,threw=false,result=null;
+  var before=[],after=[],seen=Object.create(null),i,key,value,record,threw=false,readFailed=false,result=null;
   if(!journal||!Array.isArray(keys)||typeof operation!=='function') return {ok:false,value:null};
   for(i=0;i<keys.length;i++){
     key=keys[i];
     if(typeof key!=='string'||Object.prototype.hasOwnProperty.call(seen,key)||
        !Object.prototype.hasOwnProperty.call(journal.allowed,key)) return {ok:false,value:null};
     seen[key]=true;value=fdEditionStartupJournalValue(journal,key);
-    if(!value.ok)return {ok:false,value:null};
+    if(!value.ok){journal.blocked[key]=true;journal.failed=true;return {ok:false,value:null};}
     before.push(value.value);
+    record=journal.records[key];
+    if(record&&!journal.blocked[key]&&record.expected!==value.value){
+      journal.blocked[key]=true;
+    }
   }
-  try{result=operation();}catch(ignoreOperation){threw=true;}
+  try{result=operation();}catch(ignoreOperation){threw=true;journal.failed=true;}
   for(i=0;i<keys.length;i++){
     value=fdEditionStartupJournalValue(journal,keys[i]);
-    if(!value.ok)return {ok:false,value:null};
+    if(!value.ok){journal.blocked[keys[i]]=true;journal.failed=true;readFailed=true;after.push(null);continue;}
     after.push(value.value);
   }
   for(i=0;i<keys.length;i++){
-    if(before[i]!==after[i])journal.operations.push({key:keys[i],before:before[i],after:after[i]});
+    key=keys[i];
+    if(journal.blocked[key]||before[i]===after[i])continue;
+    record=journal.records[key];
+    if(record)record.expected=after[i];
+    else{
+      journal.records[key]={key:key,original:before[i],expected:after[i]};
+      journal.order.push(key);
+    }
   }
-  return {ok:!threw,value:threw?null:result};
+  return {ok:!threw&&!readFailed,value:threw||readFailed?null:result};
 }
 
 function fdEditionStartupJournalRollback(journal){
-  var operation,current,ok=true;
-  if(!journal||!Array.isArray(journal.operations))return false;
-  for(var i=journal.operations.length-1;i>=0;i--){
-    operation=journal.operations[i];current=fdEditionStartupJournalValue(journal,operation.key);
-    if(!current.ok){ok=false;continue;}
-    if(current.value!==operation.after)continue;
+  var record,current,key,ok;
+  if(!journal||!Array.isArray(journal.order)||!journal.records||!journal.blocked)return false;
+  ok=!journal.failed;
+  for(var i=journal.order.length-1;i>=0;i--){
+    key=journal.order[i];
+    if(journal.blocked[key])continue;
+    record=journal.records[key];current=fdEditionStartupJournalValue(journal,key);
+    if(!current.ok){journal.blocked[key]=true;ok=false;continue;}
+    if(current.value!==record.expected){journal.blocked[key]=true;continue;}
     try{
-      if(operation.before===null)
-        Function.prototype.call.call(journal.remove,journal.storage,operation.key);
-      else Function.prototype.call.call(journal.set,journal.storage,operation.key,operation.before);
-    }catch(ignoreRestore){ok=false;}
+      if(record.original===null)
+        Function.prototype.call.call(journal.remove,journal.storage,key);
+      else Function.prototype.call.call(journal.set,journal.storage,key,record.original);
+    }catch(ignoreRestore){journal.blocked[key]=true;ok=false;}
   }
-  journal.operations=[];
+  journal.records=Object.create(null);journal.order=[];
   return ok;
 }
 
