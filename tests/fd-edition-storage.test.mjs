@@ -8,7 +8,8 @@ const source = (name) => readFileSync(new URL(name, ROOT), 'utf8');
 const F = new Function(`${source('fd_edition_contract.js')}\n${source('fd_edition_project.js')}\n${source('fd_edition_student.js')}\nreturn {
   fdEditionCreateEnvelope,fdEditionResolveStartup,fdEditionAcceptFirst,fdEditionAcceptSwitch,
   fdEditionReadLocalProgress,fdEditionToggleLocalProgress,fdEditionSwitchMarkup,fdEditionErrorMarkup,
-  fdEditionRuntimeListen,fdEditionRuntimeUnlisten
+  fdEditionRuntimeListen,fdEditionRuntimeUnlisten,
+  fdEditionLocalToggleAllowed:typeof fdEditionLocalToggleAllowed==='function'?fdEditionLocalToggleAllowed:null
 };`)();
 
 const REVISION = '1234567890abcdef1234567890abcdef12345678';
@@ -73,6 +74,17 @@ async function edition(audience = 'ms3', editionNumber = 1) {
   assert.equal(result.ok, true);
   return result;
 }
+
+test('local toggles are authorized only by IDs in the trusted active edition snapshot', async () => {
+  const selected = await edition();
+  assert.equal(typeof F.fdEditionLocalToggleAllowed, 'function');
+  assert.equal(F.fdEditionLocalToggleAllowed(selected, 'checklist', 'local:check:1'), true);
+  assert.equal(F.fdEditionLocalToggleAllowed(selected, 'resources', 'local:resource:1'), true);
+  assert.equal(F.fdEditionLocalToggleAllowed(selected, 'checklist', 'local:resource:1'), false);
+  assert.equal(F.fdEditionLocalToggleAllowed(selected, 'resources', 'local:check:1'), false);
+  assert.equal(F.fdEditionLocalToggleAllowed(selected, 'checklist', 'local:check:unknown'), false);
+  assert.equal(F.fdEditionLocalToggleAllowed({ fingerprint: selected.fingerprint }, 'checklist', 'local:check:1'), false);
+});
 
 function fragment(result) { return `#edition=${result.payload}`; }
 

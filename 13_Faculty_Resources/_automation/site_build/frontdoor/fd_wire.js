@@ -821,6 +821,10 @@ function fdWire(root, initialState, opts){
   function clickHandler(event){
     var target=event.target&&event.target.closest?event.target.closest(FD_ACTION_SELECTOR):null;
     if(!target) return;
+    if(!startupCommitted){
+      if(event.preventDefault) event.preventDefault();
+      return;
+    }
     var attrs=fdAttrsFromTarget(target);
     if(event.preventDefault) event.preventDefault();
     apply(fdDispatch(attrs,context({inSheet:!!state.sheet}),state),target,false);
@@ -829,6 +833,10 @@ function fdWire(root, initialState, opts){
     if(destroyed) return;
     var target=event.target;
     if(!target||!target.matches||!target.matches('.fd-searchpanel__input')) return;
+    if(!startupCommitted){
+      if(event.preventDefault) event.preventDefault();
+      return;
+    }
     var start=target.selectionStart, end=target.selectionEnd;
     var direction=target.selectionDirection;
     var before=fdClone(state);
@@ -845,6 +853,10 @@ function fdWire(root, initialState, opts){
     }
   }
   function keyHandler(event){
+    if(!startupCommitted){
+      if(event.preventDefault) event.preventDefault();
+      return;
+    }
     if(externalModalOpen()) return;
     var d=dialog();
     if(d&&fdTrapFocus(event,d)) return;
@@ -889,6 +901,10 @@ function fdWire(root, initialState, opts){
   }
   function popstateHandler(event){
     if(destroyed||!win||!win.location) return;
+    if(!startupCommitted){
+      if(event&&event.preventDefault) event.preventDefault();
+      return;
+    }
     if(previewActive()){
       if(currentRoute()!==previewRouteBase) lockPreview();
       return;
@@ -999,6 +1015,7 @@ function fdWire(root, initialState, opts){
         }
         else if(!replaceHistorySnapshot()) return false;
       }
+      if(o.releaseStartupGate&&o.releaseStartupGate()!==true) return false;
       startupCommitted=true;
       return true;
     }catch(ignoreInitialCommit){ return false; }
@@ -1008,10 +1025,11 @@ function fdWire(root, initialState, opts){
       ok:ok===true,
       getState:function(){ return state; },
       dispatch:function(attrs,c){
-        if(destroyed) return state;
+        if(destroyed||!startupCommitted) return state;
         return apply(fdDispatch(attrs,context(c),state),null,false);
       },
       commitStartup:commitStartup,
+      startupCommitted:function(){ return startupCommitted; },
       destroy:function(){
         if(destroyed&&registrations.length===0) return;
         destroyed=true;

@@ -285,6 +285,216 @@ function fdEditionStudentEscape(value){
   }catch(ignoreEscape){ return ''; }
 }
 
+function fdEditionRenderString(object,key){
+  var data=fdEditionStudentData(object,key);
+  return data.ok&&typeof data.value==='string'?data.value:'';
+}
+
+function fdEditionRenderObject(object,key){
+  var data=fdEditionStudentData(object,key);
+  return data.ok&&fdEditionStudentObject(data.value)?data.value:null;
+}
+
+function fdEditionRenderArray(object,key){
+  var data=fdEditionStudentData(object,key);
+  try{ return data.ok&&Array.isArray(data.value)?data.value:null; }
+  catch(ignoreArray){ return null; }
+}
+
+function fdEditionRenderArrayValue(array,index){
+  var descriptor;
+  try{
+    if(!Array.isArray(array)||index<0||index>=array.length) return null;
+    descriptor=Object.getOwnPropertyDescriptor(array,String(index));
+  }catch(ignoreEntry){ return null; }
+  return descriptor&&descriptor.enumerable&&Object.prototype.hasOwnProperty.call(descriptor,'value')
+    ?descriptor.value:null;
+}
+
+function fdEditionRenderPriority(value){
+  if(value==='required') return 'Required';
+  if(value==='recommended') return 'Recommended';
+  if(value==='optional') return 'Optional';
+  return '';
+}
+
+function fdEditionRenderCompletion(progress,kind,id){
+  var bucket=fdEditionRenderObject(progress,kind),entry;
+  if(!bucket||!fdEditionStudentId(id)) return false;
+  entry=fdEditionStudentData(bucket,id);
+  return entry.ok&&entry.value===true;
+}
+
+function fdEditionExternalUrl(url){
+  var parsed;
+  if(typeof url!=='string'||!url) return '';
+  try{ parsed=new URL(url); }
+  catch(ignoreUrl){ return ''; }
+  if(parsed.protocol!=='https:'||!parsed.hostname||parsed.username||parsed.password) return '';
+  return parsed.href;
+}
+
+function fdEditionExternalDomain(url){
+  var safe=fdEditionExternalUrl(url),parsed;
+  if(!safe) return '';
+  try{ parsed=new URL(safe); return String(parsed.hostname||'').toLowerCase(); }
+  catch(ignoreDomain){ return ''; }
+}
+
+function fdEditionCardMarkup(edition,currentCoreRevision){
+  var card,envelope,config,fingerprint,numberData,number,audience,pathId,audienceLabel='',duration='',
+    location,title,curator,role,start,end,verified,original,change,rows='',titleMarkup='',changeMarkup='';
+  try{
+    if(!fdEditionStudentObject(edition)) return '';
+    card=fdEditionRenderObject(edition,'card'); envelope=fdEditionRenderObject(edition,'envelope');
+    config=fdEditionRenderObject(envelope,'config');
+    fingerprint=fdEditionStudentFingerprint(fdEditionRenderString(edition,'fingerprint'));
+    numberData=fdEditionStudentData(edition,'editionNumber'); number=numberData.ok?numberData.value:null;
+    if(!card||!config||!fingerprint||typeof number!=='number'||!isFinite(number)||
+       Math.floor(number)!==number||number<1) return '';
+    location=fdEditionRenderString(card,'locationName'); title=fdEditionRenderString(card,'title');
+    curator=fdEditionRenderString(card,'curatorName'); role=fdEditionRenderString(card,'curatorRole');
+    start=fdEditionRenderString(card,'rotationStart'); end=fdEditionRenderString(card,'rotationEnd');
+    verified=fdEditionRenderString(card,'lastVerified');
+    original=fdEditionRenderString(edition,'createdAgainstCoreRevision');
+    change=fdEditionRenderString(edition,'changeNote');
+    audience=fdEditionRenderString(config,'audience'); pathId=fdEditionRenderString(config,'pathId');
+    audienceLabel=audience==='ms3'?'MS3':(audience==='resident'?'Resident':'');
+    duration=pathId==='ms3-six-week'?'6 weeks':(pathId==='resident-four-week'?'4 weeks':'');
+    if(!location||!audienceLabel||!duration) return '';
+    if(typeof currentCoreRevision!=='string'||!/^[0-9a-f]{40}$/.test(currentCoreRevision)) currentCoreRevision='';
+    if(!/^[0-9a-f]{40}$/.test(original)) original='';
+    if(title) titleMarkup='<h3 class="fd-edition-card__title">'+fdEditionStudentEscape(title)+'</h3>';
+    if(curator||role) rows+='<div class="fd-edition-card__row"><dt>Curator</dt><dd>'+fdEditionStudentEscape(curator)+
+      (curator&&role?' · ':'')+fdEditionStudentEscape(role)+'</dd></div>';
+    rows+='<div class="fd-edition-card__row"><dt>Audience and duration</dt><dd>'+audienceLabel+' · '+duration+'</dd></div>';
+    if(start||end) rows+='<div class="fd-edition-card__row"><dt>Rotation dates</dt><dd>'+fdEditionStudentEscape(start)+
+      (start&&end?' to ':'')+fdEditionStudentEscape(end)+'</dd></div>';
+    if(verified) rows+='<div class="fd-edition-card__row"><dt>Last verified</dt><dd>'+fdEditionStudentEscape(verified)+'</dd></div>';
+    if(currentCoreRevision) rows+='<div class="fd-edition-card__row"><dt>Current core revision</dt><dd><code>'+fdEditionStudentEscape(currentCoreRevision)+'</code></dd></div>';
+    if(original) rows+='<div class="fd-edition-card__row"><dt>Original core revision</dt><dd><code>'+fdEditionStudentEscape(original)+'</code></dd></div>';
+    if(change) changeMarkup='<div class="fd-edition-card__change"><strong>What changed</strong><p>'+fdEditionStudentEscape(change)+'</p></div>';
+    return '<details class="fd-edition-card"><summary class="fd-edition-card__summary">'+
+      '<span class="fd-edition-card__location">'+fdEditionStudentEscape(location)+'</span>'+
+      '<span class="fd-edition-card__edition">Edition '+fdEditionStudentEscape(number)+'</span>'+
+      '<code class="fd-edition-card__fingerprint">'+fdEditionStudentEscape(fingerprint)+'</code>'+
+      '<span class="fd-edition-card__local">Locally curated</span></summary>'+
+      '<div class="fd-edition-card__body">'+titleMarkup+'<dl class="fd-edition-card__meta">'+rows+'</dl>'+changeMarkup+
+      '<p class="fd-edition-card__warning"><strong>Identity not digitally verified.</strong> Local guidance is attending-provided and separate from centrally reviewed core content.</p>'+
+      '<p class="fd-edition-card__explain">The fingerprint confirms configuration equality only; it does not verify authorship.</p>'+
+      '</div></details>';
+  }catch(ignoreCard){ return ''; }
+}
+
+function fdEditionCoreMetaMarkup(item){
+  var priority,rationale,out;
+  try{
+    if(!fdEditionStudentObject(item)) return '';
+    priority=fdEditionRenderPriority(fdEditionRenderString(item,'editionPriority'));
+    rationale=fdEditionRenderString(item,'editionRationale');
+    if(!priority) return '';
+    out='<span class="fd-edition-coremeta"><span class="fd-edition-priority">Local priority: '+priority+'</span>';
+    if(rationale) out+='<span class="fd-edition-rationale">Attending rationale: '+fdEditionStudentEscape(rationale)+'</span>';
+    return out+'</span>';
+  }catch(ignoreCoreMeta){ return ''; }
+}
+
+function fdEditionLocalToggleMarkup(kind,id,label,priority,on){
+  var cls=on?'fd-localcheck is-done':'fd-localcheck';
+  return '<button type="button" class="'+cls+'" data-fd-local-toggle="'+kind+'" data-local-id="'+
+    fdEditionStudentEscape(id)+'" aria-pressed="'+(on?'true':'false')+'" aria-label="Mark local item complete: '+
+    fdEditionStudentEscape(label)+'"><span aria-hidden="true">✓</span></button>'+
+    '<span class="fd-localitem__body"><span class="fd-localitem__title">'+fdEditionStudentEscape(label)+'</span>'+
+    '<span class="fd-localitem__priority">Local priority: '+priority+'</span></span>';
+}
+
+function fdEditionLocalOrientationMarkup(edition,localProgress){
+  var local,fields,content='',checklistMarkup='',contacts,checklist,i,item,label,value,role,url,domain,id,priority,on;
+  try{
+    if(!fdEditionStudentObject(edition)) return '';
+    local=fdEditionRenderObject(edition,'localOrientation'); if(!local) return '';
+    fields=[
+      ['firstDayArrival','First-day arrival'],['dailySchedule','Typical daily schedule'],
+      ['roundsWorkflow','Rounds workflow'],['presentationExpectations','Presentation expectations'],
+      ['documentationExpectations','Documentation expectations'],['attendanceExpectations','Attendance expectations'],
+      ['feedbackProcess','Feedback process'],['accessPreparation','Access preparation']
+    ];
+    for(i=0;i<fields.length;i++){
+      value=fdEditionRenderString(local,fields[i][0]);
+      if(value) content+='<div class="fd-localorientation__item"><dt>'+fields[i][1]+'</dt><dd>'+fdEditionStudentEscape(value)+'</dd></div>';
+    }
+    contacts=fdEditionRenderArray(local,'contacts');
+    if(contacts){
+      for(i=0;i<contacts.length;i++){
+        item=fdEditionRenderArrayValue(contacts,i); if(!fdEditionStudentObject(item)) continue;
+        role=fdEditionRenderString(item,'role'); url=fdEditionExternalUrl(fdEditionRenderString(item,'directoryUrl'));
+        domain=fdEditionExternalDomain(url); if(!role||!url||!domain) continue;
+        content+='<div class="fd-localorientation__item"><dt>Local directory</dt><dd><a href="'+fdEditionStudentEscape(url)+
+          '" target="_blank" rel="noopener noreferrer">'+fdEditionStudentEscape(role)+'</a><span class="fd-external-domain">'+
+          fdEditionStudentEscape(domain)+'</span></dd></div>';
+      }
+    }
+    checklist=fdEditionRenderArray(local,'checklist');
+    if(checklist&&checklist.length){
+      var checklistRows='';
+      for(i=0;i<checklist.length;i++){
+        item=fdEditionRenderArrayValue(checklist,i); if(!fdEditionStudentObject(item)) continue;
+        id=fdEditionStudentId(fdEditionRenderString(item,'id')); label=fdEditionRenderString(item,'label');
+        priority=fdEditionRenderPriority(fdEditionRenderString(item,'priority')); if(!id||!label||!priority) continue;
+        on=fdEditionRenderCompletion(localProgress,'checklist',id);
+        checklistRows+='<li class="fd-localitem">'+fdEditionLocalToggleMarkup('checklist',id,label,priority,on)+'</li>';
+      }
+      if(checklistRows) checklistMarkup='<div class="fd-localchecklist"><h3>Attending-provided first-day checklist</h3><ul>'+checklistRows+'</ul></div>';
+    }
+    if(!content&&!checklistMarkup) return '';
+    return '<section class="fd-localorientation" data-edition-orientation><div class="fd-localorientation__head">'+
+      '<h2>Attending-provided local orientation</h2><span>Local guidance · separate from reviewed core</span></div>'+
+      '<dl>'+content+'</dl>'+checklistMarkup+'</section>';
+  }catch(ignoreOrientation){ return ''; }
+}
+
+function fdEditionWeekResourcesMarkup(edition,week,localProgress){
+  var local,resources,rows='',i,item,id,title,url,domain,priority,rationale,weekData,on;
+  try{
+    if(!fdEditionStudentObject(edition)||typeof week!=='number'||!isFinite(week)||Math.floor(week)!==week) return '';
+    local=fdEditionRenderObject(edition,'localOrientation'); if(!local) return '';
+    resources=fdEditionRenderArray(local,'resources'); if(!resources) return '';
+    for(i=0;i<resources.length;i++){
+      item=fdEditionRenderArrayValue(resources,i); if(!fdEditionStudentObject(item)) continue;
+      weekData=fdEditionStudentData(item,'week'); if(!weekData.ok||weekData.value!==week) continue;
+      id=fdEditionStudentId(fdEditionRenderString(item,'id')); title=fdEditionRenderString(item,'title');
+      url=fdEditionExternalUrl(fdEditionRenderString(item,'url')); domain=fdEditionExternalDomain(url);
+      priority=fdEditionRenderPriority(fdEditionRenderString(item,'priority'));
+      rationale=fdEditionRenderString(item,'rationale'); if(!id||!title||!url||!domain||!priority) continue;
+      on=fdEditionRenderCompletion(localProgress,'resources',id);
+      rows+='<li class="fd-localresource"><div class="fd-localresource__main">'+
+        fdEditionLocalToggleMarkup('resources',id,title,priority,on)+'</div>'+
+        '<span class="fd-localresource__label">Attending-provided local resource</span>'+
+        '<span class="fd-external-domain">'+fdEditionStudentEscape(domain)+'</span>'+
+        '<a class="fd-localresource__link" href="'+fdEditionStudentEscape(url)+'" target="_blank" rel="noopener noreferrer">Open resource ↗</a>'+
+        (rationale?'<p class="fd-localresource__rationale">Attending rationale: '+fdEditionStudentEscape(rationale)+'</p>':'')+
+        '</li>';
+    }
+    return rows?'<section class="fd-localresources" data-edition-week-resources><h3>Attending-provided local resources</h3><ul>'+rows+'</ul></section>':'';
+  }catch(ignoreResources){ return ''; }
+}
+
+function fdEditionLocalToggleAllowed(active,kind,id){
+  var selected,envelope,config,local,list,i,item;
+  try{
+    selected=fdEditionStudentValidEdition(active);
+    if(!selected||(kind!=='checklist'&&kind!=='resources')||!fdEditionStudentId(id)) return false;
+    envelope=selected.envelope; config=fdEditionRenderObject(envelope,'config');
+    local=fdEditionRenderObject(config,'localOrientation'); list=fdEditionRenderArray(local,kind);
+    if(!list) return false;
+    for(i=0;i<list.length;i++){
+      item=fdEditionRenderArrayValue(list,i);
+      if(fdEditionStudentObject(item)&&fdEditionRenderString(item,'id')===id) return true;
+    }
+    return false;
+  }catch(ignoreAllowed){ return false; }
+}
+
 function fdEditionSwitchMarkup(active,candidate){
   var selected=fdEditionStudentValidEdition(active),replacement=fdEditionStudentValidEdition(candidate);
   if(!selected||!replacement) return '';
@@ -389,6 +599,29 @@ function fdEditionRuntimeRemoveBusy(app){
   if(!remove) return false;
   try{ Function.prototype.call.call(remove,app,'aria-busy'); return true; }
   catch(ignoreBusy){ return false; }
+}
+
+function fdEditionRuntimeReleaseGate(app){
+  var remove=fdEditionStudentMethod(app,'removeAttribute');
+  var set=fdEditionStudentMethod(app,'setAttribute');
+  var has=fdEditionStudentMethod(app,'hasAttribute');
+  var hadBusy=true,hadInert=true;
+  if(!remove||!set) return false;
+  try{
+    if(has){
+      hadBusy=Function.prototype.call.call(has,app,'aria-busy');
+      hadInert=Function.prototype.call.call(has,app,'inert');
+    }
+    Function.prototype.call.call(remove,app,'inert');
+    Function.prototype.call.call(remove,app,'aria-busy');
+    return true;
+  }catch(ignoreRelease){
+    try{
+      if(hadInert) Function.prototype.call.call(set,app,'inert','');
+      if(hadBusy) Function.prototype.call.call(set,app,'aria-busy','true');
+    }catch(ignoreRestore){ }
+    return false;
+  }
 }
 
 function fdEditionRuntimeInputs(windowValue,documentValue,app,mount,siteContext){

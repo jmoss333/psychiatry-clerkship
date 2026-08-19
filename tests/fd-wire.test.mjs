@@ -445,10 +445,94 @@ function fakeHarness(initial, options = {}) {
     facultyPreview: options.facultyPreview,
     facultyPreviewLock: options.facultyPreviewLock,
     externalModalOpen: options.externalModalOpen,
+    releaseStartupGate: options.releaseStartupGate,
   });
   if (options.commitStartup !== false) controller.commitStartup();
   return { root, rootHandlers, fakeWindow, windowHandlers, controller };
 }
+
+test('pre-commit handlers prevent click, input, keyboard, and popstate without changing ownership', () => {
+  const storage = memStorage();
+  const LocalF = make(storage);
+  const routes = [];
+  const renders = [];
+  const releases = [];
+  const historyCalls = [];
+  const initial = {
+    ...roleContext, screen: 'app', tab: 'today', openId: 'orientation.md',
+    fromTab: 'today', searchOpen: true, query: '', done: {},
+  };
+  const h = fakeHarness(initial, {
+    F: LocalF,
+    commitStartup: false,
+    route: (route) => routes.push(route),
+    render: (...args) => renders.push(args),
+    renderTransient: (...args) => renders.push(args),
+    releaseStartupGate: () => { releases.push('released'); return true; },
+    history: {
+      state: null,
+      replaceState: (...args) => historyCalls.push(['replace', ...args]),
+      pushState: (...args) => historyCalls.push(['push', ...args]),
+    },
+  });
+  const beforeState = h.controller.getState();
+  const beforeStorage = storage.dump();
+  let prevented = 0;
+  const preventDefault = () => { prevented += 1; };
+  const input = {
+    tagName: 'INPUT', isContentEditable: false, value: 'hostile precommit query',
+    matches: (selector) => selector === '.fd-searchpanel__input',
+  };
+
+  h.rootHandlers.click({
+    target: actionTarget({ 'data-fd-tab': 'path' }), preventDefault,
+  });
+  h.rootHandlers.input({ target: input, preventDefault });
+  h.windowHandlers.keydown({ key: 'Escape', target: input, preventDefault });
+  h.windowHandlers.popstate({
+    state: { fd: true, state: { tab: 'path', openId: null } }, preventDefault,
+  });
+
+  assert.deepEqual(h.controller.getState(), beforeState);
+  assert.deepEqual(storage.dump(), beforeStorage);
+  assert.deepEqual(routes, []);
+  assert.deepEqual(renders, []);
+  assert.deepEqual(historyCalls, []);
+  assert.equal(prevented, 4);
+  assert.equal(h.controller.startupCommitted(), false);
+
+  assert.equal(h.controller.commitStartup(), true);
+  assert.equal(h.controller.startupCommitted(), true);
+  assert.deepEqual(releases, ['released']);
+  assert.equal(historyCalls.length, 1, 'history commits once before the learner gate releases');
+
+  h.rootHandlers.click({
+    target: actionTarget({ 'data-fd-tab': 'path' }), preventDefault() {},
+  });
+  assert.equal(h.controller.getState().tab, 'path', 'the same handler activates after commit');
+});
+
+test('a failed native startup-gate release leaves every controller handler pre-commit', () => {
+  const storage = memStorage();
+  const LocalF = make(storage);
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'today' }, {
+    F: LocalF,
+    commitStartup: false,
+    releaseStartupGate: () => false,
+    history: { state: null, replaceState() {}, pushState() {} },
+  });
+  let prevented = 0;
+
+  assert.equal(h.controller.commitStartup(), false);
+  assert.equal(h.controller.startupCommitted(), false);
+  h.rootHandlers.click({
+    target: actionTarget({ 'data-fd-tab': 'path' }),
+    preventDefault() { prevented += 1; },
+  });
+  assert.equal(prevented, 1);
+  assert.equal(h.controller.getState().tab, 'today');
+  assert.deepEqual(storage.dump(), {});
+});
 
 test('delegated tool expansion persists as a layout-only transient without routing or reopening', () => {
   const storage = memStorage();

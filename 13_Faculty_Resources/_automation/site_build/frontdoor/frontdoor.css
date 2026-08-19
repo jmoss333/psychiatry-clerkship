@@ -217,6 +217,7 @@
 /* The detail pane on Path uses the same row without the card treatment. */
 .fd-row.is-compact{gap:11px;background:none;border-radius:10px;padding:10px 12px;box-shadow:none}
 .fd-row__open{flex:1;min-width:0;display:flex;align-items:center;gap:10px;background:none;border:none;cursor:pointer;text-align:left;padding:2px 0;font:inherit}
+.fd-row__content{display:flex;flex:1;min-width:0;flex-direction:column;align-items:flex-start;gap:3px}
 .fd-row__title{
   font-size:14.5px;font-weight:600;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
   color:var(--fd-text);
@@ -229,6 +230,9 @@
 .fd-row__title.is-done.is-just-done{animation:fdStrikeDraw .35s ease}
 .fd-row__meta{margin-left:auto;display:inline-flex;align-items:center;gap:6px;flex:0 0 auto}
 .fd-row__min{font-size:12px;color:var(--fd-text-dim);white-space:nowrap}
+.fd-edition-coremeta{display:flex;flex-wrap:wrap;gap:3px 10px;font-size:11.5px;line-height:1.35;color:var(--fd-text-dim)}
+.fd-edition-priority{font-weight:700;color:var(--fd-terracotta-dark)}
+.fd-edition-rationale{flex-basis:100%;font-weight:400;color:var(--fd-text-mid)}
 
 .fd-check{
   width:22px;height:22px;min-width:22px;min-height:22px;border-radius:50%;flex:0 0 auto;
@@ -271,6 +275,76 @@
 .fd-setupcta:hover{background:color-mix(in srgb,var(--fd-selected) 90%,var(--fd-terracotta))}
 .fd-setupcta__kicker{display:block;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--fd-terracotta-dark)}
 .fd-setupcta__title{display:block;font-size:15px;font-weight:600;color:var(--fd-text);margin-top:2px}
+
+/* Rotation edition: a compact chart-edge handoff, intentionally subordinate to Continue/setup. */
+.fd-edition-card{
+  margin:-12px 0 18px;background:var(--fd-surface);border:1px solid var(--fd-line);
+  border-left:3px solid var(--fd-olive);border-radius:0 10px 10px 0;box-shadow:var(--fd-shadow-sm);
+}
+.fd-edition-card__summary{
+  min-height:44px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;align-items:center;
+  padding:9px 12px;cursor:pointer;list-style-position:outside;color:var(--fd-text);
+}
+.fd-edition-card__location{font-size:13px;font-weight:700;min-width:0;overflow-wrap:anywhere}
+.fd-edition-card__edition,.fd-edition-card__local{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--fd-text-dim)}
+.fd-edition-card__local{color:var(--fd-olive)}
+.fd-edition-card__fingerprint{
+  grid-column:1/-1;font-family:'SF Mono',Monaco,Consolas,monospace;font-size:11px;font-variant-numeric:tabular-nums;
+  letter-spacing:.04em;color:var(--fd-text-mid);overflow-wrap:anywhere;word-break:break-word;
+}
+.fd-edition-card__body{border-top:1px solid var(--fd-line);padding:13px 14px 14px}
+.fd-edition-card__title{margin:0 0 9px;font-family:Georgia,'Times New Roman',serif;font-size:17px;color:var(--fd-text)}
+.fd-edition-card__meta{display:grid;gap:6px;margin:0}
+.fd-edition-card__row{display:grid;grid-template-columns:minmax(116px,.6fr) minmax(0,1.4fr);gap:10px;font-size:12px}
+.fd-edition-card__row dt{font-weight:700;color:var(--fd-text-dim)}
+.fd-edition-card__row dd{margin:0;color:var(--fd-text-mid);overflow-wrap:anywhere}
+.fd-edition-card__row code{font-family:'SF Mono',Monaco,Consolas,monospace;font-size:10.5px;font-variant-numeric:tabular-nums;word-break:break-all}
+.fd-edition-card__change{margin-top:10px;padding-top:9px;border-top:1px solid var(--fd-line);font-size:12px;color:var(--fd-text-mid)}
+.fd-edition-card__change p{margin:3px 0 0}
+.fd-edition-card__warning{margin:11px 0 0;padding:8px 10px;background:var(--fd-callout);border-left:2px solid var(--fd-olive);font-size:11.5px;color:var(--fd-text-mid)}
+.fd-edition-card__explain{margin:7px 0 0;font-size:11px;color:var(--fd-text-dim)}
+
+.fd-localorientation,.fd-localresources{
+  margin:0 0 22px;padding:14px;background:var(--fd-callout);border:1px solid var(--fd-line);border-radius:10px;
+}
+.fd-localorientation__head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.fd-localorientation h2,.fd-localresources h3,.fd-localchecklist h3{margin:0;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--fd-olive)}
+.fd-localorientation__head span{font-size:10.5px;font-weight:700;color:var(--fd-text-dim)}
+.fd-localorientation dl{display:grid;gap:8px;margin:0}
+.fd-localorientation__item{display:grid;grid-template-columns:minmax(116px,.55fr) minmax(0,1.45fr);gap:10px;font-size:12.5px}
+.fd-localorientation__item dt{font-weight:700;color:var(--fd-text-mid)}
+.fd-localorientation__item dd{margin:0;color:var(--fd-text);overflow-wrap:anywhere}
+.fd-external-domain{display:block;margin-top:2px;font-family:'SF Mono',Monaco,Consolas,monospace;font-size:10.5px;color:var(--fd-text-dim);overflow-wrap:anywhere}
+.fd-localchecklist{margin-top:12px;padding-top:11px;border-top:1px solid var(--fd-line)}
+.fd-localchecklist ul,.fd-localresources ul{list-style:none;margin:9px 0 0;padding:0;display:grid;gap:7px}
+.fd-localitem,.fd-localresource__main{display:flex;align-items:flex-start;gap:10px}
+.fd-localitem__body{display:flex;min-width:0;flex:1;flex-direction:column;gap:1px}
+.fd-localitem__title{font-size:13px;font-weight:600;color:var(--fd-text);overflow-wrap:anywhere}
+.fd-localitem__priority,.fd-localresource__label{font-size:10.5px;font-weight:700;color:var(--fd-terracotta-dark)}
+.fd-localcheck{
+  width:28px;height:28px;min-width:44px;min-height:44px;margin:-8px 0 -8px -8px;padding:0;display:flex;align-items:center;
+  justify-content:center;border:0;background:transparent;color:transparent;cursor:pointer;position:relative;
+}
+.fd-localcheck::before{content:'';position:absolute;width:22px;height:22px;border:1.5px solid var(--fd-line-strong);border-radius:50%;background:var(--fd-surface)}
+.fd-localcheck span{position:relative;z-index:1;font-size:11px;font-weight:800}
+.fd-localcheck.is-done{color:var(--fd-on-accent)}
+.fd-localcheck.is-done::before{background:var(--fd-success);border-color:var(--fd-success)}
+.fd-localresources{background:var(--fd-surface-warm)}
+.fd-localresource{padding:11px 12px;background:var(--fd-surface);border:1px solid var(--fd-line);border-left:3px solid var(--fd-olive);border-radius:0 9px 9px 0}
+.fd-localresource__label{display:block;margin-top:7px;color:var(--fd-olive)}
+.fd-localresource__link{display:inline-flex;align-items:center;min-height:44px;margin-top:2px;font-size:12.5px;font-weight:700}
+.fd-localresource__rationale{margin:4px 0 0;font-size:11.5px;color:var(--fd-text-mid)}
+
+.fd-edition-switch{max-width:min(440px,calc(100vw - 32px));border:1px solid var(--fd-line-strong);border-radius:12px;padding:20px;background:var(--fd-surface);color:var(--fd-text);box-shadow:var(--fd-shadow-lift)}
+.fd-edition-switch::backdrop{background:color-mix(in srgb,var(--fd-text) 36%,transparent)}
+.fd-edition-switch h2{margin:0 0 10px;font-family:Georgia,'Times New Roman',serif;font-size:21px}
+.fd-edition-switch p{font-size:13px;color:var(--fd-text-mid);overflow-wrap:anywhere}
+.fd-edition-switch code{font-family:'SF Mono',Monaco,Consolas,monospace;font-size:11px;word-break:break-all}
+.fd-edition-switch form{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-top:16px}
+.fd-edition-switch button{min-height:44px;padding:10px 14px;border:1px solid var(--fd-line-strong);border-radius:8px;background:var(--fd-surface);color:var(--fd-text);font:inherit;font-weight:700;cursor:pointer}
+.fd-edition-error{margin:12px auto;max-width:760px;padding:12px 14px;background:var(--fd-callout);border:1px solid var(--fd-line);border-left:3px solid var(--fd-terracotta);border-radius:0 9px 9px 0;color:var(--fd-text-mid)}
+.fd-edition-error h2{margin:0 0 5px;font-size:15px;color:var(--fd-text)}
+.fd-edition-error p{margin:3px 0;font-size:12px}
 
 /* Right rail: quick tools + safety kit (desktop only) */
 .fd-rail{flex:1 1 250px;max-width:320px;min-width:0;position:sticky;top:106px;display:none;flex-direction:column;gap:24px}
@@ -641,7 +715,22 @@
    * it, the padding line just above). Do not broaden this to a bare `.fd-tip` selector. */
   .fd-article .fd-tip{display:none}
   .fd-due,.fd-resume__link,.fd-progresscard{min-height:44px;flex-wrap:wrap}
+  .fd-edition-card__summary,.fd-localcheck,.fd-localresource__link,.fd-edition-switch button{min-height:44px}
   .fd-due__action,.fd-progresscard__meta{margin-left:0;flex:0 0 100%}
+}
+
+@media (max-width:390px){
+  .fd-shell{overflow-x:hidden}
+  .fd-main{padding-left:14px;padding-right:14px;overflow-x:hidden}
+  .fd-continue{padding:15px 14px;gap:11px}
+  .fd-continue__meta{display:none}
+  .fd-ring{width:46px;height:46px}
+  .fd-ring__inner{width:35px;height:35px}
+  .fd-edition-card__summary{grid-template-columns:minmax(0,1fr);gap:2px;padding:10px 11px}
+  .fd-edition-card__fingerprint{grid-column:1}
+  .fd-edition-card__row,.fd-localorientation__item{grid-template-columns:1fr;gap:1px}
+  .fd-localorientation,.fd-localresources{padding:12px}
+  .fd-edition-switch form{display:grid;grid-template-columns:1fr}
 }
 
 /* A narrow header cannot safely compress the full brand, search field, and three utility controls

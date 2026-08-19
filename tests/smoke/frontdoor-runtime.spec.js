@@ -91,13 +91,13 @@ async function installEditionRuntimeProbe(page, options = {}) {
           () => reject(new Error('private delayed markdown rejection')), 40,
         ));
       }
-      if (['markdown-mount', 'markdown-success'].includes(startupFault)) {
+      if (['markdown-mount', 'markdown-success', 'markdown-slow-interaction'].includes(startupFault)) {
         return Promise.resolve({
           ok: true,
           text: () => new Promise((resolve) => originalSetTimeout(() => {
             record(['resource-text', startupFault]);
             resolve('# Orientation\n\nDelayed startup markdown.');
-          }, 40)),
+          }, startupFault === 'markdown-slow-interaction' ? 300 : 40)),
         });
       }
       return originalFetch(input, init);
@@ -255,6 +255,127 @@ async function installEditionRuntimeProbe(page, options = {}) {
   });
 }
 
+test('slow edition resource startup rejects every pre-commit learner interaction without losing ownership', async ({ page }, testInfo) => {
+  const pageErrors = [];
+  page.on('pageerror', (error) => pageErrors.push(error.message));
+  await installEditionRuntimeProbe(page, { startupFault: 'markdown-slow-interaction' });
+  const incoming = await createSyntheticEdition(testInfo, 2);
+  await page.goto('/');
+  await seedEditionLearner(page);
+  await resetEditionWriteLog(page);
+
+  const expectedSearch = '?page=orientation.md&case=startup-async-gate';
+  await page.goto(`${expectedSearch}#edition=${incoming.payload}`);
+  await expect(page.locator('#fdApp')).toHaveAttribute('aria-busy', 'true');
+  await expect(page.locator('#fdApp')).toHaveAttribute('inert', '');
+  const beforeStorage = await localStorageSnapshot(page);
+  const beforeUrl = page.url();
+  const beforeHistory = await page.evaluate(() => history.state);
+
+  const attempts = await page.evaluate(() => {
+    const app = document.querySelector('#fdApp');
+    const click = document.createElement('button');
+    click.setAttribute('data-fd-tab', 'path');
+    app.appendChild(click);
+    const clickEvent = new MouseEvent('click', { bubbles: true, cancelable: true });
+    click.dispatchEvent(clickEvent);
+
+    const input = document.createElement('input');
+    input.className = 'fd-searchpanel__input';
+    input.value = 'precommit mutation attempt';
+    app.appendChild(input);
+    const inputEvent = new Event('input', { bubbles: true, cancelable: true });
+    input.dispatchEvent(inputEvent);
+
+    const keyEvent = new KeyboardEvent('keydown', {
+      key: '/', bubbles: true, cancelable: true,
+    });
+    window.dispatchEvent(keyEvent);
+
+    const popEvent = new Event('popstate', { cancelable: true });
+    Object.defineProperty(popEvent, 'state', {
+      value: { fd: true, state: { tab: 'path', openId: null } },
+    });
+    window.dispatchEvent(popEvent);
+    return {
+      prevented: [clickEvent, inputEvent, keyEvent, popEvent].map((event) => event.defaultPrevented),
+      listenerCount: window.__fdActiveStartupListeners().length,
+      route: location.pathname + location.search,
+      historyState: history.state,
+      hasSearch: Boolean(document.querySelector('.fd-search')),
+      hasPath: Boolean(document.querySelector('.fd-path')),
+    };
+  });
+
+  expect(attempts.prevented).toEqual([true, true, true, true]);
+  expect(attempts.listenerCount).toBe(8);
+  expect(attempts.route).toBe(`/${expectedSearch}`);
+  expect(attempts.historyState).toEqual(beforeHistory);
+  expect(attempts.hasSearch).toBe(false);
+  expect(attempts.hasPath).toBe(false);
+  expect(page.url()).toBe(beforeUrl);
+  expect(await localStorageSnapshot(page)).toEqual(beforeStorage);
+  await expect(page.locator('#fdApp')).toHaveAttribute('aria-busy', 'true');
+  await expect(page.locator('#fdApp')).toHaveAttribute('inert', '');
+
+  await expect(page.locator('.fd-article__body')).toContainText('Delayed startup markdown.');
+  await expect(page.locator('#fdApp')).not.toHaveAttribute('aria-busy');
+  await expect(page.locator('#fdApp')).not.toHaveAttribute('inert');
+  await expect(page).toHaveURL(new RegExp(`${expectedSearch.replace(/[.?]/g, '\\$&')}$`));
+  expect(await page.evaluate(() => history.state)).toMatchObject({
+    fd: true, state: { openId: 'orientation.md', tab: 'today' },
+  });
+  expect((await editionEvents(page)).filter(([kind]) => kind === 'resource-hydrate')).toHaveLength(1);
+  expect((await editionWrites(page)).map(([key]) => key)).toEqual([LOCAL_EDITION_KEY, EDITION_KEY]);
+  expect(await page.evaluate(() => window.__fdUnhandledRejections)).toEqual([]);
+  expect(pageErrors).toEqual([]);
+});
+
+test('the attending handoff stays secondary, readable, and locally scoped at 390px', async ({ page }, testInfo) => {
+  await page.setViewportSize(PHONE);
+  const incoming = await createSyntheticEdition(testInfo, 1);
+  await page.goto('/');
+  await seedEditionLearner(page);
+  const coreBefore = await page.evaluate(() => localStorage.getItem('cw_progress_v1'));
+
+  await page.goto(`/?case=edition-phone#edition=${incoming.payload}`);
+  const continueCard = page.locator('.fd-continue');
+  const editionCard = page.locator('.fd-edition-card');
+  const orientation = page.locator('[data-edition-orientation]');
+  await expect(continueCard).toBeVisible();
+  await expect(editionCard).toBeVisible();
+  await expect(orientation).toBeVisible();
+  expect(await page.evaluate(() => {
+    const setup = document.querySelector('.fd-continue,.fd-setupcta');
+    const edition = document.querySelector('.fd-edition-card');
+    const local = document.querySelector('[data-edition-orientation]');
+    return Boolean(setup && edition && local
+      && (setup.compareDocumentPosition(edition) & Node.DOCUMENT_POSITION_FOLLOWING)
+      && (edition.compareDocumentPosition(local) & Node.DOCUMENT_POSITION_FOLLOWING));
+  })).toBe(true);
+
+  await expect(editionCard).not.toHaveAttribute('open');
+  await expect(editionCard.locator('summary')).toContainText('Locally curated');
+  await expect(editionCard.locator('.fd-edition-card__fingerprint')).toHaveText(incoming.fingerprint);
+  await editionCard.locator('summary').click();
+  await expect(editionCard).toHaveAttribute('open', '');
+  await expect(editionCard).toContainText('Identity not digitally verified.');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+
+  const toggle = orientation.locator('[data-fd-local-toggle="checklist"]');
+  await expect(toggle).toHaveAttribute('aria-pressed', 'false');
+  await expect(toggle).toHaveCSS('min-height', '44px');
+  await toggle.evaluate((node) => { node.dataset.runtimeIdentity = 'stable'; });
+  await toggle.click();
+  await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+  await expect(toggle).toHaveAttribute('data-runtime-identity', 'stable');
+  expect(await page.evaluate(() => localStorage.getItem('cw_progress_v1'))).toBe(coreBefore);
+  expect(await page.evaluate(({ key, fingerprint, id }) => {
+    const saved = JSON.parse(localStorage.getItem(key));
+    return saved.byFingerprint[fingerprint].checklist[id];
+  }, { key: LOCAL_EDITION_KEY, fingerprint: incoming.fingerprint, id: 'local:check:1' })).toBe(true);
+});
+
 async function resetEditionWriteLog(page) {
   await page.evaluate((logKey) => {
     sessionStorage.setItem(logKey, '[]');
@@ -288,6 +409,7 @@ async function expectAtomicStartupFailure(page, {
 }) {
   await expect(page.locator('.fd-edition-error[role="alert"]')).toContainText('EDITION_RUNTIME');
   await expect(page.locator('#fdApp')).not.toHaveAttribute('aria-busy', 'true');
+  await expect(page.locator('#fdApp')).not.toHaveAttribute('inert');
   expect(await localStorageSnapshot(page)).toEqual(before);
   expect(new URL(page.url()).search).toBe(expectedSearch);
   expect(await page.evaluate(() => history.state)).toBeNull();
@@ -956,8 +1078,8 @@ test('a missing fdApp returns quietly with no writes, edition render, or uncaugh
   await page.route(/\/\?case=edition-missing-root$/, async (route) => {
     const response = await route.fetch();
     const body = (await response.text()).replace(
-      '<div id="fdApp" class="fd-shell" aria-busy="true">',
-      '<div class="fd-shell" aria-busy="true">',
+      '<div id="fdApp" class="fd-shell" aria-busy="true" inert>',
+      '<div class="fd-shell" aria-busy="true" inert>',
     );
     await route.fulfill({ response, body });
   });

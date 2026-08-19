@@ -92,12 +92,13 @@ function fdRow(it, idx, doneMap, compact){
   var typeLabel=(it.kind==='tool')?'tool':'read';
   var minLabel=(it.kind!=='tool'&&typeof it.minutes==='number')?(it.minutes+' min'):'';
   var rowCls=compact?'fd-row is-compact':'fd-row';
+  var editionMeta=fdEditionCoreMetaMarkup(it);
   return '<div class="'+rowCls+'" style="animation-delay:'+(idx*35)+'ms">'+
     '<button type="button" class="'+checkCls+'" data-fd-toggle="'+fdEsc(it.ref)+'" '+
       'title="Mark done" aria-pressed="'+(on?'true':'false')+'">'+
       '<span aria-hidden="true">✓</span></button>'+
     '<button type="button" class="fd-row__open" data-fd-open="'+fdEsc(it.ref)+'">'+
-      '<span class="'+titleCls+'">'+fdEsc(it.title)+'</span>'+
+      '<span class="fd-row__content"><span class="'+titleCls+'">'+fdEsc(it.title)+'</span>'+editionMeta+'</span>'+
       '<span class="fd-row__meta">'+
         '<span class="'+typeCls+'">'+typeLabel+'</span>'+
         '<span class="fd-row__min">'+fdEsc(minLabel)+'</span>'+
@@ -255,12 +256,18 @@ function fdToday(index, state){
 
   out+=hasWeek?fdContinue(idx,st, wk, progress):fdSetupCta();
 
+  if(idx.edition){
+    out+=fdEditionCardMarkup(idx.edition,st.currentCoreRevision);
+    out+=fdEditionLocalOrientationMarkup(idx.edition,st.localProgress);
+  }
+
   if(hasWeek){
     out+='<div class="fd-listhead"><h2 class="fd-sectionhead">This week</h2>'+
       '<span class="fd-listhead__theme">'+fdEsc(wk.theme)+'</span></div>';
     out+='<div class="fd-list">';
     for(var i=0;i<wItems.length;i++){ out+=fdRow(wItems[i], i, st.done); }
     out+='</div>';
+    if(idx.edition) out+=fdEditionWeekResourcesMarkup(idx.edition,st.week,st.localProgress);
   }
 
   var daily=fdDailyPick(fdLibraryOnlyReads(idx), st.done, nowMs);

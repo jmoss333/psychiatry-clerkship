@@ -95,10 +95,10 @@ test('edition validation selects the only live index before the learner shell st
     assert.ok(body.indexOf(consumer) > selection,
       `${consumer} must run only after the edition index is selected`);
   }
-  assert.match(source, /id="fdApp" class="fd-shell" aria-busy="true"/,
-    'the initial shell must expose its pending resolver state');
-  assert.match(body, /fdEditionRuntimeRemoveBusy\(fdApp\)/,
-    'every deferred start path must end the pending resolver state');
+  assert.match(source, /id="fdApp" class="fd-shell" aria-busy="true" inert/,
+    'the initial shell must expose a native noninteractive pending resolver state');
+  assert.match(body, /releaseStartupGate:function\(\)\{return fdEditionRuntimeReleaseGate\(fdApp\);\}/,
+    'the controller commit must own the atomic inert and busy release');
 });
 
 test('startup arms rollback before state loads and awaits its owned initial resource receipt', () => {

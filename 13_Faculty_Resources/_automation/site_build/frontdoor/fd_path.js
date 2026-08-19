@@ -85,6 +85,7 @@ function fdPathDetail(index, state){
   out+='<div class="fd-detail__list">';
   for(var i=0;i<items.length;i++){ out+=fdRow(items[i], i, state.done, true); }
   out+='</div>';
+  if(idx.edition) out+=fdEditionWeekResourcesMarkup(idx.edition,viewN,state.localProgress);
   if(!isCurrent){
     out+='<button type="button" class="fd-btn fd-btn--accent" data-fd-setweek="'+fdEsc(viewN)+'">'+
       'Set as my week</button>';

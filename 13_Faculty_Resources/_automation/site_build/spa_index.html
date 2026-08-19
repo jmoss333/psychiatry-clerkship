@@ -542,7 +542,7 @@
 </head>
 <body>
 <a class="skip-link" href="#content">Skip to content</a>
-<div id="fdApp" class="fd-shell" aria-busy="true">
+<div id="fdApp" class="fd-shell" aria-busy="true" inert>
   <div id="fdChromeMount"></div>
   <div id="governanceMount"></div>
   <span id="routeStatus" class="vh-live" aria-live="polite"></span>
@@ -1605,6 +1605,7 @@
   var fdCrisisHtml=fdCrisisTemplate?fdCrisisTemplate.innerHTML:'';
   var fdNudgeMount=fdEditionRuntimeElement(fdDocument,'fdNudgeMount');
   var fdController=null;
+  var fdActiveEditionSnapshot=null;
 
   function fdSurface(name,fn){
     try{ return fn(); }
@@ -1635,6 +1636,10 @@
         :((FD_INDEX.weeks[0]||{}).n);
     }
     out.role=fdRoleName(out.role)||out.role;
+    out.currentCoreRevision=typeof FD_CORE_REVISION==='string'?FD_CORE_REVISION:'';
+    out.localProgress=FD_INDEX.edition
+      ?fdEditionReadLocalProgress(fdEditionBootStorage,FD_INDEX.edition.fingerprint)
+      :{checklist:Object.create(null),resources:Object.create(null)};
     out.crisisHtml=fdCrisisHtml;
     if(typeof FD_PROTOCOL_FAILURE_COPY==='string')out.protocolFailureCopy=FD_PROTOCOL_FAILURE_COPY;
     var wk=fdItemsForWeek(FD_INDEX,out.week), progress=fdTodayProgress(wk,out.done);
@@ -1862,8 +1867,36 @@
     if(el.hasAttribute('data-cap-open')&&ref){capMarkTriaged(id);fdOpenRef(ref);return;}
   }
 
+  function fdRefreshLocalCompletion(kind,id){
+    var progress,nodes,on,i,node;
+    try{
+      if(!contentEl||!FD_INDEX.edition)return false;
+      progress=fdEditionReadLocalProgress(fdEditionBootStorage,FD_INDEX.edition.fingerprint);
+      on=!!(progress[kind]&&progress[kind][id]);
+      nodes=contentEl.querySelectorAll('[data-fd-local-toggle]');
+      for(i=0;i<nodes.length;i++){
+        node=nodes[i];
+        if(node.getAttribute('data-fd-local-toggle')!==kind||node.getAttribute('data-local-id')!==id)continue;
+        node.setAttribute('aria-pressed',on?'true':'false');
+        if(on)node.classList.add('is-done');else node.classList.remove('is-done');
+      }
+      return true;
+    }catch(ignoreLocalRefresh){return false;}
+  }
+
   function fdAuxClick(event){
     var target=event.target, el;
+    el=target.closest&&target.closest('[data-fd-local-toggle]');
+    if(el){
+      event.preventDefault();
+      if(facultyPreviewRequest){showFacultyPreviewLockNotice();return;}
+      var localKind=el.getAttribute('data-fd-local-toggle');
+      var localId=el.getAttribute('data-local-id');
+      if(fdEditionLocalToggleAllowed(fdActiveEditionSnapshot,localKind,localId)&&
+         fdEditionToggleLocalProgress(fdEditionBootStorage,FD_INDEX.edition.fingerprint,localKind,localId))
+        fdRefreshLocalCompletion(localKind,localId);
+      return;
+    }
     el=target.closest&&target.closest('[data-capture-open]');
     if(el){event.preventDefault();if(!facultyPreviewRequest)capOpen(el);return;}
     el=target.closest&&target.closest('[data-cap-open],[data-cap-review],[data-cap-drop],[data-cap-copy]');
@@ -1993,7 +2026,14 @@
     }catch(ignoreRestore){return false;}
   }
   function fdEditionTrackListener(target,type,handler,capture){
-    var registration=fdEditionRuntimeListen(target,type,handler,capture);
+    var guarded=function(event){
+      if(!fdController||!fdController.startupCommitted||!fdController.startupCommitted()){
+        if(event&&event.preventDefault)event.preventDefault();
+        return;
+      }
+      return handler(event);
+    };
+    var registration=fdEditionRuntimeListen(target,type,guarded,capture);
     if(!registration.ok)return false;
     fdEditionStartupTeardowns.push(function(){fdEditionRuntimeUnlisten(registration);});
     return true;
@@ -2040,8 +2080,9 @@
     fdEditionStartupHistoryDirty=false;
     fdEditionStartupStorageDirty=false;
     FD_INDEX=FD_CANONICAL_INDEX;
+    fdActiveEditionSnapshot=null;
     TOPIC_META=FD_TOPIC_META;
-    fdEditionRuntimeRemoveBusy(fdApp);
+    fdEditionRuntimeReleaseGate(fdApp);
     if(state)try{
       var fallbackState=fdClone(state);
       fallbackState.openId=null;fallbackState.tab='today';fallbackState.searchOpen=false;
@@ -2063,6 +2104,7 @@
     result={mode:'rejected',needsCommit:false,index:FD_CANONICAL_INDEX,
       receipt:fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME')};
   }
+  fdActiveEditionSnapshot=result.active||null;
   var fdCheckpointStorage=fdEditionBootStorage;
   if(!fdCheckpointStorage)try{fdCheckpointStorage=window.localStorage;}catch(ignoreCheckpointStorage){ }
   fdEditionStartupStorage=fdEditionCheckpointStorage(fdCheckpointStorage);
@@ -2111,7 +2153,8 @@
       externalModalOpen:function(){return !!capSheet;},
       facultyPreview:function(){return !!facultyPreviewRequest;},
       facultyPreviewLock:showFacultyPreviewLockNotice,
-      synonyms:FD_CURRICULUM.synonyms||{}
+      synonyms:FD_CURRICULUM.synonyms||{},
+      releaseStartupGate:function(){return fdEditionRuntimeReleaseGate(fdApp);}
     });
   }catch(ignoreStartupWiring){fdController=null;}
   if(!fdController||fdController.ok!==true){
@@ -2122,8 +2165,7 @@
     if(fdController&&fdController.destroy)fdController.destroy();
   });
   if(!fdEditionTrackListener(fdApp,'click',fdAuxClick,false)||
-     !fdEditionTrackListener(window,'message',fdAuxMessage,false)||
-     !fdEditionRuntimeRemoveBusy(fdApp)){
+     !fdEditionTrackListener(window,'message',fdAuxMessage,false)){
     fdEditionRuntimeFallback(fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'),fdInitial);
     return;
   }
