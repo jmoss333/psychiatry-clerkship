@@ -2,7 +2,7 @@
 
 **Date:** 2026-08-19
 
-**Status:** Approved in conversation; written specification awaiting final user review
+**Status:** Approved by the user on 2026-08-19
 
 **Scope:** Account-free attending curation, audience-correct student edition links, local orientation overlays, immutable edition identity, and privacy-safe browser-local state
 
@@ -201,7 +201,7 @@ The edition is a versioned JSON envelope. The exact schema is validated with `ad
     "audience": "ms3",
     "pathId": "ms3-six-week",
     "editionNumber": 3,
-    "createdAgainstCoreRevision": "503b42d",
+    "createdAgainstCoreRevision": "503b42d2538d525c0a3bbf0e1767333e5e617df4",
     "card": {
       "title": "BHU2 MS3 Rotation",
       "locationName": "BHU2",
