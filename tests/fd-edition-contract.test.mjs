@@ -503,6 +503,85 @@ test('advises on ambiguous credential, access, and dose terms', () => {
   }
 });
 
+test('screens every identifier field with the common privacy policy and preserves benign IDs', () => {
+  const base = fixture('valid-ms3.json').config;
+  const identifierFields = [
+    {
+      label: 'path item instance ID', path: '/config/pathItems/0/instanceId',
+      set(config, value) { config.pathItems[0].instanceId = value; }
+    },
+    {
+      label: 'path item core ref', path: '/config/pathItems/0/ref',
+      set(config, value) { config.pathItems[0].ref = value; }
+    },
+    {
+      label: 'local checklist ID', path: '/config/localOrientation/checklist/0/id',
+      set(config, value) { config.localOrientation.checklist[0].id = value; }
+    },
+    {
+      label: 'local resource ID', path: '/config/localOrientation/resources/0/id',
+      set(config, value) { config.localOrientation.resources[0].id = value; }
+    }
+  ];
+  const blockingValues = [
+    'person@example.edu',
+    '207-555-0100',
+    'api_key=example-only',
+    'door-code=4321',
+    '5mg',
+    '<img>',
+    'onload=alert(1)'
+  ];
+
+  for (const field of identifierFields) {
+    for (const unsafe of blockingValues) {
+      const config = clone(base);
+      field.set(config, unsafe);
+      const result = F.fdEditionValidateConfig(
+        config, indexFor(config), context('ms3', base.createdAgainstCoreRevision)
+      );
+      assert.equal(result.ok, false, `${field.label}: ${unsafe}`);
+      assert.ok(result.errors.some((finding) =>
+        finding.code === 'EDITION_TEXT_RISK' && finding.path === field.path
+      ), `${field.label}: ${JSON.stringify(result.errors)}`);
+      assertPrivateSafe(result, unsafe);
+      assert.doesNotMatch(JSON.stringify([...result.errors, ...result.warnings]),
+        new RegExp(unsafe.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'));
+    }
+
+    const advisory = clone(base);
+    field.set(advisory, 'local:password-policy');
+    const advisoryResult = F.fdEditionValidateConfig(
+      advisory, indexFor(advisory), context('ms3', base.createdAgainstCoreRevision)
+    );
+    assert.equal(advisoryResult.ok, true, field.label);
+    assert.ok(advisoryResult.warnings.some((finding) =>
+      finding.code === 'EDITION_TEXT_RISK' && finding.path === field.path
+    ), field.label);
+    assertPrivateSafe(advisoryResult, 'local:password-policy');
+
+    const benign = clone(base);
+    field.set(benign, `benign:${field.label.replace(/\s+/g, '-').toLowerCase()}:2`);
+    const benignResult = F.fdEditionValidateConfig(
+      benign, indexFor(benign), context('ms3', base.createdAgainstCoreRevision)
+    );
+    assert.equal(benignResult.ok, true, `${field.label}: ${JSON.stringify(benignResult.errors)}`);
+    assert.deepEqual(benignResult.warnings, [], field.label);
+
+    for (const [identifier, valid] of [['a'.repeat(160), true], ['a'.repeat(161), false], ['has space', false]]) {
+      const boundary = clone(base);
+      field.set(boundary, identifier);
+      const boundaryResult = F.fdEditionValidateConfig(
+        boundary, indexFor(boundary), context('ms3', base.createdAgainstCoreRevision)
+      );
+      assert.equal(boundaryResult.ok, valid, `${field.label}: ${identifier.length} characters`);
+      if (!valid) assert.ok(boundaryResult.errors.some((finding) =>
+        finding.code === 'EDITION_SCHEMA' && finding.path === field.path
+      ), field.label);
+    }
+  }
+});
+
 test('canonical JSON sorts recursive object keys and preserves array order', () => {
   assert.equal(F.fdEditionCanonicalJson({ z: 1, a: { d: 4, b: 2 }, list: [3, 1] }), '{"a":{"b":2,"d":4},"list":[3,1],"z":1}');
   assert.notEqual(F.fdEditionCanonicalJson({ list: [3, 1] }), F.fdEditionCanonicalJson({ list: [1, 3] }));
@@ -607,7 +686,11 @@ test('normalizes synchronous, rejected, and malformed crypto outcomes to safe di
     assert.doesNotThrow(() => {
       digestPromise = F.fdEditionDigest({ format: 'synthetic' }, subtle);
     });
-    await assert.rejects(digestPromise, /SHA-256|Digest/i);
+    await assert.rejects(digestPromise, (error) => {
+      assert.equal(error.message, 'SHA-256 digest failed.');
+      assert.doesNotMatch(error.message, /synthetic failure detail/i);
+      return true;
+    });
 
     const created = await F.fdEditionCreateEnvelope(config, idx, ctx, subtle);
     assert.equal(created.ok, false);
@@ -618,6 +701,52 @@ test('normalizes synchronous, rejected, and malformed crypto outcomes to safe di
     assert.equal(validated.ok, false);
     assert.ok(validated.errors.some((finding) => finding.code === 'EDITION_DIGEST'));
     assertPrivateSafe(validated, 'synthetic failure detail');
+  }
+});
+
+test('direct digest masks every hostile provider-result inspection and coercion trap', async () => {
+  const privateDetail = 'provider-private-detail';
+  const hostileFulfillments = [
+    new Proxy(new ArrayBuffer(32), {
+      getPrototypeOf() { throw new Error(privateDetail); }
+    }),
+    new Proxy(new ArrayBuffer(32), {
+      get(target, key, receiver) {
+        if (key === 'byteLength') throw new Error(privateDetail);
+        return Reflect.get(target, key, receiver);
+      }
+    }),
+    new Proxy(new ArrayBuffer(32), {
+      get(target, key, receiver) {
+        if (key === 'byteLength') return 32;
+        if (key === 'length') throw new Error(privateDetail);
+        return Reflect.get(target, key, receiver);
+      }
+    }),
+    Object.create(ArrayBuffer.prototype)
+  ];
+
+  for (const fulfillment of hostileFulfillments) {
+    await assert.rejects(
+      F.fdEditionDigest({ format: 'synthetic' }, { digest() { return Promise.resolve(fulfillment); } }),
+      (error) => {
+        assert.equal(error.message, 'SHA-256 digest failed.');
+        assert.doesNotMatch(error.message, /provider-private-detail|proxy|receiver/i);
+        return true;
+      }
+    );
+  }
+
+  const coercionTraps = [
+    { get digest() { throw new Error(privateDetail); } },
+    { digest() { return { get then() { throw new Error(privateDetail); } }; } }
+  ];
+  for (const subtle of coercionTraps) {
+    await assert.rejects(F.fdEditionDigest({ format: 'synthetic' }, subtle), (error) => {
+      assert.equal(error.message, 'SHA-256 digest failed.');
+      assert.doesNotMatch(error.message, /provider-private-detail|proxy|receiver/i);
+      return true;
+    });
   }
 });
 

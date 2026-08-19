@@ -320,17 +320,27 @@ function fdEditionBase64urlDecode(text,maxBytes){
 
 function fdEditionDigest(preDigestObject,subtle){
   var bytes,digestMethod,request;
+  function failure(){ return new Error('SHA-256 digest failed.'); }
   try{ digestMethod=subtle&&subtle.digest; }
-  catch(ignoreMethod){ return Promise.reject(new Error('SHA-256 is unavailable.')); }
-  if(typeof digestMethod!=='function') return Promise.reject(new Error('SHA-256 is unavailable.'));
+  catch(ignoreMethod){ return Promise.reject(failure()); }
+  if(typeof digestMethod!=='function') return Promise.reject(failure());
   try{ bytes=new TextEncoder().encode(fdEditionCanonicalJson(preDigestObject)); }
-  catch(error){ return Promise.reject(new Error('Digest input is invalid.')); }
+  catch(ignoreInput){ return Promise.reject(failure()); }
   try{ request=digestMethod.call(subtle,'SHA-256',bytes); }
-  catch(ignoreDigest){ return Promise.reject(new Error('SHA-256 is unavailable.')); }
+  catch(ignoreDigest){ return Promise.reject(failure()); }
   return Promise.resolve(request).then(function(buffer){
-    if(!(buffer instanceof ArrayBuffer)||buffer.byteLength!==32) throw new Error('SHA-256 result is invalid.');
-    return 'sha256-'+fdEditionBase64urlEncode(new Uint8Array(buffer));
-  },function(){ throw new Error('SHA-256 is unavailable.'); });
+    var byteLengthGetter,byteLength,view,encoded;
+    try{
+      byteLengthGetter=Object.getOwnPropertyDescriptor(ArrayBuffer.prototype,'byteLength').get;
+      byteLength=byteLengthGetter.call(buffer);
+      if(byteLength!==32) throw failure();
+      view=new Uint8Array(buffer);
+      if(view.byteLength!==32) throw failure();
+      encoded=fdEditionBase64urlEncode(view);
+      if(!/^[A-Za-z0-9_-]{43}$/.test(encoded)) throw failure();
+      return 'sha256-'+encoded;
+    }catch(ignoreResult){ throw failure(); }
+  },function(){ throw failure(); });
 }
 
 function fdEditionDigestEqual(expected,actual){
@@ -392,8 +402,9 @@ function fdEditionCheckRationale(value,path,errors){
   fdEditionAdd(errors,fdEditionTextLength(value)>FD_EDITION_RULES.maxRationale,'EDITION_SCHEMA',path,'Text must contain at most 280 characters.');
 }
 
-function fdEditionCheckIdentifier(value,path,errors){
+function fdEditionCheckIdentifier(value,path,errors,warnings){
   fdEditionAdd(errors,!value||value.length>160||!/^[\x21-\x7E]+$/.test(value),'EDITION_SCHEMA',path,'The identifier must use 1 to 160 visible ASCII characters.');
+  fdEditionScreenText(value,path,errors,warnings);
 }
 
 function fdEditionHostnameValid(hostname){
@@ -448,7 +459,7 @@ function fdEditionCheckUrl(value,path,errors,warnings){
 }
 
 function fdEditionScreenText(value,path,errors,warnings){
-  var blocking=/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]|<\/?[a-z][^>]*>|\bon[a-z]+\s*=|(?:javascript|data|vbscript|blob):|\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b|\b(?:pager\s*[:#-]?\s*\d{4,}|(?:call|phone|tel(?:ephone)?)?\s*\+?\d[\d(). -]{6,}\d)\b|\b(?:password|passcode|credential|username|login|api[_ -]?key|secret|token)\s*(?::|=|\bis\b|\bare\b)\s*\S+|\b(?:access|door|badge)\s+code\s*(?::|=|\bis\b|\bare\b)\s*\S+|\bpin\s*(?::|=|\bis\b)\s*\d+|\b\d+(?:\.\d+)?\s*(?:mg|mcg|\u00b5g|g|ml|milligrams?|micrograms?|grams?|millilit(?:er|re)s?|units?|iu)\b/i;
+  var blocking=/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]|<\/?[a-z][^>]*>|\bon[a-z]+\s*=|(?:javascript|data|vbscript|blob):|\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b|\b(?:pager\s*[:#-]?\s*\d{4,}|(?:call|phone|tel(?:ephone)?)?\s*\+?\d[\d(). -]{6,}\d)\b|\b(?:password|passcode|credential|username|login|api[_ -]?key|secret|token)\s*(?::|=|\bis\b|\bare\b)\s*\S+|\b(?:access|door|badge)[_ -]+code\s*(?::|=|\bis\b|\bare\b)\s*\S+|\bpin\s*(?::|=|\bis\b)\s*\d+|\b\d+(?:\.\d+)?\s*(?:mg|mcg|\u00b5g|g|ml|milligrams?|micrograms?|grams?|millilit(?:er|re)s?|units?|iu)\b/i;
   var advisory=/\b(?:patient\s+(?:identifier|name|record)|credentials?|password|passcode|username|login|api[_ -]?key|secret|token|(?:access|door|badge)\s+code|pin|protocols?|dos(?:e|ing|age)|medication)\b/i;
   if(blocking.test(value)) errors.push(fdEditionFinding('EDITION_TEXT_RISK',path,'Text must not contain direct contact, access, credential, dose, control, HTML, event-handler, or executable content.'));
   else if(advisory.test(value)) warnings.push(fdEditionFinding('EDITION_TEXT_RISK',path,'Review this text for sensitive identifiers, credentials, protocols, or dosing details before publication.',false));
@@ -482,8 +493,8 @@ function fdEditionValidateConfig(config,index,siteContext){
 
   for(i=0;i<value.pathItems.length;i++){
     item=value.pathItems[i];
-    fdEditionCheckIdentifier(item.instanceId,'/config/pathItems/'+i+'/instanceId',errors);
-    fdEditionCheckIdentifier(item.ref,'/config/pathItems/'+i+'/ref',errors);
+    fdEditionCheckIdentifier(item.instanceId,'/config/pathItems/'+i+'/instanceId',errors,warnings);
+    fdEditionCheckIdentifier(item.ref,'/config/pathItems/'+i+'/ref',errors,warnings);
     fdEditionAdd(errors,!pathRule||item.week<1||item.week>pathRule.weeks,'EDITION_WEEK','/config/pathItems/'+i+'/week','Week must be within the audience path duration.');
     fdEditionAdd(errors,item.order<1,'EDITION_SCHEMA','/config/pathItems/'+i+'/order','Order must be a positive whole number.');
     fdEditionCheckPriority(item.priority,'/config/pathItems/'+i+'/priority',errors);
@@ -519,7 +530,7 @@ function fdEditionValidateConfig(config,index,siteContext){
     }
     for(i=0;i<value.localOrientation.checklist.length;i++){
       item=value.localOrientation.checklist[i];
-      fdEditionCheckIdentifier(item.id,'/config/localOrientation/checklist/'+i+'/id',errors);
+      fdEditionCheckIdentifier(item.id,'/config/localOrientation/checklist/'+i+'/id',errors,warnings);
       fdEditionCheckLabel(item.label,'/config/localOrientation/checklist/'+i+'/label',errors);
       fdEditionCheckPriority(item.priority,'/config/localOrientation/checklist/'+i+'/priority',errors);
       fdEditionAdd(errors,seenIds[item.id],'EDITION_SCHEMA','/config/localOrientation/checklist/'+i+'/id','Every instance and local identifier must be unique.');
@@ -527,7 +538,7 @@ function fdEditionValidateConfig(config,index,siteContext){
     }
     for(i=0;i<value.localOrientation.resources.length;i++){
       item=value.localOrientation.resources[i];
-      fdEditionCheckIdentifier(item.id,'/config/localOrientation/resources/'+i+'/id',errors);
+      fdEditionCheckIdentifier(item.id,'/config/localOrientation/resources/'+i+'/id',errors,warnings);
       fdEditionCheckLabel(item.title,'/config/localOrientation/resources/'+i+'/title',errors);
       fdEditionCheckUrl(item.url,'/config/localOrientation/resources/'+i+'/url',errors,warnings);
       fdEditionCheckPriority(item.priority,'/config/localOrientation/resources/'+i+'/priority',errors);
