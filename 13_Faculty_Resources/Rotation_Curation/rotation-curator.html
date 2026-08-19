@@ -165,6 +165,83 @@
     }
     .panel-note { color: var(--muted); }
     .preview-panel { position: sticky; top: 18px; }
+    .edition-form {
+      display: grid;
+      gap: 18px;
+      margin-top: 22px;
+    }
+    .field-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+    .field { min-width: 0; }
+    .field-wide { grid-column: 1 / -1; }
+    .field label {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--evergreen);
+      font-weight: 800;
+    }
+    .field input {
+      width: 100%;
+      min-height: 44px;
+      padding: 9px 11px;
+      border: 1px solid #8f9b96;
+      border-radius: 7px;
+      color: var(--ink);
+      background: #fff;
+    }
+    .field-description {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: .86rem;
+    }
+    .locked-facts, .draft-actions, .import-panel, .error-summary {
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fbf6ed;
+    }
+    .locked-facts p, .draft-actions p, .import-panel p { margin-bottom: 0; }
+    .locked-facts dl {
+      display: grid;
+      grid-template-columns: max-content 1fr;
+      gap: 5px 12px;
+      margin: 10px 0 0;
+    }
+    .locked-facts dt { font-weight: 800; }
+    .locked-facts dd { margin: 0; overflow-wrap: anywhere; }
+    .draft-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 16px;
+      align-items: center;
+    }
+    .primary-action, .secondary-action {
+      padding: 9px 15px;
+      border-radius: 7px;
+      font-weight: 800;
+    }
+    .primary-action { border: 1px solid var(--evergreen); color: #fff; background: var(--evergreen); }
+    .secondary-action { border: 1px solid #72857e; color: var(--evergreen); background: #fff; }
+    .file-label {
+      display: inline-flex;
+      align-items: center;
+      min-height: 44px;
+      padding: 9px 15px;
+      border: 1px solid #72857e;
+      border-radius: 7px;
+      color: var(--evergreen);
+      background: #fff;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .error-summary { border-color: var(--terracotta); background: var(--terracotta-soft); color: #5d271c; }
+    .error-summary h3 { margin: 0 0 6px; font-size: 1rem; }
+    .error-summary ul { margin: 0; padding-left: 22px; }
+    .error-summary a { color: #6b2618; font-weight: 750; }
+    [hidden] { display: none !important; }
     .placeholder-lines {
       display: grid;
       gap: 10px;
@@ -222,6 +299,10 @@
       .step-rail button { border-top: 0; border-left: 4px solid transparent; }
       .step-rail button[aria-current="step"] { border-left-color: var(--terracotta); }
       .workspace { grid-template-columns: 1fr; }
+      .field-grid { grid-template-columns: 1fr; }
+      .field-wide { grid-column: auto; }
+      .locked-facts dl { grid-template-columns: 1fr; gap: 2px; }
+      .locked-facts dd { margin-bottom: 7px; }
       .preview-panel { position: static; }
       .final-action { align-items: stretch; }
       #curatorGenerate { width: 100%; }
@@ -263,8 +344,80 @@
     <div class="workspace">
       <section id="curatorEditorMount" class="panel" aria-labelledby="curatorEditorTitle">
         <h2 id="curatorEditorTitle">1. Edition</h2>
-        <p class="panel-note">The governed editor fields will be enabled in the next implementation stage. The active audience and duration cannot be changed here.</p>
-        <div class="placeholder-lines" aria-hidden="true"><span></span><span></span><span></span></div>
+        <div id="curatorStepOne">
+          <p class="panel-note">Name this edition and identify its local curator. Dates are informational and do not expire or disable an existing edition.</p>
+          <div id="curatorErrorSummary" class="error-summary" role="alert" tabindex="-1" hidden>
+            <h3>Review the following fields</h3>
+            <ul id="curatorErrorList"></ul>
+          </div>
+          <div class="edition-form">
+            <section class="locked-facts" aria-labelledby="curatorLockedFactsTitle">
+              <strong id="curatorLockedFactsTitle">Audience, canonical path, and duration are locked by this site</strong>
+              <dl>
+                <dt>Audience</dt><dd id="curatorAudienceFact">Current audience site</dd>
+                <dt>Canonical path</dt><dd id="curatorPathFact">Current audience path</dd>
+                <dt>Edition number</dt><dd id="curatorEditionNumber">Edition 1</dd>
+              </dl>
+            </section>
+            <div class="field-grid">
+              <div class="field field-wide">
+                <label for="curatorTitle">Edition title</label>
+                <input id="curatorTitle" name="title" type="text" maxlength="100" aria-describedby="curatorTitleDescription" data-curator-card="title" autocomplete="off">
+                <p id="curatorTitleDescription" class="field-description">A short trainee-facing name for this rotation edition.</p>
+              </div>
+              <div class="field">
+                <label for="curatorLocationName">Training-location display name</label>
+                <input id="curatorLocationName" name="locationName" type="text" maxlength="100" aria-describedby="curatorLocationNameDescription" data-curator-card="locationName" autocomplete="organization">
+                <p id="curatorLocationNameDescription" class="field-description">The public location name students should recognize.</p>
+              </div>
+              <div class="field">
+                <label for="curatorLocationCode">Short location code</label>
+                <input id="curatorLocationCode" name="locationCode" type="text" maxlength="8" aria-describedby="curatorLocationCodeDescription" data-curator-card="locationCode" autocapitalize="characters" autocomplete="off">
+                <p id="curatorLocationCodeDescription" class="field-description">Use 2–8 letters or digits. It is normalized to uppercase.</p>
+              </div>
+              <div class="field">
+                <label for="curatorName">Curator display name</label>
+                <input id="curatorName" name="curatorName" type="text" maxlength="100" aria-describedby="curatorNameDescription" data-curator-card="curatorName" autocomplete="name">
+                <p id="curatorNameDescription" class="field-description">Self-entered public display name; identity is not digitally verified.</p>
+              </div>
+              <div class="field">
+                <label for="curatorRole">Curator professional role</label>
+                <input id="curatorRole" name="curatorRole" type="text" maxlength="100" aria-describedby="curatorRoleDescription" data-curator-card="curatorRole" autocomplete="organization-title">
+                <p id="curatorRoleDescription" class="field-description">For example, attending psychiatrist or clerkship director.</p>
+              </div>
+              <div class="field">
+                <label for="curatorRotationStart">Rotation start date</label>
+                <input id="curatorRotationStart" name="rotationStart" type="date" aria-describedby="curatorRotationStartDescription" data-curator-card="rotationStart">
+                <p id="curatorRotationStartDescription" class="field-description">Informational only; past dates remain valid.</p>
+              </div>
+              <div class="field">
+                <label for="curatorRotationEnd">Rotation end date</label>
+                <input id="curatorRotationEnd" name="rotationEnd" type="date" aria-describedby="curatorRotationEndDescription" data-curator-card="rotationEnd">
+                <p id="curatorRotationEndDescription" class="field-description">Must not be before the rotation start date.</p>
+              </div>
+              <div class="field">
+                <label for="curatorLastVerified">Informational last-verified date</label>
+                <input id="curatorLastVerified" name="lastVerified" type="date" aria-describedby="curatorLastVerifiedDescription" data-curator-card="lastVerified">
+                <p id="curatorLastVerifiedDescription" class="field-description">Shows when the curator last checked local details; it is not an expiration date.</p>
+              </div>
+            </div>
+            <section class="import-panel" aria-labelledby="curatorImportTitle">
+              <strong id="curatorImportTitle">Continue from a JSON backup</strong>
+              <p>Import one validated backup for this audience. Files larger than 64 KiB are rejected before being read.</p>
+              <label class="file-label" for="curatorImportFile">Choose JSON backup</label>
+              <input id="curatorImportFile" type="file" accept="application/json,.json" class="visually-hidden">
+            </section>
+            <div class="draft-actions">
+              <button type="button" id="curatorSaveDraft" class="secondary-action">Save draft on this device</button>
+              <p id="curatorSaveStatus" role="status" aria-live="polite" data-saved-copy="Saved on this device">Not yet saved on this device.</p>
+              <button type="button" id="curatorContinue" class="primary-action">Continue to curriculum</button>
+            </div>
+          </div>
+        </div>
+        <div id="curatorFutureStep" hidden>
+          <p class="panel-note">This step remains unavailable until its focused implementation and safety checks are complete.</p>
+          <div class="placeholder-lines" aria-hidden="true"><span></span><span></span><span></span></div>
+        </div>
       </section>
       <aside id="curatorPreviewMount" class="panel preview-panel" aria-labelledby="curatorPreviewTitle">
         <h2 id="curatorPreviewTitle">Student preview</h2>
