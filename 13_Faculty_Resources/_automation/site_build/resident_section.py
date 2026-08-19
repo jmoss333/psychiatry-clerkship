@@ -263,9 +263,21 @@ if _cm_untagged: print("  NOTE no 'blueprint' in cotw_registry.json (case absent
 # The resident build begins as a copy of MS3, so replace every Front Door global only after
 # resident extras, nav metadata, and topic-meta overlays are all complete. Reusing the copied
 # MS3 literals would silently hide resident-only browse paths behind student data.
+sys.path.insert(0, os.path.dirname(HERE))
+from validate_tool_governance import (
+    GovernanceError,
+    build_governance_document,
+    current_revision,
+    validate_built_tool_inventory,
+    write_atomic_json,
+)
+try:
+    _core_revision=current_revision(Path(LIB))
+except GovernanceError as error:
+    raise SystemExit(f"tool governance INVALID — {error}") from error
 try:
     _fd_payload=frontdoor_catalog.build_frontdoor_payload(
-        "resident", json.load(open(LIB+"/curriculum.json",encoding="utf-8")), nav)
+        "resident", json.load(open(LIB+"/curriculum.json",encoding="utf-8")), nav, _core_revision)
     frontdoor_catalog.inject_frontdoor_payload(
         OUT+"/index.html", _fd_payload,
         json.load(open(OUT+"/topic_meta.json",encoding="utf-8")),
@@ -308,17 +320,9 @@ print(" sections:",[s["section"] for s in nav])
 
 # ---------- TOOL GOVERNANCE ----------
 # Build from canonical sources, then verify the final resident tools exactly match its IDs.
-sys.path.insert(0, os.path.dirname(HERE))
-from validate_tool_governance import (
-    GovernanceError,
-    build_governance_document,
-    validate_built_tool_inventory,
-    write_atomic_json,
-)
-
 try:
     _governance, _governance_warnings = build_governance_document(
-        Path(LIB), "resident", enforce_expected_count=True
+        Path(LIB), "resident", revision=_core_revision, enforce_expected_count=True
     )
     validate_built_tool_inventory(_governance, Path(OUT) / "tools", site="resident")
     write_atomic_json(Path(OUT) / "tool-governance.json", _governance)

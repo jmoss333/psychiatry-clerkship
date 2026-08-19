@@ -7,12 +7,17 @@ import subprocess
 import sys
 import tempfile
 import unittest
+import warnings
 
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 
+import common  # noqa: E402
 from frontdoor_catalog import build_frontdoor_payload, inject_frontdoor_payload  # noqa: E402
+
+
+REVISION = "1234567890abcdef1234567890abcdef12345678"
 
 
 RESIDENT_EXTRAS = [
@@ -96,8 +101,13 @@ class FrontdoorCatalogTest(unittest.TestCase):
         self.resident_catalog = _catalog(self.shared + RESIDENT_EXTRAS)
 
     def test_site_projections_have_expected_placed_counts_and_roles(self):
-        ms3 = build_frontdoor_payload("ms3", self.curriculum, self.ms3_catalog)
-        resident = build_frontdoor_payload("resident", self.curriculum, self.resident_catalog)
+        ms3 = build_frontdoor_payload("ms3", self.curriculum, self.ms3_catalog, REVISION)
+        resident = build_frontdoor_payload("resident", self.curriculum, self.resident_catalog, REVISION)
+
+        self.assertEqual(ms3["audience"], "ms3")
+        self.assertEqual(resident["audience"], "resident")
+        self.assertEqual(ms3["coreRevision"], REVISION)
+        self.assertEqual(resident["coreRevision"], REVISION)
 
         self.assertEqual(sum(len(column["refs"]) for column in ms3["curriculum"]["libraryColumns"]), 81)
         self.assertEqual(sum(len(column["refs"]) for column in resident["curriculum"]["libraryColumns"]), 90)
@@ -136,10 +146,10 @@ class FrontdoorCatalogTest(unittest.TestCase):
                 curriculum = copy.deepcopy(self.curriculum)
                 mutate(curriculum)
                 with self.assertRaisesRegex(ValueError, message):
-                    build_frontdoor_payload("resident", curriculum, catalog)
+                    build_frontdoor_payload("resident", curriculum, catalog, REVISION)
 
     def test_resident_extra_titles_and_kinds_come_from_final_catalog(self):
-        payload = build_frontdoor_payload("resident", self.curriculum, self.resident_catalog)
+        payload = build_frontdoor_payload("resident", self.curriculum, self.resident_catalog, REVISION)
         entries = payload["manifest"]["tools"] + payload["manifest"]["md"]
         resolved = {entry[1]: entry[2] for entry in entries}
 
@@ -162,8 +172,8 @@ class FrontdoorCatalogTest(unittest.TestCase):
         original_ms3_catalog = copy.deepcopy(ms3_catalog)
         original_resident_catalog = copy.deepcopy(resident_catalog)
 
-        ms3 = build_frontdoor_payload("ms3", curriculum, ms3_catalog)
-        resident = build_frontdoor_payload("resident", curriculum, resident_catalog)
+        ms3 = build_frontdoor_payload("ms3", curriculum, ms3_catalog, REVISION)
+        resident = build_frontdoor_payload("resident", curriculum, resident_catalog, REVISION)
         ms3_entries = {entry[1]: entry for group in ms3["manifest"].values() for entry in group}
         resident_entries = {entry[1]: entry for group in resident["manifest"].values() for entry in group}
 
@@ -190,11 +200,11 @@ class FrontdoorCatalogTest(unittest.TestCase):
                               ("extra", extra), ("conflicting", conflicting)):
             with self.subTest(name=name):
                 with self.assertRaises(ValueError):
-                    build_frontdoor_payload("ms3", self.curriculum, catalog)
+                    build_frontdoor_payload("ms3", self.curriculum, catalog, REVISION)
 
     def test_every_emitted_ref_resolves_and_input_is_not_mutated(self):
         original = copy.deepcopy(self.curriculum)
-        payload = build_frontdoor_payload("resident", self.curriculum, self.resident_catalog)
+        payload = build_frontdoor_payload("resident", self.curriculum, self.resident_catalog, REVISION)
         manifest_refs = {entry[1] for group in payload["manifest"].values() for entry in group}
         placed = {ref for column in payload["curriculum"]["libraryColumns"]
                   for ref in column["refs"]}
@@ -208,16 +218,16 @@ class FrontdoorCatalogTest(unittest.TestCase):
             {"column": "Core", "refs": [RESIDENT_EXTRAS[0]]})
 
         with self.assertRaisesRegex(ValueError, "duplicate"):
-            build_frontdoor_payload("resident", duplicate, self.resident_catalog)
+            build_frontdoor_payload("resident", duplicate, self.resident_catalog, REVISION)
 
     def test_unplaced_ref_fails_when_final_catalog_has_no_entry(self):
         unplaced_catalog = _catalog(self.shared + RESIDENT_EXTRAS[:-1])
 
         with self.assertRaisesRegex(ValueError, RESIDENT_EXTRAS[-1]):
-            build_frontdoor_payload("resident", self.curriculum, unplaced_catalog)
+            build_frontdoor_payload("resident", self.curriculum, unplaced_catalog, REVISION)
 
     def test_resident_replacement_consumes_a_json_value_with_semicolons(self):
-        payload = build_frontdoor_payload("resident", self.curriculum, self.resident_catalog)
+        payload = build_frontdoor_payload("resident", self.curriculum, self.resident_catalog, REVISION)
         previous = '{"_note":"old; MS3 payload"}'
         with tempfile.NamedTemporaryFile("w+", encoding="utf-8") as page:
             page.write("\n".join([
@@ -226,6 +236,8 @@ class FrontdoorCatalogTest(unittest.TestCase):
                 "var FD_TOOL_REGISTRY={};",
                 "var FD_SITE_MANIFEST={};",
                 "var FD_ROLES=[];",
+                "var FD_AUDIENCE=\"\";",
+                "var FD_CORE_REVISION=\"\";",
             ]))
             page.flush()
             inject_frontdoor_payload(page.name, payload, {"note": "new; resident"}, {"tools": []})
@@ -240,7 +252,7 @@ class FrontdoorCatalogTest(unittest.TestCase):
         self.assertTrue(rendered[start + end:].startswith(";\nvar FD_TOPIC_META="), rendered)
 
     def test_inline_json_escapes_html_and_javascript_line_separators(self):
-        payload = build_frontdoor_payload("resident", self.curriculum, self.resident_catalog)
+        payload = build_frontdoor_payload("resident", self.curriculum, self.resident_catalog, REVISION)
         hostile = "</script><!--&\u2028\u2029"
         with tempfile.NamedTemporaryFile("w+", encoding="utf-8") as page:
             page.write("\n".join([
@@ -249,6 +261,8 @@ class FrontdoorCatalogTest(unittest.TestCase):
                 "var FD_TOOL_REGISTRY={};",
                 "var FD_SITE_MANIFEST={};",
                 "var FD_ROLES=[];",
+                "var FD_AUDIENCE=\"\";",
+                "var FD_CORE_REVISION=\"\";",
             ]))
             page.flush()
             inject_frontdoor_payload(page.name, payload, {"hostile": hostile}, {"tools": []})
@@ -274,7 +288,7 @@ class FrontdoorCatalogTest(unittest.TestCase):
             {"ref": ref, "reason": "MS3-only placement"}
             for ref in RESIDENT_EXTRAS
         ]
-        payload = build_frontdoor_payload("resident", curriculum, self.resident_catalog)
+        payload = build_frontdoor_payload("resident", curriculum, self.resident_catalog, REVISION)
         placed = {ref for column in payload["curriculum"]["libraryColumns"]
                   for ref in column["refs"]}
         excluded = {entry["ref"] for entry in payload["curriculum"]["libraryExclude"]}
@@ -293,8 +307,8 @@ class FrontdoorCatalogTest(unittest.TestCase):
         refs.update(ref for addition in curriculum["siteLibrary"]["resident"]["additions"]
                     for ref in addition["refs"])
         catalog = _catalog(sorted(refs))
-        ms3 = build_frontdoor_payload("ms3", curriculum, catalog)
-        resident = build_frontdoor_payload("resident", curriculum, catalog)
+        ms3 = build_frontdoor_payload("ms3", curriculum, catalog, REVISION)
+        resident = build_frontdoor_payload("resident", curriculum, catalog, REVISION)
         resident_placed = {
             ref for column in resident["curriculum"]["libraryColumns"]
             for ref in column["refs"]
@@ -312,6 +326,58 @@ class FrontdoorCatalogTest(unittest.TestCase):
         self.assertEqual(resident_additions, RESIDENT_EXTRAS)
         self.assertTrue(set(RESIDENT_EXTRAS).issubset(resident_placed))
         self.assertTrue(set(RESIDENT_EXTRAS).isdisjoint(resident_excluded))
+
+    def test_payload_requires_a_supported_site_and_lowercase_full_revision(self):
+        for site, revision, message in (
+            ("faculty", REVISION, "unsupported site"),
+            ("ms3", "ABCDEF1234567890abcdef1234567890abcdef12", "revision"),
+            ("ms3", "abc123", "revision"),
+        ):
+            with self.subTest(site=site, revision=revision):
+                with self.assertRaisesRegex(ValueError, message):
+                    build_frontdoor_payload(site, self.curriculum, self.ms3_catalog, revision)
+
+    def test_injects_all_seven_values_once_and_boots_them_for_shell_and_curator_shapes(self):
+        payload = build_frontdoor_payload("resident", self.curriculum, self.resident_catalog, REVISION)
+        fixtures = {
+            "shell": "\n".join([
+                "var FD_CURRICULUM={};", "var FD_TOPIC_META={};", "var FD_TOOL_REGISTRY={};",
+                "var FD_SITE_MANIFEST={};", "var FD_ROLES=[];", "var FD_AUDIENCE=\"\";",
+                "var FD_CORE_REVISION=\"\";", "/*__FD_DATA__*/", "/*__FD_EDITION_CONTRACT__*/",
+                "/*__FD_EDITION_PROJECT__*/", "/*__FD_EDITION_STUDENT__*/",
+                "var FD_BOOT_CONTEXT={audience:FD_AUDIENCE,revision:FD_CORE_REVISION};",
+            ]),
+            "curator": "\n".join([
+                "var FD_AUDIENCE=\"\";", "var FD_CORE_REVISION=\"\";", "var FD_CURRICULUM={};",
+                "var FD_TOPIC_META={};", "var FD_TOOL_REGISTRY={};", "var FD_SITE_MANIFEST={};",
+                "var FD_ROLES=[];", "/*__FD_DATA__*/", "/*__FD_EDITION_CONTRACT__*/",
+                "/*__FD_EDITION_PROJECT__*/", "/*__FD_EDITION_STUDENT__*/",
+                "var FD_BOOT_CONTEXT={audience:FD_AUDIENCE,revision:FD_CORE_REVISION};",
+            ]),
+        }
+        for name, fixture in fixtures.items():
+            with self.subTest(name=name), tempfile.NamedTemporaryFile("w+", suffix=".js", encoding="utf-8") as page:
+                page.write(fixture)
+                page.flush()
+                inject_frontdoor_payload(page.name, payload, {"site": name}, {"tools": []})
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore", ResourceWarning)
+                    self.assertTrue(common.inject_shared_snippets(page.name))
+                with open(page.name, encoding="utf-8") as rendered_page:
+                    rendered = rendered_page.read()
+                for needle in ("FD_CURRICULUM", "FD_TOPIC_META", "FD_TOOL_REGISTRY", "FD_SITE_MANIFEST",
+                               "FD_ROLES", "FD_AUDIENCE", "FD_CORE_REVISION"):
+                    self.assertEqual(rendered.count("var %s=" % needle), 1, needle)
+                self.assertLess(rendered.index("function fdEsc("), rendered.index("var FD_EDITION_RULES="))
+                self.assertLess(rendered.index("var FD_EDITION_RULES="), rendered.index("FD_BOOT_CONTEXT"))
+                result = subprocess.run(
+                    ["node", "-e", "const fs=require('fs');const t=fs.readFileSync(process.argv[1],'utf8');const x=new Function(t+';return {audience:FD_AUDIENCE,revision:FD_CORE_REVISION,boot:FD_BOOT_CONTEXT}')();process.stdout.write(JSON.stringify(x));", page.name],
+                    check=True, capture_output=True, text=True,
+                )
+                self.assertEqual(json.loads(result.stdout), {
+                    "audience": "resident", "revision": REVISION,
+                    "boot": {"audience": "resident", "revision": REVISION},
+                })
 
 
 if __name__ == "__main__":

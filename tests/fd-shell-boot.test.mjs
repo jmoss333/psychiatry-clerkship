@@ -57,6 +57,21 @@ test('the source body is the single live Front Door shell', () => {
   assert.doesNotMatch(source, /<aside id="side"|id="modetoggle"|id="modeCompanion"/);
 });
 
+test('the shell has one build-replaced edition context and ordered edition modules', () => {
+  for (const marker of ['FD_EDITION_CONTRACT', 'FD_EDITION_PROJECT', 'FD_EDITION_STUDENT']) {
+    assert.equal(count(`/*__${marker}__*/`), 1, `${marker} marker`);
+  }
+  for (const name of ['FD_AUDIENCE', 'FD_CORE_REVISION']) {
+    assert.equal((source.match(new RegExp(`var ${name}=\\"\\";`, 'g')) || []).length, 1,
+      `${name} JSON literal`);
+  }
+  const data = source.indexOf('/*__FD_DATA__*/');
+  const edition = source.indexOf('/*__FD_EDITION_CONTRACT__*/');
+  const consumer = source.indexOf('/*__FD_TODAY__*/');
+  assert.ok(data > -1 && data < edition && edition < consumer,
+    'edition helpers must boot after data and before their consumers');
+});
+
 test('the retired sidebar, legacy search/nav boot, companion, and dashboard are absent', () => {
   assert.doesNotMatch(source, /fetch\('nav\.json'\)/);
   for (const name of ['renderModeCompanion', 'renderWardDashboard', 'itemsForMode',

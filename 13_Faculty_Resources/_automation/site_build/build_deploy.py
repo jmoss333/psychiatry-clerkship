@@ -364,9 +364,21 @@ _abort_missing(_missing_req)
 
 # Front Door modules stay dormant in this task, but their data is made site-specific now.
 # Build after nav finalization so titles/kinds come from this site's actual browse catalog.
+sys.path.insert(0, os.path.dirname(HERE))
+from validate_tool_governance import (
+    GovernanceError,
+    build_governance_document,
+    current_revision,
+    validate_built_tool_inventory,
+    write_atomic_json,
+)
+try:
+    _core_revision=current_revision(Path(LIB))
+except GovernanceError as error:
+    raise SystemExit(f"tool governance INVALID — {error}") from error
 try:
     _fd_payload=frontdoor_catalog.build_frontdoor_payload(
-        "ms3", json.load(open(LIB+"/curriculum.json",encoding="utf-8")), nav)
+        "ms3", json.load(open(LIB+"/curriculum.json",encoding="utf-8")), nav, _core_revision)
     frontdoor_catalog.inject_frontdoor_payload(
         OUT+"/index.html", _fd_payload,
         json.load(open(OUT+"/topic_meta.json",encoding="utf-8")),
@@ -454,17 +466,9 @@ print("surface governance: emitted", len(_surface_governance["items"]), "items (
 # ---------- TOOL GOVERNANCE ----------
 # Source hashes remain over canonical source files; this final comparison proves the emitted
 # inventory exactly covers the completed built tools directory before publishing the artifact.
-sys.path.insert(0, os.path.dirname(HERE))
-from validate_tool_governance import (
-    GovernanceError,
-    build_governance_document,
-    validate_built_tool_inventory,
-    write_atomic_json,
-)
-
 try:
     _governance, _governance_warnings = build_governance_document(
-        Path(LIB), "ms3", enforce_expected_count=True
+        Path(LIB), "ms3", revision=_core_revision, enforce_expected_count=True
     )
     validate_built_tool_inventory(_governance, Path(OUT) / "tools", site="ms3")
     write_atomic_json(Path(OUT) / "tool-governance.json", _governance)
