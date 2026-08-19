@@ -192,6 +192,33 @@ test('matching edition plan performs one read and no writes', () => {
   assert.deepEqual(storage.operations, [['get', 'cw_plan_v1']]);
 });
 
+test('an absent plan reads once without cleanup and cannot erase a concurrently inserted plan', () => {
+  const { storage, F } = planHarness({ cw_pretest_v1: '{malformed-placement' }, EDITION_RES_INDEX, rows);
+  const originalGetItem = storage.getItem;
+  const inserted = '{"from":"another context"}';
+  let injected = false;
+  storage.getItem = (key) => {
+    const value = originalGetItem(key);
+    if (key === 'cw_plan_v1' && value === null && !injected) {
+      injected = true;
+      storage.setItem('cw_plan_v1', inserted);
+    }
+    return value;
+  };
+
+  assert.equal(F.fdLoadPlan(EDITION_RES_INDEX), null);
+  assert.equal(storage.snapshot().cw_plan_v1, inserted);
+  assert.deepEqual(storage.operations, [['get', 'cw_plan_v1'], ['set', 'cw_plan_v1']],
+    'the only write is the simulated other-context insertion');
+});
+
+test('an absent plan without placement is a one-read, zero-cleanup state', () => {
+  const { storage, F } = planHarness({}, EDITION_RES_INDEX, rows);
+
+  assert.equal(F.fdLoadPlan(EDITION_RES_INDEX), null);
+  assert.deepEqual(storage.operations, [['get', 'cw_plan_v1']]);
+});
+
 test('buildPlan uses its explicit edition index instead of a stale global index', () => {
   const { F } = planHarness({}, RES_INDEX, rows);
   const plan = F.buildPlan(EDITION_RES_INDEX);

@@ -1566,9 +1566,11 @@
   }
 
   function fdLoadPlan(index){
-    var plan=null,placement=null;
+    var rawPlan=null,plan=null,placement=null;
     if(!fdActivePathValid(index)) return null;
-    try{plan=JSON.parse(localStorage.getItem('cw_plan_v1')||'null');}catch(_){plan=null;}
+    try{rawPlan=localStorage.getItem('cw_plan_v1');}catch(_){rawPlan=null;}
+    if(rawPlan===null) return null;
+    try{plan=JSON.parse(rawPlan||'null');}catch(_){plan=null;}
     if(fdPlanMatches(index,plan)) return plan;
     try{placement=JSON.parse(localStorage.getItem('cw_pretest_v1')||'null');}catch(_){placement=null;}
     if(fdPlacementUsable(placement)){

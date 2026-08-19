@@ -66,10 +66,10 @@ async function installEditionRuntimeProbe(page, options = {}) {
     const readPlanStorage = () => {
       try { return JSON.parse(sessionStorage.getItem(planStorageKey) || '[]'); } catch { return []; }
     };
-    const recordPlanStorage = (operation, key) => {
-      if (key !== 'cw_plan_v1' && key !== 'cw_pretest_v1' && key !== 'cw_shelf_date') return;
+    const recordPlanStorage = (operation, key, value = null) => {
+      if (operation === 'get' && key !== 'cw_plan_v1' && key !== 'cw_pretest_v1' && key !== 'cw_shelf_date') return;
       const operations = readPlanStorage();
-      operations.push([operation, key]);
+      operations.push([operation, key, value]);
       originalSetItem.call(window.sessionStorage, planStorageKey, JSON.stringify(operations));
       window.__fdPlanStorageOps = operations;
     };
@@ -241,7 +241,7 @@ async function installEditionRuntimeProbe(page, options = {}) {
       },
     });
     Storage.prototype.setItem = function setItem(key, value) {
-      if (this === window.localStorage) recordPlanStorage('set', key);
+      if (this === window.localStorage) recordPlanStorage('set', key, String(value));
       if (this === window.localStorage && (key === editionKey || key === localKey)) {
         const writes = readLog();
         writes.push([key, String(value)]);
@@ -1158,9 +1158,13 @@ test('accepting a different valid edition commits in order, clears the hash, and
     .toEqual({ checklist: {}, resources: {} });
 });
 
-for (const [label, usablePlacement, expectedPlanMutations] of [
-  ['usable placement', true, [['set', 'cw_plan_v1']]],
-  ['no usable placement', false, Array.from({ length: 4 }, () => ['remove', 'cw_plan_v1'])],
+for (const [label, usablePlacement, expectedMutationKeys] of [
+  ['usable placement', true, [
+    ['set', LOCAL_EDITION_KEY], ['set', EDITION_KEY], ['set', 'cw_plan_v1'],
+  ]],
+  ['no usable placement', false, [
+    ['set', LOCAL_EDITION_KEY], ['set', EDITION_KEY],
+  ]],
 ]) {
   test(`accepting an edition with ${label} changes only its derived plan after reload`, async ({ page }, testInfo) => {
     await installEditionRuntimeProbe(page);
@@ -1192,8 +1196,10 @@ for (const [label, usablePlacement, expectedPlanMutations] of [
     expect(new URL(page.url()).hash).toBe('');
     const operations = await planStorageOps(page);
     expect(operations.some(([operation, key]) => operation === 'get' && key === 'cw_plan_v1')).toBe(true);
-    expect(operations.filter(([operation]) => operation !== 'get')).toEqual(expectedPlanMutations);
-    expect(operations.every(([, key]) => ['cw_plan_v1', 'cw_pretest_v1', 'cw_shelf_date'].includes(key))).toBe(true);
+    const mutations = operations.filter(([operation]) => operation !== 'get');
+    expect(mutations.map(([operation, key]) => [operation, key])).toEqual(expectedMutationKeys);
+    expect(mutations[0][2]).not.toBe(before[LOCAL_EDITION_KEY]);
+    expect(mutations[1][2]).toBe(candidate.canonicalEnvelope);
 
     const after = await localStorageSnapshot(page);
     for (const key of [
@@ -1213,6 +1219,40 @@ for (const [label, usablePlacement, expectedPlanMutations] of [
     } else expect(after.cw_plan_v1).toBeUndefined();
   });
 }
+
+test('an absent plan stays read-only before another browser context supplies a matching plan', async ({ page }, testInfo) => {
+  await installEditionRuntimeProbe(page);
+  const active = await createSyntheticEdition(testInfo, 1);
+  await page.goto('/');
+  await seedEditionLearner(page);
+  await page.goto(`/?case=edition-null-plan#edition=${active.payload}`);
+  await expect(page.locator('.fd-today')).toBeVisible();
+  await page.evaluate(() => {
+    localStorage.removeItem('cw_plan_v1');
+    localStorage.setItem('cw_pretest_v1', '{malformed-placement');
+  });
+  await resetPlanStorageLog(page);
+
+  await page.evaluate(() => {
+    const button = document.createElement('button');
+    button.setAttribute('data-pt', 'plan');
+    document.querySelector('#fdApp').appendChild(button);
+    button.click();
+  });
+  await expect(page.locator('#ptRoot')).toBeVisible();
+  await expect(page.locator('.pt-q').first()).toBeVisible();
+  expect(await planStorageOps(page)).toEqual([['get', 'cw_plan_v1', null]]);
+
+  const matchingPlan = JSON.stringify(savedPlanFor(active.canonical, active.fingerprint));
+  const other = await page.context().newPage();
+  await other.goto('/nav.json');
+  await other.evaluate((value) => localStorage.setItem('cw_plan_v1', value), matchingPlan);
+  await other.close();
+  expect(await page.evaluate(() => localStorage.getItem('cw_plan_v1'))).toBe(matchingPlan);
+  expect(await planStorageOps(page)).toEqual([
+    ['get', 'cw_plan_v1', null], ['get', 'cw_plan_v1', null],
+  ]);
+});
 
 test('malformed and wrong-audience links show a non-modal alert without changing any stored byte', async ({ page }, testInfo) => {
   await installEditionRuntimeProbe(page);
