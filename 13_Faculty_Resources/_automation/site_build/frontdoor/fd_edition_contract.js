@@ -26,6 +26,7 @@ var FD_EDITION_DANGEROUS=(function(){
   return keys;
 }());
 var FD_EDITION_MAX_ARRAY_ITEMS=FD_EDITION_RULES.maxConfigBytes;
+var FD_EDITION_URL_DECODE_PASSES=4;
 var FD_EDITION_CONFIG_FIELDS=['audience','pathId','editionNumber','createdAgainstCoreRevision','card','pathItems','localOrientation','changeNote'];
 var FD_EDITION_CARD_FIELDS=['title','locationName','locationCode','curatorName','curatorRole','rotationStart','rotationEnd','lastVerified'];
 var FD_EDITION_PATH_FIELDS=['instanceId','ref','week','order','priority','rationale'];
@@ -39,7 +40,9 @@ function fdEditionFinding(code,path,message,blocking){
 }
 
 function fdEditionObject(value){
-  return value!==null&&typeof value==='object'&&!Array.isArray(value);
+  if(value===null||typeof value!=='object') return false;
+  try{ return !Array.isArray(value); }
+  catch(ignoreArrayClassification){ return false; }
 }
 
 function fdEditionPointer(path,part){
@@ -97,8 +100,10 @@ function fdEditionString(value,path,errors){
 }
 
 function fdEditionArray(value,path,errors){
-  var keys,out,i,key,descriptor,lengthDescriptor,length,data=Object.create(null);
-  if(!Array.isArray(value)){
+  var keys,out,i,key,descriptor,lengthDescriptor,length,data=Object.create(null),isArray=false;
+  try{ isArray=Array.isArray(value); }
+  catch(ignoreArrayClassification){ isArray=false; }
+  if(!isArray){
     errors.push(fdEditionFinding('EDITION_SCHEMA',path,'A list is required.'));
     return [];
   }
@@ -241,7 +246,9 @@ function fdEditionCanonicalJson(value){
     if(typeof current!=='object') throw new Error('Canonical JSON value is invalid.');
     if(seen.indexOf(current)!==-1) throw new Error('Canonical JSON cycle is invalid.');
     seen.push(current);
-    if(Array.isArray(current)){
+    try{ descriptor=Array.isArray(current); }
+    catch(ignoreArrayClassification){ throw new Error('Canonical JSON value is invalid.'); }
+    if(descriptor){
       try{ lengthDescriptor=Object.getOwnPropertyDescriptor(current,'length'); }
       catch(ignoreLength){ lengthDescriptor=null; }
       if(!lengthDescriptor||!Object.prototype.hasOwnProperty.call(lengthDescriptor,'value')||
@@ -287,10 +294,14 @@ function fdEditionCanonicalJson(value){
 }
 
 function fdEditionBase64urlEncode(bytes){
-  var binary='',i;
-  if(!(bytes instanceof Uint8Array)) throw new Error('Base64url input must be bytes.');
-  for(i=0;i<bytes.length;i++) binary+=String.fromCharCode(bytes[i]);
-  return btoa(binary).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  var binary='',i,valid=false;
+  try{ valid=ArrayBuffer.isView(bytes)&&bytes instanceof Uint8Array; }
+  catch(ignoreByteClassification){ valid=false; }
+  if(!valid) throw new Error('Base64url input must be bytes.');
+  try{
+    for(i=0;i<bytes.length;i++) binary+=String.fromCharCode(bytes[i]);
+    return btoa(binary).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  }catch(ignoreBytes){ throw new Error('Base64url input must be bytes.'); }
 }
 
 function fdEditionBase64urlDecode(text,maxBytes){
@@ -336,14 +347,25 @@ function fdEditionDigestEqual(expected,actual){
 
 function fdEditionFingerprint(config,digest){
   var bytes,value,alphabet='0123456789ABCDEFGHJKMNPQRSTVWXYZ',token='',i,path;
-  try{ bytes=fdEditionBase64urlDecode(String(digest).slice(7),32); }
+  var audienceDescriptor,cardDescriptor,locationDescriptor,card;
+  if(typeof digest!=='string'||digest.indexOf('sha256-')!==0||!fdEditionObject(config)) return '';
+  try{ bytes=fdEditionBase64urlDecode(digest.slice(7),32); }
   catch(ignore){ return ''; }
-  if(bytes.length!==32||!config||!config.card) return '';
-  path=FD_EDITION_RULES.paths[config.audience];
-  if(!path||typeof config.card.locationCode!=='string') return '';
+  try{
+    audienceDescriptor=Object.getOwnPropertyDescriptor(config,'audience');
+    cardDescriptor=Object.getOwnPropertyDescriptor(config,'card');
+  }catch(ignoreConfig){ return ''; }
+  if(bytes.length!==32||!audienceDescriptor||!Object.prototype.hasOwnProperty.call(audienceDescriptor,'value')||
+     !cardDescriptor||!Object.prototype.hasOwnProperty.call(cardDescriptor,'value')||!fdEditionObject(cardDescriptor.value)) return '';
+  card=cardDescriptor.value;
+  try{ locationDescriptor=Object.getOwnPropertyDescriptor(card,'locationCode'); }
+  catch(ignoreCard){ return ''; }
+  if(typeof audienceDescriptor.value!=='string'||!Object.prototype.hasOwnProperty.call(FD_EDITION_RULES.paths,audienceDescriptor.value)) return '';
+  path=FD_EDITION_RULES.paths[audienceDescriptor.value];
+  if(!path||!locationDescriptor||!Object.prototype.hasOwnProperty.call(locationDescriptor,'value')||typeof locationDescriptor.value!=='string') return '';
   value=Math.floor((bytes[0]*16777216+bytes[1]*65536+bytes[2]*256+bytes[3])/4);
   for(i=5;i>=0;i--) token+=alphabet.charAt(Math.floor(value/Math.pow(32,i))%32);
-  return config.card.locationCode.replace(/\s/g,'').toUpperCase()+'-'+path.code+'-'+token;
+  return locationDescriptor.value.replace(/\s/g,'').toUpperCase()+'-'+path.code+'-'+token;
 }
 
 function fdEditionAdd(errors,condition,code,path,message){
@@ -390,8 +412,21 @@ function fdEditionCheckPriority(value,path,errors){
   fdEditionAdd(errors,FD_EDITION_RULES.priorities.indexOf(value)===-1,'EDITION_SCHEMA',path,'Priority must be required, recommended, or optional.');
 }
 
+function fdEditionDecodeUrlComponent(value,queryMode){
+  var current=value,next,i;
+  for(i=0;i<FD_EDITION_URL_DECODE_PASSES;i++){
+    if(queryMode) current=current.replace(/\+/g,' ');
+    try{ next=decodeURIComponent(current); }
+    catch(ignoreEncoding){ return {ok:false,value:''}; }
+    if(next===current) return {ok:true,value:current};
+    if(i===FD_EDITION_URL_DECODE_PASSES-1) return {ok:false,value:''};
+    current=next;
+  }
+  return {ok:false,value:''};
+}
+
 function fdEditionCheckUrl(value,path,errors,warnings){
-  var parsed=null,decoded='';
+  var parsed=null,decoded='',pathPart,queryPart,hashPart;
   try{ parsed=new URL(value); }catch(ignoreUrl){ parsed=null; }
   fdEditionAdd(errors,fdEditionTextLength(value)>FD_EDITION_RULES.maxUrl,'EDITION_URL',path,'URLs must contain at most 2048 characters.');
   fdEditionAdd(errors,!/^https:\/\/[^\s]+$/i.test(value),'EDITION_URL',path,'Only absolute HTTPS URLs are allowed.');
@@ -400,14 +435,14 @@ function fdEditionCheckUrl(value,path,errors,warnings){
   fdEditionAdd(errors,/^(?:javascript|data|vbscript|blob):/i.test(value),'EDITION_URL',path,'Executable and embedded-data URL schemes are not allowed.');
   fdEditionScreenText(value,path,errors,warnings);
   if(parsed){
-    try{
-      decoded=decodeURIComponent(parsed.pathname)+'\n'+
-        decodeURIComponent(parsed.search.replace(/\+/g,' '))+'\n'+
-        decodeURIComponent(parsed.hash);
-    }catch(ignoreEncoding){
-      errors.push(fdEditionFinding('EDITION_URL',path,'URL components must use valid percent encoding.'));
+    pathPart=fdEditionDecodeUrlComponent(parsed.pathname,false);
+    queryPart=fdEditionDecodeUrlComponent(parsed.search,true);
+    hashPart=fdEditionDecodeUrlComponent(parsed.hash,false);
+    if(!pathPart.ok||!queryPart.ok||!hashPart.ok){
+      errors.push(fdEditionFinding('EDITION_URL',path,'URL encoding must be valid and contain no excessive nested layers.'));
       return;
     }
+    decoded=pathPart.value+'\n'+queryPart.value+'\n'+hashPart.value;
     fdEditionScreenText(decoded,path,errors,warnings);
   }
 }
@@ -574,11 +609,49 @@ function fdEditionDiagnosticVersion(result){
 }
 
 function fdEditionDiagnostic(result,siteContext){
-  var first=result&&result.errors&&result.errors.length?result.errors[0].code:'EDITION_OK';
+  var code='EDITION_SCHEMA',fingerprint='',currentCoreRevision='';
+  var errorsDescriptor,lengthDescriptor,firstDescriptor,codeDescriptor,fingerprintDescriptor,revisionDescriptor,isArray=false;
+  var allowedCodes=Object.create(null),allowedList=['EDITION_SCHEMA','EDITION_DIGEST','EDITION_AUDIENCE','EDITION_REF',
+    'EDITION_WEEK','EDITION_SIZE','EDITION_URL','EDITION_TEXT_RISK'],allowedIndex;
+  for(allowedIndex=0;allowedIndex<allowedList.length;allowedIndex++) allowedCodes[allowedList[allowedIndex]]=true;
+  if(fdEditionObject(result)){
+    try{
+      errorsDescriptor=Object.getOwnPropertyDescriptor(result,'errors');
+      fingerprintDescriptor=Object.getOwnPropertyDescriptor(result,'fingerprint');
+    }catch(ignoreResult){ errorsDescriptor=null; fingerprintDescriptor=null; }
+    if(errorsDescriptor&&Object.prototype.hasOwnProperty.call(errorsDescriptor,'value')){
+      try{ isArray=Array.isArray(errorsDescriptor.value); }
+      catch(ignoreErrorsArray){ isArray=false; }
+      if(isArray){
+        try{ lengthDescriptor=Object.getOwnPropertyDescriptor(errorsDescriptor.value,'length'); }
+        catch(ignoreErrorsLength){ lengthDescriptor=null; }
+        if(lengthDescriptor&&lengthDescriptor.value===0) code='EDITION_OK';
+        else if(lengthDescriptor&&typeof lengthDescriptor.value==='number'&&lengthDescriptor.value>0){
+          try{ firstDescriptor=Object.getOwnPropertyDescriptor(errorsDescriptor.value,'0'); }
+          catch(ignoreFirst){ firstDescriptor=null; }
+          if(firstDescriptor&&Object.prototype.hasOwnProperty.call(firstDescriptor,'value')&&fdEditionObject(firstDescriptor.value)){
+            try{ codeDescriptor=Object.getOwnPropertyDescriptor(firstDescriptor.value,'code'); }
+            catch(ignoreCode){ codeDescriptor=null; }
+            if(codeDescriptor&&Object.prototype.hasOwnProperty.call(codeDescriptor,'value')&&
+               typeof codeDescriptor.value==='string'&&allowedCodes[codeDescriptor.value]) code=codeDescriptor.value;
+          }
+        }
+      }
+    }
+    if(fingerprintDescriptor&&Object.prototype.hasOwnProperty.call(fingerprintDescriptor,'value')&&
+       typeof fingerprintDescriptor.value==='string'&&/^[A-Z0-9]{2,8}-(?:MS3|RES)-[0-9A-HJKMNP-TV-Z]{6}$/.test(fingerprintDescriptor.value))
+      fingerprint=fingerprintDescriptor.value;
+  }
+  if(fdEditionObject(siteContext)){
+    try{ revisionDescriptor=Object.getOwnPropertyDescriptor(siteContext,'coreRevision'); }
+    catch(ignoreContext){ revisionDescriptor=null; }
+    if(revisionDescriptor&&Object.prototype.hasOwnProperty.call(revisionDescriptor,'value')&&typeof revisionDescriptor.value==='string'&&
+       new RegExp(FD_EDITION_RULES.patterns.revision).test(revisionDescriptor.value)) currentCoreRevision=revisionDescriptor.value;
+  }
   return {
-    code:first,
+    code:code,
     schemaVersion:fdEditionDiagnosticVersion(result),
-    fingerprint:result&&result.fingerprint||'',
-    currentCoreRevision:siteContext&&typeof siteContext.coreRevision==='string'?siteContext.coreRevision:''
+    fingerprint:fingerprint,
+    currentCoreRevision:currentCoreRevision
   };
 }

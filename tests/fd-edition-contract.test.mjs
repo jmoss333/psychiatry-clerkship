@@ -27,6 +27,12 @@ function fixture(name) {
 
 function clone(value) { return structuredClone(value); }
 
+function revokedProxy(target) {
+  const { proxy, revoke } = Proxy.revocable(target, {});
+  revoke();
+  return proxy;
+}
+
 function context(audience, revision) {
   return {
     audience,
@@ -189,6 +195,81 @@ test('canonicalization rejects hidden fields, accessors, symbols, and oversized 
   assert.ok(descriptorReads < 100, `descriptor reads: ${descriptorReads}`);
 });
 
+test('normalization and validation return safe schema findings for revoked proxies', () => {
+  const base = fixture('valid-ms3.json').config;
+  const idx = indexFor(base);
+  const ctx = context('ms3', base.createdAgainstCoreRevision);
+  const cases = [
+    revokedProxy({}),
+    Object.assign(clone(base), { card: revokedProxy({}) }),
+    Object.assign(clone(base), { pathItems: revokedProxy([]) }),
+    (() => { const c = clone(base); c.pathItems[0] = revokedProxy({}); return c; })()
+  ];
+
+  for (const config of cases) {
+    let normalized;
+    assert.doesNotThrow(() => { normalized = F.fdEditionNormalizeConfig(config); });
+    assert.equal(normalized.ok, false);
+    assert.ok(normalized.errors.some((finding) => finding.code === 'EDITION_SCHEMA'));
+    assertPrivateSafe(normalized, 'revoked');
+
+    let validated;
+    assert.doesNotThrow(() => { validated = F.fdEditionValidateConfig(config, idx, ctx); });
+    assert.equal(validated.ok, false);
+    assert.ok(validated.errors.some((finding) => finding.code === 'EDITION_SCHEMA'));
+    assertPrivateSafe(validated, 'revoked');
+  }
+});
+
+test('envelope creation and validation fail structurally for revoked top-level and nested proxies', async () => {
+  const base = fixture('valid-ms3.json').config;
+  const idx = indexFor(base);
+  const ctx = context('ms3', base.createdAgainstCoreRevision);
+  const valid = await F.fdEditionCreateEnvelope(base, idx, ctx, webcrypto.subtle);
+
+  for (const config of [revokedProxy({}), Object.assign(clone(base), { localOrientation: revokedProxy({}) })]) {
+    let created;
+    await assert.doesNotReject(async () => { created = await F.fdEditionCreateEnvelope(config, idx, ctx, webcrypto.subtle); });
+    assert.equal(created.ok, false);
+    assert.ok(created.errors.some((finding) => finding.code === 'EDITION_SCHEMA'));
+    assertPrivateSafe(created, 'revoked');
+  }
+
+  const nestedEnvelope = clone(valid.envelope);
+  nestedEnvelope.config = revokedProxy({});
+  for (const envelope of [revokedProxy({}), nestedEnvelope]) {
+    let validated;
+    await assert.doesNotReject(async () => { validated = await F.fdEditionValidateEnvelope(envelope, idx, ctx, webcrypto.subtle); });
+    assert.equal(validated.ok, false);
+    assert.ok(validated.errors.some((finding) => finding.code === 'EDITION_SCHEMA'));
+    assertPrivateSafe(validated, 'revoked');
+  }
+});
+
+test('non-structured exports do not leak revoked proxy exceptions', () => {
+  const revoked = revokedProxy({});
+  assert.throws(
+    () => F.fdEditionCanonicalJson(revoked),
+    (error) => /canonical/i.test(error.message) && !/revoked|proxy/i.test(error.message)
+  );
+  assert.equal(F.fdEditionFingerprint(revokedProxy({}), `sha256-${'A'.repeat(43)}`), '');
+  assert.equal(F.fdEditionFingerprint({ audience: revokedProxy({}), card: { locationCode: 'BHU2' } }, `sha256-${'A'.repeat(43)}`), '');
+  assert.throws(
+    () => F.fdEditionBase64urlEncode(revokedProxy(new Uint8Array([1, 2, 3]))),
+    (error) => /base64url/i.test(error.message) && !/revoked|proxy/i.test(error.message)
+  );
+  assert.deepEqual(F.fdEditionDiagnostic(revokedProxy({}), { coreRevision: '1234567890abcdef1234567890abcdef12345678' }), {
+    code: 'EDITION_SCHEMA', schemaVersion: null, fingerprint: '',
+    currentCoreRevision: '1234567890abcdef1234567890abcdef12345678'
+  });
+  assert.deepEqual(F.fdEditionDiagnostic({ errors: [{ code: revokedProxy({}) }], envelope: { schemaVersion: 1 } }, {
+    coreRevision: '1234567890abcdef1234567890abcdef12345678'
+  }), {
+    code: 'EDITION_SCHEMA', schemaVersion: 1, fingerprint: '',
+    currentCoreRevision: '1234567890abcdef1234567890abcdef12345678'
+  });
+});
+
 test('validates audience-correct MS3 and resident configs', () => {
   for (const name of ['valid-ms3.json', 'valid-resident.json']) {
     const config = fixture(name).config;
@@ -340,6 +421,48 @@ test('fails closed on malformed URL encoding and preserves benign and advisory U
   const benignResult = F.fdEditionValidateConfig(benign, indexFor(base), context('ms3', base.createdAgainstCoreRevision));
   assert.equal(benignResult.ok, true, JSON.stringify(benignResult.errors));
   assert.deepEqual(benignResult.warnings, []);
+});
+
+test('iteratively screens double-encoded privacy risks in both URL-bearing fields', () => {
+  const base = fixture('valid-ms3.json').config;
+  const cases = [
+    ['resource', 'https://example.edu/policy?contact=person%2540example.edu', 'person@example.edu'],
+    ['contact', 'https://example.edu/directory?api_key%253Dexample-only', 'example-only'],
+    ['resource', 'https://example.edu/policy?phone=207%252D555%252D0100', '207-555-0100'],
+    ['contact', 'https://example.edu/directory?note=door%2520code%2520is%25204321', '4321'],
+    ['contact', 'https://example.edu/directory?note=door%252Bcode%252Bis%252B4321', '4321'],
+    ['resource', 'https://example.edu/policy?dose=5%2520milligrams', '5 milligrams']
+  ];
+  for (const [field, unsafe, privatePart] of cases) {
+    const config = clone(base);
+    if (field === 'contact') config.localOrientation.contacts[0].directoryUrl = unsafe;
+    else config.localOrientation.resources[0].url = unsafe;
+    const result = F.fdEditionValidateConfig(config, indexFor(base), context('ms3', base.createdAgainstCoreRevision));
+    assert.equal(result.ok, false, unsafe);
+    assert.ok(result.errors.some((finding) => finding.code === 'EDITION_TEXT_RISK'));
+    assertPrivateSafe(result, privatePart);
+  }
+});
+
+test('accepts benign percent encoding and fails closed on excessive URL encoding layers', () => {
+  const base = fixture('valid-ms3.json').config;
+  const benign = clone(base);
+  benign.localOrientation.contacts[0].directoryUrl = 'https://example.edu/directory/faculty%2Dsupport';
+  benign.localOrientation.resources[0].url = 'https://example.edu/policy/orientation%20guide';
+  const benignResult = F.fdEditionValidateConfig(benign, indexFor(base), context('ms3', base.createdAgainstCoreRevision));
+  assert.equal(benignResult.ok, true, JSON.stringify(benignResult.errors));
+  assert.deepEqual(benignResult.warnings, []);
+
+  for (const field of ['contact', 'resource']) {
+    const config = clone(base);
+    const excessive = 'https://example.edu/policy?contact=person%2525252540example.edu';
+    if (field === 'contact') config.localOrientation.contacts[0].directoryUrl = excessive;
+    else config.localOrientation.resources[0].url = excessive;
+    const result = F.fdEditionValidateConfig(config, indexFor(base), context('ms3', base.createdAgainstCoreRevision));
+    assert.equal(result.ok, false, field);
+    assert.ok(result.errors.some((finding) => finding.code === 'EDITION_URL'));
+    assertPrivateSafe(result, 'person@example.edu');
+  }
 });
 
 test('advises on ambiguous sensitive topics without claiming privacy clearance', () => {
