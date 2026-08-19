@@ -555,7 +555,9 @@
 <script>
   /* Front Door owns navigation. The helpers below retain the canonical learner stores and
      governed-content contracts, but never create a second navigation tree or controller. */
-  var contentEl=document.getElementById('content');
+  var FD_RUNTIME_WIRING_OK=true;
+  var contentEl=null;
+  try{contentEl=document.getElementById('content');}catch(ignoreContentElement){FD_RUNTIME_WIRING_OK=false;}
   var currentItem=null; var GOVERNANCE={status:'loading',items:{}}; var governanceFocusSlug=''; var SCROLL={};
   var FD_PROTOCOL_FAILURE_COPY='This safety protocol is unavailable right now—do not rely on this page for clinical guidance; use the crisis resources below and contact your supervising clinician.';
   /* Fetch and capture callbacks live in this script; the Front Door controller is installed by
@@ -624,7 +626,8 @@
     });
     requestAnimationFrame(refreshTableScrollCues);
   }
-  window.addEventListener('resize',refreshTableScrollCues);
+  try{window.addEventListener('resize',refreshTableScrollCues);}
+  catch(ignoreResizeListener){FD_RUNTIME_WIRING_OK=false;}
   function progLoad(){ try{ return JSON.parse(localStorage.getItem('cw_progress_v1'))||{}; }catch(_){ return {}; } }
   function progSave(o){ try{ localStorage.setItem('cw_progress_v1',JSON.stringify(o)); }catch(_){ } }
   function reviewableItems(){ var out=[],seen={}, cols=(typeof FD_INDEX!=='undefined'&&FD_INDEX.columns)||[]; for(var c=0;c<cols.length;c++){ var items=cols[c].items||[]; for(var i=0;i<items.length;i++){ var it=items[i]; if(!it||it.kind!=='read'||seen[it.ref])continue; seen[it.ref]=1; out.push({f:it.ref,t:it.title}); } } return out; }
@@ -857,16 +860,18 @@
     notice.textContent='Open the full page from the faculty console to navigate elsewhere';
     restoreFacultyPreviewRoute();
   }
-  document.addEventListener('click',function(ev){
-    if(!facultyPreviewRequest)return;
-    var link=ev.target.closest?ev.target.closest('a[href]'):null;
-    if(!link)return;
-    var target;
-    try{target=new URL(link.getAttribute('href')||'',location.href);}catch(_){return;}
-    if(target.origin!==location.origin||target.pathname!==location.pathname)return;
-    if(!target.searchParams.has('page')&&!target.searchParams.has('tool'))return;
-    ev.preventDefault(); ev.stopPropagation(); showFacultyPreviewLockNotice();
-  },true);
+  try{
+    document.addEventListener('click',function(ev){
+      if(!facultyPreviewRequest)return;
+      var link=ev.target.closest?ev.target.closest('a[href]'):null;
+      if(!link)return;
+      var target;
+      try{target=new URL(link.getAttribute('href')||'',location.href);}catch(_){return;}
+      if(target.origin!==location.origin||target.pathname!==location.pathname)return;
+      if(!target.searchParams.has('page')&&!target.searchParams.has('tool'))return;
+      ev.preventDefault(); ev.stopPropagation(); showFacultyPreviewLockNotice();
+    },true);
+  }catch(ignoreFacultyPreviewListener){FD_RUNTIME_WIRING_OK=false;}
   var PRACTICE_LABELS={'mse.html':'Mental Status Exam','interview-circle.html':'Interview Circle','communication-practice.html':'What Do You Say Next?','diagnostic-reasoning.html':'Diagnostic Reasoning Workbench','family-systems.html':'Family Systems Practice','cssrs.html':'C-SSRS Suicide Screen','withdrawal.html':'CIWA-Ar / COWS','bfcrs.html':'Bush-Francis Catatonia','violence.html':'Violence Risk (FRST)','capacity.html':'Decisional Capacity','screeners.html':'PHQ-9 / GAD-7','oral.html':'Rounding Prep + Timer','decision-aids.html':'Algorithms & Decision Aids','shelf-mode.html':'Shelf Mode Exam Sim','review.html':'Daily Review','reflection.html':'Reflection & Identity','question-bank-practice.html':'Practice Questions','sp-interview.html':'The Interview Room — AI Patient','one-patient-six-weeks.html':'One Patient, Six Weeks'};
   var PRACTICE_SAFE={'cssrs.html':1,'violence.html':1,'withdrawal.html':1,'bfcrs.html':1,'capacity.html':1,'decision-aids.html':1};
   var PRACTICE_PAGE_TOOLS={ 't_sud.md':['withdrawal.html','cssrs.html'], 'pg_interview.md':['sp-interview.html','mse.html'], 'pg_suicide.md':['cssrs.html','violence.html','decision-aids.html','sp-interview.html'], 'catatonia.md':['bfcrs.html'], 'agitation.md':['violence.html','decision-aids.html'], 'exp_consult.md':['capacity.html','decision-aids.html'], 'cl_reference.md':['decision-aids.html'], 't_mood.md':['screeners.html'], 't_anxiety.md':['screeners.html'], 't_psychosis.md':['decision-aids.html','sp-interview.html'], 't_perinatal.md':['cssrs.html'], 't_personality.md':['cssrs.html','reflection.html'], 'brief_psychotherapy.md':['mse.html','decision-aids.html'], 'doc_oral.md':['oral.html'], 'landmark_trials.md':['shelf-mode.html','review.html'], 'evidence_inpatient.md':['review.html'], 'shelf.md':['question-bank-practice.html','shelf-mode.html'], 'reading_map.md':['review.html'], 'collateral_workflow.md':['one-patient-six-weeks.html','family-systems.html'] };
@@ -1922,7 +1927,28 @@
      canonical stores on every render. */
   var fdEditionBootStorage=null;
   var fdEditionBootLocation=null;
+  var fdEditionBootState='pending';
+  var fdEditionAuxListeners=[];
+  function fdEditionCleanupWiring(){
+    for(var i=fdEditionAuxListeners.length-1;i>=0;i--)
+      fdEditionRuntimeUnlisten(fdEditionAuxListeners[i]);
+    fdEditionAuxListeners=[];
+    if(fdController&&fdController.destroy)try{fdController.destroy();}catch(ignoreDestroy){ }
+    fdController=null;
+  }
+  function fdEditionRuntimeFallback(receipt,state){
+    fdEditionCleanupWiring();
+    FD_INDEX=FD_CANONICAL_INDEX;
+    TOPIC_META=FD_TOPIC_META;
+    fdEditionRuntimeRemoveBusy(fdApp);
+    if(state)try{fdRender(state);}catch(ignoreFallbackRender){ }
+    fdEditionRuntimeMountError(fdEditionMount,receipt||
+      fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'));
+    fdEditionBootState='failed';
+  }
   function fdStartFrontDoor(result){
+  if(fdEditionBootState!=='pending')return;
+  fdEditionBootState='starting';
   result=result&&result.index?result:{mode:'rejected',needsCommit:false,index:FD_CANONICAL_INDEX,
     receipt:fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME')};
   if(result.mode==='switch-required'&&
@@ -1930,39 +1956,61 @@
     result={mode:'rejected',needsCommit:false,index:FD_CANONICAL_INDEX,
       receipt:fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME')};
   }
+  FD_INDEX=result.index;
+  TOPIC_META=FD_TOPIC_META;
+  var fdStored,fdRotation,fdWeek,fdRouteParams,fdIncomingRef,fdInitial;
+  try{
+    fdStored=fdLoad();
+    fdRotation=LS('cw_rotation_start')||'';
+    fdWeek=fdRotationWeek(fdRotation,FD_INDEX.weeks,Date.now());
+    fdStored.roles=FD_ROLES;
+    fdStored.rotationStart=fdRotation;
+    if(fdFindWeek(FD_INDEX,fdWeek))fdStored.week=fdWeek;
+    fdRouteParams=new URLSearchParams(location.search);
+    fdIncomingRef=fdRouteParams.get('page')||fdRouteParams.get('tool')||'';
+    if(fdIncomingRef&&!fdIsLegacyRouteAlias(fdIncomingRef)&&!fdStored.role){
+      fdStored.role=(FD_ROLES[0]&&FD_ROLES[0].id)||'reader';
+      fdStored.browsing=true;
+    }
+    fdInitial=fdResolveState(location.href,fdStored);
+    fdInitial.done=fdProgressDoneMap(progLoad());
+    fdInitial.rotationStart=fdRotation;
+    if(FD_RUNTIME_WIRING_OK!==true||!fdEditionRuntimeShellReady(fdApp)){
+      fdEditionRuntimeFallback(fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'),fdInitial);
+      return;
+    }
+    fdController=fdWire(fdApp,fdInitial,{
+      window:window,document:document,index:FD_INDEX,roles:FD_ROLES,rotationStart:fdRotation,
+      render:fdRender,renderTransient:fdRenderTransient,resourceHost:function(){return contentEl;},
+      openResource:fdOpenResourceLive,openProgress:fdOpenProgress,
+      externalModalOpen:function(){return !!capSheet;},
+      facultyPreview:function(){return !!facultyPreviewRequest;},
+      facultyPreviewLock:showFacultyPreviewLockNotice,
+      synonyms:FD_CURRICULUM.synonyms||{}
+    });
+  }catch(ignoreStartupWiring){fdController=null;}
+  if(!fdController||fdController.ok!==true){
+    fdEditionRuntimeFallback(fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'),fdInitial);
+    return;
+  }
+  var fdRootAux=fdEditionRuntimeListen(fdApp,'click',fdAuxClick,false);
+  if(fdRootAux.ok)fdEditionAuxListeners.push(fdRootAux);
+  var fdWindowAux=fdRootAux.ok?fdEditionRuntimeListen(window,'message',fdAuxMessage,false):{ok:false};
+  if(fdWindowAux.ok)fdEditionAuxListeners.push(fdWindowAux);
+  if(!fdRootAux.ok||!fdWindowAux.ok||!fdEditionRuntimeRemoveBusy(fdApp)){
+    fdEditionRuntimeFallback(fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'),fdInitial);
+    return;
+  }
   if(result.mode==='active'&&result.needsCommit&&
      !fdEditionAcceptFirst(fdEditionBootStorage,result.active)){
-    result={mode:'rejected',needsCommit:false,index:FD_CANONICAL_INDEX,
-      receipt:fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME')};
+    fdEditionRuntimeFallback(fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'),fdInitial);
+    return;
   }
-  FD_INDEX=result.index;
-  if(fdApp)try{fdApp.removeAttribute('aria-busy');}catch(ignoreBusy){ }
-  TOPIC_META=FD_TOPIC_META;
-  var fdStored=fdLoad();
-  var fdRotation=LS('cw_rotation_start')||'';
-  var fdWeek=fdRotationWeek(fdRotation,FD_INDEX.weeks,Date.now());
-  fdStored.roles=FD_ROLES;
-  fdStored.rotationStart=fdRotation;
-  if(fdFindWeek(FD_INDEX,fdWeek))fdStored.week=fdWeek;
-  var fdRouteParams=new URLSearchParams(location.search);
-  var fdIncomingRef=fdRouteParams.get('page')||fdRouteParams.get('tool')||'';
-  if(fdIncomingRef&&!fdIsLegacyRouteAlias(fdIncomingRef)&&!fdStored.role){
-    fdStored.role=(FD_ROLES[0]&&FD_ROLES[0].id)||'reader';
-    fdStored.browsing=true;
+  try{fdRender(fdInitial);}
+  catch(ignoreFirstRender){
+    fdEditionRuntimeFallback(fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'),fdInitial);
+    return;
   }
-  var fdInitial=fdResolveState(location.href,fdStored);
-  fdInitial.done=fdProgressDoneMap(progLoad());
-  fdInitial.rotationStart=fdRotation;
-  fdRender(fdInitial);
-  fdController=fdWire(fdApp,fdInitial,{
-    window:window,document:document,index:FD_INDEX,roles:FD_ROLES,rotationStart:fdRotation,
-    render:fdRender,renderTransient:fdRenderTransient,resourceHost:function(){return contentEl;},
-    openResource:fdOpenResourceLive,openProgress:fdOpenProgress,
-    externalModalOpen:function(){return !!capSheet;},
-    facultyPreview:function(){return !!facultyPreviewRequest;},
-    facultyPreviewLock:showFacultyPreviewLockNotice,
-    synonyms:FD_CURRICULUM.synonyms||{}
-  });
   function fdHydrationFocusSnapshot(){
     var active=document.activeElement;
     if(!active||active===document.body||active===document.documentElement)return null;
@@ -2017,8 +2065,6 @@
       fdRestoreHydrationFocus(focusSnapshot);
     }
   };
-  fdApp.addEventListener('click',fdAuxClick);
-  window.addEventListener('message',fdAuxMessage);
   if(fdInitial.openId==='__progress__')fdOpenProgress(fdInitial,{host:contentEl});
   else if(fdInitial.openId)fdOpenResourceLive(fdInitial.openId,{
     state:fdInitial,search:location.search,host:contentEl,
@@ -2038,6 +2084,7 @@
        fdEditionBootLocation,fdEditionInputs.hashCleared,fdRecoverCommittedEdition))
       fdEditionRuntimeMountError(fdEditionMount,fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'));
   }else if(result.mode==='rejected') fdEditionRuntimeMountError(fdEditionMount,result.receipt);
+  fdEditionBootState='started';
   }
 
   var fdEditionInputs=fdEditionRuntimeInputs(window,fdDocument,fdApp,fdEditionMount,FD_SITE_CONTEXT);

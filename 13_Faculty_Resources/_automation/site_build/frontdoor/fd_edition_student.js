@@ -342,6 +342,7 @@ function fdEditionRuntimeDomReady(documentValue,app,mount){
   var create=fdEditionStudentMethod(documentValue,'createElement'),dialog,button;
   if(!documentValue||!app||!mount||!create||
      !fdEditionStudentMethod(app,'removeAttribute')||!fdEditionStudentMethod(app,'addEventListener')||
+     !fdEditionStudentMethod(app,'removeEventListener')||!fdEditionStudentMethod(app,'querySelector')||
      !fdEditionRuntimeWritable(mount,'innerHTML')||!fdEditionStudentMethod(mount,'querySelector')) return false;
   try{ dialog=Function.prototype.call.call(create,documentValue,'dialog'); button=Function.prototype.call.call(create,documentValue,'button'); }
   catch(ignoreCreate){ return false; }
@@ -349,6 +350,41 @@ function fdEditionRuntimeDomReady(documentValue,app,mount){
     fdEditionStudentMethod(dialog,'querySelector')&&fdEditionStudentMethod(dialog,'showModal')&&
     fdEditionStudentMethod(dialog,'close')&&fdEditionStudentMethod(button,'addEventListener')&&
     fdEditionStudentMethod(button,'focus'));
+}
+
+function fdEditionRuntimeShellReady(app){
+  var query=fdEditionStudentMethod(app,'querySelector'),content=null;
+  if(!query) return false;
+  try{ content=Function.prototype.call.call(query,app,'#content'); }
+  catch(ignoreQuery){ return false; }
+  return !!content;
+}
+
+function fdEditionRuntimeListen(target,type,handler,capture){
+  var add=fdEditionStudentMethod(target,'addEventListener');
+  var remove=fdEditionStudentMethod(target,'removeEventListener');
+  if(!add||!remove||typeof type!=='string'||typeof handler!=='function') return {ok:false};
+  try{ Function.prototype.call.call(add,target,type,handler,capture===true); }
+  catch(ignoreListener){ return {ok:false}; }
+  return {ok:true,target:target,type:type,handler:handler,capture:capture===true,
+    removeMethod:remove,active:true};
+}
+
+function fdEditionRuntimeUnlisten(registration){
+  if(!registration||registration.active!==true) return true;
+  registration.active=false;
+  try{
+    Function.prototype.call.call(registration.removeMethod,registration.target,
+      registration.type,registration.handler,registration.capture);
+    return true;
+  }catch(ignoreRemove){ return false; }
+}
+
+function fdEditionRuntimeRemoveBusy(app){
+  var remove=fdEditionStudentMethod(app,'removeAttribute');
+  if(!remove) return false;
+  try{ Function.prototype.call.call(remove,app,'aria-busy'); return true; }
+  catch(ignoreBusy){ return false; }
 }
 
 function fdEditionRuntimeInputs(windowValue,documentValue,app,mount,siteContext){

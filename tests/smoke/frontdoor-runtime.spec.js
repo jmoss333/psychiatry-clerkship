@@ -42,9 +42,11 @@ const VALID_PLACEMENT = {
 };
 
 async function installEditionRuntimeProbe(page, options = {}) {
-  await page.addInitScript(({ editionKey, localKey, logKey, throwHistory }) => {
+  await page.addInitScript(({ editionKey, localKey, logKey, throwHistory, listenerFault }) => {
     const originalSetItem = Storage.prototype.setItem;
     const originalReplaceState = History.prototype.replaceState;
+    const originalAddEventListener = EventTarget.prototype.addEventListener;
+    const originalQuerySelector = Element.prototype.querySelector;
     const innerHtml = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML');
     const eventKey = `${logKey}_events`;
     const readLog = () => {
@@ -62,6 +64,29 @@ async function installEditionRuntimeProbe(page, options = {}) {
     window.__fdMeaningfulRenders = [];
     window.__fdEditionWrites = readLog();
     window.__fdEditionEvents = readEvents();
+    let rootListenerCalls = 0;
+    EventTarget.prototype.addEventListener = function addEventListener(type, handler, options) {
+      if (this instanceof Element && this.id === 'fdApp') {
+        rootListenerCalls += 1;
+        if (listenerFault === 'root-always'
+          || (listenerFault === 'root-third' && rootListenerCalls === 3)) {
+          throw new Error('private root listener failure');
+        }
+      }
+      if (this === window && listenerFault === 'window-message' && type === 'message') {
+        throw new Error('private window listener failure');
+      }
+      if (this === document && listenerFault === 'document-click' && type === 'click') {
+        throw new Error('private document listener failure');
+      }
+      return originalAddEventListener.call(this, type, handler, options);
+    };
+    Element.prototype.querySelector = function querySelector(selector) {
+      if (this.id === 'fdApp' && listenerFault === 'root-query') {
+        throw new Error('private root query failure');
+      }
+      return originalQuerySelector.call(this, selector);
+    };
     History.prototype.replaceState = function replaceState(state, title, url) {
       record(['history', String(url)]);
       if (throwHistory && location.hash) throw new Error('private history failure');
@@ -106,6 +131,7 @@ async function installEditionRuntimeProbe(page, options = {}) {
     localKey: LOCAL_EDITION_KEY,
     logKey: EDITION_WRITE_LOG,
     throwHistory: options.throwHistory === true,
+    listenerFault: options.listenerFault || '',
   });
 }
 
@@ -244,6 +270,7 @@ function runtimeDomHarness() {
     tagName: tag.toUpperCase(),
     innerHTML: '',
     addEventListener() {},
+    removeEventListener() {},
     querySelector() { return null; },
     showModal() {},
     close() {},
@@ -251,6 +278,8 @@ function runtimeDomHarness() {
   });
   const mount = makeNode('div');
   const app = makeNode('div');
+  const content = makeNode('main');
+  app.querySelector = (selector) => selector === '#content' ? content : null;
   app.removeAttribute = () => {};
   return {
     app,
@@ -725,6 +754,66 @@ test('a missing governance mount falls back to core without committing or attemp
   await expect(page.locator('.fd-edition-error')).toHaveCount(0);
   expect(await editionWrites(page)).toEqual([]);
   expect(await localStorageSnapshot(page)).toEqual(before);
+});
+
+for (const fault of [
+  ['an always-throwing fdApp listener', 'root-always'],
+  ['a call-count-throwing fdApp listener', 'root-third'],
+  ['a throwing window listener', 'window-message'],
+  ['a throwing document listener', 'document-click'],
+  ['a throwing shell query API', 'root-query'],
+]) {
+  test(`${fault[0]} prevents first acceptance, rendering, and uncaught startup errors`, async ({ page }, testInfo) => {
+    const pageErrors = [];
+    page.on('pageerror', (error) => pageErrors.push(error.message));
+    await installEditionRuntimeProbe(page, { listenerFault: fault[1] });
+    const incoming = await createSyntheticEdition(testInfo, 1);
+    await page.goto('/');
+    await seedEditionLearner(page);
+    const before = await localStorageSnapshot(page);
+    await resetEditionWriteLog(page);
+
+    await page.goto(`/?case=edition-wiring-${fault[1]}#edition=${incoming.payload}`);
+    await expect(page.locator('.fd-edition-error[role="alert"]')).toContainText('EDITION_RUNTIME');
+    await expect(page.locator('#fdApp')).not.toHaveAttribute('aria-busy', 'true');
+    await expect(page.locator('.fd-today')).toBeVisible();
+    expect(await page.locator('.fd-today .fd-list .fd-row').count()).toBeGreaterThan(1);
+    expect(await editionWrites(page)).toEqual([]);
+    expect(await localStorageSnapshot(page)).toEqual(before);
+    expect(await page.evaluate((selectedTitle) => window.__fdMeaningfulRenders.every(
+      ({ rows, firstTitle }) => rows !== 1 || firstTitle !== selectedTitle,
+    ), incoming.selectedTitle)).toBe(true);
+    expect(pageErrors).toEqual([]);
+  });
+}
+
+test('a missing fdApp returns quietly with no writes, edition render, or uncaught startup error', async ({ page }, testInfo) => {
+  const pageErrors = [];
+  page.on('pageerror', (error) => pageErrors.push(error.message));
+  await installEditionRuntimeProbe(page);
+  const incoming = await createSyntheticEdition(testInfo, 1);
+  await page.goto('/');
+  await seedEditionLearner(page);
+  const before = await localStorageSnapshot(page);
+  await resetEditionWriteLog(page);
+  await page.route(/\/\?case=edition-missing-root$/, async (route) => {
+    const response = await route.fetch();
+    const body = (await response.text()).replace(
+      '<div id="fdApp" class="fd-shell" aria-busy="true">',
+      '<div class="fd-shell" aria-busy="true">',
+    );
+    await route.fulfill({ response, body });
+  });
+
+  await page.goto(`/?case=edition-missing-root#edition=${incoming.payload}`);
+  await expect(page.locator('#fdApp')).toHaveCount(0);
+  await expect(page.locator('.fd-edition-error[role="alert"]')).toContainText('EDITION_RUNTIME');
+  expect(await editionWrites(page)).toEqual([]);
+  expect(await localStorageSnapshot(page)).toEqual(before);
+  expect(await page.evaluate((selectedTitle) => window.__fdMeaningfulRenders.every(
+    ({ rows, firstTitle }) => rows !== 1 || firstTitle !== selectedTitle,
+  ), incoming.selectedTitle)).toBe(true);
+  expect(pageErrors).toEqual([]);
 });
 
 test('completion updates desktop, mobile, and the audience-correct rail immediately without replacing the governed tool', async ({ page }, testInfo) => {

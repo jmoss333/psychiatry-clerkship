@@ -548,7 +548,7 @@ function fdWire(root, initialState, opts){
   var o=opts||{}, win=o.window||(typeof window!=='undefined'?window:null);
   var doc=o.document||(typeof document!=='undefined'?document:null);
   var state=fdClone(initialState||{}), invokers=[], nudgeTimer=null, navGeneration=0;
-  var destroyed=false;
+  var destroyed=false, registrations=[];
   var render=o.render||function(){};
   var renderTransient=o.renderTransient||function(next,detail){
     if(!detail.preserveResource) render(next,detail);
@@ -962,42 +962,71 @@ function fdWire(root, initialState, opts){
     }
   }
 
-  if(root&&root.addEventListener){
-    root.addEventListener('click',clickHandler);
-    root.addEventListener('input',inputHandler);
-  }
-  if(win&&win.addEventListener){
-    win.addEventListener('keydown',keyHandler);
-    win.addEventListener('popstate',popstateHandler);
-  }
-  if(!previewActive()&&win&&win.history&&win.history.replaceState){
-    var initialLegacyRef=currentRoutedRef();
-    var initialLegacy=fdIsLegacyRouteAlias(initialLegacyRef)?fdLegacyRouteResult(
-      initialLegacyRef,{search:win.location.search||''},state
-    ):null;
-    if(initialLegacy){
-      fdSave(state);
-      routeTo(initialLegacy.route,true);
+  function removeRegistrations(){
+    for(var i=registrations.length-1;i>=0;i--){
+      var registration=registrations[i];
+      try{
+        Function.prototype.call.call(registration.remove,registration.target,
+          registration.type,registration.handler,registration.capture);
+      }catch(ignoreRemove){ }
     }
-    else replaceHistorySnapshot();
+    registrations=[];
+  }
+  function listen(target,type,handler,capture){
+    var add,remove;
+    try{
+      add=target&&target.addEventListener;
+      remove=target&&target.removeEventListener;
+    }catch(ignoreListenerAccess){ return false; }
+    if(typeof add!=='function'||typeof remove!=='function') return false;
+    try{ Function.prototype.call.call(add,target,type,handler,capture); }
+    catch(ignoreListener){ return false; }
+    registrations.push({target:target,type:type,handler:handler,capture:capture,remove:remove});
+    return true;
+  }
+  function controller(ok){
+    return {
+      ok:ok===true,
+      getState:function(){ return state; },
+      dispatch:function(attrs,c){
+        if(destroyed) return state;
+        return apply(fdDispatch(attrs,context(c),state),null,false);
+      },
+      destroy:function(){
+        if(destroyed&&registrations.length===0) return;
+        destroyed=true;
+        navGeneration++;
+        removeRegistrations();
+        if(nudgeTimer&&clearTimer) try{clearTimer(nudgeTimer);}catch(ignoreTimer){ }
+      }
+    };
   }
 
-  return {
-    getState:function(){ return state; },
-    dispatch:function(attrs,c){ return apply(fdDispatch(attrs,context(c),state),null,false); },
-    destroy:function(){
-      if(destroyed) return;
+  if(!listen(root,'click',clickHandler,false)||!listen(root,'input',inputHandler,false)||
+     !listen(win,'keydown',keyHandler,false)||!listen(win,'popstate',popstateHandler,false)){
+      removeRegistrations();
       destroyed=true;
       navGeneration++;
-      if(root&&root.removeEventListener){
-        root.removeEventListener('click',clickHandler);
-        root.removeEventListener('input',inputHandler);
+      return controller(false);
+  }
+  try{
+    if(!previewActive()&&win&&win.history&&win.history.replaceState){
+      var initialLegacyRef=currentRoutedRef();
+      var initialLegacy=fdIsLegacyRouteAlias(initialLegacyRef)?fdLegacyRouteResult(
+        initialLegacyRef,{search:win.location.search||''},state
+      ):null;
+      if(initialLegacy){
+        fdSave(state);
+        routeTo(initialLegacy.route,true);
       }
-      if(win&&win.removeEventListener){
-        win.removeEventListener('keydown',keyHandler);
-        win.removeEventListener('popstate',popstateHandler);
-      }
-      if(nudgeTimer&&clearTimer) clearTimer(nudgeTimer);
+      else replaceHistorySnapshot();
     }
-  };
+  }catch(ignoreInitialWire){
+    removeRegistrations();
+    destroyed=true;
+    navGeneration++;
+    return controller(false);
+  }
+
+  return controller(true);
 }

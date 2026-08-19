@@ -324,11 +324,65 @@ test('fdWire registers and destroys one delegated click/input/keydown/popstate l
     location: { href: 'https://example.test/', search: '', pathname: '/' },
   };
   const controller = F.fdWire(root, { ...roleContext }, { window: fakeWindow, render: () => {} });
+  assert.equal(controller.ok, true);
   assert.deepEqual(rootCalls.map(([type]) => type), ['click', 'input']);
   assert.deepEqual(windowCalls.map(([type]) => type), ['keydown', 'popstate']);
   controller.destroy();
-  assert.deepEqual(rootRemoves, rootCalls);
-  assert.deepEqual(windowRemoves, windowCalls);
+  assert.deepEqual(rootRemoves, rootCalls.slice().reverse());
+  assert.deepEqual(windowRemoves, windowCalls.slice().reverse());
+});
+
+test('fdWire reports a partial root registration failure and removes the listener already installed', () => {
+  const calls = [];
+  const removes = [];
+  const root = {
+    addEventListener(type, fn) {
+      calls.push([type, fn]);
+      if (calls.length === 2) throw new Error('private root registration failure');
+    },
+    removeEventListener: (type, fn) => removes.push([type, fn]),
+  };
+  const fakeWindow = {
+    addEventListener() { throw new Error('window must not be reached'); },
+    removeEventListener() {},
+    location: { href: 'https://example.test/', search: '', pathname: '/' },
+  };
+  let controller;
+  assert.doesNotThrow(() => {
+    controller = F.fdWire(root, { ...roleContext }, { window: fakeWindow, render: () => {} });
+  });
+  assert.equal(controller.ok, false);
+  assert.deepEqual(calls.map(([type]) => type), ['click', 'input']);
+  assert.deepEqual(removes, [calls[0]]);
+  assert.doesNotThrow(() => controller.destroy());
+  assert.deepEqual(removes, [calls[0]], 'destroy remains idempotent after automatic cleanup');
+});
+
+test('fdWire reports a partial window registration failure and unwinds every installed listener', () => {
+  const rootCalls = [];
+  const rootRemoves = [];
+  const windowCalls = [];
+  const windowRemoves = [];
+  const root = {
+    addEventListener: (type, fn) => rootCalls.push([type, fn]),
+    removeEventListener: (type, fn) => rootRemoves.push([type, fn]),
+  };
+  const fakeWindow = {
+    addEventListener(type, fn) {
+      windowCalls.push([type, fn]);
+      if (type === 'popstate') throw new Error('private window registration failure');
+    },
+    removeEventListener: (type, fn) => windowRemoves.push([type, fn]),
+    location: { href: 'https://example.test/', search: '', pathname: '/' },
+  };
+  let controller;
+  assert.doesNotThrow(() => {
+    controller = F.fdWire(root, { ...roleContext }, { window: fakeWindow, render: () => {} });
+  });
+  assert.equal(controller.ok, false);
+  assert.deepEqual(rootRemoves, rootCalls.slice().reverse());
+  assert.deepEqual(windowRemoves, [windowCalls[0]]);
+  assert.doesNotThrow(() => controller.destroy());
 });
 
 function actionTarget(attrs, extra = {}) {

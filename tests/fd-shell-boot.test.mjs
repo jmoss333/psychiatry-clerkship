@@ -97,7 +97,7 @@ test('edition validation selects the only live index before the learner shell st
   }
   assert.match(source, /id="fdApp" class="fd-shell" aria-busy="true"/,
     'the initial shell must expose its pending resolver state');
-  assert.match(body, /removeAttribute\('aria-busy'\)/,
+  assert.match(body, /fdEditionRuntimeRemoveBusy\(fdApp\)/,
     'every deferred start path must end the pending resolver state');
 });
 
