@@ -431,20 +431,25 @@ function fdEditionCheckPriority(value,path,errors){
 }
 
 function fdEditionDecodeUrlComponent(value,queryMode){
-  var current=value,next,i;
+  var current=value,next,replaced,i,layers=[];
   for(i=0;i<FD_EDITION_URL_DECODE_PASSES;i++){
-    if(queryMode) current=current.replace(/\+/g,' ');
+    if(queryMode){
+      replaced=current.replace(/\+/g,' ');
+      if(replaced!==current) layers.push(replaced);
+      current=replaced;
+    }
     try{ next=decodeURIComponent(current); }
-    catch(ignoreEncoding){ return {ok:false,value:''}; }
-    if(next===current) return {ok:true,value:current};
-    if(i===FD_EDITION_URL_DECODE_PASSES-1) return {ok:false,value:''};
+    catch(ignoreEncoding){ return {ok:false,value:'',layers:layers}; }
+    if(next===current) return {ok:true,value:current,layers:layers};
+    layers.push(next);
+    if(i===FD_EDITION_URL_DECODE_PASSES-1) return {ok:false,value:'',layers:layers};
     current=next;
   }
-  return {ok:false,value:''};
+  return {ok:false,value:'',layers:layers};
 }
 
 function fdEditionCheckUrl(value,path,errors,warnings){
-  var parsed=null,decoded='',pathPart,queryPart,hashPart;
+  var parsed=null,pathPart,queryPart,hashPart,parts,i,j;
   try{ parsed=new URL(value); }catch(ignoreUrl){ parsed=null; }
   fdEditionAdd(errors,fdEditionTextLength(value)>FD_EDITION_RULES.maxUrl,'EDITION_URL',path,'URLs must contain at most 2048 characters.');
   fdEditionAdd(errors,!/^https:\/\/[^\s]+$/i.test(value),'EDITION_URL',path,'Only absolute HTTPS URLs are allowed.');
@@ -456,17 +461,19 @@ function fdEditionCheckUrl(value,path,errors,warnings){
     pathPart=fdEditionDecodeUrlComponent(parsed.pathname,false);
     queryPart=fdEditionDecodeUrlComponent(parsed.search,true);
     hashPart=fdEditionDecodeUrlComponent(parsed.hash,false);
+    parts=[pathPart,queryPart,hashPart];
+    for(i=0;i<parts.length;i++){
+      for(j=0;j<parts[i].layers.length;j++) fdEditionScreenText(parts[i].layers[j],path,errors,warnings);
+    }
     if(!pathPart.ok||!queryPart.ok||!hashPart.ok){
       errors.push(fdEditionFinding('EDITION_URL',path,'URL encoding must be valid and contain no excessive nested layers.'));
       return;
     }
-    decoded=pathPart.value+'\n'+queryPart.value+'\n'+hashPart.value;
-    fdEditionScreenText(decoded,path,errors,warnings);
   }
 }
 
 function fdEditionScreenText(value,path,errors,warnings){
-  var blocking=/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]|<\/?[a-z][^>]*>|\bon[a-z]+\s*=|(?:javascript|data|vbscript|blob):|\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b|\b(?:pager\s*[:#-]?\s*\d{4,}|(?:call|phone|tel(?:ephone)?)?\s*\+?\d[\d(). -]{6,}\d)\b|\b(?:password|passcode|credential|username|login|api[_ -]?key|secret|token)\s*(?::|=|\bis\b|\bare\b)\s*\S+|\b(?:access|door|badge)[_ -]+code\s*(?::|=|\bis\b|\bare\b)\s*\S+|\bpin\s*(?::|=|\bis\b)\s*\d+|\b\d+(?:\.\d+)?\s*(?:mg|mcg|\u00b5g|g|ml|milligrams?|micrograms?|grams?|millilit(?:er|re)s?|units?|iu)\b/i;
+  var blocking=/[\u0000-\u0009\u000b-\u001f\u007f-\u009f]|<\/?[a-z][^>]*>|\bon[a-z]+\s*=|(?:javascript|data|vbscript|blob):|\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b|\b(?:pager\s*(?:(?:[:#=-]|\bis\b)\s*)?\d{4,}|(?:call|phone|tel(?:ephone)?)?\s*\+?\d[\d(). -]{6,}\d)\b|\b(?:password|passcode|credential|username|login|api[_ -]?key|secret|token)\s*(?::|=|\bis\b|\bare\b)\s*\S+|\b(?:access|door|badge)[_ -]+code\s*(?::|=|\bis\b|\bare\b)\s*\S+|\bpin\s*(?::|=|\bis\b)\s*\d+|\b\d+(?:\.\d+)?\s*(?:mg|mcg|\u00b5g|g|ml|milligrams?|micrograms?|grams?|millilit(?:er|re)s?|units?|iu)\b/i;
   var advisory=/\b(?:patient[_ -]+(?:identifier|name|record)|credentials?|password|passcode|username|login|api[_ -]?key|secret|token|(?:access|door|badge)[_ -]+code|pin|protocols?|dos(?:e|ing|age)|medication)\b/i;
   if(blocking.test(value)) errors.push(fdEditionFinding('EDITION_TEXT_RISK',path,'Text must not contain direct contact, access, credential, dose, control, HTML, event-handler, or executable content.'));
   else if(advisory.test(value)) warnings.push(fdEditionFinding('EDITION_TEXT_RISK',path,'Review this text for sensitive identifiers, credentials, protocols, or dosing details before publication.',false));

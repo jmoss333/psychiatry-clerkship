@@ -382,6 +382,114 @@ test('blocks unsafe URLs and sensitive or executable text without echoing it', (
   }
 });
 
+test('blocks every normalized C0 and C1 control except LF while preserving multiline narrative text', () => {
+  const base = fixture('valid-ms3.json').config;
+  const disallowed = [
+    ...Array.from({ length: 10 }, (_, code) => code),
+    ...Array.from({ length: 21 }, (_, offset) => offset + 11).filter((code) => code !== 13),
+    ...Array.from({ length: 33 }, (_, offset) => offset + 127)
+  ];
+
+  for (const code of disallowed) {
+    const config = clone(base);
+    const unsafe = `Synthetic${String.fromCharCode(code)}guidance`;
+    config.localOrientation.firstDayArrival = unsafe;
+    const result = F.fdEditionValidateConfig(
+      config, indexFor(base), context('ms3', base.createdAgainstCoreRevision)
+    );
+    assert.equal(result.ok, false, `U+${code.toString(16).padStart(4, '0')}`);
+    assert.ok(result.errors.some((finding) =>
+      finding.code === 'EDITION_TEXT_RISK' &&
+      finding.path === '/config/localOrientation/firstDayArrival'
+    ));
+    assertPrivateSafe(result, unsafe);
+  }
+
+  const multiline = clone(base);
+  multiline.localOrientation.firstDayArrival = 'First line\r\nSecond line\rThird line\nFourth line';
+  const accepted = F.fdEditionValidateConfig(
+    multiline, indexFor(base), context('ms3', base.createdAgainstCoreRevision)
+  );
+  assert.equal(accepted.ok, true, JSON.stringify(accepted.errors));
+  assert.equal(accepted.value.localOrientation.firstDayArrival,
+    'First line\nSecond line\nThird line\nFourth line');
+});
+
+test('blocks tab-obfuscated credentials and assigned pager numbers in narrative and identifier fields without echoing values', () => {
+  const base = fixture('valid-ms3.json').config;
+  const fields = [
+    {
+      path: '/config/localOrientation/firstDayArrival',
+      set(config, value) { config.localOrientation.firstDayArrival = value; }
+    },
+    {
+      path: '/config/pathItems/0/instanceId',
+      set(config, value) { config.pathItems[0].instanceId = value; }
+    },
+    {
+      path: '/config/pathItems/0/ref',
+      set(config, value) { config.pathItems[0].ref = value; }
+    },
+    {
+      path: '/config/localOrientation/checklist/0/id',
+      set(config, value) { config.localOrientation.checklist[0].id = value; }
+    },
+    {
+      path: '/config/localOrientation/resources/0/id',
+      set(config, value) { config.localOrientation.resources[0].id = value; }
+    }
+  ];
+  const unsafeValues = [
+    ['api_key\t=\tsynthetic-secret', 'synthetic-secret'],
+    ['pager = 5551234', '5551234'],
+    ['pager is 5551234', '5551234']
+  ];
+
+  for (const field of fields) {
+    for (const [unsafe, privatePart] of unsafeValues) {
+      const config = clone(base);
+      field.set(config, unsafe);
+      const result = F.fdEditionValidateConfig(
+        config, indexFor(config), context('ms3', base.createdAgainstCoreRevision)
+      );
+      assert.equal(result.ok, false, `${field.path}: assigned private value`);
+      assert.ok(result.errors.some((finding) =>
+        finding.code === 'EDITION_TEXT_RISK' && finding.path === field.path
+      ), `${field.path}: ${JSON.stringify(result.errors)}`);
+      assertPrivateSafe(result, privatePart);
+    }
+  }
+});
+
+test('blocks controls and assigned pager numbers after each decoded URL layer without echoing values', () => {
+  const base = fixture('valid-ms3.json').config;
+  const cases = [
+    ['https://example.edu/policy?note=synthetic%09guidance', 'synthetic\tguidance'],
+    ['https://example.edu/policy?note=synthetic%C2%85guidance', 'synthetic\u0085guidance'],
+    ['https://example.edu/policy?note=api_key%2509%253D%2509synthetic-secret', 'synthetic-secret'],
+    ['https://example.edu/policy?note=pager%2520is%25205551234', '5551234']
+  ];
+
+  for (const field of ['contact', 'resource']) {
+    for (const [unsafe, privatePart] of cases) {
+      const config = clone(base);
+      const path = field === 'contact'
+        ? '/config/localOrientation/contacts/0/directoryUrl'
+        : '/config/localOrientation/resources/0/url';
+      if (field === 'contact') config.localOrientation.contacts[0].directoryUrl = unsafe;
+      else config.localOrientation.resources[0].url = unsafe;
+      const result = F.fdEditionValidateConfig(
+        config, indexFor(base), context('ms3', base.createdAgainstCoreRevision)
+      );
+      assert.equal(result.ok, false, `${field}: encoded private value`);
+      assert.ok(result.errors.some((finding) =>
+        finding.code === 'EDITION_TEXT_RISK' && finding.path === path
+      ), `${field}: ${JSON.stringify(result.errors)}`);
+      assertPrivateSafe(result, privatePart);
+    }
+  }
+});
+
 test('screens raw and decoded URL content for blocking privacy risks', () => {
   const base = fixture('valid-ms3.json').config;
   const cases = [
