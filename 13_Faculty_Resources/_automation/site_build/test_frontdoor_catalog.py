@@ -379,6 +379,48 @@ class FrontdoorCatalogTest(unittest.TestCase):
                     "boot": {"audience": "resident", "revision": REVISION},
                 })
 
+    def test_real_curator_source_can_be_reinjected_without_ms3_payload_residue(self):
+        repo = os.path.abspath(os.path.join(HERE, "..", "..", ".."))
+        source = os.path.join(
+            repo, "13_Faculty_Resources", "Rotation_Curation", "rotation-curator.html"
+        )
+        with open(os.path.join(repo, "curriculum.json"), encoding="utf-8") as fh:
+            curriculum = json.load(fh)
+        refs = {
+            ref for column in curriculum["libraryColumns"] for ref in column["refs"]
+        }
+        refs.update(
+            ref
+            for addition in curriculum["siteLibrary"]["resident"]["additions"]
+            for ref in addition["refs"]
+        )
+        catalog = _catalog(sorted(refs))
+        ms3 = build_frontdoor_payload("ms3", curriculum, catalog, "a" * 40)
+        resident = build_frontdoor_payload("resident", curriculum, catalog, "b" * 40)
+
+        with tempfile.NamedTemporaryFile("w+", suffix=".html", encoding="utf-8") as page:
+            with open(source, encoding="utf-8") as source_page:
+                page.write(source_page.read())
+            page.flush()
+            inject_frontdoor_payload(page.name, ms3, {"site": "ms3"}, {"tools": []})
+            inject_frontdoor_payload(
+                page.name, resident, {"site": "resident"}, {"tools": []}
+            )
+            with open(page.name, encoding="utf-8") as rendered_page:
+                rendered = rendered_page.read()
+
+        self.assertIn('var FD_AUDIENCE="resident";', rendered)
+        self.assertIn('var FD_CORE_REVISION="' + "b" * 40 + '";', rendered)
+        self.assertIn('"id": "resident-four-week"', rendered)
+        self.assertNotIn('var FD_AUDIENCE="ms3";', rendered)
+        self.assertNotIn('"id": "ms3-six-week"', rendered)
+        self.assertNotIn("a" * 40, rendered)
+        for needle in (
+            "FD_CURRICULUM", "FD_TOPIC_META", "FD_TOOL_REGISTRY",
+            "FD_SITE_MANIFEST", "FD_ROLES", "FD_AUDIENCE", "FD_CORE_REVISION",
+        ):
+            self.assertEqual(rendered.count("var %s=" % needle), 1, needle)
+
 
 if __name__ == "__main__":
     unittest.main()

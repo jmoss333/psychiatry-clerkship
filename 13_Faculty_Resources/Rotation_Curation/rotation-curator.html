@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Faculty rotation edition builder</title>
+  <!-- [CLERKSHIP-META v1] tool="Rotation Edition Curator" version="1.0" built="2026-08-19" category="faculty-curation" audience="faculty" settings="self-study" time="20min" clinicalClaim="false" summary="Arrange an audience-locked curriculum and bounded local orientation into an account-free edition link." -->
+  <!-- QA-ALLOW-DOSE: FD_TOPIC_META is the read-only canonical site payload; this curator source adds no dose or local clinical directive. -->
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #f7f2e9;
+      --surface: #fffdf8;
+      --ink: #28332f;
+      --muted: #5d6964;
+      --evergreen: #174d43;
+      --evergreen-soft: #dce9e4;
+      --terracotta: #9f3f2a;
+      --terracotta-soft: #f5ddd5;
+      --gold: #b77731;
+      --line: #d6cec1;
+      --shadow: 0 14px 35px rgba(48, 42, 35, .09);
+    }
+    * { box-sizing: border-box; }
+    html { background: var(--paper); }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.55;
+    }
+    button, input, select, textarea { font: inherit; }
+    button, .touch-target { min-height: 44px; }
+    button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible,
+    select:focus-visible, [tabindex]:focus-visible {
+      outline: 3px solid var(--gold);
+      outline-offset: 3px;
+    }
+    .curator-shell {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 36px 0 56px;
+    }
+    .curator-header {
+      display: grid;
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .curator-kicker {
+      margin: 0;
+      color: var(--terracotta);
+      font-size: .76rem;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    h1, h2, p { margin-top: 0; }
+    h1 {
+      max-width: 780px;
+      margin-bottom: 0;
+      color: var(--evergreen);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(2rem, 4.5vw, 3.7rem);
+      line-height: 1.02;
+      letter-spacing: -.03em;
+    }
+    .context-lock {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      color: var(--evergreen);
+      font-size: .9rem;
+      font-weight: 750;
+    }
+    .context-lock span {
+      display: inline-flex;
+      min-height: 32px;
+      align-items: center;
+      padding: 5px 10px;
+      border: 1px solid #9bb8af;
+      border-radius: 999px;
+      background: var(--evergreen-soft);
+      overflow-wrap: anywhere;
+    }
+    .boundary-band {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 12px;
+      align-items: start;
+      padding: 16px 18px;
+      border: 1px solid #d6a797;
+      border-left: 5px solid var(--terracotta);
+      border-radius: 10px;
+      background: var(--terracotta-soft);
+      color: #5d271c;
+    }
+    .boundary-band strong { display: block; margin-bottom: 2px; }
+    .boundary-band p { margin-bottom: 0; }
+    .boundary-mark { font-size: 1.2rem; font-weight: 900; line-height: 1.4; }
+    .step-rail {
+      margin: 22px 0;
+      padding: 0;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+    .step-rail ol {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .step-rail li { min-width: 0; border-right: 1px solid var(--line); }
+    .step-rail li:last-child { border-right: 0; }
+    .step-rail button {
+      width: 100%;
+      padding: 11px 9px 10px;
+      border: 0;
+      border-top: 4px solid transparent;
+      color: var(--muted);
+      background: transparent;
+      font-size: .82rem;
+      font-weight: 750;
+      line-height: 1.2;
+      text-align: left;
+    }
+    .step-rail button[aria-current="step"] {
+      border-top-color: var(--terracotta);
+      color: var(--evergreen);
+      background: #fbf6ed;
+    }
+    .step-number {
+      display: block;
+      margin-bottom: 3px;
+      color: var(--terracotta);
+      font-size: .72rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(280px, .65fr);
+      gap: 20px;
+      align-items: start;
+    }
+    .panel {
+      min-width: 0;
+      padding: clamp(20px, 3vw, 30px);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      overflow-wrap: anywhere;
+    }
+    .panel h2 {
+      margin-bottom: 8px;
+      color: var(--evergreen);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 1.45rem;
+    }
+    .panel-note { color: var(--muted); }
+    .preview-panel { position: sticky; top: 18px; }
+    .placeholder-lines {
+      display: grid;
+      gap: 10px;
+      margin: 22px 0;
+    }
+    .placeholder-lines span {
+      display: block;
+      height: 12px;
+      border-radius: 999px;
+      background: #e9e2d6;
+    }
+    .placeholder-lines span:nth-child(2) { width: 76%; }
+    .placeholder-lines span:nth-child(3) { width: 58%; }
+    .final-action {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 20px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #eee9df;
+    }
+    .final-action p { max-width: 720px; margin: 0; color: var(--muted); }
+    #curatorGenerate {
+      flex: 0 0 auto;
+      min-width: 190px;
+      padding: 10px 18px;
+      border: 1px solid #aaa398;
+      border-radius: 8px;
+      color: #6f6a62;
+      background: #d9d5cd;
+      font-weight: 800;
+      cursor: not-allowed;
+      opacity: 1;
+    }
+    .visually-hidden {
+      position: absolute !important;
+      width: 1px !important;
+      height: 1px !important;
+      padding: 0 !important;
+      margin: -1px !important;
+      overflow: hidden !important;
+      clip: rect(0, 0, 0, 0) !important;
+      white-space: nowrap !important;
+      border: 0 !important;
+    }
+    @media (max-width: 760px) {
+      .curator-shell { width: min(100% - 20px, 680px); padding-top: 22px; }
+      .step-rail ol { grid-template-columns: 1fr; }
+      .step-rail li { border-right: 0; border-bottom: 1px solid var(--line); }
+      .step-rail li:last-child { border-bottom: 0; }
+      .step-rail button { border-top: 0; border-left: 4px solid transparent; }
+      .step-rail button[aria-current="step"] { border-left-color: var(--terracotta); }
+      .workspace { grid-template-columns: 1fr; }
+      .preview-panel { position: static; }
+      .final-action { align-items: stretch; }
+      #curatorGenerate { width: 100%; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <main id="root" class="curator-shell">
+    <header class="curator-header">
+      <p class="curator-kicker">Faculty worksheet · pending review</p>
+      <h1>Faculty rotation edition builder</h1>
+      <div class="context-lock" aria-label="Locked audience and curriculum path">
+        <span id="curatorAudienceLock">Audience locked by this site</span>
+        <span id="curatorPathLock">Canonical path locked by this site</span>
+      </div>
+      <div class="boundary-band" role="alert">
+        <span class="boundary-mark" aria-hidden="true">!</span>
+        <div>
+          <strong>Account-free and not access-controlled</strong>
+          <p>Pending faculty and privacy review. Identity is self-entered and is not verified; this tool does not imply endorsement or institutional approval.</p>
+        </div>
+      </div>
+    </header>
+
+    <nav class="step-rail" aria-label="Builder steps">
+      <ol>
+        <li><button type="button" data-curator-step="1" aria-current="step"><span class="step-number">Step 1</span>Edition</button></li>
+        <li><button type="button" data-curator-step="2"><span class="step-number">Step 2</span>Curriculum</button></li>
+        <li><button type="button" data-curator-step="3"><span class="step-number">Step 3</span>Schedule</button></li>
+        <li><button type="button" data-curator-step="4"><span class="step-number">Step 4</span>Local details</button></li>
+        <li><button type="button" data-curator-step="5"><span class="step-number">Step 5</span>Preview and share</button></li>
+      </ol>
+    </nav>
+
+    <p id="curatorStepStatus" class="visually-hidden" role="status" aria-live="polite">Step 1 of 5: Edition</p>
+    <div class="workspace">
+      <section id="curatorEditorMount" class="panel" aria-labelledby="curatorEditorTitle">
+        <h2 id="curatorEditorTitle">1. Edition</h2>
+        <p class="panel-note">The governed editor fields will be enabled in the next implementation stage. The active audience and duration cannot be changed here.</p>
+        <div class="placeholder-lines" aria-hidden="true"><span></span><span></span><span></span></div>
+      </section>
+      <aside id="curatorPreviewMount" class="panel preview-panel" aria-labelledby="curatorPreviewTitle">
+        <h2 id="curatorPreviewTitle">Student preview</h2>
+        <p class="panel-note">Preview is read-only and remains unavailable until the edition passes its validation and privacy checks.</p>
+      </aside>
+    </div>
+
+    <div class="final-action">
+      <p><strong>Publication unavailable.</strong> Generate stays disabled until later governed work implements validation, public-link review, and the health gate.</p>
+      <button type="button" id="curatorGenerate" disabled aria-disabled="true">Generate edition link</button>
+    </div>
+  </main>
+
+  <script>
+    var FD_CURRICULUM={};
+    var FD_TOPIC_META={};
+    var FD_TOOL_REGISTRY={};
+    var FD_SITE_MANIFEST={};
+    var FD_ROLES=[];
+    var FD_AUDIENCE="";
+    var FD_CORE_REVISION="";
+
+    /*__FD_DATA__*/
+    /*__FD_EDITION_CONTRACT__*/
+    /*__FD_EDITION_PROJECT__*/
+    /*__FD_CURATOR__*/
+
+    var FD_INDEX=fdBuildIndex(FD_CURRICULUM,FD_TOPIC_META,FD_TOOL_REGISTRY,FD_SITE_MANIFEST);
+    var FD_CURATOR_CONTEXT={audience:FD_AUDIENCE,coreRevision:FD_CORE_REVISION};
+    fdCuratorMount(document.getElementById('root'),FD_INDEX,FD_CURATOR_CONTEXT);
+  </script>
+</body>
+</html>

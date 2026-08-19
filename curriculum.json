@@ -224,6 +224,7 @@
   ],
   "libraryExclude": [
     { "ref": "feedback.html", "reason": "a feedback form, not library content — reachable from the header" },
+    { "ref": "rotation-curator.html", "reason": "faculty curation utility; not learner Library content" },
     { "ref": "week1.md", "reason": "surfaced by the Path tab, which is the week browse surface" },
     { "ref": "week2.md", "reason": "surfaced by the Path tab, which is the week browse surface" },
     { "ref": "week3.md", "reason": "surfaced by the Path tab, which is the week browse surface" },

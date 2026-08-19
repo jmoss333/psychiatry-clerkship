@@ -553,6 +553,7 @@ SNIPPET_MARKERS = {
     "/*__FD_DATA__*/": "frontdoor/fd_data.js",
     "/*__FD_EDITION_CONTRACT__*/": "frontdoor/fd_edition_contract.js",
     "/*__FD_EDITION_PROJECT__*/": "frontdoor/fd_edition_project.js",
+    "/*__FD_CURATOR__*/": "frontdoor/fd_curator.js",
     "/*__FD_EDITION_STUDENT__*/": "frontdoor/fd_edition_student.js",
     "/*__FD_TODAY__*/": "frontdoor/fd_today.js",
     "/*__FD_DUE__*/": "frontdoor/fd_due.js",

@@ -327,7 +327,7 @@ nav=[
  {"section":"Practice and Exam Prep","items":[_tool("question-bank-practice.html","Practice Questions — Question Bank"),_tool("one-patient-six-weeks.html","One Patient, Six Weeks"),_tool("review.html","Daily Review (Spaced Repetition)"),_tool("shelf-mode.html","Shelf Mode — Exam Simulation"),_md("COMAT & Shelf Review","shelf.md"),_md("Rapid Review — Buzzwords","rapid_review.md"),_md("OSCE Stations","osce.md"),_md("Practice Cases","cases.md"),_md("Landmark Trials — Listen & Test","landmark_trials.md"),_md("Anki Flashcard Decks","anki.md")]},
  {"section":"Case of the Week","items":[_md("Index — All Cases","cotw_index.md")]+[_md(w["label"],_cotw_slug(w,"ms3")) for w in _cotw_weeks]},
  {"section":"Evidence and Reference","items":[_md("Weekly Reading Map","reading_map.md"),_md("Evidence-Based Inpatient Psychiatry","evidence_inpatient.md"),_md("MS3 Book Library","book_library.md"),_md("Podcast Library (Psychiatry & Psychotherapy)","podcast_library.md")]},
- {"section":"Feedback","items":[_tool("feedback.html","Improve this library — send feedback")]},
+ {"section":"Feedback","items":[_tool("feedback.html","Improve this library — send feedback"),_tool("rotation-curator.html","Faculty: Curate a rotation edition",True)]},
 ]
 _navorder=["Orientation","Start the Encounter","Understand the Problem","Assess Safety and Acuity","Make a Plan","Communicate with Patients","Work with Family and Systems","Present and Work with the Team","Practice and Exam Prep","Case of the Week","Evidence and Reference","Feedback"]
 nav=sorted(nav,key=lambda s:_navorder.index(s["section"]) if s["section"] in _navorder else 999)
@@ -379,10 +379,12 @@ except GovernanceError as error:
 try:
     _fd_payload=frontdoor_catalog.build_frontdoor_payload(
         "ms3", json.load(open(LIB+"/curriculum.json",encoding="utf-8")), nav, _core_revision)
-    frontdoor_catalog.inject_frontdoor_payload(
-        OUT+"/index.html", _fd_payload,
-        json.load(open(OUT+"/topic_meta.json",encoding="utf-8")),
-        json.load(open(OUT+"/tool_registry.json",encoding="utf-8")))
+    _frontdoor_destinations=(OUT+"/index.html", OUT+"/tools/rotation-curator.html")
+    for _frontdoor_destination in _frontdoor_destinations:
+        frontdoor_catalog.inject_frontdoor_payload(
+            _frontdoor_destination, _fd_payload,
+            json.load(open(OUT+"/topic_meta.json",encoding="utf-8")),
+            json.load(open(OUT+"/tool_registry.json",encoding="utf-8")))
 except ValueError as _fd_error:
     print("BUILD ABORTED — Front Door payload:", _fd_error)
     raise SystemExit(1)
