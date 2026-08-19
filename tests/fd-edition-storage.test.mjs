@@ -215,6 +215,106 @@ test('startup journal isolates one conflicted key while rolling back other keys'
   assert.deepEqual(storage.snapshot(), { cw_plan_v1: 'B', cw_last: 'X' });
 });
 
+test('startup journal preflight prevents a phase from overwriting a concurrent value', () => {
+  const storage = recordingStorage({ cw_plan_v1: 'A' });
+  const journal = F.fdEditionStartupJournal(storage, ['cw_plan_v1']);
+  F.fdEditionStartupJournalRun(journal, ['cw_plan_v1'], () => storage.setItem('cw_plan_v1', 'B'));
+  storage.setItem('cw_plan_v1', 'D');
+  let calls = 0;
+
+  const phase = F.fdEditionStartupJournalRun(journal, ['cw_plan_v1'], () => {
+    calls += 1;
+    storage.setItem('cw_plan_v1', 'C');
+  });
+  assert.equal(phase.ok, false);
+  assert.equal(calls, 0);
+  assert.equal(storage.snapshot().cw_plan_v1, 'D');
+  assert.equal(F.fdEditionStartupJournalRollback(journal), false);
+  assert.equal(storage.snapshot().cw_plan_v1, 'D');
+});
+
+test('startup journal preflight makes a multi-key phase all-or-nothing', () => {
+  const storage = recordingStorage({ cw_plan_v1: 'A', cw_last: 'X' });
+  const journal = F.fdEditionStartupJournal(storage, ['cw_plan_v1', 'cw_last']);
+  F.fdEditionStartupJournalRun(journal, ['cw_plan_v1', 'cw_last'], () => {
+    storage.setItem('cw_plan_v1', 'B');
+    storage.setItem('cw_last', 'Y');
+  });
+  storage.setItem('cw_plan_v1', 'D');
+  const writesBefore = storage.writes.length;
+  let calls = 0;
+
+  const phase = F.fdEditionStartupJournalRun(journal, ['cw_plan_v1', 'cw_last'], () => {
+    calls += 1;
+    storage.setItem('cw_plan_v1', 'C');
+    storage.setItem('cw_last', 'Z');
+  });
+  assert.equal(phase.ok, false);
+  assert.equal(calls, 0);
+  assert.equal(storage.writes.length, writesBefore);
+  assert.deepEqual(storage.snapshot(), { cw_plan_v1: 'D', cw_last: 'Y' });
+  assert.equal(F.fdEditionStartupJournalRollback(journal), false);
+  assert.deepEqual(storage.snapshot(), { cw_plan_v1: 'D', cw_last: 'X' });
+});
+
+test('startup journal preflight treats delete and value ownership mismatches alike', () => {
+  for (const [startup, concurrent, expected] of [
+    [null, 'D', 'D'],
+    ['B', null, undefined],
+  ]) {
+    const storage = recordingStorage({ cw_frontdoor_v1: 'A' });
+    const journal = F.fdEditionStartupJournal(storage, ['cw_frontdoor_v1']);
+    F.fdEditionStartupJournalRun(journal, ['cw_frontdoor_v1'], () => {
+      if (startup === null) storage.removeItem('cw_frontdoor_v1');
+      else storage.setItem('cw_frontdoor_v1', startup);
+    });
+    if (concurrent === null) storage.removeItem('cw_frontdoor_v1');
+    else storage.setItem('cw_frontdoor_v1', concurrent);
+    let calls = 0;
+
+    assert.equal(F.fdEditionStartupJournalRun(journal, ['cw_frontdoor_v1'], () => {
+      calls += 1;
+      storage.setItem('cw_frontdoor_v1', 'C');
+    }).ok, false);
+    assert.equal(calls, 0);
+    assert.equal(F.fdEditionStartupJournalRollback(journal), false);
+    assert.equal(storage.snapshot().cw_frontdoor_v1, expected);
+  }
+});
+
+test('startup journal preflight read exceptions prevent every declared-key write', () => {
+  const values = new Map([['cw_plan_v1', 'A'], ['cw_last', 'X']]);
+  let failPlanRead = false;
+  let writes = 0;
+  const storage = {
+    getItem(key) {
+      if (failPlanRead && key === 'cw_plan_v1') throw new Error('preflight read failure');
+      return values.has(key) ? values.get(key) : null;
+    },
+    setItem(key, value) { writes += 1; values.set(key, value); },
+    removeItem(key) { writes += 1; values.delete(key); },
+  };
+  const journal = F.fdEditionStartupJournal(storage, ['cw_plan_v1', 'cw_last']);
+  F.fdEditionStartupJournalRun(journal, ['cw_plan_v1', 'cw_last'], () => {
+    storage.setItem('cw_plan_v1', 'B');
+    storage.setItem('cw_last', 'Y');
+  });
+  failPlanRead = true;
+  const writesBefore = writes;
+  let calls = 0;
+
+  assert.equal(F.fdEditionStartupJournalRun(journal, ['cw_plan_v1', 'cw_last'], () => {
+    calls += 1;
+    storage.setItem('cw_plan_v1', 'C');
+    storage.setItem('cw_last', 'Z');
+  }).ok, false);
+  assert.equal(calls, 0);
+  assert.equal(writes, writesBefore);
+  failPlanRead = false;
+  assert.equal(F.fdEditionStartupJournalRollback(journal), false);
+  assert.deepEqual(Object.fromEntries(values), { cw_plan_v1: 'B', cw_last: 'X' });
+});
+
 test('startup journal abandons a key after an accessor or storage failure', () => {
   const accessorStorage = {};
   Object.defineProperty(accessorStorage, 'getItem', { get() { return () => null; } });

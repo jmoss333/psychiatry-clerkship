@@ -466,6 +466,48 @@ test('browser startup journal preserves an intermediate concurrent plan value pe
   await other.close();
 });
 
+test('browser startup preflight prevents a conflicted multi-key phase from writing', async ({ page, context }) => {
+  await page.goto('/');
+  await page.addScriptTag({ content: EDITION_STUDENT_SOURCE });
+  await page.evaluate(() => {
+    localStorage.setItem('cw_plan_v1', 'plan-A');
+    localStorage.setItem('cw_frontdoor_v1', 'frontdoor-A');
+    window.__fdRoundThreeJournal = fdEditionStartupJournal(
+      localStorage, ['cw_plan_v1', 'cw_frontdoor_v1'],
+    );
+    fdEditionStartupJournalRun(
+      window.__fdRoundThreeJournal, ['cw_plan_v1', 'cw_frontdoor_v1'], () => {
+        localStorage.setItem('cw_plan_v1', 'plan-B');
+        localStorage.setItem('cw_frontdoor_v1', 'frontdoor-B');
+      },
+    );
+    window.__fdRoundThreeCalls = 0;
+  });
+
+  const other = await context.newPage();
+  await other.goto('/nav.json');
+  await other.evaluate(() => localStorage.setItem('cw_plan_v1', 'plan-D'));
+  expect(await page.evaluate(() => fdEditionStartupJournalRun(
+    window.__fdRoundThreeJournal, ['cw_plan_v1', 'cw_frontdoor_v1'], () => {
+      window.__fdRoundThreeCalls += 1;
+      localStorage.setItem('cw_plan_v1', 'plan-C');
+      localStorage.setItem('cw_frontdoor_v1', 'frontdoor-C');
+    },
+  ).ok)).toBe(false);
+  expect(await page.evaluate(() => ({
+    calls: window.__fdRoundThreeCalls,
+    plan: localStorage.getItem('cw_plan_v1'),
+    frontdoor: localStorage.getItem('cw_frontdoor_v1'),
+  }))).toEqual({ calls: 0, plan: 'plan-D', frontdoor: 'frontdoor-B' });
+
+  expect(await page.evaluate(() => fdEditionStartupJournalRollback(window.__fdRoundThreeJournal))).toBe(false);
+  expect(await page.evaluate(() => ({
+    plan: localStorage.getItem('cw_plan_v1'),
+    frontdoor: localStorage.getItem('cw_frontdoor_v1'),
+  }))).toEqual({ plan: 'plan-D', frontdoor: 'frontdoor-A' });
+  await other.close();
+});
+
 async function resetEditionWriteLog(page) {
   await page.evaluate((logKey) => {
     sessionStorage.setItem(logKey, '[]');

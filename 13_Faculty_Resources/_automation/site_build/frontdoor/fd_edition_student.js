@@ -261,7 +261,8 @@ function fdEditionStartupJournalValue(journal,key){
 }
 
 function fdEditionStartupJournalRun(journal,keys,operation){
-  var before=[],after=[],seen=Object.create(null),i,key,value,record,threw=false,readFailed=false,result=null;
+  var before=[],after=[],seen=Object.create(null),i,key,value,record,threw=false,
+    preflightFailed=false,readFailed=false,result=null;
   if(!journal||!Array.isArray(keys)||typeof operation!=='function') return {ok:false,value:null};
   for(i=0;i<keys.length;i++){
     key=keys[i];
@@ -271,10 +272,12 @@ function fdEditionStartupJournalRun(journal,keys,operation){
     if(!value.ok){journal.blocked[key]=true;journal.failed=true;return {ok:false,value:null};}
     before.push(value.value);
     record=journal.records[key];
-    if(record&&!journal.blocked[key]&&record.expected!==value.value){
-      journal.blocked[key]=true;
+    if(journal.blocked[key])preflightFailed=true;
+    else if(record&&record.expected!==value.value){
+      journal.blocked[key]=true;journal.failed=true;preflightFailed=true;
     }
   }
+  if(preflightFailed)return {ok:false,value:null};
   try{result=operation();}catch(ignoreOperation){threw=true;journal.failed=true;}
   for(i=0;i<keys.length;i++){
     value=fdEditionStartupJournalValue(journal,keys[i]);
