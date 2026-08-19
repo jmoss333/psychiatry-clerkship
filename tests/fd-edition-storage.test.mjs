@@ -243,7 +243,7 @@ test('corrupt or structurally invalid existing local progress blocks accept and 
   const invalidDocuments = [
     '{bad json',
     JSON.stringify({ schemaVersion: 1, byFingerprint: { [selected.fingerprint]: { checklist: {}, resources: {}, extra: true } } }),
-    JSON.stringify({ schemaVersion: 1, byFingerprint: { [selected.fingerprint]: { checklist: { constructor: true }, resources: {} } } })
+    JSON.stringify({ schemaVersion: 1, byFingerprint: { [selected.fingerprint]: { checklist: { 'invalid key': true }, resources: {} } } })
   ];
   for (const text of invalidDocuments) {
     const storage = seededStorage();
@@ -283,6 +283,8 @@ test('accept writes prepared local progress before the edition commit marker and
 test('commit and switch markup require a coherent success-shaped validated edition rather than a regex-shaped fingerprint', async () => {
   const selected = await edition('ms3', 1);
   const forgedCases = [
+    ['unbranded exact copy', () => {}],
+    ['format', (value) => { value.envelope.format = 'other-format'; }],
     ['token', (value) => { value.fingerprint = 'BHU2-MS3-000000'; }],
     ['location', (value) => { value.config.card.locationCode = 'MMC'; }],
     ['audience', (value) => { value.config.audience = 'resident'; }],
@@ -299,6 +301,17 @@ test('commit and switch markup require a coherent success-shaped validated editi
     assert.deepEqual(storage.snapshot(), before, label);
     assert.deepEqual(storage.writes, [], label);
   }
+});
+
+test('unbranded nested error proxies cannot make switch markup inspect hostile array properties', async () => {
+  const selected = await edition();
+  const forged = structuredClone(selected);
+  forged.errors = new Proxy([], { get(target, property) {
+    if (property === 'length') throw new Error('nested markup secret');
+    return Reflect.get(target, property);
+  } });
+  assert.doesNotThrow(() => F.fdEditionSwitchMarkup(selected, forged));
+  assert.equal(F.fdEditionSwitchMarkup(selected, forged), '');
 });
 
 test('hostile storage descriptors and markup proxies fail closed without exception text or writes', async () => {
@@ -320,7 +333,7 @@ test('hostile storage descriptors and markup proxies fail closed without excepti
   assert.equal(F.fdEditionErrorMarkup(hostileReceipt).includes('receipt secret'), false);
 });
 
-test('local completion supports printable contract IDs while rejecting whitespace, controls, and dangerous map keys', async () => {
+test('local completion supports every printable contract ID without prototype pollution', async () => {
   const selected = await edition();
   const storage = recordingStorage();
   const printable = 'UPPER.ID+@[x]:/!?';
@@ -328,7 +341,11 @@ test('local completion supports printable contract IDs while rejecting whitespac
   const progress = F.fdEditionReadLocalProgress(storage, selected.fingerprint);
   assert.equal(Object.getPrototypeOf(progress.resources), null);
   assert.equal(progress.resources[printable], true);
-  for (const id of ['space id', 'line\nbreak', '__proto__', 'constructor', 'prototype']) {
+  for (const id of ['toString', 'hasOwnProperty', '__proto__', 'constructor', 'prototype']) {
+    assert.equal(F.fdEditionToggleLocalProgress(storage, selected.fingerprint, 'resources', id), true, id);
+    assert.equal(Object.getOwnPropertyDescriptor(F.fdEditionReadLocalProgress(storage, selected.fingerprint).resources, id).value, true, id);
+  }
+  for (const id of ['space id', 'line\nbreak', '']) {
     assert.equal(F.fdEditionToggleLocalProgress(storage, selected.fingerprint, 'resources', id), false, id);
   }
 });

@@ -680,3 +680,46 @@ function fdEditionDiagnostic(result,siteContext){
     currentCoreRevision:currentCoreRevision
   };
 }
+
+/* Provenance is intentionally closure-private: consumers can inspect, never brand, a result. */
+var fdEditionTrustedSnapshot=(function(){
+  var trusted=typeof WeakMap==='function'?new WeakMap():null,
+    create=fdEditionCreateEnvelope,validate=fdEditionValidateEnvelope;
+  function freeze(value,seen){
+    var keys,i,key,descriptor;
+    if(!value||typeof value!=='object'||seen.indexOf(value)!==-1) return;
+    seen.push(value);
+    try{ keys=Reflect.ownKeys(value); }catch(ignoreKeys){ return; }
+    for(i=0;i<keys.length;i++){
+      key=keys[i];
+      try{ descriptor=Object.getOwnPropertyDescriptor(value,key); }catch(ignoreDescriptor){ return; }
+      if(descriptor&&Object.prototype.hasOwnProperty.call(descriptor,'value')) freeze(descriptor.value,seen);
+    }
+    try{ Object.freeze(value); }catch(ignoreFreeze){}
+  }
+  function mark(result){
+    var canonical,envelope,config,fingerprint,snapshot;
+    if(!trusted||!result||result.ok!==true||!result.envelope||!result.config||typeof result.fingerprint!=='string') return result;
+    try{
+      envelope=result.envelope; config=result.config; fingerprint=result.fingerprint;
+      if(envelope.format!==FD_EDITION_RULES.format||envelope.schemaVersion!==FD_EDITION_RULES.schemaVersion||
+         typeof envelope.digest!=='string'||fdEditionCanonicalJson(envelope.config)!==fdEditionCanonicalJson(config)||
+         fdEditionFingerprint(config,envelope.digest)!==fingerprint) return result;
+      canonical=fdEditionCanonicalJson(envelope);
+      envelope=JSON.parse(canonical);
+      snapshot={envelope:envelope,config:envelope.config,fingerprint:fingerprint,canonicalEnvelope:canonical};
+      freeze(snapshot,[]); trusted.set(result,snapshot); freeze(result,[]);
+    }catch(ignoreMark){}
+    return result;
+  }
+  fdEditionCreateEnvelope=function(config,index,siteContext,subtle){
+    return create(config,index,siteContext,subtle).then(mark,function(){ return mark({ok:false,envelope:null,config:null,fingerprint:'',errors:[],warnings:[]}); });
+  };
+  fdEditionValidateEnvelope=function(envelope,index,siteContext,subtle){
+    return validate(envelope,index,siteContext,subtle).then(mark,function(){ return mark({ok:false,envelope:null,config:null,fingerprint:'',errors:[],warnings:[]}); });
+  };
+  return function(result){
+    if(!trusted||(result===null||(typeof result!=='object'&&typeof result!=='function'))) return null;
+    try{ return trusted.get(result)||null; }catch(ignoreLookup){ return null; }
+  };
+}());

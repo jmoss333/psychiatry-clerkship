@@ -31,7 +31,7 @@ function fdEditionStudentFingerprint(value){
 }
 
 function fdEditionStudentId(value){
-  return typeof value==='string'&&FD_EDITION_STUDENT_ID.test(value)&&!FD_EDITION_STUDENT_DANGEROUS[value]?value:'';
+  return typeof value==='string'&&FD_EDITION_STUDENT_ID.test(value)?value:'';
 }
 
 function fdEditionStudentCode(value){
@@ -52,18 +52,6 @@ function fdEditionStudentExactObject(value,fields){
   }
   for(i=0;i<fields.length;i++) if(!seen[fields[i]]) return false;
   return true;
-}
-
-function fdEditionStudentArray(value){
-  try{ return Array.isArray(value); }catch(ignoreArray){ return false; }
-}
-
-function fdEditionStudentArrayData(value,index){
-  var descriptor;
-  if(!fdEditionStudentArray(value)) return {ok:false,value:null};
-  try{ descriptor=Object.getOwnPropertyDescriptor(value,String(index)); }catch(ignoreDescriptor){ descriptor=null; }
-  if(!descriptor||!descriptor.enumerable||!Object.prototype.hasOwnProperty.call(descriptor,'value')) return {ok:false,value:null};
-  return {ok:true,value:descriptor.value};
 }
 
 function fdEditionStudentSafeReceipt(result,siteContext,code){
@@ -174,28 +162,14 @@ function fdEditionResolveStartup(canonicalIndex,siteContext,pageUrl,incomingHash
 }
 
 function fdEditionStudentValidEdition(value){
-  var accepted,envelope,config,fingerprint,errors,envelopeConfig,digest,expected,canonicalConfig,canonicalEnvelope,i,finding,blocking;
-  if(!fdEditionStudentObject(value)) return null;
-  accepted=fdEditionStudentData(value,'ok');
-  if(!accepted.ok||accepted.value!==true) return null;
-  envelope=fdEditionStudentData(value,'envelope'); config=fdEditionStudentData(value,'config');
-  fingerprint=fdEditionStudentData(value,'fingerprint'); errors=fdEditionStudentData(value,'errors');
+  var snapshot,envelope,config,fingerprint,canonical;
+  try{ snapshot=fdEditionTrustedSnapshot(value); }catch(ignoreProvenance){ return null; }
+  if(!fdEditionStudentObject(snapshot)) return null;
+  envelope=fdEditionStudentData(snapshot,'envelope'); config=fdEditionStudentData(snapshot,'config');
+  fingerprint=fdEditionStudentData(snapshot,'fingerprint'); canonical=fdEditionStudentData(snapshot,'canonicalEnvelope');
   if(!envelope.ok||!fdEditionStudentObject(envelope.value)||!config.ok||!fdEditionStudentObject(config.value)||
-     !fingerprint.ok||!fdEditionStudentFingerprint(fingerprint.value)||!errors.ok||!fdEditionStudentArray(errors.value)) return null;
-  for(i=0;i<errors.value.length;i++){
-    finding=fdEditionStudentArrayData(errors.value,i); if(!finding.ok||!fdEditionStudentObject(finding.value)) return null;
-    blocking=fdEditionStudentData(finding.value,'blocking'); if(!blocking.ok||blocking.value===true) return null;
-  }
-  envelopeConfig=fdEditionStudentData(envelope.value,'config'); digest=fdEditionStudentData(envelope.value,'digest');
-  if(!envelopeConfig.ok||!fdEditionStudentObject(envelopeConfig.value)||!digest.ok||typeof digest.value!=='string') return null;
-  try{
-    canonicalConfig=fdEditionCanonicalJson(config.value);
-    canonicalEnvelope=fdEditionCanonicalJson(envelopeConfig.value);
-    expected=fdEditionFingerprint(config.value,digest.value);
-  }catch(ignoreCoherence){ return null; }
-  if(canonicalConfig!==canonicalEnvelope||!expected||expected!==fingerprint.value) return null;
-  try{ return {envelope:envelope.value,fingerprint:fingerprint.value,text:JSON.stringify(envelope.value)}; }
-  catch(ignoreSerialize){ return null; }
+     !fingerprint.ok||!fdEditionStudentFingerprint(fingerprint.value)||!canonical.ok||typeof canonical.value!=='string') return null;
+  return {envelope:envelope.value,fingerprint:fingerprint.value,text:canonical.value};
 }
 
 function fdEditionStudentMethod(storage,name){

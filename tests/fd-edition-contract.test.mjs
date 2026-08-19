@@ -10,7 +10,7 @@ const API_NAMES = [
   'fdEditionCanonicalJson', 'fdEditionBase64urlEncode', 'fdEditionBase64urlDecode',
   'fdEditionDigest', 'fdEditionDigestEqual', 'fdEditionFingerprint',
   'fdEditionCreateEnvelope', 'fdEditionValidateEnvelope', 'fdEditionDecodePayload',
-  'fdEditionDiagnostic'
+  'fdEditionDiagnostic', 'fdEditionTrustedSnapshot'
 ];
 
 function loadContract() {
@@ -772,6 +772,27 @@ test('creates deterministic envelopes and fingerprints from pre-digest bytes onl
   const changed = await F.fdEditionCreateEnvelope(edited, idx, ctx, webcrypto.subtle);
   assert.notEqual(changed.envelope.digest, first.envelope.digest);
   assert.notEqual(changed.fingerprint, first.fingerprint);
+});
+
+test('brands only exact validated envelopes and preserves an immutable canonical storage snapshot', async () => {
+  const config = fixture('valid-ms3.json').config;
+  const idx = indexFor(config);
+  const ctx = context('ms3', config.createdAgainstCoreRevision);
+  const created = await F.fdEditionCreateEnvelope(config, idx, ctx, webcrypto.subtle);
+  const validated = await F.fdEditionValidateEnvelope(created.envelope, idx, ctx, webcrypto.subtle);
+  for (const result of [created, validated]) {
+    const snapshot = F.fdEditionTrustedSnapshot(result);
+    assert.ok(snapshot);
+    assert.equal(Object.isFrozen(result), true);
+    assert.equal(Object.isFrozen(snapshot.envelope), true);
+    assert.equal(snapshot.canonicalEnvelope, F.fdEditionCanonicalJson(snapshot.envelope));
+    assert.equal(Reflect.set(result.envelope.config.card, 'locationCode', 'MMC'), false);
+    assert.equal(F.fdEditionTrustedSnapshot(result).canonicalEnvelope, snapshot.canonicalEnvelope);
+  }
+  const fabricated = structuredClone(created);
+  fabricated.envelope.format = 'other-format';
+  assert.equal(F.fdEditionTrustedSnapshot(fabricated), null);
+  assert.equal(F.fdEditionTrustedSnapshot({ ...created }), null);
 });
 
 test('array reordering changes the digest and resident prefix is normalized exactly', async () => {
