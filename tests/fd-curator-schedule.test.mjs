@@ -159,6 +159,55 @@ for (const audience of ['ms3', 'resident']) {
   });
 }
 
+for (const audience of ['ms3', 'resident']) {
+  test(`same-ref ${audience} placements have unique accessible schedule controls after moves`, () => {
+    let draft = fn('fdCuratorNewDraft')(index(audience), context(audience));
+    draft = reduce(draft, {
+      type: 'PATH_ADD_INSTANCE', ref: 'interview.md', week: 1,
+    }, audience);
+
+    function labels(markup, action) {
+      return [...markup.matchAll(new RegExp(
+        `data-curator-path-${action}="core:interview\\.md:[^"]+"[^>]+aria-label="([^"]+)"`,
+        'g',
+      ))].map((match) => match[1]);
+    }
+
+    let markup = fn('fdCuratorScheduleMarkup')(draft, index(audience));
+    for (const action of ['up', 'down', 'week', 'remove']) {
+      const names = labels(markup, action);
+      assert.ok(names.length >= 2, `${action} names missing`);
+      assert.equal(new Set(names).size, names.length, `${action} names must be unique`);
+      assert.ok(names.every((name) => /placement \d+/.test(name)), `${action} lacks occurrence`);
+      assert.ok(names.every((name) => /position \d+ of \d+/.test(name)), `${action} lacks position`);
+    }
+    const curriculum = fn('fdCuratorCurriculumMarkup')(draft, index(audience), 'Interview');
+    for (const control of ['priority', 'rationale']) {
+      const names = [...curriculum.matchAll(new RegExp(
+        `data-curator-path-${control}="core:interview\\.md:[^"]+"[^>]+aria-label="([^"]+)"`,
+        'g',
+      ))].map((match) => match[1]);
+      assert.equal(names.length, 3, `${control} names missing`);
+      assert.equal(new Set(names).size, names.length, `${control} names must be unique`);
+      assert.ok(names.every((name) => /placement \d+/.test(name)), `${control} lacks occurrence`);
+    }
+
+    draft = reduce(draft, {
+      type: 'PATH_MOVE_UP', instanceId: 'core:interview.md:3',
+    }, audience);
+    draft = reduce(draft, {
+      type: 'PATH_MOVE_WEEK', instanceId: 'core:interview.md:1', week: 2,
+    }, audience);
+    markup = fn('fdCuratorScheduleMarkup')(draft, index(audience));
+    for (const action of ['up', 'down', 'week', 'remove']) {
+      const names = labels(markup, action);
+      assert.equal(new Set(names).size, names.length, `${action} names collided after moves`);
+    }
+    assert.match(markup, /placement 3, position 1 of \d+ in Week 1/);
+    assert.match(markup, /placement 1, position \d+ of \d+ in Week 2/);
+  });
+}
+
 test('omits, re-adds, adds Library-only resources, and creates deliberate repeats', () => {
   let draft = reviewedDraft();
   const original = structuredClone(draft);
@@ -347,9 +396,10 @@ for (const audience of ['ms3', 'resident']) {
     const weekCount = index(audience).path.weekCount;
     assert.equal((markup.match(/data-curator-week="/g) || []).length, weekCount);
     assert.equal((markup.match(/<ol class="curator-week-list"/g) || []).length, weekCount);
-    assert.match(markup, /aria-label="Move Interview structure up in Week 1"[^>]*disabled/);
-    assert.match(markup, /aria-label="Move Mental status exam down in Week 1"[^>]*disabled/);
-    assert.match(markup, /aria-label="Move Interview structure to week"/);
+    assert.match(markup, /Week 1 · Week 1/);
+    assert.match(markup, /aria-label="Move Interview structure placement 1, position 1 of 2 in Week 1 up"[^>]*disabled/);
+    assert.match(markup, /aria-label="Move Mental status exam placement 1, position 2 of 2 in Week 1 down"[^>]*disabled/);
+    assert.match(markup, /aria-label="Move Interview structure placement 1, position 1 of 2 in Week 1 to another week"/);
     assert.match(markup, new RegExp(`<option value="${weekCount}">Week ${weekCount}</option>`));
     assert.doesNotMatch(markup, /draggable=/);
   });

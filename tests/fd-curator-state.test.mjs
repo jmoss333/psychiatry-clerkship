@@ -279,6 +279,179 @@ test('ignores corrupt, extra-field, and cryptographically invalid stored drafts 
   }
 });
 
+for (const audience of ['ms3', 'resident']) {
+  test(`rejects semantically invalid base-less ${audience} drafts at restore, save, and reducer entry`, async () => {
+    const currentIndex = index(audience);
+    const currentContext = context(audience);
+    const clean = fn('fdCuratorNewDraft')(currentIndex, currentContext);
+    const maxWeek = currentIndex.path.weekCount;
+    const cases = [];
+
+    const unknown = structuredClone(clean);
+    unknown.config.pathItems[0].ref = 'not-in-current-library.md';
+    unknown.config.pathItems[0].instanceId = 'core:not-in-current-library.md:1';
+    cases.push(['unknown Library ref', unknown]);
+
+    const mismatchedRef = structuredClone(clean);
+    mismatchedRef.config.pathItems[0].instanceId = 'core:other.md:1';
+    cases.push(['mismatched instance ref', mismatchedRef]);
+
+    const badOccurrence = structuredClone(clean);
+    badOccurrence.config.pathItems[0].instanceId = 'core:pg_interview.md:0';
+    cases.push(['non-positive occurrence', badOccurrence]);
+
+    const duplicateOccurrence = structuredClone(clean);
+    duplicateOccurrence.config.pathItems.push({
+      ...duplicateOccurrence.config.pathItems[0], order: 2,
+    });
+    cases.push(['duplicate occurrence', duplicateOccurrence]);
+
+    const weekZero = structuredClone(clean);
+    weekZero.config.pathItems[0].week = 0;
+    cases.push(['week zero', weekZero]);
+
+    const weekOverflow = structuredClone(clean);
+    weekOverflow.config.pathItems[0].week = maxWeek + 1;
+    cases.push(['week overflow', weekOverflow]);
+
+    const brokenOrder = structuredClone(clean);
+    brokenOrder.config.pathItems[0].order = 2;
+    cases.push(['non-contiguous order', brokenOrder]);
+
+    const invalidPriority = structuredClone(clean);
+    invalidPriority.config.pathItems[0].priority = 'critical';
+    cases.push(['invalid priority', invalidPriority]);
+
+    const invalidRationale = structuredClone(clean);
+    invalidRationale.config.pathItems[0].rationale = '<script>alert(1)</script>';
+    cases.push(['unsafe rationale', invalidRationale]);
+
+    for (const [label, hostile] of cases) {
+      const raw = JSON.stringify(hostile);
+      const storage = memoryStorage({ cw_curator_draft_v1: raw });
+      const adapter = fn('fdCuratorDraftStorage')(storage);
+      const restored = await adapter.load(currentIndex, currentContext, webcrypto.subtle);
+      assert.equal(restored.ok, false, label);
+      assert.equal(restored.draft, null, label);
+      assert.equal(storage.raw('cw_curator_draft_v1'), raw, `${label} raw changed`);
+      assert.equal(storage.calls.some((entry) => entry[0] === 'removeItem'), false, label);
+
+      storage.calls.length = 0;
+      assert.equal(adapter.save(hostile, currentIndex, currentContext), false, label);
+      assert.deepEqual(storage.calls, [], `${label} reached storage write`);
+
+      const before = structuredClone(hostile);
+      const reduced = fn('fdCuratorReduce')(
+        hostile,
+        { type: 'SET_CARD_FIELD', field: 'title', value: 'Must not apply' },
+        currentIndex,
+        currentContext,
+      );
+      assert.deepEqual(reduced, before, `${label} reducer result changed`);
+      assert.notStrictEqual(reduced, hostile, `${label} reducer returned mutable input`);
+      assert.deepEqual(hostile, before, `${label} reducer mutated input`);
+    }
+  });
+}
+
+test('parses instance occurrences from the exact ref prefix even when refs contain punctuation', async () => {
+  const specialRef = 'topic:section[1].md?view=core';
+  const special = { ref: specialRef, title: 'Special punctuation resource' };
+  const currentIndex = index();
+  currentIndex.byRef[specialRef] = special;
+  currentIndex.columns[0].items.push(special);
+  let draft = fn('fdCuratorNewDraft')(currentIndex, context());
+  draft = fn('fdCuratorReduce')(
+    draft, { type: 'PATH_ADD_INSTANCE', ref: specialRef, week: 2 }, currentIndex, context(),
+  );
+  assert.ok(draft.config.pathItems.some((item) =>
+    item.instanceId === `core:${specialRef}:1` && item.ref === specialRef));
+
+  const adapter = fn('fdCuratorDraftStorage')(memoryStorage());
+  assert.equal(adapter.save(draft, currentIndex, context()), true);
+
+  draft = fn('fdCuratorReduce')(
+    draft, { type: 'PATH_ADD_INSTANCE', ref: specialRef, week: 2 }, currentIndex, context(),
+  );
+  draft = fn('fdCuratorReduce')(
+    draft, { type: 'PATH_ADD_INSTANCE', ref: specialRef, week: 2 }, currentIndex, context(),
+  );
+  draft = fn('fdCuratorReduce')(
+    draft, { type: 'PATH_REMOVE_INSTANCE', instanceId: `core:${specialRef}:2` }, currentIndex, context(),
+  );
+  assert.deepEqual(
+    draft.config.pathItems.filter((item) => item.ref === specialRef).map((item) => item.instanceId),
+    [`core:${specialRef}:1`, `core:${specialRef}:3`],
+  );
+  assert.equal(adapter.save(draft, currentIndex, context()), true, 'positive occurrences may have gaps');
+
+  for (const invalidId of [
+    `core:${specialRef}:0`, `core:${specialRef}:-1`, `core:${specialRef}:1:extra`,
+    'core:topic:1',
+  ]) {
+    const hostile = structuredClone(draft);
+    hostile.config.pathItems.find((item) => item.ref === specialRef).instanceId = invalidId;
+    assert.equal(adapter.save(hostile, currentIndex, context()), false, invalidId);
+  }
+});
+
+test('reducer accepts only exact own-data actions and fails closed on hostile action or index inspection', () => {
+  const currentIndex = index();
+  const currentContext = context();
+  const draft = fn('fdCuratorNewDraft')(currentIndex, currentContext);
+  const before = structuredClone(draft);
+
+  const inherited = Object.create({
+    type: 'SET_CARD_FIELD', field: 'title', value: 'Inherited mutation',
+  });
+  const getter = {};
+  Object.defineProperty(getter, 'type', { enumerable: true, get() { throw new Error('getter ran'); } });
+  const target = { type: 'SET_CARD_FIELD', field: 'title', value: 'Revoked mutation' };
+  const revocable = Proxy.revocable(target, {});
+  revocable.revoke();
+  const extra = {
+    type: 'SET_CARD_FIELD', field: 'title', value: 'Extra mutation', extra: true,
+  };
+  const hostileActions = [inherited, getter, revocable.proxy, extra];
+
+  for (const action of hostileActions) {
+    const result = fn('fdCuratorReduce')(draft, action, currentIndex, currentContext);
+    assert.deepEqual(result, before);
+    assert.notStrictEqual(result, draft);
+    assert.deepEqual(draft, before);
+  }
+
+  const accepted = Object.create(null);
+  Object.defineProperties(accepted, {
+    type: { enumerable: true, value: 'SET_CARD_FIELD' },
+    field: { enumerable: true, value: 'title' },
+    value: { enumerable: true, value: 'Own data action' },
+  });
+  assert.equal(
+    fn('fdCuratorReduce')(draft, accepted, currentIndex, currentContext).config.card.title,
+    'Own data action',
+  );
+
+  const inheritedIndex = Object.create(currentIndex);
+  const getterIndex = { ...currentIndex };
+  Object.defineProperty(getterIndex, 'columns', {
+    enumerable: true, get() { throw new Error('index getter ran'); },
+  });
+  const revokedIndex = Proxy.revocable(currentIndex, {});
+  revokedIndex.revoke();
+  for (const hostileIndex of [inheritedIndex, getterIndex, revokedIndex.proxy]) {
+    const result = fn('fdCuratorReduce')(
+      draft,
+      { type: 'SET_CARD_FIELD', field: 'title', value: 'Must not apply' },
+      hostileIndex,
+      currentContext,
+    );
+    assert.deepEqual(result, before);
+    assert.notStrictEqual(result, draft);
+    assert.deepEqual(draft, before);
+  }
+});
+
 test('imports one valid backup as the base and rejects wrong-audience or invalid envelopes', async () => {
   const importEnvelope = fn('fdCuratorImportEnvelope');
   const validEnvelope = await envelopeFor('ms3', 3);

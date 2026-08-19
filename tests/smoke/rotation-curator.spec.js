@@ -379,3 +379,66 @@ test('slower imports cannot overwrite a newer import or an intervening edit', as
   });
   await expect(page.locator('#curatorGenerate')).toBeDisabled();
 });
+
+test('hostile stored schedules fail clean and repeated keyboard controls target one placement', async ({ page }, testInfo) => {
+  const expected = expectedSite(testInfo.project.name);
+  await page.goto(TOOL);
+  await page.locator('#curatorSaveDraft').click();
+  const hostileRaw = await page.evaluate(key => {
+    const draft = JSON.parse(localStorage.getItem(key));
+    draft.config.pathItems[0].ref = 'hostile-not-in-library.md';
+    draft.config.pathItems[0].instanceId = 'core:hostile-not-in-library.md:1';
+    const raw = JSON.stringify(draft);
+    localStorage.setItem(key, raw);
+    return raw;
+  }, DRAFT_KEY);
+  await page.reload();
+
+  expect(await page.evaluate(key => localStorage.getItem(key), DRAFT_KEY)).toBe(hostileRaw);
+  await expect(page.locator('[data-curator-ref="hostile-not-in-library.md"]')).toHaveCount(0);
+  await expect(page.locator('#curatorTitle')).toHaveValue('');
+  await page.locator('[data-curator-step="3"]').click();
+  await expect(page.locator('[data-curator-instance="core:hostile-not-in-library.md:1"]')).toHaveCount(0);
+
+  await page.locator('[data-curator-step="2"]').click();
+  const repeat = page.locator('[data-curator-path-add]').first();
+  const ref = await repeat.getAttribute('data-curator-path-add');
+  await repeat.click();
+  await page.locator('[data-curator-step="3"]').click();
+
+  const repeated = page.locator('[data-curator-instance]').filter({
+    has: page.locator(`[data-curator-path-remove^="core:${ref}:"]`),
+  });
+  await expect(repeated).toHaveCount(2);
+  const ids = await repeated.evaluateAll(nodes =>
+    nodes.map(node => node.getAttribute('data-curator-instance')));
+
+  for (const attribute of [
+    'data-curator-path-up', 'data-curator-path-down',
+    'data-curator-path-week', 'data-curator-path-remove',
+  ]) {
+    const names = await page.locator(`[${attribute}^="core:${ref}:"]`).evaluateAll(nodes =>
+      nodes.map(node => node.getAttribute('aria-label')));
+    expect(names).toHaveLength(2);
+    expect(new Set(names).size).toBe(2);
+    expect(names.every(name => /placement \d+/.test(name))).toBe(true);
+    expect(names.every(name => /position \d+ of \d+/.test(name))).toBe(true);
+  }
+
+  const removeTarget = page.locator(`[data-curator-path-remove="${ids[1]}"]`);
+  const moveTarget = page.locator(`[data-curator-path-up="${ids[1]}"]`);
+  const beforeMoveName = await moveTarget.getAttribute('aria-label');
+  await moveTarget.focus();
+  await expect(moveTarget).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(page.locator(`[data-curator-instance="${ids[1]}"]`)).toHaveCount(1);
+  expect(await page.locator(`[data-curator-path-up="${ids[1]}"]`).getAttribute('aria-label'))
+    .not.toBe(beforeMoveName);
+  await removeTarget.focus();
+  await expect(removeTarget).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(page.locator(`[data-curator-instance="${ids[1]}"]`)).toHaveCount(0);
+  await expect(page.locator(`[data-curator-instance="${ids[0]}"]`)).toHaveCount(1);
+  await expect(page.locator('[data-curator-week]')).toHaveCount(expected.weeks);
+  await expect(page.locator('#curatorGenerate')).toBeDisabled();
+});

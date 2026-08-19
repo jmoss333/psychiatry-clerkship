@@ -8,11 +8,17 @@ var FD_CURATOR_CARD_FIELDS=['title','locationName','locationCode','curatorName',
 var FD_CURATOR_AFFIRMATION_FIELDS=['publicSafe','officialLinks','previewsReviewed','forwardable'];
 
 function fdCuratorInitialState(index,siteContext){
-  var path=index&&index.path?index.path:{};
-  var context=siteContext||{};
+  var indexData=fdCuratorReadOwnDataFields(index,['path']);
+  var context=fdCuratorReadOwnDataFields(siteContext,['audience','coreRevision']);
+  var path=indexData?fdCuratorReadOwnDataFields(indexData.path,['id','weekCount']):null;
   return {
     step:1,
-    site:{audience:context.audience||'',pathId:path.id||'',weekCount:path.weekCount||0,coreRevision:context.coreRevision||''},
+    site:{
+      audience:context&&typeof context.audience==='string'?context.audience:'',
+      pathId:path&&typeof path.id==='string'?path.id:'',
+      weekCount:path&&typeof path.weekCount==='number'?path.weekCount:0,
+      coreRevision:context&&typeof context.coreRevision==='string'?context.coreRevision:''
+    },
     generateEnabled:false
   };
 }
@@ -30,32 +36,13 @@ function fdCuratorBlankOrientation(){
 }
 
 function fdCuratorWeekCount(index,siteContext){
-  var path=index&&index.path,weeks=index&&index.weeks,context=siteContext||{},i;
-  if(!path||typeof path.id!=='string'||!path.id||path.id!==context.pathId||
-     typeof path.weekCount!=='number'||!isFinite(path.weekCount)||Math.floor(path.weekCount)!==path.weekCount||
-     path.weekCount<1||!Array.isArray(weeks)||weeks.length!==path.weekCount) return 0;
-  for(i=0;i<weeks.length;i++) if(!weeks[i]||weeks[i].n!==i+1||!Array.isArray(weeks[i].items)) return 0;
-  return path.weekCount;
+  var inspected=fdCuratorIndexSnapshot(index,siteContext);
+  return inspected.ok?inspected.weekCount:0;
 }
 
 function fdCuratorLibraryGroups(index){
-  var columns=index&&index.columns,byRef=index&&index.byRef,groups=[],seen=Object.create(null);
-  var c,i,column,item,ref,canonical,items;
-  if(!Array.isArray(columns)||!byRef||typeof byRef!=='object') return groups;
-  for(c=0;c<columns.length;c++){
-    column=columns[c]; items=[];
-    if(!column||typeof column.name!=='string'||!Array.isArray(column.items)) continue;
-    for(i=0;i<column.items.length;i++){
-      item=column.items[i]; ref=item&&item.ref;
-      if(typeof ref!=='string'||!ref||ref==='rotation-curator.html'||ref.indexOf('local:')===0||seen[ref]) continue;
-      if(!Object.prototype.hasOwnProperty.call(byRef,ref)) continue;
-      canonical=byRef[ref];
-      if(!canonical||canonical.ref!==ref||typeof canonical.title!=='string') continue;
-      seen[ref]=true; items.push(canonical);
-    }
-    if(items.length) groups.push({name:column.name,accent:typeof column.accent==='string'?column.accent:'',items:items});
-  }
-  return groups;
+  var inspected=fdCuratorLibrarySnapshot(index);
+  return inspected.ok?inspected.groups:[];
 }
 
 function fdCuratorLibraryRefMap(index){
@@ -65,14 +52,14 @@ function fdCuratorLibraryRefMap(index){
 }
 
 function fdCuratorCanonicalPathItems(index,siteContext){
-  var weekCount=fdCuratorWeekCount(index,siteContext),allowed=fdCuratorLibraryRefMap(index);
-  var occurrences=Object.create(null),out=[],week,item,ref,i,j;
-  if(!weekCount) return out;
-  for(i=0;i<weekCount;i++){
-    week=index.weeks[i];
-    for(j=0;j<week.items.length;j++){
-      item=week.items[j]; ref=item&&item.ref;
-      if(typeof ref!=='string'||!allowed[ref]) return [];
+  var inspected=fdCuratorIndexSnapshot(index,siteContext);
+  var occurrences=Object.create(null),out=[],week,ref,i,j;
+  if(!inspected.ok) return out;
+  for(i=0;i<inspected.weekCount;i++){
+    week=inspected.weeks[i];
+    for(j=0;j<week.refs.length;j++){
+      ref=week.refs[j];
+      if(!inspected.allowed[ref]) return [];
       occurrences[ref]=(occurrences[ref]||0)+1;
       out.push({
         instanceId:'core:'+ref+':'+occurrences[ref],ref:ref,week:week.n,order:j+1,
@@ -84,11 +71,15 @@ function fdCuratorCanonicalPathItems(index,siteContext){
 }
 
 function fdCuratorNewDraft(index,siteContext){
-  var path=index&&index.path?index.path:{};
-  var context=siteContext||{};
+  var inspected=fdCuratorIndexSnapshot(index,siteContext);
+  var context=fdCuratorReadOwnDataFields(siteContext,['audience','pathId','coreRevision'])||{};
   return {
     schemaVersion:1,step:1,
-    site:{audience:context.audience||'',pathId:path.id||context.pathId||'',coreRevision:context.coreRevision||''},
+    site:{
+      audience:typeof context.audience==='string'?context.audience:'',
+      pathId:inspected.ok?inspected.pathId:(typeof context.pathId==='string'?context.pathId:''),
+      coreRevision:typeof context.coreRevision==='string'?context.coreRevision:''
+    },
     config:{card:fdCuratorBlankCard(),pathItems:fdCuratorCanonicalPathItems(index,siteContext),localOrientation:fdCuratorBlankOrientation(),changeNote:''},
     publication:{baseEnvelope:null,baseCanonicalConfig:'',lastGenerated:null},
     preview:{desktopReviewed:false,mobileReviewed:false},
@@ -115,8 +106,145 @@ function fdCuratorReadDataObject(value,fields){
   return out;
 }
 
+function fdCuratorReadOwnDataFields(value,fields){
+  var out={},i,key,descriptor;
+  if(!value||typeof value!=='object') return null;
+  try{ if(Array.isArray(value)) return null; }
+  catch(ignoreArray){ return null; }
+  for(i=0;i<fields.length;i++){
+    key=fields[i];
+    try{ descriptor=Object.getOwnPropertyDescriptor(value,key); }
+    catch(ignoreDescriptor){ return null; }
+    if(!descriptor||!Object.prototype.hasOwnProperty.call(descriptor,'value')) return null;
+    out[key]=descriptor.value;
+  }
+  return out;
+}
+
+function fdCuratorReadDataArray(value){
+  var keys,lengthDescriptor,length,out=[],seen=Object.create(null),i,key,descriptor;
+  try{
+    if(!Array.isArray(value)) return null;
+    lengthDescriptor=Object.getOwnPropertyDescriptor(value,'length');
+    if(!lengthDescriptor||!Object.prototype.hasOwnProperty.call(lengthDescriptor,'value')) return null;
+    length=lengthDescriptor.value;
+    if(typeof length!=='number'||!isFinite(length)||Math.floor(length)!==length||length<0) return null;
+    keys=Reflect.ownKeys(value);
+  }catch(ignoreArray){ return null; }
+  for(i=0;i<keys.length;i++){
+    key=keys[i];
+    if(key==='length') continue;
+    if(typeof key!=='string'||!/^(?:0|[1-9][0-9]*)$/.test(key)||Number(key)>=length) return null;
+    try{ descriptor=Object.getOwnPropertyDescriptor(value,key); }
+    catch(ignoreDescriptor){ return null; }
+    if(!descriptor||!Object.prototype.hasOwnProperty.call(descriptor,'value')) return null;
+    seen[key]=true; out[Number(key)]=descriptor.value;
+  }
+  for(i=0;i<length;i++) if(!seen[String(i)]) return null;
+  return out;
+}
+
+function fdCuratorLibrarySnapshot(index){
+  var top=fdCuratorReadOwnDataFields(index,['columns','byRef']),columns,groups=[],allowed=Object.create(null);
+  var seen=Object.create(null),c,i,columnData,columnItems,itemData,ref,descriptor,canonicalData,items;
+  if(!top||!top.byRef||typeof top.byRef!=='object') return {ok:false,groups:[],allowed:allowed};
+  try{ if(Array.isArray(top.byRef)) return {ok:false,groups:[],allowed:allowed}; }
+  catch(ignoreReferenceMap){ return {ok:false,groups:[],allowed:allowed}; }
+  columns=fdCuratorReadDataArray(top.columns);
+  if(!columns) return {ok:false,groups:[],allowed:allowed};
+  for(c=0;c<columns.length;c++){
+    columnData=fdCuratorReadOwnDataFields(columns[c],['name','accent','items']); items=[];
+    if(!columnData||typeof columnData.name!=='string'||typeof columnData.accent!=='string')
+      return {ok:false,groups:[],allowed:Object.create(null)};
+    columnItems=fdCuratorReadDataArray(columnData.items);
+    if(!columnItems) return {ok:false,groups:[],allowed:Object.create(null)};
+    for(i=0;i<columnItems.length;i++){
+      itemData=fdCuratorReadOwnDataFields(columnItems[i],['ref']);
+      if(!itemData||typeof itemData.ref!=='string') return {ok:false,groups:[],allowed:Object.create(null)};
+      ref=itemData.ref;
+      if(!ref||ref==='rotation-curator.html'||ref.indexOf('local:')===0||seen[ref]) continue;
+      try{ descriptor=Object.getOwnPropertyDescriptor(top.byRef,ref); }
+      catch(ignoreReference){ return {ok:false,groups:[],allowed:Object.create(null)}; }
+      if(!descriptor||!Object.prototype.hasOwnProperty.call(descriptor,'value'))
+        return {ok:false,groups:[],allowed:Object.create(null)};
+      canonicalData=fdCuratorReadOwnDataFields(descriptor.value,['ref','title']);
+      if(!canonicalData||canonicalData.ref!==ref||typeof canonicalData.title!=='string')
+        return {ok:false,groups:[],allowed:Object.create(null)};
+      seen[ref]=true; allowed[ref]=true;
+      items.push({ref:ref,title:canonicalData.title});
+    }
+    if(items.length) groups.push({name:columnData.name,accent:columnData.accent,items:items});
+  }
+  return {ok:true,groups:groups,allowed:allowed};
+}
+
+function fdCuratorIndexSnapshot(index,siteContext){
+  var top=fdCuratorReadOwnDataFields(index,['path','weeks']),path,context,library,weeks,rule,out=[],i,j,weekData,items,itemData,refs,titleDescriptor,title;
+  context=fdCuratorReadOwnDataFields(siteContext,['audience','pathId','coreRevision']);
+  path=top?fdCuratorReadOwnDataFields(top.path,['id','weekCount']):null;
+  library=fdCuratorLibrarySnapshot(index);
+  if(!top||!context||!path||!library.ok||typeof context.audience!=='string'||
+     typeof context.pathId!=='string'||typeof context.coreRevision!=='string'||
+     typeof path.id!=='string'||path.id!==context.pathId||
+     typeof path.weekCount!=='number'||!isFinite(path.weekCount)||Math.floor(path.weekCount)!==path.weekCount||path.weekCount<1)
+    return {ok:false};
+  try{ rule=FD_EDITION_RULES.paths[context.audience]; }
+  catch(ignoreRules){ rule=null; }
+  if(!rule||rule.id!==path.id||rule.weeks!==path.weekCount) return {ok:false};
+  weeks=fdCuratorReadDataArray(top.weeks);
+  if(!weeks||weeks.length!==path.weekCount) return {ok:false};
+  for(i=0;i<weeks.length;i++){
+    weekData=fdCuratorReadOwnDataFields(weeks[i],['n','items']);
+    if(!weekData||weekData.n!==i+1) return {ok:false};
+    try{ titleDescriptor=Object.getOwnPropertyDescriptor(weeks[i],'title'); }
+    catch(ignoreWeekTitle){ return {ok:false}; }
+    title='';
+    if(titleDescriptor){
+      if(!Object.prototype.hasOwnProperty.call(titleDescriptor,'value')||typeof titleDescriptor.value!=='string') return {ok:false};
+      title=titleDescriptor.value;
+    }
+    items=fdCuratorReadDataArray(weekData.items); refs=[];
+    if(!items) return {ok:false};
+    for(j=0;j<items.length;j++){
+      itemData=fdCuratorReadOwnDataFields(items[j],['ref']);
+      if(!itemData||typeof itemData.ref!=='string') return {ok:false};
+      refs.push(itemData.ref);
+    }
+    out.push({n:i+1,title:title,refs:refs});
+  }
+  return {
+    ok:true,audience:context.audience,pathId:path.id,weekCount:path.weekCount,weeks:out,
+    groups:library.groups,allowed:library.allowed,coreRevision:context.coreRevision
+  };
+}
+
+function fdCuratorActionShape(action){
+  var typeData=fdCuratorReadOwnDataFields(action,['type']),type,fields;
+  if(!typeData||typeof typeData.type!=='string') return null;
+  type=typeData.type;
+  if(type==='GO_TO_STEP') fields=['type','step'];
+  else if(type==='SET_CARD_FIELD') fields=['type','field','value'];
+  else if(type==='SET_CHANGE_NOTE') fields=['type','value'];
+  else if(type==='SET_PREVIEW_REVIEWED') fields=['type','viewport','value'];
+  else if(type==='SET_AFFIRMATION') fields=['type','name','value'];
+  else if(type==='PATH_TOGGLE'||type==='PATH_ADD_INSTANCE'){
+    fields=fdCuratorReadOwnDataFields(action,['week'])?['type','ref','week']:['type','ref'];
+  }else if(type==='PATH_REMOVE_INSTANCE'||type==='PATH_MOVE_UP'||type==='PATH_MOVE_DOWN') fields=['type','instanceId'];
+  else if(type==='PATH_SET_PRIORITY') fields=['type','instanceId','priority'];
+  else if(type==='PATH_SET_RATIONALE') fields=['type','instanceId','value'];
+  else if(type==='PATH_MOVE_WEEK') fields=['type','instanceId','week'];
+  else if(type==='GENERATION_SUCCEEDED') fields=['type','result'];
+  else fields=['type'];
+  return fdCuratorReadDataObject(action,fields);
+}
+
 function fdCuratorClone(value){
   return JSON.parse(fdEditionCanonicalJson(value));
+}
+
+function fdCuratorUnchangedResult(value,index,siteContext){
+  try{ return fdCuratorClone(value); }
+  catch(ignoreClone){ return fdCuratorNewDraft(index,siteContext); }
 }
 
 function fdCuratorFullConfig(draftConfig,site,editionNumber,revision){
@@ -128,11 +256,11 @@ function fdCuratorFullConfig(draftConfig,site,editionNumber,revision){
   };
 }
 
-function fdCuratorDraftShape(value,index,siteContext){
+function fdCuratorValidateDraft(value,index,siteContext){
   var top=fdCuratorReadDataObject(value,['schemaVersion','step','site','config','publication','preview','affirmations']);
-  var site,config,publication,preview,affirmations,normalized,lastGenerated=null,current=siteContext||{},path=index&&index.path?index.path:{};
+  var site,config,publication,preview,affirmations,normalized,lastGenerated=null,current=fdCuratorIndexSnapshot(index,siteContext);
   var affirmationIndex;
-  if(!top||top.schemaVersion!==1||typeof top.step!=='number'||!isFinite(top.step)||Math.floor(top.step)!==top.step||top.step<1||top.step>5) return {ok:false,draft:null};
+  if(!current.ok||!top||top.schemaVersion!==1||typeof top.step!=='number'||!isFinite(top.step)||Math.floor(top.step)!==top.step||top.step<1||top.step>5) return {ok:false,draft:null};
   site=fdCuratorReadDataObject(top.site,['audience','pathId','coreRevision']);
   config=fdCuratorReadDataObject(top.config,['card','pathItems','localOrientation','changeNote']);
   publication=fdCuratorReadDataObject(top.publication,['baseEnvelope','baseCanonicalConfig','lastGenerated']);
@@ -140,7 +268,7 @@ function fdCuratorDraftShape(value,index,siteContext){
   affirmations=fdCuratorReadDataObject(top.affirmations,FD_CURATOR_AFFIRMATION_FIELDS);
   if(!site||!config||!publication||!preview||!affirmations) return {ok:false,draft:null};
   if(typeof site.audience!=='string'||typeof site.pathId!=='string'||typeof site.coreRevision!=='string'||
-     site.audience!==current.audience||site.pathId!==(path.id||current.pathId)||
+     site.audience!==current.audience||site.pathId!==current.pathId||
      !/^[0-9a-f]{40}$/.test(site.coreRevision)||!current.coreRevision||!/^[0-9a-f]{40}$/.test(current.coreRevision)) return {ok:false,draft:null};
   if(typeof publication.baseCanonicalConfig!=='string'||
      (publication.baseEnvelope!==null&&(!publication.baseEnvelope||typeof publication.baseEnvelope!=='object'))) return {ok:false,draft:null};
@@ -148,7 +276,7 @@ function fdCuratorDraftShape(value,index,siteContext){
   for(affirmationIndex=0;affirmationIndex<FD_CURATOR_AFFIRMATION_FIELDS.length;affirmationIndex++)
     if(typeof affirmations[FD_CURATOR_AFFIRMATION_FIELDS[affirmationIndex]]!=='boolean') return {ok:false,draft:null};
   normalized=fdEditionNormalizeConfig(fdCuratorFullConfig(config,site,1,site.coreRevision));
-  if(!normalized.ok) return {ok:false,draft:null};
+  if(!normalized.ok||!fdCuratorPathStateValid(normalized.value.pathItems,current)) return {ok:false,draft:null};
   if(publication.lastGenerated!==null){
     lastGenerated=fdCuratorReadDataObject(publication.lastGenerated,['digest','fingerprint']);
     if(!lastGenerated||typeof lastGenerated.digest!=='string'||typeof lastGenerated.fingerprint!=='string') return {ok:false,draft:null};
@@ -156,7 +284,7 @@ function fdCuratorDraftShape(value,index,siteContext){
   try{
     return {ok:true,draft:{
       schemaVersion:1,step:top.step,
-      site:{audience:current.audience,pathId:path.id||current.pathId,coreRevision:current.coreRevision},
+      site:{audience:current.audience,pathId:current.pathId,coreRevision:current.coreRevision},
       config:{card:normalized.value.card,pathItems:normalized.value.pathItems,localOrientation:normalized.value.localOrientation,changeNote:normalized.value.changeNote},
       publication:{
         baseEnvelope:publication.baseEnvelope===null?null:fdCuratorClone(publication.baseEnvelope),
@@ -205,11 +333,11 @@ function fdCuratorFindPathItem(items,instanceId){
   return -1;
 }
 
-function fdCuratorDefaultWeek(draft,index,ref){
+function fdCuratorDefaultWeek(draft,inspected,ref){
   var items=draft.config.pathItems,i,j;
   for(i=0;i<items.length;i++) if(items[i].ref===ref) return items[i].week;
-  for(i=0;i<index.weeks.length;i++) for(j=0;j<index.weeks[i].items.length;j++)
-    if(index.weeks[i].items[j].ref===ref) return index.weeks[i].n;
+  for(i=0;i<inspected.weeks.length;i++) for(j=0;j<inspected.weeks[i].refs.length;j++)
+    if(inspected.weeks[i].refs[j]===ref) return inspected.weeks[i].n;
   return 1;
 }
 
@@ -224,6 +352,15 @@ function fdCuratorNextInstanceId(items,ref){
   return prefix+occurrence;
 }
 
+function fdCuratorInstanceOccurrence(item){
+  var prefix,suffix;
+  if(!item||typeof item.ref!=='string'||typeof item.instanceId!=='string') return '';
+  prefix='core:'+item.ref+':';
+  if(item.instanceId.indexOf(prefix)!==0) return '';
+  suffix=item.instanceId.slice(prefix.length);
+  return /^[1-9][0-9]*$/.test(suffix)?suffix:'';
+}
+
 function fdCuratorRationaleValid(value){
   var errors=[],warnings=[];
   if(typeof value!=='string'||fdEditionTextLength(value)>FD_EDITION_RULES.maxRationale) return false;
@@ -233,20 +370,27 @@ function fdCuratorRationaleValid(value){
   return errors.length===0;
 }
 
-function fdCuratorPathStateValid(items,allowed,weekCount){
-  var seenIds=Object.create(null),seenOrders=Object.create(null),counts=Object.create(null);
-  var i,item,weekKey,orderKey;
-  if(!Array.isArray(items)||!weekCount) return false;
+function fdCuratorPathStateValid(items,inspected){
+  var seenIds=Object.create(null),seenOrders=Object.create(null),seenOccurrences=Object.create(null),counts=Object.create(null);
+  var i,item,weekKey,orderKey,prefix,suffix,occurrenceKey;
+  if(!Array.isArray(items)||!inspected||!inspected.ok||!inspected.weekCount) return false;
   for(i=0;i<items.length;i++){
     item=items[i];
     if(!item||typeof item.instanceId!=='string'||!item.instanceId||seenIds[item.instanceId]||
-       typeof item.ref!=='string'||!allowed[item.ref]||
-       typeof item.week!=='number'||Math.floor(item.week)!==item.week||item.week<1||item.week>weekCount||
+       typeof item.ref!=='string'||!inspected.allowed[item.ref]||
+       typeof item.week!=='number'||Math.floor(item.week)!==item.week||item.week<1||item.week>inspected.weekCount||
        typeof item.order!=='number'||Math.floor(item.order)!==item.order||item.order<1||
        FD_EDITION_RULES.priorities.indexOf(item.priority)===-1||!fdCuratorRationaleValid(item.rationale)) return false;
+    prefix='core:'+item.ref+':';
+    if(item.instanceId.indexOf(prefix)!==0) return false;
+    suffix=item.instanceId.slice(prefix.length);
+    if(!/^[1-9][0-9]*$/.test(suffix)) return false;
+    occurrenceKey=item.ref+'\u0000'+suffix;
+    if(seenOccurrences[occurrenceKey]) return false;
     weekKey=String(item.week); orderKey=weekKey+':'+String(item.order);
     if(seenOrders[orderKey]) return false;
-    seenIds[item.instanceId]=true; seenOrders[orderKey]=true; counts[weekKey]=(counts[weekKey]||0)+1;
+    seenIds[item.instanceId]=true; seenOccurrences[occurrenceKey]=true;
+    seenOrders[orderKey]=true; counts[weekKey]=(counts[weekKey]||0)+1;
   }
   for(weekKey in counts) if(Object.prototype.hasOwnProperty.call(counts,weekKey))
     for(i=1;i<=counts[weekKey];i++) if(!seenOrders[weekKey+':'+String(i)]) return false;
@@ -289,7 +433,7 @@ function fdCuratorNextEditionNumber(draft,candidateWithoutEditionNumber){
 }
 
 function fdCuratorBuildConfig(draft,index,siteContext){
-  var shaped=fdCuratorDraftShape(draft,index,siteContext),base,revision,candidate,number;
+  var shaped=fdCuratorValidateDraft(draft,index,siteContext),base,revision,candidate,number;
   if(!shaped.ok) return {ok:false,value:null,errors:[{code:'CURATOR_DRAFT',path:'/draft',message:'The draft structure is invalid.',blocking:true}],warnings:[],canonicalBytes:0};
   draft=shaped.draft;
   base=draft.publication.baseEnvelope;
@@ -302,20 +446,24 @@ function fdCuratorBuildConfig(draft,index,siteContext){
 }
 
 function fdCuratorReduce(draft,action,index,siteContext){
-  var shaped,current,next,snapshot,candidateCanonical,expected,weekCount,allowed,items,itemIndex,item;
+  var shaped,current,next,snapshot,candidateCanonical,expected,weekCount,allowed,items,itemIndex,item,inspected,parsedAction,schema;
   var targetWeek,weekItems,position,otherIndex,i,changed=false;
-  if(!draft||draft.schemaVersion!==1){
-    current=draft||{step:1,site:{},generateEnabled:false};
+  schema=fdCuratorReadOwnDataFields(draft,['schemaVersion']);
+  parsedAction=fdCuratorActionShape(action);
+  if(!schema||schema.schemaVersion!==1){
+    current=fdCuratorReadDataObject(draft,['step','site','generateEnabled'])||{step:1,site:{},generateEnabled:false};
     return {
-      step:action&&action.type==='GO_TO_STEP'&&typeof action.step==='number'&&isFinite(action.step)&&
-        Math.floor(action.step)===action.step&&action.step>=1&&action.step<=5?action.step:current.step,
+      step:parsedAction&&parsedAction.type==='GO_TO_STEP'&&typeof parsedAction.step==='number'&&isFinite(parsedAction.step)&&
+        Math.floor(parsedAction.step)===parsedAction.step&&parsedAction.step>=1&&parsedAction.step<=5?parsedAction.step:current.step,
       site:current.site,generateEnabled:false
     };
   }
-  shaped=fdCuratorDraftShape(draft,index,siteContext);
-  current=shaped.ok?shaped.draft:fdCuratorNewDraft(index,siteContext);
+  shaped=fdCuratorValidateDraft(draft,index,siteContext);
+  if(!shaped.ok) return fdCuratorUnchangedResult(draft,index,siteContext);
+  current=shaped.draft;
   next=fdCuratorClone(current);
-  if(!action||typeof action.type!=='string') return next;
+  if(!parsedAction) return next;
+  action=parsedAction;
   if(action.type==='GO_TO_STEP'&&typeof action.step==='number'&&isFinite(action.step)&&
      Math.floor(action.step)===action.step&&action.step>=1&&action.step<=5){ next.step=action.step; return next; }
   if(action.type==='SET_CARD_FIELD'&&typeof action.field==='string'&&
@@ -331,15 +479,16 @@ function fdCuratorReduce(draft,action,index,siteContext){
   if(action.type==='SET_AFFIRMATION'&&FD_CURATOR_AFFIRMATION_FIELDS.indexOf(action.name)!==-1&&typeof action.value==='boolean'){
     next.affirmations[action.name]=action.value; return next;
   }
-  weekCount=fdCuratorWeekCount(index,siteContext);
-  allowed=fdCuratorLibraryRefMap(index);
+  inspected=fdCuratorIndexSnapshot(index,siteContext);
+  if(!inspected.ok) return next;
+  weekCount=inspected.weekCount;
+  allowed=inspected.allowed;
   items=next.config.pathItems;
-  if(action.type.indexOf('PATH_')===0&&!fdCuratorPathStateValid(items,allowed,weekCount)) return next;
   if(action.type==='PATH_TOGGLE'){
     if(typeof action.ref!=='string'||!allowed[action.ref]) return next;
     for(i=items.length-1;i>=0;i--) if(items[i].ref===action.ref){ items.splice(i,1); changed=true; }
     if(!changed){
-      targetWeek=action.week===undefined?fdCuratorDefaultWeek(next,index,action.ref):action.week;
+      targetWeek=action.week===undefined?fdCuratorDefaultWeek(next,inspected,action.ref):action.week;
       if(typeof targetWeek!=='number'||Math.floor(targetWeek)!==targetWeek||targetWeek<1||targetWeek>weekCount) return next;
       weekItems=items.filter(function(candidate){return candidate.week===targetWeek;});
       items.push({instanceId:fdCuratorNextInstanceId(items,action.ref),ref:action.ref,week:targetWeek,
@@ -349,7 +498,7 @@ function fdCuratorReduce(draft,action,index,siteContext){
   }
   if(action.type==='PATH_ADD_INSTANCE'){
     if(typeof action.ref!=='string'||!allowed[action.ref]) return next;
-    targetWeek=action.week===undefined?fdCuratorDefaultWeek(next,index,action.ref):action.week;
+    targetWeek=action.week===undefined?fdCuratorDefaultWeek(next,inspected,action.ref):action.week;
     if(typeof targetWeek!=='number'||Math.floor(targetWeek)!==targetWeek||targetWeek<1||targetWeek>weekCount) return next;
     weekItems=items.filter(function(candidate){return candidate.week===targetWeek;});
     items.push({instanceId:fdCuratorNextInstanceId(items,action.ref),ref:action.ref,week:targetWeek,
@@ -416,7 +565,7 @@ function fdCuratorStepError(fieldId,message){
 }
 
 function fdCuratorValidateStep(draft,step,index,siteContext){
-  var shaped=fdCuratorDraftShape(draft,index,siteContext),errors=[],card,labels,i,key,value,fieldId;
+  var shaped=fdCuratorValidateDraft(draft,index,siteContext),errors=[],card,labels,i,key,value,fieldId;
   if(!shaped.ok) return {ok:false,errors:[fdCuratorStepError('curatorEditorTitle','The draft structure is invalid.')]};
   if(step!==1) return {ok:true,errors:[]};
   card=shaped.draft.config.card;
@@ -449,7 +598,7 @@ function fdCuratorImportEnvelope(text,index,siteContext,subtle){
   try{ envelope=JSON.parse(text); }
   catch(ignoreParse){ return Promise.resolve({ok:false,code:'CURATOR_IMPORT_FORMAT',draft:null}); }
   return fdEditionValidateEnvelope(envelope,index,siteContext,subtle).then(function(result){
-    var snapshot,draft;
+    var snapshot,draft,validated;
     if(!result||result.ok!==true) return {ok:false,code:'CURATOR_IMPORT_INVALID',draft:null,errors:result&&result.errors?result.errors:[]};
     snapshot=fdCuratorValidatedSnapshot(result);
     if(!snapshot) return {ok:false,code:'CURATOR_IMPORT_INVALID',draft:null};
@@ -459,7 +608,9 @@ function fdCuratorImportEnvelope(text,index,siteContext,subtle){
       localOrientation:fdCuratorClone(snapshot.config.localOrientation),changeNote:snapshot.config.changeNote
     };
     draft.publication={baseEnvelope:fdCuratorClone(snapshot.envelope),baseCanonicalConfig:fdCuratorCanonicalWithoutEdition(snapshot.config),lastGenerated:null};
-    return {ok:true,code:'CURATOR_IMPORT_OK',draft:draft,fingerprint:snapshot.fingerprint};
+    validated=fdCuratorValidateDraft(draft,index,siteContext);
+    if(!validated.ok) return {ok:false,code:'CURATOR_IMPORT_INVALID',draft:null};
+    return {ok:true,code:'CURATOR_IMPORT_OK',draft:validated.draft,fingerprint:snapshot.fingerprint};
   },function(){ return {ok:false,code:'CURATOR_IMPORT_INVALID',draft:null}; });
 }
 
@@ -489,7 +640,7 @@ function fdCuratorDraftStorage(storage){
   return {
     key:FD_CURATOR_DRAFT_KEY,
     save:function(draft,index,siteContext){
-      var shaped=fdCuratorDraftShape(draft,index,siteContext);
+      var shaped=fdCuratorValidateDraft(draft,index,siteContext);
       if(!shaped.ok||!storage||typeof storage.setItem!=='function') return false;
       try{ storage.setItem(FD_CURATOR_DRAFT_KEY,fdEditionCanonicalJson(shaped.draft)); return true; }
       catch(ignoreSave){ return false; }
@@ -502,7 +653,7 @@ function fdCuratorDraftStorage(storage){
       if(raw===null) return Promise.resolve({ok:true,code:'CURATOR_DRAFT_EMPTY',draft:null});
       try{ parsed=JSON.parse(raw); }
       catch(ignoreParse){ return Promise.resolve({ok:false,code:'CURATOR_DRAFT_INVALID',draft:null}); }
-      shaped=fdCuratorDraftShape(parsed,index,siteContext);
+      shaped=fdCuratorValidateDraft(parsed,index,siteContext);
       if(!shaped.ok) return Promise.resolve({ok:false,code:'CURATOR_DRAFT_INVALID',draft:null});
       if(shaped.draft.publication.baseEnvelope===null){
         if(shaped.draft.publication.baseCanonicalConfig!==''||shaped.draft.publication.lastGenerated!==null)
@@ -537,7 +688,7 @@ function fdCuratorPriorityOptions(selected){
 
 function fdCuratorCurriculumMarkup(draft,index,query){
   var groups=fdCuratorLibraryGroups(index),needle=typeof query==='string'?query.trim().toLowerCase():'',out='';
-  var i,j,k,group,item,instances,title,searchText,groupId,placementId,rationaleId,instance;
+  var i,j,k,group,item,instances,title,searchText,groupId,placementId,rationaleId,instance,occurrence,controlLabel;
   for(i=0;i<groups.length;i++){
     group=groups[i]; groupId='curatorGroup'+i; var rows='';
     for(j=0;j<group.items.length;j++){
@@ -554,12 +705,14 @@ function fdCuratorCurriculumMarkup(draft,index,query){
       if(instances.length){
         rows+='<ul class="placement-list" aria-label="Placements for '+fdEsc(title)+'">';
         for(k=0;k<instances.length;k++){
-          instance=instances[k]; placementId='curatorPlacement'+i+'_'+j+'_'+k; rationaleId=placementId+'Rationale';
-          rows+='<li><p><strong>Placement '+(k+1)+'</strong> · Week '+instance.week+'</p>'+
+          instance=instances[k]; occurrence=fdCuratorInstanceOccurrence(instance);
+          placementId='curatorPlacement'+i+'_'+j+'_'+k; rationaleId=placementId+'Rationale';
+          controlLabel=title+' placement '+occurrence+', Week '+instance.week;
+          rows+='<li><p><strong>Placement '+occurrence+'</strong> · Week '+instance.week+'</p>'+
             '<div class="placement-fields"><div><label for="'+placementId+'Priority">Local priority</label>'+
-            '<select id="'+placementId+'Priority" data-curator-path-priority="'+fdEsc(instance.instanceId)+'">'+fdCuratorPriorityOptions(instance.priority)+'</select></div>'+
+            '<select id="'+placementId+'Priority" data-curator-path-priority="'+fdEsc(instance.instanceId)+'" aria-label="Local priority for '+fdEsc(controlLabel)+'">'+fdCuratorPriorityOptions(instance.priority)+'</select></div>'+
             '<div class="rationale-field"><label for="'+rationaleId+'">Why I selected this</label>'+
-            '<textarea id="'+rationaleId+'" maxlength="280" rows="2" data-curator-path-rationale="'+fdEsc(instance.instanceId)+'" aria-describedby="'+rationaleId+'Count">'+fdEsc(instance.rationale)+'</textarea>'+
+            '<textarea id="'+rationaleId+'" maxlength="280" rows="2" data-curator-path-rationale="'+fdEsc(instance.instanceId)+'" aria-label="Why I selected '+fdEsc(controlLabel)+'" aria-describedby="'+rationaleId+'Count">'+fdEsc(instance.rationale)+'</textarea>'+
             '<p id="'+rationaleId+'Count" class="character-count" data-curator-rationale-count="'+fdEsc(instance.instanceId)+'">'+
             fdEditionTextLength(instance.rationale)+' of 280 characters</p></div></div></li>';
         }
@@ -573,25 +726,31 @@ function fdCuratorCurriculumMarkup(draft,index,query){
 }
 
 function fdCuratorScheduleMarkup(draft,index){
-  var weekCount=index&&index.path?index.path.weekCount:0,out='',week,items,i,j,item,core,title,id,options;
+  var inspected=fdCuratorIndexSnapshot(index,draft&&draft.site),weekCount=inspected.ok?inspected.weekCount:0;
+  var out='',week,items,i,j,k,item,title,id,options,occurrence,placementLabel,titleByRef=Object.create(null);
+  if(!inspected.ok||!draft||!draft.config||!Array.isArray(draft.config.pathItems)) return out;
+  for(i=0;i<inspected.groups.length;i++) for(j=0;j<inspected.groups[i].items.length;j++)
+    titleByRef[inspected.groups[i].items[j].ref]=inspected.groups[i].items[j].title;
   for(i=1;i<=weekCount;i++){
-    week=index.weeks[i-1]; items=[];
+    week=inspected.weeks[i-1]; items=[];
     for(j=0;j<draft.config.pathItems.length;j++) if(draft.config.pathItems[j].week===i) items.push(draft.config.pathItems[j]);
     items.sort(function(a,b){return a.order-b.order;});
     out+='<section class="curator-week" data-curator-week="'+i+'" aria-labelledby="curatorWeek'+i+'Title">'+
-      '<div class="curator-week-heading"><h3 id="curatorWeek'+i+'Title">Week '+i+(week&&week.title?' · '+fdEsc(week.title):'')+'</h3><span>'+items.length+' item'+(items.length===1?'':'s')+'</span></div>'+
+      '<div class="curator-week-heading"><h3 id="curatorWeek'+i+'Title">Week '+i+(week.title?' · '+fdEsc(week.title):'')+'</h3><span>'+items.length+' item'+(items.length===1?'':'s')+'</span></div>'+
       '<ol class="curator-week-list">';
     if(!items.length) out+='<li class="empty-state">No resources scheduled for Week '+i+'.</li>';
     for(j=0;j<items.length;j++){
-      item=items[j]; core=index.byRef[item.ref]||{}; title=core.title||item.ref; id='curatorSchedule'+i+'_'+j; options='';
-      for(var w=1;w<=weekCount;w++) options+='<option value="'+w+'"'+(w===i?' selected':'')+'>Week '+w+'</option>';
+      item=items[j]; title=titleByRef[item.ref]||item.ref; id='curatorSchedule'+i+'_'+j; options='';
+      occurrence=fdCuratorInstanceOccurrence(item);
+      placementLabel=title+' placement '+occurrence+', position '+(j+1)+' of '+items.length+' in Week '+i;
+      for(k=1;k<=weekCount;k++) options+='<option value="'+k+'"'+(k===i?' selected':'')+'>Week '+k+'</option>';
       out+='<li class="schedule-item" data-curator-instance="'+fdEsc(item.instanceId)+'"><div><strong>'+fdEsc(title)+'</strong>'+
-        '<span class="schedule-meta">'+fdEsc(item.priority)+' · placement '+item.order+'</span></div><div class="schedule-actions">'+
-        '<button type="button" class="secondary-action" data-curator-path-up="'+fdEsc(item.instanceId)+'" aria-label="Move '+fdEsc(title)+' up in Week '+i+'"'+(j===0?' disabled':'')+'>Move up</button>'+
-        '<button type="button" class="secondary-action" data-curator-path-down="'+fdEsc(item.instanceId)+'" aria-label="Move '+fdEsc(title)+' down in Week '+i+'"'+(j===items.length-1?' disabled':'')+'>Move down</button>'+
-        '<label class="visually-hidden" for="'+id+'Week">Move '+fdEsc(title)+' to week</label>'+
-        '<select id="'+id+'Week" data-curator-path-week="'+fdEsc(item.instanceId)+'" aria-label="Move '+fdEsc(title)+' to week">'+options+'</select>'+
-        '<button type="button" class="secondary-action remove-action" data-curator-path-remove="'+fdEsc(item.instanceId)+'" aria-label="Remove '+fdEsc(title)+' placement from the curated Path">Remove</button>'+
+        '<span class="schedule-meta">'+fdEsc(item.priority)+' · placement '+occurrence+' · position '+(j+1)+' of '+items.length+'</span></div><div class="schedule-actions">'+
+        '<button type="button" class="secondary-action" data-curator-path-up="'+fdEsc(item.instanceId)+'" aria-label="Move '+fdEsc(placementLabel)+' up"'+(j===0?' disabled':'')+'>Move up</button>'+
+        '<button type="button" class="secondary-action" data-curator-path-down="'+fdEsc(item.instanceId)+'" aria-label="Move '+fdEsc(placementLabel)+' down"'+(j===items.length-1?' disabled':'')+'>Move down</button>'+
+        '<label class="visually-hidden" for="'+id+'Week">Move '+fdEsc(placementLabel)+' to another week</label>'+
+        '<select id="'+id+'Week" data-curator-path-week="'+fdEsc(item.instanceId)+'" aria-label="Move '+fdEsc(placementLabel)+' to another week">'+options+'</select>'+
+        '<button type="button" class="secondary-action remove-action" data-curator-path-remove="'+fdEsc(item.instanceId)+'" aria-label="Remove '+fdEsc(placementLabel)+' from the curated Path">Remove</button>'+
         '</div></li>';
     }
     out+='</ol></section>';
