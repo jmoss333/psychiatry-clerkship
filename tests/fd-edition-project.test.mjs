@@ -102,7 +102,7 @@ function validatedEdition(audience) {
     digest: `sha256-${'A'.repeat(43)}`
   };
   return {
-    ok: true, envelope, config, fingerprint: audience === 'ms3' ? 'EX1-MS3-ABC123' : 'EX1-RES-ABC123',
+    ok: true, envelope, config, fingerprint: audience === 'ms3' ? 'EX1-MS3-000000' : 'EX1-RES-000000',
     errors: [], warnings: []
   };
 }
@@ -332,4 +332,124 @@ test('rejects hostile nested edition data without invoking accessors or acceptin
     enumerable: true, value: { attested: true }
   });
   assertStructuredFailure(F.fdProjectEdition(dangerousCanonical, validatedEdition('ms3')));
+});
+
+test('recursively rejects malformed protected graphs on every preserved surface without invoking getters', () => {
+  let reads = 0;
+  const cases = [
+    ['unselected byRef accessor', () => {
+      const canonical = canonicalIndex('ms3');
+      Object.defineProperty(canonical.byRef['omitted.md'], 'clinicalMetadata', {
+        enumerable: true,
+        get() { reads += 1; return 'must not be read'; }
+      });
+      return canonical;
+    }],
+    ['unselected byRef cycle', () => {
+      const canonical = canonicalIndex('ms3');
+      canonical.byRef['omitted.md'].clinicalMetadata = canonical.byRef['omitted.md'];
+      return canonical;
+    }],
+    ['path nested named array', () => {
+      const canonical = canonicalIndex('ms3');
+      canonical.path.aliases = ['ms3-six-week'];
+      canonical.path.aliases.named = 'not array data';
+      return canonical;
+    }],
+    ['columns nested symbol', () => {
+      const canonical = canonicalIndex('ms3');
+      canonical.columns[0][Symbol('hidden')] = 'not string-keyed data';
+      return canonical;
+    }],
+    ['columns named array field', () => {
+      const canonical = canonicalIndex('ms3');
+      canonical.columns.named = 'not array data';
+      return canonical;
+    }],
+    ['columns hidden array element', () => {
+      const canonical = canonicalIndex('ms3');
+      Object.defineProperty(canonical.columns, '0', {
+        enumerable: false, configurable: true, writable: true, value: canonical.columns[0]
+      });
+      return canonical;
+    }],
+    ['kit sparse array', () => {
+      const canonical = canonicalIndex('ms3');
+      delete canonical.kit[0];
+      return canonical;
+    }],
+    ['kit dangerous key', () => {
+      const canonical = canonicalIndex('ms3');
+      Object.defineProperty(canonical.kit[0], '__proto__', {
+        enumerable: true, value: { attested: true }
+      });
+      return canonical;
+    }]
+  ];
+
+  for (const [label, makeCanonical] of cases) {
+    const result = F.fdProjectEdition(makeCanonical(), validatedEdition('ms3'));
+    assertStructuredFailure(result);
+    assert.equal(Object.hasOwn(result, 'index'), false, label);
+  }
+  assert.equal(reads, 0);
+});
+
+test('rejects exotic selected clinical metadata instead of silently converting it', () => {
+  const exoticValues = [
+    ['Date', new Date('2026-08-19T00:00:00Z')],
+    ['Map', new Map([['status', 'reviewed']])],
+    ['Set', new Set(['reviewed'])],
+    ['typed array', new Uint8Array([1, 2, 3])],
+    ['custom prototype', Object.create({ inherited: 'not plain data' })]
+  ];
+  for (const [label, exotic] of exoticValues) {
+    const canonical = canonicalIndex('ms3');
+    canonical.byRef['assessment.md'].clinicalMetadata = exotic;
+    const result = F.fdProjectEdition(canonical, validatedEdition('ms3'));
+    assert.equal(result.ok, false, label);
+    assertStructuredFailure(result);
+  }
+});
+
+test('preserves valid plain nested clinical metadata byte-equivalently on independent item clones', () => {
+  const canonical = canonicalIndex('ms3');
+  canonical.byRef['assessment.md'].clinicalMetadata = {
+    review: { state: 'reviewed', revision: 'revision-a' },
+    categories: ['safety', 'assessment'], score: 4, active: true, nullable: null
+  };
+  const before = JSON.stringify(canonical.byRef['assessment.md'].clinicalMetadata);
+
+  const result = F.fdProjectEdition(canonical, validatedEdition('ms3'));
+
+  assert.equal(result.ok, true, JSON.stringify(result.errors));
+  const first = result.index.weeks[0].items[0].clinicalMetadata;
+  const repeated = result.index.weeks[5].items[0].clinicalMetadata;
+  assert.equal(JSON.stringify(first), before);
+  assert.equal(JSON.stringify(repeated), before);
+  assert.notStrictEqual(first, canonical.byRef['assessment.md'].clinicalMetadata);
+  assert.notStrictEqual(repeated, canonical.byRef['assessment.md'].clinicalMetadata);
+  assert.notStrictEqual(first, repeated);
+  assert.equal(JSON.stringify(canonical.byRef['assessment.md'].clinicalMetadata), before);
+});
+
+test('derives and exactly matches the display fingerprint from config and digest', () => {
+  const base = validatedEdition('ms3');
+  assert.equal(F.fdProjectEdition(canonicalIndex('ms3'), base).ok, true);
+
+  const cases = [
+    ['token', (edition) => { edition.fingerprint = 'EX1-MS3-000001'; }],
+    ['location', (edition) => { edition.config.card.locationCode = 'EX2'; }],
+    ['digest', (edition) => {
+      edition.envelope.digest = 'sha256-AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE';
+    }],
+    ['audience', (edition) => { edition.fingerprint = 'EX1-RES-000000'; }]
+  ];
+  for (const [label, mutate] of cases) {
+    const edition = validatedEdition('ms3');
+    mutate(edition);
+    const result = F.fdProjectEdition(canonicalIndex('ms3'), edition);
+    assertStructuredFailure(result);
+    assert.equal(Object.hasOwn(result, 'index'), false, label);
+  }
 });

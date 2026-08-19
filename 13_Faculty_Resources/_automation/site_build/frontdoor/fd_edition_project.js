@@ -8,10 +8,13 @@ function fdEditionProjectFailure(path,message){
 }
 
 function fdEditionProjectObject(value){
-  var isArray=false;
+  var isArray=false,prototype;
   if(value===null||typeof value!=='object') return false;
-  try{ isArray=Array.isArray(value); }catch(ignoreArray){ return false; }
-  return !isArray;
+  try{
+    isArray=Array.isArray(value);
+    prototype=Object.getPrototypeOf(value);
+  }catch(ignoreObjectShape){ return false; }
+  return !isArray&&(prototype===Object.prototype||prototype===null);
 }
 
 function fdEditionProjectData(value,key){
@@ -19,7 +22,8 @@ function fdEditionProjectData(value,key){
   if(!fdEditionProjectObject(value)) return {ok:false,value:null};
   try{ descriptor=Object.getOwnPropertyDescriptor(value,key); }
   catch(ignoreDescriptor){ descriptor=null; }
-  if(!descriptor||!Object.prototype.hasOwnProperty.call(descriptor,'value')) return {ok:false,value:null};
+  if(!descriptor||!descriptor.enumerable||!Object.prototype.hasOwnProperty.call(descriptor,'value'))
+    return {ok:false,value:null};
   return {ok:true,value:descriptor.value};
 }
 
@@ -27,7 +31,8 @@ function fdEditionProjectArrayEntry(value,index){
   var descriptor;
   try{ descriptor=Object.getOwnPropertyDescriptor(value,String(index)); }
   catch(ignoreDescriptor){ descriptor=null; }
-  if(!descriptor||!Object.prototype.hasOwnProperty.call(descriptor,'value')) return {ok:false,value:null};
+  if(!descriptor||!descriptor.enumerable||!Object.prototype.hasOwnProperty.call(descriptor,'value'))
+    return {ok:false,value:null};
   return {ok:true,value:descriptor.value};
 }
 
@@ -62,6 +67,7 @@ function fdEditionProjectClone(value,seen,depth){
     }
     seen.pop(); return {ok:true,value:out};
   }
+  if(!fdEditionProjectObject(value)){ seen.pop(); return {ok:false,value:null}; }
   try{ keys=Reflect.ownKeys(value); }
   catch(ignoreKeys){ seen.pop(); return {ok:false,value:null}; }
   out={};
@@ -98,12 +104,49 @@ function fdEditionProjectHasProtectedLocalFields(localOrientation){
   return false;
 }
 
+function fdEditionProjectDigestBytes(digest){
+  var text,padded,binary,encoded,bytes=[],i;
+  if(typeof digest!=='string'||!/^sha256-[A-Za-z0-9_-]{43}$/.test(digest)) return null;
+  text=digest.slice(7);
+  padded=text.replace(/-/g,'+').replace(/_/g,'/');
+  while(padded.length%4) padded+='=';
+  try{
+    binary=atob(padded);
+    encoded=btoa(binary).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  }catch(ignoreBase64){ return null; }
+  if(binary.length!==32||encoded!==text) return null;
+  for(i=0;i<binary.length;i++) bytes.push(binary.charCodeAt(i));
+  return bytes;
+}
+
+/* Display/equality aid only. This mirrors the contract fingerprint; it is not authentication. */
+function fdEditionProjectExpectedFingerprint(config,digest){
+  var audienceData,cardData,locationData,bytes,code,location,value,alphabet='0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+  var token='',i;
+  audienceData=fdEditionProjectData(config,'audience');
+  cardData=fdEditionProjectData(config,'card');
+  if(!audienceData.ok||!cardData.ok||!fdEditionProjectObject(cardData.value)) return '';
+  locationData=fdEditionProjectData(cardData.value,'locationCode');
+  if(!locationData.ok||typeof locationData.value!=='string') return '';
+  code=audienceData.value==='ms3'?'MS3':(audienceData.value==='resident'?'RES':'');
+  if(!code) return '';
+  try{ location=locationData.value.replace(/\r\n?/g,'\n').trim().normalize('NFC').toUpperCase(); }
+  catch(ignoreLocation){ return ''; }
+  if(!/^[A-Z0-9]{2,8}$/.test(location)) return '';
+  bytes=fdEditionProjectDigestBytes(digest);
+  if(!bytes) return '';
+  value=Math.floor((bytes[0]*16777216+bytes[1]*65536+bytes[2]*256+bytes[3])/4);
+  for(i=5;i>=0;i--) token+=alphabet.charAt(Math.floor(value/Math.pow(32,i))%32);
+  return location+'-'+code+'-'+token;
+}
+
 function fdProjectEdition(canonicalIndex,validatedEdition){
   var byRefData,pathData,weeksData,columnsData,kitData,configData,envelopeData,fingerprintData,errorsData;
   var pathIdData,weekCountData,audienceData,configPathData,pathItemsData,cardData,numberData;
   var revisionData,changeData,orientationData,expected,i,j,weekData,nData,titleData,themeData,focusData;
   var itemData,instanceData,refData,itemWeekData,orderData,priorityData,rationaleData,coreData,cloned;
   var seenIds=Object.create(null),seenOrders=Object.create(null),perWeek=[],projectedWeeks=[],ordered,projected,envelopeClone;
+  var protectedClone,expectedFingerprint;
   try{
     byRefData=fdEditionProjectData(canonicalIndex,'byRef');
     pathData=fdEditionProjectData(canonicalIndex,'path');
@@ -114,6 +157,12 @@ function fdProjectEdition(canonicalIndex,validatedEdition){
        !weeksData.ok||!Array.isArray(weeksData.value)||!columnsData.ok||!Array.isArray(columnsData.value)||
        !kitData.ok||!Array.isArray(kitData.value))
       return fdEditionProjectFailure('/index','The canonical catalog is not valid for edition projection.');
+    var protectedValues=[byRefData.value,pathData.value,columnsData.value,kitData.value];
+    for(i=0;i<protectedValues.length;i++){
+      protectedClone=fdEditionProjectClone(protectedValues[i],[],0);
+      if(!protectedClone.ok)
+        return fdEditionProjectFailure('/index','The canonical protected surfaces contain unsafe nested data.');
+    }
     pathIdData=fdEditionProjectData(pathData.value,'id');
     weekCountData=fdEditionProjectData(pathData.value,'weekCount');
     if(!pathIdData.ok||typeof pathIdData.value!=='string'||!weekCountData.ok||
@@ -161,9 +210,11 @@ function fdProjectEdition(canonicalIndex,validatedEdition){
        typeof revisionData.value!=='string'||!/^[0-9a-f]{40}$/.test(revisionData.value)||
        !changeData.ok||typeof changeData.value!=='string'||!orientationData.ok||
        !fdEditionProjectObject(orientationData.value)||
-       fingerprintData.value.indexOf('-'+expected.code+'-')===-1||
        fdEditionProjectHasProtectedLocalFields(orientationData.value))
       return fdEditionProjectFailure('/edition/config','The validated edition does not match the canonical path.');
+    expectedFingerprint=fdEditionProjectExpectedFingerprint(configData.value,digestData.value);
+    if(!expectedFingerprint||fingerprintData.value!==expectedFingerprint)
+      return fdEditionProjectFailure('/edition/fingerprint','The edition fingerprint does not match its validated content.');
     envelopeClone=fdEditionProjectClone(envelopeData.value,[],0);
     if(!envelopeClone.ok)
       return fdEditionProjectFailure('/edition/envelope','The validated edition contains unsafe nested data.');
