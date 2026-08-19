@@ -98,8 +98,9 @@ function fdSetupRole(roles){
    (fd_shell.js does not know curriculum.json's role list -- Plan 3's job); it is escaped here
    like any other interpolated value. The browse tile shares data-fd-week with the numbered
    tiles ("0" means "no week"), so the delegated handler only needs one attribute to watch. */
-function fdSetupWeek(weeks, roleName){
-  var list=weeks||[];
+function fdSetupWeek(index, roleName){
+  if(!fdActivePathValid(index)) return fdPathFallback('setup');
+  var list=index.weeks;
   var out='<div class="fd-setup"><div class="fd-setup__inner fd-setup__inner--week">';
   out+='<div class="fd-setup__brand">'+
     '<button type="button" class="fd-setup__back" data-fd-back aria-label="Back">‹</button>'+

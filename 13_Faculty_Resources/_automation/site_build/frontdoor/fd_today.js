@@ -109,11 +109,9 @@ function fdRow(it, idx, doneMap, compact){
 /* The Continue card. When the week is finished (progress.next is null but the week had items)
    the button re-targets to a preview of next week instead of an item, so it carries data-fd-tab
    + data-fd-view-week rather than data-fd-open. The view attribute is intentionally distinct from
-   setup-only data-fd-week, so the two actions cannot collide. Math.min(6, week+1) matches the
-   prototype's own formula, quirk included: at week 6
-   it previews week 6 again (there is no week 7) -- not fixed here since it is not called out as a
-   deviation and the design's behaviour, absent such a note, is the spec. */
-function fdContinue(state, wk, progress){
+   setup-only data-fd-week, so the two actions cannot collide. The next target comes from the
+   projected path: its final week reviews itself rather than inventing another. */
+function fdContinue(index, state, wk, progress){
   var isComplete=progress.total>0&&progress.done===progress.total;
   var kickerCls=isComplete?'fd-continue__kicker is-complete':'fd-continue__kicker';
   var kickerText=isComplete?('Week '+fdEsc(state.week)+' complete'):('Continue · Week '+fdEsc(state.week));
@@ -123,9 +121,10 @@ function fdContinue(state, wk, progress){
     titleText=progress.next.title;
     openAttrs=' data-fd-open="'+fdEsc(progress.next.ref)+'"';
   } else {
-    var previewN=Math.min(6, state.week+1);
-    titleText='Preview Week '+previewN;
-    openAttrs=' data-fd-tab="path" data-fd-view-week="'+fdEsc(previewN)+'"';
+    var nextWeek=fdNextWeek(index,state.week);
+    var target=nextWeek?nextWeek.n:state.week;
+    titleText=(nextWeek?'Preview Week ':'Review Week ')+target;
+    openAttrs=' data-fd-tab="path" data-fd-view-week="'+fdEsc(target)+'"';
   }
   var done=state.done||{}, leftMin=0;
   for(var i=0;i<wk.items.length;i++){
@@ -241,12 +240,12 @@ function fdToday(index, state){
   /* fdExamCountdown returns a bare fragment -- its separator dot included, its leading space NOT
      ('· exam in ~5 days'), the same split the streak clause above uses when it supplies its own
      ' · '. The caller owns the join, so it must supply that space: concatenating the fragment
-     directly printed "Sunday· exam in ~5 days" through weeks 5 and 6, on the single most-read line
+     directly printed "Sunday· exam in ~5 days" through the final two path weeks, on the single most-read line
      of the front door. Guarded rather than unconditional because the empty return is the common
-     case (every week but 5 and 6, and after the exam), and ' '+'' would leave a trailing space on
+     case (every week outside the final two, and after the exam), and ' '+'' would leave a trailing space on
      the subhead for all of them. tests/fd-state.test.mjs pins the fragment's shape at one end and
      tests/fd-today.test.mjs pins this joined output at the other. */
-  var countdown=fdExamCountdown(st.week, nowMs, st.rotationStart);
+  var countdown=fdExamCountdown(st.week,idx.weeks,nowMs,st.rotationStart);
   if(countdown) sub+=' '+countdown;
 
   var out='<section class="fd-today">';
@@ -254,7 +253,7 @@ function fdToday(index, state){
   out+='<p class="fd-today__sub">'+sub+'</p>';
   out+='<div class="fd-today__cols"><div class="fd-today__main">';
 
-  out+=hasWeek?fdContinue(st, wk, progress):fdSetupCta();
+  out+=hasWeek?fdContinue(idx,st, wk, progress):fdSetupCta();
 
   if(hasWeek){
     out+='<div class="fd-listhead"><h2 class="fd-sectionhead">This week</h2>'+

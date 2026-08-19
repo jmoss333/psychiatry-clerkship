@@ -72,14 +72,30 @@ def build_frontdoor_payload(site, curriculum, catalog):
     if not isinstance(curriculum, dict):
         raise ValueError("curriculum must be an object")
 
+    expected_paths = {"ms3": ("ms3-six-week", 6), "resident": ("resident-four-week", 4)}
+    learning_paths = curriculum.get("learningPaths")
+    source_path = learning_paths.get(site) if isinstance(learning_paths, dict) else None
+    expected_id, expected_count = expected_paths[site]
+    if not isinstance(source_path, dict):
+        raise ValueError("curriculum.learningPaths.%s must be an object" % site)
+    if source_path.get("id") != expected_id:
+        raise ValueError("curriculum.learningPaths.%s.id must be '%s'" % (site, expected_id))
+    weeks = source_path.get("weeks")
+    if not isinstance(weeks, list) or len(weeks) != expected_count:
+        raise ValueError("curriculum.learningPaths.%s must contain %d weeks" %
+                         (site, expected_count))
+
     site_library = curriculum.get("siteLibrary", {})
     config = site_library.get(site) if isinstance(site_library, dict) else None
     if not isinstance(config, dict):
         raise ValueError("curriculum.siteLibrary.%s must be an object" % site)
 
     projected = copy.deepcopy(curriculum)
+    projected.pop("learningPaths", None)
     projected.pop("roles", None)
     projected.pop("siteLibrary", None)
+    projected["path"] = {"id": expected_id, "weekCount": len(weeks)}
+    projected["weeks"] = copy.deepcopy(weeks)
     columns = projected.get("libraryColumns")
     if not isinstance(columns, list):
         raise ValueError("curriculum.libraryColumns must be a list")
@@ -124,6 +140,20 @@ def build_frontdoor_payload(site, curriculum, catalog):
             if ref not in catalog_entries:
                 raise ValueError("placed ref '%s' has no final catalog entry" % ref)
 
+    path_refs = []
+    for week in weeks:
+        for item in week.get("items", []):
+            ref, kind = item.get("ref"), item.get("kind")
+            if ref not in catalog_entries:
+                raise ValueError("path ref '%s' has no final %s catalog entry" % (ref, site))
+            _title, nav_kind, _governance = catalog_entries[ref]
+            expected_kind = "tool" if nav_kind == "tool" else "read"
+            if kind != expected_kind:
+                raise ValueError("path ref '%s' declares %s but final catalog is %s" %
+                                 (ref, kind, expected_kind))
+            if ref not in path_refs:
+                path_refs.append(ref)
+
     library_exclude = projected.get("libraryExclude")
     if not isinstance(library_exclude, list):
         raise ValueError("curriculum.libraryExclude must be a list")
@@ -139,7 +169,8 @@ def build_frontdoor_payload(site, curriculum, catalog):
         raise ValueError("projected libraryExclude overlaps placed refs")
 
     manifest = {"tools": [], "md": []}
-    for ref in placed:
+    manifest_refs = placed + [ref for ref in path_refs if ref not in placed]
+    for ref in manifest_refs:
         title, kind, governance = catalog_entries[ref]
         manifest["tools" if kind == "tool" else "md"].append(["", ref, title, governance])
 

@@ -31,6 +31,7 @@ const make = new Function('localStorage', `
     fdSave: fdSave,
     fdProgressDoneMap: fdProgressDoneMap,
     fdProgressToggle: fdProgressToggle,
+    fdRotationWeek: fdRotationWeek,
     fdRotationStartForWeek: fdRotationStartForWeek,
     fdExamCountdown: fdExamCountdown,
     fdDailyPick: fdDailyPick,
@@ -39,6 +40,10 @@ const make = new Function('localStorage', `
 `);
 
 const AUDIENCE_TOKEN_RE = /MS3|clerkship|student|shelf|resident|UNE|MMC|Sanford/i;
+const FOUR = [1, 2, 3, 4].map((n) => ({ n }));
+const SIX = [1, 2, 3, 4, 5, 6].map((n) => ({ n }));
+const MONDAY = '2026-08-03';
+const atDay = (offset) => new Date(2026, 7, 3 + offset, 9, 0, 0).getTime();
 
 // ---- storage key + persistence ------------------------------------------------------
 
@@ -82,34 +87,42 @@ test('fdSave persists only whitelisted keys, never done/streak/week', () => {
   assert.equal(out.week, undefined);
 });
 
-test('fdRotationStartForWeek derives the first rotation Monday from the selected week', () => {
-  const { fdRotationStartForWeek } = make(memStorage());
+test('rotation week and start derive from explicit path membership', () => {
+  const { fdRotationWeek, fdRotationStartForWeek } = make(memStorage());
+  assert.equal(fdRotationWeek(MONDAY, FOUR, atDay(0)), 1);
+  assert.equal(fdRotationWeek(MONDAY, FOUR, atDay(6)), 1);
+  assert.equal(fdRotationWeek(MONDAY, FOUR, atDay(7)), 2);
+  assert.equal(fdRotationWeek(MONDAY, FOUR, atDay(27)), 4);
+  assert.equal(fdRotationWeek(MONDAY, FOUR, atDay(28)), 5);
+  assert.equal(fdRotationWeek(MONDAY, SIX, atDay(35)), 6);
+  assert.equal(fdRotationWeek(MONDAY, SIX, atDay(42)), 7);
   const now = new Date(2026, 7, 12, 9, 0, 0).getTime(); // Wednesday of week 6
-  assert.equal(fdRotationStartForWeek(6, now), '2026-07-06');
-  assert.equal(fdRotationStartForWeek(1, now), '2026-08-10');
-  assert.equal(fdRotationStartForWeek(0, now), '');
+  assert.equal(fdRotationStartForWeek(4, FOUR, now), '2026-07-20');
+  assert.equal(fdRotationStartForWeek(5, FOUR, Date.now()), '');
 });
 
 // ---- exam countdown -----------------------------------------------------------------
 
-test('fdExamCountdown is empty outside weeks 5 and 6', () => {
+test('fdExamCountdown is empty outside the path final two weeks', () => {
   const { fdExamCountdown } = make(memStorage());
   const wed = new Date(2026, 7, 12, 9, 0, 0).getTime();
-  for (const w of [null, 1, 2, 3, 4]) {
-    assert.equal(fdExamCountdown(w, wed), '');
+  for (const w of [null, 1, 2]) {
+    assert.equal(fdExamCountdown(w, FOUR, wed), '');
   }
+  assert.equal(fdExamCountdown(3, FOUR, wed), '· exam in ~9 days');
+  assert.equal(fdExamCountdown(4, FOUR, wed), '· exam in ~2 days');
 });
 
 test('week 6 counts down to Friday', () => {
   const { fdExamCountdown } = make(memStorage());
   const wed = new Date(2026, 7, 12, 9, 0, 0).getTime(); // Wednesday
-  assert.equal(fdExamCountdown(6, wed), '· exam in ~2 days');
+  assert.equal(fdExamCountdown(6, SIX, wed), '· exam in ~2 days');
 });
 
 test('week 5 adds the extra week', () => {
   const { fdExamCountdown } = make(memStorage());
   const wed = new Date(2026, 7, 12, 9, 0, 0).getTime();
-  assert.equal(fdExamCountdown(5, wed), '· exam in ~9 days');
+  assert.equal(fdExamCountdown(5, SIX, wed), '· exam in ~9 days');
 });
 
 // The split of responsibility, made explicit rather than left as an accident of these fixtures:
@@ -123,7 +136,7 @@ test('the countdown is a bare fragment: separator dot included, leading space NO
   const { fdExamCountdown } = make(memStorage());
   for (const week of [5, 6]) {
     for (let d = 0; d < 7; d++) {
-      const out = fdExamCountdown(week, new Date(2026, 7, 10 + d, 9, 0, 0).getTime());
+      const out = fdExamCountdown(week, SIX, new Date(2026, 7, 10 + d, 9, 0, 0).getTime());
       if (out === '') continue;
       assert.equal(out[0], '·', `week ${week} day ${d}: the fragment carries its own separator`);
       assert.doesNotMatch(out, /^\s/, `week ${week} day ${d}: the caller supplies the space`);
@@ -162,7 +175,7 @@ test('every weekday of weeks 5 and 6 has a pinned countdown', () => {
   for (const week of [5, 6]) {
     PER_WEEKDAY[week].forEach((expected, offset) => {
       const now = new Date(2026, 7, WEEK_MON + offset, 9, 0, 0).getTime();
-      assert.equal(fdExamCountdown(week, now), expected,
+      assert.equal(fdExamCountdown(week, SIX, now), expected,
         `week ${week}, day offset ${offset} from Monday`);
     });
   }
@@ -186,7 +199,7 @@ test('the countdown never increases as time advances one day at a time', () => {
   for (let offset = 0; offset < 14; offset += 1) {
     const week = offset < 7 ? 5 : 6;
     const now = new Date(2026, 7, WEEK_MON + offset, 9, 0, 0).getTime();
-    const days = daysFrom(fdExamCountdown(week, now));
+    const days = daysFrom(fdExamCountdown(week, SIX, now));
     if (days === null) { ended = true; continue; }
     assert.ok(!ended, `the countdown came back after the exam at offset ${offset}`);
     assert.ok(days <= prev, `countdown rose from ${prev} to ${days} at offset ${offset}`);
@@ -201,30 +214,30 @@ test('a stored cw_shelf_date wins over the rotation-grid fallback', () => {
   const { fdExamCountdown } = make(ls);
   const wed = new Date(2026, 7, 12, 9, 0, 0).getTime();
   // Grid fallback would say 2 days; the stored date is the real one.
-  assert.equal(fdExamCountdown(6, wed), '· exam in ~9 days');
+  assert.equal(fdExamCountdown(6, SIX, wed), '· exam in ~9 days');
 });
 
 test('a stored cw_shelf_date reads as exam day on the day and empties after it', () => {
   const ls = memStorage();
   ls.setItem('cw_shelf_date', '2026-08-14');
   const { fdExamCountdown } = make(ls);
-  assert.equal(fdExamCountdown(6, new Date(2026, 7, 14, 9, 0, 0).getTime()),
+  assert.equal(fdExamCountdown(6, SIX, new Date(2026, 7, 14, 9, 0, 0).getTime()),
     '· exam day — good luck');
-  assert.equal(fdExamCountdown(6, new Date(2026, 7, 15, 9, 0, 0).getTime()), '');
+  assert.equal(fdExamCountdown(6, SIX, new Date(2026, 7, 15, 9, 0, 0).getTime()), '');
 });
 
 test('an unparseable cw_shelf_date falls back rather than emitting NaN', () => {
   const ls = memStorage();
   ls.setItem('cw_shelf_date', 'banana');
   const { fdExamCountdown } = make(ls);
-  assert.equal(fdExamCountdown(6, new Date(2026, 7, 12, 9, 0, 0).getTime()),
+  assert.equal(fdExamCountdown(6, SIX, new Date(2026, 7, 12, 9, 0, 0).getTime()),
     '· exam in ~2 days');
 });
 
 test('a usable legacy non-Monday rotation start drives the fallback countdown', () => {
   const { fdExamCountdown } = make(memStorage());
   const wed = new Date(2026, 7, 12, 9, 0, 0).getTime();
-  assert.equal(fdExamCountdown(6, wed, '2026-07-07'), '· exam in ~3 days');
+  assert.equal(fdExamCountdown(6, SIX, wed, '2026-07-07'), '· exam in ~3 days');
 });
 
 // shelfDaysUntil() in phase_policy.js is the repo's ONE local-midnight parse site; the
@@ -237,13 +250,13 @@ test('fd_state.js contains no date-parse idiom of its own', () => {
 test('the day itself reads as exam day, not "in ~0 days"', () => {
   const { fdExamCountdown } = make(memStorage());
   const fri = new Date(2026, 7, 14, 9, 0, 0).getTime(); // Friday
-  assert.equal(fdExamCountdown(6, fri), '· exam day — good luck');
+  assert.equal(fdExamCountdown(6, SIX, fri), '· exam day — good luck');
 });
 
 test('one day out is singular', () => {
   const { fdExamCountdown } = make(memStorage());
   const thu = new Date(2026, 7, 13, 9, 0, 0).getTime();
-  assert.equal(fdExamCountdown(6, thu), '· exam in ~1 day');
+  assert.equal(fdExamCountdown(6, SIX, thu), '· exam in ~1 day');
 });
 
 // Scoped to the RETURNED strings, not the file. AUDIENCE_TOKEN_RE bans tokens in
@@ -254,7 +267,7 @@ test('every countdown string the module emits is audience-neutral', () => {
   const { fdExamCountdown } = make(memStorage());
   for (let d = 0; d < 7; d += 1) {
     for (const w of [5, 6]) {
-      const out = fdExamCountdown(w, new Date(2026, 7, 10 + d, 9, 0, 0).getTime());
+      const out = fdExamCountdown(w, SIX, new Date(2026, 7, 10 + d, 9, 0, 0).getTime());
       assert.doesNotMatch(out, AUDIENCE_TOKEN_RE,
         `fdExamCountdown(${w}) emitted an audience token: "${out}"`);
     }

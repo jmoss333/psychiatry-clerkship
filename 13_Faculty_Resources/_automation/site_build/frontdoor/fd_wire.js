@@ -170,6 +170,10 @@ function fdNumberAttr(attrs,name){
   return isFinite(n)&&n%1===0?n:null;
 }
 
+function fdDispatchHasWeek(context, n){
+  return !!fdFindWeek(context&&context.index,n);
+}
+
 function fdProtocolRef(sheet){
   if(!sheet||sheet==='kit'||String(sheet).indexOf('item:')===0) return null;
   return String(sheet);
@@ -204,7 +208,7 @@ function fdDispatch(attrs, context, state){
 
   if(fdOwn(a,'data-fd-view-week')){
     n=fdNumberAttr(a,'data-fd-view-week');
-    if(n===null) return {patch:{},route:null,effect:null};
+    if(n===null||!fdDispatchHasWeek(c,n)) return {patch:{},route:null,effect:null};
     return {
       patch:{tab:'path',viewWeek:n,openId:null},
       route:fdRouteForTab('path',c.search),effect:null
@@ -213,24 +217,25 @@ function fdDispatch(attrs, context, state){
   if(fdOwn(a,'data-fd-week')){
     n=fdNumberAttr(a,'data-fd-week');
     if(n===0){
+      var firstWeek=(c.index&&c.index.weeks&&c.index.weeks[0])||{};
       return {
-        patch:{week:null,tab:'library',viewWeek:1,screen:'app',openId:null},
+        patch:{week:null,tab:'library',viewWeek:firstWeek.n,screen:'app',openId:null},
         route:fdRouteForTab('library',c.search),effect:{type:'browse-without-rotation'}
       };
     }
-    if(n===null||n<1||n>6) return {patch:{},route:null,effect:null};
+    if(n===null||!fdDispatchHasWeek(c,n)) return {patch:{},route:null,effect:null};
     return {
       patch:{week:n,viewWeek:n,tab:'today',screen:'app',openId:null},
       route:fdRouteForTab('today',c.search),
-      effect:{type:'set-rotation',start:fdRotationStartForWeek(n,c.nowMs)}
+      effect:{type:'set-rotation',start:fdRotationStartForWeek(n,c.index.weeks,c.nowMs)}
     };
   }
   if(fdOwn(a,'data-fd-setweek')){
     n=fdNumberAttr(a,'data-fd-setweek');
-    if(n===null||n<1||n>6) return {patch:{},route:null,effect:null};
+    if(n===null||!fdDispatchHasWeek(c,n)) return {patch:{},route:null,effect:null};
     return {
       patch:{week:n,viewWeek:n,screen:'app'},route:null,
-      effect:{type:'set-rotation',start:fdRotationStartForWeek(n,c.nowMs)}
+      effect:{type:'set-rotation',start:fdRotationStartForWeek(n,c.index.weeks,c.nowMs)}
     };
   }
 
@@ -807,7 +812,7 @@ function fdWire(root, initialState, opts){
     var c={
       nowMs:Date.now(),theme:currentTheme(),
       search:(win&&win.location&&win.location.search)||'',
-      progressRaw:progressRaw(),weekItems:fdItemsForWeek(index,state.week)
+      progressRaw:progressRaw(),weekItems:fdItemsForWeek(index,state.week),index:index
     };
     var add=extra||{};
     for(var k in add){ if(fdOwn(add,k)) c[k]=add[k]; }

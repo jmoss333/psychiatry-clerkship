@@ -129,6 +129,13 @@ test('one live controller owns stable delegated navigation', () => {
     'rerender-fragile one-time binders are retired');
 });
 
+test('live state delegates duration and membership to the injected path index', () => {
+  assert.match(source, /fdRotationWeek\(out\.rotationStart,FD_INDEX\.weeks,out\.nowMs\)/);
+  assert.match(source, /fdFindWeek\(FD_INDEX,out\.week\)/);
+  assert.match(source, /fdFindWeek\(FD_INDEX,out\.viewWeek\)/);
+  assert.match(source, /fdRotationWeek\(fdRotation,FD_INDEX\.weeks,Date\.now\(\)\)/);
+});
+
 test('governed resources preserve route/query/history and post-mount state effects', () => {
   for (const needle of ['function renderGovernanceNotice(item)',
     'function refreshGovernanceNotice()', 'function readFacultyPreviewRequest()',

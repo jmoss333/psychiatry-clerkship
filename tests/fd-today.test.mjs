@@ -85,10 +85,20 @@ const FIX_MAN = {
   md: [['src/a.md', 'a.md', 'Page A'], ['src/b.md', 'b.md', 'Page B']],
 };
 const IDX = F.fdBuildIndex(FIX_CUR, FIX_META, FIX_TOOLS, FIX_MAN);
+const FOUR_CUR = Object.assign({}, FIX_CUR, { weeks: FIX_CUR.weeks.slice(0, 4).map((week) => (
+  week.n === 3 ? Object.assign({}, week, { items: [{ ref: 'w3a.md', kind: 'read' }] })
+    : week.n === 4 ? Object.assign({}, week, { items: [{ ref: 'w4a.md', kind: 'read' }] })
+      : week
+)) });
+const FOUR_MAN = Object.assign({}, FIX_MAN, {
+  md: FIX_MAN.md.concat([['src/w3a.md', 'w3a.md', 'Week 3 item'], ['src/w4a.md', 'w4a.md', 'Week 4 item']]),
+});
+const FOUR_INDEX = F.fdBuildIndex(FOUR_CUR, FIX_META, FIX_TOOLS, FOUR_MAN);
 
 const BASE_STATE = { week: 1, role: 'there', done: {}, streak: 0, ringPct: 50,
   nowMs: new Date(2026, 7, 10, 9, 0, 0).getTime() }; // Monday, morning
 const s = (over) => Object.assign({}, BASE_STATE, over);
+const fourState = (over) => Object.assign({}, BASE_STATE, over);
 
 test('the greeting varies by time of day, derived from state.nowMs', () => {
   const morning = new Date(2026, 7, 10, 9, 0, 0).getTime();
@@ -112,6 +122,19 @@ test('a completed Continue card previews Path with view-week, never setup-week',
   const html = F.fdToday(IDX, s({ done: { 'a.md': true, 't.html': true } }));
   assert.match(html, /data-fd-tab="path" data-fd-view-week="2"/);
   assert.doesNotMatch(html, /data-fd-week=/);
+});
+
+test('completed resident Week 3 previews Week 4 from the index', () => {
+  const html = F.fdToday(FOUR_INDEX, fourState({ week: 3, done: { 'w3a.md': true } }));
+  assert.match(html, /Preview Week 4/);
+  assert.match(html, /data-fd-view-week="4"/);
+});
+
+test('completed final week reviews itself and never invents a next week', () => {
+  const html = F.fdToday(FOUR_INDEX, fourState({ week: 4, done: { 'w4a.md': true } }));
+  assert.match(html, /Review Week 4/);
+  assert.match(html, /data-fd-view-week="4"/);
+  assert.doesNotMatch(html, /Preview Week 4|Week 5/);
 });
 
 test('a done item carries .is-done on both the check and the title', () => {

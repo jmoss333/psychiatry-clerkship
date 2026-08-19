@@ -67,7 +67,13 @@ function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
   for(var w=0;w<cw.length;w++){
     var items=[], src=cw[w].items||[];
     for(var j=0;j<src.length;j++){ items.push(ensure(src[j].ref, src[j].kind)); }
-    weeks.push({ n: cw[w].n, title: cw[w].title, theme: cw[w].theme, items: items });
+    weeks.push({
+      n:cw[w].n,
+      title:cw[w].title,
+      theme:cw[w].theme,
+      focusCategories:(cw[w].focusCategories||[]).slice(),
+      items:items
+    });
   }
 
   var columns=[], cc=cur.libraryColumns||[];
@@ -80,7 +86,34 @@ function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
   var kit=[], ck=cur.safetyKit||[];
   for(var k=0;k<ck.length;k++){ kit.push({ item: ensure(ck[k].ref, null), sub: ck[k].sub }); }
 
-  return { byRef: byRef, weeks: weeks, columns: columns, kit: kit };
+  var sourcePath=cur.path||{};
+  var pathInfo={
+    id:(typeof sourcePath.id==='string')?sourcePath.id:'',
+    weekCount:sourcePath.weekCount
+  };
+
+  return { byRef:byRef, path:pathInfo, weeks:weeks, columns:columns, kit:kit };
+}
+
+/* The browser receives exactly one projected path. Treat that small object as untrusted at the
+   rendering boundary: build validation normally prevents malformed projections, but a partial
+   asset/cache response must show the standard fallback rather than invent a learner plan. */
+function fdActivePathValid(index){
+  var path=index&&index.path, weeks=index&&index.weeks;
+  if(!path||typeof path.id!=='string'||!path.id||!Array.isArray(weeks)||!weeks.length||
+     path.weekCount!==weeks.length) return false;
+  for(var i=0;i<weeks.length;i++){
+    var week=weeks[i];
+    if(!week||typeof week.n!=='number'||!isFinite(week.n)||Math.floor(week.n)!==week.n||
+       week.n!==i+1||typeof week.title!=='string'||!week.title||
+       !Array.isArray(week.focusCategories)) return false;
+  }
+  return true;
+}
+
+function fdPathFallback(surface){
+  return '<div class="fd-fallback" data-fd-fallback="'+fdEsc(surface)+'" role="alert">'+
+    'This section could not load. Try reloading, or use another tab.</div>';
 }
 
 function fdItemsForWeek(index, n){
@@ -95,6 +128,18 @@ function fdItemsForWeek(index, n){
 function fdFindWeek(index, n){
   var weeks=(index&&index.weeks)||[];
   for(var i=0;i<weeks.length;i++){ if(weeks[i].n===n) return weeks[i]; }
+  return null;
+}
+
+function fdPathWeekCount(index){
+  return fdActivePathValid(index)?index.weeks.length:0;
+}
+
+function fdNextWeek(index, n){
+  var weeks=(index&&index.weeks)||[];
+  for(var i=0;i<weeks.length;i++){
+    if(weeks[i].n===n) return (i+1<weeks.length)?weeks[i+1]:null;
+  }
   return null;
 }
 

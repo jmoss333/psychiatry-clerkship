@@ -3,6 +3,20 @@ import { test, expect } from '@playwright/test';
 const DESKTOP = { width: 1280, height: 800 };
 const PHONE = { width: 390, height: 844 };
 const CAPTURE = '.fd-capture-launch--global[data-capture-open]';
+const VALID_PLACEMENT = {
+  takenAt: '2026-08-17T00:00:00.000Z',
+  answers: [{ id: 'synthetic-placement', cat: 'safety', correct: false }],
+  byCat: { safety: { n: 1, correct: 0 } },
+};
+
+function expectedPlan(testInfo) {
+  const resident = testInfo.project.name === 'nav-res';
+  return {
+    id: resident ? 'resident-four-week' : 'ms3-six-week',
+    count: resident ? 4 : 6,
+    title: resident ? 'Your 4-week plan' : 'Your 6-week plan',
+  };
+}
 
 async function seedCompleteSetup(page, extra = {}) {
   await page.addInitScript((seed) => {
@@ -20,7 +34,8 @@ async function seedCompleteSetup(page, extra = {}) {
   }, extra);
 }
 
-test('completion updates desktop, mobile, and rail immediately without replacing the governed tool', async ({ page }) => {
+test('completion updates desktop, mobile, and the audience-correct rail immediately without replacing the governed tool', async ({ page }, testInfo) => {
+  const resident = testInfo.project.name === 'nav-res';
   await page.setViewportSize(DESKTOP);
   await seedCompleteSetup(page);
   await page.goto('/?tool=question-bank-practice.html&case=completion');
@@ -40,9 +55,14 @@ test('completion updates desktop, mobile, and rail immediately without replacing
   await expect(desktop).toHaveAttribute('aria-pressed', 'true');
   await expect(mobile).toHaveAttribute('aria-pressed', 'true');
   await expect(mobile.locator(':scope > span')).toHaveCount(1);
-  await expect(page.locator('.fd-railnav__label')).toContainText('1 of 9 done');
-  await expect(page.locator('.fd-railnav__row[data-fd-open="question-bank-practice.html"] .fd-visually-hidden'))
-    .toHaveText('Completed');
+  const railLabel = page.locator('.fd-railnav__label');
+  if (resident) {
+    await expect(railLabel).toHaveCount(0);
+  } else {
+    await expect(railLabel).toContainText('1 of 9 done');
+    await expect(page.locator('.fd-railnav__row[data-fd-open="question-bank-practice.html"] .fd-visually-hidden'))
+      .toHaveText('Completed');
+  }
   expect(await page.evaluate(() => (
     document.querySelector('.fd-article') === window.__completionArticle
       && document.querySelector('.fd-article iframe') === window.__completionFrame
@@ -64,9 +84,13 @@ test('completion updates desktop, mobile, and rail immediately without replacing
   await expect(desktop).toHaveAttribute('aria-pressed', 'false');
   await expect(mobile).toHaveAttribute('aria-pressed', 'false');
   await expect(mobile.locator(':scope > span')).toHaveCount(1);
-  await expect(page.locator('.fd-railnav__label')).toContainText('0 of 9 done');
-  await expect(page.locator('.fd-railnav__row[data-fd-open="question-bank-practice.html"] .fd-visually-hidden'))
-    .toHaveCount(0);
+  if (resident) {
+    await expect(railLabel).toHaveCount(0);
+  } else {
+    await expect(railLabel).toContainText('0 of 9 done');
+    await expect(page.locator('.fd-railnav__row[data-fd-open="question-bank-practice.html"] .fd-visually-hidden'))
+      .toHaveCount(0);
+  }
   expect(await page.evaluate(() => (
     document.querySelector('.fd-article') === window.__completionArticle
       && document.querySelector('.fd-article iframe') === window.__completionFrame
@@ -345,7 +369,7 @@ test('Back from an interrupted resource load still focuses the restored route', 
   let releaseResource;
   let resourceWasRequested = false;
   const resourceRelease = new Promise((resolve) => { releaseResource = resolve; });
-  await page.route('**/content/welcome.md', async (route) => {
+  await page.route('**/content/*.md', async (route) => {
     resourceWasRequested = true;
     await resourceRelease;
     await route.continue();
@@ -354,19 +378,21 @@ test('Back from an interrupted resource load still focuses the restored route', 
   await seedCompleteSetup(page);
   await page.goto('/');
   await expect(page.locator('.fd-today')).toBeVisible();
+  const ref = await page.locator('.fd-today [data-fd-open]').first().getAttribute('data-fd-open');
+  expect(ref).toBeTruthy();
 
-  await page.locator('.fd-today [data-fd-open="welcome.md"]').first().click();
+  await page.locator(`.fd-today [data-fd-open="${ref}"]`).first().click();
   await expect.poll(() => resourceWasRequested).toBe(true);
-  await expect(page).toHaveURL(/\?page=welcome\.md/);
+  await expect(page).toHaveURL(new RegExp(`\\?page=${ref}`));
   await expect(page.locator('.fd-reader')).toBeVisible();
 
   await page.evaluate(() => history.back());
-  await expect(page).not.toHaveURL(/\?page=welcome\.md/);
+  await expect(page).not.toHaveURL(new RegExp(`\\?page=${ref}`));
   await expect(page.locator('.fd-today')).toBeVisible();
   await expect(page.locator('#content')).toBeFocused();
 
   const staleResponseFinished = page.waitForResponse((response) => (
-    new URL(response.url()).pathname.endsWith('/content/welcome.md')
+    new URL(response.url()).pathname.endsWith(`/content/${ref}`)
   ));
   releaseResource();
   const staleResponse = await staleResponseFinished;
@@ -374,7 +400,7 @@ test('Back from an interrupted resource load still focuses the restored route', 
   await page.evaluate(() => new Promise((resolve) => {
     requestAnimationFrame(() => requestAnimationFrame(resolve));
   }));
-  await expect(page).not.toHaveURL(/\?page=welcome\.md/);
+  await expect(page).not.toHaveURL(new RegExp(`\\?page=${ref}`));
   await expect(page.locator('.fd-today')).toBeVisible();
   await expect(page.locator('.fd-reader')).toHaveCount(0);
   await expect(page.locator('#content')).toBeFocused();
@@ -512,10 +538,14 @@ test('legacy Start keeps incomplete role/week setup canonical across reload and 
   await expect(page.locator('.fd-reader')).toHaveCount(0);
 });
 
-test('fd-main and Reader rail styles survive Today, Reader, Progress, placement, and plan mutations', async ({ page }) => {
+test('fd-main and Reader rail styles survive Today, Reader, Progress, placement, and plan mutations', async ({ page }, testInfo) => {
+  const planInfo = expectedPlan(testInfo);
   await page.setViewportSize(DESKTOP);
   await seedCompleteSetup(page, {
-    storage: { cw_plan_v1: { generatedAt: '2026-08-17T00:00:00Z', shelfDate: '', weeks: [] } },
+    storage: {
+      cw_plan_v1: { generatedAt: '2026-08-17T00:00:00Z', shelfDate: '', weeks: [] },
+      cw_pretest_v1: VALID_PLACEMENT,
+    },
   });
   await page.goto('/');
   const main = page.locator('main#content');
@@ -526,29 +556,38 @@ test('fd-main and Reader rail styles survive Today, Reader, Progress, placement,
   await expect(page.locator('.fd-article')).toBeVisible();
   await expect(main).toHaveClass(/\bfd-main\b/);
   const rail = page.locator('.fd-railnav');
-  await expect(rail).toBeVisible();
-  expect(await rail.evaluate((node) => {
-    const css = getComputedStyle(node);
-    return {
-      backgroundColor: css.backgroundColor,
-      borderRightWidth: css.borderRightWidth,
-      height: css.height,
-      paddingLeft: css.paddingLeft,
-      position: css.position,
-    };
-  })).toEqual({
-    backgroundColor: 'rgba(0, 0, 0, 0)',
-    borderRightWidth: '0px',
-    height: expect.not.stringMatching(/^800px$/),
-    paddingLeft: '0px',
-    position: 'sticky',
-  });
+  if (testInfo.project.name === 'nav-res') {
+    await expect(rail).toHaveCount(0);
+  } else {
+    await expect(rail).toBeVisible();
+    expect(await rail.evaluate((node) => {
+      const css = getComputedStyle(node);
+      return {
+        backgroundColor: css.backgroundColor,
+        borderRightWidth: css.borderRightWidth,
+        height: css.height,
+        paddingLeft: css.paddingLeft,
+        position: css.position,
+      };
+    })).toEqual({
+      backgroundColor: 'rgba(0, 0, 0, 0)',
+      borderRightWidth: '0px',
+      height: expect.not.stringMatching(/^800px$/),
+      paddingLeft: '0px',
+      position: 'sticky',
+    });
+  }
 
   await page.goto('/?page=__progress__');
   await expect(page.locator('#pgRoot')).toBeVisible();
   await expect(main).toHaveClass(/\bfd-main\b/);
   await page.locator('[data-pt="plan"]').click();
   await expect(page.locator('#planRoot')).toBeVisible();
+  await expect(page.locator('#planRoot h1')).toHaveText(planInfo.title);
+  await expect(page.locator('.wd-card')).toHaveCount(planInfo.count);
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('cw_plan_v1')))).toMatchObject({
+    pathId: planInfo.id, weekCount: planInfo.count,
+  });
   await expect(main).toHaveClass(/\bfd-main\b/);
   await page.locator('[data-pt="pretest"]').click();
   await expect(page.locator('#ptRoot')).toBeVisible();
@@ -609,10 +648,14 @@ test('capture alone owns Cmd/Ctrl-K and one Escape restores its connected invoke
   await expect.soft(page.locator('.fd-search')).toHaveCount(0);
 });
 
-test('document title resets for tabs and updates for successful resources and internal views', async ({ page }) => {
+test('document title resets for tabs and updates for successful resources and internal views', async ({ page }, testInfo) => {
+  const planInfo = expectedPlan(testInfo);
   await page.setViewportSize(PHONE);
   await seedCompleteSetup(page, {
-    storage: { cw_plan_v1: { generatedAt: '2026-08-17T00:00:00Z', shelfDate: '', weeks: [] } },
+    storage: {
+      cw_plan_v1: { generatedAt: '2026-08-17T00:00:00Z', shelfDate: '', weeks: [] },
+      cw_pretest_v1: VALID_PLACEMENT,
+    },
   });
   await page.goto('/');
   await expect(page).toHaveTitle(/^Today — /);
@@ -626,10 +669,39 @@ test('document title resets for tabs and updates for successful resources and in
   await page.goto('/?page=__progress__');
   await expect(page).toHaveTitle(/^Progress — /);
   await page.locator('[data-pt="plan"]').click();
-  await expect(page).toHaveTitle(/^Your 6-week plan — /);
+  await expect(page).toHaveTitle(new RegExp(`^${planInfo.title} — `));
+  await expect(page.locator('#planRoot h1')).toHaveText(planInfo.title);
+  await expect(page.locator('.wd-card')).toHaveCount(planInfo.count);
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('cw_plan_v1')))).toMatchObject({
+    pathId: planInfo.id, weekCount: planInfo.count,
+  });
+  await page.locator('[data-fd-view-week="1"]', { hasText: 'Open Week 1' }).click();
+  await expect(page).toHaveURL(/\?tab=path/);
+  await expect(page.locator('.fd-timeline__row.is-sel')).toHaveAttribute('data-fd-view-week', '1');
+  await page.goto('/?page=__progress__');
+  await page.locator('[data-pt="plan"]').click();
   await page.locator('[data-pt="pretest"]').click();
   await expect(page).toHaveTitle(/^2-minute placement — /);
   await page.locator('[data-progress-action="progress"]').click();
   await page.locator('[data-pt="plan"]').click();
-  await expect(page).toHaveTitle(/^Your 6-week plan — /);
+  await expect(page).toHaveTitle(new RegExp(`^${planInfo.title} — `));
+});
+
+test('corrupt saved plan without placement opens placement and preserves progress', async ({ page }) => {
+  const progress = { 'pg_interview.md': { done: true, at: '2026-08-17' } };
+  await page.setViewportSize(PHONE);
+  await seedCompleteSetup(page, {
+    storage: { cw_plan_v1: '{broken', cw_progress_v1: progress },
+  });
+  await page.goto('/');
+  await page.evaluate(() => {
+    const button = document.createElement('button');
+    button.setAttribute('data-pt', 'plan');
+    button.textContent = 'Plan';
+    document.querySelector('#fdApp').appendChild(button);
+    button.click();
+  });
+  await expect(page.locator('#ptRoot h1')).toHaveText('2-minute placement');
+  expect(await page.evaluate(() => localStorage.getItem('cw_plan_v1'))).toBeNull();
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('cw_progress_v1')))).toEqual(progress);
 });

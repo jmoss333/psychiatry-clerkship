@@ -113,9 +113,16 @@ test('the header says exam, never the site-specific word', () => {
 test('role and week choices are addressable by the delegated click handler', () => {
   const roles = F.fdSetupRole([{ id: 'ms3', name: 'Student', desc: 'd', hint: 'most common' }]);
   assert.match(roles, /data-fd-role="ms3"/);
-  const weeks = F.fdSetupWeek([{ n: 1, title: 'Foundations', theme: 't' }], 'Student');
+  const weeks = F.fdSetupWeek({ path: { id: 'fixture', weekCount: 1 }, weeks: [{ n: 1, title: 'Foundations', theme: 't', focusCategories: [] }] }, 'Student');
   assert.match(weeks, /data-fd-week="1"/);
   assert.match(weeks, /data-fd-week="0"/, 'the browse option must be addressable too');
+});
+
+test('missing projected path data shows the standard accessible fallback instead of an empty setup grid', () => {
+  const html = F.fdSetupWeek({ path: { id: '', weekCount: 0 }, weeks: [] }, 'Student');
+  assert.match(html, /class="fd-fallback"[^>]*data-fd-fallback="setup"[^>]*role="alert"/);
+  assert.match(html, /This section could not load\. Try reloading, or use another tab\./);
+  assert.doesNotMatch(html, /fd-weekgrid|data-fd-week="0"/);
 });
 
 test('user-supplied text is escaped in every renderer', () => {

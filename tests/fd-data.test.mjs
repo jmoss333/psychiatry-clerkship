@@ -13,7 +13,9 @@ const src = readFileSync(new URL(`${BUILD}/frontdoor/fd_data.js`, import.meta.ur
 const make = new Function(`
   ${src}
   return { fdEsc: fdEsc, fdBuildIndex: fdBuildIndex, fdItemsForWeek: fdItemsForWeek,
-           fdFindWeek: fdFindWeek, fdLibraryOnlyReads: fdLibraryOnlyReads };
+           fdFindWeek: fdFindWeek, fdLibraryOnlyReads: fdLibraryOnlyReads,
+           fdPathWeekCount: fdPathWeekCount, fdNextWeek: fdNextWeek,
+           fdActivePathValid: fdActivePathValid };
 `);
 const F = make();
 
@@ -22,12 +24,24 @@ const CUR = readJson('../curriculum.json');
 const META = readJson('../topic_meta.json');
 const TOOLS = readJson('../tool_registry.json');
 const MAN = readJson('../13_Faculty_Resources/_automation/site_build/site_manifest.json');
+const realMs3Projection = () => {
+  assert.ok(CUR.learningPaths, 'real curriculum must define learningPaths');
+  return {
+    ...CUR,
+    path: { id: 'ms3-six-week', weekCount: 6 },
+    weeks: CUR.learningPaths.ms3.weeks,
+  };
+};
 
 const FIX_CUR = {
-  weeks: [{ n: 1, title: 'W1', theme: 'T1', items: [{ ref: 'a.md', kind: 'read' }] },
-          { n: 2, title: 'W2', theme: 'T2', items: [] }, { n: 3, title: 'W3', theme: 'T3', items: [] },
-          { n: 4, title: 'W4', theme: 'T4', items: [] }, { n: 5, title: 'W5', theme: 'T5', items: [] },
-          { n: 6, title: 'W6', theme: 'T6', items: [] }],
+  path: { id: 'resident-four-week', weekCount: 4 },
+  weeks: [
+    { n: 1, title: 'W1', theme: 'T1', focusCategories: ['safety'],
+      items: [{ ref: 'a.md', kind: 'read' }] },
+    { n: 2, title: 'W2', theme: 'T2', focusCategories: ['mood'], items: [] },
+    { n: 3, title: 'W3', theme: 'T3', focusCategories: ['ethics'], items: [] },
+    { n: 4, title: 'W4', theme: 'T4', focusCategories: ['relational'], items: [] },
+  ],
   libraryColumns: [{ name: 'Col', accent: 'topic', refs: ['a.md', 'b.md'] }],
   libraryExclude: [],
   safetyKit: [{ ref: 'a.md', sub: 'Sub line' }],
@@ -50,6 +64,20 @@ test('fdEsc escapes every character that could break out of markup', () => {
 test('fdEsc coerces null and undefined to an empty string rather than printing them', () => {
   assert.equal(F.fdEsc(null), '');
   assert.equal(F.fdEsc(undefined), '');
+});
+
+test('active-path validity requires an identified, ordered, count-matched week sequence', () => {
+  const valid = { path: { id: 'fixture', weekCount: 2 }, weeks: [
+    { n: 1, title: 'One', focusCategories: [] },
+    { n: 2, title: 'Two', focusCategories: ['mood'] },
+  ] };
+  assert.equal(F.fdActivePathValid(valid), true);
+  for (const invalid of [
+    { path: { id: '', weekCount: 2 }, weeks: valid.weeks },
+    { path: { id: 'fixture', weekCount: 0 }, weeks: [] },
+    { path: { id: 'fixture', weekCount: 1 }, weeks: valid.weeks },
+    { path: { id: 'fixture', weekCount: 2 }, weeks: [valid.weeks[1], valid.weeks[0]] },
+  ]) assert.equal(F.fdActivePathValid(invalid), false);
 });
 
 test('an item joins minutes, summary, points and attestation from topic_meta', () => {
@@ -116,7 +144,12 @@ test('a projected four-field manifest entry supplies its exact governance triple
 
 test('weeks carry resolved items in curriculum order', () => {
   const idx = F.fdBuildIndex(FIX_CUR, FIX_META, FIX_TOOLS, FIX_MAN);
-  assert.equal(idx.weeks.length, 6);
+  assert.deepEqual(idx.path, { id: 'resident-four-week', weekCount: 4 });
+  assert.deepEqual(idx.weeks[0].focusCategories, ['safety']);
+  assert.equal(F.fdPathWeekCount(idx), 4);
+  assert.equal(F.fdNextWeek(idx, 3).n, 4);
+  assert.equal(F.fdNextWeek(idx, 4), null);
+  assert.equal(idx.weeks.length, 4);
   assert.equal(idx.weeks[0].items[0].ref, 'a.md');
   assert.equal(idx.weeks[0].items[0].summary, 'Summary A', 'week items must be joined, not bare refs');
 });
@@ -161,7 +194,7 @@ test('fdLibraryOnlyReads excludes week items and excludes tools', () => {
 // ---- against the REAL repo data -----------------------------------------------------
 
 test('titles resolve to the real page names, not to the slug', () => {
-  const idx = F.fdBuildIndex(CUR, META, TOOLS, MAN);
+  const idx = F.fdBuildIndex(realMs3Projection(), META, TOOLS, MAN);
   // Asserting against known titles rather than truthiness: `title` falls back to `ref`, which is
   // always truthy, so assert.ok(it.title) passes even when every title is broken.
   assert.equal(idx.byRef['pg_suicide.md'].title, 'Suicide Risk & Safety Card');
@@ -169,14 +202,15 @@ test('titles resolve to the real page names, not to the slug', () => {
 });
 
 test('no real item falls back to its slug as a title', () => {
-  const idx = F.fdBuildIndex(CUR, META, TOOLS, MAN);
+  const idx = F.fdBuildIndex(realMs3Projection(), META, TOOLS, MAN);
   const fellBack = Object.keys(idx.byRef).filter((r) => idx.byRef[r].title === r);
   assert.deepEqual(fellBack, [],
     `every placed page is in site_manifest.json, so none should degrade to its slug: ${fellBack}`);
 });
 
 test('the real curriculum joins without throwing and routes every week item', () => {
-  const idx = F.fdBuildIndex(CUR, META, TOOLS, MAN);
+  const idx = F.fdBuildIndex(realMs3Projection(), META, TOOLS, MAN);
+  assert.equal(idx.path.id, 'ms3-six-week');
   assert.equal(idx.weeks.length, 6);
   let n = 0;
   for (const w of idx.weeks) {
@@ -189,14 +223,14 @@ test('the real curriculum joins without throwing and routes every week item', ()
 });
 
 test('every real library column item resolves', () => {
-  const idx = F.fdBuildIndex(CUR, META, TOOLS, MAN);
+  const idx = F.fdBuildIndex(realMs3Projection(), META, TOOLS, MAN);
   let placed = 0;
   for (const c of idx.columns) placed += c.items.length;
   assert.equal(placed, 81, 'expected the 81 pages curriculum.json places');
 });
 
 test('all five real kit items are attested and carry safety steps', () => {
-  const idx = F.fdBuildIndex(CUR, META, TOOLS, MAN);
+  const idx = F.fdBuildIndex(realMs3Projection(), META, TOOLS, MAN);
   assert.equal(idx.kit.length, 5);
   for (const k of idx.kit) {
     assert.equal(k.item.attested, true, `${k.item.ref} must be attested to appear in the kit`);
