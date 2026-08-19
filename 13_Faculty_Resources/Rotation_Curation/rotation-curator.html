@@ -183,7 +183,8 @@
       color: var(--evergreen);
       font-weight: 800;
     }
-    .field input {
+    .field input, .field textarea, .field select, .placement-fields textarea,
+    .placement-fields select, .schedule-actions select, .curator-search input {
       width: 100%;
       min-height: 44px;
       padding: 9px 11px;
@@ -192,6 +193,7 @@
       color: var(--ink);
       background: #fff;
     }
+    textarea { resize: vertical; }
     .field-description {
       margin: 5px 0 0;
       color: var(--muted);
@@ -242,6 +244,102 @@
     .error-summary ul { margin: 0; padding-left: 22px; }
     .error-summary a { color: #6b2618; font-weight: 750; }
     [hidden] { display: none !important; }
+    .curator-search {
+      display: grid;
+      gap: 5px;
+      margin: 20px 0;
+    }
+    .curator-search label { color: var(--evergreen); font-weight: 800; }
+    .curator-resource-groups, .curator-schedule-weeks { display: grid; gap: 18px; }
+    .curator-resource-group, .curator-week {
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: #fbf8f1;
+      overflow: hidden;
+    }
+    .curator-resource-group h3, .curator-week-heading {
+      margin: 0;
+      padding: 11px 14px;
+      color: var(--evergreen);
+      background: var(--evergreen-soft);
+      font-size: 1rem;
+    }
+    .curator-resource-group > ul, .curator-week-list, .placement-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .curator-resource, .schedule-item {
+      padding: 14px;
+      border-top: 1px solid var(--line);
+      background: var(--surface);
+    }
+    .curator-resource:first-child, .schedule-item:first-child { border-top: 0; }
+    .curator-resource-head, .curator-week-heading, .schedule-item {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .resource-ref, .schedule-meta {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: .82rem;
+      overflow-wrap: anywhere;
+    }
+    .placement-count, .preview-label {
+      color: var(--terracotta);
+      font-size: .78rem;
+      font-weight: 850;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+    .resource-actions, .schedule-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 11px;
+    }
+    .resource-actions .secondary-action, .schedule-actions .secondary-action { padding: 7px 11px; }
+    .secondary-action:disabled { color: #77736d; background: #eee9df; cursor: not-allowed; }
+    .placement-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .placement-list > li {
+      padding: 12px;
+      border-left: 4px solid var(--gold);
+      border-radius: 7px;
+      background: #f7f1e7;
+    }
+    .placement-list p { margin-bottom: 7px; }
+    .placement-fields {
+      display: grid;
+      grid-template-columns: minmax(150px, .35fr) minmax(0, 1fr);
+      gap: 12px;
+    }
+    .placement-fields label { display: block; margin-bottom: 4px; color: var(--evergreen); font-weight: 800; }
+    .character-count { margin: 3px 0 0; color: var(--muted); font-size: .8rem; text-align: right; }
+    .curator-week-heading h3 { margin: 0; font-size: 1rem; }
+    .curator-week-heading span { color: var(--muted); font-size: .84rem; font-weight: 750; }
+    .schedule-actions { justify-content: flex-end; margin-top: 0; }
+    .schedule-actions select { width: auto; min-width: 110px; }
+    .remove-action { border-color: #b87564; color: #722f20; }
+    .empty-state { margin: 0; padding: 14px; color: var(--muted); }
+    .preview-weeks { display: grid; gap: 10px; }
+    .preview-weeks section, .preview-library {
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbf8f1;
+    }
+    .preview-weeks h3, .preview-library h3 { margin: 0 0 5px; color: var(--evergreen); font-size: .92rem; }
+    .preview-weeks ol, .preview-library ul { margin: 0; padding-left: 20px; }
+    .preview-weeks li span { display: block; color: var(--muted); font-size: .8rem; }
+    .preview-library { margin-top: 12px; }
+    .preview-library summary { color: var(--evergreen); font-weight: 800; cursor: pointer; }
     .placeholder-lines {
       display: grid;
       gap: 10px;
@@ -300,10 +398,14 @@
       .step-rail button[aria-current="step"] { border-left-color: var(--terracotta); }
       .workspace { grid-template-columns: 1fr; }
       .field-grid { grid-template-columns: 1fr; }
+      .placement-fields { grid-template-columns: 1fr; }
       .field-wide { grid-column: auto; }
       .locked-facts dl { grid-template-columns: 1fr; gap: 2px; }
       .locked-facts dd { margin-bottom: 7px; }
       .preview-panel { position: static; }
+      .curator-resource-head, .curator-week-heading, .schedule-item { align-items: flex-start; }
+      .schedule-item { display: grid; }
+      .schedule-actions { justify-content: flex-start; }
       .final-action { align-items: stretch; }
       #curatorGenerate { width: 100%; }
     }
@@ -414,6 +516,20 @@
             </div>
           </div>
         </div>
+        <div id="curatorStepTwo" hidden>
+          <p class="panel-note"><strong>Required means required by this local rotation only.</strong> It does not create a universal, institutional, licensing, or clinical requirement.</p>
+          <p class="panel-note">Omitting a core resource removes it only from this curated Path. The resource remains available in the student's complete Library.</p>
+          <div class="curator-search">
+            <label for="curatorLibrarySearch">Search this audience's Library</label>
+            <input id="curatorLibrarySearch" type="search" autocomplete="off" aria-describedby="curatorLibrarySearchDescription">
+            <p id="curatorLibrarySearchDescription" class="field-description">Choices come only from the Library projected into this audience site. Add another placement when trainees should revisit one resource.</p>
+          </div>
+          <div id="curatorCurriculumGroups" class="curator-resource-groups"></div>
+        </div>
+        <div id="curatorStepThree" hidden>
+          <p class="panel-note">Every schedule action is available without drag and drop. Move selected resources within a week or to another locked week.</p>
+          <div id="curatorScheduleWeeks" class="curator-schedule-weeks"></div>
+        </div>
         <div id="curatorFutureStep" hidden>
           <p class="panel-note">This step remains unavailable until its focused implementation and safety checks are complete.</p>
           <div class="placeholder-lines" aria-hidden="true"><span></span><span></span><span></span></div>
@@ -421,7 +537,9 @@
       </section>
       <aside id="curatorPreviewMount" class="panel preview-panel" aria-labelledby="curatorPreviewTitle">
         <h2 id="curatorPreviewTitle">Student preview</h2>
-        <p class="panel-note">Preview is read-only and remains unavailable until the edition passes its validation and privacy checks.</p>
+        <div id="curatorPreviewBody">
+          <p class="panel-note">Preview is read-only and updates from the validated curriculum and schedule.</p>
+        </div>
       </aside>
     </div>
 

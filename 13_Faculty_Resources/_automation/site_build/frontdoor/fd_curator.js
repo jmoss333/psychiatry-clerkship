@@ -29,13 +29,67 @@ function fdCuratorBlankOrientation(){
   };
 }
 
+function fdCuratorWeekCount(index,siteContext){
+  var path=index&&index.path,weeks=index&&index.weeks,context=siteContext||{},i;
+  if(!path||typeof path.id!=='string'||!path.id||path.id!==context.pathId||
+     typeof path.weekCount!=='number'||!isFinite(path.weekCount)||Math.floor(path.weekCount)!==path.weekCount||
+     path.weekCount<1||!Array.isArray(weeks)||weeks.length!==path.weekCount) return 0;
+  for(i=0;i<weeks.length;i++) if(!weeks[i]||weeks[i].n!==i+1||!Array.isArray(weeks[i].items)) return 0;
+  return path.weekCount;
+}
+
+function fdCuratorLibraryGroups(index){
+  var columns=index&&index.columns,byRef=index&&index.byRef,groups=[],seen=Object.create(null);
+  var c,i,column,item,ref,canonical,items;
+  if(!Array.isArray(columns)||!byRef||typeof byRef!=='object') return groups;
+  for(c=0;c<columns.length;c++){
+    column=columns[c]; items=[];
+    if(!column||typeof column.name!=='string'||!Array.isArray(column.items)) continue;
+    for(i=0;i<column.items.length;i++){
+      item=column.items[i]; ref=item&&item.ref;
+      if(typeof ref!=='string'||!ref||ref==='rotation-curator.html'||ref.indexOf('local:')===0||seen[ref]) continue;
+      if(!Object.prototype.hasOwnProperty.call(byRef,ref)) continue;
+      canonical=byRef[ref];
+      if(!canonical||canonical.ref!==ref||typeof canonical.title!=='string') continue;
+      seen[ref]=true; items.push(canonical);
+    }
+    if(items.length) groups.push({name:column.name,accent:typeof column.accent==='string'?column.accent:'',items:items});
+  }
+  return groups;
+}
+
+function fdCuratorLibraryRefMap(index){
+  var groups=fdCuratorLibraryGroups(index),map=Object.create(null),i,j;
+  for(i=0;i<groups.length;i++) for(j=0;j<groups[i].items.length;j++) map[groups[i].items[j].ref]=true;
+  return map;
+}
+
+function fdCuratorCanonicalPathItems(index,siteContext){
+  var weekCount=fdCuratorWeekCount(index,siteContext),allowed=fdCuratorLibraryRefMap(index);
+  var occurrences=Object.create(null),out=[],week,item,ref,i,j;
+  if(!weekCount) return out;
+  for(i=0;i<weekCount;i++){
+    week=index.weeks[i];
+    for(j=0;j<week.items.length;j++){
+      item=week.items[j]; ref=item&&item.ref;
+      if(typeof ref!=='string'||!allowed[ref]) return [];
+      occurrences[ref]=(occurrences[ref]||0)+1;
+      out.push({
+        instanceId:'core:'+ref+':'+occurrences[ref],ref:ref,week:week.n,order:j+1,
+        priority:'recommended',rationale:''
+      });
+    }
+  }
+  return out;
+}
+
 function fdCuratorNewDraft(index,siteContext){
   var path=index&&index.path?index.path:{};
   var context=siteContext||{};
   return {
     schemaVersion:1,step:1,
     site:{audience:context.audience||'',pathId:path.id||context.pathId||'',coreRevision:context.coreRevision||''},
-    config:{card:fdCuratorBlankCard(),pathItems:[],localOrientation:fdCuratorBlankOrientation(),changeNote:''},
+    config:{card:fdCuratorBlankCard(),pathItems:fdCuratorCanonicalPathItems(index,siteContext),localOrientation:fdCuratorBlankOrientation(),changeNote:''},
     publication:{baseEnvelope:null,baseCanonicalConfig:'',lastGenerated:null},
     preview:{desktopReviewed:false,mobileReviewed:false},
     affirmations:{publicSafe:false,officialLinks:false,previewsReviewed:false,forwardable:false}
@@ -124,6 +178,88 @@ function fdCuratorResetReviews(draft){
   return draft;
 }
 
+function fdCuratorNormalizePathItems(items,weekCount){
+  var ranked=[],perWeek=Object.create(null),out=[],i,item,week;
+  if(!Array.isArray(items)||!weekCount) return null;
+  for(i=0;i<items.length;i++){
+    item=items[i];
+    if(!item||typeof item.week!=='number'||Math.floor(item.week)!==item.week||item.week<1||item.week>weekCount) return null;
+    ranked.push({item:item,position:i});
+  }
+  ranked.sort(function(a,b){
+    if(a.item.week!==b.item.week) return a.item.week-b.item.week;
+    if(a.item.order!==b.item.order) return a.item.order-b.item.order;
+    return a.position-b.position;
+  });
+  for(i=0;i<ranked.length;i++){
+    item=ranked[i].item; week=String(item.week); perWeek[week]=(perWeek[week]||0)+1;
+    item.order=perWeek[week]; out.push(item);
+  }
+  return out;
+}
+
+function fdCuratorFindPathItem(items,instanceId){
+  var i;
+  if(typeof instanceId!=='string') return -1;
+  for(i=0;i<items.length;i++) if(items[i].instanceId===instanceId) return i;
+  return -1;
+}
+
+function fdCuratorDefaultWeek(draft,index,ref){
+  var items=draft.config.pathItems,i,j;
+  for(i=0;i<items.length;i++) if(items[i].ref===ref) return items[i].week;
+  for(i=0;i<index.weeks.length;i++) for(j=0;j<index.weeks[i].items.length;j++)
+    if(index.weeks[i].items[j].ref===ref) return index.weeks[i].n;
+  return 1;
+}
+
+function fdCuratorNextInstanceId(items,ref){
+  var used=Object.create(null),prefix='core:'+ref+':',i,suffix,occurrence=1;
+  for(i=0;i<items.length;i++){
+    if(items[i].instanceId.indexOf(prefix)!==0) continue;
+    suffix=items[i].instanceId.slice(prefix.length);
+    if(/^[1-9][0-9]*$/.test(suffix)) used[Number(suffix)]=true;
+  }
+  while(used[occurrence]) occurrence++;
+  return prefix+occurrence;
+}
+
+function fdCuratorRationaleValid(value){
+  var errors=[],warnings=[];
+  if(typeof value!=='string'||fdEditionTextLength(value)>FD_EDITION_RULES.maxRationale) return false;
+  try{ value.normalize('NFC'); }
+  catch(ignoreUnicode){ return false; }
+  fdEditionScreenText(value,'/config/pathItems/rationale',errors,warnings);
+  return errors.length===0;
+}
+
+function fdCuratorPathStateValid(items,allowed,weekCount){
+  var seenIds=Object.create(null),seenOrders=Object.create(null),counts=Object.create(null);
+  var i,item,weekKey,orderKey;
+  if(!Array.isArray(items)||!weekCount) return false;
+  for(i=0;i<items.length;i++){
+    item=items[i];
+    if(!item||typeof item.instanceId!=='string'||!item.instanceId||seenIds[item.instanceId]||
+       typeof item.ref!=='string'||!allowed[item.ref]||
+       typeof item.week!=='number'||Math.floor(item.week)!==item.week||item.week<1||item.week>weekCount||
+       typeof item.order!=='number'||Math.floor(item.order)!==item.order||item.order<1||
+       FD_EDITION_RULES.priorities.indexOf(item.priority)===-1||!fdCuratorRationaleValid(item.rationale)) return false;
+    weekKey=String(item.week); orderKey=weekKey+':'+String(item.order);
+    if(seenOrders[orderKey]) return false;
+    seenIds[item.instanceId]=true; seenOrders[orderKey]=true; counts[weekKey]=(counts[weekKey]||0)+1;
+  }
+  for(weekKey in counts) if(Object.prototype.hasOwnProperty.call(counts,weekKey))
+    for(i=1;i<=counts[weekKey];i++) if(!seenOrders[weekKey+':'+String(i)]) return false;
+  return true;
+}
+
+function fdCuratorPathChanged(next,weekCount){
+  var normalized=fdCuratorNormalizePathItems(next.config.pathItems,weekCount);
+  if(!normalized) return next;
+  next.config.pathItems=normalized;
+  return fdCuratorResetReviews(next);
+}
+
 function fdCuratorCanonicalWithoutEdition(config){
   var complete,normalized,value;
   if(!config||typeof config!=='object') return '';
@@ -166,7 +302,8 @@ function fdCuratorBuildConfig(draft,index,siteContext){
 }
 
 function fdCuratorReduce(draft,action,index,siteContext){
-  var shaped,current,next,snapshot,candidateCanonical,expected;
+  var shaped,current,next,snapshot,candidateCanonical,expected,weekCount,allowed,items,itemIndex,item;
+  var targetWeek,weekItems,position,otherIndex,i,changed=false;
   if(!draft||draft.schemaVersion!==1){
     current=draft||{step:1,site:{},generateEnabled:false};
     return {
@@ -193,6 +330,63 @@ function fdCuratorReduce(draft,action,index,siteContext){
   }
   if(action.type==='SET_AFFIRMATION'&&FD_CURATOR_AFFIRMATION_FIELDS.indexOf(action.name)!==-1&&typeof action.value==='boolean'){
     next.affirmations[action.name]=action.value; return next;
+  }
+  weekCount=fdCuratorWeekCount(index,siteContext);
+  allowed=fdCuratorLibraryRefMap(index);
+  items=next.config.pathItems;
+  if(action.type.indexOf('PATH_')===0&&!fdCuratorPathStateValid(items,allowed,weekCount)) return next;
+  if(action.type==='PATH_TOGGLE'){
+    if(typeof action.ref!=='string'||!allowed[action.ref]) return next;
+    for(i=items.length-1;i>=0;i--) if(items[i].ref===action.ref){ items.splice(i,1); changed=true; }
+    if(!changed){
+      targetWeek=action.week===undefined?fdCuratorDefaultWeek(next,index,action.ref):action.week;
+      if(typeof targetWeek!=='number'||Math.floor(targetWeek)!==targetWeek||targetWeek<1||targetWeek>weekCount) return next;
+      weekItems=items.filter(function(candidate){return candidate.week===targetWeek;});
+      items.push({instanceId:fdCuratorNextInstanceId(items,action.ref),ref:action.ref,week:targetWeek,
+        order:weekItems.length+1,priority:'recommended',rationale:''});
+    }
+    return fdCuratorPathChanged(next,weekCount);
+  }
+  if(action.type==='PATH_ADD_INSTANCE'){
+    if(typeof action.ref!=='string'||!allowed[action.ref]) return next;
+    targetWeek=action.week===undefined?fdCuratorDefaultWeek(next,index,action.ref):action.week;
+    if(typeof targetWeek!=='number'||Math.floor(targetWeek)!==targetWeek||targetWeek<1||targetWeek>weekCount) return next;
+    weekItems=items.filter(function(candidate){return candidate.week===targetWeek;});
+    items.push({instanceId:fdCuratorNextInstanceId(items,action.ref),ref:action.ref,week:targetWeek,
+      order:weekItems.length+1,priority:'recommended',rationale:''});
+    return fdCuratorPathChanged(next,weekCount);
+  }
+  itemIndex=fdCuratorFindPathItem(items,action.instanceId);
+  if(action.type==='PATH_REMOVE_INSTANCE'){
+    if(itemIndex<0) return next;
+    items.splice(itemIndex,1); return fdCuratorPathChanged(next,weekCount);
+  }
+  if(action.type==='PATH_SET_PRIORITY'){
+    if(itemIndex<0||FD_EDITION_RULES.priorities.indexOf(action.priority)===-1||items[itemIndex].priority===action.priority) return next;
+    items[itemIndex].priority=action.priority; return fdCuratorPathChanged(next,weekCount);
+  }
+  if(action.type==='PATH_SET_RATIONALE'){
+    if(itemIndex<0||!fdCuratorRationaleValid(action.value)||items[itemIndex].rationale===action.value) return next;
+    items[itemIndex].rationale=action.value; return fdCuratorPathChanged(next,weekCount);
+  }
+  if(action.type==='PATH_MOVE_WEEK'){
+    if(itemIndex<0||typeof action.week!=='number'||Math.floor(action.week)!==action.week||
+       action.week<1||action.week>weekCount||items[itemIndex].week===action.week) return next;
+    targetWeek=action.week; weekItems=items.filter(function(candidate){return candidate.week===targetWeek;});
+    items[itemIndex].week=targetWeek; items[itemIndex].order=weekItems.length+1;
+    return fdCuratorPathChanged(next,weekCount);
+  }
+  if(action.type==='PATH_MOVE_UP'||action.type==='PATH_MOVE_DOWN'){
+    if(itemIndex<0) return next;
+    item=items[itemIndex];
+    weekItems=items.filter(function(candidate){return candidate.week===item.week;})
+      .sort(function(a,b){return a.order-b.order;});
+    position=weekItems.indexOf(item);
+    if(action.type==='PATH_MOVE_UP'&&position>0) otherIndex=fdCuratorFindPathItem(items,weekItems[position-1].instanceId);
+    else if(action.type==='PATH_MOVE_DOWN'&&position>=0&&position<weekItems.length-1) otherIndex=fdCuratorFindPathItem(items,weekItems[position+1].instanceId);
+    else return next;
+    i=items[itemIndex].order; items[itemIndex].order=items[otherIndex].order; items[otherIndex].order=i;
+    return fdCuratorPathChanged(next,weekCount);
   }
   if(action.type==='GENERATION_SUCCEEDED'&&action.result&&action.result.ok===true){
     snapshot=typeof fdEditionTrustedSnapshot==='function'?fdEditionTrustedSnapshot(action.result):null;
@@ -328,6 +522,112 @@ function fdCuratorDraftStorage(storage){
   };
 }
 
+function fdCuratorPathInstances(draft,ref){
+  var out=[],items=draft&&draft.config&&Array.isArray(draft.config.pathItems)?draft.config.pathItems:[],i;
+  for(i=0;i<items.length;i++) if(items[i].ref===ref) out.push(items[i]);
+  out.sort(function(a,b){return a.week!==b.week?a.week-b.week:a.order-b.order;});
+  return out;
+}
+
+function fdCuratorPriorityOptions(selected){
+  var values=FD_EDITION_RULES.priorities,out='',i;
+  for(i=0;i<values.length;i++) out+='<option value="'+values[i]+'"'+(values[i]===selected?' selected':'')+'>'+values[i]+'</option>';
+  return out;
+}
+
+function fdCuratorCurriculumMarkup(draft,index,query){
+  var groups=fdCuratorLibraryGroups(index),needle=typeof query==='string'?query.trim().toLowerCase():'',out='';
+  var i,j,k,group,item,instances,title,searchText,groupId,placementId,rationaleId,instance;
+  for(i=0;i<groups.length;i++){
+    group=groups[i]; groupId='curatorGroup'+i; var rows='';
+    for(j=0;j<group.items.length;j++){
+      item=group.items[j]; title=item.title||item.ref;
+      searchText=(group.name+' '+title+' '+item.ref).toLowerCase();
+      if(needle&&searchText.indexOf(needle)===-1) continue;
+      instances=fdCuratorPathInstances(draft,item.ref);
+      rows+='<li class="curator-resource" data-curator-ref="'+fdEsc(item.ref)+'">'+
+        '<div class="curator-resource-head"><div><strong>'+fdEsc(title)+'</strong><span class="resource-ref">'+fdEsc(item.ref)+'</span></div>'+
+        '<span class="placement-count">'+instances.length+' placement'+(instances.length===1?'':'s')+'</span></div>'+
+        '<div class="resource-actions"><button type="button" class="secondary-action" data-curator-path-toggle="'+fdEsc(item.ref)+'">'+
+        (instances.length?'Omit from curated Path':'Include in curated Path')+'</button>'+
+        '<button type="button" class="secondary-action" data-curator-path-add="'+fdEsc(item.ref)+'">Add another placement</button></div>';
+      if(instances.length){
+        rows+='<ul class="placement-list" aria-label="Placements for '+fdEsc(title)+'">';
+        for(k=0;k<instances.length;k++){
+          instance=instances[k]; placementId='curatorPlacement'+i+'_'+j+'_'+k; rationaleId=placementId+'Rationale';
+          rows+='<li><p><strong>Placement '+(k+1)+'</strong> · Week '+instance.week+'</p>'+
+            '<div class="placement-fields"><div><label for="'+placementId+'Priority">Local priority</label>'+
+            '<select id="'+placementId+'Priority" data-curator-path-priority="'+fdEsc(instance.instanceId)+'">'+fdCuratorPriorityOptions(instance.priority)+'</select></div>'+
+            '<div class="rationale-field"><label for="'+rationaleId+'">Why I selected this</label>'+
+            '<textarea id="'+rationaleId+'" maxlength="280" rows="2" data-curator-path-rationale="'+fdEsc(instance.instanceId)+'" aria-describedby="'+rationaleId+'Count">'+fdEsc(instance.rationale)+'</textarea>'+
+            '<p id="'+rationaleId+'Count" class="character-count" data-curator-rationale-count="'+fdEsc(instance.instanceId)+'">'+
+            fdEditionTextLength(instance.rationale)+' of 280 characters</p></div></div></li>';
+        }
+        rows+='</ul>';
+      }else rows+='<p class="field-description">Available in the full Library; not currently placed in the curated Path.</p>';
+      rows+='</li>';
+    }
+    if(rows) out+='<section class="curator-resource-group" aria-labelledby="'+groupId+'"><h3 id="'+groupId+'">'+fdEsc(group.name)+'</h3><ul>'+rows+'</ul></section>';
+  }
+  return out||'<p class="empty-state">No Library resources match this search.</p>';
+}
+
+function fdCuratorScheduleMarkup(draft,index){
+  var weekCount=index&&index.path?index.path.weekCount:0,out='',week,items,i,j,item,core,title,id,options;
+  for(i=1;i<=weekCount;i++){
+    week=index.weeks[i-1]; items=[];
+    for(j=0;j<draft.config.pathItems.length;j++) if(draft.config.pathItems[j].week===i) items.push(draft.config.pathItems[j]);
+    items.sort(function(a,b){return a.order-b.order;});
+    out+='<section class="curator-week" data-curator-week="'+i+'" aria-labelledby="curatorWeek'+i+'Title">'+
+      '<div class="curator-week-heading"><h3 id="curatorWeek'+i+'Title">Week '+i+(week&&week.title?' · '+fdEsc(week.title):'')+'</h3><span>'+items.length+' item'+(items.length===1?'':'s')+'</span></div>'+
+      '<ol class="curator-week-list">';
+    if(!items.length) out+='<li class="empty-state">No resources scheduled for Week '+i+'.</li>';
+    for(j=0;j<items.length;j++){
+      item=items[j]; core=index.byRef[item.ref]||{}; title=core.title||item.ref; id='curatorSchedule'+i+'_'+j; options='';
+      for(var w=1;w<=weekCount;w++) options+='<option value="'+w+'"'+(w===i?' selected':'')+'>Week '+w+'</option>';
+      out+='<li class="schedule-item" data-curator-instance="'+fdEsc(item.instanceId)+'"><div><strong>'+fdEsc(title)+'</strong>'+
+        '<span class="schedule-meta">'+fdEsc(item.priority)+' · placement '+item.order+'</span></div><div class="schedule-actions">'+
+        '<button type="button" class="secondary-action" data-curator-path-up="'+fdEsc(item.instanceId)+'" aria-label="Move '+fdEsc(title)+' up in Week '+i+'"'+(j===0?' disabled':'')+'>Move up</button>'+
+        '<button type="button" class="secondary-action" data-curator-path-down="'+fdEsc(item.instanceId)+'" aria-label="Move '+fdEsc(title)+' down in Week '+i+'"'+(j===items.length-1?' disabled':'')+'>Move down</button>'+
+        '<label class="visually-hidden" for="'+id+'Week">Move '+fdEsc(title)+' to week</label>'+
+        '<select id="'+id+'Week" data-curator-path-week="'+fdEsc(item.instanceId)+'" aria-label="Move '+fdEsc(title)+' to week">'+options+'</select>'+
+        '<button type="button" class="secondary-action remove-action" data-curator-path-remove="'+fdEsc(item.instanceId)+'" aria-label="Remove '+fdEsc(title)+' placement from the curated Path">Remove</button>'+
+        '</div></li>';
+    }
+    out+='</ol></section>';
+  }
+  return out;
+}
+
+function fdCuratorProjectDraft(draft,index,siteContext,subtle){
+  var built=fdCuratorBuildConfig(draft,index,siteContext);
+  if(!built.ok) return Promise.resolve({ok:false,errors:built.errors||[],warnings:built.warnings||[]});
+  return fdEditionCreateEnvelope(built.value,index,siteContext,subtle).then(function(created){
+    if(!created||created.ok!==true) return created||{ok:false,errors:[]};
+    return fdProjectEdition(index,created);
+  },function(){ return {ok:false,errors:[{code:'CURATOR_PREVIEW',path:'/preview',message:'The preview could not be generated.',blocking:true}]}; });
+}
+
+function fdCuratorPreviewMarkup(projected){
+  var index=projected&&projected.index,selected='',library='',i,j,week,column,item;
+  if(!projected||projected.ok!==true||!index) return '<p class="panel-note">Complete the current fields to update this read-only preview.</p>';
+  for(i=0;i<index.weeks.length;i++){
+    week=index.weeks[i]; selected+='<section><h3>Week '+week.n+'</h3><ol>';
+    if(!week.items.length) selected+='<li>No selected resources.</li>';
+    for(j=0;j<week.items.length;j++) selected+='<li><strong>'+fdEsc(week.items[j].title)+'</strong><span>'+fdEsc(week.items[j].editionPriority)+'</span></li>';
+    selected+='</ol></section>';
+  }
+  for(i=0;i<index.columns.length;i++){
+    column=index.columns[i]; library+='<section><h3>'+fdEsc(column.name)+'</h3><ul>';
+    for(j=0;j<column.items.length;j++){
+      item=column.items[j]; library+='<li>'+fdEsc(item.title)+'</li>';
+    }
+    library+='</ul></section>';
+  }
+  return '<p class="preview-label">Projected student Path</p><div class="preview-weeks">'+selected+'</div>'+
+    '<details class="preview-library"><summary>Full Library remains available</summary>'+library+'</details>';
+}
+
 function fdCuratorRenderErrors(root,errors){
   var summary=root.querySelector('#curatorErrorSummary'),list=root.querySelector('#curatorErrorList'),i,item,link;
   if(!summary||!list) return;
@@ -342,7 +642,7 @@ function fdCuratorRenderErrors(root,errors){
 }
 
 function fdCuratorRender(state,root,index,errors){
-  var audience,path,editorTitle,status,generate,buttons,selected,i,input;
+  var audience,path,editorTitle,status,generate,buttons,selected,i,input,mount;
   var labels=['Edition','Curriculum','Schedule','Local details','Preview and share'];
   var audienceLabel=state.site.audience==='resident'?'Resident':'MS3';
   if(!root||!state) return;
@@ -358,7 +658,9 @@ function fdCuratorRender(state,root,index,errors){
     if(selected) buttons[i].setAttribute('aria-current','step'); else buttons[i].removeAttribute('aria-current');
   }
   input=root.querySelector('#curatorStepOne'); if(input) input.hidden=state.step!==1;
-  input=root.querySelector('#curatorFutureStep'); if(input) input.hidden=state.step===1;
+  input=root.querySelector('#curatorStepTwo'); if(input) input.hidden=state.step!==2;
+  input=root.querySelector('#curatorStepThree'); if(input) input.hidden=state.step!==3;
+  input=root.querySelector('#curatorFutureStep'); if(input) input.hidden=state.step<4;
   if(state.config&&state.config.card){
     for(i=0;i<FD_CURATOR_CARD_FIELDS.length;i++){
       input=root.querySelector('[data-curator-card="'+FD_CURATOR_CARD_FIELDS[i]+'"]');
@@ -370,6 +672,11 @@ function fdCuratorRender(state,root,index,errors){
         state.publication.baseEnvelope.config.createdAgainstCoreRevision:state.site.coreRevision
     ));
   }
+  mount=root.querySelector('#curatorCurriculumGroups');
+  input=root.querySelector('#curatorLibrarySearch');
+  if(mount) mount.innerHTML=fdCuratorCurriculumMarkup(state,index,input?input.value:'');
+  mount=root.querySelector('#curatorScheduleWeeks');
+  if(mount) mount.innerHTML=fdCuratorScheduleMarkup(state,index);
   fdCuratorRenderErrors(root,errors||[]);
   if(generate){ generate.disabled=true; generate.setAttribute('aria-disabled','true'); }
 }
@@ -379,8 +686,27 @@ function fdCuratorMount(root,index,siteContext){
   var adapter=fdCuratorDraftStorage(typeof localStorage==='undefined'?null:localStorage);
   var importTransactions=fdCuratorImportTransactions();
   var subtle=typeof crypto!=='undefined'&&crypto?crypto.subtle:null;
-  var buttons,i,save,continueButton,importInput;
-  function dispatch(action){ touched=true; importTransactions.touch(); state=fdCuratorReduce(state,action,index,siteContext); errors=[]; fdCuratorRender(state,root,index,errors); return state; }
+  var buttons,i,save,continueButton,importInput,previewSequence=0;
+  function refreshPreview(){
+    var preview=root.querySelector('#curatorPreviewBody'),sequence;
+    if(!preview) return;
+    if(state.step!==2&&state.step!==3){
+      preview.innerHTML='<p class="panel-note">Preview is read-only and updates from the validated curriculum and schedule.</p>';
+      return;
+    }
+    sequence=++previewSequence;
+    preview.innerHTML='<p class="panel-note">Updating the validated student preview…</p>';
+    fdCuratorProjectDraft(state,index,siteContext,subtle).then(function(result){
+      if(sequence!==previewSequence) return;
+      preview.innerHTML=fdCuratorPreviewMarkup(result);
+    });
+  }
+  function render(){ fdCuratorRender(state,root,index,errors); refreshPreview(); }
+  function dispatch(action,skipRender){
+    touched=true; importTransactions.touch(); state=fdCuratorReduce(state,action,index,siteContext); errors=[];
+    if(skipRender) refreshPreview(); else render();
+    return state;
+  }
   function status(message){ var node=root.querySelector('#curatorSaveStatus'); if(node) node.textContent=message; }
   if(!root) return null;
   buttons=root.querySelectorAll('[data-curator-step]');
@@ -388,8 +714,44 @@ function fdCuratorMount(root,index,siteContext){
     dispatch({type:'GO_TO_STEP',step:Number(event.currentTarget.getAttribute('data-curator-step'))});
   });
   root.addEventListener('input',function(event){
-    var field=event.target.getAttribute&&event.target.getAttribute('data-curator-card');
+    var field=event.target.getAttribute&&event.target.getAttribute('data-curator-card'),instance,current,count,counters,c;
     if(field) dispatch({type:'SET_CARD_FIELD',field:field,value:event.target.value});
+    instance=event.target.getAttribute&&event.target.getAttribute('data-curator-path-rationale');
+    if(instance){
+      dispatch({type:'PATH_SET_RATIONALE',instanceId:instance,value:event.target.value},true);
+      current=fdCuratorFindPathItem(state.config.pathItems,instance);
+      if(current>=0&&event.target.value!==state.config.pathItems[current].rationale) event.target.value=state.config.pathItems[current].rationale;
+      counters=root.querySelectorAll('[data-curator-rationale-count]'); count=null;
+      for(c=0;c<counters.length;c++) if(counters[c].getAttribute('data-curator-rationale-count')===instance){ count=counters[c]; break; }
+      if(count) count.textContent=fdEditionTextLength(event.target.value)+' of 280 characters';
+    }
+  });
+  root.addEventListener('click',function(event){
+    var target=event.target,ref,instance;
+    if(!target||typeof target.getAttribute!=='function') return;
+    ref=target.getAttribute('data-curator-path-toggle');
+    if(ref!==null){ dispatch({type:'PATH_TOGGLE',ref:ref}); return; }
+    ref=target.getAttribute('data-curator-path-add');
+    if(ref!==null){ dispatch({type:'PATH_ADD_INSTANCE',ref:ref}); return; }
+    instance=target.getAttribute('data-curator-path-remove');
+    if(instance!==null){ dispatch({type:'PATH_REMOVE_INSTANCE',instanceId:instance}); return; }
+    instance=target.getAttribute('data-curator-path-up');
+    if(instance!==null){ dispatch({type:'PATH_MOVE_UP',instanceId:instance}); return; }
+    instance=target.getAttribute('data-curator-path-down');
+    if(instance!==null) dispatch({type:'PATH_MOVE_DOWN',instanceId:instance});
+  });
+  root.addEventListener('change',function(event){
+    var target=event.target,instance;
+    if(!target||typeof target.getAttribute!=='function') return;
+    instance=target.getAttribute('data-curator-path-priority');
+    if(instance!==null){ dispatch({type:'PATH_SET_PRIORITY',instanceId:instance,priority:target.value}); return; }
+    instance=target.getAttribute('data-curator-path-week');
+    if(instance!==null) dispatch({type:'PATH_MOVE_WEEK',instanceId:instance,week:Number(target.value)});
+  });
+  input=root.querySelector('#curatorLibrarySearch');
+  if(input) input.addEventListener('input',function(){
+    var mount=root.querySelector('#curatorCurriculumGroups');
+    if(mount) mount.innerHTML=fdCuratorCurriculumMarkup(state,index,input.value);
   });
   save=root.querySelector('#curatorSaveDraft');
   if(save) save.addEventListener('click',function(){
@@ -410,14 +772,14 @@ function fdCuratorMount(root,index,siteContext){
     transaction=importTransactions.begin();
     fdCuratorReadImportFile(file,index,siteContext,subtle).then(function(result){
       if(!importTransactions.commit(transaction)) return;
-      if(result.ok){ touched=true; state=result.draft; errors=[]; fdCuratorRender(state,root,index,errors); status('Backup imported. Save the draft to keep it on this device.'); }
+      if(result.ok){ touched=true; state=result.draft; errors=[]; render(); status('Backup imported. Save the draft to keep it on this device.'); }
       else status(result.code==='CURATOR_IMPORT_SIZE'?'Backup must be 64 KiB or smaller.':'Backup could not be validated for this audience.');
       event.target.value='';
     });
   });
-  fdCuratorRender(state,root,index,errors);
+  render();
   adapter.load(index,siteContext,subtle).then(function(result){
-    if(!touched&&result.ok&&result.draft){ state=result.draft; fdCuratorRender(state,root,index,errors); status('Saved on this device'); }
+    if(!touched&&result.ok&&result.draft){ state=result.draft; render(); status('Saved on this device'); }
   });
   return {dispatch:dispatch,getState:function(){ return state; }};
 }

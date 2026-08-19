@@ -51,13 +51,17 @@ function context(audience = 'ms3') {
 
 function index(audience = 'ms3') {
   const weeks = audience === 'ms3' ? 6 : 4;
+  const interview = { ref: 'pg_interview.md', title: 'Synthetic interview guide' };
   return {
     path: { id: context(audience).pathId, weekCount: weeks },
-    weeks: Array.from({ length: weeks }, (_, offset) => ({ n: offset + 1 })),
+    weeks: Array.from({ length: weeks }, (_, offset) => ({
+      n: offset + 1,
+      items: offset === 0 ? [interview] : [],
+    })),
     byRef: {
-      'pg_interview.md': { ref: 'pg_interview.md', title: 'Synthetic interview guide' },
+      'pg_interview.md': interview,
     },
-    columns: [],
+    columns: [{ name: 'Interviewing', accent: '#174d43', items: [interview] }],
   };
 }
 
@@ -144,7 +148,12 @@ test('creates the exact audience-locked normalized draft shape', () => {
     step: 1,
     site: { audience: 'ms3', pathId: 'ms3-six-week', coreRevision: REVISION },
     config: {
-      card: blankCard(), pathItems: [], localOrientation: blankOrientation(), changeNote: '',
+      card: blankCard(),
+      pathItems: [{
+        instanceId: 'core:pg_interview.md:1', ref: 'pg_interview.md', week: 1,
+        order: 1, priority: 'recommended', rationale: '',
+      }],
+      localOrientation: blankOrientation(), changeNote: '',
     },
     publication: { baseEnvelope: null, baseCanonicalConfig: '', lastGenerated: null },
     preview: { desktopReviewed: false, mobileReviewed: false },
