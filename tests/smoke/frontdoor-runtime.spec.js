@@ -46,6 +46,8 @@ const VALID_PLACEMENT = {
 async function installEditionRuntimeProbe(page, options = {}) {
   await page.addInitScript(({ editionKey, localKey, logKey, throwHistory, listenerFault, startupFault }) => {
     const originalSetItem = Storage.prototype.setItem;
+    const originalGetItem = Storage.prototype.getItem;
+    const originalRemoveItem = Storage.prototype.removeItem;
     const originalReplaceState = History.prototype.replaceState;
     const originalAddEventListener = EventTarget.prototype.addEventListener;
     const originalRemoveEventListener = EventTarget.prototype.removeEventListener;
@@ -54,11 +56,22 @@ async function installEditionRuntimeProbe(page, options = {}) {
     const originalSetTimeout = window.setTimeout.bind(window);
     const innerHtml = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML');
     const eventKey = `${logKey}_events`;
+    const planStorageKey = `${logKey}_plan-storage`;
     const readLog = () => {
       try { return JSON.parse(sessionStorage.getItem(logKey) || '[]'); } catch { return []; }
     };
     const readEvents = () => {
       try { return JSON.parse(sessionStorage.getItem(eventKey) || '[]'); } catch { return []; }
+    };
+    const readPlanStorage = () => {
+      try { return JSON.parse(sessionStorage.getItem(planStorageKey) || '[]'); } catch { return []; }
+    };
+    const recordPlanStorage = (operation, key) => {
+      if (key !== 'cw_plan_v1' && key !== 'cw_pretest_v1' && key !== 'cw_shelf_date') return;
+      const operations = readPlanStorage();
+      operations.push([operation, key]);
+      originalSetItem.call(window.sessionStorage, planStorageKey, JSON.stringify(operations));
+      window.__fdPlanStorageOps = operations;
     };
     const record = (event) => {
       const events = readEvents();
@@ -69,6 +82,7 @@ async function installEditionRuntimeProbe(page, options = {}) {
     window.__fdMeaningfulRenders = [];
     window.__fdEditionWrites = readLog();
     window.__fdEditionEvents = readEvents();
+    window.__fdPlanStorageOps = readPlanStorage();
     window.__fdStartupListenerFires = [];
     window.__fdUnhandledRejections = [];
     window.__fdResourceAbortCount = 0;
@@ -227,6 +241,7 @@ async function installEditionRuntimeProbe(page, options = {}) {
       },
     });
     Storage.prototype.setItem = function setItem(key, value) {
+      if (this === window.localStorage) recordPlanStorage('set', key);
       if (this === window.localStorage && (key === editionKey || key === localKey)) {
         const writes = readLog();
         writes.push([key, String(value)]);
@@ -235,6 +250,14 @@ async function installEditionRuntimeProbe(page, options = {}) {
         record(['write', key]);
       }
       return originalSetItem.call(this, key, value);
+    };
+    Storage.prototype.getItem = function getItem(key) {
+      if (this === window.localStorage) recordPlanStorage('get', key);
+      return originalGetItem.call(this, key);
+    };
+    Storage.prototype.removeItem = function removeItem(key) {
+      if (this === window.localStorage) recordPlanStorage('remove', key);
+      return originalRemoveItem.call(this, key);
     };
     new MutationObserver(() => {
       const content = document.querySelector('#content');
@@ -517,6 +540,19 @@ async function resetEditionWriteLog(page) {
   }, EDITION_WRITE_LOG);
 }
 
+async function resetPlanStorageLog(page) {
+  await page.evaluate((logKey) => {
+    sessionStorage.setItem(`${logKey}_plan-storage`, '[]');
+    window.__fdPlanStorageOps = [];
+  }, EDITION_WRITE_LOG);
+}
+
+async function planStorageOps(page) {
+  return page.evaluate((logKey) => {
+    try { return JSON.parse(sessionStorage.getItem(`${logKey}_plan-storage`) || '[]'); } catch { return []; }
+  }, EDITION_WRITE_LOG);
+}
+
 async function editionWrites(page) {
   return page.evaluate((logKey) => {
     try { return JSON.parse(sessionStorage.getItem(logKey) || '[]'); } catch { return []; }
@@ -657,6 +693,22 @@ async function createSyntheticEdition(testInfo, editionNumber, audienceOverride 
     validated,
     canonical,
     siteContext: { audience, pathId, coreRevision: EDITION_REVISION },
+  };
+}
+
+function savedPlanFor(index, fingerprint) {
+  return {
+    pathId: index.path.id,
+    editionFingerprint: fingerprint,
+    weekCount: index.weeks.length,
+    generatedAt: '2026-08-19T00:00:00.000Z',
+    shelfDate: '',
+    weeks: index.weeks.map((week) => ({
+      week: week.n,
+      title: `Week ${week.n} — ${week.title}`,
+      allCats: [...(week.focusCategories || [])],
+      focus: [],
+    })),
   };
 }
 
@@ -1105,6 +1157,62 @@ test('accepting a different valid edition commits in order, clears the hash, and
   expect(JSON.parse(after[LOCAL_EDITION_KEY]).byFingerprint[candidate.fingerprint])
     .toEqual({ checklist: {}, resources: {} });
 });
+
+for (const [label, usablePlacement, expectedPlanMutations] of [
+  ['usable placement', true, [['set', 'cw_plan_v1']]],
+  ['no usable placement', false, Array.from({ length: 4 }, () => ['remove', 'cw_plan_v1'])],
+]) {
+  test(`accepting an edition with ${label} changes only its derived plan after reload`, async ({ page }, testInfo) => {
+    await installEditionRuntimeProbe(page);
+    const active = await createSyntheticEdition(testInfo, 1);
+    const candidate = await createSyntheticEdition(testInfo, 2);
+    const activePlan = savedPlanFor(active.canonical, active.fingerprint);
+    await page.goto('/');
+    await seedEditionLearner(page);
+    await page.evaluate(({ plan, placement }) => {
+      localStorage.setItem('cw_plan_v1', JSON.stringify(plan));
+      if (placement) localStorage.setItem('cw_pretest_v1', JSON.stringify(placement));
+      else localStorage.setItem('cw_pretest_v1', '{unusable-placement');
+      localStorage.setItem('cw_qb_v1', '{"core":"question-bank"}');
+      localStorage.setItem('cw_unrelated_v1', 'preserve unrelated cw bytes');
+      localStorage.setItem('rp_resident_state_v1', 'preserve resident bytes');
+    }, {
+      plan: activePlan,
+      placement: usablePlacement ? VALID_PLACEMENT : null,
+    });
+    await page.goto(`/?case=edition-plan-active#edition=${active.payload}`);
+    await expect(page.locator('.fd-today')).toBeVisible();
+
+    await page.goto(`/?page=__progress__&case=edition-plan-switch#edition=${candidate.payload}`);
+    await expect(page.locator('dialog.fd-edition-switch')).toBeVisible();
+    const before = await localStorageSnapshot(page);
+    await resetPlanStorageLog(page);
+    await page.getByRole('button', { name: 'Switch edition' }).click();
+    await expect(page.locator('#pgRoot')).toBeVisible();
+    expect(new URL(page.url()).hash).toBe('');
+    const operations = await planStorageOps(page);
+    expect(operations.some(([operation, key]) => operation === 'get' && key === 'cw_plan_v1')).toBe(true);
+    expect(operations.filter(([operation]) => operation !== 'get')).toEqual(expectedPlanMutations);
+    expect(operations.every(([, key]) => ['cw_plan_v1', 'cw_pretest_v1', 'cw_shelf_date'].includes(key))).toBe(true);
+
+    const after = await localStorageSnapshot(page);
+    for (const key of [
+      'cw_progress_v1', 'cw_pretest_v1', 'cw_qb_v1', 'cw_unrelated_v1', 'rp_resident_state_v1',
+    ]) expect(after[key]).toBe(before[key]);
+    const localBefore = JSON.parse(before[LOCAL_EDITION_KEY]);
+    const localAfter = JSON.parse(after[LOCAL_EDITION_KEY]);
+    expect(localAfter.byFingerprint[active.fingerprint])
+      .toEqual(localBefore.byFingerprint[active.fingerprint]);
+    expect(localAfter.byFingerprint[candidate.fingerprint]).toEqual({ checklist: {}, resources: {} });
+    if (usablePlacement) {
+      expect(JSON.parse(after.cw_plan_v1)).toMatchObject({
+        pathId: candidate.canonical.path.id,
+        editionFingerprint: candidate.fingerprint,
+        weekCount: candidate.canonical.weeks.length,
+      });
+    } else expect(after.cw_plan_v1).toBeUndefined();
+  });
+}
 
 test('malformed and wrong-audience links show a non-modal alert without changing any stored byte', async ({ page }, testInfo) => {
   await installEditionRuntimeProbe(page);

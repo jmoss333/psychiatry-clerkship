@@ -1507,6 +1507,7 @@
     }
     return {
       pathId:(index&&index.path&&index.path.id)||'',
+      editionFingerprint:typeof fdEditionIndexFingerprint==='function'?fdEditionIndexFingerprint(index):'',
       weekCount:weeks.length,
       generatedAt:generatedAt,
       shelfDate:shelfDate||'',
@@ -1522,8 +1523,9 @@
     };
   }
 
-  function buildPlan(){
-    return fdPlanFromMastery(FD_INDEX,masteryByBlueprint(),
+  function buildPlan(index){
+    var active=index||FD_INDEX;
+    return fdPlanFromMastery(active,masteryByBlueprint(),
       new Date().toISOString(),LS('cw_shelf_date')||'');
   }
 
@@ -1537,6 +1539,7 @@
     if(!fdActivePathValid(index)) return false;
     var weeks=index.weeks,path=index.path;
     if(!plan||typeof plan!=='object'||plan.pathId!==path.id||
+       plan.editionFingerprint!==fdEditionIndexFingerprint(index)||
        path.weekCount!==weeks.length||plan.weekCount!==weeks.length||!Array.isArray(plan.weeks)||
        plan.weeks.length!==weeks.length) return false;
     for(var i=0;i<weeks.length;i++){
@@ -1569,7 +1572,7 @@
     if(fdPlanMatches(index,plan)) return plan;
     try{placement=JSON.parse(localStorage.getItem('cw_pretest_v1')||'null');}catch(_){placement=null;}
     if(fdPlacementUsable(placement)){
-      plan=buildPlan();
+      plan=buildPlan(index);
       try{localStorage.setItem('cw_plan_v1',JSON.stringify(plan));}catch(_){ }
       return plan;
     }
@@ -1586,7 +1589,7 @@
        write here used to overwrite real practice records — confidence, two-tier results —
        with a cold pretest snapshot on every retake. A pretest answer may replace nothing,
        or an older pretest record; genuine practice history always wins. The attempt itself
-       is still fully recorded in cw_pretest_v1 for the plan. */ try{localStorage.setItem('cw_qb_v1',JSON.stringify(qb));}catch(_){ } try{localStorage.setItem('cw_pretest_v1',JSON.stringify({takenAt:new Date().toISOString(),answers:answers,byCat:byCat}));}catch(_){ } var plan=buildPlan(); if(!plan){ renderPretestResults(null); return; } try{localStorage.setItem('cw_plan_v1',JSON.stringify(plan));}catch(_){ } renderPretestResults(plan); }
+       is still fully recorded in cw_pretest_v1 for the plan. */ try{localStorage.setItem('cw_qb_v1',JSON.stringify(qb));}catch(_){ } try{localStorage.setItem('cw_pretest_v1',JSON.stringify({takenAt:new Date().toISOString(),answers:answers,byCat:byCat}));}catch(_){ } var plan=buildPlan(FD_INDEX); if(!plan){ renderPretestResults(null); return; } try{localStorage.setItem('cw_plan_v1',JSON.stringify(plan));}catch(_){ } renderPretestResults(plan); }
   function renderPretestResults(plan){ var root=document.getElementById('ptRoot'); if(!root)return; if(!fdActivePathValid(FD_INDEX)){ root.innerHTML=fdPathFallback('plan'); return; } currentItem={f:'__placement_results__',t:'Your placement',k:'special'};setLearnerTitle(currentItem);var mb=masteryByBlueprint(),duration=fdPathWeekCount(FD_INDEX)+'-week'; var h='<h1>Your placement</h1><p class="sub">A starting estimate from your answers — it refines as you practice. Weak areas are flagged in your plan below.</p>'; h+='<div class="hm-sec"><h2>Mastery by blueprint</h2>'+masteryBarsHtml(mb)+'</div>'; h+='<div class="hm-sec"><h2>Your personalized '+duration+' plan</h2>'+renderPlanCards(plan)+'</div>'; h+='<div class="hm-sec"><button class="hm-li" data-pt="pretest" style="border-bottom:none"><span class="t">Retake the placement</span><span class="sec">↻</span></button></div>'; root.innerHTML=h; }
   function renderStoredPlan(){ if(!fdActivePathValid(FD_INDEX)){ if(contentEl){ contentEl.className='fd-main'; contentEl.innerHTML='<article class="fd-reader fd-progress-reader">'+fdPathFallback('plan')+'</article>'; } return; } var plan=fdLoadPlan(FD_INDEX),duration=fdPathWeekCount(FD_INDEX)+'-week'; if(!plan){ startPretest(); return; } currentItem={f:'__plan__',t:'Your '+duration+' plan',k:'special'};setLearnerTitle(currentItem);if(contentEl){ contentEl.className='fd-main'; } contentEl.innerHTML='<article class="fd-reader fd-progress-reader"><button type="button" class="fd-reader__back" data-progress-action="progress">‹ Progress</button><div class="hm" id="planRoot"><h1>Your '+duration+' plan</h1><p class="sub">Personalized from your placement — the week order is fixed; your weak areas are flagged to hit first.</p><div class="hm-sec">'+renderPlanCards(plan)+'</div><div class="hm-sec"><button class="hm-li" data-pt="pretest" style="border-bottom:none"><span class="t">Retake the placement</span><span class="sec">↻</span></button></div></div></article>'; }
   /* ===== Governed Front Door live shell ===== */
