@@ -9,7 +9,10 @@ const F = new Function(`${source('fd_edition_contract.js')}\n${source('fd_editio
   fdEditionCreateEnvelope,fdEditionResolveStartup,fdEditionAcceptFirst,fdEditionAcceptSwitch,
   fdEditionReadLocalProgress,fdEditionToggleLocalProgress,fdEditionSwitchMarkup,fdEditionErrorMarkup,
   fdEditionRuntimeListen,fdEditionRuntimeUnlisten,
-  fdEditionLocalToggleAllowed:typeof fdEditionLocalToggleAllowed==='function'?fdEditionLocalToggleAllowed:null
+  fdEditionLocalToggleAllowed:typeof fdEditionLocalToggleAllowed==='function'?fdEditionLocalToggleAllowed:null,
+  fdEditionStartupJournal:typeof fdEditionStartupJournal==='function'?fdEditionStartupJournal:null,
+  fdEditionStartupJournalRun:typeof fdEditionStartupJournalRun==='function'?fdEditionStartupJournalRun:null,
+  fdEditionStartupJournalRollback:typeof fdEditionStartupJournalRollback==='function'?fdEditionStartupJournalRollback:null
 };`)();
 
 const REVISION = '1234567890abcdef1234567890abcdef12345678';
@@ -94,10 +97,70 @@ function recordingStorage(initial = {}) {
   return {
     getItem(key) { return values.has(key) ? values.get(key) : null; },
     setItem(key, value) { writes.push([key, value]); values.set(key, value); },
+    removeItem(key) { writes.push([key, null]); values.delete(key); },
     snapshot() { return Object.fromEntries(values); },
     writes
   };
 }
+
+test('startup journal rolls back only owned exact writes and preserves concurrent storage', () => {
+  assert.equal(typeof F.fdEditionStartupJournal, 'function');
+  assert.equal(typeof F.fdEditionStartupJournalRun, 'function');
+  assert.equal(typeof F.fdEditionStartupJournalRollback, 'function');
+  const storage = recordingStorage({
+    cw_plan_v1: 'broken-plan', cw_last: 'welcome.md',
+    cw_progress_v1: 'core-before', cw_qb_v1: 'questions-before',
+  });
+  const journal = F.fdEditionStartupJournal(storage, [
+    EDITION_KEY, LOCAL_KEY, 'cw_plan_v1', 'cw_last', 'cw_frontdoor_v1',
+  ]);
+
+  assert.equal(F.fdEditionStartupJournalRun(journal, [EDITION_KEY, LOCAL_KEY], () => {
+    storage.setItem(LOCAL_KEY, 'startup-local');
+    storage.setItem(EDITION_KEY, 'startup-edition');
+    return true;
+  }).value, true);
+  assert.equal(F.fdEditionStartupJournalRun(journal, ['cw_plan_v1'], () => {
+    storage.removeItem('cw_plan_v1');
+    return true;
+  }).value, true);
+  assert.equal(F.fdEditionStartupJournalRun(journal, ['cw_last'], () => {
+    storage.setItem('cw_last', 'orientation.md');
+    return true;
+  }).value, true);
+
+  storage.setItem('cw_plan_v1', 'concurrent-plan');
+  storage.setItem('cw_progress_v1', 'core-from-other-tab');
+  storage.setItem('cw_qb_v1', 'questions-from-other-tab');
+  storage.setItem('cw_concurrent_v1', 'new-cw-value');
+  storage.setItem('rp_concurrent_v1', 'new-rp-value');
+
+  assert.equal(F.fdEditionStartupJournalRollback(journal), true);
+  assert.deepEqual(storage.snapshot(), {
+    cw_plan_v1: 'concurrent-plan',
+    cw_last: 'welcome.md',
+    cw_progress_v1: 'core-from-other-tab',
+    cw_qb_v1: 'questions-from-other-tab',
+    cw_concurrent_v1: 'new-cw-value',
+    rp_concurrent_v1: 'new-rp-value',
+  });
+});
+
+test('startup journal reverses repeated owned writes by exact post-value', () => {
+  assert.equal(typeof F.fdEditionStartupJournal, 'function');
+  const storage = recordingStorage({ cw_last: 'welcome.md' });
+  const journal = F.fdEditionStartupJournal(storage, ['cw_last']);
+
+  F.fdEditionStartupJournalRun(journal, ['cw_last'], () => {
+    storage.setItem('cw_last', 'assessment.md');
+  });
+  F.fdEditionStartupJournalRun(journal, ['cw_last'], () => {
+    storage.setItem('cw_last', 'orientation.md');
+  });
+
+  assert.equal(F.fdEditionStartupJournalRollback(journal), true);
+  assert.equal(storage.snapshot().cw_last, 'welcome.md');
+});
 
 function protectedSnapshot(storage) {
   const snapshot = storage.snapshot();

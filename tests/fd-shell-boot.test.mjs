@@ -101,20 +101,40 @@ test('edition validation selects the only live index before the learner shell st
     'the controller commit must own the atomic inert and busy release');
 });
 
-test('startup arms rollback before state loads and awaits its owned initial resource receipt', () => {
+test('startup arms a key-scoped mutation journal before state loads and awaits its owned initial resource receipt', () => {
   const start = source.indexOf('async function fdStartFrontDoor(result)');
   const end = source.indexOf('\n  var fdEditionInputs=', start);
   assert.ok(start > -1 && end > start, 'the shell starter must expose an awaited transaction');
   const body = source.slice(start, end);
-  const checkpoint = body.indexOf('fdEditionCheckpointStorage(');
+  const checkpoint = body.indexOf('fdEditionStartupJournal(');
   const armed = body.indexOf('fdEditionStartupStorageDirty=true');
   const stateLoad = body.indexOf('fdLoad()');
   const open = body.indexOf('await fdOpenInitialResource(');
   const commit = body.indexOf('fdController.commitStartup()');
   assert.ok(checkpoint > -1 && checkpoint < armed && armed < stateLoad,
-    'byte-exact rollback must be armed before state or plan loading');
+    'the owned-key mutation journal must be armed before state or plan loading');
   assert.ok(open > stateLoad && commit > open,
     'the initial resource receipt must settle before startup history commits');
+  assert.doesNotMatch(source, /fdEditionCheckpointStorage|fdEditionRestoreStorage/,
+    'startup rollback must not snapshot or diff the entire localStorage namespace');
+});
+
+test('failed-switch direct recovery and local toggles share one trusted candidate identity', () => {
+  const recoveryStart = source.indexOf('function fdRecoverCommittedEdition(candidate)');
+  const recoveryEnd = source.indexOf('\n  try{', recoveryStart);
+  const recovery = source.slice(recoveryStart, recoveryEnd);
+  assert.ok(recoveryStart > -1 && recoveryEnd > recoveryStart);
+  assert.match(recovery, /FD_INDEX=index;fdActiveEditionSnapshot=recoverySnapshot/,
+    'candidate index and trusted snapshot must be adopted together before render');
+  assert.match(recovery, /FD_INDEX=previousIndex;fdActiveEditionSnapshot=previousSnapshot/,
+    'failed direct rendering must restore both prior runtime identities');
+
+  const clickStart = source.indexOf('function fdAuxClick(event)');
+  const clickEnd = source.indexOf('\n    el=target.closest&&target.closest(\'[data-capture-open]\')', clickStart);
+  const localClick = source.slice(clickStart, clickEnd);
+  assert.match(localClick, /fdEditionActiveIdentity\(fdActiveEditionSnapshot,FD_INDEX\)/);
+  assert.doesNotMatch(localClick, /FD_INDEX\.edition\.fingerprint/,
+    'authorization, storage, and refresh must not derive identity independently');
 });
 
 test('the retired sidebar, legacy search/nav boot, companion, and dashboard are absent', () => {

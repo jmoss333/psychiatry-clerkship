@@ -33,7 +33,9 @@ const EDITION_CONTRACT = new Function(`${EDITION_CONTRACT_SOURCE}\nreturn {
 // eslint-disable-next-line no-new-func
 const EDITION_RUNTIME = new Function(`${EDITION_CONTRACT_SOURCE}\n${EDITION_PROJECT_SOURCE}\n${EDITION_STUDENT_SOURCE}\nreturn {
   fdEditionValidateEnvelope,fdEditionRuntimeInputs,fdEditionRuntimeMountSwitch,
-  fdEditionRuntimeRecover:typeof fdEditionRuntimeRecover==='function'?fdEditionRuntimeRecover:null
+  fdEditionRuntimeRecover:typeof fdEditionRuntimeRecover==='function'?fdEditionRuntimeRecover:null,
+  fdEditionActiveIdentity:typeof fdEditionActiveIdentity==='function'?fdEditionActiveIdentity:null,
+  fdEditionLocalToggleAllowed,fdEditionToggleLocalProgress,fdEditionReadLocalProgress
 };`)();
 const VALID_PLACEMENT = {
   takenAt: '2026-08-17T00:00:00.000Z',
@@ -86,9 +88,10 @@ async function installEditionRuntimeProbe(page, options = {}) {
           }, { once: true });
         });
       }
-      if (startupFault === 'markdown-reject') {
+      if (startupFault === 'markdown-reject' || startupFault === 'markdown-delayed-reject') {
         return new Promise((_resolve, reject) => originalSetTimeout(
-          () => reject(new Error('private delayed markdown rejection')), 40,
+          () => reject(new Error('private delayed markdown rejection')),
+          startupFault === 'markdown-delayed-reject' ? 300 : 40,
         ));
       }
       if (['markdown-mount', 'markdown-success', 'markdown-slow-interaction'].includes(startupFault)) {
@@ -376,6 +379,62 @@ test('the attending handoff stays secondary, readable, and locally scoped at 390
   }, { key: LOCAL_EDITION_KEY, fingerprint: incoming.fingerprint, id: 'local:check:1' })).toBe(true);
 });
 
+test('delayed startup fallback preserves concurrent core and unrelated storage', async ({ page, context }, testInfo) => {
+  const pageErrors = [];
+  page.on('pageerror', (error) => pageErrors.push(error.message));
+  await installEditionRuntimeProbe(page, { startupFault: 'markdown-delayed-reject' });
+  const incoming = await createSyntheticEdition(testInfo, 2);
+  await page.goto('/');
+  await seedEditionLearner(page);
+  await page.evaluate(({ placement }) => {
+    localStorage.setItem('cw_last', 'welcome.md');
+    localStorage.setItem('cw_plan_v1', '{broken-plan-byte-sequence');
+    localStorage.setItem('cw_pretest_v1', JSON.stringify(placement));
+    localStorage.setItem('cw_qb_v1', '{"before":true}');
+  }, { placement: VALID_PLACEMENT });
+
+  const startup = page.goto(`/?page=orientation.md&case=startup-async-concurrent-fallback#edition=${incoming.payload}`);
+  await expect(page.locator('#fdApp')).toHaveAttribute('inert', '');
+  await expect(page.locator('.fd-article__body')).toContainText('Loading');
+  const other = await context.newPage();
+  await other.goto('/nav.json');
+  const concurrent = {
+    progress: '{"synthetic-core":{"done":true},"other-tab":{"done":true}}',
+    questions: '{"before":true,"other-tab":{"correct":true}}',
+  };
+  await other.evaluate((values) => {
+    localStorage.setItem('cw_progress_v1', values.progress);
+    localStorage.setItem('cw_qb_v1', values.questions);
+    localStorage.setItem('cw_concurrent_v1', 'new-cw-value');
+    localStorage.setItem('rp_concurrent_v1', 'new-rp-value');
+  }, concurrent);
+  await startup;
+
+  await expect(page.locator('.fd-edition-error[role="alert"]')).toContainText('EDITION_RUNTIME');
+  await expect(page.locator('#fdApp')).not.toHaveAttribute('inert');
+  expect(await page.evaluate(({ editionKey, localKey }) => ({
+    progress: localStorage.getItem('cw_progress_v1'),
+    questions: localStorage.getItem('cw_qb_v1'),
+    cw: localStorage.getItem('cw_concurrent_v1'),
+    rp: localStorage.getItem('rp_concurrent_v1'),
+    edition: localStorage.getItem(editionKey),
+    local: localStorage.getItem(localKey),
+    last: localStorage.getItem('cw_last'),
+    plan: localStorage.getItem('cw_plan_v1'),
+  }), { editionKey: EDITION_KEY, localKey: LOCAL_EDITION_KEY })).toEqual({
+    progress: concurrent.progress,
+    questions: concurrent.questions,
+    cw: 'new-cw-value',
+    rp: 'new-rp-value',
+    edition: null,
+    local: null,
+    last: 'welcome.md',
+    plan: '{broken-plan-byte-sequence',
+  });
+  expect(pageErrors).toEqual([]);
+  await other.close();
+});
+
 async function resetEditionWriteLog(page) {
   await page.evaluate((logKey) => {
     sessionStorage.setItem(logKey, '[]');
@@ -445,7 +504,7 @@ async function seedEditionLearner(page) {
   });
 }
 
-async function createSyntheticEdition(testInfo, editionNumber, audienceOverride = '') {
+async function createSyntheticEdition(testInfo, editionNumber, audienceOverride = '', localIds = null) {
   const audience = audienceOverride || (testInfo.project.name === 'nav-res' ? 'resident' : 'ms3');
   const pathId = audience === 'resident' ? 'resident-four-week' : 'ms3-six-week';
   const weekCount = audience === 'resident' ? 4 : 6;
@@ -494,7 +553,9 @@ async function createSyntheticEdition(testInfo, editionNumber, audienceOverride 
       presentationExpectations: '', documentationExpectations: '',
       attendanceExpectations: '', feedbackProcess: '', accessPreparation: '',
       contacts: [],
-      checklist: [{ id: `local:check:${editionNumber}`, label: 'Review local orientation', priority: 'required' }],
+      checklist: (localIds || [`local:check:${editionNumber}`]).map((id) => ({
+        id, label: `Review ${id}`, priority: 'required',
+      })),
       resources: [],
     },
     changeNote: `Synthetic runtime change ${editionNumber}.`,
@@ -592,6 +653,7 @@ function switchDialogHarness(active, candidate, options = {}) {
       schemaVersion: 1,
       byFingerprint: { [active.fingerprint]: { checklist: { 'local:check:1': true }, resources: {} } },
     })],
+    ['cw_progress_v1', '{"core":{"done":true}}'],
   ]);
   const listeners = (node) => {
     const byType = new Map();
@@ -754,10 +816,17 @@ test('reload failure restores the trusted active marker after candidate commit a
 });
 
 test('rollback failure directly renders the committed candidate after the write and does not retry', async ({}, testInfo) => {
-  const active = await createSyntheticEdition(testInfo, 1);
-  const candidate = await createSyntheticEdition(testInfo, 2);
+  const active = await createSyntheticEdition(
+    testInfo, 1, '', ['local:check:shared', 'local:check:old-only'],
+  );
+  const candidate = await createSyntheticEdition(
+    testInfo, 2, '', ['local:check:shared', 'local:check:new-only'],
+  );
   const harness = switchDialogHarness(active, candidate, { reloadThrows: true, rollbackFails: true });
   let displayedFingerprint = active.fingerprint;
+  let displayedIndex = active.validated.index;
+  let trustedSnapshot = active.validated;
+  const coreBefore = harness.values.get('cw_progress_v1');
   const directRecover = (validated) => (
     typeof EDITION_RUNTIME.fdEditionRuntimeRecover === 'function'
     && EDITION_RUNTIME.fdEditionRuntimeRecover(
@@ -765,9 +834,11 @@ test('rollback failure directly renders the committed candidate after the write 
       validated,
       candidate.siteContext,
       {},
-      (index) => {
+      (index, _state, recoveredSnapshot) => {
         harness.events.push('recover');
         displayedFingerprint = index.edition.fingerprint;
+        displayedIndex = index;
+        trustedSnapshot = recoveredSnapshot;
         return true;
       },
     )
@@ -786,6 +857,26 @@ test('rollback failure directly renders the committed candidate after the write 
   harness.decline.dispatch('click');
   expect(harness.values.get(EDITION_KEY)).toBe(candidate.canonicalEnvelope);
   expect(displayedFingerprint).toBe(candidate.fingerprint);
+  expect(trustedSnapshot?.fingerprint).toBe(candidate.fingerprint);
+  expect(typeof EDITION_RUNTIME.fdEditionActiveIdentity).toBe('function');
+  const identity = EDITION_RUNTIME.fdEditionActiveIdentity(trustedSnapshot, displayedIndex);
+  expect(identity?.fingerprint).toBe(displayedFingerprint);
+  expect(EDITION_RUNTIME.fdEditionLocalToggleAllowed(
+    identity.snapshot, 'checklist', 'local:check:shared',
+  )).toBe(true);
+  expect(EDITION_RUNTIME.fdEditionLocalToggleAllowed(
+    identity.snapshot, 'checklist', 'local:check:old-only',
+  )).toBe(false);
+  expect(EDITION_RUNTIME.fdEditionLocalToggleAllowed(
+    identity.snapshot, 'checklist', 'local:check:new-only',
+  )).toBe(true);
+  expect(EDITION_RUNTIME.fdEditionToggleLocalProgress(
+    harness.storage, identity.fingerprint, 'checklist', 'local:check:new-only',
+  )).toBe(true);
+  expect(EDITION_RUNTIME.fdEditionReadLocalProgress(
+    harness.storage, identity.fingerprint,
+  ).checklist['local:check:new-only']).toBe(true);
+  expect(harness.values.get('cw_progress_v1')).toBe(coreBefore);
   const candidateCommit = harness.events.indexOf(`write:${EDITION_KEY}:candidate`);
   const recovery = harness.events.indexOf('recover');
   expect(candidateCommit).toBeGreaterThan(-1);

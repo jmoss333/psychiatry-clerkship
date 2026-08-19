@@ -1867,11 +1867,11 @@
     if(el.hasAttribute('data-cap-open')&&ref){capMarkTriaged(id);fdOpenRef(ref);return;}
   }
 
-  function fdRefreshLocalCompletion(kind,id){
+  function fdRefreshLocalCompletion(identity,kind,id){
     var progress,nodes,on,i,node;
     try{
-      if(!contentEl||!FD_INDEX.edition)return false;
-      progress=fdEditionReadLocalProgress(fdEditionBootStorage,FD_INDEX.edition.fingerprint);
+      if(!contentEl||!identity||!identity.fingerprint)return false;
+      progress=fdEditionReadLocalProgress(fdEditionBootStorage,identity.fingerprint);
       on=!!(progress[kind]&&progress[kind][id]);
       nodes=contentEl.querySelectorAll('[data-fd-local-toggle]');
       for(i=0;i<nodes.length;i++){
@@ -1885,16 +1885,17 @@
   }
 
   function fdAuxClick(event){
-    var target=event.target, el;
+    var target=event.target, el,localIdentity;
     el=target.closest&&target.closest('[data-fd-local-toggle]');
     if(el){
       event.preventDefault();
       if(facultyPreviewRequest){showFacultyPreviewLockNotice();return;}
       var localKind=el.getAttribute('data-fd-local-toggle');
       var localId=el.getAttribute('data-local-id');
-      if(fdEditionLocalToggleAllowed(fdActiveEditionSnapshot,localKind,localId)&&
-         fdEditionToggleLocalProgress(fdEditionBootStorage,FD_INDEX.edition.fingerprint,localKind,localId))
-        fdRefreshLocalCompletion(localKind,localId);
+      localIdentity=fdEditionActiveIdentity(fdActiveEditionSnapshot,FD_INDEX);
+      if(localIdentity&&fdEditionLocalToggleAllowed(localIdentity.snapshot,localKind,localId)&&
+         fdEditionToggleLocalProgress(fdEditionBootStorage,localIdentity.fingerprint,localKind,localId))
+        fdRefreshLocalCompletion(localIdentity,localKind,localId);
       return;
     }
     el=target.closest&&target.closest('[data-capture-open]');
@@ -1964,46 +1965,8 @@
   var fdEditionStartupHistory=null;
   var fdEditionStartupHistoryDirty=false;
   var fdEditionStartupGeneration=0;
-  function fdEditionCheckpointStorage(storage){
-    var keyMethod=fdEditionStudentMethod(storage,'key');
-    var removeMethod=fdEditionStudentMethod(storage,'removeItem');
-    var values=Object.create(null),keys=[],length,key,stored;
-    if(!keyMethod||!removeMethod||!fdEditionStudentMethod(storage,'setItem'))return null;
-    try{length=storage.length;}catch(ignoreLength){return null;}
-    if(typeof length!=='number'||length<0||length%1!==0)return null;
-    for(var i=0;i<length;i++){
-      try{key=Function.prototype.call.call(keyMethod,storage,i);}catch(ignoreKey){return null;}
-      if(typeof key!=='string'||Object.prototype.hasOwnProperty.call(values,key))return null;
-      stored=fdEditionStudentRead(storage,key);
-      if(!stored.ok||typeof stored.value!=='string')return null;
-      keys.push(key);values[key]=stored.value;
-    }
-    return {storage:storage,keyMethod:keyMethod,removeMethod:removeMethod,keys:keys,values:values};
-  }
-  function fdEditionRestoreStorage(checkpoint){
-    var current=[],length,key,stored,i,ok=true;
-    if(!checkpoint)return false;
-    try{length=checkpoint.storage.length;}catch(ignoreLength){return false;}
-    if(typeof length!=='number'||length<0||length%1!==0)return false;
-    for(i=0;i<length;i++){
-      try{key=Function.prototype.call.call(checkpoint.keyMethod,checkpoint.storage,i);}
-      catch(ignoreKey){return false;}
-      if(typeof key!=='string')return false;
-      current.push(key);
-    }
-    for(i=current.length-1;i>=0;i--){
-      if(!Object.prototype.hasOwnProperty.call(checkpoint.values,current[i])){
-        try{Function.prototype.call.call(checkpoint.removeMethod,checkpoint.storage,current[i]);}
-        catch(ignoreRemove){ok=false;}
-      }
-    }
-    for(i=0;i<checkpoint.keys.length;i++){
-      key=checkpoint.keys[i];
-      stored=fdEditionStudentRead(checkpoint.storage,key);
-      if((!stored.ok||stored.value!==checkpoint.values[key])&&
-         !fdEditionStudentWrite(checkpoint.storage,key,checkpoint.values[key]))ok=false;
-    }
-    return ok;
+  function fdEditionStartupPhase(keys,operation){
+    return fdEditionStartupJournalRun(fdEditionStartupStorage,keys,operation);
   }
   function fdEditionCheckpointHistory(windowValue){
     var historyValue,locationValue,replaceMethod,state,path,search;
@@ -2061,7 +2024,11 @@
         opts.signal=aborter?aborter.signal:null;
         opts.getState=function(){return fdController&&fdController.getState?fdController.getState():opts.state;};
         opts.isCurrent=owned;
-        Promise.resolve().then(function(){return fdOpenResourceLive(ref,opts);}).then(
+        Promise.resolve().then(function(){
+          var phase=fdEditionStartupPhase(['cw_last'],function(){return fdOpenResourceLive(ref,opts);});
+          if(!phase.ok)throw new Error('startup resource journal');
+          return phase.value;
+        }).then(
           function(ok){finish(ok===true);},function(){finish(false);});
       }catch(ignoreStart){finish(false);}
     });
@@ -2076,7 +2043,7 @@
     fdEditionStartupGeneration++;
     fdEditionCleanupWiring();
     if(fdEditionStartupHistoryDirty)fdEditionRestoreHistory(fdEditionStartupHistory);
-    if(fdEditionStartupStorageDirty)fdEditionRestoreStorage(fdEditionStartupStorage);
+    if(fdEditionStartupStorageDirty)fdEditionStartupJournalRollback(fdEditionStartupStorage);
     fdEditionStartupHistoryDirty=false;
     fdEditionStartupStorageDirty=false;
     FD_INDEX=FD_CANONICAL_INDEX;
@@ -2107,7 +2074,10 @@
   fdActiveEditionSnapshot=result.active||null;
   var fdCheckpointStorage=fdEditionBootStorage;
   if(!fdCheckpointStorage)try{fdCheckpointStorage=window.localStorage;}catch(ignoreCheckpointStorage){ }
-  fdEditionStartupStorage=fdEditionCheckpointStorage(fdCheckpointStorage);
+  fdEditionStartupStorage=fdEditionStartupJournal(fdCheckpointStorage,[
+    FD_EDITION_STUDENT_KEYS.edition,FD_EDITION_STUDENT_KEYS.local,'cw_plan_v1','cw_last',
+    'cw_frontdoor_v1','cw_rotation_start'
+  ]);
   if(!fdEditionStartupStorage){
     fdEditionRuntimeFallback(fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'),null);
     return;
@@ -2170,12 +2140,19 @@
     return;
   }
   if(result.mode==='active'&&result.needsCommit){
-    if(!fdEditionAcceptFirst(fdEditionBootStorage,result.active)){
+    var fdAcceptPhase=fdEditionStartupPhase(
+      [FD_EDITION_STUDENT_KEYS.local,FD_EDITION_STUDENT_KEYS.edition],
+      function(){return fdEditionAcceptFirst(fdEditionBootStorage,result.active);}
+    );
+    if(!fdAcceptPhase.ok||fdAcceptPhase.value!==true){
       fdEditionRuntimeFallback(fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'),fdInitial);
       return;
     }
   }
-  try{fdRender(fdInitial);}
+  try{
+    var fdRenderPhase=fdEditionStartupPhase(['cw_plan_v1'],function(){fdRender(fdInitial);return true;});
+    if(!fdRenderPhase.ok)throw new Error('startup render journal');
+  }
   catch(ignoreFirstRender){
     fdEditionRuntimeFallback(fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'),fdInitial);
     return;
@@ -2235,16 +2212,28 @@
     }
   };
   function fdRecoverCommittedEdition(candidate){
-    var state;
+    var state,previousIndex=FD_INDEX,previousSnapshot=fdActiveEditionSnapshot;
     try{
       state=fdController&&fdController.getState?fdController.getState():fdInitial;
       return fdEditionRuntimeRecover(FD_CANONICAL_INDEX,candidate,FD_SITE_CONTEXT,state,
-        function(index,recoveryState){FD_INDEX=index;fdRender(recoveryState);return true;});
+        function(index,recoveryState,recoverySnapshot){
+          var identity=fdEditionActiveIdentity(recoverySnapshot,index);
+          if(!identity)return false;
+          FD_INDEX=index;fdActiveEditionSnapshot=recoverySnapshot;
+          try{fdRender(recoveryState);return true;}
+          catch(ignoreRecoveryRender){
+            FD_INDEX=previousIndex;fdActiveEditionSnapshot=previousSnapshot;
+            return false;
+          }
+        });
     }catch(ignoreRecovery){ return false; }
   }
   try{
     if(fdInitial.openId==='__progress__'){
-      if(fdOpenProgress(fdInitial,{host:contentEl})!==true)throw new Error('progress mount');
+      var fdProgressPhase=fdEditionStartupPhase(['cw_plan_v1'],function(){
+        return fdOpenProgress(fdInitial,{host:contentEl});
+      });
+      if(!fdProgressPhase.ok||fdProgressPhase.value!==true)throw new Error('progress mount');
     }
     else if(fdInitial.openId){
       var fdResourceReceipt=await fdOpenInitialResource(fdInitial.openId,{
@@ -2259,7 +2248,10 @@
     }else if(result.mode==='rejected'&&!fdEditionRuntimeMountError(fdEditionMount,result.receipt))
       throw new Error('edition alert');
     fdEditionStartupHistoryDirty=true;
-    if(!fdController.commitStartup())throw new Error('startup commit');
+    var fdCommitPhase=fdEditionStartupPhase(['cw_frontdoor_v1','cw_rotation_start'],function(){
+      return fdController.commitStartup();
+    });
+    if(!fdCommitPhase.ok||fdCommitPhase.value!==true)throw new Error('startup commit');
   }catch(ignoreFinalStartup){
     fdEditionRuntimeFallback(fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'),fdInitial);
     return;

@@ -237,6 +237,66 @@ function fdEditionStudentWrite(storage,key,value){
   catch(ignoreWrite){ return false; }
 }
 
+function fdEditionStartupJournal(storage,allowedKeys){
+  var get=fdEditionStudentMethod(storage,'getItem');
+  var set=fdEditionStudentMethod(storage,'setItem');
+  var remove=fdEditionStudentMethod(storage,'removeItem');
+  var allowed=Object.create(null),i,key;
+  if(!get||!set||!remove||!Array.isArray(allowedKeys)) return null;
+  for(i=0;i<allowedKeys.length;i++){
+    key=allowedKeys[i];
+    if(typeof key!=='string'||!key||Object.prototype.hasOwnProperty.call(allowed,key)) return null;
+    allowed[key]=true;
+  }
+  return {storage:storage,get:get,set:set,remove:remove,allowed:allowed,operations:[]};
+}
+
+function fdEditionStartupJournalValue(journal,key){
+  if(!journal||!Object.prototype.hasOwnProperty.call(journal.allowed,key)) return {ok:false,value:null};
+  try{return {ok:true,value:Function.prototype.call.call(journal.get,journal.storage,key)};}
+  catch(ignoreRead){return {ok:false,value:null};}
+}
+
+function fdEditionStartupJournalRun(journal,keys,operation){
+  var before=[],after=[],seen=Object.create(null),i,key,value,threw=false,result=null;
+  if(!journal||!Array.isArray(keys)||typeof operation!=='function') return {ok:false,value:null};
+  for(i=0;i<keys.length;i++){
+    key=keys[i];
+    if(typeof key!=='string'||Object.prototype.hasOwnProperty.call(seen,key)||
+       !Object.prototype.hasOwnProperty.call(journal.allowed,key)) return {ok:false,value:null};
+    seen[key]=true;value=fdEditionStartupJournalValue(journal,key);
+    if(!value.ok)return {ok:false,value:null};
+    before.push(value.value);
+  }
+  try{result=operation();}catch(ignoreOperation){threw=true;}
+  for(i=0;i<keys.length;i++){
+    value=fdEditionStartupJournalValue(journal,keys[i]);
+    if(!value.ok)return {ok:false,value:null};
+    after.push(value.value);
+  }
+  for(i=0;i<keys.length;i++){
+    if(before[i]!==after[i])journal.operations.push({key:keys[i],before:before[i],after:after[i]});
+  }
+  return {ok:!threw,value:threw?null:result};
+}
+
+function fdEditionStartupJournalRollback(journal){
+  var operation,current,ok=true;
+  if(!journal||!Array.isArray(journal.operations))return false;
+  for(var i=journal.operations.length-1;i>=0;i--){
+    operation=journal.operations[i];current=fdEditionStartupJournalValue(journal,operation.key);
+    if(!current.ok){ok=false;continue;}
+    if(current.value!==operation.after)continue;
+    try{
+      if(operation.before===null)
+        Function.prototype.call.call(journal.remove,journal.storage,operation.key);
+      else Function.prototype.call.call(journal.set,journal.storage,operation.key,operation.before);
+    }catch(ignoreRestore){ok=false;}
+  }
+  journal.operations=[];
+  return ok;
+}
+
 function fdEditionStudentAccept(storage,validatedEdition){
   var edition=fdEditionStudentValidEdition(validatedEdition),stored,local;
   if(!edition) return false;
@@ -495,6 +555,17 @@ function fdEditionLocalToggleAllowed(active,kind,id){
   }catch(ignoreAllowed){ return false; }
 }
 
+function fdEditionActiveIdentity(active,index){
+  var selected,indexEdition,indexFingerprint;
+  try{
+    selected=fdEditionStudentValidEdition(active); if(!selected) return null;
+    indexEdition=fdEditionRenderObject(index,'edition'); if(!indexEdition) return null;
+    indexFingerprint=fdEditionStudentFingerprint(fdEditionRenderString(indexEdition,'fingerprint'));
+    if(!indexFingerprint||indexFingerprint!==selected.fingerprint) return null;
+    return {snapshot:active,fingerprint:selected.fingerprint};
+  }catch(ignoreIdentity){return null;}
+}
+
 function fdEditionSwitchMarkup(active,candidate){
   var selected=fdEditionStudentValidEdition(active),replacement=fdEditionStudentValidEdition(candidate);
   if(!selected||!replacement) return '';
@@ -694,9 +765,11 @@ function fdEditionRuntimeRestoreActive(storage,validatedEdition){
 }
 
 function fdEditionRuntimeRecover(canonicalIndex,validatedEdition,siteContext,state,render){
-  var projected=fdEditionStudentProject(canonicalIndex,validatedEdition,siteContext);
-  if(!projected.ok||!projected.index||typeof render!=='function') return false;
-  try{ return render(projected.index,state)===true; }
+  var selected=fdEditionStudentValidEdition(validatedEdition);
+  var projected=selected?fdEditionStudentProject(canonicalIndex,validatedEdition,siteContext):null;
+  if(!projected||!projected.ok||!projected.index||
+     !fdEditionActiveIdentity(validatedEdition,projected.index)||typeof render!=='function') return false;
+  try{ return render(projected.index,state,validatedEdition)===true; }
   catch(ignoreRender){ return false; }
 }
 
