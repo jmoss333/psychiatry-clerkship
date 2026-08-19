@@ -448,7 +448,7 @@
     /*__FD_CURATOR__*/
 
     var FD_INDEX=fdBuildIndex(FD_CURRICULUM,FD_TOPIC_META,FD_TOOL_REGISTRY,FD_SITE_MANIFEST);
-    var FD_CURATOR_CONTEXT={audience:FD_AUDIENCE,coreRevision:FD_CORE_REVISION};
+    var FD_CURATOR_CONTEXT={audience:FD_AUDIENCE,pathId:FD_INDEX.path.id,coreRevision:FD_CORE_REVISION};
     fdCuratorMount(document.getElementById('root'),FD_INDEX,FD_CURATOR_CONTEXT);
   </script>
 </body>

@@ -19,6 +19,7 @@ const API_NAMES = [
   'fdCuratorNewDraft', 'fdCuratorReduce', 'fdCuratorValidateStep',
   'fdCuratorBuildConfig', 'fdCuratorNextEditionNumber',
   'fdCuratorDraftStorage', 'fdCuratorImportEnvelope', 'fdCuratorReadImportFile',
+  'fdCuratorImportTransactions',
 ];
 
 function loadApi() {
@@ -128,6 +129,14 @@ function setCard(draft, field, value, audience = 'ms3') {
   );
 }
 
+function draftWithCard(config, audience = 'ms3') {
+  let draft = fn('fdCuratorNewDraft')(index(audience), context(audience));
+  for (const [field, value] of Object.entries(config.card)) {
+    draft = setCard(draft, field, value, audience);
+  }
+  return draft;
+}
+
 test('creates the exact audience-locked normalized draft shape', () => {
   const draft = fn('fdCuratorNewDraft')(index(), context());
   assert.deepEqual(draft, {
@@ -143,6 +152,31 @@ test('creates the exact audience-locked normalized draft shape', () => {
       publicSafe: false, officialLinks: false, previewsReviewed: false, forwardable: false,
     },
   });
+});
+
+test('the real page injects the exact locked path into the browser context used by validators', async () => {
+  const source = readFileSync(HTML_SOURCE, 'utf8');
+  assert.match(
+    source,
+    /var FD_CURATOR_CONTEXT=\{audience:FD_AUDIENCE,pathId:FD_INDEX\.path\.id,coreRevision:FD_CORE_REVISION\};/,
+  );
+
+  const browserContext = {
+    audience: 'ms3', pathId: index().path.id, coreRevision: REVISION,
+  };
+  const validEnvelope = await envelopeFor('ms3', 3);
+  const imported = await fn('fdCuratorImportEnvelope')(
+    JSON.stringify(validEnvelope.envelope), index(), browserContext, webcrypto.subtle,
+  );
+  assert.equal(imported.ok, true);
+  assert.equal(fn('fdCuratorBuildConfig')(imported.draft, index(), browserContext).ok, true);
+
+  const storage = memoryStorage({
+    cw_curator_draft_v1: JSON.stringify(imported.draft),
+  });
+  const restored = await fn('fdCuratorDraftStorage')(storage)
+    .load(index(), browserContext, webcrypto.subtle);
+  assert.equal(restored.ok, true);
 });
 
 test('student-visible edits are immutable and reset previews and every affirmation', () => {
@@ -263,7 +297,7 @@ test('imports one valid backup as the base and rejects wrong-audience or invalid
   assert.equal(rejected.ok, false);
 });
 
-test('enforces the 64 KiB file cap before reading or parsing file text', async () => {
+test('enforces the 64 KiB file cap before reading and again before parsing returned text', async () => {
   let reads = 0;
   const file = { size: 65537, text() { reads += 1; return Promise.resolve('{}'); } };
   const result = await fn('fdCuratorReadImportFile')(
@@ -272,21 +306,89 @@ test('enforces the 64 KiB file cap before reading or parsing file text', async (
   assert.equal(result.ok, false);
   assert.equal(result.code, 'CURATOR_IMPORT_SIZE');
   assert.equal(reads, 0);
+
+  const understated = {
+    size: 1,
+    text() { reads += 1; return Promise.resolve('\u00e9'.repeat(32769)); },
+  };
+  const postRead = await fn('fdCuratorReadImportFile')(
+    understated, index(), context(), webcrypto.subtle,
+  );
+  assert.equal(postRead.ok, false);
+  assert.equal(postRead.code, 'CURATOR_IMPORT_SIZE');
+  assert.equal(reads, 1);
 });
 
-test('uses deterministic edition numbers for new, unchanged, changed, and generated drafts', async () => {
+test('import transactions allow only the latest untouched request to commit', () => {
+  const transactions = fn('fdCuratorImportTransactions')();
+  const first = transactions.begin();
+  const second = transactions.begin();
+  assert.equal(transactions.commit(first), false, 'an earlier import cannot beat a newer import');
+  assert.equal(transactions.commit(second), true);
+
+  const beforeEdit = transactions.begin();
+  transactions.touch();
+  assert.equal(transactions.commit(beforeEdit), false, 'an intervening edit cancels a pending import');
+
+  const current = transactions.begin();
+  assert.equal(transactions.commit(current), true);
+  assert.equal(transactions.commit(current), false, 'one import token can commit only once');
+});
+
+test('accepts only the exact current full config as a successful generation', async () => {
   const nextEdition = fn('fdCuratorNextEditionNumber');
   const build = fn('fdCuratorBuildConfig');
   const reduce = fn('fdCuratorReduce');
 
-  let fresh = fn('fdCuratorNewDraft')(index(), context());
+  let fresh = draftWithCard(completeConfig('ms3', 1));
   assert.equal(nextEdition(fresh, completeConfig('ms3', 1)), 1);
+  const freshExpected = build(fresh, index(), context());
+  assert.equal(freshExpected.ok, true);
+  assert.equal(freshExpected.value.editionNumber, 1);
+  const freshGenerated = await F.fdEditionCreateEnvelope(
+    freshExpected.value, index(), context(), webcrypto.subtle,
+  );
+  const freshAccepted = reduce(
+    fresh, { type: 'GENERATION_SUCCEEDED', result: freshGenerated }, index(), context(),
+  );
+  assert.equal(freshAccepted.publication.baseEnvelope.config.editionNumber, 1);
+
+  for (const invalidConfig of [
+    { ...freshExpected.value, editionNumber: 99 },
+    { ...freshExpected.value, createdAgainstCoreRevision: 'b'.repeat(40) },
+  ]) {
+    const invalidResult = await F.fdEditionCreateEnvelope(
+      invalidConfig, index(), context(), webcrypto.subtle,
+    );
+    assert.equal(invalidResult.ok, true);
+    const rejected = reduce(
+      fresh, { type: 'GENERATION_SUCCEEDED', result: invalidResult }, index(), context(),
+    );
+    assert.deepEqual(rejected.publication, fresh.publication);
+  }
+
+  const staleResult = freshGenerated;
+  const editedAfterGenerationStarted = setCard(fresh, 'title', 'Newer local edit');
+  const staleRejected = reduce(
+    editedAfterGenerationStarted,
+    { type: 'GENERATION_SUCCEEDED', result: staleResult },
+    index(), context(),
+  );
+  assert.deepEqual(staleRejected.publication, editedAfterGenerationStarted.publication);
 
   const baseResult = await envelopeFor('ms3', 3);
   let imported = (await fn('fdCuratorImportEnvelope')(
     JSON.stringify(baseResult.envelope), index(), context(), webcrypto.subtle,
   )).draft;
-  assert.equal(build(imported, index(), context()).value.editionNumber, 3);
+  const preserve = build(imported, index(), context());
+  assert.equal(preserve.value.editionNumber, 3);
+  const preserveResult = await F.fdEditionCreateEnvelope(
+    preserve.value, index(), context(), webcrypto.subtle,
+  );
+  const preserved = reduce(
+    imported, { type: 'GENERATION_SUCCEEDED', result: preserveResult }, index(), context(),
+  );
+  assert.equal(preserved.publication.baseEnvelope.config.editionNumber, 3);
 
   imported = setCard(imported, 'title', 'Changed Example Unit Rotation');
   const changed = build(imported, index(), context());
@@ -305,9 +407,17 @@ test('uses deterministic edition numbers for new, unchanged, changed, and genera
   const regenerated = await F.fdEditionCreateEnvelope(
     unchanged.value, index(), context(), webcrypto.subtle,
   );
-  assert.equal(regenerated.digest, generated.digest);
   assert.equal(regenerated.fingerprint, generated.fingerprint);
   assert.equal(regenerated.envelope.digest, generated.envelope.digest);
+
+  const rollbackConfig = { ...changed.value, editionNumber: 3 };
+  const rollback = await F.fdEditionCreateEnvelope(
+    rollbackConfig, index(), context(), webcrypto.subtle,
+  );
+  const rollbackRejected = reduce(
+    imported, { type: 'GENERATION_SUCCEEDED', result: rollback }, index(), context(),
+  );
+  assert.deepEqual(rollbackRejected.publication, imported.publication);
 });
 
 test('Step 1 HTML has native labeled fields, descriptions, limits, linked errors, save/import copy, and disabled Generate', () => {

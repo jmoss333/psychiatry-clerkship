@@ -166,7 +166,7 @@ function fdCuratorBuildConfig(draft,index,siteContext){
 }
 
 function fdCuratorReduce(draft,action,index,siteContext){
-  var shaped,current,next,snapshot,candidateCanonical;
+  var shaped,current,next,snapshot,candidateCanonical,expected;
   if(!draft||draft.schemaVersion!==1){
     current=draft||{step:1,site:{},generateEnabled:false};
     return {
@@ -197,10 +197,9 @@ function fdCuratorReduce(draft,action,index,siteContext){
   if(action.type==='GENERATION_SUCCEEDED'&&action.result&&action.result.ok===true){
     snapshot=typeof fdEditionTrustedSnapshot==='function'?fdEditionTrustedSnapshot(action.result):null;
     if(!snapshot||!snapshot.envelope||!snapshot.config||!snapshot.fingerprint) return next;
+    expected=fdCuratorBuildConfig(next,index,siteContext);
+    if(!expected.ok||fdEditionCanonicalJson(snapshot.config)!==fdEditionCanonicalJson(expected.value)) return next;
     candidateCanonical=fdCuratorCanonicalWithoutEdition(snapshot.config);
-    if(candidateCanonical!==fdCuratorCanonicalWithoutEdition(fdCuratorFullConfig(
-      next.config,next.site,snapshot.config.editionNumber,snapshot.config.createdAgainstCoreRevision
-    ))) return next;
     next.publication={
       baseEnvelope:fdCuratorClone(snapshot.envelope),baseCanonicalConfig:candidateCanonical,
       lastGenerated:{digest:snapshot.envelope.digest,fingerprint:snapshot.fingerprint}
@@ -276,6 +275,20 @@ function fdCuratorReadImportFile(file,index,siteContext,subtle){
   if(typeof file.text!=='function') return Promise.resolve({ok:false,code:'CURATOR_IMPORT_FORMAT',draft:null});
   return file.text().then(function(text){ return fdCuratorImportEnvelope(text,index,siteContext,subtle); },
     function(){ return {ok:false,code:'CURATOR_IMPORT_READ',draft:null}; });
+}
+
+function fdCuratorImportTransactions(){
+  var sequence=0,revision=0,lastCommitted=0;
+  return {
+    begin:function(){ return {sequence:++sequence,revision:revision}; },
+    touch:function(){ revision++; },
+    commit:function(token){
+      if(!token||token.sequence!==sequence||token.revision!==revision||token.sequence===lastCommitted) return false;
+      lastCommitted=token.sequence;
+      revision++;
+      return true;
+    }
+  };
 }
 
 function fdCuratorDraftStorage(storage){
@@ -364,9 +377,10 @@ function fdCuratorRender(state,root,index,errors){
 function fdCuratorMount(root,index,siteContext){
   var state=fdCuratorNewDraft(index,siteContext),errors=[],touched=false;
   var adapter=fdCuratorDraftStorage(typeof localStorage==='undefined'?null:localStorage);
+  var importTransactions=fdCuratorImportTransactions();
   var subtle=typeof crypto!=='undefined'&&crypto?crypto.subtle:null;
   var buttons,i,save,continueButton,importInput;
-  function dispatch(action){ touched=true; state=fdCuratorReduce(state,action,index,siteContext); errors=[]; fdCuratorRender(state,root,index,errors); return state; }
+  function dispatch(action){ touched=true; importTransactions.touch(); state=fdCuratorReduce(state,action,index,siteContext); errors=[]; fdCuratorRender(state,root,index,errors); return state; }
   function status(message){ var node=root.querySelector('#curatorSaveStatus'); if(node) node.textContent=message; }
   if(!root) return null;
   buttons=root.querySelectorAll('[data-curator-step]');
@@ -390,9 +404,12 @@ function fdCuratorMount(root,index,siteContext){
   });
   importInput=root.querySelector('#curatorImportFile');
   if(importInput) importInput.addEventListener('change',function(event){
-    var file=event.target.files&&event.target.files[0];
+    var file=event.target.files&&event.target.files[0],transaction;
     if(!file) return;
+    touched=true;
+    transaction=importTransactions.begin();
     fdCuratorReadImportFile(file,index,siteContext,subtle).then(function(result){
+      if(!importTransactions.commit(transaction)) return;
       if(result.ok){ touched=true; state=result.draft; errors=[]; fdCuratorRender(state,root,index,errors); status('Backup imported. Save the draft to keep it on this device.'); }
       else status(result.code==='CURATOR_IMPORT_SIZE'?'Backup must be 64 KiB or smaller.':'Backup could not be validated for this audience.');
       event.target.value='';
