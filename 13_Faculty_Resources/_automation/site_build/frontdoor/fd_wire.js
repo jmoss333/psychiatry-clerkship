@@ -477,7 +477,7 @@ function fdOpenResource(ref, opts){
   var parser=o.parseMarkdown||
     (typeof marked!=='undefined'&&marked&&typeof marked.parse==='function'?marked.parse:null);
   if(!fetcher||!parser) return Promise.resolve(fail());
-  return fetcher(request.url).then(function(response){
+  return fetcher(request.url,o.signal?{signal:o.signal}:undefined).then(function(response){
     if(!response||!response.ok) throw new Error('resource unavailable');
     return response.text();
   }).then(function(markdown){

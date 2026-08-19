@@ -85,7 +85,7 @@ test('edition validation selects the only live index before the learner shell st
   assert.match(source.slice(resolveCall), /\.then\(fdStartFrontDoor,/,
     'the resolver must hand the selected result to the only shell starter');
 
-  const start = source.indexOf('function fdStartFrontDoor(result)');
+  const start = source.indexOf('async function fdStartFrontDoor(result)');
   const end = source.indexOf('\n  var fdEditionInputs=', start);
   assert.ok(start > -1 && end > start, 'one deferred shell starter is required');
   const body = source.slice(start, end);
@@ -99,6 +99,22 @@ test('edition validation selects the only live index before the learner shell st
     'the initial shell must expose its pending resolver state');
   assert.match(body, /fdEditionRuntimeRemoveBusy\(fdApp\)/,
     'every deferred start path must end the pending resolver state');
+});
+
+test('startup arms rollback before state loads and awaits its owned initial resource receipt', () => {
+  const start = source.indexOf('async function fdStartFrontDoor(result)');
+  const end = source.indexOf('\n  var fdEditionInputs=', start);
+  assert.ok(start > -1 && end > start, 'the shell starter must expose an awaited transaction');
+  const body = source.slice(start, end);
+  const checkpoint = body.indexOf('fdEditionCheckpointStorage(');
+  const armed = body.indexOf('fdEditionStartupStorageDirty=true');
+  const stateLoad = body.indexOf('fdLoad()');
+  const open = body.indexOf('await fdOpenInitialResource(');
+  const commit = body.indexOf('fdController.commitStartup()');
+  assert.ok(checkpoint > -1 && checkpoint < armed && armed < stateLoad,
+    'byte-exact rollback must be armed before state or plan loading');
+  assert.ok(open > stateLoad && commit > open,
+    'the initial resource receipt must settle before startup history commits');
 });
 
 test('the retired sidebar, legacy search/nav boot, companion, and dashboard are absent', () => {
@@ -164,7 +180,7 @@ test('faculty preview ignores the learner tool-width preference', () => {
 
 test('one live controller owns stable delegated navigation', () => {
   assert.equal((source.match(/=fdWire\(/g) || []).length, 1, 'exactly one controller install');
-  assert.match(source, /getState:function\(\)\{ return fdController\.getState\(\); \}/,
+  assert.match(source, /getState:options\.getState\|\|function\(\)\{ return fdController\.getState\(\); \}/,
     'resource wrapper must provide Task 4 live-state access');
   assert.match(source, /renderTransient:fdRenderTransient/);
   assert.match(source, /openProgress:fdOpenProgress/);

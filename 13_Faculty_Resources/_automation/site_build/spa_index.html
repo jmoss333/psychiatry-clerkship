@@ -1815,8 +1815,9 @@
     return fdOpenResource(ref,{
       index:FD_INDEX,state:fdController?fdController.getState():options.state,
       search:options.search,fromHistory:options.fromHistory,host:options.host||contentEl,
-      getState:function(){ return fdController.getState(); },
+      getState:options.getState||function(){ return fdController.getState(); },
       isCurrent:options.isCurrent,governanceNotice:renderGovernanceNotice,
+      signal:options.signal,
       parseMarkdown:function(markdown){
         var html=marked.parse(markdown), meta=TOPIC_META&&TOPIC_META[ref];
         return (meta?buildTpl(meta,ref):'')+html;
@@ -1929,6 +1930,7 @@
   var fdEditionStartupStorageDirty=false;
   var fdEditionStartupHistory=null;
   var fdEditionStartupHistoryDirty=false;
+  var fdEditionStartupGeneration=0;
   function fdEditionCheckpointStorage(storage){
     var keyMethod=fdEditionStudentMethod(storage,'key');
     var removeMethod=fdEditionStudentMethod(storage,'removeItem');
@@ -1946,7 +1948,7 @@
     return {storage:storage,keyMethod:keyMethod,removeMethod:removeMethod,keys:keys,values:values};
   }
   function fdEditionRestoreStorage(checkpoint){
-    var current=[],length,key,i,ok=true;
+    var current=[],length,key,stored,i,ok=true;
     if(!checkpoint)return false;
     try{length=checkpoint.storage.length;}catch(ignoreLength){return false;}
     if(typeof length!=='number'||length<0||length%1!==0)return false;
@@ -1964,7 +1966,9 @@
     }
     for(i=0;i<checkpoint.keys.length;i++){
       key=checkpoint.keys[i];
-      if(!fdEditionStudentWrite(checkpoint.storage,key,checkpoint.values[key]))ok=false;
+      stored=fdEditionStudentRead(checkpoint.storage,key);
+      if((!stored.ok||stored.value!==checkpoint.values[key])&&
+         !fdEditionStudentWrite(checkpoint.storage,key,checkpoint.values[key]))ok=false;
     }
     return ok;
   }
@@ -1994,6 +1998,34 @@
     fdEditionStartupTeardowns.push(function(){fdEditionRuntimeUnlisten(registration);});
     return true;
   }
+  function fdOpenInitialResource(ref,options,generation){
+    return new Promise(function(resolve){
+      var active=true,settled=false,timer=null,aborter=null,opts=options||{};
+      function owned(candidate){
+        var state;
+        if(!active||generation!==fdEditionStartupGeneration||!fdController)return false;
+        try{state=fdController.getState();}
+        catch(ignoreState){return false;}
+        return !!state&&state.openId===candidate;
+      }
+      function finish(ok){
+        if(settled)return;
+        settled=true;active=false;
+        if(timer!==null)try{window.clearTimeout(timer);}catch(ignoreClear){ }
+        if(ok!==true&&aborter)try{aborter.abort();}catch(ignoreAbort){ }
+        resolve({ok:ok===true,code:ok===true?'RESOURCE_READY':'EDITION_RUNTIME',ref:ref});
+      }
+      try{
+        if(window.AbortController)aborter=new window.AbortController();
+        timer=window.setTimeout(function(){active=false;if(aborter)try{aborter.abort();}catch(ignoreAbort){ }finish(false);},8000);
+        opts.signal=aborter?aborter.signal:null;
+        opts.getState=function(){return fdController&&fdController.getState?fdController.getState():opts.state;};
+        opts.isCurrent=owned;
+        Promise.resolve().then(function(){return fdOpenResourceLive(ref,opts);}).then(
+          function(ok){finish(ok===true);},function(){finish(false);});
+      }catch(ignoreStart){finish(false);}
+    });
+  }
   function fdEditionCleanupWiring(){
     for(var i=fdEditionStartupTeardowns.length-1;i>=0;i--)
       try{fdEditionStartupTeardowns[i]();}catch(ignoreTeardown){ }
@@ -2001,6 +2033,7 @@
     fdController=null;
   }
   function fdEditionRuntimeFallback(receipt,state){
+    fdEditionStartupGeneration++;
     fdEditionCleanupWiring();
     if(fdEditionStartupHistoryDirty)fdEditionRestoreHistory(fdEditionStartupHistory);
     if(fdEditionStartupStorageDirty)fdEditionRestoreStorage(fdEditionStartupStorage);
@@ -2009,20 +2042,39 @@
     FD_INDEX=FD_CANONICAL_INDEX;
     TOPIC_META=FD_TOPIC_META;
     fdEditionRuntimeRemoveBusy(fdApp);
-    if(state)try{fdRender(state);}catch(ignoreFallbackRender){ }
+    if(state)try{
+      var fallbackState=fdClone(state);
+      fallbackState.openId=null;fallbackState.tab='today';fallbackState.searchOpen=false;
+      fallbackState.sheet=null;fallbackState.sheetFrom=null;
+      fdRender(fallbackState);
+    }catch(ignoreFallbackRender){ }
     fdEditionRuntimeMountError(fdEditionMount,receipt||
       fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'));
     fdEditionBootState='failed';
   }
-  function fdStartFrontDoor(result){
+  async function fdStartFrontDoor(result){
   if(fdEditionBootState!=='pending')return;
   fdEditionBootState='starting';
+  var fdStartupGeneration=++fdEditionStartupGeneration;
   result=result&&result.index?result:{mode:'rejected',needsCommit:false,index:FD_CANONICAL_INDEX,
     receipt:fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME')};
   if(result.mode==='switch-required'&&
      !fdEditionRuntimeSwitchReady(fdEditionBootLocation,fdEditionInputs&&fdEditionInputs.hashCleared)){
     result={mode:'rejected',needsCommit:false,index:FD_CANONICAL_INDEX,
       receipt:fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME')};
+  }
+  var fdCheckpointStorage=fdEditionBootStorage;
+  if(!fdCheckpointStorage)try{fdCheckpointStorage=window.localStorage;}catch(ignoreCheckpointStorage){ }
+  fdEditionStartupStorage=fdEditionCheckpointStorage(fdCheckpointStorage);
+  if(!fdEditionStartupStorage){
+    fdEditionRuntimeFallback(fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'),null);
+    return;
+  }
+  fdEditionStartupStorageDirty=true;
+  fdEditionStartupHistory=fdEditionCheckpointHistory(window);
+  if(!fdEditionStartupHistory){
+    fdEditionRuntimeFallback(fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'),null);
+    return;
   }
   FD_INDEX=result.index;
   TOPIC_META=FD_TOPIC_META;
@@ -2043,14 +2095,6 @@
     fdInitial=fdResolveState(location.href,fdStored);
     fdInitial.done=fdProgressDoneMap(progLoad());
     fdInitial.rotationStart=fdRotation;
-    var fdCheckpointStorage=fdEditionBootStorage;
-    if(!fdCheckpointStorage)try{fdCheckpointStorage=window.localStorage;}catch(ignoreCheckpointStorage){ }
-    fdEditionStartupStorage=fdEditionCheckpointStorage(fdCheckpointStorage);
-    fdEditionStartupHistory=fdEditionCheckpointHistory(window);
-    if(!fdEditionStartupStorage||!fdEditionStartupHistory){
-      fdEditionRuntimeFallback(fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'),fdInitial);
-      return;
-    }
     if(FD_RUNTIME_WIRING_OK!==true||!fdEditionRuntimeShellReady(fdApp)){
       fdEditionRuntimeFallback(fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'),fdInitial);
       return;
@@ -2084,7 +2128,6 @@
     return;
   }
   if(result.mode==='active'&&result.needsCommit){
-    fdEditionStartupStorageDirty=true;
     if(!fdEditionAcceptFirst(fdEditionBootStorage,result.active)){
       fdEditionRuntimeFallback(fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'),fdInitial);
       return;
@@ -2158,21 +2201,21 @@
     }catch(ignoreRecovery){ return false; }
   }
   try{
-    if(fdInitial.openId==='__progress__')fdOpenProgress(fdInitial,{host:contentEl});
+    if(fdInitial.openId==='__progress__'){
+      if(fdOpenProgress(fdInitial,{host:contentEl})!==true)throw new Error('progress mount');
+    }
     else if(fdInitial.openId){
-      fdEditionStartupStorageDirty=true;
-      fdOpenResourceLive(fdInitial.openId,{
+      var fdResourceReceipt=await fdOpenInitialResource(fdInitial.openId,{
         state:fdInitial,search:location.search,host:contentEl,
-        getState:function(){ return fdController.getState(); },
-        isCurrent:function(ref){return fdController.getState().openId===ref;}
-      });
+        getState:function(){ return fdController&&fdController.getState?fdController.getState():fdInitial; }
+      },fdStartupGeneration);
+      if(!fdResourceReceipt||fdResourceReceipt.ok!==true)throw new Error('resource task');
     }
     if(result.mode==='switch-required'){
       if(!fdEditionRuntimeMountSwitch(fdEditionMount,result,fdEditionBootStorage,
          fdEditionBootLocation,fdEditionInputs.hashCleared,fdRecoverCommittedEdition))throw new Error('edition mount');
     }else if(result.mode==='rejected'&&!fdEditionRuntimeMountError(fdEditionMount,result.receipt))
       throw new Error('edition alert');
-    fdEditionStartupStorageDirty=true;
     fdEditionStartupHistoryDirty=true;
     if(!fdController.commitStartup())throw new Error('startup commit');
   }catch(ignoreFinalStartup){
@@ -2184,20 +2227,25 @@
   fdEditionStartupStorageDirty=false;
   fdEditionStartupHistoryDirty=false;
   fdEditionBootState='started';
+  return {ok:true,code:'STARTED'};
   }
 
+  function fdEditionCatchStartup(){
+    if(fdEditionBootState==='starting')
+      fdEditionRuntimeFallback(fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'),null);
+  }
   var fdEditionInputs=fdEditionRuntimeInputs(window,fdDocument,fdApp,fdEditionMount,FD_SITE_CONTEXT);
   if(!fdEditionInputs.ok){
     fdStartFrontDoor({mode:'rejected',needsCommit:false,index:FD_CANONICAL_INDEX,
-      receipt:fdEditionInputs.receipt});
+      receipt:fdEditionInputs.receipt}).catch(fdEditionCatchStartup);
   }else{
     fdEditionBootStorage=fdEditionInputs.storage;
     fdEditionBootLocation=fdEditionInputs.location;
     fdEditionResolveStartup(FD_CANONICAL_INDEX,FD_SITE_CONTEXT,fdEditionInputs.pageUrl,
       fdEditionInputs.hash,fdEditionInputs.storedText,fdEditionInputs.subtle).then(fdStartFrontDoor,
-      function(){fdStartFrontDoor({mode:'rejected',needsCommit:false,index:FD_CANONICAL_INDEX,
+      function(){return fdStartFrontDoor({mode:'rejected',needsCommit:false,index:FD_CANONICAL_INDEX,
         receipt:{code:'EDITION_RUNTIME',schemaVersion:1,fingerprint:'',
-                 currentCoreRevision:FD_CORE_REVISION}});});
+                 currentCoreRevision:FD_CORE_REVISION}});}).catch(fdEditionCatchStartup);
   }
 })();
 </script>

@@ -48,6 +48,8 @@ async function installEditionRuntimeProbe(page, options = {}) {
     const originalAddEventListener = EventTarget.prototype.addEventListener;
     const originalRemoveEventListener = EventTarget.prototype.removeEventListener;
     const originalQuerySelector = Element.prototype.querySelector;
+    const originalFetch = window.fetch.bind(window);
+    const originalSetTimeout = window.setTimeout.bind(window);
     const innerHtml = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML');
     const eventKey = `${logKey}_events`;
     const readLog = () => {
@@ -66,6 +68,44 @@ async function installEditionRuntimeProbe(page, options = {}) {
     window.__fdEditionWrites = readLog();
     window.__fdEditionEvents = readEvents();
     window.__fdStartupListenerFires = [];
+    window.__fdUnhandledRejections = [];
+    window.__fdResourceAbortCount = 0;
+    window.addEventListener('unhandledrejection', (event) => {
+      window.__fdUnhandledRejections.push(String(event.reason?.message || event.reason || 'unknown'));
+    });
+    window.fetch = function startupResourceFetch(input, init) {
+      const url = String(input?.url || input || '');
+      if (!url.includes('content/orientation.md') || !location.search.includes('startup-async')) {
+        return originalFetch(input, init);
+      }
+      if (startupFault === 'markdown-hang') {
+        return new Promise((_resolve, reject) => {
+          init?.signal?.addEventListener('abort', () => {
+            window.__fdResourceAbortCount += 1;
+            reject(new DOMException('private startup abort', 'AbortError'));
+          }, { once: true });
+        });
+      }
+      if (startupFault === 'markdown-reject') {
+        return new Promise((_resolve, reject) => originalSetTimeout(
+          () => reject(new Error('private delayed markdown rejection')), 40,
+        ));
+      }
+      if (['markdown-mount', 'markdown-success'].includes(startupFault)) {
+        return Promise.resolve({
+          ok: true,
+          text: () => new Promise((resolve) => originalSetTimeout(() => {
+            record(['resource-text', startupFault]);
+            resolve('# Orientation\n\nDelayed startup markdown.');
+          }, 40)),
+        });
+      }
+      return originalFetch(input, init);
+    };
+    window.setTimeout = function startupResourceTimeout(handler, delay, ...args) {
+      const actual = startupFault === 'markdown-hang' && delay === 8000 ? 30 : delay;
+      return originalSetTimeout(handler, actual, ...args);
+    };
     const startupListeners = [];
     const targetLabel = (target) => target === window ? 'window'
       : (target === document ? 'document' : (target instanceof Element && target.id === 'fdApp' ? 'fdApp' : ''));
@@ -126,6 +166,10 @@ async function installEditionRuntimeProbe(page, options = {}) {
       if (this.id === 'fdApp' && listenerFault === 'root-query') {
         throw new Error('private root query failure');
       }
+      if (this.id === 'content' && selector === '.fd-article__body'
+        && location.search.includes('startup-async')) {
+        record(['resource-hydrate', location.search.includes('tool') ? 'tool' : 'markdown']);
+      }
       return originalQuerySelector.call(this, selector);
     };
     History.prototype.replaceState = function replaceState(state, title, url) {
@@ -139,6 +183,7 @@ async function installEditionRuntimeProbe(page, options = {}) {
     };
     let progressMounts = 0;
     let resourceMountFaults = 0;
+    let delayedMarkdownMountFaults = 0;
     Object.defineProperty(Element.prototype, 'innerHTML', {
       configurable: innerHtml.configurable,
       enumerable: innerHtml.enumerable,
@@ -158,6 +203,13 @@ async function installEditionRuntimeProbe(page, options = {}) {
             || (resourceMountFaults === 1 && value.includes('Page unavailable')))) {
           resourceMountFaults += 1;
           throw new Error('private initial resource opening failure');
+        }
+        if (this.id === 'content' && startupFault === 'markdown-mount'
+          && location.search.includes('startup-async-markdown-mount')
+          && typeof value === 'string' && value.includes('Delayed startup markdown.')
+          && delayedMarkdownMountFaults === 0) {
+          delayedMarkdownMountFaults += 1;
+          throw new Error('private delayed markdown mount failure');
         }
         if (this.id === 'governanceMount' && location.search.includes('startup-fault-edition-dialog')
           && startupFault === 'edition-dialog' && typeof value === 'string'
@@ -251,6 +303,8 @@ async function expectAtomicStartupFailure(page, {
     document.querySelector('#fdApp')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     return window.__fdStartupListenerFires;
   })).toEqual([]);
+  await expect(page.locator('#content .fd-today .fd-row').first()).toBeVisible();
+  expect(await page.evaluate(() => window.__fdUnhandledRejections)).toEqual([]);
   expect(pageErrors).toEqual([]);
 }
 
@@ -1042,6 +1096,144 @@ test('first acceptance through legacy Start commits once after both Progress mou
   await expect(page.locator('#pgRoot')).toBeVisible();
   expect((await editionWrites(page)).map(([key]) => key)).toEqual([LOCAL_EDITION_KEY, EDITION_KEY]);
   expect(await page.evaluate(() => window.__fdActiveStartupListeners().length)).toBe(8);
+  expect(pageErrors).toEqual([]);
+});
+
+for (const [label, startupFault] of [
+  ['rejected fetch', 'markdown-reject'],
+  ['throwing mount', 'markdown-mount'],
+  ['aborted hang', 'markdown-hang'],
+]) {
+  test(`a delayed initial Markdown ${label} rolls back before commit and cannot mutate later`, async ({ page }, testInfo) => {
+    const pageErrors = [];
+    page.on('pageerror', (error) => pageErrors.push(error.message));
+    await installEditionRuntimeProbe(page, { startupFault });
+    const incoming = await createSyntheticEdition(testInfo, 2);
+    await page.goto('/');
+    await seedEditionLearner(page);
+    await page.evaluate(() => localStorage.setItem('cw_last', 'welcome.md'));
+    const before = await localStorageSnapshot(page);
+    await resetEditionWriteLog(page);
+    const expectedSearch = `?page=orientation.md&case=startup-async-${startupFault}`;
+
+    await page.goto(`${expectedSearch}#edition=${incoming.payload}`);
+    await expectAtomicStartupFailure(page, {
+      before, expectedSearch, selectedTitle: incoming.selectedTitle, pageErrors,
+    });
+    const settledHtml = await page.locator('#content').innerHTML();
+    await page.waitForTimeout(100);
+    expect(await page.locator('#content').innerHTML()).toBe(settledHtml);
+    if (startupFault === 'markdown-hang') {
+      expect(await page.evaluate(() => window.__fdResourceAbortCount)).toBe(1);
+    }
+  });
+}
+
+test('a delayed initial tool hydration cannot touch a nulled controller after teardown', async ({ page }, testInfo) => {
+  const pageErrors = [];
+  page.on('pageerror', (error) => pageErrors.push(error.message));
+  await installEditionRuntimeProbe(page, { startupFault: 'edition-dialog' });
+  const active = await createSyntheticEdition(testInfo, 1);
+  const candidate = await createSyntheticEdition(testInfo, 2);
+  await page.goto('/');
+  await seedEditionLearner(page);
+  await page.goto(`/?case=edition-active-before-async-tool#edition=${active.payload}`);
+  await expect(page.locator('.fd-today .fd-list .fd-row__title')).toHaveText(active.selectedTitle);
+  const before = await localStorageSnapshot(page);
+  await resetEditionWriteLog(page);
+  const expectedSearch = '?tool=question-bank-practice.html&case=startup-fault-edition-dialog-async-tool';
+
+  await page.goto(`${expectedSearch}#edition=${candidate.payload}`);
+  await expectAtomicStartupFailure(page, {
+    before, expectedSearch, selectedTitle: active.selectedTitle, pageErrors,
+  });
+  const settledHtml = await page.locator('#content').innerHTML();
+  const settledHydrations = (await editionEvents(page)).filter(([kind]) => kind === 'resource-hydrate').length;
+  await page.waitForTimeout(100);
+  expect(await page.locator('#content').innerHTML()).toBe(settledHtml);
+  expect((await editionEvents(page)).filter(([kind]) => kind === 'resource-hydrate')).toHaveLength(settledHydrations);
+  expect(await page.evaluate(() => window.__fdUnhandledRejections)).toEqual([]);
+  expect(pageErrors).toEqual([]);
+});
+
+for (const mode of ['core', 'stored-edition']) {
+  test(`${mode} startup restores a plan-store mutation when the later mount fails`, async ({ page }, testInfo) => {
+    const pageErrors = [];
+    page.on('pageerror', (error) => pageErrors.push(error.message));
+    await installEditionRuntimeProbe(page, { startupFault: 'progress-second' });
+    const active = await createSyntheticEdition(testInfo, 1);
+    await page.goto('/');
+    await seedEditionLearner(page);
+    if (mode === 'stored-edition') {
+      await page.goto(`/?case=edition-active-before-plan-fault#edition=${active.payload}`);
+      await expect(page.locator('.fd-today .fd-list .fd-row__title')).toHaveText(active.selectedTitle);
+    }
+    await page.evaluate(() => localStorage.setItem('cw_plan_v1', '{broken-plan-byte-sequence'));
+    const before = await localStorageSnapshot(page);
+    await resetEditionWriteLog(page);
+    const expectedSearch = `?page=__start__&case=startup-fault-plan-${mode}`;
+
+    await page.goto(expectedSearch);
+    await expectAtomicStartupFailure(page, {
+      before, expectedSearch, selectedTitle: active.selectedTitle, pageErrors,
+    });
+    expect(await page.evaluate(() => localStorage.getItem('cw_plan_v1'))).toBe('{broken-plan-byte-sequence');
+  });
+}
+
+for (const [kind, startupFault, route] of [
+  ['Markdown', 'markdown-success', 'page=orientation.md'],
+  ['tool', '', 'tool=question-bank-practice.html'],
+]) {
+  test(`successful async ${kind} startup hydrates before the history commit`, async ({ page }, testInfo) => {
+    const pageErrors = [];
+    page.on('pageerror', (error) => pageErrors.push(error.message));
+    await installEditionRuntimeProbe(page, { startupFault });
+    const incoming = await createSyntheticEdition(testInfo, 2);
+    await page.goto('/');
+    await seedEditionLearner(page);
+    await resetEditionWriteLog(page);
+
+    await page.goto(`/?${route}&case=startup-async-${kind.toLowerCase()}#edition=${incoming.payload}`);
+    if (kind === 'Markdown') {
+      await expect(page.locator('.fd-article__body')).toContainText('Delayed startup markdown.');
+    } else {
+      await expect(page.locator('.fd-article iframe')).toBeVisible();
+    }
+    const events = await editionEvents(page);
+    const hydration = events.findIndex(([event]) => event === 'resource-hydrate');
+    const commit = events.map(([event]) => event).lastIndexOf('history');
+    expect(hydration).toBeGreaterThan(-1);
+    expect(commit).toBeGreaterThan(hydration);
+    expect(await page.evaluate(() => history.state?.fd === true)).toBe(true);
+    expect(await page.evaluate(() => window.__fdActiveStartupListeners().length)).toBe(8);
+    expect(await page.evaluate(() => window.__fdUnhandledRejections)).toEqual([]);
+    expect(pageErrors).toEqual([]);
+  });
+}
+
+test('ordinary later Markdown and tool opens retain their existing navigation behavior', async ({ page }) => {
+  const pageErrors = [];
+  page.on('pageerror', (error) => pageErrors.push(error.message));
+  await installEditionRuntimeProbe(page);
+  await page.goto('/');
+  await seedEditionLearner(page);
+  await page.reload();
+
+  await page.evaluate(() => {
+    const control = document.createElement('button');
+    control.setAttribute('data-fd-open', 'orientation.md');
+    document.querySelector('#fdApp').appendChild(control);
+    control.click();
+  });
+  await expect(page.locator('.fd-article__body')).toContainText(/Orientation/i);
+  await page.evaluate(() => {
+    const control = document.createElement('button');
+    control.setAttribute('data-fd-open', 'question-bank-practice.html');
+    document.querySelector('#fdApp').appendChild(control);
+    control.click();
+  });
+  await expect(page.locator('.fd-article iframe')).toBeVisible();
   expect(pageErrors).toEqual([]);
 });
 
