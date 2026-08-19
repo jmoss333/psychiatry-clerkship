@@ -582,6 +582,54 @@ test('screens every identifier field with the common privacy policy and preserve
   }
 });
 
+test('advises on sensitive multiword separator variants in every identifier field', () => {
+  const base = fixture('valid-ms3.json').config;
+  const identifierFields = [
+    {
+      label: 'path item instance ID', path: '/config/pathItems/0/instanceId',
+      set(config, value) { config.pathItems[0].instanceId = value; }
+    },
+    {
+      label: 'path item core ref', path: '/config/pathItems/0/ref',
+      set(config, value) { config.pathItems[0].ref = value; }
+    },
+    {
+      label: 'local checklist ID', path: '/config/localOrientation/checklist/0/id',
+      set(config, value) { config.localOrientation.checklist[0].id = value; }
+    },
+    {
+      label: 'local resource ID', path: '/config/localOrientation/resources/0/id',
+      set(config, value) { config.localOrientation.resources[0].id = value; }
+    }
+  ];
+  const phrases = [['access', 'code'], ['patient', 'identifier']];
+
+  for (const field of identifierFields) {
+    for (const separator of [' ', '-', '_']) {
+      for (const [first, second] of phrases) {
+        const identifier = `${first}${separator}${second}`;
+        const config = clone(base);
+        field.set(config, identifier);
+        const result = F.fdEditionValidateConfig(
+          config, indexFor(config), context('ms3', base.createdAgainstCoreRevision)
+        );
+        assert.ok(result.warnings.some((finding) =>
+          finding.code === 'EDITION_TEXT_RISK' && finding.path === field.path && finding.blocking === false
+        ), `${field.label}: ${identifier}`);
+        assertPrivateSafe(result, identifier);
+      }
+    }
+
+    const benign = clone(base);
+    field.set(benign, 'local:orientation-guide_2');
+    const benignResult = F.fdEditionValidateConfig(
+      benign, indexFor(benign), context('ms3', base.createdAgainstCoreRevision)
+    );
+    assert.equal(benignResult.ok, true, field.label);
+    assert.deepEqual(benignResult.warnings, [], field.label);
+  }
+});
+
 test('canonical JSON sorts recursive object keys and preserves array order', () => {
   assert.equal(F.fdEditionCanonicalJson({ z: 1, a: { d: 4, b: 2 }, list: [3, 1] }), '{"a":{"b":2,"d":4},"list":[3,1],"z":1}');
   assert.notEqual(F.fdEditionCanonicalJson({ list: [3, 1] }), F.fdEditionCanonicalJson({ list: [1, 3] }));
@@ -756,6 +804,64 @@ test('digest equality requires exact 32-byte digests and fingerprints use first 
   assert.equal(F.fdEditionDigestEqual(abc, abc.slice(0, -1) + 'A'), false);
   assert.equal(F.fdEditionDigestEqual('sha256-short', 'sha256-short'), false);
   assert.equal(F.fdEditionFingerprint({ audience: 'ms3', card: { locationCode: 'bhu2' } }, abc), 'BHU2-MS3-Q9W1DF');
+});
+
+test('fingerprints normalize valid location codes and reject invalid or hostile public prefixes', () => {
+  const digest = 'sha256-ungWv48Bz-pBQUDeXa4iI7ADYaOWF3qctBD_YfIAFa0';
+  for (const [locationCode, prefix] of [
+    ['ab', 'AB'],
+    ['abcd1234', 'ABCD1234'],
+    [' bhu2 ', 'BHU2']
+  ]) {
+    assert.equal(
+      F.fdEditionFingerprint({ audience: 'ms3', card: { locationCode } }, digest),
+      `${prefix}-MS3-Q9W1DF`,
+      locationCode
+    );
+  }
+
+  for (const locationCode of [
+    '', 'A', 'ABCDEFGHI', 'AB-CD', 'AB_CD', 'AB CD', 'BH\u00dc2',
+    'private@example.edu', 'patient-identifier'
+  ]) {
+    assert.equal(
+      F.fdEditionFingerprint({ audience: 'ms3', card: { locationCode } }, digest),
+      '',
+      locationCode
+    );
+  }
+
+  let getterReads = 0;
+  const accessorConfig = { audience: 'ms3', card: {} };
+  Object.defineProperty(accessorConfig.card, 'locationCode', {
+    enumerable: true,
+    get() { getterReads += 1; return 'private@example.edu'; }
+  });
+  const accessorAudience = { card: { locationCode: 'BHU2' } };
+  Object.defineProperty(accessorAudience, 'audience', {
+    enumerable: true,
+    get() { getterReads += 1; return 'ms3'; }
+  });
+  const hostileCard = new Proxy({}, {
+    getOwnPropertyDescriptor() { throw new Error('private-wrapper-detail'); }
+  });
+  const hostileLocation = new Proxy(new String('BHU2'), {
+    get() { throw new Error('private-wrapper-detail'); },
+    getOwnPropertyDescriptor() { throw new Error('private-wrapper-detail'); }
+  });
+
+  for (const config of [
+    accessorConfig,
+    accessorAudience,
+    { audience: 'ms3', card: hostileCard },
+    { audience: 'ms3', card: { locationCode: hostileLocation } }
+  ]) {
+    let fingerprint;
+    assert.doesNotThrow(() => { fingerprint = F.fdEditionFingerprint(config, digest); });
+    assert.equal(fingerprint, '');
+    assert.doesNotMatch(fingerprint, /private/i);
+  }
+  assert.equal(getterReads, 0);
 });
 
 test('payload decoding rejects malformed UTF-8, trailing parameters, oversize URLs, and bad envelopes', async () => {

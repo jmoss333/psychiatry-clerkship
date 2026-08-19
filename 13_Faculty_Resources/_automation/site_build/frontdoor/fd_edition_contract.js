@@ -99,6 +99,10 @@ function fdEditionString(value,path,errors){
   catch(ignore){ errors.push(fdEditionFinding('EDITION_SCHEMA',path,'The text value is not valid Unicode.')); return ''; }
 }
 
+function fdEditionLocationCode(value,path,errors){
+  return fdEditionString(value,path,errors).toUpperCase();
+}
+
 function fdEditionArray(value,path,errors){
   var keys,out,i,key,descriptor,lengthDescriptor,length,data=Object.create(null),isArray=false;
   try{ isArray=Array.isArray(value); }
@@ -167,9 +171,10 @@ function fdEditionNormalizeConfig(config){
     card={};
     for(i=0;i<FD_EDITION_CARD_FIELDS.length;i++){
       item=FD_EDITION_CARD_FIELDS[i];
-      card[item]=fdEditionString(source.card[item],fdEditionPointer('/config/card',item),errors);
+      card[item]=item==='locationCode'
+        ?fdEditionLocationCode(source.card[item],fdEditionPointer('/config/card',item),errors)
+        :fdEditionString(source.card[item],fdEditionPointer('/config/card',item),errors);
     }
-    card.locationCode=card.locationCode.toUpperCase();
     out.card=card;
   }
 
@@ -356,7 +361,7 @@ function fdEditionDigestEqual(expected,actual){
 }
 
 function fdEditionFingerprint(config,digest){
-  var bytes,value,alphabet='0123456789ABCDEFGHJKMNPQRSTVWXYZ',token='',i,path;
+  var bytes,value,alphabet='0123456789ABCDEFGHJKMNPQRSTVWXYZ',token='',i,path,locationCode;
   var audienceDescriptor,cardDescriptor,locationDescriptor,card;
   if(typeof digest!=='string'||digest.indexOf('sha256-')!==0||!fdEditionObject(config)) return '';
   try{ bytes=fdEditionBase64urlDecode(digest.slice(7),32); }
@@ -373,9 +378,11 @@ function fdEditionFingerprint(config,digest){
   if(typeof audienceDescriptor.value!=='string'||!Object.prototype.hasOwnProperty.call(FD_EDITION_RULES.paths,audienceDescriptor.value)) return '';
   path=FD_EDITION_RULES.paths[audienceDescriptor.value];
   if(!path||!locationDescriptor||!Object.prototype.hasOwnProperty.call(locationDescriptor,'value')||typeof locationDescriptor.value!=='string') return '';
+  locationCode=fdEditionLocationCode(locationDescriptor.value,'/config/card/locationCode',[]);
+  if(!new RegExp(FD_EDITION_RULES.patterns.locationCode).test(locationCode)) return '';
   value=Math.floor((bytes[0]*16777216+bytes[1]*65536+bytes[2]*256+bytes[3])/4);
   for(i=5;i>=0;i--) token+=alphabet.charAt(Math.floor(value/Math.pow(32,i))%32);
-  return locationDescriptor.value.replace(/\s/g,'').toUpperCase()+'-'+path.code+'-'+token;
+  return locationCode+'-'+path.code+'-'+token;
 }
 
 function fdEditionAdd(errors,condition,code,path,message){
@@ -460,7 +467,7 @@ function fdEditionCheckUrl(value,path,errors,warnings){
 
 function fdEditionScreenText(value,path,errors,warnings){
   var blocking=/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]|<\/?[a-z][^>]*>|\bon[a-z]+\s*=|(?:javascript|data|vbscript|blob):|\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b|\b(?:pager\s*[:#-]?\s*\d{4,}|(?:call|phone|tel(?:ephone)?)?\s*\+?\d[\d(). -]{6,}\d)\b|\b(?:password|passcode|credential|username|login|api[_ -]?key|secret|token)\s*(?::|=|\bis\b|\bare\b)\s*\S+|\b(?:access|door|badge)[_ -]+code\s*(?::|=|\bis\b|\bare\b)\s*\S+|\bpin\s*(?::|=|\bis\b)\s*\d+|\b\d+(?:\.\d+)?\s*(?:mg|mcg|\u00b5g|g|ml|milligrams?|micrograms?|grams?|millilit(?:er|re)s?|units?|iu)\b/i;
-  var advisory=/\b(?:patient\s+(?:identifier|name|record)|credentials?|password|passcode|username|login|api[_ -]?key|secret|token|(?:access|door|badge)\s+code|pin|protocols?|dos(?:e|ing|age)|medication)\b/i;
+  var advisory=/\b(?:patient[_ -]+(?:identifier|name|record)|credentials?|password|passcode|username|login|api[_ -]?key|secret|token|(?:access|door|badge)[_ -]+code|pin|protocols?|dos(?:e|ing|age)|medication)\b/i;
   if(blocking.test(value)) errors.push(fdEditionFinding('EDITION_TEXT_RISK',path,'Text must not contain direct contact, access, credential, dose, control, HTML, event-handler, or executable content.'));
   else if(advisory.test(value)) warnings.push(fdEditionFinding('EDITION_TEXT_RISK',path,'Review this text for sensitive identifiers, credentials, protocols, or dosing details before publication.',false));
 }
