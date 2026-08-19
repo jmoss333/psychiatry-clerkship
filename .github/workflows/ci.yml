@@ -102,6 +102,12 @@ jobs:
       - name: Validate — registry schemas
         run: python3 13_Faculty_Resources/_automation/validate_registry_schemas.py
 
+      - name: Test — rotation edition schema gate
+        run: python3 13_Faculty_Resources/_automation/test_validate_rotation_edition_schema.py
+
+      - name: Validate — rotation edition schema fixtures
+        run: python3 13_Faculty_Resources/_automation/validate_rotation_edition_schema.py
+
       - name: Test — ReConnect snapshot provenance
         run: python3 13_Faculty_Resources/_automation/test_validate_reconnect_snapshot_provenance.py
 

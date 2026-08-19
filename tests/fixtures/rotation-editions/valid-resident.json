@@ -1,0 +1,58 @@
+{
+  "format": "cw-rotation-edition",
+  "schemaVersion": 1,
+  "config": {
+    "audience": "resident",
+    "pathId": "resident-four-week",
+    "editionNumber": 2,
+    "createdAgainstCoreRevision": "0537907a8b9c0d1e2f3a4b5c6d7e8f9012345678",
+    "card": {
+      "title": "Synthetic Resident Rotation",
+      "locationName": "Example Service",
+      "locationCode": "RES1",
+      "curatorName": "Sample Curator",
+      "curatorRole": "Faculty educator",
+      "rotationStart": "2026-09-01",
+      "rotationEnd": "2026-09-28",
+      "lastVerified": "2026-08-19"
+    },
+    "pathItems": [
+      {
+        "instanceId": "core:synthetic-resident-guide:1",
+        "ref": "synthetic-resident-guide",
+        "week": 4,
+        "order": 1,
+        "priority": "recommended",
+        "rationale": "Synthetic resident practice."
+      }
+    ],
+    "localOrientation": {
+      "firstDayArrival": "Synthetic first-day guidance.",
+      "dailySchedule": "",
+      "roundsWorkflow": "",
+      "presentationExpectations": "",
+      "documentationExpectations": "",
+      "attendanceExpectations": "",
+      "feedbackProcess": "",
+      "accessPreparation": "Use approved institutional training.",
+      "contacts": [
+        {"role": "Synthetic support role", "directoryUrl": "https://example.edu/directory"}
+      ],
+      "checklist": [
+        {"id": "local:check:1", "label": "Review synthetic orientation", "priority": "required"}
+      ],
+      "resources": [
+        {
+          "id": "local:resource:1",
+          "title": "Synthetic local policy",
+          "url": "https://example.edu/policy",
+          "priority": "optional",
+          "week": 4,
+          "rationale": "Synthetic preparatory resource."
+        }
+      ]
+    },
+    "changeNote": "Synthetic fixture revision."
+  },
+  "digest": "sha256-AbCdEfGhIjKlMnOpQrStUvWxYz0123456789_-abcDE"
+}

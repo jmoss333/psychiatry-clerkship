@@ -1,0 +1,45 @@
+{
+  "format": "cw-rotation-edition",
+  "schemaVersion": 1,
+  "config": {
+    "audience": "resident",
+    "pathId": "resident-four-week",
+    "editionNumber": 1,
+    "createdAgainstCoreRevision": "0537907a8b9c0d1e2f3a4b5c6d7e8f9012345678",
+    "card": {
+      "title": "Synthetic Resident Rotation",
+      "locationName": "Example Service",
+      "locationCode": "RES1",
+      "curatorName": "Sample Curator",
+      "curatorRole": "Faculty educator",
+      "rotationStart": "2026-09-01",
+      "rotationEnd": "2026-09-28",
+      "lastVerified": "2026-08-19"
+    },
+    "pathItems": [],
+    "localOrientation": {
+      "firstDayArrival": "",
+      "dailySchedule": "",
+      "roundsWorkflow": "",
+      "presentationExpectations": "",
+      "documentationExpectations": "",
+      "attendanceExpectations": "",
+      "feedbackProcess": "",
+      "accessPreparation": "",
+      "contacts": [],
+      "checklist": [],
+      "resources": [
+        {
+          "id": "local:resource:1",
+          "title": "Synthetic local policy",
+          "url": "http://unsafe.example/resource",
+          "priority": "recommended",
+          "week": 1,
+          "rationale": "Synthetic resource."
+        }
+      ]
+    },
+    "changeNote": ""
+  },
+  "digest": "sha256-LcpaRhETF-u-cRGkRpzecudJxloVk8zsFAEIdURAozo"
+}

@@ -1,0 +1,37 @@
+{
+  "format": "cw-rotation-edition",
+  "schemaVersion": 1,
+  "config": {
+    "audience": "ms3",
+    "pathId": "ms3-six-week",
+    "editionNumber": 1,
+    "createdAgainstCoreRevision": "503b42d2538d525c0a3bbf0e1767333e5e617df4",
+    "card": {
+      "title": "Synthetic MS3 Rotation",
+      "locationName": "Example Unit",
+      "locationCode": "EXAMPLE",
+      "curatorName": "Sample Curator",
+      "curatorRole": "Faculty educator",
+      "rotationStart": "2026-09-01",
+      "rotationEnd": "2026-10-12",
+      "lastVerified": "2026-08-19",
+      "unexpectedNested": "synthetic"
+    },
+    "pathItems": [],
+    "localOrientation": {
+      "firstDayArrival": "",
+      "dailySchedule": "",
+      "roundsWorkflow": "",
+      "presentationExpectations": "",
+      "documentationExpectations": "",
+      "attendanceExpectations": "",
+      "feedbackProcess": "",
+      "accessPreparation": "",
+      "contacts": [],
+      "checklist": [],
+      "resources": []
+    },
+    "changeNote": ""
+  },
+  "digest": "sha256-LcpaRhETF-u-cRGkRpzecudJxloVk8zsFAEIdURAozo"
+}
