@@ -99,6 +99,21 @@ function seededStorage() {
   });
 }
 
+function writeFailingStorage(initial, failKey) {
+  const values = new Map(Object.entries(initial));
+  const attempts = [];
+  return {
+    getItem(key) { return values.has(key) ? values.get(key) : null; },
+    setItem(key, value) {
+      attempts.push(key);
+      if (key === failKey) throw new Error('adapter failure');
+      values.set(key, value);
+    },
+    snapshot() { return Object.fromEntries(values); },
+    attempts
+  };
+}
+
 test('first valid edition resolves without writes and explicit acceptance writes only the two edition keys', async () => {
   const incoming = await edition();
   const storage = seededStorage();
@@ -109,7 +124,7 @@ test('first valid edition resolves without writes and explicit acceptance writes
   assert.equal(result.active.fingerprint, incoming.fingerprint);
   assert.equal(storage.writes.length, 0);
   assert.equal(F.fdEditionAcceptFirst(storage, result.active), true);
-  assert.deepEqual(storage.writes.map(([key]) => key), [EDITION_KEY, LOCAL_KEY]);
+  assert.deepEqual(storage.writes.map(([key]) => key), [LOCAL_KEY, EDITION_KEY]);
   assert.deepEqual(protectedSnapshot(storage), before);
   assert.deepEqual(JSON.parse(storage.snapshot()[LOCAL_KEY]), { schemaVersion: 1, byFingerprint: {
     [incoming.fingerprint]: { checklist: {}, resources: {} }
@@ -158,7 +173,7 @@ test('explicit switch writes only edition and local progress while preserving co
   storage.writes.length = 0;
   const before = protectedSnapshot(storage);
   assert.equal(F.fdEditionAcceptSwitch(storage, replacement), true);
-  assert.deepEqual(storage.writes.map(([key]) => key), [EDITION_KEY, LOCAL_KEY]);
+  assert.deepEqual(storage.writes.map(([key]) => key), [LOCAL_KEY, EDITION_KEY]);
   assert.deepEqual(protectedSnapshot(storage), before);
   const local = JSON.parse(storage.snapshot()[LOCAL_KEY]);
   assert.deepEqual(local.byFingerprint[selected.fingerprint], { checklist: { 'local:check:1': true }, resources: {} });
@@ -208,19 +223,114 @@ test('local progress is fingerprint-scoped, toggle-only, and safe against hostil
   const storage = recordingStorage({ [LOCAL_KEY]: JSON.stringify({ schemaVersion: 1, byFingerprint: {
     'BHU2-MS3-4F7C2Q': { checklist: { 'old:item': true }, resources: {} }
   } }) });
-  assert.deepEqual(F.fdEditionReadLocalProgress(storage, selected.fingerprint), { checklist: {}, resources: {} });
+  assert.deepEqual(JSON.parse(JSON.stringify(F.fdEditionReadLocalProgress(storage, selected.fingerprint))), { checklist: {}, resources: {} });
   assert.equal(F.fdEditionToggleLocalProgress(storage, selected.fingerprint, 'checklist', 'local:check:1'), true);
   assert.equal(F.fdEditionToggleLocalProgress(storage, selected.fingerprint, 'checklist', 'local:check:1'), true);
-  assert.deepEqual(F.fdEditionReadLocalProgress(storage, selected.fingerprint), { checklist: {}, resources: {} });
+  assert.deepEqual(JSON.parse(JSON.stringify(F.fdEditionReadLocalProgress(storage, selected.fingerprint))), { checklist: {}, resources: {} });
   assert.equal(F.fdEditionToggleLocalProgress(storage, selected.fingerprint, 'not-a-kind', 'local:check:1'), false);
   assert.equal(F.fdEditionToggleLocalProgress(storage, selected.fingerprint, 'checklist', '<img src=x>'), false);
   const hostile = { getItem() { throw new Error('stored secret'); }, setItem() { throw new Error('write secret'); } };
-  assert.deepEqual(F.fdEditionReadLocalProgress(hostile, selected.fingerprint), { checklist: {}, resources: {} });
+  assert.deepEqual(JSON.parse(JSON.stringify(F.fdEditionReadLocalProgress(hostile, selected.fingerprint))), { checklist: {}, resources: {} });
   assert.equal(F.fdEditionToggleLocalProgress(hostile, selected.fingerprint, 'checklist', 'local:check:1'), false);
   const unreadable = { writes: 0, getItem() { throw new Error('stored secret'); }, setItem() { this.writes += 1; } };
   assert.equal(F.fdEditionAcceptFirst(unreadable, selected), false);
   assert.equal(F.fdEditionToggleLocalProgress(unreadable, selected.fingerprint, 'checklist', 'local:check:1'), false);
   assert.equal(unreadable.writes, 0, 'an unreadable local bucket must never be overwritten');
+});
+
+test('corrupt or structurally invalid existing local progress blocks accept and toggle without overwriting it', async () => {
+  const selected = await edition();
+  const invalidDocuments = [
+    '{bad json',
+    JSON.stringify({ schemaVersion: 1, byFingerprint: { [selected.fingerprint]: { checklist: {}, resources: {}, extra: true } } }),
+    JSON.stringify({ schemaVersion: 1, byFingerprint: { [selected.fingerprint]: { checklist: { constructor: true }, resources: {} } } })
+  ];
+  for (const text of invalidDocuments) {
+    const storage = seededStorage();
+    storage.setItem(LOCAL_KEY, text);
+    storage.writes.length = 0;
+    const before = storage.snapshot();
+    assert.equal(F.fdEditionAcceptFirst(storage, selected), false);
+    assert.equal(F.fdEditionToggleLocalProgress(storage, selected.fingerprint, 'checklist', 'local:check:1'), false);
+    assert.deepEqual(storage.snapshot(), before);
+    assert.deepEqual(storage.writes, []);
+  }
+});
+
+test('accept writes prepared local progress before the edition commit marker and handles each write failure safely', async () => {
+  const selected = await edition('ms3', 1);
+  const replacement = await edition('ms3', 2);
+  const initial = {
+    [EDITION_KEY]: JSON.stringify(selected.envelope),
+    [LOCAL_KEY]: JSON.stringify({ schemaVersion: 1, byFingerprint: { [selected.fingerprint]: { checklist: {}, resources: {} } } }),
+    cw_progress_v1: 'core progress', cw_pretest_v1: 'pretest', cw_qb_v1: 'qbank', cw_unrelated_v1: 'other', rp_progress_v1: 'resident'
+  };
+  for (const failedKey of [LOCAL_KEY, EDITION_KEY]) {
+    const storage = writeFailingStorage(initial, failedKey);
+    const before = protectedSnapshot({ snapshot: () => initial });
+    assert.equal(F.fdEditionAcceptSwitch(storage, replacement), false, failedKey);
+    assert.deepEqual(protectedSnapshot(storage), before, failedKey);
+    assert.equal(storage.snapshot()[EDITION_KEY], initial[EDITION_KEY], `${failedKey} keeps the old active edition`);
+    assert.equal(storage.attempts[0], LOCAL_KEY, `${failedKey} prepares local state first`);
+    if (failedKey === LOCAL_KEY) assert.deepEqual(storage.attempts, [LOCAL_KEY]);
+    else {
+      assert.deepEqual(storage.attempts, [LOCAL_KEY, EDITION_KEY]);
+      assert.deepEqual(JSON.parse(storage.snapshot()[LOCAL_KEY]).byFingerprint[replacement.fingerprint], { checklist: {}, resources: {} });
+    }
+  }
+});
+
+test('commit and switch markup require a coherent success-shaped validated edition rather than a regex-shaped fingerprint', async () => {
+  const selected = await edition('ms3', 1);
+  const forgedCases = [
+    ['token', (value) => { value.fingerprint = 'BHU2-MS3-000000'; }],
+    ['location', (value) => { value.config.card.locationCode = 'MMC'; }],
+    ['audience', (value) => { value.config.audience = 'resident'; }],
+    ['digest', (value) => { value.envelope.digest = `sha256-${'B'.repeat(43)}`; }],
+    ['blocking errors', (value) => { value.errors = [{ blocking: true }]; }]
+  ];
+  for (const [label, mutate] of forgedCases) {
+    const forged = structuredClone(selected);
+    mutate(forged);
+    const storage = seededStorage();
+    const before = storage.snapshot();
+    assert.equal(F.fdEditionAcceptFirst(storage, forged), false, label);
+    assert.equal(F.fdEditionSwitchMarkup(selected, forged), '', label);
+    assert.deepEqual(storage.snapshot(), before, label);
+    assert.deepEqual(storage.writes, [], label);
+  }
+});
+
+test('hostile storage descriptors and markup proxies fail closed without exception text or writes', async () => {
+  const selected = await edition();
+  const storage = { writes: 0 };
+  Object.defineProperty(storage, 'getItem', { get() { throw new Error('read secret'); } });
+  Object.defineProperty(storage, 'setItem', { get() { throw new Error('write secret'); } });
+  assert.doesNotThrow(() => F.fdEditionReadLocalProgress(storage, selected.fingerprint));
+  assert.doesNotThrow(() => F.fdEditionAcceptFirst(storage, selected));
+  assert.doesNotThrow(() => F.fdEditionToggleLocalProgress(storage, selected.fingerprint, 'checklist', 'local:check:1'));
+  assert.equal(storage.writes, 0);
+  const hostile = new Proxy({}, { get() { throw new Error('markup secret'); }, getPrototypeOf() { throw new Error('markup secret'); } });
+  assert.doesNotThrow(() => F.fdEditionSwitchMarkup(hostile, selected));
+  assert.equal(F.fdEditionSwitchMarkup(hostile, selected), '');
+  assert.doesNotThrow(() => F.fdEditionErrorMarkup(hostile));
+  assert.equal(F.fdEditionErrorMarkup(hostile).includes('markup secret'), false);
+  const hostileReceipt = { code: { toString() { throw new Error('receipt secret'); } } };
+  assert.doesNotThrow(() => F.fdEditionErrorMarkup(hostileReceipt));
+  assert.equal(F.fdEditionErrorMarkup(hostileReceipt).includes('receipt secret'), false);
+});
+
+test('local completion supports printable contract IDs while rejecting whitespace, controls, and dangerous map keys', async () => {
+  const selected = await edition();
+  const storage = recordingStorage();
+  const printable = 'UPPER.ID+@[x]:/!?';
+  assert.equal(F.fdEditionToggleLocalProgress(storage, selected.fingerprint, 'resources', printable), true);
+  const progress = F.fdEditionReadLocalProgress(storage, selected.fingerprint);
+  assert.equal(Object.getPrototypeOf(progress.resources), null);
+  assert.equal(progress.resources[printable], true);
+  for (const id of ['space id', 'line\nbreak', '__proto__', 'constructor', 'prototype']) {
+    assert.equal(F.fdEditionToggleLocalProgress(storage, selected.fingerprint, 'resources', id), false, id);
+  }
 });
 
 test('switch and error markup use only escaped privacy-safe diagnostic fields', async () => {

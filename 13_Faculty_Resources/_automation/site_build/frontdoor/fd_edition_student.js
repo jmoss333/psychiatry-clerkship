@@ -1,7 +1,8 @@
 /* Pure learner edition startup, explicit storage commits, and safe status markup. */
 var FD_EDITION_STUDENT_KEYS={edition:'cw_rotation_edition_v1',local:'cw_rotation_local_progress_v1'};
 var FD_EDITION_STUDENT_FINGERPRINT=/^[A-Z0-9]{2,8}-(?:MS3|RES)-[0-9A-HJKMNP-TV-Z]{6}$/;
-var FD_EDITION_STUDENT_ID=/^[a-z][a-z0-9:_-]{0,127}$/;
+var FD_EDITION_STUDENT_ID=/^[\x21-\x7e]{1,160}$/;
+var FD_EDITION_STUDENT_DANGEROUS={__proto__:true,constructor:true,prototype:true};
 var FD_EDITION_STUDENT_CODES={
   EDITION_SCHEMA:true,EDITION_DIGEST:true,EDITION_AUDIENCE:true,EDITION_REF:true,
   EDITION_WEEK:true,EDITION_SIZE:true,EDITION_URL:true,EDITION_TEXT_RISK:true,
@@ -29,14 +30,50 @@ function fdEditionStudentFingerprint(value){
   return typeof value==='string'&&FD_EDITION_STUDENT_FINGERPRINT.test(value)?value:'';
 }
 
+function fdEditionStudentId(value){
+  return typeof value==='string'&&FD_EDITION_STUDENT_ID.test(value)&&!FD_EDITION_STUDENT_DANGEROUS[value]?value:'';
+}
+
+function fdEditionStudentCode(value){
+  return typeof value==='string'&&FD_EDITION_STUDENT_CODES[value]?value:'';
+}
+
+function fdEditionStudentExactObject(value,fields){
+  var keys,allowed=Object.create(null),seen=Object.create(null),i,key,descriptor;
+  if(!fdEditionStudentObject(value)) return false;
+  for(i=0;i<fields.length;i++) allowed[fields[i]]=true;
+  try{ keys=Reflect.ownKeys(value); }catch(ignoreKeys){ return false; }
+  for(i=0;i<keys.length;i++){
+    key=keys[i];
+    if(typeof key!=='string'||FD_EDITION_STUDENT_DANGEROUS[key]||!allowed[key]) return false;
+    try{ descriptor=Object.getOwnPropertyDescriptor(value,key); }catch(ignoreDescriptor){ return false; }
+    if(!descriptor||!descriptor.enumerable||!Object.prototype.hasOwnProperty.call(descriptor,'value')) return false;
+    seen[key]=true;
+  }
+  for(i=0;i<fields.length;i++) if(!seen[fields[i]]) return false;
+  return true;
+}
+
+function fdEditionStudentArray(value){
+  try{ return Array.isArray(value); }catch(ignoreArray){ return false; }
+}
+
+function fdEditionStudentArrayData(value,index){
+  var descriptor;
+  if(!fdEditionStudentArray(value)) return {ok:false,value:null};
+  try{ descriptor=Object.getOwnPropertyDescriptor(value,String(index)); }catch(ignoreDescriptor){ descriptor=null; }
+  if(!descriptor||!descriptor.enumerable||!Object.prototype.hasOwnProperty.call(descriptor,'value')) return {ok:false,value:null};
+  return {ok:true,value:descriptor.value};
+}
+
 function fdEditionStudentSafeReceipt(result,siteContext,code){
   var receipt,codeData,versionData,fingerprintData,revisionData;
   if(fdEditionStudentObject(result)){
     codeData=fdEditionStudentData(result,'code'); versionData=fdEditionStudentData(result,'schemaVersion');
     fingerprintData=fdEditionStudentData(result,'fingerprint'); revisionData=fdEditionStudentData(result,'currentCoreRevision');
-    if(codeData.ok&&FD_EDITION_STUDENT_CODES[codeData.value]){
+    if(codeData.ok&&fdEditionStudentCode(codeData.value)){
       return {
-        code:FD_EDITION_STUDENT_CODES[code] ? code : codeData.value,
+        code:fdEditionStudentCode(code)||codeData.value,
         schemaVersion:versionData.ok&&typeof versionData.value==='number'&&isFinite(versionData.value)&&Math.floor(versionData.value)===versionData.value&&versionData.value>0?versionData.value:null,
         fingerprint:fingerprintData.ok?fdEditionStudentFingerprint(fingerprintData.value):'',
         currentCoreRevision:revisionData.ok&&typeof revisionData.value==='string'&&/^[0-9a-f]{40}$/.test(revisionData.value)?revisionData.value:''
@@ -45,12 +82,13 @@ function fdEditionStudentSafeReceipt(result,siteContext,code){
   }
   try{ receipt=fdEditionDiagnostic(result,siteContext); }
   catch(ignoreDiagnostic){ receipt=null; }
-  if(!fdEditionStudentObject(receipt)) receipt={code:'EDITION_RUNTIME',schemaVersion:null,fingerprint:'',currentCoreRevision:''};
+  codeData=fdEditionStudentData(receipt,'code'); versionData=fdEditionStudentData(receipt,'schemaVersion');
+  fingerprintData=fdEditionStudentData(receipt,'fingerprint'); revisionData=fdEditionStudentData(receipt,'currentCoreRevision');
   return {
-    code:FD_EDITION_STUDENT_CODES[code] ? code : (FD_EDITION_STUDENT_CODES[receipt.code] ? receipt.code : 'EDITION_RUNTIME'),
-    schemaVersion:typeof receipt.schemaVersion==='number'&&isFinite(receipt.schemaVersion)&&Math.floor(receipt.schemaVersion)===receipt.schemaVersion&&receipt.schemaVersion>0?receipt.schemaVersion:null,
-    fingerprint:fdEditionStudentFingerprint(receipt.fingerprint),
-    currentCoreRevision:typeof receipt.currentCoreRevision==='string'&&/^[0-9a-f]{40}$/.test(receipt.currentCoreRevision)?receipt.currentCoreRevision:''
+    code:fdEditionStudentCode(code)||(codeData.ok&&fdEditionStudentCode(codeData.value) ? codeData.value : 'EDITION_RUNTIME'),
+    schemaVersion:versionData.ok&&typeof versionData.value==='number'&&isFinite(versionData.value)&&Math.floor(versionData.value)===versionData.value&&versionData.value>0?versionData.value:null,
+    fingerprint:fingerprintData.ok?fdEditionStudentFingerprint(fingerprintData.value):'',
+    currentCoreRevision:revisionData.ok&&typeof revisionData.value==='string'&&/^[0-9a-f]{40}$/.test(revisionData.value)?revisionData.value:''
   };
 }
 
@@ -136,53 +174,92 @@ function fdEditionResolveStartup(canonicalIndex,siteContext,pageUrl,incomingHash
 }
 
 function fdEditionStudentValidEdition(value){
-  var accepted,envelope,fingerprint;
+  var accepted,envelope,config,fingerprint,errors,envelopeConfig,digest,expected,canonicalConfig,canonicalEnvelope,i,finding,blocking;
   if(!fdEditionStudentObject(value)) return null;
   accepted=fdEditionStudentData(value,'ok');
   if(!accepted.ok||accepted.value!==true) return null;
-  envelope=fdEditionStudentData(value,'envelope'); fingerprint=fdEditionStudentData(value,'fingerprint');
-  if(!envelope.ok||!fdEditionStudentObject(envelope.value)||!fingerprint.ok||!fdEditionStudentFingerprint(fingerprint.value)) return null;
+  envelope=fdEditionStudentData(value,'envelope'); config=fdEditionStudentData(value,'config');
+  fingerprint=fdEditionStudentData(value,'fingerprint'); errors=fdEditionStudentData(value,'errors');
+  if(!envelope.ok||!fdEditionStudentObject(envelope.value)||!config.ok||!fdEditionStudentObject(config.value)||
+     !fingerprint.ok||!fdEditionStudentFingerprint(fingerprint.value)||!errors.ok||!fdEditionStudentArray(errors.value)) return null;
+  for(i=0;i<errors.value.length;i++){
+    finding=fdEditionStudentArrayData(errors.value,i); if(!finding.ok||!fdEditionStudentObject(finding.value)) return null;
+    blocking=fdEditionStudentData(finding.value,'blocking'); if(!blocking.ok||blocking.value===true) return null;
+  }
+  envelopeConfig=fdEditionStudentData(envelope.value,'config'); digest=fdEditionStudentData(envelope.value,'digest');
+  if(!envelopeConfig.ok||!fdEditionStudentObject(envelopeConfig.value)||!digest.ok||typeof digest.value!=='string') return null;
+  try{
+    canonicalConfig=fdEditionCanonicalJson(config.value);
+    canonicalEnvelope=fdEditionCanonicalJson(envelopeConfig.value);
+    expected=fdEditionFingerprint(config.value,digest.value);
+  }catch(ignoreCoherence){ return null; }
+  if(canonicalConfig!==canonicalEnvelope||!expected||expected!==fingerprint.value) return null;
   try{ return {envelope:envelope.value,fingerprint:fingerprint.value,text:JSON.stringify(envelope.value)}; }
   catch(ignoreSerialize){ return null; }
 }
 
+function fdEditionStudentMethod(storage,name){
+  var cursor=storage,descriptor,depth=0;
+  if(storage===null||(typeof storage!=='object'&&typeof storage!=='function')) return null;
+  while(cursor!==null&&depth<8){
+    try{ descriptor=Object.getOwnPropertyDescriptor(cursor,name); }catch(ignoreDescriptor){ return null; }
+    if(descriptor){
+      if(!Object.prototype.hasOwnProperty.call(descriptor,'value')||typeof descriptor.value!=='function') return null;
+      return descriptor.value;
+    }
+    try{ cursor=Object.getPrototypeOf(cursor); }catch(ignorePrototype){ return null; }
+    depth+=1;
+  }
+  return null;
+}
+
 function fdEditionStudentRead(storage,key){
-  if(!storage||typeof storage.getItem!=='function') return {ok:false,value:null};
-  try{ return {ok:true,value:storage.getItem(key)}; }
+  var method=fdEditionStudentMethod(storage,'getItem');
+  if(!method) return {ok:false,value:null};
+  try{ return {ok:true,value:Function.prototype.call.call(method,storage,key)}; }
   catch(ignoreRead){ return {ok:false,value:null}; }
 }
 
+function fdEditionStudentNewDocument(){ return {schemaVersion:1,byFingerprint:Object.create(null)}; }
+
 function fdEditionStudentLocalDocument(text){
-  var parsed,root,buckets,keys,i,key,bucket,checklist,resources,out={schemaVersion:1,byFingerprint:{}};
-  if(typeof text!=='string'||text.length>FD_EDITION_RULES.maxUrlChars) return out;
-  try{ parsed=JSON.parse(text); }catch(ignoreParse){ return out; }
+  var parsed,root,buckets,keys,i,key,bucket,checklist,resources,checkedChecklist,checkedResources,out=fdEditionStudentNewDocument();
+  if(text===null) return {ok:true,document:out};
+  if(typeof text!=='string'||text.length===0||text.length>FD_EDITION_RULES.maxUrlChars) return {ok:false,document:null};
+  try{ parsed=JSON.parse(text); }catch(ignoreParse){ return {ok:false,document:null}; }
+  if(!fdEditionStudentExactObject(parsed,['schemaVersion','byFingerprint'])) return {ok:false,document:null};
   root=fdEditionStudentData(parsed,'schemaVersion'); buckets=fdEditionStudentData(parsed,'byFingerprint');
-  if(!root.ok||root.value!==1||!buckets.ok||!fdEditionStudentObject(buckets.value)) return out;
-  try{ keys=Object.keys(buckets.value); }catch(ignoreKeys){ return out; }
+  if(!root.ok||root.value!==1||!buckets.ok||!fdEditionStudentObject(buckets.value)) return {ok:false,document:null};
+  try{ keys=Reflect.ownKeys(buckets.value); }catch(ignoreKeys){ return {ok:false,document:null}; }
   for(i=0;i<keys.length;i++){
-    key=keys[i]; if(!fdEditionStudentFingerprint(key)) continue;
-    bucket=fdEditionStudentData(buckets.value,key); if(!bucket.ok) continue;
+    key=keys[i]; if(typeof key!=='string'||!fdEditionStudentFingerprint(key)) return {ok:false,document:null};
+    bucket=fdEditionStudentData(buckets.value,key); if(!bucket.ok||!fdEditionStudentExactObject(bucket.value,['checklist','resources'])) return {ok:false,document:null};
     checklist=fdEditionStudentData(bucket.value,'checklist'); resources=fdEditionStudentData(bucket.value,'resources');
-    if(!checklist.ok||!resources.ok||!fdEditionStudentObject(checklist.value)||!fdEditionStudentObject(resources.value)) continue;
-    out.byFingerprint[key]={checklist:fdEditionStudentCompletion(checklist.value),resources:fdEditionStudentCompletion(resources.value)};
+    if(!checklist.ok||!resources.ok) return {ok:false,document:null};
+    checkedChecklist=fdEditionStudentCompletion(checklist.value); checkedResources=fdEditionStudentCompletion(resources.value);
+    if(!checkedChecklist.ok||!checkedResources.ok) return {ok:false,document:null};
+    out.byFingerprint[key]={checklist:checkedChecklist.value,resources:checkedResources.value};
   }
-  return out;
+  return {ok:true,document:out};
 }
 
 function fdEditionStudentCompletion(value){
-  var keys,i,key,out={};
-  try{ keys=Object.keys(value); }catch(ignoreKeys){ return out; }
+  var keys,i,key,descriptor,out=Object.create(null);
+  if(!fdEditionStudentObject(value)) return {ok:false,value:null};
+  try{ keys=Reflect.ownKeys(value); }catch(ignoreKeys){ return {ok:false,value:null}; }
   for(i=0;i<keys.length;i++){
-    key=keys[i];
-    if(!FD_EDITION_STUDENT_ID.test(key)) continue;
-    try{ if(value[key]===true) out[key]=true; }catch(ignoreValue){}
+    key=keys[i]; if(typeof key!=='string'||!fdEditionStudentId(key)) return {ok:false,value:null};
+    try{ descriptor=Object.getOwnPropertyDescriptor(value,key); }catch(ignoreDescriptor){ return {ok:false,value:null}; }
+    if(!descriptor||!descriptor.enumerable||!Object.prototype.hasOwnProperty.call(descriptor,'value')||descriptor.value!==true) return {ok:false,value:null};
+    out[key]=true;
   }
-  return out;
+  return {ok:true,value:out};
 }
 
 function fdEditionStudentWrite(storage,key,value){
-  if(!storage||typeof storage.setItem!=='function') return false;
-  try{ storage.setItem(key,value); return true; }
+  var method=fdEditionStudentMethod(storage,'setItem');
+  if(!method) return false;
+  try{ Function.prototype.call.call(method,storage,key,value); return true; }
   catch(ignoreWrite){ return false; }
 }
 
@@ -192,10 +269,11 @@ function fdEditionStudentAccept(storage,validatedEdition){
   stored=fdEditionStudentRead(storage,FD_EDITION_STUDENT_KEYS.local);
   if(!stored.ok) return false;
   local=fdEditionStudentLocalDocument(stored.value);
-  if(!local.byFingerprint[edition.fingerprint]) local.byFingerprint[edition.fingerprint]={checklist:{},resources:{}};
-  try{ local=JSON.stringify(local); }catch(ignoreLocalSerialize){ return false; }
-  return fdEditionStudentWrite(storage,FD_EDITION_STUDENT_KEYS.edition,edition.text)&&
-    fdEditionStudentWrite(storage,FD_EDITION_STUDENT_KEYS.local,local);
+  if(!local.ok) return false;
+  if(!local.document.byFingerprint[edition.fingerprint]) local.document.byFingerprint[edition.fingerprint]={checklist:Object.create(null),resources:Object.create(null)};
+  try{ local=JSON.stringify(local.document); }catch(ignoreLocalSerialize){ return false; }
+  return fdEditionStudentWrite(storage,FD_EDITION_STUDENT_KEYS.local,local)&&
+    fdEditionStudentWrite(storage,FD_EDITION_STUDENT_KEYS.edition,edition.text);
 }
 
 function fdEditionAcceptFirst(storage,validatedEdition){ return fdEditionStudentAccept(storage,validatedEdition); }
@@ -203,38 +281,45 @@ function fdEditionAcceptSwitch(storage,validatedEdition){ return fdEditionStuden
 
 function fdEditionReadLocalProgress(storage,fingerprint){
   var valid=fdEditionStudentFingerprint(fingerprint),stored,document,bucket;
-  if(!valid) return {checklist:{},resources:{}};
+  if(!valid) return {checklist:Object.create(null),resources:Object.create(null)};
   stored=fdEditionStudentRead(storage,FD_EDITION_STUDENT_KEYS.local);
-  if(!stored.ok) return {checklist:{},resources:{}};
+  if(!stored.ok) return {checklist:Object.create(null),resources:Object.create(null)};
   document=fdEditionStudentLocalDocument(stored.value);
-  bucket=document.byFingerprint[valid];
-  return bucket?{checklist:bucket.checklist,resources:bucket.resources}:{checklist:{},resources:{}};
+  if(!document.ok) return {checklist:Object.create(null),resources:Object.create(null)};
+  bucket=document.document.byFingerprint[valid];
+  return bucket?{checklist:bucket.checklist,resources:bucket.resources}:{checklist:Object.create(null),resources:Object.create(null)};
 }
 
 function fdEditionToggleLocalProgress(storage,fingerprint,kind,id){
   var valid=fdEditionStudentFingerprint(fingerprint),stored,document,bucket;
-  if(!valid||(kind!=='checklist'&&kind!=='resources')||typeof id!=='string'||!FD_EDITION_STUDENT_ID.test(id)) return false;
+  if(!valid||(kind!=='checklist'&&kind!=='resources')||!fdEditionStudentId(id)) return false;
   stored=fdEditionStudentRead(storage,FD_EDITION_STUDENT_KEYS.local);
   if(!stored.ok) return false;
   document=fdEditionStudentLocalDocument(stored.value);
-  bucket=document.byFingerprint[valid]||(document.byFingerprint[valid]={checklist:{},resources:{}});
+  if(!document.ok) return false;
+  bucket=document.document.byFingerprint[valid]||(document.document.byFingerprint[valid]={checklist:Object.create(null),resources:Object.create(null)});
   if(bucket[kind][id]) delete bucket[kind][id]; else bucket[kind][id]=true;
-  try{ return fdEditionStudentWrite(storage,FD_EDITION_STUDENT_KEYS.local,JSON.stringify(document)); }
+  try{ return fdEditionStudentWrite(storage,FD_EDITION_STUDENT_KEYS.local,JSON.stringify(document.document)); }
   catch(ignoreSerialize){ return false; }
 }
 
 function fdEditionStudentEscape(value){
-  return String(value).replace(/[&<>"']/g,function(character){
-    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[character];
-  });
+  try{
+    return String(value).replace(/[&<>"']/g,function(character){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[character];
+    });
+  }catch(ignoreEscape){ return ''; }
 }
 
 function fdEditionSwitchMarkup(active,candidate){
-  var from=fdEditionStudentFingerprint(active&&active.fingerprint),to=fdEditionStudentFingerprint(candidate&&candidate.fingerprint);
-  return '<dialog class="fd-edition-switch" aria-labelledby="fd-edition-switch-title"><h2 id="fd-edition-switch-title">Switch rotation edition?</h2>'+
-    '<p>Your current edition: <code>'+fdEditionStudentEscape(from||'Unavailable')+'</code></p>'+
-    '<p>Edition from this link: <code>'+fdEditionStudentEscape(to||'Unavailable')+'</code></p>'+
-    '<form method="dialog"><button value="decline">Keep current edition</button><button value="accept">Switch edition</button></form></dialog>';
+  var selected=fdEditionStudentValidEdition(active),replacement=fdEditionStudentValidEdition(candidate);
+  if(!selected||!replacement) return '';
+  try{
+    return '<dialog class="fd-edition-switch" aria-labelledby="fd-edition-switch-title"><h2 id="fd-edition-switch-title">Switch rotation edition?</h2>'+
+      '<p>Your current edition: <code>'+fdEditionStudentEscape(selected.fingerprint)+'</code></p>'+
+      '<p>Edition from this link: <code>'+fdEditionStudentEscape(replacement.fingerprint)+'</code></p>'+
+      '<form method="dialog"><button value="decline">Keep current edition</button><button value="accept">Switch edition</button></form></dialog>';
+  }catch(ignoreMarkup){ return ''; }
 }
 
 function fdEditionErrorMarkup(receipt){
