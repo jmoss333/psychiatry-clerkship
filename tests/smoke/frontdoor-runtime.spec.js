@@ -1,13 +1,172 @@
 import { test, expect } from '@playwright/test';
+import { webcrypto } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 
 const DESKTOP = { width: 1280, height: 800 };
 const PHONE = { width: 390, height: 844 };
 const CAPTURE = '.fd-capture-launch--global[data-capture-open]';
+const EDITION_KEY = 'cw_rotation_edition_v1';
+const LOCAL_EDITION_KEY = 'cw_rotation_local_progress_v1';
+const EDITION_WRITE_LOG = '__fd_edition_write_log';
+const EDITION_REVISION = '1234567890abcdef1234567890abcdef12345678';
+const EDITION_CONTRACT_SOURCE = readFileSync(new URL(
+  '../../13_Faculty_Resources/_automation/site_build/frontdoor/fd_edition_contract.js',
+  import.meta.url,
+), 'utf8');
+// The browser cases generate envelopes with the shipped contract. They never manufacture or
+// brand a validation result; the learner runtime independently validates every serialized link.
+// eslint-disable-next-line no-new-func
+const EDITION_CONTRACT = new Function(`${EDITION_CONTRACT_SOURCE}\nreturn {
+  fdEditionCreateEnvelope,fdEditionCanonicalJson
+};`)();
 const VALID_PLACEMENT = {
   takenAt: '2026-08-17T00:00:00.000Z',
   answers: [{ id: 'synthetic-placement', cat: 'safety', correct: false }],
   byCat: { safety: { n: 1, correct: 0 } },
 };
+
+async function installEditionRuntimeProbe(page) {
+  await page.addInitScript(({ editionKey, localKey, logKey }) => {
+    const originalSetItem = Storage.prototype.setItem;
+    const readLog = () => {
+      try { return JSON.parse(sessionStorage.getItem(logKey) || '[]'); } catch { return []; }
+    };
+    window.__fdMeaningfulRenders = [];
+    window.__fdEditionWrites = readLog();
+    Storage.prototype.setItem = function setItem(key, value) {
+      if (this === window.localStorage && (key === editionKey || key === localKey)) {
+        const writes = readLog();
+        writes.push([key, String(value)]);
+        originalSetItem.call(window.sessionStorage, logKey, JSON.stringify(writes));
+        window.__fdEditionWrites = writes;
+      }
+      return originalSetItem.call(this, key, value);
+    };
+    new MutationObserver(() => {
+      const content = document.querySelector('#content');
+      const meaningful = content && content.querySelector(
+        '.fd-today,.fd-path,.fd-library,.fd-reader,.fd-setup',
+      );
+      if (!meaningful || content.querySelector('.skel')) return;
+      window.__fdMeaningfulRenders.push({
+        rows: content.querySelectorAll('.fd-today .fd-list .fd-row').length,
+        firstTitle: content.querySelector('.fd-today .fd-list .fd-row__title')?.textContent || '',
+      });
+    }).observe(document, { childList: true, subtree: true });
+  }, { editionKey: EDITION_KEY, localKey: LOCAL_EDITION_KEY, logKey: EDITION_WRITE_LOG });
+}
+
+async function resetEditionWriteLog(page) {
+  await page.evaluate((logKey) => {
+    sessionStorage.setItem(logKey, '[]');
+    window.__fdEditionWrites = [];
+  }, EDITION_WRITE_LOG);
+}
+
+async function editionWrites(page) {
+  return page.evaluate((logKey) => {
+    try { return JSON.parse(sessionStorage.getItem(logKey) || '[]'); } catch { return []; }
+  }, EDITION_WRITE_LOG);
+}
+
+async function localStorageSnapshot(page) {
+  return page.evaluate(() => Object.fromEntries(
+    Array.from({ length: localStorage.length }, (_, index) => localStorage.key(index))
+      .sort().map((key) => [key, localStorage.getItem(key)]),
+  ));
+}
+
+async function seedEditionLearner(page) {
+  await page.evaluate(() => {
+    const now = new Date();
+    now.setHours(12, 0, 0, 0);
+    now.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+    const start = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    localStorage.setItem('cw_rotation_start', start);
+    localStorage.setItem('cw_frontdoor_v1', JSON.stringify({
+      role: 'staff', tab: 'today', viewWeek: 1, autoAdvance: false,
+    }));
+    localStorage.setItem('cw_progress_v1', '{"synthetic-core":{"done":true}}');
+    localStorage.setItem('cw_unrelated_v1', 'preserve byte-for-byte');
+  });
+}
+
+async function createSyntheticEdition(testInfo, editionNumber, audienceOverride = '') {
+  const audience = audienceOverride || (testInfo.project.name === 'nav-res' ? 'resident' : 'ms3');
+  const pathId = audience === 'resident' ? 'resident-four-week' : 'ms3-six-week';
+  const weekCount = audience === 'resident' ? 4 : 6;
+  const selected = editionNumber === 1
+    ? { ref: 'welcome.md', title: audience === 'resident'
+      ? 'Welcome — Resident Rotation' : 'Welcome to the Rotation' }
+    : { ref: 'orientation.md', title: 'Orientation Packet' };
+  const byRef = {
+    'welcome.md': { ref: 'welcome.md', kind: 'read', title: 'Welcome to the Rotation', minutes: 5 },
+    'orientation.md': { ref: 'orientation.md', kind: 'read', title: 'Orientation Packet', minutes: 5 },
+  };
+  const canonical = {
+    byRef,
+    path: { id: pathId, weekCount },
+    weeks: Array.from({ length: weekCount }, (_, index) => ({
+      n: index + 1, title: `Week ${index + 1}`, theme: 'Synthetic', focusCategories: [], items: [],
+    })),
+    columns: [],
+    kit: [],
+  };
+  const config = {
+    audience,
+    pathId,
+    editionNumber,
+    createdAgainstCoreRevision: EDITION_REVISION,
+    card: {
+      title: `Synthetic runtime edition ${editionNumber}`,
+      locationName: 'Example Teaching Unit',
+      locationCode: audience === 'ms3' ? 'TMS3' : 'TRES',
+      curatorName: 'Example Faculty',
+      curatorRole: 'Faculty educator',
+      rotationStart: '2026-09-01',
+      rotationEnd: '2026-10-12',
+      lastVerified: '2026-08-19',
+    },
+    pathItems: [{
+      instanceId: `core:runtime:${editionNumber}`,
+      ref: selected.ref,
+      week: 1,
+      order: 1,
+      priority: 'required',
+      rationale: `Synthetic runtime priority ${editionNumber}.`,
+    }],
+    localOrientation: {
+      firstDayArrival: '', dailySchedule: '', roundsWorkflow: '',
+      presentationExpectations: '', documentationExpectations: '',
+      attendanceExpectations: '', feedbackProcess: '', accessPreparation: '',
+      contacts: [],
+      checklist: [{ id: `local:check:${editionNumber}`, label: 'Review local orientation', priority: 'required' }],
+      resources: [],
+    },
+    changeNote: `Synthetic runtime change ${editionNumber}.`,
+  };
+  const made = await EDITION_CONTRACT.fdEditionCreateEnvelope(
+    config,
+    canonical,
+    { audience, pathId, coreRevision: EDITION_REVISION },
+    webcrypto.subtle,
+  );
+  expect(made.ok).toBe(true);
+  return {
+    payload: made.payload,
+    fingerprint: made.fingerprint,
+    envelope: made.envelope,
+    canonicalEnvelope: EDITION_CONTRACT.fdEditionCanonicalJson(made.envelope),
+    audience,
+    selectedTitle: selected.title,
+  };
+}
+
+function withoutEditionStores(snapshot) {
+  return Object.fromEntries(Object.entries(snapshot).filter(
+    ([key]) => key !== EDITION_KEY && key !== LOCAL_EDITION_KEY,
+  ));
+}
 
 function expectedPlan(testInfo) {
   const resident = testInfo.project.name === 'nav-res';
@@ -33,6 +192,153 @@ async function seedCompleteSetup(page, extra = {}) {
     }
   }, extra);
 }
+
+test('a first valid edition is the first meaningful render, then reload and same-link startup do not churn storage', async ({ page }, testInfo) => {
+  await installEditionRuntimeProbe(page);
+  const incoming = await createSyntheticEdition(testInfo, 1);
+  await page.goto('/');
+  await seedEditionLearner(page);
+  await resetEditionWriteLog(page);
+
+  await page.goto(`/?case=edition-first#edition=${incoming.payload}`);
+  await expect(page.locator('.fd-today')).toBeVisible();
+  await expect(page.locator('.fd-today .fd-list .fd-row')).toHaveCount(1);
+  await expect(page.locator('.fd-today .fd-list .fd-row__title')).toHaveText(incoming.selectedTitle);
+  const firstRenders = await page.evaluate(() => window.__fdMeaningfulRenders);
+  expect(firstRenders.length).toBeGreaterThan(0);
+  expect(firstRenders.every(({ rows, firstTitle }) => (
+    rows === 1 && firstTitle === incoming.selectedTitle
+  ))).toBe(true);
+  expect((await editionWrites(page)).map(([key]) => key)).toEqual([LOCAL_EDITION_KEY, EDITION_KEY]);
+  expect(await page.evaluate((key) => localStorage.getItem(key), EDITION_KEY)).toBe(incoming.canonicalEnvelope);
+  expect(await page.evaluate(({ key, fingerprint }) => (
+    JSON.parse(localStorage.getItem(key)).byFingerprint[fingerprint]
+  ), { key: LOCAL_EDITION_KEY, fingerprint: incoming.fingerprint })).toEqual({ checklist: {}, resources: {} });
+
+  await page.evaluate(() => history.replaceState(null, '', `${location.pathname}${location.search}`));
+  await resetEditionWriteLog(page);
+  await page.reload();
+  await expect(page.locator('.fd-today')).toBeVisible();
+  expect(new URL(page.url()).hash).toBe('');
+  await expect(page.locator('.fd-today .fd-list .fd-row')).toHaveCount(1);
+  await expect(page.locator('.fd-today .fd-list .fd-row__title')).toHaveText(incoming.selectedTitle);
+  expect(await editionWrites(page)).toEqual([]);
+
+  const beforeSameLink = await localStorageSnapshot(page);
+  await resetEditionWriteLog(page);
+  await page.goto(`/?case=edition-same#edition=${incoming.payload}`);
+  await expect(page.locator('.fd-today')).toBeVisible();
+  await expect(page.locator('.fd-today .fd-list .fd-row')).toHaveCount(1);
+  await expect(page.locator('.fd-today .fd-list .fd-row__title')).toHaveText(incoming.selectedTitle);
+  expect(await editionWrites(page)).toEqual([]);
+  expect(await localStorageSnapshot(page)).toEqual(beforeSameLink);
+});
+
+test('a different valid edition prompts accessibly and decline clears only the incoming hash', async ({ page }, testInfo) => {
+  await installEditionRuntimeProbe(page);
+  const active = await createSyntheticEdition(testInfo, 1);
+  await page.goto('/');
+  await seedEditionLearner(page);
+  await page.goto(`/?case=edition-active-decline#edition=${active.payload}`);
+  await expect(page.locator('.fd-today')).toBeVisible();
+  const candidate = await createSyntheticEdition(testInfo, 2);
+  await page.evaluate(({ key, fingerprint }) => {
+    const local = JSON.parse(localStorage.getItem(key));
+    local.byFingerprint[fingerprint].checklist['local:check:1'] = true;
+    localStorage.setItem(key, JSON.stringify(local));
+  }, { key: LOCAL_EDITION_KEY, fingerprint: active.fingerprint });
+  const before = await localStorageSnapshot(page);
+  await resetEditionWriteLog(page);
+
+  await page.goto(`/?case=edition-decline#edition=${candidate.payload}`);
+  const dialog = page.locator('dialog.fd-edition-switch');
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toContainText(active.fingerprint);
+  await expect(dialog).toContainText(candidate.fingerprint);
+  await expect(page.getByRole('button', { name: 'Keep current edition' })).toBeFocused();
+  await expect(page.locator('.fd-today .fd-list .fd-row__title')).toHaveText(active.selectedTitle);
+  expect(await editionWrites(page)).toEqual([]);
+
+  await page.getByRole('button', { name: 'Keep current edition' }).click();
+  await expect(dialog).toBeHidden();
+  expect(new URL(page.url()).hash).toBe('');
+  expect(await editionWrites(page)).toEqual([]);
+  expect(await localStorageSnapshot(page)).toEqual(before);
+});
+
+test('accepting a different valid edition commits in order, clears the hash, and reloads the selected path', async ({ page }, testInfo) => {
+  await installEditionRuntimeProbe(page);
+  const active = await createSyntheticEdition(testInfo, 1);
+  await page.goto('/');
+  await seedEditionLearner(page);
+  await page.goto(`/?case=edition-active-accept#edition=${active.payload}`);
+  await expect(page.locator('.fd-today')).toBeVisible();
+  const candidate = await createSyntheticEdition(testInfo, 2);
+  await page.evaluate(({ key, fingerprint }) => {
+    const local = JSON.parse(localStorage.getItem(key));
+    local.byFingerprint[fingerprint].checklist['local:check:1'] = true;
+    localStorage.setItem(key, JSON.stringify(local));
+  }, { key: LOCAL_EDITION_KEY, fingerprint: active.fingerprint });
+  const before = await localStorageSnapshot(page);
+  await resetEditionWriteLog(page);
+
+  await page.goto(`/?case=edition-accept#edition=${candidate.payload}`);
+  await expect(page.locator('dialog.fd-edition-switch')).toBeVisible();
+  await page.getByRole('button', { name: 'Switch edition' }).click();
+  await expect(page.locator('.fd-today')).toBeVisible();
+  expect(new URL(page.url()).hash).toBe('');
+  await expect(page.locator('.fd-today .fd-list .fd-row__title')).toHaveText(candidate.selectedTitle);
+  expect((await editionWrites(page)).map(([key]) => key)).toEqual([LOCAL_EDITION_KEY, EDITION_KEY]);
+  const after = await localStorageSnapshot(page);
+  expect(withoutEditionStores(after)).toEqual(withoutEditionStores(before));
+  expect(after[EDITION_KEY]).toBe(candidate.canonicalEnvelope);
+  expect(JSON.parse(after[LOCAL_EDITION_KEY]).byFingerprint[active.fingerprint].checklist)
+    .toEqual({ 'local:check:1': true });
+  expect(JSON.parse(after[LOCAL_EDITION_KEY]).byFingerprint[candidate.fingerprint])
+    .toEqual({ checklist: {}, resources: {} });
+});
+
+test('malformed and wrong-audience links show a non-modal alert without changing any stored byte', async ({ page }, testInfo) => {
+  await installEditionRuntimeProbe(page);
+  const otherAudience = testInfo.project.name === 'nav-res' ? 'ms3' : 'resident';
+  const wrongAudience = await createSyntheticEdition(testInfo, 1, otherAudience);
+  await page.goto('/');
+  await seedEditionLearner(page);
+  const before = await localStorageSnapshot(page);
+
+  for (const [index, fragment] of ['#edition=%%%%', `#edition=${wrongAudience.payload}`].entries()) {
+    await resetEditionWriteLog(page);
+    await page.goto(`/?case=edition-rejected-${index}${fragment}`);
+    await expect(page.locator('.fd-edition-error[role="alert"]')).toBeVisible();
+    await expect(page.locator('dialog.fd-edition-switch')).toHaveCount(0);
+    expect(await page.locator('.fd-today .fd-list .fd-row').count()).toBeGreaterThan(1);
+    expect(await page.evaluate(() => document.activeElement?.closest('.fd-edition-error'))).toBeNull();
+    expect(await editionWrites(page)).toEqual([]);
+    expect(await localStorageSnapshot(page)).toEqual(before);
+  }
+});
+
+test('missing Web Crypto rejects stored edition data to the core without writes or projection', async ({ page }, testInfo) => {
+  await installEditionRuntimeProbe(page);
+  const stored = await createSyntheticEdition(testInfo, 1);
+  await page.goto('/?case=edition-crypto');
+  await seedEditionLearner(page);
+  await page.evaluate(({ key, value }) => localStorage.setItem(key, value), {
+    key: EDITION_KEY, value: stored.canonicalEnvelope,
+  });
+  const before = await localStorageSnapshot(page);
+  await resetEditionWriteLog(page);
+  await page.addInitScript(() => {
+    Object.defineProperty(window, 'crypto', { configurable: true, value: {} });
+  });
+
+  await page.goto('/');
+  await expect(page.locator('.fd-edition-error[role="alert"]')).toContainText('EDITION_CRYPTO');
+  await expect(page.locator('.fd-today')).toBeVisible();
+  expect(await page.locator('.fd-today .fd-list .fd-row').count()).toBeGreaterThan(1);
+  expect(await editionWrites(page)).toEqual([]);
+  expect(await localStorageSnapshot(page)).toEqual(before);
+});
 
 test('completion updates desktop, mobile, and the audience-correct rail immediately without replacing the governed tool', async ({ page }, testInfo) => {
   const resident = testInfo.project.name === 'nav-res';

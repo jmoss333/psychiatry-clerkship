@@ -72,6 +72,35 @@ test('the shell has one build-replaced edition context and ordered edition modul
     'edition helpers must boot after data and before their consumers');
 });
 
+test('edition validation selects the only live index before the learner shell starts', () => {
+  assert.equal(count('var FD_CANONICAL_INDEX=fdBuildIndex('), 1,
+    'the audience-correct canonical index is created exactly once');
+  assert.equal(count('var FD_INDEX=FD_CANONICAL_INDEX;'), 1,
+    'the live index starts from that one canonical index');
+  assert.doesNotMatch(source, /var FD_INDEX=fdBuildIndex\(/,
+    'the retired synchronous index-and-render boot must stay absent');
+
+  const resolveCall = source.indexOf('fdEditionResolveStartup(FD_CANONICAL_INDEX');
+  assert.ok(resolveCall > -1, 'startup must resolve stored and incoming editions');
+  assert.match(source.slice(resolveCall), /\.then\(fdStartFrontDoor,/,
+    'the resolver must hand the selected result to the only shell starter');
+
+  const start = source.indexOf('function fdStartFrontDoor(result)');
+  const end = source.indexOf('\n  var fdEditionInputs=', start);
+  assert.ok(start > -1 && end > start, 'one deferred shell starter is required');
+  const body = source.slice(start, end);
+  const selection = body.indexOf('FD_INDEX=result.index');
+  assert.ok(selection > -1, 'the resolver result must select FD_INDEX');
+  for (const consumer of ['fdRotationWeek(', 'fdResolveState(', 'fdRender(', 'fdWire(']) {
+    assert.ok(body.indexOf(consumer) > selection,
+      `${consumer} must run only after the edition index is selected`);
+  }
+  assert.match(source, /id="fdApp" class="fd-shell" aria-busy="true"/,
+    'the initial shell must expose its pending resolver state');
+  assert.match(body, /removeAttribute\('aria-busy'\)/,
+    'every deferred start path must end the pending resolver state');
+});
+
 test('the retired sidebar, legacy search/nav boot, companion, and dashboard are absent', () => {
   assert.doesNotMatch(source, /fetch\('nav\.json'\)/);
   for (const name of ['renderModeCompanion', 'renderWardDashboard', 'itemsForMode',

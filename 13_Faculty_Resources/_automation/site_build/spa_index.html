@@ -542,7 +542,7 @@
 </head>
 <body>
 <a class="skip-link" href="#content">Skip to content</a>
-<div id="fdApp" class="fd-shell">
+<div id="fdApp" class="fd-shell" aria-busy="true">
   <div id="fdChromeMount"></div>
   <div id="governanceMount"></div>
   <span id="routeStatus" class="vh-live" aria-live="polite"></span>
@@ -1589,9 +1589,13 @@
   function renderPretestResults(plan){ var root=document.getElementById('ptRoot'); if(!root)return; if(!fdActivePathValid(FD_INDEX)){ root.innerHTML=fdPathFallback('plan'); return; } currentItem={f:'__placement_results__',t:'Your placement',k:'special'};setLearnerTitle(currentItem);var mb=masteryByBlueprint(),duration=fdPathWeekCount(FD_INDEX)+'-week'; var h='<h1>Your placement</h1><p class="sub">A starting estimate from your answers — it refines as you practice. Weak areas are flagged in your plan below.</p>'; h+='<div class="hm-sec"><h2>Mastery by blueprint</h2>'+masteryBarsHtml(mb)+'</div>'; h+='<div class="hm-sec"><h2>Your personalized '+duration+' plan</h2>'+renderPlanCards(plan)+'</div>'; h+='<div class="hm-sec"><button class="hm-li" data-pt="pretest" style="border-bottom:none"><span class="t">Retake the placement</span><span class="sec">↻</span></button></div>'; root.innerHTML=h; }
   function renderStoredPlan(){ if(!fdActivePathValid(FD_INDEX)){ if(contentEl){ contentEl.className='fd-main'; contentEl.innerHTML='<article class="fd-reader fd-progress-reader">'+fdPathFallback('plan')+'</article>'; } return; } var plan=fdLoadPlan(FD_INDEX),duration=fdPathWeekCount(FD_INDEX)+'-week'; if(!plan){ startPretest(); return; } currentItem={f:'__plan__',t:'Your '+duration+' plan',k:'special'};setLearnerTitle(currentItem);if(contentEl){ contentEl.className='fd-main'; } contentEl.innerHTML='<article class="fd-reader fd-progress-reader"><button type="button" class="fd-reader__back" data-progress-action="progress">‹ Progress</button><div class="hm" id="planRoot"><h1>Your '+duration+' plan</h1><p class="sub">Personalized from your placement — the week order is fixed; your weak areas are flagged to hit first.</p><div class="hm-sec">'+renderPlanCards(plan)+'</div><div class="hm-sec"><button class="hm-li" data-pt="pretest" style="border-bottom:none"><span class="t">Retake the placement</span><span class="sec">↻</span></button></div></div></article>'; }
   /* ===== Governed Front Door live shell ===== */
-  var FD_INDEX=fdBuildIndex(FD_CURRICULUM,FD_TOPIC_META,FD_TOOL_REGISTRY,FD_SITE_MANIFEST);
+  var FD_CANONICAL_INDEX=fdBuildIndex(FD_CURRICULUM,FD_TOPIC_META,FD_TOOL_REGISTRY,FD_SITE_MANIFEST);
+  var FD_INDEX=FD_CANONICAL_INDEX;
+  var FD_SITE_CONTEXT={audience:FD_AUDIENCE,pathId:FD_CANONICAL_INDEX.path.id,
+                       coreRevision:FD_CORE_REVISION};
   var fdApp=document.getElementById('fdApp');
   var fdChromeMount=document.getElementById('fdChromeMount');
+  var fdEditionMount=document.getElementById('governanceMount');
   var fdCaptureMount=document.getElementById('fdCaptureMount');
   var fdOverlayMount=document.getElementById('fdOverlayMount');
   var fdCrisisTemplate=document.getElementById('fdCrisisTemplate');
@@ -1914,6 +1918,19 @@
   /* The root state keeps only Front Door navigation. Completion, SRS, sessions, capture,
      calibration, placement, plan, export identity, and dates continue to hydrate from their
      canonical stores on every render. */
+  var fdEditionBootStorage=null;
+  var fdEditionBootLocation=null;
+  var fdEditionBootHistory=null;
+  function fdStartFrontDoor(result){
+  result=result&&result.index?result:{mode:'rejected',needsCommit:false,index:FD_CANONICAL_INDEX,
+    receipt:fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME')};
+  if(result.mode==='active'&&result.needsCommit&&
+     !fdEditionAcceptFirst(fdEditionBootStorage,result.active)){
+    result={mode:'rejected',needsCommit:false,index:FD_CANONICAL_INDEX,
+      receipt:fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME')};
+  }
+  FD_INDEX=result.index;
+  if(fdApp)try{fdApp.removeAttribute('aria-busy');}catch(ignoreBusy){ }
   TOPIC_META=FD_TOPIC_META;
   var fdStored=fdLoad();
   var fdRotation=LS('cw_rotation_start')||'';
@@ -2002,6 +2019,27 @@
     getState:function(){ return fdController.getState(); },
     isCurrent:function(ref){return fdController.getState().openId===ref;}
   });
+  if(result.mode==='switch-required'){
+    if(!fdEditionRuntimeMountSwitch(fdEditionMount,result,fdEditionBootStorage,
+       fdEditionBootLocation,fdEditionBootHistory))
+      fdEditionRuntimeMountError(fdEditionMount,fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'));
+  }else if(result.mode==='rejected') fdEditionRuntimeMountError(fdEditionMount,result.receipt);
+  }
+
+  var fdEditionInputs=fdEditionRuntimeInputs(window,FD_SITE_CONTEXT);
+  if(!fdEditionInputs.ok){
+    fdStartFrontDoor({mode:'rejected',needsCommit:false,index:FD_CANONICAL_INDEX,
+      receipt:fdEditionInputs.receipt});
+  }else{
+    fdEditionBootStorage=fdEditionInputs.storage;
+    fdEditionBootLocation=fdEditionInputs.location;
+    try{fdEditionBootHistory=window.history;}catch(ignoreHistory){fdEditionBootHistory=null;}
+    fdEditionResolveStartup(FD_CANONICAL_INDEX,FD_SITE_CONTEXT,fdEditionInputs.pageUrl,
+      fdEditionInputs.hash,fdEditionInputs.storedText,fdEditionInputs.subtle).then(fdStartFrontDoor,
+      function(){fdStartFrontDoor({mode:'rejected',needsCommit:false,index:FD_CANONICAL_INDEX,
+        receipt:{code:'EDITION_RUNTIME',schemaVersion:1,fingerprint:'',
+                 currentCoreRevision:FD_CORE_REVISION}});});
+  }
 })();
 </script>
 </body>

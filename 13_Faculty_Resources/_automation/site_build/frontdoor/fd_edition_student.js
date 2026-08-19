@@ -305,3 +305,95 @@ function fdEditionErrorMarkup(receipt){
   if(safe.currentCoreRevision) parts.push('<p>Current core revision: <code>'+fdEditionStudentEscape(safe.currentCoreRevision)+'</code></p>');
   parts.push('</section>'); return parts.join('');
 }
+
+function fdEditionRuntimeReceipt(siteContext,code){
+  var revision='';
+  try{
+    if(siteContext&&typeof siteContext.coreRevision==='string'&&/^[0-9a-f]{40}$/.test(siteContext.coreRevision))
+      revision=siteContext.coreRevision;
+  }catch(ignoreContext){ }
+  return {code:code==='EDITION_CRYPTO'?'EDITION_CRYPTO':'EDITION_RUNTIME',schemaVersion:1,
+    fingerprint:'',currentCoreRevision:revision};
+}
+
+function fdEditionRuntimeInputs(windowValue,siteContext){
+  var locationValue=null,storage=null,cryptoValue=null,subtle=null,pageUrl='',hash='',stored;
+  try{ locationValue=windowValue&&windowValue.location; }
+  catch(ignoreLocation){ locationValue=null; }
+  if(!locationValue) return {ok:false,receipt:fdEditionRuntimeReceipt(siteContext,'EDITION_RUNTIME')};
+  try{ pageUrl=locationValue.href; hash=locationValue.hash; }
+  catch(ignoreLocationFields){ return {ok:false,receipt:fdEditionRuntimeReceipt(siteContext,'EDITION_RUNTIME')}; }
+  if(typeof pageUrl!=='string'||typeof hash!=='string')
+    return {ok:false,receipt:fdEditionRuntimeReceipt(siteContext,'EDITION_RUNTIME')};
+  try{ storage=windowValue&&windowValue.localStorage; }
+  catch(ignoreStorage){ storage=null; }
+  stored=fdEditionStudentRead(storage,FD_EDITION_STUDENT_KEYS.edition);
+  if(!stored.ok) return {ok:false,receipt:fdEditionRuntimeReceipt(siteContext,'EDITION_RUNTIME')};
+  try{ cryptoValue=windowValue&&windowValue.crypto; }
+  catch(ignoreCrypto){ cryptoValue=null; }
+  if(!cryptoValue) return {ok:false,receipt:fdEditionRuntimeReceipt(siteContext,'EDITION_CRYPTO')};
+  try{ subtle=cryptoValue.subtle; }
+  catch(ignoreSubtle){ subtle=null; }
+  if(!subtle||!fdEditionStudentMethod(subtle,'digest'))
+    return {ok:false,receipt:fdEditionRuntimeReceipt(siteContext,'EDITION_CRYPTO')};
+  return {ok:true,location:locationValue,storage:storage,pageUrl:pageUrl,hash:hash,
+    storedText:stored.value,subtle:subtle};
+}
+
+function fdEditionRuntimeClearHash(locationValue,historyValue){
+  var path='',search='',method=fdEditionStudentMethod(historyValue,'replaceState');
+  if(!method) return false;
+  try{ path=locationValue.pathname; search=locationValue.search; }
+  catch(ignoreLocation){ return false; }
+  if(typeof path!=='string'||typeof search!=='string') return false;
+  try{ Function.prototype.call.call(method,historyValue,null,'',path+search); return true; }
+  catch(ignoreHistory){ return false; }
+}
+
+function fdEditionRuntimeReload(locationValue){
+  var method=fdEditionStudentMethod(locationValue,'reload');
+  if(!method) return false;
+  try{ Function.prototype.call.call(method,locationValue); return true; }
+  catch(ignoreReload){ return false; }
+}
+
+function fdEditionRuntimeMountError(mount,receipt){
+  if(!mount) return false;
+  try{ mount.innerHTML=fdEditionErrorMarkup(receipt); return true; }
+  catch(ignoreMount){ return false; }
+}
+
+function fdEditionRuntimeMountSwitch(mount,result,storage,locationValue,historyValue){
+  var markup=fdEditionSwitchMarkup(result&&result.active,result&&result.candidate),dialog,keep,listener,show;
+  if(!mount||!markup) return false;
+  try{ mount.innerHTML=markup; dialog=mount.querySelector('dialog.fd-edition-switch'); }
+  catch(ignoreMount){ return false; }
+  if(!dialog) return false;
+  listener=fdEditionStudentMethod(dialog,'addEventListener');
+  show=fdEditionStudentMethod(dialog,'showModal');
+  if(!listener||!show) return false;
+  try{
+    Function.prototype.call.call(listener,dialog,'close',function(){
+      var accepted=false,cleared=false;
+      try{ accepted=dialog.returnValue==='accept'; }catch(ignoreReturnValue){ accepted=false; }
+      if(accepted){
+        if(!fdEditionAcceptSwitch(storage,result.candidate)){
+          fdEditionRuntimeMountError(mount,fdEditionRuntimeReceipt(null,'EDITION_RUNTIME')); return;
+        }
+        cleared=fdEditionRuntimeClearHash(locationValue,historyValue);
+        if(!cleared||!fdEditionRuntimeReload(locationValue))
+          fdEditionRuntimeMountError(mount,fdEditionRuntimeReceipt(null,'EDITION_RUNTIME'));
+        return;
+      }
+      fdEditionRuntimeClearHash(locationValue,historyValue);
+      try{ mount.innerHTML=''; }catch(ignoreCloseMount){ }
+    });
+    Function.prototype.call.call(show,dialog);
+    keep=dialog.querySelector('button[value="decline"]');
+    if(keep){
+      var focus=fdEditionStudentMethod(keep,'focus');
+      if(focus) try{ Function.prototype.call.call(focus,keep); }catch(ignoreFocus){ }
+    }
+    return true;
+  }catch(ignoreDialog){ return false; }
+}
