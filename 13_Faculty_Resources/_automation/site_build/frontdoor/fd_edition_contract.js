@@ -390,14 +390,26 @@ function fdEditionCheckPriority(value,path,errors){
   fdEditionAdd(errors,FD_EDITION_RULES.priorities.indexOf(value)===-1,'EDITION_SCHEMA',path,'Priority must be required, recommended, or optional.');
 }
 
-function fdEditionCheckUrl(value,path,errors){
-  var parsed=null;
+function fdEditionCheckUrl(value,path,errors,warnings){
+  var parsed=null,decoded='';
   try{ parsed=new URL(value); }catch(ignoreUrl){ parsed=null; }
   fdEditionAdd(errors,fdEditionTextLength(value)>FD_EDITION_RULES.maxUrl,'EDITION_URL',path,'URLs must contain at most 2048 characters.');
   fdEditionAdd(errors,!/^https:\/\/[^\s]+$/i.test(value),'EDITION_URL',path,'Only absolute HTTPS URLs are allowed.');
   fdEditionAdd(errors,!parsed||parsed.protocol!=='https:'||!fdEditionHostnameValid(parsed.hostname)||parsed.username!==''||parsed.password!=='','EDITION_URL',path,'The HTTPS URL must contain a valid hostname and no embedded credentials.');
   fdEditionAdd(errors,/[\u0000-\u001f\u007f]/.test(value)||/^https:\/\/[^/\s@]+@/i.test(value),'EDITION_URL',path,'URLs must not contain control characters or embedded credentials.');
   fdEditionAdd(errors,/^(?:javascript|data|vbscript|blob):/i.test(value),'EDITION_URL',path,'Executable and embedded-data URL schemes are not allowed.');
+  fdEditionScreenText(value,path,errors,warnings);
+  if(parsed){
+    try{
+      decoded=decodeURIComponent(parsed.pathname)+'\n'+
+        decodeURIComponent(parsed.search.replace(/\+/g,' '))+'\n'+
+        decodeURIComponent(parsed.hash);
+    }catch(ignoreEncoding){
+      errors.push(fdEditionFinding('EDITION_URL',path,'URL components must use valid percent encoding.'));
+      return;
+    }
+    fdEditionScreenText(decoded,path,errors,warnings);
+  }
 }
 
 function fdEditionScreenText(value,path,errors,warnings){
@@ -467,7 +479,7 @@ function fdEditionValidateConfig(config,index,siteContext){
     for(i=0;i<value.localOrientation.contacts.length;i++){
       item=value.localOrientation.contacts[i];
       fdEditionCheckLabel(item.role,'/config/localOrientation/contacts/'+i+'/role',errors);
-      fdEditionCheckUrl(item.directoryUrl,'/config/localOrientation/contacts/'+i+'/directoryUrl',errors);
+      fdEditionCheckUrl(item.directoryUrl,'/config/localOrientation/contacts/'+i+'/directoryUrl',errors,warnings);
       humanTexts.push([item.role,'/config/localOrientation/contacts/'+i+'/role']);
     }
     for(i=0;i<value.localOrientation.checklist.length;i++){
@@ -482,7 +494,7 @@ function fdEditionValidateConfig(config,index,siteContext){
       item=value.localOrientation.resources[i];
       fdEditionCheckIdentifier(item.id,'/config/localOrientation/resources/'+i+'/id',errors);
       fdEditionCheckLabel(item.title,'/config/localOrientation/resources/'+i+'/title',errors);
-      fdEditionCheckUrl(item.url,'/config/localOrientation/resources/'+i+'/url',errors);
+      fdEditionCheckUrl(item.url,'/config/localOrientation/resources/'+i+'/url',errors,warnings);
       fdEditionCheckPriority(item.priority,'/config/localOrientation/resources/'+i+'/priority',errors);
       fdEditionAdd(errors,!pathRule||item.week<1||item.week>pathRule.weeks,'EDITION_WEEK','/config/localOrientation/resources/'+i+'/week','Week must be within the audience path duration.');
       fdEditionCheckRationale(item.rationale,'/config/localOrientation/resources/'+i+'/rationale',errors);
@@ -546,11 +558,26 @@ function fdEditionDecodePayload(payload,index,siteContext,subtle,totalUrlLength)
   return fdEditionValidateEnvelope(envelope,index,siteContext,subtle);
 }
 
+function fdEditionDiagnosticVersion(result){
+  var envelopeDescriptor,versionDescriptor,value;
+  if(!fdEditionObject(result)) return null;
+  try{ envelopeDescriptor=Object.getOwnPropertyDescriptor(result,'envelope'); }
+  catch(ignoreEnvelope){ return null; }
+  if(!envelopeDescriptor||!Object.prototype.hasOwnProperty.call(envelopeDescriptor,'value')||
+     !fdEditionObject(envelopeDescriptor.value)) return null;
+  try{ versionDescriptor=Object.getOwnPropertyDescriptor(envelopeDescriptor.value,'schemaVersion'); }
+  catch(ignoreVersion){ return null; }
+  if(!versionDescriptor||!Object.prototype.hasOwnProperty.call(versionDescriptor,'value')) return null;
+  value=versionDescriptor.value;
+  if(typeof value!=='number'||!isFinite(value)||Math.floor(value)!==value||value<1||value>2147483647) return null;
+  return value;
+}
+
 function fdEditionDiagnostic(result,siteContext){
   var first=result&&result.errors&&result.errors.length?result.errors[0].code:'EDITION_OK';
   return {
     code:first,
-    schemaVersion:result&&result.envelope&&result.envelope.schemaVersion||FD_EDITION_RULES.schemaVersion,
+    schemaVersion:fdEditionDiagnosticVersion(result),
     fingerprint:result&&result.fingerprint||'',
     currentCoreRevision:siteContext&&typeof siteContext.coreRevision==='string'?siteContext.coreRevision:''
   };

@@ -301,6 +301,47 @@ test('blocks unsafe URLs and sensitive or executable text without echoing it', (
   }
 });
 
+test('screens raw and decoded URL content for blocking privacy risks', () => {
+  const base = fixture('valid-ms3.json').config;
+  const cases = [
+    ['https://example.edu/policy?contact=person%40example.edu', 'person@example.edu'],
+    ['https://example.edu/policy?phone=207-555-0100', '207-555-0100'],
+    ['https://example.edu/policy?api_key%3Dexample-only', 'example-only'],
+    ['https://example.edu/policy?note=door%20code%20is%204321', '4321'],
+    ['https://example.edu/policy?dose=5%20milligrams', '5 milligrams']
+  ];
+  for (const [unsafe, privatePart] of cases) {
+    const config = clone(base);
+    config.localOrientation.resources[0].url = unsafe;
+    const result = F.fdEditionValidateConfig(config, indexFor(base), context('ms3', base.createdAgainstCoreRevision));
+    assert.equal(result.ok, false, unsafe);
+    assert.ok(result.errors.some((finding) => finding.code === 'EDITION_TEXT_RISK'));
+    assertPrivateSafe(result, privatePart);
+  }
+});
+
+test('fails closed on malformed URL encoding and preserves benign and advisory URLs', () => {
+  const base = fixture('valid-ms3.json').config;
+  const malformed = clone(base);
+  malformed.localOrientation.resources[0].url = 'https://example.edu/policy?note=%E0%A4%A';
+  const malformedResult = F.fdEditionValidateConfig(malformed, indexFor(base), context('ms3', base.createdAgainstCoreRevision));
+  assert.equal(malformedResult.ok, false);
+  assert.ok(malformedResult.errors.some((finding) => finding.code === 'EDITION_URL'));
+  assertPrivateSafe(malformedResult, '%E0%A4%A');
+
+  const advisory = clone(base);
+  advisory.localOrientation.resources[0].url = 'https://example.edu/policy?note=review%20password%20handling';
+  const advisoryResult = F.fdEditionValidateConfig(advisory, indexFor(base), context('ms3', base.createdAgainstCoreRevision));
+  assert.equal(advisoryResult.ok, true);
+  assert.ok(advisoryResult.warnings.some((finding) => finding.code === 'EDITION_TEXT_RISK'));
+
+  const benign = clone(base);
+  benign.localOrientation.resources[0].url = 'https://example.edu/policies/orientation?audience=ms3#week-1';
+  const benignResult = F.fdEditionValidateConfig(benign, indexFor(base), context('ms3', base.createdAgainstCoreRevision));
+  assert.equal(benignResult.ok, true, JSON.stringify(benignResult.errors));
+  assert.deepEqual(benignResult.warnings, []);
+});
+
 test('advises on ambiguous sensitive topics without claiming privacy clearance', () => {
   const config = fixture('valid-ms3.json').config;
   config.changeNote = 'Review the patient identifier protocol and dosing guidance with your supervisor.';
@@ -499,4 +540,37 @@ test('diagnostics disclose only stable comparison fields', async () => {
     currentCoreRevision: config.createdAgainstCoreRevision
   });
   assert.doesNotMatch(JSON.stringify(F.fdEditionDiagnostic(made, ctx)), /verified identity|signature/i);
+});
+
+test('diagnostics expose only bounded integer schema versions without invoking accessors', () => {
+  const ctx = { coreRevision: '1234567890abcdef1234567890abcdef12345678' };
+  const privateValue = 'synthetic-private-version';
+  const malformed = [
+    privateValue,
+    { privateValue },
+    NaN,
+    Infinity,
+    1.5,
+    -1,
+    2147483648
+  ];
+  for (const schemaVersion of malformed) {
+    const diagnostic = F.fdEditionDiagnostic({ envelope: { schemaVersion }, errors: [] }, ctx);
+    assert.equal(diagnostic.schemaVersion, null);
+    assert.doesNotMatch(JSON.stringify(diagnostic), /synthetic-private-version/);
+  }
+
+  let getterReads = 0;
+  const envelope = {};
+  Object.defineProperty(envelope, 'schemaVersion', {
+    enumerable: true,
+    get() { getterReads += 1; return privateValue; }
+  });
+  const accessorDiagnostic = F.fdEditionDiagnostic({ envelope, errors: [] }, ctx);
+  assert.equal(accessorDiagnostic.schemaVersion, null);
+  assert.equal(getterReads, 0);
+  assert.doesNotMatch(JSON.stringify(accessorDiagnostic), /synthetic-private-version/);
+
+  assert.equal(F.fdEditionDiagnostic({ envelope: { schemaVersion: 2 }, errors: [] }, ctx).schemaVersion, 2);
+  assert.equal(F.fdEditionDiagnostic({ errors: [] }, ctx).schemaVersion, null);
 });
