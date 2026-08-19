@@ -7,7 +7,8 @@ const ROOT = new URL('../13_Faculty_Resources/_automation/site_build/frontdoor/'
 const source = (name) => readFileSync(new URL(name, ROOT), 'utf8');
 const F = new Function(`${source('fd_edition_contract.js')}\n${source('fd_edition_project.js')}\n${source('fd_edition_student.js')}\nreturn {
   fdEditionCreateEnvelope,fdEditionResolveStartup,fdEditionAcceptFirst,fdEditionAcceptSwitch,
-  fdEditionReadLocalProgress,fdEditionToggleLocalProgress,fdEditionSwitchMarkup,fdEditionErrorMarkup
+  fdEditionReadLocalProgress,fdEditionToggleLocalProgress,fdEditionSwitchMarkup,fdEditionErrorMarkup,
+  fdEditionRuntimeListen,fdEditionRuntimeUnlisten
 };`)();
 
 const REVISION = '1234567890abcdef1234567890abcdef12345678';
@@ -98,6 +99,28 @@ function seededStorage() {
     cw_qb_v1: '{"question":7}', cw_unrelated_v1: 'preserve exactly', rp_progress_v1: '{"resident":true}'
   });
 }
+
+test('runtime listener registration removes a handler when the host registers and then throws', () => {
+  const active = new Map();
+  const removals = [];
+  const target = {
+    addEventListener(type, handler) {
+      active.set(type, handler);
+      throw new Error('private post-registration failure');
+    },
+    removeEventListener(type, handler) {
+      removals.push([type, handler]);
+      if (active.get(type) === handler) active.delete(type);
+    },
+  };
+  const handler = () => assert.fail('a failed startup handler must not remain dispatchable');
+  const registration = F.fdEditionRuntimeListen(target, 'click', handler, false);
+  assert.equal(registration.ok, false);
+  assert.deepEqual([...active.keys()], []);
+  assert.deepEqual(removals, [['click', handler]]);
+  assert.equal(F.fdEditionRuntimeUnlisten(registration), true);
+  assert.deepEqual(removals, [['click', handler]], 'failed registration cleanup is idempotent');
+});
 
 function writeFailingStorage(initial, failKey) {
   const values = new Map(Object.entries(initial));

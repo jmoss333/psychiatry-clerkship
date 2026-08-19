@@ -335,12 +335,17 @@ test('fdWire registers and destroys one delegated click/input/keydown/popstate l
 test('fdWire reports a partial root registration failure and removes the listener already installed', () => {
   const calls = [];
   const removes = [];
+  const active = new Map();
   const root = {
     addEventListener(type, fn) {
       calls.push([type, fn]);
+      active.set(type, fn);
       if (calls.length === 2) throw new Error('private root registration failure');
     },
-    removeEventListener: (type, fn) => removes.push([type, fn]),
+    removeEventListener(type, fn) {
+      removes.push([type, fn]);
+      if (active.get(type) === fn) active.delete(type);
+    },
   };
   const fakeWindow = {
     addEventListener() { throw new Error('window must not be reached'); },
@@ -353,9 +358,10 @@ test('fdWire reports a partial root registration failure and removes the listene
   });
   assert.equal(controller.ok, false);
   assert.deepEqual(calls.map(([type]) => type), ['click', 'input']);
-  assert.deepEqual(removes, [calls[0]]);
+  assert.deepEqual(removes, calls.slice().reverse());
+  assert.deepEqual([...active.keys()], [], 'a register-then-throw handler must not remain live');
   assert.doesNotThrow(() => controller.destroy());
-  assert.deepEqual(removes, [calls[0]], 'destroy remains idempotent after automatic cleanup');
+  assert.deepEqual(removes, calls.slice().reverse(), 'destroy remains idempotent after automatic cleanup');
 });
 
 test('fdWire reports a partial window registration failure and unwinds every installed listener', () => {
@@ -363,16 +369,25 @@ test('fdWire reports a partial window registration failure and unwinds every ins
   const rootRemoves = [];
   const windowCalls = [];
   const windowRemoves = [];
+  const activeRoot = new Map();
+  const activeWindow = new Map();
   const root = {
-    addEventListener: (type, fn) => rootCalls.push([type, fn]),
-    removeEventListener: (type, fn) => rootRemoves.push([type, fn]),
+    addEventListener(type, fn) { rootCalls.push([type, fn]); activeRoot.set(type, fn); },
+    removeEventListener(type, fn) {
+      rootRemoves.push([type, fn]);
+      if (activeRoot.get(type) === fn) activeRoot.delete(type);
+    },
   };
   const fakeWindow = {
     addEventListener(type, fn) {
       windowCalls.push([type, fn]);
+      activeWindow.set(type, fn);
       if (type === 'popstate') throw new Error('private window registration failure');
     },
-    removeEventListener: (type, fn) => windowRemoves.push([type, fn]),
+    removeEventListener(type, fn) {
+      windowRemoves.push([type, fn]);
+      if (activeWindow.get(type) === fn) activeWindow.delete(type);
+    },
     location: { href: 'https://example.test/', search: '', pathname: '/' },
   };
   let controller;
@@ -381,7 +396,9 @@ test('fdWire reports a partial window registration failure and unwinds every ins
   });
   assert.equal(controller.ok, false);
   assert.deepEqual(rootRemoves, rootCalls.slice().reverse());
-  assert.deepEqual(windowRemoves, [windowCalls[0]]);
+  assert.deepEqual(windowRemoves, windowCalls.slice().reverse());
+  assert.deepEqual([...activeRoot.keys()], []);
+  assert.deepEqual([...activeWindow.keys()], [], 'a register-then-throw window handler must not remain live');
   assert.doesNotThrow(() => controller.destroy());
 });
 
@@ -429,6 +446,7 @@ function fakeHarness(initial, options = {}) {
     facultyPreviewLock: options.facultyPreviewLock,
     externalModalOpen: options.externalModalOpen,
   });
+  if (options.commitStartup !== false) controller.commitStartup();
   return { root, rootHandlers, fakeWindow, windowHandlers, controller };
 }
 
@@ -1147,7 +1165,9 @@ test('initial legacy aliases replace only the route portion and never call the r
       F, location, history: memory.history,
       openResource: (ref) => { opened.push(ref); },
       openProgress: () => {},
+      commitStartup: false,
     });
+    assert.equal(h.controller.commitStartup(), true);
     memory.bind(h.windowHandlers.popstate);
     assert.equal(memory.entries.length, 1);
     assert.equal(memory.entries[0].route, expectedRoute);
@@ -1179,7 +1199,10 @@ test('initial Home alias persists its normalized Today state before the canonica
   const memory = memoryHistory(location);
   const resolved = LocalF.fdResolveState(location.href, stored);
 
-  fakeHarness(resolved, { F: LocalF, location, history: memory.history });
+  const h = fakeHarness(resolved, {
+    F: LocalF, location, history: memory.history, commitStartup: false,
+  });
+  assert.equal(h.controller.commitStartup(), true);
 
   assert.equal(location.search, '?case=reload');
   const persisted = JSON.parse(ls.dump().cw_frontdoor_v1);

@@ -46,6 +46,7 @@ async function installEditionRuntimeProbe(page, options = {}) {
     const originalSetItem = Storage.prototype.setItem;
     const originalReplaceState = History.prototype.replaceState;
     const originalAddEventListener = EventTarget.prototype.addEventListener;
+    const originalRemoveEventListener = EventTarget.prototype.removeEventListener;
     const originalQuerySelector = Element.prototype.querySelector;
     const innerHtml = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML');
     const eventKey = `${logKey}_events`;
@@ -64,9 +65,19 @@ async function installEditionRuntimeProbe(page, options = {}) {
     window.__fdMeaningfulRenders = [];
     window.__fdEditionWrites = readLog();
     window.__fdEditionEvents = readEvents();
+    window.__fdStartupListenerFires = [];
+    const startupListeners = [];
+    const targetLabel = (target) => target === window ? 'window'
+      : (target === document ? 'document' : (target instanceof Element && target.id === 'fdApp' ? 'fdApp' : ''));
+    const startupType = (label, type) => (
+      (label === 'window' && ['resize', 'keydown', 'popstate', 'message'].includes(type))
+      || (label === 'document' && type === 'click')
+      || (label === 'fdApp' && ['click', 'input'].includes(type))
+    );
     let rootListenerCalls = 0;
     EventTarget.prototype.addEventListener = function addEventListener(type, handler, options) {
-      if (this instanceof Element && this.id === 'fdApp') {
+      const label = targetLabel(this);
+      if (label === 'fdApp') {
         rootListenerCalls += 1;
         if (listenerFault === 'root-always'
           || (listenerFault === 'root-third' && rootListenerCalls === 3)) {
@@ -79,8 +90,38 @@ async function installEditionRuntimeProbe(page, options = {}) {
       if (this === document && listenerFault === 'document-click' && type === 'click') {
         throw new Error('private document listener failure');
       }
+      if (startupType(label, type)) {
+        const capture = options === true || Boolean(options && options.capture);
+        const wrapped = function startupListenerProbe(...args) {
+          window.__fdStartupListenerFires.push(`${label}:${type}`);
+          return handler.apply(this, args);
+        };
+        const record = { target: this, label, type, handler, wrapped, capture, active: true };
+        startupListeners.push(record);
+        originalAddEventListener.call(this, type, wrapped, options);
+        if ((listenerFault === 'root-register-then-throw' && label === 'fdApp' && type === 'input')
+          || (listenerFault === 'window-register-then-throw' && label === 'window' && type === 'popstate')
+          || (listenerFault === 'document-register-then-throw' && label === 'document' && type === 'click')) {
+          throw new Error('private post-registration listener failure');
+        }
+        return;
+      }
       return originalAddEventListener.call(this, type, handler, options);
     };
+    EventTarget.prototype.removeEventListener = function removeEventListener(type, handler, options) {
+      const capture = options === true || Boolean(options && options.capture);
+      for (let index = startupListeners.length - 1; index >= 0; index -= 1) {
+        const record = startupListeners[index];
+        if (record.active && record.target === this && record.type === type
+          && record.handler === handler && record.capture === capture) {
+          record.active = false;
+          return originalRemoveEventListener.call(this, type, record.wrapped, options);
+        }
+      }
+      return originalRemoveEventListener.call(this, type, handler, options);
+    };
+    window.__fdActiveStartupListeners = () => startupListeners
+      .filter(({ active }) => active).map(({ label, type }) => `${label}:${type}`);
     Element.prototype.querySelector = function querySelector(selector) {
       if (this.id === 'fdApp' && listenerFault === 'root-query') {
         throw new Error('private root query failure');
@@ -759,6 +800,9 @@ test('a missing governance mount falls back to core without committing or attemp
 for (const fault of [
   ['an always-throwing fdApp listener', 'root-always'],
   ['a call-count-throwing fdApp listener', 'root-third'],
+  ['a register-then-throw fdApp listener', 'root-register-then-throw'],
+  ['a register-then-throw window listener', 'window-register-then-throw'],
+  ['a register-then-throw document listener', 'document-register-then-throw'],
   ['a throwing window listener', 'window-message'],
   ['a throwing document listener', 'document-click'],
   ['a throwing shell query API', 'root-query'],
@@ -783,6 +827,15 @@ for (const fault of [
     expect(await page.evaluate((selectedTitle) => window.__fdMeaningfulRenders.every(
       ({ rows, firstTitle }) => rows !== 1 || firstTitle !== selectedTitle,
     ), incoming.selectedTitle)).toBe(true);
+    expect(await page.evaluate(() => window.__fdActiveStartupListeners())).toEqual([]);
+    expect(await page.evaluate(() => {
+      window.__fdStartupListenerFires = [];
+      window.dispatchEvent(new Event('resize'));
+      window.dispatchEvent(new PopStateEvent('popstate'));
+      document.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      document.querySelector('#fdApp')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      return window.__fdStartupListenerFires;
+    })).toEqual([]);
     expect(pageErrors).toEqual([]);
   });
 }
@@ -810,6 +863,31 @@ test('a missing fdApp returns quietly with no writes, edition render, or uncaugh
   await expect(page.locator('.fd-edition-error[role="alert"]')).toContainText('EDITION_RUNTIME');
   expect(await editionWrites(page)).toEqual([]);
   expect(await localStorageSnapshot(page)).toEqual(before);
+  expect(await page.evaluate((selectedTitle) => window.__fdMeaningfulRenders.every(
+    ({ rows, firstTitle }) => rows !== 1 || firstTitle !== selectedTitle,
+  ), incoming.selectedTitle)).toBe(true);
+  expect(await page.evaluate(() => window.__fdActiveStartupListeners())).toEqual([]);
+  expect(pageErrors).toEqual([]);
+});
+
+test('a legacy route followed by auxiliary failure leaves storage and history at the post-clear snapshot', async ({ page }, testInfo) => {
+  const pageErrors = [];
+  page.on('pageerror', (error) => pageErrors.push(error.message));
+  await installEditionRuntimeProbe(page, { listenerFault: 'root-third' });
+  const incoming = await createSyntheticEdition(testInfo, 1);
+  await page.goto('/');
+  await seedEditionLearner(page);
+  const before = await localStorageSnapshot(page);
+  await resetEditionWriteLog(page);
+
+  await page.goto(`/?page=__home__&case=edition-legacy-aux#edition=${incoming.payload}`);
+  await expect(page.locator('.fd-edition-error[role="alert"]')).toContainText('EDITION_RUNTIME');
+  expect(await localStorageSnapshot(page)).toEqual(before);
+  expect(await editionWrites(page)).toEqual([]);
+  expect(new URL(page.url()).search).toBe('?page=__home__&case=edition-legacy-aux');
+  expect(await page.evaluate(() => history.state)).toBeNull();
+  expect((await editionEvents(page)).filter(([kind]) => kind === 'history')).toHaveLength(1);
+  expect(await page.evaluate(() => window.__fdActiveStartupListeners())).toEqual([]);
   expect(await page.evaluate((selectedTitle) => window.__fdMeaningfulRenders.every(
     ({ rows, firstTitle }) => rows !== 1 || firstTitle !== selectedTitle,
   ), incoming.selectedTitle)).toBe(true);

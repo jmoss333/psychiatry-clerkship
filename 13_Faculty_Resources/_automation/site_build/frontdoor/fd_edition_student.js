@@ -365,7 +365,11 @@ function fdEditionRuntimeListen(target,type,handler,capture){
   var remove=fdEditionStudentMethod(target,'removeEventListener');
   if(!add||!remove||typeof type!=='string'||typeof handler!=='function') return {ok:false};
   try{ Function.prototype.call.call(add,target,type,handler,capture===true); }
-  catch(ignoreListener){ return {ok:false}; }
+  catch(ignoreListener){
+    try{ Function.prototype.call.call(remove,target,type,handler,capture===true); }
+    catch(ignoreFailedRemove){ }
+    return {ok:false};
+  }
   return {ok:true,target:target,type:type,handler:handler,capture:capture===true,
     removeMethod:remove,active:true};
 }

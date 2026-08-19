@@ -626,8 +626,6 @@
     });
     requestAnimationFrame(refreshTableScrollCues);
   }
-  try{window.addEventListener('resize',refreshTableScrollCues);}
-  catch(ignoreResizeListener){FD_RUNTIME_WIRING_OK=false;}
   function progLoad(){ try{ return JSON.parse(localStorage.getItem('cw_progress_v1'))||{}; }catch(_){ return {}; } }
   function progSave(o){ try{ localStorage.setItem('cw_progress_v1',JSON.stringify(o)); }catch(_){ } }
   function reviewableItems(){ var out=[],seen={}, cols=(typeof FD_INDEX!=='undefined'&&FD_INDEX.columns)||[]; for(var c=0;c<cols.length;c++){ var items=cols[c].items||[]; for(var i=0;i<items.length;i++){ var it=items[i]; if(!it||it.kind!=='read'||seen[it.ref])continue; seen[it.ref]=1; out.push({f:it.ref,t:it.title}); } } return out; }
@@ -860,18 +858,16 @@
     notice.textContent='Open the full page from the faculty console to navigate elsewhere';
     restoreFacultyPreviewRoute();
   }
-  try{
-    document.addEventListener('click',function(ev){
-      if(!facultyPreviewRequest)return;
-      var link=ev.target.closest?ev.target.closest('a[href]'):null;
-      if(!link)return;
-      var target;
-      try{target=new URL(link.getAttribute('href')||'',location.href);}catch(_){return;}
-      if(target.origin!==location.origin||target.pathname!==location.pathname)return;
-      if(!target.searchParams.has('page')&&!target.searchParams.has('tool'))return;
-      ev.preventDefault(); ev.stopPropagation(); showFacultyPreviewLockNotice();
-    },true);
-  }catch(ignoreFacultyPreviewListener){FD_RUNTIME_WIRING_OK=false;}
+  function fdFacultyPreviewDocumentClick(ev){
+    if(!facultyPreviewRequest)return;
+    var link=ev.target.closest?ev.target.closest('a[href]'):null;
+    if(!link)return;
+    var target;
+    try{target=new URL(link.getAttribute('href')||'',location.href);}catch(_){return;}
+    if(target.origin!==location.origin||target.pathname!==location.pathname)return;
+    if(!target.searchParams.has('page')&&!target.searchParams.has('tool'))return;
+    ev.preventDefault(); ev.stopPropagation(); showFacultyPreviewLockNotice();
+  }
   var PRACTICE_LABELS={'mse.html':'Mental Status Exam','interview-circle.html':'Interview Circle','communication-practice.html':'What Do You Say Next?','diagnostic-reasoning.html':'Diagnostic Reasoning Workbench','family-systems.html':'Family Systems Practice','cssrs.html':'C-SSRS Suicide Screen','withdrawal.html':'CIWA-Ar / COWS','bfcrs.html':'Bush-Francis Catatonia','violence.html':'Violence Risk (FRST)','capacity.html':'Decisional Capacity','screeners.html':'PHQ-9 / GAD-7','oral.html':'Rounding Prep + Timer','decision-aids.html':'Algorithms & Decision Aids','shelf-mode.html':'Shelf Mode Exam Sim','review.html':'Daily Review','reflection.html':'Reflection & Identity','question-bank-practice.html':'Practice Questions','sp-interview.html':'The Interview Room — AI Patient','one-patient-six-weeks.html':'One Patient, Six Weeks'};
   var PRACTICE_SAFE={'cssrs.html':1,'violence.html':1,'withdrawal.html':1,'bfcrs.html':1,'capacity.html':1,'decision-aids.html':1};
   var PRACTICE_PAGE_TOOLS={ 't_sud.md':['withdrawal.html','cssrs.html'], 'pg_interview.md':['sp-interview.html','mse.html'], 'pg_suicide.md':['cssrs.html','violence.html','decision-aids.html','sp-interview.html'], 'catatonia.md':['bfcrs.html'], 'agitation.md':['violence.html','decision-aids.html'], 'exp_consult.md':['capacity.html','decision-aids.html'], 'cl_reference.md':['decision-aids.html'], 't_mood.md':['screeners.html'], 't_anxiety.md':['screeners.html'], 't_psychosis.md':['decision-aids.html','sp-interview.html'], 't_perinatal.md':['cssrs.html'], 't_personality.md':['cssrs.html','reflection.html'], 'brief_psychotherapy.md':['mse.html','decision-aids.html'], 'doc_oral.md':['oral.html'], 'landmark_trials.md':['shelf-mode.html','review.html'], 'evidence_inpatient.md':['review.html'], 'shelf.md':['question-bank-practice.html','shelf-mode.html'], 'reading_map.md':['review.html'], 'collateral_workflow.md':['one-patient-six-weeks.html','family-systems.html'] };
@@ -1928,12 +1924,17 @@
   var fdEditionBootStorage=null;
   var fdEditionBootLocation=null;
   var fdEditionBootState='pending';
-  var fdEditionAuxListeners=[];
+  var fdEditionStartupTeardowns=[];
+  function fdEditionTrackListener(target,type,handler,capture){
+    var registration=fdEditionRuntimeListen(target,type,handler,capture);
+    if(!registration.ok)return false;
+    fdEditionStartupTeardowns.push(function(){fdEditionRuntimeUnlisten(registration);});
+    return true;
+  }
   function fdEditionCleanupWiring(){
-    for(var i=fdEditionAuxListeners.length-1;i>=0;i--)
-      fdEditionRuntimeUnlisten(fdEditionAuxListeners[i]);
-    fdEditionAuxListeners=[];
-    if(fdController&&fdController.destroy)try{fdController.destroy();}catch(ignoreDestroy){ }
+    for(var i=fdEditionStartupTeardowns.length-1;i>=0;i--)
+      try{fdEditionStartupTeardowns[i]();}catch(ignoreTeardown){ }
+    fdEditionStartupTeardowns=[];
     fdController=null;
   }
   function fdEditionRuntimeFallback(receipt,state){
@@ -1979,6 +1980,11 @@
       fdEditionRuntimeFallback(fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'),fdInitial);
       return;
     }
+    if(!fdEditionTrackListener(window,'resize',refreshTableScrollCues,false)||
+       !fdEditionTrackListener(document,'click',fdFacultyPreviewDocumentClick,true)){
+      fdEditionRuntimeFallback(fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'),fdInitial);
+      return;
+    }
     fdController=fdWire(fdApp,fdInitial,{
       window:window,document:document,index:FD_INDEX,roles:FD_ROLES,rotationStart:fdRotation,
       render:fdRender,renderTransient:fdRenderTransient,resourceHost:function(){return contentEl;},
@@ -1993,11 +1999,12 @@
     fdEditionRuntimeFallback(fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'),fdInitial);
     return;
   }
-  var fdRootAux=fdEditionRuntimeListen(fdApp,'click',fdAuxClick,false);
-  if(fdRootAux.ok)fdEditionAuxListeners.push(fdRootAux);
-  var fdWindowAux=fdRootAux.ok?fdEditionRuntimeListen(window,'message',fdAuxMessage,false):{ok:false};
-  if(fdWindowAux.ok)fdEditionAuxListeners.push(fdWindowAux);
-  if(!fdRootAux.ok||!fdWindowAux.ok||!fdEditionRuntimeRemoveBusy(fdApp)){
+  fdEditionStartupTeardowns.push(function(){
+    if(fdController&&fdController.destroy)fdController.destroy();
+  });
+  if(!fdEditionTrackListener(fdApp,'click',fdAuxClick,false)||
+     !fdEditionTrackListener(window,'message',fdAuxMessage,false)||
+     !fdEditionRuntimeRemoveBusy(fdApp)){
     fdEditionRuntimeFallback(fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'),fdInitial);
     return;
   }
@@ -2008,6 +2015,10 @@
   }
   try{fdRender(fdInitial);}
   catch(ignoreFirstRender){
+    fdEditionRuntimeFallback(fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'),fdInitial);
+    return;
+  }
+  if(!fdController.commitStartup()){
     fdEditionRuntimeFallback(fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'),fdInitial);
     return;
   }

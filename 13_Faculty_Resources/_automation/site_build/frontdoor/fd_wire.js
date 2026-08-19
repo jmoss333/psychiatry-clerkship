@@ -548,7 +548,7 @@ function fdWire(root, initialState, opts){
   var o=opts||{}, win=o.window||(typeof window!=='undefined'?window:null);
   var doc=o.document||(typeof document!=='undefined'?document:null);
   var state=fdClone(initialState||{}), invokers=[], nudgeTimer=null, navGeneration=0;
-  var destroyed=false, registrations=[];
+  var destroyed=false, registrations=[], startupCommitted=false;
   var render=o.render||function(){};
   var renderTransient=o.renderTransient||function(next,detail){
     if(!detail.preserveResource) render(next,detail);
@@ -979,10 +979,29 @@ function fdWire(root, initialState, opts){
       remove=target&&target.removeEventListener;
     }catch(ignoreListenerAccess){ return false; }
     if(typeof add!=='function'||typeof remove!=='function') return false;
+    registrations.push({target:target,type:type,handler:handler,capture:capture,remove:remove});
     try{ Function.prototype.call.call(add,target,type,handler,capture); }
     catch(ignoreListener){ return false; }
-    registrations.push({target:target,type:type,handler:handler,capture:capture,remove:remove});
     return true;
+  }
+  function commitStartup(){
+    if(destroyed) return false;
+    if(startupCommitted) return true;
+    startupCommitted=true;
+    try{
+      if(!previewActive()&&win&&win.history&&win.history.replaceState){
+        var initialLegacyRef=currentRoutedRef();
+        var initialLegacy=fdIsLegacyRouteAlias(initialLegacyRef)?fdLegacyRouteResult(
+          initialLegacyRef,{search:win.location.search||''},state
+        ):null;
+        if(initialLegacy){
+          routeTo(initialLegacy.route,true);
+          fdSave(state);
+        }
+        else replaceHistorySnapshot();
+      }
+      return true;
+    }catch(ignoreInitialCommit){ return false; }
   }
   function controller(ok){
     return {
@@ -992,6 +1011,7 @@ function fdWire(root, initialState, opts){
         if(destroyed) return state;
         return apply(fdDispatch(attrs,context(c),state),null,false);
       },
+      commitStartup:commitStartup,
       destroy:function(){
         if(destroyed&&registrations.length===0) return;
         destroyed=true;
@@ -1009,24 +1029,5 @@ function fdWire(root, initialState, opts){
       navGeneration++;
       return controller(false);
   }
-  try{
-    if(!previewActive()&&win&&win.history&&win.history.replaceState){
-      var initialLegacyRef=currentRoutedRef();
-      var initialLegacy=fdIsLegacyRouteAlias(initialLegacyRef)?fdLegacyRouteResult(
-        initialLegacyRef,{search:win.location.search||''},state
-      ):null;
-      if(initialLegacy){
-        fdSave(state);
-        routeTo(initialLegacy.route,true);
-      }
-      else replaceHistorySnapshot();
-    }
-  }catch(ignoreInitialWire){
-    removeRegistrations();
-    destroyed=true;
-    navGeneration++;
-    return controller(false);
-  }
-
   return controller(true);
 }
