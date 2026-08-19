@@ -13,11 +13,27 @@ const EDITION_CONTRACT_SOURCE = readFileSync(new URL(
   '../../13_Faculty_Resources/_automation/site_build/frontdoor/fd_edition_contract.js',
   import.meta.url,
 ), 'utf8');
+const EDITION_PROJECT_SOURCE = readFileSync(new URL(
+  '../../13_Faculty_Resources/_automation/site_build/frontdoor/fd_edition_project.js',
+  import.meta.url,
+), 'utf8');
+const EDITION_STUDENT_SOURCE = readFileSync(new URL(
+  '../../13_Faculty_Resources/_automation/site_build/frontdoor/fd_edition_student.js',
+  import.meta.url,
+), 'utf8');
 // The browser cases generate envelopes with the shipped contract. They never manufacture or
 // brand a validation result; the learner runtime independently validates every serialized link.
 // eslint-disable-next-line no-new-func
 const EDITION_CONTRACT = new Function(`${EDITION_CONTRACT_SOURCE}\nreturn {
-  fdEditionCreateEnvelope,fdEditionCanonicalJson
+  fdEditionCreateEnvelope,fdEditionCanonicalJson,fdEditionValidateEnvelope
+};`)();
+// The switch failure cases run the shipped learner transaction against fallible boundary
+// adapters. Only the browser APIs are doubled; validation, commit, rollback, and recovery
+// decisions are the production implementation.
+// eslint-disable-next-line no-new-func
+const EDITION_RUNTIME = new Function(`${EDITION_CONTRACT_SOURCE}\n${EDITION_PROJECT_SOURCE}\n${EDITION_STUDENT_SOURCE}\nreturn {
+  fdEditionValidateEnvelope,fdEditionRuntimeInputs,fdEditionRuntimeMountSwitch,
+  fdEditionRuntimeRecover:typeof fdEditionRuntimeRecover==='function'?fdEditionRuntimeRecover:null
 };`)();
 const VALID_PLACEMENT = {
   takenAt: '2026-08-17T00:00:00.000Z',
@@ -25,20 +41,51 @@ const VALID_PLACEMENT = {
   byCat: { safety: { n: 1, correct: 0 } },
 };
 
-async function installEditionRuntimeProbe(page) {
-  await page.addInitScript(({ editionKey, localKey, logKey }) => {
+async function installEditionRuntimeProbe(page, options = {}) {
+  await page.addInitScript(({ editionKey, localKey, logKey, throwHistory }) => {
     const originalSetItem = Storage.prototype.setItem;
+    const originalReplaceState = History.prototype.replaceState;
+    const innerHtml = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML');
+    const eventKey = `${logKey}_events`;
     const readLog = () => {
       try { return JSON.parse(sessionStorage.getItem(logKey) || '[]'); } catch { return []; }
     };
+    const readEvents = () => {
+      try { return JSON.parse(sessionStorage.getItem(eventKey) || '[]'); } catch { return []; }
+    };
+    const record = (event) => {
+      const events = readEvents();
+      events.push(event);
+      originalSetItem.call(window.sessionStorage, eventKey, JSON.stringify(events));
+      window.__fdEditionEvents = events;
+    };
     window.__fdMeaningfulRenders = [];
     window.__fdEditionWrites = readLog();
+    window.__fdEditionEvents = readEvents();
+    History.prototype.replaceState = function replaceState(state, title, url) {
+      record(['history', String(url)]);
+      if (throwHistory && location.hash) throw new Error('private history failure');
+      return originalReplaceState.call(this, state, title, url);
+    };
+    Object.defineProperty(Element.prototype, 'innerHTML', {
+      configurable: innerHtml.configurable,
+      enumerable: innerHtml.enumerable,
+      get: innerHtml.get,
+      set(value) {
+        if (this.id === 'content' && typeof value === 'string'
+          && /fd-(?:today|path|library|reader|setup)/.test(value) && !value.includes('skel')) {
+          record(['render-sync', value.includes('fd-today') ? 'today' : 'other']);
+        }
+        return innerHtml.set.call(this, value);
+      },
+    });
     Storage.prototype.setItem = function setItem(key, value) {
       if (this === window.localStorage && (key === editionKey || key === localKey)) {
         const writes = readLog();
         writes.push([key, String(value)]);
         originalSetItem.call(window.sessionStorage, logKey, JSON.stringify(writes));
         window.__fdEditionWrites = writes;
+        record(['write', key]);
       }
       return originalSetItem.call(this, key, value);
     };
@@ -52,20 +99,34 @@ async function installEditionRuntimeProbe(page) {
         rows: content.querySelectorAll('.fd-today .fd-list .fd-row').length,
         firstTitle: content.querySelector('.fd-today .fd-list .fd-row__title')?.textContent || '',
       });
+      record(['render', content.querySelector('.fd-today .fd-list .fd-row__title')?.textContent || '']);
     }).observe(document, { childList: true, subtree: true });
-  }, { editionKey: EDITION_KEY, localKey: LOCAL_EDITION_KEY, logKey: EDITION_WRITE_LOG });
+  }, {
+    editionKey: EDITION_KEY,
+    localKey: LOCAL_EDITION_KEY,
+    logKey: EDITION_WRITE_LOG,
+    throwHistory: options.throwHistory === true,
+  });
 }
 
 async function resetEditionWriteLog(page) {
   await page.evaluate((logKey) => {
     sessionStorage.setItem(logKey, '[]');
+    sessionStorage.setItem(`${logKey}_events`, '[]');
     window.__fdEditionWrites = [];
+    window.__fdEditionEvents = [];
   }, EDITION_WRITE_LOG);
 }
 
 async function editionWrites(page) {
   return page.evaluate((logKey) => {
     try { return JSON.parse(sessionStorage.getItem(logKey) || '[]'); } catch { return []; }
+  }, EDITION_WRITE_LOG);
+}
+
+async function editionEvents(page) {
+  return page.evaluate((logKey) => {
+    try { return JSON.parse(sessionStorage.getItem(`${logKey}_events`) || '[]'); } catch { return []; }
   }, EDITION_WRITE_LOG);
 }
 
@@ -152,6 +213,13 @@ async function createSyntheticEdition(testInfo, editionNumber, audienceOverride 
     webcrypto.subtle,
   );
   expect(made.ok).toBe(true);
+  const validated = await EDITION_RUNTIME.fdEditionValidateEnvelope(
+    made.envelope,
+    canonical,
+    { audience, pathId, coreRevision: EDITION_REVISION },
+    webcrypto.subtle,
+  );
+  expect(validated.ok).toBe(true);
   return {
     payload: made.payload,
     fingerprint: made.fingerprint,
@@ -159,6 +227,9 @@ async function createSyntheticEdition(testInfo, editionNumber, audienceOverride 
     canonicalEnvelope: EDITION_CONTRACT.fdEditionCanonicalJson(made.envelope),
     audience,
     selectedTitle: selected.title,
+    validated,
+    canonical,
+    siteContext: { audience, pathId, coreRevision: EDITION_REVISION },
   };
 }
 
@@ -166,6 +237,128 @@ function withoutEditionStores(snapshot) {
   return Object.fromEntries(Object.entries(snapshot).filter(
     ([key]) => key !== EDITION_KEY && key !== LOCAL_EDITION_KEY,
   ));
+}
+
+function runtimeDomHarness() {
+  const makeNode = (tag) => ({
+    tagName: tag.toUpperCase(),
+    innerHTML: '',
+    addEventListener() {},
+    querySelector() { return null; },
+    showModal() {},
+    close() {},
+    focus() {},
+  });
+  const mount = makeNode('div');
+  const app = makeNode('div');
+  app.removeAttribute = () => {};
+  return {
+    app,
+    mount,
+    document: {
+      createElement(tag) { return makeNode(tag); },
+      getElementById(id) { return id === 'fdApp' ? app : (id === 'governanceMount' ? mount : null); },
+      querySelector() { return null; },
+    },
+  };
+}
+
+function runtimeWindowHarness({ hash = '#edition=synthetic', historyMode = 'ok' } = {}) {
+  const events = [];
+  const values = new Map();
+  const location = {
+    href: `https://example.edu/?case=harness${hash}`,
+    hash,
+    pathname: '/',
+    search: '?case=harness',
+    reload() { events.push('reload'); },
+  };
+  const history = historyMode === 'missing' ? null : {
+    replaceState(_state, _title, url) {
+      events.push('clear');
+      if (historyMode === 'throw') throw new Error('private history failure');
+      location.href = `https://example.edu${url}`;
+      location.hash = '';
+    },
+  };
+  const storage = {
+    getItem(key) { return values.has(key) ? values.get(key) : null; },
+    setItem(key, value) { events.push(`write:${key}`); values.set(key, String(value)); },
+  };
+  return { window: { location, history, localStorage: storage, crypto: webcrypto }, location, history, storage, values, events };
+}
+
+function switchDialogHarness(active, candidate, options = {}) {
+  const events = [];
+  const values = new Map([
+    [EDITION_KEY, active.canonicalEnvelope],
+    [LOCAL_EDITION_KEY, JSON.stringify({
+      schemaVersion: 1,
+      byFingerprint: { [active.fingerprint]: { checklist: { 'local:check:1': true }, resources: {} } },
+    })],
+  ]);
+  const listeners = (node) => {
+    const byType = new Map();
+    node.addEventListener = (type, handler) => {
+      const handlers = byType.get(type) || [];
+      handlers.push(handler);
+      byType.set(type, handlers);
+    };
+    node.dispatch = (type, extra = {}) => {
+      const event = {
+        preventDefault() { events.push(`prevent:${type}`); },
+        ...extra,
+      };
+      for (const handler of byType.get(type) || []) handler(event);
+    };
+    return node;
+  };
+  const decline = listeners({ value: 'decline', disabled: false, focus() { events.push('focus:decline'); } });
+  const accept = listeners({ value: 'accept', disabled: false, focus() { events.push('focus:accept'); } });
+  const dialog = listeners({
+    querySelector(selector) {
+      if (selector === 'button[value="decline"]') return decline;
+      if (selector === 'button[value="accept"]') return accept;
+      return null;
+    },
+    showModal() { events.push('show'); },
+    close() { events.push('close'); },
+  });
+  const mount = {
+    _html: '',
+    get innerHTML() { return this._html; },
+    set innerHTML(value) {
+      this._html = value;
+      events.push(value.includes('fd-edition-error') ? 'alert' : (value ? 'markup' : 'clear-mount'));
+    },
+    querySelector(selector) { return selector === 'dialog.fd-edition-switch' ? dialog : null; },
+  };
+  let editionWrites = 0;
+  const storage = {
+    getItem(key) { return values.has(key) ? values.get(key) : null; },
+    setItem(key, value) {
+      events.push(`write:${key}:${value === active.canonicalEnvelope ? 'active' : 'candidate'}`);
+      if (key === EDITION_KEY) {
+        editionWrites += 1;
+        if (options.rollbackFails && editionWrites > 1) throw new Error('private rollback failure');
+      }
+      values.set(key, String(value));
+    },
+  };
+  const location = {
+    pathname: '/', search: '?case=switch', hash: '',
+    reload() {
+      events.push('reload');
+      if (options.reloadThrows) throw new Error('private reload failure');
+    },
+  };
+  const recovered = [];
+  const recover = (validated) => {
+    events.push('recover');
+    recovered.push(validated.fingerprint);
+    return true;
+  };
+  return { events, values, mount, dialog, accept, decline, storage, location, recover, recovered };
 }
 
 function expectedPlan(testInfo) {
@@ -193,6 +386,142 @@ async function seedCompleteSetup(page, extra = {}) {
   }, extra);
 }
 
+test('runtime capability gate clears incoming hashes and rejects missing, throwing, or mountless boundaries without writes', async ({}, testInfo) => {
+  const audience = testInfo.project.name === 'nav-res' ? 'resident' : 'ms3';
+  const pathId = audience === 'resident' ? 'resident-four-week' : 'ms3-six-week';
+  const siteContext = { audience, pathId, coreRevision: EDITION_REVISION };
+
+  const healthyDom = runtimeDomHarness();
+  const healthy = runtimeWindowHarness();
+  const accepted = EDITION_RUNTIME.fdEditionRuntimeInputs(
+    healthy.window, healthyDom.document, healthyDom.app, healthyDom.mount, siteContext,
+  );
+  expect(accepted.ok).toBe(true);
+  expect(accepted.hash).toBe('#edition=synthetic');
+  expect(accepted.hashCleared).toBe(true);
+  expect(healthy.location.hash).toBe('');
+  expect(healthy.events).toEqual(['clear']);
+
+  for (const historyMode of ['missing', 'throw']) {
+    const dom = runtimeDomHarness();
+    const runtime = runtimeWindowHarness({ historyMode });
+    const before = Object.fromEntries(runtime.values);
+    let result;
+    expect(() => {
+      result = EDITION_RUNTIME.fdEditionRuntimeInputs(
+        runtime.window, dom.document, dom.app, dom.mount, siteContext,
+      );
+    }).not.toThrow();
+    expect(result.ok).toBe(false);
+    expect(result.receipt.code).toBe('EDITION_RUNTIME');
+    expect(Object.fromEntries(runtime.values)).toEqual(before);
+    expect(runtime.events.filter((event) => event.startsWith('write:'))).toEqual([]);
+  }
+
+  const noMount = runtimeWindowHarness();
+  const noMountDom = runtimeDomHarness();
+  const noMountResult = EDITION_RUNTIME.fdEditionRuntimeInputs(
+    noMount.window, noMountDom.document, noMountDom.app, null, siteContext,
+  );
+  expect(noMountResult.ok).toBe(false);
+  expect(noMountResult.receipt.code).toBe('EDITION_RUNTIME');
+  expect(noMount.events).toEqual([]);
+});
+
+test('reload failure restores the trusted active marker after candidate commit and keeps progress buckets', async ({}, testInfo) => {
+  const active = await createSyntheticEdition(testInfo, 1);
+  const candidate = await createSyntheticEdition(testInfo, 2);
+  const harness = switchDialogHarness(active, candidate, { reloadThrows: true });
+  expect(EDITION_RUNTIME.fdEditionRuntimeMountSwitch(
+    harness.mount,
+    { active: active.validated, candidate: candidate.validated },
+    harness.storage,
+    harness.location,
+    true,
+    harness.recover,
+  )).toBe(true);
+
+  harness.accept.dispatch('click');
+  expect(harness.values.get(EDITION_KEY)).toBe(active.canonicalEnvelope);
+  expect(JSON.parse(harness.values.get(LOCAL_EDITION_KEY)).byFingerprint).toEqual({
+    [active.fingerprint]: { checklist: { 'local:check:1': true }, resources: {} },
+    [candidate.fingerprint]: { checklist: {}, resources: {} },
+  });
+  expect(harness.recovered).toEqual([]);
+  expect(harness.events).toEqual([
+    'markup', 'show', 'focus:decline', 'prevent:click',
+    `write:${LOCAL_EDITION_KEY}:candidate`, `write:${EDITION_KEY}:candidate`,
+    'reload', `write:${EDITION_KEY}:active`, 'alert',
+  ]);
+  expect(harness.mount.innerHTML).toContain('EDITION_RUNTIME');
+  expect(harness.mount.innerHTML).not.toContain('private reload failure');
+});
+
+test('rollback failure directly renders the committed candidate after the write and does not retry', async ({}, testInfo) => {
+  const active = await createSyntheticEdition(testInfo, 1);
+  const candidate = await createSyntheticEdition(testInfo, 2);
+  const harness = switchDialogHarness(active, candidate, { reloadThrows: true, rollbackFails: true });
+  let displayedFingerprint = active.fingerprint;
+  const directRecover = (validated) => (
+    typeof EDITION_RUNTIME.fdEditionRuntimeRecover === 'function'
+    && EDITION_RUNTIME.fdEditionRuntimeRecover(
+      candidate.canonical,
+      validated,
+      candidate.siteContext,
+      {},
+      (index) => {
+        harness.events.push('recover');
+        displayedFingerprint = index.edition.fingerprint;
+        return true;
+      },
+    )
+  );
+  expect(EDITION_RUNTIME.fdEditionRuntimeMountSwitch(
+    harness.mount,
+    { active: active.validated, candidate: candidate.validated },
+    harness.storage,
+    harness.location,
+    true,
+    directRecover,
+  )).toBe(true);
+
+  harness.accept.dispatch('click');
+  harness.accept.dispatch('click');
+  harness.decline.dispatch('click');
+  expect(harness.values.get(EDITION_KEY)).toBe(candidate.canonicalEnvelope);
+  expect(displayedFingerprint).toBe(candidate.fingerprint);
+  const candidateCommit = harness.events.indexOf(`write:${EDITION_KEY}:candidate`);
+  const recovery = harness.events.indexOf('recover');
+  expect(candidateCommit).toBeGreaterThan(-1);
+  expect(recovery).toBeGreaterThan(candidateCommit);
+  expect(harness.events.filter((event) => event === 'reload')).toHaveLength(1);
+  expect(harness.events.filter((event) => event === 'recover')).toHaveLength(1);
+  expect(harness.events.filter((event) => event === 'alert')).toHaveLength(1);
+});
+
+test('decline is one-shot and closes only after a previously cleared incoming hash', async ({}, testInfo) => {
+  const active = await createSyntheticEdition(testInfo, 1);
+  const candidate = await createSyntheticEdition(testInfo, 2);
+  const harness = switchDialogHarness(active, candidate);
+  const before = Object.fromEntries(harness.values);
+  expect(EDITION_RUNTIME.fdEditionRuntimeMountSwitch(
+    harness.mount,
+    { active: active.validated, candidate: candidate.validated },
+    harness.storage,
+    harness.location,
+    true,
+    harness.recover,
+  )).toBe(true);
+
+  harness.decline.dispatch('click');
+  harness.decline.dispatch('click');
+  harness.dialog.dispatch('cancel');
+  expect(Object.fromEntries(harness.values)).toEqual(before);
+  expect(harness.events.filter((event) => event === 'close')).toHaveLength(1);
+  expect(harness.events.filter((event) => event === 'clear-mount')).toHaveLength(1);
+  expect(harness.events.filter((event) => event.startsWith('write:'))).toEqual([]);
+});
+
 test('a first valid edition is the first meaningful render, then reload and same-link startup do not churn storage', async ({ page }, testInfo) => {
   await installEditionRuntimeProbe(page);
   const incoming = await createSyntheticEdition(testInfo, 1);
@@ -210,6 +539,15 @@ test('a first valid edition is the first meaningful render, then reload and same
     rows === 1 && firstTitle === incoming.selectedTitle
   ))).toBe(true);
   expect((await editionWrites(page)).map(([key]) => key)).toEqual([LOCAL_EDITION_KEY, EDITION_KEY]);
+  const orderedEvents = await editionEvents(page);
+  const clearIndex = orderedEvents.findIndex(([kind]) => kind === 'history');
+  const localWriteIndex = orderedEvents.findIndex(([kind, value]) => kind === 'write' && value === LOCAL_EDITION_KEY);
+  const editionWriteIndex = orderedEvents.findIndex(([kind, value]) => kind === 'write' && value === EDITION_KEY);
+  const renderIndex = orderedEvents.findIndex(([kind]) => kind === 'render-sync');
+  expect(clearIndex).toBeGreaterThanOrEqual(0);
+  expect(clearIndex).toBeLessThan(localWriteIndex);
+  expect(localWriteIndex).toBeLessThan(editionWriteIndex);
+  expect(editionWriteIndex).toBeLessThan(renderIndex);
   expect(await page.evaluate((key) => localStorage.getItem(key), EDITION_KEY)).toBe(incoming.canonicalEnvelope);
   expect(await page.evaluate(({ key, fingerprint }) => (
     JSON.parse(localStorage.getItem(key)).byFingerprint[fingerprint]
@@ -284,11 +622,21 @@ test('accepting a different valid edition commits in order, clears the hash, and
 
   await page.goto(`/?case=edition-accept#edition=${candidate.payload}`);
   await expect(page.locator('dialog.fd-edition-switch')).toBeVisible();
-  await page.getByRole('button', { name: 'Switch edition' }).click();
+  await page.getByRole('button', { name: 'Switch edition' }).focus();
+  await page.getByRole('button', { name: 'Switch edition' }).press('Enter');
   await expect(page.locator('.fd-today')).toBeVisible();
   expect(new URL(page.url()).hash).toBe('');
   await expect(page.locator('.fd-today .fd-list .fd-row__title')).toHaveText(candidate.selectedTitle);
   expect((await editionWrites(page)).map(([key]) => key)).toEqual([LOCAL_EDITION_KEY, EDITION_KEY]);
+  const switchEvents = await editionEvents(page);
+  const switchClear = switchEvents.findIndex(([kind]) => kind === 'history');
+  const switchRender = switchEvents.findIndex(([kind]) => kind === 'render-sync');
+  const switchLocal = switchEvents.findIndex(([kind, value]) => kind === 'write' && value === LOCAL_EDITION_KEY);
+  const switchEdition = switchEvents.findIndex(([kind, value]) => kind === 'write' && value === EDITION_KEY);
+  expect(switchClear).toBeGreaterThanOrEqual(0);
+  expect(switchClear).toBeLessThan(switchRender);
+  expect(switchClear).toBeLessThan(switchLocal);
+  expect(switchLocal).toBeLessThan(switchEdition);
   const after = await localStorageSnapshot(page);
   expect(withoutEditionStores(after)).toEqual(withoutEditionStores(before));
   expect(after[EDITION_KEY]).toBe(candidate.canonicalEnvelope);
@@ -336,6 +684,45 @@ test('missing Web Crypto rejects stored edition data to the core without writes 
   await expect(page.locator('.fd-edition-error[role="alert"]')).toContainText('EDITION_CRYPTO');
   await expect(page.locator('.fd-today')).toBeVisible();
   expect(await page.locator('.fd-today .fd-list .fd-row').count()).toBeGreaterThan(1);
+  expect(await editionWrites(page)).toEqual([]);
+  expect(await localStorageSnapshot(page)).toEqual(before);
+});
+
+test('a throwing hash-history boundary falls back to core before any edition commit or render', async ({ page }, testInfo) => {
+  await installEditionRuntimeProbe(page, { throwHistory: true });
+  const incoming = await createSyntheticEdition(testInfo, 1);
+  await page.goto('/');
+  await seedEditionLearner(page);
+  const before = await localStorageSnapshot(page);
+  await resetEditionWriteLog(page);
+  await page.goto(`/?case=edition-history-throw#edition=${incoming.payload}`);
+  await expect(page.locator('.fd-edition-error[role="alert"]')).toContainText('EDITION_RUNTIME');
+  await expect(page.locator('.fd-today')).toBeVisible();
+  expect(await page.locator('.fd-today .fd-list .fd-row').count()).toBeGreaterThan(1);
+  await expect(page.locator('#fdApp')).not.toHaveAttribute('aria-busy', 'true');
+  expect(await editionWrites(page)).toEqual([]);
+  expect(await localStorageSnapshot(page)).toEqual(before);
+  expect((await editionEvents(page)).filter(([kind]) => kind === 'render')).not.toHaveLength(0);
+});
+
+test('a missing governance mount falls back to core without committing or attempting an unsafe alert', async ({ page }, testInfo) => {
+  await installEditionRuntimeProbe(page);
+  const incoming = await createSyntheticEdition(testInfo, 1);
+  await page.goto('/');
+  await seedEditionLearner(page);
+  const before = await localStorageSnapshot(page);
+  await resetEditionWriteLog(page);
+  await page.route(/\/\?case=edition-missing-mount$/, async (route) => {
+    const response = await route.fetch();
+    const body = (await response.text()).replace('<div id="governanceMount"></div>', '');
+    await route.fulfill({ response, body });
+  });
+
+  await page.goto(`/?case=edition-missing-mount#edition=${incoming.payload}`);
+  await expect(page.locator('.fd-today')).toBeVisible();
+  expect(await page.locator('.fd-today .fd-list .fd-row').count()).toBeGreaterThan(1);
+  await expect(page.locator('#fdApp')).not.toHaveAttribute('aria-busy', 'true');
+  await expect(page.locator('.fd-edition-error')).toHaveCount(0);
   expect(await editionWrites(page)).toEqual([]);
   expect(await localStorageSnapshot(page)).toEqual(before);
 });

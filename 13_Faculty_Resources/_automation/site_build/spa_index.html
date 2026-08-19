@@ -1593,14 +1593,16 @@
   var FD_INDEX=FD_CANONICAL_INDEX;
   var FD_SITE_CONTEXT={audience:FD_AUDIENCE,pathId:FD_CANONICAL_INDEX.path.id,
                        coreRevision:FD_CORE_REVISION};
-  var fdApp=document.getElementById('fdApp');
-  var fdChromeMount=document.getElementById('fdChromeMount');
-  var fdEditionMount=document.getElementById('governanceMount');
-  var fdCaptureMount=document.getElementById('fdCaptureMount');
-  var fdOverlayMount=document.getElementById('fdOverlayMount');
+  var fdDocument=null;
+  try{fdDocument=window.document;}catch(ignoreDocument){fdDocument=null;}
+  var fdApp=fdEditionRuntimeElement(fdDocument,'fdApp');
+  var fdChromeMount=fdEditionRuntimeElement(fdDocument,'fdChromeMount');
+  var fdEditionMount=fdEditionRuntimeElement(fdDocument,'governanceMount');
+  var fdCaptureMount=fdEditionRuntimeElement(fdDocument,'fdCaptureMount');
+  var fdOverlayMount=fdEditionRuntimeElement(fdDocument,'fdOverlayMount');
   var fdCrisisTemplate=document.getElementById('fdCrisisTemplate');
   var fdCrisisHtml=fdCrisisTemplate?fdCrisisTemplate.innerHTML:'';
-  var fdNudgeMount=document.getElementById('fdNudgeMount');
+  var fdNudgeMount=fdEditionRuntimeElement(fdDocument,'fdNudgeMount');
   var fdController=null;
 
   function fdSurface(name,fn){
@@ -1920,10 +1922,14 @@
      canonical stores on every render. */
   var fdEditionBootStorage=null;
   var fdEditionBootLocation=null;
-  var fdEditionBootHistory=null;
   function fdStartFrontDoor(result){
   result=result&&result.index?result:{mode:'rejected',needsCommit:false,index:FD_CANONICAL_INDEX,
     receipt:fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME')};
+  if(result.mode==='switch-required'&&
+     !fdEditionRuntimeSwitchReady(fdEditionBootLocation,fdEditionInputs&&fdEditionInputs.hashCleared)){
+    result={mode:'rejected',needsCommit:false,index:FD_CANONICAL_INDEX,
+      receipt:fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME')};
+  }
   if(result.mode==='active'&&result.needsCommit&&
      !fdEditionAcceptFirst(fdEditionBootStorage,result.active)){
     result={mode:'rejected',needsCommit:false,index:FD_CANONICAL_INDEX,
@@ -2019,21 +2025,28 @@
     getState:function(){ return fdController.getState(); },
     isCurrent:function(ref){return fdController.getState().openId===ref;}
   });
+  function fdRecoverCommittedEdition(candidate){
+    var state;
+    try{
+      state=fdController&&fdController.getState?fdController.getState():fdInitial;
+      return fdEditionRuntimeRecover(FD_CANONICAL_INDEX,candidate,FD_SITE_CONTEXT,state,
+        function(index,recoveryState){FD_INDEX=index;fdRender(recoveryState);return true;});
+    }catch(ignoreRecovery){ return false; }
+  }
   if(result.mode==='switch-required'){
     if(!fdEditionRuntimeMountSwitch(fdEditionMount,result,fdEditionBootStorage,
-       fdEditionBootLocation,fdEditionBootHistory))
+       fdEditionBootLocation,fdEditionInputs.hashCleared,fdRecoverCommittedEdition))
       fdEditionRuntimeMountError(fdEditionMount,fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'));
   }else if(result.mode==='rejected') fdEditionRuntimeMountError(fdEditionMount,result.receipt);
   }
 
-  var fdEditionInputs=fdEditionRuntimeInputs(window,FD_SITE_CONTEXT);
+  var fdEditionInputs=fdEditionRuntimeInputs(window,fdDocument,fdApp,fdEditionMount,FD_SITE_CONTEXT);
   if(!fdEditionInputs.ok){
     fdStartFrontDoor({mode:'rejected',needsCommit:false,index:FD_CANONICAL_INDEX,
       receipt:fdEditionInputs.receipt});
   }else{
     fdEditionBootStorage=fdEditionInputs.storage;
     fdEditionBootLocation=fdEditionInputs.location;
-    try{fdEditionBootHistory=window.history;}catch(ignoreHistory){fdEditionBootHistory=null;}
     fdEditionResolveStartup(FD_CANONICAL_INDEX,FD_SITE_CONTEXT,fdEditionInputs.pageUrl,
       fdEditionInputs.hash,fdEditionInputs.storedText,fdEditionInputs.subtle).then(fdStartFrontDoor,
       function(){fdStartFrontDoor({mode:'rejected',needsCommit:false,index:FD_CANONICAL_INDEX,
