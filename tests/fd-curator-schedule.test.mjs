@@ -190,6 +190,8 @@ for (const audience of ['ms3', 'resident']) {
       assert.equal(names.length, 3, `${control} names missing`);
       assert.equal(new Set(names).size, names.length, `${control} names must be unique`);
       assert.ok(names.every((name) => /placement \d+/.test(name)), `${control} lacks occurrence`);
+      assert.ok(names.every((name) => /position \d+ of \d+ in Week \d+/.test(name)),
+        `${control} lacks current week position`);
     }
 
     draft = reduce(draft, {
@@ -205,8 +207,44 @@ for (const audience of ['ms3', 'resident']) {
     }
     assert.match(markup, /placement 3, position 1 of \d+ in Week 1/);
     assert.match(markup, /placement 1, position \d+ of \d+ in Week 2/);
+    const rerenderedCurriculum = fn('fdCuratorCurriculumMarkup')(
+      draft, index(audience), 'Interview',
+    );
+    assert.match(rerenderedCurriculum,
+      /Local priority for Interview structure placement 3, position 1 of 2 in Week 1/);
+    assert.match(rerenderedCurriculum,
+      /Why I selected Interview structure placement 1, position 2 of 2 in Week 2/);
   });
 }
+
+test('rejects over-limit dense, sparse, and fallible index arrays before reading elements', () => {
+  const groups = fn('fdCuratorLibraryGroups');
+  const tooMany = 12289;
+  const base = index();
+  const dense = Array.from({ length: tooMany }, () => ({
+    name: 'Unused', accent: '#174d43', items: [],
+  }));
+  assert.deepEqual(groups({ ...base, columns: dense }), []);
+
+  let ownKeysReads = 0;
+  let elementReads = 0;
+  const sparse = new Proxy(new Array(tooMany), {
+    ownKeys() { ownKeysReads += 1; throw new Error('must not enumerate'); },
+    getOwnPropertyDescriptor(target, key) {
+      if (key !== 'length') elementReads += 1;
+      return Reflect.getOwnPropertyDescriptor(target, key);
+    },
+  });
+  assert.doesNotThrow(() => groups({ ...base, columns: sparse }));
+  assert.deepEqual(groups({ ...base, columns: sparse }), []);
+  assert.equal(ownKeysReads, 0, 'over-limit arrays are rejected before key enumeration');
+  assert.equal(elementReads, 0, 'over-limit arrays are rejected before element inspection');
+
+  const revoked = Proxy.revocable([], {});
+  revoked.revoke();
+  assert.doesNotThrow(() => groups({ ...base, columns: revoked.proxy }));
+  assert.deepEqual(groups({ ...base, columns: revoked.proxy }), []);
+});
 
 test('omits, re-adds, adds Library-only resources, and creates deliberate repeats', () => {
   let draft = reviewedDraft();

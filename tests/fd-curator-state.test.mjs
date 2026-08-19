@@ -17,6 +17,7 @@ const HTML_SOURCE = new URL(
 );
 const API_NAMES = [
   'fdCuratorNewDraft', 'fdCuratorReduce', 'fdCuratorValidateStep',
+  'fdCuratorApplyAction',
   'fdCuratorBuildConfig', 'fdCuratorNextEditionNumber',
   'fdCuratorDraftStorage', 'fdCuratorImportEnvelope', 'fdCuratorReadImportFile',
   'fdCuratorImportTransactions',
@@ -515,6 +516,47 @@ test('import transactions allow only the latest untouched request to commit', ()
   const current = transactions.begin();
   assert.equal(transactions.commit(current), true);
   assert.equal(transactions.commit(current), false, 'one import token can commit only once');
+});
+
+test('action application invalidates pending imports only for semantic draft changes', () => {
+  const apply = fn('fdCuratorApplyAction');
+  const transactions = fn('fdCuratorImportTransactions')();
+  let draft = fn('fdCuratorNewDraft')(index(), context());
+
+  function dispatch(action) {
+    const result = apply(draft, action, index(), context());
+    assert.equal(typeof result.changed, 'boolean');
+    draft = result.state;
+    if (result.changed) transactions.touch();
+    return result.changed;
+  }
+
+  const untouched = transactions.begin();
+  assert.equal(dispatch({ type: 'GO_TO_STEP', step: 2 }), false, 'navigation is not a draft edit');
+  assert.equal(dispatch({
+    type: 'PATH_SET_PRIORITY', instanceId: 'core:pg_interview.md:1', priority: 'recommended',
+  }), false);
+  assert.equal(dispatch({
+    type: 'PATH_SET_RATIONALE', instanceId: 'core:pg_interview.md:1', value: '',
+  }), false);
+  assert.equal(dispatch({
+    type: 'PATH_MOVE_WEEK', instanceId: 'core:pg_interview.md:1', week: 1,
+  }), false);
+  assert.equal(dispatch({ type: 'PATH_MOVE_UP', instanceId: 'core:pg_interview.md:1' }), false);
+  assert.equal(dispatch({ type: 'PATH_MOVE_DOWN', instanceId: 'core:pg_interview.md:1' }), false);
+  assert.equal(dispatch({ type: 'PATH_REMOVE_INSTANCE', instanceId: 'core:missing.md:1' }), false);
+  assert.equal(dispatch({ type: 'NOT_AN_ACTION', inherited: true }), false);
+  assert.equal(transactions.commit(untouched), true, 'reducer no-ops preserve the pending import');
+
+  const edited = transactions.begin();
+  assert.equal(dispatch({
+    type: 'PATH_SET_PRIORITY', instanceId: 'core:pg_interview.md:1', priority: 'required',
+  }), true);
+  assert.equal(transactions.commit(edited), false, 'a real student-visible edit cancels the import');
+
+  const revoked = Proxy.revocable({}, {});
+  revoked.revoke();
+  assert.doesNotThrow(() => dispatch(revoked.proxy));
 });
 
 test('accepts only the exact current full config as a successful generation', async () => {

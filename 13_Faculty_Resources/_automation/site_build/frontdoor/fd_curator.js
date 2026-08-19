@@ -4,6 +4,8 @@
    intentionally remains unavailable until the later health-gate task. */
 var FD_CURATOR_DRAFT_KEY='cw_curator_draft_v1';
 var FD_CURATOR_IMPORT_MAX_BYTES=65536;
+/* Match the adjacent shared edition contract's conservative collection bound. */
+var FD_CURATOR_MAX_ARRAY_ITEMS=12288;
 var FD_CURATOR_CARD_FIELDS=['title','locationName','locationCode','curatorName','curatorRole','rotationStart','rotationEnd','lastVerified'];
 var FD_CURATOR_AFFIRMATION_FIELDS=['publicSafe','officialLinks','previewsReviewed','forwardable'];
 
@@ -129,6 +131,7 @@ function fdCuratorReadDataArray(value){
     if(!lengthDescriptor||!Object.prototype.hasOwnProperty.call(lengthDescriptor,'value')) return null;
     length=lengthDescriptor.value;
     if(typeof length!=='number'||!isFinite(length)||Math.floor(length)!==length||length<0) return null;
+    if(length>FD_CURATOR_MAX_ARRAY_ITEMS) return null;
     keys=Reflect.ownKeys(value);
   }catch(ignoreArray){ return null; }
   for(i=0;i<keys.length;i++){
@@ -552,6 +555,27 @@ function fdCuratorReduce(draft,action,index,siteContext){
   return next;
 }
 
+function fdCuratorSemanticDraftJson(draft,index,siteContext){
+  var shaped,value;
+  try{
+    shaped=fdCuratorValidateDraft(draft,index,siteContext);
+    if(!shaped.ok) return null;
+    value=shaped.draft;
+    return fdEditionCanonicalJson({
+      schemaVersion:value.schemaVersion,site:value.site,config:value.config,
+      preview:value.preview,affirmations:value.affirmations,publication:value.publication
+    });
+  }catch(ignoreSemanticDraft){ return null; }
+}
+
+function fdCuratorApplyAction(draft,action,index,siteContext){
+  var before=fdCuratorSemanticDraftJson(draft,index,siteContext),state,after;
+  try{ state=fdCuratorReduce(draft,action,index,siteContext); }
+  catch(ignoreReduction){ state=fdCuratorUnchangedResult(draft,index,siteContext); }
+  after=fdCuratorSemanticDraftJson(state,index,siteContext);
+  return {state:state,changed:before!==null&&after!==null&&before!==after};
+}
+
 function fdCuratorValidDate(value){
   var parts,date;
   if(typeof value!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
@@ -680,6 +704,12 @@ function fdCuratorPathInstances(draft,ref){
   return out;
 }
 
+function fdCuratorWeekPlacement(draft,instance){
+  var items=draft&&draft.config&&Array.isArray(draft.config.pathItems)?draft.config.pathItems:[],count=0,i;
+  for(i=0;i<items.length;i++) if(items[i].week===instance.week) count++;
+  return {position:instance.order,count:count};
+}
+
 function fdCuratorPriorityOptions(selected){
   var values=FD_EDITION_RULES.priorities,out='',i;
   for(i=0;i<values.length;i++) out+='<option value="'+values[i]+'"'+(values[i]===selected?' selected':'')+'>'+values[i]+'</option>';
@@ -688,7 +718,7 @@ function fdCuratorPriorityOptions(selected){
 
 function fdCuratorCurriculumMarkup(draft,index,query){
   var groups=fdCuratorLibraryGroups(index),needle=typeof query==='string'?query.trim().toLowerCase():'',out='';
-  var i,j,k,group,item,instances,title,searchText,groupId,placementId,rationaleId,instance,occurrence,controlLabel;
+  var i,j,k,group,item,instances,title,searchText,groupId,placementId,rationaleId,instance,occurrence,controlLabel,placement;
   for(i=0;i<groups.length;i++){
     group=groups[i]; groupId='curatorGroup'+i; var rows='';
     for(j=0;j<group.items.length;j++){
@@ -707,8 +737,9 @@ function fdCuratorCurriculumMarkup(draft,index,query){
         for(k=0;k<instances.length;k++){
           instance=instances[k]; occurrence=fdCuratorInstanceOccurrence(instance);
           placementId='curatorPlacement'+i+'_'+j+'_'+k; rationaleId=placementId+'Rationale';
-          controlLabel=title+' placement '+occurrence+', Week '+instance.week;
-          rows+='<li><p><strong>Placement '+occurrence+'</strong> · Week '+instance.week+'</p>'+
+          placement=fdCuratorWeekPlacement(draft,instance);
+          controlLabel=title+' placement '+occurrence+', position '+placement.position+' of '+placement.count+' in Week '+instance.week;
+          rows+='<li><p><strong>Placement '+occurrence+'</strong> · Position '+placement.position+' of '+placement.count+' in Week '+instance.week+'</p>'+
             '<div class="placement-fields"><div><label for="'+placementId+'Priority">Local priority</label>'+
             '<select id="'+placementId+'Priority" data-curator-path-priority="'+fdEsc(instance.instanceId)+'" aria-label="Local priority for '+fdEsc(controlLabel)+'">'+fdCuratorPriorityOptions(instance.priority)+'</select></div>'+
             '<div class="rationale-field"><label for="'+rationaleId+'">Why I selected this</label>'+
@@ -862,7 +893,9 @@ function fdCuratorMount(root,index,siteContext){
   }
   function render(){ fdCuratorRender(state,root,index,errors); refreshPreview(); }
   function dispatch(action,skipRender){
-    touched=true; importTransactions.touch(); state=fdCuratorReduce(state,action,index,siteContext); errors=[];
+    var applied=fdCuratorApplyAction(state,action,index,siteContext);
+    state=applied.state; errors=[];
+    if(applied.changed){ touched=true; importTransactions.touch(); }
     if(skipRender) refreshPreview(); else render();
     return state;
   }

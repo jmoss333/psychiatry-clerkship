@@ -380,6 +380,59 @@ test('slower imports cannot overwrite a newer import or an intervening edit', as
   await expect(page.locator('#curatorGenerate')).toBeDisabled();
 });
 
+test('navigation and schedule no-ops preserve a pending valid import', async ({ page }) => {
+  await page.goto(TOOL);
+  const pending = await backupText(page, 'No-op import wins', 8);
+
+  const outcome = await page.evaluate(async pendingText => {
+    const input = document.querySelector('#curatorImportFile');
+    let resolveImport;
+    Object.defineProperty(input, 'files', {
+      configurable: true,
+      value: [{
+        size: new TextEncoder().encode(pendingText).length,
+        text: () => new Promise(resolve => { resolveImport = resolve; }),
+      }],
+    });
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+
+    document.querySelector('[data-curator-step="3"]').click();
+    const first = document.querySelector('[data-curator-instance]');
+    const week = first.querySelector('[data-curator-path-week]');
+    week.dispatchEvent(new Event('change', { bubbles: true }));
+    first.querySelector('[data-curator-path-up]').dispatchEvent(
+      new MouseEvent('click', { bubbles: true }),
+    );
+    const weekItems = [...document.querySelectorAll(
+      `[data-curator-week="${week.value}"] [data-curator-instance]`,
+    )];
+    weekItems.at(-1).querySelector('[data-curator-path-down]').dispatchEvent(
+      new MouseEvent('click', { bubbles: true }),
+    );
+
+    document.querySelector('[data-curator-step="2"]').click();
+    const priority = document.querySelector('[data-curator-path-priority]');
+    const rationale = document.querySelector('[data-curator-path-rationale]');
+    priority.dispatchEvent(new Event('change', { bubbles: true }));
+    rationale.dispatchEvent(new Event('input', { bubbles: true }));
+    const bogus = document.createElement('button');
+    bogus.setAttribute('data-curator-path-remove', 'core:missing.md:1');
+    document.querySelector('#root').appendChild(bogus);
+    bogus.click();
+    bogus.remove();
+
+    resolveImport(pendingText);
+    for (let attempt = 0; attempt < 100; attempt += 1) {
+      if (document.querySelector('#curatorTitle').value === 'No-op import wins') break;
+      await new Promise(resolve => setTimeout(resolve, 5));
+    }
+    return document.querySelector('#curatorTitle').value;
+  }, pending);
+
+  expect(outcome).toBe('No-op import wins');
+  await expect(page.locator('#curatorGenerate')).toBeDisabled();
+});
+
 test('hostile stored schedules fail clean and repeated keyboard controls target one placement', async ({ page }, testInfo) => {
   const expected = expectedSite(testInfo.project.name);
   await page.goto(TOOL);
@@ -404,6 +457,43 @@ test('hostile stored schedules fail clean and repeated keyboard controls target 
   const repeat = page.locator('[data-curator-path-add]').first();
   const ref = await repeat.getAttribute('data-curator-path-add');
   await repeat.click();
+
+  const priorityControls = page.locator(`[data-curator-path-priority^="core:${ref}:"]`);
+  const rationaleControls = page.locator(`[data-curator-path-rationale^="core:${ref}:"]`);
+  await expect(priorityControls).toHaveCount(2);
+  await expect(rationaleControls).toHaveCount(2);
+  for (const controls of [priorityControls, rationaleControls]) {
+    const names = await controls.evaluateAll(nodes => nodes.map(node => node.getAttribute('aria-label')));
+    expect(new Set(names).size).toBe(2);
+    expect(names.every(name => /placement \d+, position \d+ of \d+ in Week \d+/.test(name))).toBe(true);
+  }
+
+  const editRaceBackup = await backupText(page, 'Edit race must lose', 9);
+  await page.evaluate(pendingText => {
+    const input = document.querySelector('#curatorImportFile');
+    Object.defineProperty(input, 'files', {
+      configurable: true,
+      value: [{
+        size: new TextEncoder().encode(pendingText).length,
+        text: () => new Promise(resolve => { window.__resolveEditRace = resolve; }),
+      }],
+    });
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+  }, editRaceBackup);
+  const beforePriorities = await priorityControls.evaluateAll(nodes => nodes.map(node => node.value));
+  await priorityControls.nth(1).focus();
+  await page.keyboard.press('o');
+  await rationaleControls.nth(1).focus();
+  await page.keyboard.type('Only this placement rationale');
+  await page.evaluate(text => window.__resolveEditRace(text), editRaceBackup);
+  await page.waitForTimeout(30);
+  const afterPriorities = await priorityControls.evaluateAll(nodes => nodes.map(node => node.value));
+  expect(afterPriorities[0]).toBe(beforePriorities[0]);
+  expect(afterPriorities[1]).toBe('optional');
+  await expect(rationaleControls.nth(0)).toHaveValue('');
+  await expect(rationaleControls.nth(1)).toHaveValue('Only this placement rationale');
+  await expect(page.locator('#curatorTitle')).not.toHaveValue('Edit race must lose');
+
   await page.locator('[data-curator-step="3"]').click();
 
   const repeated = page.locator('[data-curator-instance]').filter({
