@@ -89,7 +89,7 @@ Re-verify before Wave 4: `shasum -a 256 docs/superpowers/specs/SPEC_Withdrawal_I
 | Wave | WP | Title | Owner | Status | Branch | PR | Blocker |
 |---|---|---|---|---|---|---|---|
 | 0 | WP-00 | Branch, tracking file, verification baseline | AGENT | pr-open | `chore/wp-00-remediation-baseline` | #371 | — |
-| 0 | WP-00b | `bin/verify.sh` + pre-push hook + smoke runner | AGENT | in-progress | `chore/wp-00b-verify-harness` | — | — |
+| 0 | WP-00b | `bin/verify.sh` + pre-push hook + smoke runner | AGENT | pr-open | `chore/wp-00b-verify-harness` | #372 | — |
 | 1 | WP-01 | Capacity: `'na'` bug + disable Copy note | AGENT | todo | — | — | — |
 | 1 | WP-02 | COWS legal-value arrays | AGENT | todo | — | — | — |
 | 1 | WP-03 | CIWA bands + delete unconditional directive | AGENT+REVIEW | todo | — | — | — |
