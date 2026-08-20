@@ -460,6 +460,68 @@ test('keeps ambiguous local safety topics advisory and allows official linked pr
   assert.equal(linkedResult.ok, true, JSON.stringify(linkedResult.errors));
 });
 
+test('requires named evidence combinations before blocking benign local guidance', () => {
+  const base = fixture('valid-ms3.json').config;
+  const cases = [
+    {
+      path: '/config/localOrientation/accessPreparation',
+      field: 'accessPreparation',
+      value: 'Obtain approved institutional access through the linked training portal.',
+      evidence: 'directive verb present; clinical action-object relation missing',
+      localAdvisory: false,
+    },
+    {
+      path: '/config/localOrientation/firstDayArrival',
+      field: 'firstDayArrival',
+      value: 'Start in the public education office at 8:00.',
+      evidence: 'directive verb present; clinical action-object relation missing',
+      localAdvisory: false,
+    },
+    {
+      path: '/config/localOrientation/firstDayArrival',
+      field: 'firstDayArrival',
+      value: 'Obtain feedback from your supervisor after rounds.',
+      evidence: 'directive verb present; clinical action-object relation missing',
+      localAdvisory: false,
+    },
+    {
+      path: '/config/localOrientation/presentationExpectations',
+      field: 'presentationExpectations',
+      value: 'Give your presentation to the resident at noon.',
+      evidence: 'directive verb present; clinical action-object relation missing',
+      localAdvisory: false,
+    },
+    {
+      path: '/config/localOrientation/feedbackProcess',
+      field: 'feedbackProcess',
+      value: 'Learners receive a satisfactory overview of the evaluation process.',
+      evidence: 'learner, evaluation, and outcome words present; evaluation-data relation missing',
+      localAdvisory: true,
+    },
+    {
+      path: '/config/localOrientation/documentationExpectations',
+      field: 'documentationExpectations',
+      value: 'Patient record training begins at 1230.',
+      evidence: 'patient, record, and digits present; explicit identifier relation missing',
+      localAdvisory: true,
+    },
+  ];
+
+  for (const item of cases) {
+    const config = clone(base);
+    config.localOrientation[item.field] = item.value;
+    const result = F.fdEditionValidateConfig(
+      config, indexFor(config), context('ms3', base.createdAgainstCoreRevision),
+    );
+    assert.equal(result.ok, true, `${item.evidence}: ${JSON.stringify(result.errors)}`);
+    assert.equal(result.errors.some((finding) =>
+      finding.code === 'EDITION_LOCAL_CONTENT' && finding.path === item.path), false, item.evidence);
+    assert.equal(result.warnings.some((finding) =>
+      finding.code === 'EDITION_LOCAL_CONTENT' && finding.path === item.path), item.localAdvisory,
+    item.evidence);
+  }
+});
+
 test('screens every local text field against reordered, separated, and confusable privacy risks', () => {
   const base = fixture('valid-ms3.json').config;
   const blocked = [
@@ -473,6 +535,9 @@ test('screens every local text field against reordered, separated, and confusabl
       c.localOrientation.firstDayArrival = value;
     }],
     ['/config/localOrientation/dailySchedule', 'MRN 12345 belongs to synthetic patient Alpha.', (c, value) => {
+      c.localOrientation.dailySchedule = value;
+    }],
+    ['/config/localOrientation/dailySchedule', 'MRN: 12-345.', (c, value) => {
       c.localOrientation.dailySchedule = value;
     }],
     ['/config/localOrientation/roundsWorkflow', 'Perform intervention X after supervision.', (c, value) => {

@@ -494,6 +494,39 @@ test('Step 4 blocks unsafe pending content and binds each desktop review to its 
   );
 });
 
+test('Step 4 saves benign evidence-adjacent guidance and still rejects clear local risks', async ({ page }) => {
+  await page.goto(TOOL);
+  await page.evaluate(key => localStorage.removeItem(key), DRAFT_KEY);
+  await completeCard(page);
+  await page.locator('[data-curator-step="4"]').click();
+
+  const allowed = [
+    ['#curatorAccessPreparation', 'accessPreparation', 'Obtain approved institutional access through the linked training portal.'],
+    ['#curatorFirstDayArrival', 'firstDayArrival', 'Start in the public education office at 8:00.'],
+    ['#curatorFirstDayArrival', 'firstDayArrival', 'Obtain feedback from your supervisor after rounds.'],
+    ['#curatorPresentationExpectations', 'presentationExpectations', 'Give your presentation to the resident at noon.'],
+    ['#curatorFeedbackProcess', 'feedbackProcess', 'Learners receive a satisfactory overview of the evaluation process.'],
+    ['#curatorDocumentationExpectations', 'documentationExpectations', 'Patient record training begins at 1230.'],
+  ];
+  for (const [selector, field, value] of allowed) {
+    await page.locator(selector).fill(value);
+    await expect(page.locator('#curatorErrorSummary')).toBeHidden();
+    await page.locator('#curatorSaveDraft').evaluate(node => node.click());
+    await expect(page.locator('#curatorSaveStatus')).toHaveText('Saved on this device');
+    expect(await page.evaluate(([key, localField]) =>
+      JSON.parse(localStorage.getItem(key)).config.localOrientation[localField], [DRAFT_KEY, field])).toBe(value);
+  }
+
+  const savedRaw = await page.evaluate(key => localStorage.getItem(key), DRAFT_KEY);
+  const blocked = 'Student Alpha received an unsatisfactory evaluation.';
+  await page.locator('#curatorFirstDayArrival').fill(blocked);
+  await expect(page.locator('#curatorErrorSummary a')).toHaveAttribute('href', '#curatorFirstDayArrival');
+  await expect(page.locator('#curatorErrorSummary')).not.toContainText(blocked);
+  await page.locator('#curatorSaveDraft').evaluate(node => node.click());
+  await expect(page.locator('#curatorSaveStatus')).toHaveText('Draft could not be saved on this device.');
+  expect(await page.evaluate(key => localStorage.getItem(key), DRAFT_KEY)).toBe(savedRaw);
+});
+
 test('delayed deliberate reviews cannot survive desktop/mobile layout changes', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto(TOOL);

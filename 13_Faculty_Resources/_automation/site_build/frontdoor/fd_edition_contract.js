@@ -479,37 +479,58 @@ function fdEditionScreenText(value,path,errors,warnings){
   else if(advisory.test(value)) warnings.push(fdEditionFinding('EDITION_TEXT_RISK',path,'Review this text for sensitive identifiers, credentials, protocols, or dosing details before publication.',false));
 }
 
+function fdEditionLocalRiskSkeleton(value){
+  var words=value.normalize('NFKC').toLowerCase();
+  /* This skeleton is deliberately narrow: common Greek/Cyrillic lookalikes used in the
+     English risk terms, zero-width separators, and punctuation inside a risk word. It is
+     used only for detection; the normalized multilingual source is never rewritten. */
+  words=words.replace(/[\u03bf\u043e]/g,'o').replace(/[\u03b1\u0430]/g,'a').replace(/[\u03b5\u0435]/g,'e')
+    .replace(/[\u03b9\u0456]/g,'i').replace(/[\u03c1\u0440]/g,'p').replace(/[\u03c4\u0442]/g,'t')
+    .replace(/[\u03bd\u043d]/g,'n').replace(/[\u03c5\u0443]/g,'y').replace(/[\u03ba\u043a]/g,'k')
+    .replace(/[\u200b-\u200f\u2060\ufeff]/g,'').replace(/[\u00ad_\-.\u2010-\u2015]/g,'');
+  return {words:words,compact:words.replace(/[^a-z0-9]+/g,'')};
+}
+
 function fdEditionScreenLocalContent(value,path,errors,warnings){
-  var risk='',compact='',resourceTitle=/^\/config\/localOrientation\/resources\/\d+\/title$/.test(path);
-  var learner,evaluation,outcome,patient,recordIdentifier,recordValue,command,instructionCommand,protocol,ambiguous;
+  var risk,words='',compact='',resourceTitle=/^\/config\/localOrientation\/resources\/\d+\/title$/.test(path);
+  var evidence,learnerEvaluationData,patientIdentifierData,clinicalDirective,protocolInstruction,ambiguous;
   try{
-    risk=value.normalize('NFKC').toLowerCase();
-    /* This skeleton is deliberately narrow: common Greek/Cyrillic lookalikes used in the
-       English risk terms, zero-width separators, and punctuation inside a risk word. It is
-       used only for detection; the normalized multilingual source is never rewritten. */
-    risk=risk.replace(/[\u03bf\u043e]/g,'o').replace(/[\u03b1\u0430]/g,'a').replace(/[\u03b5\u0435]/g,'e')
-      .replace(/[\u03b9\u0456]/g,'i').replace(/[\u03c1\u0440]/g,'p').replace(/[\u03c4\u0442]/g,'t')
-      .replace(/[\u03bd\u043d]/g,'n').replace(/[\u03c5\u0443]/g,'y').replace(/[\u03ba\u043a]/g,'k')
-      .replace(/[\u200b-\u200f\u2060\ufeff]/g,'').replace(/[\u00ad_\-.\u2010-\u2015]/g,'');
-    compact=risk.replace(/[^a-z0-9]+/g,'');
+    risk=fdEditionLocalRiskSkeleton(value);
+    words=risk.words;
+    compact=risk.compact;
   }catch(ignoreLocalRisk){
     errors.push(fdEditionFinding('EDITION_LOCAL_CONTENT',path,'Local text could not be screened safely.'));
     return;
   }
-  learner=/(?:learner|student|trainee)/.test(compact);
-  evaluation=/(?:evaluation|assessment|rating|grade)/.test(compact);
-  outcome=/(?:unsatisfactory|satisfactory|failed|failing|passed|passing|performance)/.test(compact);
-  patient=/patient/.test(compact);
-  recordIdentifier=/(?:medicalrecord|recordnumber|recordid|record|identifier|mrn)/.test(compact);
-  recordValue=/(?:medicalrecord|recordnumber|recordid|record|identifier|mrn)[a-z]{0,24}\d{3,}|\d{3,}[a-z]{0,24}(?:medicalrecord|recordnumber|recordid|record|identifier|mrn)/.test(compact);
-  command=/(?:^|[.!?]\s+|,\s+)(?:according\s+to\s+[^.!?]{0,80},?\s*)?(?:please\s+)?(?:perform|administer|give|start|stop|order|obtain|initiate|discontinue)\b|\b(?:must|should|required\s+to)\s+(?:perform|administer|give|start|stop|order|obtain|initiate|discontinue)\b/i.test(risk);
-  instructionCommand=/\b(?:perform|administer|give|start|stop|order|obtain|initiate|discontinue)\b/i.test(risk);
-  protocol=/\b(?:local|clinical|unit|institutional)\s+protocol\b/i.test(risk);
-  ambiguous=(learner&&evaluation)||(patient&&recordIdentifier)||protocol||/\bclinical\s+directive\b/i.test(risk);
-  if(learner&&evaluation&&outcome) errors.push(fdEditionFinding('EDITION_LOCAL_CONTENT',path,'Local text must not contain learner-specific evaluation information.'));
-  else if(patient&&recordIdentifier&&recordValue) errors.push(fdEditionFinding('EDITION_LOCAL_CONTENT',path,'Local text must not contain patient-specific record or identifier information.'));
-  else if(protocol&&instructionCommand) errors.push(fdEditionFinding('EDITION_LOCAL_CONTENT',path,'Local text must not copy protocol instructions; use an official HTTPS institutional link.'));
-  else if(command) errors.push(fdEditionFinding('EDITION_LOCAL_CONTENT',path,'Local text must not contain direct clinical imperatives.'));
+  evidence={
+    learnerSubject:/(?:learner|student|trainee)/.test(compact),
+    evaluationTerm:/(?:evaluation|assessment|rating|grade|score)/.test(compact),
+    specificEvaluationRelation:
+      /\b(?:learner|student|trainee)s?\b[^.!?]{0,80}\b(?:evaluation|assessment|rating|grade|score)\b\s*(?:is|was|rated|graded|scored)\s*(?:as\s+)?\b(?:unsatisfactory|satisfactory|failed|failing|passed|passing|poor|excellent)\b/i.test(words)||
+      /\b(?:learner|student|trainee)s?\b[^.!?]{0,60}\b(?:received|earned|got)\s+(?:an?\s+)?(?:unsatisfactory|satisfactory|failing|passing|poor|excellent)\s+(?:evaluation|assessment|rating|grade|score)\b/i.test(words)||
+      /\b(?:unsatisfactory|satisfactory|failing|passing|poor|excellent)\s+(?:evaluation|assessment|rating|grade|score)\b[^.!?]{0,40}\b(?:for|of)\s+(?:the\s+)?(?:learner|student|trainee)\b/i.test(words),
+    patientRecordTopic:/patient/.test(compact)&&/(?:medicalrecord|record|identifier|mrn)/.test(compact),
+    explicitPatientIdentifier:
+      /(?:mrn|medicalrecordnumber|recordnumber|recordid)[a-z]{0,20}\d{3,}/.test(compact)||
+      /\d{3,}[a-z]{0,20}(?:mrn|medicalrecordnumber|recordnumber|recordid)/.test(compact)||
+      /patient[a-z]{0,32}(?:has|with)(?:a)?record[a-z]{0,20}\d{3,}/.test(compact)||
+      /patientidentifier/.test(compact),
+    directiveFrame:/(?:^|[,;:!?]\s*)(?:please\s+)?(?:perform|administer|give|start|stop|order|obtain|prescribe|initiate|discontinue)\b|\b(?:must|should|required\s+to|requires?\s+you\s+to)\s+(?:perform|administer|give|start|stop|order|obtain|prescribe|initiate|discontinue)\b/i.test(words),
+    clinicalActionObject:
+      /perform(?:an?|the)?intervention/.test(compact)||
+      /(?:administer|give|start|stop|prescribe|initiate|discontinue)(?:an?|the)?(?:medication|medicine|drug|dose|injection|clinicaltreatment|treatment|therapy)/.test(compact)||
+      /(?:order|obtain)(?:an?|the)?(?:clinicaltest|test|lab|laboratorytest|imaging|specimen|medication|medicine|drug|clinicaltreatment|treatment)/.test(compact),
+    protocolContext:/protocol/.test(compact)
+  };
+  learnerEvaluationData=evidence.learnerSubject&&evidence.evaluationTerm&&evidence.specificEvaluationRelation;
+  patientIdentifierData=evidence.explicitPatientIdentifier;
+  clinicalDirective=evidence.directiveFrame&&evidence.clinicalActionObject;
+  protocolInstruction=evidence.protocolContext&&clinicalDirective;
+  ambiguous=(evidence.learnerSubject&&evidence.evaluationTerm)||evidence.patientRecordTopic||evidence.protocolContext||/\bclinical\s+directive\b/i.test(words);
+  if(learnerEvaluationData) errors.push(fdEditionFinding('EDITION_LOCAL_CONTENT',path,'Local text must not contain learner-specific evaluation information.'));
+  else if(patientIdentifierData) errors.push(fdEditionFinding('EDITION_LOCAL_CONTENT',path,'Local text must not contain patient-specific record or identifier information.'));
+  else if(protocolInstruction) errors.push(fdEditionFinding('EDITION_LOCAL_CONTENT',path,'Local text must not copy protocol instructions; use an official HTTPS institutional link.'));
+  else if(clinicalDirective) errors.push(fdEditionFinding('EDITION_LOCAL_CONTENT',path,'Local text must not contain direct clinical imperatives.'));
   else if(ambiguous&&!resourceTitle) warnings.push(fdEditionFinding('EDITION_LOCAL_CONTENT',path,'Review this local text for learner evaluation, patient identifier, directive, or copied protocol content.',false));
 }
 
