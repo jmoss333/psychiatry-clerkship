@@ -5528,9 +5528,9 @@
   ],
   "safetyLevel": "moderate",
   "facultyReview": {
-   "status": "pending",
+   "status": "reviewed",
    "reviewer": "Joshua Moss, MD",
-   "lastReviewed": "2026-07-27"
+   "lastReviewed": "2026-08-11"
   },
   "workflowStages": [
    "diagnosis",
