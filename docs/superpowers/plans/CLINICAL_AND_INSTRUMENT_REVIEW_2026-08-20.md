@@ -1,5 +1,14 @@
 # Psychiatry Clerkship Library — Clinical Content & Instrument Validity Review
 
+> **⚠ PROVENANCE — read before acting on anything below.**
+> This document was written by reading the repository through a mount on branch
+> `fix/table-scroll-desktop-affordance-v2`, **not `main`**. All line references are approximate
+> anchors, not addresses — locate every edit site by grepping the quoted code string. And some
+> defects described here were already fixed on `main` in the interim: **two of the first five
+> work packages attempted had stale premises**, and executing one as written would have disabled
+> a working, faculty-governed tool. **Verify every premise against `main` before acting.**
+> See amendments A1, A5 and A7 in `2026-08-20-review-remediation-STATUS.md`.
+
 **Prepared:** 2026-08-20 · **Repo:** `~/Psychiatry-Clerkship-Library` (MS3 + resident builds)
 **Scope:** clinical content (03, 04, 05, 02, 06), the 11 registered tools, the question/retrieval banks, and The Interview Room (AI standardized patient)
 **Method:** four independent read-throughs of the source tree at file/line level, followed by a structured review with two practicing psychiatrists — an inpatient attending (14 yrs, 24-bed adult unit + CL blocks) and a consultation-liaison psychiatrist (9 yrs, ~1,200 consults/yr). Reviewer commentary is quoted where it changes or overturns an audit finding.

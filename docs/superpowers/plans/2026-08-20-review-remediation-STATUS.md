@@ -76,6 +76,44 @@ Mode is wired to `question_bank.json`.
 Corollary for Wave 2+: `quizzes.json` is at
 `07_Evidence_and_Reading/Landmark_Trials/quizzes.json`, **not** the repo root the handoff implies.
 
+### A6. Render assertions, not just data assertions
+
+WP-02's eight tests passed while **every COWS subtitle was blank.** They asserted on the item
+array; the renderer read `i.d`, which the regenerated array no longer had. Data tests prove the
+array is right. They cannot prove the array is being *read*.
+
+**Standing rule — any WP that changes an instrument data model must include a render-level
+assertion that each item produces a non-empty label, subtitle/elicitation, and anchor list.**
+
+This is load-bearing for **WP-20**, which rewrites both the CIWA and COWS item shapes wholesale:
+a silent render regression there empties ten items at once, and every data test still passes.
+
+### A7. Assume ~40% premise staleness — and file the check as an artifact
+
+Two of five Wave-1 premises were already fixed on `main`. **Treat that as the base rate for every
+remaining WP, Waves 2–6 included.**
+
+A5 makes you check. A7 makes the check **auditable**: before any edit, add a premise-verification
+note to the table below — the grep evidence that the defect reproduces, or the PR number that
+fixed it. No note, no edit.
+
+#### Premise verification log
+
+| WP | Verified | Verdict | Evidence |
+|---|---|---|---|
+| WP-01 | 2026-08-20 | partly stale | `anyNA` branch present; export gap real → #374 |
+| WP-02 | 2026-08-20 | **real** | all 11 items carried `max:N` + dense render loop → #375 |
+| WP-07 | 2026-08-20 | partly stale | count directive real → #373; asterisk bug already fixed; `LOCAL_POLICY` has no HTML equivalent |
+| WP-09 | 2026-08-20 | **stale — do not execute** | `optOrder()` already shuffles per (card, day), FNV-1a + xorshift32 |
+| WP-10 | 2026-08-20 | **stale — do not execute** | `bankPool()` serves 142 attested items; PR #343 |
+| WP-03 | 2026-08-20 | **real, all parts** | `"Often no medication"` ×1; CIWA labels still 3 bands (`≤8 / 9–19 / ≥20`); `RASS/PAWSS` ×1 |
+| WP-04 | 2026-08-20 | **partly stale** | seizure band still sequential `24–48 h` (real). **ODC-2 resolved:** page self-labels "AI-drafted, faculty-reviewed" and `reviewed.json['decision-aids.html']` = reviewed, 2026-06-30, moderate |
+| WP-05 | 2026-08-20 | **real, all four parts** | Withdrawal anchors still `< 3 days`/`≥ 3 days`; `[0,1,2,3].map` renders all four with no `disabled`; only conditional is `screenCount>=2`, no malignant interrupt; callout still `1–2 mg IV/IM, reassess in 1–2 h` with no ≥50% criterion |
+| WP-06 | 2026-08-20 | **real, all parts** | one `lifetime` label (Q6 only), no Past-month frame on Q1–Q5; `S(k)` clears nothing, `showSub` gates rendering only; `tierLbl` still risk tiers; **zero** administration lines |
+| WP-06f | 2026-08-20 | **real — live exposure** | Q1–Q5 reproduced **verbatim in both shipped builds** (`_build/{ms3,res}/tools/cssrs.html`). ODC-3 is not hypothetical |
+| WP-08 | 2026-08-20 | **real** | all three punitive regexes in the pack; `onlyFirstTime` hard-coded to `open_invite` on **both** sides; `closedRun ===` on both sides; **zero** `988` in `sp-interview.html` |
+| **WP-08c** | 2026-08-20 | **✅ TIER-0 CLEAR** | `POST_PACK_STATUSES = {reviewed, attested}` unchanged; guard intact; `packNotApproved()` → **403**; `pack.status = draft-pending-attestation` in source **and both shipped builds**. The 403 holds. |
+
 ### A3. No warn→hard gate promotion while CI is down
 
 WP-15, WP-16 and WP-17 ship **warn-only** with their burn-down counters printed on every run.
@@ -96,6 +134,23 @@ string back to a SPEC line; if SPEC changes, that mapping is invalid.
 
 Re-verify before Wave 4: `shasum -a 256 docs/superpowers/specs/SPEC_Withdrawal_Instrument_Redesign_v1.md`
 
+### Deferred: the HTML `LOCAL_POLICY` mechanism (ODC-12)
+
+**Do not build a general HTML token mechanism yet — one consumer is not a design brief.**
+
+*Now (WP-07b, small):* split the violence one-pager's site-specific paragraph along the existing
+`ms3`/`res` build axis, which already maps to UNE/MMC. Shared MS3 text states the **principle**
+only — many units screen violence risk at intake with a structured tool; know which one yours
+uses and when it is completed. The FRST / MMC / ED-intake specifics ship to `res` only.
+
+This is a **content improvement, not just de-risking**: "know whether your unit uses X" is the
+same scope-calibration posture the review praised in the MS3 consult expansion module.
+
+*Later (WP-20):* the CIWA administration panel needs exactly this — hold parameters, who scores,
+frequency by band, all site-specific. Build the mechanism there **with FRST as the second
+consumer**, so two real cases inform the shape. Recorded here so the dependency is not
+rediscovered.
+
 ### When CI returns (WP-15b)
 
 1. Re-run the full battery (`bin/verify.sh`) against **merged main**.
@@ -113,7 +168,9 @@ Re-verify before Wave 4: `shasum -a 256 docs/superpowers/specs/SPEC_Withdrawal_I
 |---|---|---|---|---|---|---|---|
 | 0 | WP-00 | Branch, tracking file, verification baseline | AGENT | **merged** | — | #371 | — |
 | 0 | WP-00b | `bin/verify.sh` + pre-push hook + smoke runner | AGENT | **merged** | — | #372 | — |
-| 1 | WP-01 | Capacity: `'na'` bug + disable Copy note | AGENT | **merged** | — | #374 | OPEN-DECISION-11 raised |
+| 0 | **WP-00c** | Make `bin/verify.sh` the gate contract; collapse `ci.yml` | AGENT | **next** | — | — | — |
+| 1 | WP-01 | Capacity: `'na'` bug + disable Copy note | AGENT | **merged** | — | #374 | superseded by WP-01b |
+| 1 | **WP-01b** | Delete `verdict()`; capacity module becomes a structured report | AGENT + AUTHOR-GATED | **next** | — | — | author copy (~200 w) for header + 2 prompts |
 | 1 | WP-02 | COWS legal-value arrays | AGENT | **merged** | — | #375 | — |
 | 1 | WP-03 | CIWA bands + delete unconditional directive | AGENT+REVIEW | todo | — | — | — |
 | 1 | WP-04 | Withdrawal seizure window overlap | AGENT+REVIEW | todo | — | — | — |
@@ -152,18 +209,18 @@ Re-verify before Wave 4: `shasum -a 256 docs/superpowers/specs/SPEC_Withdrawal_I
 
 | id | Decision | Raised in | Status |
 |---|---|---|---|
-| OPEN-DECISION-1 | Delete `verdict()` and convert capacity module to a structured report? | WP-01 | open |
-| OPEN-DECISION-2 | Attest `decision-aids.html`, or suppress the attested→unattested outbound link? | WP-04 | open |
+| OPEN-DECISION-1 | Delete `verdict()` and convert the capacity module to a structured report? | WP-01 | **RESOLVED — yes, delete it. → WP-01b** |
+| OPEN-DECISION-2 | Attest `decision-aids.html` or suppress the outbound link? | WP-04 | **RESOLVED — page is attested** (`reviewed.json`, 2026-06-30, moderate); self-label now reads "AI-drafted, faculty-reviewed" |
 | OPEN-DECISION-3 | C-SSRS licensing for verbatim reproduction on two public sites | WP-06 | open |
 | OPEN-DECISION-4 | Build the BVC, or correct the markdown pointing at a nonexistent Brøset tool? | WP-07 | open |
-| OPEN-DECISION-5 | Wire Shelf Mode to `question_bank.json`, or generate `SHELF-*` decks? | WP-10 | open |
+| OPEN-DECISION-5 | Wire Shelf Mode to `question_bank.json` | WP-10 | **CLOSED by PR #343** — already wired; see A5 |
 | OPEN-DECISION-6 | Case-level attestation, or inherit page-level? (Not both.) | WP-13 | open |
 | OPEN-DECISION-7 | Do unattested drafts ship? (46 of 189 served items) | WP-17 | open |
 | OPEN-DECISION-8 | Move the communication bank to two-tier? | review §8.4 | open |
 | OPEN-DECISION-9 | Is the SP going live this academic year? Determines whether WP-08b is Tier 0 | review §5.2 | open |
 | OPEN-DECISION-10 | Source documents committed to the repo by WP-00 | WP-00 | **resolved — confirmed, root copies removed** |
-| **OPEN-DECISION-11** | `anyImp` is evaluated **before** `anyNA` in the capacity module, so three "Not assessed" + one "Impaired" still returns *"the patient LACKS capacity"*. WP-01's own replacement ordering puts `anyNA` first, which would block that — but the spec was written against code with no `anyNA` branch, so it never contemplated the ordering. **Can a single impaired ability carry a negative determination while three are unassessed?** Clinical judgement; WP-01 is an AGENT package, so flagged not changed. | WP-01 | **open** |
-| **OPEN-DECISION-12** | `LOCAL_POLICY` is `*.pack.json`-only (`pack.localPolicies` + `choiceBank tokenId`). No HTML-tool equivalent exists, so the site-specific MMC paragraph in the violence one-pager still ships unmodified to the UNE MS3 site. Build an HTML token mechanism, use the existing per-site injection (`resident_section.py`), or split the paragraph? | WP-07 | **open** |
+| OPEN-DECISION-11 | Capacity `anyImp`/`anyNA` ordering | WP-01 | **MOOT** — `verdict()` is being deleted (ODC-1). The clinical truth it surfaced is preserved as an author-written sentence in WP-01b, so the teaching is not lost with the function. |
+| OPEN-DECISION-12 | `LOCAL_POLICY` has no HTML-tool equivalent | WP-07 | **RESOLVED — split now via the ms3/res build axis; build the mechanism in WP-20.** See "Deferred: HTML LOCAL_POLICY" below |
 | OPEN-DECISION-5 | Wire Shelf Mode to `question_bank.json` | WP-10 | **resolved — already wired (PR #343); see A5** |
 
 ## Burn-down counters
