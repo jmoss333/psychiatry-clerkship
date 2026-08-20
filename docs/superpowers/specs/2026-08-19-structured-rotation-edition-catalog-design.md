@@ -2,7 +2,7 @@
 
 **Date:** 2026-08-19
 
-**Status:** Awaiting final user review
+**Status:** Approved by user on 2026-08-19
 
 **Amends:** `2026-08-19-attending-curated-rotation-editions-design.md`
 

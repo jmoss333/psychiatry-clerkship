@@ -1,5 +1,7 @@
 # Attending-Curated Rotation Editions Implementation Plan
 
+> **Superseded:** The user-approved structured-catalog amendment replaces this plan's schema-v1/free-text requirements, the failed/superseded Task 12 approach, and unexecuted Tasks 13–15. Continue with `docs/superpowers/plans/2026-08-19-structured-rotation-edition-catalog-v2.md`. Tasks 1–11 remain historical implementation context only; do not resume this plan's public prose, raw-URL, v1 storage, or regex-screening work.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Let an attending create a privacy-safe, audience-locked MS3 or resident rotation edition, share it as an immutable link, and let trainees use that edition inside the existing clerkship site without changing the reviewed clinical core or sending learner activity to a backend.
