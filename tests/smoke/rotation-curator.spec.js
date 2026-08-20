@@ -145,7 +145,22 @@ test('v2 synthetic catalog unlocks reviewed structured Steps 1 through 4', async
   await page.getByRole('button', { name: /Step 2 Curriculum/ }).click();
   await expect(page.locator('[data-curator-step-panel="2"]')).toBeVisible();
   await expect(page.locator('[data-curator-path-repeat]').first()).toBeVisible();
-  await expect(page.locator('[data-curator-path-reason]').first()).toContainText('Reviewed reason');
+  const pathPriority = page.locator('[data-curator-path-priority]').first();
+  const pathReason = page.locator('[data-curator-path-reason]').first();
+  await expect(pathReason).toContainText('Reviewed reason');
+  await expect(pathPriority.locator('option')).toHaveText(['required', 'recommended', 'optional']);
+  expect(await pathPriority.locator('option').evaluateAll((options) => options.map((option) => option.value))).toEqual(['required', 'recommended', 'optional']);
+  await expect(pathPriority).toHaveValue('recommended');
+  await expect(pathReason.locator('option')).toHaveText(['No reviewed reason', 'Reviewed reason', 'Second reviewed reason']);
+  expect(await pathReason.locator('option').evaluateAll((options) => options.map((option) => option.value))).toEqual(['', 'choice.reason@v1', 'choice.reason-two@v1']);
+  await expect(pathReason).toHaveValue('');
+  await pathPriority.evaluate((select) => {
+    const forged = document.createElement('option'); forged.value = ''; forged.textContent = 'forged blank'; select.append(forged);
+    select.value = ''; select.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+  await expect(page.locator('[data-curator-path-priority]').first()).toHaveValue('recommended');
+  expect(await page.locator('[data-curator-path-priority]').first().locator('option').evaluateAll((options) => options.map((option) => option.value))).toEqual(['required', 'recommended', 'optional']);
+  await expect(page.locator('[data-curator-path-reason]').first()).toHaveValue('');
   await page.locator('[data-curator-path-repeat]').first().click();
 
   await page.getByRole('button', { name: /Step 3 Schedule/ }).click();
@@ -325,10 +340,52 @@ test('every repeatable row field edits accessibly through rerender, navigation, 
     expect(names).toHaveLength(count); expect(new Set(names).size).toBe(count); expect(names.some(name => /row 2, local:/.test(name))).toBe(true);
   }
   async function optionValues(name) { return page.getByLabel(name).locator('option').evaluateAll(options => options.map(option => option.value)); }
-  expect(await optionValues(/Schedule event row 1.*day set/i)).toEqual(['', 'choice.day-set-two@v1', 'choice.day-set-one@v1']);
+  expect(await optionValues(/Schedule event row 1.*day set/i)).toEqual(['choice.day-set-two@v1', 'choice.day-set-one@v1']);
+  expect(await optionValues(/Schedule event row 1.*activity/i)).toEqual(['choice.activity-one@v1', 'choice.activity-two@v1']);
+  expect(await optionValues(/Schedule event row 1.*priority/i)).toEqual(['required', 'recommended', 'optional']);
+  expect(await optionValues(/Schedule event row 1.*place/i)).toEqual(['', 'place.one@v1', 'place.two@v1']);
+  expect(await optionValues(/Access item row 1.*access item/i)).toEqual(['choice.access-one@v1', 'choice.access-two@v1']);
+  expect(await optionValues(/Access item row 1.*due point/i)).toEqual(['choice.due-one@v1', 'choice.due-two@v1']);
   expect(await optionValues(/Access item row 1.*official link/i)).toEqual(['', 'link.access-one@v1', 'link.access-two@v1']);
+  expect(await optionValues(/Contact row 1.*public role/i)).toEqual(['choice.role@v1', 'choice.role-two@v1']);
   expect(await optionValues(/Contact row 1.*directory/i)).toEqual(['', 'link.directory-one@v1', 'link.directory-two@v1']);
-  expect(await optionValues(/Resource row 1.*official resource/i)).toEqual(['', 'link.access-one@v1', 'link.directory-one@v1', 'link.resource-one@v1', 'link.access-two@v1', 'link.directory-two@v1', 'link.resource-two@v1']);
+  expect(await optionValues(/Checklist action row 1.*action/i)).toEqual(['choice.checklist-one@v1', 'choice.checklist-two@v1']);
+  expect(await optionValues(/Checklist action row 1.*priority/i)).toEqual(['required', 'recommended', 'optional']);
+  expect(await optionValues(/Resource row 1.*official resource/i)).toEqual(['link.access-one@v1', 'link.directory-one@v1', 'link.resource-one@v1', 'link.access-two@v1', 'link.directory-two@v1', 'link.resource-two@v1']);
+  expect(await optionValues(/Resource row 1.*priority/i)).toEqual(['required', 'recommended', 'optional']);
+  expect(await optionValues(/Resource row 1.*reason/i)).toEqual(['', 'choice.reason@v1', 'choice.reason-two@v1']);
+  for (const name of [
+    /Schedule event row [12].*day set/i, /Schedule event row [12].*activity/i, /Schedule event row [12].*priority/i,
+    /Access item row [12].*access item/i, /Access item row [12].*due point/i,
+    /Contact row [12].*public role/i,
+    /Checklist action row [12].*action/i, /Checklist action row [12].*priority/i,
+    /Resource row [12].*official resource/i, /Resource row [12].*priority/i,
+  ]) expect((await optionValues(name)).includes('')).toBe(false);
+  for (const [name, emptyLabel] of [
+    [/Schedule event row [12].*place/i, 'No place'], [/Access item row [12].*official link/i, 'No link'],
+    [/Contact row [12].*directory/i, 'No directory'], [/Resource row [12].*reason/i, 'No reason'],
+  ]) {
+    const blankOptions = await page.getByLabel(name).locator('option[value=""]').allTextContents();
+    expect(blankOptions).toEqual([emptyLabel, emptyLabel]);
+  }
+
+  await page.getByLabel(/Schedule event row 1.*priority/i).evaluate((select) => {
+    const forged = document.createElement('option'); forged.value = ''; forged.textContent = 'forged blank'; select.append(forged);
+    select.value = ''; select.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+  await expect(page.getByLabel(/Schedule event row 1.*priority/i)).toHaveValue('required');
+  expect(await optionValues(/Schedule event row 1.*priority/i)).toEqual(['required', 'recommended', 'optional']);
+  await page.getByRole('button', { name: /Step 1 Edition/ }).click();
+  await page.locator('[data-curator-save]').click();
+  await page.reload();
+  await page.getByRole('button', { name: /Step 4 Local details/ }).click();
+  await expect(page.getByLabel(/Schedule event row 1.*priority/i)).toHaveValue('required');
+  expect(await optionValues(/Schedule event row 1.*priority/i)).toEqual(['required', 'recommended', 'optional']);
+  const forgedBlankSaved = await page.evaluate(() => JSON.parse(Object.entries(localStorage).find(([key]) => /_curator_draft_(?:ms3|resident)_v2$/.test(key))[1]));
+  expect(forgedBlankSaved.config.localPlan.schedule.events[0].priority).toBe('required');
+  await page.getByRole('button', { name: 'Review desktop preview' }).click();
+  await expect(page.locator('[data-curator-preview-status="desktop"]')).toContainText('Reviewed');
+  await expect(page.locator('.fd-curator-preview--desktop')).toContainText('Required');
 
   const edits = [
     [/Schedule event row 1.*day set/i, 'choice.day-set-two@v1'],
@@ -367,6 +424,7 @@ test('every repeatable row field edits accessibly through rerender, navigation, 
   await expect(page.locator('[data-curator-preview-status="desktop"]')).toContainText('Reviewed');
   await expect(page.locator('.fd-curator-preview--desktop')).toContainText('teaching days');
   await expect(page.locator('.fd-curator-preview--desktop')).toContainText('Second resource');
+  await expect(page.locator('.fd-curator-preview--desktop')).toContainText('the second workroom');
   await expect(page.locator('.fd-curator-preview--desktop')).toContainText('second reviewed reason');
   await page.getByRole('button', { name: /Step 1 Edition/ }).click();
   await page.locator('[data-curator-save]').click();
@@ -388,6 +446,9 @@ test('every repeatable row field edits accessibly through rerender, navigation, 
   await expect(page.locator('[data-curator-preview-status="desktop"]')).toContainText('Not reviewed');
   await page.getByRole('button', { name: 'Review desktop preview' }).click();
   await expect(page.locator('[data-curator-preview-status="desktop"]')).toContainText('Reviewed');
+  await expect(page.locator('.fd-curator-preview--desktop')).toContainText('Second resource');
+  await expect(page.locator('.fd-curator-preview--desktop')).not.toContainText('the second workroom');
+  await expect(page.locator('.fd-curator-preview--desktop')).not.toContainText('second reviewed reason');
   await page.getByRole('button', { name: /Step 1 Edition/ }).click();
   await page.locator('[data-curator-save]').click();
   await page.reload();
@@ -398,6 +459,11 @@ test('every repeatable row field edits accessibly through rerender, navigation, 
   await expect(page.getByLabel(/Contact row 1.*directory/i)).toHaveValue('');
   await expect(page.getByLabel(/Resource row 1.*reason/i)).toHaveValue('');
   await expect(page.getByLabel(/Resource row 1.*week/i)).toHaveValue('3');
+  await page.getByRole('button', { name: 'Review desktop preview' }).click();
+  await expect(page.locator('[data-curator-preview-status="desktop"]')).toContainText('Reviewed');
+  await expect(page.locator('.fd-curator-preview--desktop')).toContainText('Second resource');
+  await expect(page.locator('.fd-curator-preview--desktop')).not.toContainText('the second workroom');
+  await expect(page.locator('.fd-curator-preview--desktop')).not.toContainText('second reviewed reason');
   const secondSaved = await page.evaluate(() => JSON.parse(Object.entries(localStorage).find(([key]) => /_curator_draft_(?:ms3|resident)_v2$/.test(key))[1]));
   expect(typeof secondSaved.config.localPlan.resources[0].week).toBe('number'); expect(secondSaved.config.localPlan.resources[0].week).toBe(3);
 });

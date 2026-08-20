@@ -989,17 +989,20 @@ var FD_EDITION_CATALOG=(function(){
     },function(){ return resolveFailure(); });
   }
 
-  function matchesSite(snapshot,siteContext){
+  function siteSnapshot(snapshot,siteContext){
     var value;
-    if(!branded.has(snapshot)) return false;
+    if(!branded.has(snapshot)) return null;
     try{
       value=copy(siteContext);
-      if(!exact(value,['audience','pathId','coreRevision','localCatalogRevision','rotationEditionV2'],[])) return false;
-      if(!validAudience(value.audience)||value.pathId!==(value.audience==='ms3'?'ms3-six-week':'resident-four-week')) return false;
-      if(typeof value.coreRevision!=='string'||!/^[0-9a-f]{40}$/.test(value.coreRevision)) return false;
-      return value.audience===snapshot.audience&&value.localCatalogRevision===snapshot.revision&&value.rotationEditionV2===snapshot.rotationEditionV2;
-    }catch(ignore){ return false; }
+      if(!exact(value,['audience','pathId','coreRevision','localCatalogRevision','rotationEditionV2'],[])) return null;
+      if(!validAudience(value.audience)||value.pathId!==(value.audience==='ms3'?'ms3-six-week':'resident-four-week')) return null;
+      if(typeof value.coreRevision!=='string'||!CORE.test(value.coreRevision)||typeof value.localCatalogRevision!=='string'||!DIGEST.test(value.localCatalogRevision)||!oneOf(value.rotationEditionV2,['enabled','disabled'])) return null;
+      if(value.audience!==snapshot.audience||value.localCatalogRevision!==snapshot.revision||value.rotationEditionV2!==snapshot.rotationEditionV2) return null;
+      return deepFreeze({audience:value.audience,pathId:value.pathId,coreRevision:value.coreRevision,localCatalogRevision:value.localCatalogRevision,rotationEditionV2:value.rotationEditionV2});
+    }catch(ignore){ return null; }
   }
+
+  function matchesSite(snapshot,siteContext){ return siteSnapshot(snapshot,siteContext)!==null; }
 
   return {
     snapshot:prepare,
@@ -1007,6 +1010,7 @@ var FD_EDITION_CATALOG=(function(){
     resolve:resolve,
     trusted:function(snapshot){ return branded.has(snapshot); },
     enabled:function(snapshot){ return branded.has(snapshot)&&snapshot.rotationEditionV2==='enabled'; },
+    siteSnapshot:siteSnapshot,
     matchesSite:matchesSite
   };
 }());
@@ -1015,4 +1019,5 @@ var fdEditionCatalogRecord=FD_EDITION_CATALOG.record;
 var fdEditionCatalogResolve=FD_EDITION_CATALOG.resolve;
 var fdEditionCatalogTrusted=FD_EDITION_CATALOG.trusted;
 var fdEditionPublicationEnabled=FD_EDITION_CATALOG.enabled;
+var fdEditionCatalogSiteSnapshot=FD_EDITION_CATALOG.siteSnapshot;
 var fdEditionCatalogMatchesSite=FD_EDITION_CATALOG.matchesSite;

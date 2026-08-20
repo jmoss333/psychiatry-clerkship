@@ -8,7 +8,7 @@ const SOURCE = new URL('../13_Faculty_Resources/_automation/site_build/frontdoor
 const SHARED_PRESET_PLANS = JSON.parse(readFileSync(
   new URL('fixtures/rotation-edition-catalog/valid-local-preset-plans.json', import.meta.url), 'utf8',
 ));
-const API = ['fdEditionCatalogSnapshot', 'fdEditionCatalogRecord', 'fdEditionCatalogResolve', 'fdEditionPublicationEnabled'];
+const API = ['fdEditionCatalogSnapshot', 'fdEditionCatalogRecord', 'fdEditionCatalogResolve', 'fdEditionCatalogSiteSnapshot', 'fdEditionPublicationEnabled'];
 const CORE_REVISION = '1234567890abcdef1234567890abcdef12345678';
 const CURRENT_CORE_REVISION = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
 const LOCATION = 'location.example@v1';
@@ -494,6 +494,72 @@ test('valid complete MS3 and resident inputs produce exact closed labels, copy, 
     assert.match(crossYear.result.displayModel.firstDay.arrival.text, /12:00 AM/);
     assert.equal(crossYear.result.displayModel.typicalDay.summaryText, 'A typical day runs from 12:00 AM until about 12:00 PM.');
   }
+});
+
+testForAudiences('catalog site context returns one closure-owned frozen snapshot without ordinary Proxy reads', async (audience) => {
+  const fixture = await preparedFixture(audience);
+  const pathId = audience === 'ms3' ? 'ms3-six-week' : 'resident-four-week';
+  const input = { audience, pathId, coreRevision: CURRENT_CORE_REVISION, localCatalogRevision: fixture.prepared.snapshot.revision, rotationEditionV2: 'enabled' };
+  const trusted = fixture.F.fdEditionCatalogSiteSnapshot(fixture.prepared.snapshot, input);
+  assert.deepEqual(trusted, input);
+  assert.notEqual(trusted, input);
+  assert.equal(recursivelyFrozen(trusted), true);
+
+  let ordinaryGets = 0;
+  let ownKeysCalls = 0;
+  let descriptorCalls = 0;
+  let prototypeCalls = 0;
+  const stateful = new Proxy(input, {
+    ownKeys(target) {
+      ownKeysCalls += 1;
+      return Reflect.ownKeys(target);
+    },
+    getOwnPropertyDescriptor(target, key) {
+      descriptorCalls += 1;
+      return Reflect.getOwnPropertyDescriptor(target, key);
+    },
+    getPrototypeOf(target) {
+      prototypeCalls += 1;
+      return Reflect.getPrototypeOf(target);
+    },
+    get(target, key, receiver) {
+      ordinaryGets += 1;
+      if (key === 'audience') return audience === 'ms3' ? 'resident' : 'ms3';
+      if (key === 'pathId') return audience === 'ms3' ? 'resident-four-week' : 'ms3-six-week';
+      return Reflect.get(target, key, receiver);
+    },
+  });
+  assert.deepEqual(fixture.F.fdEditionCatalogSiteSnapshot(fixture.prepared.snapshot, stateful), input);
+  assert.equal(ordinaryGets, 0);
+  assert.equal(ownKeysCalls, 1, 'site context is captured from exactly one descriptor snapshot');
+  assert.equal(descriptorCalls, 5, 'each of the exact five fields is described once');
+  assert.equal(prototypeCalls, 1, 'the site context prototype is inspected once');
+
+  const disabledFixture = await preparedFixture(audience, 'disabled');
+  const disabledInput = { ...input, localCatalogRevision: disabledFixture.prepared.snapshot.revision, rotationEditionV2: 'disabled' };
+  const disabledTrusted = disabledFixture.F.fdEditionCatalogSiteSnapshot(disabledFixture.prepared.snapshot, disabledInput);
+  assert.deepEqual(disabledTrusted, disabledInput);
+  assert.equal(recursivelyFrozen(disabledTrusted), true);
+
+  const other = await preparedFixture(audience === 'ms3' ? 'resident' : 'ms3');
+  for (const [label, snapshot, context] of [
+    ['wrong branded audience', other.prepared.snapshot, input],
+    ['wrong same-audience path', fixture.prepared.snapshot, { ...input, pathId: audience === 'ms3' ? 'resident-four-week' : 'ms3-six-week' }],
+    ['malformed core revision', fixture.prepared.snapshot, { ...input, coreRevision: 'not-a-core-revision' }],
+    ['wrong revision', fixture.prepared.snapshot, { ...input, localCatalogRevision: `sha256-${'Z'.repeat(43)}` }],
+    ['wrong gate', fixture.prepared.snapshot, { ...input, rotationEditionV2: 'disabled' }],
+    ['snapshot clone', structuredClone(fixture.prepared.snapshot), input],
+    ['context clone with extra', fixture.prepared.snapshot, { ...structuredClone(input), extra: true }],
+  ]) {
+    assert.equal(fixture.F.fdEditionCatalogSiteSnapshot(snapshot, context), null, label);
+  }
+  let getterReads = 0;
+  const accessor = { ...input };
+  Object.defineProperty(accessor, 'audience', { enumerable: true, get() { getterReads += 1; return audience; } });
+  const revoked = Proxy.revocable(input, {}); revoked.revoke();
+  assert.equal(fixture.F.fdEditionCatalogSiteSnapshot(fixture.prepared.snapshot, accessor), null);
+  assert.equal(fixture.F.fdEditionCatalogSiteSnapshot(fixture.prepared.snapshot, revoked.proxy), null);
+  assert.equal(getterReads, 0);
 });
 
 testForAudiences('reference-set digest is the independently computed unique sorted complete graph and revision drift stays visible', async (audience) => {

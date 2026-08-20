@@ -14,11 +14,12 @@ const SOURCE = [
 ].join('\n');
 const CURATOR_HTML = readFileSync(new URL('../13_Faculty_Resources/Rotation_Curation/rotation-curator.html', import.meta.url), 'utf8');
 const API_NAMES = [
-  'fdEditionCatalogSnapshot', 'fdEditionCatalogMatchesSite', 'fdEditionPublicationEnabled', 'fdEditionCreateEnvelope', 'fdCuratorNewDraft', 'fdCuratorReduce',
+  'fdEditionCatalogSnapshot', 'fdEditionCatalogMatchesSite', 'fdEditionCatalogSiteSnapshot', 'fdEditionPublicationEnabled', 'fdEditionCreateEnvelope', 'fdCuratorNewDraft', 'fdCuratorReduce',
   'fdCuratorImportTransactions', 'fdCuratorCandidateConfig', 'fdCuratorPreparePreview',
   'fdCuratorPreviewMarkup', 'fdCuratorCompletePreview', 'fdCuratorRestoreDraft',
   'fdCuratorImportBackup',
   'fdCuratorPrepareGenerationResult', 'fdCuratorLocalCoverage', 'fdCuratorLocalMarkup',
+  'fdCuratorCurriculumMarkup',
   'fdCuratorObserveCurrentSite', 'fdCuratorCatalogOptions',
   'fdCuratorMount',
 ];
@@ -66,6 +67,13 @@ function index() {
     { n: 1, title: 'Week 1', items: [first] }, { n: 2, title: 'Week 2', items: [second] }, { n: 3, title: 'Week 3', items: [] },
     { n: 4, title: 'Week 4', items: [] }, { n: 5, title: 'Week 5', items: [] }, { n: 6, title: 'Week 6', items: [] },
   ], byRef: { 'first.md': first, 'second.md': second }, columns: [{ name: 'Library', accent: 'teal', items: [first, second] }] };
+}
+function residentContext(rotationEditionV2 = 'enabled') {
+  return { audience: 'resident', pathId: 'resident-four-week', coreRevision: CORE_REVISION, localCatalogRevision: CATALOG_REVISION, rotationEditionV2 };
+}
+function residentIndex() {
+  const value = index();
+  return { ...value, path: { id: 'resident-four-week', weekCount: 4 }, weeks: value.weeks.slice(0, 4) };
 }
 function canonical(value) {
   if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
@@ -130,6 +138,8 @@ const SNAPSHOT = await makeSnapshot();
 const DISABLED_SNAPSHOT = await makeSnapshot('disabled');
 const EMPTY_DISABLED_SNAPSHOT = await makeSnapshot('disabled', false);
 const RESIDENT_SNAPSHOT = await makeSnapshot('enabled', true, 'resident');
+const RESIDENT_DISABLED_SNAPSHOT = await makeSnapshot('disabled', true, 'resident');
+const RESIDENT_EMPTY_DISABLED_SNAPSHOT = await makeSnapshot('disabled', false, 'resident');
 function reduce(draft, action, transactions = null, site = context()) {
   return fn('fdCuratorReduce')(draft, action, index(), site, SNAPSHOT, '2026-08-19', transactions);
 }
@@ -457,6 +467,61 @@ test('live imported lineage brand survives reducer edits but serialization and c
   assert.equal(replacementResult.ok, false); assert.equal(replacementResult.errors[0].code, 'CURATOR_BASE_REIMPORT_REQUIRED');
 });
 
+test('lineage authority stays sealed across replacement, observation, clone, valid edit, and explicit re-import transitions', async () => {
+  const { draft: persisted, validation } = await persistedDraftWithBase();
+  async function candidateStatus(state, label, expectedOk, expectedEdition, site = context()) {
+    const result = await fn('fdCuratorCandidateConfig')(state, index(), SNAPSHOT, site, validation, webcrypto.subtle);
+    assert.equal(result.ok, expectedOk, label);
+    if (expectedOk) assert.equal(result.config.editionNumber, expectedEdition, label);
+    else assert.equal(result.errors[0].code, 'CURATOR_BASE_REIMPORT_REQUIRED', label);
+    return result;
+  }
+
+  let replaced = await importEnvelope(persisted.publication.baseEnvelope);
+  await candidateStatus(replaced, 'import', true, 1);
+  replaced.publication.baseEnvelope = structuredClone(replaced.publication.baseEnvelope);
+  await candidateStatus(replaced, 'import -> replace', false);
+  const replacementStep = reduce(replaced, { type: 'SET_STEP', step: 2 });
+  assert.notEqual(replacementStep, replaced);
+  await candidateStatus(replacementStep, 'import -> replace -> nonsemantic step clone', false);
+  const replacementAffirmation = reduce(replaced, { type: 'SET_AFFIRMATION', name: 'publicSafe', value: true });
+  assert.notEqual(replacementAffirmation, replaced);
+  await candidateStatus(replacementAffirmation, 'import -> replace -> nonsemantic affirmation clone', false);
+  const replacementEdit = reduce(replaced, { type: 'RESOURCE_UPDATE', instanceId: 'local:resource:1', field: 'priority', value: 'required' });
+  assert.notEqual(replacementEdit, replaced);
+  await candidateStatus(replacementEdit, 'import -> replace -> edit', false);
+
+  let observedSource = await importEnvelope(persisted.publication.baseEnvelope);
+  observedSource.publication.baseEnvelope = structuredClone(observedSource.publication.baseEnvelope);
+  observedSource.site.coreRevision = OLD_CORE_REVISION;
+  await candidateStatus(observedSource, 'import -> replace before revision observation', false, undefined, context(OLD_CORE_REVISION));
+  const observed = fn('fdCuratorObserveCurrentSite')(observedSource, index(), context());
+  assert.notEqual(observed, observedSource);
+  await candidateStatus(observed, 'import -> replace -> revision observe', false);
+
+  for (const [label, clone] of [
+    ['structured clone', structuredClone(await importEnvelope(persisted.publication.baseEnvelope))],
+    ['JSON reparse', JSON.parse(JSON.stringify(await importEnvelope(persisted.publication.baseEnvelope)))],
+  ]) {
+    await candidateStatus(clone, `import -> ${label}`, false);
+    const edit = reduce(clone, { type: 'RESOURCE_UPDATE', instanceId: 'local:resource:1', field: 'priority', value: 'required' });
+    assert.notEqual(edit, clone, label);
+    await candidateStatus(edit, `import -> ${label} -> edit`, false);
+  }
+
+  const live = await importEnvelope(persisted.publication.baseEnvelope);
+  const liveEdit = reduce(live, { type: 'RESOURCE_UPDATE', instanceId: 'local:resource:1', field: 'priority', value: 'required' });
+  await candidateStatus(liveEdit, 'import -> valid edit', true, 2);
+
+  const restored = await fn('fdCuratorRestoreDraft')(JSON.stringify(persisted), index(), context(), SNAPSHOT, validation, webcrypto.subtle);
+  assert.equal(restored.code, 'CURATOR_BASE_REIMPORT_REQUIRED');
+  await candidateStatus(restored.state, 'persisted blocked', false);
+  const reimported = await importEnvelope(persisted.publication.baseEnvelope, restored.state);
+  await candidateStatus(reimported, 'persisted blocked -> explicit re-import', true, 1);
+  const reimportedEdit = reduce(reimported, { type: 'RESOURCE_UPDATE', instanceId: 'local:resource:1', field: 'priority', value: 'required' });
+  await candidateStatus(reimportedEdit, 'persisted blocked -> explicit re-import -> edit', true, 2);
+});
+
 test('candidate derivation rejects accessor and revoked base envelopes without touching private getters', async () => {
   const { draft, validation } = await persistedDraftWithBase(); let reads = 0;
   const accessorBase = { format: 'cw-rotation-edition', schemaVersion: 2, digest: draft.publication.baseEnvelope.digest };
@@ -684,6 +749,9 @@ test('every saved repeatable row renders complete accessible field-bound UPDATE 
   ]) draft = reduce(draft, action);
   const candidate = await fn('fdCuratorCandidateConfig')(draft, index(), SNAPSHOT, context(), { mode: 'builder', generationDate: '2026-08-19' }, webcrypto.subtle);
   const markup = fn('fdCuratorLocalMarkup')(draft, SNAPSHOT, candidate.displayModel);
+  function rowEditors(category) {
+    return [...markup.matchAll(new RegExp(`<fieldset[^>]*data-curator-row-editor="${category}"[\\s\\S]*?<\\/fieldset>`, 'g'))].map((match) => match[0]);
+  }
   const expected = {
     SCHEDULE_EVENT_UPDATE: ['daySetKey', 'startTime', 'endTime', 'activityKey', 'placeKey', 'priority'],
     ACCESS_UPDATE: ['itemKey', 'dueKey', 'linkKey'],
@@ -700,16 +768,16 @@ test('every saved repeatable row renders complete accessible field-bound UPDATE 
       assert.match(markup, new RegExp(`data-curator-row-update="${action}"[^>]*data-curator-update-field="${field}"[^>]*aria-label="[^"]+(?:${labels[field]})`, 'i'), `${action}.${field}`);
     }
   }
-  const scheduleOne = markup.match(/<fieldset[^>]*data-curator-row-editor="schedule"[^>]*data-instance-id="local:schedule:1"[\s\S]*?<\/fieldset>/)[0];
+  const [scheduleOne, scheduleTwo] = rowEditors('schedule');
   assert.match(scheduleOne, /data-curator-update-field="startTime"[^>]*value="08:30"/);
   assert.match(scheduleOne, /data-curator-update-field="endTime"[^>]*value="09:30"/);
   assert.match(scheduleOne, /<option value="place\.workroom@v1" selected>/);
   assert.match(scheduleOne, /<option value="required" selected>/);
-  const access = markup.match(/<fieldset[^>]*data-curator-row-editor="accessItems"[\s\S]*?<\/fieldset>/)[0];
+  const [access, accessTwo] = rowEditors('accessItems');
   assert.match(access, /<option value="choice\.access-item@v1" selected>/);
   assert.match(access, /<option value="choice\.due-point@v1" selected>/);
   assert.match(access, /<option value="link\.access@v1" selected>/);
-  const resource = markup.match(/<fieldset[^>]*data-curator-row-editor="resources"[\s\S]*?<\/fieldset>/)[0];
+  const [resource, resourceTwo] = rowEditors('resources');
   assert.match(resource, /data-curator-update-field="week"[^>]*value="1"/);
   assert.match(resource, /<option value="choice\.reason@v1" selected>/);
   for (const [action, rowCount] of Object.entries({ SCHEDULE_EVENT_UPDATE: 2, ACCESS_UPDATE: 2, CONTACT_UPDATE: 2, CHECKLIST_UPDATE: 2, RESOURCE_UPDATE: 2 })) {
@@ -721,29 +789,157 @@ test('every saved repeatable row renders complete accessible field-bound UPDATE 
     const selectMarkup = fieldset.match(new RegExp(`<select[^>]*data-curator-update-field="${field}"[\\s\\S]*?<\\/select>`))[0];
     return [...selectMarkup.matchAll(/<option value="([^"]*)"/g)].map((match) => match[1]);
   }
-  assert.deepEqual(optionValues(scheduleOne, 'daySetKey'), ['', choiceKey('daySet')]);
-  assert.deepEqual(optionValues(scheduleOne, 'activityKey'), ['', choiceKey('activity')]);
+  function emptyOption(fieldset, field) {
+    const selectMarkup = fieldset.match(new RegExp(`<select[^>]*data-curator-update-field="${field}"[\\s\\S]*?<\\/select>`))[0];
+    return [...selectMarkup.matchAll(/<option value="">([^<]*)<\/option>/g)].map((match) => match[1]);
+  }
+  function selectedValues(fieldset, field) {
+    const selectMarkup = fieldset.match(new RegExp(`<select[^>]*data-curator-update-field="${field}"[\\s\\S]*?<\\/select>`))[0];
+    const options = [...selectMarkup.matchAll(/<option value="([^"]*)"([^>]*)>/g)].map((match) => ({ value: match[1], selected: /(?:^|\s)selected(?:\s|$)/.test(match[2]) }));
+    const selected = options.filter((option) => option.selected).map((option) => option.value);
+    return selected.length ? selected : [options[0].value];
+  }
+  assert.deepEqual(optionValues(scheduleOne, 'daySetKey'), [choiceKey('daySet')]);
+  assert.deepEqual(optionValues(scheduleOne, 'activityKey'), [choiceKey('activity')]);
   assert.deepEqual(optionValues(scheduleOne, 'placeKey'), ['', 'place.workroom@v1']);
+  assert.deepEqual(optionValues(scheduleOne, 'priority'), ['required', 'recommended', 'optional']);
+  assert.deepEqual(optionValues(access, 'itemKey'), [choiceKey('accessItem')]);
+  assert.deepEqual(optionValues(access, 'dueKey'), [choiceKey('duePoint')]);
   assert.deepEqual(optionValues(access, 'linkKey'), ['', 'link.access@v1', 'link.operational@v1', 'link.parking@v1']);
-  assert.deepEqual(optionValues(resource, 'linkKey'), ['', 'link.access@v1', 'link.arrival@v1', 'link.attendance@v1', 'link.clinical@v1', 'link.directory@v1', 'link.documentation@v1', 'link.feedback@v1', 'link.operational@v1', 'link.orientation@v1', 'link.parking@v1']);
+  const [contact, contactTwo] = rowEditors('contacts');
+  assert.deepEqual(optionValues(contact, 'roleKey'), [choiceKey('role')]);
+  assert.deepEqual(optionValues(contact, 'linkKey'), ['', 'link.directory@v1']);
+  const [checklist, checklistTwo] = rowEditors('checklistItems');
+  assert.deepEqual(optionValues(checklist, 'itemKey'), [choiceKey('checklist')]);
+  assert.deepEqual(optionValues(checklist, 'priority'), ['required', 'recommended', 'optional']);
+  assert.deepEqual(optionValues(resource, 'linkKey'), ['link.access@v1', 'link.arrival@v1', 'link.attendance@v1', 'link.clinical@v1', 'link.directory@v1', 'link.documentation@v1', 'link.feedback@v1', 'link.operational@v1', 'link.orientation@v1', 'link.parking@v1']);
+  assert.deepEqual(optionValues(resource, 'priority'), ['required', 'recommended', 'optional']);
+  assert.deepEqual(optionValues(resource, 'reasonKey'), ['', choiceKey('reason')]);
+  assert.deepEqual(emptyOption(scheduleOne, 'placeKey'), ['No place']);
+  assert.deepEqual(emptyOption(access, 'linkKey'), ['No link']);
+  assert.deepEqual(emptyOption(contact, 'linkKey'), ['No directory']);
+  assert.deepEqual(emptyOption(resource, 'reasonKey'), ['No reason']);
+  for (const [first, second, fields] of [
+    [scheduleOne, scheduleTwo, [['daySetKey', [choiceKey('daySet')]], ['activityKey', [choiceKey('activity')]], ['placeKey', ['', 'place.workroom@v1']], ['priority', ['required', 'recommended', 'optional']]]],
+    [access, accessTwo, [['itemKey', [choiceKey('accessItem')]], ['dueKey', [choiceKey('duePoint')]], ['linkKey', ['', 'link.access@v1', 'link.operational@v1', 'link.parking@v1']]]],
+    [contact, contactTwo, [['roleKey', [choiceKey('role')]], ['linkKey', ['', 'link.directory@v1']]]],
+    [checklist, checklistTwo, [['itemKey', [choiceKey('checklist')]], ['priority', ['required', 'recommended', 'optional']]]],
+    [resource, resourceTwo, [['linkKey', ['link.access@v1', 'link.arrival@v1', 'link.attendance@v1', 'link.clinical@v1', 'link.directory@v1', 'link.documentation@v1', 'link.feedback@v1', 'link.operational@v1', 'link.orientation@v1', 'link.parking@v1']], ['priority', ['required', 'recommended', 'optional']], ['reasonKey', ['', choiceKey('reason')]]]],
+  ]) for (const [field, expectedOptions] of fields) {
+    assert.deepEqual(optionValues(first, field), expectedOptions, `row 1 ${field}`);
+    assert.deepEqual(optionValues(second, field), expectedOptions, `row 2 ${field}`);
+  }
+  assert.deepEqual(emptyOption(scheduleTwo, 'placeKey'), ['No place']);
+  assert.deepEqual(emptyOption(accessTwo, 'linkKey'), ['No link']);
+  assert.deepEqual(emptyOption(contactTwo, 'linkKey'), ['No directory']);
+  assert.deepEqual(emptyOption(resourceTwo, 'reasonKey'), ['No reason']);
+  for (const [fieldset, field, expected, label] of [
+    [scheduleOne, 'daySetKey', [choiceKey('daySet')], 'schedule 1 day'], [scheduleOne, 'activityKey', [choiceKey('activity')], 'schedule 1 activity'], [scheduleOne, 'placeKey', ['place.workroom@v1'], 'schedule 1 place'], [scheduleOne, 'priority', ['required'], 'schedule 1 priority'],
+    [scheduleTwo, 'daySetKey', [choiceKey('daySet')], 'schedule 2 day'], [scheduleTwo, 'activityKey', [choiceKey('activity')], 'schedule 2 activity'], [scheduleTwo, 'placeKey', [''], 'schedule 2 place'], [scheduleTwo, 'priority', ['optional'], 'schedule 2 priority'],
+    [access, 'itemKey', [choiceKey('accessItem')], 'access 1 item'], [access, 'dueKey', [choiceKey('duePoint')], 'access 1 due'], [access, 'linkKey', ['link.access@v1'], 'access 1 link'],
+    [accessTwo, 'itemKey', [choiceKey('accessItem')], 'access 2 item'], [accessTwo, 'dueKey', [choiceKey('duePoint')], 'access 2 due'], [accessTwo, 'linkKey', [''], 'access 2 link'],
+    [contact, 'roleKey', [choiceKey('role')], 'contact 1 role'], [contact, 'linkKey', ['link.directory@v1'], 'contact 1 link'],
+    [contactTwo, 'roleKey', [choiceKey('role')], 'contact 2 role'], [contactTwo, 'linkKey', [''], 'contact 2 link'],
+    [checklist, 'itemKey', [choiceKey('checklist')], 'checklist 1 item'], [checklist, 'priority', ['recommended'], 'checklist 1 priority'],
+    [checklistTwo, 'itemKey', [choiceKey('checklist')], 'checklist 2 item'], [checklistTwo, 'priority', ['optional'], 'checklist 2 priority'],
+    [resource, 'linkKey', ['link.orientation@v1'], 'resource 1 link'], [resource, 'priority', ['recommended'], 'resource 1 priority'], [resource, 'reasonKey', [choiceKey('reason')], 'resource 1 reason'],
+    [resourceTwo, 'linkKey', ['link.clinical@v1'], 'resource 2 link'], [resourceTwo, 'priority', ['optional'], 'resource 2 priority'], [resourceTwo, 'reasonKey', [''], 'resource 2 reason'],
+  ]) assert.deepEqual(selectedValues(fieldset, field), expected, label);
   assert.doesNotMatch(markup, /data-curator-row-update="[^"]+"[^>]*(?:type="text"|type="url")/);
+});
+
+test('required singleton and ADD option contracts, defaults, and exact optional labels remain faithful', async () => {
+  const draft = reduce(completedDraft(), { type: 'LOCAL_APPLY_PRESET', presetKey: 'preset.complete@v1' });
+  const candidate = await fn('fdCuratorCandidateConfig')(draft, index(), SNAPSHOT, context(), { mode: 'builder', generationDate: '2026-08-19' }, webcrypto.subtle);
+  const markup = fn('fdCuratorLocalMarkup')(draft, SNAPSHOT, candidate.displayModel);
+  function article(category) { return markup.match(new RegExp(`<article id="fd-curator-${category}"[\\s\\S]*?<\\/article>`))[0]; }
+  function values(category, field) {
+    const select = article(category).match(new RegExp(`<select[^>]*data-curator-field="${field}"[\\s\\S]*?<\\/select>`))[0];
+    return [...select.matchAll(/<option value="([^"]*)"/g)].map((match) => match[1]);
+  }
+  function selectMarkup(category, field) {
+    return article(category).match(new RegExp(`<select[^>]*data-curator-field="${field}"[\\s\\S]*?<\\/select>`))[0];
+  }
+  function selectedValues(category, field) {
+    const select = selectMarkup(category, field);
+    const options = [...select.matchAll(/<option value="([^"]*)"([^>]*)>/g)].map((match) => ({ value: match[1], selected: /(?:^|\s)selected(?:\s|$)/.test(match[2]) }));
+    const selected = options.filter((option) => option.selected).map((option) => option.value);
+    return selected.length ? selected : [options[0].value];
+  }
+  function emptyLabels(category, field) {
+    return [...selectMarkup(category, field).matchAll(/<option value="">([^<]*)<\/option>/g)].map((match) => match[1]);
+  }
+  for (const [category, field, expected] of [
+    ['arrival', 'checkInRoleKey', [choiceKey('role')]], ['arrival', 'placeKey', ['place.workroom@v1']], ['arrival', 'linkKey', ['', 'link.arrival@v1']],
+    ['accessItems', 'itemKey', [choiceKey('accessItem')]], ['accessItems', 'dueKey', [choiceKey('duePoint')]], ['accessItems', 'linkKey', ['', 'link.access@v1', 'link.operational@v1', 'link.parking@v1']],
+    ['contacts', 'roleKey', [choiceKey('role')]], ['contacts', 'linkKey', ['', 'link.directory@v1']],
+    ['checklistItems', 'itemKey', [choiceKey('checklist')]], ['checklistItems', 'priority', ['required', 'recommended', 'optional']],
+    ['schedule', 'daySetKey', [choiceKey('daySet')]], ['schedule', 'activityKey', [choiceKey('activity')]], ['schedule', 'placeKey', ['', 'place.workroom@v1']], ['schedule', 'priority', ['required', 'recommended', 'optional']],
+    ['resources', 'linkKey', ['link.access@v1', 'link.arrival@v1', 'link.attendance@v1', 'link.clinical@v1', 'link.directory@v1', 'link.documentation@v1', 'link.feedback@v1', 'link.operational@v1', 'link.orientation@v1', 'link.parking@v1']],
+    ['resources', 'priority', ['required', 'recommended', 'optional']], ['resources', 'reasonKey', ['', choiceKey('reason')]],
+    ['rounds', 'preparationKey', [choiceKey('roundsPreparation')]], ['rounds', 'participationKey', [choiceKey('roundsParticipation')]], ['rounds', 'followUpKey', [choiceKey('roundsFollowUp')]],
+    ['presentation', 'formatKey', [choiceKey('presentationFormat')]], ['presentation', 'timingKey', [choiceKey('presentationTiming')]], ['presentation', 'elementKeys', ['choice.presentation-element-two@v1', choiceKey('presentationElement')]],
+    ['documentation', 'workflowKey', [choiceKey('documentationWorkflow')]], ['documentation', 'timingKey', [choiceKey('documentationTiming')]], ['documentation', 'policyLinkKey', ['', 'link.documentation@v1']],
+    ['attendance', 'eventInstanceIds', ['local:schedule:1', 'local:schedule:2']], ['attendance', 'absenceRoleKey', [choiceKey('role')]], ['attendance', 'policyLinkKey', ['', 'link.attendance@v1']],
+    ['feedback', 'cadenceKey', [choiceKey('feedbackCadence')]], ['feedback', 'initiatorKey', [choiceKey('feedbackInitiator')]], ['feedback', 'settingKey', [choiceKey('feedbackSetting')]],
+  ]) assert.deepEqual(values(category, field), expected, `${category}.${field}`);
+  for (const [category, field, expected] of [
+    ['arrival', 'checkInRoleKey', [choiceKey('role')]], ['arrival', 'placeKey', ['place.workroom@v1']], ['arrival', 'linkKey', ['link.arrival@v1']],
+    ['accessItems', 'itemKey', [choiceKey('accessItem')]], ['accessItems', 'dueKey', [choiceKey('duePoint')]], ['accessItems', 'linkKey', ['']],
+    ['contacts', 'roleKey', [choiceKey('role')]], ['contacts', 'linkKey', ['']],
+    ['checklistItems', 'itemKey', [choiceKey('checklist')]], ['checklistItems', 'priority', ['recommended']],
+    ['schedule', 'daySetKey', [choiceKey('daySet')]], ['schedule', 'activityKey', [choiceKey('activity')]], ['schedule', 'placeKey', ['']], ['schedule', 'priority', ['recommended']],
+    ['resources', 'linkKey', ['link.access@v1']], ['resources', 'priority', ['recommended']], ['resources', 'reasonKey', ['']],
+    ['rounds', 'preparationKey', [choiceKey('roundsPreparation')]], ['rounds', 'participationKey', [choiceKey('roundsParticipation')]], ['rounds', 'followUpKey', [choiceKey('roundsFollowUp')]],
+    ['presentation', 'formatKey', [choiceKey('presentationFormat')]], ['presentation', 'timingKey', [choiceKey('presentationTiming')]], ['presentation', 'elementKeys', [choiceKey('presentationElement')]],
+    ['documentation', 'workflowKey', [choiceKey('documentationWorkflow')]], ['documentation', 'timingKey', [choiceKey('documentationTiming')]], ['documentation', 'policyLinkKey', ['link.documentation@v1']],
+    ['attendance', 'eventInstanceIds', ['local:schedule:1']], ['attendance', 'absenceRoleKey', [choiceKey('role')]], ['attendance', 'policyLinkKey', ['link.attendance@v1']],
+    ['feedback', 'cadenceKey', [choiceKey('feedbackCadence')]], ['feedback', 'initiatorKey', [choiceKey('feedbackInitiator')]], ['feedback', 'settingKey', [choiceKey('feedbackSetting')]],
+  ]) assert.deepEqual(selectedValues(category, field), expected, `${category}.${field} selected: ${selectMarkup(category, field)}`);
+  for (const [category, field, label] of [
+    ['arrival', 'linkKey', 'No link'], ['accessItems', 'linkKey', 'No link'], ['contacts', 'linkKey', 'No link'],
+    ['schedule', 'placeKey', 'No place'], ['resources', 'reasonKey', 'No reason'],
+    ['documentation', 'policyLinkKey', 'No policy'], ['attendance', 'policyLinkKey', 'No policy'],
+  ]) assert.deepEqual(emptyLabels(category, field), [label], `${category}.${field} exact blank label`);
+});
+
+test('curriculum placement required option and reviewed reason have exact blank contracts', () => {
+  const draft = completedDraft();
+  const markup = fn('fdCuratorCurriculumMarkup')(draft, index(), SNAPSHOT, '');
+  const priorities = [...markup.matchAll(/<select data-curator-path-priority="[^"]+"[^>]*>([\s\S]*?)<\/select>/g)].map((match) => match[1]);
+  const reasons = [...markup.matchAll(/<select data-curator-path-reason="[^"]+"[^>]*>([\s\S]*?)<\/select>/g)].map((match) => match[1]);
+  assert.ok(priorities.length > 0); assert.equal(reasons.length, priorities.length);
+  for (const options of priorities) {
+    assert.deepEqual([...options.matchAll(/<option value="([^"]*)"/g)].map((match) => match[1]), ['required', 'recommended', 'optional']);
+    assert.equal((options.match(/<option value="">/g) || []).length, 0);
+    assert.deepEqual([...options.matchAll(/<option value="([^"]*)" selected>/g)].map((match) => match[1]), ['recommended']);
+  }
+  for (const options of reasons) {
+    assert.deepEqual([...options.matchAll(/<option value="([^"]*)"/g)].map((match) => match[1]), ['', choiceKey('reason')]);
+    assert.deepEqual([...options.matchAll(/<option value="">([^<]*)<\/option>/g)].map((match) => match[1]), ['No reviewed reason']);
+    assert.equal(/<option value="" selected>/.test(options), false, 'first exact blank is selected by browser semantics');
+  }
 });
 
 test('valid disabled catalogs mount useful curator drafting while malformed snapshots remain storage-dark', async () => {
   assert.equal(fn('fdEditionPublicationEnabled')(DISABLED_SNAPSHOT), false);
   assert.equal(fn('fdEditionPublicationEnabled')(EMPTY_DISABLED_SNAPSHOT), false);
-  for (const [label, snapshot, expected] of [
-    ['enabled', SNAPSHOT, /Example Unit/],
-    ['populated', DISABLED_SNAPSHOT, /Example Unit/],
-    ['empty', EMPTY_DISABLED_SNAPSHOT, /No reviewed catalog records are available/],
+  assert.equal(fn('fdEditionPublicationEnabled')(RESIDENT_DISABLED_SNAPSHOT), false);
+  assert.equal(fn('fdEditionPublicationEnabled')(RESIDENT_EMPTY_DISABLED_SNAPSHOT), false);
+  for (const [label, siteIndex, site, snapshot, expected, key] of [
+    ['ms3 enabled', index(), context(), SNAPSHOT, /Example Unit/, 'cw_curator_draft_ms3_v2'],
+    ['ms3 populated disabled', index(), context(CORE_REVISION, CATALOG_REVISION, 'disabled'), DISABLED_SNAPSHOT, /Example Unit/, 'cw_curator_draft_ms3_v2'],
+    ['ms3 empty disabled', index(), context(CORE_REVISION, CATALOG_REVISION, 'disabled'), EMPTY_DISABLED_SNAPSHOT, /No reviewed catalog records are available/, 'cw_curator_draft_ms3_v2'],
+    ['resident enabled', residentIndex(), residentContext(), RESIDENT_SNAPSHOT, /Example Unit/, 'rp_curator_draft_resident_v2'],
+    ['resident populated disabled', residentIndex(), residentContext('disabled'), RESIDENT_DISABLED_SNAPSHOT, /Example Unit/, 'rp_curator_draft_resident_v2'],
+    ['resident empty disabled', residentIndex(), residentContext('disabled'), RESIDENT_EMPTY_DISABLED_SNAPSHOT, /No reviewed catalog records are available/, 'rp_curator_draft_resident_v2'],
   ]) {
     const calls = [], editor = { innerHTML: '' };
     const root = { querySelector(selector) { return selector === '#curatorEditorMount' ? editor : null; }, querySelectorAll() { return []; }, addEventListener(type) { calls.push(['listen', type]); } };
     const storage = { getItem(key) { calls.push(['get', key]); return null; }, setItem(key) { calls.push(['set', key]); } };
-    const gate = label === 'enabled' ? 'enabled' : 'disabled';
-    const app = await fn('fdCuratorMount')(root, index(), context(CORE_REVISION, CATALOG_REVISION, gate), snapshot, '2026-08-19', { storage, subtle: webcrypto.subtle });
+    const app = await fn('fdCuratorMount')(root, siteIndex, site, snapshot, '2026-08-19', { storage, subtle: webcrypto.subtle });
     assert.equal(app.ok, true, label); assert.match(editor.innerHTML, expected, label);
-    assert.deepEqual(calls, [['get', 'cw_curator_draft_ms3_v2'], ['listen', 'click'], ['listen', 'change'], ['listen', 'input']], label);
+    assert.deepEqual(calls, [['get', key], ['listen', 'click'], ['listen', 'change'], ['listen', 'input']], label);
     assert.deepEqual(storage.writes || [], [], label);
   }
   for (const forged of [{}, structuredClone(DISABLED_SNAPSHOT)]) {
@@ -757,8 +953,12 @@ test('exact branded catalog and descriptor-safe context must match before storag
   const unavailable = '<section class="fd-curator-unavailable" role="alert"><h2>Rotation edition catalog unavailable</h2><p>The reviewed catalog could not be prepared. No draft was read or changed.</p></section>';
   assert.equal(fn('fdEditionCatalogMatchesSite')(SNAPSHOT, context()), true);
   assert.equal(fn('fdEditionCatalogMatchesSite')(SNAPSHOT, structuredClone(context())), true);
+  const trustedSite = fn('fdEditionCatalogSiteSnapshot')(SNAPSHOT, context());
+  assert.deepEqual(trustedSite, context()); assert.notEqual(trustedSite, context()); assert.equal(Object.isFrozen(trustedSite), true);
   const mismatches = [
     ['wrong audience', RESIDENT_SNAPSHOT, context()],
+    ['wrong same-audience path', SNAPSHOT, { ...context(), pathId: 'resident-four-week' }],
+    ['malformed core revision', SNAPSHOT, { ...context(), coreRevision: 'not-a-core-revision' }],
     ['wrong revision', SNAPSHOT, context(CORE_REVISION, OLD_CATALOG_REVISION, 'enabled')],
     ['wrong gate', DISABLED_SNAPSHOT, context(CORE_REVISION, CATALOG_REVISION, 'enabled')],
     ['snapshot clone', structuredClone(SNAPSHOT), context()],
@@ -780,6 +980,35 @@ test('exact branded catalog and descriptor-safe context must match before storag
     assert.equal(root.innerHTML, unavailable, label); assert.doesNotMatch(root.innerHTML, /Example Unit|Synthetic|location\.|@v1/, label);
   }
   assert.equal(getterReads, 0);
+
+  let ordinaryGets = 0;
+  let ownKeysCalls = 0;
+  let descriptorCalls = 0;
+  let prototypeCalls = 0;
+  const advertised = context();
+  const stateful = new Proxy(advertised, {
+    ownKeys(target) { ownKeysCalls += 1; return Reflect.ownKeys(target); },
+    getOwnPropertyDescriptor(target, key) { descriptorCalls += 1; return Reflect.getOwnPropertyDescriptor(target, key); },
+    getPrototypeOf(target) { prototypeCalls += 1; return Reflect.getPrototypeOf(target); },
+    get(target, key, receiver) {
+      ordinaryGets += 1;
+      if (key === 'audience') return 'resident';
+      if (key === 'pathId') return 'resident-four-week';
+      return Reflect.get(target, key, receiver);
+    },
+  });
+  const calls = [], editor = { innerHTML: '' };
+  const root = { querySelector(selector) { return selector === '#curatorEditorMount' ? editor : null; }, querySelectorAll() { return []; }, addEventListener() {} };
+  const storage = { getItem(key) { calls.push(['get', key]); return null; }, setItem(key) { calls.push(['set', key]); }, removeItem(key) { calls.push(['remove', key]); } };
+  const mounted = await fn('fdCuratorMount')(root, index(), stateful, SNAPSHOT, '2026-08-19', { storage, subtle: webcrypto.subtle });
+  assert.equal(mounted.ok, true);
+  assert.equal(mounted.dispatch({ type: 'SET_STEP', step: 4 }).changed, true);
+  assert.equal(mounted.save(), true);
+  await new Promise((resolve) => setImmediate(resolve));
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(ordinaryGets, 0); assert.equal(ownKeysCalls, 1); assert.equal(descriptorCalls, 5); assert.equal(prototypeCalls, 1);
+  assert.deepEqual(calls, [['get', 'cw_curator_draft_ms3_v2'], ['set', 'cw_curator_draft_ms3_v2']]);
+  assert.match(editor.innerHTML, /Structured local details/); assert.doesNotMatch(editor.innerHTML, /resident-four-week|rp_rotation/);
 });
 
 test('populated disabled governance permits structured drafting and exact preview but keeps publication and learner acceptance closed', async () => {
