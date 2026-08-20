@@ -1,0 +1,17 @@
+{
+  "format": "cw-rotation-edition",
+  "schemaVersion": 2,
+  "config": {
+    "audience": "ms3",
+    "pathId": "ms3-six-week",
+    "editionNumber": 1,
+    "createdAgainstCoreRevision": "503b42d2538d525c0a3bbf0e1767333e5e617df4",
+    "createdAgainstLocalCatalogRevision": "sha256-BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+    "context": {"trainingLocationKey": "location.example-unit@v1", "curatorProfileKey": "curator.example-attending@v1", "rotationStart": "2026-09-01", "rotationEnd": "2026-10-12", "editionCheckedOn": "2026-08-19"},
+    "phraseSetKey": "phrases.example@v1",
+    "pathItems": [{"instanceId": "core:library/example:1", "ref": "library/example", "week": 1, "order": 1, "priority": "required"}],
+    "localPlan": {"resources": [{"instanceId": "local:resource:1", "linkKey": "http://unsafe.example/resource", "priority": "recommended", "week": 1}]},
+    "changeSummary": {"kindCodes": ["initial"], "changedItemCount": 0}
+  },
+  "digest": "sha256-b06zyAfiw5Ft1tA1SOptperbXMfZZDdNDWz2A79irxg"
+}

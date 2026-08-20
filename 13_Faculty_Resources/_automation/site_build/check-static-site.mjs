@@ -30,6 +30,9 @@
  *   - a shipped file that is a Git-LFS pointer stub instead of real bytes
  *   - a duplicate (or missing) item id in question_bank.json
  *   - a relative/root-local <script src> whose shipped target is absent
+ *   - rotation-curator.html loads a remote script/image, exposes a browser network
+ *     transport path, or ships more than the one locally vendored QR implementation
+ *   - the vendored QR implementation signature appears in any other shipped HTML
  *   - a live shell (index.html) literal tool map (PRACTICE_LABELS/
  *     PRACTICE_PAGE_TOOLS) referencing a tool file the build doesn't ship
  *   - a `?page=`/`?tool=` reference in shipped content/*.md that doesn't resolve
@@ -67,6 +70,79 @@ const readJSON = (f) => JSON.parse(readFileSync(f, 'utf8'));
 const listHtml = (dir) => existsSync(dir) ? readdirSync(dir).filter(f => f.endsWith('.html')) : [];
 const DOSE = /\b\d+(?:\.\d+)?\s?(?:mg|mcg|mL|mg\/kg)\b/i;
 const CDN_HOST = /\b(?:cdnjs\.cloudflare\.com|unpkg\.com|jsdelivr\.net)\b/i;
+const DOSE_WAIVER_PREFIX = 'QA-ALLOW-DOSE';
+const QR_VENDOR_SIGNATURE = 'var qrcode = function()';
+const QR_VENDOR_ALLOWED_HTML = 'tools/rotation-curator.html';
+
+function tagAttributes(tag) {
+  const values = [];
+  for (const attribute of tag.matchAll(/([^\s"'<>\/=]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>]+))/g)) {
+    values.push({ name: attribute[1].toLowerCase(), value: attribute[2] ?? attribute[3] ?? attribute[4] ?? '' });
+  }
+  return values;
+}
+
+/* Return the zero-based line numbers that are allowed to bypass dose scanning.
+ * Waivers are deliberately fail-closed: an annotation is accepted only when its
+ * exact sentinel pair encloses one expected line in one approved file. Any stray,
+ * duplicated, nested, malformed, or relocated sentinel is a hard failure and
+ * waives nothing. The canonical-topic-meta context additionally parses the exact
+ * FD_TOPIC_META JSON assignment so a future editor default can never hide here. */
+function doseWaiverLines(filename, lines) {
+  const waived = new Set();
+  const contexts = [
+    {
+      name: 'canonical-topic-meta',
+      filename: 'rotation-curator.html',
+      validate(line) {
+        const match = line.match(/^\s*var FD_TOPIC_META=(\{.*\});\s*$/);
+        if (!match) return false;
+        try {
+          const value = JSON.parse(match[1]);
+          return value !== null && typeof value === 'object' && !Array.isArray(value);
+        } catch {
+          return false;
+        }
+      },
+    },
+    {
+      // Pre-existing reviewed instrument copy also needs a line-bounded exception;
+      // unlike the old file-wide marker, this can never hide a future second dose.
+      name: 'validated-instrument-line',
+      filename: 'bfcrs.html',
+      validate(line) { return DOSE.test(line); },
+    },
+  ];
+  const knownSentinels = new Set();
+
+  for (const context of contexts) {
+    const startText = `/* ${DOSE_WAIVER_PREFIX}-START: ${context.name} */`;
+    const endText = `/* ${DOSE_WAIVER_PREFIX}-END: ${context.name} */`;
+    knownSentinels.add(startText);
+    knownSentinels.add(endText);
+    const starts = [], ends = [];
+    lines.forEach((line, index) => {
+      if (line.trim() === startText) starts.push(index);
+      if (line.trim() === endText) ends.push(index);
+    });
+    if (!starts.length && !ends.length) continue;
+    const valid = filename === context.filename
+      && starts.length === 1
+      && ends.length === 1
+      && ends[0] === starts[0] + 2
+      && context.validate(lines[starts[0] + 1]);
+    if (valid) waived.add(starts[0] + 1);
+    else H(`invalid dose-waiver sentinel in ${filename}: ${context.name} must bound one approved line`);
+  }
+
+  lines.forEach((line) => {
+    if (!line.includes(DOSE_WAIVER_PREFIX)) return;
+    if (!knownSentinels.has(line.trim())) {
+      H(`invalid dose-waiver sentinel in ${filename}: unrecognized or legacy annotation`);
+    }
+  });
+  return waived;
+}
 
 /* classify(msg): map a soft-finding message to a stable class for the ratchet (section 9).
  * Regexes are ordered most-specific first and matched against the literal S() message
@@ -98,6 +174,28 @@ const jsonFiles = [], allFiles = [];
     else { allFiles.push({ fp, size: st.size }); if (f.endsWith('.json')) jsonFiles.push(fp); }
   }
 })(SITE);
+for (const rawCatalogSource of ['rotation_edition_catalog.json', 'rotation_edition_catalog_governance.json']) {
+  if (existsSync(p(rawCatalogSource))) H(`${rawCatalogSource} must not be published to the learner output`);
+}
+
+/* The QR implementation is intentionally a single, curator-only local dependency. A
+ * second embedded copy increases the unreviewed executable surface, while a copy in the
+ * learner shell would make the faculty-only generator available on every page. Scan all
+ * shipped HTML (not only tools/) so index.html and future nested shells cannot bypass it.
+ * Fixture curator pages without the QR engine remain valid: this is a placement and
+ * uniqueness invariant, while common.py's marker contract verifies real-build presence. */
+for (const { fp } of allFiles) {
+  if (!fp.endsWith('.html')) continue;
+  const rel = relative(SITE, fp).split('\\').join('/');
+  const html = readFileSync(fp, 'utf8');
+  const copies = html.split(QR_VENDOR_SIGNATURE).length - 1;
+  if (!copies) continue;
+  if (rel !== QR_VENDOR_ALLOWED_HTML) {
+    H(`QR vendor signature outside rotation-curator.html: ${rel}`);
+  } else if (copies !== 1) {
+    H(`QR vendor signature must appear exactly once in rotation-curator.html (found ${copies})`);
+  }
+}
 const parsed = {};
 for (const f of jsonFiles) {
   try { parsed[f] = readJSON(f); }
@@ -253,9 +351,15 @@ for (const f of jsAssets) {
 for (const f of toolFiles) {
   const html = readFileSync(p('tools', f), 'utf8');
   if (CDN_HOST.test(html)) H(`external CDN dependency in tools/${f} — vendor the script locally so bedside/offline use does not blank the tool`);
-  for (const match of html.matchAll(/<script\b[^>]*\bsrc\s*=\s*(["'])(.*?)\1/gi)) {
-    const source = match[2].trim();
-    if (!source || /^(?:https?:)?\/\//i.test(source) || /^(?:data|blob):/i.test(source)) continue;
+  for (const match of html.matchAll(/<script\b[^>]*>/gi)) {
+    const sourceAttribute = tagAttributes(match[0]).find((attribute) => attribute.name === 'src');
+    const source = sourceAttribute ? sourceAttribute.value.trim() : '';
+    if (!source) continue;
+    if (/^(?:https?:)?\/\//i.test(source)) {
+      if (f === 'rotation-curator.html') H(`remote script source in rotation-curator.html: ${source}`);
+      continue;
+    }
+    if (/^(?:data|blob):/i.test(source)) continue;
     if (/^[a-z][a-z0-9+.-]*:/i.test(source)) {
       H(`unsupported script source in ${f}: ${source}`);
       continue;
@@ -270,6 +374,34 @@ for (const f of toolFiles) {
     } else if (!existsSync(target)) {
       H(`missing relative script source in ${f}: ${source}`);
     }
+  }
+  if (f === 'rotation-curator.html') {
+    for (const match of html.matchAll(/<link\b[^>]*>/gi)) {
+      const tag = match[0];
+      const attributes = tagAttributes(tag);
+      const rel = attributes.find((attribute) => attribute.name === 'rel');
+      const href = attributes.find((attribute) => attribute.name === 'href');
+      const rels = rel ? rel.value.trim().toLowerCase().split(/\s+/) : [];
+      const source = href ? href.value.trim() : '';
+      if (rels.includes('stylesheet') && /^(?:https?:)?\/\//i.test(source)) H(`remote stylesheet source in rotation-curator.html: ${source}`);
+    }
+
+    // Remote raster and SVG image elements could silently turn the QR/share screen into
+    // a tracking beacon. Inline SVG is allowed; only network-addressed destinations fail.
+    for (const match of html.matchAll(/<(?:img|image|source|use|feimage)\b[^>]*>/gi)) {
+      for (const attribute of tagAttributes(match[0])) {
+        if (!['src', 'srcset', 'href', 'xlink:href'].includes(attribute.name)) continue;
+        const source = attribute.value.trim();
+        if (/(?:^|[\s,])(?:https?:)?\/\//i.test(source)) H(`remote image source in rotation-curator.html: ${source}`);
+      }
+    }
+    if (/(?:@import\s+(?:url\(\s*)?|url\(\s*)["']?\s*(?:https?:)?\/\//i.test(html)) H('remote CSS destination in rotation-curator.html');
+
+    // The vetted curator/vendor sources contain none of these tokens, including comments,
+    // so scan raw bytes. Regex comment stripping is unsafe here: comment-like delimiters in
+    // string literals can otherwise erase a real request expression between them.
+    const networkTransport = /(?:\b(?:fetch|XMLHttpRequest|WebSocket|EventSource|importScripts|sendBeacon)\b|\bimport\s*\(|\bnew\s+Image\s*\(|\b[A-Za-z_$][\w$]*\s*\.\s*(?:src|srcset)\s*=|\bcreateElement\s*\(\s*["'](?:script|img|image|source|link)["']|\bsetAttribute\s*\(\s*["'](?:src|srcset|href|xlink:href)["'])/i;
+    if (networkTransport.test(html)) H('network transport API in rotation-curator.html');
   }
   const preferredStarts = html.match(/<!--\s*\[CLERKSHIP-META v1\]/g) || [];
   const legacyStarts = html.match(/<!--\s*\[RC-META\]/g) || [];
@@ -292,15 +424,16 @@ for (const f of toolFiles) {
   if (!/<title>/i.test(html)) H(`tool missing <title>: ${f}`);
   if (!/name=["']viewport["']/i.test(html)) H(`tool missing viewport meta: ${f}`);
   // Dose-literal rule scope: HARD for the new education/trainer layer (rp-*, *-trainer)
-  // that must never read like an order set; SOFT elsewhere (validated instruments like
-  // BFCRS/CIWA legitimately carry standard doses). A reviewed file may opt out of the
-  // soft warning with a `QA-ALLOW-DOSE` comment marker.
+  // that must never read like an order set; SOFT elsewhere. Only an exact, approved,
+  // line-bounded sentinel may waive scanning; malformed annotations waive nothing.
   const doseHard = /^rp-/.test(f) || /-trainer\.html$/.test(f);
-  const doseAllow = /QA-ALLOW-DOSE/.test(html);
-  html.split('\n').forEach((line, i) => {
+  const htmlLines = html.split('\n');
+  const doseWaivers = doseWaiverLines(f, htmlLines);
+  htmlLines.forEach((line, i) => {
+    if (doseWaivers.has(i)) return;
     if (!DOSE.test(line)) return;
     const msg = `dose literal in ${f}:${i + 1} → "${line.trim().slice(0, 70)}"`;
-    if (doseHard) H(msg); else if (!doseAllow) S(msg + ' (validated-instrument? add QA-ALLOW-DOSE or route to LOCAL_POLICY)');
+    if (doseHard) H(msg); else S(msg + ' (validated instrument? use an approved line sentinel or route to LOCAL_POLICY)');
   });
   // Sanctioned localStorage namespaces: cw_* (shared hub) and rp_* (resident platform).
   const keys = [...html.matchAll(/localStorage\.(?:getItem|setItem|removeItem)\(\s*['"]([^'"]+)['"]/g)].map(m => m[1]);

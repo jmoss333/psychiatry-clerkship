@@ -11,6 +11,9 @@ const due = readFileSync(new URL(
 const shellModule = readFileSync(new URL(
   '../13_Faculty_Resources/_automation/site_build/frontdoor/fd_shell.js', import.meta.url,
 ), 'utf8');
+const wireModule = readFileSync(new URL(
+  '../13_Faculty_Resources/_automation/site_build/frontdoor/fd_wire.js', import.meta.url,
+), 'utf8');
 const capsule = readFileSync(new URL(
   '../13_Faculty_Resources/_automation/site_build/sess_capsule.js', import.meta.url,
 ), 'utf8');
@@ -55,6 +58,163 @@ test('the source body is the single live Front Door shell', () => {
   assert.equal(count('id="fdOverlayMount"'), 1, 'one overlay mount');
   assert.equal(count('id="fdNudgeMount"'), 1, 'one nudge mount');
   assert.doesNotMatch(source, /<aside id="side"|id="modetoggle"|id="modeCompanion"/);
+});
+
+test('the shell has one build-replaced edition context and ordered v2 catalog modules', () => {
+  for (const marker of ['FD_EDITION_CATALOG', 'FD_EDITION_CONTRACT', 'FD_EDITION_PROJECT', 'FD_EDITION_STUDENT']) {
+    assert.equal(count(`/*__${marker}__*/`), 1, `${marker} marker`);
+  }
+  for (const name of ['FD_AUDIENCE', 'FD_CORE_REVISION']) {
+    assert.equal((source.match(new RegExp(`var ${name}=\\"\\";`, 'g')) || []).length, 1,
+      `${name} JSON literal`);
+  }
+  assert.equal((source.match(/var FD_ROTATION_EDITION_CATALOG=\{\};/g) || []).length, 1,
+    'one build-replaced rotation catalog projection');
+  const data = source.indexOf('/*__FD_DATA__*/');
+  const catalog = source.indexOf('/*__FD_EDITION_CATALOG__*/');
+  const edition = source.indexOf('/*__FD_EDITION_CONTRACT__*/');
+  const consumer = source.indexOf('/*__FD_TODAY__*/');
+  assert.ok(data > -1 && data < catalog && catalog < edition && edition < consumer,
+    'catalog must prepare before the contract and all edition consumers');
+});
+
+test('edition validation selects the only live index before the learner shell starts', () => {
+  assert.equal(count('var FD_CANONICAL_INDEX=fdBuildIndex('), 1,
+    'the audience-correct canonical index is created exactly once');
+  assert.equal(count('var FD_INDEX=FD_CANONICAL_INDEX;'), 1,
+    'the live index starts from that one canonical index');
+  assert.doesNotMatch(source, /var FD_INDEX=fdBuildIndex\(/,
+    'the retired synchronous index-and-render boot must stay absent');
+
+  const snapshotCall = source.indexOf('fdEditionCatalogSnapshot(FD_ROTATION_EDITION_CATALOG,FD_SITE_CONTEXT.audience');
+  const resolveCall = source.indexOf('fdEditionResolveStartup(FD_CANONICAL_INDEX,fdCatalogSnapshot');
+  assert.ok(snapshotCall > -1 && snapshotCall < resolveCall,
+    'the branded catalog snapshot must settle before learner resolution');
+  assert.ok(resolveCall > -1, 'startup must resolve stored and incoming editions');
+  assert.match(source.slice(resolveCall), /\.then\(fdStartFrontDoor\)/,
+    'the resolver must hand the selected result to the only shell starter');
+
+  const start = source.indexOf('async function fdStartFrontDoor(result)');
+  const end = source.indexOf('\n  var fdEditionInputs=', start);
+  assert.ok(start > -1 && end > start, 'one deferred shell starter is required');
+  const body = source.slice(start, end);
+  const selection = body.indexOf('FD_INDEX=result.index');
+  assert.ok(selection > -1, 'the resolver result must select FD_INDEX');
+  for (const consumer of ['fdRotationWeek(', 'fdResolveState(', 'fdRender(', 'fdWire(']) {
+    assert.ok(body.indexOf(consumer) > selection,
+      `${consumer} must run only after the edition index is selected`);
+  }
+  assert.match(source, /id="fdApp" class="fd-shell" aria-busy="true" inert/,
+    'the initial shell must expose a native noninteractive pending resolver state');
+  assert.match(body, /releaseStartupGate:function\(\)\{return fdEditionRuntimeReleaseGate\(fdApp\);\}/,
+    'the controller commit must own the atomic inert and busy release');
+});
+
+test('startup makes acceptance the final fallible boundary after real wiring, rendering, resources, history, and gate release', () => {
+  const start = source.indexOf('async function fdStartFrontDoor(result)');
+  const end = source.indexOf('\n  var fdEditionInputs=', start);
+  assert.ok(start > -1 && end > start, 'the shell starter must expose an awaited transaction');
+  const body = source.slice(start, end);
+  const ordinaryStart = body.indexOf("if(result.mode==='switch-required'");
+  assert.ok(ordinaryStart > -1, 'ordinary v2 startup follows the terminal prerelease branch');
+  const ordinary = body.slice(ordinaryStart);
+  const keys = ordinary.indexOf('fdEditionStorageKeys(FD_SITE_CONTEXT.audience)');
+  const checkpoint = ordinary.indexOf('fdEditionStartupJournal(');
+  const stateLoad = ordinary.indexOf('fdLoad()');
+  const preflight = ordinary.indexOf('fdEditionRuntimePreflightWiring(');
+  const wire = ordinary.indexOf('fdWire(');
+  const open = ordinary.indexOf('await fdOpenInitialResource(');
+  const prepare = ordinary.indexOf('fdController.prepareStartup()');
+  const commit = ordinary.indexOf('fdController.commitStartup()');
+  const acceptanceCallback = ordinary.indexOf('fdController.commitStartup(function(){');
+  const acceptance = ordinary.indexOf('fdEditionCommitAcceptance(', acceptanceCallback);
+  const rejectedMount = ordinary.indexOf("result.mode==='rejected'&&!fdEditionRuntimeMountError(");
+  const rejectedFocus = ordinary.indexOf(
+    "result.mode==='rejected'&&!fdEditionRuntimeFocusError(fdEditionMount)", acceptanceCallback,
+  );
+  assert.ok(keys > -1 && keys < checkpoint && checkpoint < stateLoad && stateLoad < preflight
+    && preflight < wire && wire < open && open < prepare && prepare < acceptanceCallback
+    && acceptanceCallback < acceptance,
+  'all real wiring/render/resource/history/gate preparation must precede the acceptance callback');
+  assert.ok(rejectedMount > -1 && rejectedMount < prepare && acceptance < rejectedFocus,
+    'a rejected edition must mount while inert and receive focus only after prepare and commit succeed');
+  assert.ok(commit < 0 || commit === acceptanceCallback,
+    'there must be no unguarded controller commit call');
+  assert.equal((ordinary.match(/fdEditionCommitAcceptance\(/g) || []).length, 1,
+    'acceptance has exactly one guarded call site');
+  const prepareStart = wireModule.indexOf('function prepareStartup()');
+  const commitStart = wireModule.indexOf('function commitStartup(', prepareStart);
+  const controllerStart = wireModule.indexOf('\n  function controller(', commitStart);
+  const prepareBody = wireModule.slice(prepareStart, commitStart);
+  const commitBody = wireModule.slice(commitStart, controllerStart);
+  const history = prepareBody.indexOf('replaceHistorySnapshot()');
+  const gate = prepareBody.indexOf('o.releaseStartupGate');
+  const prepared = prepareBody.indexOf('startupPrepared=true');
+  const accept = commitBody.indexOf('acceptStartup');
+  const armed = commitBody.indexOf('startupCommitted=true');
+  assert.ok(history > -1 && history < gate && gate < prepared,
+    'history and gate release must finish in the fallible prepare phase');
+  assert.ok(accept > -1 && accept < armed, 'acceptance must immediately precede arming');
+  assert.doesNotMatch(commitBody, /replaceHistorySnapshot|releaseStartupGate|addEventListener|render|openResource/,
+    'no fallible UI, listener, history, resource, or gate work may follow the prepare phase');
+  assert.doesNotMatch(source, /fdEditionCheckpointStorage|fdEditionRestoreStorage/,
+    'startup rollback must not snapshot or diff the entire localStorage namespace');
+});
+
+test('runtime fallback releases the gate before mounting and focusing one fixed edition error', () => {
+  const start = source.indexOf('function fdEditionRuntimeFallback(receipt,state)');
+  const end = source.indexOf('\n  async function fdStartFrontDoor(result)', start);
+  assert.ok(start > -1 && end > start, 'one runtime fallback is required');
+  const fallback = source.slice(start, end);
+  const gate = fallback.indexOf('fdEditionRuntimeReleaseGate(fdApp)');
+  const mount = fallback.indexOf('fdEditionRuntimeMountError(fdEditionMount');
+  const focus = fallback.indexOf('fdEditionRuntimeFocusError(fdEditionMount)', mount);
+  assert.ok(gate > -1 && gate < mount && mount < focus,
+    'fallback must leave the shell interactive before moving focus to its mounted error');
+});
+
+test('an unsupported prerelease v1 link renders canonical core and stops before journals or listeners', () => {
+  const start = source.indexOf('async function fdStartFrontDoor(result)');
+  const end = source.indexOf('\n  var fdEditionInputs=', start);
+  assert.ok(start > -1 && end > start, 'the shell starter must exist');
+  const body = source.slice(start, end);
+  const rejection = body.indexOf("result.receipt.code==='EDITION_PRERELEASE_UNSUPPORTED'");
+  const journal = body.indexOf('fdEditionStartupJournal(');
+  const wire = body.indexOf('fdWire(');
+  assert.ok(rejection > -1 && rejection < journal && rejection < wire,
+    'the prerelease rejection must terminate before any startup journal or listener wiring');
+  const branchEnd = body.indexOf('\n  }', rejection);
+  const branch = body.slice(rejection, branchEnd);
+  assert.match(branch, /FD_INDEX=FD_CANONICAL_INDEX/,
+    'the terminal prerelease branch must retain the canonical core index');
+  assert.match(branch, /fdRender\(/, 'the terminal prerelease branch must render canonical core');
+  assert.match(branch, /fdEditionRuntimeMountError\(/,
+    'the terminal prerelease branch must show the fixed rejection');
+  assert.match(branch, /fdEditionRuntimeReleaseGate\(fdApp\)/,
+    'the terminal prerelease branch must release the pending shell without listeners');
+  assert.ok(branch.indexOf('fdEditionRuntimeReleaseGate(fdApp)')
+    < branch.indexOf('fdEditionRuntimeFocusError(fdEditionMount)'),
+  'the terminal prerelease error can receive focus only after its gate is released');
+  assert.match(branch, /return/,
+    'the terminal prerelease branch must not fall through to ordinary startup');
+});
+
+test('failed-switch direct recovery and local toggles share one trusted candidate identity', () => {
+  const recoveryStart = source.indexOf('function fdRecoverCommittedEdition(candidate)');
+  const recoveryEnd = source.indexOf('\n  try{', recoveryStart);
+  const recovery = source.slice(recoveryStart, recoveryEnd);
+  assert.ok(recoveryStart > -1 && recoveryEnd > recoveryStart);
+  assert.match(recovery, /FD_INDEX=index;fdActiveEditionSnapshot=recoverySnapshot/,
+    'candidate index and trusted snapshot must be adopted together before render');
+  assert.match(recovery, /FD_INDEX=previousIndex;fdActiveEditionSnapshot=previousSnapshot/,
+    'failed direct rendering must restore both prior runtime identities');
+
+  const clickStart = source.indexOf('function fdAuxClick(event)');
+  const clickEnd = source.indexOf('\n    el=target.closest&&target.closest(\'[data-capture-open]\')', clickStart);
+  const localClick = source.slice(clickStart, clickEnd);
+  assert.match(localClick, /fdEditionActiveIdentity\(fdActiveEditionSnapshot,FD_INDEX\)/);
+  assert.doesNotMatch(localClick, /FD_INDEX\.edition\.fingerprint/,
+    'authorization, storage, and refresh must not derive identity independently');
 });
 
 test('the retired sidebar, legacy search/nav boot, companion, and dashboard are absent', () => {
@@ -120,7 +280,7 @@ test('faculty preview ignores the learner tool-width preference', () => {
 
 test('one live controller owns stable delegated navigation', () => {
   assert.equal((source.match(/=fdWire\(/g) || []).length, 1, 'exactly one controller install');
-  assert.match(source, /getState:function\(\)\{ return fdController\.getState\(\); \}/,
+  assert.match(source, /getState:options\.getState\|\|function\(\)\{ return fdController\.getState\(\); \}/,
     'resource wrapper must provide Task 4 live-state access');
   assert.match(source, /renderTransient:fdRenderTransient/);
   assert.match(source, /openProgress:fdOpenProgress/);

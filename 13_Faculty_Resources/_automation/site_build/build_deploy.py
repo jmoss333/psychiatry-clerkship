@@ -1,4 +1,5 @@
 import os, shutil, json, sys
+from datetime import date
 from pathlib import Path
 # Shared, audience-neutral assembly logic (tokenizer, synonyms, tool keywords,
 # search index, HTML polish/dark passes, page contract). Extracted 2026-07-26 —
@@ -327,7 +328,7 @@ nav=[
  {"section":"Practice and Exam Prep","items":[_tool("question-bank-practice.html","Practice Questions — Question Bank"),_tool("one-patient-six-weeks.html","One Patient, Six Weeks"),_tool("review.html","Daily Review (Spaced Repetition)"),_tool("shelf-mode.html","Shelf Mode — Exam Simulation"),_md("COMAT & Shelf Review","shelf.md"),_md("Rapid Review — Buzzwords","rapid_review.md"),_md("OSCE Stations","osce.md"),_md("Practice Cases","cases.md"),_md("Landmark Trials — Listen & Test","landmark_trials.md"),_md("Anki Flashcard Decks","anki.md")]},
  {"section":"Case of the Week","items":[_md("Index — All Cases","cotw_index.md")]+[_md(w["label"],_cotw_slug(w,"ms3")) for w in _cotw_weeks]},
  {"section":"Evidence and Reference","items":[_md("Weekly Reading Map","reading_map.md"),_md("Evidence-Based Inpatient Psychiatry","evidence_inpatient.md"),_md("MS3 Book Library","book_library.md"),_md("Podcast Library (Psychiatry & Psychotherapy)","podcast_library.md")]},
- {"section":"Feedback","items":[_tool("feedback.html","Improve this library — send feedback")]},
+ {"section":"Feedback","items":[_tool("feedback.html","Improve this library — send feedback"),_tool("rotation-curator.html","Faculty: Curate a rotation edition",True)]},
 ]
 _navorder=["Orientation","Start the Encounter","Understand the Problem","Assess Safety and Acuity","Make a Plan","Communicate with Patients","Work with Family and Systems","Present and Work with the Team","Practice and Exam Prep","Case of the Week","Evidence and Reference","Feedback"]
 nav=sorted(nav,key=lambda s:_navorder.index(s["section"]) if s["section"] in _navorder else 999)
@@ -364,13 +365,38 @@ _abort_missing(_missing_req)
 
 # Front Door modules stay dormant in this task, but their data is made site-specific now.
 # Build after nav finalization so titles/kinds come from this site's actual browse catalog.
+sys.path.insert(0, os.path.dirname(HERE))
+from validate_tool_governance import (
+    GovernanceError,
+    build_governance_document,
+    current_revision,
+    validate_built_tool_inventory,
+    write_atomic_json,
+)
+from validate_rotation_edition_catalog import (
+    build_audience_projection as _build_rotation_projection,
+    load_catalog as _load_rotation_catalog,
+    load_governance as _load_rotation_governance,
+    validate_catalog as _validate_rotation_catalog,
+)
 try:
+    _core_revision=current_revision(Path(LIB))
+except GovernanceError as error:
+    raise SystemExit(f"tool governance INVALID — {error}") from error
+try:
+    _rotation_catalog=_load_rotation_catalog(Path(LIB))
+    _rotation_governance=_load_rotation_governance(Path(LIB))
+    _validate_rotation_catalog(_rotation_catalog,_rotation_governance,today=date.today())
+    _rotation_projection=_build_rotation_projection(_rotation_catalog,_rotation_governance,"ms3")
     _fd_payload=frontdoor_catalog.build_frontdoor_payload(
-        "ms3", json.load(open(LIB+"/curriculum.json",encoding="utf-8")), nav)
-    frontdoor_catalog.inject_frontdoor_payload(
-        OUT+"/index.html", _fd_payload,
-        json.load(open(OUT+"/topic_meta.json",encoding="utf-8")),
-        json.load(open(OUT+"/tool_registry.json",encoding="utf-8")))
+        "ms3", json.load(open(LIB+"/curriculum.json",encoding="utf-8")), nav, _core_revision,
+        _rotation_projection)
+    _frontdoor_destinations=(OUT+"/index.html", OUT+"/tools/rotation-curator.html")
+    for _frontdoor_destination in _frontdoor_destinations:
+        frontdoor_catalog.inject_frontdoor_payload(
+            _frontdoor_destination, _fd_payload,
+            json.load(open(OUT+"/topic_meta.json",encoding="utf-8")),
+            json.load(open(OUT+"/tool_registry.json",encoding="utf-8")))
 except ValueError as _fd_error:
     print("BUILD ABORTED — Front Door payload:", _fd_error)
     raise SystemExit(1)
@@ -410,6 +436,8 @@ common.apply_contrast_fix(
 )
 _QV=common.quiz_cache_bust(OUT+"/tools/quizzes.json")   # content-hash cache-bust (reproducible)
 common.apply_full_page_pass(OUT, cache_bust=_QV)
+for _frontdoor_destination in (OUT+"/index.html", OUT+"/tools/rotation-curator.html"):
+    frontdoor_catalog.assert_catalog_resolver_injected(_frontdoor_destination, _rotation_projection["revision"])
 
 # The governed shell itself is a required risk-work surface because it renders the Safety Kit.
 # Expand only after shared snippets: a marker introduced by a snippet must participate in the
@@ -454,17 +482,9 @@ print("surface governance: emitted", len(_surface_governance["items"]), "items (
 # ---------- TOOL GOVERNANCE ----------
 # Source hashes remain over canonical source files; this final comparison proves the emitted
 # inventory exactly covers the completed built tools directory before publishing the artifact.
-sys.path.insert(0, os.path.dirname(HERE))
-from validate_tool_governance import (
-    GovernanceError,
-    build_governance_document,
-    validate_built_tool_inventory,
-    write_atomic_json,
-)
-
 try:
     _governance, _governance_warnings = build_governance_document(
-        Path(LIB), "ms3", enforce_expected_count=True
+        Path(LIB), "ms3", revision=_core_revision, enforce_expected_count=True
     )
     validate_built_tool_inventory(_governance, Path(OUT) / "tools", site="ms3")
     write_atomic_json(Path(OUT) / "tool-governance.json", _governance)

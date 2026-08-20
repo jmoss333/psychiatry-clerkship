@@ -247,6 +247,44 @@ class MetadataMarkerTests(unittest.TestCase):
 
 
 class NormalizationTests(unittest.TestCase):
+    def test_only_faculty_only_metadata_may_declare_no_clinical_claim(self) -> None:
+        faculty_source = (
+            b'<!-- [CLERKSHIP-META v1] tool="synthetic-faculty" audience="faculty" '
+            b'clinicalClaim="false" -->\n'
+        )
+        faculty_marker = governance.parse_metadata_marker(
+            faculty_source, "synthetic/faculty.html"
+        )
+        faculty = governance.normalize_tool(
+            faculty_source,
+            "synthetic/faculty.html",
+            "synthetic-faculty.html",
+            faculty_marker,
+            revision="a" * 40,
+            ledger_entry=pending_ledger_entry(),
+        )
+        self.assertEqual(faculty["clinicalClaim"], False)
+
+        trainee_source = (
+            b'<!-- [CLERKSHIP-META v1] tool="synthetic-trainee" audience="trainee" '
+            b'clinicalClaim="false" -->\n'
+        )
+        trainee_marker = governance.parse_metadata_marker(
+            trainee_source, "synthetic/trainee.html"
+        )
+        with self.assertRaisesRegex(
+            governance.GovernanceError,
+            r"synthetic/trainee.html: invalid clinicalClaim field",
+        ):
+            governance.normalize_tool(
+                trainee_source,
+                "synthetic/trainee.html",
+                "synthetic-trainee.html",
+                trainee_marker,
+                revision="a" * 40,
+                ledger_entry=pending_ledger_entry(),
+            )
+
     def test_ledger_owns_review_attestation_category_and_severity(self) -> None:
         # The marker claims a rosier status/category/severity than the ledger
         # records; the envelope must reflect the ledger, not the marker.
@@ -501,8 +539,8 @@ class RepositoryProducerTests(unittest.TestCase):
         ):
             diagnostics, documents = governance.validate_repository(ROOT)
 
-        self.assertEqual(len(documents["ms3"]["items"]), 22)
-        self.assertEqual(len(documents["resident"]["items"]), 24)
+        self.assertEqual(len(documents["ms3"]["items"]), 23)
+        self.assertEqual(len(documents["resident"]["items"]), 25)
         self.assertEqual(len(diagnostics), 1)
         self.assertTrue(diagnostics[0].startswith("legacy metadata warning: "))
 
@@ -553,7 +591,7 @@ class RepositoryProducerTests(unittest.TestCase):
         ):
             with self.assertRaisesRegex(
                 governance.GovernanceError,
-                r"tool-governance.json: ms3 item count must equal 22",
+                r"tool-governance.json: ms3 item count must equal 23",
             ):
                 governance.build_governance_document(
                     ROOT, "ms3", enforce_expected_count=True
@@ -596,8 +634,22 @@ class RepositoryProducerTests(unittest.TestCase):
 
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn("tool governance OK", result.stdout)
-        self.assertIn("ms3: 22 item(s)", result.stdout)
-        self.assertIn("resident: 24 item(s)", result.stdout)
+        self.assertIn("ms3: 23 item(s)", result.stdout)
+        self.assertIn("resident: 25 item(s)", result.stdout)
+
+    def test_rotation_curator_is_a_pending_faculty_local_policy_tool(self) -> None:
+        diagnostics, documents = governance.validate_repository(ROOT)
+
+        self.assertEqual(len(diagnostics), 1)
+        for site in ("ms3", "resident"):
+            items = {item["id"]: item for item in documents[site]["items"]}
+            curator = items["tools/rotation-curator"]
+            self.assertEqual(curator["audiences"], ["faculty"])
+            self.assertEqual(curator["reviewStatus"], "needs-review")
+            self.assertEqual(curator["attestationStatus"], "needs-attestation")
+            self.assertEqual(curator["reviewCategory"], "local-policy")
+            self.assertEqual(curator["safetySeverity"], "moderate")
+            self.assertEqual(curator["clinicalClaim"], False)
 
     def test_atomic_output_rejects_an_unpinned_contract_descriptor(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

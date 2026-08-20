@@ -47,7 +47,7 @@ SITE_EXTRAS = {
         ("_prototypes/canon-quiz/rp-canon-quiz.html", "rp-canon-quiz.html"),
     ),
 }
-EXPECTED_TOOL_COUNTS = {"ms3": 22, "resident": 24}
+EXPECTED_TOOL_COUNTS = {"ms3": 23, "resident": 25}
 ALLOWED_AUDIENCES = frozenset({"trainee", "ms3", "resident", "faculty"})
 
 
@@ -225,6 +225,9 @@ def normalize_tool(
     slug = Path(built_slug).name
     if slug != built_slug or not slug.endswith(".html"):
         raise GovernanceError(f"{relative_path}: invalid built slug")
+    clinical_claim_values = (
+        {True, False} if marker.audiences == ("faculty",) else {True}
+    )
     envelope = {
         "schemaVersion": 1,
         "id": f"tools/{slug[:-len('.html')]}",
@@ -250,7 +253,7 @@ def normalize_tool(
         "safetySeverity": risk.get("level"),
         "reviewCategory": risk.get("kind"),
         "clinicalClaim": _conservative_field(
-            marker, relative_path, "clinicalClaim", True, {True}
+            marker, relative_path, "clinicalClaim", True, clinical_claim_values
         ),
         "patientDataPolicy": _conservative_field(
             marker,

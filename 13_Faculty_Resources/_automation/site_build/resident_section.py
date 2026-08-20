@@ -1,5 +1,6 @@
 # Derive the MMC resident variant from the already-built MS3 deploy (run AFTER build_deploy.py).
 import os, shutil, json, re, glob, sys
+from datetime import date
 # Shared, audience-neutral assembly logic — the same module build_deploy.py uses.
 # Extracted 2026-07-26; before that this file carried its own drifted copies of the
 # tokenizer, synonym table, tool keywords, index builder, and skip-link injection.
@@ -212,7 +213,7 @@ nav=[
  {"section":"Practice and Exam Prep","items":[{"t":"Practice Questions — Question Bank","f":"question-bank-practice.html","k":"tool"},{"t":"One Patient, Six Weeks","f":"one-patient-six-weeks.html","k":"tool"},{"t":"Daily Review (Spaced Repetition)","f":"review.html","k":"tool","hidden":True},{"t":"Board-Style Question Bank","f":"shelf-mode.html","k":"tool","hidden":True},{"t":"Canon Quiz — 200-Paper Spine","f":"rp-canon-quiz.html","k":"tool"},{"t":"Rapid Review — Buzzwords","f":"rapid_review.md","k":"md"},{"t":"Landmark Trials — Listen & Test","f":"landmark_trials.md","k":"md"},{"t":"Anki Flashcard Decks","f":"anki.md","k":"md"}]},
  {"section":"Case of the Week","items":[{"t":"Index — All Cases","f":"cotw_index.md","k":"md"}]+[{"t":w["label"],"f":_cotw_slug(w,"res"),"k":"md"} for w in _cotw_weeks]},
  {"section":"Evidence and Reference","items":[{"t":"Evidence-Based Inpatient Psychiatry","f":"evidence_inpatient.md","k":"md"},{"t":"The Psychiatry Canon (200)","f":"canon_200.md","k":"md"},{"t":"Book Library","f":"book_library.md","k":"md"},{"t":"Podcast Library (Psychiatry & Psychotherapy)","f":"podcast_library.md","k":"md"}]+_HIDDEN_INHERITED},
- {"section":"Feedback","items":[{"t":"Improve this library — send feedback","f":"feedback.html","k":"tool"}]},
+ {"section":"Feedback","items":[{"t":"Improve this library — send feedback","f":"feedback.html","k":"tool"},{"t":"Faculty: Curate a rotation edition","f":"rotation-curator.html","k":"tool","hidden":True}]},
 ]
 _navorder=["Orientation","Start the Encounter","Understand the Problem","Assess Safety and Acuity","Make a Plan","Communicate with Patients","Work with Family and Systems","Present and Work with the Team","Practice and Exam Prep","Case of the Week","Evidence and Reference","Feedback"]
 nav=sorted(nav,key=lambda s:_navorder.index(s["section"]) if s["section"] in _navorder else 999)
@@ -263,13 +264,39 @@ if _cm_untagged: print("  NOTE no 'blueprint' in cotw_registry.json (case absent
 # The resident build begins as a copy of MS3, so replace every Front Door global only after
 # resident extras, nav metadata, and topic-meta overlays are all complete. Reusing the copied
 # MS3 literals would silently hide resident-only browse paths behind student data.
+sys.path.insert(0, os.path.dirname(HERE))
+from validate_tool_governance import (
+    GovernanceError,
+    build_governance_document,
+    current_revision,
+    validate_built_tool_inventory,
+    write_atomic_json,
+)
+from validate_rotation_edition_catalog import (
+    build_audience_projection as _build_rotation_projection,
+    load_catalog as _load_rotation_catalog,
+    load_governance as _load_rotation_governance,
+    validate_catalog as _validate_rotation_catalog,
+)
 try:
+    _core_revision=current_revision(Path(LIB))
+except GovernanceError as error:
+    raise SystemExit(f"tool governance INVALID — {error}") from error
+try:
+    _rotation_catalog=_load_rotation_catalog(Path(LIB))
+    _rotation_governance=_load_rotation_governance(Path(LIB))
+    _validate_rotation_catalog(_rotation_catalog,_rotation_governance,today=date.today())
+    _rotation_projection=_build_rotation_projection(_rotation_catalog,_rotation_governance,"resident")
     _fd_payload=frontdoor_catalog.build_frontdoor_payload(
-        "resident", json.load(open(LIB+"/curriculum.json",encoding="utf-8")), nav)
-    frontdoor_catalog.inject_frontdoor_payload(
-        OUT+"/index.html", _fd_payload,
-        json.load(open(OUT+"/topic_meta.json",encoding="utf-8")),
-        json.load(open(OUT+"/tool_registry.json",encoding="utf-8")))
+        "resident", json.load(open(LIB+"/curriculum.json",encoding="utf-8")), nav, _core_revision,
+        _rotation_projection)
+    _frontdoor_destinations=(OUT+"/index.html", OUT+"/tools/rotation-curator.html")
+    for _frontdoor_destination in _frontdoor_destinations:
+        frontdoor_catalog.inject_frontdoor_payload(
+            _frontdoor_destination, _fd_payload,
+            json.load(open(OUT+"/topic_meta.json",encoding="utf-8")),
+            json.load(open(OUT+"/tool_registry.json",encoding="utf-8")))
+        frontdoor_catalog.assert_catalog_resolver_injected(_frontdoor_destination, _rotation_projection["revision"])
 except ValueError as _fd_error:
     print("BUILD ABORTED — Front Door payload:", _fd_error)
     raise SystemExit(1)
@@ -308,17 +335,9 @@ print(" sections:",[s["section"] for s in nav])
 
 # ---------- TOOL GOVERNANCE ----------
 # Build from canonical sources, then verify the final resident tools exactly match its IDs.
-sys.path.insert(0, os.path.dirname(HERE))
-from validate_tool_governance import (
-    GovernanceError,
-    build_governance_document,
-    validate_built_tool_inventory,
-    write_atomic_json,
-)
-
 try:
     _governance, _governance_warnings = build_governance_document(
-        Path(LIB), "resident", enforce_expected_count=True
+        Path(LIB), "resident", revision=_core_revision, enforce_expected_count=True
     )
     validate_built_tool_inventory(_governance, Path(OUT) / "tools", site="resident")
     write_atomic_json(Path(OUT) / "tool-governance.json", _governance)

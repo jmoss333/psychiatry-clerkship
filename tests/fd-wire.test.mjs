@@ -324,11 +324,82 @@ test('fdWire registers and destroys one delegated click/input/keydown/popstate l
     location: { href: 'https://example.test/', search: '', pathname: '/' },
   };
   const controller = F.fdWire(root, { ...roleContext }, { window: fakeWindow, render: () => {} });
+  assert.equal(controller.ok, true);
   assert.deepEqual(rootCalls.map(([type]) => type), ['click', 'input']);
   assert.deepEqual(windowCalls.map(([type]) => type), ['keydown', 'popstate']);
   controller.destroy();
-  assert.deepEqual(rootRemoves, rootCalls);
-  assert.deepEqual(windowRemoves, windowCalls);
+  assert.deepEqual(rootRemoves, rootCalls.slice().reverse());
+  assert.deepEqual(windowRemoves, windowCalls.slice().reverse());
+});
+
+test('fdWire reports a partial root registration failure and removes the listener already installed', () => {
+  const calls = [];
+  const removes = [];
+  const active = new Map();
+  const root = {
+    addEventListener(type, fn) {
+      calls.push([type, fn]);
+      active.set(type, fn);
+      if (calls.length === 2) throw new Error('private root registration failure');
+    },
+    removeEventListener(type, fn) {
+      removes.push([type, fn]);
+      if (active.get(type) === fn) active.delete(type);
+    },
+  };
+  const fakeWindow = {
+    addEventListener() { throw new Error('window must not be reached'); },
+    removeEventListener() {},
+    location: { href: 'https://example.test/', search: '', pathname: '/' },
+  };
+  let controller;
+  assert.doesNotThrow(() => {
+    controller = F.fdWire(root, { ...roleContext }, { window: fakeWindow, render: () => {} });
+  });
+  assert.equal(controller.ok, false);
+  assert.deepEqual(calls.map(([type]) => type), ['click', 'input']);
+  assert.deepEqual(removes, calls.slice().reverse());
+  assert.deepEqual([...active.keys()], [], 'a register-then-throw handler must not remain live');
+  assert.doesNotThrow(() => controller.destroy());
+  assert.deepEqual(removes, calls.slice().reverse(), 'destroy remains idempotent after automatic cleanup');
+});
+
+test('fdWire reports a partial window registration failure and unwinds every installed listener', () => {
+  const rootCalls = [];
+  const rootRemoves = [];
+  const windowCalls = [];
+  const windowRemoves = [];
+  const activeRoot = new Map();
+  const activeWindow = new Map();
+  const root = {
+    addEventListener(type, fn) { rootCalls.push([type, fn]); activeRoot.set(type, fn); },
+    removeEventListener(type, fn) {
+      rootRemoves.push([type, fn]);
+      if (activeRoot.get(type) === fn) activeRoot.delete(type);
+    },
+  };
+  const fakeWindow = {
+    addEventListener(type, fn) {
+      windowCalls.push([type, fn]);
+      activeWindow.set(type, fn);
+      if (type === 'popstate') throw new Error('private window registration failure');
+    },
+    removeEventListener(type, fn) {
+      windowRemoves.push([type, fn]);
+      if (activeWindow.get(type) === fn) activeWindow.delete(type);
+    },
+    location: { href: 'https://example.test/', search: '', pathname: '/' },
+  };
+  let controller;
+  assert.doesNotThrow(() => {
+    controller = F.fdWire(root, { ...roleContext }, { window: fakeWindow, render: () => {} });
+  });
+  assert.equal(controller.ok, false);
+  assert.deepEqual(rootRemoves, rootCalls.slice().reverse());
+  assert.deepEqual(windowRemoves, windowCalls.slice().reverse());
+  assert.deepEqual([...activeRoot.keys()], []);
+  assert.deepEqual([...activeWindow.keys()], [], 'a register-then-throw window handler must not remain live');
+  assert.doesNotThrow(() => controller.destroy());
 });
 
 function actionTarget(attrs, extra = {}) {
@@ -374,9 +445,94 @@ function fakeHarness(initial, options = {}) {
     facultyPreview: options.facultyPreview,
     facultyPreviewLock: options.facultyPreviewLock,
     externalModalOpen: options.externalModalOpen,
+    releaseStartupGate: options.releaseStartupGate,
   });
+  if (options.commitStartup !== false) controller.commitStartup();
   return { root, rootHandlers, fakeWindow, windowHandlers, controller };
 }
+
+test('pre-commit handlers prevent click, input, keyboard, and popstate without changing ownership', () => {
+  const storage = memStorage();
+  const LocalF = make(storage);
+  const routes = [];
+  const renders = [];
+  const releases = [];
+  const historyCalls = [];
+  const initial = {
+    ...roleContext, screen: 'app', tab: 'today', openId: 'orientation.md',
+    fromTab: 'today', searchOpen: true, query: '', done: {},
+  };
+  const h = fakeHarness(initial, {
+    F: LocalF,
+    commitStartup: false,
+    route: (route) => routes.push(route),
+    render: (...args) => renders.push(args),
+    renderTransient: (...args) => renders.push(args),
+    releaseStartupGate: () => { releases.push('released'); return true; },
+    history: {
+      state: null,
+      replaceState: (...args) => historyCalls.push(['replace', ...args]),
+      pushState: (...args) => historyCalls.push(['push', ...args]),
+    },
+  });
+  const beforeState = h.controller.getState();
+  const beforeStorage = storage.dump();
+  let prevented = 0;
+  const preventDefault = () => { prevented += 1; };
+  const input = {
+    tagName: 'INPUT', isContentEditable: false, value: 'hostile precommit query',
+    matches: (selector) => selector === '.fd-searchpanel__input',
+  };
+
+  h.rootHandlers.click({
+    target: actionTarget({ 'data-fd-tab': 'path' }), preventDefault,
+  });
+  h.rootHandlers.input({ target: input, preventDefault });
+  h.windowHandlers.keydown({ key: 'Escape', target: input, preventDefault });
+  h.windowHandlers.popstate({
+    state: { fd: true, state: { tab: 'path', openId: null } }, preventDefault,
+  });
+
+  assert.deepEqual(h.controller.getState(), beforeState);
+  assert.deepEqual(storage.dump(), beforeStorage);
+  assert.deepEqual(routes, []);
+  assert.deepEqual(renders, []);
+  assert.deepEqual(historyCalls, []);
+  assert.equal(prevented, 4);
+  assert.equal(h.controller.startupCommitted(), false);
+
+  assert.equal(h.controller.commitStartup(), true);
+  assert.equal(h.controller.startupCommitted(), true);
+  assert.deepEqual(releases, ['released']);
+  assert.equal(historyCalls.length, 1, 'history commits once before the learner gate releases');
+
+  h.rootHandlers.click({
+    target: actionTarget({ 'data-fd-tab': 'path' }), preventDefault() {},
+  });
+  assert.equal(h.controller.getState().tab, 'path', 'the same handler activates after commit');
+});
+
+test('a failed native startup-gate release leaves every controller handler pre-commit', () => {
+  const storage = memStorage();
+  const LocalF = make(storage);
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'today' }, {
+    F: LocalF,
+    commitStartup: false,
+    releaseStartupGate: () => false,
+    history: { state: null, replaceState() {}, pushState() {} },
+  });
+  let prevented = 0;
+
+  assert.equal(h.controller.commitStartup(), false);
+  assert.equal(h.controller.startupCommitted(), false);
+  h.rootHandlers.click({
+    target: actionTarget({ 'data-fd-tab': 'path' }),
+    preventDefault() { prevented += 1; },
+  });
+  assert.equal(prevented, 1);
+  assert.equal(h.controller.getState().tab, 'today');
+  assert.deepEqual(storage.dump(), {});
+});
 
 test('delegated tool expansion persists as a layout-only transient without routing or reopening', () => {
   const storage = memStorage();
@@ -1093,7 +1249,9 @@ test('initial legacy aliases replace only the route portion and never call the r
       F, location, history: memory.history,
       openResource: (ref) => { opened.push(ref); },
       openProgress: () => {},
+      commitStartup: false,
     });
+    assert.equal(h.controller.commitStartup(), true);
     memory.bind(h.windowHandlers.popstate);
     assert.equal(memory.entries.length, 1);
     assert.equal(memory.entries[0].route, expectedRoute);
@@ -1125,7 +1283,10 @@ test('initial Home alias persists its normalized Today state before the canonica
   const memory = memoryHistory(location);
   const resolved = LocalF.fdResolveState(location.href, stored);
 
-  fakeHarness(resolved, { F: LocalF, location, history: memory.history });
+  const h = fakeHarness(resolved, {
+    F: LocalF, location, history: memory.history, commitStartup: false,
+  });
+  assert.equal(h.controller.commitStartup(), true);
 
   assert.equal(location.search, '?case=reload');
   const persisted = JSON.parse(ls.dump().cw_frontdoor_v1);

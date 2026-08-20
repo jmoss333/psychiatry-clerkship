@@ -1,6 +1,7 @@
 """Build verified, site-specific data for the dormant Front Door modules."""
 import copy
 import json
+import re
 
 
 DATA_DEFAULTS = {
@@ -9,6 +10,9 @@ DATA_DEFAULTS = {
     "FD_TOOL_REGISTRY": "{}",
     "FD_SITE_MANIFEST": "{}",
     "FD_ROLES": "[]",
+    "FD_AUDIENCE": "\"\"",
+    "FD_CORE_REVISION": "\"\"",
+    "FD_ROTATION_EDITION_CATALOG": "{}",
 }
 
 GOVERNANCE_KEYS = {"status", "riskKind", "riskLevel"}
@@ -60,7 +64,7 @@ def _catalog_entries(catalog):
     return entries
 
 
-def build_frontdoor_payload(site, curriculum, catalog):
+def build_frontdoor_payload(site, curriculum, catalog, revision, rotation_projection=None):
     """Return a normalized Front Door projection after a site's nav is final.
 
     curriculum.json owns only placement.  The final site navigation owns every
@@ -69,8 +73,17 @@ def build_frontdoor_payload(site, curriculum, catalog):
     """
     if site not in ("ms3", "resident"):
         raise ValueError("unsupported site '%s'" % site)
+    if not isinstance(revision, str) or re.fullmatch(r"[0-9a-f]{40}", revision) is None:
+        raise ValueError("revision must be a lowercase 40-character hexadecimal value")
     if not isinstance(curriculum, dict):
         raise ValueError("curriculum must be an object")
+    if rotation_projection is None:
+        rotation_projection = {
+            "schemaVersion": 1, "audience": site, "revision": "", "projectionDigest": "",
+            "rotationEditionV2": "disabled", "selectionKeys": [], "resolutionRecords": [], "blockedKeys": [],
+        }
+    if not isinstance(rotation_projection, dict) or rotation_projection.get("audience") != site:
+        raise ValueError("rotation projection must be a matching audience object")
 
     expected_paths = {"ms3": ("ms3-six-week", 6), "resident": ("resident-four-week", 4)}
     learning_paths = curriculum.get("learningPaths")
@@ -177,7 +190,14 @@ def build_frontdoor_payload(site, curriculum, catalog):
     roles = curriculum.get("roles", {}).get(site)
     if not isinstance(roles, list):
         raise ValueError("curriculum.roles.%s must be a list" % site)
-    return {"curriculum": projected, "roles": copy.deepcopy(roles), "manifest": manifest}
+    return {
+        "curriculum": projected,
+        "roles": copy.deepcopy(roles),
+        "manifest": manifest,
+        "audience": site,
+        "coreRevision": revision,
+        "rotationEditionCatalog": copy.deepcopy(rotation_projection),
+    }
 
 
 def inject_frontdoor_payload(path, payload, topic_meta, tool_registry):
@@ -188,6 +208,9 @@ def inject_frontdoor_payload(path, payload, topic_meta, tool_registry):
         "FD_TOOL_REGISTRY": tool_registry,
         "FD_SITE_MANIFEST": payload["manifest"],
         "FD_ROLES": payload["roles"],
+        "FD_AUDIENCE": payload["audience"],
+        "FD_CORE_REVISION": payload["coreRevision"],
+        "FD_ROTATION_EDITION_CATALOG": payload["rotationEditionCatalog"],
     }
     with open(path, encoding="utf-8") as fh:
         text = fh.read()
@@ -205,5 +228,33 @@ def inject_frontdoor_payload(path, payload, topic_meta, tool_registry):
             raise ValueError("Front Door data needle lacks a terminating semicolon: %s" % name)
         text = (text[:value_start] + _inline_json(values[name])
                 + text[value_end:])
+    with open(path, "w", encoding="utf-8") as fh:
+        fh.write(text)
+
+
+def assert_catalog_resolver_injected(path, expected_revision):
+    """Keep the closed catalog resolver immediately available to both Front Door consumers."""
+    with open(path, encoding="utf-8") as fh:
+        text = fh.read()
+    signature = "var fdEditionCatalogSnapshot=FD_EDITION_CATALOG.snapshot;"
+    if text.count(signature) != 1:
+        raise ValueError("Front Door catalog resolver missing or duplicated")
+    marker = "var FD_ROTATION_EDITION_CATALOG="
+    if text.count(marker) != 1:
+        raise ValueError("Front Door catalog revision value missing or duplicated")
+    start = text.index(marker) + len(marker)
+    try:
+        projection, _end = json.JSONDecoder().raw_decode(text[start:])
+    except json.JSONDecodeError as error:
+        raise ValueError("Front Door catalog revision value is not JSON") from error
+    revision = projection.get("revision") if isinstance(projection, dict) else None
+    if not isinstance(expected_revision, str) or re.fullmatch(r"sha256-[A-Za-z0-9_-]{43}", expected_revision) is None:
+        raise ValueError("trusted Front Door catalog revision is malformed")
+    if revision != expected_revision:
+        raise ValueError("Front Door catalog revision is malformed")
+    expected = re.compile(r"var EXPECTED_REVISION='(?:__FD_CATALOG_EXPECTED_REVISION__|sha256-[A-Za-z0-9_-]{43})';")
+    if len(expected.findall(text)) != 1:
+        raise ValueError("Front Door catalog resolver revision sentinel missing or duplicated")
+    text = expected.sub("var EXPECTED_REVISION='%s';" % expected_revision, text)
     with open(path, "w", encoding="utf-8") as fh:
         fh.write(text)

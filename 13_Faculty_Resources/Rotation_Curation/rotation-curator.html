@@ -1,0 +1,766 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Faculty rotation edition builder</title>
+  <link rel="stylesheet" href="../frontdoor.css">
+  <!-- [CLERKSHIP-META v1] tool="Rotation Edition Curator" version="1.0" built="2026-08-19" category="faculty-curation" audience="faculty" settings="self-study" time="20min" clinicalClaim="false" summary="Arrange an audience-locked curriculum and bounded local orientation into an account-free edition link." -->
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #f7f2e9;
+      --surface: #fffdf8;
+      --ink: #28332f;
+      --muted: #5d6964;
+      --evergreen: #174d43;
+      --evergreen-soft: #dce9e4;
+      --terracotta: #9f3f2a;
+      --terracotta-soft: #f5ddd5;
+      --gold: #b77731;
+      --line: #d6cec1;
+      --shadow: 0 14px 35px rgba(48, 42, 35, .09);
+    }
+    * { box-sizing: border-box; }
+    html { background: var(--paper); }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.55;
+    }
+    button, input, select, textarea { font: inherit; }
+    button, .touch-target { min-height: 44px; }
+    button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible,
+    select:focus-visible, [tabindex]:focus-visible {
+      outline: 3px solid var(--gold);
+      outline-offset: 3px;
+    }
+    .curator-shell {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 36px 0 56px;
+    }
+    .curator-header {
+      display: grid;
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .curator-kicker {
+      margin: 0;
+      color: var(--terracotta);
+      font-size: .76rem;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    h1, h2, p { margin-top: 0; }
+    h1 {
+      max-width: 780px;
+      margin-bottom: 0;
+      color: var(--evergreen);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(2rem, 4.5vw, 3.7rem);
+      line-height: 1.02;
+      letter-spacing: -.03em;
+    }
+    .context-lock {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      color: var(--evergreen);
+      font-size: .9rem;
+      font-weight: 750;
+    }
+    .context-lock span {
+      display: inline-flex;
+      min-height: 32px;
+      align-items: center;
+      padding: 5px 10px;
+      border: 1px solid #9bb8af;
+      border-radius: 999px;
+      background: var(--evergreen-soft);
+      overflow-wrap: anywhere;
+    }
+    .boundary-band {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 12px;
+      align-items: start;
+      padding: 16px 18px;
+      border: 1px solid #d6a797;
+      border-left: 5px solid var(--terracotta);
+      border-radius: 10px;
+      background: var(--terracotta-soft);
+      color: #5d271c;
+    }
+    .boundary-band strong { display: block; margin-bottom: 2px; }
+    .boundary-band p { margin-bottom: 0; }
+    .boundary-mark { font-size: 1.2rem; font-weight: 900; line-height: 1.4; }
+    .step-rail {
+      margin: 22px 0;
+      padding: 0;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+    .step-rail ol {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .step-rail li { min-width: 0; border-right: 1px solid var(--line); }
+    .step-rail li:last-child { border-right: 0; }
+    .step-rail button {
+      width: 100%;
+      padding: 11px 9px 10px;
+      border: 0;
+      border-top: 4px solid transparent;
+      color: var(--muted);
+      background: transparent;
+      font-size: .82rem;
+      font-weight: 750;
+      line-height: 1.2;
+      text-align: left;
+    }
+    .step-rail button[aria-current="step"] {
+      border-top-color: var(--terracotta);
+      color: var(--evergreen);
+      background: #fbf6ed;
+    }
+    .step-number {
+      display: block;
+      margin-bottom: 3px;
+      color: var(--terracotta);
+      font-size: .72rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(280px, .65fr);
+      gap: 20px;
+      align-items: start;
+    }
+    .panel {
+      min-width: 0;
+      padding: clamp(20px, 3vw, 30px);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      overflow-wrap: anywhere;
+    }
+    .panel h2 {
+      margin-bottom: 8px;
+      color: var(--evergreen);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 1.45rem;
+    }
+    .panel-note { color: var(--muted); }
+    .fd-curator-v2 { display: grid; gap: 12px; }
+    .fd-curator-v2 > h2 { margin-bottom: 2px; }
+    .fd-curator-v2 input, .fd-curator-v2 select {
+      width: 100%;
+      min-height: 44px;
+      padding: 9px 11px;
+      border: 1px solid #8f9b96;
+      border-radius: 7px;
+      color: var(--ink);
+      background: #fff;
+    }
+    .fd-curator-v2 label { color: var(--evergreen); font-weight: 800; }
+    .fd-curator-library-item, .fd-curator-week {
+      display: grid;
+      gap: 10px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fbf6ed;
+    }
+    .fd-curator-library-item h3, .fd-curator-week h3 { margin: 0; }
+    .fd-curator-placement, .fd-curator-schedule-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      align-items: end;
+      padding-top: 10px;
+      border-top: 1px solid var(--line);
+    }
+    .fd-curator-schedule-row { grid-template-columns: minmax(140px, 1fr) auto auto minmax(120px, .6fr) auto; }
+    .fd-curator-onboarding { padding: 12px 14px; border-left: 4px solid var(--gold); background: #fff3d8; }
+    .preview-panel { position: sticky; top: 18px; }
+    [data-review-viewport="mobile"] .preview-panel { width: 100%; max-width: 390px; margin-inline: auto; }
+    [data-review-viewport="desktop"] .preview-panel { width: 100%; max-width: none; }
+    .local-view-toggle {
+      display: none;
+      position: sticky;
+      top: 0;
+      z-index: 4;
+      gap: 8px;
+      margin-bottom: 12px;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+    .local-view-toggle button { flex: 1; }
+    .local-view-toggle button[aria-pressed="true"] { color: var(--fd-on-accent,#fff); background: var(--fd-teal-deep,var(--evergreen)); }
+    .edition-form {
+      display: grid;
+      gap: 18px;
+      margin-top: 22px;
+    }
+    .field-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+    .field { min-width: 0; }
+    .field-wide { grid-column: 1 / -1; }
+    .field label {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--evergreen);
+      font-weight: 800;
+    }
+    .field input, .field textarea, .field select, .placement-fields textarea,
+    .placement-fields select, .schedule-actions select, .curator-search input {
+      width: 100%;
+      min-height: 44px;
+      padding: 9px 11px;
+      border: 1px solid #8f9b96;
+      border-radius: 7px;
+      color: var(--ink);
+      background: #fff;
+    }
+    textarea { resize: vertical; }
+    .field-description {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: .86rem;
+    }
+    .locked-facts, .draft-actions, .import-panel, .error-summary {
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fbf6ed;
+    }
+    .locked-facts p, .draft-actions p, .import-panel p { margin-bottom: 0; }
+    .locked-facts dl {
+      display: grid;
+      grid-template-columns: max-content 1fr;
+      gap: 5px 12px;
+      margin: 10px 0 0;
+    }
+    .locked-facts dt { font-weight: 800; }
+    .locked-facts dd { margin: 0; overflow-wrap: anywhere; }
+    .draft-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 16px;
+      align-items: center;
+    }
+    .primary-action, .secondary-action {
+      padding: 9px 15px;
+      border-radius: 7px;
+      font-weight: 800;
+    }
+    .primary-action { border: 1px solid var(--fd-teal-deep,var(--evergreen)); color: var(--fd-on-accent,#fff); background: var(--fd-teal-deep,var(--evergreen)); }
+    .secondary-action { border: 1px solid #72857e; color: var(--evergreen); background: #fff; }
+    .file-label {
+      display: inline-flex;
+      align-items: center;
+      min-height: 44px;
+      padding: 9px 15px;
+      border: 1px solid #72857e;
+      border-radius: 7px;
+      color: var(--evergreen);
+      background: #fff;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .error-summary { border-color: var(--terracotta); background: var(--terracotta-soft); color: #5d271c; }
+    .error-summary h3 { margin: 0 0 6px; font-size: 1rem; }
+    .error-summary ul { margin: 0; padding-left: 22px; }
+    .error-summary a { color: #6b2618; font-weight: 750; }
+    .advisory-summary {
+      margin: 14px 0;
+      padding: 14px 16px;
+      border: 1px solid #b77731;
+      border-radius: 10px;
+      background: #fff3d8;
+      color: var(--ink);
+    }
+    .advisory-summary h3 { margin: 0 0 6px; font-size: 1rem; }
+    .advisory-summary ul { margin: 0; padding-left: 22px; }
+    .advisory-summary a { color: #4b3a21; font-weight: 750; }
+    [hidden] { display: none !important; }
+    .curator-search {
+      display: grid;
+      gap: 5px;
+      margin: 20px 0;
+    }
+    .curator-search label { color: var(--evergreen); font-weight: 800; }
+    .curator-resource-groups, .curator-schedule-weeks { display: grid; gap: 18px; }
+    .curator-resource-group, .curator-week {
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: #fbf8f1;
+      overflow: hidden;
+    }
+    .curator-resource-group h3, .curator-week-heading {
+      margin: 0;
+      padding: 11px 14px;
+      color: var(--evergreen);
+      background: var(--evergreen-soft);
+      font-size: 1rem;
+    }
+    .curator-resource-group > ul, .curator-week-list, .placement-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .curator-resource, .schedule-item {
+      padding: 14px;
+      border-top: 1px solid var(--line);
+      background: var(--surface);
+    }
+    .curator-resource:first-child, .schedule-item:first-child { border-top: 0; }
+    .curator-resource-head, .curator-week-heading, .schedule-item {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .resource-ref, .schedule-meta {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: .82rem;
+      overflow-wrap: anywhere;
+    }
+    .placement-count, .preview-label {
+      color: var(--terracotta);
+      font-size: .78rem;
+      font-weight: 850;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+    .resource-actions, .schedule-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 11px;
+    }
+    .resource-actions .secondary-action, .schedule-actions .secondary-action { padding: 7px 11px; }
+    .secondary-action:disabled { color: #77736d; background: #eee9df; cursor: not-allowed; }
+    .placement-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .placement-list > li {
+      padding: 12px;
+      border-left: 4px solid var(--gold);
+      border-radius: 7px;
+      background: #f7f1e7;
+    }
+    .placement-list p { margin-bottom: 7px; }
+    .placement-fields {
+      display: grid;
+      grid-template-columns: minmax(150px, .35fr) minmax(0, 1fr);
+      gap: 12px;
+    }
+    .placement-fields label { display: block; margin-bottom: 4px; color: var(--evergreen); font-weight: 800; }
+    .character-count { margin: 3px 0 0; color: var(--muted); font-size: .8rem; text-align: right; }
+    .curator-week-heading h3 { margin: 0; font-size: 1rem; }
+    .curator-week-heading span { color: var(--muted); font-size: .84rem; font-weight: 750; }
+    .schedule-actions { justify-content: flex-end; margin-top: 0; }
+    .schedule-actions select { width: auto; min-width: 110px; }
+    .remove-action { border-color: #b87564; color: #722f20; }
+    .empty-state { margin: 0; padding: 14px; color: var(--muted); }
+    .preview-weeks { display: grid; gap: 10px; }
+    .preview-weeks section, .preview-library {
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbf8f1;
+    }
+    .preview-weeks h3, .preview-library h3 { margin: 0 0 5px; color: var(--evergreen); font-size: .92rem; }
+    .preview-weeks ol, .preview-library ul { margin: 0; padding-left: 20px; }
+    .preview-weeks li span { display: block; color: var(--muted); font-size: .8rem; }
+    .preview-library { margin-top: 12px; }
+    .preview-library summary { color: var(--evergreen); font-weight: 800; cursor: pointer; }
+    .local-editor { display: grid; gap: 22px; }
+    .local-section {
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: #fbf8f1;
+    }
+    .local-section h3 { margin: 0 0 6px; color: var(--evergreen); }
+    .local-list { display: grid; gap: 12px; margin: 14px 0 0; padding: 0; list-style: none; }
+    .local-item { padding: 13px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+    .local-add { display: grid; gap: 12px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); }
+    .local-preview { display: grid; gap: 10px; margin-top: 14px; }
+    .local-preview section { padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: #fbf8f1; }
+    .local-preview h3 { margin: 0 0 5px; color: var(--evergreen); font-size: .92rem; }
+    .local-preview ul, .local-preview ol { margin: 0; padding-left: 20px; }
+    .local-preview li span { display: block; color: var(--muted); font-size: .82rem; }
+    .preview-local-label { margin: 0; color: var(--terracotta); font-size: .75rem; font-weight: 850; text-transform: uppercase; }
+    .review-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+    .placeholder-lines {
+      display: grid;
+      gap: 10px;
+      margin: 22px 0;
+    }
+    .placeholder-lines span {
+      display: block;
+      height: 12px;
+      border-radius: 999px;
+      background: #e9e2d6;
+    }
+    .placeholder-lines span:nth-child(2) { width: 76%; }
+    .placeholder-lines span:nth-child(3) { width: 58%; }
+    .final-action {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 20px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #eee9df;
+    }
+    .final-action p { max-width: 720px; margin: 0; color: var(--muted); }
+    #curatorGenerate {
+      flex: 0 0 auto;
+      min-width: 190px;
+      padding: 10px 18px;
+      border: 1px solid #aaa398;
+      border-radius: 8px;
+      color: #6f6a62;
+      background: #d9d5cd;
+      font-weight: 800;
+      cursor: not-allowed;
+      opacity: 1;
+    }
+    .visually-hidden {
+      position: absolute !important;
+      width: 1px !important;
+      height: 1px !important;
+      padding: 0 !important;
+      margin: -1px !important;
+      overflow: hidden !important;
+      clip: rect(0, 0, 0, 0) !important;
+      white-space: nowrap !important;
+      border: 0 !important;
+    }
+    @media (max-width: 760px) {
+      .curator-shell { width: min(100% - 20px, 680px); padding-top: 22px; }
+      .step-rail ol { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+      .step-rail li { border-right: 1px solid var(--line); border-bottom: 0; }
+      .step-rail li:last-child { border-right: 0; }
+      .step-rail button { min-height: 68px; padding: 7px 3px; border-top: 4px solid transparent; text-align: center; overflow-wrap: anywhere; }
+      .step-rail button[aria-current="step"] { border-top-color: var(--terracotta); }
+      .workspace { grid-template-columns: 1fr; }
+      .field-grid { grid-template-columns: 1fr; }
+      .placement-fields { grid-template-columns: 1fr; }
+      .field-wide { grid-column: auto; }
+      .locked-facts dl { grid-template-columns: 1fr; gap: 2px; }
+      .locked-facts dd { margin-bottom: 7px; }
+      .preview-panel { position: static; }
+      .local-view-toggle { display: flex; }
+      [data-local-view="edit"] #curatorLocalViewToggle:not([hidden]) + .workspace .preview-panel { display: none; }
+      [data-local-view="preview"] #curatorLocalViewToggle:not([hidden]) + .workspace #curatorEditorMount { display: none; }
+      .curator-resource-head, .curator-week-heading, .schedule-item { align-items: flex-start; }
+      .schedule-item { display: grid; }
+      .fd-curator-placement, .fd-curator-schedule-row { grid-template-columns: 1fr; align-items: stretch; }
+      .schedule-actions { justify-content: flex-start; }
+      .final-action { align-items: stretch; }
+      #curatorGenerate { width: 100%; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <main id="root" class="curator-shell" data-local-view="edit">
+    <header class="curator-header">
+      <p class="curator-kicker">Faculty worksheet · pending review</p>
+      <h1>Faculty rotation edition builder</h1>
+      <div class="context-lock" aria-label="Locked audience and curriculum path">
+        <span id="curatorAudienceLock">Audience locked by this site</span>
+        <span id="curatorPathLock">Canonical path locked by this site</span>
+      </div>
+      <div class="boundary-band" role="alert">
+        <span class="boundary-mark" aria-hidden="true">!</span>
+        <div>
+          <strong>Account-free and not access-controlled</strong>
+          <p>Pending faculty and privacy review. Identity is self-entered and is not verified; this tool does not imply endorsement or institutional approval.</p>
+        </div>
+      </div>
+    </header>
+
+    <nav class="step-rail" aria-label="Builder steps">
+      <ol>
+        <li><button type="button" data-curator-step="1" aria-current="step"><span class="step-number">Step 1</span>Edition</button></li>
+        <li><button type="button" data-curator-step="2"><span class="step-number">Step 2</span>Curriculum</button></li>
+        <li><button type="button" data-curator-step="3"><span class="step-number">Step 3</span>Schedule</button></li>
+        <li><button type="button" data-curator-step="4"><span class="step-number">Step 4</span>Local details</button></li>
+        <li><button type="button" data-curator-step="5"><span class="step-number">Step 5</span>Preview and share</button></li>
+      </ol>
+    </nav>
+
+    <p id="curatorStepStatus" class="visually-hidden" role="status" aria-live="polite">Step 1 of 5: Edition</p>
+    <div id="curatorLocalViewToggle" class="local-view-toggle" aria-label="Local details view" hidden>
+      <button type="button" class="secondary-action" data-curator-local-view="edit" aria-pressed="true">Edit</button>
+      <button type="button" class="secondary-action" data-curator-local-view="preview" aria-pressed="false">Preview</button>
+    </div>
+    <div class="workspace">
+      <section id="curatorEditorMount" class="panel" aria-labelledby="curatorEditorTitle">
+        <template data-curator-v1-inert>
+        <h2 id="curatorEditorTitle">1. Edition</h2>
+        <div id="curatorErrorSummary" class="error-summary" role="alert" tabindex="-1" hidden>
+          <h3>Review the following fields</h3>
+          <ul id="curatorErrorList"></ul>
+        </div>
+        <div id="curatorAdvisorySummary" class="advisory-summary" hidden></div>
+        <div id="curatorStepOne">
+          <p class="panel-note">Name this edition and identify its local curator. Dates are informational and do not expire or disable an existing edition.</p>
+          <div class="edition-form">
+            <section class="locked-facts" aria-labelledby="curatorLockedFactsTitle">
+              <strong id="curatorLockedFactsTitle">Audience, canonical path, and duration are locked by this site</strong>
+              <dl>
+                <dt>Audience</dt><dd id="curatorAudienceFact">Current audience site</dd>
+                <dt>Canonical path</dt><dd id="curatorPathFact">Current audience path</dd>
+                <dt>Edition number</dt><dd id="curatorEditionNumber">Edition 1</dd>
+              </dl>
+            </section>
+            <div class="field-grid">
+              <div class="field field-wide">
+                <label for="curatorTitle">Edition title</label>
+                <input id="curatorTitle" name="title" type="text" maxlength="200" data-curator-max-codepoints="100" aria-describedby="curatorTitleDescription" data-curator-card="title" autocomplete="off">
+                <p id="curatorTitleDescription" class="field-description">A short trainee-facing name for this rotation edition.</p>
+              </div>
+              <div class="field">
+                <label for="curatorLocationName">Training-location display name</label>
+                <input id="curatorLocationName" name="locationName" type="text" maxlength="200" data-curator-max-codepoints="100" aria-describedby="curatorLocationNameDescription" data-curator-card="locationName" autocomplete="organization">
+                <p id="curatorLocationNameDescription" class="field-description">The public location name students should recognize.</p>
+              </div>
+              <div class="field">
+                <label for="curatorLocationCode">Short location code</label>
+                <input id="curatorLocationCode" name="locationCode" type="text" maxlength="8" aria-describedby="curatorLocationCodeDescription" data-curator-card="locationCode" autocapitalize="characters" autocomplete="off">
+                <p id="curatorLocationCodeDescription" class="field-description">Use 2–8 letters or digits. It is normalized to uppercase.</p>
+              </div>
+              <div class="field">
+                <label for="curatorName">Curator display name</label>
+                <input id="curatorName" name="curatorName" type="text" maxlength="200" data-curator-max-codepoints="100" aria-describedby="curatorNameDescription" data-curator-card="curatorName" autocomplete="name">
+                <p id="curatorNameDescription" class="field-description">Self-entered public display name; identity is not digitally verified.</p>
+              </div>
+              <div class="field">
+                <label for="curatorRole">Curator professional role</label>
+                <input id="curatorRole" name="curatorRole" type="text" maxlength="200" data-curator-max-codepoints="100" aria-describedby="curatorRoleDescription" data-curator-card="curatorRole" autocomplete="organization-title">
+                <p id="curatorRoleDescription" class="field-description">For example, attending psychiatrist or clerkship director.</p>
+              </div>
+              <div class="field">
+                <label for="curatorRotationStart">Rotation start date</label>
+                <input id="curatorRotationStart" name="rotationStart" type="date" aria-describedby="curatorRotationStartDescription" data-curator-card="rotationStart">
+                <p id="curatorRotationStartDescription" class="field-description">Informational only; past dates remain valid.</p>
+              </div>
+              <div class="field">
+                <label for="curatorRotationEnd">Rotation end date</label>
+                <input id="curatorRotationEnd" name="rotationEnd" type="date" aria-describedby="curatorRotationEndDescription" data-curator-card="rotationEnd">
+                <p id="curatorRotationEndDescription" class="field-description">Must not be before the rotation start date.</p>
+              </div>
+              <div class="field">
+                <label for="curatorLastVerified">Informational last-verified date</label>
+                <input id="curatorLastVerified" name="lastVerified" type="date" aria-describedby="curatorLastVerifiedDescription" data-curator-card="lastVerified">
+                <p id="curatorLastVerifiedDescription" class="field-description">Shows when the curator last checked local details; it is not an expiration date.</p>
+              </div>
+            </div>
+            <section class="import-panel" aria-labelledby="curatorImportTitle">
+              <strong id="curatorImportTitle">Continue from a JSON backup</strong>
+              <p>Import one validated backup for this audience. Files larger than 64 KiB are rejected before being read.</p>
+              <label class="file-label" for="curatorImportFile">Choose JSON backup</label>
+              <input id="curatorImportFile" type="file" accept="application/json,.json" class="visually-hidden">
+            </section>
+            <div class="draft-actions">
+              <button type="button" id="curatorSaveDraft" class="secondary-action">Save draft on this device</button>
+              <p id="curatorSaveStatus" role="status" aria-live="polite" data-saved-copy="Saved on this device">Not yet saved on this device.</p>
+              <button type="button" id="curatorContinue" class="primary-action">Continue to curriculum</button>
+            </div>
+          </div>
+        </div>
+        <div id="curatorStepTwo" hidden>
+          <p class="panel-note"><strong>Required means required by this local rotation only.</strong> It does not create a universal, institutional, licensing, or clinical requirement.</p>
+          <p class="panel-note">Omitting a core resource removes it only from this curated Path. The resource remains available in the student's complete Library.</p>
+          <div class="curator-search">
+            <label for="curatorLibrarySearch">Search this audience's Library</label>
+            <input id="curatorLibrarySearch" type="search" autocomplete="off" aria-describedby="curatorLibrarySearchDescription">
+            <p id="curatorLibrarySearchDescription" class="field-description">Choices come only from the Library projected into this audience site. Add another placement when trainees should revisit one resource.</p>
+          </div>
+          <div id="curatorCurriculumGroups" class="curator-resource-groups"></div>
+        </div>
+        <div id="curatorStepThree" hidden>
+          <p class="panel-note">Every schedule action is available without drag and drop. Move selected resources within a week or to another locked week.</p>
+          <div id="curatorScheduleWeeks" class="curator-schedule-weeks"></div>
+        </div>
+        <div id="curatorStepFour" hidden>
+          <div class="boundary-band local-privacy-boundary" role="note">
+            <span class="boundary-mark" aria-hidden="true">!</span>
+            <div>
+              <strong>Public-link privacy boundary</strong>
+              <p>No PHI, learner information, evaluations, credentials, access codes, private contact details, doses, copied clinical protocols, or direct clinical directives.</p>
+              <p>For local protocols or access instructions, add an official HTTPS institutional link instead of copying the content here.</p>
+            </div>
+          </div>
+          <div class="local-editor edition-form">
+            <section class="local-section" aria-labelledby="curatorOrientationTitle">
+              <h3 id="curatorOrientationTitle">Structured local orientation</h3>
+              <p class="field-description">Plain text only. Each field is optional and limited to 600 characters.</p>
+              <div class="field-grid">
+                <div class="field field-wide"><label for="curatorFirstDayArrival">First-day arrival guidance</label><textarea id="curatorFirstDayArrival" maxlength="1200" data-curator-max-codepoints="600" rows="3" aria-describedby="curatorFirstDayArrivalDescription curatorFirstDayArrivalCount" data-curator-orientation="firstDayArrival"></textarea><p id="curatorFirstDayArrivalDescription" class="field-description">Public arrival timing and meeting-place guidance without access codes or private contact details.</p><p id="curatorFirstDayArrivalCount" class="character-count">0 of 600 characters</p></div>
+                <div class="field field-wide"><label for="curatorDailySchedule">Typical daily schedule</label><textarea id="curatorDailySchedule" maxlength="1200" data-curator-max-codepoints="600" rows="3" aria-describedby="curatorDailyScheduleDescription curatorDailyScheduleCount" data-curator-orientation="dailySchedule"></textarea><p id="curatorDailyScheduleDescription" class="field-description">A general trainee-facing outline of the day.</p><p id="curatorDailyScheduleCount" class="character-count">0 of 600 characters</p></div>
+                <div class="field field-wide"><label for="curatorRoundsWorkflow">Rounds workflow</label><textarea id="curatorRoundsWorkflow" maxlength="1200" data-curator-max-codepoints="600" rows="3" aria-describedby="curatorRoundsWorkflowDescription curatorRoundsWorkflowCount" data-curator-orientation="roundsWorkflow"></textarea><p id="curatorRoundsWorkflowDescription" class="field-description">Describe the local workflow, not clinical directives.</p><p id="curatorRoundsWorkflowCount" class="character-count">0 of 600 characters</p></div>
+                <div class="field field-wide"><label for="curatorPresentationExpectations">Presentation expectations</label><textarea id="curatorPresentationExpectations" maxlength="1200" data-curator-max-codepoints="600" rows="3" aria-describedby="curatorPresentationExpectationsDescription curatorPresentationExpectationsCount" data-curator-orientation="presentationExpectations"></textarea><p id="curatorPresentationExpectationsDescription" class="field-description">Local format and supervision expectations only.</p><p id="curatorPresentationExpectationsCount" class="character-count">0 of 600 characters</p></div>
+                <div class="field field-wide"><label for="curatorDocumentationExpectations">Documentation expectations</label><textarea id="curatorDocumentationExpectations" maxlength="1200" data-curator-max-codepoints="600" rows="3" aria-describedby="curatorDocumentationExpectationsDescription curatorDocumentationExpectationsCount" data-curator-orientation="documentationExpectations"></textarea><p id="curatorDocumentationExpectationsDescription" class="field-description">Workflow expectations without copied protocols or patient details.</p><p id="curatorDocumentationExpectationsCount" class="character-count">0 of 600 characters</p></div>
+                <div class="field field-wide"><label for="curatorAttendanceExpectations">Attendance expectations</label><textarea id="curatorAttendanceExpectations" maxlength="1200" data-curator-max-codepoints="600" rows="3" aria-describedby="curatorAttendanceExpectationsDescription curatorAttendanceExpectationsCount" data-curator-orientation="attendanceExpectations"></textarea><p id="curatorAttendanceExpectationsDescription" class="field-description">Public expectations for participation and absences.</p><p id="curatorAttendanceExpectationsCount" class="character-count">0 of 600 characters</p></div>
+                <div class="field field-wide"><label for="curatorFeedbackProcess">Feedback process</label><textarea id="curatorFeedbackProcess" maxlength="1200" data-curator-max-codepoints="600" rows="3" aria-describedby="curatorFeedbackProcessDescription curatorFeedbackProcessCount" data-curator-orientation="feedbackProcess"></textarea><p id="curatorFeedbackProcessDescription" class="field-description">How and when trainees can seek feedback; do not enter evaluations.</p><p id="curatorFeedbackProcessCount" class="character-count">0 of 600 characters</p></div>
+                <div class="field field-wide"><label for="curatorAccessPreparation">Approved institutional access or training</label><textarea id="curatorAccessPreparation" maxlength="1200" data-curator-max-codepoints="600" rows="3" aria-describedby="curatorAccessPreparationDescription curatorAccessPreparationCount" data-curator-orientation="accessPreparation"></textarea><p id="curatorAccessPreparationDescription" class="field-description">Explain how to obtain approved access or training. Never enter credentials, codes, or private instructions; link the official HTTPS source below.</p><p id="curatorAccessPreparationCount" class="character-count">0 of 600 characters</p></div>
+              </div>
+            </section>
+
+            <section class="local-section" aria-labelledby="curatorContactsTitle">
+              <h3 id="curatorContactsTitle">Role-based directory contacts</h3>
+              <p class="field-description">Add a public role label and official HTTPS institutional directory link only—never a direct email, phone, pager, or private contact value.</p>
+              <ul id="curatorContactsList" class="local-list"></ul>
+              <div class="local-add field-grid">
+                <div class="field"><label for="curatorNewContactRole">Role label</label><input id="curatorNewContactRole" maxlength="200" data-curator-max-codepoints="100" aria-describedby="curatorNewContactRoleDescription curatorNewContactRoleCount"><p id="curatorNewContactRoleDescription" class="field-description">For example, clerkship coordinator.</p><p id="curatorNewContactRoleCount" class="character-count">0 of 100 characters</p></div>
+                <div class="field"><label for="curatorNewContactDirectoryUrl">Official HTTPS directory URL</label><input id="curatorNewContactDirectoryUrl" type="url" maxlength="4096" data-curator-max-codepoints="2048" inputmode="url" aria-describedby="curatorNewContactDirectoryUrlDescription curatorNewContactDirectoryUrlCount"><p id="curatorNewContactDirectoryUrlDescription" class="field-description">Must begin with https:// and contain no embedded username or password.</p><p id="curatorNewContactDirectoryUrlCount" class="character-count">0 of 2048 characters</p></div>
+                <button type="button" id="curatorAddContact" class="secondary-action">Add directory contact</button>
+              </div>
+            </section>
+
+            <section class="local-section" aria-labelledby="curatorChecklistTitle">
+              <h3 id="curatorChecklistTitle">First-day checklist</h3>
+              <p id="curatorChecklistCap" class="field-description">0 of 24 items</p>
+              <ul id="curatorChecklistList" class="local-list"></ul>
+              <div class="local-add field-grid">
+                <div class="field"><label for="curatorNewChecklistLabel">Checklist label</label><input id="curatorNewChecklistLabel" maxlength="200" data-curator-max-codepoints="100" aria-describedby="curatorNewChecklistLabelDescription curatorNewChecklistLabelCount"><p id="curatorNewChecklistLabelDescription" class="field-description">One concrete, non-clinical first-day action.</p><p id="curatorNewChecklistLabelCount" class="character-count">0 of 100 characters</p></div>
+                <div class="field"><label for="curatorNewChecklistPriority">Local priority</label><select id="curatorNewChecklistPriority"><option value="required">required</option><option value="recommended" selected>recommended</option><option value="optional">optional</option></select></div>
+                <button type="button" id="curatorAddChecklist" class="secondary-action">Add checklist item</button>
+              </div>
+            </section>
+
+            <section class="local-section" aria-labelledby="curatorResourcesTitle">
+              <h3 id="curatorResourcesTitle">Local external resources</h3>
+              <p class="field-description">Every item is labeled “Attending-provided local resource.” Link official local protocols rather than copying them.</p>
+              <p id="curatorResourcesCap" class="field-description">0 of 12 items</p>
+              <ul id="curatorResourcesList" class="local-list"></ul>
+              <div class="local-add field-grid">
+                <div class="field"><label for="curatorNewResourceTitle">Resource title</label><input id="curatorNewResourceTitle" maxlength="200" data-curator-max-codepoints="100" aria-describedby="curatorNewResourceTitleDescription curatorNewResourceTitleCount"><p id="curatorNewResourceTitleDescription" class="field-description">A concise public title.</p><p id="curatorNewResourceTitleCount" class="character-count">0 of 100 characters</p></div>
+                <div class="field"><label for="curatorNewResourceUrl">Official HTTPS URL</label><input id="curatorNewResourceUrl" type="url" maxlength="4096" data-curator-max-codepoints="2048" inputmode="url" aria-describedby="curatorNewResourceUrlDescription curatorNewResourceUrlCount"><p id="curatorNewResourceUrlDescription" class="field-description">The preview displays only the destination domain.</p><p id="curatorNewResourceUrlCount" class="character-count">0 of 2048 characters</p></div>
+                <div class="field"><label for="curatorNewResourcePriority">Local priority</label><select id="curatorNewResourcePriority"><option value="required">required</option><option value="recommended" selected>recommended</option><option value="optional">optional</option></select></div>
+                <div class="field"><label for="curatorNewResourceWeek">Week</label><select id="curatorNewResourceWeek"></select></div>
+                <div class="field field-wide"><label for="curatorNewResourceRationale">Why I selected this</label><textarea id="curatorNewResourceRationale" maxlength="560" data-curator-max-codepoints="280" rows="2" aria-describedby="curatorNewResourceRationaleDescription curatorNewResourceRationaleCount"></textarea><p id="curatorNewResourceRationaleDescription" class="field-description">Optional plain-text rationale.</p><p id="curatorNewResourceRationaleCount" class="character-count">0 of 280 characters</p></div>
+                <button type="button" id="curatorAddResource" class="secondary-action">Add local resource</button>
+              </div>
+            </section>
+
+            <section class="local-section" aria-labelledby="curatorReviewTitle">
+              <h3 id="curatorReviewTitle">Deliberate student preview review</h3>
+              <p class="field-description">Opening this step or resizing the browser does not count. Each action below validates a fresh envelope and projects it through the same student projector.</p>
+              <p id="curatorPreviewReviewStatus" class="field-description" role="status" aria-live="polite">Desktop preview not yet reviewed · Mobile preview not yet reviewed</p>
+              <div class="review-actions">
+                <button type="button" id="curatorReviewDesktop" class="secondary-action">Review desktop preview</button>
+                <button type="button" id="curatorReviewMobile" class="secondary-action">Review mobile preview</button>
+                <button type="button" id="curatorLocalContinue" class="primary-action">Continue to preview and share</button>
+              </div>
+            </section>
+          </div>
+        </div>
+        <div id="curatorFutureStep" hidden>
+          <p class="panel-note">This step remains unavailable until its focused implementation and safety checks are complete.</p>
+          <div class="placeholder-lines" aria-hidden="true"><span></span><span></span><span></span></div>
+        </div>
+        </template>
+      </section>
+      <aside id="curatorPreviewMount" class="panel preview-panel" aria-labelledby="curatorPreviewTitle">
+        <h2 id="curatorPreviewTitle">Student preview</h2>
+        <p id="curatorPreviewViewport" class="panel-note">Choose a deliberate desktop or mobile review to select a preview presentation.</p>
+        <div id="curatorPreviewBody">
+          <p class="panel-note">Preview is read-only and updates from the validated curriculum and schedule.</p>
+        </div>
+      </aside>
+    </div>
+
+    <div class="final-action">
+      <p data-curator-publication-summary><strong>Publication governance is disabled.</strong> Generate remains unavailable unless every reviewed gate is enabled and healthy.</p>
+      <button type="button" id="curatorGenerate" disabled aria-disabled="true" data-curator-generate>Generate edition link</button>
+    </div>
+  </main>
+
+  <script>
+    var FD_CURRICULUM={};
+    /* QA-ALLOW-DOSE-START: canonical-topic-meta */
+    var FD_TOPIC_META={};
+    /* QA-ALLOW-DOSE-END: canonical-topic-meta */
+    var FD_TOOL_REGISTRY={};
+    var FD_SITE_MANIFEST={};
+    var FD_ROLES=[];
+    var FD_AUDIENCE="";
+    var FD_CORE_REVISION="";
+    var FD_ROTATION_EDITION_CATALOG={};
+
+    /*__FD_DATA__*/
+    /*__FD_EDITION_CATALOG__*/
+    /*__FD_EDITION_CONTRACT__*/
+    /*__FD_EDITION_PROJECT__*/
+    /*__FD_EDITION_V1_SALVAGE__*/
+    <!-- QR-VENDOR-RECEIPT package="qrcode-generator@1.4.4" npm-integrity="sha512-HM7yY8O2ilqhmULxGMpcHSF1EhJJ9yBj8gvDEuZ6M+KGJ0YY2hKpnXvRD+hZPLrDVck3ExIGhmPtSdcjC+guuw==" tarball-sha256="ab6ed47d378877441deae95972e07b2716c26545a735a23aa6b9d442b33026ed" source-sha256="18ae399f81182bc9de916e9c77b195df20cc58d6f2d55a62b085a299f1bf1780" license-url="https://raw.githubusercontent.com/kazuhikoarase/qrcode-generator/js1.4.4/LICENSE" license-sha256="3a850fa5f08101db6f40676c2786e10bd2cd5fff7b12ffdf1e0c434d4e49d90c" -->
+    /*__QR_GENERATOR_1_4_4__*/
+    /*__FD_CURATOR__*/
+
+    var FD_INDEX=fdBuildIndex(FD_CURRICULUM,FD_TOPIC_META,FD_TOOL_REGISTRY,FD_SITE_MANIFEST);
+    function fdRotationCatalogContext(value){
+      var revision,gate,descriptor;
+      try{descriptor=Object.getOwnPropertyDescriptor(value,'revision');revision=descriptor&&descriptor.enumerable&&Object.prototype.hasOwnProperty.call(descriptor,'value')&&typeof descriptor.value==='string'&&/^sha256-[A-Za-z0-9_-]{43}$/.test(descriptor.value)?descriptor.value:'';}catch(ignoreRevision){revision='';}
+      try{descriptor=Object.getOwnPropertyDescriptor(value,'rotationEditionV2');gate=descriptor&&descriptor.enumerable&&Object.prototype.hasOwnProperty.call(descriptor,'value')&&(descriptor.value==='enabled'||descriptor.value==='disabled')?descriptor.value:'';}catch(ignoreGate){gate='';}
+      return revision&&gate?{localCatalogRevision:revision,rotationEditionV2:gate}:{localCatalogRevision:'',rotationEditionV2:'disabled'};
+    }
+    var fdRotationCatalogContextValue=fdRotationCatalogContext(FD_ROTATION_EDITION_CATALOG);
+    var FD_CURATOR_CONTEXT={audience:FD_AUDIENCE,pathId:FD_INDEX.path.id,coreRevision:FD_CORE_REVISION,
+      localCatalogRevision:fdRotationCatalogContextValue.localCatalogRevision,
+      rotationEditionV2:fdRotationCatalogContextValue.rotationEditionV2};
+    var fdNow=new Date();
+    var fdLocalCalendar={getFullYear:function(){return fdNow.getFullYear();},
+      getMonth:function(){return fdNow.getMonth();},getDate:function(){return fdNow.getDate();}};
+    var fdGenerationDate=fdCuratorLocalGenerationDate(fdLocalCalendar);
+    fdEditionCatalogSnapshot(FD_ROTATION_EDITION_CATALOG,FD_CURATOR_CONTEXT.audience,
+      window.crypto&&window.crypto.subtle).then(function(prepared){
+      if(!prepared||prepared.ok!==true){fdCuratorCatalogUnavailable(document.getElementById('root'));return;}
+      var fdCatalogSnapshot=prepared.snapshot;
+      var fdCuratorDependencies;
+      try{fdCuratorDependencies={storage:window.localStorage,subtle:window.crypto&&window.crypto.subtle,
+        location:{protocol:window.location.protocol,host:window.location.host,origin:window.location.origin,
+          pathname:window.location.pathname,search:window.location.search,hash:window.location.hash},
+        clipboard:window.navigator&&window.navigator.clipboard,Blob:window.Blob,URL:window.URL,document:document};}
+      catch(ignoreDependencies){fdCuratorCatalogUnavailable(document.getElementById('root'));return;}
+      fdCuratorMount(document.getElementById('root'),FD_INDEX,FD_CURATOR_CONTEXT,fdCatalogSnapshot,fdGenerationDate,fdCuratorDependencies);
+    },function(){fdCuratorCatalogUnavailable(document.getElementById('root'));});
+  </script>
+</body>
+</html>

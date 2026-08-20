@@ -477,7 +477,7 @@ function fdOpenResource(ref, opts){
   var parser=o.parseMarkdown||
     (typeof marked!=='undefined'&&marked&&typeof marked.parse==='function'?marked.parse:null);
   if(!fetcher||!parser) return Promise.resolve(fail());
-  return fetcher(request.url).then(function(response){
+  return fetcher(request.url,o.signal?{signal:o.signal}:undefined).then(function(response){
     if(!response||!response.ok) throw new Error('resource unavailable');
     return response.text();
   }).then(function(markdown){
@@ -548,7 +548,7 @@ function fdWire(root, initialState, opts){
   var o=opts||{}, win=o.window||(typeof window!=='undefined'?window:null);
   var doc=o.document||(typeof document!=='undefined'?document:null);
   var state=fdClone(initialState||{}), invokers=[], nudgeTimer=null, navGeneration=0;
-  var destroyed=false;
+  var destroyed=false, registrations=[], startupPrepared=false, startupCommitted=false;
   var render=o.render||function(){};
   var renderTransient=o.renderTransient||function(next,detail){
     if(!detail.preserveResource) render(next,detail);
@@ -821,6 +821,10 @@ function fdWire(root, initialState, opts){
   function clickHandler(event){
     var target=event.target&&event.target.closest?event.target.closest(FD_ACTION_SELECTOR):null;
     if(!target) return;
+    if(!startupCommitted){
+      if(event.preventDefault) event.preventDefault();
+      return;
+    }
     var attrs=fdAttrsFromTarget(target);
     if(event.preventDefault) event.preventDefault();
     apply(fdDispatch(attrs,context({inSheet:!!state.sheet}),state),target,false);
@@ -829,6 +833,10 @@ function fdWire(root, initialState, opts){
     if(destroyed) return;
     var target=event.target;
     if(!target||!target.matches||!target.matches('.fd-searchpanel__input')) return;
+    if(!startupCommitted){
+      if(event.preventDefault) event.preventDefault();
+      return;
+    }
     var start=target.selectionStart, end=target.selectionEnd;
     var direction=target.selectionDirection;
     var before=fdClone(state);
@@ -845,6 +853,10 @@ function fdWire(root, initialState, opts){
     }
   }
   function keyHandler(event){
+    if(!startupCommitted){
+      if(event.preventDefault) event.preventDefault();
+      return;
+    }
     if(externalModalOpen()) return;
     var d=dialog();
     if(d&&fdTrapFocus(event,d)) return;
@@ -889,6 +901,10 @@ function fdWire(root, initialState, opts){
   }
   function popstateHandler(event){
     if(destroyed||!win||!win.location) return;
+    if(!startupCommitted){
+      if(event&&event.preventDefault) event.preventDefault();
+      return;
+    }
     if(previewActive()){
       if(currentRoute()!==previewRouteBase) lockPreview();
       return;
@@ -962,42 +978,83 @@ function fdWire(root, initialState, opts){
     }
   }
 
-  if(root&&root.addEventListener){
-    root.addEventListener('click',clickHandler);
-    root.addEventListener('input',inputHandler);
-  }
-  if(win&&win.addEventListener){
-    win.addEventListener('keydown',keyHandler);
-    win.addEventListener('popstate',popstateHandler);
-  }
-  if(!previewActive()&&win&&win.history&&win.history.replaceState){
-    var initialLegacyRef=currentRoutedRef();
-    var initialLegacy=fdIsLegacyRouteAlias(initialLegacyRef)?fdLegacyRouteResult(
-      initialLegacyRef,{search:win.location.search||''},state
-    ):null;
-    if(initialLegacy){
-      fdSave(state);
-      routeTo(initialLegacy.route,true);
+  function removeRegistrations(){
+    for(var i=registrations.length-1;i>=0;i--){
+      var registration=registrations[i];
+      try{
+        Function.prototype.call.call(registration.remove,registration.target,
+          registration.type,registration.handler,registration.capture);
+      }catch(ignoreRemove){ }
     }
-    else replaceHistorySnapshot();
+    registrations=[];
+  }
+  function listen(target,type,handler,capture){
+    var add,remove;
+    try{
+      add=target&&target.addEventListener;
+      remove=target&&target.removeEventListener;
+    }catch(ignoreListenerAccess){ return false; }
+    if(typeof add!=='function'||typeof remove!=='function') return false;
+    registrations.push({target:target,type:type,handler:handler,capture:capture,remove:remove});
+    try{ Function.prototype.call.call(add,target,type,handler,capture); }
+    catch(ignoreListener){ return false; }
+    return true;
+  }
+  function prepareStartup(){
+    if(destroyed) return false;
+    if(startupPrepared) return true;
+    try{
+      if(!previewActive()&&win&&win.history&&win.history.replaceState){
+        var initialLegacyRef=currentRoutedRef();
+        var initialLegacy=fdIsLegacyRouteAlias(initialLegacyRef)?fdLegacyRouteResult(
+          initialLegacyRef,{search:win.location.search||''},state
+        ):null;
+        if(initialLegacy){
+          if(!routeTo(initialLegacy.route,true)) return false;
+          fdSave(state);
+        }
+        else if(!replaceHistorySnapshot()) return false;
+      }
+      if(o.releaseStartupGate&&o.releaseStartupGate()!==true) return false;
+      startupPrepared=true;
+      return true;
+    }catch(ignoreInitialCommit){ return false; }
+  }
+  function commitStartup(acceptStartup){
+    if(destroyed) return false;
+    if(!startupPrepared){if(typeof acceptStartup==='function'||!prepareStartup())return false;}
+    if(startupCommitted) return true;
+    if(typeof acceptStartup==='function'&&acceptStartup()!==true)return false;
+    startupCommitted=true;
+    return true;
+  }
+  function controller(ok){
+    return {
+      ok:ok===true,
+      getState:function(){ return state; },
+      dispatch:function(attrs,c){
+        if(destroyed||!startupCommitted) return state;
+        return apply(fdDispatch(attrs,context(c),state),null,false);
+      },
+      prepareStartup:prepareStartup,
+      commitStartup:commitStartup,
+      startupCommitted:function(){ return startupCommitted; },
+      destroy:function(){
+        if(destroyed&&registrations.length===0) return;
+        destroyed=true;
+        navGeneration++;
+        removeRegistrations();
+        if(nudgeTimer&&clearTimer) try{clearTimer(nudgeTimer);}catch(ignoreTimer){ }
+      }
+    };
   }
 
-  return {
-    getState:function(){ return state; },
-    dispatch:function(attrs,c){ return apply(fdDispatch(attrs,context(c),state),null,false); },
-    destroy:function(){
-      if(destroyed) return;
+  if(!listen(root,'click',clickHandler,false)||!listen(root,'input',inputHandler,false)||
+     !listen(win,'keydown',keyHandler,false)||!listen(win,'popstate',popstateHandler,false)){
+      removeRegistrations();
       destroyed=true;
       navGeneration++;
-      if(root&&root.removeEventListener){
-        root.removeEventListener('click',clickHandler);
-        root.removeEventListener('input',inputHandler);
-      }
-      if(win&&win.removeEventListener){
-        win.removeEventListener('keydown',keyHandler);
-        win.removeEventListener('popstate',popstateHandler);
-      }
-      if(nudgeTimer&&clearTimer) clearTimer(nudgeTimer);
-    }
-  };
+      return controller(false);
+  }
+  return controller(true);
 }

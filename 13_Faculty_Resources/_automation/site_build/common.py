@@ -551,6 +551,13 @@ SNIPPET_MARKERS = {
     "/*__SESS_CAPSULE__*/": "sess_capsule.js",
     "/*__FD_STATE__*/": "frontdoor/fd_state.js",
     "/*__FD_DATA__*/": "frontdoor/fd_data.js",
+    "/*__FD_EDITION_CATALOG__*/": "frontdoor/fd_edition_catalog.js",
+    "/*__FD_EDITION_CONTRACT__*/": "frontdoor/fd_edition_contract.js",
+    "/*__FD_EDITION_PROJECT__*/": "frontdoor/fd_edition_project.js",
+    "/*__FD_EDITION_V1_SALVAGE__*/": "frontdoor/fd_edition_v1_salvage.js",
+    "/*__QR_GENERATOR_1_4_4__*/": "vendor/qrcode-generator-1.4.4.js",
+    "/*__FD_CURATOR__*/": "frontdoor/fd_curator.js",
+    "/*__FD_EDITION_STUDENT__*/": "frontdoor/fd_edition_student.js",
     "/*__FD_TODAY__*/": "frontdoor/fd_today.js",
     "/*__FD_DUE__*/": "frontdoor/fd_due.js",
     "/*__FD_SHELL__*/": "frontdoor/fd_shell.js",
@@ -615,7 +622,7 @@ def _snippet_signature(snippet_text):
     """
     for line in snippet_text.splitlines():
         line = line.strip()
-        if line.startswith("function "):
+        if line.startswith("function ") and len(line) < 60:
             return line
     return None
 

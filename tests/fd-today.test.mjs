@@ -16,6 +16,7 @@ const make = new Function(`
   ${read('phase_policy.js')}
   ${read('frontdoor/fd_state.js')}
   ${read('frontdoor/fd_data.js')}
+  ${read('frontdoor/fd_edition_student.js')}
   ${todaySrc}
   return { fdTodayProgress: fdTodayProgress, fdToday: fdToday, fdBuildIndex: fdBuildIndex,
            fdItemsForWeek: fdItemsForWeek, fdLibraryOnlyReads: fdLibraryOnlyReads };
@@ -205,6 +206,27 @@ test('no week set renders the setup CTA instead of the continue card', () => {
   assert.match(html, /fd-setupcta/);
   assert.doesNotMatch(html, /fd-continue"/);
   assert.match(html, /browsing — no week set/);
+});
+
+test('Today leaves the trusted edition card and local DOM to the stable governance mount', () => {
+  const projected = Object.assign({}, IDX, { edition: { card: { fingerprint: 'EXU-MS3-ZBVX4D' } } });
+  const html = F.fdToday(projected, s({}));
+  assert.doesNotMatch(html, /fd-edition-card|data-edition-orientation|EXU-MS3-ZBVX4D/);
+});
+
+test('Today keeps core progress refs while showing edition priority and rationale beneath rows', () => {
+  const weeks = IDX.weeks.map((week) => Object.assign({}, week, {
+    items: week.items.map((item) => item.ref === 'a.md' ? Object.assign({}, item, {
+      instanceId: 'core:a.md:1', priority: 'required',
+      reasonText: 'Start before the first handoff.',
+    }) : item),
+  }));
+  const html = F.fdToday(Object.assign({}, IDX, { weeks }), s({}));
+  assert.match(html, /data-fd-toggle="a\.md"/);
+  assert.doesNotMatch(html, /data-fd-toggle="core:a\.md:1"/);
+  assert.match(html, /Required by this local rotation/);
+  assert.match(html, /Local rotation reason: Start before the first handoff\./);
+  assert.match(html, /Reviewed clerkship Library/);
 });
 
 test('the streak suffix appears at 2+ days and is omitted below that', () => {

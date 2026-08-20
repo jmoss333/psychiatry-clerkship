@@ -15,6 +15,7 @@ const make = new Function(`${wire}\nreturn {
 };`);
 const F = make();
 const NON_ACTION_ATTRS = new Set(['data-fd-fallback']);
+const AUX_ACTION_ATTRS = new Set(['data-fd-local-toggle']);
 
 function emittedAttributes() {
   const found = new Set();
@@ -32,17 +33,25 @@ test('every data-fd attribute emitted after Task 3 has one controller meaning', 
   const emitted = emittedAttributes();
   assert.deepEqual(emitted, [
     'data-fd-back', 'data-fd-change-week', 'data-fd-close-nudge',
-    'data-fd-close-search', 'data-fd-close-sheet', 'data-fd-expand-tool', 'data-fd-home', 'data-fd-open',
+    'data-fd-close-search', 'data-fd-close-sheet', 'data-fd-expand-tool', 'data-fd-home', 'data-fd-local-toggle', 'data-fd-open',
     'data-fd-progress', 'data-fd-role', 'data-fd-safety', 'data-fd-search', 'data-fd-setweek',
     'data-fd-sheet', 'data-fd-step', 'data-fd-tab', 'data-fd-theme', 'data-fd-toggle',
     'data-fd-view-week', 'data-fd-week',
   ]);
   for (const attr of emitted) {
+    if (AUX_ACTION_ATTRS.has(attr)) {
+      assert.match(shell, /closest\('\[data-fd-local-toggle\]'\)/,
+        `${attr} must be owned by the auxiliary click handler`);
+      assert.match(shell, /fdEditionToggleLocalProgress\(/,
+        `${attr} must call the edition-local progress toggle`);
+      continue;
+    }
     assert.ok(F.handled.includes(attr), `${attr} is emitted but unhandled`);
     assert.equal(typeof F.semantic(attr), 'string', `${attr} has no pinned semantic`);
     assert.notEqual(F.semantic(attr), '', `${attr} has an empty semantic`);
   }
-  assert.equal(new Set(emitted.map(F.semantic)).size, emitted.length,
+  const controllerActions = emitted.filter((attr) => !AUX_ACTION_ATTRS.has(attr));
+  assert.equal(new Set(controllerActions.map(F.semantic)).size, controllerActions.length,
     'two emitted attributes accidentally share an action meaning');
 });
 

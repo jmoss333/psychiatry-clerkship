@@ -31,6 +31,7 @@ import path from 'node:path';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const CSS_PATH = path.join(__dirname, '..', '13_Faculty_Resources/_automation/site_build/clinical-warm.css');
 const css = readFileSync(CSS_PATH, 'utf8');
+const frontdoorCss = readFileSync(path.join(__dirname, '..', '13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css'), 'utf8');
 
 function rel(hex) {
   const n = hex.replace('#', '');
@@ -133,4 +134,29 @@ test('dark front-door palette clears AA everywhere, with no exceptions', () => {
   assert.ok(Object.keys(DARK).length > 0, 'no --fd-* tokens parsed from the dark block');
   const problems = run('DARK', DARK, new Set());
   assert.deepEqual(problems, [], `dark palette contrast:\n  ${problems.join('\n  ')}`);
+});
+
+test('edition card and all eight local sections reuse the contrast-gated Front Door palette', () => {
+  for (const selector of ['[class~="fd-edition-card"]', '[class~="fd-edition-local"]', '[class~="fd-edition-section"]', '[class~="fd-edition-authority"]', '[class~="fd-edition-resource"]']) {
+    assert.ok(frontdoorCss.includes(selector), `${selector} must have a learner-facing style`);
+  }
+  const start = frontdoorCss.indexOf('/* v2 learner edition */');
+  assert.ok(start > -1, 'v2 learner edition style boundary');
+  assert.doesNotMatch(frontdoorCss.slice(start), /#[0-9a-f]{3,8}\b/i,
+    'edition styling must reuse the light/dark contrast-gated tokens');
+});
+
+test('curator coverage and both canonical previews use contrast-gated palette tokens', () => {
+  function block(selector) {
+    const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const match = frontdoorCss.match(new RegExp(`${escaped}\\s*\\{([^}]*)\\}`));
+    assert.ok(match, selector); return match[1];
+  }
+  for (const selector of ['[class~="fd-curator-coverage"],[class~="fd-curator-review-evidence"]', '[class~="fd-curator-local-card"]', '[class~="fd-curator-preview"]']) {
+    const body = block(selector);
+    assert.match(body, /background:var\(--fd-surface\)/, selector);
+    assert.match(body, /color:var\(--fd-text\)/, selector);
+    assert.match(body, /border:[^;]*var\(--fd-line-strong\)/, selector);
+  }
+  assert.match(block('[class~="fd-curator-preview--mobile"]'), /width:390px/);
 });

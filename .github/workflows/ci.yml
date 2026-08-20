@@ -25,6 +25,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           lfs: false
+          fetch-depth: 0
 
       - name: Agent docs parity — AGENTS.md must equal CLAUDE.md
         run: |
@@ -102,6 +103,41 @@ jobs:
       - name: Validate — registry schemas
         run: python3 13_Faculty_Resources/_automation/validate_registry_schemas.py
 
+      - name: Test — rotation edition schema gate
+        run: python3 13_Faculty_Resources/_automation/test_validate_rotation_edition_schema.py
+
+      - name: Validate — rotation edition schema fixtures
+        run: python3 13_Faculty_Resources/_automation/validate_rotation_edition_schema.py
+
+      - name: Test — rotation edition catalog gate
+        run: python3 13_Faculty_Resources/_automation/test_validate_rotation_edition_catalog.py
+
+      - name: Validate — immutable rotation edition catalog
+        env:
+          BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          if [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ && "$BASE_SHA" != "0000000000000000000000000000000000000000" ]]; then
+            python3 13_Faculty_Resources/_automation/validate_rotation_edition_catalog.py --compare-ref "$BASE_SHA"
+          else
+            python3 13_Faculty_Resources/_automation/validate_rotation_edition_catalog.py
+          fi
+
+      - name: Guard — production rotation edition stays exactly empty and disabled
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          root = Path("13_Faculty_Resources/Rotation_Curation")
+          expected = {
+              "rotation_edition_catalog.json": b'{"schemaVersion":1,"records":[]}\n',
+              "rotation_edition_catalog_governance.json": b'{"schemaVersion":1,"manifestRevision":1,"rotationEditionV2":"disabled","dispositions":[]}\n',
+          }
+          for name, locked in expected.items():
+              observed = (root / name).read_bytes()
+              if observed != locked:
+                  raise SystemExit(f"{name} must remain the exact empty/disabled production lock")
+          PY
+
       - name: Test — ReConnect snapshot provenance
         run: python3 13_Faculty_Resources/_automation/test_validate_reconnect_snapshot_provenance.py
 
@@ -159,6 +195,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           lfs: false
+          fetch-depth: 0
 
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
         with:
@@ -195,7 +232,7 @@ jobs:
       - name: Start local review servers
         run: bash tests/smoke/start-local-servers.sh
 
-      - name: "Check 1: nav crawl — ms3 + res"
+      - name: "Check 1: nav crawl + two-audience rotation edition journeys — ms3 + res"
         run: |
           cd tests/smoke
           npx playwright test --project=nav-ms3 --project=nav-res
