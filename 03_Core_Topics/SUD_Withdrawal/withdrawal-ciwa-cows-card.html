@@ -54,6 +54,7 @@
   .scaleItems{min-width:0}
   .item{grid-template-columns:1fr auto 90px 46px}
   .itemName{min-width:0}
+  .tagchip{display:inline-block;margin-left:6px;font-size:.62rem;font-weight:700;letter-spacing:.05em;padding:1px 6px;border-radius:var(--radius-pill);background:var(--accent-light);color:var(--accent-dark);vertical-align:middle}
   .mini{height:7px;background:var(--bg-alt);border-radius:999px;overflow:hidden}
   .mini i,.dbar i{display:block;height:100%;border-radius:999px;transition:width .2s ease}
   .mval{font-weight:700;font-variant-numeric:tabular-nums;text-align:right;font-size:.88rem}
@@ -105,19 +106,41 @@ var CIWA=[
   {k:'head',b:'Headache / fullness in head',d:'0 none → 7 extremely severe',max:7},
   {k:'orient',b:'Orientation / sensorium',d:'0 oriented → 4 disoriented to place/person',max:4}
 ];
+/* Item content is GENERATED from SPEC section 2.2 by
+   13_Faculty_Resources/_automation/gen_cows_from_spec.py -- every anchor below is a
+   byte-for-byte copy of its spec row, never retyped (handoff Ground Rule 1).
+   Re-generate rather than hand-edit; `--check` verifies the tool still matches.
+
+   COWS is a SPARSE instrument. The previous model carried max:N and the renderer looped
+   0..max, offering integers that do not exist on the scale -- gooseflesh (legal 0,3,5)
+   offered 0,1,2,3,4,5. Such a score was unreachable on the real instrument and still
+   counted toward the total. */
 var COWS=[
-  {k:'pulse',b:'Resting pulse rate',d:'measured after 1 min rest (0 ≤80 → 4 >120)',max:4},
-  {k:'sweat',b:'Sweating',d:'not from room temp/activity (0 → 4)',max:4},
-  {k:'rest',b:'Restlessness',d:'0 sits still → 5 unable to sit',max:5},
-  {k:'pupil',b:'Pupil size',d:'0 normal → 5 so dilated only rim of iris visible',max:5},
-  {k:'aches',b:'Bone / joint aches',d:'attributable to withdrawal (0 → 4)',max:4},
-  {k:'nose',b:'Runny nose / tearing',d:'not from cold/allergies (0 → 4)',max:4},
-  {k:'gi',b:'GI upset',d:'0 none → 5 multiple episodes diarrhea/vomiting',max:5},
-  {k:'tremor',b:'Tremor',d:'observation of outstretched hands (0 → 4)',max:4},
-  {k:'yawn',b:'Yawning',d:'0 none → 4 several times/minute',max:4},
-  {k:'anx',b:'Anxiety / irritability',d:'0 none → 4 so irritable participation difficult',max:4},
-  {k:'goose',b:'Gooseflesh skin',d:'0 smooth → 5 prominent piloerection',max:5}
+  {k:'pulse',b:'Resting pulse rate',tag:'OBSERVED',ask:'Measured after the patient has been sitting or lying for one minute',
+   vals:[{v:0,a:'≤80'},{v:1,a:'81–100'},{v:2,a:'101–120'},{v:4,a:'>120'}]},
+  {k:'sweat',b:'Sweating',tag:'OBSERVED',ask:'Over the past ½ hour, not accounted for by room temperature or patient activity',
+   vals:[{v:0,a:'no report of chills or flushing'},{v:1,a:'subjective report of chills or flushing'},{v:2,a:'flushed or observable moistness on face'},{v:3,a:'beads of sweat on brow or face'},{v:4,a:'sweat streaming off face'}]},
+  {k:'rest',b:'Restlessness',tag:'OBSERVED',ask:'Observation during assessment',
+   vals:[{v:0,a:'able to sit still'},{v:1,a:'reports difficulty sitting still, but is able to do so'},{v:3,a:'frequent shifting or extraneous movements of legs/arms'},{v:5,a:'unable to sit still for more than a few seconds'}]},
+  {k:'pupil',b:'Pupil size',tag:'OBSERVED',
+   vals:[{v:0,a:'pupils pinned or normal size for room light'},{v:1,a:'pupils possibly larger than normal for room light'},{v:2,a:'pupils moderately dilated'},{v:5,a:'pupils so dilated that only the rim of the iris is visible'}]},
+  {k:'aches',b:'Bone or joint aches',tag:'ASKED',ask:'If the patient had pain previously, only the additional component attributed to opioid withdrawal is scored',
+   vals:[{v:0,a:'not present'},{v:1,a:'mild diffuse discomfort'},{v:2,a:'patient reports severe diffuse aching of joints/muscles'},{v:4,a:'patient is rubbing joints or muscles and unable to sit still because of discomfort'}]},
+  {k:'nose',b:'Runny nose or tearing',tag:'OBSERVED',ask:'Not accounted for by cold symptoms or allergies',
+   vals:[{v:0,a:'not present'},{v:1,a:'nasal stuffiness or unusually moist eyes'},{v:2,a:'nose running or tearing'},{v:4,a:'nose constantly running or tears streaming down cheeks'}]},
+  {k:'gi',b:'GI upset',tag:'ASKED',ask:'Over the last ½ hour',
+   vals:[{v:0,a:'no GI symptoms'},{v:1,a:'stomach cramps'},{v:2,a:'nausea or loose stool'},{v:3,a:'vomiting or diarrhea'},{v:5,a:'multiple episodes of diarrhea or vomiting'}]},
+  {k:'tremor',b:'Tremor',tag:'OBSERVED',ask:'Observation of outstretched hands',
+   vals:[{v:0,a:'no tremor'},{v:1,a:'tremor can be felt, but not observed'},{v:2,a:'slight tremor observable'},{v:4,a:'gross tremor or muscle twitching'}]},
+  {k:'yawn',b:'Yawning',tag:'OBSERVED',ask:'Observation during assessment',
+   vals:[{v:0,a:'no yawning'},{v:1,a:'yawning once or twice during assessment'},{v:2,a:'yawning three or more times during assessment'},{v:4,a:'yawning several times per minute'}]},
+  {k:'anx',b:'Anxiety or irritability',tag:'ASKED/OBSERVED',
+   vals:[{v:0,a:'none'},{v:1,a:'patient reports increasing irritability or anxiousness'},{v:2,a:'patient obviously irritable or anxious'},{v:4,a:'patient so irritable or anxious that participation in the assessment is difficult'}]},
+  {k:'goose',b:'Gooseflesh skin',tag:'OBSERVED',
+   vals:[{v:0,a:'skin is smooth'},{v:3,a:'piloerection can be felt or hairs standing up on arms'},{v:5,a:'prominent piloerection'}]}
 ];
+/* max is derived, never hand-maintained: it drove the dense-range bug. */
+COWS.forEach(function(i){ i.max=i.vals[i.vals.length-1].v; });
 var CIWA_GAUGE={
   track:30,
   segments:[{flex:8,color:'color-mix(in srgb,var(--success) 30%,transparent)'},{flex:11,color:'color-mix(in srgb,var(--warning) 36%,transparent)'},{flex:11,color:'color-mix(in srgb,var(--danger) 32%,transparent)'}],
@@ -130,13 +153,16 @@ var CIWA_GAUGE={
 };
 var COWS_GAUGE={
   track:48,
-  segments:[{flex:12,color:'color-mix(in srgb,var(--success) 30%,transparent)'},{flex:12,color:'color-mix(in srgb,var(--warning) 36%,transparent)'},{flex:24,color:'color-mix(in srgb,var(--danger) 32%,transparent)'}],
-  labels:[{t:'≤12 mild',c:'var(--success)'},{t:'13–24 mod',c:'var(--warning)'},{t:'≥25 severe',c:'var(--danger)'}],
+  segments:[{flex:12,color:'color-mix(in srgb,var(--success) 30%,transparent)'},{flex:12,color:'color-mix(in srgb,var(--warning) 36%,transparent)'},{flex:12,color:'color-mix(in srgb,var(--danger) 24%,transparent)'},{flex:12,color:'color-mix(in srgb,var(--danger) 40%,transparent)'}],
+  /* Four bands matching info(). The old three collapsed the published 25-36 and 37-48 into
+     one '>=25 severe', and contradicted info()'s own first tier (<=4 None/minimal). */
+  labels:[{t:'5–12 mild',c:'var(--success)'},{t:'13–24 mod',c:'var(--warning)'},{t:'25–36 mod-sev',c:'var(--danger)'},{t:'37–48 severe',c:'var(--danger)'}],
   info:function(t){
     if(t<=4) return {tier:'Minimal',color:'var(--success)',bg:'var(--success-light)',pill:'None / minimal',action:'No or very early withdrawal — supportive care; reassess.',timeline:null};
     if(t<=12) return {tier:'Mild',color:'var(--accent-dark)',bg:'var(--accent-light)',pill:'Mild withdrawal',action:'Objective signs emerging — for buprenorphine, generally wait for COWS ≥8–12 to avoid precipitated withdrawal.',timeline:null};
     if(t<=24) return {tier:'Moderate',color:'var(--warning)',bg:'var(--warning-light)',pill:'Moderate withdrawal',action:'Comfort medications; consider buprenorphine induction per protocol.',timeline:null};
-    return {tier:'Severe',color:'var(--danger)',bg:'var(--danger-light)',pill:'Moderately severe / severe',action:'Significant distress — treat per protocol.',timeline:null};
+    if(t<=36) return {tier:'Moderately severe',color:'var(--danger)',bg:'var(--danger-light)',pill:'Moderately severe withdrawal',action:'Significant distress — treat per protocol.',timeline:null};
+    return {tier:'Severe',color:'var(--danger)',bg:'var(--danger-light)',pill:'Severe withdrawal',action:'Significant distress — treat per protocol.',timeline:null};
   }
 };
 function Scale(props){
@@ -152,9 +178,20 @@ function Scale(props){
     e('div',{className:'scaleItems'},
       items.map(function(i){
         var val=parseInt(v[i.k]||0,10); var r=i.max?val/i.max:0;
-        var opts=[]; for(var s=0;s<=i.max;s++) opts.push(e('option',{key:s,value:s},s));
+        /* Two shapes on purpose: COWS items carry vals[] (sparse, anchored), CIWA items still
+           carry max:N (dense 0..max, correct for that instrument). WP-20 converts CIWA. */
+        var opts = i.vals
+          ? i.vals.map(function(o){ return e('option',{key:o.v,value:o.v}, o.v+' — '+o.a); })
+          : (function(){var a=[];for(var s=0;s<=i.max;s++)a.push(e('option',{key:s,value:s},s));return a;})();
         return e('div',{className:'item',key:i.k},
-          e('div',{className:'itemName'},e('b',null,i.b),e('span',null,i.d)),
+          /* CIWA items describe themselves with `d`; generated COWS items carry the spec's own
+             OBSERVED/ASKED tag plus its elicitation/window in `ask`. Reading i.d alone left every
+             COWS subtitle blank once the array was regenerated from the spec. The tag matters
+             clinically: it says whether a rung is something you WATCH or something you ASK, which
+             is how the score is obtained. WP-20 promotes this to the full four-line pattern. */
+          e('div',{className:'itemName'},e('b',null,i.b),
+            i.tag? e('span',{className:'tagchip'},i.tag) : null,
+            e('span',null, i.d || i.ask || '')),
           e('select',{value:v[i.k]||0,'aria-label':i.b,onChange:function(ev){set(i.k,ev.target.value)}},opts),
           e('div',{className:'mini','aria-hidden':'true'},e('i',{style:{width:(r*100)+'%',background:rc(r)}})),
           e('div',{className:'mval',style:{color:(val===0?'#c9bdae':'var(--text)')}}, val+' / '+i.max));
