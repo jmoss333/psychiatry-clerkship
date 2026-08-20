@@ -6,8 +6,13 @@ var FD_EDITION_STUDENT_DANGEROUS={__proto__:true,constructor:true,prototype:true
 var FD_EDITION_STUDENT_CODES={
   EDITION_SCHEMA:true,EDITION_DIGEST:true,EDITION_AUDIENCE:true,EDITION_REF:true,
   EDITION_WEEK:true,EDITION_SIZE:true,EDITION_URL:true,EDITION_TEXT_RISK:true,
-  EDITION_CRYPTO:true,EDITION_PROJECT:true,EDITION_RUNTIME:true
+  EDITION_CRYPTO:true,EDITION_PROJECT:true,EDITION_RUNTIME:true,EDITION_DISABLED:true
 };
+
+function fdEditionPublicationEnabled(siteContext){
+  var gate=fdEditionStudentData(siteContext,'rotationEditionV2');
+  return gate.ok&&gate.value==='enabled';
+}
 
 function fdEditionStudentObject(value){
   var prototype,isArray;
@@ -120,6 +125,12 @@ function fdEditionStudentProject(canonicalIndex,validatedEdition,siteContext){
 }
 
 function fdEditionResolveStartup(canonicalIndex,siteContext,pageUrl,incomingHash,storedText,subtle){
+  if(!fdEditionPublicationEnabled(siteContext)){
+    if(typeof incomingHash==='string'&&incomingHash.indexOf('#edition=')===0)
+      return Promise.resolve({mode:'rejected',needsCommit:false,active:null,candidate:null,index:canonicalIndex,
+        receipt:fdEditionStudentSafeReceipt(null,siteContext,'EDITION_DISABLED')});
+    return Promise.resolve({mode:'core',needsCommit:false,active:null,candidate:null,index:canonicalIndex,receipt:null});
+  }
   return Promise.all([
     fdEditionStudentParseStored(storedText,canonicalIndex,siteContext,subtle),
     fdEditionStudentIncoming(incomingHash,pageUrl,canonicalIndex,siteContext,subtle)
@@ -726,6 +737,15 @@ function fdEditionRuntimeInputs(windowValue,documentValue,app,mount,siteContext)
   catch(ignoreLocationFields){ return {ok:false,receipt:fdEditionRuntimeReceipt(siteContext,'EDITION_RUNTIME')}; }
   if(typeof pageUrl!=='string'||typeof hash!=='string')
     return {ok:false,receipt:fdEditionRuntimeReceipt(siteContext,'EDITION_RUNTIME')};
+  if(!fdEditionPublicationEnabled(siteContext)){
+    if(hash){
+      try{ historyValue=windowValue&&windowValue.history; }catch(ignoreDisabledHistory){ historyValue=null; }
+      if(!fdEditionRuntimeClearHash(locationValue,historyValue))
+        return {ok:false,receipt:fdEditionRuntimeReceipt(siteContext,'EDITION_RUNTIME')};
+    }
+    return {ok:true,location:locationValue,history:historyValue,storage:null,pageUrl:pageUrl,hash:hash,
+      hashCleared:hash?true:true,storedText:null,subtle:null};
+  }
   try{ storage=windowValue&&windowValue.localStorage; }
   catch(ignoreStorage){ storage=null; }
   if(!fdEditionStudentMethod(storage,'setItem'))

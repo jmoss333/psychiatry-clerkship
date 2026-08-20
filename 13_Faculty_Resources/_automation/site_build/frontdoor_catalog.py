@@ -12,6 +12,7 @@ DATA_DEFAULTS = {
     "FD_ROLES": "[]",
     "FD_AUDIENCE": "\"\"",
     "FD_CORE_REVISION": "\"\"",
+    "FD_ROTATION_EDITION_CATALOG": "{}",
 }
 
 GOVERNANCE_KEYS = {"status", "riskKind", "riskLevel"}
@@ -63,7 +64,7 @@ def _catalog_entries(catalog):
     return entries
 
 
-def build_frontdoor_payload(site, curriculum, catalog, revision):
+def build_frontdoor_payload(site, curriculum, catalog, revision, rotation_projection=None):
     """Return a normalized Front Door projection after a site's nav is final.
 
     curriculum.json owns only placement.  The final site navigation owns every
@@ -76,6 +77,13 @@ def build_frontdoor_payload(site, curriculum, catalog, revision):
         raise ValueError("revision must be a lowercase 40-character hexadecimal value")
     if not isinstance(curriculum, dict):
         raise ValueError("curriculum must be an object")
+    if rotation_projection is None:
+        rotation_projection = {
+            "schemaVersion": 1, "audience": site, "revision": "", "projectionDigest": "",
+            "rotationEditionV2": "disabled", "selectionKeys": [], "resolutionRecords": [], "blockedKeys": [],
+        }
+    if not isinstance(rotation_projection, dict) or rotation_projection.get("audience") != site:
+        raise ValueError("rotation projection must be a matching audience object")
 
     expected_paths = {"ms3": ("ms3-six-week", 6), "resident": ("resident-four-week", 4)}
     learning_paths = curriculum.get("learningPaths")
@@ -188,6 +196,7 @@ def build_frontdoor_payload(site, curriculum, catalog, revision):
         "manifest": manifest,
         "audience": site,
         "coreRevision": revision,
+        "rotationEditionCatalog": copy.deepcopy(rotation_projection),
     }
 
 
@@ -201,6 +210,7 @@ def inject_frontdoor_payload(path, payload, topic_meta, tool_registry):
         "FD_ROLES": payload["roles"],
         "FD_AUDIENCE": payload["audience"],
         "FD_CORE_REVISION": payload["coreRevision"],
+        "FD_ROTATION_EDITION_CATALOG": payload["rotationEditionCatalog"],
     }
     with open(path, encoding="utf-8") as fh:
         text = fh.read()

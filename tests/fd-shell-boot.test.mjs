@@ -65,6 +65,8 @@ test('the shell has one build-replaced edition context and ordered edition modul
     assert.equal((source.match(new RegExp(`var ${name}=\\"\\";`, 'g')) || []).length, 1,
       `${name} JSON literal`);
   }
+  assert.equal((source.match(/var FD_ROTATION_EDITION_CATALOG=\{\};/g) || []).length, 1,
+    'one build-replaced rotation catalog projection');
   const data = source.indexOf('/*__FD_DATA__*/');
   const edition = source.indexOf('/*__FD_EDITION_CONTRACT__*/');
   const consumer = source.indexOf('/*__FD_TODAY__*/');

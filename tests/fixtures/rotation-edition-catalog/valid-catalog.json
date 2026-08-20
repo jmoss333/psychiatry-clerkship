@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "records": [
+    {
+      "key": "choice.arrival@v1",
+      "kind": "choice",
+      "contentDigest": "sha256-spAmRNH8QNzIDeLKgwP8XUdTRJdTxLvlnhAEYJTL0u8",
+      "choiceKind": "role",
+      "label": "Example coordinator",
+      "fragment": "the clerkship coordinator",
+      "audiences": ["ms3"],
+      "verifiedOn": "2026-08-19"
+    },
+    {
+      "key": "link.orientation@v1",
+      "kind": "officialLink",
+      "contentDigest": "sha256-l_LcsV-XUBZhr_6mgVF8FrKzwGO4sO1JVhKJZqD44OA",
+      "title": "Orientation",
+      "url": "https://example.edu/orientation",
+      "visibleHostname": "example.edu",
+      "purposeCode": "orientation",
+      "locationKeys": ["location.example-unit@v1"],
+      "audiences": ["ms3"],
+      "verifiedOn": "2026-08-19"
+    },
+    {
+      "key": "location.example-unit@v1",
+      "kind": "trainingLocation",
+      "contentDigest": "sha256-b_iUShni19cltbQjhSdGNZfIJUsTjkEa-PdkpN5hh-g",
+      "displayName": "Example Training Unit",
+      "locationCode": "EXU",
+      "locationTypeCode": "inpatient",
+      "audiences": ["ms3"],
+      "officialHostnames": ["example.edu"],
+      "verifiedOn": "2026-08-19"
+    },
+    {
+      "key": "place.example-workroom@v1",
+      "kind": "place",
+      "contentDigest": "sha256-MzGD6bs8bbegrbs4L8nkU4kLAngOfDoofFz1W38qWE0",
+      "displayName": "Example workroom",
+      "locationKeys": ["location.example-unit@v1"],
+      "audiences": ["ms3"],
+      "verifiedOn": "2026-08-19"
+    },
+    {
+      "key": "profile.example-attending@v1",
+      "kind": "curatorProfile",
+      "contentDigest": "sha256-8uFDbTXXyaFV4B4Pf_KFc_3acvjv5gVib5BLCqHHIk8",
+      "displayName": "Example Attending",
+      "roleKey": "choice.arrival@v1",
+      "locationKeys": ["location.example-unit@v1"],
+      "audiences": ["ms3"],
+      "verifiedOn": "2026-08-19"
+    }
+  ]
+}

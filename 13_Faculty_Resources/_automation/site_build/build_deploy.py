@@ -1,4 +1,5 @@
 import os, shutil, json, sys
+from datetime import date
 from pathlib import Path
 # Shared, audience-neutral assembly logic (tokenizer, synonyms, tool keywords,
 # search index, HTML polish/dark passes, page contract). Extracted 2026-07-26 —
@@ -372,13 +373,24 @@ from validate_tool_governance import (
     validate_built_tool_inventory,
     write_atomic_json,
 )
+from validate_rotation_edition_catalog import (
+    build_audience_projection as _build_rotation_projection,
+    load_catalog as _load_rotation_catalog,
+    load_governance as _load_rotation_governance,
+    validate_catalog as _validate_rotation_catalog,
+)
 try:
     _core_revision=current_revision(Path(LIB))
 except GovernanceError as error:
     raise SystemExit(f"tool governance INVALID — {error}") from error
 try:
+    _rotation_catalog=_load_rotation_catalog(Path(LIB))
+    _rotation_governance=_load_rotation_governance(Path(LIB))
+    _validate_rotation_catalog(_rotation_catalog,_rotation_governance,today=date.today())
+    _rotation_projection=_build_rotation_projection(_rotation_catalog,_rotation_governance,"ms3")
     _fd_payload=frontdoor_catalog.build_frontdoor_payload(
-        "ms3", json.load(open(LIB+"/curriculum.json",encoding="utf-8")), nav, _core_revision)
+        "ms3", json.load(open(LIB+"/curriculum.json",encoding="utf-8")), nav, _core_revision,
+        _rotation_projection)
     _frontdoor_destinations=(OUT+"/index.html", OUT+"/tools/rotation-curator.html")
     for _frontdoor_destination in _frontdoor_destinations:
         frontdoor_catalog.inject_frontdoor_payload(

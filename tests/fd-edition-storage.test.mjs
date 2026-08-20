@@ -12,7 +12,8 @@ const F = new Function(`${source('fd_edition_contract.js')}\n${source('fd_editio
   fdEditionLocalToggleAllowed:typeof fdEditionLocalToggleAllowed==='function'?fdEditionLocalToggleAllowed:null,
   fdEditionStartupJournal:typeof fdEditionStartupJournal==='function'?fdEditionStartupJournal:null,
   fdEditionStartupJournalRun:typeof fdEditionStartupJournalRun==='function'?fdEditionStartupJournalRun:null,
-  fdEditionStartupJournalRollback:typeof fdEditionStartupJournalRollback==='function'?fdEditionStartupJournalRollback:null
+  fdEditionStartupJournalRollback:typeof fdEditionStartupJournalRollback==='function'?fdEditionStartupJournalRollback:null,
+  fdEditionRuntimeInputs:typeof fdEditionRuntimeInputs==='function'?fdEditionRuntimeInputs:null
 };`)();
 
 const REVISION = '1234567890abcdef1234567890abcdef12345678';
@@ -41,7 +42,8 @@ function context(audience = 'ms3') {
   return {
     audience,
     pathId: audience === 'ms3' ? 'ms3-six-week' : 'resident-four-week',
-    coreRevision: REVISION
+    coreRevision: REVISION,
+    rotationEditionV2: 'enabled'
   };
 }
 
@@ -90,6 +92,36 @@ test('local toggles are authorized only by IDs in the trusted active edition sna
 });
 
 function fragment(result) { return `#edition=${result.payload}`; }
+
+test('disabled publication rejects a fragment before decoder or projector work and leaves core mode alone without one', async () => {
+  const disabled = { ...context(), rotationEditionV2: 'disabled' };
+  const decoderMustNotRun = { digest() { throw new Error('decoder must not run'); } };
+  const rejected = await F.fdEditionResolveStartup(canonicalIndex(), disabled,
+    'https://example.edu/front-door.html', '#edition=untrusted-fragment', '{unread storage}', decoderMustNotRun);
+  assert.equal(rejected.mode, 'rejected');
+  assert.equal(rejected.receipt.code, 'EDITION_DISABLED');
+  assert.equal(F.fdEditionErrorMarkup(rejected.receipt).includes('untrusted-fragment'), false);
+  const core = await F.fdEditionResolveStartup(canonicalIndex(), disabled,
+    'https://example.edu/front-door.html', '', '{unread storage}', decoderMustNotRun);
+  assert.equal(core.mode, 'core');
+  assert.equal(core.receipt, null);
+});
+
+test('disabled runtime input preparation never reads the edition storage key', () => {
+  assert.equal(typeof F.fdEditionRuntimeInputs, 'function');
+  let storageReads = 0;
+  const dialog = { addEventListener() {}, querySelector() { return null; }, showModal() {}, close() {} };
+  const button = { addEventListener() {}, focus() {} };
+  const documentValue = { createElement(tag) { return tag === 'dialog' ? dialog : button; } };
+  const app = { removeAttribute() {}, addEventListener() {}, removeEventListener() {}, querySelector() { return {}; } };
+  const mount = { innerHTML: '', querySelector() { return null; } };
+  const windowValue = { location: { href: 'https://example.edu/front-door.html', hash: '' } };
+  Object.defineProperty(windowValue, 'localStorage', { get() { storageReads += 1; throw new Error('must not read'); } });
+  const result = F.fdEditionRuntimeInputs(windowValue, documentValue, app, mount,
+    { ...context(), rotationEditionV2: 'disabled' });
+  assert.equal(result.ok, true);
+  assert.equal(storageReads, 0);
+});
 
 function recordingStorage(initial = {}) {
   const values = new Map(Object.entries(initial));

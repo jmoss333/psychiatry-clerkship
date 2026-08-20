@@ -673,7 +673,7 @@
     </div>
 
     <div class="final-action">
-      <p><strong>Publication unavailable.</strong> Generate stays disabled until later governed work implements validation, public-link review, and the health gate.</p>
+      <p><strong>Publication unavailable.</strong> Catalog publication is disabled for this build; Generate stays disabled until later governed work implements validation, public-link review, and the health gate.</p>
       <button type="button" id="curatorGenerate" disabled aria-disabled="true">Generate edition link</button>
     </div>
   </main>
@@ -688,6 +688,7 @@
     var FD_ROLES=[];
     var FD_AUDIENCE="";
     var FD_CORE_REVISION="";
+    var FD_ROTATION_EDITION_CATALOG={};
 
     /*__FD_DATA__*/
     /*__FD_EDITION_CONTRACT__*/
@@ -695,7 +696,16 @@
     /*__FD_CURATOR__*/
 
     var FD_INDEX=fdBuildIndex(FD_CURRICULUM,FD_TOPIC_META,FD_TOOL_REGISTRY,FD_SITE_MANIFEST);
+    function fdRotationCatalogContext(value){
+      var revision,gate,descriptor;
+      try{descriptor=Object.getOwnPropertyDescriptor(value,'revision');revision=descriptor&&Object.prototype.hasOwnProperty.call(descriptor,'value')&&typeof descriptor.value==='string'?descriptor.value:'';}catch(ignoreRevision){revision='';}
+      try{descriptor=Object.getOwnPropertyDescriptor(value,'rotationEditionV2');gate=descriptor&&Object.prototype.hasOwnProperty.call(descriptor,'value')&&descriptor.value==='enabled'?'enabled':'disabled';}catch(ignoreGate){gate='disabled';}
+      return {localCatalogRevision:revision,rotationEditionV2:gate};
+    }
+    var fdRotationCatalogContextValue=fdRotationCatalogContext(FD_ROTATION_EDITION_CATALOG);
     var FD_CURATOR_CONTEXT={audience:FD_AUDIENCE,pathId:FD_INDEX.path.id,coreRevision:FD_CORE_REVISION};
+    FD_CURATOR_CONTEXT.localCatalogRevision=fdRotationCatalogContextValue.localCatalogRevision;
+    FD_CURATOR_CONTEXT.rotationEditionV2=fdRotationCatalogContextValue.rotationEditionV2;
     fdCuratorMount(document.getElementById('root'),FD_INDEX,FD_CURATOR_CONTEXT);
   </script>
 </body>

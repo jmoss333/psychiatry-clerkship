@@ -161,6 +161,9 @@ const jsonFiles = [], allFiles = [];
     else { allFiles.push({ fp, size: st.size }); if (f.endsWith('.json')) jsonFiles.push(fp); }
   }
 })(SITE);
+for (const rawCatalogSource of ['rotation_edition_catalog.json', 'rotation_edition_catalog_governance.json']) {
+  if (existsSync(p(rawCatalogSource))) H(`${rawCatalogSource} must not be published to the learner output`);
+}
 const parsed = {};
 for (const f of jsonFiles) {
   try { parsed[f] = readJSON(f); }

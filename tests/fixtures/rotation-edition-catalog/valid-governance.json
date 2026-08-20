@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "manifestRevision": 1,
+  "rotationEditionV2": "enabled",
+  "dispositions": [
+    {"key":"choice.arrival@v1","status":"reviewed","changedOn":"2026-08-19","reviewRef":"SYNTHETIC-TEST-REVIEW"},
+    {"key":"link.orientation@v1","status":"blocked","changedOn":"2026-08-19","reviewRef":"SYNTHETIC-TEST-REVIEW"},
+    {"key":"location.example-unit@v1","status":"reviewed","changedOn":"2026-08-19","reviewRef":"SYNTHETIC-TEST-REVIEW"},
+    {"key":"place.example-workroom@v1","status":"pending","changedOn":"2026-08-19","reviewRef":"SYNTHETIC-TEST-REVIEW"},
+    {"key":"profile.example-attending@v1","status":"deprecated","changedOn":"2026-08-19","reviewRef":"SYNTHETIC-TEST-REVIEW"}
+  ]
+}

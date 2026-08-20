@@ -18,6 +18,11 @@ from frontdoor_catalog import build_frontdoor_payload, inject_frontdoor_payload 
 
 
 REVISION = "1234567890abcdef1234567890abcdef12345678"
+ROTATION_PROJECTION = {
+    "schemaVersion": 1, "audience": "ms3", "revision": "sha256-" + "A" * 43,
+    "projectionDigest": "sha256-" + "B" * 43, "rotationEditionV2": "disabled",
+    "selectionKeys": [], "resolutionRecords": [], "blockedKeys": [],
+}
 
 
 RESIDENT_EXTRAS = [
@@ -127,6 +132,23 @@ class FrontdoorCatalogTest(unittest.TestCase):
         self.assertNotIn("learningPaths", resident["curriculum"])
         self.assertIn("rp-canon-quiz.html", {
             entry[1] for group in resident["manifest"].values() for entry in group})
+
+    def test_payload_and_injection_carry_one_closed_rotation_catalog_projection(self):
+        payload = build_frontdoor_payload("ms3", self.curriculum, self.ms3_catalog, REVISION,
+                                         ROTATION_PROJECTION)
+        self.assertEqual(payload["rotationEditionCatalog"], ROTATION_PROJECTION)
+        with tempfile.NamedTemporaryFile("w+", encoding="utf-8") as page:
+            page.write("\n".join([
+                "var FD_CURRICULUM={};", "var FD_TOPIC_META={};", "var FD_TOOL_REGISTRY={};",
+                "var FD_SITE_MANIFEST={};", "var FD_ROLES=[];", "var FD_AUDIENCE=\"\";",
+                "var FD_CORE_REVISION=\"\";", "var FD_ROTATION_EDITION_CATALOG={};",
+            ]))
+            page.flush()
+            inject_frontdoor_payload(page.name, payload, {}, {})
+            page.seek(0)
+            rendered = page.read()
+        self.assertEqual(rendered.count("var FD_ROTATION_EDITION_CATALOG="), 1)
+        self.assertIn('"rotationEditionV2": "disabled"', rendered)
 
     def test_projection_rejects_a_missing_site_path_wrong_id_missing_catalog_ref_or_kind_mismatch(self):
         cases = (
@@ -238,6 +260,7 @@ class FrontdoorCatalogTest(unittest.TestCase):
                 "var FD_ROLES=[];",
                 "var FD_AUDIENCE=\"\";",
                 "var FD_CORE_REVISION=\"\";",
+                "var FD_ROTATION_EDITION_CATALOG={};",
             ]))
             page.flush()
             inject_frontdoor_payload(page.name, payload, {"note": "new; resident"}, {"tools": []})
@@ -263,6 +286,7 @@ class FrontdoorCatalogTest(unittest.TestCase):
                 "var FD_ROLES=[];",
                 "var FD_AUDIENCE=\"\";",
                 "var FD_CORE_REVISION=\"\";",
+                "var FD_ROTATION_EDITION_CATALOG={};",
             ]))
             page.flush()
             inject_frontdoor_payload(page.name, payload, {"hostile": hostile}, {"tools": []})
@@ -337,20 +361,20 @@ class FrontdoorCatalogTest(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, message):
                     build_frontdoor_payload(site, self.curriculum, self.ms3_catalog, revision)
 
-    def test_injects_all_seven_values_once_and_boots_them_for_shell_and_curator_shapes(self):
+    def test_injects_all_eight_values_once_and_boots_them_for_shell_and_curator_shapes(self):
         payload = build_frontdoor_payload("resident", self.curriculum, self.resident_catalog, REVISION)
         fixtures = {
             "shell": "\n".join([
                 "var FD_CURRICULUM={};", "var FD_TOPIC_META={};", "var FD_TOOL_REGISTRY={};",
                 "var FD_SITE_MANIFEST={};", "var FD_ROLES=[];", "var FD_AUDIENCE=\"\";",
-                "var FD_CORE_REVISION=\"\";", "/*__FD_DATA__*/", "/*__FD_EDITION_CONTRACT__*/",
+                "var FD_CORE_REVISION=\"\";", "var FD_ROTATION_EDITION_CATALOG={};", "/*__FD_DATA__*/", "/*__FD_EDITION_CONTRACT__*/",
                 "/*__FD_EDITION_PROJECT__*/", "/*__FD_EDITION_STUDENT__*/",
                 "var FD_BOOT_CONTEXT={audience:FD_AUDIENCE,revision:FD_CORE_REVISION};",
             ]),
             "curator": "\n".join([
                 "var FD_AUDIENCE=\"\";", "var FD_CORE_REVISION=\"\";", "var FD_CURRICULUM={};",
                 "var FD_TOPIC_META={};", "var FD_TOOL_REGISTRY={};", "var FD_SITE_MANIFEST={};",
-                "var FD_ROLES=[];", "/*__FD_DATA__*/", "/*__FD_EDITION_CONTRACT__*/",
+                "var FD_ROLES=[];", "var FD_ROTATION_EDITION_CATALOG={};", "/*__FD_DATA__*/", "/*__FD_EDITION_CONTRACT__*/",
                 "/*__FD_EDITION_PROJECT__*/", "/*__FD_EDITION_STUDENT__*/",
                 "var FD_BOOT_CONTEXT={audience:FD_AUDIENCE,revision:FD_CORE_REVISION};",
             ]),
@@ -366,7 +390,7 @@ class FrontdoorCatalogTest(unittest.TestCase):
                 with open(page.name, encoding="utf-8") as rendered_page:
                     rendered = rendered_page.read()
                 for needle in ("FD_CURRICULUM", "FD_TOPIC_META", "FD_TOOL_REGISTRY", "FD_SITE_MANIFEST",
-                               "FD_ROLES", "FD_AUDIENCE", "FD_CORE_REVISION"):
+                               "FD_ROLES", "FD_AUDIENCE", "FD_CORE_REVISION", "FD_ROTATION_EDITION_CATALOG"):
                     self.assertEqual(rendered.count("var %s=" % needle), 1, needle)
                 self.assertLess(rendered.index("function fdEsc("), rendered.index("var FD_EDITION_RULES="))
                 self.assertLess(rendered.index("var FD_EDITION_RULES="), rendered.index("FD_BOOT_CONTEXT"))
@@ -417,7 +441,7 @@ class FrontdoorCatalogTest(unittest.TestCase):
         self.assertNotIn("a" * 40, rendered)
         for needle in (
             "FD_CURRICULUM", "FD_TOPIC_META", "FD_TOOL_REGISTRY",
-            "FD_SITE_MANIFEST", "FD_ROLES", "FD_AUDIENCE", "FD_CORE_REVISION",
+            "FD_SITE_MANIFEST", "FD_ROLES", "FD_AUDIENCE", "FD_CORE_REVISION", "FD_ROTATION_EDITION_CATALOG",
         ):
             self.assertEqual(rendered.count("var %s=" % needle), 1, needle)
 
