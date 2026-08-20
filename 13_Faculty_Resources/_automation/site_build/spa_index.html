@@ -2174,7 +2174,7 @@
     return;
   }
   TOPIC_META=FD_TOPIC_META;
-  var fdStored,fdRotation,fdWeek,fdRouteParams,fdIncomingRef,fdInitial;
+  var fdStored,fdRotation,fdWeek,fdRouteParams,fdIncomingRef,fdInitial,fdEditionCardRoot=null;
   try{
     fdStored=fdLoad();
     fdRotation=LS('cw_rotation_start')||'';
@@ -2225,7 +2225,7 @@
     if(!fdRenderPhase.ok)throw new Error('startup render journal');
     if(result.mode==='active'&&result.active){
       var fdEditionContainer=document.createElement('div');
-      var fdEditionCardRoot=document.createElement('div');
+      fdEditionCardRoot=document.createElement('div');
       var fdEditionLocalRoot=document.createElement('div');
       fdEditionContainer.appendChild(fdEditionCardRoot);fdEditionContainer.appendChild(fdEditionLocalRoot);
       fdEditionMount.replaceChildren(fdEditionContainer);
@@ -2343,6 +2343,11 @@
         result.active,fdEditionInputs&&fdEditionInputs.localDocument,fdEditionAcceptanceJournal);
       return !!(fdAcceptanceReceipt&&fdAcceptanceReceipt.ok);
     }))throw new Error('startup acceptance');
+    if(result.mode==='active'&&fdEditionCardRoot&&fdEditionCardRoot.isConnected&&
+       typeof fdEditionCardRoot.focus==='function'){
+      try{fdEditionCardRoot.focus({preventScroll:true});}
+      catch(ignoreEditionCardFocus){try{fdEditionCardRoot.focus();}catch(ignoreEditionCardFallbackFocus){ }}
+    }
   }catch(ignoreFinalStartup){
     fdEditionRuntimeFallback(fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'),fdInitial);
     return;
