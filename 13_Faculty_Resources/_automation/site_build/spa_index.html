@@ -112,7 +112,10 @@
   .governance-notice.reviewed-receipt time{white-space:nowrap}
   .governance-notice.unavailable{border:1px dashed var(--text-light);background:var(--bg-alt);color:var(--text-mid);font-weight:600}
   #content.toolmode .governance-notice{margin:0;border-radius:0}
-  .governance-badge{display:inline-block;flex:0 0 auto;border:1px solid currentColor;border-radius:999px;padding:1px 6px;font-size:.58rem;font-weight:800;line-height:1.35;color:var(--warning);background:var(--warning-light);vertical-align:middle;margin-left:5px}
+  /* .58rem computed to 9.28px -- the smallest type anywhere in the product, carrying its most
+     safety-relevant signal ("Pending review · High risk"). .68rem (10.9px) is still clearly
+     subordinate to the row it annotates without falling under the legibility floor. */
+  .governance-badge{display:inline-block;flex:0 0 auto;border:1px solid currentColor;border-radius:999px;padding:1px 6px;font-size:.68rem;font-weight:800;line-height:1.35;color:var(--warning);background:var(--warning-light);vertical-align:middle;margin-left:5px}
   .governance-badge.high{color:var(--danger);background:var(--danger-light)}
   .navitem.on .governance-badge{color:var(--text);background:var(--surface)}
   .md-body{max-width:820px;margin:0 auto;padding:26px 28px 60px}
@@ -367,6 +370,16 @@
   .cap-warn strong{color:var(--text)}
   .cap-sheet textarea{width:100%;box-sizing:border-box;min-height:96px;resize:vertical;border:1px solid var(--border);border-radius:9px;padding:10px;font:inherit;font-size:.9rem;color:var(--text);background:var(--bg)}
   .cap-sheet textarea:focus-visible{outline:none;box-shadow:0 0 0 3px var(--surface),0 0 0 5px var(--accent)}
+  /* .fd-header is position:sticky, but sticky is scoped to its PARENT's box -- and this mount is
+     a flex item of .fd-shell sized exactly to the header it holds, so the header had zero travel
+     and scrolled away on every page (search, week, Safety and the tab row with it). display:contents
+     removes this wrapper's box so .fd-header becomes the flex item itself and sticks against the
+     full-height .fd-shell. Keep it: adding any layout property here re-creates the box and silently
+     un-sticks the header again. Sticky itself stays declared exactly once, on .fd-header in the
+     front-door stylesheet, where fd_shell.js's header comment already documents it. (Naming that
+     stylesheet here would trip fd-shell-boot's single-reference count, which exists to keep this
+     document from acquiring a second competing link to it.) */
+  #fdChromeMount{display:contents}
   #fdCaptureMount{width:100%;max-width:1200px;margin:12px auto 0;padding:0 20px;display:flex;justify-content:flex-end}
   #fdCaptureMount:empty{display:none}
   #fdCaptureMount .fd-capture-launch{width:min(230px,100%);margin:0}
