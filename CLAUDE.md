@@ -80,3 +80,14 @@ cd tests/smoke && npm ci && npx playwright test
   runs on Netlify).
 - **No PHI.** Clinical content is synthetic / de-identified only; never commit patient identifiers to
   git-tracked files, memory, or scratch outputs.
+- **THE LIBRARY TEACHES ADMINISTRATION; IT DOES NOT REPRODUCE INSTRUMENTS.** Same standing as the
+  dose-literal rule. Teach *how to give* an instrument — the elicitation, the confounds, what the
+  score does and does not license, what a negative result fails to rule out — and link to the
+  official form. Do **not** ship the instrument itself: no verbatim item stems, no verbatim anchor
+  ladders, no reproduced field labels, and no tool that functions as a fillable copy of a
+  copyrighted form. "Programming the form" counts as reproduction even when no text is copied —
+  the Stanley-Brown Safety Plan's terms name it explicitly, which is why the safety-planning work
+  (WP-06R-b) is a *rehearsal* tool and reproduces nothing.
+  Scope is a governance decision, not an agent decision: if a WP asks you to add verbatim item or
+  anchor text, **stop and ask** rather than inferring that a particular instrument is exempt.
+  Audit and current disposition: `docs/superpowers/plans/2026-08-20-instrument-reproduction-audit.md`.
