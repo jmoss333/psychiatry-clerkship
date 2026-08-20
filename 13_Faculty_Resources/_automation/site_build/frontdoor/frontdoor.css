@@ -341,7 +341,12 @@
 .fd-library__head{display:flex;align-items:baseline;gap:12px;margin:0 0 18px;flex-wrap:wrap}
 .fd-library__h1{margin:0;font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:26px;letter-spacing:.2px;color:var(--fd-text)}
 .fd-library__count{font-size:12.5px;color:var(--fd-text-dim)}
-.fd-library__grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(196px,1fr));gap:22px 26px;align-items:start}
+/* 196px truncated 23 of the 81 library titles, and auto-fill made it viewport-proof: extra width
+ * bought more columns, never wider ones, so the same 23 clipped at 1280px and at 1680px. 280px is
+ * the measured width that clears the great majority of real titles; the longest ("Consult
+ * Questions: Capacity, Delirium, Catatonia, Withdrawal") still ellipses, which is the intended
+ * behaviour of .fd-collink__label rather than a layout failure. */
+.fd-library__grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:22px 26px;align-items:start}
 
 .fd-col__name{
   font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--fd-terracotta);
@@ -356,6 +361,17 @@
 .fd-collink__dot{width:6px;height:6px;border-radius:50%;flex:0 0 auto;background:var(--fd-olive)}
 .fd-collink__dot.is-tool{background:var(--fd-teal)}
 .fd-collink__label{flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+/* .governance-badge is `flex:0 0 auto` (spa_index.html) so it never yielded, while the label above
+ * shrinks to nothing -- inside a library column that gave "Interaction Cards — One Action" 35px of
+ * the 196px it needed, printing "Inte…" beside a full-width "Pending review · High risk". The
+ * badge is metadata about the row; the row's NAME has to survive first, so here the badge gives
+ * ground too and ellipses itself. Its full text stays exact for assistive tech either way -- the
+ * markup already carries it in aria-label, not just as visible text.
+ * .fd-result is the search panel's row, which pairs the same non-shrinking badge with the same
+ * `flex:1;min-width:0` title -- identical failure mode, just wider and so less acute until the
+ * panel is on a phone. One rule covers both call sites. */
+.fd-collink .governance-badge,
+.fd-result .governance-badge{flex:0 1 auto;min-width:0;max-width:50%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 
 /* ═══ Reader (reading / tool pane) ═══════════════════════════════════════════ */
 
@@ -380,12 +396,27 @@
   background:var(--fd-surface);border:1px solid var(--fd-line);border-radius:14px;
   box-shadow:var(--fd-shadow-card);padding:34px 38px;max-width:760px;flex:0 1 auto;min-width:0;
 }
+/* A tool page's body is a single <iframe>, which contributes no intrinsic width -- so the
+ * content-sized `flex:0 1 auto` above left .fd-article to collapse to ~380px, rendering the tool
+ * itself at 302px with ~780px of the reader row empty. `flex:1 1 auto` makes a tool claim its
+ * column instead of shrink-wrapping nothing.
+ * Deliberately OUTSIDE the >=1000px block: [data-fd-expand-tool] is desktop-only, so below that
+ * width a learner has no toggle and this collapsed state is the only one they ever see.
+ * The 760px cap above is deliberately NOT lifted. Lifting it puts collapsed within ~240px of
+ * expanded at a 1440px desktop, which is the toggle ceasing to mean anything -- tool-expand.spec.js
+ * pins that separation at >250px in both directions. Full-bleed stays .is-tool-expanded's job. */
+.fd-reader--tool .fd-article{flex:1 1 auto}
 .fd-article__head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
 .fd-article__dot{font-size:11px;color:var(--fd-text-dim)}
 .fd-article__meta{font-size:11.5px;font-weight:600;color:var(--fd-text-dim)}
 .fd-article__h1{margin:0 0 14px;font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:29px;line-height:1.22;letter-spacing:.2px;color:var(--fd-text)}
 .fd-article__lead{margin:0 0 18px;font-size:16.5px;line-height:1.72;color:var(--fd-text);max-width:62ch}
 .fd-article__body{font-size:16.5px;line-height:1.72;max-width:62ch;color:var(--fd-text)}
+/* The 62ch measure above is a reading rule. A tool page's body is the mounted <iframe>, not prose,
+ * so it is lifted there -- see the .fd-reader--tool note on .fd-article. Kept immediately after the
+ * base rule it overrides (specificity, not order, decides the cascade here; tests/fd-tokens.test.mjs
+ * resolves a selector by first textual match, so an override placed above would shadow the base). */
+.fd-reader--tool .fd-article__body{max-width:none}
 .fd-article__body h2{margin:30px 0 12px;font-family:Georgia,'Times New Roman',serif;font-size:24px;line-height:1.3;color:var(--fd-text)}
 .fd-article__body h3{margin:24px 0 10px;font-size:18px;line-height:1.4;color:var(--fd-text)}
 .fd-article__body ul{margin:0 0 18px;padding-left:1.35em}
@@ -655,7 +686,11 @@
   .fd-brand__name{overflow:hidden;text-overflow:ellipsis}
   .fd-searchbtn{width:96px;max-width:none;justify-self:end;padding:8px 10px}
   .fd-searchbtn__label{min-width:0}
-  .fd-kbd{display:none}
+  /* Scoped to the search button on purpose. .fd-kbd has two call sites (fd_shell.js's header ⌘K
+   * and fd_library.js's "press / to filter"), and hiding the class outright reached the second
+   * one too -- the Library header read "81 pages · press to filter", a sentence with its verb's
+   * object deleted. Only the header chip is competing for width at this breakpoint. */
+  .fd-searchbtn .fd-kbd{display:none}
   .fd-header__actions{grid-column:1/-1;margin-left:0;justify-content:flex-end}
 }
 
