@@ -75,7 +75,12 @@ async function waitForContent(page) {
 
 test('nav items: exact inventory + HTTP 200 + non-empty content', async ({ request, baseURL }, testInfo) => {
   const items = await loadNav(request, baseURL);
-  expect(items).toHaveLength(testInfo.project.name === 'nav-res' ? 106 : 98);
+  expect(items).toHaveLength(testInfo.project.name === 'nav-res' ? 107 : 99);
+  expect(items.filter(item => item.f === 'rotation-curator.html').map(({
+    t, f, k, hidden,
+  }) => ({ t, f, k, hidden }))).toEqual([{
+    t: 'Faculty: Curate a rotation edition', f: 'rotation-curator.html', k: 'tool', hidden: true,
+  }]);
   const failures = [];
   const rows = [];
 

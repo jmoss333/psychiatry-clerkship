@@ -1404,10 +1404,12 @@ test('malformed and wrong-audience links show a non-modal alert without changing
   for (const [index, fragment] of ['#edition=%%%%', `#edition=${wrongAudience.payload}`].entries()) {
     await resetEditionWriteLog(page);
     await page.goto(`/?case=edition-rejected-${index}${fragment}`);
-    await expect(page.locator('.fd-edition-error[role="alert"]')).toBeVisible();
+    const alert = page.locator('.fd-edition-error[role="alert"]');
+    await expect(alert).toBeVisible();
+    await expect(alert).toHaveAttribute('tabindex', '-1');
+    await expect(alert).toBeFocused();
     await expect(page.locator('dialog.fd-edition-switch')).toHaveCount(0);
     await expect(page.locator('.fd-today')).toBeVisible();
-    expect(await page.evaluate(() => document.activeElement?.closest('.fd-edition-error'))).toBeNull();
     expect(await editionWrites(page)).toEqual([]);
     expect(await localStorageSnapshot(page)).toEqual(before);
   }

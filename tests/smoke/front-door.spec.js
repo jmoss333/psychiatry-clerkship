@@ -235,12 +235,15 @@ test('malformed built protocol fails closed with every canonical crisis resource
   await seedApp(page, testInfo);
   await page.route(/\/\?(?:$|#)|\/$/, async route => {
     const response = await route.fetch();
-    const needle = 'var FD_INDEX=fdBuildIndex(FD_CURRICULUM,FD_TOPIC_META,FD_TOOL_REGISTRY,FD_SITE_MANIFEST);';
+    const needle = [
+      'var FD_CANONICAL_INDEX=fdBuildIndex(FD_CURRICULUM,FD_TOPIC_META,FD_TOOL_REGISTRY,FD_SITE_MANIFEST);',
+      '  var FD_INDEX=FD_CANONICAL_INDEX;',
+    ].join('\n');
     const original = await response.text();
     expect(original.split(needle)).toHaveLength(2);
     const body = original.replace(
       needle,
-      `${needle}FD_TOPIC_META[FD_INDEX.kit[0].item.ref].safetySteps=[];`,
+      `${needle}\n  FD_TOPIC_META[FD_INDEX.kit[0].item.ref].safetySteps=[];`,
     );
     await route.fulfill({ response, body });
   });
