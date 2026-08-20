@@ -47,8 +47,15 @@
   .box{width:22px;height:22px;border:2px solid var(--accent);border-radius:5px;flex:none;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:700}
   .box.on{background:var(--accent)}
   .alertbox{padding:var(--sp2) var(--sp3);border-radius:var(--radius-md);font-weight:700;text-align:center;margin-top:var(--sp2)}
-  .alertbox.calm{background:var(--success-light);color:var(--success);border:1px solid var(--success)}
-  .alertbox.act{background:var(--danger-light);color:var(--danger);border:1px solid var(--danger)}
+  /* .note is now the only variant. The box carries a standing instruction, not a result, so it
+     must not be colour-coded by state: green on an unchecked list is an affirmative safety
+     statement this page has no basis for, and red on one is a false alarm. --info is this file's
+     existing neutral (see .frst, .tag.info). The former .calm/.act pair is deleted rather than
+     left dead: .calm was the green treatment the removed zero-signs reassurance rendered in, and
+     a ready-made success style sitting in a violence-risk tool is an invitation to wire that
+     directive back up. tests/violence-no-tally.test.mjs pins its absence by string, so quoting
+     the old copy verbatim anywhere in this file — comments included — fails the suite. */
+  .alertbox.note{background:var(--info-light);color:var(--info);border:1px solid var(--info)}
   .btn{border:none;border-radius:var(--radius-sm);padding:8px 14px;font-weight:600;cursor:pointer;font-family:inherit;background:transparent;color:var(--accent-dark);border:1px solid var(--border)}
   .step{display:flex;gap:var(--sp2);align-items:flex-start;margin-bottom:var(--sp2)}
   .step .n{width:24px;height:24px;border-radius:var(--radius-pill);background:var(--primary-dark);color:#fff;font-weight:700;font-size:.8rem;display:inline-flex;align-items:center;justify-content:center;flex:none}
@@ -86,7 +93,9 @@ var SIGNS=[
 function App(){
   var sel=useState({}); var setSel=sel[1]; sel=sel[0];
   function toggle(k){var n=Object.assign({},sel);n[k]=!n[k];setSel(n);}
-  var count=SIGNS.reduce(function(a,i){return a+(sel[i.k]?1:0);},0);
+  /* No tally. The page declares itself "not a scored instrument" and then must not behave like
+     one: a count implies a threshold, and this list has none. The checkboxes are a noticing aid,
+     and what they produce is attention, not a score. */
   return e('div',{className:'shell'},
     e('div',{className:'kicker'},'Acute & Safety · 04'),
     e('h1',null,'Violence Risk on the Inpatient Unit'),
@@ -135,9 +144,8 @@ function App(){
           e('span',{className:'box'+(sel[i.k]?' on':''),'aria-hidden':'true'}, sel[i.k]?'✓':''),
           e('span',null,i.b));
       }),
-      e('div',{className:'alertbox '+(count>=1?'act':'calm')},
-        count===0?'No imminent signs checked — continue routine observation and reassess.'
-                 :(count+' sign(s) present → move to de-escalation now; ensure team awareness and your own exit.')),
+      e('div',{className:'alertbox note'},
+        'Any of these means tell the team now. This list is not summed and there is no threshold — an unchecked list is not a negative result.'),
       e('button',{className:'btn',style:{marginTop:'12px'},onClick:function(){setSel({})}},'Reset')
     ),
 
