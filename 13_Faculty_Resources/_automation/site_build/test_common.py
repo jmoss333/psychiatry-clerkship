@@ -435,6 +435,15 @@ class TestSharedSnippets(unittest.TestCase):
         self.assertIn("var FD_STORE='cw_frontdoor_v1';", t)
         self.assertNotIn("/*__FD_STATE__*/", t)
 
+    def test_qr_generator_marker_expands_to_the_exact_local_curator_only_vendor(self):
+        marker = "/*__QR_GENERATOR_1_4_4__*/"
+        p = self._page("<script>\n%s\n</script>" % marker)
+        self.assertTrue(common.inject_shared_snippets(p))
+        t = open(p, encoding="utf-8").read()
+        self.assertIn("QR Code Generator for JavaScript", t)
+        self.assertIn("var qrcode = function()", t)
+        self.assertNotIn(marker, t)
+
     def test_every_frontdoor_snippet_expands(self):
         """All Front Door markers resolve through the frontdoor subdirectory."""
         markers = [
@@ -468,6 +477,14 @@ class TestSharedSnippets(unittest.TestCase):
             self.assertLess(len(sig), 60, "%s signature too long: %r" % (fname, sig))
             sigs.append(sig)
         self.assertEqual(len(sigs), len(set(sigs)), "duplicate snippet signatures")
+
+    def test_snippet_signature_skips_a_long_function_for_a_short_later_one(self):
+        long_function = "function unwieldy(" + ("argument," * 12) + "){"
+        short_function = "function stableProbe(){}"
+        body = "%s\n%s\n" % (long_function, short_function)
+
+        self.assertGreaterEqual(len(long_function), 60)
+        self.assertEqual(common._snippet_signature(body), short_function)
 
     def test_unexpanded_marker_fails_the_page_contract(self):
         d = tempfile.mkdtemp()

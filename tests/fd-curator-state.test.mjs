@@ -222,9 +222,9 @@ async function validEnvelope() {
 
 test('v2 backup import is branded, builder-resolved, bounded, and applies only at the live sequence', async () => {
   const envelope = await validEnvelope();
-  const imported = await fn('fdCuratorImportBackup')(JSON.stringify(envelope), index(), context(), SNAPSHOT, { mode: 'builder', generationDate: '2026-08-19' }, webcrypto.subtle);
-  assert.equal(imported.ok, true); assert.equal(imported.code, 'CURATOR_IMPORT_OK');
   const transactions = fn('fdCuratorImportTransactions')(); const sequence = transactions.begin();
+  const imported = await fn('fdCuratorImportBackup')(JSON.stringify(envelope), index(), context(), SNAPSHOT, { mode: 'builder', generationDate: '2026-08-19' }, webcrypto.subtle, sequence);
+  assert.equal(imported.ok, true); assert.equal(imported.code, 'CURATOR_IMPORT_OK');
   const current = fn('fdCuratorNewDraft')(index(), context());
   assert.equal(fn('fdCuratorReduce')(current, { type: 'IMPORT_SUCCEEDED', result: imported, sequence: sequence + 1 }, index(), context(), SNAPSHOT, '2026-08-19', transactions), current);
   const applied = fn('fdCuratorReduce')(current, { type: 'IMPORT_SUCCEEDED', result: imported, sequence }, index(), context(), SNAPSHOT, '2026-08-19', transactions);
@@ -240,12 +240,13 @@ test('builder import rejects deprecated, blocked, unknown, and location-ineligib
   for (const reasonKey of [
     'choice.deprecated@v1', 'choice.blocked@v1', 'choice.unknown@v1', 'choice.reason-other@v1',
   ]) {
+    const transactions = fn('fdCuratorImportTransactions')(); const sequence = transactions.begin();
     const value = structuredClone(base);
     value.config.pathItems[0].reasonKey = reasonKey;
     value.digest = await digest({ format: value.format, schemaVersion: value.schemaVersion, config: value.config });
     const result = await fn('fdCuratorImportBackup')(
       JSON.stringify(value), index(), context(), SNAPSHOT,
-      { mode: 'builder', generationDate: '2026-08-19' }, webcrypto.subtle,
+      { mode: 'builder', generationDate: '2026-08-19' }, webcrypto.subtle, sequence,
     );
     assert.deepEqual(result, { ok: false, code: 'CURATOR_IMPORT_RESELECTION_REQUIRED' }, reasonKey);
     assert.equal(JSON.stringify(result).includes(reasonKey), false);
@@ -253,11 +254,11 @@ test('builder import rejects deprecated, blocked, unknown, and location-ineligib
 });
 
 test('import size failures occur before parsing or file reads and never mutate a draft', async () => {
-  let textCalls = 0;
-  assert.deepEqual(await fn('fdCuratorImportBackup')('x'.repeat(65537), index(), context(), SNAPSHOT, { mode: 'builder', generationDate: '2026-08-19' }, webcrypto.subtle), { ok: false, code: 'CURATOR_IMPORT_SIZE' });
-  assert.deepEqual(await fn('fdCuratorReadImportFile')({ size: 65537, text() { textCalls += 1; return Promise.resolve('{}'); } }, index(), context(), SNAPSHOT, { mode: 'builder', generationDate: '2026-08-19' }, webcrypto.subtle), { ok: false, code: 'CURATOR_IMPORT_SIZE' });
+  let textCalls = 0; const transactions = fn('fdCuratorImportTransactions')(); const sequence = transactions.begin();
+  assert.deepEqual(await fn('fdCuratorImportBackup')('x'.repeat(65537), index(), context(), SNAPSHOT, { mode: 'builder', generationDate: '2026-08-19' }, webcrypto.subtle, sequence), { ok: false, code: 'CURATOR_IMPORT_SIZE' });
+  assert.deepEqual(await fn('fdCuratorReadImportFile')({ size: 65537, text() { textCalls += 1; return Promise.resolve('{}'); } }, index(), context(), SNAPSHOT, { mode: 'builder', generationDate: '2026-08-19' }, webcrypto.subtle, sequence), { ok: false, code: 'CURATOR_IMPORT_SIZE' });
   assert.equal(textCalls, 0);
-  assert.deepEqual(await fn('fdCuratorReadImportFile')({ size: 0, text() { textCalls += 1; return Promise.resolve('x'.repeat(65537)); } }, index(), context(), SNAPSHOT, { mode: 'builder', generationDate: '2026-08-19' }, webcrypto.subtle), { ok: false, code: 'CURATOR_IMPORT_SIZE' });
+  assert.deepEqual(await fn('fdCuratorReadImportFile')({ size: 0, text() { textCalls += 1; return Promise.resolve('x'.repeat(65537)); } }, index(), context(), SNAPSHOT, { mode: 'builder', generationDate: '2026-08-19' }, webcrypto.subtle, sequence), { ok: false, code: 'CURATOR_IMPORT_SIZE' });
   assert.equal(textCalls, 1);
 });
 
@@ -298,4 +299,31 @@ test('branded mount reads only the v2 draft key before registering structured co
     ['get', 'cw_curator_draft_ms3_v2'], ['listen', 'click'], ['listen', 'change'], ['listen', 'input'],
   ]);
   assert.match(editor.innerHTML, /data-curator-step-panel="1"/);
+});
+
+test('mounted dispatch executes only its first descriptor-captured action snapshot', async () => {
+  const editor = { innerHTML: '' };
+  const root = {
+    querySelector(selector) { return selector === '#curatorEditorMount' ? editor : null; },
+    querySelectorAll() { return []; },
+    addEventListener() {},
+  };
+  const storage = { getItem() { return null; }, setItem() {} };
+  const app = await fn('fdCuratorMount')(root, index(), context(), SNAPSHOT, '2026-08-19', { storage, subtle: webcrypto.subtle });
+  let snapshot = 0; let gets = 0;
+  const action = new Proxy({}, {
+    ownKeys() { snapshot += 1; return snapshot === 1 ? ['type', 'step'] : ['type', 'name', 'value']; },
+    getOwnPropertyDescriptor(_target, key) {
+      const first = { type: 'SET_STEP', step: 2 };
+      const later = { type: 'SET_AFFIRMATION', name: 'publicSafe', value: true };
+      return { configurable: true, enumerable: true, writable: true, value: (snapshot === 1 ? first : later)[key] };
+    },
+    get() { gets += 1; throw new Error('ordinary action reads are forbidden'); },
+  });
+  const result = app.dispatch(action);
+  assert.equal(result.changed, true);
+  assert.equal(app.getState().step, 2);
+  assert.equal(app.getState().affirmations.publicSafe, false);
+  assert.equal(snapshot, 1);
+  assert.equal(gets, 0);
 });

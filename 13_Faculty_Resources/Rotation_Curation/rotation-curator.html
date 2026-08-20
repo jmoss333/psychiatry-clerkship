@@ -708,8 +708,8 @@
     </div>
 
     <div class="final-action">
-      <p><strong>Publication unavailable.</strong> Catalog publication is disabled for this build; Generate stays disabled until later governed work implements validation, public-link review, and the health gate.</p>
-      <button type="button" id="curatorGenerate" disabled aria-disabled="true">Generate edition link</button>
+      <p data-curator-publication-summary><strong>Publication governance is disabled.</strong> Generate remains unavailable unless every reviewed gate is enabled and healthy.</p>
+      <button type="button" id="curatorGenerate" disabled aria-disabled="true" data-curator-generate>Generate edition link</button>
     </div>
   </main>
 
@@ -730,6 +730,8 @@
     /*__FD_EDITION_CONTRACT__*/
     /*__FD_EDITION_PROJECT__*/
     /*__FD_EDITION_V1_SALVAGE__*/
+    <!-- QR-VENDOR-RECEIPT package="qrcode-generator@1.4.4" npm-integrity="sha512-HM7yY8O2ilqhmULxGMpcHSF1EhJJ9yBj8gvDEuZ6M+KGJ0YY2hKpnXvRD+hZPLrDVck3ExIGhmPtSdcjC+guuw==" tarball-sha256="ab6ed47d378877441deae95972e07b2716c26545a735a23aa6b9d442b33026ed" source-sha256="18ae399f81182bc9de916e9c77b195df20cc58d6f2d55a62b085a299f1bf1780" license-url="https://raw.githubusercontent.com/kazuhikoarase/qrcode-generator/js1.4.4/LICENSE" license-sha256="3a850fa5f08101db6f40676c2786e10bd2cd5fff7b12ffdf1e0c434d4e49d90c" -->
+    /*__QR_GENERATOR_1_4_4__*/
     /*__FD_CURATOR__*/
 
     var FD_INDEX=fdBuildIndex(FD_CURRICULUM,FD_TOPIC_META,FD_TOOL_REGISTRY,FD_SITE_MANIFEST);
@@ -752,7 +754,10 @@
       if(!prepared||prepared.ok!==true){fdCuratorCatalogUnavailable(document.getElementById('root'));return;}
       var fdCatalogSnapshot=prepared.snapshot;
       var fdCuratorDependencies;
-      try{fdCuratorDependencies={storage:window.localStorage,subtle:window.crypto&&window.crypto.subtle};}
+      try{fdCuratorDependencies={storage:window.localStorage,subtle:window.crypto&&window.crypto.subtle,
+        location:{protocol:window.location.protocol,host:window.location.host,origin:window.location.origin,
+          pathname:window.location.pathname,search:window.location.search,hash:window.location.hash},
+        clipboard:window.navigator&&window.navigator.clipboard,Blob:window.Blob,URL:window.URL,document:document};}
       catch(ignoreDependencies){fdCuratorCatalogUnavailable(document.getElementById('root'));return;}
       fdCuratorMount(document.getElementById('root'),FD_INDEX,FD_CURATOR_CONTEXT,fdCatalogSnapshot,fdGenerationDate,fdCuratorDependencies);
     },function(){fdCuratorCatalogUnavailable(document.getElementById('root'));});

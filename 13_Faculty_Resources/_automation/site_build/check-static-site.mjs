@@ -30,6 +30,9 @@
  *   - a shipped file that is a Git-LFS pointer stub instead of real bytes
  *   - a duplicate (or missing) item id in question_bank.json
  *   - a relative/root-local <script src> whose shipped target is absent
+ *   - rotation-curator.html loads a remote script/image, exposes a browser network
+ *     transport path, or ships more than the one locally vendored QR implementation
+ *   - the vendored QR implementation signature appears in any other shipped HTML
  *   - a live shell (index.html) literal tool map (PRACTICE_LABELS/
  *     PRACTICE_PAGE_TOOLS) referencing a tool file the build doesn't ship
  *   - a `?page=`/`?tool=` reference in shipped content/*.md that doesn't resolve
@@ -68,6 +71,16 @@ const listHtml = (dir) => existsSync(dir) ? readdirSync(dir).filter(f => f.endsW
 const DOSE = /\b\d+(?:\.\d+)?\s?(?:mg|mcg|mL|mg\/kg)\b/i;
 const CDN_HOST = /\b(?:cdnjs\.cloudflare\.com|unpkg\.com|jsdelivr\.net)\b/i;
 const DOSE_WAIVER_PREFIX = 'QA-ALLOW-DOSE';
+const QR_VENDOR_SIGNATURE = 'var qrcode = function()';
+const QR_VENDOR_ALLOWED_HTML = 'tools/rotation-curator.html';
+
+function tagAttributes(tag) {
+  const values = [];
+  for (const attribute of tag.matchAll(/([^\s"'<>\/=]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>]+))/g)) {
+    values.push({ name: attribute[1].toLowerCase(), value: attribute[2] ?? attribute[3] ?? attribute[4] ?? '' });
+  }
+  return values;
+}
 
 /* Return the zero-based line numbers that are allowed to bypass dose scanning.
  * Waivers are deliberately fail-closed: an annotation is accepted only when its
@@ -163,6 +176,25 @@ const jsonFiles = [], allFiles = [];
 })(SITE);
 for (const rawCatalogSource of ['rotation_edition_catalog.json', 'rotation_edition_catalog_governance.json']) {
   if (existsSync(p(rawCatalogSource))) H(`${rawCatalogSource} must not be published to the learner output`);
+}
+
+/* The QR implementation is intentionally a single, curator-only local dependency. A
+ * second embedded copy increases the unreviewed executable surface, while a copy in the
+ * learner shell would make the faculty-only generator available on every page. Scan all
+ * shipped HTML (not only tools/) so index.html and future nested shells cannot bypass it.
+ * Fixture curator pages without the QR engine remain valid: this is a placement and
+ * uniqueness invariant, while common.py's marker contract verifies real-build presence. */
+for (const { fp } of allFiles) {
+  if (!fp.endsWith('.html')) continue;
+  const rel = relative(SITE, fp).split('\\').join('/');
+  const html = readFileSync(fp, 'utf8');
+  const copies = html.split(QR_VENDOR_SIGNATURE).length - 1;
+  if (!copies) continue;
+  if (rel !== QR_VENDOR_ALLOWED_HTML) {
+    H(`QR vendor signature outside rotation-curator.html: ${rel}`);
+  } else if (copies !== 1) {
+    H(`QR vendor signature must appear exactly once in rotation-curator.html (found ${copies})`);
+  }
 }
 const parsed = {};
 for (const f of jsonFiles) {
@@ -319,9 +351,15 @@ for (const f of jsAssets) {
 for (const f of toolFiles) {
   const html = readFileSync(p('tools', f), 'utf8');
   if (CDN_HOST.test(html)) H(`external CDN dependency in tools/${f} — vendor the script locally so bedside/offline use does not blank the tool`);
-  for (const match of html.matchAll(/<script\b[^>]*\bsrc\s*=\s*(["'])(.*?)\1/gi)) {
-    const source = match[2].trim();
-    if (!source || /^(?:https?:)?\/\//i.test(source) || /^(?:data|blob):/i.test(source)) continue;
+  for (const match of html.matchAll(/<script\b[^>]*>/gi)) {
+    const sourceAttribute = tagAttributes(match[0]).find((attribute) => attribute.name === 'src');
+    const source = sourceAttribute ? sourceAttribute.value.trim() : '';
+    if (!source) continue;
+    if (/^(?:https?:)?\/\//i.test(source)) {
+      if (f === 'rotation-curator.html') H(`remote script source in rotation-curator.html: ${source}`);
+      continue;
+    }
+    if (/^(?:data|blob):/i.test(source)) continue;
     if (/^[a-z][a-z0-9+.-]*:/i.test(source)) {
       H(`unsupported script source in ${f}: ${source}`);
       continue;
@@ -336,6 +374,34 @@ for (const f of toolFiles) {
     } else if (!existsSync(target)) {
       H(`missing relative script source in ${f}: ${source}`);
     }
+  }
+  if (f === 'rotation-curator.html') {
+    for (const match of html.matchAll(/<link\b[^>]*>/gi)) {
+      const tag = match[0];
+      const attributes = tagAttributes(tag);
+      const rel = attributes.find((attribute) => attribute.name === 'rel');
+      const href = attributes.find((attribute) => attribute.name === 'href');
+      const rels = rel ? rel.value.trim().toLowerCase().split(/\s+/) : [];
+      const source = href ? href.value.trim() : '';
+      if (rels.includes('stylesheet') && /^(?:https?:)?\/\//i.test(source)) H(`remote stylesheet source in rotation-curator.html: ${source}`);
+    }
+
+    // Remote raster and SVG image elements could silently turn the QR/share screen into
+    // a tracking beacon. Inline SVG is allowed; only network-addressed destinations fail.
+    for (const match of html.matchAll(/<(?:img|image|source|use|feimage)\b[^>]*>/gi)) {
+      for (const attribute of tagAttributes(match[0])) {
+        if (!['src', 'srcset', 'href', 'xlink:href'].includes(attribute.name)) continue;
+        const source = attribute.value.trim();
+        if (/(?:^|[\s,])(?:https?:)?\/\//i.test(source)) H(`remote image source in rotation-curator.html: ${source}`);
+      }
+    }
+    if (/(?:@import\s+(?:url\(\s*)?|url\(\s*)["']?\s*(?:https?:)?\/\//i.test(html)) H('remote CSS destination in rotation-curator.html');
+
+    // The vetted curator/vendor sources contain none of these tokens, including comments,
+    // so scan raw bytes. Regex comment stripping is unsafe here: comment-like delimiters in
+    // string literals can otherwise erase a real request expression between them.
+    const networkTransport = /(?:\b(?:fetch|XMLHttpRequest|WebSocket|EventSource|importScripts|sendBeacon)\b|\bimport\s*\(|\bnew\s+Image\s*\(|\b[A-Za-z_$][\w$]*\s*\.\s*(?:src|srcset)\s*=|\bcreateElement\s*\(\s*["'](?:script|img|image|source|link)["']|\bsetAttribute\s*\(\s*["'](?:src|srcset|href|xlink:href)["'])/i;
+    if (networkTransport.test(html)) H('network transport API in rotation-curator.html');
   }
   const preferredStarts = html.match(/<!--\s*\[CLERKSHIP-META v1\]/g) || [];
   const legacyStarts = html.match(/<!--\s*\[RC-META\]/g) || [];

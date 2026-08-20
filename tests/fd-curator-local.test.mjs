@@ -9,6 +9,7 @@ const OLD_CORE_REVISION = '4'.repeat(40);
 const CATALOG_REVISION = `sha256-${'D'.repeat(43)}`;
 const OLD_CATALOG_REVISION = `sha256-${'E'.repeat(43)}`;
 const SOURCE = [
+  readFileSync(new URL('../13_Faculty_Resources/_automation/site_build/vendor/qrcode-generator-1.4.4.js', import.meta.url), 'utf8'),
   readFileSync(new URL(`${BUILD}/fd_edition_catalog.js`, import.meta.url), 'utf8').replace('__FD_CATALOG_EXPECTED_REVISION__', CATALOG_REVISION),
   ...['fd_edition_contract.js', 'fd_edition_project.js', 'fd_curator.js'].map((name) => readFileSync(new URL(`${BUILD}/${name}`, import.meta.url), 'utf8')),
 ].join('\n');
@@ -18,7 +19,7 @@ const API_NAMES = [
   'fdCuratorImportTransactions', 'fdCuratorCandidateConfig', 'fdCuratorPreparePreview',
   'fdCuratorPreviewMarkup', 'fdCuratorCompletePreview', 'fdCuratorRestoreDraft',
   'fdCuratorImportBackup',
-  'fdCuratorPrepareGenerationResult', 'fdCuratorLocalCoverage', 'fdCuratorLocalMarkup',
+  'fdCuratorBuildShare', 'fdCuratorLocalCoverage', 'fdCuratorLocalMarkup',
   'fdCuratorCurriculumMarkup',
   'fdCuratorObserveCurrentSite', 'fdCuratorCatalogOptions', 'fdCuratorApplyAction',
   'fdCuratorMount',
@@ -140,6 +141,7 @@ const EMPTY_DISABLED_SNAPSHOT = await makeSnapshot('disabled', false);
 const RESIDENT_SNAPSHOT = await makeSnapshot('enabled', true, 'resident');
 const RESIDENT_DISABLED_SNAPSHOT = await makeSnapshot('disabled', true, 'resident');
 const RESIDENT_EMPTY_DISABLED_SNAPSHOT = await makeSnapshot('disabled', false, 'resident');
+const CURATOR_LOCATION = { protocol: 'https:', host: 'clerkship.example', origin: 'https://clerkship.example', pathname: '/tools/rotation-curator.html', search: '', hash: '' };
 function reduce(draft, action, transactions = null, site = context()) {
   return fn('fdCuratorReduce')(draft, action, index(), site, SNAPSHOT, '2026-08-19', transactions);
 }
@@ -151,6 +153,18 @@ function completedDraft() {
     { type: 'SET_ROTATION_END', value: '2026-10-12' }, { type: 'SET_EDITION_CHECKED_ON', value: '2026-08-19' },
   ]) { const next = reduce(draft, action); assert.notEqual(next, draft, action.type); draft = next; }
   return draft;
+}
+async function preparePublication(draft, validation = { mode: 'builder', generationDate: '2026-08-19' }, site = context(), snapshot = SNAPSHOT, generationSequence = 1) {
+  const candidate = await fn('fdCuratorCandidateConfig')(draft, index(), snapshot, site, validation, webcrypto.subtle);
+  assert.equal(candidate.ok, true, JSON.stringify(candidate));
+  const receipt = { contentDigest: candidate.contentDigest, referenceSetDigest: candidate.referenceSetDigest,
+    currentCoreRevision: site.coreRevision, currentCatalogRevision: site.localCatalogRevision,
+    rendererRevision: 'rotation-edition-v2-r1' };
+  draft.previewReceipts = { desktop: { ...receipt, previewPreset: 'desktop' }, mobile: { ...receipt, previewPreset: 'mobile-390' } };
+  draft.affirmations = { publicSafe: true, officialLinks: true, previewsReviewed: true, forwardable: true };
+  const generated = await fn('fdCuratorBuildShare')(draft, index(), snapshot, site, validation, webcrypto.subtle, CURATOR_LOCATION, generationSequence);
+  assert.equal(generated.ok, true, JSON.stringify(generated));
+  return { candidate, generated };
 }
 const PREVIEW_ORDER = ['First day at the location', 'Before you arrive', 'Who to contact', "Today's checklist", 'Typical day', 'Team workflow', 'Attendance and feedback', 'Official resources'];
 function completePreview(prepared, candidate, preset, sequence, transactions, options = {}) {
@@ -182,10 +196,10 @@ function completePreview(prepared, candidate, preset, sequence, transactions, op
 
 async function importEnvelope(envelope, startingDraft = fn('fdCuratorNewDraft')(index(), context())) {
   const validation = { mode: 'builder', generationDate: '2026-08-19' };
-  const imported = await fn('fdCuratorImportBackup')(JSON.stringify(envelope), index(), context(), SNAPSHOT, validation, webcrypto.subtle);
-  assert.equal(imported.ok, true, JSON.stringify(imported));
   const transactions = fn('fdCuratorImportTransactions')();
   const sequence = transactions.begin();
+  const imported = await fn('fdCuratorImportBackup')(JSON.stringify(envelope), index(), context(), SNAPSHOT, validation, webcrypto.subtle, sequence);
+  assert.equal(imported.ok, true, JSON.stringify(imported));
   const applied = reduce(startingDraft, { type: 'IMPORT_SUCCEEDED', result: imported, sequence }, transactions);
   assert.notEqual(applied, startingDraft);
   return applied;
@@ -277,11 +291,11 @@ function publicationLastGenerated(state) {
   return Object.getOwnPropertyDescriptor(publication, 'lastGenerated')?.value;
 }
 
-async function assertReimportRequired(state, validation, label, site = context(), checkGenerationArtifact = true) {
+async function assertReimportRequired(state, validation, label, site = context(), checkGenerationArtifact = true, expectedReceipts = { desktop: null, mobile: null }) {
   const candidate = await fn('fdCuratorCandidateConfig')(state, index(), SNAPSHOT, site, validation, webcrypto.subtle);
   assert.equal(candidate.ok, false, label);
   assert.equal(candidate.errors[0].code, 'CURATOR_BASE_REIMPORT_REQUIRED', label);
-  assert.deepEqual(state.previewReceipts, { desktop: null, mobile: null }, `${label} receipts`);
+  assert.deepEqual(state.previewReceipts, expectedReceipts, `${label} receipts`);
   if (checkGenerationArtifact) assert.equal(publicationLastGenerated(state), null, `${label} generation artifact`);
 }
 
@@ -531,9 +545,9 @@ test('persisted prior lineage loses authority and requires explicit current-sess
 
 test('a separately validated explicit v2 import remains usable as exact candidate lineage', async () => {
   const { draft, candidate, validation } = await persistedDraftWithBase();
-  const imported = await fn('fdCuratorImportBackup')(JSON.stringify(draft.publication.baseEnvelope), index(), context(), SNAPSHOT, validation, webcrypto.subtle);
-  assert.equal(imported.ok, true);
   const transactions = fn('fdCuratorImportTransactions')(), sequence = transactions.begin();
+  const imported = await fn('fdCuratorImportBackup')(JSON.stringify(draft.publication.baseEnvelope), index(), context(), SNAPSHOT, validation, webcrypto.subtle, sequence);
+  assert.equal(imported.ok, true);
   const applied = reduce(fn('fdCuratorNewDraft')(index(), context()), { type: 'IMPORT_SUCCEEDED', result: imported, sequence }, transactions);
   const continued = await fn('fdCuratorCandidateConfig')(applied, index(), SNAPSHOT, context(), validation, webcrypto.subtle);
   assert.equal(continued.ok, true); assert.equal(continued.contentDigest, candidate.contentDigest); assert.equal(continued.fingerprint, candidate.fingerprint);
@@ -704,9 +718,9 @@ test('each trust-sensitive operation takes one closed publication descriptor sna
     assert.equal(transitioned, live);
   }, async (live) => {
     const transactions = fn('fdCuratorImportTransactions')();
-    const candidate = await fn('fdCuratorCandidateConfig')(live, index(), SNAPSHOT, context(), validation, webcrypto.subtle);
     const sequence = transactions.beginGeneration();
-    return { transactions, sequence, generated: fn('fdCuratorPrepareGenerationResult')(candidate, sequence) };
+    const prepared = await preparePublication(live, validation, context(), SNAPSHOT, sequence);
+    return { transactions, sequence, generated: prepared.generated };
   });
 });
 
@@ -796,13 +810,13 @@ test('publication Proxy replacement cannot mint preview or generation completion
   await t.test('generation completion', async () => {
     const live = await importEnvelope(persisted.publication.baseEnvelope);
     const transactions = fn('fdCuratorImportTransactions')();
-    const candidate = await fn('fdCuratorCandidateConfig')(live, index(), SNAPSHOT, context(), validation, webcrypto.subtle);
     const sequence = transactions.beginGeneration();
-    const generated = fn('fdCuratorPrepareGenerationResult')(candidate, sequence);
+    const generated = (await preparePublication(live, validation, context(), SNAPSHOT, sequence)).generated;
+    const reviewedReceipts = structuredClone(live.previewReceipts);
     const exploit = replacePublicationWithDescriptorProxy(live);
     const transitioned = reduce(live, { type: 'GENERATION_SUCCEEDED', result: generated, sequence }, transactions);
     assert.equal(transitioned, live);
-    await assertReimportRequired(transitioned, validation, 'generation completion');
+    await assertReimportRequired(transitioned, validation, 'generation completion', context(), true, reviewedReceipts);
     assert.deepEqual(exploit.ordinaryGets, [], 'generation ordinary publication gets');
   });
 });
@@ -1430,8 +1444,7 @@ test('populated disabled governance permits structured drafting and exact previe
 
 test('generation completion accepts only its closure brand and live generation sequence', async () => {
   const draft = reduce(completedDraft(), { type: 'LOCAL_APPLY_PRESET', presetKey: 'preset.complete@v1' }), transactions = fn('fdCuratorImportTransactions')(), sequence = transactions.beginGeneration();
-  const candidate = await fn('fdCuratorCandidateConfig')(draft, index(), SNAPSHOT, context(), { mode: 'builder', generationDate: '2026-08-19' }, webcrypto.subtle);
-  const result = fn('fdCuratorPrepareGenerationResult')(candidate, sequence);
+  const { candidate, generated: result } = await preparePublication(draft, undefined, context(), SNAPSHOT, sequence);
   assert.equal(reduce(draft, { type: 'GENERATION_SUCCEEDED', result: { ...result }, sequence }, transactions), draft);
   let reads = 0; const accessor = { type: 'GENERATION_SUCCEEDED', sequence };
   Object.defineProperty(accessor, 'result', { enumerable: true, get() { reads += 1; return result; } });
@@ -1441,9 +1454,11 @@ test('generation completion accepts only its closure brand and live generation s
   transactions.beginGeneration();
   assert.equal(reduce(draft, { type: 'GENERATION_SUCCEEDED', result, sequence }, transactions), draft);
   const liveSequence = transactions.currentGeneration();
-  const liveResult = fn('fdCuratorPrepareGenerationResult')(candidate, liveSequence);
+  const liveResult = (await preparePublication(draft, undefined, context(), SNAPSHOT, liveSequence)).generated;
   const applied = reduce(draft, { type: 'GENERATION_SUCCEEDED', result: liveResult, sequence: liveSequence }, transactions);
-  assert.notEqual(applied, draft); assert.equal(applied.publication.lastGenerated.contentDigest, candidate.contentDigest);
+  const envelope = JSON.parse(liveResult.backupJson);
+  assert.notEqual(applied, draft); assert.deepEqual(applied.publication.lastGenerated, envelope); assert.deepEqual(applied.publication.baseEnvelope, envelope);
+  assert.equal(applied.publication.lastGenerated.digest, candidate.contentDigest);
 });
 
 test('already-applied preview and generation completions are exact identity no-ops', async () => {
@@ -1460,7 +1475,7 @@ test('already-applied preview and generation completions are exact identity no-o
   assert.deepEqual([transactions.current(), transactions.currentPreview(), transactions.currentGeneration()], previewSequences);
 
   const generationSequence = transactions.beginGeneration();
-  const generated = fn('fdCuratorPrepareGenerationResult')(candidate, generationSequence);
+  const generated = (await preparePublication(draft, validation, context(), SNAPSHOT, generationSequence)).generated;
   const generationAction = { type: 'GENERATION_SUCCEEDED', result: generated, sequence: generationSequence };
   draft = reduce(draft, generationAction, transactions);
   const generationSequences = [transactions.current(), transactions.currentPreview(), transactions.currentGeneration()];

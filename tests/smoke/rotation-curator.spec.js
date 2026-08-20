@@ -1,7 +1,14 @@
 import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import { test, expect } from '@playwright/test';
 
 const TOOL = '/tools/rotation-curator.html';
+const AFFIRMATIONS = {
+  publicSafe: 'I confirm this edition contains no PHI, learner data, evaluations, credentials, private contact details, or access codes.',
+  officialLinks: 'I confirm every linked local clinical protocol is an official HTTPS institutional source.',
+  previewsReviewed: 'I reviewed both the desktop and 390 px mobile student previews.',
+  forwardable: 'I understand anyone may forward this account-free link and I cannot revoke this edition from the link.',
+};
 const TOKENS = {
   arrival: ['timing', 'time', 'place', 'role'],
   scheduleWindow: ['dayStart', 'dayEnd', 'endQualifier'],
@@ -32,7 +39,7 @@ function digest(value) {
   return `sha256-${createHash('sha256').update(canonical(value)).digest('base64url')}`;
 }
 
-function projection(audience, revision) {
+function projection(audience, revision, gate = 'enabled') {
   const common = { audiences: [audience], verifiedOn: '2026-08-19' };
   const location = 'location.synthetic@v1';
   const records = [
@@ -87,14 +94,14 @@ function projection(audience, revision) {
   ].map(record => ({ ...record, contentDigest: digest(record) }))
     .sort((left, right) => left.key.localeCompare(right.key));
   const value = {
-    schemaVersion: 1, audience, revision, projectionDigest: '', rotationEditionV2: 'enabled',
+    schemaVersion: 1, audience, revision, projectionDigest: '', rotationEditionV2: gate,
     selectionKeys: records.map(record => record.key), resolutionRecords: records, blockedKeys: [],
   };
   const bare = structuredClone(value); delete bare.projectionDigest; value.projectionDigest = digest(bare);
   return value;
 }
 
-async function useSyntheticCatalog(page) {
+async function useSyntheticCatalog(page, gate = 'enabled') {
   await page.route(`**${TOOL}`, async route => {
     const response = await route.fetch();
     let html = await response.text();
@@ -103,7 +110,7 @@ async function useSyntheticCatalog(page) {
     if (!audienceMatch || !catalogMatch) throw new Error('built curator bootstrap was not found');
     const audience = JSON.parse(audienceMatch[1]);
     const current = JSON.parse(catalogMatch[1]);
-    html = html.replace(catalogMatch[0], `var FD_ROTATION_EDITION_CATALOG=${JSON.stringify(projection(audience, current.revision))};\n`);
+    html = html.replace(catalogMatch[0], `var FD_ROTATION_EDITION_CATALOG=${JSON.stringify(projection(audience, current.revision, gate))};\n`);
     await route.fulfill({ response, body: html, headers: { ...response.headers(), 'content-type': 'text/html; charset=utf-8' } });
   });
 }
@@ -130,6 +137,198 @@ async function selectReviewedContext(page) {
 test.beforeEach(async ({ page }) => {
   await useSyntheticCatalog(page);
   await observeStorage(page);
+});
+
+test('checked-in default-off Step 5 renders governed disclosures and cannot create any artifact', async ({ page }) => {
+  await page.unrouteAll({ behavior: 'wait' });
+  await useSyntheticCatalog(page, 'disabled');
+  await page.goto(TOOL); await selectReviewedContext(page);
+  await page.getByRole('button', { name: /Step 4 Local details/ }).click();
+  await page.getByRole('button', { name: 'Review desktop preview' }).click();
+  await expect(page.locator('[data-curator-preview-status="desktop"]')).toContainText('Reviewed');
+  await page.getByRole('button', { name: 'Review 390 px mobile preview' }).click();
+  await expect(page.locator('[data-curator-preview-status="mobile"]')).toContainText('Reviewed');
+  await page.getByRole('button', { name: /Step 5 Preview and share/ }).click();
+  const panel = page.locator('[data-curator-step-panel="5"]');
+  await expect(panel).toBeVisible(); await expect(panel.getByRole('heading', { name: 'Review and share' })).toBeVisible();
+  await expect(panel.locator('[data-curator-governance-status]')).toContainText(/Publication governance.*disabled/i);
+  for (const statement of Object.values(AFFIRMATIONS)) await expect(panel).toContainText(statement);
+  const explicit = panel.locator('input[data-curator-affirmation]');
+  await expect(explicit).toHaveCount(3);
+  for (const name of ['publicSafe', 'officialLinks', 'forwardable']) {
+    const checkbox = panel.getByRole('checkbox', { name: AFFIRMATIONS[name], exact: true });
+    await expect(checkbox).toBeEnabled(); await checkbox.check(); await expect(checkbox).toBeChecked();
+  }
+  await expect(panel.locator('input[data-curator-affirmation="previewsReviewed"]')).toHaveCount(0);
+  await expect(panel.locator('[data-curator-derived-affirmation="previewsReviewed"]')).toContainText('Reviewed');
+  await expect(page.locator('#curatorGenerate')).toBeDisabled(); await expect(page.locator('#curatorGenerate')).toHaveAttribute('aria-disabled', 'true');
+  await expect(page.locator('[data-curator-share-link]')).toHaveCount(0); await expect(page.locator('[data-curator-qr]')).toHaveCount(0); await expect(page.locator('[data-curator-download]')).toHaveCount(0);
+  await expect(page.locator('#curatorGenerate')).toBeDisabled(); await expect(page.locator('[data-curator-share-link]')).toHaveCount(0);
+  expect(await page.evaluate(() => typeof qrcode)).toBe('function');
+});
+
+test('enabled synthetic Step 5 requires real receipts and affirmations, then creates one exact local share', async ({ page }, testInfo) => {
+  const audience = testInfo.project.name === 'nav-res' ? 'resident' : 'ms3';
+  await page.goto(TOOL); await selectReviewedContext(page);
+  await page.getByRole('button', { name: /Step 3 Schedule/ }).click();
+  const placedItems = page.locator('[data-curator-path-remove]');
+  while (await placedItems.count() > 1) await placedItems.last().click();
+  await page.getByRole('button', { name: /Step 5 Preview and share/ }).click();
+  let panel = page.locator('[data-curator-step-panel="5"]'); await expect(panel).toBeVisible();
+  await expect(panel.locator('[data-curator-derived-affirmation="previewsReviewed"]')).toContainText('Not reviewed');
+  await expect(page.locator('#curatorGenerate')).toBeDisabled();
+  await page.getByRole('button', { name: /Step 4 Local details/ }).click();
+  await page.getByRole('button', { name: 'Review desktop preview' }).click();
+  await expect(page.locator('[data-curator-preview-status="desktop"]')).toContainText('Reviewed');
+  await page.getByRole('button', { name: /Step 5 Preview and share/ }).click();
+  panel = page.locator('[data-curator-step-panel="5"]');
+  await expect(panel.locator('[data-curator-receipt-status="desktop"]')).toContainText('Reviewed');
+  await expect(panel.locator('[data-curator-receipt-status="mobile"]')).toContainText('Not reviewed');
+  await expect(page.locator('#curatorGenerate')).toBeDisabled();
+  await page.getByRole('button', { name: /Step 4 Local details/ }).click();
+  await page.getByRole('button', { name: 'Review 390 px mobile preview' }).click();
+  await expect(page.locator('[data-curator-preview-status="mobile"]')).toContainText('Reviewed');
+  const evidence = await page.locator('[data-curator-preview-layout="desktop"]').evaluate((node) => ({
+    contentDigest: node.getAttribute('data-curator-content-digest'), referenceDigest: node.getAttribute('data-curator-reference-digest'),
+    fingerprint: node.getAttribute('data-curator-fingerprint'), coreRevision: node.getAttribute('data-curator-core-revision'),
+    catalogRevision: node.getAttribute('data-curator-catalog-revision'), rendererRevision: node.getAttribute('data-curator-renderer-revision'),
+  }));
+  await page.getByRole('button', { name: /Step 5 Preview and share/ }).click();
+  panel = page.locator('[data-curator-step-panel="5"]'); await expect(panel).toBeVisible();
+  await expect(panel.locator('[data-curator-governance-status]')).toContainText(/Publication governance.*enabled/i);
+  for (const label of ['Destination site', 'Audience', 'Fingerprint', 'Core revision', 'Catalog revision', 'Reference set digest', 'Renderer revision', 'Desktop preview', '390 px mobile preview']) await expect(panel).toContainText(label);
+  const origin = new URL(page.url()).origin;
+  await expect(panel.locator('[data-curator-destination]')).toHaveText(`${origin}/`);
+  await expect(panel.locator('[data-curator-audience]')).toHaveText(audience === 'ms3' ? 'MS3' : 'Resident');
+  await expect(panel.locator('[data-curator-fingerprint]')).toHaveText(evidence.fingerprint);
+  await expect(panel.locator('[data-curator-content-digest]')).toHaveText(evidence.contentDigest);
+  await expect(panel.locator('[data-curator-core-revision]')).toHaveText(evidence.coreRevision);
+  await expect(panel.locator('[data-curator-catalog-revision]')).toHaveText(evidence.catalogRevision);
+  await expect(panel.getByRole('heading', { name: 'Revision comparison' })).toBeVisible();
+  await expect(panel.locator('[data-curator-created-core-revision]')).toHaveText(evidence.coreRevision);
+  await expect(panel.locator('[data-curator-current-core-revision]')).toHaveText(evidence.coreRevision);
+  await expect(panel.locator('[data-curator-core-revision-status]')).toHaveText('Matches current');
+  await expect(panel.locator('[data-curator-created-catalog-revision]')).toHaveText(evidence.catalogRevision);
+  await expect(panel.locator('[data-curator-current-catalog-revision]')).toHaveText(evidence.catalogRevision);
+  await expect(panel.locator('[data-curator-catalog-revision-status]')).toHaveText('Matches current');
+  await expect(panel.locator('[data-curator-reference-digest]')).toHaveText(evidence.referenceDigest);
+  await expect(panel.locator('[data-curator-renderer-revision]')).toHaveText(evidence.rendererRevision);
+  await expect(panel.locator('[data-curator-change-summary]')).toHaveText('Initial edition 0');
+  await expect(panel.locator('[data-curator-edition-checked-on]')).toContainText('Self-attested');
+  await expect(panel.getByRole('heading', { name: 'Catalog verification provenance' })).toBeVisible();
+  const provenanceRows = panel.locator('[data-curator-provenance-row]'); await expect(provenanceRows).toHaveCount(3);
+  for (const [offset, kind, label] of [
+    [0, 'trainingLocation', 'Synthetic Teaching Unit'], [1, 'curatorProfile', 'Synthetic Faculty'], [2, 'phraseSet', 'Synthetic reviewed wording'],
+  ]) {
+    await expect(provenanceRows.nth(offset).locator('[data-curator-provenance-kind]')).toHaveText(kind);
+    await expect(provenanceRows.nth(offset).locator('[data-curator-provenance-label]')).toHaveText(label);
+    await expect(provenanceRows.nth(offset).locator('[data-curator-provenance-verified-on]')).toHaveText('2026-08-19');
+  }
+  await expect(panel).toContainText(/operator identity is not digitally verified/i); await expect(panel).toContainText(/Unauthenticated change lineage/i);
+  await expect(panel.locator('[data-curator-derived-affirmation="previewsReviewed"]')).toContainText('Reviewed');
+  const explicit = panel.locator('input[data-curator-affirmation]'); await expect(explicit).toHaveCount(3);
+  for (const name of ['publicSafe', 'officialLinks', 'forwardable']) await expect(panel.getByRole('checkbox', { name: AFFIRMATIONS[name], exact: true })).not.toBeChecked();
+  await expect(page.locator('#curatorGenerate')).toBeDisabled();
+  for (const name of ['publicSafe', 'officialLinks', 'forwardable']) await panel.getByRole('checkbox', { name: AFFIRMATIONS[name], exact: true }).check();
+  await expect(page.locator('#curatorGenerate')).toBeEnabled(); await expect(page.locator('#curatorGenerate')).toHaveAttribute('aria-disabled', 'false');
+
+  const requests = []; page.on('request', (request) => requests.push(request.url()));
+  await page.locator('#curatorGenerate').click();
+  await expect(panel.locator('[data-curator-share-status]')).toContainText('Edition link generated');
+  expect(requests).toEqual([]);
+  const link = await panel.locator('[data-curator-share-link]').getAttribute('href');
+  expect(link).toMatch(new RegExp(`^${origin.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\/#edition=[A-Za-z0-9_-]+$`));
+  expect((link.match(/#/g) || []).length).toBe(1); expect(link).not.toContain('?'); expect(link).not.toContain('%');
+  const backup = Buffer.from(link.split('#edition=')[1], 'base64url').toString('utf8'); const envelope = JSON.parse(backup);
+  expect(canonical(envelope)).toBe(backup); expect(envelope.config.audience).toBe(audience);
+  expect(Object.keys(envelope).sort()).toEqual(['config', 'digest', 'format', 'schemaVersion']);
+  await expect(panel.locator('[data-curator-qr] svg')).toBeVisible(); await expect(panel.locator('[data-curator-qr] title')).toHaveText('Rotation edition link QR code');
+  await expect(panel).toContainText('public operational guidance only'); await expect(panel).toContainText('fragment is not intentionally sent to the host');
+  for (const risk of ['browser history', 'clipboard tools', 'extensions', 'screenshots', 'recipients', 'forwarded messages']) await expect(panel).toContainText(risk);
+
+  await page.context().grantPermissions(['clipboard-read', 'clipboard-write'], { origin });
+  await panel.locator('[data-curator-copy]').click(); expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(link);
+  const downloadEvent = page.waitForEvent('download'); await panel.locator('[data-curator-download]').click(); const download = await downloadEvent;
+  expect(download.suggestedFilename()).toBe(`SYN-${audience}-rotation-edition-1.json`); expect(readFileSync(await download.path(), 'utf8')).toBe(backup);
+  const shell = await page.request.get('/'); expect(await shell.text()).not.toContain('QR Code Generator for JavaScript');
+});
+
+test('Step 5 real imported edition reports exact core and catalog drift', async ({ page }) => {
+  await page.goto(TOOL);
+  const expected = await page.evaluate(async () => {
+    const prepared = await fdEditionCatalogSnapshot(
+      FD_ROTATION_EDITION_CATALOG, FD_CURATOR_CONTEXT.audience, crypto.subtle,
+    );
+    if (!prepared || prepared.ok !== true) throw new Error('synthetic catalog snapshot unavailable');
+    const snapshot = prepared.snapshot;
+    const validation = { mode: 'builder', generationDate: fdGenerationDate };
+    const transactions = fdCuratorImportTransactions();
+    let draft = fdCuratorNewDraft(FD_INDEX, FD_CURATOR_CONTEXT);
+    const reduce = (action) => {
+      draft = fdCuratorReduce(
+        draft, action, FD_INDEX, FD_CURATOR_CONTEXT, snapshot, fdGenerationDate, transactions,
+      );
+    };
+    reduce({ type: 'SET_TRAINING_LOCATION', trainingLocationKey: 'location.synthetic@v1' });
+    reduce({ type: 'SET_CURATOR_PROFILE', curatorProfileKey: 'curator.synthetic@v1' });
+    reduce({ type: 'SET_PHRASE_SET', phraseSetKey: 'phrases.synthetic@v1' });
+    reduce({ type: 'SET_ROTATION_START', value: '2026-09-01' });
+    reduce({ type: 'SET_ROTATION_END', value: '2026-10-12' });
+    reduce({ type: 'SET_EDITION_CHECKED_ON', value: '2026-08-19' });
+
+    const candidate = await fdCuratorCandidateConfig(
+      draft, FD_INDEX, snapshot, FD_CURATOR_CONTEXT, validation, crypto.subtle,
+    );
+    if (!candidate || candidate.ok !== true) throw new Error('current candidate unavailable');
+    const oldCore = '4'.repeat(40);
+    const oldCatalog = `sha256-${'E'.repeat(43)}`;
+    const oldConfig = structuredClone(candidate.config);
+    oldConfig.createdAgainstCoreRevision = oldCore;
+    oldConfig.createdAgainstLocalCatalogRevision = oldCatalog;
+    const made = await fdEditionCreateEnvelope(
+      oldConfig, FD_INDEX, snapshot, fdCuratorContractSiteContext(FD_CURATOR_CONTEXT), validation, crypto.subtle,
+    );
+    if (!made || made.ok !== true) throw new Error('drift envelope unavailable');
+    const sequence = transactions.begin();
+    const imported = await fdCuratorImportBackup(
+      fdEditionCanonicalJson(made.envelope), FD_INDEX, FD_CURATOR_CONTEXT, snapshot, validation, crypto.subtle, sequence,
+    );
+    if (!imported || imported.ok !== true) throw new Error('drift import unavailable');
+    reduce({ type: 'IMPORT_SUCCEEDED', result: imported, sequence });
+    const drift = await fdCuratorCandidateConfig(
+      draft, FD_INDEX, snapshot, FD_CURATOR_CONTEXT, validation, crypto.subtle,
+    );
+    if (!drift || drift.ok !== true) throw new Error('drift candidate unavailable');
+    const markup = fdCuratorStepFiveMarkup(draft, drift.displayModel, {
+      contentDigest: drift.contentDigest,
+      referenceSetDigest: drift.referenceSetDigest,
+      fingerprint: drift.fingerprint,
+      currentCoreRevision: FD_CURATOR_CONTEXT.coreRevision,
+      currentCatalogRevision: FD_CURATOR_CONTEXT.localCatalogRevision,
+      rendererRevision: 'rotation-edition-v2-r1',
+    }, null, {
+      protocol: location.protocol, host: location.host, origin: location.origin,
+      pathname: location.pathname, search: '', hash: '',
+    }, '');
+    const fixture = document.createElement('div');
+    fixture.dataset.curatorDriftFixture = '';
+    fixture.innerHTML = markup;
+    document.body.append(fixture);
+    return {
+      oldCore, oldCatalog,
+      currentCore: FD_CURATOR_CONTEXT.coreRevision,
+      currentCatalog: FD_CURATOR_CONTEXT.localCatalogRevision,
+    };
+  });
+
+  const panel = page.locator('[data-curator-drift-fixture]');
+  await expect(panel.getByRole('heading', { name: 'Revision comparison' })).toBeVisible();
+  await expect(panel.locator('[data-curator-created-core-revision]')).toHaveText(expected.oldCore);
+  await expect(panel.locator('[data-curator-current-core-revision]')).toHaveText(expected.currentCore);
+  await expect(panel.locator('[data-curator-core-revision-status]')).toHaveText('Drift detected');
+  await expect(panel.locator('[data-curator-created-catalog-revision]')).toHaveText(expected.oldCatalog);
+  await expect(panel.locator('[data-curator-current-catalog-revision]')).toHaveText(expected.currentCatalog);
+  await expect(panel.locator('[data-curator-catalog-revision-status]')).toHaveText('Drift detected');
 });
 
 test('v2 synthetic catalog unlocks reviewed structured Steps 1 through 4', async ({ page }, testInfo) => {
