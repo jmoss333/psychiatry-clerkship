@@ -36,7 +36,8 @@ function load(revision = REVISION) {
     fdEditionGenerateChangeSummary,
     fdEditionCommitAcceptance,fdEditionReadLocal,fdEditionToggleLocal,fdEditionStartupJournal,
     fdEditionStartupJournalRun,fdEditionStartupJournalRollback,fdEditionRuntimeListen,fdEditionRuntimeUnlisten,
-    fdEditionRuntimeInputs,fdEditionRuntimeMountSwitch
+    fdEditionRuntimeInputs,fdEditionRuntimeMountError,fdEditionRuntimeMountSwitch,
+    fdEditionRuntimeFocusError:typeof fdEditionRuntimeFocusError==='function'?fdEditionRuntimeFocusError:null
   };`)(TextEncoder, TextDecoder, atob, btoa);
 }
 function valid(audience) { return JSON.parse(readFileSync(new URL(`fixtures/rotation-editions/valid-${audience}.json`, import.meta.url), 'utf8')); }
@@ -235,6 +236,32 @@ test('startup listener helper removes register-then-throw listeners', async () =
   assert.equal(registration.ok, false); assert.deepEqual([...active], []); assert.equal(F.fdEditionRuntimeUnlisten(registration), true);
 });
 
+test('runtime errors expose one bounded focus target and hardened focus never escapes it', async () => {
+  const { F } = await harness();
+  assert.equal(typeof F.fdEditionRuntimeFocusError, 'function');
+  const selectors = []; const focusCalls = [];
+  const alert = { focus(options) { focusCalls.push(options); } };
+  const mount = {
+    innerHTML: '',
+    querySelector(selector) { selectors.push(selector); return alert; },
+  };
+  assert.equal(F.fdEditionRuntimeMountError(mount, { code: 'EDITION_RUNTIME' }), true);
+  assert.match(mount.innerHTML,
+    /^<section class="fd-edition-error" role="alert" tabindex="-1"><h2>Rotation edition unavailable<\/h2>/);
+  assert.equal(F.fdEditionRuntimeFocusError(mount), true);
+  assert.deepEqual(selectors, ['.fd-edition-error[role="alert"]']);
+  assert.deepEqual(focusCalls, [{ preventScroll: true }]);
+
+  let retries = 0;
+  const fallbackMount = { querySelector() { return { focus(options) {
+    retries += 1; if (options) throw new Error('private focus options failure');
+  } }; } };
+  assert.equal(F.fdEditionRuntimeFocusError(fallbackMount), true);
+  assert.equal(retries, 2);
+  assert.equal(F.fdEditionRuntimeFocusError({ querySelector() { throw new Error('private query failure'); } }), false);
+  assert.equal(F.fdEditionRuntimeFocusError({ querySelector() { return { focus: 'not callable' }; } }), false);
+});
+
 test('browser capability preparation cannot read edition storage before the branded catalog gate', async () => {
   const { F, snapshot, site } = await harness(); let storageReads = 0;
   function node(tag) { return { tagName: tag, innerHTML: '', addEventListener() {}, removeEventListener() {}, querySelector() { return null; }, showModal() {}, close() {}, focus() {}, removeAttribute() {}, setAttribute() {} }; }
@@ -270,16 +297,21 @@ test('reload failure rolls back a switch; dialog failure performs zero writes', 
   function dialogHarness(showThrows = false) {
     const handlers = {}; const button = (value) => ({ value, disabled: false, addEventListener(type, handler) { handlers[`${value}:${type}`] = handler; }, focus() {} });
     const keep = button('decline'), accept = button('accept');
+    let errorFocusCount = 0; const error = { focus() { errorFocusCount += 1; } };
     const dialog = { addEventListener(type, handler) { handlers[`dialog:${type}`] = handler; }, querySelector(selector) { return selector.includes('decline') ? keep : accept; },
       showModal() { if (showThrows) throw new Error('private dialog'); }, close() {} };
-    const mount = { innerHTML: '', querySelector() { return dialog; } };
-    return { mount, accept() { handlers['accept:click']({ preventDefault() {} }); } };
+    const mount = { innerHTML: '', querySelector(selector) {
+      return selector === '.fd-edition-error[role="alert"]' ? error : dialog;
+    } };
+    return { mount, accept() { handlers['accept:click']({ preventDefault() {} }); },
+      errorFocusCount() { return errorFocusCount; } };
   }
   const store = storage(seed); const ui = dialogHarness(); let recovered = 0;
   const journal = H.F.fdEditionStartupJournal(store, [H.keys.local, H.keys.edition]);
   assert.equal(H.F.fdEditionRuntimeMountSwitch(ui.mount, { active, candidate }, store, H.keys, local, journal,
     { reload() { throw new Error('private reload'); } }, true, () => { recovered += 1; return true; }), true);
   ui.accept(); assert.deepEqual(store.snapshot(), seed); assert.equal(recovered, 0); assert.match(ui.mount.innerHTML, /EDITION_RUNTIME/);
+  assert.equal(ui.errorFocusCount(), 1);
 
   const untouched = storage(seed); const broken = dialogHarness(true);
   assert.equal(H.F.fdEditionRuntimeMountSwitch(broken.mount, { active, candidate }, untouched, H.keys, local,

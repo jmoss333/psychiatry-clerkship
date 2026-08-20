@@ -128,10 +128,16 @@ test('startup makes acceptance the final fallible boundary after real wiring, re
   const commit = ordinary.indexOf('fdController.commitStartup()');
   const acceptanceCallback = ordinary.indexOf('fdController.commitStartup(function(){');
   const acceptance = ordinary.indexOf('fdEditionCommitAcceptance(', acceptanceCallback);
+  const rejectedMount = ordinary.indexOf("result.mode==='rejected'&&!fdEditionRuntimeMountError(");
+  const rejectedFocus = ordinary.indexOf(
+    "result.mode==='rejected'&&!fdEditionRuntimeFocusError(fdEditionMount)", acceptanceCallback,
+  );
   assert.ok(keys > -1 && keys < checkpoint && checkpoint < stateLoad && stateLoad < preflight
     && preflight < wire && wire < open && open < prepare && prepare < acceptanceCallback
     && acceptanceCallback < acceptance,
   'all real wiring/render/resource/history/gate preparation must precede the acceptance callback');
+  assert.ok(rejectedMount > -1 && rejectedMount < prepare && acceptance < rejectedFocus,
+    'a rejected edition must mount while inert and receive focus only after prepare and commit succeed');
   assert.ok(commit < 0 || commit === acceptanceCallback,
     'there must be no unguarded controller commit call');
   assert.equal((ordinary.match(/fdEditionCommitAcceptance\(/g) || []).length, 1,
@@ -155,6 +161,18 @@ test('startup makes acceptance the final fallible boundary after real wiring, re
     'startup rollback must not snapshot or diff the entire localStorage namespace');
 });
 
+test('runtime fallback releases the gate before mounting and focusing one fixed edition error', () => {
+  const start = source.indexOf('function fdEditionRuntimeFallback(receipt,state)');
+  const end = source.indexOf('\n  async function fdStartFrontDoor(result)', start);
+  assert.ok(start > -1 && end > start, 'one runtime fallback is required');
+  const fallback = source.slice(start, end);
+  const gate = fallback.indexOf('fdEditionRuntimeReleaseGate(fdApp)');
+  const mount = fallback.indexOf('fdEditionRuntimeMountError(fdEditionMount');
+  const focus = fallback.indexOf('fdEditionRuntimeFocusError(fdEditionMount)', mount);
+  assert.ok(gate > -1 && gate < mount && mount < focus,
+    'fallback must leave the shell interactive before moving focus to its mounted error');
+});
+
 test('an unsupported prerelease v1 link renders canonical core and stops before journals or listeners', () => {
   const start = source.indexOf('async function fdStartFrontDoor(result)');
   const end = source.indexOf('\n  var fdEditionInputs=', start);
@@ -174,6 +192,9 @@ test('an unsupported prerelease v1 link renders canonical core and stops before 
     'the terminal prerelease branch must show the fixed rejection');
   assert.match(branch, /fdEditionRuntimeReleaseGate\(fdApp\)/,
     'the terminal prerelease branch must release the pending shell without listeners');
+  assert.ok(branch.indexOf('fdEditionRuntimeReleaseGate(fdApp)')
+    < branch.indexOf('fdEditionRuntimeFocusError(fdEditionMount)'),
+  'the terminal prerelease error can receive focus only after its gate is released');
   assert.match(branch, /return/,
     'the terminal prerelease branch must not fall through to ordinary startup');
 });

@@ -2097,6 +2097,7 @@
     }catch(ignoreFallbackRender){ }
     fdEditionRuntimeMountError(fdEditionMount,receipt||
       fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'));
+    fdEditionRuntimeFocusError(fdEditionMount);
     fdEditionBootState='failed';
   }
   async function fdStartFrontDoor(result){
@@ -2130,12 +2131,14 @@
       fdPrereleaseInitial.rotationStart=fdPrereleaseRotation;
       fdRender(fdPrereleaseInitial);
       if(!fdEditionRuntimeMountError(fdEditionMount,result.receipt)||
-         !fdEditionRuntimeReleaseGate(fdApp))throw new Error('prerelease rejection');
+         !fdEditionRuntimeReleaseGate(fdApp)||
+         !fdEditionRuntimeFocusError(fdEditionMount))throw new Error('prerelease rejection');
       fdEditionBootState='rejected';
     }catch(ignorePrereleaseRender){
       fdEditionRuntimeReleaseGate(fdApp);
       fdEditionRuntimeMountError(fdEditionMount,
         fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'));
+      fdEditionRuntimeFocusError(fdEditionMount);
       fdEditionBootState='failed';
     }
     return {ok:false,code:'EDITION_PRERELEASE_UNSUPPORTED'};
@@ -2348,6 +2351,8 @@
       try{fdEditionCardRoot.focus({preventScroll:true});}
       catch(ignoreEditionCardFocus){try{fdEditionCardRoot.focus();}catch(ignoreEditionCardFallbackFocus){ }}
     }
+    if(result.mode==='rejected'&&!fdEditionRuntimeFocusError(fdEditionMount))
+      throw new Error('edition alert focus');
   }catch(ignoreFinalStartup){
     fdEditionRuntimeFallback(fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'),fdInitial);
     return;
