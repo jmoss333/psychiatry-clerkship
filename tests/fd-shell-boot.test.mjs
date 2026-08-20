@@ -11,6 +11,9 @@ const due = readFileSync(new URL(
 const shellModule = readFileSync(new URL(
   '../13_Faculty_Resources/_automation/site_build/frontdoor/fd_shell.js', import.meta.url,
 ), 'utf8');
+const wireModule = readFileSync(new URL(
+  '../13_Faculty_Resources/_automation/site_build/frontdoor/fd_wire.js', import.meta.url,
+), 'utf8');
 const capsule = readFileSync(new URL(
   '../13_Faculty_Resources/_automation/site_build/sess_capsule.js', import.meta.url,
 ), 'utf8');
@@ -107,7 +110,7 @@ test('edition validation selects the only live index before the learner shell st
     'the controller commit must own the atomic inert and busy release');
 });
 
-test('startup uses audience v2 keys and preflights fallible wiring before acceptance writes', () => {
+test('startup makes acceptance the final fallible boundary after real wiring, rendering, resources, history, and gate release', () => {
   const start = source.indexOf('async function fdStartFrontDoor(result)');
   const end = source.indexOf('\n  var fdEditionInputs=', start);
   assert.ok(start > -1 && end > start, 'the shell starter must expose an awaited transaction');
@@ -117,19 +120,37 @@ test('startup uses audience v2 keys and preflights fallible wiring before accept
   const ordinary = body.slice(ordinaryStart);
   const keys = ordinary.indexOf('fdEditionStorageKeys(FD_SITE_CONTEXT.audience)');
   const checkpoint = ordinary.indexOf('fdEditionStartupJournal(');
-  const acceptance = ordinary.indexOf('fdEditionCommitAcceptance(');
-  const armed = ordinary.indexOf('fdEditionAcceptanceDirty=true');
   const stateLoad = ordinary.indexOf('fdLoad()');
   const preflight = ordinary.indexOf('fdEditionRuntimePreflightWiring(');
   const wire = ordinary.indexOf('fdWire(');
   const open = ordinary.indexOf('await fdOpenInitialResource(');
+  const prepare = ordinary.indexOf('fdController.prepareStartup()');
   const commit = ordinary.indexOf('fdController.commitStartup()');
+  const acceptanceCallback = ordinary.indexOf('fdController.commitStartup(function(){');
+  const acceptance = ordinary.indexOf('fdEditionCommitAcceptance(', acceptanceCallback);
   assert.ok(keys > -1 && keys < checkpoint && checkpoint < stateLoad && stateLoad < preflight
-    && preflight < armed && acceptance > armed && acceptance < wire,
-  'the two-key v2 transaction must start only after fallible wiring preflight');
-  assert.ok(wire > acceptance, 'real listeners must not be installed before acceptance settles');
-  assert.ok(open > stateLoad && commit > open,
-    'the initial resource receipt must settle before startup history commits');
+    && preflight < wire && wire < open && open < prepare && prepare < acceptanceCallback
+    && acceptanceCallback < acceptance,
+  'all real wiring/render/resource/history/gate preparation must precede the acceptance callback');
+  assert.ok(commit < 0 || commit === acceptanceCallback,
+    'there must be no unguarded controller commit call');
+  assert.equal((ordinary.match(/fdEditionCommitAcceptance\(/g) || []).length, 1,
+    'acceptance has exactly one guarded call site');
+  const prepareStart = wireModule.indexOf('function prepareStartup()');
+  const commitStart = wireModule.indexOf('function commitStartup(', prepareStart);
+  const controllerStart = wireModule.indexOf('\n  function controller(', commitStart);
+  const prepareBody = wireModule.slice(prepareStart, commitStart);
+  const commitBody = wireModule.slice(commitStart, controllerStart);
+  const history = prepareBody.indexOf('replaceHistorySnapshot()');
+  const gate = prepareBody.indexOf('o.releaseStartupGate');
+  const prepared = prepareBody.indexOf('startupPrepared=true');
+  const accept = commitBody.indexOf('acceptStartup');
+  const armed = commitBody.indexOf('startupCommitted=true');
+  assert.ok(history > -1 && history < gate && gate < prepared,
+    'history and gate release must finish in the fallible prepare phase');
+  assert.ok(accept > -1 && accept < armed, 'acceptance must immediately precede arming');
+  assert.doesNotMatch(commitBody, /replaceHistorySnapshot|releaseStartupGate|addEventListener|render|openResource/,
+    'no fallible UI, listener, history, resource, or gate work may follow the prepare phase');
   assert.doesNotMatch(source, /fdEditionCheckpointStorage|fdEditionRestoreStorage/,
     'startup rollback must not snapshot or diff the entire localStorage namespace');
 });

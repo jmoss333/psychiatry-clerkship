@@ -8,6 +8,7 @@ var FD_CURATOR_IMPORT_CODES=['CURATOR_IMPORT_SIZE','CURATOR_IMPORT_FORMAT','CURA
 var FD_CURATOR_IMPORT_RESULTS=new WeakMap();
 var FD_CURATOR_CANDIDATE_RESULTS=new WeakMap();
 var FD_CURATOR_PREVIEW_RESULTS=new WeakMap();
+var FD_CURATOR_PREVIEW_COMPLETIONS=new WeakMap();
 var FD_CURATOR_GENERATION_RESULTS=new WeakMap();
 var FD_CURATOR_DISPLAY_RESULTS=new WeakMap();
 var FD_CURATOR_OWN=Object.prototype.hasOwnProperty;
@@ -16,8 +17,7 @@ var FD_CURATOR_LOCAL_LIMITS={schedule:24,accessItems:12,contacts:8,checklistItem
 
 function fdCuratorObject(value){
   var prototype;
-  if(value===null||typeof value!=='object'||Array.isArray(value))return false;
-  try{prototype=Object.getPrototypeOf(value);return prototype===Object.prototype||prototype===null;}
+  try{if(value===null||typeof value!=='object'||Array.isArray(value))return false;prototype=Object.getPrototypeOf(value);return prototype===Object.prototype||prototype===null;}
   catch(ignore){return false;}
 }
 
@@ -233,8 +233,8 @@ function fdCuratorActionData(action){
 }
 
 function fdCuratorCatalogOptions(snapshot,kind,locationKey,audience){
-  var records,rows=[],i,record,key,resolved,label,recordKind,choiceKind='',purposeCode='';
-  try{if(typeof fdEditionPublicationEnabled!=='function'||!fdEditionPublicationEnabled(snapshot))return [];
+  var records,rows=[],i,record,key,resolved,label,recordKind,choiceKind='',purposeCodes=null;
+  try{if(typeof fdEditionCatalogTrusted!=='function'||!fdEditionCatalogTrusted(snapshot)||snapshot.audience!==audience)return [];
     records=fdCuratorArray(snapshot.resolutionRecords,4096);if(!records)return [];
     if(kind==='trainingLocation')recordKind='trainingLocation';
     else if(kind==='curatorProfile')recordKind='curatorProfile';
@@ -243,14 +243,16 @@ function fdCuratorCatalogOptions(snapshot,kind,locationKey,audience){
     else if(kind==='place')recordKind='place';
     else if(kind==='localPreset')recordKind='localPreset';
     else if(kind.indexOf('choice:')===0){recordKind='choice';choiceKind=kind.slice(7);}
-    else if(kind.indexOf('link:')===0){recordKind='officialLink';purposeCode=kind.slice(5);}
+    else if(kind==='link:any')recordKind='officialLink';
+    else if(kind==='link:access'){recordKind='officialLink';purposeCodes=['access-training','parking-transit','reviewed-operational'];}
+    else if(kind.indexOf('link:')===0){recordKind='officialLink';purposeCodes=[kind.slice(5)];}
     else return [];
     for(i=0;i<records.length;i++){
       record=records[i];key=fdCuratorOwnValue(record,'key');if(!key.ok||typeof key.value!=='string')return [];
       if(recordKind==='trainingLocation')resolved=fdEditionCatalogRecord(snapshot,key.value,'builder',recordKind,key.value);
       else{if(typeof locationKey!=='string'||!locationKey)continue;resolved=fdEditionCatalogRecord(snapshot,key.value,'builder',recordKind,locationKey);}
       if(!resolved||resolved.ok!==true||!resolved.record)continue;
-      record=resolved.record;if(choiceKind&&record.choiceKind!==choiceKind)continue;if(purposeCode&&record.purposeCode!==purposeCode)continue;
+      record=resolved.record;if(choiceKind&&record.choiceKind!==choiceKind)continue;if(purposeCodes&&purposeCodes.indexOf(record.purposeCode)<0)continue;
       label=record.displayName||record.label||record.title;if(typeof label!=='string'||!label)continue;
       rows.push({key:key.value,label:label});
     }
@@ -362,20 +364,20 @@ function fdCuratorApplyLocalMutation(next,data,snapshot){
   if(table[type]){
     value=table[type];rows=fdCuratorLocalArray(state,value[0]);if(rows.length>=value[1]){fdCuratorOmitEmpty(state,value[0]);return false;}row={instanceId:fdCuratorNextLocalId(state,value[2])};
     for(i=0;i<value[3].length;i++)row[value[3][i]]=data[value[3][i]];for(i=0;i<value[4].length;i++)if(FD_CURATOR_OWN.call(data,value[4][i]))row[value[4][i]]=data[value[4][i]];
-    if(type==='ACCESS_ADD'&&(!choice('accessItem',row.itemKey)||!choice('duePoint',row.dueKey)||!optional(row,'linkKey','access-training')))return false;
+    if(type==='ACCESS_ADD'&&(!choice('accessItem',row.itemKey)||!choice('duePoint',row.dueKey)||!optional(row,'linkKey','access')))return false;
     if(type==='CONTACT_ADD'&&(!choice('role',row.roleKey)||!optional(row,'linkKey','directory')))return false;
     if(type==='CHECKLIST_ADD'&&(!choice('checklist',row.itemKey)||!priority(row.priority)))return false;
-    if(type==='RESOURCE_ADD'&&(!link('orientation',row.linkKey)||!priority(row.priority)||!Number.isInteger(row.week)||row.week<1||row.week>(audience==='ms3'?6:4)||(row.reasonKey&&!choice('reason',row.reasonKey))))return false;
+    if(type==='RESOURCE_ADD'&&(!link('any',row.linkKey)||!priority(row.priority)||!Number.isInteger(row.week)||row.week<1||row.week>(audience==='ms3'?6:4)||(row.reasonKey&&!choice('reason',row.reasonKey))))return false;
     rows.push(row);if(!fdCuratorLocalCombinedAllowed(plan)){rows.pop();fdCuratorOmitEmpty(state,value[0]);return false;}return true;
   }
   var variants={ACCESS_UPDATE:['accessItems',['itemKey','dueKey','linkKey']],CONTACT_UPDATE:['contacts',['roleKey','linkKey']],CHECKLIST_UPDATE:['checklistItems',['itemKey','priority']],RESOURCE_UPDATE:['resources',['linkKey','priority','week','reasonKey']]};
   if(variants[type]){
     value=variants[type];position=fdCuratorFindLocal(plan,value[0],data.instanceId);if(position<0||value[1].indexOf(data.field)<0)return false;row=fdCuratorClone(plan[value[0]][position]);field=data.field;
     if((field==='linkKey'||field==='reasonKey')&&data.value==='')delete row[field];else row[field]=data.value;
-    if(type==='ACCESS_UPDATE'&&(!choice('accessItem',row.itemKey)||!choice('duePoint',row.dueKey)||!optional(row,'linkKey','access-training')))return false;
+    if(type==='ACCESS_UPDATE'&&(!choice('accessItem',row.itemKey)||!choice('duePoint',row.dueKey)||!optional(row,'linkKey','access')))return false;
     if(type==='CONTACT_UPDATE'&&(!choice('role',row.roleKey)||!optional(row,'linkKey','directory')))return false;
     if(type==='CHECKLIST_UPDATE'&&(!choice('checklist',row.itemKey)||!priority(row.priority)))return false;
-    if(type==='RESOURCE_UPDATE'&&(!link('orientation',row.linkKey)||!priority(row.priority)||!Number.isInteger(row.week)||row.week<1||row.week>(audience==='ms3'?6:4)||(row.reasonKey&&!choice('reason',row.reasonKey))))return false;
+    if(type==='RESOURCE_UPDATE'&&(!link('any',row.linkKey)||!priority(row.priority)||!Number.isInteger(row.week)||row.week<1||row.week>(audience==='ms3'?6:4)||(row.reasonKey&&!choice('reason',row.reasonKey))))return false;
     plan[value[0]][position]=row;return true;
   }
   var removals={ACCESS_REMOVE:'accessItems',CONTACT_REMOVE:'contacts',CHECKLIST_REMOVE:'checklistItems',RESOURCE_REMOVE:'resources'};
@@ -402,8 +404,8 @@ function fdCuratorReduce(state,action,index,siteContext,catalogSnapshot,generati
     cloned=fdCuratorTryClone(privateImport);return cloned.ok?cloned.value:state;
   }
   if(type==='PREVIEW_REVIEW_SUCCEEDED'){
-    if(['desktop','mobile-390'].indexOf(data.preset)<0||!Number.isInteger(data.sequence)||!transactions||typeof transactions.currentPreview!=='function'||data.sequence!==transactions.currentPreview()||!FD_CURATOR_PREVIEW_RESULTS.has(data.result))return state;
-    privateResult=FD_CURATOR_PREVIEW_RESULTS.get(data.result);if(!privateResult||privateResult.sequence!==data.sequence||privateResult.preset!==data.preset||privateResult.draftSignature!==fdCuratorCandidateDraftSignature(state))return state;
+    if(['desktop','mobile-390'].indexOf(data.preset)<0||!Number.isInteger(data.sequence)||!transactions||typeof transactions.currentPreview!=='function'||data.sequence!==transactions.currentPreview()||!FD_CURATOR_PREVIEW_COMPLETIONS.has(data.result))return state;
+    privateResult=FD_CURATOR_PREVIEW_COMPLETIONS.get(data.result);if(!privateResult||privateResult.sequence!==data.sequence||privateResult.preset!==data.preset||privateResult.draftSignature!==fdCuratorCandidateDraftSignature(state))return state;
     cloned=fdCuratorTryClone(state);if(!cloned.ok)return state;next=cloned.value;receipt={contentDigest:privateResult.receipt.contentDigest,referenceSetDigest:privateResult.receipt.referenceSetDigest,currentCoreRevision:privateResult.receipt.currentCoreRevision,currentCatalogRevision:privateResult.receipt.currentCatalogRevision,rendererRevision:privateResult.receipt.rendererRevision,previewPreset:privateResult.receipt.previewPreset};
     if(data.preset==='desktop')next.previewReceipts.desktop=receipt;else next.previewReceipts.mobile=receipt;
     other=data.preset==='desktop'?next.previewReceipts.mobile:next.previewReceipts.desktop;
@@ -509,7 +511,7 @@ function fdCuratorImportBackup(text,index,siteContext,catalogSnapshot,validation
     snapshot=fdEditionTrustedSnapshot(result);if(!snapshot)return fdCuratorImportFailure('CURATOR_IMPORT_INVALID');
     draft=fdCuratorNewDraft(index,siteContext);draft.config={context:fdCuratorClone(snapshot.config.context),phraseSetKey:snapshot.config.phraseSetKey,
       pathItems:fdCuratorClone(snapshot.config.pathItems),localPlan:fdCuratorClone(snapshot.config.localPlan),changeSummary:fdCuratorClone(snapshot.config.changeSummary)};
-    draft.publication={baseEnvelope:fdCuratorClone(snapshot.envelope),baseSemanticConfig:fdEditionCanonicalJson(fdEditionSemanticConfig(snapshot.config)),lastGenerated:null};
+    draft.publication={baseEnvelope:fdCuratorClone(snapshot.envelope),baseSemanticConfig:fdEditionSemanticConfig(snapshot.config),lastGenerated:null};
     if(!fdCuratorStateValid(draft,index,siteContext))return fdCuratorImportFailure('CURATOR_IMPORT_INVALID');
     successful={ok:true,code:'CURATOR_IMPORT_OK'};FD_CURATOR_IMPORT_RESULTS.set(successful,draft);return successful;
   },function(){return fdCuratorImportFailure('CURATOR_IMPORT_INVALID');});
@@ -565,7 +567,7 @@ function fdCuratorLocalGenerationDate(calendar){
 function fdCuratorEscape(value){return String(value).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 function fdCuratorOptionsMarkup(rows,selected,emptyLabel){
   var out='<option value="">'+fdCuratorEscape(emptyLabel)+'</option>',i;
-  for(i=0;i<rows.length;i++)out+='<option value="'+fdCuratorEscape(rows[i].key)+'"'+(rows[i].key===selected?' selected':'')+'>'+fdCuratorEscape(rows[i].label)+'</option>';return out;
+  for(i=0;i<rows.length;i++)out+='<option value="'+fdCuratorEscape(rows[i].key)+'"'+((Array.isArray(selected)?selected.indexOf(rows[i].key)>=0:rows[i].key===selected)?' selected':'')+'>'+fdCuratorEscape(rows[i].label)+'</option>';return out;
 }
 
 function fdCuratorLocalCoverage(localPlan){
@@ -596,31 +598,32 @@ function fdCuratorLocalControls(state,snapshot,category){
   function select(kind,field,label,selected,empty,multiple){return fdCuratorLocalSelect(snapshot,kind,location,audience,field,label,selected,empty,multiple);}
   function time(field,label,current){return '<label>'+label+' <input type="time" data-curator-field="'+field+'" value="'+fdCuratorEscape(current||'')+'"></label>';}
   if(category==='arrival')html+=select('choice:role','checkInRoleKey','Check-in role',value&&value.checkInRoleKey)+select('place','placeKey','Place',value&&value.placeKey)+select('link:arrival-map','linkKey','Optional arrival map',value&&value.linkKey,'No link')+'<label>Timing <select data-curator-field="timingCode"><option value="at"'+(value&&value.timingCode==='at'?' selected':'')+'>At</option><option value="by"'+(!value||value.timingCode==='by'?' selected':'')+'>By</option></select></label>'+time('time','Arrival time',value&&value.time)+'<button type="button" data-curator-local-action="arrival">Apply arrival</button>';
-  else if(category==='accessItems')html+=select('choice:accessItem','itemKey','Access item','')+select('choice:duePoint','dueKey','Due point','')+select('link:access-training','linkKey','Optional official link','','No link')+'<button type="button" data-curator-local-action="access">Add access item</button>';
+  else if(category==='accessItems')html+=select('choice:accessItem','itemKey','Access item','')+select('choice:duePoint','dueKey','Due point','')+select('link:access','linkKey','Optional official link','','No link')+'<button type="button" data-curator-local-action="access">Add access item</button>';
   else if(category==='contacts')html+=select('choice:role','roleKey','Public role','')+select('link:directory','linkKey','Optional directory','','No link')+'<button type="button" data-curator-local-action="contact">Add contact</button>';
   else if(category==='checklistItems')html+=select('choice:checklist','itemKey','Checklist action','')+select('priority','priority','Priority','recommended')+'<button type="button" data-curator-local-action="checklist">Add checklist action</button>';
   else if(category==='schedule'){
-    html+=time('dayStart','Day starts',value&&value.dayStart)+time('dayEnd','Day ends',value&&value.dayEnd)+'<label>End qualifier <select data-curator-field="endQualifierCode"><option value="at">At</option><option value="about">About</option><option value="no-later-than">No later than</option></select></label><button type="button" data-curator-local-action="schedule-bounds">Apply day bounds</button>';
+    html+=time('dayStart','Day starts',value&&value.dayStart)+time('dayEnd','Day ends',value&&value.dayEnd)+'<label>End qualifier <select data-curator-field="endQualifierCode"><option value="at"'+(value&&value.endQualifierCode==='at'?' selected':'')+'>At</option><option value="about"'+(value&&value.endQualifierCode==='about'?' selected':'')+'>About</option><option value="no-later-than"'+(value&&value.endQualifierCode==='no-later-than'?' selected':'')+'>No later than</option></select></label><button type="button" data-curator-local-action="schedule-bounds">Apply day bounds</button>';
     html+=select('choice:daySet','daySetKey','Days','')+time('startTime','Event starts','')+time('endTime','Optional end','')+select('choice:activity','activityKey','Activity','')+select('place','placeKey','Optional place','','No place')+select('priority','priority','Priority','recommended')+'<button type="button" data-curator-local-action="schedule-event">Add schedule event</button>';
   }else if(category==='rounds')html+=select('choice:roundsPreparation','preparationKey','Preparation',value&&value.preparationKey)+select('choice:roundsParticipation','participationKey','Participation',value&&value.participationKey)+select('choice:roundsFollowUp','followUpKey','Follow-up',value&&value.followUpKey)+'<button type="button" data-curator-local-action="rounds">Apply rounds</button>';
-  else if(category==='presentation')html+=select('choice:presentationFormat','formatKey','Format',value&&value.formatKey)+select('choice:presentationTiming','timingKey','Timing',value&&value.timingKey)+select('choice:presentationElement','elementKeys','Elements','',null,true)+'<button type="button" data-curator-local-action="presentation">Apply presentation</button>';
+  else if(category==='presentation')html+=select('choice:presentationFormat','formatKey','Format',value&&value.formatKey)+select('choice:presentationTiming','timingKey','Timing',value&&value.timingKey)+select('choice:presentationElement','elementKeys','Elements',value&&value.elementKeys||[],null,true)+'<button type="button" data-curator-local-action="presentation">Apply presentation</button>';
   else if(category==='documentation')html+=select('choice:documentationWorkflow','workflowKey','Workflow',value&&value.workflowKey)+select('choice:documentationTiming','timingKey','Timing',value&&value.timingKey)+select('link:documentation-policy','policyLinkKey','Optional policy',value&&value.policyLinkKey,'No policy')+'<button type="button" data-curator-local-action="documentation">Apply documentation</button>';
   else if(category==='attendance'){
     rows=plan.schedule&&plan.schedule.events||[];html+='<label>Schedule events <select data-curator-field="eventInstanceIds" multiple>';for(i=0;i<rows.length;i++)html+='<option value="'+fdCuratorEscape(rows[i].instanceId)+'"'+(value&&value.eventInstanceIds.indexOf(rows[i].instanceId)>=0?' selected':'')+'>'+fdCuratorEscape(rows[i].instanceId)+'</option>';html+='</select></label>'+select('choice:role','absenceRoleKey','Absence role',value&&value.absenceRoleKey)+select('link:attendance-policy','policyLinkKey','Optional attendance policy',value&&value.policyLinkKey,'No policy')+'<button type="button" data-curator-local-action="attendance">Apply attendance</button>';
   }else if(category==='feedback')html+=select('choice:feedbackCadence','cadenceKey','Cadence',value&&value.cadenceKey)+select('choice:feedbackInitiator','initiatorKey','Initiator',value&&value.initiatorKey)+select('choice:feedbackSetting','settingKey','Setting',value&&value.settingKey)+'<button type="button" data-curator-local-action="feedback">Apply feedback</button>';
-  else if(category==='resources')html+=select('link:orientation','linkKey','Official resource','')+select('priority','priority','Priority','recommended')+'<label>Week <input type="number" min="1" max="'+(audience==='ms3'?6:4)+'" value="1" data-curator-field="week"></label>'+select('choice:reason','reasonKey','Optional reason','','No reason')+'<button type="button" data-curator-local-action="resource">Add resource</button>';
+  else if(category==='resources')html+=select('link:any','linkKey','Official resource','')+select('priority','priority','Priority','recommended')+'<label>Week <input type="number" min="1" max="'+(audience==='ms3'?6:4)+'" value="1" data-curator-field="week"></label>'+select('choice:reason','reasonKey','Optional reason','','No reason')+'<button type="button" data-curator-local-action="resource">Add resource</button>';
   if(value)html+='<button type="button" data-curator-local-clear="'+category+'">Clear '+category+'</button>';
   rows=Array.isArray(value)?value:value&&value.events||[];for(i=0;i<rows.length;i++)html+='<button type="button" data-curator-local-remove="'+category+'" data-instance-id="'+fdCuratorEscape(rows[i].instanceId)+'">Remove '+fdCuratorEscape(rows[i].instanceId)+'</button>';
   return html+'</div>';
 }
-function fdCuratorPreviewMarkup(model,preset){
-  var trusted=fdCuratorTrustedDisplay(model),mobile=preset==='mobile-390',sections,i,rows,html;if(!trusted)return '<div class="fd-curator-preview-empty">Complete the required reviewed selections to render this preview.</div>';
+function fdCuratorPreviewMarkup(model,preset,evidence){
+  var trusted=fdCuratorTrustedDisplay(model),privateEvidence=FD_CURATOR_PREVIEW_RESULTS.get(evidence),expected=privateEvidence&&privateEvidence.expected,mobile=preset==='mobile-390',sections,i,rows,html,attributes='';if(!trusted)return '<div class="fd-curator-preview-empty">Complete the required reviewed selections to render this preview.</div>';
+  if(privateEvidence&&privateEvidence.preset===preset&&expected)attributes=' data-curator-content-digest="'+fdCuratorEscape(expected.contentDigest)+'" data-curator-reference-digest="'+fdCuratorEscape(expected.referenceSetDigest)+'" data-curator-fingerprint="'+fdCuratorEscape(evidence.fingerprint)+'" data-curator-core-revision="'+fdCuratorEscape(expected.currentCoreRevision)+'" data-curator-catalog-revision="'+fdCuratorEscape(expected.currentCatalogRevision)+'" data-curator-renderer-revision="'+fdCuratorEscape(expected.rendererRevision)+'" data-curator-render-status="complete"';
   sections=[['First day at the location',fdCuratorStudentSentences(trusted,'arrival')],['Before you arrive',fdCuratorStudentSentences(trusted,'accessItems')],['Who to contact',fdCuratorStudentSentences(trusted,'contacts')],["Today's checklist",fdCuratorStudentSentences(trusted,'checklistItems')],['Typical day',fdCuratorStudentSentences(trusted,'schedule')],['Team workflow',fdCuratorStudentSentences(trusted,'rounds').concat(fdCuratorStudentSentences(trusted,'presentation'),fdCuratorStudentSentences(trusted,'documentation'))],['Attendance and feedback',fdCuratorStudentSentences(trusted,'attendance').concat(fdCuratorStudentSentences(trusted,'feedback'))],['Official resources',fdCuratorStudentSentences(trusted,'resources')]];
-  html='<div class="fd-curator-preview '+(mobile?'fd-curator-preview--mobile':'fd-curator-preview--desktop')+'" tabindex="-1" data-curator-preview-layout="'+preset+'"><h3>'+fdCuratorEscape(trusted.card.title)+'</h3>';
+  html='<div class="fd-curator-preview '+(mobile?'fd-curator-preview--mobile':'fd-curator-preview--desktop')+'" tabindex="-1" data-curator-preview-layout="'+preset+'"'+attributes+'><h3>'+fdCuratorEscape(trusted.card.title)+'</h3>';
   for(i=0;i<sections.length;i++){html+='<section><h4>'+sections[i][0]+'</h4>';rows=sections[i][1];if(!rows.length)html+='<p>None selected.</p>';else for(var j=0;j<rows.length;j++)html+='<p>'+fdCuratorEscape(rows[j])+'</p>';html+='</section>';}
   return html+'</div>';
 }
-function fdCuratorLocalMarkup(state,catalogSnapshot,displayModel){
+function fdCuratorLocalMarkup(state,catalogSnapshot,displayModel,previewEvidence){
   var model=fdCuratorTrustedDisplay(displayModel),plan=state.config.localPlan,coverage=fdCuratorLocalCoverage(plan),location=state.config.context.trainingLocationKey,audience=state.site.audience;
   var presets=fdCuratorCatalogOptions(catalogSnapshot,'localPreset',location,audience),categories=[['arrival','Arrival'],['accessItems','Access preparation'],['contacts','Who to contact'],['checklistItems','Checklist'],['schedule','Typical schedule'],['rounds','Rounds'],['presentation','Presentation'],['documentation','Documentation'],['attendance','Attendance'],['feedback','Feedback'],['resources','Official resources']];
   var questions=[['where','Where do I go?','arrival'],['when','When should I arrive?','arrival'],['prepare','What should I prepare?','accessItems'],['help','Who can help?','contacts'],['first','What do I do first?','checklistItems']],html='<section data-curator-step-panel="4" aria-labelledby="fd-curator-local-title"><h2 id="fd-curator-local-title">Structured local details</h2><p data-curator-local-status role="status" aria-live="polite" tabindex="-1"></p>';
@@ -628,7 +631,7 @@ function fdCuratorLocalMarkup(state,catalogSnapshot,displayModel){
   html+='<label>Apply a reviewed local preset <select data-curator-local-preset>'+fdCuratorOptionsMarkup(presets,'','Choose a reviewed preset')+'</select></label>';
   html+='<section class="fd-curator-local-group"><h2>First-day essentials</h2>';for(i=0;i<4;i++)html+='<article id="fd-curator-'+categories[i][0]+'" class="fd-curator-local-card" tabindex="-1"><h3>'+categories[i][1]+'</h3>'+fdCuratorLocalControls(state,catalogSnapshot,categories[i][0])+fdCuratorStudentsSee(model,categories[i][0])+'<p class="fd-curator-reviewed-only">Choose only from repository-reviewed options.</p></article>';html+='</section>';
   html+='<section class="fd-curator-local-group"><h2>How this rotation works</h2>';for(i=4;i<categories.length;i++)html+='<article id="fd-curator-'+categories[i][0]+'" class="fd-curator-local-card" tabindex="-1"><h3>'+categories[i][1]+'</h3>'+fdCuratorLocalControls(state,catalogSnapshot,categories[i][0])+fdCuratorStudentsSee(model,categories[i][0])+'<p class="fd-curator-reviewed-only">Choose only from repository-reviewed options.</p></article>';html+='</section>';
-  html+='<section class="fd-curator-review-evidence" data-curator-review-evidence><h2>Canonical previews</h2><p>Fingerprint: <code>'+(model?fdCuratorEscape(model.card.fingerprint):'pending')+'</code></p><p>Candidate digest: <code>'+(state.previewReceipts.desktop?fdCuratorEscape(state.previewReceipts.desktop.contentDigest):state.previewReceipts.mobile?fdCuratorEscape(state.previewReceipts.mobile.contentDigest):'pending')+'</code></p><div class="fd-curator-preview-actions"><button type="button" data-curator-review-preview="desktop">Review desktop preview</button><span data-curator-preview-status="desktop" role="status" aria-live="polite">'+(state.previewReceipts.desktop?'Reviewed':'Not reviewed')+'</span><button type="button" data-curator-review-preview="mobile-390">Review 390 px mobile preview</button><span data-curator-preview-status="mobile" role="status" aria-live="polite">'+(state.previewReceipts.mobile?'Reviewed':'Not reviewed')+'</span></div>'+fdCuratorPreviewMarkup(model,'desktop')+fdCuratorPreviewMarkup(model,'mobile-390')+'</section>';
+  html+='<section class="fd-curator-review-evidence" data-curator-review-evidence><h2>Canonical previews</h2><p>Fingerprint: <code>'+(model?fdCuratorEscape(model.card.fingerprint):'pending')+'</code></p><p>Candidate digest: <code>'+(state.previewReceipts.desktop?fdCuratorEscape(state.previewReceipts.desktop.contentDigest):state.previewReceipts.mobile?fdCuratorEscape(state.previewReceipts.mobile.contentDigest):'pending')+'</code></p><div class="fd-curator-preview-actions"><button type="button" data-curator-review-preview="desktop">Review desktop preview</button><span data-curator-preview-status="desktop" role="status" aria-live="polite">'+(state.previewReceipts.desktop?'Reviewed':'Not reviewed')+'</span><button type="button" data-curator-review-preview="mobile-390">Review 390 px mobile preview</button><span data-curator-preview-status="mobile" role="status" aria-live="polite">'+(state.previewReceipts.mobile?'Reviewed':'Not reviewed')+'</span></div>'+fdCuratorPreviewMarkup(model,'desktop',previewEvidence&&previewEvidence.desktop)+fdCuratorPreviewMarkup(model,'mobile-390',previewEvidence&&previewEvidence.mobile)+'</section>';
   return html+'</section>';
 }
 
@@ -637,6 +640,7 @@ function fdCuratorStepOneMarkup(state,catalogSnapshot,generationDate){
   var profiles=location?fdCuratorCatalogOptions(catalogSnapshot,'curatorProfile',location,state.site.audience):[];
   var phrases=location?fdCuratorCatalogOptions(catalogSnapshot,'phraseSet',location,state.site.audience):[];
   var html='<section class="fd-curator-v2" data-curator-step-panel="1"><h2>Step 1 — Reviewed edition context</h2>';
+  if(!locations.length)html+='<div class="fd-curator-onboarding" role="status"><strong>No reviewed catalog records are available.</strong> You can inspect this empty draft while publication remains disabled.</div>';
   html+='<label for="curatorTrainingLocation">Training location</label><select id="curatorTrainingLocation" data-curator-location>'+fdCuratorOptionsMarkup(locations,location,'Choose a reviewed location')+'</select>';
   if(location&&!profiles.length)html+='<div class="fd-curator-onboarding" role="status"><strong>No reviewed curator profile is available.</strong> A reviewed catalog proposal is required before this edition can be completed.</div>';
   else html+='<label for="curatorProfile">Curator profile</label><select id="curatorProfile" data-curator-profile>'+fdCuratorOptionsMarkup(profiles,state.config.context.curatorProfileKey,'Choose a reviewed profile')+'</select>';
@@ -710,20 +714,35 @@ function fdCuratorCandidateFailure(code){return {ok:false,config:null,envelopePr
 function fdCuratorCandidateDraftSignature(state){
   try{return fdEditionCanonicalJson({site:state.site,config:state.config,baseEnvelope:state.publication.baseEnvelope});}catch(ignore){return '';}
 }
+function fdCuratorAuthenticateBase(state,index,catalogSnapshot,siteContext,validationContext,subtle){
+  var publication=state&&state.publication,contractSite=fdCuratorContractSiteContext(siteContext),base,semantic;
+  try{if(!publication||!fdCuratorExactData(publication,['baseEnvelope','baseSemanticConfig','lastGenerated'],[])||typeof publication.baseSemanticConfig!=='string'||!contractSite)return Promise.resolve({ok:false});base=publication.baseEnvelope;semantic=publication.baseSemanticConfig;}
+  catch(ignoreBoundary){return Promise.resolve({ok:false});}
+  if(base===null)return Promise.resolve(semantic===''?{ok:true,config:null,envelope:null}:{ok:false});
+  if(!fdCuratorExactData(base,['format','schemaVersion','config','digest'],[])||!fdCuratorObject(base.config)||!semantic)return Promise.resolve({ok:false});
+  return fdEditionValidateEnvelope(base,index,catalogSnapshot,contractSite,validationContext,subtle).then(function(validated){
+    var trusted=validated&&validated.ok===true?fdEditionTrustedSnapshot(validated):null,canonical;
+    if(!trusted)return {ok:false};
+    try{canonical=fdEditionSemanticConfig(trusted.config);if(!canonical||canonical!==semantic)return {ok:false};return {ok:true,config:fdCuratorClone(trusted.config),envelope:fdCuratorClone(trusted.envelope)};}
+    catch(ignoreTrusted){return {ok:false};}
+  },function(){return {ok:false};});
+}
 function fdCuratorCandidateConfig(state,index,catalogSnapshot,siteContext,validationContext,subtle){
-  var context=state&&state.config&&state.config.context,contractSite=fdCuratorContractSiteContext(siteContext),base,baseConfig=null,tentative,config,summary,edition=1;
+  var context=state&&state.config&&state.config.context,contractSite=fdCuratorContractSiteContext(siteContext),tentative;
   if(!contractSite||!fdCuratorStateValid(state,index,siteContext)||!fdCuratorExactData(validationContext,['mode','generationDate'],[])||validationContext.mode!=='builder'||!fdCuratorRealDate(validationContext.generationDate)||!context.trainingLocationKey||!context.curatorProfileKey||!state.config.phraseSetKey||!fdCuratorRealDate(context.rotationStart)||!fdCuratorRealDate(context.rotationEnd)||!fdCuratorRealDate(context.editionCheckedOn)||context.editionCheckedOn>validationContext.generationDate)return Promise.resolve(fdCuratorCandidateFailure('CURATOR_INCOMPLETE'));
   tentative={audience:state.site.audience,pathId:state.site.pathId,editionNumber:1,createdAgainstCoreRevision:contractSite.coreRevision,createdAgainstLocalCatalogRevision:contractSite.localCatalogRevision,context:fdCuratorClone(context),phraseSetKey:state.config.phraseSetKey,pathItems:fdCuratorClone(state.config.pathItems),localPlan:fdCuratorClone(state.config.localPlan),changeSummary:{kindCodes:['initial'],changedItemCount:0}};
-  try{base=state.publication.baseEnvelope;if(base&&fdCuratorObject(base)&&fdCuratorObject(base.config)){baseConfig=fdCuratorClone(base.config);edition=baseConfig.editionNumber;}}
-  catch(ignoreBase){baseConfig=null;edition=1;}
-  if(baseConfig&&fdEditionSemanticConfig(baseConfig)===fdEditionSemanticConfig(tentative))config=baseConfig;
-  else if(baseConfig){if(!Number.isInteger(edition)||edition<1||edition>=2147483647)return Promise.resolve(fdCuratorCandidateFailure('CURATOR_EDITION_LIMIT'));summary=fdEditionGenerateChangeSummary(baseConfig,tentative);if(!summary||!summary.kindCodes.length)return Promise.resolve(fdCuratorCandidateFailure('CURATOR_INVALID'));tentative.editionNumber=edition+1;tentative.changeSummary=summary;config=tentative;}
-  else config=tentative;
-  return fdEditionCreateEnvelope(config,index,catalogSnapshot,contractSite,validationContext,subtle).then(function(made){
-    var trusted,pre,display,result;if(!made||made.ok!==true||(trusted=fdEditionTrustedSnapshot(made))===null)return fdCuratorCandidateFailure('CURATOR_INVALID');
-    try{pre={format:'cw-rotation-edition',schemaVersion:2,config:fdCuratorClone(trusted.config)};display=fdCuratorClone(trusted.displayModel);result={ok:true,config:fdCuratorClone(trusted.config),envelopePreimage:pre,contentDigest:made.contentDigest,referenceSetDigest:trusted.referenceSetDigest,fingerprint:trusted.fingerprint,displayModel:display,errors:[]};FD_CURATOR_CANDIDATE_RESULTS.set(result,{trusted:made,draftSignature:fdCuratorCandidateDraftSignature(state),site:{coreRevision:contractSite.coreRevision,catalogRevision:contractSite.localCatalogRevision}});FD_CURATOR_DISPLAY_RESULTS.set(display,fdEditionCanonicalJson(display));return result;}
-    catch(ignoreResult){return fdCuratorCandidateFailure('CURATOR_INVALID');}
-  },function(){return fdCuratorCandidateFailure('CURATOR_INVALID');});
+  return fdCuratorAuthenticateBase(state,index,catalogSnapshot,siteContext,validationContext,subtle).then(function(authenticated){
+    var baseConfig=authenticated&&authenticated.ok?authenticated.config:null,config,summary,edition;
+    if(!authenticated||!authenticated.ok)return fdCuratorCandidateFailure('CURATOR_BASE_INVALID');
+    if(baseConfig&&fdEditionSemanticConfig(baseConfig)===fdEditionSemanticConfig(tentative))config=baseConfig;
+    else if(baseConfig){edition=baseConfig.editionNumber;if(!Number.isInteger(edition)||edition<1||edition>=2147483647)return fdCuratorCandidateFailure('CURATOR_EDITION_LIMIT');summary=fdEditionGenerateChangeSummary(baseConfig,tentative);if(!summary||!summary.kindCodes.length)return fdCuratorCandidateFailure('CURATOR_INVALID');tentative.editionNumber=edition+1;tentative.changeSummary=summary;config=tentative;}
+    else config=tentative;
+    return fdEditionCreateEnvelope(config,index,catalogSnapshot,contractSite,validationContext,subtle).then(function(made){
+      var trusted,pre,display,result;if(!made||made.ok!==true||(trusted=fdEditionTrustedSnapshot(made))===null)return fdCuratorCandidateFailure('CURATOR_INVALID');
+      try{pre={format:'cw-rotation-edition',schemaVersion:2,config:fdCuratorClone(trusted.config)};display=fdCuratorClone(trusted.displayModel);result={ok:true,config:fdCuratorClone(trusted.config),envelopePreimage:pre,contentDigest:made.contentDigest,referenceSetDigest:trusted.referenceSetDigest,fingerprint:trusted.fingerprint,displayModel:display,errors:[]};FD_CURATOR_CANDIDATE_RESULTS.set(result,{trusted:made,draftSignature:fdCuratorCandidateDraftSignature(state),site:{coreRevision:contractSite.coreRevision,catalogRevision:contractSite.localCatalogRevision}});FD_CURATOR_DISPLAY_RESULTS.set(display,fdEditionCanonicalJson(display));return result;}
+      catch(ignoreResult){return fdCuratorCandidateFailure('CURATOR_INVALID');}
+    },function(){return fdCuratorCandidateFailure('CURATOR_INVALID');});
+  });
 }
 
 function fdCuratorReceiptExpected(privateCandidate){
@@ -743,6 +762,23 @@ function fdCuratorPreparePreview(state,index,catalogSnapshot,siteContext,validat
     display=fdCuratorClone(candidate.displayModel);result={ok:true,code:'CURATOR_PREVIEW_OK',preset:preset,displayModel:display,contentDigest:candidate.contentDigest,fingerprint:candidate.fingerprint};FD_CURATOR_DISPLAY_RESULTS.set(display,fdEditionCanonicalJson(display));FD_CURATOR_PREVIEW_RESULTS.set(result,{sequence:sequence,preset:preset,receipt:receipt,expected:expected,draftSignature:privateCandidate.draftSignature});return result;
   });
 }
+function fdCuratorCompletePreview(prepared,root,preset,sequence,transactions){
+  var privatePreview=FD_CURATOR_PREVIEW_RESULTS.get(prepared),expected,node,again,headings,i,result;
+  var order=['First day at the location','Before you arrive','Who to contact',"Today's checklist",'Typical day','Team workflow','Attendance and feedback','Official resources'];
+  function failure(){return {ok:false,code:'CURATOR_PREVIEW_RENDER_INVALID'};}
+  if(!privatePreview||privatePreview.preset!==preset||privatePreview.sequence!==sequence||!transactions||typeof transactions.currentPreview!=='function'||transactions.currentPreview()!==sequence||!root)return failure();
+  expected=privatePreview.expected;if(!expected)return failure();
+  try{
+    if(typeof root.querySelector!=='function'||typeof root.contains!=='function')return failure();
+    node=root.querySelector('[data-curator-preview-layout="'+preset+'"]');
+    if(!node||node.isConnected!==true||root.contains(node)!==true||typeof node.getAttribute!=='function'||typeof node.querySelectorAll!=='function')return failure();
+    if(node.getAttribute('data-curator-preview-layout')!==preset||node.getAttribute('data-curator-content-digest')!==expected.contentDigest||node.getAttribute('data-curator-reference-digest')!==expected.referenceSetDigest||node.getAttribute('data-curator-fingerprint')!==prepared.fingerprint||node.getAttribute('data-curator-core-revision')!==expected.currentCoreRevision||node.getAttribute('data-curator-catalog-revision')!==expected.currentCatalogRevision||node.getAttribute('data-curator-renderer-revision')!==expected.rendererRevision||node.getAttribute('data-curator-render-status')!=='complete')return failure();
+    headings=node.querySelectorAll('h4');if(!headings||headings.length!==order.length)return failure();
+    for(i=0;i<order.length;i++)if(headings[i].textContent!==order[i])return failure();
+    again=root.querySelector('[data-curator-preview-layout="'+preset+'"]');if(again!==node||node.isConnected!==true||root.contains(node)!==true||transactions.currentPreview()!==sequence)return failure();
+  }catch(ignoreRender){return failure();}
+  result={ok:true,code:'CURATOR_PREVIEW_RENDER_OK'};FD_CURATOR_PREVIEW_COMPLETIONS.set(result,{sequence:sequence,preset:preset,receipt:privatePreview.receipt,expected:expected,draftSignature:privatePreview.draftSignature});return result;
+}
 function fdCuratorPrepareGenerationResult(candidate,sequence){
   var privateCandidate=FD_CURATOR_CANDIDATE_RESULTS.get(candidate),result;if(!privateCandidate||!Number.isInteger(sequence))return {ok:false,code:'CURATOR_GENERATION_INVALID'};
   result={ok:true,code:'CURATOR_GENERATION_READY'};FD_CURATOR_GENERATION_RESULTS.set(result,{sequence:sequence,draftSignature:privateCandidate.draftSignature,lastGenerated:{contentDigest:candidate.contentDigest,referenceSetDigest:candidate.referenceSetDigest,fingerprint:candidate.fingerprint}});return result;
@@ -760,6 +796,29 @@ function fdCuratorObserveCurrentSite(state,index,siteContext){
   copy=fdCuratorClone(state);copy.site.coreRevision=current.coreRevision;copy.site.localCatalogRevision=current.localCatalogRevision;copy.site.rendererRevision=FD_CURATOR_RENDERER_REVISION;copy.previewReceipts={desktop:null,mobile:null};copy.affirmations.previewsReviewed=false;copy.publication.lastGenerated=null;return copy;
 }
 
+function fdCuratorRestoreDraft(text,index,siteContext,catalogSnapshot,validationContext,subtle){
+  var bytes,value,observed;
+  function failure(){return {ok:false,code:'CURATOR_DRAFT_INVALID'};}
+  if(typeof text!=='string')return Promise.resolve(failure());
+  try{bytes=new TextEncoder().encode(text).length;if(bytes>FD_CURATOR_IMPORT_MAX_BYTES)return Promise.resolve(failure());value=JSON.parse(text);observed=fdCuratorObserveCurrentSite(value,index,siteContext);if(!observed)return Promise.resolve(failure());observed=fdCuratorClone(observed);}
+  catch(ignoreStored){return Promise.resolve(failure());}
+  return fdCuratorAuthenticateBase(observed,index,catalogSnapshot,siteContext,validationContext,subtle).then(function(authenticated){
+    if(!authenticated||!authenticated.ok)return failure();
+    if(authenticated.config){observed.publication.baseEnvelope=authenticated.envelope;observed.publication.baseSemanticConfig=fdEditionSemanticConfig(authenticated.config);}
+    else{observed.publication.baseEnvelope=null;observed.publication.baseSemanticConfig='';}
+    observed.publication.lastGenerated=null;
+    return fdCuratorCandidateConfig(observed,index,catalogSnapshot,siteContext,validationContext,subtle).then(function(candidate){
+      var privateCandidate=FD_CURATOR_CANDIDATE_RESULTS.get(candidate),expected=privateCandidate&&fdCuratorReceiptExpected(privateCandidate),desktop=null,mobile=null;
+      if(candidate&&candidate.ok&&expected){
+        if(fdCuratorReceiptMatches(observed.previewReceipts.desktop,expected,'desktop'))desktop=fdCuratorClone(observed.previewReceipts.desktop);
+        if(fdCuratorReceiptMatches(observed.previewReceipts.mobile,expected,'mobile-390'))mobile=fdCuratorClone(observed.previewReceipts.mobile);
+      }
+      observed.previewReceipts={desktop:desktop,mobile:mobile};observed.affirmations.previewsReviewed=Boolean(desktop&&mobile);
+      return {ok:true,code:'CURATOR_DRAFT_READY',state:observed};
+    });
+  },function(){return failure();});
+}
+
 function fdCuratorCatalogUnavailable(root){
   try{root.innerHTML='<section class="fd-curator-unavailable" role="alert"><h2>Rotation edition catalog unavailable</h2><p>The reviewed catalog could not be prepared. No draft was read or changed.</p></section>';return {ok:false,code:'CURATOR_CATALOG_UNAVAILABLE'};}
   catch(ignore){return {ok:false,code:'CURATOR_CATALOG_UNAVAILABLE'};}
@@ -768,15 +827,17 @@ function fdCuratorCatalogUnavailable(root){
 function fdCuratorDraftStorage(storage,key){
   function method(name){var cursor=storage,descriptor,depth=0;while(cursor&&depth<8){try{descriptor=Object.getOwnPropertyDescriptor(cursor,name);}catch(ignore){return null;}if(descriptor)return FD_CURATOR_OWN.call(descriptor,'value')&&typeof descriptor.value==='function'?descriptor.value:null;try{cursor=Object.getPrototypeOf(cursor);}catch(ignorePrototype){return null;}depth+=1;}return null;}
   var get=method('getItem'),set=method('setItem');
-  return {load:function(index,siteContext){var text,value,observed;if(!get)return null;try{text=get.call(storage,key);if(text===null)return null;if(typeof text!=='string'||new TextEncoder().encode(text).length>FD_CURATOR_IMPORT_MAX_BYTES)return null;value=JSON.parse(text);observed=fdCuratorObserveCurrentSite(value,index,siteContext);return observed?fdCuratorClone(observed):null;}catch(ignore){return null;}},save:function(state,index,siteContext){if(!set||!fdCuratorStateValid(state,index,siteContext))return false;try{set.call(storage,key,fdEditionCanonicalJson(state));return true;}catch(ignore){return false;}}};
+  return {load:function(index,siteContext,catalogSnapshot,validationContext,subtle){var text;if(!get)return Promise.resolve({ok:true,code:'CURATOR_DRAFT_EMPTY',state:null});try{text=get.call(storage,key);if(text===null)return Promise.resolve({ok:true,code:'CURATOR_DRAFT_EMPTY',state:null});return fdCuratorRestoreDraft(text,index,siteContext,catalogSnapshot,validationContext,subtle);}catch(ignore){return Promise.resolve({ok:false,code:'CURATOR_DRAFT_INVALID'});}},save:function(state,index,siteContext){if(!set||!fdCuratorStateValid(state,index,siteContext))return false;try{set.call(storage,key,fdEditionCanonicalJson(state));return true;}catch(ignore){return false;}}};
 }
 
 function fdCuratorMount(root,canonicalIndex,siteContext,catalogSnapshot,generationDate,dependencies){
-  var keys,storage,adapter,state,transactions=fdCuratorImportTransactions(),deps=dependencies||{},editor,searchQuery='',displayModel=null,renderSequence=0;
-  if(!root||typeof fdEditionPublicationEnabled!=='function'||!fdEditionPublicationEnabled(catalogSnapshot))return Promise.resolve(fdCuratorCatalogUnavailable(root));
+  var keys,storage,adapter,state,transactions=fdCuratorImportTransactions(),deps=dependencies||{},editor,searchQuery='',displayModel=null,previewEvidence={desktop:null,mobile:null},renderSequence=0;
+  if(!root||typeof fdEditionCatalogTrusted!=='function'||!fdEditionCatalogTrusted(catalogSnapshot))return Promise.resolve(fdCuratorCatalogUnavailable(root));
   keys=fdEditionStorageKeys(siteContext.audience);if(!keys)return Promise.resolve(fdCuratorCatalogUnavailable(root));
   try{storage=deps.storage||localStorage;}catch(ignoreStorage){storage=null;}
-  adapter=fdCuratorDraftStorage(storage,keys.curator);state=adapter.load(canonicalIndex,siteContext)||fdCuratorNewDraft(canonicalIndex,siteContext);
+  adapter=fdCuratorDraftStorage(storage,keys.curator);
+  return adapter.load(canonicalIndex,siteContext,catalogSnapshot,{mode:'builder',generationDate:generationDate},(function(){try{return deps.subtle||crypto.subtle;}catch(ignore){return deps.subtle||null;}}())).then(function(loaded){
+  var loadInvalid=loaded&&loaded.ok===false;state=loaded&&loaded.ok&&loaded.state?loaded.state:fdCuratorNewDraft(canonicalIndex,siteContext);
   function mountNode(){try{return typeof root.querySelector==='function'&&root.querySelector('#curatorEditorMount')||root;}catch(ignore){return root;}}
   function subtleValue(){try{return deps.subtle||crypto.subtle;}catch(ignore){return deps.subtle||null;}}
   function refreshModel(){
@@ -788,7 +849,7 @@ function fdCuratorMount(root,canonicalIndex,siteContext,catalogSnapshot,generati
     if(state.step===1)editor.innerHTML=fdCuratorStepOneMarkup(state,catalogSnapshot,generationDate);
     else if(state.step===2)editor.innerHTML=fdCuratorCurriculumMarkup(state,canonicalIndex,catalogSnapshot,searchQuery);
     else if(state.step===3)editor.innerHTML=fdCuratorScheduleMarkup(state,canonicalIndex);
-    else if(state.step===4)editor.innerHTML=fdCuratorLocalMarkup(state,catalogSnapshot,displayModel);
+    else if(state.step===4)editor.innerHTML=fdCuratorLocalMarkup(state,catalogSnapshot,displayModel,previewEvidence);
     else editor.innerHTML='<section class="fd-curator-placeholder"><h2>Step '+state.step+'</h2><p>This structured step is completed in the next atomic checkpoint.</p></section>';
     try{
       buttons=root.querySelectorAll('[data-curator-step]');
@@ -800,7 +861,7 @@ function fdCuratorMount(root,canonicalIndex,siteContext,catalogSnapshot,generati
   function dispatch(action){
     var data=fdCuratorActionData(action),result;
     if(data&&(data.type==='SET_STEP'||data.type==='IMPORT_SUCCEEDED'||data.type==='IMPORT_REJECTED'))transactions.cancelPreview();
-    result=fdCuratorApplyAction(state,action,canonicalIndex,siteContext,catalogSnapshot,generationDate,transactions);state=result.state;if(result.changed)render();return result;
+    result=fdCuratorApplyAction(state,action,canonicalIndex,siteContext,catalogSnapshot,generationDate,transactions);state=result.state;if(result.changed){if(data&&data.type!=='SET_STEP'&&data.type!=='PREVIEW_REVIEW_SUCCEEDED')previewEvidence={desktop:null,mobile:null};render();}return result;
   }
   render();
   function targetAttribute(target,name){try{return target&&typeof target.getAttribute==='function'?target.getAttribute(name):null;}catch(ignore){return null;}}
@@ -821,7 +882,7 @@ function fdCuratorMount(root,canonicalIndex,siteContext,catalogSnapshot,generati
     instanceId=targetAttribute(target,'data-curator-path-remove');if(instanceId!==null){dispatch({type:'PATH_REMOVE',instanceId:instanceId});return;}
     instanceId=targetAttribute(target,'data-curator-path-move-order');if(instanceId!==null){direction=targetAttribute(target,'data-direction');dispatch({type:'PATH_MOVE_ORDER',instanceId:instanceId,direction:direction});return;}
     focus=targetAttribute(target,'data-curator-focus');if(focus!==null){try{var focusNode=root.querySelector('#fd-curator-'+focus);if(focusNode)focusNode.focus();}catch(ignoreFocus){}return;}
-    preset=targetAttribute(target,'data-curator-review-preview');if(preset!==null){sequence=transactions.beginPreview();setStatus('[data-curator-preview-status="'+(preset==='desktop'?'desktop':'mobile')+'"]','Rendering exact preview…');fdCuratorPreparePreview(state,canonicalIndex,catalogSnapshot,siteContext,{mode:'builder',generationDate:generationDate},subtleValue(),preset,sequence).then(function(result){var applied;if(sequence!==transactions.currentPreview())return;if(!result||!result.ok){setStatus('[data-curator-preview-status="'+(preset==='desktop'?'desktop':'mobile')+'"]','Preview could not be validated.');return;}displayModel=result.displayModel;applied=dispatch({type:'PREVIEW_REVIEW_SUCCEEDED',preset:preset,result:result,sequence:sequence});if(applied.changed){try{var preview=root.querySelector('[data-curator-preview-layout="'+preset+'"]');if(preview)preview.focus();}catch(ignorePreviewFocus){}}});return;}
+    preset=targetAttribute(target,'data-curator-review-preview');if(preset!==null){sequence=transactions.beginPreview();setStatus('[data-curator-preview-status="'+(preset==='desktop'?'desktop':'mobile')+'"]','Rendering exact preview…');fdCuratorPreparePreview(state,canonicalIndex,catalogSnapshot,siteContext,{mode:'builder',generationDate:generationDate},subtleValue(),preset,sequence).then(function(result){var applied,completion,evidenceKey=preset==='desktop'?'desktop':'mobile';if(sequence!==transactions.currentPreview())return;if(!result||!result.ok){setStatus('[data-curator-preview-status="'+evidenceKey+'"]','Preview could not be validated.');return;}try{displayModel=result.displayModel;previewEvidence[evidenceKey]=result;if(!render(true)){previewEvidence[evidenceKey]=null;setStatus('[data-curator-preview-status="'+evidenceKey+'"]','Preview could not be validated.');return;}completion=fdCuratorCompletePreview(result,root,preset,sequence,transactions);if(!completion.ok){previewEvidence[evidenceKey]=null;setStatus('[data-curator-preview-status="'+evidenceKey+'"]','Preview could not be validated.');return;}applied=dispatch({type:'PREVIEW_REVIEW_SUCCEEDED',preset:preset,result:completion,sequence:sequence});if(applied.changed){try{var preview=root.querySelector('[data-curator-preview-layout="'+preset+'"]');if(preview)preview.focus();}catch(ignorePreviewFocus){}}}catch(ignorePreviewRender){previewEvidence[evidenceKey]=null;setStatus('[data-curator-preview-status="'+evidenceKey+'"]','Preview could not be validated.');}});return;}
     var category=targetAttribute(target,'data-curator-local-clear');if(category!==null){var cleared=dispatch({type:'LOCAL_CATEGORY_CLEAR',category:category});if(!cleared.changed&&category==='schedule'){setStatus('[data-curator-local-status]','Remove attendance references before clearing the schedule.');try{root.querySelector('[data-curator-local-status]').focus();}catch(ignoreBlockedFocus){}}return;}
     category=targetAttribute(target,'data-curator-local-remove');if(category!==null){instanceId=targetAttribute(target,'data-instance-id');var removalType={schedule:'SCHEDULE_EVENT_REMOVE',accessItems:'ACCESS_REMOVE',contacts:'CONTACT_REMOVE',checklistItems:'CHECKLIST_REMOVE',resources:'RESOURCE_REMOVE'}[category];var removed=removalType&&dispatch({type:removalType,instanceId:instanceId});if(!removed||!removed.changed){setStatus('[data-curator-local-status]','This schedule event is used by attendance. Remove that attendance reference first.');try{root.querySelector('[data-curator-local-status]').focus();}catch(ignoreRemovalFocus){}}return;}
     var localAction=targetAttribute(target,'data-curator-local-action');if(localAction!==null){
@@ -871,6 +932,8 @@ function fdCuratorMount(root,canonicalIndex,siteContext,catalogSnapshot,generati
   if(typeof root.addEventListener==='function'){
     root.addEventListener('click',click);root.addEventListener('change',change);root.addEventListener('input',input);
   }
-  return Promise.resolve({ok:true,code:'CURATOR_READY',dispatch:dispatch,getState:function(){return fdCuratorClone(state);},
-    save:function(){return adapter.save(state,canonicalIndex,siteContext);},transactions:transactions});
+  if(loadInvalid)setStatus('[data-curator-import-status]','Saved draft could not be authenticated. A new local draft was opened.');
+  return {ok:true,code:'CURATOR_READY',dispatch:dispatch,getState:function(){return fdCuratorClone(state);},
+    save:function(){return adapter.save(state,canonicalIndex,siteContext);},transactions:transactions};
+  });
 }

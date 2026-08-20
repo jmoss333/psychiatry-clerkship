@@ -134,6 +134,7 @@ async function installEditionRuntimeProbe(page, testInfo, options = {}) {
     const originalAddEventListener = EventTarget.prototype.addEventListener;
     const originalRemoveEventListener = EventTarget.prototype.removeEventListener;
     const originalQuerySelector = Element.prototype.querySelector;
+    const originalRemoveAttribute = Element.prototype.removeAttribute;
     const originalFetch = window.fetch.bind(window);
     const originalSetTimeout = window.setTimeout.bind(window);
     const innerHtml = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML');
@@ -214,15 +215,24 @@ async function installEditionRuntimeProbe(page, testInfo, options = {}) {
       || (label === 'fdApp' && ['click', 'input'].includes(type))
     );
     let rootListenerCalls = 0;
+    let windowStartupListenerCalls = 0;
+    let documentStartupListenerCalls = 0;
     EventTarget.prototype.addEventListener = function addEventListener(type, handler, options) {
       const label = targetLabel(this);
       if (label === 'fdApp') {
         rootListenerCalls += 1;
         if (listenerFault === 'root-always'
-          || (listenerFault === 'root-third' && rootListenerCalls === 3)) {
+          || (listenerFault === 'root-third' && rootListenerCalls === 3)
+          || (listenerFault === 'root-post-probe' && rootListenerCalls === 4)) {
           throw new Error('private root listener failure');
         }
       }
+      if (label === 'window' && startupType(label, type)) windowStartupListenerCalls += 1;
+      if (label === 'document' && startupType(label, type)) documentStartupListenerCalls += 1;
+      if (listenerFault === 'window-post-probe' && label === 'window'
+        && windowStartupListenerCalls === 5) throw new Error('private post-probe window failure');
+      if (listenerFault === 'document-post-probe' && label === 'document'
+        && documentStartupListenerCalls === 2) throw new Error('private post-probe document failure');
       if (this === window && listenerFault === 'window-message' && type === 'message') {
         throw new Error('private window listener failure');
       }
@@ -271,6 +281,22 @@ async function installEditionRuntimeProbe(page, testInfo, options = {}) {
       }
       return originalQuerySelector.call(this, selector);
     };
+    let gateReleaseFaults = 0; let partialGateRemoved = false;
+    Element.prototype.removeAttribute = function removeAttribute(name) {
+      if (this.id === 'fdApp' && startupFault === 'gate-release'
+        && location.search.includes('startup-fault-gate') && name === 'inert'
+        && gateReleaseFaults++ === 0) {
+        throw new Error('private startup gate release failure');
+      }
+      if (this.id === 'fdApp' && startupFault === 'gate-release-partial'
+        && location.search.includes('startup-fault-gate-partial')) {
+        if (name === 'inert') partialGateRemoved = true;
+        else if (name === 'aria-busy' && partialGateRemoved && gateReleaseFaults++ === 0) {
+          throw new Error('private partial startup gate release failure');
+        }
+      }
+      return originalRemoveAttribute.call(this, name);
+    };
     History.prototype.replaceState = function replaceState(state, title, url) {
       record(['history', String(url)]);
       if (throwHistory && location.hash) throw new Error('private history failure');
@@ -281,6 +307,7 @@ async function installEditionRuntimeProbe(page, testInfo, options = {}) {
       return originalReplaceState.call(this, state, title, url);
     };
     let progressMounts = 0;
+    let initialRenderFaults = 0;
     let resourceMountFaults = 0;
     let delayedMarkdownMountFaults = 0;
     Object.defineProperty(Element.prototype, 'innerHTML', {
@@ -295,6 +322,12 @@ async function installEditionRuntimeProbe(page, testInfo, options = {}) {
             || (startupFault === 'progress-second' && progressMounts === 2)) {
             throw new Error('private initial progress mount failure');
           }
+        }
+        if (this.id === 'content' && startupFault === 'initial-render'
+          && location.search.includes('startup-fault-initial-render')
+          && typeof value === 'string' && value.includes('fd-today')
+          && !value.includes('skel') && initialRenderFaults++ === 0) {
+          throw new Error('private ordinary initial render failure');
         }
         if (this.id === 'content' && location.search.includes('startup-fault-resource')
           && startupFault === 'resource-open' && typeof value === 'string'
@@ -314,6 +347,11 @@ async function installEditionRuntimeProbe(page, testInfo, options = {}) {
           && startupFault === 'edition-dialog' && typeof value === 'string'
           && value.includes('<dialog class="fd-edition-switch"')) {
           throw new Error('private edition dialog insertion failure');
+        }
+        if (this.id === 'governanceMount' && startupFault === 'error-alert'
+          && location.search.includes('startup-fault-error-alert')
+          && typeof value === 'string' && value.includes('fd-edition-error')) {
+          throw new Error('private fixed error alert failure');
         }
         if (this.id === 'content' && typeof value === 'string'
           && /fd-(?:today|path|library|reader|setup)/.test(value) && !value.includes('skel')) {
@@ -339,6 +377,13 @@ async function installEditionRuntimeProbe(page, testInfo, options = {}) {
     };
     Storage.prototype.removeItem = function removeItem(key) {
       if (this === window.localStorage) recordPlanStorage('remove', key);
+      if (this === window.localStorage && (key === editionKey || key === localKey)) {
+        const writes = readLog();
+        writes.push([key, '__REMOVE__']);
+        originalSetItem.call(window.sessionStorage, logKey, JSON.stringify(writes));
+        window.__fdEditionWrites = writes;
+        record(['remove', key]);
+      }
       return originalRemoveItem.call(this, key);
     };
     new MutationObserver(() => {
@@ -659,6 +704,7 @@ async function expectAtomicStartupFailure(page, {
   await expect(page.locator('#fdApp')).not.toHaveAttribute('aria-busy', 'true');
   await expect(page.locator('#fdApp')).not.toHaveAttribute('inert');
   expect(await localStorageSnapshot(page)).toEqual(before);
+  expect(await editionWrites(page)).toEqual([]);
   expect(new URL(page.url()).search).toBe(expectedSearch);
   expect(await page.evaluate(() => history.state)).toBeNull();
   expect(await page.evaluate(() => window.__fdActiveStartupListeners())).toEqual([]);
@@ -1148,9 +1194,12 @@ test('a first valid edition is the first meaningful render, then reload and same
   const editionWriteIndex = orderedEvents.findIndex(([kind, value]) => kind === 'write' && value === EDITION_KEY);
   const renderIndex = orderedEvents.findIndex(([kind]) => kind === 'render-sync');
   expect(clearIndex).toBeGreaterThanOrEqual(0);
-  expect(clearIndex).toBeLessThan(localWriteIndex);
+  expect(clearIndex).toBeLessThan(renderIndex);
+  expect(renderIndex).toBeLessThan(localWriteIndex);
   expect(localWriteIndex).toBeLessThan(editionWriteIndex);
-  expect(editionWriteIndex).toBeLessThan(renderIndex);
+  expect(orderedEvents.slice(editionWriteIndex + 1).filter(([kind]) => (
+    kind === 'history' || kind === 'write' || kind === 'remove'
+  ))).toEqual([]);
   expect(await page.evaluate((key) => localStorage.getItem(key), EDITION_KEY)).toBe(incoming.canonicalEnvelope);
   expect(await page.evaluate(({ key, fingerprint }) => (
     JSON.parse(localStorage.getItem(key)).byFingerprint[fingerprint]
@@ -1457,6 +1506,9 @@ test('a missing governance mount falls back to core without committing or attemp
 for (const fault of [
   ['an always-throwing fdApp listener', 'root-always'],
   ['a call-count-throwing fdApp listener', 'root-third'],
+  ['a first-real-registration fdApp listener', 'root-post-probe'],
+  ['a first-real-registration window listener', 'window-post-probe'],
+  ['a first-real-registration document listener', 'document-post-probe'],
   ['a register-then-throw fdApp listener', 'root-register-then-throw'],
   ['a register-then-throw window listener', 'window-register-then-throw'],
   ['a register-then-throw document listener', 'document-register-then-throw'],
@@ -1632,6 +1684,58 @@ test('a final startup history failure rolls back first acceptance after every ea
     before, expectedSearch, selectedTitle: incoming.selectedTitle, pageErrors,
   });
   expect((await editionEvents(page)).filter(([kind]) => kind === 'history')).toHaveLength(3);
+});
+
+test('a final startup gate-release failure performs zero edition/local operations', async ({ page }, testInfo) => {
+  const pageErrors = [];
+  page.on('pageerror', (error) => pageErrors.push(error.message));
+  await installEditionRuntimeProbe(page, testInfo, { startupFault: 'gate-release' });
+  const incoming = await createSyntheticEdition(testInfo, 1);
+  await page.goto('/');
+  await seedEditionLearner(page);
+  const before = await localStorageSnapshot(page);
+  await resetEditionWriteLog(page);
+  const expectedSearch = '?case=startup-fault-gate';
+  await page.goto(`${expectedSearch}#edition=${incoming.payload}`);
+  await expectAtomicStartupFailure(page, { before, expectedSearch, selectedTitle: incoming.selectedTitle, pageErrors });
+});
+
+test('an ordinary initial render failure performs zero edition/local operations', async ({ page }, testInfo) => {
+  const pageErrors = []; page.on('pageerror', error => pageErrors.push(error.message));
+  await installEditionRuntimeProbe(page, testInfo, { startupFault: 'initial-render' });
+  const incoming = await createSyntheticEdition(testInfo, 1);
+  await page.goto('/'); await seedEditionLearner(page);
+  const before = await localStorageSnapshot(page); await resetEditionWriteLog(page);
+  const expectedSearch = '?case=startup-fault-initial-render';
+  await page.goto(`${expectedSearch}#edition=${incoming.payload}`);
+  await expectAtomicStartupFailure(page, { before, expectedSearch, selectedTitle: incoming.selectedTitle, pageErrors });
+});
+
+test('a partially completed gate release performs zero edition/local operations and restores the gate', async ({ page }, testInfo) => {
+  const pageErrors = []; page.on('pageerror', error => pageErrors.push(error.message));
+  await installEditionRuntimeProbe(page, testInfo, { startupFault: 'gate-release-partial' });
+  const incoming = await createSyntheticEdition(testInfo, 1);
+  await page.goto('/'); await seedEditionLearner(page);
+  const before = await localStorageSnapshot(page); await resetEditionWriteLog(page);
+  const expectedSearch = '?case=startup-fault-gate-partial';
+  await page.goto(`${expectedSearch}#edition=${incoming.payload}`);
+  await expectAtomicStartupFailure(page, { before, expectedSearch, selectedTitle: incoming.selectedTitle, pageErrors });
+});
+
+test('a failed fixed error alert after hostile wiring still performs zero edition/local operations', async ({ page }, testInfo) => {
+  const pageErrors = []; page.on('pageerror', error => pageErrors.push(error.message));
+  await installEditionRuntimeProbe(page, testInfo, { listenerFault: 'root-post-probe', startupFault: 'error-alert' });
+  const incoming = await createSyntheticEdition(testInfo, 1);
+  await page.goto('/'); await seedEditionLearner(page);
+  const before = await localStorageSnapshot(page); await resetEditionWriteLog(page);
+  await page.goto(`/?case=startup-fault-error-alert#edition=${incoming.payload}`);
+  await expect(page.locator('#fdApp')).not.toHaveAttribute('inert');
+  await expect(page.locator('.fd-today')).toBeVisible();
+  await expect(page.locator('.fd-edition-error')).toHaveCount(0);
+  expect(await localStorageSnapshot(page)).toEqual(before);
+  expect(await editionWrites(page)).toEqual([]);
+  expect(await page.evaluate(() => window.__fdActiveStartupListeners())).toEqual([]);
+  expect(pageErrors).toEqual([]);
 });
 
 test('first acceptance through legacy Start commits once after both Progress mounts', async ({ page }, testInfo) => {

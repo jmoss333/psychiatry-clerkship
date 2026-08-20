@@ -993,10 +993,12 @@ var FD_EDITION_CATALOG=(function(){
     snapshot:prepare,
     record:recordFor,
     resolve:resolve,
+    trusted:function(snapshot){ return branded.has(snapshot); },
     enabled:function(snapshot){ return branded.has(snapshot)&&snapshot.rotationEditionV2==='enabled'; }
   };
 }());
 var fdEditionCatalogSnapshot=FD_EDITION_CATALOG.snapshot;
 var fdEditionCatalogRecord=FD_EDITION_CATALOG.record;
 var fdEditionCatalogResolve=FD_EDITION_CATALOG.resolve;
+var fdEditionCatalogTrusted=FD_EDITION_CATALOG.trusted;
 var fdEditionPublicationEnabled=FD_EDITION_CATALOG.enabled;

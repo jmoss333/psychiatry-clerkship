@@ -48,6 +48,14 @@ function isPidAlive(pid) {
   }
 }
 
+function processGroupHasMembers(pgid) {
+  const rows = spawnSync('ps', ['-axo', 'pid=,pgid='], { encoding: 'utf8' }).stdout.split(/\r?\n/);
+  return rows.some((row) => {
+    const match = row.match(/^\s*(\d+)\s+(\d+)\s*$/);
+    return match && Number(match[2]) === pgid;
+  });
+}
+
 async function terminateProcessGroup(pgid) {
   if (!Number.isInteger(pgid) || pgid <= 0) return;
   try {
@@ -757,6 +765,8 @@ exit 0`);
   await waitFor(() => fs.existsSync(childDone), 'test grandchild did not finish its descriptor-safe path');
   await waitFor(() => runnerStateDirectories(context.temporary).length === 0, 'active-signal state survived', 6_000);
   await waitForPortsClosed(configured.ports);
+  await waitFor(() => !processGroupHasMembers(child.pid), 'active test process group survived', 6_000);
+  context.processGroups.delete(child.pid);
 });
 
 test('launcher ownership loss after readiness fails closed and remains bounded', {

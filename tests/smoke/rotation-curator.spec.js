@@ -38,6 +38,10 @@ function projection(audience, revision) {
   const records = [
     { key: 'choice.role@v1', kind: 'choice', choiceKind: 'role', label: 'Faculty role', fragment: 'the faculty role', ...common },
     { key: 'choice.reason@v1', kind: 'choice', choiceKind: 'reason', label: 'Reviewed reason', fragment: 'reviewed reason', locationKeys: [location], ...common },
+    { key: 'choice.presentation-format@v1', kind: 'choice', choiceKind: 'presentationFormat', label: 'Problem representation', fragment: 'a problem representation', locationKeys: [location], ...common },
+    { key: 'choice.presentation-timing@v1', kind: 'choice', choiceKind: 'presentationTiming', label: 'During rounds', fragment: 'during rounds', locationKeys: [location], ...common },
+    { key: 'choice.presentation-element-one@v1', kind: 'choice', choiceKind: 'presentationElement', label: 'Assessment', fragment: 'assessment', locationKeys: [location], ...common },
+    { key: 'choice.presentation-element-two@v1', kind: 'choice', choiceKind: 'presentationElement', label: 'Plan', fragment: 'plan', locationKeys: [location], ...common },
     { key: location, kind: 'trainingLocation', displayName: 'Synthetic Teaching Unit', locationCode: 'SYN', locationTypeCode: 'inpatient', officialHostnames: ['example.invalid'], ...common },
     { key: 'curator.synthetic@v1', kind: 'curatorProfile', displayName: 'Synthetic Faculty', roleKey: 'choice.role@v1', locationKeys: [location], ...common },
     {
@@ -144,23 +148,107 @@ test('desktop and mobile review receipts are independent and expose exact digest
   await expect(page.locator('#fd-curator-arrival')).toBeFocused();
   await page.getByRole('button', { name: 'Review desktop preview' }).focus();
   await page.keyboard.press('Enter');
+  await expect(page.locator('.fd-curator-preview--desktop')).toHaveAttribute('data-curator-render-status', 'complete');
+  await expect(page.locator('.fd-curator-preview--desktop h4')).toHaveText([
+    'First day at the location', 'Before you arrive', 'Who to contact', "Today's checklist",
+    'Typical day', 'Team workflow', 'Attendance and feedback', 'Official resources',
+  ]);
+  expect(await page.locator('.fd-curator-preview--desktop').evaluate(node => node.isConnected)).toBe(true);
+  const desktopEvidence = await page.locator('.fd-curator-preview--desktop').evaluate(node => Object.fromEntries([
+    'content-digest', 'reference-digest', 'fingerprint', 'core-revision', 'catalog-revision', 'renderer-revision',
+  ].map(name => [name, node.getAttribute(`data-curator-${name}`)])));
+  expect(desktopEvidence['content-digest']).toMatch(/^sha256-[A-Za-z0-9_-]{43}$/);
+  expect(desktopEvidence['reference-digest']).toMatch(/^sha256-[A-Za-z0-9_-]{43}$/);
+  expect(desktopEvidence.fingerprint).toMatch(/^[A-Z0-9]+-(?:MS3|RES)-[A-Z0-9]{6}$/);
+  expect(desktopEvidence['core-revision']).toHaveLength(40);
+  expect(desktopEvidence['catalog-revision']).toMatch(/^sha256-/);
+  expect(desktopEvidence['renderer-revision']).toBe('rotation-edition-v2-r1');
   await expect(page.locator('[data-curator-preview-status="desktop"]')).toContainText('Reviewed');
   await expect(page.locator('[data-curator-preview-status="mobile"]')).not.toContainText('Reviewed');
+
+  await page.evaluate(() => {
+    const editor = document.querySelector('#curatorEditorMount');
+    const descriptor = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML');
+    let fail = true;
+    Object.defineProperty(editor, 'innerHTML', {
+      configurable: true,
+      get() { return descriptor.get.call(this); },
+      set(value) { if (fail) { fail = false; throw new Error('private preview render failure'); } return descriptor.set.call(this, value); },
+    });
+  });
+  await page.getByRole('button', { name: 'Review desktop preview' }).click();
+  await expect(page.locator('[data-curator-preview-status="desktop"]')).toContainText('Preview could not be validated');
+  await page.evaluate(() => { delete document.querySelector('#curatorEditorMount').innerHTML; });
+  await page.getByRole('button', { name: /Step 1 Edition/ }).click();
+  await page.locator('[data-curator-save]').click();
+  const preserved = await page.evaluate(() => JSON.parse(Object.entries(localStorage).find(([key]) => /_curator_draft_(?:ms3|resident)_v2$/.test(key))[1]));
+  expect(preserved.previewReceipts.desktop.contentDigest).toBe(desktopEvidence['content-digest']);
+  await page.getByRole('button', { name: /Step 4 Local details/ }).click();
   await page.getByRole('button', { name: 'Review 390 px mobile preview' }).focus();
   await page.keyboard.press('Enter');
-  await expect(page.locator('[data-curator-preview-status="mobile"]')).toContainText('Reviewed');
-  await expect(page.locator('[data-curator-review-evidence]')).toContainText(/sha256-/);
   await expect(page.locator('.fd-curator-preview--mobile')).toHaveCSS('width', '390px');
+  await expect(page.locator('.fd-curator-preview--mobile')).toHaveAttribute('data-curator-render-status', 'complete');
   await expect(page.locator('.fd-curator-preview--mobile h4')).toHaveText([
     'First day at the location', 'Before you arrive', 'Who to contact', "Today's checklist",
     'Typical day', 'Team workflow', 'Attendance and feedback', 'Official resources',
   ]);
+  expect(await page.locator('.fd-curator-preview--mobile').evaluate(node => node.isConnected)).toBe(true);
+  const mobileEvidence = await page.locator('.fd-curator-preview--mobile').evaluate(node => Object.fromEntries([
+    'content-digest', 'reference-digest', 'fingerprint', 'core-revision', 'catalog-revision', 'renderer-revision',
+  ].map(name => [name, node.getAttribute(`data-curator-${name}`)])));
+  expect(mobileEvidence).toEqual(desktopEvidence);
+  await expect(page.locator('[data-curator-preview-status="mobile"]')).toContainText('Reviewed');
+  await expect(page.locator('[data-curator-review-evidence]')).toContainText(/sha256-/);
   await expect(page.locator('[data-curator-review-evidence]')).not.toContainText(hostileSearch);
   await page.getByRole('button', { name: /Step 1 Edition/ }).click();
   await page.locator('[data-curator-save]').click();
   const saved = await page.evaluate(() => Object.entries(localStorage).find(([key]) => /_curator_draft_(?:ms3|resident)_v2$/.test(key))?.[1] || '');
   expect(saved).not.toContain(hostileSearch);
   await expect(page.locator('#curatorEditorMount')).not.toContainText(hostileSearch);
+});
+
+test('structured multi-select and qualifier survive every rerender, navigation, save, reload, and edit', async ({ page }) => {
+  await page.goto(TOOL);
+  await selectReviewedContext(page);
+  await page.getByRole('button', { name: /Step 4 Local details/ }).click();
+
+  await page.locator('#fd-curator-presentation [data-curator-field="formatKey"]').selectOption('choice.presentation-format@v1');
+  await page.locator('#fd-curator-presentation [data-curator-field="timingKey"]').selectOption('choice.presentation-timing@v1');
+  await page.locator('#fd-curator-presentation [data-curator-field="elementKeys"]').selectOption([
+    'choice.presentation-element-one@v1', 'choice.presentation-element-two@v1',
+  ]);
+  await page.locator('#fd-curator-presentation [data-curator-local-action="presentation"]').click();
+  await expect(page.locator('#fd-curator-presentation [data-curator-field="elementKeys"]')).toHaveValues([
+    'choice.presentation-element-one@v1', 'choice.presentation-element-two@v1',
+  ]);
+
+  await page.locator('#fd-curator-schedule [data-curator-field="dayStart"]').fill('07:45');
+  await page.locator('#fd-curator-schedule [data-curator-field="dayEnd"]').fill('17:00');
+  await page.locator('#fd-curator-schedule [data-curator-field="endQualifierCode"]').selectOption('no-later-than');
+  await page.locator('#fd-curator-schedule [data-curator-local-action="schedule-bounds"]').click();
+  await expect(page.locator('#fd-curator-schedule [data-curator-field="endQualifierCode"]')).toHaveValue('no-later-than');
+  await expect(page.locator('#fd-curator-presentation [data-curator-field="elementKeys"]')).toHaveValues([
+    'choice.presentation-element-one@v1', 'choice.presentation-element-two@v1',
+  ]);
+
+  await page.getByRole('button', { name: /Step 3 Schedule/ }).click();
+  await page.getByRole('button', { name: /Step 4 Local details/ }).click();
+  await expect(page.locator('#fd-curator-schedule [data-curator-field="endQualifierCode"]')).toHaveValue('no-later-than');
+  await expect(page.locator('#fd-curator-presentation [data-curator-field="elementKeys"]')).toHaveValues([
+    'choice.presentation-element-one@v1', 'choice.presentation-element-two@v1',
+  ]);
+
+  await page.getByRole('button', { name: /Step 1 Edition/ }).click();
+  await page.locator('[data-curator-save]').click();
+  await page.reload();
+  await page.getByRole('button', { name: /Step 4 Local details/ }).click();
+  await expect(page.locator('#fd-curator-schedule [data-curator-field="endQualifierCode"]')).toHaveValue('no-later-than');
+  await expect(page.locator('#fd-curator-presentation [data-curator-field="elementKeys"]')).toHaveValues([
+    'choice.presentation-element-one@v1', 'choice.presentation-element-two@v1',
+  ]);
+  await page.locator('#fd-curator-schedule [data-curator-field="endQualifierCode"]').selectOption('about');
+  await page.locator('#fd-curator-schedule [data-curator-local-action="schedule-bounds"]').click();
+  await expect(page.locator('#fd-curator-schedule [data-curator-field="endQualifierCode"]')).toHaveValue('about');
 });
 
 test('v1 backup salvage discards prose and writes nothing until an explicit v2 save', async ({ page }) => {

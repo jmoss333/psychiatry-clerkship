@@ -548,7 +548,7 @@ function fdWire(root, initialState, opts){
   var o=opts||{}, win=o.window||(typeof window!=='undefined'?window:null);
   var doc=o.document||(typeof document!=='undefined'?document:null);
   var state=fdClone(initialState||{}), invokers=[], nudgeTimer=null, navGeneration=0;
-  var destroyed=false, registrations=[], startupCommitted=false;
+  var destroyed=false, registrations=[], startupPrepared=false, startupCommitted=false;
   var render=o.render||function(){};
   var renderTransient=o.renderTransient||function(next,detail){
     if(!detail.preserveResource) render(next,detail);
@@ -1000,9 +1000,9 @@ function fdWire(root, initialState, opts){
     catch(ignoreListener){ return false; }
     return true;
   }
-  function commitStartup(){
+  function prepareStartup(){
     if(destroyed) return false;
-    if(startupCommitted) return true;
+    if(startupPrepared) return true;
     try{
       if(!previewActive()&&win&&win.history&&win.history.replaceState){
         var initialLegacyRef=currentRoutedRef();
@@ -1016,9 +1016,17 @@ function fdWire(root, initialState, opts){
         else if(!replaceHistorySnapshot()) return false;
       }
       if(o.releaseStartupGate&&o.releaseStartupGate()!==true) return false;
-      startupCommitted=true;
+      startupPrepared=true;
       return true;
     }catch(ignoreInitialCommit){ return false; }
+  }
+  function commitStartup(acceptStartup){
+    if(destroyed) return false;
+    if(!startupPrepared){if(typeof acceptStartup==='function'||!prepareStartup())return false;}
+    if(startupCommitted) return true;
+    if(typeof acceptStartup==='function'&&acceptStartup()!==true)return false;
+    startupCommitted=true;
+    return true;
   }
   function controller(ok){
     return {
@@ -1028,6 +1036,7 @@ function fdWire(root, initialState, opts){
         if(destroyed||!startupCommitted) return state;
         return apply(fdDispatch(attrs,context(c),state),null,false);
       },
+      prepareStartup:prepareStartup,
       commitStartup:commitStartup,
       startupCommitted:function(){ return startupCommitted; },
       destroy:function(){

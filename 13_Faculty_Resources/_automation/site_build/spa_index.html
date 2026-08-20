@@ -2195,21 +2195,6 @@
       fdEditionRuntimeFallback(fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'),fdInitial);
       return;
     }
-    fdEditionAcceptanceDirty=true;
-    if(result.mode==='active'&&result.needsCommit){
-      fdAcceptanceReceipt=fdEditionCommitAcceptance(fdCheckpointStorage,fdEditionBootKeys,
-        result.active,fdEditionInputs&&fdEditionInputs.localDocument,fdEditionAcceptanceJournal);
-      if(!fdAcceptanceReceipt.ok){
-        if(fdAcceptanceReceipt.irrecoverable){
-          fdEditionRuntimeFallback(fdAcceptanceReceipt,fdInitial);
-          return;
-        }
-        result={mode:'rejected',needsCommit:false,index:FD_CANONICAL_INDEX,
-          receipt:fdAcceptanceReceipt};
-        FD_INDEX=FD_CANONICAL_INDEX;
-        fdActiveEditionSnapshot=null;
-      }
-    }
     fdController=fdWire(fdApp,fdInitial,{
       window:window,document:document,index:FD_INDEX,roles:FD_ROLES,rotationStart:fdRotation,
       render:fdRender,renderTransient:fdRenderTransient,resourceHost:function(){return contentEl;},
@@ -2348,9 +2333,16 @@
       throw new Error('edition alert');
     fdEditionStartupHistoryDirty=true;
     var fdCommitPhase=fdEditionStartupPhase(['cw_frontdoor_v1','cw_rotation_start'],function(){
-      return fdController.commitStartup();
+      return fdController.prepareStartup();
     });
     if(!fdCommitPhase.ok||fdCommitPhase.value!==true)throw new Error('startup commit');
+    if(!fdController.commitStartup(function(){
+      if(result.mode!=='active'||!result.needsCommit)return true;
+      fdEditionAcceptanceDirty=true;
+      fdAcceptanceReceipt=fdEditionCommitAcceptance(fdCheckpointStorage,fdEditionBootKeys,
+        result.active,fdEditionInputs&&fdEditionInputs.localDocument,fdEditionAcceptanceJournal);
+      return !!(fdAcceptanceReceipt&&fdAcceptanceReceipt.ok);
+    }))throw new Error('startup acceptance');
   }catch(ignoreFinalStartup){
     fdEditionRuntimeFallback(fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'),fdInitial);
     return;
