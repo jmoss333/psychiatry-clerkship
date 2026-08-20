@@ -52,6 +52,924 @@
       "locationKeys": ["location.example-unit@v1"],
       "audiences": ["ms3"],
       "verifiedOn": "2026-08-19"
+    },
+    {
+      "key": "synthetic.choice.access-one@v1",
+      "kind": "choice",
+      "contentDigest": "sha256-KFjtmoqjfHrWdYs1W1nj84JmqAB3gBlgJtPHMmZQm8U",
+      "choiceKind": "accessItem",
+      "label": "Access preparation",
+      "fragment": "complete access preparation",
+      "audiences": [
+        "resident"
+      ],
+      "verifiedOn": "2026-08-19",
+      "locationKeys": [
+        "synthetic.location.primary@v1"
+      ]
+    },
+    {
+      "key": "synthetic.choice.access-two@v1",
+      "kind": "choice",
+      "contentDigest": "sha256-jd9JnBwe80Qz8sEJIiecl5fUxTlg5wx_LT-k-ANhRbA",
+      "choiceKind": "accessItem",
+      "label": "Second access preparation",
+      "fragment": "complete the second access preparation",
+      "audiences": [
+        "resident"
+      ],
+      "verifiedOn": "2026-08-19",
+      "locationKeys": [
+        "synthetic.location.primary@v1"
+      ]
+    },
+    {
+      "key": "synthetic.choice.activity-one@v1",
+      "kind": "choice",
+      "contentDigest": "sha256-pJWwdpPZM39B0ZCZEoT3d0nRNqfo-LH8_voD_dZB0S0",
+      "choiceKind": "activity",
+      "label": "Team activity",
+      "fragment": "the team activity",
+      "audiences": [
+        "resident"
+      ],
+      "verifiedOn": "2026-08-19",
+      "locationKeys": [
+        "synthetic.location.primary@v1"
+      ]
+    },
+    {
+      "key": "synthetic.choice.activity-two@v1",
+      "kind": "choice",
+      "contentDigest": "sha256-jmgLRFc2Wl5dXVBGjBtlN6g9V_s8pzCfgldhQmyt-kM",
+      "choiceKind": "activity",
+      "label": "Teaching activity",
+      "fragment": "the teaching activity",
+      "audiences": [
+        "resident"
+      ],
+      "verifiedOn": "2026-08-19",
+      "locationKeys": [
+        "synthetic.location.primary@v1"
+      ]
+    },
+    {
+      "key": "synthetic.choice.blocked-reason@v1",
+      "kind": "choice",
+      "contentDigest": "sha256-lzeVsWNx-NAKC9gRlIiNPOS3kMkk1ljuRKBDS2m5YCQ",
+      "choiceKind": "reason",
+      "label": "Blocked test reason",
+      "fragment": "blocked test reason",
+      "audiences": [
+        "resident"
+      ],
+      "verifiedOn": "2026-08-19",
+      "locationKeys": [
+        "synthetic.location.primary@v1"
+      ]
+    },
+    {
+      "key": "synthetic.choice.checklist-one@v1",
+      "kind": "choice",
+      "contentDigest": "sha256-zfJT-DVIfNxnCsKtpklueSJHd24aA0sab-G1fmqFlEo",
+      "choiceKind": "checklist",
+      "label": "Bring reviewed materials",
+      "fragment": "bring the reviewed materials",
+      "audiences": [
+        "resident"
+      ],
+      "verifiedOn": "2026-08-19",
+      "locationKeys": [
+        "synthetic.location.primary@v1"
+      ]
+    },
+    {
+      "key": "synthetic.choice.checklist-two@v1",
+      "kind": "choice",
+      "contentDigest": "sha256-ulF4fzg8wvnoCcVemZE8isUPtuZqfXnARswcFFamQU4",
+      "choiceKind": "checklist",
+      "label": "Review the schedule",
+      "fragment": "review the schedule",
+      "audiences": [
+        "resident"
+      ],
+      "verifiedOn": "2026-08-19",
+      "locationKeys": [
+        "synthetic.location.primary@v1"
+      ]
+    },
+    {
+      "key": "synthetic.choice.day-set-one@v1",
+      "kind": "choice",
+      "contentDigest": "sha256-6rYP-bxoCqaVRw-aE9cAOsJ0xvIpLd5GDUnkqin5rSs",
+      "choiceKind": "daySet",
+      "label": "Weekdays",
+      "fragment": "weekdays",
+      "audiences": [
+        "resident"
+      ],
+      "verifiedOn": "2026-08-19",
+      "locationKeys": [
+        "synthetic.location.primary@v1"
+      ]
+    },
+    {
+      "key": "synthetic.choice.day-set-two@v1",
+      "kind": "choice",
+      "contentDigest": "sha256-RGpSHaejnV7gS8Umaz4n8ZzV-AXSTBJoIJH1-3EZOYQ",
+      "choiceKind": "daySet",
+      "label": "Teaching days",
+      "fragment": "teaching days",
+      "audiences": [
+        "resident"
+      ],
+      "verifiedOn": "2026-08-19",
+      "locationKeys": [
+        "synthetic.location.primary@v1"
+      ]
+    },
+    {
+      "key": "synthetic.choice.deprecated-reason@v1",
+      "kind": "choice",
+      "contentDigest": "sha256-6UOC3rdzriRaeF9-SdWbIOTfQh2t4TR_FmgC0849a9w",
+      "choiceKind": "reason",
+      "label": "Deprecated test reason",
+      "fragment": "deprecated test reason",
+      "audiences": [
+        "resident"
+      ],
+      "verifiedOn": "2026-08-19",
+      "locationKeys": [
+        "synthetic.location.primary@v1"
+      ]
+    },
+    {
+      "key": "synthetic.choice.documentation-timing@v1",
+      "kind": "choice",
+      "contentDigest": "sha256-p0PJXFEFLpGkmc0DK1TKAttNEz9PJ-6XosbsAwrXvmo",
+      "choiceKind": "documentationTiming",
+      "label": "After review",
+      "fragment": "after supervisor review",
+      "audiences": [
+        "resident"
+      ],
+      "verifiedOn": "2026-08-19",
+      "locationKeys": [
+        "synthetic.location.primary@v1"
+      ]
+    },
+    {
+      "key": "synthetic.choice.documentation-workflow@v1",
+      "kind": "choice",
+      "contentDigest": "sha256-IndCyHFlczdmMjyTD3vw35n7i4qJG724Jjkxm1f_IGI",
+      "choiceKind": "documentationWorkflow",
+      "label": "Approved institutional record",
+      "fragment": "use the approved institutional record",
+      "audiences": [
+        "resident"
+      ],
+      "verifiedOn": "2026-08-19",
+      "locationKeys": [
+        "synthetic.location.primary@v1"
+      ]
+    },
+    {
+      "key": "synthetic.choice.due-one@v1",
+      "kind": "choice",
+      "contentDigest": "sha256-o4aDy-VWbPWHhiuYybG49PmIa7myuDjf9QlDgJzcP2o",
+      "choiceKind": "duePoint",
+      "label": "Before arrival",
+      "fragment": "before arrival",
+      "audiences": [
+        "resident"
+      ],
+      "verifiedOn": "2026-08-19",
+      "locationKeys": [
+        "synthetic.location.primary@v1"
+      ]
+    },
+    {
+      "key": "synthetic.choice.due-two@v1",
+      "kind": "choice",
+      "contentDigest": "sha256-fIUueuUigrE-5iSlEDIPkIyqY-F0lEnysNEH3AfUv38",
+      "choiceKind": "duePoint",
+      "label": "Before the second day",
+      "fragment": "before the second day",
+      "audiences": [
+        "resident"
+      ],
+      "verifiedOn": "2026-08-19",
+      "locationKeys": [
+        "synthetic.location.primary@v1"
+      ]
+    },
+    {
+      "key": "synthetic.choice.feedback-cadence@v1",
+      "kind": "choice",
+      "contentDigest": "sha256-XJhrxvz--kH9lhUMi52BHEEqwAs4uL82lkCVeSoW_bk",
+      "choiceKind": "feedbackCadence",
+      "label": "Weekly",
+      "fragment": "weekly",
+      "audiences": [
+        "resident"
+      ],
+      "verifiedOn": "2026-08-19",
+      "locationKeys": [
+        "synthetic.location.primary@v1"
+      ]
+    },
+    {
+      "key": "synthetic.choice.feedback-initiator@v1",
+      "kind": "choice",
+      "contentDigest": "sha256-2r_AVqbQs0sb4N880TGBQpi8KBb77uhQiT5guSpkfRY",
+      "choiceKind": "feedbackInitiator",
+      "label": "Learner initiated",
+      "fragment": "initiated by the learner",
+      "audiences": [
+        "resident"
+      ],
+      "verifiedOn": "2026-08-19",
+      "locationKeys": [
+        "synthetic.location.primary@v1"
+      ]
+    },
+    {
+      "key": "synthetic.choice.feedback-setting@v1",
+      "kind": "choice",
+      "contentDigest": "sha256-jNrgGoEbLowA5-uL7nK8eHCWidOfUYx0eG96t4n9H-g",
+      "choiceKind": "feedbackSetting",
+      "label": "Scheduled meeting",
+      "fragment": "in a scheduled meeting",
+      "audiences": [
+        "resident"
+      ],
+      "verifiedOn": "2026-08-19",
+      "locationKeys": [
+        "synthetic.location.primary@v1"
+      ]
+    },
+    {
+      "key": "synthetic.choice.presentation-element-one@v1",
+      "kind": "choice",
+      "contentDigest": "sha256-v3xggxyL80MOhgMX9972xmFjiGjp1tk1u7EcmoctE0c",
+      "choiceKind": "presentationElement",
+      "label": "Summary",
+      "fragment": "summary",
+      "audiences": [
+        "resident"
+      ],
+      "verifiedOn": "2026-08-19",
+      "locationKeys": [
+        "synthetic.location.primary@v1"
+      ]
+    },
+    {
+      "key": "synthetic.choice.presentation-element-two@v1",
+      "kind": "choice",
+      "contentDigest": "sha256-VjfmUZu9mhqTBMatJYsEFPZi3QRGEdQTcG93RqTxHhY",
+      "choiceKind": "presentationElement",
+      "label": "Questions",
+      "fragment": "questions",
+      "audiences": [
+        "resident"
+      ],
+      "verifiedOn": "2026-08-19",
+      "locationKeys": [
+        "synthetic.location.primary@v1"
+      ]
+    },
+    {
+      "key": "synthetic.choice.presentation-format@v1",
+      "kind": "choice",
+      "contentDigest": "sha256-TNoUMahqNGQUHPEloaVbJSHbafo10RJ0kS75kFOAdI0",
+      "choiceKind": "presentationFormat",
+      "label": "Brief format",
+      "fragment": "a brief format",
+      "audiences": [
+        "resident"
+      ],
+      "verifiedOn": "2026-08-19",
+      "locationKeys": [
+        "synthetic.location.primary@v1"
+      ]
+    },
+    {
+      "key": "synthetic.choice.presentation-timing@v1",
+      "kind": "choice",
+      "contentDigest": "sha256-KcsYPbiGWnJNpofRVsgPkj1HeVPx4-chEJplguiqB_o",
+      "choiceKind": "presentationTiming",
+      "label": "During the activity",
+      "fragment": "during the activity",
+      "audiences": [
+        "resident"
+      ],
+      "verifiedOn": "2026-08-19",
+      "locationKeys": [
+        "synthetic.location.primary@v1"
+      ]
+    },
+    {
+      "key": "synthetic.choice.reason-one@v1",
+      "kind": "choice",
+      "contentDigest": "sha256-aR9zUlfPGK29fs2FUn-7qi1OPd0aMCLiHEdHwOxqYzk",
+      "choiceKind": "reason",
+      "label": "Prepare for supervised practice",
+      "fragment": "prepare for supervised practice",
+      "audiences": [
+        "resident"
+      ],
+      "verifiedOn": "2026-08-19",
+      "locationKeys": [
+        "synthetic.location.primary@v1"
+      ]
+    },
+    {
+      "key": "synthetic.choice.reason-two@v1",
+      "kind": "choice",
+      "contentDigest": "sha256-j6fpchFKiY7sL9cFGa1_JsCFTQas37ck0rQ9Ntuvxyg",
+      "choiceKind": "reason",
+      "label": "Review before arrival",
+      "fragment": "review before arrival",
+      "audiences": [
+        "resident"
+      ],
+      "verifiedOn": "2026-08-19",
+      "locationKeys": [
+        "synthetic.location.primary@v1"
+      ]
+    },
+    {
+      "key": "synthetic.choice.role-one@v1",
+      "kind": "choice",
+      "contentDigest": "sha256-_1YBM97u-xMczVe2dy-f_J8zE7gKUEcAuIECMFpkrGQ",
+      "choiceKind": "role",
+      "label": "Faculty guide",
+      "fragment": "the faculty guide",
+      "audiences": [
+        "resident"
+      ],
+      "verifiedOn": "2026-08-19",
+      "locationKeys": [
+        "synthetic.location.primary@v1"
+      ]
+    },
+    {
+      "key": "synthetic.choice.role-two@v1",
+      "kind": "choice",
+      "contentDigest": "sha256-bLOuidIotu6ja6YSGJwigxK8HpDn98k4K-fTILYc01U",
+      "choiceKind": "role",
+      "label": "Program guide",
+      "fragment": "the program guide",
+      "audiences": [
+        "resident"
+      ],
+      "verifiedOn": "2026-08-19",
+      "locationKeys": [
+        "synthetic.location.primary@v1"
+      ]
+    },
+    {
+      "key": "synthetic.choice.rounds-follow-up@v1",
+      "kind": "choice",
+      "contentDigest": "sha256-xz23-HAwq7Tw0IuVvD2c-70HW7NegDwDBuc1_WgCa7w",
+      "choiceKind": "roundsFollowUp",
+      "label": "Complete follow-up with supervision",
+      "fragment": "complete follow-up with supervision",
+      "audiences": [
+        "resident"
+      ],
+      "verifiedOn": "2026-08-19",
+      "locationKeys": [
+        "synthetic.location.primary@v1"
+      ]
+    },
+    {
+      "key": "synthetic.choice.rounds-participation@v1",
+      "kind": "choice",
+      "contentDigest": "sha256-QoD-M19T_7i41uyNoZcU5VCC6C57vwssp4Y1k0MYgNA",
+      "choiceKind": "roundsParticipation",
+      "label": "Participate with supervision",
+      "fragment": "participate with supervision",
+      "audiences": [
+        "resident"
+      ],
+      "verifiedOn": "2026-08-19",
+      "locationKeys": [
+        "synthetic.location.primary@v1"
+      ]
+    },
+    {
+      "key": "synthetic.choice.rounds-preparation@v1",
+      "kind": "choice",
+      "contentDigest": "sha256-bLw9T9Bzr4lG4IciCLjrZGmTWG9cvFD8pN5q7frj7pA",
+      "choiceKind": "roundsPreparation",
+      "label": "Review assigned materials",
+      "fragment": "review assigned materials",
+      "audiences": [
+        "resident"
+      ],
+      "verifiedOn": "2026-08-19",
+      "locationKeys": [
+        "synthetic.location.primary@v1"
+      ]
+    },
+    {
+      "key": "synthetic.curator@v1",
+      "kind": "curatorProfile",
+      "contentDigest": "sha256-9dYMokoNdkDWf5wIJB-Q5K4kaCZAWB_Xd0I4r3sPLCc",
+      "displayName": "Synthetic Faculty",
+      "roleKey": "synthetic.choice.role-one@v1",
+      "locationKeys": [
+        "synthetic.location.primary@v1"
+      ],
+      "audiences": [
+        "resident"
+      ],
+      "verifiedOn": "2026-08-19"
+    },
+    {
+      "key": "synthetic.link.access-one@v1",
+      "kind": "officialLink",
+      "contentDigest": "sha256-wFhymo5kp7H03Kd0g2ff3RhU-Td0XH-_1F_KMshISaE",
+      "title": "Access preparation page",
+      "url": "https://example.invalid/access-one",
+      "visibleHostname": "example.invalid",
+      "purposeCode": "access-training",
+      "locationKeys": [
+        "synthetic.location.primary@v1"
+      ],
+      "audiences": [
+        "resident"
+      ],
+      "verifiedOn": "2026-08-19"
+    },
+    {
+      "key": "synthetic.link.access-two@v1",
+      "kind": "officialLink",
+      "contentDigest": "sha256-Gm7fzSGLe3fMyyYv9dmBsFf395MZ_JPFbdZDuciEtLE",
+      "title": "Second access page",
+      "url": "https://example.invalid/access-two",
+      "visibleHostname": "example.invalid",
+      "purposeCode": "reviewed-operational",
+      "locationKeys": [
+        "synthetic.location.primary@v1"
+      ],
+      "audiences": [
+        "resident"
+      ],
+      "verifiedOn": "2026-08-19"
+    },
+    {
+      "key": "synthetic.link.arrival@v1",
+      "kind": "officialLink",
+      "contentDigest": "sha256-VSuDZkqtkQlykfuTRdLpFNzMSIGaBpLe_LR7LaONTw8",
+      "title": "Arrival map",
+      "url": "https://example.invalid/arrival",
+      "visibleHostname": "example.invalid",
+      "purposeCode": "arrival-map",
+      "locationKeys": [
+        "synthetic.location.primary@v1"
+      ],
+      "audiences": [
+        "resident"
+      ],
+      "verifiedOn": "2026-08-19"
+    },
+    {
+      "key": "synthetic.link.attendance@v1",
+      "kind": "officialLink",
+      "contentDigest": "sha256-u98JgXj63hIq-D98RSo6pB49UVFHxZN7RcxxgA2V3mU",
+      "title": "Attendance page",
+      "url": "https://example.invalid/attendance",
+      "visibleHostname": "example.invalid",
+      "purposeCode": "attendance-policy",
+      "locationKeys": [
+        "synthetic.location.primary@v1"
+      ],
+      "audiences": [
+        "resident"
+      ],
+      "verifiedOn": "2026-08-19"
+    },
+    {
+      "key": "synthetic.link.cross-location@v1",
+      "kind": "officialLink",
+      "contentDigest": "sha256-C2Z-Yud5XGXvzOaSM33MSd_FSwhRRsTKmoRY_rCgoqw",
+      "title": "Alternate location page",
+      "url": "https://example.invalid/alternate",
+      "visibleHostname": "example.invalid",
+      "purposeCode": "orientation",
+      "locationKeys": [
+        "synthetic.location.alternate@v1"
+      ],
+      "audiences": [
+        "resident"
+      ],
+      "verifiedOn": "2026-08-19"
+    },
+    {
+      "key": "synthetic.link.directory-one@v1",
+      "kind": "officialLink",
+      "contentDigest": "sha256-WnGNVoGRGeX-fwp4DK4YwQep15FwFvN6LusmW14UGso",
+      "title": "Faculty directory",
+      "url": "https://example.invalid/directory-one",
+      "visibleHostname": "example.invalid",
+      "purposeCode": "directory",
+      "locationKeys": [
+        "synthetic.location.primary@v1"
+      ],
+      "audiences": [
+        "resident"
+      ],
+      "verifiedOn": "2026-08-19"
+    },
+    {
+      "key": "synthetic.link.directory-two@v1",
+      "kind": "officialLink",
+      "contentDigest": "sha256--OqxdOlkNiIHEg85A1MDqt-13uR76cwAkHlZJdqcBjQ",
+      "title": "Program directory",
+      "url": "https://example.invalid/directory-two",
+      "visibleHostname": "example.invalid",
+      "purposeCode": "directory",
+      "locationKeys": [
+        "synthetic.location.primary@v1"
+      ],
+      "audiences": [
+        "resident"
+      ],
+      "verifiedOn": "2026-08-19"
+    },
+    {
+      "key": "synthetic.link.documentation@v1",
+      "kind": "officialLink",
+      "contentDigest": "sha256-YXbpB1zudUfwKIOxQkCjozMN38wqUkrC8BrACccGed8",
+      "title": "Documentation page",
+      "url": "https://example.invalid/documentation",
+      "visibleHostname": "example.invalid",
+      "purposeCode": "documentation-policy",
+      "locationKeys": [
+        "synthetic.location.primary@v1"
+      ],
+      "audiences": [
+        "resident"
+      ],
+      "verifiedOn": "2026-08-19"
+    },
+    {
+      "key": "synthetic.link.feedback@v1",
+      "kind": "officialLink",
+      "contentDigest": "sha256-xa5Dqw0C5_YHclewGvse2FrPJACFo0a9ud-t8pKtZ5o",
+      "title": "Feedback page",
+      "url": "https://example.invalid/feedback",
+      "visibleHostname": "example.invalid",
+      "purposeCode": "feedback-policy",
+      "locationKeys": [
+        "synthetic.location.primary@v1"
+      ],
+      "audiences": [
+        "resident"
+      ],
+      "verifiedOn": "2026-08-19"
+    },
+    {
+      "key": "synthetic.link.resource@v1",
+      "kind": "officialLink",
+      "contentDigest": "sha256-ajl4DOjTTxwjC2YOTHaiEdQr3WoqPEeScZLmxJJiqUA",
+      "title": "Orientation resource",
+      "url": "https://example.invalid/resource",
+      "visibleHostname": "example.invalid",
+      "purposeCode": "orientation",
+      "locationKeys": [
+        "synthetic.location.primary@v1"
+      ],
+      "audiences": [
+        "resident"
+      ],
+      "verifiedOn": "2026-08-19"
+    },
+    {
+      "key": "synthetic.location.alternate@v1",
+      "kind": "trainingLocation",
+      "contentDigest": "sha256-ybeQrL3y15mwrGTeZ3A3OWBsaMBAHt2f9Isueuh6pHk",
+      "displayName": "Alternate Synthetic Unit",
+      "locationCode": "ALT",
+      "locationTypeCode": "mixed",
+      "officialHostnames": [
+        "example.invalid"
+      ],
+      "audiences": [
+        "resident"
+      ],
+      "verifiedOn": "2026-08-19"
+    },
+    {
+      "key": "synthetic.location.primary@v1",
+      "kind": "trainingLocation",
+      "contentDigest": "sha256-LN07hCGkVEFjLBxyaCtRb1QQPcMrdsd0hPObnQ1kIDk",
+      "displayName": "Synthetic Teaching Unit",
+      "locationCode": "SYN",
+      "locationTypeCode": "inpatient",
+      "officialHostnames": [
+        "example.invalid"
+      ],
+      "audiences": [
+        "resident"
+      ],
+      "verifiedOn": "2026-08-19"
+    },
+    {
+      "key": "synthetic.phrases@v1",
+      "kind": "phraseSet",
+      "contentDigest": "sha256-h0ovVUhOVOotcwGWv8RFkKpKPlBWfyFHY1-hpPFfOlA",
+      "displayName": "Synthetic reviewed wording",
+      "templates": {
+        "arrival": {
+          "text": "{timing} {time} {place} {role}",
+          "tokens": [
+            "timing",
+            "time",
+            "place",
+            "role"
+          ]
+        },
+        "scheduleWindow": {
+          "text": "{dayStart} {dayEnd} {endQualifier}",
+          "tokens": [
+            "dayStart",
+            "dayEnd",
+            "endQualifier"
+          ]
+        },
+        "scheduleRangeWithPlace": {
+          "text": "{daySet} {startTime} {endTime} {activity} {place} {priority}",
+          "tokens": [
+            "daySet",
+            "startTime",
+            "endTime",
+            "activity",
+            "place",
+            "priority"
+          ]
+        },
+        "scheduleRangeWithoutPlace": {
+          "text": "{daySet} {startTime} {endTime} {activity} {priority}",
+          "tokens": [
+            "daySet",
+            "startTime",
+            "endTime",
+            "activity",
+            "priority"
+          ]
+        },
+        "schedulePointWithPlace": {
+          "text": "{daySet} {startTime} {activity} {place} {priority}",
+          "tokens": [
+            "daySet",
+            "startTime",
+            "activity",
+            "place",
+            "priority"
+          ]
+        },
+        "schedulePointWithoutPlace": {
+          "text": "{daySet} {startTime} {activity} {priority}",
+          "tokens": [
+            "daySet",
+            "startTime",
+            "activity",
+            "priority"
+          ]
+        },
+        "rounds": {
+          "text": "{preparation} {participation} {followUp}",
+          "tokens": [
+            "preparation",
+            "participation",
+            "followUp"
+          ]
+        },
+        "presentation": {
+          "text": "{format} {timing} {elements}",
+          "tokens": [
+            "format",
+            "timing",
+            "elements"
+          ]
+        },
+        "documentation": {
+          "text": "{workflow} {timing}",
+          "tokens": [
+            "workflow",
+            "timing"
+          ]
+        },
+        "attendance": {
+          "text": "{events} {absenceRole}",
+          "tokens": [
+            "events",
+            "absenceRole"
+          ]
+        },
+        "feedback": {
+          "text": "{cadence} {initiator} {setting}",
+          "tokens": [
+            "cadence",
+            "initiator",
+            "setting"
+          ]
+        },
+        "access": {
+          "text": "{item} {due}",
+          "tokens": [
+            "item",
+            "due"
+          ]
+        },
+        "contact": {
+          "text": "{role}",
+          "tokens": [
+            "role"
+          ]
+        },
+        "checklist": {
+          "text": "{item} {priority}",
+          "tokens": [
+            "item",
+            "priority"
+          ]
+        },
+        "resourceWithReason": {
+          "text": "{title} {priority} {week} {reason} {hostname}",
+          "tokens": [
+            "title",
+            "priority",
+            "week",
+            "reason",
+            "hostname"
+          ]
+        },
+        "resourceWithoutReason": {
+          "text": "{title} {priority} {week} {hostname}",
+          "tokens": [
+            "title",
+            "priority",
+            "week",
+            "hostname"
+          ]
+        },
+        "changeSummary": {
+          "text": "{kinds} {count}",
+          "tokens": [
+            "kinds",
+            "count"
+          ]
+        }
+      },
+      "locationKeys": [
+        "synthetic.location.primary@v1"
+      ],
+      "audiences": [
+        "resident"
+      ],
+      "verifiedOn": "2026-08-19"
+    },
+    {
+      "key": "synthetic.place.alternate@v1",
+      "kind": "place",
+      "contentDigest": "sha256-OUkblCNDLbsvtUKFCICSiqyX3nVwhcITfHK4VPKGagQ",
+      "displayName": "the alternate workroom",
+      "locationKeys": [
+        "synthetic.location.alternate@v1"
+      ],
+      "audiences": [
+        "resident"
+      ],
+      "verifiedOn": "2026-08-19"
+    },
+    {
+      "key": "synthetic.place.one@v1",
+      "kind": "place",
+      "contentDigest": "sha256-SvKP_NwUrNYj_mQ9xptDij6a0pbqjtQo0P82FiLO8gE",
+      "displayName": "the first workroom",
+      "locationKeys": [
+        "synthetic.location.primary@v1"
+      ],
+      "audiences": [
+        "resident"
+      ],
+      "verifiedOn": "2026-08-19"
+    },
+    {
+      "key": "synthetic.place.two@v1",
+      "kind": "place",
+      "contentDigest": "sha256-ZSRyWV5YrIutWDit-Y8YxoyTEIqPV0vRQO42sqMaB5Q",
+      "displayName": "the second workroom",
+      "locationKeys": [
+        "synthetic.location.primary@v1"
+      ],
+      "audiences": [
+        "resident"
+      ],
+      "verifiedOn": "2026-08-19"
+    },
+    {
+      "key": "synthetic.preset.full@v1",
+      "kind": "localPreset",
+      "contentDigest": "sha256-lxQS5yD7xj1l0nPx660HxQflP-fSpkZRBUoHRFgOSgE",
+      "displayName": "Complete synthetic local plan",
+      "localPlan": {
+        "arrival": {
+          "timingCode": "by",
+          "time": "07:45",
+          "placeKey": "synthetic.place.one@v1",
+          "checkInRoleKey": "synthetic.choice.role-one@v1",
+          "linkKey": "synthetic.link.arrival@v1"
+        },
+        "schedule": {
+          "dayStart": "07:45",
+          "dayEnd": "17:00",
+          "endQualifierCode": "about",
+          "events": [
+            {
+              "instanceId": "local:schedule:1",
+              "daySetKey": "synthetic.choice.day-set-one@v1",
+              "startTime": "08:30",
+              "endTime": "09:00",
+              "activityKey": "synthetic.choice.activity-one@v1",
+              "placeKey": "synthetic.place.one@v1",
+              "priority": "required"
+            }
+          ]
+        },
+        "rounds": {
+          "preparationKey": "synthetic.choice.rounds-preparation@v1",
+          "participationKey": "synthetic.choice.rounds-participation@v1",
+          "followUpKey": "synthetic.choice.rounds-follow-up@v1"
+        },
+        "presentation": {
+          "formatKey": "synthetic.choice.presentation-format@v1",
+          "timingKey": "synthetic.choice.presentation-timing@v1",
+          "elementKeys": [
+            "synthetic.choice.presentation-element-one@v1"
+          ]
+        },
+        "documentation": {
+          "workflowKey": "synthetic.choice.documentation-workflow@v1",
+          "timingKey": "synthetic.choice.documentation-timing@v1",
+          "policyLinkKey": "synthetic.link.documentation@v1"
+        },
+        "attendance": {
+          "eventInstanceIds": [
+            "local:schedule:1"
+          ],
+          "absenceRoleKey": "synthetic.choice.role-two@v1",
+          "policyLinkKey": "synthetic.link.attendance@v1"
+        },
+        "feedback": {
+          "cadenceKey": "synthetic.choice.feedback-cadence@v1",
+          "initiatorKey": "synthetic.choice.feedback-initiator@v1",
+          "settingKey": "synthetic.choice.feedback-setting@v1"
+        },
+        "accessItems": [
+          {
+            "instanceId": "local:access:1",
+            "itemKey": "synthetic.choice.access-one@v1",
+            "dueKey": "synthetic.choice.due-one@v1",
+            "linkKey": "synthetic.link.access-one@v1"
+          }
+        ],
+        "contacts": [
+          {
+            "instanceId": "local:contact:1",
+            "roleKey": "synthetic.choice.role-two@v1",
+            "linkKey": "synthetic.link.directory-one@v1"
+          }
+        ],
+        "checklistItems": [
+          {
+            "instanceId": "local:checklist:1",
+            "itemKey": "synthetic.choice.checklist-one@v1",
+            "priority": "recommended"
+          }
+        ],
+        "resources": [
+          {
+            "instanceId": "local:resource:1",
+            "linkKey": "synthetic.link.resource@v1",
+            "priority": "recommended",
+            "week": 1,
+            "reasonKey": "synthetic.choice.reason-one@v1"
+          }
+        ]
+      },
+      "locationKeys": [
+        "synthetic.location.primary@v1"
+      ],
+      "phraseSetKey": "synthetic.phrases@v1",
+      "audiences": [
+        "resident"
+      ],
+      "verifiedOn": "2026-08-19"
     }
   ]
 }

@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { test, expect } from '@playwright/test';
+import { replaceRotationEditionCatalog } from './rotation-edition-fixture.js';
 
 const TOOL = '/tools/rotation-curator.html';
 const AFFIRMATIONS = {
@@ -106,12 +107,12 @@ async function useSyntheticCatalog(page, gate = 'enabled') {
     const response = await route.fetch();
     let html = await response.text();
     const audienceMatch = html.match(/var FD_AUDIENCE=("(?:[^"\\]|\\.)*");/);
-    const catalogMatch = html.match(/var FD_ROTATION_EDITION_CATALOG=(\{.*?\});\s*\n/s);
-    if (!audienceMatch || !catalogMatch) throw new Error('built curator bootstrap was not found');
+    if (!audienceMatch) throw new Error('built curator bootstrap was not found');
     const audience = JSON.parse(audienceMatch[1]);
-    const current = JSON.parse(catalogMatch[1]);
-    html = html.replace(catalogMatch[0], `var FD_ROTATION_EDITION_CATALOG=${JSON.stringify(projection(audience, current.revision, gate))};\n`);
-    await route.fulfill({ response, body: html, headers: { ...response.headers(), 'content-type': 'text/html; charset=utf-8' } });
+    const parsed = replaceRotationEditionCatalog(html, projection(audience, `sha256-${'A'.repeat(43)}`, gate));
+    const current = parsed.originalProjection;
+    html = replaceRotationEditionCatalog(html, projection(audience, current.revision, gate)).body;
+    await route.fulfill({ response, body: html });
   });
 }
 

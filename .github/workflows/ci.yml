@@ -122,6 +122,22 @@ jobs:
             python3 13_Faculty_Resources/_automation/validate_rotation_edition_catalog.py
           fi
 
+      - name: Guard — production rotation edition stays exactly empty and disabled
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          root = Path("13_Faculty_Resources/Rotation_Curation")
+          expected = {
+              "rotation_edition_catalog.json": b'{"schemaVersion":1,"records":[]}\n',
+              "rotation_edition_catalog_governance.json": b'{"schemaVersion":1,"manifestRevision":1,"rotationEditionV2":"disabled","dispositions":[]}\n',
+          }
+          for name, locked in expected.items():
+              observed = (root / name).read_bytes()
+              if observed != locked:
+                  raise SystemExit(f"{name} must remain the exact empty/disabled production lock")
+          PY
+
       - name: Test — ReConnect snapshot provenance
         run: python3 13_Faculty_Resources/_automation/test_validate_reconnect_snapshot_provenance.py
 
@@ -216,7 +232,7 @@ jobs:
       - name: Start local review servers
         run: bash tests/smoke/start-local-servers.sh
 
-      - name: "Check 1: nav crawl — ms3 + res"
+      - name: "Check 1: nav crawl + two-audience rotation edition journeys — ms3 + res"
         run: |
           cd tests/smoke
           npx playwright test --project=nav-ms3 --project=nav-res
