@@ -1,5 +1,14 @@
 # Implementation Handoff — Clinical & Instrument Review Remediation
 
+> **⚠ PROVENANCE — read before acting on anything below.**
+> This document was written by reading the repository through a mount on branch
+> `fix/table-scroll-desktop-affordance-v2`, **not `main`**. All line references are approximate
+> anchors, not addresses — locate every edit site by grepping the quoted code string. And some
+> defects described here were already fixed on `main` in the interim: **two of the first five
+> work packages attempted had stale premises**, and executing one as written would have disabled
+> a working, faculty-governed tool. **Verify every premise against `main` before acting.**
+> See amendments A1, A5 and A7 in `2026-08-20-review-remediation-STATUS.md`.
+
 **Target repo:** `~/Psychiatry-Clerkship-Library` (branch from `main`)
 **Source documents:** `CLINICAL_AND_INSTRUMENT_REVIEW_2026-08-20.md` · `SPEC_Withdrawal_Instrument_Redesign_v1.md`
 **Audience:** Claude Code (or any coding agent) executing in the repo, with Joshua Moss, MD as the clinical author-of-record.
