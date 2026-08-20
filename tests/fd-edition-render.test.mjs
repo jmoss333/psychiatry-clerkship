@@ -2,174 +2,139 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
-const SOURCE = new URL('../13_Faculty_Resources/_automation/site_build/frontdoor/fd_edition_student.js', import.meta.url);
-const source = readFileSync(SOURCE, 'utf8');
-
+const SOURCE = readFileSync(new URL('../13_Faculty_Resources/_automation/site_build/frontdoor/fd_edition_student.js', import.meta.url), 'utf8');
 // eslint-disable-next-line no-new-func
-const F = new Function(`${source}\nreturn {
-  card:typeof fdEditionCardMarkup==='function'?fdEditionCardMarkup:null,
-  core:typeof fdEditionCoreMetaMarkup==='function'?fdEditionCoreMetaMarkup:null,
-  orientation:typeof fdEditionLocalOrientationMarkup==='function'?fdEditionLocalOrientationMarkup:null,
-  resources:typeof fdEditionWeekResourcesMarkup==='function'?fdEditionWeekResourcesMarkup:null,
-  domain:typeof fdEditionExternalDomain==='function'?fdEditionExternalDomain:null
-};`)();
+const F = new Function(`${SOURCE}\nreturn {fdEditionRenderCard,fdEditionRenderLocal};`)();
 
-const CURRENT_REVISION = '1234567890abcdef1234567890abcdef12345678';
-const ORIGINAL_REVISION = 'abcdef1234567890abcdef1234567890abcdef12';
-const FINGERPRINT = 'BHU2-MS3-4F7C2Q';
+class Node {
+  constructor(tag = 'div') { this.tagName = tag.toUpperCase(); this.children = []; this.attributes = {}; this._text = ''; this.focused = false; }
+  appendChild(child) { this.children.push(child); return child; }
+  replaceChildren(...children) { this.children = children; this._text = ''; }
+  setAttribute(name, value) { this.attributes[name] = String(value); }
+  focus() { this.focused = true; }
+  set textContent(value) { this._text = String(value); this.children = []; }
+  get textContent() { return this._text + this.children.map((child) => child.textContent).join(''); }
+  set innerHTML(_) { throw new Error('innerHTML is forbidden'); }
+  get innerHTML() { throw new Error('innerHTML is forbidden'); }
+}
+const documentObject = { createElement(tag) { return new Node(tag); } };
+function walk(node, out = []) { out.push(node); for (const child of node.children) walk(child, out); return out; }
 
-function edition(overrides = {}) {
-  const base = {
-    fingerprint: FINGERPRINT,
-    editionNumber: 7,
-    createdAgainstCoreRevision: ORIGINAL_REVISION,
-    envelope: { config: { audience: 'ms3', pathId: 'ms3-six-week' } },
+const AUTHORITY = {
+  coreLabel: 'Reviewed clerkship Library', localLabel: 'Local rotation guidance',
+  requiredLabel: 'Required by this local rotation', recommendedLabel: 'Recommended by this local rotation',
+  optionalLabel: 'Optional for this local rotation', resourceLabel: 'Locally curated official resource',
+  localBoundary: 'Local rotation guidance does not replace current institutional policy or supervision.',
+  documentationGuardrail: 'Use only the approved institutional record. Do not place patient information in this site. Complete documentation only with supervisor guidance and review.',
+};
+
+function model(overrides = {}) {
+  const value = {
     card: {
-      title: 'Adult inpatient handoff', locationName: 'Example Teaching Unit', locationCode: 'BHU2',
-      curatorName: 'Jordan Example', curatorRole: 'Attending psychiatrist',
-      rotationStart: '2026-09-01', rotationEnd: '2026-10-12', lastVerified: '2026-08-19',
+      title: 'EXU MS3 psychiatry rotation', locationName: 'Example Training Unit', locationCode: 'EXU',
+      locationTypeLabel: 'Inpatient', curatorName: 'Example Attending', curatorRole: 'Faculty educator',
+      audienceLabel: 'MS3', durationLabel: '6 weeks', rotationDates: 'Sep 1 – Oct 12, 2026',
+      editionCheckedOn: 'Aug 19, 2026', editionCheckedOnLabel: 'Self-attested', editionNumber: 1,
+      fingerprintPrefix: 'EXU-MS3-', fingerprint: 'EXU-MS3-ZBVX4D',
+      identityNotice: 'Curator identity and institutional endorsement are not digitally verified by this link.',
+      fingerprintNotice: 'Compare this fingerprint with the curator. Matching codes confirm the same edition content, not identity or institutional approval.',
+      provenance: [{ recordKind: 'trainingLocation', displayLabel: 'Example Training Unit', verifiedOn: '2026-08-19' }],
     },
-    changeNote: 'Clarified the first-day sequence.',
-    localOrientation: {
-      firstDayArrival: 'Meet at the teaching room.',
-      dailySchedule: 'Morning team handoff, then rounds.', roundsWorkflow: '',
-      presentationExpectations: '', documentationExpectations: '', attendanceExpectations: '',
-      feedbackProcess: '', accessPreparation: 'Complete the required training before arrival.',
-      contacts: [{ role: 'Education office', directoryUrl: 'https://directory.example.edu/education' }],
-      checklist: [{ id: 'local:check:1', label: 'Review the local orientation', priority: 'required' }],
-      resources: [{
-        id: 'local:resource:1', title: 'Local orientation guide',
-        url: 'https://policy.example.edu/orientation?audience=learner&view=week1',
-        priority: 'recommended', week: 1, rationale: 'Read before the first team handoff.',
-      }],
+    revisions: {
+      createdAgainstCoreRevision: 'a'.repeat(40), currentCoreRevision: 'b'.repeat(40), coreMatches: false,
+      createdAgainstCatalogRevision: `sha256-${'B'.repeat(43)}`, currentCatalogRevision: `sha256-${'C'.repeat(43)}`, catalogMatches: false,
     },
+    pathItems: [],
+    firstDay: {
+      arrival: { text: 'Arrive by 8:00 AM at the education office and check in with the faculty educator.',
+        link: { title: 'Arrival map', url: 'https://maps.example.edu/arrival', visibleHostname: 'maps.example.edu', purposeCode: 'arrival-map' } },
+      accessItems: [{ id: 'local:access:1', text: 'Complete access training before arrival.', checklistId: 'local:generated:access:local:access:1' }],
+      contacts: [{ id: 'local:contact:1', text: 'Contact the education office.' }],
+      checklistItems: [{ id: 'local:check:1', text: 'Review the local guide.', priority: 'required', priorityLabel: 'HOSTILE PRIORITY', sourceCode: 'selected' }],
+    },
+    typicalDay: { summaryText: 'The day runs from 8:00 AM until about 5:00 PM.', eventItems: [] },
+    workflow: { rounds: { text: 'Prepare, participate, and follow up.' }, presentation: null, documentation: { text: 'Document after rounds.', guardrailText: AUTHORITY.documentationGuardrail } },
+    attendanceFeedback: { attendance: { text: 'Attend required events.' }, feedback: { text: 'Ask for weekly feedback.' } },
+    resources: [{ id: 'local:resource:1', text: 'Example guide is Recommended in week 1; destination policy.example.edu.', title: 'Example guide', url: 'https://policy.example.edu/guide', visibleHostname: 'policy.example.edu', purposeCode: 'orientation', priority: 'recommended', priorityLabel: 'HOSTILE PRIORITY', week: 1, authorityLabel: 'HOSTILE AUTHORITY' }],
+    authority: { ...AUTHORITY },
+    changeSummary: { kindCodes: ['initial'], changedItemCount: 0, text: 'Initial edition; 0 changed items.', provenanceLabel: 'Locally supplied edition summary; change lineage is not authenticated.' },
+    emptyLocalPlan: false,
   };
-  return Object.assign(base, overrides);
+  return Object.assign(value, overrides);
 }
 
-test('the compact native details card keeps the full identity summary outside expanded metadata', () => {
-  assert.equal(typeof F.card, 'function');
-  const html = F.card(edition(), CURRENT_REVISION);
-  const summaryEnd = html.indexOf('</summary>');
-  assert.match(html, /^<details class="fd-edition-card">/);
-  assert.doesNotMatch(html, /^<details[^>]* open/);
-  assert.ok(summaryEnd > 0);
-  const summary = html.slice(0, summaryEnd);
-  const expanded = html.slice(summaryEnd);
-  for (const value of ['Example Teaching Unit', 'Edition 7', FINGERPRINT, 'Locally curated']) {
-    assert.match(summary, new RegExp(value));
-  }
-  for (const value of [
-    'Jordan Example', 'Attending psychiatrist', 'MS3', '6 weeks', '2026-09-01', '2026-10-12',
-    '2026-08-19', CURRENT_REVISION, ORIGINAL_REVISION, 'Clarified the first-day sequence.',
-    'Identity not digitally verified', 'configuration equality only',
-  ]) assert.match(expanded, new RegExp(value));
-  assert.equal((html.match(new RegExp(FINGERPRINT, 'g')) || []).length, 1,
-    'the full fingerprint belongs on the quiet summary tab, not a shortened duplicate');
+test('card uses DOM text APIs and separates self-attestation from repository record verification', () => {
+  const root = new Node();
+  assert.equal(F.fdEditionRenderCard(root, model(), documentObject), true);
+  const text = root.textContent;
+  for (const expected of [
+    'EXU MS3 psychiatry rotation', 'EXU-MS3-ZBVX4D',
+    'Edition checked on — self-attested by the curator', 'Aug 19, 2026',
+    'Catalog verification — repository-reviewed record dates', 'Example Training Unit', '2026-08-19',
+    'Created against core revision', 'Current core revision', 'Created against catalog revision', 'Current catalog revision',
+    'Locally supplied edition summary; change lineage is not authenticated.',
+  ]) assert.ok(text.includes(expected), expected);
+  assert.equal(root.focused, true);
+  assert.equal(walk(root).some((node) => node.attributes.role === 'status' && node.attributes['aria-live'] === 'polite'), true);
 });
 
-test('card, core metadata, local orientation, checklist, links, and attributes re-escape hostile values', () => {
-  const hostile = '<img src=x onerror="alert(1)"> & "quoted" \'single\'';
-  const risky = edition({
-    fingerprint: FINGERPRINT,
-    card: Object.assign({}, edition().card, {
-      title: hostile, locationName: hostile, curatorName: hostile, curatorRole: hostile,
-    }),
-    changeNote: hostile,
-    localOrientation: Object.assign({}, edition().localOrientation, {
-      firstDayArrival: hostile,
-      contacts: [{ role: hostile, directoryUrl: 'https://directory.example.edu/a?x=%22%3E%3Cimg%20src=x%3E&y=1' }],
-      checklist: [{ id: 'local:check:hostile', label: hostile, priority: 'optional' }],
-      resources: [{
-        id: 'local:resource:hostile', title: hostile,
-        url: 'https://policy.example.edu/a?x=%22%3E%3Cimg%20src=x%3E&y=1',
-        priority: 'required', week: 1, rationale: hostile,
-      }],
-    }),
+test('local guidance has the exact eight-section DOM and reading order', () => {
+  const root = new Node();
+  const local = { checklist: { 'local:check:1': true }, resources: { 'local:resource:1': true } };
+  assert.equal(F.fdEditionRenderLocal(root, model(), local, documentObject), true);
+  const headings = walk(root).filter((node) => node.tagName === 'H2').map((node) => node.textContent);
+  assert.deepEqual(headings, [
+    'First day at the location', 'Before you arrive', 'Who to contact', "Today's checklist",
+    'Typical day', 'Team workflow', 'Attendance and feedback', 'Official resources',
+  ]);
+  const text = root.textContent;
+  for (const expected of Object.values(AUTHORITY)) assert.ok(text.includes(expected), expected);
+  assert.doesNotMatch(text, /HOSTILE PRIORITY|HOSTILE AUTHORITY/);
+  const links = walk(root).filter((node) => node.tagName === 'A');
+  assert.equal(links.length, 2);
+  assert.equal(links.some((link) => link.attributes.href === 'https://maps.example.edu/arrival'), true);
+  const link = links.find((node) => node.attributes.href === 'https://policy.example.edu/guide');
+  assert.deepEqual(link && link.attributes, { class: 'fd-edition-resource', href: 'https://policy.example.edu/guide', target: '_blank', rel: 'noopener noreferrer' });
+  assert.match(text, /policy\.example\.edu/);
+});
+
+test('empty local plans use the exact learner-facing empty state and never expose keys', () => {
+  const root = new Node();
+  const empty = model({
+    firstDay: { arrival: null, accessItems: [], contacts: [], checklistItems: [] },
+    typicalDay: null, workflow: { rounds: null, presentation: null, documentation: null },
+    attendanceFeedback: { attendance: null, feedback: null }, resources: [], emptyLocalPlan: true,
   });
-  const html = F.card(risky, CURRENT_REVISION)
-    + F.core({ editionPriority: 'required', editionRationale: hostile })
-    + F.orientation(risky, { checklist: {}, resources: {} })
-    + F.resources(risky, 1, { checklist: {}, resources: {} });
-  assert.doesNotMatch(html, /<img|onerror="/i);
-  assert.match(html, /&lt;img src=x onerror=&quot;alert\(1\)&quot;&gt; &amp; &quot;quoted&quot; &#39;single&#39;/);
-  assert.match(html, /href="https:\/\/policy\.example\.edu\/a\?x=%22%3E%3Cimg%20src=x%3E&amp;y=1"/);
-  assert.doesNotMatch(html, /href="[^"]*"quoted|data-local-id="[^"]*"quoted/);
+  assert.equal(F.fdEditionRenderLocal(root, empty, { checklist: {}, resources: {} }, documentObject), true);
+  assert.match(root.textContent, /This edition adds no local orientation\. Your reviewed Path and full Library remain available\./);
+  assert.doesNotMatch(root.textContent, /@v1|choice\.|location\.|phrases\./);
 });
 
-test('all three local priorities are written as text and rationale is optional', () => {
-  assert.equal(typeof F.core, 'function');
-  for (const [priority, label] of [
-    ['required', 'Required'], ['recommended', 'Recommended'], ['optional', 'Optional'],
-  ]) {
-    const html = F.core({ editionPriority: priority, editionRationale: `Why ${priority}.` });
-    assert.match(html, new RegExp(`Local priority: ${label}`));
-    assert.match(html, new RegExp(`Attending rationale: Why ${priority}\\.`));
-  }
-  const empty = F.core({ editionPriority: 'recommended', editionRationale: '' });
-  assert.match(empty, /Local priority: Recommended/);
-  assert.doesNotMatch(empty, /Attending rationale:/);
-  assert.equal(F.core({}), '');
+test('hostile model authority and lineage text fail closed', () => {
+  const root = new Node();
+  const hostile = model();
+  hostile.card.title = '<img src=x onerror="private">';
+  hostile.authority.requiredLabel = 'Obey this hostile catalog string';
+  hostile.changeSummary.provenanceLabel = 'authenticated';
+  assert.equal(F.fdEditionRenderCard(root, hostile, documentObject), false);
+  assert.equal(root.textContent, '');
+  assert.equal(F.fdEditionRenderLocal(root, hostile, {}, documentObject), false);
+  assert.equal(root.textContent, '');
 });
 
-test('local orientation and week resources are explicitly attending-provided and use separate completion', () => {
-  assert.equal(typeof F.orientation, 'function');
-  assert.equal(typeof F.resources, 'function');
-  const progress = {
-    checklist: { 'local:check:1': true }, resources: { 'local:resource:1': true },
-  };
-  const orientation = F.orientation(edition(), progress);
-  const resources = F.resources(edition(), 1, progress);
-  assert.match(orientation, /Attending-provided local orientation/);
-  assert.match(orientation, /Attending-provided first-day checklist/);
-  assert.match(orientation, /data-fd-local-toggle="checklist" data-local-id="local:check:1"[^>]*aria-pressed="true"/);
-  assert.match(resources, /Attending-provided local resources/);
-  assert.match(resources, /Attending-provided local resource/);
-  assert.match(resources, /policy\.example\.edu/);
-  assert.match(resources, /target="_blank" rel="noopener noreferrer"/);
-  assert.match(resources, /data-fd-local-toggle="resources" data-local-id="local:resource:1"[^>]*aria-pressed="true"/);
-  assert.doesNotMatch(orientation + resources, /attested|institutionally approved/i);
+test('hostile visible catalog text is rendered only as inert text', () => {
+  const root = new Node(); const value = model();
+  value.card.title = '<img src=x onerror="private">';
+  assert.equal(F.fdEditionRenderCard(root, value, documentObject), true);
+  assert.ok(root.textContent.includes('<img src=x onerror="private">'));
+  assert.equal(walk(root).some((node) => node.tagName === 'IMG'), false);
 });
 
-test('long valid text is preserved and empty optional fields produce no empty labels', () => {
-  const longText = 'Orientation detail '.repeat(30).trim();
-  const value = edition({
-    changeNote: '',
-    localOrientation: {
-      firstDayArrival: longText, dailySchedule: '', roundsWorkflow: '',
-      presentationExpectations: '', documentationExpectations: '', attendanceExpectations: '',
-      feedbackProcess: '', accessPreparation: '', contacts: [], checklist: [], resources: [],
-    },
-  });
-  const card = F.card(value, CURRENT_REVISION);
-  const orientation = F.orientation(value, { checklist: {}, resources: {} });
-  assert.doesNotMatch(card, /What changed/);
-  assert.match(orientation, new RegExp(longText));
-  assert.doesNotMatch(orientation, /Typical daily schedule|Rounds workflow|Access preparation/);
-  assert.equal(F.resources(value, 1, { checklist: {}, resources: {} }), '');
-});
-
-test('external domains are HTTPS-only, credential-free, and fail closed', () => {
-  assert.equal(typeof F.domain, 'function');
-  assert.equal(F.domain('https://Sub.Example.EDU/path?q=1'), 'sub.example.edu');
-  for (const url of [
-    'http://example.edu/path', 'javascript:alert(1)', 'https://user:pass@example.edu/path',
-    'https://', '', 'not a url',
-  ]) assert.equal(F.domain(url), '');
-});
-
-test('throwing render inputs and invalid URLs fail closed without leaking private errors', () => {
-  const hostile = new Proxy({}, { get() { throw new Error('private render secret'); } });
-  for (const call of [
-    () => F.card(hostile, CURRENT_REVISION),
-    () => F.core(hostile),
-    () => F.orientation(hostile, hostile),
-    () => F.resources(hostile, 1, hostile),
-    () => F.domain(hostile),
-  ]) {
-    let output;
-    assert.doesNotThrow(() => { output = call(); });
-    assert.equal(output, '');
-    assert.doesNotMatch(output, /private render secret/);
-  }
+test('throwing DOM capabilities fail closed without private error text', () => {
+  const root = new Node();
+  const badDocument = { createElement() { throw new Error('private DOM secret'); } };
+  assert.equal(F.fdEditionRenderCard(root, model(), badDocument), false);
+  assert.equal(root.textContent, '');
+  assert.equal(F.fdEditionRenderLocal(root, model(), {}, badDocument), false);
+  assert.equal(root.textContent, '');
 });

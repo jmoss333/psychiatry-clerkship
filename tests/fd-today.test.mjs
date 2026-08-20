@@ -208,51 +208,25 @@ test('no week set renders the setup CTA instead of the continue card', () => {
   assert.match(html, /browsing — no week set/);
 });
 
-test('setup or Continue stays first, followed immediately by edition identity then local orientation', () => {
-  const edition = {
-    fingerprint: 'BHU2-MS3-4F7C2Q', editionNumber: 3,
-    createdAgainstCoreRevision: 'abcdef1234567890abcdef1234567890abcdef12',
-    envelope: { config: { audience: 'ms3', pathId: 'ms3-six-week' } },
-    card: {
-      title: 'Local edition', locationName: 'Example Unit', locationCode: 'BHU2',
-      curatorName: 'Example Attending', curatorRole: 'Attending psychiatrist',
-      rotationStart: '2026-09-01', rotationEnd: '2026-10-12', lastVerified: '2026-08-19',
-    },
-    changeNote: '',
-    localOrientation: {
-      firstDayArrival: 'Meet in the teaching room.', dailySchedule: '', roundsWorkflow: '',
-      presentationExpectations: '', documentationExpectations: '', attendanceExpectations: '',
-      feedbackProcess: '', accessPreparation: '', contacts: [],
-      checklist: [{ id: 'local:check:1', label: 'Read local orientation', priority: 'required' }],
-      resources: [],
-    },
-  };
-  const projected = Object.assign({}, IDX, { edition });
-  const state = s({
-    currentCoreRevision: '1234567890abcdef1234567890abcdef12345678',
-    localProgress: { checklist: {}, resources: {} },
-  });
-  for (const html of [F.fdToday(projected, state), F.fdToday(projected, s(Object.assign({}, state, { week: null })))]) {
-    const action = Math.max(html.indexOf('class="fd-continue"'), html.indexOf('class="fd-setupcta"'));
-    const card = html.indexOf('class="fd-edition-card"');
-    const local = html.indexOf('data-edition-orientation');
-    assert.ok(action > -1 && action < card && card < local,
-      'the first-day action must precede the immediately following edition and local handoff');
-  }
+test('Today leaves the trusted edition card and local DOM to the stable governance mount', () => {
+  const projected = Object.assign({}, IDX, { edition: { card: { fingerprint: 'EXU-MS3-ZBVX4D' } } });
+  const html = F.fdToday(projected, s({}));
+  assert.doesNotMatch(html, /fd-edition-card|data-edition-orientation|EXU-MS3-ZBVX4D/);
 });
 
 test('Today keeps core progress refs while showing edition priority and rationale beneath rows', () => {
   const weeks = IDX.weeks.map((week) => Object.assign({}, week, {
     items: week.items.map((item) => item.ref === 'a.md' ? Object.assign({}, item, {
-      editionInstanceId: 'core:a.md:1', editionPriority: 'required',
-      editionRationale: 'Start before the first handoff.',
+      instanceId: 'core:a.md:1', priority: 'required',
+      reasonText: 'Start before the first handoff.',
     }) : item),
   }));
   const html = F.fdToday(Object.assign({}, IDX, { weeks }), s({}));
   assert.match(html, /data-fd-toggle="a\.md"/);
   assert.doesNotMatch(html, /data-fd-toggle="core:a\.md:1"/);
-  assert.match(html, /Local priority: Required/);
-  assert.match(html, /Attending rationale: Start before the first handoff\./);
+  assert.match(html, /Required by this local rotation/);
+  assert.match(html, /Local rotation reason: Start before the first handoff\./);
+  assert.match(html, /Reviewed clerkship Library/);
 });
 
 test('the streak suffix appears at 2+ days and is omitted below that', () => {

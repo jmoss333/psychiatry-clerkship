@@ -1,327 +1,87 @@
-/* Pure rotation-edition Path projector. Protected core surfaces remain canonical references. */
-function fdEditionProjectFinding(path,message){
-  return {code:'EDITION_PROJECT',path:path,message:message,blocking:true};
+/* Trusted v2 rotation-edition projector. Protected core graphs are cloned byte-for-byte. */
+function fdEditionProjectFinding(path){
+  return {code:'EDITION_PROJECT',path:path,message:'The rotation edition cannot be projected.',blocking:true};
 }
 
-function fdEditionProjectFailure(path,message){
-  return {ok:false,errors:[fdEditionProjectFinding(path,message)]};
-}
+function fdEditionProjectFailure(path){ return {ok:false,errors:[fdEditionProjectFinding(path||'/')]}; }
 
 function fdEditionProjectObject(value){
-  var isArray=false,prototype;
-  if(value===null||typeof value!=='object') return false;
-  try{
-    isArray=Array.isArray(value);
-    prototype=Object.getPrototypeOf(value);
-  }catch(ignoreObjectShape){ return false; }
-  return !isArray&&(prototype===Object.prototype||prototype===null);
-}
-
-function fdEditionProjectData(value,key){
-  var descriptor;
-  if(!fdEditionProjectObject(value)) return {ok:false,value:null};
-  try{ descriptor=Object.getOwnPropertyDescriptor(value,key); }
-  catch(ignoreDescriptor){ descriptor=null; }
-  if(!descriptor||!descriptor.enumerable||!Object.prototype.hasOwnProperty.call(descriptor,'value'))
-    return {ok:false,value:null};
-  return {ok:true,value:descriptor.value};
-}
-
-function fdEditionProjectArrayEntry(value,index){
-  var descriptor;
-  try{ descriptor=Object.getOwnPropertyDescriptor(value,String(index)); }
-  catch(ignoreDescriptor){ descriptor=null; }
-  if(!descriptor||!descriptor.enumerable||!Object.prototype.hasOwnProperty.call(descriptor,'value'))
-    return {ok:false,value:null};
-  return {ok:true,value:descriptor.value};
+  var proto,isArray;
+  if(!value||typeof value!=='object') return false;
+  try{ isArray=Array.isArray(value);proto=Object.getPrototypeOf(value); }catch(ignore){ return false; }
+  return !isArray&&(proto===Object.prototype||proto===null);
 }
 
 function fdEditionProjectClone(value,seen,depth){
-  var out,keys,i,key,entry,lengthDescriptor,length,isArray=false,descriptor;
-  if(value===null||typeof value==='string'||typeof value==='boolean') return {ok:true,value:value};
-  if(typeof value==='number'&&isFinite(value)) return {ok:true,value:value};
-  if(typeof value!=='object'||depth>32||seen.indexOf(value)!==-1) return {ok:false,value:null};
+  var proto,isArray,keys,lengthDescriptor,length,out,i,key,descriptor;
+  if(value===null||typeof value==='string'||typeof value==='boolean') return value;
+  if(typeof value==='number'){ if(!isFinite(value)) throw new Error('invalid');return value; }
+  if(!value||typeof value!=='object'||depth>64||seen.indexOf(value)>=0) throw new Error('invalid');
   seen.push(value);
-  try{ isArray=Array.isArray(value); }catch(ignoreArray){ seen.pop(); return {ok:false,value:null}; }
+  try{ isArray=Array.isArray(value);proto=Object.getPrototypeOf(value); }catch(ignoreShape){ throw new Error('invalid'); }
   if(isArray){
-    try{ lengthDescriptor=Object.getOwnPropertyDescriptor(value,'length'); }
-    catch(ignoreLength){ lengthDescriptor=null; }
-    if(!lengthDescriptor||typeof lengthDescriptor.value!=='number'||lengthDescriptor.value<0||
-       Math.floor(lengthDescriptor.value)!==lengthDescriptor.value){ seen.pop(); return {ok:false,value:null}; }
-    length=lengthDescriptor.value; out=[];
-    try{ keys=Reflect.ownKeys(value); }
-    catch(ignoreArrayKeys){ seen.pop(); return {ok:false,value:null}; }
-    for(i=0;i<keys.length;i++){
-      key=keys[i];
-      if(key==='length') continue;
-      if(typeof key!=='string'||!/^(?:0|[1-9][0-9]*)$/.test(key)||Number(key)>=length){
-        seen.pop(); return {ok:false,value:null};
-      }
-    }
+    if(proto!==Array.prototype) throw new Error('invalid');
+    try{ lengthDescriptor=Object.getOwnPropertyDescriptor(value,'length');keys=Reflect.ownKeys(value); }catch(ignoreArray){ throw new Error('invalid'); }
+    if(!lengthDescriptor||!Object.prototype.hasOwnProperty.call(lengthDescriptor,'value')||typeof lengthDescriptor.value!=='number'||Math.floor(lengthDescriptor.value)!==lengthDescriptor.value||lengthDescriptor.value<0||keys.length!==lengthDescriptor.value+1) throw new Error('invalid');
+    length=lengthDescriptor.value;out=[];
+    for(i=0;i<keys.length;i++){ key=keys[i];if(typeof key!=='string'||(key!=='length'&&(!/^(?:0|[1-9][0-9]*)$/.test(key)||Number(key)>=length))) throw new Error('invalid'); }
     for(i=0;i<length;i++){
-      entry=fdEditionProjectArrayEntry(value,i);
-      if(!entry.ok){ seen.pop(); return {ok:false,value:null}; }
-      entry=fdEditionProjectClone(entry.value,seen,depth+1);
-      if(!entry.ok){ seen.pop(); return entry; }
-      out.push(entry.value);
+      try{ descriptor=Object.getOwnPropertyDescriptor(value,String(i)); }catch(ignoreEntry){ descriptor=null; }
+      if(!descriptor||!descriptor.enumerable||!Object.prototype.hasOwnProperty.call(descriptor,'value')) throw new Error('invalid');
+      out.push(fdEditionProjectClone(descriptor.value,seen,depth+1));
     }
-    seen.pop(); return {ok:true,value:out};
+  }else{
+    if(proto!==Object.prototype&&proto!==null) throw new Error('invalid');
+    try{ keys=Reflect.ownKeys(value); }catch(ignoreKeys){ throw new Error('invalid'); }
+    out={};
+    for(i=0;i<keys.length;i++){
+      key=keys[i];if(typeof key!=='string'||key==='__proto__'||key==='constructor'||key==='prototype') throw new Error('invalid');
+      try{ descriptor=Object.getOwnPropertyDescriptor(value,key); }catch(ignoreDescriptor){ descriptor=null; }
+      if(!descriptor||!descriptor.enumerable||!Object.prototype.hasOwnProperty.call(descriptor,'value')) throw new Error('invalid');
+      out[key]=fdEditionProjectClone(descriptor.value,seen,depth+1);
+    }
   }
-  if(!fdEditionProjectObject(value)){ seen.pop(); return {ok:false,value:null}; }
-  try{ keys=Reflect.ownKeys(value); }
-  catch(ignoreKeys){ seen.pop(); return {ok:false,value:null}; }
-  out={};
-  for(i=0;i<keys.length;i++){
-    key=keys[i];
-    if(typeof key!=='string'||key==='__proto__'||key==='constructor'||key==='prototype'){
-      seen.pop(); return {ok:false,value:null};
-    }
-    try{ descriptor=Object.getOwnPropertyDescriptor(value,key); }
-    catch(ignoreObjectDescriptor){ descriptor=null; }
-    if(!descriptor||!descriptor.enumerable||!Object.prototype.hasOwnProperty.call(descriptor,'value')){
-      seen.pop(); return {ok:false,value:null};
-    }
-    entry=fdEditionProjectClone(descriptor.value,seen,depth+1);
-    if(!entry.ok){ seen.pop(); return entry; }
-    out[key]=entry.value;
-  }
-  seen.pop(); return {ok:true,value:out};
+  seen.pop();return out;
 }
 
-function fdEditionProjectHasProtectedLocalFields(localOrientation){
-  var groups=['checklist','resources'],groupDescriptor,list,i,entry,g;
-  for(g=0;g<groups.length;g++){
-    groupDescriptor=fdEditionProjectData(localOrientation,groups[g]);
-    if(!groupDescriptor.ok||!Array.isArray(groupDescriptor.value)) return true;
-    list=groupDescriptor.value;
-    for(i=0;i<list.length;i++){
-      entry=fdEditionProjectArrayEntry(list,i);
-      if(!entry.ok||!fdEditionProjectObject(entry.value)||
-         Object.prototype.hasOwnProperty.call(entry.value,'governance')||
-         Object.prototype.hasOwnProperty.call(entry.value,'attested')) return true;
-    }
-  }
-  return false;
-}
+function fdEditionProjectCopy(value){ return fdEditionProjectClone(value,[],0); }
 
-function fdEditionProjectDigestBytes(digest){
-  var text,padded,binary,encoded,bytes=[],i;
-  if(typeof digest!=='string'||!/^sha256-[A-Za-z0-9_-]{43}$/.test(digest)) return null;
-  text=digest.slice(7);
-  padded=text.replace(/-/g,'+').replace(/_/g,'/');
-  while(padded.length%4) padded+='=';
+function fdProjectEdition(coreIndex,trustedValidatedEdition){
+  var trusted,index,config,display,pathRule,seenIds=Object.create(null),orders=Object.create(null),i,item,displayItem,core,placement,weekItems;
   try{
-    binary=atob(padded);
-    encoded=btoa(binary).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
-  }catch(ignoreBase64){ return null; }
-  if(binary.length!==32||encoded!==text) return null;
-  for(i=0;i<binary.length;i++) bytes.push(binary.charCodeAt(i));
-  return bytes;
-}
-
-/* Display/equality aid only. This mirrors the contract fingerprint; it is not authentication. */
-function fdEditionProjectExpectedFingerprint(config,digest){
-  var audienceData,cardData,locationData,bytes,code,location,value,alphabet='0123456789ABCDEFGHJKMNPQRSTVWXYZ';
-  var token='',i;
-  audienceData=fdEditionProjectData(config,'audience');
-  cardData=fdEditionProjectData(config,'card');
-  if(!audienceData.ok||!cardData.ok||!fdEditionProjectObject(cardData.value)) return '';
-  locationData=fdEditionProjectData(cardData.value,'locationCode');
-  if(!locationData.ok||typeof locationData.value!=='string') return '';
-  code=audienceData.value==='ms3'?'MS3':(audienceData.value==='resident'?'RES':'');
-  if(!code) return '';
-  try{ location=locationData.value.replace(/\r\n?/g,'\n').trim().normalize('NFC').toUpperCase(); }
-  catch(ignoreLocation){ return ''; }
-  if(!/^[A-Z0-9]{2,8}$/.test(location)) return '';
-  bytes=fdEditionProjectDigestBytes(digest);
-  if(!bytes) return '';
-  value=Math.floor((bytes[0]*16777216+bytes[1]*65536+bytes[2]*256+bytes[3])/4);
-  for(i=5;i>=0;i--) token+=alphabet.charAt(Math.floor(value/Math.pow(32,i))%32);
-  return location+'-'+code+'-'+token;
-}
-
-function fdProjectEdition(canonicalIndex,validatedEdition){
-  var byRefData,pathData,weeksData,columnsData,kitData,configData,envelopeData,fingerprintData,errorsData;
-  var pathIdData,weekCountData,audienceData,configPathData,pathItemsData,cardData,numberData;
-  var revisionData,changeData,orientationData,expected,i,j,weekData,nData,titleData,themeData,focusData;
-  var itemData,instanceData,refData,itemWeekData,orderData,priorityData,rationaleData,coreData,cloned;
-  var seenIds=Object.create(null),seenOrders=Object.create(null),perWeek=[],projectedWeeks=[],ordered,projected,envelopeClone;
-  var protectedClone,expectedFingerprint;
-  try{
-    byRefData=fdEditionProjectData(canonicalIndex,'byRef');
-    pathData=fdEditionProjectData(canonicalIndex,'path');
-    weeksData=fdEditionProjectData(canonicalIndex,'weeks');
-    columnsData=fdEditionProjectData(canonicalIndex,'columns');
-    kitData=fdEditionProjectData(canonicalIndex,'kit');
-    if(!byRefData.ok||!fdEditionProjectObject(byRefData.value)||!pathData.ok||
-       !weeksData.ok||!Array.isArray(weeksData.value)||!columnsData.ok||!Array.isArray(columnsData.value)||
-       !kitData.ok||!Array.isArray(kitData.value))
-      return fdEditionProjectFailure('/index','The canonical catalog is not valid for edition projection.');
-    var protectedValues=[byRefData.value,pathData.value,columnsData.value,kitData.value];
-    for(i=0;i<protectedValues.length;i++){
-      protectedClone=fdEditionProjectClone(protectedValues[i],[],0);
-      if(!protectedClone.ok)
-        return fdEditionProjectFailure('/index','The canonical protected surfaces contain unsafe nested data.');
+    if(typeof fdEditionTrustedSnapshot!=='function') throw new Error('trust');
+    trusted=fdEditionTrustedSnapshot(trustedValidatedEdition);if(!trusted) throw new Error('trust');
+    if(!fdEditionProjectObject(trusted)||!fdEditionProjectObject(trusted.envelope)||trusted.envelope.schemaVersion!==2||!fdEditionProjectObject(trusted.config)||!fdEditionProjectObject(trusted.envelope.config)||typeof fdEditionCanonicalJson!=='function'||fdEditionCanonicalJson(trusted.envelope.config)!==fdEditionCanonicalJson(trusted.config)) throw new Error('trust');
+    config=trusted.config;display=trusted.displayModel;
+    if(!fdEditionProjectObject(display)||!fdEditionProjectObject(display.card)||display.card.fingerprint!==trusted.fingerprint||!Array.isArray(display.pathItems)||display.pathItems.length!==config.pathItems.length) throw new Error('trust');
+    index=fdEditionProjectCopy(coreIndex);
+    pathRule=config.audience==='ms3'?{id:'ms3-six-week',weeks:6}:config.audience==='resident'?{id:'resident-four-week',weeks:4}:null;
+    if(!pathRule||!fdEditionProjectObject(index.path)||index.path.id!==pathRule.id||index.path.weekCount!==pathRule.weeks||!Array.isArray(index.weeks)||index.weeks.length!==pathRule.weeks||!fdEditionProjectObject(index.byRef)||config.pathId!==pathRule.id) throw new Error('core');
+    for(i=0;i<index.weeks.length;i++){ if(!fdEditionProjectObject(index.weeks[i])||index.weeks[i].n!==i+1)throw new Error('core');index.weeks[i].items=[]; }
+    for(i=0;i<config.pathItems.length;i++){
+      item=config.pathItems[i];displayItem=display.pathItems[i];
+      if(!fdEditionProjectObject(item)||!fdEditionProjectObject(displayItem)||typeof item.instanceId!=='string'||seenIds[item.instanceId]||typeof item.ref!=='string'||!fdEditionProjectObject(index.byRef[item.ref])||index.byRef[item.ref].ref!==item.ref||!Number.isInteger(item.week)||item.week<1||item.week>pathRule.weeks||!Number.isInteger(item.order)||item.order<1||!['required','recommended','optional'].includes(item.priority)||displayItem.instanceId!==item.instanceId||displayItem.ref!==item.ref||displayItem.week!==item.week||displayItem.order!==item.order||displayItem.priority!==item.priority||displayItem.title!==index.byRef[item.ref].title) throw new Error('edition');
+      seenIds[item.instanceId]=true;weekItems=orders[item.week]||(orders[item.week]=Object.create(null));if(weekItems[item.order])throw new Error('edition');weekItems[item.order]=true;
+      core=fdEditionProjectCopy(index.byRef[item.ref]);placement=core;placement.instanceId=item.instanceId;placement.priority=item.priority;
+      if(Object.prototype.hasOwnProperty.call(displayItem,'reasonText')){ if(typeof displayItem.reasonText!=='string')throw new Error('edition');placement.reasonText=displayItem.reasonText; }
+      index.weeks[item.week-1].items.push({order:item.order,value:placement});
     }
-    pathIdData=fdEditionProjectData(pathData.value,'id');
-    weekCountData=fdEditionProjectData(pathData.value,'weekCount');
-    if(!pathIdData.ok||typeof pathIdData.value!=='string'||!weekCountData.ok||
-       typeof weekCountData.value!=='number'||Math.floor(weekCountData.value)!==weekCountData.value||
-       weeksData.value.length!==weekCountData.value)
-      return fdEditionProjectFailure('/index/path','The canonical path is inconsistent.');
-
-    if(!fdEditionProjectObject(validatedEdition))
-      return fdEditionProjectFailure('/edition','A successful validated edition is required.');
-    var okData=fdEditionProjectData(validatedEdition,'ok');
-    configData=fdEditionProjectData(validatedEdition,'config');
-    envelopeData=fdEditionProjectData(validatedEdition,'envelope');
-    fingerprintData=fdEditionProjectData(validatedEdition,'fingerprint');
-    errorsData=fdEditionProjectData(validatedEdition,'errors');
-    if(!okData.ok||okData.value!==true||!configData.ok||!fdEditionProjectObject(configData.value)||
-       !envelopeData.ok||!fdEditionProjectObject(envelopeData.value)||!fingerprintData.ok||
-       typeof fingerprintData.value!=='string'||!errorsData.ok||!Array.isArray(errorsData.value)||
-       errorsData.value.length!==0||
-       !/^[A-Z0-9]{2,8}-(?:MS3|RES)-[0-9A-HJKMNP-TV-Z]{6}$/.test(fingerprintData.value))
-      return fdEditionProjectFailure('/edition','A successful validated edition is required.');
-    var formatData=fdEditionProjectData(envelopeData.value,'format');
-    var schemaData=fdEditionProjectData(envelopeData.value,'schemaVersion');
-    var envelopeConfigData=fdEditionProjectData(envelopeData.value,'config');
-    var digestData=fdEditionProjectData(envelopeData.value,'digest');
-    if(!formatData.ok||formatData.value!=='cw-rotation-edition'||!schemaData.ok||schemaData.value!==1||
-       !envelopeConfigData.ok||envelopeConfigData.value!==configData.value||!digestData.ok||
-       typeof digestData.value!=='string'||!/^sha256-[A-Za-z0-9_-]{43}$/.test(digestData.value))
-      return fdEditionProjectFailure('/edition/envelope','The validated edition envelope is inconsistent.');
-
-    audienceData=fdEditionProjectData(configData.value,'audience');
-    configPathData=fdEditionProjectData(configData.value,'pathId');
-    pathItemsData=fdEditionProjectData(configData.value,'pathItems');
-    cardData=fdEditionProjectData(configData.value,'card');
-    numberData=fdEditionProjectData(configData.value,'editionNumber');
-    revisionData=fdEditionProjectData(configData.value,'createdAgainstCoreRevision');
-    changeData=fdEditionProjectData(configData.value,'changeNote');
-    orientationData=fdEditionProjectData(configData.value,'localOrientation');
-    expected=audienceData.value==='ms3'?{id:'ms3-six-week',weeks:6,code:'MS3'}:
-      (audienceData.value==='resident'?{id:'resident-four-week',weeks:4,code:'RES'}:null);
-    if(!audienceData.ok||!expected||!configPathData.ok||configPathData.value!==expected.id||
-       pathIdData.value!==expected.id||weekCountData.value!==expected.weeks||
-       !pathItemsData.ok||!Array.isArray(pathItemsData.value)||!cardData.ok||
-       !fdEditionProjectObject(cardData.value)||!numberData.ok||typeof numberData.value!=='number'||
-       Math.floor(numberData.value)!==numberData.value||numberData.value<1||!revisionData.ok||
-       typeof revisionData.value!=='string'||!/^[0-9a-f]{40}$/.test(revisionData.value)||
-       !changeData.ok||typeof changeData.value!=='string'||!orientationData.ok||
-       !fdEditionProjectObject(orientationData.value)||
-       fdEditionProjectHasProtectedLocalFields(orientationData.value))
-      return fdEditionProjectFailure('/edition/config','The validated edition does not match the canonical path.');
-    expectedFingerprint=fdEditionProjectExpectedFingerprint(configData.value,digestData.value);
-    if(!expectedFingerprint||fingerprintData.value!==expectedFingerprint)
-      return fdEditionProjectFailure('/edition/fingerprint','The edition fingerprint does not match its validated content.');
-    envelopeClone=fdEditionProjectClone(envelopeData.value,[],0);
-    if(!envelopeClone.ok)
-      return fdEditionProjectFailure('/edition/envelope','The validated edition contains unsafe nested data.');
-
-    for(i=0;i<weeksData.value.length;i++){
-      weekData=fdEditionProjectArrayEntry(weeksData.value,i);
-      if(!weekData.ok||!fdEditionProjectObject(weekData.value))
-        return fdEditionProjectFailure('/index/weeks','The canonical weeks are inconsistent.');
-      nData=fdEditionProjectData(weekData.value,'n');
-      titleData=fdEditionProjectData(weekData.value,'title');
-      themeData=fdEditionProjectData(weekData.value,'theme');
-      focusData=fdEditionProjectData(weekData.value,'focusCategories');
-      if(!nData.ok||nData.value!==i+1||!titleData.ok||typeof titleData.value!=='string'||
-         !themeData.ok||typeof themeData.value!=='string'||!focusData.ok||!Array.isArray(focusData.value))
-        return fdEditionProjectFailure('/index/weeks','The canonical weeks are inconsistent.');
-      cloned=fdEditionProjectClone(focusData.value,[],0);
-      if(!cloned.ok) return fdEditionProjectFailure('/index/weeks','The canonical week metadata cannot be cloned safely.');
-      projectedWeeks.push({n:nData.value,title:titleData.value,theme:themeData.value,
-        focusCategories:cloned.value,items:[]});
-      perWeek.push([]);
+    for(i=0;i<index.weeks.length;i++){
+      index.weeks[i].items.sort(function(left,right){return left.order-right.order;});
+      index.weeks[i].items.forEach(function(entry,offset){if(entry.order!==offset+1)throw new Error('edition');});
+      index.weeks[i].items=index.weeks[i].items.map(function(entry){return entry.value;});
     }
-
-    for(i=0;i<pathItemsData.value.length;i++){
-      itemData=fdEditionProjectArrayEntry(pathItemsData.value,i);
-      if(!itemData.ok||!fdEditionProjectObject(itemData.value))
-        return fdEditionProjectFailure('/edition/config/pathItems','The edition path items are inconsistent.');
-      instanceData=fdEditionProjectData(itemData.value,'instanceId');
-      refData=fdEditionProjectData(itemData.value,'ref');
-      itemWeekData=fdEditionProjectData(itemData.value,'week');
-      orderData=fdEditionProjectData(itemData.value,'order');
-      priorityData=fdEditionProjectData(itemData.value,'priority');
-      rationaleData=fdEditionProjectData(itemData.value,'rationale');
-      if(!instanceData.ok||typeof instanceData.value!=='string'||!instanceData.value||
-         !refData.ok||typeof refData.value!=='string'||!refData.value||
-         !itemWeekData.ok||typeof itemWeekData.value!=='number'||Math.floor(itemWeekData.value)!==itemWeekData.value||
-         itemWeekData.value<1||itemWeekData.value>expected.weeks||!orderData.ok||
-         typeof orderData.value!=='number'||Math.floor(orderData.value)!==orderData.value||orderData.value<1||
-         !priorityData.ok||['required','recommended','optional'].indexOf(priorityData.value)===-1||
-         !rationaleData.ok||typeof rationaleData.value!=='string'||seenIds[instanceData.value]||
-         seenOrders[String(itemWeekData.value)+':'+String(orderData.value)])
-        return fdEditionProjectFailure('/edition/config/pathItems','The edition path items are inconsistent.');
-      seenIds[instanceData.value]=true;
-      seenOrders[String(itemWeekData.value)+':'+String(orderData.value)]=true;
-      try{ coreData=Object.getOwnPropertyDescriptor(byRefData.value,refData.value); }
-      catch(ignoreCoreDescriptor){ coreData=null; }
-      if(!coreData||!Object.prototype.hasOwnProperty.call(coreData,'value')||
-         !fdEditionProjectObject(coreData.value))
-        return fdEditionProjectFailure('/edition/config/pathItems','An edition core reference is unavailable.');
-      var coreRefData=fdEditionProjectData(coreData.value,'ref');
-      if(!coreRefData.ok||coreRefData.value!==refData.value)
-        return fdEditionProjectFailure('/edition/config/pathItems','An edition core reference is inconsistent.');
-      perWeek[itemWeekData.value-1].push({order:orderData.value,core:coreData.value,
-        instanceId:instanceData.value,priority:priorityData.value,rationale:rationaleData.value});
-    }
-
-    for(i=0;i<perWeek.length;i++){
-      ordered=perWeek[i].slice().sort(function(a,b){return a.order-b.order;});
-      for(j=0;j<ordered.length;j++){
-        if(ordered[j].order!==j+1)
-          return fdEditionProjectFailure('/edition/config/pathItems','Edition order must be contiguous within each week.');
-        cloned=fdEditionProjectClone(ordered[j].core,[],0);
-        if(!cloned.ok) return fdEditionProjectFailure('/index/byRef','A canonical item cannot be cloned safely.');
-        cloned.value.editionInstanceId=ordered[j].instanceId;
-        cloned.value.editionPriority=ordered[j].priority;
-        cloned.value.editionRationale=ordered[j].rationale;
-        projectedWeeks[i].items.push(cloned.value);
-      }
-    }
-
-    projected={
-      byRef:byRefData.value,
-      path:pathData.value,
-      weeks:projectedWeeks,
-      columns:columnsData.value,
-      kit:kitData.value,
-      edition:{
-        envelope:envelopeClone.value,
-        fingerprint:fingerprintData.value,
-        card:envelopeClone.value.config.card,
-        editionNumber:numberData.value,
-        createdAgainstCoreRevision:revisionData.value,
-        changeNote:changeData.value,
-        localOrientation:envelopeClone.value.config.localOrientation
-      }
-    };
-    return {ok:true,index:projected};
-  }catch(ignoreProjection){
-    return fdEditionProjectFailure('/','The edition could not be projected safely.');
-  }
+    index.edition=trusted.displayModel;
+    return {ok:true,index:index};
+  }catch(ignoreProjection){ return fdEditionProjectFailure('/'); }
 }
 
 function fdEditionIndexFingerprint(index){
-  var editionData,fingerprintData;
-  try{
-    editionData=fdEditionProjectData(index,'edition');
-    if(!editionData.ok||!fdEditionProjectObject(editionData.value)) return '';
-    fingerprintData=fdEditionProjectData(editionData.value,'fingerprint');
-    return fingerprintData.ok&&typeof fingerprintData.value==='string'&&
-      /^[A-Z0-9]{2,8}-(?:MS3|RES)-[0-9A-HJKMNP-TV-Z]{6}$/.test(fingerprintData.value)
-      ?fingerprintData.value:'';
-  }catch(ignoreFingerprint){ return ''; }
+  try{ return fdEditionProjectObject(index)&&fdEditionProjectObject(index.edition)&&fdEditionProjectObject(index.edition.card)&&typeof index.edition.card.fingerprint==='string'&&/^[A-Z0-9]{2,8}-(?:MS3|RES)-[0-9A-HJKMNP-TV-Z]{6}$/.test(index.edition.card.fingerprint)?index.edition.card.fingerprint:''; }
+  catch(ignore){ return ''; }
 }
 
 function fdEditionCoreProgressRef(projectedItem){
-  var refData;
-  try{
-    refData=fdEditionProjectData(projectedItem,'ref');
-    return refData.ok&&typeof refData.value==='string'?refData.value:'';
-  }catch(ignoreRef){ return ''; }
+  try{ return fdEditionProjectObject(projectedItem)&&typeof projectedItem.ref==='string'?projectedItem.ref:''; }
+  catch(ignore){ return ''; }
 }

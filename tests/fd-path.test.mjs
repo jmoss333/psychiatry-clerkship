@@ -201,40 +201,33 @@ test('the rows really are the compact variant of the shared row, not a fork', ()
 test('projected core rows keep stable progress refs and add local priority and rationale', () => {
   const weeks = IDX.weeks.map((week) => Object.assign({}, week, {
     items: week.items.map((item) => item.ref === 'w2a.md' ? Object.assign({}, item, {
-      editionInstanceId: 'core:w2a.md:1', editionPriority: 'optional',
-      editionRationale: 'Use after the team discussion.',
+      instanceId: 'core:w2a.md:1', priority: 'optional',
+      reasonText: 'Use after the team discussion.',
     }) : item),
   }));
   const html = F.fdPath(Object.assign({}, IDX, { weeks }), s({ week: 2, viewWeek: 2 }));
   assert.match(html, /data-fd-toggle="w2a\.md"/);
   assert.doesNotMatch(html, /data-fd-toggle="core:w2a\.md:1"/);
-  assert.match(html, /Local priority: Optional/);
-  assert.match(html, /Attending rationale: Use after the team discussion\./);
+  assert.match(html, /Optional for this local rotation/);
+  assert.match(html, /Local rotation reason: Use after the team discussion\./);
+  assert.match(html, /Reviewed clerkship Library/);
 });
 
-test('Path renders matching-week external resources under a separate attending-provided heading', () => {
+test('Path leaves trusted local resources to the stable governance mount', () => {
   const edition = {
-    fingerprint: 'MMC-MS3-91K6TX', editionNumber: 2,
-    createdAgainstCoreRevision: 'abcdef1234567890abcdef1234567890abcdef12',
-    localOrientation: {
-      resources: [{
+    card: { fingerprint: 'EXU-MS3-ZBVX4D' },
+    resources: [{
         id: 'local:resource:week2', title: 'Local workflow page',
         url: 'https://education.example.edu/workflow', priority: 'recommended', week: 2,
         rationale: 'Review before local rounds.',
       }],
-    },
   };
   const html = F.fdPath(Object.assign({}, IDX, { edition }), s({
     week: 2, viewWeek: 2,
     localProgress: { checklist: {}, resources: { 'local:resource:week2': true } },
   }));
-  const core = html.indexOf('class="fd-detail__list"');
-  const local = html.indexOf('Attending-provided local resources');
-  assert.ok(core > -1 && local > core);
-  assert.match(html, /education\.example\.edu/);
-  assert.match(html, /target="_blank" rel="noopener noreferrer"/);
-  assert.match(html, /aria-pressed="true"/);
-  assert.doesNotMatch(html, /attested|reviewed|institutionally approved/i);
+  assert.match(html, /class="fd-detail__list"/);
+  assert.doesNotMatch(html, /education\.example\.edu|local:resource:week2|Attending-provided/);
 });
 
 // ---- "Set as my week" only when viewWeek !== week --------------------------------------

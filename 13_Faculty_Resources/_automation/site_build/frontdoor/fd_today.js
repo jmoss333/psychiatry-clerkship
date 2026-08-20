@@ -256,10 +256,6 @@ function fdToday(index, state){
 
   out+=hasWeek?fdContinue(idx,st, wk, progress):fdSetupCta();
 
-  if(idx.edition){
-    out+=fdEditionCardMarkup(idx.edition,st.currentCoreRevision);
-    out+=fdEditionLocalOrientationMarkup(idx.edition,st.localProgress);
-  }
 
   if(hasWeek){
     out+='<div class="fd-listhead"><h2 class="fd-sectionhead">This week</h2>'+
@@ -267,7 +263,6 @@ function fdToday(index, state){
     out+='<div class="fd-list">';
     for(var i=0;i<wItems.length;i++){ out+=fdRow(wItems[i], i, st.done); }
     out+='</div>';
-    if(idx.edition) out+=fdEditionWeekResourcesMarkup(idx.edition,st.week,st.localProgress);
   }
 
   var daily=fdDailyPick(fdLibraryOnlyReads(idx), st.done, nowMs);

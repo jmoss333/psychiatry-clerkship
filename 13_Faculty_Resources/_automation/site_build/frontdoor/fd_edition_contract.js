@@ -1,785 +1,389 @@
-/* Rotation-edition trust boundary. Pure: no DOM, storage, clock, or network access. */
+/* Closed v2 rotation-edition trust boundary. No DOM, storage, clock, or network access. */
 var FD_EDITION_RULES=(function(){
-  function freeze(value){
-    var key;
-    if(value&&typeof value==='object'&&!Object.isFrozen(value)){
-      Object.freeze(value);
-      for(key in value){ if(Object.prototype.hasOwnProperty.call(value,key)) freeze(value[key]); }
-    }
-    return value;
-  }
-  return freeze({
-    format:'cw-rotation-edition',schemaVersion:1,
-    maxConfigBytes:12288,maxUrlChars:16000,maxQrChars:1800,
-    maxChecklist:24,maxResources:12,maxUrl:2048,
-    maxTitle:100,maxRationale:280,maxOrientation:600,
-    priorities:['required','recommended','optional'],
-    paths:{ms3:{id:'ms3-six-week',weeks:6,code:'MS3'},
-           resident:{id:'resident-four-week',weeks:4,code:'RES'}},
-    patterns:{locationCode:'^[A-Z0-9]{2,8}$',revision:'^[0-9a-f]{40}$'}
-  });
+  var value={
+    format:'cw-rotation-edition',schemaVersion:2,maxConfigBytes:12288,maxUrlChars:16000,maxQrChars:1800,
+    maxPathItems:96,maxChecklist:24,maxResources:12,priorities:['required','recommended','optional'],
+    changeKinds:['initial','edition-context','curriculum-selection','curriculum-priority','curriculum-reason','schedule','arrival','workflow','access','contacts','checklist','resources'],
+    paths:{ms3:{id:'ms3-six-week',weeks:6,code:'MS3'},resident:{id:'resident-four-week',weeks:4,code:'RES'}}
+  },key;
+  function freeze(item){ var keys,i;if(item&&typeof item==='object'&&!Object.isFrozen(item)){keys=Object.keys(item);for(i=0;i<keys.length;i++)freeze(item[keys[i]]);Object.freeze(item);}return item; }
+  for(key in value.paths) if(Object.prototype.hasOwnProperty.call(value.paths,key)) Object.freeze(value.paths[key]);
+  return freeze(value);
 }());
 
-var FD_EDITION_DANGEROUS=(function(){
-  var keys=Object.create(null);
-  keys.__proto__=true; keys.constructor=true; keys.prototype=true;
-  return keys;
-}());
-var FD_EDITION_MAX_ARRAY_ITEMS=FD_EDITION_RULES.maxConfigBytes;
-var FD_EDITION_URL_DECODE_PASSES=4;
-var FD_EDITION_CONFIG_FIELDS=['audience','pathId','editionNumber','createdAgainstCoreRevision','card','pathItems','localOrientation','changeNote'];
-var FD_EDITION_CARD_FIELDS=['title','locationName','locationCode','curatorName','curatorRole','rotationStart','rotationEnd','lastVerified'];
-var FD_EDITION_PATH_FIELDS=['instanceId','ref','week','order','priority','rationale'];
-var FD_EDITION_ORIENTATION_FIELDS=['firstDayArrival','dailySchedule','roundsWorkflow','presentationExpectations','documentationExpectations','attendanceExpectations','feedbackProcess','accessPreparation','contacts','checklist','resources'];
-var FD_EDITION_CONTACT_FIELDS=['role','directoryUrl'];
-var FD_EDITION_CHECKLIST_FIELDS=['id','label','priority'];
-var FD_EDITION_RESOURCE_FIELDS=['id','title','url','priority','week','rationale'];
+var FD_EDITION_KEY=/^[a-z0-9][a-z0-9._:-]{0,126}@v[1-9][0-9]{0,5}$/;
+var FD_EDITION_DIGEST=/^sha256-[A-Za-z0-9_-]{43}$/;
+var FD_EDITION_REVISION=/^[0-9a-f]{40}$/;
+var FD_EDITION_ID=/^[\x21-\x7e]{1,160}$/;
+var FD_EDITION_TIME=/^(?:[01][0-9]|2[0-3]):[0-5][0-9]$/;
+var FD_EDITION_LOCATION=/^[A-Z0-9]{2,8}$/;
+var FD_EDITION_LOCAL_CATEGORIES=['arrival','schedule','rounds','presentation','documentation','attendance','feedback','accessItems','contacts','checklistItems','resources'];
+var FD_EDITION_OWN=Object.prototype.hasOwnProperty;
+var FD_EDITION_TRUST=typeof WeakMap==='function'?new WeakMap():null;
+var FD_EDITION_CATALOG_RESOLVE=typeof fdEditionCatalogResolve==='function'?fdEditionCatalogResolve:null;
 
-function fdEditionFinding(code,path,message,blocking){
-  return {code:code,path:path,message:message,blocking:blocking!==false};
+function fdEditionFinding(code,path,message){
+  return {code:code,path:path,message:message,blocking:true};
 }
 
-function fdEditionObject(value){
-  if(value===null||typeof value!=='object') return false;
-  try{ return !Array.isArray(value); }
-  catch(ignoreArrayClassification){ return false; }
+function fdEditionFailure(code,path){
+  return {ok:false,envelope:null,payload:null,config:null,resolved:null,displayModel:null,referenceSetDigest:'',contentDigest:'',fingerprint:'',canonicalBytes:0,errors:[fdEditionFinding(code||'EDITION_SCHEMA',path||'/','The rotation edition is invalid.')],warnings:[]};
 }
 
-function fdEditionPointer(path,part){
-  return path+'/'+String(part).replace(/~/g,'~0').replace(/\//g,'~1');
+function fdEditionIsPlainObject(value){
+  var proto,isArray;
+  if(!value||typeof value!=='object') return false;
+  try{ isArray=Array.isArray(value);proto=Object.getPrototypeOf(value); }catch(ignoreShape){ return false; }
+  return !isArray&&(proto===Object.prototype||proto===null);
 }
 
-function fdEditionAllowedMap(fields){
-  var map=Object.create(null),i;
-  for(i=0;i<fields.length;i++) map[fields[i]]=true;
-  return map;
-}
-
-function fdEditionOwnKeys(value){
-  return Reflect.ownKeys(value);
-}
-
-function fdEditionReadObject(value,fields,path,errors){
-  var out={},allowed=fdEditionAllowedMap(fields),present=Object.create(null),keys,i,key,descriptor;
-  if(!fdEditionObject(value)){
-    errors.push(fdEditionFinding('EDITION_SCHEMA',path,'An object with the required fields is required.'));
-    return null;
-  }
-  try{ keys=fdEditionOwnKeys(value); }
-  catch(ignore){ errors.push(fdEditionFinding('EDITION_SCHEMA',path,'The object could not be read safely.')); return null; }
-  for(i=0;i<keys.length;i++){
-    key=keys[i];
-    if(typeof key!=='string'||FD_EDITION_DANGEROUS[key]||!allowed[key]){
-      errors.push(fdEditionFinding('EDITION_SCHEMA',path,'Only documented fields are allowed.'));
-      continue;
+function fdEditionPlainCopy(value,seen,depth){
+  var proto,isArray,keys,lengthDescriptor,length,out,i,key,descriptor;
+  if(value===null||typeof value==='string'||typeof value==='boolean') return value;
+  if(typeof value==='number'){ if(!isFinite(value)||Math.floor(value)!==value) throw new Error('invalid'); return value; }
+  if(!value||typeof value!=='object'||depth>64||seen.indexOf(value)>=0) throw new Error('invalid');
+  seen.push(value);
+  try{ isArray=Array.isArray(value);proto=Object.getPrototypeOf(value); }catch(ignorePrototype){ throw new Error('invalid'); }
+  if(isArray){
+    if(proto!==Array.prototype) throw new Error('invalid');
+    try{ lengthDescriptor=Object.getOwnPropertyDescriptor(value,'length');keys=Reflect.ownKeys(value); }catch(ignoreArray){ throw new Error('invalid'); }
+    if(!lengthDescriptor||!FD_EDITION_OWN.call(lengthDescriptor,'value')||typeof lengthDescriptor.value!=='number'||Math.floor(lengthDescriptor.value)!==lengthDescriptor.value||lengthDescriptor.value<0||lengthDescriptor.value>4096||keys.length!==lengthDescriptor.value+1) throw new Error('invalid');
+    length=lengthDescriptor.value;out=[];
+    for(i=0;i<keys.length;i++){ key=keys[i];if(typeof key!=='string'||(key!=='length'&&(!/^(?:0|[1-9][0-9]*)$/.test(key)||Number(key)>=length))) throw new Error('invalid'); }
+    for(i=0;i<length;i++){
+      try{ descriptor=Object.getOwnPropertyDescriptor(value,String(i)); }catch(ignoreEntry){ descriptor=null; }
+      if(!descriptor||!descriptor.enumerable||!FD_EDITION_OWN.call(descriptor,'value')) throw new Error('invalid');
+      out.push(fdEditionPlainCopy(descriptor.value,seen,depth+1));
     }
-    try{ descriptor=Object.getOwnPropertyDescriptor(value,key); }
-    catch(ignoreDescriptor){ descriptor=null; }
-    if(!descriptor||!Object.prototype.hasOwnProperty.call(descriptor,'value')){
-      errors.push(fdEditionFinding('EDITION_SCHEMA',path,'Fields must be plain data values.'));
-      continue;
-    }
-    present[key]=true;
-    out[key]=descriptor.value;
-  }
-  for(i=0;i<fields.length;i++){
-    if(!present[fields[i]]){
-      errors.push(fdEditionFinding('EDITION_SCHEMA',path,'All required fields must be present.'));
-    }
-  }
-  return out;
-}
-
-function fdEditionString(value,path,errors){
-  if(typeof value!=='string'){
-    errors.push(fdEditionFinding('EDITION_SCHEMA',path,'A text value is required.'));
-    return '';
-  }
-  try{ return value.replace(/\r\n?/g,'\n').trim().normalize('NFC'); }
-  catch(ignore){ errors.push(fdEditionFinding('EDITION_SCHEMA',path,'The text value is not valid Unicode.')); return ''; }
-}
-
-function fdEditionLocationCode(value,path,errors){
-  return fdEditionString(value,path,errors).toUpperCase();
-}
-
-function fdEditionArray(value,path,errors){
-  var keys,out,i,key,descriptor,lengthDescriptor,length,data=Object.create(null),isArray=false;
-  try{ isArray=Array.isArray(value); }
-  catch(ignoreArrayClassification){ isArray=false; }
-  if(!isArray){
-    errors.push(fdEditionFinding('EDITION_SCHEMA',path,'A list is required.'));
-    return [];
-  }
-  try{ lengthDescriptor=Object.getOwnPropertyDescriptor(value,'length'); }
-  catch(ignoreLength){ lengthDescriptor=null; }
-  if(!lengthDescriptor||!Object.prototype.hasOwnProperty.call(lengthDescriptor,'value')||
-     typeof lengthDescriptor.value!=='number'||!isFinite(lengthDescriptor.value)||
-     Math.floor(lengthDescriptor.value)!==lengthDescriptor.value||lengthDescriptor.value<0){
-    errors.push(fdEditionFinding('EDITION_SCHEMA',path,'The list length is invalid.'));
-    return [];
-  }
-  length=lengthDescriptor.value;
-  if(length>FD_EDITION_MAX_ARRAY_ITEMS){
-    errors.push(fdEditionFinding('EDITION_SIZE',path,'The list is too large to process safely.'));
-    return [];
-  }
-  try{ keys=fdEditionOwnKeys(value); }
-  catch(ignoreKeys){ errors.push(fdEditionFinding('EDITION_SCHEMA',path,'The list could not be read safely.')); return []; }
-  for(i=0;i<keys.length;i++){
-    key=keys[i];
-    if(key==='length') continue;
-    if(typeof key!=='string'||!/^(?:0|[1-9][0-9]*)$/.test(key)||Number(key)>=length){
-      errors.push(fdEditionFinding('EDITION_SCHEMA',path,'Lists must not contain named fields.'));
-      continue;
-    }
-    try{ descriptor=Object.getOwnPropertyDescriptor(value,key); }
-    catch(ignoreDescriptor){ descriptor=null; }
-    if(!descriptor||!Object.prototype.hasOwnProperty.call(descriptor,'value'))
-      errors.push(fdEditionFinding('EDITION_SCHEMA',path,'Lists must contain plain data values.'));
-    else data[key]=descriptor.value;
-  }
-  out=[];
-  for(i=0;i<length;i++){
-    if(!Object.prototype.hasOwnProperty.call(data,String(i))){
-      errors.push(fdEditionFinding('EDITION_SCHEMA',path,'Lists must contain plain data values.'));
-      out.push(undefined);
-    }else out.push(data[String(i)]);
-  }
-  return out;
-}
-
-function fdEditionNumber(value,path,errors){
-  if(typeof value!=='number'||!isFinite(value)||Math.floor(value)!==value){
-    errors.push(fdEditionFinding('EDITION_SCHEMA',path,'A whole number is required.'));
-    return 0;
-  }
-  return value;
-}
-
-function fdEditionNormalizeConfig(config){
-  var errors=[],source=fdEditionReadObject(config,FD_EDITION_CONFIG_FIELDS,'/config',errors),out={};
-  var card,orientation,list,item,i;
-  if(!source) return {ok:false,errors:errors};
-  out.audience=fdEditionString(source.audience,'/config/audience',errors);
-  out.pathId=fdEditionString(source.pathId,'/config/pathId',errors);
-  out.editionNumber=fdEditionNumber(source.editionNumber,'/config/editionNumber',errors);
-  out.createdAgainstCoreRevision=fdEditionString(source.createdAgainstCoreRevision,'/config/createdAgainstCoreRevision',errors);
-
-  source.card=fdEditionReadObject(source.card,FD_EDITION_CARD_FIELDS,'/config/card',errors);
-  if(source.card){
-    card={};
-    for(i=0;i<FD_EDITION_CARD_FIELDS.length;i++){
-      item=FD_EDITION_CARD_FIELDS[i];
-      card[item]=item==='locationCode'
-        ?fdEditionLocationCode(source.card[item],fdEditionPointer('/config/card',item),errors)
-        :fdEditionString(source.card[item],fdEditionPointer('/config/card',item),errors);
-    }
-    out.card=card;
-  }
-
-  out.pathItems=[];
-  list=fdEditionArray(source.pathItems,'/config/pathItems',errors);
-  for(i=0;i<list.length;i++){
-    item=fdEditionReadObject(list[i],FD_EDITION_PATH_FIELDS,fdEditionPointer('/config/pathItems',i),errors);
-    if(item) out.pathItems.push({
-      instanceId:fdEditionString(item.instanceId,fdEditionPointer('/config/pathItems/'+i,'instanceId'),errors),
-      ref:fdEditionString(item.ref,fdEditionPointer('/config/pathItems/'+i,'ref'),errors),
-      week:fdEditionNumber(item.week,fdEditionPointer('/config/pathItems/'+i,'week'),errors),
-      order:fdEditionNumber(item.order,fdEditionPointer('/config/pathItems/'+i,'order'),errors),
-      priority:fdEditionString(item.priority,fdEditionPointer('/config/pathItems/'+i,'priority'),errors),
-      rationale:fdEditionString(item.rationale,fdEditionPointer('/config/pathItems/'+i,'rationale'),errors)
-    });
-  }
-
-  source.localOrientation=fdEditionReadObject(source.localOrientation,FD_EDITION_ORIENTATION_FIELDS,'/config/localOrientation',errors);
-  if(source.localOrientation){
-    orientation={};
-    for(i=0;i<8;i++){
-      item=FD_EDITION_ORIENTATION_FIELDS[i];
-      orientation[item]=fdEditionString(source.localOrientation[item],fdEditionPointer('/config/localOrientation',item),errors);
-    }
-    orientation.contacts=[];
-    list=fdEditionArray(source.localOrientation.contacts,'/config/localOrientation/contacts',errors);
-    for(i=0;i<list.length;i++){
-      item=fdEditionReadObject(list[i],FD_EDITION_CONTACT_FIELDS,fdEditionPointer('/config/localOrientation/contacts',i),errors);
-      if(item) orientation.contacts.push({
-        role:fdEditionString(item.role,'/config/localOrientation/contacts/'+i+'/role',errors),
-        directoryUrl:fdEditionString(item.directoryUrl,'/config/localOrientation/contacts/'+i+'/directoryUrl',errors)
-      });
-    }
-    orientation.checklist=[];
-    list=fdEditionArray(source.localOrientation.checklist,'/config/localOrientation/checklist',errors);
-    for(i=0;i<list.length;i++){
-      item=fdEditionReadObject(list[i],FD_EDITION_CHECKLIST_FIELDS,fdEditionPointer('/config/localOrientation/checklist',i),errors);
-      if(item) orientation.checklist.push({
-        id:fdEditionString(item.id,'/config/localOrientation/checklist/'+i+'/id',errors),
-        label:fdEditionString(item.label,'/config/localOrientation/checklist/'+i+'/label',errors),
-        priority:fdEditionString(item.priority,'/config/localOrientation/checklist/'+i+'/priority',errors)
-      });
-    }
-    orientation.resources=[];
-    list=fdEditionArray(source.localOrientation.resources,'/config/localOrientation/resources',errors);
-    for(i=0;i<list.length;i++){
-      item=fdEditionReadObject(list[i],FD_EDITION_RESOURCE_FIELDS,fdEditionPointer('/config/localOrientation/resources',i),errors);
-      if(item) orientation.resources.push({
-        id:fdEditionString(item.id,'/config/localOrientation/resources/'+i+'/id',errors),
-        title:fdEditionString(item.title,'/config/localOrientation/resources/'+i+'/title',errors),
-        url:fdEditionString(item.url,'/config/localOrientation/resources/'+i+'/url',errors),
-        priority:fdEditionString(item.priority,'/config/localOrientation/resources/'+i+'/priority',errors),
-        week:fdEditionNumber(item.week,'/config/localOrientation/resources/'+i+'/week',errors),
-        rationale:fdEditionString(item.rationale,'/config/localOrientation/resources/'+i+'/rationale',errors)
-      });
-    }
-    out.localOrientation=orientation;
-  }
-  out.changeNote=fdEditionString(source.changeNote,'/config/changeNote',errors);
-  return errors.length?{ok:false,errors:errors}:{ok:true,value:out};
-}
-
-function fdEditionCanonicalJson(value){
-  var seen=[];
-  function encode(current,depth){
-    var keys,out,i,key,descriptor,lengthDescriptor,length,data;
-    if(depth>64) throw new Error('Canonical JSON depth is invalid.');
-    if(current===null) return 'null';
-    if(typeof current==='string'||typeof current==='boolean') return JSON.stringify(current);
-    if(typeof current==='number'){
-      if(!isFinite(current)) throw new Error('Canonical JSON number is invalid.');
-      return JSON.stringify(current);
-    }
-    if(typeof current!=='object') throw new Error('Canonical JSON value is invalid.');
-    if(seen.indexOf(current)!==-1) throw new Error('Canonical JSON cycle is invalid.');
-    seen.push(current);
-    try{ descriptor=Array.isArray(current); }
-    catch(ignoreArrayClassification){ throw new Error('Canonical JSON value is invalid.'); }
-    if(descriptor){
-      try{ lengthDescriptor=Object.getOwnPropertyDescriptor(current,'length'); }
-      catch(ignoreLength){ lengthDescriptor=null; }
-      if(!lengthDescriptor||!Object.prototype.hasOwnProperty.call(lengthDescriptor,'value')||
-         lengthDescriptor.value>FD_EDITION_MAX_ARRAY_ITEMS) throw new Error('Canonical JSON array is invalid.');
-      length=lengthDescriptor.value; data=Object.create(null); out=[];
-      try{ keys=fdEditionOwnKeys(current); }
-      catch(ignoreArrayKeys){ throw new Error('Canonical JSON array is invalid.'); }
-      for(i=0;i<keys.length;i++){
-        key=keys[i];
-        if(key==='length') continue;
-        if(typeof key!=='string'||!/^(?:0|[1-9][0-9]*)$/.test(key)||Number(key)>=length)
-          throw new Error('Canonical JSON array key is invalid.');
-        try{ descriptor=Object.getOwnPropertyDescriptor(current,key); }
-        catch(ignoreArrayDescriptor){ descriptor=null; }
-        if(!descriptor||!Object.prototype.hasOwnProperty.call(descriptor,'value'))
-          throw new Error('Canonical JSON array value is invalid.');
-        data[key]=descriptor.value;
-      }
-      for(i=0;i<length;i++){
-        if(!Object.prototype.hasOwnProperty.call(data,String(i))) throw new Error('Canonical JSON sparse array is invalid.');
-        out.push(encode(data[String(i)],depth+1));
-      }
-      seen.pop();
-      return '['+out.join(',')+']';
-    }
-    try{ keys=fdEditionOwnKeys(current); }
-    catch(ignoreObjectKeys){ throw new Error('Canonical JSON object is invalid.'); }
-    for(i=0;i<keys.length;i++) if(typeof keys[i]!=='string') throw new Error('Canonical JSON symbol key is invalid.');
-    keys.sort(); out=[];
+  }else{
+    if(proto!==Object.prototype&&proto!==null) throw new Error('invalid');
+    try{ keys=Reflect.ownKeys(value); }catch(ignoreKeys){ throw new Error('invalid'); }
+    if(keys.length>128) throw new Error('invalid');
+    out={};
     for(i=0;i<keys.length;i++){
       key=keys[i];
-      if(FD_EDITION_DANGEROUS[key]) throw new Error('Canonical JSON key is invalid.');
-      try{ descriptor=Object.getOwnPropertyDescriptor(current,key); }
-      catch(ignoreObjectDescriptor){ descriptor=null; }
-      if(!descriptor||!descriptor.enumerable||!Object.prototype.hasOwnProperty.call(descriptor,'value'))
-        throw new Error('Canonical JSON object value is invalid.');
-      out.push(JSON.stringify(key)+':'+encode(descriptor.value,depth+1));
+      if(typeof key!=='string'||key==='__proto__'||key==='constructor'||key==='prototype') throw new Error('invalid');
+      try{ descriptor=Object.getOwnPropertyDescriptor(value,key); }catch(ignoreDescriptor){ descriptor=null; }
+      if(!descriptor||!descriptor.enumerable||!FD_EDITION_OWN.call(descriptor,'value')) throw new Error('invalid');
+      out[key]=fdEditionPlainCopy(descriptor.value,seen,depth+1);
     }
-    seen.pop();
+  }
+  seen.pop();return out;
+}
+
+function fdEditionCopy(value){ return fdEditionPlainCopy(value,[],0); }
+
+function fdEditionCanonicalJson(value){
+  var copied=fdEditionCopy(value);
+  function encode(current){
+    var keys,out=[],i;
+    if(current===null||typeof current==='string'||typeof current==='boolean'||typeof current==='number') return JSON.stringify(current);
+    if(Array.isArray(current)){ for(i=0;i<current.length;i++) out.push(encode(current[i]));return '['+out.join(',')+']'; }
+    keys=Object.keys(current).sort();
+    for(i=0;i<keys.length;i++) out.push(JSON.stringify(keys[i])+':'+encode(current[keys[i]]));
     return '{'+out.join(',')+'}';
   }
-  return encode(value,0);
+  return encode(copied);
+}
+
+function fdEditionUtf8(text){
+  var out=[],i=0,code,next;
+  while(i<text.length){
+    code=text.charCodeAt(i++);
+    if(code>=0xd800&&code<=0xdbff){ if(i>=text.length) throw new Error('invalid');next=text.charCodeAt(i++);if(next<0xdc00||next>0xdfff) throw new Error('invalid');code=0x10000+((code-0xd800)<<10)+(next-0xdc00); }
+    else if(code>=0xdc00&&code<=0xdfff) throw new Error('invalid');
+    if(code<=0x7f) out.push(code);
+    else if(code<=0x7ff) out.push(0xc0|(code>>6),0x80|(code&63));
+    else if(code<=0xffff) out.push(0xe0|(code>>12),0x80|((code>>6)&63),0x80|(code&63));
+    else out.push(0xf0|(code>>18),0x80|((code>>12)&63),0x80|((code>>6)&63),0x80|(code&63));
+  }
+  return new Uint8Array(out);
 }
 
 function fdEditionBase64urlEncode(bytes){
-  var binary='',i,valid=false;
-  try{ valid=ArrayBuffer.isView(bytes)&&bytes instanceof Uint8Array; }
-  catch(ignoreByteClassification){ valid=false; }
-  if(!valid) throw new Error('Base64url input must be bytes.');
-  try{
-    for(i=0;i<bytes.length;i++) binary+=String.fromCharCode(bytes[i]);
-    return btoa(binary).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
-  }catch(ignoreBytes){ throw new Error('Base64url input must be bytes.'); }
+  var binary='',i;
+  if(!bytes||typeof bytes.length!=='number') throw new Error('invalid');
+  for(i=0;i<bytes.length;i++) binary+=String.fromCharCode(bytes[i]);
+  return btoa(binary).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
 }
 
 function fdEditionBase64urlDecode(text,maxBytes){
   var padded,binary,out,i;
-  if(typeof text!=='string'||!text||!/^[A-Za-z0-9_-]+$/.test(text)||text.length%4===1)
-    throw new Error('Invalid base64url payload.');
-  padded=text.replace(/-/g,'+').replace(/_/g,'/');
-  while(padded.length%4) padded+='=';
-  try{ binary=atob(padded); }catch(ignore){ throw new Error('Invalid base64url payload.'); }
-  if(typeof maxBytes==='number'&&binary.length>maxBytes) throw new Error('Invalid base64url size.');
-  out=new Uint8Array(binary.length);
-  for(i=0;i<binary.length;i++) out[i]=binary.charCodeAt(i);
-  if(fdEditionBase64urlEncode(out)!==text) throw new Error('Invalid base64url payload.');
-  return out;
+  if(typeof text!=='string'||!text||!/^[A-Za-z0-9_-]+$/.test(text)||text.length%4===1) throw new Error('invalid');
+  padded=text.replace(/-/g,'+').replace(/_/g,'/');while(padded.length%4) padded+='=';
+  binary=atob(padded);if(typeof maxBytes==='number'&&binary.length>maxBytes) throw new Error('invalid');
+  out=new Uint8Array(binary.length);for(i=0;i<binary.length;i++) out[i]=binary.charCodeAt(i);
+  if(fdEditionBase64urlEncode(out)!==text) throw new Error('invalid');return out;
 }
 
-function fdEditionDigest(preDigestObject,subtle){
-  var bytes,digestMethod,request;
-  function failure(){ return new Error('SHA-256 digest failed.'); }
-  try{ digestMethod=subtle&&subtle.digest; }
-  catch(ignoreMethod){ return Promise.reject(failure()); }
-  if(typeof digestMethod!=='function') return Promise.reject(failure());
-  try{ bytes=new TextEncoder().encode(fdEditionCanonicalJson(preDigestObject)); }
-  catch(ignoreInput){ return Promise.reject(failure()); }
-  try{ request=digestMethod.call(subtle,'SHA-256',bytes); }
-  catch(ignoreDigest){ return Promise.reject(failure()); }
+function fdEditionDigest(value,subtle){
+  var method,request,bytes;
+  try{ method=subtle&&subtle.digest;bytes=fdEditionUtf8(fdEditionCanonicalJson(value)); }catch(ignoreInput){ return Promise.reject(new Error('invalid')); }
+  if(typeof method!=='function') return Promise.reject(new Error('invalid'));
+  try{ request=method.call(subtle,'SHA-256',bytes); }catch(ignoreCall){ return Promise.reject(new Error('invalid')); }
   return Promise.resolve(request).then(function(buffer){
-    var byteLengthGetter,byteLength,view,encoded;
-    try{
-      byteLengthGetter=Object.getOwnPropertyDescriptor(ArrayBuffer.prototype,'byteLength').get;
-      byteLength=byteLengthGetter.call(buffer);
-      if(byteLength!==32) throw failure();
-      view=new Uint8Array(buffer);
-      if(view.byteLength!==32) throw failure();
-      encoded=fdEditionBase64urlEncode(view);
-      if(!/^[A-Za-z0-9_-]{43}$/.test(encoded)) throw failure();
-      return 'sha256-'+encoded;
-    }catch(ignoreResult){ throw failure(); }
-  },function(){ throw failure(); });
+    var getter,length,view;
+    try{ getter=Object.getOwnPropertyDescriptor(ArrayBuffer.prototype,'byteLength').get;length=getter.call(buffer);view=new Uint8Array(buffer); }catch(ignoreBuffer){ throw new Error('invalid'); }
+    if(length!==32||view.byteLength!==32) throw new Error('invalid');
+    return 'sha256-'+fdEditionBase64urlEncode(view);
+  });
 }
 
-function fdEditionDigestEqual(expected,actual){
-  var left,right,diff=0,i;
-  if(typeof expected!=='string'||typeof actual!=='string'||expected.indexOf('sha256-')!==0||actual.indexOf('sha256-')!==0) return false;
-  try{
-    left=fdEditionBase64urlDecode(expected.slice(7),32);
-    right=fdEditionBase64urlDecode(actual.slice(7),32);
-  }catch(ignore){ return false; }
-  if(left.length!==32||right.length!==32) return false;
-  for(i=0;i<32;i++) diff|=left[i]^right[i];
-  return diff===0;
+function fdEditionDigestEqual(left,right){
+  var a,b,diff=0,i;
+  try{ a=fdEditionBase64urlDecode(left.slice(7),32);b=fdEditionBase64urlDecode(right.slice(7),32); }catch(ignore){ return false; }
+  if(!FD_EDITION_DIGEST.test(left)||!FD_EDITION_DIGEST.test(right)||a.length!==32||b.length!==32) return false;
+  for(i=0;i<32;i++) diff|=a[i]^b[i];return diff===0;
 }
 
-function fdEditionFingerprint(config,digest){
-  var bytes,value,alphabet='0123456789ABCDEFGHJKMNPQRSTVWXYZ',token='',i,path,locationCode;
-  var audienceDescriptor,cardDescriptor,locationDescriptor,card;
-  if(typeof digest!=='string'||digest.indexOf('sha256-')!==0||!fdEditionObject(config)) return '';
-  try{ bytes=fdEditionBase64urlDecode(digest.slice(7),32); }
-  catch(ignore){ return ''; }
-  try{
-    audienceDescriptor=Object.getOwnPropertyDescriptor(config,'audience');
-    cardDescriptor=Object.getOwnPropertyDescriptor(config,'card');
-  }catch(ignoreConfig){ return ''; }
-  if(bytes.length!==32||!audienceDescriptor||!Object.prototype.hasOwnProperty.call(audienceDescriptor,'value')||
-     !cardDescriptor||!Object.prototype.hasOwnProperty.call(cardDescriptor,'value')||!fdEditionObject(cardDescriptor.value)) return '';
-  card=cardDescriptor.value;
-  try{ locationDescriptor=Object.getOwnPropertyDescriptor(card,'locationCode'); }
-  catch(ignoreCard){ return ''; }
-  if(typeof audienceDescriptor.value!=='string'||!Object.prototype.hasOwnProperty.call(FD_EDITION_RULES.paths,audienceDescriptor.value)) return '';
-  path=FD_EDITION_RULES.paths[audienceDescriptor.value];
-  if(!path||!locationDescriptor||!Object.prototype.hasOwnProperty.call(locationDescriptor,'value')||typeof locationDescriptor.value!=='string') return '';
-  locationCode=fdEditionLocationCode(locationDescriptor.value,'/config/card/locationCode',[]);
-  if(!new RegExp(FD_EDITION_RULES.patterns.locationCode).test(locationCode)) return '';
-  value=Math.floor((bytes[0]*16777216+bytes[1]*65536+bytes[2]*256+bytes[3])/4);
-  for(i=5;i>=0;i--) token+=alphabet.charAt(Math.floor(value/Math.pow(32,i))%32);
-  return locationCode+'-'+path.code+'-'+token;
+function fdEditionFingerprint(locationCode,audience,contentDigest,referenceSetDigest,subtle){
+  var token=audience==='ms3'?'MS3':audience==='resident'?'RES':'',alphabet='0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+  if(typeof locationCode!=='string'||!FD_EDITION_LOCATION.test(locationCode)||!token||typeof contentDigest!=='string'||!FD_EDITION_DIGEST.test(contentDigest)||typeof referenceSetDigest!=='string'||!FD_EDITION_DIGEST.test(referenceSetDigest)) return Promise.resolve('');
+  return fdEditionDigest({contentDigest:contentDigest,referenceSetDigest:referenceSetDigest},subtle).then(function(result){
+    var bytes,value,suffix='',i;
+    try{ bytes=fdEditionBase64urlDecode(result.slice(7),32); }catch(ignoreBytes){ return ''; }
+    value=Math.floor((bytes[0]*16777216+bytes[1]*65536+bytes[2]*256+bytes[3])/4);
+    for(i=5;i>=0;i--) suffix+=alphabet.charAt(Math.floor(value/Math.pow(32,i))%32);
+    return locationCode+'-'+token+'-'+suffix;
+  },function(){ return ''; });
 }
 
-function fdEditionAdd(errors,condition,code,path,message){
-  if(condition) errors.push(fdEditionFinding(code,path,message));
-}
-
-function fdEditionValidDate(value){
-  var match,date;
-  if(!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
-  match=value.split('-');
-  date=new Date(Date.UTC(Number(match[0]),Number(match[1])-1,Number(match[2])));
-  return date.getUTCFullYear()===Number(match[0])&&date.getUTCMonth()===Number(match[1])-1&&date.getUTCDate()===Number(match[2]);
-}
-
-function fdEditionTextLength(value){
-  return Array.from(value).length;
-}
-
-function fdEditionCheckLabel(value,path,errors){
-  fdEditionAdd(errors,!value||fdEditionTextLength(value)>FD_EDITION_RULES.maxTitle,'EDITION_SCHEMA',path,'Text must contain 1 to 100 characters.');
-}
-
-function fdEditionCheckRationale(value,path,errors){
-  fdEditionAdd(errors,fdEditionTextLength(value)>FD_EDITION_RULES.maxRationale,'EDITION_SCHEMA',path,'Text must contain at most 280 characters.');
-}
-
-function fdEditionCheckIdentifier(value,path,errors,warnings){
-  fdEditionAdd(errors,!value||value.length>160||!/^[\x21-\x7E]+$/.test(value),'EDITION_SCHEMA',path,'The identifier must use 1 to 160 visible ASCII characters.');
-  fdEditionScreenText(value,path,errors,warnings);
-}
-
-function fdEditionHostnameValid(hostname){
-  var labels,i;
-  if(!hostname) return false;
-  if(/^\[[0-9a-f:.]+\]$/i.test(hostname)) return true;
-  if(hostname.length>253) return false;
-  labels=hostname.split('.');
-  for(i=0;i<labels.length;i++){
-    if(!labels[i]||labels[i].length>63||!/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/i.test(labels[i])) return false;
-  }
+function fdEditionExact(value,required,optional){
+  var allowed=Object.create(null),keys,i;
+  if(!fdEditionIsPlainObject(value)) return false;
+  for(i=0;i<required.length;i++) allowed[required[i]]=true;
+  for(i=0;i<optional.length;i++) allowed[optional[i]]=true;
+  keys=Object.keys(value);for(i=0;i<keys.length;i++) if(!allowed[keys[i]]) return false;
+  for(i=0;i<required.length;i++) if(!FD_EDITION_OWN.call(value,required[i])) return false;
   return true;
 }
 
-function fdEditionCheckPriority(value,path,errors){
-  fdEditionAdd(errors,FD_EDITION_RULES.priorities.indexOf(value)===-1,'EDITION_SCHEMA',path,'Priority must be required, recommended, or optional.');
+function fdEditionOneOf(value,values){ return values.indexOf(value)>=0; }
+function fdEditionInteger(value,min,max){ return typeof value==='number'&&Math.floor(value)===value&&value>=min&&value<=max; }
+
+function fdEditionRealDate(value){
+  var parts,year,month,day,leap,days;
+  if(typeof value!=='string'||!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(value)) return false;
+  parts=value.split('-');year=Number(parts[0]);month=Number(parts[1]);day=Number(parts[2]);
+  leap=year%4===0&&(year%100!==0||year%400===0);days=[31,leap?29:28,31,30,31,30,31,31,30,31,30,31];
+  return month>=1&&month<=12&&day>=1&&day<=days[month-1];
 }
 
-function fdEditionDecodeUrlComponent(value,queryMode){
-  var current=value,next,replaced,i,layers=[];
-  for(i=0;i<FD_EDITION_URL_DECODE_PASSES;i++){
-    if(queryMode){
-      replaced=current.replace(/\+/g,' ');
-      if(replaced!==current) layers.push(replaced);
-      current=replaced;
-    }
-    try{ next=decodeURIComponent(current); }
-    catch(ignoreEncoding){ return {ok:false,value:'',layers:layers}; }
-    if(next===current) return {ok:true,value:current,layers:layers};
-    layers.push(next);
-    if(i===FD_EDITION_URL_DECODE_PASSES-1) return {ok:false,value:'',layers:layers};
-    current=next;
+function fdEditionTimeMinutes(value){ return typeof value==='string'&&FD_EDITION_TIME.test(value)?Number(value.slice(0,2))*60+Number(value.slice(3)):null; }
+
+function fdEditionCoreContext(index,config,siteContext){
+  var path,weeks,byRef,i,item,descriptor,titles=Object.create(null),requested=Object.create(null),keys;
+  function data(object,key){ var value;try{value=Object.getOwnPropertyDescriptor(object,key);}catch(ignore){return null;}return value&&value.enumerable&&FD_EDITION_OWN.call(value,'value')?value.value:null; }
+  if(!fdEditionIsPlainObject(index)||!fdEditionIsPlainObject(siteContext)||siteContext.audience!==config.audience) return null;
+  path=data(index,'path');weeks=data(index,'weeks');byRef=data(index,'byRef');
+  if(!fdEditionIsPlainObject(path)||!Array.isArray(weeks)||!fdEditionIsPlainObject(byRef)) return null;
+  if(data(path,'id')!==config.pathId||data(path,'weekCount')!==(config.audience==='ms3'?6:4)||weeks.length!==data(path,'weekCount')) return null;
+  for(i=0;i<weeks.length;i++){ item=data(weeks,String(i));if(!fdEditionIsPlainObject(item)||data(item,'n')!==i+1) return null; }
+  for(i=0;i<config.pathItems.length;i++) requested[config.pathItems[i].ref]=true;
+  keys=Object.keys(requested);
+  for(i=0;i<keys.length;i++){
+    try{ descriptor=Object.getOwnPropertyDescriptor(byRef,keys[i]); }catch(ignoreRef){ descriptor=null; }
+    if(!descriptor||!descriptor.enumerable||!FD_EDITION_OWN.call(descriptor,'value')||!fdEditionIsPlainObject(descriptor.value)||data(descriptor.value,'ref')!==keys[i]||typeof data(descriptor.value,'title')!=='string') return null;
+    titles[keys[i]]=data(descriptor.value,'title');
   }
-  return {ok:false,value:'',layers:layers};
+  return {titles:titles};
 }
 
-function fdEditionCheckUrl(value,path,errors,warnings){
-  var parsed=null,pathPart,queryPart,hashPart,parts,i,j;
-  try{ parsed=new URL(value); }catch(ignoreUrl){ parsed=null; }
-  fdEditionAdd(errors,fdEditionTextLength(value)>FD_EDITION_RULES.maxUrl,'EDITION_URL',path,'URLs must contain at most 2048 characters.');
-  fdEditionAdd(errors,!/^https:\/\/[^\s]+$/i.test(value),'EDITION_URL',path,'Only absolute HTTPS URLs are allowed.');
-  fdEditionAdd(errors,!parsed||parsed.protocol!=='https:'||!fdEditionHostnameValid(parsed.hostname)||parsed.username!==''||parsed.password!=='','EDITION_URL',path,'The HTTPS URL must contain a valid hostname and no embedded credentials.');
-  fdEditionAdd(errors,/[\u0000-\u001f\u007f]/.test(value)||/^https:\/\/[^/\s@]+@/i.test(value),'EDITION_URL',path,'URLs must not contain control characters or embedded credentials.');
-  fdEditionAdd(errors,/^(?:javascript|data|vbscript|blob):/i.test(value),'EDITION_URL',path,'Executable and embedded-data URL schemes are not allowed.');
-  fdEditionScreenText(value,path,errors,warnings);
-  if(parsed){
-    pathPart=fdEditionDecodeUrlComponent(parsed.pathname,false);
-    queryPart=fdEditionDecodeUrlComponent(parsed.search,true);
-    hashPart=fdEditionDecodeUrlComponent(parsed.hash,false);
-    parts=[pathPart,queryPart,hashPart];
-    for(i=0;i<parts.length;i++){
-      for(j=0;j<parts[i].layers.length;j++) fdEditionScreenText(parts[i].layers[j],path,errors,warnings);
-    }
-    if(!pathPart.ok||!queryPart.ok||!hashPart.ok){
-      errors.push(fdEditionFinding('EDITION_URL',path,'URL encoding must be valid and contain no excessive nested layers.'));
-      return;
+function fdEditionValidateLocalPlan(plan,maxWeek,ids){
+  var keys,i,row,value,start,tuple,scheduleIds=Object.create(null),tuples=Object.create(null),seen=Object.create(null),count;
+  function key(value){ return typeof value==='string'&&FD_EDITION_KEY.test(value); }
+  function identifier(value){ return typeof value==='string'&&FD_EDITION_ID.test(value); }
+  function uniqueId(value){ if(!identifier(value)||ids[value]) throw new Error('invalid');ids[value]=true; }
+  function priority(value){ if(!fdEditionOneOf(value,FD_EDITION_RULES.priorities)) throw new Error('invalid'); }
+  function list(value,min,max){ return Array.isArray(value)&&value.length>=min&&value.length<=max; }
+  if(!fdEditionIsPlainObject(plan)) throw new Error('invalid');keys=Object.keys(plan);
+  for(i=0;i<keys.length;i++) if(!fdEditionOneOf(keys[i],FD_EDITION_LOCAL_CATEGORIES)) throw new Error('invalid');
+  if(FD_EDITION_OWN.call(plan,'arrival')){
+    value=plan.arrival;if(!fdEditionExact(value,['timingCode','time','placeKey','checkInRoleKey'],['linkKey'])||!fdEditionOneOf(value.timingCode,['at','by'])||fdEditionTimeMinutes(value.time)===null||!key(value.placeKey)||!key(value.checkInRoleKey)||(FD_EDITION_OWN.call(value,'linkKey')&&!key(value.linkKey))) throw new Error('invalid');
+  }
+  if(FD_EDITION_OWN.call(plan,'schedule')){
+    value=plan.schedule;if(!fdEditionExact(value,['dayStart','dayEnd','endQualifierCode','events'],[])||!fdEditionOneOf(value.endQualifierCode,['at','about','no-later-than'])||fdEditionTimeMinutes(value.dayStart)===null||fdEditionTimeMinutes(value.dayEnd)===null||fdEditionTimeMinutes(value.dayStart)>=fdEditionTimeMinutes(value.dayEnd)||!list(value.events,1,24)) throw new Error('invalid');
+    for(i=0;i<value.events.length;i++){
+      row=value.events[i];if(!fdEditionExact(row,['instanceId','daySetKey','startTime','activityKey','priority'],['endTime','placeKey'])) throw new Error('invalid');
+      uniqueId(row.instanceId);scheduleIds[row.instanceId]=true;start=fdEditionTimeMinutes(row.startTime);
+      if(start===null||(FD_EDITION_OWN.call(row,'endTime')&&(fdEditionTimeMinutes(row.endTime)===null||fdEditionTimeMinutes(row.endTime)<=start))||!key(row.daySetKey)||!key(row.activityKey)||(FD_EDITION_OWN.call(row,'placeKey')&&!key(row.placeKey))) throw new Error('invalid');
+      priority(row.priority);tuple=[row.daySetKey,row.startTime,row.endTime||'',row.activityKey,row.placeKey||''].join('\u0000');if(tuples[tuple]) throw new Error('invalid');tuples[tuple]=true;
     }
   }
+  if(FD_EDITION_OWN.call(plan,'rounds')){ value=plan.rounds;if(!fdEditionExact(value,['preparationKey','participationKey','followUpKey'],[])||!key(value.preparationKey)||!key(value.participationKey)||!key(value.followUpKey)) throw new Error('invalid'); }
+  if(FD_EDITION_OWN.call(plan,'presentation')){
+    value=plan.presentation;if(!fdEditionExact(value,['formatKey','timingKey','elementKeys'],[])||!key(value.formatKey)||!key(value.timingKey)||!list(value.elementKeys,1,8)) throw new Error('invalid');seen=Object.create(null);
+    for(i=0;i<value.elementKeys.length;i++){ if(!key(value.elementKeys[i])||seen[value.elementKeys[i]]) throw new Error('invalid');seen[value.elementKeys[i]]=true; }
+  }
+  if(FD_EDITION_OWN.call(plan,'documentation')){ value=plan.documentation;if(!fdEditionExact(value,['workflowKey','timingKey'],['policyLinkKey'])||!key(value.workflowKey)||!key(value.timingKey)||(FD_EDITION_OWN.call(value,'policyLinkKey')&&!key(value.policyLinkKey))) throw new Error('invalid'); }
+  if(FD_EDITION_OWN.call(plan,'attendance')){
+    value=plan.attendance;if(!fdEditionExact(value,['eventInstanceIds','absenceRoleKey'],['policyLinkKey'])||!list(value.eventInstanceIds,1,24)||!key(value.absenceRoleKey)||(FD_EDITION_OWN.call(value,'policyLinkKey')&&!key(value.policyLinkKey))) throw new Error('invalid');seen=Object.create(null);
+    for(i=0;i<value.eventInstanceIds.length;i++){ if(!identifier(value.eventInstanceIds[i])||seen[value.eventInstanceIds[i]]||!scheduleIds[value.eventInstanceIds[i]]) throw new Error('invalid');seen[value.eventInstanceIds[i]]=true; }
+  }
+  if(FD_EDITION_OWN.call(plan,'feedback')){ value=plan.feedback;if(!fdEditionExact(value,['cadenceKey','initiatorKey','settingKey'],[])||!key(value.cadenceKey)||!key(value.initiatorKey)||!key(value.settingKey)) throw new Error('invalid'); }
+  function rows(category,min,max,required,optional,validate){
+    var values=plan[category],j;if(!list(values,min,max)) throw new Error('invalid');
+    for(j=0;j<values.length;j++){ row=values[j];if(!fdEditionExact(row,required,optional)) throw new Error('invalid');uniqueId(row.instanceId);validate(row); }
+  }
+  if(FD_EDITION_OWN.call(plan,'accessItems')) rows('accessItems',1,12,['instanceId','itemKey','dueKey'],['linkKey'],function(item){if(!key(item.itemKey)||!key(item.dueKey)||(FD_EDITION_OWN.call(item,'linkKey')&&!key(item.linkKey)))throw new Error('invalid');});
+  if(FD_EDITION_OWN.call(plan,'contacts')) rows('contacts',1,8,['instanceId','roleKey'],['linkKey'],function(item){if(!key(item.roleKey)||(FD_EDITION_OWN.call(item,'linkKey')&&!key(item.linkKey)))throw new Error('invalid');});
+  if(FD_EDITION_OWN.call(plan,'checklistItems')) rows('checklistItems',1,24,['instanceId','itemKey','priority'],[],function(item){if(!key(item.itemKey))throw new Error('invalid');priority(item.priority);});
+  if(FD_EDITION_OWN.call(plan,'resources')) rows('resources',1,12,['instanceId','linkKey','priority','week'],['reasonKey'],function(item){if(!key(item.linkKey)||(FD_EDITION_OWN.call(item,'reasonKey')&&!key(item.reasonKey))||!fdEditionInteger(item.week,1,maxWeek))throw new Error('invalid');priority(item.priority);});
+  count=(FD_EDITION_OWN.call(plan,'arrival')?1:0)+(plan.accessItems?plan.accessItems.length:0)+(plan.checklistItems?plan.checklistItems.length:0);if(count>24) throw new Error('invalid');
 }
 
-function fdEditionScreenText(value,path,errors,warnings){
-  var blocking=/[\u0000-\u0009\u000b-\u001f\u007f-\u009f]|<\/?[a-z][^>]*>|\bon[a-z]+\s*=|(?:javascript|data|vbscript|blob):|\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b|\b(?:pager\s*(?:(?:[:#=-]|\bis\b)\s*)?\d{4,}|(?:call|phone|tel(?:ephone)?)?\s*\+?\d[\d(). -]{6,}\d)\b|\b(?:password|passcode|credential|username|login|api[_ -]?key|secret|token)\s*(?::|=|\bis\b|\bare\b)\s*\S+|\b(?:access|door|badge)[_ -]+code\s*(?::|=|\bis\b|\bare\b)\s*\S+|\bpin\s*(?::|=|\bis\b)\s*\d+|\b\d+(?:\.\d+)?\s*(?:mg|mcg|\u00b5g|g|ml|milligrams?|micrograms?|grams?|millilit(?:er|re)s?|units?|iu)\b/i;
-  var advisory=/\b(?:patient[_ -]+(?:identifier|name|record)|credentials?|password|passcode|username|login|api[_ -]?key|secret|token|(?:access|door|badge)[_ -]+code|pin|protocols?|dos(?:e|ing|age)|medication)\b/i;
-  if(blocking.test(value)) errors.push(fdEditionFinding('EDITION_TEXT_RISK',path,'Text must not contain direct contact, access, credential, dose, control, HTML, event-handler, or executable content.'));
-  else if(advisory.test(value)) warnings.push(fdEditionFinding('EDITION_TEXT_RISK',path,'Review this text for sensitive identifiers, credentials, protocols, or dosing details before publication.',false));
+function fdEditionValidateConfigShape(config,coreIndex,siteContext,validationContext){
+  var path,maxWeek,ids=Object.create(null),orders=Object.create(null),counts=Object.create(null),lastWeek=0,lastOrder=0,i,item,key,codeIndex=-1,currentIndex,core,bytes;
+  if(!fdEditionExact(config,['audience','pathId','editionNumber','createdAgainstCoreRevision','createdAgainstLocalCatalogRevision','context','phraseSetKey','pathItems','localPlan','changeSummary'],[])) throw new Error('invalid');
+  path=FD_EDITION_RULES.paths[config.audience];if(!path||config.pathId!==path.id) throw new Error('invalid');maxWeek=path.weeks;
+  if(!fdEditionInteger(config.editionNumber,1,2147483647)||typeof config.createdAgainstCoreRevision!=='string'||!FD_EDITION_REVISION.test(config.createdAgainstCoreRevision)||typeof config.createdAgainstLocalCatalogRevision!=='string'||!FD_EDITION_DIGEST.test(config.createdAgainstLocalCatalogRevision)||typeof config.phraseSetKey!=='string'||!FD_EDITION_KEY.test(config.phraseSetKey)) throw new Error('invalid');
+  if(!fdEditionExact(config.context,['trainingLocationKey','curatorProfileKey','rotationStart','rotationEnd','editionCheckedOn'],[])||!FD_EDITION_KEY.test(config.context.trainingLocationKey)||!FD_EDITION_KEY.test(config.context.curatorProfileKey)||!fdEditionRealDate(config.context.rotationStart)||!fdEditionRealDate(config.context.rotationEnd)||config.context.rotationEnd<config.context.rotationStart||!fdEditionRealDate(config.context.editionCheckedOn)) throw new Error('invalid');
+  if(!fdEditionExact(validationContext,['mode','generationDate'],[])||(validationContext.mode!=='builder'&&validationContext.mode!=='learner')||(validationContext.mode==='builder'&&(!fdEditionRealDate(validationContext.generationDate)||config.context.editionCheckedOn>validationContext.generationDate))||(validationContext.mode==='learner'&&validationContext.generationDate!=='')) throw new Error('invalid');
+  if(!Array.isArray(config.pathItems)||config.pathItems.length<1||config.pathItems.length>96) throw new Error('invalid');
+  for(i=0;i<config.pathItems.length;i++){
+    item=config.pathItems[i];if(!fdEditionExact(item,['instanceId','ref','week','order','priority'],['reasonKey'])||typeof item.instanceId!=='string'||!FD_EDITION_ID.test(item.instanceId)||typeof item.ref!=='string'||!FD_EDITION_ID.test(item.ref)||FD_EDITION_KEY.test(item.ref)||ids[item.instanceId]||!fdEditionInteger(item.week,1,maxWeek)||!fdEditionInteger(item.order,1,96)||!fdEditionOneOf(item.priority,FD_EDITION_RULES.priorities)||(FD_EDITION_OWN.call(item,'reasonKey')&&!FD_EDITION_KEY.test(item.reasonKey))) throw new Error('invalid');
+    ids[item.instanceId]=true;if(item.week<lastWeek||(item.week===lastWeek&&item.order<=lastOrder)) throw new Error('invalid');lastWeek=item.week;lastOrder=item.order;key=String(item.week);if(!orders[key])orders[key]=Object.create(null);if(orders[key][item.order])throw new Error('invalid');orders[key][item.order]=true;counts[key]=(counts[key]||0)+1;
+  }
+  Object.keys(counts).forEach(function(week){ var order;for(order=1;order<=counts[week];order++)if(!orders[week][order])throw new Error('invalid'); });
+  fdEditionValidateLocalPlan(config.localPlan,maxWeek,ids);
+  if(!fdEditionExact(config.changeSummary,['kindCodes','changedItemCount'],[])||!Array.isArray(config.changeSummary.kindCodes)||config.changeSummary.kindCodes.length<1||config.changeSummary.kindCodes.length>12||!fdEditionInteger(config.changeSummary.changedItemCount,0,255)) throw new Error('invalid');
+  for(i=0;i<config.changeSummary.kindCodes.length;i++){ currentIndex=FD_EDITION_RULES.changeKinds.indexOf(config.changeSummary.kindCodes[i]);if(currentIndex<0||currentIndex<=codeIndex)throw new Error('invalid');codeIndex=currentIndex; }
+  if(config.editionNumber===1){if(config.changeSummary.kindCodes.length!==1||config.changeSummary.kindCodes[0]!=='initial'||config.changeSummary.changedItemCount!==0)throw new Error('invalid');}
+  else if(config.changeSummary.kindCodes[0]==='initial'||config.changeSummary.changedItemCount<1) throw new Error('invalid');
+  bytes=fdEditionUtf8(fdEditionCanonicalJson(config)).length;if(bytes>FD_EDITION_RULES.maxConfigBytes) throw new Error('size');
+  core=fdEditionCoreContext(coreIndex,config,siteContext);if(!core) throw new Error('core');return {config:config,core:core,canonicalBytes:bytes};
 }
 
-function fdEditionLocalRiskSkeleton(value){
-  var words=value.normalize('NFKC').toLowerCase();
-  /* This skeleton is deliberately narrow: common Greek/Cyrillic lookalikes used in the
-     English risk terms, zero-width separators, and punctuation inside a risk word. It is
-     used only for detection; the normalized multilingual source is never rewritten. */
-  words=words.replace(/[\u03bf\u043e]/g,'o').replace(/[\u03b1\u0430]/g,'a').replace(/[\u03b5\u0435]/g,'e')
-    .replace(/[\u03b9\u0456]/g,'i').replace(/[\u03c1\u0440]/g,'p').replace(/[\u03c4\u0442]/g,'t')
-    .replace(/[\u03bd\u043d]/g,'n').replace(/[\u03c5\u0443]/g,'y').replace(/[\u03ba\u043a]/g,'k')
-    .replace(/[\u200b-\u200f\u2060\ufeff]/g,'').replace(/[\u00ad_\-.\u2010-\u2015]/g,'');
-  return {words:words,compact:words.replace(/[^a-z0-9]+/g,'')};
+function fdEditionResolvedDisplay(config,core,catalogResult){
+  var model=fdEditionCopy(catalogResult.displayModel),i,item,resolved;
+  if(!fdEditionIsPlainObject(model)||!fdEditionIsPlainObject(model.card)||!Array.isArray(model.pathItems)||model.pathItems.length!==config.pathItems.length) throw new Error('invalid');
+  for(i=0;i<config.pathItems.length;i++){
+    item=config.pathItems[i];resolved=model.pathItems[i];
+    if(!fdEditionExact(resolved,['instanceId','ref','week','order','priority','priorityLabel'],FD_EDITION_OWN.call(item,'reasonKey')?['reasonText']:[])||resolved.instanceId!==item.instanceId||resolved.ref!==item.ref||resolved.week!==item.week||resolved.order!==item.order||resolved.priority!==item.priority||typeof resolved.priorityLabel!=='string'||(FD_EDITION_OWN.call(item,'reasonKey')&&typeof resolved.reasonText!=='string')) throw new Error('invalid');
+    resolved.title=core.titles[item.ref];
+  }
+  return model;
 }
 
-function fdEditionScreenLocalContent(value,path,errors,warnings){
-  var risk,words='',compact='',resourceTitle=/^\/config\/localOrientation\/resources\/\d+\/title$/.test(path);
-  var evidence,learnerEvaluationData,patientIdentifierData,clinicalDirective,protocolInstruction,ambiguous;
+function fdEditionValidateConfig(config,coreIndex,catalogSnapshot,siteContext,validationContext,subtle){
+  var value,validation,context,site;
+  try{ value=fdEditionCopy(config);context=fdEditionCopy(validationContext);site=fdEditionCopy(siteContext);validation=fdEditionValidateConfigShape(value,coreIndex,site,context); }
+  catch(error){ return Promise.resolve(fdEditionFailure(error&&error.message==='size'?'EDITION_SIZE':error&&error.message==='core'?'EDITION_REF':'EDITION_SCHEMA','/config')); }
+  if(!FD_EDITION_CATALOG_RESOLVE) return Promise.resolve(fdEditionFailure('EDITION_CATALOG','/config'));
+  return Promise.resolve(FD_EDITION_CATALOG_RESOLVE(value,catalogSnapshot,context.mode,site,subtle)).then(function(result){
+    var copied,model;
+    try{
+      copied=fdEditionCopy(result);
+      if(!fdEditionExact(copied,['ok','resolved','referenceSetDigest','displayModel','errors'],[])||copied.ok!==true||!fdEditionIsPlainObject(copied.resolved)||typeof copied.referenceSetDigest!=='string'||!FD_EDITION_DIGEST.test(copied.referenceSetDigest)||!Array.isArray(copied.errors)||copied.errors.length!==0) throw new Error('invalid');
+      model=fdEditionResolvedDisplay(value,validation.core,copied);
+      return {ok:true,envelope:null,payload:null,config:value,resolved:copied.resolved,displayModel:model,referenceSetDigest:copied.referenceSetDigest,contentDigest:'',fingerprint:'',canonicalBytes:validation.canonicalBytes,errors:[],warnings:[]};
+    }catch(ignoreResult){ return fdEditionFailure('EDITION_CATALOG','/config'); }
+  },function(){ return fdEditionFailure('EDITION_CATALOG','/config'); });
+}
+
+function fdEditionBrand(result){
+  var snapshot;
+  if(!FD_EDITION_TRUST||!result||result.ok!==true) return result;
   try{
-    risk=fdEditionLocalRiskSkeleton(value);
-    words=risk.words;
-    compact=risk.compact;
-  }catch(ignoreLocalRisk){
-    errors.push(fdEditionFinding('EDITION_LOCAL_CONTENT',path,'Local text could not be screened safely.'));
-    return;
-  }
-  evidence={
-    learnerSubject:/(?:learner|student|trainee)/.test(compact),
-    evaluationTerm:/(?:evaluation|assessment|rating|grade|score)/.test(compact),
-    specificEvaluationRelation:
-      /\b(?:learner|student|trainee)s?\b[^.!?]{0,80}\b(?:evaluation|assessment|rating|grade|score)\b\s*(?:is|was|rated|graded|scored)\s*(?:as\s+)?\b(?:unsatisfactory|satisfactory|failed|failing|passed|passing|poor|excellent)\b/i.test(words)||
-      /\b(?:learner|student|trainee)s?\b[^.!?]{0,60}\b(?:received|earned|got)\s+(?:an?\s+)?(?:unsatisfactory|satisfactory|failing|passing|poor|excellent)\s+(?:evaluation|assessment|rating|grade|score)\b/i.test(words)||
-      /\b(?:unsatisfactory|satisfactory|failing|passing|poor|excellent)\s+(?:evaluation|assessment|rating|grade|score)\b[^.!?]{0,40}\b(?:for|of)\s+(?:the\s+)?(?:learner|student|trainee)\b/i.test(words),
-    patientRecordTopic:/patient/.test(compact)&&/(?:medicalrecord|record|identifier|mrn)/.test(compact),
-    explicitPatientIdentifier:
-      /(?:mrn|medicalrecordnumber|recordnumber|recordid)[a-z]{0,20}\d{3,}/.test(compact)||
-      /\d{3,}[a-z]{0,20}(?:mrn|medicalrecordnumber|recordnumber|recordid)/.test(compact)||
-      /patient[a-z]{0,32}(?:has|with)(?:a)?record[a-z]{0,20}\d{3,}/.test(compact)||
-      /patientidentifier/.test(compact),
-    directiveFrame:/(?:^|[,;:!?]\s*)(?:please\s+)?(?:perform|administer|give|start|stop|order|obtain|prescribe|initiate|discontinue)\b|\b(?:must|should|required\s+to|requires?\s+you\s+to)\s+(?:perform|administer|give|start|stop|order|obtain|prescribe|initiate|discontinue)\b/i.test(words),
-    clinicalActionObject:
-      /perform(?:an?|the)?intervention/.test(compact)||
-      /(?:administer|give|start|stop|prescribe|initiate|discontinue)(?:an?|the)?(?:medication|medicine|drug|dose|injection|clinicaltreatment|treatment|therapy)/.test(compact)||
-      /(?:order|obtain)(?:an?|the)?(?:clinicaltest|test|lab|laboratorytest|imaging|specimen|medication|medicine|drug|clinicaltreatment|treatment)/.test(compact),
-    protocolContext:/protocol/.test(compact)
-  };
-  learnerEvaluationData=evidence.learnerSubject&&evidence.evaluationTerm&&evidence.specificEvaluationRelation;
-  patientIdentifierData=evidence.explicitPatientIdentifier;
-  clinicalDirective=evidence.directiveFrame&&evidence.clinicalActionObject;
-  protocolInstruction=evidence.protocolContext&&clinicalDirective;
-  ambiguous=(evidence.learnerSubject&&evidence.evaluationTerm)||evidence.patientRecordTopic||evidence.protocolContext||/\bclinical\s+directive\b/i.test(words);
-  if(learnerEvaluationData) errors.push(fdEditionFinding('EDITION_LOCAL_CONTENT',path,'Local text must not contain learner-specific evaluation information.'));
-  else if(patientIdentifierData) errors.push(fdEditionFinding('EDITION_LOCAL_CONTENT',path,'Local text must not contain patient-specific record or identifier information.'));
-  else if(protocolInstruction) errors.push(fdEditionFinding('EDITION_LOCAL_CONTENT',path,'Local text must not copy protocol instructions; use an official HTTPS institutional link.'));
-  else if(clinicalDirective) errors.push(fdEditionFinding('EDITION_LOCAL_CONTENT',path,'Local text must not contain direct clinical imperatives.'));
-  else if(ambiguous&&!resourceTitle) warnings.push(fdEditionFinding('EDITION_LOCAL_CONTENT',path,'Review this local text for learner evaluation, patient identifier, directive, or copied protocol content.',false));
+    snapshot={envelope:result.envelope,config:result.config,resolved:result.resolved,displayModel:result.displayModel,referenceSetDigest:result.referenceSetDigest,fingerprint:result.fingerprint};
+    FD_EDITION_TRUST.set(result,fdEditionCanonicalJson(snapshot));
+  }catch(ignoreBrand){}
+  return result;
 }
 
-function fdEditionValidateConfig(config,index,siteContext){
-  var normalized=fdEditionNormalizeConfig(config),errors=[],warnings=[],value,pathRule,i,item,key,seenIds=Object.create(null),orders=Object.create(null),canonicalBytes=0,indexPathValid=true;
-  var humanTexts=[],localTexts=[];
-  if(!normalized.ok) return {ok:false,value:null,errors:normalized.errors,warnings:warnings,canonicalBytes:0};
-  value=normalized.value;
-  pathRule=FD_EDITION_RULES.paths[value.audience];
-  fdEditionAdd(errors,!pathRule,'EDITION_AUDIENCE','/config/audience','The audience must match a supported site.');
-  fdEditionAdd(errors,!pathRule||value.pathId!==pathRule.id,'EDITION_AUDIENCE','/config/pathId','The path must match the selected audience.');
-  fdEditionAdd(errors,!siteContext||value.audience!==siteContext.audience||value.pathId!==siteContext.pathId,'EDITION_AUDIENCE','/config','The edition must match the current audience and path.');
-  indexPathValid=!!(index&&index.path&&pathRule&&index.path.id===pathRule.id&&index.path.weekCount===pathRule.weeks&&Array.isArray(index.weeks)&&index.weeks.length===pathRule.weeks);
-  if(indexPathValid){
-    for(i=0;i<index.weeks.length;i++){
-      if(!index.weeks[i]||index.weeks[i].n!==i+1){ indexPathValid=false; break; }
-    }
-  }
-  fdEditionAdd(errors,!indexPathValid,'EDITION_AUDIENCE','/config/pathId','The current catalog path and duration must match the audience.');
-  fdEditionAdd(errors,value.editionNumber<1,'EDITION_SCHEMA','/config/editionNumber','Edition number must be at least 1.');
-  fdEditionAdd(errors,!new RegExp(FD_EDITION_RULES.patterns.revision).test(value.createdAgainstCoreRevision),'EDITION_SCHEMA','/config/createdAgainstCoreRevision','The core revision must be a 40-character lowercase hexadecimal revision.');
-
-  if(value.card){
-    for(i=0;i<5;i++){ key=FD_EDITION_CARD_FIELDS[i]; fdEditionCheckLabel(value.card[key],'/config/card/'+key,errors); humanTexts.push([value.card[key],'/config/card/'+key]); }
-    fdEditionAdd(errors,!new RegExp(FD_EDITION_RULES.patterns.locationCode).test(value.card.locationCode),'EDITION_SCHEMA','/config/card/locationCode','Location code must contain 2 to 8 uppercase letters or digits.');
-    for(i=5;i<8;i++) fdEditionAdd(errors,!fdEditionValidDate(value.card[FD_EDITION_CARD_FIELDS[i]]),'EDITION_SCHEMA','/config/card/'+FD_EDITION_CARD_FIELDS[i],'A real calendar date in YYYY-MM-DD form is required.');
-    fdEditionAdd(errors,fdEditionValidDate(value.card.rotationStart)&&fdEditionValidDate(value.card.rotationEnd)&&value.card.rotationEnd<value.card.rotationStart,'EDITION_SCHEMA','/config/card/rotationEnd','Rotation end must not be before rotation start.');
-  }
-
-  for(i=0;i<value.pathItems.length;i++){
-    item=value.pathItems[i];
-    fdEditionCheckIdentifier(item.instanceId,'/config/pathItems/'+i+'/instanceId',errors,warnings);
-    fdEditionCheckIdentifier(item.ref,'/config/pathItems/'+i+'/ref',errors,warnings);
-    fdEditionAdd(errors,!pathRule||item.week<1||item.week>pathRule.weeks,'EDITION_WEEK','/config/pathItems/'+i+'/week','Week must be within the audience path duration.');
-    fdEditionAdd(errors,item.order<1,'EDITION_SCHEMA','/config/pathItems/'+i+'/order','Order must be a positive whole number.');
-    fdEditionCheckPriority(item.priority,'/config/pathItems/'+i+'/priority',errors);
-    fdEditionCheckRationale(item.rationale,'/config/pathItems/'+i+'/rationale',errors);
-    humanTexts.push([item.rationale,'/config/pathItems/'+i+'/rationale']);
-    fdEditionAdd(errors,seenIds[item.instanceId],'EDITION_SCHEMA','/config/pathItems/'+i+'/instanceId','Every instance and local identifier must be unique.');
-    seenIds[item.instanceId]=true;
-    fdEditionAdd(errors,!index||!index.byRef||!Object.prototype.hasOwnProperty.call(index.byRef,item.ref),'EDITION_REF','/config/pathItems/'+i+'/ref','Every core reference must exist in the current catalog.');
-    key=String(item.week)+':'+String(item.order);
-    fdEditionAdd(errors,orders[key],'EDITION_SCHEMA','/config/pathItems/'+i+'/order','Order values must be unique within each week.');
-    orders[key]=true;
-  }
-  if(pathRule){
-    for(i=1;i<=pathRule.weeks;i++){
-      var weekOrders=value.pathItems.filter(function(entry){return entry.week===i;}).map(function(entry){return entry.order;}).sort(function(a,b){return a-b;});
-      for(var o=0;o<weekOrders.length;o++) fdEditionAdd(errors,weekOrders[o]!==o+1,'EDITION_SCHEMA','/config/pathItems','Order values must be contiguous within each week.');
-    }
-  }
-
-  if(value.localOrientation){
-    for(i=0;i<8;i++){
-      key=FD_EDITION_ORIENTATION_FIELDS[i];
-      fdEditionAdd(errors,fdEditionTextLength(value.localOrientation[key])>FD_EDITION_RULES.maxOrientation,'EDITION_SCHEMA','/config/localOrientation/'+key,'Orientation text must contain at most 600 characters.');
-      humanTexts.push([value.localOrientation[key],'/config/localOrientation/'+key]);
-      localTexts.push([value.localOrientation[key],'/config/localOrientation/'+key]);
-    }
-    fdEditionAdd(errors,value.localOrientation.checklist.length>FD_EDITION_RULES.maxChecklist,'EDITION_SIZE','/config/localOrientation/checklist','At most 24 checklist items are allowed.');
-    fdEditionAdd(errors,value.localOrientation.resources.length>FD_EDITION_RULES.maxResources,'EDITION_SIZE','/config/localOrientation/resources','At most 12 local resources are allowed.');
-    for(i=0;i<value.localOrientation.contacts.length;i++){
-      item=value.localOrientation.contacts[i];
-      fdEditionCheckLabel(item.role,'/config/localOrientation/contacts/'+i+'/role',errors);
-      fdEditionCheckUrl(item.directoryUrl,'/config/localOrientation/contacts/'+i+'/directoryUrl',errors,warnings);
-      humanTexts.push([item.role,'/config/localOrientation/contacts/'+i+'/role']);
-      localTexts.push([item.role,'/config/localOrientation/contacts/'+i+'/role']);
-    }
-    for(i=0;i<value.localOrientation.checklist.length;i++){
-      item=value.localOrientation.checklist[i];
-      fdEditionCheckIdentifier(item.id,'/config/localOrientation/checklist/'+i+'/id',errors,warnings);
-      fdEditionCheckLabel(item.label,'/config/localOrientation/checklist/'+i+'/label',errors);
-      fdEditionCheckPriority(item.priority,'/config/localOrientation/checklist/'+i+'/priority',errors);
-      fdEditionAdd(errors,seenIds[item.id],'EDITION_SCHEMA','/config/localOrientation/checklist/'+i+'/id','Every instance and local identifier must be unique.');
-      seenIds[item.id]=true; humanTexts.push([item.label,'/config/localOrientation/checklist/'+i+'/label']);
-      localTexts.push([item.label,'/config/localOrientation/checklist/'+i+'/label']);
-    }
-    for(i=0;i<value.localOrientation.resources.length;i++){
-      item=value.localOrientation.resources[i];
-      fdEditionCheckIdentifier(item.id,'/config/localOrientation/resources/'+i+'/id',errors,warnings);
-      fdEditionCheckLabel(item.title,'/config/localOrientation/resources/'+i+'/title',errors);
-      fdEditionCheckUrl(item.url,'/config/localOrientation/resources/'+i+'/url',errors,warnings);
-      fdEditionCheckPriority(item.priority,'/config/localOrientation/resources/'+i+'/priority',errors);
-      fdEditionAdd(errors,!pathRule||item.week<1||item.week>pathRule.weeks,'EDITION_WEEK','/config/localOrientation/resources/'+i+'/week','Week must be within the audience path duration.');
-      fdEditionCheckRationale(item.rationale,'/config/localOrientation/resources/'+i+'/rationale',errors);
-      fdEditionAdd(errors,seenIds[item.id],'EDITION_SCHEMA','/config/localOrientation/resources/'+i+'/id','Every instance and local identifier must be unique.');
-      seenIds[item.id]=true;
-      humanTexts.push([item.title,'/config/localOrientation/resources/'+i+'/title'],[item.rationale,'/config/localOrientation/resources/'+i+'/rationale']);
-      localTexts.push([item.title,'/config/localOrientation/resources/'+i+'/title'],[item.rationale,'/config/localOrientation/resources/'+i+'/rationale']);
-    }
-  }
-  fdEditionCheckRationale(value.changeNote,'/config/changeNote',errors);
-  humanTexts.push([value.changeNote,'/config/changeNote']);
-  for(i=0;i<humanTexts.length;i++) fdEditionScreenText(humanTexts[i][0],humanTexts[i][1],errors,warnings);
-  for(i=0;i<localTexts.length;i++) fdEditionScreenLocalContent(localTexts[i][0],localTexts[i][1],errors,warnings);
-  try{ canonicalBytes=new TextEncoder().encode(fdEditionCanonicalJson(value)).length; }
-  catch(ignoreCanonical){ errors.push(fdEditionFinding('EDITION_SCHEMA','/config','The configuration cannot be serialized safely.')); }
-  fdEditionAdd(errors,canonicalBytes>FD_EDITION_RULES.maxConfigBytes,'EDITION_SIZE','/config','The canonical configuration must be at most 12 KiB.');
-  return {ok:errors.length===0,value:value,errors:errors,warnings:warnings,canonicalBytes:canonicalBytes};
+function fdEditionFinish(checked,envelope,contentDigest,subtle){
+  var location;
+  try{ location=checked.resolved.location.locationCode;if(typeof location!=='string'||!FD_EDITION_LOCATION.test(location)) throw new Error('invalid'); }
+  catch(ignoreLocation){ return Promise.resolve(fdEditionFailure('EDITION_CATALOG','/config/context/trainingLocationKey')); }
+  return fdEditionFingerprint(location,checked.config.audience,contentDigest,checked.referenceSetDigest,subtle).then(function(fingerprint){
+    var model,result,payload;
+    if(!fingerprint) return fdEditionFailure('EDITION_DIGEST','/digest');
+    try{ model=fdEditionCopy(checked.displayModel);model.card.fingerprint=fingerprint;payload=fdEditionBase64urlEncode(fdEditionUtf8(fdEditionCanonicalJson(envelope))); }
+    catch(ignoreModel){ return fdEditionFailure('EDITION_SCHEMA','/'); }
+    result={ok:true,envelope:envelope,payload:payload,config:envelope.config,resolved:checked.resolved,displayModel:model,referenceSetDigest:checked.referenceSetDigest,contentDigest:contentDigest,fingerprint:fingerprint,canonicalBytes:checked.canonicalBytes,errors:[],warnings:[]};
+    return fdEditionBrand(result);
+  });
 }
 
-function fdEditionFailure(code,path,message,warnings,canonicalBytes){
-  return {ok:false,envelope:null,payload:null,config:null,fingerprint:'',canonicalBytes:canonicalBytes||0,errors:[fdEditionFinding(code,path,message)],warnings:warnings||[]};
+function fdEditionCreateEnvelope(config,coreIndex,catalogSnapshot,siteContext,validationContext,subtle){
+  return fdEditionValidateConfig(config,coreIndex,catalogSnapshot,siteContext,validationContext,subtle).then(function(checked){
+    var pre;if(!checked.ok)return checked;pre={format:FD_EDITION_RULES.format,schemaVersion:2,config:checked.config};
+    return fdEditionDigest(pre,subtle).then(function(contentDigest){ return fdEditionFinish(checked,{format:pre.format,schemaVersion:pre.schemaVersion,config:pre.config,digest:contentDigest},contentDigest,subtle); },function(){ return fdEditionFailure('EDITION_DIGEST','/digest'); });
+  });
 }
 
-function fdEditionCreateEnvelope(config,index,siteContext,subtle){
-  var checked=fdEditionValidateConfig(config,index,siteContext),pre;
-  if(!checked.ok) return Promise.resolve({ok:false,envelope:null,payload:null,config:null,fingerprint:'',canonicalBytes:checked.canonicalBytes,errors:checked.errors,warnings:checked.warnings});
-  pre={format:FD_EDITION_RULES.format,schemaVersion:FD_EDITION_RULES.schemaVersion,config:checked.value};
-  return fdEditionDigest(pre,subtle).then(function(digest){
-    var envelope={format:pre.format,schemaVersion:pre.schemaVersion,config:pre.config,digest:digest};
-    var payload=fdEditionBase64urlEncode(new TextEncoder().encode(fdEditionCanonicalJson(envelope)));
-    return {ok:true,envelope:envelope,payload:payload,config:checked.value,fingerprint:fdEditionFingerprint(checked.value,digest),canonicalBytes:checked.canonicalBytes,errors:[],warnings:checked.warnings};
-  },function(){ return fdEditionFailure('EDITION_DIGEST','/digest','SHA-256 is unavailable in this browser.',checked.warnings,checked.canonicalBytes); });
+function fdEditionValidateEnvelope(envelope,coreIndex,catalogSnapshot,siteContext,validationContext,subtle){
+  var value;
+  try{ value=fdEditionCopy(envelope);if(!fdEditionExact(value,['format','schemaVersion','config','digest'],[])||value.format!==FD_EDITION_RULES.format||value.schemaVersion!==2||typeof value.digest!=='string'||!FD_EDITION_DIGEST.test(value.digest)) throw new Error('invalid'); }
+  catch(ignoreEnvelope){ return Promise.resolve(fdEditionFailure('EDITION_SCHEMA','/')); }
+  return fdEditionValidateConfig(value.config,coreIndex,catalogSnapshot,siteContext,validationContext,subtle).then(function(checked){
+    if(!checked.ok)return checked;
+    return fdEditionDigest({format:value.format,schemaVersion:value.schemaVersion,config:checked.config},subtle).then(function(actual){
+      var normalized;if(!fdEditionDigestEqual(value.digest,actual))return fdEditionFailure('EDITION_DIGEST','/digest');
+      normalized={format:value.format,schemaVersion:value.schemaVersion,config:checked.config,digest:value.digest};return fdEditionFinish(checked,normalized,value.digest,subtle);
+    },function(){ return fdEditionFailure('EDITION_DIGEST','/digest'); });
+  });
 }
 
-function fdEditionValidateEnvelope(envelope,index,siteContext,subtle){
-  var errors=[],source=fdEditionReadObject(envelope,['format','schemaVersion','config','digest'],'/',errors),checked,normalized,digestPattern=/^sha256-[A-Za-z0-9_-]{43}$/;
-  if(!source) return Promise.resolve({ok:false,envelope:null,config:null,fingerprint:'',errors:errors,warnings:[]});
-  if(typeof source.format!=='string'||source.format!==FD_EDITION_RULES.format) errors.push(fdEditionFinding('EDITION_SCHEMA','/format','The edition format is unsupported.'));
-  if(source.schemaVersion!==FD_EDITION_RULES.schemaVersion) errors.push(fdEditionFinding('EDITION_SCHEMA','/schemaVersion','The edition schema version is unsupported.'));
-  if(typeof source.digest!=='string'||!digestPattern.test(source.digest)) errors.push(fdEditionFinding('EDITION_DIGEST','/digest','The SHA-256 digest has an invalid form.'));
-  checked=fdEditionValidateConfig(source.config,index,siteContext);
-  errors=errors.concat(checked.errors);
-  normalized={format:source.format,schemaVersion:source.schemaVersion,config:checked.value,digest:source.digest};
-  if(errors.length) return Promise.resolve({ok:false,envelope:normalized,config:checked.value,fingerprint:'',errors:errors,warnings:checked.warnings});
-  return fdEditionDigest({format:normalized.format,schemaVersion:normalized.schemaVersion,config:normalized.config},subtle).then(function(actual){
-    var valid=fdEditionDigestEqual(normalized.digest,actual);
-    var digestErrors=valid?[]:[fdEditionFinding('EDITION_DIGEST','/digest','The edition digest does not match its content.')];
-    return {ok:valid,envelope:normalized,config:normalized.config,fingerprint:valid?fdEditionFingerprint(normalized.config,normalized.digest):'',errors:digestErrors,warnings:checked.warnings};
-  },function(){ return {ok:false,envelope:normalized,config:normalized.config,fingerprint:'',errors:[fdEditionFinding('EDITION_DIGEST','/digest','SHA-256 is unavailable in this browser.')],warnings:checked.warnings}; });
-}
-
-function fdEditionDecodePayload(payload,index,siteContext,subtle,totalUrlLength){
+function fdEditionDecodePayload(payload,coreIndex,catalogSnapshot,siteContext,validationContext,subtle,totalUrlLength){
   var bytes,text,envelope;
-  if(typeof totalUrlLength!=='number'||!isFinite(totalUrlLength)||Math.floor(totalUrlLength)!==totalUrlLength||totalUrlLength<0||totalUrlLength>FD_EDITION_RULES.maxUrlChars)
-    return Promise.resolve(fdEditionFailure('EDITION_URL','/','The complete edition URL must contain at most 16000 characters.'));
-  if(typeof payload==='string'&&(payload.length>totalUrlLength||payload.length>FD_EDITION_RULES.maxUrlChars))
-    return Promise.resolve(fdEditionFailure('EDITION_URL','/','The edition payload length must fit within the complete URL limit.'));
-  try{
-    bytes=fdEditionBase64urlDecode(payload,FD_EDITION_RULES.maxUrlChars);
-    text=new TextDecoder('utf-8',{fatal:true}).decode(bytes);
-    envelope=JSON.parse(text);
-  }catch(ignore){ return Promise.resolve(fdEditionFailure('EDITION_SCHEMA','/','The edition payload is malformed.')); }
-  return fdEditionValidateEnvelope(envelope,index,siteContext,subtle);
+  if(!fdEditionInteger(totalUrlLength,0,FD_EDITION_RULES.maxUrlChars)||typeof payload!=='string'||payload.length>totalUrlLength||payload.length>FD_EDITION_RULES.maxUrlChars) return Promise.resolve(fdEditionFailure('EDITION_URL','/'));
+  try{ bytes=fdEditionBase64urlDecode(payload,FD_EDITION_RULES.maxUrlChars);text=new TextDecoder('utf-8',{fatal:true}).decode(bytes);envelope=JSON.parse(text); }
+  catch(ignorePayload){ return Promise.resolve(fdEditionFailure('EDITION_SCHEMA','/')); }
+  return fdEditionValidateEnvelope(envelope,coreIndex,catalogSnapshot,siteContext,validationContext,subtle);
 }
 
-function fdEditionDiagnosticVersion(result){
-  var envelopeDescriptor,versionDescriptor,value;
-  if(!fdEditionObject(result)) return null;
-  try{ envelopeDescriptor=Object.getOwnPropertyDescriptor(result,'envelope'); }
-  catch(ignoreEnvelope){ return null; }
-  if(!envelopeDescriptor||!Object.prototype.hasOwnProperty.call(envelopeDescriptor,'value')||
-     !fdEditionObject(envelopeDescriptor.value)) return null;
-  try{ versionDescriptor=Object.getOwnPropertyDescriptor(envelopeDescriptor.value,'schemaVersion'); }
-  catch(ignoreVersion){ return null; }
-  if(!versionDescriptor||!Object.prototype.hasOwnProperty.call(versionDescriptor,'value')) return null;
-  value=versionDescriptor.value;
-  if(typeof value!=='number'||!isFinite(value)||Math.floor(value)!==value||value<1||value>2147483647) return null;
-  return value;
+function fdEditionDeepFreeze(value){ var keys,i;if(value&&typeof value==='object'&&!Object.isFrozen(value)){keys=Object.keys(value);for(i=0;i<keys.length;i++)fdEditionDeepFreeze(value[keys[i]]);Object.freeze(value);}return value; }
+
+function fdEditionTrustedSnapshot(result){
+  var canonical,snapshot;
+  if(!FD_EDITION_TRUST||!result||(typeof result!=='object'&&typeof result!=='function')) return null;
+  try{ canonical=FD_EDITION_TRUST.get(result);if(!canonical)return null;snapshot=JSON.parse(canonical);return fdEditionDeepFreeze(snapshot); }
+  catch(ignoreTrust){ return null; }
+}
+
+function fdEditionSemanticConfig(config){
+  var value;
+  try{ value=fdEditionCopy(config);delete value.editionNumber;delete value.changeSummary;delete value.createdAgainstCoreRevision;delete value.createdAgainstLocalCatalogRevision;return fdEditionCanonicalJson(value); }
+  catch(ignoreConfig){ return ''; }
+}
+
+function fdEditionGenerateChangeSummary(baseConfig,currentConfig){
+  var base,current,kinds=Object.create(null),count=0;
+  function same(left,right){ if(typeof left==='undefined'&&typeof right==='undefined')return true;try{return fdEditionCanonicalJson(left)===fdEditionCanonicalJson(right);}catch(ignore){return false;} }
+  function add(kind,amount){ kinds[kind]=true;count=Math.min(255,count+(amount||1)); }
+  function field(left,right,kind){ if(!same(left,right))add(kind,1); }
+  function rows(left,right,kind){
+    var a=Object.create(null),b=Object.create(null),keys=Object.create(null),i,total=0,list;
+    left=left||[];right=right||[];for(i=0;i<left.length;i++){a[left[i].instanceId]=left[i];keys[left[i].instanceId]=true;}for(i=0;i<right.length;i++){b[right[i].instanceId]=right[i];keys[right[i].instanceId]=true;}
+    list=Object.keys(keys);for(i=0;i<list.length;i++)if(!a[list[i]]||!b[list[i]]||!same(a[list[i]],b[list[i]]))total+=1;if(total)add(kind,total);
+  }
+  if(baseConfig===null||typeof baseConfig==='undefined') return {kindCodes:['initial'],changedItemCount:0};
+  try{ base=fdEditionCopy(baseConfig);current=fdEditionCopy(currentConfig); }catch(ignoreCopy){ return null; }
+  ['audience','pathId','phraseSetKey'].forEach(function(key){field(base[key],current[key],'edition-context');});
+  ['trainingLocationKey','curatorProfileKey','rotationStart','rotationEnd','editionCheckedOn'].forEach(function(key){field(base.context[key],current.context[key],'edition-context');});
+  (function(){
+    var a=Object.create(null),b=Object.create(null),keys=Object.create(null),i,id,left,right,list;
+    for(i=0;i<base.pathItems.length;i++){a[base.pathItems[i].instanceId]=base.pathItems[i];keys[base.pathItems[i].instanceId]=true;}
+    for(i=0;i<current.pathItems.length;i++){b[current.pathItems[i].instanceId]=current.pathItems[i];keys[current.pathItems[i].instanceId]=true;}
+    list=Object.keys(keys);
+    for(i=0;i<list.length;i++){ id=list[i];left=a[id];right=b[id];if(!left||!right){add('curriculum-selection',1);continue;}var changed=false;if(left.ref!==right.ref){kinds['curriculum-selection']=true;changed=true;}if(left.priority!==right.priority){kinds['curriculum-priority']=true;changed=true;}if((left.reasonKey||'')!==(right.reasonKey||'')){kinds['curriculum-reason']=true;changed=true;}if(left.week!==right.week||left.order!==right.order){kinds.schedule=true;changed=true;}if(changed)count=Math.min(255,count+1); }
+  }());
+  field(base.localPlan.arrival,current.localPlan.arrival,'arrival');
+  (function(){ var left=base.localPlan.schedule,right=current.localPlan.schedule;if(!left&&!right)return;left=left||{};right=right||{};if(!same([left.dayStart||null,left.dayEnd||null,left.endQualifierCode||null],[right.dayStart||null,right.dayEnd||null,right.endQualifierCode||null]))add('schedule',1);rows(left.events,right.events,'schedule'); }());
+  ['rounds','presentation','documentation','attendance','feedback'].forEach(function(key){field(base.localPlan[key],current.localPlan[key],'workflow');});
+  rows(base.localPlan.accessItems,current.localPlan.accessItems,'access');rows(base.localPlan.contacts,current.localPlan.contacts,'contacts');rows(base.localPlan.checklistItems,current.localPlan.checklistItems,'checklist');rows(base.localPlan.resources,current.localPlan.resources,'resources');
+  return {kindCodes:FD_EDITION_RULES.changeKinds.filter(function(kind){return kind!=='initial'&&kinds[kind];}),changedItemCount:count};
+}
+
+function fdEditionStorageKeys(audience){
+  if(audience==='ms3') return {edition:'cw_rotation_edition_ms3_v2',local:'cw_rotation_local_progress_ms3_v2',curator:'cw_curator_draft_ms3_v2'};
+  if(audience==='resident') return {edition:'rp_rotation_edition_resident_v2',local:'rp_rotation_local_progress_resident_v2',curator:'rp_curator_draft_resident_v2'};
+  return null;
 }
 
 function fdEditionDiagnostic(result,siteContext){
-  var code='EDITION_SCHEMA',fingerprint='',currentCoreRevision='';
-  var errorsDescriptor,lengthDescriptor,firstDescriptor,codeDescriptor,fingerprintDescriptor,revisionDescriptor,isArray=false;
-  var allowedCodes=Object.create(null),allowedList=['EDITION_SCHEMA','EDITION_DIGEST','EDITION_AUDIENCE','EDITION_REF',
-    'EDITION_WEEK','EDITION_SIZE','EDITION_URL','EDITION_TEXT_RISK'],allowedIndex;
-  for(allowedIndex=0;allowedIndex<allowedList.length;allowedIndex++) allowedCodes[allowedList[allowedIndex]]=true;
-  if(fdEditionObject(result)){
-    try{
-      errorsDescriptor=Object.getOwnPropertyDescriptor(result,'errors');
-      fingerprintDescriptor=Object.getOwnPropertyDescriptor(result,'fingerprint');
-    }catch(ignoreResult){ errorsDescriptor=null; fingerprintDescriptor=null; }
-    if(errorsDescriptor&&Object.prototype.hasOwnProperty.call(errorsDescriptor,'value')){
-      try{ isArray=Array.isArray(errorsDescriptor.value); }
-      catch(ignoreErrorsArray){ isArray=false; }
-      if(isArray){
-        try{ lengthDescriptor=Object.getOwnPropertyDescriptor(errorsDescriptor.value,'length'); }
-        catch(ignoreErrorsLength){ lengthDescriptor=null; }
-        if(lengthDescriptor&&lengthDescriptor.value===0) code='EDITION_OK';
-        else if(lengthDescriptor&&typeof lengthDescriptor.value==='number'&&lengthDescriptor.value>0){
-          try{ firstDescriptor=Object.getOwnPropertyDescriptor(errorsDescriptor.value,'0'); }
-          catch(ignoreFirst){ firstDescriptor=null; }
-          if(firstDescriptor&&Object.prototype.hasOwnProperty.call(firstDescriptor,'value')&&fdEditionObject(firstDescriptor.value)){
-            try{ codeDescriptor=Object.getOwnPropertyDescriptor(firstDescriptor.value,'code'); }
-            catch(ignoreCode){ codeDescriptor=null; }
-            if(codeDescriptor&&Object.prototype.hasOwnProperty.call(codeDescriptor,'value')&&
-               typeof codeDescriptor.value==='string'&&allowedCodes[codeDescriptor.value]) code=codeDescriptor.value;
-          }
-        }
-      }
-    }
-    if(fingerprintDescriptor&&Object.prototype.hasOwnProperty.call(fingerprintDescriptor,'value')&&
-       typeof fingerprintDescriptor.value==='string'&&/^[A-Z0-9]{2,8}-(?:MS3|RES)-[0-9A-HJKMNP-TV-Z]{6}$/.test(fingerprintDescriptor.value))
-      fingerprint=fingerprintDescriptor.value;
-  }
-  if(fdEditionObject(siteContext)){
-    try{ revisionDescriptor=Object.getOwnPropertyDescriptor(siteContext,'coreRevision'); }
-    catch(ignoreContext){ revisionDescriptor=null; }
-    if(revisionDescriptor&&Object.prototype.hasOwnProperty.call(revisionDescriptor,'value')&&typeof revisionDescriptor.value==='string'&&
-       new RegExp(FD_EDITION_RULES.patterns.revision).test(revisionDescriptor.value)) currentCoreRevision=revisionDescriptor.value;
-  }
-  return {
-    code:code,
-    schemaVersion:fdEditionDiagnosticVersion(result),
-    fingerprint:fingerprint,
-    currentCoreRevision:currentCoreRevision
-  };
+  var trusted=fdEditionTrustedSnapshot(result),code='EDITION_SCHEMA',revision='',version=null;
+  try{if(result&&Array.isArray(result.errors)&&result.errors.length&&typeof result.errors[0].code==='string')code=result.errors[0].code;else if(trusted)code='EDITION_OK';if(result&&result.envelope&&result.envelope.schemaVersion===2)version=2;if(siteContext&&typeof siteContext.coreRevision==='string'&&FD_EDITION_REVISION.test(siteContext.coreRevision))revision=siteContext.coreRevision;}catch(ignore){}
+  return {code:code,schemaVersion:version,fingerprint:trusted?trusted.fingerprint:'',currentCoreRevision:revision};
 }
-
-/* Provenance is intentionally closure-private: consumers can inspect, never brand, a result. */
-var fdEditionTrustedSnapshot=(function(){
-  var trusted=typeof WeakMap==='function'?new WeakMap():null,
-    create=fdEditionCreateEnvelope,validate=fdEditionValidateEnvelope;
-  function freeze(value,seen){
-    var keys,i,key,descriptor;
-    if(!value||typeof value!=='object'||seen.indexOf(value)!==-1) return;
-    seen.push(value);
-    try{ keys=Reflect.ownKeys(value); }catch(ignoreKeys){ return; }
-    for(i=0;i<keys.length;i++){
-      key=keys[i];
-      try{ descriptor=Object.getOwnPropertyDescriptor(value,key); }catch(ignoreDescriptor){ return; }
-      if(descriptor&&Object.prototype.hasOwnProperty.call(descriptor,'value')) freeze(descriptor.value,seen);
-    }
-    try{ Object.freeze(value); }catch(ignoreFreeze){}
-  }
-  function mark(result){
-    var canonical,envelope,config,fingerprint,snapshot;
-    if(!trusted||!result||result.ok!==true||!result.envelope||!result.config||typeof result.fingerprint!=='string') return result;
-    try{
-      envelope=result.envelope; config=result.config; fingerprint=result.fingerprint;
-      if(envelope.format!==FD_EDITION_RULES.format||envelope.schemaVersion!==FD_EDITION_RULES.schemaVersion||
-         typeof envelope.digest!=='string'||fdEditionCanonicalJson(envelope.config)!==fdEditionCanonicalJson(config)||
-         fdEditionFingerprint(config,envelope.digest)!==fingerprint) return result;
-      canonical=fdEditionCanonicalJson(envelope);
-      envelope=JSON.parse(canonical);
-      snapshot={envelope:envelope,config:envelope.config,fingerprint:fingerprint,canonicalEnvelope:canonical};
-      freeze(snapshot,[]); trusted.set(result,snapshot); freeze(result,[]);
-    }catch(ignoreMark){}
-    return result;
-  }
-  fdEditionCreateEnvelope=function(config,index,siteContext,subtle){
-    return create(config,index,siteContext,subtle).then(mark,function(){ return mark({ok:false,envelope:null,config:null,fingerprint:'',errors:[],warnings:[]}); });
-  };
-  fdEditionValidateEnvelope=function(envelope,index,siteContext,subtle){
-    return validate(envelope,index,siteContext,subtle).then(mark,function(){ return mark({ok:false,envelope:null,config:null,fingerprint:'',errors:[],warnings:[]}); });
-  };
-  return function(result){
-    if(!trusted||(result===null||(typeof result!=='object'&&typeof result!=='function'))) return null;
-    try{ return trusted.get(result)||null; }catch(ignoreLookup){ return null; }
-  };
-}());

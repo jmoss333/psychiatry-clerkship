@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
   <title>Faculty rotation edition builder</title>
+  <link rel="stylesheet" href="../frontdoor.css">
   <!-- [CLERKSHIP-META v1] tool="Rotation Edition Curator" version="1.0" built="2026-08-19" category="faculty-curation" audience="faculty" settings="self-study" time="20min" clinicalClaim="false" summary="Arrange an audience-locked curriculum and bounded local orientation into an account-free edition link." -->
   <style>
     :root {
@@ -164,6 +165,37 @@
       font-size: 1.45rem;
     }
     .panel-note { color: var(--muted); }
+    .fd-curator-v2 { display: grid; gap: 12px; }
+    .fd-curator-v2 > h2 { margin-bottom: 2px; }
+    .fd-curator-v2 input, .fd-curator-v2 select {
+      width: 100%;
+      min-height: 44px;
+      padding: 9px 11px;
+      border: 1px solid #8f9b96;
+      border-radius: 7px;
+      color: var(--ink);
+      background: #fff;
+    }
+    .fd-curator-v2 label { color: var(--evergreen); font-weight: 800; }
+    .fd-curator-library-item, .fd-curator-week {
+      display: grid;
+      gap: 10px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fbf6ed;
+    }
+    .fd-curator-library-item h3, .fd-curator-week h3 { margin: 0; }
+    .fd-curator-placement, .fd-curator-schedule-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      align-items: end;
+      padding-top: 10px;
+      border-top: 1px solid var(--line);
+    }
+    .fd-curator-schedule-row { grid-template-columns: minmax(140px, 1fr) auto auto minmax(120px, .6fr) auto; }
+    .fd-curator-onboarding { padding: 12px 14px; border-left: 4px solid var(--gold); background: #fff3d8; }
     .preview-panel { position: sticky; top: 18px; }
     [data-review-viewport="mobile"] .preview-panel { width: 100%; max-width: 390px; margin-inline: auto; }
     [data-review-viewport="desktop"] .preview-panel { width: 100%; max-width: none; }
@@ -454,6 +486,7 @@
       [data-local-view="preview"] #curatorLocalViewToggle:not([hidden]) + .workspace #curatorEditorMount { display: none; }
       .curator-resource-head, .curator-week-heading, .schedule-item { align-items: flex-start; }
       .schedule-item { display: grid; }
+      .fd-curator-placement, .fd-curator-schedule-row { grid-template-columns: 1fr; align-items: stretch; }
       .schedule-actions { justify-content: flex-start; }
       .final-action { align-items: stretch; }
       #curatorGenerate { width: 100%; }
@@ -498,6 +531,7 @@
     </div>
     <div class="workspace">
       <section id="curatorEditorMount" class="panel" aria-labelledby="curatorEditorTitle">
+        <template data-curator-v1-inert>
         <h2 id="curatorEditorTitle">1. Edition</h2>
         <div id="curatorErrorSummary" class="error-summary" role="alert" tabindex="-1" hidden>
           <h3>Review the following fields</h3>
@@ -662,6 +696,7 @@
           <p class="panel-note">This step remains unavailable until its focused implementation and safety checks are complete.</p>
           <div class="placeholder-lines" aria-hidden="true"><span></span><span></span><span></span></div>
         </div>
+        </template>
       </section>
       <aside id="curatorPreviewMount" class="panel preview-panel" aria-labelledby="curatorPreviewTitle">
         <h2 id="curatorPreviewTitle">Student preview</h2>
@@ -694,6 +729,7 @@
     /*__FD_EDITION_CATALOG__*/
     /*__FD_EDITION_CONTRACT__*/
     /*__FD_EDITION_PROJECT__*/
+    /*__FD_EDITION_V1_SALVAGE__*/
     /*__FD_CURATOR__*/
 
     var FD_INDEX=fdBuildIndex(FD_CURRICULUM,FD_TOPIC_META,FD_TOOL_REGISTRY,FD_SITE_MANIFEST);
@@ -704,10 +740,22 @@
       return revision&&gate?{localCatalogRevision:revision,rotationEditionV2:gate}:{localCatalogRevision:'',rotationEditionV2:'disabled'};
     }
     var fdRotationCatalogContextValue=fdRotationCatalogContext(FD_ROTATION_EDITION_CATALOG);
-    var FD_CURATOR_CONTEXT={audience:FD_AUDIENCE,pathId:FD_INDEX.path.id,coreRevision:FD_CORE_REVISION};
-    FD_CURATOR_CONTEXT.localCatalogRevision=fdRotationCatalogContextValue.localCatalogRevision;
-    FD_CURATOR_CONTEXT.rotationEditionV2=fdRotationCatalogContextValue.rotationEditionV2;
-    fdCuratorMount(document.getElementById('root'),FD_INDEX,FD_CURATOR_CONTEXT);
+    var FD_CURATOR_CONTEXT={audience:FD_AUDIENCE,pathId:FD_INDEX.path.id,coreRevision:FD_CORE_REVISION,
+      localCatalogRevision:fdRotationCatalogContextValue.localCatalogRevision,
+      rotationEditionV2:fdRotationCatalogContextValue.rotationEditionV2};
+    var fdNow=new Date();
+    var fdLocalCalendar={getFullYear:function(){return fdNow.getFullYear();},
+      getMonth:function(){return fdNow.getMonth();},getDate:function(){return fdNow.getDate();}};
+    var fdGenerationDate=fdCuratorLocalGenerationDate(fdLocalCalendar);
+    fdEditionCatalogSnapshot(FD_ROTATION_EDITION_CATALOG,FD_CURATOR_CONTEXT.audience,
+      window.crypto&&window.crypto.subtle).then(function(prepared){
+      if(!prepared||prepared.ok!==true){fdCuratorCatalogUnavailable(document.getElementById('root'));return;}
+      var fdCatalogSnapshot=prepared.snapshot;
+      var fdCuratorDependencies;
+      try{fdCuratorDependencies={storage:window.localStorage,subtle:window.crypto&&window.crypto.subtle};}
+      catch(ignoreDependencies){fdCuratorCatalogUnavailable(document.getElementById('root'));return;}
+      fdCuratorMount(document.getElementById('root'),FD_INDEX,FD_CURATOR_CONTEXT,fdCatalogSnapshot,fdGenerationDate,fdCuratorDependencies);
+    },function(){fdCuratorCatalogUnavailable(document.getElementById('root'));});
   </script>
 </body>
 </html>

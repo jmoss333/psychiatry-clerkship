@@ -1,455 +1,135 @@
 import assert from 'node:assert/strict';
+import { webcrypto } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 
-const SOURCE = new URL('../13_Faculty_Resources/_automation/site_build/frontdoor/fd_edition_project.js', import.meta.url);
-const body = readFileSync(SOURCE, 'utf8');
-const F = new Function(`${body}\nreturn {
-  fdProjectEdition,fdEditionIndexFingerprint,fdEditionCoreProgressRef
-};`)();
+const contract = readFileSync(new URL('../13_Faculty_Resources/_automation/site_build/frontdoor/fd_edition_contract.js', import.meta.url), 'utf8');
+const projector = readFileSync(new URL('../13_Faculty_Resources/_automation/site_build/frontdoor/fd_edition_project.js', import.meta.url), 'utf8');
+const synthetic = JSON.parse(readFileSync(new URL('fixtures/rotation-editions/synthetic-core-index.json', import.meta.url), 'utf8'));
+const revision = `sha256-${'B'.repeat(43)}`;
 
-function clone(value) { return structuredClone(value); }
-
-function freezeDeep(value) {
-  if (!value || typeof value !== 'object' || Object.isFrozen(value)) return value;
-  for (const key of Reflect.ownKeys(value)) freezeDeep(value[key]);
-  return Object.freeze(value);
+function load() {
+  const resolver = `
+  var fdEditionCatalogResolve=async function(config){
+    var audience=config.audience==='ms3'?'MS3':'Resident';
+    return {ok:true,resolved:{config:config,location:{locationCode:'EXU'},curator:{},phraseSet:{}},
+      referenceSetDigest:'sha256-BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB',
+      displayModel:{card:{fingerprint:'',audienceLabel:audience},pathItems:config.pathItems.map(function(item){var out=Object.assign({},item,{priorityLabel:item.priority==='required'?'Required':item.priority==='recommended'?'Recommended':'Optional'});delete out.reasonKey;if(item.reasonKey)out.reasonText='Resolved catalog reason';return out;}),
+        revisions:{createdAgainstCoreRevision:config.createdAgainstCoreRevision,currentCoreRevision:config.createdAgainstCoreRevision,coreMatches:true,
+          createdAgainstCatalogRevision:config.createdAgainstLocalCatalogRevision,currentCatalogRevision:config.createdAgainstLocalCatalogRevision,catalogMatches:true},
+        changeSummary:config.changeSummary,firstDay:{arrival:null,accessItems:[],contacts:[],checklistItems:[]},typicalDay:null,
+        workflow:{rounds:null,presentation:null,documentation:null},attendanceFeedback:{attendance:null,feedback:null},resources:[],emptyLocalPlan:true},errors:[]};
+  };`;
+  return new Function('TextEncoder', 'TextDecoder', 'atob', 'btoa',
+    `${resolver}\n${contract}\n${projector}\nreturn {fdEditionValidateEnvelope,fdEditionTrustedSnapshot,fdProjectEdition,fdEditionIndexFingerprint,fdEditionCoreProgressRef};`,
+  )(TextEncoder, TextDecoder, atob, btoa);
 }
 
-function canonicalIndex(audience) {
-  const weekCount = audience === 'ms3' ? 6 : 4;
-  const pathId = audience === 'ms3' ? 'ms3-six-week' : 'resident-four-week';
-  const byRef = {
-    'assessment.md': {
-      ref: 'assessment.md', kind: 'read', title: 'Synthetic assessment', minutes: 9,
-      summary: 'Synthetic clinical summary.', points: ['Observe', 'Escalate'],
-      attested: true, toolRef: 'assessment-tool.html', risk: 'high',
-      governance: ['clinical', 'reviewed', 'revision-a'], href: '?page=assessment.md'
-    },
-    'assessment-tool.html': {
-      ref: 'assessment-tool.html', kind: 'tool', title: 'Synthetic tool', minutes: null,
-      summary: 'Synthetic tool summary.', points: [], attested: false, toolRef: null,
-      risk: 'medium', governance: ['tool', 'pending', 'revision-b'],
-      href: '?tool=assessment-tool.html'
-    },
-    'omitted.md': {
-      ref: 'omitted.md', kind: 'read', title: 'Canonical library-only resource', minutes: 4,
-      summary: 'This remains available in the Library.', points: ['Canonical'],
-      attested: true, toolRef: null, risk: 'low',
-      governance: ['clinical', 'reviewed', 'revision-c'], href: '?page=omitted.md'
-    }
-  };
-  return {
-    byRef,
-    path: { id: pathId, weekCount },
-    weeks: Array.from({ length: weekCount }, (_, offset) => ({
-      n: offset + 1,
-      title: `Canonical week ${offset + 1}`,
-      theme: `Canonical theme ${offset + 1}`,
-      focusCategories: [`focus-${offset + 1}`],
-      items: offset === 0 ? [byRef['omitted.md']] : []
-    })),
-    columns: [{
-      name: 'Canonical Library', accent: '#123456',
-      items: [byRef['assessment.md'], byRef['assessment-tool.html'], byRef['omitted.md']]
-    }],
-    kit: [{ item: byRef['assessment.md'], sub: 'Canonical Safety Kit guidance.' }]
-  };
+function validDocument(audience) {
+  return JSON.parse(readFileSync(new URL(`fixtures/rotation-editions/valid-${audience === 'ms3' ? 'ms3' : 'resident'}.json`, import.meta.url), 'utf8'));
 }
 
-function validatedEdition(audience) {
-  const config = {
-    audience,
-    pathId: audience === 'ms3' ? 'ms3-six-week' : 'resident-four-week',
-    editionNumber: audience === 'ms3' ? 3 : 7,
-    createdAgainstCoreRevision: '1234567890abcdef1234567890abcdef12345678',
-    card: {
-      title: 'Synthetic curated rotation', locationName: 'Example service', locationCode: 'EX1',
-      curatorName: 'Sample Curator', curatorRole: 'Faculty educator',
-      rotationStart: '2026-09-01', rotationEnd: '2026-10-12', lastVerified: '2026-08-19'
-    },
-    pathItems: [
-      {
-        instanceId: 'core:tool:1', ref: 'assessment-tool.html', week: 1, order: 2,
-        priority: 'optional', rationale: 'Use after the core reading.'
-      },
-      {
-        instanceId: 'core:assessment:1', ref: 'assessment.md', week: 1, order: 1,
-        priority: 'required', rationale: 'Start with the core framework.'
-      },
-      {
-        instanceId: 'core:assessment:2', ref: 'assessment.md',
-        week: audience === 'ms3' ? 6 : 4, order: 1,
-        priority: 'recommended', rationale: 'Revisit for integration.'
-      }
-    ],
-    localOrientation: {
-      firstDayArrival: 'Synthetic arrival guidance.', dailySchedule: '', roundsWorkflow: '',
-      presentationExpectations: '', documentationExpectations: '', attendanceExpectations: '',
-      feedbackProcess: '', accessPreparation: '',
-      contacts: [{ role: 'Support role', directoryUrl: 'https://example.edu/directory' }],
-      checklist: [{ id: 'local:check:1', label: 'Review local orientation', priority: 'required' }],
-      resources: [{
-        id: 'local:resource:1', title: 'Local orientation resource',
-        url: 'https://example.edu/orientation', priority: 'recommended', week: 1,
-        rationale: 'Local workflow only.'
-      }]
-    },
-    changeNote: 'Synthetic edition update.'
-  };
-  const envelope = {
-    format: 'cw-rotation-edition', schemaVersion: 1, config,
-    digest: `sha256-${'A'.repeat(43)}`
-  };
-  return {
-    ok: true, envelope, config, fingerprint: audience === 'ms3' ? 'EX1-MS3-000000' : 'EX1-RES-000000',
-    errors: [], warnings: []
-  };
+async function trusted(audience) {
+  const F = load();
+  const core = structuredClone(synthetic.audiences[audience]);
+  const document = validDocument(audience);
+  const result = await F.fdEditionValidateEnvelope(document, core, {}, {
+    audience, coreRevision: core.coreRevision, localCatalogRevision: revision, rotationEditionV2: 'enabled',
+  }, { mode: 'learner', generationDate: '' }, webcrypto.subtle);
+  assert.equal(result.ok, true, JSON.stringify(result.errors));
+  return { F, core, document, result };
 }
 
-function allWeekItems(index) { return index.weeks.flatMap((week) => week.items); }
-
-function assertStructuredFailure(result) {
+function assertFailure(result) {
   assert.equal(result.ok, false);
-  assert.equal(Object.hasOwn(result, 'index'), false, 'failure must not expose a partial index');
+  assert.equal(Object.hasOwn(result, 'index'), false);
   assert.ok(Array.isArray(result.errors) && result.errors.length > 0);
-  for (const finding of result.errors) {
-    assert.deepEqual(Object.keys(finding).sort(), ['blocking', 'code', 'message', 'path']);
-    assert.equal(finding.code, 'EDITION_PROJECT');
-    assert.equal(finding.blocking, true);
-    assert.match(finding.path, /^\//);
-  }
 }
 
 for (const audience of ['ms3', 'resident']) {
-  test(`projects the ordered ${audience} edition across its canonical duration with repeats kept separate`, () => {
-    const canonical = canonicalIndex(audience);
-    const edition = validatedEdition(audience);
-    const canonicalBefore = JSON.stringify(canonical);
-    const columnsBefore = JSON.stringify(canonical.columns);
-    const kitBefore = JSON.stringify(canonical.kit);
-    const byRefBefore = JSON.stringify(canonical.byRef);
-    const editionBefore = JSON.stringify(edition);
-
-    const result = F.fdProjectEdition(canonical, edition);
-
-    assert.equal(result.ok, true, JSON.stringify(result.errors));
-    const projected = result.index;
-    const weekCount = audience === 'ms3' ? 6 : 4;
-    assert.equal(projected.weeks.length, weekCount);
-    assert.deepEqual(projected.path, canonical.path);
-    assert.deepEqual(projected.weeks.map(({ n, title, theme, focusCategories }) => ({
-      n, title, theme, focusCategories
-    })), canonical.weeks.map(({ n, title, theme, focusCategories }) => ({
-      n, title, theme, focusCategories
-    })));
-    assert.deepEqual(projected.weeks[0].items.map((item) => item.ref),
-      ['assessment.md', 'assessment-tool.html']);
-    assert.deepEqual(projected.weeks[weekCount - 1].items.map((item) => item.ref),
-      ['assessment.md']);
-    assert.equal(projected.weeks.slice(1, -1).every((week) => week.items.length === 0), true);
-
-    const [first, tool] = projected.weeks[0].items;
-    const repeated = projected.weeks[weekCount - 1].items[0];
-    assert.deepEqual(
-      [first.editionInstanceId, first.editionPriority, first.editionRationale],
-      ['core:assessment:1', 'required', 'Start with the core framework.']
-    );
-    assert.deepEqual(
-      [tool.editionInstanceId, tool.editionPriority, tool.editionRationale],
-      ['core:tool:1', 'optional', 'Use after the core reading.']
-    );
-    assert.deepEqual(
-      [repeated.editionInstanceId, repeated.editionPriority, repeated.editionRationale],
-      ['core:assessment:2', 'recommended', 'Revisit for integration.']
-    );
-    assert.notStrictEqual(first, canonical.byRef['assessment.md']);
-    assert.notStrictEqual(repeated, canonical.byRef['assessment.md']);
-    assert.notStrictEqual(first, repeated);
-    assert.equal(F.fdEditionCoreProgressRef(first), 'assessment.md');
-    assert.equal(F.fdEditionCoreProgressRef(repeated), 'assessment.md');
-    assert.equal(allWeekItems(projected).some((item) => item.ref === 'omitted.md'), false);
-    assert.equal(projected.byRef['omitted.md'], canonical.byRef['omitted.md']);
-
-    assert.deepEqual(projected.edition, {
-      envelope: edition.envelope,
-      fingerprint: edition.fingerprint,
-      card: edition.config.card,
-      editionNumber: edition.config.editionNumber,
-      createdAgainstCoreRevision: edition.config.createdAgainstCoreRevision,
-      changeNote: edition.config.changeNote,
-      localOrientation: edition.config.localOrientation
+  test(`projects only closure-trusted ${audience} placements and binds the resolved display model`, async () => {
+    const { F, core, result } = await trusted(audience);
+    const before = structuredClone(core);
+    const protectedBefore = JSON.stringify({
+      byRef: core.byRef, columns: core.columns, kit: core.kit,
+      singleSafetyRule: core.singleSafetyRule, supervision: core.supervision,
+      learnerHistory: core.learnerHistory,
     });
-    assert.equal(F.fdEditionIndexFingerprint(projected), edition.fingerprint);
-    assert.equal(F.fdEditionIndexFingerprint(canonical), '');
-
-    assert.equal(Object.hasOwn(projected.byRef, 'local:resource:1'), false);
-    assert.equal(Object.hasOwn(projected.byRef, 'local:check:1'), false);
-    assert.equal(JSON.stringify(projected.columns).includes('local:resource:1'), false);
-    assert.equal(JSON.stringify(projected.kit).includes('local:check:1'), false);
-    for (const local of [
-      ...projected.edition.localOrientation.checklist,
-      ...projected.edition.localOrientation.resources
-    ]) {
-      assert.equal(Object.hasOwn(local, 'governance'), false);
-      assert.equal(Object.hasOwn(local, 'attested'), false);
-    }
-
-    assert.equal(JSON.stringify(canonical), canonicalBefore);
-    assert.equal(JSON.stringify(canonical.columns), columnsBefore);
-    assert.equal(JSON.stringify(canonical.kit), kitBefore);
-    assert.equal(JSON.stringify(canonical.byRef), byRefBefore);
-    assert.equal(JSON.stringify(edition), editionBefore);
+    const projected = F.fdProjectEdition(core, result);
+    assert.equal(projected.ok, true, JSON.stringify(projected.errors));
+    const week = audience === 'ms3' ? 0 : 3;
+    assert.equal(projected.index.weeks[week].items.length, 1);
+    assert.deepEqual(projected.index.weeks[week].items[0], {
+      ...core.byRef['library/example'], instanceId: 'core:library/example:1',
+      priority: audience === 'ms3' ? 'required' : 'recommended',
+    });
+    assert.deepEqual(projected.index.edition, result.displayModel);
+    assert.equal(projected.index.edition.card.fingerprint, result.fingerprint);
+    assert.equal(F.fdEditionIndexFingerprint(projected.index), result.fingerprint);
+    assert.equal(F.fdEditionCoreProgressRef(projected.index.weeks[week].items[0]), 'library/example');
+    assert.equal(JSON.stringify({
+      byRef: projected.index.byRef, columns: projected.index.columns, kit: projected.index.kit,
+      singleSafetyRule: projected.index.singleSafetyRule, supervision: projected.index.supervision,
+      learnerHistory: projected.index.learnerHistory,
+    }), protectedBefore);
+    assert.deepEqual(core, before, 'projection never mutates the canonical index');
   });
 }
 
-test('projects from a recursively frozen canonical index without changing protected surfaces', () => {
-  const canonical = canonicalIndex('ms3');
-  const edition = validatedEdition('ms3');
-  const protectedBefore = clone({
-    columns: canonical.columns, kit: canonical.kit, byRef: canonical.byRef,
-    path: canonical.path,
-    items: Object.values(canonical.byRef).map((item) => ({
-      ref: item.ref, governance: item.governance, attested: item.attested,
-      href: item.href, title: item.title, summary: item.summary,
-      minutes: item.minutes, points: item.points, risk: item.risk, toolRef: item.toolRef
-    }))
-  });
-  freezeDeep(canonical);
-
-  const result = F.fdProjectEdition(canonical, edition);
-
-  assert.equal(result.ok, true, JSON.stringify(result.errors));
-  assert.strictEqual(result.index.columns, canonical.columns);
-  assert.strictEqual(result.index.kit, canonical.kit);
-  assert.strictEqual(result.index.byRef, canonical.byRef);
-  assert.strictEqual(result.index.path, canonical.path);
-  assert.deepEqual({
-    columns: result.index.columns, kit: result.index.kit, byRef: result.index.byRef,
-    path: result.index.path,
-    items: Object.values(result.index.byRef).map((item) => ({
-      ref: item.ref, governance: item.governance, attested: item.attested,
-      href: item.href, title: item.title, summary: item.summary,
-      minutes: item.minutes, points: item.points, risk: item.risk, toolRef: item.toolRef
-    }))
-  }, protectedBefore);
-  assert.equal(Object.isFrozen(canonical), true);
-  assert.equal(Object.isFrozen(canonical.byRef['assessment.md'].points), true);
+test('rejects raw envelopes, copied validation results, and trust lookalikes atomically', async () => {
+  const { F, core, document, result } = await trusted('ms3');
+  for (const candidate of [
+    document,
+    structuredClone(result),
+    { ...result },
+    { ok: true, envelope: result.envelope, config: result.config, fingerprint: result.fingerprint, displayModel: result.displayModel, referenceSetDigest: result.referenceSetDigest, errors: [] },
+  ]) assertFailure(F.fdProjectEdition(core, candidate));
 });
 
-test('rejects inconsistent projector inputs atomically', () => {
-  const cases = [
-    ['missing canonical index', null, validatedEdition('ms3')],
-    ['missing protected Library columns', (() => {
-      const value = canonicalIndex('ms3'); delete value.columns; return value;
-    })(), validatedEdition('ms3')],
-    ['unsuccessful validation result', canonicalIndex('ms3'), {
-      ...validatedEdition('ms3'), ok: false
-    }],
-    ['successful flag with blocking findings', canonicalIndex('ms3'), (() => {
-      const value = validatedEdition('ms3');
-      value.errors = [{
-        code: 'EDITION_REF', path: '/config/pathItems/0/ref',
-        message: 'A core reference is unavailable.', blocking: true
-      }];
-      return value;
-    })()],
-    ['missing envelope', canonicalIndex('ms3'), (() => {
-      const value = validatedEdition('ms3'); delete value.envelope; return value;
-    })()],
-    ['path mismatch', canonicalIndex('ms3'), (() => {
-      const value = validatedEdition('ms3'); value.config.pathId = 'resident-four-week'; return value;
-    })()],
-    ['duration mismatch', (() => {
-      const value = canonicalIndex('ms3'); value.path.weekCount = 5; return value;
-    })(), validatedEdition('ms3')],
-    ['unknown ref', canonicalIndex('ms3'), (() => {
-      const value = validatedEdition('ms3'); value.config.pathItems[0].ref = 'missing.md'; return value;
-    })()],
-    ['out-of-range week', canonicalIndex('resident'), (() => {
-      const value = validatedEdition('resident'); value.config.pathItems[0].week = 5; return value;
-    })()],
-    ['duplicate instance ID', canonicalIndex('ms3'), (() => {
-      const value = validatedEdition('ms3'); value.config.pathItems[1].instanceId = 'core:tool:1'; return value;
-    })()],
-    ['duplicate week order', canonicalIndex('ms3'), (() => {
-      const value = validatedEdition('ms3'); value.config.pathItems[0].order = 1; return value;
-    })()],
-    ['noncontiguous week order', canonicalIndex('ms3'), (() => {
-      const value = validatedEdition('ms3'); value.config.pathItems[0].order = 3; return value;
-    })()],
-    ['tampered fingerprint', canonicalIndex('ms3'), (() => {
-      const value = validatedEdition('ms3'); value.fingerprint = ''; return value;
-    })()],
-    ['local checklist with core governance', canonicalIndex('ms3'), (() => {
-      const value = validatedEdition('ms3');
-      value.config.localOrientation.checklist[0].governance = ['clinical', 'reviewed', 'revision-x'];
-      return value;
-    })()],
-    ['local resource with core attestation', canonicalIndex('ms3'), (() => {
-      const value = validatedEdition('ms3');
-      value.config.localOrientation.resources[0].attested = true;
-      return value;
-    })()]
-  ];
-
-  for (const [label, canonical, edition] of cases) {
-    const canonicalBefore = canonical === null ? null : JSON.stringify(canonical);
-    const editionBefore = JSON.stringify(edition);
-    const result = F.fdProjectEdition(canonical, edition);
-    assertStructuredFailure(result);
-    assert.equal(canonical === null ? null : JSON.stringify(canonical), canonicalBefore, label);
-    assert.equal(JSON.stringify(edition), editionBefore, label);
-  }
+test('projects the existing index shape without requiring duplicated audience metadata', async () => {
+  const { F, core, result } = await trusted('ms3');
+  delete core.audience;
+  delete core.coreRevision;
+  const projected = F.fdProjectEdition(core, result);
+  assert.equal(projected.ok, true, JSON.stringify(projected.errors));
+  assert.equal(projected.index.path.id, 'ms3-six-week');
 });
 
-test('progress and fingerprint helpers fail closed for malformed inputs', () => {
-  assert.equal(F.fdEditionCoreProgressRef(null), '');
-  assert.equal(F.fdEditionCoreProgressRef({ ref: 4, editionInstanceId: 'core:x:1' }), '');
-  assert.equal(F.fdEditionIndexFingerprint(null), '');
-  assert.equal(F.fdEditionIndexFingerprint({ edition: { fingerprint: 4 } }), '');
-  assert.equal(F.fdEditionIndexFingerprint({ edition: { fingerprint: 'untrusted' } }), '');
-});
+test('preserves protected core graphs byte-equivalently and fails closed on unsafe graphs', async () => {
+  const { F, core, result } = await trusted('ms3');
+  core.byRef['library/example'].clinicalMetadata = { review: { state: 'reviewed' }, tags: ['safety'], active: true };
+  const before = JSON.stringify(core);
+  const projected = F.fdProjectEdition(core, result);
+  assert.equal(projected.ok, true, JSON.stringify(projected.errors));
+  assert.equal(JSON.stringify(core), before);
+  assert.deepEqual(projected.index.weeks[0].items[0].clinicalMetadata, core.byRef['library/example'].clinicalMetadata);
+  assert.notStrictEqual(projected.index.weeks[0].items[0].clinicalMetadata, core.byRef['library/example'].clinicalMetadata);
 
-test('rejects hostile nested edition data without invoking accessors or accepting dangerous keys', () => {
   let reads = 0;
-  const accessorEdition = validatedEdition('ms3');
-  Object.defineProperty(accessorEdition.config.localOrientation.resources[0], 'title', {
-    enumerable: true,
-    get() { reads += 1; return 'must not be read'; }
-  });
-  assertStructuredFailure(F.fdProjectEdition(canonicalIndex('ms3'), accessorEdition));
-  assert.equal(reads, 0);
-
-  const dangerousEdition = validatedEdition('ms3');
-  Object.defineProperty(dangerousEdition.config.localOrientation.checklist[0], '__proto__', {
-    enumerable: true, value: { governance: 'must not cross the boundary' }
-  });
-  assertStructuredFailure(F.fdProjectEdition(canonicalIndex('ms3'), dangerousEdition));
-
-  const dangerousCanonical = canonicalIndex('ms3');
-  Object.defineProperty(dangerousCanonical.byRef['assessment.md'], '__proto__', {
-    enumerable: true, value: { attested: true }
-  });
-  assertStructuredFailure(F.fdProjectEdition(dangerousCanonical, validatedEdition('ms3')));
-});
-
-test('recursively rejects malformed protected graphs on every preserved surface without invoking getters', () => {
-  let reads = 0;
-  const cases = [
-    ['unselected byRef accessor', () => {
-      const canonical = canonicalIndex('ms3');
-      Object.defineProperty(canonical.byRef['omitted.md'], 'clinicalMetadata', {
-        enumerable: true,
-        get() { reads += 1; return 'must not be read'; }
-      });
-      return canonical;
-    }],
-    ['unselected byRef cycle', () => {
-      const canonical = canonicalIndex('ms3');
-      canonical.byRef['omitted.md'].clinicalMetadata = canonical.byRef['omitted.md'];
-      return canonical;
-    }],
-    ['path nested named array', () => {
-      const canonical = canonicalIndex('ms3');
-      canonical.path.aliases = ['ms3-six-week'];
-      canonical.path.aliases.named = 'not array data';
-      return canonical;
-    }],
-    ['columns nested symbol', () => {
-      const canonical = canonicalIndex('ms3');
-      canonical.columns[0][Symbol('hidden')] = 'not string-keyed data';
-      return canonical;
-    }],
-    ['columns named array field', () => {
-      const canonical = canonicalIndex('ms3');
-      canonical.columns.named = 'not array data';
-      return canonical;
-    }],
-    ['columns hidden array element', () => {
-      const canonical = canonicalIndex('ms3');
-      Object.defineProperty(canonical.columns, '0', {
-        enumerable: false, configurable: true, writable: true, value: canonical.columns[0]
-      });
-      return canonical;
-    }],
-    ['kit sparse array', () => {
-      const canonical = canonicalIndex('ms3');
-      delete canonical.kit[0];
-      return canonical;
-    }],
-    ['kit dangerous key', () => {
-      const canonical = canonicalIndex('ms3');
-      Object.defineProperty(canonical.kit[0], '__proto__', {
-        enumerable: true, value: { attested: true }
-      });
-      return canonical;
-    }]
-  ];
-
-  for (const [label, makeCanonical] of cases) {
-    const result = F.fdProjectEdition(makeCanonical(), validatedEdition('ms3'));
-    assertStructuredFailure(result);
-    assert.equal(Object.hasOwn(result, 'index'), false, label);
-  }
+  const hostile = structuredClone(core);
+  Object.defineProperty(hostile.byRef['library/example'], 'secret', { enumerable: true, get() { reads += 1; return 'must not run'; } });
+  assertFailure(F.fdProjectEdition(hostile, result));
   assert.equal(reads, 0);
 });
 
-test('rejects exotic selected clinical metadata instead of silently converting it', () => {
-  const exoticValues = [
-    ['Date', new Date('2026-08-19T00:00:00Z')],
-    ['Map', new Map([['status', 'reviewed']])],
-    ['Set', new Set(['reviewed'])],
-    ['typed array', new Uint8Array([1, 2, 3])],
-    ['custom prototype', Object.create({ inherited: 'not plain data' })]
-  ];
-  for (const [label, exotic] of exoticValues) {
-    const canonical = canonicalIndex('ms3');
-    canonical.byRef['assessment.md'].clinicalMetadata = exotic;
-    const result = F.fdProjectEdition(canonical, validatedEdition('ms3'));
-    assert.equal(result.ok, false, label);
-    assertStructuredFailure(result);
-  }
-});
-
-test('preserves valid plain nested clinical metadata byte-equivalently on independent item clones', () => {
-  const canonical = canonicalIndex('ms3');
-  canonical.byRef['assessment.md'].clinicalMetadata = {
-    review: { state: 'reviewed', revision: 'revision-a' },
-    categories: ['safety', 'assessment'], score: 4, active: true, nullable: null
-  };
-  const before = JSON.stringify(canonical.byRef['assessment.md'].clinicalMetadata);
-
-  const result = F.fdProjectEdition(canonical, validatedEdition('ms3'));
-
-  assert.equal(result.ok, true, JSON.stringify(result.errors));
-  const first = result.index.weeks[0].items[0].clinicalMetadata;
-  const repeated = result.index.weeks[5].items[0].clinicalMetadata;
-  assert.equal(JSON.stringify(first), before);
-  assert.equal(JSON.stringify(repeated), before);
-  assert.notStrictEqual(first, canonical.byRef['assessment.md'].clinicalMetadata);
-  assert.notStrictEqual(repeated, canonical.byRef['assessment.md'].clinicalMetadata);
-  assert.notStrictEqual(first, repeated);
-  assert.equal(JSON.stringify(canonical.byRef['assessment.md'].clinicalMetadata), before);
-});
-
-test('derives and exactly matches the display fingerprint from config and digest', () => {
-  const base = validatedEdition('ms3');
-  assert.equal(F.fdProjectEdition(canonicalIndex('ms3'), base).ok, true);
-
-  const cases = [
-    ['token', (edition) => { edition.fingerprint = 'EX1-MS3-000001'; }],
-    ['location', (edition) => { edition.config.card.locationCode = 'EX2'; }],
-    ['digest', (edition) => {
-      edition.envelope.digest = 'sha256-AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE';
-    }],
-    ['audience', (edition) => { edition.fingerprint = 'EX1-RES-000000'; }]
-  ];
-  for (const [label, mutate] of cases) {
-    const edition = validatedEdition('ms3');
-    mutate(edition);
-    const result = F.fdProjectEdition(canonicalIndex('ms3'), edition);
-    assertStructuredFailure(result);
-    assert.equal(Object.hasOwn(result, 'index'), false, label);
-  }
+test('resolved reasons decorate placements without replacing canonical titles or governance', async () => {
+  const F = load();
+  const core = structuredClone(synthetic.audiences.ms3);
+  const document = validDocument('ms3');
+  document.config.pathItems[0].reasonKey = 'choice.reason@v1';
+  document.digest = await (async () => {
+    const pre = { format: document.format, schemaVersion: document.schemaVersion, config: document.config };
+    const canonical = (value) => Array.isArray(value) ? `[${value.map(canonical).join(',')}]` : value && typeof value === 'object' ? `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${canonical(value[key])}`).join(',')}}` : JSON.stringify(value);
+    const bytes = await webcrypto.subtle.digest('SHA-256', new TextEncoder().encode(canonical(pre)));
+    return `sha256-${Buffer.from(bytes).toString('base64url')}`;
+  })();
+  const validation = await F.fdEditionValidateEnvelope(document, core, {}, {
+    audience: 'ms3', coreRevision: core.coreRevision, localCatalogRevision: revision, rotationEditionV2: 'enabled',
+  }, { mode: 'learner', generationDate: '' }, webcrypto.subtle);
+  assert.equal(validation.ok, true, JSON.stringify(validation.errors));
+  const projected = F.fdProjectEdition(core, validation);
+  assert.equal(projected.ok, true, JSON.stringify(projected.errors));
+  assert.equal(projected.index.weeks[0].items[0].reasonText, 'Resolved catalog reason');
+  assert.equal(projected.index.weeks[0].items[0].title, 'Synthetic core example');
+  assert.deepEqual(projected.index.weeks[0].items[0].governance, ['clinical', 'reviewed']);
 });

@@ -10,6 +10,7 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const LAUNCHER = path.join(ROOT, 'tests/smoke/start-local-servers.sh');
+const RUNNER = path.join(ROOT, 'tests/smoke/run-local-playwright.sh');
 const SMOKE_ENV_KEYS = [
   'SMOKE_MS3_PORT',
   'SMOKE_RES_PORT',
@@ -123,6 +124,51 @@ function runLauncher(context, {
       resolve({ code, signal, stdout, stderr, timedOut, pgid: child.pid });
     });
   });
+}
+
+function runRunner(context, {
+  args = ['rotation-curator.spec.js'], env = cleanEnvironment(), cwd = os.tmpdir(),
+  timeoutMs = 12_000, onSpawn = () => {},
+} = {}) {
+  return new Promise((resolve, reject) => {
+    const child = spawn('/bin/bash', [RUNNER, ...args], { cwd, env, detached: true, stdio: ['ignore', 'pipe', 'pipe'] });
+    context.processGroups.add(child.pid); onSpawn(child);
+    child.stdout.setEncoding('utf8'); child.stderr.setEncoding('utf8');
+    let stdout = '', stderr = '', timedOut = false;
+    child.stdout.on('data', (chunk) => { stdout += chunk; }); child.stderr.on('data', (chunk) => { stderr += chunk; }); child.once('error', reject);
+    const timer = setTimeout(() => {
+      timedOut = true;
+      try { process.kill(-child.pid, 'SIGKILL'); } catch (error) { if (error.code !== 'ESRCH') reject(error); }
+    }, timeoutMs);
+    child.once('close', (code, signal) => { clearTimeout(timer); resolve({ code, signal, stdout, stderr, timedOut, pgid: child.pid }); });
+  });
+}
+
+async function waitFor(predicate, message, timeoutMs = 4_000) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) { const value = await predicate(); if (value) return value; await sleep(25); }
+  assert.fail(message);
+}
+
+function runnerStateDirectories(temporary) {
+  if (!fs.existsSync(temporary)) return [];
+  return fs.readdirSync(temporary).filter((name) => name.startsWith('smoke-playwright.')).map((name) => path.join(temporary, name));
+}
+
+function installNpxStandIn(context, body) {
+  const bin = path.join(context.temporary, `runner-bin-${Math.random().toString(16).slice(2)}`);
+  fs.mkdirSync(bin);
+  const executable = path.join(bin, 'npx');
+  fs.writeFileSync(executable, `#!/usr/bin/env bash\nset -u\n${body}\n`);
+  fs.chmodSync(executable, 0o755);
+  return bin;
+}
+
+async function runnerEnvironment(context, overrides = {}) {
+  const reservations = await reserveLoopbackPorts(3);
+  const ports = reservations.map(({ port }) => port);
+  await releaseReservations(reservations);
+  return { ports, env: makeLauncherEnvironment(context, ports, { TMPDIR: context.temporary, ...overrides }) };
 }
 
 async function reserveLoopbackPorts(count) {
@@ -551,4 +597,186 @@ test('launcher refuses to overwrite an existing PID manifest', async (t) => {
   assert.equal(fs.readFileSync(manifest, 'utf8'), sentinel);
   assert.equal(fs.existsSync(path.join(context.stateDir, '.startup-pids.tsv')), false);
   await waitForPortsClosed(ports);
+});
+
+test('self-contained Playwright runner pins FIFO ownership and never signals manifest PIDs', () => {
+  const source = fs.readFileSync(RUNNER, 'utf8');
+  assert.match(source, /mktemp -d/);
+  assert.match(source, /mkfifo/);
+  assert.match(source, /exec 9<>/);
+  assert.match(source, /LAUNCHER="\$SCRIPT_DIR\/start-local-servers\.sh"/);
+  assert.match(source, /"\$LAUNCHER" --wait/);
+  assert.match(source, /9>&-/);
+  assert.match(source, /printf ['"]STOP\\n['"] >&9/);
+  assert.doesNotMatch(source, /\bkill\b|pkill|server-pids[^\n]*kill/);
+});
+
+test('launcher wait mode validates one FIFO before preflight and owns cleanup through STOP or EOF', () => {
+  const source = fs.readFileSync(LAUNCHER, 'utf8');
+  assert.match(source, /--wait/);
+  assert.match(source, /CONTROL_READY/);
+  assert.match(source, /SERVERS_READY/);
+  assert.match(source, /read[^\n]+CONTROL/);
+  assert.match(source, /STOP/);
+  assert.match(source, /jobs -pr/);
+});
+
+test('runner preserves the Playwright exit code and removes its private state', {
+  skip: process.env.NETLIFY === 'true' && 'server spawning is blocked in Netlify build containers',
+}, async (t) => {
+  const context = createTestContext(t);
+  const reservations = await reserveLoopbackPorts(3);
+  const ports = reservations.map(({ port }) => port);
+  await releaseReservations(reservations);
+  const bin = path.join(context.temporary, 'bin'); fs.mkdirSync(bin);
+  const trace = path.join(context.temporary, 'npx.trace');
+  const fake = path.join(bin, 'npx');
+  fs.writeFileSync(fake, `#!/usr/bin/env bash\nprintf '%s\\n' "$*" > ${shellQuote(trace)}\nexit 23\n`);
+  fs.chmodSync(fake, 0o755);
+  const result = await runRunner(context, { args: ['rotation-curator.spec.js', '--project=nav-ms3'], env: makeLauncherEnvironment(context, ports, { PATH: `${bin}${path.delimiter}${process.env.PATH}`, TMPDIR: context.temporary }) });
+  assert.equal(result.timedOut, false); assert.equal(result.code, 23, result.stdout + result.stderr);
+  assert.equal(fs.readFileSync(trace, 'utf8').trim(), 'playwright test rotation-curator.spec.js --project=nav-ms3');
+  assert.deepEqual(fs.readdirSync(context.stateDir), []);
+  assert.deepEqual(runnerStateDirectories(context.temporary), []);
+  await waitForPortsClosed(ports);
+});
+
+test('runner passes arguments unchanged and closes descriptor 9 in the Playwright stand-in and grandchild', {
+  skip: process.env.NETLIFY === 'true' && 'server spawning is blocked in Netlify build containers',
+}, async (t) => {
+  const context = createTestContext(t); const trace = path.join(context.temporary, 'fd.trace');
+  const bin = installNpxStandIn(context, `
+if [ -e /dev/fd/9 ]; then echo parent-leak > ${shellQuote(trace)}; exit 90; fi
+/bin/bash -c 'if [ -e /dev/fd/9 ]; then exit 91; fi' || exit $?
+printf '%s\n' "$*" > ${shellQuote(trace)}
+exit 0`);
+  const configured = await runnerEnvironment(context, { PATH: `${bin}${path.delimiter}${process.env.PATH}` });
+  const result = await runRunner(context, { args: ['one.spec.js', 'two.spec.js', '--project=nav-ms3', '--grep', 'exact words'], env: configured.env });
+  assert.equal(result.timedOut, false); assert.equal(result.code, 0, result.stdout + result.stderr);
+  assert.equal(fs.readFileSync(trace, 'utf8').trim(), 'playwright test one.spec.js two.spec.js --project=nav-ms3 --grep exact words');
+  assert.deepEqual(runnerStateDirectories(context.temporary), []); await waitForPortsClosed(configured.ports);
+});
+
+test('runner can restart immediately on the same clean ports without a TIME_WAIT false positive', {
+  skip: process.env.NETLIFY === 'true' && 'server spawning is blocked in Netlify build containers',
+}, async (t) => {
+  const context = createTestContext(t);
+  const bin = installNpxStandIn(context, 'exit 0');
+  const configured = await runnerEnvironment(context, { PATH: `${bin}${path.delimiter}${process.env.PATH}` });
+  const first = await runRunner(context, { env: configured.env });
+  assert.equal(first.timedOut, false); assert.equal(first.code, 0, first.stdout + first.stderr);
+  const second = await runRunner(context, { env: configured.env });
+  assert.equal(second.timedOut, false); assert.equal(second.code, 0, second.stdout + second.stderr);
+  assert.deepEqual(runnerStateDirectories(context.temporary), []); await waitForPortsClosed(configured.ports);
+});
+
+test('hostile three-row stale manifest is rejected without signaling its unrelated live PID', {
+  skip: process.env.NETLIFY === 'true' && 'server spawning is blocked in Netlify build containers',
+}, async (t) => {
+  const context = createTestContext(t), ready = path.join(context.temporary, 'test.ready'), release = path.join(context.temporary, 'test.release');
+  const bin = installNpxStandIn(context, `
+: > ${shellQuote(ready)}
+attempt=0
+while [ ! -f ${shellQuote(release)} ] && [ "$attempt" -lt 160 ]; do sleep 0.05; attempt=$((attempt+1)); done
+[ -f ${shellQuote(release)} ] || exit 92
+exit 0`);
+  const configured = await runnerEnvironment(context, { PATH: `${bin}${path.delimiter}${process.env.PATH}` });
+  let runner;
+  const resultPromise = runRunner(context, { env: configured.env, onSpawn: (child) => { runner = child; } });
+  const stateDir = await waitFor(() => runnerStateDirectories(context.temporary)[0], 'runner state was not created');
+  const manifest = path.join(stateDir, 'server-pids.tsv');
+  await waitFor(() => fs.existsSync(manifest) && fs.existsSync(ready), 'runner did not reach active test');
+  const unrelated = spawn('/bin/bash', ['-c', 'trap "" TERM; while :; do sleep 1; done'], { detached: true, stdio: 'ignore' });
+  context.processGroups.add(unrelated.pid);
+  fs.writeFileSync(manifest, [
+    `ms3\t${unrelated.pid}\t${configured.ports[0]}`,
+    `res\t${unrelated.pid}\t${configured.ports[1]}`,
+    `faculty\t${unrelated.pid}\t${configured.ports[2]}`,
+  ].join('\n') + '\n');
+  fs.writeFileSync(release, 'continue\n');
+  const result = await resultPromise;
+  assert.equal(result.timedOut, false); assert.equal(result.code, 1, result.stdout + result.stderr);
+  assert.equal(isPidAlive(unrelated.pid), true, 'manifest PID was improperly signaled');
+  assert.deepEqual(runnerStateDirectories(context.temporary), []); await waitForPortsClosed(configured.ports);
+  assert.ok(runner.pid > 0);
+});
+
+test('preflight failure occurs after CONTROL_READY, never invokes tests, and leaves no private state', {
+  skip: process.env.NETLIFY === 'true' && 'server spawning is blocked in Netlify build containers',
+}, async (t) => {
+  const context = createTestContext(t); fs.rmSync(context.sites.ms3, { recursive: true });
+  const invoked = path.join(context.temporary, 'must-not-run');
+  const bin = installNpxStandIn(context, `: > ${shellQuote(invoked)}; exit 0`);
+  const configured = await runnerEnvironment(context, { PATH: `${bin}${path.delimiter}${process.env.PATH}` });
+  const result = await runRunner(context, { env: configured.env });
+  assert.equal(result.timedOut, false); assert.equal(result.code, 1, result.stdout + result.stderr);
+  assert.doesNotMatch(result.stderr, /unbound variable/, 'empty preflight cleanup must be safe under Bash nounset');
+  assert.equal(fs.existsSync(invoked), false); assert.deepEqual(runnerStateDirectories(context.temporary), []);
+  await waitForPortsClosed(configured.ports);
+});
+
+for (const signal of ['SIGTERM', 'SIGKILL']) test(`runner ${signal} before CONTROL_READY closes the FIFO without deadlock or residue`, {
+  skip: process.env.NETLIFY === 'true' && 'server spawning is blocked in Netlify build containers',
+}, async (t) => {
+  const context = createTestContext(t), bashEnv = path.join(context.temporary, 'hold-launcher.sh');
+  const firstShell = path.join(context.temporary, 'wrapper-sourced'), holdReady = path.join(context.temporary, 'launcher-held'), holdRelease = path.join(context.temporary, 'launcher-release');
+  fs.writeFileSync(bashEnv, `if [ ! -f ${shellQuote(firstShell)} ]; then : > ${shellQuote(firstShell)}; else : > ${shellQuote(holdReady)}; attempt=0; while [ ! -f ${shellQuote(holdRelease)} ] && [ "$attempt" -lt 240 ]; do sleep 0.025; attempt=$((attempt+1)); done; fi\n`);
+  const bin = installNpxStandIn(context, 'exit 93');
+  const configured = await runnerEnvironment(context, { BASH_ENV: bashEnv, PATH: `${bin}${path.delimiter}${process.env.PATH}` });
+  let child; const resultPromise = runRunner(context, { env: configured.env, onSpawn: (value) => { child = value; } });
+  const stateDir = await waitFor(() => runnerStateDirectories(context.temporary)[0], 'runner state was not created');
+  await waitFor(() => fs.existsSync(holdReady), 'launcher did not enter the pre-control hold');
+  assert.doesNotMatch(fs.readFileSync(path.join(stateDir, 'launcher.stdout'), 'utf8'), /CONTROL_READY/);
+  child.kill(signal);
+  if (signal === 'SIGTERM') {
+    await waitFor(() => fs.existsSync(path.join(stateDir, '.wrapper-cleaning')), 'runner did not enter its TERM cleanup');
+  } else {
+    await waitFor(() => !isPidAlive(child.pid), 'SIGKILL did not terminate the runner');
+  }
+  fs.writeFileSync(holdRelease, 'release\n');
+  const result = await resultPromise; assert.equal(result.timedOut, false);
+  if (signal === 'SIGTERM') assert.equal(result.code, 143, result.stdout + result.stderr); else assert.equal(result.signal, 'SIGKILL');
+  await waitFor(() => runnerStateDirectories(context.temporary).length === 0, 'private runner state survived signal', 6_000);
+  await waitForPortsClosed(configured.ports);
+});
+
+for (const signal of ['SIGTERM', 'SIGKILL']) test(`runner ${signal} during an active test tree releases launcher ownership and server state`, {
+  skip: process.env.NETLIFY === 'true' && 'server spawning is blocked in Netlify build containers',
+}, async (t) => {
+  const context = createTestContext(t), ready = path.join(context.temporary, 'active.ready'), childDone = path.join(context.temporary, 'grandchild.done');
+  const bin = installNpxStandIn(context, `
+/bin/bash -c 'sleep 1; : > ${shellQuote(childDone)}' &
+: > ${shellQuote(ready)}
+wait
+exit 0`);
+  const configured = await runnerEnvironment(context, { PATH: `${bin}${path.delimiter}${process.env.PATH}` });
+  let child; const resultPromise = runRunner(context, { env: configured.env, onSpawn: (value) => { child = value; } });
+  await waitFor(() => fs.existsSync(ready), 'test stand-in did not become active'); child.kill(signal);
+  const result = await resultPromise; assert.equal(result.timedOut, false);
+  if (signal === 'SIGTERM') assert.equal(result.code, 143, result.stdout + result.stderr); else assert.equal(result.signal, 'SIGKILL');
+  await waitFor(() => fs.existsSync(childDone), 'test grandchild did not finish its descriptor-safe path');
+  await waitFor(() => runnerStateDirectories(context.temporary).length === 0, 'active-signal state survived', 6_000);
+  await waitForPortsClosed(configured.ports);
+});
+
+test('launcher ownership loss after readiness fails closed and remains bounded', {
+  skip: process.env.NETLIFY === 'true' && 'server spawning is blocked in Netlify build containers',
+}, async (t) => {
+  const context = createTestContext(t), ready = path.join(context.temporary, 'owner.ready'), release = path.join(context.temporary, 'owner.release');
+  const bin = installNpxStandIn(context, `: > ${shellQuote(ready)}; while [ ! -f ${shellQuote(release)} ]; do sleep 0.05; done; exit 0`);
+  const configured = await runnerEnvironment(context, { PATH: `${bin}${path.delimiter}${process.env.PATH}` });
+  let wrapper; const resultPromise = runRunner(context, { env: configured.env, onSpawn: (value) => { wrapper = value; } });
+  await waitFor(() => fs.existsSync(ready), 'test stand-in did not become active');
+  const launcherPid = await waitFor(() => {
+    const rows = spawnSync('ps', ['-axo', 'pid=,ppid=,command='], { encoding: 'utf8' }).stdout.split(/\r?\n/);
+    for (const row of rows) {
+      const match = row.match(/^\s*(\d+)\s+(\d+)\s+(.*)$/);
+      if (match && Number(match[2]) === wrapper.pid && match[3].includes('start-local-servers.sh')) return Number(match[1]);
+    }
+    return null;
+  }, 'launcher direct child was not found');
+  process.kill(launcherPid, 'SIGTERM'); fs.writeFileSync(release, 'continue\n');
+  const result = await resultPromise; assert.equal(result.timedOut, false); assert.notEqual(result.code, 0);
+  await waitFor(() => runnerStateDirectories(context.temporary).length === 0, 'ownership-loss state survived', 6_000);
+  await waitForPortsClosed(configured.ports);
 });

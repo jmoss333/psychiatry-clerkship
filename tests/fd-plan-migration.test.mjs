@@ -21,7 +21,6 @@ function extract(re, label) {
 const shelfOrderSrc = extract(/var SHELF_ORDER=\[[^\]]*\];/, 'SHELF_ORDER literal');
 const activePathValidSrc = dataSource.match(/function fdActivePathValid\(index\)\{[\s\S]*?\n\}/)[0];
 const editionProjectObjectSrc = editionProjectSource.match(/function fdEditionProjectObject\(value\)\{[\s\S]*?\n\}/)[0];
-const editionProjectDataSrc = editionProjectSource.match(/function fdEditionProjectData\(value,key\)\{[\s\S]*?\n\}/)[0];
 const editionFingerprintSrc = editionProjectSource.match(/function fdEditionIndexFingerprint\(index\)\{[\s\S]*?\n\}/)[0];
 const planFromMasterySrc = extract(/function fdPlanFromMastery\(index,masteryRows,generatedAt,shelfDate\)\{[\s\S]*?\n  \}/, 'fdPlanFromMastery()');
 const sameStringsSrc = extract(/function fdSameStrings\(a,b\)\{[\s\S]*?\n  \}/, 'fdSameStrings()');
@@ -54,12 +53,12 @@ function memStorage(seed = {}) {
 function make(localStorage, FD_INDEX, masteryRows) {
   // eslint-disable-next-line no-new-func
   return new Function('localStorage', 'FD_INDEX', 'masteryRows', `
+    var FD_PLAN_REFRESH_ALLOWED=true;
     function LS(k){ return localStorage.getItem(k); }
     function masteryByBlueprint(){ return masteryRows; }
     ${shelfOrderSrc}
     ${activePathValidSrc}
     ${editionProjectObjectSrc}
-    ${editionProjectDataSrc}
     ${editionFingerprintSrc}
     ${planFromMasterySrc}
     ${sameStringsSrc}
@@ -68,7 +67,8 @@ function make(localStorage, FD_INDEX, masteryRows) {
     ${buildPlanSrc}
     ${loadPlanSrc}
     return {buildPlan:buildPlan,fdPlanFromMastery:fdPlanFromMastery,
-      fdPlanMatches:fdPlanMatches,fdPlacementUsable:fdPlacementUsable,fdLoadPlan:fdLoadPlan};
+      fdPlanMatches:fdPlanMatches,fdPlacementUsable:fdPlacementUsable,fdLoadPlan:fdLoadPlan,
+      setRefreshAllowed:function(value){FD_PLAN_REFRESH_ALLOWED=value;}};
   `)(localStorage, FD_INDEX, masteryRows);
 }
 
@@ -100,7 +100,7 @@ const RES_INDEX = {
 const EDITION_FINGERPRINT = 'ED1-RES-ABCDEF';
 const EDITION_RES_INDEX = {
   ...RES_INDEX,
-  edition: { fingerprint: EDITION_FINGERPRINT },
+  edition: { card: { fingerprint: EDITION_FINGERPRINT } },
 };
 const USABLE_PLACEMENT = JSON.stringify({
   takenAt: NOW,
@@ -146,10 +146,14 @@ test('plans carry exact edition compatibility metadata without authenticating th
   assert.equal(F.fdPlanMatches(EDITION_RES_INDEX, legacyPlan), false);
 });
 
-test('mismatched edition plan regenerates only the derived plan and preserves learner stores', () => {
+test('mismatched edition plan refreshes derived fields while preserving manual items and history exactly', () => {
   const { F: source } = planHarness({}, EDITION_RES_INDEX, rows);
   const stalePlan = source.fdPlanFromMastery({ ...EDITION_RES_INDEX,
-    edition: { fingerprint: 'ED2-RES-ABCDEF' } }, rows, NOW, '');
+    edition: { card: { fingerprint: 'ED2-RES-ABCDEF' } } }, rows, NOW, '');
+  stalePlan.manualItems = [{ id: 'manual:1', ref: 'clinical-reference.md', note: 'Keep exact learner note.' }];
+  stalePlan.history = [{ at: '2026-08-10T10:00:00.000Z', action: 'saved', id: 'manual:1' }];
+  const manualBytes = JSON.stringify(stalePlan.manualItems);
+  const historyBytes = JSON.stringify(stalePlan.history);
   const seed = preservationSeed(stalePlan);
   const { storage, F } = planHarness(seed, RES_INDEX, rows);
   const before = { ...seed };
@@ -157,6 +161,8 @@ test('mismatched edition plan regenerates only the derived plan and preserves le
   const plan = F.fdLoadPlan(EDITION_RES_INDEX);
 
   assert.equal(plan.editionFingerprint, EDITION_FINGERPRINT);
+  assert.equal(JSON.stringify(plan.manualItems), manualBytes);
+  assert.equal(JSON.stringify(plan.history), historyBytes);
   assert.deepEqual(storage.operations, [
     ['get', 'cw_plan_v1'], ['get', 'cw_pretest_v1'], ['get', 'cw_shelf_date'], ['set', 'cw_plan_v1'],
   ]);
@@ -181,6 +187,29 @@ test('incompatible plan without usable placement removes only the derived plan',
   ]);
   delete before.cw_plan_v1;
   assert.deepEqual(storage.snapshot(), before);
+});
+
+test('manual items and plan history survive an edition refresh even without usable placement', () => {
+  const stale = { pathId: RES_INDEX.path.id, editionFingerprint: 'OLD-RES-ABCDEF', weekCount: 4,
+    generatedAt: NOW, shelfDate: '', weeks: [],
+    manualItems: [{ id: 'manual:keep', ref: 'clinical-reference.md' }],
+    history: [{ at: NOW, action: 'saved', id: 'manual:keep' }] };
+  const seed = { cw_plan_v1: JSON.stringify(stale), cw_pretest_v1: '{invalid' };
+  const { storage, F } = planHarness(seed, EDITION_RES_INDEX, rows);
+  const plan = F.fdLoadPlan(EDITION_RES_INDEX);
+  assert.equal(plan.editionFingerprint, EDITION_FINGERPRINT);
+  assert.equal(JSON.stringify(plan.manualItems), JSON.stringify(stale.manualItems));
+  assert.equal(JSON.stringify(plan.history), JSON.stringify(stale.history));
+  assert.equal(storage.snapshot().cw_plan_v1, JSON.stringify(plan));
+});
+
+test('rejected or undecided-switch startup leaves cw_plan_v1 byte-identical', () => {
+  const bytes = '{"editionFingerprint":"stale","manualItems":[{"id":"keep"}],"history":["exact"]}';
+  const { storage, F } = planHarness({ cw_plan_v1: bytes, cw_pretest_v1: USABLE_PLACEMENT }, EDITION_RES_INDEX, rows);
+  F.setRefreshAllowed(false);
+  assert.equal(F.fdLoadPlan(EDITION_RES_INDEX), null);
+  assert.equal(storage.snapshot().cw_plan_v1, bytes);
+  assert.deepEqual(storage.operations, [['get', 'cw_plan_v1']]);
 });
 
 test('matching edition plan performs one read and no writes', () => {

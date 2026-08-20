@@ -26,6 +26,9 @@ STARTUP_JOURNAL=""
 PID_MANIFEST=""
 PID_TMP=""
 DEFERRED_SIGNAL_STATUS=0
+WAIT_MODE=0
+CONTROL_FIFO=""
+CONTROL_FD_OPEN=0
 
 error() {
   printf 'ERROR: %s\n' "$*" >&2
@@ -134,6 +137,9 @@ try:
     for raw_port in sys.argv[1:]:
         port = int(raw_port)
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # Match Python's HTTPServer bind behavior: a just-cleaned listener may leave
+        # harmless TIME_WAIT sockets, while an actually listening owner still fails.
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         try:
             sock.bind(("127.0.0.1", port))
         except OSError:
@@ -161,7 +167,9 @@ cleanup_processes() {
   local alive
   if [ "${#PIDS[@]}" -eq 0 ]; then return 0; fi
   for pid in "${PIDS[@]}"; do
-    kill -TERM "$pid" >/dev/null 2>&1 || true
+    if owned_job "$pid"; then
+      kill -TERM "$pid" >/dev/null 2>&1 || true
+    fi
   done
   while [ "$attempt" -lt 20 ]; do
     alive=0
@@ -173,13 +181,22 @@ cleanup_processes() {
     attempt=$((attempt + 1))
   done
   for pid in "${PIDS[@]}"; do
-    if kill -0 "$pid" >/dev/null 2>&1; then
+    if owned_job "$pid"; then
       kill -KILL "$pid" >/dev/null 2>&1 || true
     fi
   done
   for pid in "${PIDS[@]}"; do
     wait "$pid" >/dev/null 2>&1 || true
   done
+}
+
+owned_job() {
+  local expected="$1"
+  local owned
+  while IFS= read -r owned; do
+    [ "$owned" = "$expected" ] && return 0
+  done < <(jobs -pr)
+  return 1
 }
 
 print_logs() {
@@ -196,14 +213,21 @@ print_logs() {
 
 on_exit() {
   local status=$?
+  local index
   trap - EXIT HUP INT TERM
-  if [ "$STARTUP_COMPLETE" -ne 1 ]; then
-    [ "$status" -ne 0 ] || status=1
+  if [ "$STARTUP_COMPLETE" -ne 1 ] || [ "$WAIT_MODE" -eq 1 ]; then
+    if [ "$STARTUP_COMPLETE" -ne 1 ]; then [ "$status" -ne 0 ] || status=1; fi
     set +e
     cleanup_processes
     if [ -n "$PID_MANIFEST" ]; then rm -f "$PID_MANIFEST"; fi
     if [ -n "$PID_TMP" ]; then rm -f "$PID_TMP"; fi
-    print_logs
+    if [ "$WAIT_MODE" -eq 1 ] && [ -n "$STARTUP_JOURNAL" ]; then rm -f "$STARTUP_JOURNAL"; fi
+    if [ "$status" -ne 0 ]; then print_logs; fi
+    if [ "$WAIT_MODE" -eq 1 ]; then
+      for ((index = 0; index < ${#LOGS[@]}; index++)); do rm -f "${LOGS[$index]}"; done
+      rm -f "$CONTROL_FIFO" "$STATE_DIR/launcher.stdout" "$STATE_DIR/launcher.stderr"
+      rmdir "$STATE_DIR" >/dev/null 2>&1 || true
+    fi
   fi
   exit "$status"
 }
@@ -268,16 +292,38 @@ wait_until_ready() {
 case "$#" in
   0) MODE='start' ;;
   1)
-    [ "$1" = '--print-config' ] || die 'usage: start-local-servers.sh [--print-config]'
+    [ "$1" = '--print-config' ] || die 'usage: start-local-servers.sh [--print-config | --wait control-fifo]'
     MODE='print-config'
     ;;
-  *) die 'usage: start-local-servers.sh [--print-config]' ;;
+  2)
+    [ "$1" = '--wait' ] || die 'usage: start-local-servers.sh [--print-config | --wait control-fifo]'
+    MODE='wait'; WAIT_MODE=1; CONTROL_FIFO="$2"
+    ;;
+  *) die 'usage: start-local-servers.sh [--print-config | --wait control-fifo]' ;;
 esac
 
 validate_config
 if [ "$MODE" = 'print-config' ]; then
   print_config
   exit 0
+fi
+
+if [ "$WAIT_MODE" -eq 1 ]; then
+  [ -n "$CONTROL_FIFO" ] || die 'control FIFO path is required'
+  case "$CONTROL_FIFO" in /*) ;; *) die 'control FIFO path must be absolute' ;; esac
+  [ ! -L "$CONTROL_FIFO" ] || die 'control FIFO must not be a symlink'
+  [ -p "$CONTROL_FIFO" ] || die 'control path must be one FIFO'
+  FIFO_OWNER="$(stat -f '%u' "$CONTROL_FIFO" 2>/dev/null || stat -c '%u' "$CONTROL_FIFO" 2>/dev/null || true)"
+  [ "$FIFO_OWNER" = "$(id -u)" ] || die 'control FIFO must be owned by the current user'
+  trap on_exit EXIT
+  trap 'exit 129' HUP
+  trap 'exit 130' INT
+  trap 'exit 143' TERM
+  exec 8<>"$CONTROL_FIFO"
+  exec 7<"$CONTROL_FIFO"
+  exec 8>&-
+  CONTROL_FD_OPEN=1
+  printf 'CONTROL_READY\n'
 fi
 
 require_command python3
@@ -292,6 +338,7 @@ preflight_ports
 
 if [ -n "$STATE_DIR" ]; then
   STATE_DIR="$(resolve_path "$STATE_DIR")"
+  [ ! -L "$STATE_DIR" ] || die 'server state directory must not be a symlink'
   mkdir -p "$STATE_DIR"
 else
   STATE_DIR="$(mktemp -d "${TMPDIR:-/tmp}/smoke-servers.XXXXXX")"
@@ -305,10 +352,12 @@ refuse_existing_artifact "$PID_TMP" 'temporary PID manifest'
 : > "$STARTUP_JOURNAL"
 printf 'STATE_DIR\t%s\n' "$STATE_DIR"
 
-trap on_exit EXIT
-trap 'exit 129' HUP
-trap 'exit 130' INT
-trap 'exit 143' TERM
+if [ "$WAIT_MODE" -ne 1 ]; then
+  trap on_exit EXIT
+  trap 'exit 129' HUP
+  trap 'exit 130' INT
+  trap 'exit 143' TERM
+fi
 
 start_server ms3 "$MS3_PORT" "$MS3_DIR"
 start_server res "$RES_PORT" "$RES_DIR"
@@ -338,4 +387,14 @@ for pid in "${PIDS[@]}"; do printf ' %s' "$pid"; done
 printf '\nServers ready\n'
 
 STARTUP_COMPLETE=1
+if [ "$WAIT_MODE" -eq 1 ]; then
+  printf 'SERVERS_READY\n'
+  CONTROL_LINE=''
+  if IFS= read -r CONTROL_LINE <&7; then
+    [ "$CONTROL_LINE" = 'STOP' ] || die 'control FIFO accepted only STOP'
+  fi
+  exec 7<&-
+  CONTROL_FD_OPEN=0
+  exit 0
+fi
 trap - EXIT HUP INT TERM

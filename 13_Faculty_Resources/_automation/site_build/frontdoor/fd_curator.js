@@ -1,1753 +1,876 @@
-/* Faculty rotation-edition curator state and Step 1 lifecycle.
-   Drafts and imports are untrusted until rebuilt through explicit allowlists and,
-   when an envelope is present, the shared cryptographic validator. Publication
-   intentionally remains unavailable until the later health-gate task. */
-var FD_CURATOR_DRAFT_KEY='cw_curator_draft_v1';
+/* V2 faculty curator state and structured Steps 1 through 3. */
 var FD_CURATOR_IMPORT_MAX_BYTES=65536;
-/* Match the adjacent shared edition contract's conservative collection bound. */
-var FD_CURATOR_MAX_ARRAY_ITEMS=12288;
-var FD_CURATOR_CARD_FIELDS=['title','locationName','locationCode','curatorName','curatorRole','rotationStart','rotationEnd','lastVerified'];
-var FD_CURATOR_AFFIRMATION_FIELDS=['publicSafe','officialLinks','previewsReviewed','forwardable'];
-var FD_CURATOR_ORIENTATION_FIELDS=['firstDayArrival','dailySchedule','roundsWorkflow','presentationExpectations','documentationExpectations','attendanceExpectations','feedbackProcess','accessPreparation'];
-var FD_CURATOR_LOCAL_LABELS={
-  firstDayArrival:'First-day arrival',dailySchedule:'Typical daily schedule',roundsWorkflow:'Rounds workflow',
-  presentationExpectations:'Presentation expectations',documentationExpectations:'Documentation expectations',
-  attendanceExpectations:'Attendance expectations',feedbackProcess:'Feedback process',accessPreparation:'Access preparation'
-};
+var FD_CURATOR_MAX_PATH_ITEMS=96;
+var FD_CURATOR_RENDERER_REVISION='rotation-edition-v2-r1';
+var FD_CURATOR_PRIORITIES=['required','recommended','optional'];
+var FD_CURATOR_AFFIRMATIONS=['publicSafe','officialLinks','previewsReviewed','forwardable'];
+var FD_CURATOR_IMPORT_CODES=['CURATOR_IMPORT_SIZE','CURATOR_IMPORT_FORMAT','CURATOR_IMPORT_INVALID','CURATOR_IMPORT_RESELECTION_REQUIRED'];
+var FD_CURATOR_IMPORT_RESULTS=new WeakMap();
+var FD_CURATOR_CANDIDATE_RESULTS=new WeakMap();
+var FD_CURATOR_PREVIEW_RESULTS=new WeakMap();
+var FD_CURATOR_GENERATION_RESULTS=new WeakMap();
+var FD_CURATOR_DISPLAY_RESULTS=new WeakMap();
+var FD_CURATOR_OWN=Object.prototype.hasOwnProperty;
+var FD_CURATOR_LOCAL_CATEGORIES=['arrival','schedule','rounds','presentation','documentation','attendance','feedback','accessItems','contacts','checklistItems','resources'];
+var FD_CURATOR_LOCAL_LIMITS={schedule:24,accessItems:12,contacts:8,checklistItems:24,resources:12};
 
-function fdCuratorInitialState(index,siteContext){
-  var indexData=fdCuratorReadOwnDataFields(index,['path']);
-  var context=fdCuratorReadOwnDataFields(siteContext,['audience','coreRevision']);
-  var path=indexData?fdCuratorReadOwnDataFields(indexData.path,['id','weekCount']):null;
-  return {
-    step:1,
-    site:{
-      audience:context&&typeof context.audience==='string'?context.audience:'',
-      pathId:path&&typeof path.id==='string'?path.id:'',
-      weekCount:path&&typeof path.weekCount==='number'?path.weekCount:0,
-      coreRevision:context&&typeof context.coreRevision==='string'?context.coreRevision:''
-    },
-    generateEnabled:false
-  };
+function fdCuratorObject(value){
+  var prototype;
+  if(value===null||typeof value!=='object'||Array.isArray(value))return false;
+  try{prototype=Object.getPrototypeOf(value);return prototype===Object.prototype||prototype===null;}
+  catch(ignore){return false;}
 }
 
-function fdCuratorBlankCard(){
-  return {title:'',locationName:'',locationCode:'',curatorName:'',curatorRole:'',rotationStart:'',rotationEnd:'',lastVerified:''};
+function fdCuratorExactData(value,required,optional){
+  var keys,allowed=Object.create(null),i,key,descriptor;
+  if(!fdCuratorObject(value))return null;
+  for(i=0;i<required.length;i++)allowed[required[i]]=true;
+  for(i=0;i<optional.length;i++)allowed[optional[i]]=true;
+  try{keys=Reflect.ownKeys(value);}catch(ignoreKeys){return null;}
+  for(i=0;i<keys.length;i++){
+    key=keys[i];if(typeof key!=='string'||!allowed[key])return null;
+    try{descriptor=Object.getOwnPropertyDescriptor(value,key);}catch(ignoreDescriptor){return null;}
+    if(!descriptor||!descriptor.enumerable||!FD_CURATOR_OWN.call(descriptor,'value'))return null;
+  }
+  for(i=0;i<required.length;i++)if(keys.indexOf(required[i])<0)return null;
+  return value;
 }
 
-function fdCuratorBlankOrientation(){
-  return {
-    firstDayArrival:'',dailySchedule:'',roundsWorkflow:'',presentationExpectations:'',
-    documentationExpectations:'',attendanceExpectations:'',feedbackProcess:'',accessPreparation:'',
-    contacts:[],checklist:[],resources:[]
-  };
+function fdCuratorOwnValue(value,key){
+  var descriptor;
+  try{descriptor=Object.getOwnPropertyDescriptor(value,key);}
+  catch(ignore){return {ok:false,value:null};}
+  return descriptor&&descriptor.enumerable&&FD_CURATOR_OWN.call(descriptor,'value')?
+    {ok:true,value:descriptor.value}:{ok:false,value:null};
 }
 
-function fdCuratorWeekCount(index,siteContext){
-  var inspected=fdCuratorIndexSnapshot(index,siteContext);
-  return inspected.ok?inspected.weekCount:0;
+function fdCuratorArray(value,max){
+  var length,keys,i,key,descriptor;
+  if(!Array.isArray(value))return null;
+  try{length=Object.getOwnPropertyDescriptor(value,'length');}
+  catch(ignoreLength){return null;}
+  if(!length||!FD_CURATOR_OWN.call(length,'value')||!Number.isInteger(length.value)||length.value<0||length.value>max)return null;
+  try{keys=Reflect.ownKeys(value);}catch(ignoreKeys){return null;}
+  if(keys.length!==length.value+1)return null;
+  for(i=0;i<length.value;i++){
+    key=String(i);if(keys.indexOf(key)<0)return null;
+    try{descriptor=Object.getOwnPropertyDescriptor(value,key);}catch(ignoreDescriptor){return null;}
+    if(!descriptor||!descriptor.enumerable||!FD_CURATOR_OWN.call(descriptor,'value'))return null;
+  }
+  return value;
 }
 
-function fdCuratorLibraryGroups(index){
-  var inspected=fdCuratorLibrarySnapshot(index);
-  return inspected.ok?inspected.groups:[];
+function fdCuratorClone(value){return JSON.parse(fdEditionCanonicalJson(value));}
+function fdCuratorTryClone(value){try{return {ok:true,value:fdCuratorClone(value)};}catch(ignore){return {ok:false,value:null};}}
+
+function fdCuratorRealDate(value){
+  var part,stamp;
+  if(typeof value!=='string'||!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(value))return false;
+  part=value.split('-').map(Number);stamp=new Date(Date.UTC(part[0],part[1]-1,part[2]));
+  return stamp.getUTCFullYear()===part[0]&&stamp.getUTCMonth()===part[1]-1&&stamp.getUTCDate()===part[2];
 }
 
-function fdCuratorLibraryRefMap(index){
-  var groups=fdCuratorLibraryGroups(index),map=Object.create(null),i,j;
-  for(i=0;i<groups.length;i++) for(j=0;j<groups[i].items.length;j++) map[groups[i].items[j].ref]=true;
-  return map;
+function fdCuratorSiteValue(siteContext){
+  var value=fdCuratorExactData(siteContext,
+    ['audience','pathId','coreRevision','localCatalogRevision','rotationEditionV2'],[]),weeks;
+  if(!value||['ms3','resident'].indexOf(value.audience)<0)return null;
+  weeks=value.audience==='ms3'?6:4;
+  if(value.pathId!==(value.audience==='ms3'?'ms3-six-week':'resident-four-week')||
+     !/^[0-9a-f]{40}$/.test(value.coreRevision)||
+     !/^sha256-[A-Za-z0-9_-]{43}$/.test(value.localCatalogRevision)||
+     ['enabled','disabled'].indexOf(value.rotationEditionV2)<0)return null;
+  return {audience:value.audience,pathId:value.pathId,coreRevision:value.coreRevision,
+    localCatalogRevision:value.localCatalogRevision,rotationEditionV2:value.rotationEditionV2,weekCount:weeks};
+}
+
+function fdCuratorIndexSnapshot(index,siteContext){
+  var site=fdCuratorSiteValue(siteContext),pathData,weeksData,byRefData,columnsData,path,weeks,byRef,columns;
+  var canonical=[],allowed=Object.create(null),library=[],occurrence=Object.create(null),i,j,row,ref,titleData,columnItems,seenLibrary=Object.create(null);
+  if(!site||!fdCuratorObject(index))return {ok:false};
+  pathData=fdCuratorOwnValue(index,'path');weeksData=fdCuratorOwnValue(index,'weeks');
+  byRefData=fdCuratorOwnValue(index,'byRef');columnsData=fdCuratorOwnValue(index,'columns');
+  if(!pathData.ok||!weeksData.ok||!byRefData.ok||!columnsData.ok)return {ok:false};
+  path=pathData.value;weeks=fdCuratorArray(weeksData.value,6);byRef=byRefData.value;columns=fdCuratorArray(columnsData.value,256);
+  if(!fdCuratorObject(path)||path.id!==site.pathId||path.weekCount!==site.weekCount||!weeks||weeks.length!==site.weekCount||!fdCuratorObject(byRef)||!columns)return {ok:false};
+  for(i=0;i<columns.length;i++){
+    if(!fdCuratorObject(columns[i]))return {ok:false};
+    columnItems=fdCuratorArray(fdCuratorOwnValue(columns[i],'items').value,4096);if(!columnItems)return {ok:false};
+    for(j=0;j<columnItems.length;j++){
+      row=columnItems[j];ref=fdCuratorOwnValue(row,'ref');if(!ref.ok||typeof ref.value!=='string')return {ok:false};ref=ref.value;
+      if(!ref||ref.indexOf('local:')===0||ref==='rotation-curator.html'||seenLibrary[ref])continue;
+      titleData=fdCuratorOwnValue(byRef,ref);if(!titleData.ok||!fdCuratorObject(titleData.value)||titleData.value.ref!==ref||typeof titleData.value.title!=='string')return {ok:false};
+      seenLibrary[ref]=true;allowed[ref]=true;library.push({ref:ref,title:titleData.value.title});
+    }
+  }
+  for(i=0;i<weeks.length;i++){
+    row=weeks[i];if(!fdCuratorObject(row)||fdCuratorOwnValue(row,'n').value!==i+1)return {ok:false};
+    columnItems=fdCuratorArray(fdCuratorOwnValue(row,'items').value,FD_CURATOR_MAX_PATH_ITEMS);if(!columnItems)return {ok:false};
+    for(j=0;j<columnItems.length;j++){
+      ref=fdCuratorOwnValue(columnItems[j],'ref');if(!ref.ok||typeof ref.value!=='string'||!ref.value)return {ok:false};ref=ref.value;
+      titleData=fdCuratorOwnValue(byRef,ref);if(!titleData.ok||!fdCuratorObject(titleData.value)||titleData.value.ref!==ref||typeof titleData.value.title!=='string')return {ok:false};
+      allowed[ref]=true;if(!seenLibrary[ref]){seenLibrary[ref]=true;library.push({ref:ref,title:titleData.value.title});}
+      occurrence[ref]=(occurrence[ref]||0)+1;
+      canonical.push({instanceId:'core:'+ref+':'+occurrence[ref],ref:ref,week:i+1,order:j+1,priority:'recommended'});
+    }
+  }
+  if(!canonical.length||canonical.length>FD_CURATOR_MAX_PATH_ITEMS)return {ok:false};
+  return {ok:true,site:site,weeks:weeks,byRef:byRef,allowed:allowed,library:library,canonical:canonical};
 }
 
 function fdCuratorCanonicalPathItems(index,siteContext){
   var inspected=fdCuratorIndexSnapshot(index,siteContext);
-  var occurrences=Object.create(null),out=[],week,ref,i,j;
-  if(!inspected.ok) return out;
-  for(i=0;i<inspected.weekCount;i++){
-    week=inspected.weeks[i];
-    for(j=0;j<week.refs.length;j++){
-      ref=week.refs[j];
-      if(!inspected.allowed[ref]) return [];
-      occurrences[ref]=(occurrences[ref]||0)+1;
-      out.push({
-        instanceId:'core:'+ref+':'+occurrences[ref],ref:ref,week:week.n,order:j+1,
-        priority:'recommended',rationale:''
-      });
-    }
-  }
-  return out;
+  return inspected.ok?fdCuratorClone(inspected.canonical):[];
 }
 
 function fdCuratorNewDraft(index,siteContext){
-  var inspected=fdCuratorIndexSnapshot(index,siteContext);
-  var context=fdCuratorReadOwnDataFields(siteContext,['audience','pathId','coreRevision'])||{};
-  return {
-    schemaVersion:1,step:1,
-    site:{
-      audience:typeof context.audience==='string'?context.audience:'',
-      pathId:inspected.ok?inspected.pathId:(typeof context.pathId==='string'?context.pathId:''),
-      coreRevision:typeof context.coreRevision==='string'?context.coreRevision:''
-    },
-    config:{card:fdCuratorBlankCard(),pathItems:fdCuratorCanonicalPathItems(index,siteContext),localOrientation:fdCuratorBlankOrientation(),changeNote:''},
-    publication:{baseEnvelope:null,baseCanonicalConfig:'',lastGenerated:null},
-    preview:{desktopReviewed:false,mobileReviewed:false},
-    affirmations:{publicSafe:false,officialLinks:false,previewsReviewed:false,forwardable:false}
-  };
+  var inspected=fdCuratorIndexSnapshot(index,siteContext),site=inspected.ok?inspected.site:fdCuratorSiteValue(siteContext)||{audience:'',pathId:'',coreRevision:'',localCatalogRevision:'',rotationEditionV2:'disabled'};
+  return {schemaVersion:2,step:1,site:{audience:site.audience,pathId:site.pathId,coreRevision:site.coreRevision,
+    localCatalogRevision:site.localCatalogRevision,rotationEditionV2:site.rotationEditionV2,
+    rendererRevision:FD_CURATOR_RENDERER_REVISION},config:{context:{trainingLocationKey:'',curatorProfileKey:'',
+    rotationStart:'',rotationEnd:'',editionCheckedOn:''},phraseSetKey:'',pathItems:inspected.ok?fdCuratorClone(inspected.canonical):[],
+    localPlan:{},changeSummary:{kindCodes:['initial'],changedItemCount:0}},publication:{baseEnvelope:null,
+    baseSemanticConfig:'',lastGenerated:null},previewReceipts:{desktop:null,mobile:null},affirmations:{publicSafe:false,
+    officialLinks:false,previewsReviewed:false,forwardable:false}};
 }
 
-function fdCuratorReadDataObject(value,fields){
-  var keys,allowed=Object.create(null),out={},i,key,descriptor;
-  if(!value||typeof value!=='object') return null;
-  try{ if(Array.isArray(value)) return null; keys=Reflect.ownKeys(value); }
-  catch(ignoreKeys){ return null; }
-  for(i=0;i<fields.length;i++) allowed[fields[i]]=true;
-  if(keys.length!==fields.length) return null;
-  for(i=0;i<keys.length;i++){
-    key=keys[i];
-    if(typeof key!=='string'||key==='__proto__'||key==='constructor'||key==='prototype'||!allowed[key]) return null;
-    try{ descriptor=Object.getOwnPropertyDescriptor(value,key); }
-    catch(ignoreDescriptor){ return null; }
-    if(!descriptor||!Object.prototype.hasOwnProperty.call(descriptor,'value')) return null;
-    out[key]=descriptor.value;
-  }
-  for(i=0;i<fields.length;i++) if(!Object.prototype.hasOwnProperty.call(out,fields[i])) return null;
-  return out;
-}
-
-function fdCuratorReadOwnDataFields(value,fields){
-  var out={},i,key,descriptor;
-  if(!value||typeof value!=='object') return null;
-  try{ if(Array.isArray(value)) return null; }
-  catch(ignoreArray){ return null; }
-  for(i=0;i<fields.length;i++){
-    key=fields[i];
-    try{ descriptor=Object.getOwnPropertyDescriptor(value,key); }
-    catch(ignoreDescriptor){ return null; }
-    if(!descriptor||!Object.prototype.hasOwnProperty.call(descriptor,'value')) return null;
-    out[key]=descriptor.value;
-  }
-  return out;
-}
-
-function fdCuratorReadDataArray(value){
-  var keys,lengthDescriptor,length,out=[],seen=Object.create(null),i,key,descriptor;
-  try{
-    if(!Array.isArray(value)) return null;
-    lengthDescriptor=Object.getOwnPropertyDescriptor(value,'length');
-    if(!lengthDescriptor||!Object.prototype.hasOwnProperty.call(lengthDescriptor,'value')) return null;
-    length=lengthDescriptor.value;
-    if(typeof length!=='number'||!isFinite(length)||Math.floor(length)!==length||length<0) return null;
-    if(length>FD_CURATOR_MAX_ARRAY_ITEMS) return null;
-    keys=Reflect.ownKeys(value);
-  }catch(ignoreArray){ return null; }
-  for(i=0;i<keys.length;i++){
-    key=keys[i];
-    if(key==='length') continue;
-    if(typeof key!=='string'||!/^(?:0|[1-9][0-9]*)$/.test(key)||Number(key)>=length) return null;
-    try{ descriptor=Object.getOwnPropertyDescriptor(value,key); }
-    catch(ignoreDescriptor){ return null; }
-    if(!descriptor||!Object.prototype.hasOwnProperty.call(descriptor,'value')) return null;
-    seen[key]=true; out[Number(key)]=descriptor.value;
-  }
-  for(i=0;i<length;i++) if(!seen[String(i)]) return null;
-  return out;
-}
-
-function fdCuratorLibrarySnapshot(index){
-  var top=fdCuratorReadOwnDataFields(index,['columns','byRef']),columns,groups=[],allowed=Object.create(null);
-  var seen=Object.create(null),c,i,columnData,columnItems,itemData,ref,descriptor,canonicalData,items;
-  if(!top||!top.byRef||typeof top.byRef!=='object') return {ok:false,groups:[],allowed:allowed};
-  try{ if(Array.isArray(top.byRef)) return {ok:false,groups:[],allowed:allowed}; }
-  catch(ignoreReferenceMap){ return {ok:false,groups:[],allowed:allowed}; }
-  columns=fdCuratorReadDataArray(top.columns);
-  if(!columns) return {ok:false,groups:[],allowed:allowed};
-  for(c=0;c<columns.length;c++){
-    columnData=fdCuratorReadOwnDataFields(columns[c],['name','accent','items']); items=[];
-    if(!columnData||typeof columnData.name!=='string'||typeof columnData.accent!=='string')
-      return {ok:false,groups:[],allowed:Object.create(null)};
-    columnItems=fdCuratorReadDataArray(columnData.items);
-    if(!columnItems) return {ok:false,groups:[],allowed:Object.create(null)};
-    for(i=0;i<columnItems.length;i++){
-      itemData=fdCuratorReadOwnDataFields(columnItems[i],['ref']);
-      if(!itemData||typeof itemData.ref!=='string') return {ok:false,groups:[],allowed:Object.create(null)};
-      ref=itemData.ref;
-      if(!ref||ref==='rotation-curator.html'||ref.indexOf('local:')===0||seen[ref]) continue;
-      try{ descriptor=Object.getOwnPropertyDescriptor(top.byRef,ref); }
-      catch(ignoreReference){ return {ok:false,groups:[],allowed:Object.create(null)}; }
-      if(!descriptor||!Object.prototype.hasOwnProperty.call(descriptor,'value'))
-        return {ok:false,groups:[],allowed:Object.create(null)};
-      canonicalData=fdCuratorReadOwnDataFields(descriptor.value,['ref','title']);
-      if(!canonicalData||canonicalData.ref!==ref||typeof canonicalData.title!=='string')
-        return {ok:false,groups:[],allowed:Object.create(null)};
-      seen[ref]=true; allowed[ref]=true;
-      items.push({ref:ref,title:canonicalData.title});
-    }
-    if(items.length) groups.push({name:columnData.name,accent:columnData.accent,items:items});
-  }
-  return {ok:true,groups:groups,allowed:allowed};
-}
-
-function fdCuratorIndexSnapshot(index,siteContext){
-  var top=fdCuratorReadOwnDataFields(index,['path','weeks']),path,context,library,weeks,rule,out=[],i,j,weekData,items,itemData,refs,titleDescriptor,title;
-  context=fdCuratorReadOwnDataFields(siteContext,['audience','pathId','coreRevision']);
-  path=top?fdCuratorReadOwnDataFields(top.path,['id','weekCount']):null;
-  library=fdCuratorLibrarySnapshot(index);
-  if(!top||!context||!path||!library.ok||typeof context.audience!=='string'||
-     typeof context.pathId!=='string'||typeof context.coreRevision!=='string'||
-     typeof path.id!=='string'||path.id!==context.pathId||
-     typeof path.weekCount!=='number'||!isFinite(path.weekCount)||Math.floor(path.weekCount)!==path.weekCount||path.weekCount<1)
-    return {ok:false};
-  try{ rule=FD_EDITION_RULES.paths[context.audience]; }
-  catch(ignoreRules){ rule=null; }
-  if(!rule||rule.id!==path.id||rule.weeks!==path.weekCount) return {ok:false};
-  weeks=fdCuratorReadDataArray(top.weeks);
-  if(!weeks||weeks.length!==path.weekCount) return {ok:false};
-  for(i=0;i<weeks.length;i++){
-    weekData=fdCuratorReadOwnDataFields(weeks[i],['n','items']);
-    if(!weekData||weekData.n!==i+1) return {ok:false};
-    try{ titleDescriptor=Object.getOwnPropertyDescriptor(weeks[i],'title'); }
-    catch(ignoreWeekTitle){ return {ok:false}; }
-    title='';
-    if(titleDescriptor){
-      if(!Object.prototype.hasOwnProperty.call(titleDescriptor,'value')||typeof titleDescriptor.value!=='string') return {ok:false};
-      title=titleDescriptor.value;
-    }
-    items=fdCuratorReadDataArray(weekData.items); refs=[];
-    if(!items) return {ok:false};
-    for(j=0;j<items.length;j++){
-      itemData=fdCuratorReadOwnDataFields(items[j],['ref']);
-      if(!itemData||typeof itemData.ref!=='string') return {ok:false};
-      refs.push(itemData.ref);
-    }
-    out.push({n:i+1,title:title,refs:refs});
-  }
-  return {
-    ok:true,audience:context.audience,pathId:path.id,weekCount:path.weekCount,weeks:out,
-    groups:library.groups,allowed:library.allowed,coreRevision:context.coreRevision
-  };
-}
-
-function fdCuratorActionShape(action){
-  var typeData=fdCuratorReadOwnDataFields(action,['type']),type,fields;
-  if(!typeData||typeof typeData.type!=='string') return null;
-  type=typeData.type;
-  if(type==='GO_TO_STEP') fields=['type','step'];
-  else if(type==='SET_CARD_FIELD') fields=['type','field','value'];
-  else if(type==='SET_CHANGE_NOTE') fields=['type','value'];
-  else if(type==='SET_PREVIEW_REVIEWED') fields=['type','viewport','value'];
-  else if(type==='SET_AFFIRMATION') fields=['type','name','value'];
-  else if(type==='PATH_TOGGLE'||type==='PATH_ADD_INSTANCE'){
-    fields=fdCuratorReadOwnDataFields(action,['week'])?['type','ref','week']:['type','ref'];
-  }else if(type==='PATH_REMOVE_INSTANCE'||type==='PATH_MOVE_UP'||type==='PATH_MOVE_DOWN') fields=['type','instanceId'];
-  else if(type==='PATH_SET_PRIORITY') fields=['type','instanceId','priority'];
-  else if(type==='PATH_SET_RATIONALE') fields=['type','instanceId','value'];
-  else if(type==='PATH_MOVE_WEEK') fields=['type','instanceId','week'];
-  else if(type==='LOCAL_SET_ORIENTATION') fields=['type','field','value'];
-  else if(type==='LOCAL_CONTACT_ADD') fields=['type','role','directoryUrl'];
-  else if(type==='LOCAL_CONTACT_REMOVE') fields=['type','index'];
-  else if(type==='LOCAL_CONTACT_UPDATE') fields=['type','index','field','value'];
-  else if(type==='LOCAL_CHECKLIST_ADD') fields=['type','label','priority'];
-  else if(type==='LOCAL_CHECKLIST_REMOVE') fields=['type','id'];
-  else if(type==='LOCAL_CHECKLIST_UPDATE') fields=['type','id','field','value'];
-  else if(type==='LOCAL_RESOURCE_ADD') fields=['type','title','url','priority','week','rationale'];
-  else if(type==='LOCAL_RESOURCE_REMOVE') fields=['type','id'];
-  else if(type==='LOCAL_RESOURCE_UPDATE') fields=['type','id','field','value'];
-  else if(type==='GENERATION_SUCCEEDED') fields=['type','result'];
-  else fields=['type'];
-  return fdCuratorReadDataObject(action,fields);
-}
-
-function fdCuratorClone(value){
-  return JSON.parse(fdEditionCanonicalJson(value));
-}
-
-function fdCuratorUnchangedResult(value,index,siteContext){
-  try{ return fdCuratorClone(value); }
-  catch(ignoreClone){ return fdCuratorNewDraft(index,siteContext); }
-}
-
-function fdCuratorFullConfig(draftConfig,site,editionNumber,revision){
-  return {
-    audience:site.audience,pathId:site.pathId,editionNumber:editionNumber,
-    createdAgainstCoreRevision:revision||site.coreRevision,
-    card:draftConfig.card,pathItems:draftConfig.pathItems,
-    localOrientation:draftConfig.localOrientation,changeNote:draftConfig.changeNote
-  };
-}
-
-function fdCuratorPlainTextValid(value,max,allowEmpty){
-  if(typeof value!=='string'||(!allowEmpty&&value.trim()==='')||fdEditionTextLength(value)>max) return false;
-  try{ value.normalize('NFC'); }
-  catch(ignoreUnicode){ return false; }
-  return !/[\u0000-\u0009\u000b-\u001f\u007f-\u009f]/.test(value);
-}
-
-function fdCuratorHttpsUrlValid(value){
-  var errors=[],warnings=[];
-  if(typeof value!=='string') return false;
-  fdEditionCheckUrl(value,'/config/localOrientation/url',errors,warnings);
-  return errors.length===0;
-}
-
-function fdCuratorLocalIdentifierValid(value){
-  var errors=[],warnings=[];
-  if(typeof value!=='string'||!value||value.length>160||!/^[\x21-\x7e]+$/.test(value)) return false;
-  fdEditionScreenText(value,'/config/localOrientation/id',errors,warnings);
-  return errors.length===0;
-}
-
-function fdCuratorLocalIdNumber(id,prefix){
-  var suffix;
-  if(typeof id!=='string'||id.indexOf(prefix)!==0) return 0;
-  suffix=id.slice(prefix.length);
-  return /^[1-9][0-9]*$/.test(suffix)?Number(suffix):0;
-}
-
-function fdCuratorNextLocalId(draft,prefix){
-  var used=Object.create(null),groups=[draft.config.pathItems,draft.config.localOrientation.checklist,draft.config.localOrientation.resources];
-  var i,j,n=1,value,id;
-  for(i=0;i<groups.length;i++) for(j=0;j<groups[i].length;j++){
-    id=i===0?groups[i][j].instanceId:groups[i][j].id;
-    value=fdCuratorLocalIdNumber(id,prefix);
-    if(value) used[value]=true;
-  }
-  while(used[n]) n++;
-  return prefix+n;
-}
-
-function fdCuratorFindLocalItem(items,id){
-  var i;
-  if(typeof id!=='string') return -1;
-  for(i=0;i<items.length;i++) if(items[i].id===id) return i;
-  return -1;
-}
-
-function fdCuratorLocalStateValid(orientation,inspected,pathItems){
-  var seen=Object.create(null),i,item;
-  if(!orientation||!inspected||!inspected.ok) return false;
-  for(i=0;i<FD_CURATOR_ORIENTATION_FIELDS.length;i++)
-    if(!fdCuratorPlainTextValid(orientation[FD_CURATOR_ORIENTATION_FIELDS[i]],FD_EDITION_RULES.maxOrientation,true)) return false;
-  if(!Array.isArray(orientation.contacts)||!Array.isArray(orientation.checklist)||!Array.isArray(orientation.resources)||
-     orientation.contacts.length>FD_CURATOR_MAX_ARRAY_ITEMS||orientation.checklist.length>FD_EDITION_RULES.maxChecklist||
-     orientation.resources.length>FD_EDITION_RULES.maxResources) return false;
-  for(i=0;i<pathItems.length;i++) seen[pathItems[i].instanceId]=true;
-  for(i=0;i<orientation.contacts.length;i++){
-    item=orientation.contacts[i];
-    if(!item||!fdCuratorPlainTextValid(item.role,FD_EDITION_RULES.maxTitle,false)||!fdCuratorHttpsUrlValid(item.directoryUrl)) return false;
-  }
-  for(i=0;i<orientation.checklist.length;i++){
-    item=orientation.checklist[i];
-    if(!item||!fdCuratorLocalIdentifierValid(item.id)||seen[item.id]||!fdCuratorPlainTextValid(item.label,FD_EDITION_RULES.maxTitle,false)||
-       FD_EDITION_RULES.priorities.indexOf(item.priority)===-1) return false;
-    seen[item.id]=true;
-  }
-  for(i=0;i<orientation.resources.length;i++){
-    item=orientation.resources[i];
-    if(!item||!fdCuratorLocalIdentifierValid(item.id)||seen[item.id]||!fdCuratorPlainTextValid(item.title,FD_EDITION_RULES.maxTitle,false)||
-       !fdCuratorHttpsUrlValid(item.url)||FD_EDITION_RULES.priorities.indexOf(item.priority)===-1||
-       typeof item.week!=='number'||Math.floor(item.week)!==item.week||item.week<1||item.week>inspected.weekCount||
-       !fdCuratorPlainTextValid(item.rationale,FD_EDITION_RULES.maxRationale,true)) return false;
-    seen[item.id]=true;
-  }
+function fdCuratorStateValid(state,index,siteContext){
+  var inspected=fdCuratorIndexSnapshot(index,siteContext),top,site,config,context,publication,receipts,affirmations,i;
+  if(!inspected.ok)return false;
+  top=fdCuratorExactData(state,['schemaVersion','step','site','config','publication','previewReceipts','affirmations'],[]);
+  if(!top||top.schemaVersion!==2||!Number.isInteger(top.step)||top.step<1||top.step>5)return false;
+  site=fdCuratorExactData(top.site,['audience','pathId','coreRevision','localCatalogRevision','rotationEditionV2','rendererRevision'],[]);
+  if(!site||site.audience!==inspected.site.audience||site.pathId!==inspected.site.pathId||site.coreRevision!==inspected.site.coreRevision||site.localCatalogRevision!==inspected.site.localCatalogRevision||site.rotationEditionV2!==inspected.site.rotationEditionV2||site.rendererRevision!==FD_CURATOR_RENDERER_REVISION)return false;
+  config=fdCuratorExactData(top.config,['context','phraseSetKey','pathItems','localPlan','changeSummary'],[]);
+  context=config&&fdCuratorExactData(config.context,['trainingLocationKey','curatorProfileKey','rotationStart','rotationEnd','editionCheckedOn'],[]);
+  if(!config||!context||typeof context.trainingLocationKey!=='string'||typeof context.curatorProfileKey!=='string'||typeof config.phraseSetKey!=='string'||!fdCuratorLocalPlanStateValid(config.localPlan,inspected.site.weekCount)||!fdCuratorPathStateValid(config.pathItems,inspected))return false;
+  for(i=0;i<3;i++){var dateValue=[context.rotationStart,context.rotationEnd,context.editionCheckedOn][i];if(dateValue!==''&&!fdCuratorRealDate(dateValue))return false;}
+  if(context.rotationStart&&context.rotationEnd&&context.rotationEnd<context.rotationStart)return false;
+  if(!fdCuratorExactData(config.changeSummary,['kindCodes','changedItemCount'],[])||!Array.isArray(config.changeSummary.kindCodes)||!Number.isInteger(config.changeSummary.changedItemCount))return false;
+  publication=fdCuratorExactData(top.publication,['baseEnvelope','baseSemanticConfig','lastGenerated'],[]);
+  receipts=fdCuratorExactData(top.previewReceipts,['desktop','mobile'],[]);
+  affirmations=fdCuratorExactData(top.affirmations,FD_CURATOR_AFFIRMATIONS,[]);
+  if(!publication||typeof publication.baseSemanticConfig!=='string'||!receipts||!affirmations)return false;
+  for(i=0;i<FD_CURATOR_AFFIRMATIONS.length;i++)if(typeof affirmations[FD_CURATOR_AFFIRMATIONS[i]]!=='boolean')return false;
   return true;
 }
 
-function fdCuratorValidateDraft(value,index,siteContext){
-  var top=fdCuratorReadDataObject(value,['schemaVersion','step','site','config','publication','preview','affirmations']);
-  var site,config,publication,preview,affirmations,normalized,lastGenerated=null,current=fdCuratorIndexSnapshot(index,siteContext);
-  var affirmationIndex;
-  if(!current.ok||!top||top.schemaVersion!==1||typeof top.step!=='number'||!isFinite(top.step)||Math.floor(top.step)!==top.step||top.step<1||top.step>5) return {ok:false,draft:null};
-  site=fdCuratorReadDataObject(top.site,['audience','pathId','coreRevision']);
-  config=fdCuratorReadDataObject(top.config,['card','pathItems','localOrientation','changeNote']);
-  publication=fdCuratorReadDataObject(top.publication,['baseEnvelope','baseCanonicalConfig','lastGenerated']);
-  preview=fdCuratorReadDataObject(top.preview,['desktopReviewed','mobileReviewed']);
-  affirmations=fdCuratorReadDataObject(top.affirmations,FD_CURATOR_AFFIRMATION_FIELDS);
-  if(!site||!config||!publication||!preview||!affirmations) return {ok:false,draft:null};
-  if(typeof site.audience!=='string'||typeof site.pathId!=='string'||typeof site.coreRevision!=='string'||
-     site.audience!==current.audience||site.pathId!==current.pathId||
-     !/^[0-9a-f]{40}$/.test(site.coreRevision)||!current.coreRevision||!/^[0-9a-f]{40}$/.test(current.coreRevision)) return {ok:false,draft:null};
-  if(typeof publication.baseCanonicalConfig!=='string'||
-     (publication.baseEnvelope!==null&&(!publication.baseEnvelope||typeof publication.baseEnvelope!=='object'))) return {ok:false,draft:null};
-  if(typeof preview.desktopReviewed!=='boolean'||typeof preview.mobileReviewed!=='boolean') return {ok:false,draft:null};
-  for(affirmationIndex=0;affirmationIndex<FD_CURATOR_AFFIRMATION_FIELDS.length;affirmationIndex++)
-    if(typeof affirmations[FD_CURATOR_AFFIRMATION_FIELDS[affirmationIndex]]!=='boolean') return {ok:false,draft:null};
-  normalized=fdEditionNormalizeConfig(fdCuratorFullConfig(config,site,1,site.coreRevision));
-  if(!normalized.ok||!fdCuratorPathStateValid(normalized.value.pathItems,current)||
-     !fdCuratorLocalStateValid(normalized.value.localOrientation,current,normalized.value.pathItems)) return {ok:false,draft:null};
-  if(publication.lastGenerated!==null){
-    lastGenerated=fdCuratorReadDataObject(publication.lastGenerated,['digest','fingerprint']);
-    if(!lastGenerated||typeof lastGenerated.digest!=='string'||typeof lastGenerated.fingerprint!=='string') return {ok:false,draft:null};
+function fdCuratorKey(value){return typeof value==='string'&&/^[a-z0-9][a-z0-9._:-]{0,126}@v[1-9][0-9]{0,5}$/.test(value);}
+function fdCuratorTime(value){return typeof value==='string'&&/^(?:[01][0-9]|2[0-3]):[0-5][0-9]$/.test(value);}
+function fdCuratorLocalPlanStateValid(plan,maxWeek){
+  var keys,i,j,row,value,ids=Object.create(null),events=Object.create(null),seen=Object.create(null),count;
+  function exact(item,required,optional){return fdCuratorExactData(item,required,optional);}
+  function list(item,max){return fdCuratorArray(item,max);}
+  function id(value){if(typeof value!=='string'||!value||value.length>160||ids[value])return false;ids[value]=true;return true;}
+  function priority(value){return FD_CURATOR_PRIORITIES.indexOf(value)>=0;}
+  if(!fdCuratorObject(plan))return false;try{keys=Reflect.ownKeys(plan);}catch(ignore){return false;}
+  for(i=0;i<keys.length;i++)if(typeof keys[i]!=='string'||FD_CURATOR_LOCAL_CATEGORIES.indexOf(keys[i])<0)return false;
+  if(FD_CURATOR_OWN.call(plan,'arrival')){value=exact(plan.arrival,['timingCode','time','placeKey','checkInRoleKey'],['linkKey']);if(!value||['at','by'].indexOf(value.timingCode)<0||!fdCuratorTime(value.time)||!fdCuratorKey(value.placeKey)||!fdCuratorKey(value.checkInRoleKey)||(FD_CURATOR_OWN.call(value,'linkKey')&&!fdCuratorKey(value.linkKey)))return false;}
+  if(FD_CURATOR_OWN.call(plan,'schedule')){
+    value=exact(plan.schedule,['dayStart','dayEnd','endQualifierCode','events'],[]);if(!value||!fdCuratorTime(value.dayStart)||!fdCuratorTime(value.dayEnd)||value.dayStart>=value.dayEnd||['at','about','no-later-than'].indexOf(value.endQualifierCode)<0||!list(value.events,24))return false;
+    for(i=0;i<value.events.length;i++){row=exact(value.events[i],['instanceId','daySetKey','startTime','activityKey','priority'],['endTime','placeKey']);if(!row||!id(row.instanceId)||!fdCuratorKey(row.daySetKey)||!fdCuratorTime(row.startTime)||!fdCuratorKey(row.activityKey)||!priority(row.priority)||(FD_CURATOR_OWN.call(row,'endTime')&&(!fdCuratorTime(row.endTime)||row.endTime<=row.startTime))||(FD_CURATOR_OWN.call(row,'placeKey')&&!fdCuratorKey(row.placeKey)))return false;events[row.instanceId]=true;}
   }
-  try{
-    return {ok:true,draft:{
-      schemaVersion:1,step:top.step,
-      site:{audience:current.audience,pathId:current.pathId,coreRevision:current.coreRevision},
-      config:{card:normalized.value.card,pathItems:normalized.value.pathItems,localOrientation:normalized.value.localOrientation,changeNote:normalized.value.changeNote},
-      publication:{
-        baseEnvelope:publication.baseEnvelope===null?null:fdCuratorClone(publication.baseEnvelope),
-        baseCanonicalConfig:publication.baseCanonicalConfig,
-        lastGenerated:lastGenerated===null?null:{digest:lastGenerated.digest,fingerprint:lastGenerated.fingerprint}
-      },
-      preview:{desktopReviewed:preview.desktopReviewed,mobileReviewed:preview.mobileReviewed},
-      affirmations:{
-        publicSafe:affirmations.publicSafe,officialLinks:affirmations.officialLinks,
-        previewsReviewed:affirmations.previewsReviewed,forwardable:affirmations.forwardable
-      }
-    }};
-  }catch(ignoreClone){ return {ok:false,draft:null}; }
-}
-
-function fdCuratorResetReviews(draft){
-  draft.preview={desktopReviewed:false,mobileReviewed:false};
-  draft.affirmations={publicSafe:false,officialLinks:false,previewsReviewed:false,forwardable:false};
-  return draft;
-}
-
-function fdCuratorNormalizePathItems(items,weekCount){
-  var ranked=[],perWeek=Object.create(null),out=[],i,item,week;
-  if(!Array.isArray(items)||!weekCount) return null;
-  for(i=0;i<items.length;i++){
-    item=items[i];
-    if(!item||typeof item.week!=='number'||Math.floor(item.week)!==item.week||item.week<1||item.week>weekCount) return null;
-    ranked.push({item:item,position:i});
-  }
-  ranked.sort(function(a,b){
-    if(a.item.week!==b.item.week) return a.item.week-b.item.week;
-    if(a.item.order!==b.item.order) return a.item.order-b.item.order;
-    return a.position-b.position;
-  });
-  for(i=0;i<ranked.length;i++){
-    item=ranked[i].item; week=String(item.week); perWeek[week]=(perWeek[week]||0)+1;
-    item.order=perWeek[week]; out.push(item);
-  }
-  return out;
-}
-
-function fdCuratorFindPathItem(items,instanceId){
-  var i;
-  if(typeof instanceId!=='string') return -1;
-  for(i=0;i<items.length;i++) if(items[i].instanceId===instanceId) return i;
-  return -1;
-}
-
-function fdCuratorDefaultWeek(draft,inspected,ref){
-  var items=draft.config.pathItems,i,j;
-  for(i=0;i<items.length;i++) if(items[i].ref===ref) return items[i].week;
-  for(i=0;i<inspected.weeks.length;i++) for(j=0;j<inspected.weeks[i].refs.length;j++)
-    if(inspected.weeks[i].refs[j]===ref) return inspected.weeks[i].n;
-  return 1;
-}
-
-function fdCuratorNextInstanceId(items,ref){
-  var used=Object.create(null),prefix='core:'+ref+':',i,suffix,occurrence=1;
-  for(i=0;i<items.length;i++){
-    if(items[i].instanceId.indexOf(prefix)!==0) continue;
-    suffix=items[i].instanceId.slice(prefix.length);
-    if(/^[1-9][0-9]*$/.test(suffix)) used[Number(suffix)]=true;
-  }
-  while(used[occurrence]) occurrence++;
-  return prefix+occurrence;
-}
-
-function fdCuratorInstanceOccurrence(item){
-  var prefix,suffix;
-  if(!item||typeof item.ref!=='string'||typeof item.instanceId!=='string') return '';
-  prefix='core:'+item.ref+':';
-  if(item.instanceId.indexOf(prefix)!==0) return '';
-  suffix=item.instanceId.slice(prefix.length);
-  return /^[1-9][0-9]*$/.test(suffix)?suffix:'';
-}
-
-function fdCuratorRationaleValid(value){
-  var errors=[],warnings=[];
-  if(typeof value!=='string'||fdEditionTextLength(value)>FD_EDITION_RULES.maxRationale) return false;
-  try{ value.normalize('NFC'); }
-  catch(ignoreUnicode){ return false; }
-  fdEditionScreenText(value,'/config/pathItems/rationale',errors,warnings);
-  return errors.length===0;
+  if(FD_CURATOR_OWN.call(plan,'rounds')){value=exact(plan.rounds,['preparationKey','participationKey','followUpKey'],[]);if(!value||!fdCuratorKey(value.preparationKey)||!fdCuratorKey(value.participationKey)||!fdCuratorKey(value.followUpKey))return false;}
+  if(FD_CURATOR_OWN.call(plan,'presentation')){value=exact(plan.presentation,['formatKey','timingKey','elementKeys'],[]);if(!value||!fdCuratorKey(value.formatKey)||!fdCuratorKey(value.timingKey)||!list(value.elementKeys,8)||!value.elementKeys.length)return false;seen=Object.create(null);for(i=0;i<value.elementKeys.length;i++){if(!fdCuratorKey(value.elementKeys[i])||seen[value.elementKeys[i]])return false;seen[value.elementKeys[i]]=true;}}
+  if(FD_CURATOR_OWN.call(plan,'documentation')){value=exact(plan.documentation,['workflowKey','timingKey'],['policyLinkKey']);if(!value||!fdCuratorKey(value.workflowKey)||!fdCuratorKey(value.timingKey)||(FD_CURATOR_OWN.call(value,'policyLinkKey')&&!fdCuratorKey(value.policyLinkKey)))return false;}
+  if(FD_CURATOR_OWN.call(plan,'attendance')){value=exact(plan.attendance,['eventInstanceIds','absenceRoleKey'],['policyLinkKey']);if(!value||!(value.eventInstanceIds=list(value.eventInstanceIds,24))||!value.eventInstanceIds.length||!fdCuratorKey(value.absenceRoleKey)||(FD_CURATOR_OWN.call(value,'policyLinkKey')&&!fdCuratorKey(value.policyLinkKey)))return false;seen=Object.create(null);for(i=0;i<value.eventInstanceIds.length;i++)if(typeof value.eventInstanceIds[i]!=='string'||!events[value.eventInstanceIds[i]]||seen[value.eventInstanceIds[i]])return false;else seen[value.eventInstanceIds[i]]=true;}
+  if(FD_CURATOR_OWN.call(plan,'feedback')){value=exact(plan.feedback,['cadenceKey','initiatorKey','settingKey'],[]);if(!value||!fdCuratorKey(value.cadenceKey)||!fdCuratorKey(value.initiatorKey)||!fdCuratorKey(value.settingKey))return false;}
+  function rows(category,max,required,optional,check){var listValue=list(plan[category],max);if(!listValue||!listValue.length)return false;for(j=0;j<listValue.length;j++){row=exact(listValue[j],required,optional);if(!row||!id(row.instanceId)||!check(row))return false;}return true;}
+  if(FD_CURATOR_OWN.call(plan,'accessItems')&&!rows('accessItems',12,['instanceId','itemKey','dueKey'],['linkKey'],function(item){return fdCuratorKey(item.itemKey)&&fdCuratorKey(item.dueKey)&&(!FD_CURATOR_OWN.call(item,'linkKey')||fdCuratorKey(item.linkKey));}))return false;
+  if(FD_CURATOR_OWN.call(plan,'contacts')&&!rows('contacts',8,['instanceId','roleKey'],['linkKey'],function(item){return fdCuratorKey(item.roleKey)&&(!FD_CURATOR_OWN.call(item,'linkKey')||fdCuratorKey(item.linkKey));}))return false;
+  if(FD_CURATOR_OWN.call(plan,'checklistItems')&&!rows('checklistItems',24,['instanceId','itemKey','priority'],[],function(item){return fdCuratorKey(item.itemKey)&&priority(item.priority);}))return false;
+  if(FD_CURATOR_OWN.call(plan,'resources')&&!rows('resources',12,['instanceId','linkKey','priority','week'],['reasonKey'],function(item){return fdCuratorKey(item.linkKey)&&priority(item.priority)&&Number.isInteger(item.week)&&item.week>=1&&item.week<=maxWeek&&(!FD_CURATOR_OWN.call(item,'reasonKey')||fdCuratorKey(item.reasonKey));}))return false;
+  count=(plan.arrival?1:0)+(plan.accessItems?plan.accessItems.length:0)+(plan.checklistItems?plan.checklistItems.length:0);return count<=24;
 }
 
 function fdCuratorPathStateValid(items,inspected){
-  var seenIds=Object.create(null),seenOrders=Object.create(null),seenOccurrences=Object.create(null),counts=Object.create(null);
-  var i,item,weekKey,orderKey,prefix,suffix,occurrenceKey;
-  if(!Array.isArray(items)||!inspected||!inspected.ok||!inspected.weekCount) return false;
-  for(i=0;i<items.length;i++){
-    item=items[i];
-    if(!item||typeof item.instanceId!=='string'||!item.instanceId||seenIds[item.instanceId]||
-       typeof item.ref!=='string'||!inspected.allowed[item.ref]||
-       typeof item.week!=='number'||Math.floor(item.week)!==item.week||item.week<1||item.week>inspected.weekCount||
-       typeof item.order!=='number'||Math.floor(item.order)!==item.order||item.order<1||
-       FD_EDITION_RULES.priorities.indexOf(item.priority)===-1||!fdCuratorRationaleValid(item.rationale)) return false;
-    prefix='core:'+item.ref+':';
-    if(item.instanceId.indexOf(prefix)!==0) return false;
-    suffix=item.instanceId.slice(prefix.length);
-    if(!/^[1-9][0-9]*$/.test(suffix)) return false;
-    occurrenceKey=item.ref+'\u0000'+suffix;
-    if(seenOccurrences[occurrenceKey]) return false;
-    weekKey=String(item.week); orderKey=weekKey+':'+String(item.order);
-    if(seenOrders[orderKey]) return false;
-    seenIds[item.instanceId]=true; seenOccurrences[occurrenceKey]=true;
-    seenOrders[orderKey]=true; counts[weekKey]=(counts[weekKey]||0)+1;
+  var list=fdCuratorArray(items,FD_CURATOR_MAX_PATH_ITEMS),ids=Object.create(null),orders=Object.create(null),counts=Object.create(null),i,row,keys,j;
+  if(!list||!list.length)return false;
+  for(i=0;i<list.length;i++){
+    row=fdCuratorExactData(list[i],['instanceId','ref','week','order','priority'],['reasonKey']);
+    if(!row||typeof row.instanceId!=='string'||!row.instanceId||typeof row.ref!=='string'||!inspected.allowed[row.ref]||ids[row.instanceId]||!Number.isInteger(row.week)||row.week<1||row.week>inspected.site.weekCount||!Number.isInteger(row.order)||row.order<1||FD_CURATOR_PRIORITIES.indexOf(row.priority)<0||(FD_CURATOR_OWN.call(row,'reasonKey')&&(typeof row.reasonKey!=='string'||!row.reasonKey)))return false;
+    ids[row.instanceId]=true;if(!orders[row.week])orders[row.week]=Object.create(null);if(orders[row.week][row.order])return false;orders[row.week][row.order]=true;counts[row.week]=(counts[row.week]||0)+1;
   }
-  for(weekKey in counts) if(Object.prototype.hasOwnProperty.call(counts,weekKey))
-    for(i=1;i<=counts[weekKey];i++) if(!seenOrders[weekKey+':'+String(i)]) return false;
+  keys=Object.keys(counts);for(i=0;i<keys.length;i++)for(j=1;j<=counts[keys[i]];j++)if(!orders[keys[i]][j])return false;
   return true;
 }
 
-function fdCuratorPathChanged(next,weekCount){
-  var normalized=fdCuratorNormalizePathItems(next.config.pathItems,weekCount);
-  if(!normalized) return next;
-  next.config.pathItems=normalized;
-  return fdCuratorResetReviews(next);
+function fdCuratorActionData(action){
+  var typeData=fdCuratorOwnValue(action,'type'),fields=[],optional=[],type;
+  if(!typeData.ok||typeof typeData.value!=='string')return null;type=typeData.value;
+  if(type==='SET_TRAINING_LOCATION')fields=['type','trainingLocationKey'];
+  else if(type==='SET_CURATOR_PROFILE')fields=['type','curatorProfileKey'];
+  else if(type==='SET_ROTATION_START'||type==='SET_ROTATION_END'||type==='SET_EDITION_CHECKED_ON')fields=['type','value'];
+  else if(type==='SET_PHRASE_SET')fields=['type','phraseSetKey'];
+  else if(type==='PATH_INCLUDE'||type==='PATH_REPEAT')fields=['type','ref','week'];
+  else if(type==='PATH_REMOVE')fields=['type','instanceId'];
+  else if(type==='PATH_MOVE_WEEK')fields=['type','instanceId','week'];
+  else if(type==='PATH_MOVE_ORDER')fields=['type','instanceId','direction'];
+  else if(type==='PATH_SET_PRIORITY')fields=['type','instanceId','priority'];
+  else if(type==='PATH_SET_REASON')fields=['type','instanceId','reasonKey'];
+  else if(type==='SET_STEP')fields=['type','step'];
+  else if(type==='IMPORT_SUCCEEDED')fields=['type','result','sequence'];
+  else if(type==='IMPORT_REJECTED')fields=['type','code','sequence'];
+  else if(type==='LOCAL_APPLY_PRESET')fields=['type','presetKey'];
+  else if(type==='ARRIVAL_SET')fields=['type','value'];
+  else if(type==='ARRIVAL_CLEAR')fields=['type'];
+  else if(type==='SCHEDULE_SET_BOUNDS')fields=['type','dayStart','dayEnd','endQualifierCode'];
+  else if(type==='SCHEDULE_EVENT_ADD'){fields=['type','daySetKey','startTime','activityKey','priority'];optional=['endTime','placeKey'];}
+  else if(type==='SCHEDULE_EVENT_UPDATE')fields=['type','instanceId','field','value'];
+  else if(type==='SCHEDULE_EVENT_REMOVE')fields=['type','instanceId'];
+  else if(type==='ROUNDS_SET'||type==='PRESENTATION_SET'||type==='DOCUMENTATION_SET'||type==='ATTENDANCE_SET'||type==='FEEDBACK_SET')fields=['type','value'];
+  else if(type==='ACCESS_ADD'){fields=['type','itemKey','dueKey'];optional=['linkKey'];}
+  else if(type==='ACCESS_UPDATE'||type==='CONTACT_UPDATE'||type==='CHECKLIST_UPDATE'||type==='RESOURCE_UPDATE')fields=['type','instanceId','field','value'];
+  else if(type==='ACCESS_REMOVE'||type==='CONTACT_REMOVE'||type==='CHECKLIST_REMOVE'||type==='RESOURCE_REMOVE')fields=['type','instanceId'];
+  else if(type==='CONTACT_ADD'){fields=['type','roleKey'];optional=['linkKey'];}
+  else if(type==='CHECKLIST_ADD')fields=['type','itemKey','priority'];
+  else if(type==='RESOURCE_ADD'){fields=['type','linkKey','priority','week'];optional=['reasonKey'];}
+  else if(type==='LOCAL_CATEGORY_CLEAR')fields=['type','category'];
+  else if(type==='PREVIEW_REVIEW_SUCCEEDED')fields=['type','preset','result','sequence'];
+  else if(type==='SET_AFFIRMATION')fields=['type','name','value'];
+  else if(type==='GENERATION_SUCCEEDED')fields=['type','result','sequence'];
+  else return null;
+  return fdCuratorExactData(action,fields,optional);
 }
 
-function fdCuratorLocalChanged(next){
-  return fdCuratorResetReviews(next);
-}
-
-function fdCuratorCommitLocalMutation(next,current,index,siteContext){
-  var validated,policy;
-  fdCuratorLocalChanged(next);
-  validated=fdCuratorValidateDraft(next,index,siteContext);
-  if(!validated.ok) return current;
-  policy=fdCuratorLocalPolicy(validated.draft,index,siteContext);
-  return policy.ok?validated.draft:current;
-}
-
-function fdCuratorCanonicalWithoutEdition(config){
-  var complete,normalized,value;
-  if(!config||typeof config!=='object') return '';
-  complete={
-    audience:config.audience,pathId:config.pathId,
-    editionNumber:typeof config.editionNumber==='number'?config.editionNumber:1,
-    createdAgainstCoreRevision:config.createdAgainstCoreRevision,
-    card:config.card,pathItems:config.pathItems,localOrientation:config.localOrientation,changeNote:config.changeNote
-  };
-  normalized=fdEditionNormalizeConfig(complete);
-  if(!normalized.ok) return '';
-  value=normalized.value;
-  return fdEditionCanonicalJson({
-    audience:value.audience,pathId:value.pathId,createdAgainstCoreRevision:value.createdAgainstCoreRevision,
-    card:value.card,pathItems:value.pathItems,localOrientation:value.localOrientation,changeNote:value.changeNote
-  });
-}
-
-function fdCuratorNextEditionNumber(draft,candidateWithoutEditionNumber){
-  var base=draft&&draft.publication?draft.publication.baseEnvelope:null;
-  var baseNumber=base&&base.config?base.config.editionNumber:0;
-  var candidateCanonical='';
-  if(!base||typeof baseNumber!=='number'||!isFinite(baseNumber)||Math.floor(baseNumber)!==baseNumber||baseNumber<1) return 1;
-  try{ candidateCanonical=fdCuratorCanonicalWithoutEdition(candidateWithoutEditionNumber); }
-  catch(ignoreCanonical){ candidateCanonical=''; }
-  return candidateCanonical&&candidateCanonical===draft.publication.baseCanonicalConfig?baseNumber:baseNumber+1;
-}
-
-function fdCuratorBuildConfig(draft,index,siteContext){
-  var shaped=fdCuratorValidateDraft(draft,index,siteContext),base,revision,candidate,number;
-  if(!shaped.ok) return {ok:false,value:null,errors:[{code:'CURATOR_DRAFT',path:'/draft',message:'The draft structure is invalid.',blocking:true}],warnings:[],canonicalBytes:0};
-  draft=shaped.draft;
-  base=draft.publication.baseEnvelope;
-  revision=base&&base.config?base.config.createdAgainstCoreRevision:draft.site.coreRevision;
-  candidate=fdCuratorFullConfig(draft.config,draft.site,1,revision);
-  number=fdCuratorNextEditionNumber(draft,candidate);
-  if(base&&base.config&&number!==base.config.editionNumber) candidate.createdAgainstCoreRevision=draft.site.coreRevision;
-  candidate.editionNumber=number;
-  return fdEditionValidateConfig(candidate,index,siteContext);
-}
-
-function fdCuratorReduce(draft,action,index,siteContext){
-  var shaped,current,next,snapshot,candidateCanonical,expected,weekCount,allowed,items,itemIndex,item,inspected,parsedAction,schema;
-  var targetWeek,weekItems,position,otherIndex,i,changed=false;
-  schema=fdCuratorReadOwnDataFields(draft,['schemaVersion']);
-  parsedAction=fdCuratorActionShape(action);
-  if(!schema||schema.schemaVersion!==1){
-    current=fdCuratorReadDataObject(draft,['step','site','generateEnabled'])||{step:1,site:{},generateEnabled:false};
-    return {
-      step:parsedAction&&parsedAction.type==='GO_TO_STEP'&&typeof parsedAction.step==='number'&&isFinite(parsedAction.step)&&
-        Math.floor(parsedAction.step)===parsedAction.step&&parsedAction.step>=1&&parsedAction.step<=5?parsedAction.step:current.step,
-      site:current.site,generateEnabled:false
-    };
-  }
-  shaped=fdCuratorValidateDraft(draft,index,siteContext);
-  if(!shaped.ok) return fdCuratorUnchangedResult(draft,index,siteContext);
-  current=shaped.draft;
-  next=fdCuratorClone(current);
-  if(!parsedAction) return next;
-  action=parsedAction;
-  if(action.type==='GO_TO_STEP'&&typeof action.step==='number'&&isFinite(action.step)&&
-     Math.floor(action.step)===action.step&&action.step>=1&&action.step<=5){ next.step=action.step; return next; }
-  if(action.type==='SET_CARD_FIELD'&&typeof action.field==='string'&&
-     FD_CURATOR_CARD_FIELDS.indexOf(action.field)!==-1&&typeof action.value==='string'){
-    if(next.config.card[action.field]===action.value) return next;
-    next.config.card[action.field]=action.value; return fdCuratorResetReviews(next);
-  }
-  if(action.type==='SET_CHANGE_NOTE'&&typeof action.value==='string'){
-    if(next.config.changeNote===action.value) return next;
-    next.config.changeNote=action.value; return fdCuratorResetReviews(next);
-  }
-  if(action.type==='SET_PREVIEW_REVIEWED'&&(action.viewport==='desktop'||action.viewport==='mobile')&&typeof action.value==='boolean'){
-    next.preview[action.viewport+'Reviewed']=action.value; return next;
-  }
-  if(action.type==='SET_AFFIRMATION'&&FD_CURATOR_AFFIRMATION_FIELDS.indexOf(action.name)!==-1&&typeof action.value==='boolean'){
-    next.affirmations[action.name]=action.value; return next;
-  }
-  inspected=fdCuratorIndexSnapshot(index,siteContext);
-  if(!inspected.ok) return next;
-  weekCount=inspected.weekCount;
-  allowed=inspected.allowed;
-  items=next.config.pathItems;
-  if(action.type==='LOCAL_SET_ORIENTATION'){
-    if(FD_CURATOR_ORIENTATION_FIELDS.indexOf(action.field)===-1||
-       !fdCuratorPlainTextValid(action.value,FD_EDITION_RULES.maxOrientation,true)||
-       next.config.localOrientation[action.field]===action.value) return next;
-    next.config.localOrientation[action.field]=action.value; return fdCuratorCommitLocalMutation(next,current,index,siteContext);
-  }
-  if(action.type==='LOCAL_CONTACT_ADD'){
-    if(next.config.localOrientation.contacts.length>=FD_CURATOR_MAX_ARRAY_ITEMS||
-       !fdCuratorPlainTextValid(action.role,FD_EDITION_RULES.maxTitle,false)||!fdCuratorHttpsUrlValid(action.directoryUrl)) return next;
-    next.config.localOrientation.contacts.push({role:action.role,directoryUrl:action.directoryUrl});
-    return fdCuratorCommitLocalMutation(next,current,index,siteContext);
-  }
-  if(action.type==='LOCAL_CONTACT_REMOVE'){
-    if(typeof action.index!=='number'||Math.floor(action.index)!==action.index||action.index<0||
-       action.index>=next.config.localOrientation.contacts.length) return next;
-    next.config.localOrientation.contacts.splice(action.index,1); return fdCuratorCommitLocalMutation(next,current,index,siteContext);
-  }
-  if(action.type==='LOCAL_CONTACT_UPDATE'){
-    if(typeof action.index!=='number'||Math.floor(action.index)!==action.index||action.index<0||
-       action.index>=next.config.localOrientation.contacts.length||
-       (action.field!=='role'&&action.field!=='directoryUrl')) return next;
-    if(action.field==='role'&&!fdCuratorPlainTextValid(action.value,FD_EDITION_RULES.maxTitle,false)) return next;
-    if(action.field==='directoryUrl'&&!fdCuratorHttpsUrlValid(action.value)) return next;
-    if(next.config.localOrientation.contacts[action.index][action.field]===action.value) return next;
-    next.config.localOrientation.contacts[action.index][action.field]=action.value; return fdCuratorCommitLocalMutation(next,current,index,siteContext);
-  }
-  if(action.type==='LOCAL_CHECKLIST_ADD'){
-    if(next.config.localOrientation.checklist.length>=FD_EDITION_RULES.maxChecklist||
-       !fdCuratorPlainTextValid(action.label,FD_EDITION_RULES.maxTitle,false)||
-       FD_EDITION_RULES.priorities.indexOf(action.priority)===-1) return next;
-    next.config.localOrientation.checklist.push({
-      id:fdCuratorNextLocalId(next,'local:first-day:'),
-      label:action.label,priority:action.priority
-    });
-    return fdCuratorCommitLocalMutation(next,current,index,siteContext);
-  }
-  if(action.type==='LOCAL_CHECKLIST_REMOVE'){
-    itemIndex=fdCuratorFindLocalItem(next.config.localOrientation.checklist,action.id);
-    if(itemIndex<0) return next;
-    next.config.localOrientation.checklist.splice(itemIndex,1); return fdCuratorCommitLocalMutation(next,current,index,siteContext);
-  }
-  if(action.type==='LOCAL_CHECKLIST_UPDATE'){
-    itemIndex=fdCuratorFindLocalItem(next.config.localOrientation.checklist,action.id);
-    if(itemIndex<0||(action.field!=='label'&&action.field!=='priority')) return next;
-    if(action.field==='label'&&!fdCuratorPlainTextValid(action.value,FD_EDITION_RULES.maxTitle,false)) return next;
-    if(action.field==='priority'&&FD_EDITION_RULES.priorities.indexOf(action.value)===-1) return next;
-    if(next.config.localOrientation.checklist[itemIndex][action.field]===action.value) return next;
-    next.config.localOrientation.checklist[itemIndex][action.field]=action.value; return fdCuratorCommitLocalMutation(next,current,index,siteContext);
-  }
-  if(action.type==='LOCAL_RESOURCE_ADD'){
-    if(next.config.localOrientation.resources.length>=FD_EDITION_RULES.maxResources||
-       !fdCuratorPlainTextValid(action.title,FD_EDITION_RULES.maxTitle,false)||!fdCuratorHttpsUrlValid(action.url)||
-       FD_EDITION_RULES.priorities.indexOf(action.priority)===-1||typeof action.week!=='number'||
-       Math.floor(action.week)!==action.week||action.week<1||action.week>weekCount||
-       !fdCuratorPlainTextValid(action.rationale,FD_EDITION_RULES.maxRationale,true)) return next;
-    next.config.localOrientation.resources.push({
-      id:fdCuratorNextLocalId(next,'local:resource:'),
-      title:action.title,url:action.url,priority:action.priority,week:action.week,rationale:action.rationale
-    });
-    return fdCuratorCommitLocalMutation(next,current,index,siteContext);
-  }
-  if(action.type==='LOCAL_RESOURCE_REMOVE'){
-    itemIndex=fdCuratorFindLocalItem(next.config.localOrientation.resources,action.id);
-    if(itemIndex<0) return next;
-    next.config.localOrientation.resources.splice(itemIndex,1); return fdCuratorCommitLocalMutation(next,current,index,siteContext);
-  }
-  if(action.type==='LOCAL_RESOURCE_UPDATE'){
-    itemIndex=fdCuratorFindLocalItem(next.config.localOrientation.resources,action.id);
-    if(itemIndex<0||['title','url','priority','week','rationale'].indexOf(action.field)===-1) return next;
-    if(action.field==='title'&&!fdCuratorPlainTextValid(action.value,FD_EDITION_RULES.maxTitle,false)) return next;
-    if(action.field==='url'&&!fdCuratorHttpsUrlValid(action.value)) return next;
-    if(action.field==='priority'&&FD_EDITION_RULES.priorities.indexOf(action.value)===-1) return next;
-    if(action.field==='week'&&(typeof action.value!=='number'||Math.floor(action.value)!==action.value||action.value<1||action.value>weekCount)) return next;
-    if(action.field==='rationale'&&!fdCuratorPlainTextValid(action.value,FD_EDITION_RULES.maxRationale,true)) return next;
-    if(next.config.localOrientation.resources[itemIndex][action.field]===action.value) return next;
-    next.config.localOrientation.resources[itemIndex][action.field]=action.value; return fdCuratorCommitLocalMutation(next,current,index,siteContext);
-  }
-  if(action.type==='PATH_TOGGLE'){
-    if(typeof action.ref!=='string'||!allowed[action.ref]) return next;
-    for(i=items.length-1;i>=0;i--) if(items[i].ref===action.ref){ items.splice(i,1); changed=true; }
-    if(!changed){
-      targetWeek=action.week===undefined?fdCuratorDefaultWeek(next,inspected,action.ref):action.week;
-      if(typeof targetWeek!=='number'||Math.floor(targetWeek)!==targetWeek||targetWeek<1||targetWeek>weekCount) return next;
-      weekItems=items.filter(function(candidate){return candidate.week===targetWeek;});
-      items.push({instanceId:fdCuratorNextInstanceId(items,action.ref),ref:action.ref,week:targetWeek,
-        order:weekItems.length+1,priority:'recommended',rationale:''});
+function fdCuratorCatalogOptions(snapshot,kind,locationKey,audience){
+  var records,rows=[],i,record,key,resolved,label,recordKind,choiceKind='',purposeCode='';
+  try{if(typeof fdEditionPublicationEnabled!=='function'||!fdEditionPublicationEnabled(snapshot))return [];
+    records=fdCuratorArray(snapshot.resolutionRecords,4096);if(!records)return [];
+    if(kind==='trainingLocation')recordKind='trainingLocation';
+    else if(kind==='curatorProfile')recordKind='curatorProfile';
+    else if(kind==='phraseSet')recordKind='phraseSet';
+    else if(kind==='reason'){recordKind='choice';choiceKind='reason';}
+    else if(kind==='place')recordKind='place';
+    else if(kind==='localPreset')recordKind='localPreset';
+    else if(kind.indexOf('choice:')===0){recordKind='choice';choiceKind=kind.slice(7);}
+    else if(kind.indexOf('link:')===0){recordKind='officialLink';purposeCode=kind.slice(5);}
+    else return [];
+    for(i=0;i<records.length;i++){
+      record=records[i];key=fdCuratorOwnValue(record,'key');if(!key.ok||typeof key.value!=='string')return [];
+      if(recordKind==='trainingLocation')resolved=fdEditionCatalogRecord(snapshot,key.value,'builder',recordKind,key.value);
+      else{if(typeof locationKey!=='string'||!locationKey)continue;resolved=fdEditionCatalogRecord(snapshot,key.value,'builder',recordKind,locationKey);}
+      if(!resolved||resolved.ok!==true||!resolved.record)continue;
+      record=resolved.record;if(choiceKind&&record.choiceKind!==choiceKind)continue;if(purposeCode&&record.purposeCode!==purposeCode)continue;
+      label=record.displayName||record.label||record.title;if(typeof label!=='string'||!label)continue;
+      rows.push({key:key.value,label:label});
     }
-    return fdCuratorPathChanged(next,weekCount);
-  }
-  if(action.type==='PATH_ADD_INSTANCE'){
-    if(typeof action.ref!=='string'||!allowed[action.ref]) return next;
-    targetWeek=action.week===undefined?fdCuratorDefaultWeek(next,inspected,action.ref):action.week;
-    if(typeof targetWeek!=='number'||Math.floor(targetWeek)!==targetWeek||targetWeek<1||targetWeek>weekCount) return next;
-    weekItems=items.filter(function(candidate){return candidate.week===targetWeek;});
-    items.push({instanceId:fdCuratorNextInstanceId(items,action.ref),ref:action.ref,week:targetWeek,
-      order:weekItems.length+1,priority:'recommended',rationale:''});
-    return fdCuratorPathChanged(next,weekCount);
-  }
-  itemIndex=fdCuratorFindPathItem(items,action.instanceId);
-  if(action.type==='PATH_REMOVE_INSTANCE'){
-    if(itemIndex<0) return next;
-    items.splice(itemIndex,1); return fdCuratorPathChanged(next,weekCount);
-  }
-  if(action.type==='PATH_SET_PRIORITY'){
-    if(itemIndex<0||FD_EDITION_RULES.priorities.indexOf(action.priority)===-1||items[itemIndex].priority===action.priority) return next;
-    items[itemIndex].priority=action.priority; return fdCuratorPathChanged(next,weekCount);
-  }
-  if(action.type==='PATH_SET_RATIONALE'){
-    if(itemIndex<0||!fdCuratorRationaleValid(action.value)||items[itemIndex].rationale===action.value) return next;
-    items[itemIndex].rationale=action.value; return fdCuratorPathChanged(next,weekCount);
-  }
-  if(action.type==='PATH_MOVE_WEEK'){
-    if(itemIndex<0||typeof action.week!=='number'||Math.floor(action.week)!==action.week||
-       action.week<1||action.week>weekCount||items[itemIndex].week===action.week) return next;
-    targetWeek=action.week; weekItems=items.filter(function(candidate){return candidate.week===targetWeek;});
-    items[itemIndex].week=targetWeek; items[itemIndex].order=weekItems.length+1;
-    return fdCuratorPathChanged(next,weekCount);
-  }
-  if(action.type==='PATH_MOVE_UP'||action.type==='PATH_MOVE_DOWN'){
-    if(itemIndex<0) return next;
-    item=items[itemIndex];
-    weekItems=items.filter(function(candidate){return candidate.week===item.week;})
-      .sort(function(a,b){return a.order-b.order;});
-    position=weekItems.indexOf(item);
-    if(action.type==='PATH_MOVE_UP'&&position>0) otherIndex=fdCuratorFindPathItem(items,weekItems[position-1].instanceId);
-    else if(action.type==='PATH_MOVE_DOWN'&&position>=0&&position<weekItems.length-1) otherIndex=fdCuratorFindPathItem(items,weekItems[position+1].instanceId);
-    else return next;
-    i=items[itemIndex].order; items[itemIndex].order=items[otherIndex].order; items[otherIndex].order=i;
-    return fdCuratorPathChanged(next,weekCount);
-  }
-  if(action.type==='GENERATION_SUCCEEDED'){
-    snapshot=typeof fdEditionTrustedSnapshot==='function'?fdEditionTrustedSnapshot(action.result):null;
-    if(!snapshot||!snapshot.envelope||!snapshot.config||!snapshot.fingerprint) return next;
-    expected=fdCuratorBuildConfig(next,index,siteContext);
-    if(!expected.ok||fdEditionCanonicalJson(snapshot.config)!==fdEditionCanonicalJson(expected.value)) return next;
-    candidateCanonical=fdCuratorCanonicalWithoutEdition(snapshot.config);
-    next.publication={
-      baseEnvelope:fdCuratorClone(snapshot.envelope),baseCanonicalConfig:candidateCanonical,
-      lastGenerated:{digest:snapshot.envelope.digest,fingerprint:snapshot.fingerprint}
-    };
-    return next;
-  }
-  return next;
+  }catch(ignore){return [];}
+  rows.sort(function(a,b){return a.label.localeCompare(b.label)||a.key.localeCompare(b.key);});return rows;
 }
 
-function fdCuratorSemanticDraftJson(draft,index,siteContext){
-  var shaped,value;
-  try{
-    shaped=fdCuratorValidateDraft(draft,index,siteContext);
-    if(!shaped.ok) return null;
-    value=shaped.draft;
-    return fdEditionCanonicalJson({
-      schemaVersion:value.schemaVersion,site:value.site,config:value.config,
-      preview:value.preview,affirmations:value.affirmations,publication:value.publication
-    });
-  }catch(ignoreSemanticDraft){ return null; }
-}
-
-function fdCuratorApplyAction(draft,action,index,siteContext){
-  var before=fdCuratorSemanticDraftJson(draft,index,siteContext),state,after;
-  try{ state=fdCuratorReduce(draft,action,index,siteContext); }
-  catch(ignoreReduction){ state=fdCuratorUnchangedResult(draft,index,siteContext); }
-  after=fdCuratorSemanticDraftJson(state,index,siteContext);
-  return {state:state,changed:before!==null&&after!==null&&before!==after};
-}
-
-function fdCuratorValidDate(value){
-  var parts,date;
-  if(typeof value!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
-  parts=value.split('-');
-  date=new Date(Date.UTC(Number(parts[0]),Number(parts[1])-1,Number(parts[2])));
-  return date.getUTCFullYear()===Number(parts[0])&&date.getUTCMonth()===Number(parts[1])-1&&date.getUTCDate()===Number(parts[2]);
-}
-
-function fdCuratorStepError(fieldId,message){
-  return {code:'CURATOR_FIELD',fieldId:fieldId,href:'#'+fieldId,message:message,blocking:true};
-}
-
-function fdCuratorLocalFindingLocation(path){
-  var match,field,index;
-  match=/^\/config\/localOrientation\/([A-Za-z]+)$/.exec(path);
-  if(match&&FD_CURATOR_ORIENTATION_FIELDS.indexOf(match[1])!==-1){
-    field=match[1];
-    return {fieldId:'curator'+field.charAt(0).toUpperCase()+field.slice(1),category:'Orientation',field:FD_CURATOR_LOCAL_LABELS[field]};
-  }
-  match=/^\/config\/localOrientation\/(contacts|checklist|resources)\/(\d+)\/(role|directoryUrl|label|priority|title|url|week|rationale|id)$/.exec(path);
-  if(match){
-    index=Number(match[2]); field=match[3];
-    if(match[1]==='contacts') return {
-      fieldId:'curatorContact'+index+(field==='directoryUrl'?'DirectoryUrl':'Role'),category:'Directory contact',
-      field:field==='directoryUrl'?'Directory URL':'Role label'
-    };
-    if(match[1]==='checklist') return {
-      fieldId:'curatorChecklist'+index+(field==='priority'?'Priority':'Label'),category:'First-day checklist',
-      field:field==='priority'?'Priority':'Label'
-    };
-    return {
-      fieldId:'curatorResource'+index+({title:'Title',url:'Url',priority:'Priority',week:'Week',rationale:'Rationale',id:'Title'}[field]||'Title'),
-      category:'Local resource',field:{title:'Title',url:'URL',priority:'Priority',week:'Week',rationale:'Selection rationale',id:'Identifier'}[field]
-    };
-  }
-  if(path==='/config/localOrientation/contacts') return {fieldId:'curatorNewContactRole',category:'Directory contacts',field:'Contact list'};
-  if(path==='/config/localOrientation/checklist') return {fieldId:'curatorNewChecklistLabel',category:'First-day checklist',field:'Checklist items'};
-  if(path==='/config/localOrientation/resources') return {fieldId:'curatorNewResourceTitle',category:'Local resources',field:'Resource list'};
-  if(path==='/config') return {fieldId:'curatorEditorTitle',category:'Local details',field:'Total edition size'};
-  return null;
-}
-
-function fdCuratorLocalFindings(result,draft){
-  var out={errors:[],warnings:[]},groups=['errors','warnings'],g,i,source,location,finding,target;
-  result=result||{};
-  for(g=0;g<groups.length;g++){
-    source=Array.isArray(result[groups[g]])?result[groups[g]]:[];
-    for(i=0;i<source.length;i++){
-      finding=source[i]; location=finding&&typeof finding.path==='string'?fdCuratorLocalFindingLocation(finding.path):null;
-      if(!location) continue;
-      target={
-        code:finding.code,fieldId:location.fieldId,href:'#'+location.fieldId,
-        message:location.category+' — '+location.field+': '+finding.message,
-        blocking:finding.blocking!==false
-      };
-      out[groups[g]].push(target);
-    }
-  }
-  return out;
-}
-
-function fdCuratorLocalPolicy(draft,index,siteContext){
-  var shaped=fdCuratorValidateDraft(draft,index,siteContext),candidate,result;
-  if(!shaped.ok) return {ok:false,errors:[fdCuratorStepError('curatorEditorTitle','The draft structure is invalid.')],warnings:[]};
-  candidate=fdCuratorFullConfig(shaped.draft.config,shaped.draft.site,1,shaped.draft.site.coreRevision);
-  result=fdEditionValidateConfig(candidate,index,siteContext);
-  result=fdCuratorLocalFindings(result,shaped.draft);
-  return {ok:result.errors.length===0,errors:result.errors,warnings:result.warnings};
-}
-
-function fdCuratorPendingFinding(fieldId,category,field,message,blocking){
-  return {code:'CURATOR_PENDING',fieldId:fieldId,href:'#'+fieldId,
-    message:category+' — '+field+': '+message,blocking:blocking!==false};
-}
-
-function fdCuratorPendingSharedFindings(result,type,itemIndex){
-  var out={errors:[],warnings:[]},groups=['errors','warnings'],prefix,fields,g,i,finding,suffix,fieldId,label;
-  if(type==='contact'){
-    prefix='/config/localOrientation/contacts/'+itemIndex+'/';
-    fields={role:['curatorNewContactRole','Role label'],directoryUrl:['curatorNewContactDirectoryUrl','Directory URL']};
-    label='Directory contact';
-  }else if(type==='checklist'){
-    prefix='/config/localOrientation/checklist/'+itemIndex+'/';
-    fields={label:['curatorNewChecklistLabel','Label'],priority:['curatorNewChecklistPriority','Priority']};
-    label='First-day checklist';
-  }else{
-    prefix='/config/localOrientation/resources/'+itemIndex+'/';
-    fields={title:['curatorNewResourceTitle','Title'],url:['curatorNewResourceUrl','URL'],priority:['curatorNewResourcePriority','Priority'],week:['curatorNewResourceWeek','Week'],rationale:['curatorNewResourceRationale','Selection rationale']};
-    label='Local resource';
-  }
-  for(g=0;g<groups.length;g++) for(i=0;i<(result[groups[g]]||[]).length;i++){
-    finding=result[groups[g]][i];
-    if(!finding||typeof finding.path!=='string'||finding.path.indexOf(prefix)!==0) continue;
-    suffix=finding.path.slice(prefix.length); if(!fields[suffix]) continue;
-    fieldId=fields[suffix][0];
-    out[groups[g]].push({code:finding.code,fieldId:fieldId,href:'#'+fieldId,
-      message:label+' — '+fields[suffix][1]+': '+finding.message,blocking:finding.blocking!==false});
-  }
-  return out;
-}
-
-function fdCuratorReadPendingObject(value,fields){
-  var keys,prototype,allowed=Object.create(null),out={},i,key,descriptor;
-  if(!value||typeof value!=='object') return null;
-  try{
-    if(Array.isArray(value)) return null;
-    prototype=Object.getPrototypeOf(value);
-    if(prototype!==Object.prototype) return null;
-    keys=Reflect.ownKeys(value);
-  }catch(ignorePendingShape){ return null; }
-  if(keys.length!==fields.length) return null;
-  for(i=0;i<fields.length;i++) allowed[fields[i]]=true;
-  for(i=0;i<keys.length;i++){
-    key=keys[i];
-    if(typeof key!=='string'||!allowed[key]) return null;
-    try{ descriptor=Object.getOwnPropertyDescriptor(value,key); }
-    catch(ignorePendingDescriptor){ return null; }
-    if(!descriptor||!descriptor.enumerable||!Object.prototype.hasOwnProperty.call(descriptor,'value')) return null;
-    out[key]=descriptor.value;
-  }
-  return out;
-}
-
-function fdCuratorValidatePendingLocal(pending,draft,index,siteContext,scope,mode){
-  var pendingTop=fdCuratorReadPendingObject(pending,['contact','checklist','resource']);
-  var pendingContact=pendingTop&&fdCuratorReadPendingObject(pendingTop.contact,['role','directoryUrl']);
-  var pendingChecklist=pendingTop&&fdCuratorReadPendingObject(pendingTop.checklist,['label','priority']);
-  var pendingResource=pendingTop&&fdCuratorReadPendingObject(pendingTop.resource,['title','url','priority','week','rationale']);
-  var shaped=fdCuratorValidateDraft(draft,index,siteContext),types=scope==='all'?['contact','checklist','resource']:[scope];
-  var out={ok:true,empty:true,errors:[],warnings:[],action:null},i,type,value,has,action,next,checked,mapped,itemIndex,fieldId;
-  var candidate,errorCount,expectedLength,actualLength;
-  if(!pendingTop||!pendingContact||!pendingChecklist||!pendingResource||!shaped.ok||types.some(function(name){return ['contact','checklist','resource'].indexOf(name)===-1;})){
-    out.ok=false; out.errors.push(fdCuratorPendingFinding('curatorEditorTitle','Local details','Pending item','The pending fields could not be validated.')); return out;
-  }
-  pending={contact:pendingContact,checklist:pendingChecklist,resource:pendingResource}; draft=shaped.draft;
-  for(i=0;i<types.length;i++){
-    type=types[i]; value=pending[type]||{};
-    has=type==='contact'?((typeof value.role==='string'&&value.role.length>0)||(typeof value.directoryUrl==='string'&&value.directoryUrl.length>0)):
-      type==='checklist'?(typeof value.label==='string'&&value.label.length>0):
-      ((typeof value.title==='string'&&value.title.length>0)||(typeof value.url==='string'&&value.url.length>0)||(typeof value.rationale==='string'&&value.rationale.length>0));
-    if(!has&&scope==='all') continue;
-    out.empty=false;
-    errorCount=out.errors.length;
-    if(type==='contact'){
-      if(!fdCuratorPlainTextValid(value.role,FD_EDITION_RULES.maxTitle,false)) out.errors.push(fdCuratorPendingFinding('curatorNewContactRole','Directory contact','Role label','Enter a public role label of at most 100 characters.'));
-      if(!fdCuratorHttpsUrlValid(value.directoryUrl)) out.errors.push(fdCuratorPendingFinding('curatorNewContactDirectoryUrl','Directory contact','Directory URL','Enter an absolute HTTPS institutional directory URL without embedded credentials.'));
-      if(draft.config.localOrientation.contacts.length>=FD_CURATOR_MAX_ARRAY_ITEMS) out.errors.push(fdCuratorPendingFinding('curatorNewContactRole','Directory contacts','Contact list','The safe structural contact limit has been reached.'));
-      action={type:'LOCAL_CONTACT_ADD',role:value.role,directoryUrl:value.directoryUrl};
-      itemIndex=draft.config.localOrientation.contacts.length;
-    }else if(type==='checklist'){
-      if(!fdCuratorPlainTextValid(value.label,FD_EDITION_RULES.maxTitle,false)) out.errors.push(fdCuratorPendingFinding('curatorNewChecklistLabel','First-day checklist','Label','Enter a checklist label of at most 100 characters.'));
-      if(FD_EDITION_RULES.priorities.indexOf(value.priority)===-1) out.errors.push(fdCuratorPendingFinding('curatorNewChecklistPriority','First-day checklist','Priority','Choose required, recommended, or optional.'));
-      if(draft.config.localOrientation.checklist.length>=FD_EDITION_RULES.maxChecklist) out.errors.push(fdCuratorPendingFinding('curatorNewChecklistLabel','First-day checklist','Checklist items','At most 24 checklist items are allowed.'));
-      action={type:'LOCAL_CHECKLIST_ADD',label:value.label,priority:value.priority};
-      itemIndex=draft.config.localOrientation.checklist.length;
-    }else{
-      if(!fdCuratorPlainTextValid(value.title,FD_EDITION_RULES.maxTitle,false)) out.errors.push(fdCuratorPendingFinding('curatorNewResourceTitle','Local resource','Title','Enter a resource title of at most 100 characters.'));
-      if(!fdCuratorHttpsUrlValid(value.url)) out.errors.push(fdCuratorPendingFinding('curatorNewResourceUrl','Local resource','URL','Enter an absolute HTTPS institutional URL without embedded credentials.'));
-      if(FD_EDITION_RULES.priorities.indexOf(value.priority)===-1) out.errors.push(fdCuratorPendingFinding('curatorNewResourcePriority','Local resource','Priority','Choose required, recommended, or optional.'));
-      if(typeof value.week!=='number'||Math.floor(value.week)!==value.week||value.week<1||value.week>fdCuratorWeekCount(index,siteContext)) out.errors.push(fdCuratorPendingFinding('curatorNewResourceWeek','Local resource','Week','Choose a week within this audience path.'));
-      if(!fdCuratorPlainTextValid(value.rationale,FD_EDITION_RULES.maxRationale,true)) out.errors.push(fdCuratorPendingFinding('curatorNewResourceRationale','Local resource','Selection rationale','Enter at most 280 plain-text characters.'));
-      if(draft.config.localOrientation.resources.length>=FD_EDITION_RULES.maxResources) out.errors.push(fdCuratorPendingFinding('curatorNewResourceTitle','Local resources','Resource list','At most 12 local resources are allowed.'));
-      action={type:'LOCAL_RESOURCE_ADD',title:value.title,url:value.url,priority:value.priority,week:value.week,rationale:value.rationale};
-      itemIndex=draft.config.localOrientation.resources.length;
-    }
-    if(out.errors.length!==errorCount) continue;
-    candidate=fdCuratorClone(draft);
-    if(type==='contact') candidate.config.localOrientation.contacts.push({role:action.role,directoryUrl:action.directoryUrl});
-    else if(type==='checklist') candidate.config.localOrientation.checklist.push({
-      id:fdCuratorNextLocalId(candidate,'local:first-day:'),label:action.label,priority:action.priority
-    });
-    else candidate.config.localOrientation.resources.push({
-      id:fdCuratorNextLocalId(candidate,'local:resource:'),title:action.title,url:action.url,
-      priority:action.priority,week:action.week,rationale:action.rationale
-    });
-    checked=fdEditionValidateConfig(fdCuratorFullConfig(candidate.config,candidate.site,1,candidate.site.coreRevision),index,siteContext);
-    mapped=fdCuratorPendingSharedFindings(checked,type,itemIndex);
-    out.errors=out.errors.concat(mapped.errors); out.warnings=out.warnings.concat(mapped.warnings);
-    if(checked.errors.length&&!mapped.errors.length){
-      fieldId=type==='contact'?'curatorNewContactRole':type==='checklist'?'curatorNewChecklistLabel':'curatorNewResourceTitle';
-      out.errors.push(fdCuratorPendingFinding(fieldId,type==='contact'?'Directory contact':type==='checklist'?'First-day checklist':'Local resource','Pending item','The item could not be added safely.'));
-    }
-    if(mapped.errors.length||checked.errors.length) continue;
-    next=fdCuratorReduce(draft,action,index,siteContext);
-    expectedLength=type==='contact'?draft.config.localOrientation.contacts.length+1:type==='checklist'?draft.config.localOrientation.checklist.length+1:draft.config.localOrientation.resources.length+1;
-    actualLength=type==='contact'?next.config.localOrientation.contacts.length:type==='checklist'?next.config.localOrientation.checklist.length:next.config.localOrientation.resources.length;
-    if(actualLength!==expectedLength){
-      fieldId=type==='contact'?'curatorNewContactRole':type==='checklist'?'curatorNewChecklistLabel':'curatorNewResourceTitle';
-      out.errors.push(fdCuratorPendingFinding(fieldId,type==='contact'?'Directory contact':type==='checklist'?'First-day checklist':'Local resource','Pending item','The item could not be added safely.'));
-      continue;
-    }
-    if(!mapped.errors.length&&mode==='leave'){
-      fieldId=type==='contact'?'curatorNewContactRole':type==='checklist'?'curatorNewChecklistLabel':'curatorNewResourceTitle';
-      out.errors.push(fdCuratorPendingFinding(fieldId,type==='contact'?'Directory contact':type==='checklist'?'First-day checklist':'Local resource','Pending item','Add this item or clear its fields before continuing.'));
-    }
-    if(scope!=='all'&&!mapped.errors.length) out.action=action;
-  }
-  out.ok=out.errors.length===0;
-  return out;
-}
-
-function fdCuratorValidateStep(draft,step,index,siteContext){
-  var shaped=fdCuratorValidateDraft(draft,index,siteContext),errors=[],card,labels,i,key,value,fieldId;
-  if(!shaped.ok) return {ok:false,errors:[fdCuratorStepError('curatorEditorTitle','The draft structure is invalid.')]};
-  if(step===4) return fdCuratorLocalPolicy(shaped.draft,index,siteContext);
-  if(step!==1) return {ok:true,errors:[],warnings:[]};
-  card=shaped.draft.config.card;
-  labels={title:'Edition title',locationName:'Training-location display name',locationCode:'Short location code',curatorName:'Curator display name',curatorRole:'Curator professional role'};
-  for(i=0;i<5;i++){
-    key=FD_CURATOR_CARD_FIELDS[i]; value=card[key]; fieldId='curator'+key.charAt(0).toUpperCase()+key.slice(1);
-    if(value.trim()==='') errors.push(fdCuratorStepError(fieldId,labels[key]+' is required.'));
-    else if(fdEditionTextLength(value)>FD_EDITION_RULES.maxTitle) errors.push(fdCuratorStepError(fieldId,labels[key]+' must contain at most 100 characters.'));
-  }
-  if(card.locationCode&&!(new RegExp(FD_EDITION_RULES.patterns.locationCode)).test(card.locationCode.trim().toUpperCase()))
-    errors.push(fdCuratorStepError('curatorLocationCode','Short location code must contain 2 to 8 letters or digits.'));
-  if(!fdCuratorValidDate(card.rotationStart)) errors.push(fdCuratorStepError('curatorRotationStart','Enter a real rotation start date.'));
-  if(!fdCuratorValidDate(card.rotationEnd)) errors.push(fdCuratorStepError('curatorRotationEnd','Enter a real rotation end date.'));
-  if(!fdCuratorValidDate(card.lastVerified)) errors.push(fdCuratorStepError('curatorLastVerified','Enter a real informational last-verified date.'));
-  if(fdCuratorValidDate(card.rotationStart)&&fdCuratorValidDate(card.rotationEnd)&&card.rotationEnd<card.rotationStart)
-    errors.push(fdCuratorStepError('curatorRotationEnd','Rotation end must not be before rotation start.'));
-  return {ok:errors.length===0,errors:errors,warnings:[]};
-}
-
-function fdCuratorValidatedSnapshot(result){
-  return typeof fdEditionTrustedSnapshot==='function'?fdEditionTrustedSnapshot(result):null;
-}
-
-function fdCuratorImportEnvelope(text,index,siteContext,subtle){
-  var bytes,envelope;
-  if(typeof text!=='string') return Promise.resolve({ok:false,code:'CURATOR_IMPORT_FORMAT',draft:null});
-  try{ bytes=new TextEncoder().encode(text).length; }
-  catch(ignoreEncoding){ return Promise.resolve({ok:false,code:'CURATOR_IMPORT_FORMAT',draft:null}); }
-  if(bytes>FD_CURATOR_IMPORT_MAX_BYTES) return Promise.resolve({ok:false,code:'CURATOR_IMPORT_SIZE',draft:null});
-  try{ envelope=JSON.parse(text); }
-  catch(ignoreParse){ return Promise.resolve({ok:false,code:'CURATOR_IMPORT_FORMAT',draft:null}); }
-  return fdEditionValidateEnvelope(envelope,index,siteContext,subtle).then(function(result){
-    var snapshot,draft,validated;
-    if(!result||result.ok!==true) return {ok:false,code:'CURATOR_IMPORT_INVALID',draft:null,errors:result&&result.errors?result.errors:[]};
-    snapshot=fdCuratorValidatedSnapshot(result);
-    if(!snapshot) return {ok:false,code:'CURATOR_IMPORT_INVALID',draft:null};
-    draft=fdCuratorNewDraft(index,siteContext);
-    draft.config={
-      card:fdCuratorClone(snapshot.config.card),pathItems:fdCuratorClone(snapshot.config.pathItems),
-      localOrientation:fdCuratorClone(snapshot.config.localOrientation),changeNote:snapshot.config.changeNote
-    };
-    draft.publication={baseEnvelope:fdCuratorClone(snapshot.envelope),baseCanonicalConfig:fdCuratorCanonicalWithoutEdition(snapshot.config),lastGenerated:null};
-    validated=fdCuratorValidateDraft(draft,index,siteContext);
-    if(!validated.ok) return {ok:false,code:'CURATOR_IMPORT_INVALID',draft:null};
-    return {ok:true,code:'CURATOR_IMPORT_OK',draft:validated.draft,fingerprint:snapshot.fingerprint};
-  },function(){ return {ok:false,code:'CURATOR_IMPORT_INVALID',draft:null}; });
-}
-
-function fdCuratorReadImportFile(file,index,siteContext,subtle){
-  if(!file||typeof file.size!=='number'||!isFinite(file.size)||file.size<0||file.size>FD_CURATOR_IMPORT_MAX_BYTES)
-    return Promise.resolve({ok:false,code:'CURATOR_IMPORT_SIZE',draft:null});
-  if(typeof file.text!=='function') return Promise.resolve({ok:false,code:'CURATOR_IMPORT_FORMAT',draft:null});
-  return file.text().then(function(text){ return fdCuratorImportEnvelope(text,index,siteContext,subtle); },
-    function(){ return {ok:false,code:'CURATOR_IMPORT_READ',draft:null}; });
+function fdCuratorOptionEligible(snapshot,kind,key,location,audience){
+  var list=fdCuratorCatalogOptions(snapshot,kind,location,audience),i;
+  for(i=0;i<list.length;i++)if(list[i].key===key)return true;return false;
 }
 
 function fdCuratorImportTransactions(){
-  var sequence=0,revision=0,lastCommitted=0;
-  return {
-    begin:function(){ return {sequence:++sequence,revision:revision}; },
-    touch:function(){ revision++; },
-    commit:function(token){
-      if(!token||token.sequence!==sequence||token.revision!==revision||token.sequence===lastCommitted) return false;
-      lastCommitted=token.sequence;
-      revision++;
-      return true;
-    }
-  };
+  var sequence=0,importSequence=0,previewSequence=0,generationSequence=0;
+  function next(){sequence+=1;return sequence;}
+  return {begin:function(){importSequence=next();return importSequence;},current:function(){return importSequence;},
+    cancel:function(){importSequence=next();return importSequence;},beginPreview:function(){previewSequence=next();return previewSequence;},
+    currentPreview:function(){return previewSequence;},cancelPreview:function(){previewSequence=next();return previewSequence;},
+    beginGeneration:function(){generationSequence=next();return generationSequence;},currentGeneration:function(){return generationSequence;},
+    cancelGeneration:function(){generationSequence=next();return generationSequence;}};
 }
 
-function fdCuratorDraftStorage(storage){
-  return {
-    key:FD_CURATOR_DRAFT_KEY,
-    save:function(draft,index,siteContext){
-      var shaped=fdCuratorValidateDraft(draft,index,siteContext),localPolicy;
-      if(!shaped.ok||!storage||typeof storage.setItem!=='function') return false;
-      localPolicy=fdCuratorLocalPolicy(shaped.draft,index,siteContext);
-      if(!localPolicy.ok) return false;
-      try{ storage.setItem(FD_CURATOR_DRAFT_KEY,fdEditionCanonicalJson(shaped.draft)); return true; }
-      catch(ignoreSave){ return false; }
-    },
-    load:function(index,siteContext,subtle){
-      var raw,parsed,shaped;
-      if(!storage||typeof storage.getItem!=='function') return Promise.resolve({ok:false,code:'CURATOR_DRAFT_STORAGE',draft:null});
-      try{ raw=storage.getItem(FD_CURATOR_DRAFT_KEY); }
-      catch(ignoreRead){ return Promise.resolve({ok:false,code:'CURATOR_DRAFT_STORAGE',draft:null}); }
-      if(raw===null) return Promise.resolve({ok:true,code:'CURATOR_DRAFT_EMPTY',draft:null});
-      try{ parsed=JSON.parse(raw); }
-      catch(ignoreParse){ return Promise.resolve({ok:false,code:'CURATOR_DRAFT_INVALID',draft:null}); }
-      shaped=fdCuratorValidateDraft(parsed,index,siteContext);
-      if(!shaped.ok) return Promise.resolve({ok:false,code:'CURATOR_DRAFT_INVALID',draft:null});
-      if(shaped.draft.publication.baseEnvelope===null){
-        if(shaped.draft.publication.baseCanonicalConfig!==''||shaped.draft.publication.lastGenerated!==null)
-          return Promise.resolve({ok:false,code:'CURATOR_DRAFT_INVALID',draft:null});
-        return Promise.resolve({ok:true,code:'CURATOR_DRAFT_OK',draft:shaped.draft});
-      }
-      return fdEditionValidateEnvelope(shaped.draft.publication.baseEnvelope,index,siteContext,subtle).then(function(result){
-        var snapshot=fdCuratorValidatedSnapshot(result),last=shaped.draft.publication.lastGenerated;
-        if(!snapshot||fdCuratorCanonicalWithoutEdition(snapshot.config)!==shaped.draft.publication.baseCanonicalConfig)
-          return {ok:false,code:'CURATOR_DRAFT_INVALID',draft:null};
-        if(last&&(last.digest!==snapshot.envelope.digest||last.fingerprint!==snapshot.fingerprint))
-          return {ok:false,code:'CURATOR_DRAFT_INVALID',draft:null};
-        shaped.draft.publication.baseEnvelope=fdCuratorClone(snapshot.envelope);
-        return {ok:true,code:'CURATOR_DRAFT_OK',draft:shaped.draft};
-      },function(){ return {ok:false,code:'CURATOR_DRAFT_INVALID',draft:null}; });
-    }
-  };
+function fdCuratorFindItem(items,instanceId){var i;for(i=0;i<items.length;i++)if(items[i].instanceId===instanceId)return i;return -1;}
+function fdCuratorNormalizeOrders(items){
+  items.sort(function(a,b){return a.week-b.week||a.order-b.order||a.instanceId.localeCompare(b.instanceId);});
+  var week=0,order=0,i;for(i=0;i<items.length;i++){if(items[i].week!==week){week=items[i].week;order=0;}items[i].order=++order;}return items;
+}
+function fdCuratorNextOccurrence(items,ref){
+  var used=Object.create(null),prefix='core:'+ref+':',i,suffix,next=1;
+  for(i=0;i<items.length;i++)if(items[i].ref===ref&&items[i].instanceId.indexOf(prefix)===0){suffix=items[i].instanceId.slice(prefix.length);if(/^[1-9][0-9]*$/.test(suffix))used[Number(suffix)]=true;}
+  while(used[next])next+=1;return next;
+}
+function fdCuratorInvalidate(next){
+  next.previewReceipts={desktop:null,mobile:null};next.affirmations={publicSafe:false,officialLinks:false,previewsReviewed:false,forwardable:false};next.publication.lastGenerated=null;return next;
 }
 
-function fdCuratorPathInstances(draft,ref){
-  var out=[],items=draft&&draft.config&&Array.isArray(draft.config.pathItems)?draft.config.pathItems:[],i;
-  for(i=0;i<items.length;i++) if(items[i].ref===ref) out.push(items[i]);
-  out.sort(function(a,b){return a.week!==b.week?a.week-b.week:a.order-b.order;});
-  return out;
+function fdCuratorEligible(snapshot,kind,key,location,audience){return typeof key==='string'&&fdCuratorOptionEligible(snapshot,kind,key,location,audience);}
+function fdCuratorLocalIds(state){
+  var ids=Object.create(null),plan=state.config.localPlan,i,j,rows;
+  for(i=0;i<state.config.pathItems.length;i++)ids[state.config.pathItems[i].instanceId]=true;
+  rows=plan.schedule&&plan.schedule.events||[];for(i=0;i<rows.length;i++)ids[rows[i].instanceId]=true;
+  for(i=0;i<4;i++){rows=plan[['accessItems','contacts','checklistItems','resources'][i]]||[];for(j=0;j<rows.length;j++)ids[rows[j].instanceId]=true;}
+  return ids;
+}
+function fdCuratorNextLocalId(state,kind){var ids=fdCuratorLocalIds(state),number=1,prefix='local:'+kind+':';while(ids[prefix+number])number+=1;return prefix+number;}
+function fdCuratorLocalArray(next,category){if(!FD_CURATOR_OWN.call(next.config.localPlan,category))next.config.localPlan[category]=[];return next.config.localPlan[category];}
+function fdCuratorOmitEmpty(next,category){if(Array.isArray(next.config.localPlan[category])&&!next.config.localPlan[category].length)delete next.config.localPlan[category];}
+function fdCuratorScheduleTuple(row){return [row.daySetKey,row.startTime,row.endTime||'',row.activityKey,row.placeKey||''].join('\u0000');}
+function fdCuratorChoice(snapshot,kind,key,state){return fdCuratorEligible(snapshot,'choice:'+kind,key,state.config.context.trainingLocationKey,state.site.audience);}
+function fdCuratorLink(snapshot,purpose,key,state){return fdCuratorEligible(snapshot,'link:'+purpose,key,state.config.context.trainingLocationKey,state.site.audience);}
+function fdCuratorOptionalLink(snapshot,purpose,value,state){return value===''||fdCuratorLink(snapshot,purpose,value,state);}
+function fdCuratorNested(value,required,optional){var exact=fdCuratorExactData(value,required,optional||[]),copy;if(!exact)return null;copy=fdCuratorTryClone(exact);return copy.ok?copy.value:null;}
+function fdCuratorLocalCombinedAllowed(plan){return (plan.arrival?1:0)+(plan.accessItems?plan.accessItems.length:0)+(plan.checklistItems?plan.checklistItems.length:0)<=24;}
+function fdCuratorFindLocal(plan,category,instanceId){var rows=category==='schedule'?(plan.schedule&&plan.schedule.events||[]):(plan[category]||[]),i;for(i=0;i<rows.length;i++)if(rows[i].instanceId===instanceId)return i;return -1;}
+
+function fdCuratorApplyLocalMutation(next,data,snapshot){
+  var state=next,plan=state.config.localPlan,type=data.type,location=state.config.context.trainingLocationKey,audience=state.site.audience;
+  var value,rows,row,position,field,allowed,i,record,resolved,tuple,seen;
+  function choice(kind,key){return fdCuratorChoice(snapshot,kind,key,state);}
+  function link(purpose,key){return fdCuratorLink(snapshot,purpose,key,state);}
+  function optional(object,key,purpose){return !FD_CURATOR_OWN.call(object,key)||link(purpose,object[key]);}
+  function time(value){return fdCuratorTime(value);}
+  function priority(value){return FD_CURATOR_PRIORITIES.indexOf(value)>=0;}
+  function setSingle(category,copied){plan[category]=copied;return true;}
+  if(type==='LOCAL_APPLY_PRESET'){
+    if(typeof data.presetKey!=='string'||!fdCuratorEligible(snapshot,'localPreset',data.presetKey,location,audience))return false;
+    try{resolved=fdEditionCatalogRecord(snapshot,data.presetKey,'builder','localPreset',location);record=resolved&&resolved.ok===true&&resolved.record;if(!record||record.phraseSetKey!==state.config.phraseSetKey||!fdCuratorLocalPlanStateValid(record.localPlan,state.site.audience==='ms3'?6:4))return false;value=fdCuratorClone(record.localPlan);}catch(ignorePreset){return false;}
+    if(fdEditionCanonicalJson(value)===fdEditionCanonicalJson(plan))return false;state.config.localPlan=value;return true;
+  }
+  if(type==='ARRIVAL_CLEAR'){if(!plan.arrival)return false;delete plan.arrival;return true;}
+  if(type==='ARRIVAL_SET'){
+    value=fdCuratorNested(data.value,['timingCode','time','placeKey','checkInRoleKey'],['linkKey']);
+    if(!value||['at','by'].indexOf(value.timingCode)<0||!time(value.time)||!fdCuratorEligible(snapshot,'place',value.placeKey,location,audience)||!choice('role',value.checkInRoleKey)||!optional(value,'linkKey','arrival-map'))return false;
+    return setSingle('arrival',value);
+  }
+  if(type==='SCHEDULE_SET_BOUNDS'){
+    if(!time(data.dayStart)||!time(data.dayEnd)||data.dayStart>=data.dayEnd||['at','about','no-later-than'].indexOf(data.endQualifierCode)<0)return false;
+    rows=plan.schedule&&plan.schedule.events||[];plan.schedule={dayStart:data.dayStart,dayEnd:data.dayEnd,endQualifierCode:data.endQualifierCode,events:fdCuratorClone(rows)};return true;
+  }
+  if(type==='SCHEDULE_EVENT_ADD'){
+    if(!plan.schedule||plan.schedule.events.length>=24||!choice('daySet',data.daySetKey)||!time(data.startTime)||!choice('activity',data.activityKey)||!priority(data.priority))return false;
+    if(FD_CURATOR_OWN.call(data,'endTime')&&(!time(data.endTime)||data.endTime<=data.startTime))return false;
+    if(FD_CURATOR_OWN.call(data,'placeKey')&&!fdCuratorEligible(snapshot,'place',data.placeKey,location,audience))return false;
+    row={instanceId:fdCuratorNextLocalId(state,'schedule'),daySetKey:data.daySetKey,startTime:data.startTime};if(FD_CURATOR_OWN.call(data,'endTime'))row.endTime=data.endTime;row.activityKey=data.activityKey;if(FD_CURATOR_OWN.call(data,'placeKey'))row.placeKey=data.placeKey;row.priority=data.priority;
+    tuple=fdCuratorScheduleTuple(row);for(i=0;i<plan.schedule.events.length;i++)if(fdCuratorScheduleTuple(plan.schedule.events[i])===tuple)return false;plan.schedule.events.push(row);return true;
+  }
+  if(type==='SCHEDULE_EVENT_UPDATE'){
+    allowed=['daySetKey','startTime','endTime','activityKey','placeKey','priority'];if(allowed.indexOf(data.field)<0||typeof data.value!=='string')return false;position=fdCuratorFindLocal(plan,'schedule',data.instanceId);if(position<0)return false;row=fdCuratorClone(plan.schedule.events[position]);field=data.field;
+    if((field==='endTime'||field==='placeKey')&&data.value==='')delete row[field];else row[field]=data.value;
+    if(!choice('daySet',row.daySetKey)||!time(row.startTime)||!choice('activity',row.activityKey)||!priority(row.priority)||(row.endTime&&(!time(row.endTime)||row.endTime<=row.startTime))||(row.placeKey&&!fdCuratorEligible(snapshot,'place',row.placeKey,location,audience)))return false;
+    tuple=fdCuratorScheduleTuple(row);for(i=0;i<plan.schedule.events.length;i++)if(i!==position&&fdCuratorScheduleTuple(plan.schedule.events[i])===tuple)return false;plan.schedule.events[position]=row;return true;
+  }
+  if(type==='SCHEDULE_EVENT_REMOVE'){
+    position=fdCuratorFindLocal(plan,'schedule',data.instanceId);if(position<0||(plan.attendance&&plan.attendance.eventInstanceIds.indexOf(data.instanceId)>=0))return false;plan.schedule.events.splice(position,1);if(!plan.schedule.events.length)delete plan.schedule;return true;
+  }
+  if(type==='ROUNDS_SET'){value=fdCuratorNested(data.value,['preparationKey','participationKey','followUpKey'],[]);if(!value||!choice('roundsPreparation',value.preparationKey)||!choice('roundsParticipation',value.participationKey)||!choice('roundsFollowUp',value.followUpKey))return false;return setSingle('rounds',value);}
+  if(type==='PRESENTATION_SET'){
+    value=fdCuratorNested(data.value,['formatKey','timingKey','elementKeys'],[]);if(!value||!choice('presentationFormat',value.formatKey)||!choice('presentationTiming',value.timingKey)||(rows=fdCuratorArray(value.elementKeys,8))===null||!rows.length)return false;seen=Object.create(null);for(i=0;i<rows.length;i++)if(seen[rows[i]]||!choice('presentationElement',rows[i]))return false;else seen[rows[i]]=true;return setSingle('presentation',value);
+  }
+  if(type==='DOCUMENTATION_SET'){value=fdCuratorNested(data.value,['workflowKey','timingKey'],['policyLinkKey']);if(!value||!choice('documentationWorkflow',value.workflowKey)||!choice('documentationTiming',value.timingKey)||!optional(value,'policyLinkKey','documentation-policy'))return false;return setSingle('documentation',value);}
+  if(type==='ATTENDANCE_SET'){
+    value=fdCuratorNested(data.value,['eventInstanceIds','absenceRoleKey'],['policyLinkKey']);rows=value&&fdCuratorArray(value.eventInstanceIds,24);if(!value||!rows||!rows.length||!choice('role',value.absenceRoleKey)||!optional(value,'policyLinkKey','attendance-policy')||!plan.schedule)return false;seen=Object.create(null);for(i=0;i<rows.length;i++)if(typeof rows[i]!=='string'||seen[rows[i]]||fdCuratorFindLocal(plan,'schedule',rows[i])<0)return false;else seen[rows[i]]=true;return setSingle('attendance',value);
+  }
+  if(type==='FEEDBACK_SET'){value=fdCuratorNested(data.value,['cadenceKey','initiatorKey','settingKey'],[]);if(!value||!choice('feedbackCadence',value.cadenceKey)||!choice('feedbackInitiator',value.initiatorKey)||!choice('feedbackSetting',value.settingKey))return false;return setSingle('feedback',value);}
+  if(type==='LOCAL_CATEGORY_CLEAR'){
+    if(FD_CURATOR_LOCAL_CATEGORIES.indexOf(data.category)<0||!FD_CURATOR_OWN.call(plan,data.category)||(data.category==='schedule'&&plan.attendance))return false;delete plan[data.category];return true;
+  }
+  var table={ACCESS_ADD:['accessItems',12,'access',['itemKey','dueKey'],['linkKey']],CONTACT_ADD:['contacts',8,'contact',['roleKey'],['linkKey']],CHECKLIST_ADD:['checklistItems',24,'checklist',['itemKey','priority'],[]],RESOURCE_ADD:['resources',12,'resource',['linkKey','priority','week'],['reasonKey']]};
+  if(table[type]){
+    value=table[type];rows=fdCuratorLocalArray(state,value[0]);if(rows.length>=value[1]){fdCuratorOmitEmpty(state,value[0]);return false;}row={instanceId:fdCuratorNextLocalId(state,value[2])};
+    for(i=0;i<value[3].length;i++)row[value[3][i]]=data[value[3][i]];for(i=0;i<value[4].length;i++)if(FD_CURATOR_OWN.call(data,value[4][i]))row[value[4][i]]=data[value[4][i]];
+    if(type==='ACCESS_ADD'&&(!choice('accessItem',row.itemKey)||!choice('duePoint',row.dueKey)||!optional(row,'linkKey','access-training')))return false;
+    if(type==='CONTACT_ADD'&&(!choice('role',row.roleKey)||!optional(row,'linkKey','directory')))return false;
+    if(type==='CHECKLIST_ADD'&&(!choice('checklist',row.itemKey)||!priority(row.priority)))return false;
+    if(type==='RESOURCE_ADD'&&(!link('orientation',row.linkKey)||!priority(row.priority)||!Number.isInteger(row.week)||row.week<1||row.week>(audience==='ms3'?6:4)||(row.reasonKey&&!choice('reason',row.reasonKey))))return false;
+    rows.push(row);if(!fdCuratorLocalCombinedAllowed(plan)){rows.pop();fdCuratorOmitEmpty(state,value[0]);return false;}return true;
+  }
+  var variants={ACCESS_UPDATE:['accessItems',['itemKey','dueKey','linkKey']],CONTACT_UPDATE:['contacts',['roleKey','linkKey']],CHECKLIST_UPDATE:['checklistItems',['itemKey','priority']],RESOURCE_UPDATE:['resources',['linkKey','priority','week','reasonKey']]};
+  if(variants[type]){
+    value=variants[type];position=fdCuratorFindLocal(plan,value[0],data.instanceId);if(position<0||value[1].indexOf(data.field)<0)return false;row=fdCuratorClone(plan[value[0]][position]);field=data.field;
+    if((field==='linkKey'||field==='reasonKey')&&data.value==='')delete row[field];else row[field]=data.value;
+    if(type==='ACCESS_UPDATE'&&(!choice('accessItem',row.itemKey)||!choice('duePoint',row.dueKey)||!optional(row,'linkKey','access-training')))return false;
+    if(type==='CONTACT_UPDATE'&&(!choice('role',row.roleKey)||!optional(row,'linkKey','directory')))return false;
+    if(type==='CHECKLIST_UPDATE'&&(!choice('checklist',row.itemKey)||!priority(row.priority)))return false;
+    if(type==='RESOURCE_UPDATE'&&(!link('orientation',row.linkKey)||!priority(row.priority)||!Number.isInteger(row.week)||row.week<1||row.week>(audience==='ms3'?6:4)||(row.reasonKey&&!choice('reason',row.reasonKey))))return false;
+    plan[value[0]][position]=row;return true;
+  }
+  var removals={ACCESS_REMOVE:'accessItems',CONTACT_REMOVE:'contacts',CHECKLIST_REMOVE:'checklistItems',RESOURCE_REMOVE:'resources'};
+  if(removals[type]){position=fdCuratorFindLocal(plan,removals[type],data.instanceId);if(position<0)return false;plan[removals[type]].splice(position,1);fdCuratorOmitEmpty(state,removals[type]);return true;}
+  return false;
 }
 
-function fdCuratorWeekPlacement(draft,instance){
-  var items=draft&&draft.config&&Array.isArray(draft.config.pathItems)?draft.config.pathItems:[],count=0,i;
-  for(i=0;i<items.length;i++) if(items[i].week===instance.week) count++;
-  return {position:instance.order,count:count};
-}
-
-function fdCuratorPriorityOptions(selected){
-  var values=FD_EDITION_RULES.priorities,out='',i;
-  for(i=0;i<values.length;i++) out+='<option value="'+values[i]+'"'+(values[i]===selected?' selected':'')+'>'+values[i]+'</option>';
-  return out;
-}
-
-function fdCuratorCurriculumMarkup(draft,index,query){
-  var groups=fdCuratorLibraryGroups(index),needle=typeof query==='string'?query.trim().toLowerCase():'',out='';
-  var i,j,k,group,item,instances,title,searchText,groupId,placementId,rationaleId,instance,occurrence,controlLabel,placement;
-  for(i=0;i<groups.length;i++){
-    group=groups[i]; groupId='curatorGroup'+i; var rows='';
-    for(j=0;j<group.items.length;j++){
-      item=group.items[j]; title=item.title||item.ref;
-      searchText=(group.name+' '+title+' '+item.ref).toLowerCase();
-      if(needle&&searchText.indexOf(needle)===-1) continue;
-      instances=fdCuratorPathInstances(draft,item.ref);
-      rows+='<li class="curator-resource" data-curator-ref="'+fdEsc(item.ref)+'">'+
-        '<div class="curator-resource-head"><div><strong>'+fdEsc(title)+'</strong><span class="resource-ref">'+fdEsc(item.ref)+'</span></div>'+
-        '<span class="placement-count">'+instances.length+' placement'+(instances.length===1?'':'s')+'</span></div>'+
-        '<div class="resource-actions"><button type="button" class="secondary-action" data-curator-path-toggle="'+fdEsc(item.ref)+'">'+
-        (instances.length?'Omit from curated Path':'Include in curated Path')+'</button>'+
-        '<button type="button" class="secondary-action" data-curator-path-add="'+fdEsc(item.ref)+'">Add another placement</button></div>';
-      if(instances.length){
-        rows+='<ul class="placement-list" aria-label="Placements for '+fdEsc(title)+'">';
-        for(k=0;k<instances.length;k++){
-          instance=instances[k]; occurrence=fdCuratorInstanceOccurrence(instance);
-          placementId='curatorPlacement'+i+'_'+j+'_'+k; rationaleId=placementId+'Rationale';
-          placement=fdCuratorWeekPlacement(draft,instance);
-          controlLabel=title+' placement '+occurrence+', position '+placement.position+' of '+placement.count+' in Week '+instance.week;
-          rows+='<li><p><strong>Placement '+occurrence+'</strong> · Position '+placement.position+' of '+placement.count+' in Week '+instance.week+'</p>'+
-            '<div class="placement-fields"><div><label for="'+placementId+'Priority">Local priority</label>'+
-            '<select id="'+placementId+'Priority" data-curator-path-priority="'+fdEsc(instance.instanceId)+'" aria-label="Local priority for '+fdEsc(controlLabel)+'">'+fdCuratorPriorityOptions(instance.priority)+'</select></div>'+
-            '<div class="rationale-field"><label for="'+rationaleId+'">Why I selected this</label>'+
-            '<textarea id="'+rationaleId+'" maxlength="280" rows="2" data-curator-path-rationale="'+fdEsc(instance.instanceId)+'" aria-label="Why I selected '+fdEsc(controlLabel)+'" aria-describedby="'+rationaleId+'Count">'+fdEsc(instance.rationale)+'</textarea>'+
-            '<p id="'+rationaleId+'Count" class="character-count" data-curator-rationale-count="'+fdEsc(instance.instanceId)+'">'+
-            fdEditionTextLength(instance.rationale)+' of 280 characters</p></div></div></li>';
-        }
-        rows+='</ul>';
-      }else rows+='<p class="field-description">Available in the full Library; not currently placed in the curated Path.</p>';
-      rows+='</li>';
-    }
-    if(rows) out+='<section class="curator-resource-group" aria-labelledby="'+groupId+'"><h3 id="'+groupId+'">'+fdEsc(group.name)+'</h3><ul>'+rows+'</ul></section>';
+function fdCuratorReduce(state,action,index,siteContext,catalogSnapshot,generationDate,transactions){
+  var inspected=fdCuratorIndexSnapshot(index,siteContext),data,type,next,cloned,position,item,weekRows,swap,eligible,privateImport,privateResult,receipt,other;
+  if(!inspected.ok||!fdCuratorStateValid(state,index,siteContext))return state;
+  data=fdCuratorActionData(action);if(!data)return state;type=data.type;
+  if(type==='SET_STEP'){
+    if(!Number.isInteger(data.step)||data.step<1||data.step>5||data.step===state.step)return state;
+    cloned=fdCuratorTryClone(state);if(!cloned.ok)return state;next=cloned.value;next.step=data.step;return next;
   }
-  return out||'<p class="empty-state">No Library resources match this search.</p>';
-}
-
-function fdCuratorScheduleMarkup(draft,index){
-  var inspected=fdCuratorIndexSnapshot(index,draft&&draft.site),weekCount=inspected.ok?inspected.weekCount:0;
-  var out='',week,items,i,j,k,item,title,id,options,occurrence,placementLabel,titleByRef=Object.create(null);
-  if(!inspected.ok||!draft||!draft.config||!Array.isArray(draft.config.pathItems)) return out;
-  for(i=0;i<inspected.groups.length;i++) for(j=0;j<inspected.groups[i].items.length;j++)
-    titleByRef[inspected.groups[i].items[j].ref]=inspected.groups[i].items[j].title;
-  for(i=1;i<=weekCount;i++){
-    week=inspected.weeks[i-1]; items=[];
-    for(j=0;j<draft.config.pathItems.length;j++) if(draft.config.pathItems[j].week===i) items.push(draft.config.pathItems[j]);
-    items.sort(function(a,b){return a.order-b.order;});
-    out+='<section class="curator-week" data-curator-week="'+i+'" aria-labelledby="curatorWeek'+i+'Title">'+
-      '<div class="curator-week-heading"><h3 id="curatorWeek'+i+'Title">Week '+i+(week.title?' · '+fdEsc(week.title):'')+'</h3><span>'+items.length+' item'+(items.length===1?'':'s')+'</span></div>'+
-      '<ol class="curator-week-list">';
-    if(!items.length) out+='<li class="empty-state">No resources scheduled for Week '+i+'.</li>';
-    for(j=0;j<items.length;j++){
-      item=items[j]; title=titleByRef[item.ref]||item.ref; id='curatorSchedule'+i+'_'+j; options='';
-      occurrence=fdCuratorInstanceOccurrence(item);
-      placementLabel=title+' placement '+occurrence+', position '+(j+1)+' of '+items.length+' in Week '+i;
-      for(k=1;k<=weekCount;k++) options+='<option value="'+k+'"'+(k===i?' selected':'')+'>Week '+k+'</option>';
-      out+='<li class="schedule-item" data-curator-instance="'+fdEsc(item.instanceId)+'"><div><strong>'+fdEsc(title)+'</strong>'+
-        '<span class="schedule-meta">'+fdEsc(item.priority)+' · placement '+occurrence+' · position '+(j+1)+' of '+items.length+'</span></div><div class="schedule-actions">'+
-        '<button type="button" class="secondary-action" data-curator-path-up="'+fdEsc(item.instanceId)+'" aria-label="Move '+fdEsc(placementLabel)+' up"'+(j===0?' disabled':'')+'>Move up</button>'+
-        '<button type="button" class="secondary-action" data-curator-path-down="'+fdEsc(item.instanceId)+'" aria-label="Move '+fdEsc(placementLabel)+' down"'+(j===items.length-1?' disabled':'')+'>Move down</button>'+
-        '<label class="visually-hidden" for="'+id+'Week">Move '+fdEsc(placementLabel)+' to another week</label>'+
-        '<select id="'+id+'Week" data-curator-path-week="'+fdEsc(item.instanceId)+'" aria-label="Move '+fdEsc(placementLabel)+' to another week">'+options+'</select>'+
-        '<button type="button" class="secondary-action remove-action" data-curator-path-remove="'+fdEsc(item.instanceId)+'" aria-label="Remove '+fdEsc(placementLabel)+' from the curated Path">Remove</button>'+
-        '</div></li>';
-    }
-    out+='</ol></section>';
-  }
-  return out;
-}
-
-function fdCuratorProjectDraft(draft,index,siteContext,subtle){
-  var built=fdCuratorBuildConfig(draft,index,siteContext);
-  if(!built.ok) return Promise.resolve({ok:false,errors:built.errors||[],warnings:built.warnings||[]});
-  return fdEditionCreateEnvelope(built.value,index,siteContext,subtle).then(function(created){
-    if(!created||created.ok!==true) return created||{ok:false,errors:[]};
-    return fdProjectEdition(index,created);
-  },function(){ return {ok:false,errors:[{code:'CURATOR_PREVIEW',path:'/preview',message:'The preview could not be generated.',blocking:true}]}; });
-}
-
-function fdCuratorExternalDomain(value){
-  var parsed;
-  if(typeof value!=='string') return '';
-  try{ parsed=new URL(value); }
-  catch(ignoreUrl){ return ''; }
-  if(parsed.protocol!=='https:'||parsed.username!==''||parsed.password!==''||!fdEditionHostnameValid(parsed.hostname)) return '';
-  return parsed.hostname;
-}
-
-function fdCuratorLocalPreviewMarkup(projected){
-  var edition=projected&&projected.ok===true&&projected.index?projected.index.edition:null;
-  var local=edition&&edition.localOrientation,out='',i,item,domain,field,value;
-  if(!local) return '<p class="panel-note">Complete the local fields, then choose a deliberate preview review.</p>';
-  out='<section class="local-preview" aria-label="Attending-provided local orientation"><p class="preview-label">Attending-provided local orientation</p>';
-  for(i=0;i<FD_CURATOR_ORIENTATION_FIELDS.length;i++){
-    field=FD_CURATOR_ORIENTATION_FIELDS[i]; value=local[field];
-    if(value) out+='<section><h3>'+fdEsc(FD_CURATOR_LOCAL_LABELS[field])+'</h3><p>'+fdEsc(value)+'</p></section>';
-  }
-  if(local.contacts.length){
-    out+='<section><h3>Role-based directory contacts</h3><ul>';
-    for(i=0;i<local.contacts.length;i++){
-      item=local.contacts[i]; domain=fdCuratorExternalDomain(item.directoryUrl);
-      out+='<li><strong>'+fdEsc(item.role)+'</strong><span>Official directory · '+fdEsc(domain||'Invalid domain')+'</span></li>';
-    }
-    out+='</ul></section>';
-  }
-  if(local.checklist.length){
-    out+='<section><h3>First-day checklist</h3><ol>';
-    for(i=0;i<local.checklist.length;i++){
-      item=local.checklist[i]; out+='<li><strong>'+fdEsc(item.label)+'</strong><span>'+fdEsc(item.priority)+'</span></li>';
-    }
-    out+='</ol></section>';
-  }
-  if(local.resources.length){
-    out+='<section><h3>Local resources</h3><ul>';
-    for(i=0;i<local.resources.length;i++){
-      item=local.resources[i]; domain=fdCuratorExternalDomain(item.url);
-      out+='<li><p class="preview-local-label">Attending-provided local resource</p><strong>'+fdEsc(item.title)+'</strong>'+
-        '<span>'+fdEsc(item.priority)+' · Week '+item.week+' · '+fdEsc(domain||'Invalid domain')+'</span>'+
-        (item.rationale?'<p>'+fdEsc(item.rationale)+'</p>':'')+'</li>';
-    }
-    out+='</ul></section>';
-  }
-  return out+'</section>';
-}
-
-function fdCuratorContactsMarkup(draft){
-  var items=draft.config.localOrientation.contacts,out='',i,item;
-  for(i=0;i<items.length;i++){
-    item=items[i]; out+='<li class="local-item"><div class="field-grid"><div class="field"><label for="curatorContact'+i+'Role">Role label</label>'+
-      '<input id="curatorContact'+i+'Role" maxlength="200" data-curator-max-codepoints="100" value="'+fdEsc(item.role)+'" data-curator-contact-index="'+i+'" data-curator-contact-field="role" aria-describedby="curatorContact'+i+'RoleCount"><p id="curatorContact'+i+'RoleCount" class="character-count">'+fdEditionTextLength(item.role)+' of 100 characters</p></div>'+
-      '<div class="field"><label for="curatorContact'+i+'DirectoryUrl">Official HTTPS directory URL</label>'+
-      '<input id="curatorContact'+i+'DirectoryUrl" maxlength="4096" data-curator-max-codepoints="2048" type="url" value="'+fdEsc(item.directoryUrl)+'" data-curator-contact-index="'+i+'" data-curator-contact-field="directoryUrl" aria-describedby="curatorContact'+i+'DirectoryUrlCount"><p id="curatorContact'+i+'DirectoryUrlCount" class="character-count">'+fdEditionTextLength(item.directoryUrl)+' of 2048 characters</p>'+
-      '<p class="field-description">Visible domain: '+fdEsc(fdCuratorExternalDomain(item.directoryUrl))+'</p></div></div>'+
-      '<button type="button" class="secondary-action remove-action" data-curator-contact-remove="'+i+'">Remove contact</button></li>';
-  }
-  return out||'<li class="empty-state">No role-based directory contacts added.</li>';
-}
-
-function fdCuratorChecklistMarkup(draft){
-  var items=draft.config.localOrientation.checklist,out='',i,item;
-  for(i=0;i<items.length;i++){
-    item=items[i]; out+='<li class="local-item"><div class="field-grid"><div class="field"><label for="curatorChecklist'+i+'Label">Checklist label</label>'+
-      '<input id="curatorChecklist'+i+'Label" maxlength="200" data-curator-max-codepoints="100" value="'+fdEsc(item.label)+'" data-curator-checklist-id="'+fdEsc(item.id)+'" data-curator-checklist-field="label" aria-describedby="curatorChecklist'+i+'LabelCount">'+
-      '<p id="curatorChecklist'+i+'LabelCount" class="character-count">'+fdEditionTextLength(item.label)+' of 100 characters</p></div>'+
-      '<div class="field"><label for="curatorChecklist'+i+'Priority">Local priority</label><select id="curatorChecklist'+i+'Priority" data-curator-checklist-id="'+fdEsc(item.id)+'" data-curator-checklist-field="priority">'+fdCuratorPriorityOptions(item.priority)+'</select></div></div>'+
-      '<button type="button" class="secondary-action remove-action" data-curator-checklist-remove="'+fdEsc(item.id)+'">Remove checklist item</button></li>';
-  }
-  return out||'<li class="empty-state">No first-day checklist items added.</li>';
-}
-
-function fdCuratorResourceWeekOptions(selected,weekCount){
-  var out='',i;
-  for(i=1;i<=weekCount;i++) out+='<option value="'+i+'"'+(i===selected?' selected':'')+'>Week '+i+'</option>';
-  return out;
-}
-
-function fdCuratorResourcesMarkup(draft,index){
-  var items=draft.config.localOrientation.resources,out='',i,item,weekCount=fdCuratorWeekCount(index,draft.site);
-  for(i=0;i<items.length;i++){
-    item=items[i]; out+='<li class="local-item"><div class="field-grid">'+
-      '<div class="field"><label for="curatorResource'+i+'Title">Resource title</label><input id="curatorResource'+i+'Title" maxlength="200" data-curator-max-codepoints="100" value="'+fdEsc(item.title)+'" data-curator-resource-id="'+fdEsc(item.id)+'" data-curator-resource-field="title" aria-describedby="curatorResource'+i+'TitleCount"><p id="curatorResource'+i+'TitleCount" class="character-count">'+fdEditionTextLength(item.title)+' of 100 characters</p></div>'+
-      '<div class="field"><label for="curatorResource'+i+'Url">Official HTTPS URL</label><input id="curatorResource'+i+'Url" type="url" maxlength="4096" data-curator-max-codepoints="2048" value="'+fdEsc(item.url)+'" data-curator-resource-id="'+fdEsc(item.id)+'" data-curator-resource-field="url" aria-describedby="curatorResource'+i+'UrlCount"><p id="curatorResource'+i+'UrlCount" class="character-count">'+fdEditionTextLength(item.url)+' of 2048 characters</p><p class="field-description">Visible domain: '+fdEsc(fdCuratorExternalDomain(item.url))+'</p></div>'+
-      '<div class="field"><label for="curatorResource'+i+'Priority">Local priority</label><select id="curatorResource'+i+'Priority" data-curator-resource-id="'+fdEsc(item.id)+'" data-curator-resource-field="priority">'+fdCuratorPriorityOptions(item.priority)+'</select></div>'+
-      '<div class="field"><label for="curatorResource'+i+'Week">Week</label><select id="curatorResource'+i+'Week" data-curator-resource-id="'+fdEsc(item.id)+'" data-curator-resource-field="week">'+fdCuratorResourceWeekOptions(item.week,weekCount)+'</select></div>'+
-      '<div class="field field-wide"><label for="curatorResource'+i+'Rationale">Why I selected this</label><textarea id="curatorResource'+i+'Rationale" maxlength="560" data-curator-max-codepoints="280" data-curator-resource-id="'+fdEsc(item.id)+'" data-curator-resource-field="rationale" aria-describedby="curatorResource'+i+'RationaleCount">'+fdEsc(item.rationale)+'</textarea><p id="curatorResource'+i+'RationaleCount" class="character-count">'+fdEditionTextLength(item.rationale)+' of 280 characters</p></div></div>'+
-      '<button type="button" class="secondary-action remove-action" data-curator-resource-remove="'+fdEsc(item.id)+'">Remove local resource</button></li>';
-  }
-  return out||'<li class="empty-state">No local external resources added.</li>';
-}
-
-function fdCuratorPreviewMarkup(projected){
-  var index=projected&&projected.index,selected='',library='',i,j,week,column,item;
-  if(!projected||projected.ok!==true||!index) return '<p class="panel-note">Complete the current fields to update this read-only preview.</p>';
-  for(i=0;i<index.weeks.length;i++){
-    week=index.weeks[i]; selected+='<section><h3>Week '+week.n+'</h3><ol>';
-    if(!week.items.length) selected+='<li>No selected resources.</li>';
-    for(j=0;j<week.items.length;j++) selected+='<li><strong>'+fdEsc(week.items[j].title)+'</strong><span>'+fdEsc(week.items[j].editionPriority)+'</span></li>';
-    selected+='</ol></section>';
-  }
-  for(i=0;i<index.columns.length;i++){
-    column=index.columns[i]; library+='<section><h3>'+fdEsc(column.name)+'</h3><ul>';
-    for(j=0;j<column.items.length;j++){
-      item=column.items[j]; library+='<li>'+fdEsc(item.title)+'</li>';
-    }
-    library+='</ul></section>';
-  }
-  return '<p class="preview-label">Projected student Path</p><div class="preview-weeks">'+selected+'</div>'+
-    '<details class="preview-library"><summary>Full Library remains available</summary>'+library+'</details>'+fdCuratorLocalPreviewMarkup(projected);
-}
-
-function fdCuratorRenderErrors(root,errors){
-  var summary=root.querySelector('#curatorErrorSummary'),list=root.querySelector('#curatorErrorList'),i,item,link;
-  if(!summary||!list) return;
-  while(list.firstChild) list.removeChild(list.firstChild);
-  if(!errors||!errors.length){ summary.hidden=true; return; }
-  for(i=0;i<errors.length;i++){
-    item=document.createElement('li'); link=document.createElement('a');
-    link.href=errors[i].href; link.textContent=errors[i].message;
-    item.appendChild(link); list.appendChild(item);
-  }
-  summary.hidden=false;
-}
-
-function fdCuratorRenderWarnings(root,warnings){
-  var node=root.querySelector('#curatorAdvisorySummary'),out='',i;
-  if(!node) return;
-  if(!warnings||!warnings.length){ node.hidden=true; node.innerHTML=''; return; }
-  out='<h3>Advisory review</h3><ul>';
-  for(i=0;i<warnings.length;i++) out+='<li><a href="'+fdEsc(warnings[i].href)+'">'+fdEsc(warnings[i].message)+'</a></li>';
-  node.innerHTML=out+'</ul>'; node.hidden=false;
-}
-
-function fdCuratorRenderReviewStatus(root,state){
-  var node=root.querySelector('#curatorPreviewReviewStatus'),next;
-  if(!node) return;
-  next=(state.preview.desktopReviewed?'Desktop preview reviewed':'Desktop preview not yet reviewed')+' · '+
-    (state.preview.mobileReviewed?'Mobile preview reviewed':'Mobile preview not yet reviewed');
-  if(node.textContent!==next) node.textContent=next;
-}
-
-function fdCuratorRender(state,root,index,errors,warnings){
-  var audience,path,editorTitle,status,generate,buttons,selected,i,input,mount,field,count;
-  var labels=['Edition','Curriculum','Schedule','Local details','Preview and share'];
-  var audienceLabel=state.site.audience==='resident'?'Resident':'MS3';
-  if(!root||!state) return;
-  audience=root.querySelector('#curatorAudienceLock'); path=root.querySelector('#curatorPathLock');
-  editorTitle=root.querySelector('#curatorEditorTitle'); status=root.querySelector('#curatorStepStatus'); generate=root.querySelector('#curatorGenerate');
-  if(audience) audience.textContent=audienceLabel+' audience locked';
-  if(path) path.textContent=state.site.pathId+' · '+(index&&index.path?index.path.weekCount:state.site.weekCount||0)+' weeks locked';
-  if(editorTitle) editorTitle.textContent=state.step+'. '+labels[state.step-1];
-  if(status) status.textContent='Step '+state.step+' of 5: '+labels[state.step-1];
-  buttons=root.querySelectorAll('[data-curator-step]');
-  for(i=0;i<buttons.length;i++){
-    selected=Number(buttons[i].getAttribute('data-curator-step'))===state.step;
-    if(selected) buttons[i].setAttribute('aria-current','step'); else buttons[i].removeAttribute('aria-current');
-  }
-  input=root.querySelector('#curatorStepOne'); if(input) input.hidden=state.step!==1;
-  input=root.querySelector('#curatorStepTwo'); if(input) input.hidden=state.step!==2;
-  input=root.querySelector('#curatorStepThree'); if(input) input.hidden=state.step!==3;
-  input=root.querySelector('#curatorStepFour'); if(input) input.hidden=state.step!==4;
-  input=root.querySelector('#curatorFutureStep'); if(input) input.hidden=state.step!==5;
-  input=root.querySelector('#curatorLocalViewToggle'); if(input) input.hidden=state.step!==4;
-  if(state.config&&state.config.card){
-    for(i=0;i<FD_CURATOR_CARD_FIELDS.length;i++){
-      input=root.querySelector('[data-curator-card="'+FD_CURATOR_CARD_FIELDS[i]+'"]');
-      if(input&&input.value!==state.config.card[FD_CURATOR_CARD_FIELDS[i]]) input.value=state.config.card[FD_CURATOR_CARD_FIELDS[i]];
-    }
-    input=root.querySelector('#curatorEditionNumber');
-    if(input) input.textContent='Edition '+fdCuratorNextEditionNumber(state,fdCuratorFullConfig(
-      state.config,state.site,1,state.publication.baseEnvelope&&state.publication.baseEnvelope.config?
-        state.publication.baseEnvelope.config.createdAgainstCoreRevision:state.site.coreRevision
-    ));
-  }
-  mount=root.querySelector('#curatorCurriculumGroups');
-  input=root.querySelector('#curatorLibrarySearch');
-  if(mount) mount.innerHTML=fdCuratorCurriculumMarkup(state,index,input?input.value:'');
-  mount=root.querySelector('#curatorScheduleWeeks');
-  if(mount) mount.innerHTML=fdCuratorScheduleMarkup(state,index);
-  for(i=0;i<FD_CURATOR_ORIENTATION_FIELDS.length;i++){
-    field=FD_CURATOR_ORIENTATION_FIELDS[i]; input=root.querySelector('[data-curator-orientation="'+field+'"]');
-    if(input&&input.value!==state.config.localOrientation[field]) input.value=state.config.localOrientation[field];
-    count=root.querySelector('#curator'+field.charAt(0).toUpperCase()+field.slice(1)+'Count');
-    if(count) count.textContent=fdEditionTextLength(state.config.localOrientation[field])+' of 600 characters';
-  }
-  mount=root.querySelector('#curatorContactsList'); if(mount) mount.innerHTML=fdCuratorContactsMarkup(state);
-  mount=root.querySelector('#curatorChecklistList'); if(mount) mount.innerHTML=fdCuratorChecklistMarkup(state);
-  mount=root.querySelector('#curatorResourcesList'); if(mount) mount.innerHTML=fdCuratorResourcesMarkup(state,index);
-  input=root.querySelector('#curatorNewResourceWeek');
-  if(input&&(!input.options||!input.options.length)) input.innerHTML=fdCuratorResourceWeekOptions(1,fdCuratorWeekCount(index,state.site));
-  count=root.querySelector('#curatorChecklistCap'); if(count) count.textContent=state.config.localOrientation.checklist.length+' of 24 items';
-  count=root.querySelector('#curatorResourcesCap'); if(count) count.textContent=state.config.localOrientation.resources.length+' of 12 items';
-  fdCuratorRenderReviewStatus(root,state);
-  fdCuratorRenderErrors(root,errors||[]);
-  fdCuratorRenderWarnings(root,warnings||[]);
-  if(generate){ generate.disabled=true; generate.setAttribute('aria-disabled','true'); }
-}
-
-function fdCuratorMount(root,index,siteContext){
-  var state=fdCuratorNewDraft(index,siteContext),errors=[],warnings=[],touched=false;
-  var adapter=fdCuratorDraftStorage(typeof localStorage==='undefined'?null:localStorage);
-  var importTransactions=fdCuratorImportTransactions();
-  var subtle=typeof crypto!=='undefined'&&crypto?crypto.subtle:null;
-  var buttons,i,save,continueButton,importInput,previewSequence=0;
-  var reviewSequences={desktop:0,mobile:0},reviewCache=null,reviewLoading=null,layoutRevision=0;
-  var orientationIssues=Object.create(null);
-  var reviewWindow=root&&root.ownerDocument?root.ownerDocument.defaultView:null;
-  var reviewPlaceholder='<p class="panel-note">Choose Review desktop preview or Review mobile preview to validate and update this preview.</p>';
-  function visibleVersion(){
-    var shaped=fdCuratorValidateDraft(state,index,siteContext);
-    if(!shaped.ok) return '';
-    return fdEditionCanonicalJson({
-      site:shaped.draft.site,config:shaped.draft.config,
-      baseCanonicalConfig:shaped.draft.publication.baseCanonicalConfig
-    });
-  }
-  function refreshPreview(){
-    var sequence=++previewSequence;
-    var preview=root.querySelector('#curatorPreviewBody');
-    if(!preview) return;
-    if(state.step===4){
-      if(reviewCache&&reviewCache.version===visibleVersion()&&root.getAttribute('data-review-viewport')===reviewCache.viewport) preview.innerHTML=reviewCache.markup;
-      else preview.innerHTML=reviewPlaceholder;
-      return;
-    }
-    if(state.step!==2&&state.step!==3){
-      preview.innerHTML='<p class="panel-note">Preview is read-only and updates from the validated curriculum and schedule.</p>';
-      return;
-    }
-    preview.innerHTML='<p class="panel-note">Updating the validated student preview…</p>';
-    fdCuratorProjectDraft(state,index,siteContext,subtle).then(function(result){
-      if(sequence!==previewSequence) return;
-      preview.innerHTML=fdCuratorPreviewMarkup(result);
-    });
-  }
-  function orientationIssueLists(){
-    var out={errors:[],warnings:[]},key,issue;
-    for(key in orientationIssues) if(Object.prototype.hasOwnProperty.call(orientationIssues,key)){
-      issue=orientationIssues[key]; out.errors=out.errors.concat(issue.errors||[]); out.warnings=out.warnings.concat(issue.warnings||[]);
-    }
-    return out;
-  }
-  function restoreOrientationIssues(){
-    var key,issue,node,count;
-    for(key in orientationIssues) if(Object.prototype.hasOwnProperty.call(orientationIssues,key)){
-      issue=orientationIssues[key]; node=root.querySelector('[data-curator-orientation="'+key+'"]');
-      if(node) node.value=issue.value;
-      count=root.querySelector('#curator'+key.charAt(0).toUpperCase()+key.slice(1)+'Count');
-      if(count) count.textContent=fdEditionTextLength(issue.value)+' of 600 characters';
-    }
-  }
-  function render(){ fdCuratorRender(state,root,index,errors,warnings); restoreOrientationIssues(); refreshPreview(); }
-  function validateOrientationInput(field,value){
-    var candidate=fdCuratorClone(state),result,mapped,fieldId='curator'+field.charAt(0).toUpperCase()+field.slice(1);
-    candidate.config.localOrientation[field]=value;
-    result=fdEditionValidateConfig(fdCuratorFullConfig(candidate.config,candidate.site,1,candidate.site.coreRevision),index,siteContext);
-    mapped=fdCuratorLocalFindings(result,candidate);
-    return {
-      errors:mapped.errors.filter(function(item){return item.fieldId===fieldId;}),
-      warnings:mapped.warnings.filter(function(item){return item.fieldId===fieldId;})
-    };
-  }
-  function pendingValues(){
-    function value(id){ var node=root.querySelector('#'+id); return node&&typeof node.value==='string'?node.value:''; }
-    return {
-      contact:{role:value('curatorNewContactRole'),directoryUrl:value('curatorNewContactDirectoryUrl')},
-      checklist:{label:value('curatorNewChecklistLabel'),priority:value('curatorNewChecklistPriority')},
-      resource:{title:value('curatorNewResourceTitle'),url:value('curatorNewResourceUrl'),priority:value('curatorNewResourcePriority'),
-        week:Number(value('curatorNewResourceWeek')),rationale:value('curatorNewResourceRationale')}
-    };
-  }
-  function clearPending(type){
-    var ids=type==='contact'?['curatorNewContactRole','curatorNewContactDirectoryUrl']:
-      type==='checklist'?['curatorNewChecklistLabel']:['curatorNewResourceTitle','curatorNewResourceUrl','curatorNewResourceRationale'];
-    var j,node,count;
-    for(j=0;j<ids.length;j++){
-      node=root.querySelector('#'+ids[j]); if(node) node.value='';
-      count=root.querySelector('#'+ids[j]+'Count');
-      if(count&&node) count.textContent='0 of '+(Number(node.getAttribute&&node.getAttribute('data-curator-max-codepoints'))||node.maxLength)+' characters';
-    }
-    node=type==='checklist'?root.querySelector('#curatorNewChecklistPriority'):
-      type==='resource'?root.querySelector('#curatorNewResourcePriority'):null;
-    if(node) node.value='recommended';
-    if(type==='resource'){ node=root.querySelector('#curatorNewResourceWeek'); if(node) node.value='1'; }
-  }
-  function tryAddPending(type){
-    var checked=fdCuratorValidatePendingLocal(pendingValues(),state,index,siteContext,type,'add'),before,after;
-    errors=checked.errors||[]; warnings=checked.warnings||[];
-    if(!checked.ok||!checked.action){ fdCuratorRenderErrors(root,errors); fdCuratorRenderWarnings(root,warnings); return false; }
-    before=type==='contact'?state.config.localOrientation.contacts.length:type==='checklist'?state.config.localOrientation.checklist.length:state.config.localOrientation.resources.length;
-    dispatch(checked.action);
-    after=type==='contact'?state.config.localOrientation.contacts.length:type==='checklist'?state.config.localOrientation.checklist.length:state.config.localOrientation.resources.length;
-    if(after!==before+1){ errors=[fdCuratorPendingFinding(type==='contact'?'curatorNewContactRole':type==='checklist'?'curatorNewChecklistLabel':'curatorNewResourceTitle','Local details','Pending item','The item could not be added safely.')]; fdCuratorRenderErrors(root,errors); return false; }
-    clearPending(type); warnings=checked.warnings||[]; fdCuratorRenderWarnings(root,warnings); return true;
-  }
-  function invalidateReviewWork(clearCache){
-    reviewSequences.desktop++; reviewSequences.mobile++;
-    if(clearCache) reviewCache=null;
-    clearReviewLoading(reviewLoading);
-  }
-  function setLocalView(value,reviewViewport){
-    var toggles,j,label=root.querySelector('#curatorPreviewViewport');
-    root.setAttribute('data-local-view',value);
-    if(reviewViewport) root.setAttribute('data-review-viewport',reviewViewport);
-    else root.removeAttribute('data-review-viewport');
-    toggles=root.querySelectorAll('[data-curator-local-view]');
-    for(j=0;j<toggles.length;j++) toggles[j].setAttribute('aria-pressed',toggles[j].getAttribute('data-curator-local-view')===value?'true':'false');
-    if(label) label.textContent=reviewViewport==='mobile'?'Mobile-width student preview · 390 px maximum':
-      reviewViewport==='desktop'?'Desktop student preview':'Choose a deliberate desktop or mobile review to select a preview presentation.';
-  }
-  function reviewLayoutSnapshot(viewport,preview){
-    var panel=root.querySelector('#curatorPreviewMount'),rect=null,rects=null,width=null,height=null;
-    var geometry='unavailable',windowClass='unavailable';
-    try{
-      if(reviewWindow&&typeof reviewWindow.innerWidth==='number'&&isFinite(reviewWindow.innerWidth)){
-        width=reviewWindow.innerWidth;
-        height=typeof reviewWindow.innerHeight==='number'&&isFinite(reviewWindow.innerHeight)?reviewWindow.innerHeight:null;
-        windowClass=width<=760?'mobile':'desktop';
-      }
-      if(panel&&typeof panel.getClientRects==='function') rects=panel.getClientRects();
-      if(panel&&typeof panel.getBoundingClientRect==='function'){
-        rect=panel.getBoundingClientRect();
-        geometry=[Math.round(rect.left*100)/100,Math.round(rect.top*100)/100,
-          Math.round(rect.width*100)/100,Math.round(rect.height*100)/100].join(':');
-      }
-    }catch(ignoreReviewGeometry){ return {ok:false,panel:panel,windowClass:'invalid',width:width,height:height,geometry:'invalid'}; }
-    if(state.step!==4||root.getAttribute('data-local-view')!=='preview'||root.getAttribute('data-review-viewport')!==viewport||
-       !preview||preview.isConnected===false||!panel||panel.isConnected===false||panel.hidden)
-      return {ok:false,panel:panel,windowClass:windowClass,width:width,height:height,geometry:geometry};
-    if(rects&&rects.length===0)
-      return {ok:false,panel:panel,windowClass:windowClass,width:width,height:height,geometry:geometry};
-    if(rect&&(rect.width<=0||rect.height<=0))
-      return {ok:false,panel:panel,windowClass:windowClass,width:width,height:height,geometry:geometry};
-    if(viewport==='mobile'&&rect&&rect.width>390.5)
-      return {ok:false,panel:panel,windowClass:windowClass,width:width,height:height,geometry:geometry};
-    return {ok:root.querySelector('#curatorPreviewBody')===preview,panel:panel,windowClass:windowClass,width:width,height:height,geometry:geometry};
-  }
-  function reviewReceipt(viewport,preview){
-    var layout=reviewLayoutSnapshot(viewport,preview);
-    return {
-      version:visibleVersion(),step:state.step,viewport:viewport,viewMode:root.getAttribute('data-local-view'),
-      previewNode:preview,panelNode:layout.panel,layoutRevision:layoutRevision,windowClass:layout.windowClass,
-      windowWidth:layout.width,windowHeight:layout.height,geometry:layout.geometry,layoutOk:layout.ok
-    };
-  }
-  function reviewReceiptMatches(receipt){
-    var layout;
-    if(!receipt||receipt.step!==4||state.step!==4||receipt.version!==visibleVersion()||receipt.layoutRevision!==layoutRevision||
-       receipt.viewMode!=='preview'||root.getAttribute('data-local-view')!=='preview'||root.getAttribute('data-review-viewport')!==receipt.viewport||
-       root.querySelector('#curatorPreviewBody')!==receipt.previewNode||receipt.previewNode.isConnected===false) return false;
-    layout=reviewLayoutSnapshot(receipt.viewport,receipt.previewNode);
-    return !!(receipt.layoutOk&&layout.ok&&layout.panel===receipt.panelNode&&layout.windowClass===receipt.windowClass&&
-      layout.width===receipt.windowWidth&&layout.height===receipt.windowHeight&&layout.geometry===receipt.geometry);
-  }
-  function clearReviewLoading(receipt){
-    if(reviewLoading!==receipt) return;
-    reviewLoading=null;
-    if(receipt&&receipt.previewNode&&receipt.previewNode.isConnected!==false&&root.querySelector('#curatorPreviewBody')===receipt.previewNode)
-      receipt.previewNode.innerHTML=reviewPlaceholder;
-  }
-  function dispatch(action,skipRender){
-    var priorStep=state.step,applied=fdCuratorApplyAction(state,action,index,siteContext);
-    state=applied.state; errors=[]; warnings=[];
-    if(applied.changed){
-      touched=true; importTransactions.touch();
-      if(action&&action.type!=='SET_PREVIEW_REVIEWED'){
-        invalidateReviewWork(true);
-      }
-    }
-    if(action&&action.type==='GO_TO_STEP'&&state.step!==priorStep) invalidateReviewWork(false);
-    if(skipRender){
-      fdCuratorRenderReviewStatus(root,state); fdCuratorRenderErrors(root,errors); fdCuratorRenderWarnings(root,warnings);
-      refreshPreview();
-    }else render();
+  if(type==='IMPORT_REJECTED'){
+    if(!Number.isInteger(data.sequence)||!transactions||typeof transactions.current!=='function'||data.sequence!==transactions.current()||FD_CURATOR_IMPORT_CODES.indexOf(data.code)<0)return state;
     return state;
   }
-  function focusSummary(){ var summary=root.querySelector('#curatorErrorSummary'); if(summary&&typeof summary.focus==='function') summary.focus(); }
-  function reviewPreview(viewport){
-    var sequence,checked,pendingChecked,preview,listed,receipt,projected;
-    if(viewport!=='desktop'&&viewport!=='mobile') return Promise.resolve({ok:false,code:'CURATOR_PREVIEW_VIEW'});
-    checked=fdCuratorValidateStep(state,4,index,siteContext);
-    pendingChecked=fdCuratorValidatePendingLocal(pendingValues(),state,index,siteContext,'all','leave');
-    listed=orientationIssueLists();
-    errors=listed.errors.concat(checked.errors||[],pendingChecked.errors||[]); warnings=listed.warnings.concat(checked.warnings||[],pendingChecked.warnings||[]);
-    if(listed.errors.length||!checked.ok||!pendingChecked.ok){ render(); focusSummary(); return Promise.resolve({ok:false,code:'CURATOR_PREVIEW_INVALID'}); }
-    invalidateReviewWork(true); sequence=reviewSequences[viewport]; setLocalView('preview',viewport);
-    preview=root.querySelector('#curatorPreviewBody'); receipt=reviewReceipt(viewport,preview);
-    if(!receipt.layoutOk) return Promise.resolve({ok:false,code:'CURATOR_PREVIEW_HIDDEN'});
-    if(preview) preview.innerHTML='<p class="panel-note">Validating the '+viewport+' student preview…</p>';
-    receipt=reviewReceipt(viewport,preview);
-    if(!receipt.layoutOk){ if(preview) preview.innerHTML=reviewPlaceholder; return Promise.resolve({ok:false,code:'CURATOR_PREVIEW_HIDDEN'}); }
-    reviewLoading=receipt;
-    try{ projected=fdCuratorProjectDraft(state,index,siteContext,subtle); }
-    catch(ignorePreviewStart){ projected=Promise.reject(new Error('preview unavailable')); }
-    return Promise.resolve(projected).then(function(result){
-      var mapped,applied,markup;
-      if(sequence!==reviewSequences[viewport]||!reviewReceiptMatches(receipt)){
-        clearReviewLoading(receipt); return {ok:false,code:'CURATOR_PREVIEW_STALE'};
-      }
-      if(!result||result.ok!==true){
-        clearReviewLoading(receipt);
-        mapped=fdCuratorLocalFindings(result||{},state); errors=mapped.errors.length?mapped.errors:[fdCuratorStepError('curatorEditorTitle','The student preview could not be generated.')];
-        warnings=mapped.warnings; fdCuratorRender(state,root,index,errors,warnings); focusSummary();
-        return {ok:false,code:'CURATOR_PREVIEW_INVALID'};
-      }
-      markup=fdCuratorPreviewMarkup(result);
-      applied=fdCuratorApplyAction(state,{type:'SET_PREVIEW_REVIEWED',viewport:viewport,value:true},index,siteContext);
-      if(!reviewReceiptMatches(receipt)){ clearReviewLoading(receipt); return {ok:false,code:'CURATOR_PREVIEW_STALE'}; }
-      reviewLoading=null;
-      state=applied.state; if(applied.changed) touched=true;
-      reviewCache={version:receipt.version,viewport:viewport,markup:markup}; errors=[]; render();
-      return {ok:true,viewport:viewport,projected:result,state:state};
-    },function(){
-      if(sequence!==reviewSequences[viewport]||!reviewReceiptMatches(receipt)){
-        clearReviewLoading(receipt); return {ok:false,code:'CURATOR_PREVIEW_STALE'};
-      }
-      clearReviewLoading(receipt);
-      errors=[fdCuratorStepError('curatorEditorTitle','The student preview could not be generated.')]; warnings=[];
-      fdCuratorRender(state,root,index,errors,warnings); focusSummary(); return {ok:false,code:'CURATOR_PREVIEW_INVALID'};
-    });
+  if(type==='IMPORT_SUCCEEDED'){
+    if(!Number.isInteger(data.sequence)||!transactions||typeof transactions.current!=='function'||data.sequence!==transactions.current()||!FD_CURATOR_IMPORT_RESULTS.has(data.result))return state;
+    privateImport=FD_CURATOR_IMPORT_RESULTS.get(data.result);if(!privateImport||!fdCuratorStateValid(privateImport,index,siteContext))return state;
+    if(fdEditionCanonicalJson(privateImport)===fdEditionCanonicalJson(state))return state;
+    cloned=fdCuratorTryClone(privateImport);return cloned.ok?cloned.value:state;
   }
-  function status(message){ var node=root.querySelector('#curatorSaveStatus'); if(node) node.textContent=message; }
-  if(!root) return null;
-  if(reviewWindow&&typeof reviewWindow.addEventListener==='function'){
-    try{ reviewWindow.addEventListener('resize',function(){ layoutRevision++; invalidateReviewWork(false); }); }
-    catch(ignoreResizeRegistration){}
+  if(type==='PREVIEW_REVIEW_SUCCEEDED'){
+    if(['desktop','mobile-390'].indexOf(data.preset)<0||!Number.isInteger(data.sequence)||!transactions||typeof transactions.currentPreview!=='function'||data.sequence!==transactions.currentPreview()||!FD_CURATOR_PREVIEW_RESULTS.has(data.result))return state;
+    privateResult=FD_CURATOR_PREVIEW_RESULTS.get(data.result);if(!privateResult||privateResult.sequence!==data.sequence||privateResult.preset!==data.preset||privateResult.draftSignature!==fdCuratorCandidateDraftSignature(state))return state;
+    cloned=fdCuratorTryClone(state);if(!cloned.ok)return state;next=cloned.value;receipt={contentDigest:privateResult.receipt.contentDigest,referenceSetDigest:privateResult.receipt.referenceSetDigest,currentCoreRevision:privateResult.receipt.currentCoreRevision,currentCatalogRevision:privateResult.receipt.currentCatalogRevision,rendererRevision:privateResult.receipt.rendererRevision,previewPreset:privateResult.receipt.previewPreset};
+    if(data.preset==='desktop')next.previewReceipts.desktop=receipt;else next.previewReceipts.mobile=receipt;
+    other=data.preset==='desktop'?next.previewReceipts.mobile:next.previewReceipts.desktop;
+    next.affirmations.previewsReviewed=fdCuratorReceiptMatches(next.previewReceipts.desktop,privateResult.expected,'desktop')&&fdCuratorReceiptMatches(next.previewReceipts.mobile,privateResult.expected,'mobile-390');return next;
   }
-  buttons=root.querySelectorAll('[data-curator-step]');
-  for(i=0;i<buttons.length;i++) buttons[i].addEventListener('click',function(event){
-    dispatch({type:'GO_TO_STEP',step:Number(event.currentTarget.getAttribute('data-curator-step'))});
+  if(type==='SET_AFFIRMATION'){
+    if(['publicSafe','officialLinks','forwardable'].indexOf(data.name)<0||typeof data.value!=='boolean'||state.affirmations[data.name]===data.value)return state;
+    cloned=fdCuratorTryClone(state);if(!cloned.ok)return state;cloned.value.affirmations[data.name]=data.value;return cloned.value;
+  }
+  if(type==='GENERATION_SUCCEEDED'){
+    if(!Number.isInteger(data.sequence)||!transactions||typeof transactions.currentGeneration!=='function'||data.sequence!==transactions.currentGeneration()||!FD_CURATOR_GENERATION_RESULTS.has(data.result))return state;
+    privateResult=FD_CURATOR_GENERATION_RESULTS.get(data.result);if(!privateResult||privateResult.sequence!==data.sequence||privateResult.draftSignature!==fdCuratorCandidateDraftSignature(state))return state;
+    cloned=fdCuratorTryClone(state);if(!cloned.ok)return state;cloned.value.publication.lastGenerated=fdCuratorClone(privateResult.lastGenerated);return cloned.value;
+  }
+  cloned=fdCuratorTryClone(state);if(!cloned.ok)return state;next=cloned.value;
+  if(type==='SET_TRAINING_LOCATION'){
+    if(typeof data.trainingLocationKey!=='string'||data.trainingLocationKey===state.config.context.trainingLocationKey)return state;
+    if(data.trainingLocationKey&&!fdCuratorOptionEligible(catalogSnapshot,'trainingLocation',data.trainingLocationKey,'',inspected.site.audience))return state;
+    next.config.context.trainingLocationKey=data.trainingLocationKey;
+    if(!data.trainingLocationKey||!fdCuratorOptionEligible(catalogSnapshot,'curatorProfile',next.config.context.curatorProfileKey,data.trainingLocationKey,inspected.site.audience))next.config.context.curatorProfileKey='';
+    if(!data.trainingLocationKey||!fdCuratorOptionEligible(catalogSnapshot,'phraseSet',next.config.phraseSetKey,data.trainingLocationKey,inspected.site.audience))next.config.phraseSetKey='';
+  }else if(type==='SET_CURATOR_PROFILE'){
+    if(typeof data.curatorProfileKey!=='string'||data.curatorProfileKey===state.config.context.curatorProfileKey)return state;
+    if(data.curatorProfileKey&&!fdCuratorOptionEligible(catalogSnapshot,'curatorProfile',data.curatorProfileKey,state.config.context.trainingLocationKey,inspected.site.audience))return state;
+    next.config.context.curatorProfileKey=data.curatorProfileKey;
+  }else if(type==='SET_PHRASE_SET'){
+    if(typeof data.phraseSetKey!=='string'||data.phraseSetKey===state.config.phraseSetKey)return state;
+    if(data.phraseSetKey&&!fdCuratorOptionEligible(catalogSnapshot,'phraseSet',data.phraseSetKey,state.config.context.trainingLocationKey,inspected.site.audience))return state;
+    next.config.phraseSetKey=data.phraseSetKey;
+  }else if(type==='SET_ROTATION_START'||type==='SET_ROTATION_END'||type==='SET_EDITION_CHECKED_ON'){
+    if(typeof data.value!=='string'||(data.value&&!fdCuratorRealDate(data.value)))return state;
+    var field=type==='SET_ROTATION_START'?'rotationStart':type==='SET_ROTATION_END'?'rotationEnd':'editionCheckedOn';
+    if(data.value===state.config.context[field])return state;
+    if(field==='rotationStart'&&data.value&&state.config.context.rotationEnd&&state.config.context.rotationEnd<data.value)return state;
+    if(field==='rotationEnd'&&data.value&&state.config.context.rotationStart&&data.value<state.config.context.rotationStart)return state;
+    if(field==='editionCheckedOn'&&data.value&&(!fdCuratorRealDate(generationDate)||data.value>generationDate))return state;
+    next.config.context[field]=data.value;
+  }else if(type==='PATH_INCLUDE'||type==='PATH_REPEAT'){
+    if(typeof data.ref!=='string'||!inspected.allowed[data.ref]||!Number.isInteger(data.week)||data.week<1||data.week>inspected.site.weekCount||next.config.pathItems.length>=FD_CURATOR_MAX_PATH_ITEMS)return state;
+    if(type==='PATH_INCLUDE'&&fdCuratorFindRef(next.config.pathItems,data.ref))return state;
+    weekRows=next.config.pathItems.filter(function(row){return row.week===data.week;});
+    next.config.pathItems.push({instanceId:'core:'+data.ref+':'+fdCuratorNextOccurrence(next.config.pathItems,data.ref),ref:data.ref,week:data.week,order:weekRows.length+1,priority:'recommended'});
+    fdCuratorNormalizeOrders(next.config.pathItems);
+  }else if(type==='PATH_REMOVE'){
+    if(typeof data.instanceId!=='string'||next.config.pathItems.length===1||(position=fdCuratorFindItem(next.config.pathItems,data.instanceId))<0)return state;
+    next.config.pathItems.splice(position,1);fdCuratorNormalizeOrders(next.config.pathItems);
+  }else if(type==='PATH_MOVE_WEEK'){
+    position=fdCuratorFindItem(next.config.pathItems,data.instanceId);
+    if(position<0||!Number.isInteger(data.week)||data.week<1||data.week>inspected.site.weekCount||next.config.pathItems[position].week===data.week)return state;
+    next.config.pathItems[position].week=data.week;next.config.pathItems[position].order=next.config.pathItems.filter(function(row,i){return i!==position&&row.week===data.week;}).length+1;fdCuratorNormalizeOrders(next.config.pathItems);
+  }else if(type==='PATH_MOVE_ORDER'){
+    position=fdCuratorFindItem(next.config.pathItems,data.instanceId);if(position<0||['up','down'].indexOf(data.direction)<0)return state;
+    item=next.config.pathItems[position];weekRows=next.config.pathItems.filter(function(row){return row.week===item.week;}).sort(function(a,b){return a.order-b.order;});
+    var within=fdCuratorFindItem(weekRows,item.instanceId),target=data.direction==='up'?within-1:within+1;
+    if(target<0||target>=weekRows.length)return state;swap=weekRows[target].order;weekRows[target].order=item.order;item.order=swap;fdCuratorNormalizeOrders(next.config.pathItems);
+  }else if(type==='PATH_SET_PRIORITY'){
+    position=fdCuratorFindItem(next.config.pathItems,data.instanceId);if(position<0||FD_CURATOR_PRIORITIES.indexOf(data.priority)<0||next.config.pathItems[position].priority===data.priority)return state;
+    next.config.pathItems[position].priority=data.priority;
+  }else if(type==='PATH_SET_REASON'){
+    position=fdCuratorFindItem(next.config.pathItems,data.instanceId);if(position<0||typeof data.reasonKey!=='string')return state;
+    item=next.config.pathItems[position];if((item.reasonKey||'')===data.reasonKey)return state;
+    eligible=!data.reasonKey||fdCuratorOptionEligible(catalogSnapshot,'reason',data.reasonKey,state.config.context.trainingLocationKey,inspected.site.audience);if(!eligible)return state;
+    if(data.reasonKey)item.reasonKey=data.reasonKey;else delete item.reasonKey;
+  }else if(FD_CURATOR_LOCAL_CATEGORIES.indexOf(type)<0&&/^(?:LOCAL_|ARRIVAL_|SCHEDULE_|ROUNDS_|PRESENTATION_|DOCUMENTATION_|ATTENDANCE_|FEEDBACK_|ACCESS_|CONTACT_|CHECKLIST_|RESOURCE_)/.test(type)){
+    var beforeLocal=fdEditionCanonicalJson(next.config.localPlan);if(!fdCuratorApplyLocalMutation(next,data,catalogSnapshot)||fdEditionCanonicalJson(next.config.localPlan)===beforeLocal)return state;
+  }else return state;
+  return fdCuratorInvalidate(next);
+}
+
+function fdCuratorFindRef(items,ref){var i;for(i=0;i<items.length;i++)if(items[i].ref===ref)return true;return false;}
+
+function fdCuratorApplyAction(state,action,index,siteContext,catalogSnapshot,generationDate,transactions){
+  var next=fdCuratorReduce(state,action,index,siteContext,catalogSnapshot,generationDate,transactions),semantic=false;
+  if(next!==state){semantic=fdEditionCanonicalJson({site:state.site,config:state.config,baseEnvelope:state.publication.baseEnvelope})!==fdEditionCanonicalJson({site:next.site,config:next.config,baseEnvelope:next.publication.baseEnvelope});if(semantic&&transactions&&typeof transactions.cancel==='function')transactions.cancel();if(semantic&&transactions&&typeof transactions.cancelPreview==='function')transactions.cancelPreview();if(semantic&&transactions&&typeof transactions.cancelGeneration==='function')transactions.cancelGeneration();}
+  return {state:next,changed:next!==state,semanticChanged:semantic};
+}
+
+function fdCuratorImportFailure(code){return {ok:false,code:code};}
+function fdCuratorContractSiteContext(siteContext){
+  var site=fdCuratorSiteValue(siteContext);
+  return site?{audience:site.audience,localCatalogRevision:site.localCatalogRevision,
+    rotationEditionV2:site.rotationEditionV2,coreRevision:site.coreRevision}:null;
+}
+function fdCuratorImportCode(result){
+  var errors=result&&Array.isArray(result.errors)?result.errors:[],i,code='';
+  for(i=0;i<errors.length;i++){code=errors[i]&&errors[i].code||'';if(/CATALOG|RECORD|BLOCKED|DEPRECATED|MISSING|RESELECTION/.test(code))return 'CURATOR_IMPORT_RESELECTION_REQUIRED';}
+  return 'CURATOR_IMPORT_INVALID';
+}
+
+function fdCuratorImportBackup(text,index,siteContext,catalogSnapshot,validationContext,subtle){
+  var bytes,envelope,contextData;
+  if(typeof text!=='string')return Promise.resolve(fdCuratorImportFailure('CURATOR_IMPORT_FORMAT'));
+  try{bytes=new TextEncoder().encode(text).length;}catch(ignoreEncoding){return Promise.resolve(fdCuratorImportFailure('CURATOR_IMPORT_FORMAT'));}
+  if(bytes>FD_CURATOR_IMPORT_MAX_BYTES)return Promise.resolve(fdCuratorImportFailure('CURATOR_IMPORT_SIZE'));
+  try{envelope=JSON.parse(text);}catch(ignoreParse){return Promise.resolve(fdCuratorImportFailure('CURATOR_IMPORT_FORMAT'));}
+  contextData=fdCuratorExactData(validationContext,['mode','generationDate'],[]);
+  if(!contextData||contextData.mode!=='builder'||typeof contextData.generationDate!=='string')return Promise.resolve(fdCuratorImportFailure('CURATOR_IMPORT_INVALID'));
+  var contractSite=fdCuratorContractSiteContext(siteContext);
+  if(!contractSite)return Promise.resolve(fdCuratorImportFailure('CURATOR_IMPORT_INVALID'));
+  return fdEditionValidateEnvelope(envelope,index,catalogSnapshot,contractSite,contextData,subtle).then(function(result){
+    var snapshot,draft,successful;
+    if(!result||result.ok!==true)return fdCuratorImportFailure(fdCuratorImportCode(result));
+    snapshot=fdEditionTrustedSnapshot(result);if(!snapshot)return fdCuratorImportFailure('CURATOR_IMPORT_INVALID');
+    draft=fdCuratorNewDraft(index,siteContext);draft.config={context:fdCuratorClone(snapshot.config.context),phraseSetKey:snapshot.config.phraseSetKey,
+      pathItems:fdCuratorClone(snapshot.config.pathItems),localPlan:fdCuratorClone(snapshot.config.localPlan),changeSummary:fdCuratorClone(snapshot.config.changeSummary)};
+    draft.publication={baseEnvelope:fdCuratorClone(snapshot.envelope),baseSemanticConfig:fdEditionCanonicalJson(fdEditionSemanticConfig(snapshot.config)),lastGenerated:null};
+    if(!fdCuratorStateValid(draft,index,siteContext))return fdCuratorImportFailure('CURATOR_IMPORT_INVALID');
+    successful={ok:true,code:'CURATOR_IMPORT_OK'};FD_CURATOR_IMPORT_RESULTS.set(successful,draft);return successful;
+  },function(){return fdCuratorImportFailure('CURATOR_IMPORT_INVALID');});
+}
+
+function fdCuratorReadImportFile(file,index,siteContext,catalogSnapshot,validationContext,subtle){
+  return fdCuratorReadBackupFile(file).then(function(read){
+    return read.ok?fdCuratorImportBackup(read.text,index,siteContext,catalogSnapshot,validationContext,subtle):fdCuratorImportFailure(read.code);
   });
-  root.addEventListener('input',function(event){
-    var field=event.target.getAttribute&&event.target.getAttribute('data-curator-card'),instance,current,count,counters,c,id,indexValue,logicalMax,checked,listed;
-    logicalMax=event.target.getAttribute&&Number(event.target.getAttribute('data-curator-max-codepoints'));
-    if(logicalMax>0&&typeof event.target.value==='string'&&fdEditionTextLength(event.target.value)>logicalMax)
-      event.target.value=Array.from(event.target.value).slice(0,logicalMax).join('');
-    if(event.target.id&&typeof event.target.value==='string'&&event.target.maxLength>0){
-      count=root.querySelector('#'+event.target.id+'Count');
-      if(count) count.textContent=fdEditionTextLength(event.target.value)+' of '+(logicalMax||event.target.maxLength)+' characters';
+}
+
+function fdCuratorReadBackupFile(file){
+  var sizeData,textData,blobSize=null,blobText=null;
+  if(!file||typeof file!=='object')return Promise.resolve(fdCuratorImportFailure('CURATOR_IMPORT_FORMAT'));
+  sizeData=fdCuratorOwnValue(file,'size');textData=fdCuratorOwnValue(file,'text');
+  if(sizeData.ok)blobSize=sizeData.value;
+  else try{if(typeof Blob==='function'&&file instanceof Blob){blobSize=Object.getOwnPropertyDescriptor(Blob.prototype,'size').get.call(file);blobText=Blob.prototype.text;}}catch(ignoreBlob){blobSize=null;}
+  if(typeof blobSize!=='number'||!isFinite(blobSize)||blobSize<0||blobSize>FD_CURATOR_IMPORT_MAX_BYTES)return Promise.resolve(fdCuratorImportFailure('CURATOR_IMPORT_SIZE'));
+  if(!blobText&&textData.ok&&typeof textData.value==='function')blobText=textData.value;
+  if(typeof blobText!=='function')return Promise.resolve(fdCuratorImportFailure('CURATOR_IMPORT_FORMAT'));
+  try{return Promise.resolve(blobText.call(file)).then(function(text){
+    var bytes;if(typeof text!=='string')return fdCuratorImportFailure('CURATOR_IMPORT_FORMAT');
+    try{bytes=new TextEncoder().encode(text).length;}catch(ignoreEncoding){return fdCuratorImportFailure('CURATOR_IMPORT_FORMAT');}
+    return bytes>FD_CURATOR_IMPORT_MAX_BYTES?fdCuratorImportFailure('CURATOR_IMPORT_SIZE'):{ok:true,code:'CURATOR_IMPORT_FILE_OK',text:text};
+  },function(){return fdCuratorImportFailure('CURATOR_IMPORT_FORMAT');});}
+  catch(ignoreRead){return Promise.resolve(fdCuratorImportFailure('CURATOR_IMPORT_FORMAT'));}
+}
+
+function fdCuratorImportText(text,index,siteContext,catalogSnapshot,validationContext,subtle){
+  return fdCuratorImportBackup(text,index,siteContext,catalogSnapshot,validationContext,subtle).then(function(v2){
+    if(v2.ok||v2.code==='CURATOR_IMPORT_SIZE'||typeof fdEditionV1ValidateForSalvage!=='function'||typeof fdEditionV1Salvage!=='function')return v2;
+    return fdEditionV1ValidateForSalvage(text,index,siteContext,subtle).then(function(validated){
+      var salvaged,successful;
+      if(!validated||validated.ok!==true)return v2;
+      salvaged=fdEditionV1Salvage(validated,index,siteContext,validationContext.generationDate);
+      if(!salvaged||salvaged.ok!==true||!fdCuratorStateValid(salvaged.draft,index,siteContext))return fdCuratorImportFailure('CURATOR_IMPORT_INVALID');
+      successful={ok:true,code:'CURATOR_IMPORT_SALVAGED',droppedReferenceCount:salvaged.droppedReferenceCount};
+      FD_CURATOR_IMPORT_RESULTS.set(successful,salvaged.draft);return successful;
+    },function(){return v2;});
+  });
+}
+
+function fdCuratorLocalGenerationDate(calendar){
+  var year,month,day,stamp;
+  try{
+    if(!calendar||typeof calendar.getFullYear!=='function'||typeof calendar.getMonth!=='function'||typeof calendar.getDate!=='function')return '';
+    year=calendar.getFullYear();month=calendar.getMonth()+1;day=calendar.getDate();
+    if(!Number.isInteger(year)||!Number.isInteger(month)||!Number.isInteger(day)||year<1||year>9999||month<1||month>12||day<1||day>31)return '';
+    stamp=String(year).padStart(4,'0')+'-'+String(month).padStart(2,'0')+'-'+String(day).padStart(2,'0');return fdCuratorRealDate(stamp)?stamp:'';
+  }catch(ignore){return '';}
+}
+
+function fdCuratorEscape(value){return String(value).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+function fdCuratorOptionsMarkup(rows,selected,emptyLabel){
+  var out='<option value="">'+fdCuratorEscape(emptyLabel)+'</option>',i;
+  for(i=0;i<rows.length;i++)out+='<option value="'+fdCuratorEscape(rows[i].key)+'"'+(rows[i].key===selected?' selected':'')+'>'+fdCuratorEscape(rows[i].label)+'</option>';return out;
+}
+
+function fdCuratorLocalCoverage(localPlan){
+  var plan=localPlan&&typeof localPlan==='object'?localPlan:{};
+  return {where:Boolean(plan.arrival&&plan.arrival.placeKey),when:Boolean(plan.arrival&&plan.arrival.timingCode&&plan.arrival.time),prepare:Boolean(plan.accessItems&&plan.accessItems.length),help:Boolean((plan.contacts&&plan.contacts.length)||(plan.arrival&&plan.arrival.checkInRoleKey)),first:Boolean((plan.checklistItems&&plan.checklistItems.length)||(plan.schedule&&plan.schedule.events.length))};
+}
+function fdCuratorTrustedDisplay(model){var canonical;try{canonical=FD_CURATOR_DISPLAY_RESULTS.get(model);return canonical&&canonical===fdEditionCanonicalJson(model)?model:null;}catch(ignore){return null;}}
+function fdCuratorStudentSentences(model,category){
+  var rows=[],i,value;
+  if(!model)return rows;
+  if(category==='arrival'&&model.firstDay.arrival)rows.push(model.firstDay.arrival.text);
+  else if(category==='accessItems')for(i=0;i<model.firstDay.accessItems.length;i++)rows.push(model.firstDay.accessItems[i].text);
+  else if(category==='contacts')for(i=0;i<model.firstDay.contacts.length;i++)rows.push(model.firstDay.contacts[i].text);
+  else if(category==='checklistItems')for(i=0;i<model.firstDay.checklistItems.length;i++)rows.push(model.firstDay.checklistItems[i].text);
+  else if(category==='schedule'&&model.typicalDay){if(model.typicalDay.summaryText)rows.push(model.typicalDay.summaryText);for(i=0;i<model.typicalDay.eventItems.length;i++)rows.push(model.typicalDay.eventItems[i].text);}
+  else if(['rounds','presentation','documentation'].indexOf(category)>=0&&(value=model.workflow[category]))rows.push(value.text);
+  else if(category==='attendance'&&model.attendanceFeedback.attendance)rows.push(model.attendanceFeedback.attendance.text);
+  else if(category==='feedback'&&model.attendanceFeedback.feedback)rows.push(model.attendanceFeedback.feedback.text);
+  else if(category==='resources')for(i=0;i<model.resources.length;i++)rows.push(model.resources[i].text);
+  return rows;
+}
+function fdCuratorStudentsSee(model,category){var rows=fdCuratorStudentSentences(model,category),html='<div class="fd-curator-learners-see"><strong>Students will see</strong>';if(!rows.length)return html+'<p>Nothing from this category until reviewed selections are included.</p></div>';for(var i=0;i<rows.length;i++)html+='<p>'+fdCuratorEscape(rows[i])+'</p>';return html+'</div>';}
+function fdCuratorLocalSelect(snapshot,kind,location,audience,field,label,selected,empty,multiple){
+  var rows=kind==='priority'?FD_CURATOR_PRIORITIES.map(function(value){return {key:value,label:value};}):fdCuratorCatalogOptions(snapshot,kind,location,audience),html='<label>'+label+' <select data-curator-field="'+field+'"'+(multiple?' multiple':'')+'>'+fdCuratorOptionsMarkup(rows,selected||'',empty||'Choose reviewed option')+'</select></label>';return html;
+}
+function fdCuratorLocalControls(state,snapshot,category){
+  var plan=state.config.localPlan,location=state.config.context.trainingLocationKey,audience=state.site.audience,value=plan[category],html='<div class="fd-curator-structured-controls">',i,rows;
+  function select(kind,field,label,selected,empty,multiple){return fdCuratorLocalSelect(snapshot,kind,location,audience,field,label,selected,empty,multiple);}
+  function time(field,label,current){return '<label>'+label+' <input type="time" data-curator-field="'+field+'" value="'+fdCuratorEscape(current||'')+'"></label>';}
+  if(category==='arrival')html+=select('choice:role','checkInRoleKey','Check-in role',value&&value.checkInRoleKey)+select('place','placeKey','Place',value&&value.placeKey)+select('link:arrival-map','linkKey','Optional arrival map',value&&value.linkKey,'No link')+'<label>Timing <select data-curator-field="timingCode"><option value="at"'+(value&&value.timingCode==='at'?' selected':'')+'>At</option><option value="by"'+(!value||value.timingCode==='by'?' selected':'')+'>By</option></select></label>'+time('time','Arrival time',value&&value.time)+'<button type="button" data-curator-local-action="arrival">Apply arrival</button>';
+  else if(category==='accessItems')html+=select('choice:accessItem','itemKey','Access item','')+select('choice:duePoint','dueKey','Due point','')+select('link:access-training','linkKey','Optional official link','','No link')+'<button type="button" data-curator-local-action="access">Add access item</button>';
+  else if(category==='contacts')html+=select('choice:role','roleKey','Public role','')+select('link:directory','linkKey','Optional directory','','No link')+'<button type="button" data-curator-local-action="contact">Add contact</button>';
+  else if(category==='checklistItems')html+=select('choice:checklist','itemKey','Checklist action','')+select('priority','priority','Priority','recommended')+'<button type="button" data-curator-local-action="checklist">Add checklist action</button>';
+  else if(category==='schedule'){
+    html+=time('dayStart','Day starts',value&&value.dayStart)+time('dayEnd','Day ends',value&&value.dayEnd)+'<label>End qualifier <select data-curator-field="endQualifierCode"><option value="at">At</option><option value="about">About</option><option value="no-later-than">No later than</option></select></label><button type="button" data-curator-local-action="schedule-bounds">Apply day bounds</button>';
+    html+=select('choice:daySet','daySetKey','Days','')+time('startTime','Event starts','')+time('endTime','Optional end','')+select('choice:activity','activityKey','Activity','')+select('place','placeKey','Optional place','','No place')+select('priority','priority','Priority','recommended')+'<button type="button" data-curator-local-action="schedule-event">Add schedule event</button>';
+  }else if(category==='rounds')html+=select('choice:roundsPreparation','preparationKey','Preparation',value&&value.preparationKey)+select('choice:roundsParticipation','participationKey','Participation',value&&value.participationKey)+select('choice:roundsFollowUp','followUpKey','Follow-up',value&&value.followUpKey)+'<button type="button" data-curator-local-action="rounds">Apply rounds</button>';
+  else if(category==='presentation')html+=select('choice:presentationFormat','formatKey','Format',value&&value.formatKey)+select('choice:presentationTiming','timingKey','Timing',value&&value.timingKey)+select('choice:presentationElement','elementKeys','Elements','',null,true)+'<button type="button" data-curator-local-action="presentation">Apply presentation</button>';
+  else if(category==='documentation')html+=select('choice:documentationWorkflow','workflowKey','Workflow',value&&value.workflowKey)+select('choice:documentationTiming','timingKey','Timing',value&&value.timingKey)+select('link:documentation-policy','policyLinkKey','Optional policy',value&&value.policyLinkKey,'No policy')+'<button type="button" data-curator-local-action="documentation">Apply documentation</button>';
+  else if(category==='attendance'){
+    rows=plan.schedule&&plan.schedule.events||[];html+='<label>Schedule events <select data-curator-field="eventInstanceIds" multiple>';for(i=0;i<rows.length;i++)html+='<option value="'+fdCuratorEscape(rows[i].instanceId)+'"'+(value&&value.eventInstanceIds.indexOf(rows[i].instanceId)>=0?' selected':'')+'>'+fdCuratorEscape(rows[i].instanceId)+'</option>';html+='</select></label>'+select('choice:role','absenceRoleKey','Absence role',value&&value.absenceRoleKey)+select('link:attendance-policy','policyLinkKey','Optional attendance policy',value&&value.policyLinkKey,'No policy')+'<button type="button" data-curator-local-action="attendance">Apply attendance</button>';
+  }else if(category==='feedback')html+=select('choice:feedbackCadence','cadenceKey','Cadence',value&&value.cadenceKey)+select('choice:feedbackInitiator','initiatorKey','Initiator',value&&value.initiatorKey)+select('choice:feedbackSetting','settingKey','Setting',value&&value.settingKey)+'<button type="button" data-curator-local-action="feedback">Apply feedback</button>';
+  else if(category==='resources')html+=select('link:orientation','linkKey','Official resource','')+select('priority','priority','Priority','recommended')+'<label>Week <input type="number" min="1" max="'+(audience==='ms3'?6:4)+'" value="1" data-curator-field="week"></label>'+select('choice:reason','reasonKey','Optional reason','','No reason')+'<button type="button" data-curator-local-action="resource">Add resource</button>';
+  if(value)html+='<button type="button" data-curator-local-clear="'+category+'">Clear '+category+'</button>';
+  rows=Array.isArray(value)?value:value&&value.events||[];for(i=0;i<rows.length;i++)html+='<button type="button" data-curator-local-remove="'+category+'" data-instance-id="'+fdCuratorEscape(rows[i].instanceId)+'">Remove '+fdCuratorEscape(rows[i].instanceId)+'</button>';
+  return html+'</div>';
+}
+function fdCuratorPreviewMarkup(model,preset){
+  var trusted=fdCuratorTrustedDisplay(model),mobile=preset==='mobile-390',sections,i,rows,html;if(!trusted)return '<div class="fd-curator-preview-empty">Complete the required reviewed selections to render this preview.</div>';
+  sections=[['First day at the location',fdCuratorStudentSentences(trusted,'arrival')],['Before you arrive',fdCuratorStudentSentences(trusted,'accessItems')],['Who to contact',fdCuratorStudentSentences(trusted,'contacts')],["Today's checklist",fdCuratorStudentSentences(trusted,'checklistItems')],['Typical day',fdCuratorStudentSentences(trusted,'schedule')],['Team workflow',fdCuratorStudentSentences(trusted,'rounds').concat(fdCuratorStudentSentences(trusted,'presentation'),fdCuratorStudentSentences(trusted,'documentation'))],['Attendance and feedback',fdCuratorStudentSentences(trusted,'attendance').concat(fdCuratorStudentSentences(trusted,'feedback'))],['Official resources',fdCuratorStudentSentences(trusted,'resources')]];
+  html='<div class="fd-curator-preview '+(mobile?'fd-curator-preview--mobile':'fd-curator-preview--desktop')+'" tabindex="-1" data-curator-preview-layout="'+preset+'"><h3>'+fdCuratorEscape(trusted.card.title)+'</h3>';
+  for(i=0;i<sections.length;i++){html+='<section><h4>'+sections[i][0]+'</h4>';rows=sections[i][1];if(!rows.length)html+='<p>None selected.</p>';else for(var j=0;j<rows.length;j++)html+='<p>'+fdCuratorEscape(rows[j])+'</p>';html+='</section>';}
+  return html+'</div>';
+}
+function fdCuratorLocalMarkup(state,catalogSnapshot,displayModel){
+  var model=fdCuratorTrustedDisplay(displayModel),plan=state.config.localPlan,coverage=fdCuratorLocalCoverage(plan),location=state.config.context.trainingLocationKey,audience=state.site.audience;
+  var presets=fdCuratorCatalogOptions(catalogSnapshot,'localPreset',location,audience),categories=[['arrival','Arrival'],['accessItems','Access preparation'],['contacts','Who to contact'],['checklistItems','Checklist'],['schedule','Typical schedule'],['rounds','Rounds'],['presentation','Presentation'],['documentation','Documentation'],['attendance','Attendance'],['feedback','Feedback'],['resources','Official resources']];
+  var questions=[['where','Where do I go?','arrival'],['when','When should I arrive?','arrival'],['prepare','What should I prepare?','accessItems'],['help','Who can help?','contacts'],['first','What do I do first?','checklistItems']],html='<section data-curator-step-panel="4" aria-labelledby="fd-curator-local-title"><h2 id="fd-curator-local-title">Structured local details</h2><p data-curator-local-status role="status" aria-live="polite" tabindex="-1"></p>';
+  html+='<div class="fd-curator-coverage" role="status" aria-live="polite"><h3>First-day coverage</h3><ul>';for(var i=0;i<questions.length;i++)html+='<li class="'+(coverage[questions[i][0]]?'is-covered':'is-missing')+'"><span aria-hidden="true">'+(coverage[questions[i][0]]?'✓':'!')+'</span> <a href="#fd-curator-'+questions[i][2]+'" data-curator-focus="'+questions[i][2]+'">'+questions[i][1]+'</a> — '+(coverage[questions[i][0]]?'covered':'not yet covered')+'</li>';html+='</ul><p>Coverage is advisory and does not by itself block a valid edition.</p></div>';
+  html+='<label>Apply a reviewed local preset <select data-curator-local-preset>'+fdCuratorOptionsMarkup(presets,'','Choose a reviewed preset')+'</select></label>';
+  html+='<section class="fd-curator-local-group"><h2>First-day essentials</h2>';for(i=0;i<4;i++)html+='<article id="fd-curator-'+categories[i][0]+'" class="fd-curator-local-card" tabindex="-1"><h3>'+categories[i][1]+'</h3>'+fdCuratorLocalControls(state,catalogSnapshot,categories[i][0])+fdCuratorStudentsSee(model,categories[i][0])+'<p class="fd-curator-reviewed-only">Choose only from repository-reviewed options.</p></article>';html+='</section>';
+  html+='<section class="fd-curator-local-group"><h2>How this rotation works</h2>';for(i=4;i<categories.length;i++)html+='<article id="fd-curator-'+categories[i][0]+'" class="fd-curator-local-card" tabindex="-1"><h3>'+categories[i][1]+'</h3>'+fdCuratorLocalControls(state,catalogSnapshot,categories[i][0])+fdCuratorStudentsSee(model,categories[i][0])+'<p class="fd-curator-reviewed-only">Choose only from repository-reviewed options.</p></article>';html+='</section>';
+  html+='<section class="fd-curator-review-evidence" data-curator-review-evidence><h2>Canonical previews</h2><p>Fingerprint: <code>'+(model?fdCuratorEscape(model.card.fingerprint):'pending')+'</code></p><p>Candidate digest: <code>'+(state.previewReceipts.desktop?fdCuratorEscape(state.previewReceipts.desktop.contentDigest):state.previewReceipts.mobile?fdCuratorEscape(state.previewReceipts.mobile.contentDigest):'pending')+'</code></p><div class="fd-curator-preview-actions"><button type="button" data-curator-review-preview="desktop">Review desktop preview</button><span data-curator-preview-status="desktop" role="status" aria-live="polite">'+(state.previewReceipts.desktop?'Reviewed':'Not reviewed')+'</span><button type="button" data-curator-review-preview="mobile-390">Review 390 px mobile preview</button><span data-curator-preview-status="mobile" role="status" aria-live="polite">'+(state.previewReceipts.mobile?'Reviewed':'Not reviewed')+'</span></div>'+fdCuratorPreviewMarkup(model,'desktop')+fdCuratorPreviewMarkup(model,'mobile-390')+'</section>';
+  return html+'</section>';
+}
+
+function fdCuratorStepOneMarkup(state,catalogSnapshot,generationDate){
+  var location=state.config.context.trainingLocationKey,locations=fdCuratorCatalogOptions(catalogSnapshot,'trainingLocation','',state.site.audience);
+  var profiles=location?fdCuratorCatalogOptions(catalogSnapshot,'curatorProfile',location,state.site.audience):[];
+  var phrases=location?fdCuratorCatalogOptions(catalogSnapshot,'phraseSet',location,state.site.audience):[];
+  var html='<section class="fd-curator-v2" data-curator-step-panel="1"><h2>Step 1 — Reviewed edition context</h2>';
+  html+='<label for="curatorTrainingLocation">Training location</label><select id="curatorTrainingLocation" data-curator-location>'+fdCuratorOptionsMarkup(locations,location,'Choose a reviewed location')+'</select>';
+  if(location&&!profiles.length)html+='<div class="fd-curator-onboarding" role="status"><strong>No reviewed curator profile is available.</strong> A reviewed catalog proposal is required before this edition can be completed.</div>';
+  else html+='<label for="curatorProfile">Curator profile</label><select id="curatorProfile" data-curator-profile>'+fdCuratorOptionsMarkup(profiles,state.config.context.curatorProfileKey,'Choose a reviewed profile')+'</select>';
+  html+='<label for="curatorPhraseSet">Reviewed wording</label><select id="curatorPhraseSet" data-curator-phrases>'+fdCuratorOptionsMarkup(phrases,state.config.phraseSetKey,'Choose reviewed wording')+'</select>';
+  html+='<label for="curatorRotationStart">Rotation start</label><input id="curatorRotationStart" type="date" data-curator-date="SET_ROTATION_START" value="'+fdCuratorEscape(state.config.context.rotationStart)+'">';
+  html+='<label for="curatorRotationEnd">Rotation end</label><input id="curatorRotationEnd" type="date" data-curator-date="SET_ROTATION_END" value="'+fdCuratorEscape(state.config.context.rotationEnd)+'">';
+  html+='<label for="curatorEditionCheckedOn">Edition checked on</label><input id="curatorEditionCheckedOn" type="date" data-curator-date="SET_EDITION_CHECKED_ON" max="'+fdCuratorEscape(generationDate||'')+'" value="'+fdCuratorEscape(state.config.context.editionCheckedOn)+'">';
+  html+='<section class="import-panel" aria-labelledby="curatorImportTitle"><strong id="curatorImportTitle">Continue from a JSON backup</strong><p>Validated v2 backups are restored exactly. A v1 backup may be safely salvaged after its discarded local prose is removed.</p><label class="file-label" for="curatorImportFile">Choose JSON backup</label><input id="curatorImportFile" type="file" accept="application/json,.json" class="visually-hidden" data-curator-import><p data-curator-import-status role="status" aria-live="polite"></p></section>';
+  html+='<div class="draft-actions"><button type="button" id="curatorSaveDraft" class="secondary-action" data-curator-save>Save draft on this device</button><p data-curator-save-status role="status" aria-live="polite">Not yet saved on this device.</p></div></section>';return html;
+}
+
+function fdCuratorStateSiteContext(state){
+  var site=state&&state.site;
+  return site?{audience:site.audience,pathId:site.pathId,coreRevision:site.coreRevision,
+    localCatalogRevision:site.localCatalogRevision,rotationEditionV2:site.rotationEditionV2}:null;
+}
+
+function fdCuratorPlacementMeta(state,index){
+  var inspected=fdCuratorIndexSnapshot(index,fdCuratorStateSiteContext(state)),positions=Object.create(null),occurrence=Object.create(null),totals=Object.create(null),items=state.config.pathItems.slice().sort(function(a,b){return a.week-b.week||a.order-b.order;}),i,row,title;
+  for(i=0;i<items.length;i++)totals[items[i].week]=(totals[items[i].week]||0)+1;
+  for(i=0;i<items.length;i++){
+    row=items[i];occurrence[row.ref]=(occurrence[row.ref]||0)+1;title=inspected.ok&&inspected.byRef[row.ref]?inspected.byRef[row.ref].title:row.ref;
+    positions[row.instanceId]={title:title,occurrence:occurrence[row.ref],position:row.order,total:totals[row.week],week:row.week};
+  }
+  return positions;
+}
+function fdCuratorPlacementName(meta,action){return action+' '+meta.title+', occurrence '+meta.occurrence+', position '+meta.position+' of '+meta.total+' in Week '+meta.week;}
+
+function fdCuratorCurriculumMarkup(state,index,catalogSnapshot,query){
+  var inspected=fdCuratorIndexSnapshot(index,fdCuratorStateSiteContext(state)),meta=fdCuratorPlacementMeta(state,index),reasons=fdCuratorCatalogOptions(catalogSnapshot,'reason',state.config.context.trainingLocationKey,state.site.audience),html='<section class="fd-curator-v2" data-curator-step-panel="2"><h2>Step 2 — Curriculum</h2>',i,j,row,match;
+  if(!inspected.ok)return '<p>Curriculum unavailable.</p>';query=String(query||'').toLowerCase();
+  html+='<label for="curatorLibrarySearch">Search this audience curriculum</label><input id="curatorLibrarySearch" type="search" data-curator-search value="'+fdCuratorEscape(query)+'" autocomplete="off">';
+  for(i=0;i<inspected.library.length;i++){
+    row=inspected.library[i];if(query&&row.title.toLowerCase().indexOf(query)<0&&row.ref.toLowerCase().indexOf(query)<0)continue;
+    match=state.config.pathItems.filter(function(item){return item.ref===row.ref;});
+    html+='<article class="fd-curator-library-item"><h3>'+fdCuratorEscape(row.title)+'</h3><code>'+fdCuratorEscape(row.ref)+'</code>';
+    html+='<label>Placement week <select data-curator-library-week aria-label="Choose week for '+fdCuratorEscape(row.title)+', occurrence '+(match.length+1)+', position 1 of 1 in Week 1">';
+    for(var week=1;week<=inspected.site.weekCount;week++)html+='<option value="'+week+'">Week '+week+'</option>';html+='</select></label>';
+    if(!match.length)html+='<button type="button" data-curator-path-include="'+fdCuratorEscape(row.ref)+'" aria-label="Include '+fdCuratorEscape(row.title)+', occurrence 1, position 1 of 1 in Week 1">Include</button>';
+    html+='<button type="button" data-curator-path-repeat="'+fdCuratorEscape(row.ref)+'" aria-label="Repeat '+fdCuratorEscape(row.title)+', occurrence '+(match.length+1)+', position 1 of 1 in Week 1">Repeat</button>';
+    for(j=0;j<match.length;j++){
+      var placed=match[j],label=meta[placed.instanceId],prefix=fdCuratorEscape(placed.instanceId);
+      html+='<div class="fd-curator-placement"><label>Priority <select data-curator-path-priority="'+prefix+'" aria-label="'+fdCuratorEscape(fdCuratorPlacementName(label,'Set priority for'))+'">'+fdCuratorOptionsMarkup(FD_CURATOR_PRIORITIES.map(function(value){return {key:value,label:value};}),placed.priority,'Choose priority')+'</select></label>';
+      html+='<label>Reviewed reason <select data-curator-path-reason="'+prefix+'" aria-label="'+fdCuratorEscape(fdCuratorPlacementName(label,placed.reasonKey?'Clear or set reason for':'Choose reason for'))+'">'+fdCuratorOptionsMarkup(reasons,placed.reasonKey||'','No reviewed reason')+'</select></label>';
+      html+='<button type="button" data-curator-path-remove="'+prefix+'" aria-label="'+fdCuratorEscape(fdCuratorPlacementName(label,'Remove from curriculum'))+'">Omit</button></div>';
     }
-    if(field) dispatch({type:'SET_CARD_FIELD',field:field,value:event.target.value});
-    field=event.target.getAttribute&&event.target.getAttribute('data-curator-orientation');
-    if(field){
-      checked=validateOrientationInput(field,event.target.value);
-      if(checked.errors.length){
-        orientationIssues[field]={value:event.target.value,errors:checked.errors,warnings:checked.warnings};
-        state=fdCuratorResetReviews(fdCuratorClone(state)); touched=true; importTransactions.touch(); invalidateReviewWork(true);
-        listed=orientationIssueLists(); errors=listed.errors; warnings=listed.warnings;
-        fdCuratorRenderReviewStatus(root,state); fdCuratorRenderErrors(root,errors); fdCuratorRenderWarnings(root,warnings); refreshPreview(); return;
-      }
-      delete orientationIssues[field]; dispatch({type:'LOCAL_SET_ORIENTATION',field:field,value:event.target.value},true);
-      listed=orientationIssueLists(); errors=listed.errors; warnings=listed.warnings.concat(checked.warnings||[]);
-      fdCuratorRenderErrors(root,errors); fdCuratorRenderWarnings(root,warnings);
-      count=root.querySelector('#curator'+field.charAt(0).toUpperCase()+field.slice(1)+'Count'); if(count) count.textContent=fdEditionTextLength(event.target.value)+' of 600 characters'; return;
+    html+='</article>';
+  }
+  return html+'</section>';
+}
+
+function fdCuratorScheduleMarkup(state,index){
+  var inspected=fdCuratorIndexSnapshot(index,fdCuratorStateSiteContext(state)),meta=fdCuratorPlacementMeta(state,index),html='<section class="fd-curator-v2" data-curator-step-panel="3"><h2>Step 3 — Schedule</h2>',week,i,j,rows,row,label,prefix;
+  if(!inspected.ok)return '<p>Schedule unavailable.</p>';
+  for(week=1;week<=inspected.site.weekCount;week++){
+    rows=state.config.pathItems.filter(function(item){return item.week===week;}).sort(function(a,b){return a.order-b.order;});html+='<section class="fd-curator-week"><h3>Week '+week+'</h3>';
+    for(i=0;i<rows.length;i++){
+      row=rows[i];label=meta[row.instanceId];prefix=fdCuratorEscape(row.instanceId);html+='<div class="fd-curator-schedule-row"><span>'+fdCuratorEscape(label.title)+'</span>';
+      html+='<button type="button" data-curator-path-move-order="'+prefix+'" data-direction="up" aria-label="'+fdCuratorEscape(fdCuratorPlacementName(label,'Move up'))+'"'+(i===0?' disabled':'')+'>↑</button>';
+      html+='<button type="button" data-curator-path-move-order="'+prefix+'" data-direction="down" aria-label="'+fdCuratorEscape(fdCuratorPlacementName(label,'Move down'))+'"'+(i===rows.length-1?' disabled':'')+'>↓</button>';
+      html+='<label><span class="visually-hidden">'+fdCuratorEscape(fdCuratorPlacementName(label,'Move to week'))+'</span><select data-curator-path-move-week="'+prefix+'" aria-label="'+fdCuratorEscape(fdCuratorPlacementName(label,'Move to week'))+'">';
+      for(j=1;j<=inspected.site.weekCount;j++)html+='<option value="'+j+'"'+(j===week?' selected':'')+'>Week '+j+'</option>';html+='</select></label>';
+      html+='<button type="button" data-curator-path-remove="'+prefix+'" aria-label="'+fdCuratorEscape(fdCuratorPlacementName(label,'Remove from schedule'))+'">Remove</button></div>';
     }
-    indexValue=event.target.getAttribute&&event.target.getAttribute('data-curator-contact-index');
-    field=event.target.getAttribute&&event.target.getAttribute('data-curator-contact-field');
-    if(indexValue!==null&&field){ dispatch({type:'LOCAL_CONTACT_UPDATE',index:Number(indexValue),field:field,value:event.target.value},true); return; }
-    id=event.target.getAttribute&&event.target.getAttribute('data-curator-checklist-id');
-    field=event.target.getAttribute&&event.target.getAttribute('data-curator-checklist-field');
-    if(id!==null&&field==='label'){ dispatch({type:'LOCAL_CHECKLIST_UPDATE',id:id,field:field,value:event.target.value},true); return; }
-    id=event.target.getAttribute&&event.target.getAttribute('data-curator-resource-id');
-    field=event.target.getAttribute&&event.target.getAttribute('data-curator-resource-field');
-    if(id!==null&&(field==='title'||field==='url'||field==='rationale')){ dispatch({type:'LOCAL_RESOURCE_UPDATE',id:id,field:field,value:event.target.value},true); return; }
-    instance=event.target.getAttribute&&event.target.getAttribute('data-curator-path-rationale');
-    if(instance){
-      dispatch({type:'PATH_SET_RATIONALE',instanceId:instance,value:event.target.value},true);
-      current=fdCuratorFindPathItem(state.config.pathItems,instance);
-      if(current>=0&&event.target.value!==state.config.pathItems[current].rationale) event.target.value=state.config.pathItems[current].rationale;
-      counters=root.querySelectorAll('[data-curator-rationale-count]'); count=null;
-      for(c=0;c<counters.length;c++) if(counters[c].getAttribute('data-curator-rationale-count')===instance){ count=counters[c]; break; }
-      if(count) count.textContent=fdEditionTextLength(event.target.value)+' of 280 characters';
-    }
+    html+='</section>';
+  }
+  return html+'</section>';
+}
+
+function fdCuratorCandidateFailure(code){return {ok:false,config:null,envelopePreimage:null,contentDigest:'',referenceSetDigest:'',fingerprint:'',displayModel:null,errors:[{code:code||'CURATOR_INVALID',path:'/',message:'The structured rotation edition is incomplete or invalid.'}]};}
+function fdCuratorCandidateDraftSignature(state){
+  try{return fdEditionCanonicalJson({site:state.site,config:state.config,baseEnvelope:state.publication.baseEnvelope});}catch(ignore){return '';}
+}
+function fdCuratorCandidateConfig(state,index,catalogSnapshot,siteContext,validationContext,subtle){
+  var context=state&&state.config&&state.config.context,contractSite=fdCuratorContractSiteContext(siteContext),base,baseConfig=null,tentative,config,summary,edition=1;
+  if(!contractSite||!fdCuratorStateValid(state,index,siteContext)||!fdCuratorExactData(validationContext,['mode','generationDate'],[])||validationContext.mode!=='builder'||!fdCuratorRealDate(validationContext.generationDate)||!context.trainingLocationKey||!context.curatorProfileKey||!state.config.phraseSetKey||!fdCuratorRealDate(context.rotationStart)||!fdCuratorRealDate(context.rotationEnd)||!fdCuratorRealDate(context.editionCheckedOn)||context.editionCheckedOn>validationContext.generationDate)return Promise.resolve(fdCuratorCandidateFailure('CURATOR_INCOMPLETE'));
+  tentative={audience:state.site.audience,pathId:state.site.pathId,editionNumber:1,createdAgainstCoreRevision:contractSite.coreRevision,createdAgainstLocalCatalogRevision:contractSite.localCatalogRevision,context:fdCuratorClone(context),phraseSetKey:state.config.phraseSetKey,pathItems:fdCuratorClone(state.config.pathItems),localPlan:fdCuratorClone(state.config.localPlan),changeSummary:{kindCodes:['initial'],changedItemCount:0}};
+  try{base=state.publication.baseEnvelope;if(base&&fdCuratorObject(base)&&fdCuratorObject(base.config)){baseConfig=fdCuratorClone(base.config);edition=baseConfig.editionNumber;}}
+  catch(ignoreBase){baseConfig=null;edition=1;}
+  if(baseConfig&&fdEditionSemanticConfig(baseConfig)===fdEditionSemanticConfig(tentative))config=baseConfig;
+  else if(baseConfig){if(!Number.isInteger(edition)||edition<1||edition>=2147483647)return Promise.resolve(fdCuratorCandidateFailure('CURATOR_EDITION_LIMIT'));summary=fdEditionGenerateChangeSummary(baseConfig,tentative);if(!summary||!summary.kindCodes.length)return Promise.resolve(fdCuratorCandidateFailure('CURATOR_INVALID'));tentative.editionNumber=edition+1;tentative.changeSummary=summary;config=tentative;}
+  else config=tentative;
+  return fdEditionCreateEnvelope(config,index,catalogSnapshot,contractSite,validationContext,subtle).then(function(made){
+    var trusted,pre,display,result;if(!made||made.ok!==true||(trusted=fdEditionTrustedSnapshot(made))===null)return fdCuratorCandidateFailure('CURATOR_INVALID');
+    try{pre={format:'cw-rotation-edition',schemaVersion:2,config:fdCuratorClone(trusted.config)};display=fdCuratorClone(trusted.displayModel);result={ok:true,config:fdCuratorClone(trusted.config),envelopePreimage:pre,contentDigest:made.contentDigest,referenceSetDigest:trusted.referenceSetDigest,fingerprint:trusted.fingerprint,displayModel:display,errors:[]};FD_CURATOR_CANDIDATE_RESULTS.set(result,{trusted:made,draftSignature:fdCuratorCandidateDraftSignature(state),site:{coreRevision:contractSite.coreRevision,catalogRevision:contractSite.localCatalogRevision}});FD_CURATOR_DISPLAY_RESULTS.set(display,fdEditionCanonicalJson(display));return result;}
+    catch(ignoreResult){return fdCuratorCandidateFailure('CURATOR_INVALID');}
+  },function(){return fdCuratorCandidateFailure('CURATOR_INVALID');});
+}
+
+function fdCuratorReceiptExpected(privateCandidate){
+  var trusted=fdEditionTrustedSnapshot(privateCandidate.trusted);if(!trusted)return null;
+  return {contentDigest:privateCandidate.trusted.contentDigest,referenceSetDigest:trusted.referenceSetDigest,currentCoreRevision:privateCandidate.site.coreRevision,currentCatalogRevision:privateCandidate.site.catalogRevision,rendererRevision:FD_CURATOR_RENDERER_REVISION};
+}
+function fdCuratorReceiptMatches(receipt,expected,preset){
+  var value=fdCuratorExactData(receipt,['contentDigest','referenceSetDigest','currentCoreRevision','currentCatalogRevision','rendererRevision','previewPreset'],[]);
+  return Boolean(value&&expected&&value.contentDigest===expected.contentDigest&&value.referenceSetDigest===expected.referenceSetDigest&&value.currentCoreRevision===expected.currentCoreRevision&&value.currentCatalogRevision===expected.currentCatalogRevision&&value.rendererRevision===expected.rendererRevision&&value.previewPreset===preset);
+}
+function fdCuratorPreparePreview(state,index,catalogSnapshot,siteContext,validationContext,subtle,preset,sequence){
+  if(['desktop','mobile-390'].indexOf(preset)<0||!Number.isInteger(sequence))return Promise.resolve({ok:false,code:'CURATOR_PREVIEW_INVALID'});
+  return fdCuratorCandidateConfig(state,index,catalogSnapshot,siteContext,validationContext,subtle).then(function(candidate){
+    var privateCandidate,projected,expected,receipt,result,display;if(!candidate.ok||(privateCandidate=FD_CURATOR_CANDIDATE_RESULTS.get(candidate))===undefined)return {ok:false,code:'CURATOR_PREVIEW_INVALID'};
+    projected=fdProjectEdition(index,privateCandidate.trusted);if(!projected||projected.ok!==true)return {ok:false,code:'CURATOR_PREVIEW_INVALID'};
+    expected=fdCuratorReceiptExpected(privateCandidate);if(!expected)return {ok:false,code:'CURATOR_PREVIEW_INVALID'};receipt={contentDigest:expected.contentDigest,referenceSetDigest:expected.referenceSetDigest,currentCoreRevision:expected.currentCoreRevision,currentCatalogRevision:expected.currentCatalogRevision,rendererRevision:expected.rendererRevision,previewPreset:preset};
+    display=fdCuratorClone(candidate.displayModel);result={ok:true,code:'CURATOR_PREVIEW_OK',preset:preset,displayModel:display,contentDigest:candidate.contentDigest,fingerprint:candidate.fingerprint};FD_CURATOR_DISPLAY_RESULTS.set(display,fdEditionCanonicalJson(display));FD_CURATOR_PREVIEW_RESULTS.set(result,{sequence:sequence,preset:preset,receipt:receipt,expected:expected,draftSignature:privateCandidate.draftSignature});return result;
   });
-  root.addEventListener('click',function(event){
-    var target=event.target,ref,instance,value,id;
-    if(!target||typeof target.getAttribute!=='function') return;
-    ref=target.getAttribute('data-curator-path-toggle');
-    if(ref!==null){ dispatch({type:'PATH_TOGGLE',ref:ref}); return; }
-    ref=target.getAttribute('data-curator-path-add');
-    if(ref!==null){ dispatch({type:'PATH_ADD_INSTANCE',ref:ref}); return; }
-    instance=target.getAttribute('data-curator-path-remove');
-    if(instance!==null){ dispatch({type:'PATH_REMOVE_INSTANCE',instanceId:instance}); return; }
-    instance=target.getAttribute('data-curator-path-up');
-    if(instance!==null){ dispatch({type:'PATH_MOVE_UP',instanceId:instance}); return; }
-    instance=target.getAttribute('data-curator-path-down');
-    if(instance!==null){ dispatch({type:'PATH_MOVE_DOWN',instanceId:instance}); return; }
-    value=target.getAttribute('data-curator-contact-remove');
-    if(value!==null){ dispatch({type:'LOCAL_CONTACT_REMOVE',index:Number(value)}); return; }
-    id=target.getAttribute('data-curator-checklist-remove');
-    if(id!==null){ dispatch({type:'LOCAL_CHECKLIST_REMOVE',id:id}); return; }
-    id=target.getAttribute('data-curator-resource-remove');
-    if(id!==null){ dispatch({type:'LOCAL_RESOURCE_REMOVE',id:id}); return; }
-    if(target.id==='curatorAddContact'){
-      tryAddPending('contact'); return;
-    }
-    if(target.id==='curatorAddChecklist'){
-      tryAddPending('checklist'); return;
-    }
-    if(target.id==='curatorAddResource'){
-      tryAddPending('resource'); return;
-    }
-    if(target.id==='curatorReviewDesktop'){ reviewPreview('desktop'); return; }
-    if(target.id==='curatorReviewMobile'){ reviewPreview('mobile'); return; }
-    value=target.getAttribute('data-curator-local-view');
-    if(value==='edit'||value==='preview'){
-      invalidateReviewWork(false); setLocalView(value,null);
-      return;
-    }
-  });
-  root.addEventListener('change',function(event){
-    var target=event.target,instance,id,field,value;
-    if(!target||typeof target.getAttribute!=='function') return;
-    instance=target.getAttribute('data-curator-path-priority');
-    if(instance!==null){ dispatch({type:'PATH_SET_PRIORITY',instanceId:instance,priority:target.value}); return; }
-    instance=target.getAttribute('data-curator-path-week');
-    if(instance!==null){ dispatch({type:'PATH_MOVE_WEEK',instanceId:instance,week:Number(target.value)}); return; }
-    id=target.getAttribute('data-curator-checklist-id'); field=target.getAttribute('data-curator-checklist-field');
-    if(id!==null&&field==='priority'){ dispatch({type:'LOCAL_CHECKLIST_UPDATE',id:id,field:field,value:target.value}); return; }
-    id=target.getAttribute('data-curator-resource-id'); field=target.getAttribute('data-curator-resource-field');
-    if(id!==null&&(field==='priority'||field==='week')){
-      value=field==='week'?Number(target.value):target.value;
-      dispatch({type:'LOCAL_RESOURCE_UPDATE',id:id,field:field,value:value});
-    }
-  });
-  input=root.querySelector('#curatorLibrarySearch');
-  if(input) input.addEventListener('input',function(){
-    var mount=root.querySelector('#curatorCurriculumGroups');
-    if(mount) mount.innerHTML=fdCuratorCurriculumMarkup(state,index,input.value);
-  });
-  save=root.querySelector('#curatorSaveDraft');
-  if(save) save.addEventListener('click',function(){
-    var listed=orientationIssueLists();
-    if(listed.errors.length){ errors=listed.errors; warnings=listed.warnings; fdCuratorRenderErrors(root,errors); fdCuratorRenderWarnings(root,warnings); status('Draft could not be saved on this device.'); }
-    else if(adapter.save(state,index,siteContext)) status('Saved on this device');
-    else status('Draft could not be saved on this device.');
-  });
-  continueButton=root.querySelector('#curatorContinue');
-  if(continueButton) continueButton.addEventListener('click',function(){
-    var checked=fdCuratorValidateStep(state,1,index,siteContext),summary;
-    if(!checked.ok){ errors=checked.errors; fdCuratorRender(state,root,index,errors); summary=root.querySelector('#curatorErrorSummary'); if(summary) summary.focus(); return; }
-    dispatch({type:'GO_TO_STEP',step:2});
-  });
-  continueButton=root.querySelector('#curatorLocalContinue');
-  if(continueButton) continueButton.addEventListener('click',function(){
-    var checked=fdCuratorValidateStep(state,4,index,siteContext),pendingChecked=fdCuratorValidatePendingLocal(pendingValues(),state,index,siteContext,'all','leave'),listed=orientationIssueLists();
-    errors=listed.errors.concat(checked.errors||[],pendingChecked.errors||[]); warnings=listed.warnings.concat(checked.warnings||[],pendingChecked.warnings||[]);
-    if(listed.errors.length||!checked.ok||!pendingChecked.ok){ render(); focusSummary(); return; }
-    dispatch({type:'GO_TO_STEP',step:5});
-  });
-  importInput=root.querySelector('#curatorImportFile');
-  if(importInput) importInput.addEventListener('change',function(event){
-    var file=event.target.files&&event.target.files[0],transaction;
-    if(!file) return;
-    touched=true;
-    invalidateReviewWork(false);
-    transaction=importTransactions.begin();
-    fdCuratorReadImportFile(file,index,siteContext,subtle).then(function(result){
-      if(!importTransactions.commit(transaction)) return;
-      invalidateReviewWork(true);
-      if(result.ok){
-        touched=true; state=result.draft; orientationIssues=Object.create(null); errors=[]; warnings=[];
-        clearPending('contact'); clearPending('checklist'); clearPending('resource');
-        setLocalView('edit',null); render(); status('Backup imported. Save the draft to keep it on this device.');
-      }
-      else status(result.code==='CURATOR_IMPORT_SIZE'?'Backup must be 64 KiB or smaller.':'Backup could not be validated for this audience.');
-      event.target.value='';
-    });
-  });
+}
+function fdCuratorPrepareGenerationResult(candidate,sequence){
+  var privateCandidate=FD_CURATOR_CANDIDATE_RESULTS.get(candidate),result;if(!privateCandidate||!Number.isInteger(sequence))return {ok:false,code:'CURATOR_GENERATION_INVALID'};
+  result={ok:true,code:'CURATOR_GENERATION_READY'};FD_CURATOR_GENERATION_RESULTS.set(result,{sequence:sequence,draftSignature:privateCandidate.draftSignature,lastGenerated:{contentDigest:candidate.contentDigest,referenceSetDigest:candidate.referenceSetDigest,fingerprint:candidate.fingerprint}});return result;
+}
+function fdCuratorProjectDraft(state,index,catalogSnapshot,siteContext,validationContext,subtle){
+  return fdCuratorCandidateConfig(state,index,catalogSnapshot,siteContext,validationContext,subtle).then(function(candidate){var privateCandidate,projected;if(!candidate.ok||(privateCandidate=FD_CURATOR_CANDIDATE_RESULTS.get(candidate))===undefined)return {ok:false,code:candidate.errors[0].code};projected=fdProjectEdition(index,privateCandidate.trusted);return projected&&projected.ok?{ok:true,code:'CURATOR_PREVIEW_OK',index:projected.index}:{ok:false,code:'CURATOR_INVALID'};});
+}
+
+function fdCuratorObserveCurrentSite(state,index,siteContext){
+  var current=fdCuratorSiteValue(siteContext),storedContext,copy;if(!current||!state||!fdCuratorObject(state.site))return null;
+  storedContext={audience:state.site.audience,pathId:state.site.pathId,coreRevision:state.site.coreRevision,localCatalogRevision:state.site.localCatalogRevision,rotationEditionV2:state.site.rotationEditionV2};
+  if(!fdCuratorStateValid(state,index,storedContext))return null;
+  if(state.site.audience!==current.audience||state.site.pathId!==current.pathId||state.site.rotationEditionV2!==current.rotationEditionV2)return null;
+  if(state.site.coreRevision===current.coreRevision&&state.site.localCatalogRevision===current.localCatalogRevision&&state.site.rendererRevision===FD_CURATOR_RENDERER_REVISION)return state;
+  copy=fdCuratorClone(state);copy.site.coreRevision=current.coreRevision;copy.site.localCatalogRevision=current.localCatalogRevision;copy.site.rendererRevision=FD_CURATOR_RENDERER_REVISION;copy.previewReceipts={desktop:null,mobile:null};copy.affirmations.previewsReviewed=false;copy.publication.lastGenerated=null;return copy;
+}
+
+function fdCuratorCatalogUnavailable(root){
+  try{root.innerHTML='<section class="fd-curator-unavailable" role="alert"><h2>Rotation edition catalog unavailable</h2><p>The reviewed catalog could not be prepared. No draft was read or changed.</p></section>';return {ok:false,code:'CURATOR_CATALOG_UNAVAILABLE'};}
+  catch(ignore){return {ok:false,code:'CURATOR_CATALOG_UNAVAILABLE'};}
+}
+
+function fdCuratorDraftStorage(storage,key){
+  function method(name){var cursor=storage,descriptor,depth=0;while(cursor&&depth<8){try{descriptor=Object.getOwnPropertyDescriptor(cursor,name);}catch(ignore){return null;}if(descriptor)return FD_CURATOR_OWN.call(descriptor,'value')&&typeof descriptor.value==='function'?descriptor.value:null;try{cursor=Object.getPrototypeOf(cursor);}catch(ignorePrototype){return null;}depth+=1;}return null;}
+  var get=method('getItem'),set=method('setItem');
+  return {load:function(index,siteContext){var text,value,observed;if(!get)return null;try{text=get.call(storage,key);if(text===null)return null;if(typeof text!=='string'||new TextEncoder().encode(text).length>FD_CURATOR_IMPORT_MAX_BYTES)return null;value=JSON.parse(text);observed=fdCuratorObserveCurrentSite(value,index,siteContext);return observed?fdCuratorClone(observed):null;}catch(ignore){return null;}},save:function(state,index,siteContext){if(!set||!fdCuratorStateValid(state,index,siteContext))return false;try{set.call(storage,key,fdEditionCanonicalJson(state));return true;}catch(ignore){return false;}}};
+}
+
+function fdCuratorMount(root,canonicalIndex,siteContext,catalogSnapshot,generationDate,dependencies){
+  var keys,storage,adapter,state,transactions=fdCuratorImportTransactions(),deps=dependencies||{},editor,searchQuery='',displayModel=null,renderSequence=0;
+  if(!root||typeof fdEditionPublicationEnabled!=='function'||!fdEditionPublicationEnabled(catalogSnapshot))return Promise.resolve(fdCuratorCatalogUnavailable(root));
+  keys=fdEditionStorageKeys(siteContext.audience);if(!keys)return Promise.resolve(fdCuratorCatalogUnavailable(root));
+  try{storage=deps.storage||localStorage;}catch(ignoreStorage){storage=null;}
+  adapter=fdCuratorDraftStorage(storage,keys.curator);state=adapter.load(canonicalIndex,siteContext)||fdCuratorNewDraft(canonicalIndex,siteContext);
+  function mountNode(){try{return typeof root.querySelector==='function'&&root.querySelector('#curatorEditorMount')||root;}catch(ignore){return root;}}
+  function subtleValue(){try{return deps.subtle||crypto.subtle;}catch(ignore){return deps.subtle||null;}}
+  function refreshModel(){
+    var sequence=++renderSequence,signature=fdCuratorCandidateDraftSignature(state),validation={mode:'builder',generationDate:generationDate};
+    fdCuratorCandidateConfig(state,canonicalIndex,catalogSnapshot,siteContext,validation,subtleValue()).then(function(candidate){if(sequence!==renderSequence||signature!==fdCuratorCandidateDraftSignature(state))return;displayModel=candidate.ok?candidate.displayModel:null;if(state.step===4)render(true);});
+  }
+  function render(skipRefresh){
+    var buttons,i;editor=mountNode();if(!editor)return false;
+    if(state.step===1)editor.innerHTML=fdCuratorStepOneMarkup(state,catalogSnapshot,generationDate);
+    else if(state.step===2)editor.innerHTML=fdCuratorCurriculumMarkup(state,canonicalIndex,catalogSnapshot,searchQuery);
+    else if(state.step===3)editor.innerHTML=fdCuratorScheduleMarkup(state,canonicalIndex);
+    else if(state.step===4)editor.innerHTML=fdCuratorLocalMarkup(state,catalogSnapshot,displayModel);
+    else editor.innerHTML='<section class="fd-curator-placeholder"><h2>Step '+state.step+'</h2><p>This structured step is completed in the next atomic checkpoint.</p></section>';
+    try{
+      buttons=root.querySelectorAll('[data-curator-step]');
+      for(i=0;i<buttons.length;i++)if(Number(buttons[i].getAttribute('data-curator-step'))===state.step)buttons[i].setAttribute('aria-current','step');else buttons[i].removeAttribute('aria-current');
+      var status=root.querySelector('#curatorStepStatus');if(status)status.textContent='Step '+state.step+' of 5';
+    }catch(ignoreNavigation){}
+    if(state.step===4&&!skipRefresh)refreshModel();return true;
+  }
+  function dispatch(action){
+    var data=fdCuratorActionData(action),result;
+    if(data&&(data.type==='SET_STEP'||data.type==='IMPORT_SUCCEEDED'||data.type==='IMPORT_REJECTED'))transactions.cancelPreview();
+    result=fdCuratorApplyAction(state,action,canonicalIndex,siteContext,catalogSnapshot,generationDate,transactions);state=result.state;if(result.changed)render();return result;
+  }
   render();
-  adapter.load(index,siteContext,subtle).then(function(result){
-    if(!touched&&result.ok&&result.draft){ invalidateReviewWork(true); state=result.draft; render(); status('Saved on this device'); }
-  });
-  return {dispatch:dispatch,getState:function(){ return state; },reviewPreview:reviewPreview};
+  function targetAttribute(target,name){try{return target&&typeof target.getAttribute==='function'?target.getAttribute(name):null;}catch(ignore){return null;}}
+  function actionTarget(target,selector){try{return target&&typeof target.closest==='function'?target.closest(selector):target;}catch(ignore){return target;}}
+  function targetWeek(target){
+    var article,select,value;
+    try{article=target.closest('.fd-curator-library-item');select=article&&article.querySelector('[data-curator-library-week]');value=select&&Number(select.value);}
+    catch(ignore){value=0;}return Number.isInteger(value)?value:0;
+  }
+  function setStatus(selector,message){var node;try{node=root.querySelector(selector);if(node)node.textContent=message;}catch(ignore){}}
+  function click(event){
+    var target=event&&event.target,step=targetAttribute(target,'data-curator-step'),ref,instanceId,direction,preset,sequence,focus;
+    target=actionTarget(target,'[data-curator-step],[data-curator-path-include],[data-curator-path-repeat],[data-curator-path-remove],[data-curator-path-move-order],[data-curator-save],[data-curator-review-preview],[data-curator-focus],[data-curator-local-action],[data-curator-local-remove],[data-curator-local-clear]');
+    step=targetAttribute(target,'data-curator-step');
+    if(step!==null){dispatch({type:'SET_STEP',step:Number(step)});return;}
+    ref=targetAttribute(target,'data-curator-path-include');if(ref!==null){dispatch({type:'PATH_INCLUDE',ref:ref,week:targetWeek(target)});return;}
+    ref=targetAttribute(target,'data-curator-path-repeat');if(ref!==null){dispatch({type:'PATH_REPEAT',ref:ref,week:targetWeek(target)});return;}
+    instanceId=targetAttribute(target,'data-curator-path-remove');if(instanceId!==null){dispatch({type:'PATH_REMOVE',instanceId:instanceId});return;}
+    instanceId=targetAttribute(target,'data-curator-path-move-order');if(instanceId!==null){direction=targetAttribute(target,'data-direction');dispatch({type:'PATH_MOVE_ORDER',instanceId:instanceId,direction:direction});return;}
+    focus=targetAttribute(target,'data-curator-focus');if(focus!==null){try{var focusNode=root.querySelector('#fd-curator-'+focus);if(focusNode)focusNode.focus();}catch(ignoreFocus){}return;}
+    preset=targetAttribute(target,'data-curator-review-preview');if(preset!==null){sequence=transactions.beginPreview();setStatus('[data-curator-preview-status="'+(preset==='desktop'?'desktop':'mobile')+'"]','Rendering exact preview…');fdCuratorPreparePreview(state,canonicalIndex,catalogSnapshot,siteContext,{mode:'builder',generationDate:generationDate},subtleValue(),preset,sequence).then(function(result){var applied;if(sequence!==transactions.currentPreview())return;if(!result||!result.ok){setStatus('[data-curator-preview-status="'+(preset==='desktop'?'desktop':'mobile')+'"]','Preview could not be validated.');return;}displayModel=result.displayModel;applied=dispatch({type:'PREVIEW_REVIEW_SUCCEEDED',preset:preset,result:result,sequence:sequence});if(applied.changed){try{var preview=root.querySelector('[data-curator-preview-layout="'+preset+'"]');if(preview)preview.focus();}catch(ignorePreviewFocus){}}});return;}
+    var category=targetAttribute(target,'data-curator-local-clear');if(category!==null){var cleared=dispatch({type:'LOCAL_CATEGORY_CLEAR',category:category});if(!cleared.changed&&category==='schedule'){setStatus('[data-curator-local-status]','Remove attendance references before clearing the schedule.');try{root.querySelector('[data-curator-local-status]').focus();}catch(ignoreBlockedFocus){}}return;}
+    category=targetAttribute(target,'data-curator-local-remove');if(category!==null){instanceId=targetAttribute(target,'data-instance-id');var removalType={schedule:'SCHEDULE_EVENT_REMOVE',accessItems:'ACCESS_REMOVE',contacts:'CONTACT_REMOVE',checklistItems:'CHECKLIST_REMOVE',resources:'RESOURCE_REMOVE'}[category];var removed=removalType&&dispatch({type:removalType,instanceId:instanceId});if(!removed||!removed.changed){setStatus('[data-curator-local-status]','This schedule event is used by attendance. Remove that attendance reference first.');try{root.querySelector('[data-curator-local-status]').focus();}catch(ignoreRemovalFocus){}}return;}
+    var localAction=targetAttribute(target,'data-curator-local-action');if(localAction!==null){
+      var card,fields={},controls,controlName,selectedValues,actionValue,actionResult;
+      try{card=target.closest('.fd-curator-local-card');controls=card.querySelectorAll('[data-curator-field]');for(var controlIndex=0;controlIndex<controls.length;controlIndex++){controlName=controls[controlIndex].getAttribute('data-curator-field');if(controls[controlIndex].multiple){selectedValues=[];for(var optionIndex=0;optionIndex<controls[controlIndex].options.length;optionIndex++)if(controls[controlIndex].options[optionIndex].selected&&controls[controlIndex].options[optionIndex].value)selectedValues.push(controls[controlIndex].options[optionIndex].value);fields[controlName]=selectedValues;}else fields[controlName]=String(controls[controlIndex].value||'');}}
+      catch(ignoreFields){fields={};}
+      if(localAction==='arrival'){actionValue={timingCode:fields.timingCode,time:fields.time,placeKey:fields.placeKey,checkInRoleKey:fields.checkInRoleKey};if(fields.linkKey)actionValue.linkKey=fields.linkKey;actionResult=dispatch({type:'ARRIVAL_SET',value:actionValue});}
+      else if(localAction==='schedule-bounds')actionResult=dispatch({type:'SCHEDULE_SET_BOUNDS',dayStart:fields.dayStart,dayEnd:fields.dayEnd,endQualifierCode:fields.endQualifierCode});
+      else if(localAction==='schedule-event'){actionValue={type:'SCHEDULE_EVENT_ADD',daySetKey:fields.daySetKey,startTime:fields.startTime,activityKey:fields.activityKey,priority:fields.priority};if(fields.endTime)actionValue.endTime=fields.endTime;if(fields.placeKey)actionValue.placeKey=fields.placeKey;actionResult=dispatch(actionValue);}
+      else if(localAction==='rounds')actionResult=dispatch({type:'ROUNDS_SET',value:{preparationKey:fields.preparationKey,participationKey:fields.participationKey,followUpKey:fields.followUpKey}});
+      else if(localAction==='presentation')actionResult=dispatch({type:'PRESENTATION_SET',value:{formatKey:fields.formatKey,timingKey:fields.timingKey,elementKeys:fields.elementKeys||[]}});
+      else if(localAction==='documentation'){actionValue={workflowKey:fields.workflowKey,timingKey:fields.timingKey};if(fields.policyLinkKey)actionValue.policyLinkKey=fields.policyLinkKey;actionResult=dispatch({type:'DOCUMENTATION_SET',value:actionValue});}
+      else if(localAction==='attendance'){actionValue={eventInstanceIds:fields.eventInstanceIds||[],absenceRoleKey:fields.absenceRoleKey};if(fields.policyLinkKey)actionValue.policyLinkKey=fields.policyLinkKey;actionResult=dispatch({type:'ATTENDANCE_SET',value:actionValue});}
+      else if(localAction==='feedback')actionResult=dispatch({type:'FEEDBACK_SET',value:{cadenceKey:fields.cadenceKey,initiatorKey:fields.initiatorKey,settingKey:fields.settingKey}});
+      else if(localAction==='access'){actionValue={type:'ACCESS_ADD',itemKey:fields.itemKey,dueKey:fields.dueKey};if(fields.linkKey)actionValue.linkKey=fields.linkKey;actionResult=dispatch(actionValue);}
+      else if(localAction==='contact'){actionValue={type:'CONTACT_ADD',roleKey:fields.roleKey};if(fields.linkKey)actionValue.linkKey=fields.linkKey;actionResult=dispatch(actionValue);}
+      else if(localAction==='checklist')actionResult=dispatch({type:'CHECKLIST_ADD',itemKey:fields.itemKey,priority:fields.priority});
+      else if(localAction==='resource'){actionValue={type:'RESOURCE_ADD',linkKey:fields.linkKey,priority:fields.priority,week:Number(fields.week)};if(fields.reasonKey)actionValue.reasonKey=fields.reasonKey;actionResult=dispatch(actionValue);}
+      if(!actionResult||!actionResult.changed)setStatus('[data-curator-local-status]','Choose a complete eligible set of reviewed options.');return;
+    }
+    if(targetAttribute(target,'data-curator-save')!==null)setStatus('[data-curator-save-status]',adapter.save(state,canonicalIndex,siteContext)?'Saved on this device.':'Draft could not be saved on this device.');
+  }
+  function change(event){
+    var target=event&&event.target,instanceId,type,file,sequence;
+    if(targetAttribute(target,'data-curator-location')!==null){dispatch({type:'SET_TRAINING_LOCATION',trainingLocationKey:String(target.value||'')});return;}
+    if(targetAttribute(target,'data-curator-profile')!==null){dispatch({type:'SET_CURATOR_PROFILE',curatorProfileKey:String(target.value||'')});return;}
+    if(targetAttribute(target,'data-curator-phrases')!==null){dispatch({type:'SET_PHRASE_SET',phraseSetKey:String(target.value||'')});return;}
+    if(targetAttribute(target,'data-curator-local-preset')!==null){dispatch({type:'LOCAL_APPLY_PRESET',presetKey:String(target.value||'')});return;}
+    type=targetAttribute(target,'data-curator-date');if(type!==null){dispatch({type:type,value:String(target.value||'')});return;}
+    instanceId=targetAttribute(target,'data-curator-path-priority');if(instanceId!==null){dispatch({type:'PATH_SET_PRIORITY',instanceId:instanceId,priority:String(target.value||'')});return;}
+    instanceId=targetAttribute(target,'data-curator-path-reason');if(instanceId!==null){dispatch({type:'PATH_SET_REASON',instanceId:instanceId,reasonKey:String(target.value||'')});return;}
+    instanceId=targetAttribute(target,'data-curator-path-move-week');if(instanceId!==null){dispatch({type:'PATH_MOVE_WEEK',instanceId:instanceId,week:Number(target.value)});return;}
+    if(targetAttribute(target,'data-curator-import')!==null){
+      try{file=target.files&&target.files[0];}catch(ignoreFiles){file=null;}sequence=transactions.begin();transactions.cancelPreview();
+      fdCuratorReadBackupFile(file).then(function(read){
+        if(!read.ok)return read;
+        return fdCuratorImportText(read.text,canonicalIndex,siteContext,catalogSnapshot,{mode:'builder',generationDate:generationDate},deps.subtle);
+      }).then(function(result){
+        var applied;if(sequence!==transactions.current())return;
+        if(result&&result.ok===true){applied=dispatch({type:'IMPORT_SUCCEEDED',result:result,sequence:sequence});if(applied.changed)setStatus('[data-curator-import-status]',result.code==='CURATOR_IMPORT_SALVAGED'?'Legacy backup safely salvaged; '+result.droppedReferenceCount+' unavailable references were dropped.':'Validated v2 backup imported.');return;}
+        dispatch({type:'IMPORT_REJECTED',code:result&&FD_CURATOR_IMPORT_CODES.indexOf(result.code)>=0?result.code:'CURATOR_IMPORT_INVALID',sequence:sequence});
+        setStatus('[data-curator-import-status]',result&&result.code==='CURATOR_IMPORT_SIZE'?'Backup must be 64 KiB or smaller.':result&&result.code==='CURATOR_IMPORT_RESELECTION_REQUIRED'?'Backup uses catalog choices that must be reselected.':'Backup could not be validated for this audience.');
+      },function(){if(sequence===transactions.current())setStatus('[data-curator-import-status]','Backup could not be validated for this audience.');});
+    }
+  }
+  function input(event){var target=event&&event.target;if(targetAttribute(target,'data-curator-search')!==null){searchQuery=String(target.value||'');render();}}
+  if(typeof root.addEventListener==='function'){
+    root.addEventListener('click',click);root.addEventListener('change',change);root.addEventListener('input',input);
+  }
+  return Promise.resolve({ok:true,code:'CURATOR_READY',dispatch:dispatch,getState:function(){return fdCuratorClone(state);},
+    save:function(){return adapter.save(state,canonicalIndex,siteContext);},transactions:transactions});
 }

@@ -1,310 +1,168 @@
-/* Pure learner edition startup, explicit storage commits, and safe status markup. */
-var FD_EDITION_STUDENT_KEYS={edition:'cw_rotation_edition_v1',local:'cw_rotation_local_progress_v1'};
+/* V2-only learner edition startup, bounded local state, and trusted-model rendering. */
 var FD_EDITION_STUDENT_FINGERPRINT=/^[A-Z0-9]{2,8}-(?:MS3|RES)-[0-9A-HJKMNP-TV-Z]{6}$/;
 var FD_EDITION_STUDENT_ID=/^[\x21-\x7e]{1,160}$/;
-var FD_EDITION_STUDENT_DANGEROUS={__proto__:true,constructor:true,prototype:true};
-var FD_EDITION_STUDENT_CODES={
-  EDITION_SCHEMA:true,EDITION_DIGEST:true,EDITION_AUDIENCE:true,EDITION_REF:true,
-  EDITION_WEEK:true,EDITION_SIZE:true,EDITION_URL:true,EDITION_TEXT_RISK:true,
-  EDITION_CRYPTO:true,EDITION_PROJECT:true,EDITION_RUNTIME:true,EDITION_DISABLED:true
+var FD_EDITION_STUDENT_OWN=Object.prototype.hasOwnProperty;
+var FD_EDITION_STUDENT_AUTHORITY={
+  coreLabel:'Reviewed clerkship Library',
+  localLabel:'Local rotation guidance',
+  requiredLabel:'Required by this local rotation',
+  recommendedLabel:'Recommended by this local rotation',
+  optionalLabel:'Optional for this local rotation',
+  resourceLabel:'Locally curated official resource',
+  localBoundary:'Local rotation guidance does not replace current institutional policy or supervision.',
+  documentationGuardrail:'Use only the approved institutional record. Do not place patient information in this site. Complete documentation only with supervisor guidance and review.'
 };
-
-function fdEditionPublicationEnabled(siteContext){
-  var gate=fdEditionStudentData(siteContext,'rotationEditionV2');
-  return gate.ok&&gate.value==='enabled';
-}
+var FD_EDITION_STUDENT_LINEAGE='Locally supplied edition summary; change lineage is not authenticated.';
 
 function fdEditionStudentObject(value){
-  var prototype,isArray;
-  if(value===null||typeof value!=='object') return false;
-  try{ prototype=Object.getPrototypeOf(value); isArray=Array.isArray(value); }
-  catch(ignoreShape){ return false; }
-  return !isArray&&(prototype===Object.prototype||prototype===null);
+  var prototype;
+  if(value===null||typeof value!=='object'||Array.isArray(value))return false;
+  try{prototype=Object.getPrototypeOf(value);return prototype===Object.prototype||prototype===null;}
+  catch(ignore){return false;}
 }
 
-function fdEditionStudentData(value,key){
-  var descriptor;
-  if(!fdEditionStudentObject(value)) return {ok:false,value:null};
-  try{ descriptor=Object.getOwnPropertyDescriptor(value,key); }
-  catch(ignoreDescriptor){ descriptor=null; }
-  if(!descriptor||!descriptor.enumerable||!Object.prototype.hasOwnProperty.call(descriptor,'value')) return {ok:false,value:null};
-  return {ok:true,value:descriptor.value};
-}
-
-function fdEditionStudentFingerprint(value){
-  return typeof value==='string'&&FD_EDITION_STUDENT_FINGERPRINT.test(value)?value:'';
-}
-
-function fdEditionStudentId(value){
-  return typeof value==='string'&&FD_EDITION_STUDENT_ID.test(value)?value:'';
-}
-
-function fdEditionStudentCode(value){
-  return typeof value==='string'&&FD_EDITION_STUDENT_CODES[value]?value:'';
-}
-
-function fdEditionStudentExactObject(value,fields){
-  var keys,allowed=Object.create(null),seen=Object.create(null),i,key,descriptor;
-  if(!fdEditionStudentObject(value)) return false;
-  for(i=0;i<fields.length;i++) allowed[fields[i]]=true;
-  try{ keys=Reflect.ownKeys(value); }catch(ignoreKeys){ return false; }
-  for(i=0;i<keys.length;i++){
-    key=keys[i];
-    if(typeof key!=='string'||FD_EDITION_STUDENT_DANGEROUS[key]||!allowed[key]) return false;
-    try{ descriptor=Object.getOwnPropertyDescriptor(value,key); }catch(ignoreDescriptor){ return false; }
-    if(!descriptor||!descriptor.enumerable||!Object.prototype.hasOwnProperty.call(descriptor,'value')) return false;
-    seen[key]=true;
-  }
-  for(i=0;i<fields.length;i++) if(!seen[fields[i]]) return false;
-  return true;
-}
-
-function fdEditionStudentSafeReceipt(result,siteContext,code){
-  var receipt,codeData,versionData,fingerprintData,revisionData;
-  if(fdEditionStudentObject(result)){
-    codeData=fdEditionStudentData(result,'code'); versionData=fdEditionStudentData(result,'schemaVersion');
-    fingerprintData=fdEditionStudentData(result,'fingerprint'); revisionData=fdEditionStudentData(result,'currentCoreRevision');
-    if(codeData.ok&&fdEditionStudentCode(codeData.value)){
-      return {
-        code:fdEditionStudentCode(code)||codeData.value,
-        schemaVersion:versionData.ok&&typeof versionData.value==='number'&&isFinite(versionData.value)&&Math.floor(versionData.value)===versionData.value&&versionData.value>0?versionData.value:null,
-        fingerprint:fingerprintData.ok?fdEditionStudentFingerprint(fingerprintData.value):'',
-        currentCoreRevision:revisionData.ok&&typeof revisionData.value==='string'&&/^[0-9a-f]{40}$/.test(revisionData.value)?revisionData.value:''
-      };
-    }
-  }
-  try{ receipt=fdEditionDiagnostic(result,siteContext); }
-  catch(ignoreDiagnostic){ receipt=null; }
-  codeData=fdEditionStudentData(receipt,'code'); versionData=fdEditionStudentData(receipt,'schemaVersion');
-  fingerprintData=fdEditionStudentData(receipt,'fingerprint'); revisionData=fdEditionStudentData(receipt,'currentCoreRevision');
-  return {
-    code:fdEditionStudentCode(code)||(codeData.ok&&fdEditionStudentCode(codeData.value) ? codeData.value : 'EDITION_RUNTIME'),
-    schemaVersion:versionData.ok&&typeof versionData.value==='number'&&isFinite(versionData.value)&&Math.floor(versionData.value)===versionData.value&&versionData.value>0?versionData.value:null,
-    fingerprint:fingerprintData.ok?fdEditionStudentFingerprint(fingerprintData.value):'',
-    currentCoreRevision:revisionData.ok&&typeof revisionData.value==='string'&&/^[0-9a-f]{40}$/.test(revisionData.value)?revisionData.value:''
-  };
-}
-
-function fdEditionStudentParseStored(text,canonicalIndex,siteContext,subtle){
-  var envelope;
-  if(text===null||text===undefined||text==='') return Promise.resolve({present:false,result:null});
-  if(typeof text!=='string'||text.length>FD_EDITION_RULES.maxUrlChars)
-    return Promise.resolve({present:true,result:{ok:false,errors:[]},code:'EDITION_SCHEMA'});
-  try{ envelope=JSON.parse(text); }
-  catch(ignoreStored){ return Promise.resolve({present:true,result:{ok:false,errors:[]},code:'EDITION_SCHEMA'}); }
-  try{
-    return fdEditionValidateEnvelope(envelope,canonicalIndex,siteContext,subtle).then(function(result){
-      return {present:true,result:result,code:null};
-    },function(){ return {present:true,result:{ok:false,errors:[]},code:'EDITION_CRYPTO'}; });
-  }catch(ignoreValidation){ return Promise.resolve({present:true,result:{ok:false,errors:[]},code:'EDITION_RUNTIME'}); }
-}
-
-function fdEditionStudentIncoming(hash,pageUrl,canonicalIndex,siteContext,subtle){
-  var payload,base,totalLength;
-  if(hash===null||hash===undefined||hash==='') return Promise.resolve({present:false,result:null});
-  if(typeof hash!=='string'||hash.slice(0,9)!=='#edition=')
-    return Promise.resolve({present:true,result:{ok:false,errors:[]},code:'EDITION_URL'});
-  payload=hash.slice(9);
-  if(typeof pageUrl!=='string') return Promise.resolve({present:true,result:{ok:false,errors:[]},code:'EDITION_URL'});
-  base=pageUrl.indexOf('#')===-1?pageUrl:pageUrl.slice(0,pageUrl.indexOf('#'));
-  totalLength=base.length+hash.length;
-  try{
-    return fdEditionDecodePayload(payload,canonicalIndex,siteContext,subtle,totalLength).then(function(result){
-      return {present:true,result:result,code:null};
-    },function(){ return {present:true,result:{ok:false,errors:[]},code:'EDITION_CRYPTO'}; });
-  }catch(ignoreDecode){ return Promise.resolve({present:true,result:{ok:false,errors:[]},code:'EDITION_RUNTIME'}); }
-}
-
-function fdEditionStudentProject(canonicalIndex,validatedEdition,siteContext){
-  var projected;
-  try{ projected=fdProjectEdition(canonicalIndex,validatedEdition); }
-  catch(ignoreProject){ return {ok:false,index:canonicalIndex,receipt:fdEditionStudentSafeReceipt(null,siteContext,'EDITION_PROJECT')}; }
-  if(!projected||projected.ok!==true||!projected.index)
-    return {ok:false,index:canonicalIndex,receipt:fdEditionStudentSafeReceipt(projected,siteContext,'EDITION_PROJECT')};
-  return {ok:true,index:projected.index,receipt:null};
-}
-
-function fdEditionResolveStartup(canonicalIndex,siteContext,pageUrl,incomingHash,storedText,subtle){
-  if(!fdEditionPublicationEnabled(siteContext)){
-    if(typeof incomingHash==='string'&&incomingHash.indexOf('#edition=')===0)
-      return Promise.resolve({mode:'rejected',needsCommit:false,active:null,candidate:null,index:canonicalIndex,
-        receipt:fdEditionStudentSafeReceipt(null,siteContext,'EDITION_DISABLED')});
-    return Promise.resolve({mode:'core',needsCommit:false,active:null,candidate:null,index:canonicalIndex,receipt:null});
-  }
-  return Promise.all([
-    fdEditionStudentParseStored(storedText,canonicalIndex,siteContext,subtle),
-    fdEditionStudentIncoming(incomingHash,pageUrl,canonicalIndex,siteContext,subtle)
-  ]).then(function(parts){
-    var stored=parts[0],incoming=parts[1],storedValid=stored.result&&stored.result.ok===true,
-      incomingValid=incoming.result&&incoming.result.ok===true,active=null,candidate=null,projected;
-    if(stored.present&&!storedValid){
-      if(!incomingValid) return {mode:'rejected',needsCommit:false,active:null,candidate:null,index:canonicalIndex,
-        receipt:fdEditionStudentSafeReceipt(stored.result,siteContext,stored.code)};
-    }
-    if(incoming.present&&!incomingValid){
-      if(storedValid){
-        projected=fdEditionStudentProject(canonicalIndex,stored.result,siteContext);
-        return {mode:'rejected',needsCommit:false,active:projected.ok?stored.result:null,candidate:null,index:projected.index,
-          receipt:fdEditionStudentSafeReceipt(incoming.result,siteContext,incoming.code)};
-      }
-      return {mode:'rejected',needsCommit:false,active:null,candidate:null,index:canonicalIndex,
-        receipt:fdEditionStudentSafeReceipt(incoming.result,siteContext,incoming.code)};
-    }
-    if(storedValid){
-      projected=fdEditionStudentProject(canonicalIndex,stored.result,siteContext);
-      if(!projected.ok) return {mode:'rejected',needsCommit:false,active:null,candidate:null,index:canonicalIndex,receipt:projected.receipt};
-      active=stored.result;
-      if(incomingValid&&incoming.result.fingerprint!==stored.result.fingerprint){
-        return {mode:'switch-required',needsCommit:false,active:active,candidate:incoming.result,index:projected.index,receipt:null};
-      }
-      return {mode:'active',needsCommit:false,active:active,candidate:null,index:projected.index,receipt:null};
-    }
-    if(incomingValid){
-      projected=fdEditionStudentProject(canonicalIndex,incoming.result,siteContext);
-      if(!projected.ok) return {mode:'rejected',needsCommit:false,active:null,candidate:null,index:canonicalIndex,receipt:projected.receipt};
-      candidate=incoming.result;
-      return {mode:'active',needsCommit:true,active:candidate,candidate:null,index:projected.index,receipt:null};
-    }
-    return {mode:'core',needsCommit:false,active:null,candidate:null,index:canonicalIndex,receipt:null};
-  },function(){
-    return {mode:'rejected',needsCommit:false,active:null,candidate:null,index:canonicalIndex,
-      receipt:fdEditionStudentSafeReceipt(null,siteContext,'EDITION_RUNTIME')};
-  });
-}
-
-function fdEditionStudentValidEdition(value){
-  var snapshot,envelope,config,fingerprint,canonical;
-  try{ snapshot=fdEditionTrustedSnapshot(value); }catch(ignoreProvenance){ return null; }
-  if(!fdEditionStudentObject(snapshot)) return null;
-  envelope=fdEditionStudentData(snapshot,'envelope'); config=fdEditionStudentData(snapshot,'config');
-  fingerprint=fdEditionStudentData(snapshot,'fingerprint'); canonical=fdEditionStudentData(snapshot,'canonicalEnvelope');
-  if(!envelope.ok||!fdEditionStudentObject(envelope.value)||!config.ok||!fdEditionStudentObject(config.value)||
-     !fingerprint.ok||!fdEditionStudentFingerprint(fingerprint.value)||!canonical.ok||typeof canonical.value!=='string') return null;
-  return {envelope:envelope.value,fingerprint:fingerprint.value,text:canonical.value};
-}
-
-function fdEditionStudentMethod(storage,name){
-  var cursor=storage,descriptor,depth=0;
-  if(storage===null||(typeof storage!=='object'&&typeof storage!=='function')) return null;
+function fdEditionStudentMethod(object,name){
+  var cursor=object,descriptor,depth=0;
+  if(object===null||(typeof object!=='object'&&typeof object!=='function'))return null;
   while(cursor!==null&&depth<8){
-    try{ descriptor=Object.getOwnPropertyDescriptor(cursor,name); }catch(ignoreDescriptor){ return null; }
+    try{descriptor=Object.getOwnPropertyDescriptor(cursor,name);}catch(ignoreDescriptor){return null;}
     if(descriptor){
-      if(!Object.prototype.hasOwnProperty.call(descriptor,'value')||typeof descriptor.value!=='function') return null;
+      if(!FD_EDITION_STUDENT_OWN.call(descriptor,'value')||typeof descriptor.value!=='function')return null;
       return descriptor.value;
     }
-    try{ cursor=Object.getPrototypeOf(cursor); }catch(ignorePrototype){ return null; }
+    try{cursor=Object.getPrototypeOf(cursor);}catch(ignorePrototype){return null;}
     depth+=1;
   }
   return null;
 }
 
+function fdEditionStudentExact(value,required,optional){
+  var keys,i,key,allowed=Object.create(null);
+  if(!fdEditionStudentObject(value))return false;
+  for(i=0;i<required.length;i++){key=required[i];allowed[key]=true;if(!FD_EDITION_STUDENT_OWN.call(value,key))return false;}
+  for(i=0;i<optional.length;i++)allowed[optional[i]]=true;
+  try{keys=Object.keys(value);}catch(ignoreKeys){return false;}
+  for(i=0;i<keys.length;i++)if(!allowed[keys[i]])return false;
+  return true;
+}
+
 function fdEditionStudentRead(storage,key){
   var method=fdEditionStudentMethod(storage,'getItem');
-  if(!method) return {ok:false,value:null};
-  try{ return {ok:true,value:Function.prototype.call.call(method,storage,key)}; }
-  catch(ignoreRead){ return {ok:false,value:null}; }
-}
-
-function fdEditionStudentNewDocument(){ return {schemaVersion:1,byFingerprint:Object.create(null)}; }
-
-function fdEditionStudentLocalDocument(text){
-  var parsed,root,buckets,keys,i,key,bucket,checklist,resources,checkedChecklist,checkedResources,out=fdEditionStudentNewDocument();
-  if(text===null) return {ok:true,document:out};
-  if(typeof text!=='string'||text.length===0||text.length>FD_EDITION_RULES.maxUrlChars) return {ok:false,document:null};
-  try{ parsed=JSON.parse(text); }catch(ignoreParse){ return {ok:false,document:null}; }
-  if(!fdEditionStudentExactObject(parsed,['schemaVersion','byFingerprint'])) return {ok:false,document:null};
-  root=fdEditionStudentData(parsed,'schemaVersion'); buckets=fdEditionStudentData(parsed,'byFingerprint');
-  if(!root.ok||root.value!==1||!buckets.ok||!fdEditionStudentObject(buckets.value)) return {ok:false,document:null};
-  try{ keys=Reflect.ownKeys(buckets.value); }catch(ignoreKeys){ return {ok:false,document:null}; }
-  for(i=0;i<keys.length;i++){
-    key=keys[i]; if(typeof key!=='string'||!fdEditionStudentFingerprint(key)) return {ok:false,document:null};
-    bucket=fdEditionStudentData(buckets.value,key); if(!bucket.ok||!fdEditionStudentExactObject(bucket.value,['checklist','resources'])) return {ok:false,document:null};
-    checklist=fdEditionStudentData(bucket.value,'checklist'); resources=fdEditionStudentData(bucket.value,'resources');
-    if(!checklist.ok||!resources.ok) return {ok:false,document:null};
-    checkedChecklist=fdEditionStudentCompletion(checklist.value); checkedResources=fdEditionStudentCompletion(resources.value);
-    if(!checkedChecklist.ok||!checkedResources.ok) return {ok:false,document:null};
-    out.byFingerprint[key]={checklist:checkedChecklist.value,resources:checkedResources.value};
-  }
-  return {ok:true,document:out};
-}
-
-function fdEditionStudentCompletion(value){
-  var keys,i,key,descriptor,out=Object.create(null);
-  if(!fdEditionStudentObject(value)) return {ok:false,value:null};
-  try{ keys=Reflect.ownKeys(value); }catch(ignoreKeys){ return {ok:false,value:null}; }
-  for(i=0;i<keys.length;i++){
-    key=keys[i]; if(typeof key!=='string'||!fdEditionStudentId(key)) return {ok:false,value:null};
-    try{ descriptor=Object.getOwnPropertyDescriptor(value,key); }catch(ignoreDescriptor){ return {ok:false,value:null}; }
-    if(!descriptor||!descriptor.enumerable||!Object.prototype.hasOwnProperty.call(descriptor,'value')||descriptor.value!==true) return {ok:false,value:null};
-    out[key]=true;
-  }
-  return {ok:true,value:out};
+  if(!method)return {ok:false,value:null};
+  try{return {ok:true,value:Function.prototype.call.call(method,storage,key)};}catch(ignoreRead){return {ok:false,value:null};}
 }
 
 function fdEditionStudentWrite(storage,key,value){
   var method=fdEditionStudentMethod(storage,'setItem');
-  if(!method) return false;
-  try{ Function.prototype.call.call(method,storage,key,value); return true; }
-  catch(ignoreWrite){ return false; }
+  if(!method)return false;
+  try{Function.prototype.call.call(method,storage,key,value);return true;}catch(ignoreWrite){return false;}
 }
 
+function fdEditionStudentReceipt(siteContext,code,fingerprint){
+  var revision='';
+  try{if(siteContext&&typeof siteContext.coreRevision==='string'&&/^[0-9a-f]{40}$/.test(siteContext.coreRevision))revision=siteContext.coreRevision;}catch(ignore){}
+  return {code:code,schemaVersion:2,fingerprint:FD_EDITION_STUDENT_FINGERPRINT.test(fingerprint||'')?fingerprint:'',currentCoreRevision:revision};
+}
+
+function fdEditionStudentCore(index,siteContext,code){
+  return {mode:code?'rejected':'core',index:index,active:null,candidate:null,needsCommit:false,receipt:code?fdEditionStudentReceipt(siteContext,code,''):null};
+}
+
+function fdEditionStudentEnvelopeVersion(text,isPayload){
+  var raw=text,value;
+  try{
+    if(typeof raw!=='string'||!raw||raw.length>16000)return null;
+    if(isPayload){raw=raw.replace(/-/g,'+').replace(/_/g,'/');while(raw.length%4)raw+='=';raw=decodeURIComponent(Array.prototype.map.call(atob(raw),function(c){return '%'+('00'+c.charCodeAt(0).toString(16)).slice(-2);}).join(''));}
+    value=JSON.parse(raw);
+    return fdEditionStudentObject(value)&&value.format==='cw-rotation-edition'&&Number.isInteger(value.schemaVersion)?value.schemaVersion:null;
+  }catch(ignore){return null;}
+}
+
+function fdEditionStudentFailureCode(result){
+  var code='';
+  try{if(result&&Array.isArray(result.errors)&&result.errors.length&&typeof result.errors[0].code==='string')code=result.errors[0].code;}catch(ignore){}
+  return /CATALOG|RECORD|BLOCKED|DEPRECATED|MISSING/.test(code)?'EDITION_RESELECTION_REQUIRED':'EDITION_INVALID';
+}
+
+function fdEditionStudentValidateStored(text,canonicalIndex,catalogSnapshot,siteContext,subtle){
+  var value;
+  if(text===null||text==='')return Promise.resolve({kind:'empty',value:null});
+  if(fdEditionStudentEnvelopeVersion(text,false)===1)return Promise.resolve({kind:'v1',value:null});
+  try{value=JSON.parse(text);}catch(ignoreParse){return Promise.resolve({kind:'invalid',value:null});}
+  return fdEditionValidateEnvelope(value,canonicalIndex,catalogSnapshot,siteContext,{mode:'learner',generationDate:''},subtle).then(function(result){
+    return result&&result.ok&&fdEditionTrustedSnapshot(result)?{kind:'valid',value:result}:{kind:fdEditionStudentFailureCode(result)==='EDITION_RESELECTION_REQUIRED'?'reselection':'invalid',value:null};
+  },function(){return {kind:'invalid',value:null};});
+}
+
+function fdEditionStudentValidateIncoming(hash,pageUrl,canonicalIndex,catalogSnapshot,siteContext,subtle){
+  var payload='';
+  if(!hash)return Promise.resolve({kind:'empty',value:null});
+  try{if(typeof hash!=='string'||hash.indexOf('#edition=')!==0||hash.indexOf('&')>=0||typeof pageUrl!=='string'||pageUrl.length+hash.length>16000)return Promise.resolve({kind:'invalid',value:null});payload=hash.slice(9);}catch(ignoreHash){return Promise.resolve({kind:'invalid',value:null});}
+  if(fdEditionStudentEnvelopeVersion(payload,true)===1)return Promise.resolve({kind:'v1',value:null});
+  return fdEditionDecodePayload(payload,canonicalIndex,catalogSnapshot,siteContext,{mode:'learner',generationDate:''},subtle,pageUrl.length+hash.length).then(function(result){
+    return result&&result.ok&&fdEditionTrustedSnapshot(result)?{kind:'valid',value:result}:{kind:fdEditionStudentFailureCode(result)==='EDITION_RESELECTION_REQUIRED'?'reselection':'invalid',value:null};
+  },function(){return {kind:'invalid',value:null};});
+}
+
+function fdEditionStudentProject(canonicalIndex,validated){
+  var projected;
+  try{projected=fdProjectEdition(canonicalIndex,validated);return projected&&projected.ok&&projected.index?projected:null;}catch(ignore){return null;}
+}
+
+function fdEditionResolveStartup(canonicalIndex,catalogSnapshot,siteContext,pageUrl,incomingHash,storedText,subtle){
+  var enabled=false;
+  try{
+    if(siteContext&&siteContext.rotationEditionV2==='disabled')return Promise.resolve(fdEditionStudentCore(canonicalIndex,siteContext,incomingHash?'EDITION_DISABLED':''));
+    enabled=typeof fdEditionPublicationEnabled==='function'&&fdEditionPublicationEnabled(catalogSnapshot)===true;
+  }catch(ignoreGate){enabled=false;}
+  if(!enabled)return Promise.resolve(fdEditionStudentCore(canonicalIndex,siteContext,incomingHash?'EDITION_CATALOG_UNAVAILABLE':''));
+  return Promise.all([
+    fdEditionStudentValidateStored(storedText,canonicalIndex,catalogSnapshot,siteContext,subtle),
+    fdEditionStudentValidateIncoming(incomingHash,pageUrl,canonicalIndex,catalogSnapshot,siteContext,subtle)
+  ]).then(function(values){
+    var stored=values[0],incoming=values[1],active=null,candidate=null,projected,code='';
+    if(stored.kind==='v1'||incoming.kind==='v1')code='EDITION_PRERELEASE_UNSUPPORTED';
+    else if(stored.kind==='reselection'||incoming.kind==='reselection')code='EDITION_RESELECTION_REQUIRED';
+    else if(stored.kind==='invalid'||incoming.kind==='invalid')code='EDITION_INVALID';
+    if(code)return fdEditionStudentCore(canonicalIndex,siteContext,code);
+    if(stored.kind==='valid')active=stored.value;
+    if(incoming.kind==='valid'){
+      if(active&&active.fingerprint!==incoming.value.fingerprint)candidate=incoming.value;
+      else active=incoming.value;
+    }
+    if(!active)return fdEditionStudentCore(canonicalIndex,siteContext,'');
+    projected=fdEditionStudentProject(canonicalIndex,active);
+    if(!projected)return fdEditionStudentCore(canonicalIndex,siteContext,'EDITION_INVALID');
+    if(candidate)return {mode:'switch-required',index:projected.index,active:active,candidate:candidate,needsCommit:false,receipt:null};
+    return {mode:'active',index:projected.index,active:active,candidate:null,needsCommit:stored.kind!=='valid',receipt:null};
+  },function(){return fdEditionStudentCore(canonicalIndex,siteContext,'EDITION_INVALID');});
+}
+
+/* Exact-write journal: rollback touches only bytes this startup can still prove it owns. */
 function fdEditionStartupJournal(storage,allowedKeys){
-  var get=fdEditionStudentMethod(storage,'getItem');
-  var set=fdEditionStudentMethod(storage,'setItem');
-  var remove=fdEditionStudentMethod(storage,'removeItem');
+  var get=fdEditionStudentMethod(storage,'getItem'),set=fdEditionStudentMethod(storage,'setItem'),remove=fdEditionStudentMethod(storage,'removeItem');
   var allowed=Object.create(null),i,key;
-  if(!get||!set||!remove||!Array.isArray(allowedKeys)) return null;
-  for(i=0;i<allowedKeys.length;i++){
-    key=allowedKeys[i];
-    if(typeof key!=='string'||!key||Object.prototype.hasOwnProperty.call(allowed,key)) return null;
-    allowed[key]=true;
-  }
-  return {
-    storage:storage,get:get,set:set,remove:remove,allowed:allowed,
-    records:Object.create(null),order:[],blocked:Object.create(null),failed:false
-  };
+  if(!get||!set||!remove||!Array.isArray(allowedKeys))return null;
+  for(i=0;i<allowedKeys.length;i++){key=allowedKeys[i];if(typeof key!=='string'||!key||FD_EDITION_STUDENT_OWN.call(allowed,key))return null;allowed[key]=true;}
+  return {storage:storage,get:get,set:set,remove:remove,allowed:allowed,records:Object.create(null),order:[],blocked:Object.create(null),failed:false};
 }
 
 function fdEditionStartupJournalValue(journal,key){
-  if(!journal||!Object.prototype.hasOwnProperty.call(journal.allowed,key)) return {ok:false,value:null};
-  try{return {ok:true,value:Function.prototype.call.call(journal.get,journal.storage,key)};}
-  catch(ignoreRead){return {ok:false,value:null};}
+  if(!journal||!FD_EDITION_STUDENT_OWN.call(journal.allowed,key))return {ok:false,value:null};
+  try{return {ok:true,value:Function.prototype.call.call(journal.get,journal.storage,key)};}catch(ignore){return {ok:false,value:null};}
 }
 
 function fdEditionStartupJournalRun(journal,keys,operation){
-  var before=[],after=[],seen=Object.create(null),i,key,value,record,threw=false,
-    preflightFailed=false,readFailed=false,result=null;
-  if(!journal||!Array.isArray(keys)||typeof operation!=='function') return {ok:false,value:null};
+  var before=[],after=[],seen=Object.create(null),i,key,value,record,threw=false,readFailed=false,result=null;
+  if(!journal||!Array.isArray(keys)||typeof operation!=='function')return {ok:false,value:null};
   for(i=0;i<keys.length;i++){
-    key=keys[i];
-    if(typeof key!=='string'||Object.prototype.hasOwnProperty.call(seen,key)||
-       !Object.prototype.hasOwnProperty.call(journal.allowed,key)) return {ok:false,value:null};
-    seen[key]=true;value=fdEditionStartupJournalValue(journal,key);
-    if(!value.ok){journal.blocked[key]=true;journal.failed=true;return {ok:false,value:null};}
-    before.push(value.value);
-    record=journal.records[key];
-    if(journal.blocked[key])preflightFailed=true;
-    else if(record&&record.expected!==value.value){
-      journal.blocked[key]=true;journal.failed=true;preflightFailed=true;
-    }
+    key=keys[i];if(typeof key!=='string'||FD_EDITION_STUDENT_OWN.call(seen,key)||!FD_EDITION_STUDENT_OWN.call(journal.allowed,key))return {ok:false,value:null};seen[key]=true;
+    value=fdEditionStartupJournalValue(journal,key);if(!value.ok){journal.blocked[key]=true;journal.failed=true;return {ok:false,value:null};}
+    record=journal.records[key];if(journal.blocked[key]||(record&&record.expected!==value.value)){journal.blocked[key]=true;journal.failed=true;return {ok:false,value:null};}before.push(value.value);
   }
-  if(preflightFailed)return {ok:false,value:null};
-  try{result=operation();}catch(ignoreOperation){threw=true;journal.failed=true;}
-  for(i=0;i<keys.length;i++){
-    value=fdEditionStartupJournalValue(journal,keys[i]);
-    if(!value.ok){journal.blocked[keys[i]]=true;journal.failed=true;readFailed=true;after.push(null);continue;}
-    after.push(value.value);
-  }
-  for(i=0;i<keys.length;i++){
-    key=keys[i];
-    if(journal.blocked[key]||before[i]===after[i])continue;
-    record=journal.records[key];
-    if(record)record.expected=after[i];
-    else{
-      journal.records[key]={key:key,original:before[i],expected:after[i]};
-      journal.order.push(key);
-    }
-  }
+  try{result=operation();}catch(ignoreOperation){threw=true;}
+  for(i=0;i<keys.length;i++){value=fdEditionStartupJournalValue(journal,keys[i]);if(!value.ok){journal.blocked[keys[i]]=true;journal.failed=true;readFailed=true;after.push(null);}else after.push(value.value);}
+  for(i=0;i<keys.length;i++){key=keys[i];if(journal.blocked[key]||before[i]===after[i])continue;record=journal.records[key];if(record)record.expected=after[i];else{journal.records[key]={key:key,original:before[i],expected:after[i]};journal.order.push(key);}}
   return {ok:!threw&&!readFailed,value:threw||readFailed?null:result};
 }
 
@@ -313,558 +171,254 @@ function fdEditionStartupJournalRollback(journal){
   if(!journal||!Array.isArray(journal.order)||!journal.records||!journal.blocked)return false;
   ok=!journal.failed;
   for(var i=journal.order.length-1;i>=0;i--){
-    key=journal.order[i];
-    if(journal.blocked[key])continue;
-    record=journal.records[key];current=fdEditionStartupJournalValue(journal,key);
-    if(!current.ok){journal.blocked[key]=true;ok=false;continue;}
-    if(current.value!==record.expected){journal.blocked[key]=true;continue;}
-    try{
-      if(record.original===null)
-        Function.prototype.call.call(journal.remove,journal.storage,key);
-      else Function.prototype.call.call(journal.set,journal.storage,key,record.original);
-    }catch(ignoreRestore){journal.blocked[key]=true;ok=false;}
+    key=journal.order[i];if(journal.blocked[key])continue;record=journal.records[key];current=fdEditionStartupJournalValue(journal,key);
+    if(!current.ok){journal.blocked[key]=true;ok=false;continue;}if(current.value!==record.expected){journal.blocked[key]=true;ok=false;continue;}
+    try{if(record.original===null)Function.prototype.call.call(journal.remove,journal.storage,key);else Function.prototype.call.call(journal.set,journal.storage,key,record.original);}catch(ignoreRestore){journal.blocked[key]=true;ok=false;}
   }
-  journal.records=Object.create(null);journal.order=[];
-  return ok;
+  journal.records=Object.create(null);journal.order=[];return ok;
 }
 
-function fdEditionStudentAccept(storage,validatedEdition){
-  var edition=fdEditionStudentValidEdition(validatedEdition),stored,local;
-  if(!edition) return false;
-  stored=fdEditionStudentRead(storage,FD_EDITION_STUDENT_KEYS.local);
-  if(!stored.ok) return false;
-  local=fdEditionStudentLocalDocument(stored.value);
-  if(!local.ok) return false;
-  if(!local.document.byFingerprint[edition.fingerprint]) local.document.byFingerprint[edition.fingerprint]={checklist:Object.create(null),resources:Object.create(null)};
-  try{ local=JSON.stringify(local.document); }catch(ignoreLocalSerialize){ return false; }
-  return fdEditionStudentWrite(storage,FD_EDITION_STUDENT_KEYS.local,local)&&
-    fdEditionStudentWrite(storage,FD_EDITION_STUDENT_KEYS.edition,edition.text);
+function fdEditionStudentFingerprint(value){return typeof value==='string'&&FD_EDITION_STUDENT_FINGERPRINT.test(value)?value:'';}
+function fdEditionStudentId(value){return typeof value==='string'&&FD_EDITION_STUDENT_ID.test(value)&&value!=='__proto__'&&value!=='constructor'&&value!=='prototype'?value:'';}
+function fdEditionStudentEmptyBucket(){return {checklist:Object.create(null),resources:Object.create(null)};}
+function fdEditionStudentEmptyLocal(){return {schemaVersion:2,byFingerprint:Object.create(null)};}
+
+function fdEditionStudentBucket(value){
+  var kinds=['checklist','resources'],limits=[24,12],out=fdEditionStudentEmptyBucket(),i,j,keys;
+  if(!fdEditionStudentExact(value,kinds,[]))return null;
+  for(i=0;i<kinds.length;i++){
+    if(!fdEditionStudentObject(value[kinds[i]]))return null;keys=Object.keys(value[kinds[i]]);if(keys.length>limits[i])return null;
+    for(j=0;j<keys.length;j++){if(!fdEditionStudentId(keys[j])||value[kinds[i]][keys[j]]!==true)return null;out[kinds[i]][keys[j]]=true;}
+  }
+  return out;
 }
 
-function fdEditionAcceptFirst(storage,validatedEdition){ return fdEditionStudentAccept(storage,validatedEdition); }
-function fdEditionAcceptSwitch(storage,validatedEdition){ return fdEditionStudentAccept(storage,validatedEdition); }
-
-function fdEditionReadLocalProgress(storage,fingerprint){
-  var valid=fdEditionStudentFingerprint(fingerprint),stored,document,bucket;
-  if(!valid) return {checklist:Object.create(null),resources:Object.create(null)};
-  stored=fdEditionStudentRead(storage,FD_EDITION_STUDENT_KEYS.local);
-  if(!stored.ok) return {checklist:Object.create(null),resources:Object.create(null)};
-  document=fdEditionStudentLocalDocument(stored.value);
-  if(!document.ok) return {checklist:Object.create(null),resources:Object.create(null)};
-  bucket=document.document.byFingerprint[valid];
-  return bucket?{checklist:bucket.checklist,resources:bucket.resources}:{checklist:Object.create(null),resources:Object.create(null)};
+function fdEditionStudentLocalDocument(value){
+  var parsed=value,keys,i,bucket,out=fdEditionStudentEmptyLocal();
+  try{if(value===null||typeof value==='undefined'||value==='')return {ok:true,document:out};if(typeof value==='string')parsed=JSON.parse(value);}catch(ignoreParse){return {ok:false,document:null};}
+  if(!fdEditionStudentExact(parsed,['schemaVersion','byFingerprint'],[])||parsed.schemaVersion!==2||!fdEditionStudentObject(parsed.byFingerprint))return {ok:false,document:null};
+  try{keys=Object.keys(parsed.byFingerprint);}catch(ignoreKeys){return {ok:false,document:null};}if(keys.length>128)return {ok:false,document:null};
+  for(i=0;i<keys.length;i++){if(!fdEditionStudentFingerprint(keys[i]))return {ok:false,document:null};bucket=fdEditionStudentBucket(parsed.byFingerprint[keys[i]]);if(!bucket)return {ok:false,document:null};out.byFingerprint[keys[i]]=bucket;}
+  return {ok:true,document:out};
 }
 
-function fdEditionToggleLocalProgress(storage,fingerprint,kind,id){
-  var valid=fdEditionStudentFingerprint(fingerprint),stored,document,bucket;
-  if(!valid||(kind!=='checklist'&&kind!=='resources')||!fdEditionStudentId(id)) return false;
-  stored=fdEditionStudentRead(storage,FD_EDITION_STUDENT_KEYS.local);
-  if(!stored.ok) return false;
-  document=fdEditionStudentLocalDocument(stored.value);
-  if(!document.ok) return false;
-  bucket=document.document.byFingerprint[valid]||(document.document.byFingerprint[valid]={checklist:Object.create(null),resources:Object.create(null)});
-  if(bucket[kind][id]) delete bucket[kind][id]; else bucket[kind][id]=true;
-  try{ return fdEditionStudentWrite(storage,FD_EDITION_STUDENT_KEYS.local,JSON.stringify(document.document)); }
-  catch(ignoreSerialize){ return false; }
-}
-
-function fdEditionStudentEscape(value){
+function fdEditionStudentAllowed(displayModel){
+  var allowed={checklist:Object.create(null),resources:Object.create(null)},list,i,id;
   try{
-    return String(value).replace(/[&<>"']/g,function(character){
-      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[character];
-    });
-  }catch(ignoreEscape){ return ''; }
+    if(!fdEditionStudentObject(displayModel)||!fdEditionStudentObject(displayModel.firstDay)||!Array.isArray(displayModel.firstDay.checklistItems)||!Array.isArray(displayModel.resources))return null;
+    list=displayModel.firstDay.checklistItems;for(i=0;i<list.length;i++){id=fdEditionStudentId(list[i]&&list[i].id);if(!id)return null;allowed.checklist[id]=true;}
+    list=displayModel.resources;for(i=0;i<list.length;i++){id=fdEditionStudentId(list[i]&&list[i].id);if(!id)return null;allowed.resources[id]=true;}
+    return allowed;
+  }catch(ignore){return null;}
 }
 
-function fdEditionRenderString(object,key){
-  var data=fdEditionStudentData(object,key);
-  return data.ok&&typeof data.value==='string'?data.value:'';
+function fdEditionReadLocalDocument(storage,keys){
+  var stored,parsed;
+  if(!keys||typeof keys.local!=='string')return null;stored=fdEditionStudentRead(storage,keys.local);if(!stored.ok)return null;parsed=fdEditionStudentLocalDocument(stored.value);return parsed.ok?parsed.document:null;
 }
 
-function fdEditionRenderObject(object,key){
-  var data=fdEditionStudentData(object,key);
-  return data.ok&&fdEditionStudentObject(data.value)?data.value:null;
+function fdEditionReadLocal(storage,keys,fingerprint,displayModel){
+  var fp=fdEditionStudentFingerprint(fingerprint),document,bucket,allowed,out={checklist:{},resources:{}},kind,ids,i;
+  if(!fp||(allowed=fdEditionStudentAllowed(displayModel))===null)return out;document=fdEditionReadLocalDocument(storage,keys);if(!document)return out;bucket=document.byFingerprint[fp];if(!bucket)return out;
+  for(kind in out)if(FD_EDITION_STUDENT_OWN.call(out,kind)){ids=Object.keys(bucket[kind]);for(i=0;i<ids.length;i++)if(allowed[kind][ids[i]])out[kind][ids[i]]=true;}
+  return out;
 }
 
-function fdEditionRenderArray(object,key){
-  var data=fdEditionStudentData(object,key);
-  try{ return data.ok&&Array.isArray(data.value)?data.value:null; }
-  catch(ignoreArray){ return null; }
+function fdEditionToggleLocal(storage,keys,fingerprint,kind,id,displayModel){
+  var fp=fdEditionStudentFingerprint(fingerprint),allowed,document,bucket,ids,text;
+  if(!fp||(kind!=='checklist'&&kind!=='resources')||!fdEditionStudentId(id)||(allowed=fdEditionStudentAllowed(displayModel))===null||!allowed[kind][id])return false;
+  document=fdEditionReadLocalDocument(storage,keys);if(!document)return false;bucket=document.byFingerprint[fp];
+  if(!bucket){if(Object.keys(document.byFingerprint).length>=128)return false;bucket=fdEditionStudentEmptyBucket();document.byFingerprint[fp]=bucket;}
+  if(bucket[kind][id])delete bucket[kind][id];else{ids=Object.keys(bucket[kind]);if(ids.length>=(kind==='checklist'?24:12))return false;bucket[kind][id]=true;}
+  try{text=JSON.stringify(document);JSON.parse(text);}catch(ignoreSerialize){return false;}return fdEditionStudentWrite(storage,keys.local,text);
 }
 
-function fdEditionRenderArrayValue(array,index){
-  var descriptor;
+/* The shell's long-standing action vocabulary retains this name, but the v2-only
+   signature and validation path stay entirely in fdEditionToggleLocal. */
+function fdEditionToggleLocalProgress(storage,keys,fingerprint,kind,id,displayModel){
+  return fdEditionToggleLocal(storage,keys,fingerprint,kind,id,displayModel);
+}
+
+function fdEditionCommitAcceptance(storage,keys,validatedEdition,localDocument,journal){
+  var trusted,fp,parsedLocal,bucket,editionText,localText,run,rolled;
   try{
-    if(!Array.isArray(array)||index<0||index>=array.length) return null;
-    descriptor=Object.getOwnPropertyDescriptor(array,String(index));
-  }catch(ignoreEntry){ return null; }
-  return descriptor&&descriptor.enumerable&&Object.prototype.hasOwnProperty.call(descriptor,'value')
-    ?descriptor.value:null;
+    trusted=fdEditionTrustedSnapshot(validatedEdition);if(!trusted||!trusted.envelope||trusted.envelope.schemaVersion!==2||!fdEditionStudentFingerprint(trusted.fingerprint)||!keys||typeof keys.local!=='string'||typeof keys.edition!=='string')throw new Error('invalid');
+    fp=trusted.fingerprint;parsedLocal=fdEditionStudentLocalDocument(localDocument);if(!parsedLocal.ok)throw new Error('invalid');
+    if(!parsedLocal.document.byFingerprint[fp]){if(Object.keys(parsedLocal.document.byFingerprint).length>=128)return {ok:false,code:'EDITION_LOCAL_CAPACITY'};parsedLocal.document.byFingerprint[fp]=fdEditionStudentEmptyBucket();}
+    localText=JSON.stringify(parsedLocal.document);if(!fdEditionStudentLocalDocument(JSON.parse(localText)).ok)throw new Error('invalid');
+    editionText=JSON.stringify(trusted.envelope);if(JSON.parse(editionText).schemaVersion!==2)throw new Error('invalid');
+  }catch(ignorePrepare){return {ok:false,code:'EDITION_STORAGE'};}
+  run=fdEditionStartupJournalRun(journal,[keys.local,keys.edition],function(){
+    var localAfter,editionAfter;
+    if(!fdEditionStudentWrite(storage,keys.local,localText))throw new Error('local');
+    if(!fdEditionStudentWrite(storage,keys.edition,editionText))throw new Error('edition');
+    localAfter=fdEditionStudentRead(storage,keys.local);editionAfter=fdEditionStudentRead(storage,keys.edition);
+    if(!localAfter.ok||!editionAfter.ok||localAfter.value!==localText||editionAfter.value!==editionText)return false;
+    return true;
+  });
+  if(run.ok&&run.value===true)return {ok:true,code:'EDITION_ACCEPTED'};
+  rolled=fdEditionStartupJournalRollback(journal);
+  return rolled?{ok:false,code:'EDITION_STORAGE'}:{ok:false,code:'EDITION_STORAGE',irrecoverable:true};
 }
 
-function fdEditionRenderPriority(value){
-  if(value==='required') return 'Required';
-  if(value==='recommended') return 'Recommended';
-  if(value==='optional') return 'Optional';
-  return '';
-}
-
-function fdEditionRenderCompletion(progress,kind,id){
-  var bucket=fdEditionRenderObject(progress,kind),entry;
-  if(!bucket||!fdEditionStudentId(id)) return false;
-  entry=fdEditionStudentData(bucket,id);
-  return entry.ok&&entry.value===true;
-}
-
-function fdEditionExternalUrl(url){
-  var parsed;
-  if(typeof url!=='string'||!url) return '';
-  try{ parsed=new URL(url); }
-  catch(ignoreUrl){ return ''; }
-  if(parsed.protocol!=='https:'||!parsed.hostname||parsed.username||parsed.password) return '';
-  return parsed.href;
-}
-
-function fdEditionExternalDomain(url){
-  var safe=fdEditionExternalUrl(url),parsed;
-  if(!safe) return '';
-  try{ parsed=new URL(safe); return String(parsed.hostname||'').toLowerCase(); }
-  catch(ignoreDomain){ return ''; }
-}
-
-function fdEditionCardMarkup(edition,currentCoreRevision){
-  var card,envelope,config,fingerprint,numberData,number,audience,pathId,audienceLabel='',duration='',
-    location,title,curator,role,start,end,verified,original,change,rows='',titleMarkup='',changeMarkup='';
-  try{
-    if(!fdEditionStudentObject(edition)) return '';
-    card=fdEditionRenderObject(edition,'card'); envelope=fdEditionRenderObject(edition,'envelope');
-    config=fdEditionRenderObject(envelope,'config');
-    fingerprint=fdEditionStudentFingerprint(fdEditionRenderString(edition,'fingerprint'));
-    numberData=fdEditionStudentData(edition,'editionNumber'); number=numberData.ok?numberData.value:null;
-    if(!card||!config||!fingerprint||typeof number!=='number'||!isFinite(number)||
-       Math.floor(number)!==number||number<1) return '';
-    location=fdEditionRenderString(card,'locationName'); title=fdEditionRenderString(card,'title');
-    curator=fdEditionRenderString(card,'curatorName'); role=fdEditionRenderString(card,'curatorRole');
-    start=fdEditionRenderString(card,'rotationStart'); end=fdEditionRenderString(card,'rotationEnd');
-    verified=fdEditionRenderString(card,'lastVerified');
-    original=fdEditionRenderString(edition,'createdAgainstCoreRevision');
-    change=fdEditionRenderString(edition,'changeNote');
-    audience=fdEditionRenderString(config,'audience'); pathId=fdEditionRenderString(config,'pathId');
-    audienceLabel=audience==='ms3'?'MS3':(audience==='resident'?'Resident':'');
-    duration=pathId==='ms3-six-week'?'6 weeks':(pathId==='resident-four-week'?'4 weeks':'');
-    if(!location||!audienceLabel||!duration) return '';
-    if(typeof currentCoreRevision!=='string'||!/^[0-9a-f]{40}$/.test(currentCoreRevision)) currentCoreRevision='';
-    if(!/^[0-9a-f]{40}$/.test(original)) original='';
-    if(title) titleMarkup='<h3 class="fd-edition-card__title">'+fdEditionStudentEscape(title)+'</h3>';
-    if(curator||role) rows+='<div class="fd-edition-card__row"><dt>Curator</dt><dd>'+fdEditionStudentEscape(curator)+
-      (curator&&role?' · ':'')+fdEditionStudentEscape(role)+'</dd></div>';
-    rows+='<div class="fd-edition-card__row"><dt>Audience and duration</dt><dd>'+audienceLabel+' · '+duration+'</dd></div>';
-    if(start||end) rows+='<div class="fd-edition-card__row"><dt>Rotation dates</dt><dd>'+fdEditionStudentEscape(start)+
-      (start&&end?' to ':'')+fdEditionStudentEscape(end)+'</dd></div>';
-    if(verified) rows+='<div class="fd-edition-card__row"><dt>Last verified</dt><dd>'+fdEditionStudentEscape(verified)+'</dd></div>';
-    if(currentCoreRevision) rows+='<div class="fd-edition-card__row"><dt>Current core revision</dt><dd><code>'+fdEditionStudentEscape(currentCoreRevision)+'</code></dd></div>';
-    if(original) rows+='<div class="fd-edition-card__row"><dt>Original core revision</dt><dd><code>'+fdEditionStudentEscape(original)+'</code></dd></div>';
-    if(change) changeMarkup='<div class="fd-edition-card__change"><strong>What changed</strong><p>'+fdEditionStudentEscape(change)+'</p></div>';
-    return '<details class="fd-edition-card"><summary class="fd-edition-card__summary">'+
-      '<span class="fd-edition-card__location">'+fdEditionStudentEscape(location)+'</span>'+
-      '<span class="fd-edition-card__edition">Edition '+fdEditionStudentEscape(number)+'</span>'+
-      '<code class="fd-edition-card__fingerprint">'+fdEditionStudentEscape(fingerprint)+'</code>'+
-      '<span class="fd-edition-card__local">Locally curated</span></summary>'+
-      '<div class="fd-edition-card__body">'+titleMarkup+'<dl class="fd-edition-card__meta">'+rows+'</dl>'+changeMarkup+
-      '<p class="fd-edition-card__warning"><strong>Identity not digitally verified.</strong> Local guidance is attending-provided and separate from centrally reviewed core content.</p>'+
-      '<p class="fd-edition-card__explain">The fingerprint confirms configuration equality only; it does not verify authorship.</p>'+
-      '</div></details>';
-  }catch(ignoreCard){ return ''; }
-}
-
-function fdEditionCoreMetaMarkup(item){
-  var priority,rationale,out;
-  try{
-    if(!fdEditionStudentObject(item)) return '';
-    priority=fdEditionRenderPriority(fdEditionRenderString(item,'editionPriority'));
-    rationale=fdEditionRenderString(item,'editionRationale');
-    if(!priority) return '';
-    out='<span class="fd-edition-coremeta"><span class="fd-edition-priority">Local priority: '+priority+'</span>';
-    if(rationale) out+='<span class="fd-edition-rationale">Attending rationale: '+fdEditionStudentEscape(rationale)+'</span>';
-    return out+'</span>';
-  }catch(ignoreCoreMeta){ return ''; }
-}
-
-function fdEditionLocalToggleMarkup(kind,id,label,priority,on){
-  var cls=on?'fd-localcheck is-done':'fd-localcheck';
-  return '<button type="button" class="'+cls+'" data-fd-local-toggle="'+kind+'" data-local-id="'+
-    fdEditionStudentEscape(id)+'" aria-pressed="'+(on?'true':'false')+'" aria-label="Mark local item complete: '+
-    fdEditionStudentEscape(label)+'"><span aria-hidden="true">✓</span></button>'+
-    '<span class="fd-localitem__body"><span class="fd-localitem__title">'+fdEditionStudentEscape(label)+'</span>'+
-    '<span class="fd-localitem__priority">Local priority: '+priority+'</span></span>';
-}
-
-function fdEditionLocalOrientationMarkup(edition,localProgress){
-  var local,fields,content='',checklistMarkup='',contacts,checklist,i,item,label,value,role,url,domain,id,priority,on;
-  try{
-    if(!fdEditionStudentObject(edition)) return '';
-    local=fdEditionRenderObject(edition,'localOrientation'); if(!local) return '';
-    fields=[
-      ['firstDayArrival','First-day arrival'],['dailySchedule','Typical daily schedule'],
-      ['roundsWorkflow','Rounds workflow'],['presentationExpectations','Presentation expectations'],
-      ['documentationExpectations','Documentation expectations'],['attendanceExpectations','Attendance expectations'],
-      ['feedbackProcess','Feedback process'],['accessPreparation','Access preparation']
-    ];
-    for(i=0;i<fields.length;i++){
-      value=fdEditionRenderString(local,fields[i][0]);
-      if(value) content+='<div class="fd-localorientation__item"><dt>'+fields[i][1]+'</dt><dd>'+fdEditionStudentEscape(value)+'</dd></div>';
-    }
-    contacts=fdEditionRenderArray(local,'contacts');
-    if(contacts){
-      for(i=0;i<contacts.length;i++){
-        item=fdEditionRenderArrayValue(contacts,i); if(!fdEditionStudentObject(item)) continue;
-        role=fdEditionRenderString(item,'role'); url=fdEditionExternalUrl(fdEditionRenderString(item,'directoryUrl'));
-        domain=fdEditionExternalDomain(url); if(!role||!url||!domain) continue;
-        content+='<div class="fd-localorientation__item"><dt>Local directory</dt><dd><a href="'+fdEditionStudentEscape(url)+
-          '" target="_blank" rel="noopener noreferrer">'+fdEditionStudentEscape(role)+'</a><span class="fd-external-domain">'+
-          fdEditionStudentEscape(domain)+'</span></dd></div>';
-      }
-    }
-    checklist=fdEditionRenderArray(local,'checklist');
-    if(checklist&&checklist.length){
-      var checklistRows='';
-      for(i=0;i<checklist.length;i++){
-        item=fdEditionRenderArrayValue(checklist,i); if(!fdEditionStudentObject(item)) continue;
-        id=fdEditionStudentId(fdEditionRenderString(item,'id')); label=fdEditionRenderString(item,'label');
-        priority=fdEditionRenderPriority(fdEditionRenderString(item,'priority')); if(!id||!label||!priority) continue;
-        on=fdEditionRenderCompletion(localProgress,'checklist',id);
-        checklistRows+='<li class="fd-localitem">'+fdEditionLocalToggleMarkup('checklist',id,label,priority,on)+'</li>';
-      }
-      if(checklistRows) checklistMarkup='<div class="fd-localchecklist"><h3>Attending-provided first-day checklist</h3><ul>'+checklistRows+'</ul></div>';
-    }
-    if(!content&&!checklistMarkup) return '';
-    return '<section class="fd-localorientation" data-edition-orientation><div class="fd-localorientation__head">'+
-      '<h2>Attending-provided local orientation</h2><span>Local guidance · separate from reviewed core</span></div>'+
-      '<dl>'+content+'</dl>'+checklistMarkup+'</section>';
-  }catch(ignoreOrientation){ return ''; }
-}
-
-function fdEditionWeekResourcesMarkup(edition,week,localProgress){
-  var local,resources,rows='',i,item,id,title,url,domain,priority,rationale,weekData,on;
-  try{
-    if(!fdEditionStudentObject(edition)||typeof week!=='number'||!isFinite(week)||Math.floor(week)!==week) return '';
-    local=fdEditionRenderObject(edition,'localOrientation'); if(!local) return '';
-    resources=fdEditionRenderArray(local,'resources'); if(!resources) return '';
-    for(i=0;i<resources.length;i++){
-      item=fdEditionRenderArrayValue(resources,i); if(!fdEditionStudentObject(item)) continue;
-      weekData=fdEditionStudentData(item,'week'); if(!weekData.ok||weekData.value!==week) continue;
-      id=fdEditionStudentId(fdEditionRenderString(item,'id')); title=fdEditionRenderString(item,'title');
-      url=fdEditionExternalUrl(fdEditionRenderString(item,'url')); domain=fdEditionExternalDomain(url);
-      priority=fdEditionRenderPriority(fdEditionRenderString(item,'priority'));
-      rationale=fdEditionRenderString(item,'rationale'); if(!id||!title||!url||!domain||!priority) continue;
-      on=fdEditionRenderCompletion(localProgress,'resources',id);
-      rows+='<li class="fd-localresource"><div class="fd-localresource__main">'+
-        fdEditionLocalToggleMarkup('resources',id,title,priority,on)+'</div>'+
-        '<span class="fd-localresource__label">Attending-provided local resource</span>'+
-        '<span class="fd-external-domain">'+fdEditionStudentEscape(domain)+'</span>'+
-        '<a class="fd-localresource__link" href="'+fdEditionStudentEscape(url)+'" target="_blank" rel="noopener noreferrer">Open resource ↗</a>'+
-        (rationale?'<p class="fd-localresource__rationale">Attending rationale: '+fdEditionStudentEscape(rationale)+'</p>':'')+
-        '</li>';
-    }
-    return rows?'<section class="fd-localresources" data-edition-week-resources><h3>Attending-provided local resources</h3><ul>'+rows+'</ul></section>':'';
-  }catch(ignoreResources){ return ''; }
+function fdEditionStudentValidEdition(value){
+  var trusted;
+  try{trusted=fdEditionTrustedSnapshot(value);if(!trusted||!fdEditionStudentFingerprint(trusted.fingerprint)||!trusted.envelope||trusted.envelope.schemaVersion!==2)return null;return {fingerprint:trusted.fingerprint,envelope:trusted.envelope,displayModel:trusted.displayModel};}catch(ignore){return null;}
 }
 
 function fdEditionLocalToggleAllowed(active,kind,id){
-  var selected,envelope,config,local,list,i,item;
-  try{
-    selected=fdEditionStudentValidEdition(active);
-    if(!selected||(kind!=='checklist'&&kind!=='resources')||!fdEditionStudentId(id)) return false;
-    envelope=selected.envelope; config=fdEditionRenderObject(envelope,'config');
-    local=fdEditionRenderObject(config,'localOrientation'); list=fdEditionRenderArray(local,kind);
-    if(!list) return false;
-    for(i=0;i<list.length;i++){
-      item=fdEditionRenderArrayValue(list,i);
-      if(fdEditionStudentObject(item)&&fdEditionRenderString(item,'id')===id) return true;
-    }
-    return false;
-  }catch(ignoreAllowed){ return false; }
+  var edition=fdEditionStudentValidEdition(active),allowed;if(!edition||(allowed=fdEditionStudentAllowed(edition.displayModel))===null)return false;return !!(allowed[kind]&&allowed[kind][id]);
 }
 
 function fdEditionActiveIdentity(active,index){
-  var selected,indexEdition,indexFingerprint;
+  var edition=fdEditionStudentValidEdition(active),fingerprint='';
+  try{fingerprint=index&&index.edition&&index.edition.card&&fdEditionStudentFingerprint(index.edition.card.fingerprint);}catch(ignore){}
+  return edition&&fingerprint===edition.fingerprint?{snapshot:active,fingerprint:fingerprint,displayModel:edition.displayModel}:null;
+}
+
+function fdEditionStudentAuthority(model){
+  var keys=Object.keys(FD_EDITION_STUDENT_AUTHORITY),i;
+  if(!fdEditionStudentObject(model)||!fdEditionStudentExact(model.authority,keys,[]))return false;
+  for(i=0;i<keys.length;i++)if(model.authority[keys[i]]!==FD_EDITION_STUDENT_AUTHORITY[keys[i]])return false;
+  return !!(model.changeSummary&&model.changeSummary.provenanceLabel===FD_EDITION_STUDENT_LINEAGE);
+}
+
+function fdEditionStudentDom(root,documentObject){
+  return !!(root&&fdEditionStudentMethod(root,'replaceChildren')&&fdEditionStudentMethod(root,'appendChild')&&documentObject&&fdEditionStudentMethod(documentObject,'createElement'));
+}
+
+function fdEditionStudentElement(documentObject,tag,text,className){
+  var el=Function.prototype.call.call(fdEditionStudentMethod(documentObject,'createElement'),documentObject,tag);
+  if(className)el.setAttribute('class',className);if(typeof text==='string')el.textContent=text;return el;
+}
+
+function fdEditionStudentAppend(parent,documentObject,tag,text,className){var el=fdEditionStudentElement(documentObject,tag,text,className);parent.appendChild(el);return el;}
+function fdEditionStudentClear(root){try{root.replaceChildren();}catch(ignore){}}
+function fdEditionStudentPriority(priority){return priority==='required'?FD_EDITION_STUDENT_AUTHORITY.requiredLabel:priority==='recommended'?FD_EDITION_STUDENT_AUTHORITY.recommendedLabel:priority==='optional'?FD_EDITION_STUDENT_AUTHORITY.optionalLabel:'';}
+
+function fdEditionRenderCard(root,displayModel,documentObject){
+  var card,revisions,section,summary,list,i,row,status,focus;
+  if(!fdEditionStudentDom(root,documentObject)){fdEditionStudentClear(root);return false;}
   try{
-    selected=fdEditionStudentValidEdition(active); if(!selected) return null;
-    indexEdition=fdEditionRenderObject(index,'edition'); if(!indexEdition) return null;
-    indexFingerprint=fdEditionStudentFingerprint(fdEditionRenderString(indexEdition,'fingerprint'));
-    if(!indexFingerprint||indexFingerprint!==selected.fingerprint) return null;
-    return {snapshot:active,fingerprint:selected.fingerprint};
-  }catch(ignoreIdentity){return null;}
+    if(!fdEditionStudentAuthority(displayModel))throw new Error('model');card=displayModel.card;revisions=displayModel.revisions;
+    if(!fdEditionStudentObject(card)||!fdEditionStudentObject(revisions)||!fdEditionStudentFingerprint(card.fingerprint)||!Array.isArray(card.provenance))throw new Error('model');
+    root.replaceChildren();root.setAttribute('class','fd-edition-card');root.setAttribute('tabindex','-1');
+    section=fdEditionStudentElement(documentObject,'section','', 'fd-edition-card__body');
+    fdEditionStudentAppend(section,documentObject,'p',FD_EDITION_STUDENT_AUTHORITY.localLabel,'fd-edition-authority');
+    fdEditionStudentAppend(section,documentObject,'h2',String(card.title));
+    summary=fdEditionStudentAppend(section,documentObject,'p',String(card.locationName)+' · Edition '+String(card.editionNumber)+' · '+String(card.fingerprint));
+    fdEditionStudentAppend(section,documentObject,'p','Curated by '+String(card.curatorName)+' · '+String(card.curatorRole));
+    fdEditionStudentAppend(section,documentObject,'p',String(card.audienceLabel)+' · '+String(card.durationLabel)+' · '+String(card.rotationDates));
+    fdEditionStudentAppend(section,documentObject,'h3','Edition checked on — self-attested by the curator');
+    fdEditionStudentAppend(section,documentObject,'p',String(card.editionCheckedOn));
+    fdEditionStudentAppend(section,documentObject,'h3','Catalog verification — repository-reviewed record dates');
+    list=fdEditionStudentElement(documentObject,'ul');
+    for(i=0;i<card.provenance.length;i++){row=card.provenance[i];if(!row||typeof row.displayLabel!=='string'||typeof row.verifiedOn!=='string')throw new Error('model');fdEditionStudentAppend(list,documentObject,'li',row.displayLabel+' — '+row.verifiedOn);}
+    section.appendChild(list);
+    fdEditionStudentAppend(section,documentObject,'p','Created against core revision '+String(revisions.createdAgainstCoreRevision));
+    fdEditionStudentAppend(section,documentObject,'p','Current core revision '+String(revisions.currentCoreRevision));
+    fdEditionStudentAppend(section,documentObject,'p','Created against catalog revision '+String(revisions.createdAgainstCatalogRevision));
+    fdEditionStudentAppend(section,documentObject,'p','Current catalog revision '+String(revisions.currentCatalogRevision));
+    fdEditionStudentAppend(section,documentObject,'p',String(displayModel.changeSummary.text));
+    fdEditionStudentAppend(section,documentObject,'p',FD_EDITION_STUDENT_LINEAGE,'fd-edition-lineage');
+    fdEditionStudentAppend(section,documentObject,'p',String(card.identityNotice));fdEditionStudentAppend(section,documentObject,'p',String(card.fingerprintNotice));
+    status=fdEditionStudentAppend(section,documentObject,'p','Rotation edition ready.');status.setAttribute('role','status');status.setAttribute('aria-live','polite');
+    root.appendChild(section);focus=fdEditionStudentMethod(root,'focus');if(focus)Function.prototype.call.call(focus,root);return true;
+  }catch(ignoreRender){fdEditionStudentClear(root);return false;}
 }
 
-function fdEditionSwitchMarkup(active,candidate){
-  var selected=fdEditionStudentValidEdition(active),replacement=fdEditionStudentValidEdition(candidate);
-  if(!selected||!replacement) return '';
+function fdEditionStudentLocalItem(section,documentObject,item,kind,localState){
+  var row,label,on=false,button,link,url,linkValue;
+  if(!item||typeof item.text!=='string')throw new Error('item');row=fdEditionStudentElement(documentObject,'div','', 'fd-edition-local__item');
+  if(item.priority){label=fdEditionStudentPriority(item.priority);if(!label)throw new Error('priority');fdEditionStudentAppend(row,documentObject,'p',label,'fd-edition-authority');}
+  fdEditionStudentAppend(row,documentObject,'p',item.text);
+  if(kind&&fdEditionStudentId(item.id)){on=!!(localState&&localState[kind]&&localState[kind][item.id]);button=fdEditionStudentAppend(row,documentObject,'button',on?'Completed':'Mark complete');button.setAttribute('type','button');button.setAttribute('data-fd-local-toggle',kind);button.setAttribute('data-local-id',item.id);button.setAttribute('aria-pressed',on?'true':'false');}
+  linkValue=item.url?item:item.link;
+  if(linkValue){url=new URL(linkValue.url);if(url.protocol!=='https:'||url.username||url.password||url.hostname!==linkValue.visibleHostname)throw new Error('url');link=fdEditionStudentAppend(row,documentObject,'a',linkValue.title+' — '+linkValue.visibleHostname,'fd-edition-resource');link.setAttribute('href',url.href);link.setAttribute('target','_blank');link.setAttribute('rel','noopener noreferrer');fdEditionStudentAppend(row,documentObject,'p',FD_EDITION_STUDENT_AUTHORITY.resourceLabel,'fd-edition-authority');}
+  section.appendChild(row);
+}
+
+function fdEditionRenderLocal(root,displayModel,localState,documentObject){
+  var wrapper,definitions,section,i,j,items,row,workflow,attendance;
+  if(!fdEditionStudentDom(root,documentObject)){fdEditionStudentClear(root);return false;}
   try{
-    return '<dialog class="fd-edition-switch" aria-labelledby="fd-edition-switch-title"><h2 id="fd-edition-switch-title">Switch rotation edition?</h2>'+
-      '<p>Your current edition: <code>'+fdEditionStudentEscape(selected.fingerprint)+'</code></p>'+
-      '<p>Edition from this link: <code>'+fdEditionStudentEscape(replacement.fingerprint)+'</code></p>'+
-      '<form method="dialog"><button type="button" value="decline">Keep current edition</button><button type="button" value="accept">Switch edition</button></form></dialog>';
-  }catch(ignoreMarkup){ return ''; }
-}
-
-function fdEditionErrorMarkup(receipt){
-  var safe=fdEditionStudentSafeReceipt(receipt,null,null),parts=[];
-  parts.push('<section class="fd-edition-error" role="alert"><h2>Rotation edition unavailable</h2>');
-  parts.push('<p>Diagnostic code: <code>'+fdEditionStudentEscape(safe.code)+'</code></p>');
-  if(safe.schemaVersion!==null) parts.push('<p>Schema version: <code>'+fdEditionStudentEscape(safe.schemaVersion)+'</code></p>');
-  if(safe.fingerprint) parts.push('<p>Edition fingerprint: <code>'+fdEditionStudentEscape(safe.fingerprint)+'</code></p>');
-  if(safe.currentCoreRevision) parts.push('<p>Current core revision: <code>'+fdEditionStudentEscape(safe.currentCoreRevision)+'</code></p>');
-  parts.push('</section>'); return parts.join('');
-}
-
-function fdEditionRuntimeReceipt(siteContext,code){
-  var revision='';
-  try{
-    if(siteContext&&typeof siteContext.coreRevision==='string'&&/^[0-9a-f]{40}$/.test(siteContext.coreRevision))
-      revision=siteContext.coreRevision;
-  }catch(ignoreContext){ }
-  return {code:code==='EDITION_CRYPTO'?'EDITION_CRYPTO':'EDITION_RUNTIME',schemaVersion:1,
-    fingerprint:'',currentCoreRevision:revision};
-}
-
-function fdEditionRuntimeElement(documentValue,id){
-  var method=fdEditionStudentMethod(documentValue,'getElementById');
-  if(!method) return null;
-  try{ return Function.prototype.call.call(method,documentValue,id); }
-  catch(ignoreElement){ return null; }
-}
-
-function fdEditionRuntimeWritable(object,name){
-  var cursor=object,descriptor,depth=0;
-  if(object===null||(typeof object!=='object'&&typeof object!=='function')) return false;
-  while(cursor!==null&&depth<8){
-    try{ descriptor=Object.getOwnPropertyDescriptor(cursor,name); }catch(ignoreDescriptor){ return false; }
-    if(descriptor){
-      if(Object.prototype.hasOwnProperty.call(descriptor,'value')) return descriptor.writable===true;
-      return typeof descriptor.set==='function';
+    if(!fdEditionStudentAuthority(displayModel))throw new Error('model');
+    root.replaceChildren();root.setAttribute('class','fd-edition-local');wrapper=fdEditionStudentElement(documentObject,'div');
+    fdEditionStudentAppend(wrapper,documentObject,'p',FD_EDITION_STUDENT_AUTHORITY.coreLabel,'fd-edition-authority');
+    fdEditionStudentAppend(wrapper,documentObject,'p',FD_EDITION_STUDENT_AUTHORITY.localLabel,'fd-edition-authority');
+    fdEditionStudentAppend(wrapper,documentObject,'p',FD_EDITION_STUDENT_AUTHORITY.localBoundary,'fd-edition-authority');
+    fdEditionStudentAppend(wrapper,documentObject,'p',FD_EDITION_STUDENT_AUTHORITY.requiredLabel+' · '+FD_EDITION_STUDENT_AUTHORITY.recommendedLabel+' · '+FD_EDITION_STUDENT_AUTHORITY.optionalLabel,'fd-edition-authority');
+    workflow=displayModel.workflow;attendance=displayModel.attendanceFeedback;
+    definitions=[
+      ['First day at the location',displayModel.firstDay.arrival?[displayModel.firstDay.arrival]:[],''],
+      ['Before you arrive',displayModel.firstDay.accessItems,''],
+      ['Who to contact',displayModel.firstDay.contacts,''],
+      ["Today's checklist",displayModel.firstDay.checklistItems,'checklist'],
+      ['Typical day',displayModel.typicalDay?[{text:displayModel.typicalDay.summaryText}].concat(displayModel.typicalDay.eventItems||[]):[],''],
+      ['Team workflow',[workflow.rounds,workflow.presentation,workflow.documentation].filter(Boolean),''],
+      ['Attendance and feedback',[attendance.attendance,attendance.feedback].filter(Boolean),''],
+      ['Official resources',displayModel.resources,'resources']
+    ];
+    if(displayModel.emptyLocalPlan)fdEditionStudentAppend(wrapper,documentObject,'p','This edition adds no local orientation. Your reviewed Path and full Library remain available.','fd-edition-empty');
+    for(i=0;i<definitions.length;i++){
+      section=fdEditionStudentElement(documentObject,'section','', 'fd-edition-section');fdEditionStudentAppend(section,documentObject,'h2',definitions[i][0]);items=definitions[i][1]||[];
+      for(j=0;j<items.length;j++){row=items[j];fdEditionStudentLocalItem(section,documentObject,row,definitions[i][2],localState||{});if(row===workflow.documentation)fdEditionStudentAppend(section,documentObject,'p',FD_EDITION_STUDENT_AUTHORITY.documentationGuardrail,'fd-edition-authority');}
+      wrapper.appendChild(section);
     }
-    try{ cursor=Object.getPrototypeOf(cursor); }catch(ignorePrototype){ return false; }
-    depth+=1;
+    if(!(workflow&&workflow.documentation))fdEditionStudentAppend(wrapper,documentObject,'p',FD_EDITION_STUDENT_AUTHORITY.documentationGuardrail,'fd-edition-authority');
+    root.appendChild(wrapper);return true;
+  }catch(ignoreRender){fdEditionStudentClear(root);return false;}
+}
+
+function fdEditionCoreMetaMarkup(item){
+  var priority='',reason='';
+  try{priority=fdEditionStudentPriority(item&&item.priority);reason=item&&typeof item.reasonText==='string'?item.reasonText:'';if(!priority)return '';return '<span class="fd-row__edition"><span>'+fdEditionStudentEscape(FD_EDITION_STUDENT_AUTHORITY.coreLabel)+'</span><span>'+fdEditionStudentEscape(priority)+'</span>'+(reason?'<span>Local rotation reason: '+fdEditionStudentEscape(reason)+'</span>':'')+'</span>';}catch(ignore){return '';}
+}
+
+function fdEditionStudentEscape(value){return String(value).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+function fdEditionSwitchMarkup(active,candidate){var left=fdEditionStudentValidEdition(active),right=fdEditionStudentValidEdition(candidate);if(!left||!right)return '';return '<dialog class="fd-edition-switch" aria-labelledby="fd-edition-switch-title"><h2 id="fd-edition-switch-title">Switch rotation edition?</h2><p>Your current edition: <code>'+fdEditionStudentEscape(left.fingerprint)+'</code></p><p>Edition from this link: <code>'+fdEditionStudentEscape(right.fingerprint)+'</code></p><form method="dialog"><button type="button" value="decline">Keep current edition</button><button type="button" value="accept">Switch edition</button></form></dialog>';}
+function fdEditionErrorMarkup(receipt){var code=receipt&&typeof receipt.code==='string'?receipt.code:'EDITION_RUNTIME';return '<section class="fd-edition-error" role="alert"><h2>Rotation edition unavailable</h2><p>Diagnostic code: <code>'+fdEditionStudentEscape(code)+'</code></p></section>';}
+
+function fdEditionRuntimeElement(documentValue,id){var method=fdEditionStudentMethod(documentValue,'getElementById');if(!method)return null;try{return Function.prototype.call.call(method,documentValue,id);}catch(ignore){return null;}}
+function fdEditionRuntimeWritable(object,name){var cursor=object,descriptor,depth=0;if(object===null||(typeof object!=='object'&&typeof object!=='function'))return false;while(cursor!==null&&depth<8){try{descriptor=Object.getOwnPropertyDescriptor(cursor,name);}catch(ignore){return false;}if(descriptor){if(FD_EDITION_STUDENT_OWN.call(descriptor,'value'))return descriptor.writable===true;return typeof descriptor.set==='function';}try{cursor=Object.getPrototypeOf(cursor);}catch(ignorePrototype){return false;}depth+=1;}return false;}
+function fdEditionRuntimeDomReady(documentValue,app,mount){var create=fdEditionStudentMethod(documentValue,'createElement'),dialog,button;if(!create||!app||!mount||!fdEditionStudentMethod(app,'removeAttribute')||!fdEditionStudentMethod(app,'setAttribute')||!fdEditionStudentMethod(app,'addEventListener')||!fdEditionStudentMethod(app,'removeEventListener')||!fdEditionStudentMethod(app,'querySelector')||!fdEditionRuntimeWritable(mount,'innerHTML')||!fdEditionStudentMethod(mount,'querySelector'))return false;try{dialog=Function.prototype.call.call(create,documentValue,'dialog');button=Function.prototype.call.call(create,documentValue,'button');}catch(ignoreCreate){return false;}return !!(dialog&&button&&fdEditionStudentMethod(dialog,'addEventListener')&&fdEditionStudentMethod(dialog,'querySelector')&&fdEditionStudentMethod(dialog,'showModal')&&fdEditionStudentMethod(dialog,'close')&&fdEditionStudentMethod(button,'addEventListener')&&fdEditionStudentMethod(button,'focus'));}
+function fdEditionRuntimeShellReady(app){var query=fdEditionStudentMethod(app,'querySelector'),content=null;if(!query)return false;try{content=Function.prototype.call.call(query,app,'#content');}catch(ignore){return false;}return !!content;}
+function fdEditionRuntimeProbeListener(target,type,capture){var add=fdEditionStudentMethod(target,'addEventListener'),remove=fdEditionStudentMethod(target,'removeEventListener'),probe=function(){};if(!add||!remove)return false;try{Function.prototype.call.call(add,target,type,probe,capture===true);Function.prototype.call.call(remove,target,type,probe,capture===true);return true;}catch(ignoreProbe){try{Function.prototype.call.call(remove,target,type,probe,capture===true);}catch(ignoreRemove){}return false;}}
+function fdEditionRuntimePreflightWiring(windowValue,documentValue,app){if(!fdEditionRuntimeShellReady(app))return false;return fdEditionRuntimeProbeListener(app,'click',false)&&fdEditionRuntimeProbeListener(app,'input',false)&&fdEditionRuntimeProbeListener(app,'click',false)&&fdEditionRuntimeProbeListener(windowValue,'keydown',true)&&fdEditionRuntimeProbeListener(windowValue,'popstate',false)&&fdEditionRuntimeProbeListener(windowValue,'message',false)&&fdEditionRuntimeProbeListener(windowValue,'resize',false)&&fdEditionRuntimeProbeListener(documentValue,'click',true);}
+function fdEditionRuntimeListen(target,type,handler,capture){var add=fdEditionStudentMethod(target,'addEventListener'),remove=fdEditionStudentMethod(target,'removeEventListener');if(!add||!remove||typeof type!=='string'||typeof handler!=='function')return {ok:false};try{Function.prototype.call.call(add,target,type,handler,capture===true);}catch(ignore){try{Function.prototype.call.call(remove,target,type,handler,capture===true);}catch(ignoreRemove){}return {ok:false};}return {ok:true,target:target,type:type,handler:handler,capture:capture===true,removeMethod:remove,active:true};}
+function fdEditionRuntimeUnlisten(registration){if(!registration||registration.active!==true)return true;registration.active=false;try{Function.prototype.call.call(registration.removeMethod,registration.target,registration.type,registration.handler,registration.capture);return true;}catch(ignore){return false;}}
+function fdEditionRuntimeReleaseGate(app){var remove=fdEditionStudentMethod(app,'removeAttribute'),set=fdEditionStudentMethod(app,'setAttribute');if(!remove||!set)return false;try{Function.prototype.call.call(remove,app,'inert');Function.prototype.call.call(remove,app,'aria-busy');return true;}catch(ignore){try{Function.prototype.call.call(set,app,'inert','');Function.prototype.call.call(set,app,'aria-busy','true');}catch(ignoreRestore){}return false;}}
+function fdEditionRuntimeReceipt(siteContext,code){return fdEditionStudentReceipt(siteContext,code==='EDITION_CRYPTO'?'EDITION_CRYPTO':'EDITION_RUNTIME','');}
+function fdEditionRuntimeClearHash(locationValue,historyValue){var method=fdEditionStudentMethod(historyValue,'replaceState'),path,search;if(!method)return false;try{path=locationValue.pathname;search=locationValue.search;if(typeof path!=='string'||typeof search!=='string')return false;Function.prototype.call.call(method,historyValue,null,'',path+search);return true;}catch(ignore){return false;}}
+function fdEditionRuntimeReload(locationValue){var method=fdEditionStudentMethod(locationValue,'reload');if(!method)return false;try{return Function.prototype.call.call(method,locationValue)!==false;}catch(ignore){return false;}}
+function fdEditionRuntimeSwitchReady(locationValue,hashCleared){return hashCleared===true&&!!fdEditionStudentMethod(locationValue,'reload');}
+function fdEditionRuntimeMountError(mount,receipt){try{mount.innerHTML=fdEditionErrorMarkup(receipt);return true;}catch(ignore){return false;}}
+
+function fdEditionRuntimeInputs(windowValue,documentValue,app,mount,catalogSnapshot,siteContext){
+  var locationValue,historyValue,storage,cryptoValue,subtle,pageUrl,hash,keys,stored,local,hashCleared=true;
+  try{locationValue=windowValue.location;pageUrl=locationValue.href;hash=locationValue.hash;cryptoValue=windowValue.crypto;subtle=cryptoValue.subtle;}catch(ignore){return {ok:false,receipt:fdEditionRuntimeReceipt(siteContext,'EDITION_RUNTIME')};}
+  if(typeof pageUrl!=='string'||typeof hash!=='string'||!fdEditionStudentMethod(subtle,'digest'))return {ok:false,receipt:fdEditionRuntimeReceipt(siteContext,'EDITION_CRYPTO')};
+  if(!fdEditionRuntimeDomReady(documentValue,app,mount)||!fdEditionStudentMethod(locationValue,'reload'))return {ok:false,receipt:fdEditionRuntimeReceipt(siteContext,'EDITION_RUNTIME')};
+  if(siteContext&&siteContext.rotationEditionV2==='disabled'){
+    historyValue=null;if(hash){try{historyValue=windowValue.history;}catch(ignoreDisabledHistory){}hashCleared=fdEditionRuntimeClearHash(locationValue,historyValue);if(!hashCleared)return {ok:false,receipt:fdEditionRuntimeReceipt(siteContext,'EDITION_RUNTIME')};}
+    return {ok:true,location:locationValue,history:historyValue,storage:null,keys:null,pageUrl:pageUrl,hash:hash,hashCleared:true,storedText:null,localDocument:null,subtle:subtle};
   }
-  return false;
+  if(typeof fdEditionPublicationEnabled!=='function'||!fdEditionPublicationEnabled(catalogSnapshot))return {ok:false,receipt:fdEditionStudentReceipt(siteContext,'EDITION_CATALOG_UNAVAILABLE','')};
+  try{storage=windowValue.localStorage;historyValue=windowValue.history;}catch(ignoreBoundary){return {ok:false,receipt:fdEditionRuntimeReceipt(siteContext,'EDITION_RUNTIME')};}
+  keys=fdEditionStorageKeys(siteContext.audience);if(!keys||!fdEditionStudentMethod(storage,'setItem')||!fdEditionStudentMethod(storage,'removeItem'))return {ok:false,receipt:fdEditionRuntimeReceipt(siteContext,'EDITION_RUNTIME')};
+  stored=fdEditionStudentRead(storage,keys.edition);local=fdEditionStudentRead(storage,keys.local);if(!stored.ok||!local.ok)return {ok:false,receipt:fdEditionRuntimeReceipt(siteContext,'EDITION_RUNTIME')};
+  if(hash){hashCleared=fdEditionRuntimeClearHash(locationValue,historyValue);try{hashCleared=hashCleared&&locationValue.hash==='';}catch(ignoreHash){hashCleared=false;}if(!hashCleared)return {ok:false,receipt:fdEditionRuntimeReceipt(siteContext,'EDITION_RUNTIME')};}
+  local=fdEditionStudentLocalDocument(local.value);if(!local.ok)return {ok:false,receipt:fdEditionRuntimeReceipt(siteContext,'EDITION_RUNTIME')};
+  return {ok:true,location:locationValue,history:historyValue,storage:storage,keys:keys,pageUrl:pageUrl,hash:hash,hashCleared:hashCleared,storedText:stored.value,localDocument:local.document,subtle:subtle};
 }
 
-function fdEditionRuntimeDomReady(documentValue,app,mount){
-  var create=fdEditionStudentMethod(documentValue,'createElement'),dialog,button;
-  if(!documentValue||!app||!mount||!create||
-     !fdEditionStudentMethod(app,'removeAttribute')||!fdEditionStudentMethod(app,'addEventListener')||
-     !fdEditionStudentMethod(app,'removeEventListener')||!fdEditionStudentMethod(app,'querySelector')||
-     !fdEditionRuntimeWritable(mount,'innerHTML')||!fdEditionStudentMethod(mount,'querySelector')) return false;
-  try{ dialog=Function.prototype.call.call(create,documentValue,'dialog'); button=Function.prototype.call.call(create,documentValue,'button'); }
-  catch(ignoreCreate){ return false; }
-  return !!(dialog&&button&&fdEditionStudentMethod(dialog,'addEventListener')&&
-    fdEditionStudentMethod(dialog,'querySelector')&&fdEditionStudentMethod(dialog,'showModal')&&
-    fdEditionStudentMethod(dialog,'close')&&fdEditionStudentMethod(button,'addEventListener')&&
-    fdEditionStudentMethod(button,'focus'));
-}
+function fdEditionRuntimeRecover(canonicalIndex,validatedEdition,state,render){var projected=fdEditionStudentProject(canonicalIndex,validatedEdition);if(!projected||!fdEditionActiveIdentity(validatedEdition,projected.index)||typeof render!=='function')return false;try{return render(projected.index,state,validatedEdition)===true;}catch(ignore){return false;}}
 
-function fdEditionRuntimeShellReady(app){
-  var query=fdEditionStudentMethod(app,'querySelector'),content=null;
-  if(!query) return false;
-  try{ content=Function.prototype.call.call(query,app,'#content'); }
-  catch(ignoreQuery){ return false; }
-  return !!content;
-}
-
-function fdEditionRuntimeListen(target,type,handler,capture){
-  var add=fdEditionStudentMethod(target,'addEventListener');
-  var remove=fdEditionStudentMethod(target,'removeEventListener');
-  if(!add||!remove||typeof type!=='string'||typeof handler!=='function') return {ok:false};
-  try{ Function.prototype.call.call(add,target,type,handler,capture===true); }
-  catch(ignoreListener){
-    try{ Function.prototype.call.call(remove,target,type,handler,capture===true); }
-    catch(ignoreFailedRemove){ }
-    return {ok:false};
-  }
-  return {ok:true,target:target,type:type,handler:handler,capture:capture===true,
-    removeMethod:remove,active:true};
-}
-
-function fdEditionRuntimeUnlisten(registration){
-  if(!registration||registration.active!==true) return true;
-  registration.active=false;
-  try{
-    Function.prototype.call.call(registration.removeMethod,registration.target,
-      registration.type,registration.handler,registration.capture);
-    return true;
-  }catch(ignoreRemove){ return false; }
-}
-
-function fdEditionRuntimeRemoveBusy(app){
-  var remove=fdEditionStudentMethod(app,'removeAttribute');
-  if(!remove) return false;
-  try{ Function.prototype.call.call(remove,app,'aria-busy'); return true; }
-  catch(ignoreBusy){ return false; }
-}
-
-function fdEditionRuntimeReleaseGate(app){
-  var remove=fdEditionStudentMethod(app,'removeAttribute');
-  var set=fdEditionStudentMethod(app,'setAttribute');
-  var has=fdEditionStudentMethod(app,'hasAttribute');
-  var hadBusy=true,hadInert=true;
-  if(!remove||!set) return false;
-  try{
-    if(has){
-      hadBusy=Function.prototype.call.call(has,app,'aria-busy');
-      hadInert=Function.prototype.call.call(has,app,'inert');
-    }
-    Function.prototype.call.call(remove,app,'inert');
-    Function.prototype.call.call(remove,app,'aria-busy');
-    return true;
-  }catch(ignoreRelease){
-    try{
-      if(hadInert) Function.prototype.call.call(set,app,'inert','');
-      if(hadBusy) Function.prototype.call.call(set,app,'aria-busy','true');
-    }catch(ignoreRestore){ }
-    return false;
-  }
-}
-
-function fdEditionRuntimeInputs(windowValue,documentValue,app,mount,siteContext){
-  var locationValue=null,historyValue=null,storage=null,cryptoValue=null,subtle=null,pageUrl='',hash='',stored,hashCleared=false;
-  if(!fdEditionRuntimeDomReady(documentValue,app,mount))
-    return {ok:false,receipt:fdEditionRuntimeReceipt(siteContext,'EDITION_RUNTIME')};
-  try{ locationValue=windowValue&&windowValue.location; }
-  catch(ignoreLocation){ locationValue=null; }
-  if(!locationValue) return {ok:false,receipt:fdEditionRuntimeReceipt(siteContext,'EDITION_RUNTIME')};
-  try{ pageUrl=locationValue.href; hash=locationValue.hash; }
-  catch(ignoreLocationFields){ return {ok:false,receipt:fdEditionRuntimeReceipt(siteContext,'EDITION_RUNTIME')}; }
-  if(typeof pageUrl!=='string'||typeof hash!=='string')
-    return {ok:false,receipt:fdEditionRuntimeReceipt(siteContext,'EDITION_RUNTIME')};
-  if(!fdEditionPublicationEnabled(siteContext)){
-    if(hash){
-      try{ historyValue=windowValue&&windowValue.history; }catch(ignoreDisabledHistory){ historyValue=null; }
-      if(!fdEditionRuntimeClearHash(locationValue,historyValue))
-        return {ok:false,receipt:fdEditionRuntimeReceipt(siteContext,'EDITION_RUNTIME')};
-    }
-    return {ok:true,location:locationValue,history:historyValue,storage:null,pageUrl:pageUrl,hash:hash,
-      hashCleared:hash?true:true,storedText:null,subtle:null};
-  }
-  try{ storage=windowValue&&windowValue.localStorage; }
-  catch(ignoreStorage){ storage=null; }
-  if(!fdEditionStudentMethod(storage,'setItem'))
-    return {ok:false,receipt:fdEditionRuntimeReceipt(siteContext,'EDITION_RUNTIME')};
-  stored=fdEditionStudentRead(storage,FD_EDITION_STUDENT_KEYS.edition);
-  if(!stored.ok) return {ok:false,receipt:fdEditionRuntimeReceipt(siteContext,'EDITION_RUNTIME')};
-  if(hash){
-    try{ historyValue=windowValue&&windowValue.history; }
-    catch(ignoreHistory){ historyValue=null; }
-    if(!fdEditionRuntimeClearHash(locationValue,historyValue))
-      return {ok:false,receipt:fdEditionRuntimeReceipt(siteContext,'EDITION_RUNTIME')};
-    try{ hashCleared=locationValue.hash===''; }
-    catch(ignoreClearedHash){ hashCleared=false; }
-    if(!hashCleared) return {ok:false,receipt:fdEditionRuntimeReceipt(siteContext,'EDITION_RUNTIME')};
-  }
-  try{ cryptoValue=windowValue&&windowValue.crypto; }
-  catch(ignoreCrypto){ cryptoValue=null; }
-  if(!cryptoValue) return {ok:false,receipt:fdEditionRuntimeReceipt(siteContext,'EDITION_CRYPTO')};
-  try{ subtle=cryptoValue.subtle; }
-  catch(ignoreSubtle){ subtle=null; }
-  if(!subtle||!fdEditionStudentMethod(subtle,'digest'))
-    return {ok:false,receipt:fdEditionRuntimeReceipt(siteContext,'EDITION_CRYPTO')};
-  return {ok:true,location:locationValue,history:historyValue,storage:storage,pageUrl:pageUrl,hash:hash,
-    hashCleared:hash?hashCleared:true,storedText:stored.value,subtle:subtle};
-}
-
-function fdEditionRuntimeClearHash(locationValue,historyValue){
-  var path='',search='',method=fdEditionStudentMethod(historyValue,'replaceState');
-  if(!method) return false;
-  try{ path=locationValue.pathname; search=locationValue.search; }
-  catch(ignoreLocation){ return false; }
-  if(typeof path!=='string'||typeof search!=='string') return false;
-  try{ Function.prototype.call.call(method,historyValue,null,'',path+search); return true; }
-  catch(ignoreHistory){ return false; }
-}
-
-function fdEditionRuntimeReload(locationValue){
-  var method=fdEditionStudentMethod(locationValue,'reload'),result;
-  if(!method) return false;
-  try{ result=Function.prototype.call.call(method,locationValue); return result!==false; }
-  catch(ignoreReload){ return false; }
-}
-
-function fdEditionRuntimeSwitchReady(locationValue,hashCleared){
-  return hashCleared===true&&!!fdEditionStudentMethod(locationValue,'reload');
-}
-
-function fdEditionRuntimeMountError(mount,receipt){
-  if(!mount) return false;
-  try{ mount.innerHTML=fdEditionErrorMarkup(receipt); return true; }
-  catch(ignoreMount){ return false; }
-}
-
-function fdEditionRuntimeRestoreActive(storage,validatedEdition){
-  var edition=fdEditionStudentValidEdition(validatedEdition);
-  return !!edition&&fdEditionStudentWrite(storage,FD_EDITION_STUDENT_KEYS.edition,edition.text);
-}
-
-function fdEditionRuntimeRecover(canonicalIndex,validatedEdition,siteContext,state,render){
-  var selected=fdEditionStudentValidEdition(validatedEdition);
-  var projected=selected?fdEditionStudentProject(canonicalIndex,validatedEdition,siteContext):null;
-  if(!projected||!projected.ok||!projected.index||
-     !fdEditionActiveIdentity(validatedEdition,projected.index)||typeof render!=='function') return false;
-  try{ return render(projected.index,state,validatedEdition)===true; }
-  catch(ignoreRender){ return false; }
-}
-
-function fdEditionRuntimeMountSwitch(mount,result,storage,locationValue,hashCleared,recover){
-  var markup=fdEditionSwitchMarkup(result&&result.active,result&&result.candidate),dialog,keep,accept,
-    dialogListener,keepListener,acceptListener,show,close,focus,state='pending';
-  if(!mount||!markup||!fdEditionRuntimeSwitchReady(locationValue,hashCleared)||typeof recover!=='function') return false;
-  try{ mount.innerHTML=markup; dialog=mount.querySelector('dialog.fd-edition-switch'); }
-  catch(ignoreMount){ return false; }
-  if(!dialog) return false;
-  dialogListener=fdEditionStudentMethod(dialog,'addEventListener');
-  show=fdEditionStudentMethod(dialog,'showModal');
-  close=fdEditionStudentMethod(dialog,'close');
-  try{ keep=dialog.querySelector('button[value="decline"]'); accept=dialog.querySelector('button[value="accept"]'); }
-  catch(ignoreButtons){ return false; }
-  keepListener=fdEditionStudentMethod(keep,'addEventListener');
-  acceptListener=fdEditionStudentMethod(accept,'addEventListener');
-  focus=fdEditionStudentMethod(keep,'focus');
-  if(!dialogListener||!show||!close||!keep||!accept||!keepListener||!acceptListener||!focus) return false;
-  function prevent(event){
-    var method=fdEditionStudentMethod(event,'preventDefault');
-    if(method) try{ Function.prototype.call.call(method,event); }catch(ignorePrevent){ }
-  }
-  function lock(){
-    try{ keep.disabled=true; }catch(ignoreKeepLock){ }
-    try{ accept.disabled=true; }catch(ignoreAcceptLock){ }
-  }
-  function fail(){
-    fdEditionRuntimeMountError(mount,fdEditionRuntimeReceipt(null,'EDITION_RUNTIME'));
-  }
-  function decide(accepted,event){
-    var restored=false,recovered=false;
-    prevent(event);
-    if(state!=='pending') return;
-    state='working'; lock();
-    if(!accepted){
-      try{ Function.prototype.call.call(close,dialog); mount.innerHTML=''; state='done'; }
-      catch(ignoreDeclineClose){ state='failed'; fail(); }
-      return;
-    }
-    if(!fdEditionAcceptSwitch(storage,result.candidate)){ state='failed'; fail(); return; }
-    if(fdEditionRuntimeReload(locationValue)){ state='done'; return; }
-    restored=fdEditionRuntimeRestoreActive(storage,result.active);
-    if(!restored){
-      try{ recovered=recover(result.candidate)===true; }catch(ignoreRecovery){ recovered=false; }
-    }
-    state=recovered||restored?'recovered':'failed';
-    fail();
-  }
-  try{
-    Function.prototype.call.call(acceptListener,accept,'click',function(event){ decide(true,event); });
-    Function.prototype.call.call(keepListener,keep,'click',function(event){ decide(false,event); });
-    Function.prototype.call.call(dialogListener,dialog,'cancel',function(event){ decide(false,event); });
-    Function.prototype.call.call(show,dialog);
-    Function.prototype.call.call(focus,keep);
-    return true;
-  }catch(ignoreDialog){ return false; }
+function fdEditionRuntimeMountSwitch(mount,result,storage,keys,localDocument,journal,locationValue,hashCleared,recover){
+  var markup=fdEditionSwitchMarkup(result&&result.active,result&&result.candidate),dialog,keep,accept,state='pending';
+  if(!mount||!markup||!fdEditionRuntimeSwitchReady(locationValue,hashCleared)||typeof recover!=='function')return false;
+  try{mount.innerHTML=markup;dialog=mount.querySelector('dialog.fd-edition-switch');keep=dialog.querySelector('button[value="decline"]');accept=dialog.querySelector('button[value="accept"]');if(!dialog||!keep||!accept)throw new Error('dialog');
+    accept.addEventListener('click',function(event){var receipt,rolled=false;if(event&&event.preventDefault)event.preventDefault();if(state!=='pending')return;state='working';receipt=fdEditionCommitAcceptance(storage,keys,result.candidate,localDocument,journal);if(!receipt.ok){state='failed';fdEditionRuntimeMountError(mount,receipt);return;}if(fdEditionRuntimeReload(locationValue)){state='done';return;}rolled=fdEditionStartupJournalRollback(journal);state=rolled?'rolled-back':(recover(result.candidate)===true?'recovered':'failed');fdEditionRuntimeMountError(mount,fdEditionRuntimeReceipt(null,'EDITION_RUNTIME'));});
+    keep.addEventListener('click',function(event){if(event&&event.preventDefault)event.preventDefault();if(state!=='pending')return;state='done';dialog.close();mount.innerHTML='';});dialog.addEventListener('cancel',function(event){if(event&&event.preventDefault)event.preventDefault();if(state==='pending'){state='done';dialog.close();mount.innerHTML='';}});dialog.showModal();keep.focus();return true;
+  }catch(ignore){return false;}
 }

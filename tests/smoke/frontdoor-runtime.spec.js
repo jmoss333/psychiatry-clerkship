@@ -5,10 +5,14 @@ import { readFileSync } from 'node:fs';
 const DESKTOP = { width: 1280, height: 800 };
 const PHONE = { width: 390, height: 844 };
 const CAPTURE = '.fd-capture-launch--global[data-capture-open]';
-const EDITION_KEY = 'cw_rotation_edition_v1';
-const LOCAL_EDITION_KEY = 'cw_rotation_local_progress_v1';
+let EDITION_KEY = 'cw_rotation_edition_ms3_v2';
+let LOCAL_EDITION_KEY = 'cw_rotation_local_progress_ms3_v2';
 const EDITION_WRITE_LOG = '__fd_edition_write_log';
-const EDITION_REVISION = '1234567890abcdef1234567890abcdef12345678';
+const EDITION_CATALOG_REVISION = `sha256-${'B'.repeat(43)}`;
+const EDITION_CATALOG_SOURCE = readFileSync(new URL(
+  '../../13_Faculty_Resources/_automation/site_build/frontdoor/fd_edition_catalog.js',
+  import.meta.url,
+), 'utf8').replace('__FD_CATALOG_EXPECTED_REVISION__', EDITION_CATALOG_REVISION);
 const EDITION_CONTRACT_SOURCE = readFileSync(new URL(
   '../../13_Faculty_Resources/_automation/site_build/frontdoor/fd_edition_contract.js',
   import.meta.url,
@@ -21,29 +25,107 @@ const EDITION_STUDENT_SOURCE = readFileSync(new URL(
   '../../13_Faculty_Resources/_automation/site_build/frontdoor/fd_edition_student.js',
   import.meta.url,
 ), 'utf8');
+const EDITION_SYNTHETIC = JSON.parse(readFileSync(new URL(
+  '../fixtures/rotation-editions/synthetic-core-index.json', import.meta.url,
+), 'utf8'));
+const EDITION_VALID = {
+  ms3: JSON.parse(readFileSync(new URL('../fixtures/rotation-editions/valid-ms3.json', import.meta.url), 'utf8')),
+  resident: JSON.parse(readFileSync(new URL('../fixtures/rotation-editions/valid-resident.json', import.meta.url), 'utf8')),
+};
 // The browser cases generate envelopes with the shipped contract. They never manufacture or
 // brand a validation result; the learner runtime independently validates every serialized link.
 // eslint-disable-next-line no-new-func
-const EDITION_CONTRACT = new Function(`${EDITION_CONTRACT_SOURCE}\nreturn {
-  fdEditionCreateEnvelope,fdEditionCanonicalJson,fdEditionValidateEnvelope
-};`)();
+const EDITION_CONTRACT = new Function('TextEncoder', 'TextDecoder', 'atob', 'btoa', `${EDITION_CATALOG_SOURCE}\n${EDITION_CONTRACT_SOURCE}\nreturn {
+  fdEditionCatalogSnapshot,fdEditionCreateEnvelope,fdEditionCanonicalJson,fdEditionValidateEnvelope,fdEditionStorageKeys
+};`)(TextEncoder, TextDecoder, atob, btoa);
 // The switch failure cases run the shipped learner transaction against fallible boundary
 // adapters. Only the browser APIs are doubled; validation, commit, rollback, and recovery
 // decisions are the production implementation.
 // eslint-disable-next-line no-new-func
-const EDITION_RUNTIME = new Function(`${EDITION_CONTRACT_SOURCE}\n${EDITION_PROJECT_SOURCE}\n${EDITION_STUDENT_SOURCE}\nreturn {
-  fdEditionValidateEnvelope,fdEditionRuntimeInputs,fdEditionRuntimeMountSwitch,
+const EDITION_RUNTIME = new Function('TextEncoder', 'TextDecoder', 'atob', 'btoa', `${EDITION_CATALOG_SOURCE}\n${EDITION_CONTRACT_SOURCE}\n${EDITION_PROJECT_SOURCE}\n${EDITION_STUDENT_SOURCE}\nreturn {
+  fdEditionCatalogSnapshot,fdEditionValidateEnvelope,fdEditionRuntimeInputs,fdEditionRuntimeMountSwitch,
   fdEditionRuntimeRecover:typeof fdEditionRuntimeRecover==='function'?fdEditionRuntimeRecover:null,
   fdEditionActiveIdentity:typeof fdEditionActiveIdentity==='function'?fdEditionActiveIdentity:null,
-  fdEditionLocalToggleAllowed,fdEditionToggleLocalProgress,fdEditionReadLocalProgress
-};`)();
+  fdEditionLocalToggleAllowed,fdEditionToggleLocal,fdEditionReadLocal,
+  fdEditionReadLocalDocument,fdEditionStartupJournal,fdEditionStorageKeys,fdProjectEdition
+};`)(TextEncoder, TextDecoder, atob, btoa);
 const VALID_PLACEMENT = {
   takenAt: '2026-08-17T00:00:00.000Z',
   answers: [{ id: 'synthetic-placement', cat: 'safety', correct: false }],
   byCat: { safety: { n: 1, correct: 0 } },
 };
+const SYNTHETIC_PAGE_ROUTES = new WeakSet();
 
-async function installEditionRuntimeProbe(page, options = {}) {
+function editionCanonical(value) {
+  if (Array.isArray(value)) return `[${value.map(editionCanonical).join(',')}]`;
+  if (value && typeof value === 'object') {
+    return `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${editionCanonical(value[key])}`).join(',')}}`;
+  }
+  return JSON.stringify(value);
+}
+
+async function editionDigest(value) {
+  return `sha256-${Buffer.from(await webcrypto.subtle.digest(
+    'SHA-256', new TextEncoder().encode(editionCanonical(value)),
+  )).toString('base64url')}`;
+}
+
+async function installSyntheticLearnerCatalog(page) {
+  if (SYNTHETIC_PAGE_ROUTES.has(page)) return;
+  SYNTHETIC_PAGE_ROUTES.add(page);
+  await page.route('**/*', async (route) => {
+    if (route.request().resourceType() !== 'document') return route.continue();
+    const pathname = new URL(route.request().url()).pathname;
+    if (pathname !== '/' && pathname !== '/index.html') return route.continue();
+    const response = await route.fetch();
+    let html = await response.text();
+    const audienceMatch = html.match(/var FD_AUDIENCE=(["'][^"']+["']);/);
+    const catalogMatch = html.match(/var FD_ROTATION_EDITION_CATALOG=(\{.*?\});\s*\n/s);
+    if (!audienceMatch || !catalogMatch) return route.fulfill({ response, body: html });
+    const audience = JSON.parse(audienceMatch[1]);
+    const current = JSON.parse(catalogMatch[1]);
+    const canonical = structuredClone(EDITION_SYNTHETIC.audiences[audience]);
+    const coreMatch = html.match(/var FD_CORE_REVISION=(["'][0-9a-f]{40}["']);/);
+    const indexMatch = html.match(/var FD_CANONICAL_INDEX=fdBuildIndex\(FD_CURRICULUM,FD_TOPIC_META,FD_TOOL_REGISTRY,FD_SITE_MANIFEST\);/);
+    if (!canonical || !coreMatch || !indexMatch) throw new Error('built learner bootstrap was not found');
+    const currentCoreRevision = JSON.parse(coreMatch[1]);
+    const sourceRecords = EDITION_SYNTHETIC.catalogRecords.concat([1, 2].map((editionNumber) => ({
+      key: `choice.runtime-check-${editionNumber}-0@v1`, kind: 'choice', choiceKind: 'checklist',
+      label: 'Synthetic checklist 1', fragment: `Review local:check:${editionNumber}`,
+      locationKeys: ['location.example-unit@v1'], audiences: ['ms3', 'resident'], verifiedOn: '2026-08-19',
+    })));
+    const records = await Promise.all(sourceRecords.map(async (record) => ({
+      ...structuredClone(record), contentDigest: await editionDigest(record),
+    })));
+    records.sort((left, right) => left.key.localeCompare(right.key));
+    const projection = {
+      schemaVersion: 1, audience, revision: EDITION_CATALOG_REVISION, projectionDigest: '',
+      rotationEditionV2: 'enabled', selectionKeys: records.map((record) => record.key),
+      resolutionRecords: records, blockedKeys: [],
+    };
+    const bare = structuredClone(projection); delete bare.projectionDigest;
+    projection.projectionDigest = await editionDigest(bare);
+    html = html.replace(catalogMatch[0], `var FD_ROTATION_EDITION_CATALOG=${JSON.stringify(projection)};\n`);
+    html = html.split(current.revision).join(EDITION_CATALOG_REVISION);
+    html = html.replace(indexMatch[0], `var FD_CANONICAL_INDEX=${JSON.stringify(canonical)};`);
+    html = html.split(currentCoreRevision).join(canonical.coreRevision);
+    await route.fulfill({ response, body: html, headers: { ...response.headers(), 'content-type': 'text/html; charset=utf-8' } });
+  });
+}
+
+function selectEditionKeys(audience) {
+  if (audience === 'resident') {
+    EDITION_KEY = 'rp_rotation_edition_resident_v2';
+    LOCAL_EDITION_KEY = 'rp_rotation_local_progress_resident_v2';
+  } else {
+    EDITION_KEY = 'cw_rotation_edition_ms3_v2';
+    LOCAL_EDITION_KEY = 'cw_rotation_local_progress_ms3_v2';
+  }
+}
+
+async function installEditionRuntimeProbe(page, testInfo, options = {}) {
+  await installSyntheticLearnerCatalog(page);
+  selectEditionKeys(testInfo.project.name === 'nav-res' ? 'resident' : 'ms3');
   await page.addInitScript(({ editionKey, localKey, logKey, throwHistory, listenerFault, startupFault }) => {
     const originalSetItem = Storage.prototype.setItem;
     const originalGetItem = Storage.prototype.getItem;
@@ -284,7 +366,7 @@ async function installEditionRuntimeProbe(page, options = {}) {
 test('slow edition resource startup rejects every pre-commit learner interaction without losing ownership', async ({ page }, testInfo) => {
   const pageErrors = [];
   page.on('pageerror', (error) => pageErrors.push(error.message));
-  await installEditionRuntimeProbe(page, { startupFault: 'markdown-slow-interaction' });
+  await installEditionRuntimeProbe(page, testInfo, { startupFault: 'markdown-slow-interaction' });
   const incoming = await createSyntheticEdition(testInfo, 2);
   await page.goto('/');
   await seedEditionLearner(page);
@@ -358,6 +440,7 @@ test('slow edition resource startup rejects every pre-commit learner interaction
 });
 
 test('the attending handoff stays secondary, readable, and locally scoped at 390px', async ({ page }, testInfo) => {
+  await installSyntheticLearnerCatalog(page);
   await page.setViewportSize(PHONE);
   const incoming = await createSyntheticEdition(testInfo, 1);
   await page.goto('/');
@@ -367,25 +450,22 @@ test('the attending handoff stays secondary, readable, and locally scoped at 390
   await page.goto(`/?case=edition-phone#edition=${incoming.payload}`);
   const continueCard = page.locator('.fd-continue');
   const editionCard = page.locator('.fd-edition-card');
-  const orientation = page.locator('[data-edition-orientation]');
+  const orientation = page.locator('.fd-edition-local');
   await expect(continueCard).toBeVisible();
   await expect(editionCard).toBeVisible();
   await expect(orientation).toBeVisible();
   expect(await page.evaluate(() => {
     const setup = document.querySelector('.fd-continue,.fd-setupcta');
     const edition = document.querySelector('.fd-edition-card');
-    const local = document.querySelector('[data-edition-orientation]');
+    const local = document.querySelector('.fd-edition-local');
     return Boolean(setup && edition && local
       && (setup.compareDocumentPosition(edition) & Node.DOCUMENT_POSITION_FOLLOWING)
       && (edition.compareDocumentPosition(local) & Node.DOCUMENT_POSITION_FOLLOWING));
   })).toBe(true);
 
-  await expect(editionCard).not.toHaveAttribute('open');
-  await expect(editionCard.locator('summary')).toContainText('Locally curated');
-  await expect(editionCard.locator('.fd-edition-card__fingerprint')).toHaveText(incoming.fingerprint);
-  await editionCard.locator('summary').click();
-  await expect(editionCard).toHaveAttribute('open', '');
-  await expect(editionCard).toContainText('Identity not digitally verified.');
+  await expect(editionCard).toContainText('Local rotation guidance');
+  await expect(editionCard).toContainText(incoming.fingerprint);
+  await expect(editionCard).toContainText('Curator identity and institutional endorsement are not digitally verified by this link.');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 
   const toggle = orientation.locator('[data-fd-local-toggle="checklist"]');
@@ -405,7 +485,7 @@ test('the attending handoff stays secondary, readable, and locally scoped at 390
 test('delayed startup fallback preserves concurrent core and unrelated storage', async ({ page, context }, testInfo) => {
   const pageErrors = [];
   page.on('pageerror', (error) => pageErrors.push(error.message));
-  await installEditionRuntimeProbe(page, { startupFault: 'markdown-delayed-reject' });
+  await installEditionRuntimeProbe(page, testInfo, { startupFault: 'markdown-delayed-reject' });
   const incoming = await createSyntheticEdition(testInfo, 2);
   await page.goto('/');
   await seedEditionLearner(page);
@@ -481,7 +561,7 @@ test('browser startup journal preserves an intermediate concurrent plan value pe
   const other = await context.newPage();
   await other.goto('/nav.json');
   await other.evaluate(() => localStorage.setItem('cw_plan_v1', 'plan-B'));
-  expect(await page.evaluate(() => fdEditionStartupJournalRollback(window.__fdRoundTwoJournal))).toBe(true);
+  expect(await page.evaluate(() => fdEditionStartupJournalRollback(window.__fdRoundTwoJournal))).toBe(false);
   expect(await page.evaluate(() => ({
     plan: localStorage.getItem('cw_plan_v1'),
     frontdoor: localStorage.getItem('cw_frontdoor_v1'),
@@ -593,106 +673,107 @@ async function expectAtomicStartupFailure(page, {
     document.querySelector('#fdApp')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     return window.__fdStartupListenerFires;
   })).toEqual([]);
-  await expect(page.locator('#content .fd-today .fd-row').first()).toBeVisible();
+  await expect(page.locator('#content .fd-today')).toBeVisible();
   expect(await page.evaluate(() => window.__fdUnhandledRejections)).toEqual([]);
   expect(pageErrors).toEqual([]);
 }
 
 async function seedEditionLearner(page) {
-  await page.evaluate(() => {
+  await page.evaluate((viewWeek) => {
     const now = new Date();
     now.setHours(12, 0, 0, 0);
-    now.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+    now.setDate(now.getDate() - ((now.getDay() + 6) % 7) - ((viewWeek - 1) * 7));
     const start = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     localStorage.setItem('cw_rotation_start', start);
     localStorage.setItem('cw_frontdoor_v1', JSON.stringify({
-      role: 'staff', tab: 'today', viewWeek: 1, autoAdvance: false,
+      role: 'staff', tab: 'today', viewWeek, week: viewWeek, autoAdvance: false,
     }));
     localStorage.setItem('cw_progress_v1', '{"synthetic-core":{"done":true}}');
     localStorage.setItem('cw_unrelated_v1', 'preserve byte-for-byte');
-  });
+  }, EDITION_KEY.startsWith('rp_') ? 4 : 1);
+}
+
+function prereleaseEditionPayload() {
+  return Buffer.from(JSON.stringify({
+    format: 'cw-rotation-edition', schemaVersion: 1,
+    config: { unsupported: 'prerelease' }, digest: 'legacy',
+  }), 'utf8').toString('base64url');
 }
 
 async function createSyntheticEdition(testInfo, editionNumber, audienceOverride = '', localIds = null) {
   const audience = audienceOverride || (testInfo.project.name === 'nav-res' ? 'resident' : 'ms3');
-  const pathId = audience === 'resident' ? 'resident-four-week' : 'ms3-six-week';
-  const weekCount = audience === 'resident' ? 4 : 6;
-  const selected = editionNumber === 1
-    ? { ref: 'welcome.md', title: audience === 'resident'
-      ? 'Welcome — Resident Rotation' : 'Welcome to the Rotation' }
-    : { ref: 'orientation.md', title: 'Orientation Packet' };
-  const byRef = {
-    'welcome.md': { ref: 'welcome.md', kind: 'read', title: 'Welcome to the Rotation', minutes: 5 },
-    'orientation.md': { ref: 'orientation.md', kind: 'read', title: 'Orientation Packet', minutes: 5 },
+  selectEditionKeys(audience);
+  const canonical = structuredClone(EDITION_SYNTHETIC.audiences[audience]);
+  const config = structuredClone(EDITION_VALID[audience].config);
+  config.editionNumber = editionNumber;
+  const resolvedLocalIds = localIds || [`local:check:${editionNumber}`];
+  config.localPlan = { checklistItems: resolvedLocalIds.map((id, index) => ({
+    instanceId: id, itemKey: `choice.runtime-check-${editionNumber}-${index}@v1`, priority: 'required',
+  })) };
+  if (editionNumber > 1) {
+    config.context.editionCheckedOn = '2026-08-18';
+    config.changeSummary = { kindCodes: ['edition-context', 'checklist'], changedItemCount: resolvedLocalIds.length + 1 };
+  } else {
+    config.changeSummary = { kindCodes: ['initial'], changedItemCount: 0 };
+  }
+  const canonicalJson = (value) => Array.isArray(value)
+    ? `[${value.map(canonicalJson).join(',')}]`
+    : value && typeof value === 'object'
+      ? `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${canonicalJson(value[key])}`).join(',')}}`
+      : JSON.stringify(value);
+  const digest = async (value) => `sha256-${Buffer.from(await webcrypto.subtle.digest(
+    'SHA-256', new TextEncoder().encode(canonicalJson(value)),
+  )).toString('base64url')}`;
+  const sourceRecords = EDITION_SYNTHETIC.catalogRecords.concat(resolvedLocalIds.map((id, index) => ({
+    key: `choice.runtime-check-${editionNumber}-${index}@v1`, kind: 'choice', choiceKind: 'checklist',
+    label: `Synthetic checklist ${index + 1}`, fragment: `Review ${id}`,
+    locationKeys: ['location.example-unit@v1'], audiences: ['ms3', 'resident'], verifiedOn: '2026-08-19',
+  })));
+  const records = await Promise.all(sourceRecords.map(async (record) => ({
+    ...structuredClone(record), contentDigest: await digest(record),
+  })));
+  records.sort((left, right) => left.key.localeCompare(right.key));
+  const catalogProjection = {
+    schemaVersion: 1, audience, revision: EDITION_CATALOG_REVISION, projectionDigest: '',
+    rotationEditionV2: 'enabled', selectionKeys: records.map((record) => record.key),
+    resolutionRecords: records, blockedKeys: [],
   };
-  const canonical = {
-    byRef,
-    path: { id: pathId, weekCount },
-    weeks: Array.from({ length: weekCount }, (_, index) => ({
-      n: index + 1, title: `Week ${index + 1}`, theme: 'Synthetic', focusCategories: [], items: [],
-    })),
-    columns: [],
-    kit: [],
-  };
-  const config = {
-    audience,
-    pathId,
-    editionNumber,
-    createdAgainstCoreRevision: EDITION_REVISION,
-    card: {
-      title: `Synthetic runtime edition ${editionNumber}`,
-      locationName: 'Example Teaching Unit',
-      locationCode: audience === 'ms3' ? 'TMS3' : 'TRES',
-      curatorName: 'Example Faculty',
-      curatorRole: 'Faculty educator',
-      rotationStart: '2026-09-01',
-      rotationEnd: '2026-10-12',
-      lastVerified: '2026-08-19',
-    },
-    pathItems: [{
-      instanceId: `core:runtime:${editionNumber}`,
-      ref: selected.ref,
-      week: 1,
-      order: 1,
-      priority: 'required',
-      rationale: `Synthetic runtime priority ${editionNumber}.`,
-    }],
-    localOrientation: {
-      firstDayArrival: '', dailySchedule: '', roundsWorkflow: '',
-      presentationExpectations: '', documentationExpectations: '',
-      attendanceExpectations: '', feedbackProcess: '', accessPreparation: '',
-      contacts: [],
-      checklist: (localIds || [`local:check:${editionNumber}`]).map((id) => ({
-        id, label: `Review ${id}`, priority: 'required',
-      })),
-      resources: [],
-    },
-    changeNote: `Synthetic runtime change ${editionNumber}.`,
-  };
+  const bareProjection = structuredClone(catalogProjection); delete bareProjection.projectionDigest;
+  catalogProjection.projectionDigest = await digest(bareProjection);
+  const prepared = await EDITION_CONTRACT.fdEditionCatalogSnapshot(catalogProjection, audience, webcrypto.subtle);
+  expect(prepared.ok, JSON.stringify(prepared.errors || [])).toBe(true);
+  const siteContext = { audience, coreRevision: canonical.coreRevision,
+    localCatalogRevision: EDITION_CATALOG_REVISION, rotationEditionV2: 'enabled' };
   const made = await EDITION_CONTRACT.fdEditionCreateEnvelope(
-    config,
-    canonical,
-    { audience, pathId, coreRevision: EDITION_REVISION },
-    webcrypto.subtle,
+    config, canonical, prepared.snapshot, siteContext,
+    { mode: 'builder', generationDate: '2026-08-19' }, webcrypto.subtle,
   );
-  expect(made.ok).toBe(true);
+  expect(made.ok, JSON.stringify(made.errors || [])).toBe(true);
+  const runtimePrepared = await EDITION_RUNTIME.fdEditionCatalogSnapshot(
+    catalogProjection, audience, webcrypto.subtle,
+  );
+  expect(runtimePrepared.ok, JSON.stringify(runtimePrepared.errors || [])).toBe(true);
   const validated = await EDITION_RUNTIME.fdEditionValidateEnvelope(
     made.envelope,
     canonical,
-    { audience, pathId, coreRevision: EDITION_REVISION },
-    webcrypto.subtle,
+    runtimePrepared.snapshot, siteContext, { mode: 'learner', generationDate: '' }, webcrypto.subtle,
   );
-  expect(validated.ok).toBe(true);
+  expect(validated.ok, JSON.stringify(validated.errors || [])).toBe(true);
+  const projected = EDITION_RUNTIME.fdProjectEdition(canonical, validated);
+  expect(projected.ok).toBe(true);
   return {
     payload: made.payload,
     fingerprint: made.fingerprint,
     envelope: made.envelope,
     canonicalEnvelope: EDITION_CONTRACT.fdEditionCanonicalJson(made.envelope),
     audience,
-    selectedTitle: selected.title,
+    selectedTitle: canonical.byRef['library/example'].title,
     validated,
+    projectedIndex: projected.index,
     canonical,
-    siteContext: { audience, pathId, coreRevision: EDITION_REVISION },
+    siteContext,
+    catalogSnapshot: runtimePrepared.snapshot,
+    keys: EDITION_CONTRACT.fdEditionStorageKeys(audience),
   };
 }
 
@@ -734,6 +815,7 @@ function runtimeDomHarness() {
   const content = makeNode('main');
   app.querySelector = (selector) => selector === '#content' ? content : null;
   app.removeAttribute = () => {};
+  app.setAttribute = () => {};
   return {
     app,
     mount,
@@ -766,6 +848,7 @@ function runtimeWindowHarness({ hash = '#edition=synthetic', historyMode = 'ok' 
   const storage = {
     getItem(key) { return values.has(key) ? values.get(key) : null; },
     setItem(key, value) { events.push(`write:${key}`); values.set(key, String(value)); },
+    removeItem(key) { events.push(`remove:${key}`); values.delete(key); },
   };
   return { window: { location, history, localStorage: storage, crypto: webcrypto }, location, history, storage, values, events };
 }
@@ -775,7 +858,7 @@ function switchDialogHarness(active, candidate, options = {}) {
   const values = new Map([
     [EDITION_KEY, active.canonicalEnvelope],
     [LOCAL_EDITION_KEY, JSON.stringify({
-      schemaVersion: 1,
+      schemaVersion: 2,
       byFingerprint: { [active.fingerprint]: { checklist: { 'local:check:1': true }, resources: {} } },
     })],
     ['cw_progress_v1', '{"core":{"done":true}}'],
@@ -827,6 +910,7 @@ function switchDialogHarness(active, candidate, options = {}) {
       }
       values.set(key, String(value));
     },
+    removeItem(key) { events.push(`remove:${key}`); values.delete(key); },
   };
   const location = {
     pathname: '/', search: '?case=switch', hash: '',
@@ -871,13 +955,13 @@ async function seedCompleteSetup(page, extra = {}) {
 
 test('runtime capability gate clears incoming hashes and rejects missing, throwing, or mountless boundaries without writes', async ({}, testInfo) => {
   const audience = testInfo.project.name === 'nav-res' ? 'resident' : 'ms3';
-  const pathId = audience === 'resident' ? 'resident-four-week' : 'ms3-six-week';
-  const siteContext = { audience, pathId, coreRevision: EDITION_REVISION };
+  const synthetic = await createSyntheticEdition(testInfo, 1, audience);
+  const siteContext = synthetic.siteContext;
 
   const healthyDom = runtimeDomHarness();
   const healthy = runtimeWindowHarness();
   const accepted = EDITION_RUNTIME.fdEditionRuntimeInputs(
-    healthy.window, healthyDom.document, healthyDom.app, healthyDom.mount, siteContext,
+    healthy.window, healthyDom.document, healthyDom.app, healthyDom.mount, synthetic.catalogSnapshot, siteContext,
   );
   expect(accepted.ok).toBe(true);
   expect(accepted.hash).toBe('#edition=synthetic');
@@ -892,7 +976,7 @@ test('runtime capability gate clears incoming hashes and rejects missing, throwi
     let result;
     expect(() => {
       result = EDITION_RUNTIME.fdEditionRuntimeInputs(
-        runtime.window, dom.document, dom.app, dom.mount, siteContext,
+        runtime.window, dom.document, dom.app, dom.mount, synthetic.catalogSnapshot, siteContext,
       );
     }).not.toThrow();
     expect(result.ok).toBe(false);
@@ -904,7 +988,7 @@ test('runtime capability gate clears incoming hashes and rejects missing, throwi
   const noMount = runtimeWindowHarness();
   const noMountDom = runtimeDomHarness();
   const noMountResult = EDITION_RUNTIME.fdEditionRuntimeInputs(
-    noMount.window, noMountDom.document, noMountDom.app, null, siteContext,
+    noMount.window, noMountDom.document, noMountDom.app, null, synthetic.catalogSnapshot, siteContext,
   );
   expect(noMountResult.ok).toBe(false);
   expect(noMountResult.receipt.code).toBe('EDITION_RUNTIME');
@@ -919,6 +1003,9 @@ test('reload failure restores the trusted active marker after candidate commit a
     harness.mount,
     { active: active.validated, candidate: candidate.validated },
     harness.storage,
+    candidate.keys,
+    EDITION_RUNTIME.fdEditionReadLocalDocument(harness.storage, candidate.keys),
+    EDITION_RUNTIME.fdEditionStartupJournal(harness.storage, [candidate.keys.local, candidate.keys.edition]),
     harness.location,
     true,
     harness.recover,
@@ -928,13 +1015,12 @@ test('reload failure restores the trusted active marker after candidate commit a
   expect(harness.values.get(EDITION_KEY)).toBe(active.canonicalEnvelope);
   expect(JSON.parse(harness.values.get(LOCAL_EDITION_KEY)).byFingerprint).toEqual({
     [active.fingerprint]: { checklist: { 'local:check:1': true }, resources: {} },
-    [candidate.fingerprint]: { checklist: {}, resources: {} },
   });
   expect(harness.recovered).toEqual([]);
   expect(harness.events).toEqual([
     'markup', 'show', 'focus:decline', 'prevent:click',
     `write:${LOCAL_EDITION_KEY}:candidate`, `write:${EDITION_KEY}:candidate`,
-    'reload', `write:${EDITION_KEY}:active`, 'alert',
+    'reload', `write:${EDITION_KEY}:active`, `write:${LOCAL_EDITION_KEY}:candidate`, 'alert',
   ]);
   expect(harness.mount.innerHTML).toContain('EDITION_RUNTIME');
   expect(harness.mount.innerHTML).not.toContain('private reload failure');
@@ -949,7 +1035,7 @@ test('rollback failure directly renders the committed candidate after the write 
   );
   const harness = switchDialogHarness(active, candidate, { reloadThrows: true, rollbackFails: true });
   let displayedFingerprint = active.fingerprint;
-  let displayedIndex = active.validated.index;
+  let displayedIndex = active.projectedIndex;
   let trustedSnapshot = active.validated;
   const coreBefore = harness.values.get('cw_progress_v1');
   const directRecover = (validated) => (
@@ -957,11 +1043,10 @@ test('rollback failure directly renders the committed candidate after the write 
     && EDITION_RUNTIME.fdEditionRuntimeRecover(
       candidate.canonical,
       validated,
-      candidate.siteContext,
       {},
       (index, _state, recoveredSnapshot) => {
         harness.events.push('recover');
-        displayedFingerprint = index.edition.fingerprint;
+        displayedFingerprint = index.edition.card.fingerprint;
         displayedIndex = index;
         trustedSnapshot = recoveredSnapshot;
         return true;
@@ -972,6 +1057,9 @@ test('rollback failure directly renders the committed candidate after the write 
     harness.mount,
     { active: active.validated, candidate: candidate.validated },
     harness.storage,
+    candidate.keys,
+    EDITION_RUNTIME.fdEditionReadLocalDocument(harness.storage, candidate.keys),
+    EDITION_RUNTIME.fdEditionStartupJournal(harness.storage, [candidate.keys.local, candidate.keys.edition]),
     harness.location,
     true,
     directRecover,
@@ -995,11 +1083,11 @@ test('rollback failure directly renders the committed candidate after the write 
   expect(EDITION_RUNTIME.fdEditionLocalToggleAllowed(
     identity.snapshot, 'checklist', 'local:check:new-only',
   )).toBe(true);
-  expect(EDITION_RUNTIME.fdEditionToggleLocalProgress(
-    harness.storage, identity.fingerprint, 'checklist', 'local:check:new-only',
+  expect(EDITION_RUNTIME.fdEditionToggleLocal(
+    harness.storage, candidate.keys, identity.fingerprint, 'checklist', 'local:check:new-only', candidate.validated.displayModel,
   )).toBe(true);
-  expect(EDITION_RUNTIME.fdEditionReadLocalProgress(
-    harness.storage, identity.fingerprint,
+  expect(EDITION_RUNTIME.fdEditionReadLocal(
+    harness.storage, candidate.keys, identity.fingerprint, candidate.validated.displayModel,
   ).checklist['local:check:new-only']).toBe(true);
   expect(harness.values.get('cw_progress_v1')).toBe(coreBefore);
   const candidateCommit = harness.events.indexOf(`write:${EDITION_KEY}:candidate`);
@@ -1020,6 +1108,9 @@ test('decline is one-shot and closes only after a previously cleared incoming ha
     harness.mount,
     { active: active.validated, candidate: candidate.validated },
     harness.storage,
+    candidate.keys,
+    EDITION_RUNTIME.fdEditionReadLocalDocument(harness.storage, candidate.keys),
+    EDITION_RUNTIME.fdEditionStartupJournal(harness.storage, [candidate.keys.local, candidate.keys.edition]),
     harness.location,
     true,
     harness.recover,
@@ -1035,7 +1126,7 @@ test('decline is one-shot and closes only after a previously cleared incoming ha
 });
 
 test('a first valid edition is the first meaningful render, then reload and same-link startup do not churn storage', async ({ page }, testInfo) => {
-  await installEditionRuntimeProbe(page);
+  await installEditionRuntimeProbe(page, testInfo);
   const incoming = await createSyntheticEdition(testInfo, 1);
   await page.goto('/');
   await seedEditionLearner(page);
@@ -1085,7 +1176,7 @@ test('a first valid edition is the first meaningful render, then reload and same
 });
 
 test('a different valid edition prompts accessibly and decline clears only the incoming hash', async ({ page }, testInfo) => {
-  await installEditionRuntimeProbe(page);
+  await installEditionRuntimeProbe(page, testInfo);
   const active = await createSyntheticEdition(testInfo, 1);
   await page.goto('/');
   await seedEditionLearner(page);
@@ -1117,7 +1208,7 @@ test('a different valid edition prompts accessibly and decline clears only the i
 });
 
 test('accepting a different valid edition commits in order, clears the hash, and reloads the selected path', async ({ page }, testInfo) => {
-  await installEditionRuntimeProbe(page);
+  await installEditionRuntimeProbe(page, testInfo);
   const active = await createSyntheticEdition(testInfo, 1);
   await page.goto('/');
   await seedEditionLearner(page);
@@ -1158,16 +1249,12 @@ test('accepting a different valid edition commits in order, clears the hash, and
     .toEqual({ checklist: {}, resources: {} });
 });
 
-for (const [label, usablePlacement, expectedMutationKeys] of [
-  ['usable placement', true, [
-    ['set', LOCAL_EDITION_KEY], ['set', EDITION_KEY], ['set', 'cw_plan_v1'],
-  ]],
-  ['no usable placement', false, [
-    ['set', LOCAL_EDITION_KEY], ['set', EDITION_KEY],
-  ]],
+for (const [label, usablePlacement, planMutation] of [
+  ['usable placement', true, [['set', 'cw_plan_v1']]],
+  ['no usable placement', false, [['remove', 'cw_plan_v1']]],
 ]) {
   test(`accepting an edition with ${label} changes only its derived plan after reload`, async ({ page }, testInfo) => {
-    await installEditionRuntimeProbe(page);
+    await installEditionRuntimeProbe(page, testInfo);
     const active = await createSyntheticEdition(testInfo, 1);
     const candidate = await createSyntheticEdition(testInfo, 2);
     const activePlan = savedPlanFor(active.canonical, active.fingerprint);
@@ -1197,6 +1284,9 @@ for (const [label, usablePlacement, expectedMutationKeys] of [
     const operations = await planStorageOps(page);
     expect(operations.some(([operation, key]) => operation === 'get' && key === 'cw_plan_v1')).toBe(true);
     const mutations = operations.filter(([operation]) => operation !== 'get');
+    const expectedMutationKeys = [
+      ['set', LOCAL_EDITION_KEY], ['set', EDITION_KEY], ...planMutation,
+    ];
     expect(mutations.map(([operation, key]) => [operation, key])).toEqual(expectedMutationKeys);
     expect(mutations[0][2]).not.toBe(before[LOCAL_EDITION_KEY]);
     expect(mutations[1][2]).toBe(candidate.canonicalEnvelope);
@@ -1221,7 +1311,7 @@ for (const [label, usablePlacement, expectedMutationKeys] of [
 }
 
 test('an absent plan stays read-only before another browser context supplies a matching plan', async ({ page }, testInfo) => {
-  await installEditionRuntimeProbe(page);
+  await installEditionRuntimeProbe(page, testInfo);
   const active = await createSyntheticEdition(testInfo, 1);
   await page.goto('/');
   await seedEditionLearner(page);
@@ -1255,7 +1345,7 @@ test('an absent plan stays read-only before another browser context supplies a m
 });
 
 test('malformed and wrong-audience links show a non-modal alert without changing any stored byte', async ({ page }, testInfo) => {
-  await installEditionRuntimeProbe(page);
+  await installEditionRuntimeProbe(page, testInfo);
   const otherAudience = testInfo.project.name === 'nav-res' ? 'ms3' : 'resident';
   const wrongAudience = await createSyntheticEdition(testInfo, 1, otherAudience);
   await page.goto('/');
@@ -1267,15 +1357,43 @@ test('malformed and wrong-audience links show a non-modal alert without changing
     await page.goto(`/?case=edition-rejected-${index}${fragment}`);
     await expect(page.locator('.fd-edition-error[role="alert"]')).toBeVisible();
     await expect(page.locator('dialog.fd-edition-switch')).toHaveCount(0);
-    expect(await page.locator('.fd-today .fd-list .fd-row').count()).toBeGreaterThan(1);
+    await expect(page.locator('.fd-today')).toBeVisible();
     expect(await page.evaluate(() => document.activeElement?.closest('.fd-edition-error'))).toBeNull();
     expect(await editionWrites(page)).toEqual([]);
     expect(await localStorageSnapshot(page)).toEqual(before);
   }
 });
 
-test('missing Web Crypto rejects stored edition data to the core without writes or projection', async ({ page }, testInfo) => {
-  await installEditionRuntimeProbe(page);
+test('a prerelease v1 link is explicitly unsupported with zero writes or startup listeners', async ({ page }, testInfo) => {
+  await installEditionRuntimeProbe(page, testInfo);
+  await page.goto('/');
+  await seedEditionLearner(page);
+  await page.evaluate(() => {
+    localStorage.setItem('cw_rotation_edition_v1', '{"preserve":"edition"}');
+    localStorage.setItem('cw_rotation_local_progress_v1', '{"preserve":"local"}');
+  });
+  const before = await localStorageSnapshot(page);
+  await resetEditionWriteLog(page);
+
+  await page.goto(`/?case=edition-prerelease-v1#edition=${prereleaseEditionPayload()}`);
+  await expect(page.locator('.fd-edition-error[role="alert"]'))
+    .toContainText('EDITION_PRERELEASE_UNSUPPORTED');
+  await expect(page.locator('.fd-today')).toBeVisible();
+  expect(await editionWrites(page)).toEqual([]);
+  expect(await localStorageSnapshot(page)).toEqual(before);
+  expect(await page.evaluate(() => window.__fdActiveStartupListeners())).toEqual([]);
+  expect(await page.evaluate(() => {
+    window.__fdStartupListenerFires = [];
+    window.dispatchEvent(new Event('resize'));
+    window.dispatchEvent(new PopStateEvent('popstate'));
+    document.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    document.querySelector('#fdApp')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    return window.__fdStartupListenerFires;
+  })).toEqual([]);
+});
+
+test('missing Web Crypto enters core without reading or projecting stored edition data', async ({ page }, testInfo) => {
+  await installEditionRuntimeProbe(page, testInfo);
   const stored = await createSyntheticEdition(testInfo, 1);
   await page.goto('/?case=edition-crypto');
   await seedEditionLearner(page);
@@ -1285,19 +1403,22 @@ test('missing Web Crypto rejects stored edition data to the core without writes 
   const before = await localStorageSnapshot(page);
   await resetEditionWriteLog(page);
   await page.addInitScript(() => {
-    Object.defineProperty(window, 'crypto', { configurable: true, value: {} });
+    Object.defineProperty(Crypto.prototype, 'subtle', {
+      configurable: true,
+      get() { return undefined; },
+    });
   });
 
   await page.goto('/');
-  await expect(page.locator('.fd-edition-error[role="alert"]')).toContainText('EDITION_CRYPTO');
+  expect(await page.evaluate(() => Boolean(window.crypto && window.crypto.subtle))).toBe(false);
+  await expect(page.locator('.fd-edition-error')).toHaveCount(0);
   await expect(page.locator('.fd-today')).toBeVisible();
-  expect(await page.locator('.fd-today .fd-list .fd-row').count()).toBeGreaterThan(1);
   expect(await editionWrites(page)).toEqual([]);
   expect(await localStorageSnapshot(page)).toEqual(before);
 });
 
 test('a throwing hash-history boundary falls back to core before any edition commit or render', async ({ page }, testInfo) => {
-  await installEditionRuntimeProbe(page, { throwHistory: true });
+  await installEditionRuntimeProbe(page, testInfo, { throwHistory: true });
   const incoming = await createSyntheticEdition(testInfo, 1);
   await page.goto('/');
   await seedEditionLearner(page);
@@ -1306,7 +1427,6 @@ test('a throwing hash-history boundary falls back to core before any edition com
   await page.goto(`/?case=edition-history-throw#edition=${incoming.payload}`);
   await expect(page.locator('.fd-edition-error[role="alert"]')).toContainText('EDITION_RUNTIME');
   await expect(page.locator('.fd-today')).toBeVisible();
-  expect(await page.locator('.fd-today .fd-list .fd-row').count()).toBeGreaterThan(1);
   await expect(page.locator('#fdApp')).not.toHaveAttribute('aria-busy', 'true');
   expect(await editionWrites(page)).toEqual([]);
   expect(await localStorageSnapshot(page)).toEqual(before);
@@ -1314,7 +1434,7 @@ test('a throwing hash-history boundary falls back to core before any edition com
 });
 
 test('a missing governance mount falls back to core without committing or attempting an unsafe alert', async ({ page }, testInfo) => {
-  await installEditionRuntimeProbe(page);
+  await installEditionRuntimeProbe(page, testInfo);
   const incoming = await createSyntheticEdition(testInfo, 1);
   await page.goto('/');
   await seedEditionLearner(page);
@@ -1328,7 +1448,6 @@ test('a missing governance mount falls back to core without committing or attemp
 
   await page.goto(`/?case=edition-missing-mount#edition=${incoming.payload}`);
   await expect(page.locator('.fd-today')).toBeVisible();
-  expect(await page.locator('.fd-today .fd-list .fd-row').count()).toBeGreaterThan(1);
   await expect(page.locator('#fdApp')).not.toHaveAttribute('aria-busy', 'true');
   await expect(page.locator('.fd-edition-error')).toHaveCount(0);
   expect(await editionWrites(page)).toEqual([]);
@@ -1348,7 +1467,7 @@ for (const fault of [
   test(`${fault[0]} prevents first acceptance, rendering, and uncaught startup errors`, async ({ page }, testInfo) => {
     const pageErrors = [];
     page.on('pageerror', (error) => pageErrors.push(error.message));
-    await installEditionRuntimeProbe(page, { listenerFault: fault[1] });
+    await installEditionRuntimeProbe(page, testInfo, { listenerFault: fault[1] });
     const incoming = await createSyntheticEdition(testInfo, 1);
     await page.goto('/');
     await seedEditionLearner(page);
@@ -1359,7 +1478,6 @@ for (const fault of [
     await expect(page.locator('.fd-edition-error[role="alert"]')).toContainText('EDITION_RUNTIME');
     await expect(page.locator('#fdApp')).not.toHaveAttribute('aria-busy', 'true');
     await expect(page.locator('.fd-today')).toBeVisible();
-    expect(await page.locator('.fd-today .fd-list .fd-row').count()).toBeGreaterThan(1);
     expect(await editionWrites(page)).toEqual([]);
     expect(await localStorageSnapshot(page)).toEqual(before);
     expect(await page.evaluate((selectedTitle) => window.__fdMeaningfulRenders.every(
@@ -1381,7 +1499,7 @@ for (const fault of [
 test('a missing fdApp returns quietly with no writes, edition render, or uncaught startup error', async ({ page }, testInfo) => {
   const pageErrors = [];
   page.on('pageerror', (error) => pageErrors.push(error.message));
-  await installEditionRuntimeProbe(page);
+  await installEditionRuntimeProbe(page, testInfo);
   const incoming = await createSyntheticEdition(testInfo, 1);
   await page.goto('/');
   await seedEditionLearner(page);
@@ -1411,7 +1529,7 @@ test('a missing fdApp returns quietly with no writes, edition render, or uncaugh
 test('a legacy route followed by auxiliary failure leaves storage and history at the post-clear snapshot', async ({ page }, testInfo) => {
   const pageErrors = [];
   page.on('pageerror', (error) => pageErrors.push(error.message));
-  await installEditionRuntimeProbe(page, { listenerFault: 'root-third' });
+  await installEditionRuntimeProbe(page, testInfo, { listenerFault: 'root-third' });
   const incoming = await createSyntheticEdition(testInfo, 1);
   await page.goto('/');
   await seedEditionLearner(page);
@@ -1439,7 +1557,7 @@ for (const [label, startupFault] of [
   test(`a ${label} initial Progress mount failure rolls back first acceptance and legacy startup`, async ({ page }, testInfo) => {
     const pageErrors = [];
     page.on('pageerror', (error) => pageErrors.push(error.message));
-    await installEditionRuntimeProbe(page, { startupFault });
+    await installEditionRuntimeProbe(page, testInfo, { startupFault });
     const incoming = await createSyntheticEdition(testInfo, 1);
     await page.goto('/');
     await seedEditionLearner(page);
@@ -1458,7 +1576,7 @@ for (const [label, startupFault] of [
 test('a synchronous initial resource-opening failure unwinds without bookmark or edition residue', async ({ page }, testInfo) => {
   const pageErrors = [];
   page.on('pageerror', (error) => pageErrors.push(error.message));
-  await installEditionRuntimeProbe(page, { startupFault: 'resource-open' });
+  await installEditionRuntimeProbe(page, testInfo, { startupFault: 'resource-open' });
   const incoming = await createSyntheticEdition(testInfo, 1);
   await page.goto('/');
   await seedEditionLearner(page);
@@ -1478,7 +1596,7 @@ test('a synchronous initial resource-opening failure unwinds without bookmark or
 test('a switch-dialog insertion failure preserves the stored edition and uncommitted legacy route', async ({ page }, testInfo) => {
   const pageErrors = [];
   page.on('pageerror', (error) => pageErrors.push(error.message));
-  await installEditionRuntimeProbe(page, { startupFault: 'edition-dialog' });
+  await installEditionRuntimeProbe(page, testInfo, { startupFault: 'edition-dialog' });
   const active = await createSyntheticEdition(testInfo, 1);
   const candidate = await createSyntheticEdition(testInfo, 2);
   await page.goto('/');
@@ -1501,7 +1619,7 @@ test('a switch-dialog insertion failure preserves the stored edition and uncommi
 test('a final startup history failure rolls back first acceptance after every earlier phase succeeds', async ({ page }, testInfo) => {
   const pageErrors = [];
   page.on('pageerror', (error) => pageErrors.push(error.message));
-  await installEditionRuntimeProbe(page, { startupFault: 'commit-history' });
+  await installEditionRuntimeProbe(page, testInfo, { startupFault: 'commit-history' });
   const incoming = await createSyntheticEdition(testInfo, 1);
   await page.goto('/');
   await seedEditionLearner(page);
@@ -1519,7 +1637,7 @@ test('a final startup history failure rolls back first acceptance after every ea
 test('first acceptance through legacy Start commits once after both Progress mounts', async ({ page }, testInfo) => {
   const pageErrors = [];
   page.on('pageerror', (error) => pageErrors.push(error.message));
-  await installEditionRuntimeProbe(page);
+  await installEditionRuntimeProbe(page, testInfo);
   const incoming = await createSyntheticEdition(testInfo, 1);
   await page.goto('/');
   await seedEditionLearner(page);
@@ -1541,7 +1659,7 @@ for (const [label, startupFault] of [
   test(`a delayed initial Markdown ${label} rolls back before commit and cannot mutate later`, async ({ page }, testInfo) => {
     const pageErrors = [];
     page.on('pageerror', (error) => pageErrors.push(error.message));
-    await installEditionRuntimeProbe(page, { startupFault });
+    await installEditionRuntimeProbe(page, testInfo, { startupFault });
     const incoming = await createSyntheticEdition(testInfo, 2);
     await page.goto('/');
     await seedEditionLearner(page);
@@ -1566,7 +1684,7 @@ for (const [label, startupFault] of [
 test('a delayed initial tool hydration cannot touch a nulled controller after teardown', async ({ page }, testInfo) => {
   const pageErrors = [];
   page.on('pageerror', (error) => pageErrors.push(error.message));
-  await installEditionRuntimeProbe(page, { startupFault: 'edition-dialog' });
+  await installEditionRuntimeProbe(page, testInfo, { startupFault: 'edition-dialog' });
   const active = await createSyntheticEdition(testInfo, 1);
   const candidate = await createSyntheticEdition(testInfo, 2);
   await page.goto('/');
@@ -1594,7 +1712,7 @@ for (const mode of ['core', 'stored-edition']) {
   test(`${mode} startup restores a plan-store mutation when the later mount fails`, async ({ page }, testInfo) => {
     const pageErrors = [];
     page.on('pageerror', (error) => pageErrors.push(error.message));
-    await installEditionRuntimeProbe(page, { startupFault: 'progress-second' });
+    await installEditionRuntimeProbe(page, testInfo, { startupFault: 'progress-second' });
     const active = await createSyntheticEdition(testInfo, 1);
     await page.goto('/');
     await seedEditionLearner(page);
@@ -1622,7 +1740,7 @@ for (const [kind, startupFault, route] of [
   test(`successful async ${kind} startup hydrates before the history commit`, async ({ page }, testInfo) => {
     const pageErrors = [];
     page.on('pageerror', (error) => pageErrors.push(error.message));
-    await installEditionRuntimeProbe(page, { startupFault });
+    await installEditionRuntimeProbe(page, testInfo, { startupFault });
     const incoming = await createSyntheticEdition(testInfo, 2);
     await page.goto('/');
     await seedEditionLearner(page);
@@ -1646,10 +1764,10 @@ for (const [kind, startupFault, route] of [
   });
 }
 
-test('ordinary later Markdown and tool opens retain their existing navigation behavior', async ({ page }) => {
+test('ordinary later Markdown and tool opens retain their existing navigation behavior', async ({ page }, testInfo) => {
   const pageErrors = [];
   page.on('pageerror', (error) => pageErrors.push(error.message));
-  await installEditionRuntimeProbe(page);
+  await installEditionRuntimeProbe(page, testInfo);
   await page.goto('/');
   await seedEditionLearner(page);
   await page.reload();

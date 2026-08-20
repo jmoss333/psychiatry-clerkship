@@ -1,716 +1,288 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
 import { webcrypto } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 
-const ROOT = new URL('../13_Faculty_Resources/_automation/site_build/frontdoor/', import.meta.url);
-const source = (name) => readFileSync(new URL(name, ROOT), 'utf8');
-const F = new Function(`${source('fd_edition_contract.js')}\n${source('fd_edition_project.js')}\n${source('fd_edition_student.js')}\nreturn {
-  fdEditionCreateEnvelope,fdEditionResolveStartup,fdEditionAcceptFirst,fdEditionAcceptSwitch,
-  fdEditionReadLocalProgress,fdEditionToggleLocalProgress,fdEditionSwitchMarkup,fdEditionErrorMarkup,
-  fdEditionRuntimeListen,fdEditionRuntimeUnlisten,
-  fdEditionLocalToggleAllowed:typeof fdEditionLocalToggleAllowed==='function'?fdEditionLocalToggleAllowed:null,
-  fdEditionStartupJournal:typeof fdEditionStartupJournal==='function'?fdEditionStartupJournal:null,
-  fdEditionStartupJournalRun:typeof fdEditionStartupJournalRun==='function'?fdEditionStartupJournalRun:null,
-  fdEditionStartupJournalRollback:typeof fdEditionStartupJournalRollback==='function'?fdEditionStartupJournalRollback:null,
-  fdEditionRuntimeInputs:typeof fdEditionRuntimeInputs==='function'?fdEditionRuntimeInputs:null
-};`)();
+const FRONT = new URL('../13_Faculty_Resources/_automation/site_build/frontdoor/', import.meta.url);
+const CATALOG = readFileSync(new URL('fd_edition_catalog.js', FRONT), 'utf8');
+const CONTRACT = readFileSync(new URL('fd_edition_contract.js', FRONT), 'utf8');
+const PROJECT = readFileSync(new URL('fd_edition_project.js', FRONT), 'utf8');
+const STUDENT = readFileSync(new URL('fd_edition_student.js', FRONT), 'utf8');
+const SYNTHETIC = JSON.parse(readFileSync(new URL('fixtures/rotation-editions/synthetic-core-index.json', import.meta.url), 'utf8'));
+const REVISION = `sha256-${'B'.repeat(43)}`;
 
-const REVISION = '1234567890abcdef1234567890abcdef12345678';
-const EDITION_KEY = 'cw_rotation_edition_v1';
-const LOCAL_KEY = 'cw_rotation_local_progress_v1';
-
-function canonicalIndex(audience = 'ms3', options = {}) {
-  const weekCount = audience === 'ms3' ? 6 : 4;
-  const pathId = audience === 'ms3' ? 'ms3-six-week' : 'resident-four-week';
-  const byRef = {
-    'assessment.md': { ref: 'assessment.md', kind: 'read', title: 'Synthetic assessment', minutes: 9 },
-    'tool.html': { ref: 'tool.html', kind: 'tool', title: 'Synthetic tool', minutes: null }
-  };
+function canonical(value) {
+  if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
+  if (value && typeof value === 'object') return `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${canonical(value[key])}`).join(',')}}`;
+  return JSON.stringify(value);
+}
+async function digest(value) {
+  const bytes = await webcrypto.subtle.digest('SHA-256', new TextEncoder().encode(canonical(value)));
+  return `sha256-${Buffer.from(bytes).toString('base64url')}`;
+}
+async function projection(audience, options = {}) {
+  let records = await Promise.all(SYNTHETIC.catalogRecords.map(async (record) => ({ ...structuredClone(record), contentDigest: await digest(record) })));
+  records.sort((a, b) => a.key.localeCompare(b.key));
+  const blockedKeys = options.blockedKeys || [];
+  records = records.filter((record) => !blockedKeys.includes(record.key));
+  const value = { schemaVersion: 1, audience, revision: options.revision || REVISION, projectionDigest: '', rotationEditionV2: options.gate || 'enabled', selectionKeys: records.map((record) => record.key), resolutionRecords: records, blockedKeys };
+  const bare = structuredClone(value); delete bare.projectionDigest; value.projectionDigest = await digest(bare);
+  return value;
+}
+function load(revision = REVISION) {
+  const source = `${CATALOG.replace('__FD_CATALOG_EXPECTED_REVISION__', revision)}\n${CONTRACT}\n${PROJECT}\n${STUDENT}`;
+  return new Function('TextEncoder', 'TextDecoder', 'atob', 'btoa', `${source}\nreturn {
+    fdEditionCatalogSnapshot,fdEditionStorageKeys,fdEditionResolveStartup,fdEditionTrustedSnapshot,fdEditionValidateEnvelope,
+    fdEditionGenerateChangeSummary,
+    fdEditionCommitAcceptance,fdEditionReadLocal,fdEditionToggleLocal,fdEditionStartupJournal,
+    fdEditionStartupJournalRun,fdEditionStartupJournalRollback,fdEditionRuntimeListen,fdEditionRuntimeUnlisten,
+    fdEditionRuntimeInputs,fdEditionRuntimeMountSwitch
+  };`)(TextEncoder, TextDecoder, atob, btoa);
+}
+function valid(audience) { return JSON.parse(readFileSync(new URL(`fixtures/rotation-editions/valid-${audience}.json`, import.meta.url), 'utf8')); }
+async function harness(audience = 'ms3', options = {}) {
+  const revision = options.revision || REVISION;
+  const F = load(revision);
+  const prepared = await F.fdEditionCatalogSnapshot(await projection(audience, options), audience, webcrypto.subtle);
+  assert.equal(prepared.ok, true, JSON.stringify(prepared.errors));
+  const core = structuredClone(SYNTHETIC.audiences[audience]);
+  const site = { audience, coreRevision: options.coreRevision || core.coreRevision, localCatalogRevision: revision, rotationEditionV2: options.gate || 'enabled' };
+  return { F, snapshot: prepared.snapshot, core, site, envelope: valid(audience), keys: F.fdEditionStorageKeys(audience) };
+}
+function fragment(envelope) { return `#edition=${Buffer.from(JSON.stringify(envelope)).toString('base64url')}`; }
+function storage(seed = {}, behavior = {}) {
+  const map = new Map(Object.entries(seed)); const operations = []; let mismatchUsed = false;
   return {
-    byRef,
-    path: { id: pathId, weekCount },
-    weeks: Array.from({ length: weekCount }, (_, i) => ({
-      n: i + 1, title: `Week ${i + 1}`, theme: 'Synthetic', focusCategories: [], items: []
-    })),
-    columns: options.columns === undefined ? [] : options.columns,
-    kit: options.kit === undefined ? [] : options.kit
+    operations,
+    getItem(key) { operations.push(['get', key]); if (behavior.getThrow) throw new Error('private read'); return map.has(key) ? map.get(key) : null; },
+    setItem(key, value) { operations.push(['set', key]); if (behavior.failKey === key) throw new Error('private quota'); const mismatch = behavior.mismatchKey === key && !mismatchUsed; if (mismatch) mismatchUsed = true; map.set(key, mismatch ? `${value}x` : String(value)); },
+    removeItem(key) { operations.push(['remove', key]); map.delete(key); },
+    snapshot() { return Object.fromEntries(map); },
   };
 }
+async function replacement(H) {
+  const next = structuredClone(H.envelope); next.config.editionNumber = 2;
+  next.config.context.editionCheckedOn = '2026-08-18';
+  next.config.changeSummary = H.F.fdEditionGenerateChangeSummary(H.envelope.config, next.config);
+  next.digest = await digest({ format: next.format, schemaVersion: 2, config: next.config });
+  const checked = await H.F.fdEditionValidateEnvelope(next, H.core, H.snapshot, H.site, { mode: 'learner', generationDate: '' }, webcrypto.subtle);
+  assert.equal(checked.ok, true, JSON.stringify(checked.errors)); return checked;
+}
+const PROTECTED = {
+  cw_rotation_edition_v1: '{"v1":"edition"}', cw_rotation_local_progress_v1: '{"v1":"local"}', cw_curator_draft_v1: '{"v1":"draft"}',
+  cw_progress_v1: '{"core":"progress"}', cw_qbank_attest_v1: '{"core":"attestation"}', cw_plan_v1: '{"manualItems":["saved"],"history":["kept"]}',
+};
 
-function context(audience = 'ms3') {
-  return {
-    audience,
-    pathId: audience === 'ms3' ? 'ms3-six-week' : 'resident-four-week',
-    coreRevision: REVISION,
-    rotationEditionV2: 'enabled'
-  };
+test('fresh storage keys are audience-specific v2 keys only', async () => {
+  const { F } = await harness();
+  assert.deepEqual(F.fdEditionStorageKeys('ms3'), { edition: 'cw_rotation_edition_ms3_v2', local: 'cw_rotation_local_progress_ms3_v2', curator: 'cw_curator_draft_ms3_v2' });
+  assert.deepEqual(F.fdEditionStorageKeys('resident'), { edition: 'rp_rotation_edition_resident_v2', local: 'rp_rotation_local_progress_resident_v2', curator: 'rp_curator_draft_resident_v2' });
+  const changed = F.fdEditionStorageKeys('ms3'); changed.edition = 'hostile';
+  assert.equal(F.fdEditionStorageKeys('ms3').edition, 'cw_rotation_edition_ms3_v2');
+});
+
+for (const audience of ['ms3', 'resident']) {
+  test(`${audience} startup accepts valid incoming and stored v2 without writes`, async () => {
+    const { F, snapshot, core, site, envelope } = await harness(audience);
+    const incoming = await F.fdEditionResolveStartup(core, snapshot, site, 'https://example.edu/front-door.html', fragment(envelope), null, webcrypto.subtle);
+    assert.equal(incoming.mode, 'active'); assert.equal(incoming.needsCommit, true);
+    assert.ok(F.fdEditionTrustedSnapshot(incoming.active)); assert.equal(incoming.index.edition.card.fingerprint, incoming.active.fingerprint);
+    const stored = await F.fdEditionResolveStartup(core, snapshot, site, 'https://example.edu/front-door.html', '', JSON.stringify(envelope), webcrypto.subtle);
+    assert.equal(stored.mode, 'active'); assert.equal(stored.needsCommit, false);
+    const revisit = await F.fdEditionResolveStartup(core, snapshot, site, 'https://example.edu/front-door.html', fragment(envelope), JSON.stringify(envelope), webcrypto.subtle);
+    assert.equal(revisit.mode, 'active'); assert.equal(revisit.needsCommit, false); assert.equal(revisit.candidate, null);
+  });
 }
 
-function config(audience = 'ms3', editionNumber = 1) {
-  const finalWeek = audience === 'ms3' ? 6 : 4;
-  return {
-    audience,
-    pathId: audience === 'ms3' ? 'ms3-six-week' : 'resident-four-week',
-    editionNumber,
-    createdAgainstCoreRevision: REVISION,
-    card: {
-      title: 'Synthetic curated rotation', locationName: 'Example Unit', locationCode: 'BHU2',
-      curatorName: 'Example Faculty', curatorRole: 'Faculty educator',
-      rotationStart: '2026-09-01', rotationEnd: '2026-10-12', lastVerified: '2026-08-19'
-    },
-    pathItems: [
-      { instanceId: 'core:assessment:1', ref: 'assessment.md', week: 1, order: 1, priority: 'required', rationale: 'Start here.' },
-      { instanceId: 'core:tool:1', ref: 'tool.html', week: finalWeek, order: 1, priority: 'optional', rationale: 'Practice later.' }
-    ],
-    localOrientation: {
-      firstDayArrival: '', dailySchedule: '', roundsWorkflow: '', presentationExpectations: '',
-      documentationExpectations: '', attendanceExpectations: '', feedbackProcess: '', accessPreparation: '',
-      contacts: [],
-      checklist: [{ id: 'local:check:1', label: 'Review orientation', priority: 'required' }],
-      resources: [{ id: 'local:resource:1', title: 'Orientation resource', url: 'https://example.edu/orientation', priority: 'recommended', week: 1, rationale: 'Local workflow.' }]
-    },
-    changeNote: 'Synthetic update.'
-  };
-}
-
-async function edition(audience = 'ms3', editionNumber = 1) {
-  const result = await F.fdEditionCreateEnvelope(config(audience, editionNumber), canonicalIndex(audience), context(audience), webcrypto.subtle);
-  assert.equal(result.ok, true);
-  return result;
-}
-
-test('local toggles are authorized only by IDs in the trusted active edition snapshot', async () => {
-  const selected = await edition();
-  assert.equal(typeof F.fdEditionLocalToggleAllowed, 'function');
-  assert.equal(F.fdEditionLocalToggleAllowed(selected, 'checklist', 'local:check:1'), true);
-  assert.equal(F.fdEditionLocalToggleAllowed(selected, 'resources', 'local:resource:1'), true);
-  assert.equal(F.fdEditionLocalToggleAllowed(selected, 'checklist', 'local:resource:1'), false);
-  assert.equal(F.fdEditionLocalToggleAllowed(selected, 'resources', 'local:check:1'), false);
-  assert.equal(F.fdEditionLocalToggleAllowed(selected, 'checklist', 'local:check:unknown'), false);
-  assert.equal(F.fdEditionLocalToggleAllowed({ fingerprint: selected.fingerprint }, 'checklist', 'local:check:1'), false);
+test('disabled mode ignores storage; hashes reject with the fixed disabled code', async () => {
+  const { F, snapshot, core, site } = await harness('ms3', { gate: 'disabled' });
+  const noHash = await F.fdEditionResolveStartup(core, snapshot, site, 'https://example.edu/', '', '{unread private bytes}', { digest() { throw new Error('must not decode'); } });
+  assert.equal(noHash.mode, 'core');
+  const hash = await F.fdEditionResolveStartup(core, snapshot, site, 'https://example.edu/', '#edition=private', '{unread}', { digest() { throw new Error('must not decode'); } });
+  assert.equal(hash.mode, 'rejected'); assert.equal(hash.receipt.code, 'EDITION_DISABLED');
 });
 
-function fragment(result) { return `#edition=${result.payload}`; }
-
-test('disabled publication rejects a fragment before decoder or projector work and leaves core mode alone without one', async () => {
-  const disabled = { ...context(), rotationEditionV2: 'disabled' };
-  const decoderMustNotRun = { digest() { throw new Error('decoder must not run'); } };
-  const rejected = await F.fdEditionResolveStartup(canonicalIndex(), disabled,
-    'https://example.edu/front-door.html', '#edition=untrusted-fragment', '{unread storage}', decoderMustNotRun);
-  assert.equal(rejected.mode, 'rejected');
-  assert.equal(rejected.receipt.code, 'EDITION_DISABLED');
-  assert.equal(F.fdEditionErrorMarkup(rejected.receipt).includes('untrusted-fragment'), false);
-  const core = await F.fdEditionResolveStartup(canonicalIndex(), disabled,
-    'https://example.edu/front-door.html', '', '{unread storage}', decoderMustNotRun);
-  assert.equal(core.mode, 'core');
-  assert.equal(core.receipt, null);
-});
-
-test('disabled runtime input preparation never reads the edition storage key', () => {
-  assert.equal(typeof F.fdEditionRuntimeInputs, 'function');
-  let storageReads = 0;
-  const dialog = { addEventListener() {}, querySelector() { return null; }, showModal() {}, close() {} };
-  const button = { addEventListener() {}, focus() {} };
-  const documentValue = { createElement(tag) { return tag === 'dialog' ? dialog : button; } };
-  const app = { removeAttribute() {}, addEventListener() {}, removeEventListener() {}, querySelector() { return {}; } };
-  const mount = { innerHTML: '', querySelector() { return null; } };
-  const windowValue = { location: { href: 'https://example.edu/front-door.html', hash: '' } };
-  Object.defineProperty(windowValue, 'localStorage', { get() { storageReads += 1; throw new Error('must not read'); } });
-  const result = F.fdEditionRuntimeInputs(windowValue, documentValue, app, mount,
-    { ...context(), rotationEditionV2: 'disabled' });
-  assert.equal(result.ok, true);
-  assert.equal(storageReads, 0);
-});
-
-function recordingStorage(initial = {}) {
-  const values = new Map(Object.entries(initial));
-  const writes = [];
-  return {
-    getItem(key) { return values.has(key) ? values.get(key) : null; },
-    setItem(key, value) { writes.push([key, value]); values.set(key, value); },
-    removeItem(key) { writes.push([key, null]); values.delete(key); },
-    snapshot() { return Object.fromEntries(values); },
-    writes
-  };
-}
-
-test('startup journal rolls back only owned exact writes and preserves concurrent storage', () => {
-  assert.equal(typeof F.fdEditionStartupJournal, 'function');
-  assert.equal(typeof F.fdEditionStartupJournalRun, 'function');
-  assert.equal(typeof F.fdEditionStartupJournalRollback, 'function');
-  const storage = recordingStorage({
-    cw_plan_v1: 'broken-plan', cw_last: 'welcome.md',
-    cw_progress_v1: 'core-before', cw_qb_v1: 'questions-before',
-  });
-  const journal = F.fdEditionStartupJournal(storage, [
-    EDITION_KEY, LOCAL_KEY, 'cw_plan_v1', 'cw_last', 'cw_frontdoor_v1',
-  ]);
-
-  assert.equal(F.fdEditionStartupJournalRun(journal, [EDITION_KEY, LOCAL_KEY], () => {
-    storage.setItem(LOCAL_KEY, 'startup-local');
-    storage.setItem(EDITION_KEY, 'startup-edition');
-    return true;
-  }).value, true);
-  assert.equal(F.fdEditionStartupJournalRun(journal, ['cw_plan_v1'], () => {
-    storage.removeItem('cw_plan_v1');
-    return true;
-  }).value, true);
-  assert.equal(F.fdEditionStartupJournalRun(journal, ['cw_last'], () => {
-    storage.setItem('cw_last', 'orientation.md');
-    return true;
-  }).value, true);
-
-  storage.setItem('cw_plan_v1', 'concurrent-plan');
-  storage.setItem('cw_progress_v1', 'core-from-other-tab');
-  storage.setItem('cw_qb_v1', 'questions-from-other-tab');
-  storage.setItem('cw_concurrent_v1', 'new-cw-value');
-  storage.setItem('rp_concurrent_v1', 'new-rp-value');
-
-  assert.equal(F.fdEditionStartupJournalRollback(journal), true);
-  assert.deepEqual(storage.snapshot(), {
-    cw_plan_v1: 'concurrent-plan',
-    cw_last: 'welcome.md',
-    cw_progress_v1: 'core-from-other-tab',
-    cw_qb_v1: 'questions-from-other-tab',
-    cw_concurrent_v1: 'new-cw-value',
-    rp_concurrent_v1: 'new-rp-value',
-  });
-});
-
-test('startup journal reverses repeated owned writes by exact post-value', () => {
-  assert.equal(typeof F.fdEditionStartupJournal, 'function');
-  const storage = recordingStorage({ cw_last: 'welcome.md' });
-  const journal = F.fdEditionStartupJournal(storage, ['cw_last']);
-
-  F.fdEditionStartupJournalRun(journal, ['cw_last'], () => {
-    storage.setItem('cw_last', 'assessment.md');
-  });
-  F.fdEditionStartupJournalRun(journal, ['cw_last'], () => {
-    storage.setItem('cw_last', 'orientation.md');
-  });
-
-  assert.equal(F.fdEditionStartupJournalRollback(journal), true);
-  assert.equal(storage.snapshot().cw_last, 'welcome.md');
-});
-
-test('startup journal collapses A to B to C ownership before comparing concurrent bytes', () => {
-  for (const [concurrent, expected] of [['B', 'B'], ['C', 'A'], ['D', 'D']]) {
-    const storage = recordingStorage({ cw_plan_v1: 'A' });
-    const journal = F.fdEditionStartupJournal(storage, ['cw_plan_v1']);
-    F.fdEditionStartupJournalRun(journal, ['cw_plan_v1'], () => storage.setItem('cw_plan_v1', 'B'));
-    F.fdEditionStartupJournalRun(journal, ['cw_plan_v1'], () => storage.setItem('cw_plan_v1', 'C'));
-
-    storage.setItem('cw_plan_v1', concurrent);
-    assert.equal(F.fdEditionStartupJournalRollback(journal), true);
-    assert.equal(storage.snapshot().cw_plan_v1, expected, `concurrent ${concurrent}`);
+test('unavailable or unbranded catalogs preserve core and use the fixed catalog code for a fragment', async () => {
+  const { F, core, site } = await harness();
+  for (const snapshot of [null, { rotationEditionV2: 'enabled' }]) {
+    const coreOnly = await F.fdEditionResolveStartup(core, snapshot, site, 'https://example.edu/', '', '{unread}', webcrypto.subtle);
+    assert.equal(coreOnly.mode, 'core');
+    const rejected = await F.fdEditionResolveStartup(core, snapshot, site, 'https://example.edu/', '#edition=private', '{unread}', webcrypto.subtle);
+    assert.equal(rejected.receipt.code, 'EDITION_CATALOG_UNAVAILABLE');
   }
 });
 
-test('startup journal never follows an intermediate value through set delete set', () => {
-  const storage = recordingStorage({ cw_plan_v1: 'A' });
-  const journal = F.fdEditionStartupJournal(storage, ['cw_plan_v1']);
-  F.fdEditionStartupJournalRun(journal, ['cw_plan_v1'], () => storage.setItem('cw_plan_v1', 'B'));
-  F.fdEditionStartupJournalRun(journal, ['cw_plan_v1'], () => storage.removeItem('cw_plan_v1'));
-  F.fdEditionStartupJournalRun(journal, ['cw_plan_v1'], () => storage.setItem('cw_plan_v1', 'C'));
-
-  storage.removeItem('cw_plan_v1');
-  assert.equal(F.fdEditionStartupJournalRollback(journal), true);
-  assert.equal(storage.snapshot().cw_plan_v1, undefined);
-});
-
-test('startup journal never follows an intermediate value through delete restore', () => {
-  const storage = recordingStorage({ cw_frontdoor_v1: 'A' });
-  const journal = F.fdEditionStartupJournal(storage, ['cw_frontdoor_v1']);
-  F.fdEditionStartupJournalRun(journal, ['cw_frontdoor_v1'], () => storage.removeItem('cw_frontdoor_v1'));
-  F.fdEditionStartupJournalRun(journal, ['cw_frontdoor_v1'], () => storage.setItem('cw_frontdoor_v1', 'A'));
-
-  storage.removeItem('cw_frontdoor_v1');
-  assert.equal(F.fdEditionStartupJournalRollback(journal), true);
-  assert.equal(storage.snapshot().cw_frontdoor_v1, undefined);
-});
-
-test('startup journal isolates one conflicted key while rolling back other keys', () => {
-  const storage = recordingStorage({ cw_plan_v1: 'A', cw_last: 'X' });
-  const journal = F.fdEditionStartupJournal(storage, ['cw_plan_v1', 'cw_last']);
-  F.fdEditionStartupJournalRun(journal, ['cw_plan_v1', 'cw_last'], () => {
-    storage.setItem('cw_plan_v1', 'B');
-    storage.setItem('cw_last', 'Y');
-  });
-  F.fdEditionStartupJournalRun(journal, ['cw_plan_v1', 'cw_last'], () => {
-    storage.setItem('cw_plan_v1', 'C');
-    storage.setItem('cw_last', 'Z');
-  });
-
-  storage.setItem('cw_plan_v1', 'B');
-  assert.equal(F.fdEditionStartupJournalRollback(journal), true);
-  assert.deepEqual(storage.snapshot(), { cw_plan_v1: 'B', cw_last: 'X' });
-});
-
-test('startup journal preflight prevents a phase from overwriting a concurrent value', () => {
-  const storage = recordingStorage({ cw_plan_v1: 'A' });
-  const journal = F.fdEditionStartupJournal(storage, ['cw_plan_v1']);
-  F.fdEditionStartupJournalRun(journal, ['cw_plan_v1'], () => storage.setItem('cw_plan_v1', 'B'));
-  storage.setItem('cw_plan_v1', 'D');
-  let calls = 0;
-
-  const phase = F.fdEditionStartupJournalRun(journal, ['cw_plan_v1'], () => {
-    calls += 1;
-    storage.setItem('cw_plan_v1', 'C');
-  });
-  assert.equal(phase.ok, false);
-  assert.equal(calls, 0);
-  assert.equal(storage.snapshot().cw_plan_v1, 'D');
-  assert.equal(F.fdEditionStartupJournalRollback(journal), false);
-  assert.equal(storage.snapshot().cw_plan_v1, 'D');
-});
-
-test('startup journal preflight makes a multi-key phase all-or-nothing', () => {
-  const storage = recordingStorage({ cw_plan_v1: 'A', cw_last: 'X' });
-  const journal = F.fdEditionStartupJournal(storage, ['cw_plan_v1', 'cw_last']);
-  F.fdEditionStartupJournalRun(journal, ['cw_plan_v1', 'cw_last'], () => {
-    storage.setItem('cw_plan_v1', 'B');
-    storage.setItem('cw_last', 'Y');
-  });
-  storage.setItem('cw_plan_v1', 'D');
-  const writesBefore = storage.writes.length;
-  let calls = 0;
-
-  const phase = F.fdEditionStartupJournalRun(journal, ['cw_plan_v1', 'cw_last'], () => {
-    calls += 1;
-    storage.setItem('cw_plan_v1', 'C');
-    storage.setItem('cw_last', 'Z');
-  });
-  assert.equal(phase.ok, false);
-  assert.equal(calls, 0);
-  assert.equal(storage.writes.length, writesBefore);
-  assert.deepEqual(storage.snapshot(), { cw_plan_v1: 'D', cw_last: 'Y' });
-  assert.equal(F.fdEditionStartupJournalRollback(journal), false);
-  assert.deepEqual(storage.snapshot(), { cw_plan_v1: 'D', cw_last: 'X' });
-});
-
-test('startup journal preflight treats delete and value ownership mismatches alike', () => {
-  for (const [startup, concurrent, expected] of [
-    [null, 'D', 'D'],
-    ['B', null, undefined],
-  ]) {
-    const storage = recordingStorage({ cw_frontdoor_v1: 'A' });
-    const journal = F.fdEditionStartupJournal(storage, ['cw_frontdoor_v1']);
-    F.fdEditionStartupJournalRun(journal, ['cw_frontdoor_v1'], () => {
-      if (startup === null) storage.removeItem('cw_frontdoor_v1');
-      else storage.setItem('cw_frontdoor_v1', startup);
-    });
-    if (concurrent === null) storage.removeItem('cw_frontdoor_v1');
-    else storage.setItem('cw_frontdoor_v1', concurrent);
-    let calls = 0;
-
-    assert.equal(F.fdEditionStartupJournalRun(journal, ['cw_frontdoor_v1'], () => {
-      calls += 1;
-      storage.setItem('cw_frontdoor_v1', 'C');
-    }).ok, false);
-    assert.equal(calls, 0);
-    assert.equal(F.fdEditionStartupJournalRollback(journal), false);
-    assert.equal(storage.snapshot().cw_frontdoor_v1, expected);
+test('v1 URL and stored envelopes reject before writes and preserve every prerelease/core byte', async () => {
+  const { F, snapshot, core, site } = await harness();
+  const v1 = { format: 'cw-rotation-edition', schemaVersion: 1, config: { private: 'do not echo' }, digest: 'legacy' };
+  for (const [hash, stored] of [[fragment(v1), null], ['', JSON.stringify(v1)]]) {
+    const store = storage(PROTECTED); const before = store.snapshot();
+    const result = await F.fdEditionResolveStartup(core, snapshot, site, 'https://example.edu/', hash, stored, webcrypto.subtle);
+    assert.equal(result.mode, 'rejected'); assert.equal(result.receipt.code, 'EDITION_PRERELEASE_UNSUPPORTED');
+    assert.deepEqual(store.snapshot(), before); assert.deepEqual(store.operations, []);
   }
 });
 
-test('startup journal preflight read exceptions prevent every declared-key write', () => {
-  const values = new Map([['cw_plan_v1', 'A'], ['cw_last', 'X']]);
-  let failPlanRead = false;
-  let writes = 0;
-  const storage = {
-    getItem(key) {
-      if (failPlanRead && key === 'cw_plan_v1') throw new Error('preflight read failure');
-      return values.has(key) ? values.get(key) : null;
-    },
-    setItem(key, value) { writes += 1; values.set(key, value); },
-    removeItem(key) { writes += 1; values.delete(key); },
-  };
-  const journal = F.fdEditionStartupJournal(storage, ['cw_plan_v1', 'cw_last']);
-  F.fdEditionStartupJournalRun(journal, ['cw_plan_v1', 'cw_last'], () => {
-    storage.setItem('cw_plan_v1', 'B');
-    storage.setItem('cw_last', 'Y');
-  });
-  failPlanRead = true;
-  const writesBefore = writes;
-  let calls = 0;
-
-  assert.equal(F.fdEditionStartupJournalRun(journal, ['cw_plan_v1', 'cw_last'], () => {
-    calls += 1;
-    storage.setItem('cw_plan_v1', 'C');
-    storage.setItem('cw_last', 'Z');
-  }).ok, false);
-  assert.equal(calls, 0);
-  assert.equal(writes, writesBefore);
-  failPlanRead = false;
-  assert.equal(F.fdEditionStartupJournalRollback(journal), false);
-  assert.deepEqual(Object.fromEntries(values), { cw_plan_v1: 'B', cw_last: 'X' });
+test('malformed and digest-mismatched v2 fragments use fixed invalid diagnostics', async () => {
+  const { F, snapshot, core, site, envelope } = await harness();
+  const corrupt = structuredClone(envelope); corrupt.digest = `sha256-${'A'.repeat(43)}`;
+  for (const hash of ['#edition=%%%%', fragment(corrupt)]) {
+    const result = await F.fdEditionResolveStartup(core, snapshot, site, 'https://example.edu/', hash, null, webcrypto.subtle);
+    assert.equal(result.mode, 'rejected'); assert.equal(result.receipt.code, 'EDITION_INVALID');
+    assert.doesNotMatch(JSON.stringify(result.receipt), /%%%%|private/);
+  }
 });
 
-test('startup journal abandons a key after an accessor or storage failure', () => {
-  const accessorStorage = {};
-  Object.defineProperty(accessorStorage, 'getItem', { get() { return () => null; } });
-  accessorStorage.setItem = () => {};
-  accessorStorage.removeItem = () => {};
-  assert.equal(F.fdEditionStartupJournal(accessorStorage, ['cw_plan_v1']), null);
+test('blocked or missing catalog records require reselection while revision-only drift remains valid', async () => {
+  const blocked = await harness('ms3', { blockedKeys: ['curator.example-attending@v1'] });
+  const rejected = await blocked.F.fdEditionResolveStartup(blocked.core, blocked.snapshot, blocked.site, 'https://example.edu/', fragment(blocked.envelope), null, webcrypto.subtle);
+  assert.equal(rejected.receipt.code, 'EDITION_RESELECTION_REQUIRED');
+  const driftRevision = `sha256-${'C'.repeat(43)}`;
+  const baseline = await harness('ms3');
+  const original = await baseline.F.fdEditionResolveStartup(baseline.core, baseline.snapshot, baseline.site, 'https://example.edu/', fragment(baseline.envelope), null, webcrypto.subtle);
+  const drift = await harness('ms3', { revision: driftRevision });
+  const accepted = await drift.F.fdEditionResolveStartup(drift.core, drift.snapshot, drift.site, 'https://example.edu/', fragment(drift.envelope), null, webcrypto.subtle);
+  assert.equal(accepted.mode, 'active'); assert.equal(accepted.active.fingerprint, original.active.fingerprint);
+  assert.equal(accepted.active.displayModel.revisions.catalogMatches, false);
+});
 
-  const values = new Map([['cw_plan_v1', 'A']]);
-  let readCount = 0;
-  let failReadAt = 0;
-  const storage = {
-    getItem(key) {
-      readCount += 1;
-      if (readCount === failReadAt) throw new Error('read failure');
-      return values.has(key) ? values.get(key) : null;
-    },
-    setItem(key, value) { values.set(key, value); },
-    removeItem(key) { values.delete(key); },
-  };
-  const journal = F.fdEditionStartupJournal(storage, ['cw_plan_v1']);
-  F.fdEditionStartupJournalRun(journal, ['cw_plan_v1'], () => storage.setItem('cw_plan_v1', 'B'));
-  failReadAt = readCount + 2;
-  assert.equal(F.fdEditionStartupJournalRun(
-    journal, ['cw_plan_v1'], () => storage.setItem('cw_plan_v1', 'C'),
-  ).ok, false);
-  storage.setItem('cw_plan_v1', 'B');
-  assert.equal(F.fdEditionStartupJournalRollback(journal), false);
-  assert.equal(values.get('cw_plan_v1'), 'B');
+test('different valid edition asks before switching; decline changes no bytes', async () => {
+  const H = await harness(); const { F, snapshot, core, site, envelope } = H;
+  const checked = await replacement(H);
+  const result = await F.fdEditionResolveStartup(core, snapshot, site, 'https://example.edu/', `#edition=${checked.payload}`, JSON.stringify(envelope), webcrypto.subtle);
+  assert.equal(result.mode, 'switch-required'); assert.ok(result.active); assert.ok(result.candidate);
+  const store = storage(PROTECTED); const before = store.snapshot();
+  assert.deepEqual(store.snapshot(), before); assert.deepEqual(store.operations, []);
 
-  const readFailureValues = new Map([['cw_last', 'A']]);
-  let failRollbackRead = false;
-  const readFailing = {
-    getItem(key) {
-      if (failRollbackRead) throw new Error('rollback read failure');
-      return readFailureValues.has(key) ? readFailureValues.get(key) : null;
-    },
-    setItem(key, value) { readFailureValues.set(key, value); },
-    removeItem(key) { readFailureValues.delete(key); },
-  };
-  const readFailureJournal = F.fdEditionStartupJournal(readFailing, ['cw_last']);
-  F.fdEditionStartupJournalRun(
-    readFailureJournal, ['cw_last'], () => readFailing.setItem('cw_last', 'B'),
+  const local = { schemaVersion: 2, byFingerprint: { [result.active.fingerprint]: { checklist: { 'local:old': true }, resources: {} } } };
+  const acceptedStore = storage({ ...PROTECTED, [F.fdEditionStorageKeys('ms3').local]: JSON.stringify(local) });
+  const keys = F.fdEditionStorageKeys('ms3');
+  const journal = F.fdEditionStartupJournal(acceptedStore, [keys.local, keys.edition]);
+  assert.deepEqual(F.fdEditionCommitAcceptance(acceptedStore, keys, result.candidate, local, journal), { ok: true, code: 'EDITION_ACCEPTED' });
+  const switched = JSON.parse(acceptedStore.snapshot()[keys.local]);
+  assert.deepEqual(switched.byFingerprint[result.active.fingerprint], { checklist: { 'local:old': true }, resources: {} });
+  assert.deepEqual(switched.byFingerprint[result.candidate.fingerprint], { checklist: {}, resources: {} });
+});
+
+test('acceptance uses one journaled local-first/edition-second transaction and preserves v1/core bytes', async () => {
+  const { F, snapshot, core, site, envelope, keys } = await harness();
+  const result = await F.fdEditionResolveStartup(core, snapshot, site, 'https://example.edu/', fragment(envelope), null, webcrypto.subtle);
+  const store = storage(PROTECTED); const before = store.snapshot();
+  const journal = F.fdEditionStartupJournal(store, [keys.local, keys.edition]);
+  const receipt = F.fdEditionCommitAcceptance(store, keys, result.active, null, journal);
+  assert.deepEqual(receipt, { ok: true, code: 'EDITION_ACCEPTED' });
+  assert.deepEqual(store.operations.filter(([op]) => op === 'set').map(([, key]) => key), [keys.local, keys.edition]);
+  for (const [key, value] of Object.entries(before)) assert.equal(store.snapshot()[key], value, key);
+  assert.deepEqual(JSON.parse(store.snapshot()[keys.local]), { schemaVersion: 2, byFingerprint: { [result.active.fingerprint]: { checklist: {}, resources: {} } } });
+  assert.deepEqual(JSON.parse(store.snapshot()[keys.edition]), envelope);
+});
+
+test('second-write throw or postwrite mismatch rolls back both values and reports storage failure', async () => {
+  const { F, snapshot, core, site, envelope, keys } = await harness();
+  const result = await F.fdEditionResolveStartup(core, snapshot, site, 'https://example.edu/', fragment(envelope), null, webcrypto.subtle);
+  for (const behavior of [{ failKey: keys.edition }, { mismatchKey: keys.edition }]) {
+    const seed = { ...PROTECTED, [keys.local]: '{"before":"local"}', [keys.edition]: '{"before":"edition"}' };
+    const store = storage(seed, behavior); const journal = F.fdEditionStartupJournal(store, [keys.local, keys.edition]);
+    const receipt = F.fdEditionCommitAcceptance(store, keys, result.active, null, journal);
+    assert.equal(receipt.ok, false); assert.equal(receipt.code, 'EDITION_STORAGE');
+    assert.deepEqual(store.snapshot(), seed);
+  }
+});
+
+test('local progress is closed, bounded, fingerprint-scoped, and permits only resolved IDs', async () => {
+  const { F, keys } = await harness();
+  const fp = 'EXU-MS3-ZBVX4D';
+  const display = { card: { fingerprint: fp }, firstDay: { checklistItems: [{ id: 'local:check:1' }] }, resources: [{ id: 'local:resource:1' }] };
+  const doc = { schemaVersion: 2, byFingerprint: { [fp]: { checklist: { 'local:check:1': true }, resources: {} } } };
+  const store = storage({ [keys.local]: JSON.stringify(doc) });
+  assert.deepEqual(F.fdEditionReadLocal(store, keys, fp, display), { checklist: { 'local:check:1': true }, resources: {} });
+  assert.equal(F.fdEditionToggleLocal(store, keys, fp, 'resources', 'local:resource:1', display), true);
+  assert.equal(F.fdEditionToggleLocal(store, keys, fp, 'checklist', 'local:unknown', display), false);
+  const hostile = storage({ [keys.local]: JSON.stringify({ ...doc, extra: true }) });
+  assert.deepEqual(F.fdEditionReadLocal(hostile, keys, fp, display), { checklist: {}, resources: {} });
+});
+
+test('a 129th fingerprint acceptance returns capacity and never evicts or writes', async () => {
+  const { F, snapshot, core, site, envelope, keys } = await harness();
+  const result = await F.fdEditionResolveStartup(core, snapshot, site, 'https://example.edu/', fragment(envelope), null, webcrypto.subtle);
+  const byFingerprint = {};
+  for (let i = 0; i < 128; i++) byFingerprint[`EXU-MS3-${String(i).padStart(6, '0')}`] = { checklist: {}, resources: {} };
+  const local = { schemaVersion: 2, byFingerprint };
+  const store = storage({ ...PROTECTED, [keys.local]: JSON.stringify(local) }); const before = store.snapshot();
+  const journal = F.fdEditionStartupJournal(store, [keys.local, keys.edition]);
+  assert.deepEqual(F.fdEditionCommitAcceptance(store, keys, result.active, local, journal), { ok: false, code: 'EDITION_LOCAL_CAPACITY' });
+  assert.deepEqual(store.snapshot(), before); assert.equal(store.operations.some(([op]) => op === 'set'), false);
+});
+
+test('local checklist and resource completion caps reject the next resolved ID without a write', async () => {
+  const { F, keys } = await harness(); const fp = 'EXU-MS3-ZBVX4D';
+  const checklistItems = Array.from({ length: 25 }, (_, i) => ({ id: `local:check:${i}` }));
+  const resources = Array.from({ length: 13 }, (_, i) => ({ id: `local:resource:${i}` }));
+  const bucket = { checklist: {}, resources: {} };
+  for (let i = 0; i < 24; i++) bucket.checklist[`local:check:${i}`] = true;
+  for (let i = 0; i < 12; i++) bucket.resources[`local:resource:${i}`] = true;
+  const store = storage({ [keys.local]: JSON.stringify({ schemaVersion: 2, byFingerprint: { [fp]: bucket } }) });
+  const display = { card: { fingerprint: fp }, firstDay: { checklistItems }, resources };
+  assert.equal(F.fdEditionToggleLocal(store, keys, fp, 'checklist', 'local:check:24', display), false);
+  assert.equal(F.fdEditionToggleLocal(store, keys, fp, 'resources', 'local:resource:12', display), false);
+  assert.equal(store.operations.some(([op]) => op === 'set'), false);
+});
+
+test('startup listener helper removes register-then-throw listeners', async () => {
+  const { F } = await harness(); const active = new Map();
+  const target = { addEventListener(type, handler) { active.set(type, handler); throw new Error('private'); }, removeEventListener(type, handler) { if (active.get(type) === handler) active.delete(type); } };
+  const registration = F.fdEditionRuntimeListen(target, 'click', () => {}, false);
+  assert.equal(registration.ok, false); assert.deepEqual([...active], []); assert.equal(F.fdEditionRuntimeUnlisten(registration), true);
+});
+
+test('browser capability preparation cannot read edition storage before the branded catalog gate', async () => {
+  const { F, snapshot, site } = await harness(); let storageReads = 0;
+  function node(tag) { return { tagName: tag, innerHTML: '', addEventListener() {}, removeEventListener() {}, querySelector() { return null; }, showModal() {}, close() {}, focus() {}, removeAttribute() {}, setAttribute() {} }; }
+  const app = node('div'); app.querySelector = (selector) => selector === '#content' ? node('main') : null;
+  const mount = node('div');
+  const documentValue = { createElement(tag) { return node(tag); } };
+  const windowValue = { location: { href: 'https://example.edu/', hash: '', pathname: '/', search: '', reload() {} }, history: { replaceState() {} }, crypto: webcrypto };
+  Object.defineProperty(windowValue, 'localStorage', { get() { storageReads += 1; throw new Error('private storage'); } });
+  const unavailable = F.fdEditionRuntimeInputs(windowValue, documentValue, app, mount, { rotationEditionV2: 'enabled' }, site);
+  assert.equal(unavailable.ok, false); assert.equal(unavailable.receipt.code, 'EDITION_CATALOG_UNAVAILABLE'); assert.equal(storageReads, 0);
+  const gated = F.fdEditionRuntimeInputs(windowValue, documentValue, app, mount, snapshot, site);
+  assert.equal(gated.ok, false); assert.equal(gated.receipt.code, 'EDITION_RUNTIME'); assert.equal(storageReads, 1);
+});
+
+test('history failure after the branded gate reads but never writes edition storage', async () => {
+  const { F, snapshot, site, keys } = await harness();
+  function node(tag) { return { tagName: tag, innerHTML: '', addEventListener() {}, removeEventListener() {}, querySelector() { return null; }, showModal() {}, close() {}, focus() {}, removeAttribute() {}, setAttribute() {} }; }
+  const app = node('div'); app.querySelector = (selector) => selector === '#content' ? node('main') : null;
+  const store = storage({ [keys.edition]: null, [keys.local]: JSON.stringify({ schemaVersion: 2, byFingerprint: {} }) });
+  const windowValue = { location: { href: 'https://example.edu/#edition=x', hash: '#edition=x', pathname: '/', search: '', reload() {} },
+    history: { replaceState() { throw new Error('private history'); } }, localStorage: store, crypto: webcrypto };
+  const result = F.fdEditionRuntimeInputs(windowValue, { createElement: node }, app, node('div'), snapshot, site);
+  assert.equal(result.ok, false); assert.equal(result.receipt.code, 'EDITION_RUNTIME');
+  assert.equal(store.operations.some(([op]) => op === 'set' || op === 'remove'), false);
+});
+
+test('reload failure rolls back a switch; dialog failure performs zero writes', async () => {
+  const H = await harness(); const candidate = await replacement(H); const active = await H.F.fdEditionValidateEnvelope(
+    H.envelope, H.core, H.snapshot, H.site, { mode: 'learner', generationDate: '' }, webcrypto.subtle,
   );
-  failRollbackRead = true;
-  assert.equal(F.fdEditionStartupJournalRollback(readFailureJournal), false);
-  assert.equal(readFailureValues.get('cw_last'), 'B');
-
-  for (const original of ['A', null]) {
-    const owned = new Map(original === null ? [] : [['cw_last', original]]);
-    let failRestore = false;
-    const failing = {
-      getItem(key) { return owned.has(key) ? owned.get(key) : null; },
-      setItem(key, value) {
-        if (failRestore && original !== null) throw new Error('set failure');
-        owned.set(key, value);
-      },
-      removeItem(key) {
-        if (failRestore && original === null) throw new Error('remove failure');
-        owned.delete(key);
-      },
-    };
-    const ownedJournal = F.fdEditionStartupJournal(failing, ['cw_last']);
-    F.fdEditionStartupJournalRun(ownedJournal, ['cw_last'], () => failing.setItem('cw_last', 'B'));
-    failRestore = true;
-    assert.equal(F.fdEditionStartupJournalRollback(ownedJournal), false);
-    assert.equal(owned.get('cw_last'), 'B');
+  const local = { schemaVersion: 2, byFingerprint: { [active.fingerprint]: { checklist: {}, resources: {} } } };
+  const seed = { [H.keys.edition]: JSON.stringify(active.envelope), [H.keys.local]: JSON.stringify(local), ...PROTECTED };
+  function dialogHarness(showThrows = false) {
+    const handlers = {}; const button = (value) => ({ value, disabled: false, addEventListener(type, handler) { handlers[`${value}:${type}`] = handler; }, focus() {} });
+    const keep = button('decline'), accept = button('accept');
+    const dialog = { addEventListener(type, handler) { handlers[`dialog:${type}`] = handler; }, querySelector(selector) { return selector.includes('decline') ? keep : accept; },
+      showModal() { if (showThrows) throw new Error('private dialog'); }, close() {} };
+    const mount = { innerHTML: '', querySelector() { return dialog; } };
+    return { mount, accept() { handlers['accept:click']({ preventDefault() {} }); } };
   }
-});
+  const store = storage(seed); const ui = dialogHarness(); let recovered = 0;
+  const journal = H.F.fdEditionStartupJournal(store, [H.keys.local, H.keys.edition]);
+  assert.equal(H.F.fdEditionRuntimeMountSwitch(ui.mount, { active, candidate }, store, H.keys, local, journal,
+    { reload() { throw new Error('private reload'); } }, true, () => { recovered += 1; return true; }), true);
+  ui.accept(); assert.deepEqual(store.snapshot(), seed); assert.equal(recovered, 0); assert.match(ui.mount.innerHTML, /EDITION_RUNTIME/);
 
-function protectedSnapshot(storage) {
-  const snapshot = storage.snapshot();
-  return Object.fromEntries(Object.entries(snapshot).filter(([key]) =>
-    key === 'cw_progress_v1' || key === 'cw_pretest_v1' || key === 'cw_qb_v1' || key === 'cw_unrelated_v1' || key.startsWith('rp_')));
-}
-
-function seededStorage() {
-  return recordingStorage({
-    cw_progress_v1: '{"assessment.md":true}', cw_pretest_v1: '{"complete":true}',
-    cw_qb_v1: '{"question":7}', cw_unrelated_v1: 'preserve exactly', rp_progress_v1: '{"resident":true}'
-  });
-}
-
-test('runtime listener registration removes a handler when the host registers and then throws', () => {
-  const active = new Map();
-  const removals = [];
-  const target = {
-    addEventListener(type, handler) {
-      active.set(type, handler);
-      throw new Error('private post-registration failure');
-    },
-    removeEventListener(type, handler) {
-      removals.push([type, handler]);
-      if (active.get(type) === handler) active.delete(type);
-    },
-  };
-  const handler = () => assert.fail('a failed startup handler must not remain dispatchable');
-  const registration = F.fdEditionRuntimeListen(target, 'click', handler, false);
-  assert.equal(registration.ok, false);
-  assert.deepEqual([...active.keys()], []);
-  assert.deepEqual(removals, [['click', handler]]);
-  assert.equal(F.fdEditionRuntimeUnlisten(registration), true);
-  assert.deepEqual(removals, [['click', handler]], 'failed registration cleanup is idempotent');
-});
-
-function writeFailingStorage(initial, failKey) {
-  const values = new Map(Object.entries(initial));
-  const attempts = [];
-  return {
-    getItem(key) { return values.has(key) ? values.get(key) : null; },
-    setItem(key, value) {
-      attempts.push(key);
-      if (key === failKey) throw new Error('adapter failure');
-      values.set(key, value);
-    },
-    snapshot() { return Object.fromEntries(values); },
-    attempts
-  };
-}
-
-test('first valid edition resolves without writes and explicit acceptance writes only the two edition keys', async () => {
-  const incoming = await edition();
-  const storage = seededStorage();
-  const before = protectedSnapshot(storage);
-  const result = await F.fdEditionResolveStartup(canonicalIndex(), context(), 'https://example.edu/front-door.html', fragment(incoming), null, webcrypto.subtle);
-  assert.equal(result.mode, 'active');
-  assert.equal(result.needsCommit, true);
-  assert.equal(result.active.fingerprint, incoming.fingerprint);
-  assert.equal(storage.writes.length, 0);
-  assert.equal(F.fdEditionAcceptFirst(storage, result.active), true);
-  assert.deepEqual(storage.writes.map(([key]) => key), [LOCAL_KEY, EDITION_KEY]);
-  assert.deepEqual(protectedSnapshot(storage), before);
-  assert.deepEqual(JSON.parse(storage.snapshot()[LOCAL_KEY]), { schemaVersion: 1, byFingerprint: {
-    [incoming.fingerprint]: { checklist: {}, resources: {} }
-  } });
-});
-
-test('same incoming edition and a stored edition without a fragment stay active without storage churn', async () => {
-  const selected = await edition();
-  const stored = JSON.stringify(selected.envelope);
-  for (const incomingHash of [fragment(selected), '']) {
-    const storage = seededStorage();
-    const result = await F.fdEditionResolveStartup(canonicalIndex(), context(), 'https://example.edu/front-door.html', incomingHash, stored, webcrypto.subtle);
-    assert.equal(result.mode, 'active');
-    assert.equal(result.needsCommit, false);
-    assert.equal(result.active.fingerprint, selected.fingerprint);
-    assert.equal(result.candidate, null);
-    assert.equal(storage.writes.length, 0);
-  }
-});
-
-test('different newer and older valid links require confirmation and preserve the stored active edition', async () => {
-  const selected = await edition('ms3', 2);
-  for (const number of [1, 3]) {
-    const incoming = await edition('ms3', number);
-    const storage = seededStorage();
-    const before = storage.snapshot();
-    const result = await F.fdEditionResolveStartup(canonicalIndex(), context(), 'https://example.edu/front-door.html', fragment(incoming), JSON.stringify(selected.envelope), webcrypto.subtle);
-    assert.equal(result.mode, 'switch-required');
-    assert.equal(result.needsCommit, false);
-    assert.equal(result.active.fingerprint, selected.fingerprint);
-    assert.equal(result.candidate.fingerprint, incoming.fingerprint);
-    assert.equal(result.index.edition.fingerprint, selected.fingerprint);
-    assert.deepEqual(storage.snapshot(), before, 'declining the switch leaves all values byte-for-byte unchanged');
-    assert.equal(storage.writes.length, 0);
-  }
-});
-
-test('explicit switch writes only edition and local progress while preserving core and unrelated values byte-for-byte', async () => {
-  const selected = await edition('ms3', 1);
-  const replacement = await edition('ms3', 2);
-  const storage = seededStorage();
-  storage.setItem(LOCAL_KEY, JSON.stringify({ schemaVersion: 1, byFingerprint: {
-    [selected.fingerprint]: { checklist: { 'local:check:1': true }, resources: {} },
-    'BHU2-MS3-4F7C2Q': { checklist: {}, resources: { 'local:resource:1': true } }
-  } }));
-  storage.writes.length = 0;
-  const before = protectedSnapshot(storage);
-  assert.equal(F.fdEditionAcceptSwitch(storage, replacement), true);
-  assert.deepEqual(storage.writes.map(([key]) => key), [LOCAL_KEY, EDITION_KEY]);
-  assert.deepEqual(protectedSnapshot(storage), before);
-  const local = JSON.parse(storage.snapshot()[LOCAL_KEY]);
-  assert.deepEqual(local.byFingerprint[selected.fingerprint], { checklist: { 'local:check:1': true }, resources: {} });
-  assert.deepEqual(local.byFingerprint[replacement.fingerprint], { checklist: {}, resources: {} });
-});
-
-test('corrupt stored data and malformed, wrong-audience, wrong-path, or oversized incoming links reject without writes or content echo', async () => {
-  const good = await edition();
-  const wrongAudience = await edition('resident');
-  const wrongPath = structuredClone(good.envelope);
-  wrongPath.config.pathId = 'resident-four-week';
-  const incomingCases = [
-    ['malformed', '#edition=%%%%'],
-    ['wrong audience', fragment(wrongAudience)],
-    ['wrong path', `#edition=${Buffer.from(JSON.stringify(wrongPath)).toString('base64url')}`],
-    ['oversized', `#edition=${'A'.repeat(16001)}`]
-  ];
-  for (const [label, incomingHash] of incomingCases) {
-    const storage = seededStorage();
-    const before = storage.snapshot();
-    const result = await F.fdEditionResolveStartup(canonicalIndex(), context(), 'https://example.edu/front-door.html', incomingHash, '{bad json <script>alert(1)</script>', webcrypto.subtle);
-    assert.equal(result.mode, 'rejected', label);
-    assert.equal(result.index.path.id, 'ms3-six-week', label);
-    assert.equal(storage.writes.length, 0, label);
-    assert.deepEqual(storage.snapshot(), before, label);
-    const markup = F.fdEditionErrorMarkup(result.receipt);
-    assert.match(markup, /role="alert"/);
-    assert.equal(markup.includes('<script>'), false);
-    assert.equal(markup.includes('bad json'), false);
-  }
-});
-
-test('a projection failure rejects the candidate without changing an otherwise valid storage snapshot', async () => {
-  const incoming = await edition();
-  const storage = seededStorage();
-  const before = storage.snapshot();
-  const result = await F.fdEditionResolveStartup(canonicalIndex('ms3', { columns: null }), context(), 'https://example.edu/front-door.html', fragment(incoming), null, webcrypto.subtle);
-  assert.equal(result.mode, 'rejected');
-  assert.equal(result.active, null);
-  assert.equal(result.index.path.id, 'ms3-six-week');
-  assert.equal(storage.writes.length, 0);
-  assert.deepEqual(storage.snapshot(), before);
-});
-
-test('local progress is fingerprint-scoped, toggle-only, and safe against hostile storage', async () => {
-  const selected = await edition();
-  const storage = recordingStorage({ [LOCAL_KEY]: JSON.stringify({ schemaVersion: 1, byFingerprint: {
-    'BHU2-MS3-4F7C2Q': { checklist: { 'old:item': true }, resources: {} }
-  } }) });
-  assert.deepEqual(JSON.parse(JSON.stringify(F.fdEditionReadLocalProgress(storage, selected.fingerprint))), { checklist: {}, resources: {} });
-  assert.equal(F.fdEditionToggleLocalProgress(storage, selected.fingerprint, 'checklist', 'local:check:1'), true);
-  assert.equal(F.fdEditionToggleLocalProgress(storage, selected.fingerprint, 'checklist', 'local:check:1'), true);
-  assert.deepEqual(JSON.parse(JSON.stringify(F.fdEditionReadLocalProgress(storage, selected.fingerprint))), { checklist: {}, resources: {} });
-  assert.equal(F.fdEditionToggleLocalProgress(storage, selected.fingerprint, 'not-a-kind', 'local:check:1'), false);
-  assert.equal(F.fdEditionToggleLocalProgress(storage, selected.fingerprint, 'checklist', '<img src=x>'), false);
-  const hostile = { getItem() { throw new Error('stored secret'); }, setItem() { throw new Error('write secret'); } };
-  assert.deepEqual(JSON.parse(JSON.stringify(F.fdEditionReadLocalProgress(hostile, selected.fingerprint))), { checklist: {}, resources: {} });
-  assert.equal(F.fdEditionToggleLocalProgress(hostile, selected.fingerprint, 'checklist', 'local:check:1'), false);
-  const unreadable = { writes: 0, getItem() { throw new Error('stored secret'); }, setItem() { this.writes += 1; } };
-  assert.equal(F.fdEditionAcceptFirst(unreadable, selected), false);
-  assert.equal(F.fdEditionToggleLocalProgress(unreadable, selected.fingerprint, 'checklist', 'local:check:1'), false);
-  assert.equal(unreadable.writes, 0, 'an unreadable local bucket must never be overwritten');
-});
-
-test('corrupt or structurally invalid existing local progress blocks accept and toggle without overwriting it', async () => {
-  const selected = await edition();
-  const invalidDocuments = [
-    '{bad json',
-    JSON.stringify({ schemaVersion: 1, byFingerprint: { [selected.fingerprint]: { checklist: {}, resources: {}, extra: true } } }),
-    JSON.stringify({ schemaVersion: 1, byFingerprint: { [selected.fingerprint]: { checklist: { 'invalid key': true }, resources: {} } } })
-  ];
-  for (const text of invalidDocuments) {
-    const storage = seededStorage();
-    storage.setItem(LOCAL_KEY, text);
-    storage.writes.length = 0;
-    const before = storage.snapshot();
-    assert.equal(F.fdEditionAcceptFirst(storage, selected), false);
-    assert.equal(F.fdEditionToggleLocalProgress(storage, selected.fingerprint, 'checklist', 'local:check:1'), false);
-    assert.deepEqual(storage.snapshot(), before);
-    assert.deepEqual(storage.writes, []);
-  }
-});
-
-test('accept writes prepared local progress before the edition commit marker and handles each write failure safely', async () => {
-  const selected = await edition('ms3', 1);
-  const replacement = await edition('ms3', 2);
-  const initial = {
-    [EDITION_KEY]: JSON.stringify(selected.envelope),
-    [LOCAL_KEY]: JSON.stringify({ schemaVersion: 1, byFingerprint: { [selected.fingerprint]: { checklist: {}, resources: {} } } }),
-    cw_progress_v1: 'core progress', cw_pretest_v1: 'pretest', cw_qb_v1: 'qbank', cw_unrelated_v1: 'other', rp_progress_v1: 'resident'
-  };
-  for (const failedKey of [LOCAL_KEY, EDITION_KEY]) {
-    const storage = writeFailingStorage(initial, failedKey);
-    const before = protectedSnapshot({ snapshot: () => initial });
-    assert.equal(F.fdEditionAcceptSwitch(storage, replacement), false, failedKey);
-    assert.deepEqual(protectedSnapshot(storage), before, failedKey);
-    assert.equal(storage.snapshot()[EDITION_KEY], initial[EDITION_KEY], `${failedKey} keeps the old active edition`);
-    assert.equal(storage.attempts[0], LOCAL_KEY, `${failedKey} prepares local state first`);
-    if (failedKey === LOCAL_KEY) assert.deepEqual(storage.attempts, [LOCAL_KEY]);
-    else {
-      assert.deepEqual(storage.attempts, [LOCAL_KEY, EDITION_KEY]);
-      assert.deepEqual(JSON.parse(storage.snapshot()[LOCAL_KEY]).byFingerprint[replacement.fingerprint], { checklist: {}, resources: {} });
-    }
-  }
-});
-
-test('commit and switch markup require a coherent success-shaped validated edition rather than a regex-shaped fingerprint', async () => {
-  const selected = await edition('ms3', 1);
-  const forgedCases = [
-    ['unbranded exact copy', () => {}],
-    ['format', (value) => { value.envelope.format = 'other-format'; }],
-    ['token', (value) => { value.fingerprint = 'BHU2-MS3-000000'; }],
-    ['location', (value) => { value.config.card.locationCode = 'MMC'; }],
-    ['audience', (value) => { value.config.audience = 'resident'; }],
-    ['digest', (value) => { value.envelope.digest = `sha256-${'B'.repeat(43)}`; }],
-    ['blocking errors', (value) => { value.errors = [{ blocking: true }]; }]
-  ];
-  for (const [label, mutate] of forgedCases) {
-    const forged = structuredClone(selected);
-    mutate(forged);
-    const storage = seededStorage();
-    const before = storage.snapshot();
-    assert.equal(F.fdEditionAcceptFirst(storage, forged), false, label);
-    assert.equal(F.fdEditionSwitchMarkup(selected, forged), '', label);
-    assert.deepEqual(storage.snapshot(), before, label);
-    assert.deepEqual(storage.writes, [], label);
-  }
-});
-
-test('unbranded nested error proxies cannot make switch markup inspect hostile array properties', async () => {
-  const selected = await edition();
-  const forged = structuredClone(selected);
-  forged.errors = new Proxy([], { get(target, property) {
-    if (property === 'length') throw new Error('nested markup secret');
-    return Reflect.get(target, property);
-  } });
-  assert.doesNotThrow(() => F.fdEditionSwitchMarkup(selected, forged));
-  assert.equal(F.fdEditionSwitchMarkup(selected, forged), '');
-});
-
-test('hostile storage descriptors and markup proxies fail closed without exception text or writes', async () => {
-  const selected = await edition();
-  const storage = { writes: 0 };
-  Object.defineProperty(storage, 'getItem', { get() { throw new Error('read secret'); } });
-  Object.defineProperty(storage, 'setItem', { get() { throw new Error('write secret'); } });
-  assert.doesNotThrow(() => F.fdEditionReadLocalProgress(storage, selected.fingerprint));
-  assert.doesNotThrow(() => F.fdEditionAcceptFirst(storage, selected));
-  assert.doesNotThrow(() => F.fdEditionToggleLocalProgress(storage, selected.fingerprint, 'checklist', 'local:check:1'));
-  assert.equal(storage.writes, 0);
-  const hostile = new Proxy({}, { get() { throw new Error('markup secret'); }, getPrototypeOf() { throw new Error('markup secret'); } });
-  assert.doesNotThrow(() => F.fdEditionSwitchMarkup(hostile, selected));
-  assert.equal(F.fdEditionSwitchMarkup(hostile, selected), '');
-  assert.doesNotThrow(() => F.fdEditionErrorMarkup(hostile));
-  assert.equal(F.fdEditionErrorMarkup(hostile).includes('markup secret'), false);
-  const hostileReceipt = { code: { toString() { throw new Error('receipt secret'); } } };
-  assert.doesNotThrow(() => F.fdEditionErrorMarkup(hostileReceipt));
-  assert.equal(F.fdEditionErrorMarkup(hostileReceipt).includes('receipt secret'), false);
-});
-
-test('local completion supports every printable contract ID without prototype pollution', async () => {
-  const selected = await edition();
-  const storage = recordingStorage();
-  const printable = 'UPPER.ID+@[x]:/!?';
-  assert.equal(F.fdEditionToggleLocalProgress(storage, selected.fingerprint, 'resources', printable), true);
-  const progress = F.fdEditionReadLocalProgress(storage, selected.fingerprint);
-  assert.equal(Object.getPrototypeOf(progress.resources), null);
-  assert.equal(progress.resources[printable], true);
-  for (const id of ['toString', 'hasOwnProperty', '__proto__', 'constructor', 'prototype']) {
-    assert.equal(F.fdEditionToggleLocalProgress(storage, selected.fingerprint, 'resources', id), true, id);
-    assert.equal(Object.getOwnPropertyDescriptor(F.fdEditionReadLocalProgress(storage, selected.fingerprint).resources, id).value, true, id);
-  }
-  for (const id of ['space id', 'line\nbreak', '']) {
-    assert.equal(F.fdEditionToggleLocalProgress(storage, selected.fingerprint, 'resources', id), false, id);
-  }
-});
-
-test('switch and error markup use only escaped privacy-safe diagnostic fields', async () => {
-  const active = await edition('ms3', 1);
-  const candidate = await edition('ms3', 2);
-  const switchMarkup = F.fdEditionSwitchMarkup(active, candidate);
-  assert.match(switchMarkup, /<dialog[^>]*aria-labelledby=/);
-  assert.match(switchMarkup, new RegExp(active.fingerprint));
-  assert.match(switchMarkup, new RegExp(candidate.fingerprint));
-  const errorMarkup = F.fdEditionErrorMarkup({ code: 'EDITION_SCHEMA', schemaVersion: 1, fingerprint: '<unsafe>', currentCoreRevision: REVISION });
-  assert.match(errorMarkup, /role="alert"/);
-  assert.equal(errorMarkup.includes('<unsafe>'), false);
-  assert.equal(errorMarkup.includes(REVISION), true);
+  const untouched = storage(seed); const broken = dialogHarness(true);
+  assert.equal(H.F.fdEditionRuntimeMountSwitch(broken.mount, { active, candidate }, untouched, H.keys, local,
+    H.F.fdEditionStartupJournal(untouched, [H.keys.local, H.keys.edition]), { reload() {} }, true, () => true), false);
+  assert.equal(untouched.operations.some(([op]) => op === 'set' || op === 'remove'), false);
 });

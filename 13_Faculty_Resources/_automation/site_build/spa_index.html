@@ -544,10 +544,10 @@
 <a class="skip-link" href="#content">Skip to content</a>
 <div id="fdApp" class="fd-shell" aria-busy="true" inert>
   <div id="fdChromeMount"></div>
-  <div id="governanceMount"></div>
   <span id="routeStatus" class="vh-live" aria-live="polite"></span>
   <div id="fdCaptureMount"></div>
   <main id="content" class="fd-main" tabindex="-1"><div class="skel" role="status" aria-label="Loading"><div class="bar title"></div><div class="bar"></div><div class="bar short"></div><div class="bar"></div></div></main>
+  <div id="governanceMount"></div>
   <div id="fdOverlayMount"></div>
   <template id="fdCrisisTemplate"><!-- crisis-block-html --></template>
   <div id="fdNudgeMount"></div>
@@ -1526,6 +1526,8 @@
     };
   }
 
+  var FD_PLAN_REFRESH_ALLOWED=true;
+
   function buildPlan(index){
     var active=index||FD_INDEX;
     return fdPlanFromMastery(active,masteryByBlueprint(),
@@ -1569,15 +1571,30 @@
   }
 
   function fdLoadPlan(index){
-    var rawPlan=null,plan=null,placement=null;
+    var rawPlan=null,plan=null,placement=null,manualItems,history;
     if(!fdActivePathValid(index)) return null;
     try{rawPlan=localStorage.getItem('cw_plan_v1');}catch(_){rawPlan=null;}
     if(rawPlan===null) return null;
     try{plan=JSON.parse(rawPlan||'null');}catch(_){plan=null;}
     if(fdPlanMatches(index,plan)) return plan;
+    if(FD_PLAN_REFRESH_ALLOWED!==true)return null;
+    if(plan&&typeof plan==='object'){
+      if(Object.prototype.hasOwnProperty.call(plan,'manualItems'))manualItems=plan.manualItems;
+      if(Object.prototype.hasOwnProperty.call(plan,'history'))history=plan.history;
+    }
     try{placement=JSON.parse(localStorage.getItem('cw_pretest_v1')||'null');}catch(_){placement=null;}
     if(fdPlacementUsable(placement)){
       plan=buildPlan(index);
+      if(typeof manualItems!=='undefined')plan.manualItems=manualItems;
+      if(typeof history!=='undefined')plan.history=history;
+      try{localStorage.setItem('cw_plan_v1',JSON.stringify(plan));}catch(_){ }
+      return plan;
+    }
+    if(typeof manualItems!=='undefined'||typeof history!=='undefined'){
+      plan=buildPlan(index);
+      if(!plan)return null;
+      if(typeof manualItems!=='undefined')plan.manualItems=manualItems;
+      if(typeof history!=='undefined')plan.history=history;
       try{localStorage.setItem('cw_plan_v1',JSON.stringify(plan));}catch(_){ }
       return plan;
     }
@@ -1607,8 +1624,8 @@
     return revision&&gate?{localCatalogRevision:revision,rotationEditionV2:gate}:{localCatalogRevision:'',rotationEditionV2:'disabled'};
   }
   var fdRotationCatalogContextValue=fdRotationCatalogContext(FD_ROTATION_EDITION_CATALOG);
-  var FD_SITE_CONTEXT={audience:FD_AUDIENCE,pathId:FD_CANONICAL_INDEX.path.id,
-                       coreRevision:FD_CORE_REVISION,localCatalogRevision:fdRotationCatalogContextValue.localCatalogRevision,
+  var FD_SITE_CONTEXT={audience:FD_AUDIENCE,coreRevision:FD_CORE_REVISION,
+                       localCatalogRevision:fdRotationCatalogContextValue.localCatalogRevision,
                        rotationEditionV2:fdRotationCatalogContextValue.rotationEditionV2};
   var fdDocument=null;
   try{fdDocument=window.document;}catch(ignoreDocument){fdDocument=null;}
@@ -1622,6 +1639,8 @@
   var fdNudgeMount=fdEditionRuntimeElement(fdDocument,'fdNudgeMount');
   var fdController=null;
   var fdActiveEditionSnapshot=null;
+  var fdCatalogSnapshot=null;
+  var fdEditionBootKeys=null;
 
   function fdSurface(name,fn){
     try{ return fn(); }
@@ -1653,9 +1672,9 @@
     }
     out.role=fdRoleName(out.role)||out.role;
     out.currentCoreRevision=typeof FD_CORE_REVISION==='string'?FD_CORE_REVISION:'';
-    out.localProgress=FD_INDEX.edition
-      ?fdEditionReadLocalProgress(fdEditionBootStorage,FD_INDEX.edition.fingerprint)
-      :{checklist:Object.create(null),resources:Object.create(null)};
+    out.localProgress=FD_INDEX.edition&&FD_INDEX.edition.card
+      ?fdEditionReadLocal(fdEditionBootStorage,fdEditionBootKeys,FD_INDEX.edition.card.fingerprint,FD_INDEX.edition)
+      :{checklist:{},resources:{}};
     out.crisisHtml=fdCrisisHtml;
     if(typeof FD_PROTOCOL_FAILURE_COPY==='string')out.protocolFailureCopy=FD_PROTOCOL_FAILURE_COPY;
     var wk=fdItemsForWeek(FD_INDEX,out.week), progress=fdTodayProgress(wk,out.done);
@@ -1887,9 +1906,9 @@
     var progress,nodes,on,i,node;
     try{
       if(!contentEl||!identity||!identity.fingerprint)return false;
-      progress=fdEditionReadLocalProgress(fdEditionBootStorage,identity.fingerprint);
+      progress=fdEditionReadLocal(fdEditionBootStorage,fdEditionBootKeys,identity.fingerprint,identity.displayModel);
       on=!!(progress[kind]&&progress[kind][id]);
-      nodes=contentEl.querySelectorAll('[data-fd-local-toggle]');
+      nodes=fdEditionMount.querySelectorAll('[data-fd-local-toggle]');
       for(i=0;i<nodes.length;i++){
         node=nodes[i];
         if(node.getAttribute('data-fd-local-toggle')!==kind||node.getAttribute('data-local-id')!==id)continue;
@@ -1910,7 +1929,7 @@
       var localId=el.getAttribute('data-local-id');
       localIdentity=fdEditionActiveIdentity(fdActiveEditionSnapshot,FD_INDEX);
       if(localIdentity&&fdEditionLocalToggleAllowed(localIdentity.snapshot,localKind,localId)&&
-         fdEditionToggleLocalProgress(fdEditionBootStorage,localIdentity.fingerprint,localKind,localId))
+         fdEditionToggleLocalProgress(fdEditionBootStorage,fdEditionBootKeys,localIdentity.fingerprint,localKind,localId,localIdentity.displayModel))
         fdRefreshLocalCompletion(localIdentity,localKind,localId);
       return;
     }
@@ -1977,6 +1996,8 @@
   var fdEditionBootState='pending';
   var fdEditionStartupTeardowns=[];
   var fdEditionStartupStorage=null;
+  var fdEditionAcceptanceJournal=null;
+  var fdEditionAcceptanceDirty=false;
   var fdEditionStartupStorageDirty=false;
   var fdEditionStartupHistory=null;
   var fdEditionStartupHistoryDirty=false;
@@ -2060,6 +2081,8 @@
     fdEditionCleanupWiring();
     if(fdEditionStartupHistoryDirty)fdEditionRestoreHistory(fdEditionStartupHistory);
     if(fdEditionStartupStorageDirty)fdEditionStartupJournalRollback(fdEditionStartupStorage);
+    if(fdEditionAcceptanceJournal)fdEditionStartupJournalRollback(fdEditionAcceptanceJournal);
+    fdEditionAcceptanceDirty=false;
     fdEditionStartupHistoryDirty=false;
     fdEditionStartupStorageDirty=false;
     FD_INDEX=FD_CANONICAL_INDEX;
@@ -2082,6 +2105,41 @@
   var fdStartupGeneration=++fdEditionStartupGeneration;
   result=result&&result.index?result:{mode:'rejected',needsCommit:false,index:FD_CANONICAL_INDEX,
     receipt:fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME')};
+  FD_INDEX=result.index;
+  FD_PLAN_REFRESH_ALLOWED=result.mode!=='rejected'&&result.mode!=='switch-required';
+  if(result.mode==='rejected'&&result.receipt&&
+     result.receipt.code==='EDITION_PRERELEASE_UNSUPPORTED'){
+    FD_INDEX=FD_CANONICAL_INDEX;
+    fdActiveEditionSnapshot=null;
+    TOPIC_META=FD_TOPIC_META;
+    try{
+      var fdPrereleaseStored=fdLoad();
+      var fdPrereleaseRotation=LS('cw_rotation_start')||'';
+      var fdPrereleaseWeek=fdRotationWeek(fdPrereleaseRotation,FD_INDEX.weeks,Date.now());
+      fdPrereleaseStored.roles=FD_ROLES;
+      fdPrereleaseStored.rotationStart=fdPrereleaseRotation;
+      if(fdFindWeek(FD_INDEX,fdPrereleaseWeek))fdPrereleaseStored.week=fdPrereleaseWeek;
+      var fdPrereleaseRoute=new URLSearchParams(location.search);
+      var fdPrereleaseRef=fdPrereleaseRoute.get('page')||fdPrereleaseRoute.get('tool')||'';
+      if(fdPrereleaseRef&&!fdIsLegacyRouteAlias(fdPrereleaseRef)&&!fdPrereleaseStored.role){
+        fdPrereleaseStored.role=(FD_ROLES[0]&&FD_ROLES[0].id)||'reader';
+        fdPrereleaseStored.browsing=true;
+      }
+      var fdPrereleaseInitial=fdResolveState(location.href,fdPrereleaseStored);
+      fdPrereleaseInitial.done=fdProgressDoneMap(progLoad());
+      fdPrereleaseInitial.rotationStart=fdPrereleaseRotation;
+      fdRender(fdPrereleaseInitial);
+      if(!fdEditionRuntimeMountError(fdEditionMount,result.receipt)||
+         !fdEditionRuntimeReleaseGate(fdApp))throw new Error('prerelease rejection');
+      fdEditionBootState='rejected';
+    }catch(ignorePrereleaseRender){
+      fdEditionRuntimeReleaseGate(fdApp);
+      fdEditionRuntimeMountError(fdEditionMount,
+        fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'));
+      fdEditionBootState='failed';
+    }
+    return {ok:false,code:'EDITION_PRERELEASE_UNSUPPORTED'};
+  }
   if(result.mode==='switch-required'&&
      !fdEditionRuntimeSwitchReady(fdEditionBootLocation,fdEditionInputs&&fdEditionInputs.hashCleared)){
     result={mode:'rejected',needsCommit:false,index:FD_CANONICAL_INDEX,
@@ -2090,9 +2148,20 @@
   fdActiveEditionSnapshot=result.active||null;
   var fdCheckpointStorage=fdEditionBootStorage;
   if(!fdCheckpointStorage)try{fdCheckpointStorage=window.localStorage;}catch(ignoreCheckpointStorage){ }
+  var fdAcceptanceReceipt=null;
+  fdEditionBootKeys=fdEditionStorageKeys(FD_SITE_CONTEXT.audience);
+  if(!fdEditionBootKeys){
+    fdEditionRuntimeFallback(fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'),null);
+    return;
+  }
+  fdEditionAcceptanceJournal=fdEditionStartupJournal(fdCheckpointStorage,
+    [fdEditionBootKeys.local,fdEditionBootKeys.edition]);
+  if(!fdEditionAcceptanceJournal){
+    fdEditionRuntimeFallback(fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'),null);
+    return;
+  }
   fdEditionStartupStorage=fdEditionStartupJournal(fdCheckpointStorage,[
-    FD_EDITION_STUDENT_KEYS.edition,FD_EDITION_STUDENT_KEYS.local,'cw_plan_v1','cw_last',
-    'cw_frontdoor_v1','cw_rotation_start'
+    'cw_plan_v1','cw_last','cw_frontdoor_v1','cw_rotation_start'
   ]);
   if(!fdEditionStartupStorage){
     fdEditionRuntimeFallback(fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'),null);
@@ -2104,7 +2173,6 @@
     fdEditionRuntimeFallback(fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'),null);
     return;
   }
-  FD_INDEX=result.index;
   TOPIC_META=FD_TOPIC_META;
   var fdStored,fdRotation,fdWeek,fdRouteParams,fdIncomingRef,fdInitial;
   try{
@@ -2123,14 +2191,24 @@
     fdInitial=fdResolveState(location.href,fdStored);
     fdInitial.done=fdProgressDoneMap(progLoad());
     fdInitial.rotationStart=fdRotation;
-    if(FD_RUNTIME_WIRING_OK!==true||!fdEditionRuntimeShellReady(fdApp)){
+    if(FD_RUNTIME_WIRING_OK!==true||!fdEditionRuntimePreflightWiring(window,document,fdApp)){
       fdEditionRuntimeFallback(fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'),fdInitial);
       return;
     }
-    if(!fdEditionTrackListener(window,'resize',refreshTableScrollCues,false)||
-       !fdEditionTrackListener(document,'click',fdFacultyPreviewDocumentClick,true)){
-      fdEditionRuntimeFallback(fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'),fdInitial);
-      return;
+    fdEditionAcceptanceDirty=true;
+    if(result.mode==='active'&&result.needsCommit){
+      fdAcceptanceReceipt=fdEditionCommitAcceptance(fdCheckpointStorage,fdEditionBootKeys,
+        result.active,fdEditionInputs&&fdEditionInputs.localDocument,fdEditionAcceptanceJournal);
+      if(!fdAcceptanceReceipt.ok){
+        if(fdAcceptanceReceipt.irrecoverable){
+          fdEditionRuntimeFallback(fdAcceptanceReceipt,fdInitial);
+          return;
+        }
+        result={mode:'rejected',needsCommit:false,index:FD_CANONICAL_INDEX,
+          receipt:fdAcceptanceReceipt};
+        FD_INDEX=FD_CANONICAL_INDEX;
+        fdActiveEditionSnapshot=null;
+      }
     }
     fdController=fdWire(fdApp,fdInitial,{
       window:window,document:document,index:FD_INDEX,roles:FD_ROLES,rotationStart:fdRotation,
@@ -2150,24 +2228,27 @@
   fdEditionStartupTeardowns.push(function(){
     if(fdController&&fdController.destroy)fdController.destroy();
   });
-  if(!fdEditionTrackListener(fdApp,'click',fdAuxClick,false)||
+  if(!fdEditionTrackListener(window,'resize',refreshTableScrollCues,false)||
+     !fdEditionTrackListener(document,'click',fdFacultyPreviewDocumentClick,true)||
+     !fdEditionTrackListener(fdApp,'click',fdAuxClick,false)||
      !fdEditionTrackListener(window,'message',fdAuxMessage,false)){
     fdEditionRuntimeFallback(fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'),fdInitial);
     return;
   }
-  if(result.mode==='active'&&result.needsCommit){
-    var fdAcceptPhase=fdEditionStartupPhase(
-      [FD_EDITION_STUDENT_KEYS.local,FD_EDITION_STUDENT_KEYS.edition],
-      function(){return fdEditionAcceptFirst(fdEditionBootStorage,result.active);}
-    );
-    if(!fdAcceptPhase.ok||fdAcceptPhase.value!==true){
-      fdEditionRuntimeFallback(fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'),fdInitial);
-      return;
-    }
-  }
   try{
     var fdRenderPhase=fdEditionStartupPhase(['cw_plan_v1'],function(){fdRender(fdInitial);return true;});
     if(!fdRenderPhase.ok)throw new Error('startup render journal');
+    if(result.mode==='active'&&result.active){
+      var fdEditionContainer=document.createElement('div');
+      var fdEditionCardRoot=document.createElement('div');
+      var fdEditionLocalRoot=document.createElement('div');
+      fdEditionContainer.appendChild(fdEditionCardRoot);fdEditionContainer.appendChild(fdEditionLocalRoot);
+      fdEditionMount.replaceChildren(fdEditionContainer);
+      if(!fdEditionRenderCard(fdEditionCardRoot,result.active.displayModel,document)||
+         !fdEditionRenderLocal(fdEditionLocalRoot,result.active.displayModel,
+           fdEditionReadLocal(fdEditionBootStorage,fdEditionBootKeys,result.active.fingerprint,result.active.displayModel),document))
+        throw new Error('edition render');
+    }
   }
   catch(ignoreFirstRender){
     fdEditionRuntimeFallback(fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'),fdInitial);
@@ -2231,7 +2312,7 @@
     var state,previousIndex=FD_INDEX,previousSnapshot=fdActiveEditionSnapshot;
     try{
       state=fdController&&fdController.getState?fdController.getState():fdInitial;
-      return fdEditionRuntimeRecover(FD_CANONICAL_INDEX,candidate,FD_SITE_CONTEXT,state,
+      return fdEditionRuntimeRecover(FD_CANONICAL_INDEX,candidate,state,
         function(index,recoveryState,recoverySnapshot){
           var identity=fdEditionActiveIdentity(recoverySnapshot,index);
           if(!identity)return false;
@@ -2259,7 +2340,9 @@
       if(!fdResourceReceipt||fdResourceReceipt.ok!==true)throw new Error('resource task');
     }
     if(result.mode==='switch-required'){
-      if(!fdEditionRuntimeMountSwitch(fdEditionMount,result,fdEditionBootStorage,
+      if(!fdEditionRuntimeMountSwitch(fdEditionMount,result,fdEditionBootStorage,fdEditionBootKeys,
+         fdEditionReadLocalDocument(fdEditionBootStorage,fdEditionBootKeys),
+         fdEditionStartupJournal(fdEditionBootStorage,[fdEditionBootKeys.local,fdEditionBootKeys.edition]),
          fdEditionBootLocation,fdEditionInputs.hashCleared,fdRecoverCommittedEdition))throw new Error('edition mount');
     }else if(result.mode==='rejected'&&!fdEditionRuntimeMountError(fdEditionMount,result.receipt))
       throw new Error('edition alert');
@@ -2273,6 +2356,8 @@
     return;
   }
   fdEditionStartupStorage=null;
+  fdEditionAcceptanceJournal=null;
+  fdEditionAcceptanceDirty=false;
   fdEditionStartupHistory=null;
   fdEditionStartupStorageDirty=false;
   fdEditionStartupHistoryDirty=false;
@@ -2284,19 +2369,27 @@
     if(fdEditionBootState==='starting')
       fdEditionRuntimeFallback(fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'),null);
   }
-  var fdEditionInputs=fdEditionRuntimeInputs(window,fdDocument,fdApp,fdEditionMount,FD_SITE_CONTEXT);
-  if(!fdEditionInputs.ok){
-    fdStartFrontDoor({mode:'rejected',needsCommit:false,index:FD_CANONICAL_INDEX,
-      receipt:fdEditionInputs.receipt}).catch(fdEditionCatchStartup);
-  }else{
+  var fdEditionInputs=null;
+  var fdCatalogSubtle=null;
+  try{fdCatalogSubtle=window.crypto&&window.crypto.subtle;}catch(ignoreCatalogCrypto){fdCatalogSubtle=null;}
+  Promise.resolve(fdCatalogSubtle&&fdEditionCatalogSnapshot(FD_ROTATION_EDITION_CATALOG,FD_SITE_CONTEXT.audience,fdCatalogSubtle)).then(function(prepared){
+    var pageUrl='',hash='';
+    if(!prepared||prepared.ok!==true||!prepared.snapshot){
+      try{pageUrl=window.location.href;hash=window.location.hash;}catch(ignoreCatalogLocation){ }
+      try{fdEditionBootStorage=window.localStorage;fdEditionBootLocation=window.location;}catch(ignoreCatalogStorage){ }
+      return fdStartFrontDoor({mode:hash?'rejected':'core',needsCommit:false,index:FD_CANONICAL_INDEX,
+        active:null,candidate:null,receipt:hash?fdEditionStudentReceipt(FD_SITE_CONTEXT,'EDITION_CATALOG_UNAVAILABLE',''):null});
+    }
+    fdCatalogSnapshot=prepared.snapshot;
+    fdEditionInputs=fdEditionRuntimeInputs(window,fdDocument,fdApp,fdEditionMount,fdCatalogSnapshot,FD_SITE_CONTEXT);
+    if(!fdEditionInputs.ok)return fdStartFrontDoor({mode:'rejected',needsCommit:false,index:FD_CANONICAL_INDEX,
+      active:null,candidate:null,receipt:fdEditionInputs.receipt});
     fdEditionBootStorage=fdEditionInputs.storage;
     fdEditionBootLocation=fdEditionInputs.location;
-    fdEditionResolveStartup(FD_CANONICAL_INDEX,FD_SITE_CONTEXT,fdEditionInputs.pageUrl,
-      fdEditionInputs.hash,fdEditionInputs.storedText,fdEditionInputs.subtle).then(fdStartFrontDoor,
-      function(){return fdStartFrontDoor({mode:'rejected',needsCommit:false,index:FD_CANONICAL_INDEX,
-        receipt:{code:'EDITION_RUNTIME',schemaVersion:1,fingerprint:'',
-                 currentCoreRevision:FD_CORE_REVISION}});}).catch(fdEditionCatchStartup);
-  }
+    return fdEditionResolveStartup(FD_CANONICAL_INDEX,fdCatalogSnapshot,FD_SITE_CONTEXT,fdEditionInputs.pageUrl,
+      fdEditionInputs.hash,fdEditionInputs.storedText,fdEditionInputs.subtle).then(fdStartFrontDoor);
+  },function(){return fdStartFrontDoor({mode:'core',needsCommit:false,index:FD_CANONICAL_INDEX,
+    active:null,candidate:null,receipt:null});}).catch(fdEditionCatchStartup);
 })();
 </script>
 </body>
