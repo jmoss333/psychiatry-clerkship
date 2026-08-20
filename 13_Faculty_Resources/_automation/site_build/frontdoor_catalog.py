@@ -239,3 +239,20 @@ def assert_catalog_resolver_injected(path):
     signature = "var fdEditionCatalogSnapshot=FD_EDITION_CATALOG.snapshot;"
     if text.count(signature) != 1:
         raise ValueError("Front Door catalog resolver missing or duplicated")
+    marker = "var FD_ROTATION_EDITION_CATALOG="
+    if text.count(marker) != 1:
+        raise ValueError("Front Door catalog revision value missing or duplicated")
+    start = text.index(marker) + len(marker)
+    try:
+        projection, _end = json.JSONDecoder().raw_decode(text[start:])
+    except json.JSONDecodeError as error:
+        raise ValueError("Front Door catalog revision value is not JSON") from error
+    revision = projection.get("revision") if isinstance(projection, dict) else None
+    if not isinstance(revision, str) or re.fullmatch(r"sha256-[A-Za-z0-9_-]{43}", revision) is None:
+        raise ValueError("Front Door catalog revision is malformed")
+    expected = re.compile(r"var EXPECTED_REVISION='(?:__FD_CATALOG_EXPECTED_REVISION__|sha256-[A-Za-z0-9_-]{43})';")
+    if len(expected.findall(text)) != 1:
+        raise ValueError("Front Door catalog resolver revision sentinel missing or duplicated")
+    text = expected.sub("var EXPECTED_REVISION='%s';" % revision, text)
+    with open(path, "w", encoding="utf-8") as fh:
+        fh.write(text)

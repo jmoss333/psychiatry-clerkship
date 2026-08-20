@@ -7,7 +7,8 @@ const SOURCE = new URL('../13_Faculty_Resources/_automation/site_build/frontdoor
 const API = ['fdEditionCatalogSnapshot', 'fdEditionCatalogRecord', 'fdEditionCatalogResolve', 'fdEditionPublicationEnabled'];
 
 function load() {
-  return new Function('TextEncoder', 'btoa', `${readFileSync(SOURCE, 'utf8')}\nreturn {${API.join(',')}};`)(TextEncoder, btoa);
+  const source = readFileSync(SOURCE, 'utf8').replace('__FD_CATALOG_EXPECTED_REVISION__', 'sha256-l57lmbbvaA0koAmWc_ik3g_V-RTLPJMDJaxSgRs0sAg');
+  return new Function('TextEncoder', 'btoa', `${source}\nreturn {${API.join(',')}};`)(TextEncoder, btoa);
 }
 
 function canonical(value) {
@@ -89,6 +90,37 @@ test('resolves the closed v2 model with fixed labels and revision comparisons', 
   assert.equal(result.ok, true, JSON.stringify(result.errors));
   assert.equal(result.displayModel.card.audienceLabel, 'MS3'); assert.equal(result.displayModel.card.durationLabel, '6 weeks');
   assert.equal(result.displayModel.card.fingerprint, ''); assert.equal(result.displayModel.pathItems[0].reasonText, 'prepare for the service');
+  assert.equal(result.displayModel.changeSummary.text, 'Initial edition 0');
   assert.equal(result.displayModel.revisions.coreMatches, false); assert.equal(result.displayModel.revisions.catalogMatches, false);
   assert.match(result.referenceSetDigest, /^sha256-[A-Za-z0-9_-]{43}$/);
+});
+
+test('rejects extra or impossible v2 config fields while preserving an optional path reason', async () => {
+  const F = load(); const prepared = await F.fdEditionCatalogSnapshot(await projection(), 'ms3', webcrypto.subtle);
+  const context = { audience: 'ms3', localCatalogRevision: prepared.snapshot.revision, rotationEditionV2: 'enabled', coreRevision: '1234567890abcdef1234567890abcdef12345678' };
+  const optionalReason = config(); delete optionalReason.pathItems[0].reasonKey;
+  const valid = await F.fdEditionCatalogResolve(optionalReason, prepared.snapshot, 'learner', context, webcrypto.subtle);
+  assert.equal(valid.ok, true, JSON.stringify(valid.errors));
+  assert.equal(Object.hasOwn(valid.displayModel.pathItems[0], 'reasonText'), false);
+  for (const mutate of [
+    (value) => { value.privateValue = 'do-not-echo'; },
+    (value) => { value.context.rotationStart = '2026-02-30'; },
+    (value) => { value.pathItems[0].week = 99; },
+    (value) => { value.changeSummary.kindCodes = ['unreviewed-value']; },
+    (value) => { value.localPlan = { unknown: 'do-not-echo' }; },
+  ]) {
+    const invalid = config(); mutate(invalid);
+    const result = await F.fdEditionCatalogResolve(invalid, prepared.snapshot, 'learner', context, webcrypto.subtle);
+    assert.equal(result.ok, false);
+    assert.equal(JSON.stringify(result.errors).includes('do-not-echo'), false);
+  }
+});
+
+test('rejects malformed Web Crypto digest results without partially trusting a projection', async () => {
+  const F = load();
+  for (const subtle of [null, { digest() { return Promise.resolve({ byteLength: 32 }); } }, { digest() { return Promise.resolve(new Uint8Array(32)); } }, { digest() { return Promise.resolve(new ArrayBuffer(31)); } }]) {
+    const result = await F.fdEditionCatalogSnapshot(await projection(), 'ms3', subtle);
+    assert.equal(result.ok, false);
+    assert.equal(F.fdEditionPublicationEnabled(result.snapshot), false);
+  }
 });
