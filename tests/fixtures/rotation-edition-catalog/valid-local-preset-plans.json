@@ -1,0 +1,118 @@
+{
+  "ms3": {
+    "arrival": {
+      "timingCode": "by",
+      "time": "08:00",
+      "placeKey": "place.workroom@v1",
+      "checkInRoleKey": "choice.role@v1"
+    },
+    "schedule": {
+      "dayStart": "08:00",
+      "dayEnd": "17:00",
+      "endQualifierCode": "about",
+      "events": [
+        {
+          "instanceId": "local:schedule:1",
+          "daySetKey": "choice.day-set@v1",
+          "startTime": "09:00",
+          "endTime": "10:00",
+          "activityKey": "choice.activity@v1",
+          "priority": "required"
+        },
+        {
+          "instanceId": "local:schedule:2",
+          "daySetKey": "choice.day-set@v1",
+          "startTime": "13:00",
+          "activityKey": "choice.activity@v1",
+          "priority": "optional"
+        }
+      ]
+    },
+    "accessItems": [
+      {
+        "instanceId": "local:access:1",
+        "itemKey": "choice.access-item@v1",
+        "dueKey": "choice.due-point@v1"
+      }
+    ],
+    "contacts": [
+      {
+        "instanceId": "local:contact:1",
+        "roleKey": "choice.role@v1"
+      }
+    ],
+    "checklistItems": [
+      {
+        "instanceId": "local:checklist:1",
+        "itemKey": "choice.checklist@v1",
+        "priority": "recommended"
+      }
+    ],
+    "resources": [
+      {
+        "instanceId": "local:resource:1",
+        "linkKey": "link.orientation@v1",
+        "priority": "optional",
+        "week": 6
+      }
+    ]
+  },
+  "resident": {
+    "arrival": {
+      "timingCode": "by",
+      "time": "08:00",
+      "placeKey": "place.workroom@v1",
+      "checkInRoleKey": "choice.role@v1"
+    },
+    "schedule": {
+      "dayStart": "08:00",
+      "dayEnd": "17:00",
+      "endQualifierCode": "about",
+      "events": [
+        {
+          "instanceId": "local:schedule:1",
+          "daySetKey": "choice.day-set@v1",
+          "startTime": "09:00",
+          "endTime": "10:00",
+          "activityKey": "choice.activity@v1",
+          "priority": "required"
+        },
+        {
+          "instanceId": "local:schedule:2",
+          "daySetKey": "choice.day-set@v1",
+          "startTime": "13:00",
+          "activityKey": "choice.activity@v1",
+          "priority": "optional"
+        }
+      ]
+    },
+    "accessItems": [
+      {
+        "instanceId": "local:access:1",
+        "itemKey": "choice.access-item@v1",
+        "dueKey": "choice.due-point@v1"
+      }
+    ],
+    "contacts": [
+      {
+        "instanceId": "local:contact:1",
+        "roleKey": "choice.role@v1"
+      }
+    ],
+    "checklistItems": [
+      {
+        "instanceId": "local:checklist:1",
+        "itemKey": "choice.checklist@v1",
+        "priority": "recommended"
+      }
+    ],
+    "resources": [
+      {
+        "instanceId": "local:resource:1",
+        "linkKey": "link.orientation@v1",
+        "priority": "optional",
+        "week": 4
+      }
+    ]
+  }
+}

@@ -5,6 +5,9 @@ import { test } from 'node:test';
 import { runInNewContext } from 'node:vm';
 
 const SOURCE = new URL('../13_Faculty_Resources/_automation/site_build/frontdoor/fd_edition_catalog.js', import.meta.url);
+const SHARED_PRESET_PLANS = JSON.parse(readFileSync(
+  new URL('fixtures/rotation-edition-catalog/valid-local-preset-plans.json', import.meta.url), 'utf8',
+));
 const API = ['fdEditionCatalogSnapshot', 'fdEditionCatalogRecord', 'fdEditionCatalogResolve', 'fdEditionPublicationEnabled'];
 const CORE_REVISION = '1234567890abcdef1234567890abcdef12345678';
 const CURRENT_CORE_REVISION = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
@@ -14,6 +17,8 @@ const PHRASES = 'phrases.example@v1';
 const CURATOR = 'profile.example@v1';
 const BLOCKED = 'choice.blocked@v1';
 const DEPRECATED = 'choice.deprecated-reason@v1';
+const AUDIENCES = ['ms3', 'resident'];
+const RAW_VISIBLE_KEY = 'choice.raw-visible@v9';
 const PURPOSE_CODES = [
   'arrival-map', 'orientation', 'access-training', 'documentation-policy', 'attendance-policy',
   'feedback-policy', 'directory', 'parking-transit', 'official-clinical-policy', 'reviewed-operational',
@@ -237,6 +242,10 @@ async function projection(audience = 'ms3', gate = 'enabled') {
       localPlan: fullLocalPlan(), phraseSetKey: PHRASES, ...scoped,
     },
     {
+      key: 'preset.python-parity@v1', kind: 'localPreset', displayName: 'Python parity preset',
+      localPlan: structuredClone(SHARED_PRESET_PLANS[audience]), phraseSetKey: PHRASES, ...scoped,
+    },
+    {
       key: 'choice.other-role@v1', kind: 'choice', choiceKind: 'role', label: 'Other role',
       fragment: 'the other-location coordinator', locationKeys: [OTHER_LOCATION], ...common,
     },
@@ -335,6 +344,12 @@ function assertFailure(result, secret = '') {
   if ('displayModel' in result) assert.equal(result.displayModel, null);
   if ('referenceSetDigest' in result) assert.equal(result.referenceSetDigest, '');
   if (secret) assert.equal(JSON.stringify(result.errors).includes(secret), false);
+}
+
+function testForAudiences(name, body) {
+  for (const audience of AUDIENCES) {
+    test(`${name} [${audience}]`, () => body(audience));
+  }
 }
 
 function recordByKey(value, key) {
@@ -466,21 +481,23 @@ test('valid complete MS3 and resident inputs produce exact closed labels, copy, 
     assert.equal(second.referenceSetDigest, result.referenceSetDigest);
   }
 
-  const crossYearValue = config();
-  crossYearValue.context.rotationStart = '2026-12-31';
-  crossYearValue.context.rotationEnd = '2027-01-02';
-  crossYearValue.localPlan.arrival.time = '00:00';
-  crossYearValue.localPlan.schedule.dayStart = '00:00';
-  crossYearValue.localPlan.schedule.dayEnd = '12:00';
-  const crossYear = await resolveFixture('ms3', crossYearValue);
-  assert.equal(crossYear.result.ok, true, JSON.stringify(crossYear.result.errors));
-  assert.equal(crossYear.result.displayModel.card.rotationDates, 'December 31, 2026 – January 2, 2027');
-  assert.match(crossYear.result.displayModel.firstDay.arrival.text, /12:00 AM/);
-  assert.equal(crossYear.result.displayModel.typicalDay.summaryText, 'A typical day runs from 12:00 AM until about 12:00 PM.');
+  for (const audience of AUDIENCES) {
+    const crossYearValue = config(audience);
+    crossYearValue.context.rotationStart = '2026-12-31';
+    crossYearValue.context.rotationEnd = '2027-01-02';
+    crossYearValue.localPlan.arrival.time = '00:00';
+    crossYearValue.localPlan.schedule.dayStart = '00:00';
+    crossYearValue.localPlan.schedule.dayEnd = '12:00';
+    const crossYear = await resolveFixture(audience, crossYearValue);
+    assert.equal(crossYear.result.ok, true, JSON.stringify(crossYear.result.errors));
+    assert.equal(crossYear.result.displayModel.card.rotationDates, 'December 31, 2026 – January 2, 2027');
+    assert.match(crossYear.result.displayModel.firstDay.arrival.text, /12:00 AM/);
+    assert.equal(crossYear.result.displayModel.typicalDay.summaryText, 'A typical day runs from 12:00 AM until about 12:00 PM.');
+  }
 });
 
-test('reference-set digest is the independently computed unique sorted complete graph and revision drift stays visible', async () => {
-  const { input, prepared, result } = await resolveFixture('ms3');
+testForAudiences('reference-set digest is the independently computed unique sorted complete graph and revision drift stays visible', async (audience) => {
+  const { input, prepared, result } = await resolveFixture(audience);
   assert.equal(result.ok, true, JSON.stringify(result.errors));
   const expectedKeys = [
     LOCATION, CURATOR, PHRASES,
@@ -506,10 +523,10 @@ test('reference-set digest is the independently computed unique sorted complete 
   });
 });
 
-test('empty local plan and all optional omissions remain absent with exact null sentinels', async () => {
-  const value = config('ms3', {});
+testForAudiences('empty local plan and all optional omissions remain absent with exact null sentinels', async (audience) => {
+  const value = config(audience, {});
   delete value.pathItems[0].reasonKey;
-  const { result } = await resolveFixture('ms3', value);
+  const { result } = await resolveFixture(audience, value);
   assert.equal(result.ok, true, JSON.stringify(result.errors));
   assert.equal(result.displayModel.emptyLocalPlan, true);
   assert.deepEqual(result.displayModel.firstDay, { arrival: null, accessItems: [], contacts: [], checklistItems: [] });
@@ -519,9 +536,10 @@ test('empty local plan and all optional omissions remain absent with exact null 
   assert.deepEqual(result.displayModel.resources, []);
   assert.equal(Object.hasOwn(result.displayModel.pathItems[0], 'reasonText'), false);
 
-  const schemaParity = await resolveFixture('ms3', config('ms3', { accessItems: [] }));
-  assert.equal(schemaParity.result.ok, true, JSON.stringify(schemaParity.result.errors));
-  assert.deepEqual(schemaParity.result.displayModel.firstDay.accessItems, []);
+  for (const category of ['accessItems', 'contacts', 'checklistItems', 'resources']) {
+    const presentEmpty = await resolveFixture(audience, config(audience, { [category]: [] }));
+    assertFailure(presentEmpty.result);
+  }
 
   const optionalPlan = fullLocalPlan();
   delete optionalPlan.arrival.linkKey;
@@ -529,7 +547,7 @@ test('empty local plan and all optional omissions remain absent with exact null 
   delete optionalPlan.attendance.policyLinkKey;
   delete optionalPlan.accessItems[0].linkKey;
   delete optionalPlan.contacts[0].linkKey;
-  const optional = await resolveFixture('ms3', config('ms3', optionalPlan));
+  const optional = await resolveFixture(audience, config(audience, optionalPlan));
   assert.equal(optional.result.ok, true, JSON.stringify(optional.result.errors));
   assert.equal(Object.hasOwn(optional.result.displayModel.firstDay.arrival, 'link'), false);
   assert.equal(Object.hasOwn(optional.result.displayModel.workflow.documentation, 'link'), false);
@@ -539,9 +557,39 @@ test('empty local plan and all optional omissions remain absent with exact null 
   assert.equal(Object.hasOwn(optional.result.displayModel.resources[1], 'reasonText'), false);
 });
 
-test('gate, trust brand, lifecycle, kind, and location rules fail closed', async () => {
-  const enabled = await preparedFixture('ms3', 'enabled');
-  const disabled = await preparedFixture('ms3', 'disabled');
+testForAudiences('every catalog-backed visible-text source rejects an embedded raw exact key without echo or display output', async (audience) => {
+  const base = await projection(audience);
+  const cases = [
+    ['location display', LOCATION, (record) => { record.displayName = `Unit ${RAW_VISIBLE_KEY} name`; }],
+    ['curator display', CURATOR, (record) => { record.displayName = `Curator ${RAW_VISIBLE_KEY} name`; }],
+    ['place display', 'place.workroom@v1', (record) => { record.displayName = `Place ${RAW_VISIBLE_KEY} name`; }],
+    ['official title', 'link.orientation@v1', (record) => { record.title = `Title ${RAW_VISIBLE_KEY} text`; }],
+    ['choice label', choiceKey('role'), (record) => { record.label = `Label ${RAW_VISIBLE_KEY} text`; }],
+    ['choice fragment', choiceKey('role'), (record) => { record.fragment = `Fragment ${RAW_VISIBLE_KEY} text`; }],
+    ['phrase display', PHRASES, (record) => { record.displayName = `Phrases ${RAW_VISIBLE_KEY} name`; }],
+    ['preset display', 'preset.complete@v1', (record) => { record.displayName = `Preset ${RAW_VISIBLE_KEY} name`; }],
+    ['rendered template', PHRASES, (record) => { record.templates.arrival.text += ` ${RAW_VISIBLE_KEY}`; }],
+  ];
+  for (const [name, key, mutate] of cases) {
+    const candidate = structuredClone(base);
+    mutate(recordByKey(candidate, key));
+    await refreshProjection(candidate);
+    const F = load(base.revision);
+    const prepared = await F.fdEditionCatalogSnapshot(candidate, audience, webcrypto.subtle);
+    assertFailure(prepared, RAW_VISIBLE_KEY);
+    const result = await F.fdEditionCatalogResolve(
+      config(audience), prepared.snapshot, 'learner',
+      { audience, localCatalogRevision: base.revision, rotationEditionV2: 'enabled', coreRevision: CORE_REVISION },
+      webcrypto.subtle,
+    );
+    assertFailure(result, RAW_VISIBLE_KEY);
+    assert.equal(result.displayModel, null, name);
+  }
+});
+
+testForAudiences('gate, trust brand, lifecycle, kind, and location rules fail closed', async (audience) => {
+  const enabled = await preparedFixture(audience, 'enabled');
+  const disabled = await preparedFixture(audience, 'disabled');
   assert.equal(enabled.F.fdEditionPublicationEnabled(enabled.prepared.snapshot), true);
   assert.equal(disabled.F.fdEditionPublicationEnabled(disabled.prepared.snapshot), false);
   assert.equal(enabled.F.fdEditionPublicationEnabled(structuredClone(enabled.prepared.snapshot)), false);
@@ -573,14 +621,15 @@ test('gate, trust brand, lifecycle, kind, and location rules fail closed', async
   assert.equal(enabled.F.fdEditionCatalogRecord(structuredClone(enabled.prepared.snapshot), choiceKey('role'), 'learner', 'choice', LOCATION).ok, false);
 });
 
-test('snapshot top-level ordering, membership, disjointness, audience, revision, and digest mutations are rejected', async () => {
-  const base = await projection();
+testForAudiences('snapshot top-level ordering, membership, disjointness, audience, revision, and digest mutations are rejected', async (audience) => {
+  const base = await projection(audience);
+  const otherAudience = audience === 'ms3' ? 'resident' : 'ms3';
   const cases = [
     ['extra top-level field', async (value) => { value.secret = 'TOP-LEVEL-SECRET'; await refreshProjection(value); }, 'TOP-LEVEL-SECRET'],
     ['missing top-level field', async (value) => { delete value.blockedKeys; }, ''],
     ['wrong schema version', async (value) => { value.schemaVersion = 2; await refreshProjection(value); }, ''],
     ['malformed gate', async (value) => { value.rotationEditionV2 = 'preview'; await refreshProjection(value); }, ''],
-    ['wrong audience', async (value) => { value.audience = 'resident'; await refreshProjection(value); }, ''],
+    ['wrong audience', async (value) => { value.audience = otherAudience; await refreshProjection(value); }, ''],
     ['tampered expected combined revision', async (value) => { value.revision = `sha256-${'B'.repeat(43)}`; await refreshProjection(value); }, ''],
     ['tampered projection digest', async (value) => { value.projectionDigest = `sha256-${'C'.repeat(43)}`; }, ''],
     ['tampered record digest', async (value) => {
@@ -594,32 +643,32 @@ test('snapshot top-level ordering, membership, disjointness, audience, revision,
     ['blocked and resolution overlap', async (value) => { value.blockedKeys = [choiceKey('role')]; await refreshProjection(value); }, ''],
     ['misordered records', async (value) => { value.resolutionRecords.reverse(); await refreshProjection(value); }, ''],
     ['duplicate record key', async (value) => { value.resolutionRecords.push(structuredClone(value.resolutionRecords[0])); value.resolutionRecords.sort((a, b) => a.key.localeCompare(b.key)); await refreshProjection(value); }, ''],
-    ['record missing projection audience', async (value) => { recordByKey(value, choiceKey('role')).audiences = ['resident']; await refreshProjection(value); }, ''],
+    ['record missing projection audience', async (value) => { recordByKey(value, choiceKey('role')).audiences = [otherAudience]; await refreshProjection(value); }, ''],
   ];
   for (const [name, mutate, secret] of cases) {
     const candidate = structuredClone(base);
     await mutate(candidate);
     const F = load(base.revision);
-    const result = await F.fdEditionCatalogSnapshot(candidate, 'ms3', webcrypto.subtle);
+    const result = await F.fdEditionCatalogSnapshot(candidate, audience, webcrypto.subtle);
     assertFailure(result, secret);
     assert.equal(F.fdEditionPublicationEnabled(result.snapshot), false, name);
-    const unresolved = await F.fdEditionCatalogResolve(config(), result.snapshot, 'learner', {
-      audience: 'ms3', localCatalogRevision: base.revision, rotationEditionV2: 'enabled', coreRevision: CORE_REVISION,
+    const unresolved = await F.fdEditionCatalogResolve(config(audience), result.snapshot, 'learner', {
+      audience, localCatalogRevision: base.revision, rotationEditionV2: 'enabled', coreRevision: CORE_REVISION,
     }, webcrypto.subtle);
     assertFailure(unresolved);
   }
-  const wrongExpected = await load(base.revision).fdEditionCatalogSnapshot(base, 'resident', webcrypto.subtle);
+  const wrongExpected = await load(base.revision).fdEditionCatalogSnapshot(base, otherAudience, webcrypto.subtle);
   assertFailure(wrongExpected);
 });
 
-test('all seven catalog record variants are closed and every common text/date/set cap is enforced', async () => {
-  const base = await projection();
+testForAudiences('all seven catalog record variants are closed and every common text/date/set cap is enforced', async (audience) => {
+  const base = await projection(audience);
   for (const kind of ['trainingLocation', 'curatorProfile', 'place', 'officialLink', 'phraseSet', 'choice', 'localPreset']) {
     const candidate = structuredClone(base);
     const target = candidate.resolutionRecords.find((record) => record.kind === kind);
     target.unreviewedField = 'VARIANT-SECRET';
     await refreshProjection(candidate);
-    const result = await load(base.revision).fdEditionCatalogSnapshot(candidate, 'ms3', webcrypto.subtle);
+    const result = await load(base.revision).fdEditionCatalogSnapshot(candidate, audience, webcrypto.subtle);
     assertFailure(result, 'VARIANT-SECRET');
   }
 
@@ -633,7 +682,7 @@ test('all seven catalog record variants are closed and every common text/date/se
     ['choice fragment 241 scalars', (value) => { recordByKey(value, choiceKey('role')).fragment = 'x'.repeat(241); }],
     ['template text 513 scalars', (value) => { recordByKey(value, PHRASES).templates.arrival.text = 'x'.repeat(513); }],
     ['audiences unsorted', (value) => { recordByKey(value, choiceKey('role')).audiences = ['resident', 'ms3']; }],
-    ['audiences duplicate', (value) => { recordByKey(value, choiceKey('role')).audiences = ['ms3', 'ms3']; }],
+    ['audiences duplicate', (value) => { recordByKey(value, choiceKey('role')).audiences = [audience, audience]; }],
     ['audiences over cap', (value) => { recordByKey(value, choiceKey('role')).audiences = ['ms3', 'resident', 'faculty']; }],
     ['location scope empty', (value) => { recordByKey(value, choiceKey('role')).locationKeys = []; }],
     ['location scope duplicate', (value) => { recordByKey(value, choiceKey('role')).locationKeys = [LOCATION, LOCATION]; }],
@@ -650,7 +699,7 @@ test('all seven catalog record variants are closed and every common text/date/se
     const candidate = structuredClone(base);
     mutate(candidate);
     await refreshProjection(candidate);
-    const result = await load(base.revision).fdEditionCatalogSnapshot(candidate, 'ms3', webcrypto.subtle);
+    const result = await load(base.revision).fdEditionCatalogSnapshot(candidate, audience, webcrypto.subtle);
     assertFailure(result);
     assert.ok(name);
   }
@@ -658,12 +707,12 @@ test('all seven catalog record variants are closed and every common text/date/se
   const emojiBoundary = structuredClone(base);
   recordByKey(emojiBoundary, LOCATION).displayName = '😀'.repeat(120);
   await refreshProjection(emojiBoundary);
-  const accepted = await load(base.revision).fdEditionCatalogSnapshot(emojiBoundary, 'ms3', webcrypto.subtle);
+  const accepted = await load(base.revision).fdEditionCatalogSnapshot(emojiBoundary, audience, webcrypto.subtle);
   assert.equal(accepted.ok, true, JSON.stringify(accepted.errors));
 
   const overRecords = structuredClone(base);
   overRecords.resolutionRecords = new Array(4097);
-  const overResult = await load(base.revision).fdEditionCatalogSnapshot(overRecords, 'ms3', webcrypto.subtle);
+  const overResult = await load(base.revision).fdEditionCatalogSnapshot(overRecords, audience, webcrypto.subtle);
   assertFailure(overResult);
 
   const overBytes = structuredClone(base);
@@ -671,18 +720,18 @@ test('all seven catalog record variants are closed and every common text/date/se
   for (let index = 0; index < fillCount; index += 1) {
     overBytes.resolutionRecords.push({
       key: `choice.cap-${String(index).padStart(4, '0')}-${'x'.repeat(100)}@v1`,
-      kind: 'choice', contentDigest: `sha256-${'A'.repeat(43)}`, audiences: ['ms3'],
+      kind: 'choice', contentDigest: `sha256-${'A'.repeat(43)}`, audiences: [audience],
       verifiedOn: '2026-08-19', choiceKind: 'reason', label: 'x'.repeat(120),
       fragment: 'x'.repeat(240), locationKeys: [LOCATION],
     });
   }
   assert.ok(Buffer.byteLength(canonical(overBytes), 'utf8') > 2 * 1024 * 1024);
-  const byteResult = await load(base.revision).fdEditionCatalogSnapshot(overBytes, 'ms3', webcrypto.subtle);
+  const byteResult = await load(base.revision).fdEditionCatalogSnapshot(overBytes, audience, webcrypto.subtle);
   assertFailure(byteResult);
 });
 
-test('official URLs enforce exact HTTPS hostname, declaration, purpose, and length rules', async () => {
-  const base = await projection();
+testForAudiences('official URLs enforce exact HTTPS hostname, declaration, purpose, and length rules', async (audience) => {
+  const base = await projection(audience);
   const cases = [
     ['http', (link) => { link.url = 'http://example.edu/orientation'; }],
     ['userinfo', (link) => { link.url = 'https://user@example.edu/orientation'; }],
@@ -699,7 +748,7 @@ test('official URLs enforce exact HTTPS hostname, declaration, purpose, and leng
     const candidate = structuredClone(base);
     mutate(recordByKey(candidate, 'link.orientation@v1'));
     await refreshProjection(candidate);
-    const result = await load(base.revision).fdEditionCatalogSnapshot(candidate, 'ms3', webcrypto.subtle);
+    const result = await load(base.revision).fdEditionCatalogSnapshot(candidate, audience, webcrypto.subtle);
     assertFailure(result, 'token=x');
     assert.ok(name);
   }
@@ -707,7 +756,7 @@ test('official URLs enforce exact HTTPS hostname, declaration, purpose, and leng
     const candidate = structuredClone(base);
     recordByKey(candidate, 'link.orientation@v1').purposeCode = purposeCode;
     await refreshProjection(candidate);
-    const result = await load(base.revision).fdEditionCatalogSnapshot(candidate, 'ms3', webcrypto.subtle);
+    const result = await load(base.revision).fdEditionCatalogSnapshot(candidate, audience, webcrypto.subtle);
     assert.equal(result.ok, true, purposeCode);
   }
   for (const purposeCode of ['access-training', 'parking-transit', 'reviewed-operational']) {
@@ -715,15 +764,15 @@ test('official URLs enforce exact HTTPS hostname, declaration, purpose, and leng
     recordByKey(candidate, 'link.access@v1').purposeCode = purposeCode;
     await refreshProjection(candidate);
     const F = load(base.revision);
-    const prepared = await F.fdEditionCatalogSnapshot(candidate, 'ms3', webcrypto.subtle);
+    const prepared = await F.fdEditionCatalogSnapshot(candidate, audience, webcrypto.subtle);
     assert.equal(prepared.ok, true, purposeCode);
-    const result = await F.fdEditionCatalogResolve(config(), prepared.snapshot, 'learner', siteContext(prepared.snapshot), webcrypto.subtle);
+    const result = await F.fdEditionCatalogResolve(config(audience), prepared.snapshot, 'learner', siteContext(prepared.snapshot), webcrypto.subtle);
     assert.equal(result.ok, true, purposeCode);
   }
 });
 
-test('every phrase template rejects missing, repeated, unknown, or reordered placeholders and inventory drift', async () => {
-  const base = await projection();
+testForAudiences('every phrase template rejects missing, repeated, unknown, or reordered placeholders and inventory drift', async (audience) => {
+  const base = await projection(audience);
   const mutations = [
     ['missing placeholder', (row) => { row.text = row.text.replace(`{${row.tokens[0]}}`, 'plain'); }],
     ['repeated placeholder', (row) => { row.text += ` {${row.tokens[0]}}`; }],
@@ -735,7 +784,7 @@ test('every phrase template rejects missing, repeated, unknown, or reordered pla
       const candidate = structuredClone(base);
       mutate(recordByKey(candidate, PHRASES).templates[name]);
       await refreshProjection(candidate);
-      const result = await load(base.revision).fdEditionCatalogSnapshot(candidate, 'ms3', webcrypto.subtle);
+      const result = await load(base.revision).fdEditionCatalogSnapshot(candidate, audience, webcrypto.subtle);
       assertFailure(result);
       assert.ok(`${name} ${mutationName}`);
     }
@@ -748,14 +797,14 @@ test('every phrase template rejects missing, repeated, unknown, or reordered pla
     const candidate = structuredClone(base);
     mutate(recordByKey(candidate, PHRASES).templates);
     await refreshProjection(candidate);
-    const result = await load(base.revision).fdEditionCatalogSnapshot(candidate, 'ms3', webcrypto.subtle);
+    const result = await load(base.revision).fdEditionCatalogSnapshot(candidate, audience, webcrypto.subtle);
     assertFailure(result);
     assert.ok(name);
   }
 });
 
-test('catalog relationship graph rejects missing, wrong-kind, cross-location, hostname, closure, and cycle-like dependencies', async () => {
-  const base = await projection();
+testForAudiences('catalog relationship graph rejects missing, wrong-kind, cross-location, hostname, closure, and cycle-like dependencies', async (audience) => {
+  const base = await projection(audience);
   const cases = [
     ['missing location record', (value) => {
       value.resolutionRecords = value.resolutionRecords.filter((row) => row.key !== OTHER_LOCATION);
@@ -776,7 +825,7 @@ test('catalog relationship graph rejects missing, wrong-kind, cross-location, ho
     const candidate = structuredClone(base);
     mutate(candidate);
     await refreshProjection(candidate);
-    const result = await load(base.revision).fdEditionCatalogSnapshot(candidate, 'ms3', webcrypto.subtle);
+    const result = await load(base.revision).fdEditionCatalogSnapshot(candidate, audience, webcrypto.subtle);
     assertFailure(result);
     assert.ok(name);
   }
@@ -811,18 +860,22 @@ const LOCAL_PLAN_INVALID_CASES = [
   ['attendance event IDs duplicate', (plan) => { plan.attendance.eventInstanceIds = ['local:schedule:1', 'local:schedule:1']; }],
   ['attendance missing schedule membership', (plan) => { plan.attendance.eventInstanceIds = ['local:schedule:99']; }],
   ['feedback missing field', (plan) => { delete plan.feedback.settingKey; }],
+  ['present empty access must be omitted', (plan) => { plan.accessItems = []; }],
   ['access cap', (plan) => { plan.accessItems = Array.from({ length: 13 }, (_, i) => ({ ...plan.accessItems[0], instanceId: `local:access:${i + 1}` })); }],
   ['access rows must be an array', (plan) => { plan.accessItems = {}; }],
   ['access row missing required field', (plan) => { delete plan.accessItems[0].dueKey; }],
   ['access row extra field', (plan) => { plan.accessItems[0].other = true; }],
+  ['present empty contacts must be omitted', (plan) => { plan.contacts = []; }],
   ['contact cap', (plan) => { plan.contacts = Array.from({ length: 9 }, (_, i) => ({ ...plan.contacts[0], instanceId: `local:contact:${i + 1}` })); }],
   ['contact rows must be an array', (plan) => { plan.contacts = {}; }],
   ['contact row missing required field', (plan) => { delete plan.contacts[0].roleKey; }],
   ['contact row extra field', (plan) => { plan.contacts[0].other = true; }],
+  ['present empty checklist must be omitted', (plan) => { plan.checklistItems = []; }],
   ['checklist cap', (plan) => { plan.checklistItems = Array.from({ length: 25 }, (_, i) => ({ ...plan.checklistItems[0], instanceId: `local:checklist:${i + 1}` })); }],
   ['checklist rows must be an array', (plan) => { plan.checklistItems = {}; }],
   ['checklist row missing required field', (plan) => { delete plan.checklistItems[0].itemKey; }],
   ['checklist row extra field', (plan) => { plan.checklistItems[0].other = true; }],
+  ['present empty resources must be omitted', (plan) => { plan.resources = []; }],
   ['resource cap', (plan) => { plan.resources = Array.from({ length: 13 }, (_, i) => ({ ...plan.resources[0], instanceId: `local:resource:${i + 1}` })); }],
   ['resource rows must be an array', (plan) => { plan.resources = {}; }],
   ['resource row missing required field', (plan) => { delete plan.resources[0].linkKey; }],
@@ -830,36 +883,77 @@ const LOCAL_PLAN_INVALID_CASES = [
   ['duplicate cross-category ID', (plan) => { plan.contacts[0].instanceId = plan.accessItems[0].instanceId; }],
   ['row non-ASCII ID', (plan) => { plan.contacts[0].instanceId = 'local:contact:é'; }],
   ['resource priority', (plan) => { plan.resources[0].priority = 'urgent'; }],
-  ['resource week', (plan) => { plan.resources[0].week = 7; }],
+  ['resource week above audience maximum', (plan, audience) => { plan.resources[0].week = audience === 'ms3' ? 7 : 5; }],
   ['resolved checklist total cap', (plan) => {
     plan.accessItems = Array.from({ length: 12 }, (_, i) => ({ ...plan.accessItems[0], instanceId: `local:access:${i + 1}` }));
     plan.checklistItems = Array.from({ length: 12 }, (_, i) => ({ ...plan.checklistItems[0], instanceId: `local:checklist:${i + 1}` }));
   }],
 ];
 
-test('every local-plan category, row discriminator, optional field, cap, ID union, tuple, attendance membership, and checklist total is validated for configs', async () => {
-  const fixture = await preparedFixture();
+const SHARED_PARITY_INVALID_CASES = [
+  ...['accessItems', 'contacts', 'checklistItems', 'resources'].map((category) => [
+    `shared present-empty ${category}`,
+    (plan) => { plan[category] = []; },
+  ]),
+  ['shared duplicate schedule tuple', (plan) => {
+    const secondId = plan.schedule.events[1].instanceId;
+    plan.schedule.events[1] = { ...structuredClone(plan.schedule.events[0]), instanceId: secondId };
+  }],
+  ['shared resolved checklist total 25', (plan) => {
+    plan.accessItems = Array.from({ length: 12 }, (_, index) => ({
+      ...plan.accessItems[0], instanceId: `local:access:${index + 1}`,
+    }));
+    plan.checklistItems = Array.from({ length: 12 }, (_, index) => ({
+      ...plan.checklistItems[0], instanceId: `local:checklist:${index + 1}`,
+    }));
+  }],
+];
+
+testForAudiences('every local-plan category, row discriminator, optional field, cap, ID union, tuple, attendance membership, and checklist total is validated for configs', async (audience) => {
+  const fixture = await preparedFixture(audience);
   for (const [name, mutate] of LOCAL_PLAN_INVALID_CASES) {
-    const value = config();
-    mutate(value.localPlan);
+    const value = config(audience);
+    mutate(value.localPlan, audience);
     const result = await fixture.F.fdEditionCatalogResolve(value, fixture.prepared.snapshot, 'learner', siteContext(fixture.prepared.snapshot), webcrypto.subtle);
     assertFailure(result, 'LOCAL-SECRET');
     assert.ok(name);
   }
-  const resident = await preparedFixture('resident');
-  const residentValue = config('resident');
-  residentValue.localPlan.resources[0].week = 5;
-  const residentResult = await resident.F.fdEditionCatalogResolve(residentValue, resident.prepared.snapshot, 'learner', siteContext(resident.prepared.snapshot), webcrypto.subtle);
-  assertFailure(residentResult);
+  const maximumWeek = config(audience);
+  maximumWeek.localPlan.resources[0].week = audience === 'ms3' ? 6 : 4;
+  const maximumResult = await fixture.F.fdEditionCatalogResolve(maximumWeek, fixture.prepared.snapshot, 'learner', siteContext(fixture.prepared.snapshot), webcrypto.subtle);
+  assert.equal(maximumResult.ok, true, JSON.stringify(maximumResult.errors));
 });
 
-test('the same complete local-plan validation and dependency rules apply inside localPreset records', async () => {
-  const base = await projection();
+testForAudiences('the same complete local-plan validation and dependency rules apply inside localPreset records', async (audience) => {
+  const base = await projection(audience);
+  const F = load(base.revision);
+  const prepared = await F.fdEditionCatalogSnapshot(base, audience, webcrypto.subtle);
+  assert.equal(prepared.ok, true, JSON.stringify(prepared.errors));
+  const validPresetPlan = structuredClone(recordByKey(base, 'preset.python-parity@v1').localPlan);
+  const resolvedPresetPlan = await F.fdEditionCatalogResolve(
+    config(audience, validPresetPlan), prepared.snapshot, 'learner', siteContext(prepared.snapshot), webcrypto.subtle,
+  );
+  assert.equal(resolvedPresetPlan.ok, true, 'every Python-valid synthetic preset plan must snapshot and resolve in the browser');
+  for (const [name, mutate] of SHARED_PARITY_INVALID_CASES) {
+    const invalidConfigPlan = structuredClone(SHARED_PRESET_PLANS[audience]);
+    mutate(invalidConfigPlan);
+    const configResult = await F.fdEditionCatalogResolve(
+      config(audience, invalidConfigPlan), prepared.snapshot, 'learner', siteContext(prepared.snapshot), webcrypto.subtle,
+    );
+    assertFailure(configResult);
+
+    const invalidProjection = structuredClone(base);
+    mutate(recordByKey(invalidProjection, 'preset.python-parity@v1').localPlan);
+    await refreshProjection(invalidProjection);
+    const snapshotResult = await load(base.revision).fdEditionCatalogSnapshot(invalidProjection, audience, webcrypto.subtle);
+    assertFailure(snapshotResult);
+    assert.ok(name);
+  }
   for (const [name, mutate] of LOCAL_PLAN_INVALID_CASES) {
     const candidate = structuredClone(base);
-    mutate(recordByKey(candidate, 'preset.complete@v1').localPlan);
+    mutate(recordByKey(candidate, 'preset.complete@v1').localPlan, audience);
     await refreshProjection(candidate);
-    const result = await load(base.revision).fdEditionCatalogSnapshot(candidate, 'ms3', webcrypto.subtle);
+    const result = await load(base.revision).fdEditionCatalogSnapshot(candidate, audience, webcrypto.subtle);
     assertFailure(result, 'LOCAL-SECRET');
     assert.ok(name);
   }
@@ -899,20 +993,20 @@ test('the same complete local-plan validation and dependency rules apply inside 
     const candidate = structuredClone(base);
     mutate(recordByKey(candidate, 'preset.complete@v1').localPlan);
     await refreshProjection(candidate);
-    const result = await load(base.revision).fdEditionCatalogSnapshot(candidate, 'ms3', webcrypto.subtle);
+    const result = await load(base.revision).fdEditionCatalogSnapshot(candidate, audience, webcrypto.subtle);
     assertFailure(result);
     assert.ok(name);
   }
 
-  const residentBase = await projection('resident');
-  recordByKey(residentBase, 'preset.complete@v1').localPlan.resources[0].week = 5;
-  await refreshProjection(residentBase);
-  const residentResult = await load(residentBase.revision).fdEditionCatalogSnapshot(residentBase, 'resident', webcrypto.subtle);
-  assertFailure(residentResult);
+  const maximumWeek = structuredClone(base);
+  recordByKey(maximumWeek, 'preset.complete@v1').localPlan.resources[0].week = audience === 'ms3' ? 6 : 4;
+  await refreshProjection(maximumWeek);
+  const maximumResult = await load(base.revision).fdEditionCatalogSnapshot(maximumWeek, audience, webcrypto.subtle);
+  assert.equal(maximumResult.ok, true, JSON.stringify(maximumResult.errors));
 });
 
-test('typed config references enforce exact kind, choiceKind, purpose, audience, location, lifecycle, and closure', async () => {
-  const fixture = await preparedFixture();
+testForAudiences('typed config references enforce exact kind, choiceKind, purpose, audience, location, lifecycle, and closure', async (audience) => {
+  const fixture = await preparedFixture(audience);
   const cases = [
     ['location kind', (plan, value) => { value.context.trainingLocationKey = choiceKey('role'); }],
     ['curator kind', (plan, value) => { value.context.curatorProfileKey = choiceKey('role'); }],
@@ -951,7 +1045,7 @@ test('typed config references enforce exact kind, choiceKind, purpose, audience,
     ['blocked key', (plan) => { plan.arrival.checkInRoleKey = BLOCKED; }],
   ];
   for (const [name, mutate] of cases) {
-    const value = config();
+    const value = config(audience);
     mutate(value.localPlan, value);
     const result = await fixture.F.fdEditionCatalogResolve(value, fixture.prepared.snapshot, 'learner', siteContext(fixture.prepared.snapshot), webcrypto.subtle);
     assertFailure(result);
@@ -959,7 +1053,7 @@ test('typed config references enforce exact kind, choiceKind, purpose, audience,
   }
 
   let digestCalls = 0;
-  const incomplete = config();
+  const incomplete = config(audience);
   incomplete.localPlan.arrival.checkInRoleKey = 'choice.unlisted@v1';
   const incompleteResult = await fixture.F.fdEditionCatalogResolve(
     incomplete, fixture.prepared.snapshot, 'learner', siteContext(fixture.prepared.snapshot),
@@ -968,7 +1062,7 @@ test('typed config references enforce exact kind, choiceKind, purpose, audience,
   assertFailure(incompleteResult);
   assert.equal(digestCalls, 0, 'the complete typed graph must close before digesting or rendering');
 
-  const learnerValue = config();
+  const learnerValue = config(audience);
   learnerValue.pathItems[0].reasonKey = DEPRECATED;
   const learner = await fixture.F.fdEditionCatalogResolve(learnerValue, fixture.prepared.snapshot, 'learner', siteContext(fixture.prepared.snapshot), webcrypto.subtle);
   assert.equal(learner.ok, true, JSON.stringify(learner.errors));
@@ -976,12 +1070,12 @@ test('typed config references enforce exact kind, choiceKind, purpose, audience,
   assertFailure(builder);
 });
 
-test('config root, context, path, ordering, size, audience limits, and exact change-summary rules are table-validated', async () => {
-  const fixture = await preparedFixture();
+testForAudiences('config root, context, path, ordering, size, audience limits, and exact change-summary rules are table-validated', async (audience) => {
+  const fixture = await preparedFixture(audience);
   const cases = [
     ['extra config field', (value) => { value.secret = 'CONFIG-SECRET'; }],
     ['missing config field', (value) => { delete value.context; }],
-    ['audience/path mismatch', (value) => { value.pathId = 'resident-four-week'; }],
+    ['audience/path mismatch', (value) => { value.pathId = audience === 'ms3' ? 'resident-four-week' : 'ms3-six-week'; }],
     ['edition zero', (value) => { value.editionNumber = 0; }],
     ['edition above max', (value) => { value.editionNumber = 2147483648; }],
     ['edition noninteger', (value) => { value.editionNumber = 1.5; }],
@@ -1001,7 +1095,7 @@ test('config root, context, path, ordering, size, audience limits, and exact cha
     ['path ref empty', (value) => { value.pathItems[0].ref = ''; }],
     ['path ref nonASCII', (value) => { value.pathItems[0].ref = 'library/é'; }],
     ['path week zero', (value) => { value.pathItems[0].week = 0; }],
-    ['path week above audience', (value) => { value.pathItems[0].week = 7; }],
+    ['path week above audience', (value) => { value.pathItems[0].week = audience === 'ms3' ? 7 : 5; }],
     ['path order zero', (value) => { value.pathItems[0].order = 0; }],
     ['path duplicate week/order tuple', (value) => { value.pathItems[1].week = 1; value.pathItems[1].order = 1; }],
     ['path noncontiguous order', (value) => { value.pathItems[0].order = 2; }],
@@ -1021,14 +1115,14 @@ test('config root, context, path, ordering, size, audience limits, and exact cha
     ['later edition must have changed item', (value) => { value.editionNumber = 2; value.changeSummary = { kindCodes: ['schedule'], changedItemCount: 0 }; }],
   ];
   for (const [name, mutate] of cases) {
-    const value = config();
+    const value = config(audience);
     mutate(value);
     const result = await fixture.F.fdEditionCatalogResolve(value, fixture.prepared.snapshot, 'learner', siteContext(fixture.prepared.snapshot), webcrypto.subtle);
     assertFailure(result, 'SECRET');
     assert.ok(name);
   }
 
-  const oversized = config();
+  const oversized = config(audience);
   oversized.pathItems = Array.from({ length: 96 }, (_, i) => ({
     instanceId: `${'i'.repeat(150)}${String(i).padStart(3, '0')}`,
     ref: `${'r'.repeat(150)}${String(i).padStart(3, '0')}`,
@@ -1038,15 +1132,15 @@ test('config root, context, path, ordering, size, audience limits, and exact cha
   const overResult = await fixture.F.fdEditionCatalogResolve(oversized, fixture.prepared.snapshot, 'learner', siteContext(fixture.prepared.snapshot), webcrypto.subtle);
   assertFailure(overResult);
 
-  const maximumEdition = config();
+  const maximumEdition = config(audience);
   maximumEdition.editionNumber = 2147483647;
   maximumEdition.changeSummary = { kindCodes: ['schedule'], changedItemCount: 1 };
   const maximumResult = await fixture.F.fdEditionCatalogResolve(maximumEdition, fixture.prepared.snapshot, 'learner', siteContext(fixture.prepared.snapshot), webcrypto.subtle);
   assert.equal(maximumResult.ok, true, JSON.stringify(maximumResult.errors));
 });
 
-test('descriptor-safe boundaries reject accessors, proxies, revoked proxies, inheritance, pollution keys, symbols, non-enumerables, sparse arrays, oversize arrays, and cycles', async () => {
-  const base = await projection();
+testForAudiences('descriptor-safe boundaries reject accessors, proxies, revoked proxies, inheritance, pollution keys, symbols, non-enumerables, sparse arrays, oversize arrays, and cycles', async (audience) => {
+  const base = await projection(audience);
   let accessorReads = 0;
   const projectionCases = [];
   const accessor = structuredClone(base);
@@ -1056,31 +1150,33 @@ test('descriptor-safe boundaries reject accessors, proxies, revoked proxies, inh
   const revocable = Proxy.revocable(structuredClone(base), {}); revocable.revoke(); projectionCases.push(['revoked proxy', revocable.proxy]);
   projectionCases.push(['inherited property', Object.assign(Object.create({ inherited: true }), structuredClone(base))]);
   const pollution = structuredClone(base); Object.defineProperty(pollution, '__proto__', { enumerable: true, value: 'POLLUTION-SECRET' }); projectionCases.push(['pollution key', pollution]);
+  const constructorKey = structuredClone(base); Object.defineProperty(constructorKey, 'constructor', { enumerable: true, value: 'POLLUTION-SECRET' }); projectionCases.push(['constructor pollution key', constructorKey]);
+  const prototypeKey = structuredClone(base); Object.defineProperty(prototypeKey, 'prototype', { enumerable: true, value: 'POLLUTION-SECRET' }); projectionCases.push(['prototype pollution key', prototypeKey]);
   const symbol = structuredClone(base); symbol[Symbol('secret')] = true; projectionCases.push(['symbol', symbol]);
   const hidden = structuredClone(base); Object.defineProperty(hidden, 'hidden', { enumerable: false, value: true }); projectionCases.push(['non-enumerable', hidden]);
   const sparse = structuredClone(base); sparse.selectionKeys = new Array(2); sparse.selectionKeys[1] = choiceKey('role'); projectionCases.push(['sparse array', sparse]);
   const oversize = structuredClone(base); oversize.selectionKeys = new Array(4097).fill(choiceKey('role')); projectionCases.push(['oversize array', oversize]);
   const cycle = structuredClone(base); cycle.self = cycle; projectionCases.push(['cycle', cycle]);
   for (const [name, candidate] of projectionCases) {
-    const result = await load(base.revision).fdEditionCatalogSnapshot(candidate, 'ms3', webcrypto.subtle);
+    const result = await load(base.revision).fdEditionCatalogSnapshot(candidate, audience, webcrypto.subtle);
     assertFailure(result, 'SECRET');
     assert.ok(name);
   }
   assert.equal(accessorReads, 0);
 
-  const fixture = await preparedFixture();
+  const fixture = await preparedFixture(audience);
   let configReads = 0;
-  const configAccessor = config();
+  const configAccessor = config(audience);
   Object.defineProperty(configAccessor.context, 'rotationStart', { enumerable: true, get() { configReads += 1; return '2026-09-01'; } });
-  const configSymbol = config(); configSymbol[Symbol('secret')] = true;
-  const configCycle = config(); configCycle.self = configCycle;
+  const configSymbol = config(audience); configSymbol[Symbol('secret')] = true;
+  const configCycle = config(audience); configCycle.self = configCycle;
   const contextAccessor = siteContext(fixture.prepared.snapshot);
-  Object.defineProperty(contextAccessor, 'audience', { enumerable: true, get() { configReads += 1; return 'ms3'; } });
+  Object.defineProperty(contextAccessor, 'audience', { enumerable: true, get() { configReads += 1; return audience; } });
   for (const [name, value, context] of [
     ['config accessor', configAccessor, siteContext(fixture.prepared.snapshot)],
     ['config symbol', configSymbol, siteContext(fixture.prepared.snapshot)],
     ['config cycle', configCycle, siteContext(fixture.prepared.snapshot)],
-    ['context accessor', config(), contextAccessor],
+    ['context accessor', config(audience), contextAccessor],
   ]) {
     const result = await fixture.F.fdEditionCatalogResolve(value, fixture.prepared.snapshot, 'learner', context, webcrypto.subtle);
     assertFailure(result);
@@ -1100,9 +1196,9 @@ function crossRealmSubtle() {
   };
 }
 
-test('Web Crypto accepts genuine cross-realm exact 32-byte ArrayBuffers and rejects every malformed async boundary without partial trust', async () => {
-  const base = await projection();
-  const crossRealm = await load(base.revision).fdEditionCatalogSnapshot(base, 'ms3', crossRealmSubtle());
+testForAudiences('Web Crypto accepts genuine cross-realm exact 32-byte ArrayBuffers and rejects every malformed async boundary without partial trust', async (audience) => {
+  const base = await projection(audience);
+  const crossRealm = await load(base.revision).fdEditionCatalogSnapshot(base, audience, crossRealmSubtle());
   assert.equal(crossRealm.ok, true, JSON.stringify(crossRealm.errors));
 
   const detached = new ArrayBuffer(32);
@@ -1129,43 +1225,44 @@ test('Web Crypto accepts genuine cross-realm exact 32-byte ArrayBuffers and reje
   ];
   for (const [name, subtle] of snapshotCases) {
     const F = load(base.revision);
-    const result = await F.fdEditionCatalogSnapshot(base, 'ms3', subtle);
+    const result = await F.fdEditionCatalogSnapshot(base, audience, subtle);
     assertFailure(result, 'SECRET');
     assert.equal(F.fdEditionPublicationEnabled(result.snapshot), false, name);
   }
   assert.equal(thenReads, 0, 'intrinsic Promise brand check must not assimilate hostile thenables');
 
-  const fixture = await preparedFixture();
+  const fixture = await preparedFixture(audience);
   for (const [name, subtle] of boundaryCases) {
-    const result = await fixture.F.fdEditionCatalogResolve(config(), fixture.prepared.snapshot, 'learner', siteContext(fixture.prepared.snapshot), subtle);
+    const result = await fixture.F.fdEditionCatalogResolve(config(audience), fixture.prepared.snapshot, 'learner', siteContext(fixture.prepared.snapshot), subtle);
     assertFailure(result, 'SECRET');
     assert.ok(name);
   }
 });
 
-test('site context is closed and must exactly bind audience, current catalog revision, gate, and core revision', async () => {
-  const fixture = await preparedFixture();
+testForAudiences('site context is closed and must exactly bind audience, current catalog revision, gate, and core revision', async (audience) => {
+  const fixture = await preparedFixture(audience);
+  const otherAudience = audience === 'ms3' ? 'resident' : 'ms3';
   const cases = [
     ['extra field', { extra: true }],
-    ['audience', { audience: 'resident' }],
+    ['audience', { audience: otherAudience }],
     ['catalog revision', { localCatalogRevision: `sha256-${'Z'.repeat(43)}` }],
     ['gate', { rotationEditionV2: 'disabled' }],
     ['core revision', { coreRevision: 'ABC' }],
   ];
   for (const [name, overrides] of cases) {
-    const result = await fixture.F.fdEditionCatalogResolve(config(), fixture.prepared.snapshot, 'learner', siteContext(fixture.prepared.snapshot, overrides), webcrypto.subtle);
+    const result = await fixture.F.fdEditionCatalogResolve(config(audience), fixture.prepared.snapshot, 'learner', siteContext(fixture.prepared.snapshot, overrides), webcrypto.subtle);
     assertFailure(result);
     assert.ok(name);
   }
 });
 
-test('the resolver executes without DOM, storage, network, clock, locale, URL-parser, TextEncoder, or btoa globals', async () => {
-  const input = await projection();
+testForAudiences('the resolver executes without DOM, storage, network, clock, locale, URL-parser, TextEncoder, or btoa globals', async (audience) => {
+  const input = await projection(audience);
   const F = loadWithoutBrowserOrClockGlobals(input.revision);
-  const prepared = await F.fdEditionCatalogSnapshot(input, 'ms3', webcrypto.subtle);
+  const prepared = await F.fdEditionCatalogSnapshot(input, audience, webcrypto.subtle);
   assert.equal(prepared.ok, true, JSON.stringify(prepared.errors));
   const result = await F.fdEditionCatalogResolve(
-    config(), prepared.snapshot, 'learner', siteContext(prepared.snapshot), webcrypto.subtle,
+    config(audience), prepared.snapshot, 'learner', siteContext(prepared.snapshot), webcrypto.subtle,
   );
   assert.equal(result.ok, true, JSON.stringify(result.errors));
 });

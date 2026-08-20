@@ -25,6 +25,7 @@ var FD_EDITION_CATALOG=(function(){
   var DATE=/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/;
   var HOSTNAME=/^[a-z0-9](?:[a-z0-9.-]{0,251}[a-z0-9])?$/;
   var TEXT_CONTROL=/[\x00-\x1f\x7f-\x9f\u202a-\u202e\u2066-\u2069<>&]/;
+  var RAW_KEY_TOKEN=/[a-z0-9][a-z0-9._:-]{0,126}@v[1-9][0-9]{0,5}/;
 
   var AUDIENCES=['ms3','resident'];
   var RECORD_KINDS=['trainingLocation','curatorProfile','place','officialLink','phraseSet','choice','localPreset'];
@@ -264,9 +265,10 @@ var FD_EDITION_CATALOG=(function(){
     return count;
   }
 
-  function plainText(value,maximum){
+  function safeVisibleText(value,maximum){
     var length=scalarLength(value);
-    return length>=1&&length<=maximum&&value===value.trim()&&!TEXT_CONTROL.test(value);
+    return length>=1&&(typeof maximum!=='number'||length<=maximum)&&value===value.trim()&&
+      !TEXT_CONTROL.test(value)&&!RAW_KEY_TOKEN.test(value);
   }
 
   function safeString(value,minimum,maximum){
@@ -333,7 +335,7 @@ var FD_EDITION_CATALOG=(function(){
       name=names[i];
       row=templates[name];
       tokens=TEMPLATE_TOKENS[name];
-      if(!exact(row,['text','tokens'],[])||!plainText(row.text,512)||!Array.isArray(row.tokens)||row.tokens.length!==tokens.length||row.tokens.length>16) return false;
+      if(!exact(row,['text','tokens'],[])||!safeVisibleText(row.text,512)||!Array.isArray(row.tokens)||row.tokens.length!==tokens.length||row.tokens.length>16) return false;
       remainder=row.text;
       for(j=0;j<tokens.length;j++){
         if(row.tokens[j]!==tokens[j]) return false;
@@ -360,16 +362,16 @@ var FD_EDITION_CATALOG=(function(){
     if(!exact(record,required,optional)||!validKey(record.key)||typeof record.contentDigest!=='string'||!DIGEST.test(record.contentDigest)) return false;
     if(!sortedUnique(record.audiences,1,2,validAudience)||record.audiences.indexOf('ms3')<0&&record.audiences.indexOf('resident')<0||!realDate(record.verifiedOn)) return false;
     if(own.call(record,'locationKeys')&&!sortedUnique(record.locationKeys,1,64,validKey)) return false;
-    if(own.call(record,'displayName')&&!plainText(record.displayName,120)) return false;
+    if(own.call(record,'displayName')&&!safeVisibleText(record.displayName,120)) return false;
     if(kind==='trainingLocation'){
       return typeof record.locationCode==='string'&&/^[A-Z0-9]{2,8}$/.test(record.locationCode)&&
         oneOf(record.locationTypeCode,LOCATION_TYPES)&&sortedUnique(record.officialHostnames,0,32,validHostname);
     }
     if(kind==='curatorProfile') return validKey(record.roleKey);
     if(kind==='place') return true;
-    if(kind==='officialLink') return plainText(record.title,120)&&oneOf(record.purposeCode,PURPOSE_CODES)&&officialUrl(record);
+    if(kind==='officialLink') return safeVisibleText(record.title,120)&&oneOf(record.purposeCode,PURPOSE_CODES)&&officialUrl(record);
     if(kind==='phraseSet') return templateSetValid(record.templates);
-    if(kind==='choice') return oneOf(record.choiceKind,CHOICE_KINDS)&&plainText(record.label,80)&&plainText(record.fragment,240);
+    if(kind==='choice') return oneOf(record.choiceKind,CHOICE_KINDS)&&safeVisibleText(record.label,80)&&safeVisibleText(record.fragment,240);
     if(kind==='localPreset'){
       if(!validKey(record.phraseSetKey)) return false;
       try{ validateLocalPlan(record.localPlan,record.audiences.indexOf('resident')>=0?4:6,Object.create(null),null); }
@@ -472,7 +474,7 @@ var FD_EDITION_CATALOG=(function(){
 
     if(own.call(plan,'accessItems')){
       value=plan.accessItems;
-      if(!Array.isArray(value)||value.length>12) fail();
+      if(!Array.isArray(value)||value.length<1||value.length>12) fail();
       for(i=0;i<value.length;i++){
         row=value[i];
         if(!exact(row,['instanceId','itemKey','dueKey'],['linkKey'])) fail();
@@ -484,7 +486,7 @@ var FD_EDITION_CATALOG=(function(){
     }
     if(own.call(plan,'contacts')){
       value=plan.contacts;
-      if(!Array.isArray(value)||value.length>8) fail();
+      if(!Array.isArray(value)||value.length<1||value.length>8) fail();
       for(i=0;i<value.length;i++){
         row=value[i];
         if(!exact(row,['instanceId','roleKey'],['linkKey'])) fail();
@@ -495,7 +497,7 @@ var FD_EDITION_CATALOG=(function(){
     }
     if(own.call(plan,'checklistItems')){
       value=plan.checklistItems;
-      if(!Array.isArray(value)||value.length>24) fail();
+      if(!Array.isArray(value)||value.length<1||value.length>24) fail();
       for(i=0;i<value.length;i++){
         row=value[i];
         if(!exact(row,['instanceId','itemKey','priority'],[])) fail();
@@ -506,7 +508,7 @@ var FD_EDITION_CATALOG=(function(){
     }
     if(own.call(plan,'resources')){
       value=plan.resources;
-      if(!Array.isArray(value)||value.length>12) fail();
+      if(!Array.isArray(value)||value.length<1||value.length>12) fail();
       for(i=0;i<value.length;i++){
         row=value[i];
         if(!exact(row,['instanceId','linkKey','priority','week'],['reasonKey'])) fail();
@@ -806,7 +808,7 @@ var FD_EDITION_CATALOG=(function(){
   }
 
   function safeLearnerValue(value){
-    return typeof value==='string'&&scalarLength(value)>=1&&value===value.trim()&&!TEXT_CONTROL.test(value)&&!KEY.test(value);
+    return safeVisibleText(value);
   }
 
   function renderTemplate(phrases,name,values){

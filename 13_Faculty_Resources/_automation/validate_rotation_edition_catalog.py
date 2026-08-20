@@ -23,6 +23,7 @@ GOVERNANCE_SCHEMA_PATH = CURATION / "rotation_edition_catalog_governance.schema.
 KEY = re.compile(r"^[a-z0-9][a-z0-9._:-]{0,126}@v[1-9][0-9]{0,5}$")
 DIGEST = re.compile(r"^sha256-[A-Za-z0-9_-]{43}$")
 TEXT_CONTROL = re.compile(r"[\x00-\x1f\x7f-\x9f\u202a-\u202e\u2066-\u2069<>&]")
+RAW_KEY_TOKEN = re.compile(r"[a-z0-9][a-z0-9._:-]{0,126}@v[1-9][0-9]{0,5}")
 CHOICE_KINDS = {"reason", "activity", "role", "checklist", "daySet", "roundsPreparation", "roundsParticipation", "roundsFollowUp", "presentationFormat", "presentationTiming", "presentationElement", "documentationWorkflow", "documentationTiming", "feedbackCadence", "feedbackInitiator", "feedbackSetting", "accessItem", "duePoint"}
 LOCATION_TYPES = {"inpatient", "outpatient", "consult-liaison", "emergency", "community", "mixed"}
 PURPOSE_CODES = {"arrival-map", "orientation", "access-training", "documentation-policy", "attendance-policy", "feedback-policy", "directory", "parking-transit", "official-clinical-policy", "reviewed-operational"}
@@ -96,6 +97,11 @@ def _plain_text(value, pointer: str, maximum: int) -> None:
         raise _error("CATALOG_INVALID", pointer)
 
 
+def _safe_visible_text(value, pointer: str, maximum: int) -> None:
+    if not isinstance(value, str) or not value or len(value) > maximum or value != value.strip() or TEXT_CONTROL.search(value) or RAW_KEY_TOKEN.search(value):
+        raise _error("CATALOG_INVALID", pointer)
+
+
 def _sorted_unique(values, pointer: str) -> None:
     if not isinstance(values, list) or values != sorted(values) or len(values) != len(set(values)):
         raise _error("CATALOG_INVALID", pointer)
@@ -142,8 +148,8 @@ def _validate_record(record: dict, index: int, records_by_key: dict, today: date
     if set(record["audiences"]) - {"ms3", "resident"} or not record["audiences"]:
         raise _error("CATALOG_INVALID", pointer + "/audiences")
     _real_date(record["verifiedOn"], pointer + "/verifiedOn", today)
-    if "displayName" in record: _plain_text(record["displayName"], pointer + "/displayName", 120)
-    if "title" in record: _plain_text(record["title"], pointer + "/title", 120)
+    if "displayName" in record: _safe_visible_text(record["displayName"], pointer + "/displayName", 120)
+    if "title" in record: _safe_visible_text(record["title"], pointer + "/title", 120)
     if "locationKeys" in record:
         _sorted_unique(record["locationKeys"], pointer + "/locationKeys")
         if not record["locationKeys"] or len(record["locationKeys"]) > 64 or any(not isinstance(key, str) or not KEY.fullmatch(key) for key in record["locationKeys"]):
@@ -158,7 +164,7 @@ def _validate_record(record: dict, index: int, records_by_key: dict, today: date
             raise _error("CATALOG_INVALID", pointer + "/officialHostnames")
     elif record["kind"] == "choice":
         if record["choiceKind"] not in CHOICE_KINDS: raise _error("CATALOG_INVALID", pointer + "/choiceKind")
-        _plain_text(record["label"], pointer + "/label", 80); _plain_text(record["fragment"], pointer + "/fragment", 240)
+        _safe_visible_text(record["label"], pointer + "/label", 80); _safe_visible_text(record["fragment"], pointer + "/fragment", 240)
     elif record["kind"] == "officialLink":
         _plain_text(record["visibleHostname"], pointer + "/visibleHostname", 253)
         if record["purposeCode"] not in PURPOSE_CODES: raise _error("CATALOG_INVALID", pointer + "/purposeCode")
@@ -172,7 +178,7 @@ def _validate_record(record: dict, index: int, records_by_key: dict, today: date
             row = templates[name]
             if not isinstance(row, dict) or set(row) != {"text", "tokens"} or row.get("tokens") != tokens:
                 raise _error("CATALOG_INVALID", pointer + "/templates/" + name)
-            _plain_text(row["text"], pointer + "/templates/" + name + "/text", 512)
+            _safe_visible_text(row["text"], pointer + "/templates/" + name + "/text", 512)
             if len(tokens) > 16 or any(row["text"].count("{" + token + "}") != 1 for token in tokens) or re.sub(r"\{(?:" + "|".join(re.escape(token) for token in tokens) + r")\}", "", row["text"]).find("{") >= 0 or "}" in re.sub(r"\{(?:" + "|".join(re.escape(token) for token in tokens) + r")\}", "", row["text"]):
                 raise _error("CATALOG_INVALID", pointer + "/templates/" + name + "/text")
 
@@ -223,6 +229,7 @@ def _validate_local_plan(plan, pointer, records_by_key, audiences, locations):
         raise _error("CATALOG_INVALID", pointer)
     ids = set()
     schedule_ids = set()
+    schedule_tuples = set()
     if "arrival" in plan:
         value = plan["arrival"]; item_pointer = pointer + "/arrival"
         _exact_object(value, {"timingCode", "time", "placeKey", "checkInRoleKey"}, {"linkKey"}, item_pointer)
@@ -246,6 +253,9 @@ def _validate_local_plan(plan, pointer, records_by_key, audiences, locations):
             start = _time(event["startTime"], event_pointer + "/startTime")
             if "endTime" in event and _time(event["endTime"], event_pointer + "/endTime") <= start: raise _error("CATALOG_INVALID", event_pointer + "/endTime")
             if event["priority"] not in {"required", "recommended", "optional"}: raise _error("CATALOG_INVALID", event_pointer + "/priority")
+            schedule_tuple = (event["daySetKey"], event["startTime"], event.get("endTime", ""), event["activityKey"], event.get("placeKey", ""))
+            if schedule_tuple in schedule_tuples: raise _error("CATALOG_INVALID", event_pointer)
+            schedule_tuples.add(schedule_tuple)
             _plan_reference(records_by_key, event["daySetKey"], event_pointer + "/daySetKey", audiences, locations, {"choice"}, {"daySet"})
             _plan_reference(records_by_key, event["activityKey"], event_pointer + "/activityKey", audiences, locations, {"choice"}, {"activity"})
             if "placeKey" in event: _plan_reference(records_by_key, event["placeKey"], event_pointer + "/placeKey", audiences, locations, {"place"})
@@ -283,7 +293,7 @@ def _validate_local_plan(plan, pointer, records_by_key, audiences, locations):
     for category, (maximum, required, optional) in arrays.items():
         if category not in plan: continue
         values = plan[category]; item_pointer = pointer + "/" + category
-        if not isinstance(values, list) or len(values) > maximum: raise _error("CATALOG_INVALID", item_pointer)
+        if not isinstance(values, list) or not 1 <= len(values) <= maximum: raise _error("CATALOG_INVALID", item_pointer)
         for index, value in enumerate(values):
             row_pointer = item_pointer + "/" + str(index); _exact_object(value, required, optional, row_pointer)
             _identifier(value["instanceId"], row_pointer + "/instanceId")
@@ -303,6 +313,9 @@ def _validate_local_plan(plan, pointer, records_by_key, audiences, locations):
                 if value["priority"] not in {"required", "recommended", "optional"} or not isinstance(value["week"], int) or value["week"] < 1 or value["week"] > (4 if "resident" in audiences else 6): raise _error("CATALOG_INVALID", row_pointer)
                 _plan_reference(records_by_key, value["linkKey"], row_pointer + "/linkKey", audiences, locations, {"officialLink"})
                 if "reasonKey" in value: _plan_reference(records_by_key, value["reasonKey"], row_pointer + "/reasonKey", audiences, locations, {"choice"}, {"reason"})
+    checklist_total = (1 if "arrival" in plan else 0) + len(plan.get("accessItems", [])) + len(plan.get("checklistItems", []))
+    if checklist_total > 24:
+        raise _error("CATALOG_INVALID", pointer + "/checklistItems")
 
 
 def _record_reference_keys(value):
