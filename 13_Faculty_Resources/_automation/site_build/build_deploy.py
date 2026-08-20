@@ -437,7 +437,7 @@ common.apply_contrast_fix(
 _QV=common.quiz_cache_bust(OUT+"/tools/quizzes.json")   # content-hash cache-bust (reproducible)
 common.apply_full_page_pass(OUT, cache_bust=_QV)
 for _frontdoor_destination in (OUT+"/index.html", OUT+"/tools/rotation-curator.html"):
-    frontdoor_catalog.assert_catalog_resolver_injected(_frontdoor_destination)
+    frontdoor_catalog.assert_catalog_resolver_injected(_frontdoor_destination, _rotation_projection["revision"])
 
 # The governed shell itself is a required risk-work surface because it renders the Safety Kit.
 # Expand only after shared snippets: a marker introduced by a snippet must participate in the

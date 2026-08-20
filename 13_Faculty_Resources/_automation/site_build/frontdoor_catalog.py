@@ -232,7 +232,7 @@ def inject_frontdoor_payload(path, payload, topic_meta, tool_registry):
         fh.write(text)
 
 
-def assert_catalog_resolver_injected(path):
+def assert_catalog_resolver_injected(path, expected_revision):
     """Keep the closed catalog resolver immediately available to both Front Door consumers."""
     with open(path, encoding="utf-8") as fh:
         text = fh.read()
@@ -248,11 +248,13 @@ def assert_catalog_resolver_injected(path):
     except json.JSONDecodeError as error:
         raise ValueError("Front Door catalog revision value is not JSON") from error
     revision = projection.get("revision") if isinstance(projection, dict) else None
-    if not isinstance(revision, str) or re.fullmatch(r"sha256-[A-Za-z0-9_-]{43}", revision) is None:
+    if not isinstance(expected_revision, str) or re.fullmatch(r"sha256-[A-Za-z0-9_-]{43}", expected_revision) is None:
+        raise ValueError("trusted Front Door catalog revision is malformed")
+    if revision != expected_revision:
         raise ValueError("Front Door catalog revision is malformed")
     expected = re.compile(r"var EXPECTED_REVISION='(?:__FD_CATALOG_EXPECTED_REVISION__|sha256-[A-Za-z0-9_-]{43})';")
     if len(expected.findall(text)) != 1:
         raise ValueError("Front Door catalog resolver revision sentinel missing or duplicated")
-    text = expected.sub("var EXPECTED_REVISION='%s';" % revision, text)
+    text = expected.sub("var EXPECTED_REVISION='%s';" % expected_revision, text)
     with open(path, "w", encoding="utf-8") as fh:
         fh.write(text)

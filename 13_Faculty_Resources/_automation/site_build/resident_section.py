@@ -296,7 +296,7 @@ try:
             _frontdoor_destination, _fd_payload,
             json.load(open(OUT+"/topic_meta.json",encoding="utf-8")),
             json.load(open(OUT+"/tool_registry.json",encoding="utf-8")))
-        frontdoor_catalog.assert_catalog_resolver_injected(_frontdoor_destination)
+        frontdoor_catalog.assert_catalog_resolver_injected(_frontdoor_destination, _rotation_projection["revision"])
 except ValueError as _fd_error:
     print("BUILD ABORTED — Front Door payload:", _fd_error)
     raise SystemExit(1)

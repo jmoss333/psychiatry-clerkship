@@ -124,3 +124,13 @@ test('rejects malformed Web Crypto digest results without partially trusting a p
     assert.equal(F.fdEditionPublicationEnabled(result.snapshot), false);
   }
 });
+
+test('rejects a spoofed digest buffer and out-of-range local resource before rendering', async () => {
+  const F = load(); const prepared = await F.fdEditionCatalogSnapshot(await projection(), 'ms3', webcrypto.subtle);
+  const spoofed = { [Symbol.toStringTag]: 'ArrayBuffer', byteLength: 32, length: 32 };
+  const digestResult = await F.fdEditionCatalogSnapshot(await projection(), 'ms3', { digest() { return Promise.resolve(spoofed); } });
+  assert.equal(digestResult.ok, false);
+  const local = config(); local.localPlan = { resources: [{ instanceId: 'local:resource:1', linkKey: 'link.invalid@v1', priority: 'required', week: 99 }] };
+  const result = await F.fdEditionCatalogResolve(local, prepared.snapshot, 'learner', { audience: 'ms3', localCatalogRevision: prepared.snapshot.revision, rotationEditionV2: 'enabled', coreRevision: local.createdAgainstCoreRevision }, webcrypto.subtle);
+  assert.equal(result.ok, false);
+});
