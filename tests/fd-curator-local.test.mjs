@@ -20,7 +20,7 @@ const API_NAMES = [
   'fdCuratorImportBackup',
   'fdCuratorPrepareGenerationResult', 'fdCuratorLocalCoverage', 'fdCuratorLocalMarkup',
   'fdCuratorCurriculumMarkup',
-  'fdCuratorObserveCurrentSite', 'fdCuratorCatalogOptions',
+  'fdCuratorObserveCurrentSite', 'fdCuratorCatalogOptions', 'fdCuratorApplyAction',
   'fdCuratorMount',
 ];
 const F = new Function('TextEncoder', 'TextDecoder', 'atob', 'btoa',
@@ -189,6 +189,100 @@ async function importEnvelope(envelope, startingDraft = fn('fdCuratorNewDraft')(
   const applied = reduce(startingDraft, { type: 'IMPORT_SUCCEEDED', result: imported, sequence }, transactions);
   assert.notEqual(applied, startingDraft);
   return applied;
+}
+
+function replacePublicationWithDescriptorProxy(state, options = {}) {
+  const publication = state.publication;
+  const originalBase = publication.baseEnvelope;
+  const target = {
+    baseEnvelope: options.preserveBaseIdentity ? originalBase : structuredClone(originalBase),
+    baseSemanticConfig: publication.baseSemanticConfig,
+    lastGenerated: publication.lastGenerated,
+  };
+  const ledger = { ownKeys: 0, descriptors: 0, prototypes: 0, ordinaryGets: [] };
+  const proxy = new Proxy(target, {
+    getPrototypeOf(inner) {
+      ledger.prototypes += 1;
+      return Reflect.getPrototypeOf(inner);
+    },
+    ownKeys(inner) {
+      ledger.ownKeys += 1;
+      return Reflect.ownKeys(inner);
+    },
+    getOwnPropertyDescriptor(inner, key) {
+      ledger.descriptors += 1;
+      return Reflect.getOwnPropertyDescriptor(inner, key);
+    },
+    get(inner, key, receiver) {
+      ledger.ordinaryGets.push(key);
+      if (key === 'baseEnvelope') return originalBase;
+      return Reflect.get(inner, key, receiver);
+    },
+  });
+  state.publication = proxy;
+  return { proxy, target, originalBase, ledger, ordinaryGets: ledger.ordinaryGets };
+}
+
+function replacePublicationWithAlternatingOwnKeysProxy(state) {
+  const publication = state.publication;
+  const target = {
+    baseEnvelope: publication.baseEnvelope,
+    baseSemanticConfig: publication.baseSemanticConfig,
+    lastGenerated: publication.lastGenerated,
+  };
+  const ledger = { ownKeys: 0, descriptors: 0, prototypes: 0, ordinaryGets: [] };
+  const proxy = new Proxy(target, {
+    getPrototypeOf(inner) {
+      ledger.prototypes += 1;
+      return Reflect.getPrototypeOf(inner);
+    },
+    ownKeys(inner) {
+      ledger.ownKeys += 1;
+      const keys = Reflect.ownKeys(inner);
+      return ledger.ownKeys === 1 ? [...keys, 'first-snapshot-only-extra'] : keys;
+    },
+    getOwnPropertyDescriptor(inner, key) {
+      ledger.descriptors += 1;
+      return Reflect.getOwnPropertyDescriptor(inner, key);
+    },
+    get(inner, key, receiver) {
+      ledger.ordinaryGets.push(key);
+      return Reflect.get(inner, key, receiver);
+    },
+  });
+  state.publication = proxy;
+  return { proxy, target, ledger };
+}
+
+function publicationSnapshotCounts(ledger) {
+  return { ownKeys: ledger.ownKeys, descriptors: ledger.descriptors, prototypes: ledger.prototypes };
+}
+
+function assertOnePublicationSnapshot(ledger, before, label) {
+  const after = publicationSnapshotCounts(ledger);
+  assert.deepEqual({
+    ownKeys: after.ownKeys - before.ownKeys,
+    descriptors: after.descriptors - before.descriptors,
+    prototypes: after.prototypes - before.prototypes,
+  }, { ownKeys: 1, descriptors: 3, prototypes: 1 }, `${label} descriptor snapshot count`);
+  assert.deepEqual(ledger.ordinaryGets, [], `${label} ordinary publication gets`);
+}
+
+function assertOneRejectedPublicationSnapshot(ledger, label) {
+  assert.deepEqual(ledger, { ownKeys: 1, descriptors: 0, prototypes: 1, ordinaryGets: [] }, `${label} single rejected snapshot`);
+}
+
+function publicationLastGenerated(state) {
+  const publication = Object.getOwnPropertyDescriptor(state, 'publication')?.value;
+  return Object.getOwnPropertyDescriptor(publication, 'lastGenerated')?.value;
+}
+
+async function assertReimportRequired(state, validation, label, site = context(), checkGenerationArtifact = true) {
+  const candidate = await fn('fdCuratorCandidateConfig')(state, index(), SNAPSHOT, site, validation, webcrypto.subtle);
+  assert.equal(candidate.ok, false, label);
+  assert.equal(candidate.errors[0].code, 'CURATOR_BASE_REIMPORT_REQUIRED', label);
+  assert.deepEqual(state.previewReceipts, { desktop: null, mobile: null }, `${label} receipts`);
+  if (checkGenerationArtifact) assert.equal(publicationLastGenerated(state), null, `${label} generation artifact`);
 }
 
 test('every closed local action builds the exact normalized v2 local plan', () => {
@@ -520,6 +614,308 @@ test('lineage authority stays sealed across replacement, observation, clone, val
   await candidateStatus(reimported, 'persisted blocked -> explicit re-import', true, 1);
   const reimportedEdit = reduce(reimported, { type: 'RESOURCE_UPDATE', instanceId: 'local:resource:1', field: 'priority', value: 'required' });
   await candidateStatus(reimportedEdit, 'persisted blocked -> explicit re-import -> edit', true, 2);
+});
+
+test('publication Proxy replacement cannot retain lineage through candidate or clone transitions', async (t) => {
+  const { draft: persisted, validation } = await persistedDraftWithBase();
+  const cases = [
+    ['direct candidate', (live) => live],
+    ['SET_STEP', (live) => reduce(live, { type: 'SET_STEP', step: 2 })],
+    ['SET_AFFIRMATION', (live) => reduce(live, { type: 'SET_AFFIRMATION', name: 'publicSafe', value: true })],
+    ['semantic resource edit through apply action', (live) => fn('fdCuratorApplyAction')(
+      live,
+      { type: 'RESOURCE_UPDATE', instanceId: 'local:resource:1', field: 'priority', value: 'required' },
+      index(), context(), SNAPSHOT, '2026-08-19', fn('fdCuratorImportTransactions')(),
+    ).state],
+    ['revision observation', (live) => {
+      live.site.coreRevision = OLD_CORE_REVISION;
+      return fn('fdCuratorObserveCurrentSite')(live, index(), context());
+    }],
+  ];
+  for (const [label, transition] of cases) await t.test(label, async () => {
+    const live = await importEnvelope(persisted.publication.baseEnvelope);
+    const exploit = replacePublicationWithDescriptorProxy(live);
+    const transitioned = transition(live);
+    assert.ok(transitioned, label);
+    if (label !== 'direct candidate') assert.notEqual(transitioned, live, label);
+    await assertReimportRequired(transitioned, validation, label);
+    assert.deepEqual(exploit.ordinaryGets, [], `${label} ordinary publication gets`);
+  });
+});
+
+test('publication object identity is required even when the exact trusted base object is retained', async () => {
+  const { draft: persisted, validation } = await persistedDraftWithBase();
+  const live = await importEnvelope(persisted.publication.baseEnvelope);
+  const exploit = replacePublicationWithDescriptorProxy(live, { preserveBaseIdentity: true });
+  assert.equal(Object.getOwnPropertyDescriptor(exploit.target, 'baseEnvelope').value, exploit.originalBase);
+  const before = publicationSnapshotCounts(exploit.ledger);
+  await assertReimportRequired(live, validation, 'publication-only replacement', context(), false);
+  assert.equal(Object.getOwnPropertyDescriptor(exploit.target, 'lastGenerated').value, null);
+  assertOnePublicationSnapshot(exploit.ledger, before, 'publication-only replacement');
+});
+
+test('each trust-sensitive operation takes one closed publication descriptor snapshot', async (t) => {
+  const { draft: persisted, validation } = await persistedDraftWithBase();
+  async function hostile(label, operation, setup = null) {
+    await t.test(label, async () => {
+      const live = await importEnvelope(persisted.publication.baseEnvelope);
+      const prepared = setup ? await setup(live) : null;
+      const exploit = replacePublicationWithDescriptorProxy(live);
+      const before = publicationSnapshotCounts(exploit.ledger);
+      await operation(live, prepared);
+      assertOnePublicationSnapshot(exploit.ledger, before, label);
+    });
+  }
+  await hostile('candidate', async (live) => {
+    await assertReimportRequired(live, validation, 'candidate', context(), false);
+  });
+  await hostile('reduce', (live) => {
+    const transitioned = reduce(live, { type: 'SET_STEP', step: 2 });
+    assert.notEqual(transitioned, live);
+  });
+  await hostile('observe', (live) => {
+    const observed = fn('fdCuratorObserveCurrentSite')(live, index(), context());
+    assert.notEqual(observed, live);
+  }, (live) => { live.site.coreRevision = OLD_CORE_REVISION; });
+  await hostile('apply action', (live) => {
+    const applied = fn('fdCuratorApplyAction')(
+      live,
+      { type: 'RESOURCE_UPDATE', instanceId: 'local:resource:1', field: 'priority', value: 'required' },
+      index(), context(), SNAPSHOT, '2026-08-19', fn('fdCuratorImportTransactions')(),
+    );
+    assert.notEqual(applied.state, live);
+  });
+  await hostile('preview completion', (live, prepared) => {
+    const transitioned = reduce(live, {
+      type: 'PREVIEW_REVIEW_SUCCEEDED', preset: 'desktop', result: prepared.completion, sequence: prepared.sequence,
+    }, prepared.transactions);
+    assert.equal(transitioned, live);
+  }, async (live) => {
+    const transactions = fn('fdCuratorImportTransactions')();
+    const candidate = await fn('fdCuratorCandidateConfig')(live, index(), SNAPSHOT, context(), validation, webcrypto.subtle);
+    const sequence = transactions.beginPreview();
+    const preview = await fn('fdCuratorPreparePreview')(live, index(), SNAPSHOT, context(), validation, webcrypto.subtle, 'desktop', sequence);
+    return { transactions, sequence, completion: completePreview(preview, candidate, 'desktop', sequence, transactions) };
+  });
+  await hostile('generation completion', (live, prepared) => {
+    const transitioned = reduce(live, {
+      type: 'GENERATION_SUCCEEDED', result: prepared.generated, sequence: prepared.sequence,
+    }, prepared.transactions);
+    assert.equal(transitioned, live);
+  }, async (live) => {
+    const transactions = fn('fdCuratorImportTransactions')();
+    const candidate = await fn('fdCuratorCandidateConfig')(live, index(), SNAPSHOT, context(), validation, webcrypto.subtle);
+    const sequence = transactions.beginGeneration();
+    return { transactions, sequence, generated: fn('fdCuratorPrepareGenerationResult')(candidate, sequence) };
+  });
+});
+
+test('an invalid first publication snapshot is terminal for reduce, apply, and completion', async (t) => {
+  const { draft: persisted, validation } = await persistedDraftWithBase();
+  await t.test('reduce', async () => {
+    const live = await importEnvelope(persisted.publication.baseEnvelope);
+    const exploit = replacePublicationWithAlternatingOwnKeysProxy(live);
+    const transitioned = reduce(live, { type: 'SET_STEP', step: 2 });
+    assert.equal(transitioned, live);
+    assertOneRejectedPublicationSnapshot(exploit.ledger, 'reduce');
+  });
+  await t.test('apply action', async () => {
+    const live = await importEnvelope(persisted.publication.baseEnvelope);
+    const exploit = replacePublicationWithAlternatingOwnKeysProxy(live);
+    const applied = fn('fdCuratorApplyAction')(
+      live,
+      { type: 'RESOURCE_UPDATE', instanceId: 'local:resource:1', field: 'priority', value: 'required' },
+      index(), context(), SNAPSHOT, '2026-08-19', fn('fdCuratorImportTransactions')(),
+    );
+    assert.deepEqual(applied, { state: live, changed: false, semanticChanged: false });
+    assertOneRejectedPublicationSnapshot(exploit.ledger, 'apply action');
+  });
+  await t.test('preview completion', async () => {
+    const live = await importEnvelope(persisted.publication.baseEnvelope);
+    const transactions = fn('fdCuratorImportTransactions')();
+    const candidate = await fn('fdCuratorCandidateConfig')(live, index(), SNAPSHOT, context(), validation, webcrypto.subtle);
+    const sequence = transactions.beginPreview();
+    const preview = await fn('fdCuratorPreparePreview')(live, index(), SNAPSHOT, context(), validation, webcrypto.subtle, 'desktop', sequence);
+    const completion = completePreview(preview, candidate, 'desktop', sequence, transactions);
+    assert.equal(completion.ok, true);
+    const exploit = replacePublicationWithAlternatingOwnKeysProxy(live);
+    const transitioned = reduce(live, { type: 'PREVIEW_REVIEW_SUCCEEDED', preset: 'desktop', result: completion, sequence }, transactions);
+    assert.equal(transitioned, live);
+    assert.deepEqual(live.previewReceipts, { desktop: null, mobile: null });
+    assert.equal(Object.getOwnPropertyDescriptor(exploit.target, 'lastGenerated').value, null);
+    assertOneRejectedPublicationSnapshot(exploit.ledger, 'preview completion');
+  });
+});
+
+test('preview preparation rejects hostile publication identity without exposing an artifact', async () => {
+  const { draft: persisted, validation } = await persistedDraftWithBase();
+  const live = await importEnvelope(persisted.publication.baseEnvelope);
+  const transactions = fn('fdCuratorImportTransactions')();
+  const sequence = transactions.beginPreview();
+  const exploit = replacePublicationWithDescriptorProxy(live);
+  const before = publicationSnapshotCounts(exploit.ledger);
+  const prepared = await fn('fdCuratorPreparePreview')(live, index(), SNAPSHOT, context(), validation, webcrypto.subtle, 'desktop', sequence);
+  assert.deepEqual(prepared, { ok: false, code: 'CURATOR_BASE_REIMPORT_REQUIRED' });
+  assert.equal('displayModel' in prepared, false);
+  assert.equal('contentDigest' in prepared, false);
+  assert.equal('fingerprint' in prepared, false);
+  assertOnePublicationSnapshot(exploit.ledger, before, 'preview preparation');
+});
+
+test('untouched imported lineage survives non-semantic step and affirmation transitions', async () => {
+  const { draft: persisted, validation } = await persistedDraftWithBase();
+  let live = await importEnvelope(persisted.publication.baseEnvelope);
+  const stepped = reduce(live, { type: 'SET_STEP', step: 2 });
+  assert.notEqual(stepped, live);
+  assert.equal(stepped.step, 2);
+  let candidate = await fn('fdCuratorCandidateConfig')(stepped, index(), SNAPSHOT, context(), validation, webcrypto.subtle);
+  assert.equal(candidate.ok, true);
+  live = reduce(stepped, { type: 'SET_AFFIRMATION', name: 'publicSafe', value: true });
+  assert.notEqual(live, stepped);
+  assert.equal(live.affirmations.publicSafe, true);
+  candidate = await fn('fdCuratorCandidateConfig')(live, index(), SNAPSHOT, context(), validation, webcrypto.subtle);
+  assert.equal(candidate.ok, true);
+});
+
+test('publication Proxy replacement cannot mint preview or generation completion artifacts', async (t) => {
+  const { draft: persisted, validation } = await persistedDraftWithBase();
+  await t.test('preview completion', async () => {
+    const live = await importEnvelope(persisted.publication.baseEnvelope);
+    const transactions = fn('fdCuratorImportTransactions')();
+    const candidate = await fn('fdCuratorCandidateConfig')(live, index(), SNAPSHOT, context(), validation, webcrypto.subtle);
+    const sequence = transactions.beginPreview();
+    const prepared = await fn('fdCuratorPreparePreview')(live, index(), SNAPSHOT, context(), validation, webcrypto.subtle, 'desktop', sequence);
+    const completion = completePreview(prepared, candidate, 'desktop', sequence, transactions);
+    assert.equal(completion.ok, true);
+    const exploit = replacePublicationWithDescriptorProxy(live);
+    const transitioned = reduce(live, { type: 'PREVIEW_REVIEW_SUCCEEDED', preset: 'desktop', result: completion, sequence }, transactions);
+    assert.equal(transitioned, live);
+    await assertReimportRequired(transitioned, validation, 'preview completion');
+    assert.deepEqual(exploit.ordinaryGets, [], 'preview ordinary publication gets');
+  });
+  await t.test('generation completion', async () => {
+    const live = await importEnvelope(persisted.publication.baseEnvelope);
+    const transactions = fn('fdCuratorImportTransactions')();
+    const candidate = await fn('fdCuratorCandidateConfig')(live, index(), SNAPSHOT, context(), validation, webcrypto.subtle);
+    const sequence = transactions.beginGeneration();
+    const generated = fn('fdCuratorPrepareGenerationResult')(candidate, sequence);
+    const exploit = replacePublicationWithDescriptorProxy(live);
+    const transitioned = reduce(live, { type: 'GENERATION_SUCCEEDED', result: generated, sequence }, transactions);
+    assert.equal(transitioned, live);
+    await assertReimportRequired(transitioned, validation, 'generation completion');
+    assert.deepEqual(exploit.ordinaryGets, [], 'generation ordinary publication gets');
+  });
+});
+
+test('publication descriptor snapshots reject inconsistent and malformed replacements without ordinary reads', async (t) => {
+  const { draft: persisted, validation } = await persistedDraftWithBase();
+  await t.test('descriptor mutation during the one publication snapshot', async () => {
+    const live = await importEnvelope(persisted.publication.baseEnvelope);
+    const publication = live.publication;
+    const originalBase = publication.baseEnvelope;
+    const ledger = { ownKeys: 0, descriptors: 0, prototypes: 0, ordinaryGets: [] };
+    live.publication = new Proxy(publication, {
+      getPrototypeOf(target) { ledger.prototypes += 1; return Reflect.getPrototypeOf(target); },
+      ownKeys(target) { ledger.ownKeys += 1; return Reflect.ownKeys(target); },
+      getOwnPropertyDescriptor(target, key) {
+        ledger.descriptors += 1;
+        const descriptor = Reflect.getOwnPropertyDescriptor(target, key);
+        if (key === 'baseEnvelope') {
+          target.baseSemanticConfig = `${target.baseSemanticConfig}#mutated`;
+          return { ...descriptor, value: structuredClone(originalBase) };
+        }
+        return descriptor;
+      },
+      get(target, key, receiver) {
+        ledger.ordinaryGets.push(key);
+        if (key === 'baseEnvelope') return originalBase;
+        return Reflect.get(target, key, receiver);
+      },
+    });
+    await assertReimportRequired(live, validation, 'mutating descriptor publication', context(), false);
+    assert.deepEqual(ledger, { ownKeys: 1, descriptors: 3, prototypes: 1, ordinaryGets: [] });
+  });
+
+  const malformed = [
+    ['accessor', (publication, reads) => {
+      const value = { baseSemanticConfig: publication.baseSemanticConfig, lastGenerated: null };
+      Object.defineProperty(value, 'baseEnvelope', { enumerable: true, get() { reads.count += 1; return publication.baseEnvelope; } });
+      return value;
+    }],
+    ['revoked', (publication) => {
+      const target = {
+        baseEnvelope: structuredClone(publication.baseEnvelope),
+        baseSemanticConfig: publication.baseSemanticConfig,
+        lastGenerated: null,
+      };
+      const value = Proxy.revocable(target, {});
+      value.revoke();
+      return { publication: value.proxy, artifactTarget: target };
+    }],
+    ['symbol', (publication) => ({ baseEnvelope: structuredClone(publication.baseEnvelope), baseSemanticConfig: publication.baseSemanticConfig, lastGenerated: null, [Symbol('extra')]: true })],
+    ['extra key', (publication) => ({ baseEnvelope: structuredClone(publication.baseEnvelope), baseSemanticConfig: publication.baseSemanticConfig, lastGenerated: null, extra: true })],
+    ['non-enumerable', (publication) => {
+      const value = { baseSemanticConfig: publication.baseSemanticConfig, lastGenerated: null };
+      Object.defineProperty(value, 'baseEnvelope', { enumerable: false, value: structuredClone(publication.baseEnvelope) });
+      return value;
+    }],
+    ['exotic prototype', (publication) => Object.assign(Object.create({ inherited: true }), {
+      baseEnvelope: structuredClone(publication.baseEnvelope), baseSemanticConfig: publication.baseSemanticConfig, lastGenerated: null,
+    })],
+  ];
+  for (const [label, makePublication] of malformed) await t.test(label, async () => {
+    const live = await importEnvelope(persisted.publication.baseEnvelope);
+    const reads = { count: 0 };
+    const made = makePublication(live.publication, reads);
+    const artifactTarget = made && Object.hasOwn(made, 'artifactTarget') ? made.artifactTarget : null;
+    live.publication = artifactTarget ? made.publication : made;
+    await assertReimportRequired(live, validation, label, context(), false);
+    if (artifactTarget) assert.equal(Object.getOwnPropertyDescriptor(artifactTarget, 'lastGenerated').value, null, `${label} generation artifact`);
+    assert.equal(reads.count, 0, `${label} accessor reads`);
+  });
+});
+
+test('publication shape validation rejects in-place mutation of the exact trusted object', async (t) => {
+  const { draft: persisted, validation } = await persistedDraftWithBase();
+  const cases = [
+    ['extra key', (publication) => { publication.extra = true; }],
+    ['symbol', (publication) => { publication[Symbol('extra')] = true; }],
+    ['accessor base', (publication, reads) => {
+      const base = publication.baseEnvelope;
+      Object.defineProperty(publication, 'baseEnvelope', {
+        configurable: true, enumerable: true,
+        get() { reads.count += 1; return base; },
+      });
+    }],
+    ['non-enumerable base', (publication) => {
+      const base = publication.baseEnvelope;
+      Object.defineProperty(publication, 'baseEnvelope', { configurable: true, enumerable: false, writable: true, value: base });
+    }],
+    ['exotic prototype', (publication) => { Object.setPrototypeOf(publication, { inherited: true }); }],
+  ];
+  for (const [label, mutate] of cases) await t.test(label, async () => {
+    const live = await importEnvelope(persisted.publication.baseEnvelope);
+    const publication = live.publication;
+    const reads = { count: 0 };
+    mutate(publication, reads);
+    assert.equal(live.publication, publication, `${label} retained publication identity`);
+    await assertReimportRequired(live, validation, `in-place ${label}`);
+    assert.equal(reads.count, 0, `${label} accessor reads`);
+  });
+});
+
+test('explicit re-import replaces hostile publication identity and retains semantic work', async () => {
+  const { draft: persisted, validation } = await persistedDraftWithBase();
+  let live = await importEnvelope(persisted.publication.baseEnvelope);
+  live = reduce(live, { type: 'RESOURCE_UPDATE', instanceId: 'local:resource:1', field: 'priority', value: 'required' });
+  const exploit = replacePublicationWithDescriptorProxy(live);
+  await assertReimportRequired(live, validation, 'before explicit re-import');
+  const recovered = await importEnvelope(exploit.originalBase, live);
+  assert.equal(recovered.config.localPlan.resources[0].priority, 'required');
+  const candidate = await fn('fdCuratorCandidateConfig')(recovered, index(), SNAPSHOT, context(), validation, webcrypto.subtle);
+  assert.equal(candidate.ok, true); assert.equal(candidate.config.editionNumber, 2);
+  assert.deepEqual(candidate.config.changeSummary, { kindCodes: ['resources'], changedItemCount: 1 });
+  assert.deepEqual(exploit.ordinaryGets, [], 're-import ordinary publication gets');
 });
 
 test('candidate derivation rejects accessor and revoked base envelopes without touching private getters', async () => {
