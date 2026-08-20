@@ -165,6 +165,8 @@
     }
     .panel-note { color: var(--muted); }
     .preview-panel { position: sticky; top: 18px; }
+    [data-review-viewport="mobile"] .preview-panel { width: 100%; max-width: 390px; margin-inline: auto; }
+    [data-review-viewport="desktop"] .preview-panel { width: 100%; max-width: none; }
     .local-view-toggle {
       display: none;
       position: sticky;
@@ -179,7 +181,7 @@
       box-shadow: var(--shadow);
     }
     .local-view-toggle button { flex: 1; }
-    .local-view-toggle button[aria-pressed="true"] { color: #fff; background: var(--evergreen); }
+    .local-view-toggle button[aria-pressed="true"] { color: var(--surface, #fffdf8); background: var(--evergreen); }
     .edition-form {
       display: grid;
       gap: 18px;
@@ -240,7 +242,7 @@
       border-radius: 7px;
       font-weight: 800;
     }
-    .primary-action { border: 1px solid var(--evergreen); color: #fff; background: var(--evergreen); }
+    .primary-action { border: 1px solid var(--evergreen); color: var(--surface, #fffdf8); background: var(--evergreen); }
     .secondary-action { border: 1px solid #72857e; color: var(--evergreen); background: #fff; }
     .file-label {
       display: inline-flex;
@@ -435,11 +437,11 @@
     }
     @media (max-width: 760px) {
       .curator-shell { width: min(100% - 20px, 680px); padding-top: 22px; }
-      .step-rail ol { grid-template-columns: 1fr; }
-      .step-rail li { border-right: 0; border-bottom: 1px solid var(--line); }
-      .step-rail li:last-child { border-bottom: 0; }
-      .step-rail button { border-top: 0; border-left: 4px solid transparent; }
-      .step-rail button[aria-current="step"] { border-left-color: var(--terracotta); }
+      .step-rail ol { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+      .step-rail li { border-right: 1px solid var(--line); border-bottom: 0; }
+      .step-rail li:last-child { border-right: 0; }
+      .step-rail button { min-height: 68px; padding: 7px 3px; border-top: 4px solid transparent; text-align: center; overflow-wrap: anywhere; }
+      .step-rail button[aria-current="step"] { border-top-color: var(--terracotta); }
       .workspace { grid-template-columns: 1fr; }
       .field-grid { grid-template-columns: 1fr; }
       .placement-fields { grid-template-columns: 1fr; }
@@ -516,12 +518,12 @@
             <div class="field-grid">
               <div class="field field-wide">
                 <label for="curatorTitle">Edition title</label>
-                <input id="curatorTitle" name="title" type="text" maxlength="100" aria-describedby="curatorTitleDescription" data-curator-card="title" autocomplete="off">
+                <input id="curatorTitle" name="title" type="text" maxlength="200" data-curator-max-codepoints="100" aria-describedby="curatorTitleDescription" data-curator-card="title" autocomplete="off">
                 <p id="curatorTitleDescription" class="field-description">A short trainee-facing name for this rotation edition.</p>
               </div>
               <div class="field">
                 <label for="curatorLocationName">Training-location display name</label>
-                <input id="curatorLocationName" name="locationName" type="text" maxlength="100" aria-describedby="curatorLocationNameDescription" data-curator-card="locationName" autocomplete="organization">
+                <input id="curatorLocationName" name="locationName" type="text" maxlength="200" data-curator-max-codepoints="100" aria-describedby="curatorLocationNameDescription" data-curator-card="locationName" autocomplete="organization">
                 <p id="curatorLocationNameDescription" class="field-description">The public location name students should recognize.</p>
               </div>
               <div class="field">
@@ -531,12 +533,12 @@
               </div>
               <div class="field">
                 <label for="curatorName">Curator display name</label>
-                <input id="curatorName" name="curatorName" type="text" maxlength="100" aria-describedby="curatorNameDescription" data-curator-card="curatorName" autocomplete="name">
+                <input id="curatorName" name="curatorName" type="text" maxlength="200" data-curator-max-codepoints="100" aria-describedby="curatorNameDescription" data-curator-card="curatorName" autocomplete="name">
                 <p id="curatorNameDescription" class="field-description">Self-entered public display name; identity is not digitally verified.</p>
               </div>
               <div class="field">
                 <label for="curatorRole">Curator professional role</label>
-                <input id="curatorRole" name="curatorRole" type="text" maxlength="100" aria-describedby="curatorRoleDescription" data-curator-card="curatorRole" autocomplete="organization-title">
+                <input id="curatorRole" name="curatorRole" type="text" maxlength="200" data-curator-max-codepoints="100" aria-describedby="curatorRoleDescription" data-curator-card="curatorRole" autocomplete="organization-title">
                 <p id="curatorRoleDescription" class="field-description">For example, attending psychiatrist or clerkship director.</p>
               </div>
               <div class="field">
@@ -596,14 +598,14 @@
               <h3 id="curatorOrientationTitle">Structured local orientation</h3>
               <p class="field-description">Plain text only. Each field is optional and limited to 600 characters.</p>
               <div class="field-grid">
-                <div class="field field-wide"><label for="curatorFirstDayArrival">First-day arrival guidance</label><textarea id="curatorFirstDayArrival" maxlength="600" rows="3" aria-describedby="curatorFirstDayArrivalDescription curatorFirstDayArrivalCount" data-curator-orientation="firstDayArrival"></textarea><p id="curatorFirstDayArrivalDescription" class="field-description">Public arrival timing and meeting-place guidance without access codes or private contact details.</p><p id="curatorFirstDayArrivalCount" class="character-count">0 of 600 characters</p></div>
-                <div class="field field-wide"><label for="curatorDailySchedule">Typical daily schedule</label><textarea id="curatorDailySchedule" maxlength="600" rows="3" aria-describedby="curatorDailyScheduleDescription curatorDailyScheduleCount" data-curator-orientation="dailySchedule"></textarea><p id="curatorDailyScheduleDescription" class="field-description">A general trainee-facing outline of the day.</p><p id="curatorDailyScheduleCount" class="character-count">0 of 600 characters</p></div>
-                <div class="field field-wide"><label for="curatorRoundsWorkflow">Rounds workflow</label><textarea id="curatorRoundsWorkflow" maxlength="600" rows="3" aria-describedby="curatorRoundsWorkflowDescription curatorRoundsWorkflowCount" data-curator-orientation="roundsWorkflow"></textarea><p id="curatorRoundsWorkflowDescription" class="field-description">Describe the local workflow, not clinical directives.</p><p id="curatorRoundsWorkflowCount" class="character-count">0 of 600 characters</p></div>
-                <div class="field field-wide"><label for="curatorPresentationExpectations">Presentation expectations</label><textarea id="curatorPresentationExpectations" maxlength="600" rows="3" aria-describedby="curatorPresentationExpectationsDescription curatorPresentationExpectationsCount" data-curator-orientation="presentationExpectations"></textarea><p id="curatorPresentationExpectationsDescription" class="field-description">Local format and supervision expectations only.</p><p id="curatorPresentationExpectationsCount" class="character-count">0 of 600 characters</p></div>
-                <div class="field field-wide"><label for="curatorDocumentationExpectations">Documentation expectations</label><textarea id="curatorDocumentationExpectations" maxlength="600" rows="3" aria-describedby="curatorDocumentationExpectationsDescription curatorDocumentationExpectationsCount" data-curator-orientation="documentationExpectations"></textarea><p id="curatorDocumentationExpectationsDescription" class="field-description">Workflow expectations without copied protocols or patient details.</p><p id="curatorDocumentationExpectationsCount" class="character-count">0 of 600 characters</p></div>
-                <div class="field field-wide"><label for="curatorAttendanceExpectations">Attendance expectations</label><textarea id="curatorAttendanceExpectations" maxlength="600" rows="3" aria-describedby="curatorAttendanceExpectationsDescription curatorAttendanceExpectationsCount" data-curator-orientation="attendanceExpectations"></textarea><p id="curatorAttendanceExpectationsDescription" class="field-description">Public expectations for participation and absences.</p><p id="curatorAttendanceExpectationsCount" class="character-count">0 of 600 characters</p></div>
-                <div class="field field-wide"><label for="curatorFeedbackProcess">Feedback process</label><textarea id="curatorFeedbackProcess" maxlength="600" rows="3" aria-describedby="curatorFeedbackProcessDescription curatorFeedbackProcessCount" data-curator-orientation="feedbackProcess"></textarea><p id="curatorFeedbackProcessDescription" class="field-description">How and when trainees can seek feedback; do not enter evaluations.</p><p id="curatorFeedbackProcessCount" class="character-count">0 of 600 characters</p></div>
-                <div class="field field-wide"><label for="curatorAccessPreparation">Approved institutional access or training</label><textarea id="curatorAccessPreparation" maxlength="600" rows="3" aria-describedby="curatorAccessPreparationDescription curatorAccessPreparationCount" data-curator-orientation="accessPreparation"></textarea><p id="curatorAccessPreparationDescription" class="field-description">Explain how to obtain approved access or training. Never enter credentials, codes, or private instructions; link the official HTTPS source below.</p><p id="curatorAccessPreparationCount" class="character-count">0 of 600 characters</p></div>
+                <div class="field field-wide"><label for="curatorFirstDayArrival">First-day arrival guidance</label><textarea id="curatorFirstDayArrival" maxlength="1200" data-curator-max-codepoints="600" rows="3" aria-describedby="curatorFirstDayArrivalDescription curatorFirstDayArrivalCount" data-curator-orientation="firstDayArrival"></textarea><p id="curatorFirstDayArrivalDescription" class="field-description">Public arrival timing and meeting-place guidance without access codes or private contact details.</p><p id="curatorFirstDayArrivalCount" class="character-count">0 of 600 characters</p></div>
+                <div class="field field-wide"><label for="curatorDailySchedule">Typical daily schedule</label><textarea id="curatorDailySchedule" maxlength="1200" data-curator-max-codepoints="600" rows="3" aria-describedby="curatorDailyScheduleDescription curatorDailyScheduleCount" data-curator-orientation="dailySchedule"></textarea><p id="curatorDailyScheduleDescription" class="field-description">A general trainee-facing outline of the day.</p><p id="curatorDailyScheduleCount" class="character-count">0 of 600 characters</p></div>
+                <div class="field field-wide"><label for="curatorRoundsWorkflow">Rounds workflow</label><textarea id="curatorRoundsWorkflow" maxlength="1200" data-curator-max-codepoints="600" rows="3" aria-describedby="curatorRoundsWorkflowDescription curatorRoundsWorkflowCount" data-curator-orientation="roundsWorkflow"></textarea><p id="curatorRoundsWorkflowDescription" class="field-description">Describe the local workflow, not clinical directives.</p><p id="curatorRoundsWorkflowCount" class="character-count">0 of 600 characters</p></div>
+                <div class="field field-wide"><label for="curatorPresentationExpectations">Presentation expectations</label><textarea id="curatorPresentationExpectations" maxlength="1200" data-curator-max-codepoints="600" rows="3" aria-describedby="curatorPresentationExpectationsDescription curatorPresentationExpectationsCount" data-curator-orientation="presentationExpectations"></textarea><p id="curatorPresentationExpectationsDescription" class="field-description">Local format and supervision expectations only.</p><p id="curatorPresentationExpectationsCount" class="character-count">0 of 600 characters</p></div>
+                <div class="field field-wide"><label for="curatorDocumentationExpectations">Documentation expectations</label><textarea id="curatorDocumentationExpectations" maxlength="1200" data-curator-max-codepoints="600" rows="3" aria-describedby="curatorDocumentationExpectationsDescription curatorDocumentationExpectationsCount" data-curator-orientation="documentationExpectations"></textarea><p id="curatorDocumentationExpectationsDescription" class="field-description">Workflow expectations without copied protocols or patient details.</p><p id="curatorDocumentationExpectationsCount" class="character-count">0 of 600 characters</p></div>
+                <div class="field field-wide"><label for="curatorAttendanceExpectations">Attendance expectations</label><textarea id="curatorAttendanceExpectations" maxlength="1200" data-curator-max-codepoints="600" rows="3" aria-describedby="curatorAttendanceExpectationsDescription curatorAttendanceExpectationsCount" data-curator-orientation="attendanceExpectations"></textarea><p id="curatorAttendanceExpectationsDescription" class="field-description">Public expectations for participation and absences.</p><p id="curatorAttendanceExpectationsCount" class="character-count">0 of 600 characters</p></div>
+                <div class="field field-wide"><label for="curatorFeedbackProcess">Feedback process</label><textarea id="curatorFeedbackProcess" maxlength="1200" data-curator-max-codepoints="600" rows="3" aria-describedby="curatorFeedbackProcessDescription curatorFeedbackProcessCount" data-curator-orientation="feedbackProcess"></textarea><p id="curatorFeedbackProcessDescription" class="field-description">How and when trainees can seek feedback; do not enter evaluations.</p><p id="curatorFeedbackProcessCount" class="character-count">0 of 600 characters</p></div>
+                <div class="field field-wide"><label for="curatorAccessPreparation">Approved institutional access or training</label><textarea id="curatorAccessPreparation" maxlength="1200" data-curator-max-codepoints="600" rows="3" aria-describedby="curatorAccessPreparationDescription curatorAccessPreparationCount" data-curator-orientation="accessPreparation"></textarea><p id="curatorAccessPreparationDescription" class="field-description">Explain how to obtain approved access or training. Never enter credentials, codes, or private instructions; link the official HTTPS source below.</p><p id="curatorAccessPreparationCount" class="character-count">0 of 600 characters</p></div>
               </div>
             </section>
 
@@ -612,8 +614,8 @@
               <p class="field-description">Add a public role label and official HTTPS institutional directory link only—never a direct email, phone, pager, or private contact value.</p>
               <ul id="curatorContactsList" class="local-list"></ul>
               <div class="local-add field-grid">
-                <div class="field"><label for="curatorNewContactRole">Role label</label><input id="curatorNewContactRole" maxlength="100" aria-describedby="curatorNewContactRoleDescription curatorNewContactRoleCount"><p id="curatorNewContactRoleDescription" class="field-description">For example, clerkship coordinator.</p><p id="curatorNewContactRoleCount" class="character-count">0 of 100 characters</p></div>
-                <div class="field"><label for="curatorNewContactDirectoryUrl">Official HTTPS directory URL</label><input id="curatorNewContactDirectoryUrl" type="url" maxlength="2048" inputmode="url" aria-describedby="curatorNewContactDirectoryUrlDescription curatorNewContactDirectoryUrlCount"><p id="curatorNewContactDirectoryUrlDescription" class="field-description">Must begin with https:// and contain no embedded username or password.</p><p id="curatorNewContactDirectoryUrlCount" class="character-count">0 of 2048 characters</p></div>
+                <div class="field"><label for="curatorNewContactRole">Role label</label><input id="curatorNewContactRole" maxlength="200" data-curator-max-codepoints="100" aria-describedby="curatorNewContactRoleDescription curatorNewContactRoleCount"><p id="curatorNewContactRoleDescription" class="field-description">For example, clerkship coordinator.</p><p id="curatorNewContactRoleCount" class="character-count">0 of 100 characters</p></div>
+                <div class="field"><label for="curatorNewContactDirectoryUrl">Official HTTPS directory URL</label><input id="curatorNewContactDirectoryUrl" type="url" maxlength="4096" data-curator-max-codepoints="2048" inputmode="url" aria-describedby="curatorNewContactDirectoryUrlDescription curatorNewContactDirectoryUrlCount"><p id="curatorNewContactDirectoryUrlDescription" class="field-description">Must begin with https:// and contain no embedded username or password.</p><p id="curatorNewContactDirectoryUrlCount" class="character-count">0 of 2048 characters</p></div>
                 <button type="button" id="curatorAddContact" class="secondary-action">Add directory contact</button>
               </div>
             </section>
@@ -623,7 +625,7 @@
               <p id="curatorChecklistCap" class="field-description">0 of 24 items</p>
               <ul id="curatorChecklistList" class="local-list"></ul>
               <div class="local-add field-grid">
-                <div class="field"><label for="curatorNewChecklistLabel">Checklist label</label><input id="curatorNewChecklistLabel" maxlength="100" aria-describedby="curatorNewChecklistLabelDescription curatorNewChecklistLabelCount"><p id="curatorNewChecklistLabelDescription" class="field-description">One concrete, non-clinical first-day action.</p><p id="curatorNewChecklistLabelCount" class="character-count">0 of 100 characters</p></div>
+                <div class="field"><label for="curatorNewChecklistLabel">Checklist label</label><input id="curatorNewChecklistLabel" maxlength="200" data-curator-max-codepoints="100" aria-describedby="curatorNewChecklistLabelDescription curatorNewChecklistLabelCount"><p id="curatorNewChecklistLabelDescription" class="field-description">One concrete, non-clinical first-day action.</p><p id="curatorNewChecklistLabelCount" class="character-count">0 of 100 characters</p></div>
                 <div class="field"><label for="curatorNewChecklistPriority">Local priority</label><select id="curatorNewChecklistPriority"><option value="required">required</option><option value="recommended" selected>recommended</option><option value="optional">optional</option></select></div>
                 <button type="button" id="curatorAddChecklist" class="secondary-action">Add checklist item</button>
               </div>
@@ -635,11 +637,11 @@
               <p id="curatorResourcesCap" class="field-description">0 of 12 items</p>
               <ul id="curatorResourcesList" class="local-list"></ul>
               <div class="local-add field-grid">
-                <div class="field"><label for="curatorNewResourceTitle">Resource title</label><input id="curatorNewResourceTitle" maxlength="100" aria-describedby="curatorNewResourceTitleDescription curatorNewResourceTitleCount"><p id="curatorNewResourceTitleDescription" class="field-description">A concise public title.</p><p id="curatorNewResourceTitleCount" class="character-count">0 of 100 characters</p></div>
-                <div class="field"><label for="curatorNewResourceUrl">Official HTTPS URL</label><input id="curatorNewResourceUrl" type="url" maxlength="2048" inputmode="url" aria-describedby="curatorNewResourceUrlDescription curatorNewResourceUrlCount"><p id="curatorNewResourceUrlDescription" class="field-description">The preview displays only the destination domain.</p><p id="curatorNewResourceUrlCount" class="character-count">0 of 2048 characters</p></div>
+                <div class="field"><label for="curatorNewResourceTitle">Resource title</label><input id="curatorNewResourceTitle" maxlength="200" data-curator-max-codepoints="100" aria-describedby="curatorNewResourceTitleDescription curatorNewResourceTitleCount"><p id="curatorNewResourceTitleDescription" class="field-description">A concise public title.</p><p id="curatorNewResourceTitleCount" class="character-count">0 of 100 characters</p></div>
+                <div class="field"><label for="curatorNewResourceUrl">Official HTTPS URL</label><input id="curatorNewResourceUrl" type="url" maxlength="4096" data-curator-max-codepoints="2048" inputmode="url" aria-describedby="curatorNewResourceUrlDescription curatorNewResourceUrlCount"><p id="curatorNewResourceUrlDescription" class="field-description">The preview displays only the destination domain.</p><p id="curatorNewResourceUrlCount" class="character-count">0 of 2048 characters</p></div>
                 <div class="field"><label for="curatorNewResourcePriority">Local priority</label><select id="curatorNewResourcePriority"><option value="required">required</option><option value="recommended" selected>recommended</option><option value="optional">optional</option></select></div>
                 <div class="field"><label for="curatorNewResourceWeek">Week</label><select id="curatorNewResourceWeek"></select></div>
-                <div class="field field-wide"><label for="curatorNewResourceRationale">Why I selected this</label><textarea id="curatorNewResourceRationale" maxlength="280" rows="2" aria-describedby="curatorNewResourceRationaleDescription curatorNewResourceRationaleCount"></textarea><p id="curatorNewResourceRationaleDescription" class="field-description">Optional plain-text rationale.</p><p id="curatorNewResourceRationaleCount" class="character-count">0 of 280 characters</p></div>
+                <div class="field field-wide"><label for="curatorNewResourceRationale">Why I selected this</label><textarea id="curatorNewResourceRationale" maxlength="560" data-curator-max-codepoints="280" rows="2" aria-describedby="curatorNewResourceRationaleDescription curatorNewResourceRationaleCount"></textarea><p id="curatorNewResourceRationaleDescription" class="field-description">Optional plain-text rationale.</p><p id="curatorNewResourceRationaleCount" class="character-count">0 of 280 characters</p></div>
                 <button type="button" id="curatorAddResource" class="secondary-action">Add local resource</button>
               </div>
             </section>
@@ -663,6 +665,7 @@
       </section>
       <aside id="curatorPreviewMount" class="panel preview-panel" aria-labelledby="curatorPreviewTitle">
         <h2 id="curatorPreviewTitle">Student preview</h2>
+        <p id="curatorPreviewViewport" class="panel-note">Choose a deliberate desktop or mobile review to select a preview presentation.</p>
         <div id="curatorPreviewBody">
           <p class="panel-note">Preview is read-only and updates from the validated curriculum and schedule.</p>
         </div>

@@ -303,10 +303,12 @@ function fdCuratorLocalIdNumber(id,prefix){
   return /^[1-9][0-9]*$/.test(suffix)?Number(suffix):0;
 }
 
-function fdCuratorNextLocalId(items,prefix){
-  var used=Object.create(null),i,n=1,value;
-  for(i=0;i<items.length;i++){
-    value=fdCuratorLocalIdNumber(items[i].id,prefix);
+function fdCuratorNextLocalId(draft,prefix){
+  var used=Object.create(null),groups=[draft.config.pathItems,draft.config.localOrientation.checklist,draft.config.localOrientation.resources];
+  var i,j,n=1,value,id;
+  for(i=0;i<groups.length;i++) for(j=0;j<groups[i].length;j++){
+    id=i===0?groups[i][j].instanceId:groups[i][j].id;
+    value=fdCuratorLocalIdNumber(id,prefix);
     if(value) used[value]=true;
   }
   while(used[n]) n++;
@@ -503,6 +505,15 @@ function fdCuratorLocalChanged(next){
   return fdCuratorResetReviews(next);
 }
 
+function fdCuratorCommitLocalMutation(next,current,index,siteContext){
+  var validated,policy;
+  fdCuratorLocalChanged(next);
+  validated=fdCuratorValidateDraft(next,index,siteContext);
+  if(!validated.ok) return current;
+  policy=fdCuratorLocalPolicy(validated.draft,index,siteContext);
+  return policy.ok?validated.draft:current;
+}
+
 function fdCuratorCanonicalWithoutEdition(config){
   var complete,normalized,value;
   if(!config||typeof config!=='object') return '';
@@ -567,9 +578,11 @@ function fdCuratorReduce(draft,action,index,siteContext){
      Math.floor(action.step)===action.step&&action.step>=1&&action.step<=5){ next.step=action.step; return next; }
   if(action.type==='SET_CARD_FIELD'&&typeof action.field==='string'&&
      FD_CURATOR_CARD_FIELDS.indexOf(action.field)!==-1&&typeof action.value==='string'){
+    if(next.config.card[action.field]===action.value) return next;
     next.config.card[action.field]=action.value; return fdCuratorResetReviews(next);
   }
   if(action.type==='SET_CHANGE_NOTE'&&typeof action.value==='string'){
+    if(next.config.changeNote===action.value) return next;
     next.config.changeNote=action.value; return fdCuratorResetReviews(next);
   }
   if(action.type==='SET_PREVIEW_REVIEWED'&&(action.viewport==='desktop'||action.viewport==='mobile')&&typeof action.value==='boolean'){
@@ -587,18 +600,18 @@ function fdCuratorReduce(draft,action,index,siteContext){
     if(FD_CURATOR_ORIENTATION_FIELDS.indexOf(action.field)===-1||
        !fdCuratorPlainTextValid(action.value,FD_EDITION_RULES.maxOrientation,true)||
        next.config.localOrientation[action.field]===action.value) return next;
-    next.config.localOrientation[action.field]=action.value; return fdCuratorLocalChanged(next);
+    next.config.localOrientation[action.field]=action.value; return fdCuratorCommitLocalMutation(next,current,index,siteContext);
   }
   if(action.type==='LOCAL_CONTACT_ADD'){
     if(next.config.localOrientation.contacts.length>=FD_CURATOR_MAX_ARRAY_ITEMS||
        !fdCuratorPlainTextValid(action.role,FD_EDITION_RULES.maxTitle,false)||!fdCuratorHttpsUrlValid(action.directoryUrl)) return next;
     next.config.localOrientation.contacts.push({role:action.role,directoryUrl:action.directoryUrl});
-    return fdCuratorLocalChanged(next);
+    return fdCuratorCommitLocalMutation(next,current,index,siteContext);
   }
   if(action.type==='LOCAL_CONTACT_REMOVE'){
     if(typeof action.index!=='number'||Math.floor(action.index)!==action.index||action.index<0||
        action.index>=next.config.localOrientation.contacts.length) return next;
-    next.config.localOrientation.contacts.splice(action.index,1); return fdCuratorLocalChanged(next);
+    next.config.localOrientation.contacts.splice(action.index,1); return fdCuratorCommitLocalMutation(next,current,index,siteContext);
   }
   if(action.type==='LOCAL_CONTACT_UPDATE'){
     if(typeof action.index!=='number'||Math.floor(action.index)!==action.index||action.index<0||
@@ -607,22 +620,22 @@ function fdCuratorReduce(draft,action,index,siteContext){
     if(action.field==='role'&&!fdCuratorPlainTextValid(action.value,FD_EDITION_RULES.maxTitle,false)) return next;
     if(action.field==='directoryUrl'&&!fdCuratorHttpsUrlValid(action.value)) return next;
     if(next.config.localOrientation.contacts[action.index][action.field]===action.value) return next;
-    next.config.localOrientation.contacts[action.index][action.field]=action.value; return fdCuratorLocalChanged(next);
+    next.config.localOrientation.contacts[action.index][action.field]=action.value; return fdCuratorCommitLocalMutation(next,current,index,siteContext);
   }
   if(action.type==='LOCAL_CHECKLIST_ADD'){
     if(next.config.localOrientation.checklist.length>=FD_EDITION_RULES.maxChecklist||
        !fdCuratorPlainTextValid(action.label,FD_EDITION_RULES.maxTitle,false)||
        FD_EDITION_RULES.priorities.indexOf(action.priority)===-1) return next;
     next.config.localOrientation.checklist.push({
-      id:fdCuratorNextLocalId(next.config.localOrientation.checklist,'local:first-day:'),
+      id:fdCuratorNextLocalId(next,'local:first-day:'),
       label:action.label,priority:action.priority
     });
-    return fdCuratorLocalChanged(next);
+    return fdCuratorCommitLocalMutation(next,current,index,siteContext);
   }
   if(action.type==='LOCAL_CHECKLIST_REMOVE'){
     itemIndex=fdCuratorFindLocalItem(next.config.localOrientation.checklist,action.id);
     if(itemIndex<0) return next;
-    next.config.localOrientation.checklist.splice(itemIndex,1); return fdCuratorLocalChanged(next);
+    next.config.localOrientation.checklist.splice(itemIndex,1); return fdCuratorCommitLocalMutation(next,current,index,siteContext);
   }
   if(action.type==='LOCAL_CHECKLIST_UPDATE'){
     itemIndex=fdCuratorFindLocalItem(next.config.localOrientation.checklist,action.id);
@@ -630,7 +643,7 @@ function fdCuratorReduce(draft,action,index,siteContext){
     if(action.field==='label'&&!fdCuratorPlainTextValid(action.value,FD_EDITION_RULES.maxTitle,false)) return next;
     if(action.field==='priority'&&FD_EDITION_RULES.priorities.indexOf(action.value)===-1) return next;
     if(next.config.localOrientation.checklist[itemIndex][action.field]===action.value) return next;
-    next.config.localOrientation.checklist[itemIndex][action.field]=action.value; return fdCuratorLocalChanged(next);
+    next.config.localOrientation.checklist[itemIndex][action.field]=action.value; return fdCuratorCommitLocalMutation(next,current,index,siteContext);
   }
   if(action.type==='LOCAL_RESOURCE_ADD'){
     if(next.config.localOrientation.resources.length>=FD_EDITION_RULES.maxResources||
@@ -639,15 +652,15 @@ function fdCuratorReduce(draft,action,index,siteContext){
        Math.floor(action.week)!==action.week||action.week<1||action.week>weekCount||
        !fdCuratorPlainTextValid(action.rationale,FD_EDITION_RULES.maxRationale,true)) return next;
     next.config.localOrientation.resources.push({
-      id:fdCuratorNextLocalId(next.config.localOrientation.resources,'local:resource:'),
+      id:fdCuratorNextLocalId(next,'local:resource:'),
       title:action.title,url:action.url,priority:action.priority,week:action.week,rationale:action.rationale
     });
-    return fdCuratorLocalChanged(next);
+    return fdCuratorCommitLocalMutation(next,current,index,siteContext);
   }
   if(action.type==='LOCAL_RESOURCE_REMOVE'){
     itemIndex=fdCuratorFindLocalItem(next.config.localOrientation.resources,action.id);
     if(itemIndex<0) return next;
-    next.config.localOrientation.resources.splice(itemIndex,1); return fdCuratorLocalChanged(next);
+    next.config.localOrientation.resources.splice(itemIndex,1); return fdCuratorCommitLocalMutation(next,current,index,siteContext);
   }
   if(action.type==='LOCAL_RESOURCE_UPDATE'){
     itemIndex=fdCuratorFindLocalItem(next.config.localOrientation.resources,action.id);
@@ -658,7 +671,7 @@ function fdCuratorReduce(draft,action,index,siteContext){
     if(action.field==='week'&&(typeof action.value!=='number'||Math.floor(action.value)!==action.value||action.value<1||action.value>weekCount)) return next;
     if(action.field==='rationale'&&!fdCuratorPlainTextValid(action.value,FD_EDITION_RULES.maxRationale,true)) return next;
     if(next.config.localOrientation.resources[itemIndex][action.field]===action.value) return next;
-    next.config.localOrientation.resources[itemIndex][action.field]=action.value; return fdCuratorLocalChanged(next);
+    next.config.localOrientation.resources[itemIndex][action.field]=action.value; return fdCuratorCommitLocalMutation(next,current,index,siteContext);
   }
   if(action.type==='PATH_TOGGLE'){
     if(typeof action.ref!=='string'||!allowed[action.ref]) return next;
@@ -817,6 +830,111 @@ function fdCuratorLocalPolicy(draft,index,siteContext){
   result=fdEditionValidateConfig(candidate,index,siteContext);
   result=fdCuratorLocalFindings(result,shaped.draft);
   return {ok:result.errors.length===0,errors:result.errors,warnings:result.warnings};
+}
+
+function fdCuratorPendingFinding(fieldId,category,field,message,blocking){
+  return {code:'CURATOR_PENDING',fieldId:fieldId,href:'#'+fieldId,
+    message:category+' — '+field+': '+message,blocking:blocking!==false};
+}
+
+function fdCuratorPendingSharedFindings(result,type,itemIndex){
+  var out={errors:[],warnings:[]},groups=['errors','warnings'],prefix,fields,g,i,finding,suffix,fieldId,label;
+  if(type==='contact'){
+    prefix='/config/localOrientation/contacts/'+itemIndex+'/';
+    fields={role:['curatorNewContactRole','Role label'],directoryUrl:['curatorNewContactDirectoryUrl','Directory URL']};
+    label='Directory contact';
+  }else if(type==='checklist'){
+    prefix='/config/localOrientation/checklist/'+itemIndex+'/';
+    fields={label:['curatorNewChecklistLabel','Label'],priority:['curatorNewChecklistPriority','Priority']};
+    label='First-day checklist';
+  }else{
+    prefix='/config/localOrientation/resources/'+itemIndex+'/';
+    fields={title:['curatorNewResourceTitle','Title'],url:['curatorNewResourceUrl','URL'],priority:['curatorNewResourcePriority','Priority'],week:['curatorNewResourceWeek','Week'],rationale:['curatorNewResourceRationale','Selection rationale']};
+    label='Local resource';
+  }
+  for(g=0;g<groups.length;g++) for(i=0;i<(result[groups[g]]||[]).length;i++){
+    finding=result[groups[g]][i];
+    if(!finding||typeof finding.path!=='string'||finding.path.indexOf(prefix)!==0) continue;
+    suffix=finding.path.slice(prefix.length); if(!fields[suffix]) continue;
+    fieldId=fields[suffix][0];
+    out[groups[g]].push({code:finding.code,fieldId:fieldId,href:'#'+fieldId,
+      message:label+' — '+fields[suffix][1]+': '+finding.message,blocking:finding.blocking!==false});
+  }
+  return out;
+}
+
+function fdCuratorValidatePendingLocal(pending,draft,index,siteContext,scope,mode){
+  var shaped=fdCuratorValidateDraft(draft,index,siteContext),types=scope==='all'?['contact','checklist','resource']:[scope];
+  var out={ok:true,empty:true,errors:[],warnings:[],action:null},i,type,value,has,action,next,checked,mapped,itemIndex,fieldId;
+  var candidate,errorCount,expectedLength,actualLength;
+  if(!shaped.ok||types.some(function(name){return ['contact','checklist','resource'].indexOf(name)===-1;})){
+    out.ok=false; out.errors.push(fdCuratorPendingFinding('curatorEditorTitle','Local details','Pending item','The pending fields could not be validated.')); return out;
+  }
+  pending=pending||{}; draft=shaped.draft;
+  for(i=0;i<types.length;i++){
+    type=types[i]; value=pending[type]||{};
+    has=type==='contact'?((typeof value.role==='string'&&value.role.length>0)||(typeof value.directoryUrl==='string'&&value.directoryUrl.length>0)):
+      type==='checklist'?(typeof value.label==='string'&&value.label.length>0):
+      ((typeof value.title==='string'&&value.title.length>0)||(typeof value.url==='string'&&value.url.length>0)||(typeof value.rationale==='string'&&value.rationale.length>0));
+    if(!has&&scope==='all') continue;
+    out.empty=false;
+    errorCount=out.errors.length;
+    if(type==='contact'){
+      if(!fdCuratorPlainTextValid(value.role,FD_EDITION_RULES.maxTitle,false)) out.errors.push(fdCuratorPendingFinding('curatorNewContactRole','Directory contact','Role label','Enter a public role label of at most 100 characters.'));
+      if(!fdCuratorHttpsUrlValid(value.directoryUrl)) out.errors.push(fdCuratorPendingFinding('curatorNewContactDirectoryUrl','Directory contact','Directory URL','Enter an absolute HTTPS institutional directory URL without embedded credentials.'));
+      if(draft.config.localOrientation.contacts.length>=FD_CURATOR_MAX_ARRAY_ITEMS) out.errors.push(fdCuratorPendingFinding('curatorNewContactRole','Directory contacts','Contact list','The safe structural contact limit has been reached.'));
+      action={type:'LOCAL_CONTACT_ADD',role:value.role,directoryUrl:value.directoryUrl};
+      itemIndex=draft.config.localOrientation.contacts.length;
+    }else if(type==='checklist'){
+      if(!fdCuratorPlainTextValid(value.label,FD_EDITION_RULES.maxTitle,false)) out.errors.push(fdCuratorPendingFinding('curatorNewChecklistLabel','First-day checklist','Label','Enter a checklist label of at most 100 characters.'));
+      if(FD_EDITION_RULES.priorities.indexOf(value.priority)===-1) out.errors.push(fdCuratorPendingFinding('curatorNewChecklistPriority','First-day checklist','Priority','Choose required, recommended, or optional.'));
+      if(draft.config.localOrientation.checklist.length>=FD_EDITION_RULES.maxChecklist) out.errors.push(fdCuratorPendingFinding('curatorNewChecklistLabel','First-day checklist','Checklist items','At most 24 checklist items are allowed.'));
+      action={type:'LOCAL_CHECKLIST_ADD',label:value.label,priority:value.priority};
+      itemIndex=draft.config.localOrientation.checklist.length;
+    }else{
+      if(!fdCuratorPlainTextValid(value.title,FD_EDITION_RULES.maxTitle,false)) out.errors.push(fdCuratorPendingFinding('curatorNewResourceTitle','Local resource','Title','Enter a resource title of at most 100 characters.'));
+      if(!fdCuratorHttpsUrlValid(value.url)) out.errors.push(fdCuratorPendingFinding('curatorNewResourceUrl','Local resource','URL','Enter an absolute HTTPS institutional URL without embedded credentials.'));
+      if(FD_EDITION_RULES.priorities.indexOf(value.priority)===-1) out.errors.push(fdCuratorPendingFinding('curatorNewResourcePriority','Local resource','Priority','Choose required, recommended, or optional.'));
+      if(typeof value.week!=='number'||Math.floor(value.week)!==value.week||value.week<1||value.week>fdCuratorWeekCount(index,siteContext)) out.errors.push(fdCuratorPendingFinding('curatorNewResourceWeek','Local resource','Week','Choose a week within this audience path.'));
+      if(!fdCuratorPlainTextValid(value.rationale,FD_EDITION_RULES.maxRationale,true)) out.errors.push(fdCuratorPendingFinding('curatorNewResourceRationale','Local resource','Selection rationale','Enter at most 280 plain-text characters.'));
+      if(draft.config.localOrientation.resources.length>=FD_EDITION_RULES.maxResources) out.errors.push(fdCuratorPendingFinding('curatorNewResourceTitle','Local resources','Resource list','At most 12 local resources are allowed.'));
+      action={type:'LOCAL_RESOURCE_ADD',title:value.title,url:value.url,priority:value.priority,week:value.week,rationale:value.rationale};
+      itemIndex=draft.config.localOrientation.resources.length;
+    }
+    if(out.errors.length!==errorCount) continue;
+    candidate=fdCuratorClone(draft);
+    if(type==='contact') candidate.config.localOrientation.contacts.push({role:action.role,directoryUrl:action.directoryUrl});
+    else if(type==='checklist') candidate.config.localOrientation.checklist.push({
+      id:fdCuratorNextLocalId(candidate,'local:first-day:'),label:action.label,priority:action.priority
+    });
+    else candidate.config.localOrientation.resources.push({
+      id:fdCuratorNextLocalId(candidate,'local:resource:'),title:action.title,url:action.url,
+      priority:action.priority,week:action.week,rationale:action.rationale
+    });
+    checked=fdEditionValidateConfig(fdCuratorFullConfig(candidate.config,candidate.site,1,candidate.site.coreRevision),index,siteContext);
+    mapped=fdCuratorPendingSharedFindings(checked,type,itemIndex);
+    out.errors=out.errors.concat(mapped.errors); out.warnings=out.warnings.concat(mapped.warnings);
+    if(checked.errors.length&&!mapped.errors.length){
+      fieldId=type==='contact'?'curatorNewContactRole':type==='checklist'?'curatorNewChecklistLabel':'curatorNewResourceTitle';
+      out.errors.push(fdCuratorPendingFinding(fieldId,type==='contact'?'Directory contact':type==='checklist'?'First-day checklist':'Local resource','Pending item','The item could not be added safely.'));
+    }
+    if(mapped.errors.length||checked.errors.length) continue;
+    next=fdCuratorReduce(draft,action,index,siteContext);
+    expectedLength=type==='contact'?draft.config.localOrientation.contacts.length+1:type==='checklist'?draft.config.localOrientation.checklist.length+1:draft.config.localOrientation.resources.length+1;
+    actualLength=type==='contact'?next.config.localOrientation.contacts.length:type==='checklist'?next.config.localOrientation.checklist.length:next.config.localOrientation.resources.length;
+    if(actualLength!==expectedLength){
+      fieldId=type==='contact'?'curatorNewContactRole':type==='checklist'?'curatorNewChecklistLabel':'curatorNewResourceTitle';
+      out.errors.push(fdCuratorPendingFinding(fieldId,type==='contact'?'Directory contact':type==='checklist'?'First-day checklist':'Local resource','Pending item','The item could not be added safely.'));
+      continue;
+    }
+    if(!mapped.errors.length&&mode==='leave'){
+      fieldId=type==='contact'?'curatorNewContactRole':type==='checklist'?'curatorNewChecklistLabel':'curatorNewResourceTitle';
+      out.errors.push(fdCuratorPendingFinding(fieldId,type==='contact'?'Directory contact':type==='checklist'?'First-day checklist':'Local resource','Pending item','Add this item or clear its fields before continuing.'));
+    }
+    if(scope!=='all'&&!mapped.errors.length) out.action=action;
+  }
+  out.ok=out.errors.length===0;
+  return out;
 }
 
 function fdCuratorValidateStep(draft,step,index,siteContext){
@@ -1082,9 +1200,9 @@ function fdCuratorContactsMarkup(draft){
   var items=draft.config.localOrientation.contacts,out='',i,item;
   for(i=0;i<items.length;i++){
     item=items[i]; out+='<li class="local-item"><div class="field-grid"><div class="field"><label for="curatorContact'+i+'Role">Role label</label>'+
-      '<input id="curatorContact'+i+'Role" maxlength="100" value="'+fdEsc(item.role)+'" data-curator-contact-index="'+i+'" data-curator-contact-field="role" aria-describedby="curatorContact'+i+'RoleCount"><p id="curatorContact'+i+'RoleCount" class="character-count">'+fdEditionTextLength(item.role)+' of 100 characters</p></div>'+
+      '<input id="curatorContact'+i+'Role" maxlength="200" data-curator-max-codepoints="100" value="'+fdEsc(item.role)+'" data-curator-contact-index="'+i+'" data-curator-contact-field="role" aria-describedby="curatorContact'+i+'RoleCount"><p id="curatorContact'+i+'RoleCount" class="character-count">'+fdEditionTextLength(item.role)+' of 100 characters</p></div>'+
       '<div class="field"><label for="curatorContact'+i+'DirectoryUrl">Official HTTPS directory URL</label>'+
-      '<input id="curatorContact'+i+'DirectoryUrl" maxlength="2048" type="url" value="'+fdEsc(item.directoryUrl)+'" data-curator-contact-index="'+i+'" data-curator-contact-field="directoryUrl" aria-describedby="curatorContact'+i+'DirectoryUrlCount"><p id="curatorContact'+i+'DirectoryUrlCount" class="character-count">'+fdEditionTextLength(item.directoryUrl)+' of 2048 characters</p>'+
+      '<input id="curatorContact'+i+'DirectoryUrl" maxlength="4096" data-curator-max-codepoints="2048" type="url" value="'+fdEsc(item.directoryUrl)+'" data-curator-contact-index="'+i+'" data-curator-contact-field="directoryUrl" aria-describedby="curatorContact'+i+'DirectoryUrlCount"><p id="curatorContact'+i+'DirectoryUrlCount" class="character-count">'+fdEditionTextLength(item.directoryUrl)+' of 2048 characters</p>'+
       '<p class="field-description">Visible domain: '+fdEsc(fdCuratorExternalDomain(item.directoryUrl))+'</p></div></div>'+
       '<button type="button" class="secondary-action remove-action" data-curator-contact-remove="'+i+'">Remove contact</button></li>';
   }
@@ -1095,7 +1213,7 @@ function fdCuratorChecklistMarkup(draft){
   var items=draft.config.localOrientation.checklist,out='',i,item;
   for(i=0;i<items.length;i++){
     item=items[i]; out+='<li class="local-item"><div class="field-grid"><div class="field"><label for="curatorChecklist'+i+'Label">Checklist label</label>'+
-      '<input id="curatorChecklist'+i+'Label" maxlength="100" value="'+fdEsc(item.label)+'" data-curator-checklist-id="'+fdEsc(item.id)+'" data-curator-checklist-field="label" aria-describedby="curatorChecklist'+i+'LabelCount">'+
+      '<input id="curatorChecklist'+i+'Label" maxlength="200" data-curator-max-codepoints="100" value="'+fdEsc(item.label)+'" data-curator-checklist-id="'+fdEsc(item.id)+'" data-curator-checklist-field="label" aria-describedby="curatorChecklist'+i+'LabelCount">'+
       '<p id="curatorChecklist'+i+'LabelCount" class="character-count">'+fdEditionTextLength(item.label)+' of 100 characters</p></div>'+
       '<div class="field"><label for="curatorChecklist'+i+'Priority">Local priority</label><select id="curatorChecklist'+i+'Priority" data-curator-checklist-id="'+fdEsc(item.id)+'" data-curator-checklist-field="priority">'+fdCuratorPriorityOptions(item.priority)+'</select></div></div>'+
       '<button type="button" class="secondary-action remove-action" data-curator-checklist-remove="'+fdEsc(item.id)+'">Remove checklist item</button></li>';
@@ -1113,11 +1231,11 @@ function fdCuratorResourcesMarkup(draft,index){
   var items=draft.config.localOrientation.resources,out='',i,item,weekCount=fdCuratorWeekCount(index,draft.site);
   for(i=0;i<items.length;i++){
     item=items[i]; out+='<li class="local-item"><div class="field-grid">'+
-      '<div class="field"><label for="curatorResource'+i+'Title">Resource title</label><input id="curatorResource'+i+'Title" maxlength="100" value="'+fdEsc(item.title)+'" data-curator-resource-id="'+fdEsc(item.id)+'" data-curator-resource-field="title" aria-describedby="curatorResource'+i+'TitleCount"><p id="curatorResource'+i+'TitleCount" class="character-count">'+fdEditionTextLength(item.title)+' of 100 characters</p></div>'+
-      '<div class="field"><label for="curatorResource'+i+'Url">Official HTTPS URL</label><input id="curatorResource'+i+'Url" type="url" maxlength="2048" value="'+fdEsc(item.url)+'" data-curator-resource-id="'+fdEsc(item.id)+'" data-curator-resource-field="url" aria-describedby="curatorResource'+i+'UrlCount"><p id="curatorResource'+i+'UrlCount" class="character-count">'+fdEditionTextLength(item.url)+' of 2048 characters</p><p class="field-description">Visible domain: '+fdEsc(fdCuratorExternalDomain(item.url))+'</p></div>'+
+      '<div class="field"><label for="curatorResource'+i+'Title">Resource title</label><input id="curatorResource'+i+'Title" maxlength="200" data-curator-max-codepoints="100" value="'+fdEsc(item.title)+'" data-curator-resource-id="'+fdEsc(item.id)+'" data-curator-resource-field="title" aria-describedby="curatorResource'+i+'TitleCount"><p id="curatorResource'+i+'TitleCount" class="character-count">'+fdEditionTextLength(item.title)+' of 100 characters</p></div>'+
+      '<div class="field"><label for="curatorResource'+i+'Url">Official HTTPS URL</label><input id="curatorResource'+i+'Url" type="url" maxlength="4096" data-curator-max-codepoints="2048" value="'+fdEsc(item.url)+'" data-curator-resource-id="'+fdEsc(item.id)+'" data-curator-resource-field="url" aria-describedby="curatorResource'+i+'UrlCount"><p id="curatorResource'+i+'UrlCount" class="character-count">'+fdEditionTextLength(item.url)+' of 2048 characters</p><p class="field-description">Visible domain: '+fdEsc(fdCuratorExternalDomain(item.url))+'</p></div>'+
       '<div class="field"><label for="curatorResource'+i+'Priority">Local priority</label><select id="curatorResource'+i+'Priority" data-curator-resource-id="'+fdEsc(item.id)+'" data-curator-resource-field="priority">'+fdCuratorPriorityOptions(item.priority)+'</select></div>'+
       '<div class="field"><label for="curatorResource'+i+'Week">Week</label><select id="curatorResource'+i+'Week" data-curator-resource-id="'+fdEsc(item.id)+'" data-curator-resource-field="week">'+fdCuratorResourceWeekOptions(item.week,weekCount)+'</select></div>'+
-      '<div class="field field-wide"><label for="curatorResource'+i+'Rationale">Why I selected this</label><textarea id="curatorResource'+i+'Rationale" maxlength="280" data-curator-resource-id="'+fdEsc(item.id)+'" data-curator-resource-field="rationale" aria-describedby="curatorResource'+i+'RationaleCount">'+fdEsc(item.rationale)+'</textarea><p id="curatorResource'+i+'RationaleCount" class="character-count">'+fdEditionTextLength(item.rationale)+' of 280 characters</p></div></div>'+
+      '<div class="field field-wide"><label for="curatorResource'+i+'Rationale">Why I selected this</label><textarea id="curatorResource'+i+'Rationale" maxlength="560" data-curator-max-codepoints="280" data-curator-resource-id="'+fdEsc(item.id)+'" data-curator-resource-field="rationale" aria-describedby="curatorResource'+i+'RationaleCount">'+fdEsc(item.rationale)+'</textarea><p id="curatorResource'+i+'RationaleCount" class="character-count">'+fdEditionTextLength(item.rationale)+' of 280 characters</p></div></div>'+
       '<button type="button" class="secondary-action remove-action" data-curator-resource-remove="'+fdEsc(item.id)+'">Remove local resource</button></li>';
   }
   return out||'<li class="empty-state">No local external resources added.</li>';
@@ -1235,6 +1353,7 @@ function fdCuratorMount(root,index,siteContext){
   var subtle=typeof crypto!=='undefined'&&crypto?crypto.subtle:null;
   var buttons,i,save,continueButton,importInput,previewSequence=0;
   var reviewSequences={desktop:0,mobile:0},reviewCache=null;
+  var orientationIssues=Object.create(null);
   function visibleVersion(){
     var shaped=fdCuratorValidateDraft(state,index,siteContext);
     if(!shaped.ok) return '';
@@ -1248,7 +1367,7 @@ function fdCuratorMount(root,index,siteContext){
     var preview=root.querySelector('#curatorPreviewBody');
     if(!preview) return;
     if(state.step===4){
-      if(reviewCache&&reviewCache.version===visibleVersion()) preview.innerHTML=reviewCache.markup;
+      if(reviewCache&&reviewCache.version===visibleVersion()&&root.getAttribute('data-review-viewport')===reviewCache.viewport) preview.innerHTML=reviewCache.markup;
       else preview.innerHTML='<p class="panel-note">Choose Review desktop preview or Review mobile preview to validate and update this preview.</p>';
       return;
     }
@@ -1262,16 +1381,95 @@ function fdCuratorMount(root,index,siteContext){
       preview.innerHTML=fdCuratorPreviewMarkup(result);
     });
   }
-  function render(){ fdCuratorRender(state,root,index,errors,warnings); refreshPreview(); }
+  function orientationIssueLists(){
+    var out={errors:[],warnings:[]},key,issue;
+    for(key in orientationIssues) if(Object.prototype.hasOwnProperty.call(orientationIssues,key)){
+      issue=orientationIssues[key]; out.errors=out.errors.concat(issue.errors||[]); out.warnings=out.warnings.concat(issue.warnings||[]);
+    }
+    return out;
+  }
+  function restoreOrientationIssues(){
+    var key,issue,node,count;
+    for(key in orientationIssues) if(Object.prototype.hasOwnProperty.call(orientationIssues,key)){
+      issue=orientationIssues[key]; node=root.querySelector('[data-curator-orientation="'+key+'"]');
+      if(node) node.value=issue.value;
+      count=root.querySelector('#curator'+key.charAt(0).toUpperCase()+key.slice(1)+'Count');
+      if(count) count.textContent=fdEditionTextLength(issue.value)+' of 600 characters';
+    }
+  }
+  function render(){ fdCuratorRender(state,root,index,errors,warnings); restoreOrientationIssues(); refreshPreview(); }
+  function validateOrientationInput(field,value){
+    var candidate=fdCuratorClone(state),result,mapped,fieldId='curator'+field.charAt(0).toUpperCase()+field.slice(1);
+    candidate.config.localOrientation[field]=value;
+    result=fdEditionValidateConfig(fdCuratorFullConfig(candidate.config,candidate.site,1,candidate.site.coreRevision),index,siteContext);
+    mapped=fdCuratorLocalFindings(result,candidate);
+    return {
+      errors:mapped.errors.filter(function(item){return item.fieldId===fieldId;}),
+      warnings:mapped.warnings.filter(function(item){return item.fieldId===fieldId;})
+    };
+  }
+  function pendingValues(){
+    function value(id){ var node=root.querySelector('#'+id); return node&&typeof node.value==='string'?node.value:''; }
+    return {
+      contact:{role:value('curatorNewContactRole'),directoryUrl:value('curatorNewContactDirectoryUrl')},
+      checklist:{label:value('curatorNewChecklistLabel'),priority:value('curatorNewChecklistPriority')},
+      resource:{title:value('curatorNewResourceTitle'),url:value('curatorNewResourceUrl'),priority:value('curatorNewResourcePriority'),
+        week:Number(value('curatorNewResourceWeek')),rationale:value('curatorNewResourceRationale')}
+    };
+  }
+  function clearPending(type){
+    var ids=type==='contact'?['curatorNewContactRole','curatorNewContactDirectoryUrl']:
+      type==='checklist'?['curatorNewChecklistLabel']:['curatorNewResourceTitle','curatorNewResourceUrl','curatorNewResourceRationale'];
+    var j,node,count;
+    for(j=0;j<ids.length;j++){
+      node=root.querySelector('#'+ids[j]); if(node) node.value='';
+      count=root.querySelector('#'+ids[j]+'Count');
+      if(count&&node) count.textContent='0 of '+(Number(node.getAttribute&&node.getAttribute('data-curator-max-codepoints'))||node.maxLength)+' characters';
+    }
+    node=root.querySelector(type==='checklist'?'#curatorNewChecklistPriority':'#curatorNewResourcePriority'); if(node) node.value='recommended';
+    if(type==='resource'){ node=root.querySelector('#curatorNewResourceWeek'); if(node) node.value='1'; }
+  }
+  function tryAddPending(type){
+    var checked=fdCuratorValidatePendingLocal(pendingValues(),state,index,siteContext,type,'add'),before,after;
+    errors=checked.errors||[]; warnings=checked.warnings||[];
+    if(!checked.ok||!checked.action){ fdCuratorRenderErrors(root,errors); fdCuratorRenderWarnings(root,warnings); return false; }
+    before=type==='contact'?state.config.localOrientation.contacts.length:type==='checklist'?state.config.localOrientation.checklist.length:state.config.localOrientation.resources.length;
+    dispatch(checked.action);
+    after=type==='contact'?state.config.localOrientation.contacts.length:type==='checklist'?state.config.localOrientation.checklist.length:state.config.localOrientation.resources.length;
+    if(after!==before+1){ errors=[fdCuratorPendingFinding(type==='contact'?'curatorNewContactRole':type==='checklist'?'curatorNewChecklistLabel':'curatorNewResourceTitle','Local details','Pending item','The item could not be added safely.')]; fdCuratorRenderErrors(root,errors); return false; }
+    clearPending(type); warnings=checked.warnings||[]; fdCuratorRenderWarnings(root,warnings); return true;
+  }
+  function invalidateReviewWork(clearCache){
+    reviewSequences.desktop++; reviewSequences.mobile++;
+    if(clearCache) reviewCache=null;
+  }
+  function setLocalView(value,reviewViewport){
+    var toggles,j,label=root.querySelector('#curatorPreviewViewport');
+    root.setAttribute('data-local-view',value);
+    if(reviewViewport) root.setAttribute('data-review-viewport',reviewViewport);
+    else root.removeAttribute('data-review-viewport');
+    toggles=root.querySelectorAll('[data-curator-local-view]');
+    for(j=0;j<toggles.length;j++) toggles[j].setAttribute('aria-pressed',toggles[j].getAttribute('data-curator-local-view')===value?'true':'false');
+    if(label) label.textContent=reviewViewport==='mobile'?'Mobile-width student preview · 390 px maximum':
+      reviewViewport==='desktop'?'Desktop student preview':'Choose a deliberate desktop or mobile review to select a preview presentation.';
+  }
+  function reviewPresentationMatches(viewport,preview){
+    var panel=root.querySelector('#curatorPreviewMount');
+    if(state.step!==4||root.getAttribute('data-local-view')!=='preview'||root.getAttribute('data-review-viewport')!==viewport||
+       !preview||preview.isConnected===false||!panel||panel.isConnected===false||panel.hidden) return false;
+    if(typeof panel.getClientRects==='function'&&panel.ownerDocument&&panel.getClientRects().length===0) return false;
+    return root.querySelector('#curatorPreviewBody')===preview;
+  }
   function dispatch(action,skipRender){
-    var applied=fdCuratorApplyAction(state,action,index,siteContext);
+    var priorStep=state.step,applied=fdCuratorApplyAction(state,action,index,siteContext);
     state=applied.state; errors=[]; warnings=[];
     if(applied.changed){
       touched=true; importTransactions.touch();
       if(action&&action.type!=='SET_PREVIEW_REVIEWED'){
-        reviewSequences.desktop++; reviewSequences.mobile++; reviewCache=null;
+        invalidateReviewWork(true);
       }
     }
+    if(action&&action.type==='GO_TO_STEP'&&state.step!==priorStep) invalidateReviewWork(false);
     if(skipRender){
       fdCuratorRenderReviewStatus(root,state); fdCuratorRenderErrors(root,errors); fdCuratorRenderWarnings(root,warnings);
       refreshPreview();
@@ -1280,16 +1478,20 @@ function fdCuratorMount(root,index,siteContext){
   }
   function focusSummary(){ var summary=root.querySelector('#curatorErrorSummary'); if(summary&&typeof summary.focus==='function') summary.focus(); }
   function reviewPreview(viewport){
-    var startVersion,sequence,checked,preview;
+    var startVersion,sequence,checked,pendingChecked,preview,listed;
     if(viewport!=='desktop'&&viewport!=='mobile') return Promise.resolve({ok:false,code:'CURATOR_PREVIEW_VIEW'});
     checked=fdCuratorValidateStep(state,4,index,siteContext);
-    errors=checked.errors||[]; warnings=checked.warnings||[];
-    if(!checked.ok){ fdCuratorRender(state,root,index,errors,warnings); focusSummary(); return Promise.resolve({ok:false,code:'CURATOR_PREVIEW_INVALID'}); }
-    startVersion=visibleVersion(); sequence=++reviewSequences[viewport]; preview=root.querySelector('#curatorPreviewBody');
+    pendingChecked=fdCuratorValidatePendingLocal(pendingValues(),state,index,siteContext,'all','leave');
+    listed=orientationIssueLists();
+    errors=listed.errors.concat(checked.errors||[],pendingChecked.errors||[]); warnings=listed.warnings.concat(checked.warnings||[],pendingChecked.warnings||[]);
+    if(listed.errors.length||!checked.ok||!pendingChecked.ok){ render(); focusSummary(); return Promise.resolve({ok:false,code:'CURATOR_PREVIEW_INVALID'}); }
+    invalidateReviewWork(true); sequence=reviewSequences[viewport]; setLocalView('preview',viewport);
+    startVersion=visibleVersion(); preview=root.querySelector('#curatorPreviewBody');
+    if(!reviewPresentationMatches(viewport,preview)) return Promise.resolve({ok:false,code:'CURATOR_PREVIEW_HIDDEN'});
     if(preview) preview.innerHTML='<p class="panel-note">Validating the '+viewport+' student preview…</p>';
     return fdCuratorProjectDraft(state,index,siteContext,subtle).then(function(result){
       var mapped,applied,markup;
-      if(sequence!==reviewSequences[viewport]||startVersion!==visibleVersion()) return {ok:false,code:'CURATOR_PREVIEW_STALE'};
+      if(sequence!==reviewSequences[viewport]||startVersion!==visibleVersion()||!reviewPresentationMatches(viewport,preview)) return {ok:false,code:'CURATOR_PREVIEW_STALE'};
       if(!result||result.ok!==true){
         mapped=fdCuratorLocalFindings(result||{},state); errors=mapped.errors.length?mapped.errors:[fdCuratorStepError('curatorEditorTitle','The student preview could not be generated.')];
         warnings=mapped.warnings; fdCuratorRender(state,root,index,errors,warnings); focusSummary();
@@ -1297,12 +1499,12 @@ function fdCuratorMount(root,index,siteContext){
       }
       markup=fdCuratorPreviewMarkup(result);
       applied=fdCuratorApplyAction(state,{type:'SET_PREVIEW_REVIEWED',viewport:viewport,value:true},index,siteContext);
-      if(startVersion!==visibleVersion()) return {ok:false,code:'CURATOR_PREVIEW_STALE'};
-      state=applied.state; if(applied.changed){ touched=true; importTransactions.touch(); }
-      reviewCache={version:startVersion,markup:markup}; errors=[]; render();
+      if(startVersion!==visibleVersion()||!reviewPresentationMatches(viewport,preview)) return {ok:false,code:'CURATOR_PREVIEW_STALE'};
+      state=applied.state; if(applied.changed) touched=true;
+      reviewCache={version:startVersion,viewport:viewport,markup:markup}; errors=[]; render();
       return {ok:true,viewport:viewport,projected:result,state:state};
     },function(){
-      if(sequence!==reviewSequences[viewport]||startVersion!==visibleVersion()) return {ok:false,code:'CURATOR_PREVIEW_STALE'};
+      if(sequence!==reviewSequences[viewport]||startVersion!==visibleVersion()||!reviewPresentationMatches(viewport,preview)) return {ok:false,code:'CURATOR_PREVIEW_STALE'};
       errors=[fdCuratorStepError('curatorEditorTitle','The student preview could not be generated.')]; warnings=[];
       fdCuratorRender(state,root,index,errors,warnings); focusSummary(); return {ok:false,code:'CURATOR_PREVIEW_INVALID'};
     });
@@ -1314,14 +1516,29 @@ function fdCuratorMount(root,index,siteContext){
     dispatch({type:'GO_TO_STEP',step:Number(event.currentTarget.getAttribute('data-curator-step'))});
   });
   root.addEventListener('input',function(event){
-    var field=event.target.getAttribute&&event.target.getAttribute('data-curator-card'),instance,current,count,counters,c,id,indexValue;
+    var field=event.target.getAttribute&&event.target.getAttribute('data-curator-card'),instance,current,count,counters,c,id,indexValue,logicalMax,checked,listed;
+    logicalMax=event.target.getAttribute&&Number(event.target.getAttribute('data-curator-max-codepoints'));
+    if(logicalMax>0&&typeof event.target.value==='string'&&fdEditionTextLength(event.target.value)>logicalMax)
+      event.target.value=Array.from(event.target.value).slice(0,logicalMax).join('');
     if(event.target.id&&typeof event.target.value==='string'&&event.target.maxLength>0){
       count=root.querySelector('#'+event.target.id+'Count');
-      if(count) count.textContent=fdEditionTextLength(event.target.value)+' of '+event.target.maxLength+' characters';
+      if(count) count.textContent=fdEditionTextLength(event.target.value)+' of '+(logicalMax||event.target.maxLength)+' characters';
     }
     if(field) dispatch({type:'SET_CARD_FIELD',field:field,value:event.target.value});
     field=event.target.getAttribute&&event.target.getAttribute('data-curator-orientation');
-    if(field){ dispatch({type:'LOCAL_SET_ORIENTATION',field:field,value:event.target.value},true); count=root.querySelector('#curator'+field.charAt(0).toUpperCase()+field.slice(1)+'Count'); if(count) count.textContent=fdEditionTextLength(event.target.value)+' of 600 characters'; return; }
+    if(field){
+      checked=validateOrientationInput(field,event.target.value);
+      if(checked.errors.length){
+        orientationIssues[field]={value:event.target.value,errors:checked.errors,warnings:checked.warnings};
+        state=fdCuratorResetReviews(fdCuratorClone(state)); touched=true; importTransactions.touch(); invalidateReviewWork(true);
+        listed=orientationIssueLists(); errors=listed.errors; warnings=listed.warnings;
+        fdCuratorRenderReviewStatus(root,state); fdCuratorRenderErrors(root,errors); fdCuratorRenderWarnings(root,warnings); refreshPreview(); return;
+      }
+      delete orientationIssues[field]; dispatch({type:'LOCAL_SET_ORIENTATION',field:field,value:event.target.value},true);
+      listed=orientationIssueLists(); errors=listed.errors; warnings=listed.warnings.concat(checked.warnings||[]);
+      fdCuratorRenderErrors(root,errors); fdCuratorRenderWarnings(root,warnings);
+      count=root.querySelector('#curator'+field.charAt(0).toUpperCase()+field.slice(1)+'Count'); if(count) count.textContent=fdEditionTextLength(event.target.value)+' of 600 characters'; return;
+    }
     indexValue=event.target.getAttribute&&event.target.getAttribute('data-curator-contact-index');
     field=event.target.getAttribute&&event.target.getAttribute('data-curator-contact-field');
     if(indexValue!==null&&field){ dispatch({type:'LOCAL_CONTACT_UPDATE',index:Number(indexValue),field:field,value:event.target.value},true); return; }
@@ -1361,22 +1578,19 @@ function fdCuratorMount(root,index,siteContext){
     id=target.getAttribute('data-curator-resource-remove');
     if(id!==null){ dispatch({type:'LOCAL_RESOURCE_REMOVE',id:id}); return; }
     if(target.id==='curatorAddContact'){
-      dispatch({type:'LOCAL_CONTACT_ADD',role:root.querySelector('#curatorNewContactRole').value,directoryUrl:root.querySelector('#curatorNewContactDirectoryUrl').value}); return;
+      tryAddPending('contact'); return;
     }
     if(target.id==='curatorAddChecklist'){
-      dispatch({type:'LOCAL_CHECKLIST_ADD',label:root.querySelector('#curatorNewChecklistLabel').value,priority:root.querySelector('#curatorNewChecklistPriority').value}); return;
+      tryAddPending('checklist'); return;
     }
     if(target.id==='curatorAddResource'){
-      dispatch({type:'LOCAL_RESOURCE_ADD',title:root.querySelector('#curatorNewResourceTitle').value,url:root.querySelector('#curatorNewResourceUrl').value,
-        priority:root.querySelector('#curatorNewResourcePriority').value,week:Number(root.querySelector('#curatorNewResourceWeek').value),
-        rationale:root.querySelector('#curatorNewResourceRationale').value}); return;
+      tryAddPending('resource'); return;
     }
     if(target.id==='curatorReviewDesktop'){ reviewPreview('desktop'); return; }
     if(target.id==='curatorReviewMobile'){ reviewPreview('mobile'); return; }
     value=target.getAttribute('data-curator-local-view');
     if(value==='edit'||value==='preview'){
-      root.setAttribute('data-local-view',value); buttons=root.querySelectorAll('[data-curator-local-view]');
-      for(i=0;i<buttons.length;i++) buttons[i].setAttribute('aria-pressed',buttons[i]===target?'true':'false');
+      invalidateReviewWork(false); setLocalView(value,null);
       return;
     }
   });
@@ -1402,7 +1616,9 @@ function fdCuratorMount(root,index,siteContext){
   });
   save=root.querySelector('#curatorSaveDraft');
   if(save) save.addEventListener('click',function(){
-    if(adapter.save(state,index,siteContext)) status('Saved on this device');
+    var listed=orientationIssueLists();
+    if(listed.errors.length){ errors=listed.errors; warnings=listed.warnings; fdCuratorRenderErrors(root,errors); fdCuratorRenderWarnings(root,warnings); status('Draft could not be saved on this device.'); }
+    else if(adapter.save(state,index,siteContext)) status('Saved on this device');
     else status('Draft could not be saved on this device.');
   });
   continueButton=root.querySelector('#curatorContinue');
@@ -1413,9 +1629,9 @@ function fdCuratorMount(root,index,siteContext){
   });
   continueButton=root.querySelector('#curatorLocalContinue');
   if(continueButton) continueButton.addEventListener('click',function(){
-    var checked=fdCuratorValidateStep(state,4,index,siteContext);
-    errors=checked.errors||[]; warnings=checked.warnings||[];
-    if(!checked.ok){ fdCuratorRender(state,root,index,errors,warnings); focusSummary(); return; }
+    var checked=fdCuratorValidateStep(state,4,index,siteContext),pendingChecked=fdCuratorValidatePendingLocal(pendingValues(),state,index,siteContext,'all','leave'),listed=orientationIssueLists();
+    errors=listed.errors.concat(checked.errors||[],pendingChecked.errors||[]); warnings=listed.warnings.concat(checked.warnings||[],pendingChecked.warnings||[]);
+    if(listed.errors.length||!checked.ok||!pendingChecked.ok){ render(); focusSummary(); return; }
     dispatch({type:'GO_TO_STEP',step:5});
   });
   importInput=root.querySelector('#curatorImportFile');
@@ -1423,17 +1639,19 @@ function fdCuratorMount(root,index,siteContext){
     var file=event.target.files&&event.target.files[0],transaction;
     if(!file) return;
     touched=true;
+    invalidateReviewWork(false);
     transaction=importTransactions.begin();
     fdCuratorReadImportFile(file,index,siteContext,subtle).then(function(result){
       if(!importTransactions.commit(transaction)) return;
-      if(result.ok){ touched=true; state=result.draft; errors=[]; render(); status('Backup imported. Save the draft to keep it on this device.'); }
+      invalidateReviewWork(true);
+      if(result.ok){ touched=true; state=result.draft; orientationIssues=Object.create(null); errors=[]; warnings=[]; setLocalView('edit',null); render(); status('Backup imported. Save the draft to keep it on this device.'); }
       else status(result.code==='CURATOR_IMPORT_SIZE'?'Backup must be 64 KiB or smaller.':'Backup could not be validated for this audience.');
       event.target.value='';
     });
   });
   render();
   adapter.load(index,siteContext,subtle).then(function(result){
-    if(!touched&&result.ok&&result.draft){ state=result.draft; render(); status('Saved on this device'); }
+    if(!touched&&result.ok&&result.draft){ invalidateReviewWork(true); state=result.draft; render(); status('Saved on this device'); }
   });
   return {dispatch:dispatch,getState:function(){ return state; },reviewPreview:reviewPreview};
 }

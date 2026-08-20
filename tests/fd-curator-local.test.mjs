@@ -13,7 +13,7 @@ const API_NAMES = [
   'fdCuratorNewDraft', 'fdCuratorReduce', 'fdCuratorValidateStep',
   'fdCuratorApplyAction', 'fdCuratorDraftStorage', 'fdCuratorProjectDraft',
   'fdCuratorLocalPreviewMarkup', 'fdCuratorExternalDomain', 'fdCuratorLocalFindings',
-  'fdCuratorImportEnvelope', 'fdCuratorMount',
+  'fdCuratorImportEnvelope', 'fdCuratorValidatePendingLocal', 'fdCuratorMount',
 ];
 
 function loadApi() {
@@ -21,8 +21,10 @@ function loadApi() {
   return new Function(
     'TextEncoder', 'TextDecoder', 'atob', 'btoa', 'localStorage',
     `function fdEsc(value){return String(value).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}\n${source}\n` +
-    `return {${API_NAMES.map((name) => `${name}:typeof ${name}==='function'?${name}:null`).join(',')},fdEditionCreateEnvelope,` +
-    'setCuratorProjector:function(value){fdCuratorProjectDraft=value;}};',
+    `return {${API_NAMES.map((name) => `${name}:typeof ${name}==='function'?${name}:null`).join(',')},fdEditionCreateEnvelope,fdEditionDigest,` +
+    'setCuratorProjector:function(value){fdCuratorProjectDraft=value;},' +
+    'setCuratorImportReader:function(value){fdCuratorReadImportFile=value;},' +
+    'setCuratorNextLocalId:function(value){fdCuratorNextLocalId=value;}};',
   )(TextEncoder, TextDecoder, atob, btoa, null);
 }
 
@@ -222,6 +224,43 @@ test('preserves valid imported schema IDs while generating new IDs in the approv
   assert.equal(edited.config.localOrientation.checklist.at(-1).id, 'local:first-day:1');
 });
 
+test('allocates local IDs against the union of path, checklist, and resource identifiers', () => {
+  let draft = completedDraft();
+  draft.config.localOrientation.checklist = [
+    { id: 'local:resource:1', label: 'Imported cross-prefix item', priority: 'optional' },
+    { id: 'local:first-day:2', label: 'Imported gap item', priority: 'recommended' },
+  ];
+  let next = reduce(draft, {
+    type: 'LOCAL_RESOURCE_ADD', title: 'New resource', url: 'https://example.edu/resource',
+    priority: 'recommended', week: 1, rationale: '',
+  });
+  assert.equal(next.config.localOrientation.resources.at(-1).id, 'local:resource:2');
+  next = reduce(next, {
+    type: 'LOCAL_CHECKLIST_ADD', label: 'New checklist item', priority: 'required',
+  });
+  assert.equal(next.config.localOrientation.checklist.at(-1).id, 'local:first-day:1',
+    'the allocator uses the first unused suffix, not the highest suffix plus one');
+
+  draft = completedDraft();
+  draft.config.localOrientation.resources = [{
+    id: 'local:first-day:1', title: 'Imported inverse-prefix resource',
+    url: 'https://example.edu/inverse', priority: 'optional', week: 1, rationale: '',
+  }];
+  next = reduce(draft, {
+    type: 'LOCAL_CHECKLIST_ADD', label: 'Inverse checklist item', priority: 'recommended',
+  });
+  assert.equal(next.config.localOrientation.checklist.at(-1).id, 'local:first-day:2');
+
+  const harness = loadApi();
+  const valid = completedDraft();
+  harness.setCuratorNextLocalId(() => valid.config.pathItems[0].instanceId);
+  const rejected = harness.fdCuratorReduce(valid, {
+    type: 'LOCAL_RESOURCE_ADD', title: 'Must not be appended', url: 'https://example.edu/noop',
+    priority: 'optional', week: 1, rationale: '',
+  }, index(), context());
+  assert.deepEqual(rejected, valid, 'a semantically invalid constructed result returns unchanged');
+});
+
 for (const audience of ['ms3', 'resident']) {
   test(`enforces ${audience} local-resource caps, fields, and audience week bounds`, () => {
     let draft = reviewedDraft(audience);
@@ -283,9 +322,7 @@ test('Step 4 reports shared blocking and advisory findings by category and field
   const validate = fn('fdCuratorValidateStep');
   let draft = completedDraft();
   const secret = 'password=synthetic-secret-value';
-  draft = reduce(draft, {
-    type: 'LOCAL_SET_ORIENTATION', field: 'firstDayArrival', value: secret,
-  });
+  draft.config.localOrientation.firstDayArrival = secret;
   let checked = validate(draft, 4, index(), context());
   assert.equal(checked.ok, false);
   assert.ok(checked.errors.some((finding) =>
@@ -319,9 +356,7 @@ test('save rejects blocking local policy findings but preserves advisory drafts'
   const storage = { setItem(key, value) { calls.push([key, value]); } };
   const adapter = fn('fdCuratorDraftStorage')(storage);
   let draft = completedDraft();
-  draft = reduce(draft, {
-    type: 'LOCAL_SET_ORIENTATION', field: 'firstDayArrival', value: 'password=do-not-save',
-  });
+  draft.config.localOrientation.firstDayArrival = 'password=do-not-save';
   assert.equal(adapter.save(draft, index(), context()), false);
   assert.equal(calls.length, 0);
 
@@ -332,6 +367,95 @@ test('save rejects blocking local policy findings but preserves advisory drafts'
   });
   assert.equal(adapter.save(draft, index(), context()), true);
   assert.equal(calls.length, 1);
+});
+
+test('exact prohibited local content cannot be saved or imported through a valid digest', async () => {
+  const blocked = [
+    'Synthetic learner Alpha evaluation is unsatisfactory.',
+    'Synthetic patient Alpha has record 12345.',
+    'Perform intervention X immediately.',
+    'Follow the local protocol: perform intervention X immediately.',
+  ];
+  for (const unsafe of blocked) {
+    const calls = [];
+    const adapter = fn('fdCuratorDraftStorage')({ setItem(...args) { calls.push(args); } });
+    const safe = completedDraft();
+    const reduced = reduce(safe, {
+      type: 'LOCAL_SET_ORIENTATION', field: 'firstDayArrival', value: unsafe,
+    });
+    assert.deepEqual(reduced, safe, 'the reducer must reject a shared-policy violation');
+    const draft = structuredClone(safe);
+    draft.config.localOrientation.firstDayArrival = unsafe;
+    assert.equal(adapter.save(draft, index(), context()), false, unsafe);
+    assert.deepEqual(calls, []);
+
+    const config = {
+      audience: 'ms3', pathId: 'ms3-six-week', editionNumber: 3,
+      createdAgainstCoreRevision: REVISION, card: draft.config.card,
+      pathItems: draft.config.pathItems, localOrientation: draft.config.localOrientation,
+      changeNote: '',
+    };
+    const pre = { format: 'cw-rotation-edition', schemaVersion: 1, config };
+    const envelope = { ...pre, digest: await F.fdEditionDigest(pre, webcrypto.subtle) };
+    const imported = await fn('fdCuratorImportEnvelope')(
+      JSON.stringify(envelope), index(), context(), webcrypto.subtle,
+    );
+    assert.equal(imported.ok, false, unsafe);
+    assert.doesNotMatch(JSON.stringify(imported), /Synthetic learner Alpha|Synthetic patient Alpha|12345|intervention X/i);
+  }
+});
+
+test('pending add buffers validate exact fields and cannot be silently excluded', () => {
+  const validate = fn('fdCuratorValidatePendingLocal');
+  const draft = completedDraft();
+  const empty = {
+    contact: { role: '', directoryUrl: '' },
+    checklist: { label: '', priority: 'recommended' },
+    resource: { title: '', url: '', priority: 'recommended', week: 1, rationale: '' },
+  };
+  let result = validate({
+    ...empty, contact: { role: 'Coordinator', directoryUrl: '' },
+  }, draft, index(), context(), 'contact', 'add');
+  assert.equal(result.ok, false);
+  assert.equal(result.errors[0].href, '#curatorNewContactDirectoryUrl');
+
+  result = validate({
+    ...empty, resource: { ...empty.resource, title: 'Guide', url: 'http://example.edu/guide' },
+  }, draft, index(), context(), 'resource', 'add');
+  assert.equal(result.ok, false);
+  assert.ok(result.errors.some((finding) => finding.href === '#curatorNewResourceUrl'));
+
+  const secret = 'Synthetic patient Alpha has record 12345.';
+  result = validate({
+    ...empty, checklist: { label: secret, priority: 'required' },
+  }, draft, index(), context(), 'checklist', 'add');
+  assert.equal(result.ok, false);
+  assert.ok(result.errors.some((finding) => finding.href === '#curatorNewChecklistLabel'));
+  assert.ok(result.errors.some((finding) => /patient-specific record or identifier/i.test(finding.message)));
+  assert.doesNotMatch(JSON.stringify(result), /Synthetic patient Alpha|12345/);
+
+  const validPending = {
+    ...empty,
+    resource: {
+      title: 'Official orientation guide', url: 'https://example.edu/orientation',
+      priority: 'optional', week: 1, rationale: 'Public overview.',
+    },
+  };
+  result = validate(validPending, draft, index(), context(), 'resource', 'add');
+  assert.equal(result.ok, true);
+  assert.equal(result.action.type, 'LOCAL_RESOURCE_ADD');
+  result = validate(validPending, draft, index(), context(), 'all', 'leave');
+  assert.equal(result.ok, false, 'valid but uncommitted input blocks Review and Continue');
+  assert.equal(result.errors[0].href, '#curatorNewResourceTitle');
+
+  const capped = structuredClone(draft);
+  capped.config.localOrientation.resources = Array.from({ length: 12 }, (_, offset) => ({
+    id: `local:resource:${offset + 1}`, title: `Resource ${offset + 1}`,
+    url: `https://example.edu/${offset + 1}`, priority: 'optional', week: 1, rationale: '',
+  }));
+  result = validate(validPending, capped, index(), context(), 'resource', 'add');
+  assert.equal(result.ok, false);
+  assert.equal(result.errors[0].href, '#curatorNewResourceTitle');
 });
 
 test('validated projector preview escapes local text and shows only external domains', async () => {
@@ -373,6 +497,7 @@ test('delayed preview review records only the requested view for the still-curre
   function node(id) {
     if (!nodes.has(id)) nodes.set(id, {
       id, hidden: false, innerHTML: '', textContent: '', value: '', disabled: false,
+      isConnected: true,
       attributes: new Map(), listeners: {},
       setAttribute(name, value) { this.attributes.set(name, String(value)); },
       removeAttribute(name) { this.attributes.delete(name); },
@@ -397,15 +522,28 @@ test('delayed preview review records only the requested view for the still-curre
 
   const first = app.reviewPreview('desktop');
   assert.equal(pending.length, 1);
-  app.dispatch({ type: 'LOCAL_SET_ORIENTATION', field: 'dailySchedule', value: 'New draft' });
+  assert.equal(root.getAttribute('data-review-viewport'), 'desktop');
+  assert.equal(root.getAttribute('data-local-view'), 'preview');
+  app.dispatch({ type: 'GO_TO_STEP', step: 1 });
   pending[0].resolve({ ok: true, index: { weeks: [], columns: [], edition: { localOrientation: { firstDayArrival: '', dailySchedule: '', roundsWorkflow: '', presentationExpectations: '', documentationExpectations: '', attendanceExpectations: '', feedbackProcess: '', accessPreparation: '', contacts: [], checklist: [], resources: [] } } } });
-  assert.equal((await first).ok, false, 'the visible edit makes the older preview stale');
+  assert.equal((await first).ok, false, 'navigation away from Step 4 makes the review stale');
   assert.equal(app.getState().preview.desktopReviewed, false);
 
-  const second = app.reviewPreview('mobile');
-  assert.equal(pending.length, 2);
+  app.dispatch({ type: 'GO_TO_STEP', step: 4 });
+  const modeStale = app.reviewPreview('mobile');
+  assert.equal(root.getAttribute('data-review-viewport'), 'mobile');
+  root.listeners.click({ target: Object.assign(node('editToggle'), {
+    getAttribute(name) { return name === 'data-curator-local-view' ? 'edit' : null; },
+  }) });
   pending[1].resolve({ ok: true, index: { weeks: [], columns: [], edition: { localOrientation: app.getState().config.localOrientation } } });
-  assert.equal((await second).ok, true);
+  assert.equal((await modeStale).ok, false, 'changing the rendered preview mode makes the review stale');
+
+  const supersededDesktop = app.reviewPreview('desktop');
+  const winningMobile = app.reviewPreview('mobile');
+  pending[2].resolve({ ok: true, index: { weeks: [], columns: [], edition: { localOrientation: app.getState().config.localOrientation } } });
+  assert.equal((await supersededDesktop).ok, false, 'a newer review supersedes every pending viewport review');
+  pending[3].resolve({ ok: true, index: { weeks: [], columns: [], edition: { localOrientation: app.getState().config.localOrientation } } });
+  assert.equal((await winningMobile).ok, true);
   assert.deepEqual(app.getState().preview, { desktopReviewed: false, mobileReviewed: true });
 
   const input = node('curatorDailySchedule');
@@ -415,6 +553,60 @@ test('delayed preview review records only the requested view for the still-curre
   assert.deepEqual(app.getState().preview, { desktopReviewed: false, mobileReviewed: false });
   assert.equal(node('curatorPreviewReviewStatus').textContent,
     'Desktop preview not yet reviewed · Mobile preview not yet reviewed');
+
+  input.value = '😀'.repeat(601);
+  input.setAttribute('data-curator-max-codepoints', '600');
+  root.listeners.input({ target: input });
+  assert.equal(app.getState().config.localOrientation.dailySchedule, '😀'.repeat(600));
+  assert.equal(input.value, '😀'.repeat(600), 'max plus one is rejected without DOM/state divergence');
+  assert.equal(node('curatorDailyScheduleCount').textContent, '600 of 600 characters');
+});
+
+test('import begin and commit invalidate deliberate review work without review-start canceling the import', async () => {
+  const harness = loadApi();
+  const previews = [];
+  let resolveImport;
+  harness.setCuratorProjector((draft) => new Promise((resolve) => {
+    previews.push({ draft, resolve });
+  }));
+  harness.setCuratorImportReader(() => new Promise((resolve) => { resolveImport = resolve; }));
+  const nodes = new Map();
+  function node(id) {
+    if (!nodes.has(id)) nodes.set(id, {
+      id, hidden: false, innerHTML: '', textContent: '', value: '', disabled: false,
+      isConnected: true, files: [], attributes: new Map(), listeners: {},
+      setAttribute(name, value) { this.attributes.set(name, String(value)); },
+      removeAttribute(name) { this.attributes.delete(name); },
+      getAttribute(name) { return this.attributes.has(name) ? this.attributes.get(name) : null; },
+      addEventListener(name, callback) { this.listeners[name] = callback; },
+      focus() {}, querySelector() { return null; }, querySelectorAll() { return []; },
+    });
+    return nodes.get(id);
+  }
+  const root = node('root');
+  root.querySelector = (selector) => selector.startsWith('#') ? node(selector.slice(1)) : null;
+  root.querySelectorAll = () => [];
+  root.addEventListener = (name, callback) => { root.listeners[name] = callback; };
+  const app = harness.fdCuratorMount(root, index(), context());
+  for (const [field, value] of Object.entries(completedDraft().config.card)) {
+    app.dispatch({ type: 'SET_CARD_FIELD', field, value });
+  }
+  app.dispatch({ type: 'GO_TO_STEP', step: 4 });
+  const beforeImport = app.reviewPreview('desktop');
+  const input = node('curatorImportFile');
+  input.files = [{ size: 10, text() { return Promise.resolve('{}'); } }];
+  input.listeners.change({ target: input });
+  previews[0].resolve({ ok: true, index: { weeks: [], columns: [], edition: { localOrientation: app.getState().config.localOrientation } } });
+  assert.equal((await beforeImport).code, 'CURATOR_PREVIEW_STALE');
+
+  const duringImport = app.reviewPreview('mobile');
+  const imported = completedDraft(); imported.config.card.title = 'Imported replacement';
+  resolveImport({ ok: true, draft: imported });
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  previews[1].resolve({ ok: true, index: { weeks: [], columns: [], edition: { localOrientation: imported.config.localOrientation } } });
+  assert.equal((await duringImport).code, 'CURATOR_PREVIEW_STALE');
+  assert.equal(app.getState().config.card.title, 'Imported replacement', 'review start does not cancel the pending import');
+  assert.deepEqual(app.getState().preview, { desktopReviewed: false, mobileReviewed: false });
 });
 
 test('Step 4 HTML exposes the bounded editor, deliberate previews, and responsive modes', () => {
@@ -432,7 +624,7 @@ test('Step 4 HTML exposes the bounded editor, deliberate previews, and responsiv
   };
   for (const [id, label] of Object.entries(labels)) {
     assert.match(source, new RegExp(`<label[^>]+for="${id}"[^>]*>${label}<`));
-    assert.match(source, new RegExp(`id="${id}"[^>]+maxlength="600"[^>]+aria-describedby=`));
+    assert.match(source, new RegExp(`id="${id}"[^>]+maxlength="1200"[^>]+data-curator-max-codepoints="600"[^>]+aria-describedby=`));
     assert.match(source, new RegExp(`id="${id}Count"[^>]+class="character-count"`));
   }
   assert.match(source, /No PHI, learner information, evaluations, credentials, access codes, private contact details, doses, copied clinical protocols, or direct clinical directives/);

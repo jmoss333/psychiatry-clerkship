@@ -3,6 +3,16 @@ import { test, expect } from '@playwright/test';
 const TOOL = '/tools/rotation-curator.html';
 const DRAFT_KEY = 'cw_curator_draft_v1';
 
+function contrastRatio(foreground, background) {
+  const parse = value => value.match(/[\d.]+/g).slice(0, 3).map(Number);
+  const luminance = value => parse(value).map(channel => {
+    const normalized = channel / 255;
+    return normalized <= 0.03928 ? normalized / 12.92 : ((normalized + 0.055) / 1.055) ** 2.4;
+  }).reduce((sum, channel, index) => sum + channel * [0.2126, 0.7152, 0.0722][index], 0);
+  const a = luminance(foreground); const b = luminance(background);
+  return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+}
+
 function expectedSite(projectName) {
   return projectName === 'nav-res'
     ? { audience: 'resident', label: 'Resident', pathId: 'resident-four-week', weeks: 4 }
@@ -164,6 +174,17 @@ async function backupText(page, title, editionNumber = 7, audienceOverride = nul
   }, { title, editionNumber, audienceOverride });
 }
 
+async function completeCard(page) {
+  await page.locator('#curatorTitle').fill('Safe local orientation');
+  await page.locator('#curatorLocationName').fill('Example Unit');
+  await page.locator('#curatorLocationCode').fill('EX1');
+  await page.locator('#curatorName').fill('Example Curator');
+  await page.locator('#curatorRole').fill('Attending psychiatrist');
+  await page.locator('#curatorRotationStart').fill('2026-08-24');
+  await page.locator('#curatorRotationEnd').fill('2026-09-18');
+  await page.locator('#curatorLastVerified').fill('2026-08-19');
+}
+
 test('built curator is audience-locked, hidden, draft-aware, and network-inert', async ({
   page, request, baseURL,
 }, testInfo) => {
@@ -274,6 +295,165 @@ test('built curator is audience-locked, hidden, draft-aware, and network-inert',
   const searchDocs = Array.isArray(search) ? search : (search.docs || []);
   expect(searchDocs.some(doc => (doc.f || doc.file || doc.path) === 'rotation-curator.html')).toBe(false);
   expect(errors).toEqual([]);
+});
+
+test('built primary and selected mobile controls retain readable computed contrast', async ({ page }) => {
+  await page.goto(TOOL);
+  const primary = await page.locator('#curatorContinue').evaluate(node => {
+    const style = getComputedStyle(node);
+    return { color: style.color, background: style.backgroundColor };
+  });
+  expect(contrastRatio(primary.color, primary.background)).toBeGreaterThanOrEqual(4.5);
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.locator('[data-curator-step="4"]').click();
+  await page.locator('[data-curator-local-view="preview"]').click();
+  const selected = await page.locator('[data-curator-local-view="preview"]').evaluate(node => {
+    const style = getComputedStyle(node);
+    return { color: style.color, background: style.backgroundColor };
+  });
+  expect(contrastRatio(selected.color, selected.background)).toBeGreaterThanOrEqual(4.5);
+});
+
+test('Step 4 is discoverable and touch-safe in the first 390px viewport', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(TOOL);
+  await completeCard(page);
+  await page.locator('[data-curator-step="4"]').click();
+  const geometry = await page.evaluate(() => {
+    const toggle = document.querySelector('#curatorLocalViewToggle');
+    const controls = [...document.querySelectorAll(
+      '.step-rail button, #curatorLocalViewToggle button, #curatorStepFour button',
+    )].filter(node => getComputedStyle(node).display !== 'none');
+    return {
+      toggleTop: toggle.getBoundingClientRect().top,
+      overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      shortestControl: Math.min(...controls.map(node => node.getBoundingClientRect().height)),
+    };
+  });
+  expect(geometry.toggleTop).toBeGreaterThanOrEqual(0);
+  expect(geometry.toggleTop).toBeLessThan(844);
+  expect(geometry.overflow).toBeLessThanOrEqual(0);
+  expect(geometry.shortestControl).toBeGreaterThanOrEqual(44);
+  await expect(page.locator('#curatorStepFour')).toBeVisible();
+  await expect(page.locator('#curatorErrorSummary')).not.toBeFocused();
+  await expect(page.locator('#curatorPreviewReviewStatus')).toHaveText(
+    'Desktop preview not yet reviewed · Mobile preview not yet reviewed',
+  );
+  await page.locator('[data-curator-local-view="preview"]').click();
+  await expect(page.locator('#curatorPreviewReviewStatus')).toHaveText(
+    'Desktop preview not yet reviewed · Mobile preview not yet reviewed',
+  );
+  await page.locator('[data-curator-local-view="edit"]').click();
+  await page.locator('#curatorFirstDayArrival').fill('Meet in the public education office.');
+  await page.locator('#curatorReviewMobile').click();
+  await expect(page.locator('#root')).toHaveAttribute('data-local-view', 'preview');
+  await expect(page.locator('#root')).toHaveAttribute('data-review-viewport', 'mobile');
+  await expect(page.locator('#curatorEditorMount')).toBeHidden();
+  await expect(page.locator('#curatorPreviewMount')).toBeVisible();
+  await expect(page.locator('#curatorPreviewReviewStatus')).toHaveText(
+    'Desktop preview not yet reviewed · Mobile preview reviewed',
+  );
+  await page.locator('[data-curator-local-view="edit"]').click();
+  await page.locator('#curatorDailySchedule').fill('A later visible edit.');
+  await expect(page.locator('#curatorPreviewReviewStatus')).toHaveText(
+    'Desktop preview not yet reviewed · Mobile preview not yet reviewed',
+  );
+  expect(await page.evaluate(() =>
+    document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(0);
+});
+
+test('Step 4 blocks unsafe pending content and binds each desktop review to its presentation', async ({ page }) => {
+  await page.goto(TOOL);
+  await page.evaluate(key => localStorage.removeItem(key), DRAFT_KEY);
+  await completeCard(page);
+  await page.locator('[data-curator-step="4"]').click();
+  await expect(page.getByText('Public-link privacy boundary', { exact: true })).toBeVisible();
+  await expect(page.getByText(/official HTTPS institutional link instead of copying/)).toBeVisible();
+
+  for (const blocked of [
+    'Synthetic learner Alpha evaluation is unsatisfactory.',
+    'Synthetic patient Alpha has record 12345.',
+    'Perform intervention X immediately.',
+    'Follow the local protocol: perform intervention X immediately.',
+  ]) {
+    await page.locator('#curatorFirstDayArrival').fill(blocked);
+    await expect(page.locator('#curatorErrorSummary')).toBeVisible();
+    await expect(page.locator('#curatorErrorSummary a')).toHaveAttribute('href', '#curatorFirstDayArrival');
+    await expect(page.locator('#curatorErrorSummary')).not.toContainText(blocked);
+    await expect(page.locator('#curatorErrorSummary')).not.toBeFocused();
+    await page.locator('#curatorSaveDraft').evaluate(node => node.click());
+    await expect(page.locator('#curatorSaveStatus')).toHaveText('Draft could not be saved on this device.');
+    expect(await page.evaluate(key => localStorage.getItem(key), DRAFT_KEY)).toBeNull();
+    await expect(page.locator('#curatorFirstDayArrival')).toHaveValue(blocked);
+  }
+  await page.locator('#curatorFirstDayArrival').fill('Meet in the public education office.');
+  await expect(page.locator('#curatorErrorSummary')).toBeHidden();
+
+  const unsafe = 'Synthetic patient Alpha has record 12345.';
+  await page.locator('#curatorNewChecklistLabel').fill(unsafe);
+  await page.locator('#curatorAddChecklist').click();
+  await expect(page.locator('#curatorErrorSummary')).toBeVisible();
+  await expect(page.locator('#curatorErrorSummary a')).toHaveAttribute('href', '#curatorNewChecklistLabel');
+  await expect(page.locator('#curatorErrorSummary')).not.toContainText(unsafe);
+  await expect(page.locator('#curatorErrorSummary')).not.toBeFocused();
+  await expect(page.locator('#curatorNewChecklistLabel')).toHaveValue(unsafe);
+  await expect(page.locator('#curatorChecklistCap')).toHaveText('0 of 24 items');
+  expect(await page.evaluate(key => localStorage.getItem(key), DRAFT_KEY)).toBeNull();
+  await page.locator('#curatorNewChecklistLabel').fill('');
+
+  await page.locator('#curatorNewResourceTitle').fill('Official orientation protocol');
+  await page.locator('#curatorNewResourceUrl').fill('http://example.edu/private?token=secret');
+  await page.locator('#curatorAddResource').click();
+  await expect(page.locator('#curatorErrorSummary a')).toHaveAttribute('href', '#curatorNewResourceUrl');
+  await expect(page.locator('#curatorErrorSummary')).not.toBeFocused();
+  await expect(page.locator('#curatorNewResourceTitle')).toHaveValue('Official orientation protocol');
+  await expect(page.locator('#curatorNewResourceUrl')).toHaveValue('http://example.edu/private?token=secret');
+  await expect(page.locator('#curatorResourcesCap')).toHaveText('0 of 12 items');
+
+  await page.locator('#curatorNewResourceUrl').fill('https://example.edu/orientation?section=overview#start');
+  await page.locator('#curatorAddResource').click();
+  await expect(page.locator('#curatorResourcesCap')).toHaveText('1 of 12 items');
+  await expect(page.locator('#curatorNewResourceTitle')).toHaveValue('');
+  await expect(page.locator('#curatorNewResourceUrl')).toHaveValue('');
+  await expect(page.locator('#curatorNewResourceTitleCount')).toHaveText('0 of 100 characters');
+  await expect(page.locator('#curatorResourcesList')).toContainText('Visible domain: example.edu');
+
+  await page.locator('#curatorNewChecklistLabel').fill('Confirm public meeting location');
+  await page.locator('#curatorReviewDesktop').click();
+  await expect(page.locator('#curatorErrorSummary')).toBeFocused();
+  await expect(page.locator('#curatorErrorSummary a')).toHaveAttribute('href', '#curatorNewChecklistLabel');
+  await expect(page.locator('#curatorNewChecklistLabel')).toHaveValue('Confirm public meeting location');
+  await expect(page.locator('#curatorPreviewReviewStatus')).toHaveText(
+    'Desktop preview not yet reviewed · Mobile preview not yet reviewed',
+  );
+  await page.locator('#curatorAddChecklist').click();
+  await page.locator('#curatorReviewDesktop').click();
+  await expect(page.locator('#root')).toHaveAttribute('data-local-view', 'preview');
+  await expect(page.locator('#root')).toHaveAttribute('data-review-viewport', 'desktop');
+  await expect(page.locator('#curatorPreviewReviewStatus')).toHaveText(
+    'Desktop preview reviewed · Mobile preview not yet reviewed',
+  );
+  await expect(page.locator('#curatorPreviewBody')).toContainText('example.edu');
+  await expect(page.locator('#curatorPreviewBody')).not.toContainText('/orientation');
+  await expect(page.locator('#curatorPreviewBody')).not.toContainText('section=overview');
+
+  await page.locator('#curatorReviewMobile').click();
+  await expect(page.locator('#root')).toHaveAttribute('data-review-viewport', 'mobile');
+  await expect(page.locator('#curatorPreviewReviewStatus')).toHaveText(
+    'Desktop preview reviewed · Mobile preview reviewed',
+  );
+  expect(await page.locator('#curatorPreviewMount').evaluate(node =>
+    node.getBoundingClientRect().width)).toBeLessThanOrEqual(390);
+  await page.locator('#curatorFirstDayArrival').evaluate((node) => {
+    node.value = '😀'.repeat(601);
+    node.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+  await expect(page.locator('#curatorFirstDayArrival')).toHaveValue('😀'.repeat(600));
+  await expect(page.locator('#curatorFirstDayArrivalCount')).toHaveText('600 of 600 characters');
+  await expect(page.locator('#curatorPreviewReviewStatus')).toHaveText(
+    'Desktop preview not yet reviewed · Mobile preview not yet reviewed',
+  );
 });
 
 test('real page saves, restores, and imports only a validated audience-correct draft', async ({ page }, testInfo) => {

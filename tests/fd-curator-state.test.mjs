@@ -214,6 +214,23 @@ test('student-visible edits are immutable and reset previews and every affirmati
   assert.deepEqual(navigated.affirmations, before.affirmations);
 });
 
+test('same-value card and change-note actions preserve reviews, affirmations, and semantic state', () => {
+  const reduce = fn('fdCuratorReduce');
+  let draft = fn('fdCuratorNewDraft')(index(), context());
+  draft = setCard(draft, 'title', 'Same value rotation');
+  draft = reduce(draft, { type: 'SET_CHANGE_NOTE', value: 'Same value note' }, index(), context());
+  draft = reduce(draft, { type: 'SET_PREVIEW_REVIEWED', viewport: 'desktop', value: true }, index(), context());
+  draft = reduce(draft, { type: 'SET_PREVIEW_REVIEWED', viewport: 'mobile', value: true }, index(), context());
+  for (const name of ['publicSafe', 'officialLinks', 'previewsReviewed', 'forwardable']) {
+    draft = reduce(draft, { type: 'SET_AFFIRMATION', name, value: true }, index(), context());
+  }
+  const before = structuredClone(draft);
+  assert.deepEqual(setCard(draft, 'title', 'Same value rotation'), before);
+  assert.deepEqual(reduce(draft, {
+    type: 'SET_CHANGE_NOTE', value: 'Same value note',
+  }, index(), context()), before);
+});
+
 test('a genuine local edit invalidates pending imports while its semantic no-op does not', () => {
   const apply = fn('fdCuratorApplyAction');
   const transactions = fn('fdCuratorImportTransactions')();
@@ -749,15 +766,17 @@ test('accepts only the exact current full config as a successful generation', as
 test('Step 1 HTML has native labeled fields, descriptions, limits, linked errors, save/import copy, and disabled Generate', () => {
   const source = readFileSync(HTML_SOURCE, 'utf8');
   const fields = [
-    ['curatorTitle', 'Edition title', '100'],
-    ['curatorLocationName', 'Training-location display name', '100'],
-    ['curatorLocationCode', 'Short location code', '8'],
-    ['curatorName', 'Curator display name', '100'],
-    ['curatorRole', 'Curator professional role', '100'],
+    ['curatorTitle', 'Edition title', '200', '100'],
+    ['curatorLocationName', 'Training-location display name', '200', '100'],
+    ['curatorLocationCode', 'Short location code', '8', null],
+    ['curatorName', 'Curator display name', '200', '100'],
+    ['curatorRole', 'Curator professional role', '200', '100'],
   ];
-  for (const [id, label, maxlength] of fields) {
+  for (const [id, label, maxlength, logicalMax] of fields) {
     assert.match(source, new RegExp(`<label[^>]+for="${id}"[^>]*>${label}<`));
-    assert.match(source, new RegExp(`id="${id}"[^>]+maxlength="${maxlength}"[^>]+aria-describedby=`));
+    assert.match(source, new RegExp(
+      `id="${id}"[^>]+maxlength="${maxlength}"${logicalMax ? `[^>]+data-curator-max-codepoints="${logicalMax}"` : ''}[^>]+aria-describedby=`,
+    ));
   }
   for (const [id, label] of [
     ['curatorRotationStart', 'Rotation start date'],

@@ -382,6 +382,84 @@ test('blocks unsafe URLs and sensitive or executable text without echoing it', (
   }
 });
 
+test('blocks clear local learner evaluation, patient identifier, directive, and copied protocol content', async () => {
+  const base = fixture('valid-ms3.json').config;
+  const blocked = [
+    ['Synthetic learner Alpha evaluation is unsatisfactory.', 'learner evaluation'],
+    ['Synthetic patient Alpha has record 12345.', 'patient identifier'],
+    ['Perform intervention X immediately.', 'clinical directive'],
+    ['Follow the local protocol: perform intervention X immediately.', 'protocol instruction'],
+  ];
+  for (const [unsafe, label] of blocked) {
+    const config = clone(base);
+    config.localOrientation.firstDayArrival = unsafe;
+    const result = F.fdEditionValidateConfig(
+      config, indexFor(config), context('ms3', base.createdAgainstCoreRevision),
+    );
+    assert.equal(result.ok, false, label);
+    assert.ok(result.errors.some((finding) =>
+      finding.code === 'EDITION_LOCAL_CONTENT' &&
+      finding.path === '/config/localOrientation/firstDayArrival'), JSON.stringify(result.errors));
+    assertPrivateSafe(result, unsafe);
+    const created = await F.fdEditionCreateEnvelope(
+      config, indexFor(config), context('ms3', base.createdAgainstCoreRevision), webcrypto.subtle,
+    );
+    assert.equal(created.ok, false, `${label} cannot enter a generated envelope`);
+  }
+
+  for (const [path, mutate] of [
+    ['/config/localOrientation/checklist/0/label', (c) => {
+      c.localOrientation.checklist[0].label = 'Synthetic patient Alpha has record 12345.';
+    }],
+    ['/config/localOrientation/resources/0/rationale', (c) => {
+      c.localOrientation.resources[0].rationale = 'Perform intervention X immediately.';
+    }],
+  ]) {
+    const config = clone(base); mutate(config);
+    const result = F.fdEditionValidateConfig(
+      config, indexFor(config), context('ms3', base.createdAgainstCoreRevision),
+    );
+    assert.equal(result.ok, false, path);
+    assert.ok(result.errors.some((finding) =>
+      finding.code === 'EDITION_LOCAL_CONTENT' && finding.path === path));
+  }
+});
+
+test('keeps ambiguous local safety topics advisory and allows official linked protocol titles', () => {
+  const base = fixture('valid-ms3.json').config;
+  const allowed = [
+    'Learners receive formative feedback at mid-rotation.',
+    'Discuss how patient records are organized in the public training system.',
+    'Observe intervention X during supervised teaching.',
+    'Use the official protocol link below.',
+  ];
+  for (const text of allowed) {
+    const config = clone(base); config.localOrientation.firstDayArrival = text;
+    const result = F.fdEditionValidateConfig(
+      config, indexFor(config), context('ms3', base.createdAgainstCoreRevision),
+    );
+    assert.equal(result.ok, true, text);
+  }
+
+  const ambiguous = clone(base);
+  ambiguous.localOrientation.firstDayArrival = 'Review the learner evaluation process with faculty.';
+  const advisory = F.fdEditionValidateConfig(
+    ambiguous, indexFor(ambiguous), context('ms3', base.createdAgainstCoreRevision),
+  );
+  assert.equal(advisory.ok, true);
+  assert.ok(advisory.warnings.some((finding) =>
+    finding.code === 'EDITION_LOCAL_CONTENT' &&
+    finding.path === '/config/localOrientation/firstDayArrival'));
+
+  const linked = clone(base);
+  linked.localOrientation.resources[0].title = 'Official local documentation protocol';
+  linked.localOrientation.resources[0].url = 'https://example.edu/policies/documentation';
+  const linkedResult = F.fdEditionValidateConfig(
+    linked, indexFor(linked), context('ms3', base.createdAgainstCoreRevision),
+  );
+  assert.equal(linkedResult.ok, true, JSON.stringify(linkedResult.errors));
+});
+
 test('blocks every normalized C0 and C1 control except LF while preserving multiline narrative text', () => {
   const base = fixture('valid-ms3.json').config;
   const disallowed = [

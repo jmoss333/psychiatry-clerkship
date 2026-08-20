@@ -479,9 +479,22 @@ function fdEditionScreenText(value,path,errors,warnings){
   else if(advisory.test(value)) warnings.push(fdEditionFinding('EDITION_TEXT_RISK',path,'Review this text for sensitive identifiers, credentials, protocols, or dosing details before publication.',false));
 }
 
+function fdEditionScreenLocalContent(value,path,errors,warnings){
+  var learnerEvaluation=/\b(?:learner|student|trainee)\b[^\n]{0,80}\b(?:evaluation|assessment|rating|grade)\b[^\n]{0,80}\b(?:unsatisfactory|satisfactory|fail(?:ed|ing)?|pass(?:ed|ing)?|performance)\b|\b(?:evaluation|assessment|rating|grade)\b[^\n]{0,80}\b(?:for|of)\s+(?:the\s+)?(?:learner|student|trainee)\b[^\n]{0,80}\b(?:unsatisfactory|satisfactory|fail(?:ed|ing)?|pass(?:ed|ing)?|performance)\b/i;
+  var patientIdentifier=/\bpatient\b[^\n]{0,80}\b(?:medical\s+record|record|identifier|mrn)\b\s*(?:(?:number|no\.?|is|has|:|#)\s*)?[A-Z0-9][A-Z0-9-]{2,}\b/i;
+  var copiedProtocol=/\b(?:follow|use)\s+(?:the\s+)?(?:local|clinical|unit|institutional)\s+protocol\b\s*[:;\-]\s*\S+/i;
+  var directImperative=/(?:^|[.!?]\s+)(?:perform|administer|give|start|stop|order|obtain|initiate|discontinue)\b[^\n.!?]{0,120}\b(?:immediately|now|stat)\b/i;
+  var ambiguous=/\b(?:learner|student|trainee)\s+(?:evaluation|assessment)|\bpatient\s+(?:record|identifier)|\b(?:local|clinical|unit|institutional)\s+protocol\b|\bclinical\s+directive\b/i;
+  if(learnerEvaluation.test(value)) errors.push(fdEditionFinding('EDITION_LOCAL_CONTENT',path,'Local text must not contain learner-specific evaluation information.'));
+  else if(patientIdentifier.test(value)) errors.push(fdEditionFinding('EDITION_LOCAL_CONTENT',path,'Local text must not contain patient-specific record or identifier information.'));
+  else if(copiedProtocol.test(value)) errors.push(fdEditionFinding('EDITION_LOCAL_CONTENT',path,'Local text must not copy protocol instructions; use an official HTTPS institutional link.'));
+  else if(directImperative.test(value)) errors.push(fdEditionFinding('EDITION_LOCAL_CONTENT',path,'Local text must not contain direct clinical imperatives.'));
+  else if(ambiguous.test(value)) warnings.push(fdEditionFinding('EDITION_LOCAL_CONTENT',path,'Review this local text for learner evaluation, patient identifier, directive, or copied protocol content.',false));
+}
+
 function fdEditionValidateConfig(config,index,siteContext){
   var normalized=fdEditionNormalizeConfig(config),errors=[],warnings=[],value,pathRule,i,item,key,seenIds=Object.create(null),orders=Object.create(null),canonicalBytes=0,indexPathValid=true;
-  var humanTexts=[];
+  var humanTexts=[],localTexts=[];
   if(!normalized.ok) return {ok:false,value:null,errors:normalized.errors,warnings:warnings,canonicalBytes:0};
   value=normalized.value;
   pathRule=FD_EDITION_RULES.paths[value.audience];
@@ -533,6 +546,7 @@ function fdEditionValidateConfig(config,index,siteContext){
       key=FD_EDITION_ORIENTATION_FIELDS[i];
       fdEditionAdd(errors,fdEditionTextLength(value.localOrientation[key])>FD_EDITION_RULES.maxOrientation,'EDITION_SCHEMA','/config/localOrientation/'+key,'Orientation text must contain at most 600 characters.');
       humanTexts.push([value.localOrientation[key],'/config/localOrientation/'+key]);
+      localTexts.push([value.localOrientation[key],'/config/localOrientation/'+key]);
     }
     fdEditionAdd(errors,value.localOrientation.checklist.length>FD_EDITION_RULES.maxChecklist,'EDITION_SIZE','/config/localOrientation/checklist','At most 24 checklist items are allowed.');
     fdEditionAdd(errors,value.localOrientation.resources.length>FD_EDITION_RULES.maxResources,'EDITION_SIZE','/config/localOrientation/resources','At most 12 local resources are allowed.');
@@ -549,6 +563,7 @@ function fdEditionValidateConfig(config,index,siteContext){
       fdEditionCheckPriority(item.priority,'/config/localOrientation/checklist/'+i+'/priority',errors);
       fdEditionAdd(errors,seenIds[item.id],'EDITION_SCHEMA','/config/localOrientation/checklist/'+i+'/id','Every instance and local identifier must be unique.');
       seenIds[item.id]=true; humanTexts.push([item.label,'/config/localOrientation/checklist/'+i+'/label']);
+      localTexts.push([item.label,'/config/localOrientation/checklist/'+i+'/label']);
     }
     for(i=0;i<value.localOrientation.resources.length;i++){
       item=value.localOrientation.resources[i];
@@ -561,11 +576,13 @@ function fdEditionValidateConfig(config,index,siteContext){
       fdEditionAdd(errors,seenIds[item.id],'EDITION_SCHEMA','/config/localOrientation/resources/'+i+'/id','Every instance and local identifier must be unique.');
       seenIds[item.id]=true;
       humanTexts.push([item.title,'/config/localOrientation/resources/'+i+'/title'],[item.rationale,'/config/localOrientation/resources/'+i+'/rationale']);
+      localTexts.push([item.rationale,'/config/localOrientation/resources/'+i+'/rationale']);
     }
   }
   fdEditionCheckRationale(value.changeNote,'/config/changeNote',errors);
   humanTexts.push([value.changeNote,'/config/changeNote']);
   for(i=0;i<humanTexts.length;i++) fdEditionScreenText(humanTexts[i][0],humanTexts[i][1],errors,warnings);
+  for(i=0;i<localTexts.length;i++) fdEditionScreenLocalContent(localTexts[i][0],localTexts[i][1],errors,warnings);
   try{ canonicalBytes=new TextEncoder().encode(fdEditionCanonicalJson(value)).length; }
   catch(ignoreCanonical){ errors.push(fdEditionFinding('EDITION_SCHEMA','/config','The configuration cannot be serialized safely.')); }
   fdEditionAdd(errors,canonicalBytes>FD_EDITION_RULES.maxConfigBytes,'EDITION_SIZE','/config','The canonical configuration must be at most 12 KiB.');
