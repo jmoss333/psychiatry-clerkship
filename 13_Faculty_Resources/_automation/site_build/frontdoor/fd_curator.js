@@ -11,6 +11,7 @@ var FD_CURATOR_PREVIEW_RESULTS=new WeakMap();
 var FD_CURATOR_PREVIEW_COMPLETIONS=new WeakMap();
 var FD_CURATOR_GENERATION_RESULTS=new WeakMap();
 var FD_CURATOR_DISPLAY_RESULTS=new WeakMap();
+var FD_CURATOR_TRUSTED_BASES=new WeakMap();
 var FD_CURATOR_OWN=Object.prototype.hasOwnProperty;
 var FD_CURATOR_LOCAL_CATEGORIES=['arrival','schedule','rounds','presentation','documentation','attendance','feedback','accessItems','contacts','checklistItems','resources'];
 var FD_CURATOR_LOCAL_LIMITS={schedule:24,accessItems:12,contacts:8,checklistItems:24,resources:12};
@@ -62,6 +63,16 @@ function fdCuratorArray(value,max){
 
 function fdCuratorClone(value){return JSON.parse(fdEditionCanonicalJson(value));}
 function fdCuratorTryClone(value){try{return {ok:true,value:fdCuratorClone(value)};}catch(ignore){return {ok:false,value:null};}}
+function fdCuratorTransferBaseTrust(source,target){
+  var trusted=FD_CURATOR_TRUSTED_BASES.get(source),publication;
+  if(!trusted)return target;
+  try{
+    publication=fdCuratorExactData(target.publication,['baseEnvelope','baseSemanticConfig','lastGenerated'],[]);
+    if(publication&&publication.baseSemanticConfig===trusted.semantic&&fdEditionCanonicalJson(publication.baseEnvelope)===trusted.envelopeCanonical)FD_CURATOR_TRUSTED_BASES.set(target,{envelopeCanonical:trusted.envelopeCanonical,semantic:trusted.semantic,config:trusted.config,envelope:trusted.envelope,baseObject:publication.baseEnvelope});
+  }catch(ignore){}
+  return target;
+}
+function fdCuratorTryCloneState(value){var cloned=fdCuratorTryClone(value);if(cloned.ok)fdCuratorTransferBaseTrust(value,cloned.value);return cloned;}
 
 function fdCuratorRealDate(value){
   var part,stamp;
@@ -391,7 +402,7 @@ function fdCuratorReduce(state,action,index,siteContext,catalogSnapshot,generati
   data=fdCuratorActionData(action);if(!data)return state;type=data.type;
   if(type==='SET_STEP'){
     if(!Number.isInteger(data.step)||data.step<1||data.step>5||data.step===state.step)return state;
-    cloned=fdCuratorTryClone(state);if(!cloned.ok)return state;next=cloned.value;next.step=data.step;return next;
+    cloned=fdCuratorTryCloneState(state);if(!cloned.ok)return state;next=cloned.value;next.step=data.step;return next;
   }
   if(type==='IMPORT_REJECTED'){
     if(!Number.isInteger(data.sequence)||!transactions||typeof transactions.current!=='function'||data.sequence!==transactions.current()||FD_CURATOR_IMPORT_CODES.indexOf(data.code)<0)return state;
@@ -400,27 +411,38 @@ function fdCuratorReduce(state,action,index,siteContext,catalogSnapshot,generati
   if(type==='IMPORT_SUCCEEDED'){
     if(!Number.isInteger(data.sequence)||!transactions||typeof transactions.current!=='function'||data.sequence!==transactions.current()||!FD_CURATOR_IMPORT_RESULTS.has(data.result))return state;
     privateImport=FD_CURATOR_IMPORT_RESULTS.get(data.result);if(!privateImport||!fdCuratorStateValid(privateImport,index,siteContext))return state;
+    if(state.publication.baseEnvelope!==null&&!FD_CURATOR_TRUSTED_BASES.has(state)&&privateImport.publication.baseEnvelope!==null){
+      cloned=fdCuratorTryClone(state);if(!cloned.ok)return state;next=cloned.value;
+      next.publication.baseEnvelope=fdCuratorClone(privateImport.publication.baseEnvelope);next.publication.baseSemanticConfig=privateImport.publication.baseSemanticConfig;
+      fdCuratorInvalidate(next);fdCuratorTransferBaseTrust(privateImport,next);return next;
+    }
     if(fdEditionCanonicalJson(privateImport)===fdEditionCanonicalJson(state))return state;
-    cloned=fdCuratorTryClone(privateImport);return cloned.ok?cloned.value:state;
+    cloned=fdCuratorTryCloneState(privateImport);return cloned.ok?cloned.value:state;
   }
   if(type==='PREVIEW_REVIEW_SUCCEEDED'){
     if(['desktop','mobile-390'].indexOf(data.preset)<0||!Number.isInteger(data.sequence)||!transactions||typeof transactions.currentPreview!=='function'||data.sequence!==transactions.currentPreview()||!FD_CURATOR_PREVIEW_COMPLETIONS.has(data.result))return state;
     privateResult=FD_CURATOR_PREVIEW_COMPLETIONS.get(data.result);if(!privateResult||privateResult.sequence!==data.sequence||privateResult.preset!==data.preset||privateResult.draftSignature!==fdCuratorCandidateDraftSignature(state))return state;
-    cloned=fdCuratorTryClone(state);if(!cloned.ok)return state;next=cloned.value;receipt={contentDigest:privateResult.receipt.contentDigest,referenceSetDigest:privateResult.receipt.referenceSetDigest,currentCoreRevision:privateResult.receipt.currentCoreRevision,currentCatalogRevision:privateResult.receipt.currentCatalogRevision,rendererRevision:privateResult.receipt.rendererRevision,previewPreset:privateResult.receipt.previewPreset};
+    receipt={contentDigest:privateResult.receipt.contentDigest,referenceSetDigest:privateResult.receipt.referenceSetDigest,currentCoreRevision:privateResult.receipt.currentCoreRevision,currentCatalogRevision:privateResult.receipt.currentCatalogRevision,rendererRevision:privateResult.receipt.rendererRevision,previewPreset:privateResult.receipt.previewPreset};
+    if(fdCuratorReceiptMatches(data.preset==='desktop'?state.previewReceipts.desktop:state.previewReceipts.mobile,privateResult.expected,data.preset)){
+      other=data.preset==='desktop'?state.previewReceipts.mobile:state.previewReceipts.desktop;
+      if(state.affirmations.previewsReviewed===(fdCuratorReceiptMatches(data.preset==='desktop'?receipt:other,privateResult.expected,'desktop')&&fdCuratorReceiptMatches(data.preset==='desktop'?other:receipt,privateResult.expected,'mobile-390')))return state;
+    }
+    cloned=fdCuratorTryCloneState(state);if(!cloned.ok)return state;next=cloned.value;
     if(data.preset==='desktop')next.previewReceipts.desktop=receipt;else next.previewReceipts.mobile=receipt;
     other=data.preset==='desktop'?next.previewReceipts.mobile:next.previewReceipts.desktop;
     next.affirmations.previewsReviewed=fdCuratorReceiptMatches(next.previewReceipts.desktop,privateResult.expected,'desktop')&&fdCuratorReceiptMatches(next.previewReceipts.mobile,privateResult.expected,'mobile-390');return next;
   }
   if(type==='SET_AFFIRMATION'){
     if(['publicSafe','officialLinks','forwardable'].indexOf(data.name)<0||typeof data.value!=='boolean'||state.affirmations[data.name]===data.value)return state;
-    cloned=fdCuratorTryClone(state);if(!cloned.ok)return state;cloned.value.affirmations[data.name]=data.value;return cloned.value;
+    cloned=fdCuratorTryCloneState(state);if(!cloned.ok)return state;cloned.value.affirmations[data.name]=data.value;return cloned.value;
   }
   if(type==='GENERATION_SUCCEEDED'){
     if(!Number.isInteger(data.sequence)||!transactions||typeof transactions.currentGeneration!=='function'||data.sequence!==transactions.currentGeneration()||!FD_CURATOR_GENERATION_RESULTS.has(data.result))return state;
     privateResult=FD_CURATOR_GENERATION_RESULTS.get(data.result);if(!privateResult||privateResult.sequence!==data.sequence||privateResult.draftSignature!==fdCuratorCandidateDraftSignature(state))return state;
-    cloned=fdCuratorTryClone(state);if(!cloned.ok)return state;cloned.value.publication.lastGenerated=fdCuratorClone(privateResult.lastGenerated);return cloned.value;
+    if(state.publication.lastGenerated&&fdEditionCanonicalJson(state.publication.lastGenerated)===fdEditionCanonicalJson(privateResult.lastGenerated))return state;
+    cloned=fdCuratorTryCloneState(state);if(!cloned.ok)return state;cloned.value.publication.lastGenerated=fdCuratorClone(privateResult.lastGenerated);return cloned.value;
   }
-  cloned=fdCuratorTryClone(state);if(!cloned.ok)return state;next=cloned.value;
+  cloned=fdCuratorTryCloneState(state);if(!cloned.ok)return state;next=cloned.value;
   if(type==='SET_TRAINING_LOCATION'){
     if(typeof data.trainingLocationKey!=='string'||data.trainingLocationKey===state.config.context.trainingLocationKey)return state;
     if(data.trainingLocationKey&&!fdCuratorOptionEligible(catalogSnapshot,'trainingLocation',data.trainingLocationKey,'',inspected.site.audience))return state;
@@ -513,6 +535,7 @@ function fdCuratorImportBackup(text,index,siteContext,catalogSnapshot,validation
       pathItems:fdCuratorClone(snapshot.config.pathItems),localPlan:fdCuratorClone(snapshot.config.localPlan),changeSummary:fdCuratorClone(snapshot.config.changeSummary)};
     draft.publication={baseEnvelope:fdCuratorClone(snapshot.envelope),baseSemanticConfig:fdEditionSemanticConfig(snapshot.config),lastGenerated:null};
     if(!fdCuratorStateValid(draft,index,siteContext))return fdCuratorImportFailure('CURATOR_IMPORT_INVALID');
+    FD_CURATOR_TRUSTED_BASES.set(draft,{envelopeCanonical:fdEditionCanonicalJson(snapshot.envelope),semantic:draft.publication.baseSemanticConfig,config:fdCuratorClone(snapshot.config),envelope:fdCuratorClone(snapshot.envelope),baseObject:draft.publication.baseEnvelope});
     successful={ok:true,code:'CURATOR_IMPORT_OK'};FD_CURATOR_IMPORT_RESULTS.set(successful,draft);return successful;
   },function(){return fdCuratorImportFailure('CURATOR_IMPORT_INVALID');});
 }
@@ -597,6 +620,12 @@ function fdCuratorLocalControls(state,snapshot,category){
   var plan=state.config.localPlan,location=state.config.context.trainingLocationKey,audience=state.site.audience,value=plan[category],html='<div class="fd-curator-structured-controls">',i,rows;
   function select(kind,field,label,selected,empty,multiple){return fdCuratorLocalSelect(snapshot,kind,location,audience,field,label,selected,empty,multiple);}
   function time(field,label,current){return '<label>'+label+' <input type="time" data-curator-field="'+field+'" value="'+fdCuratorEscape(current||'')+'"></label>';}
+  function rowSelect(action,row,kind,field,label,current,empty){
+    var options=kind==='priority'?FD_CURATOR_PRIORITIES.map(function(item){return {key:item,label:item};}):fdCuratorCatalogOptions(snapshot,kind,location,audience);
+    return '<label>'+fdCuratorEscape(label)+' <select data-curator-row-update="'+action+'" data-instance-id="'+fdCuratorEscape(row.instanceId)+'" data-curator-update-field="'+field+'" aria-label="'+fdCuratorEscape(label)+'">'+fdCuratorOptionsMarkup(options,current||'',empty||'Choose reviewed option')+'</select></label>';
+  }
+  function rowInput(action,row,type,field,label,current,attributes){return '<label>'+fdCuratorEscape(label)+' <input type="'+type+'" data-curator-row-update="'+action+'" data-instance-id="'+fdCuratorEscape(row.instanceId)+'" data-curator-update-field="'+field+'" aria-label="'+fdCuratorEscape(label)+'" value="'+fdCuratorEscape(current===undefined?'':current)+'"'+(attributes||'')+'></label>';}
+  function rowLabel(prefix,number,row,field){return prefix+' row '+number+', '+row.instanceId+', '+field;}
   if(category==='arrival')html+=select('choice:role','checkInRoleKey','Check-in role',value&&value.checkInRoleKey)+select('place','placeKey','Place',value&&value.placeKey)+select('link:arrival-map','linkKey','Optional arrival map',value&&value.linkKey,'No link')+'<label>Timing <select data-curator-field="timingCode"><option value="at"'+(value&&value.timingCode==='at'?' selected':'')+'>At</option><option value="by"'+(!value||value.timingCode==='by'?' selected':'')+'>By</option></select></label>'+time('time','Arrival time',value&&value.time)+'<button type="button" data-curator-local-action="arrival">Apply arrival</button>';
   else if(category==='accessItems')html+=select('choice:accessItem','itemKey','Access item','')+select('choice:duePoint','dueKey','Due point','')+select('link:access','linkKey','Optional official link','','No link')+'<button type="button" data-curator-local-action="access">Add access item</button>';
   else if(category==='contacts')html+=select('choice:role','roleKey','Public role','')+select('link:directory','linkKey','Optional directory','','No link')+'<button type="button" data-curator-local-action="contact">Add contact</button>';
@@ -612,16 +641,41 @@ function fdCuratorLocalControls(state,snapshot,category){
   }else if(category==='feedback')html+=select('choice:feedbackCadence','cadenceKey','Cadence',value&&value.cadenceKey)+select('choice:feedbackInitiator','initiatorKey','Initiator',value&&value.initiatorKey)+select('choice:feedbackSetting','settingKey','Setting',value&&value.settingKey)+'<button type="button" data-curator-local-action="feedback">Apply feedback</button>';
   else if(category==='resources')html+=select('link:any','linkKey','Official resource','')+select('priority','priority','Priority','recommended')+'<label>Week <input type="number" min="1" max="'+(audience==='ms3'?6:4)+'" value="1" data-curator-field="week"></label>'+select('choice:reason','reasonKey','Optional reason','','No reason')+'<button type="button" data-curator-local-action="resource">Add resource</button>';
   if(value)html+='<button type="button" data-curator-local-clear="'+category+'">Clear '+category+'</button>';
-  rows=Array.isArray(value)?value:value&&value.events||[];for(i=0;i<rows.length;i++)html+='<button type="button" data-curator-local-remove="'+category+'" data-instance-id="'+fdCuratorEscape(rows[i].instanceId)+'">Remove '+fdCuratorEscape(rows[i].instanceId)+'</button>';
+  rows=Array.isArray(value)?value:value&&value.events||[];
+  for(i=0;i<rows.length;i++){
+    var row=rows[i],number=i+1,action,prefix;
+    if(category==='schedule'){
+      action='SCHEDULE_EVENT_UPDATE';prefix='Schedule event';html+='<fieldset data-curator-row-editor="schedule" data-instance-id="'+fdCuratorEscape(row.instanceId)+'"><legend>'+fdCuratorEscape(prefix+' row '+number+', '+row.instanceId)+'</legend>';
+      html+=rowSelect(action,row,'choice:daySet','daySetKey',rowLabel(prefix,number,row,'day set'),row.daySetKey)+rowInput(action,row,'time','startTime',rowLabel(prefix,number,row,'start time'),row.startTime)+rowInput(action,row,'time','endTime',rowLabel(prefix,number,row,'end time'),row.endTime||'')+rowSelect(action,row,'choice:activity','activityKey',rowLabel(prefix,number,row,'activity'),row.activityKey)+rowSelect(action,row,'place','placeKey',rowLabel(prefix,number,row,'place'),row.placeKey||'','No place')+rowSelect(action,row,'priority','priority',rowLabel(prefix,number,row,'priority'),row.priority);
+    }else if(category==='accessItems'){
+      action='ACCESS_UPDATE';prefix='Access item';html+='<fieldset data-curator-row-editor="accessItems" data-instance-id="'+fdCuratorEscape(row.instanceId)+'"><legend>'+fdCuratorEscape(prefix+' row '+number+', '+row.instanceId)+'</legend>';
+      html+=rowSelect(action,row,'choice:accessItem','itemKey',rowLabel(prefix,number,row,'access item'),row.itemKey)+rowSelect(action,row,'choice:duePoint','dueKey',rowLabel(prefix,number,row,'due point'),row.dueKey)+rowSelect(action,row,'link:access','linkKey',rowLabel(prefix,number,row,'official link'),row.linkKey||'','No link');
+    }else if(category==='contacts'){
+      action='CONTACT_UPDATE';prefix='Contact';html+='<fieldset data-curator-row-editor="contacts" data-instance-id="'+fdCuratorEscape(row.instanceId)+'"><legend>'+fdCuratorEscape(prefix+' row '+number+', '+row.instanceId)+'</legend>';
+      html+=rowSelect(action,row,'choice:role','roleKey',rowLabel(prefix,number,row,'public role'),row.roleKey)+rowSelect(action,row,'link:directory','linkKey',rowLabel(prefix,number,row,'directory'),row.linkKey||'','No directory');
+    }else if(category==='checklistItems'){
+      action='CHECKLIST_UPDATE';prefix='Checklist action';html+='<fieldset data-curator-row-editor="checklistItems" data-instance-id="'+fdCuratorEscape(row.instanceId)+'"><legend>'+fdCuratorEscape(prefix+' row '+number+', '+row.instanceId)+'</legend>';
+      html+=rowSelect(action,row,'choice:checklist','itemKey',rowLabel(prefix,number,row,'action'),row.itemKey)+rowSelect(action,row,'priority','priority',rowLabel(prefix,number,row,'priority'),row.priority);
+    }else if(category==='resources'){
+      action='RESOURCE_UPDATE';prefix='Resource';html+='<fieldset data-curator-row-editor="resources" data-instance-id="'+fdCuratorEscape(row.instanceId)+'"><legend>'+fdCuratorEscape(prefix+' row '+number+', '+row.instanceId)+'</legend>';
+      html+=rowSelect(action,row,'link:any','linkKey',rowLabel(prefix,number,row,'official resource'),row.linkKey)+rowSelect(action,row,'priority','priority',rowLabel(prefix,number,row,'priority'),row.priority)+rowInput(action,row,'number','week',rowLabel(prefix,number,row,'week'),row.week,' min="1" max="'+(audience==='ms3'?6:4)+'"')+rowSelect(action,row,'choice:reason','reasonKey',rowLabel(prefix,number,row,'reason'),row.reasonKey||'','No reason');
+    }else continue;
+    html+='<button type="button" data-curator-local-remove="'+category+'" data-instance-id="'+fdCuratorEscape(row.instanceId)+'" aria-label="Remove '+fdCuratorEscape(prefix.toLowerCase()+' row '+number+', '+row.instanceId)+'">Remove</button></fieldset>';
+  }
   return html+'</div>';
 }
-function fdCuratorPreviewMarkup(model,preset,evidence){
-  var trusted=fdCuratorTrustedDisplay(model),privateEvidence=FD_CURATOR_PREVIEW_RESULTS.get(evidence),expected=privateEvidence&&privateEvidence.expected,mobile=preset==='mobile-390',sections,i,rows,html,attributes='';if(!trusted)return '<div class="fd-curator-preview-empty">Complete the required reviewed selections to render this preview.</div>';
-  if(privateEvidence&&privateEvidence.preset===preset&&expected)attributes=' data-curator-content-digest="'+fdCuratorEscape(expected.contentDigest)+'" data-curator-reference-digest="'+fdCuratorEscape(expected.referenceSetDigest)+'" data-curator-fingerprint="'+fdCuratorEscape(evidence.fingerprint)+'" data-curator-core-revision="'+fdCuratorEscape(expected.currentCoreRevision)+'" data-curator-catalog-revision="'+fdCuratorEscape(expected.currentCatalogRevision)+'" data-curator-renderer-revision="'+fdCuratorEscape(expected.rendererRevision)+'" data-curator-render-status="complete"';
-  sections=[['First day at the location',fdCuratorStudentSentences(trusted,'arrival')],['Before you arrive',fdCuratorStudentSentences(trusted,'accessItems')],['Who to contact',fdCuratorStudentSentences(trusted,'contacts')],["Today's checklist",fdCuratorStudentSentences(trusted,'checklistItems')],['Typical day',fdCuratorStudentSentences(trusted,'schedule')],['Team workflow',fdCuratorStudentSentences(trusted,'rounds').concat(fdCuratorStudentSentences(trusted,'presentation'),fdCuratorStudentSentences(trusted,'documentation'))],['Attendance and feedback',fdCuratorStudentSentences(trusted,'attendance').concat(fdCuratorStudentSentences(trusted,'feedback'))],['Official resources',fdCuratorStudentSentences(trusted,'resources')]];
-  html='<div class="fd-curator-preview '+(mobile?'fd-curator-preview--mobile':'fd-curator-preview--desktop')+'" tabindex="-1" data-curator-preview-layout="'+preset+'"'+attributes+'><h3>'+fdCuratorEscape(trusted.card.title)+'</h3>';
-  for(i=0;i<sections.length;i++){html+='<section><h4>'+sections[i][0]+'</h4>';rows=sections[i][1];if(!rows.length)html+='<p>None selected.</p>';else for(var j=0;j<rows.length;j++)html+='<p>'+fdCuratorEscape(rows[j])+'</p>';html+='</section>';}
-  return html+'</div>';
+function fdCuratorPreviewBody(model){
+  var sections=[['First day at the location',fdCuratorStudentSentences(model,'arrival')],['Before you arrive',fdCuratorStudentSentences(model,'accessItems')],['Who to contact',fdCuratorStudentSentences(model,'contacts')],["Today's checklist",fdCuratorStudentSentences(model,'checklistItems')],['Typical day',fdCuratorStudentSentences(model,'schedule')],['Team workflow',fdCuratorStudentSentences(model,'rounds').concat(fdCuratorStudentSentences(model,'presentation'),fdCuratorStudentSentences(model,'documentation'))],['Attendance and feedback',fdCuratorStudentSentences(model,'attendance').concat(fdCuratorStudentSentences(model,'feedback'))],['Official resources',fdCuratorStudentSentences(model,'resources')]],i,j,rows,html='<h3>'+fdCuratorEscape(model.card.title)+'</h3>';
+  for(i=0;i<sections.length;i++){html+='<section><h4>'+sections[i][0]+'</h4>';rows=sections[i][1];if(!rows.length)html+='<p>None selected.</p>';else for(j=0;j<rows.length;j++)html+='<p>'+fdCuratorEscape(rows[j])+'</p>';html+='</section>';}
+  return html;
+}
+function fdCuratorPreviewMarkup(prepared,preset){
+  var privatePreview=FD_CURATOR_PREVIEW_RESULTS.get(prepared),expected,mobile,body;
+  if(!privatePreview||privatePreview.preset!==preset)return '<div class="fd-curator-preview-empty">Complete the required reviewed selections to render this preview.</div>';
+  expected=privatePreview.expected;mobile=preset==='mobile-390';
+  try{body=fdCuratorPreviewBody(privatePreview.displayModel);privatePreview.body=body;}
+  catch(ignore){return '<div class="fd-curator-preview-empty">Complete the required reviewed selections to render this preview.</div>';}
+  return '<div class="fd-curator-preview '+(mobile?'fd-curator-preview--mobile':'fd-curator-preview--desktop')+'" tabindex="-1" data-curator-preview-layout="'+preset+'" data-curator-content-digest="'+fdCuratorEscape(expected.contentDigest)+'" data-curator-reference-digest="'+fdCuratorEscape(expected.referenceSetDigest)+'" data-curator-fingerprint="'+fdCuratorEscape(privatePreview.fingerprint)+'" data-curator-core-revision="'+fdCuratorEscape(expected.currentCoreRevision)+'" data-curator-catalog-revision="'+fdCuratorEscape(expected.currentCatalogRevision)+'" data-curator-renderer-revision="'+fdCuratorEscape(expected.rendererRevision)+'" data-curator-render-status="complete">'+body+'</div>';
 }
 function fdCuratorLocalMarkup(state,catalogSnapshot,displayModel,previewEvidence){
   var model=fdCuratorTrustedDisplay(displayModel),plan=state.config.localPlan,coverage=fdCuratorLocalCoverage(plan),location=state.config.context.trainingLocationKey,audience=state.site.audience;
@@ -631,7 +685,7 @@ function fdCuratorLocalMarkup(state,catalogSnapshot,displayModel,previewEvidence
   html+='<label>Apply a reviewed local preset <select data-curator-local-preset>'+fdCuratorOptionsMarkup(presets,'','Choose a reviewed preset')+'</select></label>';
   html+='<section class="fd-curator-local-group"><h2>First-day essentials</h2>';for(i=0;i<4;i++)html+='<article id="fd-curator-'+categories[i][0]+'" class="fd-curator-local-card" tabindex="-1"><h3>'+categories[i][1]+'</h3>'+fdCuratorLocalControls(state,catalogSnapshot,categories[i][0])+fdCuratorStudentsSee(model,categories[i][0])+'<p class="fd-curator-reviewed-only">Choose only from repository-reviewed options.</p></article>';html+='</section>';
   html+='<section class="fd-curator-local-group"><h2>How this rotation works</h2>';for(i=4;i<categories.length;i++)html+='<article id="fd-curator-'+categories[i][0]+'" class="fd-curator-local-card" tabindex="-1"><h3>'+categories[i][1]+'</h3>'+fdCuratorLocalControls(state,catalogSnapshot,categories[i][0])+fdCuratorStudentsSee(model,categories[i][0])+'<p class="fd-curator-reviewed-only">Choose only from repository-reviewed options.</p></article>';html+='</section>';
-  html+='<section class="fd-curator-review-evidence" data-curator-review-evidence><h2>Canonical previews</h2><p>Fingerprint: <code>'+(model?fdCuratorEscape(model.card.fingerprint):'pending')+'</code></p><p>Candidate digest: <code>'+(state.previewReceipts.desktop?fdCuratorEscape(state.previewReceipts.desktop.contentDigest):state.previewReceipts.mobile?fdCuratorEscape(state.previewReceipts.mobile.contentDigest):'pending')+'</code></p><div class="fd-curator-preview-actions"><button type="button" data-curator-review-preview="desktop">Review desktop preview</button><span data-curator-preview-status="desktop" role="status" aria-live="polite">'+(state.previewReceipts.desktop?'Reviewed':'Not reviewed')+'</span><button type="button" data-curator-review-preview="mobile-390">Review 390 px mobile preview</button><span data-curator-preview-status="mobile" role="status" aria-live="polite">'+(state.previewReceipts.mobile?'Reviewed':'Not reviewed')+'</span></div>'+fdCuratorPreviewMarkup(model,'desktop',previewEvidence&&previewEvidence.desktop)+fdCuratorPreviewMarkup(model,'mobile-390',previewEvidence&&previewEvidence.mobile)+'</section>';
+  html+='<section class="fd-curator-review-evidence" data-curator-review-evidence><h2>Canonical previews</h2><p>Fingerprint: <code>'+(model?fdCuratorEscape(model.card.fingerprint):'pending')+'</code></p><p>Candidate digest: <code>'+(state.previewReceipts.desktop?fdCuratorEscape(state.previewReceipts.desktop.contentDigest):state.previewReceipts.mobile?fdCuratorEscape(state.previewReceipts.mobile.contentDigest):'pending')+'</code></p><div class="fd-curator-preview-actions"><button type="button" data-curator-review-preview="desktop">Review desktop preview</button><span data-curator-preview-status="desktop" role="status" aria-live="polite">'+(state.previewReceipts.desktop?'Reviewed':'Not reviewed')+'</span><button type="button" data-curator-review-preview="mobile-390">Review 390 px mobile preview</button><span data-curator-preview-status="mobile" role="status" aria-live="polite">'+(state.previewReceipts.mobile?'Reviewed':'Not reviewed')+'</span></div>'+fdCuratorPreviewMarkup(previewEvidence&&previewEvidence.desktop,'desktop')+fdCuratorPreviewMarkup(previewEvidence&&previewEvidence.mobile,'mobile-390')+'</section>';
   return html+'</section>';
 }
 
@@ -715,17 +769,16 @@ function fdCuratorCandidateDraftSignature(state){
   try{return fdEditionCanonicalJson({site:state.site,config:state.config,baseEnvelope:state.publication.baseEnvelope});}catch(ignore){return '';}
 }
 function fdCuratorAuthenticateBase(state,index,catalogSnapshot,siteContext,validationContext,subtle){
-  var publication=state&&state.publication,contractSite=fdCuratorContractSiteContext(siteContext),base,semantic;
+  var publication=state&&state.publication,contractSite=fdCuratorContractSiteContext(siteContext),base,semantic,trusted;
   try{if(!publication||!fdCuratorExactData(publication,['baseEnvelope','baseSemanticConfig','lastGenerated'],[])||typeof publication.baseSemanticConfig!=='string'||!contractSite)return Promise.resolve({ok:false});base=publication.baseEnvelope;semantic=publication.baseSemanticConfig;}
   catch(ignoreBoundary){return Promise.resolve({ok:false});}
   if(base===null)return Promise.resolve(semantic===''?{ok:true,config:null,envelope:null}:{ok:false});
-  if(!fdCuratorExactData(base,['format','schemaVersion','config','digest'],[])||!fdCuratorObject(base.config)||!semantic)return Promise.resolve({ok:false});
-  return fdEditionValidateEnvelope(base,index,catalogSnapshot,contractSite,validationContext,subtle).then(function(validated){
-    var trusted=validated&&validated.ok===true?fdEditionTrustedSnapshot(validated):null,canonical;
-    if(!trusted)return {ok:false};
-    try{canonical=fdEditionSemanticConfig(trusted.config);if(!canonical||canonical!==semantic)return {ok:false};return {ok:true,config:fdCuratorClone(trusted.config),envelope:fdCuratorClone(trusted.envelope)};}
-    catch(ignoreTrusted){return {ok:false};}
-  },function(){return {ok:false};});
+  trusted=FD_CURATOR_TRUSTED_BASES.get(state);
+  if(!trusted)return Promise.resolve({ok:false,code:'CURATOR_BASE_REIMPORT_REQUIRED'});
+  try{
+    if(base!==trusted.baseObject||!semantic||semantic!==trusted.semantic||fdEditionCanonicalJson(base)!==trusted.envelopeCanonical)return Promise.resolve({ok:false,code:'CURATOR_BASE_REIMPORT_REQUIRED'});
+    return Promise.resolve({ok:true,config:fdCuratorClone(trusted.config),envelope:fdCuratorClone(trusted.envelope)});
+  }catch(ignoreTrusted){return Promise.resolve({ok:false,code:'CURATOR_BASE_REIMPORT_REQUIRED'});}
 }
 function fdCuratorCandidateConfig(state,index,catalogSnapshot,siteContext,validationContext,subtle){
   var context=state&&state.config&&state.config.context,contractSite=fdCuratorContractSiteContext(siteContext),tentative;
@@ -733,7 +786,7 @@ function fdCuratorCandidateConfig(state,index,catalogSnapshot,siteContext,valida
   tentative={audience:state.site.audience,pathId:state.site.pathId,editionNumber:1,createdAgainstCoreRevision:contractSite.coreRevision,createdAgainstLocalCatalogRevision:contractSite.localCatalogRevision,context:fdCuratorClone(context),phraseSetKey:state.config.phraseSetKey,pathItems:fdCuratorClone(state.config.pathItems),localPlan:fdCuratorClone(state.config.localPlan),changeSummary:{kindCodes:['initial'],changedItemCount:0}};
   return fdCuratorAuthenticateBase(state,index,catalogSnapshot,siteContext,validationContext,subtle).then(function(authenticated){
     var baseConfig=authenticated&&authenticated.ok?authenticated.config:null,config,summary,edition;
-    if(!authenticated||!authenticated.ok)return fdCuratorCandidateFailure('CURATOR_BASE_INVALID');
+    if(!authenticated||!authenticated.ok)return fdCuratorCandidateFailure(authenticated&&authenticated.code||'CURATOR_BASE_INVALID');
     if(baseConfig&&fdEditionSemanticConfig(baseConfig)===fdEditionSemanticConfig(tentative))config=baseConfig;
     else if(baseConfig){edition=baseConfig.editionNumber;if(!Number.isInteger(edition)||edition<1||edition>=2147483647)return fdCuratorCandidateFailure('CURATOR_EDITION_LIMIT');summary=fdEditionGenerateChangeSummary(baseConfig,tentative);if(!summary||!summary.kindCodes.length)return fdCuratorCandidateFailure('CURATOR_INVALID');tentative.editionNumber=edition+1;tentative.changeSummary=summary;config=tentative;}
     else config=tentative;
@@ -756,26 +809,28 @@ function fdCuratorReceiptMatches(receipt,expected,preset){
 function fdCuratorPreparePreview(state,index,catalogSnapshot,siteContext,validationContext,subtle,preset,sequence){
   if(['desktop','mobile-390'].indexOf(preset)<0||!Number.isInteger(sequence))return Promise.resolve({ok:false,code:'CURATOR_PREVIEW_INVALID'});
   return fdCuratorCandidateConfig(state,index,catalogSnapshot,siteContext,validationContext,subtle).then(function(candidate){
-    var privateCandidate,projected,expected,receipt,result,display;if(!candidate.ok||(privateCandidate=FD_CURATOR_CANDIDATE_RESULTS.get(candidate))===undefined)return {ok:false,code:'CURATOR_PREVIEW_INVALID'};
+    var privateCandidate,projected,expected,receipt,result,display,privateDisplay;if(!candidate.ok)return {ok:false,code:candidate.errors&&candidate.errors[0]&&candidate.errors[0].code==='CURATOR_BASE_REIMPORT_REQUIRED'?'CURATOR_BASE_REIMPORT_REQUIRED':'CURATOR_PREVIEW_INVALID'};
+    if((privateCandidate=FD_CURATOR_CANDIDATE_RESULTS.get(candidate))===undefined)return {ok:false,code:'CURATOR_PREVIEW_INVALID'};
     projected=fdProjectEdition(index,privateCandidate.trusted);if(!projected||projected.ok!==true)return {ok:false,code:'CURATOR_PREVIEW_INVALID'};
     expected=fdCuratorReceiptExpected(privateCandidate);if(!expected)return {ok:false,code:'CURATOR_PREVIEW_INVALID'};receipt={contentDigest:expected.contentDigest,referenceSetDigest:expected.referenceSetDigest,currentCoreRevision:expected.currentCoreRevision,currentCatalogRevision:expected.currentCatalogRevision,rendererRevision:expected.rendererRevision,previewPreset:preset};
-    display=fdCuratorClone(candidate.displayModel);result={ok:true,code:'CURATOR_PREVIEW_OK',preset:preset,displayModel:display,contentDigest:candidate.contentDigest,fingerprint:candidate.fingerprint};FD_CURATOR_DISPLAY_RESULTS.set(display,fdEditionCanonicalJson(display));FD_CURATOR_PREVIEW_RESULTS.set(result,{sequence:sequence,preset:preset,receipt:receipt,expected:expected,draftSignature:privateCandidate.draftSignature});return result;
+    display=fdCuratorClone(candidate.displayModel);privateDisplay=fdCuratorClone(candidate.displayModel);result={ok:true,code:'CURATOR_PREVIEW_OK',preset:preset,displayModel:display,contentDigest:candidate.contentDigest,fingerprint:candidate.fingerprint};FD_CURATOR_DISPLAY_RESULTS.set(display,fdEditionCanonicalJson(display));FD_CURATOR_PREVIEW_RESULTS.set(result,{sequence:sequence,preset:preset,receipt:receipt,expected:expected,draftSignature:privateCandidate.draftSignature,displayModel:privateDisplay,fingerprint:candidate.fingerprint,body:null});return result;
   });
 }
 function fdCuratorCompletePreview(prepared,root,preset,sequence,transactions){
-  var privatePreview=FD_CURATOR_PREVIEW_RESULTS.get(prepared),expected,node,again,headings,i,result;
+  var privatePreview=FD_CURATOR_PREVIEW_RESULTS.get(prepared),expected,node,again,nodes,headings,i,result;
   var order=['First day at the location','Before you arrive','Who to contact',"Today's checklist",'Typical day','Team workflow','Attendance and feedback','Official resources'];
   function failure(){return {ok:false,code:'CURATOR_PREVIEW_RENDER_INVALID'};}
   if(!privatePreview||privatePreview.preset!==preset||privatePreview.sequence!==sequence||!transactions||typeof transactions.currentPreview!=='function'||transactions.currentPreview()!==sequence||!root)return failure();
-  expected=privatePreview.expected;if(!expected)return failure();
+  expected=privatePreview.expected;if(!expected||typeof privatePreview.body!=='string')return failure();
   try{
-    if(typeof root.querySelector!=='function'||typeof root.contains!=='function')return failure();
-    node=root.querySelector('[data-curator-preview-layout="'+preset+'"]');
+    if(typeof root.querySelector!=='function'||typeof root.querySelectorAll!=='function'||typeof root.contains!=='function')return failure();
+    nodes=root.querySelectorAll('[data-curator-preview-layout="'+preset+'"]');if(!nodes||nodes.length!==1)return failure();node=nodes[0];
+    if(root.querySelector('[data-curator-preview-layout="'+preset+'"]')!==node)return failure();
     if(!node||node.isConnected!==true||root.contains(node)!==true||typeof node.getAttribute!=='function'||typeof node.querySelectorAll!=='function')return failure();
-    if(node.getAttribute('data-curator-preview-layout')!==preset||node.getAttribute('data-curator-content-digest')!==expected.contentDigest||node.getAttribute('data-curator-reference-digest')!==expected.referenceSetDigest||node.getAttribute('data-curator-fingerprint')!==prepared.fingerprint||node.getAttribute('data-curator-core-revision')!==expected.currentCoreRevision||node.getAttribute('data-curator-catalog-revision')!==expected.currentCatalogRevision||node.getAttribute('data-curator-renderer-revision')!==expected.rendererRevision||node.getAttribute('data-curator-render-status')!=='complete')return failure();
+    if(node.getAttribute('data-curator-preview-layout')!==preset||node.getAttribute('data-curator-content-digest')!==expected.contentDigest||node.getAttribute('data-curator-reference-digest')!==expected.referenceSetDigest||node.getAttribute('data-curator-fingerprint')!==privatePreview.fingerprint||node.getAttribute('data-curator-core-revision')!==expected.currentCoreRevision||node.getAttribute('data-curator-catalog-revision')!==expected.currentCatalogRevision||node.getAttribute('data-curator-renderer-revision')!==expected.rendererRevision||node.getAttribute('data-curator-render-status')!=='complete'||node.innerHTML!==privatePreview.body)return failure();
     headings=node.querySelectorAll('h4');if(!headings||headings.length!==order.length)return failure();
     for(i=0;i<order.length;i++)if(headings[i].textContent!==order[i])return failure();
-    again=root.querySelector('[data-curator-preview-layout="'+preset+'"]');if(again!==node||node.isConnected!==true||root.contains(node)!==true||transactions.currentPreview()!==sequence)return failure();
+    again=root.querySelector('[data-curator-preview-layout="'+preset+'"]');nodes=root.querySelectorAll('[data-curator-preview-layout="'+preset+'"]');if(again!==node||!nodes||nodes.length!==1||nodes[0]!==node||node.isConnected!==true||root.contains(node)!==true||transactions.currentPreview()!==sequence)return failure();
   }catch(ignoreRender){return failure();}
   result={ok:true,code:'CURATOR_PREVIEW_RENDER_OK'};FD_CURATOR_PREVIEW_COMPLETIONS.set(result,{sequence:sequence,preset:preset,receipt:privatePreview.receipt,expected:expected,draftSignature:privatePreview.draftSignature});return result;
 }
@@ -793,7 +848,7 @@ function fdCuratorObserveCurrentSite(state,index,siteContext){
   if(!fdCuratorStateValid(state,index,storedContext))return null;
   if(state.site.audience!==current.audience||state.site.pathId!==current.pathId||state.site.rotationEditionV2!==current.rotationEditionV2)return null;
   if(state.site.coreRevision===current.coreRevision&&state.site.localCatalogRevision===current.localCatalogRevision&&state.site.rendererRevision===FD_CURATOR_RENDERER_REVISION)return state;
-  copy=fdCuratorClone(state);copy.site.coreRevision=current.coreRevision;copy.site.localCatalogRevision=current.localCatalogRevision;copy.site.rendererRevision=FD_CURATOR_RENDERER_REVISION;copy.previewReceipts={desktop:null,mobile:null};copy.affirmations.previewsReviewed=false;copy.publication.lastGenerated=null;return copy;
+  copy=fdCuratorClone(state);fdCuratorTransferBaseTrust(state,copy);copy.site.coreRevision=current.coreRevision;copy.site.localCatalogRevision=current.localCatalogRevision;copy.site.rendererRevision=FD_CURATOR_RENDERER_REVISION;copy.previewReceipts={desktop:null,mobile:null};copy.affirmations.previewsReviewed=false;copy.publication.lastGenerated=null;return copy;
 }
 
 function fdCuratorRestoreDraft(text,index,siteContext,catalogSnapshot,validationContext,subtle){
@@ -802,6 +857,10 @@ function fdCuratorRestoreDraft(text,index,siteContext,catalogSnapshot,validation
   if(typeof text!=='string')return Promise.resolve(failure());
   try{bytes=new TextEncoder().encode(text).length;if(bytes>FD_CURATOR_IMPORT_MAX_BYTES)return Promise.resolve(failure());value=JSON.parse(text);observed=fdCuratorObserveCurrentSite(value,index,siteContext);if(!observed)return Promise.resolve(failure());observed=fdCuratorClone(observed);}
   catch(ignoreStored){return Promise.resolve(failure());}
+  if(observed.publication.baseEnvelope!==null){
+    observed.publication.lastGenerated=null;observed.previewReceipts={desktop:null,mobile:null};observed.affirmations.previewsReviewed=false;
+    return Promise.resolve({ok:true,code:'CURATOR_BASE_REIMPORT_REQUIRED',state:observed});
+  }
   return fdCuratorAuthenticateBase(observed,index,catalogSnapshot,siteContext,validationContext,subtle).then(function(authenticated){
     if(!authenticated||!authenticated.ok)return failure();
     if(authenticated.config){observed.publication.baseEnvelope=authenticated.envelope;observed.publication.baseSemanticConfig=fdEditionSemanticConfig(authenticated.config);}
@@ -831,13 +890,14 @@ function fdCuratorDraftStorage(storage,key){
 }
 
 function fdCuratorMount(root,canonicalIndex,siteContext,catalogSnapshot,generationDate,dependencies){
-  var keys,storage,adapter,state,transactions=fdCuratorImportTransactions(),deps=dependencies||{},editor,searchQuery='',displayModel=null,previewEvidence={desktop:null,mobile:null},renderSequence=0;
-  if(!root||typeof fdEditionCatalogTrusted!=='function'||!fdEditionCatalogTrusted(catalogSnapshot))return Promise.resolve(fdCuratorCatalogUnavailable(root));
-  keys=fdEditionStorageKeys(siteContext.audience);if(!keys)return Promise.resolve(fdCuratorCatalogUnavailable(root));
+  var keys,storage,adapter,state,site,transactions=fdCuratorImportTransactions(),deps=dependencies||{},editor,searchQuery='',displayModel=null,previewEvidence={desktop:null,mobile:null},renderSequence=0;
+  if(!root||typeof fdEditionCatalogMatchesSite!=='function'||!fdEditionCatalogMatchesSite(catalogSnapshot,siteContext)||(site=fdCuratorSiteValue(siteContext))===null)return Promise.resolve(fdCuratorCatalogUnavailable(root));
+  siteContext={audience:site.audience,pathId:site.pathId,coreRevision:site.coreRevision,localCatalogRevision:site.localCatalogRevision,rotationEditionV2:site.rotationEditionV2};
+  keys=fdEditionStorageKeys(site.audience);if(!keys)return Promise.resolve(fdCuratorCatalogUnavailable(root));
   try{storage=deps.storage||localStorage;}catch(ignoreStorage){storage=null;}
   adapter=fdCuratorDraftStorage(storage,keys.curator);
   return adapter.load(canonicalIndex,siteContext,catalogSnapshot,{mode:'builder',generationDate:generationDate},(function(){try{return deps.subtle||crypto.subtle;}catch(ignore){return deps.subtle||null;}}())).then(function(loaded){
-  var loadInvalid=loaded&&loaded.ok===false;state=loaded&&loaded.ok&&loaded.state?loaded.state:fdCuratorNewDraft(canonicalIndex,siteContext);
+  var loadInvalid=loaded&&loaded.ok===false,loadReimport=loaded&&loaded.code==='CURATOR_BASE_REIMPORT_REQUIRED';state=loaded&&loaded.ok&&loaded.state?loaded.state:fdCuratorNewDraft(canonicalIndex,siteContext);
   function mountNode(){try{return typeof root.querySelector==='function'&&root.querySelector('#curatorEditorMount')||root;}catch(ignore){return root;}}
   function subtleValue(){try{return deps.subtle||crypto.subtle;}catch(ignore){return deps.subtle||null;}}
   function refreshModel(){
@@ -906,7 +966,15 @@ function fdCuratorMount(root,canonicalIndex,siteContext,catalogSnapshot,generati
     if(targetAttribute(target,'data-curator-save')!==null)setStatus('[data-curator-save-status]',adapter.save(state,canonicalIndex,siteContext)?'Saved on this device.':'Draft could not be saved on this device.');
   }
   function change(event){
-    var target=event&&event.target,instanceId,type,file,sequence;
+    var target=event&&event.target,instanceId,type,file,sequence,field,value,allowed;
+    type=targetAttribute(target,'data-curator-row-update');
+    if(type!==null){
+      instanceId=targetAttribute(target,'data-instance-id');field=targetAttribute(target,'data-curator-update-field');
+      allowed={SCHEDULE_EVENT_UPDATE:['daySetKey','startTime','endTime','activityKey','placeKey','priority'],ACCESS_UPDATE:['itemKey','dueKey','linkKey'],CONTACT_UPDATE:['roleKey','linkKey'],CHECKLIST_UPDATE:['itemKey','priority'],RESOURCE_UPDATE:['linkKey','priority','week','reasonKey']};
+      if(!allowed[type]||allowed[type].indexOf(field)<0)return;
+      try{value=type==='RESOURCE_UPDATE'&&field==='week'?Number(target.value):String(target.value||'');}catch(ignoreRowValue){return;}
+      dispatch({type:type,instanceId:instanceId,field:field,value:value});return;
+    }
     if(targetAttribute(target,'data-curator-location')!==null){dispatch({type:'SET_TRAINING_LOCATION',trainingLocationKey:String(target.value||'')});return;}
     if(targetAttribute(target,'data-curator-profile')!==null){dispatch({type:'SET_CURATOR_PROFILE',curatorProfileKey:String(target.value||'')});return;}
     if(targetAttribute(target,'data-curator-phrases')!==null){dispatch({type:'SET_PHRASE_SET',phraseSetKey:String(target.value||'')});return;}
@@ -933,6 +1001,7 @@ function fdCuratorMount(root,canonicalIndex,siteContext,catalogSnapshot,generati
     root.addEventListener('click',click);root.addEventListener('change',change);root.addEventListener('input',input);
   }
   if(loadInvalid)setStatus('[data-curator-import-status]','Saved draft could not be authenticated. A new local draft was opened.');
+  else if(loadReimport)setStatus('[data-curator-import-status]','CURATOR_BASE_REIMPORT_REQUIRED');
   return {ok:true,code:'CURATOR_READY',dispatch:dispatch,getState:function(){return fdCuratorClone(state);},
     save:function(){return adapter.save(state,canonicalIndex,siteContext);},transactions:transactions};
   });

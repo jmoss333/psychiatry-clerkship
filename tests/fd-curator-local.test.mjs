@@ -14,9 +14,9 @@ const SOURCE = [
 ].join('\n');
 const CURATOR_HTML = readFileSync(new URL('../13_Faculty_Resources/Rotation_Curation/rotation-curator.html', import.meta.url), 'utf8');
 const API_NAMES = [
-  'fdEditionCatalogSnapshot', 'fdEditionPublicationEnabled', 'fdEditionCreateEnvelope', 'fdCuratorNewDraft', 'fdCuratorReduce',
+  'fdEditionCatalogSnapshot', 'fdEditionCatalogMatchesSite', 'fdEditionPublicationEnabled', 'fdEditionCreateEnvelope', 'fdCuratorNewDraft', 'fdCuratorReduce',
   'fdCuratorImportTransactions', 'fdCuratorCandidateConfig', 'fdCuratorPreparePreview',
-  'fdCuratorCompletePreview', 'fdCuratorRestoreDraft',
+  'fdCuratorPreviewMarkup', 'fdCuratorCompletePreview', 'fdCuratorRestoreDraft',
   'fdCuratorImportBackup',
   'fdCuratorPrepareGenerationResult', 'fdCuratorLocalCoverage', 'fdCuratorLocalMarkup',
   'fdCuratorObserveCurrentSite', 'fdCuratorCatalogOptions',
@@ -100,8 +100,8 @@ function fullLocalPlan() {
     resources: [{ instanceId: 'local:resource:1', linkKey: 'link.orientation@v1', priority: 'recommended', week: 1, reasonKey: choiceKey('reason') }],
   };
 }
-async function makeSnapshot(gate = 'enabled', includeRecords = true) {
-  const common = { audiences: ['ms3'], verifiedOn: '2026-08-19' }, scoped = { locationKeys: ['location.example@v1'], ...common };
+async function makeSnapshot(gate = 'enabled', includeRecords = true, audience = 'ms3') {
+  const common = { audiences: [audience], verifiedOn: '2026-08-19' }, scoped = { locationKeys: ['location.example@v1'], ...common };
   const records = [
     { key: 'location.example@v1', kind: 'trainingLocation', displayName: 'Example Unit', locationCode: 'EXU', locationTypeCode: 'inpatient', officialHostnames: ['example.edu'], ...common },
     { key: 'location.other@v1', kind: 'trainingLocation', displayName: 'Other Unit', locationCode: 'OTH', locationTypeCode: 'outpatient', officialHostnames: ['other.example.edu'], ...common },
@@ -121,14 +121,15 @@ async function makeSnapshot(gate = 'enabled', includeRecords = true) {
   const resolutionRecords = await Promise.all(records.map(async (record) => ({ ...record, contentDigest: await digest(record) })));
   resolutionRecords.sort((a, b) => a.key.localeCompare(b.key));
   const selected = resolutionRecords.filter((record) => record.key !== 'link.deprecated@v1');
-  const projection = { schemaVersion: 1, audience: 'ms3', revision: CATALOG_REVISION, projectionDigest: '', rotationEditionV2: gate, selectionKeys: includeRecords ? selected.map((record) => record.key) : [], resolutionRecords: includeRecords ? resolutionRecords : [], blockedKeys: includeRecords ? ['link.blocked@v1'] : [] };
+  const projection = { schemaVersion: 1, audience, revision: CATALOG_REVISION, projectionDigest: '', rotationEditionV2: gate, selectionKeys: includeRecords ? selected.map((record) => record.key) : [], resolutionRecords: includeRecords ? resolutionRecords : [], blockedKeys: includeRecords ? ['link.blocked@v1'] : [] };
   const bare = structuredClone(projection); delete bare.projectionDigest; projection.projectionDigest = await digest(bare);
-  const prepared = await fn('fdEditionCatalogSnapshot')(projection, 'ms3', webcrypto.subtle);
+  const prepared = await fn('fdEditionCatalogSnapshot')(projection, audience, webcrypto.subtle);
   assert.equal(prepared.ok, true, JSON.stringify(prepared)); return prepared.snapshot;
 }
 const SNAPSHOT = await makeSnapshot();
 const DISABLED_SNAPSHOT = await makeSnapshot('disabled');
 const EMPTY_DISABLED_SNAPSHOT = await makeSnapshot('disabled', false);
+const RESIDENT_SNAPSHOT = await makeSnapshot('enabled', true, 'resident');
 function reduce(draft, action, transactions = null, site = context()) {
   return fn('fdCuratorReduce')(draft, action, index(), site, SNAPSHOT, '2026-08-19', transactions);
 }
@@ -143,29 +144,41 @@ function completedDraft() {
 }
 const PREVIEW_ORDER = ['First day at the location', 'Before you arrive', 'Who to contact', "Today's checklist", 'Typical day', 'Team workflow', 'Attendance and feedback', 'Official resources'];
 function completePreview(prepared, candidate, preset, sequence, transactions, options = {}) {
-  const attributes = {
-    'data-curator-preview-layout': preset,
-    'data-curator-content-digest': candidate.contentDigest,
-    'data-curator-reference-digest': candidate.referenceSetDigest,
-    'data-curator-fingerprint': candidate.fingerprint,
-    'data-curator-core-revision': CORE_REVISION,
-    'data-curator-catalog-revision': CATALOG_REVISION,
-    'data-curator-renderer-revision': 'rotation-edition-v2-r1',
-    'data-curator-render-status': 'complete',
-  };
+  const markup = options.markup ?? fn('fdCuratorPreviewMarkup')(prepared, preset);
+  const attributes = Object.fromEntries([...markup.matchAll(/\s(data-curator-[a-z-]+)="([^"]*)"/g)].map((match) => [match[1], match[2]]));
   if (options.attributes) Object.assign(attributes, options.attributes);
+  const bodyMatch = markup.match(/^<div[^>]*>([\s\S]*)<\/div>$/);
+  const body = options.body ?? (bodyMatch ? bodyMatch[1] : '');
   const node = {
     isConnected: options.connected !== false,
     getAttribute(name) { if (options.throwRead) throw new Error('private render read'); return attributes[name] ?? null; },
     querySelectorAll(selector) { return selector === 'h4' ? PREVIEW_ORDER.map((textContent) => ({ textContent })) : []; },
   };
-  const replacement = { ...node };
+  Object.defineProperty(node, 'innerHTML', { enumerable: true, get() { if (options.throwBodyRead) throw new Error('private body read'); return body; } });
+  const replacement = {
+    isConnected: node.isConnected,
+    getAttribute: node.getAttribute,
+    querySelectorAll: node.querySelectorAll,
+  };
+  Object.defineProperty(replacement, 'innerHTML', { enumerable: true, get() { return body; } });
   let queries = 0;
   const root = {
     querySelector() { queries += 1; if (options.throwQuery) throw new Error('private render query'); return options.replaced && queries > 1 ? replacement : node; },
+    querySelectorAll() { if (options.throwQuery) throw new Error('private render query'); return options.duplicate ? [node, replacement] : [node]; },
     contains(value) { return options.contained !== false && value === node; },
   };
   return fn('fdCuratorCompletePreview')(prepared, root, preset, sequence, transactions);
+}
+
+async function importEnvelope(envelope, startingDraft = fn('fdCuratorNewDraft')(index(), context())) {
+  const validation = { mode: 'builder', generationDate: '2026-08-19' };
+  const imported = await fn('fdCuratorImportBackup')(JSON.stringify(envelope), index(), context(), SNAPSHOT, validation, webcrypto.subtle);
+  assert.equal(imported.ok, true, JSON.stringify(imported));
+  const transactions = fn('fdCuratorImportTransactions')();
+  const sequence = transactions.begin();
+  const applied = reduce(startingDraft, { type: 'IMPORT_SUCCEEDED', result: imported, sequence }, transactions);
+  assert.notEqual(applied, startingDraft);
+  return applied;
 }
 
 test('every closed local action builds the exact normalized v2 local plan', () => {
@@ -226,8 +239,8 @@ test('official-link update paths and rendered selector sets match the exact redu
   const markup = fn('fdCuratorLocalMarkup')(draft, SNAPSHOT, candidate.displayModel);
   const access = markup.match(/id="fd-curator-accessItems"[\s\S]*?<\/article>/)[0];
   const resources = markup.match(/id="fd-curator-resources"[\s\S]*?<\/article>/)[0];
-  assert.deepEqual([...access.matchAll(/<option value="(link\.[^"]+)"/g)].map((match) => match[1]), ['link.access@v1', 'link.operational@v1', 'link.parking@v1']);
-  assert.deepEqual([...resources.matchAll(/<option value="(link\.[^"]+)"/g)].map((match) => match[1]), ['link.access@v1', 'link.arrival@v1', 'link.attendance@v1', 'link.clinical@v1', 'link.directory@v1', 'link.documentation@v1', 'link.feedback@v1', 'link.operational@v1', 'link.orientation@v1', 'link.parking@v1']);
+  assert.deepEqual([...new Set([...access.matchAll(/<option value="(link\.[^"]+)"/g)].map((match) => match[1]))], ['link.access@v1', 'link.operational@v1', 'link.parking@v1']);
+  assert.deepEqual([...new Set([...resources.matchAll(/<option value="(link\.[^"]+)"/g)].map((match) => match[1]))], ['link.access@v1', 'link.arrival@v1', 'link.attendance@v1', 'link.clinical@v1', 'link.directory@v1', 'link.documentation@v1', 'link.feedback@v1', 'link.operational@v1', 'link.orientation@v1', 'link.parking@v1']);
 });
 
 test('updates, optional clearing, category clearing, and lowest-unused IDs preserve exact public shapes', () => {
@@ -336,7 +349,7 @@ test('candidate is async and exact, preserves identity on drift, and increments 
   assert.equal(initial.contentDigest, await digest(initial.envelopePreimage));
   const oldConfig = structuredClone(initial.config); oldConfig.createdAgainstCoreRevision = OLD_CORE_REVISION; oldConfig.createdAgainstLocalCatalogRevision = OLD_CATALOG_REVISION;
   const base = await fn('fdEditionCreateEnvelope')(oldConfig, index(), SNAPSHOT, contractContext(), validation, webcrypto.subtle); assert.equal(base.ok, true);
-  draft.publication.baseEnvelope = base.envelope; draft.publication.baseSemanticConfig = semanticConfig(oldConfig);
+  draft = await importEnvelope(base.envelope);
   const drift = await fn('fdCuratorCandidateConfig')(draft, index(), SNAPSHOT, context(), validation, webcrypto.subtle);
   assert.deepEqual(drift.config, oldConfig); assert.equal(drift.contentDigest, base.contentDigest); assert.equal(drift.fingerprint, base.fingerprint);
   const changed = reduce(draft, { type: 'RESOURCE_UPDATE', instanceId: 'local:resource:1', field: 'priority', value: 'required' });
@@ -361,25 +374,50 @@ async function persistedDraftWithBase() {
   return { draft, candidate, validation };
 }
 
-test('persisted base lineage is freshly authenticated and semantic identity is rederived before candidate use', async () => {
+test('persisted prior lineage loses authority and requires explicit current-session re-import', async () => {
   const { draft, candidate, validation } = await persistedDraftWithBase();
+  draft.publication.lastGenerated = { contentDigest: candidate.contentDigest, referenceSetDigest: candidate.referenceSetDigest, fingerprint: candidate.fingerprint };
   const valid = await fn('fdCuratorRestoreDraft')(JSON.stringify(draft), index(), context(), SNAPSHOT, validation, webcrypto.subtle);
-  assert.equal(valid.ok, true); assert.deepEqual(valid.state.publication.baseEnvelope, draft.publication.baseEnvelope);
-  assert.equal(valid.state.publication.baseSemanticConfig, semanticConfig(candidate.config));
-  const tamperCases = [
-    ['digest', (value) => { value.publication.baseEnvelope.digest = `sha256-${'A'.repeat(43)}`; }],
-    ['edition', async (value) => { value.publication.baseEnvelope.config.editionNumber = 2; value.publication.baseEnvelope.digest = await digest({ format: value.publication.baseEnvelope.format, schemaVersion: value.publication.baseEnvelope.schemaVersion, config: value.publication.baseEnvelope.config }); }],
-    ['summary', async (value) => { value.publication.baseEnvelope.config.changeSummary = { kindCodes: ['resources'], changedItemCount: 1 }; value.publication.baseEnvelope.digest = await digest({ format: value.publication.baseEnvelope.format, schemaVersion: value.publication.baseEnvelope.schemaVersion, config: value.publication.baseEnvelope.config }); }],
-    ['core revision', (value) => { value.publication.baseEnvelope.config.createdAgainstCoreRevision = OLD_CORE_REVISION; }],
-    ['catalog revision', (value) => { value.publication.baseEnvelope.config.createdAgainstLocalCatalogRevision = OLD_CATALOG_REVISION; }],
-    ['semantic copy', (value) => { value.publication.baseSemanticConfig = canonical({ hostile: 'PRIVATE-BASE-MARKER' }); }],
-  ];
-  for (const [name, mutate] of tamperCases) {
-    const value = structuredClone(draft); await mutate(value);
-    const restored = await fn('fdCuratorRestoreDraft')(JSON.stringify(value), index(), context(), SNAPSHOT, validation, webcrypto.subtle);
-    assert.deepEqual(restored, { ok: false, code: 'CURATOR_DRAFT_INVALID' }, name);
-    assert.equal(JSON.stringify(restored).includes('PRIVATE-BASE-MARKER'), false, name);
-  }
+  assert.equal(valid.ok, true); assert.equal(valid.code, 'CURATOR_BASE_REIMPORT_REQUIRED');
+  assert.deepEqual(valid.state.publication.baseEnvelope, draft.publication.baseEnvelope);
+  assert.deepEqual(valid.state.previewReceipts, { desktop: null, mobile: null });
+  assert.equal(valid.state.affirmations.previewsReviewed, false);
+  assert.equal(valid.state.publication.lastGenerated, null);
+  const blocked = await fn('fdCuratorCandidateConfig')(valid.state, index(), SNAPSHOT, context(), validation, webcrypto.subtle);
+  assert.equal(blocked.ok, false); assert.equal(blocked.errors[0].code, 'CURATOR_BASE_REIMPORT_REQUIRED');
+  const transactions = fn('fdCuratorImportTransactions')(), sequence = transactions.beginPreview();
+  const preview = await fn('fdCuratorPreparePreview')(valid.state, index(), SNAPSHOT, context(), validation, webcrypto.subtle, 'desktop', sequence);
+  assert.deepEqual(preview, { ok: false, code: 'CURATOR_BASE_REIMPORT_REQUIRED' });
+
+  const intended = await importEnvelope(draft.publication.baseEnvelope, valid.state);
+  assert.equal(canonical(intended.config), canonical(valid.state.config));
+  const intendedCandidate = await fn('fdCuratorCandidateConfig')(intended, index(), SNAPSHOT, context(), validation, webcrypto.subtle);
+  assert.equal(intendedCandidate.ok, true); assert.equal(intendedCandidate.contentDigest, candidate.contentDigest);
+
+  const coherent = structuredClone(draft);
+  coherent.publication.baseEnvelope.config.editionNumber = 2;
+  coherent.publication.baseEnvelope.config.changeSummary = { kindCodes: ['resources'], changedItemCount: 1 };
+  coherent.publication.baseEnvelope.config.createdAgainstCoreRevision = OLD_CORE_REVISION;
+  coherent.publication.baseEnvelope.config.createdAgainstLocalCatalogRevision = OLD_CATALOG_REVISION;
+  coherent.publication.baseEnvelope.digest = await digest({ format: coherent.publication.baseEnvelope.format, schemaVersion: coherent.publication.baseEnvelope.schemaVersion, config: coherent.publication.baseEnvelope.config });
+  coherent.publication.baseSemanticConfig = semanticConfig(coherent.publication.baseEnvelope.config);
+  coherent.config.localPlan.resources[0].priority = 'required';
+  const coherentRestore = await fn('fdCuratorRestoreDraft')(JSON.stringify(coherent), index(), context(), SNAPSHOT, validation, webcrypto.subtle);
+  assert.equal(coherentRestore.ok, true); assert.equal(coherentRestore.code, 'CURATOR_BASE_REIMPORT_REQUIRED');
+  const coherentCandidate = await fn('fdCuratorCandidateConfig')(coherentRestore.state, index(), SNAPSHOT, context(), validation, webcrypto.subtle);
+  assert.equal(coherentCandidate.ok, false); assert.equal(coherentCandidate.errors[0].code, 'CURATOR_BASE_REIMPORT_REQUIRED');
+  const coherentSemantic = canonical(coherentRestore.state.config);
+  const reconfirmed = await importEnvelope(draft.publication.baseEnvelope, coherentRestore.state);
+  assert.equal(canonical(reconfirmed.config), coherentSemantic);
+  const reconfirmedCandidate = await fn('fdCuratorCandidateConfig')(reconfirmed, index(), SNAPSHOT, context(), validation, webcrypto.subtle);
+  assert.equal(reconfirmedCandidate.ok, true); assert.equal(reconfirmedCandidate.config.editionNumber, 2);
+  assert.deepEqual(reconfirmedCandidate.config.changeSummary, { kindCodes: ['resources'], changedItemCount: 1 });
+  assert.equal(reconfirmedCandidate.config.createdAgainstCoreRevision, CORE_REVISION);
+  assert.equal(reconfirmedCandidate.config.createdAgainstLocalCatalogRevision, CATALOG_REVISION);
+  const alternate = await importEnvelope(coherent.publication.baseEnvelope);
+  const alternateCandidate = await fn('fdCuratorCandidateConfig')(alternate, index(), SNAPSHOT, context(), validation, webcrypto.subtle);
+  assert.equal(alternateCandidate.ok, true); assert.equal(alternateCandidate.config.editionNumber, 2); assert.equal(alternateCandidate.contentDigest, coherent.publication.baseEnvelope.digest);
+
   let reads = 0; const accessor = {}; Object.defineProperty(accessor, 'publication', { enumerable: true, get() { reads += 1; return draft.publication; } });
   const revoked = Proxy.revocable({}, {}); revoked.revoke();
   assert.deepEqual(await fn('fdCuratorRestoreDraft')(accessor, index(), context(), SNAPSHOT, validation, webcrypto.subtle), { ok: false, code: 'CURATOR_DRAFT_INVALID' });
@@ -397,20 +435,43 @@ test('a separately validated explicit v2 import remains usable as exact candidat
   assert.equal(continued.ok, true); assert.equal(continued.contentDigest, candidate.contentDigest); assert.equal(continued.fingerprint, candidate.fingerprint);
 });
 
+test('live imported lineage brand survives reducer edits but serialization and caller cloning lose authority', async () => {
+  const { draft, validation } = await persistedDraftWithBase();
+  let live = await importEnvelope(draft.publication.baseEnvelope);
+  const exact = await fn('fdCuratorCandidateConfig')(live, index(), SNAPSHOT, context(), validation, webcrypto.subtle);
+  assert.equal(exact.ok, true); assert.equal(exact.config.editionNumber, 1);
+  live = reduce(live, { type: 'RESOURCE_UPDATE', instanceId: 'local:resource:1', field: 'priority', value: 'required' });
+  const changed = await fn('fdCuratorCandidateConfig')(live, index(), SNAPSHOT, context(), validation, webcrypto.subtle);
+  assert.equal(changed.ok, true); assert.equal(changed.config.editionNumber, 2);
+  for (const untrusted of [structuredClone(live), JSON.parse(JSON.stringify(live))]) {
+    const result = await fn('fdCuratorCandidateConfig')(untrusted, index(), SNAPSHOT, context(), validation, webcrypto.subtle);
+    assert.equal(result.ok, false); assert.equal(result.errors[0].code, 'CURATOR_BASE_REIMPORT_REQUIRED');
+    const edited = reduce(untrusted, { type: 'RESOURCE_UPDATE', instanceId: 'local:resource:1', field: 'priority', value: 'optional' });
+    assert.notEqual(edited, untrusted);
+    const editedResult = await fn('fdCuratorCandidateConfig')(edited, index(), SNAPSHOT, context(), validation, webcrypto.subtle);
+    assert.equal(editedResult.ok, false); assert.equal(editedResult.errors[0].code, 'CURATOR_BASE_REIMPORT_REQUIRED');
+  }
+  const replaced = await importEnvelope(draft.publication.baseEnvelope);
+  replaced.publication.baseEnvelope = structuredClone(replaced.publication.baseEnvelope);
+  const replacementResult = await fn('fdCuratorCandidateConfig')(replaced, index(), SNAPSHOT, context(), validation, webcrypto.subtle);
+  assert.equal(replacementResult.ok, false); assert.equal(replacementResult.errors[0].code, 'CURATOR_BASE_REIMPORT_REQUIRED');
+});
+
 test('candidate derivation rejects accessor and revoked base envelopes without touching private getters', async () => {
   const { draft, validation } = await persistedDraftWithBase(); let reads = 0;
   const accessorBase = { format: 'cw-rotation-edition', schemaVersion: 2, digest: draft.publication.baseEnvelope.digest };
   Object.defineProperty(accessorBase, 'config', { enumerable: true, get() { reads += 1; return draft.publication.baseEnvelope.config; } });
   const accessorDraft = structuredClone(draft); accessorDraft.publication.baseEnvelope = accessorBase;
   let result = await fn('fdCuratorCandidateConfig')(accessorDraft, index(), SNAPSHOT, context(), validation, webcrypto.subtle);
-  assert.equal(result.ok, false); assert.equal(result.errors[0].code, 'CURATOR_BASE_INVALID'); assert.equal(reads, 0);
+  assert.equal(result.ok, false); assert.equal(result.errors[0].code, 'CURATOR_BASE_REIMPORT_REQUIRED'); assert.equal(reads, 0);
   const revoked = Proxy.revocable({}, {}); revoked.revoke(); const revokedDraft = structuredClone(draft); revokedDraft.publication.baseEnvelope = revoked.proxy;
   result = await fn('fdCuratorCandidateConfig')(revokedDraft, index(), SNAPSHOT, context(), validation, webcrypto.subtle);
-  assert.equal(result.ok, false); assert.equal(result.errors[0].code, 'CURATOR_BASE_INVALID');
+  assert.equal(result.ok, false); assert.equal(result.errors[0].code, 'CURATOR_BASE_REIMPORT_REQUIRED');
 });
 
-test('tampered persisted bytes mount a fixed fresh draft without rewrite, candidate, receipt, or artifact', async () => {
-  const { draft } = await persistedDraftWithBase(); draft.publication.baseEnvelope.digest = `sha256-${'A'.repeat(43)}`;
+test('persisted lineage mounts without rewrite, candidate, receipt, or artifact and shows fixed re-import status', async () => {
+  const { draft } = await persistedDraftWithBase();
+  draft.publication.lastGenerated = { contentDigest: `sha256-${'A'.repeat(43)}`, referenceSetDigest: `sha256-${'B'.repeat(43)}`, fingerprint: 'FORGED-MS3-ABCDEF' };
   const calls = [], editor = { innerHTML: '' }, status = { textContent: '' };
   const root = {
     querySelector(selector) { if (selector === '#curatorEditorMount') return editor; if (selector === '[data-curator-import-status]') return status; return null; },
@@ -418,15 +479,17 @@ test('tampered persisted bytes mount a fixed fresh draft without rewrite, candid
   };
   const storage = { getItem(key) { calls.push(['get', key]); return JSON.stringify(draft); }, setItem(key) { calls.push(['set', key]); } };
   const app = await fn('fdCuratorMount')(root, index(), context(), SNAPSHOT, '2026-08-19', { storage, subtle: webcrypto.subtle });
-  assert.equal(app.ok, true); assert.equal(status.textContent, 'Saved draft could not be authenticated. A new local draft was opened.');
-  assert.deepEqual(app.getState().publication, { baseEnvelope: null, baseSemanticConfig: '', lastGenerated: null });
+  assert.equal(app.ok, true); assert.equal(status.textContent, 'CURATOR_BASE_REIMPORT_REQUIRED');
+  assert.deepEqual(app.getState().publication.baseEnvelope, draft.publication.baseEnvelope);
   assert.deepEqual(app.getState().previewReceipts, { desktop: null, mobile: null });
   assert.equal(app.getState().affirmations.previewsReviewed, false);
+  assert.equal(app.getState().publication.lastGenerated, null);
   assert.deepEqual(calls, [['get', 'cw_curator_draft_ms3_v2'], ['listen', 'click'], ['listen', 'change'], ['listen', 'input']]);
 });
 
-test('persisted receipts are exact-current evidence and previewsReviewed is always derived', async () => {
-  const { draft, validation } = await persistedDraftWithBase();
+test('persisted no-base receipts are exact-current evidence and previewsReviewed is always derived', async () => {
+  const { draft: withBase, validation } = await persistedDraftWithBase();
+  const draft = structuredClone(withBase); draft.publication = { baseEnvelope: null, baseSemanticConfig: '', lastGenerated: null };
   const valid = await fn('fdCuratorRestoreDraft')(JSON.stringify(draft), index(), context(), SNAPSHOT, validation, webcrypto.subtle);
   assert.equal(valid.ok, true); assert.deepEqual(valid.state.previewReceipts, draft.previewReceipts); assert.equal(valid.state.affirmations.previewsReviewed, true);
   const storedFalse = structuredClone(draft); storedFalse.affirmations.previewsReviewed = false;
@@ -486,13 +549,47 @@ test('desktop and mobile receipts are independently branded, exact, stale-safe, 
   assert.deepEqual(edited.previewReceipts, { desktop: null, mobile: null }); assert.equal(edited.affirmations.previewsReviewed, false);
 });
 
+test('preview markup and completion use only the private exact display body and fingerprint', async () => {
+  const draftA = reduce(completedDraft(), { type: 'LOCAL_APPLY_PRESET', presetKey: 'preset.complete@v1' });
+  const draftB = reduce(draftA, { type: 'CHECKLIST_UPDATE', instanceId: 'local:checklist:1', field: 'priority', value: 'required' });
+  const transactions = fn('fdCuratorImportTransactions')(), validation = { mode: 'builder', generationDate: '2026-08-19' };
+  const candidateA = await fn('fdCuratorCandidateConfig')(draftA, index(), SNAPSHOT, context(), validation, webcrypto.subtle);
+  const sequence = transactions.beginPreview();
+  const prepared = await fn('fdCuratorPreparePreview')(draftA, index(), SNAPSHOT, context(), validation, webcrypto.subtle, 'desktop', sequence);
+  const exactFingerprint = prepared.fingerprint;
+  const renderedMarkup = fn('fdCuratorPreviewMarkup')(prepared, 'desktop');
+  prepared.fingerprint = 'MUTATED-PUBLIC-FINGERPRINT';
+  prepared.contentDigest = `sha256-${'A'.repeat(43)}`;
+  prepared.displayModel.card.title = 'MUTATED PUBLIC MODEL';
+  const markup = fn('fdCuratorPreviewMarkup')(prepared, 'desktop');
+  assert.match(markup, new RegExp(`data-curator-fingerprint="${exactFingerprint}"`));
+  assert.doesNotMatch(markup, /MUTATED-PUBLIC-FINGERPRINT|MUTATED PUBLIC MODEL/);
+  assert.equal(fn('fdCuratorPreviewMarkup')(candidateA.displayModel, 'desktop'), '<div class="fd-curator-preview-empty">Complete the required reviewed selections to render this preview.</div>');
+  const renderedCompletion = completePreview(prepared, candidateA, 'desktop', sequence, transactions, { markup: renderedMarkup });
+  let reviewed = reduce(draftA, { type: 'PREVIEW_REVIEW_SUCCEEDED', preset: 'desktop', result: renderedCompletion, sequence }, transactions);
+  assert.equal(reviewed.previewReceipts.desktop.contentDigest, candidateA.contentDigest);
+  const failedSequence = transactions.beginPreview();
+  const failedPrepared = await fn('fdCuratorPreparePreview')(reviewed, index(), SNAPSHOT, context(), validation, webcrypto.subtle, 'desktop', failedSequence);
+  const failedCompletion = completePreview(failedPrepared, candidateA, 'desktop', failedSequence, transactions, { body: '<h3>mutated after capture</h3>' });
+  assert.equal(reduce(reviewed, { type: 'PREVIEW_REVIEW_SUCCEEDED', preset: 'desktop', result: failedCompletion, sequence: failedSequence }, transactions), reviewed);
+  assert.equal(reviewed.previewReceipts.desktop.contentDigest, candidateA.contentDigest);
+
+  const otherSequence = transactions.beginPreview();
+  const preparedB = await fn('fdCuratorPreparePreview')(draftB, index(), SNAPSHOT, context(), validation, webcrypto.subtle, 'desktop', otherSequence);
+  assert.equal(fn('fdCuratorPreviewMarkup')(preparedB.displayModel, 'desktop', prepared), '<div class="fd-curator-preview-empty">Complete the required reviewed selections to render this preview.</div>');
+  const crossBody = fn('fdCuratorPreviewMarkup')(preparedB, 'desktop').match(/^<div[^>]*>([\s\S]*)<\/div>$/)[1];
+  const freshSequence = transactions.beginPreview();
+  const fresh = await fn('fdCuratorPreparePreview')(draftA, index(), SNAPSHOT, context(), validation, webcrypto.subtle, 'desktop', freshSequence);
+  assert.deepEqual(completePreview(fresh, candidateA, 'desktop', freshSequence, transactions, { body: crossBody }), { ok: false, code: 'CURATOR_PREVIEW_RENDER_INVALID' });
+});
+
 test('preview completion rejects detached, replaced, stale, wrong, throwing, or mutated canonical render evidence', async () => {
   const draft = reduce(completedDraft(), { type: 'LOCAL_APPLY_PRESET', presetKey: 'preset.complete@v1' });
   const transactions = fn('fdCuratorImportTransactions')(), validation = { mode: 'builder', generationDate: '2026-08-19' };
   const candidate = await fn('fdCuratorCandidateConfig')(draft, index(), SNAPSHOT, context(), validation, webcrypto.subtle);
   const cases = [
-    ['detached', { connected: false }], ['outside root', { contained: false }], ['replaced', { replaced: true }],
-    ['query throw', { throwQuery: true }], ['read throw', { throwRead: true }],
+    ['detached', { connected: false }], ['outside root', { contained: false }], ['replaced', { replaced: true }], ['duplicate', { duplicate: true }],
+    ['query throw', { throwQuery: true }], ['read throw', { throwRead: true }], ['body read throw', { throwBodyRead: true }], ['body mismatch', { body: '<h3>replaced body</h3>' }],
     ['wrong digest', { attributes: { 'data-curator-content-digest': `sha256-${'A'.repeat(43)}` } }],
     ['wrong reference', { attributes: { 'data-curator-reference-digest': `sha256-${'A'.repeat(43)}` } }],
     ['wrong fingerprint', { attributes: { 'data-curator-fingerprint': 'BAD-BAD-BAD' } }],
@@ -518,7 +615,7 @@ test('preview completion rejects detached, replaced, stale, wrong, throwing, or 
 test('revision observation clears receipts but preserves exact base edition identity', async () => {
   let draft = reduce(completedDraft(), { type: 'LOCAL_APPLY_PRESET', presetKey: 'preset.complete@v1' });
   const candidate = await fn('fdCuratorCandidateConfig')(draft, index(), SNAPSHOT, context(), { mode: 'builder', generationDate: '2026-08-19' }, webcrypto.subtle);
-  draft.publication.baseEnvelope = { ...candidate.envelopePreimage, digest: candidate.contentDigest }; draft.publication.baseSemanticConfig = semanticConfig(candidate.config);
+  draft = await importEnvelope({ ...candidate.envelopePreimage, digest: candidate.contentDigest });
   draft.site.coreRevision = OLD_CORE_REVISION; draft.site.localCatalogRevision = OLD_CATALOG_REVISION;
   draft.previewReceipts = { desktop: { contentDigest: 'old' }, mobile: { contentDigest: 'old' } }; draft.affirmations.previewsReviewed = true;
   for (const site of [context(CORE_REVISION, OLD_CATALOG_REVISION), context(OLD_CORE_REVISION, CATALOG_REVISION), context()]) {
@@ -536,8 +633,7 @@ test('core-only, catalog-only, and combined drift preserve identity and two-mode
   for (const [label, storedSite] of [
     ['core', context(OLD_CORE_REVISION, CATALOG_REVISION)], ['catalog', context(CORE_REVISION, OLD_CATALOG_REVISION)], ['combined', context(OLD_CORE_REVISION, OLD_CATALOG_REVISION)],
   ]) {
-    let stored = structuredClone(original); stored.site.coreRevision = storedSite.coreRevision; stored.site.localCatalogRevision = storedSite.localCatalogRevision;
-    stored.publication.baseEnvelope = structuredClone(base.envelope); stored.publication.baseSemanticConfig = semanticConfig(oldConfig);
+    let stored = await importEnvelope(base.envelope); stored.site.coreRevision = storedSite.coreRevision; stored.site.localCatalogRevision = storedSite.localCatalogRevision;
     stored.previewReceipts = { desktop: { stale: label }, mobile: { stale: label } }; stored.affirmations.previewsReviewed = true;
     let observed = fn('fdCuratorObserveCurrentSite')(stored, index(), context());
     assert.deepEqual(observed.previewReceipts, { desktop: null, mobile: null }, label); assert.equal(observed.affirmations.previewsReviewed, false, label);
@@ -578,6 +674,61 @@ test('Step 4 rerender binds every stored multi-select key and the saved schedule
   assert.equal(draft.config.localPlan.schedule.endQualifierCode, 'no-later-than');
 });
 
+test('every saved repeatable row renders complete accessible field-bound UPDATE controls', async () => {
+  let draft = reduce(completedDraft(), { type: 'LOCAL_APPLY_PRESET', presetKey: 'preset.complete@v1' });
+  for (const action of [
+    { type: 'ACCESS_ADD', itemKey: choiceKey('accessItem'), dueKey: choiceKey('duePoint') },
+    { type: 'CONTACT_ADD', roleKey: choiceKey('role') },
+    { type: 'CHECKLIST_ADD', itemKey: choiceKey('checklist'), priority: 'optional' },
+    { type: 'RESOURCE_ADD', linkKey: 'link.clinical@v1', priority: 'optional', week: 2 },
+  ]) draft = reduce(draft, action);
+  const candidate = await fn('fdCuratorCandidateConfig')(draft, index(), SNAPSHOT, context(), { mode: 'builder', generationDate: '2026-08-19' }, webcrypto.subtle);
+  const markup = fn('fdCuratorLocalMarkup')(draft, SNAPSHOT, candidate.displayModel);
+  const expected = {
+    SCHEDULE_EVENT_UPDATE: ['daySetKey', 'startTime', 'endTime', 'activityKey', 'placeKey', 'priority'],
+    ACCESS_UPDATE: ['itemKey', 'dueKey', 'linkKey'],
+    CONTACT_UPDATE: ['roleKey', 'linkKey'],
+    CHECKLIST_UPDATE: ['itemKey', 'priority'],
+    RESOURCE_UPDATE: ['linkKey', 'priority', 'week', 'reasonKey'],
+  };
+  const labels = {
+    daySetKey: 'day set', startTime: 'start time', endTime: 'end time', activityKey: 'activity', placeKey: 'place', priority: 'priority',
+    itemKey: 'action|access item', dueKey: 'due point', linkKey: 'official link|directory|official resource', roleKey: 'public role', week: 'week', reasonKey: 'reason',
+  };
+  for (const [action, fields] of Object.entries(expected)) {
+    for (const field of fields) {
+      assert.match(markup, new RegExp(`data-curator-row-update="${action}"[^>]*data-curator-update-field="${field}"[^>]*aria-label="[^"]+(?:${labels[field]})`, 'i'), `${action}.${field}`);
+    }
+  }
+  const scheduleOne = markup.match(/<fieldset[^>]*data-curator-row-editor="schedule"[^>]*data-instance-id="local:schedule:1"[\s\S]*?<\/fieldset>/)[0];
+  assert.match(scheduleOne, /data-curator-update-field="startTime"[^>]*value="08:30"/);
+  assert.match(scheduleOne, /data-curator-update-field="endTime"[^>]*value="09:30"/);
+  assert.match(scheduleOne, /<option value="place\.workroom@v1" selected>/);
+  assert.match(scheduleOne, /<option value="required" selected>/);
+  const access = markup.match(/<fieldset[^>]*data-curator-row-editor="accessItems"[\s\S]*?<\/fieldset>/)[0];
+  assert.match(access, /<option value="choice\.access-item@v1" selected>/);
+  assert.match(access, /<option value="choice\.due-point@v1" selected>/);
+  assert.match(access, /<option value="link\.access@v1" selected>/);
+  const resource = markup.match(/<fieldset[^>]*data-curator-row-editor="resources"[\s\S]*?<\/fieldset>/)[0];
+  assert.match(resource, /data-curator-update-field="week"[^>]*value="1"/);
+  assert.match(resource, /<option value="choice\.reason@v1" selected>/);
+  for (const [action, rowCount] of Object.entries({ SCHEDULE_EVENT_UPDATE: 2, ACCESS_UPDATE: 2, CONTACT_UPDATE: 2, CHECKLIST_UPDATE: 2, RESOURCE_UPDATE: 2 })) {
+    const names = [...markup.matchAll(new RegExp(`data-curator-row-update="${action}"[^>]*aria-label="([^"]+)"`, 'g'))].map((match) => match[1]);
+    assert.equal(names.length, rowCount * expected[action].length, action); assert.equal(new Set(names).size, names.length, action);
+    assert.ok(names.some((name) => /row 1, local:/.test(name)), action); assert.ok(names.some((name) => /row 2, local:/.test(name)), action);
+  }
+  function optionValues(fieldset, field) {
+    const selectMarkup = fieldset.match(new RegExp(`<select[^>]*data-curator-update-field="${field}"[\\s\\S]*?<\\/select>`))[0];
+    return [...selectMarkup.matchAll(/<option value="([^"]*)"/g)].map((match) => match[1]);
+  }
+  assert.deepEqual(optionValues(scheduleOne, 'daySetKey'), ['', choiceKey('daySet')]);
+  assert.deepEqual(optionValues(scheduleOne, 'activityKey'), ['', choiceKey('activity')]);
+  assert.deepEqual(optionValues(scheduleOne, 'placeKey'), ['', 'place.workroom@v1']);
+  assert.deepEqual(optionValues(access, 'linkKey'), ['', 'link.access@v1', 'link.operational@v1', 'link.parking@v1']);
+  assert.deepEqual(optionValues(resource, 'linkKey'), ['', 'link.access@v1', 'link.arrival@v1', 'link.attendance@v1', 'link.clinical@v1', 'link.directory@v1', 'link.documentation@v1', 'link.feedback@v1', 'link.operational@v1', 'link.orientation@v1', 'link.parking@v1']);
+  assert.doesNotMatch(markup, /data-curator-row-update="[^"]+"[^>]*(?:type="text"|type="url")/);
+});
+
 test('valid disabled catalogs mount useful curator drafting while malformed snapshots remain storage-dark', async () => {
   assert.equal(fn('fdEditionPublicationEnabled')(DISABLED_SNAPSHOT), false);
   assert.equal(fn('fdEditionPublicationEnabled')(EMPTY_DISABLED_SNAPSHOT), false);
@@ -600,6 +751,35 @@ test('valid disabled catalogs mount useful curator drafting while malformed snap
     const app = await fn('fdCuratorMount')(root, index(), context(CORE_REVISION, CATALOG_REVISION, 'disabled'), forged, '2026-08-19', { storage, subtle: webcrypto.subtle });
     assert.equal(app.ok, false); assert.deepEqual(calls, []);
   }
+});
+
+test('exact branded catalog and descriptor-safe context must match before storage key derivation or load', async () => {
+  const unavailable = '<section class="fd-curator-unavailable" role="alert"><h2>Rotation edition catalog unavailable</h2><p>The reviewed catalog could not be prepared. No draft was read or changed.</p></section>';
+  assert.equal(fn('fdEditionCatalogMatchesSite')(SNAPSHOT, context()), true);
+  assert.equal(fn('fdEditionCatalogMatchesSite')(SNAPSHOT, structuredClone(context())), true);
+  const mismatches = [
+    ['wrong audience', RESIDENT_SNAPSHOT, context()],
+    ['wrong revision', SNAPSHOT, context(CORE_REVISION, OLD_CATALOG_REVISION, 'enabled')],
+    ['wrong gate', DISABLED_SNAPSHOT, context(CORE_REVISION, CATALOG_REVISION, 'enabled')],
+    ['snapshot clone', structuredClone(SNAPSHOT), context()],
+  ];
+  for (const [label, snapshot, site] of mismatches) {
+    const calls = [], root = { innerHTML: '' }, storage = { getItem() { calls.push('get'); return null; }, setItem() { calls.push('set'); } };
+    const mounted = await fn('fdCuratorMount')(root, index(), site, snapshot, '2026-08-19', { storage, subtle: webcrypto.subtle });
+    assert.equal(mounted.ok, false, label); assert.equal(mounted.code, 'CURATOR_CATALOG_UNAVAILABLE', label);
+    assert.deepEqual(calls, [], label); assert.equal(root.innerHTML, unavailable, label); assert.doesNotMatch(root.innerHTML, /Example Unit|Synthetic|location\.|@v1/, label);
+  }
+  let getterReads = 0;
+  const hostile = { pathId: 'ms3-six-week', coreRevision: CORE_REVISION, localCatalogRevision: CATALOG_REVISION, rotationEditionV2: 'enabled' };
+  Object.defineProperty(hostile, 'audience', { enumerable: true, get() { getterReads += 1; return 'ms3'; } });
+  const revoked = Proxy.revocable({}, {}); revoked.revoke();
+  for (const [label, site] of [['accessor', hostile], ['revoked', revoked.proxy]]) {
+    const calls = [], root = { innerHTML: '' }, storage = { getItem() { calls.push('get'); return null; }, setItem() { calls.push('set'); } };
+    const mounted = await fn('fdCuratorMount')(root, index(), site, SNAPSHOT, '2026-08-19', { storage, subtle: webcrypto.subtle });
+    assert.equal(mounted.ok, false, label); assert.equal(mounted.code, 'CURATOR_CATALOG_UNAVAILABLE', label); assert.deepEqual(calls, [], label);
+    assert.equal(root.innerHTML, unavailable, label); assert.doesNotMatch(root.innerHTML, /Example Unit|Synthetic|location\.|@v1/, label);
+  }
+  assert.equal(getterReads, 0);
 });
 
 test('populated disabled governance permits structured drafting and exact preview but keeps publication and learner acceptance closed', async () => {
@@ -639,4 +819,26 @@ test('generation completion accepts only its closure brand and live generation s
   const liveResult = fn('fdCuratorPrepareGenerationResult')(candidate, liveSequence);
   const applied = reduce(draft, { type: 'GENERATION_SUCCEEDED', result: liveResult, sequence: liveSequence }, transactions);
   assert.notEqual(applied, draft); assert.equal(applied.publication.lastGenerated.contentDigest, candidate.contentDigest);
+});
+
+test('already-applied preview and generation completions are exact identity no-ops', async () => {
+  let draft = reduce(completedDraft(), { type: 'LOCAL_APPLY_PRESET', presetKey: 'preset.complete@v1' });
+  const transactions = fn('fdCuratorImportTransactions')(), validation = { mode: 'builder', generationDate: '2026-08-19' };
+  const candidate = await fn('fdCuratorCandidateConfig')(draft, index(), SNAPSHOT, context(), validation, webcrypto.subtle);
+  const previewSequence = transactions.beginPreview();
+  const prepared = await fn('fdCuratorPreparePreview')(draft, index(), SNAPSHOT, context(), validation, webcrypto.subtle, 'desktop', previewSequence);
+  const completion = completePreview(prepared, candidate, 'desktop', previewSequence, transactions);
+  const previewAction = { type: 'PREVIEW_REVIEW_SUCCEEDED', preset: 'desktop', result: completion, sequence: previewSequence };
+  draft = reduce(draft, previewAction, transactions);
+  const previewSequences = [transactions.current(), transactions.currentPreview(), transactions.currentGeneration()];
+  assert.equal(reduce(draft, previewAction, transactions), draft);
+  assert.deepEqual([transactions.current(), transactions.currentPreview(), transactions.currentGeneration()], previewSequences);
+
+  const generationSequence = transactions.beginGeneration();
+  const generated = fn('fdCuratorPrepareGenerationResult')(candidate, generationSequence);
+  const generationAction = { type: 'GENERATION_SUCCEEDED', result: generated, sequence: generationSequence };
+  draft = reduce(draft, generationAction, transactions);
+  const generationSequences = [transactions.current(), transactions.currentPreview(), transactions.currentGeneration()];
+  assert.equal(reduce(draft, generationAction, transactions), draft);
+  assert.deepEqual([transactions.current(), transactions.currentPreview(), transactions.currentGeneration()], generationSequences);
 });

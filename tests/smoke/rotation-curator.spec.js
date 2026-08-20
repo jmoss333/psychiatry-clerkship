@@ -37,11 +37,31 @@ function projection(audience, revision) {
   const location = 'location.synthetic@v1';
   const records = [
     { key: 'choice.role@v1', kind: 'choice', choiceKind: 'role', label: 'Faculty role', fragment: 'the faculty role', ...common },
+    { key: 'choice.role-two@v1', kind: 'choice', choiceKind: 'role', label: 'Second public role', fragment: 'the second public role', locationKeys: [location], ...common },
     { key: 'choice.reason@v1', kind: 'choice', choiceKind: 'reason', label: 'Reviewed reason', fragment: 'reviewed reason', locationKeys: [location], ...common },
+    { key: 'choice.reason-two@v1', kind: 'choice', choiceKind: 'reason', label: 'Second reviewed reason', fragment: 'second reviewed reason', locationKeys: [location], ...common },
+    { key: 'choice.day-set-one@v1', kind: 'choice', choiceKind: 'daySet', label: 'Weekdays', fragment: 'weekdays', locationKeys: [location], ...common },
+    { key: 'choice.day-set-two@v1', kind: 'choice', choiceKind: 'daySet', label: 'Teaching days', fragment: 'teaching days', locationKeys: [location], ...common },
+    { key: 'choice.activity-one@v1', kind: 'choice', choiceKind: 'activity', label: 'Rounds', fragment: 'rounds', locationKeys: [location], ...common },
+    { key: 'choice.activity-two@v1', kind: 'choice', choiceKind: 'activity', label: 'Teaching', fragment: 'teaching', locationKeys: [location], ...common },
+    { key: 'choice.access-one@v1', kind: 'choice', choiceKind: 'accessItem', label: 'Badge setup', fragment: 'complete badge setup', locationKeys: [location], ...common },
+    { key: 'choice.access-two@v1', kind: 'choice', choiceKind: 'accessItem', label: 'Email setup', fragment: 'complete email setup', locationKeys: [location], ...common },
+    { key: 'choice.due-one@v1', kind: 'choice', choiceKind: 'duePoint', label: 'Before arrival', fragment: 'before arrival', locationKeys: [location], ...common },
+    { key: 'choice.due-two@v1', kind: 'choice', choiceKind: 'duePoint', label: 'Before day two', fragment: 'before day two', locationKeys: [location], ...common },
+    { key: 'choice.checklist-one@v1', kind: 'choice', choiceKind: 'checklist', label: 'Bring badge', fragment: 'bring your badge', locationKeys: [location], ...common },
+    { key: 'choice.checklist-two@v1', kind: 'choice', choiceKind: 'checklist', label: 'Review schedule', fragment: 'review the schedule', locationKeys: [location], ...common },
     { key: 'choice.presentation-format@v1', kind: 'choice', choiceKind: 'presentationFormat', label: 'Problem representation', fragment: 'a problem representation', locationKeys: [location], ...common },
     { key: 'choice.presentation-timing@v1', kind: 'choice', choiceKind: 'presentationTiming', label: 'During rounds', fragment: 'during rounds', locationKeys: [location], ...common },
     { key: 'choice.presentation-element-one@v1', kind: 'choice', choiceKind: 'presentationElement', label: 'Assessment', fragment: 'assessment', locationKeys: [location], ...common },
     { key: 'choice.presentation-element-two@v1', kind: 'choice', choiceKind: 'presentationElement', label: 'Plan', fragment: 'plan', locationKeys: [location], ...common },
+    { key: 'place.one@v1', kind: 'place', displayName: 'the first workroom', locationKeys: [location], ...common },
+    { key: 'place.two@v1', kind: 'place', displayName: 'the second workroom', locationKeys: [location], ...common },
+    { key: 'link.access-one@v1', kind: 'officialLink', title: 'First access page', url: 'https://example.invalid/access-one', visibleHostname: 'example.invalid', purposeCode: 'access-training', locationKeys: [location], ...common },
+    { key: 'link.access-two@v1', kind: 'officialLink', title: 'Second access page', url: 'https://example.invalid/access-two', visibleHostname: 'example.invalid', purposeCode: 'reviewed-operational', locationKeys: [location], ...common },
+    { key: 'link.directory-one@v1', kind: 'officialLink', title: 'First directory', url: 'https://example.invalid/directory-one', visibleHostname: 'example.invalid', purposeCode: 'directory', locationKeys: [location], ...common },
+    { key: 'link.directory-two@v1', kind: 'officialLink', title: 'Second directory', url: 'https://example.invalid/directory-two', visibleHostname: 'example.invalid', purposeCode: 'directory', locationKeys: [location], ...common },
+    { key: 'link.resource-one@v1', kind: 'officialLink', title: 'First resource', url: 'https://example.invalid/resource-one', visibleHostname: 'example.invalid', purposeCode: 'orientation', locationKeys: [location], ...common },
+    { key: 'link.resource-two@v1', kind: 'officialLink', title: 'Second resource', url: 'https://example.invalid/resource-two', visibleHostname: 'example.invalid', purposeCode: 'official-clinical-policy', locationKeys: [location], ...common },
     { key: location, kind: 'trainingLocation', displayName: 'Synthetic Teaching Unit', locationCode: 'SYN', locationTypeCode: 'inpatient', officialHostnames: ['example.invalid'], ...common },
     { key: 'curator.synthetic@v1', kind: 'curatorProfile', displayName: 'Synthetic Faculty', roleKey: 'choice.role@v1', locationKeys: [location], ...common },
     {
@@ -49,6 +69,19 @@ function projection(audience, revision) {
       templates: Object.fromEntries(Object.entries(TOKENS).map(([name, tokens]) => [name, {
         text: tokens.map(token => `{${token}}`).join(' '), tokens,
       }])),
+      locationKeys: [location], ...common,
+    },
+    {
+      key: 'preset.synthetic@v1', kind: 'localPreset', displayName: 'Synthetic repeatable rows', phraseSetKey: 'phrases.synthetic@v1',
+      localPlan: {
+        schedule: { dayStart: '07:45', dayEnd: '17:00', endQualifierCode: 'about', events: [
+          { instanceId: 'local:schedule:1', daySetKey: 'choice.day-set-one@v1', startTime: '08:30', endTime: '09:30', activityKey: 'choice.activity-one@v1', placeKey: 'place.one@v1', priority: 'required' },
+        ] },
+        accessItems: [{ instanceId: 'local:access:1', itemKey: 'choice.access-one@v1', dueKey: 'choice.due-one@v1', linkKey: 'link.access-one@v1' }],
+        contacts: [{ instanceId: 'local:contact:1', roleKey: 'choice.role@v1', linkKey: 'link.directory-one@v1' }],
+        checklistItems: [{ instanceId: 'local:checklist:1', itemKey: 'choice.checklist-one@v1', priority: 'recommended' }],
+        resources: [{ instanceId: 'local:resource:1', linkKey: 'link.resource-one@v1', priority: 'recommended', week: 1, reasonKey: 'choice.reason@v1' }],
+      },
       locationKeys: [location], ...common,
     },
   ].map(record => ({ ...record, contentDigest: digest(record) }))
@@ -182,7 +215,11 @@ test('desktop and mobile review receipts are independent and expose exact digest
   await page.getByRole('button', { name: /Step 1 Edition/ }).click();
   await page.locator('[data-curator-save]').click();
   const preserved = await page.evaluate(() => JSON.parse(Object.entries(localStorage).find(([key]) => /_curator_draft_(?:ms3|resident)_v2$/.test(key))[1]));
-  expect(preserved.previewReceipts.desktop.contentDigest).toBe(desktopEvidence['content-digest']);
+  expect(preserved.previewReceipts.desktop).toEqual({
+    contentDigest: desktopEvidence['content-digest'], referenceSetDigest: desktopEvidence['reference-digest'],
+    currentCoreRevision: desktopEvidence['core-revision'], currentCatalogRevision: desktopEvidence['catalog-revision'],
+    rendererRevision: desktopEvidence['renderer-revision'], previewPreset: 'desktop',
+  });
   await page.getByRole('button', { name: /Step 4 Local details/ }).click();
   await page.getByRole('button', { name: 'Review 390 px mobile preview' }).focus();
   await page.keyboard.press('Enter');
@@ -249,6 +286,120 @@ test('structured multi-select and qualifier survive every rerender, navigation, 
   await page.locator('#fd-curator-schedule [data-curator-field="endQualifierCode"]').selectOption('about');
   await page.locator('#fd-curator-schedule [data-curator-local-action="schedule-bounds"]').click();
   await expect(page.locator('#fd-curator-schedule [data-curator-field="endQualifierCode"]')).toHaveValue('about');
+});
+
+test('every repeatable row field edits accessibly through rerender, navigation, save-load, preview, and a second edit', async ({ page }) => {
+  test.slow();
+  await page.goto(TOOL);
+  await selectReviewedContext(page);
+  await page.getByRole('button', { name: /Step 4 Local details/ }).click();
+  await page.locator('[data-curator-local-preset]').selectOption('preset.synthetic@v1');
+  await expect(page.getByLabel(/Schedule event row 1.*start time/i)).toHaveValue('08:30');
+
+  const schedule = page.locator('#fd-curator-schedule');
+  await schedule.locator('[data-curator-field="daySetKey"]').selectOption('choice.day-set-two@v1');
+  await schedule.locator('[data-curator-field="startTime"]').fill('13:00');
+  await schedule.locator('[data-curator-field="activityKey"]').selectOption('choice.activity-two@v1');
+  await schedule.locator('[data-curator-field="priority"]').selectOption('optional');
+  await schedule.locator('[data-curator-local-action="schedule-event"]').click();
+
+  const access = page.locator('#fd-curator-accessItems');
+  await access.locator('[data-curator-field="itemKey"]').selectOption('choice.access-two@v1');
+  await access.locator('[data-curator-field="dueKey"]').selectOption('choice.due-two@v1');
+  await access.locator('[data-curator-local-action="access"]').click();
+  const contacts = page.locator('#fd-curator-contacts');
+  await contacts.locator('[data-curator-field="roleKey"]').selectOption('choice.role-two@v1');
+  await contacts.locator('[data-curator-local-action="contact"]').click();
+  const checklist = page.locator('#fd-curator-checklistItems');
+  await checklist.locator('[data-curator-field="itemKey"]').selectOption('choice.checklist-two@v1');
+  await checklist.locator('[data-curator-field="priority"]').selectOption('optional');
+  await checklist.locator('[data-curator-local-action="checklist"]').click();
+  const resources = page.locator('#fd-curator-resources');
+  await resources.locator('[data-curator-field="linkKey"]').selectOption('link.resource-two@v1');
+  await resources.locator('[data-curator-field="priority"]').selectOption('optional');
+  await resources.locator('[data-curator-field="week"]').fill('2');
+  await resources.locator('[data-curator-local-action="resource"]').click();
+
+  for (const [action, count] of Object.entries({ SCHEDULE_EVENT_UPDATE: 12, ACCESS_UPDATE: 6, CONTACT_UPDATE: 4, CHECKLIST_UPDATE: 4, RESOURCE_UPDATE: 8 })) {
+    const names = await page.locator(`[data-curator-row-update="${action}"]`).evaluateAll(nodes => nodes.map(node => node.getAttribute('aria-label')));
+    expect(names).toHaveLength(count); expect(new Set(names).size).toBe(count); expect(names.some(name => /row 2, local:/.test(name))).toBe(true);
+  }
+  async function optionValues(name) { return page.getByLabel(name).locator('option').evaluateAll(options => options.map(option => option.value)); }
+  expect(await optionValues(/Schedule event row 1.*day set/i)).toEqual(['', 'choice.day-set-two@v1', 'choice.day-set-one@v1']);
+  expect(await optionValues(/Access item row 1.*official link/i)).toEqual(['', 'link.access-one@v1', 'link.access-two@v1']);
+  expect(await optionValues(/Contact row 1.*directory/i)).toEqual(['', 'link.directory-one@v1', 'link.directory-two@v1']);
+  expect(await optionValues(/Resource row 1.*official resource/i)).toEqual(['', 'link.access-one@v1', 'link.directory-one@v1', 'link.resource-one@v1', 'link.access-two@v1', 'link.directory-two@v1', 'link.resource-two@v1']);
+
+  const edits = [
+    [/Schedule event row 1.*day set/i, 'choice.day-set-two@v1'],
+    [/Schedule event row 1.*activity/i, 'choice.activity-two@v1'],
+    [/Schedule event row 1.*place/i, 'place.two@v1'],
+    [/Schedule event row 1.*priority/i, 'optional'],
+    [/Access item row 1.*access item/i, 'choice.access-two@v1'],
+    [/Access item row 1.*due point/i, 'choice.due-two@v1'],
+    [/Access item row 1.*official link/i, 'link.access-two@v1'],
+    [/Contact row 1.*public role/i, 'choice.role-two@v1'],
+    [/Contact row 1.*directory/i, 'link.directory-two@v1'],
+    [/Checklist action row 1.*action/i, 'choice.checklist-two@v1'],
+    [/Checklist action row 1.*priority/i, 'required'],
+    [/Resource row 1.*official resource/i, 'link.resource-two@v1'],
+    [/Resource row 1.*priority/i, 'optional'],
+    [/Resource row 1.*reason/i, 'choice.reason-two@v1'],
+  ];
+  for (const [name, value] of edits) { await page.getByLabel(name).selectOption(value); await expect(page.getByLabel(name)).toHaveValue(value); }
+  for (const [name, value] of [[/Schedule event row 1.*start time/i, '09:00'], [/Schedule event row 1.*end time/i, '10:00']]) {
+    await page.getByLabel(name).fill(value); await page.getByLabel(name).press('Tab'); await expect(page.getByLabel(name)).toHaveValue(value);
+  }
+  await page.getByLabel(/Resource row 1.*week/i).fill('2'); await page.getByLabel(/Resource row 1.*week/i).press('Tab'); await expect(page.getByLabel(/Resource row 1.*week/i)).toHaveValue('2');
+
+  await expect(page.getByLabel(/Schedule event row 1.*day set/i)).toHaveValue('choice.day-set-two@v1');
+  await expect(page.getByLabel(/Schedule event row 1.*end time/i)).toHaveValue('10:00');
+  await expect(page.getByLabel(/Access item row 1.*official link/i)).toHaveValue('link.access-two@v1');
+  await expect(page.getByLabel(/Resource row 1.*week/i)).toHaveValue('2');
+  await page.getByRole('button', { name: /Step 3 Schedule/ }).click();
+  await page.getByRole('button', { name: /Step 4 Local details/ }).click();
+  for (const [name, value] of edits) await expect(page.getByLabel(name)).toHaveValue(value);
+  await expect(page.getByLabel(/Schedule event row 1.*start time/i)).toHaveValue('09:00');
+  await expect(page.getByLabel(/Schedule event row 1.*end time/i)).toHaveValue('10:00');
+  await expect(page.getByLabel(/Resource row 1.*week/i)).toHaveValue('2');
+
+  await page.getByRole('button', { name: 'Review desktop preview' }).click();
+  await expect(page.locator('[data-curator-preview-status="desktop"]')).toContainText('Reviewed');
+  await expect(page.locator('.fd-curator-preview--desktop')).toContainText('teaching days');
+  await expect(page.locator('.fd-curator-preview--desktop')).toContainText('Second resource');
+  await expect(page.locator('.fd-curator-preview--desktop')).toContainText('second reviewed reason');
+  await page.getByRole('button', { name: /Step 1 Edition/ }).click();
+  await page.locator('[data-curator-save]').click();
+  await page.reload();
+  await page.getByRole('button', { name: /Step 4 Local details/ }).click();
+  for (const [name, value] of edits) await expect(page.getByLabel(name)).toHaveValue(value);
+  await expect(page.getByLabel(/Schedule event row 1.*start time/i)).toHaveValue('09:00');
+  await expect(page.getByLabel(/Schedule event row 1.*end time/i)).toHaveValue('10:00');
+  await expect(page.getByLabel(/Resource row 1.*week/i)).toHaveValue('2');
+  await expect(page.locator('[data-curator-preview-status="desktop"]')).toContainText('Reviewed');
+  const firstSaved = await page.evaluate(() => JSON.parse(Object.entries(localStorage).find(([key]) => /_curator_draft_(?:ms3|resident)_v2$/.test(key))[1]));
+  expect(typeof firstSaved.config.localPlan.resources[0].week).toBe('number'); expect(firstSaved.config.localPlan.resources[0].week).toBe(2);
+
+  for (const name of [/Schedule event row 1.*end time/i, /Schedule event row 1.*place/i]) {
+    const control = page.getByLabel(name); if (await control.getAttribute('type') === 'time') await control.fill(''); else await control.selectOption(''); await control.press('Tab');
+  }
+  for (const name of [/Access item row 1.*official link/i, /Contact row 1.*directory/i, /Resource row 1.*reason/i]) await page.getByLabel(name).selectOption('');
+  await page.getByLabel(/Resource row 1.*week/i).fill('3'); await page.getByLabel(/Resource row 1.*week/i).press('Tab');
+  await expect(page.locator('[data-curator-preview-status="desktop"]')).toContainText('Not reviewed');
+  await page.getByRole('button', { name: 'Review desktop preview' }).click();
+  await expect(page.locator('[data-curator-preview-status="desktop"]')).toContainText('Reviewed');
+  await page.getByRole('button', { name: /Step 1 Edition/ }).click();
+  await page.locator('[data-curator-save]').click();
+  await page.reload();
+  await page.getByRole('button', { name: /Step 4 Local details/ }).click();
+  await expect(page.getByLabel(/Schedule event row 1.*end time/i)).toHaveValue('');
+  await expect(page.getByLabel(/Schedule event row 1.*place/i)).toHaveValue('');
+  await expect(page.getByLabel(/Access item row 1.*official link/i)).toHaveValue('');
+  await expect(page.getByLabel(/Contact row 1.*directory/i)).toHaveValue('');
+  await expect(page.getByLabel(/Resource row 1.*reason/i)).toHaveValue('');
+  await expect(page.getByLabel(/Resource row 1.*week/i)).toHaveValue('3');
+  const secondSaved = await page.evaluate(() => JSON.parse(Object.entries(localStorage).find(([key]) => /_curator_draft_(?:ms3|resident)_v2$/.test(key))[1]));
+  expect(typeof secondSaved.config.localPlan.resources[0].week).toBe('number'); expect(secondSaved.config.localPlan.resources[0].week).toBe(3);
 });
 
 test('v1 backup salvage discards prose and writes nothing until an explicit v2 save', async ({ page }) => {
