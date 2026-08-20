@@ -100,7 +100,7 @@ test('both builders emit governance inventories matching their final tools', () 
       timeout: 60_000,
     });
     assert.equal(built.status, 0, built.stdout + built.stderr);
-    assertInventory(ms3, 22); // retired standalone timeline is now the governed Path tab
+    assertInventory(ms3, 23); // +rotation-curator.html (#377); standalone timeline is the governed Path tab
     assert.match(
       fs.readFileSync(path.join(ms3, '_headers'), 'utf8'),
       /\/tool-governance\.json\n  Cache-Control: public, max-age=0, must-revalidate/,
@@ -111,7 +111,7 @@ test('both builders emit governance inventories matching their final tools', () 
       timeout: 60_000,
     });
     assert.equal(residentBuilt.status, 0, residentBuilt.stdout + residentBuilt.stderr);
-    assertInventory(resident, 24); // retired standalone timeline is now the governed Path tab
+    assertInventory(resident, 25); // +rotation-curator.html (#377); standalone timeline is the governed Path tab
     const residentIndex = fs.readFileSync(path.join(resident, 'index.html'), 'utf8');
     for (const expected of [
       '<span class="fd-brand__name">MMC Psychiatry</span>',
