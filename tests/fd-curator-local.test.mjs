@@ -13,7 +13,7 @@ const API_NAMES = [
   'fdCuratorNewDraft', 'fdCuratorReduce', 'fdCuratorValidateStep',
   'fdCuratorApplyAction', 'fdCuratorDraftStorage', 'fdCuratorProjectDraft',
   'fdCuratorLocalPreviewMarkup', 'fdCuratorExternalDomain', 'fdCuratorLocalFindings',
-  'fdCuratorImportEnvelope', 'fdCuratorValidatePendingLocal', 'fdCuratorMount',
+  'fdCuratorImportEnvelope', 'fdCuratorValidatePendingLocal', 'fdCuratorRenderReviewStatus', 'fdCuratorMount',
 ];
 
 function loadApi() {
@@ -371,21 +371,24 @@ test('save rejects blocking local policy findings but preserves advisory drafts'
 
 test('exact prohibited local content cannot be saved or imported through a valid digest', async () => {
   const blocked = [
-    'Synthetic learner Alpha evaluation is unsatisfactory.',
-    'Synthetic patient Alpha has record 12345.',
-    'Perform intervention X immediately.',
-    'Follow the local protocol: perform intervention X immediately.',
+    { unsafe: 'Synthetic learner Alpha evaluation is unsatisfactory.', field: 'firstDayArrival' },
+    { unsafe: 'Synthetic patient Alpha has record 12345.', field: 'dailySchedule' },
+    { unsafe: 'Student Alpha received an unsatisfactory evaluation.', field: 'feedbackProcess' },
+    { unsafe: 'MRN 12345 belongs to synthetic patient Alpha.', field: 'documentationExpectations' },
+    { unsafe: 'Perform intervention X after supervision.', field: 'roundsWorkflow' },
+    { unsafe: 'Synthetic learner Alpha evaluati\u03bfn is unsatisfactory.', field: 'presentationExpectations' },
+    { unsafe: 'According to the local protocol, perform intervention X.', field: 'accessPreparation' },
   ];
-  for (const unsafe of blocked) {
+  for (const { unsafe, field } of blocked) {
     const calls = [];
     const adapter = fn('fdCuratorDraftStorage')({ setItem(...args) { calls.push(args); } });
     const safe = completedDraft();
     const reduced = reduce(safe, {
-      type: 'LOCAL_SET_ORIENTATION', field: 'firstDayArrival', value: unsafe,
+      type: 'LOCAL_SET_ORIENTATION', field, value: unsafe,
     });
     assert.deepEqual(reduced, safe, 'the reducer must reject a shared-policy violation');
     const draft = structuredClone(safe);
-    draft.config.localOrientation.firstDayArrival = unsafe;
+    draft.config.localOrientation[field] = unsafe;
     assert.equal(adapter.save(draft, index(), context()), false, unsafe);
     assert.deepEqual(calls, []);
 
@@ -402,6 +405,45 @@ test('exact prohibited local content cannot be saved or imported through a valid
     );
     assert.equal(imported.ok, false, unsafe);
     assert.doesNotMatch(JSON.stringify(imported), /Synthetic learner Alpha|Synthetic patient Alpha|12345|intervention X/i);
+  }
+
+  const safe = completedDraft();
+  assert.deepEqual(reduce(safe, {
+    type: 'LOCAL_CONTACT_ADD', role: 'Synthetic patient Alpha has record 12345.',
+    directoryUrl: 'https://example.edu/directory',
+  }), safe);
+  assert.deepEqual(reduce(safe, {
+    type: 'LOCAL_RESOURCE_ADD', title: 'Synthetic learner Alpha evaluation is unsatisfactory.',
+    url: 'https://example.edu/resource', priority: 'optional', week: 1, rationale: '',
+  }), safe);
+
+  for (const mutate of [
+    (draft) => draft.config.localOrientation.contacts.push({
+      role: 'Synthetic patient Alpha has record 12345.', directoryUrl: 'https://example.edu/directory',
+    }),
+    (draft) => draft.config.localOrientation.resources.push({
+      id: 'local:resource:1', title: 'Synthetic learner Alpha evaluation is unsatisfactory.',
+      url: 'https://example.edu/resource', priority: 'optional', week: 1, rationale: '',
+    }),
+  ]) {
+    const calls = [];
+    const adapter = fn('fdCuratorDraftStorage')({ setItem(...args) { calls.push(args); } });
+    const draft = completedDraft(); mutate(draft);
+    assert.equal(adapter.save(draft, index(), context()), false);
+    assert.deepEqual(calls, []);
+    const config = {
+      audience: 'ms3', pathId: 'ms3-six-week', editionNumber: 3,
+      createdAgainstCoreRevision: REVISION, card: draft.config.card,
+      pathItems: draft.config.pathItems, localOrientation: draft.config.localOrientation,
+      changeNote: '',
+    };
+    const pre = { format: 'cw-rotation-edition', schemaVersion: 1, config };
+    const envelope = { ...pre, digest: await F.fdEditionDigest(pre, webcrypto.subtle) };
+    const imported = await fn('fdCuratorImportEnvelope')(
+      JSON.stringify(envelope), index(), context(), webcrypto.subtle,
+    );
+    assert.equal(imported.ok, false);
+    assert.doesNotMatch(JSON.stringify(imported), /Synthetic learner Alpha|Synthetic patient Alpha|12345/);
   }
 });
 
@@ -458,6 +500,71 @@ test('pending add buffers validate exact fields and cannot be silently excluded'
   assert.equal(result.errors[0].href, '#curatorNewResourceTitle');
 });
 
+test('pending validation rejects hostile shapes without invoking getters or exposing values', () => {
+  const validate = fn('fdCuratorValidatePendingLocal');
+  const draft = completedDraft();
+  const ordinary = () => ({
+    contact: { role: '', directoryUrl: '' },
+    checklist: { label: '', priority: 'recommended' },
+    resource: { title: '', url: '', priority: 'recommended', week: 1, rationale: '' },
+  });
+  let getterReads = 0;
+  const topAccessor = ordinary();
+  Object.defineProperty(topAccessor, 'contact', {
+    enumerable: true, get() { getterReads += 1; return { role: 'private-value', directoryUrl: '' }; },
+  });
+  const nestedAccessor = ordinary();
+  Object.defineProperty(nestedAccessor.resource, 'title', {
+    enumerable: true, get() { getterReads += 1; return 'private-value'; },
+  });
+  const inherited = Object.create({ extra: 'private-value' });
+  Object.assign(inherited, ordinary());
+  const extra = ordinary(); extra.extra = 'private-value';
+  const exotic = ordinary(); exotic.contact = Object.create({});
+  Object.assign(exotic.contact, { role: '', directoryUrl: '' });
+  const { proxy, revoke } = Proxy.revocable(ordinary(), {}); revoke();
+
+  for (const hostile of [topAccessor, nestedAccessor, inherited, extra, exotic, proxy]) {
+    let result;
+    assert.doesNotThrow(() => {
+      result = validate(hostile, draft, index(), context(), 'all', 'leave');
+    });
+    assert.equal(result.ok, false);
+    assert.equal(result.errors.length, 1);
+    assert.deepEqual(result.errors[0], {
+      code: 'CURATOR_PENDING', fieldId: 'curatorEditorTitle', href: '#curatorEditorTitle',
+      message: 'Local details — Pending item: The pending fields could not be validated.',
+      blocking: true,
+    });
+    assert.doesNotMatch(JSON.stringify(result), /private-value/);
+  }
+  assert.equal(getterReads, 0);
+
+  assert.equal(validate(ordinary(), draft, index(), context(), 'all', 'leave').ok, true);
+});
+
+test('review status mutates its polite live region only when the announced state changes', () => {
+  const renderStatus = fn('fdCuratorRenderReviewStatus');
+  let text = 'Desktop preview not yet reviewed · Mobile preview not yet reviewed';
+  let mutations = 0;
+  const statusNode = {};
+  Object.defineProperty(statusNode, 'textContent', {
+    get() { return text; },
+    set(value) { text = value; mutations += 1; },
+  });
+  const root = { querySelector(selector) { return selector === '#curatorPreviewReviewStatus' ? statusNode : null; } };
+  const state = completedDraft();
+  renderStatus(root, state);
+  renderStatus(root, state);
+  assert.equal(mutations, 0, 'same-state renders do not announce');
+
+  state.preview.desktopReviewed = true;
+  renderStatus(root, state);
+  renderStatus(root, state);
+  assert.equal(mutations, 1, 'a genuine review transition announces once');
+  assert.equal(text, 'Desktop preview reviewed · Mobile preview not yet reviewed');
+});
+
 test('validated projector preview escapes local text and shows only external domains', async () => {
   let draft = completedDraft();
   draft = reduce(draft, {
@@ -493,11 +600,16 @@ test('delayed preview review records only the requested view for the still-curre
   harness.setCuratorProjector((draft) => new Promise((resolve) => {
     pending.push({ title: draft.config.card.title, resolve });
   }));
+  const fakeWindow = {
+    innerWidth: 1280, innerHeight: 900, listeners: {},
+    addEventListener(name, callback) { this.listeners[name] = callback; },
+  };
+  const ownerDocument = { defaultView: fakeWindow };
   const nodes = new Map();
   function node(id) {
     if (!nodes.has(id)) nodes.set(id, {
       id, hidden: false, innerHTML: '', textContent: '', value: '', disabled: false,
-      isConnected: true,
+      isConnected: true, ownerDocument,
       attributes: new Map(), listeners: {},
       setAttribute(name, value) { this.attributes.set(name, String(value)); },
       removeAttribute(name) { this.attributes.delete(name); },
@@ -560,6 +672,23 @@ test('delayed preview review records only the requested view for the still-curre
   assert.equal(app.getState().config.localOrientation.dailySchedule, '😀'.repeat(600));
   assert.equal(input.value, '😀'.repeat(600), 'max plus one is rejected without DOM/state divergence');
   assert.equal(node('curatorDailyScheduleCount').textContent, '600 of 600 characters');
+
+  const resizedDesktop = app.reviewPreview('desktop');
+  assert.match(node('curatorPreviewBody').innerHTML, /Validating the desktop student preview/);
+  fakeWindow.innerWidth = 390; fakeWindow.innerHeight = 844;
+  fakeWindow.listeners.resize();
+  pending[4].resolve({ ok: true, index: { weeks: [], columns: [], edition: { localOrientation: app.getState().config.localOrientation } } });
+  assert.equal((await resizedDesktop).code, 'CURATOR_PREVIEW_STALE');
+  assert.deepEqual(app.getState().preview, { desktopReviewed: false, mobileReviewed: false });
+  assert.doesNotMatch(node('curatorPreviewBody').innerHTML, /Validating/);
+
+  const resizedMobile = app.reviewPreview('mobile');
+  fakeWindow.innerWidth = 1280; fakeWindow.innerHeight = 900;
+  fakeWindow.listeners.resize(); fakeWindow.listeners.resize();
+  pending[5].resolve({ ok: true, index: { weeks: [], columns: [], edition: { localOrientation: app.getState().config.localOrientation } } });
+  assert.equal((await resizedMobile).code, 'CURATOR_PREVIEW_STALE');
+  assert.deepEqual(app.getState().preview, { desktopReviewed: false, mobileReviewed: false });
+  assert.doesNotMatch(node('curatorPreviewBody').innerHTML, /Validating/);
 });
 
 test('import begin and commit invalidate deliberate review work without review-start canceling the import', async () => {
@@ -600,12 +729,73 @@ test('import begin and commit invalidate deliberate review work without review-s
   assert.equal((await beforeImport).code, 'CURATOR_PREVIEW_STALE');
 
   const duringImport = app.reviewPreview('mobile');
+  node('curatorNewContactRole').value = 'Legacy coordinator';
+  node('curatorNewContactDirectoryUrl').value = 'https://example.edu/legacy';
+  node('curatorNewChecklistLabel').value = 'Legacy checklist item';
+  node('curatorNewChecklistPriority').value = 'required';
+  node('curatorNewResourceTitle').value = 'Legacy resource';
+  node('curatorNewResourceUrl').value = 'http://private.invalid/legacy';
+  node('curatorNewResourcePriority').value = 'optional';
+  node('curatorNewResourceWeek').value = '2';
+  node('curatorNewResourceRationale').value = 'Legacy rationale';
   const imported = completedDraft(); imported.config.card.title = 'Imported replacement';
   resolveImport({ ok: true, draft: imported });
   await new Promise((resolve) => setTimeout(resolve, 0));
   previews[1].resolve({ ok: true, index: { weeks: [], columns: [], edition: { localOrientation: imported.config.localOrientation } } });
   assert.equal((await duringImport).code, 'CURATOR_PREVIEW_STALE');
   assert.equal(app.getState().config.card.title, 'Imported replacement', 'review start does not cancel the pending import');
+  assert.deepEqual(app.getState().preview, { desktopReviewed: false, mobileReviewed: false });
+  for (const id of [
+    'curatorNewContactRole', 'curatorNewContactDirectoryUrl', 'curatorNewChecklistLabel',
+    'curatorNewResourceTitle', 'curatorNewResourceUrl', 'curatorNewResourceRationale',
+  ]) assert.equal(node(id).value, '', `${id} is cleared by replacement import`);
+  assert.equal(node('curatorNewChecklistPriority').value, 'recommended');
+  assert.equal(node('curatorNewResourcePriority').value, 'recommended');
+  assert.equal(node('curatorNewResourceWeek').value, '1');
+});
+
+test('failed and rejected deliberate reviews always clear the validating placeholder', async () => {
+  const harness = loadApi();
+  const deferred = [];
+  harness.setCuratorProjector(() => new Promise((resolve, reject) => deferred.push({ resolve, reject })));
+  const fakeWindow = { innerWidth: 1280, innerHeight: 900, addEventListener() {} };
+  const ownerDocument = { defaultView: fakeWindow };
+  const nodes = new Map();
+  function node(id) {
+    if (!nodes.has(id)) nodes.set(id, {
+      id, hidden: false, innerHTML: '', textContent: '', value: '', disabled: false,
+      isConnected: true, ownerDocument, attributes: new Map(), listeners: {},
+      setAttribute(name, value) { this.attributes.set(name, String(value)); },
+      removeAttribute(name) { this.attributes.delete(name); },
+      getAttribute(name) { return this.attributes.has(name) ? this.attributes.get(name) : null; },
+      addEventListener(name, callback) { this.listeners[name] = callback; },
+      focus() { this.focused = true; }, querySelector() { return null; }, querySelectorAll() { return []; },
+    });
+    return nodes.get(id);
+  }
+  const root = node('root');
+  root.querySelector = (selector) => {
+    if (selector === '#curatorErrorList') return null;
+    return selector.startsWith('#') ? node(selector.slice(1)) : null;
+  };
+  root.querySelectorAll = () => [];
+  root.addEventListener = (name, callback) => { root.listeners[name] = callback; };
+  const app = harness.fdCuratorMount(root, index(), context());
+  for (const [field, value] of Object.entries(completedDraft().config.card)) {
+    app.dispatch({ type: 'SET_CARD_FIELD', field, value });
+  }
+  app.dispatch({ type: 'GO_TO_STEP', step: 4 });
+
+  const failed = app.reviewPreview('desktop');
+  assert.match(node('curatorPreviewBody').innerHTML, /Validating the desktop student preview/);
+  deferred[0].resolve({ ok: false, errors: [], warnings: [] });
+  assert.equal((await failed).code, 'CURATOR_PREVIEW_INVALID');
+  assert.doesNotMatch(node('curatorPreviewBody').innerHTML, /Validating/);
+  const rejected = app.reviewPreview('mobile');
+  assert.match(node('curatorPreviewBody').innerHTML, /Validating the mobile student preview/);
+  deferred[1].reject(new Error('synthetic failure'));
+  assert.equal((await rejected).code, 'CURATOR_PREVIEW_INVALID');
+  assert.doesNotMatch(node('curatorPreviewBody').innerHTML, /Validating/);
   assert.deepEqual(app.getState().preview, { desktopReviewed: false, mobileReviewed: false });
 });
 
@@ -636,6 +826,8 @@ test('Step 4 HTML exposes the bounded editor, deliberate previews, and responsiv
   assert.match(source, /data-curator-local-view="preview"[^>]*>Preview</);
   assert.match(source, /@media \(max-width: 760px\)[\s\S]*\.local-view-toggle/);
   assert.match(source, /\.preview-panel \{ position: sticky; top: 18px; \}/);
+  assert.match(source, /\.primary-action \{[^}]*color: var\(--fd-on-accent,#fff\)/);
+  assert.match(source, /\.local-view-toggle button\[aria-pressed="true"\] \{[^}]*color: var\(--fd-on-accent,#fff\)/);
   assert.doesNotMatch(source, /aria-live=["'][^"']*["'][^>]*id="curatorPreviewBody"/);
   assert.match(source, /id="curatorGenerate" disabled aria-disabled="true"/);
 });

@@ -299,20 +299,26 @@ test('built curator is audience-locked, hidden, draft-aware, and network-inert',
 
 test('built primary and selected mobile controls retain readable computed contrast', async ({ page }) => {
   await page.goto(TOOL);
-  const primary = await page.locator('#curatorContinue').evaluate(node => {
-    const style = getComputedStyle(node);
-    return { color: style.color, background: style.backgroundColor };
-  });
-  expect(contrastRatio(primary.color, primary.background)).toBeGreaterThanOrEqual(4.5);
+  for (const theme of ['light', 'dark']) {
+    await page.evaluate(value => localStorage.setItem('cw_theme', value), theme);
+    await page.reload();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
+    const primary = await page.locator('#curatorContinue').evaluate(node => {
+      const style = getComputedStyle(node);
+      return { color: style.color, background: style.backgroundColor };
+    });
+    expect(contrastRatio(primary.color, primary.background), `${theme} primary`).toBeGreaterThanOrEqual(4.5);
 
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.locator('[data-curator-step="4"]').click();
-  await page.locator('[data-curator-local-view="preview"]').click();
-  const selected = await page.locator('[data-curator-local-view="preview"]').evaluate(node => {
-    const style = getComputedStyle(node);
-    return { color: style.color, background: style.backgroundColor };
-  });
-  expect(contrastRatio(selected.color, selected.background)).toBeGreaterThanOrEqual(4.5);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.locator('[data-curator-step="4"]').click();
+    await page.locator('[data-curator-local-view="preview"]').click();
+    const selected = await page.locator('[data-curator-local-view="preview"]').evaluate(node => {
+      const style = getComputedStyle(node);
+      return { color: style.color, background: style.backgroundColor };
+    });
+    expect(contrastRatio(selected.color, selected.background), `${theme} selected toggle`).toBeGreaterThanOrEqual(4.5);
+    await page.setViewportSize({ width: 1280, height: 900 });
+  }
 });
 
 test('Step 4 is discoverable and touch-safe in the first 390px viewport', async ({ page }) => {
@@ -340,12 +346,18 @@ test('Step 4 is discoverable and touch-safe in the first 390px viewport', async 
   await expect(page.locator('#curatorPreviewReviewStatus')).toHaveText(
     'Desktop preview not yet reviewed · Mobile preview not yet reviewed',
   );
+  await page.evaluate(() => {
+    window.__curatorReviewAnnouncements = 0;
+    new MutationObserver(records => { window.__curatorReviewAnnouncements += records.length; })
+      .observe(document.querySelector('#curatorPreviewReviewStatus'), { childList: true, characterData: true, subtree: true });
+  });
   await page.locator('[data-curator-local-view="preview"]').click();
   await expect(page.locator('#curatorPreviewReviewStatus')).toHaveText(
     'Desktop preview not yet reviewed · Mobile preview not yet reviewed',
   );
   await page.locator('[data-curator-local-view="edit"]').click();
   await page.locator('#curatorFirstDayArrival').fill('Meet in the public education office.');
+  expect(await page.evaluate(() => window.__curatorReviewAnnouncements)).toBe(0);
   await page.locator('#curatorReviewMobile').click();
   await expect(page.locator('#root')).toHaveAttribute('data-local-view', 'preview');
   await expect(page.locator('#root')).toHaveAttribute('data-review-viewport', 'mobile');
@@ -354,11 +366,13 @@ test('Step 4 is discoverable and touch-safe in the first 390px viewport', async 
   await expect(page.locator('#curatorPreviewReviewStatus')).toHaveText(
     'Desktop preview not yet reviewed · Mobile preview reviewed',
   );
+  expect(await page.evaluate(() => window.__curatorReviewAnnouncements)).toBe(1);
   await page.locator('[data-curator-local-view="edit"]').click();
   await page.locator('#curatorDailySchedule').fill('A later visible edit.');
   await expect(page.locator('#curatorPreviewReviewStatus')).toHaveText(
     'Desktop preview not yet reviewed · Mobile preview not yet reviewed',
   );
+  expect(await page.evaluate(() => window.__curatorReviewAnnouncements)).toBe(2);
   expect(await page.evaluate(() =>
     document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(0);
 });
@@ -374,8 +388,11 @@ test('Step 4 blocks unsafe pending content and binds each desktop review to its 
   for (const blocked of [
     'Synthetic learner Alpha evaluation is unsatisfactory.',
     'Synthetic patient Alpha has record 12345.',
-    'Perform intervention X immediately.',
-    'Follow the local protocol: perform intervention X immediately.',
+    'Student Alpha received an unsatisfactory evaluation.',
+    'MRN 12345 belongs to synthetic patient Alpha.',
+    'Perform intervention X after supervision.',
+    'Synthetic learner Alpha evaluati\u03bfn is unsatisfactory.',
+    'According to the local protocol, perform intervention X.',
   ]) {
     await page.locator('#curatorFirstDayArrival').fill(blocked);
     await expect(page.locator('#curatorErrorSummary')).toBeVisible();
@@ -389,6 +406,27 @@ test('Step 4 blocks unsafe pending content and binds each desktop review to its 
   }
   await page.locator('#curatorFirstDayArrival').fill('Meet in the public education office.');
   await expect(page.locator('#curatorErrorSummary')).toBeHidden();
+
+  const unsafeRole = 'Synthetic patient Alpha has record 12345.';
+  await page.locator('#curatorNewContactRole').fill(unsafeRole);
+  await page.locator('#curatorNewContactDirectoryUrl').fill('https://example.edu/directory');
+  await page.locator('#curatorAddContact').click();
+  await expect(page.locator('#curatorErrorSummary a')).toHaveAttribute('href', '#curatorNewContactRole');
+  await expect(page.locator('#curatorErrorSummary')).not.toContainText(unsafeRole);
+  expect(await page.evaluate(key => localStorage.getItem(key), DRAFT_KEY)).toBeNull();
+  await page.locator('#curatorNewContactRole').fill('');
+  await page.locator('#curatorNewContactDirectoryUrl').fill('');
+
+  const unsafeTitle = 'Synthetic learner Alpha evaluation is unsatisfactory.';
+  await page.locator('#curatorNewResourceTitle').fill(unsafeTitle);
+  await page.locator('#curatorNewResourceUrl').fill('https://example.edu/resource');
+  await page.locator('#curatorAddResource').click();
+  await expect(page.locator('#curatorErrorSummary a')).toHaveAttribute('href', '#curatorNewResourceTitle');
+  await expect(page.locator('#curatorErrorSummary')).not.toContainText(unsafeTitle);
+  await expect(page.locator('#curatorResourcesCap')).toHaveText('0 of 12 items');
+  expect(await page.evaluate(key => localStorage.getItem(key), DRAFT_KEY)).toBeNull();
+  await page.locator('#curatorNewResourceTitle').fill('');
+  await page.locator('#curatorNewResourceUrl').fill('');
 
   const unsafe = 'Synthetic patient Alpha has record 12345.';
   await page.locator('#curatorNewChecklistLabel').fill(unsafe);
@@ -456,6 +494,45 @@ test('Step 4 blocks unsafe pending content and binds each desktop review to its 
   );
 });
 
+test('delayed deliberate reviews cannot survive desktop/mobile layout changes', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto(TOOL);
+  await completeCard(page);
+  await page.locator('[data-curator-step="4"]').click();
+  await page.evaluate(() => {
+    const projector = fdCuratorProjectDraft;
+    window.__curatorReviewReleases = [];
+    fdCuratorProjectDraft = (...args) => new Promise(resolve => {
+      window.__curatorReviewReleases.push(() => projector(...args).then(resolve));
+    });
+  });
+
+  await page.locator('#curatorReviewDesktop').click();
+  await expect(page.locator('#curatorPreviewBody')).toContainText('Validating the desktop student preview');
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.locator('#curatorPreviewBody')).not.toContainText('Validating');
+  await page.evaluate(() => window.__curatorReviewReleases.shift()());
+  await page.waitForTimeout(30);
+  await expect(page.locator('#curatorPreviewReviewStatus')).toHaveText(
+    'Desktop preview not yet reviewed · Mobile preview not yet reviewed',
+  );
+
+  await page.locator('[data-curator-local-view="edit"]').click();
+  await page.locator('#curatorReviewMobile').click();
+  await expect(page.locator('#root')).toHaveAttribute('data-local-view', 'preview');
+  await expect(page.locator('#curatorPreviewMount')).toBeVisible();
+  await expect(page.locator('#curatorPreviewBody')).toContainText('Validating the mobile student preview');
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.setViewportSize({ width: 1270, height: 880 });
+  await expect(page.locator('#curatorPreviewBody')).not.toContainText('Validating');
+  await page.evaluate(() => window.__curatorReviewReleases.shift()());
+  await page.waitForTimeout(30);
+  await expect(page.locator('#curatorPreviewReviewStatus')).toHaveText(
+    'Desktop preview not yet reviewed · Mobile preview not yet reviewed',
+  );
+  await expect(page.locator('#curatorGenerate')).toBeDisabled();
+});
+
 test('real page saves, restores, and imports only a validated audience-correct draft', async ({ page }, testInfo) => {
   const expected = expectedSite(testInfo.project.name);
   await page.goto(TOOL);
@@ -485,6 +562,18 @@ test('real page saves, restores, and imports only a validated audience-correct d
   expect(await page.evaluate(key => localStorage.getItem(key), DRAFT_KEY)).toBe(savedRaw);
 
   const valid = await backupText(page, 'Imported current audience', 7);
+  await page.locator('[data-curator-step="4"]').click();
+  await page.locator('#curatorNewContactRole').fill('Legacy coordinator');
+  await page.locator('#curatorNewContactDirectoryUrl').fill('https://example.edu/legacy');
+  await page.locator('#curatorNewChecklistLabel').fill('Legacy checklist');
+  await page.locator('#curatorNewChecklistPriority').selectOption('required');
+  await page.locator('#curatorNewResourceTitle').fill('Legacy resource');
+  await page.locator('#curatorNewResourceUrl').fill('http://example.edu/private');
+  await page.locator('#curatorNewResourcePriority').selectOption('optional');
+  await page.locator('#curatorNewResourceWeek').selectOption('2');
+  await page.locator('#curatorNewResourceRationale').fill('Legacy rationale');
+  await page.locator('#curatorAddResource').click();
+  await expect(page.locator('#curatorErrorSummary')).toBeVisible();
   await page.locator('#curatorImportFile').setInputFiles({
     name: 'valid.json', mimeType: 'application/json', buffer: Buffer.from(valid),
   });
@@ -493,10 +582,20 @@ test('real page saves, restores, and imports only a validated audience-correct d
   await expect(page.locator('#curatorSaveStatus')).toHaveText(
     'Backup imported. Save the draft to keep it on this device.',
   );
+  await page.locator('[data-curator-step="4"]').click();
+  for (const id of [
+    '#curatorNewContactRole', '#curatorNewContactDirectoryUrl', '#curatorNewChecklistLabel',
+    '#curatorNewResourceTitle', '#curatorNewResourceUrl', '#curatorNewResourceRationale',
+  ]) await expect(page.locator(id)).toHaveValue('');
+  await expect(page.locator('#curatorNewChecklistPriority')).toHaveValue('recommended');
+  await expect(page.locator('#curatorNewResourcePriority')).toHaveValue('recommended');
+  await expect(page.locator('#curatorNewResourceWeek')).toHaveValue('1');
+  await expect(page.locator('#curatorErrorSummary')).toBeHidden();
   expect(await page.evaluate(key => localStorage.getItem(key), DRAFT_KEY)).toBe(savedRaw);
 
   const wrongAudience = expected.audience === 'ms3' ? 'resident' : 'ms3';
   const wrong = await backupText(page, 'Wrong audience', 4, wrongAudience);
+  await page.locator('#curatorNewChecklistLabel').fill('Correction survives failed import');
   await page.locator('#curatorImportFile').setInputFiles({
     name: 'wrong.json', mimeType: 'application/json', buffer: Buffer.from(wrong),
   });
@@ -504,6 +603,7 @@ test('real page saves, restores, and imports only a validated audience-correct d
     'Backup could not be validated for this audience.',
   );
   await expect(page.locator('#curatorTitle')).toHaveValue('Imported current audience');
+  await expect(page.locator('#curatorNewChecklistLabel')).toHaveValue('Correction survives failed import');
   expect(await page.evaluate(key => localStorage.getItem(key), DRAFT_KEY)).toBe(savedRaw);
 
   await page.locator('#curatorImportFile').setInputFiles({

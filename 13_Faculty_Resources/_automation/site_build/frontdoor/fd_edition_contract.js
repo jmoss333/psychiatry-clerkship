@@ -480,16 +480,37 @@ function fdEditionScreenText(value,path,errors,warnings){
 }
 
 function fdEditionScreenLocalContent(value,path,errors,warnings){
-  var learnerEvaluation=/\b(?:learner|student|trainee)\b[^\n]{0,80}\b(?:evaluation|assessment|rating|grade)\b[^\n]{0,80}\b(?:unsatisfactory|satisfactory|fail(?:ed|ing)?|pass(?:ed|ing)?|performance)\b|\b(?:evaluation|assessment|rating|grade)\b[^\n]{0,80}\b(?:for|of)\s+(?:the\s+)?(?:learner|student|trainee)\b[^\n]{0,80}\b(?:unsatisfactory|satisfactory|fail(?:ed|ing)?|pass(?:ed|ing)?|performance)\b/i;
-  var patientIdentifier=/\bpatient\b[^\n]{0,80}\b(?:medical\s+record|record|identifier|mrn)\b\s*(?:(?:number|no\.?|is|has|:|#)\s*)?[A-Z0-9][A-Z0-9-]{2,}\b/i;
-  var copiedProtocol=/\b(?:follow|use)\s+(?:the\s+)?(?:local|clinical|unit|institutional)\s+protocol\b\s*[:;\-]\s*\S+/i;
-  var directImperative=/(?:^|[.!?]\s+)(?:perform|administer|give|start|stop|order|obtain|initiate|discontinue)\b[^\n.!?]{0,120}\b(?:immediately|now|stat)\b/i;
-  var ambiguous=/\b(?:learner|student|trainee)\s+(?:evaluation|assessment)|\bpatient\s+(?:record|identifier)|\b(?:local|clinical|unit|institutional)\s+protocol\b|\bclinical\s+directive\b/i;
-  if(learnerEvaluation.test(value)) errors.push(fdEditionFinding('EDITION_LOCAL_CONTENT',path,'Local text must not contain learner-specific evaluation information.'));
-  else if(patientIdentifier.test(value)) errors.push(fdEditionFinding('EDITION_LOCAL_CONTENT',path,'Local text must not contain patient-specific record or identifier information.'));
-  else if(copiedProtocol.test(value)) errors.push(fdEditionFinding('EDITION_LOCAL_CONTENT',path,'Local text must not copy protocol instructions; use an official HTTPS institutional link.'));
-  else if(directImperative.test(value)) errors.push(fdEditionFinding('EDITION_LOCAL_CONTENT',path,'Local text must not contain direct clinical imperatives.'));
-  else if(ambiguous.test(value)) warnings.push(fdEditionFinding('EDITION_LOCAL_CONTENT',path,'Review this local text for learner evaluation, patient identifier, directive, or copied protocol content.',false));
+  var risk='',compact='',resourceTitle=/^\/config\/localOrientation\/resources\/\d+\/title$/.test(path);
+  var learner,evaluation,outcome,patient,recordIdentifier,recordValue,command,instructionCommand,protocol,ambiguous;
+  try{
+    risk=value.normalize('NFKC').toLowerCase();
+    /* This skeleton is deliberately narrow: common Greek/Cyrillic lookalikes used in the
+       English risk terms, zero-width separators, and punctuation inside a risk word. It is
+       used only for detection; the normalized multilingual source is never rewritten. */
+    risk=risk.replace(/[\u03bf\u043e]/g,'o').replace(/[\u03b1\u0430]/g,'a').replace(/[\u03b5\u0435]/g,'e')
+      .replace(/[\u03b9\u0456]/g,'i').replace(/[\u03c1\u0440]/g,'p').replace(/[\u03c4\u0442]/g,'t')
+      .replace(/[\u03bd\u043d]/g,'n').replace(/[\u03c5\u0443]/g,'y').replace(/[\u03ba\u043a]/g,'k')
+      .replace(/[\u200b-\u200f\u2060\ufeff]/g,'').replace(/[\u00ad_\-.\u2010-\u2015]/g,'');
+    compact=risk.replace(/[^a-z0-9]+/g,'');
+  }catch(ignoreLocalRisk){
+    errors.push(fdEditionFinding('EDITION_LOCAL_CONTENT',path,'Local text could not be screened safely.'));
+    return;
+  }
+  learner=/(?:learner|student|trainee)/.test(compact);
+  evaluation=/(?:evaluation|assessment|rating|grade)/.test(compact);
+  outcome=/(?:unsatisfactory|satisfactory|failed|failing|passed|passing|performance)/.test(compact);
+  patient=/patient/.test(compact);
+  recordIdentifier=/(?:medicalrecord|recordnumber|recordid|record|identifier|mrn)/.test(compact);
+  recordValue=/(?:medicalrecord|recordnumber|recordid|record|identifier|mrn)[a-z]{0,24}\d{3,}|\d{3,}[a-z]{0,24}(?:medicalrecord|recordnumber|recordid|record|identifier|mrn)/.test(compact);
+  command=/(?:^|[.!?]\s+|,\s+)(?:according\s+to\s+[^.!?]{0,80},?\s*)?(?:please\s+)?(?:perform|administer|give|start|stop|order|obtain|initiate|discontinue)\b|\b(?:must|should|required\s+to)\s+(?:perform|administer|give|start|stop|order|obtain|initiate|discontinue)\b/i.test(risk);
+  instructionCommand=/\b(?:perform|administer|give|start|stop|order|obtain|initiate|discontinue)\b/i.test(risk);
+  protocol=/\b(?:local|clinical|unit|institutional)\s+protocol\b/i.test(risk);
+  ambiguous=(learner&&evaluation)||(patient&&recordIdentifier)||protocol||/\bclinical\s+directive\b/i.test(risk);
+  if(learner&&evaluation&&outcome) errors.push(fdEditionFinding('EDITION_LOCAL_CONTENT',path,'Local text must not contain learner-specific evaluation information.'));
+  else if(patient&&recordIdentifier&&recordValue) errors.push(fdEditionFinding('EDITION_LOCAL_CONTENT',path,'Local text must not contain patient-specific record or identifier information.'));
+  else if(protocol&&instructionCommand) errors.push(fdEditionFinding('EDITION_LOCAL_CONTENT',path,'Local text must not copy protocol instructions; use an official HTTPS institutional link.'));
+  else if(command) errors.push(fdEditionFinding('EDITION_LOCAL_CONTENT',path,'Local text must not contain direct clinical imperatives.'));
+  else if(ambiguous&&!resourceTitle) warnings.push(fdEditionFinding('EDITION_LOCAL_CONTENT',path,'Review this local text for learner evaluation, patient identifier, directive, or copied protocol content.',false));
 }
 
 function fdEditionValidateConfig(config,index,siteContext){
@@ -555,6 +576,7 @@ function fdEditionValidateConfig(config,index,siteContext){
       fdEditionCheckLabel(item.role,'/config/localOrientation/contacts/'+i+'/role',errors);
       fdEditionCheckUrl(item.directoryUrl,'/config/localOrientation/contacts/'+i+'/directoryUrl',errors,warnings);
       humanTexts.push([item.role,'/config/localOrientation/contacts/'+i+'/role']);
+      localTexts.push([item.role,'/config/localOrientation/contacts/'+i+'/role']);
     }
     for(i=0;i<value.localOrientation.checklist.length;i++){
       item=value.localOrientation.checklist[i];
@@ -576,7 +598,7 @@ function fdEditionValidateConfig(config,index,siteContext){
       fdEditionAdd(errors,seenIds[item.id],'EDITION_SCHEMA','/config/localOrientation/resources/'+i+'/id','Every instance and local identifier must be unique.');
       seenIds[item.id]=true;
       humanTexts.push([item.title,'/config/localOrientation/resources/'+i+'/title'],[item.rationale,'/config/localOrientation/resources/'+i+'/rationale']);
-      localTexts.push([item.rationale,'/config/localOrientation/resources/'+i+'/rationale']);
+      localTexts.push([item.title,'/config/localOrientation/resources/'+i+'/title'],[item.rationale,'/config/localOrientation/resources/'+i+'/rationale']);
     }
   }
   fdEditionCheckRationale(value.changeNote,'/config/changeNote',errors);

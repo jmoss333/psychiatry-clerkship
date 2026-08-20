@@ -863,14 +863,40 @@ function fdCuratorPendingSharedFindings(result,type,itemIndex){
   return out;
 }
 
+function fdCuratorReadPendingObject(value,fields){
+  var keys,prototype,allowed=Object.create(null),out={},i,key,descriptor;
+  if(!value||typeof value!=='object') return null;
+  try{
+    if(Array.isArray(value)) return null;
+    prototype=Object.getPrototypeOf(value);
+    if(prototype!==Object.prototype) return null;
+    keys=Reflect.ownKeys(value);
+  }catch(ignorePendingShape){ return null; }
+  if(keys.length!==fields.length) return null;
+  for(i=0;i<fields.length;i++) allowed[fields[i]]=true;
+  for(i=0;i<keys.length;i++){
+    key=keys[i];
+    if(typeof key!=='string'||!allowed[key]) return null;
+    try{ descriptor=Object.getOwnPropertyDescriptor(value,key); }
+    catch(ignorePendingDescriptor){ return null; }
+    if(!descriptor||!descriptor.enumerable||!Object.prototype.hasOwnProperty.call(descriptor,'value')) return null;
+    out[key]=descriptor.value;
+  }
+  return out;
+}
+
 function fdCuratorValidatePendingLocal(pending,draft,index,siteContext,scope,mode){
+  var pendingTop=fdCuratorReadPendingObject(pending,['contact','checklist','resource']);
+  var pendingContact=pendingTop&&fdCuratorReadPendingObject(pendingTop.contact,['role','directoryUrl']);
+  var pendingChecklist=pendingTop&&fdCuratorReadPendingObject(pendingTop.checklist,['label','priority']);
+  var pendingResource=pendingTop&&fdCuratorReadPendingObject(pendingTop.resource,['title','url','priority','week','rationale']);
   var shaped=fdCuratorValidateDraft(draft,index,siteContext),types=scope==='all'?['contact','checklist','resource']:[scope];
   var out={ok:true,empty:true,errors:[],warnings:[],action:null},i,type,value,has,action,next,checked,mapped,itemIndex,fieldId;
   var candidate,errorCount,expectedLength,actualLength;
-  if(!shaped.ok||types.some(function(name){return ['contact','checklist','resource'].indexOf(name)===-1;})){
+  if(!pendingTop||!pendingContact||!pendingChecklist||!pendingResource||!shaped.ok||types.some(function(name){return ['contact','checklist','resource'].indexOf(name)===-1;})){
     out.ok=false; out.errors.push(fdCuratorPendingFinding('curatorEditorTitle','Local details','Pending item','The pending fields could not be validated.')); return out;
   }
-  pending=pending||{}; draft=shaped.draft;
+  pending={contact:pendingContact,checklist:pendingChecklist,resource:pendingResource}; draft=shaped.draft;
   for(i=0;i<types.length;i++){
     type=types[i]; value=pending[type]||{};
     has=type==='contact'?((typeof value.role==='string'&&value.role.length>0)||(typeof value.directoryUrl==='string'&&value.directoryUrl.length>0)):
@@ -1284,9 +1310,11 @@ function fdCuratorRenderWarnings(root,warnings){
 }
 
 function fdCuratorRenderReviewStatus(root,state){
-  var node=root.querySelector('#curatorPreviewReviewStatus');
-  if(node) node.textContent=(state.preview.desktopReviewed?'Desktop preview reviewed':'Desktop preview not yet reviewed')+' · '+
+  var node=root.querySelector('#curatorPreviewReviewStatus'),next;
+  if(!node) return;
+  next=(state.preview.desktopReviewed?'Desktop preview reviewed':'Desktop preview not yet reviewed')+' · '+
     (state.preview.mobileReviewed?'Mobile preview reviewed':'Mobile preview not yet reviewed');
+  if(node.textContent!==next) node.textContent=next;
 }
 
 function fdCuratorRender(state,root,index,errors,warnings){
@@ -1352,8 +1380,10 @@ function fdCuratorMount(root,index,siteContext){
   var importTransactions=fdCuratorImportTransactions();
   var subtle=typeof crypto!=='undefined'&&crypto?crypto.subtle:null;
   var buttons,i,save,continueButton,importInput,previewSequence=0;
-  var reviewSequences={desktop:0,mobile:0},reviewCache=null;
+  var reviewSequences={desktop:0,mobile:0},reviewCache=null,reviewLoading=null,layoutRevision=0;
   var orientationIssues=Object.create(null);
+  var reviewWindow=root&&root.ownerDocument?root.ownerDocument.defaultView:null;
+  var reviewPlaceholder='<p class="panel-note">Choose Review desktop preview or Review mobile preview to validate and update this preview.</p>';
   function visibleVersion(){
     var shaped=fdCuratorValidateDraft(state,index,siteContext);
     if(!shaped.ok) return '';
@@ -1368,7 +1398,7 @@ function fdCuratorMount(root,index,siteContext){
     if(!preview) return;
     if(state.step===4){
       if(reviewCache&&reviewCache.version===visibleVersion()&&root.getAttribute('data-review-viewport')===reviewCache.viewport) preview.innerHTML=reviewCache.markup;
-      else preview.innerHTML='<p class="panel-note">Choose Review desktop preview or Review mobile preview to validate and update this preview.</p>';
+      else preview.innerHTML=reviewPlaceholder;
       return;
     }
     if(state.step!==2&&state.step!==3){
@@ -1426,7 +1456,9 @@ function fdCuratorMount(root,index,siteContext){
       count=root.querySelector('#'+ids[j]+'Count');
       if(count&&node) count.textContent='0 of '+(Number(node.getAttribute&&node.getAttribute('data-curator-max-codepoints'))||node.maxLength)+' characters';
     }
-    node=root.querySelector(type==='checklist'?'#curatorNewChecklistPriority':'#curatorNewResourcePriority'); if(node) node.value='recommended';
+    node=type==='checklist'?root.querySelector('#curatorNewChecklistPriority'):
+      type==='resource'?root.querySelector('#curatorNewResourcePriority'):null;
+    if(node) node.value='recommended';
     if(type==='resource'){ node=root.querySelector('#curatorNewResourceWeek'); if(node) node.value='1'; }
   }
   function tryAddPending(type){
@@ -1442,6 +1474,7 @@ function fdCuratorMount(root,index,siteContext){
   function invalidateReviewWork(clearCache){
     reviewSequences.desktop++; reviewSequences.mobile++;
     if(clearCache) reviewCache=null;
+    clearReviewLoading(reviewLoading);
   }
   function setLocalView(value,reviewViewport){
     var toggles,j,label=root.querySelector('#curatorPreviewViewport');
@@ -1453,12 +1486,55 @@ function fdCuratorMount(root,index,siteContext){
     if(label) label.textContent=reviewViewport==='mobile'?'Mobile-width student preview · 390 px maximum':
       reviewViewport==='desktop'?'Desktop student preview':'Choose a deliberate desktop or mobile review to select a preview presentation.';
   }
-  function reviewPresentationMatches(viewport,preview){
-    var panel=root.querySelector('#curatorPreviewMount');
+  function reviewLayoutSnapshot(viewport,preview){
+    var panel=root.querySelector('#curatorPreviewMount'),rect=null,rects=null,width=null,height=null;
+    var geometry='unavailable',windowClass='unavailable';
+    try{
+      if(reviewWindow&&typeof reviewWindow.innerWidth==='number'&&isFinite(reviewWindow.innerWidth)){
+        width=reviewWindow.innerWidth;
+        height=typeof reviewWindow.innerHeight==='number'&&isFinite(reviewWindow.innerHeight)?reviewWindow.innerHeight:null;
+        windowClass=width<=760?'mobile':'desktop';
+      }
+      if(panel&&typeof panel.getClientRects==='function') rects=panel.getClientRects();
+      if(panel&&typeof panel.getBoundingClientRect==='function'){
+        rect=panel.getBoundingClientRect();
+        geometry=[Math.round(rect.left*100)/100,Math.round(rect.top*100)/100,
+          Math.round(rect.width*100)/100,Math.round(rect.height*100)/100].join(':');
+      }
+    }catch(ignoreReviewGeometry){ return {ok:false,panel:panel,windowClass:'invalid',width:width,height:height,geometry:'invalid'}; }
     if(state.step!==4||root.getAttribute('data-local-view')!=='preview'||root.getAttribute('data-review-viewport')!==viewport||
-       !preview||preview.isConnected===false||!panel||panel.isConnected===false||panel.hidden) return false;
-    if(typeof panel.getClientRects==='function'&&panel.ownerDocument&&panel.getClientRects().length===0) return false;
-    return root.querySelector('#curatorPreviewBody')===preview;
+       !preview||preview.isConnected===false||!panel||panel.isConnected===false||panel.hidden)
+      return {ok:false,panel:panel,windowClass:windowClass,width:width,height:height,geometry:geometry};
+    if(rects&&rects.length===0)
+      return {ok:false,panel:panel,windowClass:windowClass,width:width,height:height,geometry:geometry};
+    if(rect&&(rect.width<=0||rect.height<=0))
+      return {ok:false,panel:panel,windowClass:windowClass,width:width,height:height,geometry:geometry};
+    if(viewport==='mobile'&&rect&&rect.width>390.5)
+      return {ok:false,panel:panel,windowClass:windowClass,width:width,height:height,geometry:geometry};
+    return {ok:root.querySelector('#curatorPreviewBody')===preview,panel:panel,windowClass:windowClass,width:width,height:height,geometry:geometry};
+  }
+  function reviewReceipt(viewport,preview){
+    var layout=reviewLayoutSnapshot(viewport,preview);
+    return {
+      version:visibleVersion(),step:state.step,viewport:viewport,viewMode:root.getAttribute('data-local-view'),
+      previewNode:preview,panelNode:layout.panel,layoutRevision:layoutRevision,windowClass:layout.windowClass,
+      windowWidth:layout.width,windowHeight:layout.height,geometry:layout.geometry,layoutOk:layout.ok
+    };
+  }
+  function reviewReceiptMatches(receipt){
+    var layout;
+    if(!receipt||receipt.step!==4||state.step!==4||receipt.version!==visibleVersion()||receipt.layoutRevision!==layoutRevision||
+       receipt.viewMode!=='preview'||root.getAttribute('data-local-view')!=='preview'||root.getAttribute('data-review-viewport')!==receipt.viewport||
+       root.querySelector('#curatorPreviewBody')!==receipt.previewNode||receipt.previewNode.isConnected===false) return false;
+    layout=reviewLayoutSnapshot(receipt.viewport,receipt.previewNode);
+    return !!(receipt.layoutOk&&layout.ok&&layout.panel===receipt.panelNode&&layout.windowClass===receipt.windowClass&&
+      layout.width===receipt.windowWidth&&layout.height===receipt.windowHeight&&layout.geometry===receipt.geometry);
+  }
+  function clearReviewLoading(receipt){
+    if(reviewLoading!==receipt) return;
+    reviewLoading=null;
+    if(receipt&&receipt.previewNode&&receipt.previewNode.isConnected!==false&&root.querySelector('#curatorPreviewBody')===receipt.previewNode)
+      receipt.previewNode.innerHTML=reviewPlaceholder;
   }
   function dispatch(action,skipRender){
     var priorStep=state.step,applied=fdCuratorApplyAction(state,action,index,siteContext);
@@ -1478,7 +1554,7 @@ function fdCuratorMount(root,index,siteContext){
   }
   function focusSummary(){ var summary=root.querySelector('#curatorErrorSummary'); if(summary&&typeof summary.focus==='function') summary.focus(); }
   function reviewPreview(viewport){
-    var startVersion,sequence,checked,pendingChecked,preview,listed;
+    var sequence,checked,pendingChecked,preview,listed,receipt,projected;
     if(viewport!=='desktop'&&viewport!=='mobile') return Promise.resolve({ok:false,code:'CURATOR_PREVIEW_VIEW'});
     checked=fdCuratorValidateStep(state,4,index,siteContext);
     pendingChecked=fdCuratorValidatePendingLocal(pendingValues(),state,index,siteContext,'all','leave');
@@ -1486,31 +1562,47 @@ function fdCuratorMount(root,index,siteContext){
     errors=listed.errors.concat(checked.errors||[],pendingChecked.errors||[]); warnings=listed.warnings.concat(checked.warnings||[],pendingChecked.warnings||[]);
     if(listed.errors.length||!checked.ok||!pendingChecked.ok){ render(); focusSummary(); return Promise.resolve({ok:false,code:'CURATOR_PREVIEW_INVALID'}); }
     invalidateReviewWork(true); sequence=reviewSequences[viewport]; setLocalView('preview',viewport);
-    startVersion=visibleVersion(); preview=root.querySelector('#curatorPreviewBody');
-    if(!reviewPresentationMatches(viewport,preview)) return Promise.resolve({ok:false,code:'CURATOR_PREVIEW_HIDDEN'});
+    preview=root.querySelector('#curatorPreviewBody'); receipt=reviewReceipt(viewport,preview);
+    if(!receipt.layoutOk) return Promise.resolve({ok:false,code:'CURATOR_PREVIEW_HIDDEN'});
     if(preview) preview.innerHTML='<p class="panel-note">Validating the '+viewport+' student preview…</p>';
-    return fdCuratorProjectDraft(state,index,siteContext,subtle).then(function(result){
+    receipt=reviewReceipt(viewport,preview);
+    if(!receipt.layoutOk){ if(preview) preview.innerHTML=reviewPlaceholder; return Promise.resolve({ok:false,code:'CURATOR_PREVIEW_HIDDEN'}); }
+    reviewLoading=receipt;
+    try{ projected=fdCuratorProjectDraft(state,index,siteContext,subtle); }
+    catch(ignorePreviewStart){ projected=Promise.reject(new Error('preview unavailable')); }
+    return Promise.resolve(projected).then(function(result){
       var mapped,applied,markup;
-      if(sequence!==reviewSequences[viewport]||startVersion!==visibleVersion()||!reviewPresentationMatches(viewport,preview)) return {ok:false,code:'CURATOR_PREVIEW_STALE'};
+      if(sequence!==reviewSequences[viewport]||!reviewReceiptMatches(receipt)){
+        clearReviewLoading(receipt); return {ok:false,code:'CURATOR_PREVIEW_STALE'};
+      }
       if(!result||result.ok!==true){
+        clearReviewLoading(receipt);
         mapped=fdCuratorLocalFindings(result||{},state); errors=mapped.errors.length?mapped.errors:[fdCuratorStepError('curatorEditorTitle','The student preview could not be generated.')];
         warnings=mapped.warnings; fdCuratorRender(state,root,index,errors,warnings); focusSummary();
         return {ok:false,code:'CURATOR_PREVIEW_INVALID'};
       }
       markup=fdCuratorPreviewMarkup(result);
       applied=fdCuratorApplyAction(state,{type:'SET_PREVIEW_REVIEWED',viewport:viewport,value:true},index,siteContext);
-      if(startVersion!==visibleVersion()||!reviewPresentationMatches(viewport,preview)) return {ok:false,code:'CURATOR_PREVIEW_STALE'};
+      if(!reviewReceiptMatches(receipt)){ clearReviewLoading(receipt); return {ok:false,code:'CURATOR_PREVIEW_STALE'}; }
+      reviewLoading=null;
       state=applied.state; if(applied.changed) touched=true;
-      reviewCache={version:startVersion,viewport:viewport,markup:markup}; errors=[]; render();
+      reviewCache={version:receipt.version,viewport:viewport,markup:markup}; errors=[]; render();
       return {ok:true,viewport:viewport,projected:result,state:state};
     },function(){
-      if(sequence!==reviewSequences[viewport]||startVersion!==visibleVersion()||!reviewPresentationMatches(viewport,preview)) return {ok:false,code:'CURATOR_PREVIEW_STALE'};
+      if(sequence!==reviewSequences[viewport]||!reviewReceiptMatches(receipt)){
+        clearReviewLoading(receipt); return {ok:false,code:'CURATOR_PREVIEW_STALE'};
+      }
+      clearReviewLoading(receipt);
       errors=[fdCuratorStepError('curatorEditorTitle','The student preview could not be generated.')]; warnings=[];
       fdCuratorRender(state,root,index,errors,warnings); focusSummary(); return {ok:false,code:'CURATOR_PREVIEW_INVALID'};
     });
   }
   function status(message){ var node=root.querySelector('#curatorSaveStatus'); if(node) node.textContent=message; }
   if(!root) return null;
+  if(reviewWindow&&typeof reviewWindow.addEventListener==='function'){
+    try{ reviewWindow.addEventListener('resize',function(){ layoutRevision++; invalidateReviewWork(false); }); }
+    catch(ignoreResizeRegistration){}
+  }
   buttons=root.querySelectorAll('[data-curator-step]');
   for(i=0;i<buttons.length;i++) buttons[i].addEventListener('click',function(event){
     dispatch({type:'GO_TO_STEP',step:Number(event.currentTarget.getAttribute('data-curator-step'))});
@@ -1644,7 +1736,11 @@ function fdCuratorMount(root,index,siteContext){
     fdCuratorReadImportFile(file,index,siteContext,subtle).then(function(result){
       if(!importTransactions.commit(transaction)) return;
       invalidateReviewWork(true);
-      if(result.ok){ touched=true; state=result.draft; orientationIssues=Object.create(null); errors=[]; warnings=[]; setLocalView('edit',null); render(); status('Backup imported. Save the draft to keep it on this device.'); }
+      if(result.ok){
+        touched=true; state=result.draft; orientationIssues=Object.create(null); errors=[]; warnings=[];
+        clearPending('contact'); clearPending('checklist'); clearPending('resource');
+        setLocalView('edit',null); render(); status('Backup imported. Save the draft to keep it on this device.');
+      }
       else status(result.code==='CURATOR_IMPORT_SIZE'?'Backup must be 64 KiB or smaller.':'Backup could not be validated for this audience.');
       event.target.value='';
     });

@@ -460,6 +460,75 @@ test('keeps ambiguous local safety topics advisory and allows official linked pr
   assert.equal(linkedResult.ok, true, JSON.stringify(linkedResult.errors));
 });
 
+test('screens every local text field against reordered, separated, and confusable privacy risks', () => {
+  const base = fixture('valid-ms3.json').config;
+  const blocked = [
+    ['/config/localOrientation/resources/0/title', 'Synthetic learner Alpha evaluation is unsatisfactory.', (c, value) => {
+      c.localOrientation.resources[0].title = value;
+    }],
+    ['/config/localOrientation/contacts/0/role', 'Synthetic patient Alpha has record 12345.', (c, value) => {
+      c.localOrientation.contacts[0].role = value;
+    }],
+    ['/config/localOrientation/firstDayArrival', 'Student Alpha received an unsatisfactory evaluation.', (c, value) => {
+      c.localOrientation.firstDayArrival = value;
+    }],
+    ['/config/localOrientation/dailySchedule', 'MRN 12345 belongs to synthetic patient Alpha.', (c, value) => {
+      c.localOrientation.dailySchedule = value;
+    }],
+    ['/config/localOrientation/roundsWorkflow', 'Perform intervention X after supervision.', (c, value) => {
+      c.localOrientation.roundsWorkflow = value;
+    }],
+    ['/config/localOrientation/accessPreparation', 'After supervision, perform intervention X.', (c, value) => {
+      c.localOrientation.accessPreparation = value;
+    }],
+    ['/config/localOrientation/presentationExpectations', 'Synthetic learner Alpha evaluati\u03bfn is unsatisfactory.', (c, value) => {
+      c.localOrientation.presentationExpectations = value;
+    }],
+    ['/config/localOrientation/documentationExpectations', 'According to the local protocol, perform intervention X.', (c, value) => {
+      c.localOrientation.documentationExpectations = value;
+    }],
+    ['/config/localOrientation/attendanceExpectations', 'Unsatis-factory rating for student Alpha.', (c, value) => {
+      c.localOrientation.attendanceExpectations = value;
+    }],
+    ['/config/localOrientation/feedbackProcess', 'Patient Alpha record-number 12-345.', (c, value) => {
+      c.localOrientation.feedbackProcess = value;
+    }],
+  ];
+  for (const [path, unsafe, mutate] of blocked) {
+    const config = clone(base); mutate(config, unsafe);
+    const result = F.fdEditionValidateConfig(
+      config, indexFor(config), context('ms3', base.createdAgainstCoreRevision),
+    );
+    assert.equal(result.ok, false, path);
+    assert.ok(result.errors.some((finding) =>
+      finding.code === 'EDITION_LOCAL_CONTENT' && finding.path === path), JSON.stringify(result.errors));
+    assertPrivateSafe(result, unsafe);
+  }
+
+  const allowed = [
+    'Students receive general formative feedback at mid-rotation.',
+    'Meet in the learner workroom after orientation.',
+    'Discuss patient record systems without entering private data.',
+    'Protocol review occurs during the scheduled faculty conference.',
+    '\u041e\u0431\u0449\u0430\u044f \u043e\u0440\u0438\u0435\u043d\u0442\u0430\u0446\u0438\u044f \u0434\u043b\u044f \u0441\u0442\u0443\u0434\u0435\u043d\u0442\u043e\u0432.',
+  ];
+  for (const text of allowed) {
+    const config = clone(base); config.localOrientation.accessPreparation = text;
+    const result = F.fdEditionValidateConfig(
+      config, indexFor(config), context('ms3', base.createdAgainstCoreRevision),
+    );
+    assert.equal(result.ok, true, `${text}: ${JSON.stringify(result.errors)}`);
+  }
+
+  const official = clone(base);
+  official.localOrientation.resources[0].title = 'Official local medication protocol';
+  official.localOrientation.resources[0].url = 'https://example.edu/policies/medication';
+  const officialResult = F.fdEditionValidateConfig(
+    official, indexFor(official), context('ms3', base.createdAgainstCoreRevision),
+  );
+  assert.equal(officialResult.ok, true, JSON.stringify(officialResult.errors));
+});
+
 test('blocks every normalized C0 and C1 control except LF while preserving multiline narrative text', () => {
   const base = fixture('valid-ms3.json').config;
   const disallowed = [
