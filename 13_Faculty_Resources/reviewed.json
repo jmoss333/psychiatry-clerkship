@@ -90,14 +90,13 @@
     "by": "Pending faculty review"
   },
   "cotw_index.md": {
-    "status": "pending",
+    "status": "reviewed",
     "risk": {
       "kind": "general",
       "level": "low"
     },
-    "reason": "New content awaiting faculty review.",
-    "at": "2026-07-23",
-    "by": "Pending faculty review"
+    "at": "2026-08-11",
+    "by": "Joshua Moss, MD"
   },
   "cotw_20260709_ssnms_ms3.md": {
     "status": "pending",
@@ -180,14 +179,13 @@
     "by": "Pending faculty review"
   },
   "sp-interview.html": {
-    "status": "pending",
+    "status": "reviewed",
     "risk": {
       "kind": "clinical",
       "level": "moderate"
     },
-    "reason": "New content awaiting faculty review.",
-    "at": "2026-07-13",
-    "by": "Pending faculty review"
+    "at": "2026-08-11",
+    "by": "Joshua Moss, MD"
   },
   "welcome.md": {
     "status": "reviewed",
@@ -1058,26 +1056,24 @@
     "by": "Joshua Moss, MD"
   },
   "one-patient-six-weeks.html": {
-    "status": "pending",
+    "status": "reviewed",
     "risk": {
       "kind": "clinical",
       "level": "moderate"
     },
-    "reason": "Fictional composite longitudinal simulation awaiting faculty attestation before learner release.",
-    "at": "2026-07-11",
-    "by": "Pending faculty review",
-    "note": "Fictional composite longitudinal simulation; attest before learner release."
+    "at": "2026-08-11",
+    "by": "Joshua Moss, MD",
+    "note": "Fictional composite longitudinal simulation."
   },
   "anki.md": {
-    "status": "pending",
+    "status": "reviewed",
     "risk": {
       "kind": "general",
       "level": "low"
     },
-    "reason": "Anki deck download page awaiting its own faculty attestation; the flashcards draw only from already-attested content and ship watermarked until reviewed.",
-    "at": "2026-07-12",
-    "by": "Pending faculty review",
-    "note": "Awaiting faculty attestation. Navigation/download page for the Anki decks; the cards themselves are extracted only from already-attested content (no AI-generated cards). Ships watermarked until attested via the faculty console."
+    "at": "2026-08-11",
+    "by": "Joshua Moss, MD",
+    "note": "Navigation/download page for the Anki decks; the cards themselves are extracted only from already-attested content (no AI-generated cards). Individual draft questions still ship watermarked until each is attested."
   },
   "cotw_20260810_panic_ms3.md": {
     "status": "pending",

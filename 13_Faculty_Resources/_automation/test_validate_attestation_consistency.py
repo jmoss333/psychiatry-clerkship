@@ -398,12 +398,22 @@ class AttestationConsistencyTests(unittest.TestCase):
         )
         return validate(root)
 
-    def validate_pack(self, pack):
+    def validate_pack(self, pack, *, ledger_status=None, tool_status=None):
+        # Most callers exercise ONE pack rule at a time and want the surrounding ledger
+        # and metadata to AGREE with the pack, so the statuses default to whatever the
+        # pack itself claims rather than pinning a snapshot of it: canonical_pack()
+        # reads the real sp-interview.pack.json, so hard-coding "pending" here turned
+        # seven of these tests red the day that tool was attested. A caller testing
+        # cross-file DISAGREEMENT passes the two statuses explicitly.
+        resolved_tool = tool_status or pack.get("status", "draft-pending-attestation")
+        resolved_ledger = ledger_status or (
+            "reviewed" if resolved_tool == "reviewed" else "pending"
+        )
         with tempfile.TemporaryDirectory() as root:
             write_fixture(
                 root,
-                ledger_status="pending",
-                tool_status="draft-pending-attestation",
+                ledger_status=resolved_ledger,
+                tool_status=resolved_tool,
                 pack=pack,
             )
             return self.validate(root)
@@ -461,7 +471,11 @@ class AttestationConsistencyTests(unittest.TestCase):
     def test_pack_claiming_reviewed_while_ledger_pending_fails(self):
         pack = pending_pack()
         pack["status"] = "reviewed"
-        errors = self.validate_pack(pack)
+        # Explicit statuses: this test is about the pack DISAGREEING with the ledger,
+        # so it must not inherit validate_pack()'s agree-with-the-pack default.
+        errors = self.validate_pack(
+            pack, ledger_status="pending", tool_status="draft-pending-attestation"
+        )
         self.assertIn("sp-interview.html: pack-reviewed-ledger-status-mismatch", errors)
 
     def test_topic_meta_claiming_reviewed_while_ledger_pending_fails(self):
