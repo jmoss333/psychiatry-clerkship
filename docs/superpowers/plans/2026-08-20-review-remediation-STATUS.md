@@ -53,6 +53,29 @@ if the last two are missed**, because parity compares rapport/coverage/gates and
 debrief narrative. That is structurally the same hole the `onlyFirstTime` bug lived in — both
 sides wrong together, test green.
 
+### A5. Stale premises — verify the DEFECT before executing a WP
+
+Amendment A1 covers drifted line numbers. Wave 1 surfaced the larger version: **some defects the
+review describes no longer exist.** The review read a mount on
+`fix/table-scroll-desktop-affordance-v2`; several were fixed on `main` in the interim.
+
+**Confirm the defect reproduces before writing the fix.** Two of the first five packages would
+have caused harm if executed as written.
+
+| WP | Handoff says | Actually on `main` | Evidence |
+|---|---|---|---|
+| **WP-10** | Serves 5 hardcoded `SAMPLE` items; `BLUEPRINT` + `buildExam` are dead code; delete the "blueprint-weighted COMAT/shelf simulation" claim and disable the tool | **Fixed by PR #343.** `bankPool()` draws **142 attested items** from `question_bank.json`; `pool.length===0` is false so `SAMPLE` never fires; `buildExam` is called, `BLUEPRINT` drives allocation. The marketing copy is now **accurate**. | `bankPool`-eligible = 142 of 192; `SAMPLE` reachable only when the bank fails to load |
+| **WP-09** | Options render in source order; key at index 0 in 220/437; pressing "1" scores ~50% | **Already implemented, more rigorously than specified.** `optOrder()` does a deterministic per-(card, local day) shuffle with an FNV-1a seed + xorshift32 — chosen *because* a bare LCG produced only 5 of 24 permutations. Verified in-repo across 200 ids: 24/24 permutations, first-position ≈ ¼. Stable across re-renders and same-day resumes. | `review.html`, `optOrder` and its comment |
+| **WP-01** | `'na'` is truthy so the tool declares INTACT | **Laundering half already fixed** — `verdict()` has an `anyNA` branch. The export half was real and is fixed in #374. | verified by executing `verdict()` |
+| **WP-07** | Count directive **and** literal-`**` FRST bug **and** `LOCAL_POLICY` token | Count directive real (fixed, #373). Asterisk bug **already fixed**. `LOCAL_POLICY` is **pack-only infrastructure** with no HTML equivalent → OPEN-DECISION-12. | `check-static-site.mjs` L378-382 |
+
+**Executing WP-10 as written would have disabled a working, faculty-governed exam simulator** and
+deleted page copy that is now true. It also means **OPEN-DECISION-5 is already resolved** — Shelf
+Mode is wired to `question_bank.json`.
+
+Corollary for Wave 2+: `quizzes.json` is at
+`07_Evidence_and_Reading/Landmark_Trials/quizzes.json`, **not** the repo root the handoff implies.
+
 ### A3. No warn→hard gate promotion while CI is down
 
 WP-15, WP-16 and WP-17 ship **warn-only** with their burn-down counters printed on every run.
@@ -88,18 +111,18 @@ Re-verify before Wave 4: `shasum -a 256 docs/superpowers/specs/SPEC_Withdrawal_I
 
 | Wave | WP | Title | Owner | Status | Branch | PR | Blocker |
 |---|---|---|---|---|---|---|---|
-| 0 | WP-00 | Branch, tracking file, verification baseline | AGENT | pr-open | `chore/wp-00-remediation-baseline` | #371 | — |
-| 0 | WP-00b | `bin/verify.sh` + pre-push hook + smoke runner | AGENT | pr-open | `chore/wp-00b-verify-harness` | #372 | — |
-| 1 | WP-01 | Capacity: `'na'` bug + disable Copy note | AGENT | todo | — | — | — |
-| 1 | WP-02 | COWS legal-value arrays | AGENT | todo | — | — | — |
+| 0 | WP-00 | Branch, tracking file, verification baseline | AGENT | **merged** | — | #371 | — |
+| 0 | WP-00b | `bin/verify.sh` + pre-push hook + smoke runner | AGENT | **merged** | — | #372 | — |
+| 1 | WP-01 | Capacity: `'na'` bug + disable Copy note | AGENT | **merged** | — | #374 | OPEN-DECISION-11 raised |
+| 1 | WP-02 | COWS legal-value arrays | AGENT | **merged** | — | #375 | — |
 | 1 | WP-03 | CIWA bands + delete unconditional directive | AGENT+REVIEW | todo | — | — | — |
 | 1 | WP-04 | Withdrawal seizure window overlap | AGENT+REVIEW | todo | — | — | — |
 | 1 | WP-05 | BFCRS anchors, invalid scores, malignant interrupt | AGENT+REVIEW | todo | — | — | — |
 | 1 | WP-06 | C-SSRS timeframes, stale answers, admin panel | AGENT+REVIEW | todo | — | — | OPEN-DECISION-3 blocks 6e |
-| 1 | WP-07 | Violence page: delete count directive | AGENT | todo | — | — | — |
+| 1 | WP-07 | Violence page: delete count directive | AGENT | **merged** | — | #373 | LOCAL_POLICY half deferred → OPEN-DECISION-12 |
 | 1 | WP-08 | SP: punitive regexes, crisis path, keep 403 | AGENT+REVIEW | todo | — | — | needs 2nd reviewer |
-| 2 | WP-09 | Daily Review: shuffle options | AGENT | todo | — | — | — |
-| 2 | WP-10 | Shelf Mode: disable + remove false copy | AGENT | todo | — | — | — |
+| 2 | WP-09 | Daily Review: shuffle options | AGENT | **already done on main** | — | — | premise stale — see "Stale premises" |
+| 2 | WP-10 | Shelf Mode: disable + remove false copy | AGENT | **premise stale — do not execute** | — | — | see "Stale premises" |
 | 2 | WP-11 | Case banks: randomize at render | AGENT | todo | — | — | — |
 | 2 | WP-12 | Formative labelling + honest attempts | AGENT | todo | — | — | — |
 | 2 | WP-13 | Draft-badge bug + attestation coherence | AGENT | todo | — | — | — |
@@ -138,7 +161,10 @@ Re-verify before Wave 4: `shasum -a 256 docs/superpowers/specs/SPEC_Withdrawal_I
 | OPEN-DECISION-7 | Do unattested drafts ship? (46 of 189 served items) | WP-17 | open |
 | OPEN-DECISION-8 | Move the communication bank to two-tier? | review §8.4 | open |
 | OPEN-DECISION-9 | Is the SP going live this academic year? Determines whether WP-08b is Tier 0 | review §5.2 | open |
-| **OPEN-DECISION-10** | **Source documents committed to the repo by WP-00 — confirm or revert.** See "WP-00 notes". | WP-00 | **needs confirmation** |
+| OPEN-DECISION-10 | Source documents committed to the repo by WP-00 | WP-00 | **resolved — confirmed, root copies removed** |
+| **OPEN-DECISION-11** | `anyImp` is evaluated **before** `anyNA` in the capacity module, so three "Not assessed" + one "Impaired" still returns *"the patient LACKS capacity"*. WP-01's own replacement ordering puts `anyNA` first, which would block that — but the spec was written against code with no `anyNA` branch, so it never contemplated the ordering. **Can a single impaired ability carry a negative determination while three are unassessed?** Clinical judgement; WP-01 is an AGENT package, so flagged not changed. | WP-01 | **open** |
+| **OPEN-DECISION-12** | `LOCAL_POLICY` is `*.pack.json`-only (`pack.localPolicies` + `choiceBank tokenId`). No HTML-tool equivalent exists, so the site-specific MMC paragraph in the violence one-pager still ships unmodified to the UNE MS3 site. Build an HTML token mechanism, use the existing per-site injection (`resident_section.py`), or split the paragraph? | WP-07 | **open** |
+| OPEN-DECISION-5 | Wire Shelf Mode to `question_bank.json` | WP-10 | **resolved — already wired (PR #343); see A5** |
 
 ## Burn-down counters
 
@@ -147,6 +173,9 @@ Populated as the gates land; each must be printed on every CI run so it cannot b
 | Counter | WP | Baseline | Current |
 |---|---|---|---|
 | `validate_item_cues` allowlist size | WP-15 | not yet measured | — |
+| COWS options outside published legal values | WP-02 | 12 (dense ranges on 11 items) | **0** — pinned by `tests/cows-legal-values.test.mjs` |
+| Count-derived directives on non-instruments | WP-07 | 1 (violence one-pager) | **0** — pinned by `tests/violence-no-tally.test.mjs` |
+| Exportable incomplete capacity notes | WP-01 | unbounded | **0** — pinned by `tests/capacity-verdict.test.mjs` |
 | Distractor-rationale leaks (`quizzes.json`) | WP-19a | 175 / 437 questions (393 options) | — |
 | Attested items drifted since 2026-07-05 | WP-17 | not yet measured | — |
 | Cases `draft` under a `reviewed` tool page | WP-13 | 22 across 5 banks | — |
