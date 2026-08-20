@@ -69,6 +69,28 @@ async function replacement(H) {
   const checked = await H.F.fdEditionValidateEnvelope(next, H.core, H.snapshot, H.site, { mode: 'learner', generationDate: '' }, webcrypto.subtle);
   assert.equal(checked.ok, true, JSON.stringify(checked.errors)); return checked;
 }
+
+async function expandedEnvelope(H, audience) {
+  const envelope = structuredClone(H.envelope);
+  const weekCount = audience === 'resident' ? 4 : 6;
+  const itemsPerWeek = 96 / weekCount;
+  envelope.config.pathItems = Array.from({ length: 96 }, (_, offset) => ({
+    instanceId: `core:library/example:${offset + 1}`,
+    ref: 'library/example',
+    week: Math.floor(offset / itemsPerWeek) + 1,
+    order: (offset % itemsPerWeek) + 1,
+    priority: 'recommended',
+  }));
+  envelope.digest = await digest({
+    format: envelope.format, schemaVersion: envelope.schemaVersion, config: envelope.config,
+  });
+  const checked = await H.F.fdEditionValidateEnvelope(
+    envelope, H.core, H.snapshot, H.site, { mode: 'learner', generationDate: '' }, webcrypto.subtle,
+  );
+  assert.equal(checked.ok, true, JSON.stringify(checked.errors));
+  assert.equal(Buffer.byteLength(canonical(envelope.config)) <= 12 * 1024, true);
+  return envelope;
+}
 const PROTECTED = {
   cw_rotation_edition_v1: '{"v1":"edition"}', cw_rotation_local_progress_v1: '{"v1":"local"}', cw_curator_draft_v1: '{"v1":"draft"}',
   cw_progress_v1: '{"core":"progress"}', cw_qbank_attest_v1: '{"core":"attestation"}', cw_plan_v1: '{"manualItems":["saved"],"history":["kept"]}',
@@ -92,6 +114,46 @@ for (const audience of ['ms3', 'resident']) {
     assert.equal(stored.mode, 'active'); assert.equal(stored.needsCommit, false);
     const revisit = await F.fdEditionResolveStartup(core, snapshot, site, 'https://example.edu/front-door.html', fragment(envelope), JSON.stringify(envelope), webcrypto.subtle);
     assert.equal(revisit.mode, 'active'); assert.equal(revisit.needsCommit, false); assert.equal(revisit.candidate, null);
+  });
+
+  test(`${audience} accepts the same valid long edition from a base URL plus hash or a complete href`, async () => {
+    const H = await harness(audience); const envelope = await expandedEnvelope(H, audience);
+    const hash = fragment(envelope); const baseUrl = 'https://example.edu/'; const completeUrl = baseUrl + hash;
+    assert.equal(completeUrl.length > 8000, true, completeUrl.length);
+    assert.equal(completeUrl.length <= 16000, true, completeUrl.length);
+
+    const fromBase = await H.F.fdEditionResolveStartup(
+      H.core, H.snapshot, H.site, baseUrl, hash, null, webcrypto.subtle,
+    );
+    const fromComplete = await H.F.fdEditionResolveStartup(
+      H.core, H.snapshot, H.site, completeUrl, hash, null, webcrypto.subtle,
+    );
+    assert.equal(fromBase.mode, 'active');
+    assert.equal(fromComplete.mode, 'active');
+    assert.equal(fromComplete.active.fingerprint, fromBase.active.fingerprint);
+  });
+
+  test(`${audience} accepts a valid complete URL at 16,000 characters and rejects 16,001`, async () => {
+    const H = await harness(audience); const envelope = await expandedEnvelope(H, audience);
+    const hash = fragment(envelope); const prefix = 'https://example.edu/?cap=';
+    const baseAtCap = prefix + 'x'.repeat(16000 - prefix.length - hash.length);
+    const completeAtCap = baseAtCap + hash; const completeAboveCap = baseAtCap + `x${hash}`;
+    assert.equal(baseAtCap.length + hash.length, 16000, 'base plus hash invariant');
+    assert.equal(completeAtCap.length, 16000); assert.equal(completeAboveCap.length, 16001);
+
+    const baseForm = await H.F.fdEditionResolveStartup(
+      H.core, H.snapshot, H.site, baseAtCap, hash, null, webcrypto.subtle,
+    );
+    const atCap = await H.F.fdEditionResolveStartup(
+      H.core, H.snapshot, H.site, completeAtCap, hash, null, webcrypto.subtle,
+    );
+    const aboveCap = await H.F.fdEditionResolveStartup(
+      H.core, H.snapshot, H.site, completeAboveCap, hash, null, webcrypto.subtle,
+    );
+    assert.equal(baseForm.mode, 'active');
+    assert.equal(atCap.mode, 'active');
+    assert.equal(atCap.active.fingerprint, baseForm.active.fingerprint);
+    assert.equal(aboveCap.mode, 'rejected'); assert.equal(aboveCap.receipt.code, 'EDITION_INVALID');
   });
 }
 
