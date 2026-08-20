@@ -54,6 +54,10 @@
   .verdict.part{background:var(--warning-light);color:var(--warning);border:1px solid var(--warning)}
   .btn{border:none;border-radius:var(--radius-sm);padding:9px 16px;font-size:.9rem;font-weight:600;cursor:pointer;font-family:inherit}
   .btn-primary{background:var(--primary-dark);color:#fff} .btn-primary:hover{background:var(--primary)}
+  /* A disabled control that still looks pressable is its own defect: the learner clicks, nothing
+     happens, and they conclude the tool is broken rather than that the assessment is unfinished.
+     :disabled must win over :hover, hence the ordering and the explicit hover reset. */
+  .btn:disabled,.btn-primary:disabled,.btn-primary:disabled:hover{background:var(--border);color:var(--text-mid);cursor:not-allowed}
   .btn-ghost{background:transparent;color:var(--accent-dark);border:1px solid var(--border)}
   .row{display:flex;gap:var(--sp2);flex-wrap:wrap;align-items:center;margin-top:var(--sp3)}
   .pearl{background:var(--warning-light);border-left:3px solid var(--warning);border-radius:var(--radius-sm);padding:var(--sp2) var(--sp3);font-size:.9rem;margin-top:var(--sp2)}
@@ -194,7 +198,18 @@ function App(){
       function(){var v=verdict(); return e('div',{className:'verdict '+v.cls}, v.txt);}(),
       e('div',{className:'output'}, note()),
       e('div',{className:'row'},
-        e('button',{className:'btn btn-primary',onClick:copyNote}, copied?'Copied ✓':'Copy note'),
+        /* Export is gated on a determination existing. note() already degrades honestly for an
+           incomplete assessment ("Not formally assessed" per ability, "Assessment incomplete."),
+           but a copied note leaves this tool and lands in a chart or a handoff, where the header
+           "CAPACITY ASSESSMENT" and the four-ability list carry more weight than the one line
+           that says it is not finished. Nothing is hidden -- the draft stays visible on screen
+           above; only the one-click export off-page waits for all four abilities. */
+        function(){var v=verdict(); var incomplete=(v.cls==='part'); return e('button',{
+          className:'btn btn-primary',
+          disabled:incomplete,
+          title:(incomplete?'Rate all four abilities before exporting a note.':''),
+          onClick:function(){ if(!incomplete) copyNote(); }
+        }, copied?'Copied ✓':'Copy note');}(),
         e('button',{className:'btn btn-ghost',onClick:reset},'Reset')),
       e('div',{className:'pearl'}, e('b',null,'Before concluding "lacks capacity": '),'rule out and treat reversible contributors — delirium, intoxication/withdrawal, pain, acute psychosis, language/communication barriers. Capacity can return.')
     )
