@@ -155,13 +155,13 @@ test('different valid edition asks before switching; decline changes no bytes', 
   const store = storage(PROTECTED); const before = store.snapshot();
   assert.deepEqual(store.snapshot(), before); assert.deepEqual(store.operations, []);
 
-  const local = { schemaVersion: 2, byFingerprint: { [result.active.fingerprint]: { checklist: { 'local:old': true }, resources: {} } } };
+  const local = { schemaVersion: 2, byFingerprint: { [result.active.fingerprint]: { checklist: { 'local:checklist:1': true }, resources: {} } } };
   const acceptedStore = storage({ ...PROTECTED, [F.fdEditionStorageKeys('ms3').local]: JSON.stringify(local) });
   const keys = F.fdEditionStorageKeys('ms3');
   const journal = F.fdEditionStartupJournal(acceptedStore, [keys.local, keys.edition]);
   assert.deepEqual(F.fdEditionCommitAcceptance(acceptedStore, keys, result.candidate, local, journal), { ok: true, code: 'EDITION_ACCEPTED' });
   const switched = JSON.parse(acceptedStore.snapshot()[keys.local]);
-  assert.deepEqual(switched.byFingerprint[result.active.fingerprint], { checklist: { 'local:old': true }, resources: {} });
+  assert.deepEqual(switched.byFingerprint[result.active.fingerprint], { checklist: { 'local:checklist:1': true }, resources: {} });
   assert.deepEqual(switched.byFingerprint[result.candidate.fingerprint], { checklist: {}, resources: {} });
 });
 
@@ -193,14 +193,73 @@ test('second-write throw or postwrite mismatch rolls back both values and report
 test('local progress is closed, bounded, fingerprint-scoped, and permits only resolved IDs', async () => {
   const { F, keys } = await harness();
   const fp = 'EXU-MS3-ZBVX4D';
-  const display = { card: { fingerprint: fp }, firstDay: { checklistItems: [{ id: 'local:check:1' }] }, resources: [{ id: 'local:resource:1' }] };
-  const doc = { schemaVersion: 2, byFingerprint: { [fp]: { checklist: { 'local:check:1': true }, resources: {} } } };
+  const checklistIds = [
+    'local:checklist:1',
+    'local:generated:arrival',
+    'local:generated:access:local:access:1',
+  ];
+  const display = {
+    card: { fingerprint: fp },
+    firstDay: { checklistItems: checklistIds.map((id) => ({ id })) },
+    resources: [{ id: 'local:resource:1' }],
+  };
+  const doc = { schemaVersion: 2, byFingerprint: { [fp]: { checklist: Object.fromEntries(checklistIds.map((id) => [id, true])), resources: {} } } };
   const store = storage({ [keys.local]: JSON.stringify(doc) });
-  assert.deepEqual(F.fdEditionReadLocal(store, keys, fp, display), { checklist: { 'local:check:1': true }, resources: {} });
+  assert.deepEqual(F.fdEditionReadLocal(store, keys, fp, display), { checklist: Object.fromEntries(checklistIds.map((id) => [id, true])), resources: {} });
   assert.equal(F.fdEditionToggleLocal(store, keys, fp, 'resources', 'local:resource:1', display), true);
-  assert.equal(F.fdEditionToggleLocal(store, keys, fp, 'checklist', 'local:unknown', display), false);
+  assert.equal(F.fdEditionToggleLocal(store, keys, fp, 'checklist', 'local:checklist:99', display), false);
+  assert.equal(F.fdEditionToggleLocal(store, keys, fp, 'checklist', 'local:generated:access:local:access:2', display), false);
   const hostile = storage({ [keys.local]: JSON.stringify({ ...doc, extra: true }) });
   assert.deepEqual(F.fdEditionReadLocal(hostile, keys, fp, display), { checklist: {}, resources: {} });
+});
+
+test('local progress rejects hostile, wrong-kind, noncanonical, and forged generated IDs without writes', async () => {
+  const { F, keys, snapshot, core, site, envelope } = await harness();
+  const validated = await F.fdEditionResolveStartup(core, snapshot, site, 'https://example.edu/', fragment(envelope), null, webcrypto.subtle);
+  const fp = validated.active.fingerprint;
+  const display = {
+    firstDay: { checklistItems: [
+      { id: 'local:checklist:1' },
+      { id: 'local:generated:arrival' },
+      { id: 'local:generated:access:local:access:1' },
+    ] },
+    resources: [{ id: 'local:resource:1' }],
+  };
+  const cases = [
+    ['checklist', 'patient:synthetic-person-record'],
+    ['checklist', 'local:resource:1'],
+    ['checklist', 'local:checklist:0'],
+    ['checklist', 'local:checklist:01'],
+    ['checklist', 'local:checklist:-1'],
+    ['checklist', 'local:checklist:text'],
+    ['checklist', 'local:checklist:999'],
+    ['checklist', 'local:generated:access:patient:synthetic-person-record'],
+    ['checklist', 'local:generated:access:local:access:0'],
+    ['checklist', 'local:generated:access:local:access:2'],
+    ['resources', 'local:checklist:1'],
+    ['resources', 'local:resource:0'],
+    ['resources', 'local:resource:01'],
+    ['resources', 'local:resource:-1'],
+    ['resources', 'local:resource:text'],
+    ['resources', 'local:resource:999'],
+    ['resources', 'local:generated:arrival'],
+  ];
+  for (const [kind, id] of cases) {
+    const document = { schemaVersion: 2, byFingerprint: { [fp]: { checklist: {}, resources: {} } } };
+    document.byFingerprint[fp][kind][id] = true;
+    const text = JSON.stringify(document);
+    const store = storage({ [keys.local]: text });
+    const before = store.snapshot();
+    assert.deepEqual(F.fdEditionReadLocal(store, keys, fp, display), { checklist: {}, resources: {} }, `${kind}:${id}`);
+    assert.equal(F.fdEditionToggleLocal(store, keys, fp, kind, id, display), false, `${kind}:${id}`);
+    assert.deepEqual(store.snapshot(), before, `${kind}:${id}`);
+    assert.equal(store.operations.some(([op]) => op === 'set' || op === 'remove'), false, `${kind}:${id}`);
+
+    const commitStore = storage({ [keys.local]: text });
+    const journal = F.fdEditionStartupJournal(commitStore, [keys.local, keys.edition]);
+    assert.deepEqual(F.fdEditionCommitAcceptance(commitStore, keys, validated.active, document, journal), { ok: false, code: 'EDITION_STORAGE' });
+    assert.equal(commitStore.operations.some(([op]) => op === 'set' || op === 'remove'), false, `${kind}:${id}`);
+  }
 });
 
 test('a 129th fingerprint acceptance returns capacity and never evicts or writes', async () => {
@@ -217,15 +276,15 @@ test('a 129th fingerprint acceptance returns capacity and never evicts or writes
 
 test('local checklist and resource completion caps reject the next resolved ID without a write', async () => {
   const { F, keys } = await harness(); const fp = 'EXU-MS3-ZBVX4D';
-  const checklistItems = Array.from({ length: 25 }, (_, i) => ({ id: `local:check:${i}` }));
-  const resources = Array.from({ length: 13 }, (_, i) => ({ id: `local:resource:${i}` }));
+  const checklistItems = Array.from({ length: 25 }, (_, i) => ({ id: `local:checklist:${i + 1}` }));
+  const resources = Array.from({ length: 13 }, (_, i) => ({ id: `local:resource:${i + 1}` }));
   const bucket = { checklist: {}, resources: {} };
-  for (let i = 0; i < 24; i++) bucket.checklist[`local:check:${i}`] = true;
-  for (let i = 0; i < 12; i++) bucket.resources[`local:resource:${i}`] = true;
+  for (let i = 0; i < 24; i++) bucket.checklist[`local:checklist:${i + 1}`] = true;
+  for (let i = 0; i < 12; i++) bucket.resources[`local:resource:${i + 1}`] = true;
   const store = storage({ [keys.local]: JSON.stringify({ schemaVersion: 2, byFingerprint: { [fp]: bucket } }) });
   const display = { card: { fingerprint: fp }, firstDay: { checklistItems }, resources };
-  assert.equal(F.fdEditionToggleLocal(store, keys, fp, 'checklist', 'local:check:24', display), false);
-  assert.equal(F.fdEditionToggleLocal(store, keys, fp, 'resources', 'local:resource:12', display), false);
+  assert.equal(F.fdEditionToggleLocal(store, keys, fp, 'checklist', 'local:checklist:25', display), false);
+  assert.equal(F.fdEditionToggleLocal(store, keys, fp, 'resources', 'local:resource:13', display), false);
   assert.equal(store.operations.some(([op]) => op === 'set'), false);
 });
 

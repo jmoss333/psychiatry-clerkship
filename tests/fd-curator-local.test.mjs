@@ -376,6 +376,57 @@ test('updates, optional clearing, category clearing, and lowest-unused IDs prese
   assert.equal(Object.hasOwn(draft.config.localPlan, 'schedule'), false);
 });
 
+test('all curator row producers reuse the lowest missing positive identifier without closing later gaps', () => {
+  let draft = reduce(completedDraft(), { type: 'LOCAL_APPLY_PRESET', presetKey: 'preset.complete@v1' });
+  draft = reduce(draft, { type: 'LOCAL_CATEGORY_CLEAR', category: 'attendance' });
+  draft = reduce(draft, { type: 'SCHEDULE_EVENT_REMOVE', instanceId: 'local:schedule:1' });
+  draft = reduce(draft, { type: 'SCHEDULE_EVENT_ADD', daySetKey: choiceKey('daySet'), startTime: '10:15', activityKey: choiceKey('activity'), priority: 'recommended' });
+  assert.deepEqual(draft.config.localPlan.schedule.events.map((row) => row.instanceId).sort(), ['local:schedule:1', 'local:schedule:2']);
+
+  draft = reduce(draft, { type: 'ACCESS_REMOVE', instanceId: 'local:access:1' });
+  draft = reduce(draft, { type: 'ACCESS_ADD', itemKey: choiceKey('accessItem'), dueKey: choiceKey('duePoint') });
+  draft = reduce(draft, { type: 'CONTACT_REMOVE', instanceId: 'local:contact:1' });
+  draft = reduce(draft, { type: 'CONTACT_ADD', roleKey: choiceKey('role') });
+  draft = reduce(draft, { type: 'CHECKLIST_REMOVE', instanceId: 'local:checklist:1' });
+  draft = reduce(draft, { type: 'CHECKLIST_ADD', itemKey: choiceKey('checklist'), priority: 'optional' });
+  draft = reduce(draft, { type: 'RESOURCE_REMOVE', instanceId: 'local:resource:1' });
+  draft = reduce(draft, { type: 'RESOURCE_ADD', linkKey: 'link.orientation@v1', priority: 'optional', week: 2 });
+  assert.equal(draft.config.localPlan.accessItems[0].instanceId, 'local:access:1');
+  assert.equal(draft.config.localPlan.contacts[0].instanceId, 'local:contact:1');
+  assert.equal(draft.config.localPlan.checklistItems[0].instanceId, 'local:checklist:1');
+  assert.equal(draft.config.localPlan.resources[0].instanceId, 'local:resource:1');
+});
+
+test('persisted curator local IDs are category-bound and rejected without echo', async () => {
+  const base = reduce(completedDraft(), { type: 'LOCAL_APPLY_PRESET', presetKey: 'preset.complete@v1' });
+  const validation = { mode: 'builder', generationDate: '2026-08-19' };
+  const baseline = await fn('fdCuratorCandidateConfig')(base, index(), SNAPSHOT, context(), validation, webcrypto.subtle);
+  assert.equal(baseline.ok, true, JSON.stringify(baseline.errors));
+
+  const cases = [
+    ['patient:synthetic-person-record', (plan, id) => { plan.schedule.events[0].instanceId = id; plan.attendance.eventInstanceIds[0] = id; }],
+    ['local:access:7', (plan, id) => { plan.schedule.events[0].instanceId = id; plan.attendance.eventInstanceIds[0] = id; }],
+    ['local:schedule:0', (plan, id) => { plan.schedule.events[0].instanceId = id; plan.attendance.eventInstanceIds[0] = id; }],
+    ['local:access:01', (plan, id) => { plan.accessItems[0].instanceId = id; }],
+    ['local:contact:-1', (plan, id) => { plan.contacts[0].instanceId = id; }],
+    ['local:checklist:text', (plan, id) => { plan.checklistItems[0].instanceId = id; }],
+    ['local:resource:0', (plan, id) => { plan.resources[0].instanceId = id; }],
+    ['local:generated:arrival', (plan, id) => { plan.checklistItems[0].instanceId = id; }],
+    ['local:generated:access:local:access:1', (plan, id) => { plan.checklistItems[0].instanceId = id; }],
+  ];
+  for (const [secret, mutate] of cases) {
+    const hostile = structuredClone(base);
+    mutate(hostile.config.localPlan, secret);
+    assert.equal(reduce(hostile, { type: 'SET_STEP', step: 2 }), hostile, secret);
+    const candidate = await fn('fdCuratorCandidateConfig')(hostile, index(), SNAPSHOT, context(), validation, webcrypto.subtle);
+    assert.equal(candidate.ok, false, secret);
+    assert.equal(JSON.stringify(candidate).includes(secret), false, secret);
+    const restored = await fn('fdCuratorRestoreDraft')(JSON.stringify(hostile), index(), context(), SNAPSHOT, validation, webcrypto.subtle);
+    assert.deepEqual(restored, { ok: false, code: 'CURATOR_DRAFT_INVALID' }, secret);
+    assert.equal(JSON.stringify(restored).includes(secret), false, secret);
+  }
+});
+
 test('invalid, boundary, duplicate, dependency-blocked, and accessor actions are identity no-ops', () => {
   const draft = reduce(completedDraft(), { type: 'LOCAL_APPLY_PRESET', presetKey: 'preset.complete@v1' }); let reads = 0;
   const accessor = { type: 'ARRIVAL_SET' }; Object.defineProperty(accessor, 'value', { enumerable: true, get() { reads += 1; return fullLocalPlan().arrival; } });

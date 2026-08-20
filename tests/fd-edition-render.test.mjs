@@ -50,7 +50,7 @@ function model(overrides = {}) {
         link: { title: 'Arrival map', url: 'https://maps.example.edu/arrival', visibleHostname: 'maps.example.edu', purposeCode: 'arrival-map' } },
       accessItems: [{ id: 'local:access:1', text: 'Complete access training before arrival.', checklistId: 'local:generated:access:local:access:1' }],
       contacts: [{ id: 'local:contact:1', text: 'Contact the education office.' }],
-      checklistItems: [{ id: 'local:check:1', text: 'Review the local guide.', priority: 'required', priorityLabel: 'HOSTILE PRIORITY', sourceCode: 'selected' }],
+      checklistItems: [{ id: 'local:checklist:1', text: 'Review the local guide.', priority: 'required', priorityLabel: 'HOSTILE PRIORITY', sourceCode: 'selected' }],
     },
     typicalDay: { summaryText: 'The day runs from 8:00 AM until about 5:00 PM.', eventItems: [] },
     workflow: { rounds: { text: 'Prepare, participate, and follow up.' }, presentation: null, documentation: { text: 'Document after rounds.', guardrailText: AUTHORITY.documentationGuardrail } },
@@ -80,7 +80,7 @@ test('card uses DOM text APIs and separates self-attestation from repository rec
 
 test('local guidance has the exact eight-section DOM and reading order', () => {
   const root = new Node();
-  const local = { checklist: { 'local:check:1': true }, resources: { 'local:resource:1': true } };
+  const local = { checklist: { 'local:checklist:1': true }, resources: { 'local:resource:1': true } };
   assert.equal(F.fdEditionRenderLocal(root, model(), local, documentObject), true);
   const headings = walk(root).filter((node) => node.tagName === 'H2').map((node) => node.textContent);
   assert.deepEqual(headings, [
@@ -128,6 +128,28 @@ test('hostile visible catalog text is rendered only as inert text', () => {
   assert.equal(F.fdEditionRenderCard(root, value, documentObject), true);
   assert.ok(root.textContent.includes('<img src=x onerror="private">'));
   assert.equal(walk(root).some((node) => node.tagName === 'IMG'), false);
+});
+
+test('hostile or forged progress IDs never become DOM attributes or interactive toggles', () => {
+  for (const [kind, id] of [
+    ['checklist', 'patient:synthetic-person-record'],
+    ['checklist', 'local:resource:99'],
+    ['checklist', 'local:checklist:0'],
+    ['checklist', 'local:checklist:01'],
+    ['checklist', 'local:generated:access:local:access:0'],
+    ['resources', 'local:checklist:99'],
+    ['resources', 'local:resource:text'],
+    ['resources', 'local:generated:arrival'],
+  ]) {
+    const root = new Node(); const value = model();
+    if (kind === 'checklist') value.firstDay.checklistItems[0].id = id;
+    else value.resources[0].id = id;
+    assert.equal(F.fdEditionRenderLocal(root, value, { checklist: {}, resources: {} }, documentObject), true);
+    const nodes = walk(root);
+    assert.equal(nodes.some((node) => Object.values(node.attributes).includes(id)), false, `${kind}:${id}`);
+    assert.equal(nodes.some((node) => node.attributes['data-fd-local-toggle'] === kind), false, `${kind}:${id}`);
+    assert.equal(root.textContent.includes(id), false, `${kind}:${id}`);
+  }
 });
 
 test('throwing DOM capabilities fail closed without private error text', () => {

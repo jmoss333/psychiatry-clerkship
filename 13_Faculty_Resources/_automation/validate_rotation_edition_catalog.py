@@ -24,6 +24,7 @@ KEY = re.compile(r"^[a-z0-9][a-z0-9._:-]{0,126}@v[1-9][0-9]{0,5}$")
 DIGEST = re.compile(r"^sha256-[A-Za-z0-9_-]{43}$")
 TEXT_CONTROL = re.compile(r"[\x00-\x1f\x7f-\x9f\u202a-\u202e\u2066-\u2069<>&]")
 RAW_KEY_TOKEN = re.compile(r"[a-z0-9][a-z0-9._:-]{0,126}@v[1-9][0-9]{0,5}")
+POSITIVE_DECIMAL = re.compile(r"^[1-9][0-9]*$")
 CHOICE_KINDS = {"reason", "activity", "role", "checklist", "daySet", "roundsPreparation", "roundsParticipation", "roundsFollowUp", "presentationFormat", "presentationTiming", "presentationElement", "documentationWorkflow", "documentationTiming", "feedbackCadence", "feedbackInitiator", "feedbackSetting", "accessItem", "duePoint"}
 LOCATION_TYPES = {"inpatient", "outpatient", "consult-liaison", "emergency", "community", "mixed"}
 PURPOSE_CODES = {"arrival-map", "orientation", "access-training", "documentation-policy", "attendance-policy", "feedback-policy", "directory", "parking-transit", "official-clinical-policy", "reviewed-operational"}
@@ -189,8 +190,9 @@ def _time(value, pointer: str) -> int:
     return int(value[:2]) * 60 + int(value[3:])
 
 
-def _identifier(value, pointer: str) -> None:
-    if not isinstance(value, str) or not value or len(value) > 160 or re.fullmatch(r"[\x21-\x7e]+", value) is None:
+def _local_identifier(value, kind: str, pointer: str) -> None:
+    prefix = f"local:{kind}:"
+    if not isinstance(value, str) or len(value) > 160 or not value.startswith(prefix) or POSITIVE_DECIMAL.fullmatch(value[len(prefix):]) is None:
         raise _error("CATALOG_INVALID", pointer)
 
 
@@ -247,7 +249,7 @@ def _validate_local_plan(plan, pointer, records_by_key, audiences, locations):
         for index, event in enumerate(value["events"]):
             event_pointer = item_pointer + "/events/" + str(index)
             _exact_object(event, {"instanceId", "daySetKey", "startTime", "activityKey", "priority"}, {"endTime", "placeKey"}, event_pointer)
-            _identifier(event["instanceId"], event_pointer + "/instanceId")
+            _local_identifier(event["instanceId"], "schedule", event_pointer + "/instanceId")
             if event["instanceId"] in ids: raise _error("CATALOG_INVALID", event_pointer + "/instanceId")
             ids.add(event["instanceId"]); schedule_ids.add(event["instanceId"])
             start = _time(event["startTime"], event_pointer + "/startTime")
@@ -281,7 +283,10 @@ def _validate_local_plan(plan, pointer, records_by_key, audiences, locations):
     if "attendance" in plan:
         value = plan["attendance"]; item_pointer = pointer + "/attendance"
         _exact_object(value, {"eventInstanceIds", "absenceRoleKey"}, {"policyLinkKey"}, item_pointer)
-        if not isinstance(value["eventInstanceIds"], list) or not 1 <= len(value["eventInstanceIds"]) <= 24 or len(value["eventInstanceIds"]) != len(set(value["eventInstanceIds"])) or not set(value["eventInstanceIds"]).issubset(schedule_ids): raise _error("CATALOG_INVALID", item_pointer + "/eventInstanceIds")
+        if not isinstance(value["eventInstanceIds"], list) or not 1 <= len(value["eventInstanceIds"]) <= 24 or len(value["eventInstanceIds"]) != len(set(value["eventInstanceIds"])): raise _error("CATALOG_INVALID", item_pointer + "/eventInstanceIds")
+        for index, instance_id in enumerate(value["eventInstanceIds"]):
+            _local_identifier(instance_id, "schedule", item_pointer + "/eventInstanceIds/" + str(index))
+            if instance_id not in schedule_ids: raise _error("CATALOG_INVALID", item_pointer + "/eventInstanceIds")
         _plan_reference(records_by_key, value["absenceRoleKey"], item_pointer + "/absenceRoleKey", audiences, locations, {"choice"}, {"role"})
         if "policyLinkKey" in value: _plan_reference(records_by_key, value["policyLinkKey"], item_pointer + "/policyLinkKey", audiences, locations, {"officialLink"}, purposes={"attendance-policy"})
     arrays = {
@@ -296,7 +301,7 @@ def _validate_local_plan(plan, pointer, records_by_key, audiences, locations):
         if not isinstance(values, list) or not 1 <= len(values) <= maximum: raise _error("CATALOG_INVALID", item_pointer)
         for index, value in enumerate(values):
             row_pointer = item_pointer + "/" + str(index); _exact_object(value, required, optional, row_pointer)
-            _identifier(value["instanceId"], row_pointer + "/instanceId")
+            _local_identifier(value["instanceId"], {"accessItems": "access", "contacts": "contact", "checklistItems": "checklist", "resources": "resource"}[category], row_pointer + "/instanceId")
             if value["instanceId"] in ids: raise _error("CATALOG_INVALID", row_pointer + "/instanceId")
             ids.add(value["instanceId"])
             if category == "accessItems":

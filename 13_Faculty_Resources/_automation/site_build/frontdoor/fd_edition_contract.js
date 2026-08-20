@@ -15,6 +15,7 @@ var FD_EDITION_KEY=/^[a-z0-9][a-z0-9._:-]{0,126}@v[1-9][0-9]{0,5}$/;
 var FD_EDITION_DIGEST=/^sha256-[A-Za-z0-9_-]{43}$/;
 var FD_EDITION_REVISION=/^[0-9a-f]{40}$/;
 var FD_EDITION_ID=/^[\x21-\x7e]{1,160}$/;
+var FD_EDITION_POSITIVE_DECIMAL=/^[1-9][0-9]*$/;
 var FD_EDITION_TIME=/^(?:[01][0-9]|2[0-3]):[0-5][0-9]$/;
 var FD_EDITION_LOCATION=/^[A-Z0-9]{2,8}$/;
 var FD_EDITION_LOCAL_CATEGORIES=['arrival','schedule','rounds','presentation','documentation','attendance','feedback','accessItems','contacts','checklistItems','resources'];
@@ -160,6 +161,8 @@ function fdEditionExact(value,required,optional){
 
 function fdEditionOneOf(value,values){ return values.indexOf(value)>=0; }
 function fdEditionInteger(value,min,max){ return typeof value==='number'&&Math.floor(value)===value&&value>=min&&value<=max; }
+function fdEditionCoreInstanceId(value,ref){var prefix;if(typeof value!=='string'||typeof ref!=='string'||value.length>160)return false;prefix='core:'+ref+':';return value.indexOf(prefix)===0&&FD_EDITION_POSITIVE_DECIMAL.test(value.slice(prefix.length));}
+function fdEditionLocalInstanceId(value,kind){var prefix;if(typeof value!=='string'||typeof kind!=='string'||value.length>160)return false;prefix='local:'+kind+':';return value.indexOf(prefix)===0&&FD_EDITION_POSITIVE_DECIMAL.test(value.slice(prefix.length));}
 
 function fdEditionRealDate(value){
   var parts,year,month,day,leap,days;
@@ -192,8 +195,7 @@ function fdEditionCoreContext(index,config,siteContext){
 function fdEditionValidateLocalPlan(plan,maxWeek,ids){
   var keys,i,row,value,start,tuple,scheduleIds=Object.create(null),tuples=Object.create(null),seen=Object.create(null),count;
   function key(value){ return typeof value==='string'&&FD_EDITION_KEY.test(value); }
-  function identifier(value){ return typeof value==='string'&&FD_EDITION_ID.test(value); }
-  function uniqueId(value){ if(!identifier(value)||ids[value]) throw new Error('invalid');ids[value]=true; }
+  function uniqueId(value,kind){ if(!fdEditionLocalInstanceId(value,kind)||ids[value]) throw new Error('invalid');ids[value]=true; }
   function priority(value){ if(!fdEditionOneOf(value,FD_EDITION_RULES.priorities)) throw new Error('invalid'); }
   function list(value,min,max){ return Array.isArray(value)&&value.length>=min&&value.length<=max; }
   if(!fdEditionIsPlainObject(plan)) throw new Error('invalid');keys=Object.keys(plan);
@@ -205,7 +207,7 @@ function fdEditionValidateLocalPlan(plan,maxWeek,ids){
     value=plan.schedule;if(!fdEditionExact(value,['dayStart','dayEnd','endQualifierCode','events'],[])||!fdEditionOneOf(value.endQualifierCode,['at','about','no-later-than'])||fdEditionTimeMinutes(value.dayStart)===null||fdEditionTimeMinutes(value.dayEnd)===null||fdEditionTimeMinutes(value.dayStart)>=fdEditionTimeMinutes(value.dayEnd)||!list(value.events,1,24)) throw new Error('invalid');
     for(i=0;i<value.events.length;i++){
       row=value.events[i];if(!fdEditionExact(row,['instanceId','daySetKey','startTime','activityKey','priority'],['endTime','placeKey'])) throw new Error('invalid');
-      uniqueId(row.instanceId);scheduleIds[row.instanceId]=true;start=fdEditionTimeMinutes(row.startTime);
+      uniqueId(row.instanceId,'schedule');scheduleIds[row.instanceId]=true;start=fdEditionTimeMinutes(row.startTime);
       if(start===null||(FD_EDITION_OWN.call(row,'endTime')&&(fdEditionTimeMinutes(row.endTime)===null||fdEditionTimeMinutes(row.endTime)<=start))||!key(row.daySetKey)||!key(row.activityKey)||(FD_EDITION_OWN.call(row,'placeKey')&&!key(row.placeKey))) throw new Error('invalid');
       priority(row.priority);tuple=[row.daySetKey,row.startTime,row.endTime||'',row.activityKey,row.placeKey||''].join('\u0000');if(tuples[tuple]) throw new Error('invalid');tuples[tuple]=true;
     }
@@ -218,17 +220,17 @@ function fdEditionValidateLocalPlan(plan,maxWeek,ids){
   if(FD_EDITION_OWN.call(plan,'documentation')){ value=plan.documentation;if(!fdEditionExact(value,['workflowKey','timingKey'],['policyLinkKey'])||!key(value.workflowKey)||!key(value.timingKey)||(FD_EDITION_OWN.call(value,'policyLinkKey')&&!key(value.policyLinkKey))) throw new Error('invalid'); }
   if(FD_EDITION_OWN.call(plan,'attendance')){
     value=plan.attendance;if(!fdEditionExact(value,['eventInstanceIds','absenceRoleKey'],['policyLinkKey'])||!list(value.eventInstanceIds,1,24)||!key(value.absenceRoleKey)||(FD_EDITION_OWN.call(value,'policyLinkKey')&&!key(value.policyLinkKey))) throw new Error('invalid');seen=Object.create(null);
-    for(i=0;i<value.eventInstanceIds.length;i++){ if(!identifier(value.eventInstanceIds[i])||seen[value.eventInstanceIds[i]]||!scheduleIds[value.eventInstanceIds[i]]) throw new Error('invalid');seen[value.eventInstanceIds[i]]=true; }
+    for(i=0;i<value.eventInstanceIds.length;i++){ if(!fdEditionLocalInstanceId(value.eventInstanceIds[i],'schedule')||seen[value.eventInstanceIds[i]]||!scheduleIds[value.eventInstanceIds[i]]) throw new Error('invalid');seen[value.eventInstanceIds[i]]=true; }
   }
   if(FD_EDITION_OWN.call(plan,'feedback')){ value=plan.feedback;if(!fdEditionExact(value,['cadenceKey','initiatorKey','settingKey'],[])||!key(value.cadenceKey)||!key(value.initiatorKey)||!key(value.settingKey)) throw new Error('invalid'); }
-  function rows(category,min,max,required,optional,validate){
+  function rows(category,kind,min,max,required,optional,validate){
     var values=plan[category],j;if(!list(values,min,max)) throw new Error('invalid');
-    for(j=0;j<values.length;j++){ row=values[j];if(!fdEditionExact(row,required,optional)) throw new Error('invalid');uniqueId(row.instanceId);validate(row); }
+    for(j=0;j<values.length;j++){ row=values[j];if(!fdEditionExact(row,required,optional)) throw new Error('invalid');uniqueId(row.instanceId,kind);validate(row); }
   }
-  if(FD_EDITION_OWN.call(plan,'accessItems')) rows('accessItems',1,12,['instanceId','itemKey','dueKey'],['linkKey'],function(item){if(!key(item.itemKey)||!key(item.dueKey)||(FD_EDITION_OWN.call(item,'linkKey')&&!key(item.linkKey)))throw new Error('invalid');});
-  if(FD_EDITION_OWN.call(plan,'contacts')) rows('contacts',1,8,['instanceId','roleKey'],['linkKey'],function(item){if(!key(item.roleKey)||(FD_EDITION_OWN.call(item,'linkKey')&&!key(item.linkKey)))throw new Error('invalid');});
-  if(FD_EDITION_OWN.call(plan,'checklistItems')) rows('checklistItems',1,24,['instanceId','itemKey','priority'],[],function(item){if(!key(item.itemKey))throw new Error('invalid');priority(item.priority);});
-  if(FD_EDITION_OWN.call(plan,'resources')) rows('resources',1,12,['instanceId','linkKey','priority','week'],['reasonKey'],function(item){if(!key(item.linkKey)||(FD_EDITION_OWN.call(item,'reasonKey')&&!key(item.reasonKey))||!fdEditionInteger(item.week,1,maxWeek))throw new Error('invalid');priority(item.priority);});
+  if(FD_EDITION_OWN.call(plan,'accessItems')) rows('accessItems','access',1,12,['instanceId','itemKey','dueKey'],['linkKey'],function(item){if(!key(item.itemKey)||!key(item.dueKey)||(FD_EDITION_OWN.call(item,'linkKey')&&!key(item.linkKey)))throw new Error('invalid');});
+  if(FD_EDITION_OWN.call(plan,'contacts')) rows('contacts','contact',1,8,['instanceId','roleKey'],['linkKey'],function(item){if(!key(item.roleKey)||(FD_EDITION_OWN.call(item,'linkKey')&&!key(item.linkKey)))throw new Error('invalid');});
+  if(FD_EDITION_OWN.call(plan,'checklistItems')) rows('checklistItems','checklist',1,24,['instanceId','itemKey','priority'],[],function(item){if(!key(item.itemKey))throw new Error('invalid');priority(item.priority);});
+  if(FD_EDITION_OWN.call(plan,'resources')) rows('resources','resource',1,12,['instanceId','linkKey','priority','week'],['reasonKey'],function(item){if(!key(item.linkKey)||(FD_EDITION_OWN.call(item,'reasonKey')&&!key(item.reasonKey))||!fdEditionInteger(item.week,1,maxWeek))throw new Error('invalid');priority(item.priority);});
   count=(FD_EDITION_OWN.call(plan,'arrival')?1:0)+(plan.accessItems?plan.accessItems.length:0)+(plan.checklistItems?plan.checklistItems.length:0);if(count>24) throw new Error('invalid');
 }
 
@@ -241,7 +243,7 @@ function fdEditionValidateConfigShape(config,coreIndex,siteContext,validationCon
   if(!fdEditionExact(validationContext,['mode','generationDate'],[])||(validationContext.mode!=='builder'&&validationContext.mode!=='learner')||(validationContext.mode==='builder'&&(!fdEditionRealDate(validationContext.generationDate)||config.context.editionCheckedOn>validationContext.generationDate))||(validationContext.mode==='learner'&&validationContext.generationDate!=='')) throw new Error('invalid');
   if(!Array.isArray(config.pathItems)||config.pathItems.length<1||config.pathItems.length>96) throw new Error('invalid');
   for(i=0;i<config.pathItems.length;i++){
-    item=config.pathItems[i];if(!fdEditionExact(item,['instanceId','ref','week','order','priority'],['reasonKey'])||typeof item.instanceId!=='string'||!FD_EDITION_ID.test(item.instanceId)||typeof item.ref!=='string'||!FD_EDITION_ID.test(item.ref)||FD_EDITION_KEY.test(item.ref)||ids[item.instanceId]||!fdEditionInteger(item.week,1,maxWeek)||!fdEditionInteger(item.order,1,96)||!fdEditionOneOf(item.priority,FD_EDITION_RULES.priorities)||(FD_EDITION_OWN.call(item,'reasonKey')&&!FD_EDITION_KEY.test(item.reasonKey))) throw new Error('invalid');
+    item=config.pathItems[i];if(!fdEditionExact(item,['instanceId','ref','week','order','priority'],['reasonKey'])||typeof item.ref!=='string'||!FD_EDITION_ID.test(item.ref)||FD_EDITION_KEY.test(item.ref)||!fdEditionCoreInstanceId(item.instanceId,item.ref)||ids[item.instanceId]||!fdEditionInteger(item.week,1,maxWeek)||!fdEditionInteger(item.order,1,96)||!fdEditionOneOf(item.priority,FD_EDITION_RULES.priorities)||(FD_EDITION_OWN.call(item,'reasonKey')&&!FD_EDITION_KEY.test(item.reasonKey))) throw new Error('invalid');
     ids[item.instanceId]=true;if(item.week<lastWeek||(item.week===lastWeek&&item.order<=lastOrder)) throw new Error('invalid');lastWeek=item.week;lastOrder=item.order;key=String(item.week);if(!orders[key])orders[key]=Object.create(null);if(orders[key][item.order])throw new Error('invalid');orders[key][item.order]=true;counts[key]=(counts[key]||0)+1;
   }
   Object.keys(counts).forEach(function(week){ var order;for(order=1;order<=counts[week];order++)if(!orders[week][order])throw new Error('invalid'); });

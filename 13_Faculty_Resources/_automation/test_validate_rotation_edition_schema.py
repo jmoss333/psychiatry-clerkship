@@ -204,6 +204,50 @@ class RotationEditionSchemaGateTests(unittest.TestCase):
                 mutate(candidate)
                 self.assertTrue(self.validate(set_digest(candidate), catalog=catalog), label)
 
+    def test_instance_identifiers_are_derived_typed_and_never_echo_rejected_values(self) -> None:
+        base = load_fixture("valid-ms3.json")
+        base["config"]["localPlan"] = full_local_plan()
+        catalog = rich_catalog(self.synthetic["catalogProjections"]["ms3"])
+
+        def schedule_id(value: dict, instance_id: str) -> None:
+            value["config"]["localPlan"]["schedule"]["events"][0]["instanceId"] = instance_id
+            value["config"]["localPlan"]["attendance"]["eventInstanceIds"] = [instance_id]
+
+        cases = (
+            ("PHI-like path ID", "/config/pathItems/0/instanceId", "patient:synthetic-person-record", lambda value: value["config"]["pathItems"][0].__setitem__("instanceId", "patient:synthetic-person-record")),
+            ("core ID/ref mismatch", "/config/pathItems/0/instanceId", "core:library/other:1", lambda value: value["config"]["pathItems"][0].__setitem__("instanceId", "core:library/other:1")),
+            ("core zero", "/config/pathItems/0/instanceId", "core:library/example:0", lambda value: value["config"]["pathItems"][0].__setitem__("instanceId", "core:library/example:0")),
+            ("core leading zero", "/config/pathItems/0/instanceId", "core:library/example:01", lambda value: value["config"]["pathItems"][0].__setitem__("instanceId", "core:library/example:01")),
+            ("core negative", "/config/pathItems/0/instanceId", "core:library/example:-1", lambda value: value["config"]["pathItems"][0].__setitem__("instanceId", "core:library/example:-1")),
+            ("core text suffix", "/config/pathItems/0/instanceId", "core:library/example:text", lambda value: value["config"]["pathItems"][0].__setitem__("instanceId", "core:library/example:text")),
+            ("generated ID in core row", "/config/pathItems/0/instanceId", "local:generated:arrival", lambda value: value["config"]["pathItems"][0].__setitem__("instanceId", "local:generated:arrival")),
+            ("PHI-like schedule ID with matching attendance", "/config/localPlan/schedule/events/0/instanceId", "patient:synthetic-person-record", lambda value: schedule_id(value, "patient:synthetic-person-record")),
+            ("wrong local category with matching attendance", "/config/localPlan/schedule/events/0/instanceId", "local:access:7", lambda value: schedule_id(value, "local:access:7")),
+            ("access zero", "/config/localPlan/accessItems/0/instanceId", "local:access:0", lambda value: value["config"]["localPlan"]["accessItems"][0].__setitem__("instanceId", "local:access:0")),
+            ("contact leading zero", "/config/localPlan/contacts/0/instanceId", "local:contact:01", lambda value: value["config"]["localPlan"]["contacts"][0].__setitem__("instanceId", "local:contact:01")),
+            ("checklist negative", "/config/localPlan/checklistItems/0/instanceId", "local:checklist:-1", lambda value: value["config"]["localPlan"]["checklistItems"][0].__setitem__("instanceId", "local:checklist:-1")),
+            ("resource text suffix", "/config/localPlan/resources/0/instanceId", "local:resource:text", lambda value: value["config"]["localPlan"]["resources"][0].__setitem__("instanceId", "local:resource:text")),
+            ("generated arrival in public checklist row", "/config/localPlan/checklistItems/0/instanceId", "local:generated:arrival", lambda value: value["config"]["localPlan"]["checklistItems"][0].__setitem__("instanceId", "local:generated:arrival")),
+            ("generated access in public checklist row", "/config/localPlan/checklistItems/0/instanceId", "local:generated:access:local:access:1", lambda value: value["config"]["localPlan"]["checklistItems"][0].__setitem__("instanceId", "local:generated:access:local:access:1")),
+        )
+        for label, expected, secret, mutate in cases:
+            with self.subTest(case=label):
+                candidate = copy.deepcopy(base)
+                mutate(candidate)
+                errors = self.validate(set_digest(candidate), catalog=catalog)
+                self.assertIn(expected, errors)
+                self.assertNotIn(secret, "\n".join(errors))
+
+        gapped = copy.deepcopy(base)
+        gapped["config"]["pathItems"][0]["instanceId"] = "core:library/example:7"
+        schedule_id(gapped, "local:schedule:7")
+        gapped["config"]["localPlan"]["schedule"]["events"][1]["instanceId"] = "local:schedule:11"
+        gapped["config"]["localPlan"]["accessItems"][0]["instanceId"] = "local:access:4"
+        gapped["config"]["localPlan"]["contacts"][0]["instanceId"] = "local:contact:9"
+        gapped["config"]["localPlan"]["checklistItems"][0]["instanceId"] = "local:checklist:3"
+        gapped["config"]["localPlan"]["resources"][0]["instanceId"] = "local:resource:12"
+        self.assertEqual(self.validate(set_digest(gapped), catalog=catalog), [])
+
     def test_learner_mode_accepts_a_real_future_checked_date_but_builder_does_not(self) -> None:
         candidate = load_fixture("valid-ms3.json")
         candidate["config"]["context"]["editionCheckedOn"] = "2026-08-20"
@@ -238,7 +282,7 @@ class RotationEditionSchemaGateTests(unittest.TestCase):
         candidate["config"]["pathItems"] = []
         for index in range(96):
             ref = "library/" + str(index).zfill(3) + "x" * 140
-            candidate["config"]["pathItems"].append({"instanceId": f"core:{index}:" + "y" * 140, "ref": ref, "week": (index // 16) + 1, "order": (index % 16) + 1, "priority": "required"})
+            candidate["config"]["pathItems"].append({"instanceId": f"core:{ref}:1", "ref": ref, "week": (index // 16) + 1, "order": (index % 16) + 1, "priority": "required"})
             core["byRef"][ref] = {"ref": ref, "title": "Synthetic"}
         set_digest(candidate)
         try:

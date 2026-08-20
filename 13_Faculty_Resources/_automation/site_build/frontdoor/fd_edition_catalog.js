@@ -21,6 +21,7 @@ var FD_EDITION_CATALOG=(function(){
   var DIGEST=/^sha256-[A-Za-z0-9_-]{43}$/;
   var CORE=/^[0-9a-f]{40}$/;
   var IDENTIFIER=/^[\x21-\x7e]{1,160}$/;
+  var POSITIVE_DECIMAL=/^[1-9][0-9]*$/;
   var TIME=/^(?:[01][0-9]|2[0-3]):[0-5][0-9]$/;
   var DATE=/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/;
   var HOSTNAME=/^[a-z0-9](?:[a-z0-9.-]{0,251}[a-z0-9])?$/;
@@ -304,6 +305,8 @@ var FD_EDITION_CATALOG=(function(){
 
   function validKey(value){ return typeof value==='string'&&KEY.test(value); }
   function validIdentifier(value){ return typeof value==='string'&&IDENTIFIER.test(value); }
+  function validCoreInstanceId(value,ref){ var prefix;if(typeof value!=='string'||typeof ref!=='string'||value.length>160)return false;prefix='core:'+ref+':';return value.indexOf(prefix)===0&&POSITIVE_DECIMAL.test(value.slice(prefix.length)); }
+  function validLocalInstanceId(value,kind){ var prefix;if(typeof value!=='string'||typeof kind!=='string'||value.length>160)return false;prefix='local:'+kind+':';return value.indexOf(prefix)===0&&POSITIVE_DECIMAL.test(value.slice(prefix.length)); }
   function validAudience(value){ return typeof value==='string'&&oneOf(value,AUDIENCES); }
   function validHostname(value){ return typeof value==='string'&&value.length<=253&&HOSTNAME.test(value)&&value===value.toLowerCase(); }
 
@@ -387,8 +390,8 @@ var FD_EDITION_CATALOG=(function(){
       if(!validKey(key)) fail();
       return lookup?lookup(key,kind,choiceKinds,purposes):null;
     }
-    function uniqueId(id){
-      if(!validIdentifier(id)||ids[id]) fail();
+    function uniqueId(id,kind){
+      if(!validLocalInstanceId(id,kind)||ids[id]) fail();
       ids[id]=true;
     }
     function priority(code){ if(!oneOf(code,PRIORITIES)) fail(); }
@@ -412,7 +415,7 @@ var FD_EDITION_CATALOG=(function(){
       for(i=0;i<value.events.length;i++){
         row=value.events[i];
         if(!exact(row,['instanceId','daySetKey','startTime','activityKey','priority'],['endTime','placeKey'])) fail();
-        uniqueId(row.instanceId);
+        uniqueId(row.instanceId,'schedule');
         scheduleIds[row.instanceId]=true;
         start=timeMinutes(row.startTime);
         if(own.call(row,'endTime')&&timeMinutes(row.endTime)<=start) fail();
@@ -458,7 +461,7 @@ var FD_EDITION_CATALOG=(function(){
       if(!exact(value,['eventInstanceIds','absenceRoleKey'],['policyLinkKey'])||!Array.isArray(value.eventInstanceIds)||value.eventInstanceIds.length<1||value.eventInstanceIds.length>24) fail();
       seen=Object.create(null);
       for(i=0;i<value.eventInstanceIds.length;i++){
-        if(!validIdentifier(value.eventInstanceIds[i])||seen[value.eventInstanceIds[i]]||!scheduleIds[value.eventInstanceIds[i]]) fail();
+        if(!validLocalInstanceId(value.eventInstanceIds[i],'schedule')||seen[value.eventInstanceIds[i]]||!scheduleIds[value.eventInstanceIds[i]]) fail();
         seen[value.eventInstanceIds[i]]=true;
       }
       reference(value.absenceRoleKey,'choice',['role'],null);
@@ -478,7 +481,7 @@ var FD_EDITION_CATALOG=(function(){
       for(i=0;i<value.length;i++){
         row=value[i];
         if(!exact(row,['instanceId','itemKey','dueKey'],['linkKey'])) fail();
-        uniqueId(row.instanceId);
+        uniqueId(row.instanceId,'access');
         reference(row.itemKey,'choice',['accessItem'],null);
         reference(row.dueKey,'choice',['duePoint'],null);
         if(own.call(row,'linkKey')) reference(row.linkKey,'officialLink',null,['access-training','parking-transit','reviewed-operational']);
@@ -490,7 +493,7 @@ var FD_EDITION_CATALOG=(function(){
       for(i=0;i<value.length;i++){
         row=value[i];
         if(!exact(row,['instanceId','roleKey'],['linkKey'])) fail();
-        uniqueId(row.instanceId);
+        uniqueId(row.instanceId,'contact');
         reference(row.roleKey,'choice',['role'],null);
         if(own.call(row,'linkKey')) reference(row.linkKey,'officialLink',null,['directory']);
       }
@@ -501,7 +504,7 @@ var FD_EDITION_CATALOG=(function(){
       for(i=0;i<value.length;i++){
         row=value[i];
         if(!exact(row,['instanceId','itemKey','priority'],[])) fail();
-        uniqueId(row.instanceId);
+        uniqueId(row.instanceId,'checklist');
         priority(row.priority);
         reference(row.itemKey,'choice',['checklist'],null);
       }
@@ -512,7 +515,7 @@ var FD_EDITION_CATALOG=(function(){
       for(i=0;i<value.length;i++){
         row=value[i];
         if(!exact(row,['instanceId','linkKey','priority','week'],['reasonKey'])) fail();
-        uniqueId(row.instanceId);
+        uniqueId(row.instanceId,'resource');
         priority(row.priority);
         if(typeof row.week!=='number'||Math.floor(row.week)!==row.week||row.week<1||row.week>maxWeek) fail();
         reference(row.linkKey,'officialLink',null,null);
@@ -704,7 +707,7 @@ var FD_EDITION_CATALOG=(function(){
     if(!Array.isArray(value.pathItems)||value.pathItems.length<1||value.pathItems.length>96) fail();
     for(i=0;i<value.pathItems.length;i++){
       item=value.pathItems[i];
-      if(!exact(item,['instanceId','ref','week','order','priority'],['reasonKey'])||!validIdentifier(item.instanceId)||!validIdentifier(item.ref)||KEY.test(item.ref)||ids[item.instanceId]) fail();
+      if(!exact(item,['instanceId','ref','week','order','priority'],['reasonKey'])||!validIdentifier(item.ref)||KEY.test(item.ref)||!validCoreInstanceId(item.instanceId,item.ref)||ids[item.instanceId]) fail();
       ids[item.instanceId]=true;
       if(typeof item.week!=='number'||Math.floor(item.week)!==item.week||item.week<1||item.week>maxWeek||typeof item.order!=='number'||Math.floor(item.order)!==item.order||item.order<1||!oneOf(item.priority,PRIORITIES)) fail();
       if(own.call(item,'reasonKey')&&!validKey(item.reasonKey)) fail();

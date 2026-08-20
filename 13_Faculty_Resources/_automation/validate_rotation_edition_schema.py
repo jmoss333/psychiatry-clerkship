@@ -27,6 +27,7 @@ KEY = re.compile(r"^[a-z0-9][a-z0-9._:-]{0,126}@v[1-9][0-9]{0,5}$")
 DIGEST = re.compile(r"^sha256-[A-Za-z0-9_-]{43}$")
 REVISION = re.compile(r"^[0-9a-f]{40}$")
 TIME = re.compile(r"^(?:[01][0-9]|2[0-3]):[0-5][0-9]$")
+POSITIVE_DECIMAL = re.compile(r"^[1-9][0-9]*$")
 CHANGE_KINDS = (
     "initial", "edition-context", "curriculum-selection", "curriculum-priority",
     "curriculum-reason", "schedule", "arrival", "workflow", "access", "contacts",
@@ -37,6 +38,20 @@ CHANGE_KINDS = (
 def json_pointer(path) -> str:
     """Format an iterable path as an RFC 6901 JSON Pointer."""
     return "/" + "/".join(str(part).replace("~", "~0").replace("/", "~1") for part in path)
+
+
+def _core_instance_id(value: object, ref: object) -> bool:
+    if not isinstance(value, str) or not isinstance(ref, str) or len(value) > 160:
+        return False
+    prefix = f"core:{ref}:"
+    return value.startswith(prefix) and POSITIVE_DECIMAL.fullmatch(value[len(prefix):]) is not None
+
+
+def _local_instance_id(value: object, kind: str) -> bool:
+    if not isinstance(value, str) or len(value) > 160:
+        return False
+    prefix = f"local:{kind}:"
+    return value.startswith(prefix) and POSITIVE_DECIMAL.fullmatch(value[len(prefix):]) is not None
 
 
 def canonical_json_bytes(value: object) -> bytes:
@@ -238,6 +253,7 @@ def _semantic_errors(document: dict, core_index: object, catalog_projection: obj
     orders: dict[int, set[int]] = {}
     last = (0, 0)
     for index, item in enumerate(config["pathItems"]):
+        if not _core_instance_id(item["instanceId"], item["ref"]): errors.add(f"/config/pathItems/{index}/instanceId")
         if item["instanceId"] in ids: errors.add(f"/config/pathItems/{index}/instanceId")
         ids.add(item["instanceId"])
         if not 1 <= item["week"] <= maximum_week: errors.add(f"/config/pathItems/{index}/week")
@@ -258,6 +274,7 @@ def _semantic_errors(document: dict, core_index: object, catalog_projection: obj
         if start is None: errors.add("/config/localPlan/schedule/dayStart")
         if end is None or (start is not None and end <= start): errors.add("/config/localPlan/schedule/dayEnd")
         for index, item in enumerate(schedule["events"]):
+            if not _local_instance_id(item["instanceId"], "schedule"): errors.add(f"/config/localPlan/schedule/events/{index}/instanceId")
             item_start = _time_minutes(item["startTime"])
             if item_start is None: errors.add(f"/config/localPlan/schedule/events/{index}/startTime")
             if "endTime" in item:
@@ -269,11 +286,13 @@ def _semantic_errors(document: dict, core_index: object, catalog_projection: obj
             schedule_ids.add(item["instanceId"])
     if "attendance" in plan:
         for index, instance_id in enumerate(plan["attendance"]["eventInstanceIds"]):
-            if instance_id not in schedule_ids: errors.add(f"/config/localPlan/attendance/eventInstanceIds/{index}")
+            if not _local_instance_id(instance_id, "schedule") or instance_id not in schedule_ids: errors.add(f"/config/localPlan/attendance/eventInstanceIds/{index}")
     for category in ("schedule", "accessItems", "contacts", "checklistItems", "resources"):
         rows = plan.get(category, {}).get("events", []) if category == "schedule" else plan.get(category, [])
         for index, item in enumerate(rows):
             instance_id = item["instanceId"]
+            kind = {"schedule": "schedule", "accessItems": "access", "contacts": "contact", "checklistItems": "checklist", "resources": "resource"}[category]
+            if not _local_instance_id(instance_id, kind): errors.add(f"/config/localPlan/{'schedule/events' if category == 'schedule' else category}/{index}/instanceId")
             if instance_id in ids: errors.add(f"/config/localPlan/{'schedule/events' if category == 'schedule' else category}/{index}/instanceId")
             ids.add(instance_id)
     if len(plan.get("checklistItems", [])) + len(plan.get("accessItems", [])) + (1 if "arrival" in plan else 0) > 24:

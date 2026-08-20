@@ -91,7 +91,7 @@ async function installSyntheticLearnerCatalog(page) {
     const currentCoreRevision = JSON.parse(coreMatch[1]);
     const sourceRecords = EDITION_SYNTHETIC.catalogRecords.concat([1, 2].map((editionNumber) => ({
       key: `choice.runtime-check-${editionNumber}-0@v1`, kind: 'choice', choiceKind: 'checklist',
-      label: 'Synthetic checklist 1', fragment: `Review local:check:${editionNumber}`,
+      label: 'Synthetic checklist 1', fragment: `Review local:checklist:${editionNumber}`,
       locationKeys: ['location.example-unit@v1'], audiences: ['ms3', 'resident'], verifiedOn: '2026-08-19',
     })));
     const records = await Promise.all(sourceRecords.map(async (record) => ({
@@ -524,7 +524,7 @@ test('the attending handoff stays secondary, readable, and locally scoped at 390
   expect(await page.evaluate(({ key, fingerprint, id }) => {
     const saved = JSON.parse(localStorage.getItem(key));
     return saved.byFingerprint[fingerprint].checklist[id];
-  }, { key: LOCAL_EDITION_KEY, fingerprint: incoming.fingerprint, id: 'local:check:1' })).toBe(true);
+  }, { key: LOCAL_EDITION_KEY, fingerprint: incoming.fingerprint, id: 'local:checklist:1' })).toBe(true);
 });
 
 test('delayed startup fallback preserves concurrent core and unrelated storage', async ({ page, context }, testInfo) => {
@@ -752,7 +752,7 @@ async function createSyntheticEdition(testInfo, editionNumber, audienceOverride 
   const canonical = structuredClone(EDITION_SYNTHETIC.audiences[audience]);
   const config = structuredClone(EDITION_VALID[audience].config);
   config.editionNumber = editionNumber;
-  const resolvedLocalIds = localIds || [`local:check:${editionNumber}`];
+  const resolvedLocalIds = localIds || [`local:checklist:${editionNumber}`];
   config.localPlan = { checklistItems: resolvedLocalIds.map((id, index) => ({
     instanceId: id, itemKey: `choice.runtime-check-${editionNumber}-${index}@v1`, priority: 'required',
   })) };
@@ -905,7 +905,7 @@ function switchDialogHarness(active, candidate, options = {}) {
     [EDITION_KEY, active.canonicalEnvelope],
     [LOCAL_EDITION_KEY, JSON.stringify({
       schemaVersion: 2,
-      byFingerprint: { [active.fingerprint]: { checklist: { 'local:check:1': true }, resources: {} } },
+      byFingerprint: { [active.fingerprint]: { checklist: { 'local:checklist:1': true }, resources: {} } },
     })],
     ['cw_progress_v1', '{"core":{"done":true}}'],
   ]);
@@ -1060,7 +1060,7 @@ test('reload failure restores the trusted active marker after candidate commit a
   harness.accept.dispatch('click');
   expect(harness.values.get(EDITION_KEY)).toBe(active.canonicalEnvelope);
   expect(JSON.parse(harness.values.get(LOCAL_EDITION_KEY)).byFingerprint).toEqual({
-    [active.fingerprint]: { checklist: { 'local:check:1': true }, resources: {} },
+    [active.fingerprint]: { checklist: { 'local:checklist:1': true }, resources: {} },
   });
   expect(harness.recovered).toEqual([]);
   expect(harness.events).toEqual([
@@ -1074,10 +1074,10 @@ test('reload failure restores the trusted active marker after candidate commit a
 
 test('rollback failure directly renders the committed candidate after the write and does not retry', async ({}, testInfo) => {
   const active = await createSyntheticEdition(
-    testInfo, 1, '', ['local:check:shared', 'local:check:old-only'],
+    testInfo, 1, '', ['local:checklist:1', 'local:checklist:2'],
   );
   const candidate = await createSyntheticEdition(
-    testInfo, 2, '', ['local:check:shared', 'local:check:new-only'],
+    testInfo, 2, '', ['local:checklist:1', 'local:checklist:3'],
   );
   const harness = switchDialogHarness(active, candidate, { reloadThrows: true, rollbackFails: true });
   let displayedFingerprint = active.fingerprint;
@@ -1121,20 +1121,20 @@ test('rollback failure directly renders the committed candidate after the write 
   const identity = EDITION_RUNTIME.fdEditionActiveIdentity(trustedSnapshot, displayedIndex);
   expect(identity?.fingerprint).toBe(displayedFingerprint);
   expect(EDITION_RUNTIME.fdEditionLocalToggleAllowed(
-    identity.snapshot, 'checklist', 'local:check:shared',
+    identity.snapshot, 'checklist', 'local:checklist:1',
   )).toBe(true);
   expect(EDITION_RUNTIME.fdEditionLocalToggleAllowed(
-    identity.snapshot, 'checklist', 'local:check:old-only',
+    identity.snapshot, 'checklist', 'local:checklist:2',
   )).toBe(false);
   expect(EDITION_RUNTIME.fdEditionLocalToggleAllowed(
-    identity.snapshot, 'checklist', 'local:check:new-only',
+    identity.snapshot, 'checklist', 'local:checklist:3',
   )).toBe(true);
   expect(EDITION_RUNTIME.fdEditionToggleLocal(
-    harness.storage, candidate.keys, identity.fingerprint, 'checklist', 'local:check:new-only', candidate.validated.displayModel,
+    harness.storage, candidate.keys, identity.fingerprint, 'checklist', 'local:checklist:3', candidate.validated.displayModel,
   )).toBe(true);
   expect(EDITION_RUNTIME.fdEditionReadLocal(
     harness.storage, candidate.keys, identity.fingerprint, candidate.validated.displayModel,
-  ).checklist['local:check:new-only']).toBe(true);
+  ).checklist['local:checklist:3']).toBe(true);
   expect(harness.values.get('cw_progress_v1')).toBe(coreBefore);
   const candidateCommit = harness.events.indexOf(`write:${EDITION_KEY}:candidate`);
   const recovery = harness.events.indexOf('recover');
@@ -1234,7 +1234,7 @@ test('a different valid edition prompts accessibly and decline clears only the i
   const candidate = await createSyntheticEdition(testInfo, 2);
   await page.evaluate(({ key, fingerprint }) => {
     const local = JSON.parse(localStorage.getItem(key));
-    local.byFingerprint[fingerprint].checklist['local:check:1'] = true;
+    local.byFingerprint[fingerprint].checklist['local:checklist:1'] = true;
     localStorage.setItem(key, JSON.stringify(local));
   }, { key: LOCAL_EDITION_KEY, fingerprint: active.fingerprint });
   const before = await localStorageSnapshot(page);
@@ -1266,7 +1266,7 @@ test('accepting a different valid edition commits in order, clears the hash, and
   const candidate = await createSyntheticEdition(testInfo, 2);
   await page.evaluate(({ key, fingerprint }) => {
     const local = JSON.parse(localStorage.getItem(key));
-    local.byFingerprint[fingerprint].checklist['local:check:1'] = true;
+    local.byFingerprint[fingerprint].checklist['local:checklist:1'] = true;
     localStorage.setItem(key, JSON.stringify(local));
   }, { key: LOCAL_EDITION_KEY, fingerprint: active.fingerprint });
   const before = await localStorageSnapshot(page);
@@ -1276,6 +1276,7 @@ test('accepting a different valid edition commits in order, clears the hash, and
   await expect(page.locator('dialog.fd-edition-switch')).toBeVisible();
   await page.getByRole('button', { name: 'Switch edition' }).focus();
   await page.getByRole('button', { name: 'Switch edition' }).press('Enter');
+  await expect(page.locator('.fd-edition-card')).toContainText(candidate.fingerprint);
   await expect(page.locator('.fd-today')).toBeVisible();
   expect(new URL(page.url()).hash).toBe('');
   await expect(page.locator('.fd-today .fd-list .fd-row__title')).toHaveText(candidate.selectedTitle);
@@ -1293,7 +1294,7 @@ test('accepting a different valid edition commits in order, clears the hash, and
   expect(withoutEditionStores(after)).toEqual(withoutEditionStores(before));
   expect(after[EDITION_KEY]).toBe(candidate.canonicalEnvelope);
   expect(JSON.parse(after[LOCAL_EDITION_KEY]).byFingerprint[active.fingerprint].checklist)
-    .toEqual({ 'local:check:1': true });
+    .toEqual({ 'local:checklist:1': true });
   expect(JSON.parse(after[LOCAL_EDITION_KEY]).byFingerprint[candidate.fingerprint])
     .toEqual({ checklist: {}, resources: {} });
 });

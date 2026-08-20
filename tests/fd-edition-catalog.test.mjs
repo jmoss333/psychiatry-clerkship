@@ -469,6 +469,13 @@ test('valid complete MS3 and resident inputs produce exact closed labels, copy, 
     assert.equal(new Set(officialProvenance.map((row) => row.displayLabel)).size, officialProvenance.length);
     assert.equal(officialProvenance.length, 6);
     assert.equal(model.attendanceFeedback.attendance.text.includes('local:schedule:'), false);
+    assert.equal(model.firstDay.accessItems[0].id, 'local:access:1');
+    assert.equal(model.firstDay.accessItems[0].checklistId, 'local:generated:access:local:access:1');
+    assert.deepEqual(model.firstDay.checklistItems.map((item) => item.id), [
+      'local:generated:arrival',
+      'local:generated:access:local:access:1',
+      'local:checklist:1',
+    ]);
     assert.equal(JSON.stringify(model).includes('@v1'), false, 'learner-visible model must not contain catalog keys');
     assert.equal(stringValues(model).some((text) => /[{}]/.test(text)), false, 'all template placeholders must be resolved');
     assert.deepEqual(Object.keys(result.resolved).sort(), ['config', 'curator', 'location', 'phraseSet']);
@@ -914,6 +921,12 @@ const LOCAL_PLAN_INVALID_CASES = [
   ['schedule event invalid start', (plan) => { plan.schedule.events[0].startTime = '25:00'; }],
   ['schedule event invalid end', (plan) => { plan.schedule.events[0].endTime = '09:99'; }],
   ['schedule event priority', (plan) => { plan.schedule.events[0].priority = 'urgent'; }],
+  ['schedule PHI-like ID with matching attendance', (plan) => { plan.schedule.events[0].instanceId = 'patient:synthetic-person-record'; plan.attendance.eventInstanceIds[0] = 'patient:synthetic-person-record'; }],
+  ['schedule wrong-category ID with matching attendance', (plan) => { plan.schedule.events[0].instanceId = 'local:access:7'; plan.attendance.eventInstanceIds[0] = 'local:access:7'; }],
+  ['schedule zero ID', (plan) => { plan.schedule.events[0].instanceId = 'local:schedule:0'; plan.attendance.eventInstanceIds[0] = 'local:schedule:0'; }],
+  ['schedule leading-zero ID', (plan) => { plan.schedule.events[0].instanceId = 'local:schedule:01'; plan.attendance.eventInstanceIds[0] = 'local:schedule:01'; }],
+  ['schedule negative ID', (plan) => { plan.schedule.events[0].instanceId = 'local:schedule:-1'; plan.attendance.eventInstanceIds[0] = 'local:schedule:-1'; }],
+  ['schedule text ID', (plan) => { plan.schedule.events[0].instanceId = 'local:schedule:text'; plan.attendance.eventInstanceIds[0] = 'local:schedule:text'; }],
   ['duplicate schedule ID', (plan) => { plan.schedule.events[1].instanceId = plan.schedule.events[0].instanceId; }],
   ['duplicate schedule tuple', (plan) => { const id = plan.schedule.events[1].instanceId; plan.schedule.events[1] = { ...structuredClone(plan.schedule.events[0]), instanceId: id }; }],
   ['rounds missing field', (plan) => { delete plan.rounds.followUpKey; }],
@@ -931,21 +944,26 @@ const LOCAL_PLAN_INVALID_CASES = [
   ['access rows must be an array', (plan) => { plan.accessItems = {}; }],
   ['access row missing required field', (plan) => { delete plan.accessItems[0].dueKey; }],
   ['access row extra field', (plan) => { plan.accessItems[0].other = true; }],
+  ['access wrong-category ID', (plan) => { plan.accessItems[0].instanceId = 'local:contact:7'; }],
   ['present empty contacts must be omitted', (plan) => { plan.contacts = []; }],
   ['contact cap', (plan) => { plan.contacts = Array.from({ length: 9 }, (_, i) => ({ ...plan.contacts[0], instanceId: `local:contact:${i + 1}` })); }],
   ['contact rows must be an array', (plan) => { plan.contacts = {}; }],
   ['contact row missing required field', (plan) => { delete plan.contacts[0].roleKey; }],
   ['contact row extra field', (plan) => { plan.contacts[0].other = true; }],
+  ['contact zero ID', (plan) => { plan.contacts[0].instanceId = 'local:contact:0'; }],
   ['present empty checklist must be omitted', (plan) => { plan.checklistItems = []; }],
   ['checklist cap', (plan) => { plan.checklistItems = Array.from({ length: 25 }, (_, i) => ({ ...plan.checklistItems[0], instanceId: `local:checklist:${i + 1}` })); }],
   ['checklist rows must be an array', (plan) => { plan.checklistItems = {}; }],
   ['checklist row missing required field', (plan) => { delete plan.checklistItems[0].itemKey; }],
   ['checklist row extra field', (plan) => { plan.checklistItems[0].other = true; }],
+  ['checklist generated arrival ID is constructor-only', (plan) => { plan.checklistItems[0].instanceId = 'local:generated:arrival'; }],
+  ['checklist generated access ID is constructor-only', (plan) => { plan.checklistItems[0].instanceId = 'local:generated:access:local:access:1'; }],
   ['present empty resources must be omitted', (plan) => { plan.resources = []; }],
   ['resource cap', (plan) => { plan.resources = Array.from({ length: 13 }, (_, i) => ({ ...plan.resources[0], instanceId: `local:resource:${i + 1}` })); }],
   ['resource rows must be an array', (plan) => { plan.resources = {}; }],
   ['resource row missing required field', (plan) => { delete plan.resources[0].linkKey; }],
   ['resource row extra field', (plan) => { plan.resources[0].other = true; }],
+  ['resource text ID', (plan) => { plan.resources[0].instanceId = 'local:resource:text'; }],
   ['duplicate cross-category ID', (plan) => { plan.contacts[0].instanceId = plan.accessItems[0].instanceId; }],
   ['row non-ASCII ID', (plan) => { plan.contacts[0].instanceId = 'local:contact:é'; }],
   ['resource priority', (plan) => { plan.resources[0].priority = 'urgent'; }],
@@ -988,6 +1006,18 @@ testForAudiences('every local-plan category, row discriminator, optional field, 
   maximumWeek.localPlan.resources[0].week = audience === 'ms3' ? 6 : 4;
   const maximumResult = await fixture.F.fdEditionCatalogResolve(maximumWeek, fixture.prepared.snapshot, 'learner', siteContext(fixture.prepared.snapshot), webcrypto.subtle);
   assert.equal(maximumResult.ok, true, JSON.stringify(maximumResult.errors));
+
+  const gapped = config(audience);
+  gapped.localPlan.schedule.events[0].instanceId = 'local:schedule:7';
+  gapped.localPlan.schedule.events[1].instanceId = 'local:schedule:11';
+  gapped.localPlan.attendance.eventInstanceIds = ['local:schedule:7', 'local:schedule:11'];
+  gapped.localPlan.accessItems[0].instanceId = 'local:access:4';
+  gapped.localPlan.contacts[0].instanceId = 'local:contact:9';
+  gapped.localPlan.checklistItems[0].instanceId = 'local:checklist:3';
+  gapped.localPlan.resources[0].instanceId = 'local:resource:12';
+  gapped.localPlan.resources[1].instanceId = 'local:resource:20';
+  const gappedResult = await fixture.F.fdEditionCatalogResolve(gapped, fixture.prepared.snapshot, 'learner', siteContext(fixture.prepared.snapshot), webcrypto.subtle);
+  assert.equal(gappedResult.ok, true, JSON.stringify(gappedResult.errors));
 });
 
 testForAudiences('the same complete local-plan validation and dependency rules apply inside localPreset records', async (audience) => {
@@ -1158,6 +1188,14 @@ testForAudiences('config root, context, path, ordering, size, audience limits, a
     ['path and local ID union collision', (value) => { value.localPlan.contacts[0].instanceId = value.pathItems[0].instanceId; }],
     ['path ID empty', (value) => { value.pathItems[0].instanceId = ''; }],
     ['path ID nonASCII', (value) => { value.pathItems[0].instanceId = 'core:é'; }],
+    ['path ID PHI-like', (value) => { value.pathItems[0].instanceId = 'patient:synthetic-person-record'; }],
+    ['path ID wrong namespace', (value) => { value.pathItems[0].instanceId = 'local:resource:7'; }],
+    ['path ID zero', (value) => { value.pathItems[0].instanceId = 'core:library/example:0'; }],
+    ['path ID leading zero', (value) => { value.pathItems[0].instanceId = 'core:library/example:01'; }],
+    ['path ID negative', (value) => { value.pathItems[0].instanceId = 'core:library/example:-1'; }],
+    ['path ID text suffix', (value) => { value.pathItems[0].instanceId = 'core:library/example:text'; }],
+    ['path ID generated local', (value) => { value.pathItems[0].instanceId = 'local:generated:arrival'; }],
+    ['path ID does not match same-row ref', (value) => { value.pathItems[0].instanceId = 'core:library/second:7'; }],
     ['path ref empty', (value) => { value.pathItems[0].ref = ''; }],
     ['path ref nonASCII', (value) => { value.pathItems[0].ref = 'library/é'; }],
     ['path week zero', (value) => { value.pathItems[0].week = 0; }],
@@ -1189,11 +1227,10 @@ testForAudiences('config root, context, path, ordering, size, audience limits, a
   }
 
   const oversized = config(audience);
-  oversized.pathItems = Array.from({ length: 96 }, (_, i) => ({
-    instanceId: `${'i'.repeat(150)}${String(i).padStart(3, '0')}`,
-    ref: `${'r'.repeat(150)}${String(i).padStart(3, '0')}`,
-    week: 1, order: i + 1, priority: 'required',
-  }));
+  oversized.pathItems = Array.from({ length: 96 }, (_, i) => {
+    const ref = `${'r'.repeat(148)}${String(i).padStart(3, '0')}`;
+    return { instanceId: `core:${ref}:1`, ref, week: 1, order: i + 1, priority: 'required' };
+  });
   assert.ok(Buffer.byteLength(canonical(oversized), 'utf8') > 12 * 1024);
   const overResult = await fixture.F.fdEditionCatalogResolve(oversized, fixture.prepared.snapshot, 'learner', siteContext(fixture.prepared.snapshot), webcrypto.subtle);
   assertFailure(overResult);

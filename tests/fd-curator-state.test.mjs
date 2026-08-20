@@ -163,6 +163,28 @@ test('hostile nested persisted values fail closed before reducer cloning', () =>
   });
 });
 
+test('persisted core placement IDs must be derived from the same row ref', () => {
+  const base = fn('fdCuratorNewDraft')(index(), context());
+  const ref = base.config.pathItems[0].ref;
+  for (const id of [
+    'patient:synthetic-person-record',
+    'local:resource:7',
+    `core:${ref}:0`,
+    `core:${ref}:01`,
+    `core:${ref}:-1`,
+    `core:${ref}:text`,
+    'local:generated:arrival',
+    'core:other.md:7',
+  ]) {
+    const hostile = structuredClone(base);
+    hostile.config.pathItems[0].instanceId = id;
+    assert.equal(reduce(hostile, { type: 'SET_STEP', step: 2 }), hostile, id);
+  }
+  const gapped = structuredClone(base);
+  gapped.config.pathItems[0].instanceId = `core:${ref}:7`;
+  assert.notEqual(reduce(gapped, { type: 'SET_STEP', step: 2 }), gapped);
+});
+
 test('dates preserve future rotations but enforce real values, order, and checked-date bounds', () => {
   let draft = fn('fdCuratorNewDraft')(index(), context());
   draft = reduce(draft, { type: 'SET_ROTATION_START', value: '2027-01-04' });

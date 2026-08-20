@@ -1,6 +1,6 @@
 /* V2-only learner edition startup, bounded local state, and trusted-model rendering. */
 var FD_EDITION_STUDENT_FINGERPRINT=/^[A-Z0-9]{2,8}-(?:MS3|RES)-[0-9A-HJKMNP-TV-Z]{6}$/;
-var FD_EDITION_STUDENT_ID=/^[\x21-\x7e]{1,160}$/;
+var FD_EDITION_STUDENT_POSITIVE_DECIMAL=/^[1-9][0-9]*$/;
 var FD_EDITION_STUDENT_OWN=Object.prototype.hasOwnProperty;
 var FD_EDITION_STUDENT_AUTHORITY={
   coreLabel:'Reviewed clerkship Library',
@@ -179,7 +179,9 @@ function fdEditionStartupJournalRollback(journal){
 }
 
 function fdEditionStudentFingerprint(value){return typeof value==='string'&&FD_EDITION_STUDENT_FINGERPRINT.test(value)?value:'';}
-function fdEditionStudentId(value){return typeof value==='string'&&FD_EDITION_STUDENT_ID.test(value)&&value!=='__proto__'&&value!=='constructor'&&value!=='prototype'?value:'';}
+function fdEditionStudentLocalId(value,kind){var prefix;if(typeof value!=='string'||typeof kind!=='string'||value.length>160)return '';prefix='local:'+kind+':';return value.indexOf(prefix)===0&&FD_EDITION_STUDENT_POSITIVE_DECIMAL.test(value.slice(prefix.length))?value:'';}
+function fdEditionStudentChecklistId(value){var prefix='local:generated:access:',access;if(fdEditionStudentLocalId(value,'checklist'))return value;if(value==='local:generated:arrival')return value;if(typeof value!=='string'||value.indexOf(prefix)!==0)return '';access=value.slice(prefix.length);return fdEditionStudentLocalId(access,'access')?value:'';}
+function fdEditionStudentProgressId(value,kind){return kind==='checklist'?fdEditionStudentChecklistId(value):kind==='resources'?fdEditionStudentLocalId(value,'resource'):'';}
 function fdEditionStudentEmptyBucket(){return {checklist:Object.create(null),resources:Object.create(null)};}
 function fdEditionStudentEmptyLocal(){return {schemaVersion:2,byFingerprint:Object.create(null)};}
 
@@ -188,7 +190,7 @@ function fdEditionStudentBucket(value){
   if(!fdEditionStudentExact(value,kinds,[]))return null;
   for(i=0;i<kinds.length;i++){
     if(!fdEditionStudentObject(value[kinds[i]]))return null;keys=Object.keys(value[kinds[i]]);if(keys.length>limits[i])return null;
-    for(j=0;j<keys.length;j++){if(!fdEditionStudentId(keys[j])||value[kinds[i]][keys[j]]!==true)return null;out[kinds[i]][keys[j]]=true;}
+    for(j=0;j<keys.length;j++){if(!fdEditionStudentProgressId(keys[j],kinds[i])||value[kinds[i]][keys[j]]!==true)return null;out[kinds[i]][keys[j]]=true;}
   }
   return out;
 }
@@ -206,8 +208,8 @@ function fdEditionStudentAllowed(displayModel){
   var allowed={checklist:Object.create(null),resources:Object.create(null)},list,i,id;
   try{
     if(!fdEditionStudentObject(displayModel)||!fdEditionStudentObject(displayModel.firstDay)||!Array.isArray(displayModel.firstDay.checklistItems)||!Array.isArray(displayModel.resources))return null;
-    list=displayModel.firstDay.checklistItems;for(i=0;i<list.length;i++){id=fdEditionStudentId(list[i]&&list[i].id);if(!id)return null;allowed.checklist[id]=true;}
-    list=displayModel.resources;for(i=0;i<list.length;i++){id=fdEditionStudentId(list[i]&&list[i].id);if(!id)return null;allowed.resources[id]=true;}
+    list=displayModel.firstDay.checklistItems;for(i=0;i<list.length;i++){id=fdEditionStudentProgressId(list[i]&&list[i].id,'checklist');if(!id||allowed.checklist[id])return null;allowed.checklist[id]=true;}
+    list=displayModel.resources;for(i=0;i<list.length;i++){id=fdEditionStudentProgressId(list[i]&&list[i].id,'resources');if(!id||allowed.resources[id])return null;allowed.resources[id]=true;}
     return allowed;
   }catch(ignore){return null;}
 }
@@ -226,7 +228,7 @@ function fdEditionReadLocal(storage,keys,fingerprint,displayModel){
 
 function fdEditionToggleLocal(storage,keys,fingerprint,kind,id,displayModel){
   var fp=fdEditionStudentFingerprint(fingerprint),allowed,document,bucket,ids,text;
-  if(!fp||(kind!=='checklist'&&kind!=='resources')||!fdEditionStudentId(id)||(allowed=fdEditionStudentAllowed(displayModel))===null||!allowed[kind][id])return false;
+  if(!fp||(kind!=='checklist'&&kind!=='resources')||!fdEditionStudentProgressId(id,kind)||(allowed=fdEditionStudentAllowed(displayModel))===null||!allowed[kind][id])return false;
   document=fdEditionReadLocalDocument(storage,keys);if(!document)return false;bucket=document.byFingerprint[fp];
   if(!bucket){if(Object.keys(document.byFingerprint).length>=128)return false;bucket=fdEditionStudentEmptyBucket();document.byFingerprint[fp]=bucket;}
   if(bucket[kind][id])delete bucket[kind][id];else{ids=Object.keys(bucket[kind]);if(ids.length>=(kind==='checklist'?24:12))return false;bucket[kind][id]=true;}
@@ -240,11 +242,12 @@ function fdEditionToggleLocalProgress(storage,keys,fingerprint,kind,id,displayMo
 }
 
 function fdEditionCommitAcceptance(storage,keys,validatedEdition,localDocument,journal){
-  var trusted,fp,parsedLocal,bucket,editionText,localText,run,rolled;
+  var trusted,fp,parsedLocal,bucket,allowed,kind,ids,i,editionText,localText,run,rolled;
   try{
     trusted=fdEditionTrustedSnapshot(validatedEdition);if(!trusted||!trusted.envelope||trusted.envelope.schemaVersion!==2||!fdEditionStudentFingerprint(trusted.fingerprint)||!keys||typeof keys.local!=='string'||typeof keys.edition!=='string')throw new Error('invalid');
-    fp=trusted.fingerprint;parsedLocal=fdEditionStudentLocalDocument(localDocument);if(!parsedLocal.ok)throw new Error('invalid');
+    fp=trusted.fingerprint;parsedLocal=fdEditionStudentLocalDocument(localDocument);allowed=fdEditionStudentAllowed(trusted.displayModel);if(!parsedLocal.ok||allowed===null)throw new Error('invalid');
     if(!parsedLocal.document.byFingerprint[fp]){if(Object.keys(parsedLocal.document.byFingerprint).length>=128)return {ok:false,code:'EDITION_LOCAL_CAPACITY'};parsedLocal.document.byFingerprint[fp]=fdEditionStudentEmptyBucket();}
+    bucket=parsedLocal.document.byFingerprint[fp];for(kind in allowed)if(FD_EDITION_STUDENT_OWN.call(allowed,kind)){ids=Object.keys(bucket[kind]);for(i=0;i<ids.length;i++)if(!allowed[kind][ids[i]])throw new Error('invalid');}
     localText=JSON.stringify(parsedLocal.document);if(!fdEditionStudentLocalDocument(JSON.parse(localText)).ok)throw new Error('invalid');
     editionText=JSON.stringify(trusted.envelope);if(JSON.parse(editionText).schemaVersion!==2)throw new Error('invalid');
   }catch(ignorePrepare){return {ok:false,code:'EDITION_STORAGE'};}
@@ -332,7 +335,7 @@ function fdEditionStudentLocalItem(section,documentObject,item,kind,localState){
   if(!item||typeof item.text!=='string')throw new Error('item');row=fdEditionStudentElement(documentObject,'div','', 'fd-edition-local__item');
   if(item.priority){label=fdEditionStudentPriority(item.priority);if(!label)throw new Error('priority');fdEditionStudentAppend(row,documentObject,'p',label,'fd-edition-authority');}
   fdEditionStudentAppend(row,documentObject,'p',item.text);
-  if(kind&&fdEditionStudentId(item.id)){on=!!(localState&&localState[kind]&&localState[kind][item.id]);button=fdEditionStudentAppend(row,documentObject,'button',on?'Completed':'Mark complete');button.setAttribute('type','button');button.setAttribute('data-fd-local-toggle',kind);button.setAttribute('data-local-id',item.id);button.setAttribute('aria-pressed',on?'true':'false');}
+  if(kind&&fdEditionStudentProgressId(item.id,kind)){on=!!(localState&&localState[kind]&&localState[kind][item.id]);button=fdEditionStudentAppend(row,documentObject,'button',on?'Completed':'Mark complete');button.setAttribute('type','button');button.setAttribute('data-fd-local-toggle',kind);button.setAttribute('data-local-id',item.id);button.setAttribute('aria-pressed',on?'true':'false');}
   linkValue=item.url?item:item.link;
   if(linkValue){url=new URL(linkValue.url);if(url.protocol!=='https:'||url.username||url.password||url.hostname!==linkValue.visibleHostname)throw new Error('url');link=fdEditionStudentAppend(row,documentObject,'a',linkValue.title+' — '+linkValue.visibleHostname,'fd-edition-resource');link.setAttribute('href',url.href);link.setAttribute('target','_blank');link.setAttribute('rel','noopener noreferrer');fdEditionStudentAppend(row,documentObject,'p',FD_EDITION_STUDENT_AUTHORITY.resourceLabel,'fd-edition-authority');}
   section.appendChild(row);

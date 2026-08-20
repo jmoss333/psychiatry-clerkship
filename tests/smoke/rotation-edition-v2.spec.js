@@ -1373,6 +1373,7 @@ test('payload faults fail closed one at a time with canonical core and byte-iden
   const rawLegacySecret = 'RAW_LEGACY_PUBLIC_FIELD_SECRET';
   const oversizeSecret = 'OVERSIZE_URL_SECRET';
   const oversizedLocalFingerprint = `OVRSEED-${audience === 'ms3' ? 'MS3' : 'RES'}-S3CR3T`;
+  const zeroCoreId = `core:${artifact.envelope.config.pathItems[0].ref}:0`;
   const cases = [
     {
       name: 'tampered edition digest', code: 'EDITION_INVALID',
@@ -1391,6 +1392,60 @@ test('payload faults fail closed one at a time with canonical core and byte-iden
         envelope.config.audience = audience === 'ms3' ? 'resident' : 'ms3';
         envelope.config.pathId = audience === 'ms3' ? 'resident-four-week' : 'ms3-six-week';
       }), secrets: [],
+    },
+    {
+      name: 'PHI-like path identifier', code: 'EDITION_INVALID',
+      link: mutateRotationEditionLink(artifact.link, (envelope) => {
+        envelope.config.pathItems[0].instanceId = 'patient:synthetic-person-record';
+      }), secrets: ['patient:synthetic-person-record'],
+    },
+    {
+      name: 'core identifier/ref mismatch', code: 'EDITION_INVALID',
+      link: mutateRotationEditionLink(artifact.link, (envelope) => {
+        envelope.config.pathItems[0].instanceId = 'core:synthetic-other-ref:7';
+      }), secrets: ['core:synthetic-other-ref:7'],
+    },
+    {
+      name: 'core zero identifier', code: 'EDITION_INVALID',
+      link: mutateRotationEditionLink(artifact.link, (envelope) => {
+        envelope.config.pathItems[0].instanceId = zeroCoreId;
+      }), secrets: [zeroCoreId],
+    },
+    {
+      name: 'wrong local row category', code: 'EDITION_INVALID',
+      link: mutateRotationEditionLink(artifact.link, (envelope) => {
+        envelope.config.localPlan.resources[0].instanceId = 'local:contact:7';
+      }), secrets: ['local:contact:7'],
+    },
+    {
+      name: 'leading-zero resource identifier', code: 'EDITION_INVALID',
+      link: mutateRotationEditionLink(artifact.link, (envelope) => {
+        envelope.config.localPlan.resources[0].instanceId = 'local:resource:01';
+      }), secrets: ['local:resource:01'],
+    },
+    {
+      name: 'negative resource identifier', code: 'EDITION_INVALID',
+      link: mutateRotationEditionLink(artifact.link, (envelope) => {
+        envelope.config.localPlan.resources[0].instanceId = 'local:resource:-1';
+      }), secrets: ['local:resource:-1'],
+    },
+    {
+      name: 'text resource identifier', code: 'EDITION_INVALID',
+      link: mutateRotationEditionLink(artifact.link, (envelope) => {
+        envelope.config.localPlan.resources[0].instanceId = 'local:resource:text';
+      }), secrets: ['local:resource:text'],
+    },
+    {
+      name: 'generated identifier forged into public resource row', code: 'EDITION_INVALID',
+      link: mutateRotationEditionLink(artifact.link, (envelope) => {
+        envelope.config.localPlan.resources[0].instanceId = 'local:generated:arrival';
+      }), secrets: ['local:generated:arrival'],
+    },
+    {
+      name: 'generated access identifier forged into public resource row', code: 'EDITION_INVALID',
+      link: mutateRotationEditionLink(artifact.link, (envelope) => {
+        envelope.config.localPlan.resources[0].instanceId = 'local:generated:access:local:access:1';
+      }), secrets: ['local:generated:access:local:access:1'],
     },
     {
       name: 'blocked key', code: 'EDITION_RESELECTION_REQUIRED',
@@ -2205,18 +2260,7 @@ test('hostile catalog and config lookalikes cannot replace code-owned authority 
     await learner.context.close();
   }
 
-  const configLearner = await newLearnerPage(browser, baseURL, audience, routeOptions);
-  try {
-    await gotoFreshEditionDocument(configLearner.page, configLink);
-    await expect(configLearner.page.locator('.fd-edition-error')).toHaveCount(0);
-    await expect(configLearner.page.locator('.fd-edition-card,.fd-edition-local')).toHaveCount(2);
-    for (const fixed of ROTATION_EDITION_AUTHORITY) {
-      await expect(configLearner.page.locator('#fdApp')).toContainText(fixed);
-    }
-    const authority = await configLearner.page.locator('.fd-edition-authority').allTextContents();
-    expect(authority.join('\n')).not.toContain(configLookalike);
-    expect(await configLearner.page.locator('body').innerText()).not.toContain(configLookalike);
-  } finally {
-    await configLearner.context.close();
-  }
+  await assertRejectedLearnerCase(browser, baseURL, audience, {
+    link: configLink, code: 'EDITION_INVALID', secrets: [configLookalike], routeOptions,
+  });
 });

@@ -87,8 +87,13 @@ function contractContext() {
 function residentContext(gate = 'enabled') {
   return { audience: 'resident', pathId: 'resident-four-week', coreRevision: CORE_REVISION, localCatalogRevision: CATALOG_REVISION, rotationEditionV2: gate };
 }
+const SIZE_REFS = Array.from({ length: 131 }, (_, padding) => ({
+  ref: `synthetic-size/${'x'.repeat(padding)}`,
+  title: `Synthetic size fixture ${padding}`,
+}));
 function index() {
   const first = { ref: 'first.md', title: 'First reviewed item' };
+  const library = [first, ...SIZE_REFS];
   return {
     path: { id: 'ms3-six-week', weekCount: 6 },
     weeks: [
@@ -96,7 +101,8 @@ function index() {
       { n: 3, title: 'Week 3', items: [] }, { n: 4, title: 'Week 4', items: [] },
       { n: 5, title: 'Week 5', items: [] }, { n: 6, title: 'Week 6', items: [] },
     ],
-    byRef: { 'first.md': first }, columns: [{ name: 'Library', accent: 'teal', items: [first] }],
+    byRef: Object.fromEntries(library.map((item) => [item.ref, item])),
+    columns: [{ name: 'Library', accent: 'teal', items: library }],
   };
 }
 function residentIndex() {
@@ -886,8 +892,9 @@ test('the shared publication boundary supports a reviewed resident projection an
 
 function expandedDraft(count, padding) {
   const draft = completedDraft();
+  const ref = SIZE_REFS[padding].ref;
   draft.config.pathItems = Array.from({ length: count }, (_, offset) => ({
-    instanceId: `core:first.md:${offset + 1}-${'x'.repeat(padding)}`, ref: 'first.md', week: 1,
+    instanceId: `core:${ref}:${offset + 1}`, ref, week: 1,
     order: offset + 1, priority: 'recommended',
   }));
   return draft;
@@ -928,7 +935,7 @@ test('the 12 KiB canonical-config cap blocks before and independently of the 16,
   assert.notEqual(relaxedSource, SOURCE, 'test-only relaxed contract must replace the canonical caps');
   assert.equal(relaxedSource.includes('var MAX_CONFIG_BYTES=12*1024;'), false); assert.equal(relaxedSource.includes('maxConfigBytes:12288'), false);
   const api = loadApiFromSource(relaxedSource); const snapshot = await makeSnapshot('enabled', api);
-  const fixture = expandedDraft(96, 100); const predicted = predictedUrlLength(fixture);
+  const fixture = expandedDraft(96, 7); const predicted = predictedUrlLength(fixture);
   assert.equal(predicted.configBytes > 12288, true, predicted.configBytes); assert.equal(predicted.configBytes <= 20000, true, predicted.configBytes);
   const reviewed = await reviewedDraft(fixture, api, snapshot);
   assert.equal(Buffer.byteLength(canonical(reviewed.candidate.config)) > 12288, true, 'real branded reviews cover the oversized candidate');

@@ -225,6 +225,56 @@ class RotationEditionCatalogTest(unittest.TestCase):
             validate_catalog(duplicate, governance, today=TODAY)
         self.assertEqual(str(caught.exception), "CATALOG_INVALID " + pointer)
 
+    def test_local_preset_identifiers_are_typed_canonical_and_non_echoing(self):
+        schema = json.loads((ROOT / "13_Faculty_Resources" / "Rotation_Curation" / "rotation_edition_catalog.schema.json").read_text(encoding="utf-8"))
+
+        def schedule_id(plan, instance_id):
+            if "attendance" not in plan:
+                plan["attendance"] = {
+                    "eventInstanceIds": [plan["schedule"]["events"][0]["instanceId"]],
+                    "absenceRoleKey": _choice_key("role"),
+                }
+            plan["schedule"]["events"][0]["instanceId"] = instance_id
+            plan["attendance"]["eventInstanceIds"] = [instance_id]
+
+        cases = (
+            ("PHI-like schedule ID", "/localPlan/schedule/events/0/instanceId", "patient:synthetic-person-record", lambda plan: schedule_id(plan, "patient:synthetic-person-record")),
+            ("wrong schedule category with matching attendance", "/localPlan/schedule/events/0/instanceId", "local:access:7", lambda plan: schedule_id(plan, "local:access:7")),
+            ("schedule zero", "/localPlan/schedule/events/0/instanceId", "local:schedule:0", lambda plan: schedule_id(plan, "local:schedule:0")),
+            ("access leading zero", "/localPlan/accessItems/0/instanceId", "local:access:01", lambda plan: plan["accessItems"][0].__setitem__("instanceId", "local:access:01")),
+            ("contact negative", "/localPlan/contacts/0/instanceId", "local:contact:-1", lambda plan: plan["contacts"][0].__setitem__("instanceId", "local:contact:-1")),
+            ("checklist text", "/localPlan/checklistItems/0/instanceId", "local:checklist:text", lambda plan: plan["checklistItems"][0].__setitem__("instanceId", "local:checklist:text")),
+            ("resource wrong category", "/localPlan/resources/0/instanceId", "local:contact:8", lambda plan: plan["resources"][0].__setitem__("instanceId", "local:contact:8")),
+            ("generated arrival in public checklist", "/localPlan/checklistItems/0/instanceId", "local:generated:arrival", lambda plan: plan["checklistItems"][0].__setitem__("instanceId", "local:generated:arrival")),
+            ("generated access in public checklist", "/localPlan/checklistItems/0/instanceId", "local:generated:access:local:access:1", lambda plan: plan["checklistItems"][0].__setitem__("instanceId", "local:generated:access:local:access:1")),
+        )
+        for label, suffix, secret, mutate in cases:
+            with self.subTest(case=label):
+                catalog, governance = _preset_catalog()
+                preset = _preset_record(catalog)
+                mutate(preset["localPlan"])
+                _refresh_record(preset)
+                schema_errors = list(Draft7Validator(schema).iter_errors(catalog))
+                self.assertTrue(schema_errors, label)
+                pointer = f"/records/{catalog['records'].index(preset)}{suffix}"
+                with self.assertRaises(ValueError) as caught:
+                    validate_catalog(catalog, governance, today=TODAY)
+                self.assertEqual(str(caught.exception), "CATALOG_INVALID " + pointer)
+                self.assertNotIn(secret, str(caught.exception))
+
+        catalog, governance = _preset_catalog()
+        preset = _preset_record(catalog)
+        plan = preset["localPlan"]
+        schedule_id(plan, "local:schedule:7")
+        plan["schedule"]["events"][1]["instanceId"] = "local:schedule:11"
+        plan["accessItems"][0]["instanceId"] = "local:access:4"
+        plan["contacts"][0]["instanceId"] = "local:contact:9"
+        plan["checklistItems"][0]["instanceId"] = "local:checklist:3"
+        plan["resources"][0]["instanceId"] = "local:resource:12"
+        _refresh_record(preset)
+        self.assertEqual(list(Draft7Validator(schema).iter_errors(catalog)), [])
+        validate_catalog(catalog, governance, today=TODAY)
+
         over_total = copy.deepcopy(catalog)
         preset = _preset_record(over_total)
         access = preset["localPlan"]["accessItems"][0]

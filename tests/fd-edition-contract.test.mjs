@@ -243,6 +243,56 @@ test('generates ordered code-owned change summaries and counts changed high-leve
   });
 });
 
+for (const audience of ['ms3', 'resident']) {
+  test(`${audience} contract binds core IDs to their row ref and local IDs to their category`, async () => {
+    const { F, catalogSnapshot, coreIndex, siteContext } = await context(audience);
+    const validation = validationContext();
+    const base = validFor(audience).config;
+    base.localPlan = {
+      contacts: [{ instanceId: 'local:contact:1', roleKey: 'choice.example-role@v1' }],
+    };
+    const accepted = await F.fdEditionValidateConfig(
+      base, coreIndex, catalogSnapshot, siteContext, validation, webcrypto.subtle,
+    );
+    assert.equal(accepted.ok, true, JSON.stringify(accepted.errors));
+
+    const cases = [
+      ['PHI-like core ID', 'patient:synthetic-person-record', (value, id) => { value.pathItems[0].instanceId = id; }],
+      ['core wrong namespace', 'local:resource:7', (value, id) => { value.pathItems[0].instanceId = id; }],
+      ['core zero', `core:${base.pathItems[0].ref}:0`, (value, id) => { value.pathItems[0].instanceId = id; }],
+      ['core leading zero', `core:${base.pathItems[0].ref}:01`, (value, id) => { value.pathItems[0].instanceId = id; }],
+      ['core negative', `core:${base.pathItems[0].ref}:-1`, (value, id) => { value.pathItems[0].instanceId = id; }],
+      ['core text', `core:${base.pathItems[0].ref}:text`, (value, id) => { value.pathItems[0].instanceId = id; }],
+      ['core generated local', 'local:generated:arrival', (value, id) => { value.pathItems[0].instanceId = id; }],
+      ['core mismatch', 'core:library/other:7', (value, id) => { value.pathItems[0].instanceId = id; }],
+      ['PHI-like contact ID', 'patient:synthetic-person-record', (value, id) => { value.localPlan.contacts[0].instanceId = id; }],
+      ['contact wrong category', 'local:resource:7', (value, id) => { value.localPlan.contacts[0].instanceId = id; }],
+      ['contact zero', 'local:contact:0', (value, id) => { value.localPlan.contacts[0].instanceId = id; }],
+      ['contact leading zero', 'local:contact:01', (value, id) => { value.localPlan.contacts[0].instanceId = id; }],
+      ['contact negative', 'local:contact:-1', (value, id) => { value.localPlan.contacts[0].instanceId = id; }],
+      ['contact text', 'local:contact:text', (value, id) => { value.localPlan.contacts[0].instanceId = id; }],
+      ['contact generated', 'local:generated:access:local:access:1', (value, id) => { value.localPlan.contacts[0].instanceId = id; }],
+    ];
+    for (const [label, secret, mutate] of cases) {
+      const candidate = structuredClone(base);
+      mutate(candidate, secret);
+      const result = await F.fdEditionValidateConfig(
+        candidate, coreIndex, catalogSnapshot, siteContext, validation, webcrypto.subtle,
+      );
+      assert.equal(result.ok, false, label);
+      assert.equal(JSON.stringify(result.errors).includes(secret), false, label);
+    }
+
+    const gapped = structuredClone(base);
+    gapped.pathItems[0].instanceId = `core:${gapped.pathItems[0].ref}:7`;
+    gapped.localPlan.contacts[0].instanceId = 'local:contact:9';
+    const gapResult = await F.fdEditionValidateConfig(
+      gapped, coreIndex, catalogSnapshot, siteContext, validation, webcrypto.subtle,
+    );
+    assert.equal(gapResult.ok, true, JSON.stringify(gapResult.errors));
+  });
+}
+
 test('pins the 30-bit Crockford fingerprint vector independently of envelope base64', async () => {
   const { F } = await context();
   const fingerprint = await F.fdEditionFingerprint(
