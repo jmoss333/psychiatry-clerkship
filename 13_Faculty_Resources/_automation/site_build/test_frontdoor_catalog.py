@@ -14,7 +14,11 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 
 import common  # noqa: E402
-from frontdoor_catalog import build_frontdoor_payload, inject_frontdoor_payload  # noqa: E402
+from frontdoor_catalog import (  # noqa: E402
+    assert_catalog_resolver_injected,
+    build_frontdoor_payload,
+    inject_frontdoor_payload,
+)
 
 
 REVISION = "1234567890abcdef1234567890abcdef12345678"
@@ -407,6 +411,52 @@ class FrontdoorCatalogTest(unittest.TestCase):
                     "audience": "resident", "revision": REVISION,
                     "boot": {"audience": "resident", "revision": REVISION},
                 })
+
+    def test_trusted_catalog_revision_is_substituted_for_fresh_ms3_and_reused_resident_assembler_paths(self):
+        """A fresh resolver sentinel and an inherited prior-audience literal must both be rebound."""
+        revisions = ("sha256-" + "M" * 43, "sha256-" + "R" * 43)
+        ms3_projection = {
+            **ROTATION_PROJECTION, "revision": revisions[0], "audience": "ms3",
+        }
+        resident_projection = {
+            **ROTATION_PROJECTION, "revision": revisions[1], "audience": "resident",
+        }
+        fixture = "\n".join([
+            "var FD_ROTATION_EDITION_CATALOG=%s;" % json.dumps(
+                ms3_projection, ensure_ascii=False, sort_keys=True
+            ),
+            "/*__FD_EDITION_CATALOG__*/",
+        ])
+        with tempfile.NamedTemporaryFile("w+", suffix=".js", encoding="utf-8") as page:
+            page.write(fixture)
+            page.flush()
+            self.assertTrue(common.inject_shared_snippets(page.name))
+
+            # Fresh MS3 assembly replaces the checked-in sentinel.
+            assert_catalog_resolver_injected(page.name, revisions[0])
+            with open(page.name, encoding="utf-8") as rendered_page:
+                ms3 = rendered_page.read()
+            self.assertEqual(ms3.count("var EXPECTED_REVISION='%s';" % revisions[0]), 1)
+            self.assertNotIn("__FD_CATALOG_EXPECTED_REVISION__", ms3)
+
+            # Resident assembly inherits the MS3 body, replaces the audience payload, and
+            # must replace the already-substituted trusted literal rather than trusting it.
+            old_value = "var FD_ROTATION_EDITION_CATALOG=" + json.dumps(
+                ms3_projection, ensure_ascii=False, sort_keys=True
+            ) + ";"
+            new_value = "var FD_ROTATION_EDITION_CATALOG=" + json.dumps(
+                resident_projection, ensure_ascii=False, sort_keys=True
+            ) + ";"
+            self.assertEqual(ms3.count(old_value), 1)
+            page.seek(0)
+            page.truncate()
+            page.write(ms3.replace(old_value, new_value))
+            page.flush()
+            assert_catalog_resolver_injected(page.name, revisions[1])
+            with open(page.name, encoding="utf-8") as rendered_page:
+                resident = rendered_page.read()
+            self.assertEqual(resident.count("var EXPECTED_REVISION='%s';" % revisions[1]), 1)
+            self.assertNotIn("var EXPECTED_REVISION='%s';" % revisions[0], resident)
 
     def test_real_curator_source_can_be_reinjected_without_ms3_payload_residue(self):
         repo = os.path.abspath(os.path.join(HERE, "..", "..", ".."))
