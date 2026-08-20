@@ -698,9 +698,9 @@
     var FD_INDEX=fdBuildIndex(FD_CURRICULUM,FD_TOPIC_META,FD_TOOL_REGISTRY,FD_SITE_MANIFEST);
     function fdRotationCatalogContext(value){
       var revision,gate,descriptor;
-      try{descriptor=Object.getOwnPropertyDescriptor(value,'revision');revision=descriptor&&Object.prototype.hasOwnProperty.call(descriptor,'value')&&typeof descriptor.value==='string'?descriptor.value:'';}catch(ignoreRevision){revision='';}
-      try{descriptor=Object.getOwnPropertyDescriptor(value,'rotationEditionV2');gate=descriptor&&Object.prototype.hasOwnProperty.call(descriptor,'value')&&descriptor.value==='enabled'?'enabled':'disabled';}catch(ignoreGate){gate='disabled';}
-      return {localCatalogRevision:revision,rotationEditionV2:gate};
+      try{descriptor=Object.getOwnPropertyDescriptor(value,'revision');revision=descriptor&&descriptor.enumerable&&Object.prototype.hasOwnProperty.call(descriptor,'value')&&typeof descriptor.value==='string'&&/^sha256-[A-Za-z0-9_-]{43}$/.test(descriptor.value)?descriptor.value:'';}catch(ignoreRevision){revision='';}
+      try{descriptor=Object.getOwnPropertyDescriptor(value,'rotationEditionV2');gate=descriptor&&descriptor.enumerable&&Object.prototype.hasOwnProperty.call(descriptor,'value')&&(descriptor.value==='enabled'||descriptor.value==='disabled')?descriptor.value:'';}catch(ignoreGate){gate='';}
+      return revision&&gate?{localCatalogRevision:revision,rotationEditionV2:gate}:{localCatalogRevision:'',rotationEditionV2:'disabled'};
     }
     var fdRotationCatalogContextValue=fdRotationCatalogContext(FD_ROTATION_EDITION_CATALOG);
     var FD_CURATOR_CONTEXT={audience:FD_AUDIENCE,pathId:FD_INDEX.path.id,coreRevision:FD_CORE_REVISION};

@@ -15,6 +15,8 @@ import unittest
 from datetime import date
 from pathlib import Path
 
+from jsonschema import Draft7Validator
+
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 sys.path.insert(0, str(HERE))
@@ -42,6 +44,35 @@ def digested_catalog():
         bare.pop("contentDigest")
         record["contentDigest"] = canonical_digest(bare)
     return catalog
+
+
+def _template_set():
+    token_sets = {
+        "arrival": ["timing", "time", "place", "role"], "scheduleWindow": ["dayStart", "dayEnd", "endQualifier"],
+        "scheduleRangeWithPlace": ["daySet", "startTime", "endTime", "activity", "place", "priority"],
+        "scheduleRangeWithoutPlace": ["daySet", "startTime", "endTime", "activity", "priority"],
+        "schedulePointWithPlace": ["daySet", "startTime", "activity", "place", "priority"],
+        "schedulePointWithoutPlace": ["daySet", "startTime", "activity", "priority"],
+        "rounds": ["preparation", "participation", "followUp"], "presentation": ["format", "timing", "elements"],
+        "documentation": ["workflow", "timing"], "attendance": ["events", "absenceRole"],
+        "feedback": ["cadence", "initiator", "setting"], "access": ["item", "due"], "contact": ["role"],
+        "checklist": ["item", "priority"], "resourceWithReason": ["title", "priority", "week", "reason", "hostname"],
+        "resourceWithoutReason": ["title", "priority", "week", "hostname"], "changeSummary": ["kinds", "count"],
+    }
+    return {name: {"text": " ".join("{" + token + "}" for token in tokens), "tokens": tokens}
+            for name, tokens in token_sets.items()}
+
+
+def _append_reviewed(catalog, governance, record):
+    bare = copy.deepcopy(record)
+    bare.pop("contentDigest", None)
+    record = {**bare, "contentDigest": canonical_digest(bare)}
+    catalog["records"].append(record)
+    catalog["records"].sort(key=lambda value: value["key"])
+    governance["dispositions"].append({"key": record["key"], "status": "reviewed",
+                                        "changedOn": "2026-08-19", "reviewRef": "SYNTHETIC-TEST-REVIEW"})
+    governance["dispositions"].sort(key=lambda value: value["key"])
+    return record
 
 
 class RotationEditionCatalogTest(unittest.TestCase):
@@ -72,6 +103,101 @@ class RotationEditionCatalogTest(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, pointer) as caught:
                     validate_catalog(catalog, governance, today=TODAY)
                 self.assertNotIn("token=x", str(caught.exception))
+
+    def test_local_presets_reject_arbitrary_categories_free_text_and_more_than_eight_contacts(self):
+        catalog, governance = copy.deepcopy(self.catalog), copy.deepcopy(self.governance)
+        _append_reviewed(catalog, governance, {
+            "key": "phrase.example@v1", "kind": "phraseSet", "displayName": "Example phrases",
+            "templates": _template_set(), "audiences": ["ms3"], "verifiedOn": "2026-08-19",
+        })
+        _append_reviewed(catalog, governance, {
+            "key": "preset.example@v1", "kind": "localPreset", "displayName": "Example preset",
+            "localPlan": {"arrival": {"timingCode": "by", "time": "08:00", "placeKey": "place.example-workroom@v1", "checkInRoleKey": "choice.arrival@v1"}},
+            "locationKeys": ["location.example-unit@v1"], "phraseSetKey": "phrase.example@v1",
+            "audiences": ["ms3"], "verifiedOn": "2026-08-19",
+        })
+        validate_catalog(catalog, governance, today=TODAY)
+        cases = []
+        free_text = copy.deepcopy(catalog)
+        preset = next(record for record in free_text["records"] if record["key"] == "preset.example@v1")
+        preset["localPlan"]["freeText"] = "must never become public copy"
+        preset["contentDigest"] = canonical_digest({key: value for key, value in preset.items() if key != "contentDigest"})
+        cases.append((free_text, "/localPlan"))
+        too_many_contacts = copy.deepcopy(catalog)
+        preset = next(record for record in too_many_contacts["records"] if record["key"] == "preset.example@v1")
+        preset["localPlan"]["contacts"] = [
+            {"instanceId": "local:contact:" + str(index), "roleKey": "choice.arrival@v1"}
+            for index in range(1, 10)
+        ]
+        preset["contentDigest"] = canonical_digest({key: value for key, value in preset.items() if key != "contentDigest"})
+        cases.append((too_many_contacts, "/localPlan/contacts"))
+        for candidate, pointer in cases:
+            with self.subTest(pointer=pointer):
+                with self.assertRaisesRegex(ValueError, pointer):
+                    validate_catalog(candidate, governance, today=TODAY)
+
+    def test_cross_record_dependencies_must_share_audience_and_location_scope_and_project_together(self):
+        catalog, governance = copy.deepcopy(self.catalog), copy.deepcopy(self.governance)
+        _append_reviewed(catalog, governance, {
+            "key": "choice.resident-role@v1", "kind": "choice", "choiceKind": "role",
+            "label": "Resident role", "fragment": "the resident role", "audiences": ["resident"], "verifiedOn": "2026-08-19",
+        })
+        _append_reviewed(catalog, governance, {
+            "key": "profile.cross-scope@v1", "kind": "curatorProfile", "displayName": "Example Attending",
+            "roleKey": "choice.resident-role@v1", "locationKeys": ["location.example-unit@v1"],
+            "audiences": ["ms3"], "verifiedOn": "2026-08-19",
+        })
+        with self.assertRaisesRegex(ValueError, "/roleKey"):
+            validate_catalog(catalog, governance, today=TODAY)
+        profile = next(record for record in catalog["records"] if record["key"] == "profile.cross-scope@v1")
+        profile["roleKey"] = "choice.arrival@v1"
+        profile["contentDigest"] = canonical_digest({key: value for key, value in profile.items() if key != "contentDigest"})
+        _append_reviewed(catalog, governance, {
+            "key": "phrase.resident@v1", "kind": "phraseSet", "displayName": "Resident phrases",
+            "templates": _template_set(), "audiences": ["resident"], "verifiedOn": "2026-08-19",
+        })
+        _append_reviewed(catalog, governance, {
+            "key": "preset.cross-scope@v1", "kind": "localPreset", "displayName": "Example preset",
+            "localPlan": {}, "locationKeys": ["location.example-unit@v1"], "phraseSetKey": "phrase.resident@v1",
+            "audiences": ["ms3"], "verifiedOn": "2026-08-19",
+        })
+        with self.assertRaisesRegex(ValueError, "/phraseSetKey"):
+            validate_catalog(catalog, governance, today=TODAY)
+
+    def test_urls_and_phrase_templates_enforce_locked_bounds_and_exact_placeholder_sets(self):
+        long_url = copy.deepcopy(self.catalog)
+        link = next(record for record in long_url["records"] if record["kind"] == "officialLink")
+        link["url"] = "https://example.edu/" + "a" * 3000
+        link["contentDigest"] = canonical_digest({key: value for key, value in link.items() if key != "contentDigest"})
+        with self.assertRaisesRegex(ValueError, "/url"):
+            validate_catalog(long_url, self.governance, today=TODAY)
+        catalog, governance = copy.deepcopy(self.catalog), copy.deepcopy(self.governance)
+        _append_reviewed(catalog, governance, {
+            "key": "phrase.placeholder@v1", "kind": "phraseSet", "displayName": "Example phrases",
+            "templates": _template_set(), "audiences": ["ms3"], "verifiedOn": "2026-08-19",
+        })
+        phrase = next(record for record in catalog["records"] if record["key"] == "phrase.placeholder@v1")
+        phrase["templates"]["arrival"]["text"] = "Plain text with no declared substitutions"
+        phrase["contentDigest"] = canonical_digest({key: value for key, value in phrase.items() if key != "contentDigest"})
+        with self.assertRaisesRegex(ValueError, "/templates/arrival/text"):
+            validate_catalog(catalog, governance, today=TODAY)
+
+    def test_draft_schema_closes_local_preset_variants_and_caps_contacts_at_eight(self):
+        schema = json.loads((ROOT / "13_Faculty_Resources" / "Rotation_Curation" / "rotation_edition_catalog.schema.json").read_text(encoding="utf-8"))
+        preset = {
+            "key": "preset.schema@v1", "kind": "localPreset", "contentDigest": "sha256-" + "A" * 43,
+            "displayName": "Example preset", "locationKeys": ["location.example-unit@v1"],
+            "phraseSetKey": "phrase.example@v1", "audiences": ["ms3"], "verifiedOn": "2026-08-19",
+            "localPlan": {"freeText": "not a public field"},
+        }
+        errors = list(Draft7Validator(schema).iter_errors({"schemaVersion": 1, "records": [preset]}))
+        self.assertTrue(errors, "closed local-plan schema must reject arbitrary categories")
+        preset["localPlan"] = {"contacts": [
+            {"instanceId": "local:contact:" + str(index), "roleKey": "choice.arrival@v1"}
+            for index in range(1, 10)
+        ]}
+        errors = list(Draft7Validator(schema).iter_errors({"schemaVersion": 1, "records": [preset]}))
+        self.assertTrue(errors, "contacts cap must be eight")
 
     def test_projection_is_closed_stable_and_applies_lifecycle_rules(self):
         validate_catalog(self.catalog, self.governance, today=TODAY)
@@ -113,6 +239,8 @@ class RotationEditionCatalogTest(unittest.TestCase):
             new["contentDigest"] = canonical_digest({k: v for k, v in new.items() if k != "contentDigest"})
             added["records"].append(new); added["records"].sort(key=lambda item: item["key"])
             validate_immutable_against_ref(root, ref, added)
+            with self.assertRaisesRegex(ValueError, "/compare-ref"):
+                validate_immutable_against_ref(root, "f" * 40, added)
 
 
 if __name__ == "__main__":

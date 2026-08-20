@@ -163,7 +163,7 @@ def _validate_record(record: dict, index: int, records_by_key: dict, today: date
         _plain_text(record["visibleHostname"], pointer + "/visibleHostname", 253)
         if record["purposeCode"] not in PURPOSE_CODES: raise _error("CATALOG_INVALID", pointer + "/purposeCode")
         parsed = urlsplit(record["url"])
-        if parsed.scheme != "https" or parsed.username or parsed.password or parsed.query or parsed.fragment or parsed.hostname != record["visibleHostname"] or parsed.hostname != parsed.hostname.lower():
+        if not isinstance(record["url"], str) or not 1 <= len(record["url"]) <= 2048 or parsed.scheme != "https" or parsed.username or parsed.password or parsed.query or parsed.fragment or parsed.hostname != record["visibleHostname"] or parsed.hostname != parsed.hostname.lower():
             raise _error("CATALOG_INVALID", pointer + "/url")
     elif record["kind"] == "phraseSet":
         templates = record["templates"]
@@ -173,8 +173,167 @@ def _validate_record(record: dict, index: int, records_by_key: dict, today: date
             if not isinstance(row, dict) or set(row) != {"text", "tokens"} or row.get("tokens") != tokens:
                 raise _error("CATALOG_INVALID", pointer + "/templates/" + name)
             _plain_text(row["text"], pointer + "/templates/" + name + "/text", 512)
-            if re.sub(r"\{(?:" + "|".join(re.escape(token) for token in tokens) + r")\}", "", row["text"]).find("{") >= 0:
+            if len(tokens) > 16 or any(row["text"].count("{" + token + "}") != 1 for token in tokens) or re.sub(r"\{(?:" + "|".join(re.escape(token) for token in tokens) + r")\}", "", row["text"]).find("{") >= 0 or "}" in re.sub(r"\{(?:" + "|".join(re.escape(token) for token in tokens) + r")\}", "", row["text"]):
                 raise _error("CATALOG_INVALID", pointer + "/templates/" + name + "/text")
+
+
+def _time(value, pointer: str) -> int:
+    if not isinstance(value, str) or re.fullmatch(r"(?:[01][0-9]|2[0-3]):[0-5][0-9]", value) is None:
+        raise _error("CATALOG_INVALID", pointer)
+    return int(value[:2]) * 60 + int(value[3:])
+
+
+def _identifier(value, pointer: str) -> None:
+    if not isinstance(value, str) or not value or len(value) > 160 or re.fullmatch(r"[\x21-\x7e]+", value) is None:
+        raise _error("CATALOG_INVALID", pointer)
+
+
+def _scope_reference(records_by_key, key, pointer, *, audiences, locations, kinds, choice_kinds=None, purposes=None):
+    target = records_by_key.get(key)
+    if target is None or target.get("kind") not in kinds:
+        raise _error("CATALOG_INVALID", pointer)
+    if choice_kinds is not None and target.get("choiceKind") not in choice_kinds:
+        raise _error("CATALOG_INVALID", pointer)
+    if purposes is not None and target.get("purposeCode") not in purposes:
+        raise _error("CATALOG_INVALID", pointer)
+    if not set(audiences).issubset(set(target.get("audiences", []))):
+        raise _error("CATALOG_INVALID", pointer)
+    target_locations = target.get("locationKeys")
+    if target_locations is not None and not set(locations).issubset(set(target_locations)):
+        raise _error("CATALOG_INVALID", pointer)
+    return target
+
+
+def _exact_object(value, required, optional, pointer):
+    if not isinstance(value, dict) or not set(required).issubset(value) or set(value) - set(required) - set(optional):
+        raise _error("CATALOG_INVALID", pointer)
+
+
+def _plan_reference(records_by_key, value, pointer, audiences, locations, kinds, choice_kinds=None, purposes=None):
+    if not isinstance(value, str) or not KEY.fullmatch(value):
+        raise _error("CATALOG_INVALID", pointer)
+    return _scope_reference(records_by_key, value, pointer, audiences=audiences, locations=locations,
+                            kinds=kinds, choice_kinds=choice_kinds, purposes=purposes)
+
+
+def _validate_local_plan(plan, pointer, records_by_key, audiences, locations):
+    """Validate the locked v2 local-plan subset embedded in immutable presets."""
+    categories = {"arrival", "schedule", "rounds", "presentation", "documentation", "attendance", "feedback", "accessItems", "contacts", "checklistItems", "resources"}
+    if not isinstance(plan, dict) or set(plan) - categories:
+        raise _error("CATALOG_INVALID", pointer)
+    ids = set()
+    schedule_ids = set()
+    if "arrival" in plan:
+        value = plan["arrival"]; item_pointer = pointer + "/arrival"
+        _exact_object(value, {"timingCode", "time", "placeKey", "checkInRoleKey"}, {"linkKey"}, item_pointer)
+        if value["timingCode"] not in {"at", "by"}: raise _error("CATALOG_INVALID", item_pointer + "/timingCode")
+        _time(value["time"], item_pointer + "/time")
+        _plan_reference(records_by_key, value["placeKey"], item_pointer + "/placeKey", audiences, locations, {"place"})
+        _plan_reference(records_by_key, value["checkInRoleKey"], item_pointer + "/checkInRoleKey", audiences, locations, {"choice"}, {"role"})
+        if "linkKey" in value: _plan_reference(records_by_key, value["linkKey"], item_pointer + "/linkKey", audiences, locations, {"officialLink"}, purposes={"arrival-map"})
+    if "schedule" in plan:
+        value = plan["schedule"]; item_pointer = pointer + "/schedule"
+        _exact_object(value, {"dayStart", "dayEnd", "endQualifierCode", "events"}, set(), item_pointer)
+        if _time(value["dayStart"], item_pointer + "/dayStart") >= _time(value["dayEnd"], item_pointer + "/dayEnd") or value["endQualifierCode"] not in {"at", "about", "no-later-than"}:
+            raise _error("CATALOG_INVALID", item_pointer)
+        if not isinstance(value["events"], list) or not 1 <= len(value["events"]) <= 24: raise _error("CATALOG_INVALID", item_pointer + "/events")
+        for index, event in enumerate(value["events"]):
+            event_pointer = item_pointer + "/events/" + str(index)
+            _exact_object(event, {"instanceId", "daySetKey", "startTime", "activityKey", "priority"}, {"endTime", "placeKey"}, event_pointer)
+            _identifier(event["instanceId"], event_pointer + "/instanceId")
+            if event["instanceId"] in ids: raise _error("CATALOG_INVALID", event_pointer + "/instanceId")
+            ids.add(event["instanceId"]); schedule_ids.add(event["instanceId"])
+            start = _time(event["startTime"], event_pointer + "/startTime")
+            if "endTime" in event and _time(event["endTime"], event_pointer + "/endTime") <= start: raise _error("CATALOG_INVALID", event_pointer + "/endTime")
+            if event["priority"] not in {"required", "recommended", "optional"}: raise _error("CATALOG_INVALID", event_pointer + "/priority")
+            _plan_reference(records_by_key, event["daySetKey"], event_pointer + "/daySetKey", audiences, locations, {"choice"}, {"daySet"})
+            _plan_reference(records_by_key, event["activityKey"], event_pointer + "/activityKey", audiences, locations, {"choice"}, {"activity"})
+            if "placeKey" in event: _plan_reference(records_by_key, event["placeKey"], event_pointer + "/placeKey", audiences, locations, {"place"})
+    simple = {
+        "rounds": ({"preparationKey", "participationKey", "followUpKey"}, {"preparationKey": ("choice", {"roundsPreparation"}), "participationKey": ("choice", {"roundsParticipation"}), "followUpKey": ("choice", {"roundsFollowUp"})}),
+        "documentation": ({"workflowKey", "timingKey"}, {"workflowKey": ("choice", {"documentationWorkflow"}), "timingKey": ("choice", {"documentationTiming"})}),
+        "feedback": ({"cadenceKey", "initiatorKey", "settingKey"}, {"cadenceKey": ("choice", {"feedbackCadence"}), "initiatorKey": ("choice", {"feedbackInitiator"}), "settingKey": ("choice", {"feedbackSetting"})}),
+    }
+    for category, (required, fields) in simple.items():
+        if category not in plan: continue
+        value = plan[category]; item_pointer = pointer + "/" + category
+        optional = {"policyLinkKey"} if category == "documentation" else set()
+        _exact_object(value, required, optional, item_pointer)
+        for field, (kind, choice_kind) in fields.items(): _plan_reference(records_by_key, value[field], item_pointer + "/" + field, audiences, locations, {kind}, choice_kind)
+        if "policyLinkKey" in value: _plan_reference(records_by_key, value["policyLinkKey"], item_pointer + "/policyLinkKey", audiences, locations, {"officialLink"}, purposes={"documentation-policy"})
+    if "presentation" in plan:
+        value = plan["presentation"]; item_pointer = pointer + "/presentation"
+        _exact_object(value, {"formatKey", "timingKey", "elementKeys"}, set(), item_pointer)
+        _plan_reference(records_by_key, value["formatKey"], item_pointer + "/formatKey", audiences, locations, {"choice"}, {"presentationFormat"})
+        _plan_reference(records_by_key, value["timingKey"], item_pointer + "/timingKey", audiences, locations, {"choice"}, {"presentationTiming"})
+        if not isinstance(value["elementKeys"], list) or not 1 <= len(value["elementKeys"]) <= 8 or len(value["elementKeys"]) != len(set(value["elementKeys"])): raise _error("CATALOG_INVALID", item_pointer + "/elementKeys")
+        for index, key in enumerate(value["elementKeys"]): _plan_reference(records_by_key, key, item_pointer + "/elementKeys/" + str(index), audiences, locations, {"choice"}, {"presentationElement"})
+    if "attendance" in plan:
+        value = plan["attendance"]; item_pointer = pointer + "/attendance"
+        _exact_object(value, {"eventInstanceIds", "absenceRoleKey"}, {"policyLinkKey"}, item_pointer)
+        if not isinstance(value["eventInstanceIds"], list) or not 1 <= len(value["eventInstanceIds"]) <= 24 or len(value["eventInstanceIds"]) != len(set(value["eventInstanceIds"])) or not set(value["eventInstanceIds"]).issubset(schedule_ids): raise _error("CATALOG_INVALID", item_pointer + "/eventInstanceIds")
+        _plan_reference(records_by_key, value["absenceRoleKey"], item_pointer + "/absenceRoleKey", audiences, locations, {"choice"}, {"role"})
+        if "policyLinkKey" in value: _plan_reference(records_by_key, value["policyLinkKey"], item_pointer + "/policyLinkKey", audiences, locations, {"officialLink"}, purposes={"attendance-policy"})
+    arrays = {
+        "accessItems": (12, {"instanceId", "itemKey", "dueKey"}, {"linkKey"}),
+        "contacts": (8, {"instanceId", "roleKey"}, {"linkKey"}),
+        "checklistItems": (24, {"instanceId", "itemKey", "priority"}, set()),
+        "resources": (12, {"instanceId", "linkKey", "priority", "week"}, {"reasonKey"}),
+    }
+    for category, (maximum, required, optional) in arrays.items():
+        if category not in plan: continue
+        values = plan[category]; item_pointer = pointer + "/" + category
+        if not isinstance(values, list) or len(values) > maximum: raise _error("CATALOG_INVALID", item_pointer)
+        for index, value in enumerate(values):
+            row_pointer = item_pointer + "/" + str(index); _exact_object(value, required, optional, row_pointer)
+            _identifier(value["instanceId"], row_pointer + "/instanceId")
+            if value["instanceId"] in ids: raise _error("CATALOG_INVALID", row_pointer + "/instanceId")
+            ids.add(value["instanceId"])
+            if category == "accessItems":
+                _plan_reference(records_by_key, value["itemKey"], row_pointer + "/itemKey", audiences, locations, {"choice"}, {"accessItem"})
+                _plan_reference(records_by_key, value["dueKey"], row_pointer + "/dueKey", audiences, locations, {"choice"}, {"duePoint"})
+                if "linkKey" in value: _plan_reference(records_by_key, value["linkKey"], row_pointer + "/linkKey", audiences, locations, {"officialLink"}, purposes={"access-training", "parking-transit", "reviewed-operational"})
+            elif category == "contacts":
+                _plan_reference(records_by_key, value["roleKey"], row_pointer + "/roleKey", audiences, locations, {"choice"}, {"role"})
+                if "linkKey" in value: _plan_reference(records_by_key, value["linkKey"], row_pointer + "/linkKey", audiences, locations, {"officialLink"}, purposes={"directory"})
+            elif category == "checklistItems":
+                if value["priority"] not in {"required", "recommended", "optional"}: raise _error("CATALOG_INVALID", row_pointer + "/priority")
+                _plan_reference(records_by_key, value["itemKey"], row_pointer + "/itemKey", audiences, locations, {"choice"}, {"checklist"})
+            else:
+                if value["priority"] not in {"required", "recommended", "optional"} or not isinstance(value["week"], int) or value["week"] < 1 or value["week"] > (4 if "resident" in audiences else 6): raise _error("CATALOG_INVALID", row_pointer)
+                _plan_reference(records_by_key, value["linkKey"], row_pointer + "/linkKey", audiences, locations, {"officialLink"})
+                if "reasonKey" in value: _plan_reference(records_by_key, value["reasonKey"], row_pointer + "/reasonKey", audiences, locations, {"choice"}, {"reason"})
+
+
+def _record_reference_keys(value):
+    """Collect exact catalog references from a closed record without treating text as data."""
+    found = set()
+    if isinstance(value, dict):
+        for field, child in value.items():
+            if field == "key":
+                continue
+            if field.endswith("Key") and isinstance(child, str) and KEY.fullmatch(child):
+                found.add(child)
+            elif field.endswith("Keys") and isinstance(child, list):
+                found.update(item for item in child if isinstance(item, str) and KEY.fullmatch(item))
+            else:
+                found.update(_record_reference_keys(child))
+    elif isinstance(value, list):
+        for child in value:
+            found.update(_record_reference_keys(child))
+    return found
+
+
+def _validate_reference_cycles(records_by_key):
+    edges = {key: _record_reference_keys(record) & set(records_by_key) for key, record in records_by_key.items()}
+    visiting, visited = set(), set()
+    def visit(key):
+        if key in visiting: raise _error("CATALOG_INVALID", "/records")
+        if key in visited: return
+        visiting.add(key)
+        for child in edges[key]: visit(child)
+        visiting.remove(key); visited.add(key)
+    for key in edges: visit(key)
 
 
 def validate_catalog(catalog: dict, governance: dict, *, today: date) -> None:
@@ -199,17 +358,16 @@ def validate_catalog(catalog: dict, governance: dict, *, today: date) -> None:
         pointer = f"/records/{index}"
         if record["kind"] != "trainingLocation":
             for location_key in record.get("locationKeys", []):
-                location = records_by_key.get(location_key)
-                if location is None or location.get("kind") != "trainingLocation": raise _error("CATALOG_INVALID", pointer + "/locationKeys")
+                _scope_reference(records_by_key, location_key, pointer + "/locationKeys", audiences=record["audiences"], locations=[], kinds={"trainingLocation"})
         if record["kind"] == "curatorProfile":
-            role = records_by_key.get(record["roleKey"])
-            if role is None or role.get("kind") != "choice" or role.get("choiceKind") != "role": raise _error("CATALOG_INVALID", pointer + "/roleKey")
+            _scope_reference(records_by_key, record["roleKey"], pointer + "/roleKey", audiences=record["audiences"], locations=record["locationKeys"], kinds={"choice"}, choice_kinds={"role"})
         if record["kind"] == "officialLink":
             for location_key in record["locationKeys"]:
                 if record["visibleHostname"] not in records_by_key[location_key].get("officialHostnames", []): raise _error("CATALOG_INVALID", pointer + "/visibleHostname")
         if record["kind"] == "localPreset":
-            phrase = records_by_key.get(record["phraseSetKey"])
-            if phrase is None or phrase.get("kind") != "phraseSet": raise _error("CATALOG_INVALID", pointer + "/phraseSetKey")
+            _scope_reference(records_by_key, record["phraseSetKey"], pointer + "/phraseSetKey", audiences=record["audiences"], locations=record["locationKeys"], kinds={"phraseSet"})
+            _validate_local_plan(record["localPlan"], pointer + "/localPlan", records_by_key, record["audiences"], record["locationKeys"])
+    _validate_reference_cycles(records_by_key)
 
 
 def build_audience_projection(catalog: dict, governance: dict, audience: str) -> dict:
@@ -219,6 +377,10 @@ def build_audience_projection(catalog: dict, governance: dict, audience: str) ->
     selection = sorted(record["key"] for record in relevant if status_by_key[record["key"]] == "reviewed")
     resolution = sorted((record for record in relevant if status_by_key[record["key"]] in {"reviewed", "deprecated"}), key=lambda record: record["key"])
     blocked = sorted(record["key"] for record in relevant if status_by_key[record["key"]] == "blocked")
+    resolution_keys = {record["key"] for record in resolution}
+    for record in resolution:
+        if not _record_reference_keys(record).issubset(resolution_keys):
+            raise _error("CATALOG_INVALID", "/projection")
     projection = {"schemaVersion": 1, "audience": audience, "revision": canonical_digest({"catalog": catalog, "governance": governance}), "projectionDigest": "", "rotationEditionV2": governance["rotationEditionV2"], "selectionKeys": selection, "resolutionRecords": resolution, "blockedKeys": blocked}
     projection["projectionDigest"] = canonical_digest({key: value for key, value in projection.items() if key != "projectionDigest"})
     if len(canonical_json_bytes(projection)) > 2 * 1024 * 1024: raise _error("CATALOG_INVALID", "/projection")
@@ -227,9 +389,17 @@ def build_audience_projection(catalog: dict, governance: dict, audience: str) ->
 
 def validate_immutable_against_ref(root: Path, git_ref: str, catalog: dict) -> None:
     if re.fullmatch(r"[0-9a-f]{40}", git_ref) is None: raise _error("CATALOG_INVALID", "/compare-ref")
+    commit = subprocess.run(["git", "-C", str(root), "rev-parse", "--verify", f"{git_ref}^{{commit}}"], capture_output=True, text=True, shell=False)
+    if commit.returncode != 0:
+        raise _error("CATALOG_IMMUTABLE", "/compare-ref")
+    listed = subprocess.run(["git", "-C", str(root), "ls-tree", "-r", "--name-only", git_ref, "--", CATALOG_PATH.as_posix()], capture_output=True, text=True, shell=False)
+    if listed.returncode != 0:
+        raise _error("CATALOG_IMMUTABLE", "/compare-ref")
+    if CATALOG_PATH.as_posix() not in listed.stdout.splitlines():
+        return
     result = subprocess.run(["git", "-C", str(root), "show", f"{git_ref}:{CATALOG_PATH.as_posix()}"], capture_output=True, text=True, shell=False)
     if result.returncode != 0:
-        return
+        raise _error("CATALOG_IMMUTABLE", "/compare-ref")
     try: prior = json.loads(result.stdout)
     except json.JSONDecodeError as error: raise _error("CATALOG_IMMUTABLE", "/records") from error
     prior_records = {record.get("key"): record for record in prior.get("records", []) if isinstance(record, dict)}
