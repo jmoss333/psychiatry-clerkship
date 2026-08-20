@@ -1,5 +1,7 @@
 # Attending-Curated Rotation Editions — Design
 
+> **Structured-catalog amendment:** `2026-08-19-structured-rotation-edition-catalog-design.md` supersedes this document's free-text schema, curator metadata, local-orientation, rationale, change-note, and raw-link design before publication is enabled. The audience, learner, projector, fingerprint, and governance principles here remain authoritative where the amendment does not replace them.
+
 **Date:** 2026-08-19
 
 **Status:** Approved by the user on 2026-08-19
