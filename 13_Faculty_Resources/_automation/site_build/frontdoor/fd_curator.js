@@ -1182,7 +1182,7 @@ function fdCuratorMount(root,canonicalIndex,siteContext,catalogSnapshot,generati
   function dispatch(action){
     var data=fdCuratorActionData(action),result;
     if(data&&(data.type==='SET_STEP'||data.type==='IMPORT_SUCCEEDED'||data.type==='IMPORT_REJECTED')){transactions.cancelPreview();transactions.cancelGeneration();}
-    result=fdCuratorApplyAction(state,data,canonicalIndex,siteContext,catalogSnapshot,generationDate,transactions);state=result.state;if(result.changed){healthSequence+=1;healthResult=fdCuratorPublicationFailure('CURATOR_HEALTH_PENDING');if(data&&data.type!=='SET_STEP'&&data.type!=='PREVIEW_REVIEW_SUCCEEDED')previewEvidence={desktop:null,mobile:null};if(!data||data.type!=='GENERATION_SUCCEEDED'){shareArtifact=null;shareStatus='';}render();}return result;
+    result=fdCuratorApplyAction(state,data,canonicalIndex,siteContext,catalogSnapshot,generationDate,transactions);state=result.state;if(result.changed){healthSequence+=1;healthResult=fdCuratorPublicationFailure('CURATOR_HEALTH_PENDING');if(data&&data.type!=='SET_STEP'&&data.type!=='PREVIEW_REVIEW_SUCCEEDED')previewEvidence={desktop:null,mobile:null};if(!data||data.type!=='GENERATION_SUCCEEDED'){shareArtifact=null;shareStatus='';}render(data&&data.type==='PREVIEW_REVIEW_SUCCEEDED');}return result;
   }
   render();
   function targetAttribute(target,name){try{return target&&typeof target.getAttribute==='function'?target.getAttribute(name):null;}catch(ignore){return null;}}
