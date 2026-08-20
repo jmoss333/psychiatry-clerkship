@@ -214,6 +214,28 @@ test('student-visible edits are immutable and reset previews and every affirmati
   assert.deepEqual(navigated.affirmations, before.affirmations);
 });
 
+test('a genuine local edit invalidates pending imports while its semantic no-op does not', () => {
+  const apply = fn('fdCuratorApplyAction');
+  const transactions = fn('fdCuratorImportTransactions')();
+  let draft = fn('fdCuratorNewDraft')(index(), context());
+
+  let token = transactions.begin();
+  let applied = apply(draft, {
+    type: 'LOCAL_SET_ORIENTATION', field: 'dailySchedule', value: '',
+  }, index(), context());
+  assert.equal(applied.changed, false);
+  assert.equal(transactions.commit(token), true);
+
+  token = transactions.begin();
+  applied = apply(draft, {
+    type: 'LOCAL_SET_ORIENTATION', field: 'dailySchedule', value: 'Synthetic schedule',
+  }, index(), context());
+  assert.equal(applied.changed, true);
+  if (applied.changed) transactions.touch();
+  assert.equal(transactions.commit(token), false);
+  assert.deepEqual(applied.state.preview, { desktopReviewed: false, mobileReviewed: false });
+});
+
 test('Step 1 accepts real informational dates, including past dates, and links invalid fields', () => {
   const validate = fn('fdCuratorValidateStep');
   let draft = fn('fdCuratorNewDraft')(index(), context());

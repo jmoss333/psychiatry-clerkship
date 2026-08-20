@@ -165,6 +165,21 @@
     }
     .panel-note { color: var(--muted); }
     .preview-panel { position: sticky; top: 18px; }
+    .local-view-toggle {
+      display: none;
+      position: sticky;
+      top: 0;
+      z-index: 4;
+      gap: 8px;
+      margin-bottom: 12px;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+    .local-view-toggle button { flex: 1; }
+    .local-view-toggle button[aria-pressed="true"] { color: #fff; background: var(--evergreen); }
     .edition-form {
       display: grid;
       gap: 18px;
@@ -243,6 +258,17 @@
     .error-summary h3 { margin: 0 0 6px; font-size: 1rem; }
     .error-summary ul { margin: 0; padding-left: 22px; }
     .error-summary a { color: #6b2618; font-weight: 750; }
+    .advisory-summary {
+      margin: 14px 0;
+      padding: 14px 16px;
+      border: 1px solid #b77731;
+      border-radius: 10px;
+      background: #fff3d8;
+      color: var(--ink);
+    }
+    .advisory-summary h3 { margin: 0 0 6px; font-size: 1rem; }
+    .advisory-summary ul { margin: 0; padding-left: 22px; }
+    .advisory-summary a { color: #4b3a21; font-weight: 750; }
     [hidden] { display: none !important; }
     .curator-search {
       display: grid;
@@ -340,6 +366,24 @@
     .preview-weeks li span { display: block; color: var(--muted); font-size: .8rem; }
     .preview-library { margin-top: 12px; }
     .preview-library summary { color: var(--evergreen); font-weight: 800; cursor: pointer; }
+    .local-editor { display: grid; gap: 22px; }
+    .local-section {
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: #fbf8f1;
+    }
+    .local-section h3 { margin: 0 0 6px; color: var(--evergreen); }
+    .local-list { display: grid; gap: 12px; margin: 14px 0 0; padding: 0; list-style: none; }
+    .local-item { padding: 13px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+    .local-add { display: grid; gap: 12px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); }
+    .local-preview { display: grid; gap: 10px; margin-top: 14px; }
+    .local-preview section { padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: #fbf8f1; }
+    .local-preview h3 { margin: 0 0 5px; color: var(--evergreen); font-size: .92rem; }
+    .local-preview ul, .local-preview ol { margin: 0; padding-left: 20px; }
+    .local-preview li span { display: block; color: var(--muted); font-size: .82rem; }
+    .preview-local-label { margin: 0; color: var(--terracotta); font-size: .75rem; font-weight: 850; text-transform: uppercase; }
+    .review-actions { display: flex; flex-wrap: wrap; gap: 10px; }
     .placeholder-lines {
       display: grid;
       gap: 10px;
@@ -403,6 +447,9 @@
       .locked-facts dl { grid-template-columns: 1fr; gap: 2px; }
       .locked-facts dd { margin-bottom: 7px; }
       .preview-panel { position: static; }
+      .local-view-toggle { display: flex; }
+      [data-local-view="edit"] #curatorLocalViewToggle:not([hidden]) + .workspace .preview-panel { display: none; }
+      [data-local-view="preview"] #curatorLocalViewToggle:not([hidden]) + .workspace #curatorEditorMount { display: none; }
       .curator-resource-head, .curator-week-heading, .schedule-item { align-items: flex-start; }
       .schedule-item { display: grid; }
       .schedule-actions { justify-content: flex-start; }
@@ -415,7 +462,7 @@
   </style>
 </head>
 <body>
-  <main id="root" class="curator-shell">
+  <main id="root" class="curator-shell" data-local-view="edit">
     <header class="curator-header">
       <p class="curator-kicker">Faculty worksheet · pending review</p>
       <h1>Faculty rotation edition builder</h1>
@@ -443,15 +490,20 @@
     </nav>
 
     <p id="curatorStepStatus" class="visually-hidden" role="status" aria-live="polite">Step 1 of 5: Edition</p>
+    <div id="curatorLocalViewToggle" class="local-view-toggle" aria-label="Local details view" hidden>
+      <button type="button" class="secondary-action" data-curator-local-view="edit" aria-pressed="true">Edit</button>
+      <button type="button" class="secondary-action" data-curator-local-view="preview" aria-pressed="false">Preview</button>
+    </div>
     <div class="workspace">
       <section id="curatorEditorMount" class="panel" aria-labelledby="curatorEditorTitle">
         <h2 id="curatorEditorTitle">1. Edition</h2>
+        <div id="curatorErrorSummary" class="error-summary" role="alert" tabindex="-1" hidden>
+          <h3>Review the following fields</h3>
+          <ul id="curatorErrorList"></ul>
+        </div>
+        <div id="curatorAdvisorySummary" class="advisory-summary" hidden></div>
         <div id="curatorStepOne">
           <p class="panel-note">Name this edition and identify its local curator. Dates are informational and do not expire or disable an existing edition.</p>
-          <div id="curatorErrorSummary" class="error-summary" role="alert" tabindex="-1" hidden>
-            <h3>Review the following fields</h3>
-            <ul id="curatorErrorList"></ul>
-          </div>
           <div class="edition-form">
             <section class="locked-facts" aria-labelledby="curatorLockedFactsTitle">
               <strong id="curatorLockedFactsTitle">Audience, canonical path, and duration are locked by this site</strong>
@@ -529,6 +581,80 @@
         <div id="curatorStepThree" hidden>
           <p class="panel-note">Every schedule action is available without drag and drop. Move selected resources within a week or to another locked week.</p>
           <div id="curatorScheduleWeeks" class="curator-schedule-weeks"></div>
+        </div>
+        <div id="curatorStepFour" hidden>
+          <div class="boundary-band local-privacy-boundary" role="note">
+            <span class="boundary-mark" aria-hidden="true">!</span>
+            <div>
+              <strong>Public-link privacy boundary</strong>
+              <p>No PHI, learner information, evaluations, credentials, access codes, private contact details, doses, copied clinical protocols, or direct clinical directives.</p>
+              <p>For local protocols or access instructions, add an official HTTPS institutional link instead of copying the content here.</p>
+            </div>
+          </div>
+          <div class="local-editor edition-form">
+            <section class="local-section" aria-labelledby="curatorOrientationTitle">
+              <h3 id="curatorOrientationTitle">Structured local orientation</h3>
+              <p class="field-description">Plain text only. Each field is optional and limited to 600 characters.</p>
+              <div class="field-grid">
+                <div class="field field-wide"><label for="curatorFirstDayArrival">First-day arrival guidance</label><textarea id="curatorFirstDayArrival" maxlength="600" rows="3" aria-describedby="curatorFirstDayArrivalDescription curatorFirstDayArrivalCount" data-curator-orientation="firstDayArrival"></textarea><p id="curatorFirstDayArrivalDescription" class="field-description">Public arrival timing and meeting-place guidance without access codes or private contact details.</p><p id="curatorFirstDayArrivalCount" class="character-count">0 of 600 characters</p></div>
+                <div class="field field-wide"><label for="curatorDailySchedule">Typical daily schedule</label><textarea id="curatorDailySchedule" maxlength="600" rows="3" aria-describedby="curatorDailyScheduleDescription curatorDailyScheduleCount" data-curator-orientation="dailySchedule"></textarea><p id="curatorDailyScheduleDescription" class="field-description">A general trainee-facing outline of the day.</p><p id="curatorDailyScheduleCount" class="character-count">0 of 600 characters</p></div>
+                <div class="field field-wide"><label for="curatorRoundsWorkflow">Rounds workflow</label><textarea id="curatorRoundsWorkflow" maxlength="600" rows="3" aria-describedby="curatorRoundsWorkflowDescription curatorRoundsWorkflowCount" data-curator-orientation="roundsWorkflow"></textarea><p id="curatorRoundsWorkflowDescription" class="field-description">Describe the local workflow, not clinical directives.</p><p id="curatorRoundsWorkflowCount" class="character-count">0 of 600 characters</p></div>
+                <div class="field field-wide"><label for="curatorPresentationExpectations">Presentation expectations</label><textarea id="curatorPresentationExpectations" maxlength="600" rows="3" aria-describedby="curatorPresentationExpectationsDescription curatorPresentationExpectationsCount" data-curator-orientation="presentationExpectations"></textarea><p id="curatorPresentationExpectationsDescription" class="field-description">Local format and supervision expectations only.</p><p id="curatorPresentationExpectationsCount" class="character-count">0 of 600 characters</p></div>
+                <div class="field field-wide"><label for="curatorDocumentationExpectations">Documentation expectations</label><textarea id="curatorDocumentationExpectations" maxlength="600" rows="3" aria-describedby="curatorDocumentationExpectationsDescription curatorDocumentationExpectationsCount" data-curator-orientation="documentationExpectations"></textarea><p id="curatorDocumentationExpectationsDescription" class="field-description">Workflow expectations without copied protocols or patient details.</p><p id="curatorDocumentationExpectationsCount" class="character-count">0 of 600 characters</p></div>
+                <div class="field field-wide"><label for="curatorAttendanceExpectations">Attendance expectations</label><textarea id="curatorAttendanceExpectations" maxlength="600" rows="3" aria-describedby="curatorAttendanceExpectationsDescription curatorAttendanceExpectationsCount" data-curator-orientation="attendanceExpectations"></textarea><p id="curatorAttendanceExpectationsDescription" class="field-description">Public expectations for participation and absences.</p><p id="curatorAttendanceExpectationsCount" class="character-count">0 of 600 characters</p></div>
+                <div class="field field-wide"><label for="curatorFeedbackProcess">Feedback process</label><textarea id="curatorFeedbackProcess" maxlength="600" rows="3" aria-describedby="curatorFeedbackProcessDescription curatorFeedbackProcessCount" data-curator-orientation="feedbackProcess"></textarea><p id="curatorFeedbackProcessDescription" class="field-description">How and when trainees can seek feedback; do not enter evaluations.</p><p id="curatorFeedbackProcessCount" class="character-count">0 of 600 characters</p></div>
+                <div class="field field-wide"><label for="curatorAccessPreparation">Approved institutional access or training</label><textarea id="curatorAccessPreparation" maxlength="600" rows="3" aria-describedby="curatorAccessPreparationDescription curatorAccessPreparationCount" data-curator-orientation="accessPreparation"></textarea><p id="curatorAccessPreparationDescription" class="field-description">Explain how to obtain approved access or training. Never enter credentials, codes, or private instructions; link the official HTTPS source below.</p><p id="curatorAccessPreparationCount" class="character-count">0 of 600 characters</p></div>
+              </div>
+            </section>
+
+            <section class="local-section" aria-labelledby="curatorContactsTitle">
+              <h3 id="curatorContactsTitle">Role-based directory contacts</h3>
+              <p class="field-description">Add a public role label and official HTTPS institutional directory link only—never a direct email, phone, pager, or private contact value.</p>
+              <ul id="curatorContactsList" class="local-list"></ul>
+              <div class="local-add field-grid">
+                <div class="field"><label for="curatorNewContactRole">Role label</label><input id="curatorNewContactRole" maxlength="100" aria-describedby="curatorNewContactRoleDescription curatorNewContactRoleCount"><p id="curatorNewContactRoleDescription" class="field-description">For example, clerkship coordinator.</p><p id="curatorNewContactRoleCount" class="character-count">0 of 100 characters</p></div>
+                <div class="field"><label for="curatorNewContactDirectoryUrl">Official HTTPS directory URL</label><input id="curatorNewContactDirectoryUrl" type="url" maxlength="2048" inputmode="url" aria-describedby="curatorNewContactDirectoryUrlDescription curatorNewContactDirectoryUrlCount"><p id="curatorNewContactDirectoryUrlDescription" class="field-description">Must begin with https:// and contain no embedded username or password.</p><p id="curatorNewContactDirectoryUrlCount" class="character-count">0 of 2048 characters</p></div>
+                <button type="button" id="curatorAddContact" class="secondary-action">Add directory contact</button>
+              </div>
+            </section>
+
+            <section class="local-section" aria-labelledby="curatorChecklistTitle">
+              <h3 id="curatorChecklistTitle">First-day checklist</h3>
+              <p id="curatorChecklistCap" class="field-description">0 of 24 items</p>
+              <ul id="curatorChecklistList" class="local-list"></ul>
+              <div class="local-add field-grid">
+                <div class="field"><label for="curatorNewChecklistLabel">Checklist label</label><input id="curatorNewChecklistLabel" maxlength="100" aria-describedby="curatorNewChecklistLabelDescription curatorNewChecklistLabelCount"><p id="curatorNewChecklistLabelDescription" class="field-description">One concrete, non-clinical first-day action.</p><p id="curatorNewChecklistLabelCount" class="character-count">0 of 100 characters</p></div>
+                <div class="field"><label for="curatorNewChecklistPriority">Local priority</label><select id="curatorNewChecklistPriority"><option value="required">required</option><option value="recommended" selected>recommended</option><option value="optional">optional</option></select></div>
+                <button type="button" id="curatorAddChecklist" class="secondary-action">Add checklist item</button>
+              </div>
+            </section>
+
+            <section class="local-section" aria-labelledby="curatorResourcesTitle">
+              <h3 id="curatorResourcesTitle">Local external resources</h3>
+              <p class="field-description">Every item is labeled “Attending-provided local resource.” Link official local protocols rather than copying them.</p>
+              <p id="curatorResourcesCap" class="field-description">0 of 12 items</p>
+              <ul id="curatorResourcesList" class="local-list"></ul>
+              <div class="local-add field-grid">
+                <div class="field"><label for="curatorNewResourceTitle">Resource title</label><input id="curatorNewResourceTitle" maxlength="100" aria-describedby="curatorNewResourceTitleDescription curatorNewResourceTitleCount"><p id="curatorNewResourceTitleDescription" class="field-description">A concise public title.</p><p id="curatorNewResourceTitleCount" class="character-count">0 of 100 characters</p></div>
+                <div class="field"><label for="curatorNewResourceUrl">Official HTTPS URL</label><input id="curatorNewResourceUrl" type="url" maxlength="2048" inputmode="url" aria-describedby="curatorNewResourceUrlDescription curatorNewResourceUrlCount"><p id="curatorNewResourceUrlDescription" class="field-description">The preview displays only the destination domain.</p><p id="curatorNewResourceUrlCount" class="character-count">0 of 2048 characters</p></div>
+                <div class="field"><label for="curatorNewResourcePriority">Local priority</label><select id="curatorNewResourcePriority"><option value="required">required</option><option value="recommended" selected>recommended</option><option value="optional">optional</option></select></div>
+                <div class="field"><label for="curatorNewResourceWeek">Week</label><select id="curatorNewResourceWeek"></select></div>
+                <div class="field field-wide"><label for="curatorNewResourceRationale">Why I selected this</label><textarea id="curatorNewResourceRationale" maxlength="280" rows="2" aria-describedby="curatorNewResourceRationaleDescription curatorNewResourceRationaleCount"></textarea><p id="curatorNewResourceRationaleDescription" class="field-description">Optional plain-text rationale.</p><p id="curatorNewResourceRationaleCount" class="character-count">0 of 280 characters</p></div>
+                <button type="button" id="curatorAddResource" class="secondary-action">Add local resource</button>
+              </div>
+            </section>
+
+            <section class="local-section" aria-labelledby="curatorReviewTitle">
+              <h3 id="curatorReviewTitle">Deliberate student preview review</h3>
+              <p class="field-description">Opening this step or resizing the browser does not count. Each action below validates a fresh envelope and projects it through the same student projector.</p>
+              <p id="curatorPreviewReviewStatus" class="field-description" role="status" aria-live="polite">Desktop preview not yet reviewed · Mobile preview not yet reviewed</p>
+              <div class="review-actions">
+                <button type="button" id="curatorReviewDesktop" class="secondary-action">Review desktop preview</button>
+                <button type="button" id="curatorReviewMobile" class="secondary-action">Review mobile preview</button>
+                <button type="button" id="curatorLocalContinue" class="primary-action">Continue to preview and share</button>
+              </div>
+            </section>
+          </div>
         </div>
         <div id="curatorFutureStep" hidden>
           <p class="panel-note">This step remains unavailable until its focused implementation and safety checks are complete.</p>

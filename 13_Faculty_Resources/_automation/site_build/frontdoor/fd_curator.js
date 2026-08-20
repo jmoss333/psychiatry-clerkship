@@ -8,6 +8,12 @@ var FD_CURATOR_IMPORT_MAX_BYTES=65536;
 var FD_CURATOR_MAX_ARRAY_ITEMS=12288;
 var FD_CURATOR_CARD_FIELDS=['title','locationName','locationCode','curatorName','curatorRole','rotationStart','rotationEnd','lastVerified'];
 var FD_CURATOR_AFFIRMATION_FIELDS=['publicSafe','officialLinks','previewsReviewed','forwardable'];
+var FD_CURATOR_ORIENTATION_FIELDS=['firstDayArrival','dailySchedule','roundsWorkflow','presentationExpectations','documentationExpectations','attendanceExpectations','feedbackProcess','accessPreparation'];
+var FD_CURATOR_LOCAL_LABELS={
+  firstDayArrival:'First-day arrival',dailySchedule:'Typical daily schedule',roundsWorkflow:'Rounds workflow',
+  presentationExpectations:'Presentation expectations',documentationExpectations:'Documentation expectations',
+  attendanceExpectations:'Attendance expectations',feedbackProcess:'Feedback process',accessPreparation:'Access preparation'
+};
 
 function fdCuratorInitialState(index,siteContext){
   var indexData=fdCuratorReadOwnDataFields(index,['path']);
@@ -236,6 +242,16 @@ function fdCuratorActionShape(action){
   else if(type==='PATH_SET_PRIORITY') fields=['type','instanceId','priority'];
   else if(type==='PATH_SET_RATIONALE') fields=['type','instanceId','value'];
   else if(type==='PATH_MOVE_WEEK') fields=['type','instanceId','week'];
+  else if(type==='LOCAL_SET_ORIENTATION') fields=['type','field','value'];
+  else if(type==='LOCAL_CONTACT_ADD') fields=['type','role','directoryUrl'];
+  else if(type==='LOCAL_CONTACT_REMOVE') fields=['type','index'];
+  else if(type==='LOCAL_CONTACT_UPDATE') fields=['type','index','field','value'];
+  else if(type==='LOCAL_CHECKLIST_ADD') fields=['type','label','priority'];
+  else if(type==='LOCAL_CHECKLIST_REMOVE') fields=['type','id'];
+  else if(type==='LOCAL_CHECKLIST_UPDATE') fields=['type','id','field','value'];
+  else if(type==='LOCAL_RESOURCE_ADD') fields=['type','title','url','priority','week','rationale'];
+  else if(type==='LOCAL_RESOURCE_REMOVE') fields=['type','id'];
+  else if(type==='LOCAL_RESOURCE_UPDATE') fields=['type','id','field','value'];
   else if(type==='GENERATION_SUCCEEDED') fields=['type','result'];
   else fields=['type'];
   return fdCuratorReadDataObject(action,fields);
@@ -259,6 +275,81 @@ function fdCuratorFullConfig(draftConfig,site,editionNumber,revision){
   };
 }
 
+function fdCuratorPlainTextValid(value,max,allowEmpty){
+  if(typeof value!=='string'||(!allowEmpty&&value.trim()==='')||fdEditionTextLength(value)>max) return false;
+  try{ value.normalize('NFC'); }
+  catch(ignoreUnicode){ return false; }
+  return !/[\u0000-\u0009\u000b-\u001f\u007f-\u009f]/.test(value);
+}
+
+function fdCuratorHttpsUrlValid(value){
+  var errors=[],warnings=[];
+  if(typeof value!=='string') return false;
+  fdEditionCheckUrl(value,'/config/localOrientation/url',errors,warnings);
+  return errors.length===0;
+}
+
+function fdCuratorLocalIdentifierValid(value){
+  var errors=[],warnings=[];
+  if(typeof value!=='string'||!value||value.length>160||!/^[\x21-\x7e]+$/.test(value)) return false;
+  fdEditionScreenText(value,'/config/localOrientation/id',errors,warnings);
+  return errors.length===0;
+}
+
+function fdCuratorLocalIdNumber(id,prefix){
+  var suffix;
+  if(typeof id!=='string'||id.indexOf(prefix)!==0) return 0;
+  suffix=id.slice(prefix.length);
+  return /^[1-9][0-9]*$/.test(suffix)?Number(suffix):0;
+}
+
+function fdCuratorNextLocalId(items,prefix){
+  var used=Object.create(null),i,n=1,value;
+  for(i=0;i<items.length;i++){
+    value=fdCuratorLocalIdNumber(items[i].id,prefix);
+    if(value) used[value]=true;
+  }
+  while(used[n]) n++;
+  return prefix+n;
+}
+
+function fdCuratorFindLocalItem(items,id){
+  var i;
+  if(typeof id!=='string') return -1;
+  for(i=0;i<items.length;i++) if(items[i].id===id) return i;
+  return -1;
+}
+
+function fdCuratorLocalStateValid(orientation,inspected,pathItems){
+  var seen=Object.create(null),i,item;
+  if(!orientation||!inspected||!inspected.ok) return false;
+  for(i=0;i<FD_CURATOR_ORIENTATION_FIELDS.length;i++)
+    if(!fdCuratorPlainTextValid(orientation[FD_CURATOR_ORIENTATION_FIELDS[i]],FD_EDITION_RULES.maxOrientation,true)) return false;
+  if(!Array.isArray(orientation.contacts)||!Array.isArray(orientation.checklist)||!Array.isArray(orientation.resources)||
+     orientation.contacts.length>FD_CURATOR_MAX_ARRAY_ITEMS||orientation.checklist.length>FD_EDITION_RULES.maxChecklist||
+     orientation.resources.length>FD_EDITION_RULES.maxResources) return false;
+  for(i=0;i<pathItems.length;i++) seen[pathItems[i].instanceId]=true;
+  for(i=0;i<orientation.contacts.length;i++){
+    item=orientation.contacts[i];
+    if(!item||!fdCuratorPlainTextValid(item.role,FD_EDITION_RULES.maxTitle,false)||!fdCuratorHttpsUrlValid(item.directoryUrl)) return false;
+  }
+  for(i=0;i<orientation.checklist.length;i++){
+    item=orientation.checklist[i];
+    if(!item||!fdCuratorLocalIdentifierValid(item.id)||seen[item.id]||!fdCuratorPlainTextValid(item.label,FD_EDITION_RULES.maxTitle,false)||
+       FD_EDITION_RULES.priorities.indexOf(item.priority)===-1) return false;
+    seen[item.id]=true;
+  }
+  for(i=0;i<orientation.resources.length;i++){
+    item=orientation.resources[i];
+    if(!item||!fdCuratorLocalIdentifierValid(item.id)||seen[item.id]||!fdCuratorPlainTextValid(item.title,FD_EDITION_RULES.maxTitle,false)||
+       !fdCuratorHttpsUrlValid(item.url)||FD_EDITION_RULES.priorities.indexOf(item.priority)===-1||
+       typeof item.week!=='number'||Math.floor(item.week)!==item.week||item.week<1||item.week>inspected.weekCount||
+       !fdCuratorPlainTextValid(item.rationale,FD_EDITION_RULES.maxRationale,true)) return false;
+    seen[item.id]=true;
+  }
+  return true;
+}
+
 function fdCuratorValidateDraft(value,index,siteContext){
   var top=fdCuratorReadDataObject(value,['schemaVersion','step','site','config','publication','preview','affirmations']);
   var site,config,publication,preview,affirmations,normalized,lastGenerated=null,current=fdCuratorIndexSnapshot(index,siteContext);
@@ -279,7 +370,8 @@ function fdCuratorValidateDraft(value,index,siteContext){
   for(affirmationIndex=0;affirmationIndex<FD_CURATOR_AFFIRMATION_FIELDS.length;affirmationIndex++)
     if(typeof affirmations[FD_CURATOR_AFFIRMATION_FIELDS[affirmationIndex]]!=='boolean') return {ok:false,draft:null};
   normalized=fdEditionNormalizeConfig(fdCuratorFullConfig(config,site,1,site.coreRevision));
-  if(!normalized.ok||!fdCuratorPathStateValid(normalized.value.pathItems,current)) return {ok:false,draft:null};
+  if(!normalized.ok||!fdCuratorPathStateValid(normalized.value.pathItems,current)||
+     !fdCuratorLocalStateValid(normalized.value.localOrientation,current,normalized.value.pathItems)) return {ok:false,draft:null};
   if(publication.lastGenerated!==null){
     lastGenerated=fdCuratorReadDataObject(publication.lastGenerated,['digest','fingerprint']);
     if(!lastGenerated||typeof lastGenerated.digest!=='string'||typeof lastGenerated.fingerprint!=='string') return {ok:false,draft:null};
@@ -407,6 +499,10 @@ function fdCuratorPathChanged(next,weekCount){
   return fdCuratorResetReviews(next);
 }
 
+function fdCuratorLocalChanged(next){
+  return fdCuratorResetReviews(next);
+}
+
 function fdCuratorCanonicalWithoutEdition(config){
   var complete,normalized,value;
   if(!config||typeof config!=='object') return '';
@@ -487,6 +583,83 @@ function fdCuratorReduce(draft,action,index,siteContext){
   weekCount=inspected.weekCount;
   allowed=inspected.allowed;
   items=next.config.pathItems;
+  if(action.type==='LOCAL_SET_ORIENTATION'){
+    if(FD_CURATOR_ORIENTATION_FIELDS.indexOf(action.field)===-1||
+       !fdCuratorPlainTextValid(action.value,FD_EDITION_RULES.maxOrientation,true)||
+       next.config.localOrientation[action.field]===action.value) return next;
+    next.config.localOrientation[action.field]=action.value; return fdCuratorLocalChanged(next);
+  }
+  if(action.type==='LOCAL_CONTACT_ADD'){
+    if(next.config.localOrientation.contacts.length>=FD_CURATOR_MAX_ARRAY_ITEMS||
+       !fdCuratorPlainTextValid(action.role,FD_EDITION_RULES.maxTitle,false)||!fdCuratorHttpsUrlValid(action.directoryUrl)) return next;
+    next.config.localOrientation.contacts.push({role:action.role,directoryUrl:action.directoryUrl});
+    return fdCuratorLocalChanged(next);
+  }
+  if(action.type==='LOCAL_CONTACT_REMOVE'){
+    if(typeof action.index!=='number'||Math.floor(action.index)!==action.index||action.index<0||
+       action.index>=next.config.localOrientation.contacts.length) return next;
+    next.config.localOrientation.contacts.splice(action.index,1); return fdCuratorLocalChanged(next);
+  }
+  if(action.type==='LOCAL_CONTACT_UPDATE'){
+    if(typeof action.index!=='number'||Math.floor(action.index)!==action.index||action.index<0||
+       action.index>=next.config.localOrientation.contacts.length||
+       (action.field!=='role'&&action.field!=='directoryUrl')) return next;
+    if(action.field==='role'&&!fdCuratorPlainTextValid(action.value,FD_EDITION_RULES.maxTitle,false)) return next;
+    if(action.field==='directoryUrl'&&!fdCuratorHttpsUrlValid(action.value)) return next;
+    if(next.config.localOrientation.contacts[action.index][action.field]===action.value) return next;
+    next.config.localOrientation.contacts[action.index][action.field]=action.value; return fdCuratorLocalChanged(next);
+  }
+  if(action.type==='LOCAL_CHECKLIST_ADD'){
+    if(next.config.localOrientation.checklist.length>=FD_EDITION_RULES.maxChecklist||
+       !fdCuratorPlainTextValid(action.label,FD_EDITION_RULES.maxTitle,false)||
+       FD_EDITION_RULES.priorities.indexOf(action.priority)===-1) return next;
+    next.config.localOrientation.checklist.push({
+      id:fdCuratorNextLocalId(next.config.localOrientation.checklist,'local:first-day:'),
+      label:action.label,priority:action.priority
+    });
+    return fdCuratorLocalChanged(next);
+  }
+  if(action.type==='LOCAL_CHECKLIST_REMOVE'){
+    itemIndex=fdCuratorFindLocalItem(next.config.localOrientation.checklist,action.id);
+    if(itemIndex<0) return next;
+    next.config.localOrientation.checklist.splice(itemIndex,1); return fdCuratorLocalChanged(next);
+  }
+  if(action.type==='LOCAL_CHECKLIST_UPDATE'){
+    itemIndex=fdCuratorFindLocalItem(next.config.localOrientation.checklist,action.id);
+    if(itemIndex<0||(action.field!=='label'&&action.field!=='priority')) return next;
+    if(action.field==='label'&&!fdCuratorPlainTextValid(action.value,FD_EDITION_RULES.maxTitle,false)) return next;
+    if(action.field==='priority'&&FD_EDITION_RULES.priorities.indexOf(action.value)===-1) return next;
+    if(next.config.localOrientation.checklist[itemIndex][action.field]===action.value) return next;
+    next.config.localOrientation.checklist[itemIndex][action.field]=action.value; return fdCuratorLocalChanged(next);
+  }
+  if(action.type==='LOCAL_RESOURCE_ADD'){
+    if(next.config.localOrientation.resources.length>=FD_EDITION_RULES.maxResources||
+       !fdCuratorPlainTextValid(action.title,FD_EDITION_RULES.maxTitle,false)||!fdCuratorHttpsUrlValid(action.url)||
+       FD_EDITION_RULES.priorities.indexOf(action.priority)===-1||typeof action.week!=='number'||
+       Math.floor(action.week)!==action.week||action.week<1||action.week>weekCount||
+       !fdCuratorPlainTextValid(action.rationale,FD_EDITION_RULES.maxRationale,true)) return next;
+    next.config.localOrientation.resources.push({
+      id:fdCuratorNextLocalId(next.config.localOrientation.resources,'local:resource:'),
+      title:action.title,url:action.url,priority:action.priority,week:action.week,rationale:action.rationale
+    });
+    return fdCuratorLocalChanged(next);
+  }
+  if(action.type==='LOCAL_RESOURCE_REMOVE'){
+    itemIndex=fdCuratorFindLocalItem(next.config.localOrientation.resources,action.id);
+    if(itemIndex<0) return next;
+    next.config.localOrientation.resources.splice(itemIndex,1); return fdCuratorLocalChanged(next);
+  }
+  if(action.type==='LOCAL_RESOURCE_UPDATE'){
+    itemIndex=fdCuratorFindLocalItem(next.config.localOrientation.resources,action.id);
+    if(itemIndex<0||['title','url','priority','week','rationale'].indexOf(action.field)===-1) return next;
+    if(action.field==='title'&&!fdCuratorPlainTextValid(action.value,FD_EDITION_RULES.maxTitle,false)) return next;
+    if(action.field==='url'&&!fdCuratorHttpsUrlValid(action.value)) return next;
+    if(action.field==='priority'&&FD_EDITION_RULES.priorities.indexOf(action.value)===-1) return next;
+    if(action.field==='week'&&(typeof action.value!=='number'||Math.floor(action.value)!==action.value||action.value<1||action.value>weekCount)) return next;
+    if(action.field==='rationale'&&!fdCuratorPlainTextValid(action.value,FD_EDITION_RULES.maxRationale,true)) return next;
+    if(next.config.localOrientation.resources[itemIndex][action.field]===action.value) return next;
+    next.config.localOrientation.resources[itemIndex][action.field]=action.value; return fdCuratorLocalChanged(next);
+  }
   if(action.type==='PATH_TOGGLE'){
     if(typeof action.ref!=='string'||!allowed[action.ref]) return next;
     for(i=items.length-1;i>=0;i--) if(items[i].ref===action.ref){ items.splice(i,1); changed=true; }
@@ -588,10 +761,69 @@ function fdCuratorStepError(fieldId,message){
   return {code:'CURATOR_FIELD',fieldId:fieldId,href:'#'+fieldId,message:message,blocking:true};
 }
 
+function fdCuratorLocalFindingLocation(path){
+  var match,field,index;
+  match=/^\/config\/localOrientation\/([A-Za-z]+)$/.exec(path);
+  if(match&&FD_CURATOR_ORIENTATION_FIELDS.indexOf(match[1])!==-1){
+    field=match[1];
+    return {fieldId:'curator'+field.charAt(0).toUpperCase()+field.slice(1),category:'Orientation',field:FD_CURATOR_LOCAL_LABELS[field]};
+  }
+  match=/^\/config\/localOrientation\/(contacts|checklist|resources)\/(\d+)\/(role|directoryUrl|label|priority|title|url|week|rationale|id)$/.exec(path);
+  if(match){
+    index=Number(match[2]); field=match[3];
+    if(match[1]==='contacts') return {
+      fieldId:'curatorContact'+index+(field==='directoryUrl'?'DirectoryUrl':'Role'),category:'Directory contact',
+      field:field==='directoryUrl'?'Directory URL':'Role label'
+    };
+    if(match[1]==='checklist') return {
+      fieldId:'curatorChecklist'+index+(field==='priority'?'Priority':'Label'),category:'First-day checklist',
+      field:field==='priority'?'Priority':'Label'
+    };
+    return {
+      fieldId:'curatorResource'+index+({title:'Title',url:'Url',priority:'Priority',week:'Week',rationale:'Rationale',id:'Title'}[field]||'Title'),
+      category:'Local resource',field:{title:'Title',url:'URL',priority:'Priority',week:'Week',rationale:'Selection rationale',id:'Identifier'}[field]
+    };
+  }
+  if(path==='/config/localOrientation/contacts') return {fieldId:'curatorNewContactRole',category:'Directory contacts',field:'Contact list'};
+  if(path==='/config/localOrientation/checklist') return {fieldId:'curatorNewChecklistLabel',category:'First-day checklist',field:'Checklist items'};
+  if(path==='/config/localOrientation/resources') return {fieldId:'curatorNewResourceTitle',category:'Local resources',field:'Resource list'};
+  if(path==='/config') return {fieldId:'curatorEditorTitle',category:'Local details',field:'Total edition size'};
+  return null;
+}
+
+function fdCuratorLocalFindings(result,draft){
+  var out={errors:[],warnings:[]},groups=['errors','warnings'],g,i,source,location,finding,target;
+  result=result||{};
+  for(g=0;g<groups.length;g++){
+    source=Array.isArray(result[groups[g]])?result[groups[g]]:[];
+    for(i=0;i<source.length;i++){
+      finding=source[i]; location=finding&&typeof finding.path==='string'?fdCuratorLocalFindingLocation(finding.path):null;
+      if(!location) continue;
+      target={
+        code:finding.code,fieldId:location.fieldId,href:'#'+location.fieldId,
+        message:location.category+' — '+location.field+': '+finding.message,
+        blocking:finding.blocking!==false
+      };
+      out[groups[g]].push(target);
+    }
+  }
+  return out;
+}
+
+function fdCuratorLocalPolicy(draft,index,siteContext){
+  var shaped=fdCuratorValidateDraft(draft,index,siteContext),candidate,result;
+  if(!shaped.ok) return {ok:false,errors:[fdCuratorStepError('curatorEditorTitle','The draft structure is invalid.')],warnings:[]};
+  candidate=fdCuratorFullConfig(shaped.draft.config,shaped.draft.site,1,shaped.draft.site.coreRevision);
+  result=fdEditionValidateConfig(candidate,index,siteContext);
+  result=fdCuratorLocalFindings(result,shaped.draft);
+  return {ok:result.errors.length===0,errors:result.errors,warnings:result.warnings};
+}
+
 function fdCuratorValidateStep(draft,step,index,siteContext){
   var shaped=fdCuratorValidateDraft(draft,index,siteContext),errors=[],card,labels,i,key,value,fieldId;
   if(!shaped.ok) return {ok:false,errors:[fdCuratorStepError('curatorEditorTitle','The draft structure is invalid.')]};
-  if(step!==1) return {ok:true,errors:[]};
+  if(step===4) return fdCuratorLocalPolicy(shaped.draft,index,siteContext);
+  if(step!==1) return {ok:true,errors:[],warnings:[]};
   card=shaped.draft.config.card;
   labels={title:'Edition title',locationName:'Training-location display name',locationCode:'Short location code',curatorName:'Curator display name',curatorRole:'Curator professional role'};
   for(i=0;i<5;i++){
@@ -606,7 +838,7 @@ function fdCuratorValidateStep(draft,step,index,siteContext){
   if(!fdCuratorValidDate(card.lastVerified)) errors.push(fdCuratorStepError('curatorLastVerified','Enter a real informational last-verified date.'));
   if(fdCuratorValidDate(card.rotationStart)&&fdCuratorValidDate(card.rotationEnd)&&card.rotationEnd<card.rotationStart)
     errors.push(fdCuratorStepError('curatorRotationEnd','Rotation end must not be before rotation start.'));
-  return {ok:errors.length===0,errors:errors};
+  return {ok:errors.length===0,errors:errors,warnings:[]};
 }
 
 function fdCuratorValidatedSnapshot(result){
@@ -664,8 +896,10 @@ function fdCuratorDraftStorage(storage){
   return {
     key:FD_CURATOR_DRAFT_KEY,
     save:function(draft,index,siteContext){
-      var shaped=fdCuratorValidateDraft(draft,index,siteContext);
+      var shaped=fdCuratorValidateDraft(draft,index,siteContext),localPolicy;
       if(!shaped.ok||!storage||typeof storage.setItem!=='function') return false;
+      localPolicy=fdCuratorLocalPolicy(shaped.draft,index,siteContext);
+      if(!localPolicy.ok) return false;
       try{ storage.setItem(FD_CURATOR_DRAFT_KEY,fdEditionCanonicalJson(shaped.draft)); return true; }
       catch(ignoreSave){ return false; }
     },
@@ -798,6 +1032,97 @@ function fdCuratorProjectDraft(draft,index,siteContext,subtle){
   },function(){ return {ok:false,errors:[{code:'CURATOR_PREVIEW',path:'/preview',message:'The preview could not be generated.',blocking:true}]}; });
 }
 
+function fdCuratorExternalDomain(value){
+  var parsed;
+  if(typeof value!=='string') return '';
+  try{ parsed=new URL(value); }
+  catch(ignoreUrl){ return ''; }
+  if(parsed.protocol!=='https:'||parsed.username!==''||parsed.password!==''||!fdEditionHostnameValid(parsed.hostname)) return '';
+  return parsed.hostname;
+}
+
+function fdCuratorLocalPreviewMarkup(projected){
+  var edition=projected&&projected.ok===true&&projected.index?projected.index.edition:null;
+  var local=edition&&edition.localOrientation,out='',i,item,domain,field,value;
+  if(!local) return '<p class="panel-note">Complete the local fields, then choose a deliberate preview review.</p>';
+  out='<section class="local-preview" aria-label="Attending-provided local orientation"><p class="preview-label">Attending-provided local orientation</p>';
+  for(i=0;i<FD_CURATOR_ORIENTATION_FIELDS.length;i++){
+    field=FD_CURATOR_ORIENTATION_FIELDS[i]; value=local[field];
+    if(value) out+='<section><h3>'+fdEsc(FD_CURATOR_LOCAL_LABELS[field])+'</h3><p>'+fdEsc(value)+'</p></section>';
+  }
+  if(local.contacts.length){
+    out+='<section><h3>Role-based directory contacts</h3><ul>';
+    for(i=0;i<local.contacts.length;i++){
+      item=local.contacts[i]; domain=fdCuratorExternalDomain(item.directoryUrl);
+      out+='<li><strong>'+fdEsc(item.role)+'</strong><span>Official directory · '+fdEsc(domain||'Invalid domain')+'</span></li>';
+    }
+    out+='</ul></section>';
+  }
+  if(local.checklist.length){
+    out+='<section><h3>First-day checklist</h3><ol>';
+    for(i=0;i<local.checklist.length;i++){
+      item=local.checklist[i]; out+='<li><strong>'+fdEsc(item.label)+'</strong><span>'+fdEsc(item.priority)+'</span></li>';
+    }
+    out+='</ol></section>';
+  }
+  if(local.resources.length){
+    out+='<section><h3>Local resources</h3><ul>';
+    for(i=0;i<local.resources.length;i++){
+      item=local.resources[i]; domain=fdCuratorExternalDomain(item.url);
+      out+='<li><p class="preview-local-label">Attending-provided local resource</p><strong>'+fdEsc(item.title)+'</strong>'+
+        '<span>'+fdEsc(item.priority)+' · Week '+item.week+' · '+fdEsc(domain||'Invalid domain')+'</span>'+
+        (item.rationale?'<p>'+fdEsc(item.rationale)+'</p>':'')+'</li>';
+    }
+    out+='</ul></section>';
+  }
+  return out+'</section>';
+}
+
+function fdCuratorContactsMarkup(draft){
+  var items=draft.config.localOrientation.contacts,out='',i,item;
+  for(i=0;i<items.length;i++){
+    item=items[i]; out+='<li class="local-item"><div class="field-grid"><div class="field"><label for="curatorContact'+i+'Role">Role label</label>'+
+      '<input id="curatorContact'+i+'Role" maxlength="100" value="'+fdEsc(item.role)+'" data-curator-contact-index="'+i+'" data-curator-contact-field="role" aria-describedby="curatorContact'+i+'RoleCount"><p id="curatorContact'+i+'RoleCount" class="character-count">'+fdEditionTextLength(item.role)+' of 100 characters</p></div>'+
+      '<div class="field"><label for="curatorContact'+i+'DirectoryUrl">Official HTTPS directory URL</label>'+
+      '<input id="curatorContact'+i+'DirectoryUrl" maxlength="2048" type="url" value="'+fdEsc(item.directoryUrl)+'" data-curator-contact-index="'+i+'" data-curator-contact-field="directoryUrl" aria-describedby="curatorContact'+i+'DirectoryUrlCount"><p id="curatorContact'+i+'DirectoryUrlCount" class="character-count">'+fdEditionTextLength(item.directoryUrl)+' of 2048 characters</p>'+
+      '<p class="field-description">Visible domain: '+fdEsc(fdCuratorExternalDomain(item.directoryUrl))+'</p></div></div>'+
+      '<button type="button" class="secondary-action remove-action" data-curator-contact-remove="'+i+'">Remove contact</button></li>';
+  }
+  return out||'<li class="empty-state">No role-based directory contacts added.</li>';
+}
+
+function fdCuratorChecklistMarkup(draft){
+  var items=draft.config.localOrientation.checklist,out='',i,item;
+  for(i=0;i<items.length;i++){
+    item=items[i]; out+='<li class="local-item"><div class="field-grid"><div class="field"><label for="curatorChecklist'+i+'Label">Checklist label</label>'+
+      '<input id="curatorChecklist'+i+'Label" maxlength="100" value="'+fdEsc(item.label)+'" data-curator-checklist-id="'+fdEsc(item.id)+'" data-curator-checklist-field="label" aria-describedby="curatorChecklist'+i+'LabelCount">'+
+      '<p id="curatorChecklist'+i+'LabelCount" class="character-count">'+fdEditionTextLength(item.label)+' of 100 characters</p></div>'+
+      '<div class="field"><label for="curatorChecklist'+i+'Priority">Local priority</label><select id="curatorChecklist'+i+'Priority" data-curator-checklist-id="'+fdEsc(item.id)+'" data-curator-checklist-field="priority">'+fdCuratorPriorityOptions(item.priority)+'</select></div></div>'+
+      '<button type="button" class="secondary-action remove-action" data-curator-checklist-remove="'+fdEsc(item.id)+'">Remove checklist item</button></li>';
+  }
+  return out||'<li class="empty-state">No first-day checklist items added.</li>';
+}
+
+function fdCuratorResourceWeekOptions(selected,weekCount){
+  var out='',i;
+  for(i=1;i<=weekCount;i++) out+='<option value="'+i+'"'+(i===selected?' selected':'')+'>Week '+i+'</option>';
+  return out;
+}
+
+function fdCuratorResourcesMarkup(draft,index){
+  var items=draft.config.localOrientation.resources,out='',i,item,weekCount=fdCuratorWeekCount(index,draft.site);
+  for(i=0;i<items.length;i++){
+    item=items[i]; out+='<li class="local-item"><div class="field-grid">'+
+      '<div class="field"><label for="curatorResource'+i+'Title">Resource title</label><input id="curatorResource'+i+'Title" maxlength="100" value="'+fdEsc(item.title)+'" data-curator-resource-id="'+fdEsc(item.id)+'" data-curator-resource-field="title" aria-describedby="curatorResource'+i+'TitleCount"><p id="curatorResource'+i+'TitleCount" class="character-count">'+fdEditionTextLength(item.title)+' of 100 characters</p></div>'+
+      '<div class="field"><label for="curatorResource'+i+'Url">Official HTTPS URL</label><input id="curatorResource'+i+'Url" type="url" maxlength="2048" value="'+fdEsc(item.url)+'" data-curator-resource-id="'+fdEsc(item.id)+'" data-curator-resource-field="url" aria-describedby="curatorResource'+i+'UrlCount"><p id="curatorResource'+i+'UrlCount" class="character-count">'+fdEditionTextLength(item.url)+' of 2048 characters</p><p class="field-description">Visible domain: '+fdEsc(fdCuratorExternalDomain(item.url))+'</p></div>'+
+      '<div class="field"><label for="curatorResource'+i+'Priority">Local priority</label><select id="curatorResource'+i+'Priority" data-curator-resource-id="'+fdEsc(item.id)+'" data-curator-resource-field="priority">'+fdCuratorPriorityOptions(item.priority)+'</select></div>'+
+      '<div class="field"><label for="curatorResource'+i+'Week">Week</label><select id="curatorResource'+i+'Week" data-curator-resource-id="'+fdEsc(item.id)+'" data-curator-resource-field="week">'+fdCuratorResourceWeekOptions(item.week,weekCount)+'</select></div>'+
+      '<div class="field field-wide"><label for="curatorResource'+i+'Rationale">Why I selected this</label><textarea id="curatorResource'+i+'Rationale" maxlength="280" data-curator-resource-id="'+fdEsc(item.id)+'" data-curator-resource-field="rationale" aria-describedby="curatorResource'+i+'RationaleCount">'+fdEsc(item.rationale)+'</textarea><p id="curatorResource'+i+'RationaleCount" class="character-count">'+fdEditionTextLength(item.rationale)+' of 280 characters</p></div></div>'+
+      '<button type="button" class="secondary-action remove-action" data-curator-resource-remove="'+fdEsc(item.id)+'">Remove local resource</button></li>';
+  }
+  return out||'<li class="empty-state">No local external resources added.</li>';
+}
+
 function fdCuratorPreviewMarkup(projected){
   var index=projected&&projected.index,selected='',library='',i,j,week,column,item;
   if(!projected||projected.ok!==true||!index) return '<p class="panel-note">Complete the current fields to update this read-only preview.</p>';
@@ -815,7 +1140,7 @@ function fdCuratorPreviewMarkup(projected){
     library+='</ul></section>';
   }
   return '<p class="preview-label">Projected student Path</p><div class="preview-weeks">'+selected+'</div>'+
-    '<details class="preview-library"><summary>Full Library remains available</summary>'+library+'</details>';
+    '<details class="preview-library"><summary>Full Library remains available</summary>'+library+'</details>'+fdCuratorLocalPreviewMarkup(projected);
 }
 
 function fdCuratorRenderErrors(root,errors){
@@ -831,8 +1156,23 @@ function fdCuratorRenderErrors(root,errors){
   summary.hidden=false;
 }
 
-function fdCuratorRender(state,root,index,errors){
-  var audience,path,editorTitle,status,generate,buttons,selected,i,input,mount;
+function fdCuratorRenderWarnings(root,warnings){
+  var node=root.querySelector('#curatorAdvisorySummary'),out='',i;
+  if(!node) return;
+  if(!warnings||!warnings.length){ node.hidden=true; node.innerHTML=''; return; }
+  out='<h3>Advisory review</h3><ul>';
+  for(i=0;i<warnings.length;i++) out+='<li><a href="'+fdEsc(warnings[i].href)+'">'+fdEsc(warnings[i].message)+'</a></li>';
+  node.innerHTML=out+'</ul>'; node.hidden=false;
+}
+
+function fdCuratorRenderReviewStatus(root,state){
+  var node=root.querySelector('#curatorPreviewReviewStatus');
+  if(node) node.textContent=(state.preview.desktopReviewed?'Desktop preview reviewed':'Desktop preview not yet reviewed')+' · '+
+    (state.preview.mobileReviewed?'Mobile preview reviewed':'Mobile preview not yet reviewed');
+}
+
+function fdCuratorRender(state,root,index,errors,warnings){
+  var audience,path,editorTitle,status,generate,buttons,selected,i,input,mount,field,count;
   var labels=['Edition','Curriculum','Schedule','Local details','Preview and share'];
   var audienceLabel=state.site.audience==='resident'?'Resident':'MS3';
   if(!root||!state) return;
@@ -850,7 +1190,9 @@ function fdCuratorRender(state,root,index,errors){
   input=root.querySelector('#curatorStepOne'); if(input) input.hidden=state.step!==1;
   input=root.querySelector('#curatorStepTwo'); if(input) input.hidden=state.step!==2;
   input=root.querySelector('#curatorStepThree'); if(input) input.hidden=state.step!==3;
-  input=root.querySelector('#curatorFutureStep'); if(input) input.hidden=state.step<4;
+  input=root.querySelector('#curatorStepFour'); if(input) input.hidden=state.step!==4;
+  input=root.querySelector('#curatorFutureStep'); if(input) input.hidden=state.step!==5;
+  input=root.querySelector('#curatorLocalViewToggle'); if(input) input.hidden=state.step!==4;
   if(state.config&&state.config.card){
     for(i=0;i<FD_CURATOR_CARD_FIELDS.length;i++){
       input=root.querySelector('[data-curator-card="'+FD_CURATOR_CARD_FIELDS[i]+'"]');
@@ -867,20 +1209,49 @@ function fdCuratorRender(state,root,index,errors){
   if(mount) mount.innerHTML=fdCuratorCurriculumMarkup(state,index,input?input.value:'');
   mount=root.querySelector('#curatorScheduleWeeks');
   if(mount) mount.innerHTML=fdCuratorScheduleMarkup(state,index);
+  for(i=0;i<FD_CURATOR_ORIENTATION_FIELDS.length;i++){
+    field=FD_CURATOR_ORIENTATION_FIELDS[i]; input=root.querySelector('[data-curator-orientation="'+field+'"]');
+    if(input&&input.value!==state.config.localOrientation[field]) input.value=state.config.localOrientation[field];
+    count=root.querySelector('#curator'+field.charAt(0).toUpperCase()+field.slice(1)+'Count');
+    if(count) count.textContent=fdEditionTextLength(state.config.localOrientation[field])+' of 600 characters';
+  }
+  mount=root.querySelector('#curatorContactsList'); if(mount) mount.innerHTML=fdCuratorContactsMarkup(state);
+  mount=root.querySelector('#curatorChecklistList'); if(mount) mount.innerHTML=fdCuratorChecklistMarkup(state);
+  mount=root.querySelector('#curatorResourcesList'); if(mount) mount.innerHTML=fdCuratorResourcesMarkup(state,index);
+  input=root.querySelector('#curatorNewResourceWeek');
+  if(input&&(!input.options||!input.options.length)) input.innerHTML=fdCuratorResourceWeekOptions(1,fdCuratorWeekCount(index,state.site));
+  count=root.querySelector('#curatorChecklistCap'); if(count) count.textContent=state.config.localOrientation.checklist.length+' of 24 items';
+  count=root.querySelector('#curatorResourcesCap'); if(count) count.textContent=state.config.localOrientation.resources.length+' of 12 items';
+  fdCuratorRenderReviewStatus(root,state);
   fdCuratorRenderErrors(root,errors||[]);
+  fdCuratorRenderWarnings(root,warnings||[]);
   if(generate){ generate.disabled=true; generate.setAttribute('aria-disabled','true'); }
 }
 
 function fdCuratorMount(root,index,siteContext){
-  var state=fdCuratorNewDraft(index,siteContext),errors=[],touched=false;
+  var state=fdCuratorNewDraft(index,siteContext),errors=[],warnings=[],touched=false;
   var adapter=fdCuratorDraftStorage(typeof localStorage==='undefined'?null:localStorage);
   var importTransactions=fdCuratorImportTransactions();
   var subtle=typeof crypto!=='undefined'&&crypto?crypto.subtle:null;
   var buttons,i,save,continueButton,importInput,previewSequence=0;
+  var reviewSequences={desktop:0,mobile:0},reviewCache=null;
+  function visibleVersion(){
+    var shaped=fdCuratorValidateDraft(state,index,siteContext);
+    if(!shaped.ok) return '';
+    return fdEditionCanonicalJson({
+      site:shaped.draft.site,config:shaped.draft.config,
+      baseCanonicalConfig:shaped.draft.publication.baseCanonicalConfig
+    });
+  }
   function refreshPreview(){
     var sequence=++previewSequence;
     var preview=root.querySelector('#curatorPreviewBody');
     if(!preview) return;
+    if(state.step===4){
+      if(reviewCache&&reviewCache.version===visibleVersion()) preview.innerHTML=reviewCache.markup;
+      else preview.innerHTML='<p class="panel-note">Choose Review desktop preview or Review mobile preview to validate and update this preview.</p>';
+      return;
+    }
     if(state.step!==2&&state.step!==3){
       preview.innerHTML='<p class="panel-note">Preview is read-only and updates from the validated curriculum and schedule.</p>';
       return;
@@ -891,13 +1262,50 @@ function fdCuratorMount(root,index,siteContext){
       preview.innerHTML=fdCuratorPreviewMarkup(result);
     });
   }
-  function render(){ fdCuratorRender(state,root,index,errors); refreshPreview(); }
+  function render(){ fdCuratorRender(state,root,index,errors,warnings); refreshPreview(); }
   function dispatch(action,skipRender){
     var applied=fdCuratorApplyAction(state,action,index,siteContext);
-    state=applied.state; errors=[];
-    if(applied.changed){ touched=true; importTransactions.touch(); }
-    if(skipRender) refreshPreview(); else render();
+    state=applied.state; errors=[]; warnings=[];
+    if(applied.changed){
+      touched=true; importTransactions.touch();
+      if(action&&action.type!=='SET_PREVIEW_REVIEWED'){
+        reviewSequences.desktop++; reviewSequences.mobile++; reviewCache=null;
+      }
+    }
+    if(skipRender){
+      fdCuratorRenderReviewStatus(root,state); fdCuratorRenderErrors(root,errors); fdCuratorRenderWarnings(root,warnings);
+      refreshPreview();
+    }else render();
     return state;
+  }
+  function focusSummary(){ var summary=root.querySelector('#curatorErrorSummary'); if(summary&&typeof summary.focus==='function') summary.focus(); }
+  function reviewPreview(viewport){
+    var startVersion,sequence,checked,preview;
+    if(viewport!=='desktop'&&viewport!=='mobile') return Promise.resolve({ok:false,code:'CURATOR_PREVIEW_VIEW'});
+    checked=fdCuratorValidateStep(state,4,index,siteContext);
+    errors=checked.errors||[]; warnings=checked.warnings||[];
+    if(!checked.ok){ fdCuratorRender(state,root,index,errors,warnings); focusSummary(); return Promise.resolve({ok:false,code:'CURATOR_PREVIEW_INVALID'}); }
+    startVersion=visibleVersion(); sequence=++reviewSequences[viewport]; preview=root.querySelector('#curatorPreviewBody');
+    if(preview) preview.innerHTML='<p class="panel-note">Validating the '+viewport+' student preview…</p>';
+    return fdCuratorProjectDraft(state,index,siteContext,subtle).then(function(result){
+      var mapped,applied,markup;
+      if(sequence!==reviewSequences[viewport]||startVersion!==visibleVersion()) return {ok:false,code:'CURATOR_PREVIEW_STALE'};
+      if(!result||result.ok!==true){
+        mapped=fdCuratorLocalFindings(result||{},state); errors=mapped.errors.length?mapped.errors:[fdCuratorStepError('curatorEditorTitle','The student preview could not be generated.')];
+        warnings=mapped.warnings; fdCuratorRender(state,root,index,errors,warnings); focusSummary();
+        return {ok:false,code:'CURATOR_PREVIEW_INVALID'};
+      }
+      markup=fdCuratorPreviewMarkup(result);
+      applied=fdCuratorApplyAction(state,{type:'SET_PREVIEW_REVIEWED',viewport:viewport,value:true},index,siteContext);
+      if(startVersion!==visibleVersion()) return {ok:false,code:'CURATOR_PREVIEW_STALE'};
+      state=applied.state; if(applied.changed){ touched=true; importTransactions.touch(); }
+      reviewCache={version:startVersion,markup:markup}; errors=[]; render();
+      return {ok:true,viewport:viewport,projected:result,state:state};
+    },function(){
+      if(sequence!==reviewSequences[viewport]||startVersion!==visibleVersion()) return {ok:false,code:'CURATOR_PREVIEW_STALE'};
+      errors=[fdCuratorStepError('curatorEditorTitle','The student preview could not be generated.')]; warnings=[];
+      fdCuratorRender(state,root,index,errors,warnings); focusSummary(); return {ok:false,code:'CURATOR_PREVIEW_INVALID'};
+    });
   }
   function status(message){ var node=root.querySelector('#curatorSaveStatus'); if(node) node.textContent=message; }
   if(!root) return null;
@@ -906,8 +1314,23 @@ function fdCuratorMount(root,index,siteContext){
     dispatch({type:'GO_TO_STEP',step:Number(event.currentTarget.getAttribute('data-curator-step'))});
   });
   root.addEventListener('input',function(event){
-    var field=event.target.getAttribute&&event.target.getAttribute('data-curator-card'),instance,current,count,counters,c;
+    var field=event.target.getAttribute&&event.target.getAttribute('data-curator-card'),instance,current,count,counters,c,id,indexValue;
+    if(event.target.id&&typeof event.target.value==='string'&&event.target.maxLength>0){
+      count=root.querySelector('#'+event.target.id+'Count');
+      if(count) count.textContent=fdEditionTextLength(event.target.value)+' of '+event.target.maxLength+' characters';
+    }
     if(field) dispatch({type:'SET_CARD_FIELD',field:field,value:event.target.value});
+    field=event.target.getAttribute&&event.target.getAttribute('data-curator-orientation');
+    if(field){ dispatch({type:'LOCAL_SET_ORIENTATION',field:field,value:event.target.value},true); count=root.querySelector('#curator'+field.charAt(0).toUpperCase()+field.slice(1)+'Count'); if(count) count.textContent=fdEditionTextLength(event.target.value)+' of 600 characters'; return; }
+    indexValue=event.target.getAttribute&&event.target.getAttribute('data-curator-contact-index');
+    field=event.target.getAttribute&&event.target.getAttribute('data-curator-contact-field');
+    if(indexValue!==null&&field){ dispatch({type:'LOCAL_CONTACT_UPDATE',index:Number(indexValue),field:field,value:event.target.value},true); return; }
+    id=event.target.getAttribute&&event.target.getAttribute('data-curator-checklist-id');
+    field=event.target.getAttribute&&event.target.getAttribute('data-curator-checklist-field');
+    if(id!==null&&field==='label'){ dispatch({type:'LOCAL_CHECKLIST_UPDATE',id:id,field:field,value:event.target.value},true); return; }
+    id=event.target.getAttribute&&event.target.getAttribute('data-curator-resource-id');
+    field=event.target.getAttribute&&event.target.getAttribute('data-curator-resource-field');
+    if(id!==null&&(field==='title'||field==='url'||field==='rationale')){ dispatch({type:'LOCAL_RESOURCE_UPDATE',id:id,field:field,value:event.target.value},true); return; }
     instance=event.target.getAttribute&&event.target.getAttribute('data-curator-path-rationale');
     if(instance){
       dispatch({type:'PATH_SET_RATIONALE',instanceId:instance,value:event.target.value},true);
@@ -919,7 +1342,7 @@ function fdCuratorMount(root,index,siteContext){
     }
   });
   root.addEventListener('click',function(event){
-    var target=event.target,ref,instance;
+    var target=event.target,ref,instance,value,id;
     if(!target||typeof target.getAttribute!=='function') return;
     ref=target.getAttribute('data-curator-path-toggle');
     if(ref!==null){ dispatch({type:'PATH_TOGGLE',ref:ref}); return; }
@@ -930,15 +1353,47 @@ function fdCuratorMount(root,index,siteContext){
     instance=target.getAttribute('data-curator-path-up');
     if(instance!==null){ dispatch({type:'PATH_MOVE_UP',instanceId:instance}); return; }
     instance=target.getAttribute('data-curator-path-down');
-    if(instance!==null) dispatch({type:'PATH_MOVE_DOWN',instanceId:instance});
+    if(instance!==null){ dispatch({type:'PATH_MOVE_DOWN',instanceId:instance}); return; }
+    value=target.getAttribute('data-curator-contact-remove');
+    if(value!==null){ dispatch({type:'LOCAL_CONTACT_REMOVE',index:Number(value)}); return; }
+    id=target.getAttribute('data-curator-checklist-remove');
+    if(id!==null){ dispatch({type:'LOCAL_CHECKLIST_REMOVE',id:id}); return; }
+    id=target.getAttribute('data-curator-resource-remove');
+    if(id!==null){ dispatch({type:'LOCAL_RESOURCE_REMOVE',id:id}); return; }
+    if(target.id==='curatorAddContact'){
+      dispatch({type:'LOCAL_CONTACT_ADD',role:root.querySelector('#curatorNewContactRole').value,directoryUrl:root.querySelector('#curatorNewContactDirectoryUrl').value}); return;
+    }
+    if(target.id==='curatorAddChecklist'){
+      dispatch({type:'LOCAL_CHECKLIST_ADD',label:root.querySelector('#curatorNewChecklistLabel').value,priority:root.querySelector('#curatorNewChecklistPriority').value}); return;
+    }
+    if(target.id==='curatorAddResource'){
+      dispatch({type:'LOCAL_RESOURCE_ADD',title:root.querySelector('#curatorNewResourceTitle').value,url:root.querySelector('#curatorNewResourceUrl').value,
+        priority:root.querySelector('#curatorNewResourcePriority').value,week:Number(root.querySelector('#curatorNewResourceWeek').value),
+        rationale:root.querySelector('#curatorNewResourceRationale').value}); return;
+    }
+    if(target.id==='curatorReviewDesktop'){ reviewPreview('desktop'); return; }
+    if(target.id==='curatorReviewMobile'){ reviewPreview('mobile'); return; }
+    value=target.getAttribute('data-curator-local-view');
+    if(value==='edit'||value==='preview'){
+      root.setAttribute('data-local-view',value); buttons=root.querySelectorAll('[data-curator-local-view]');
+      for(i=0;i<buttons.length;i++) buttons[i].setAttribute('aria-pressed',buttons[i]===target?'true':'false');
+      return;
+    }
   });
   root.addEventListener('change',function(event){
-    var target=event.target,instance;
+    var target=event.target,instance,id,field,value;
     if(!target||typeof target.getAttribute!=='function') return;
     instance=target.getAttribute('data-curator-path-priority');
     if(instance!==null){ dispatch({type:'PATH_SET_PRIORITY',instanceId:instance,priority:target.value}); return; }
     instance=target.getAttribute('data-curator-path-week');
-    if(instance!==null) dispatch({type:'PATH_MOVE_WEEK',instanceId:instance,week:Number(target.value)});
+    if(instance!==null){ dispatch({type:'PATH_MOVE_WEEK',instanceId:instance,week:Number(target.value)}); return; }
+    id=target.getAttribute('data-curator-checklist-id'); field=target.getAttribute('data-curator-checklist-field');
+    if(id!==null&&field==='priority'){ dispatch({type:'LOCAL_CHECKLIST_UPDATE',id:id,field:field,value:target.value}); return; }
+    id=target.getAttribute('data-curator-resource-id'); field=target.getAttribute('data-curator-resource-field');
+    if(id!==null&&(field==='priority'||field==='week')){
+      value=field==='week'?Number(target.value):target.value;
+      dispatch({type:'LOCAL_RESOURCE_UPDATE',id:id,field:field,value:value});
+    }
   });
   input=root.querySelector('#curatorLibrarySearch');
   if(input) input.addEventListener('input',function(){
@@ -955,6 +1410,13 @@ function fdCuratorMount(root,index,siteContext){
     var checked=fdCuratorValidateStep(state,1,index,siteContext),summary;
     if(!checked.ok){ errors=checked.errors; fdCuratorRender(state,root,index,errors); summary=root.querySelector('#curatorErrorSummary'); if(summary) summary.focus(); return; }
     dispatch({type:'GO_TO_STEP',step:2});
+  });
+  continueButton=root.querySelector('#curatorLocalContinue');
+  if(continueButton) continueButton.addEventListener('click',function(){
+    var checked=fdCuratorValidateStep(state,4,index,siteContext);
+    errors=checked.errors||[]; warnings=checked.warnings||[];
+    if(!checked.ok){ fdCuratorRender(state,root,index,errors,warnings); focusSummary(); return; }
+    dispatch({type:'GO_TO_STEP',step:5});
   });
   importInput=root.querySelector('#curatorImportFile');
   if(importInput) importInput.addEventListener('change',function(event){
@@ -973,5 +1435,5 @@ function fdCuratorMount(root,index,siteContext){
   adapter.load(index,siteContext,subtle).then(function(result){
     if(!touched&&result.ok&&result.draft){ state=result.draft; render(); status('Saved on this device'); }
   });
-  return {dispatch:dispatch,getState:function(){ return state; }};
+  return {dispatch:dispatch,getState:function(){ return state; },reviewPreview:reviewPreview};
 }
