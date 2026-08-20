@@ -439,6 +439,7 @@ class TestSharedSnippets(unittest.TestCase):
         """All Front Door markers resolve through the frontdoor subdirectory."""
         markers = [
             ("/*__FD_DATA__*/", "function fdEsc("),
+            ("/*__FD_EDITION_CATALOG__*/", "var FD_EDITION_CATALOG="),
             ("/*__FD_TODAY__*/", "function fdTodayProgress("),
             ("/*__FD_DUE__*/", "function fdDueRow("),
             ("/*__FD_SHELL__*/", "function fdKeyAction("),

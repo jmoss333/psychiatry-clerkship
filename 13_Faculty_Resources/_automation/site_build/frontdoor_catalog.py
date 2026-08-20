@@ -230,3 +230,12 @@ def inject_frontdoor_payload(path, payload, topic_meta, tool_registry):
                 + text[value_end:])
     with open(path, "w", encoding="utf-8") as fh:
         fh.write(text)
+
+
+def assert_catalog_resolver_injected(path):
+    """Keep the closed catalog resolver immediately available to both Front Door consumers."""
+    with open(path, encoding="utf-8") as fh:
+        text = fh.read()
+    signature = "var fdEditionCatalogSnapshot=FD_EDITION_CATALOG.snapshot;"
+    if text.count(signature) != 1:
+        raise ValueError("Front Door catalog resolver missing or duplicated")

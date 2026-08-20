@@ -363,18 +363,20 @@ class FrontdoorCatalogTest(unittest.TestCase):
 
     def test_injects_all_eight_values_once_and_boots_them_for_shell_and_curator_shapes(self):
         payload = build_frontdoor_payload("resident", self.curriculum, self.resident_catalog, REVISION)
+        with open(os.path.join(HERE, "frontdoor", "fd_edition_catalog.js"), encoding="utf-8") as source:
+            catalog_body = source.read()
         fixtures = {
             "shell": "\n".join([
                 "var FD_CURRICULUM={};", "var FD_TOPIC_META={};", "var FD_TOOL_REGISTRY={};",
                 "var FD_SITE_MANIFEST={};", "var FD_ROLES=[];", "var FD_AUDIENCE=\"\";",
-                "var FD_CORE_REVISION=\"\";", "var FD_ROTATION_EDITION_CATALOG={};", "/*__FD_DATA__*/", "/*__FD_EDITION_CONTRACT__*/",
+                "var FD_CORE_REVISION=\"\";", "var FD_ROTATION_EDITION_CATALOG={};", "/*__FD_DATA__*/", "/*__FD_EDITION_CATALOG__*/", "/*__FD_EDITION_CONTRACT__*/",
                 "/*__FD_EDITION_PROJECT__*/", "/*__FD_EDITION_STUDENT__*/",
                 "var FD_BOOT_CONTEXT={audience:FD_AUDIENCE,revision:FD_CORE_REVISION};",
             ]),
             "curator": "\n".join([
                 "var FD_AUDIENCE=\"\";", "var FD_CORE_REVISION=\"\";", "var FD_CURRICULUM={};",
                 "var FD_TOPIC_META={};", "var FD_TOOL_REGISTRY={};", "var FD_SITE_MANIFEST={};",
-                "var FD_ROLES=[];", "var FD_ROTATION_EDITION_CATALOG={};", "/*__FD_DATA__*/", "/*__FD_EDITION_CONTRACT__*/",
+                "var FD_ROLES=[];", "var FD_ROTATION_EDITION_CATALOG={};", "/*__FD_DATA__*/", "/*__FD_EDITION_CATALOG__*/", "/*__FD_EDITION_CONTRACT__*/",
                 "/*__FD_EDITION_PROJECT__*/", "/*__FD_EDITION_STUDENT__*/",
                 "var FD_BOOT_CONTEXT={audience:FD_AUDIENCE,revision:FD_CORE_REVISION};",
             ]),
@@ -393,6 +395,9 @@ class FrontdoorCatalogTest(unittest.TestCase):
                                "FD_ROLES", "FD_AUDIENCE", "FD_CORE_REVISION", "FD_ROTATION_EDITION_CATALOG"):
                     self.assertEqual(rendered.count("var %s=" % needle), 1, needle)
                 self.assertLess(rendered.index("function fdEsc("), rendered.index("var FD_EDITION_RULES="))
+                self.assertEqual(rendered.count(catalog_body), 1)
+                self.assertLess(rendered.index("var FD_ROTATION_EDITION_CATALOG="), rendered.index(catalog_body))
+                self.assertLess(rendered.index("var FD_EDITION_CATALOG="), rendered.index("var FD_EDITION_RULES="))
                 self.assertLess(rendered.index("var FD_EDITION_RULES="), rendered.index("FD_BOOT_CONTEXT"))
                 result = subprocess.run(
                     ["node", "-e", "const fs=require('fs');const t=fs.readFileSync(process.argv[1],'utf8');const x=new Function(t+';return {audience:FD_AUDIENCE,revision:FD_CORE_REVISION,boot:FD_BOOT_CONTEXT}')();process.stdout.write(JSON.stringify(x));", page.name],

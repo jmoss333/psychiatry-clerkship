@@ -551,6 +551,7 @@ SNIPPET_MARKERS = {
     "/*__SESS_CAPSULE__*/": "sess_capsule.js",
     "/*__FD_STATE__*/": "frontdoor/fd_state.js",
     "/*__FD_DATA__*/": "frontdoor/fd_data.js",
+    "/*__FD_EDITION_CATALOG__*/": "frontdoor/fd_edition_catalog.js",
     "/*__FD_EDITION_CONTRACT__*/": "frontdoor/fd_edition_contract.js",
     "/*__FD_EDITION_PROJECT__*/": "frontdoor/fd_edition_project.js",
     "/*__FD_CURATOR__*/": "frontdoor/fd_curator.js",
