@@ -2195,3 +2195,49 @@ test('attribution is server-derived: GET exposes it, body.attester is ignored, d
   );
   assert.equal(defaultSaved['mse-tool'].by, 'Joshua Moss, MD');
 });
+
+test('both repository writes re-emit 2-space JSON so a one-field change is a one-field diff', async () => {
+  // reviewed.json was written with an indent of 1 until 2026-08-20 while the file on
+  // disk is 2-space indented, so every content attestation rewrote all ~1,170 lines.
+  // That is what made each attestation commit unreviewable and conflict-prone. These
+  // assertions are on the raw serialized bytes, not the parsed object, because parsing
+  // is exactly what hid the defect from every other test in this file.
+  const contentMock = createGithubMock();
+  const contentResponse = await handlerWith(contentMock)(apiRequest('POST', {
+    body: { target: 'content', changes: { 'mse-tool': true } },
+  }));
+  assert.equal(contentResponse.status, 200);
+  const contentText = Buffer.from(contentMock.putBodies[0].body.content, 'base64')
+    .toString('utf8');
+  assert.equal(contentText, `${JSON.stringify(JSON.parse(contentText), null, 2)}\n`);
+
+  // Teeth: the round-trip above re-serializes whatever it just parsed, so it passes for
+  // ANY indent the writer happens to use. Pin the real leading whitespace at two depths
+  // to fix the unit at 2 — a slug key is depth 1, its "status" is depth 2.
+  const indentOf = predicate => {
+    const line = contentText.split('\n').find(predicate);
+    assert.ok(line, 'expected line not found in serialized ledger');
+    return line.match(/^ */)[0].length;
+  };
+  assert.equal(indentOf(line => line.startsWith(' ') && line.includes('"mse-tool":')), 2);
+  assert.equal(indentOf(line => line.includes('"status":')), 4);
+
+  // The qbank path already used 2 and must stay there — both now read one constant.
+  const item = validItem({ status: 'attested' });
+  const edited = clone(item);
+  edited.stem = 'A revised fictional patient has persistent sadness. What diagnosis best fits?';
+  const bankMock = createGithubMock({ files: defaultFiles(makeBank([item])) });
+  const bankResponse = await handlerWith(bankMock)(apiRequest('POST', {
+    body: {
+      action: 'qbank.save-draft',
+      manifestRevision: MANIFEST_SHA,
+      id: item.id,
+      baseRevision: itemRevision(item),
+      item: edited,
+    },
+  }));
+  assert.equal(bankResponse.status, 200);
+  const blobCall = bankMock.calls.find(call => call.method === 'POST' && call.git === 'blobs');
+  const bankText = Buffer.from(JSON.parse(blobCall.body).content, 'base64').toString('utf8');
+  assert.equal(bankText, `${JSON.stringify(JSON.parse(bankText), null, 2)}\n`);
+});

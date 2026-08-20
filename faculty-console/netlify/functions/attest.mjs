@@ -24,6 +24,14 @@ const REVIEWED_PATH = '13_Faculty_Resources/reviewed.json';
 const MANIFEST_PATH = '13_Faculty_Resources/_automation/site_build/site_manifest.json';
 const QBANK_PATH = 'question_bank.json';
 
+// Both files are stored 2-space indented, so every write must re-emit them that way.
+// This is not cosmetic: reviewed.json was written with an indent of 1 until 2026-08-20,
+// which reformatted all ~1,170 lines on every single-field attestation. That made each
+// attestation commit unreviewable and guaranteed a conflict against any concurrent edit
+// — a large part of why the attest/pending branch became unmergeable. Shared constant so
+// the two write paths (write() positional, writeAtHead() options) cannot drift again.
+const JSON_INDENT = 2;
+
 const GITHUB_API = 'https://api.github.com';
 const GITHUB_API_VERSION = '2026-03-10';
 const MAX_POST_BYTES = 128 * 1024;
@@ -947,7 +955,7 @@ async function commitContentMutation({ repository, body, attester }) {
         reviewed,
         file.sha,
         `attest: ${effectiveChanges.length} content item(s) by ${attester} (${at})`,
-        1,
+        JSON_INDENT,
       );
       return {
         ok: true,
@@ -1081,7 +1089,7 @@ async function commitQbankMutation({ repository, action, body, attester }) {
         {
           expectedBlobSha: bankFile.sha,
           message: mutationMessage(action, result, attester, today()),
-          indent: 2,
+          indent: JSON_INDENT,
           parentHead,
         },
       );
