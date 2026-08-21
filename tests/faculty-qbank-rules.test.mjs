@@ -596,16 +596,19 @@ test('current repository bank has 189 blocker-free active items with a balanced 
   // .codex/36da working tree, reconciled against retirements that landed since) spreads
   // the drafts' correct keys near-evenly; qb_pha_011 (demoted attested->draft in
   // PR #280, keyed B) accounts for the +1 on B relative to the transplanted 46.
-  // Five of those drafts (qb_anx_013/014/015/016, qb_cdev_005) were attested in the
-  // faculty console on 2026-08-11/12; the commits stranded on attest/pending and were
-  // replayed onto main separately. They carried one A, one B, one C and two D, so the
-  // near-even spread the re-key pass established survives the transition intact.
+  // Five of those drafts were attested in the faculty console on 2026-08-11/12, stranded
+  // on attest/pending, and replayed onto main in #380. Four of the five were then reopened:
+  // the console reads attest/pending, which forked BEFORE the answer-key rebalance, so it
+  // showed pre-rebalance text and #380 replayed the status onto questions whose wording —
+  // and for three of them, whose correct option (A->B, A->C, A->D) — had since changed.
+  // Only qb_anx_016 stayed attested; its text on main is the version that was reviewed.
+  // A status is only meaningful against the content it was given for.
   assert.equal(result.counts.total, 189);
-  assert.equal(result.counts.draft, 42);
-  assert.equal(result.counts.attested, 147);
+  assert.equal(result.counts.draft, 46);
+  assert.equal(result.counts.attested, 143);
   assert.equal(Object.keys(result.byId).length, 189);
   assert.equal(Object.values(result.byId).flatMap(entry => entry.blockers).length, 0);
-  assert.deepEqual(result.answerKeys, { A: 11, B: 11, C: 10, D: 10 });
+  assert.deepEqual(result.answerKeys, { A: 12, B: 12, C: 11, D: 11 });
   for (const item of bank.items.filter(entry => entry.retired)) {
     assert.equal(Object.hasOwn(result.byId, item.id), false);
   }
