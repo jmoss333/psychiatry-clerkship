@@ -8638,7 +8638,7 @@
       "options": [
         {
           "key": "A",
-          "t": "A stimulant ",
+          "t": "A stimulant",
           "c": true
         },
         {
@@ -9850,7 +9850,7 @@
       "options": [
         {
           "key": "A",
-          "t": "Social anxiety disorder, Performance type  requiring PRN medication",
+          "t": "Social anxiety disorder, Performance type requiring PRN medication",
           "c": true
         },
         {
@@ -9863,7 +9863,7 @@
         },
         {
           "key": "C",
-          "t": "Panic disorder requiring prn medication",
+          "t": "Panic disorder requiring PRN medication",
           "trap": {
             "name": "Wrong-dx trap",
             "note": "There are no recurrent unexpected panic attacks with persistent worry about attacks; this is performance-limited social anxiety."
