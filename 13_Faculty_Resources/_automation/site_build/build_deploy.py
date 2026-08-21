@@ -402,23 +402,30 @@ except ValueError as _fd_error:
     raise SystemExit(1)
 print("frontdoor payload:",sum(len(c["refs"]) for c in _fd_payload["curriculum"]["libraryColumns"]),"placed refs (ms3)")
 
-# ---- retired-bank-ids injection (shell calibration parity) ----
-# The shell counts confidently-wrong items straight from cw_qb_v1; the practice tool
-# filters retired items via activeItems(). Inject the CURRENT retired ids so both
-# surfaces count identically. Verified replacement: a missing/duplicated needle means
-# the shell's parity plumbing was edited away — fail the build, don't ship the drift.
-# The resident build inherits this (it rebrands the MS3-built index.html).
-_retired_ids=sorted(i["id"] for i in json.load(open(LIB+"/question_bank.json",encoding="utf-8")).get("items",[]) if i.get("retired"))
+# ---- retired/draft-bank-ids injection (shell servability parity) ----
+# The shell counts due QB# cards and confidently-wrong items straight from cw_srs_v1 /
+# cw_qb_v1; the practice tool filters via activeItems() — retired items always, drafts
+# unless the learner opted in (cw_qb_drafts_v1; WP-37 attested-only default). Inject the
+# CURRENT retired and draft ids so both surfaces count identically. Verified replacement:
+# a missing/duplicated needle means the shell's parity plumbing was edited away — fail the
+# build, don't ship the drift. The resident build inherits this (it rebrands the MS3-built
+# index.html).
+_qb_items=json.load(open(LIB+"/question_bank.json",encoding="utf-8")).get("items",[])
+_retired_ids=sorted(i["id"] for i in _qb_items if i.get("retired"))
+_draft_ids=sorted(i["id"] for i in _qb_items
+                  if not i.get("retired") and i.get("status")!="attested")
 _spa_out=OUT+"/index.html"
 _spa_t=open(_spa_out,encoding="utf-8").read()
-_RETIRED_NEEDLE="var RETIRED_QB_IDS=[];"
-if _spa_t.count(_RETIRED_NEEDLE)!=1:
-    print("BUILD ABORTED — RETIRED_QB_IDS needle missing or duplicated in spa_index.html")
-    raise SystemExit(1)
-open(_spa_out,"w",encoding="utf-8").write(
-    _spa_t.replace(_RETIRED_NEEDLE,"var RETIRED_QB_IDS="+json.dumps(_retired_ids)+";")
-)
+for _needle,_ids,_label in ((
+        "var RETIRED_QB_IDS=[];",_retired_ids,"RETIRED_QB_IDS"),(
+        "var DRAFT_QB_IDS=[];",_draft_ids,"DRAFT_QB_IDS")):
+    if _spa_t.count(_needle)!=1:
+        print("BUILD ABORTED — %s needle missing or duplicated in spa_index.html"%_label)
+        raise SystemExit(1)
+    _spa_t=_spa_t.replace(_needle,"var %s=%s;"%(_label,json.dumps(_ids)))
+open(_spa_out,"w",encoding="utf-8").write(_spa_t)
 print("retired-qb injection:",len(_retired_ids),"id(s)")
+print("draft-qb injection:",len(_draft_ids),"id(s)")
 print("tools:",len(tools)," md copied:",len(md)-len(missing)," missing:",missing)
 
 # ---------- POLISH + A11Y + DARK-MODE PASS (shared with the resident build) ----------
