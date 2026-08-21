@@ -21,45 +21,72 @@
       "evidence-limits": 3,
       "practice-inpatient": 12,
       "total": 59
+    },
+    "canonicalPass": {
+      "date": "2026-08-21",
+      "tool": "Scholar Sidekick MCP (scholar-sidekick.com, SCHOLAR_API_KEY tier)",
+      "pipeline": "checkRetraction (59/59, single calls) -> checkOpenAccess (39 previously-proxy entries) -> formatCitation (ama, builtin; requestIds 97409fcc-e9d9-4f54-a7b8-b81a2a65620e, c41aed15-f962-4a9f-9df5-eb4044fd555d) -> verifyCitation (stanley-brown-2012: matched/high)",
+      "findings": {
+        "retracted": 0,
+        "expressionsOfConcern": 0,
+        "errata": [
+          "32428905 (10.1159/000508894)",
+          "25806661 (10.1001/jamapsychiatry.2015.1480) — new catch this pass"
+        ],
+        "supersededVersionNotice": [
+          "21154340 pub2 -> pub3 (faculty decision pending elsewhere, not in verification fields)"
+        ],
+        "doiCorrected": [
+          "40471224: 10.4081/ripppo.2025.2025.841 -> 10.4081/ripppo.2025.841"
+        ],
+        "oaUpgrades": 10,
+        "submittedVersionOnly": [
+          "42018336",
+          "32428905"
+        ]
+      },
+      "handEdits": "formatCitation builtin-AMA compound-surname artifacts corrected: Del Re A, van Straten A, Tudur Smith C, de Figueiredo JM, Hajek Gross C, De Salve F, Bastos Maia M, Millikan Bell AM; Difronzo title de-HTML-entitied; StatPearls citation completed by hand (formatter emitted no container)."
     }
   },
   "entries": [
     {
       "id": "fluckiger-2018",
       "domain": "alliance",
-      "citation": "Flückiger C, Del Re AC, Wampold BE, Horvath AO. The alliance in adult psychotherapy: a meta-analytic synthesis. Psychotherapy (Chic). 2018;55(4):316-340.",
+      "citation": "Flückiger C, Del Re A, Wampold B, Horvath A. The alliance in adult psychotherapy: A meta-analytic synthesis. Psychotherapy (Chic). 2018;55(4):316-340. doi:10.1037/pst0000172.",
       "pmid": "29792475",
       "doi": "10.1037/pst0000172",
-      "oaStatus": "closed",
-      "linkType": "proxy",
+      "oaStatus": "hybrid",
+      "linkType": "open",
       "annotation": "The canonical number: alliance quality predicts outcome across hundreds of studies. Read before any modality. Fixes WP-26 miscitation.",
       "learnerLevel": "both",
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, checkOpenAccess hybrid, formatCitation ama",
+      "note": "OA upgrade 2026-08-21 (Unpaywall via Scholar Sidekick): hybrid, publishedVersion at https://doi.org/10.1037/pst0000172."
     },
     {
       "id": "tetzlaff-2025",
       "domain": "alliance",
-      "citation": "Tetzlaff M, Bruins J, Castelein S. Associated factors of the quality of therapeutic alliance in people with severe mental illnesses: a systematic review. Clin Psychol Rev. 2025;122:102656.",
+      "citation": "Tetzlaff M, Bruins J, Castelein S. Associated factors of the quality of therapeutic alliance in people with severe mental illnesses: A systematic review. Clin Psychol Rev. 2025;122:102656. doi:10.1016/j.cpr.2025.102656.",
       "pmid": "41110399",
       "doi": "10.1016/j.cpr.2025.102656",
-      "oaStatus": "closed",
-      "linkType": "proxy",
+      "oaStatus": "hybrid",
+      "linkType": "open",
       "annotation": "Closest to our census: alliance with SMI patients is buildable, and the levers are partly the clinician's.",
       "learnerLevel": "both",
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, checkOpenAccess hybrid, formatCitation ama",
+      "note": "OA upgrade 2026-08-21 (Unpaywall via Scholar Sidekick): hybrid, publishedVersion at https://doi.org/10.1016/j.cpr.2025.102656."
     },
     {
       "id": "huggett-2022",
       "domain": "alliance",
-      "citation": "Huggett C, Gooding P, Haddock G, Quigley J, Pratt D. The relationship between the therapeutic alliance in psychotherapy and suicidal experiences: a systematic review. Clin Psychol Psychother. 2022;29(4):1203-1235.",
+      "citation": "Huggett C, Gooding P, Haddock G, Quigley J, Pratt D. The relationship between the therapeutic alliance in psychotherapy and suicidal experiences: A systematic review. Clin Psychol Psychother. 2022;29(4):1203-1235. doi:10.1002/cpp.2726.",
       "pmid": "35168297",
       "doi": "10.1002/cpp.2726",
       "oaStatus": "gold-or-green",
@@ -69,13 +96,13 @@
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, OA per 2026-08-21 Unpaywall gate, formatCitation ama"
     },
     {
       "id": "saxler-2024",
       "domain": "alliance",
-      "citation": "Saxler E, Schindler T, Philipsen A, Schulze M, Lux S. Therapeutic alliance in individual adult psychotherapy: a systematic review of conceptualizations and measures. Front Psychol. 2024;15:1293851.",
+      "citation": "Saxler E, Schindler T, Philipsen A, Schulze M, Lux S. Therapeutic alliance in individual adult psychotherapy: a systematic review of conceptualizations and measures for face-to-face- and online-psychotherapy. Front Psychol. 2024;15:1293851. doi:10.3389/fpsyg.2024.1293851.",
       "pmid": "38993343",
       "doi": "10.3389/fpsyg.2024.1293851",
       "oaStatus": "gold-or-green",
@@ -85,31 +112,32 @@
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, OA per 2026-08-21 Unpaywall gate, formatCitation ama"
     },
     {
       "id": "huggett-2024",
       "domain": "alliance",
-      "citation": "Huggett C, Peters S, Gooding P, Berry N, Pratt D. A systematic review and meta-ethnography of client and therapist perspectives of the therapeutic alliance in the context of psychotherapy and suicidal experiences. Clin Psychol Rev. 2024;113:102469.",
+      "citation": "Huggett C, Peters S, Gooding P, Berry N, Pratt D. A systematic review and meta-ethnography of client and therapist perspectives of the therapeutic alliance in the context of psychotherapy and suicidal experiences. Clin Psychol Rev. 2024;113:102469. doi:10.1016/j.cpr.2024.102469.",
       "pmid": "39098267",
       "doi": "10.1016/j.cpr.2024.102469",
-      "oaStatus": "closed",
-      "linkType": "proxy",
+      "oaStatus": "hybrid",
+      "linkType": "open",
       "annotation": "Go-deeper: qualitative meta-ethnography of both perspectives on alliance amid suicidal experiences (proxy-only).",
       "learnerLevel": "resident",
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, checkOpenAccess hybrid, formatCitation ama",
+      "note": "OA upgrade 2026-08-21 (Unpaywall via Scholar Sidekick): hybrid, publishedVersion at https://doi.org/10.1016/j.cpr.2024.102469."
     },
     {
       "id": "difronzo-2025",
       "domain": "alliance",
-      "citation": "Difronzo MJ, Thackeray L, O'Keeffe S, Calderon A, Midgley N. \"Maybe you don't know what answers I want\": unresolved alliance ruptures preceding dropout in short-term psychoanalytic psychotherapy with depressed adolescents. Res Psychother. 2025;28(1):841.",
+      "citation": "Difronzo MJ, Thackeray L, O'Keeffe S, Calderon A, Midgley N. \"Maybe you don't know what answers I want\": unresolved alliance ruptures preceding dropout in short-term psychoanalytic psychotherapy with depressed adolescents. Res Psychother. 2025;28(1):841. doi:10.4081/ripppo.2025.841.",
       "pmid": "40471224",
-      "doi": "10.4081/ripppo.2025.2025.841",
+      "doi": "10.4081/ripppo.2025.841",
       "oaStatus": "gold-or-green",
       "linkType": "open",
       "annotation": "The only rupture-repair paper in the harvest: unresolved ruptures precede dropout. Cross-filed from evidence-limits.",
@@ -117,13 +145,14 @@
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction: DOI corrected (see note), OA per 2026-08-21 Unpaywall gate, formatCitation ama",
+      "note": "DOI corrected 2026-08-21: PubMed and Europe PMC both carry the corrupt 10.4081/ripppo.2025.2025.841 (year duplicated; 404s at Crossref). Corrected DOI verified clean via Crossref/Retraction Watch."
     },
     {
       "id": "man-2023",
       "domain": "inpatient-brief",
-      "citation": "Man H, Wood L, Glover N. A systematic review and narrative synthesis of indirect psychological intervention in acute mental health inpatient settings. Clin Psychol Psychother. 2023;30(1):24-37.",
+      "citation": "Man H, Wood L, Glover N. A systematic review and narrative synthesis of indirect psychological intervention in acute mental health inpatient settings. Clin Psychol Psychother. 2023;30(1):24-37. doi:10.1002/cpp.2780.",
       "pmid": "35997039",
       "doi": "10.1002/cpp.2780",
       "oaStatus": "gold-or-green",
@@ -135,13 +164,13 @@
       ],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, OA per 2026-08-21 Unpaywall gate, formatCitation ama"
     },
     {
       "id": "schefft-2019",
       "domain": "inpatient-brief",
-      "citation": "Schefft C, Guhn A, Brakemeier EL, Sterzer P, Köhler S. Efficacy of inpatient psychotherapy for major depressive disorder: a meta-analysis of controlled trials. Acta Psychiatr Scand. 2019;139(4):322-335.",
+      "citation": "Schefft C, Guhn A, Brakemeier E, Sterzer P, Köhler S. Efficacy of inpatient psychotherapy for major depressive disorder: a meta-analysis of controlled trials. Acta Psychiatr Scand. 2019;139(4):322-335. doi:10.1111/acps.12995.",
       "pmid": "30520019",
       "doi": "10.1111/acps.12995",
       "oaStatus": "closed",
@@ -153,13 +182,13 @@
       ],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, checkOpenAccess closed, formatCitation ama"
     },
     {
       "id": "cohen-chazani-2022",
       "domain": "inpatient-brief",
-      "citation": "Cohen-Chazani Y, Lavidor M, Gilboa-Schechtman E, Roe D, Hasson-Ohayon I. Meta-analysis of the effect of psychotherapy in an inpatient setting. Psychiatry. 2022;85(4):399-417.",
+      "citation": "Cohen-Chazani Y, Lavidor M, Gilboa-Schechtman E, Roe D, Hasson-Ohayon I. Meta-Analysis of the Effect of Psychotherapy in an Inpatient Setting: Examining the Moderating Role of Diagnosis and Therapeutic Approach. Psychiatry. 2022;85(4):399-417. doi:10.1080/00332747.2022.2062660.",
       "pmid": "35442174",
       "doi": "10.1080/00332747.2022.2062660",
       "oaStatus": "closed",
@@ -171,29 +200,30 @@
       ],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, checkOpenAccess closed, formatCitation ama"
     },
     {
       "id": "cuijpers-2026",
       "domain": "behavioral-activation",
-      "citation": "Cuijpers P, Ciharova M, Tong L, et al. Behavioral activation for depression: a comprehensive systematic review and meta-analysis. Clin Psychol Rev. 2026;128:102783.",
+      "citation": "Cuijpers P, Ciharova M, Tong L, et al. Behavioral activation for depression: A comprehensive systematic review and meta-analysis. Clin Psychol Rev. 2026;128:102783. doi:10.1016/j.cpr.2026.102783.",
       "pmid": "42492146",
       "doi": "10.1016/j.cpr.2026.102783",
-      "oaStatus": "closed",
-      "linkType": "proxy",
+      "oaStatus": "hybrid",
+      "linkType": "open",
       "annotation": "Current state of the whole BA field — same first author as the 2007 anchor, twenty years on.",
       "learnerLevel": "both",
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, checkOpenAccess hybrid, formatCitation ama",
+      "note": "OA upgrade 2026-08-21 (Unpaywall via Scholar Sidekick): hybrid, publishedVersion at https://doi.org/10.1016/j.cpr.2026.102783."
     },
     {
       "id": "cuijpers-2007",
       "domain": "behavioral-activation",
-      "citation": "Cuijpers P, van Straten A, Warmerdam L. Behavioral activation treatments of depression: a meta-analysis. Clin Psychol Rev. 2007;27(3):318-326.",
+      "citation": "Cuijpers P, van Straten A, Warmerdam L. Behavioral activation treatments of depression: a meta-analysis. Clin Psychol Rev. 2007;27(3):318-326. doi:10.1016/j.cpr.2006.11.001.",
       "pmid": "17184887",
       "doi": "10.1016/j.cpr.2006.11.001",
       "oaStatus": "closed",
@@ -203,29 +233,30 @@
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, checkOpenAccess closed, formatCitation ama"
     },
     {
       "id": "ciharova-2021",
       "domain": "behavioral-activation",
-      "citation": "Ciharova M, Furukawa TA, Efthimiou O, et al. Cognitive restructuring, behavioral activation and cognitive-behavioral therapy in the treatment of adult depression: a network meta-analysis. J Consult Clin Psychol. 2021;89(6):563-574.",
+      "citation": "Ciharova M, Furukawa T, Efthimiou O, et al. Cognitive restructuring, behavioral activation and cognitive-behavioral therapy in the treatment of adult depression: A network meta-analysis. J Consult Clin Psychol. 2021;89(6):563-574. doi:10.1037/ccp0000654.",
       "pmid": "34264703",
       "doi": "10.1037/ccp0000654",
-      "oaStatus": "closed",
-      "linkType": "proxy",
+      "oaStatus": "green",
+      "linkType": "open",
       "annotation": "The dismantling question head-to-head: how much does the C in CBT add over activation alone?",
       "learnerLevel": "both",
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, checkOpenAccess green, formatCitation ama",
+      "note": "OA upgrade 2026-08-21 (Unpaywall via Scholar Sidekick): green, publishedVersion at https://pure.amsterdamumc.nl/en/publications/c61a5dfe-3c4a-4f72-a498-c865361860cd."
     },
     {
       "id": "simmonds-buckley-2019",
       "domain": "behavioral-activation",
-      "citation": "Simmonds-Buckley M, Kellett S, Waller G. Acceptability and efficacy of group behavioral activation for depression among adults: a meta-analysis. Behav Ther. 2019;50(5):864-885.",
+      "citation": "Simmonds-Buckley M, Kellett S, Waller G. Acceptability and Efficacy of Group Behavioral Activation for Depression Among Adults: A Meta-Analysis. Behav Ther. 2019;50(5):864-885. doi:10.1016/j.beth.2019.01.003.",
       "pmid": "31422844",
       "doi": "10.1016/j.beth.2019.01.003",
       "oaStatus": "closed",
@@ -237,13 +268,13 @@
       ],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, checkOpenAccess closed, formatCitation ama"
     },
     {
       "id": "pott-2022",
       "domain": "behavioral-activation",
-      "citation": "Pott SL, Delgadillo J, Kellett S. Is behavioral activation an effective and acceptable treatment for co-occurring depression and substance use disorders? A meta-analysis of RCTs. J Subst Abuse Treat. 2022;132:108478.",
+      "citation": "Pott S, Delgadillo J, Kellett S. Is behavioral activation an effective and acceptable treatment for co-occurring depression and substance use disorders? A meta-analysis of randomized controlled trials. J Subst Abuse Treat. 2022;132:108478. doi:10.1016/j.jsat.2021.108478.",
       "pmid": "34146994",
       "doi": "10.1016/j.jsat.2021.108478",
       "oaStatus": "closed",
@@ -253,13 +284,13 @@
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, checkOpenAccess closed, formatCitation ama"
     },
     {
       "id": "stanley-brown-2018",
       "domain": "safety-means",
-      "citation": "Stanley B, Brown GK, Brenner LA, et al. Comparison of the Safety Planning Intervention with follow-up vs usual care of suicidal patients treated in the emergency department. JAMA Psychiatry. 2018;75(9):894-900.",
+      "citation": "Stanley B, Brown G, Brenner L, et al. Comparison of the Safety Planning Intervention With Follow-up vs Usual Care of Suicidal Patients Treated in the Emergency Department. JAMA Psychiatry. 2018;75(9):894-900. doi:10.1001/jamapsychiatry.2018.1776.",
       "pmid": "29998307",
       "doi": "10.1001/jamapsychiatry.2018.1776",
       "oaStatus": "free-pmc",
@@ -272,13 +303,13 @@
       ],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, OA per 2026-08-21 Unpaywall gate, formatCitation ama"
     },
     {
       "id": "stanley-brown-2012",
       "domain": "safety-means",
-      "citation": "Stanley B, Brown GK. Safety planning intervention: a brief intervention to mitigate suicide risk. Cogn Behav Pract. 2012;19(2):256-264.",
+      "citation": "Stanley B, Brown GK. Safety Planning Intervention: A Brief Intervention to Mitigate Suicide Risk. Cognitive and Behavioral Practice. 2012;19(2):256-264. doi:10.1016/j.cbpra.2011.01.001.",
       "pmid": null,
       "doi": "10.1016/j.cbpra.2011.01.001",
       "oaStatus": "closed",
@@ -288,14 +319,14 @@
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending",
-      "note": "verification: PENDING (not in Europe PMC; run verifyCitation via Scholar_Sidekick)"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: verifyCitation matched (high confidence), checkRetraction clean, checkOpenAccess closed, formatCitation ama",
+      "note": "Not Europe PMC-indexed (Cognitive and Behavioral Practice is outside MEDLINE): verified 2026-08-21 via Scholar Sidekick verifyCitation against Crossref — verdict matched, high confidence."
     },
     {
       "id": "steeg-2025",
       "domain": "safety-means",
-      "citation": "Steeg S, Ledden S, Marzano L, et al. Effectiveness of suicide means restriction: an overview of systematic reviews. BMJ Ment Health. 2025;28(1):e302069.",
+      "citation": "Steeg S, Ledden S, Marzano L, et al. Effectiveness of suicide means restriction: an overview of systematic reviews. BMJ Ment Health. 2025;28(1). doi:10.1136/bmjment-2025-302069.",
       "pmid": "41365522",
       "doi": "10.1136/bmjment-2025-302069",
       "oaStatus": "gold-or-green",
@@ -307,13 +338,13 @@
       ],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, OA per 2026-08-21 Unpaywall gate, formatCitation ama"
     },
     {
       "id": "shank-2026",
       "domain": "safety-means",
-      "citation": "Shank LM, Smolenski DJ, Boyd C, et al. Systematic review of the impact of interventions changing access to lethal means on suicide attempts and deaths. Inj Prev. 2026;32(1):7-15.",
+      "citation": "Shank L, Smolenski D, Boyd C, et al. Systematic review of the impact of interventions changing access to lethal means on suicide attempts and deaths. Inj Prev. 2026;32(1):7-15. doi:10.1136/ip-2024-045611.",
       "pmid": "40185617",
       "doi": "10.1136/ip-2024-045611",
       "oaStatus": "closed",
@@ -325,13 +356,13 @@
       ],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, checkOpenAccess closed, formatCitation ama"
     },
     {
       "id": "penzenik-2026",
       "domain": "safety-means",
-      "citation": "Penzenik ME, Schneider AL, Hoffmire CA, Sells JR, Stearns-Yoder KA, Brenner LA. Rural community members' experiences and perceptions regarding lethal means safety. J Rural Health. 2026;42(1):e70103.",
+      "citation": "Penzenik M, Schneider A, Hoffmire C, Sells J, Stearns-Yoder K, Brenner L. Rural community members' experiences and perceptions regarding lethal means safety in the context of suicide and accidental death rates. J Rural Health. 2026;42(1):e70103. doi:10.1111/jrh.70103.",
       "pmid": "41588871",
       "doi": "10.1111/jrh.70103",
       "oaStatus": "closed",
@@ -341,13 +372,13 @@
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, checkOpenAccess closed, formatCitation ama"
     },
     {
       "id": "varese-2025",
       "domain": "cbt-psychosis",
-      "citation": "Varese F, Sudell M, Morrison AP, Longden E, Tudur Smith C; IMPART. Treatment effect modifiers of cognitive behaviour therapy in people with psychosis: an IPD meta-analysis of RCTs. Health Technol Assess. 2025;29(53):1-115.",
+      "citation": "Varese F, Sudell M, Morrison A, Longden E, Tudur Smith C, IMPART. Treatment effect modifiers of cognitive behaviour therapy in people with psychosis: an individual participant data meta-analysis of RCTs. Health Technol Assess. 2025;29(53):1-115. doi:10.3310/NCFR5074.",
       "pmid": "41217072",
       "doi": "10.3310/ncfr5074",
       "oaStatus": "gold-or-green",
@@ -357,13 +388,13 @@
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, OA per 2026-08-21 Unpaywall gate, formatCitation ama"
     },
     {
       "id": "hong-2025",
       "domain": "cbt-psychosis",
-      "citation": "Hong Y, Chen Y, Bai Y, Tan W. Cognitive-behavioral therapy for the improvement of negative symptoms and functioning in schizophrenia: SR and meta-analysis of RCTs. PLoS One. 2025;20(5):e0324685.",
+      "citation": "Hong Y, Chen Y, Bai Y, Tan W. Cognitive-behavioral therapy for the improvement of negative symptoms and functioning in schizophrenia: A systematic review and meta-analysis of randomized controlled trials. PLoS One. 2025;20(5):e0324685. doi:10.1371/journal.pone.0324685.",
       "pmid": "40392926",
       "doi": "10.1371/journal.pone.0324685",
       "oaStatus": "gold-or-green",
@@ -373,13 +404,13 @@
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, OA per 2026-08-21 Unpaywall gate, formatCitation ama"
     },
     {
       "id": "tarrier-wykes-2004",
       "domain": "cbt-psychosis",
-      "citation": "Tarrier N, Wykes T. Is there evidence that cognitive behaviour therapy is an effective treatment for schizophrenia? A cautious or cautionary tale? Behav Res Ther. 2004;42(12):1377-1401.",
+      "citation": "Tarrier N, Wykes T. Is there evidence that cognitive behaviour therapy is an effective treatment for schizophrenia? A cautious or cautionary tale? Behav Res Ther. 2004;42(12):1377-1401. doi:10.1016/j.brat.2004.06.020.",
       "pmid": "15500811",
       "doi": "10.1016/j.brat.2004.06.020",
       "oaStatus": "closed",
@@ -389,13 +420,13 @@
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, checkOpenAccess closed, formatCitation ama"
     },
     {
       "id": "links-ross-2025",
       "domain": "bpd-dbt-gpm",
-      "citation": "Links PS, Ross J. Good psychiatric management of borderline personality disorder: foundations and future challenges. Am J Psychother. 2025;78(1):4-10.",
+      "citation": "Links P, Ross J. Good Psychiatric Management of Borderline Personality Disorder: Foundations and Future Challenges. Am J Psychother. 2025;78(1):4-10. doi:10.1176/appi.psychotherapy.20230044.",
       "pmid": "38952224",
       "doi": "10.1176/appi.psychotherapy.20230044",
       "oaStatus": "closed",
@@ -407,29 +438,30 @@
       ],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, checkOpenAccess closed, formatCitation ama"
     },
     {
       "id": "wibbelink-2026",
       "domain": "bpd-dbt-gpm",
-      "citation": "Wibbelink CJM, Kamphuis JH, Sinnaeve R, et al. Dialectical behavior therapy vs schema therapy for patients with borderline personality disorder: the BOOTS multicenter randomized clinical trial. JAMA Psychiatry. 2026;83(7):669-681.",
+      "citation": "Wibbelink C, Kamphuis J, Sinnaeve R, et al. Dialectical Behavior Therapy vs Schema Therapy for Patients With Borderline Personality Disorder: The BOOTS Multicenter Randomized Clinical Trial. JAMA Psychiatry. 2026;83(7):669-681. doi:10.1001/jamapsychiatry.2026.0418.",
       "pmid": "42018336",
       "doi": "10.1001/jamapsychiatry.2026.0418",
-      "oaStatus": "closed",
+      "oaStatus": "green-submitted-only",
       "linkType": "proxy",
       "annotation": "The newest head-to-head of two specialist therapies (equivalence trial design).",
       "learnerLevel": "both",
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, checkOpenAccess green-submitted-only, formatCitation ama",
+      "note": "Free copy (PMC13103886) is the submitted manuscript only — link the version of record via proxy; author manuscript noted for after-hours access."
     },
     {
       "id": "brodsky-2025",
       "domain": "bpd-dbt-gpm",
-      "citation": "Brodsky BS, Galfalvy H, Mann JJ, Grunebaum MF, Stanley B. Dialectical behavior therapy versus serotonin reuptake inhibitor treatment for suicidal behavior in borderline personality disorder: an RCT. Am J Psychiatry. 2025;182(12):1083-1092.",
+      "citation": "Brodsky B, Galfalvy H, Mann J, Grunebaum M, Stanley B. Dialectical Behavior Therapy Versus Serotonin Reuptake Inhibitor Treatment for Suicidal Behavior in Borderline Personality Disorder: A Randomized Controlled Trial. Am J Psychiatry. 2025;182(12):1083-1092. doi:10.1176/appi.ajp.20240298.",
       "pmid": "41190740",
       "doi": "10.1176/appi.ajp.20240298",
       "oaStatus": "closed",
@@ -439,13 +471,13 @@
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, checkOpenAccess closed, formatCitation ama"
     },
     {
       "id": "arqueros-2026",
       "domain": "bpd-dbt-gpm",
-      "citation": "Arqueros M, Soler J, Pascual JC. Stand-alone dialectical behavior therapy skills training for borderline personality disorder: a systematic review and meta-analysis. Personal Disord. 2026 (ahead of print).",
+      "citation": "Arqueros M, Soler J, Pascual J. Stand-alone dialectical behavior therapy skills training for borderline personality disorder: A systematic review and meta-analysis. Personal Disord. 2026. doi:10.1037/per0000774.",
       "pmid": "42275028",
       "doi": "10.1037/per0000774",
       "oaStatus": "closed",
@@ -455,13 +487,13 @@
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, checkOpenAccess closed, formatCitation ama"
     },
     {
       "id": "appel-2026",
       "domain": "bpd-dbt-gpm",
-      "citation": "Appel G, Arac-Orhun S, Hersh R. Guidance for family engagement with patients with borderline personality disorder. Psychodyn Psychiatry. 2026;54(1):97-109.",
+      "citation": "Appel G, Arac-Orhun S, Hersh R. Guidance for Family Engagement With Patients With Borderline Personality Disorder: Integrating Principles From Transference-Focused Psychotherapy and Good Psychiatric Management. Psychodyn Psychiatry. 2026;54(1):97-109. doi:10.1521/pdps.2026.54.1.97.",
       "pmid": "41849148",
       "doi": "10.1521/pdps.2026.54.1.97",
       "oaStatus": "closed",
@@ -471,13 +503,13 @@
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, checkOpenAccess closed, formatCitation ama"
     },
     {
       "id": "pharoah-2010",
       "domain": "family",
-      "citation": "Pharoah F, Mari J, Rathbone J, Wong W. Family intervention for schizophrenia. Cochrane Database Syst Rev. 2010;(12):CD000088.",
+      "citation": "Pharoah F, Mari J, Rathbone J, Wong W. Family intervention for schizophrenia. Cochrane Database Syst Rev. 2010:CD000088. doi:10.1002/14651858.CD000088.pub2.",
       "pmid": "21154340",
       "doi": "10.1002/14651858.CD000088.pub2",
       "oaStatus": "free-pmc",
@@ -489,13 +521,14 @@
       ],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction: superseded-version notice (.pub3), OA per 2026-08-21 Unpaywall gate, formatCitation ama",
+      "note": "Crossref flags CD000088.pub2 as superseded by .pub3 (2010-12-08) while PMID 21154340 maps to .pub2 — which version to cite is a faculty decision (do not guess); see THERAPY_LIBRARY_VERIFIED_KEEPS_2026-08-21.md §3."
     },
     {
       "id": "ma-2021",
       "domain": "family",
-      "citation": "Ma CF, Chan SKW, Chung YL, et al. The predictive power of expressed emotion and its components in relapse of schizophrenia: meta-analysis and meta-regression. Psychol Med. 2021;51(3):365-375.",
+      "citation": "Ma C, Chan S, Chung Y, et al. The predictive power of expressed emotion and its components in relapse of schizophrenia: a meta-analysis and meta-regression. Psychol Med. 2021;51(3):365-375. doi:10.1017/S0033291721000209.",
       "pmid": "33568244",
       "doi": "10.1017/S0033291721000209",
       "oaStatus": "closed",
@@ -507,13 +540,13 @@
       ],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, checkOpenAccess closed, formatCitation ama"
     },
     {
       "id": "camacho-gomez-2020",
       "domain": "family",
-      "citation": "Camacho-Gomez M, Castellvi P. Effectiveness of family intervention for preventing relapse in first-episode psychosis until 24 months of follow-up. Schizophr Bull. 2020;46(1):98-109.",
+      "citation": "Camacho-Gomez M, Castellvi P. Effectiveness of Family Intervention for Preventing Relapse in First-Episode Psychosis Until 24 Months of Follow-up: A Systematic Review With Meta-analysis of Randomized Controlled Trials. Schizophr Bull. 2020;46(1):98-109. doi:10.1093/schbul/sbz038.",
       "pmid": "31050757",
       "doi": "10.1093/schbul/sbz038",
       "oaStatus": "free-pmc",
@@ -523,13 +556,13 @@
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, OA per 2026-08-21 Unpaywall gate, formatCitation ama"
     },
     {
       "id": "schwenker-2023",
       "domain": "motivational-interviewing",
-      "citation": "Schwenker R, Dietrich CE, Hirpa S, et al. Motivational interviewing for substance use reduction. Cochrane Database Syst Rev. 2023;12:CD008063.",
+      "citation": "Schwenker R, Dietrich C, Hirpa S, et al. Motivational interviewing for substance use reduction. Cochrane Database Syst Rev. 2023;12(12):CD008063. doi:10.1002/14651858.CD008063.pub3.",
       "pmid": "38084817",
       "doi": "10.1002/14651858.CD008063.pub3",
       "oaStatus": "free-pmc",
@@ -541,13 +574,13 @@
       ],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, OA per 2026-08-21 Unpaywall gate, formatCitation ama"
     },
     {
       "id": "bastos-maia-2025",
       "domain": "motivational-interviewing",
-      "citation": "Bastos Maia M, Martins PM, Figueiredo-Braga M. Outcomes and challenges of motivational interviewing in dual diagnosis treatment: a systematic review. J Dual Diagn. 2025;21(1):56-69.",
+      "citation": "Bastos Maia M, Martins P, Figueiredo-Braga M. Outcomes and Challenges of Motivational Interviewing in Dual Diagnosis Treatment-A Systematic Review. J Dual Diagn. 2025;21(1):56-69. doi:10.1080/15504263.2024.2434218.",
       "pmid": "39798118",
       "doi": "10.1080/15504263.2024.2434218",
       "oaStatus": "closed",
@@ -557,29 +590,30 @@
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, checkOpenAccess closed, formatCitation ama"
     },
     {
       "id": "ferguson-2026",
       "domain": "trauma-informed",
-      "citation": "Ferguson M, Loughhead M, McIntyre H, Procter N. Trauma-informed approaches to suicide prevention. Crisis. 2026;47(1):41-52.",
+      "citation": "Ferguson M, Loughhead M, McIntyre H, Procter N. Trauma-Informed Approaches to Suicide Prevention. Crisis. 2026;47(1):41-52. doi:10.1027/0227-5910/a001031.",
       "pmid": "41267566",
       "doi": "10.1027/0227-5910/a001031",
-      "oaStatus": "closed",
-      "linkType": "proxy",
+      "oaStatus": "hybrid",
+      "linkType": "open",
       "annotation": "The bridge between trauma histories and risk practices: assessment can retraumatize; there are alternatives.",
       "learnerLevel": "both",
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, checkOpenAccess hybrid, formatCitation ama",
+      "note": "OA upgrade 2026-08-21 (Unpaywall via Scholar Sidekick): hybrid, publishedVersion at https://doi.org/10.1027/0227-5910/a001031."
     },
     {
       "id": "goldstein-2024",
       "domain": "trauma-informed",
-      "citation": "Goldstein E, Chokshi B, Melendez-Torres GJ, Rios A, Jelley M, Lewis-O'Connor A. Effectiveness of trauma-informed care implementation in health care settings: systematic review of reviews and realist synthesis. Perm J. 2024;28(1):135-150.",
+      "citation": "Goldstein E, Chokshi B, Melendez-Torres G, Rios A, Jelley M, Lewis-O'Connor A. Effectiveness of Trauma-Informed Care Implementation in Health Care Settings: Systematic Review of Reviews and Realist Synthesis. Perm J. 2024;28(1):135-150. doi:10.7812/TPP/23.127.",
       "pmid": "38444328",
       "doi": "10.7812/TPP/23.127",
       "oaStatus": "gold-or-green",
@@ -589,13 +623,13 @@
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, OA per 2026-08-21 Unpaywall gate, formatCitation ama"
     },
     {
       "id": "mahon-2024",
       "domain": "trauma-informed",
-      "citation": "Mahon D. An umbrella review of systematic reviews on trauma informed approaches. Community Ment Health J. 2024;60(8):1627-1651.",
+      "citation": "Mahon D. An Umbrella Review of Systematic Reviews on Trauma Informed Approaches. Community Ment Health J. 2024;60(8):1627-1651. doi:10.1007/s10597-024-01317-z.",
       "pmid": "39046622",
       "doi": "10.1007/s10597-024-01317-z",
       "oaStatus": "closed",
@@ -605,45 +639,47 @@
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, checkOpenAccess closed, formatCitation ama"
     },
     {
       "id": "hajek-gross-2024",
       "domain": "psychodynamic-mbt",
-      "citation": "Hajek Gross C, Oehlke SM, Prillinger K, Goreis A, Plener PL, Kothgassner OD. Efficacy of mentalization-based therapy in treating self-harm: a systematic review and meta-analysis. Suicide Life Threat Behav. 2024;54(2):317-337.",
+      "citation": "Hajek Gross C, Oehlke S, Prillinger K, Goreis A, Plener P, Kothgassner O. Efficacy of mentalization-based therapy in treating self-harm: A systematic review and meta-analysis. Suicide Life Threat Behav. 2024;54(2):317-337. doi:10.1111/sltb.13044.",
       "pmid": "38279664",
       "doi": "10.1111/sltb.13044",
-      "oaStatus": "closed",
-      "linkType": "proxy",
+      "oaStatus": "hybrid",
+      "linkType": "open",
       "annotation": "A psychodynamically derived treatment with meta-analytic support for self-harm.",
       "learnerLevel": "both",
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, checkOpenAccess hybrid, formatCitation ama",
+      "note": "OA upgrade 2026-08-21 (Unpaywall via Scholar Sidekick): hybrid, publishedVersion at https://doi.org/10.1111/sltb.13044."
     },
     {
       "id": "wienicke-2023",
       "domain": "psychodynamic-mbt",
-      "citation": "Wienicke FJ, Beutel ME, Zwerenz R, et al. Efficacy and moderators of short-term psychodynamic psychotherapy for depression: SR and meta-analysis of individual participant data. Clin Psychol Rev. 2023;101:102269.",
+      "citation": "Wienicke F, Beutel M, Zwerenz R, et al. Efficacy and moderators of short-term psychodynamic psychotherapy for depression: A systematic review and meta-analysis of individual participant data. Clin Psychol Rev. 2023;101:102269. doi:10.1016/j.cpr.2023.102269.",
       "pmid": "36958077",
       "doi": "10.1016/j.cpr.2023.102269",
-      "oaStatus": "closed",
-      "linkType": "proxy",
+      "oaStatus": "hybrid",
+      "linkType": "open",
       "annotation": "Retires the reflex that psychodynamic means unevidenced — IPD-level support in depression.",
       "learnerLevel": "both",
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, checkOpenAccess hybrid, formatCitation ama",
+      "note": "OA upgrade 2026-08-21 (Unpaywall via Scholar Sidekick): hybrid, publishedVersion at https://doi.org/10.1016/j.cpr.2023.102269."
     },
     {
       "id": "driessen-2023",
       "domain": "psychodynamic-mbt",
-      "citation": "Driessen E, Fokkema M, Dekker JJM, et al. Which patients benefit from adding short-term psychodynamic psychotherapy to antidepressants in the treatment of depression? Psychol Med. 2023;53(13):6090-6101.",
+      "citation": "Driessen E, Fokkema M, Dekker J, et al. Which patients benefit from adding short-term psychodynamic psychotherapy to antidepressants in the treatment of depression? A systematic review and meta-analysis of individual participant data. Psychol Med. 2023;53(13):6090-6101. doi:10.1017/S0033291722003270.",
       "pmid": "36404677",
       "doi": "10.1017/S0033291722003270",
       "oaStatus": "gold-or-green",
@@ -653,13 +689,13 @@
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, OA per 2026-08-21 Unpaywall gate, formatCitation ama"
     },
     {
       "id": "defigueiredo-2026",
       "domain": "cl-medically-ill",
-      "citation": "de Figueiredo JM. The demoralization construct in clinical practice and research. J Clin Psychiatry. 2026;87(2):26com16383.",
+      "citation": "de Figueiredo JM. The Demoralization Construct in Clinical Practice and Research. J Clin Psychiatry. 2026;87(2). doi:10.4088/JCP.26com16383.",
       "pmid": "41920002",
       "doi": "10.4088/JCP.26com16383",
       "oaStatus": "closed",
@@ -669,13 +705,13 @@
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, checkOpenAccess closed, formatCitation ama"
     },
     {
       "id": "statpearls-mcp-2026",
       "domain": "cl-medically-ill",
-      "citation": "Gunturu S, McGee M, Javaid A. Meaning-Centered Psychotherapy. In: StatPearls. StatPearls Publishing; 2026. NBK622746.",
+      "citation": "Gunturu S, McGee M, Javaid A. Meaning-Centered Psychotherapy. In: StatPearls [Internet]. Treasure Island (FL): StatPearls Publishing; 2026. PMID: 42207918.",
       "pmid": "42207918",
       "doi": null,
       "oaStatus": "gold-or-green",
@@ -685,29 +721,31 @@
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction n/a (no DOI; tertiary reference), OA per 2026-08-21 Unpaywall gate, formatCitation ama",
+      "note": "checkRetraction n/a: StatPearls chapter has no DOI and is outside the retraction graph; tertiary study-guide reference, orientation use only."
     },
     {
       "id": "abbass-2020",
       "domain": "cl-medically-ill",
-      "citation": "Abbass A, Town J, Holmes H, et al. Short-term psychodynamic psychotherapy for functional somatic disorders: a meta-analysis of RCTs. Psychother Psychosom. 2020;89(6):363-370.",
+      "citation": "Abbass A, Town J, Holmes H, et al. Short-Term Psychodynamic Psychotherapy for Functional Somatic Disorders: A Meta-Analysis of Randomized Controlled Trials. Psychother Psychosom. 2020;89(6):363-370. doi:10.1159/000507738. Erratum in: Psychother Psychosom. 2020;89(6):408. doi:10.1159/000508894.",
       "pmid": "32428905",
       "doi": "10.1159/000507738",
-      "oaStatus": "closed",
+      "oaStatus": "green-submitted-only",
       "linkType": "proxy",
       "annotation": "Functional somatic presentations are consult bread-and-butter; a specific therapy helps.",
       "learnerLevel": "both",
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction: erratum noted, checkOpenAccess green-submitted-only, formatCitation ama",
+      "note": "Erratum: Psychother Psychosom. 2020;89(6):408, doi:10.1159/000508894 (2020-05-19); paper stands. Free online copy is the submitted manuscript only — link the version of record via proxy."
     },
     {
       "id": "modini-large-2026",
       "domain": "post-discharge",
-      "citation": "Modini M, Large M. Understanding the suicide rate post-discharge from a psychiatric hospital: time for a rethink. Australas Psychiatry. 2026;34(3):227-230.",
+      "citation": "Modini M, Large M. Understanding the suicide rate post-discharge from a psychiatric hospital: Time for a rethink. Australas Psychiatry. 2026;34(3):227-230. doi:10.1177/10398562261425069.",
       "pmid": "41664893",
       "doi": "10.1177/10398562261425069",
       "oaStatus": "closed",
@@ -720,13 +758,13 @@
       ],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, checkOpenAccess closed, formatCitation ama"
     },
     {
       "id": "diefenbach-2025",
       "domain": "post-discharge",
-      "citation": "Diefenbach GJ, Collett S, Black S, Rudd MD, Gueorguieva R, Tolin DF. The effect of inpatient brief CBT for suicide prevention on post-discharge emergency department utilization. Gen Hosp Psychiatry. 2025;93:73-79.",
+      "citation": "Diefenbach G, Collett S, Black S, Rudd M, Gueorguieva R, Tolin D. The effect of inpatient brief cognitive-behavioral therapy for suicide prevention on post-discharge emergency department utilization: Secondary analysis of a randomized clinical trial. Gen Hosp Psychiatry. 2025;93:73-79. doi:10.1016/j.genhosppsych.2025.01.007.",
       "pmid": "39837259",
       "doi": "10.1016/j.genhosppsych.2025.01.007",
       "oaStatus": "closed",
@@ -738,13 +776,13 @@
       ],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, checkOpenAccess closed, formatCitation ama"
     },
     {
       "id": "steinberg-2024",
       "domain": "post-discharge",
-      "citation": "Steinberg R, Amini J, Sinyor M, Mitchell RHB, Schaffer A. Implementation of caring contacts using patient feedback to reduce suicide-related outcomes following psychiatric hospitalization. Suicide Life Threat Behav. 2024;54(6):1041-1052.",
+      "citation": "Steinberg R, Amini J, Sinyor M, Mitchell R, Schaffer A. Implementation of caring contacts using patient feedback to reduce suicide-related outcomes following psychiatric hospitalization. Suicide Life Threat Behav. 2024;54(6):1041-1052. doi:10.1111/sltb.13108.",
       "pmid": "38934489",
       "doi": "10.1111/sltb.13108",
       "oaStatus": "gold-or-green",
@@ -754,13 +792,13 @@
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, OA per 2026-08-21 Unpaywall gate, formatCitation ama"
     },
     {
       "id": "schunemann-2025",
       "domain": "evidence-limits",
-      "citation": "Schünemann O, Jansen A, Willutzki U, Heinrichs N. Allegiance and treatment quality as moderators of the comparative effectiveness of psychotherapy? Clin Psychol Eur. 2025;7(1):e9709.",
+      "citation": "Schünemann O, Jansen A, Willutzki U, Heinrichs N. Allegiance and Treatment Quality as Moderators of the Comparative Effectiveness of Psychotherapy? A Systematic Review and Meta-Analysis of Studies Comparing Humanistic Psychotherapy to Other Psychotherapy Approaches. Clin Psychol Eur. 2025;7(1):e9709. doi:10.32872/cpe.9709.",
       "pmid": "40177337",
       "doi": "10.32872/cpe.9709",
       "oaStatus": "gold-or-green",
@@ -770,45 +808,47 @@
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, OA per 2026-08-21 Unpaywall gate, formatCitation ama"
     },
     {
       "id": "desalve-2025",
       "domain": "evidence-limits",
-      "citation": "De Salve F, Rossi C, Gioacchini E, Messina I, Oasi O. Dropout in psychotherapy for personality disorders: a systematic review of predictors. Clin Psychol Psychother. 2025;32(3):e70080.",
+      "citation": "De Salve F, Rossi C, Gioacchini E, Messina I, Oasi O. Dropout in Psychotherapy for Personality Disorders: A Systematic Review of Predictors. Clin Psychol Psychother. 2025;32(3):e70080. doi:10.1002/cpp.70080.",
       "pmid": "40325843",
       "doi": "10.1002/cpp.70080",
-      "oaStatus": "closed",
-      "linkType": "proxy",
+      "oaStatus": "hybrid",
+      "linkType": "open",
       "annotation": "The outcome nobody advertises: a therapy the patient leaves is not a therapy that worked.",
       "learnerLevel": "both",
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, checkOpenAccess hybrid, formatCitation ama",
+      "note": "OA upgrade 2026-08-21 (Unpaywall via Scholar Sidekick): hybrid, publishedVersion at https://doi.org/10.1002/cpp.70080."
     },
     {
       "id": "westra-2023",
       "domain": "evidence-limits",
-      "citation": "Westra HA. The implications of the Dodo bird verdict for training in psychotherapy: prioritizing process observation. Psychother Res. 2023;33(4):527-529.",
+      "citation": "Westra H. The implications of the Dodo bird verdict for training in psychotherapy: prioritizing process observation. Psychother Res. 2023;33(4):527-529. doi:10.1080/10503307.2022.2141588.",
       "pmid": "36525623",
       "doi": "10.1080/10503307.2022.2141588",
-      "oaStatus": "closed",
-      "linkType": "proxy",
+      "oaStatus": "bronze",
+      "linkType": "open",
       "annotation": "If therapies are near-equivalent on average, what should you train? The closing read of the section.",
       "learnerLevel": "both",
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, checkOpenAccess bronze, formatCitation ama",
+      "note": "Bronze OA: free at the publisher without an open licence — the link can be withdrawn; treat as open-fragile in link checks."
     },
     {
       "id": "xia-2011",
       "domain": "practice-inpatient",
-      "citation": "Xia J, Merinder LB, Belgamwar MR. Psychoeducation for schizophrenia. Cochrane Database Syst Rev. 2011;(6):CD002831.",
+      "citation": "Xia J, Merinder L, Belgamwar M. Psychoeducation for schizophrenia. Cochrane Database Syst Rev. 2011;2011(6):CD002831. doi:10.1002/14651858.CD002831.pub2.",
       "pmid": "21678337",
       "doi": "10.1002/14651858.CD002831.pub2",
       "oaStatus": "free-pmc",
@@ -820,13 +860,13 @@
       ],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, OA per 2026-08-21 Unpaywall gate, formatCitation ama"
     },
     {
       "id": "kleiman-2026",
       "domain": "practice-inpatient",
-      "citation": "Kleiman EM, Hawes-Sousa MT, Rizvi SL, Nock MK. Updating psychological treatment during inpatient psychiatric care. JAMA Psychiatry. 2026;83(6):559-560.",
+      "citation": "Kleiman E, Hawes-Sousa M, Rizvi S, Nock M. Updating Psychological Treatment During Inpatient Psychiatric Care. JAMA Psychiatry. 2026;83(6):559-560. doi:10.1001/jamapsychiatry.2026.0443.",
       "pmid": "42018314",
       "doi": "10.1001/jamapsychiatry.2026.0443",
       "oaStatus": "closed",
@@ -838,13 +878,13 @@
       ],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, checkOpenAccess closed, formatCitation ama"
     },
     {
       "id": "diefenbach-2024-primary",
       "domain": "practice-inpatient",
-      "citation": "Diefenbach GJ, Lord KA, Stubbing J, et al. Brief cognitive behavioral therapy for suicidal inpatients: a randomized clinical trial. JAMA Psychiatry. 2024;81(12):1177-1186.",
+      "citation": "Diefenbach G, Lord K, Stubbing J, et al. Brief Cognitive Behavioral Therapy for Suicidal Inpatients: A Randomized Clinical Trial. JAMA Psychiatry. 2024;81(12):1177-1186. doi:10.1001/jamapsychiatry.2024.2349.",
       "pmid": "39259550",
       "doi": "10.1001/jamapsychiatry.2024.2349",
       "oaStatus": "free-pmc",
@@ -856,13 +896,13 @@
       ],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, OA per 2026-08-21 Unpaywall gate, formatCitation ama"
     },
     {
       "id": "kearns-2025",
       "domain": "practice-inpatient",
-      "citation": "Kearns JC, Crasta D, Spitzer EG, et al. Evaluating the effectiveness of safety plans for mitigating suicide risk in two samples of psychiatrically hospitalized military veterans. Behav Ther. 2025;56(2):438-451.",
+      "citation": "Kearns J, Crasta D, Spitzer E, et al. Evaluating the Effectiveness of Safety Plans for Mitigating Suicide Risk in Two Samples of Psychiatrically Hospitalized Military Veterans. Behav Ther. 2025;56(2):438-451. doi:10.1016/j.beth.2024.08.001.",
       "pmid": "40010911",
       "doi": "10.1016/j.beth.2024.08.001",
       "oaStatus": "closed",
@@ -875,13 +915,13 @@
       ],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, checkOpenAccess closed, formatCitation ama"
     },
     {
       "id": "sall-2019",
       "domain": "practice-inpatient",
-      "citation": "Sall J, Brenner L, Millikan Bell AM, Colston MJ. Assessment and management of patients at risk for suicide: synopsis of the 2019 VA/DoD clinical practice guidelines. Ann Intern Med. 2019;171(5):343-353.",
+      "citation": "Sall J, Brenner L, Millikan Bell AM, Colston M. Assessment and Management of Patients at Risk for Suicide: Synopsis of the 2019 U.S. Department of Veterans Affairs and U.S. Department of Defense Clinical Practice Guidelines. Ann Intern Med. 2019;171(5):343-353. doi:10.7326/M19-0687.",
       "pmid": "31450237",
       "doi": "10.7326/M19-0687",
       "oaStatus": "closed",
@@ -893,13 +933,13 @@
       ],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, checkOpenAccess closed, formatCitation ama"
     },
     {
       "id": "belkin-2021",
       "domain": "practice-inpatient",
-      "citation": "Belkin MR, Briggs MC, Candan K, et al. Psychoeducation for inpatients with first-episode psychosis: results from a survey of psychiatry trainees. Psychiatr Serv. 2021;72(5):582-585.",
+      "citation": "Belkin M, Briggs M, Candan K, Risola K, Kane J, Birnbaum M. Psychoeducation for Inpatients With First-Episode Psychosis: Results From a Survey of Psychiatry Trainees in New York City. Psychiatr Serv. 2021;72(5):582-585. doi:10.1176/appi.ps.201900633.",
       "pmid": "33691485",
       "doi": "10.1176/appi.ps.201900633",
       "oaStatus": "closed",
@@ -911,13 +951,13 @@
       ],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, checkOpenAccess closed, formatCitation ama"
     },
     {
       "id": "linehan-2015",
       "domain": "practice-inpatient",
-      "citation": "Linehan MM, Korslund KE, Harned MS, et al. Dialectical behavior therapy for high suicide risk in individuals with borderline personality disorder: an RCT and component analysis. JAMA Psychiatry. 2015;72(5):475-482.",
+      "citation": "Linehan M, Korslund K, Harned M, et al. Dialectical behavior therapy for high suicide risk in individuals with borderline personality disorder: a randomized clinical trial and component analysis. JAMA Psychiatry. 2015;72(5):475-482. doi:10.1001/jamapsychiatry.2014.3039. Erratum in: JAMA Psychiatry. doi:10.1001/jamapsychiatry.2015.1480.",
       "pmid": "25806661",
       "doi": "10.1001/jamapsychiatry.2014.3039",
       "oaStatus": "closed",
@@ -929,13 +969,14 @@
       ],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction: erratum noted, checkOpenAccess closed, formatCitation ama",
+      "note": "Erratum: JAMA Psychiatry, doi:10.1001/jamapsychiatry.2015.1480; paper stands. Caught by the 2026-08-21 Scholar Sidekick pass (missed by the earlier gate)."
     },
     {
       "id": "bohus-lancet-2021",
       "domain": "practice-inpatient",
-      "citation": "Bohus M, Stoffers-Winterling J, Sharp C, Krause-Utz A, Schmahl C, Lieb K. Borderline personality disorder. Lancet. 2021;398(10310):1528-1540.",
+      "citation": "Bohus M, Stoffers-Winterling J, Sharp C, Krause-Utz A, Schmahl C, Lieb K. Borderline personality disorder. Lancet. 2021;398(10310):1528-1540. doi:10.1016/S0140-6736(21)00476-1.",
       "pmid": "34688371",
       "doi": "10.1016/S0140-6736(21)00476-1",
       "oaStatus": "closed",
@@ -947,13 +988,13 @@
       ],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, checkOpenAccess closed, formatCitation ama"
     },
     {
       "id": "leichsenring-2023",
       "domain": "practice-inpatient",
-      "citation": "Leichsenring F, Heim N, Leweke F, Spitzer C, Steinert C, Kernberg OF. Borderline personality disorder: a review. JAMA. 2023;329(8):670-679.",
+      "citation": "Leichsenring F, Heim N, Leweke F, Spitzer C, Steinert C, Kernberg O. Borderline Personality Disorder: A Review. JAMA. 2023;329(8):670-679. doi:10.1001/jama.2023.0589.",
       "pmid": "36853245",
       "doi": "10.1001/jama.2023.0589",
       "oaStatus": "closed",
@@ -965,13 +1006,13 @@
       ],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, checkOpenAccess closed, formatCitation ama"
     },
     {
       "id": "soler-2022",
       "domain": "practice-inpatient",
-      "citation": "Soler J, Casellas-Pujol E, Fernández-Felipe I, et al. \"Skills for pills\": the dialectical-behavioural therapy skills training reduces polypharmacy in borderline personality disorder. Acta Psychiatr Scand. 2022;145(4):332-342.",
+      "citation": "Soler J, Casellas-Pujol E, Fernández-Felipe I, Martín-Blanco A, Almenta D, Pascual J. \"Skills for pills\": The dialectical-behavioural therapy skills training reduces polypharmacy in borderline personality disorder. Acta Psychiatr Scand. 2022;145(4):332-342. doi:10.1111/acps.13403.",
       "pmid": "35088405",
       "doi": "10.1111/acps.13403",
       "oaStatus": "gold-or-green",
@@ -983,13 +1024,13 @@
       ],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, OA per 2026-08-21 Unpaywall gate, formatCitation ama"
     },
     {
       "id": "tham-solomon-2024",
       "domain": "practice-inpatient",
-      "citation": "Tham SS, Solomon P. Family involvement in routine services for individuals with severe mental illness: scoping review of barriers and strategies. Psychiatr Serv. 2024;75(10):1009-1030.",
+      "citation": "Tham S, Solomon P. Family Involvement in Routine Services for Individuals With Severe Mental Illness: Scoping Review of Barriers and Strategies. Psychiatr Serv. 2024;75(10):1009-1030. doi:10.1176/appi.ps.20230452.",
       "pmid": "38938096",
       "doi": "10.1176/appi.ps.20230452",
       "oaStatus": "closed",
@@ -1001,13 +1042,13 @@
       ],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, checkOpenAccess closed, formatCitation ama"
     },
     {
       "id": "hansson-2022",
       "domain": "practice-inpatient",
-      "citation": "Hansson KM, Romøren M, Weimand B, et al. The duty of confidentiality during family involvement: ethical challenges and possible solutions. BMC Psychiatry. 2022;22(1):812.",
+      "citation": "Hansson K, Romøren M, Weimand B, et al. The duty of confidentiality during family involvement: ethical challenges and possible solutions in the treatment of persons with psychotic disorders. BMC Psychiatry. 2022;22(1):812. doi:10.1186/s12888-022-04461-6.",
       "pmid": "36539741",
       "doi": "10.1186/s12888-022-04461-6",
       "oaStatus": "gold-or-green",
@@ -1019,8 +1060,8 @@
       ],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
-      "verifiedAt": "2026-08-20",
-      "verification": "epmc-identity-retraction; canonical scholar-sidekick pass pending"
+      "verifiedAt": "2026-08-21",
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, OA per 2026-08-21 Unpaywall gate, formatCitation ama"
     }
   ]
 }

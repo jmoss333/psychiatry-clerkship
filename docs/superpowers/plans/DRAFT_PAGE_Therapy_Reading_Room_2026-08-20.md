@@ -1,7 +1,7 @@
 # The Therapy Reading Room
 
 > **Status: AI-drafted · pending faculty attestation · pending final keep/cut review · not yet registered for build.**
-> All PMIDs below passed identity + retraction verification on 2026-08-20. Open-access status is provisional pending a final check; formatted citations to be regenerated before release.
+> All PMIDs below passed identity + retraction verification (2026-08-20) and the Scholar Sidekick canonical pass (2026-08-21): retraction/errata sweep clean (errata noted in the staging registry), open-access links finalized via Unpaywall, citations regenerated. Annotation text is still pending the abstract-check editorial pass and faculty attestation.
 
 **How to use this page.** This is a curated reading list, not a bibliography — a handful of papers per topic, each with one line on why it's worth your time. **Open** means the full text is free right now; **Library** means use the institutional proxy link. Start with your patient: whatever you admitted today, there's a section for it. If you read only one paper per week of the rotation, take the six marked ★.
 
@@ -11,16 +11,16 @@
 
 ## The working relationship (alliance)
 
-- ★ **The alliance in adult psychotherapy: a meta-analytic synthesis** — Flückiger et al., *Psychotherapy* 2018. PMID 29792475 · Library
+- ★ **The alliance in adult psychotherapy: a meta-analytic synthesis** — Flückiger et al., *Psychotherapy* 2018. PMID 29792475 · Open
   The foundational number: across hundreds of studies, the quality of the therapeutic relationship consistently predicts outcome. Learn this before any modality.
-- **Alliance quality in severe mental illness** — Tetzlaff et al., *Clin Psychol Rev* 2025. PMID 41110399 · Library
+- **Alliance quality in severe mental illness** — Tetzlaff et al., *Clin Psychol Rev* 2025. PMID 41110399 · Open
   Closest to our population: alliance with patients with psychosis and severe depression is buildable, and the levers are partly the clinician's.
 - **Alliance and suicidal experiences** — Huggett et al., *Clin Psychol Psychother* 2022. PMID 35168297 · Open
   Keeping a relationship alive while assessing risk: assessment done *to* a patient erodes the alliance safety planning depends on.
 - **What "alliance" actually means** — Saxler et al., *Front Psychol* 2024. PMID 38993343 · Open
   A primer on the bond/goals/tasks model — useful before the outcome literature.
 
-*Go deeper:* Huggett et al. 2024 (meta-ethnography of client and therapist perspectives; PMID 39098267 · Library) · unresolved alliance ruptures preceding dropout, Difronzo et al. 2025 (PMID 40471224 · Open).
+*Go deeper:* Huggett et al. 2024 (meta-ethnography of client and therapist perspectives; PMID 39098267 · Open) · unresolved alliance ruptures preceding dropout, Difronzo et al. 2025 (PMID 40471224 · Open).
 
 ## What an inpatient unit can deliver
 
@@ -35,11 +35,11 @@
 
 ## Behavioral activation
 
-- ★ **BA for depression: comprehensive systematic review and meta-analysis** — Cuijpers et al., *Clin Psychol Rev* 2026. PMID 42492146 · Library
+- ★ **BA for depression: comprehensive systematic review and meta-analysis** — Cuijpers et al., *Clin Psychol Rev* 2026. PMID 42492146 · Open
   The current state of the whole field — same first author as the 2007 anchor below, twenty years on. Simple, teachable, still standing.
 - **Behavioral activation treatments of depression: meta-analysis** — Cuijpers et al., *Clin Psychol Rev* 2007. PMID 17184887 · Library
   Where the modern claim started: activation alone is a treatment, not a warm-up for cognitive work.
-- **Cognitive restructuring vs BA vs CBT: network meta-analysis** — Ciharova et al., *J Consult Clin Psychol* 2021. PMID 34264703 · Library
+- **Cognitive restructuring vs BA vs CBT: network meta-analysis** — Ciharova et al., *J Consult Clin Psychol* 2021. PMID 34264703 · Open
   The dismantling question — how much does the "C" add over activation? Treatments are packages, and packages can be tested in parts.
 - **Group BA: acceptability and efficacy** — Simmonds-Buckley et al., *Behav Ther* 2019. PMID 31422844 · Library
   The evidence under the unit's actual delivery format: the group.
@@ -97,7 +97,7 @@
 
 ## Trauma-informed care
 
-- **Trauma-informed approaches to suicide prevention** — Ferguson et al., *Crisis* 2026. PMID 41267566 · Library
+- **Trauma-informed approaches to suicide prevention** — Ferguson et al., *Crisis* 2026. PMID 41267566 · Open
   The bridge between trauma histories and risk practices: assessment and safety procedures can retraumatize, and there are alternatives.
 - **TIC implementation: review of reviews** — Goldstein et al., *Perm J* 2024. PMID 38444328 · Open
   What actually happens when systems implement TIC.
@@ -106,9 +106,9 @@
 
 ## Psychodynamic therapy and mentalization
 
-- **MBT for self-harm: SR and meta-analysis** — Hajek Gross et al., *Suicide Life Threat Behav* 2024. PMID 38279664 · Library
+- **MBT for self-harm: SR and meta-analysis** — Hajek Gross et al., *Suicide Life Threat Behav* 2024. PMID 38279664 · Open
   A psychodynamically derived treatment with meta-analytic support for one of our hardest presentations.
-- **Short-term psychodynamic psychotherapy for depression: IPD meta-analysis** — Wienicke et al., *Clin Psychol Rev* 2023. PMID 36958077 · Library
+- **Short-term psychodynamic psychotherapy for depression: IPD meta-analysis** — Wienicke et al., *Clin Psychol Rev* 2023. PMID 36958077 · Open
   Retires the reflex that "psychodynamic" means "unevidenced."
 - **Who benefits from adding STPP to antidepressants?** — Driessen et al., *Psychol Med* 2023. PMID 36404677 · Open
   The combined-treatment question in its most practical, ward-relevant form.
@@ -137,9 +137,9 @@
 
 - **Allegiance and treatment quality as moderators** — Schünemann et al., *Clin Psychol Eur* 2025. PMID 40177337 · Open
   Who ran the trial shapes what the trial finds. Read author lists like you read methods.
-- **Dropout in psychotherapy for personality disorders** — De Salve et al., *Clin Psychol Psychother* 2025. PMID 40325843 · Library
+- **Dropout in psychotherapy for personality disorders** — De Salve et al., *Clin Psychol Psychother* 2025. PMID 40325843 · Open
   The outcome nobody advertises: a therapy the patient leaves is not a therapy that worked.
-- **The Dodo bird verdict and training** — Westra, *Psychother Res* 2023. PMID 36525623 · Library
+- **The Dodo bird verdict and training** — Westra, *Psychother Res* 2023. PMID 36525623 · Open
   If therapies are near-equivalent on average, what should you actually learn? Read this last; it's the point of the whole page.
 
 ---

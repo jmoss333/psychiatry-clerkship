@@ -1,7 +1,7 @@
 # Therapy on the Unit — What You Can Actually Do This Week
 
 > **Status: AI-drafted · pending faculty attestation · not yet registered for build.**
-> Citations: **every reference on this page passed identity + retraction verification on 2026-08-20** (Europe PMC; includes the formerly OpenEvidence-supplied set, all resolved to PMIDs). Still pending before student release: canonical Unpaywall OA pass, Crossref errata/expression-of-concern sweep, and formatCitation regeneration — see the Claude Code handoff.
+> Citations: **every reference on this page passed identity + retraction verification (2026-08-20, Europe PMC) and the Scholar Sidekick canonical pass (2026-08-21)** — Crossref/Retraction Watch retraction + errata sweep (0 retracted; errata noted inline), Unpaywall OA pass, and formatCitation (AMA) regeneration. Two errata are carried on their citations (refs 16 and the Reading Room's Abbass entry); the Pharoah Cochrane version question (ref 27) awaits a faculty decision.
 > Learner level: **MS3 core**, with labeled **Resident extension** blocks.
 
 ---
@@ -136,41 +136,40 @@ A. A signed no-suicide contract  B. Unstructured supportive counseling  C. A per
 
 ## References
 
-**Verified [✓] (identity + retraction checked 2026-08-20; citations provisional-AMA pending formatCitation):**
+**All references below completed the canonical citation pass on 2026-08-21** (Scholar Sidekick:
+checkRetraction via Crossref/Retraction Watch, checkOpenAccess via Unpaywall, formatCitation AMA).
+Numbering matches the in-text anchors.
 
-1. Schefft C, et al. Efficacy of inpatient psychotherapy for major depressive disorder: a meta-analysis of controlled trials. *Acta Psychiatr Scand.* 2019;139(4):322-335. PMID 30520019.
-2. Cohen-Chazani Y, et al. Meta-analysis of the effect of psychotherapy in an inpatient setting: examining the moderating role of diagnosis and therapeutic approach. *Psychiatry.* 2022;85(4):399-417. PMID 35442174.
-3. Stanley B, Brown GK, et al. Comparison of the Safety Planning Intervention with follow-up vs usual care of suicidal patients treated in the emergency department. *JAMA Psychiatry.* 2018;75(9):894-900. PMID 29998307.
-5. Modini M, Large M. Understanding the suicide rate post-discharge from a psychiatric hospital: time for a rethink. *Australas Psychiatry.* 2026;34(3):227-230. PMID 41664893.
-9. Shank LM, et al. Systematic review of the impact of interventions changing access to lethal means on suicide attempts and deaths. *Inj Prev.* 2026;32(1):7-15. PMID 40185617.
-11. Diefenbach GJ, et al. The effect of inpatient brief cognitive-behavioral therapy for suicide prevention on post-discharge emergency department utilization. *Gen Hosp Psychiatry.* 2025;93:73-79. PMID 39837259.
-12. Steinberg R, et al. Implementation of caring contacts using patient feedback to reduce suicide-related outcomes following psychiatric hospitalization. *Suicide Life Threat Behav.* 2024;54(6):1041-1052. PMID 38934489.
-13. Tetzlaff M, et al. Associated factors of the quality of therapeutic alliance in people with severe mental illnesses: a systematic review. *Clin Psychol Rev.* 2025;122:102656. PMID 41110399.
-14. Cuijpers P, et al. Behavioral activation for depression: a comprehensive systematic review and meta-analysis. *Clin Psychol Rev.* 2026;128:102783. PMID 42492146.
-15. Simmonds-Buckley M, et al. Acceptability and efficacy of group behavioral activation for depression among adults: a meta-analysis. *Behav Ther.* 2019;50(5):864-885. PMID 31422844.
-17. Arqueros M, et al. Stand-alone dialectical behavior therapy skills training for borderline personality disorder: a systematic review and meta-analysis. *Personal Disord.* 2026. PMID 42275028.
-18. Schwenker R, et al. Motivational interviewing for substance use reduction. *Cochrane Database Syst Rev.* 2023;12:CD008063. PMID 38084817.
-19. Bastos Maia M, et al. Outcomes and challenges of motivational interviewing in dual diagnosis treatment: a systematic review. *J Dual Diagn.* 2025;21(1):56-69. PMID 39798118.
-20. Varese F, et al. Treatment effect modifiers of cognitive behaviour therapy in people with psychosis: an individual participant data meta-analysis of RCTs. *Health Technol Assess.* 2025;29(53):1-115. PMID 41217072.
-21. Links PS, Ross J. Good psychiatric management of borderline personality disorder: foundations and future challenges. *Am J Psychother.* 2025;78(1):4-10. PMID 38952224.
-24. Wibbelink CJM, et al. Dialectical behavior therapy vs schema therapy for patients with borderline personality disorder: the BOOTS multicenter randomized clinical trial. *JAMA Psychiatry.* 2026;83(7):669-681. PMID 42018336.
-25. Brodsky BS, et al. Dialectical behavior therapy versus serotonin reuptake inhibitor treatment for suicidal behavior in borderline personality disorder: a randomized controlled trial. *Am J Psychiatry.* 2025;182(12):1083-1092. PMID 41190740.
+1. Schefft C, Guhn A, Brakemeier E, Sterzer P, Köhler S. Efficacy of inpatient psychotherapy for major depressive disorder: a meta-analysis of controlled trials. Acta Psychiatr Scand. 2019;139(4):322-335. doi:10.1111/acps.12995.
+2. Cohen-Chazani Y, Lavidor M, Gilboa-Schechtman E, Roe D, Hasson-Ohayon I. Meta-Analysis of the Effect of Psychotherapy in an Inpatient Setting: Examining the Moderating Role of Diagnosis and Therapeutic Approach. Psychiatry. 2022;85(4):399-417. doi:10.1080/00332747.2022.2062660.
+3. Stanley B, Brown G, Brenner L, et al. Comparison of the Safety Planning Intervention With Follow-up vs Usual Care of Suicidal Patients Treated in the Emergency Department. JAMA Psychiatry. 2018;75(9):894-900. doi:10.1001/jamapsychiatry.2018.1776.
+4. Xia J, Merinder L, Belgamwar M. Psychoeducation for schizophrenia. Cochrane Database Syst Rev. 2011;2011(6):CD002831. doi:10.1002/14651858.CD002831.pub2. (Free full text: PMC4170907.)
+5. Modini M, Large M. Understanding the suicide rate post-discharge from a psychiatric hospital: Time for a rethink. Australas Psychiatry. 2026;34(3):227-230. doi:10.1177/10398562261425069.
+6. Kleiman E, Hawes-Sousa M, Rizvi S, Nock M. Updating Psychological Treatment During Inpatient Psychiatric Care. JAMA Psychiatry. 2026;83(6):559-560. doi:10.1001/jamapsychiatry.2026.0443.
+7. Kearns J, Crasta D, Spitzer E, et al. Evaluating the Effectiveness of Safety Plans for Mitigating Suicide Risk in Two Samples of Psychiatrically Hospitalized Military Veterans. Behav Ther. 2025;56(2):438-451. doi:10.1016/j.beth.2024.08.001.
+8. Sall J, Brenner L, Millikan Bell AM, Colston M. Assessment and Management of Patients at Risk for Suicide: Synopsis of the 2019 U.S. Department of Veterans Affairs and U.S. Department of Defense Clinical Practice Guidelines. Ann Intern Med. 2019;171(5):343-353. doi:10.7326/M19-0687.
+9. Shank L, Smolenski D, Boyd C, et al. Systematic review of the impact of interventions changing access to lethal means on suicide attempts and deaths. Inj Prev. 2026;32(1):7-15. doi:10.1136/ip-2024-045611.
+10. Belkin M, Briggs M, Candan K, Risola K, Kane J, Birnbaum M. Psychoeducation for Inpatients With First-Episode Psychosis: Results From a Survey of Psychiatry Trainees in New York City. Psychiatr Serv. 2021;72(5):582-585. doi:10.1176/appi.ps.201900633.
+11. Diefenbach G, Collett S, Black S, Rudd M, Gueorguieva R, Tolin D. The effect of inpatient brief cognitive-behavioral therapy for suicide prevention on post-discharge emergency department utilization: Secondary analysis of a randomized clinical trial. Gen Hosp Psychiatry. 2025;93:73-79. doi:10.1016/j.genhosppsych.2025.01.007.
+12. Steinberg R, Amini J, Sinyor M, Mitchell R, Schaffer A. Implementation of caring contacts using patient feedback to reduce suicide-related outcomes following psychiatric hospitalization. Suicide Life Threat Behav. 2024;54(6):1041-1052. doi:10.1111/sltb.13108.
+13. Tetzlaff M, Bruins J, Castelein S. Associated factors of the quality of therapeutic alliance in people with severe mental illnesses: A systematic review. Clin Psychol Rev. 2025;122:102656. doi:10.1016/j.cpr.2025.102656.
+14. Cuijpers P, Ciharova M, Tong L, et al. Behavioral activation for depression: A comprehensive systematic review and meta-analysis. Clin Psychol Rev. 2026;128:102783. doi:10.1016/j.cpr.2026.102783.
+15. Simmonds-Buckley M, Kellett S, Waller G. Acceptability and Efficacy of Group Behavioral Activation for Depression Among Adults: A Meta-Analysis. Behav Ther. 2019;50(5):864-885. doi:10.1016/j.beth.2019.01.003.
+16. Linehan M, Korslund K, Harned M, et al. Dialectical behavior therapy for high suicide risk in individuals with borderline personality disorder: a randomized clinical trial and component analysis. JAMA Psychiatry. 2015;72(5):475-482. doi:10.1001/jamapsychiatry.2014.3039. Erratum in: JAMA Psychiatry. doi:10.1001/jamapsychiatry.2015.1480.
+17. Arqueros M, Soler J, Pascual J. Stand-alone dialectical behavior therapy skills training for borderline personality disorder: A systematic review and meta-analysis. Personal Disord. 2026. doi:10.1037/per0000774.
+18. Schwenker R, Dietrich C, Hirpa S, et al. Motivational interviewing for substance use reduction. Cochrane Database Syst Rev. 2023;12(12):CD008063. doi:10.1002/14651858.CD008063.pub3.
+19. Bastos Maia M, Martins P, Figueiredo-Braga M. Outcomes and Challenges of Motivational Interviewing in Dual Diagnosis Treatment-A Systematic Review. J Dual Diagn. 2025;21(1):56-69. doi:10.1080/15504263.2024.2434218.
+20. Varese F, Sudell M, Morrison A, Longden E, Tudur Smith C, IMPART. Treatment effect modifiers of cognitive behaviour therapy in people with psychosis: an individual participant data meta-analysis of RCTs. Health Technol Assess. 2025;29(53):1-115. doi:10.3310/NCFR5074.
+21. Links P, Ross J. Good Psychiatric Management of Borderline Personality Disorder: Foundations and Future Challenges. Am J Psychother. 2025;78(1):4-10. doi:10.1176/appi.psychotherapy.20230044.
+22. Bohus M, Stoffers-Winterling J, Sharp C, Krause-Utz A, Schmahl C, Lieb K. Borderline personality disorder. Lancet. 2021;398(10310):1528-1540. doi:10.1016/S0140-6736(21)00476-1. · Leichsenring F, Heim N, Leweke F, Spitzer C, Steinert C, Kernberg O. Borderline Personality Disorder: A Review. JAMA. 2023;329(8):670-679. doi:10.1001/jama.2023.0589.
+23. Soler J, Casellas-Pujol E, Fernández-Felipe I, Martín-Blanco A, Almenta D, Pascual J. "Skills for pills": The dialectical-behavioural therapy skills training reduces polypharmacy in borderline personality disorder. Acta Psychiatr Scand. 2022;145(4):332-342. doi:10.1111/acps.13403. (Open access: PMC9305183.)
+24. Wibbelink C, Kamphuis J, Sinnaeve R, et al. Dialectical Behavior Therapy vs Schema Therapy for Patients With Borderline Personality Disorder: The BOOTS Multicenter Randomized Clinical Trial. JAMA Psychiatry. 2026;83(7):669-681. doi:10.1001/jamapsychiatry.2026.0418.
+25. Brodsky B, Galfalvy H, Mann J, Grunebaum M, Stanley B. Dialectical Behavior Therapy Versus Serotonin Reuptake Inhibitor Treatment for Suicidal Behavior in Borderline Personality Disorder: A Randomized Controlled Trial. Am J Psychiatry. 2025;182(12):1083-1092. doi:10.1176/appi.ajp.20240298.
 26. (See 17.)
-27. Pharoah F, et al. Family intervention for schizophrenia. *Cochrane Database Syst Rev.* 2010;(12):CD000088. PMID 21154340.
-29. Ma CF, et al. The predictive power of expressed emotion and its components in relapse of schizophrenia: a meta-analysis and meta-regression. *Psychol Med.* 2021;51(3):365-375. PMID 33568244.
-30. Camacho-Gomez M, Castellvi P. Effectiveness of family intervention for preventing relapse in first-episode psychosis until 24 months of follow-up. *Schizophr Bull.* 2020;46(1):98-109. PMID 31050757.
-31. Appel G, et al. Guidance for family engagement with patients with borderline personality disorder: integrating principles from transference-focused psychotherapy and good psychiatric management. *Psychodyn Psychiatry.* 2026;54(1):97-109. PMID 41849148.
+27. Pharoah F, Mari J, Rathbone J, Wong W. Family intervention for schizophrenia. Cochrane Database Syst Rev. 2010:CD000088. doi:10.1002/14651858.CD000088.pub2. [Editor note, pre-attestation: PMID 21154340 maps to the 2010 .pub2 version, which Crossref flags as superseded by .pub3 — version to cite is a pending faculty decision.]
+28. Tham S, Solomon P. Family Involvement in Routine Services for Individuals With Severe Mental Illness: Scoping Review of Barriers and Strategies. Psychiatr Serv. 2024;75(10):1009-1030. doi:10.1176/appi.ps.20230452. · Hansson K, Romøren M, Weimand B, et al. The duty of confidentiality during family involvement: ethical challenges and possible solutions in the treatment of persons with psychotic disorders. BMC Psychiatry. 2022;22(1):812. doi:10.1186/s12888-022-04461-6. (Open access: PMC9764492.)
+29. Ma C, Chan S, Chung Y, et al. The predictive power of expressed emotion and its components in relapse of schizophrenia: a meta-analysis and meta-regression. Psychol Med. 2021;51(3):365-375. doi:10.1017/S0033291721000209.
+30. Camacho-Gomez M, Castellvi P. Effectiveness of Family Intervention for Preventing Relapse in First-Episode Psychosis Until 24 Months of Follow-up: A Systematic Review With Meta-analysis of Randomized Controlled Trials. Schizophr Bull. 2020;46(1):98-109. doi:10.1093/schbul/sbz038.
+31. Appel G, Arac-Orhun S, Hersh R. Guidance for Family Engagement With Patients With Borderline Personality Disorder: Integrating Principles From Transference-Focused Psychotherapy and Good Psychiatric Management. Psychodyn Psychiatry. 2026;54(1):97-109. doi:10.1521/pdps.2026.54.1.97.
 
-**Formerly OpenEvidence-supplied — now identity + retraction verified (2026-08-20, Europe PMC):**
-
-4. Xia J, Merinder LB, Belgamwar MR. Psychoeducation for schizophrenia. *Cochrane Database Syst Rev.* 2011;(6):CD002831. PMID 21678337. (Free full text: PMC4170907.)
-6. Kleiman EM, Hawes-Sousa MT, Rizvi SL, Nock MK. Updating psychological treatment during inpatient psychiatric care. *JAMA Psychiatry.* 2026;83(6):559-560. PMID 42018314.
-7. Kearns JC, Crasta D, Spitzer EG, et al. Evaluating the effectiveness of safety plans for mitigating suicide risk in two samples of psychiatrically hospitalized military veterans. *Behav Ther.* 2025;56(2):438-451. PMID 40010911.
-8. Sall J, Brenner L, Millikan Bell AM, Colston MJ. Assessment and management of patients at risk for suicide: synopsis of the 2019 VA/DoD clinical practice guidelines. *Ann Intern Med.* 2019;171(5):343-353. PMID 31450237.
-10. Belkin MR, Briggs MC, Candan K, et al. Psychoeducation for inpatients with first-episode psychosis: results from a survey of psychiatry trainees in New York City. *Psychiatr Serv.* 2021;72(5):582-585. PMID 33691485.
-16. Linehan MM, Korslund KE, Harned MS, et al. Dialectical behavior therapy for high suicide risk in individuals with borderline personality disorder: a randomized clinical trial and component analysis. *JAMA Psychiatry.* 2015;72(5):475-482. PMID 25806661.
-22. Bohus M, Stoffers-Winterling J, Sharp C, Krause-Utz A, Schmahl C, Lieb K. Borderline personality disorder. *Lancet.* 2021;398(10310):1528-1540. PMID 34688371. · Leichsenring F, Heim N, Leweke F, Spitzer C, Steinert C, Kernberg OF. Borderline personality disorder: a review. *JAMA.* 2023;329(8):670-679. PMID 36853245.
-23. Soler J, Casellas-Pujol E, Fernández-Felipe I, et al. "Skills for pills": the dialectical-behavioural therapy skills training reduces polypharmacy in borderline personality disorder. *Acta Psychiatr Scand.* 2022;145(4):332-342. PMID 35088405. (Open access: PMC9305183.)
-28. Tham SS, Solomon P. Family involvement in routine services for individuals with severe mental illness: scoping review of barriers and strategies. *Psychiatr Serv.* 2024;75(10):1009-1030. PMID 38938096. · Hansson KM, Romøren M, Weimand B, et al. The duty of confidentiality during family involvement: ethical challenges and possible solutions. *BMC Psychiatry.* 2022;22(1):812. PMID 36539741. (Open access: PMC9764492.)
-
-**Also verified — the primary trial behind reference 11:** Diefenbach GJ, Lord KA, Stubbing J, et al. Brief cognitive behavioral therapy for suicidal inpatients: a randomized clinical trial. *JAMA Psychiatry.* 2024;81(12):1177-1186. PMID 39259550. (Free full text: PMC11391362.)
+**Also verified — the primary trial behind reference 11:** Diefenbach G, Lord K, Stubbing J, et al. Brief Cognitive Behavioral Therapy for Suicidal Inpatients: A Randomized Clinical Trial. JAMA Psychiatry. 2024;81(12):1177-1186. doi:10.1001/jamapsychiatry.2024.2349. (Free full text: PMC11391362.)
