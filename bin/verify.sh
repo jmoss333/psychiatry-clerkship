@@ -26,6 +26,16 @@ set -uo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.." || exit 2
 REPO="$PWD"
 
+# Git exports GIT_DIR and friends into hooks, and this script IS a pre-push hook. Several
+# suites build throwaway git repos with `git init <tmp>` + `git -C <tmp> config …`; GIT_DIR
+# outranks -C for config resolution, so under the hook those fixture writes land in the
+# REAL repository. That is not hypothetical: it set core.bare=true and user.name=Fixture on
+# this repo on 2026-08-20, which breaks `git status`, `git grep`, and `git push` everywhere,
+# including the other worktrees. Scrub the inherited git environment before running anything.
+unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_PREFIX GIT_COMMON_DIR \
+      GIT_OBJECT_DIRECTORY GIT_ALTERNATE_OBJECT_DIRECTORIES GIT_QUARANTINE_PATH \
+      GIT_CONFIG GIT_CONFIG_GLOBAL GIT_CONFIG_SYSTEM GIT_AUTHOR_NAME GIT_AUTHOR_EMAIL
+
 QUICK=0
 [ "${1:-}" = "--quick" ] && QUICK=1
 
@@ -41,6 +51,21 @@ step() {
     printf '%s\n' "$out" | tail -15 | sed 's/^/        | /'
     FAILED+=("$name")
   fi
+}
+
+# ci.yml greps for machine-specific paths and fails when it FINDS them, so the exit codes
+# invert: git grep returns 1 for "clean" and 0 for "violations". Do not express that as
+# `! git grep …` — that also maps git's own errors (exit 128, e.g. no work tree) to success,
+# which is how this step reported PASS while printing "fatal: this operation must be run in
+# a work tree". Any exit code other than 0 or 1 is a broken check, not a passing one.
+lint_machine_paths() {
+  local out rc
+  out="$(git grep -nE "/(Users|sessions)/[a-z]" -- "*.py" 2>&1)"; rc=$?
+  case $rc in
+    1) echo "no hard-coded machine paths in tracked *.py"; return 0 ;;
+    0) echo "$out"; return 1 ;;
+    *) echo "git grep could not run (exit $rc): $out"; return 2 ;;
+  esac
 }
 
 echo "verify.sh — $(git rev-parse --abbrev-ref HEAD) @ $(git rev-parse --short HEAD)"
@@ -86,7 +111,7 @@ step "validate_reconnect_snapshot_provenance" python3 $A/validate_reconnect_snap
 step "unit — surface governance"            python3 $A/test_surface_governance.py
 step "unit — tool governance"               python3 $A/test_validate_tool_governance.py
 step "validate_tool_governance"             python3 $A/validate_tool_governance.py
-step "lint — no hard-coded machine paths"   bash -c '! git grep -nE "/(Users|sessions)/[a-z]" -- "*.py"'
+step "lint — no hard-coded machine paths"   lint_machine_paths
 # ci.yml runs this with --compare-ref "$BASE_SHA" on PR events; the bare form is its own
 # else-branch, so local runs get the same immutability contract minus the base comparison.
 step "validate_rotation_edition_catalog"    python3 $A/validate_rotation_edition_catalog.py
