@@ -8567,7 +8567,7 @@
     },
     {
       "id": "qb_cdev_005",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "childdev",
       "competency": [
@@ -9671,7 +9671,7 @@
     },
     {
       "id": "qb_anx_013",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "anxiety",
       "competency": [
@@ -9724,7 +9724,7 @@
     },
     {
       "id": "qb_anx_014",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "anxiety",
       "competency": [
@@ -9778,7 +9778,7 @@
     },
     {
       "id": "qb_anx_015",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "anxiety",
       "competency": [
