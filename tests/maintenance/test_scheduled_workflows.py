@@ -326,7 +326,8 @@ class ScheduledWorkflowTests(unittest.TestCase):
             ),
             (
                 (
-                    "          lfs: false\n\n"
+                    "          lfs: false\n"
+                    "          fetch-depth: 0\n\n"
                     "      - uses: actions/setup-python@"
                     "5fda3b95a4ea91299a34e894583c3862153e4b97 # v7\n"
                     "        with:\n"
@@ -334,7 +335,8 @@ class ScheduledWorkflowTests(unittest.TestCase):
                     "      - name: Install — registry schema"
                 ),
                 (
-                    "          lfs: false\n\n"
+                    "          lfs: false\n"
+                    "          fetch-depth: 0\n\n"
                     "      - uses: actions/setup-python@"
                     "5fda3b95a4ea91299a34e894583c3862153e4b97\n"
                     "        with:\n"
