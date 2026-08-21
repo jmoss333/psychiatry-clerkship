@@ -147,6 +147,11 @@ EXPECTED_STEP_INVENTORIES = {
             ("name", "Validate — family systems scenarios contract"),
             ("name", "Test — registry schema gate"),
             ("name", "Validate — registry schemas"),
+            ("name", "Test — rotation edition schema gate"),
+            ("name", "Validate — rotation edition schema fixtures"),
+            ("name", "Test — rotation edition catalog gate"),
+            ("name", "Validate — immutable rotation edition catalog"),
+            ("name", "Guard — production rotation edition stays exactly empty and disabled"),
             ("name", "Test — ReConnect snapshot provenance"),
             ("name", "Validate — ReConnect snapshot provenance"),
             ("name", "Unit — surface governance"),
@@ -171,7 +176,7 @@ EXPECTED_STEP_INVENTORIES = {
             ("uses", "actions/cache"),
             ("name", "Install Playwright + Chromium"),
             ("name", "Start local review servers"),
-            ("name", "Check 1: nav crawl — ms3 + res"),
+            ("name", "Check 1: nav crawl + two-audience rotation edition journeys — ms3 + res"),
             ("name", "Check 1a: Interview Room acceptance — ms3"),
             ("name", "Check 1b: Unified faculty attestation workspace"),
             ("name", "Check 2: LFS integrity — Netlify deploy preview"),
@@ -302,7 +307,7 @@ EXPECTED_STEP_INVENTORIES = {
 # Native true/false values stay typed, `on` stays a string, and action inputs
 # use runner-coerced string semantics. Pin comments are validated separately.
 EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
-    "ci.yml": "91a3e2cf4ffa20f1e3b34c2bbb3b4d18c2508a596956d47ff7341715a7d089ae",
+    "ci.yml": "328e78f4ae8fb3029c435bc83c047f6bc319cd435635340ce94bb8bc0db7a1ef",
     "maintenance-governance-digest.yml": (
         "9869ba87704c40c9f5117b012ef7fea372644e318ccbb0df54d118b296675099"
     ),
@@ -505,7 +510,7 @@ CRITICAL_STEPS = {
                 "required CI smoke build",
             ),
             (
-                "Check 1: nav crawl — ms3 + res",
+                "Check 1: nav crawl + two-audience rotation edition journeys — ms3 + res",
                 "cd tests/smoke\n"
                 "npx playwright test --project=nav-ms3 --project=nav-res",
                 None,
