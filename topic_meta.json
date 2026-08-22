@@ -759,7 +759,10 @@
    }
   ],
   "evidenceIds": [
-   "asam-alcohol-withdrawal-2020"
+   "asam-alcohol-withdrawal-2020",
+   "schwenker-2023",
+   "bastos-maia-2025",
+   "pott-2022"
   ],
   "relatedTools": [
    "withdrawal.html",
@@ -934,6 +937,13 @@
   "epa": [
    "EPA1",
    "EPA2"
+  ],
+  "evidenceIds": [
+   "links-ross-2025",
+   "wibbelink-2026",
+   "brodsky-2025",
+   "arqueros-2026",
+   "appel-2026"
   ]
  },
  "t_neurodev.md": {
@@ -2235,7 +2245,11 @@
   "evidenceIds": [
    "cssrs-columbia-lighthouse",
    "va-dod-suicide-cpg-2024",
-   "joint-commission-suicide-prevention"
+   "joint-commission-suicide-prevention",
+   "steeg-2025",
+   "stanley-brown-2018",
+   "diefenbach-2025",
+   "shank-2026"
   ],
   "relatedTools": [
    "cssrs.html",
@@ -2341,7 +2355,11 @@
   "evidenceIds": [
    "cssrs-columbia-lighthouse",
    "va-dod-suicide-cpg-2024",
-   "joint-commission-suicide-prevention"
+   "joint-commission-suicide-prevention",
+   "steeg-2025",
+   "stanley-brown-2018",
+   "diefenbach-2025",
+   "shank-2026"
   ],
   "relatedTools": [
    "cssrs.html",
@@ -3376,6 +3394,11 @@
   ],
   "epa": [
    "EPA9"
+  ],
+  "evidenceIds": [
+   "pharoah-2010-family-intervention",
+   "ma-2021",
+   "camacho-gomez-2020"
   ]
  },
  "family_modalities.md": {
@@ -3701,6 +3724,10 @@
   },
   "epa": [
    "EPA7"
+  ],
+  "evidenceIds": [
+   "schunemann-2025",
+   "desalve-2025"
   ]
  },
  "protocol_library.md": {
@@ -5554,5 +5581,137 @@
     }
    ]
   }
+ },
+ "therapy_on_the_unit.md": {
+  "read": 12,
+  "tldr": "The admission itself is a treatment window: every patient gets the non-negotiable three — a personalized safety plan, structured psychoeducation, discharge bridging — and every encounter is a chance for a 5-minute micro-intervention matched to the presentation.",
+  "points": [
+   "Inpatient psychotherapy adds a real, modest benefit (SMD ~0.24-0.43, NNT ~7) and no modality is clearly superior — common factors carry the effect, which is exactly the part an MS3 can deliver from day one.",
+   "The non-negotiable three for every admission: a personalized, quality-checked safety plan (associated with ~45% fewer suicidal behaviors when paired with follow-up), structured psychoeducation (readmission NNT ~5 in psychosis), and discharge bridging — the first weeks out are the riskiest of the whole episode.",
+   "Match the move to the presentation: BA micro-dose for the withdrawn, one distress-tolerance skill for the flooded, MI readiness ruler for the ambivalent — and the more acute the disorganization, the more behavioral and supportive the intervention."
+  ],
+  "cant": "No no-suicide contracts, no trauma processing mid-crisis, no 16-session manual compressed into a 4-day stay — and don't diagnose a comorbidity out of a BPD affective storm: trigger-linked shifts lasting hours are the disorder's expected physiology, not new-onset MDD.",
+  "quiz": {
+   "q": "A 22-year-old woman with borderline personality disorder is admitted after self-injury. By day 3, night staff describe her as 'manipulative,' while her day nurse advocates strongly for extending the admission. The next best step in management is:",
+   "o": [
+    {
+     "t": "Assign her exclusively to the day nurse she trusts"
+    },
+    {
+     "t": "A team meeting producing one plan that every staff member communicates identically",
+     "c": true
+    },
+    {
+     "t": "Transfer to another unit"
+    },
+    {
+     "t": "A behavioral contract threatening discharge for further self-injury"
+    }
+   ],
+   "why": "This is splitting — the patient's polarized internal world reproduced in the team. The evidence-based response is team-level: shared formulation, a single consistent plan, and normalization of the dynamic so it informs rather than divides care. Exclusive assignment entrenches the split; punitive contingencies escalate risk."
+  },
+  "cta": [
+   {
+    "label": "Read the evidence behind this module",
+    "href": "?page=therapy_reading_room.md"
+   },
+   {
+    "label": "Open Brief Psychotherapy on the Unit",
+    "href": "?page=brief_psychotherapy.md"
+   }
+  ],
+  "relatedTools": [
+   "communication-practice.html",
+   "family-systems.html",
+   "reflection.html"
+  ],
+  "workflowModes": [
+   "ward",
+   "5min",
+   "family",
+   "safety"
+  ],
+  "workflowStages": [
+   "treatment",
+   "safety",
+   "communication",
+   "family"
+  ],
+  "familyOverlay": "inpatient_family_meeting_plants_a_seed",
+  "clinicalWorkflow": {
+   "ask": "Ask what they used to enjoy that could go on today's schedule, what helps even a little when flooded, and who should be in the room for the family meeting before discharge.",
+   "mse": "Track engagement, affect regulation, and cognitive load — the more disorganized the sensorium, the more behavioral and supportive the intervention has to be.",
+   "safety": "Every admission: a personalized safety plan whose quality is checked (not a pasted template), collaborative lethal-means counseling, and discharge bridging before the highest-risk first weeks out.",
+   "say": "We can use these few days: one skill, one scheduled activity, and one plan for the first week home.",
+   "collateral": "You can always listen to a family without the patient's permission — consent governs what you share, not what you hear.",
+   "rounds": "Name the mechanism, the 5-minute intervention delivered, the patient's response, and the discharge-bridge status.",
+   "exam": "Safety planning with follow-up beats no-suicide contracts; behavioral activation matches the anergic patient; psychoeducation carries the strongest single-intervention numbers in psychosis.",
+   "actions": [
+    {
+     "label": "Open the Therapy Reading Room",
+     "href": "?page=therapy_reading_room.md"
+    }
+   ]
+  },
+  "evidenceIds": [
+   "man-2023",
+   "schefft-2019",
+   "links-ross-2025",
+   "steeg-2025",
+   "stanley-brown-2018",
+   "xia-2011",
+   "modini-large-2026"
+  ],
+  "facultyReview": {
+   "status": "pending",
+   "reviewer": "Joshua Moss, MD"
+  },
+  "epa": [
+   "EPA8",
+   "EPA9"
+  ]
+ },
+ "therapy_reading_room.md": {
+  "read": 8,
+  "tldr": "A curated, verified therapy reading list: a handful of papers per domain with one line each on why it's worth your time — six ★ picks for the six weeks, open-access links checked, and the evidence-limits section as the lens for everything above it.",
+  "points": [
+   "Read one ★ paper per rotation week: alliance (Flückiger), behavioral activation (Cuijpers 2026), safety planning (Stanley 2018), GPM for BPD (Links & Ross), family intervention (Pharoah), and the post-discharge risk rethink (Modini & Large).",
+   "Open means the full text is free right now (links are checked so the open ones really open); Library means use the institutional proxy.",
+   "The honest nulls stay in on purpose — a thin evidence base under a confident clinical habit is itself a teaching point, and each annotation carries the paper's own numbers."
+  ],
+  "cant": "Don't quote an annotation as the paper's finding without opening the paper — annotations are one-line orientations drafted from abstracts, and the anchors' own hedges (Pharoah's 'may decrease relapse') are part of the finding.",
+  "cta": [
+   {
+    "label": "Open Therapy on the Unit",
+    "href": "?page=therapy_on_the_unit.md"
+   }
+  ],
+  "relatedTools": [
+   "question-bank-practice.html",
+   "review.html"
+  ],
+  "workflowModes": [
+   "ward",
+   "shelf"
+  ],
+  "workflowStages": [
+   "treatment",
+   "exam"
+  ],
+  "evidenceIds": [
+   "fluckiger-2018",
+   "cuijpers-2026",
+   "stanley-brown-2018",
+   "links-ross-2025",
+   "pharoah-2010-family-intervention",
+   "modini-large-2026"
+  ],
+  "facultyReview": {
+   "status": "pending",
+   "reviewer": "Joshua Moss, MD"
+  },
+  "epa": [
+   "EPA7"
+  ]
  }
 }
