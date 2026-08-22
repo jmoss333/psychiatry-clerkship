@@ -28,27 +28,31 @@ function extract(re, label) {
 }
 
 const srsLoadSrc = extract(/function srsLoad\(\)\{[\s\S]*?\n\}/, 'srsLoad()');
+const includeDraftsSrc = extract(/function includeDrafts\(\)\{[\s\S]*?\}/, 'includeDrafts()');
 const activeItemsSrc = extract(/function activeItems\(\)\{[\s\S]*?\n\}/, 'activeItems()');
 const dueQbItemsSrc = extract(/function dueQbItems\(\)\{[\s\S]*?\n\}/, 'dueQbItems()');
 const buildQueueSrc = extract(/function buildQueue\([\s\S]*?\n\}/, 'buildQueue()');
 const startSessionSrc = extract(/function startSession\(catFilter[\s\S]*?\n\}/, 'startSession()');
 
-function item(id, category, difficulty, retired = false) {
-  const it = { id, category, difficulty, stem: `stem ${id}`, options: [] };
+function item(id, category, difficulty, retired = false, status = 'attested') {
+  const it = { id, category, difficulty, stem: `stem ${id}`, options: [], status };
   if (retired) it.retired = true;
   return it;
 }
 
 // Runs the real sources. srsCards: {'QB#<id>': {due:<ms>}}. Returns the queue that
 // beginSession received. shuffle is stubbed to identity so order is assertable.
-function run(bankItems, srsCards, [cat, diff, size]) {
-  const harness = new Function('BANK', 'srsRaw', 'NOW', 'cat', 'diff', 'size', `
+// draftsOn seeds the cw_qb_drafts_v1 opt-in that includeDrafts() reads (WP-37:
+// attested-only by default), routed through the same lsGet stub as the SRS state.
+function run(bankItems, srsCards, [cat, diff, size], draftsOn = false) {
+  const harness = new Function('BANK', 'srsRaw', 'NOW', 'cat', 'diff', 'size', 'draftsOn', `
     var captured = null;
-    function lsGet(){ return srsRaw; }
+    function lsGet(k){ if (k === 'cw_qb_drafts_v1') return draftsOn === true; return srsRaw; }
     function shuffle(a){ return a.slice(); }
     function beginSession(queue){ captured = queue; }
     var _realNow = Date.now; Date.now = function(){ return NOW; };
     ${srsLoadSrc}
+    ${includeDraftsSrc}
     ${activeItemsSrc}
     ${dueQbItemsSrc}
     ${buildQueueSrc}
@@ -56,7 +60,7 @@ function run(bankItems, srsCards, [cat, diff, size]) {
     try { startSession(cat, diff, size); } finally { Date.now = _realNow; }
     return captured;
   `);
-  return harness({ items: bankItems }, { v: 1, cards: srsCards }, 1_000_000, cat, diff, size);
+  return harness({ items: bankItems }, { v: 1, cards: srsCards }, 1_000_000, cat, diff, size, draftsOn);
 }
 
 const BANK = [
@@ -66,6 +70,7 @@ const BANK = [
   item('qb_d', 'mood', 1),
   item('qb_e', 'mood', 2, /* retired */ true),
   item('qb_f', 'mood', 2),
+  item('qb_g', 'mood', 2, false, /* draft */ 'draft'),
 ];
 
 test('due cards serve first, most-overdue first, then the fresh selection', () => {
@@ -120,24 +125,45 @@ test('a due card for a RETIRED item never resurfaces even with valid schedule st
 
 test('empty or malformed schedule state degrades to the normal shuffled session', () => {
   const queue = run(BANK, {}, ['all', 'all', 'all']);
-  assert.equal(queue.length, BANK.filter(it => !it.retired).length);
+  assert.equal(queue.length,
+    BANK.filter(it => !it.retired && it.status === 'attested').length,
+    'the default session is the attested-only pool');
 });
 
-// ---- shell parity plumbing (RETIRED_QB_IDS) ----------------------------------------
-
-test('the shell carries exactly one empty RETIRED_QB_IDS needle for the build to fill', () => {
-  const needle = 'var RETIRED_QB_IDS=[];';
-  assert.equal(spaSrc.split(needle).length - 1, 1,
-    'build_deploy.py verified-replaces this literal; zero or two copies breaks the injection');
+test('a due card for a DRAFT item does not resurface by default (WP-37 attested-only pool)', () => {
+  const queue = run(BANK, {
+    'QB#qb_g': { due: 1 }, // maximally overdue, but the item is an un-attested draft
+  }, ['all', 'all', 'all']);
+  assert.ok(!queue.some(it => it.id === 'qb_g'),
+    'a draft card must not resurface while the learner has not opted in');
+  assert.ok(!queue.some(it => it.id === 'qb_e'), 'retired stays excluded too');
 });
 
-test('both shell calibration counters skip retired records', () => {
+test('with the draft opt-in set, a due draft card resurfaces first again', () => {
+  const queue = run(BANK, {
+    'QB#qb_g': { due: 1 },
+  }, ['all', 'all', 'all'], /* draftsOn */ true);
+  assert.equal(queue[0].id, 'qb_g', 'opted-in learners get the full due-first behaviour');
+  assert.ok(!queue.some(it => it.id === 'qb_e'),
+    'the opt-in widens the pool to drafts only — never to retired items');
+});
+
+// ---- shell parity plumbing (RETIRED_QB_IDS / DRAFT_QB_IDS) -------------------------
+
+test('the shell carries exactly one empty needle of each kind for the build to fill', () => {
+  for (const needle of ['var RETIRED_QB_IDS=[];', 'var DRAFT_QB_IDS=[];']) {
+    assert.equal(spaSrc.split(needle).length - 1, 1,
+      `build_deploy.py verified-replaces ${needle}; zero or two copies breaks the injection`);
+  }
+});
+
+test('both shell calibration counters count only servable records (not retired; drafts only when opted in)', () => {
   const summary = spaSrc.match(/function calibrationSummary\(\)\{[\s\S]*?\n  \}/);
   assert.ok(summary, 'calibrationSummary not found');
-  assert.match(summary[0], /isRetiredQb\(id\)/,
-    'calibrationSummary must skip retired ids');
+  assert.match(summary[0], /qbRecordServable\(id\)/,
+    'calibrationSummary must apply the shared servability rule');
   const panel = spaSrc.match(/function renderCalibPanel\(\)\{[\s\S]*?\n  \}/);
   assert.ok(panel, 'renderCalibPanel not found');
-  assert.match(panel[0], /isRetiredQb\(id\)/,
-    'renderCalibPanel certWrong count must skip retired ids');
+  assert.match(panel[0], /qbRecordServable\(id\)/,
+    'renderCalibPanel certWrong count must apply the shared servability rule');
 });

@@ -1314,9 +1314,27 @@
 
   /* ---- helpers reading existing storage ---- */
   function LS(k){ try{ return localStorage.getItem(k); }catch(_){ return null; } }
+  /* ---- qb servability (shell parity) ----
+     Which bank records/cards the shell may count, matching question-bank-practice.html's
+     activeItems(): retired items are never servable; un-attested drafts are servable only
+     while the learner's cw_qb_drafts_v1 opt-in is set (WP-37 attested-only default).
+     Both id lists are BUILD-INJECTED from question_bank.json (the source literals stay
+     empty; build_deploy.py hard-fails if either needle is missing or duplicated, and
+     check-static-site.mjs §6c cross-checks the built output). The resident shell inherits
+     the injected lists (it rebrands the MS3-built index.html). Counting a record the
+     practice tool will not serve re-opens the "Due today counts cards nothing can serve"
+     defect class. */
+  var RETIRED_QB_IDS=[];
+  function isRetiredQb(id){ return RETIRED_QB_IDS.indexOf(id)>=0; }
+  var DRAFT_QB_IDS=[];
+  function isDraftQb(id){ return DRAFT_QB_IDS.indexOf(id)>=0; }
+  function qbDraftsIncluded(){ try{ return localStorage.getItem('cw_qb_drafts_v1')==='true'; }catch(_){ return false; } }
+  /* id is the bank item id (no QB# prefix). */
+  function qbRecordServable(id){ if(isRetiredQb(id))return false; if(!qbDraftsIncluded()&&isDraftQb(id))return false; return true; }
+  /* ---- end qb servability ---- */
   function srsState(){ try{ return JSON.parse(localStorage.getItem('cw_srs_v1')||'null'); }catch(_){ return null; } }
   function srsBucket(id){ if(id.indexOf('QB#')===0)return 'qb'; if(id.indexOf('FAM#')===0)return 'fam'; if(id.indexOf('deck#')===0||id.indexOf('TOPIC#')===0)return 'daily'; return 'other'; }
-  function dueBreakdown(){ var s=srsState(),b={daily:{due:0,overdue:0},qb:{due:0,overdue:0},fam:{due:0,overdue:0},other:{due:0,overdue:0}}; if(s&&s.cards){ var now=Date.now(),sod=new Date();sod.setHours(0,0,0,0); for(var id in s.cards){ var c=s.cards[id]; if(c&&c.due<=now){ var k=srsBucket(id); b[k].due++; if(c.due<sod.getTime())b[k].overdue++; } } } return b; }
+  function dueBreakdown(){ var s=srsState(),b={daily:{due:0,overdue:0},qb:{due:0,overdue:0},fam:{due:0,overdue:0},other:{due:0,overdue:0}}; if(s&&s.cards){ var now=Date.now(),sod=new Date();sod.setHours(0,0,0,0); for(var id in s.cards){ var c=s.cards[id]; if(c&&c.due<=now){ var k=srsBucket(id); if(k==='qb'&&!qbRecordServable(id.slice(3)))continue; b[k].due++; if(c.due<sod.getTime())b[k].overdue++; } } } return b; }
   function dueCount(){ var b=dueBreakdown(); return {due:b.daily.due,overdue:b.daily.overdue}; }
   /* ---- end due breakdown ---- */
   function navScan(){ var p=(typeof progLoad==='function')?progLoad():{}, meta=(typeof TOPIC_META!=='undefined')?TOPIC_META:{}, hy=[],cov={}, cols=(typeof FD_INDEX!=='undefined'&&FD_INDEX.columns)||[]; for(var c=0;c<cols.length;c++){ var sec=cols[c].name||'', items=cols[c].items||[]; for(var i=0;i<items.length;i++){ var it=items[i]; if(!it)continue; if(it.kind==='read'){ if(!cov[sec])cov[sec]={done:0,tot:0}; cov[sec].tot++; if(p[it.ref]&&p[it.ref].done)cov[sec].done++; } if(meta[it.ref]&&meta[it.ref].hy&&!(p[it.ref]&&p[it.ref].done))hy.push({f:it.ref,t:it.title,sec:sec}); } } return {hy:hy,cov:cov}; }
@@ -1350,17 +1368,13 @@
        score of a perfect record clears 70 anyway, so the clause only rescues tiny-n perfection. */
     return SHELF_ORDER.map(function(c){ var a=acc[c]; var n=a.total; var score=null; if(n){ score=Math.round(100*((a.correct+1.5)/(n+3))); score=Math.max(0,score-Math.min(15,a.lapses*3)); } return {c:c,label:SHELF_LABEL[c],score:score,n:n,miss:Math.max(0,a.total-a.correct),conf:(n===0?'none':(n<5?'low':'solid'))}; });
   }
-  /* Retired bank items, BUILD-INJECTED from question_bank.json (this source literal stays
-     an empty list; build_deploy.py hard-fails if the needle is missing). Lets the shell's
-     calibration counts skip records for since-retired items — closing the parity gap with
-     question-bank-practice.html's certWrongItems(), which filters through activeItems().
-     The resident shell inherits the injected list (it rebrands the MS3-built index.html). */
-  var RETIRED_QB_IDS=[];
-  function isRetiredQb(id){ return RETIRED_QB_IDS.indexOf(id)>=0; }
-  /* confidence calibration (derived): how accurate are answers at each stated confidence? */
+  /* confidence calibration (derived): how accurate are answers at each stated confidence?
+     Counts only records the practice tool would serve (qbRecordServable — see the qb
+     servability block above dueBreakdown) so these numbers stay in parity with the
+     tool's certWrongItems() preset. */
   function calibrationSummary(){
     var lv={guess:{n:0,correct:0},likely:{n:0,correct:0},certain:{n:0,correct:0}}, certWrong=0, total=0;
-    try{ var qb=JSON.parse(localStorage.getItem('cw_qb_v1')||'{}'); Object.keys(qb).forEach(function(id){ var r=qb[id]; if(isRetiredQb(id))return; if(!r||!r.confidence||!lv[r.confidence])return; total++; lv[r.confidence].n++; if(r.correct)lv[r.confidence].correct++; if(r.confidence==='certain'&&!r.correct)certWrong++; }); }catch(_){ }
+    try{ var qb=JSON.parse(localStorage.getItem('cw_qb_v1')||'{}'); Object.keys(qb).forEach(function(id){ var r=qb[id]; if(!qbRecordServable(id))return; if(!r||!r.confidence||!lv[r.confidence])return; total++; lv[r.confidence].n++; if(r.correct)lv[r.confidence].correct++; if(r.confidence==='certain'&&!r.correct)certWrong++; }); }catch(_){ }
     return {lv:lv,certWrong:certWrong,total:total};
   }
   function safeLS(k){ try{ return JSON.parse(localStorage.getItem(k)||'null'); }catch(_){ return null; } }
@@ -1448,7 +1462,7 @@
     if(barsHtml){ h+='<div class="hm-bars">'+barsHtml+'</div>'; }
     else{ h+='<div class="sub" style="margin:0 0 8px">Not enough attempts yet at any one confidence level to show bars — keep practicing.</div>'; }
     var qbv1={}; try{ qbv1=JSON.parse(localStorage.getItem('cw_qb_v1')||'{}')||{}; }catch(_){ qbv1={}; }
-    var certWrong=0; Object.keys(qbv1).forEach(function(id){ var r=qbv1[id]; if(isRetiredQb(id))return; if(r&&r.certWrong===true)certWrong++; });
+    var certWrong=0; Object.keys(qbv1).forEach(function(id){ var r=qbv1[id]; if(!qbRecordServable(id))return; if(r&&r.certWrong===true)certWrong++; });
     if(certWrong>0){
       h+='<div class="sub" style="margin:8px 0 0">You were <strong>confidently wrong</strong> on '+certWrong+' item'+(certWrong===1?'':'s')+' — those are the highest-yield to revisit.</div>';
       h+='<button class="hm-li" data-f="question-bank-practice.html" style="border-bottom:none"><span class="t">Practice your confidently-wrong items</span><span class="sec">Practice →</span></button>';
