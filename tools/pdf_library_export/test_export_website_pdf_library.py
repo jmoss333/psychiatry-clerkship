@@ -270,7 +270,7 @@ def test_default_site_manifest_sources_exist_in_repo():
     md_entries, tool_entries = load_manifest(repo_root, manifest)
 
     assert len(md_entries) == 69  # +therapy_on_the_unit.md, +therapy_reading_room.md (2026-08-21, WP-T3)
-    assert len(tool_entries) == 22  # +rotation-curator.html (2026-08-20, PR #377)
+    assert len(tool_entries) == 21  # +interaction-cards.html (2026-08-11, PR #315)
 
 
 def test_resolve_cli_paths_expands_relative_paths():
