@@ -210,11 +210,13 @@ const REAL_IDX = F.fdBuildIndex(REAL_CUR, REAL_META, REAL_TOOLS, REAL_MAN);
 
 test('the count of rendered links equals 81 against the real curriculum.json', () => {
   const expected = (REAL_CUR.libraryColumns || []).reduce((n, c) => n + c.refs.length, 0);
-  assert.equal(expected, 81, 'curriculum.json is expected to place 81 pages across the five columns');
+  // 83 = 81 + the two 2026-08-21 therapy-curriculum pages (therapy_on_the_unit.md,
+  // therapy_reading_room.md).
+  assert.equal(expected, 83, 'curriculum.json is expected to place 83 pages across the five columns');
   const html = F.fdLibrary(REAL_IDX);
   const links = html.match(/data-fd-open="/g) || [];
   assert.equal(links.length, expected, 'every column-placed page must render exactly one Library link');
-  assert.equal(links.length, 81);
+  assert.equal(links.length, 83);
 });
 
 test('the real header count matches the real link count', () => {

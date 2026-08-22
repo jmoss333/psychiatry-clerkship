@@ -118,11 +118,75 @@ SAFETY_GATE_IDS = {
     "vanderkruik-2017-postpartum-psychosis-prevalence",
     "wesseloo-2016-postpartum-relapse",
 }
+# Evidence promoted by the 2026-08-21 therapy-curriculum build (WP-T2; Taplinger
+# request #5, closes review finding F19 for the therapy domain). Reading-list
+# domains + practice-inpatient module support, one alphabetical set — the two
+# rows already registered (pharoah-2010-family-intervention,
+# stanley-brown-2012-safety-planning) were updated in place, not re-added.
+THERAPY_WP_T2_IDS = {
+    "abbass-2020",
+    "appel-2026",
+    "arqueros-2026",
+    "bastos-maia-2025",
+    "belkin-2021",
+    "bohus-lancet-2021",
+    "brodsky-2025",
+    "camacho-gomez-2020",
+    "ciharova-2021",
+    "cohen-chazani-2022",
+    "cuijpers-2007",
+    "cuijpers-2026",
+    "desalve-2025",
+    "diefenbach-2024-primary",
+    "diefenbach-2025",
+    "difronzo-2025",
+    "driessen-2023",
+    "ferguson-2026",
+    "fluckiger-2018",
+    "goldstein-2024",
+    "hajek-gross-2024",
+    "hansson-2022",
+    "hong-2025",
+    "huggett-2022",
+    "huggett-2024",
+    "kearns-2025",
+    "kleiman-2026",
+    "leichsenring-2023",
+    "linehan-2015",
+    "links-ross-2025",
+    "ma-2021",
+    "mahon-2024",
+    "man-2023",
+    "modini-large-2026",
+    "penzenik-2026",
+    "pott-2022",
+    "sall-2019",
+    "saxler-2024",
+    "schefft-2019",
+    "schunemann-2025",
+    "schwenker-2023",
+    "shank-2026",
+    "simmonds-buckley-2019",
+    "soler-2022",
+    "stanley-brown-2018",
+    "statpearls-mcp-2026",
+    "steeg-2025",
+    "steinberg-2024",
+    "tarrier-wykes-2004",
+    "tetzlaff-2025",
+    "tham-solomon-2024",
+    "varese-2025",
+    "wibbelink-2026",
+    "wienicke-2023",
+    "xia-2011",
+}
 # The registry inventory is locked to this union: a source added without being
 # registered here fails the canary below, which is the point. Deriving the
 # expected count from the union keeps the count assertion honest (it still
 # catches duplicate ids) without making every batch a three-site magic-number edit.
-ALL_SOURCE_IDS = EXISTING_IDS | TIER1_IDS | SURVEILLANCE_IDS | SAFETY_GATE_IDS
+ALL_SOURCE_IDS = (
+    EXISTING_IDS | TIER1_IDS | SURVEILLANCE_IDS | SAFETY_GATE_IDS | THERAPY_WP_T2_IDS
+)
 REFERENCE_FILES = (
     "topic_meta.json",
     "tool_registry.json",
@@ -417,11 +481,20 @@ def test_published_schema_governance_is_required_for_every_canonical_source():
     required = set(schema["definitions"]["governance"]["required"])
     assert {"supersededBy", "correctionStatus", "noteHistory"} <= required
 
+    # Sources with a PUBLISHED erratum (correction, not retraction) — verified via the
+    # 2026-08-21 Scholar Sidekick canonical pass and recorded in each entry's noteHistory.
+    # Anything else claiming a correction status (or any expression-of-concern/retracted
+    # source) still fails: the allow-list is the record of what faculty knowingly kept.
+    CORRECTED_IDS = {"abbass-2020", "linehan-2015"}
+
     registry = load_evidence_registry(REGISTRY_PATH)
     assert len(registry["sources"]) == len(ALL_SOURCE_IDS)
     for position, source in enumerate(registry["sources"]):
         assert source["governance"]["supersededBy"] == [], position
-        assert source["governance"]["correctionStatus"] == "none-known", position
+        expected_status = (
+            "corrected" if source["id"] in CORRECTED_IDS else "none-known"
+        )
+        assert source["governance"]["correctionStatus"] == expected_status, position
         assert registry_library._STABLE_ID_RE.fullmatch(source["id"]), position
 
 
@@ -912,27 +985,35 @@ def test_canonical_pharoah_appraisal_preserves_review_uncertainty():
     assert "poor trial methods may overestimate effects" in limitations
 
 
-def test_canonical_pharoah_identity_records_faculty_approved_publisher_exception():
+def test_canonical_pharoah_identity_records_faculty_settled_pub3_version():
+    """Faculty decision 2026-08-21 supersedes the 2026-07-12 retain-.pub2 exception.
+
+    The Cochrane Library version history was checked directly: .pub3 is the 2010
+    Dec 8 update that PMID 21154340 identifies; the .pub2 DOI carried by PubMed and
+    Europe PMC is a metadata error. Both decisions must remain visible in the
+    noteHistory — the identity pins the CURRENT understanding, the history keeps
+    the record of what was previously believed and why it changed.
+    """
     source = index_sources(load_evidence_registry(REGISTRY_PATH))[
         "pharoah-2010-family-intervention"
     ]
     identity = source["identity"]
     note = identity["note"].lower()
-    assert (
-        identity["source"]
-        == "zotero-local-api-and-pubmed-agree-cochrane-publisher-disagrees"
-    )
-    assert "publisher-doi" not in identity["source"]
-    assert "cochrane publisher metadata disagrees" in note
-    assert "faculty-approved exception" in note
-    assert "retain" in note
+    assert "cochrane-library-version-history" in identity["source"]
+    assert "supersedes the 2026-07-12 exception" in note
+    assert "metadata error" in note
     assert ".pub2" in note
     assert ".pub3" in note
-    assert "2026-07-12" in note
+    assert "2026-08-21" in note
     assert identity["status"] == "verified"
-    assert source["citation"]["doi"] == "10.1002/14651858.cd000088.pub2"
+    assert source["citation"]["doi"] == "10.1002/14651858.cd000088.pub3"
     assert source["citation"]["pmid"] == "21154340"
     assert source["zotero"]["itemKey"] == "P4M5H9VM"
+    # The superseded exception must survive in the append-only history.
+    history_notes = " ".join(
+        entry["note"].lower() for entry in source["governance"]["noteHistory"]
+    )
+    assert "faculty-approved exception recorded 2026-07-12" in history_notes
 
 
 def test_canonical_tads_appraisal_preserves_safety_exclusions_and_power_limit():

@@ -9,7 +9,7 @@ function audience(testInfo) {
   const resident = testInfo.project.name === 'nav-res';
   return {
     role: resident ? 'pgy1' : 'student',
-    libraryCount: resident ? 90 : 81,
+    libraryCount: resident ? 92 : 83,  // +therapy_on_the_unit.md, +therapy_reading_room.md (WP-T3)
     residentRef: resident ? 'rp-agitation.html' : null,
     weekCount: resident ? 4 : 6,
     pathHeading: resident ? 'Your 4-week path' : 'Your 6-week path',

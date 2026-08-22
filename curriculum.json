@@ -205,6 +205,7 @@
         "case_formulation.md", "doc_oral.md", "collateral_workflow.md",
         "exp_tx.md", "exp_family.md", "family_modalities.md",
         "family_playbook.md", "psychotherapy.md", "brief_psychotherapy.md",
+        "therapy_on_the_unit.md",
         "motivational_interviewing.md", "cultural_psychiatry.md",
         "ethics_legal.md"
       ]
@@ -215,7 +216,8 @@
       "refs": [
         "core_readings.md", "shelf.md", "osce.md", "cases.md",
         "rapid_review.md", "reading_map.md", "anki.md", "rounds_questions.md",
-        "landmark_trials.md", "evidence_inpatient.md", "psychopharm_primer.md",
+        "landmark_trials.md", "evidence_inpatient.md", "therapy_reading_room.md",
+        "psychopharm_primer.md",
         "med_monitoring.md", "ect_neuromodulation.md", "nutrition_metabolic.md",
         "omm_resources.md", "book_library.md", "podcast_library.md",
         "cotw_index.md"
