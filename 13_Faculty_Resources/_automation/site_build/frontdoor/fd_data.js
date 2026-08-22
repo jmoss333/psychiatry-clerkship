@@ -16,10 +16,11 @@ function fdIsTool(ref){ return /\.html$/.test(ref); }
 /* A page with no topic_meta entry still has to render -- the Library carries every shipped page
    and not all of them are topic-template pages. Degrade to a titled row rather than throwing:
    renderHome()'s history in this repo is that one unguarded throw blanks the whole surface. */
-function fdMakeItem(ref, kind, topicMeta, toolIndex, titleIndex){
+function fdMakeItem(ref, kind, topicMeta, toolIndex, manifestIndex){
   var m=topicMeta[ref]||{};
   var t=toolIndex[ref]||null;
   var fr=m.facultyReview||{};
+  var manifest=manifestIndex[ref]||{};
   var isTool=(kind==='tool')||fdIsTool(ref);
   return {
     ref: ref,
@@ -28,13 +29,14 @@ function fdMakeItem(ref, kind, topicMeta, toolIndex, titleIndex){
        title field on any entry -- it describes a page's content, not its identity -- so reading
        one there would silently degrade every .md row to its raw slug. Falling back to the ref is
        for a page the manifest does not list, which the curriculum validator already rejects. */
-    title: titleIndex[ref]||ref,
+    title: manifest.title||ref,
     minutes: (typeof m.read==='number')?m.read:null,
     summary: m.tldr||'',
     points: (m.points&&m.points.length)?m.points:[],
     attested: fr.status==='reviewed',
     toolRef: (m.relatedTools&&m.relatedTools.length)?m.relatedTools[0]:null,
     risk: (t&&t.riskLevel)||m.safetyLevel||null,
+    governance: manifest.governance||null,
     href: (isTool?'?tool=':'?page=')+ref
   };
 }
@@ -44,16 +46,20 @@ function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
   var toolIndex={}, list=(toolRegistry&&toolRegistry.tools)||[];
   for(var i=0;i<list.length;i++){ toolIndex[list[i].file]=list[i]; }
 
-  /* site_manifest entries are [sourcePath, slug, title] triples for both md and tools. */
-  var titleIndex={}, man=siteManifest||{};
+  /* Canonical site_manifest entries are [sourcePath, slug, title] triples. The private build
+     projection adds governance as element 3; direct callers with canonical triples get null. */
+  var manifestIndex={}, man=siteManifest||{};
   var groups=[man.tools||[], man.md||[]];
   for(var g=0;g<groups.length;g++){
-    for(var e=0;e<groups[g].length;e++){ titleIndex[groups[g][e][1]]=groups[g][e][2]; }
+    for(var e=0;e<groups[g].length;e++){
+      var entry=groups[g][e];
+      manifestIndex[entry[1]]={title:entry[2],governance:entry.length===4?entry[3]:null};
+    }
   }
 
   var byRef={};
   function ensure(ref, kind){
-    if(!byRef[ref]) byRef[ref]=fdMakeItem(ref, kind, meta, toolIndex, titleIndex);
+    if(!byRef[ref]) byRef[ref]=fdMakeItem(ref, kind, meta, toolIndex, manifestIndex);
     return byRef[ref];
   }
 
@@ -61,7 +67,13 @@ function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
   for(var w=0;w<cw.length;w++){
     var items=[], src=cw[w].items||[];
     for(var j=0;j<src.length;j++){ items.push(ensure(src[j].ref, src[j].kind)); }
-    weeks.push({ n: cw[w].n, title: cw[w].title, theme: cw[w].theme, items: items });
+    weeks.push({
+      n:cw[w].n,
+      title:cw[w].title,
+      theme:cw[w].theme,
+      focusCategories:(cw[w].focusCategories||[]).slice(),
+      items:items
+    });
   }
 
   var columns=[], cc=cur.libraryColumns||[];
@@ -74,7 +86,34 @@ function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
   var kit=[], ck=cur.safetyKit||[];
   for(var k=0;k<ck.length;k++){ kit.push({ item: ensure(ck[k].ref, null), sub: ck[k].sub }); }
 
-  return { byRef: byRef, weeks: weeks, columns: columns, kit: kit };
+  var sourcePath=cur.path||{};
+  var pathInfo={
+    id:(typeof sourcePath.id==='string')?sourcePath.id:'',
+    weekCount:sourcePath.weekCount
+  };
+
+  return { byRef:byRef, path:pathInfo, weeks:weeks, columns:columns, kit:kit };
+}
+
+/* The browser receives exactly one projected path. Treat that small object as untrusted at the
+   rendering boundary: build validation normally prevents malformed projections, but a partial
+   asset/cache response must show the standard fallback rather than invent a learner plan. */
+function fdActivePathValid(index){
+  var path=index&&index.path, weeks=index&&index.weeks;
+  if(!path||typeof path.id!=='string'||!path.id||!Array.isArray(weeks)||!weeks.length||
+     path.weekCount!==weeks.length) return false;
+  for(var i=0;i<weeks.length;i++){
+    var week=weeks[i];
+    if(!week||typeof week.n!=='number'||!isFinite(week.n)||Math.floor(week.n)!==week.n||
+       week.n!==i+1||typeof week.title!=='string'||!week.title||
+       !Array.isArray(week.focusCategories)) return false;
+  }
+  return true;
+}
+
+function fdPathFallback(surface){
+  return '<div class="fd-fallback" data-fd-fallback="'+fdEsc(surface)+'" role="alert">'+
+    'This section could not load. Try reloading, or use another tab.</div>';
 }
 
 function fdItemsForWeek(index, n){
@@ -89,6 +128,18 @@ function fdItemsForWeek(index, n){
 function fdFindWeek(index, n){
   var weeks=(index&&index.weeks)||[];
   for(var i=0;i<weeks.length;i++){ if(weeks[i].n===n) return weeks[i]; }
+  return null;
+}
+
+function fdPathWeekCount(index){
+  return fdActivePathValid(index)?index.weeks.length:0;
+}
+
+function fdNextWeek(index, n){
+  var weeks=(index&&index.weeks)||[];
+  for(var i=0;i<weeks.length;i++){
+    if(weeks[i].n===n) return (i+1<weeks.length)?weeks[i+1]:null;
+  }
   return null;
 }
 

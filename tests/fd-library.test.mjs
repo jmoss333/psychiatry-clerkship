@@ -16,14 +16,16 @@ const BUILD = '../13_Faculty_Resources/_automation/site_build';
 const read = (p) => readFileSync(new URL(`${BUILD}/${p}`, import.meta.url), 'utf8');
 const librarySrc = read('frontdoor/fd_library.js');
 
-// eslint-disable-next-line no-new-func
-const make = new Function(`
-  ${read('phase_policy.js')}
-  ${read('frontdoor/fd_state.js')}
-  ${read('frontdoor/fd_data.js')}
-  ${librarySrc}
-  return { fdLibrary: fdLibrary, fdBuildIndex: fdBuildIndex };
-`);
+function make(governanceBadge) {
+  // eslint-disable-next-line no-new-func
+  return new Function('governanceBadge', `
+    ${read('phase_policy.js')}
+    ${read('frontdoor/fd_state.js')}
+    ${read('frontdoor/fd_data.js')}
+    ${librarySrc}
+    return { fdLibrary: fdLibrary, fdBuildIndex: fdBuildIndex };
+  `)(governanceBadge || function () { return ''; });
+}
 const F = make();
 
 const AUDIENCE_TOKEN_RE = /MS3|clerkship|student|shelf|resident|UNE|MMC|Sanford/i;
@@ -118,6 +120,32 @@ test('data-fd-open is the established open convention -- no second attribute nam
   assert.doesNotMatch(html, /data-fd-link=/);
 });
 
+test('library rows pass projected governance to the shared badge helper after each label', () => {
+  const calls = [];
+  const G = make((triplet) => {
+    calls.push(triplet);
+    if (!triplet || triplet.status === 'reviewed') return '';
+    return triplet.riskLevel === 'high'
+      ? '<span class="governance-badge high">Pending review · High risk</span>'
+      : '<span class="governance-badge">Pending review</span>';
+  });
+  const manifest = JSON.parse(JSON.stringify(FIX_MAN));
+  manifest.tools[0].push({ status: 'pending', riskKind: 'clinical', riskLevel: 'high' });
+  manifest.tools[1].push({ status: 'pending', riskKind: 'general', riskLevel: 'low' });
+  manifest.md.find((entry) => entry[1] === 'mismatch-read.md').push(
+    { status: 'reviewed', riskKind: 'general', riskLevel: 'low' });
+  const html = G.fdLibrary(G.fdBuildIndex(FIX_CUR, FIX_META, FIX_TOOLS, manifest));
+
+  assert.deepEqual(calls.slice(0, 3), [
+    { status: 'pending', riskKind: 'clinical', riskLevel: 'high' },
+    { status: 'pending', riskKind: 'general', riskLevel: 'low' },
+    { status: 'reviewed', riskKind: 'general', riskLevel: 'low' },
+  ]);
+  assert.match(html, /fd-collink__label">Tool One<\/span><span class="governance-badge high">Pending review · High risk<\/span>/);
+  assert.match(html, /fd-collink__label">Tool Two<\/span><span class="governance-badge">Pending review<\/span>/);
+  assert.doesNotMatch(html, /fd-collink__label">Misplaced Read<\/span><span class="governance-badge/);
+});
+
 // ---- header: exact copy + page count ------------------------------------------------------
 
 test('the header reads "Everything, one screen" with the page count', () => {
@@ -182,11 +210,13 @@ const REAL_IDX = F.fdBuildIndex(REAL_CUR, REAL_META, REAL_TOOLS, REAL_MAN);
 
 test('the count of rendered links equals 81 against the real curriculum.json', () => {
   const expected = (REAL_CUR.libraryColumns || []).reduce((n, c) => n + c.refs.length, 0);
-  assert.equal(expected, 81, 'curriculum.json is expected to place 81 pages across the five columns');
+  // 83 = 81 + the two 2026-08-21 therapy-curriculum pages (therapy_on_the_unit.md,
+  // therapy_reading_room.md).
+  assert.equal(expected, 83, 'curriculum.json is expected to place 83 pages across the five columns');
   const html = F.fdLibrary(REAL_IDX);
   const links = html.match(/data-fd-open="/g) || [];
   assert.equal(links.length, expected, 'every column-placed page must render exactly one Library link');
-  assert.equal(links.length, 81);
+  assert.equal(links.length, 83);
 });
 
 test('the real header count matches the real link count', () => {

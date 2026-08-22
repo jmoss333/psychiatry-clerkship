@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "audiences": {
+    "ms3": {
+      "audience": "ms3",
+      "coreRevision": "503b42d2538d525c0a3bbf0e1767333e5e617df4",
+      "path": {"id": "ms3-six-week", "weekCount": 6},
+      "weeks": [
+        {"n": 1, "title": "Week 1", "theme": "Foundation", "focusCategories": [], "items": []},
+        {"n": 2, "title": "Week 2", "theme": "Practice", "focusCategories": [], "items": []},
+        {"n": 3, "title": "Week 3", "theme": "Application", "focusCategories": [], "items": []},
+        {"n": 4, "title": "Week 4", "theme": "Integration", "focusCategories": [], "items": []},
+        {"n": 5, "title": "Week 5", "theme": "Synthesis", "focusCategories": [], "items": []},
+        {"n": 6, "title": "Week 6", "theme": "Transition", "focusCategories": [], "items": []}
+      ],
+      "byRef": {"library/example": {"ref": "library/example", "kind": "read", "title": "Synthetic core example", "summary": "Synthetic reviewed core copy.", "attested": true, "governance": ["clinical", "reviewed"]}},
+      "columns": [{"name": "Library", "items": [{"ref": "library/example"}]}],
+      "kit": [{"item": {"ref": "library/example"}, "sub": "Synthetic Safety Kit copy."}],
+      "singleSafetyRule": "Synthetic core safety rule.",
+      "supervision": "Synthetic supervision copy.",
+      "learnerHistory": {"untouched": true}
+    },
+    "resident": {
+      "audience": "resident",
+      "coreRevision": "0537907a8b9c0d1e2f3a4b5c6d7e8f9012345678",
+      "path": {"id": "resident-four-week", "weekCount": 4},
+      "weeks": [
+        {"n": 1, "title": "Week 1", "theme": "Foundation", "focusCategories": [], "items": []},
+        {"n": 2, "title": "Week 2", "theme": "Practice", "focusCategories": [], "items": []},
+        {"n": 3, "title": "Week 3", "theme": "Application", "focusCategories": [], "items": []},
+        {"n": 4, "title": "Week 4", "theme": "Integration", "focusCategories": [], "items": []}
+      ],
+      "byRef": {"library/example": {"ref": "library/example", "kind": "read", "title": "Synthetic resident core example", "summary": "Synthetic reviewed resident core copy.", "attested": true, "governance": ["clinical", "reviewed"]}},
+      "columns": [{"name": "Library", "items": [{"ref": "library/example"}]}],
+      "kit": [{"item": {"ref": "library/example"}, "sub": "Synthetic resident Safety Kit copy."}],
+      "singleSafetyRule": "Synthetic resident core safety rule.",
+      "supervision": "Synthetic resident supervision copy.",
+      "learnerHistory": {"untouched": true}
+    }
+  },
+  "catalogRecords": [
+    {"key": "choice.example-role@v1", "kind": "choice", "choiceKind": "role", "label": "Example role", "fragment": "the example attending", "audiences": ["ms3", "resident"], "verifiedOn": "2026-08-19"},
+    {"key": "curator.example-attending@v1", "kind": "curatorProfile", "displayName": "Example Attending", "roleKey": "choice.example-role@v1", "locationKeys": ["location.example-unit@v1"], "audiences": ["ms3", "resident"], "verifiedOn": "2026-08-19"},
+    {"key": "location.example-unit@v1", "kind": "trainingLocation", "displayName": "Example Training Unit", "locationCode": "EXU", "locationTypeCode": "inpatient", "audiences": ["ms3", "resident"], "officialHostnames": ["example.edu"], "verifiedOn": "2026-08-19"},
+    {"key": "phrases.example@v1", "kind": "phraseSet", "displayName": "Example reviewed wording", "templates": {
+      "arrival": {"text": "Arrive {timing} {time} at {place} and check in with {role}.", "tokens": ["timing", "time", "place", "role"]},
+      "scheduleWindow": {"text": "The day runs from {dayStart} until {endQualifier} {dayEnd}.", "tokens": ["dayStart", "dayEnd", "endQualifier"]},
+      "scheduleRangeWithPlace": {"text": "On {daySet}, {activity} runs from {startTime} to {endTime} at {place} ({priority}).", "tokens": ["daySet", "startTime", "endTime", "activity", "place", "priority"]},
+      "scheduleRangeWithoutPlace": {"text": "On {daySet}, {activity} runs from {startTime} to {endTime} ({priority}).", "tokens": ["daySet", "startTime", "endTime", "activity", "priority"]},
+      "schedulePointWithPlace": {"text": "On {daySet}, {activity} starts at {startTime} at {place} ({priority}).", "tokens": ["daySet", "startTime", "activity", "place", "priority"]},
+      "schedulePointWithoutPlace": {"text": "On {daySet}, {activity} starts at {startTime} ({priority}).", "tokens": ["daySet", "startTime", "activity", "priority"]},
+      "rounds": {"text": "Before rounds, {preparation}; during rounds, {participation}; after rounds, {followUp}.", "tokens": ["preparation", "participation", "followUp"]},
+      "presentation": {"text": "Use {format} {timing} and include {elements}.", "tokens": ["format", "timing", "elements"]},
+      "documentation": {"text": "{workflow}; {timing}.", "tokens": ["workflow", "timing"]},
+      "attendance": {"text": "Attend {events}. Report absences to {absenceRole}.", "tokens": ["events", "absenceRole"]},
+      "feedback": {"text": "Feedback occurs {cadence}; {initiator} in {setting}.", "tokens": ["cadence", "initiator", "setting"]},
+      "access": {"text": "{item} {due}.", "tokens": ["item", "due"]},
+      "contact": {"text": "Contact {role}.", "tokens": ["role"]},
+      "checklist": {"text": "{item} ({priority}).", "tokens": ["item", "priority"]},
+      "resourceWithReason": {"text": "{title} is {priority} in week {week} because {reason}; destination {hostname}.", "tokens": ["title", "priority", "week", "reason", "hostname"]},
+      "resourceWithoutReason": {"text": "{title} is {priority} in week {week}; destination {hostname}.", "tokens": ["title", "priority", "week", "hostname"]},
+      "changeSummary": {"text": "{kinds}; {count} changed items.", "tokens": ["kinds", "count"]}
+    }, "locationKeys": ["location.example-unit@v1"], "audiences": ["ms3", "resident"], "verifiedOn": "2026-08-19"}
+  ]
+}

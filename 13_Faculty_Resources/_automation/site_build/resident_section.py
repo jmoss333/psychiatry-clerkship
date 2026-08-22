@@ -1,9 +1,12 @@
 # Derive the MMC resident variant from the already-built MS3 deploy (run AFTER build_deploy.py).
 import os, shutil, json, re, glob, sys
+from datetime import date
 # Shared, audience-neutral assembly logic — the same module build_deploy.py uses.
 # Extracted 2026-07-26; before that this file carried its own drifted copies of the
 # tokenizer, synonym table, tool keywords, index builder, and skip-link injection.
 import common
+import crisis_block as _crisis
+import frontdoor_catalog
 from pathlib import Path
 
 # Session-portable paths (fixed 2026-07-01): derive from this script's own location.
@@ -125,30 +128,36 @@ open(OUT.rstrip("/\\")+".source-map.json","w",encoding="utf-8").write(json.dumps
 # or the build aborts (previously six bare replace() calls that silently no-oped
 # after any shell reword, reverting resident branding to MS3 text).
 RESIDENT_REBRAND=[
- ('<div class="by">MS3 Clerkship · Joshua Moss, MD</div>','<div class="by">Resident Rotation · Sanford BHU · Joshua Moss, MD</div>'),
- ('<h1>Inpatient Psychiatry</h1>','<h1>MMC Psychiatry</h1>'),
+ ('<span class="fd-brand__name">Inpatient Psychiatry</span>','<span class="fd-brand__name">MMC Psychiatry</span>'),
+ ('<span class="fd-setup__brand-name">Inpatient Psychiatry</span>','<span class="fd-setup__brand-name">MMC Psychiatry</span>'),
  ('MS3 Psychiatry Clerkship','MMC Psychiatry Residency'),
  ('MS3 Clerkship','Resident Rotation'),
- ('Private teaching site for the MS3 inpatient psychiatry rotation. Educational use; fictional composites only, no PHI. Some pages are pending faculty review.',
-  'Private teaching site for the MMC general-psychiatry resident inpatient rotation at the Sanford Behavioral Health Unit. Educational use; fictional composites only, no PHI. Pending faculty attestation.'),
  ('A private learning hub for the third-year inpatient psychiatry clerkship.',
   'A private learning hub for the MMC general-psychiatry resident inpatient rotation (Sanford BHU).'),
 ]
 ix=open(OUT+"/index.html",encoding="utf-8").read()
 ix=common.apply_verified_replacements(ix, RESIDENT_REBRAND, label="resident index rebrand")
-open(OUT+"/index.html","w",encoding="utf-8").write(ix)
-
-# ---- rebrand learning-path (Path-mode home) ----
-lp=OUT+"/tools/learning-path.html"
-if not os.path.exists(lp):
-    print("BUILD ABORTED — resident rebrand target missing:",lp)
+_resident_shell_required=(
+ '<span class="fd-brand__name">MMC Psychiatry</span>',
+ '<span class="fd-setup__brand-name">MMC Psychiatry</span>',
+ '<title>Inpatient Psychiatry — Resident Rotation</title>',
+ 'MMC Psychiatry Residency',
+ 'A private learning hub for the MMC general-psychiatry resident inpatient rotation (Sanford BHU).',
+)
+_resident_shell_stale=(
+ '<span class="fd-brand__name">Inpatient Psychiatry</span>',
+ '<span class="fd-setup__brand-name">Inpatient Psychiatry</span>',
+ 'MS3 Psychiatry Clerkship',
+ 'MS3 Clerkship',
+)
+_missing_shell=[needle for needle in _resident_shell_required if needle not in ix]
+_stale_shell=[needle for needle in _resident_shell_stale if needle in ix]
+if _missing_shell or _stale_shell:
+    print("BUILD ABORTED — resident Front Door branding assertion failed")
+    for needle in _missing_shell: print("   - missing:",repr(needle))
+    for needle in _stale_shell: print("   - stale:",repr(needle))
     raise SystemExit(1)
-s=open(lp,encoding="utf-8").read()
-s=common.apply_verified_replacements(s,[
- ("Inpatient Psychiatry — Learning Path","MMC Psychiatry — Learning Path"),
- ("MS3 Clerkship · Joshua Moss, MD","Resident Rotation · Joshua Moss, MD"),
-],label="resident learning-path rebrand")
-open(lp,"w",encoding="utf-8").write(s)
+open(OUT+"/index.html","w",encoding="utf-8").write(ix)
 
 # ---- resident-level reasoning cases: same tool, harder audience-specific payload ----
 _resident_reasoning=os.path.join(LIB,"reasoning_cases_resident.json")
@@ -193,19 +202,18 @@ nav=[
    {"t":"Welcome — Resident Rotation","f":"welcome.md","k":"md"},
    {"t":"4-Week Rotation Plan","f":"rotation.md","k":"md"},
    {"t":"Core Reading List","f":"core_readings.md","k":"md"},
-   {"t":"Supervision, EPAs & Teaching","f":"supervision_teaching.md","k":"md"},
-   {"t":"Learning Path","f":"learning-path.html","k":"tool","hidden":True}]},
+   {"t":"Supervision, EPAs & Teaching","f":"supervision_teaching.md","k":"md"}]},
  {"section":"Start the Encounter","items":[{"t":"Interview & MSE","f":"pg_interview.md","k":"md"},{"t":"Mental Status Exam","f":"mse.html","k":"tool"},{"t":"The Interview Circle","f":"interview-circle.html","k":"tool"},{"t":"The Interview Room — AI Standardized Patient","f":"sp-interview.html","k":"tool"},{"t":"Screeners: PHQ-9 & GAD-7","f":"screeners.html","k":"tool"}]},
  {"section":"Understand the Problem","items":[{"t":"Differential Dx Scaffolds","f":"ddx.md","k":"md"},{"t":"Diagnostic Reasoning Workbench","f":"diagnostic-reasoning.html","k":"tool"},{"t":"Formulation & DDx","f":"pg_formulation.md","k":"md"},{"t":"Case Formulation","f":"case_formulation.md","k":"md"},{"t":"Medical Workup & Mimics","f":"medical_workup.md","k":"md"},{"t":"Mood","f":"t_mood.md","k":"md"},{"t":"Psychosis","f":"t_psychosis.md","k":"md"},{"t":"Anxiety/Trauma/OCD","f":"t_anxiety.md","k":"md"},{"t":"Personality","f":"t_personality.md","k":"md"},{"t":"Substance Use","f":"t_sud.md","k":"md"},{"t":"Geriatric","f":"t_geri.md","k":"md"},{"t":"Perinatal","f":"t_perinatal.md","k":"md"},{"t":"Neurodevelopmental Disorders","f":"t_neurodev.md","k":"md"},{"t":"Eating Disorders","f":"t_eating.md","k":"md"}]},
  {"section":"Assess Safety and Acuity","pinned":True,"items":[{"t":"Suicide Risk & Safety","f":"pg_suicide.md","k":"md"},{"t":"Suicide Risk & Safety Planning","f":"suicide.md","k":"md"},{"t":"Columbia C-SSRS Screener","f":"cssrs.html","k":"tool"},{"t":"Violence Risk","f":"violence.md","k":"md"},{"t":"Violence Risk (FRST)","f":"violence.html","k":"tool"},{"t":"Agitation & Restraint","f":"agitation.md","k":"md"},{"t":"Agitation Ladder — PRN Trainer","f":"rp-agitation.html","k":"tool"},{"t":"Catatonia","f":"catatonia.md","k":"md"},{"t":"Bush-Francis Catatonia Scale (BFCRS)","f":"bfcrs.html","k":"tool"},{"t":"Hyperthermia & Toxidromes","f":"toxidromes.md","k":"md"},{"t":"Delirium","f":"delirium.md","k":"md"},{"t":"Withdrawal: CIWA-Ar/COWS","f":"withdrawal.html","k":"tool"},{"t":"Decisional Capacity","f":"capacity.html","k":"tool"},{"t":"Consult Questions: Capacity, Delirium, Catatonia, Withdrawal","f":"exp_consult.md","k":"md"},{"t":"C-L: Emergencies, Tox & Capacity (Numbers)","f":"cl_reference.md","k":"md"},{"t":"Inpatient Systems & Med-Legal","f":"systems_medlegal.md","k":"md"}]},
  {"section":"Make a Plan","items":[{"t":"Psychopharmacology Primer","f":"psychopharm_primer.md","k":"md"},{"t":"Advanced Psychopharmacology","f":"adv_psychopharm.md","k":"md"},{"t":"Medication Monitoring & Labs","f":"med_monitoring.md","k":"md"},{"t":"Protocol Library","f":"protocol_library.md","k":"md"},{"t":"Algorithms & Decision Aids","f":"decision-aids.html","k":"tool"},{"t":"Interaction Cards — One Action","f":"interaction-cards.html","k":"tool"},{"t":"Nutrition & Metabolic Health","f":"nutrition_metabolic.md","k":"md"}]},
- {"section":"Communicate with Patients","items":[{"t":"What Do You Say Next?","f":"communication-practice.html","k":"tool"},{"t":"Psychotherapies at a Glance","f":"psychotherapy.md","k":"md"},{"t":"Motivational Interviewing","f":"motivational_interviewing.md","k":"md"},{"t":"Brief Psychotherapy on the Unit","f":"brief_psychotherapy.md","k":"md"},{"t":"Five Good Minutes — Brief Psych Coach","f":"rp-brief-psych.html","k":"tool"},{"t":"Reflection & Identity","f":"reflection.html","k":"tool"}]},
+ {"section":"Communicate with Patients","items":[{"t":"What Do You Say Next?","f":"communication-practice.html","k":"tool"},{"t":"Psychotherapies at a Glance","f":"psychotherapy.md","k":"md"},{"t":"Motivational Interviewing","f":"motivational_interviewing.md","k":"md"},{"t":"Brief Psychotherapy on the Unit","f":"brief_psychotherapy.md","k":"md"},{"t":"Therapy on the Unit","f":"therapy_on_the_unit.md","k":"md"},{"t":"Five Good Minutes — Brief Psych Coach","f":"rp-brief-psych.html","k":"tool"},{"t":"Reflection & Identity","f":"reflection.html","k":"tool"}]},
  {"section":"Work with Family and Systems","items":[{"t":"Family Systems Practice","f":"family-systems.html","k":"tool"},{"t":"I Need Collateral: 10-Minute Workflow","f":"collateral_workflow.md","k":"md"},{"t":"Family & Discharge","f":"exp_family.md","k":"md"},{"t":"Family Meeting Playbook (90-min)","f":"family_playbook.md","k":"md"},{"t":"Family Therapy Modalities","f":"family_modalities.md","k":"md"}]},
  {"section":"Present and Work with the Team","items":[{"t":"Documentation & Oral Presentation","f":"doc_oral.md","k":"md"},{"t":"Treatment Team Rounding Prep","f":"oral.html","k":"tool"},{"t":"High-Yield Rounds Questions","f":"rounds_questions.md","k":"md"}]},
  {"section":"Practice and Exam Prep","items":[{"t":"Practice Questions — Question Bank","f":"question-bank-practice.html","k":"tool"},{"t":"One Patient, Six Weeks","f":"one-patient-six-weeks.html","k":"tool"},{"t":"Daily Review (Spaced Repetition)","f":"review.html","k":"tool","hidden":True},{"t":"Board-Style Question Bank","f":"shelf-mode.html","k":"tool","hidden":True},{"t":"Canon Quiz — 200-Paper Spine","f":"rp-canon-quiz.html","k":"tool"},{"t":"Rapid Review — Buzzwords","f":"rapid_review.md","k":"md"},{"t":"Landmark Trials — Listen & Test","f":"landmark_trials.md","k":"md"},{"t":"Anki Flashcard Decks","f":"anki.md","k":"md"}]},
  {"section":"Case of the Week","items":[{"t":"Index — All Cases","f":"cotw_index.md","k":"md"}]+[{"t":w["label"],"f":_cotw_slug(w,"res"),"k":"md"} for w in _cotw_weeks]},
- {"section":"Evidence and Reference","items":[{"t":"Evidence-Based Inpatient Psychiatry","f":"evidence_inpatient.md","k":"md"},{"t":"The Psychiatry Canon (200)","f":"canon_200.md","k":"md"},{"t":"Book Library","f":"book_library.md","k":"md"},{"t":"Podcast Library (Psychiatry & Psychotherapy)","f":"podcast_library.md","k":"md"}]+_HIDDEN_INHERITED},
- {"section":"Feedback","items":[{"t":"Improve this library — send feedback","f":"feedback.html","k":"tool"}]},
+ {"section":"Evidence and Reference","items":[{"t":"Evidence-Based Inpatient Psychiatry","f":"evidence_inpatient.md","k":"md"},{"t":"The Therapy Reading Room","f":"therapy_reading_room.md","k":"md"},{"t":"The Psychiatry Canon (200)","f":"canon_200.md","k":"md"},{"t":"Book Library","f":"book_library.md","k":"md"},{"t":"Podcast Library (Psychiatry & Psychotherapy)","f":"podcast_library.md","k":"md"}]+_HIDDEN_INHERITED},
+ {"section":"Feedback","items":[{"t":"Improve this library — send feedback","f":"feedback.html","k":"tool"},{"t":"Faculty: Curate a rotation edition","f":"rotation-curator.html","k":"tool","hidden":True}]},
 ]
 _navorder=["Orientation","Start the Encounter","Understand the Problem","Assess Safety and Acuity","Make a Plan","Communicate with Patients","Work with Family and Systems","Present and Work with the Team","Practice and Exam Prep","Case of the Week","Evidence and Reference","Feedback"]
 nav=sorted(nav,key=lambda s:_navorder.index(s["section"]) if s["section"] in _navorder else 999)
@@ -252,6 +260,47 @@ import cotw_meta as _cotw_meta
 _cm_add,_cm_skip,_cm_prune,_cm_untagged=_cotw_meta.inject(OUT,_cotw_weeks,"res")
 print("cotw topic_meta: %d derived, %d hand-written kept, %d ms3 keys pruned"%(_cm_add,_cm_skip,_cm_prune))
 if _cm_untagged: print("  NOTE no 'blueprint' in cotw_registry.json (case absent from the crosswalk): "+", ".join(_cm_untagged))
+
+# The resident build begins as a copy of MS3, so replace every Front Door global only after
+# resident extras, nav metadata, and topic-meta overlays are all complete. Reusing the copied
+# MS3 literals would silently hide resident-only browse paths behind student data.
+sys.path.insert(0, os.path.dirname(HERE))
+from validate_tool_governance import (
+    GovernanceError,
+    build_governance_document,
+    current_revision,
+    validate_built_tool_inventory,
+    write_atomic_json,
+)
+from validate_rotation_edition_catalog import (
+    build_audience_projection as _build_rotation_projection,
+    load_catalog as _load_rotation_catalog,
+    load_governance as _load_rotation_governance,
+    validate_catalog as _validate_rotation_catalog,
+)
+try:
+    _core_revision=current_revision(Path(LIB))
+except GovernanceError as error:
+    raise SystemExit(f"tool governance INVALID — {error}") from error
+try:
+    _rotation_catalog=_load_rotation_catalog(Path(LIB))
+    _rotation_governance=_load_rotation_governance(Path(LIB))
+    _validate_rotation_catalog(_rotation_catalog,_rotation_governance,today=date.today())
+    _rotation_projection=_build_rotation_projection(_rotation_catalog,_rotation_governance,"resident")
+    _fd_payload=frontdoor_catalog.build_frontdoor_payload(
+        "resident", json.load(open(LIB+"/curriculum.json",encoding="utf-8")), nav, _core_revision,
+        _rotation_projection)
+    _frontdoor_destinations=(OUT+"/index.html", OUT+"/tools/rotation-curator.html")
+    for _frontdoor_destination in _frontdoor_destinations:
+        frontdoor_catalog.inject_frontdoor_payload(
+            _frontdoor_destination, _fd_payload,
+            json.load(open(OUT+"/topic_meta.json",encoding="utf-8")),
+            json.load(open(OUT+"/tool_registry.json",encoding="utf-8")))
+        frontdoor_catalog.assert_catalog_resolver_injected(_frontdoor_destination, _rotation_projection["revision"])
+except ValueError as _fd_error:
+    print("BUILD ABORTED — Front Door payload:", _fd_error)
+    raise SystemExit(1)
+print("frontdoor payload:",sum(len(c["refs"]) for c in _fd_payload["curriculum"]["libraryColumns"]),"placed refs (resident)")
 # ---------- MEDIA GUARD: drop <video> embeds whose asset was never exported (resident build) ----------
 # Resident inherits ms3's already-guarded pages via copytree, but re-writes some content from
 # source and adds its own media — so guard the final OUT before indexing.
@@ -260,6 +309,10 @@ strip_missing_media(OUT)
 
 # ---- resident search index: same engine, same synonyms, same tool keywords as MS3 ----
 common.build_search_index(nav, OUT, label="resident")
+
+# Resident starts from the expanded MS3 artifact, then rebrands and replaces its Front Door
+# payload. Prove none of those later transforms reacquired an unexpanded shell marker.
+_crisis.assert_no_html_marker_file(OUT+"/index.html", "final resident Front Door shell index")
 
 # Postcondition gate (architecture review rec 1.3): the rp-* tools used to bypass the
 # page pass entirely and ship degraded. This makes that impossible to reintroduce.
@@ -282,17 +335,9 @@ print(" sections:",[s["section"] for s in nav])
 
 # ---------- TOOL GOVERNANCE ----------
 # Build from canonical sources, then verify the final resident tools exactly match its IDs.
-sys.path.insert(0, os.path.dirname(HERE))
-from validate_tool_governance import (
-    GovernanceError,
-    build_governance_document,
-    validate_built_tool_inventory,
-    write_atomic_json,
-)
-
 try:
     _governance, _governance_warnings = build_governance_document(
-        Path(LIB), "resident", enforce_expected_count=True
+        Path(LIB), "resident", revision=_core_revision, enforce_expected_count=True
     )
     validate_built_tool_inventory(_governance, Path(OUT) / "tools", site="resident")
     write_atomic_json(Path(OUT) / "tool-governance.json", _governance)

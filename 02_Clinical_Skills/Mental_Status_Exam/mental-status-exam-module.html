@@ -75,6 +75,7 @@
   @media(prefers-reduced-motion:reduce){.domchip{transition:none}.noteline{animation:none}}
   footer{margin-top:var(--sp4);padding-top:var(--sp3);border-top:1px solid var(--border);font-size:.85rem;color:var(--text-light);text-align:center}
   .count{font-size:.78rem;color:var(--text-light)}
+  .selection-status{min-height:1.4em;margin:0 0 var(--sp2);font-size:.86rem;color:var(--accent-dark)}
 </style>
 </head>
 <body>
@@ -119,18 +120,90 @@ var DOMAINS = [
    pearl:'Judge judgment on behavior, not hypotheticals. "Left AMA against advice with active SI" is the evidence.'}
 ];
 
+var MSE_CONFLICTS = {
+  thoughtContent: [
+    ['no SI/HI','passive SI'],
+    ['no SI/HI','active SI'],
+    ['no SI/HI','homicidal ideation'],
+    ['no delusions','paranoid delusions'],
+    ['no delusions','grandiose delusions']
+  ],
+  perception: [
+    ['no perceptual disturbances','auditory hallucinations'],
+    ['no perceptual disturbances','visual hallucinations'],
+    ['no perceptual disturbances','responding to internal stimuli']
+  ],
+  cognition: [['oriented x3','oriented x4']]
+};
+
+function mseDomainByKey(domainKey){
+  for(var i=0;i<DOMAINS.length;i++){
+    if(DOMAINS[i].key===domainKey) return DOMAINS[i];
+  }
+  return null;
+}
+
+function applyMseSelection(selection, domainKey, option, singleChoice){
+  var source=(selection&&typeof selection==='object')?selection:{};
+  var next={};
+  var key;
+  for(key in source){
+    if(Object.prototype.hasOwnProperty.call(source,key)){
+      next[key]=Array.isArray(source[key])?source[key].slice():[];
+    }
+  }
+  var domain=mseDomainByKey(domainKey);
+  if(!domain||domain.options.indexOf(option)<0) return {selection:next,removed:[]};
+
+  var cur=(next[domainKey]||[]).slice();
+  var selectedIndex=cur.indexOf(option);
+  var removed=[];
+  if(singleChoice){
+    cur=(selectedIndex===0)?[]:[option];
+  }else if(selectedIndex>=0){
+    cur.splice(selectedIndex,1);
+  }else{
+    var pairs=Array.isArray(MSE_CONFLICTS[domainKey])?MSE_CONFLICTS[domainKey]:[];
+    for(var p=0;p<pairs.length;p++){
+      var pair=pairs[p];
+      if(!Array.isArray(pair)||pair.length!==2||typeof pair[0]!=='string'||typeof pair[1]!=='string') continue;
+      var other=null;
+      if(pair[0]===option) other=pair[1];
+      else if(pair[1]===option) other=pair[0];
+      if(other===null) continue;
+      var otherIndex=cur.indexOf(other);
+      if(otherIndex>=0){ cur.splice(otherIndex,1); removed.push(other); }
+    }
+    cur.push(option);
+  }
+  next[domainKey]=cur;
+  return {selection:next,removed:removed};
+}
+
+function mseJoinLabels(values){
+  if(values.length>2) return values.slice(0,-1).join(', ')+', and '+values[values.length-1];
+  return values.join(' and ');
+}
+
+function mseReplacementMessage(option, removed){
+  if(!removed||!removed.length) return '';
+  var subject=option.charAt(0).toUpperCase()+option.slice(1);
+  return subject+' replaced '+mseJoinLabels(removed)+' because these findings conflict.';
+}
+
 function App(){
   var tab = useState('learn'); var setTab = tab[1]; tab = tab[0];
   var open = useState({}); var setOpen = open[1]; open = open[0];
   var sel = useState({}); var setSel = sel[1]; sel = sel[0];
   var copied = useState(false); var setCopied = copied[1]; copied = copied[0];
+  var status = useState(''); var setStatus = status[1]; status = status[0];
 
   function toggleOpen(k){ var n=Object.assign({},open); n[k]=!n[k]; setOpen(n); }
   function pick(dk, opt, single){
-    var cur = (sel[dk]||[]).slice();
-    if(single){ cur = (cur[0]===opt)?[]:[opt]; }
-    else { var i=cur.indexOf(opt); if(i>=0)cur.splice(i,1); else cur.push(opt); }
-    var n=Object.assign({},sel); n[dk]=cur; setSel(n); setCopied(false);
+    var result=applyMseSelection(sel,dk,opt,!!single);
+    setSel(result.selection);
+    setCopied(false);
+    setStatus(mseReplacementMessage(opt,result.removed));
   }
   function selectedCount(){ return DOMAINS.reduce(function(a,d){return a+((sel[d.key]||[]).length?1:0)},0); }
 
@@ -160,7 +233,7 @@ function App(){
     var t=buildParagraph();
     if(navigator.clipboard){ navigator.clipboard.writeText(t).then(function(){setCopied(true);}); }
   }
-  function reset(){ setSel({}); setCopied(false); }
+  function reset(){ setSel({}); setCopied(false); setStatus(''); }
 
   var header = e('div',{key:'h'},
     e('div',{className:'kicker'},'Clinical Skills · 02'),
@@ -196,6 +269,7 @@ function App(){
   var build = e('div',{key:'b'},
     e('div',{className:'card'},
       e('p',{className:'sub',style:{marginTop:0}},'Tap descriptors in each domain. Single-choice domains (mood, thought process, insight, judgment) take one; others accept several. Your written MSE drafts live below.'),
+      e('div',{id:'mse-selection-status',className:'selection-status',role:'status','aria-live':'polite','aria-atomic':'true'},status),
       DOMAINS.map(function(d){
         var s=sel[d.key]||[];
         return e('div',{key:d.key,style:{marginBottom:'14px'}},

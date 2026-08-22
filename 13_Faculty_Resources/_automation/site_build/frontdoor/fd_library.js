@@ -37,6 +37,7 @@ function fdCollink(item){
   return '<button type="button" class="fd-collink" data-fd-open="'+fdEsc(item.ref)+'">'+
     '<span class="'+dotCls+'"></span>'+
     '<span class="fd-collink__label">'+fdEsc(item.title)+'</span>'+
+    governanceBadge(item.governance)+
   '</button>';
 }
 

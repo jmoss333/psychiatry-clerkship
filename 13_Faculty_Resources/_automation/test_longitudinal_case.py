@@ -32,7 +32,14 @@ def main():
     assert tool["storageKeys"] == ["cw_longitudinal_v1"]
 
     reviewed = json.loads(REVIEWED_PATH.read_text(encoding="utf-8"))
-    assert reviewed["one-patient-six-weeks.html"]["status"] == "pending"
+    # Governance PRESENCE, not a specific status. This asserted "pending" until the tool
+    # was attested on 2026-08-11 (replayed to main in #380), at which point a completely
+    # normal review transition read as a contract break. What this contract actually
+    # needs is that the simulation carries a ledger record with a real risk
+    # classification — the status itself is the faculty console's to move.
+    record = reviewed["one-patient-six-weeks.html"]
+    assert record["status"] in ("pending", "reviewed"), record["status"]
+    assert record["risk"]["kind"] and record["risk"]["level"], record
 
     known_pages = {row[1] for row in manifest["md"]}
     known_tools = {row[1] for row in manifest["tools"]}

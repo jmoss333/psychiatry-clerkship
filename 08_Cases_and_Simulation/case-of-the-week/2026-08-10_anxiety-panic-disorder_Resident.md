@@ -182,9 +182,9 @@ Based on articles retrieved from PubMed.
 
 5. van Dis EAM, van Veen SC, Hagenaars MA, Batelaan NM, Bockting CLH, van den Heuvel RM, Cuijpers P, Engelhard IM. Long-term outcomes of cognitive behavioral therapy for anxiety-related disorders: a systematic review and meta-analysis. *JAMA Psychiatry*. 2020;77(3):265–273. [https://doi.org/10.1001/jamapsychiatry.2019.3986](https://doi.org/10.1001/jamapsychiatry.2019.3986)
 
-6. Klevebrant L, Frick A. Effects of caffeine on anxiety and panic attacks in patients with panic disorder: a systematic review and meta-analysis. *General Hospital Psychiatry*. 2021;74:22–31. [https://doi.org/10.1016/j.genhosppsych.2021.11.005](https://doi.org/10.1016/j.genhosppsych.2021.11.005)
+6. Klevebrant L, Frick A. Effects of caffeine on anxiety and panic attacks in patients with panic disorder: a systematic review and meta-analysis. *General Hospital Psychiatry*. 2022;74:22–31. [https://doi.org/10.1016/j.genhosppsych.2021.11.005](https://doi.org/10.1016/j.genhosppsych.2021.11.005)
 
-7. Archer C, Wiles N, Kessler D, Turner K, Caldwell DM. Beta-blockers for the treatment of anxiety disorders: a systematic review and meta-analysis. *Journal of Affective Disorders*. 2024;368:90–99. [https://doi.org/10.1016/j.jad.2024.09.068](https://doi.org/10.1016/j.jad.2024.09.068)
+7. Archer C, Wiles N, Kessler D, Turner K, Caldwell DM. Beta-blockers for the treatment of anxiety disorders: a systematic review and meta-analysis. *Journal of Affective Disorders*. 2025;368:90–99. [https://doi.org/10.1016/j.jad.2024.09.068](https://doi.org/10.1016/j.jad.2024.09.068)
 
 8. Tsai SJ, Cheng CM, Chang WH, Bai YM, Su TP, Chen TJ, Chen MH. Panic disorder and suicide. *Psychological Medicine*. 2025;55:e38. [https://doi.org/10.1017/S0033291724003441](https://doi.org/10.1017/S0033291724003441)
 

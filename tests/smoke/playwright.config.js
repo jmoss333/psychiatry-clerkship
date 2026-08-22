@@ -3,7 +3,7 @@ import { defineConfig, devices } from '@playwright/test';
 const MS3_URL = process.env.MS3_BASE_URL || 'http://localhost:4200';
 const RES_URL = process.env.RES_BASE_URL || 'http://localhost:4201';
 const FACULTY_URL = process.env.FACULTY_CONSOLE_BASE_URL || 'http://localhost:4202';
-const SP_INTERVIEW_URL = process.env.SP_INTERVIEW_BASE_URL || 'http://localhost:4300';
+const SP_INTERVIEW_URL = process.env.SP_INTERVIEW_BASE_URL || new URL('/tools/', `${MS3_URL}/`).href;
 
 export default defineConfig({
   testDir: '.',
@@ -16,10 +16,8 @@ export default defineConfig({
     ['junit', { outputFile: 'test-results/results.xml' }],
   ],
 
-  // Baselines live in tests/smoke/baseline/  → committed to the repo.
-  // On first run (no baselines), run: npm run update-baselines
-  // Threshold is intentionally loose (20 %) to tolerate cross-platform
-  // font-rendering differences between macOS (local) and Ubuntu (CI).
+  // Baselines live in tests/smoke/baseline/ and are generated only by the repository's
+  // Ubuntu/Chromium refresh workflow. Never update them from a macOS workstation.
   snapshotDir: './baseline',
   snapshotPathTemplate: '{snapshotDir}/{arg}{ext}',
   expect: {
@@ -44,12 +42,12 @@ export default defineConfig({
   projects: [
     {
       name: 'nav-ms3',
-      testMatch: ['nav-crawl.spec.js', 'longitudinal-case.spec.js', 'family-systems.spec.js', 'qbank-retired.spec.js', 'aria-live.spec.js', 'mode-companion.spec.js', 'communication-practice.spec.js', 'ward-capture.spec.js', 'governance-warnings.spec.js'],
+      testMatch: ['nav-crawl.spec.js', 'longitudinal-case.spec.js', 'family-systems.spec.js', 'qbank-retired.spec.js', 'aria-live.spec.js', 'communication-practice.spec.js', 'ward-capture.spec.js', 'frontdoor-runtime.spec.js', 'front-door.spec.js', 'tool-expand.spec.js', 'governance-warnings.spec.js', 'mse-builder.spec.js', 'rotation-curator.spec.js', 'rotation-edition-v2.spec.js'],
       use: { ...devices['Desktop Chrome'], baseURL: MS3_URL },
     },
     {
       name: 'nav-res',
-      testMatch: ['nav-crawl.spec.js', 'longitudinal-case.spec.js', 'family-systems.spec.js', 'mode-companion.spec.js', 'communication-practice.spec.js', 'governance-warnings.spec.js'],
+      testMatch: ['nav-crawl.spec.js', 'longitudinal-case.spec.js', 'family-systems.spec.js', 'communication-practice.spec.js', 'frontdoor-runtime.spec.js', 'front-door.spec.js', 'tool-expand.spec.js', 'governance-warnings.spec.js', 'mse-builder.spec.js', 'rotation-curator.spec.js', 'rotation-edition-v2.spec.js'],
       use: { ...devices['Desktop Chrome'], baseURL: RES_URL },
     },
     {

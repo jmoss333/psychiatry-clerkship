@@ -9,6 +9,7 @@ import test from 'node:test';
 const BUILD = '../13_Faculty_Resources/_automation/site_build';
 const warm = readFileSync(new URL(`${BUILD}/clinical-warm.css`, import.meta.url), 'utf8');
 const fd = readFileSync(new URL(`${BUILD}/frontdoor/frontdoor.css`, import.meta.url), 'utf8');
+const inventory = readFileSync(new URL('../docs/superpowers/specs/front-door-handoff/CLASS-INVENTORY.md', import.meta.url), 'utf8');
 
 const TOKENS = [
   'fd-bg', 'fd-surface', 'fd-surface-warm', 'fd-line', 'fd-line-strong', 'fd-line-hover',
@@ -29,8 +30,18 @@ function block(css, selector) {
   assert.ok(i !== -1, `no ${selector} block in clinical-warm.css`);
   const open = text.indexOf('{', i);
   const close = text.indexOf('}', open);
-  return text.slice(open, close);
+  return text.slice(open + 1, close);
 }
+
+function rule(css, selector) {
+  return block(css, selector);
+}
+
+test('rule exposes only declarations, so an empty selector cannot satisfy a non-empty assertion', () => {
+  const empty = rule('.fixture{}', '.fixture');
+  assert.equal(empty, '');
+  assert.doesNotMatch(empty, /\S/);
+});
 
 test('every front-door token is defined in the light palette', () => {
   const light = block(warm, ':root');
@@ -99,4 +110,40 @@ test('the desktop breakpoint is 1000px, as the design specifies', () => {
 test('animations are disabled under prefers-reduced-motion', () => {
   assert.match(fd, /@media\s*\(prefers-reduced-motion:\s*reduce\)/,
     'the source prototype ships no reduced-motion handling; this repo requires it');
+});
+
+test('reader body gives rendered long-form content a readable token-based type scale', () => {
+  const body = rule(fd, '.fd-article__body');
+  assert.match(body, /font-size:\s*16\.5px/);
+  assert.match(body, /line-height:\s*1\.72/);
+  assert.match(body, /max-width:\s*62ch/);
+  assert.match(body, /color:\s*var\(--fd-text\)/);
+  for (const descendant of ['h2', 'h3', 'ul', 'ol', 'li', 'a', 'code', 'blockquote']) {
+    const descendantRule = rule(fd, `.fd-article__body ${descendant}`);
+    assert.match(descendantRule, /\S/, `rendered article ${descendant} elements need a non-empty treatment`);
+  }
+  assert.match(rule(fd, '.fd-article__body h2'), /font-family:|font-size:|line-height:/,
+    'section headings need representative typography rather than an empty selector');
+  assert.match(rule(fd, '.fd-article__body a'), /color:\s*var\(--fd-/,
+    'article links must retain a token-based visible treatment');
+  assert.match(rule(fd, '.fd-article__body code'), /font-family:|background:\s*var\(--fd-/,
+    'inline code needs a readable typography or token-based surface treatment');
+});
+
+test('portalled overlays retain a visible keyboard focus indicator', () => {
+  const focus = rule(fd, '.fd-search :focus-visible,.fd-sheet :focus-visible,.fd-nudge :focus-visible');
+  assert.match(focus, /outline:\s*2px solid var\(--fd-focus\)/,
+    'overlays may mount outside .fd-shell and need their own visible outline');
+  assert.match(focus, /outline-offset:\s*2px/,
+    'overlay focus needs separation from the control edge');
+});
+
+test('the class inventory documents the exact distinct front-door selector count', () => {
+  const selectorNames = new Set(
+    [...strip(fd).matchAll(/\.((?:fd-[A-Za-z0-9_-]+))/g)].map((m) => m[1]),
+  );
+  const documented = inventory.match(/\((\d+) distinct `fd-\*` selector names,/);
+  assert.ok(documented, 'CLASS-INVENTORY must state the distinct fd-* selector count');
+  assert.equal(Number(documented[1]), selectorNames.size,
+    'CLASS-INVENTORY must stay synchronized with comment-stripped frontdoor.css selectors');
 });

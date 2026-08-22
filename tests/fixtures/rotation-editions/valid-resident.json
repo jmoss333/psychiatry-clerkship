@@ -1,0 +1,23 @@
+{
+  "format": "cw-rotation-edition",
+  "schemaVersion": 2,
+  "config": {
+    "audience": "resident",
+    "pathId": "resident-four-week",
+    "editionNumber": 1,
+    "createdAgainstCoreRevision": "0537907a8b9c0d1e2f3a4b5c6d7e8f9012345678",
+    "createdAgainstLocalCatalogRevision": "sha256-BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+    "context": {
+      "trainingLocationKey": "location.example-unit@v1",
+      "curatorProfileKey": "curator.example-attending@v1",
+      "rotationStart": "2026-09-01",
+      "rotationEnd": "2026-09-28",
+      "editionCheckedOn": "2026-08-19"
+    },
+    "phraseSetKey": "phrases.example@v1",
+    "pathItems": [{"instanceId": "core:library/example:1", "ref": "library/example", "week": 4, "order": 1, "priority": "recommended"}],
+    "localPlan": {},
+    "changeSummary": {"kindCodes": ["initial"], "changedItemCount": 0}
+  },
+  "digest": "sha256-rkWhQGbehs13sSwDngoPmXRCYv17tK2A6bYzq1l_pIM"
+}

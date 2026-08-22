@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the six root registries against their Draft-07 JSON Schemas."""
+"""Validate the seven root registries against their Draft-07 JSON Schemas."""
 
 import argparse
 import json
@@ -26,6 +26,7 @@ PAIRS = (
     ("family_systems_scenarios.json", "family_systems_scenarios.schema.json"),
     ("evidence_registry.json", "evidence_registry.schema.json"),
     ("tool_registry.json", "tool_registry.schema.json"),
+    ("curriculum.json", "curriculum.schema.json"),
 )
 
 
@@ -178,7 +179,7 @@ def schema_reference_error(schema):
 
 
 def validate_root(root: Path) -> tuple[list[str], bool]:
-    """Return deterministic diagnostics for the six fixed registry/schema pairs."""
+    """Return deterministic diagnostics for the seven fixed registry/schema pairs."""
     diagnostics = []
     has_errors = False
     for document_name, schema_name in PAIRS:
@@ -246,7 +247,7 @@ def main() -> int:
         "--root",
         type=Path,
         default=Path(__file__).resolve().parents[2],
-        help="repository root containing the six fixed registry/schema pairs",
+        help="repository root containing the seven fixed registry/schema pairs",
     )
     args = parser.parse_args()
 

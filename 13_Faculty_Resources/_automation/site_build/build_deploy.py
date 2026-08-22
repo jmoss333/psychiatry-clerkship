@@ -1,10 +1,12 @@
 import os, shutil, json, sys
+from datetime import date
 from pathlib import Path
 # Shared, audience-neutral assembly logic (tokenizer, synonyms, tool keywords,
 # search index, HTML polish/dark passes, page contract). Extracted 2026-07-26 —
 # see common.py's module docstring. resident_section.py imports the same module,
 # so these no longer exist as two drifting copies.
 import common
+import frontdoor_catalog
 # Session-portable paths (fixed 2026-07-01): derive from this script's own location instead of a
 # hard-coded sandbox mount, so the build runs under any Cowork session or the real filesystem.
 HERE=os.path.dirname(os.path.abspath(__file__))
@@ -15,6 +17,7 @@ SPA=os.path.join(HERE,"spa_index.html")                   # SPA shell (co-locate
 MARKED=os.path.join(HERE,"marked.min.js")                 # vendored marked (co-located)
 MANIFEST=os.path.join(HERE,"site_manifest.json")          # content/tool build manifest
 CLINICAL_CSS=os.path.join(HERE,"clinical-warm.css")       # shared dark-mode tokens
+FRONTDOOR_CSS=os.path.join(HERE,"frontdoor","frontdoor.css")
 
 def _relpath(p):
     for base in (LIB,HERE):
@@ -37,7 +40,7 @@ def _copy_required(src,dst,missing):
     else:
         missing.append(src)
 
-_bootstrap_missing=[p for p in [MANIFEST,SPA,MARKED,CLINICAL_CSS] if not os.path.exists(p)]
+_bootstrap_missing=[p for p in [MANIFEST,SPA,MARKED,CLINICAL_CSS,FRONTDOOR_CSS] if not os.path.exists(p)]
 _abort_missing(_bootstrap_missing)
 if os.path.exists(OUT): shutil.rmtree(OUT)
 os.makedirs(OUT+"/content"); os.makedirs(OUT+"/tools")
@@ -63,7 +66,6 @@ _required=[os.path.join(LIB,src) for src,_,_ in tools]+[
     os.path.join(LIB,src) for src,_ in tool_assets
 ]+[
     LIB+"/07_Evidence_and_Reading/Landmark_Trials/quizzes.json",
-    LIB+"/01_Six_Week_Curriculum/learning-path.html",
     LIB+"/question_bank.json",
 ]+[os.path.join(LIB,"_prototypes","agitation-trainer","vendor",f) for f in ["react.min.js","react-dom.min.js"]]
 _abort_missing([p for p in _required if not os.path.exists(p)])
@@ -174,7 +176,6 @@ for _jn, _fallback in [
 # question_bank.json: served at site root so both qbank-attest.html and question-bank-practice.html can fetch ../question_bank.json
 _missing_req=[]
 _copy_required(LIB+"/question_bank.json", OUT+"/question_bank.json", _missing_req)
-_copy_required(LIB+"/01_Six_Week_Curriculum/learning-path.html", OUT+"/tools/learning-path.html", _missing_req)
 _abort_missing(_missing_req)
 
 # ---- diagnostic pretest pool (adaptive engine v2): 1 attested, scoreable item per
@@ -254,6 +255,10 @@ _CRISIS_REQUIRED_MD={
     "t_eating.md","t_dissociative.md","t_adjustment.md","t_perinatal.md",
     # bedside work & disposition — the peri-discharge transition is the highest-risk window
     "brief_psychotherapy.md","exp_family.md","family_playbook.md","collateral_workflow.md",
+    # therapy module: teaches safety-plan delivery, lethal-means counseling, and discharge
+    # bridging — the learner is doing risk work, not merely reading about it (the Reading
+    # Room page, by contrast, is a reading list and deliberately carries no crisis block)
+    "therapy_on_the_unit.md",
 }
 _crisis_tools_done=set()
 for _tool_html in [os.path.join(OUT,"tools",_f) for _f in os.listdir(os.path.join(OUT,"tools")) if _f.endswith(".html")]:
@@ -316,18 +321,18 @@ def _tool(f,t=None,hidden=None):
     return dict({"t":t or _tool_titles.get(f,f),"f":f,"k":"tool"},**({"hidden":True} if (hidden if hidden is not None else f in HIDDEN_TOOLS) else {}))
 _week_items=[_md(t,f,True) for f,t in [("week%d.md"%i,["Week 1 — Foundations","Week 2 — Mood/Psychosis/Pharm","Week 3 — Psychotherapy/Personality","Week 4 — Family/Systems/EE","Week 5 — Acute/Emergency","Week 6 — Integration/Exam"][i-1]) for i in range(1,7)]]
 nav=[
- {"section":"Orientation","pinned":True,"items":[_md("Welcome to the Rotation","welcome.md"),_md("Orientation Packet","orientation.md"),_md("Core Reading List","core_readings.md"),_tool("learning-path.html","Learning Path",True),_tool("orientation-video.html","Orientation Video",True)]+_week_items},
+ {"section":"Orientation","pinned":True,"items":[_md("Welcome to the Rotation","welcome.md"),_md("Orientation Packet","orientation.md"),_md("Core Reading List","core_readings.md"),_tool("orientation-video.html","Orientation Video",True)]+_week_items},
  {"section":"Start the Encounter","items":[_md("Interview & MSE","pg_interview.md"),_tool("mse.html","Mental Status Exam"),_tool("interview-circle.html","The Interview Circle"),_tool("sp-interview.html","The Interview Room — AI Standardized Patient"),_tool("screeners.html","Screeners: PHQ-9 & GAD-7")]},
  {"section":"Understand the Problem","items":[_md("Differential Dx Scaffolds","ddx.md"),_tool("diagnostic-reasoning.html","Diagnostic Reasoning Workbench"),_md("Formulation & DDx","pg_formulation.md"),_md("Case Formulation","case_formulation.md"),_md("Medical Workup & Mimics","medical_workup.md"),_md("Mood","t_mood.md"),_md("Psychosis","t_psychosis.md"),_md("Anxiety/Trauma/OCD","t_anxiety.md"),_md("Personality","t_personality.md"),_md("Substance Use","t_sud.md"),_md("Geriatric","t_geri.md"),_md("Perinatal","t_perinatal.md"),_md("Neurodevelopmental Disorders","t_neurodev.md"),_md("Eating Disorders","t_eating.md"),_md("Neurocognitive (Dementia)","t_neurocog.md"),_md("Somatic Symptom & Related","t_somatic.md"),_md("Sleep-Wake Disorders","t_sleep.md"),_md("Dissociative Disorders","t_dissociative.md"),_md("Sexual, Paraphilic & Gender","t_sexual.md"),_md("Impulse-Control & Conduct","t_impulse.md"),_md("Adjustment Disorders","t_adjustment.md"),_md("Culture, Disparities & Formulation","cultural_psychiatry.md")]},
  {"section":"Assess Safety and Acuity","pinned":True,"items":[_md("Suicide Risk & Safety","pg_suicide.md"),_md("Suicide Risk & Safety Planning","suicide.md"),_tool("cssrs.html","Columbia C-SSRS Screener"),_md("Violence Risk","violence.md"),_tool("violence.html","Violence Risk (FRST)"),_md("Agitation & Restraint","agitation.md"),_md("Catatonia","catatonia.md"),_tool("bfcrs.html","Bush-Francis Catatonia Scale (BFCRS)"),_md("Hyperthermia & Toxidromes","toxidromes.md"),_md("Delirium","delirium.md"),_tool("withdrawal.html","Withdrawal: CIWA-Ar/COWS"),_tool("capacity.html","Decisional Capacity"),_md("Consult Questions: Capacity, Delirium, Catatonia, Withdrawal","exp_consult.md"),_md("Ethics & the Law: Confidentiality, Tarasoff, Reporting","ethics_legal.md")]},
  {"section":"Make a Plan","items":[_md("Psychopharmacology Primer","psychopharm_primer.md"),_md("Medication Monitoring & Labs","med_monitoring.md"),_md("Protocol Library","protocol_library.md"),_md("ECT & Neuromodulation","ect_neuromodulation.md"),_md("Treatment Basics","exp_tx.md"),_tool("decision-aids.html","Algorithms & Decision Aids"),_tool("interaction-cards.html","Interaction Cards — One Action"),_md("Nutrition & Metabolic Health","nutrition_metabolic.md"),_md("Osteopathic (OMM) Resources","omm_resources.md")]},
- {"section":"Communicate with Patients","items":[_tool("communication-practice.html","What Do You Say Next?"),_md("Psychotherapies at a Glance","psychotherapy.md"),_md("Motivational Interviewing","motivational_interviewing.md"),_md("Brief Psychotherapy on the Unit","brief_psychotherapy.md"),_tool("reflection.html","Reflection & Identity")]},
+ {"section":"Communicate with Patients","items":[_tool("communication-practice.html","What Do You Say Next?"),_md("Psychotherapies at a Glance","psychotherapy.md"),_md("Motivational Interviewing","motivational_interviewing.md"),_md("Brief Psychotherapy on the Unit","brief_psychotherapy.md"),_md("Therapy on the Unit","therapy_on_the_unit.md"),_tool("reflection.html","Reflection & Identity")]},
  {"section":"Work with Family and Systems","items":[_tool("family-systems.html","Family Systems Practice"),_md("I Need Collateral: 10-Minute Workflow","collateral_workflow.md"),_md("Family & Discharge","exp_family.md"),_md("Family Meeting Playbook (90-min)","family_playbook.md"),_md("Family Therapy Modalities","family_modalities.md")]},
  {"section":"Present and Work with the Team","items":[_md("Documentation & Oral Presentation","doc_oral.md"),_tool("oral.html","Treatment Team Rounding Prep"),_md("High-Yield Rounds Questions","rounds_questions.md")]},
  {"section":"Practice and Exam Prep","items":[_tool("question-bank-practice.html","Practice Questions — Question Bank"),_tool("one-patient-six-weeks.html","One Patient, Six Weeks"),_tool("review.html","Daily Review (Spaced Repetition)"),_tool("shelf-mode.html","Shelf Mode — Exam Simulation"),_md("COMAT & Shelf Review","shelf.md"),_md("Rapid Review — Buzzwords","rapid_review.md"),_md("OSCE Stations","osce.md"),_md("Practice Cases","cases.md"),_md("Landmark Trials — Listen & Test","landmark_trials.md"),_md("Anki Flashcard Decks","anki.md")]},
  {"section":"Case of the Week","items":[_md("Index — All Cases","cotw_index.md")]+[_md(w["label"],_cotw_slug(w,"ms3")) for w in _cotw_weeks]},
- {"section":"Evidence and Reference","items":[_md("Weekly Reading Map","reading_map.md"),_md("Evidence-Based Inpatient Psychiatry","evidence_inpatient.md"),_md("MS3 Book Library","book_library.md"),_md("Podcast Library (Psychiatry & Psychotherapy)","podcast_library.md")]},
- {"section":"Feedback","items":[_tool("feedback.html","Improve this library — send feedback")]},
+ {"section":"Evidence and Reference","items":[_md("Weekly Reading Map","reading_map.md"),_md("Evidence-Based Inpatient Psychiatry","evidence_inpatient.md"),_md("The Therapy Reading Room","therapy_reading_room.md"),_md("MS3 Book Library","book_library.md"),_md("Podcast Library (Psychiatry & Psychotherapy)","podcast_library.md")]},
+ {"section":"Feedback","items":[_tool("feedback.html","Improve this library — send feedback"),_tool("rotation-curator.html","Faculty: Curate a rotation edition",True)]},
 ]
 _navorder=["Orientation","Start the Encounter","Understand the Problem","Assess Safety and Acuity","Make a Plan","Communicate with Patients","Work with Family and Systems","Present and Work with the Team","Practice and Exam Prep","Case of the Week","Evidence and Reference","Feedback"]
 nav=sorted(nav,key=lambda s:_navorder.index(s["section"]) if s["section"] in _navorder else 999)
@@ -359,7 +364,47 @@ _missing_req=[]
 _copy_required(SPA, OUT+"/index.html", _missing_req)
 _copy_required(MARKED, OUT+"/marked.min.js", _missing_req)  # vendored (ward-wifi: no CDN dependency)
 _copy_required(CLINICAL_CSS, OUT+"/clinical-warm.css", _missing_req)  # shared dark-mode tokens (linked into tools below)
+_copy_required(FRONTDOOR_CSS, OUT+"/frontdoor.css", _missing_req)
 _abort_missing(_missing_req)
+
+# Front Door modules stay dormant in this task, but their data is made site-specific now.
+# Build after nav finalization so titles/kinds come from this site's actual browse catalog.
+sys.path.insert(0, os.path.dirname(HERE))
+from validate_tool_governance import (
+    GovernanceError,
+    build_governance_document,
+    current_revision,
+    validate_built_tool_inventory,
+    write_atomic_json,
+)
+from validate_rotation_edition_catalog import (
+    build_audience_projection as _build_rotation_projection,
+    load_catalog as _load_rotation_catalog,
+    load_governance as _load_rotation_governance,
+    validate_catalog as _validate_rotation_catalog,
+)
+try:
+    _core_revision=current_revision(Path(LIB))
+except GovernanceError as error:
+    raise SystemExit(f"tool governance INVALID — {error}") from error
+try:
+    _rotation_catalog=_load_rotation_catalog(Path(LIB))
+    _rotation_governance=_load_rotation_governance(Path(LIB))
+    _validate_rotation_catalog(_rotation_catalog,_rotation_governance,today=date.today())
+    _rotation_projection=_build_rotation_projection(_rotation_catalog,_rotation_governance,"ms3")
+    _fd_payload=frontdoor_catalog.build_frontdoor_payload(
+        "ms3", json.load(open(LIB+"/curriculum.json",encoding="utf-8")), nav, _core_revision,
+        _rotation_projection)
+    _frontdoor_destinations=(OUT+"/index.html", OUT+"/tools/rotation-curator.html")
+    for _frontdoor_destination in _frontdoor_destinations:
+        frontdoor_catalog.inject_frontdoor_payload(
+            _frontdoor_destination, _fd_payload,
+            json.load(open(OUT+"/topic_meta.json",encoding="utf-8")),
+            json.load(open(OUT+"/tool_registry.json",encoding="utf-8")))
+except ValueError as _fd_error:
+    print("BUILD ABORTED — Front Door payload:", _fd_error)
+    raise SystemExit(1)
+print("frontdoor payload:",sum(len(c["refs"]) for c in _fd_payload["curriculum"]["libraryColumns"]),"placed refs (ms3)")
 
 # ---- retired-bank-ids injection (shell calibration parity) ----
 # The shell counts confidently-wrong items straight from cw_qb_v1; the practice tool
@@ -395,6 +440,16 @@ common.apply_contrast_fix(
 )
 _QV=common.quiz_cache_bust(OUT+"/tools/quizzes.json")   # content-hash cache-bust (reproducible)
 common.apply_full_page_pass(OUT, cache_bust=_QV)
+for _frontdoor_destination in (OUT+"/index.html", OUT+"/tools/rotation-curator.html"):
+    frontdoor_catalog.assert_catalog_resolver_injected(_frontdoor_destination, _rotation_projection["revision"])
+
+# The governed shell itself is a required risk-work surface because it renders the Safety Kit.
+# Expand only after shared snippets: a marker introduced by a snippet must participate in the
+# exactly-one count rather than arriving after an apparently clean early check. Unlike optional
+# tool/page loops, zero or duplicate shell markers are both fatal; resident inherits this checked
+# artifact and receives its own final-marker postcondition below.
+_crisis.inject_required_html_file(OUT+"/index.html", _crisis_data, "Front Door shell index")
+print("crisis block injected: shell index")
 
 
 open(OUT+"/favicon.svg","w",encoding="utf-8").write('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="#9f3f2a"/><text x="32" y="45" font-family="Georgia,serif" font-size="40" fill="#fff" text-anchor="middle">\u03c8</text></svg>')
@@ -410,6 +465,9 @@ from media_guard import strip_missing_media
 strip_missing_media(OUT)
 
 common.build_search_index(nav, OUT, label="ms3")
+
+# Final shell postcondition after every MS3 index transform and before page/static QA.
+_crisis.assert_no_html_marker_file(OUT+"/index.html", "final Front Door shell index")
 
 # Postcondition gate (architecture review rec 1.3): prove every shipped page actually
 # received the chrome/dark transforms rather than silently missing them.
@@ -428,17 +486,9 @@ print("surface governance: emitted", len(_surface_governance["items"]), "items (
 # ---------- TOOL GOVERNANCE ----------
 # Source hashes remain over canonical source files; this final comparison proves the emitted
 # inventory exactly covers the completed built tools directory before publishing the artifact.
-sys.path.insert(0, os.path.dirname(HERE))
-from validate_tool_governance import (
-    GovernanceError,
-    build_governance_document,
-    validate_built_tool_inventory,
-    write_atomic_json,
-)
-
 try:
     _governance, _governance_warnings = build_governance_document(
-        Path(LIB), "ms3", enforce_expected_count=True
+        Path(LIB), "ms3", revision=_core_revision, enforce_expected_count=True
     )
     validate_built_tool_inventory(_governance, Path(OUT) / "tools", site="ms3")
     write_atomic_json(Path(OUT) / "tool-governance.json", _governance)

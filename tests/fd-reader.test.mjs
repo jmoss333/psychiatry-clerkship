@@ -186,6 +186,13 @@ test('the mobile action bar\'s primary label is wrapped in a bare <span>', () =>
     /fd-btn fd-btn--primary" data-fd-toggle="a\.md" aria-pressed="(?:true|false)"><span>[^<]*<\/span><\/button>/);
 });
 
+test('the icon-only mobile back control has an explicit accessible name', () => {
+  const html = F.fdReader(IDX, s({ ref: 'a.md' }), '');
+  const bar = html.slice(html.indexOf('class="fd-actionbar"'));
+  assert.match(bar, /class="fd-btn fd-btn--ghost" data-fd-back aria-label="Back to Today">‹<\/button>/,
+    'the compact mobile back glyph needs the same destination name as the visible desktop control');
+});
+
 // ---- prev/next footer -----------------------------------------------------------------------
 
 test('the prev/next footer carries no breakpoint class or style in the markup', () => {
@@ -303,6 +310,18 @@ test('the done toggles carry aria-pressed in both states, and the rail row carri
     'the rail row navigates; it is not a toggle');
 });
 
+test('only completed rail rows announce their completion status', () => {
+  const unread = F.fdReader(IDX, s({ ref: 'a.md', week: 1, done: {} }), '');
+  assert.doesNotMatch(unread, /fd-visually-hidden">Completed<\/span>/,
+    'an unread navigation target must not be announced as complete');
+
+  const done = F.fdReader(IDX, s({ ref: 'a.md', week: 1, done: { 'b.md': true } }), '');
+  assert.match(done,
+    /<span class="fd-railnav__title is-done">Page B<\/span><span class="fd-visually-hidden">Completed<\/span>/,
+    'a completed navigation target needs a screen-reader-only status, not aria-pressed');
+  assert.doesNotMatch(done, /class="fd-railnav__row[^"]*"[^>]*aria-pressed/);
+});
+
 test('the currently-open row carries is-current, and only that row', () => {
   const html = F.fdReader(IDX, s({ ref: 'b.md', week: 1 }), '');
   assert.match(html, /fd-railnav__row is-current" data-fd-open="b\.md"/);
@@ -322,6 +341,46 @@ test('a tool item shows "Interactive tool" and "self-paced" rather than read min
   const html = F.fdReader(IDX, s({ ref: 'tool.html', week: 1 }), '');
   assert.match(html, /fd-eyebrow">Week 1 · Interactive tool</);
   assert.match(html, /fd-article__meta">self-paced</);
+});
+
+test('tool Readers emit one stable expansion toggle while reading Readers emit none', () => {
+  const focused = F.fdReader(IDX, s({ ref: 'tool.html', week: 1, toolExpanded: false }),
+    '<iframe class="toolframe"></iframe>');
+  const expanded = F.fdReader(IDX, s({ ref: 'tool.html', week: 1, toolExpanded: true }),
+    '<iframe class="toolframe"></iframe>');
+  const reading = F.fdReader(IDX, s({ ref: 'a.md', toolExpanded: true }), '<p>Read</p>');
+
+  assert.equal((focused.match(/data-fd-expand-tool/g) || []).length, 1);
+  assert.match(focused,
+    /data-fd-expand-tool aria-pressed="false" aria-controls="fd-tool-region"[^>]*>[^<]*(?:<[^>]+>)*Expand tool/);
+  assert.match(focused, /class="fd-reader fd-reader--tool"/);
+  assert.doesNotMatch(focused, /fd-reader fd-reader--tool is-tool-expanded/);
+  assert.match(focused, /id="fd-tool-region"/);
+
+  assert.equal((expanded.match(/data-fd-expand-tool/g) || []).length, 1);
+  assert.match(expanded,
+    /data-fd-expand-tool aria-pressed="true" aria-controls="fd-tool-region"/);
+  assert.match(expanded, /class="fd-reader fd-reader--tool is-tool-expanded"/);
+  assert.match(expanded, />Expand tool<\/span>/,
+    'aria-pressed toggles keep the visible and accessible label stable');
+
+  assert.doesNotMatch(reading, /data-fd-expand-tool|fd-reader--tool|fd-tool-region/,
+    'a related Try-now tool must not turn the reading page itself into a tool');
+});
+
+test('direct unindexed html routes still render as tools with the expansion control', () => {
+  const empty = { byRef: {}, weeks: [] };
+  for (const ref of ['orientation-video.html', 'feedback.html', 'rp-agitation.html']) {
+    const html = F.fdReader(empty, {
+      ref, week: null, fromTab: 'library', done: {}, toolExpanded: false,
+    }, '<iframe class="toolframe"></iframe>');
+    assert.match(html, /fd-eyebrow">Interactive tool</, ref);
+    assert.match(html, /data-fd-expand-tool aria-pressed="false"/, ref);
+    assert.match(html, /id="fd-tool-region"/, ref);
+  }
+  assert.doesNotMatch(F.fdReader(empty, {
+    ref: 'unindexed.md', week: null, fromTab: 'library', done: {}, toolExpanded: true,
+  }, '<p>Read</p>'), /data-fd-expand-tool|fd-reader--tool/);
 });
 
 test('the source chip shows the item\'s ref', () => {

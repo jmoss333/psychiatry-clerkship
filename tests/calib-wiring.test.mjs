@@ -199,8 +199,7 @@ test('spa_index.html renderProgress swaps in renderCalibPanel() and falls back t
   const endMarker = '/* ---- end calib panel ---- */';
   assert.ok(spaSrc.includes(startMarker) && spaSrc.includes(endMarker),
     'calib-panel slice markers must both be present');
-  // The calibration card lives on the Progress view since the Today/Progress split —
-  // renderHome must NOT carry it (Today is the action half; analytics render on Progress).
+  // The calibration card lives only on the internal Progress reader after the shell cutover.
   const renderProgressMatch = spaSrc.match(/window\.renderProgress=function\(\)\{[\s\S]*?\n  \};/);
   assert.ok(renderProgressMatch, 'window.renderProgress function not found');
   const body = renderProgressMatch[0];
@@ -210,12 +209,10 @@ test('spa_index.html renderProgress swaps in renderCalibPanel() and falls back t
     'renderProgress must use the panel output when non-empty');
   assert.match(body, /else\{ var cal=calibrationSummary\(\);/,
     'renderProgress must fall back to the legacy calibrationSummary() card when the panel is empty');
-  const renderHomeMatch = spaSrc.match(/window\.renderHome=function\(\)\{[\s\S]*?\n  \};/);
-  assert.ok(renderHomeMatch, 'window.renderHome function not found');
-  // Pin the swap-in CALL (var calPanel=...), not the bare identifier — a renderHome comment
-  // legitimately cites renderCalibPanel()'s docs and must not trip this.
-  assert.doesNotMatch(renderHomeMatch[0], /var calPanel=/,
-    'renderHome must not render the calibration panel — it moved to renderProgress');
+  assert.doesNotMatch(spaSrc, /window\.renderHome=function/,
+    'the legacy combined home renderer must not survive the Front Door cutover');
+  assert.match(spaSrc, /fdSurface\('progress',[\s\S]*window\.renderProgress\(\)/,
+    'the retained analytics renderer must mount through the independently guarded Progress view');
 });
 
 // Every file this repo's build treats as shipped source (git-tracked .html/.js). Untracked
@@ -226,7 +223,7 @@ function trackedSources() {
     cwd: repo,
     encoding: 'utf8',
   });
-  return out.split('\n').filter(Boolean);
+  return out.split('\n').filter((rel) => rel && fs.existsSync(path.join(repo, rel)));
 }
 
 test('no consumer reimplements calibLog locally', () => {

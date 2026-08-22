@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Static rotation edition catalog governance",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "manifestRevision", "rotationEditionV2", "dispositions"],
+  "properties": {
+    "schemaVersion": {"const": 1}, "manifestRevision": {"type": "integer", "minimum": 1},
+    "rotationEditionV2": {"enum": ["disabled", "enabled"]},
+    "dispositions": {"type": "array", "maxItems": 16384, "items": {"$ref": "#/definitions/disposition"}}
+  },
+  "definitions": {
+    "key": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._:-]{0,126}@v[1-9][0-9]{0,5}$"},
+    "date": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"},
+    "disposition": {"type": "object", "additionalProperties": false, "required": ["key", "status", "changedOn", "reviewRef"], "properties": {
+      "key": {"$ref": "#/definitions/key"}, "status": {"enum": ["pending", "reviewed", "deprecated", "blocked"]},
+      "changedOn": {"$ref": "#/definitions/date"}, "reviewRef": {"type": "string", "minLength": 1, "maxLength": 160}
+    }}
+  }
+}

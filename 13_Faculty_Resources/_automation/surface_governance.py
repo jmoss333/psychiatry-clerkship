@@ -547,7 +547,6 @@ COTW_REGISTRY_RELATIVE = Path("08_Cases_and_Simulation/case-of-the-week/cotw_reg
 # (SurfaceGovernanceError, load_validated_ledger), so importing back would
 # be a circular import. Keep the two lists in sync by hand if either changes.
 _ADDITIONAL_TOOL_SOURCES = {
-    "learning-path.html": "01_Six_Week_Curriculum/learning-path.html",
     "orientation-video.html": "_prototypes/orientation-video/orientation-video.html",
     "rp-agitation.html": "_prototypes/agitation-trainer/rp-agitation.html",
     "rp-brief-psych.html": "_prototypes/brief-psych/rp-brief-psych.html",

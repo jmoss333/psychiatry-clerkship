@@ -39,11 +39,9 @@ SITE_MANIFEST_RELATIVE = Path("13_Faculty_Resources/_automation/site_build/site_
 REVIEWED_RELATIVE = Path("13_Faculty_Resources/reviewed.json")
 SITE_EXTRAS = {
     "ms3": (
-        ("01_Six_Week_Curriculum/learning-path.html", "learning-path.html"),
         ("_prototypes/orientation-video/orientation-video.html", "orientation-video.html"),
     ),
     "resident": (
-        ("01_Six_Week_Curriculum/learning-path.html", "learning-path.html"),
         ("_prototypes/agitation-trainer/rp-agitation.html", "rp-agitation.html"),
         ("_prototypes/brief-psych/rp-brief-psych.html", "rp-brief-psych.html"),
         ("_prototypes/canon-quiz/rp-canon-quiz.html", "rp-canon-quiz.html"),
@@ -227,6 +225,9 @@ def normalize_tool(
     slug = Path(built_slug).name
     if slug != built_slug or not slug.endswith(".html"):
         raise GovernanceError(f"{relative_path}: invalid built slug")
+    clinical_claim_values = (
+        {True, False} if marker.audiences == ("faculty",) else {True}
+    )
     envelope = {
         "schemaVersion": 1,
         "id": f"tools/{slug[:-len('.html')]}",
@@ -252,7 +253,7 @@ def normalize_tool(
         "safetySeverity": risk.get("level"),
         "reviewCategory": risk.get("kind"),
         "clinicalClaim": _conservative_field(
-            marker, relative_path, "clinicalClaim", True, {True}
+            marker, relative_path, "clinicalClaim", True, clinical_claim_values
         ),
         "patientDataPolicy": _conservative_field(
             marker,

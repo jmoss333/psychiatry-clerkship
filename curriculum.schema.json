@@ -2,33 +2,32 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "curriculum.json — front door structure",
   "type": "object",
-  "required": ["weeks", "libraryColumns", "libraryExclude", "safetyKit", "roles", "synonyms"],
+  "required": ["learningPaths", "libraryColumns", "libraryExclude", "siteLibrary", "safetyKit", "roles", "synonyms"],
+  "additionalProperties": false,
   "properties": {
     "_note": { "type": "string" },
-    "weeks": {
-      "type": "array",
-      "minItems": 6,
-      "maxItems": 6,
-      "items": {
-        "type": "object",
-        "required": ["n", "title", "theme", "items"],
-        "additionalProperties": false,
-        "properties": {
-          "n": { "type": "integer", "minimum": 1, "maximum": 6 },
-          "title": { "type": "string", "minLength": 1 },
-          "theme": { "type": "string", "minLength": 1 },
-          "items": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "required": ["ref", "kind"],
-              "additionalProperties": false,
-              "properties": {
-                "ref": { "type": "string", "minLength": 1 },
-                "kind": { "type": "string", "enum": ["read", "tool"] }
-              }
-            }
-          }
+    "learningPaths": {
+      "type": "object",
+      "required": ["ms3", "resident"],
+      "additionalProperties": false,
+      "properties": {
+        "ms3": {
+          "allOf": [
+            { "$ref": "#/definitions/learningPath" },
+            { "properties": {
+              "id": { "const": "ms3-six-week" },
+              "weeks": { "minItems": 6, "maxItems": 6 }
+            }}
+          ]
+        },
+        "resident": {
+          "allOf": [
+            { "$ref": "#/definitions/learningPath" },
+            { "properties": {
+              "id": { "const": "resident-four-week" },
+              "weeks": { "minItems": 4, "maxItems": 4 }
+            }}
+          ]
         }
       }
     },
@@ -57,6 +56,15 @@
         }
       }
     },
+    "siteLibrary": {
+      "type": "object",
+      "required": ["ms3", "resident"],
+      "additionalProperties": false,
+      "properties": {
+        "ms3": { "$ref": "#/definitions/siteLibraryEntry" },
+        "resident": { "$ref": "#/definitions/siteLibraryEntry" }
+      }
+    },
     "safetyKit": {
       "type": "array",
       "items": {
@@ -81,6 +89,70 @@
     "synonyms": { "type": "object", "additionalProperties": { "type": "string" } }
   },
   "definitions": {
+    "learningPath": {
+      "type": "object",
+      "required": ["id", "weeks"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "weeks": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/week" }
+        }
+      }
+    },
+    "week": {
+      "type": "object",
+      "required": ["n", "title", "theme", "focusCategories", "items"],
+      "additionalProperties": false,
+      "properties": {
+        "n": { "type": "integer", "minimum": 1, "maximum": 6 },
+        "title": { "type": "string", "minLength": 1 },
+        "theme": { "type": "string", "minLength": 1 },
+        "focusCategories": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "enum": [
+            "anxiety", "childdev", "ethics", "mood", "neurocog", "otherdx",
+            "personality", "pharm", "psychosis", "relational", "safety", "substance"
+          ] }
+        },
+        "items": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/pathItem" }
+        }
+      }
+    },
+    "pathItem": {
+      "type": "object",
+      "required": ["ref", "kind"],
+      "additionalProperties": false,
+      "properties": {
+        "ref": { "type": "string", "minLength": 1 },
+        "kind": { "type": "string", "enum": ["read", "tool"] }
+      }
+    },
+    "siteLibraryEntry": {
+      "type": "object",
+      "required": ["additions", "exclusions"],
+      "additionalProperties": false,
+      "properties": {
+        "additions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["column", "refs"],
+            "additionalProperties": false,
+            "properties": {
+              "column": { "type": "string", "minLength": 1 },
+              "refs": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+            }
+          }
+        },
+        "exclusions": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+      }
+    },
     "roleList": {
       "type": "array",
       "items": {

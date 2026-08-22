@@ -163,9 +163,9 @@ def quiz_cache_bust(quizzes_path):
 # ---------------------------------------------------------------------------
 # Tool search keywords — union of the two forked tables, per key.
 #
-# Neither side was a superset: MS3 was richer for 12 of the 15 keys that
-# differed, but `learning-path.html`, `review.html`, and `shelf-mode.html` each
-# had resident-only terms ("rotation", "board review") that MS3 lacked. Union
+# Neither side was a superset: MS3 was richer for most keys that differed, but
+# `review.html` and `shelf-mode.html` had resident-only terms ("rotation",
+# "board review") that MS3 lacked. Union
 # preserves both. Resident-only tools (rp-*) are included and are simply never
 # referenced by the MS3 nav, so they cost that build nothing.
 #
@@ -193,7 +193,6 @@ _TOOLKW_MS3 = {
     "feedback.html": "feedback improve library suggest resource report broken link error confusing helpful rating comment survey suggestion box contact",
     "decision-aids.html": "algorithms decision aids visual trees flowchart rule out first move escalation ladder agitation restraint nms serotonin syndrome hyperthermia alcohol withdrawal timeline delirium tremens ciwa score bands catatonia psychosis differential dark mode",
     "bfcrs.html": "bush francis catatonia rating scale bfcrs bfcsi catatonia screening immobility stupor mutism posturing catalepsy waxy flexibility negativism mitgehen gegenhalten echopraxia lorazepam challenge severity score",
-    "learning-path.html": "learning path home dashboard six week progress streak daily review study plan start here",
     "question-bank-practice.html": "practice questions question bank comat shelf exam vignette single best answer sba two-tier confidence calibration trap feedback spaced repetition category filter mood psychosis anxiety substance neurocognitive pharmacology safety personality relational ethics",
 }
 
@@ -212,7 +211,6 @@ _TOOLKW_RES = {
     "bfcrs.html": "bush francis catatonia rating scale immobility mutism posturing waxy flexibility lorazepam challenge",
     "review.html": "daily review spaced repetition srs flashcards retention due cards streak board review test enhanced learning forgetting curve",
     "feedback.html": "feedback improve library suggest resource report broken link error confusing helpful comment suggestion box",
-    "learning-path.html": "learning path home dashboard rotation progress daily review",
     "rp-agitation.html": "agitation ladder prn trainer restraint de-escalation seclusion intramuscular haloperidol lorazepam olanzapine decision escalation",
     "rp-brief-psych.html": "five good minutes brief psychotherapy coach supportive bedside therapeutic conversation skills",
     "rp-canon-quiz.html": "canon quiz 200 paper spine landmark trials evidence self test board review recall",
@@ -552,6 +550,23 @@ SNIPPET_MARKERS = {
     "/*__PHASE_POLICY__*/": "phase_policy.js",
     "/*__SESS_CAPSULE__*/": "sess_capsule.js",
     "/*__FD_STATE__*/": "frontdoor/fd_state.js",
+    "/*__FD_DATA__*/": "frontdoor/fd_data.js",
+    "/*__FD_EDITION_CATALOG__*/": "frontdoor/fd_edition_catalog.js",
+    "/*__FD_EDITION_CONTRACT__*/": "frontdoor/fd_edition_contract.js",
+    "/*__FD_EDITION_PROJECT__*/": "frontdoor/fd_edition_project.js",
+    "/*__FD_EDITION_V1_SALVAGE__*/": "frontdoor/fd_edition_v1_salvage.js",
+    "/*__QR_GENERATOR_1_4_4__*/": "vendor/qrcode-generator-1.4.4.js",
+    "/*__FD_CURATOR__*/": "frontdoor/fd_curator.js",
+    "/*__FD_EDITION_STUDENT__*/": "frontdoor/fd_edition_student.js",
+    "/*__FD_TODAY__*/": "frontdoor/fd_today.js",
+    "/*__FD_DUE__*/": "frontdoor/fd_due.js",
+    "/*__FD_SHELL__*/": "frontdoor/fd_shell.js",
+    "/*__FD_PATH__*/": "frontdoor/fd_path.js",
+    "/*__FD_LIBRARY__*/": "frontdoor/fd_library.js",
+    "/*__FD_READER__*/": "frontdoor/fd_reader.js",
+    "/*__FD_SEARCH__*/": "frontdoor/fd_search.js",
+    "/*__FD_SHEET__*/": "frontdoor/fd_sheet.js",
+    "/*__FD_WIRE__*/": "frontdoor/fd_wire.js",
 }
 
 
@@ -607,7 +622,7 @@ def _snippet_signature(snippet_text):
     """
     for line in snippet_text.splitlines():
         line = line.strip()
-        if line.startswith("function "):
+        if line.startswith("function ") and len(line) < 60:
             return line
     return None
 

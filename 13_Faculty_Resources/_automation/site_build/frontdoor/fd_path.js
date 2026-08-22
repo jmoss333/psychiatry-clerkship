@@ -1,4 +1,4 @@
-/* Path -- the six-week timeline (left column) and the selected week's detail card (right
+/* Path -- the projected learning-path timeline (left column) and the selected week's detail card (right
    column). See CLASS-INVENTORY.md section 4 and the prototype's Path section
    (Front-Door-Hi-Fi-v2.dc.html, search "══", line 287) for the markup this ports.
 
@@ -43,8 +43,7 @@ function fdPathDotCls(isDone, isNow){
 /* One timeline row. .fd-timeline__line is emitted unconditionally on every row, including the
    last -- frontdoor.css hides it there via :last-child, and skipping it in markup instead
    would break the spine on any row the CSS selector does not happen to cover (CLASS-INVENTORY
-   ⚠). data-fd-week carries the row's week number, reusing the established convention rather
-   than inventing a Path-specific attribute. */
+   ⚠). data-fd-view-week carries the row's browsing target; data-fd-week remains setup-only. */
 function fdPathTimelineRow(index, w, state){
   var items=fdItemsForWeek(index, w.n);
   var progress=fdTodayProgress(items, state.done);
@@ -53,7 +52,7 @@ function fdPathTimelineRow(index, w, state){
   var isDone=progress.total>0&&progress.pct===100;
   var rowCls=isSel?'fd-timeline__row is-sel':'fd-timeline__row';
   var nLabel='Week '+fdEsc(w.n)+(isNow?' · you are here':'');
-  return '<button type="button" class="'+rowCls+'" data-fd-week="'+fdEsc(w.n)+'">'+
+  return '<button type="button" class="'+rowCls+'" data-fd-view-week="'+fdEsc(w.n)+'">'+
     '<span class="fd-timeline__gutter">'+
       '<span class="'+fdPathDotCls(isDone, isNow)+'"></span>'+
       '<span class="fd-timeline__line"></span>'+
@@ -72,9 +71,8 @@ function fdPathTimelineRow(index, w, state){
 function fdPathDetail(index, state){
   var idx=index||{weeks:[]};
   var weeks=idx.weeks||[];
-  var fallbackN=weeks.length?weeks[0].n:1;
-  var viewN=(typeof state.viewWeek==='number'&&!isNaN(state.viewWeek))?state.viewWeek:fallbackN;
-  var wk=fdFindWeek(idx, viewN);
+  var wk=fdFindWeek(idx,state.viewWeek)||weeks[0]||null;
+  var viewN=wk?wk.n:null;
   var items=fdItemsForWeek(idx, viewN);
   var isCurrent=(typeof state.week==='number'&&!isNaN(state.week))&&state.week===viewN;
 
@@ -99,8 +97,9 @@ function fdPath(index, state){
   var st=state||{};
   var idx=index||{weeks:[]};
   var weeks=idx.weeks||[];
+  if(!fdActivePathValid(idx)) return fdPathFallback('path');
   var out='<section class="fd-path">';
-  out+='<h1 class="fd-path__h1">The six weeks</h1>';
+  out+='<h1 class="fd-path__h1">Your '+fdEsc(fdPathWeekCount(idx))+'-week path</h1>';
   out+='<div class="fd-path__cols">';
   out+='<div class="fd-timeline">';
   for(var i=0;i<weeks.length;i++){ out+=fdPathTimelineRow(idx, weeks[i], st); }

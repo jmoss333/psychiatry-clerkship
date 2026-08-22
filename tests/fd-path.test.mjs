@@ -16,6 +16,7 @@ const make = new Function(`
   ${read('phase_policy.js')}
   ${read('frontdoor/fd_state.js')}
   ${read('frontdoor/fd_data.js')}
+  ${read('frontdoor/fd_edition_student.js')}
   ${read('frontdoor/fd_today.js')}
   ${pathSrc}
   return { fdPath: fdPath, fdBuildIndex: fdBuildIndex, fdItemsForWeek: fdItemsForWeek,
@@ -38,8 +39,10 @@ const WEEK_DEFS = [
 
 function buildCurriculum(weekDefs) {
   return {
+    path: { id: 'fixture-path', weekCount: weekDefs.length },
     weeks: weekDefs.map((w) => ({
       n: w.n, title: w.title, theme: w.theme,
+      focusCategories: [],
       items: w.refs.map(([ref, kind]) => ({ ref, kind })),
     })),
     libraryColumns: [], libraryExclude: [], safetyKit: [],
@@ -64,15 +67,17 @@ const FIX_META = {};
 const FIX_TOOLS = { tools: [{ file: 'w5b.html', title: 'Title w5b.html', category: 'acute-safety', riskLevel: 'moderate' }] };
 const FIX_MAN = buildManifest(WEEK_DEFS);
 const IDX = F.fdBuildIndex(FIX_CUR, FIX_META, FIX_TOOLS, FIX_MAN);
+const FOUR_INDEX = F.fdBuildIndex(buildCurriculum(WEEK_DEFS.slice(0, 4)), FIX_META, FIX_TOOLS,
+  buildManifest(WEEK_DEFS.slice(0, 4)));
 
 const BASE_STATE = { week: 2, viewWeek: 2, done: {} };
 const s = (over) => Object.assign({}, BASE_STATE, over);
 
 // Row extraction: each timeline row is exactly one <button>...spans...</button> with no nested
-// button, so a non-greedy match up to the first </button> after the data-fd-week attribute
+// button, so a non-greedy match up to the first </button> after the data-fd-view-week attribute
 // safely captures just that row.
 function rowFor(html, n) {
-  const m = html.match(new RegExp('<button type="button" class="([^"]*)" data-fd-week="' + n + '">([\\s\\S]*?)</button>'));
+  const m = html.match(new RegExp('<button type="button" class="([^"]*)" data-fd-view-week="' + n + '">([\\s\\S]*?)</button>'));
   if (!m) throw new Error('no timeline row for week ' + n);
   return { cls: m[1], body: m[2] };
 }
@@ -86,6 +91,24 @@ test('all six timeline rows render, each carrying its connector line (including 
   const lines = html.match(/class="fd-timeline__line"/g) || [];
   assert.equal(lines.length, 6, '.fd-timeline__line must be emitted on every row, last included');
   for (let n = 1; n <= 6; n++) assert.ok(rowFor(html, n), 'row ' + n + ' must be findable');
+});
+
+test('Path emits view-week actions only, reserving setup-week for setup', () => {
+  const html = F.fdPath(IDX, s({}));
+  assert.equal((html.match(/data-fd-view-week=/g) || []).length, 6);
+  assert.doesNotMatch(html, /data-fd-week=/);
+});
+
+test('Path renders the projected path length and falls back only to an actual first week', () => {
+  const fourHtml = F.fdPath(FOUR_INDEX, { week: 2, viewWeek: 2, done: {} });
+  assert.match(fourHtml, /<h1 class="fd-path__h1">Your 4-week path<\/h1>/);
+  assert.equal((fourHtml.match(/data-fd-view-week=/g) || []).length, 4);
+  const invalid = F.fdPath(FOUR_INDEX, { week: 2, viewWeek: 99, done: {} });
+  assert.match(invalid, /<span class="fd-eyebrow">Week 1<\/span>/);
+  assert.doesNotMatch(invalid, /Week 99/);
+  const empty = F.fdPath({ path: { id: '', weekCount: 0 }, weeks: [] },
+    { week: null, viewWeek: null, done: {} });
+  assert.match(empty, /class="fd-fallback"[^>]*role="alert"/);
 });
 
 // ---- dot state: is-current only on state.week; is-done only when actually complete ----
@@ -173,6 +196,38 @@ test('aria-pressed tracks the done map in both directions on the detail card', (
 test('the rows really are the compact variant of the shared row, not a fork', () => {
   const html = F.fdPath(IDX, s({ week: 5, viewWeek: 5, done: {} }));
   assert.match(html, /class="fd-row is-compact"/);
+});
+
+test('projected core rows keep stable progress refs and add local priority and rationale', () => {
+  const weeks = IDX.weeks.map((week) => Object.assign({}, week, {
+    items: week.items.map((item) => item.ref === 'w2a.md' ? Object.assign({}, item, {
+      instanceId: 'core:w2a.md:1', priority: 'optional',
+      reasonText: 'Use after the team discussion.',
+    }) : item),
+  }));
+  const html = F.fdPath(Object.assign({}, IDX, { weeks }), s({ week: 2, viewWeek: 2 }));
+  assert.match(html, /data-fd-toggle="w2a\.md"/);
+  assert.doesNotMatch(html, /data-fd-toggle="core:w2a\.md:1"/);
+  assert.match(html, /Optional for this local rotation/);
+  assert.match(html, /Local rotation reason: Use after the team discussion\./);
+  assert.match(html, /Reviewed clerkship Library/);
+});
+
+test('Path leaves trusted local resources to the stable governance mount', () => {
+  const edition = {
+    card: { fingerprint: 'EXU-MS3-ZBVX4D' },
+    resources: [{
+        id: 'local:resource:week2', title: 'Local workflow page',
+        url: 'https://education.example.edu/workflow', priority: 'recommended', week: 2,
+        rationale: 'Review before local rounds.',
+      }],
+  };
+  const html = F.fdPath(Object.assign({}, IDX, { edition }), s({
+    week: 2, viewWeek: 2,
+    localProgress: { checklist: {}, resources: { 'local:resource:week2': true } },
+  }));
+  assert.match(html, /class="fd-detail__list"/);
+  assert.doesNotMatch(html, /education\.example\.edu|local:resource:week2|Attending-provided/);
 });
 
 // ---- "Set as my week" only when viewWeek !== week --------------------------------------

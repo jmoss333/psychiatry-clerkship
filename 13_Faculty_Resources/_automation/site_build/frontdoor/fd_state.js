@@ -15,8 +15,9 @@ var FD_STORE='cw_frontdoor_v1';
 
 /* Persisted keys are ONLY those with no existing home. done lives in cw_progress_v1,
    streak in cw_srs_v1.stats, and the rotation week in cw_rotation_start/cw_start_week —
-   copying them here would create two sources that silently desync. */
-var FD_KEYS=['role','tab','viewWeek','openId','fromTab','scrollPos'];
+   copying them here would create two sources that silently desync. toolExpanded is shell layout,
+   not clinical progress or route state, so this store is its single home. */
+var FD_KEYS=['role','tab','viewWeek','openId','fromTab','scrollPos','toolExpanded'];
 
 function fdLoad(){
   try{ return JSON.parse(localStorage.getItem(FD_STORE)||'{}')||{}; }catch(_){ return {}; }
@@ -30,36 +31,94 @@ function fdSave(o){
   try{ localStorage.setItem(FD_STORE, JSON.stringify(out)); }catch(_){ }
 }
 
-/* Weeks 5-6 carry a countdown to the exam. Returns '' for every other week so callers can
-   concatenate unconditionally.
+/* cw_progress_v1 predates Front Door and stores objects, not booleans. Renderers receive the
+   small boolean projection below; writes retain the legacy {done,at} entry so the old shell's
+   progLoad()/entry.done contract continues to read every learner's saved progress. */
+function fdProgressDoneMap(raw){
+  var out={}, src=raw||{}, entry;
+  if(typeof src!=='object') return out;
+  for(var ref in src){
+    if(Object.prototype.hasOwnProperty.call(src, ref)){
+      entry=src[ref];
+      if(entry&&typeof entry==='object'&&typeof entry.done==='boolean') out[ref]=entry.done;
+    }
+  }
+  return out;
+}
+
+function fdProgressToggle(raw, ref, done, nowMs){
+  var out={}, src=raw||{};
+  if(src&&typeof src==='object'){
+    for(var key in src){
+      if(Object.prototype.hasOwnProperty.call(src, key)) out[key]=src[key];
+    }
+  }
+  if(done) out[ref]={done:true,at:localDayStr(nowMs)};
+  else delete out[ref];
+  return out;
+}
+
+function fdStateHasWeek(weeks, n){
+  var list=weeks||[];
+  if(typeof n!=='number'||isNaN(n)||n%1!==0) return false;
+  for(var i=0;i<list.length;i++){ if(list[i]&&list[i].n===n) return true; }
+  return false;
+}
+
+function fdRotationWeek(rotationStart, weeks, nowMs){
+  var list=weeks||[];
+  if(!list.length||typeof shelfDaysUntil!=='function') return null;
+  var du=shelfDaysUntil(rotationStart||'',nowMs);
+  if(du===null) return null;
+  if(du>0) return 0;
+  var position=Math.floor(-du/7)+1;
+  if(position<=list.length) return list[position-1].n;
+  return list[list.length-1].n+1;
+}
+
+/* Recover a rotation's first Monday from a selected path week without rewriting an older stored
+   start date. A zero means browsing rather than a rotation. */
+function fdRotationStartForWeek(selectedWeek, weeks, nowMs){
+  if(!fdStateHasWeek(weeks,selectedWeek)) return '';
+  var d=new Date(nowMs||Date.now());
+  d.setDate(d.getDate()-((d.getDay()+6)%7)-((selectedWeek-1)*7));
+  return localDayStr(d.getTime());
+}
+
+/* The final two path weeks carry a countdown to the exam. Returns '' for every other week so
+   callers can concatenate unconditionally.
 
    The stored cw_shelf_date wins whenever it is set: it is the actual date, and it is what the
    phase chip already counts against (phasePolicy), so the two surfaces cannot disagree.
 
-   Without a stored date we fall back to the rotation grid, anchored to the FRIDAY OF WEEK 6 —
+   Without a stored date we fall back to the rotation grid, anchored to the Friday of the final
+   path week —
    not to "the next Friday on the wall calendar". The wall-calendar form shipped in the
    prototype and is wrong: on the Saturday of week 5 it counted to the *following* week's
    Friday and then added another 7, yielding 13 where the real answer is 6 — so moving one day
    forward in time made the countdown grow, and past the exam it counted toward a phantom
    second one. Anchoring to a fixed point on the grid makes the value fall by exactly one per
-   day. idx is the day's offset from Monday (Mon=0 … Sun=6); the exam sits at idx 4 of week 6.
+   day. idx is the day's offset from Monday (Mon=0 … Sun=6); the exam sits at idx 4 of the final
+   path week.
 
    Once the exam is behind us there is nothing to count down to, so we return '' rather than a
    negative day count or a wrapped-around next Friday.
 
-   The no-stored-date fallback assumes cw_rotation_start is Monday-aligned — idx above is only a
-   true offset-from-Monday if the rotation actually started on one. This holds because rotations
-   always begin on a Monday (confirmed by the repo owner, 2026-08-15). If a non-Monday
-   cw_rotation_start were ever written, the fallback would drift: the countdown would rise as
-   time advances rather than fall, the same failure mode the wall-calendar formula above had. */
-function fdExamCountdown(week, nowMs){
-  if(week!==5&&week!==6) return '';
+   For a legacy stored rotation start that is not Monday-aligned, the fallback derives the fixed
+   final-week Friday offset from that actual start rather than treating its weekday as Monday. */
+function fdExamCountdown(week, weeks, nowMs, rotationStart){
+  var list=weeks||[], last=list.length?list[list.length-1].n:null;
+  if(last===null||!fdStateHasWeek(list,week)||week<last-1) return '';
   var stored=null;
   try{ stored=localStorage.getItem('cw_shelf_date'); }catch(_){ }
   var days=shelfDaysUntil(stored, nowMs);
   if(days===null){
-    var idx=(new Date(nowMs||Date.now()).getDay()+6)%7;
-    days=(6-week)*7+(4-idx);
+    var fromStart=shelfDaysUntil(rotationStart, nowMs);
+    if(fromStart!==null) days=((last-1)*7+4)+fromStart;
+    else {
+      var idx=(new Date(nowMs||Date.now()).getDay()+6)%7;
+      days=(last-week)*7+(4-idx);
+    }
   }
   if(days<0) return '';
   if(days===0) return '· exam day — good luck';
@@ -71,7 +130,7 @@ function fdExamCountdown(week, nowMs){
 function fdDailyPick(candidates, doneMap, nowMs){
   var pool=[], done=doneMap||{};
   for(var i=0;i<(candidates||[]).length;i++){
-    if(!done[candidates[i].ref]) pool.push(candidates[i]);
+    if(done[candidates[i].ref]!==true) pool.push(candidates[i]);
   }
   if(!pool.length) return null;
   return pool[localDayIndex(nowMs)%pool.length];

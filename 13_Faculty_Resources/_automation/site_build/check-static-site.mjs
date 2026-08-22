@@ -30,10 +30,11 @@
  *   - a shipped file that is a Git-LFS pointer stub instead of real bytes
  *   - a duplicate (or missing) item id in question_bank.json
  *   - a relative/root-local <script src> whose shipped target is absent
- *   - a shell (index.html) literal map (LAB/ICON/PRACTICE_LABELS/PAGE_TOOLS/
- *     PRACTICE_PAGE_TOOLS/DASH_CONFIG) referencing a tool file the build doesn't ship
- *   - a shell CASE_TITLES/FAMILY_SCENARIO_TITLES id missing from communication_cases.json
- *     / family_systems_scenarios.json
+ *   - rotation-curator.html loads a remote script/image, exposes a browser network
+ *     transport path, or ships more than the one locally vendored QR implementation
+ *   - the vendored QR implementation signature appears in any other shipped HTML
+ *   - a live shell (index.html) literal tool map (PRACTICE_LABELS/
+ *     PRACTICE_PAGE_TOOLS) referencing a tool file the build doesn't ship
  *   - a `?page=`/`?tool=` reference in shipped content/*.md that doesn't resolve
  *   - a soft-finding class (see qa-baseline.json) whose count exceeds its baseline
  *   - reviewed.json (the raw internal review ledger) shipped to the learner output
@@ -69,6 +70,79 @@ const readJSON = (f) => JSON.parse(readFileSync(f, 'utf8'));
 const listHtml = (dir) => existsSync(dir) ? readdirSync(dir).filter(f => f.endsWith('.html')) : [];
 const DOSE = /\b\d+(?:\.\d+)?\s?(?:mg|mcg|mL|mg\/kg)\b/i;
 const CDN_HOST = /\b(?:cdnjs\.cloudflare\.com|unpkg\.com|jsdelivr\.net)\b/i;
+const DOSE_WAIVER_PREFIX = 'QA-ALLOW-DOSE';
+const QR_VENDOR_SIGNATURE = 'var qrcode = function()';
+const QR_VENDOR_ALLOWED_HTML = 'tools/rotation-curator.html';
+
+function tagAttributes(tag) {
+  const values = [];
+  for (const attribute of tag.matchAll(/([^\s"'<>\/=]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>]+))/g)) {
+    values.push({ name: attribute[1].toLowerCase(), value: attribute[2] ?? attribute[3] ?? attribute[4] ?? '' });
+  }
+  return values;
+}
+
+/* Return the zero-based line numbers that are allowed to bypass dose scanning.
+ * Waivers are deliberately fail-closed: an annotation is accepted only when its
+ * exact sentinel pair encloses one expected line in one approved file. Any stray,
+ * duplicated, nested, malformed, or relocated sentinel is a hard failure and
+ * waives nothing. The canonical-topic-meta context additionally parses the exact
+ * FD_TOPIC_META JSON assignment so a future editor default can never hide here. */
+function doseWaiverLines(filename, lines) {
+  const waived = new Set();
+  const contexts = [
+    {
+      name: 'canonical-topic-meta',
+      filename: 'rotation-curator.html',
+      validate(line) {
+        const match = line.match(/^\s*var FD_TOPIC_META=(\{.*\});\s*$/);
+        if (!match) return false;
+        try {
+          const value = JSON.parse(match[1]);
+          return value !== null && typeof value === 'object' && !Array.isArray(value);
+        } catch {
+          return false;
+        }
+      },
+    },
+    {
+      // Pre-existing reviewed instrument copy also needs a line-bounded exception;
+      // unlike the old file-wide marker, this can never hide a future second dose.
+      name: 'validated-instrument-line',
+      filename: 'bfcrs.html',
+      validate(line) { return DOSE.test(line); },
+    },
+  ];
+  const knownSentinels = new Set();
+
+  for (const context of contexts) {
+    const startText = `/* ${DOSE_WAIVER_PREFIX}-START: ${context.name} */`;
+    const endText = `/* ${DOSE_WAIVER_PREFIX}-END: ${context.name} */`;
+    knownSentinels.add(startText);
+    knownSentinels.add(endText);
+    const starts = [], ends = [];
+    lines.forEach((line, index) => {
+      if (line.trim() === startText) starts.push(index);
+      if (line.trim() === endText) ends.push(index);
+    });
+    if (!starts.length && !ends.length) continue;
+    const valid = filename === context.filename
+      && starts.length === 1
+      && ends.length === 1
+      && ends[0] === starts[0] + 2
+      && context.validate(lines[starts[0] + 1]);
+    if (valid) waived.add(starts[0] + 1);
+    else H(`invalid dose-waiver sentinel in ${filename}: ${context.name} must bound one approved line`);
+  }
+
+  lines.forEach((line) => {
+    if (!line.includes(DOSE_WAIVER_PREFIX)) return;
+    if (!knownSentinels.has(line.trim())) {
+      H(`invalid dose-waiver sentinel in ${filename}: unrecognized or legacy annotation`);
+    }
+  });
+  return waived;
+}
 
 /* classify(msg): map a soft-finding message to a stable class for the ratchet (section 9).
  * Regexes are ordered most-specific first and matched against the literal S() message
@@ -100,6 +174,28 @@ const jsonFiles = [], allFiles = [];
     else { allFiles.push({ fp, size: st.size }); if (f.endsWith('.json')) jsonFiles.push(fp); }
   }
 })(SITE);
+for (const rawCatalogSource of ['rotation_edition_catalog.json', 'rotation_edition_catalog_governance.json']) {
+  if (existsSync(p(rawCatalogSource))) H(`${rawCatalogSource} must not be published to the learner output`);
+}
+
+/* The QR implementation is intentionally a single, curator-only local dependency. A
+ * second embedded copy increases the unreviewed executable surface, while a copy in the
+ * learner shell would make the faculty-only generator available on every page. Scan all
+ * shipped HTML (not only tools/) so index.html and future nested shells cannot bypass it.
+ * Fixture curator pages without the QR engine remain valid: this is a placement and
+ * uniqueness invariant, while common.py's marker contract verifies real-build presence. */
+for (const { fp } of allFiles) {
+  if (!fp.endsWith('.html')) continue;
+  const rel = relative(SITE, fp).split('\\').join('/');
+  const html = readFileSync(fp, 'utf8');
+  const copies = html.split(QR_VENDOR_SIGNATURE).length - 1;
+  if (!copies) continue;
+  if (rel !== QR_VENDOR_ALLOWED_HTML) {
+    H(`QR vendor signature outside rotation-curator.html: ${rel}`);
+  } else if (copies !== 1) {
+    H(`QR vendor signature must appear exactly once in rotation-curator.html (found ${copies})`);
+  }
+}
 const parsed = {};
 for (const f of jsonFiles) {
   try { parsed[f] = readJSON(f); }
@@ -255,9 +351,15 @@ for (const f of jsAssets) {
 for (const f of toolFiles) {
   const html = readFileSync(p('tools', f), 'utf8');
   if (CDN_HOST.test(html)) H(`external CDN dependency in tools/${f} — vendor the script locally so bedside/offline use does not blank the tool`);
-  for (const match of html.matchAll(/<script\b[^>]*\bsrc\s*=\s*(["'])(.*?)\1/gi)) {
-    const source = match[2].trim();
-    if (!source || /^(?:https?:)?\/\//i.test(source) || /^(?:data|blob):/i.test(source)) continue;
+  for (const match of html.matchAll(/<script\b[^>]*>/gi)) {
+    const sourceAttribute = tagAttributes(match[0]).find((attribute) => attribute.name === 'src');
+    const source = sourceAttribute ? sourceAttribute.value.trim() : '';
+    if (!source) continue;
+    if (/^(?:https?:)?\/\//i.test(source)) {
+      if (f === 'rotation-curator.html') H(`remote script source in rotation-curator.html: ${source}`);
+      continue;
+    }
+    if (/^(?:data|blob):/i.test(source)) continue;
     if (/^[a-z][a-z0-9+.-]*:/i.test(source)) {
       H(`unsupported script source in ${f}: ${source}`);
       continue;
@@ -272,6 +374,34 @@ for (const f of toolFiles) {
     } else if (!existsSync(target)) {
       H(`missing relative script source in ${f}: ${source}`);
     }
+  }
+  if (f === 'rotation-curator.html') {
+    for (const match of html.matchAll(/<link\b[^>]*>/gi)) {
+      const tag = match[0];
+      const attributes = tagAttributes(tag);
+      const rel = attributes.find((attribute) => attribute.name === 'rel');
+      const href = attributes.find((attribute) => attribute.name === 'href');
+      const rels = rel ? rel.value.trim().toLowerCase().split(/\s+/) : [];
+      const source = href ? href.value.trim() : '';
+      if (rels.includes('stylesheet') && /^(?:https?:)?\/\//i.test(source)) H(`remote stylesheet source in rotation-curator.html: ${source}`);
+    }
+
+    // Remote raster and SVG image elements could silently turn the QR/share screen into
+    // a tracking beacon. Inline SVG is allowed; only network-addressed destinations fail.
+    for (const match of html.matchAll(/<(?:img|image|source|use|feimage)\b[^>]*>/gi)) {
+      for (const attribute of tagAttributes(match[0])) {
+        if (!['src', 'srcset', 'href', 'xlink:href'].includes(attribute.name)) continue;
+        const source = attribute.value.trim();
+        if (/(?:^|[\s,])(?:https?:)?\/\//i.test(source)) H(`remote image source in rotation-curator.html: ${source}`);
+      }
+    }
+    if (/(?:@import\s+(?:url\(\s*)?|url\(\s*)["']?\s*(?:https?:)?\/\//i.test(html)) H('remote CSS destination in rotation-curator.html');
+
+    // The vetted curator/vendor sources contain none of these tokens, including comments,
+    // so scan raw bytes. Regex comment stripping is unsafe here: comment-like delimiters in
+    // string literals can otherwise erase a real request expression between them.
+    const networkTransport = /(?:\b(?:fetch|XMLHttpRequest|WebSocket|EventSource|importScripts|sendBeacon)\b|\bimport\s*\(|\bnew\s+Image\s*\(|\b[A-Za-z_$][\w$]*\s*\.\s*(?:src|srcset)\s*=|\bcreateElement\s*\(\s*["'](?:script|img|image|source|link)["']|\bsetAttribute\s*\(\s*["'](?:src|srcset|href|xlink:href)["'])/i;
+    if (networkTransport.test(html)) H('network transport API in rotation-curator.html');
   }
   const preferredStarts = html.match(/<!--\s*\[CLERKSHIP-META v1\]/g) || [];
   const legacyStarts = html.match(/<!--\s*\[RC-META\]/g) || [];
@@ -294,15 +424,16 @@ for (const f of toolFiles) {
   if (!/<title>/i.test(html)) H(`tool missing <title>: ${f}`);
   if (!/name=["']viewport["']/i.test(html)) H(`tool missing viewport meta: ${f}`);
   // Dose-literal rule scope: HARD for the new education/trainer layer (rp-*, *-trainer)
-  // that must never read like an order set; SOFT elsewhere (validated instruments like
-  // BFCRS/CIWA legitimately carry standard doses). A reviewed file may opt out of the
-  // soft warning with a `QA-ALLOW-DOSE` comment marker.
+  // that must never read like an order set; SOFT elsewhere. Only an exact, approved,
+  // line-bounded sentinel may waive scanning; malformed annotations waive nothing.
   const doseHard = /^rp-/.test(f) || /-trainer\.html$/.test(f);
-  const doseAllow = /QA-ALLOW-DOSE/.test(html);
-  html.split('\n').forEach((line, i) => {
+  const htmlLines = html.split('\n');
+  const doseWaivers = doseWaiverLines(f, htmlLines);
+  htmlLines.forEach((line, i) => {
+    if (doseWaivers.has(i)) return;
     if (!DOSE.test(line)) return;
     const msg = `dose literal in ${f}:${i + 1} → "${line.trim().slice(0, 70)}"`;
-    if (doseHard) H(msg); else if (!doseAllow) S(msg + ' (validated-instrument? add QA-ALLOW-DOSE or route to LOCAL_POLICY)');
+    if (doseHard) H(msg); else S(msg + ' (validated instrument? use an approved line sentinel or route to LOCAL_POLICY)');
   });
   // Sanctioned localStorage namespaces: cw_* (shared hub) and rp_* (resident platform).
   const keys = [...html.matchAll(/localStorage\.(?:getItem|setItem|removeItem)\(\s*['"]([^'"]+)['"]/g)].map(m => m[1]);
@@ -487,25 +618,22 @@ if (!existsSync(srcMapPath)) {
 }
 
 /* ---------- 7b. shell-reference integrity scan (HARD) ----------
- * index.html (the SPA shell) carries several hand-maintained literal maps that point at
- * shipped tool files, communication-case ids, and family-scenario ids. Earlier tasks in
- * this branch (sp-interview.html, one-patient-six-weeks.html) added entries to these maps
- * by hand — nothing upstream verifies the entries still resolve once shipped. This section
- * closes that gap: a tool filename, case id, scenario id, or `?page=`/`?tool=` reference
+ * index.html (the SPA shell) retains two hand-maintained literal maps that point at shipped
+ * tool files. Earlier tasks in this branch (sp-interview.html, one-patient-six-weeks.html)
+ * added entries to these maps by hand — nothing upstream verifies the entries still resolve
+ * once shipped. This section closes that gap: a tool filename or `?page=`/`?tool=` reference
  * the build ships but doesn't back with a real file is a dead end a student can click into.
  *
  * Extraction approach (fragile by construction — flagged here on purpose): the shell
  * literals are ordinary JS object literals baked into index.html, not JSON, so a real
  * parser isn't available without adding a dependency this dependency-free gate deliberately
  * avoids. `extractVarBlock` isolates each `var NAME={...};` block with a quote-aware brace
- * counter (needed because DASH_CONFIG nests a per-mode object inside the outer one);
- * regexes then pull `'*.html'` string literals or bare-identifier object keys out of that
- * block. This breaks if the build ever reformats these vars — e.g. switches `var` to
- * `const`/`let`, quotes the CASE_TITLES/FAMILY_SCENARIO_TITLES keys, or a label string
- * picks up an unescaped matching quote. The `shell literal map "X" not found` HARD failure
+ * counter; a regex then pulls `'*.html'` string literals out of that block. This breaks if
+ * the build ever reformats these vars — e.g. switches `var` to `const`/`let` or a label
+ * string picks up an unescaped matching quote. The `shell literal map "X" not found` HARD failure
  * below is the tripwire for that regression class: it means the scan went blind, not that
  * the shell is fine — treat it as a bug in this section, not a pass. Also note: the
- * `'*.html'`/bare-key regexes read raw characters, not tokens — a quoted `'*.html'`-looking
+ * The `'*.html'` regex reads raw characters, not tokens — a quoted `'*.html'`-looking
  * string or a `word:'...'`-looking fragment sitting inside a "//" or block-comment inside
  * one of these var blocks would be picked up as a phantom reference. No such comment
  * exists in these blocks today (verified) — flagged here as a known blind spot, not a bug.
@@ -518,12 +646,12 @@ if (!existsSync(srcMapPath)) {
  * Tri-state presence gate (added after CI caught this scan hard-failing the SP-interview
  * contract suite's synthetic fixture sites, whose stub index.html deliberately carries
  * none of these maps — it's testing the checker's *other* rules, not the real shell):
- *   - all 8 maps present  → scan runs normally (the real shell always carries all 8).
- *   - zero of 8 present   → this isn't a shell that's supposed to have these maps at all
+ *   - both maps present   → scan runs normally (the live shell always carries both).
+ *   - zero maps present   → this isn't a shell that's supposed to have these maps at all
  *     (a test fixture, a non-SPA site) — section 7b is skipped entirely (a, b, and c) with
  *     an I() note, not a HARD failure.
- *   - some but not all present → real drift or regex rot on an actual shell (which always
- *     ships all 8 together) — kept as HARD failures per missing map, unchanged. Do NOT
+ *   - one map present → real drift or regex rot on an actual shell (which always ships both)
+ *     — kept as a HARD failure for the missing map. Do NOT
  *     special-case known fixtures by path/name; the all-or-nothing marker count is the
  *     only signal used, so a real shell that loses a map still fails loudly.
  */
@@ -548,15 +676,13 @@ const SHELL_REF_ALLOWLIST = new Set([
     return null; // ran off the end without closing — extraction failed
   };
   const htmlNamesIn = (block) => new Set([...block.matchAll(/(['"])([^'"]+\.html)\1/g)].map(m => m[2]));
-  const bareKeysIn = (block) => new Set([...block.matchAll(/([A-Za-z_$][\w$]*)\s*:\s*'/g)].map(m => m[1]));
-  const TOOL_MAP_VARS = ['LAB', 'ICON', 'PRACTICE_LABELS', 'PAGE_TOOLS', 'PRACTICE_PAGE_TOOLS', 'DASH_CONFIG'];
-  const ALL_SHELL_MAP_VARS = [...TOOL_MAP_VARS, 'CASE_TITLES', 'FAMILY_SCENARIO_TITLES'];
+  const TOOL_MAP_VARS = ['PRACTICE_LABELS', 'PRACTICE_PAGE_TOOLS'];
 
   const shellHtml = existsSync(shellPath) ? readFileSync(shellPath, 'utf8') : null;
   if (shellHtml === null) {
     H('index.html missing from built site (shell-reference scan cannot run)');
   } else {
-    const presentMapVars = ALL_SHELL_MAP_VARS.filter(v => shellHtml.includes(`var ${v}=`));
+    const presentMapVars = TOOL_MAP_VARS.filter(v => shellHtml.includes(`var ${v}=`));
     if (presentMapVars.length === 0) {
       I('no shell literal maps in index.html — 7b scan skipped (fixture or non-SPA site)');
     } else {
@@ -576,22 +702,7 @@ const SHELL_REF_ALLOWLIST = new Set([
           H(`shell references missing tool "${name}" (in ${[...vars].sort().join(', ')}) — index.html`);
       }
 
-      // (b) CASE_TITLES / FAMILY_SCENARIO_TITLES ids must exist in the shipped case/scenario data.
-      const idBlockCheck = (varName, dataFile, dataKey) => {
-        const block = extractVarBlock(shellHtml, varName);
-        if (block === null) { H(`shell literal map "${varName}" not found in index.html (extraction failed — see comment above)`); return; }
-        const target = p(dataFile);
-        if (!existsSync(target) || !parsed[target]) { H(`${dataFile} not found or unparsable in built site (cannot verify ${varName} ids)`); return; }
-        const knownIds = new Set((parsed[target][dataKey] || []).map(x => x && x.id).filter(Boolean));
-        for (const id of bareKeysIn(block)) {
-          if (knownIds.has(id) || SHELL_REF_ALLOWLIST.has(id)) continue;
-          H(`shell ${varName} references missing id "${id}" — not in ${dataFile}`);
-        }
-      };
-      idBlockCheck('CASE_TITLES', 'communication_cases.json', 'cases');
-      idBlockCheck('FAMILY_SCENARIO_TITLES', 'family_systems_scenarios.json', 'scenarios');
-
-      // (c) `?page=`/`?tool=` references in shipped content/*.md must resolve to a shipped
+      // (b) `?page=`/`?tool=` references in shipped content/*.md must resolve to a shipped
       // content slug / tool file. Target is read up to the next &, quote, close-paren, or
       // whitespace, so both markdown `(...)` links and raw `href="..."` attributes match. A
       // trailing `#fragment` (e.g. `?page=shelf.md#section`) is stripped after decoding —

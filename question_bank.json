@@ -8646,7 +8646,7 @@
           "t": "An antipsychotic",
           "trap": {
             "name": "Off-target trap",
-            "note": "Antipsychotics do not treat core ADHD and carry metabolic and movement risks."
+            "note": "Not first-line for ADHD; metabolic and movement risks."
           }
         },
         {
@@ -8654,7 +8654,7 @@
           "t": "A benzodiazepine",
           "trap": {
             "name": "Sedative trap",
-            "note": "Benzodiazepines have no role in ADHD and can worsen disinhibition."
+            "note": "No role in ADHD; can worsen disinhibition."
           }
         },
         {
@@ -8662,7 +8662,7 @@
           "t": "An SSRI",
           "trap": {
             "name": "Wrong-class trap",
-            "note": "SSRIs treat depression and anxiety, not the core ADHD syndrome."
+            "note": "SSRIs treat depression/anxiety, not core ADHD."
           }
         }
       ],
@@ -9831,7 +9831,7 @@
     },
     {
       "id": "qb_anx_016",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "anxiety",
       "competency": [
@@ -9850,32 +9850,32 @@
       "options": [
         {
           "key": "A",
-          "t": "Generalized anxiety disorder requiring daily medication",
-          "trap": {
-            "name": "Overgeneralization trap",
-            "note": "Anxiety limited to performance is not pervasive GAD."
-          }
+          "t": "Social anxiety disorder, Performance type requiring PRN medication",
+          "c": true
         },
         {
           "key": "B",
-          "t": "Panic disorder with unexpected attacks",
+          "t": "Generalized anxiety disorder requiring daily long-term medication",
           "trap": {
-            "name": "Wrong-dx trap",
-            "note": "There are no recurrent unexpected panic attacks with persistent worry about attacks."
+            "name": "Overgeneralization trap",
+            "note": "Anxiety limited to performance is not pervasive GAD; the performance-only subtype can be managed PRN."
           }
         },
         {
           "key": "C",
-          "t": "Normal stage fright with no clinical discussion",
+          "t": "Panic disorder requiring PRN medication",
           "trap": {
-            "name": "Dismissal trap",
-            "note": "Impairing performance anxiety is a recognized, treatable condition."
+            "name": "Wrong-dx trap",
+            "note": "There are no recurrent unexpected panic attacks with persistent worry about attacks; this is performance-limited social anxiety."
           }
         },
         {
           "key": "D",
-          "t": "Performance-only social anxiety; PRN propranolol for performances",
-          "c": true
+          "t": "A normal reaction requiring no discussion",
+          "trap": {
+            "name": "Dismissal trap",
+            "note": "Impairing performance anxiety is a recognized, treatable condition."
+          }
         }
       ],
       "why": "Anxiety confined to discrete public performances is performance-only social anxiety. When medically appropriate, a PRN beta-blocker can reduce tremor, tachycardia, and sweating for those events; generalized social anxiety is treated with CBT/exposure and SSRI/SNRI when medication is needed.",

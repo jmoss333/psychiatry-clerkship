@@ -5,7 +5,7 @@
   "built": "2026-07-12",
   "evidenceThrough": "2026-06-30",
   "reviewCadenceDays": 180,
-  "status": "draft-pending-attestation",
+  "status": "reviewed",
   "_incorporationChecklist": {
     "source": "Original fictional composite authored for this tool. Interview-skills framing per pg_interview.md; SI-inquiry language per house communication cases and C-SSRS module.",
     "claimExtraction": "No dose literals anywhere in this pack (regex \\d+\\s?(mg|mcg|mL) must return nothing). No management content; this is an interviewing tool.",
