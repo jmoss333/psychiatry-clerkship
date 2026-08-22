@@ -122,6 +122,8 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body
 .draft-notice{background:var(--warning-light);border-left:3px solid var(--warning);border-radius:0 8px 8px 0;padding:10px 13px;font-size:.86rem;color:var(--warning);margin:12px 18px 0}
 .setup-draft-note{background:var(--warning-light);border-left:3px solid var(--warning);border-radius:0 8px 8px 0;padding:10px 13px;font-size:.86rem;color:var(--warning);margin:0 0 14px}
 .setup-draft-note .chip-draft{margin-right:4px}
+.setup-draft-toggle{display:block;margin-top:8px;font-weight:600;cursor:pointer}
+.setup-draft-toggle input{margin-right:6px}
 .sum-certlist{margin-bottom:16px}
 .sum-certlist h3{font-family:var(--font-head);font-size:.95rem;color:var(--text);margin:0 0 8px}
 .sum-certlist .row{display:flex;align-items:center;gap:10px;margin:5px 0;font-size:.84rem}
@@ -291,24 +293,42 @@ function buildQueue(items, catFilter, diffFilter, sizeLimit){
   return q;
 }
 
-/* Items eligible to serve to learners. Retired items (near-duplicate/redundant per
-   question_bank.schema.json) are NEVER queued. Drafts ARE served, and every surface that
-   shows one labels it — see renderMeta() and the .draft-notice callout in renderQuestion().
+/* Items eligible to serve to learners. Two gates:
+   — Retired items (near-duplicate/redundant per question_bank.schema.json) are NEVER queued.
+   — Un-attested items serve ONLY when the learner opts in via the setup-screen toggle
+     (persisted as cw_qb_drafts_v1). The default pool is faculty-attested items only, and
+     every surface that shows an included draft labels it — see renderMeta() and the
+     .draft-notice callout in renderQuestion().
 
-   Policy, not an oversight: the 2026-07-15 decision log
-   (docs/superpowers/plans/2026-07-15-audit-remediation-master.md) records "Keep serving
-   un-attested draft qbank items (marked) — do not gate the practice bank to attested-only",
-   confirmed by Dr. Moss. a04a848 gated it to attested-only anyway and the pool fell 192->143;
-   this restores the documented behaviour. Drafts remain drafts: `status` is still the source
-   of truth, nothing here mutates it, and attestation stays server-side. */
+   Policy history, because this has flipped before: the 2026-07-15 decision log recorded
+   "serve drafts, marked" after a04a848 gated to attested-only by ACCIDENT — the pool fell
+   192->143 with no UI trace, and #284 restored serving. The 2026-08-20 Taplinger response
+   plan (PLAN_Taplinger_Feedback_and_Therapy_Library_2026-08-20.md §A2 / WP-37, urgency per
+   FEEDBACK_IMPACT_Taplinger_Verbatim_2026-08-20.md §3) reverses that decision deliberately
+   now that an external course page links to the site: attested-only BY DEFAULT, drafts
+   opt-in and labelled. Unlike a04a848, this flip is visible — the setup screen states the
+   exclusion, shows the excluded count, and carries the toggle.
+
+   Fail-safe direction: only an explicit status==='attested' reaches the default pool, so a
+   new or misspelled status is withheld rather than served as reviewed (mirrors the label
+   logic, which marks anything not attested). `status` is still the source of truth; nothing
+   here mutates it, and attestation stays server-side. */
+function includeDrafts(){ return lsGet('cw_qb_drafts_v1')===true; }
+function setIncludeDrafts(on){ lsSet('cw_qb_drafts_v1', !!on); }
 function activeItems(){
-  return (BANK && BANK.items ? BANK.items : []).filter(function(it){ return !it.retired; });
+  var inc = includeDrafts();
+  return (BANK && BANK.items ? BANK.items : []).filter(function(it){
+    if(it.retired) return false;
+    if(!inc && it.status!=='attested') return false;
+    return true;
+  });
 }
 
 /* Focus-mode presets, built from the learner's own cw_qb_v1 history. Both start from
    activeItems(), so a leftover record for a since-retired item (or one dropped from the
-   bank entirely) can never surface here — the item has to still be servable today. Drafts
-   are unaffected, since activeItems() already serves those (see comment above). */
+   bank entirely) can never surface here — the item has to still be servable today. That
+   same routing applies the draft rule: a record for a draft item surfaces only while the
+   learner's cw_qb_drafts_v1 opt-in is set (see the policy comment above). */
 function missedItems(){
   var records = qbLoad();
   return activeItems().filter(function(it){
@@ -360,7 +380,15 @@ function renderSetup(){
     if(cats[k]) catOpts+='<option value="'+k+'">'+CAT_LABELS[k]+'</option>';
   });
   var total = items.length;
-  var draftCount = items.filter(function(it){ return it.status!=='attested'; }).length;
+  /* bankDraftCount is toggle-independent (all non-retired, non-attested items in the
+     bank); draftCount is how many of those are in the SERVED pool right now. The note
+     renders whenever the bank has drafts, in whichever wording matches the toggle —
+     excluded-by-default (off) or labelled-in-pool (on). */
+  var draftsOn = includeDrafts();
+  var bankDraftCount = (BANK && BANK.items ? BANK.items : []).filter(function(it){
+    return !it.retired && it.status!=='attested';
+  }).length;
+  var draftCount = draftsOn ? bankDraftCount : 0;
   var missedCount = missedItems().length;
   var certWrongCount = certWrongItems().length;
   var dueCount = dueQbItems().length;
@@ -368,13 +396,18 @@ function renderSetup(){
     +'<h2>Practice bank</h2>'
     +'<p class="sub">'+total+' items across 12 categories. Select filters, then start. '
       +'Retired near-duplicates are excluded.</p>'
-    +(draftCount
+    +(bankDraftCount
       ? '<p class="setup-draft-note" role="note">'
         +'<span class="chip chip-draft"><span aria-hidden="true">&#9888;</span> Draft — not yet faculty-reviewed</span> '
-        +draftCount+' of these '+total+' questions carry this label. They have not yet been '
-        +'reviewed by faculty, so treat their answers and explanations as unverified — check them '
-        +'against a primary source before relying on them clinically. Every draft is labelled again '
-        +'on the question itself.</p>'
+        +(draftsOn
+          ? draftCount+' of these '+total+' questions carry this label. They have not yet been '
+            +'reviewed by faculty, so treat their answers and explanations as unverified — check them '
+            +'against a primary source before relying on them clinically. Every draft is labelled again '
+            +'on the question itself. '
+          : bankDraftCount+' draft question'+(bankDraftCount===1?' is':'s are')+' not served by default — '
+            +'this bank serves only faculty-reviewed questions unless you include drafts. ')
+        +'<label class="setup-draft-toggle"><input type="checkbox" id="draftToggle"'+(draftsOn?' checked':'')+'> '
+        +'Include draft questions</label></p>'
       : '')
     +'<div class="focus-modes">'
     +'<div class="focus-modes-lbl">Focus modes</div>'
@@ -688,6 +721,16 @@ function bindSetup(){
      rather than being shuffled — the schedule is the point of this focus mode. */
   if(dueBtn) dueBtn.addEventListener('click',function(){
     beginSession(dueQbItems());
+  });
+  /* Draft opt-in (WP-37). Persist, then re-render the whole setup so every count
+     (pool size, match count, focus-mode buttons) reflects the new pool; refocus the
+     toggle so keyboard users are not dropped at the top of the re-rendered screen. */
+  var draftToggle=document.getElementById('draftToggle');
+  if(draftToggle) draftToggle.addEventListener('change',function(){
+    setIncludeDrafts(draftToggle.checked);
+    showSetup();
+    var t=document.getElementById('draftToggle');
+    if(t) t.focus();
   });
 }
 

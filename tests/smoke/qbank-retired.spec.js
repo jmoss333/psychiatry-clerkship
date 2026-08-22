@@ -1,8 +1,13 @@
 import { test, expect } from '@playwright/test';
 
-// Policy (2026-07-15 decision log, confirmed by Dr. Moss): un-attested drafts ARE served,
-// clearly marked; only retired items are withheld. a04a848 briefly gated the pool to
-// attested-only (192 -> 143) — these assert the restored behaviour against the shipped site.
+// Policy (WP-37, PLAN_Taplinger_Feedback_and_Therapy_Library_2026-08-20.md §A2, decided by
+// Dr. Moss): the practice bank serves FACULTY-ATTESTED items only by default; un-attested
+// drafts are opt-in via the setup-screen toggle (persisted as cw_qb_drafts_v1) and stay
+// clearly labelled when included. Retired items are withheld under every setting.
+// This deliberately reverses the 2026-07-15 "serve drafts, marked" decision (see the node
+// suite tests/qbank-draft-visibility.test.mjs for the history) — unlike a04a848's silent
+// accidental gate, the exclusion is stated on the setup screen. These assert the shipped
+// site end-to-end: pool math in both toggle states, persistence, and per-question labels.
 
 async function bank(page, baseURL) {
   const res = await page.request.get(`${baseURL}/question_bank.json`);
@@ -14,40 +19,59 @@ async function bank(page, baseURL) {
     served: items.filter((it) => !it.retired),
     retired: items.filter((it) => it.retired),
     drafts: items.filter((it) => !it.retired && it.status !== 'attested'),
+    attested: items.filter((it) => !it.retired && it.status === 'attested'),
   };
 }
 
-test('practice bank serves drafts and never serves retired items', async ({ page, baseURL }) => {
-  const { items, served, retired, drafts } = await bank(page, baseURL);
-  // Guards: this test only proves something if the bank actually holds both kinds.
+async function shownCount(page) {
+  await page.selectOption('#f-size', 'all');
+  const countText = (await page.locator('#itemCount').textContent()) || '';
+  return parseInt((countText.match(/\d+/) || ['0'])[0], 10);
+}
+
+test('the default pool is attested-only; drafts and retired are withheld and the exclusion is stated', async ({ page, baseURL }) => {
+  const { items, served, retired, drafts, attested } = await bank(page, baseURL);
+  // Guards: this test only proves something if the bank actually holds all three kinds.
   expect(retired.length).toBeGreaterThan(0);
   expect(drafts.length).toBeGreaterThan(0);
+  expect(attested.length).toBeGreaterThan(0);
 
   await page.goto('/tools/question-bank-practice.html');
   await page.waitForSelector('#f-size');
-  await page.selectOption('#f-size', 'all');
-  await expect(page.locator('#itemCount')).toContainText('match');
+  const shown = await shownCount(page);
+  expect(shown).toBe(attested.length);     // attested only
+  expect(shown).not.toBe(served.length);   // drafts withheld
+  expect(shown).not.toBe(items.length);    // retired withheld too
 
-  const countText = (await page.locator('#itemCount').textContent()) || '';
-  const shown = parseInt((countText.match(/\d+/) || ['0'])[0], 10);
-  expect(shown).toBe(served.length);       // drafts are back in the pool
-  expect(shown).not.toBe(items.length);    // ...and retired were still withheld
-  // Explicitly rules out a regression to the attested-only pool.
-  expect(shown).not.toBe(served.length - drafts.length);
-
-  // The preview states how many are unreviewed before the learner starts.
+  // The exclusion is stated, with the count, and the opt-in is offered unchecked.
   const note = page.locator('.setup-draft-note');
   await expect(note).toBeVisible();
   await expect(note).toContainText('Draft — not yet faculty-reviewed');
-  await expect(note).toContainText(`${drafts.length} of these ${served.length} questions`);
+  await expect(note).toContainText(`${drafts.length} draft questions are not served by default`);
+  await expect(page.locator('#draftToggle')).not.toBeChecked();
 });
 
-// Separate test so a failure points at labelling rather than at pool composition.
-test('every served draft is labelled on the question itself', async ({ page, baseURL }) => {
+test('opting in widens the pool to drafts (labelled per question); the choice persists across reloads', async ({ page, baseURL }) => {
   const { served, drafts } = await bank(page, baseURL);
+  expect(drafts.length).toBeGreaterThan(0);
 
-  // Pick the category with the most drafts and queue all of it, so encountering a draft
-  // is guaranteed rather than luck-of-the-shuffle.
+  await page.goto('/tools/question-bank-practice.html');
+  await page.waitForSelector('#draftToggle');
+  await page.check('#draftToggle');
+  // The toggle re-renders the setup screen with the widened pool and the labelled-count copy.
+  const note = page.locator('.setup-draft-note');
+  await expect(note).toContainText(`${drafts.length} of these ${served.length} questions`);
+  expect(await shownCount(page)).toBe(served.length);
+
+  // Persisted: a fresh load keeps the opt-in.
+  await page.reload();
+  await page.waitForSelector('#draftToggle');
+  await expect(page.locator('#draftToggle')).toBeChecked();
+  expect(await shownCount(page)).toBe(served.length);
+
+  // Every served draft is labelled on the question itself. Pick the category with the
+  // most drafts and queue all of it, so encountering a draft is guaranteed rather than
+  // luck-of-the-shuffle.
   const byCat = {};
   for (const it of served) {
     byCat[it.category] = byCat[it.category] || { total: 0, draft: 0 };
@@ -56,10 +80,7 @@ test('every served draft is labelled on the question itself', async ({ page, bas
   }
   const [category, stats] = Object.entries(byCat).sort((a, b) => b[1].draft - a[1].draft)[0];
   expect(stats.draft, 'need a category containing drafts').toBeGreaterThan(0);
-  expect(drafts.length).toBeGreaterThan(0);
 
-  await page.goto('/tools/question-bank-practice.html');
-  await page.waitForSelector('#f-size');
   await page.selectOption('#f-cat', category);
   await page.selectOption('#f-size', 'all');
   await page.click('#startBtn');
@@ -91,7 +112,25 @@ test('every served draft is labelled on the question itself', async ({ page, bas
     await page.waitForSelector('.qcard');
   }
 
-  expect(sawDraft, 'expected labelled drafts in the served pool').toBeGreaterThan(0);
+  expect(sawDraft, 'expected labelled drafts in the opted-in pool').toBeGreaterThan(0);
   // Proves the label is item-specific rather than painted on every card.
   expect(sawAttested, 'expected some attested items to carry no label').toBeGreaterThan(0);
+});
+
+test('opting back out restores the attested-only default', async ({ page, baseURL }) => {
+  const { drafts, attested } = await bank(page, baseURL);
+  expect(drafts.length).toBeGreaterThan(0);
+
+  await page.goto('/tools/question-bank-practice.html');
+  await page.waitForSelector('#draftToggle');
+  await page.check('#draftToggle');
+  await expect(page.locator('.setup-draft-note')).toContainText('carry this label');
+  await page.uncheck('#draftToggle');
+  await expect(page.locator('.setup-draft-note')).toContainText('not served by default');
+  expect(await shownCount(page)).toBe(attested.length);
+
+  await page.reload();
+  await page.waitForSelector('#draftToggle');
+  await expect(page.locator('#draftToggle')).not.toBeChecked();
+  expect(await shownCount(page)).toBe(attested.length);
 });

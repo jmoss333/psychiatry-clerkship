@@ -45,10 +45,12 @@ function memStorage(initial) {
 
 // eslint-disable-next-line no-new-func
 const build = new Function('localStorage', 'calibRead', `
-  /* Retired-parity stub: in the shell, RETIRED_QB_IDS is build-injected and
-     isRetiredQb() filters both calibration counters. This suite's fixtures use no
-     retired ids, so the stub is a constant false. */
-  function isRetiredQb(){ return false; }
+  /* Servability stub: in the shell, RETIRED_QB_IDS / DRAFT_QB_IDS are build-injected and
+     qbRecordServable() filters both calibration counters (retired always; drafts unless
+     the learner opted in — WP-37). This suite's fixtures use no retired or draft ids, so
+     the stub is a constant true; the filtering behaviour itself is pinned by
+     tests/qbank-due-first.test.mjs and tests/srs-home-counters.test.mjs. */
+  function qbRecordServable(){ return true; }
   ${panelCode}
   return renderCalibPanel;
 `);

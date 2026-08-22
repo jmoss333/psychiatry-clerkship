@@ -554,27 +554,33 @@ if (existsSync(qbPath) && parsed[qbPath]) {
   }
 }
 
-/* ---------- 6c. shell retired-ids parity injection (HARD) ---------- */
-// The shell's confidently-wrong calibration counters skip since-retired bank items via a
-// build-injected RETIRED_QB_IDS list (build_deploy.py replaces the empty source literal).
-// Drift silently re-opens the parity gap with question-bank-practice.html's
-// certWrongItems(), so the two BUILT artifacts are cross-checked here: whatever
-// question_bank.json ships, index.html must carry exactly its retired ids. Fixture sites
-// without a bank skip the rule (scoped to real builds, like the pretest/blueprint checks).
+/* ---------- 6c. shell retired/draft-ids parity injection (HARD) ---------- */
+// The shell's due counters and confidently-wrong calibration counters skip bank items the
+// practice tool will not serve via build-injected RETIRED_QB_IDS and DRAFT_QB_IDS lists
+// (build_deploy.py replaces the empty source literals; drafts additionally honour the
+// learner's cw_qb_drafts_v1 opt-in at runtime — WP-37 attested-only default). Drift
+// silently re-opens the parity gap with question-bank-practice.html's activeItems(), so
+// the two BUILT artifacts are cross-checked here: whatever question_bank.json ships,
+// index.html must carry exactly its retired ids and its non-retired draft ids. Fixture
+// sites without a bank skip the rule (scoped to real builds, like the pretest checks).
 if (existsSync(qbPath) && parsed[qbPath] && existsSync(p('index.html'))) {
-  const retiredIds = (parsed[qbPath].items || [])
-    .filter((it) => it && it.retired)
-    .map((it) => it.id)
-    .sort();
+  const bankItems = (parsed[qbPath].items || []).filter(Boolean);
+  const expected = {
+    RETIRED_QB_IDS: bankItems.filter((it) => it.retired).map((it) => it.id).sort(),
+    DRAFT_QB_IDS: bankItems.filter((it) => !it.retired && it.status !== 'attested')
+      .map((it) => it.id).sort(),
+  };
   const shellSrc = readFileSync(p('index.html'), 'utf8');
-  const injected = shellSrc.match(/var RETIRED_QB_IDS=(\[[^\]]*\]);/);
-  if (!injected) {
-    H('index.html is missing the build-injected RETIRED_QB_IDS list (shell calibration parity)');
-  } else {
+  for (const [name, want] of Object.entries(expected)) {
+    const injected = shellSrc.match(new RegExp(`var ${name}=(\\[[^\\]]*\\]);`));
+    if (!injected) {
+      H(`index.html is missing the build-injected ${name} list (shell servability parity)`);
+      continue;
+    }
     let ids = null;
     try { ids = JSON.parse(injected[1]); } catch { /* falls through to the mismatch report */ }
-    if (!Array.isArray(ids) || JSON.stringify([...ids].sort()) !== JSON.stringify(retiredIds)) {
-      H(`RETIRED_QB_IDS drift: index.html carries ${injected[1]} but question_bank.json retires ${JSON.stringify(retiredIds)}`);
+    if (!Array.isArray(ids) || JSON.stringify([...ids].sort()) !== JSON.stringify(want)) {
+      H(`${name} drift: index.html carries ${injected[1]} but question_bank.json expects ${JSON.stringify(want)}`);
     }
   }
 }
