@@ -75,7 +75,8 @@ async function waitForContent(page) {
 
 test('nav items: exact inventory + HTTP 200 + non-empty content', async ({ request, baseURL }, testInfo) => {
   const items = await loadNav(request, baseURL);
-  expect(items).toHaveLength(testInfo.project.name === 'nav-res' ? 107 : 99);
+  // +2 per audience: therapy_on_the_unit.md and therapy_reading_room.md (WP-T3).
+  expect(items).toHaveLength(testInfo.project.name === 'nav-res' ? 109 : 101);
   expect(items.filter(item => item.f === 'rotation-curator.html').map(({
     t, f, k, hidden,
   }) => ({ t, f, k, hidden }))).toEqual([{
@@ -141,7 +142,7 @@ test('Front Door Library exactly matches the projected placed refs', async ({ pa
   const rendered = await page.locator('.fd-collink[data-fd-open]').evaluateAll(controls => (
     controls.map(control => control.getAttribute('data-fd-open')).sort()
   ));
-  const expectedCount = testInfo.project.name === 'nav-res' ? 90 : 81;
+  const expectedCount = testInfo.project.name === 'nav-res' ? 92 : 83;  // +2, WP-T3
 
   expect(new Set(expected).size).toBe(expectedCount);
   expect(new Set(rendered).size).toBe(expectedCount);
