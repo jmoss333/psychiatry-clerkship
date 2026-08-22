@@ -1,7 +1,7 @@
 # Therapy on the Unit — What You Can Actually Do This Week
 
 > **Status: AI-drafted · pending faculty attestation · not yet registered for build.**
-> Citations: **every reference on this page passed identity + retraction verification (2026-08-20, Europe PMC) and the Scholar Sidekick canonical pass (2026-08-21)** — Crossref/Retraction Watch retraction + errata sweep (0 retracted; errata noted inline), Unpaywall OA pass, and formatCitation (AMA) regeneration. Two errata are carried on their citations (refs 16 and the Reading Room's Abbass entry); the Pharoah Cochrane version question (ref 27) awaits a faculty decision.
+> Citations: **every reference on this page passed identity + retraction verification (2026-08-20, Europe PMC) and the Scholar Sidekick canonical pass (2026-08-21)** — Crossref/Retraction Watch retraction + errata sweep (0 retracted; errata noted inline), Unpaywall OA pass, and formatCitation (AMA) regeneration. Two errata are carried on their citations (ref 16 and the Reading Room's Abbass entry). The Pharoah Cochrane version was settled by faculty on 2026-08-21: PMID 21154340 is the December 2010 update (cited as .pub3; the .pub2 DOI in PubMed/Europe PMC is a metadata error).
 > Learner level: **MS3 core**, with labeled **Resident extension** blocks.
 
 ---
@@ -25,7 +25,7 @@ By the end of this module you should be able to:
 
 ## In 30 seconds
 
-Adding psychotherapy to standard inpatient care produces a real, modest benefit (standardized effects roughly 0.24–0.43), and **no modality is clearly superior — diagnosis and common factors (alliance, validation, structure) matter more than brand name** [1,2]. The three non-negotiables for every patient: a **personalized, high-quality safety plan** (roughly 45% fewer suicidal behaviors when paired with follow-up contact in the landmark ED cohort) [3], **structured psychoeducation** (in psychosis, number-needed-to-treat of about 5 to prevent one readmission) [4 ✓], and **discharge bridging** — because the weeks right after discharge are the highest-risk period in the entire episode of care [5]. Between those, every encounter is a chance for a micro-intervention: schedule one activity, teach one skill, roll with one ambivalence. What you should *not* do is equally evidence-based: no no-suicide contracts, no trauma processing mid-crisis, no starting a 16-session manual on day 2 of a 4-day stay.
+Adding psychotherapy to standard inpatient care produces a real, modest benefit (standardized effects roughly 0.24–0.43), and **no modality is clearly superior — diagnosis and common factors (alliance, validation, structure) matter more than brand name** [1,2]. The three non-negotiables for every patient: a **personalized, high-quality safety plan** (associated with roughly 45% fewer suicidal behaviors when paired with follow-up contact in the landmark ED cohort study — a cohort comparison, not an RCT) [3], **structured psychoeducation** (in psychosis, number-needed-to-treat of about 5 to prevent one readmission) [4 ✓], and **discharge bridging** — because the weeks right after discharge are the highest-risk period in the entire episode of care [5]. Between those, every encounter is a chance for a micro-intervention: schedule one activity, teach one skill, roll with one ambivalence. What you should *not* do is equally evidence-based: no no-suicide contracts, no trauma processing mid-crisis, no starting a 16-session manual on day 2 of a 4-day stay.
 
 ---
 
@@ -41,7 +41,7 @@ Hold both halves of that finding. The effect is real: an admission is a treatmen
 
 ## 2 · The non-negotiable three (every patient, every admission)
 
-**2a. A safety plan that's actually personalized.** The Stanley–Brown Safety Planning Intervention with structured follow-up was associated with roughly 45% fewer suicidal behaviors and double the odds of outpatient engagement in a large ED cohort [3 ✓]. Two clinical points the evidence adds: **quality matters** — plan quality, especially the warning-signs step, predicts outcomes; a generic template pasted into the chart may provide false reassurance [7 ✓] — and **no-suicide contracts are obsolete**: they have no evidence of benefit and structured crisis planning is superior [8 ✓]. Watch how your team approaches the lethal-means conversation: it is counseling about securing the home environment, delivered collaboratively and matter-of-factly, and it is one of the strongest levers in suicide prevention [9 ✓].
+**2a. A safety plan that's actually personalized.** The Stanley–Brown Safety Planning Intervention with structured follow-up was associated with roughly 45% fewer suicidal behaviors and double the odds of outpatient engagement in a large ED cohort [3 ✓]. Two clinical points the evidence adds: **quality matters** — plan quality, especially the warning-signs step, predicts outcomes; a generic template pasted into the chart may provide false reassurance [7 ✓] — and **no-suicide contracts are obsolete**: they have no evidence of benefit and structured crisis planning is superior [8 ✓]. Watch how your team approaches the lethal-means conversation: it is counseling about securing the home environment, delivered collaboratively and matter-of-factly. Be honest about its evidence tier: the population-level wins (bridge barriers, pack-size limits, pesticide bans) are concrete — see the Steeg umbrella review in the go-deeper rail — but controlled studies of means-change interventions show a small reduction, if any, in deaths, and their ecological designs preclude individual-level causal inference [9 ✓].
 
 **2b. Structured psychoeducation.** In schizophrenia-spectrum admissions, psychoeducation has the strongest evidence base of any single psychological intervention: Cochrane pooling shows reduced relapse (NNT ≈ 9) and readmission (NNT ≈ 5) [4 ✓]. The catch from practice surveys: most of what gets called psychoeducation is unstructured conversation. Structure it — diagnosis, medications, early warning signs, when and whom to call — and document that it happened [10 ✓].
 
@@ -129,10 +129,9 @@ A. A signed no-suicide contract  B. Unstructured supportive counseling  C. A per
 1. **Man et al. 2023** [✓ OA] — indirect psychological intervention in acute settings: what the *milieu team* can deliver. PMID 35997039.
 2. **Schefft et al. 2019** [✓] — the inpatient-psychotherapy-works meta-analysis. PMID 30520019.
 3. **Links & Ross 2025** [✓] — GPM foundations: the generalist stance for BPD. PMID 38952224.
-4. **Steeg et al. 2025** [✓ OA] — means restriction: overview of systematic reviews. PMID 41365522.
-5. **Westra 2023** [✓] — what the Dodo bird verdict means for how you train. PMID 36525623.
+4. **Steeg et al. 2025** [✓ OA] — means restriction: overview of systematic reviews — the concrete population-level wins. PMID 41365522.
 
-*Full domain-by-domain reading list: see the Therapy Reading Room page.*
+*A fifth rail slot (on what near-equivalent therapies imply for training) is held pending a full-text faculty read — see the Reading Room's evidence-limits section. Full domain-by-domain reading list: see the Therapy Reading Room page.*
 
 ## References
 
@@ -166,7 +165,7 @@ Numbering matches the in-text anchors.
 24. Wibbelink C, Kamphuis J, Sinnaeve R, et al. Dialectical Behavior Therapy vs Schema Therapy for Patients With Borderline Personality Disorder: The BOOTS Multicenter Randomized Clinical Trial. JAMA Psychiatry. 2026;83(7):669-681. doi:10.1001/jamapsychiatry.2026.0418.
 25. Brodsky B, Galfalvy H, Mann J, Grunebaum M, Stanley B. Dialectical Behavior Therapy Versus Serotonin Reuptake Inhibitor Treatment for Suicidal Behavior in Borderline Personality Disorder: A Randomized Controlled Trial. Am J Psychiatry. 2025;182(12):1083-1092. doi:10.1176/appi.ajp.20240298.
 26. (See 17.)
-27. Pharoah F, Mari J, Rathbone J, Wong W. Family intervention for schizophrenia. Cochrane Database Syst Rev. 2010:CD000088. doi:10.1002/14651858.CD000088.pub2. [Editor note, pre-attestation: PMID 21154340 maps to the 2010 .pub2 version, which Crossref flags as superseded by .pub3 — version to cite is a pending faculty decision.]
+27. Pharoah F, Mari J, Rathbone J, Wong W. Family intervention for schizophrenia. Cochrane Database Syst Rev. 2010;(12):CD000088. doi:10.1002/14651858.CD000088.pub3. [Version settled by faculty 2026-08-21 from the Cochrane Library version history: PMID 21154340 is the 2010 Dec 8 update, published as .pub3; the .pub2 DOI carried by PubMed and Europe PMC is a metadata error.]
 28. Tham S, Solomon P. Family Involvement in Routine Services for Individuals With Severe Mental Illness: Scoping Review of Barriers and Strategies. Psychiatr Serv. 2024;75(10):1009-1030. doi:10.1176/appi.ps.20230452. · Hansson K, Romøren M, Weimand B, et al. The duty of confidentiality during family involvement: ethical challenges and possible solutions in the treatment of persons with psychotic disorders. BMC Psychiatry. 2022;22(1):812. doi:10.1186/s12888-022-04461-6. (Open access: PMC9764492.)
 29. Ma C, Chan S, Chung Y, et al. The predictive power of expressed emotion and its components in relapse of schizophrenia: a meta-analysis and meta-regression. Psychol Med. 2021;51(3):365-375. doi:10.1017/S0033291721000209.
 30. Camacho-Gomez M, Castellvi P. Effectiveness of Family Intervention for Preventing Relapse in First-Episode Psychosis Until 24 Months of Follow-up: A Systematic Review With Meta-analysis of Randomized Controlled Trials. Schizophr Bull. 2020;46(1):98-109. doi:10.1093/schbul/sbz038.

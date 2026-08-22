@@ -46,6 +46,17 @@
         ]
       },
       "handEdits": "formatCitation builtin-AMA compound-surname artifacts corrected: Del Re A, van Straten A, Tudur Smith C, de Figueiredo JM, Hajek Gross C, De Salve F, Bastos Maia M, Millikan Bell AM; Difronzo title de-HTML-entitied; StatPearls citation completed by hand (formatter emitted no container)."
+    },
+    "annotationsRewrite": {
+      "date": "2026-08-21",
+      "method": "All reading-list annotations regenerated from PubMed abstracts (NCBI efetch, batched, PMID-echo verified) per the faculty editorial directives of 2026-08-21: the seven abstract-check contradictions corrected per THERAPY_LIBRARY_ANNOTATIONS_ABSTRACT_CHECKED_2026-08-21.md §2, remaining rows tightened per its §6 style (carry the number, quote the abstract where the finding is the teaching point).",
+      "anchors": {
+        "D1": "fluckiger-2018",
+        "D3-means": "steeg-2025 (shank-2026 demoted to go-deeper)",
+        "D9": "wienicke-2023 (hajek-gross-2024 reframed as comparator lesson)",
+        "D12": "schunemann-2025 reframed; closing slot held (westra-2023)"
+      },
+      "status": "DRAFT — every annotation awaits Dr. Moss's signature at the author-gated PR"
     }
   },
   "entries": [
@@ -57,7 +68,7 @@
       "doi": "10.1037/pst0000172",
       "oaStatus": "hybrid",
       "linkType": "open",
-      "annotation": "The canonical number: alliance quality predicts outcome across hundreds of studies. Read before any modality. Fixes WP-26 miscitation.",
+      "annotation": "The foundational number: across 295 studies and 30,000+ patients, alliance quality predicts outcome — r = .278 (≈ d = .58), consistent across therapy approaches, assessor perspectives, and even internet delivery. Read this before any modality.",
       "learnerLevel": "both",
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
@@ -74,7 +85,7 @@
       "doi": "10.1016/j.cpr.2025.102656",
       "oaStatus": "hybrid",
       "linkType": "open",
-      "annotation": "Closest to our census: alliance with SMI patients is buildable, and the levers are partly the clinician's.",
+      "annotation": "48 studies on what tracks alliance quality in SMI. The sharpest finding is a mismatch: symptom severity influenced clinician-rated alliance but not patient-rated — how sick a patient looks changes what the clinician thinks of the relationship, not what the patient thinks. Observational associations, not trial effects.",
       "learnerLevel": "both",
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
@@ -91,7 +102,7 @@
       "doi": "10.1002/cpp.2726",
       "oaStatus": "gold-or-green",
       "linkType": "open",
-      "annotation": "Keeping an alliance alive while assessing suicide risk; assessment done TO a patient erodes what safety planning depends on.",
+      "annotation": "A robust alliance formed early in therapy predicted later reductions in suicidal ideation and attempts — and suicidal experiences themselves did not preclude forming one. The practice point: attend to patients' concerns about discussing suicidality.",
       "learnerLevel": "both",
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
@@ -107,7 +118,7 @@
       "doi": "10.3389/fpsyg.2024.1293851",
       "oaStatus": "gold-or-green",
       "linkType": "open",
-      "annotation": "Open-access primer on what alliance means (bond/goals/tasks) before the outcome literature.",
+      "annotation": "A systematic review of 48 different alliance instruments; its own conclusion: \"the broad variety of conceptualizations and measures of TA makes coherent research on TA difficult.\" The exhibit for why alliance numbers vary between studies.",
       "learnerLevel": "ms3",
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
@@ -123,7 +134,7 @@
       "doi": "10.1016/j.cpr.2024.102469",
       "oaStatus": "hybrid",
       "linkType": "open",
-      "annotation": "Go-deeper: qualitative meta-ethnography of both perspectives on alliance amid suicidal experiences (proxy-only).",
+      "annotation": "Client and therapist voices on building alliance around suicidal experiences: weaving risk assessment into the therapeutic conversation — rather than bolting it on — helped both alliance and safety.",
       "learnerLevel": "resident",
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
@@ -140,14 +151,15 @@
       "doi": "10.4081/ripppo.2025.841",
       "oaStatus": "gold-or-green",
       "linkType": "open",
-      "annotation": "The only rupture-repair paper in the harvest: unresolved ruptures precede dropout. Cross-filed from evidence-limits.",
+      "annotation": "Unresolved alliance ruptures preceded dropout in five depressed adolescents dissatisfied with therapy (qualitative; pediatric sample — flagged). Cross-filed from evidence-limits.",
       "learnerLevel": "both",
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
       "verifiedAt": "2026-08-21",
       "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction: DOI corrected (see note), OA per 2026-08-21 Unpaywall gate, formatCitation ama",
-      "note": "DOI corrected 2026-08-21: PubMed and Europe PMC both carry the corrupt 10.4081/ripppo.2025.2025.841 (year duplicated; 404s at Crossref). Corrected DOI verified clean via Crossref/Retraction Watch."
+      "note": "DOI corrected 2026-08-21: PubMed and Europe PMC both carry the corrupt 10.4081/ripppo.2025.2025.841 (year duplicated; 404s at Crossref). Corrected DOI verified clean via Crossref/Retraction Watch.",
+      "population": "adolescents (flag per faculty directive 2026-08-21)"
     },
     {
       "id": "man-2023",
@@ -157,7 +169,7 @@
       "doi": "10.1002/cpp.2780",
       "oaStatus": "gold-or-green",
       "linkType": "open",
-      "annotation": "Indirect = psychology delivered through the team and milieu — what an acute unit can actually staff.",
+      "annotation": "\"Indirect\" = psychology delivered through the team and milieu — case formulation sessions, supervision, reflective practice — which is what an acute unit can actually staff. Ten small studies; promise, not proof.",
       "learnerLevel": "both",
       "linkedPages": [
         "therapy-on-the-unit"
@@ -175,7 +187,7 @@
       "doi": "10.1111/acps.12995",
       "oaStatus": "closed",
       "linkType": "proxy",
-      "annotation": "Psychotherapy works within an admission for MDD (SMD 0.24, NNT ~7) with zero heterogeneity across modalities.",
+      "annotation": "Pooled benefit over control is small and durable — g = 0.24, NNT 7.4, holding at 12 months (g = 0.21) — and comparisons against waitlist or non-standardized control tended to run larger than against structured routine care. The authors' own phrase: \"a small but sustained effect.\" Carry the number, not the slogan.",
       "learnerLevel": "both",
       "linkedPages": [
         "therapy-on-the-unit"
@@ -193,7 +205,7 @@
       "doi": "10.1080/00332747.2022.2062660",
       "oaStatus": "closed",
       "linkType": "proxy",
-      "annotation": "Across diagnoses: real effect (d≈0.43), moderated by diagnosis more than by therapy brand — common factors carry it.",
+      "annotation": "Across 37 samples (4,443 inpatients), psychotherapy's specific contribution was d = 0.43 (CI 0.06–0.81); therapy orientation had no significant effect, and diagnosis moderated outcome. A real effect — not a brand effect.",
       "learnerLevel": "both",
       "linkedPages": [
         "therapy-on-the-unit"
@@ -211,7 +223,7 @@
       "doi": "10.1016/j.cpr.2026.102783",
       "oaStatus": "hybrid",
       "linkType": "open",
-      "annotation": "Current state of the whole BA field — same first author as the 2007 anchor, twenty years on.",
+      "annotation": "105 trials, 13,933 patients: BA vs control SMD 0.67, effects holding at 12 months, no difference vs other therapies (SMD 0.04) — and still effective self-guided (0.36) and in institutional settings (0.36). Same first author as the 2007 anchor below, twenty years on. Simple, teachable, still standing.",
       "learnerLevel": "both",
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
@@ -228,7 +240,7 @@
       "doi": "10.1016/j.cpr.2006.11.001",
       "oaStatus": "closed",
       "linkType": "proxy",
-      "annotation": "Where the modern claim started: activation alone is a treatment, not a warm-up for cognitive work.",
+      "annotation": "Where the modern claim started: activity scheduling alone vs control d = 0.87, and vs cognitive therapy d = 0.02. Activation is a treatment, not a warm-up for cognitive work.",
       "learnerLevel": "both",
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
@@ -244,7 +256,7 @@
       "doi": "10.1037/ccp0000654",
       "oaStatus": "green",
       "linkType": "open",
-      "annotation": "The dismantling question head-to-head: how much does the C in CBT add over activation alone?",
+      "annotation": "The dismantling question: restructuring, activation, and the full CBT package were statistically indistinguishable head-to-head, and all beat care-as-usual (SMDs 0.44–0.57). Treatments are packages, and the parts test out about equally.",
       "learnerLevel": "both",
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
@@ -261,7 +273,7 @@
       "doi": "10.1016/j.beth.2019.01.003",
       "oaStatus": "closed",
       "linkType": "proxy",
-      "annotation": "The evidence under the delivery format the unit actually runs: the group.",
+      "annotation": "The evidence under the unit's actual delivery format: group BA beat controls (SMD 0.72), matched other active therapies, and dropout (14%) was no worse.",
       "learnerLevel": "both",
       "linkedPages": [
         "therapy-on-the-unit"
@@ -279,7 +291,7 @@
       "doi": "10.1016/j.jsat.2021.108478",
       "oaStatus": "closed",
       "linkType": "proxy",
-      "annotation": "Dual diagnosis is the daily census: activation works when depression is entangled with substance use.",
+      "annotation": "The honest null: across five trials (195 patients total), BA was not differentially effective for co-occurring depression and substance use (SMD 0.19, p = 0.20; GRADE Low throughout) — though attendance ran 72% and the authors call it \"an acceptable treatment option.\" Kept for the lesson: this is how thin the evidence under a confident clinical habit can be.",
       "learnerLevel": "both",
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
@@ -295,7 +307,7 @@
       "doi": "10.1001/jamapsychiatry.2018.1776",
       "oaStatus": "free-pmc",
       "linkType": "open",
-      "annotation": "The foundational SPI cohort: ~45% fewer suicidal behaviors, doubled engagement. The tool's origin citation.",
+      "annotation": "The foundational cohort (1,640 ED patients): safety planning plus follow-up contact was associated with 45% fewer suicidal behaviors (OR 0.56) and double the odds of attending outpatient care. A cohort comparison, not an RCT — but the tool you'll use most is built on it.",
       "learnerLevel": "both",
       "linkedPages": [
         "therapy-on-the-unit",
@@ -331,7 +343,7 @@
       "doi": "10.1136/bmjment-2025-302069",
       "oaStatus": "gold-or-green",
       "linkType": "open",
-      "annotation": "Umbrella view: restricting access to lethal means changes outcomes, not just process measures.",
+      "annotation": "The umbrella view (20 reviews, 179 primary studies), and the concrete wins behind the counseling: physical barriers at jumping sites show strong effects, platform screen doors cut site-specific deaths without displacement, paracetamol pack limits reduced self-poisoning admissions, and bans on highly hazardous pesticides reduced suicide rates. Review quality varies — the authors say so — but this is where means restriction earns its place.",
       "learnerLevel": "both",
       "linkedPages": [
         "safety-planning-tool"
@@ -349,7 +361,7 @@
       "doi": "10.1136/ip-2024-045611",
       "oaStatus": "closed",
       "linkType": "proxy",
-      "annotation": "The depth behind the umbrella — the citation under every secure-the-home conversation.",
+      "annotation": "The sobering trial-level review: stricter firearm regulation was associated with \"a small reduction, if any\" in suicide deaths; no high-quality RCTs; ecological designs preclude individual-level causal inference. Counsel about means honestly, on population-level evidence.",
       "learnerLevel": "both",
       "linkedPages": [
         "safety-planning-tool"
@@ -367,7 +379,7 @@
       "doi": "10.1111/jrh.70103",
       "oaStatus": "closed",
       "linkType": "proxy",
-      "annotation": "How rural communities — ours — actually hear lethal-means counseling; the how is population-specific.",
+      "annotation": "How rural communities — ours — actually hear lethal-means counseling: most would discuss firearm access with a provider, but only 4–11% had ever been asked. The gap is the opportunity.",
       "learnerLevel": "both",
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
@@ -383,7 +395,7 @@
       "doi": "10.3310/ncfr5074",
       "oaStatus": "gold-or-green",
       "linkType": "open",
-      "annotation": "IPD answer to who benefits from CBTp: average effects hide heterogeneity; selection is a skill.",
+      "annotation": "The most sophisticated current answer, and it's a corrected instinct: this IPD meta-analysis (27 trials, n = 2,870) tested every modifier a clinician might select on — age, gender, ethnicity, illness duration, phase, severity, dose, format — and found no reliable evidence that any of them changes CBTp's efficacy. Its conclusion: offer CBTp equally, irrespective of demographic or clinical characteristics.",
       "learnerLevel": "both",
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
@@ -399,7 +411,7 @@
       "doi": "10.1371/journal.pone.0324685",
       "oaStatus": "gold-or-green",
       "linkType": "open",
-      "annotation": "The honest quantification of the hardest target: negative symptoms.",
+      "annotation": "CBT improved negative symptoms versus treatment-as-usual (MD −1.65 PANSS points) with gains in overall function (SMD 0.38) and social skills (SMD 0.87). Real — and modest: a 1.65-point PANSS shift is statistically robust and clinically small, which is exactly why the hardest target in psychosis needs honest numbers.",
       "learnerLevel": "both",
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
@@ -415,7 +427,7 @@
       "doi": "10.1016/j.brat.2004.06.020",
       "oaStatus": "closed",
       "linkType": "proxy",
-      "annotation": "Effect sizes shrink as rigor rises — the most transferable methods lesson in the library.",
+      "annotation": "Effect sizes shrink as trial rigor rises — the significant negative correlation between methodological quality and effect. The single most transferable methods lesson on this page.",
       "learnerLevel": "both",
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
@@ -431,7 +443,7 @@
       "doi": "10.1176/appi.psychotherapy.20230044",
       "oaStatus": "closed",
       "linkType": "proxy",
-      "annotation": "The reframe that changes behavior: BPD is treatable by any competent generalist. Refer-out is not a plan.",
+      "annotation": "The reframe that changes behavior: GPM was built so any competent generalist can treat BPD — \"refer out\" is not a plan. Reviews the foundations and the original Canadian trial, and is candid about what's unproven (noninferiority against specialist therapies is listed as future work).",
       "learnerLevel": "both",
       "linkedPages": [
         "therapy-on-the-unit"
@@ -449,7 +461,7 @@
       "doi": "10.1001/jamapsychiatry.2026.0418",
       "oaStatus": "green-submitted-only",
       "linkType": "proxy",
-      "annotation": "The newest head-to-head of two specialist therapies (equivalence trial design).",
+      "annotation": "The newest head-to-head (n = 204, nine sites, 3-year horizon): no significant difference between DBT and schema therapy (d = 0.15), large improvements in both — and two-year dropout near half in each arm. How the field adjudicates between credible treatments.",
       "learnerLevel": "both",
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
@@ -466,7 +478,7 @@
       "doi": "10.1176/appi.ajp.20240298",
       "oaStatus": "closed",
       "linkType": "proxy",
-      "annotation": "Meds-versus-therapy tested where it matters most: suicidal behavior in BPD.",
+      "annotation": "The meds-versus-therapy question tested where it matters: six months of DBT produced fewer suicide-related events and less self-injury than SSRI plus clinical management, while depression improved comparably in both arms and outcomes converged by 12 months.",
       "learnerLevel": "both",
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
@@ -482,7 +494,7 @@
       "doi": "10.1037/per0000774",
       "oaStatus": "closed",
       "linkType": "proxy",
-      "annotation": "What the affordable, skills-only version buys — a discharge-planning fact.",
+      "annotation": "What the affordable, skills-only version buys: large within-arm improvements (BPD severity d = −1.32) with 71% retention — but these are mostly pre-post benchmarks, not controlled comparisons. A discharge-planning fact with an evidence-grade caveat.",
       "learnerLevel": "both",
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
@@ -498,7 +510,7 @@
       "doi": "10.1521/pdps.2026.54.1.97",
       "oaStatus": "closed",
       "linkType": "proxy",
-      "annotation": "The family is usually in the room and rarely addressed; TFP+GPM principles for engaging them.",
+      "annotation": "The family is usually in the room and rarely addressed: commonsense guidance for generalists drawn from TFP and GPM. Practical road map, not trial data.",
       "learnerLevel": "both",
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
@@ -509,12 +521,12 @@
     {
       "id": "pharoah-2010",
       "domain": "family",
-      "citation": "Pharoah F, Mari J, Rathbone J, Wong W. Family intervention for schizophrenia. Cochrane Database Syst Rev. 2010:CD000088. doi:10.1002/14651858.CD000088.pub2.",
+      "citation": "Pharoah F, Mari J, Rathbone J, Wong W. Family intervention for schizophrenia. Cochrane Database Syst Rev. 2010;(12):CD000088. doi:10.1002/14651858.CD000088.pub3.",
       "pmid": "21154340",
-      "doi": "10.1002/14651858.CD000088.pub2",
+      "doi": "10.1002/14651858.CD000088.pub3",
       "oaStatus": "free-pmc",
       "linkType": "open",
-      "annotation": "The canonical Cochrane: less relapse, fewer readmissions, better adherence. NNT ~7 territory.",
+      "annotation": "The canonical review (53 RCTs): family intervention \"may decrease the frequency of relapse\" (RR 0.55, NNT 7) and \"may also reduce hospital admission\" (RR 0.78, CI 0.6–1.0, NNT 8), with better medication adherence too. The authors' own hedge — effects \"may be overestimated due to the poor methodological quality\" — is part of the finding: the same rigor lesson Tarrier & Wykes teach, arriving in the domain's foundational citation.",
       "learnerLevel": "both",
       "linkedPages": [
         "therapy-on-the-unit"
@@ -522,8 +534,8 @@
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
       "verifiedAt": "2026-08-21",
-      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction: superseded-version notice (.pub3), OA per 2026-08-21 Unpaywall gate, formatCitation ama",
-      "note": "Crossref flags CD000088.pub2 as superseded by .pub3 (2010-12-08) while PMID 21154340 maps to .pub2 — which version to cite is a faculty decision (do not guess); see THERAPY_LIBRARY_VERIFIED_KEEPS_2026-08-21.md §3."
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction: superseded-version notice (.pub3), OA per 2026-08-21 Unpaywall gate, formatCitation ama; Cochrane version settled .pub3 (faculty, 2026-08-21)",
+      "note": "Version settled by faculty 2026-08-21 from the Cochrane Library version history: PMID 21154340 is the 2010 Dec 8 update, published as .pub3 (.pub2 is the 2006 Oct 18 version); the .pub2 DOI carried by PubMed and Europe PMC is a metadata error. No later version exists."
     },
     {
       "id": "ma-2021",
@@ -533,7 +545,7 @@
       "doi": "10.1017/S0033291721000209",
       "oaStatus": "closed",
       "linkType": "proxy",
-      "annotation": "The family's emotional climate is a measured, modifiable relapse predictor — the floor under all family work.",
+      "annotation": "The empirical floor under family work: high expressed emotion predicts early relapse (OR 4.87 within 12 months), criticism predicts relapse (OR 2.22), and warmth protects (OR 0.35). A measured, modifiable relapse predictor.",
       "learnerLevel": "both",
       "linkedPages": [
         "therapy-on-the-unit"
@@ -551,7 +563,7 @@
       "doi": "10.1093/schbul/sbz038",
       "oaStatus": "free-pmc",
       "linkType": "open",
-      "annotation": "Intervene early with families in FEP and relapse falls, durably to 24 months.",
+      "annotation": "Intervene early with families and relapse falls hard: RR 0.42 out to 24 months in first-episode psychosis, with shorter admissions and better functioning. Durable, not just immediate.",
       "learnerLevel": "both",
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
@@ -567,7 +579,7 @@
       "doi": "10.1002/14651858.CD008063.pub3",
       "oaStatus": "free-pmc",
       "linkType": "open",
-      "annotation": "The definitive review, valuable for its restraint: modest effects, limited certainty. Stance plus calibration.",
+      "annotation": "The definitive review (93 trials, 22,776 participants), valuable for its restraint: small effects versus no intervention that fade over follow-up, little-to-no difference versus treatment as usual or other active treatments, and mostly low-certainty evidence. Hold the stance and the calibration.",
       "learnerLevel": "both",
       "linkedPages": [
         "therapy-on-the-unit"
@@ -585,7 +597,7 @@
       "doi": "10.1080/15504263.2024.2434218",
       "oaStatus": "closed",
       "linkType": "proxy",
-      "annotation": "The MI paper that matches our census: dual diagnosis.",
+      "annotation": "The MI paper that matches our census: most outcomes improved without reaching significance; the clear signals were fewer relapses and fewer alcohol-binge days. An add-on with a narrow, real benefit.",
       "learnerLevel": "both",
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
@@ -601,14 +613,15 @@
       "doi": "10.1027/0227-5910/a001031",
       "oaStatus": "hybrid",
       "linkType": "open",
-      "annotation": "The bridge between trauma histories and risk practices: assessment can retraumatize; there are alternatives.",
+      "annotation": "Maps the field (27 papers — most focused on children and young people; extrapolate to adult units with care): the case for risk assessment and safety procedures that don't retraumatize. Framework and gaps, not outcome data.",
       "learnerLevel": "both",
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
       "verifiedAt": "2026-08-21",
       "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, checkOpenAccess hybrid, formatCitation ama",
-      "note": "OA upgrade 2026-08-21 (Unpaywall via Scholar Sidekick): hybrid, publishedVersion at https://doi.org/10.1027/0227-5910/a001031."
+      "note": "OA upgrade 2026-08-21 (Unpaywall via Scholar Sidekick): hybrid, publishedVersion at https://doi.org/10.1027/0227-5910/a001031.",
+      "population": "mixed — majority children/young people; adult-relevant framework (flag per faculty directive 2026-08-21)"
     },
     {
       "id": "goldstein-2024",
@@ -618,7 +631,7 @@
       "doi": "10.7812/TPP/23.127",
       "oaStatus": "gold-or-green",
       "linkType": "open",
-      "annotation": "What actually happens when systems implement TIC — the freely linkable workhorse.",
+      "annotation": "What actually happens when systems implement TIC: mechanisms and outcomes mapped to SAMHSA's ten implementation domains. The implementation manual behind the aspiration.",
       "learnerLevel": "both",
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
@@ -634,13 +647,14 @@
       "doi": "10.1007/s10597-024-01317-z",
       "oaStatus": "closed",
       "linkType": "proxy",
-      "annotation": "The honest status report at the highest evidence tier: enthusiasm currently outruns outcome evidence.",
+      "annotation": "The honest status report: across 14 systematic reviews (half rated low quality; many youth/school settings), effectiveness evidence remains mixed — enthusiasm currently outruns outcome data. Commitment plus candor.",
       "learnerLevel": "both",
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
       "verifiedAt": "2026-08-21",
-      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, checkOpenAccess closed, formatCitation ama"
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, checkOpenAccess closed, formatCitation ama",
+      "population": "mixed — many youth/school settings (flag per faculty directive 2026-08-21)"
     },
     {
       "id": "hajek-gross-2024",
@@ -650,14 +664,15 @@
       "doi": "10.1111/sltb.13044",
       "oaStatus": "hybrid",
       "linkType": "open",
-      "annotation": "A psychodynamically derived treatment with meta-analytic support for self-harm.",
+      "annotation": "Kept for the comparator lesson: MBT's pre-post effects on self-harm look large (g = −0.82), but against active controls it \"did not prove to be more efficacious,\" and the authors conclude that \"prioritizing the application of MBT(-A) for the treatment of self-harm is not supported\" (includes MBT-A adolescent arms). Read past the pre-post effect size to the comparator — always.",
       "learnerLevel": "both",
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
       "verifiedAt": "2026-08-21",
       "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, checkOpenAccess hybrid, formatCitation ama",
-      "note": "OA upgrade 2026-08-21 (Unpaywall via Scholar Sidekick): hybrid, publishedVersion at https://doi.org/10.1111/sltb.13044."
+      "note": "OA upgrade 2026-08-21 (Unpaywall via Scholar Sidekick): hybrid, publishedVersion at https://doi.org/10.1111/sltb.13044.",
+      "population": "adults and adolescents — includes MBT-A arms (flag per faculty directive 2026-08-21)"
     },
     {
       "id": "wienicke-2023",
@@ -667,7 +682,7 @@
       "doi": "10.1016/j.cpr.2023.102269",
       "oaStatus": "hybrid",
       "linkType": "open",
-      "annotation": "Retires the reflex that psychodynamic means unevidenced — IPD-level support in depression.",
+      "annotation": "Retires the reflex that \"psychodynamic\" means \"unevidenced\": individual-participant data from 11 of 13 eligible trials (n = 771) show STPP beats control conditions for depression (d = −0.62 at post-treatment), with larger effects in longer index episodes.",
       "learnerLevel": "both",
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
@@ -684,7 +699,7 @@
       "doi": "10.1017/S0033291722003270",
       "oaStatus": "gold-or-green",
       "linkType": "open",
-      "annotation": "The combined-treatment question in its most ward-relevant form: who gains from adding therapy to the antidepressant?",
+      "annotation": "The combined-treatment question in its most ward-relevant form: adding STPP to antidepressants helped most in severe and chronic (>2-year) depression — the patients we actually admit.",
       "learnerLevel": "both",
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
@@ -700,13 +715,15 @@
       "doi": "10.4088/JCP.26com16383",
       "oaStatus": "closed",
       "linkType": "proxy",
-      "annotation": "The highest-yield CL distinction: demoralization is not depression. (Commentary; author spelling per EPMC 'de Figueirido' — resolve at formatCitation.)",
+      "annotation": "Construct orientation — a commentary distinguishing demoralization from depression. Full text pending faculty review.",
       "learnerLevel": "both",
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
       "verifiedAt": "2026-08-21",
-      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, checkOpenAccess closed, formatCitation ama"
+      "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, checkOpenAccess closed, formatCitation ama",
+      "held": true,
+      "note": "HELD as D10 item for the Taplinger merge (faculty directive 2026-08-21): commentary with no abstract; no treatment-response claim ships on it; not promoted to evidence_registry.json pending full-text review. PubMed byline carries the record typo 'de Figueirido'; correct spelling per the article's own correspondence line is de Figueiredo."
     },
     {
       "id": "statpearls-mcp-2026",
@@ -716,7 +733,7 @@
       "doi": null,
       "oaStatus": "gold-or-green",
       "linkType": "open",
-      "annotation": "Free reference orientation to meaning-centered psychotherapy before the trial literature.",
+      "annotation": "A free reference orientation to meaning-centered work (the Frankl → Breitbart lineage) before the trial literature. Tertiary study guide — orient with it, don't cite it as evidence.",
       "learnerLevel": "both",
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
@@ -733,7 +750,7 @@
       "doi": "10.1159/000507738",
       "oaStatus": "green-submitted-only",
       "linkType": "proxy",
-      "annotation": "Functional somatic presentations are consult bread-and-butter; a specific therapy helps.",
+      "annotation": "Functional presentations are consult bread-and-butter, and a specific brief therapy helps: across 17 RCTs, STPP beat minimal treatment, TAU, and waitlist on somatic symptoms at every time frame (small-to-large effects). Carries a published erratum (a correction — the paper stands).",
       "learnerLevel": "both",
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
@@ -750,7 +767,7 @@
       "doi": "10.1177/10398562261425069",
       "oaStatus": "closed",
       "linkType": "proxy",
-      "annotation": "The statistic to carry out of the rotation: risk peaks in the weeks after discharge.",
+      "annotation": "The statistic to carry out of this rotation — risk peaks in the weeks after discharge — and an argument piece contending the field keeps studying categorical predictors while ignoring how the admission itself was experienced. Read it before you write your last discharge summary.",
       "learnerLevel": "both",
       "linkedPages": [
         "therapy-on-the-unit",
@@ -769,7 +786,7 @@
       "doi": "10.1016/j.genhosppsych.2025.01.007",
       "oaStatus": "closed",
       "linkType": "proxy",
-      "annotation": "What is delivered during the stay bends the curve after it (secondary analysis of the BCBT-Inpatient RCT).",
+      "annotation": "Adding brief CBT during the stay cut post-discharge ED visits by about three quarters (OR 0.25) — but \"only among participants without SUD.\" On a dual-diagnosis unit, that qualifier is the teaching point; the authors themselves call for work to make it hold in SUD.",
       "learnerLevel": "both",
       "linkedPages": [
         "therapy-on-the-unit"
@@ -787,7 +804,7 @@
       "doi": "10.1111/sltb.13108",
       "oaStatus": "gold-or-green",
       "linkType": "open",
-      "annotation": "One of the cheapest interventions in psychiatry, refined with patient input.",
+      "annotation": "One of the cheapest interventions in psychiatry, refined with patient input: brief caring-contact messages on days 2 and 7 post-discharge, with pilot-scale (n = 27) reductions in depressive symptoms and better connectedness. Cheap, kind — and still early-stage evidence.",
       "learnerLevel": "both",
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
@@ -803,7 +820,7 @@
       "doi": "10.32872/cpe.9709",
       "oaStatus": "gold-or-green",
       "linkType": "open",
-      "annotation": "Who ran the trial shapes what it finds (scope: humanistic-vs-other comparisons). Read author lists like methods.",
+      "annotation": "The allegiance hypothesis, tested — and not confirmed: in trials comparing humanistic therapy to other approaches, researcher allegiance and treatment quality were \"not as relevant for outcomes… as expected.\" That is a richer evidence-limits lesson than the slogan: a bias everyone \"knows\" matters failed to show up when someone checked (scope: humanistic-vs-other comparisons).",
       "learnerLevel": "both",
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
@@ -819,7 +836,7 @@
       "doi": "10.1002/cpp.70080",
       "oaStatus": "hybrid",
       "linkType": "open",
-      "annotation": "The outcome nobody advertises: a therapy the patient leaves is not a therapy that worked.",
+      "annotation": "The outcome nobody advertises: dropout runs 10–58% in personality-disorder psychotherapy, predicted by younger age, comorbid substance use, and emotion dysregulation — while strong alliances and phone coaching protect. A therapy the patient leaves is not a therapy that worked.",
       "learnerLevel": "both",
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
@@ -836,14 +853,15 @@
       "doi": "10.1080/10503307.2022.2141588",
       "oaStatus": "bronze",
       "linkType": "open",
-      "annotation": "If therapies are near-equivalent on average, what should you train? The closing read of the section.",
+      "annotation": "HELD pending faculty full-text read — do not ship.",
       "learnerLevel": "both",
       "linkedPages": [],
       "addedBy": "cowork-agent-draft (Moss review pending)",
       "addedAt": "2026-08-20",
       "verifiedAt": "2026-08-21",
       "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, checkOpenAccess bronze, formatCitation ama",
-      "note": "Bronze OA: free at the publisher without an open licence — the link can be withdrawn; treat as open-fragile in link checks."
+      "note": "HELD (faculty directive 2026-08-21): closing-paper slot decision pending a full-text faculty read; the prior paraphrase must not ship, and this entry is not promoted to evidence_registry.json. Bronze OA: free at the publisher without an open licence — the link can be withdrawn; treat as open-fragile in link checks.",
+      "held": true
     },
     {
       "id": "xia-2011",
