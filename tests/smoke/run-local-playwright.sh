@@ -12,6 +12,21 @@ LAUNCHER_READY=0
 FD9_OPEN=0
 MANIFEST_CHECKSUM=""
 
+# Owner uid of a path, portably. BSD and GNU stat disagree about -f: on BSD
+# (macOS) it means "format", on GNU (Linux) it means "file system status" — and
+# the GNU form writes a whole filesystem report to STDOUT before exiting non-zero.
+# In a `$(stat -f … || stat -c …)` chain that report is captured ALONGSIDE the
+# fallback's answer, so the value can never equal `id -u` and every ownership
+# guard below fails closed on Linux. Probe GNU's -c first (BSD stat rejects it
+# without writing stdout) and accept only an all-digits answer.
+file_owner_uid() {
+  local uid
+  uid="$(stat -c '%u' "$1" 2>/dev/null)"
+  case "$uid" in ''|*[!0-9]*) uid="$(stat -f '%u' "$1" 2>/dev/null)" ;; esac
+  case "$uid" in ''|*[!0-9]*) return 1 ;; esac
+  printf '%s\n' "$uid"
+}
+
 owned_launcher() {
   local owned
   [ -n "$LAUNCHER_PID" ] || return 1
@@ -59,12 +74,12 @@ trap 'exit 143' TERM
 
 STATE_DIR="$(mktemp -d "${TMPDIR:-/tmp}/smoke-playwright.XXXXXX")" || exit 1
 [ -d "$STATE_DIR" ] && [ ! -L "$STATE_DIR" ] || exit 1
-STATE_OWNER="$(stat -f '%u' "$STATE_DIR" 2>/dev/null || stat -c '%u' "$STATE_DIR" 2>/dev/null || true)"
+STATE_OWNER="$(file_owner_uid "$STATE_DIR" || true)"
 [ "$STATE_OWNER" = "$(id -u)" ] || exit 1
 CONTROL_FIFO="$STATE_DIR/control.fifo"
 mkfifo "$CONTROL_FIFO" || exit 1
 [ -p "$CONTROL_FIFO" ] && [ ! -L "$CONTROL_FIFO" ] || exit 1
-FIFO_OWNER="$(stat -f '%u' "$CONTROL_FIFO" 2>/dev/null || stat -c '%u' "$CONTROL_FIFO" 2>/dev/null || true)"
+FIFO_OWNER="$(file_owner_uid "$CONTROL_FIFO" || true)"
 [ "$FIFO_OWNER" = "$(id -u)" ] || exit 1
 exec 9<>"$CONTROL_FIFO" || exit 1
 FD9_OPEN=1
@@ -98,7 +113,7 @@ owned_launcher || exit 1
 
 MANIFEST="$STATE_DIR/server-pids.tsv"
 [ -f "$MANIFEST" ] && [ ! -L "$MANIFEST" ] || exit 1
-MANIFEST_OWNER="$(stat -f '%u' "$MANIFEST" 2>/dev/null || stat -c '%u' "$MANIFEST" 2>/dev/null || true)"
+MANIFEST_OWNER="$(file_owner_uid "$MANIFEST" || true)"
 [ "$MANIFEST_OWNER" = "$(id -u)" ] || exit 1
 
 expected_labels="ms3 res faculty"
