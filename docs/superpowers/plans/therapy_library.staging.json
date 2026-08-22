@@ -333,7 +333,8 @@
       "addedAt": "2026-08-20",
       "verifiedAt": "2026-08-21",
       "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: verifyCitation matched (high confidence), checkRetraction clean, checkOpenAccess closed, formatCitation ama",
-      "note": "Not Europe PMC-indexed (Cognitive and Behavioral Practice is outside MEDLINE): verified 2026-08-21 via Scholar Sidekick verifyCitation against Crossref — verdict matched, high confidence."
+      "note": "Not Europe PMC-indexed (Cognitive and Behavioral Practice is outside MEDLINE): verified 2026-08-21 via Scholar Sidekick verifyCitation against Crossref — verdict matched, high confidence. Already registered in evidence_registry.json as stanley-brown-2012-safety-planning (verifyCitation result appended to that entry); not re-promoted.",
+      "registryId": "stanley-brown-2012-safety-planning"
     },
     {
       "id": "steeg-2025",
@@ -535,7 +536,8 @@
       "addedAt": "2026-08-20",
       "verifiedAt": "2026-08-21",
       "verification": "epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction: superseded-version notice (.pub3), OA per 2026-08-21 Unpaywall gate, formatCitation ama; Cochrane version settled .pub3 (faculty, 2026-08-21)",
-      "note": "Version settled by faculty 2026-08-21 from the Cochrane Library version history: PMID 21154340 is the 2010 Dec 8 update, published as .pub3 (.pub2 is the 2006 Oct 18 version); the .pub2 DOI carried by PubMed and Europe PMC is a metadata error. No later version exists."
+      "note": "Version settled by faculty 2026-08-21 from the Cochrane Library version history: PMID 21154340 is the 2010 Dec 8 update, published as .pub3 (.pub2 is the 2006 Oct 18 version); the .pub2 DOI carried by PubMed and Europe PMC is a metadata error. No later version exists. Already registered in evidence_registry.json as pharoah-2010-family-intervention (DOI updated to .pub3 there per this decision); not re-promoted.",
+      "registryId": "pharoah-2010-family-intervention"
     },
     {
       "id": "ma-2021",
