@@ -219,6 +219,14 @@
 .fd-row__open{flex:1;min-width:0;display:flex;align-items:center;gap:10px;background:none;border:none;cursor:pointer;text-align:left;padding:2px 0;font:inherit}
 .fd-row__content{display:flex;flex:1;min-width:0;flex-direction:column;align-items:flex-start;gap:3px}
 .fd-row__title{
+  /* align-self:stretch is load-bearing, not cosmetic. .fd-row__content is a COLUMN flex
+     container with align-items:flex-start, which sizes children to fit-content in the cross
+     (horizontal) axis -- so without this the title box grows to its own max-content width, the
+     ellipsis below never engages, and the longest item title sets a hard horizontal floor for
+     the whole Path tab (324-339px depending on the build, against 362px available at a 390px
+     viewport). Some platforms' font metrics land just under that floor and some do not, so the
+     overflow reproduces only on wider-glyph systems. Pinned at 320px by front-door.spec.js. */
+  align-self:stretch;
   font-size:14.5px;font-weight:600;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
   color:var(--fd-text);
 }

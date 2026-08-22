@@ -40,8 +40,16 @@ async function loadPlacedNavItems(page, request, baseURL) {
 function findItem(items, predicate, description) {
   const item = items.find(predicate);
   if (!item) {
+    // Read this before concluding the renderer regressed. The Library is a curated allowlist
+    // (curriculum.json -> libraryColumns), so which governance states have a *placed* example is
+    // a property of current content, not of the code: attesting the last item in a state empties
+    // the set and this throws. That is what happened in #380, which correctly replayed four
+    // stranded attestations and, as a side effect, left no placed pending/non-high item at all.
     throw new Error(
-      `no nav item matches "${description}" — this site has no governance entry for that state`,
+      `no placed nav item is currently "${description}" — no placed item is in that governance `
+      + 'state right now. Check reviewed.json against curriculum.json libraryColumns before '
+      + 'suspecting the renderer; the state branches themselves are pinned against a synthetic '
+      + 'ledger by tests/surface-governance-ui.test.mjs.',
     );
   }
   return item;
@@ -105,23 +113,39 @@ test.describe('risk-aware review status (shared shell)', () => {
     await expect(page.locator('.surface-governance-direct:visible')).toHaveCount(1);
   });
 
-  test('pending moderate/low item shows a compact status, never an alert', async ({
+  // Asserts over EVERY placed pending/non-high item rather than one arbitrary find(), so the
+  // test strengthens as content grows and stops depending on one item keeping its status. When
+  // the set is empty the end-to-end wiring simply has no live example to exercise; the branch
+  // itself stays pinned by tests/surface-governance-ui.test.mjs, which renders a synthetic
+  // pending/moderate ledger and asserts the compact markup directly. Skipping is visible in the
+  // report and annotated with the count; throwing read as a governance regression and was not.
+  test('every pending moderate/low item shows a compact status, never an alert', async ({
     page, request, baseURL,
-  }) => {
+  }, testInfo) => {
     const items = await loadPlacedNavItems(page, request, baseURL);
-    const target = findItem(
-      items,
+    const targets = items.filter(
       (it) => it.governance && it.governance.status === 'pending' && it.governance.riskLevel !== 'high',
-      'pending moderate/low item',
     );
-    const url = target.k === 'tool'
-      ? `${baseURL}/?tool=${encodeURIComponent(target.f)}`
-      : `${baseURL}/?page=${encodeURIComponent(target.f)}`;
+    testInfo.annotations.push({
+      type: 'placed-pending-non-high',
+      description: `${targets.length} placed item(s): ${targets.map((it) => it.f).join(', ') || 'none'}`,
+    });
+    test.skip(
+      targets.length === 0,
+      'no placed item is pending at moderate/low risk in the current ledger — the compact branch '
+      + 'is pinned by tests/surface-governance-ui.test.mjs',
+    );
 
-    await page.goto(url, { waitUntil: 'domcontentloaded' });
+    for (const target of targets) {
+      const url = target.k === 'tool'
+        ? `${baseURL}/?tool=${encodeURIComponent(target.f)}`
+        : `${baseURL}/?page=${encodeURIComponent(target.f)}`;
 
-    await expect(page.locator('.fd-article__body > .governance-notice.pending-compact')).toBeVisible();
-    await expect(page.locator('.fd-article__body > .governance-notice.pending-high')).toHaveCount(0);
+      await page.goto(url, { waitUntil: 'domcontentloaded' });
+
+      await expect(page.locator('.fd-article__body > .governance-notice.pending-compact')).toBeVisible();
+      await expect(page.locator('.fd-article__body > .governance-notice.pending-high')).toHaveCount(0);
+    }
   });
 
   test('reviewed item shows a reviewer/date receipt', async ({ page, request, baseURL }) => {

@@ -6,6 +6,21 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 ROOT="$(cd "$SCRIPT_DIR/../.." && pwd -P)"
 cd "$ROOT"
 
+# Owner uid of a path, portably. BSD and GNU stat disagree about -f: on BSD
+# (macOS) it means "format", on GNU (Linux) it means "file system status" — and
+# the GNU form writes a whole filesystem report to STDOUT before exiting non-zero.
+# In a `$(stat -f … || stat -c …)` chain that report is captured ALONGSIDE the
+# fallback's answer, so the value can never equal `id -u` and the ownership guard
+# fails closed on Linux. Probe GNU's -c first (BSD stat rejects it without
+# writing stdout) and accept only an all-digits answer.
+file_owner_uid() {
+  local uid
+  uid="$(stat -c '%u' "$1" 2>/dev/null)"
+  case "$uid" in ''|*[!0-9]*) uid="$(stat -f '%u' "$1" 2>/dev/null)" ;; esac
+  case "$uid" in ''|*[!0-9]*) return 1 ;; esac
+  printf '%s\n' "$uid"
+}
+
 MS3_PORT="${SMOKE_MS3_PORT:-4200}"
 RES_PORT="${SMOKE_RES_PORT:-4201}"
 FACULTY_PORT="${SMOKE_FACULTY_PORT:-4202}"
@@ -313,7 +328,7 @@ if [ "$WAIT_MODE" -eq 1 ]; then
   case "$CONTROL_FIFO" in /*) ;; *) die 'control FIFO path must be absolute' ;; esac
   [ ! -L "$CONTROL_FIFO" ] || die 'control FIFO must not be a symlink'
   [ -p "$CONTROL_FIFO" ] || die 'control path must be one FIFO'
-  FIFO_OWNER="$(stat -f '%u' "$CONTROL_FIFO" 2>/dev/null || stat -c '%u' "$CONTROL_FIFO" 2>/dev/null || true)"
+  FIFO_OWNER="$(file_owner_uid "$CONTROL_FIFO" || true)"
   [ "$FIFO_OWNER" = "$(id -u)" ] || die 'control FIFO must be owned by the current user'
   trap on_exit EXIT
   trap 'exit 129' HUP

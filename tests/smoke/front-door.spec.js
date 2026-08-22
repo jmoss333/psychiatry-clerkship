@@ -99,6 +99,33 @@ test('Path projects each audience duration without mobile overflow', async ({ pa
   await expectHealthy(page);
 });
 
+// The 390px check above passed on macOS both before and after the .fd-row__title fix, because
+// macOS font metrics happened to land just under the floor a max-content-sized title imposed
+// (339px on res / 324px on ms3, against 362px available). Ubuntu's wider defaults did not, so CI
+// caught what the workstation could not. Asserting at 320px removes the luck: an untruncated
+// title overflows there on every platform, so this fails without the fix rather than depending
+// on which fonts the runner happens to have.
+test('Path detail titles truncate rather than set a horizontal floor at 320px', async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 320, height: 844 });
+  await seedApp(page, testInfo);
+  await page.goto('/');
+  await page.locator('[data-fd-change-week]').click();
+  await page.locator('[data-fd-week="1"]').click();
+  await page.locator('[data-fd-tab="path"]').click();
+  await expect(page.locator('.fd-path')).toBeVisible();
+
+  expect(await page.locator('.fd-path').evaluate((el) => el.scrollWidth - el.clientWidth)).toBe(0);
+
+  // The row title must be the element that gives: it fills its column and clips, rather than
+  // widening the pane. Without align-self:stretch its box equals its full text width, so
+  // scrollWidth === clientWidth here and the overflow is pushed up to .fd-path instead.
+  const title = await page.locator('.fd-row__title').first().evaluate((el) => ({
+    clientWidth: el.clientWidth, scrollWidth: el.scrollWidth,
+  }));
+  expect(title.scrollWidth).toBeGreaterThan(title.clientWidth);
+  await expectHealthy(page);
+});
+
 test('tab focus order is stable and Path preview does not change rotation until adoption', async ({ page }, testInfo) => {
   await seedApp(page, testInfo);
   await page.goto('/');
