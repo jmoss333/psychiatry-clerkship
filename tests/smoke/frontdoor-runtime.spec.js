@@ -162,6 +162,12 @@ async function installEditionRuntimeProbe(page, testInfo, options = {}) {
       originalSetItem.call(window.sessionStorage, eventKey, JSON.stringify(events));
       window.__fdEditionEvents = events;
     };
+    // Latch for the 'markdown-slow-interaction' fault. Startup stays pending until the spec
+    // releases it, so "the gate rejects pre-commit interactions" is proved against a signal the
+    // test owns rather than against a wall-clock timer the CI runner can outrun. Set before the
+    // stub runs, so releasing early is safe: text() checks the flag and delivers immediately.
+    window.__fdStartupMarkdownReleased = false;
+    window.__fdReleaseStartupMarkdown = () => { window.__fdStartupMarkdownReleased = true; };
     window.__fdMeaningfulRenders = [];
     window.__fdEditionWrites = readLog();
     window.__fdEditionEvents = readEvents();
@@ -194,10 +200,18 @@ async function installEditionRuntimeProbe(page, testInfo, options = {}) {
       if (['markdown-mount', 'markdown-success', 'markdown-slow-interaction'].includes(startupFault)) {
         return Promise.resolve({
           ok: true,
-          text: () => new Promise((resolve) => originalSetTimeout(() => {
-            record(['resource-text', startupFault]);
-            resolve('# Orientation\n\nDelayed startup markdown.');
-          }, startupFault === 'markdown-slow-interaction' ? 300 : 40)),
+          text: () => new Promise((resolve) => {
+            const deliver = () => {
+              record(['resource-text', startupFault]);
+              resolve('# Orientation\n\nDelayed startup markdown.');
+            };
+            if (startupFault !== 'markdown-slow-interaction') {
+              originalSetTimeout(deliver, 40);
+              return;
+            }
+            if (window.__fdStartupMarkdownReleased) { deliver(); return; }
+            window.__fdReleaseStartupMarkdown = deliver;
+          }),
         });
       }
       return originalFetch(input, init);
@@ -470,6 +484,10 @@ test('slow edition resource startup rejects every pre-commit learner interaction
   expect(await localStorageSnapshot(page)).toEqual(beforeStorage);
   await expect(page.locator('#fdApp')).toHaveAttribute('aria-busy', 'true');
   await expect(page.locator('#fdApp')).toHaveAttribute('inert', '');
+
+  // Every pre-commit assertion above has now run against a startup that was still pending by
+  // construction, not by winning a race. Release it and assert the normal completion path.
+  await page.evaluate(() => window.__fdReleaseStartupMarkdown());
 
   await expect(page.locator('.fd-article__body')).toContainText('Delayed startup markdown.');
   await expect(page.locator('#fdApp')).not.toHaveAttribute('aria-busy');

@@ -226,7 +226,9 @@ test('every real library column item resolves', () => {
   const idx = F.fdBuildIndex(realMs3Projection(), META, TOOLS, MAN);
   let placed = 0;
   for (const c of idx.columns) placed += c.items.length;
-  assert.equal(placed, 81, 'expected the 81 pages curriculum.json places');
+  // 83 = 81 + the two 2026-08-21 therapy-curriculum pages (therapy_on_the_unit.md,
+  // therapy_reading_room.md) placed in the Clinical-skills and Evidence-&-exam columns.
+  assert.equal(placed, 83, 'expected the 83 pages curriculum.json places');
 });
 
 test('all five real kit items are attested and carry safety steps', () => {

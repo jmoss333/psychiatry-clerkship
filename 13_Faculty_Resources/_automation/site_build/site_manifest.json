@@ -419,6 +419,11 @@
    "Brief Psychotherapy on the Unit"
   ],
   [
+   "02_Clinical_Skills/Psychotherapy/therapy_on_the_unit_inpatient_teaching.md",
+   "therapy_on_the_unit.md",
+   "Therapy on the Unit"
+  ],
+  [
    "02_Clinical_Skills/Psychotherapy/psychotherapy_inpatient_teaching.md",
    "psychotherapy.md",
    "Psychotherapies at a Glance"
@@ -457,6 +462,11 @@
    "07_Evidence_and_Reading/Inpatient_Evidence/evidence_inpatient.md",
    "evidence_inpatient.md",
    "Evidence-Based Inpatient Psychiatry"
+  ],
+  [
+   "07_Evidence_and_Reading/Therapy_Reading_Room/therapy_reading_room.md",
+   "therapy_reading_room.md",
+   "The Therapy Reading Room"
   ]
  ]
 }
