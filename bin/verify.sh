@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 # verify.sh — the full local gate, in one command.
 #
-# WHY THIS EXISTS: GitHub Actions is blocked at the account level (billing), so CI is not
-# running. The gate is therefore self-reported, and a self-reported gate is only worth
-# something if it is one deterministic command that a human can re-run and compare. This
-# script's stdout is what goes in the PR body.
+# WHY THIS EXISTS: CI runs again (Actions billing restored 2026-08-22), but the gate is still
+# worth having locally: it mirrors ci.yml's build-test-validate job step for step, so a failure
+# is caught before the push rather than twenty minutes later, and it is one deterministic
+# command a human can re-run and compare. Installed as a pre-push hook by bin/install-hooks.sh.
+# This script's stdout is what goes in the PR body.
 #
 #   bash bin/verify.sh            # full battery
 #   bash bin/verify.sh --quick    # skip the two site builds (fast inner loop; NOT a gate run)

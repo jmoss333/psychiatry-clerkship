@@ -99,5 +99,7 @@ rather than to this page. No clinical content was authored.
 ## Recommended enforcement, once scope is decided
 
 A gate in `check-static-site.mjs` that fails on known verbatim item stems, seeded from the
-retirement list. Deliberately **not** built yet: encoding the wrong scope in a gate is worse than
-no gate, and per amendment A3 no new gate is promoted to hard while CI is down.
+retirement list. Deliberately **not** built yet, for one reason only: encoding the wrong scope in
+a gate is worse than no gate. The second reason has expired — **amendment A3 was retired in #396**
+(Actions billing restored 2026-08-22), so when this gate is built it should ship **hard**, not
+warn-only.

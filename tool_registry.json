@@ -29,7 +29,7 @@
       "sourcePath": "04_Acute_and_Safety/Catatonia/bfcrs.html",
       "category": "acute-safety",
       "riskLevel": "high",
-      "disclaimerType": "validated-instrument-teaching",
+      "disclaimerType": "instrument-not-reproduced",
       "storageKeys": [],
       "evidenceIds": ["bap-catatonia-2023"],
       "relatedPages": ["catatonia.md"]
