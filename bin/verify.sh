@@ -148,7 +148,6 @@ echo "────────────────────────�
 if [ ${#FAILED[@]} -eq 0 ]; then
   [ $QUICK -eq 1 ] && { echo "QUICK PASS — builds skipped, not a gate run"; exit 0; }
   echo "ALL CHECKS PASSED"
-  echo "CI unavailable (Actions billing) — local gate only."
   exit 0
 fi
 echo "FAILED (${#FAILED[@]}): ${FAILED[*]}"
