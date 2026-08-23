@@ -151,11 +151,20 @@ frequency by band, all site-specific. Build the mechanism there **with FRST as t
 consumer**, so two real cases inform the shape. Recorded here so the dependency is not
 rediscovered.
 
-### When CI returns (WP-15b)
+### When CI returns (WP-15b) — **billing restored 2026-08-22; steps 1 and 3 done**
 
-1. Re-run the full battery (`bin/verify.sh`) against **merged main**.
-2. Open one PR promoting the warn-gates to hard.
-3. Drop the "CI unavailable" line from the PR template.
+1. ~~Re-run the full battery (`bin/verify.sh`) against **merged main**.~~ Done — green on
+   every PR from #388 onward, and on `main`'s own push runs.
+2. **Still open, and it is not a no-op-in-waiting: there are no warn-gates to promote.**
+   WP-15, WP-16 and WP-17 are all still `todo`, so nothing exists yet to harden. WP-15b
+   cannot be closed by flipping a flag — it closes when those three ship *as hard gates*,
+   which is now the correct target since A3's "no promotion while CI is down" no longer applies.
+3. ~~Drop the "CI unavailable" line.~~ Done — removed from `bin/verify.sh`. There is no PR
+   template file in this repo; the line was only ever pasted by hand into PR bodies.
+
+**Amendment A3 is retired.** It read "no warn→hard gate promotion while CI is down." CI is up,
+branch protection is back on with `enforce_admins: true`, and both checks are required. New
+gates should ship hard unless there is a reason of their own to warn first.
 
 ## Status legend
 
@@ -190,7 +199,7 @@ rediscovered.
 | 2 | WP-13 | Draft-badge bug + attestation coherence | AGENT | todo | — | — | — |
 | 2 | WP-14 | Diagnostic Reasoning: blind repeat practice | AGENT | todo | — | — | WP-11 |
 | 3 | WP-15 | CI gate: positional + length cues (**warn-only**, per A3) | AGENT | todo | — | — | WP-11 |
-| 3 | WP-15b | Promote warn-gates to hard | AGENT | blocked-ci | — | — | **Actions billing restored** |
+| 3 | WP-15b | Promote warn-gates to hard | AGENT | todo | — | — | **unblocked 2026-08-22** — billing restored, A3 retired; now waits on WP-15/16/17 existing |
 | 3 | WP-16 | `quizzes.json` governance | AGENT | todo | — | — | WP-09 |
 | 3 | WP-17 | Content-hash attestation in CI | AGENT | todo | — | — | — |
 | 3 | WP-18 | Trap-name consistency + 3 stale `why` | AGENT+REVIEW | todo | — | — | WP-17 |
@@ -275,9 +284,10 @@ by design: baselines are Ubuntu-only and false-diff on macOS.
 failure, and is installed as a **pre-push hook** by `bash bin/install-hooks.sh` (hooks live in the
 shared `--git-common-dir`, so one install covers every worktree; a fresh clone needs it again).
 
-Its stdout goes in the PR body, followed by the literal line:
-
-> `CI unavailable (Actions billing) — local gate only.`
+Its stdout goes in the PR body. It no longer appends an outage notice: billing was restored
+2026-08-22, and the line `CI unavailable (Actions billing) — local gate only.` was removed from
+`bin/verify.sh` the next day. A gate that states something false about its own standing teaches
+people to skim its output.
 
 Failure path is verified, not assumed: appending a byte to `AGENTS.md` makes it report
 `FAILED (1): CLAUDE.md/AGENTS.md byte-parity` and exit `1`.
