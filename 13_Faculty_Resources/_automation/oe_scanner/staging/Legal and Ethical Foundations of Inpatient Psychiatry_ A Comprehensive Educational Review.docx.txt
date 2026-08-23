@@ -1,0 +1,545 @@
+
+Legal and Ethical Foundations of Inpatient Psychiatry: A Comprehensive Educational Review
+
+
+I. ETHICAL PRINCIPLES
+
+
+The Four Principles Framework
+
+
+The Beauchamp and Childress "principlism" framework provides the dominant ethical foundation for psychiatric practice, comprising respect for autonomy, beneficence, nonmaleficence, and justice.[1][2] In inpatient psychiatry, the central ethical tension is between autonomy and beneficence — conditions involving impaired judgment, decision-making capacity, and impulse control may require clinicians to "prioritize actions to prevent harm, including involuntary hospitalization, when needed, based on the principle of beneficence".[3][4] The APA Resource Document on Non-Emergency Involuntary Medication explicitly frames involuntary treatment as creating tension between these two principles, noting that formal procedures (judicial hearing and/or independent review) have been developed to ensure that the benefits of treatment outweigh a patient's autonomy interests before involuntary treatment is administered.[5]
+
+Coercive treatment can be ethically justified only when (1) a patient's capacity to consent is substantially impaired and (2) severe danger to health or life cannot be prevented by less intrusive means; mental disorder alone without impaired capacity does not justify involuntary treatment and may constitute misuse of psychiatry.[6] Bloch and Green (2006) propose complementing principlism with care ethics to address the unique vulnerabilities of psychiatric patients.[7]
+
+---
+
+II. CIVIL COMMITMENT: LEGAL STANDARDS
+
+
+Constitutional Foundations
+
+
+Civil commitment rests on two constitutional doctrines: police power (the state's authority to protect public safety by confining individuals dangerous to others) and parens patriae (the state's authority to protect individuals who cannot care for themselves).[8][9] The debate between dangerousness-based and need-for-treatment criteria has been a central tension in commitment law since the 1960s.[10]
+
+Landmark Cases
+
+
+
+
+Substantive Commitment Criteria
+
+
+All U.S. jurisdictions require the presence of mental illness as a threshold criterion. A 2025 comprehensive 50-state statutory review identified that 47 of 51 jurisdictions allow commitment based on impaired ability to live independently, using one of three standards: grave disability (12 states), inability to meet basic needs (28 states), or inability to provide for welfare and protection (9 states).[14] Components, allowable evidence, exclusions, and requirements for treatment alternatives varied widely across jurisdictions.[14]
+
+Emergency Holds
+
+
+Every state has emergency hold laws permitting short-term involuntary detention, with the 72-hour hold being the most common duration — though this time frame lacks strong empirical justification and its origins are largely historical.[15][16] Emergency detention rates vary 33-fold across states (from 29 per 100,000 in Connecticut to 966 per 100,000 in Florida), and from 2010 to 2022, civil commitment rates significantly increased in 9 states and DC while no states showed significant decreases.[17][18]
+
+Due Process Requirements
+
+
+Key procedural protections include the "clear and convincing evidence" standard of proof, right to a hearing before longer-term commitment, right to legal representation, right to appeal, and the principle of least restrictive alternative.[12][11][14] Patients retain a right to refuse treatment separate from the right to liberty, and some jurisdictions require a separate judicial determination of competency to refuse treatment.[19]
+
+---
+
+III. CAPACITY ASSESSMENT
+
+
+The Four Abilities Model
+
+
+The foundational framework established by Appelbaum and Grisso (1988) identifies four legal standards for competence, endorsed by the APA Resource Document on Decisional Capacity (2019):[20][21]
+
+1. Understanding — Grasping basic facts about one's condition, proposed intervention, alternatives, and risks/benefits
+
+2. Appreciation — Recognizing how the information applies to one's own case (closely related to insight)
+
+3. Reasoning — Comparing options and consistently inferring consequences
+
+4. Expressing a choice — Communicating a decision that is reasonably stable absent new information
+
+Critical principles: Capacity is decision-specific (a patient may have capacity for some decisions but not others), is not determined by diagnosis alone, exists on a continuum, and is assessed based on the process of decision-making, not the final decision itself.[22][23][24]
+
+Capacity vs. Competency
+
+
+Capacity is a clinical determination made by physicians; competency is a legal determination made by courts — though Appelbaum's 2007 NEJM review notes these distinctions "are not consistently reflected in either legal or medical usage".[25] In practice, physicians determine capacity at the bedside, and formal judicial adjudication is reserved for contested cases.[20]
+
+Prevalence of Impaired Capacity
+
+
+A systematic review found a median incapacity rate of 29% among psychiatric inpatients, while Owen et al. (2008) estimated[26] 60% lacked capacity among consecutive psychiatric admissions, ranging from 97% in mania to 4% in personality disorders — notably, 39% of voluntary patients lacked capacity.[27] A meta-review concluded that up to three-quarters of psychiatric patients, including those with schizophrenia or bipolar disorder, may retain capacity.[28]
+
+Assessment Tools
+
+
+The MacArthur Competence Assessment Tool for Treatment (MacCAT-T) has the most empirical support among capacity instruments, with internal consistency α = 0.91–0.93, inter-rater reliability ICC = 0.92–0.98, and validation across schizophrenia, anorexia nervosa, dementia, and general psychiatric populations.[29][30][31][32] However, it does not provide a dichotomous capacity/incapacity determination and no single instrument is considered a "gold standard".[21]
+
+The JAMA Rational Clinical Examination systematic review identified the Aid to Capacity Evaluation (ACE) as the best available instrument for medical patients (LR+ 8.5, LR− 0.21), freely available online and administrable in <30 minutes.[24] Critically, clinicians recognized incapacity in only 42% of affected patients without structured tools, underscoring the need for systematic assessment.[24]
+
+The Sliding Scale Standard
+
+
+The concept that higher-risk decisions require a higher threshold of decisional capacity is endorsed by the APA Resource Document but remains controversial — a systematic review found 22 of 41 publications supported risk-sensitive assessment, with critics raising concerns about paternalism.[21][33][34]
+
+---
+
+IV. CONFIDENTIALITY AND DUTY TO WARN/PROTECT
+
+
+Confidentiality Framework
+
+
+The APA's Principles of Medical Ethics holds that explicit consent, preferably written, should be obtained prior to disclosing information to third parties, other than limited emergent circumstances.[35] HIPAA requires patient authorization for disclosure of protected health information, with broad exceptions for treatment/payment/operations, public health, law enforcement, medical emergencies, and court orders.[36][37] Psychotherapy notes receive heightened protection and cannot be disclosed without specific patient authorization, with limited exceptions including imminent danger to self/others.[38] Jaffee v. Redmond (1996) established federal psychotherapist-patient privilege.[39]
+
+Tarasoff and the Duty to Protect
+
+
+Tarasoff v. Regents (1976) established that psychotherapists have a duty to protect intended victims when patient conduct presents a serious danger of violence, adopted in approximately 33 U.S. jurisdictions.[40][41] Appelbaum (1985) described a three-part model: (1) assessment of dangerousness, (2) selection of a course of action, and (3) implementation.[42] The "specificity rule" — limiting the duty to reasonably identifiable victims — is the most common formulation, though recent decisions have expanded the duty to unnamed victims.[43]
+
+Ethical Criteria for Overriding Confidentiality
+
+
+Lo et al. (2005) in JAMA articulated five criteria: necessity (serious and likely harm to identifiable third parties), effectiveness (breach allows effective prevention), least restrictive alternative, proportionality (disclosure limited to what is essential), and transparency (publicly justified policies).[36]
+
+Clinical Impact of Tarasoff Warnings
+
+
+Empirical study by Binder and McNiel (1996) found that in most cases, issuing Tarasoff warnings had minimal or positive effects on the therapeutic relationship, and many anticipated negative effects had not materialized.[44] Clinicians should follow a decision algorithm addressing: (1) Is the patient dangerous to others? (2) Is the danger due to serious mental illness? (3) Is the danger imminent? (4) Is the danger targeted at identifiable victims?[45]
+
+---
+
+V. INVOLUNTARY MEDICATION FRAMEWORKS
+
+
+Legal Standards by Population
+
+
+
+
+A retrospective review of all federal Sell cases (N=132) found that 79% of treated defendants with psychotic illness were rendered competent to stand trial.[46]
+
+Right to Refuse Treatment
+
+
+Civilly committed patients retain a right to refuse treatment. Rogers v. Commissioner (Massachusetts) requires judicial determination of incompetency before non-emergency involuntary medication.[19] Rivers v. Katz (New York) mandates court adjudication, with 92% of applications approved.[47] The APA recommends that involuntary administration of medication should not be authorized as part of a commitment order without separate review and approval.[48]
+
+---
+
+VI. RISK DOCUMENTATION
+
+
+Best Practices
+
+
+The APA Resource Document on Violence Risk Assessment (2011) establishes that risk assessment is "a necessary part of providing safe and effective outpatient psychiatric care" and "an essential element also of proper decision making around hospital admission and discharge".[49] The VA/DoD Clinical Practice Guideline (2024) and Joint Commission require documentation of suicidal ideation, plan, intent, suicidal/self-harm behaviors, risk factors, protective factors, risk stratification, and a risk mitigation plan.[50][51]
+
+Current evidence strongly supports shifting from risk prediction (categorizing patients as high/medium/low risk) to therapeutic risk assessment, formulation, and management — a person-centered approach that regards all patients with mental health problems as potentially at increased risk and focuses on reducing risk through collaborative safety planning.[52] Nearly 90% of mental health patients who died by suicide in one UK study were rated as no risk or low risk when last seen.[53]
+
+Common Documentation Pitfalls
+
+
+Based on the evidence reviewed, the following pitfalls are consistently identified:
+
+
+
+---
+
+VII. PATIENT RIGHTS
+
+
+Core patient rights recognized across jurisdictions include the right to be consulted before involuntary hospitalization, right to appeal, right to information about status and treatment, right to legal representation, right to communication and visits, right to dignity and privacy, and right to least restrictive treatment.[57] The APA (2022) position statement emphasizes that psychiatric advance directives (PADs) are critical when considering seclusion or restraint, and that patient preferences should guide these decisions.[58]
+
+A meta-analysis of 5 RCTs found that PADs reduced the risk of compulsory admission by 25% compared with usual care.[59] The DAiP trial demonstrated that peer worker–facilitated PADs reduced compulsory admissions from 39.9% to 27.0% (risk difference −0.13, p=0.007).[59]
+
+Psychiatric patients are the only adult population excluded from the national HCAHPS patient experience survey, which has been characterized as reflecting "permissiveness for substandard treatment" and extreme power imbalances in inpatient psychiatry.[60]
+
+---
+
+VIII. EFFECTS OF COERCIVE CARE ON THERAPEUTIC ALLIANCE AND OUTCOMES
+
+
+Clinical Outcomes
+
+
+A systematic review of 41 studies found that involuntary patients showed equal levels of symptom improvement and treatment compliance compared to voluntary patients, but demonstrated lower social functioning, higher suicide rates, and greater dissatisfaction with treatment.[61] The EUNOMIA prospective study (n=2,326) confirmed significant symptom improvement over 3 months regardless of legal status.[62] A propensity score–matched Swiss analysis found compulsorily admitted patients reached similar outcomes in shorter treatment duration and were readmitted less often.[63]
+
+Critically, legally voluntary patients who feel coerced may have worse outcomes than legally involuntary patients — the EUNOMIA study found that being legally voluntary but feeling coerced was associated with less symptom improvement, highlighting that subjective experience of coercion may matter more than legal status.[62]
+
+Therapeutic Alliance
+
+
+Coercion generally damages the therapeutic alliance, but the relationship is modifiable. Higher perceived coercion is associated with more negative patient-therapist relationships.[64] However, the alliance can be maintained despite coercion when there is good communication, understanding of rationale, and a sense that clinicians acted in the patient's best interests.[65] Perceived coercion is only weakly associated with formal coercion; instead, it is most strongly associated with perceived level of involvement in decision-making and perceived interpersonal separation from staff.[66]
+
+Retrospective Patient Views
+
+
+Between 39–71% of patients felt admission was right after 1 month, rising to 46–86% after 3 months.[67] Among patients who initially lacked capacity, 83% gave retrospective approval after regaining capacity.[68] However, perceptions of coercion remained stable even when patients revised their views on the necessity of hospitalization.[69]
+
+Evidence-Based Mitigation Strategies
+
+
+The following forest plot from de Jong et al. demonstrates that advance statements are the only intervention category with a statistically significant pooled effect on reducing compulsory admissions (RR 0.77, 95% CI 0.60–0.98), while community treatment orders, compliance enhancement, and integrated treatment showed no significant reduction:
+
+Figure 2 Relative Risk of Compulsory Admission per Subgroup of Intervention
+
+An umbrella review of randomized evidence identified three effective intervention categories: staff training to reduce restraint (RR 0.74, GRADE moderate), shared decision-making interventions (RR 0.75, GRADE moderate), and integrated care (RR 0.66, GRADE low).[71] The first RCT of open-door policies in acute psychiatric wards found no increase in coercive measures or violent events, reduced subjective coercion, and achieved >20% shorter median length of stay.[72]
+
+Procedural justice elements partially mediate the relationship between involuntary status and perceived coercion. Perceived fairness was the strongest predictor of both satisfaction with treatment (β=0.234, p=0.022) and satisfaction with decision-making involvement (β=0.360, p<0.001).[73][74]
+
+---
+
+IX. RESIDENT LEGAL CHECKLIST
+
+
+Before Initiating Civil Commitment
+
+
+- Confirm presence of a qualifying mental illness (diagnosis-specific, not merely behavioral disturbance)
+
+- Document specific evidence of dangerousness (to self, to others) and/or grave disability/inability to meet basic needs — use behavioral observations, not conclusory statements
+
+- Document less restrictive alternatives considered and why they are insufficient
+
+- Assess and document decisional capacity using the four Appelbaum-Grisso factors
+
+- Identify and document who initiated the hold and under what statutory authority
+
+- Ensure the patient is informed of their rights (right to hearing, right to counsel, right to appeal)
+
+- Document collateral information sources and content
+
+- Note the time-limited nature of the emergency hold and when judicial review is required
+
+Before Administering Involuntary Medication
+
+
+- Document that the patient lacks decisional capacity for the specific treatment decision
+
+- Document the risk-benefit analysis: anticipated benefits of medication vs. risks of non-treatment and risks of medication
+
+- Document that less restrictive alternatives (verbal de-escalation, voluntary medication, alternative medications/routes) were attempted or considered
+
+- Confirm compliance with institutional and state-specific procedures (administrative review, judicial hearing, or both)
+
+- Document the specific medication, dose, route, and monitoring plan
+
+- Document the emergency (if applicable) that necessitates immediate treatment without prior review
+
+Duty to Warn/Protect
+
+
+- Assess whether the patient has made a specific, credible threat toward an identifiable victim
+
+- Document the clinical reasoning for the dangerousness assessment
+
+- Know your jurisdiction's specific requirements (mandatory vs. permissive; specificity rule)
+
+- Document actions taken (warning victim, notifying law enforcement, increasing level of care, modifying treatment plan)
+
+- Document discussion with the patient about limits of confidentiality (ideally at treatment onset)
+
+Confidentiality
+
+
+- Obtain written consent before disclosing information to third parties (unless an exception applies)
+
+- Know the HIPAA exceptions applicable to the situation
+
+- Keep psychotherapy notes separate from the general treatment record
+
+- Document the rationale for any disclosure made without patient consent
+
+- Apply the minimum necessary standard — disclose only what is essential
+
+Risk Documentation (Every Shift/Encounter)
+
+
+- Document suicidal ideation, plan, intent, and access to means
+
+- Document violence risk factors and current threat assessment
+
+- Document protective factors
+
+- Provide an individualized risk formulation (not just a category)
+
+- Document the risk management plan and any changes
+
+- Document patient's response to interventions and safety planning
+
+---
+
+X. CAPACITY DOCUMENTATION TEMPLATE
+
+
+Header: Decisional Capacity Assessment — [Specific Decision]
+
+1. Reason for Assessment
+
+- Specific decision at issue (e.g., "refusal of olanzapine 10 mg PO daily for acute psychosis")
+
+- Who requested the assessment and why
+
+2. Clinical Context
+
+- Psychiatric diagnosis(es) or "no psychiatric illness identified"
+
+- Relevant medical conditions (delirium, metabolic disturbances, medication effects)
+
+- Current mental status examination findings relevant to capacity
+
+3. Information Disclosed
+
+- Description of the proposed intervention, including risks, benefits, and side effects
+
+- Alternatives discussed, including risks/benefits of each
+
+- Consequences of no treatment
+
+4. Assessment of Four Abilities (document each separately per APA Resource Document)[21]
+
+- Understanding: "When asked to explain the proposed treatment in their own words, the patient stated: [verbatim quote]. This demonstrates [adequate/inadequate] understanding because..."
+
+- Appreciation: "When asked how this condition and treatment apply to them personally, the patient stated: [verbatim quote]. This demonstrates [adequate/inadequate] appreciation because..."
+
+- Reasoning: "When asked to compare the options and describe how each would affect their daily life, the patient stated: [verbatim quote]. This demonstrates [adequate/inadequate] reasoning because..."
+
+- Expressing a Choice: "The patient [was/was not] able to communicate a consistent choice. The patient stated: [verbatim quote]."
+
+5. Capacity Optimization Attempted
+
+- Reversible factors addressed (e.g., treated delirium, adjusted medications, waited for sobriety)
+
+- Information simplified or re-presented
+
+- Alternative communication methods used
+
+- Reassessment timing if applicable
+
+6. Structured Tool Used (if applicable)
+
+- Tool name (e.g., MacCAT-T, ACE) and scores
+
+- Note: "Structured tools supplement but do not replace clinical judgment"[21]
+
+7. Persons Present
+
+- Names and roles of all individuals present during the assessment
+
+8. Conclusion
+
+- "Based on the above assessment, the patient [has/lacks] decisional capacity for [specific decision] at this time."
+
+- Specify which factor(s) are impaired and how the impairment relates to the psychiatric condition
+
+- Note whether treatment could change capacity findings
+
+- If lacking capacity: identify surrogate decision-maker and/or advance directive
+
+- If applicable: note "differential capacity" (e.g., patient may lack capacity for treatment refusal but retain capacity to designate a surrogate)
+
+9. Plan
+
+- Reassessment timeline
+
+- Steps to optimize capacity
+
+- Surrogate decision-maker involvement
+
+- Legal consultation if needed
+
+---
+
+XI. CIVIL COMMITMENT TEACHING FRAMEWORK
+
+
+Core Competencies for Residents
+
+
+Level 1 — Foundational Knowledge
+
+- Constitutional doctrines (police power vs. parens patriae)
+
+- Landmark cases and their clinical implications
+
+- Ethical principles and their tensions in involuntary care
+
+- Commitment criteria in the training jurisdiction
+
+- Patient rights during involuntary hospitalization
+
+Level 2 — Clinical Skills
+
+- Conducting and documenting a civil commitment evaluation using APA's recommended domains[54]
+
+- Performing structured capacity assessments using the four-abilities model
+
+- Conducting violence and suicide risk assessments with individualized formulations[49]
+
+- Applying Tarasoff decision algorithms in clinical scenarios[45]
+
+- Documenting risk-benefit analyses for involuntary interventions
+
+Level 3 — Ethical Reasoning and Procedural Justice
+
+- Balancing autonomy and beneficence in specific clinical scenarios
+
+- Applying procedural justice principles to reduce perceived coercion[73][74]
+
+- Understanding the effects of coercive care on therapeutic alliance and outcomes[61][65]
+
+- Implementing shared decision-making and advance directives[59][71]
+
+- Recognizing and mitigating implicit biases in commitment decisions[75]
+
+Teaching Methods
+
+
+
+
+Key Teaching Points
+
+
+1. Legal status ≠ clinical need ≠ patient experience. Dangerousness measures predict initial legal status, but disability measures better predict subsequent commitment decisions. Legally voluntary patients who feel coerced may have worse outcomes than legally involuntary patients.[55][62]
+
+2. Documentation is both a clinical and legal act. The medical record must demonstrate the clinical reasoning process, not just the conclusion. Every commitment evaluation should address the APA's recommended domains, and every capacity assessment should separately address each of the four Appelbaum-Grisso factors.[21][54]
+
+3. Coercion is modifiable. Perceived coercion is most strongly associated with involvement in decision-making and perceived fairness, not with the coercive act itself. Staff training, shared decision-making, and psychiatric advance directives have the strongest evidence for reducing coercive practices.[66][73][71]
+
+4. Risk assessment is therapeutic, not predictive. Current risk scales have poor predictive value for suicide; the goal is therapeutic risk formulation and collaborative safety planning, not categorization.[52][53]
+
+5. Capacity is a clinical skill that requires practice. Without structured assessment, clinicians miss incapacity in the majority of cases. The MacCAT-T and ACE are validated tools that improve reliability.[24][32]
+
+---
+
+XII. KEY REFERENCES BY TOPIC
+
+
+
+
+---
+
+This review provides general educational information for psychiatry training purposes. Civil commitment law, duty-to-warn requirements, and involuntary medication procedures vary substantially by jurisdiction. Residents should consult their institution's legal counsel and their state's specific statutes for jurisdiction-specific guidance.
+
+---
+
+Would you like to explore the evidence on specific interventions to reduce seclusion and restraint use in inpatient psychiatry, including the Six Core Strategies framework and trauma-informed care models?
+
+References
+2020 American Heart Association and American College of Cardiology Consensus Conference on Professionalism and Ethics: A Consensus Conference Report. Executive Committee, Benjamin IJ, Valentine CM, et al. Journal of the American College of Cardiology. 2021;77(24):3079-3133. doi:10.1016/j.jacc.2021.04.004.
+Challenges to Ethics and Professionalism Facing the Contemporary Neurologist. Bernat JL. Neurology. 2014;83(14):1285-93. doi:10.1212/WNL.0000000000000845.
+Management of First-Episode Psychosis and Schizophrenia (SCZ) (2023). Marlene Arias-Reynoso DNP PMHNP-BC, Jennifer L. Bell MD, Pamela Blueford LICSW, et al. Department of Veterans Affairs.
+Management of Bipolar Disorder (BD) (2023). Thad Abrams MD MS, Jennifer Bell MD, Paulette Cazares MD MPH, et al. Department of Veterans Affairs.
+Resource Document on Non-Emergency Involuntary Medication for Mental Disorders in U.S. Jails. American Psychiatric Association (2020).
+Ethics of Coercive Treatment and Misuse of Psychiatry. Steinert T. Psychiatric Services (Washington, D.C.). 2017;68(3):291-294. doi:10.1176/appi.ps.201600066.
+An Ethical Framework for Psychiatry. Bloch S, Green SA. The British Journal of Psychiatry : The Journal of Mental Science. 2006;188:7-12. doi:10.1192/bjp.188.1.7.
+A Commitment Law for Patients, Doctors, and Lawyers. Roth LH. The American Journal of Psychiatry. 1979;136(9):1121-7. doi:10.1176/ajp.136.9.1121.
+Public Health Law in a New Century: Part II: Public Health Powers and Limits. Gostin LO. JAMA. 2000;283(22):2979-84. doi:10.1001/jama.283.22.2979.
+Need-for-Treatment Criteria for Involuntary Civil Commitment: Impact in Practice. Miller RD. The American Journal of Psychiatry. 1992;149(10):1380-4. doi:10.1176/ajp.149.10.1380.
+A Review of Major Implications of the O'Connor v. Donaldson Decision. Kopolow LE. The American Journal of Psychiatry. 1976;133(4):379-83. doi:10.1176/ajp.133.4.379.
+New Develpments in Civil Commitment of the Mentally Ill. Impact for Patient, Family, and Psychiatrist. Williams PW. JAMA. 1979;242(21):2307-9.
+Guidelines for Determining Restorability of Competency to Stand Trial and Recommendations for Involuntary Treatment. Cochrane RE, Laxton KL, Mulay AL, Herbel BL. Journal of Forensic Sciences. 2021;66(4):1201-1209. doi:10.1111/1556-4029.14746.
+Grave Disability, Basic Needs, and Welfare and Protection: Statutory Definitions for Involuntary Commitment Across States. Barnard AV, Redmond J, Wright H, Rahmanian Koushkaki S, Bromley E. Psychiatric Services (Washington, D.C.). 2025;:appips20240589. doi:10.1176/appi.ps.20240589.
+State Laws on Emergency Holds for Mental Health Stabilization. Hedman LC, Petrila J, Fisher WH, et al. Psychiatric Services (Washington, D.C.). 2016;67(5):529-35. doi:10.1176/appi.ps.201500205.
+Reasonable or Random: 72-Hour Limits to Psychiatric Holds. Morris NP. Psychiatric Services (Washington, D.C.). 2021;72(2):210-212. doi:10.1176/appi.ps.202000284.
+Incidences of Involuntary Psychiatric Detentions in 25 U.S. States. Lee G, Cohen D. Psychiatric Services (Washington, D.C.). 2021;72(1):61-68. doi:10.1176/appi.ps.201900477.
+Involuntary Inpatient Civil Commitment: Trends From 2010 to 2022. Karakus M, Nelson V, Scott E, et al. Psychiatric Services (Washington, D.C.). 2025;:appips20250024. doi:10.1176/appi.ps.20250024.
+Incompetence to Refuse Treatment: A Necessary Condition for Civil Commitment. Lebegue B, Clark LD. The American Journal of Psychiatry. 1981;138(8):1075-7. doi:10.1176/ajp.138.8.1075.
+Assessing Patients' Capacities to Consent to Treatment. Appelbaum PS, Grisso T. The New England Journal of Medicine. 1988;319(25):1635-8. doi:10.1056/NEJM198812223192504.
+Resource Document on the Decisional Capacity Determinations in Consultation-Liaison Psychiatry: A Guide for the General Psychiatrist. James A. Bourgeois OD MD, Maria Tiamson-Kassab MD, Kathleen A. Sheehan MD, Diana Robinson MD, Mira Zein MD. American Psychiatric Association (2019).
+Ethical Considerations in Dementia Diagnosis and Care: AAN Position Statement. Chiong W, Tsou AY, Simmons Z, et al. Neurology. 2021;97(2):80-89. doi:10.1212/WNL.0000000000012079.
+Best Practices Guidelines Geriatric Trauma Management. Alicia Mangram MD FACS, Jessica M. Berdeja MD, Christine S. Cocanour MD FACS FCCM, et al. American College of Surgeons (2023).
+Does This Patient Have Medical Decision-Making Capacity?. Sessums LL, Zembrzuska H, Jackson JL. JAMA. 2011;306(4):420-7. doi:10.1001/jama.2011.1023.
+Assessment of Patients' Competence to Consent to Treatment. Appelbaum PS. The New England Journal of Medicine. 2007;357(18):1834-40. doi:10.1056/NEJMcp074045.
+Mental Capacity in Psychiatric Patients: Systematic Review. Okai D, Owen G, McGuire H, et al. The British Journal of Psychiatry : The Journal of Mental Science. 2007;191:291-7. doi:10.1192/bjp.bp.106.035162.
+Mental Capacity to Make Decisions on Treatment in People Admitted to Psychiatric Hospitals: Cross Sectional Study. Owen GS, Richardson G, David AS, et al. BMJ (Clinical Research Ed.). 2008;337:a448. doi:10.1136/bmj.39580.546597.BE.
+A Meta-Review of Literature Reviews Assessing the Capacity of Patients With Severe Mental Disorders to Make Decisions About Their Healthcare. Calcedo-Barba A, Fructuoso A, Martinez-Raga J, et al. BMC Psychiatry. 2020;20(1):339. doi:10.1186/s12888-020-02756-0.
+The MacCAT-T: A Clinical Tool to Assess Patients' Capacities to Make Treatment Decisions. Grisso T, Appelbaum PS, Hill-Fotouhi C. Psychiatric Services (Washington, D.C.). 1997;48(11):1415-9. doi:10.1176/ps.48.11.1415.
+Validation of the French Version of the MacArthur Competence Assessment Tool for Treatment (MacCAT-T) in a French Sample of Individuals With Schizophrenia: Validation De La Version Française De l'Instrument d'Évaluation Des Compétences MacArthur-traitement (MacCAT-T) Dans Un Échantillon Français De Personnes Souffrant De Schizophrénie. Raffard S, Lebrun C, Laraki Y, Capdevielle D. Canadian Journal of Psychiatry. Revue Canadienne De Psychiatrie. 2021;66(4):395-405. doi:10.1177/0706743720966443.
+Validity and Reliability of Mexican Version of MacArthur Competence Assessment Tool for Treatment Decision (MacCAT-T) in Patients With Schizophrenia. Fresán A, Saracco-Alvarez RA, Arienti-González JM, et al. International Journal of Law and Psychiatry. 2025;104:102153. doi:10.1016/j.ijlp.2025.102153.
+Assessing Decisional Capacity for Clinical Research or Treatment: A Review of Instruments. Dunn LB, Nowrangi MA, Palmer BW, Jeste DV, Saks ER. The American Journal of Psychiatry. 2006;163(8):1323-34. doi:10.1176/ajp.2006.163.8.1323.
+Should Assessments of Decision-Making Capacity Be Risk-Sensitive? A Systematic Review. Berens NC, Kim SYH. Frontiers in Psychology. 2022;13:897144. doi:10.3389/fpsyg.2022.897144.
+Risk-Sensitive Assessment of Decision-Making Capacity: A Comprehensive Defense. Kim SYH, Berens NC. The Hastings Center Report. 2023;53(4):30-43. doi:10.1002/hast.1500.
+Resource Document on Preparing in Advance: What Every Psychiatrist and Their Family Should Know About Planning for Unexpected Practice Closures. American Psychiatric Association (2025).
+HIPAA and Patient Care: The Role for Professional Judgment. Lo B, Dornbrand L, Dubler NN. JAMA. 2005;293(14):1766-71. doi:10.1001/jama.293.14.1766.
+Privacy in Psychiatric Treatment: Threats and Responses. Appelbaum PS. The American Journal of Psychiatry. 2002;159(11):1809-18. doi:10.1176/appi.ajp.159.11.1809.
+Psychotherapy notes provision of the Health Insurance Portability and Accountability Act (HIPPA) privacy rule. American Psychiatric Association (2002).
+The Ethical and Legal Implications of Jaffee v Redmond and the HIPAA Medical Privacy Rule for Psychotherapy and General Psychiatry. Mosher PW, Swire PP. The Psychiatric Clinics of North America. 2002;25(3):575-84, vi-vii. doi:10.1016/s0193-953x(01)00013-2.
+Protecting Victims of Violent Patients While Protecting Confidentiality. Bersoff DN. The American Psychologist. 2014 Jul-Aug;69(5):461-7. doi:10.1037/a0037198.
+The Psychiatrist's Duty to Protect. Knoll JL. CNS Spectrums. 2015;20(3):215-22. doi:10.1017/S1092852914000728.
+Tarasoff and the Clinician: Problems in Fulfilling the Duty to Protect. Appelbaum PS. The American Journal of Psychiatry. 1985;142(4):425-9. doi:10.1176/ajp.142.4.425.
+How Specific Is the Specificity Rule in Duty to Warn or Protect Jurisprudence Following the Pennsylvania Supreme Court's Maas Decision?. Radley A, Felthous AR. Journal of Forensic Sciences. 2025;70(1):237-248. doi:10.1111/1556-4029.15664.
+Application of the Tarasoff Ruling and Its Effect on the Victim and the Therapeutic Relationship. Binder RL, McNiel DE. Psychiatric Services (Washington, D.C.). 1996;47(11):1212-5. doi:10.1176/ps.47.11.1212.
+The Clinician's Duty to Protect Third Parties. Felthous AR. The Psychiatric Clinics of North America. 1999;22(1):49-60. doi:10.1016/s0193-953x(05)70058-7.
+The Sell Effect: Involuntary Medication Treatment Is a "Clear and Convincing" Success. Cochrane RE, Herbel BL, Reardon ML, Lloyd KP. Law and Human Behavior. 2013;37(2):107-16. doi:10.1037/lhb0000003.
+New York Under the Rivers Decision: An Epidemiologic Study of Drug Treatment Refusal. Zito JM, Craig TJ, Wanderling J. The American Journal of Psychiatry. 1991;148(7):904-9. doi:10.1176/ajp.148.7.904.
+Resource Document on Involuntary Outpatient Commitment. Marvin S. Swartz MD, Steven K Hoge MD, Debra A. Pinals MD, et al. American Psychiatric Association (2016).
+Psychiatric violence risk assessment. Alec Buchanan MD PhD, Renee Binder MD, Michael Norko MD, Marvin Swartz MD. American Psychiatric Association (2011).
+Assessment and Management of Patients at Risk for Suicide (2024). Nazanin Bahraini PhD, Candice Bodie LCSW, Lisa A. Brenner PhD ABPP, et al. Department of Veterans Affairs.
+R3 Report Issue 18: National Patient Safety Goal for Suicide Prevention. The Joint Commission. Joint Commission (2018).
+Assessment of Suicide Risk in Mental Health Practice: Shifting From Prediction to Therapeutic Assessment, Formulation, and Risk Management. Hawton K, Lascelles K, Pitman A, Gilbert S, Silverman M. The Lancet. Psychiatry. 2022;9(11):922-928. doi:10.1016/S2215-0366(22)00232-2.
+Suicide and Self-Harm. Knipe D, Padmanathan P, Newton-Howes G, Chan LF, Kapur N. Lancet (London, England). 2022;399(10338):1903-1916. doi:10.1016/S0140-6736(22)00173-8.
+Implementation of an Evidence Based Guideline for Assessment and Documentation of the Civil Commitment Process. Perrigo TL, Williams KA. Community Mental Health Journal. 2016;52(8):1033-1036. doi:10.1007/s10597-014-9816-6.
+Dangerousness and Disability as Predictors of Psychiatric Patients' Legal Status. Pokorny L, Shull RD, Nicholson RA. Behavioral Sciences & the Law. 1999;17(3):253-67. doi:10.1002/(sici)1099-0798(199907/09)17:3<253::aid-bsl344>3.0.co;2-v.
+American Geriatrics Society Position Statement: Making Medical Treatment Decisions for Unrepresented Older Adults. Dixon JD, Josyula AV, Javier NM, et al. Journal of the American Geriatrics Society. 2025;73(5):1353-1364. doi:10.1111/jgs.19288.
+Variations in Patterns of Involuntary Hospitalisation and in Legal Frameworks: An International Comparative Study. Sheridan Rains L, Zenina T, Dias MC, et al. The Lancet. Psychiatry. 2019;6(5):403-417. doi:10.1016/S2215-0366(19)30090-2.
+Seclusion or Restraint. American Psychiatric Association (2022).
+Effect of Psychiatric Advance Directives Facilitated by Peer Workers on Compulsory Admission Among People With Mental Illness: A Randomized Clinical Trial. Tinland A, Loubière S, Mougeot F, et al. JAMA Psychiatry. 2022;79(8):752-759. doi:10.1001/jamapsychiatry.2022.1627.
+The Need to Prioritize Patient-Centered Care in Inpatient Psychiatry as a Matter of Social Justice. Shields MC, Beidas RS. JAMA Health Forum. 2022;3(2):e214461. doi:10.1001/jamahealthforum.2021.4461.
+Involuntary vs. Voluntary Hospital Admission. A Systematic Literature Review on Outcome Diversity. Kallert TW, Glöckner M, Schützwohl M. European Archives of Psychiatry and Clinical Neuroscience. 2008;258(4):195-209. doi:10.1007/s00406-007-0777-4.
+Coerced Hospital Admission and Symptom Change--a Prospective Observational Multi-Centre Study. Kallert TW, Katsakou C, Adamowski T, et al. PloS One. 2011;6(11):e28191. doi:10.1371/journal.pone.0028191.
+Impact of Compulsory Admission on Treatment and Outcome: A Propensity Score Matched Analysis. Hofmann AB, Schmid HM, Hofmann LA, et al. European Psychiatry : The Journal of the Association of European Psychiatrists. 2022;65(1):e6. doi:10.1192/j.eurpsy.2022.4.
+Therapeutic Relationship in the Context of Perceived Coercion in a Psychiatric Population. Theodoridou A, Schlatter F, Ajdacic V, Rössler W, Jäger M. Psychiatry Research. 2012;200(2-3):939-44. doi:10.1016/j.psychres.2012.04.012.
+Coercion and the Inpatient Treatment Alliance. Lawrence RE, Perez-Coste MM, Bailey JL, DeSilva RB, Dixon LB. Psychiatric Services (Washington, D.C.). 2019;70(12):1110-1115. doi:10.1176/appi.ps.201900132.
+Pathways to Experienced Coercion During Psychiatric Admission: A Network Analysis. Silva B, Morandi S, Bachelard M, Bonsack C, Golay P. BMC Psychiatry. 2024;24(1):546. doi:10.1186/s12888-024-05968-w.
+Patients' Views of Involuntary Hospital Admission After 1 and 3 Months: Prospective Study in 11 European Countries. Priebe S, Katsakou C, Glöckner M, et al. The British Journal of Psychiatry : The Journal of Mental Science. 2010;196(3):179-85. doi:10.1192/bjp.bp.109.068916.
+Retrospective Views of Psychiatric in-Patients Regaining Mental Capacity. Owen GS, David AS, Hayward P, et al. The British Journal of Psychiatry : The Journal of Mental Science. 2009;195(5):403-7. doi:10.1192/bjp.bp.109.065151.
+Patients' Revisions of Their Beliefs About the Need for Hospitalization. Gardner W, Lidz CW, Hoge SK, et al. The American Journal of Psychiatry. 1999;156(9):1385-91. doi:10.1176/ajp.156.9.1385.
+Interventions to Reduce Compulsory Psychiatric Admissions: A Systematic Review and Meta-analysis. de Jong MH, Kamperman AM, Oorschot M, et al. JAMA Psychiatry. 2016;73(7):657-64. doi:10.1001/jamapsychiatry.2016.0501.
+Efficacy of Interventions to Reduce Coercive Treatment in Mental Health Services: Umbrella Review of Randomised Evidence. Barbui C, Purgato M, Abdulmalik J, et al. The British Journal of Psychiatry : The Journal of Mental Science. 2021;218(4):185-195. doi:10.1192/bjp.2020.144.
+Open-Door Policy Versus Treatment-as-Usual in Urban Psychiatric Inpatient Wards: A Pragmatic, Randomised Controlled, Non-Inferiority Trial in Norway. Indregard AR, Nussle HM, Hagen M, et al. The Lancet. Psychiatry. 2024;11(5):330-338. doi:10.1016/S2215-0366(24)00039-7.
+How Do Decision Making and Fairness Mediate the Relationship Between Involuntary Hospitalisation and Perceived Coercion Among Psychiatric Inpatients?. Morandi S, Silva B, Pauli G, et al. Journal of Psychiatric Research. 2024;173:98-103. doi:10.1016/j.jpsychires.2024.03.017.
+Perceived Fairness as Main Determinant of Patients' Satisfaction With Care During Psychiatric Hospitalisation: An Observational Study. Silva B, Pauli G, Diringer O, et al. International Journal of Law and Psychiatry. 2022 May-Jun;82:101793. doi:10.1016/j.ijlp.2022.101793.
+Clinical and Social Factors Associated With Increased Risk for Involuntary Psychiatric Hospitalisation: A Systematic Review, Meta-Analysis, and Narrative Synthesis. Walker S, Mackay E, Barnett P, et al. The Lancet. Psychiatry. 2019;6(12):1039-1053. doi:10.1016/S2215-0366(19)30406-7.
+
+Case | Year | Key Holding
+O'Connor v. Donaldson | 1975 | Mentally ill persons who are not dangerous and can survive safely in the community cannot be confined involuntarily[1]
+Addington v. Texas | 1979 | "Clear and convincing evidence" is the constitutionally required standard of proof for civil commitment[2]
+Washington v. Harper | 1990 | Involuntary medication of prisoners requires administrative review showing dangerousness/grave disability + medical interest[3]
+Sell v. United States | 2003 | Four-part test for involuntary medication to restore trial competency: government interest, likely efficacy, least restrictive means, medical interest[4]
+Setting | Standard | Decision-Maker | Key Requirements
+Inpatient (civil) | Varies by state; generally requires incapacity + dangerousness or grave disability | Judicial hearing or administrative review (state-dependent) | Least restrictive alternative; medical interest[1], [2]
+Sentenced prisoners | Harper standard: dangerous or gravely disabled + medical interest | Administrative committee | Treatment purpose; independent advisor; right to appeal[1]
+Pretrial detainees (dangerous) | Harper standard extended | Administrative review | Same as sentenced prisoners[1]
+Pretrial detainees (competency restoration) | Sell four-part test | Judicial hearing | Government interest; likely efficacy; least restrictive; medical interest[3]
+Emergency | Imminent danger to self/others | Treating physician | Time-limited; document emergency; reassess promptly[1]
+Pitfall | Evidence/Consequence
+Relying on risk categorization alone (high/medium/low) without individualized formulation | Poor predictive value; false sense of security; most suicides occur in "low risk" groups[1], [2]
+Failing to document clinical reasoning — recording only the conclusion without the process | Inadequate for legal review; does not demonstrate standard of care[3]
+Omitting protective factors | Incomplete risk picture; Joint Commission requires documentation of both risk and protective factors[4]
+Not documenting capacity assessment when treatment is refused or involuntary treatment is initiated | APA recommends separate assessment of each of the four Appelbaum-Grisso factors[5]
+Conflating legal status with clinical need | Dangerousness measures predict initial legal status, but disability measures better predict subsequent commitment decisions[6]
+Failing to document less restrictive alternatives considered | Required by most commitment statutes; absence weakens legal defensibility[7]
+Not documenting risk-benefit analysis for involuntary interventions | APA explicitly requires that benefits outweigh autonomy interests before involuntary treatment[8]
+Inadequate documentation of the civil commitment evaluation | Only 25.5% of evaluations contained APA's recommended 11 domains pre-intervention in one quality improvement study[3]
+Using checklists without clinical narrative | A tick-box approach can impede therapeutic engagement and fails to capture the dynamic nature of risk[1]
+Not reassessing and documenting changes over time | Capacity can be evanescent; risk fluctuates; AGS recommends periodic reassessment[9], [10]
+Method | Content | Evidence Base
+Case-based simulation | Civil commitment hearings, capacity assessments, Tarasoff scenarios | Standardized forms increase documentation quality from 25.5% to 65.6% compliance with APA domains[1]
+Structured observation | Attending-supervised commitment evaluations with real-time feedback | Clinicians recognize incapacity in only 42% of cases without structured tools[2]
+Ethics rounds | Analysis of autonomy-beneficence tensions in actual cases | Procedural justice elements reduce perceived coercion[3]
+Patient narrative review | First-person accounts of involuntary hospitalization | 52% of patients revise their belief about needing hospitalization, but perceptions of coercion remain stable[4]
+Legal consultation | Jurisdiction-specific statutory review with hospital counsel | 47 of 51 jurisdictions use different standards for non-dangerousness commitment[5]
+Quality improvement | Chart audits of commitment documentation against APA standards | Pre-intervention compliance with APA domains was only 25.5%[1]
+Topic | Key References
+Ethical framework | Beauchamp & Childress (principlism)[1]; Steinert 2017 (ethics of coercion)[2]; APA Resource Document on Involuntary Medication[3]
+Civil commitment law | O'Connor v. Donaldson 1975[4]; Addington v. Texas 1979[5]; Barnard et al. 2025 (50-state statutory review)[6]; Hedman et al. 2016 (emergency hold laws)[7]
+Capacity assessment | Appelbaum & Grisso 1988 NEJM[8]; Appelbaum 2007 NEJM[9]; APA Resource Document on Decisional Capacity 2019[10]; Sessums et al. 2011 JAMA (systematic review of tools)[11]
+Duty to warn/protect | Tarasoff v. Regents 1976[12]; Appelbaum 1985[13]; Binder & McNiel 1996[14]; Lo et al. 2005 JAMA (ethical criteria)[15]
+Involuntary medication | Washington v. Harper 1990[3]; Sell v. United States 2003[16]; APA Resource Document on Involuntary Medication 2020[3]
+Risk assessment | APA Resource Document on Violence Risk Assessment 2011[17]; VA/DoD Suicide Risk CPG 2024[18]; Hawton et al. 2022 (therapeutic risk assessment)[19]
+Coercion outcomes | Kallert et al. 2008 (systematic review)[20]; EUNOMIA study[21]; de Jong et al. 2016 JAMA Psychiatry (interventions meta-analysis)[22]; DAiP trial 2022[23]
+Procedural justice | Morandi et al. 2024 (mediation analysis)[24]; Silva et al. 2022 (fairness and satisfaction)[25]; Barbui et al. 2021 (umbrella review)[26]
+Patient rights | Sheridan Rains et al. 2019 Lancet Psychiatry (international comparison)[27]; APA Position Statement on Seclusion/Restraint 2022[28]; Shields & Beidas 2022 JAMA Health Forum[29]
