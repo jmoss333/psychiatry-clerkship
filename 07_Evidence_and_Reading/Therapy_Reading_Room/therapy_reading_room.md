@@ -1,6 +1,6 @@
 # The Therapy Reading Room
 
-> **Review status:** AI-drafted; pending review and attestation by Joshua Moss, MD. Every PMID passed identity + retraction verification (2026-08-20) and the Scholar Sidekick canonical pass (2026-08-21); open-access links are checked so the open ones really open. Annotations are drafted from the papers' abstracts and await faculty signature. Educational; no PHI.
+> **Review status:** Reviewed and attested by Joshua Moss, MD (2026-08-23). Every PMID passed identity + retraction verification (2026-08-20) and the Scholar Sidekick canonical pass (2026-08-21); open-access links are checked so the open ones really open. Educational; no PHI.
 
 **How to use this page.** This is a curated reading list, not a bibliography — a handful of papers per topic, each with one line on why it's worth your time. **Open** means the full text is free right now; **Library** means use the institutional proxy link. Start with your patient: whatever you admitted today, there's a section for it. If you read only one paper per week of the rotation, take the six marked ★.
 
@@ -135,8 +135,8 @@
 - **Dropout in psychotherapy for personality disorders** — De Salve et al., *Clin Psychol Psychother* 2025. PMID 40325843 · Open
   The outcome nobody advertises: dropout runs 10–58% in personality-disorder psychotherapy, predicted by younger age, comorbid substance use, and emotion dysregulation — while strong alliances and phone coaching protect. A therapy the patient leaves is not a therapy that worked.
 
-*The closing-paper slot for this section is deliberately held pending a full-text faculty read (Westra 2023, on what near-equivalent therapies imply for how you train). It will be filled — or the section will close on the dropout paper — at attestation.*
+*The closing-paper slot for this section is deliberately held pending a full-text faculty read (Westra 2023, on what near-equivalent therapies imply for how you train). Until that read, the section closes on the dropout paper above.*
 
 ---
 
-*What this page deliberately does not do: host PDFs, reproduce abstracts, or substitute for supervision. Every paper here was verified for identity and retraction status before listing; link types are checked so the open ones really open. Annotations are drafted from the papers' abstracts and are pending faculty signature.*
+*What this page deliberately does not do: host PDFs, reproduce abstracts, or substitute for supervision. Every paper here was verified for identity and retraction status before listing; link types are checked so the open ones really open. Annotations are drafted from the papers' abstracts with AI assistance and carry faculty signature as of 2026-08-23.*
