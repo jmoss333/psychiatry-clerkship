@@ -98,6 +98,8 @@ step "unit — citation surveillance"         python3 $A/surveillance/bin/run_ci
 step "unit — resource intake"               python3 $A/surveillance/bin/run_resource_intake.py --self-test
 step "test_validate_claim_anchors"          python3 $A/test_validate_claim_anchors.py
 step "validate_claim_anchors"               python3 $A/validate_claim_anchors.py
+step "unit — evidence annotations"          python3 $A/validate_evidence_annotations.py --self-test
+step "validate_evidence_annotations"        python3 $A/validate_evidence_annotations.py
 step "test_generate_evidence_drill"         python3 $A/test_generate_evidence_drill.py
 step "evidence drill is regenerated"        python3 $A/generate_evidence_drill.py --check
 step "test_longitudinal_case"               python3 $A/test_longitudinal_case.py
