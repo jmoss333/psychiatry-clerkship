@@ -1,0 +1,566 @@
+
+
+
+
+Long-Acting Injectable Antipsychotics in Schizophrenia, Bipolar Disorder, and Recurrent Psychiatric Hospitalization: A Comprehensive Evidence Review
+
+
+---
+
+1. Scope and Framing
+
+
+This review synthesizes evidence across RCTs, mirror-image studies, nationwide cohort studies, meta-analyses, and clinical practice guidelines on long-acting injectable antipsychotics (LAIs) for schizophrenia spectrum disorders and bipolar I disorder. Coverage includes efficacy/effectiveness data, mortality outcomes, patient selection, initiation logistics, equity concerns, and practical clinical tools. The evidence base spans >400,000 patients across multiple study designs and is current through mid-2026.
+
+---
+
+2. The Efficacy-Effectiveness Gap: RCTs vs. Mirror-Image Studies
+
+
+The most important methodological insight in the LAI literature is the systematic divergence in effect sizes between study designs. The landmark Kishimoto et al. (2021) meta-analysis in The Lancet Psychiatry (137 studies, 397,319 patients) directly quantified this gap for the primary outcome of hospitalization or relapse:[1]
+
+
+
+The ~10-fold difference in NNT (45 in RCTs vs. 4 in mirror-image studies) reflects fundamental design-related biases.[1] RCTs select adherent patients willing to be randomized and provide intensive monitoring that improves oral-arm adherence, thereby minimizing the very advantage LAIs are designed to provide.[2][3] Mirror-image studies may overestimate benefit through regression to the mean (LAIs are often initiated after a crisis) and expectation bias.[4][1] Cohort studies introduce a conservative bias because clinicians preferentially prescribe LAIs to more severely ill patients (Hedges' g = 0.15, p = 0.01 for illness severity).[5]
+
+The Schneider-Thoma et al. (2022) Lancet network meta-analysis (127 RCTs, 18,152 participants) confirmed that within RCTs, LAIs were not more efficacious than their oral counterparts for relapse prevention, while noting that the risk difference in RCTs with broad inclusion criteria was only ~2%.[2] The Ostuzzi et al. (2022) World Psychiatry network meta-analysis (92 RCTs, 22,645 patients) concluded that olanzapine, aripiprazole, and paliperidone are the best choices for maintenance treatment, as both LAI and oral formulations of these drugs are among the best-performing treatments.[6]
+
+The "true" effect size likely lies between these extremes. Within-individual designs from Scandinavian registries — which eliminate between-patient confounding by using each patient as their own control — provide perhaps the most informative estimates, suggesting a 20–50% reduction in rehospitalization with LAIs.[7][8][9]
+
+---
+
+3. Landmark Trials
+
+
+PRELAPSE (Kane et al., 2020)
+
+
+This cluster-randomized trial (489 patients, 39 US sites, 2-year follow-up) in early-phase schizophrenia (age 18–35, <5 years antipsychotic use) randomized clinics — not patients — to encourage aripiprazole once-monthly (AOM) vs. usual care. By randomizing at the clinic level, PRELAPSE partially overcame the individual-level selection bias inherent in traditional RCTs. AOM produced a significant 44% reduction in incidence rate of first hospitalization (NNT = 7).[10]
+
+The following figure from the PRELAPSE trial shows Kaplan-Meier survival curves demonstrating the probability of remaining hospitalization-free over 2 years, with AOM consistently superior to clinician's choice.
+
+Figure 2 Time Remaining Without Having a First Hospitalization
+
+PRIDE (Alphs et al., 2015)
+
+
+This 15-month RCT of 444 patients with schizophrenia and a history of incarceration found paliperidone palmitate monthly (PP1M) significantly delayed time to first treatment failure vs. oral antipsychotics (HR 1.43, 95% CI 1.09–1.88; p = 0.011). Treatment failure rates were 39.8% (PP1M) vs. 53.7% (oral), with arrest/incarceration being the most common reason for treatment failure (21.2% vs. 29.4%).[11]
+
+EULAST (2023)
+
+
+This pragmatic, open-label European RCT (511 patients, 50 sites, 15 countries) randomized early-phase schizophrenia patients 1:1:1:1 to LAI paliperidone, LAI aripiprazole, oral paliperidone, or oral aripiprazole. No significant difference in all-cause discontinuation was found between combined LAI and oral groups (HR 1.16, 95% CI 0.94–1.43, p = 0.18).[3] However, a critical secondary analysis found that among patients with comorbid substance use disorder (n = 143), LAIs reduced all-cause discontinuation by 36% (adjusted HR 0.641, 95% CI 0.438–0.938, p = 0.022), while no benefit was seen in those without SUD.[12]
+
+PROACTIVE (Buckley et al., 2015)
+
+
+This 30-month pragmatic RCT (305 patients, 8 US academic centers) comparing LAI risperidone vs. physician's choice oral SGAs found no significant difference in time to first relapse (42% LAI vs. 32% oral). The investigators noted that biweekly monitoring visits required for LAI administration may have contributed to low relapse rates in both arms.[13][14]
+
+Subotnik et al. (2015)
+
+
+In first-episode schizophrenia, LAI risperidone showed a 6-fold lower 12-month relapse rate (5% vs. 33%) compared to oral risperidone, providing some of the strongest RCT evidence for early LAI use.[15]
+
+---
+
+4. Relapse Prevention
+
+
+Schizophrenia
+
+
+The evidence for LAI-mediated relapse prevention is strongest in real-world settings. The Finnish FIN20 cohort (62,250 patients, up to 20-year follow-up) found the lowest rehospitalization risk with olanzapine LAI (adjusted HR 0.46), clozapine (HR 0.51), and paliperidone LAI (HR 0.51).[8][16] Among first-episode patients, the benefit was even more pronounced: flupentixol LAI (HR 0.24), olanzapine LAI (HR 0.26), and perphenazine LAI (HR 0.39).[8]
+
+The Hamina et al. (2024) Finnish cohort (131,000+ patients) confirmed paliperidone 3-month LAI as the most effective formulation for relapse prevention (AHR 0.66 vs. oral olanzapine), followed by aripiprazole LAI (AHR 0.77) and olanzapine LAI (AHR 0.79). Critically, LAIs were more effective in the incident cohort (AHR 0.74) than the prevalent cohort (AHR 0.84), supporting early initiation.[9]
+
+Bipolar I Disorder
+
+
+The evidence base for LAIs in bipolar disorder is thinner but directionally consistent. Aripiprazole monohydrate (Abilify Maintena) is FDA-approved for bipolar I maintenance monotherapy based on a 52-week randomized withdrawal trial showing significantly delayed time to recurrence of any mood episode (HR 0.45; 95% CI 0.30–0.68; p < 0.0001), with relapse rates of 26.5% vs. 51.1%.[17][18] Risperidone LAI (Risperdal Consta) is approved as monotherapy or adjunctive therapy to lithium or valproate for bipolar I maintenance.[19] Both LAIs primarily prevent mania rather than depression.[20][21][22]
+
+A Finnish nationwide cohort found LAIs reduced psychiatric rehospitalization by 30% vs. oral counterparts in bipolar disorder (HR 0.70).[23] An observational meta-analysis (17 studies) showed LAIs were superior to oral antipsychotics in preventing relapse/hospitalization in both cohort studies (RR 0.63, 95% CI 0.44–0.90) and mirror-image studies (RR 0.46, 95% CI 0.28–0.77).[24]
+
+---
+
+5. Hospitalization Reduction
+
+
+Magnitude of Effect
+
+
+A US meta-analysis of real-world studies (57 publications) found LAIs reduced odds of hospitalization by 38% (OR 0.62, 95% CI 0.54–0.71), hospitalization rate by 25% (IRR 0.75), and ER admissions by 14% (IRR 0.86, 95% CI 0.77–0.97).[25] The Wei et al. (2022) Hong Kong within-subject study found a 48% reduction in psychiatric hospitalizations (IRR 0.52) and 44% reduction in suicide attempts (IRR 0.56).[26]
+
+The following figure from Wei et al. (2022) shows a comprehensive forest plot of subgroup analyses comparing LAIs vs. oral antipsychotics across multiple outcomes, demonstrating consistent benefits across sex, age, initiation timing, and substance use status.
+
+Figure 2 Subgroup Analyses for the Use of Long-Acting Injectable Antipsychotics (LAIAs) vs Oral Antipsychotics (OAs) During the Full Treatment Period
+
+Progressive Benefit Over Time
+
+
+A 6-year mirror-image study of paliperidone palmitate 3-monthly (PP3M) showed mean psychiatric bed days declined from ~30 days/year pre-treatment to ~13 days/year post-treatment, with bed days reaching zero by year 3 of continuous treatment.[27]
+
+The following figure from Clark et al. (2024) illustrates this progressive elimination of hospitalization over 3 years of continuous PP3M treatment.
+
+Figure 1 (A) Mean number of bed days per year 3 years before and 3 years after PPLAI initiation for patients who continued PP3M, with standard error. (B) Mean number of bed days shown by year, 3 years before and 3 years after PPLAI initiation for patients who continued PP3M, with standard error.
+
+Cost Implications
+
+
+Pharmacy costs increase with LAIs (~$5,603/year), but medical costs decrease by a comparable amount (~$5,404/year), resulting in no significant net difference in total healthcare costs.[25] A Canadian study found total all-cause costs were $33,788 lower per patient in the 2 years post-LAI initiation vs. pre-initiation.[28] A Medicaid study found that after applying cumulative rebates, PP1M initiation resulted in significant total healthcare cost savings of $231 per patient per month.[29]
+
+---
+
+6. Mortality Outcomes
+
+
+All-Cause Mortality
+
+
+Real-world evidence consistently shows LAIs are associated with reduced all-cause mortality compared to oral antipsychotics. The Aymerich et al. (2025) meta-analysis (17 studies, n = 12,042) found LAIs reduced all-cause mortality by 21% (OR 0.79, 95% CI 0.66–0.95), with more pronounced benefit in first-episode psychosis.[30] The Correll et al. (2022) World Psychiatry meta-analysis (135 studies, N = 4,536,447) found SGA-LAIs had the largest protective effect against all-cause mortality among all antipsychotic regimens (RR 0.39, 95% CI 0.27–0.56).[31]
+
+
+
+The following table from Huang et al. (2021) shows mortality outcomes comparing LAI and oral antipsychotic groups across all-cause, natural-cause, and suicide mortality, with consistent reductions favoring LAIs.
+
+Table 2 All-Cause, Natural, and Suicide Mortality Risks in 4924 Patients With Schizophrenia Who Switched to LAIs Compared With Their OAP Using Counterparts
+
+Cardiovascular Mortality
+
+
+The FIN20 study found any antipsychotic use vs. nonuse reduced cardiovascular mortality by 38% (aHR 0.62, 95% CI 0.57–0.67); clozapine reduced it by 45%.[16] The Wei et al. (2025) study in older adults confirmed no significant increase in cardiovascular hospital admissions with LAIs (IRR 1.04, 0.86–1.25).[33]
+
+Suicide Mortality
+
+
+Evidence on LAIs and suicide is mixed and generally not statistically significant in most individual studies. The Aymerich et al. meta-analysis found no significant difference for suicidal mortality (OR 0.86, 95% CI 0.59–1.26).[30] However, early LAI use (within 2 years of diagnosis) may reduce suicide mortality by 47%.[32] SGA-LAIs appear preferable: FGA-LAIs were associated with increased suicide risk in one Taiwanese cohort (HR 1.52, p = 0.01).[34]
+
+Timing Matters
+
+
+A Taiwanese matched cohort found that switching to LAIs within the first 3 years of treatment was associated with markedly lower all-cause mortality (HR 0.49, 95% CI 0.27–0.87) and natural-cause mortality (HR 0.30, 95% CI 0.15–0.60). Late switching (after 3 years) showed no mortality benefit.[35]
+
+---
+
+7. Patient Selection
+
+
+Who Benefits Most?
+
+
+
+
+Sources:[9][7][26][36][35][12][11][29][37]
+
+Critical Caveat: Continuity Matters
+
+
+A Taiwanese study of first-admission schizophrenia found that patients who received LAIs but discontinued early had worse outcomes than those who never received LAIs, while those who continued LAIs had the best outcomes. This highlights that LAI initiation without continuity may be counterproductive.[38]
+
+---
+
+8. Shared Decision-Making
+
+
+Clinicians Overestimate Patient Resistance
+
+
+A consistent finding across multiple studies is that clinicians overestimate patient resistance to LAIs.[39][40] The PRELAPSE trial demonstrated that with proper training, practitioners can communicate LAI advantages even in early illness stages and engage patients in shared decision-making, resulting in high acceptance rates. The investigators emphasized that "the use of LAIs does not deprive patients of autonomy or choice. The choice is made each time an injection is administered".[10]
+
+Patient Perspectives
+
+
+A 2025 systematic review of 39 qualitative studies (1,477 patients) identified three core themes: (1) perception and experience of medication, (2) social dynamics and influence, and (3) trust and communication with healthcare providers. Side effects and lack of information were frequently cited concerns. While LAIs were linked to symptom stability and functional improvements, many patients lacked adequate information about their effects.[41]
+
+Barriers to Informed Decision-Making
+
+
+A focused ethnographic study identified that discussions about LAIs were restricted to patients with nonadherence or repeated hospitalizations, with inadequate patient education and limited therapist knowledge about LAIs.[42] Canadian focus groups found that 9 of 34 patients had never heard of LAIs at all.[43] The multinational ADVANCE study found that patients initially treated in outpatient settings with strong support were more likely to accept LAIs, while those first treated during acute inpatient episodes often feared treatment and felt a lack of control.[44]
+
+---
+
+9. Equity and Coercion Concerns
+
+
+Racial Disparities: A Two-Layered Problem
+
+
+The evidence reveals a dual disparity. First, Black patients are more likely to receive LAIs overall (AOR 1.38, 95% CI 1.31–1.46 in a national Medicare sample of 210,686 patients).[45] Second — and more clinically consequential — among LAI users, Black patients receive inferior first-generation LAIs at higher rates. In Medicare LAI users, Black patients had substantially lower rates of SGA-LAI use than White patients (adjusted 60.1% vs. 69.9%; AOR 0.63, 95% CI 0.60–0.66).[45] In Medicaid beneficiaries, Black patients had higher FGA-LAI utilization (46.8% vs. 38.9%; OR 1.47).[46] FGA-LAIs showed significantly earlier discontinuation than SGA-LAIs (HR 2.12), suggesting this disparity may contribute to poorer outcomes.[47]
+
+The following table from Li et al. (2023) shows adjusted rates and odds ratios for LAI use by race/ethnicity among Medicare beneficiaries with schizophrenia.
+
+Table 1 Rates of Any LAI Use Among All Fee-for-Service Medicare Beneficiaries With Schizophrenia Using Antipsychotics in 2019
+
+The APA Resource Document on Anti-Racist Mental Health Policies identifies that Black patients are "more likely to be treated with first generation antipsychotics, more likely to be treated with higher medication doses, and more likely to receive long acting injectable formulations" as a consequence of racialized clinical descriptors.[48]
+
+Perceived Coercion
+
+
+A cross-sectional study found that mean total coercion levels were significantly higher for depot than oral formulations (4.39 vs. 2.80, p = 0.027), with 30% of depot patients feeling people tried to force them to take medication vs. 2% of oral patients (p < 0.001).[49] The US DECIDE survey found that clinicians with high LAI use were more likely to "use any means necessary to ensure that a patient is on an LAI" (44–51%) and had used guardianship to assist with treatment (69–70%).[50]
+
+Assisted Outpatient Treatment (AOT)
+
+
+A Cochrane review (3 RCTs, n = 749) found no significant differences between compulsory community treatment and voluntary care for readmission (RR 0.98, 95% CI 0.82–1.16), estimating it would take 142 orders to prevent one readmission.[51][52] However, the APA Resource Document notes that sustained periods of outpatient commitment (≥6 months), when linked to intensive services, may improve outcomes.[53]
+
+The Ethical Paradox
+
+
+The same formulation can represent both coercive overuse (when disproportionately imposed on minority patients without shared decision-making) and inequitable underuse (when minority patients are denied access to newer SGA-LAIs with better tolerability). Roberts and Geppert's ethical analysis argues that considerations of justice may actually indicate LAIs should be used more frequently and earlier for select patients — reframing the equity concern as one of under-access rather than over-imposition.[54]
+
+---
+
+10. Guideline Positions
+
+
+A systematic review of 19 schizophrenia clinical practice guidelines found that 18 of 19 (94.7%) commented on LAIs, with the most common indications being nonadherence (77.8%), maintenance care (72.2%), and patient preference (66.7%). Only 5 of 18 (27.8%) recommended LAIs for first-episode schizophrenia.[55]
+
+
+
+Sources:[55][56][57][58][59][60]
+
+There is a growing disconnect between traditional guideline conservatism and accumulating evidence favoring early LAI use. Expert consensus increasingly frames LAIs as "not a last resort but a viable first-line/early-phase treatment option".[61]
+
+---
+
+11. Initiation Logistics and Oral Overlap Requirements
+
+
+
+
+Sources:[62][63][17][64][65][66]
+
+Key Practical Pearls
+
+
+- Paliperidone palmitate is the only LAI with a true pharmacokinetic loading strategy that eliminates oral overlap entirely.[62][67]
+
+- Risperdal Consta has the most burdensome oral overlap (21 days) due to its unique microsphere release kinetics with a 3-week lag before the main release phase begins.[65]
+
+- Aristada Initio was specifically developed as a NanoCrystal dispersion to provide a 1-day alternative to the 21-day oral overlap.[68][69]
+
+- Zyprexa Relprevv is the only LAI requiring a REMS program with mandatory 3-hour post-injection observation for post-injection delirium/sedation syndrome (PDSS), which occurs in <0.1% of injections but ~2% of patients over long-term treatment.[66]
+
+- For patients naïve to paliperidone/risperidone, establish tolerability with oral paliperidone or oral risperidone before initiating the LAI.[63][65]
+
+- CYP2D6 poor metabolizers on Abilify Maintena should start and maintain at 300 mg rather than 400 mg.[17]
+
+---
+
+12. Missed-Dose Quick Guide
+
+
+Paliperidone Palmitate Monthly (Invega Sustenna / Erzofri)
+
+
+
+
+Dosing window: monthly doses may be given ±7 days.[67][63]
+
+Abilify Maintena (Aripiprazole Monohydrate)
+
+
+
+
+Source:[17]
+
+Aristada (Aripiprazole Lauroxil)
+
+
+
+
+Source:[64]
+
+Risperdal Consta (Risperidone LAI)
+
+
+No specific tiered missed-dose protocol exists in the FDA label. When restarting after a treatment gap, oral supplementation must be administered for at least 21 days after the first injection upon reinitiation.[65][57]
+
+Zyprexa Relprevv (Olanzapine Pamoate)
+
+
+No formally tiered missed-dose protocol in the FDA label. Clinical judgment should guide reinitiation at the previously established dose. The 3-hour REMS observation requirement applies to every injection.[66]
+
+---
+
+13. Resident LAI Selection Table
+
+
+
+
+Sources:[17][62][63][70][71][64][65][66]
+
+---
+
+14. Initiation Algorithm
+
+
+Step 1: Candidate Identification
+
+- Any patient with schizophrenia spectrum disorder or bipolar I disorder (manic-predominant polarity)
+
+- Prioritize: nonadherence history, early-phase illness, comorbid SUD, justice involvement, frequent hospitalizations, patient preference
+
+Step 2: Shared Decision-Making
+
+- Normalize the conversation: "Many patients find that a monthly/bimonthly injection helps them stay well without having to remember daily pills"
+
+- Address misconceptions proactively; do not restrict discussion to nonadherent patients
+
+- Confirm tolerability with oral equivalent if patient is antipsychotic-naïve
+
+Step 3: Select Formulation (based on clinical profile)
+
+- Metabolic concerns / SUD comorbidity / bipolar I → Aripiprazole LAI (Abilify Maintena or Aristada)
+
+- Need for rapid therapeutic levels / plan for extended intervals → Paliperidone palmitate (Sustenna/Erzofri → Trinza → Hafyera)
+
+- Bipolar I adjunctive to mood stabilizer → Risperidone LAI (Risperdal Consta)
+
+- Oral olanzapine responder, other options failed → Olanzapine pamoate (Zyprexa Relprevv, if REMS-capable setting)
+
+Step 4: Initiate
+
+- Verify tolerability with oral equivalent (if naïve)
+
+- Use 1-day initiation protocols when available to minimize oral overlap burden
+
+- Schedule follow-up injection before patient leaves clinic
+
+- Document dosing window and missed-dose protocol in chart
+
+Step 5: Transition to Extended Intervals (when stable)
+
+- PP1M → PP3M after ≥4 months of adequate PP1M treatment[70]
+
+- PP3M → PP6M after ≥1 cycle of PP3M[71]
+
+- Aristada: consider Q6W (882 mg) or Q2M (1064 mg) dosing
+
+---
+
+15. Counseling Script
+
+
+> "I'd like to talk with you about a different way to take your medication. Instead of pills every day, there's an option for a shot that works for [2 weeks / 1 month / 2 months / 3 months / 6 months]. It's the same type of medicine, just delivered differently.
+
+>
+
+> Many of my patients tell me they prefer it because they don't have to think about medication every day. It can help keep the medicine at a steady level in your body, which may help you stay well and out of the hospital.
+
+>
+
+> This is not a punishment or something we only offer when things aren't going well. It's actually something that works best when we start it early. You would come to the clinic for your appointment, get the injection, and that's it until next time.
+
+>
+
+> Some things to know: [For aripiprazole: the most common side effect is restlessness/akathisia, and it tends to have less weight gain. For paliperidone/risperidone: it can raise prolactin levels, which we'll monitor. For olanzapine: weight gain is a concern, and you'd need to stay at the clinic for 3 hours after each shot for monitoring.]
+
+>
+
+> You're always in control of this decision. If you try it and don't like it, we can switch back. The injection wears off over time — it's not permanent. What questions do you have?"
+
+This script incorporates evidence-based principles: normalizing LAI use rather than framing it as a last resort, emphasizing patient autonomy and reversibility, providing balanced information about side effects, and using plain language.[61][10][41][44][43]
+
+---
+
+16. Evidence Gaps and Emerging Data
+
+
+Several important uncertainties remain:
+
+- No validated patient selection algorithm exists; current guidance relies on clinical risk factors rather than formal scoring tools.[37]
+
+- Head-to-head LAI comparisons are scarce; most evidence compares LAIs to oral antipsychotics rather than to each other.
+
+- Bipolar depression prevention has not been demonstrated with any currently available LAI; both aripiprazole and risperidone LAIs primarily prevent mania.[20][21][22]
+
+- Paliperidone palmitate is not FDA-approved for bipolar disorder (only schizoaffective disorder), limiting its formal use in bipolar populations.[72]
+
+- The intersection of race, involuntary treatment, and LAI prescribing — specifically whether Black patients are more likely to receive LAIs involuntarily vs. voluntarily — remains under-researched.[73]
+
+- Aripiprazole 2-month ready-to-use (Ari 2MRTU 960 mg) has shown comparable efficacy to AOM 400 mg in bipolar I in a 32-week open-label trial, potentially expanding options.[74][75]
+
+- Immortal time bias may affect some observational mortality estimates; a 2024 Canadian study raised concerns that after correcting for this bias, the protective association of antipsychotics with mortality was attenuated.[76]
+
+---
+
+17. Summary
+
+
+The totality of evidence supports LAIs as a highly effective strategy for reducing relapse, hospitalization, and mortality in schizophrenia spectrum disorders, with emerging evidence in bipolar I disorder. The benefit is most pronounced in early-phase illness, nonadherent patients, those with comorbid substance use, and justice-involved populations. Real-world studies consistently show 20–50% reductions in rehospitalization and 20–60% reductions in all-cause mortality with LAIs vs. oral antipsychotics, with the caveat that RCTs show more modest effects due to selection of adherent patients. Guidelines are evolving from positioning LAIs as a last resort for nonadherence toward recognizing them as a viable early-phase treatment option. Clinicians should engage in shared decision-making, offer LAIs proactively rather than punitively, and remain vigilant about racial disparities in both LAI access and formulation quality.
+
+---
+
+Top 15 References
+
+
+1. Kishimoto et al., Lancet Psychiatry 2021 — Definitive comparative meta-analysis across RCTs, cohort, and pre-post studies (137 studies, 397,319 patients)[1]
+
+2. Schneider-Thoma et al., Lancet 2022 — Network meta-analysis of 32 oral and LAI antipsychotics for maintenance (127 RCTs, 18,152 patients)[2]
+
+3. Kane et al., JAMA Psychiatry 2020 (PRELAPSE) — Cluster-randomized trial of AOM in early-phase schizophrenia (489 patients)[10]
+
+4. Tiihonen et al., JAMA Psychiatry 2017 — Swedish nationwide cohort with within-individual design (29,823 patients)[7]
+
+5. Taipale et al., World Psychiatry 2020 (FIN20) — 20-year follow-up of mortality and morbidity (62,250 patients)[16]
+
+6. Hamina et al., JAMA Network Open 2024 — Comparative effectiveness of antipsychotics in 131,000+ patients[9]
+
+7. Wei et al., JAMA Network Open 2022 — Hong Kong within-subject analysis of LAIs vs. OAs[26]
+
+8. Alphs et al., J Clin Psychiatry 2015 (PRIDE) — RCT in justice-involved schizophrenia patients[11]
+
+9. Correll et al., World Psychiatry 2022 — Mortality meta-analysis (135 studies, 4.5 million patients)[31]
+
+10. Huang et al., JAMA Network Open 2021 — LAIs vs. OAs and mortality in newly diagnosed schizophrenia[32]
+
+11. Calabrese et al., J Clin Psychiatry 2017 — Aripiprazole LAI for bipolar I maintenance (randomized withdrawal)[18]
+
+12. Li et al., JAMA Network Open 2023 — Racial/ethnic disparities in LAI prescribing (210,686 Medicare beneficiaries)[45]
+
+13. Ostuzzi et al., World Psychiatry 2022 — Network meta-analysis of 92 RCTs for relapse prevention[6]
+
+14. VA/DoD Clinical Practice Guideline 2023 — Current US guideline for schizophrenia and bipolar disorder management[57]
+
+15. Aymerich et al., Molecular Psychiatry 2025 — Meta-analysis of LAI vs. oral antipsychotic mortality (17 studies)[30]
+
+---
+
+Would you like to explore the specific evidence on transitioning patients from PP1M to extended-interval formulations (PP3M/PP6M), including optimal timing, dosing equivalences, and real-world discontinuation rates?
+
+References
+Long-Acting Injectable Versus Oral Antipsychotics for the Maintenance Treatment of Schizophrenia: A Systematic Review and Comparative Meta-Analysis of Randomised, Cohort, and Pre-Post Studies. Kishimoto T, Hagi K, Kurokawa S, Kane JM, Correll CU. The Lancet. Psychiatry. 2021;8(5):387-404. doi:10.1016/S2215-0366(21)00039-0.
+Comparative Efficacy and Tolerability of 32 Oral and Long-Acting Injectable Antipsychotics for the Maintenance Treatment of Adults With Schizophrenia: A Systematic Review and Network Meta-Analysis. Schneider-Thoma J, Chalkou K, Dörries C, et al. Lancet (London, England). 2022;399(10327):824-836. doi:10.1016/S0140-6736(21)01997-8.
+Efficacy of Oral Versus Long-Acting Antipsychotic Treatment in Patients With Early-Phase Schizophrenia in Europe and Israel: A Large-Scale, Open-Label, Randomised Trial (EULAST). Winter-van Rossum I, Weiser M, Galderisi S, et al. The Lancet. Psychiatry. 2023;10(3):197-208. doi:10.1016/S2215-0366(23)00005-6.
+Long-Acting Injectable Versus Oral Antipsychotics in Schizophrenia: A Systematic Review and Meta-Analysis of Mirror-Image Studies. Kishimoto T, Nitta M, Borenstein M, Kane JM, Correll CU. The Journal of Clinical Psychiatry. 2013;74(10):957-65. doi:10.4088/JCP.13r08440.
+Effectiveness of Long-Acting Injectable vs Oral Antipsychotics in Patients With Schizophrenia: A Meta-Analysis of Prospective and Retrospective Cohort Studies. Kishimoto T, Hagi K, Nitta M, et al. Schizophrenia Bulletin. 2018;44(3):603-619. doi:10.1093/schbul/sbx090.
+Oral and Long-Acting Antipsychotics for Relapse Prevention in Schizophrenia-Spectrum Disorders: A Network Meta-Analysis of 92 Randomized Trials Including 22,645 Participants. Ostuzzi G, Bertolini F, Tedeschi F, et al. World Psychiatry : Official Journal of the World Psychiatric Association (WPA). 2022;21(2):295-307. doi:10.1002/wps.20972.
+Real-World Effectiveness of Antipsychotic Treatments in a Nationwide Cohort of 29 823 Patients With Schizophrenia. Tiihonen J, Mittendorfer-Rutz E, Majak M, et al. JAMA Psychiatry. 2017;74(7):686-693. doi:10.1001/jamapsychiatry.2017.1322.
+Comparative Effectiveness of Antipsychotic Drugs for Rehospitalization in Schizophrenia-a Nationwide Study With 20-Year Follow-Up. Taipale H, Mehtälä J, Tanskanen A, Tiihonen J. Schizophrenia Bulletin. 2018;44(6):1381-1387. doi:10.1093/schbul/sbx176.
+Comparative Effectiveness of Antipsychotics in Patients With Schizophrenia Spectrum Disorder. Hamina A, Taipale H, Lieslehto J, et al. JAMA Network Open. 2024;7(10):e2438358. doi:10.1001/jamanetworkopen.2024.38358.
+Effect of Long-Acting Injectable Antipsychotics vs Usual Care on Time to First Hospitalization in Early-Phase Schizophrenia: A Randomized Clinical Trial. Kane JM, Schooler NR, Marcy P, et al. JAMA Psychiatry. 2020;77(12):1217-1224. doi:10.1001/jamapsychiatry.2020.2076.
+Real-World Outcomes of Paliperidone Palmitate Compared to Daily Oral Antipsychotic Therapy in Schizophrenia: A Randomized, Open-Label, Review Board-Blinded 15-Month Study. Alphs L, Benson C, Cheshire-Kinney K, et al. The Journal of Clinical Psychiatry. 2015;76(5):554-61. doi:10.4088/JCP.14m09584.
+Impact of Long-Acting Injectable Versus Oral Antipsychotic Treatment on All-Cause Discontinuation Risk in People With Early Phase Schizophrenia and Comorbid Substance Use Disorder: A Secondary Analysis of the EULAST Randomized Trial. Mortazavi M, Aminifarsani Z, Rossum IW, et al. CNS Drugs. 2026;40(1):99-109. doi:10.1007/s40263-025-01225-0.
+Comparison of SGA Oral Medications and a Long-Acting Injectable SGA: The PROACTIVE Study. Buckley PF, Schooler NR, Goff DC, et al. Schizophrenia Bulletin. 2015;41(2):449-59. doi:10.1093/schbul/sbu067.
+Comparison of Injectable and Oral Antipsychotics in Relapse Rates in a Pragmatic 30-Month Schizophrenia Relapse Prevention Study. Buckley PF, Schooler NR, Goff DC, et al. Psychiatric Services (Washington, D.C.). 2016;67(12):1370-1372. doi:10.1176/appi.ps.201500466.
+Long-Acting Injectable Risperidone for Relapse Prevention and Control of Breakthrough Symptoms After a Recent First Episode of Schizophrenia : A Randomized Clinical Trial. Subotnik KL, Casaus LR, Ventura J, et al. JAMA Psychiatry. 2015;72(8):822-9. doi:10.1001/jamapsychiatry.2015.0270.
+20-Year Follow-Up Study of Physical Morbidity and Mortality in Relationship to Antipsychotic Treatment in a Nationwide Cohort of 62,250 Patients With Schizophrenia (FIN20). Taipale H, Tanskanen A, Mehtälä J, et al. World Psychiatry : Official Journal of the World Psychiatric Association (WPA). 2020;19(1):61-68. doi:10.1002/wps.20699.
+ABILIFY MAINTENA. Food and Drug Administration. Updated date: 2026-03-24.
+Efficacy and Safety of Aripiprazole Once-Monthly in the Maintenance Treatment of Bipolar I Disorder: A Double-Blind, Placebo-Controlled, 52-Week Randomized Withdrawal Study. Calabrese JR, Sanchez R, Jin N, et al. The Journal of Clinical Psychiatry. 2017;78(3):324-331. doi:10.4088/JCP.16m11201.
+Identifying Profiles of Patients With Bipolar I Disorder Who Would Benefit From Maintenance Therapy With a Long-Acting Injectable Antipsychotic. Tohen M, Goldberg JF, Hassoun Y, Sureddi S. The Journal of Clinical Psychiatry. 2020;81(4):OT19046AH1. doi:10.4088/JCP.OT19046AH1.
+Bipolar Disorders. McIntyre RS, Berk M, Brietzke E, et al. Lancet (London, England). 2020;396(10265):1841-1856. doi:10.1016/S0140-6736(20)31544-0.
+Long-Acting Injectable Antipsychotics (LAIs) for Maintenance Treatment of Bipolar and Schizoaffective Disorders: A Systematic Review. Pacchiarotti I, Tiihonen J, Kotzalidis GD, et al. European Neuropsychopharmacology : The Journal of the European College of Neuropsychopharmacology. 2019;29(4):457-470. doi:10.1016/j.euroneuro.2019.02.003.
+Long-Acting Second-Generation Injectable Antipsychotics for the Maintenance Treatment of Bipolar Disorder: A Narrative Review. Belge JB, Sabbe BGCC. Expert Opinion on Pharmacotherapy. 2024;25(3):295-299. doi:10.1080/14656566.2024.2329743.
+Real-world Effectiveness of Pharmacologic Treatments for the Prevention of Rehospitalization in a Finnish Nationwide Cohort of Patients With Bipolar Disorder. Lähteenvuo M, Tanskanen A, Taipale H, et al. JAMA Psychiatry. 2018;75(4):347-355. doi:10.1001/jamapsychiatry.2017.4711.
+Effectiveness of Long-Acting Injectable Antipsychotics Versus Oral Antipsychotics in People With Bipolar Disorder: A Systematic Review and Meta-Analysis of Observational Studies: Efficacité Des Antipsychotiques Injectables À Action Prolongée Par Rapport Aux Antipsychotiques Oraux Chez Les Personnes Atteintes De Troubles Bipolaires : Revue Systématique Et Méta-Analyse d'Études Observationnelles. Wagner E, Katyal S, Lee IO, et al. Canadian Journal of Psychiatry. Revue Canadienne De Psychiatrie. 2026;71(6):420-435. doi:10.1177/07067437251412576.
+Real-World Evidence of the Clinical and Economic Impact of Long-Acting Injectable Versus Oral Antipsychotics Among Patients With Schizophrenia in the United States: A Systematic Review and Meta-Analysis. Lin D, Thompson-Leduc P, Ghelerter I, et al. CNS Drugs. 2021;35(5):469-481. doi:10.1007/s40263-021-00815-y.
+Association of Long-Acting Injectable Antipsychotics and Oral Antipsychotics With Disease Relapse, Health Care Use, and Adverse Events Among People With Schizophrenia. Wei Y, Yan VKC, Kang W, et al. JAMA Network Open. 2022;5(7):e2224163. doi:10.1001/jamanetworkopen.2022.24163.
+Long term impact of 3‐monthly paliperidone palmitate on hospitalisation in patients with schizophrenia: Six‐year mirror image study. Clark I, Wallman P, Gee S, Taylor D. Acta Psychiatrica Scandinavica. 2024;150(1):48-50. doi:10.1111/acps.13691.
+Health Resource Utilization and Cost Before Versus After Initiation of Second-Generation Long-Acting Injectable Antipsychotics Among Adults With Schizophrenia in Alberta, Canada: A Retrospective, Observational Single-Arm Study. Wong KO, Klarenbach SW, Martins KJB, et al. BMC Psychiatry. 2022;22(1):444. doi:10.1186/s12888-022-04075-y.
+Antipsychotic Adherence, Resource Use, and Costs Before and After the Initiation of Once-Monthly Paliperidone Palmitate Therapy Among Medicaid Beneficiaries With Prior Schizophrenia Relapse. Zhdanava M, Lin D, Lafeuille MH, et al. Clinical Therapeutics. 2021;43(3):535-548. doi:10.1016/j.clinthera.2021.01.011.
+All-Cause Mortality Risk in Long-Acting Injectable Versus Oral Antipsychotics in Schizophrenia: A Systematic Review and Meta-Analysis. Aymerich C, Salazar de Pablo G, Pacho M, et al. Molecular Psychiatry. 2025;30(1):263-271. doi:10.1038/s41380-024-02694-3.
+Mortality in People With Schizophrenia: A Systematic Review and Meta-Analysis of Relative Risk and Aggravating or Attenuating Factors. Correll CU, Solmi M, Croatto G, et al. World Psychiatry : Official Journal of the World Psychiatric Association (WPA). 2022;21(2):248-271. doi:10.1002/wps.20994.
+Comparison of Long-Acting Injectable Antipsychotics With Oral Antipsychotics and Suicide and All-Cause Mortality in Patients With Newly Diagnosed Schizophrenia. Huang CY, Fang SC, Shao YJ. JAMA Network Open. 2021;4(5):e218810. doi:10.1001/jamanetworkopen.2021.8810.
+Disease Relapse, All-Cause Mortality, and Adverse Events Associated With Long-Acting Injectable Antipsychotics Versus Oral Antipsychotics in Older People With Schizophrenia in Hong Kong: A Population-Based Within-Subject Analysis. Wei Y, Yan VKC, Castle DJ, et al. The Lancet. Psychiatry. 2025;12(11):830-840. doi:10.1016/S2215-0366(25)00268-8.
+Long-Acting Antipsychotics and Mortality in Patients With Schizophrenia Receiving Homecare Case Management. Chen WY, Chen PY, Chiu CC, et al. Psychiatry and Clinical Neurosciences. 2025;. doi:10.1111/pcn.13853.
+Long-Term Outcomes of Early Use of Long-Acting Injectable Antipsychotics in Schizophrenia. Fang SC, Huang CY, Shao YJ. The Journal of Clinical Psychiatry. 2022;83(4):21r14153. doi:10.4088/JCP.21r14153.
+Real-World Effectiveness of Long-Acting Injectable Antipsychotic Treatments in a Nationwide Cohort of 12,373 Patients With Schizophrenia-Spectrum Disorders. Boyer L, Falissard B, Nuss P, et al. Molecular Psychiatry. 2023;28(9):3709-3716. doi:10.1038/s41380-023-02175-z.
+Pharmacokinetic Correlates of Clinical Response in a Retrospective Naturalistic Cohort of Patients Treated With Long-Acting Injectable Antipsychotics. Kuzo N, Gaspari D, Carpi F, et al. Schizophrenia Research. 2025;288:38-46. doi:10.1016/j.schres.2025.12.012.
+In-Hospital Use of Long-Acting Injectable Antipsychotics and Readmission Risk in Patients With First-Admission Schizophrenia in Taiwan. Chen W, Wu CS, Liu CC, et al. JAMA Network Open. 2024;7(6):e2417006. doi:10.1001/jamanetworkopen.2024.17006.
+Optimizing Treatment Choices to Improve Adherence and Outcomes in Schizophrenia. Kane JM, Correll CU. The Journal of Clinical Psychiatry. 2019;80(5):IN18031AH1C. doi:10.4088/JCP.IN18031AH1C.
+Controversies Surrounding the Use of Long-Acting Injectable Antipsychotic Medications for the Treatment of Patients With Schizophrenia. Kane JM, McEvoy JP, Correll CU, Llorca PM. CNS Drugs. 2021;35(11):1189-1205. doi:10.1007/s40263-021-00861-6.
+Oral Versus Long-Acting Injectable Antipsychotics in Schizophrenia Spectrum Disorders: A Systematic Review of Patients' Subjective Experiences. Aprile SF, Rodolico A, Di Francesco A, et al. Psychiatry Research. 2025;348:116460. doi:10.1016/j.psychres.2025.116460.
+Focused Ethnographic Examination of Barriers to Use of Long-Acting Injectable Antipsychotics. Robinson DG, Subramaniam A, Fearis PJ, et al. Psychiatric Services (Washington, D.C.). 2020;71(4):337-342. doi:10.1176/appi.ps.201900236.
+A Qualitative Study of Experiences With and Perceptions Regarding Long-Acting Injectable Antipsychotics: Part I-Patient Perspectives. Iyer S, Banks N, Roy MA, et al. Canadian Journal of Psychiatry. Revue Canadienne De Psychiatrie. 2013;58(5 Suppl 1):14S-22S. doi:10.1177/088740341305805s03.
+Experiences and Perceptions of Patients, Caregivers, and Healthcare Professionals With Long-Acting Injectable Antipsychotics for the Treatment of Schizophrenia: Qualitative Results From the Multinational ADVANCE Study. Franzenburg KR, Hansen R, Suett M, et al. Frontiers in Psychiatry. 2025;16:1645328. doi:10.3389/fpsyt.2025.1645328.
+Racial and Ethnic Disparities in Long-Acting Injectable Antipsychotic Use in a National Sample of Medicare Beneficiaries With Schizophrenia. Li P, Benson C, Geng Z, et al. JAMA Network Open. 2023;6(9):e2334016. doi:10.1001/jamanetworkopen.2023.34016.
+Racial Disparities in Utilization of First-Generation Versus Second-Generation Long-Acting Injectable Antipsychotics in Medicaid Beneficiaries With Schizophrenia. Pesa J, Liu Z, Fu AZ, Campbell AK, Grucza R. Schizophrenia Research. 2023;261:170-177. doi:10.1016/j.schres.2023.09.033.
+Use and Discontinuation Rates of Long-Acting Injectable Antipsychotics Between Race/Ethnicity in Older Adults Using Medicaid Databases. Cassara CM, Xu J, Hall DB, et al. Journal of the American Geriatrics Society. 2025;73(5):1454-1461. doi:10.1111/jgs.19386.
+Resource Document on Advocating for Anti-Racist Mental Health Policies with a Focus on Dismantling Anti-Black Racism. Joshua R. Anthony MD MBA, Amanda Calhoun MD MPH, Enrico G. Castillo MD MSHPM, et al. American Psychiatric Association (2021).
+Are Depot Antipsychotics More Coercive Than Tablets? The Patient's Perspective. Patel MX, de Zoysa N, Bernadt M, Bindman J, David AS. Journal of Psychopharmacology (Oxford, England). 2010;24(10):1483-9. doi:10.1177/0269881109103133.
+Clinician Differences in Attitudes and Perceptions on the Use of Long-Acting Injectable Antipsychotic Agents in Treating Patients With Schizophrenia: Results From the US DECIDE Survey. Velligan D, Salinas GD, Belcher E, et al. BMC Psychiatry. 2025;25(1):232. doi:10.1186/s12888-025-06565-1.
+Compulsory Community and Involuntary Outpatient Treatment for People With Severe Mental Disorders. Kisely SR, Campbell LA, O'Reilly R. The Cochrane Database of Systematic Reviews. 2017;3:CD004408. doi:10.1002/14651858.CD004408.pub5.
+Compulsory Community and Involuntary Outpatient Treatment for People With Severe Mental Disorders. Kisely SR, Campbell LA. Schizophrenia Bulletin. 2015;41(3):542-3. doi:10.1093/schbul/sbv021.
+Resource Document on Involuntary Outpatient Commitment. Marvin S. Swartz MD, Steven K Hoge MD, Debra A. Pinals MD, et al. American Psychiatric Association (2016).
+Ethical Use of Long-Acting Medications in the Treatment of Severe and Persistent Mental Illnesses. Roberts LW, Geppert CM. Comprehensive Psychiatry. 2004 May-Jun;45(3):161-7. doi:10.1016/j.comppsych.2004.02.003.
+Systematic Literature Review of Schizophrenia Clinical Practice Guidelines on Acute and Maintenance Management With Antipsychotics. Correll CU, Martin A, Patel C, et al. Schizophrenia (Heidelberg, Germany). 2022;8(1):5. doi:10.1038/s41537-021-00192-x.
+The American Psychiatric Association Practice Guideline for the Treatment of Patients With Schizophrenia. Keepers GA, Fochtmann LJ, Anzia JM, et al. The American Journal of Psychiatry. 2020;177(9):868-872. doi:10.1176/appi.ajp.2020.177901.
+Management of First-Episode Psychosis and Schizophrenia (SCZ) (2023). Marlene Arias-Reynoso DNP PMHNP-BC, Jennifer L. Bell MD, Pamela Blueford LICSW, et al. Department of Veterans Affairs.
+NICE CG178 Psychosis and Schizophrenia in Adults: Treatment and Management - An Evidence-Based Guideline?. Taylor M, Perera U. The British Journal of Psychiatry : The Journal of Mental Science. 2015;206(5):357-9. doi:10.1192/bjp.bp.114.155945.
+Evidence-Based Expert Consensus Regarding Long-Acting Injectable Antipsychotics for Schizophrenia From the Taiwanese Society of Biological Psychiatry and Neuropsychopharmacology (TSBPN). Yang KC, Liao YT, Yang YK, et al. CNS Drugs. 2021;35(8):893-905. doi:10.1007/s40263-021-00838-5.
+Delphi Panel to Obtain Clinical Consensus About Using Long-Acting Injectable Antipsychotics to Treat First-Episode and Early-Phase Schizophrenia: Treatment Goals and Approaches to Functional Recovery. Arango C, Fagiolini A, Gorwood P, et al. BMC Psychiatry. 2023;23(1):453. doi:10.1186/s12888-023-04928-0.
+Long-Acting Injectable Antipsychotics for Patients With First-Episode and Early-Phase Schizophrenia: Still Not Considered Often Enough. Correll CU. CNS Spectrums. 2025;30(1):e66. doi:10.1017/S1092852925100503.
+Practical Guidance for Dosing and Switching Paliperidone Palmitate Treatment in Patients With Schizophrenia. Gopal S, Gassmann-Mayer C, Palumbo J, et al. Current Medical Research and Opinion. 2010;26(2):377-87. doi:10.1185/03007990903482772.
+Erzofri extended-release. Food and Drug Administration. Updated date: 2026-03-09.
+ARISTADA. Food and Drug Administration. Updated date: 2025-01-28.
+RISPERDAL CONSTA. Food and Drug Administration. Updated date: 2025-11-05.
+ZYPREXA Relprevv. Food and Drug Administration. Updated date: 2026-05-19.
+Dosing and Switching Strategies for Paliperidone Palmitate: Based on Population Pharmacokinetic Modelling and Clinical Trial Data. Samtani MN, Gopal S, Gassmann-Mayer C, Alphs L, Palumbo JM. CNS Drugs. 2011;25(10):829-45. doi:10.2165/11591690-000000000-00000.
+Size Matters: The Importance of Particle Size in a Newly Developed Injectable Formulation for the Treatment of Schizophrenia. Jain R, Meyer J, Wehr A, et al. CNS Spectrums. 2020;25(3):323-330. doi:10.1017/S1092852919000816.
+Pharmacokinetic Evaluation of a 1-Day Treatment Initiation Option for Starting Long-Acting Aripiprazole Lauroxil for Schizophrenia. Hard ML, Wehr AY, Du Y, et al. Journal of Clinical Psychopharmacology. 2018;38(5):435-441. doi:10.1097/JCP.0000000000000921.
+Dosing and Switching Strategies for Paliperidone Palmitate 3-Month Formulation in Patients With Schizophrenia Based on Population Pharmacokinetic Modeling and Simulation, and Clinical Trial Data. Magnusson MO, Samtani MN, Plan EL, et al. CNS Drugs. 2017;31(4):273-288. doi:10.1007/s40263-017-0416-1.
+INVEGA HAFYERA. Food and Drug Administration. Updated date: 2025-02-18.
+Management of Bipolar Disorder (BD) (2023). Thad Abrams MD MS, Jennifer Bell MD, Paulette Cazares MD MPH, et al. Department of Veterans Affairs.
+The Ethics of Coercion in Mental Healthcare: The Role of Structural Racism. Faissner M, Braun E. Journal of Medical Ethics. 2024;50(7):476-481. doi:10.1136/jme-2023-108984.
+Evaluating the Efficacy and Safety of the Currently Available Once-Every-Two Months Long-Acting Injectable Formulations of Aripiprazole for the Treatment of Schizophrenia or as a Maintenance Monotherapy for Bipolar I Disorder in Adults. Samalin L, Boudieu L, Llorca PM. Expert Review of Neurotherapeutics. 2024;24(3):291-298. doi:10.1080/14737175.2024.2313550.
+Safety and Efficacy of Aripiprazole 2-Month Ready-to-Use 960 mg: Secondary Analysis of Outcomes in Adult Patients With Bipolar I Disorder in a Randomized, Open-Label, Parallel-Arm, Pivotal Study. McIntyre RS, Such P, Yildirim M, et al. Current Medical Research and Opinion. 2023;39(7):1021-1030. doi:10.1080/03007995.2023.2219155.
+Medication Exposure and Mortality in Patients With Schizophrenia. Brodeur S, Chiu YM, Courteau J, et al. JAMA Network Open. 2024;7(11):e2447137. doi:10.1001/jamanetworkopen.2024.47137.
+
+Study Design | N Studies | N Patients | RR (95% CI) | NNTB | Interpretation
+RCTs | 29 | 7,833 | 0.88 (0.79–0.99) | 45 | Modest benefit; adherent patients selected
+Cohort studies | 44 | 106,136 | 0.92 (0.88–0.98) | 31 | Conservative bias (sicker patients get LAIs)
+Mirror-image (pre-post) | 28 | 17,876 | 0.44 (0.39–0.51) | 4 | Large benefit; regression to mean possible
+Study | Design | N | LAI vs. OAP All-Cause Mortality | Key Finding
+Taipale 2018 (Sweden) | Nationwide cohort | 29,823 | aHR 0.67 (0.56–0.80) | SG-LAI lowest cumulative mortality (7.5% over 7.5 years)
+Huang 2021 (Taiwan) | Propensity-matched | 4,924 | aHR 0.67 (0.55–0.83) | Early use (within 2 years) reduced suicide mortality by 47%
+Wei 2025 (Hong Kong, elderly) | Within-subject | 24,985 | HR 0.23 (0.12–0.44) | No increase in cardiovascular admissions
+Correll 2022 (meta-analysis) | SR/MA, 135 studies | 4.5M | SGA-LAI RR 0.39 (0.27–0.56) vs. no AP | Largest protective effect of any antipsychotic regimen
+Kishi 2016 (RCT meta-analysis) | SR/MA, 52 RCTs | 17,416 | RR 0.71 (p = 0.30, NS) | Underpowered for rare mortality events
+Predictor | Evidence | Strength
+Medication nonadherence | LAIs effective only in non-compliant patients in French cohort (n = 12,373); no benefit in compliant patients except aripiprazole LAI | Strong
+Early-phase illness | Greater benefit in incident vs. prevalent cohorts (AHR 0.74 vs. 0.84); 85% relapse reduction in FEP | Strong
+Early LAI initiation | Substantially greater risk reductions for early vs. late initiators across all outcomes; mortality benefit only with initiation within 3 years | Strong
+Comorbid substance use | 36% lower discontinuation risk with LAI in SUD patients (EULAST); consistent across observational studies | Moderate
+Criminal justice involvement | PRIDE: 39.8% vs. 53.7% treatment failure (PP1M vs. OAs) | Moderate (single RCT)
+Frequent prior hospitalizations | Benefits maintained/amplified in patients with ≥2–4 prior admissions | Moderate
+Younger age | Better treatment response (aOR 0.97 per year increase) | Moderate
+LAI monotherapy | 3.77× higher odds of response vs. polypharmacy | Moderate
+Guideline | Year | Schizophrenia Position | Bipolar Position | LAI for FEP?
+APA | 2020 | Recommended when nonadherence is a concern | Not specifically addressed | Not explicitly
+VA/DoD | 2023 | Conditional: suggest offering LAIs to improve adherence | Conditional: risperidone LAI if lithium/quetiapine not selected | Not specifically
+NICE (CG178) | 2014 | Depot/LAI after acute episode if acceptable to patient | Not addressed | Not specifically
+TSBPN (Taiwan) | 2021 | LAIs as option for all patients including FEP | Not addressed | Yes
+Florida Best Practice | Current | LAI switch at same level as continued oral AP, even in stable FEP | Not addressed | Yes
+Expert Delphi Panel | 2023 | Consensus supporting LAIs in FEP regardless of severity | — | Yes
+Feature | PP1M (Invega Sustenna) | PP1M (Erzofri) | Abilify Maintena | Aristada (+Initio) | Risperdal Consta | Zyprexa Relprevv
+Frequency | Monthly | Monthly | Monthly | Monthly, Q6W, or Q2M | Every 2 weeks | Every 2 or 4 weeks
+Loading Protocol | 234 mg D1 + 156 mg D8 (both deltoid) | 351 mg D1 (deltoid) | 1-day: 2×400 mg + oral 20 mg; OR 14-day: 1×400 mg + oral ×14d | 1-day: Initio 675 mg + oral 30 mg + first Aristada; OR 21d oral | None | Higher doses first 8 weeks
+Oral Overlap | None | None | 14 days (or 1-day protocol) | 21 days (or 1-day with Initio) | 21 days required | Generally not required
+Injection Site | Deltoid (initiation); deltoid or gluteal (maintenance) | Deltoid (initiation); deltoid or gluteal (maintenance) | Deltoid or gluteal | 441 mg: deltoid or gluteal; ≥662 mg: gluteal only | Deltoid or gluteal | Gluteal only
+Storage | Room temp | Room temp | Room temp | Room temp | Refrigerated (2–8°C) | Room temp
+REMS | No | No | No | No | No | Yes (3-hour observation)
+Time Since Last Injection | Action
+≤6 weeks | Resume previously stabilized dose ASAP; continue monthly
+>6 weeks to 6 months | Re-load: give previously stabilized dose in deltoid ASAP → same dose in deltoid 1 week later → resume monthly
+>6 months | Full re-initiation: 234 mg (Sustenna) or 351 mg (Erzofri) deltoid Day 1 → resume previously stabilized dose monthly
+Dose Number | Time Since Last Injection | Action
+2nd or 3rd dose | ≤5 weeks | Administer injection ASAP
+2nd or 3rd dose | >5 weeks | Restart with 1-day or 14-day initiation
+4th or subsequent | ≤6 weeks | Administer injection ASAP
+4th or subsequent | >6 weeks | Restart with 1-day or 14-day initiation
+Last Aristada Dose | No Supplementation Needed | Supplement with Initio or 7 days oral aripiprazole | Full Re-initiation
+441 mg (monthly) | ≤6 weeks | >6 to ≤7 weeks | >7 weeks
+662 mg (monthly) | ≤8 weeks | >8 to ≤12 weeks | >12 weeks
+882 mg (monthly or Q6W) | ≤8 weeks | >8 to ≤12 weeks | >12 weeks
+1064 mg (Q2M) | ≤10 weeks | >10 to ≤12 weeks | >12 weeks
+Feature | PP1M (Sustenna/Erzofri) | PP3M (Trinza) | PP6M (Hafyera) | Abilify Maintena | Aristada (+Initio) | Risperdal Consta | Zyprexa Relprevv
+Active Moiety | Paliperidone | Paliperidone | Paliperidone | Aripiprazole | Aripiprazole | Risperidone → paliperidone | Olanzapine
+Receptor Profile | D2/5-HT2A antagonist | Same | Same | D2 partial agonist | D2 partial agonist | D2/5-HT2A antagonist | Multi-receptor antagonist
+Frequency | Monthly | Q3 months | Q6 months | Monthly | Monthly / Q6W / Q2M | Q2 weeks | Q2W or Q4W
+FDA Indications | Schizophrenia; schizoaffective | Schizophrenia | Schizophrenia | Schizophrenia; Bipolar I | Schizophrenia | Schizophrenia; Bipolar I | Schizophrenia
+Oral Overlap | None | N/A (requires prior PP1M) | N/A (requires prior PP1M or PP3M) | 14 days or 1-day protocol | 21 days or 1-day with Initio | 21 days | Generally none
+Key Metabolic Concern | Prolactin ↑↑, weight ↑ | Same | Same | Akathisia; low metabolic risk | Akathisia; low metabolic risk | Prolactin ↑↑, weight ↑ | Weight ↑↑↑, metabolic syndrome
+Storage | Room temp | Room temp | Room temp | Room temp | Room temp | Refrigerated | Room temp
+REMS | No | No | No | No | No | No | Yes (3-hr observation)
+Best For | Nonadherence; need for rapid therapeutic levels; transition to Q3M/Q6M | Stable patients on PP1M ≥4 months | Stable patients; minimal clinic visits | Metabolic concerns; bipolar I; SUD comorbidity | Flexible dosing intervals; 1-day start | Bipolar I maintenance; adjunctive to Li/VPA | Treatment-resistant (oral olanzapine responders)
+Avoid/Caution | Renal impairment (CrCl <50); QTc prolongation | Same | Same | CYP2D6 poor metabolizers (use 300 mg); combined CYP2D6 + 3A4 inhibitors | Same CYP concerns as Maintena | Hepatic impairment; elderly with dementia | Settings without 3-hr observation capacity

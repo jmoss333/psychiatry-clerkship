@@ -1,6 +1,6 @@
 # Ethics & the Law: Confidentiality, Tarasoff & Reporting
 
-> **Review status:** Reviewed and attested by Joshua Moss, MD (2026-07-09). Educational; fictional composites only, no PHI.
+> **Review status:** Reviewed and attested by Joshua Moss, MD (2026-07-31). Educational; fictional composites only, no PHI.
 
 **In one line** — Psychiatry runs on confidentiality, but the exam and the ward turn on knowing its **limits** — when you *must* break it to protect a third party, when you *must* report abuse, and when you can treat or hold a patient *against their will* — always choosing the **least restrictive** option that keeps people safe.
 
@@ -10,9 +10,9 @@
 
 **Mandatory reporting** — Report suspected **child abuse or neglect** and **elder/dependent-adult abuse** to the appropriate agency — reporting requires **reasonable suspicion, not proof**, and mandated reporters are generally protected when reporting in good faith. Remember: **factitious disorder imposed on another (medical child abuse)** is reportable, and many jurisdictions add specific duties (e.g., certain injuries, some intimate-partner situations). When in doubt, protect the vulnerable person.
 
-**Involuntary hospitalization (civil commitment)** — The usual criteria are a mental illness *plus* **danger to self, danger to others, or grave disability** (inability to meet basic needs). Emergency holds allow short-term detention for evaluation; longer commitment requires due process (hearing). Involuntary hospitalization does **not** by itself authorize involuntary medication.
+**Involuntary hospitalization (civil commitment)** — The usual criteria are a mental illness *plus* **danger to self, danger to others, or grave disability** (inability to meet basic needs). Emergency holds allow short-term detention for evaluation; longer commitment requires due process (hearing), and the constitutionally required standard of proof is **"clear and convincing evidence"** (*Addington v. Texas*, 1979). A person who is **not dangerous and can survive safely in the community cannot be confined** against their will (*O'Connor v. Donaldson*, 1975). Involuntary hospitalization does **not** by itself authorize involuntary medication.
 
-**Right to refuse & involuntary medication** — Competent patients (including many involuntarily hospitalized ones) generally retain the **right to refuse medication**. Overriding that refusal requires either a **true emergency** (imminent danger) or a **separate legal/adjudicated process** (e.g., a court or independent review depending on jurisdiction). Commitment status ≠ consent.
+**Right to refuse & involuntary medication** — Competent patients (including many involuntarily hospitalized ones) generally retain the **right to refuse medication**. Overriding that refusal requires either a **true emergency** (imminent danger) or a **separate legal/adjudicated process** (e.g., a court or independent review depending on jurisdiction) — for example, an **administrative review** for a dangerous, mentally ill prisoner (*Washington v. Harper*, 1990), or the **four-part *Sell* test** to medicate a defendant solely to restore competency to stand trial (*Sell v. United States*, 2003). Commitment status ≠ consent.
 
 **Informed consent & capacity** — Valid consent requires **capacity, disclosure (risks/benefits/alternatives), and voluntariness**. **Capacity is decision-specific and clinical** (a physician assesses it); **competence is a legal determination** (a court decides). The four abilities: *communicate a choice, understand, appreciate, and reason.* The **emergency exception** permits necessary treatment when consent can't be obtained and delay would cause harm. For patients who lack capacity, use advance directives or a surrogate/substituted judgment.
 
@@ -31,6 +31,7 @@
 - A serious threat to an identifiable victim triggers a duty to protect (Tarasoff) — confidentiality yields.
 - Child and elder abuse are mandated reports on *reasonable suspicion*; good-faith reporters are protected.
 - Commitment criteria: danger to self, danger to others, or grave disability — and use the least restrictive option.
+- The commitment standard of proof is *clear and convincing evidence* (*Addington v. Texas*); a non-dangerous patient who can survive safely in the community cannot be confined (*O'Connor v. Donaldson*).
 - Involuntary hospitalization ≠ involuntary medication; refusal stands absent an emergency or legal process.
 - Capacity is clinical and decision-specific; competence is a legal (court) determination.
 - Informed consent = capacity + disclosure + voluntariness; the emergency exception covers necessary urgent care.

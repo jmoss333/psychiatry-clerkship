@@ -15,17 +15,49 @@
     "processed_at": "2026-07-01T12:12:45",
     "sha256": "6878c1527ed902a68ec5f58333e2aba73fe22182d98283e626cefef0fb15b287"
   },
+  "Clozapine in Inpatient Psychiatry_ Comprehensive Evidence Review.docx": {
+    "processed_at": "2026-07-20T08:15:25",
+    "sha256": "7a901223a90131692afb2bbb35d4d8406aa29a3b102f4e26819dfa5b01f00957"
+  },
+  "Competency-Based Medical Education in Psychiatry Residency_ Comprehensive Evidence Review and EPA-Based Assessment Implementation Toolkit (1).docx": {
+    "processed_at": "2026-07-23T08:16:15",
+    "sha256": "579bb23b07c5ba1e262d58d24c8f2dae6bdc08fc3b31555deee835732b437217"
+  },
+  "Competency-Based Medical Education in Psychiatry Residency_ Comprehensive Evidence Review and EPA-Based Assessment Implementation Toolkit.docx": {
+    "processed_at": "2026-07-23T08:16:15",
+    "sha256": "2daf4190d23a128b50d9ae362ffc44623a1edabfffb9f89cf793ca8575ae44a6"
+  },
+  "Comprehensive Evidence Review_ Diagnosis and Management of Catatonia in Inpatient Psychiatry and Medically Ill Patients.docx": {
+    "processed_at": "2026-07-20T08:15:25",
+    "sha256": "f82c6abf22b72326fc582cc83a1a439ae423bda651d1d20ca2693655fba2e45e"
+  },
   "Consultation-Liaison Psychiatry for Inpatient Psychiatry Residents_ A Comprehensive Evidence Review.docx": {
     "processed_at": "2026-07-01T12:12:45",
     "sha256": "7df3f36930337637904f94f948612e5508d812b2e495e4d95047e36edb9d2660"
+  },
+  "Delirium for the Psychiatry Resident_ A Comprehensive Evidence Review.docx": {
+    "processed_at": "2026-07-20T08:15:25",
+    "sha256": "c9e48dbe99fbafd8da06af16ac22d1c40e3d86710f10f1b908859764820e06d1"
   },
   "Discharge Planning from Adult Inpatient Psychiatry_ A Comprehensive Evidence Review.docx": {
     "processed_at": "2026-07-01T12:12:45",
     "sha256": "8b44f638c0ce1433fdd6965f1e66f667a54f648f49218f49bc7ed46076bcf715"
   },
+  "Electroconvulsive Therapy and Neuromodulation in Psychiatry_ A Comprehensive Evidence Review.docx": {
+    "processed_at": "2026-07-20T08:15:25",
+    "sha256": "546cb66bb1c8068ebbf2b0450e02908650b59cc27dd91954627453fa338180dd"
+  },
   "Family Involvement and Family Interventions in Adult Inpatient Psychiatry_ A Comprehensive Evidence Review.docx": {
     "processed_at": "2026-07-01T12:12:45",
     "sha256": "f4e0aa99a0c1c6174d73436c40e088c0423429fc4faa933ce6ac0f21c83f5727"
+  },
+  "Guideline_Surveillance_Delta_2026-07-01.md": {
+    "processed_at": "2026-07-23T08:16:15",
+    "sha256": "f661035eeca398d89f1dc7f864e978e08be33284ff8d33150b13994b694befef"
+  },
+  "Guideline_Surveillance_Refresh_2026-07.docx": {
+    "processed_at": "2026-07-23T08:16:15",
+    "sha256": "475c3d1ab343486a208e4ae1bfbaaefa0ee962960b2b77ad9a6d4041d8e83cd2"
   },
   "INCORPORATION_REVIEW.md": {
     "processed_at": "2026-07-01T12:12:45",
@@ -38,6 +70,18 @@
   "Inpatient Psychiatric Management of Borderline Personality Disorder and Severe Personality Pathology_ A Comprehensive Evidence Review.docx": {
     "processed_at": "2026-07-01T12:12:45",
     "sha256": "e364784c3198619dee582f945d54d1a55ea70c9246ea7ee12ef76a6be7027415"
+  },
+  "Integrating Structured Family Meetings into Inpatient Psychiatry Residency Training_ Competency Milestones, Curriculum Design, and Assessment Tools.docx": {
+    "processed_at": "2026-07-23T08:16:15",
+    "sha256": "f45121ff2c752006ee9af12dee76e3a7a06f2e08b498e0e02b96bfd10a7ffc51"
+  },
+  "Legal and Ethical Foundations of Inpatient Psychiatry_ A Comprehensive Educational Review.docx": {
+    "processed_at": "2026-07-23T08:16:15",
+    "sha256": "4a5835bc5f449189a149f83b834bbf585f20a9fadf1b05881393c1a96061666c"
+  },
+  "Long-Acting Injectable Antipsychotics in Schizophrenia, Bipolar Disorder, and Recurrent Psychiatric Hospitalization_ A Comprehensive Evidence Review.docx": {
+    "processed_at": "2026-07-20T08:15:25",
+    "sha256": "1aa3d362fc19e371e393ef99e7c368f9c0c3f81e693f96d6c2ec788c436ec488"
   },
   "OPENEVIDENCE 100 Questions.docx": {
     "processed_at": "2026-07-01T12:12:45",
@@ -66,5 +110,55 @@
   "Social Determinants of Health, Structural Competency, and Health Inequities in Inpatient Psychiatry_ A Comprehensive Evidence Review.docx": {
     "processed_at": "2026-07-01T12:12:45",
     "sha256": "2348077a4884775e121f72540bce3ebff9b5f920818a196b983147012c02acd0"
-  }
+  },
+  "The Psychiatry Resident Psychopharmacology Canon_ An Evidence-Based Compendium.docx": {
+    "processed_at": "2026-07-23T08:16:15",
+    "sha256": "2e4ad9d1a8ca21578648af0b2386de8a7d01d6dff67dea89a500123b6ee35c07"
+  },
+  "Violence Risk Assessment and Management in Inpatient Psychiatry_ A Comprehensive Evidence Review.docx": {
+    "processed_at": "2026-07-20T08:15:25",
+    "sha256": "6e8dbb340958aaa1f45a2e6309cc06ff2bc59ba4c757c1e403f06f4bafcf591f"
+  },
+  "__attestations__": [
+    {
+      "attested_at": "2026-07-31T22:57:10",
+      "attester": "Joshua Moss, MD",
+      "cleared_notes": [
+        "commitment case law (*Addington v. Texas*, *O'Connor v. Donaldson*) and involuntary-medication case law (*Washington v. Harper*, *Sell v. United States*) added 2026-07-23"
+      ],
+      "page": "03_Core_Topics/Ethics_Legal/ethics_law_confidentiality_inpatient_teaching.md",
+      "prior_attestation": "2026-07-09",
+      "stamp_date": "2026-07-31"
+    },
+    {
+      "attested_at": "2026-07-31T22:57:10",
+      "attester": "Joshua Moss, MD",
+      "cleared_notes": [
+        "CATIE discontinuation figure (74% by 18 mo; perphenazine comparable) added 2026-07-23 (Lieberman 2005, *NEJM*, [DOI](https://doi.org/10.1056/NEJMoa051688))"
+      ],
+      "page": "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md",
+      "prior_attestation": "2026-07-09",
+      "stamp_date": "2026-07-31"
+    },
+    {
+      "attested_at": "2026-07-31T22:57:10",
+      "attester": "Joshua Moss, MD",
+      "cleared_notes": [
+        "STAR\\*D reanalysis figure added 2026-07-23 (Pigott 2023, *BMJ Open*, [DOI](https://doi.org/10.1136/bmjopen-2022-063095))"
+      ],
+      "page": "14_Tracks/Resident/adv_psychopharmacology.md",
+      "prior_attestation": "2026-07-09",
+      "stamp_date": "2026-07-31"
+    },
+    {
+      "attested_at": "2026-07-31T22:57:10",
+      "attester": "Joshua Moss, MD",
+      "cleared_notes": [
+        "PAD/DAiP figure (Tinland 2022, *JAMA Psychiatry*, [DOI](https://doi.org/10.1001/jamapsychiatry.2022.1627)) and involuntary-medication case law (*Washington v. Harper*, *Sell v. United States*) added 2026-07-23"
+      ],
+      "page": "14_Tracks/Resident/systems_medlegal.md",
+      "prior_attestation": "2026-07-09",
+      "stamp_date": "2026-07-31"
+    }
+  ]
 }

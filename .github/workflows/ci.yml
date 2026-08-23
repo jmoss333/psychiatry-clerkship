@@ -76,6 +76,12 @@ jobs:
       - name: Validate — registry schemas
         run: python3 13_Faculty_Resources/_automation/validate_registry_schemas.py
 
+      - name: Test — evidence-annotation gate
+        run: python3 13_Faculty_Resources/_automation/validate_evidence_annotations.py --self-test
+
+      - name: Validate — evidence annotations against source spans
+        run: python3 13_Faculty_Resources/_automation/validate_evidence_annotations.py
+
       - name: Test — ReConnect snapshot provenance
         run: python3 13_Faculty_Resources/_automation/test_validate_reconnect_snapshot_provenance.py
 

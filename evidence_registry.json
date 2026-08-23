@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "owner": "Joshua Moss, MD",
   "usageNotice": "Educational metadata only; faculty review remains required for clinical recommendations.",
-  "updated": "2026-07-18",
+  "updated": "2026-08-21",
   "surveillance": {
     "version": 1,
     "updated": "2026-07-08",
@@ -48,7 +48,7 @@
       },
       "max_candidates_per_run": 25,
       "severity_default": "P2",
-      "notes": "Manual-trigger first. Journals are copyright-sensitive\u2014capture citation + link, not full text."
+      "notes": "Manual-trigger first. Journals are copyright-sensitive—capture citation + link, not full text."
     }
   },
   "sources": [
@@ -503,9 +503,9 @@
       },
       "appraisal": {
         "studyDesign": "Conceptual article proposing the biopsychosocial model as an alternative to the dominant biomedical model.",
-        "population": "Not applicable \u2014 conceptual/review article",
-        "comparator": "Not applicable \u2014 conceptual/review article",
-        "outcomes": "Not applicable \u2014 conceptual/review article",
+        "population": "Not applicable — conceptual/review article",
+        "comparator": "Not applicable — conceptual/review article",
+        "outcomes": "Not applicable — conceptual/review article",
         "limitations": "Conceptual proposal rather than an empirical evaluation; the abstract reports no enrolled sample, comparator, or measured outcomes.",
         "reviewStatus": "reviewed",
         "reviewedAt": "2026-07-12"
@@ -630,7 +630,7 @@
       "appraisal": {
         "studyDesign": "Conceptual clinical-legal review and practical assessment framework.",
         "population": "Patients whose ability to accept or refuse a specific treatment is questioned; no enrolled study sample.",
-        "comparator": "Not applicable \u2014 conceptual/review article",
+        "comparator": "Not applicable — conceptual/review article",
         "outcomes": "Defines four abilities: communicating a choice, understanding information, appreciating the situation and consequences, and manipulating information rationally; it also distinguishes clinical assessment from legal adjudication.",
         "limitations": "Conceptual and legal framework; the abstract reports no validation cohort, diagnostic-accuracy comparison, or patient outcomes.",
         "reviewStatus": "reviewed",
@@ -695,7 +695,7 @@
       "appraisal": {
         "studyDesign": "Descriptive clinical-practice intervention article with a case example; not an outcome trial.",
         "population": "Suicidal patients evaluated in emergency departments and other acute-care settings are the target population; no analytic sample was enrolled.",
-        "comparator": "Not applicable \u2014 conceptual/review article",
+        "comparator": "Not applicable — conceptual/review article",
         "outcomes": "Describes a written, prioritized six-component plan covering warning signs, internal coping, social distraction, supportive contacts, professional resources, and lethal-means restriction; no empirical effectiveness outcome was measured.",
         "limitations": "Descriptive, non-comparative article; it cannot itself establish effectiveness, and subsequent Safety Planning Intervention outcome studies are outside its scope.",
         "reviewStatus": "reviewed",
@@ -978,7 +978,7 @@
         "tier": 1,
         "selection": "7",
         "role": "required",
-        "teachingRole": "Expressed emotion \u2192 relapse",
+        "teachingRole": "Expressed emotion → relapse",
         "weekNumbers": [
           4
         ],
@@ -1307,8 +1307,10 @@
       "governance": {
         "lastReviewed": "2026-07-12",
         "reviewCadence": "annual",
-        "supersededBy": [],
-        "correctionStatus": "none-known"
+        "supersededBy": [
+          "Chien WT, Ma DCF, Bressington D, Mou H. Family-Based Interventions Versus Standard Care for People With Schizophrenia. Cochrane Database Syst Rev. 2024."
+        ],
+        "correctionStatus": "superseded"
       }
     },
     {
@@ -1577,7 +1579,7 @@
         "tier": 1,
         "selection": "14a",
         "role": "required",
-        "teachingRole": "Candidate-gene rise\u2026",
+        "teachingRole": "Candidate-gene rise…",
         "weekNumbers": [
           6
         ],
@@ -1662,7 +1664,7 @@
         "tier": 1,
         "selection": "14b",
         "role": "required",
-        "teachingRole": "\u2026and fall (replication crisis)",
+        "teachingRole": "…and fall (replication crisis)",
         "weekNumbers": [
           6
         ],
@@ -1839,8 +1841,8 @@
       },
       "appraisal": {
         "studyDesign": "Narrative and conceptual review of neurobiological evidence supporting the brain-disease model of addiction.",
-        "population": "Not applicable \u2014 conceptual/review article",
-        "comparator": "Not applicable \u2014 conceptual/review article",
+        "population": "Not applicable — conceptual/review article",
+        "comparator": "Not applicable — conceptual/review article",
         "outcomes": "The review synthesizes a three-stage addiction cycle and links it to adaptations in reward, stress, and executive-control circuits that impair behavioral control.",
         "limitations": "The review has no defined study population, comparator, or pooled clinical-effect estimate; it also notes that the model does not identify an abnormality shared by every person with addiction and does not by itself explain untreated recovery.",
         "reviewStatus": "reviewed",
@@ -2302,6 +2304,297 @@
         ],
         "clerkshipRelevance": "Supports recognition of mania and mixed features, treatment-emergent (antidepressant-induced) switch risk, and suicide-risk awareness in mixed states under supervision.",
         "shelfComatRelevance": "High",
+        "clinicalWorkflowRelevance": "High"
+      }
+    },
+    {
+      "id": "fluckiger-alliance-meta-2018",
+      "type": "systematic-review",
+      "citation": {
+        "title": "The Alliance in Adult Psychotherapy: A Meta-Analytic Synthesis",
+        "authors": [
+          {
+            "family": "Flückiger"
+          },
+          {
+            "family": "Del Re"
+          },
+          {
+            "family": "Wampold"
+          },
+          {
+            "family": "Horvath"
+          }
+        ],
+        "organization": "",
+        "year": 2018,
+        "journal": "Psychotherapy",
+        "volume": "",
+        "pages": "",
+        "doi": "",
+        "pmid": "29792475",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/29792475/"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "abstract-check-2026-08-21",
+        "verifiedAt": "2026-08-21",
+        "note": "PMID corrected 2026-08-21: previously filed as 30335453, which is Elliott's empathy meta-analysis."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "meta-analysis of 295 studies, >30,000 patients",
+        "facultyReviewStatus": "pending-faculty-review",
+        "lastReviewed": "2026-08-21",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "therapy",
+          "alliance",
+          "common-factors"
+        ],
+        "clerkshipRelevance": "The quantitative anchor for the alliance-outcome relationship (r = .278).",
+        "shelfComatRelevance": "Moderate",
+        "clinicalWorkflowRelevance": "High"
+      }
+    },
+    {
+      "id": "elliott-empathic-reflections-2023",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Empathic Reflections by Themselves Are Not Effective: Meta-Analysis and Qualitative Synthesis",
+        "authors": [
+          {
+            "family": "Elliott"
+          },
+          {
+            "family": "Bohart"
+          },
+          {
+            "family": "Larson"
+          },
+          {
+            "family": "Muntigl"
+          },
+          {
+            "family": "Smoliak"
+          }
+        ],
+        "organization": "",
+        "year": 2023,
+        "journal": "Psychotherapy Research",
+        "volume": "",
+        "pages": "",
+        "doi": "",
+        "pmid": "",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/?term=Empathic+Reflections+by+Themselves+Are+Not+Effective"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "abstract-check-2026-08-21",
+        "verifiedAt": "2026-08-21",
+        "note": "Identified via completed OpenEvidence Deep Consult; abstract conclusion captured verbatim."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "meta-analysis of 43 samples",
+        "facultyReviewStatus": "pending-faculty-review",
+        "lastReviewed": "2026-08-21",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "therapy",
+          "alliance",
+          "empathy"
+        ],
+        "clerkshipRelevance": "Distinguishes experienced empathy from empathic reflection as a technique.",
+        "shelfComatRelevance": "Moderate",
+        "clinicalWorkflowRelevance": "High"
+      }
+    },
+    {
+      "id": "cbtp-covariate-synthesis-2026",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Evidence synthesis of covariate moderation of cognitive-behavioural therapy efficacy in psychosis",
+        "authors": [
+          {
+            "family": "(see registry note)"
+          }
+        ],
+        "organization": "",
+        "year": 2026,
+        "journal": "(see registry note)",
+        "volume": "",
+        "pages": "",
+        "doi": "",
+        "pmid": "41217072",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/41217072/"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "abstract-check-2026-08-21",
+        "verifiedAt": "2026-08-21",
+        "note": "Annotation inverted in v1 and corrected 2026-08-21 against the abstract conclusion."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "evidence synthesis with covariate meta-regression",
+        "facultyReviewStatus": "pending-faculty-review",
+        "lastReviewed": "2026-08-21",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "therapy",
+          "psychosis",
+          "cbtp"
+        ],
+        "clerkshipRelevance": "The selection-fallacy anchor: no covariate reliably moderated CBTp efficacy.",
+        "shelfComatRelevance": "Moderate",
+        "clinicalWorkflowRelevance": "High"
+      }
+    },
+    {
+      "id": "mbt-self-harm-meta-2024",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Mentalization-based treatment for self-harm: meta-analysis",
+        "authors": [
+          {
+            "family": "(see registry note)"
+          }
+        ],
+        "organization": "",
+        "year": 2024,
+        "journal": "(see registry note)",
+        "volume": "",
+        "pages": "",
+        "doi": "",
+        "pmid": "38279664",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/38279664/"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "abstract-check-2026-08-21",
+        "verifiedAt": "2026-08-21",
+        "note": "Annotation inverted in v1 and corrected 2026-08-21 against the abstract conclusion."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "meta-analysis; pre-post vs active-control contrast",
+        "facultyReviewStatus": "pending-faculty-review",
+        "lastReviewed": "2026-08-21",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "therapy",
+          "personality",
+          "self-harm"
+        ],
+        "clerkshipRelevance": "Teaches the difference between pre-post support and superiority over an active control.",
+        "shelfComatRelevance": "Moderate",
+        "clinicalWorkflowRelevance": "High"
+      }
+    },
+    {
+      "id": "ba-cooccurring-sud-meta-2021",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Behavioural activation for depression in co-occurring substance use disorder: meta-analysis",
+        "authors": [
+          {
+            "family": "(see registry note)"
+          }
+        ],
+        "organization": "",
+        "year": 2021,
+        "journal": "(see registry note)",
+        "volume": "",
+        "pages": "",
+        "doi": "",
+        "pmid": "34146994",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/34146994/"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "abstract-check-2026-08-21",
+        "verifiedAt": "2026-08-21",
+        "note": "Annotation asserted efficacy in v1; corrected 2026-08-21."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "meta-analysis, 5 trials, n = 195, GRADE Low",
+        "facultyReviewStatus": "pending-faculty-review",
+        "lastReviewed": "2026-08-21",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "therapy",
+          "depression",
+          "substance-use"
+        ],
+        "clerkshipRelevance": "The acceptability-not-efficacy result; teaches how to read a null with a question for a title.",
+        "shelfComatRelevance": "Moderate",
+        "clinicalWorkflowRelevance": "High"
+      }
+    },
+    {
+      "id": "shank-lethal-means-sr-2026",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Systematic review of the impact of interventions changing access to lethal means on suicide attempts and deaths",
+        "authors": [
+          {
+            "family": "Shank"
+          },
+          {
+            "family": "Smolenski"
+          },
+          {
+            "family": "Boyd"
+          }
+        ],
+        "organization": "",
+        "year": 2026,
+        "journal": "Injury Prevention",
+        "volume": "",
+        "pages": "",
+        "doi": "10.1136/ip-2024-045611",
+        "pmid": "40185617",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/40185617/"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "abstract-check-2026-08-21",
+        "verifiedAt": "2026-08-21",
+        "note": "v1 annotation ('strongest causal lever') retracted 2026-08-21; see SPEC_Therapy_Curriculum_Domains_v2."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "systematic review; ecological designs; no RCTs identified",
+        "facultyReviewStatus": "pending-faculty-review",
+        "lastReviewed": "2026-08-21",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "suicide",
+          "safety",
+          "lethal-means"
+        ],
+        "clerkshipRelevance": "The honest ceiling on individual lethal-means counselling claims.",
+        "shelfComatRelevance": "Moderate",
         "clinicalWorkflowRelevance": "High"
       }
     }
