@@ -199,10 +199,18 @@ function fdSearchResults(index, query, synonyms, state){
   for(var e=0;e<expandedWords.length;e++){ if(expandedWords[e]) qw.push(expandedWords[e]); }
   var contentWords=fdSearchContentWords(qw);
 
+  /* The PROTOCOL pass deliberately keeps the UNFILTERED word list. The index carries no stem or
+     synonym coverage for "suicidal", "die", or "self-harm", so on a plain-language query --
+     "she said she wants to die", "patient wants to leave" -- the only thing that reaches a safety
+     sheet is a match on one of the query's own words. Filtering them here dropped the safety kit
+     out of those queries entirely. Stopword filtering exists to stop "on"/"the" acting as a
+     wildcard in the ITEM pass, where a spurious match displaces a real one inside the cap; the
+     protocol pass has no such failure mode -- protocols are 5 items, always rank first, and
+     always fit inside the cap. */
   var protoResults=[];
   for(var kk=0;kk<kit.length;kk++){
     var kitItem=kit[kk].item;
-    if(fdSearchHits(fdSearchHaystack(kitItem), rawQuery, contentWords)){
+    if(fdSearchHits(fdSearchHaystack(kitItem), rawQuery, qw)){
       protoResults.push({ item: kitItem, kind:'protocol', meta:'safety · protocol' });
       seenRefs[kitItem.ref]=true;
     }
@@ -225,10 +233,15 @@ function fdSearchResults(index, query, synonyms, state){
       });
     }
   }
-  /* Stable by construction: equal scores preserve the alphabetical order established above.
-     Protocols are concatenated ahead of every item and are never reordered -- the safety
-     contract is positional, not score-based. */
-  itemResults.sort(function(a,b){ return b._score-a._score; });
+  /* Ties break on ref rather than on Array.prototype.sort stability, which ES5 does not
+     guarantee: on an engine that reorders equal scores the tail of the list would shuffle and
+     the cap-at-8 would drop a different page in different browsers. Protocols are concatenated
+     ahead of every item and are never reordered -- the safety contract is positional, not
+     score-based. */
+  itemResults.sort(function(a,b){
+    return (b._score-a._score) ||
+      (a.item.ref<b.item.ref?-1:(a.item.ref>b.item.ref?1:0));
+  });
   for(var s=0;s<itemResults.length;s++){ delete itemResults[s]._score; }
 
   return protoResults.concat(itemResults).slice(0,8);

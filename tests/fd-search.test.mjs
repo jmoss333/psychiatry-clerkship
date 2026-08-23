@@ -253,8 +253,16 @@ test('synonyms are not hardcoded -- an empty synonym map falls back to plain sub
 
 const titles = (q) => F.fdSearchResults(REAL_INDEX, q, SYN, {}).map((r) => r.item.title);
 
-test('searching a page title exactly returns that page first', () => {
-  assert.equal(titles('therapy on the unit')[0], 'Therapy on the Unit');
+test('searching a page title exactly returns that page at the head of the item block', () => {
+  // "Head of the ITEM block", not head of the whole list: protocols are matched on the
+  // UNFILTERED query and concatenated ahead of every item, so a multi-word query whose stopwords
+  // brush a safety sheet puts protocols above the title match. That is the stated safety
+  // contract, and it is what the base commit did too -- at d24f192 this query returned five
+  // protocols and no Therapy on the Unit at all. The relevance fix owns the item ordering.
+  const r = F.fdSearchResults(REAL_INDEX, 'therapy on the unit', SYN, {});
+  const items = r.filter((x) => x.kind === 'item');
+  assert.equal(items[0].item.title, 'Therapy on the Unit');
+  assert.ok(r.indexOf(items[0]) < 8, 'the exact title match must survive the cap-at-8');
 });
 
 test('a one-word topic query surfaces the attested pages for that topic', () => {
@@ -291,4 +299,39 @@ test('protocols still rank ahead of ordinary items after scoring', () => {
 
 test('scoring does not break the cap-at-8 contract', () => {
   assert.ok(F.fdSearchResults(REAL_INDEX, 'a', SYN, {}).length <= 8);
+});
+
+// ---- protocol reachability for natural-language safety queries -------------------------------
+// The index carries no stem or synonym coverage for "suicidal", "die", or "self-harm", so the
+// UNFILTERED word list is the only thing that surfaces a protocol sheet for the way a learner
+// actually types mid-shift. Stopword filtering belongs to the item pass alone: applying it to the
+// protocol pass silently removed the safety kit from these queries.
+
+test('a natural-language risk disclosure still returns the safety-kit protocol first', () => {
+  const r = F.fdSearchResults(REAL_INDEX, 'she said she wants to die', SYN, {});
+  assert.ok(r.some((x) => x.kind === 'protocol'),
+    'no protocol at all for a plain-language risk disclosure');
+  assert.equal(r[0].kind, 'protocol', 'the protocol sheet must lead, not a study-mode tool');
+});
+
+test('asking how to talk to a suicidal patient still reaches the suicide protocol sheet', () => {
+  const refs = F.fdSearchResults(REAL_INDEX, 'how do i talk to a suicidal patient', SYN, {})
+    .map((x) => x.item.ref);
+  assert.ok(refs.includes('pg_suicide.md'), `pg_suicide.md missing: ${refs.join(', ')}`);
+});
+
+test('"patient wants to leave" still reaches both the suicide and the capacity/AMA sheets', () => {
+  const refs = F.fdSearchResults(REAL_INDEX, 'patient wants to leave', SYN, {})
+    .map((x) => x.item.ref);
+  assert.ok(refs.includes('pg_suicide.md'), `pg_suicide.md missing: ${refs.join(', ')}`);
+  assert.ok(refs.includes('exp_consult.md'), `exp_consult.md missing: ${refs.join(', ')}`);
+});
+
+test('the item comparator breaks score ties explicitly rather than trusting sort stability', () => {
+  // ES5 does not guarantee a stable Array.prototype.sort; an engine that reorders equal scores
+  // would reshuffle the tail of every result list, and the cap-at-8 would then drop a different
+  // page on different browsers. The tiebreak makes the order a property of the comparator.
+  const src = searchSrc.slice(searchSrc.indexOf('itemResults.sort('));
+  assert.match(src.slice(0, 400), /_score[\s\S]{0,120}\|\|[\s\S]{0,160}ref/,
+    'itemResults.sort must fall back to a ref comparison when scores are equal');
 });
