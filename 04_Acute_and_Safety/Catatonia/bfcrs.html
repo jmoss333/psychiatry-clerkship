@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- [RC-META] tool="Bush-Francis Catatonia Rating Scale" version="1.1" built="2026-07-07" category="acute-safety" audience="trainee,ms3" settings="inpatient" time="10min" summary="Interactive Bush-Francis Catatonia Rating Scale (BFCRS): 23 items with operational 0-3 anchors, live screening count (items 1-14, positive if >=2 scored >=1), severity total /69, and a lorazepam-challenge prompt when the screen is positive. Educational; fictional composites only; no PHI." -->
+<!-- [RC-META] tool="Bush-Francis Catatonia Rating Scale" version="1.1" built="2026-07-07" category="acute-safety" audience="trainee,ms3" settings="inpatient" time="10min" summary="Reference page for the Bush-Francis Catatonia Rating Scale (BFCRS). Item text and 0-3 anchor ladders are NOT reproduced: the scale is published under URMC terms requiring prior written consent (WP-02d, 2026-08-23). Cites the primary source, links the official version, and directs scoring to the institution's approved form. Administration teaching is authored separately (WP-22)." -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex,nofollow">
 <title>Bush-Francis Catatonia Rating Scale</title>
-<meta name="description" content="Interactive Bush-Francis Catatonia Rating Scale (BFCRS) with per-level symptom anchors, screening count, and severity total.">
+<meta name="description" content="Bush-Francis Catatonia Rating Scale (BFCRS) — reference and attribution. Item text and scoring anchors are not reproduced here; use your institution's approved form.">
 <style>
   :root{
     --bg:#f6f3ee; --bg-alt:#faf6f0; --surface:#ffffff; --border:#ddd3c6;
@@ -104,120 +104,38 @@
   </video>
 </details>
 <script>(function(){var d=document.currentScript.previousElementSibling;if(!d||d.tagName!=='DETAILS')return;var v=d.querySelector('video');if(!v)return;d.addEventListener('toggle',function(){if(d.open){try{v.currentTime=0;v.play&&v.play();}catch(_){}}else{try{v.pause&&v.pause();}catch(_){}}});})();</script>
-<div id="root"></div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<script>
-var e=React.createElement, useState=React.useState;
+<div id="root" class="wrap">
+  <div class="eyebrow">Catatonia</div>
+  <h1>Bush-Francis Catatonia Rating Scale</h1>
+  <p class="sub">This page no longer reproduces the BFCRS. Use your unit&rsquo;s current approved
+  form to screen and score.</p>
 
-// Bush-Francis Catatonia Rating Scale — 23 items. Items 1–14 = screening instrument.
-// Each item: name, one-line descriptor, and operational anchors for levels 0–3.
-var BF=[
- {n:"Excitement",d:"Extreme hyperactivity, non-purposeful motor unrest",a:["Absent","Excessive motion, intermittent","Constant motion, hyperkinetic, no rest periods","Frantic, ceaseless catatonic excitement"]},
- {n:"Immobility / stupor",d:"Extreme hypoactivity; minimally responsive to surroundings",a:["Absent","Sits abnormally still; may interact briefly","Virtually no interaction with the external world","Stuporous; non-reactive even to painful stimuli"]},
- {n:"Mutism",d:"Verbal unresponsiveness (not due to aphasia)",a:["Absent","Responds to few questions; incomprehensible whisper","Speaks fewer than ~20 words over 5 minutes","No speech at all"]},
- {n:"Staring",d:"Fixed gaze, reduced visual scanning and blinking",a:["Absent","Poor eye contact; gaze held < 20 s; decreased blinking","Gaze held > 20 s, shifts only occasionally","Fixed, non-reactive gaze"]},
- {n:"Posturing / catalepsy",d:"Spontaneously maintains posture(s) against gravity",a:["Absent","Holds a posture < 1 minute","Holds a posture 1–15 minutes","Bizarre posture, or any posture held > 15 minutes"]},
- {n:"Grimacing",d:"Maintains odd facial expressions",a:["Absent","Held < 10 seconds","Held < 1 minute","Bizarre expression, or held > 1 minute"]},
- {n:"Echopraxia / echolalia",d:"Mimics the examiner's movements or speech",a:["Absent","Occasional","Frequent","Constant"]},
- {n:"Stereotypy",d:"Repetitive, non-goal-directed motor activity",a:["Absent","Occasional","Frequent","Constant"]},
- {n:"Mannerisms",d:"Odd, purposeful (caricatured) movements",a:["Absent","Occasional","Frequent","Constant"]},
- {n:"Verbigeration",d:"Repetition of phrases or sentences",a:["Absent","Occasional","Frequent, difficult to interrupt","Constant"]},
- {n:"Rigidity",d:"Maintains a rigid position against attempts to move",a:["Absent","Mild resistance","Moderate resistance","Severe; cannot be repositioned"]},
- {n:"Negativism",d:"Resists, or does the opposite of, instruction",a:["Absent","Mild, intermittent","Moderate, consistent","Severe, consistent"]},
- {n:"Waxy flexibility",d:"Initial resistance, then molds like a candle (scored 0 or 3)",a:["Absent","— (item is rated present / absent)","— (item is rated present / absent)","Present: molds into and holds the new posture"]},
- {n:"Withdrawal",d:"Refuses food / drink or eye contact",a:["Absent","Minimal intake / interaction for < 1 day","< 3 days","No intake / interaction for ≥ 3 days"]},
- {n:"Impulsivity",d:"Sudden, inappropriate acts without provocation",a:["Absent","Occasional","Frequent","Constant, or not redirectable"]},
- {n:"Automatic obedience",d:"Exaggerated cooperation with the examiner's request",a:["Absent","Occasional","Frequent","Constant"]},
- {n:"Mitgehen",d:"“Anglepoise” — limb rises to light finger pressure (scored 0 or 3)",a:["Absent","— (item is rated present / absent)","— (item is rated present / absent)","Present: limb raised by light pressure despite instruction"]},
- {n:"Gegenhalten",d:"Resistance proportional to the force applied",a:["Absent","Mild","Moderate","Severe; cannot be repositioned"]},
- {n:"Ambitendency",d:"Motorically “stuck,” hesitant, indecisive",a:["Absent","Occasional","Frequent","Constant"]},
- {n:"Grasp reflex",d:"Grasps the hand when the palm is stroked (scored 0 or 3)",a:["Absent","— (item is rated present / absent)","— (item is rated present / absent)","Present"]},
- {n:"Perseveration",d:"Returns repeatedly to the same topic or movement",a:["Absent","Occasional","Frequent","Constant"]},
- {n:"Combativeness",d:"Belligerent, usually undirected aggression",a:["Absent","Occasional; can be calmed","Frequent","Dangerous; requires intervention"]},
- {n:"Autonomic abnormality",d:"Abnormal temperature, BP, heart rate, RR, or sweating",a:["Absent","One parameter abnormal","Two parameters abnormal","Three or more parameters abnormal"]}
-];
+  <div class="disc" style="margin-top:18px">
+    <p style="margin:0 0 10px"><b>Why the items were removed.</b> The BFCRS is published by the
+    University of Rochester Medical Center under site-wide Web Terms of Use stating that the
+    contents &ldquo;may not be distributed, modified, reproduced, or used, in whole or in part
+    without the prior written consent of the University of Rochester Medical Center,&rdquo; with
+    use granted only for &ldquo;personal non-commercial use.&rdquo; No instrument-specific licence
+    is published alongside the scale. Reproducing all 23 items and their anchors on a public
+    teaching site is outside that grant, so they have been withdrawn pending written permission.</p>
 
-function App(){
-  var sv=useState(BF.map(function(){return 0;})),scores=sv[0],setScores=sv[1];
-  function set(i,v){ var a=scores.slice(); a[i]=v; setScores(a); }
-  function reset(){ setScores(BF.map(function(){return 0;})); window.scrollTo(0,0); }
+    <p style="margin:0 0 10px"><b>Primary source.</b> Bush G, Fink M, Petrides G, Dowling F,
+    Francis A. Catatonia. I. Rating scale and standardized examination.
+    <em>Acta Psychiatr Scand.</em> 1996;93(2):129&ndash;36.
+    <a href="https://pubmed.ncbi.nlm.nih.gov/8686483/" target="_blank" rel="noopener noreferrer">PMID
+    8686483</a>.</p>
 
-  var screenCount=0; for(var i=0;i<14;i++){ if(scores[i]>0) screenCount++; }
-  var positive=screenCount>=2;
-  var total=scores.reduce(function(a,b){return a+b;},0);
-  var pct=Math.round(100*total/69);
+    <p style="margin:0 0 10px"><b>Official version.</b> The scale, its training materials and the
+    standardized examination are published at
+    <a href="https://www.urmc.rochester.edu/psychiatry/divisions/collaborative-care-and-wellness/bush-francis-catatonia-rating-scale"
+    target="_blank" rel="noopener noreferrer">the URMC BFCRS site</a>. Score from your
+    institution&rsquo;s current approved form at the bedside, not from any teaching page.</p>
 
-  function Item(i){
-    var it=BF[i];
-    return e("div",{className:"item",key:i},
-      e("div",{className:"ihead"},
-        e("span",{className:"num"}, i+1),
-        e("span",null, e("span",{className:"iname"}, it.n), it.d? e("span",{className:"idesc"}, " — "+it.d):null)),
-      e("div",{className:"opts"}, [0,1,2,3].map(function(v){
-        var on=scores[i]===v;
-        return e("button",{key:v,className:"opt"+(on?" on":"")+(v===0?" zero":""),onClick:function(){set(i,v);}},
-          e("span",{className:"k"}, v),
-          e("span",{className:"atx"}, it.a[v]));
-      })));
-  }
-
-  return e("div",{className:"wrap"},
-    e("div",{className:"eyebrow"},"Catatonia"),
-    e("h1",null,"Bush-Francis Catatonia Rating Scale"),
-    e("div",{className:"sub"},"Score each item by the description that best fits. Items 1–14 are the screening instrument; items 15–23 add severity detail."),
-    e("span",{className:"opt-pill"},"Optional · teaching tool"),
-
-    e("div",{className:"summary"},
-      e("div",{className:"dualcards"},
-        e("div",{className:"scard"},
-          e("div",{className:"eyebrow2"},"Screen · items 1–14"),
-          e("div",{className:"dialrow"},
-            e("div",{className:"dial",role:"img","aria-label":"Screen: "+screenCount+" of 14 items — "+(positive?"positive":"negative"),style:{background:"conic-gradient(var(--danger) "+(screenCount/14*360)+"deg, var(--primary-light) 0)"}},
-              e("div",{className:"dialinner"}, e("b",{style:{color:(positive?"var(--danger)":"var(--accent-dark)")}}, screenCount), e("small",null,"of 14"))),
-            e("div",null,
-              e("div",{className:"posword",style:{color:(positive?"var(--danger)":"var(--accent-dark)")}}, positive?"POSITIVE":"NEGATIVE"),
-              e("div",{className:"drule"},"≥ 2 items scored ≥ 1 → screen positive")))),
-        e("div",{className:"scard","aria-live":"polite","aria-atomic":true},
-          e("div",{className:"eyebrow2"},"Severity total"),
-          e("div",{className:"sevnum"}, total, e("span",{className:"sevmax"}," / 69")),
-          e("div",{className:"sevtrack"}, e("i",{style:{width:pct+"%"}})),
-          e("div",{className:"sevcap"},"Independent of the screen — track it to follow response."))),
-      positive? e("div",{className:"lorcallout"},
-        e("span",{className:"flask"},"⚗"),
-/* QA-ALLOW-DOSE-START: validated-instrument-line */
-        e("span",null, e("b",null,"Screen positive → consider a lorazepam challenge. "),"e.g., 1–2 mg IV/IM, reassess in 1–2 h. Hold antipsychotics until catatonia is excluded (malignant catatonia / NMS risk). Escalate per protocol.")) : null
-/* QA-ALLOW-DOSE-END: validated-instrument-line */
-    ),
-    e("div",{className:"heatwrap"},
-      e("div",{className:"eyebrow2",style:{margin:"0 0 8px 2px"}},"All 23 items"),
-      e("div",{className:"heatgrid"}, scores.map(function(s,idx){
-        var bg = s===0?"var(--bg-alt)":(s===1?"#e0a86a":(s===2?"var(--primary)":"var(--danger)"));
-        return e("div",{key:idx,className:"hcell",style:{background:bg,color:(s===0?"var(--text-light)":"#fff"),borderColor:(s===0?"var(--border)":"transparent")},title:(idx+1)+". "+BF[idx].n+" · "+s}, idx+1);
-      })),
-      (function(){ var chips=scores.map(function(s,idx){return {s:s,n:BF[idx].n};}).filter(function(x){return x.s>0;}).sort(function(a,b){return b.s-a.s;});
-        return chips.length? e("div",{className:"heatchips"}, chips.map(function(c,idx){return e("span",{key:idx,className:"hchip"}, c.n+" · "+c.s);})) : e("div",{className:"sevcap",style:{marginTop:"8px"}},"Score the items below — the grid fills as you go.");
-      })()
-    ),
-
-    e("div",{className:"legend"},"Each option below shows the operational anchor for that level — tap the one that matches."),
-
-    e("div",{className:"ghead"},"Screening instrument ",e("small",null,"items 1–14")),
-    [0,1,2,3,4,5,6,7,8,9,10,11,12,13].map(function(i){return Item(i);}),
-
-    e("div",{className:"ghead"},"Additional severity items ",e("small",null,"items 15–23")),
-    [14,15,16,17,18,19,20,21,22].map(function(i){return Item(i);}),
-
-    e("div",{className:"row",style:{justifyContent:"flex-end",marginTop:"14px"}},
-      e("button",{className:"btn ghost",onClick:reset},"Reset")),
-
-    e("div",{className:"disc"},
-      "Teaching version of the Bush-Francis Catatonia Rating Scale (Bush, Fink, Petrides, Dowling & Francis, ",
-      e("em",null,"Acta Psychiatr Scand"),", 1996). Anchors are paraphrased for teaching — verify against the published manual and follow your institutional protocol. The lorazepam-challenge prompt is general guidance, not a dosing order. Educational; fictional composites only, no PHI. Use supervision for any bedside assessment or treatment decision.",
-      e("br"),"Joshua Moss, MD | Psychiatrist")
-  );
-}
-ReactDOM.createRoot(document.getElementById("root")).render(e(App));
-</script>
+    <p style="margin:0">Administration teaching for this scale &mdash; how the examination is
+    conducted and what the score does and does not license &mdash; is authored separately and is
+    not yet published here.</p>
+    <br>Joshua Moss, MD | Psychiatrist
+  </div>
+</div>
 </body>
 </html>

@@ -183,7 +183,7 @@ gates should ship hard unless there is a reason of their own to warn first.
 | 1 | WP-02 | COWS legal-value arrays | AGENT | **merged** | — | #375 | — |
 | 1 | **WP-02b** | Instrument attribution on `withdrawal.html` (CIWA-Ar + COWS) | AGENT | **done** | `decision/instrument-scope-option-a` | — | — |
 | 1 | **WP-02c** | Verify the PHQ-9/GAD-7 permission footer against the current published form | AUTHOR-GATED | todo | — | — | needs the current form, not a remembered footer |
-| 1 | **WP-02d** | Establish CIWA-Ar / COWS / BFCRS copyright status | AUTHOR-GATED | todo | — | — | author/counsel task; **blocks WP-20/21/22** |
+| 1 | **WP-02d** | Establish CIWA-Ar / COWS / BFCRS copyright status | AUTHOR-GATED | **resolved** | — | — | BFCRS **restricted** (URMC terms) → items removed, WP-22 now blocked on written permission; COWS grant is clinical-copying only, 45 anchors flagged not reverted; CIWA-Ar unresolved, needs one ILL |
 | 1 | **WP-06R-a** | Retire the C-SSRS verbatim reproduction from `cssrs.html` | AGENT + AUTHOR-GATED | **next** | — | — | removal is mechanical; the replacement administration-teaching copy is authored |
 | 1 | **WP-06R-b** | Safety-plan rehearsal tool that reproduces no Stanley–Brown content | AUTHOR-GATED | todo | — | — | content |
 | 1 | WP-03 | CIWA bands + delete unconditional directive | AGENT+REVIEW | todo | — | — | — |
