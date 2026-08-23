@@ -1,0 +1,594 @@
+
+The Psychiatry Resident Psychopharmacology Canon: An Evidence-Based Compendium
+
+
+---
+
+I. ANTIPSYCHOTICS
+
+
+Landmark Effectiveness Trials
+
+
+CATIE (2005) enrolled 1,460 patients with chronic schizophrenia across 57 US sites in a double-blind, NIMH-funded pragmatic trial comparing olanzapine, quetiapine, risperidone, ziprasidone, and perphenazine.[1] The primary finding — that 74% of patients discontinued before 18 months (median 4.6 months) — underscored the profound tolerability challenges across all agents.[1] Olanzapine had the longest time to discontinuation (9.2 months) but the greatest metabolic burden; perphenazine was comparably effective to most SGAs, challenging the assumed class superiority of second-generation agents.[1][2] In Phase 2, clozapine was superior to other SGAs for patients who failed Phase 1 due to lack of efficacy.[2]
+
+Figure 2 Outcome Measures of Effectiveness.
+
+CUtLASS (2006) randomized 227 UK patients to FGA vs. SGA classes and found no advantage for SGAs in quality of life, symptoms, or cost-effectiveness, with a trend actually favoring FGAs.[4] CUtLASS Band 2 confirmed clozapine's superiority over other SGAs in treatment-resistant populations.[5]
+
+EUFEST (2008) studied 498 first-episode patients and found all SGAs had lower discontinuation rates than low-dose haloperidol, but no differences in PANSS total score change by mixed-model analysis.[6][7] Response rates ranged from 67% (amisulpride, olanzapine) to 37% (haloperidol).[6]
+
+Network Meta-Analyses: The Efficacy Hierarchy
+
+
+Three successive NMAs have established a consistent efficacy hierarchy. The Leucht et al. 2013 NMA (212 RCTs, 43,049 participants) first demonstrated that not all antipsychotics are equally effective, with clozapine (SMD 0.88) significantly more effective than all others.[8] The Huhn et al. 2019 update (402 RCTs, 53,463 participants) confirmed that clozapine, amisulpride, olanzapine, and risperidone were significantly more efficacious than multiple other agents, and that side-effect differences were more marked than efficacy differences.[3] The Schneider-Thoma et al. 2026 update (438 RCTs, 78,193 participants) incorporated xanomeline-trospium — the first non-dopaminergic antipsychotic — and reaffirmed the same top-tier agents.[9]
+
+For maintenance treatment, the Schneider-Thoma et al. 2022 NMA (127 RCTs, 18,152 participants) found no clear superiority of specific antipsychotics for relapse prevention, suggesting choice should be guided mainly by tolerability.[10]
+
+Key Safety Controversies
+
+
+Metabolic effects remain the dominant tolerability concern. The 2004 ADA/APA Consensus Statement established monitoring recommendations, yet metabolic screening remains dismally low (baseline glucose ~23%, lipids ~8%).[11][12] The metabolic risk hierarchy is well-established: clozapine and olanzapine carry the highest risk; ziprasidone, lurasidone, and aripiprazole the lowest.[3] GLP-1 receptor agonists (e.g., semaglutide) are emerging as promising interventions for antipsychotic-induced metabolic effects.[13]
+
+Mortality in elderly with dementia prompted the 2005 FDA black box warning (1.6–1.7× increased mortality risk), extended to all antipsychotics in 2008.[14][15] NNH estimates range from 26 (haloperidol) to 50 (quetiapine) over 180 days.[14]
+
+---
+
+II. ANTIDEPRESSANTS
+
+
+STARD: The Foundational Pragmatic Trial
+
+
+STARD enrolled 4,041 outpatients across 41 sites in the largest pragmatic antidepressant trial. Step 1 citalopram achieved ~33% remission; subsequent steps showed diminishing returns with no antidepressant clearly superior to another at any step. The originally reported cumulative remission rate of ~67% was challenged by a 2023 reanalysis using protocol-stipulated blinded ratings, which found the actual rate was [16][17]35.0% — approximately half the original figure.[18]
+
+Cipriani 2018: The Definitive NMA
+
+
+The landmark NMA (522 RCTs, 116,477 patients, 21 antidepressants) confirmed all 21 antidepressants were more effective than placebo (ORs 1.37–2.13).[18] For the best balance of efficacy and acceptability, escitalopram and sertraline ranked in the top half for both domains.[18] A "novelty effect" was identified: drugs appeared 1.18× more effective when they were the experimental agent.[18]
+
+The Efficacy Debate
+
+
+The Kirsch meta-analysis (2008) and Fournier patient-level meta-analysis (2010) argued that the drug-placebo difference (~1.8–2.0 HDRS points) was below clinical significance thresholds except in very severe depression.[19] Counter-evidence from Gibbons et al. (2012) and Hieronymus et al. (2019), using patient-level data, found antidepressants effective across the full severity spectrum.[19] A Bayesian meta-analysis (169 RCTs) found the variability ratio was ~1.0, suggesting a near-constant, uniform treatment effect rather than distinct responder/non-responder subgroups.[20]
+
+Publication Bias: Turner et al. (2008)
+
+
+This landmark NEJM study compared 74 FDA-registered trials with their published counterparts and found 94% of published trials appeared positive vs. only 51% per FDA analysis, with effect size inflation of 32% overall.[20]
+
+Figure 3 Mean Weighted Effect Size According to Drug, Publication Status, and Data Source.
+
+FDA Black Box Warning and Suicidality
+
+
+The 2004 pediatric and 2007 young adult (<25 years) black box warnings were based on a meta-analysis of 24 pediatric RCTs showing increased suicidal ideation/behavior (RR ~1.95), though no completed suicides occurred.[22] Unintended consequences included reduced mental health care utilization and subsequent increases in suicide deaths.[22]
+
+Key Negative/Practice-Changing Trials
+
+
+CO-MED (2011): Neither bupropion-escitalopram nor venlafaxine-mirtazapine combination outperformed escitalopram monotherapy as first-step treatment (remission ~38% across all arms).[23] VAST-D (2017): Aripiprazole augmentation (28.9% remission) was modestly superior to switching (22.3%) but not to bupropion augmentation (26.9%).[23] TADS (2004): Combination fluoxetine + CBT was superior to either alone in adolescents; CBT alone did not differ from placebo at 12 weeks.[24]
+
+---
+
+III. MOOD STABILIZERS
+
+
+Lithium
+
+
+The BALANCE trial (2010) is the pivotal maintenance study: 330 bipolar I patients randomized to lithium monotherapy, lithium + valproate, or valproate monotherapy for 24 months. Lithium monotherapy was significantly superior to valproate monotherapy (HR 0.71), and combination was superior to valproate alone (HR 0.59, NNT = 7).[25] Lithium's prophylactic evidence uniquely comes from non-enriched-design RCTs.[26]
+
+Lithium and suicide prevention is supported by the Cipriani et al. 2013 meta-analysis (48 RCTs, 6,674 participants): lithium reduced completed suicides (OR 0.13) and all-cause mortality (OR 0.38) vs. placebo.[27] Within-individual Swedish data (51,535 patients) confirmed a 14% reduction in suicidal events during lithium treatment but not during valproate treatment.[28]
+
+Lithium monitoring: The McKnight et al. 2012 systematic review established the toxicity profile — reduced urinary concentrating ability (~15%), hypothyroidism (6-fold increase), hyperparathyroidism (~10% of users).[29] Therapeutic range: 0.8–1.2 mEq/L acute, 0.8–1.0 mEq/L maintenance; toxicity ≥1.5 mEq/L.[30]
+
+Lamotrigine
+
+
+The Bowden (2003) and Calabrese (2003) 18-month trials established lamotrigine's polarity-specific profile: superior to placebo for depressive relapse prevention, while lithium was superior for manic relapse prevention.[31][32] The pooled analysis confirmed complementary polarity profiles (median survival: lamotrigine 197 days, lithium 184 days, placebo 86 days).[33]
+
+Valproate
+
+
+The Bowden et al. 2000 maintenance trial is a key negative trial: the primary ITT analysis failed to separate divalproex from placebo, though enrichment analysis showed benefit.[33] Valproate lacks FDA approval for maintenance despite widespread off-label use.[34] Teratogenicity is a critical concern: MCM risk ~9–10%, dose-dependent, with neural tube defects in 1.5–5.0%; folate supplementation does not prevent valproate-associated NTDs.[34]
+
+---
+
+IV. CLOZAPINE
+
+
+The Superiority Debate
+
+
+The Kane et al. 1988 pivotal study (SMD −0.88 vs. chlorpromazine in TRS) led to FDA approval, but this effect size has never been replicated.[34] A critical tension exists between RCT-based and real-world evidence:
+
+- RCT meta-analyses (Samara 2016, Dong 2024, Schneider-Thoma 2025 IPD-MA) find no clear superiority of clozapine over olanzapine/risperidone in blinded trials.[34][35]
+
+- Real-world cohort data (Masuda 2019, Tiihonen 2017, FIN20) consistently show clozapine associated with lowest hospitalization, lowest all-cause mortality (aHR 0.39), and lowest suicide mortality (aHR 0.21).[35][36]
+
+Explanations for this discrepancy include sampling bias (most severely treatment-resistant patients excluded from blinded RCTs), subtherapeutic clozapine dosing, and industry sponsorship bias.[37]
+
+InterSePT and Anti-Suicidal Properties
+
+
+The InterSePT trial (956 patients) demonstrated clozapine's significantly longer delay to recurrent suicidal behavior vs. olanzapine (HR 0.76), leading to the FDA's second approved indication.[38] Clozapine is the only antipsychotic consistently associated with decreased suicide risk across multiple nationwide register studies.[39][40]
+
+Figure 1
+
+REMS Monitoring and Underutilization
+
+
+ANC monitoring follows a tiered schedule: weekly for months 1–6, biweekly for months 7–12, monthly thereafter.[40] A 2025 global Delphi consensus recommends discontinuing routine ANC monitoring after 2 years and lowering cessation thresholds, as 85–90% of agranulocytosis cases occur in the first year.[42] Despite ~30% of schizophrenia patients having TRS, fewer than 10% receive clozapine in most US states, with an 18% decline in population-adjusted use from 2015–2020.[43]
+
+Augmentation of Partial Clozapine Response
+
+
+Only ~40–50% of TRS patients respond adequately to clozapine monotherapy.[44] The TRRIP Working Group recommends ensuring plasma levels ≥350 ng/mL before augmentation.[45] Medium-dose aripiprazole (9–<16.5 mg/day) combined with high-dose clozapine was associated with a 32% decreased hospitalization risk in a 2025 meta-analysis of two nationwide cohorts.[46] ECT augmentation of clozapine achieved 50% response vs. 0% in the Petrides et al. 2015 RCT.[22]
+
+---
+
+V. LONG-ACTING INJECTABLE ANTIPSYCHOTICS
+
+
+The RCT vs. Real-World Paradox
+
+
+The Kishimoto et al. 2021 meta-analysis (137 studies, 397,319 patients) found LAIs reduced relapse/hospitalization across all study designs, but the magnitude differed dramatically: RCTs RR 0.88, cohort studies RR 0.92, pre-post studies RR 0.44.[47] This discrepancy reflects selection of adherent patients and frequent monitoring improving oral adherence in RCTs.[47]
+
+Landmark Trials
+
+
+PRELAPSE (2020): The first large-scale US cluster-RCT in early-phase schizophrenia (489 participants, mean age 25) showed AOM reduced hospitalization by 44% (HR 0.56, NNT = 7).[48] PRIDE (2015): PP1M delayed treatment failure vs. oral antipsychotics in patients with incarceration history (HR 1.43, median 416 vs. 226 days).[49] PROACTIVE (2015): A notable negative trial — no difference in relapse between LAI risperidone and oral SGAs, likely due to biweekly monitoring improving adherence in both groups.[50]
+
+Real-World Effectiveness and Mortality
+
+
+The Hamina et al. 2024 nationwide Finnish study found paliperidone 3-month LAI had the lowest relapse risk (AHR 0.66 vs. oral olanzapine), followed by aripiprazole LAI (0.77).[51] LAIs are associated with 33% lower mortality than equivalent orals (aHR 0.67), with the greatest benefit when initiated early (≤3 years of illness).[52][51]
+
+---
+
+VI. TREATMENT-RESISTANT DEPRESSION
+
+
+Definition and Staging
+
+
+TRD is defined as inadequate response to ≥2 antidepressants despite adequate trial duration and adherence, affecting at least 30% of persons with depression.[53] The Maudsley Staging Method is the best-validated multidimensional staging model, incorporating treatment failure, severity, and duration (scores 3–15).[54]
+
+Augmentation Strategies
+
+
+Lithium augmentation is supported by 10 placebo-controlled trials (NNT = 5, OR 3.11).[55] Atypical antipsychotic augmentation has the most robust evidence: aripiprazole (OR 1.85) and quetiapine XR (OR 1.92) are the best-supported agents in network meta-analyses.[56] Five atypical antipsychotics now carry FDA approval for adjunctive MDD: aripiprazole, brexpiprazole, cariprazine, lumateperone, and quetiapine XR.[57]
+
+Esketamine/Ketamine
+
+
+Intranasal esketamine (FDA-approved 2019) demonstrated a MADRS difference of −4.0 to −6.8 points vs. placebo in the TRANSFORM trials.[19] The SUSTAIN-1 relapse prevention trial showed NNT = 4.[19] In a head-to-head NEJM trial, esketamine was 1.54 times as likely as quetiapine XR to achieve remission at week 8.[58] A 2025 phase 4 RCT demonstrated esketamine monotherapy efficacy (effect sizes 0.48–0.63), with significant effects within 24 hours.[59]
+
+IV ketamine meta-analysis (26 RCTs, 1,166 patients) showed SMD −1.74 at 4 hours and −0.89 at 1 week, with significant anti-suicidal effects (SMD −0.69 at 24 hours).[60]
+
+ECT vs. Ketamine: ELEKT-D
+
+
+The ELEKT-D trial (n=403) found ketamine was noninferior to ECT for nonpsychotic TRD (response 55.4% vs. 41.2%), with substantially less memory decline.[55] ECT remains recommended as superior for psychotic depression, older adults, and inpatient settings.[55]
+
+Table 2 Primary and Secondary Outcomes in the Modified Intention-to-Treat Population.*
+
+TMS
+
+
+The THREE-D trial (n=414) established that 3-minute iTBS was noninferior to 37.5-minute standard rTMS (response 49% vs. 47%, remission 32% vs. 27%).[62] The Stanford Neuromodulation Therapy (SNT) protocol — 50 iTBS sessions over 5 days — achieved 57% remission vs. 0% sham in the initial RCT, with a replication RCT confirming 50% vs. 21% remission.[62]
+
+Psilocybin
+
+
+The Goodwin et al. 2022 NEJM phase 2 trial (n=233) showed psilocybin 25 mg produced MADRS change of −12.0 vs. −5.4 for 1 mg control at 3 weeks, with 37% response and 29% remission.[63] However, the EPISODE trial (2026, n=144) had a negative primary endpoint (response 17.0% vs. 10.6%, p=0.19), though key secondary endpoints were significant.[64] Meta-analysis of 6 RCTs found response RR 2.34 and remission RR 3.38 at 2–3 weeks.[65]
+
+---
+
+VII. TREATMENT-RESISTANT BIPOLAR DISORDER
+
+
+No consensus definition exists, though the 2025 ISBD Task Force operationalized treatment-resistant bipolar I depression as inadequate response to two adequate trials of approved first-line treatments.[66] For refractory mania, guidelines recommend combination mood stabilizer + antipsychotic, then clozapine or ECT.[35]
+
+Clozapine in bipolar disorder has never been tested in a placebo-controlled RCT but shows 72–77% response in open trials of refractory mania.[67][36] A 2025 multinational register study found clozapine was more effective than other oral antipsychotics in reducing psychiatric hospitalizations in bipolar disorder.[68]
+
+ECT in bipolar depression achieves 73.9–77.1% response rates, with the only RCT (Schoeyen et al. 2015) showing ECT significantly superior to algorithm-based pharmacotherapy (response 73.9% vs. 35.0%).[68][69] Pramipexole augmentation showed 60–67% response vs. 9–20% placebo in small RCTs.[36][70]
+
+---
+
+VIII. TREATMENT-RESISTANT SCHIZOPHRENIA
+
+
+The TRRIP consensus defines TRS as persistent at least moderate symptoms after ≥2 courses of different antipsychotics at adequate dose (≥6 weeks), duration, and adherence.[71] All major international guidelines recommend clozapine as the treatment of choice.[71] The Siskind et al. 2016 meta-analysis found clozapine NNT = 9 vs. other antipsychotics.[71] Target trough plasma level is ≥350 ng/mL.[72]
+
+For clozapine-resistant schizophrenia (~50–60% of TRS patients), ECT augmentation (50% response vs. 0% in the Petrides RCT) and medium-dose aripiprazole augmentation have the best evidence.[45][46][22]
+
+---
+
+IX. ECT
+
+
+Core Efficacy Data
+
+
+The UK ECT Review Group meta-analysis (2003) established ECT's superiority over sham (SES −0.91) and pharmacotherapy (SES −0.80).[73] Overall response rates are 60–80% and remission rates 50–60%.[74] ECT is particularly effective in psychotic depression (OR 1.47 for remission) and older adults.[75]
+
+Electrode Placement and Pulse Width
+
+
+The Sackeim et al. (1993, 2000) studies established that RUL ECT efficacy is dose-dependent: low-dose RUL was essentially ineffective, while high-dose (6× threshold) RUL achieved response rates equivalent to bilateral ECT with fewer cognitive effects.[76][74] Ultrabrief pulse (0.3 ms) RUL ECT at 6× threshold achieved 73% remission with markedly fewer cognitive effects in the Sackeim 2008 study.[77]
+
+Relapse Prevention
+
+
+The Sackeim et al. 2001 JAMA study demonstrated that 84% relapse on placebo after ECT, establishing the necessity of continuation therapy; nortriptyline + lithium reduced relapse to 39%.[78] The CORE study (Kellner 2006) showed continuation ECT was equivalent to nortriptyline + lithium (~46% sustained remission).[79] The PRIDE Phase 2 study showed continuation ECT + venlafaxine + lithium achieved >80% sustained response in geriatric patients.[80]
+
+Cognitive Effects
+
+
+Bilateral ECT causes more severe and persisting retrograde amnesia than RUL ECT.[81] Autobiographical memory loss may be permanent (SMD 0.82 for bilateral, 0.32 for RUL).[81] Critically, ECT is not associated with increased dementia risk — a 2026 meta-analysis found significantly lower dementia risk in adults >50 years (HR 0.78).[82]
+
+ECT in Catatonia
+
+
+ECT improves 80–100% of catatonia, including up to 60% of benzodiazepine-refractory cases.[83]
+
+---
+
+X. PHARMACOGENOMICS
+
+
+The Evidence Gap
+
+
+The GUIDED trial (n=1,167) missed its primary endpoint (symptom improvement p=0.107) but showed significant secondary endpoints (remission 15.3% vs. 10.1%, p=0.007).[77] The PRIME Care trial (n=1,944) met its prescribing behavior co-primary endpoint but showed only "small nonpersistent effects on symptom remission" (OR 1.28, p=0.02 as repeated measure; week 24 specifically not significant).[84]
+
+Meta-analyses show modest but statistically significant improvements (remission RR ~1.4), though effect sizes have attenuated in more recent, better-designed trials.[37] The APA Council of Research (2024 update) concluded that evidence does not support use of currently available combinatorial PGx tools for treatment selection in MDD.[35] CPIC guidelines for CYP2D6/CYP2C19 provide transparent, evidence-based dosing guidance for specific drug-gene pairs and represent the strongest evidence in this domain.[85]
+
+---
+
+XI. DEPRESCRIBING AND POLYPHARMACY
+
+
+Antipsychotic Deprescribing
+
+
+The RADAR trial (n=253, recurrent psychosis) found antipsychotic reduction doubled severe relapse risk (25% vs. 13%, OR 2.20), though two-thirds of those who reduced ≥50% did not experience severe relapse.[86] The HAMLETT trial (n=347, first-episode psychosis, 4-year follow-up) showed a critical temporal pattern: DRD was associated with higher short-term relapse but significantly better long-term functioning at 3–4 years.[86] The Wunderink 7-year follow-up similarly showed higher functional remission (55.9% vs. 21.7%) and recovery (52.9% vs. 17.4%) with early dose reduction.[35]
+
+Hyperbolic tapering — reducing by a fixed proportion of the current dose based on the hyperbolic dose-D2 occupancy relationship — has been proposed but not yet tested in RCTs.[35]
+
+Antidepressant Discontinuation
+
+
+The ANTLER trial (n=478) found 56% relapse with discontinuation vs. 39% with continuation (HR 2.06), though 44% who discontinued did not relapse.[88] A 2026 network meta-analysis found that slow tapering alone did NOT significantly outperform abrupt discontinuation; the addition of psychological support was critical (NNT 4.3 for continuation + psychological support).[89]
+
+The withdrawal vs. relapse distinction remains a fundamental methodological challenge. A 2025 JAMA Psychiatry meta-analysis found antidepressant discontinuation was not associated with greater depressive symptoms in the first 2 weeks, suggesting discontinuation symptoms are unlikely to be mistaken for mood relapse in the short term.[90]
+
+Polypharmacy
+
+
+Approximately 1 in 4 antipsychotic users receive antipsychotic polypharmacy.[91] The ASCP 2026 Task Force achieved consensus on 44 of 50 Delphi statements, including 100% agreement that utility of continuing any psychotropic should be reassessed at minimum annually.[56]
+
+---
+
+XII. TOP 50 PAPERS
+
+
+
+
+---
+
+XIII. TOP 20 PRACTICE-CHANGING FINDINGS
+
+
+
+
+---
+
+XIV. TEACHING TABLES
+
+
+Table 1: Antipsychotic Comparison — Efficacy and Side-Effect Profiles
+
+
+
+
+Key: +++ high, ++ moderate, + low, − minimal/none, ↓ decreases
+
+Table 2: Antidepressant Selection — Guideline-Based Decision Algorithm
+
+
+
+
+Table 3: Mood Stabilizer Comparison
+
+
+
+
+Key: +++ strong evidence, ++ moderate, + weak/limited, − no significant evidence, +/− mixed
+
+Table 4: Treatment-Resistant Depression — Stepwise Algorithm
+
+
+
+
+Table 5: Clozapine — Essential Knowledge for Residents
+
+
+
+
+Table 6: LAI Comparison
+
+
+
+
+Table 7: ECT Decision Guide
+
+
+
+
+Table 8: Deprescribing Decision Framework
+
+
+
+
+---
+
+This compendium synthesizes evidence from >600 sources across 13 domains of psychopharmacology. The field continues to evolve rapidly, with particular momentum in muscarinic antipsychotics (xanomeline-trospium), psychedelic-assisted therapy, accelerated neuromodulation, and precision psychiatry approaches. Residents should revisit these evidence bases annually as new landmark trials emerge.
+
+Would you like to explore any specific domain in greater depth — for example, the emerging evidence for xanomeline-trospium as the first non-dopaminergic antipsychotic, or the detailed pharmacology of individual antidepressant classes?
+
+References
+The Roles of Efficacy, Safety, and Tolerability in Antipsychotic Effectiveness: Practical Implications of the CATIE Schizophrenia Trial. Nasrallah HA. The Journal of Clinical Psychiatry. 2007;68 Suppl 1:5-11.
+What CATIE Found: Results From the Schizophrenia Trial. Swartz MS, Stroup TS, McEvoy JP, et al. Psychiatric Services (Washington, D.C.). 2008;59(5):500-6. doi:10.1176/ps.2008.59.5.500.
+Effectiveness of Antipsychotic Drugs in Patients with Chronic Schizophrenia. Lieberman JA, Stroup TS, McEvoy JP, et al. The New England Journal of Medicine. 2005;353(12):1209-23. doi:10.1056/NEJMoa051688.
+The National Institute of Mental Health Clinical Antipsychotic Trials of Intervention Effectiveness (CATIE) Project: Schizophrenia Trial Design and Protocol Development. Stroup TS, McEvoy JP, Swartz MS, et al. Schizophrenia Bulletin. 2003;29(1):15-31. doi:10.1093/oxfordjournals.schbul.a006986.
+The CATIE and CUtLASS Studies in Schizophrenia: Results and Implications for Clinicians. Naber D, Lambert M. CNS Drugs. 2009;23(8):649-59. doi:10.2165/00023210-200923080-00002.
+The CATIE Schizophrenia Trial: Results, Impact, Controversy. Manschreck TC, Boshes RA. Harvard Review of Psychiatry. 2007 Sep-Oct;15(5):245-58. doi:10.1080/10673220701679838.
+Antipsychotics and Schizophrenia: From Efficacy and Effectiveness to Clinical Decision-Making. Foussias G, Remington G. Canadian Journal of Psychiatry. Revue Canadienne De Psychiatrie. 2010;55(3):117-25. doi:10.1177/070674371005500302.
+Interpreting the Efficacy Findings in the CATIE Study: What Clinicians Should Know. Meltzer HY, Bobo WV. CNS Spectrums. 2006;11(7 Suppl 7):14-24. doi:10.1017/s109285290002664x.
+Randomized Controlled Trial of the Effect on Quality of Life of Second- vs First-Generation Antipsychotic Drugs in Schizophrenia: Cost Utility of the Latest Antipsychotic Drugs in Schizophrenia Study (CUtLASS 1). Jones PB, Barnes TR, Davies L, et al. Archives of General Psychiatry. 2006;63(10):1079-87. doi:10.1001/archpsyc.63.10.1079.
+Comparative Effectiveness of Atypical Antipsychotics in Schizophrenia: What Have Real-World Trials Taught Us?. Attard A, Taylor DM. CNS Drugs. 2012;26(6):491-508. doi:10.2165/11632020-000000000-00000.
+The European First Episode Schizophrenia Trial (EUFEST): Rationale and Design of the Trial. Fleischhacker WW, Keet IP, Kahn RS. Schizophrenia Research. 2005;78(2-3):147-56. doi:10.1016/j.schres.2005.06.004.
+Multisite Prediction of 4-Week and 52-Week Treatment Outcomes in Patients With First-Episode Psychosis: A Machine Learning Approach. Koutsouleris N, Kahn RS, Chekroud AM, et al. The Lancet. Psychiatry. 2016;3(10):935-946. doi:10.1016/S2215-0366(16)30171-7.
+Effectiveness of Antipsychotics in First-Episode Schizophrenia and Schizophreniform Disorder on Response and Remission: An Open Randomized Clinical Trial (EUFEST). Boter H, Peuskens J, Libiger J, et al. Schizophrenia Research. 2009;115(2-3):97-103. doi:10.1016/j.schres.2009.09.019.
+Interpreting Treatment Trials in Schizophrenia Patients: Lessons Learned From EUFEST. Fleischhacker WW, Derks E, Kahn RS. Schizophrenia Research. 2012;138(1):39-40. doi:10.1016/j.schres.2012.03.027.
+Cognitive Effects of Antipsychotic Drugs in First-Episode Schizophrenia and Schizophreniform Disorder: A Randomized, Open-Label Clinical Trial (EUFEST). Davidson M, Galderisi S, Weiser M, et al. The American Journal of Psychiatry. 2009;166(6):675-82. doi:10.1176/appi.ajp.2008.08060806.
+Treatment of Depression in First Episode of Schizophrenia: Results From EUFEST. Rybakowski JK, Vansteelandt K, Szafranski T, et al. European Neuropsychopharmacology : The Journal of the European College of Neuropsychopharmacology. 2012;22(12):875-82. doi:10.1016/j.euroneuro.2012.04.001.
+Extrapyramidal Symptoms During Treatment of First Schizophrenia Episode: Results From EUFEST. Rybakowski JK, Vansteelandt K, Remlinger-Molenda A, et al. European Neuropsychopharmacology : The Journal of the European College of Neuropsychopharmacology. 2014;24(9):1500-5. doi:10.1016/j.euroneuro.2014.07.001.
+Comparative Efficacy and Tolerability of 15 Antipsychotic Drugs in Schizophrenia: A Multiple-Treatments Meta-Analysis. Leucht S, Cipriani A, Spineli L, et al. Lancet (London, England). 2013;382(9896):951-62. doi:10.1016/S0140-6736(13)60733-3.
+Comparative Efficacy and Tolerability of 32 Oral Antipsychotics for the Acute Treatment of Adults With Multi-Episode Schizophrenia: A Systematic Review and Network Meta-Analysis. Huhn M, Nikolakopoulou A, Schneider-Thoma J, et al. Lancet (London, England). 2019;394(10202):939-951. doi:10.1016/S0140-6736(19)31135-3.
+Comparative Efficacy and Tolerability of 32 Oral and Long-Acting Injectable Antipsychotics for the Maintenance Treatment of Adults With Schizophrenia: A Systematic Review and Network Meta-Analysis. Schneider-Thoma J, Chalkou K, Dörries C, et al. Lancet (London, England). 2022;399(10327):824-836. doi:10.1016/S0140-6736(21)01997-8.
+Selective Publication of Antidepressant Trials and Its Influence on Apparent Efficacy. Turner EH, Matthews AM, Linardatos E, Tell RA, Rosenthal R. The New England Journal of Medicine. 2008;358(3):252-60. doi:10.1056/NEJMsa065779.
+Comparative Efficacy and Tolerability of Antidopaminergic and Muscarinic Antipsychotics for Acute Schizophrenia: A Network Meta-Analysis of Randomised Controlled Trials Indexed in International English and Chinese Databases. Schneider-Thoma J, Zhu Y, Qin M, et al. Lancet (London, England). 2026;407(10531):876-891. doi:10.1016/S0140-6736(25)02365-7.
+Efficacy, Acceptability, and Tolerability of Antipsychotics in Treatment-Resistant Schizophrenia: A Network Meta-analysis. Samara MT, Dold M, Gianatsi M, et al. JAMA Psychiatry. 2016;73(3):199-210. doi:10.1001/jamapsychiatry.2015.2955.
+Efficacy and Effectiveness of Antipsychotics in Schizophrenia: Network Meta-Analyses Combining Evidence From Randomised Controlled Trials and Real-World Data. Efthimiou O, Taipale H, Radua J, et al. The Lancet. Psychiatry. 2024;11(2):102-111. doi:10.1016/S2215-0366(23)00366-8.
+The Superiority of Clozapine Over Second-Generation Antipsychotics in Patients With Treatment-Resistant Schizophrenia: Room for Doubt. Andrade C. The Journal of Clinical Psychiatry. 2025;86(3):25f16038. doi:10.4088/JCP.25f16038.
+Clozapine v. First- And Second-Generation Antipsychotics in Treatment-Refractory Schizophrenia: Systematic Review and Meta-Analysis. Siskind D, McCartney L, Goldschlager R, Kisely S. The British Journal of Psychiatry : The Journal of Mental Science. 2016;209(5):385-392. doi:10.1192/bjp.bp.115.177261.
+Systematic Literature Review of Schizophrenia Clinical Practice Guidelines on Acute and Maintenance Management With Antipsychotics. Correll CU, Martin A, Patel C, et al. Schizophrenia (Heidelberg, Germany). 2022;8(1):5. doi:10.1038/s41537-021-00192-x.
+Treatment-Resistant Schizophrenia: Definition, Predictors, and Therapy Options. Correll CU, Howes OD. The Journal of Clinical Psychiatry. 2021;82(5):MY20096AH1C. doi:10.4088/JCP.MY20096AH1C.
+Long-Acting Injectable Versus Oral Antipsychotics for the Maintenance Treatment of Schizophrenia: A Systematic Review and Comparative Meta-Analysis of Randomised, Cohort, and Pre-Post Studies. Kishimoto T, Hagi K, Kurokawa S, Kane JM, Correll CU. The Lancet. Psychiatry. 2021;8(5):387-404. doi:10.1016/S2215-0366(21)00039-0.
+Comparative Effectiveness of Antipsychotics in Patients With Schizophrenia Spectrum Disorder. Hamina A, Taipale H, Lieslehto J, et al. JAMA Network Open. 2024;7(10):e2438358. doi:10.1001/jamanetworkopen.2024.38358.
+Real-World Effectiveness of Antipsychotic Treatments in a Nationwide Cohort of 29 823 Patients With Schizophrenia. Tiihonen J, Mittendorfer-Rutz E, Majak M, et al. JAMA Psychiatry. 2017;74(7):686-693. doi:10.1001/jamapsychiatry.2017.1322.
+Efficacy and Tolerability of Seven Antipsychotic Drugs in Acutely Ill Patients With Schizophrenia: A Randomized, Multicenter, Assessor-Blinded Trial. Zhao G, Sun Y, Zhang Y, et al. The American Journal of Psychiatry. 2025;:appiajp20250111. doi:10.1176/appi.ajp.20250111.
+The American Psychiatric Association Practice Guideline for the Treatment of Patients With Schizophrenia. Keepers GA, Fochtmann LJ, Anzia JM, et al. The American Journal of Psychiatry. 2020;177(9):868-872. doi:10.1176/appi.ajp.2020.177901.
+Management of First-Episode Psychosis and Schizophrenia (SCZ) (2023). Marlene Arias-Reynoso DNP PMHNP-BC, Jennifer L. Bell MD, Pamela Blueford LICSW, et al. Department of Veterans Affairs.
+Management of Bipolar Disorder (BD) (2023). Thad Abrams MD MS, Jennifer Bell MD, Paulette Cazares MD MPH, et al. Department of Veterans Affairs.
+Diagnosis and Treatment of Bipolar Disorder: A Review. Nierenberg AA, Agustini B, Köhler-Forsberg O, et al. JAMA. 2023;330(14):1370-1380. doi:10.1001/jama.2023.18588.
+Bipolar Disorders. McIntyre RS, Berk M, Brietzke E, et al. Lancet (London, England). 2020;396(10265):1841-1856. doi:10.1016/S0140-6736(20)31544-0.
+Implementation of Monitoring and Management Guidelines for Second-Generation Antipsychotics. Sernyak MJ. The Journal of Clinical Psychiatry. 2007;68 Suppl 4:14-8.
+Metabolic Screening After the American Diabetes Association's Consensus Statement on Antipsychotic Drugs and Diabetes. Morrato EH, Newcomer JW, Kamat S, et al. Diabetes Care. 2009;32(6):1037-42. doi:10.2337/dc08-1720.
+Schizophrenia. Marder SR, Cannon TD. The New England Journal of Medicine. 2019;381(18):1753-1761. doi:10.1056/NEJMra1808803.
+Clozapine Treatment for Suicidality in Schizophrenia: International Suicide Prevention Trial (InterSePT). Meltzer HY, Alphs L, Green AI, et al. Archives of General Psychiatry. 2003;60(1):82-91. doi:10.1001/archpsyc.60.1.82.
+Pharmacological Management of Glucose Dysregulation in Patients Treated With Second-Generation Antipsychotics. Cernea S, Dima L, Correll CU, Manu P. Drugs. 2020;80(17):1763-1781. doi:10.1007/s40265-020-01393-x.
+Guideline Concordant Monitoring of Metabolic Risk in People Treated With Antipsychotic Medication: Systematic Review and Meta-Analysis of Screening Practices. Mitchell AJ, Delaffon V, Vancampfort D, Correll CU, De Hert M. Psychological Medicine. 2012;42(1):125-47. doi:10.1017/S003329171100105X.
+Semaglutide and Early-Stage Metabolic Abnormalities in Individuals With Schizophrenia Spectrum Disorders. Sass MR, Klausen MK, Schwarz CR, et al. JAMA Psychiatry. 2025;:2842202. doi:10.1001/jamapsychiatry.2025.3639.
+Antipsychotics and Risk of QT Prolongation: A Pharmacovigilance Study. Bordet C, Garcia P, Salvo F, et al. Psychopharmacology. 2023;240(1):199-202. doi:10.1007/s00213-022-06293-4.
+Ziprasidone. Food and Drug Administration. Updated date: 2023-08-07.
+Antipsychotic Drugs: Prolonged QTc Interval, Torsade De Pointes, and Sudden Death. Glassman AH, Bigger JT. The American Journal of Psychiatry. 2001;158(11):1774-82. doi:10.1176/appi.ajp.158.11.1774.
+Antipsychotic-Related QTc Prolongation, Torsade De Pointes and Sudden Death. Haddad PM, Anderson IM. Drugs. 2002;62(11):1649-71. doi:10.2165/00003495-200262110-00006.
+Dementia Is More Than Memory Loss: Neuropsychiatric Symptoms of Dementia and Their Nonpharmacological and Pharmacological Management. Tampi RR, Jeste DV. The American Journal of Psychiatry. 2022;179(8):528-543. doi:10.1176/appi.ajp.20220508.
+Olanzapine. Food and Drug Administration. Updated date: 2026-03-09.
+Antipsychotics, Other Psychotropics, and the Risk of Death in Patients With Dementia: Number Needed to Harm. Maust DT, Kim HM, Seyfried LS, et al. JAMA Psychiatry. 2015;72(5):438-45. doi:10.1001/jamapsychiatry.2014.3018.
+Association of the US Food and Drug Administration Antipsychotic Drug Boxed Warning With Medication Use and Health Outcomes in Elderly Patients With Dementia. Rubino A, Sanon M, Ganz ML, et al. JAMA Network Open. 2020;3(4):e203630. doi:10.1001/jamanetworkopen.2020.3630.
+The Consequences of Antipsychotic Medication Use for People Living With Dementia: A Systematic Review and Meta-Analysis. Thant PE, Zenker A, Jarl J, et al. Frontiers in Psychiatry. 2026;17:1817609. doi:10.3389/fpsyt.2026.1817609.
+Risk of Death With Atypical Antipsychotic Drug Treatment for Dementia: Meta-analysis of Randomized Placebo-Controlled Trials. Schneider LS, Dagerman KS, Insel P. JAMA. 2005;294(15):1934-43. doi:10.1001/jama.294.15.1934.
+Bipolar Disorder. Carvalho AF, Firth J, Vieta E. The New England Journal of Medicine. 2020;383(1):58-66. doi:10.1056/NEJMra1906193.
+Bipolar Disorder. Grande I, Berk M, Birmaher B, Vieta E. Lancet (London, England). 2016;387(10027):1561-1572. doi:10.1016/S0140-6736(15)00241-X.
+Antipsychotic Drugs: A Concise Review of History, Classification, Indications, Mechanism, Efficacy, Side Effects, Dosing, and Clinical Application. Leucht S, Priller J, Davis JM. The American Journal of Psychiatry. 2024;181(10):865-878. doi:10.1176/appi.ajp.20240738.
+Clozapine After 1 Failed Antipsychotic Drug Trial in First-Episode Psychosis. Li X, Lu C, Zhai Z, et al. JAMA Psychiatry. 2026;:2845904. doi:10.1001/jamapsychiatry.2026.0086.
+Lithium for Maintenance Treatment of Mood Disorders. Burgess S, Geddes J, Hawton K, et al. The Cochrane Database of Systematic Reviews. 2001;(3):CD003013. doi:10.1002/14651858.CD003013.
+Long-Term Lithium Therapy for Bipolar Disorder: Systematic Review and Meta-Analysis of Randomized Controlled Trials. Geddes JR, Burgess S, Hawton K, Jamison K, Goodwin GM. The American Journal of Psychiatry. 2004;161(2):217-22. doi:10.1176/appi.ajp.161.2.217.
+Ketamine versus ECT for Nonpsychotic Treatment-Resistant Major Depression. Anand A, Mathew SJ, Sanacora G, et al. The New England Journal of Medicine. 2023;388(25):2315-2325. doi:10.1056/NEJMoa2302399.
+Lithium Plus Valproate Combination Therapy Versus Monotherapy for Relapse Prevention in Bipolar I Disorder (BALANCE): A Randomised Open-Label Trial. BALANCE investigators and collaborators, Geddes JR, Goodwin GM, et al. Lancet (London, England). 2010;375(9712):385-95. doi:10.1016/S0140-6736(09)61828-6.
+Mood Stabilizers and/or Antipsychotics for Bipolar Disorder in the Maintenance Phase: A Systematic Review and Network Meta-Analysis of Randomized Controlled Trials. Kishi T, Ikuta T, Matsuda Y, et al. Molecular Psychiatry. 2021;26(8):4146-4157. doi:10.1038/s41380-020-00946-6.
+Lithium in the Prevention of Suicide in Mood Disorders: Updated Systematic Review and Meta-Analysis. Cipriani A, Hawton K, Stockton S, Geddes JR. BMJ (Clinical Research Ed.). 2013;346:f3646. doi:10.1136/bmj.f3646.
+Suicidal Behavior During Lithium and Valproate Treatment: A Within-Individual 8-Year Prospective Study of 50,000 Patients With Bipolar Disorder. Song J, Sjölander A, Joas E, et al. The American Journal of Psychiatry. 2017;174(8):795-802. doi:10.1176/appi.ajp.2017.16050542.
+Effectiveness of Medical Treatment for Bipolar Disorder Regarding Suicide, Self-Harm and Psychiatric Hospital Admission: Between- And Within-Individual Study on Danish National Data. Fitzgerald C, Christensen RHB, Simons J, et al. The British Journal of Psychiatry : The Journal of Mental Science. 2022;:1-9. doi:10.1192/bjp.2022.54.
+The Efficacy of Lithium in the Treatment of Suicidal Ideation, Behavior and Suicide: An Updated Systematic Review and Meta-Analysis of Randomized Controlled Trials. Wang JX, Le GH, Wong S, et al. Journal of Affective Disorders. 2025;387:119487. doi:10.1016/j.jad.2025.119487.
+Lithium Toxicity Profile: A Systematic Review and Meta-Analysis. McKnight RF, Adida M, Budge K, et al. Lancet (London, England). 2012;379(9817):721-8. doi:10.1016/S0140-6736(11)61516-X.
+Long-Term Effects of Lithium on Renal, Thyroid, and Parathyroid Function: A Retrospective Analysis of Laboratory Data. Shine B, McKnight RF, Leaver L, Geddes JR. Lancet (London, England). 2015;386(9992):461-8. doi:10.1016/S0140-6736(14)61842-0.
+Lithium Carbonate. Food and Drug Administration. Updated date: 2023-10-02.
+A Randomized, Placebo-Controlled 12-Month Trial of Divalproex and Lithium in Treatment of Outpatients With Bipolar I Disorder. Bowden CL, Calabrese JR, McElroy SL, et al. Archives of General Psychiatry. 2000;57(5):481-9. doi:10.1001/archpsyc.57.5.481.
+Psychotropic Effects of Antiepileptic Drugs. Ettinger AB. Neurology. 2006;67(11):1916-25. doi:10.1212/01.wnl.0000247045.85646.c0.
+Divalproex in the Treatment of Bipolar Disorder. Keck PE, McElroy SL. Psychopharmacology Bulletin. 2003;37 Suppl 2:67-73.
+Valproic Acid, Valproate and Divalproex in the Maintenance Treatment of Bipolar Disorder. Cipriani A, Reid K, Young AH, Macritchie K, Geddes J. The Cochrane Database of Systematic Reviews. 2013;(10):CD003196. doi:10.1002/14651858.CD003196.pub2.
+Long-Term Treatment of Bipolar Disorder With Valproate: Updated Systematic Review and Meta-Analyses. Yee CS, Vázquez GH, Hawken ER, et al. Harvard Review of Psychiatry. 2021 May-Jun 01;29(3):188-195. doi:10.1097/HRP.0000000000000292.
+Divalproex Sodium. Food and Drug Administration. Updated date: 2026-04-27.
+A Placebo-Controlled 18-Month Trial of Lamotrigine and Lithium Maintenance Treatment in Recently Manic or Hypomanic Patients With Bipolar I Disorder. Bowden CL, Calabrese JR, Sachs G, et al. Archives of General Psychiatry. 2003;60(4):392-400. doi:10.1001/archpsyc.60.4.392.
+A Placebo-Controlled 18-Month Trial of Lamotrigine and Lithium Maintenance Treatment in Recently Depressed Patients With Bipolar I Disorder. Calabrese JR, Bowden CL, Sachs G, et al. The Journal of Clinical Psychiatry. 2003;64(9):1013-24. doi:10.4088/jcp.v64n0906.
+A Pooled Analysis of 2 Placebo-Controlled 18-Month Trials of Lamotrigine and Lithium Maintenance in Bipolar I Disorder. Goodwin GM, Bowden CL, Calabrese JR, et al. The Journal of Clinical Psychiatry. 2004;65(3):432-41. doi:10.4088/jcp.v65n0321.
+Lamotrigine in the Maintenance Treatment of Bipolar Disorder. Hashimoto Y, Kotake K, Watanabe N, Fujiwara T, Sakamoto S. The Cochrane Database of Systematic Reviews. 2021;9:CD013575. doi:10.1002/14651858.CD013575.pub2.
+Lamotrigine in the Maintenance Treatment of Bipolar Disorder. Salisbury-Afshar E. American Family Physician. 2022;106(3):249-250.
+Lamotrigine. Food and Drug Administration. Updated date: 2026-05-19.
+LAMOTRIGINE. Food and Drug Administration. Updated date: 2026-02-05.
+Clinical Use of Carbamazepine for Bipolar Disorders. Wang PW, Ketter TA. Expert Opinion on Pharmacotherapy. 2005;6(16):2887-902. doi:10.1517/14656566.6.16.2887.
+Prophylactic Efficacy of Lithium, Valproic Acid, and Carbamazepine in the Maintenance Phase of Bipolar Disorder: A Naturalistic Study. Peselow ED, Clevenger S, IsHak WW. International Clinical Psychopharmacology. 2016;31(4):218-23. doi:10.1097/YIC.0000000000000097.
+Canadian Network for Mood and Anxiety Treatments (CANMAT) and International Society for Bipolar Disorders (ISBD) 2018 Guidelines for the Management of Patients With Bipolar Disorder. Yatham LN, Kennedy SH, Parikh SV, et al. Bipolar Disorders. 2018;20(2):97-170. doi:10.1111/bdi.12609.
+Canadian Network for Mood and Anxiety Treatments ( CANMAT ) and International Society for Bipolar Disorders ( ISBD ) 2018 guidelines for the management of patients with bipolar disorder. Yatham LN, Kennedy SH, Parikh SV, et al. Bipolar Disorders. 2018;20(2):97-170. doi:10.1111/bdi.12609.
+Is Lithium Monitoring NICE? Lithium Monitoring in a UK Secondary Care Setting. Nikolova VL, Pattanaseri K, Hidalgo-Mazzei D, Taylor D, Young AH. Journal of Psychopharmacology (Oxford, England). 2018;32(4):408-415. doi:10.1177/0269881118760663.
+Standards of Lithium Monitoring in Mental Health Ttrusts in the UK. Collins N, Barnes TR, Shingleton-Smith A, Gerrett D, Paton C. BMC Psychiatry. 2010;10:80. doi:10.1186/1471-244X-10-80.
+Relapse Prevention in Bipolar Disorder: A Critical Review of Current Guidelines. McAllister-Williams RH. Journal of Psychopharmacology (Oxford, England). 2006;20(2 Suppl):12-6. doi:10.1177/1359786806063071.
+Current Management of Bipolar Affective Disorder: Is It Reflective of the BAP Guidelines?. Farrelly N, Dibben C, Hunt N. Journal of Psychopharmacology (Oxford, England). 2006;20(1):128-31. doi:10.1177/0269881105056999.
+Pharmacological Strategies for Bipolar Disorders in Acute Phases and Chronic Management With a Special Focus on Lithium, Valproic Acid, and Atypical Antipsychotics. Carli M, Weiss F, Grenno G, et al. Current Neuropharmacology. 2023;21(4):935-950. doi:10.2174/1570159X21666230224102318.
+Mood-Stabilizing Anticonvulsants, Spina Bifida, and Folate Supplementation: Commentary. Patel N, Viguera AC, Baldessarini RJ. Journal of Clinical Psychopharmacology. 2018;38(1):7-10. doi:10.1097/JCP.0000000000000813.
+Use of Antiseizure Medications Early in Pregnancy and the Risk of Major Malformations in the Newborn. Hernandez-Diaz S, Quinn M, Conant S, et al. Neurology. 2025;105(3):e213786. doi:10.1212/WNL.0000000000213786.
+Major Congenital Malformations Associated With Exposure to Antiepileptic Drugs During Pregnancy. Andrade C. The Journal of Clinical Psychiatry. 2018;79(4):18f12449. doi:10.4088/JCP.18f12449.
+Lithium for Acute Mania. McKnight RF, de La Motte de Broöns de Vauvert SJGN, Chesney E, et al. The Cochrane Database of Systematic Reviews. 2019;6:CD004048. doi:10.1002/14651858.CD004048.pub4.
+Pre‐diagnostic and post‐diagnostic psychopharmacological treatment of 16 288 patients with bipolar disorder. Köhler-Forsberg O, Gasse C, Hieronymus F, et al. Bipolar Disorders. 2021;23(4):357-367. doi:10.1111/bdi.12976.
+STAR*D: Revising Conventional Wisdom. Rush AJ, Warden D, Wisniewski SR, et al. CNS Drugs. 2009;23(8):627-47. doi:10.2165/00023210-200923080-00001.
+Depression in the Primary Care Setting. Park LT, Zarate CA. The New England Journal of Medicine. 2019;380(6):559-568. doi:10.1056/NEJMcp1712493.
+Depression. Malhi GS, Mann JJ. Lancet (London, England). 2018;392(10161):2299-2312. doi:10.1016/S0140-6736(18)31948-2.
+What Are the Treatment Remission, Response and Extent of Improvement Rates After Up to Four Trials of Antidepressant Therapies in Real-World Depressed Patients? A Reanalysis of the STAR*D Study's Patient-Level Data With Fidelity to the Original Research Protocol. Pigott HE, Kim T, Xu C, Kirsch I, Amsterdam J. BMJ Open. 2023;13(7):e063095. doi:10.1136/bmjopen-2022-063095.
+What Did STAR*D Teach Us? Results From a Large-Scale, Practical, Clinical Trial for Patients With Depression. Gaynes BN, Warden D, Trivedi MH, et al. Psychiatric Services (Washington, D.C.). 2009;60(11):1439-45. doi:10.1176/ps.2009.60.11.1439.
+What to Expect When Switching to a Second Antidepressant Medication Following an Ineffective Initial SSRI: A Report From the Randomized Clinical STAR*D Study. Rush AJ, South C, Jha MK, Jain SB, Trivedi MH. The Journal of Clinical Psychiatry. 2020;81(5):19m12949. doi:10.4088/JCP.19m12949.
+Combining Medications to Enhance Depression Outcomes (CO-MED): Acute and Long-Term Outcomes of a Single-Blind Randomized Study. Rush AJ, Trivedi MH, Stewart JW, et al. The American Journal of Psychiatry. 2011;168(7):689-701. doi:10.1176/appi.ajp.2011.10111645.
+Can C-Reactive Protein Inform Antidepressant Medication Selection in Depressed Outpatients? Findings From the CO-MED Trial. Jha MK, Minhajuddin A, Gadad BS, et al. Psychoneuroendocrinology. 2017;78:105-113. doi:10.1016/j.psyneuen.2017.01.023.
+Validating Pre-Treatment Body Mass Index as Moderator of Antidepressant Treatment Outcomes: Findings From CO-MED Trial. Jha MK, Wakhlu S, Dronamraju N, et al. Journal of Affective Disorders. 2018;234:34-37. doi:10.1016/j.jad.2018.02.089.
+Combining Antidepressants vs Antidepressant Monotherapy for Treatment of Patients With Acute Depression: A Systematic Review and Meta-analysis. Henssler J, Alexander D, Schwarzer G, Bschor T, Baethge C. JAMA Psychiatry. 2022;79(4):300-312. doi:10.1001/jamapsychiatry.2021.4313.
+
+# | Trial/Study Name | One-Line Summary
+1 | CATIE (Lieberman 2005) | 74% discontinued before 18 months; olanzapine most effective but most metabolic burden; perphenazine comparable to SGAs
+2 | CUtLASS (Jones 2006) | No advantage for SGAs over FGAs in quality of life or symptoms
+3 | EUFEST (Kahn 2008) | SGAs had better retention than haloperidol in first-episode psychosis but similar symptom improvement
+4 | Leucht NMA (Lancet 2013) | First NMA showing not all antipsychotics equally effective; clozapine most efficacious
+5 | Huhn NMA (Lancet 2019) | 32 antipsychotics compared; side-effect differences more marked than efficacy differences
+6 | Schneider-Thoma Maintenance NMA (Lancet 2022) | No clear superiority among agents for relapse prevention; choice guided by tolerability
+7 | Kane Clozapine Trial (1988) | Established clozapine efficacy in TRS vs. chlorpromazine; led to FDA approval
+8 | InterSePT (Meltzer 2003) | Clozapine superior to olanzapine for reducing recurrent suicidal behavior
+9 | FIN20 (Taipale 2020) | 20-year follow-up: clozapine lowest all-cause mortality (aHR 0.39) among antipsychotics
+10 | Tiihonen Swedish Cohort (JAMA Psychiatry 2017) | Clozapine and LAIs most effective in real-world; greatest LAI benefit in early illness
+11 | Schneider-Thoma IPD-MA (Lancet Psychiatry 2025) | No evidence for superior efficacy of clozapine vs. other SGAs in blinded RCTs
+12 | STAR*D (Rush 2006) | Largest pragmatic antidepressant trial; ~33% remission step 1; diminishing returns with each step
+13 | STAR*D Reanalysis (Pigott 2023) | Cumulative remission 35% (not 67%) using protocol-stipulated blinded ratings
+14 | Cipriani Antidepressant NMA (Lancet 2018) | All 21 antidepressants beat placebo; escitalopram and sertraline best efficacy-acceptability balance
+15 | Turner Publication Bias (NEJM 2008) | 94% of published trials appeared positive vs. 51% per FDA; 32% effect size inflation
+16 | Kirsch/Fournier Severity Meta-analyses (2008/2010) | Drug-placebo difference ~2 HDRS points; clinically meaningful only in very severe depression
+17 | CO-MED (Rush 2011) | Neither combination strategy outperformed SSRI monotherapy as first-step treatment
+18 | VAST-D (Mohamed 2017) | Aripiprazole augmentation modestly superior to switching; not superior to bupropion augmentation
+19 | TADS (March 2004) | Fluoxetine + CBT superior to either alone in adolescent depression; CBT alone = placebo at 12 weeks
+20 | TORDIA (Brent 2008) | Switching SSRI equally effective as switching to venlafaxine in adolescent TRD; adding CBT helps
+21 | BALANCE (Geddes 2010) | Lithium monotherapy superior to valproate monotherapy; combination best overall
+22 | Cipriani Lithium-Suicide MA (BMJ 2013) | Lithium reduces completed suicides (OR 0.13) and all-cause mortality (OR 0.38)
+23 | Bowden Lamotrigine Trial (2003) | Lamotrigine superior for depression prevention; lithium superior for mania prevention
+24 | Calabrese Lamotrigine Trial (2003) | Confirmed polarity-specific maintenance profiles in recently depressed bipolar I patients
+25 | Bowden Valproate Maintenance (2000) | Key negative trial: primary ITT analysis failed to separate divalproex from placebo
+26 | McKnight Lithium Toxicity (Lancet 2012) | Systematic review establishing lithium's renal, thyroid, and parathyroid toxicity profile
+27 | PRELAPSE (Kane 2020) | LAI (AOM) reduced hospitalization by 44% in early-phase schizophrenia (NNT = 7)
+28 | Kishimoto LAI MA (Lancet Psychiatry 2021) | LAIs reduce relapse across all study designs; RCT RR 0.88, pre-post RR 0.44
+29 | Hamina Comparative Effectiveness (JAMA Network Open 2024) | PP3M LAI best for relapse prevention; LAIs collectively AHR 0.81 vs. oral counterparts
+30 | ELEKT-D (Anand 2023) | Ketamine noninferior to ECT for nonpsychotic TRD; less cognitive impairment
+31 | TRANSFORM-2 (Popova 2019) | Esketamine + oral AD superior to placebo + oral AD for TRD (MADRS difference −4.0)
+32 | Esketamine vs. Quetiapine (Reif 2023) | Esketamine 1.54× more likely to achieve remission than quetiapine XR
+33 | UK ECT Review Group (Lancet 2003) | ECT superior to sham (SES −0.91) and pharmacotherapy (SES −0.80) for depression
+34 | Sackeim Electrode Placement (NEJM 1993/AGP 2000) | RUL ECT efficacy is dose-dependent; high-dose RUL equivalent to bilateral with fewer cognitive effects
+35 | Sackeim Post-ECT Relapse (JAMA 2001) | 84% relapse on placebo; nortriptyline + lithium reduces to 39%
+36 | CORE Continuation ECT (Kellner 2006) | Continuation ECT equivalent to nortriptyline + lithium for relapse prevention
+37 | PRIDE (Kellner 2016) | RUL ultrabrief ECT + venlafaxine: 62% remission in elderly; continuation ECT + meds: >80% sustained response
+38 | THREE-D (Blumberger 2018) | 3-minute iTBS noninferior to 37.5-minute standard rTMS for depression
+39 | SNT (Cole 2022) | Stanford accelerated iTBS: 57% remission vs. 0% sham
+40 | Goodwin Psilocybin (NEJM 2022) | Psilocybin 25 mg: 37% response, 29% remission at 3 weeks in TRD
+41 | GUIDED (Greden 2019) | PGx-guided care missed primary endpoint; significant secondary endpoints for remission
+42 | PRIME Care (Oslin 2022) | PGx testing changed prescribing but showed only small, nonpersistent remission effects
+43 | RADAR (Moncrieff 2023) | Antipsychotic reduction doubled severe relapse risk; two-thirds who reduced ≥50% did not relapse
+44 | HAMLETT (Sommer 2026) | Early DRD: higher short-term relapse but better long-term functioning at 3–4 years in FEP
+45 | Wunderink 7-Year Follow-up (2013) | Dose reduction/discontinuation: higher functional remission (55.9% vs. 21.7%) at 7 years
+46 | ANTLER (Lewis 2021) | 56% relapse with antidepressant discontinuation vs. 39% with continuation; 44% did not relapse
+47 | Henssler Combination AD MA (JAMA Psychiatry 2022) | AD combinations superior to monotherapy (SMD 0.31); driven by α2-antagonist combinations
+48 | Schneider Dementia Mortality (JAMA 2005) | Atypical antipsychotics: 1.6–1.7× mortality in elderly with dementia; basis for FDA black box
+49 | Petrides ECT + Clozapine (AJP 2015) | ECT augmentation of clozapine: 50% response vs. 0% in clozapine-resistant schizophrenia
+50 | Horowitz Hyperbolic Tapering (Lancet Psychiatry 2019/Schizophr Bull 2021) | Proposed hyperbolic tapering based on receptor occupancy pharmacology for safe discontinuation
+# | Finding | Why It Changed Practice
+1 | SGAs are not categorically superior to FGAs (CATIE, CUtLASS) | Ended the assumption that SGAs should always be preferred; shifted focus to individual drug selection based on side-effect profiles
+2 | Antipsychotic efficacy is not equal — a hierarchy exists (Leucht 2013, Huhn 2019 NMAs) | Challenged the "all antipsychotics are interchangeable" dogma; established clozapine, amisulpride, olanzapine, risperidone as top-tier
+3 | Clozapine reduces suicide risk (InterSePT, FIN20, Taipale 2021) | Led to FDA's second indication; established clozapine as uniquely anti-suicidal among antipsychotics
+4 | Clozapine has the lowest all-cause mortality (FIN20: aHR 0.39) | Reframed clozapine from "dangerous drug requiring monitoring" to "life-saving drug being underutilized"
+5 | LAIs are superior to oral antipsychotics in real-world settings (Tiihonen 2017, Hamina 2024, PRELAPSE) | Shifted LAIs from "last resort for nonadherent patients" to consideration as early/first-line treatment
+6 | STAR*D cumulative remission is ~35%, not 67% (Pigott 2023 reanalysis) | Recalibrated expectations for sequential antidepressant treatment; reinforced the magnitude of TRD
+7 | All antidepressants beat placebo but differences between them are small (Cipriani 2018) | Confirmed antidepressant efficacy while showing selection should be guided by tolerability, not efficacy ranking
+8 | Publication bias inflates antidepressant effect sizes by 32% (Turner 2008) | Transformed how clinicians and researchers interpret published trial data
+9 | Lithium is superior to valproate for bipolar maintenance (BALANCE) | Challenged the trend of replacing lithium with valproate; reinforced lithium as first-line
+10 | Lithium reduces suicide by ~87% (Cipriani 2013: OR 0.13) | Established lithium's unique anti-suicide property as a distinct clinical indication
+11 | Lamotrigine prevents depressive but not manic relapses; lithium the reverse (Bowden/Calabrese 2003) | Enabled polarity-specific maintenance treatment selection
+12 | Ketamine is noninferior to ECT for nonpsychotic TRD (ELEKT-D) | Provided the first rigorous head-to-head comparison; expanded treatment options for TRD
+13 | Esketamine is superior to quetiapine for TRD (Reif 2023) | First active-comparator superiority trial for esketamine; positioned it as preferred augmentation
+14 | 3-minute iTBS is noninferior to 37.5-minute rTMS (THREE-D) | Dramatically reduced treatment time, improving TMS accessibility and throughput
+15 | Antipsychotic dose reduction improves long-term functioning in FEP (Wunderink 7-year, HAMLETT 4-year) | Challenged indefinite maintenance at full dose; opened discussion of guided dose reduction
+16 | Slow tapering alone does not prevent relapse — psychological support is critical (2026 NMA) | Shifted deprescribing paradigm from purely pharmacological to integrated psychosocial approach
+17 | Antipsychotics increase mortality 1.6–1.7× in elderly with dementia (Schneider 2005) | Led to FDA black box warning; fundamentally changed prescribing in dementia
+18 | Combination antidepressants are not superior to monotherapy as first-step (CO-MED) | Prevented premature escalation to combination therapy; reinforced sequential approach
+19 | Pharmacogenomic testing changes prescribing but has limited clinical outcome impact (GUIDED, PRIME Care) | Tempered enthusiasm for routine PGx testing; highlighted gap between analytical and clinical validity
+20 | Hyperbolic tapering based on receptor pharmacology (Horowitz 2019/2021) | Provided a pharmacological rationale for gradual dose reduction; influenced emerging guidelines
+Agent | Efficacy Rank (NMA) | Weight Gain | QTc Risk | EPS Risk | Prolactin | Sedation | Metabolic Risk | Refs
+Clozapine | 1st | +++ | + | − | − | +++ | +++ | [1], [2]
+Olanzapine | 3rd | +++ | + | + | + | ++ | +++ | [1], [2]
+Risperidone | 4th | + | + | ++ | +++ | + | + | [1], [2]
+Amisulpride | 2nd | + | ++ | + | +++ | + | + | [1], [2]
+Quetiapine | 7th | ++ | + | − | − | +++ | ++ | [1], [2]
+Aripiprazole | 8th | − | − | + | −(↓) | − | − | [1], [2]
+Ziprasidone | 9th | − | ++ | + | + | + | − | [1], [2]
+Lurasidone | 10th | − | −(↓) | + | + | + | − | [1], [2]
+Haloperidol | 6th | − | + | +++ | ++ | + | − | [1], [2]
+Cariprazine | ~8th | − | − | + | + | − | − | [2], [3]
+Brexpiprazole | ~8th | + | − | + | − | + | + | [2], [3]
+Clinical Scenario | First-Line | Second-Line | Third-Line | Key Considerations | Refs
+Mild-moderate MDD | SSRI (escitalopram, sertraline) or psychotherapy | Switch SSRI or add psychotherapy | SNRI, bupropion, mirtazapine | NICE recommends psychotherapy before medication for mild depression | [1], [2]
+Severe MDD | SSRI/SNRI + psychotherapy (CBT or IPT) | Augment with aripiprazole or quetiapine XR | Lithium augmentation; ECT | Combined treatment preferred for severe/chronic/recurrent | [3], [4], [5]
+MDD with anxiety | SSRI (sertraline, escitalopram) | SNRI (venlafaxine, duloxetine) | Mirtazapine; buspirone augmentation | Avoid bupropion (may worsen anxiety) | [1]
+MDD with insomnia | Mirtazapine or trazodone (adjunct) | SSRI + trazodone | Quetiapine XR augmentation | Avoid activating agents at bedtime | [1]
+MDD with fatigue/hypersomnia | Bupropion | SNRI; modafinil augmentation | Aripiprazole augmentation | Bupropion also useful for smoking cessation, weight neutrality | [1]
+MDD with sexual dysfunction | Bupropion; mirtazapine | Switch within class; dose reduction | Aripiprazole augmentation | Bupropion has lowest sexual dysfunction rate | [1]
+Adolescent MDD | Fluoxetine + CBT | Fluoxetine alone; CBT alone | Switch SSRI (not venlafaxine) | TADS/TORDIA evidence; monitor suicidality closely | [6], [7]
+TRD (≥2 failed trials) | Augment with aripiprazole or quetiapine XR | Lithium augmentation; esketamine | ECT; TMS | Ensure adequate dose/duration of prior trials; check adherence | [3], [8], [9]
+Agent | Acute Mania | Bipolar Depression | Maintenance (Mania) | Maintenance (Depression) | Anti-Suicide | Teratogenicity | Key Monitoring | Refs
+Lithium | ++ | +/− | +++ | ++ | +++ | Low (Ebstein's ~1:1000) | Levels, renal, thyroid, calcium q6–12mo | [1], [2], [3], [4]
+Valproate | ++ | − | + | + | − | HIGH (MCM 9–10%; NTDs) | Levels, LFTs, CBC, pregnancy test | [5], [6]
+Lamotrigine | − | + | − | +++ | − | Low (MCM 2–3%) | Rash monitoring; slow titration | [5], [7], [8]
+Carbamazepine | + | − | +/− | − | − | Moderate (MCM 3–6%) | Levels, CBC, LFTs, HLA-B*1502 | [6], [9]
+Step | Strategy | Evidence Level | Expected Remission Rate | Key Considerations | Refs
+1 | Optimize current antidepressant (dose, duration ≥8–12 weeks, adherence) | Expert consensus | Variable | Rule out pseudo-resistance; measurement-based care | [1], [2]
+2 | Switch antidepressant (within or between class) | STAR*D Step 2 | ~25% | No clear advantage of within- vs. between-class switch | [2], [3]
+3a | Augment with aripiprazole (2–15 mg/d) or quetiapine XR (150–300 mg/d) | Multiple RCTs, NMAs | ~26–29% | Monitor metabolic effects, akathisia (aripiprazole), sedation (quetiapine) | [4], [5], [6]
+3b | Augment with lithium (600–900 mg/d, level 0.6–1.0) | 10 RCTs, NNT = 5 | ~41% | Requires monitoring; most evidence with TCAs | [7]
+4 | Esketamine nasal spray (56–84 mg, twice weekly → weekly → biweekly) | Phase 3 RCTs | ~27% remission at 8 weeks | REMS program; 2-hour monitoring post-dose; dissociative effects | [8], [9], [10]
+5 | ECT (RUL ultrabrief or brief pulse, 6× threshold) | Decades of evidence | ~50–62% remission | Gold standard for psychotic depression, acute suicidality, elderly; cognitive effects | [7], [11], [12]
+6 | TMS/iTBS (left DLPFC, 20–30 sessions) | Large RCTs | ~27–35% remission | Noninvasive; fewer side effects; accelerated protocols emerging | [13]
+7 | Investigational: psilocybin, accelerated TBS, combination strategies | Phase 2 trials | Variable | Not FDA-approved (psilocybin); limited durability data | [14], [15], [16]
+Domain | Key Facts | Refs
+Indications | (1) TRS after ≥2 failed antipsychotics; (2) Reducing recurrent suicidal behavior in schizophrenia/schizoaffective | [1], [2]
+Dosing | Start 12.5 mg/d; titrate by 25–50 mg/d; target 300–600 mg/d; target trough ≥350 ng/mL | [1], [3]
+ANC monitoring | Weekly × 6 months → biweekly × 6 months → monthly thereafter | [1]
+ANC thresholds | ≥1500: continue; 1000–1499: increase to 3×/week; 500–999: interrupt; <500: discontinue | [1]
+Mortality benefit | Lowest all-cause mortality among all antipsychotics (aHR 0.39 at 20 years) | [4]
+Anti-suicide | Only antipsychotic consistently reducing suicide risk (HR 0.64–0.66 in register studies) | [1], [5]
+Metabolic | Highest weight gain and metabolic risk; monitor fasting glucose, lipids, HbA1c | [6]
+Myocarditis | Risk ~3%; monitor troponin + CRP weekly for ≥1 month | [7]
+GI hypomotility | Constipation → ileus → death; proactive bowel regimen essential | [7]
+Seizures | Dose-dependent; ~3–5% at doses >600 mg/d; consider prophylactic valproate | [1]
+Rechallenge after neutropenia | Success rate ~63–87% after mild-moderate neutropenia; ~18% after agranulocytosis; G-CSF support: ~76% success | [7], [8]
+Underutilization | <10% of TRS patients receive clozapine in most US states despite guideline recommendations | [9]
+Agent | Formulation | Dosing Interval | Initiation | Key Trial Evidence | Refs
+Paliperidone palmitate 1-month (PP1M) | IM deltoid/gluteal | Monthly | 150 mg eq. day 1, 100 mg eq. day 8 | PRIDE, PROSIPAL, DREaM | [1], [2], [3]
+Paliperidone palmitate 3-month (PP3M) | IM deltoid/gluteal | Every 3 months | Requires ≥4 months stable on PP1M | Noninferior to PP1M; NNT 3.4 at 12 months | [4]
+Paliperidone palmitate 6-month (PP6M) | IM gluteal | Every 6 months | Requires stable on PP3M | Noninferior to PP3M; 3.9% relapse in 2-year OLE | [5]
+Aripiprazole monohydrate (AOM 400) | IM deltoid/gluteal | Monthly | 14-day oral overlap; 400 mg | PRELAPSE; QUALIFY (superior QoL vs. PP1M) | [6], [7]
+Aripiprazole lauroxil (AL) | IM deltoid/gluteal | Monthly or bimonthly | 1-day initiation available (with oral) | ALPINE; NNT 6 vs. placebo | [8], [9]
+Risperidone LAI | IM gluteal | Every 2 weeks | 3-week oral overlap; 25–50 mg | PROACTIVE (negative trial) | [10]
+Olanzapine pamoate | IM gluteal | Every 2–4 weeks | No oral overlap needed | Post-injection delirium/sedation syndrome (PDSS) risk; 3-hour monitoring | [11]
+Parameter | Recommendation | Evidence | Refs
+Electrode placement | RUL at 6× threshold (first-line); switch to bilateral if inadequate response after 6–8 treatments | Sackeim 1993/2000; Kolshus 2017 MA | [1], [2], [3]
+Pulse width | Ultrabrief (0.3 ms) for RUL; brief pulse (0.5–1.0 ms) for bilateral | Sackeim 2008; PRIDE | [4], [5]
+Frequency | 3×/week (bilateral) or 2–3×/week (RUL) | Expert consensus | [2]
+Course length | 6–12 treatments; assess response after each | PRIDE: mean 7.3 to remission | [5]
+Continuation therapy | Nortriptyline + lithium OR continuation ECT (STABLE algorithm) | Sackeim 2001; CORE; PRIDE Phase 2 | [6], [7], [8]
+Best indications | Psychotic depression, catatonia, acute suicidality, elderly, treatment resistance | Multiple meta-analyses | [2], [9], [10], [11]
+Cognitive monitoring | Assess orientation, autobiographical memory at each treatment; consider switching placement if significant impairment | Expert consensus | [2], [12]
+Dementia risk | No increased risk; possibly protective in adults >50 years (HR 0.78) | 2026 meta-analysis | [13]
+Medication Class | When to Consider Deprescribing | How to Taper | Key Risks | Evidence | Refs
+Antipsychotics (recurrent psychosis) | Stable ≥1 year; patient preference; significant side effects | Reduce by 10% every 4 weeks (hyperbolic); monitor closely | Relapse (OR 2.20 in RADAR); 2/3 who reduce ≥50% do not relapse | RADAR, Cochrane 2022 | [1], [2], [3]
+Antipsychotics (FEP, single episode) | Remission ≥6–12 months; shared decision-making | Gradual reduction over 6–18 months; consider guided DRD | Short-term relapse risk but possible long-term functional benefit | HAMLETT, Wunderink | [2], [4]
+Antidepressants (MDD) | Remission ≥6–12 months (first episode); consider indefinite if ≥3 episodes | Hyperbolic taper; add psychological support; final doses may be very small | 56% relapse with discontinuation; withdrawal symptoms in ~31% | ANTLER, 2026 NMA | [5], [6], [7]
+Benzodiazepines | Chronic use >4 weeks; elderly; concurrent opioids | 5–10% reduction every 2–4 weeks; CBT augmentation (NNT = 2) | Seizures (abrupt cessation); rebound anxiety/insomnia | ASAM 2025 | [8], [9]
+Polypharmacy (general) | Non-evidence-based combinations; duplicative mechanisms; significant ADRs | One change at a time; reassess annually | Clinical deterioration re-stabilized by returning to baseline dose in 87.5% | ASCP 2026 Delphi | [9], [10]

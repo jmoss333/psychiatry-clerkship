@@ -1,0 +1,613 @@
+
+
+
+Competency-Based Medical Education in Psychiatry Residency: Comprehensive Evidence Review and EPA-Based Assessment Implementation Toolkit
+
+
+Scope and Framing
+
+
+This review synthesizes the evidence landscape on competency-based medical education (CBME) as applied to psychiatry residency training, with a focus on EPAs, milestones, workplace-based assessment, feedback, direct observation, and learning analytics. It is designed to support a program-level curriculum redesign and ACGME self-study for PGY-2 through PGY-4 residents, with implementation deliverables tailored for the New Innovations platform. The review covers conceptual frameworks, empirical evidence (including psychometric data), equity considerations, and practical implementation tools. It concludes with a complete EPA-based feedback system design for inpatient psychiatry.
+
+---
+
+Part I: Evidence Review
+
+
+1. ACGME Psychiatry Milestones and the CBME Framework
+
+
+The ACGME Milestones are competency-based behavioral descriptions of developmental performance that form the operational backbone of outcomes-based accreditation, introduced through the Next Accreditation System (NAS) in 2013.[1] The general psychiatry milestones were initially completed in 2013, developed jointly by the ACGME and the American Board of Psychiatry and Neurology (ABPN).[2] Milestones 2.0, developed by work groups convened in 2018, introduced two major structural changes: (1) harmonized milestones across all specialties in four of six competency domains (ICS, PBLI, Professionalism, SBP), and (2) specialty-specific milestones retained for Patient Care and Medical Knowledge.[3] A notable psychiatry-specific addition was the well-being subcompetency under Professionalism, developed with significant input from AADPRT, which addressed unique challenges including balancing individual versus systemic responsibility for burnout and maintaining privacy while assessing resident well-being.[4]
+
+Each subcompetency is rated on five developmental levels based on the Dreyfus model: Level 1 (novice) through Level 5 (aspirational expertise), with Level 4 representing the target at training completion.[5] Programs report milestone ratings to the ACGME semi-annually, synthesized by Clinical Competency Committees (CCCs) from multiple data sources.[1][6] A 2025 NEJM review by Cooper and Holmboe positions CBME as requiring a systems approach encompassing workplace-based assessment, ongoing faculty development, learning analytics, longitudinal coaching, and fit-for-purpose CCCs.[7]
+
+The relationship between EPAs and milestones is illustrated in the following figure from Cooper and Holmboe, showing how a single EPA integrates multiple competency domains with developmental progression from novice through expertise.
+
+Figure 3 Relationship between EPAs and Competency Milestones, with Narrative Description of Proficiency.
+
+2. Entrustable Professional Activities in Psychiatry
+
+
+2a. Conceptual Foundation
+
+
+EPAs, first proposed by ten Cate in 2005, are "units of professional practice that can be fully entrusted to a trainee once they have demonstrated the necessary competence to execute this activity unsupervised".[8] They synthesize multiple abstract competencies into observable clinical activities, providing the clinical context necessary for meaningful workplace-based assessment.[7] Ten Cate and colleagues proposed adding "trusted" as a level atop Miller's pyramid (knows → knows how → shows how → does → trusted), arguing that trust encompasses more than observed proficiency and includes readiness to handle unexpected challenges.[9]
+
+2b. Psychiatry-Specific EPA Frameworks
+
+
+The most rigorous US psychiatry EPA development was conducted by a national task force (May 2014–February 2017) using a three-stage process: iterative consensus yielding 24 proposed EPAs, review by 4 non-psychiatry EPA experts reducing to 14, and a two-round Delphi study with 31 national experts (all completing frame-of-reference training). Ten EPAs met stringent inclusion criteria (content validity index ≥0.8, lower asymmetric CI ≥4.0).[10] The RANZCP identified four first-year trainee EPAs (initiating common psychiatric medications, discharging patients with schizophrenia or bipolar disorder, conducting risk assessments, managing psychiatric emergencies).[11] Additional frameworks have been developed in China (17 EPAs) and Taiwan (21 EPAs).[12][13]
+
+
+
+2c. Implementation Evidence
+
+
+A mobile app for EPA-based assessment in psychiatry outpatient continuity clinic demonstrated feasibility: mean completion time was 76 seconds, 95% of narrative comments were behaviorally specific and actionable, 91% were corrective, and entrustment scores correlated moderately with resident experience (r = 0.43, P < .001). However, only 6 of 10 dyads completed the target of ≥10 assessments, highlighting uneven adoption.[14] The Psychopharmacotherapy-Structured Clinical Observation (P-SCO) tool, a 26-item direct observation instrument for medication management visits, demonstrated content validity, feasibility, and generated 5.3 times more corrective comments than traditional global assessments.[15][16] Factor analysis of P-SCO data revealed three factors — affective tasks, cognitive tasks, and "hard tasks" (substance use assessment, violence risk, adherence) — with hard tasks showing the slowest improvement over training.[16]
+
+3. Workplace-Based Assessment: Evidence and Tools
+
+
+3a. Mini-CEX Psychometrics
+
+
+The BEME systematic review (58 studies) found Cronbach's alpha ranging from 0.58 to 0.97 (weighted mean = 0.90).[17] A meta-analysis demonstrated construct validity effect sizes (d) of 0.25–0.50 across residency year levels and predictive validity correlations of r = 0.26–0.85.[18] Approximately 9 encounters with a single different assessor per encounter are needed for a generalizability coefficient ≥0.80; this drops to 4 encounters with 2 raters per encounter.[3] The scoring component is the weakest link — leniency error is pervasive, and the six competency items correlate so highly they may not discriminate across domains.[19]
+
+3b. Direct Observation: Rates and Barriers
+
+
+Direct observation occurs infrequently across specialties; end-of-rotation global ratings are often completed by supervisors who have not directly observed trainees with patients.[8] A Canadian psychiatry program study identified barriers at resident, faculty, and administrative levels, with enablers including financial compensation for faculty, guidelines, and discussion at the beginning of each rotation.[20] Hauer et al.'s "Twelve Tips" for implementing direct observation tools emphasize selecting tools with existing validity evidence, including faculty development on rating and feedback, using behavioral anchors, and soliciting narrative comments.[21][22]
+
+3c. Clinical Competency Committees
+
+
+CCCs synthesize data from multiple sources to assign milestone ratings reported semi-annually.[6] A mixed-methods study found CCC members weighted rotation ratings highest (37%), followed by faculty rotation comments (27%) and personal experience with residents (14%).[23] Most CCCs operate under a problem identification model focused on struggling residents rather than a developmental model tracking all residents' growth — a significant limitation for program redesign.[13] Three recommended core CCC goals include: discerning each resident's developmental status, determining readiness for unsupervised practice, and fostering self-assessment ability.[24]
+
+The following figure illustrates the workflow from individual EPA microassessments to CCC summative entrustment decisions, showing how assessments accumulate over a six-month cycle before the CCC assigns both a summative entrustment level and a confidence rating.
+
+Figure 1 Flowchart of the Entrustable Professional Activity (EPA) Microassessment to Clinical Competency Committee (CCC) Decision-Making Process
+
+4. Feedback Quality and Feedback Interventions
+
+
+4a. Evidence-Based Feedback Models
+
+
+The R2C2 model (Relationship, Reaction, Content, Coaching) is the most extensively studied framework, developed through iterative qualitative research. A multi-country case study across five residency programs (including psychiatry) found it effective in engaging residents in reflective, goal-oriented discussions.[26] However, a 2023 study adapting R2C2 for in-the-moment feedback found that many dyads struggled with coaching components, specifically creating action plans and follow-up arrangements.[27] A psychiatry-specific implementation study identified self-efficacy, in-house educational expertise, learning culture, and organizational readiness as key facilitators.[28]
+
+The Ask-Tell-Ask (ATA) model promotes learner accountability and reflection through three steps: asking for self-assessment, telling the observer's assessment, and asking for the learner's action plan.[29] It is described as efficient and ideal for the milestones era.[29]
+
+4b. Characteristics of Effective Feedback
+
+
+Converging evidence identifies core characteristics: specific and behaviorally anchored (referencing observable behaviors rather than general impressions), actionable (suggesting modifiable behaviors), timely (within days rather than weeks), based on direct observation, and relationship-dependent.[30][31][32][33] A discrete choice experiment with 95 residents found that valence, dialogue, relationship, and focus each accounted for ~20% of feedback preferences, while source and situation each accounted for only ~11% — suggesting "how" feedback is provided matters more than "who" provides it.[34]
+
+Critically, a meta-analysis found that one-third of feedback studies demonstrated negative impacts on learning, particularly when feedback threatens self-esteem or conflicts with self-perception.[35][36]
+
+4c. Narrative vs. Numeric Feedback
+
+
+Narrative evaluations converted by experienced graders achieved higher inter-rater reliability (ICC = 0.88) than original numeric scores (ICC = 0.62) in a neurology clerkship study.[37] A purely narrative multisource feedback instrument showed that 92% of trainees and supervisors preferred narrative over numerical MSF.[38] Ginsburg et al. argue that "numbers encapsulate, words elaborate" — numeric entrustment ratings serve a different purpose than narrative comments, and dual-purposing words for both assessment and feedback is problematic.[39]
+
+The SFED-based rubric shown below provides a practical scoring matrix for evaluating verbal feedback quality across five categories with five performance levels, offering concrete criteria for faculty development.
+
+Figure 1 SFED‐based rubric for verbal feedback evaluation.
+
+5. Rating Scale Design: Entrustment-Supervision Scales
+
+
+Entrustment-supervision scales align with how clinicians naturally make day-to-day supervision decisions, resulting in increased reliability.[41] Construct-aligned scales substantially reduced assessor disagreement: the number of assessors needed for G ≥ 0.70 fell from 6 to 3 for the mini-CEX and from 8 to 3 for case-based discussion.[42] The O-EDShOT (entrustment-supervision scale) outperformed a traditional norm-referenced WBA: 59% of score variability was attributable to trainees (vs. 21% for traditional), and fewer assessments were needed for reliability of 0.8 (27 vs. 51).[43] Replacing a standard numeric scale with a BARS for fellowship applicant assessment normalized data distribution and enhanced inter-rater reliability.[44]
+
+ES scales have ordinal (not interval) properties and can be retrospective ("how much supervision was provided?") or prospective ("how much supervision will be needed?"). Prospective scales truly focus on entrustment and require more holistic judgment including risk estimation.[45] Some faculty struggle with interpreting entrustment anchor language, particularly whether assessment should be retrospective or prospective.[46]
+
+The OpTrust tool provides an example of a behaviorally anchored entrustment assessment matrix with specific behavioral descriptors for both faculty and resident actions across four entrustability levels.
+
+Figure 1 OpTrust Intraoperative Faculty Entrustment and Resident Entrustability Assessment Tool
+
+6. Validity and Reliability Concerns
+
+
+6a. Sources of Measurement Error
+
+
+Rater variance is consistently the dominant source of error. In an internal medicine entrustment-based WBA system (166,686 ratings), raters accounted for 37% of variance while residents accounted for only 19%.[48] A multi-institutional generalizability study (53,565 WBAs across 7 institutions) found learner-attributable variance <10% in 76% of analyses, requiring a median of 60 observations for acceptable reliability (Φ > 0.70).[49] This fundamentally challenges whether individual WBA data points can be generalized to represent true competence.
+
+Program-level variance in milestone ratings is also substantial: in family medicine, program-level variability accounted for 35% of total variance, consistently exceeding learner-level variability.[50] Up to 36% of general surgery programs practiced uniform rating (assigning all residents the same score corresponding to PGY level).[51]
+
+6b. Racial and Ethnic Bias
+
+
+Multiple large national studies demonstrate racial and ethnic disparities in milestone assessments. In internal medicine (>9,000 residents), URiM and Asian residents received lower total milestone scores than White residents, with disparities peaking during PGY-2.[6] In emergency medicine, intersectional analysis showed URM female residents received increasingly lower ratings over time, equivalent to approximately 2–3 additional months of training.[52] A 2026 study across 19,492 PGY-2 residents in 6 specialties found URiM residents (AOR 0.68) and Asian residents (AOR 0.67) were less likely to receive exceptionally high ratings than White residents, even after controlling for Step 2 CK scores.[53]
+
+Figure 3 Intersectional Disparities in Competency Scores by Ethnoracial Group and Sex Cross-Strata
+
+6c. Practical Mitigation Strategies
+
+
+Evidence-supported approaches include: combining multiple WBA tools in a portfolio (which achieves acceptable reliability with fewer total assessments than any single tool); applying hawk-dove corrections for rater stringency/leniency (which increased student-attributable variance from 4–8% to 14.8–17.8%); increasing rater diversity and frequency; using entrustment-based scales; shifting CCCs from problem identification to developmental models; and conducting routine equity audits of assessment data.[54][55][56][48][41][57][6][58]
+
+7. Faculty Development
+
+
+7a. Evidence Base
+
+
+Faculty development in assessment has been characterized as "the missing link" in CBME.[59] The strongest experimental evidence comes from the Kogan et al. (2023) RCT (n=94 randomized): a multifaceted rater training intervention improved narrative holistic specificity (2.76 vs. 2.31, P < .001), narrative accuracy (2.37 vs. 2.06, P < .001), and entrustment rating accuracy (58.1% vs. 49.7%, P = .006). Participants with lower baseline skill benefited most.[60] However, commitment-to-change data showed only 39% of commitments were fully implemented at 3 months, with lack of time/competing priorities as the most cited barrier.[61]
+
+7b. Minimizing Faculty Burden
+
+
+A Canadian neurosurgery survey found faculty recommended ≤3 minutes as feasible for completing an EPA evaluation form and 5 minutes for oral feedback; if forms took ≤3 minutes, 85% would complete evaluations weekly or daily, and 71% preferred mobile application access.[62] EHR-driven EPA delivery led to a 4.6-fold increase in EPAs completed, with platform triggering driving 88% of faculty completions.[63] The prEPAred mobile app achieved a median supervisor rating time of 17 seconds (IQR 11–30s).[64]
+
+7c. Sustainability
+
+
+Assessment culture transformation requires sustained effort. An early implementation study found that assessment took more time and effort initially, but by year 3 this was mitigated by a sense of value for all stakeholders.[65] Implementing practical CBME components was perceived as a "sprint," while realizing CBME principles and changing culture was a "marathon" requiring continuous faculty development.[66]
+
+8. Learning Analytics Dashboards
+
+
+No psychiatry-specific dashboard implementation was identified in the literature — this represents a clear gap. The most widely cited design guidance comes from Boscardin et al.'s "Twelve Tips," emphasizing that dashboards should deliver timely, continuous, easily visualized performance data to facilitate informed self-assessment and learning planning.[67] Successful implementations in other specialties include: an anesthesiology automated clinical performance dashboard (80% of residents desired frequent updates); a radiology web-based database that reduced CCC preparation time by ~90% for coordinators and ~50% for faculty; and an emergency medicine feedback dashboard that increased submitted evaluations and face-to-face feedback.[68][69][70]
+
+The University of Washington developed a method mapping EPA-based evaluation responses to "milestone elements," automatically tallying confirmed milestone elements as faculty complete EPA assessments — a model directly applicable to New Innovations implementation.[71]
+
+---
+
+Part II: EPA-Based Feedback System for Inpatient Psychiatry
+
+
+Core EPAs for Inpatient Psychiatry (PGY-2 through PGY-4)
+
+
+Drawing on the Young et al. national framework, the P-SCO tool domains, the RANZCP EPAs, and the Taiwan framework, the following[10][72][73][11][13] 10 core EPAs are proposed for an inpatient psychiatry rotation. Each integrates multiple ACGME competency domains and maps to specific Psychiatry Milestones 2.0 subcompetencies.
+
+
+
+Behaviorally Anchored Entrustment Rating Scale
+
+
+Based on the evidence supporting entrustment-supervision scales over traditional Likert scales, the following[41][42][43][45] 5-level prospective entrustment scale is recommended. Prospective scales ("how much supervision will this resident need going forward?") align with authentic clinical entrustment decisions and produce more reliable ratings than retrospective scales.[45]
+
+
+
+Mobile-Friendly Attending Feedback Form (New Innovations)
+
+
+This form is designed for completion in ≤3 minutes on a mobile device, consistent with the evidence that forms taking ≤3 minutes achieve 85% weekly completion rates and that the psychiatry EPA mobile app averaged 76 seconds per assessment.[62][14]
+
+Form Structure (New Innovations Custom Evaluation):
+
+Section 1: Header (auto-populated)
+
+- Resident name, PGY level, date, attending name, rotation week
+
+Section 2: EPA Selection
+
+- Select the EPA observed (dropdown menu of 10 EPAs)
+
+- Clinical context (brief free text, e.g., "new admission with psychosis" — optional, 1 line)
+
+Section 3: Entrustment Rating
+
+- "Based on today's observation, what level of supervision does this resident need for this activity going forward?" (5-level scale as above, radio buttons)
+
+Section 4: Narrative Feedback (structured prompts)
+
+- "What did the resident do well?" (free text, 1–3 sentences)
+
+- "What is one specific thing the resident should work on?" (free text, 1–3 sentences)
+
+- "Suggested next step or learning goal:" (free text, 1 sentence — optional)
+
+Section 5: Direct Observation Confirmation
+
+- "Was this assessment based on direct observation?" (Yes / Partial / No — radio buttons)
+
+- "Approximate duration of observation:" (dropdown: <10 min, 10–20 min, 20–30 min, >30 min)
+
+Resident Self-Assessment Form
+
+
+Completed by the resident before receiving attending feedback (consistent with ATA model principles and evidence that self-assessment before external input enhances reflection).[29][74]
+
+Form Structure:
+
+Section 1: EPA and Context
+
+- Which EPA did you perform today? (dropdown)
+
+- Brief clinical scenario (1 line)
+
+Section 2: Self-Entrustment Rating
+
+- "What level of supervision do you think you needed for this activity?" (same 5-level scale)
+
+Section 3: Reflection Prompts
+
+- "What went well in this encounter?" (1–3 sentences)
+
+- "What was challenging or what would you do differently?" (1–3 sentences)
+
+- "What specific skill or knowledge area do you want to develop?" (1 sentence)
+
+Section 4: Feedback Request
+
+- "Is there a specific aspect of your performance you'd like feedback on?" (free text, optional)
+
+Mid-Rotation Feedback Workflow
+
+
+Timing: End of Week 2 (for a 4-week rotation) or Week 3 (for a 6-week rotation)
+
+Process (using R2C2 framework):[75][26]
+
+1. Pre-meeting preparation (5 min): Attending reviews accumulated EPA assessments in New Innovations dashboard. Resident completes a brief self-assessment summary.
+
+2. Structured conversation (15–20 min):
+
+- Relationship (2 min): Check in on rotation experience, learning environment, well-being
+
+- Reaction (3 min): Resident reviews their EPA data and self-assessments; "What patterns do you notice?"
+
+- Content (5 min): Attending shares observations, highlights strengths and growth areas with specific examples from EPA assessments. Compare self-assessment to attending ratings — discrepancies are particularly valuable for discussion.
+
+- Coaching (5–10 min): Collaboratively develop 1–2 specific, measurable learning goals for the remainder of the rotation. Identify specific clinical opportunities to practice target skills.
+
+3. Documentation: Mid-rotation feedback summary entered in New Innovations (template below). Both parties sign.
+
+Mid-Rotation Feedback Summary Template:
+
+
+
+End-of-Rotation Summary Template
+
+
+Completed by attending, informed by accumulated EPA data and mid-rotation feedback.
+
+
+
+Dashboard Concept
+
+
+Based on the evidence from successful implementations in other specialties and the EPA-to-milestone mapping methodology, the following dashboard elements are recommended for New Innovations:[67][68][69][70][71]
+
+Resident-Facing Dashboard:
+
+- EPA completion tracker: Visual grid showing which EPAs have been assessed, how many times, and current entrustment level (color-coded: red = Level 1–2, yellow = Level 3, green = Level 4–5)
+
+- Entrustment trajectory: Line graph showing entrustment ratings over time for each EPA, with expected developmental benchmarks by PGY level
+
+- Self-assessment vs. attending comparison: Side-by-side comparison highlighting calibration gaps
+
+- Narrative feedback archive: Searchable repository of all narrative comments received
+
+- Learning goal tracker: Current goals with status (from mid-rotation feedback)
+
+Program Director / CCC Dashboard:
+
+- Cohort overview: Heat map of all residents × all EPAs showing current entrustment levels
+
+- Outlier identification: Automated flagging of residents >1 SD below cohort mean on any EPA, or with <50% of expected assessments completed
+
+- Assessment volume monitor: Tracking number of assessments per resident per rotation (target: ≥2 per week)
+
+- Faculty participation rates: Identifying faculty who are under-completing assessments
+
+- Equity audit view: Entrustment ratings stratified by resident demographics (aggregated, de-identified for pattern detection)
+
+- Milestone crosswalk: Auto-mapped milestone levels derived from EPA entrustment data[71]
+
+Implementation Plan (Minimal Faculty Time)
+
+
+Phase 1: Foundation (Months 1–2)
+
+
+
+Faculty Development Session Content (45 minutes):
+
+- What are EPAs and why they matter (5 min)
+
+- How to use the entrustment scale — with 3 video vignettes of inpatient psychiatry encounters rated collaboratively (20 min; frame-of-reference training approach)[60]
+
+- How to write actionable narrative feedback — practice with examples (10 min)
+
+- Logistics: accessing the form on mobile, when to complete, target frequency (5 min)
+
+- Q&A (5 min)
+
+Phase 2: Pilot (Months 3–4)
+
+- Target: ≥2 EPA assessments per resident per week (≥8 per 4-week rotation)
+
+- Weekly check-in emails to pilot faculty (automated from New Innovations)
+
+- Collect faculty and resident feedback at 4 weeks via brief survey
+
+- Adjust form based on feedback (reduce friction points)
+
+Phase 3: Expansion (Months 5–8)
+
+- Roll out to all inpatient units
+
+- 15-minute "booster" at faculty meeting: share pilot data, address common questions
+
+- Implement mid-rotation feedback workflow
+
+- Configure dashboard views in New Innovations
+
+- Begin CCC integration: present EPA data alongside traditional evaluations
+
+Phase 4: Optimization (Months 9–12)
+
+- Conduct first equity audit of entrustment ratings
+
+- Refine EPA descriptions based on faculty and resident input
+
+- Develop spaced-learning module for ongoing faculty calibration (evidence supports spaced repetition for sustained learning)[76][77]
+
+- Present outcomes at department grand rounds
+
+- Prepare data for ACGME self-study
+
+Strategies to Minimize Faculty Burden:
+
+- Mobile-first design: All forms accessible via smartphone; target ≤3 minutes per assessment[62]
+
+- "Observe and rate" culture: Encourage completing the form immediately after any clinical encounter where the resident was observed — no need for separate scheduled observations[78]
+
+- Auto-reminders: New Innovations can send automated reminders if a faculty member has not completed an assessment in >5 days
+
+- EHR-triggered prompts: If feasible, configure prompts after specific clinical events (new admissions, discharges, emergency assessments) to trigger EPA assessment requests[63]
+
+- Batch narrative review: For CCC preparation, program coordinator pre-synthesizes EPA data into the end-of-rotation summary template, reducing CCC member preparation time by up to 90%[69]
+
+Best-Practice EPA Feedback Form Design Principles
+
+
+Synthesizing across the evidence base, the following principles should guide form design:
+
+1. Use entrustment-supervision scales rather than traditional Likert scales — they align with clinical decision-making and improve reliability[41][42][43]
+
+2. Combine numeric entrustment ratings with structured narrative prompts — but explicitly separate the purpose of words for feedback vs. assessment[39]
+
+3. Keep forms short — ≤3 minutes for completion; median 17–76 seconds for the rating component alone[62][64][14]
+
+4. Include a "direct observation" confirmation — feedback credibility depends on the assessor having directly observed the performance[79][80]
+
+5. Use prospective entrustment anchors ("what supervision will this resident need going forward?") rather than retrospective[45]
+
+6. Prompt for specific, corrective feedback — the question "What is one specific thing the resident should work on?" generates higher-quality comments than open-ended "comments" boxes[14][32]
+
+7. Separate self-assessment from attending assessment — resident completes self-assessment before receiving feedback, enabling calibration discussions[29]
+
+8. Build in a coaching/action-planning step — this is consistently the weakest component in practice but the most impactful for learning[26][27]
+
+Suggested Rating Anchor Refinements by EPA
+
+
+For EPAs where faculty may struggle with entrustment language, provide EPA-specific behavioral examples at each level. For example:
+
+EPA 3 (Pharmacotherapy) — Level 3 (Indirect Supervision):
+
+> "Resident independently selects appropriate medication class and starting dose for common presentations (e.g., acute psychosis, major depression). Considers drug interactions and medical comorbidities. May need guidance for complex polypharmacy, treatment-resistant cases, or clozapine initiation. Reports plan to attending before implementing."
+
+EPA 4 (Psychiatric Emergencies) — Level 2 (Direct Supervision):
+
+> "Resident can conduct a structured risk assessment with prompting. Initiates de-escalation but may need attending to take over if situation escalates. Knows when to call for help but may not yet recognize early warning signs independently. Attending should be immediately available."
+
+Faculty Implementation Tips
+
+
+1. Start with observation you're already doing. Every time a resident presents a case, conducts a family meeting, or manages an acute situation in your presence, that is an observation opportunity. Complete the EPA form immediately afterward — it takes less time than writing a text message.[14]
+
+2. Focus on one corrective comment. The evidence shows that 91% of high-quality EPA feedback is corrective. Resist the urge to be comprehensive — one specific, actionable suggestion is more useful than five vague ones.[14][32]
+
+3. Use the entrustment scale as a conversation starter. When your rating differs from the resident's self-assessment, that discrepancy is the most valuable teaching moment. Ask: "I rated you at Level 2 for this EPA — you rated yourself at Level 3. Let's talk about what would need to change for me to trust you to do this with less supervision."
+
+4. Don't wait for perfection. Complete the assessment even if the observation was brief or partial. A 10-minute observation of a medication discussion is sufficient for EPA 3. Partial data from many observations is more reliable than comprehensive data from few.[49][54]
+
+5. Calibrate with colleagues. Discuss 1–2 "borderline" residents at faculty meetings using the entrustment scale. This informal frame-of-reference training improves shared mental models more than formal workshops.[60][81]
+
+6. Be aware of bias. National data show consistent racial/ethnic disparities in clinical performance assessments. Before rating, ask yourself: "Am I rating this resident's actual observed performance, or am I influenced by factors unrelated to what I just saw?"[6][82][52]
+
+7. Protect feedback conversations from assessment. Not every observation needs to generate a form. Some of the most valuable teaching moments should remain purely formative — a brief hallway conversation about what went well and what to try next time.[39]
+
+ChatGPT Prompt for EPA-Based Feedback System Design
+
+
+The following prompt can be used to generate or customize EPA-based feedback system components for other rotations or specialties:
+
+---
+
+You are a medical education expert specializing in competency-based medical education, entrustable professional activities (EPAs), and workplace-based assessment. Design an EPA-based feedback system for a [SPECIALTY] residency [ROTATION NAME] rotation.
+
+Context: This is for PGY-[LEVEL] residents at a [SETTING] program using [PLATFORM] as the evaluation platform. The rotation is [DURATION] weeks long.
+
+Please provide:
+
+1. 8–12 core EPAs specific to this rotation, each with: title, primary ACGME competency domains, and 3–4 key observable behaviors.
+
+2. A 5-level behaviorally anchored entrustment rating scale with rotation-specific behavioral descriptors at each level for at least 3 of the EPAs.
+
+3. A mobile-friendly attending feedback form that can be completed in under 3 minutes, including: EPA selection, entrustment rating, structured narrative prompts for strengths and growth areas, and direct observation confirmation.
+
+4. A resident self-assessment form completed before receiving attending feedback, including: self-entrustment rating and reflection prompts.
+
+5. A mid-rotation feedback workflow using the R2C2 model (Relationship, Reaction, Content, Coaching) with specific timing, preparation steps, and a documentation template.
+
+6. An end-of-rotation summary template that synthesizes EPA data into a narrative summary with entrustment trends, goal progress, and CCC-relevant information.
+
+7. A dashboard concept with separate views for residents (self-tracking) and program directors (cohort oversight, outlier identification, equity monitoring).
+
+8. A phased implementation plan (4 phases over 12 months) that minimizes faculty time burden, includes a 45-minute faculty development session outline, and specifies assessment frequency targets.
+
+Base your design on current evidence including: entrustment-supervision scales (ten Cate), the R2C2 feedback model (Sargeant), programmatic assessment principles (van der Vleuten), and the Young et al. (2018) psychiatry EPA framework. Prioritize feasibility and faculty adoption over comprehensiveness.
+
+---
+
+Key Evidence Gaps and Future Directions
+
+
+Several important uncertainties should inform ongoing program evaluation:
+
+- No large-scale US implementation data exist for psychiatry EPAs; the mobile app pilot involved only 10 dyads[14]
+
+- Psychometric validation of psychiatry EPAs remains limited compared to pediatrics or surgery
+
+- No psychiatry-specific learning analytics dashboard has been described in the literature
+
+- The optimal number of observations for reliable entrustment decisions in psychiatry is unknown; estimates from other specialties range from 9 to 60+ depending on design[49][83]
+
+- Impact on patient outcomes from EPA-based assessment has not been demonstrated in psychiatry
+
+- Equity data on psychiatry-specific milestone and EPA ratings have not been published, though disparities are well-documented in internal medicine and emergency medicine[6][52]
+
+- Platform-specific evidence for New Innovations WBA implementation is absent from the peer-reviewed literature
+
+---
+
+Would you like to explore the specific process for mapping these inpatient psychiatry EPAs to the ACGME Psychiatry Milestones 2.0 subcompetencies, including a crosswalk table that could be configured in New Innovations for automated milestone reporting?
+
+References
+The Next GME Accreditation System — Rationale and Benefits. Nasca TJ, Philibert I, Brigham T, Flynn TC. The New England Journal of Medicine. 2012;366(11):1051-6. doi:10.1056/NEJMsr1200117.
+The Road Ahead in Education: Milestones for Geriatric Psychiatry Subspecialty Training. Swantek SS, Maixner SM, Llorente MD, et al. The American Journal of Geriatric Psychiatry : Official Journal of the American Association for Geriatric Psychiatry. 2016;24(9):675-89. doi:10.1016/j.jagp.2016.03.011.
+Introducing the Neurology Milestones 2.0. Dewey JJ, Chiota-McCollum N, Barratt D, et al. Neurology. 2022;98(9):366-372. doi:10.1212/WNL.0000000000013312.
+Challenges of Assessing Resident Competency in Well-Being: Development of the Psychiatry Milestones 2.0 Well-Being Subcompetency. Houston LJ, DeJong SM, Brenner AM, et al. Academic Medicine : Journal of the Association of American Medical Colleges. 2022;97(3):351-356. doi:10.1097/ACM.0000000000004220.
+Trainee Physician Milestone Ratings and Patient Complaints in Early Posttraining Practice. Han M, Hamstra SJ, Hogan SO, et al. JAMA Network Open. 2023;6(4):e237588. doi:10.1001/jamanetworkopen.2023.7588.
+Racial and Ethnic Differences in Internal Medicine Residency Assessments. Boatright D, Anderson N, Kim JG, et al. JAMA Network Open. 2022;5(12):e2247649. doi:10.1001/jamanetworkopen.2022.47649.
+Competency-Based Medical Education at the Front Lines of Patient Care. Cooper D, Holmboe ES. The New England Journal of Medicine. 2025;393(4):376-388. doi:10.1056/NEJMra2411880.
+The Recommended Description of an Entrustable Professional Activity: AMEE Guide No. 140. Ten Cate O, Taylor DR. Medical Teacher. 2021;43(10):1106-1114. doi:10.1080/0142159X.2020.1838465.
+Entrustment Decision Making: Extending Miller's Pyramid. Ten Cate O, Carraccio C, Damodaran A, et al. Academic Medicine : Journal of the Association of American Medical Colleges. 2021;96(2):199-204. doi:10.1097/ACM.0000000000003800.
+Developing End-of-Training Entrustable Professional Activities for Psychiatry: Results and Methodological Lessons. Young JQ, Hasser C, Hung EK, et al. Academic Medicine : Journal of the Association of American Medical Colleges. 2018;93(7):1048-1054. doi:10.1097/ACM.0000000000002058.
+Using Entrustable Professional Activities to Guide Curriculum Development in Psychiatry Training. Boyce P, Spratt C, Davies M, McEvoy P. BMC Medical Education. 2011;11:96. doi:10.1186/1472-6920-11-96.
+Establishing Entrustable Professional Activities for Psychiatry Residents in China. Yan F, Yang X, Zhang L, et al. BMC Medical Education. 2023;23(1):623. doi:10.1186/s12909-023-04583-9.
+Importance-Based Approach to Entrustable Professional Activities for Psychiatric Residency Training. Chen WY, Chu CP, Huang TF, et al. BMC Medical Education. 2025;25(1):1068. doi:10.1186/s12909-025-07655-0.
+Fast, Easy, and Good: Assessing Entrustable Professional Activities in Psychiatry Residents With a Mobile App. Young JQ, McClure M. Academic Medicine : Journal of the Association of American Medical Colleges. 2020;95(10):1546-1549. doi:10.1097/ACM.0000000000003390.
+Feedback in Clinical Education: Untying the Gordian Knot. Weinstein DF. Academic Medicine : Journal of the Association of American Medical Colleges. 2015;90(5):559-61. doi:10.1097/ACM.0000000000000559.
+Relationships as the Backbone of Feedback: Exploring Preceptor and Resident Perceptions of Their Behaviors During Feedback Conversations. Ramani S, Könings KD, Ginsburg S, van der Vleuten CPM. Academic Medicine : Journal of the Association of American Medical Colleges. 2020;95(7):1073-1081. doi:10.1097/ACM.0000000000002971.
+Pediatric Endocrinology Milestones 2.0-Guide to Their Implementation. Tillotson CV, Becetti I, Hwu K, et al. BMC Medical Education. 2023;23(1):985. doi:10.1186/s12909-023-04862-5.
+Competency-Based Assessment in Psychiatric Education: A Systems Approach. Young JQ, Holmboe ES, Frank JR. The Psychiatric Clinics of North America. 2021;44(2):217-235. doi:10.1016/j.psc.2020.12.005.
+Placing Constraints on the Use of the ACGME Milestones: A Commentary on the Limitations of Global Performance Ratings. Williams RG, Dunnington GL, Mellinger JD, Klamen DL. Academic Medicine : Journal of the Association of American Medical Colleges. 2015;90(4):404-7. doi:10.1097/ACM.0000000000000507.
+Toward Defining the Foundation of the MD Degree: Core Entrustable Professional Activities for Entering Residency. Englander R, Flynn T, Call S, et al. Academic Medicine : Journal of the Association of American Medical Colleges. 2016;91(10):1352-1358. doi:10.1097/ACM.0000000000001204.
+Implementing an Entrustable Professional Activities Framework in Undergraduate Medical Education: Early Lessons From the AAMC Core Entrustable Professional Activities for Entering Residency Pilot. Lomis K, Amiel JM, Ryan MS, et al. Academic Medicine : Journal of the Association of American Medical Colleges. 2017;92(6):765-770. doi:10.1097/ACM.0000000000001543.
+Comparing Entrustment Decision-Making Outcomes of the Core Entrustable Professional Activities Pilot, 2019-2020. Brown DR, Moeller JJ, Grbic D, et al. JAMA Network Open. 2022;5(9):e2233342. doi:10.1001/jamanetworkopen.2022.33342.
+From Theory to Practice: Making Entrustable Professional Activities Come to Life in the Context of Milestones. Englander R, Carraccio C. Academic Medicine : Journal of the Association of American Medical Colleges. 2014;89(10):1321-3. doi:10.1097/ACM.0000000000000324.
+Effectiveness of Entrustable Professional Activity-Based Clinical Psychiatry Training for Indian Medical Interns: A Preliminary Study. Abhijita B, Sinha A, Choudhury AA, Sahu DP, Patra S. Psychiatry. 2024;87(1):96-98. doi:10.1080/00332747.2023.2291959.
+Decision-Making Confidence of Clinical Competency Committees for Entrustable Professional Activities. Montgomery KB, Mellinger JD, McLeod MC, et al. JAMA Surgery. 2024;159(7):801-808. doi:10.1001/jamasurg.2024.0809.
+The R2C2 Model in Residency Education: How Does It Foster Coaching and Promote Feedback Use?. Sargeant J, Lockyer JM, Mann K, et al. Academic Medicine : Journal of the Association of American Medical Colleges. 2018;93(7):1055-1063. doi:10.1097/ACM.0000000000002131.
+Application of the R2C2 Model to in-the-Moment Feedback and Coaching. Lockyer J, Lee-Krueger R, Armson H, et al. Academic Medicine : Journal of the Association of American Medical Colleges. 2023;98(9):1062-1068. doi:10.1097/ACM.0000000000005237.
+Implementation of Structured Feedback in a Psychiatry Residency Program in Canada: A Qualitative Analysis Study. Thakur A, Darani S, Kalocsai C, et al. Frontiers in Psychiatry. 2023;14:1276985. doi:10.3389/fpsyt.2023.1276985.
+Targeted Feedback in the Milestones Era: Utilization of the Ask-Tell-Ask Feedback Model to Promote Reflection and Self-Assessment. French JC, Colbert CY, Pien LC, Dannefer EF, Taylor CA. Journal of Surgical Education. 2015 Nov-Dec;72(6):e274-9. doi:10.1016/j.jsurg.2015.05.016.
+Assessment and Feedback Methods in Competency-Based Medical Education. Lee GB, Chiu AM. Annals of Allergy, Asthma & Immunology : Official Publication of the American College of Allergy, Asthma, & Immunology. 2022;128(3):256-262. doi:10.1016/j.anai.2021.12.010.
+Training in Neurology: Objective Structured Clinical Examination Case to Teach and Model Feedback Skills in Neurology Residency. LaRocque JJ, Grossman SN, Kurzweil AM, et al. Neurology. 2022;98(16):684-689. doi:10.1212/WNL.0000000000200223.
+Best Practices in Formative Feedback in Resident Evaluations: A Narrative Review. VanderStoep A, Constant K, Kavic SM. Journal of Surgical Education. 2025;82(3):103417. doi:10.1016/j.jsurg.2024.103417.
+Strategies for Effective Feedback. Kritek PA. Annals of the American Thoracic Society. 2015;12(4):557-60. doi:10.1513/AnnalsATS.201411-524FR.
+Residents' Perceptions of What Makes Feedback Valuable in Workplace-Based Learning: A Discrete Choice Experiment. van der Leeuw RM, Bouwmeester NH, Eva KW, Hiligsmann M, Teunissen PW. Medical Education. 2025;59(6):606-614. doi:10.1111/medu.15541.
+Resuscitation Education Science: Educational Strategies to Improve Outcomes From Cardiac Arrest: A Scientific Statement From the American Heart Association. Cheng A, Nadkarni VM, Mancini MB, et al. Circulation. 2018;138(6):e82-e122. doi:10.1161/CIR.0000000000000583.
+Variables That Affect the Process and Outcome of Feedback, Relevant for Medical Training: A Meta-Review. van de Ridder JM, McGaghie WC, Stokking KM, ten Cate OT. Medical Education. 2015;49(7):658-73. doi:10.1111/medu.12744.
+Numerical Versus Narrative: A Comparison Between Methods to Measure Medical Student Performance During Clinical Clerkships. Bartels J, Mooney CJ, Stone RT. Medical Teacher. 2017;39(11):1154-1158. doi:10.1080/0142159X.2017.1368467.
+Feasibility, Quality and Validity of Narrative Multisource Feedback in Postgraduate Training: A Mixed-Method Study. Holm EA, Al-Bayati SJL, Barfod TS, et al. BMJ Open. 2021;11(7):e047019. doi:10.1136/bmjopen-2020-047019.
+Numbers Encapsulate, Words Elaborate: Toward the Best Use of Comments for Assessment and Feedback on Entrustment Ratings. Ginsburg S, Watling CJ, Schumacher DJ, Gingerich A, Hatala R. Academic Medicine : Journal of the Association of American Medical Colleges. 2021;96(7S):S81-S86. doi:10.1097/ACM.0000000000004089.
+Evaluating Verbal Feedback in Medical Education: Utilization of a Feedback Model to Develop a Standardized Rubric for Evaluation. Parr MFE, Goenka P, Islam S, Fornari A, Khan A. Journal of Evaluation in Clinical Practice. 2026;32(4):e70461. doi:10.1111/jep.70461.
+Entrustability Scales: Outlining Their Usefulness for Competency-Based Clinical Assessment. Rekman J, Gofton W, Dudek N, Gofton T, Hamstra SJ. Academic Medicine : Journal of the Association of American Medical Colleges. 2016;91(2):186-90. doi:10.1097/ACM.0000000000001045.
+Good Questions, Good Answers: Construct Alignment Improves the Performance of Workplace-Based Assessment Scales. Crossley J, Johnson G, Booth J, Wade W. Medical Education. 2011;45(6):560-9. doi:10.1111/j.1365-2923.2010.03913.x.
+Assessing the Utility of a Novel Entrustment-Supervision Assessment Tool. Dewhirst S, Wood TJ, Cheung WJ, Frank JR. Medical Education. 2023;57(10):949-957. doi:10.1111/medu.15156.
+The Impact of Behavioral Anchors in the Assessment of Fellowship Applicants: Reducing Rater Biases. Langhan ML, Tiyyagura G. Academic Pediatrics. 2022;22(2):313-318. doi:10.1016/j.acap.2021.11.018.
+Assessing Trainees and Making Entrustment Decisions: On the Nature and Use of Entrustment-Supervision Scales. Ten Cate O, Schwartz A, Chen HC. Academic Medicine : Journal of the Association of American Medical Colleges. 2020;95(11):1662-1669. doi:10.1097/ACM.0000000000003427.
+Exploring the Use of Rating Scales With Entrustment Anchors in Workplace-Based Assessment. Robinson TJG, Wagner N, Szulewski A, et al. Medical Education. 2021;55(9):1047-1055. doi:10.1111/medu.14573.
+Faculty Entrustment and Resident Entrustability. Millar JK, Matusko N, Evans J, et al. JAMA Surgery. 2024;159(3):277-285. doi:10.1001/jamasurg.2023.6915.
+A Reliability Analysis of Entrustment-Derived Workplace-Based Assessments. Kelleher M, Kinnear B, Sall D, et al. Academic Medicine : Journal of the Association of American Medical Colleges. 2020;95(4):616-622. doi:10.1097/ACM.0000000000002997.
+How Well Do Workplace-Based Assessments Support Summative Entrustment Decisions? A Multi-Institutional Generalisability Study. Ryan MS, Gielissen KA, Shin D, et al. Medical Education. 2024;58(7):825-837. doi:10.1111/medu.15291.
+Longitudinal Reliability of Milestones-Based Learning Trajectories in Family Medicine Residents. Park YS, Hamstra SJ, Yamazaki K, Holmboe E. JAMA Network Open. 2021;4(12):e2137179. doi:10.1001/jamanetworkopen.2021.37179.
+Investigating Program Differences in ACGME General Surgery Milestone 2.0 Ratings: Medical Knowledge and Practice-Based Learning and Improvement. Ferguson C, Becker N, Greer J, et al. Journal of Surgical Education. 2025;:103730. doi:10.1016/j.jsurg.2025.103730.
+Intersectional Disparities in Emergency Medicine Residents’ Performance Assessments by Race, Ethnicity, and Sex. Lett E, Tran NK, Nweke N, et al. JAMA Network Open. 2023;6(9):e2330847. doi:10.1001/jamanetworkopen.2023.30847.
+Sex, Race, and Ethnicity Differences Among Residents With Exceptionally High Graduate Medical Education Ratings. Kim JG, Hauer KE, Boscardin CK, et al. JAMA Network Open. 2026;9(3):e264017. doi:10.1001/jamanetworkopen.2026.4017.
+Composite Reliability of a Workplace-Based Assessment Toolbox for Postgraduate Medical Education. Moonen-van Loon JM, Overeem K, Donkers HH, van der Vleuten CP, Driessen EW. Advances in Health Sciences Education : Theory and Practice. 2013;18(5):1087-102. doi:10.1007/s10459-013-9450-z.
+The Reliability of a Portfolio of Workplace-Based Assessments in Anesthesia Training. Castanelli DJ, Moonen-van Loon JMW, Jolly B, Weller JM. Canadian Journal of Anaesthesia = Journal Canadien d'Anesthesie. 2019;66(2):193-200. doi:10.1007/s12630-018-1251-7.
+Building Reliable and Generalizable Clerkship Competency Assessments: Impact of 'Hawk-Dove' Correction. Santen SA, Ryan M, Helou MA, et al. Medical Teacher. 2021;43(12):1374-1380. doi:10.1080/0142159X.2021.1948519.
+Reimagining the Clinical Competency Committee to Enhance Education and Prepare for Competency-Based Time-Variable Advancement. Goldhamer MEJ, Martinez-Lage M, Black-Schaffer WS, et al. Journal of General Internal Medicine. 2022;37(9):2280-2290. doi:10.1007/s11606-022-07515-3.
+Medical Education's Wicked Problem: Achieving Equity in Assessment for Medical Learners. Lucey CR, Hauer KE, Boatright D, Fernandez A. Academic Medicine : Journal of the Association of American Medical Colleges. 2020;95(12S Addressing Harmful Bias and Eliminating Discrimination in Health Professions Learning Environments):S98-S108. doi:10.1097/ACM.0000000000003717.
+Faculty Development in Assessment: The Missing Link in Competency-Based Medical Education. Holmboe ES, Ward DS, Reznick RK, et al. Academic Medicine : Journal of the Association of American Medical Colleges. 2011;86(4):460-7. doi:10.1097/ACM.0b013e31820cb2a7.
+Can Rater Training Improve the Quality and Accuracy of Workplace-Based Assessment Narrative Comments and Entrustment Ratings? A Randomized Controlled Trial. Kogan JR, Dine CJ, Conforti LN, Holmboe ES. Academic Medicine : Journal of the Association of American Medical Colleges. 2023;98(2):237-247. doi:10.1097/ACM.0000000000004819.
+Commitment to Change and Challenges to Implementing Changes After Workplace-Based Assessment Rater Training. Kogan JR, Conforti LN, Yamazaki K, Iobst W, Holmboe ES. Academic Medicine : Journal of the Association of American Medical Colleges. 2017;92(3):394-402. doi:10.1097/ACM.0000000000001319.
+Resident Evaluations in the Age of Competency-Based Medical Education: Faculty Perspectives on Minimizing Burdens. Rabski JE, Saha A, Cusimano MD, Dabns F. Journal of Neurosurgery. 2021;135(3):949-954. doi:10.3171/2020.7.JNS201688.
+EHR-Driven Delivery of EPA Assessments Significantly Improves Participation. Chang C, Jesneck J, Lee E, et al. Journal of Surgical Education. 2024;81(11):A12-A22. doi:10.1016/j.jsurg.2024.06.015.
+A Mobile Application to Facilitate Implementation of Programmatic Assessment in Anaesthesia Training. Marty AP, Braun J, Schick C, et al. British Journal of Anaesthesia. 2022;128(6):990-996. doi:10.1016/j.bja.2022.02.038.
+Competency-Based Medical Education Implementation: Are We Transforming the Culture of Assessment?. Griffiths J, Dalgarno N, Schultz K, Han H, van Melle E. Medical Teacher. 2019;41(7):811-818. doi:10.1080/0142159X.2019.1584276.
+It's a Marathon, Not a Sprint: Rapid Evaluation of Competency-Based Medical Education Program Implementation. Hall AK, Rich J, Dagnone JD, et al. Academic Medicine : Journal of the Association of American Medical Colleges. 2020;95(5):786-793. doi:10.1097/ACM.0000000000003040.
+Twelve Tips to Promote Successful Development of a Learner Performance Dashboard Within a Medical Education Program. Boscardin C, Fergus KB, Hellevig B, Hauer KE. Medical Teacher. 2018;40(8):855-861. doi:10.1080/0142159X.2017.1396306.
+Automated Near-Real-Time Clinical Performance Feedback for Anesthesiology Residents: One Piece of the Milestones Puzzle. Ehrenfeld JM, McEvoy MD, Furman WR, Snyder D, Sandberg WS. Anesthesiology. 2014;120(1):172-84. doi:10.1097/ALN.0000000000000071.
+Implementation of a Departmental Resident Web-Based Database. Yen SPF, Lewis PJ. Academic Radiology. 2022;29(1):144-149. doi:10.1016/j.acra.2020.09.023.
+An Innovative Feedback Tool Leading to Improved Faculty Feedback and Positive Reception by Residents. Harrison R, Tsyrulnik A, Wood DB, et al. The Western Journal of Emergency Medicine. 2019;21(1):47-51. doi:10.5811/westjem.2019.10.44302.
+Shortening the Miles to the Milestones: Connecting EPA-Based Evaluations to ACGME Milestone Reports for Internal Medicine Residency Programs. Choe JH, Knight CL, Stiling R, et al. Academic Medicine : Journal of the Association of American Medical Colleges. 2016;91(7):943-50. doi:10.1097/ACM.0000000000001161.
+Performance Assessment of Pharmacotherapy: Results From a Content Validity Survey of the Psychopharmacotherapy-Structured Clinical Observation (P-Sco) Tool. Young JQ, Irby DM, Kusz M, O'Sullivan PS. Academic Psychiatry : The Journal of the American Association of Directors of Psychiatric Residency Training and the Association for Academic Psychiatry. 2018;42(6):765-772. doi:10.1007/s40596-017-0876-0.
+Evidence for the Validity of the Psychopharmacotherapy-Structured Clinical Observation Tool: Results of a Factor and Time Series Analysis. Young JQ, Rasul R, O'Sullivan PS. Academic Psychiatry : The Journal of the American Association of Directors of Psychiatric Residency Training and the Association for Academic Psychiatry. 2018;42(6):759-764. doi:10.1007/s40596-018-0928-0.
+Identifying Coaching Skills to Improve Feedback Use in Postgraduate Medical Education. Armson H, Lockyer JM, Zetkulic M, Könings KD, Sargeant J. Medical Education. 2019;53(5):477-493. doi:10.1111/medu.13818.
+Facilitated Reflective Performance Feedback: Developing an Evidence- And Theory-Based Model That Builds Relationship, Explores Reactions and Content, and Coaches for Performance Change (R2C2). Sargeant J, Lockyer J, Mann K, et al. Academic Medicine : Journal of the Association of American Medical Colleges. 2015;90(12):1698-706. doi:10.1097/ACM.0000000000000809.
+Effectiveness of the Spaced Education Pedagogy for Clinicians' Continuing Professional Development: A Systematic Review. Phillips JL, Heneka N, Bhattarai P, Fraser C, Shaw T. Medical Education. 2019;53(9):886-902. doi:10.1111/medu.13895.
+The Effect of Spaced Repetition on Learning and Knowledge Transfer in a Large Cohort of Practicing Physicians. Price DW, Wang T, O'Neill TR, et al. Academic Medicine : Journal of the Association of American Medical Colleges. 2025;100(1):94-102. doi:10.1097/ACM.0000000000005856.
+Perceptions of Scheduled vs. Unscheduled Directly Observed Visits in an Internal Medicine Residency Outpatient Clinic. Rea J, Stephenson C, Leasure E, et al. BMC Medical Education. 2020;20(1):64. doi:10.1186/s12909-020-1968-1.
+Necessary but Not Sufficient: Identifying Conditions for Effective Feedback During Internal Medicine Residents' Clinical Education. MacNeil K, Cuncic C, Voyer S, Butler D, Hatala R. Advances in Health Sciences Education : Theory and Practice. 2020;25(3):641-654. doi:10.1007/s10459-019-09948-8.
+Feedback and Coaching. Atkinson A, Watling CJ, Brand PLP. European Journal of Pediatrics. 2022;181(2):441-446. doi:10.1007/s00431-021-04118-8.
+How Faculty Members Experience Workplace-Based Assessment Rater Training: A Qualitative Study. Kogan JR, Conforti LN, Bernabeo E, Iobst W, Holmboe E. Medical Education. 2015;49(7):692-708. doi:10.1111/medu.12733.
+Association Between Resident Race and Ethnicity and Clinical Performance Assessment Scores in Graduate Medical Education. Klein R, Ufere NN, Schaeffer S, et al. Academic Medicine : Journal of the Association of American Medical Colleges. 2022;97(9):1351-1359. doi:10.1097/ACM.0000000000004743.
+A Laboratory Study on the Reliability Estimations of the Mini-Cex. Alves de Lima A, Conde D, Costabel J, Corso J, Van der Vleuten C. Advances in Health Sciences Education : Theory and Practice. 2013;18(1):5-13. doi:10.1007/s10459-011-9343-y.
+
+Framework | Country | Year | EPAs | Method | Key Feature
+Young et al. | USA | 2018 | 10 (end-of-training) | 3-stage consensus + Delphi (n=31) | Stringent CVI criteria; model methodology
+RANZCP (Boyce et al.) | Australia/NZ | 2011 | 4 (first-year) | Fellow survey | Among earliest global implementations
+Yan et al. | China | 2023 | 17 | 2-round Delphi (n=44) | Phase-based modularization
+Chen et al. | Taiwan | 2025 | 21 | Delphi + importance survey | Faculty-resident perception gaps identified
+EPA # | EPA Title | Primary Competency Domains | Key Observable Behaviors
+1 | Conduct a comprehensive psychiatric evaluation | PC, MK, ICS | Biopsychosocial history, MSE, risk assessment, collateral information gathering
+2 | Develop a psychiatric formulation and differential diagnosis | PC, MK | Integrate biological, psychological, social factors; prioritize differential; identify knowledge gaps
+3 | Develop and implement a pharmacotherapy plan | PC, MK, SBP | Evidence-based medication selection, dosing, monitoring, informed consent, drug interactions
+4 | Assess and manage psychiatric emergencies | PC, MK, ICS, PROF | Acute risk assessment, de-escalation, safety planning, involuntary hold procedures
+5 | Conduct therapeutic communication and brief psychotherapeutic interventions | PC, ICS | Motivational interviewing, supportive therapy, psychoeducation, therapeutic alliance
+6 | Manage transitions of care (admission, discharge, handoff) | PC, SBP, ICS | Discharge planning, medication reconciliation, safety planning, structured handoffs
+7 | Collaborate with interprofessional teams | ICS, SBP, PROF | Team communication, care coordination, family meetings, conflict resolution
+8 | Provide psychiatric consultation to medical/surgical teams | PC, MK, ICS, SBP | Capacity evaluations, diagnostic clarification, medication recommendations in medically complex patients
+9 | Document clinical encounters effectively | PC, SBP, PBLI | Admission notes, progress notes, discharge summaries, legal documentation
+10 | Engage in reflective practice and continuous improvement | PBLI, PROF | Self-assessment, evidence-based practice, quality improvement, well-being practices
+Level | Entrustment Anchor | Behavioral Description (Inpatient Psychiatry Context)
+1 — Observe only | Not yet trusted to perform this activity; requires direct, proactive supervision | Resident observes attending perform the activity. Attending must be present throughout. Resident may assist with components under direct guidance.
+2 — Direct supervision | Trusted to perform with attending present and actively guiding | Resident performs the activity with attending in the room or immediately available. Attending provides real-time coaching, corrects errors, and co-manages key decisions. Resident needs prompting for critical steps.
+3 — Indirect supervision | Trusted to perform with attending available but not present; reactive supervision | Resident performs independently and reports back. Attending reviews key decisions and documentation afterward. Resident recognizes when to seek help but may miss subtle complexities. Ready for overnight call with backup.
+4 — Distant/no supervision | Trusted to perform without supervision; may need occasional consultation for unusual cases | Resident performs the activity independently and manages complications. Seeks consultation appropriately for rare or complex scenarios. Attending reviews only as part of routine oversight. Ready for unsupervised practice.
+5 — Trusted to supervise others | Trusted to supervise junior learners performing this activity | Resident teaches and supervises junior residents or students. Provides feedback, models the activity, and ensures quality. Functions as a near-peer educator.
+Field | Content
+Rotation / Dates | [Auto-populated]
+EPAs assessed to date | [Number and list]
+Entrustment trend | [Summary: e.g., "Averaging Level 3 across EPAs 1–6; Level 2 for EPA 4 (emergencies)"]
+Strengths identified | [2–3 specific, behaviorally anchored strengths]
+Growth areas identified | [1–2 specific areas with examples]
+Learning goals for remainder of rotation | [1–2 SMART goals]
+Plan to achieve goals | [Specific clinical opportunities, readings, or practice activities]
+Concerns requiring escalation | [None / Describe]
+Resident signature / Date | 
+Attending signature / Date | 
+Field | Content
+Rotation / Dates / PGY Level | [Auto-populated]
+Total EPA assessments completed | [Number; target ≥8 per rotation]
+EPA Entrustment Summary | 
+EPA 1: Psychiatric evaluation | [Final entrustment level + trend]
+EPA 2: Formulation/differential | [Final entrustment level + trend]
+EPA 3: Pharmacotherapy | [Final entrustment level + trend]
+EPA 4: Psychiatric emergencies | [Final entrustment level + trend]
+EPA 5: Therapeutic communication | [Final entrustment level + trend]
+EPA 6: Transitions of care | [Final entrustment level + trend]
+EPA 7: Interprofessional collaboration | [Final entrustment level + trend]
+EPA 8: Psychiatric consultation | [Final entrustment level + trend]
+EPA 9: Clinical documentation | [Final entrustment level + trend]
+EPA 10: Reflective practice | [Final entrustment level + trend]
+Overall narrative summary | [3–5 sentences: key strengths, growth trajectory, areas for continued development]
+Progress toward mid-rotation goals | [Met / Partially met / Not met — with specifics]
+Recommended focus for next rotation | [1–2 priority areas]
+Milestone mapping | [Auto-generated from EPA data if configured in New Innovations]
+Concerns for CCC review | [None / Describe with specific examples]
+Week | Activity | Time Required | Responsible
+1–2 | Configure EPA forms in New Innovations | 8–10 hours | Program coordinator + IT
+2 | Pilot-test forms with 2–3 faculty on mobile devices | 30 min each | Volunteer faculty
+3 | 45-minute faculty development session: "EPA Assessment in 3 Minutes" | 45 min | Program director
+4 | Launch with 1 inpatient unit as pilot site | — | —

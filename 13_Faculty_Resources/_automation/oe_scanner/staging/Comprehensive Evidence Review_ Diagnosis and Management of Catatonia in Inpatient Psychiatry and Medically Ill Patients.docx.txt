@@ -1,0 +1,599 @@
+Comprehensive Evidence Review: Diagnosis and Management of Catatonia in Inpatient Psychiatry and Medically Ill Patients
+
+
+1. Scope and Framing
+
+
+This review synthesizes current evidence on the recognition, diagnosis, and management of catatonia across psychiatric and medical settings. It covers the Bush-Francis Catatonia Rating Scale (BFCRS), the lorazepam challenge test, benzodiazepine dosing, ECT indications and timing, malignant catatonia, the catatonia-delirium interface, antipsychotic risks, and etiology-specific considerations (mood disorders, psychosis, autism spectrum disorder, medical illness, and substance-related states). The evidence base is drawn from the 2025 APA Resource Document on Catatonia, the 2023 NEJM review, the 2024 Nature Reviews Disease Primers, the 2019 Lancet Psychiatry review, Cochrane systematic reviews, and recent meta-analyses. A critical limitation throughout is the near-complete absence of randomized controlled trials — virtually all treatment evidence derives from case series, retrospective cohorts, and expert consensus.[1][2][3]
+
+---
+
+2. Epidemiology and Pathophysiology
+
+
+Catatonia occurs in 5–18% of psychiatric inpatients and 3.3% of general medical inpatients, though it remains widely underrecognized.[4] A meta-analysis of 74 studies found a mean prevalence of 9% in acute psychiatric settings, rising to 23.9% among patients referred for ECT.[2] In the ICU, prospective studies suggest up to one-third of critically ill adults may meet criteria.[5][6] The majority of catatonia cases occur in the context of mood disorders (bipolar and depressive), not schizophrenia, contrary to historical assumptions.[1][7]
+
+The pathophysiology centers on disrupted excitatory-inhibitory balance within cortico-striato-thalamo-cortical (CSTC) circuits, specifically decreased GABAergic inhibitory tone relative to glutamatergic excitatory tone in the frontal cortex and basal ganglia.[8][6] This model explains the therapeutic efficacy of GABA-A agonists (benzodiazepines) and NMDA antagonists (amantadine, memantine).[8] Dopamine blockade — particularly via the indirect basal ganglia pathway — can induce or worsen catatonia, providing the mechanistic basis for antipsychotic-related risks.[8] Increasing evidence also supports an inflammatory/immune-mediated component, with anti-NMDA receptor encephalitis as the prototypical example.[9][8]
+
+---
+
+3. Diagnostic Assessment: The Bush-Francis Catatonia Rating Scale
+
+
+Structure and Scoring
+
+
+The BFCRS is a 23-item clinician-administered scale (each item scored 0–3), with the first 14 items constituting the Bush-Francis Catatonia Screening Instrument (BFCSI).[10] A score of ≥2 on the 14-item screen is considered positive and prompts completion of the full 23-item scale.[8] The BFCSI includes all 12 DSM-5-TR diagnostic criteria for catatonia and all ICD-11 criteria.[8]
+
+Psychometric Properties
+
+
+The original 1996 validation demonstrated inter-rater reliability of 0.93 for the full scale and 0.95 for the screening instrument, with mean item agreement of 88.2% and 92.7%, respectively.[10] However, item response theory analysis has revealed many redundant items, low reliability at low severity, and an underlying factor structure explaining only ~37% of variance.[11] A knowledge assessment study found clinicians correctly scored only ~69% of BFCRS items, with no improvement by training level, highlighting the need for standardized training.[12]
+
+DSM-5 vs. BFCRS Diagnostic Sensitivity
+
+
+The DSM-5-TR requires ≥3 of 12 specified signs for diagnosis.[7] However, DSM-5 may underdiagnose catatonia: in one study, DSM-5 identified only 73% of treatment-validated cases compared to 91% by DSM-IV criteria.[11] In a South African cohort, the BFCSI identified all 44 catatonia cases (18.3% prevalence) while DSM-5 identified only 16 (6.6%), missing ~64% — largely because DSM-5 excludes staring, the most common sign (present in 75%).[13]
+
+ICU-Specific Threshold
+
+
+In critically ill patients where delirium-catatonia overlap is common, Wilson et al. (2017) found that a higher cutoff of ≥4 BFCSI items achieved 91% sensitivity and 91% specificity for DSM-5 catatonia.[5]
+
+Rapid Screening: The Catatonia Quick Screen
+
+
+The Catatonia Quick Screen (CQS) is a 4-item sequential screening tool assessing excitement, mutism, abnormal staring, and abnormal posture, achieving 97% sensitivity in the training cohort and 91% in validation.[14] Any single positive finding triggers further evaluation with a full diagnostic scale.
+
+Figure 4 Assessment for catatonia using the Catatonia Quick Screen (CQS). A positive response to any of the four questions is a positive screen, which should be followed up by a complete catatonia diagnostic scale. A negative response to all four questions makes catatonia unlikely and rules out the diagnosis unless there remains high clinical suspicion for catatonia, in which case further assessment can be performed.
+
+---
+
+4. The Lorazepam Challenge Test
+
+
+Protocol
+
+
+The 2025 APA Resource Document provides the standardized protocol:[8]
+
+
+
+Response Rates
+
+
+A 2026 systematic review and meta-analysis (53 studies, 1336 screened) found an overall remission rate of 55% and response rate of 77%, with a mean BFCRS reduction of −11.88 points (Cohen's d = −3.15, a very large effect).[15] The NEJM review reports lorazepam is effective in up to 90% of acute catatonia cases.[1] A dose comparison study (2 mg vs. 4 mg) found no between-group differences, suggesting 2 mg is the optimal challenge dose.[16] In pediatric patients (n=54, median age 16), the mean BFCRS decreased from 16.6 to 9.5 (Hedges's g = 1.20, p < 0.001).[17] The Cochrane review identified only one small RCT and concluded that while observational data strongly support use, trial-derived evidence remains insufficient.[3]
+
+Important Caveats
+
+
+A negative lorazepam challenge does not rule out catatonia — approximately 24% of catatonic patients may not respond.[18] Benzodiazepine response may be diminished in chronic schizophrenia-associated catatonia.[19] In comorbid catatonia-delirium, response rates appear lower (11% in one study vs. 60% in catatonia alone), though other data suggest some benefit.[20][21]
+
+---
+
+5. Lorazepam Maintenance Dosing
+
+
+Acute Phase
+
+
+Following a positive challenge, continue IV lorazepam for at least 24–48 hours before converting to oral.[8] IV lorazepam may be more potent than oral; a dose increase may be needed when switching routes.[8] Lorazepam should be administered at minimum three times daily (every 4–8 hours) given its 14 ± 5 hour half-life.[8]
+
+Dose Ranges and Escalation
+
+
+
+
+Sources:[1][8][15][22][23]
+
+Tapering
+
+
+No controlled studies exist on benzodiazepine tapering after treatment response.[8] The APA Resource Document recommends: inpatient taper of 10–25% per day (slower in elderly); outpatient taper up to 25% per week; acute catatonia taper over 1–2 weeks; chronic catatonia taper over months.[8] PRN benzodiazepine should be prescribed during taper for symptom recurrence.[8]
+
+---
+
+6. Electroconvulsive Therapy
+
+
+Efficacy
+
+
+ECT response rates in catatonia are consistently reported at 59–100%.[1][24] In benzodiazepine-refractory catatonia specifically, response rates are 76–92%.[6] A retrospective study found 95% of patients (19/20) responded, with a mean of 4.2 sessions to response.[25] Motor inhibition symptoms (stupor, mutism) responded most robustly.[25] A meta-analysis (564 patients, 28 studies) found significant improvement (SMD = −3.14) but cautioned that published studies are of low quality.[26]
+
+Timing of Initiation
+
+
+- Standard pathway: If no response to scheduled lorazepam by 7 days, pursue ECT or pharmacologic augmentation[8]
+
+- Malignant catatonia: ECT should be started urgently, without waiting for benzodiazepine failure[8]
+
+- Life-threatening features: ECT can be first-line when severe autonomic instability, withdrawal leading to insufficient oral intake, or inanition is present[2]
+
+- Response declines with chronicity: earlier treatment is associated with better outcomes[1][2]
+
+Parameters
+
+
+Bitemporal (BT) placement is generally preferred, though a naturalistic case series found 90% response and 70% remission with right unilateral (RUL) placement, with stable or improved cognition.[8][27] In pediatric patients, 6/10 who started with RUL responded to RUL alone, while patients with malignant catatonia preferentially required bilateral placement.[28] Thrice-weekly is the standard schedule; daily ECT may be used for severe symptoms.[8] Effects can be expected after 4–6 sessions over 1–2 weeks, but ≥12 sessions may be needed for full response.[8][1] In ICU malignant catatonia, 6–23 treatments were required.[29]
+
+Maintenance ECT
+
+
+Maintenance ECT following acute response can prevent relapse.[8] Many patients benefit from concomitant maintenance benzodiazepine treatment.[8]
+
+---
+
+7. Malignant Catatonia
+
+
+Definition and Recognition
+
+
+Malignant catatonia is characterized by catatonic symptoms plus autonomic instability (labile blood pressure, tachycardia, tachypnea), hyperthermia, and often hyperactivity progressing to stuporous exhaustion.[6][30] It is a medical emergency requiring ICU-level care.[29][30]
+
+Mortality and Outcomes
+
+
+Untreated malignant catatonia may be fatal in 10–20% of cases, sometimes within days.[31][32] The largest systematic case series analysis (117 cases) found that combined benzodiazepine + ECT treatment yielded the most favorable outcomes, while purely supportive therapy yielded the least favorable.[33] Earlier application of benzodiazepines was significantly associated with favorable outcome.[33] Patients with severe malignant catatonia have a 78% higher risk of dying than those with moderate severity.[33]
+
+Management
+
+
+- ICU setting with continuous monitoring of vital signs, fluid balance, and temperature[29][30]
+
+- Lorazepam as first-line, with urgent ECT if no response or if malignant features are present at onset[8][33]
+
+- Supportive care: VTE prophylaxis, pressure ulcer prevention, aspiration precautions, daily stretching, adequate hydration/nutrition (tube feeding/IV fluids as needed)[1][2]
+
+- Correct vital sign abnormalities as a crucial part of management[8]
+
+- Stop all antipsychotics immediately if NMS is suspected[34]
+
+---
+
+8. NMS–Catatonia Overlap
+
+
+Many experts consider NMS to be a drug-induced form of malignant catatonia precipitated by dopamine receptor blocking agents.[8][9] A systematic review of 490 case reports identified discriminating features: diaphoresis (OR 10.0), rigor (OR 9.6), and fever (OR 7.3) favor NMS, while negativism (OR 0.26), posturing (OR 0.24), waxy flexibility (OR 0.22), and stereotypy (OR 0.12) favor catatonia.[35] However, the overlap is substantial, and a systematic review of 555 antipsychotic-induced events concluded the clinical overlap "suggests a clinical continuum".[36]
+
+NMS treatment per the 2024 NEJM review includes: immediate cessation of the offending agent, IV fluids (target urine output ~200–300 mL/hr for rhabdomyolysis), cooling measures, dantrolene for core temperature ≥38–40°C with moderate-to-severe rigidity, and bromocriptine or amantadine as dopamine agonists.[34] ECT is reserved for refractory cases.[34] Residual catatonia can persist for months after NMS resolution; bromocriptine improved residual catatonic symptoms in 80% and resolved them in 50% of cases.[37]
+
+---
+
+9. Catatonia vs. Delirium
+
+
+Distinguishing Features
+
+
+Both conditions share mutism, stupor, immobility, staring, and withdrawal.[1][8] However, delirium is characterized by fluctuating decreased alertness and cognition with inattention as the cardinal feature, while catatonia features psychomotor abnormalities as the essential element with preserved (though often inaccessible) consciousness.[1][8] Signs considered nearly pathognomonic for catatonia include waxy flexibility, catalepsy, echophenomena, negativism, posturing, and stereotypies — these are not typical of delirium.[1][8]
+
+Co-occurrence
+
+
+The DSM-5-TR formally precludes diagnosing catatonia in the presence of delirium, but multiple prospective studies demonstrate frequent co-occurrence:[7]
+
+
+
+Sources:[5][20][21][38]
+
+The ICD-11, unlike DSM-5-TR, recognizes catatonia as an independent diagnosis and does not preclude co-occurrence with delirium.[8]
+
+---
+
+10. Catatonia Across Etiologies
+
+
+Mood Disorders
+
+
+The majority of catatonia cases involve individuals with depressive or bipolar disorders.[7] Up to 20% of patients with acute mania exhibit classic catatonic signs.[2] Catatonia and psychotic features should raise suspicion for bipolar depression over unipolar depression.[39][40] Benzodiazepine response rates are highest in affective catatonia (~90%).[1] Valproate is a useful adjunct in bipolar-associated catatonia.[1]
+
+Schizophrenia
+
+
+Catatonic symptoms in schizophrenia tend to be persistent, enduring, and bizarre (mannerisms, negativism, stereotypies), as opposed to episodic symptoms in mood disorders.[19] Benzodiazepines may be less effective in chronic schizophrenia-associated catatonia.[19] Clozapine (<150 mg/day) is the preferred antipsychotic for chronic catatonia in schizophrenia.[1][8] A cohort study (JAMA Psychiatry, 2025; n=303) found 48.8% relapsed over median 29.8 months, with antipsychotic prescription at discharge associated with a 41.1% reduction in relapse risk (HR 0.59, 95% CI 0.38–0.92).[41]
+
+Autism Spectrum Disorder
+
+
+A meta-analysis found a pooled prevalence of 10.4% (95% CI 5.8–18.0%) of individuals with ASD meeting criteria for catatonia.[42] Diagnostic challenges are substantial due to overlapping features (mutism, stereotypies, echophenomena).[43][7] There is a median diagnostic delay of 330 days in NDD patients without psychosis, compared to ~16 days in neurotypical patients.[44] Treatment requires higher lorazepam doses (6–24 mg/day; mean maximal dose 17.4 mg/day in one study) and longer durations.[22][23] Alternative benzodiazepines (clonazepam, diazepam) and midazolam infusions may help in partial lorazepam responders.[45] Notably, 4/5 patients in one series had worsening with escalating antipsychotic doses prior to catatonia recognition.[45]
+
+Medical Illness
+
+
+Two-thirds of catatonia attributed to non-psychiatric medical illness is due to primary neurologic conditions.[8] Anti-NMDA receptor encephalitis is the most well-established autoimmune cause, with catatonia present in 69% of confirmed cases in one prospective study.[46] NMDARE may have an incomplete response to lorazepam and can worsen with high-potency antipsychotics.[8] Treatment is primarily immunotherapy, with ECT as effective adjunctive symptomatic treatment.[47][48] Other medical causes include metabolic disorders, focal cerebral lesions, infections, and medications.[1]
+
+Substance-Related States
+
+
+Intoxication: Cannabis and cocaine are the most commonly cited substances causing catatonia.[1] Withdrawal: Benzodiazepine, alcohol, opioid, and clozapine withdrawal can all precipitate catatonia.[1][49] A review identified 55 cases of withdrawal catatonia, with the majority from benzodiazepine (24 cases) and clozapine (20 cases) discontinuation.[49] Clozapine withdrawal catatonia is a distinct entity; re-initiation of clozapine is the treatment of choice.[8]
+
+---
+
+11. Antipsychotic Risks in Catatonia
+
+
+Three Categories of Risk
+
+
+1. Worsening of catatonic symptoms: In the largest systematic review (175 trials in 110 patients), antipsychotic use was beneficial in 60%, neutral in 29.1%, and harmful in 10.9% of trials[19][50]
+
+2. Precipitation of NMS: Pre-existing catatonia confers an NMS risk of approximately 3.6%, compared to 0.07–1.8% in the general antipsychotic-treated population[9][51]
+
+3. Antipsychotic-induced catatonia: SGAs were implicated in 63.8% of events overall; FGAs and polypharmacy were risk factors for malignant progression[36]
+
+Risk Stratification by Agent
+
+
+A WHO pharmacovigilance database analysis (>313,000 reports) found FGAs had a reporting odds ratio of 2.2 for catatonia syndromes compared to SGAs.[52] The highest individual risks were for molindone (ROR 6.0) and haloperidol (ROR 3.8).[52] NMS frequency with FGAs is approximately 0.2% versus 0.006% with SGAs; NMS mortality is 10–20% with FGAs versus 5.5% with SGAs.[53]
+
+Safer Options When Antipsychotics Are Necessary
+
+
+- Clozapine: Preferred for catatonia with psychosis, especially chronic schizophrenia; use at <150 mg/day[1][8]
+
+- Aripiprazole: May have advantage due to partial dopamine agonism[4][8]
+
+- Low-potency SGAs: Thought to carry least risk; should be given in combination with a benzodiazepine[8]
+
+- Check serum iron before trialing any antipsychotic in catatonia (low iron is an NMS risk factor)[8]
+
+- High-potency FGAs should be avoided[8]
+
+- Never give antipsychotics during malignant catatonia or NMS[8]
+
+---
+
+12. Second-Line Pharmacotherapy
+
+
+The NMDA antagonists amantadine and memantine are second-line options, typically used to augment benzodiazepines.[1][8] A narrative review identified 27 cases treated with amantadine and 20 with memantine, with rapid responses reported.[54] They may be particularly useful in comorbid catatonia-delirium (unlikely to worsen delirium) and in schizophrenia-associated catatonia (less responsive to benzodiazepines).[8] Amantadine is started at 50 mg twice daily and increased to 400 mg/day; memantine at 5 mg twice daily, increased to 10 mg twice daily.[8] Amantadine lowers the seizure threshold and should be used cautiously in epilepsy and anti-NMDAR encephalitis.[8] Valproate and carbamazepine may also be effective, particularly as adjuncts.[8]
+
+---
+
+13. Resident Algorithm for Catatonia Management
+
+
+Step 1: Screen and Diagnose
+
+
+- Use the Catatonia Quick Screen (CQS): excitement, mutism, abnormal staring, abnormal posture — any positive → full BFCRS
+
+- Complete the 14-item BFCSI: score ≥2 → positive screen → complete full 23-item BFCRS
+
+- In ICU patients: use threshold of ≥4 BFCSI items
+
+- Document baseline BFCRS score
+
+Step 2: Initial Workup
+
+
+- Labs: CBC, CMP, CK, serum iron, TSH, urinalysis, urine drug screen, blood cultures if febrile
+
+- Consider: anti-NMDAR antibodies, autoimmune encephalitis panel, LP if indicated
+
+- Imaging: brain MRI if first episode or medical etiology suspected
+
+- EEG: if seizures suspected or to rule out non-convulsive status epilepticus
+
+- Review medication list: identify and hold dopamine antagonists; assess for recent benzodiazepine/clozapine discontinuation
+
+Step 3: Lorazepam Challenge (see protocol below)
+
+
+- Administer lorazepam 2 mg IV (1 mg if elderly, pediatric, or respiratory risk)
+
+- Reassess BFCRS at 30 minutes
+
+- If <50% improvement → repeat 2 mg IV → reassess at 30 minutes
+
+- Document response
+
+Step 4: Initiate Treatment Based on Response
+
+
+Positive challenge (≥50% BFCRS reduction):
+
+- Start scheduled lorazepam IV (e.g., 2 mg IV q6–8h)
+
+- Titrate daily by 2 mg increments to sustained response
+
+- Typical range: 8–24 mg/day (higher in ASD/NDD)
+
+- Reassess BFCRS daily
+
+- Convert to PO after 24–48 hours of IV stability (may need dose increase)
+
+- Maximal response expected in 3–7 days
+
+Negative or partial challenge:
+
+- Start scheduled lorazepam regardless (negative challenge does not rule out catatonia)
+
+- Add amantadine 50 mg BID → titrate to 200 mg BID, OR memantine 5 mg BID → 10 mg BID
+
+- If no response by day 7 → ECT referral
+
+Step 5: Assess for Malignant Features
+
+
+- Temperature >38°C, autonomic instability, elevated CK, leukocytosis, low iron
+
+- If present → urgent ECT referral, ICU transfer, aggressive supportive care
+
+- Stop all antipsychotics immediately
+
+Step 6: Supportive Care (All Patients)
+
+
+- VTE prophylaxis (pharmacologic + mechanical)
+
+- Pressure ulcer prevention (repositioning q2h, skin assessments)
+
+- Daily passive range of motion/stretching
+
+- Ensure hydration and nutrition (tube feeding/IV fluids if needed)
+
+- Aspiration precautions
+
+- Monitor vitals, CK, fluid balance
+
+Step 7: Taper and Relapse Prevention
+
+
+- Inpatient taper: 10–25% per day
+
+- Outpatient taper: up to 25% per week
+
+- Prescribe PRN benzodiazepine during taper
+
+- Monitor for early signs of recurrence (slowed motor performance)
+
+- Consider maintenance ECT or clozapine (<150 mg/day) for chronic/recurrent cases
+
+---
+
+14. Lorazepam Challenge Protocol
+
+
+
+
+For oral/IM administration: Use same doses; reassess at 2 hours (PO) or 30–60 minutes (IM) before repeating.[8]
+
+---
+
+15. ECT Referral Criteria
+
+
+ECT should be pursued in the following situations:
+
+1. No response to scheduled lorazepam after 7 days of adequate dosing (≥8 mg/day)[8]
+
+2. Malignant catatonia — urgent referral without waiting for benzodiazepine trial (autonomic instability, hyperthermia, elevated CK, altered consciousness)[8]
+
+3. Life-threatening features: inability to maintain oral intake, severe dehydration/malnutrition, inanition[2]
+
+4. NMS not responding to dantrolene/bromocriptine[34]
+
+5. Partial benzodiazepine response with persistent significant functional impairment after dose optimization and augmentation with NMDA antagonists[8]
+
+6. Chronic/recurrent catatonia requiring maintenance treatment[8]
+
+7. Catatonia in pregnancy (benzodiazepines carry teratogenic risk; ECT is relatively safe)[8]
+
+ECT parameters: Bitemporal preferred (RUL acceptable for treatment-naïve patients); thrice weekly standard (daily for severe/malignant); expect response after 4–6 sessions; may need ≥12 sessions; continue concurrent benzodiazepines during ECT course.[8][1]
+
+---
+
+16. Documentation Template
+
+
+Catatonia Assessment and Management Note
+
+
+Date/Time: ___
+
+Evaluator: ___
+
+SCREENING:
+
+- Catatonia Quick Screen: Excitement ☐ Mutism ☐ Abnormal staring ☐ Abnormal posture ☐
+
+- BFCSI (14-item screen) score: ___/42 (positive if ≥2; ≥4 in ICU)
+
+- Full BFCRS (23-item) score: ___/69
+
+SIGNS PRESENT (check all that apply):
+
+☐ Stupor ☐ Catalepsy ☐ Waxy flexibility ☐ Mutism ☐ Negativism ☐ Posturing ☐ Mannerisms ☐ Stereotypy ☐ Agitation ☐ Grimacing ☐ Echolalia ☐ Echopraxia ☐ Staring ☐ Rigidity ☐ Withdrawal ☐ Excitement ☐ Impulsivity ☐ Automatic obedience ☐ Mitgehen ☐ Gegenhalten ☐ Ambitendency ☐ Grasp reflex ☐ Perseveration ☐ Verbigeration ☐ Combativeness
+
+MALIGNANT FEATURES:
+
+- Temperature: ___ °C ☐ Hyperthermia (>38°C)
+
+- Autonomic instability: ☐ Tachycardia ☐ Labile BP ☐ Tachypnea ☐ Diaphoresis
+
+- CK: ___ (↑ if >1000 U/L)
+
+- WBC: ___ ☐ Leukocytosis
+
+- Serum iron: ___ (↓ if <60 μg/dL — NMS risk factor)
+
+ETIOLOGY ASSESSMENT:
+
+- Psychiatric: ☐ Mood disorder ☐ Schizophrenia spectrum ☐ ASD/NDD ☐ Other: ___
+
+- Medical: ☐ Anti-NMDAR encephalitis ☐ Other autoimmune ☐ Metabolic ☐ Infection ☐ Focal CNS lesion ☐ Other: ___
+
+- Substance-related: ☐ Intoxication (agent: ) ☐ Withdrawal (agent: )
+
+- Medication-induced: ☐ Antipsychotic ☐ Other: ___
+
+LORAZEPAM CHALLENGE:
+
+- Pre-challenge BFCRS: ___
+
+- Dose 1: mg ☐ IV ☐ IM ☐ PO Time:
+
+- Post-dose 1 BFCRS: (at min) % change: ___
+
+- Dose 2 (if needed): mg ☐ IV ☐ IM ☐ PO Time:
+
+- Post-dose 2 BFCRS: (at min) % change: ___
+
+- Result: ☐ Positive (≥50% reduction) ☐ Negative ☐ Sedated — reassess upon awakening
+
+TREATMENT PLAN:
+
+- ☐ Scheduled lorazepam: mg ☐ IV ☐ PO q hours (total daily dose: ___ mg)
+
+- ☐ NMDA antagonist: ☐ Amantadine mg BID ☐ Memantine mg BID
+
+- ☐ ECT referral: ☐ Routine ☐ Urgent (malignant features)
+
+- ☐ Antipsychotic management: ☐ Held ☐ Discontinued ☐ Continued (agent: , rationale: )
+
+- ☐ Supportive care: ☐ VTE prophylaxis ☐ Pressure ulcer prevention ☐ ROM exercises ☐ Nutrition/hydration plan ☐ Aspiration precautions
+
+MONITORING:
+
+- BFCRS reassessment frequency: ☐ Daily ☐ BID ☐ Other: ___
+
+- Vitals: ☐ Routine ☐ Q4h ☐ Continuous (if malignant)
+
+- Labs to repeat: ☐ CK ☐ BMP ☐ Iron ☐ Other: ___
+
+DISPOSITION:
+
+- ☐ Continue inpatient management
+
+- ☐ ICU transfer (malignant catatonia)
+
+- ☐ Taper plan: % per day/week; PRN lorazepam mg prescribed
+
+- ☐ Outpatient follow-up: ___
+
+---
+
+17. Top 15 References
+
+
+
+
+---
+
+Summary
+
+
+Catatonia is a common, underrecognized neuropsychiatric syndrome affecting 5–18% of psychiatric inpatients and 3.3% of medical inpatients, with the majority of cases occurring in mood disorders rather than schizophrenia. The BFCRS remains the gold-standard assessment tool, with the CQS offering rapid screening. The lorazepam challenge (2 mg IV) is both diagnostic and therapeutic, with response rates of 77% overall and up to 90% in acute cases. Scheduled lorazepam (8–24 mg/day) is first-line treatment, with ECT as second-line for benzodiazepine-refractory or malignant cases. Malignant catatonia is a medical emergency requiring urgent ECT and ICU care. Antipsychotics carry meaningful risks — particularly high-potency FGAs — and should be used cautiously, with clozapine preferred when antipsychotics are necessary. Catatonia and delirium frequently co-occur despite DSM-5-TR exclusion criteria, and clinicians should screen for both. Special populations (ASD/NDD) require higher doses, longer treatment durations, and heightened vigilance for diagnostic delay. The evidence base remains limited by the absence of RCTs, and treatment decisions rely heavily on expert consensus and observational data.
+
+---
+
+Would you like to explore the emerging evidence on immunomodulatory treatments for catatonia, particularly in the context of autoimmune encephalitis and the growing recognition of immune-mediated mechanisms across catatonia etiologies?
+
+References
+Catatonia. Heckers S, Walther S. The New England Journal of Medicine. 2023;389(19):1797-1802. doi:10.1056/NEJMra2116304.
+Structure and Neural Mechanisms of Catatonia. Walther S, Stegmayer K, Wilson JE, Heckers S. The Lancet. Psychiatry. 2019;6(7):610-619. doi:10.1016/S2215-0366(18)30474-7.
+Benzodiazepines for Catatonia in People With Schizophrenia or Other Serious Mental Illnesses. Zaman H, Gibson RC, Walcott G. The Cochrane Database of Systematic Reviews. 2019;8:CD006570. doi:10.1002/14651858.CD006570.pub3.
+Catatonia. Hirjak D, Rogers JP, Wolf RC, et al. Nature Reviews. Disease Primers. 2024;10(1):49. doi:10.1038/s41572-024-00534-w.
+Delirium and Catatonia in Critically Ill Patients: The Delirium and Catatonia Prospective Cohort Investigation. Wilson JE, Carlson R, Duggan MC, et al. Critical Care Medicine. 2017;45(11):1837-1844. doi:10.1097/CCM.0000000000002642.
+Clinical Reasoning: A 17-Year-Old Adolescent Boy With New Altered Mental Status in the Pediatric Intensive Care Unit. Ohman RT, Atchison C, Patel ND, Killien EY. Neurology. 2024;103(3):e209709. doi:10.1212/WNL.0000000000209709.
+Diagnostic and Statistical Manual of Mental Disorders. Dilip V. Jeste, Jeffrey A. Lieberman, David Fassler, et al. American Psychiatric Association (2022).
+Resource Document on Catatonia. Jo Ellen Wilson, Mark A. Oldham, Andrew Francis, et al. American Psychiatric Association (2025).
+Catatonia and the Immune System: A Review. Rogers JP, Pollak TA, Blackman G, David AS. The Lancet. Psychiatry. 2019;6(7):620-630. doi:10.1016/S2215-0366(19)30190-7.
+Catatonia. I. Rating Scale and Standardized Examination. Bush G, Fink M, Petrides G, Dowling F, Francis A. Acta Psychiatrica Scandinavica. 1996;93(2):129-36. doi:10.1111/j.1600-0447.1996.tb09814.x.
+The Diagnostic Criteria and Structure of Catatonia. Wilson JE, Niu K, Nicolson SE, Levine SZ, Heckers S. Schizophrenia Research. 2015;164(1-3):256-62. doi:10.1016/j.schres.2014.12.036.
+Prevalent Gaps in Understanding the Features of Catatonia Among Psychiatrists, Psychiatry Trainees, and Medical Students. Wortzel JR, Maeng DD, Francis A, Oldham MA. The Journal of Clinical Psychiatry. 2021;82(5):21m14025. doi:10.4088/JCP.21m14025.
+A Prospective Descriptive Study on Prevalence of Catatonia and Correlates in an Acute Mental Health Unit in Nelson Mandela Bay, South Africa. Zingela Z, Stroud L, Cronje J, Fink M, Van Wyk S. PloS One. 2022;17(3):e0264944. doi:10.1371/journal.pone.0264944.
+The Catatonia Quick Screen ( CQS ): A Rapid Screening Tool for Catatonia in Adult and Pediatric Populations. Luccarelli J, Kalinich M, Wilson JE, et al. Acta Psychiatrica Scandinavica. 2025;152(5):341-349. doi:10.1111/acps.13820.
+The Effect of Benzodiazepines on Catatonia: A Systematic Review and Meta-Analysis. Bot L, Schotsman B, Oostra E, et al. Acta Psychiatrica Scandinavica. 2026;. doi:10.1111/acps.70102.
+Revisiting Lorazepam Challenge Test: Clinical Response With Dose Variations and Utility for Catatonia in a Psychiatric Emergency Setting. Suchandra HH, Reddi VSK, Aandi Subramaniyam B, Muliyala KP. The Australian and New Zealand Journal of Psychiatry. 2021;55(10):993-1004. doi:10.1177/0004867420968915.
+The Effectiveness of the Lorazepam Challenge Test in Pediatric Catatonia: A Multisite Retrospective Cohort Study. Luccarelli J, McCoy TH, York T, et al. Schizophrenia Research. 2024;270:410-415. doi:10.1016/j.schres.2024.07.004.
+Pearls & Oy-Sters: An Unusual Neuropsychiatric Manifestation of Systemic Lupus Erythematosus. Kim DD, Ho C, King R, Morrow SA. Neurology. 2018;90(21):e1929-e1932. doi:10.1212/WNL.0000000000005555.
+Antipsychotics for Schizophrenia Spectrum Disorders With Catatonic Symptoms. Huang MW, Gibson RC, Jayaram MB, Caroff SN. The Cochrane Database of Systematic Reviews. 2022;7:CD013100. doi:10.1002/14651858.CD013100.pub2.
+Catatonia and Delirium in a General Medical Setting: Prevalence and Naturalistic Treatment Outcome. Mormando C, Reinfeld S, Genova N, et al. Journal of the Academy of Consultation-Liaison Psychiatry. 2025;:S2667-2960(25)00896-1. doi:10.1016/j.jaclp.2025.10.334.
+Catatonia and Delirium: Assessment of Comorbidity, Prevalence, and Therapeutic Response in Medically Ill Inpatients From a University Hospital. Appiani FJ, Duarte JM, Sauré M, et al. Journal of Clinical Psychopharmacology. 2023 Jan-Feb 01;43(1):55-59. doi:10.1097/JCP.0000000000001621.
+Catatonia in Autistic Adults in a Tertiary Inpatient and Outpatient Neurodevelopmental Service: A Retrospective Review. Hasan S, Desarkar P, Lunsky Y, Thakur A. Journal of Autism and Developmental Disorders. 2025;:10.1007/s10803-025-06837-5. doi:10.1007/s10803-025-06837-5.
+Longitudinal Symptom Burden and Pharmacologic Management of Catatonia in Autism With Intellectual Disability: An Observational Study. Smith JR, Lim S, Bindra S, et al. Autism Research : Official Journal of the International Society for Autism Research. 2025;18(2):449-462. doi:10.1002/aur.3315.
+Systematic Review of Catatonia Treatment. Pelzer AC, van der Heijden FM, den Boer E. Neuropsychiatric Disease and Treatment. 2018;14:317-326. doi:10.2147/NDT.S147897.
+The Effect of Electroconvulsive Therapy on Specific Catatonia Symptoms and Predictors of Late Response. Breit S, Meyer A, Schmitt W, Bracht T, Walther S. Pharmacopsychiatry. 2024;57(1):13-20. doi:10.1055/a-2195-1499.
+Is Electroconvulsive Therapy an Evidence-Based Treatment for Catatonia? A Systematic Review and Meta-Analysis. Leroy A, Naudet F, Vaiva G, et al. European Archives of Psychiatry and Clinical Neuroscience. 2018;268(7):675-687. doi:10.1007/s00406-017-0819-5.
+Ultrabrief and Brief Pulse Right Unilateral Electroconvulsive Therapy for Catatonia Management and Relapse Prevention: Naturalistic Case Series. Bonomo N, Abell S, Patel N, et al. The Journal of ECT. 2026;:00124509-990000000-00371. doi:10.1097/YCT.0000000000001241.
+Use of Electroconvulsive Therapy in Children and Adolescents With Catatonia-a Case Series. Pal R, Cheng T, Eddington S, et al. The Journal of ECT. 2024;40(3):203-206. doi:10.1097/YCT.0000000000001052.
+Electroconvulsive Therapy in the Intensive Care Unit for the Treatment of Catatonia: A Case Series and Review of the Literature. Dessens FM, van Paassen J, van Westerloo DJ, et al. General Hospital Psychiatry. 2016 Jan-Feb;38:37-41. doi:10.1016/j.genhosppsych.2015.09.008.
+Malignant Catatonia: A Review for the Intensivist. Connell J, Oldham M, Pandharipande P, et al. Journal of Intensive Care Medicine. 2023;38(2):137-150. doi:10.1177/08850666221114303.
+Crossing State Lines: Ethical and Clinical Considerations in Treating a Child With Catatonia. Miller J, Sowar K, Abbott CC, et al. Journal of the American Academy of Child and Adolescent Psychiatry. 2022;61(5):583-585. doi:10.1016/j.jaac.2022.02.004.
+Neuroleptic Malignant Syndrome/Malignant Catatonia in Child Psychiatry: Literature Review and a Case Series. Ghaziuddin N, Hendriks M, Patel P, Wachtel LE, Dhossche DM. Journal of Child and Adolescent Psychopharmacology. 2017;27(4):359-365. doi:10.1089/cap.2016.0180.
+Malignant Catatonia: Severity, Treatment and Outcome - A Systematic Case Series Analysis. Cronemeyer M, Schönfeldt-Lecuona C, Gahr M, Keller F, Sartorius A. The World Journal of Biological Psychiatry : The Official Journal of the World Federation of Societies of Biological Psychiatry. 2022;23(1):78-86. doi:10.1080/15622975.2021.1925153.
+Neuroleptic Malignant Syndrome. Wijdicks EFM, Ropper AH. The New England Journal of Medicine. 2024;391(12):1130-1138. doi:10.1056/NEJMra2404606.
+Neuroleptic Malignant Syndrome or Catatonia? Trying to Solve the Catatonic Dilemma. Lang FU, Lang S, Becker T, Jäger M. Psychopharmacology. 2015;232(1):1-5. doi:10.1007/s00213-014-3807-8.
+What Clinical Analysis of Antipsychotic-Induced Catatonia and Neuroleptic Malignant Syndrome Tells Us About the Links Between These Two Syndromes: A Systematic Review. Virolle J, Redon M, Montastruc F, et al. Schizophrenia Research. 2023;262:184-200. doi:10.1016/j.schres.2023.08.003.
+Bromocriptine for Residual Catatonia Following Neuroleptic Malignant Syndrome: Illustrative Case Report and Systematic Review. Sarmiento B, Gunther M, Cohen-Oram A, Jiang S. Journal of the Academy of Consultation-Liaison Psychiatry. 2025 Mar-Apr;66(2):139-151. doi:10.1016/j.jaclp.2024.12.003.
+Clinical Significance of Delirium With Catatonic Signs in Patients With Neurological Disorders. Ramirez-Bermudez J, Medina-Gutierrez A, Gomez-Cianca H, et al. The Journal of Neuropsychiatry and Clinical Neurosciences. 2022;34(2):132-140. doi:10.1176/appi.neuropsych.18120364.
+Bipolar Disorder. Grande I, Berk M, Birmaher B, Vieta E. Lancet (London, England). 2016;387(10027):1561-1572. doi:10.1016/S0140-6736(15)00241-X.
+Diagnosis and Treatment of Bipolar Disorder: A Review. Nierenberg AA, Agustini B, Köhler-Forsberg O, et al. JAMA. 2023;330(14):1370-1380. doi:10.1001/jama.2023.18588.
+Risk Factors for Catatonia Relapse in Psychotic and Affective Disorders. Pathak H, Susan Varghese S, Suhas S, et al. JAMA Psychiatry. 2025;82(10):1015-1019. doi:10.1001/jamapsychiatry.2025.1818.
+Catatonia in Autism Spectrum Disorders: A Systematic Review and Meta-Analysis. Vaquerizo-Serrano J, Salazar De Pablo G, Singh J, Santosh P. European Psychiatry : The Journal of the Association of European Psychiatrists. 2021;65(1):e4. doi:10.1192/j.eurpsy.2021.2259.
+Systematic Review of Symptoms of Catatonia in Autism Spectrum Disorder. Hasan S, Hussain I, Chadwick L, et al. Journal of Autism and Developmental Disorders. 2025;:10.1007/s10803-025-06855-3. doi:10.1007/s10803-025-06855-3.
+Neurodevelopmental Disorders Including Autism Spectrum Disorder and Intellectual Disability as a Risk Factor for Delayed Diagnosis of Catatonia. Zappia KJ, Shillington A, Fosdick C, et al. Journal of Developmental and Behavioral Pediatrics : JDBP. 2024 Mar-Apr 01;45(2):e137-e142. doi:10.1097/DBP.0000000000001252.
+Another Option for Aggression and Self-Injury, Alternative Benzodiazepines for Catatonia in Profound Autism. Smith JR, York T, Warn S, et al. Journal of Child and Adolescent Psychopharmacology. 2023;33(3):109-117. doi:10.1089/cap.2022.0067.
+Neuropsychiatric Phenotypes of Anti-Nmdar Encephalitis: A Prospective Study. Espinola-Nadurille M, Restrepo-Martínez M, Bayliss L, et al. Psychological Medicine. 2023;53(9):4266-4274. doi:10.1017/S0033291722001027.
+Electroconvulsive Therapy for Catatonia in NMDA Receptor Encephalitis Unresponsive to Immunotherapy in a Five Year Old. Lopez LV, Hartzell G, Lowet D, Samuels S, Popeo DM. Pediatrics. 2025;:e2024070580. doi:10.1542/peds.2024-070580.
+Adolescents and Young Adults With Anti-N-Methyl-D-Aspartate Receptor Encephalitis With Excited Catatonia: Literature Review and 2 Illustrative Cases. Levy E, Reinoso P, Shoaib H, et al. Journal of the Academy of Consultation-Liaison Psychiatry. 2023 Mar-Apr;64(2):177-182. doi:10.1016/j.jaclp.2022.07.006.
+Review of Withdrawal Catatonia: What Does This Reveal About Clozapine?. Lander M, Bastiampillai T, Sareen J. Translational Psychiatry. 2018;8(1):139. doi:10.1038/s41398-018-0192-9.
+The Use of Antipsychotics in the Treatment of Catatonia: A Systematic Review. Redon M, Virolle J, Montastruc F, et al. European Psychiatry : The Journal of the Association of European Psychiatrists. 2025;68(1):e48. doi:10.1192/j.eurpsy.2025.9.
+Clinical and Pharmacologic Risk Factors for Neuroleptic Malignant Syndrome: A Case-Control Study. Berardi D, Amore M, Keck PE, Troia M, Dell'Atti M. Biological Psychiatry. 1998;44(8):748-54. doi:10.1016/s0006-3223(97)00530-1.
+Comparative Effects of 30 Antipsychotics on Risk of Catatonia: An Analysis of the WHO Pharmacovigilance Database. Da Costa J, Very E, Rousseau V, et al. The Journal of Clinical Psychiatry. 2022;84(1):21m14238. doi:10.4088/JCP.21m14238.
+Recent Developments in Drug-Induced Movement Disorders: A Mixed Picture. Factor SA, Burkhard PR, Caroff S, et al. The Lancet. Neurology. 2019;18(9):880-890. doi:10.1016/S1474-4422(19)30152-8.
+N-Methyl-D-Aspartate (NMDA) Receptor Antagonists for Treatment of Catatonia in Adults: Narrative Review. Lee JH, Suzuki J. General Hospital Psychiatry. 2024 Nov-Dec;91:60-65. doi:10.1016/j.genhosppsych.2024.09.005.
+
+Parameter | Recommendation
+Initial dose | 2 mg IV (1 mg in children, elderly, or respiratory-risk patients)
+Preferred route | IV (peak effect 1–3 min); IM second-line; PO third-line
+Positive response | ≥50% reduction on BFCRS
+Onset | Within 5 min IV; may take ≥2 hours PO
+Repeat dose | If <50% response at 30 min (parenteral) or 2 hours (oral), give another 2 mg
+Sedation | Does not rule out catatonia; reassess upon awakening
+Alternative | IV diazepam when parenteral lorazepam unavailable
+Parameter | Evidence
+Typical maintenance | 1–2 mg every 4–12 hours; total daily doses of 8–24 mg common
+NEJM recommendation | Up to 16 mg/day
+Meta-analysis range | 2–60 mg/day, median 8 mg/day
+ASD/NDD populations | Often require 6–24 mg/day; mean maximal dose 17.4 mg/day in one study
+Time to maximal response | 3–7 days of scheduled dosing
+Escalation trigger | If no response by 7 days → ECT or pharmacologic augmentation
+Study | Setting | N | Co-occurrence Rate | Key Finding
+Wilson et al. 2017 | ICU | 136 | 31% had both | ≥4 BFCSI items: 91% sensitivity/specificity
+Appiani et al. 2023 | Medical inpatients | 120 | 26% had both | Lorazepam response: 60% catatonia alone vs. 11% comorbid
+Mormando et al. 2025 | General medical | 718 | 8.4% of delirious patients had catatonia | Lorazepam response in 57%
+Ramirez-Bermudez et al. 2022 | Neurological | 264 | 23% met criteria for both | Associated with encephalitis
+Step | Action | Timing
+1 | Obtain baseline BFCRS score | Before challenge
+2 | Ensure IV access; have flumazenil and airway equipment available | Before challenge
+3 | Administer lorazepam 2 mg IV push (1 mg if elderly, pediatric, or respiratory compromise) | T = 0
+4 | Observe for response; reassess BFCRS | T = 5–30 min
+5 | If ≥50% BFCRS reduction → POSITIVE challenge → initiate scheduled lorazepam | —
+6 | If <50% reduction at 30 min → administer lorazepam 2 mg IV (second dose) | T = 30 min
+7 | Reassess BFCRS after second dose | T = 60 min
+8 | If ≥50% reduction → POSITIVE → initiate scheduled lorazepam | —
+9 | If still <50% reduction → NEGATIVE challenge (does not rule out catatonia) | —
+10 | If patient becomes sedated → reassess upon awakening (sedation ≠ negative test) | Upon awakening
+11 | Document: pre-challenge BFCRS, post-challenge BFCRS, % change, doses given, route, response time | Immediately
+# | Citation | Type | Key Contribution
+1 | Heckers S, Walther S. Catatonia. NEJM 2023;389:1797-1802 | Review | Definitive clinical review; diagnosis, treatment, clinical scenarios
+2 | Wilson JE, Oldham MA, Francis A, et al. Resource Document on Catatonia. APA 2025 | Guideline | Most comprehensive current guideline; BFCRS, LCT protocol, treatment algorithm
+3 | Hirjak D, Rogers JP, Wolf RC, et al. Catatonia. Nat Rev Dis Primers 2024;10:49 | Primer | Epidemiology, pathophysiology, screening, treatment overview
+4 | Walther S, Stegmayer K, Wilson JE, Heckers S. Structure and Neural Mechanisms of Catatonia. Lancet Psychiatry 2019;6:610-619 | Review | Neural mechanisms, CSTC circuits, clinical recommendations
+5 | Bush G, Fink M, Petrides G, et al. Catatonia. I. Rating Scale and Standardized Examination. Acta Psychiatr Scand 1996 | Validation | Original BFCRS validation; inter-rater reliability 0.93
+6 | Bot L, Schotsman B, Oostra E, et al. Effect of Benzodiazepines on Catatonia. Acta Psychiatr Scand 2026 | Meta-analysis | 53 studies; remission 55%, response 77%, Cohen's d −3.15
+7 | Wilson JE, Carlson R, Duggan MC, et al. Delirium and Catatonia in Critically Ill Patients. Crit Care Med 2017 | Prospective cohort | ICU catatonia-delirium overlap; ≥4 BFCSI threshold
+8 | Huang MW, Gibson RC, Jayaram MB, Caroff SN. Antipsychotics for Schizophrenia Spectrum Disorders With Catatonic Symptoms. Cochrane 2022 | Cochrane review | Antipsychotic evidence; NMS risk; only 1 RCT identified
+9 | Zaman H, Gibson RC, Walcott G. Benzodiazepines for Catatonia. Cochrane 2019 | Cochrane review | Only 1 small RCT; observational data supports use
+10 | Pathak H, et al. Risk Factors for Catatonia Relapse. JAMA Psychiatry 2025 | Cohort study | 48.8% relapse; antipsychotics at discharge reduce relapse 41%
+11 | Wijdicks EFM, Ropper AH. Neuroleptic Malignant Syndrome. NEJM 2024 | Review | NMS diagnosis, treatment, catatonia overlap
+12 | Cronemeyer M, et al. Malignant Catatonia: Severity, Treatment and Outcome. World J Biol Psychiatry 2022 | Systematic case series | 117 cases; combined BZD+ECT best outcomes
+13 | Vaquerizo-Serrano J, et al. Catatonia in ASD: Systematic Review and Meta-Analysis. Eur Psychiatry 2021 | Meta-analysis | Pooled prevalence 10.4% in ASD
+14 | Da Costa J, et al. Comparative Effects of 30 Antipsychotics on Risk of Catatonia. J Clin Psychiatry 2022 | Pharmacovigilance | WHO VigiBase; haloperidol ROR 3.8; FGA ROR 2.2 vs SGA
+15 | Luccarelli J, et al. Catatonia Quick Screen (CQS). Acta Psychiatr Scand 2025 | Validation | 4-item screen; 97% sensitivity
