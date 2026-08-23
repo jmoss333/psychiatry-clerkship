@@ -172,6 +172,11 @@ rediscovered.
 | 1 | WP-01 | Capacity: `'na'` bug + disable Copy note | AGENT | **merged** | — | #374 | superseded by WP-01b |
 | 1 | **WP-01b** | Delete `verdict()`; capacity module becomes a structured report | AGENT + AUTHOR-GATED | **next** | — | — | author copy (~200 w) for header + 2 prompts |
 | 1 | WP-02 | COWS legal-value arrays | AGENT | **merged** | — | #375 | — |
+| 1 | **WP-02b** | Instrument attribution on `withdrawal.html` (CIWA-Ar + COWS) | AGENT | **done** | `decision/instrument-scope-option-a` | — | — |
+| 1 | **WP-02c** | Verify the PHQ-9/GAD-7 permission footer against the current published form | AUTHOR-GATED | todo | — | — | needs the current form, not a remembered footer |
+| 1 | **WP-02d** | Establish CIWA-Ar / COWS / BFCRS copyright status | AUTHOR-GATED | todo | — | — | author/counsel task; **blocks WP-20/21/22** |
+| 1 | **WP-06R-a** | Retire the C-SSRS verbatim reproduction from `cssrs.html` | AGENT + AUTHOR-GATED | **next** | — | — | removal is mechanical; the replacement administration-teaching copy is authored |
+| 1 | **WP-06R-b** | Safety-plan rehearsal tool that reproduces no Stanley–Brown content | AUTHOR-GATED | todo | — | — | content |
 | 1 | WP-03 | CIWA bands + delete unconditional directive | AGENT+REVIEW | todo | — | — | — |
 | 1 | WP-04 | Withdrawal seizure window overlap | AGENT+REVIEW | todo | — | — | — |
 | 1 | WP-05 | BFCRS anchors, invalid scores, malignant interrupt | AGENT+REVIEW | todo | — | — | — |
@@ -211,7 +216,7 @@ rediscovered.
 |---|---|---|---|
 | OPEN-DECISION-1 | Delete `verdict()` and convert the capacity module to a structured report? | WP-01 | **RESOLVED — yes, delete it. → WP-01b** |
 | OPEN-DECISION-2 | Attest `decision-aids.html` or suppress the outbound link? | WP-04 | **RESOLVED — page is attested** (`reviewed.json`, 2026-06-30, moderate); self-label now reads "AI-drafted, faculty-reviewed" |
-| OPEN-DECISION-3 | C-SSRS licensing for verbatim reproduction on two public sites | WP-06 | open |
+| OPEN-DECISION-3 | C-SSRS licensing for verbatim reproduction on two public sites | WP-06 | **RESOLVED 2026-08-23 — Option A: the rule covers copyrighted instruments only. C-SSRS retires → WP-06R-a.** See `2026-08-20-instrument-reproduction-audit.md` |
 | OPEN-DECISION-4 | Build the BVC, or correct the markdown pointing at a nonexistent Brøset tool? | WP-07 | open |
 | OPEN-DECISION-5 | Wire Shelf Mode to `question_bank.json` | WP-10 | **CLOSED by PR #343** — already wired; see A5 |
 | OPEN-DECISION-6 | Case-level attestation, or inherit page-level? (Not both.) | WP-13 | open |
