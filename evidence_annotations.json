@@ -287,6 +287,864 @@
           ]
         }
       ]
+    },
+    {
+      "sourceId": "tetzlaff-2025",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-08-23",
+        "pmid": "41110399",
+        "doi": "10.1016/j.cpr.2025.102656",
+        "sourceSpan": "Parallel literature searches in PsycInfo, Medline, and PubMed between 2000-June 2025 identified 5198 potential articles, of which 48 met inclusion. Clinical symptom severity influenced MHP-rated TA, but not client-rated TA. A secure attachment of the client favored TA quality, while other attachment styles appeared to be unrelated to TA."
+      },
+      "claims": [
+        {
+          "claimId": "alliance-smi-rater-mismatch",
+          "claimText": "Across 48 included studies in severe mental illness, clinical symptom severity influenced clinician-rated therapeutic alliance but not client-rated alliance.",
+          "claimTerms": [
+            "48 met inclusion",
+            "Clinical symptom severity influenced MHP-rated TA, but not client-rated TA"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "RR"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "huggett-2022",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-08-23",
+        "pmid": "35168297",
+        "doi": "10.1002/cpp.2726",
+        "sourceSpan": "Findings failed to demonstrate a clear link between suicidal experiences prior to or during psychotherapy and the subsequent development and maintenance of the therapeutic alliance during psychotherapy. However, a robust therapeutic alliance reported early on in psychotherapy was related to a subsequent reduction in suicidal ideation and attempts."
+      },
+      "claims": [
+        {
+          "claimId": "alliance-and-suicidality",
+          "claimText": "Suicidal experiences before or during psychotherapy showed no clear link to whether a therapeutic alliance formed, while a robust alliance reported early in psychotherapy was related to a subsequent reduction in suicidal ideation and attempts.",
+          "claimTerms": [
+            "failed to demonstrate a clear link",
+            "robust therapeutic alliance reported early on"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "RR"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "man-2023",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-08-23",
+        "pmid": "35997039",
+        "doi": "10.1002/cpp.2780",
+        "sourceSpan": "Ten studies were included in the review, and all utilized a small to moderate sample size. The most common type of indirect intervention employed was case formulation sessions. Other types of indirect interventions included formal clinical supervision, reflective practice and staff practice-based education sessions. Overall, the utilization of indirect psychological interventions shows promise, particularly case formulation sessions. However, additional larger scale research is required to further develop the evidence base of indirect interventions for this setting."
+      },
+      "claims": [
+        {
+          "claimId": "indirect-psychological-interventions",
+          "claimText": "Indirect psychological interventions on inpatient units — most commonly case formulation sessions, plus clinical supervision and reflective practice — show promise across a small evidence base, but additional larger scale research is required.",
+          "claimTerms": [
+            "case formulation sessions",
+            "shows promise",
+            "additional larger scale research is required"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "RR"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "schefft-2019",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-08-23",
+        "pmid": "30520019",
+        "doi": "10.1111/acps.12995",
+        "sourceSpan": "The meta-analysis of 19 available comparisons resulted in a moderate pooled effect size showing a small and statistically significant benefit of the psychotherapeutic intervention over control conditions (g = 0.24, P < 0.001, I2 = 0%). This corresponds to a number needed to treat of 7.4. The effects of the interventions were stable over 12-month follow-up (g = 0.21, P < 0.01, I2 = 30%). Comparisons with waitlist or non-standardized control treatments tended to be associated with larger effect sizes than standardized control treatments. This meta-analysis provides evidence for a small but sustained effect of inpatient psychotherapy in patients with major depressive disorders."
+      },
+      "claims": [
+        {
+          "claimId": "inpatient-psychotherapy-effect",
+          "claimText": "Inpatient psychotherapy for major depression showed a small but sustained benefit over control conditions (g = 0.24, number needed to treat 7.4), stable at 12-month follow-up (g = 0.21), with waitlist or non-standardized controls tending to produce larger effect sizes than standardized ones.",
+          "claimTerms": [
+            "small but sustained effect",
+            "number needed to treat of 7.4"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "RR"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "cohen-chazani-2022",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-08-23",
+        "pmid": "35442174",
+        "doi": "10.1080/00332747.2022.2062660",
+        "sourceSpan": "In total, 37 samples were included for the meta-analysis with a total of 4,443 patients. The meta-analysis of 15 samples with a control group resulted in the upper end of the low effect size for the contribution of psychotherapy to the improvement of patients' clinical status measured by symptomatic and functional measures (k = 15, Cohen's d = 0.43, and 95% CI 0.06 to 0.81). No significant effects were uncovered for psychotherapy orientation. Diagnosis was found to moderate the contribution of psychotherapy in an inpatient setting to the improvement of patients' clinical condition."
+      },
+      "claims": [
+        {
+          "claimId": "inpatient-psychotherapy-specific-contribution",
+          "claimText": "Across 37 samples (4,443 patients), the specific contribution of psychotherapy during psychiatric hospitalization was d = 0.43 (95% CI 0.06 to 0.81); no significant effects were found for psychotherapy orientation, while diagnosis moderated the contribution.",
+          "claimTerms": [
+            "No significant effects were uncovered for psychotherapy orientation",
+            "Diagnosis was found to moderate"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "RR"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "cuijpers-2007",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-08-23",
+        "pmid": "17184887",
+        "doi": "10.1016/j.cpr.2006.11.001",
+        "sourceSpan": "Sixteen studies with 780 subjects were included. The pooled effect size indicating the difference between intervention and control conditions at post-test was 0.87 (95% CI: 0.60 - 1.15). This is a large effect. In ten studies activity scheduling was compared to cognitive therapy, and the pooled effect size indicating the difference between these two types of treatment was 0.02. The differences between activity scheduling and cognitive therapy at follow-up were also non-significant."
+      },
+      "claims": [
+        {
+          "claimId": "activity-scheduling-vs-cognitive-therapy",
+          "claimText": "Activity scheduling differed from control conditions by a pooled effect size of 0.87, while the difference between activity scheduling and cognitive therapy was 0.02 and non-significant at follow-up — activation is a treatment in its own right, not a preliminary to cognitive work.",
+          "claimTerms": [
+            "difference between these two types of treatment was 0.02",
+            "also non-significant"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "RR"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "ciharova-2021",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-08-23",
+        "pmid": "34264703",
+        "doi": "10.1037/ccp0000654",
+        "sourceSpan": "A total of 45 studies with 3,382 participants were included. There was no evidence of a difference in effectiveness between CR, BA, and CBT. All three interventions were superior to CAU; SMD 0.57, 95% confidence interval [CI 0.08-1.07]; 0.52 [0.34-0.71]; 0.44 [0.28-0.60], respectively. No difference in tolerability was found."
+      },
+      "claims": [
+        {
+          "claimId": "cr-ba-cbt-indistinguishable",
+          "claimText": "There was no evidence of a difference in effectiveness between cognitive restructuring, behavioural activation and full CBT, while all three were superior to care-as-usual (SMD 0.57, 0.52 and 0.44 respectively).",
+          "claimTerms": [
+            "no evidence of a difference in effectiveness between CR, BA, and CBT",
+            "superior to CAU"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "RR"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "simmonds-buckley-2019",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-08-23",
+        "pmid": "31422844",
+        "doi": "10.1016/j.beth.2019.01.003",
+        "sourceSpan": "Nineteen trials were quantitatively synthesized. Depression outcomes postgroup BA treatment were superior to controls (SMD 0.72, CI 0.34 to 1.10, k=13, N=461) and were equivalent to other active therapies (SMD 0.14, CI -0.18 to 0.46, k=15, N=526). The dropout rate for group BA (14%) was no different from other active treatments for depression (17%)."
+      },
+      "claims": [
+        {
+          "claimId": "group-ba-efficacy-and-dropout",
+          "claimText": "Group behavioural activation was superior to controls (SMD 0.72) and equivalent to other active therapies, with a dropout rate of 14% that was no different from other active treatments.",
+          "claimTerms": [
+            "superior to controls",
+            "equivalent to other active therapies",
+            "was no different from other active treatments"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "RR"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "steeg-2025",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-08-23",
+        "pmid": "41365522",
+        "doi": "10.1136/bmjment-2025-302069",
+        "sourceSpan": "We included 20 systematic reviews, synthesising evidence from 179 unique primary studies. Physical barriers to prevent jumping showed strong effect sizes, although primary study overlap was high. Train platform screen doors were associated with reduced site-specific suicide mortality, with no evidence of displacement to other sites, although the number of studies was small. Paracetamol pack size limitation reduced self-poisoning admissions, with mixed impacts on mortality. Bans on highly hazardous pesticides reduced suicide rates."
+      },
+      "claims": [
+        {
+          "claimId": "means-restriction-population-wins",
+          "claimText": "Across 20 systematic reviews and 179 unique primary studies, physical barriers to prevent jumping showed strong effect sizes, train platform screen doors were associated with reduced site-specific suicide mortality with no evidence of displacement, paracetamol pack size limitation reduced self-poisoning admissions, and bans on highly hazardous pesticides reduced suicide rates.",
+          "claimTerms": [
+            "no evidence of displacement to other sites",
+            "Bans on highly hazardous pesticides reduced suicide rates"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "RR"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "hong-2025",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-08-23",
+        "pmid": "40392926",
+        "doi": "10.1371/journal.pone.0324685",
+        "sourceSpan": "CBT significantly improved negative symptoms in patients with schizophrenia compared to treatment as usual (TAU) (MD = -1.65, 95% CI = -2.10 to -1.21, p < 0.001, I2 = 41%). CBT significantly improved overall function in patients with schizophrenia (SMD = 0.38, 95% CI = 0.13 to 0.63, p < 0.05, I2 = 0%). Additionally, CBT significantly enhanced social skills (SMD = 0.87, 95% CI = 0.58 to 1.16, p < 0.001, I2 = 0%) and social functioning (SMD = 0.19, 95% CI = 0.03 to 0.36, p < 0.05, I2 = 24%) in these patients."
+      },
+      "claims": [
+        {
+          "claimId": "cbtp-negative-symptoms-magnitude",
+          "claimText": "CBT improved negative symptoms of schizophrenia versus treatment as usual by a mean difference of -1.65 on the rating scale, with improvement in overall function (SMD 0.38) and social skills (SMD 0.87) — statistically robust and clinically modest.",
+          "claimTerms": [
+            "compared to treatment as usual",
+            "significantly enhanced social skills"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "RR"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "tarrier-wykes-2004",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-08-23",
+        "pmid": "15500811",
+        "doi": "10.1016/j.brat.2004.06.020",
+        "sourceSpan": "A review of these studies indicates modest effect sizes, with the strongest evidence available for chronic patients. There is evidence that the effect size of the trials is significantly and negatively correlated to their methodological quality. We conclude cautiously that overall there is good evidence for the efficacy and effectiveness of CBTp in the treatment of schizophrenia."
+      },
+      "claims": [
+        {
+          "claimId": "cbtp-quality-effect-correlation",
+          "claimText": "Across CBT for psychosis trials, effect sizes are modest and the effect size of the trials is significantly and negatively correlated to their methodological quality — better-designed trials report smaller effects.",
+          "claimTerms": [
+            "significantly and negatively correlated to their methodological quality",
+            "modest effect sizes"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "RR"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "wibbelink-2026",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-08-23",
+        "pmid": "42018336",
+        "doi": "10.1001/jamapsychiatry.2026.0418",
+        "sourceSpan": "Of 204 participants (172 female [84.3%]; mean [SD] age, 32.21 [9.57] years), 95 (46.6%) received DBT and 109 (53.4%) received ST. Intention-to-treat analysis revealed no significant difference between DBT and ST in reducing BPD severity (P = .27, r = 0.09), with large improvements in both treatments. At 36-month follow-up, the estimated mean difference was -1.09 on the BPDSI-5 (Cohen d = 0.15; 95% CI, -0.17 to 0.47). Dropout did not differ significantly (DBT: 34% at 1 year, 52% at 2 years; ST: 29% at 1 year, 46% at 2 years)."
+      },
+      "claims": [
+        {
+          "claimId": "dbt-vs-schema-no-difference",
+          "claimText": "In a multicentre trial of 204 outpatients, there was no significant difference between DBT and schema therapy in reducing BPD severity (Cohen d = 0.15) with large improvements in both, and dropout by 2 years reached 52% and 46% respectively.",
+          "claimTerms": [
+            "no significant difference between DBT and ST",
+            "large improvements in both treatments"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "RR"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "brodsky-2025",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-08-23",
+        "pmid": "41190740",
+        "doi": "10.1176/appi.ajp.20240298",
+        "sourceSpan": "Significantly fewer SREs occurred in the DBT arm compared with the SSRI/M arm during the 6-month treatment phase. Significantly fewer suicide attempts occurred in the DBT arm compared with the SSRI/M arm. DBT participants had significantly lower NSSI counts than SSRI/M participants. Severity of depression and suicidal ideation decreased comparably in both treatment groups. After 6 months of treatment, the rate of major depressive disorder was significantly lower in the SSRI/M arm compared with the DBT arm. At 12-month follow-up (6 months after completion of the treatment phase), outcomes were comparable between the two groups."
+      },
+      "claims": [
+        {
+          "claimId": "dbt-vs-ssri-suicide-events",
+          "claimText": "Over a 6-month treatment phase, DBT produced significantly fewer suicide-related events, fewer suicide attempts and lower non-suicidal self-injury counts than SSRI plus clinical management, while severity of depression and suicidal ideation decreased comparably in both groups and outcomes were comparable between the two groups at 12-month follow-up.",
+          "claimTerms": [
+            "Significantly fewer SREs occurred in the DBT arm",
+            "decreased comparably in both treatment groups",
+            "outcomes were comparable between the two groups"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "RR"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "arqueros-2026",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-08-23",
+        "pmid": "42275028",
+        "doi": "10.1037/per0000774",
+        "sourceSpan": "Seven studies met criteria; five entered meta-analysis. BPD clinical severity showed large within-arm improvement (d = -1.32, 95% confidence interval [CI; -1.99, -0.64]) with substantial heterogeneity. Pooled dropout was 29% (95% CI [23%, 36%]), implying 71% retention. Stand-alone DBT-ST is associated with large symptom reductions and acceptable retention, providing skills-specific benchmarks to inform implementation, whereas heterogeneity indicates the need for more robust comparative trials."
+      },
+      "claims": [
+        {
+          "claimId": "dbt-skills-only-benchmarks",
+          "claimText": "Stand-alone DBT skills training showed large within-arm improvement in BPD severity (d = -1.32) with 71% retention, but these are within-arm benchmarks and heterogeneity indicates the need for more robust comparative trials.",
+          "claimTerms": [
+            "large within-arm improvement",
+            "implying 71% retention",
+            "need for more robust comparative trials"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "RR"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "appel-2026",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-08-23",
+        "pmid": "41849148",
+        "doi": "10.1521/pdps.2026.54.1.97",
+        "sourceSpan": "The goal of this article is to outline a set of simple, commonsense interventions for generalist providers informed by two evidence-based treatments for patients with borderline personality organization or other moderate to severe personality disorder presentations, transference-focused psychotherapy (TFP), and good psychiatric management for borderline personality disorder. Clinicians can benefit from familiarity with the guidance for working with families outlined in these modalities, even if they are not motivated to offer either of these two treatments themselves."
+      },
+      "claims": [
+        {
+          "claimId": "family-work-generalist-roadmap",
+          "claimText": "Commonsense interventions for generalist providers working with the families of patients with personality disorder, drawn from transference-focused psychotherapy and good psychiatric management — a road map rather than trial data.",
+          "claimTerms": [
+            "simple, commonsense interventions for generalist providers",
+            "even if they are not motivated to offer either of these two treatments"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "RR"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "ma-2021",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-08-23",
+        "pmid": "33568244",
+        "doi": "10.1017/S0033291721000209",
+        "sourceSpan": "Findings revealed that global HEE significantly predicted more on early relapse (<=12 months) [OR 4.87 (95% CI 3.22-7.36)] than that on late relapse (>12 months) [OR 2.13 (95% CI 1.36-3.35)]. Higher level of critical comments (CC) significantly predicted relapse [OR 2.22 (95% CI 1.16-4.26)], whereas higher level of warmth significantly protected patients from relapse [OR 0.35 (95% CI 0.15-0.85)]. Results also confirmed the foci of family interventions on reducing CC and improving warmth in relationship."
+      },
+      "claims": [
+        {
+          "claimId": "expressed-emotion-relapse-prediction",
+          "claimText": "High expressed emotion significantly predicted early relapse within 12 months (OR 4.87), critical comments significantly predicted relapse (OR 2.22), and higher warmth significantly protected patients from relapse (OR 0.35).",
+          "claimTerms": [
+            "significantly predicted more on early relapse",
+            "higher level of warmth significantly protected patients from relapse"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "RR"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "camacho-gomez-2020",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-08-23",
+        "pmid": "31050757",
+        "doi": "10.1093/schbul/sbz038",
+        "sourceSpan": "Pooled results showed that FIp was effective for preventing relapse (RR = 0.42; 95% CI = 0.29 to 0.61) compared to TAU and/or other psychosocial interventions. FIp showed benefits in reducing duration of hospitalization (TAU, MD = -3.31; other interventions, MD = -4.57) and psychotic symptoms (TAU, SMD = -0.68), and increased functionality (TAU, SMD = 1.36; other interventions, SMD = 1.41). These findings suggest that FIp is effective for reducing relapse rates, duration of hospitalization, and psychotic symptoms, and for increasing functionality in FEP patients up to 24 months."
+      },
+      "claims": [
+        {
+          "claimId": "family-intervention-first-episode",
+          "claimText": "In first-episode psychosis, family intervention was effective for preventing relapse (RR 0.42) and reduced duration of hospitalization and psychotic symptoms while increasing functionality, holding up to 24 months.",
+          "claimTerms": [
+            "effective for preventing relapse",
+            "up to 24 months"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "RR"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "schwenker-2023",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-08-23",
+        "pmid": "38084817",
+        "doi": "10.1002/14651858.CD008063.pub3",
+        "sourceSpan": "We included 93 studies with 22,776 participants. Motivational interviewing may reduce substance use compared with no intervention up to a short follow-up period. MI probably reduces substance use slightly compared with assessment and feedback over medium- and long-term periods. MI may make little to no difference to substance use compared to treatment as usual and another active intervention. Overall, we have moderate to no confidence in the evidence, which forces us to be careful about our conclusions."
+      },
+      "claims": [
+        {
+          "claimId": "mi-calibrated-effects",
+          "claimText": "Across 93 studies with 22,776 participants, motivational interviewing may reduce substance use compared with no intervention over short follow-up, but may make little to no difference compared to treatment as usual or another active intervention, on evidence of moderate to no certainty.",
+          "claimTerms": [
+            "may make little to no difference to substance use",
+            "moderate to no confidence in the evidence"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "RR"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "bastos-maia-2025",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-08-23",
+        "pmid": "39798118",
+        "doi": "10.1080/15504263.2024.2434218",
+        "sourceSpan": "8 RCTs were included in this review. The patients who underwent MI interventions showed an improvement in functioning, psychiatric symptoms, medication compliance and substance use, although without statistical significance. The number of relapses, total days in relapse and alcohol binge days showed a significant improvement in favor of the intervention group. Although there was a clear improvement in most of these outcomes, most studies failed to detect significant results. A significant clinical outcome of MI application was found in lower relapse occurrence and alcohol abuse."
+      },
+      "claims": [
+        {
+          "claimId": "mi-dual-diagnosis-narrow-benefit",
+          "claimText": "Motivational interviewing improved functioning, psychiatric symptoms, medication compliance and substance use without reaching statistical significance, while number of relapses, days in relapse and alcohol binge days showed significant improvement in favour of the intervention group.",
+          "claimTerms": [
+            "although without statistical significance",
+            "significant improvement in favor of the intervention group"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "RR"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "ferguson-2026",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-08-23",
+        "pmid": "41267566",
+        "doi": "10.1027/0227-5910/a001031",
+        "sourceSpan": "27 papers (n = 1 systematic review, n = 2 mixed methods, n = 8 qualitative, n = 5 quantitative, n = 11 discussion papers) were eligible for inclusion, primarily published in the past five years, mostly from the United States. The majority focus on children/young people, at the selective or indicated level. Lived experience leadership is lacking, and most do not explore suicide-specific outcomes. Limitations: The results may not represent global trauma-informed suicide prevention strategies, and the paper does not evaluate the effectiveness of these approaches."
+      },
+      "claims": [
+        {
+          "claimId": "tic-suicide-prevention-scoping",
+          "claimText": "Across 27 papers on trauma-informed suicide prevention, the majority focus on children and young people, most do not explore suicide-specific outcomes, and the review does not evaluate the effectiveness of these approaches.",
+          "claimTerms": [
+            "majority focus on children/young people",
+            "most do not explore suicide-specific outcomes",
+            "does not evaluate the effectiveness"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "RR"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "goldstein-2024",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-08-23",
+        "pmid": "38444328",
+        "doi": "10.7812/TPP/23.127",
+        "sourceSpan": "Realist synthesis methodology was used to develop context-mechanism-outcome configurations. Sixteen articles featuring varied review types were included. The results, highlighting the strategies that lead to improved outcomes for patients and systems, were mapped to SAMHSA's 10 TIC implementation domains, including engagement and involvement; training and workforce development; cross-sector collaboration; screening, assessment, and treatment services; governance and leadership; policy; evaluation; progress monitoring and quality assurance; financing; and physical environment."
+      },
+      "claims": [
+        {
+          "claimId": "tic-implementation-domains",
+          "claimText": "Mechanisms and outcomes of trauma-informed care implementation were mapped to SAMHSA's 10 implementation domains, spanning engagement, workforce training, cross-sector collaboration, screening and treatment services, governance, policy, evaluation, financing and physical environment.",
+          "claimTerms": [
+            "mapped to SAMHSA's 10 TIC implementation domains",
+            "training and workforce development"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "RR"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "mahon-2024",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-08-23",
+        "pmid": "39046622",
+        "doi": "10.1007/s10597-024-01317-z",
+        "sourceSpan": "The search strategy yielded 5,297 articles, of which (N = 14) systematic reviews are included. Critical appraisal categorised the reviews as 28% high quality, 22% moderate quality, and 50% as low quality. Most reviews (50%), were conducted on youth populations, with school settings being the most studied context. The composition of the individual studies included in each systematic review were generally of low quality with mixed findings of effectiveness and implementation. Trauma-informed care is proposed as a system wide intervention to improve outcomes for service users, however the research base is still under scrutiny."
+      },
+      "claims": [
+        {
+          "claimId": "tic-evidence-still-mixed",
+          "claimText": "Across 14 systematic reviews of trauma-informed care, 50% were rated low quality, most were conducted on youth populations in school settings, and the constituent studies were generally of low quality with mixed findings of effectiveness — the research base is still under scrutiny.",
+          "claimTerms": [
+            "50% as low quality",
+            "mixed findings of effectiveness",
+            "research base is still under scrutiny"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "RR"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "wienicke-2023",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-08-23",
+        "pmid": "36958077",
+        "doi": "10.1016/j.cpr.2023.102269",
+        "sourceSpan": "IPD were obtained from 11 of the 13 (84.6%) studies identified (n = 771/837, 92.1%; mean age = 40.8, SD = 13.3; 79.3% female). STPP resulted in significantly lower depressive symptom levels than control conditions at post-treatment (d = -0.62, 95%CI [-0.76, -0.47], p < .001). At post-treatment, STPP was more efficacious for participants with longer rather than shorter current depressive episode durations. This moderator finding, however, is observational and requires prospective validation in future large-scale trials."
+      },
+      "claims": [
+        {
+          "claimId": "stpp-depression-ipd",
+          "claimText": "Individual participant data from 11 of the 13 eligible trials (n = 771) showed short-term psychodynamic psychotherapy produced significantly lower depressive symptom levels than control conditions at post-treatment (d = -0.62), with greater efficacy for longer current episode durations — a moderator finding that is observational and requires prospective validation.",
+          "claimTerms": [
+            "significantly lower depressive symptom levels than control conditions",
+            "observational and requires prospective validation"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "RR"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "driessen-2023",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-08-23",
+        "pmid": "36404677",
+        "doi": "10.1017/S0033291722003270",
+        "sourceSpan": "Data were obtained for all seven trials identified (100%, n = 482, combined: n = 238, antidepressants: n = 244). Adding STPP to antidepressants was more efficacious for patients with high rather than low baseline depression levels [B = -0.49, 95% confidence interval (CI) -0.61 to -0.37, p < 0.0001] and for patients with a depressive episode duration of >2 years rather than <1 year (B = -0.68, 95% CI -1.31 to -0.05, p = 0.03) and than 1-2 years (B = -0.86, 95% CI -1.66 to -0.06, p = 0.04). These findings need validation but suggest that depression severity and episode duration are factors to consider when adding STPP to antidepressants."
+      },
+      "claims": [
+        {
+          "claimId": "stpp-plus-antidepressants-moderators",
+          "claimText": "Adding short-term psychodynamic psychotherapy to antidepressants was more efficacious for patients with high rather than low baseline depression levels and for those with a depressive episode duration of >2 years rather than <1 year; these findings need validation.",
+          "claimTerms": [
+            "more efficacious for patients with high rather than low baseline depression levels",
+            "These findings need validation"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "RR"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "abbass-2020",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-08-23",
+        "pmid": "32428905",
+        "doi": "10.1159/000507738",
+        "sourceSpan": "In meta-analyses of 17 RCTs, STPP significantly outperformed minimal treatment, treatment as usual, or waiting list controls on somatic symptom measures at all time frames, with small to large magnitude effect sizes. Descriptive reviews of 5 RCTs suggest that STPP performed at least as well as other bona fide psychological therapies. Limitations of this meta-analysis include small samples of studies and possible publication bias. STPP is a valid treatment option for diverse FSD conditions resulting in somatic symptom reductions that persist over time."
+      },
+      "claims": [
+        {
+          "claimId": "stpp-functional-somatic-disorders",
+          "claimText": "Across 17 RCTs, short-term psychodynamic psychotherapy significantly outperformed minimal treatment, treatment as usual, or waiting list controls on somatic symptom measures at all time frames, with small to large magnitude effect sizes.",
+          "claimTerms": [
+            "significantly outperformed minimal treatment",
+            "at all time frames"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "RR"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "diefenbach-2025",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-08-23",
+        "pmid": "39837259",
+        "doi": "10.1016/j.genhosppsych.2025.01.007",
+        "sourceSpan": "Inpatients with a history of suicide attempt were assigned to BCBT-I + TAU (n = 94) or TAU alone (n = 106). Adding BCBT-I to TAU reduced the odds and rate of post-discharge ED visits by three quarters [Odds Ratio estimate = 0.25, 95 % CI:(0.12, 0.46); Rate Ratio estimate = 0.24, 95 % CI:(0.11, 0.53)], but only among participants without SUD. Over one-third (36 %) of ED visits were related to suicide. Additional research is needed to improve the efficacy of BCBT-I for patients with SUD."
+      },
+      "claims": [
+        {
+          "claimId": "bcbt-post-discharge-ed-use",
+          "claimText": "Adding brief CBT for inpatients to treatment as usual reduced the odds of post-discharge emergency department visits by three quarters (odds ratio 0.25), but only among participants without a substance use disorder; additional research is needed for patients with SUD.",
+          "claimTerms": [
+            "but only among participants without SUD",
+            "Additional research is needed"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "RR"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "steinberg-2024",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-08-23",
+        "pmid": "38934489",
+        "doi": "10.1111/sltb.13108",
+        "sourceSpan": "Individuals with a suicide-related concern following discharge from an inpatient psychiatric hospitalization (n = 27), sending CCs on days 2 and 7 post-discharge (phase 3). Phase 3 participants demonstrated reductions in depressive symptoms at day-7 post-discharge (-6.4% mean score on Hopkins-Symptom-Checklist, -9.0% mean score on Entrapment-Scale). Most participants agreed that CC messages helped them feel more connected to the hospital and encouraged help-seeking behavior post-discharge. This study supports the use of an iterative process, including patient feedback, to improve CC messages and provides further pilot evidence that CC can have beneficial effects."
+      },
+      "claims": [
+        {
+          "claimId": "caring-contacts-pilot",
+          "claimText": "Caring-contact messages sent on days 2 and 7 after discharge to 27 participants produced reductions in depressive symptoms at day 7 and left most participants feeling more connected to the hospital — pilot evidence, not a trial result.",
+          "claimTerms": [
+            "reductions in depressive symptoms at day-7 post-discharge",
+            "further pilot evidence"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "RR"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "schunemann-2025",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-08-23",
+        "pmid": "40177337",
+        "doi": "10.32872/cpe.9709",
+        "sourceSpan": "However, allegiance and bona fide were significant moderators only for two (allegiance) resp. one (bona fide) of five outcome comparison. We found no clear evidence for allegiance or treatment quality impacting upon treatment outcome in this re-examination. Allegiance and treatment quality were not as relevant for outcomes in this meta-analysis of RCTs as expected."
+      },
+      "claims": [
+        {
+          "claimId": "allegiance-tested-not-confirmed",
+          "claimText": "In this re-examination of humanistic-versus-other psychotherapy trials, there was no clear evidence for researcher allegiance or treatment quality impacting upon treatment outcome — allegiance and treatment quality were not as relevant for outcomes as expected.",
+          "claimTerms": [
+            "no clear evidence for allegiance or treatment quality impacting upon treatment outcome",
+            "not as relevant for outcomes"
+          ],
+          "direction": "negative",
+          "usedBy": [
+            "RR"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "desalve-2025",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-08-23",
+        "pmid": "40325843",
+        "doi": "10.1002/cpp.70080",
+        "sourceSpan": "Dropout rates ranged from 10.4% to 58%, depending on treatment modality and patient characteristics. Younger age, comorbid substance use disorders, emotional dysregulation, distress tolerance difficulties were significant predictors of dropout. Conversely, strong therapeutic alliances, mindfulness-based skills and engagement in phone coaching were associated with improved retention."
+      },
+      "claims": [
+        {
+          "claimId": "pd-psychotherapy-dropout",
+          "claimText": "Dropout in personality-disorder psychotherapy ranged from 10.4% to 58% depending on modality and patient characteristics, predicted by younger age, comorbid substance use disorders and emotional dysregulation, while strong therapeutic alliances and engagement in phone coaching were associated with improved retention.",
+          "claimTerms": [
+            "Dropout rates ranged from",
+            "associated with improved retention"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "RR"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "saxler-2024",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-08-23",
+        "pmid": "38993343",
+        "doi": "10.3389/fpsyg.2024.1293851",
+        "sourceSpan": "A current overview of 48 instruments for measuring TA (46 for F2F-PT, 2 for Online-PT) including their conceptual backgrounds, characteristics and main content aspects is presented. The broad variety of conceptualizations and measures of TA makes coherent research on TA difficult. There are conceptual challenges such as the role of attachment style in TA that remain to be clarified."
+      },
+      "claims": [
+        {
+          "claimId": "alliance-measurement-fragmentation",
+          "claimText": "An overview of 48 instruments for measuring therapeutic alliance found that the broad variety of conceptualizations and measures of TA makes coherent research on TA difficult.",
+          "claimTerms": [
+            "48 instruments for measuring TA",
+            "makes coherent research on TA difficult"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "RR"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "huggett-2024",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-08-23",
+        "pmid": "39098267",
+        "doi": "10.1016/j.cpr.2024.102469",
+        "sourceSpan": "Thirty-seven papers were included, generating two overarching themes; 'Working on the edge' and 'Being ready, willing, and able to build an alliance in the context of suicidal experiences'. Clinical implications emphasise the need to improve training, supervision, and support for therapists. Flexibly interweaving risk assessment into therapeutic conversation was beneficial to the alliance with suicidal clients and enhanced their safety."
+      },
+      "claims": [
+        {
+          "claimId": "risk-assessment-woven-into-conversation",
+          "claimText": "Flexibly interweaving risk assessment into therapeutic conversation was beneficial to the alliance with suicidal clients and enhanced their safety — weaving risk assessment into the conversation rather than bolting it on.",
+          "claimTerms": [
+            "Flexibly interweaving risk assessment into therapeutic conversation",
+            "enhanced their safety"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "RR"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "difronzo-2025",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-08-23",
+        "pmid": "40471224",
+        "doi": "10.4081/ripppo.2025.841",
+        "sourceSpan": "This study investigated the psychotherapeutic process in short-term psychoanalytic psychotherapy (STPP) with five adolescents with moderate/severe depression who had dropped out of STPP in a large randomized controlled trial and reported dissatisfaction with treatment. In each case, sessions were rated as featuring unresolved ruptures with the therapist. Results revealed a weak alliance preceding the adolescent dropping out of therapy, with a mismatch between self-reliant and disengaged adolescents presenting with strong negative affects and therapists seeking to maintain an active exploration of the adolescents' difficulties."
+      },
+      "claims": [
+        {
+          "claimId": "unresolved-ruptures-precede-dropout",
+          "claimText": "In five adolescents with moderate/severe depression who dropped out of short-term psychoanalytic psychotherapy, sessions featured unresolved ruptures with the therapist and a weak alliance preceding dropout — a qualitative adolescent sample, not an adult inpatient one.",
+          "claimTerms": [
+            "five adolescents with moderate/severe depression",
+            "unresolved ruptures with the therapist"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "RR"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "penzenik-2026",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-08-23",
+        "pmid": "41588871",
+        "doi": "10.1111/jrh.70103",
+        "sourceSpan": "Across these communities, 3,846 individuals responded to the survey. Whereas most respondents were at least somewhat willing to discuss access to firearms with health care providers, only 3.8%-10.8% reported that any provider had asked about such access. A low proportion reported discussions with providers regarding safe storage of medications (14.1%-21.66%). Many respondents did not agree that gun locks and safes reduce suicide risk (16.9%-23.5%)."
+      },
+      "claims": [
+        {
+          "claimId": "lethal-means-counselling-rarely-happens",
+          "claimText": "Most respondents were at least somewhat willing to discuss access to firearms with health care providers, yet only 3.8%-10.8% reported that any provider had asked about such access, and a low proportion reported discussions about safe storage of medications (14.1%-21.66%).",
+          "claimTerms": [
+            "at least somewhat willing to discuss access to firearms",
+            "only 3.8%-10.8% reported that any provider had asked"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "RR"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "xia-2011",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-08-23",
+        "pmid": "21678337",
+        "doi": "10.1002/14651858.CD002831.pub2",
+        "sourceSpan": "Relapse appeared to be lower in psychoeducation group (n = 1214, RR 0.70 CI 0.61 to 0.81, NNT 9 CI 7 to 14) and this also applied to readmission (n = 206, RR 0.71 CI 0.56 to 0.89, NNT 5 CI 4 to 13). Psychoeducation does seem to reduce relapse, readmission and encourage medication compliance, as well as reduce the length of hospital stay in these hospital-based studies of limited quality. The true size of effect is likely to be less than demonstrated in this review - but, nevertheless, some sort of psychoeducation could be clinically effective and potentially cost beneficial."
+      },
+      "claims": [
+        {
+          "claimId": "psychoeducation-relapse-readmission",
+          "claimText": "Psychoeducation in schizophrenia reduced relapse (NNT 9) and readmission (NNT 5), on hospital-based studies of limited quality whose true size of effect is likely to be less than demonstrated in the review.",
+          "claimTerms": [
+            "NNT 9",
+            "NNT 5",
+            "studies of limited quality",
+            "true size of effect is likely to be less than demonstrated"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "T4"
+          ]
+        }
+      ]
     }
   ]
 }
