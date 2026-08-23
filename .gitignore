@@ -73,3 +73,16 @@ node_modules/
 
 # ---- Local Zotero reconciliation artifacts (metadata only; never curriculum authority) ----
 /outputs/evidence_registry/
+
+# ---- Agent scratch: local state, never repository content ----
+# Untracked but NOT ignored until 2026-08-23, which left ~1.4 GB of nested git
+# worktrees one `git add -A` away from being committed.
+#
+# Deliberately targeted rather than ignoring .claude/ wholesale: .claude/skills/
+# is tracked repository content (the topic-meta-author skill WP-T4 used), and a
+# blanket rule would leave edits to it invisible in `git status`.
+.claude/worktrees/
+.claude/settings.local.json
+
+# Regenerable PDF-review screenshots.
+tmp/
