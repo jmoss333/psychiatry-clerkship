@@ -286,6 +286,16 @@
   .md-body .sec-b,.fd-article__body .sec-b{display:none;padding:0 16px 12px}
   .md-body .sec-c.open .sec-b,.fd-article__body .sec-c.open .sec-b{display:block}
   .md-body .sec-b>:first-child,.fd-article__body .sec-b>:first-child{margin-top:6px}
+  /* Print renders the page exactly as it stands, so a collapsed body would print as a run of
+     headings with nothing under them -- Ctrl-P and Save-as-PDF are how these pages get carried
+     onto the unit. Force every section body open on paper and drop the controls that only mean
+     something on screen. */
+  @media print{
+    .md-body .sec-b,.fd-article__body .sec-b{display:block !important}
+    .md-body .sec-toolbar,.fd-article__body .sec-toolbar{display:none !important}
+    .md-body .sec-chev,.fd-article__body .sec-chev{display:none !important}
+    .md-body .sec-c,.fd-article__body .sec-c{border:none;background:none;margin:0}
+  }
   .mobile-chrome{display:none}
   .vh-live{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}
   .menubtn{display:none}
@@ -585,12 +595,23 @@
   /* Metadata is also injected as FD_TOPIC_META. Keep the fetch for canonical quiz/SRS helpers,
      then refresh only the currently mounted Front Door surface. */
   fetch('topic_meta.json').then(function(r){return r.ok?r.json():{}}).then(function(d){ TOPIC_META=d||{}; srsDropPhantomTopics(); try{ specialRefresh(); }catch(_){ } }).catch(function(){});
+  var SEC_SEQ=0;
   function makeCollapsible(body){
     if(!body) return;
+    /* A page carrying the build-injected crisis block is never collapsed. crisis_block.py emits
+       a .crisis-block-hook element alongside the block, so this is a structural test, not a match
+       on the block's prose. The block usually sits between two h2s, which put the crisis lines
+       inside a display:none section body: present in the DOM, absent from what a learner reads,
+       and unreachable by in-page find or by print. The pages that carry the block are exactly the
+       pages the crisis scope rule says a learner is DOING risk work on, so full expansion --
+       which is also how these pages rendered before the collapse CSS went live -- is the right
+       default for them. Bailing out here rather than force-opening one section also means no
+       later change to where the block sits can strand it again. */
+    if(body.querySelector('.crisis-block-hook')) return;
     var kids=[].slice.call(body.children);
     var nH2=kids.filter(function(el){return el.tagName==='H2';}).length;
     if(nH2<4 || body.querySelector('.sec-c')) return;
-    var groups=[],cur=null;
+    var groups=[],cur=null,lastWrap=null,lastBtn=null;
     kids.forEach(function(el){ if(el.tagName==='H2'){cur={h2:el,body:[]};groups.push(cur);} else if(cur){cur.body.push(el);} });
     var first=null;
     groups.forEach(function(g){
@@ -601,12 +622,21 @@
       var tt=document.createElement('span'); tt.textContent=g.h2.textContent; btn.appendChild(tt);
       hh.appendChild(btn);
       var bd=document.createElement('div'); bd.className='sec-b';
+      /* Name the region the toggle controls. SEC_SEQ is document-scoped, not per-call, so ids
+         stay unique when a second body is enhanced before the first is torn down. */
+      bd.id='sec-b-'+(++SEC_SEQ); btn.setAttribute('aria-controls',bd.id);
       g.body.forEach(function(n){ bd.appendChild(n); });
       body.insertBefore(wrap,g.h2); wrap.appendChild(hh); wrap.appendChild(bd); body.removeChild(g.h2);
       btn.onclick=function(){ var o=!wrap.classList.contains('open'); wrap.classList.toggle('open',o); btn.setAttribute('aria-expanded',String(o)); requestAnimationFrame(refreshTableScrollCues); };
       if(!first) first=wrap;
+      lastWrap=wrap; lastBtn=btn;
       if(bd.querySelector('iframe')){ wrap.classList.add('open'); btn.setAttribute('aria-expanded','true'); }
     });
+    /* The last section stays open. Every page-level trailer -- the "Pair with" cross-link rail
+       and the attribution line -- is authored after the final h2, so it lands in the last
+       section's body; collapsing it hides a page's own outbound links behind a click and makes
+       the reachability rails unreachable. Same force-open precedent as the iframe case above. */
+    if(lastWrap){ lastWrap.classList.add('open'); lastBtn.setAttribute('aria-expanded','true'); }
     if(first){
       var bar=document.createElement('div'); bar.className='sec-toolbar';
       function mk(lbl,op){ var b=document.createElement('button'); b.type='button'; b.className='sec-all'; b.textContent=lbl;
