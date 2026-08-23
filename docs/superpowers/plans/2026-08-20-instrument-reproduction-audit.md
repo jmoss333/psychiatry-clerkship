@@ -55,6 +55,23 @@ ladders** — that is what "drop-in content spec" means. Under the new rule:
 | **B. Rule covers all instruments** | WP-02 must be partly reverted, WP-20 redesigned around elicitation-without-anchors, and `screeners.html` + `bfcrs.html` join the retirement queue. |
 | **C. Rule covers learner-facing scoring surfaces, not teaching pages** | Turns on whether a tool that *computes a score* is an administration aid or a copy. |
 
+> ## ✅ RESOLVED 2026-08-23 — **Option A.** The rule covers copyrighted instruments only.
+>
+> Joshua Moss, MD, clinical author-of-record. Consequences, in force from this date:
+>
+> | Instrument | Standing under Option A |
+> |---|---|
+> | **C-SSRS** | **Retires** — copyrighted, licensed by the Columbia Lighthouse Project, reproduced verbatim on two public sites. → **WP-06R-a** |
+> | **Stanley–Brown** | Never programmed. → **WP-06R-b** builds a rehearsal tool that reproduces nothing |
+> | **PHQ-9 / GAD-7** | Provisionally stay. Pfizer's standard form footer states no permission is required to reproduce, translate, display or distribute — **this must be verified against the current form before it is relied on.** → **WP-02c** |
+> | **CIWA-Ar / COWS / BFCRS** | Copyright status **not established**. Wide public reproduction is evidence of practice, not of permission. Establishing it is an author/counsel task. → **WP-02d**, blocks the Wave-4 anchor-ladder work |
+> | **WP-20 / WP-21 / WP-22** | Survive in principle, but stay blocked on WP-02d for CIWA-Ar and COWS specifically |
+> | **WP-02b** | Unblocked and **done** — attribution added to `withdrawal.html`; see below |
+>
+> Option A resolves the scope question. It does **not** license an agent to infer that any
+> further instrument is exempt: an instrument is exempt only once its status is established and
+> recorded in the table above.
+
 **I am not making this call**, and per the rule as written an agent must not infer that a given
 instrument is exempt. What is not in doubt: **C-SSRS retires** (Josh's decision, WP-06R-a) and
 **Stanley-Brown is never programmed** (WP-06R-b builds a rehearsal tool that reproduces nothing).
@@ -70,6 +87,12 @@ one.
 not Wesson & Ling for COWS. WP-02 added 45 verbatim anchors to that page without adding any.
 Independent of how the scope question lands, attribution should be added; queued as **WP-02b**
 (agent-executable: citation + link to the official form, no clinical content authored).
+
+**Done 2026-08-23.** `withdrawal.html` now names both instruments and links their primary
+sources, verified against PubMed the same day: CIWA-Ar — Sullivan et al., *Br J Addict*
+1989;84(11):1353–7 (PMID 2597811); COWS — Wesson & Ling, *J Psychoactive Drugs* 2003;35(2):253–9
+(PMID 12924748). The block also directs scoring to the institution's complete current form
+rather than to this page. No clinical content was authored.
 
 ## Recommended enforcement, once scope is decided
 
