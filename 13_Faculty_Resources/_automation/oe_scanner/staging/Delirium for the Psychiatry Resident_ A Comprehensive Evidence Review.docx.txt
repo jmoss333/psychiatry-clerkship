@@ -1,0 +1,593 @@
+
+Delirium for the Psychiatry Resident: A Comprehensive Evidence Review
+
+
+---
+
+1. Scope and Framing
+
+
+This review synthesizes the current evidence on delirium prevention, diagnosis, and management across hospital settings, organized for psychiatry residents who are frequently consulted for delirium on medical, surgical, and ICU services. It covers screening instruments, nonpharmacologic prevention bundles, pharmacologic treatment evidence, key differential diagnoses (catatonia, dementia, substance withdrawal), and setting-specific considerations (ICU vs. non-ICU). The review draws on NICE CG103, SCCM PADIS 2018/2025, Cochrane systematic reviews, and landmark RCTs through mid-2026. It concludes with a practical algorithm, medication table, nonpharmacologic bundle checklist, and curated reference list.
+
+---
+
+2. Delirium Screening Tools
+
+
+Only 12–35% of delirium cases are recognized through routine clinical documentation without structured screening.[1] Tool selection should be guided by clinical setting, assessor training, and whether the goal is screening (high sensitivity) or confirmation (high specificity).[2]
+
+Confusion Assessment Method (CAM)
+
+
+The CAM remains the most widely used delirium instrument worldwide, used in >4,500 published studies.[3] It assesses four core features: acute onset/fluctuating course, inattention, disorganized thinking, and altered level of consciousness. With trained raters performing formal cognitive testing, sensitivity is 94–100% and specificity 90–95% (κ = 0.92).[3][4] However, sensitivity drops to ~40% when scored from routine clinical observations without structured cognitive testing.[5] This training dependency is the CAM's principal limitation.
+
+CAM-ICU
+
+
+Adapted for patients who cannot communicate verbally, the CAM-ICU is completable in ~2 minutes.[6] A 2023 Cochrane review (25 studies, 2,817 participants) found pooled sensitivity of 0.78 (95% CI 0.72–0.83) and specificity of 0.95 (95% CI 0.92–0.97).[7] The SCCM PADIS guidelines recommend CAM-ICU or ICDSC for routine ICU delirium screening.[2] Real-world nurse-documented assessments show only moderate agreement (κ = 0.42) with trained researcher assessments, underscoring the importance of training.[8]
+
+The summary ROC plot from the Cochrane review illustrates the distribution of diagnostic accuracy across CAM-ICU studies, with the pooled estimate in the upper-left quadrant indicating generally high specificity and moderate-to-high sensitivity.
+
+Figure 6 Summary ROC plot of CAM‐ICU for diagnosis of delirium.
+
+4AT (4 'A's Test)
+
+
+The 4AT assesses alertness, AMT-4 (orientation), attention (months backward), and acute change. Its key advantage is that no special training is required, and it is completable in <2 minutes.[5] A meta-analysis of 17 studies (3,702 observations) found pooled sensitivity of 0.88 and specificity of 0.88.[10] In a head-to-head comparison with the CAM in 785 acute medical patients ≥70 years, the 4AT had sensitivity of 76% vs. CAM sensitivity of only 40% when the CAM was used without formal cognitive testing.[5] NICE and multiple national guidelines now recommend the 4AT for routine screening.[5][10]
+
+3D-CAM (3-Minute Diagnostic Interview)
+
+
+The 3D-CAM operationalizes the CAM algorithm in a standardized 20-item assessment (median 3 minutes). A meta-analysis of 7 studies (1,350 participants) found pooled sensitivity of 0.92 and specificity of 0.95.[11] It detected 100% of mild delirium cases vs. 30% for the CAM-ICU in general medicine inpatients.[12] This tool offers the best combined sensitivity and specificity among brief instruments.
+
+DRS-R-98 (Delirium Rating Scale–Revised-98)
+
+
+The 16-item DRS-R-98 is best suited for longitudinal severity tracking and phenomenological research rather than rapid screening, requiring 20–30 minutes and psychiatric-trained clinicians.[3][13] Sensitivity ranges from 89–100% and specificity from 85–100% depending on cutoff.[9] It is the instrument of choice for C-L psychiatry when monitoring delirium severity over time.
+
+
+
+---
+
+3. Nonpharmacologic Prevention Bundles
+
+
+Multicomponent nonpharmacologic interventions are the most consistently effective strategy for delirium prevention and are endorsed by all major guidelines.[3][9] At least 30–40% of delirium cases are considered preventable.[1]
+
+Hospital Elder Life Program (HELP)
+
+
+HELP is the foundational evidence-based model, targeting six delirium risk factors using an interdisciplinary team and trained volunteers.[1] A 2018 meta-analysis (44 articles, 14 in meta-analysis) demonstrated a 53% reduction in delirium incidence (OR 0.47, 95% CI 0.37–0.59), 42% reduction in falls, and cost savings of $1,600–$3,800 per patient.[9] The tailored, family-involved HELP (t-HELP) RCT (Wang et al., 2020; n = 281 surgical patients) showed postoperative delirium in 2.6% vs. 19.4% (RR 0.14, 95% CI 0.05–0.38; NNT = 5.9), with shorter length of stay (12.2 vs. 16.4 days).[9]
+
+The cumulative incidence of delirium from the modified HELP cluster RCT (Chen et al., 2017) demonstrates significantly lower delirium rates in the intervention group, with divergence beginning in the early postoperative days.
+
+Figure 2 Cumulative Incidence of Delirium by Group
+
+ABCDEF Bundle (ICU Setting)
+
+
+The ABCDEF bundle (Assess/prevent/manage pain; Both spontaneous awakening and breathing trials; Choice of analgesia and sedation; Delirium: assess/prevent/manage; Early mobility and exercise; Family engagement) operationalizes the SCCM PADIS guidelines.[2] The ICU Liberation Collaborative (Pun et al., 2019; 15,226 adults, 68 ICUs) showed complete bundle performance was associated with lower odds of delirium (AOR 0.60, 95% CI 0.49–0.72) and hospital death within 7 days (AHR 0.32, 95% CI 0.17–0.62), with a consistent dose-response relationship.[15] However, a recent pragmatic RCT (Sosnowski et al., 2026) found no significant difference in delirium incidence (37.9% vs. 36.4%) with only 50% bundle adherence, highlighting that the positive ABCDEF evidence is predominantly observational.[16]
+
+NICE CG103 Ten Risk Factor Domains
+
+
+The NICE guidelines (2010) recommend a tailored multicomponent intervention package addressing ten clinical domains:[9]
+
+
+
+HELP protocols were aligned with NICE guidelines in 2013 by adding protocols for hypoxia, infection, pain, and constipation.[17]
+
+Which Components Drive the Effect?
+
+
+The 2021 Cochrane component network meta-analysis (Burton et al.; 14 multicomponent RCTs, 3,693 participants) identified three components with statistically significant individual effects:[9]
+
+- Sleep hygiene: OR 0.25 (95% CrI 0.08–0.71)
+
+- Reorientation & familiar objects: OR 0.32 (95% CrI 0.11–0.89)
+
+- Cognitive stimulation: OR 0.45 (95% CrI 0.21–0.93)
+
+Nutrition/hydration (OR 0.48), oxygenation (OR 0.35), and bowel/bladder care (OR 0.55) showed probable reductions but credible intervals included 1. Mobilization, sensory aids, and pain control had imprecise estimates as isolated interventions.[9] The evidence supports bundled delivery of ≥3 components rather than single-component interventions.
+
+Sleep Promotion
+
+
+The SCCM PADIS guidelines conditionally recommend sleep-promoting protocols in the ICU (earplugs, eye masks, noise/light reduction, clustering care), with pooled analysis showing reduced delirium prevalence (RR 0.62, 95% CI 0.42–0.91; very low quality).[2] A surgical ICU quality improvement study (Tonna et al., 2021; n = 646) implementing a multicomponent sleep-wake bundle found a significant reduction in proportion of ICU days with delirium (15% vs. 20%, adjusted decrease 4.9%).[18]
+
+Early Mobility
+
+
+A 2025 meta-analysis (59 RCTs, 8,462 ICU patients) found enhanced mobilization may reduce delirium duration (MD −1.34 days, 95% CI −1.85 to −0.83; low certainty) and ICU-acquired weakness (RR 0.79, 95% CI 0.66–0.95; moderate certainty).[19] A network meta-analysis found that multicomponent interventions involving early mobilization and family participation were the most effective combination (OR 0.12, 95% CI 0.02–0.83).[20]
+
+---
+
+4. Antipsychotics for Delirium: Evidence and Limitations
+
+
+The Bottom Line
+
+
+No antipsychotic has demonstrated clear efficacy for reducing delirium duration or improving delirium-free days in adequately powered, placebo-controlled RCTs. All major guidelines recommend against routine use. However, short-term use may be appropriate for severe agitation, hallucinations, or distress posing safety risks.[2][21]
+
+Major ICU Treatment Trials
+
+
+MIND-USA (2018): 566 ICU patients with delirium randomized to IV haloperidol (max 20 mg/day), IV ziprasidone (max 40 mg/day), or placebo across 16 centers. No significant difference in days alive without delirium or coma (median 8.5, 7.9, and 8.7 days; P = 0.26).[21] Long-term follow-up showed no benefit on cognitive, functional, or quality-of-life outcomes at 3 or 12 months.[22]
+
+AID-ICU (2022): 1,000 ICU patients randomized to IV haloperidol (2.5 mg TID + 2.5 mg PRN, max 20 mg/day) or placebo. No significant difference in days alive and out of hospital at 90 days (35.8 vs. 32.9 days; P = 0.22).[23] However, 90-day mortality was numerically lower with haloperidol (36.3% vs. 43.3%), and a pre-planned Bayesian analysis found 99% probability of any mortality benefit and 94% probability of clinically important mortality benefit.[24]
+
+EuRIDICE (2023): 132 ICU patients; stopped early for futility. Haloperidol did not increase delirium- and coma-free days, but haloperidol-treated patients were significantly less likely to receive rescue benzodiazepines (adjusted OR 0.41; P = 0.02).[25]
+
+REDUCE (2018): The definitive prevention trial — 1,789 high-risk ICU patients randomized to prophylactic haloperidol 1 mg TID, 2 mg TID, or placebo. No difference in 28-day survival, delirium incidence (33.3% vs. 33.0%), or any secondary outcome.[26]
+
+The REDUCE trial survival curves demonstrate overlapping Kaplan-Meier curves for haloperidol and placebo at both 28 and 90 days.
+
+Figure 2 Survival Analysis at 28 and 90 Days
+
+Palliative Care: Signal of Harm
+
+
+The Agar et al. (2017) trial (247 palliative care patients) is a critical counterpoint: both risperidone and haloperidol arms had significantly worse delirium symptom scores than placebo, and haloperidol was associated with worse overall survival (HR 1.73; 95% CI 1.20–2.50).[3] This trial demonstrates that in palliative care, antipsychotics may cause harm.
+
+Figure 2 Secondary Multivariable Mixed-Model Analysis of Delirium
+
+Haloperidol vs. Atypical Antipsychotics
+
+
+A 2025 meta-analysis (11 RCTs, 1,450 patients) found no significant difference in delirium severity (SMD −0.03) or mortality, but haloperidol had 2.7-fold higher odds of extrapyramidal symptoms (OR 2.72; 95% CI 1.26–5.87).[29]
+
+QTc Safety
+
+
+A secondary analysis of MIND-USA found that neither haloperidol nor ziprasidone caused clinically relevant QTc changes compared to placebo in patients with baseline QTc <550 ms.[30] A systematic review of IV haloperidol recommends ECG monitoring only when using doses >5 mg and telemetry only for high-risk patients receiving cumulative doses ≥100 mg or with QTc >500 ms.[31]
+
+Inappropriate Continuation
+
+
+Approximately one-third of older adults who start antipsychotics during hospitalization continue them after discharge. A 2025 trial emulation study found that antipsychotic discontinuation after hospitalization was associated with lower risks of rehospitalization and all-cause mortality compared with continuation.[32]
+
+Dexmedetomidine
+
+
+Dexmedetomidine is the only pharmacologic agent with consistent evidence for delirium reduction. A meta-analysis of 77 RCTs (n = 11,997) found dexmedetomidine reduced delirium risk compared to other sedatives (RR 0.67, 95% CI 0.55–0.81; moderate certainty), but increased bradycardia (RR 2.39) and hypotension (RR 1.32).[33] The 2025 PADIS update conditionally recommends dexmedetomidine over propofol for ICU sedation.[34] The SCCM PADIS guidelines also conditionally recommend dexmedetomidine for delirium in mechanically ventilated adults where agitation precludes weaning/extubation.[2]
+
+Melatonin and Ramelteon
+
+
+A 2026 dose-response meta-analysis (24 studies, 3,680 participants) found melatoninergic agonists reduce delirium incidence (RR 0.77, 95% CI 0.62–0.94), with superior effects in surgical ICU settings and an optimal cumulative dose of ~22 mg of melatonin.[3] A separate meta-analysis of sleep-wake regulating agents (ramelteon, suvorexant, lemborexant) found 40–46% relative risk reductions in delirium prevalence, though based on low-certainty evidence.[35] The 2025 PADIS update conditionally recommends melatonin for sleep disruption in the ICU.[34]
+
+The following forest plot compares the effects of melatonin, ramelteon, and orexin receptor antagonists on delirium incidence across RCTs and observational studies.
+
+Figure 2 Effects of sleep–wake pharmacotherapies on delirium. (A) Randomized controlled trials by drug class vs. no drugs. (B) Observational studies by drug class vs. no drugs. Color coding: Color coding by pharmacologic class (two shades per class): Melatonin = blue, ramelteon = green, orexin‐receptor antagonists (suvorexant, lemborexant) = pink. In both panels, RCTs are displayed in the lighter shade and observational studies in the darker shade for each class. Explanatory note: Study squares show risk ratios (RR) with 95% confidence intervals (CI); square size is proportional to the random‐effects weight of each study; diamonds depict the pooled effect (center = pooled RR; width = 95% CI). Model: Mantel–Haenszel (MH) random‐effects. Heterogeneity: χ2/Cochran's Q (test for between‐study differences; df = number of studies minus 1), I 2 (percentage of total variability due to heterogeneity), τ2 (between‐study variance on the log‐RR scale). Overall effect: Z test with two‐sided p value. The x‐axis is logarithmic; RR = 1.0 indicates no effect; RR < 1.0 favors intervention, RR > 1.0 favors control. A plain‐language guide to the meta‐analytic terms is available in Supporting Information.
+
+---
+
+5. ICU vs. Non-ICU Delirium
+
+
+Epidemiology
+
+
+Delirium prevalence is substantially higher in the ICU (31–81%, higher with mechanical ventilation) compared to general wards (11–35%).[37][38] A 2025 meta-analysis (213 studies, 183,285 patients) found pooled ICU delirium prevalence of 35.7% and incidence of 28.8%.[38] Hypoactive delirium is the most common subtype across all settings, representing ~75% of cases.[1]
+
+Key Differences
+
+
+A direct comparison study (Canet et al., 2019; 100 ward vs. 100 ICU patients) revealed that ward delirium patients were older (median 84 vs. 65 years), more likely to have pre-existing dementia (38% vs. 2%), and more likely to have persistent delirium at discharge (66% vs. 17%).[39] ICU delirium patients were more likely to have undergone surgery (62% vs. 24%) and to recover.[39]
+
+
+
+Outcomes
+
+
+ICU delirium is associated with higher in-hospital mortality (RR 2.19, 95% CI 1.78–2.70) and long-term cognitive decline equivalent to mild Alzheimer's-type dementia, with delirium duration being the most potent risk factor.[40][41] In non-ICU settings, delirium independently predicts death (OR 2.0), institutionalization (OR 2.4), and incident dementia (OR 12.5).[1] A large cohort study (55,211 matched pairs) found delirium is an independent risk factor for incident dementia (subdistribution HR 3.00, 95% CI 2.91–3.10), with cumulative dementia incidence of 31% by 5 years after a delirium episode.[42]
+
+The conceptual framework from Reade & Finfer illustrating the bidirectional relationships between pain, agitation, and delirium in the ICU underpins the integrated management approach of the PADIS guidelines.
+
+Figure 1 Causes and Interactions of Pain, Agitation, and Delirium.
+
+---
+
+6. Alcohol and Benzodiazepine Withdrawal Mimics
+
+
+Alcohol Withdrawal Delirium (Delirium Tremens)
+
+
+Delirium tremens typically begins 48–72 hours after the last drink and lasts 1–8 days (usually 2–3 days).[44][45] It occurs in 3–5% of patients hospitalized for alcohol withdrawal, with 1–4% mortality.[44] Key features include severe confusion, predominantly visual hallucinations, agitation, and prominent autonomic hyperactivity (tachycardia, hypertension, diaphoresis, fever) that distinguishes it from other delirium etiologies.[44][45] Predictors include CIWA-Ar scores >15 (especially with SBP >150 or pulse >100), recent withdrawal seizures, and prior withdrawal delirium.[44] The ASAM guideline emphasizes that a detailed neurological and medical examination should be conducted to rule out other common causes of delirium regardless of the apparent etiology.[46] Benzodiazepines are first-line treatment; symptom-triggered dosing reduces total benzodiazepine dose and duration.[45]
+
+Benzodiazepine Withdrawal Delirium
+
+
+Benzodiazepine withdrawal can produce a life-threatening delirium clinically similar to alcohol withdrawal, given the shared GABAergic mechanism.[9] A systematic review of 24 published cases found onset 12 hours to 13 days after dose changes, with disorientation, cognitive dysfunction, agitation, hallucinations, and persecutory delusions, typically hyperactive in nature.[47] Critically, delirium most often occurred due to tapering or abrupt discontinuation by inpatient healthcare teams, highlighting the importance of medication reconciliation on admission.[47] Benzodiazepine reinitiation led to complete symptom resolution in 22 of 24 cases.[47] Severe withdrawal can occur with as little as 15 mg diazepam equivalent daily for several months.[9]
+
+Key Differentiating Features
+
+
+Both alcohol and benzodiazepine withdrawal delirium feature prominent autonomic hyperactivity that is typically more pronounced than in other forms of delirium. The temporal relationship to substance cessation/reduction and the presence of autonomic signs are the primary distinguishing features. Clinicians should not rule out co-occurring disease or simultaneous withdrawal from other substances.[46]
+
+---
+
+7. Catatonia vs. Delirium
+
+
+The Overlap Problem
+
+
+Delirium and catatonia frequently co-occur despite the DSM-5-TR precluding a catatonia diagnosis in the presence of delirium. In a prospective study of 136 critically ill patients, 43% had delirium alone, 3% had catatonia alone, and 31% met criteria for both.[48] Among 120 medical inpatients with a prior delirium diagnosis, 26% were positive for both conditions.[49] The ICD-11, unlike DSM-5-TR, allows catatonia to overlap with and coincide with delirium.[47] The APA Resource Document on Catatonia (2025) explicitly states that "catatonia can overlap with and coincide with delirium".[47]
+
+Key Distinguishing Features
+
+
+
+
+Diagnostic Approach
+
+
+The Bush-Francis Catatonia Rating Scale (BFCRS) is the most widely used instrument; a score ≥2 on the 14 screening items is considered positive.[47][50] In critically ill patients, a higher threshold of ≥4 BFCRS screening items was both 91% sensitive and 91% specific for DSM-5 catatonia.[48] The lorazepam challenge test (2 mg IV; ≥50% reduction on BFCRS = positive) is the typical confirmatory step, with overall response rate of 77% in a systematic review.[50] However, lorazepam response differs markedly between pure catatonia (60% positive) and catatonia-delirium overlap (11% positive), complicating both diagnosis and treatment.[49] An EEG revealing diffuse slowing makes concurrent delirium with catatonia more likely.[51]
+
+---
+
+8. Dementia vs. Delirium
+
+
+Key Distinctions
+
+
+
+
+The cornerstone of differentiation is determining the patient's baseline mental status and the acuity of any changes.[3] If uncertain, mental status changes should be treated as delirium until proven otherwise.[52]
+
+Delirium Superimposed on Dementia (DSD)
+
+
+DSD is extremely common: pooled prevalence is 48.9% among hospitalized older adults with dementia.[53] Dementia is the leading risk factor for delirium, consistently increasing risk by 2–5 times; two-thirds of delirium cases occur in patients with dementia.[52][54] Conversely, delirium is an independent risk factor for incident dementia (subdistribution HR 3.00).[42] Patients with DSD have longer hospitalization, worse cognitive and functional outcomes, and higher mortality compared to patients with dementia alone.[53] Inattention, altered levels of arousal, and motor dysfunction may help distinguish DSD from dementia alone.[52]
+
+---
+
+9. Resident Delirium Algorithm
+
+
+Step 1: Screen
+
+
+- All settings: Use 4AT (no training required, <2 min) for initial screening
+
+- ICU: Use CAM-ICU or ICDSC per SCCM PADIS guidelines
+
+- If positive: Confirm with 3D-CAM or full CAM with cognitive testing
+
+- Track severity: DRS-R-98 for longitudinal monitoring
+
+Step 2: Identify and Treat Underlying Causes (DELIRIUM mnemonic)
+
+
+- Drugs (anticholinergics, benzodiazepines, opioids, steroids — review and reconcile)
+
+- Electrolytes (Na⁺, Ca²⁺, glucose, renal/hepatic function)
+
+- Lack of sleep (implement sleep hygiene protocol)
+
+- Infection (UA, CXR, blood cultures, COVID/flu)
+
+- Retention (urinary retention, constipation — remove catheters)
+
+- Immobility (mobilize early, remove restraints)
+
+- Underhydration/Undernutrition (IV fluids, oral intake, nutrition consult)
+
+- Metabolic (thyroid, B₁₂, ammonia, hypoxia)
+
+Step 3: Rule Out Mimics
+
+
+- Alcohol/BZD withdrawal: Temporal relationship to cessation? Autonomic hyperactivity? → CIWA-Ar, benzodiazepine treatment
+
+- Catatonia: Motor signs (posturing, waxy flexibility, mutism)? → BFCRS screen (≥2 positive); if positive → lorazepam challenge (2 mg IV); EEG if diagnostic uncertainty
+
+- Dementia: Acute change from baseline? Inattention? Fluctuating consciousness? → If uncertain, treat as delirium until proven otherwise
+
+- Seizures/NCSE: Consider EEG if unexplained altered mental status
+
+Step 4: Implement Nonpharmacologic Bundle (ALL patients)
+
+
+- See Nonpharmacologic Bundle Checklist below
+
+Step 5: Pharmacologic Management (ONLY if needed)
+
+
+- Indication: Severe agitation, hallucinations, or distress posing safety risk AND refractory to nonpharmacologic measures
+
+- First-line: Haloperidol 0.5–1 mg PO/IM/IV q4–6h PRN (max 5 mg/day in elderly)
+
+- Alternative: Quetiapine 12.5–25 mg PO q12h (preferred if EPS risk, Parkinson's, Lewy body)
+
+- ICU with agitation precluding extubation: Dexmedetomidine infusion (0.2–0.7 mcg/kg/hr)
+
+- Alcohol/BZD withdrawal: Benzodiazepines (symptom-triggered dosing)
+
+- Catatonia: Lorazepam 1–2 mg IV/IM q4–8h; escalate to ECT if refractory
+
+- Palliative care: Avoid antipsychotics (evidence of harm); prioritize comfort measures
+
+- Always: Plan for discontinuation; do not continue antipsychotics at discharge without clear indication
+
+Step 6: Monitor and Reassess
+
+
+- Screen q8–12h with 4AT or CAM-ICU
+
+- Track severity with DRS-R-98 if persistent
+
+- Monitor QTc if using antipsychotics (ECG at baseline; repeat if dose >5 mg haloperidol or QTc >500 ms)
+
+- Reassess for new precipitants daily
+
+- Red flags for escalation: new focal neurologic signs, fever >38.5°C, seizures, NMS features (rigidity + fever + autonomic instability)
+
+---
+
+10. Medication Table
+
+
+
+
+---
+
+11. Nonpharmacologic Bundle Checklist
+
+
+Based on NICE CG103, HELP, and ABCDEF bundle evidence:[2][9]
+
+✅ Reorientation & Cognitive Stimulation (OR 0.32 and 0.45 respectively)[9]
+
+- Introduce yourself and explain the situation at each encounter
+
+- Provide clock, calendar, and familiar objects from home
+
+- Engage in cognitively stimulating activities (conversation, reminiscence, word games)
+
+- Minimize room/bed changes; maintain consistent care team
+
+✅ Sleep Hygiene (OR 0.25)[9]
+
+- Reduce nighttime noise and light (earplugs, eye masks)
+
+- Cluster care activities to avoid nighttime interruptions
+
+- Avoid nighttime medications when possible
+
+- Promote daytime wakefulness (open blinds, encourage activity)
+
+- Consider melatonin 3–5 mg PO qHS
+
+✅ Early Mobility
+
+- Mobilize within 24 hours of admission (or as soon as medically safe)
+
+- Physical therapy consult for high-risk patients
+
+- Minimize physical restraints and tethers (catheters, lines)
+
+- Encourage sitting in chair for meals
+
+✅ Sensory Optimization
+
+- Ensure glasses and hearing aids are available and in use
+
+- Adequate room lighting during daytime
+
+- Minimize unnecessary noise
+
+✅ Hydration, Nutrition & Bowel Care
+
+- Monitor fluid intake; encourage oral fluids
+
+- Assess for dehydration daily (mucous membranes, urine output)
+
+- Nutritional assessment; assisted feeding if needed; ensure dentures
+
+- Daily bowel assessment; prevent and treat constipation
+
+✅ Pain Management
+
+- Assess pain regularly (verbal or behavioral scale)
+
+- Scheduled non-opioid analgesia (acetaminophen) when appropriate
+
+- Minimize opioids; avoid meperidine
+
+✅ Medication Review
+
+- Review and reconcile all medications on admission
+
+- Minimize anticholinergics, benzodiazepines, and sedative-hypnotics
+
+- Identify and address benzodiazepine/alcohol dependence (do not abruptly discontinue)
+
+✅ Infection & Hypoxia Surveillance
+
+- Monitor for signs of infection; remove unnecessary catheters
+
+- Monitor oxygen saturation; treat hypoxia
+
+✅ Family Engagement
+
+- Encourage family presence and participation in care
+
+- Educate family about delirium (what it is, how to help)
+
+- Involve family in reorientation and cognitive stimulation
+
+---
+
+12. Guideline Summary
+
+
+
+
+---
+
+13. Top 15 References for the Psychiatry Resident
+
+
+
+
+---
+
+14. Key Takeaways for the Psychiatry Resident
+
+
+1. Screen systematically: Use the 4AT for rapid screening (no training needed) and the 3D-CAM or full CAM for confirmation. In the ICU, use CAM-ICU.
+
+2. Prevention works; drugs don't: Multicomponent nonpharmacologic bundles reduce delirium by ~50%. No pharmacologic agent reliably prevents or treats delirium.
+
+3. Always look for the cause: Delirium is a symptom, not a diagnosis. The consult should focus on identifying and treating precipitants (infection, medications, metabolic derangements, pain, constipation, urinary retention).
+
+4. Think about withdrawal: Always reconcile home medications on admission. Abrupt benzodiazepine discontinuation by inpatient teams is a common and preventable cause of delirium.
+
+5. Think about catatonia: Screen with BFCRS in any patient with motor abnormalities, mutism, or staring. Catatonia co-occurs with delirium in ~30% of critically ill patients. A lorazepam challenge can be both diagnostic and therapeutic — but response rates are lower in catatonia-delirium overlap.
+
+6. Antipsychotics are for safety, not for cure: Use only for severe agitation or distress posing safety risks, at the lowest effective dose, for the shortest duration. Always plan for discontinuation. Never continue at discharge without a clear, documented indication.
+
+7. Dementia is the #1 risk factor: Two-thirds of delirium occurs in patients with dementia. If uncertain whether the presentation is delirium or dementia, treat as delirium until proven otherwise.
+
+8. Delirium has lasting consequences: It independently predicts incident dementia (HR 3.0), institutionalization, and death. Communicate this to patients and families.
+
+---
+
+Would you like to explore the emerging evidence on orexin receptor antagonists (suvorexant, lemborexant) for delirium prevention, which represent a potentially practice-changing pharmacologic approach with early positive signals?
+
+References
+Delirium in Hospitalized Older Adults. Marcantonio ER. The New England Journal of Medicine. 2017;377(15):1456-1466. doi:10.1056/NEJMcp1605501.
+Does This Patient Have Delirium?Value of Bedside Instruments. Wong CL, Holroyd-Leduc J, Simel DL, Straus SE. JAMA. 2010;304(7):779-86. doi:10.1001/jama.2010.1182.
+Delirium in Older Persons: Advances in Diagnosis and Treatment. Oh ES, Fong TG, Hshieh TT, Inouye SK. JAMA. 2017;318(12):1161-1174. doi:10.1001/jama.2017.12067.
+Rehospitalization and the Association of Postoperative Delirium With Cognitive Decline in Older Adults. Hshieh TT, Kunicki ZJ, Fong TG, et al. JAMA Internal Medicine. 2026;:2850105. doi:10.1001/jamainternmed.2026.1910.
+The Confusion Assessment Method: A Systematic Review of Current Usage. Wei LA, Fearing MA, Sternberg EJ, Inouye SK. Journal of the American Geriatrics Society. 2008;56(5):823-30. doi:10.1111/j.1532-5415.2008.01674.x.
+Confusion Assessment Method: A Systematic Review and Meta-Analysis of Diagnostic Accuracy. Shi Q, Warren L, Saposnik G, Macdermid JC. Neuropsychiatric Disease and Treatment. 2013;9:1359-70. doi:10.2147/NDT.S49520.
+Delirium Assessment Tools Among Hospitalized Older Adults: A Systematic Review and Metaanalysis of Diagnostic Accuracy. Lin CJ, Su IC, Huang SW, et al. Ageing Research Reviews. 2023;90:102025. doi:10.1016/j.arr.2023.102025.
+Delirium Detection in Older Acute Medical Inpatients: A Multicentre Prospective Comparative Diagnostic Test Accuracy Study of the 4AT and the Confusion Assessment Method. Shenkin SD, Fox C, Godfrey M, et al. BMC Medicine. 2019;17(1):138. doi:10.1186/s12916-019-1367-9.
+Confusion Assessment Method for the Intensive Care Unit (CAM‐ICU) for the diagnosis of delirium in adults in critical care settings. Miranda F, Gonzalez F, Plana MN, et al. The Cochrane Database of Systematic Reviews. 2023;11:CD013126. doi:10.1002/14651858.CD013126.pub2.
+The 4 'A's Test for Detecting Delirium in Acute Medical Patients: A Diagnostic Accuracy Study. MacLullich AM, Shenkin SD, Goodacre S, et al. Health Technology Assessment (Winchester, England). 2019;23(40):1-194. doi:10.3310/hta23400.
+Postoperative delirium screening tools for post‐anaesthetic adult patients in non‐intensive care units: A systematic review and meta‐analysis. Kim S, Choi E, Jung Y, Jang I. Journal of Clinical Nursing. 2023;32(9-10):1691-1704. doi:10.1111/jocn.16157.
+Best Practices Guidelines Geriatric Trauma Management. Alicia Mangram MD FACS, Jessica M. Berdeja MD, Christine S. Cocanour MD FACS FCCM, et al. American College of Surgeons (2023).
+Delirium in Mechanically Ventilated Patients: Validity and Reliability of the Confusion Assessment Method for the Intensive Care Unit (CAM-ICU). Ely EW, Inouye SK, Bernard GR, et al. JAMA. 2001;286(21):2703-10. doi:10.1001/jama.286.21.2703.
+Effect of a Modified Hospital Elder Life Program on Delirium and Length of Hospital Stay in Patients Undergoing Abdominal Surgery: A Cluster Randomized Clinical Trial. Chen CC, Li HC, Liang JT, et al. JAMA Surgery. 2017;152(9):827-834. doi:10.1001/jamasurg.2017.1083.
+The 2014 Updated Version of the Confusion Assessment Method for the Intensive Care Unit Compared to the 5th Version of the Diagnostic and Statistical Manual of Mental Disorders and Other Current Methods Used by Intensivists. Chanques G, Ely EW, Garnier O, et al. Annals of Intensive Care. 2018;8(1):33. doi:10.1186/s13613-018-0377-7.
+Diagnostic Accuracy of the CAM-ICU and ICDSC in Detecting Intensive Care Unit Delirium: A Bivariate Meta-Analysis. Chen TJ, Chung YW, Chang HR, et al. International Journal of Nursing Studies. 2021;113:103782. doi:10.1016/j.ijnurstu.2020.103782.
+Clinical Practice Guidelines for the Prevention and Management of Pain, Agitation/Sedation, Delirium, Immobility, and Sleep Disruption in Adult Patients in the ICU. Devlin JW, Skrobik Y, Gélinas C, et al. Critical Care Medicine. 2018;46(9):e825-e873. doi:10.1097/CCM.0000000000003299.
+Optimizing Agreement Between Bedside Nurse-Documented and Trained Researcher Delirium Assessments in the ICU. Toth KM, Aghababa Z, Kennedy JN, et al. Critical Care Medicine. 2025;:00003246-990000000-00625. doi:10.1097/CCM.0000000000006879.
+Diagnostic Accuracy of the 4AT for Delirium Detection in Older Adults: Systematic Review and Meta-Analysis. Tieges Z, Maclullich AMJ, Anand A, et al. Age and Ageing. 2021;50(3):733-743. doi:10.1093/ageing/afaa224.
+Diagnostic Test Accuracy of the 4AT for Delirium Detection: A Systematic Review and Meta-Analysis. Jeong E, Park J, Lee J. International Journal of Environmental Research and Public Health. 2020;17(20):E7515. doi:10.3390/ijerph17207515.
+Delirium Detection in the Emergency Department: A Diagnostic Accuracy Meta-Analysis of History, Physical Examination, Laboratory Tests, and Screening Instruments. Carpenter CR, Lee S, Kennedy M, et al. Academic Emergency Medicine : Official Journal of the Society for Academic Emergency Medicine. 2024;31(10):1014-1036. doi:10.1111/acem.14935.
+Diagnostic Test Accuracies of 4AT Items Are Consistent Across the Range of Baseline Cognition: Results From Two Prospective Studies. Hogan P, Cheston H, Dunne O, et al. Age and Ageing. 2026;55(6):afag182. doi:10.1093/ageing/afag182.
+Diagnosing Delirium in Older Emergency Department Patients: Validity and Reliability of the Delirium Triage Screen and the Brief Confusion Assessment Method. Han JH, Wilson A, Vasilevskis EE, et al. Annals of Emergency Medicine. 2013;62(5):457-465. doi:10.1016/j.annemergmed.2013.05.003.
+A Quick and Easy Delirium Assessment for Nonphysician Research Personnel. Han JH, Wilson A, Graves AJ, et al. The American Journal of Emergency Medicine. 2016;34(6):1031-6. doi:10.1016/j.ajem.2016.02.069.
+Validation of the Brief Confusion Assessment Method for Screening Delirium in Elderly Medical Patients in a German Emergency Department. Baten V, Busch HJ, Busche C, et al. Academic Emergency Medicine : Official Journal of the Society for Academic Emergency Medicine. 2018;25(11):1251-1262. doi:10.1111/acem.13449.
+Evaluation of Delirium Screening Tools in Geriatric Medical Inpatients: A Diagnostic Test Accuracy Study. Hendry K, Quinn TJ, Evans J, et al. Age and Ageing. 2016;45(6):832-837. doi:10.1093/ageing/afw130.
+Effect of Haloperidol on Survival Among Critically Ill Adults With a High Risk of Delirium: The REDUCE Randomized Clinical Trial. van den Boogaard M, Slooter AJC, Brüggemann RJM, et al. JAMA. 2018;319(7):680-690. doi:10.1001/jama.2018.0160.
+Efficacy of Oral Risperidone, Haloperidol, or Placebo for Symptoms of Delirium Among Patients in Palliative Care: A Randomized Clinical Trial. Agar MR, Lawlor PG, Quinn S, et al. JAMA Internal Medicine. 2017;177(1):34-42. doi:10.1001/jamainternmed.2016.7491.
+Assessment of Instruments for Measurement of Delirium Severity: A Systematic Review. Jones RN, Cizginer S, Pavlech L, et al. JAMA Internal Medicine. 2019;179(2):231-239. doi:10.1001/jamainternmed.2018.6975.
+Validation of the Delirium Rating Scale-Revised-98: Comparison With the Delirium Rating Scale and the Cognitive Test for Delirium. Trzepacz PT, Mittal D, Torres R, et al. The Journal of Neuropsychiatry and Clinical Neurosciences. 2001;13(2):229-42. doi:10.1176/jnp.13.2.229.
+Portuguese Version of the Delirium Rating Scale-Revised-98: Reliability and Validity. de Negreiros DP, da Silva Meleiro AM, Furlanetto LM, Trzepacz PT. International Journal of Geriatric Psychiatry. 2008;23(5):472-7. doi:10.1002/gps.1906.
+Chinese Version of the Delirium Rating Scale-Revised-98: Reliability and Validity. Huang MC, Lee CH, Lai YC, et al. Comprehensive Psychiatry. 2009 Jan-Feb;50(1):81-5. doi:10.1016/j.comppsych.2008.05.011.
+The Validity and Applicability of the Revised Delirium Rating Scale (DRS-R98) for Delirium Severity Assessment in a Critical Care Setting. Almuhairi ES, Badejo M, Peer A, Pitkanen M, McKenzie CA. Journal of Intensive Care Medicine. 2023;:8850666231199986. doi:10.1177/08850666231199986.
+Fast, Systematic, and Continuous Delirium Assessment in Hospitalized Patients: The Nursing Delirium Screening Scale. Gaudreau JD, Gagnon P, Harel F, Tremblay A, Roy MA. Journal of Pain and Symptom Management. 2005;29(4):368-75. doi:10.1016/j.jpainsymman.2004.07.009.
+Different Assessment Tools for Intensive Care Unit Delirium: Which Score to Use?. Luetz A, Heymann A, Radtke FM, et al. Critical Care Medicine. 2010;38(2):409-18. doi:10.1097/CCM.0b013e3181cabb42.
+Pharmacologic Modulation of Circadian Rhythms for Delirium Prevention: An Age‐Stratified Systematic Review and Meta‐Analysis. de Oliveira HM, Gallo Ruelas M, Parker T, et al. Journal of the American Geriatrics Society. 2026;74(5):1439-1449. doi:10.1111/jgs.70305.
+Detecting Delirium in Elderly Medical Emergency Patients: Validation and Subsequent Modification of the German Nursing Delirium Screening Scale. Brich J, Baten V, Wußmann J, et al. Internal and Emergency Medicine. 2019;14(5):767-776. doi:10.1007/s11739-018-1989-5.
+Evaluation of Two Delirium Screening Tools for Detecting Post-Operative Delirium in the Elderly. Neufeld KJ, Leoutsakos JS, Sieber FE, et al. British Journal of Anaesthesia. 2013;111(4):612-8. doi:10.1093/bja/aet167.
+3d-Cam: Derivation and Validation of a 3-Minute Diagnostic Interview for CAM-defined Delirium: A Cross-Sectional Diagnostic Test Study. Marcantonio ER, Ngo LH, O'Connor M, et al. Annals of Internal Medicine. 2014;161(8):554-61. doi:10.7326/M14-0865.
+Diagnostic Accuracy of the 3-Minute Diagnostic Interview for Confusion Assessment Method-Defined Delirium in Delirium Detection: A Systematic Review and Meta-Analysis. Ma R, Zhao J, Li C, et al. Age and Ageing. 2023;52(5):afad074. doi:10.1093/ageing/afad074.
+Detection of Delirium in Hospitalized Older General Medicine Patients: A Comparison of the 3d-Cam and CAM-ICU. Kuczmarska A, Ngo LH, Guess J, et al. Journal of General Internal Medicine. 2016;31(3):297-303. doi:10.1007/s11606-015-3514-0.
+Validation of Two Screening Tools for Detecting Delirium in Older Patients in the Post-Anaesthetic Care Unit: A Diagnostic Test Accuracy Study. Aldwikat RK, Manias E, Holmes A, Tomlinson E, Nicholson P. International Journal of Environmental Research and Public Health. 2022;19(23):16020. doi:10.3390/ijerph192316020.
+Sedation and Delirium in the Intensive Care Unit. Reade MC, Finfer S. The New England Journal of Medicine. 2014;370(5):444-54. doi:10.1056/NEJMra1208705.
+A Nurse-Administered 3-Minute Diagnostic Interview for CAM-defined Delirium (3d-Cam Chinese Version) in Hospitalized Elderly Patients: A Validation Study. Wang J, Lu S, Huang Y, et al. International Journal of Nursing Studies. 2020;110:103701. doi:10.1016/j.ijnurstu.2020.103701.
+Evaluation of the 3-Minute Diagnostic Confusion Assessment Method for Identification of Postoperative Delirium in Older Patients. Oberhaus J, Wang W, Mickle AM, et al. JAMA Network Open. 2021;4(12):e2137267. doi:10.1001/jamanetworkopen.2021.37267.
+Delirium Detection Tools Show Varying Completion Rates and Positive Score Rates When Used at Scale in Routine Practice in General Hospital Settings: A Systematic Review. Penfold RS, Squires C, Angus A, et al. Journal of the American Geriatrics Society. 2024;72(5):1508-1524. doi:10.1111/jgs.18751.
+Catatonia. Heckers S, Walther S. The New England Journal of Medicine. 2023;389(19):1797-1802. doi:10.1056/NEJMra2116304.
+Clinical Reasoning: A 17-Year-Old Adolescent Boy With New Altered Mental Status in the Pediatric Intensive Care Unit. Ohman RT, Atchison C, Patel ND, Killien EY. Neurology. 2024;103(3):e209709. doi:10.1212/WNL.0000000000209709.
+Diagnostic and Statistical Manual of Mental Disorders. Dilip V. Jeste, Jeffrey A. Lieberman, David Fassler, et al. American Psychiatric Association (2022).
+Clinical EEG Slowing Correlates With Delirium Severity and Predicts Poor Clinical Outcomes. Kimchi EY, Neelagiri A, Whitt W, et al. Neurology. 2019;93(13):e1260-e1271. doi:10.1212/WNL.0000000000008164.
+Electrographic Features of Catatonia With or Without Comorbid Delirium. Luccarelli J, Smith JR, Turley N, et al. The Journal of Neuropsychiatry and Clinical Neurosciences. 2025;:appineuropsych20240215. doi:10.1176/appi.neuropsych.20240215.
+Resource Document on Catatonia. Jo Ellen Wilson, Mark A. Oldham, Andrew Francis, et al. American Psychiatric Association (2025).
+Resource Document on Acute Neuropsychiatric Sequelae of COVID-19 Infection. Scott Beach, Nadia Cacodcar, Erica Baller, Jon Levenson. American Psychiatric Association (2023).
+Delirium and Catatonia in Critically Ill Patients: The Delirium and Catatonia Prospective Cohort Investigation. Wilson JE, Carlson R, Duggan MC, et al. Critical Care Medicine. 2017;45(11):1837-1844. doi:10.1097/CCM.0000000000002642.
+Catatonia and Delirium: Assessment of Comorbidity, Prevalence, and Therapeutic Response in Medically Ill Inpatients From a University Hospital. Appiani FJ, Duarte JM, Sauré M, et al. Journal of Clinical Psychopharmacology. 2023 Jan-Feb 01;43(1):55-59. doi:10.1097/JCP.0000000000001621.
+
+Tool | Setting | Time | Sensitivity | Specificity | Training | Best Use
+CAM | General medical | ~5 min | 82–94% (trained) | 89–99% | Yes | Diagnosis (with cognitive testing)
+CAM-ICU | ICU | ~2 min | 78% | 95% | Yes | ICU screening (intubated patients)
+4AT | All settings | <2 min | 76–88% | 88–94% | No | Rapid screening
+3D-CAM | General medical | ~3 min | 92% | 95% | Yes | Structured screening/diagnosis
+DRS-R-98 | C-L psychiatry | 20–30 min | 89–100% | 85–100% | Yes | Severity tracking, research
+Nu-DESC | Nursing/periop | ~1 min | 66–86% | 80–91% | Minimal | Nurse-based observation
+NICE Domain | Specific Interventions
+1. Cognitive impairment/disorientation | Reorientation, clocks, calendars, familiar objects, cognitive stimulation
+2. Dehydration/constipation | Fluid intake monitoring, laxatives, bowel care protocols
+3. Hypoxia | Oxygen saturation monitoring, supplemental O₂ as needed
+4. Infection | Early identification and treatment, catheter removal
+5. Immobility/limited mobility | Early mobilization, physical therapy, minimize restraints
+6. Medications | Review polypharmacy, minimize anticholinergics/sedatives/opioids
+7. Pain | Regular pain assessment, scheduled analgesia
+8. Poor nutrition | Nutritional assessment, assisted feeding, dentures
+9. Sensory impairment | Provide glasses, hearing aids, adequate lighting
+10. Sleep disturbance | Noise/light reduction, clustering care, avoid nighttime medications
+Feature | ICU Delirium | Non-ICU Delirium
+Prevalence | 31–81% | 11–35%
+Typical patient | Younger (~65 yr), acutely ill | Older (~84 yr), often with dementia
+Key modifiable risk factors | Benzodiazepines, deep sedation, blood transfusion | Polypharmacy, anticholinergics, dehydration, urinary catheters
+Screening tools | CAM-ICU, ICDSC | CAM, 3D-CAM, 4AT
+Management framework | ABCDEF bundle | HELP; NICE multicomponent
+Sedation strategy | Dexmedetomidine over benzodiazepines | Not applicable
+Persistence at discharge | 17% | 66%
+Long-term cognitive impact | Duration predicts 1-year cognitive dysfunction (BRAIN-ICU) | Associated with incident dementia (OR 12.5)
+Feature | Delirium | Catatonia
+Core disturbance | Attention and awareness | Psychomotor function
+Consciousness | Fluctuating, reduced | Typically preserved (pure form)
+Motor signs | Nonspecific agitation or retardation | Waxy flexibility, catalepsy, posturing, stereotypies, echophenomena
+EEG | Diffuse slowing (OR 10.3 for theta/delta) | Normal in 72% without comorbid delirium; abnormal in 69% with co-occurring delirium
+Response to lorazepam | No improvement; may worsen | Remits in up to 90% of acute cases
+Response to antipsychotics | Uncertain benefit | May worsen (risk of NMS)
+Feature | Delirium | Dementia
+Onset | Abrupt (hours to days) | Insidious (months to years)
+Duration | Hours to days (can be prolonged) | Months to years
+Attention | Reduced — hallmark feature, occurs early | Normal except in severe dementia
+Consciousness | Fluctuating; reduced level | Generally intact
+Course | Fluctuating | Progressive
+Reversibility | Usually reversible | Usually irreversible
+Cause | Underlying medical condition, substance, or drug | Underlying neurological process
+Medication | Dose | Route | Frequency | Key Evidence | Cautions
+Haloperidol | 0.5–2 mg (elderly: 0.5–1 mg) | PO/IM/IV | q4–6h PRN | MIND-USA, AID-ICU: no benefit on delirium duration[1], [2]; possible mortality benefit (Bayesian)[3]; reduces rescue BZD use[4] | QTc prolongation (monitor if >5 mg); EPS; FDA black box in dementia; not FDA-approved IV
+Quetiapine | 12.5–50 mg | PO | q12h–q8h | Small RCT: shorter time to resolution (1.0 vs 4.5 days)[5]; meta-analysis for prophylaxis: RR 0.61[6] | Sedation, orthostatic hypotension; preferred in Parkinson's/Lewy body
+Olanzapine | 2.5–5 mg | PO/IM | q12–24h | Limited treatment data; NMA for prevention: OR 0.25 in surgical patients[6] | Sedation, metabolic effects; avoid in dementia
+Risperidone | 0.25–0.5 mg | PO | q12h | Palliative care: worse outcomes than placebo[7]; single prevention RCT positive[8] | EPS; FDA black box in dementia
+Dexmedetomidine | 0.2–0.7 mcg/kg/hr | IV infusion | Continuous | RR 0.67 for delirium vs other sedatives (moderate certainty)[9]; SCCM conditional recommendation[8] | Bradycardia (RR 2.39), hypotension (RR 1.32); ICU only
+Melatonin | 3–5 mg | PO | qHS | RR 0.77 for delirium prevention (low certainty)[7]; optimal cumulative dose ~22 mg[7] | Generally safe; best evidence in surgical ICU
+Ramelteon | 8 mg | PO | qHS | Included in sleep-wake agent meta-analyses; RR 0.60 (low certainty)[10] | Minimal side effects
+Lorazepam (for catatonia) | 1–2 mg | IV/IM | q4–8h | 77% response rate in catatonia[11]; 11% response in catatonia-delirium overlap[12] | Respiratory depression; may worsen delirium if not catatonia
+Lorazepam (for withdrawal) | 2–4 mg | IV/PO | Symptom-triggered (CIWA-Ar) | First-line for alcohol/BZD withdrawal delirium[13] | Respiratory depression; oversedation
+Guideline | Year | Key Recommendations
+NICE CG103 | 2010 | Multicomponent intervention targeting 10 risk factor domains; antipsychotics only if non-pharmacologic measures fail and patient at risk[1]
+SCCM PADIS | 2018 | CAM-ICU/ICDSC for screening; multicomponent nonpharmacologic prevention; against routine antipsychotics; dexmedetomidine over benzodiazepines for sedation[2]
+SCCM PADIS Update | 2025 | Dexmedetomidine over propofol; melatonin for sleep; unable to issue recommendation on antipsychotics for treatment[3]
+AGS Beers Criteria | 2023 | Avoid antipsychotics except FDA-approved indications; may consider short-term use (hours to days) for severe behavioral disturbances[4]
+APA Catatonia Resource Document | 2025 | Catatonia can co-occur with delirium; BFCRS ≥4 in ICU; lorazepam challenge for diagnosis[5]
+# | Citation | Why It Matters
+1 | Marcantonio ER. Delirium in Hospitalized Older Adults. NEJM 2017 | Definitive clinical review; HELP model; risk factor framework
+2 | Oh ES et al. Delirium in Older Persons: Advances in Diagnosis and Treatment. JAMA 2017 | Comprehensive JAMA review; screening tools; prevention evidence
+3 | Devlin JW et al. SCCM PADIS Guidelines. Crit Care Med 2018 | ICU delirium management standard; ABCDEF bundle; sedation strategy
+4 | Girard TD et al. MIND-USA. NEJM 2018 | Landmark negative RCT: haloperidol/ziprasidone vs placebo in ICU delirium
+5 | Andersen-Ranberg NC et al. AID-ICU. NEJM 2022 | Largest ICU delirium treatment RCT; haloperidol mortality signal
+6 | van den Boogaard M et al. REDUCE. JAMA 2018 | Definitive negative prevention trial: prophylactic haloperidol in ICU
+7 | Agar MR et al. Palliative Care Delirium. JAMA Intern Med 2017 | Antipsychotics worsen delirium in palliative care — signal of harm
+8 | Burton JK et al. Cochrane Non-Pharmacological Interventions. 2021 | Component NMA: sleep, reorientation, cognitive stimulation drive effect
+9 | Pun BT et al. ICU Liberation Collaborative. Crit Care Med 2019 | ABCDEF bundle in 15,226 patients; dose-response relationship
+10 | Wang YY et al. t-HELP. JAMA Intern Med 2020 | Family-involved HELP RCT: NNT 5.9 for delirium prevention
+11 | Miranda F et al. Cochrane CAM-ICU. 2023 | Definitive diagnostic accuracy review of CAM-ICU
+12 | Wilson JE et al. Delirium and Catatonia in Critically Ill Patients. Crit Care Med 2017 | 31% co-occurrence; BFCRS ≥4 threshold for ICU
+13 | Heckers S, Walther S. Catatonia. NEJM 2023 | Comprehensive catatonia review; differential with delirium
+14 | Lewis K et al. Dexmedetomidine Meta-Analysis. Intensive Care Med 2022 | 77 RCTs: dexmedetomidine reduces delirium (RR 0.67)
+15 | O'Mahony R et al. NICE CG103 Synopsis. Ann Intern Med 2011 | NICE 10-domain prevention framework

@@ -1,0 +1,428 @@
+
+
+
+Electroconvulsive Therapy and Neuromodulation in Psychiatry: A Comprehensive Evidence Review
+
+
+Scope and Framing
+
+
+This review synthesizes the evidence base for ECT and neuromodulation therapies across psychiatric indications, organized for psychiatry residents preparing for clinical practice and board examinations. It covers ECT indications, technique optimization, cognitive effects, continuation/maintenance strategies, TMS, ketamine/esketamine, and emerging modalities. The focus is on landmark trials, meta-analyses, and current guideline recommendations through mid-2026.
+
+---
+
+PART I: ELECTROCONVULSIVE THERAPY
+
+
+1. ECT for Severe Major Depression
+
+
+ECT remains the most effective acute treatment for severe depression. The UK ECT Review Group (2003) meta-analysis demonstrated real ECT was significantly superior to sham ECT across 6 trials (standardized effect size −0.91, 95% CI −1.27 to −0.54), translating to a mean Hamilton Depression Rating Scale (HDRS) difference of 9.7 points.[1] ECT was also superior to pharmacotherapy across 18 trials (SES −0.80, 95% CI −1.29 to −0.29).[1] The Pagnin et al. (2004) meta-analysis confirmed ECT superiority over sham, placebo, TCAs, and MAOIs.[2]
+
+The Mutz et al. (2019) network meta-analysis — the largest comparative analysis of brain stimulation therapies (113 trials, 6,750 patients) — found bitemporal ECT had the highest odds of response versus sham (OR 8.91, 95% CI 2.57–30.91), followed by high-dose right unilateral ECT (OR 7.27, 95% CI 1.90–27.78).[3] Pooled response rates for ECT in depression range from 60–80%, with remission rates of 50–60%.[4] A large naturalistic study at Mayo Clinic (n=408) reported an 80.4% response rate and 52.7% remission rate.[1]
+
+2. Psychotic Depression
+
+
+Psychotic depression represents perhaps the strongest indication for ECT. The landmark CORE study (Petrides et al., 2001) treated 253 patients with bilateral ECT and found an overall remission rate of 87%, with psychotic depression achieving 95% remission versus 83% for nonpsychotic depression.[1] The van Diermen et al. (2018) meta-analysis of 34 studies confirmed that psychotic features independently predicted ECT remission (OR 1.47, P=0.001) and response (OR 1.69, P<0.001).[1] In late-life psychotic depression, remission rates of 68.9% versus 51.0% for nonpsychotic depression have been reported (OR 2.10, 95% CI 1.07–4.10).[1]
+
+3. Catatonia
+
+
+ECT improves 80–100% of catatonia cases, including up to 60% of patients who do not respond to benzodiazepines, according to the APA Resource Document on Catatonia (2025).[4] A systematic review and meta-analysis (Leroy et al., 2018) found a pooled improvement in catatonic symptoms with an SMD of −3.14 (95% CI −3.95 to −2.34).[4] Motor symptoms respond most rapidly, with a mean of 4.2 sessions to response.[4] The NEJM review by Heckers & Walther (2023) noted that both lorazepam and ECT lead to response in 60–100% of patients, with ECT effective after insufficient benzodiazepine response.[5] Bitemporal placement is generally preferred for catatonia, and for malignant catatonia, ECT should be started urgently.[4] Notably, no sham-controlled RCTs exist for ECT in catatonia.[4]
+
+4. Acute Mania
+
+
+A 50-year review by Mukherjee et al. (1994) found ECT associated with remission or marked improvement in 80% of manic patients.[4] The Popiolek et al. (2022) Swedish registry study (n=571) reported an 84.4% response rate, with response rates reaching 91.5% in the most severely ill patients.[6] A meta-analysis of 12 RCTs (Zhang et al., 2021; n=863) confirmed ECT plus pharmacotherapy outperformed pharmacotherapy alone (SMD −3.50, 95% CI −4.57 to −2.44).[7] ECT is no longer considered first-line for mania in contemporary guidelines but remains highly effective for pharmacotherapy-resistant or severe cases.[8]
+
+5. Schizophrenia
+
+
+The Cochrane Review (Sinclair et al., 2019) found moderate-certainty evidence that ECT plus antipsychotics yields greater response than antipsychotics alone.[9] The most compelling evidence is in clozapine-resistant schizophrenia (CRS). The landmark Petrides et al. (2015) RCT randomized 39 CRS patients to ECT plus clozapine versus clozapine alone: 50% of the ECT group met response criteria versus 0% in the clozapine-alone group.[10] A meta-analysis of 18 RCTs (Wang et al., 2018; n=1,769) confirmed ECT augmentation of clozapine was superior for response (53.6% vs. 25.4%, NNT=3).[11] However, a recent sham-controlled RCT (Melzer-Ribeiro et al., 2024; n=40) found no significant difference between ECT and sham-ECT in well-defined CRS patients with confirmed clozapine levels ≥350 ng/mL, challenging the open-label evidence.[12] NICE does not recommend ECT for schizophrenia except in catatonia.[9]
+
+6. ECT in Pregnancy
+
+
+No RCTs exist for ECT in pregnancy. A review of 339 cases (Anderson & Reti, 2009) found at least partial remission in 78% of cases with efficacy data, with 25 fetal/neonatal complications (only 11 likely ECT-related).[13] A 2024 systematic review of 130 pregnant women found most complications were low-to-moderate grade and not life-threatening.[14] The VA/DoD (2022) guideline gives a strong recommendation for ECT in pregnancy as a listed indication.[2] ECT is considered relatively safe during pregnancy with a multidisciplinary team approach, though monitoring for premature contractions is recommended.[15]
+
+7. Geriatric Depression
+
+
+The PRIDE study (Kellner et al., 2016) is the landmark trial in this population. Phase 1 treated 240 patients ≥60 years with right unilateral ultrabrief pulse ECT at 6× seizure threshold plus venlafaxine, achieving a 61.7% remission rate with a mean of 7.3 treatments.[9] A study of the oldest-old (≥85 years; n=522) found response rates of 81.2% and remission of 53.3% — actually higher than younger counterparts — with fewer adverse events.[16] Older age is an independent predictor of better ECT response (SMD 0.35, P<0.001).[1]
+
+---
+
+PART II: COGNITIVE ADVERSE EFFECTS
+
+
+Types and Time Course
+
+
+The Semkovska & McLoughlin (2010) meta-analysis (84 studies, n=2,981) provides the most comprehensive cognitive mapping. Significant decreases were found in 72% of cognitive variables at 0–3 days post-ECT, with effect sizes ranging from −1.10 to −0.21.[17] By 4–15 days, all but one variable had confidence intervals including zero, and after 15 days, 57% of variables showed improvement beyond baseline (effect sizes 0.35–0.75).[17]
+
+Autobiographical memory is the most persistent concern. A 2025 meta-analysis (9 studies, 432 patients) found ECT patients had significantly larger autobiographical memory loss than controls (SMD = 0.55, 95% CI 0.35–0.75), and results suggested lost memories are not regained at long-term follow-up.[18] Bilateral ECT produced a large effect on autobiographical memory (SMD = 0.82) compared to a small effect with right unilateral ECT (SMD = 0.32).[18]
+
+The following figure shows MoCA trajectories across five time points, demonstrating initial decline during treatment followed by recovery and improvement at 3- and 6-month follow-up.
+
+Figure 2 Change in MoCA total score and subscores. T0 = one week prior to ECT; T1 = during (before the third session); T2 = within 1 week after the index course of ECT; T3 = 3 months after index ECT course; T4 = 6 months after index ECT course; Montreal Cognitive Assessment (MoCA).
+
+Risk Factors
+
+
+The Sackeim et al. (2007) study — the first large-scale prospective naturalistic study of ECT cognitive effects (n=347) — identified key risk factors: bilateral electrode placement, sine wave stimulation (now obsolete), advancing age, lower premorbid intellectual function, and female gender.[20] Importantly, cognitive outcomes varied significantly across treatment sites, demonstrating that ECT technique drives cognitive outcomes.[20] A 10-year study (n=199) found total number of previous ECT sessions had no effect on cognitive performance, and neurofilament light chain (a biomarker for neuroaxonal damage) showed no change during ECT.[21][22]
+
+Counterintuitively, patients with low baseline MMSE (<24) actually showed significant MMSE improvement during ECT, and pretreatment cognitive impairment should not lead clinicians to withhold ECT.[23] The following figure from the CARE Network study shows that younger patients (18–29 years) had the highest rates of cognitive decline (~45%) while older patients (80+) had the highest rates of cognitive improvement (~26%).
+
+Figure 2 Percentage of people in MoCA change categories by age group.
+
+No Cumulative Brain Damage
+
+
+A Danish registry study (n=168,015) found ECT was not associated with increased risk of incident dementia.[4] Subjective memory complaints correlate more with mood state than objective neuropsychological performance.[25]
+
+---
+
+PART III: ELECTRODE PLACEMENT AND TECHNIQUE
+
+
+Right Unilateral vs. Bitemporal
+
+
+The Sackeim et al. (2000) dose-response RCT established that right unilateral (RUL) ECT requires 5–6× seizure threshold to match bilateral ECT efficacy.[26] The Kolshus et al. (2017) meta-analysis (7 RCTs, n=792) comparing high-dose (>5× ST) RUL versus moderate-dose bitemporal ECT found no difference in efficacy (Hedges's g = −0.03) but significant cognitive advantages for RUL: faster reorientation (mean difference −8.28 min) and less retrograde autobiographical memory loss (Hedges's g = −0.46).[27] The EFFECT-Dep trial (n=138) confirmed noninferiority of twice-weekly high-dose RUL to bitemporal ECT.[28]
+
+Ultrabrief vs. Brief Pulse
+
+
+Ultrabrief pulse (UBP) ECT offers cognitive advantages but potentially at the cost of reduced efficacy. The Tor et al. (2015) meta-analysis found brief pulse was slightly more efficacious (SMD = 0.25) but caused significantly more cognitive side effects across all domains.[29] However, a 2025 comprehensive meta-analysis (Jelovac & McLoughlin; 30 studies, n=1,478) raised concerns: pooled UBP remission was only 32.2% (95% CI 26.1–39.0%), with 28.1% requiring switching to brief-pulse ECT.[30] The decision between UBP and brief pulse should be individualized based on the relative priority of efficacy versus cognitive sparing.
+
+Bifrontal Placement
+
+
+The Kellner et al. (2010) three-arm RCT (n=230) found all three placements (bifrontal, bitemporal, RUL) were effective, with remission rates of 61%, 64%, and 55% respectively.[31] The cognitive profile of bifrontal placement is similar to bitemporal.[4]
+
+---
+
+PART IV: CONTINUATION AND MAINTENANCE ECT
+
+
+The Relapse Problem
+
+
+Without continuation treatment, relapse rates after successful ECT are devastating. The Sackeim et al. (2001) placebo arm demonstrated an 84% relapse rate over 24 weeks.[9] Even with continuation pharmacotherapy, a meta-analysis of 32 studies found 51.1% relapse by 12 months.[32]
+
+Landmark Continuation Studies
+
+
+The Sackeim et al. (2001) RCT established the pharmacotherapy standard: nortriptyline plus lithium reduced relapse to 39% versus 60% with nortriptyline alone and 84% with placebo.[9] The CORE study (Kellner et al., 2006) was the first RCT comparing continuation ECT (C-ECT) to pharmacotherapy: C-ECT and nortriptyline plus lithium were equivalent (37.1% vs. 31.6% relapse).[33] The PRIDE Phase 2 (Kellner et al., 2016) tested combined C-ECT plus pharmacotherapy versus pharmacotherapy alone in elderly patients: the ECT plus medication group had significantly lower HDRS scores at 24 weeks (adjusted mean difference 4.2, 95% CI 1.6–6.9), with >80% sustained response over 6 months.[34] The Nordenskjöld et al. (2013) Swedish RCT extended follow-up to 1 year: 32% relapsed with C-ECT plus pharmacotherapy versus 61% with pharmacotherapy alone (HR 2.32).[35]
+
+The most recent meta-analysis (Jelovac et al., 2025; 4 RCTs, n=254) confirms that C-ECT combined with pharmacotherapy reduces the relative risk of relapse by 43% (RR 0.57, 95% CI 0.37–0.88; NNT=7).[36] A 2026 global Delphi consensus recommended pharmacotherapy with lithium plus an antidepressant for all patients, with continuation ECT via tapering for patients at high relapse risk.[37]
+
+Typical Tapering Schedule
+
+
+The most commonly used protocol: weekly × 4 weeks → biweekly × 8 weeks → monthly thereafter.[33] The PRIDE study used the STABLE algorithm (Symptom-Titrated, Algorithm-Based Longitudinal ECT): 4 fixed weekly treatments, then additional ECT only as needed based on symptom monitoring.[34] Cognitive safety of C/M-ECT has been confirmed across multiple studies, with no detectable adverse cognitive effects compared to pharmacotherapy alone at 6 months.[38][39]
+
+---
+
+PART V: TRANSCRANIAL MAGNETIC STIMULATION
+
+
+Foundational Evidence
+
+
+The O'Reardon et al. (2007) pivotal trial randomized 301 medication-free patients with TRD to active or sham TMS over the left DLPFC (10 Hz, 120% motor threshold, 5 days/week for 4–6 weeks): response was 24% active versus 15% sham, remission 17% versus 8%.[40] This led to FDA clearance of the NeuroStar system in 2008.[41] Meta-analytic data across 29 RCTs show pooled OR for response of 3.3 (NNT=6) and for remission of 3.3 (NNT=8).[41]
+
+Theta Burst Stimulation
+
+
+The THREE-D trial (Blumberger et al., Lancet 2018) — the largest brain stimulation trial at the time (n=414) — established that intermittent theta burst stimulation (iTBS, ~3 minutes) was noninferior to standard 10 Hz rTMS (37.5 minutes): response 49% vs. 47%, remission 32% vs. 27% (P=0.0011 for noninferiority).[42] This dramatically reduced treatment time and led to FDA clearance of iTBS. The FOUR-D trial (2022) confirmed noninferiority of bilateral TBS in older adults (≥60 years).[39]
+
+Stanford Neuromodulation Therapy (SNT/SAINT)
+
+
+The SNT protocol delivers 50 iTBS sessions over 5 days with fcMRI-guided targeting. The open-label pilot (Cole et al., AJP 2020) reported 90.5% remission.[43] The sham-controlled RCT (Cole et al., AJP 2022; n=29) found response of 71.4% versus 13.3% sham, remission 57.1% versus 0% (Cohen d = 1.4).[44] A replication RCT (Kratter et al., World Psychiatry 2026; n=48) confirmed remission of 50.0% versus 20.8% sham (P=0.035).[45] The Taylor et al. (2026) JAMA Psychiatry trial demonstrated connectivity-based targeting yielded response of 80% versus 60% with scalp-based targeting.[46] Durability remains a concern: only 33% of all participants remained in remission at 12 weeks.[47]
+
+The following figure from the Ramos et al. (2025) trial of pragmatic accelerated TBS shows the divergence in HDRS-17 scores between active and sham groups, with effects becoming most apparent after week 2.
+
+Figure 2 Change in 17-Item Hamilton Depression Rating Scale (HDRS-17) Score in the Randomized, Sham-Controlled Phase of the Study
+
+TMS vs. ECT
+
+
+ECT remains more efficacious than rTMS: meta-analyses show remission of 52% with ECT versus 33.6% with rTMS (NNT=6 favoring ECT).[49] However, ECT superiority is more apparent in psychotic depression; rTMS may be comparably effective in nonpsychotic depression.[50] TMS requires no anesthesia, has no cognitive side effects, and patients can drive themselves to treatment.[51]
+
+---
+
+PART VI: KETAMINE AND ESKETAMINE
+
+
+IV Ketamine
+
+
+Ketamine (0.5 mg/kg IV over 40 minutes) produces rapid antidepressant effects through NMDA receptor antagonism, glutamate surge, and enhanced neuroplasticity via BDNF/mTORC1 signaling.[52] Meta-analytic data show depression scores significantly reduced versus placebo with SMD 0.68 at 24 hours, with NNT for response of 3 at 1 day to 1 week.[53][54]
+
+The ELEKT-D Trial
+
+
+The ELEKT-D trial (Anand et al., NEJM 2023; N=403) compared IV ketamine (6 infusions over 3 weeks) to ECT (~9 sessions over 3 weeks) in nonpsychotic TRD. Response was 55.4% with ketamine versus 41.2% with ECT (difference 14.2 percentage points; P<0.001 for noninferiority).[55] Ketamine was noninferior to ECT, with the point estimate favoring ketamine. ECT was associated with significantly greater memory impairment (delayed recall T-score decrease: −9.7 vs. −0.9).[55] However, limitations include the open-label design, predominantly outpatient population (89%), and use of RUL rather than bilateral ECT.[55]
+
+The following figure from the ELEKT-D trial shows response rates and depression score trajectories for ketamine versus ECT.
+
+Figure 1 Response to Ketamine and ECT According to the QIDS-SR-16 and MADRS during the Initial 3-Week Treatment Phase.
+
+Esketamine (Spravato)
+
+
+Esketamine nasal spray was FDA-approved in March 2019 for TRD (with an oral antidepressant) and subsequently for MDD with acute suicidal ideation.[57] It is a Schedule III controlled substance available only through a REMS program requiring certified healthcare settings and ≥2-hour post-dose monitoring.[57] Among the TRANSFORM trials, only TRANSFORM-2 met its primary endpoint (MADRS LS mean difference −4.0, P=0.020).[58] A 2025 IPD meta-analysis of 7 RCTs (N=1,505) found esketamine plus antidepressant reduced MADRS scores versus placebo (MD −2.94, 95% CI −5.39 to −0.48), a statistically significant but small effect.[59] A 2025 meta-analysis in the American Journal of Psychiatry characterized the effect size as modest (0.15–0.23), comparable to atypical antipsychotic augmentation.[60]
+
+The SUSTAIN-1 relapse prevention trial showed continued esketamine decreased relapse risk by 51% in remitters and 70% in responders versus placebo.[61] The ESCAPE-TRD trial (Reif et al., NEJM 2023; N=676) demonstrated esketamine plus SSRI/SNRI was superior to quetiapine XR plus SSRI/SNRI for remission at week 8 (27.1% vs. 17.6%, P=0.003).[62] SUSTAIN-3 provided up to 6.6 years of open-label safety data with no new safety signals.[63]
+
+The following figure from the SUSTAIN-1 trial shows Kaplan-Meier estimates of time to relapse, demonstrating clear separation favoring continued esketamine.
+
+Figure 2 Kaplan-Meier Estimates of Time to Relapse
+
+Suicidality
+
+
+IV ketamine produces rapid anti-suicidal ideation effects (SMD −0.51 at 4 hours), but effects do not persist beyond 72 hours.[65] The ASPIRE trials showed rapid reduction in depressive symptoms with esketamine, but the between-group difference in suicidality severity was not statistically significant.[66] The FDA label states that "the effectiveness of Spravato in preventing suicide or reducing suicidal ideation or behavior has not been established".[67]
+
+---
+
+PART VII: EMERGING NEUROMODULATION
+
+
+Vagus Nerve Stimulation (VNS)
+
+
+FDA-approved for TRD in 2005 (≥4 failed trials). The RECOVER trial (N=493) missed its primary endpoint (percent time in MADRS response) but showed significant benefits on multiple secondary endpoints including quality of life and psychosocial function.[68] A 5-year registry (n=795) showed cumulative response of 67.6% with VNS versus 40.9% with treatment as usual.[69] The VA/DoD issued a "weak against" recommendation for routine use.[19]
+
+Magnetic Seizure Therapy (MST)
+
+
+The CREST-MST trial (Blumberger et al., Lancet Psychiatry 2026; N=236) — the largest randomized convulsive therapy trial ever conducted — established noninferiority of MST to ultrabrief RUL ECT for remission (22.5% vs. 27.8%), with significantly less autobiographical memory worsening (2.7% vs. 17.3%, P=0.0003).[24] MST remains investigational and not FDA-approved.
+
+The following figure from the Deng et al. (2024) trial shows comparable HDRS-24 trajectories and Kaplan-Meier remission curves for MST and ECT.
+
+Figure 3 24-Item Hamilton Depression Rating Scale (HDRS-24) Scores and Kaplan-Meier Curves for the Probability of Remission Among the Magnetic Seizure Therapy (MST) and Electroconvulsive Therapy (ECT) Groups
+
+Deep Brain Stimulation (DBS)
+
+
+DBS remains investigational for depression. The BROADEN trial (SCC target; N=90) found no significant difference versus sham at 6 months (20% vs. 17% response).[71] However, open-label data consistently show ~50% response at 6 months and sustained remission over 2–8 years.[71] Network meta-analysis identified the medial forebrain bundle as associated with the highest response rate (86%).[72] The disconnect between promising open-label and negative sham-controlled results remains a central challenge.
+
+Transcranial Direct Current Stimulation (tDCS)
+
+
+Not FDA-cleared for any psychiatric indication. The largest multicentre RCT (DepressionDC, N=150) was completely negative (MADRS change −8.2 active vs. −8.0 sham, Cohen d=0.03).[73] The most recent IPD meta-analysis (2026; n=1,246) found a small effect (d=0.24), with effect sizes shrinking in larger trials.[74]
+
+Focused Ultrasound
+
+
+Entirely investigational. Small pilot studies show promising target engagement (subcallosal cingulate, amygdala) with moderate-to-large pooled effects (Hedges' g=0.88), but no large RCTs exist.[9][75]
+
+---
+
+RESIDENT REFERRAL CRITERIA: WHEN TO REFER FOR ECT
+
+
+Urgent/emergent referral:
+
+- Catatonia unresponsive to benzodiazepines (especially malignant catatonia with autonomic instability, hyperthermia, or refusal of oral intake)[4]
+
+- Active suicidality with imminent risk requiring rapid response
+
+- Severe psychotic depression with food/fluid refusal or medical compromise
+
+- Neuroleptic malignant syndrome (overlaps with malignant catatonia)
+
+Strong indications (discuss early in treatment course):
+
+- Psychotic depression (95% remission rate with ECT)[1]
+
+- Severe MDD with failure of ≥2 adequate antidepressant trials
+
+- Severe mania refractory to pharmacotherapy
+
+- Clozapine-resistant schizophrenia (50% response with ECT augmentation)[10]
+
+- Depression in pregnancy when pharmacotherapy is inadequate or contraindicated[2]
+
+- Geriatric depression, especially with psychotic features or medical comorbidity limiting pharmacotherapy[9]
+
+Consider referral:
+
+- Patient preference for ECT
+
+- Prior positive response to ECT
+
+- Need for rapid response (medical comorbidity, severe functional impairment)
+
+- Intolerance of multiple medication trials
+
+When to refer for TMS:
+
+- MDD with failure of 1–2 adequate medication trials (optimal window)[41]
+
+- Patient preference for non-pharmacological treatment
+
+- Medication intolerance or contraindications
+
+- Pregnancy (emerging evidence supports safety)[76]
+
+When to refer for ketamine/esketamine:
+
+- TRD after multiple adequate pharmacotherapy trials[67]
+
+- Acute suicidal ideation requiring rapid symptom reduction (bridge therapy)[65]
+
+- Patients who decline or cannot access ECT
+
+---
+
+COUNSELING SCRIPT FOR ECT
+
+
+The following is a framework for informed consent discussions:
+
+What ECT is: "ECT is a medical procedure performed under general anesthesia in which a brief, controlled electrical stimulus is applied to the brain to produce a generalized seizure lasting about 30–60 seconds. The entire procedure takes about 15–20 minutes. You will be asleep and will not feel the seizure."
+
+Why it is recommended: "ECT is the most effective treatment available for severe depression [or the specific indication]. Response rates are approximately 60–80%, which is higher than any medication. For your specific condition [psychotic depression/catatonia/etc.], the response rate is even higher."
+
+Treatment course: "A typical course involves 6–12 treatments given 2–3 times per week. Most patients begin to notice improvement after 3–4 treatments. After the acute course, we will discuss a plan to prevent relapse, which may include medications, ongoing ECT at decreasing frequency, or both."
+
+Side effects: "The most common side effects are headache, muscle aches, and nausea on the day of treatment — these are usually mild and treatable. The most significant concern is memory effects. You may have difficulty remembering new information during the treatment course (this typically resolves within 2–4 weeks after the last treatment) and some difficulty recalling events from around the time of treatment. In some patients, memory for personal events from weeks to months before treatment may be affected, and some of these memories may not fully return. We use techniques — specifically, right-sided electrode placement and ultrabrief pulse width — that significantly reduce memory effects while maintaining effectiveness."
+
+What ECT does not do: "ECT does not cause brain damage. Large studies have shown no association with dementia, and brain biomarkers of injury do not change during ECT. It does not change your personality."
+
+Anesthesia and safety: "You will receive a short-acting anesthetic and a muscle relaxant. The medical risks are primarily those of brief general anesthesia. Serious complications are rare — the mortality rate is approximately 1 in 50,000–100,000 treatments, comparable to minor surgical procedures."
+
+---
+
+COMPREHENSIVE COMPARISON TABLE
+
+
+
+
+---
+
+TOP 20 REFERENCES FOR FURTHER READING
+
+
+
+
+---
+
+Would you like to explore the specific protocols and practical considerations for transitioning patients between neuromodulation modalities (e.g., from failed TMS to ECT, or from acute ECT to maintenance esketamine)?
+
+References
+Continuation Pharmacotherapy in the Prevention of Relapse Following Electroconvulsive Therapy: A Randomized Controlled Trial. Sackeim HA, Haskett RF, Mulsant BH, et al. JAMA. 2001;285(10):1299-307. doi:10.1001/jama.285.10.1299.
+Clinical Outcomes of Continuation and Maintenance Electroconvulsive Therapy. Jørgensen A, Gronemann FH, Rozing MP, Jørgensen MB, Osler M. JAMA Psychiatry. 2024;81(12):1207-1214. doi:10.1001/jamapsychiatry.2024.2360.
+Relapse Following Successful Electroconvulsive Therapy for Major Depression: A Meta-Analysis. Jelovac A, Kolshus E, McLoughlin DM. Neuropsychopharmacology : Official Publication of the American College of Neuropsychopharmacology. 2013;38(12):2467-74. doi:10.1038/npp.2013.149.
+Continuation Electroconvulsive Therapy vs Pharmacotherapy for Relapse Prevention in Major Depression: A Multisite Study From the Consortium for Research in Electroconvulsive Therapy (CORE). Kellner CH, Knapp RG, Petrides G, et al. Archives of General Psychiatry. 2006;63(12):1337-44. doi:10.1001/archpsyc.63.12.1337.
+A Randomized Controlled Trial Comparing the Memory Effects of Continuation Electroconvulsive Therapy Versus Continuation Pharmacotherapy: Results From the Consortium for Research in ECT (CORE) Study. Smith GE, Rasmussen KG, Cullum CM, et al. The Journal of Clinical Psychiatry. 2010;71(2):185-93. doi:10.4088/JCP.08m04797gre.
+A Novel Strategy for Continuation ECT in Geriatric Depression: Phase 2 of the PRIDE Study. Kellner CH, Husain MM, Knapp RG, et al. The American Journal of Psychiatry. 2016;173(11):1110-1118. doi:10.1176/appi.ajp.2016.16010118.
+Right Unilateral Ultrabrief Pulse ECT in Geriatric Depression: Phase 1 of the PRIDE Study. Kellner CH, Husain MM, Knapp RG, et al. The American Journal of Psychiatry. 2016;173(11):1101-1109. doi:10.1176/appi.ajp.2016.15081101.
+Effects of Continuation Electroconvulsive Therapy on Quality of Life in Elderly Depressed Patients: A Randomized Clinical Trial. McCall WV, Lisanby SH, Rosenquist PB, et al. Journal of Psychiatric Research. 2018;97:65-69. doi:10.1016/j.jpsychires.2017.11.001.
+Electroconvulsive Therapy. Espinoza RT, Kellner CH. The New England Journal of Medicine. 2022;386(7):667-672. doi:10.1056/NEJMra2034954.
+Longitudinal Neurocognitive Effects of Combined Electroconvulsive Therapy (ECT) and Pharmacotherapy in Major Depressive Disorder in Older Adults: Phase 2 of the PRIDE Study. Lisanby SH, McClintock SM, McCall WV, et al. The American Journal of Geriatric Psychiatry : Official Journal of the American Association for Geriatric Psychiatry. 2022;30(1):15-28. doi:10.1016/j.jagp.2021.04.006.
+Continuation Electroconvulsive Therapy With Pharmacotherapy Versus Pharmacotherapy Alone for Prevention of Relapse of Depression: A Randomized Controlled Trial. Nordenskjöld A, von Knorring L, Ljung T, et al. The Journal of ECT. 2013;29(2):86-92. doi:10.1097/YCT.0b013e318276591f.
+Pharmacological Strategies in the Prevention of Relapse After Electroconvulsive Therapy. Prudic J, Haskett RF, McCall WV, et al. The Journal of ECT. 2013;29(1):3-12. doi:10.1097/YCT.0b013e31826ea8c4.
+Electroconvulsive Therapy in the Continuation and Maintenance Treatment of Depression: Systematic Review and Meta-Analyses. Elias A, Phutane VH, Clarke S, Prudic J. The Australian and New Zealand Journal of Psychiatry. 2018;52(5):415-424. doi:10.1177/0004867417743343.
+Continuation Electroconvulsive Therapy Combined With Pharmacotherapy for Depression Relapse Prevention: A Systematic Review and Meta-Analysis. Jelovac A, Braithwaite R, Kellner CH, McLoughlin DM. Psychological Medicine. 2025;55:e251. doi:10.1017/S0033291725101608.
+Discontinuation of Continuation or Maintenance Electroconvulsive Therapy Caused by the COVID-19 Pandemic: A Naturalistic Study Investigating Relapse in Patients With Major Depressive Disorder. Van de Velde N, Geerts PJ, Tandt H, et al. The Journal of ECT. 2021;37(4):230-237. doi:10.1097/YCT.0000000000000785.
+The Effects of Maintenance Electroconvulsive Therapy on Hospitalization Rates. Kocamer Şahin Ş, Demir B, Elboğa G, Altındağ A, Elmalı E. The Journal of Nervous and Mental Disease. 2021;209(3):155-158. doi:10.1097/NMD.0000000000001278.
+Resource Document on the Reclassification of ECT Devices. American Psychiatric Association (2019).
+Neuromodulation Strategies for the Treatment of Depression. Conroy SK, Holtzheimer PE. The American Journal of Psychiatry. 2021;178(12):1082-1088. doi:10.1176/appi.ajp.2021.21101034.
+Cognitive change after electroconvulsive therapy in mood disorders measured with the Montreal Cognitive Assessment. Hebbrecht K, Giltay EJ, Birkenhäger TK, et al. Acta Psychiatrica Scandinavica. 2020;142(5):413-422. doi:10.1111/acps.13231.
+Management of Major Depressive Disorder (MDD) (2022). Rhanda Brockington DNP FNP-BC, Andrew Buelt DO, Vincent Capaldi MD MSc FAPA FACP, et al. Department of Veterans Affairs.
+A Global Delphi-Based Expert Consensus on Relapse Prevention Strategies Following Successful Electroconvulsive Therapy for Major Depressive Disorder. Rovers JJE, van Eijndhoven PFP, Abbot C, et al. The American Journal of Psychiatry. 2026;183(6):401-408. doi:10.1176/appi.ajp.20250641.
+Clinical Practice Recommendations for Continuation and Maintenance Electroconvulsive Therapy for Depression: Outcomes From a Review of the Evidence and a Consensus Workshop Held in Australia in May 2017. Gill SP, Kellner CH. The Journal of ECT. 2019;35(1):14-20. doi:10.1097/YCT.0000000000000484.
+Is Baseline Medication Resistance Associated With Potential for Relapse After Successful Remission of a Depressive Episode With ECT? Data From the Consortium for Research on Electroconvulsive Therapy (CORE). Rasmussen KG, Mueller M, Rummans TA, et al. The Journal of Clinical Psychiatry. 2009;70(2):232-7. doi:10.4088/jcp.08m04092.
+Clinical Outcomes of Electroconvulsive Therapy (ECT) for Depression in Older Old People Relative to Other Age Groups Across the Adult Life Span: A CARE Network Study. Sarma S, Zeng Y, Barreiros AR, et al. International Journal of Geriatric Psychiatry. 2024;39(8):e6133. doi:10.1002/gps.6133.
+Relapse following bitemporal and high‐dose right unilateral electroconvulsive therapy for major depression. Jelovac A, Kolshus E, McLoughlin DM. Acta Psychiatrica Scandinavica. 2021;144(3):218-229. doi:10.1111/acps.13331.
+Predictors of 6- And 12-Month Relapse After Stopping Electroconvulsive Therapy: Critical Considerations, Including Overfitting in Regression and Confounding in Follow-Up Studies. Andrade C. The Journal of Clinical Psychiatry. 2021;82(4):21f14174. doi:10.4088/JCP.21f14174.
+Clinical characteristics associated with relapse 2 years after electroconvulsive therapy for major depression. Pluijms EM, Vinther PT, Kamperman AM, Birkenhäger TK. Acta Psychiatrica Scandinavica. 2023;147(6):561-569. doi:10.1111/acps.13542.
+The Efficacy and Tolerability of Continuation and Maintenance Electroconvulsive Therapy for Depression: A Systematic Review of Randomized and Observational Studies. Rowland T, Mann R, Azeem S. The Journal of ECT. 2023;39(3):141-150. doi:10.1097/YCT.0000000000000914.
+Maintenance ECT Is Associated With Sustained Improvement in Depression Symptoms Without Adverse Cognitive Effects in a Retrospective Cohort of 100 Patients Each Receiving 50 or More ECT Treatments. Luccarelli J, McCoy TH, Seiner SJ, Henry ME. Journal of Affective Disorders. 2020;271:109-114. doi:10.1016/j.jad.2020.03.152.
+Real-World Analysis of Pharmacological Treatments to Prevent Relapse After Electroconvulsive Therapy for Major Depressive Disorder: A Nationwide Cohort Study. Kronsell A, Nordenskjöld A, Bodén R, et al. Translational Psychiatry. 2025;:10.1038/s41398-025-03746-0. doi:10.1038/s41398-025-03746-0.
+Cognitive-Behavioral Therapy as Continuation Treatment to Sustain Response After Electroconvulsive Therapy in Depression: A Randomized Controlled Trial. Brakemeier EL, Merkl A, Wilbertz G, et al. Biological Psychiatry. 2014;76(3):194-202. doi:10.1016/j.biopsych.2013.11.030.
+Multifactorial Determinants of the Neurocognitive Effects of Electroconvulsive Therapy. McClintock SM, Choi J, Deng ZD, et al. The Journal of ECT. 2014;30(2):165-76. doi:10.1097/YCT.0000000000000137.
+Objective Cognitive Performance Associated With Electroconvulsive Therapy for Depression: A Systematic Review and Meta-Analysis. Semkovska M, McLoughlin DM. Biological Psychiatry. 2010;68(6):568-77. doi:10.1016/j.biopsych.2010.06.009.
+Autobiographical Memory After Electroconvulsive Therapy: Systematic Review and Meta-Analysis. Mathiassen AB, Semkovska M, Lundsgaard CC, Gbyl K, Videbech P. The British Journal of Psychiatry : The Journal of Mental Science. 2025;:1-11. doi:10.1192/bjp.2025.2.
+Neurocognitive Effects After Brief Pulse and Ultrabrief Pulse Unilateral Electroconvulsive Therapy for Major Depression: A Review. Verwijk E, Comijs HC, Kok RM, et al. Journal of Affective Disorders. 2012;140(3):233-43. doi:10.1016/j.jad.2012.02.024.
+Current Practices of Electroconvulsive Therapy in Mental Disorders: A Systematic Review and Meta-Analysis of Short and Long-Term Cognitive Effects. Landry M, Moreno A, Patry S, Potvin S, Lemasson M. The Journal of ECT. 2021;37(2):119-127. doi:10.1097/YCT.0000000000000723.
+Long-Term Cognitive Effects of Electroconvulsive Therapy in Major Depressive Disorder: A Systematic Review and Meta-Analysis. Guo Q, Wang Y, Guo L, et al. Psychiatry Research. 2023;331:115611. doi:10.1016/j.psychres.2023.115611.
+The Cognitive Effects of Electroconvulsive Therapy in Community Settings. Sackeim HA, Prudic J, Fuller R, et al. Neuropsychopharmacology : Official Publication of the American College of Neuropsychopharmacology. 2007;32(1):244-54. doi:10.1038/sj.npp.1301180.
+A Prospective, Randomized, Double-blind Comparison of Bilateral and Right Unilateral Electroconvulsive Therapy at Different Stimulus Intensities. Sackeim HA, Prudic J, Devanand DP, et al. Archives of General Psychiatry. 2000;57(5):425-34. doi:10.1001/archpsyc.57.5.425.
+Electroconvulsive Therapy for Schizophrenia. Tharyan P, Adams CE. The Cochrane Database of Systematic Reviews. 2005;(2):CD000076. doi:10.1002/14651858.CD000076.pub2.
+Unilateral Brief-Pulse Electroconvulsive Therapy and Cognition: Effects of Electrode Placement, Stimulus Dosage and Time. Semkovska M, Keane D, Babalola O, McLoughlin DM. Journal of Psychiatric Research. 2011;45(6):770-80. doi:10.1016/j.jpsychires.2010.11.001.
+Effects of Pulse Width and Electrode Placement on the Efficacy and Cognitive Effects of Electroconvulsive Therapy. Sackeim HA, Prudic J, Nobler MS, et al. Brain Stimulation. 2008;1(2):71-83. doi:10.1016/j.brs.2008.03.001.
+Bitemporal v. High-Dose Right Unilateral Electroconvulsive Therapy for Depression: A Systematic Review and Meta-Analysis of Randomized Controlled Trials. Kolshus E, Jelovac A, McLoughlin DM. Psychological Medicine. 2017;47(3):518-530. doi:10.1017/S0033291716002737.
+Bitemporal Versus High-Dose Unilateral Twice-Weekly Electroconvulsive Therapy for Depression (EFFECT-Dep): A Pragmatic, Randomized, Non-Inferiority Trial. Semkovska M, Landau S, Dunne R, et al. The American Journal of Psychiatry. 2016;173(4):408-17. doi:10.1176/appi.ajp.2015.15030372.
+Bifrontal, Bitemporal and Right Unilateral Electrode Placement in ECT: Randomised Trial. Kellner CH, Knapp R, Husain MM, et al. The British Journal of Psychiatry : The Journal of Mental Science. 2010;196(3):226-34. doi:10.1192/bjp.bp.109.066183.
+Systematic Review and Meta-Analysis of Bifrontal Electroconvulsive Therapy Versus Bilateral and Unilateral Electroconvulsive Therapy in Depression. Dunne RA, McLoughlin DM. The World Journal of Biological Psychiatry : The Official Journal of the World Federation of Societies of Biological Psychiatry. 2012;13(4):248-58. doi:10.3109/15622975.2011.615863.
+Multicenter Randomized Controlled Trial of Bifrontal, Bitemporal, and Right Unilateral Electroconvulsive Therapy in Major Depressive Disorder. Su L, Jia Y, Liang S, et al. Psychiatry and Clinical Neurosciences. 2019;73(10):636-641. doi:10.1111/pcn.12907.
+Accelerated Theta-Burst Stimulation for Treatment-Resistant Depression: A Randomized Clinical Trial. Ramos MRF, Goerigk S, Aparecida da Silva V, et al. JAMA Psychiatry. 2025;82(5):442-450. doi:10.1001/jamapsychiatry.2025.0013.
+Neurocognitive Effects of Combined Electroconvulsive Therapy (ECT) and Venlafaxine in Geriatric Depression: Phase 1 of the PRIDE Study. Lisanby SH, McClintock SM, Alexopoulos G, et al. The American Journal of Geriatric Psychiatry : Official Journal of the American Association for Geriatric Psychiatry. 2020;28(3):304-316. doi:10.1016/j.jagp.2019.10.003.
+A Systematic Review and Meta-Analysis of Brief Versus Ultrabrief Right Unilateral Electroconvulsive Therapy for Depression. Tor PC, Bautovich A, Wang MJ, et al. The Journal of Clinical Psychiatry. 2015;76(9):e1092-8. doi:10.4088/JCP.14r09145.
+Efficacy and Cognitive Side Effects After Brief Pulse and Ultrabrief Pulse Right Unilateral Electroconvulsive Therapy for Major Depression: A Randomized, Double-Blind, Controlled Study. Spaans HP, Verwijk E, Comijs HC, et al. The Journal of Clinical Psychiatry. 2013;74(11):e1029-36. doi:10.4088/JCP.13m08538.
+Relapse and Long-Term Cognitive Performance After Brief Pulse or Ultrabrief Pulse Right Unilateral Electroconvulsive Therapy: A Multicenter Naturalistic Follow Up. Verwijk E, Spaans HP, Comijs HC, et al. Journal of Affective Disorders. 2015;184:137-44. doi:10.1016/j.jad.2015.05.022.
+A Randomized Controlled Trial of Brief and Ultrabrief Pulse Right Unilateral Electroconvulsive Therapy. Loo CK, Katalinic N, Smith DJ, et al. The International Journal of Neuropsychopharmacology. 2014;18(1):pyu045. doi:10.1093/ijnp/pyu045.
+Ultrabrief Pulse Electroconvulsive Therapy for Depression: A Systematic Review and Meta-Analysis. Jelovac A, McLoughlin DM. Molecular Psychiatry. 2025;:10.1038/s41380-025-03327-z. doi:10.1038/s41380-025-03327-z.
+Determinants of Seizure Threshold in ECT: Benzodiazepine Use, Anesthetic Dosage, and Other Factors. Boylan LS, Haskett RF, Mulsant BH, et al. The Journal of ECT. 2000;16(1):3-18. doi:10.1097/00124509-200003000-00002.
+Ketamine versus ECT for Nonpsychotic Treatment-Resistant Major Depression. Anand A, Mathew SJ, Sanacora G, et al. The New England Journal of Medicine. 2023;388(25):2315-2325. doi:10.1056/NEJMoa2302399.
+Predictors of Seizure Threshold in Right Unilateral Ultrabrief Electroconvulsive Therapy: Role of Concomitant Medications and Anaesthesia Used. Gálvez V, Hadzi-Pavlovic D, Smith D, Loo CK. Brain Stimulation. 2015 May-Jun;8(3):486-92. doi:10.1016/j.brs.2014.12.012.
+Age-Dependent Dose Increase During an Acute Electroconvulsive Therapy Series. Plemper J, Sartorius A, Karl S. The Journal of ECT. 2023;39(3):193-196. doi:10.1097/YCT.0000000000000896.
+The Clinical Relevance of Dose Titration in Electroconvulsive Therapy: A Systematic Review of the Literature. Landry M, Lafrenière S, Patry S, Potvin S, Lemasson M. Psychiatry Research. 2020;294:113497. doi:10.1016/j.psychres.2020.113497.
+Pertinence of Titration and Age-Based Dosing Methods for Electroconvulsive Therapy: An International Retrospective Multicenter Study. Lemasson M, Rochette L, Galvão F, et al. The Journal of ECT. 2018;34(4):220-226. doi:10.1097/YCT.0000000000000508.
+Psychotic Depressive Subtype and White Mater Hyperintensities Do Not Predict Cognitive Side Effects in ECT: A Systematic Review of Pretreatment Predictors. van Kessel MA, van der Vlugt JJB, Spaans HP, Murre JMJ, Verwijk E. Journal of Affective Disorders. 2020;272:340-347. doi:10.1016/j.jad.2020.03.181.
+MMSE Changes During and After ECT in Late-Life Depression: A Prospective Study. Obbels J, Vansteelandt K, Verwijk E, et al. The American Journal of Geriatric Psychiatry : Official Journal of the American Association for Geriatric Psychiatry. 2019;27(9):934-944. doi:10.1016/j.jagp.2019.04.006.
+The Role of Baseline Cognitive Function in the Neurocognitive Effects of Electroconvulsive Therapy in Depressed Elderly Patients. Dybedal GS, Tanum L, Sundet K, Bjølseth TM. The Clinical Neuropsychologist. 2015;29(4):487-508. doi:10.1080/13854046.2015.1050457.
+Efficacy of Esketamine Nasal Spray Plus Oral Antidepressant Treatment for Relapse Prevention in Patients With Treatment-Resistant Depression: A Randomized Clinical Trial. Daly EJ, Trivedi MH, Janik A, et al. JAMA Psychiatry. 2019;76(9):893-903. doi:10.1001/jamapsychiatry.2019.1189.
+Evaluation of Cumulative Cognitive Deficits From Electroconvulsive Therapy. Kirov GG, Owen L, Ballard H, et al. The British Journal of Psychiatry : The Journal of Mental Science. 2016;208(3):266-70. doi:10.1192/bjp.bp.114.158261.
+The Myth of Brain Damage: No Change of Neurofilament Light Chain During Transient Cognitive Side-Effects of ECT. Besse M, Belz M, Bartels C, et al. European Archives of Psychiatry and Clinical Neuroscience. 2024;274(5):1187-1195. doi:10.1007/s00406-023-01686-8.
+Cognitive Adverse Effects of Electroconvulsive Therapy: A Discrepancy Between Subjective and Objective Measures?. Hammershøj LG, Petersen JZ, Jensen HM, Jørgensen MB, Miskowiak KW. The Journal of ECT. 2022;38(1):30-38. doi:10.1097/YCT.0000000000000797.
+Detecting Objective and Subjective Cognitive Effects of Electroconvulsive Therapy: Intensity, Duration and Test Utility in a Large Clinical Sample. Fernie G, Bennett DM, Currie J, Perrin JS, Reid IC. Psychological Medicine. 2014;44(14):2985-94. doi:10.1017/S0033291714000658.
+Cognitive Function After Electroconvulsive Therapy for Depression: Relationship to Clinical Response. Anderson IM, McAllister-Williams RH, Downey D, Elliott R, Loo C. Psychological Medicine. 2021;51(10):1647-1656. doi:10.1017/S0033291720000379.
+Clinical Outcomes of Magnetic Seizure Therapy vs Electroconvulsive Therapy for Major Depressive Episode: A Randomized Clinical Trial. Deng ZD, Luber B, McClintock SM, et al. JAMA Psychiatry. 2024;81(3):240-249. doi:10.1001/jamapsychiatry.2023.4599.
+Efficacy and Safety of Electroconvulsive Therapy in Depressive Disorders: A Systematic Review and Meta-Analysis. UK ECT Review Group. Lancet (London, England). 2003;361(9360):799-808. doi:10.1016/S0140-6736(03)12705-5.
+Efficacy of ECT in Depression: A Meta-Analytic Review. Pagnin D, de Queiroz V, Pini S, Cassano GB. The Journal of ECT. 2004;20(1):13-20. doi:10.1097/00124509-200403000-00004.
+Comparative Efficacy and Acceptability of Non-Surgical Brain Stimulation for the Acute Treatment of Major Depressive Episodes in Adults: Systematic Review and Network Meta-Analysis. Mutz J, Vipulananthan V, Carter B, et al. BMJ (Clinical Research Ed.). 2019;364:l1079. doi:10.1136/bmj.l1079.
+Brain Stimulation and Other Biological Non-Pharmacological Interventions in Mental Disorders: An Umbrella Review. Rosson S, de Filippis R, Croatto G, et al. Neuroscience and Biobehavioral Reviews. 2022;139:104743. doi:10.1016/j.neubiorev.2022.104743.
+The Medical Management of Depression. Mann JJ. The New England Journal of Medicine. 2005;353(17):1819-34. doi:10.1056/NEJMra050730.
+Mechanism of Action of ECT in Depression. Belge JB, van Eijndhoven P, Mulders PCR. Current Topics in Behavioral Neurosciences. 2024;66:279-295. doi:10.1007/7854_2023_450.
+
+Feature | ECT | TMS (Standard/iTBS) | SNT/SAINT | Ketamine IV | Esketamine IN | VNS | MST
+FDA Status | Class II (2018) | Cleared (2008/2018) | Cleared (2026) | Off-label | Approved (2019) | Approved (2005) | Investigational
+Primary Indication | Severe/TRD, psychotic depression, catatonia | TRD (1–2 failed trials) | TRD | TRD | TRD + oral AD | TRD (≥4 failed trials) | TRD (investigational)
+Response Rate | 60–80% | 24–49% | 54–71% | 55% (ELEKT-D) | 27–38% | 28–68% (long-term) | 44–51%
+Remission Rate | 50–60% | 17–32% | 50–90% (open-label); 50% (RCT) | ~30% | 17–33% | 19–43% (long-term) | 22–37%
+Onset | 1–2 weeks | 4–6 weeks | 5 days | Hours | Hours–days | Months | 1–3 weeks
+Course Duration | 3–4 weeks (acute) | 4–6 weeks (daily) | 5 days | 3 weeks (6 infusions) | 4 weeks induction | Permanent implant | 3–4 weeks
+Anesthesia | General | None | None | None (monitored) | None (monitored) | Surgical implant | General
+Cognitive Effects | Transient anterograde/retrograde amnesia; autobiographical memory risk | None | None reported | None significant | None significant | None | Minimal (vs. ECT)
+Key Advantage | Highest efficacy | No anesthesia, no cognitive effects, outpatient | Rapid (5-day course), high remission | Rapid onset, no cognitive effects | FDA-approved, nasal spray | Long-term durability | ECT-like efficacy, less cognitive impact
+Key Limitation | Cognitive effects, anesthesia required, stigma | Lower efficacy than ECT, daily visits | Durability (33% remission at 12 wk), limited data | Off-label, no long-term data, abuse potential | Small effect size, REMS, cost, dissociation | Invasive, slow onset, primary endpoint missed | Not yet available clinically
+Approximate Cost | $2,500–5,000/session | $6,000–12,000/course | $10,000–15,000/course | $400–800/infusion | $600–900/session | $30,000+ (device + surgery) | Investigational
+# | Citation | Significance
+1 | Espinoza & Kellner, NEJM 2022 | Definitive contemporary ECT review
+2 | UK ECT Review Group, Lancet 2003 | Landmark ECT vs. sham/pharmacotherapy meta-analysis
+3 | Petrides et al., J ECT 2001 (CORE) | 95% remission in psychotic depression
+4 | Sackeim et al., JAMA 2001 | Established post-ECT relapse prevention with nortriptyline + lithium
+5 | Kellner et al., Arch Gen Psychiatry 2006 (CORE) | First RCT of continuation ECT vs. pharmacotherapy
+6 | Kellner et al., AJP 2016 (PRIDE Phase 1) | RUL ultrabrief pulse ECT in geriatric depression
+7 | Kellner et al., AJP 2016 (PRIDE Phase 2) | Combined continuation ECT + pharmacotherapy
+8 | Sackeim et al., Arch Gen Psychiatry 2000 | Dose-response RCT establishing 6× ST for RUL ECT
+9 | Sackeim et al., Neuropsychopharmacology 2007 | Cognitive effects in community settings
+10 | Semkovska & McLoughlin, Biol Psychiatry 2010 | Definitive cognitive effects meta-analysis
+11 | Mutz et al., BMJ 2019 | Network meta-analysis of all brain stimulation therapies
+12 | Blumberger et al., Lancet 2018 (THREE-D) | iTBS noninferiority to standard rTMS
+13 | Cole et al., AJP 2022 (SNT) | Sham-controlled RCT of Stanford Neuromodulation Therapy
+14 | O'Reardon et al., Biol Psychiatry 2007 | Pivotal TMS trial leading to FDA clearance
+15 | Anand et al., NEJM 2023 (ELEKT-D) | Ketamine vs. ECT noninferiority trial
+16 | Popova et al., AJP 2019 (TRANSFORM-2) | Pivotal esketamine trial
+17 | Daly et al., JAMA Psychiatry 2019 (SUSTAIN-1) | Esketamine relapse prevention
+18 | Reif et al., NEJM 2023 (ESCAPE-TRD) | Esketamine vs. quetiapine XR
+19 | Blumberger et al., Lancet Psychiatry 2026 (CREST-MST) | Largest convulsive therapy RCT; MST noninferiority
+20 | Petrides et al., AJP 2015 | ECT augmentation in clozapine-resistant schizophrenia

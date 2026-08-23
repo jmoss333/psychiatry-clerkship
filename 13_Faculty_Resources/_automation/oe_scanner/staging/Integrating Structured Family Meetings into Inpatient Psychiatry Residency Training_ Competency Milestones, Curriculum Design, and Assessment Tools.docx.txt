@@ -1,0 +1,459 @@
+
+Integrating Structured Family Meetings into Inpatient Psychiatry Residency Training: Competency Milestones, Curriculum Design, and Assessment Tools
+
+
+---
+
+1. Scope and Framing
+
+
+This report provides a practical implementation framework for integrating family meeting skills into inpatient psychiatry residency training. It maps family-related competencies to the ACGME Milestones 2.0 framework, synthesizes the evidence on teaching methods (simulation, direct observation, graduated responsibility), presents validated and adaptable assessment instruments, and proposes a phased curriculum with specific milestones for each training year. The goal is to bridge the well-documented gap between the strong evidence base for family interventions and their persistently low implementation in routine inpatient practice.
+
+---
+
+2. The Training Gap: Why This Matters
+
+
+2.1 The Implementation Paradox Revisited
+
+
+Family psychoeducation is among the most evidence-based interventions in psychiatry — with an NNT of 7 for relapse prevention and >100 supporting RCTs — yet implementation rates range from 0% to 53% across settings.[1][2] A critical driver of this gap is inadequate training. A survey of psychiatry trainees at nine New York City hospitals found that while almost all reported providing psychoeducation to first-episode psychosis patients and families, 81% for patients and 84% for families reported that content and delivery were not uniform, with 98% relying on unstructured conversation and only ~25% using handouts.[3] A national survey confirmed that >80% of psychiatry, psychology, and social work programs offered family therapy didactics, but far fewer required them.[4]
+
+2.2 Training Intensity Matters
+
+
+Brief training is insufficient to change practice. A dissemination study found that two days of staff training produced no change in adoption of family interventions, whereas intensive training over several months resulted in implementation at the majority of study sites.[5] Carter (1989) found that residents who received modest or minimal family therapy training during residency were significantly less likely to use marital and family therapy in post-residency practice, while those who received adequate training preferred it second only to individual therapy.[6]
+
+---
+
+3. ACGME Milestones 2.0: Mapping Family Meeting Skills
+
+
+3.1 The Competency Architecture
+
+
+The ACGME Milestones 2.0 framework organizes psychiatry training across six core competency domains, with 22 subcompetencies rated on a 5-level developmental scale.[7][8] Family therapy/family intervention skills are not a standalone milestone or subcompetency — rather, they are embedded across multiple domains.[9] The Milestones 2.0 introduced "harmonized" milestones across four domains (ICS, PBLI, PROF, SBP), creating standardized expectations across specialties.[10]
+
+3.2 Mapping Family Meeting Competencies to ACGME Domains
+
+
+
+
+[7][8][9][11][12]
+
+3.3 Entrustable Professional Activities (EPAs)
+
+
+Young et al. (2018) developed 10 end-of-training EPAs for psychiatry through a rigorous three-stage process including a national Delphi study of 31 experts.[13] While no EPA is exclusively dedicated to family meetings, several encompass family-related skills:
+
+- EPA: Provide psychoeducation — includes educating patients and families about diagnosis, treatment, and prognosis
+
+- EPA: Develop and implement treatment plans — includes coordinating with families as part of comprehensive treatment planning
+
+- EPA: Manage transitions of care — includes discharge planning with family involvement
+
+A mobile app-based EPA assessment tool piloted with psychiatry residents demonstrated feasibility (mean completion time 76 seconds per assessment), high-quality feedback (95% of comments behaviorally specific and actionable), and moderate correlation between entrustment scores and resident experience (r = 0.43, P < .001).[14]
+
+---
+
+4. Evidence-Based Teaching Methods
+
+
+4.1 Simulation and Standardized Patients
+
+
+A systematic review and meta-analysis of 163 studies (27 RCTs) on simulation in psychiatry found significant improvements in attitudes (SMD = 0.52), skills (SMD = 1.37), knowledge (SMD = 1.22), and behaviors (SMD = 1.07) compared to active controls, with effects sustained at 3-month follow-up.[15] A 2025 scoping review of 26 studies on family meeting training across healthcare settings found that role-play or simulation was the most common teaching method, with medical students and residents as the primary trainees.[16]
+
+Specifically for psychiatry residents, Amsalem et al. (2021) demonstrated that a 5-hour simulation workshop (high-fidelity simulation with professional actor + lecture + role-play of 3 scenarios) significantly improved communication scores (mean 24.9 → 27.8, p<0.001) and self-confidence (3.4 → 4.0 on 5-point Likert, sustained at 2 months).[17]
+
+4.2 Just-in-Time Coaching
+
+
+Rock (2021) described "just-in-time" simulation — training immediately before a real clinical encounter — as a powerful scaffolding technique. Key steps include: (1) assessing the learner's understanding, (2) identifying challenging aspects, (3) providing a script as a cognitive aid, (4) emotional preparation through mental rehearsal, (5) coaching on approach/pace/tone, and (6) providing specific feedback afterward.[18]
+
+4.3 Direct Observation with Structured Feedback
+
+
+A procedural approach to teaching ICU family conferences used a 5-component module: instructional video, faculty observation of conferences, standardized observation with formative evaluation, online procedure log, and conference note template. Of respondents, 92% rated the module good/very good/excellent, though only 41% completed even one observed conference due to competing demands.[19] Direct observation remains underutilized in psychiatry training; a Canadian study identified barriers at resident, faculty, and administrative levels, with enablers including financial compensation, guidelines, and rotation-start discussions.[20]
+
+4.4 Video Review
+
+
+Video review of clinical encounters enables indirect observation, more accurate focus on specific moments, and promotes self-reflection. Supervisors describe using video to foster consensus and shift perspectives, though emotional risks (trainee anxiety, defensiveness) must be managed through trust-building.[20][21]
+
+4.5 Graduated Responsibility Model
+
+
+Campbell et al. (2021) compiled 10 tips for teaching trainees to conduct family meetings, emphasizing that the "see one, do one, teach one" axiom should not apply. Instead, they recommend: (1) structured preparation before every meeting, (2) graduated responsibility (observe → co-lead → lead with observation → lead independently), (3) explicit feedback using behavioral descriptors, and (4) debriefing after every meeting.[22]
+
+The figure below from Widera et al. (2020) in the New England Journal of Medicine illustrates a stepwise framework for conducting family meetings for seriously ill patients, providing a structured cognitive aid that can serve as both a teaching tool and a clinical reference for residents.
+
+Figure 1 Stepwise Framework for Family Meetings.
+
+---
+
+5. Assessment Instruments
+
+
+5.1 Available Tools
+
+
+No single universally adopted, psychometrically robust instrument exists specifically for evaluating psychiatry residents' family meeting competency.[1] However, several validated or well-described tools can be adapted:
+
+
+
+5.2 Recommended Assessment Strategy
+
+
+A multi-method approach is most robust, combining:
+
+1. Direct observation with the Family Meeting Behavioral Skills Checklist (minimum 2 observed meetings per rotation)
+
+2. Simulation-based OSCE annually using the ROSCE format with standardized family scenarios
+
+3. EPA-based entrustment ratings via mobile app after each observed family meeting
+
+4. Self-reflection through structured post-meeting debriefing forms
+
+5. Procedure log tracking number and type of family meetings conducted
+
+---
+
+6. Proposed Curriculum: A Four-Year Developmental Framework
+
+
+6.1 Overview
+
+
+
+
+6.2 Year-by-Year Curriculum Detail
+
+
+PGY-1: Foundations
+
+
+Didactics (4–6 hours)
+
+- Lecture 1: The evidence base — EE, landmark trials, NNT=7, the 50% rule
+
+- Lecture 2: Family systems basics — genograms, family structure, communication patterns
+
+- Lecture 3: Confidentiality and consent — HIPAA framework, listening vs. disclosing, practical scenarios
+
+Clinical Requirements
+
+- Observe ≥5 faculty-led family meetings on inpatient rotations
+
+- Complete structured observation form for each meeting (what went well, what was challenging, what techniques were used)
+
+- Co-lead ≥2 family meetings with senior resident or attending supervision
+
+- Complete a genogram for ≥3 patients
+
+Assessment
+
+- Self-reflection logs reviewed by supervisor
+
+- Informal faculty feedback after co-led meetings
+
+- Knowledge assessment: brief quiz on EE, HIPAA, family intervention evidence
+
+PGY-2: Core Skills
+
+
+Didactics (6–8 hours)
+
+- Workshop 1 (3 hrs): Simulation workshop — 3 standardized family scenarios with professional actors (high-EE family, family requesting information when patient declines involvement, discharge planning meeting)
+
+- Lecture 4: Psychoeducation models — what to teach families about schizophrenia, bipolar disorder, and medications
+
+- Lecture 5: Communication frameworks — MI with families, de-escalation, managing conflict
+
+- Lecture 6: Brief family interventions feasible during short admissions
+
+Clinical Requirements
+
+- Lead ≥6 family meetings on inpatient rotation with faculty observation (minimum 2 directly observed with checklist)
+
+- Participate in ≥1 multifamily group session (if available)
+
+- Deliver psychoeducation to ≥3 families using standardized handout
+
+- Document family meetings using structured note template
+
+Assessment
+
+- Annual OSCE with family meeting scenario (ROSCE format)
+
+- Direct observation using Family Meeting Behavioral Skills Checklist (≥2 per rotation)
+
+- EPA entrustment ratings via mobile app
+
+- Self-confidence survey (pre/post simulation workshop)
+
+PGY-3: Advanced Application
+
+
+Didactics (4–6 hours)
+
+- Seminar 1: Complex family dynamics — substance use, personality disorders, cultural considerations, high-conflict families
+
+- Seminar 2: Family-focused therapy for bipolar disorder — Miklowitz model overview
+
+- Seminar 3: Caregiver burden assessment and intervention — ZBI, NAMI resources, caregiver-focused interventions
+
+Clinical Requirements
+
+- Lead ≥8 family meetings independently across inpatient and outpatient settings
+
+- Deliver ≥2 structured psychoeducation sessions (individual or group format)
+
+- Complete ≥1 video-recorded family meeting with faculty review using FCOF
+
+- Assess caregiver burden using ZBI in ≥2 families
+
+Assessment
+
+- Video review with FCOF scoring
+
+- Procedure log documenting meeting types, complexity, and outcomes
+
+- Supervisor evaluation of independent family meeting competence
+
+- Written case formulation integrating family systems perspective
+
+PGY-4: Mastery and Teaching
+
+
+Didactics (2–4 hours)
+
+- Seminar: Teaching family skills — how to supervise junior residents in family meetings
+
+- Journal club: Critical appraisal of family intervention literature
+
+Clinical Requirements
+
+- Supervise ≥2 PGY-2 residents conducting family meetings (with feedback documentation)
+
+- Lead or co-lead ≥1 QI project related to family involvement (e.g., tracking family meeting rates, developing unit protocols, implementing standardized psychoeducation)
+
+- Present a family intervention case at grand rounds or case conference
+
+Assessment
+
+- Teaching evaluation by supervised residents
+
+- QI project assessment (design, implementation, outcomes)
+
+- Portfolio review: compilation of procedure logs, self-reflections, supervisor evaluations, and QI project across all 4 years
+
+- Final entrustment decision: Can this resident independently conduct family meetings across a range of clinical scenarios?
+
+---
+
+7. Practical Implementation Strategies
+
+
+7.1 Overcoming Barriers
+
+
+The literature identifies barriers at multiple levels.[9][31][32] Evidence-based strategies to address each:
+
+
+
+7.2 The "Champion" Model
+
+
+Successful implementation requires identified champions at multiple levels: a faculty champion who models family meeting skills and provides supervision, a residency training director who ensures curricular integration, and an administrative champion who supports protected time and resources.[5][32] The Berman & Heru (2005) GAP proposal emphasizes that the goal should be family-centered care competency — achievable within existing residency constraints — rather than sophisticated family therapy training, which requires more intensive investment.[9]
+
+7.3 Standardized Cognitive Aids
+
+
+Providing residents with structured tools reduces variability and increases confidence:
+
+- Family Meeting Agenda Template (as detailed in the previous review)
+
+- Psychoeducation Handout (diagnosis-specific, as provided previously)
+
+- Family Meeting Note Template (structured documentation)
+
+- HIPAA Decision Tree Pocket Card (when can/cannot disclose)
+
+- Early Warning Signs Worksheet (completed collaboratively with family at discharge)
+
+7.4 Sample Family Meeting Note Template
+
+
+> FAMILY MEETING NOTE
+
+>
+
+> Date/Time: Duration: minutes
+
+>
+
+> Attendees: [Patient name, relationship of each family member, team members present]
+
+>
+
+> Patient consent status: [Verbal consent obtained / Written ROI on file / Patient declined — meeting with family only per HIPAA exception / Patient incapacitated — disclosure in best interest]
+
+>
+
+> Scope of disclosure agreed upon: [Specify what patient agreed to discuss]
+
+>
+
+> Agenda items discussed:
+
+> 1. ___
+
+> 2. ___
+
+> 3. ___
+
+>
+
+> Family perspective/concerns: [Summary of family's observations, timeline, concerns]
+
+>
+
+> Information provided to family: [Diagnosis discussed, treatment plan, medications, expected course]
+
+>
+
+> Psychoeducation delivered: [Topics covered; handouts provided: Y/N]
+
+>
+
+> Discharge planning discussed: [Outpatient appointments, medication plan, crisis plan, early warning signs]
+
+>
+
+> Resources provided: [NAMI, support groups, crisis numbers]
+
+>
+
+> Action items:
+
+> - ___
+
+> - ___
+
+>
+
+> Follow-up meeting scheduled: [Date/time or N/A]
+
+>
+
+> Resident: Supervising Attending:
+
+---
+
+8. Teaching Pearls for Educators
+
+
+1. Frame family meetings as a procedure. Just as residents learn to perform lumbar punctures with structured observation and graduated responsibility, family meetings should be taught with the same procedural rigor — preparation, observation, practice, feedback, independence.[19][22]
+
+2. The 5-hour investment. A single 5-hour simulation workshop significantly improves communication scores and self-confidence, with effects sustained at 2 months. This is a high-yield, low-cost intervention that every program can implement.[17]
+
+3. Debrief every meeting. The learning happens in the debrief, not the meeting itself. Even 5 minutes of structured feedback after a family meeting ("What went well? What would you do differently? What was the hardest moment?") accelerates skill development.[22]
+
+4. Teach the "listening is not disclosing" framework early. Confidentiality anxiety is the #1 reason residents avoid family contact. Teaching this distinction in PGY-1 orientation transforms the barrier into a bridge.[34][35]
+
+5. Use the NNT=7 to motivate. When residents understand that family psychoeducation has an NNT comparable to statins, it reframes family meetings from "soft skill" to "evidence-based procedure."[1]
+
+6. Model it. Faculty who routinely conduct family meetings and invite residents to observe create a culture where family involvement is normative. Faculty who avoid family contact implicitly teach that it is optional.[32]
+
+7. Start with the genogram. Teaching residents to complete a three-generation genogram for every admitted patient creates a natural entry point for family-systems thinking and identifies who should be invited to meetings.[9]
+
+8. Assess caregiver burden explicitly. Teaching residents to administer the Zarit Burden Interview (even the 12-item short form) to at least one caregiver per rotation builds awareness that caregivers are hidden patients.[37]
+
+9. Track it. What gets measured gets done. Programs that track family meeting rates as a quality indicator see higher implementation than those that treat it as optional.[2]
+
+10. Connect inpatient to outpatient. The inpatient family meeting is the initiation of a longer-term intervention, not a standalone treatment. Teaching residents to make warm handoffs to outpatient family programs (NAMI FTF, outpatient family therapy) closes the loop.[38]
+
+---
+
+9. Evidence Gaps and Future Directions
+
+
+No psychiatry-specific RCTs directly compare different methods of teaching family meeting skills to psychiatry residents in inpatient settings — most evidence is extrapolated from ICU, palliative care, and neonatology contexts.[16] Long-term skill retention is poorly studied; most evaluations use pre-post designs without longitudinal follow-up.[16] No standardized national assessment tool exists for family therapy competency in psychiatry residency.[1] The distinction between "family-centered care" and "family therapy" remains important for curriculum design — the ACGME mandates the former for all residents, while the latter requires more intensive training.[9]
+
+The most promising direction is the development of psychiatry-specific family meeting OSCEs with standardized scenarios (high-EE family, confidentiality dilemma, discharge planning, patient declining involvement) that could be shared across programs and validated nationally. The EPA framework, combined with mobile app–based assessment, offers a scalable approach to longitudinal competency tracking.[13][14]
+
+---
+
+Would you like to explore how to design specific OSCE scenarios for family meeting assessment, including standardized patient scripts, scoring rubrics, and debriefing guides?
+
+References
+Family Intervention (Brief) for Schizophrenia. Okpokoro U, Adams CE, Sampson S. The Cochrane Database of Systematic Reviews. 2014;(3):CD009802. doi:10.1002/14651858.CD009802.pub2.
+Expressed Emotion and Psychiatric Relapse: A Meta-analysis. Butzlaff RL, Hooley JM. Archives of General Psychiatry. 1998;55(6):547-52. doi:10.1001/archpsyc.55.6.547.
+Integrity of Literature on Expressed Emotion and Relapse in Patients With Schizophrenia Verified by a P-Curve Analysis. Weintraub MJ, Hall DL, Carbonella JY, Weisman de Mamani A, Hooley JM. Family Process. 2017;56(2):436-444. doi:10.1111/famp.12208.
+The Predictive Utility of Expressed Emotion in Schizophrenia: An Aggregate Analysis. Bebbington P, Kuipers L. Psychological Medicine. 1994;24(3):707-18. doi:10.1017/s0033291700027860.
+The Predictive Power of Expressed Emotion and Its Components in Relapse of Schizophrenia: A Meta-Analysis and Meta-Regression. Ma CF, Chan SKW, Chung YL, et al. Psychological Medicine. 2021;51(3):365-375. doi:10.1017/S0033291721000209.
+The Predictive Validity of Expressed Emotions (EE) in Schizophrenia. A 20-Year Prospective Study. Cechnicki A, Bielańska A, Hanuszkiewicz I, Daren A. Journal of Psychiatric Research. 2013;47(2):208-14. doi:10.1016/j.jpsychires.2012.10.004.
+Family Management in the Prevention of Exacerbations of Schizophrenia: A Controlled Study. Falloon IR, Boyd JL, McGill CW, et al. The New England Journal of Medicine. 1982;306(24):1437-40. doi:10.1056/NEJM198206173062401.
+A Controlled Trial of Social Intervention in the Families of Schizophrenic Patients. Leff J, Kuipers L, Berkowitz R, Eberlein-Vries R, Sturgeon D. The British Journal of Psychiatry : The Journal of Mental Science. 1982;141:121-34. doi:10.1192/bjp.141.2.121.
+A Trial of Family Therapy v. A Relatives Group for Schizophrenia. Leff J, Berkowitz R, Shavit N, et al. The British Journal of Psychiatry : The Journal of Mental Science. 1989;154:58-66. doi:10.1192/bjp.154.1.58.
+A Trial of Family Therapy Versus a Relatives' Group for Schizophrenia. Two-Year Follow-Up. Leff J, Berkowitz R, Shavit N, et al. The British Journal of Psychiatry : The Journal of Mental Science. 1990;157:571-7. doi:10.1192/bjp.157.4.571.
+Family Treatment of Adult Schizophrenic Patients: A Psycho-Educational Approach. Anderson CM, Hogarty GE, Reiss DJ. Schizophrenia Bulletin. 1980;6(3):490-505. doi:10.1093/schbul/6.3.490.
+Family Intervention for the Rehabilitation of Schizophrenia: Toward Protection and Coping. Strachan AM. Schizophrenia Bulletin. 1986;12(4):678-98. doi:10.1093/schbul/12.4.678.
+The Community Management of Schizophrenia. A Controlled Trial of a Behavioural Intervention With Families to Reduce Relapse. Tarrier N, Barrowclough C, Vaughn C, et al. The British Journal of Psychiatry : The Journal of Mental Science. 1988;153:532-42. doi:10.1192/bjp.153.4.532.
+Psychoeducational Multiple Family Groups: Four-Year Relapse Outcome in Schizophrenia. McFarlane WR, Link B, Dushay R, Marchal J, Crilly J. Family Process. 1995;34(2):127-44. doi:10.1111/j.1545-5300.1995.00127.x.
+Family Interventions for Schizophrenia and the Psychoses: A Review. McFarlane WR. Family Process. 2016;55(3):460-82. doi:10.1111/famp.12235.
+Partnering With Families: Multiple Family Group Psychoeducation for Schizophrenia. Jewell TC, Downing D, McFarlane WR. Journal of Clinical Psychology. 2009;65(8):868-78. doi:10.1002/jclp.20610.
+Family-Focused Treatment of Bipolar Disorder: 1-Year Effects of a Psychoeducational Program in Conjunction With Pharmacotherapy. Miklowitz DJ, Simoneau TL, George EL, et al. Biological Psychiatry. 2000;48(6):582-92. doi:10.1016/s0006-3223(00)00931-8.
+Family-Focused Treatment Versus Individual Treatment for Bipolar Disorder: Results of a Randomized Clinical Trial. Rea MM, Tompson MC, Miklowitz DJ, et al. Journal of Consulting and Clinical Psychology. 2003;71(3):482-92. doi:10.1037/0022-006x.71.3.482.
+A Randomized Study of Family-Focused Psychoeducation and Pharmacotherapy in the Outpatient Management of Bipolar Disorder. Miklowitz DJ, George EL, Richards JA, Simoneau TL, Suddath RL. Archives of General Psychiatry. 2003;60(9):904-12. doi:10.1001/archpsyc.60.9.904.
+Adjunctive Psychotherapy for Bipolar Disorder: A Systematic Review and Component Network Meta-analysis. Miklowitz DJ, Efthimiou O, Furukawa TA, et al. JAMA Psychiatry. 2021;78(2):141-150. doi:10.1001/jamapsychiatry.2020.2993.
+Family Intervention for Schizophrenia. Pharoah F, Mari J, Rathbone J, Wong W. The Cochrane Database of Systematic Reviews. 2010;(12):CD000088. doi:10.1002/14651858.CD000088.pub2.
+Family-Based Interventions Versus Standard Care for People With Schizophrenia. Chien WT, Ma DCF, Bressington D, Mou H. The Cochrane Database of Systematic Reviews. 2024;10:CD013541. doi:10.1002/14651858.CD013541.pub2.
+Family Meetings on Behalf of Patients with Serious Illness. Widera E, Anderson WG, Santhosh L, et al. The New England Journal of Medicine. 2020;383(11):e71. doi:10.1056/NEJMvcm1913056.
+Family Interventions for Bipolar Disorder. Justo LP, Soares BG, Calil HM. The Cochrane Database of Systematic Reviews. 2007;(4):CD005167. doi:10.1002/14651858.CD005167.pub2.
+Family Interventions for Relapse Prevention in Schizophrenia: A Systematic Review and Network Meta-Analysis. Rodolico A, Bighelli I, Avanzato C, et al. The Lancet. Psychiatry. 2022;9(3):211-221. doi:10.1016/S2215-0366(21)00437-5.
+Psychosocial and Psychological Interventions for Relapse Prevention in Schizophrenia: A Systematic Review and Network Meta-Analysis. Bighelli I, Rodolico A, García-Mieres H, et al. The Lancet. Psychiatry. 2021;8(11):969-980. doi:10.1016/S2215-0366(21)00243-1.
+Effectiveness of Family Intervention for Preventing Relapse in First-Episode Psychosis Until 24 Months of Follow-Up: A Systematic Review With Meta-Analysis of Randomized Controlled Trials. Camacho-Gomez M, Castellvi P. Schizophrenia Bulletin. 2020;46(1):98-109. doi:10.1093/schbul/sbz038.
+Psychological Distress and Burden of Care Among Family Caregivers of Patients With Mental Illness in a Neuropsychiatric Outpatient Clinic in Nigeria. Udoh EE, Omorere DE, Sunday O, Osasu OS, Amoo BA. PloS One. 2021;16(5):e0250309. doi:10.1371/journal.pone.0250309.
+Empathy and Perceived Burden in Caregivers of Patients With Schizophrenia Spectrum Disorders. Di Lorenzo R, Girone A, Panzera N, et al. BMC Health Services Research. 2021;21(1):250. doi:10.1186/s12913-021-06258-x.
+Posttraumatic Stress Symptoms, Quality of Life, and Stress Burden in Caregivers of Patients With Severe Mental Illness: An Underestimated Health Concern. Rady A, Mouloukheya T, Gamal E. Frontiers in Psychiatry. 2021;12:623499. doi:10.3389/fpsyt.2021.623499.
+A Systematic Review Comparing Caregiver Burden and Psychological Functioning in Caregivers of Individuals With Schizophrenia Spectrum Disorders and Bipolar Disorders. Karambelas GJ, Filia K, Byrne LK, et al. BMC Psychiatry. 2022;22(1):422. doi:10.1186/s12888-022-04069-w.
+Systematic Review and Meta-Analysis of Family-Based Interventions for Early Psychosis: Carer and Patient Outcomes. Gleeson JFM, Ludwig K, Stiles BJ, et al. Schizophrenia Research. 2025;276:57-78. doi:10.1016/j.schres.2025.01.006.
+Effectiveness of Psychoeducational Interventions for Family Carers of People With Psychosis: A Systematic Review and Meta-Analysis. Sin J, Gillard S, Spain D, et al. Clinical Psychology Review. 2017;56:13-24. doi:10.1016/j.cpr.2017.05.002.
+Randomized trial comparing caregiver‐only family‐focused treatment to standard health education on the 6‐month outcome of bipolar disorder. Perlick DA, Jackson C, Grier S, et al. Bipolar Disorders. 2018;20(7):622-633. doi:10.1111/bdi.12621.
+Caregiver Burden and Dementia: A Systematic Review of Self-Report Instruments. Tu JY, Jin G, Chen JH, Chen YC. Journal of Alzheimer's Disease : JAD. 2022;86(4):1527-1543. doi:10.3233/JAD-215082.
+Cognitive Reframing for Carers of People With Dementia. Vernooij-Dassen M, Draskovic I, McCleery J, Downs M. The Cochrane Database of Systematic Reviews. 2011;(11):CD005318. doi:10.1002/14651858.CD005318.pub2.
+Application of a Multidimensional Caregiver Burden Inventory. Novak M, Guest C. The Gerontologist. 1989;29(6):798-803. doi:10.1093/geront/29.6.798.
+Family Assessment in Early Psychosis. McCleery A, Addington J, Addington D. Psychiatry Research. 2007;152(2-3):95-102. doi:10.1016/j.psychres.2006.07.002.
+
+ACGME Domain | Subcompetency | Family Meeting Application | Milestone Level Descriptors
+Patient Care (PC) | Psychotherapy | Conducting family psychoeducation; basic family intervention skills | L1: Observes family meetings; L3: Conducts structured meetings with supervision; L5: Independently adapts approach to complex family dynamics
+Medical Knowledge (MK) | Knowledge of psychiatric disorders | Understanding EE, family systems theory, evidence base for family interventions | L1: Knows EE construct; L3: Applies evidence to clinical decisions; L5: Teaches and critically appraises family intervention literature
+Interpersonal & Communication Skills (ICS) | Patient- and family-centered communication | Relationship building with families; managing multi-party encounters; navigating confidentiality | L1: Uses basic communication skills; L3: Adapts communication to family context; L5: Models expert communication in high-conflict situations
+ICS | Interprofessional communication | Coordinating family meetings with social work, nursing, case management | L1: Participates in team discussions; L3: Leads interdisciplinary family conferences; L5: Facilitates complex multi-stakeholder meetings
+Systems-Based Practice (SBP) | Patient safety and quality improvement | Standardizing family meeting processes; tracking outcomes | L1: Identifies family involvement as quality indicator; L3: Implements structured protocols; L5: Leads QI initiatives for family engagement
+SBP | System navigation and advocacy | Connecting families to community resources (NAMI, outpatient family therapy) | L1: Knows available resources; L3: Actively facilitates referrals; L5: Advocates for systemic changes to support family involvement
+Professionalism (PROF) | Ethical principles | Navigating confidentiality, consent, and competing interests in family meetings | L1: Understands HIPAA basics; L3: Applies listening-vs-disclosing framework; L5: Manages complex ethical dilemmas independently
+Practice-Based Learning (PBLI) | Reflective practice | Self-assessment after family meetings; incorporating feedback | L1: Accepts feedback; L3: Seeks feedback proactively; L5: Mentors others in reflective practice
+Instrument | Type | Psychometrics | Best Use in Residency | Ref
+Rochester OSCE (ROSCE) | Direct observation/OSCE | Formative + summative; adaptable to multiple settings | Annual simulation-based assessment of family meeting skills | [1]
+Family-Centered Observation Form (FCOF) | Videotaped encounter rating | Significant improvement in rapport building post-curriculum | Pre/post curriculum evaluation via videotaped family meetings | [2]
+Family Meeting Behavioral Skills Checklist | Direct observation checklist | Total observed skills 51% → 65% (p≤0.01, d=1.13) after training | Real-time faculty observation during inpatient family meetings | [2]
+Interprofessional/Family-Centered-Care Observation Rubric (I-FOR) | Faculty observation rubric | α > 0.930; test-retest r = 0.82–0.86 | Multidisciplinary team assessment of family-centered care | [3]
+Global Assessment of Relational Functioning (GARF) | Clinician-rated scale | ICCs 0.78–0.82; convergent validity established | Assessing family relational functioning (not therapist competence per se) | [4], [5]
+EPA Mobile App | Entrustment rating + narrative | 95% comments behaviorally specific; r = 0.43 with experience | Longitudinal tracking of entrustment across family-related EPAs | [6]
+Family Therapy Coding System (FTCS) | Observer coding system | Excellent reliability; discriminant validity across experience levels | Research/advanced assessment of therapy process skills | [7]
+Condensed MFT Core Competencies | Competency framework | 16 items mapped to 128 original AAMFT competencies | Structuring supervision goals and self-assessment | [8]
+Training Year | Focus | Didactic Hours | Clinical Requirements | Assessment
+PGY-1 | Foundations: observation and basic skills | 4–6 hrs | Observe ≥5 family meetings; co-lead ≥2 | Self-reflection logs; faculty feedback
+PGY-2 | Core skills: conducting structured meetings | 6–8 hrs | Lead ≥6 family meetings with observation; simulation workshop | OSCE; direct observation checklist; EPA ratings
+PGY-3 | Advanced application: complex families, psychoeducation programs | 4–6 hrs | Lead ≥8 meetings independently; deliver ≥2 psychoeducation sessions | Video review; FCOF; procedure log
+PGY-4 | Mastery and teaching: supervision, QI, curriculum development | 2–4 hrs | Supervise junior residents; lead ≥1 QI project on family involvement | Teaching evaluation; QI project assessment; portfolio review
+Barrier | Strategy | Evidence
+Time constraints | Integrate family meetings into existing workflow rather than adding separate sessions; use 15-minute "mini-meetings" | Carer involvement feasible within first week of admission in 53% of patients[1]
+Faculty discomfort | Faculty development workshops; pair less experienced faculty with family therapy–trained colleagues | Training changes how clinicians interpret and practice confidentiality[2]
+Confidentiality uncertainty | Standardize the "listening vs. disclosing" framework; create pocket cards with HIPAA decision trees | Scoping review: confidentiality used as "smokescreen" when clinicians lack training[3]
+Patient refusal | Use MI techniques to explore preferences; frame family involvement as standard care, not opt-in | VA/DoD recommends MI to engage patients in family services[4]
+Competing curricular demands | Map family skills to existing ACGME milestones rather than creating new requirements; integrate into existing rotations | GAP proposal: family-centered care (not full family therapy) is the achievable standard[5]
+Lack of standardization | Develop unit-specific family meeting protocols, note templates, and psychoeducation handouts | 84% of trainees report non-uniform psychoeducation delivery[6]

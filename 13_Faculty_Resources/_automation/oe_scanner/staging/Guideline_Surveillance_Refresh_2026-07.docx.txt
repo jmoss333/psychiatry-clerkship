@@ -1,0 +1,105 @@
+Adult Inpatient Psychiatry
+Quarterly Clinical Guideline Surveillance Refresh
+Prepared for: Joshua Moss, MD — Psychiatrist (BHU2)
+Refresh date: July 1, 2026  ·  Baseline reviewed: Inpatient_Psychiatry_Guideline_Surveillance_2023-2026.docx (review date June 23, 2026)
+Scope: APA · SAMHSA/988 · CMS · VA/DoD · NICE · ASAM · The Joint Commission · FDA · specialty societies — items published, updated, reaffirmed, retired, or newly in development since the baseline.
+What Changed Since Last Quarter
+The June 23, 2026 baseline was comprehensive through its review date, but this refresh surfaces several consequential items published earlier in 2026 (Feb–Apr) that the baseline missed, plus genuinely new developments in the eight days since. Framed honestly: this is less “what happened this quarter” and more “what the record now shows, corrected and current.”
+CMS issued the FY2027 IPF PPS/IPFQR proposed rule (CMS-1847-P, published April 7, 2026; comment period closed June 1, 2026) — not in the baseline. It is the first rule to spell out IPF Patient Assessment Instrument (IPF-PAI) mechanics: quarterly submission beginning October 1, 2027, five statutory data categories, FHIR-API submission option, and a 100%-of-items/≥80%-of-assessments compliance threshold. Final rule expected ~August 2026.
+FDA approved Auvelity (dextromethorphan-bupropion) on April 30, 2026 for agitation associated with Alzheimer’s dementia — the first FDA-approved non-antipsychotic for this indication, and a genuine alternative to brexpiprazole that avoids the antipsychotic-class Boxed Warning. Not in the baseline.
+FDA approved Bysanti (milsaperidone) on February 20, 2026 — a new atypical antipsychotic (new chemical entity, iloperidone-bioequivalent) for schizophrenia and bipolar I manic/mixed episodes. U.S. availability expected Q3 2026. Not in the baseline.
+SAMHSA issued an April 24, 2026 Dear Colleague Letter further restricting which harm-reduction supplies federal grantees may fund (syringes, direct-distribution fentanyl test strips excluded; naloxone and infectious-disease testing remain fundable), with a companion letter urging that MOUD be framed as a recovery pathway rather than indefinite maintenance. This extends a July 2025 policy shift the baseline did not capture.
+The CMS Innovation in Behavioral Health (IBH) Model’s operational status — flagged as “uncertain” in the baseline — is now resolved: active in Michigan, New York, and South Carolina (2026–2027 implementation); a Cohort II funding opportunity closed June 3, 2026, with up to five more states and awards expected September 2026.
+IPFQR Psychiatric Inpatient Experience (PIX) survey mandatory reporting is now live for the January 1–December 31, 2026 calendar year (FY2028 payment consequence) — confirms the baseline’s “build the workflow now” flag has become a present-tense compliance requirement.
+Joint Commission and NQF announced January 26, 2026 that they are aligning the Sentinel Events List with NQF’s Serious Reportable Events List, effective January 1, 2027. Three legacy workplace-safety sentinel events are retained — Homicide, Sexual Abuse/Assault, and Physical Assault of a staff member — pairing directly with the existing R3 #42 workplace-violence-prevention standard. Not in the baseline.
+No change: NICE NG10432 (rapid-tranquillisation rewrite) remains in committee development with no draft published; APA MDD (2010)/Bipolar (2002) revisions show no public progress; clozapine post-REMS monitoring guidance is unchanged; no confirmed HEDIS FUH/FUM/FUA measurement-year-2026 specification changes were identified (NCQA posted MY2026 measure-trending determinations June 26, 2026, but the specific FUH/FUM/FUA trending designation could not be independently confirmed this pass — verify before citing).
+Context, not a guideline change: SAMHSA experienced a chaotic grant termination-and-restoration episode January 13–15, 2026 (~$2B, ~2,000–2,900 grantees affected then restored) — relevant to the stability of downstream community referral partners (peer support, prevention, treatment) BHU2 relies on for discharge planning.
+Master Table — New / Updated / Retired Items
+Priority: NOW = immediate action/compliance · PLAN = protocolize this quarter · WATCH = monitor for publication or status change.
+
+Practice-Changing Entries in Detail
+CMS FY2027 IPF PPS/IPFQR Proposed Rule (CMS-1847-P)
+Category: Updated / Quality metric / Workflow  |  Priority: NOW
+Published in the Federal Register April 7, 2026; public comment period closed June 1, 2026; final rule expected on the usual early-August cadence for an October 1 FY start.
+Top provisions:
+Proposed 2.3% payment-rate update (2021-based market basket 3.1% less a 0.8-point productivity adjustment); ~2.1%/$50M net increase to total IPF payments.
+Proposed facility-level outlier payment cap: outlier payments limited to no more than 20% of an IPF’s total IPF PPS payments in a year.
+IPFQR proposes removing two measures beginning with the CY2026 reporting period/FY2028 payment determination: SUB-2/2a (Alcohol Use Brief Intervention Provided or Offered) and TOB-3/3a (Tobacco Use Treatment Provided or Offered at Discharge).
+Standardized IPF Patient Assessment Instrument (IPF-PAI), per CAA-2023 §4125(b)(1): five statutory domains (functional status; cognitive function/mental status; special services, treatments, and interventions; medical conditions/comorbidities; impairments); proposed quarterly submission beginning October 1, 2027; compliance threshold of 100% of items completed for ≥80% of submitted assessments to avoid a payment reduction; submission via CMS web application or an HL7 FHIR-based API (the first CMS statutory QRP to use the FHIR standard).
+Impact on adult inpatient psychiatry: The IPF-PAI is the most significant medium-term documentation-burden signal since the program’s inception — a structured, item-level patient assessment distinct from claims-based quality measures, with an EHR-interoperability (FHIR) requirement. Begin scoping EHR-vendor FHIR capability now; the 15-month runway to October 2027 is short for a system integration project.
+Impact on discharge planning: SUB-2/2a and TOB-3/3a removal (if finalized) reduces discharge-documentation burden for alcohol brief-intervention and tobacco-treatment offer/provision, but does not change the clinical standard of care for either.
+Impact on family involvement: No direct provision; family/caregiver-reported functional and cognitive status may become relevant IPF-PAI data sources depending on final item specifications.
+Impact on documentation/EHR workflows: Confirm EHR vendor roadmap for FHIR-based IPF-PAI submission; flag SUB-2/2a and TOB-3/3a fields for removal pending the final rule; do not remove until finalized — CMS has reversed IPFQR measure decisions before (see baseline: SDOH/health-equity measures added FY2024, removed FY2026).
+Source: CMS FY2027 IPF PPS Proposed Rule fact sheet; Federal Register, CMS-1847-P (Apr 7, 2026)
+Auvelity (Dextromethorphan-Bupropion) — Alzheimer’s Agitation
+Category: New drug / Safety  |  Priority: NOW
+FDA-approved April 30, 2026 for agitation associated with dementia due to Alzheimer’s disease — an expanded indication for a drug first approved in 2022 for MDD. First-in-class NMDA/sigma-1 mechanism; the first FDA-approved treatment for AD agitation that is NOT an antipsychotic.
+Top practice-changing points:
+Provides a non-antipsychotic first option for AD-related agitation, sidestepping the antipsychotic-class Boxed Warning (increased mortality in elderly dementia patients) that still applies to brexpiprazole (captured in the baseline as the first-approved agent, May 2023).
+Combination therapy (dextromethorphan + bupropion, marketed as Auvelity) — review for bupropion-related contraindications (seizure disorder, eating disorders) before use in the geriatric/dementia population, distinct from brexpiprazole’s risk profile.
+Impact on adult inpatient psychiatry: A meaningful new option for BHU2’s dementia-with-agitation admissions, particularly where families or the treating team want to avoid antipsychotic exposure; still requires a structured, time-limited trial with reassessment akin to brexpiprazole use.
+Impact on discharge planning: Document the specific agitation-management rationale (antipsychotic vs. Auvelity vs. non-pharmacologic) and hand off a reassessment plan and taper/continuation decision to the outpatient or long-term-care prescriber.
+Impact on family involvement: A genuine talking point for families wary of antipsychotics in a demented relative — frame as a non-antipsychotic option with its own distinct risk profile (bupropion seizure-risk, stimulating effects), not as risk-free.
+Impact on documentation/EHR workflows: Add Auvelity to the dementia-agitation order-set option list alongside brexpiprazole; require documented rationale and reassessment date for either.
+Source: FDA press announcement; Psychiatric Times
+Bysanti (Milsaperidone)
+Category: New drug  |  Priority: PLAN
+FDA-approved February 20, 2026 (Vanda Pharmaceuticals) for schizophrenia and for manic or mixed episodes of bipolar I disorder in adults. A new chemical entity, atypical antipsychotic, described as bioequivalent to iloperidone across the therapeutic dosing range. U.S. commercial availability anticipated Q3 2026.
+Impact on adult inpatient psychiatry: A new antipsychotic option entering formularies mid-to-late 2026; treat as iloperidone-class for practical purposes (QTc/titration/CYP2D6 considerations typical of the class) pending BHU2 pharmacy P&T review once commercially available.
+Impact on discharge planning / family involvement: Standard new-antipsychotic discharge counseling (metabolic monitoring, QTc if relevant, adherence) applies; no dementia or pediatric indication.
+Impact on documentation/EHR workflows: Add to formulary-review queue; no order-set changes needed until pharmacy completes P&T review.
+Source: Psychiatric Times; Vanda Pharmaceuticals press release
+SAMHSA Harm-Reduction Funding Restriction (Dear Colleague Letter)
+Category: Workflow / Policy  |  Priority: PLAN
+Issued April 24, 2026, updating July 2025 guidance issued under the administration’s “Ending Crime and Disorder on America’s Streets” executive order. Narrows which supplies/services SAMHSA grantees may fund as harm reduction.
+Excluded from federal grant funding: fentanyl test strips and sterile syringes for direct distribution to people who use drugs (test strips remain fundable for use by public-health officials, law enforcement, and medical professionals in official capacities).
+Still fundable: naloxone, sharps-disposal kits, and infectious-disease (HIV/hepatitis) testing and vaccination.
+A companion letter urges that methadone and buprenorphine be framed as a pathway to recovery rather than indefinite maintenance treatment — a messaging shift, not (as of this review) a change to FDA labeling or clinical practice standards for MOUD.
+Impact on adult inpatient psychiatry: Does not change inpatient MOUD initiation or continuation practice directly, but affects the harm-reduction and MOUD-linkage capacity of community partners BHU2 refers to at discharge — verify current service availability with local harm-reduction/OTP partners rather than assuming continuity.
+Impact on discharge planning: If a discharge plan has historically included referral to a syringe-service or test-strip-distribution program, confirm the program is still funded/operating before including it; naloxone provision at discharge is unaffected.
+Impact on family involvement: None directly; may affect messaging if family asks about long-term methadone/buprenorphine — continue to counsel per clinical evidence (VA/DoD SUD guideline, ASAM) rather than the administrative framing.
+Impact on documentation/EHR workflows: Review discharge-referral resource lists for harm-reduction services annually given funding volatility; no order-set changes indicated.
+Source: National Association of Counties summary; NWVCIL policy brief
+Joint Commission / NQF Sentinel Events List Alignment
+Category: Updated / Workflow  |  Priority: PLAN
+Announced January 26, 2026; effective January 1, 2027 across all accredited organizations. Joint Commission is adopting NQF’s updated Serious Reportable Events (SRE) List as part of its Sentinel Events (SE) List, ending the need to track two separate safety-event frameworks.
+Three legacy workplace-safety sentinel events are explicitly retained in the consolidated list: Homicide, Sexual Abuse/Assault, and Physical Assault of a staff member.
+A joint Aligning Patient Safety Event Reporting report provides a crosswalk between the SRE and SE lists to guide implementation.
+Impact on adult inpatient psychiatry: Directly reinforces the existing R3 #42 (BHC workplace-violence-prevention program, eff. July 1, 2024) standard already in the baseline — staff-assault events now sit inside the same mandatory sentinel-event reporting framework as patient-safety events, raising their institutional visibility.
+Impact on discharge planning / family involvement: No direct effect.
+Impact on documentation/EHR workflows: Confirm BHU2’s incident-reporting system captures Homicide, Sexual Abuse/Assault, and Physical Assault of staff as sentinel-event-reportable categories ahead of the January 1, 2027 effective date; align with the existing workplace-violence annual worksite analysis (R3 #42).
+Source: Joint Commission announcement; NQF announcement
+Watchlist Status — Your 7 Priority Items
+1. NICE NG10 rapid-tranquillisation update (GID-NG10432)
+NO CHANGE. Still in committee development, past the scope-consultation stage; no draft guideline has been published for consultation as of July 1, 2026, and NICE has not posted an expected publication date. Continue current NG10 (2015) rapid-tranquillisation recommendations (IM lorazepam alone, OR IM haloperidol + IM promethazine, with ECG-contingent branching) unchanged.
+2. CMS IPF PPS/IPFQR annual final rule
+IN PROGRESS. The FY2027 proposed rule (CMS-1847-P) published April 7, 2026 with comment period closed June 1, 2026 — see detailed entry above. This is the first rule to give concrete IPF-PAI implementation mechanics. Final rule expected on the usual early-August cadence; next quarter’s refresh should capture it.
+3. IPFQR Psychiatric Inpatient Experience (PIX) survey
+STATUS ADVANCED. Mandatory reporting period (January 1–December 31, 2026, tied to FY2028 payment) is now live, not merely upcoming. If BHU2’s facility has not operationalized the ≥24-hour-pre-discharge PIX workflow, this is now a live compliance gap, not a planning item.
+4. APA MDD (2010) and Bipolar (2002) practice-guideline revisions
+NO CHANGE. No public announcement of progress on either revision was identified this quarter. Continue supplementing with VA/DoD, CANMAT/ISBD, and current literature for inpatient decisions as previously recommended.
+5. Clozapine post-REMS monitoring
+NO CHANGE. No new FDA or consensus guidance since the June 13, 2025 REMS removal. The Boxed Warning and label-based ANC monitoring schedule remain the standard of care.
+6. HEDIS measurement-year updates to FUH/FUM/FUA
+NO CHANGE IDENTIFIED. No MY2026 specification changes to FUH/FUM/FUA were found this quarter; the MY2025 overhaul captured in the baseline (broadened numerator/denominator, telehealth-qualifying) remains the current specification.
+7. New FDA psychiatric approvals or safety warnings
+CHANGED. Two new approvals since the baseline: Bysanti (milsaperidone, Feb 20, 2026) and the Auvelity Alzheimer’s-agitation expanded indication (Apr 30, 2026) — see detailed entries above. No new Boxed Warnings specific to psychiatric medications were identified this quarter beyond the ongoing benzodiazepine-class warning update process noted in prior FDA communications.
+Confidence & Gaps
+High confidence: CMS FY2027 proposed-rule provisions (CMS fact sheet + Federal Register primary source), both FDA approvals (FDA press announcements corroborated by Psychiatric Times/Drugs.com/AJMC), and the IBH Model Cohort II timeline (CMS.gov) were confirmed against primary organizational sources.
+Moderate confidence: SAMHSA harm-reduction Dear Colleague Letter details are drawn from advocacy-organization and trade-press summaries (NACo, NWVCIL) rather than a directly fetched SAMHSA PDF (the primary document exists at samhsa.gov/sites/default/files/dear-colleague-letter-upated-hr-funding-guidance.pdf but was not independently rendered in this pass) — verify exact excluded-supply language before quoting to staff or partners.
+Explicit framing note: several items in this refresh (Bysanti, Auvelity, the FY2027 proposed rule, the SAMHSA harm-reduction letter) were published between February and April 2026 — before the June 23, 2026 baseline’s review date — but were absent from that baseline document. They are reported here as first-time surfacing/gap-fills, not as “new this quarter,” in the interest of accuracy.
+Gap: this pass did not find any 2026 update to VA/DoD, ASAM, or specialty-society (BAP catatonia, INTEGRATE, CANMAT/ISBD) guidance beyond what the baseline already captured — treat as true “no change” pending next quarter’s check, not as an exhaustive negative search.
+Adjacent but out of scope: an EMA/PRAC recommendation on potential neurodevelopmental risk in children born to men treated with valproate medicines (dated June 15, 2026, EU/EMA mechanism, distinct from the UK MHRA/NICE valproate-in-men action already in the baseline) surfaced during this pass. It predates the June 23 baseline cutoff and is a European regulatory action rather than a U.S./UK guideline change — noted here for awareness, not added to the master table.
+Provenance note: a separate, complementary delta analysis (targeting a live HTML guideline tracker rather than this Word-document series) was found already present in this folder as of this refresh, independently corroborating the CMS FY2027 proposed rule and Bysanti’s February 20, 2026 approval date, and additionally flagging the Joint Commission/NQF sentinel-events alignment (incorporated above) and an unconfirmed NCQA HEDIS MY2026 trending posting (reflected in the watchlist section). No conflicting facts were found between the two analyses.
+Given only 8 days elapsed since the June 23 baseline review, the next scheduled refresh (~October 2026) is the point at which the FY2027 IPF PPS FINAL rule (expected ~August 2026) and any NICE NG10432 draft-for-consultation should be checked first.
+Joshua Moss, MD | Psychiatrist
+Item | Org | Date | Category | Inpatient impact | Priority
+FY2027 IPF PPS/IPFQR Proposed Rule (CMS-1847-P) | CMS | Apr 7, 2026 (proposed) | Updated / Quality metric / Workflow | First rule to detail IPF-PAI mechanics; 20% outlier payment cap; 2.3% rate update; proposes removing SUB-2/2a and TOB-3/3a IPFQR measures | NOW
+Auvelity (dextromethorphan-bupropion) – Alzheimer’s agitation | FDA | Apr 30, 2026 | New drug / Safety | First non-antipsychotic approved for AD-related agitation – avoids antipsychotic Boxed Warning | NOW
+Bysanti (milsaperidone) | FDA | Feb 20, 2026 | New drug | New atypical antipsychotic (NCE) for schizophrenia and bipolar I mania/mixed episodes; iloperidone-bioequivalent | PLAN
+SAMHSA harm-reduction funding restriction (Dear Colleague Letter) | SAMHSA/HHS | Apr 24, 2026 | Workflow / Policy | Narrows grantee funding for syringe/test-strip distribution; reframes MOUD messaging – affects discharge referral partners | PLAN
+CMS Innovation in Behavioral Health (IBH) Model – status confirmed + Cohort II | CMS/CMMI | Ongoing; Cohort II NOFO closed Jun 3, 2026 | Updated / Workflow | Resolves baseline uncertainty; active in MI/NY/SC; watch Cohort II state awards (Sep 2026) | WATCH
+IPFQR PIX survey – mandatory period now live | CMS/NRI | Jan 1–Dec 31, 2026 (mandatory) | Quality metric | Confirms transition from voluntary (CY2025) to mandatory (CY2026) reporting is now in effect | NOW
+NICE NG10 rapid-tranquillisation rewrite (GID-NG10432) | NICE | No change – in development | Watchlist | Still pre-draft; continue current NG10 (2015) RT protocol | WATCH
+SAMHSA grant termination/restoration episode | SAMHSA/HHS | Jan 13–15, 2026 | Workflow / Systems risk | Situational awareness re: instability of community referral partners (peer support, prevention, treatment) | WATCH
+Joint Commission/NQF Sentinel Events List aligned with SRE List | Joint Commission / NQF | Announced Jan 26, 2026; eff. Jan 1, 2027 | Updated / Workflow | Retains Homicide, Sexual Abuse/Assault, and Physical Assault of staff as reportable sentinel events — pairs with R3 #42 workplace-violence standard | PLAN

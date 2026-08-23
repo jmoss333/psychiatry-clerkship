@@ -1,0 +1,509 @@
+Violence Risk Assessment and Management in Inpatient Psychiatry: A Comprehensive Evidence Review
+
+
+Scope and Framing
+
+
+This review synthesizes the current evidence on violence risk assessment and management in adult inpatient psychiatric settings, covering structured professional judgment (SPJ) tools, risk factor taxonomy, trauma-informed care, restraint/seclusion reduction, team-based behavioral planning, and documentation standards. The evidence base draws on systematic reviews, meta-analyses, validation studies, Cochrane reviews, and clinical practice guidelines from the APA, NICE, Joint Commission, and CMS. Approximately 17% (95% CI 14–20%) of acute psychiatric inpatients commit at least one act of violence during hospitalization, making this a core competency for psychiatric residents and attending physicians.[1]
+
+---
+
+1. Structured Professional Judgment Tools
+
+
+Conceptual Framework
+
+
+Violence risk assessment instruments fall into two categories: short-term/imminent tools (predicting violence within 24 hours) and longer-term tools (predicting violence over weeks to months). A systematic review and meta-analysis of 78 samples in forensic psychiatric hospitals found that imminent tools had a median AUC of 0.83 (IQR 0.71–0.85) compared with 0.68 (IQR 0.62–0.75) for longer-term tools, establishing that short-term dynamic instruments substantially outperform longer-term instruments for inpatient violence prediction.[2] The 2024 Cochrane review of four RCTs found that structured risk assessment likely reduces severe aggression events compared with standard care (RR 0.59, 95% CI 0.37–0.93; moderate-certainty evidence).[3]
+
+HCR-20 (Historical, Clinical, Risk Management-20)
+
+
+The HCR-20 is the most globally used SPJ instrument, comprising 20 items across Historical (H10), Clinical (C5), and Risk Management (R5) subscales.[4] The Lancet Psychiatry meta-analysis (50 studies, 10,460 participants, 12 countries) found a pooled AUC of 0.69 (95% CI 0.65–0.72) for HCR-20v2 predicting violent recidivism, with the H10 subscale alone achieving AUC 0.72 (95% CI 0.65–0.79).[5] In nonforensic populations, AUCs of 0.72 for men and 0.77 for women have been reported.[6] An international study of 210 forensic inpatients with schizophrenia-spectrum disorders found that HCR-20v3 performance deteriorated after 6 months, supporting reassessment at that interval.[7] A critical narrative review of 206 HCR-20 studies found that 92% relied on summed item scores (actuarial use) rather than the SPJ approach as intended, and only one study tested whether HCR-20 use actually reduced violence rates.[4]
+
+Best use: Medium- to long-term risk stratification; admission-level risk formulation; identifying low-risk patients for step-down. Not designed for daily reassessment.
+
+Brøset Violence Checklist (BVC)
+
+
+The BVC is a 6-item nursing-administered checklist (confusion, irritability, boisterousness, verbal threats, physical threats, attacks on objects) designed for 24-hour prediction. A scoping review and meta-analysis of 15 independent studies found a pooled AUC of 0.83.[8] The Dickens et al. meta-analysis (282,238 assessments, 2,723 individuals) found pooled effect sizes of Hedges' g = 1.35 (95% CI 1.15–1.56) for prediction of aggression against people.[9] An umbrella review reported sensitivity of 45.7–88.6%, specificity of 80–100%, and critically, NPV of 97–99.5%, meaning the BVC excels at ruling out imminent violence.[10] Adding sleep disturbance variables improved AUC from 0.757 to 0.873 in one PICU study.[11] The following forest plot from the Hvidhjelm et al. meta-analysis illustrates the BVC's predictive validity across 15 studies:
+
+Figure 2 Brøset violence checklist meta‐analysis ( N = 15).
+
+Dynamic Appraisal of Situational Aggression (DASA)
+
+
+The DASA is a 7-item tool (irritability, impulsivity, unwillingness to follow directions, sensitivity to perceived provocation, easily angered when requests denied, negative attitudes, verbal threats) also designed for 24-hour prediction. The largest validation study to date (3,819 patients, 88,124 DASA scores) found an overall AUC of 0.73, with consistent performance across forensic (0.71), schizophrenia (0.73), and acute care units (0.75).[12] A two-year retrospective study found high DASA scores were associated with subsequent aggression with HR 9.64 (95% CI 7.75–11.99) after controlling for static variables.[13] Crucially, a cluster-randomized crossover trial of an electronic DASA plus aggression prevention protocol (eDASA+APP) demonstrated a significant reduction in aggressive incidents (OR 0.56, 95% CI 0.45–0.70, p<0.001) and reduced as-needed medication use (OR 0.64, 95% CI 0.50–0.83).[14] This is the strongest trial evidence that a structured risk assessment tool, when paired with a management protocol, actually reduces violence.
+
+The following figure from the Estonian cross-cultural validation study demonstrates the dose-response relationship between DASA scores and probability of aggressive behavior within 24 hours (AUC 0.86):
+
+Figure 1 Probability estimates of the manifestation of aggressive behaviour according to the DASA total score with 95% confidence intervals.
+
+Classification of Violence Risk (COVR)
+
+
+The COVR is an actuarial software program based on the MacArthur Violence Risk Assessment Study's iterative classification tree approach, generating probability estimates (1–76%) of post-discharge community violence.[16] A Swedish validation found AUC of 0.77 with comparable performance for women (0.78) and men (0.76).[17] However, a replication by the original researchers showed "considerable reduction in positive predictive power," raising concerns about clinical use for high-risk classifications.[18] The COVR was designed for predicting community violence post-discharge and has a more limited evidence base for inpatient violence prediction than the other tools.
+
+Comparative Summary of Tools
+
+
+
+
+Key cross-cutting finding: PPV is consistently low across all tools (typically <15% for short-term tools), reflecting the low base rate of violence even in psychiatric populations.[10][5] These tools are substantially better at ruling out violence than ruling it in. Combining multiple instruments may not result in clinically meaningful improvements beyond a single well-administered dynamic tool.[19]
+
+---
+
+2. Static Versus Dynamic Risk Factors
+
+
+Static Risk Factors
+
+
+Static (historical, non-modifiable) risk factors consistently identified across meta-analyses include prior violent offenses, prior imprisonment, criminal history (pooled OR 3.50, 95% CI 2.37–5.16 in a 2025 updated meta-analysis of 47 longitudinal studies, 203,297 individuals), male sex, younger age, family history of violence or substance misuse, and low socioeconomic status.[20][21] A 2025 U.S. study of 15,186 inpatients confirmed that patients who committed assault were more likely to be male, younger, have a psychotic disorder, be involuntarily admitted, and have a known history of assault.[22] Criminal history factors remain the strongest static predictors across all meta-analyses.[21][23]
+
+Dynamic Risk Factors
+
+
+A meta-analysis of 110 studies (n = 45,533) found the strongest dynamic risk factors for violence in psychosis were hostile behavior, recent drug misuse, and non-adherence with psychological therapies (all p < 0.001), followed by poor impulse control, recent substance/alcohol misuse (p < 0.01), and medication non-adherence (p < 0.05).[23] The 2025 updated meta-analysis classified positive psychotic symptoms and anger from persecutory beliefs as dynamic risk factors, though criminal history and substance misuse remained stronger overall predictors.[21]
+
+Relative Predictive Value
+
+
+The evidence on whether dynamic factors add incremental value beyond static factors is mixed. A prospective study found dynamic factors added little incremental predictive value beyond static ones (AUC 0.77 with dynamic score vs. 0.75 without).[24] However, the large Canadian study (88,124 patient-days) found DASA scores strongly outperformed all static variables in multivariable models (HR 9.64 for high scores vs. static variable HRs of 1.2–2.5).[13] The practical implication is that dynamic factors are the actionable targets for prevention, regardless of their incremental statistical contribution.
+
+Ward-Level Risk Factors
+
+
+A systematic review of 146 studies identified environmental and organizational risk factors beyond individual patient characteristics: higher bed occupancy, restrictive ward environment, lack of privacy and structure, unqualified or temporary staff, and staff burnout.[25] Higher proportions of male patients, involuntary patients, patients with schizophrenia, and patients with alcohol use disorder were associated with higher unit-level violence rates.[1]
+
+---
+
+3. Substance Use and Violence Risk
+
+
+Substance misuse is the single strongest psychiatric risk factor for violence at a population level, with a pooled OR of 7.4 (95% CI 4.3–12.7) in an umbrella review.[20] Swedish longitudinal data showed hazard ratios for violent offending of 16.2 (95% CI 14.6–17.9) for men and 36.0 (95% CI 27.0–48.0) for women with drug use disorders.[20] The following figure from the Swedish population study by Sariaslan et al. illustrates that drug and alcohol use disorders have the highest absolute rates of violence perpetration (12–27 events per 1,000 person-years) across all psychiatric diagnoses:
+
+Figure 4 Risk of Subjection to Violence and Perpetration of Violence Among Individuals Diagnosed With Specific Psychiatric Disorders Compared With Siblings Without Psychiatric Disorders
+
+Comorbid substance misuse dramatically amplifies violence risk in psychosis. The most recent meta-analysis in JAMA Psychiatry (data from 15 countries) found schizophrenia spectrum disorders without substance misuse comorbidity had a pooled OR for violence of 3.5 (95% CI 2.6–4.6), while those with comorbidity had a pooled OR of 9.9 (95% CI 7.2–13.5).[27] A Swedish population study (n = 8,003) found 27.6% of patients with schizophrenia and comorbid substance abuse committed a violent offense versus 8.5% without comorbidity.[28]
+
+Specific substances: Cannabis use was identified as a novel risk factor in the 2025 updated meta-analysis (OR 3.34, 95% CI 2.32–4.82).[21] Daily cannabis use increased violence odds in psychosis (pooled OR 1.6, 95% CI 1.2–2.0), daily stimulant use (pooled OR 2.8, 95% CI 1.7–4.5), and daily depressant use (pooled OR 2.2, 95% CI 1.1–4.5).[29] In emergency psychiatric settings, cannabinoid use combined with psychotic symptoms increased violence odds to 7.1 (95% CI 3.7–13.6).[30]
+
+Inpatient paradox: One large U.S. study (n = 15,186) found patients with comorbid substance use disorder were paradoxically less likely to engage in inpatient assault, possibly because active intoxication (the proximal risk factor) resolves during hospitalization.[22] This underscores that the dynamic state of intoxication/withdrawal, rather than the static diagnosis of SUD, is the operative risk factor.
+
+---
+
+4. Psychosis and Violence Risk
+
+
+Persecutory Delusions and Anger
+
+
+The East London First Episode Psychosis Study (n = 458, JAMA Psychiatry) found that 38% of patients were violent in the 12 months prior to interview, with three delusion types demonstrating pathways to serious violence mediated by anger: persecution, being spied on, and conspiracy. The population-attributable risk percentage of anger due to delusions was 30.8% for minor violence and 55.9% for serious violence.[31] Reanalysis of the MacArthur Violence Risk Assessment Study confirmed that specific delusions (being spied upon, being followed, being plotted against, being under external control, thought insertion) were associated with violence when measured concurrently, but associations disappeared in prospective designs with temporal separation.[32][33] This indicates that anger is the key mediating variable, not the delusion itself.
+
+Threat/Control-Override (TCO) Symptoms
+
+
+The TCO hypothesis — that symptoms involving feeling threatened or having one's mind/body controlled by external forces are specifically linked to violence — has mixed evidence. TCO symptoms were independently associated with acute severe/fatal violence in forensic patients (OR 3.10, 95% CI 1.51–6.35), and were more frequent in homicide offenders with schizophrenia than in those with substance use or personality disorders.[34][35] However, the MacArthur study found neither delusions in general nor TCO delusions were associated with higher violence risk in a prospective design.[33] The association appears to be mediated by anger and impulsiveness rather than being a direct effect.[31][36]
+
+Command Hallucinations
+
+
+Patients with command hallucinations to harm others were more than twice as likely to be violent after controlling for demographics, substance abuse history, and response biases.[37] Command hallucinations were independently associated with acute severe/fatal violence (OR 2.35, 95% CI 1.05–5.24).[34] However, in chronic schizophrenia inpatients, it was the negative emotional content and tone of voices, and the patient's inability to cope with voices, that distinguished violent from non-violent patients, rather than command hallucinations per se.[38]
+
+Clinical Synthesis on Psychotic Symptoms
+
+
+Psychotic symptoms are dynamic risk factors for violence, but the relationship is complex and largely mediated by anger/negative affect. Temporal proximity is crucial — concurrent measurement detects associations that disappear with temporal separation.[32][33] Risk factors differ by phase of illness: among patients with few positive symptoms, TCO symptoms, depression, drug use, and conduct disorder history predict aggression; among those with high positive symptoms, only medication non-compliance was detectable as a predictor.[39] The practical implication is that monitoring anger, emotional distress, and coping capacity is more informative than cataloging specific delusion content.
+
+---
+
+5. Trauma-Informed Care
+
+
+Principles and Prevalence
+
+
+Trauma-informed care (TIC) is based on three core principles: recognizing the prevalence of trauma (50–80% of psychiatric inpatients have trauma histories), recognizing how trauma affects all individuals including patients and staff, and assessing and treating trauma-related symptoms to prevent retraumatization.[40][41] TIC has been endorsed by SAMHSA, the APA, and multiple mental health organizations.[40] The APA's 2022 Resource Document on Seclusion or Restraint explicitly states that "a culturally competent, trauma-informed, and patient-centered approach is necessary when making decisions about whether to use seclusion or restraint".[41]
+
+Evidence for Effectiveness
+
+
+A 2023 scoping review identified 31 studies of TIC in acute, crisis, emergency, and residential mental health settings; the Six Core Strategies (n = 7) and Sanctuary Model (n = 6) were the most commonly reported approaches.[42] A 4-year NHS evaluation of TIC using Power Threat Meaning Framework team formulation demonstrated significant reductions in monthly self-harm incidents (p < 0.01; r = 0.42), seclusion (p < 0.05; r = 0.30), and restraint (p < 0.05; d = 0.55).[43] A state hospital study using a multiple-baseline design found an 82.3% reduction in seclusion and restraint rates (p = .008) after implementing TIC training, environmental changes, modified unit rules, and patient involvement in treatment planning.[44] However, most evidence is preliminary with few controlled trials, limiting causal inference.[42][45]
+
+---
+
+6. Restraint and Seclusion Reduction
+
+
+Six Core Strategies (6CS)
+
+
+The 6CS framework (NASMHPD) comprises: (1) leadership toward organizational change, (2) use of data to inform practice, (3) workforce development, (4) use of S/R reduction tools, (5) consumer roles in inpatient settings, and (6) rigorous debriefing techniques.[46] A federally funded multisite study of 43 facilities found that facilities with stabilized 6CS implementation reduced the percentage secluded by 17% (p = .002), seclusion hours by 19% (p = .001), and proportion restrained by 30% (p = .03).[47] Pennsylvania State Hospitals achieved nearly 10 years of cessation of seclusion and mechanical restraint use through continuous 6CS adherence, with physical restraint duration falling by 64% (6.6 to 2.4 minutes, p < .001) and all safety measures improving or remaining unchanged.[48] However, one public psychiatric hospital showed S/R use resumed after monitoring and 6CS adherence ended, underscoring the importance of sustained organizational commitment.[49]
+
+Safewards Model
+
+
+The Safewards cluster RCT (31 wards, 15 hospitals) found the experimental condition reduced conflict events by 15% (95% CI 5.7–23.7%) and containment events by 23.2% (95% CI 9.9–35.5%).[50] A Danish interrupted time-series analysis found a 2% decrease per quarter in overall coercive measures (p < .001) and an 11% decrease per quarter in forced sedation (p < .001).[51] The Safewards Secure model has been adapted for forensic mental health settings, as shown in the following figure:
+
+Figure 3 Final Safewards Secure model simplified version.
+
+A systematic review concluded that while evidence supports Safewards' effectiveness in general mental health services, there is insufficient high-quality evidence for settings beyond this.[53]
+
+Pharmacological Management of Acute Agitation
+
+
+When de-escalation fails, pharmacological management is indicated. An umbrella review and multiple meta-analyses support the following tiered approach:[54][55][56][57]
+
+
+
+A 2026 individual participant data network meta-analysis in The Lancet Psychiatry found that haloperidol monotherapy was among the least effective options and was associated with extrapyramidal side effects, while antipsychotic–benzodiazepine combinations appeared among the most effective options across both moderate and severe agitation.[57]
+
+---
+
+7. Team-Based Behavioral Planning
+
+
+Effective violence prevention requires a multidisciplinary approach integrating risk assessment into daily clinical workflow. Key evidence-based components include:
+
+Structured daily risk assessment: The DASA or BVC should be scored at least twice daily (each shift) by nursing staff, with results discussed in team meetings and treatment planning.[12][58] In a Finnish study, 91.2% of high DASA scores led to at least one intervention, though non-coercive interventions (daily activities, therapeutic engagement) were significantly associated with decreased perceived risk, while pharmacological or coercive interventions were not.[58]
+
+Collaborative risk management plans: In forensic settings, plans jointly developed by patients and staff that identify early warning signs, risk factors, management strategies, and goals showed high face and content validity.[59] Ward managers identified four key strategies: (1) carrying out work properly while staying in the background, (2) promoting key values and de-escalation, (3) treating staff as critical resources, and (4) exchanging information and debriefing after incidents.[60]
+
+Milieu as active treatment: A JAMA Psychiatry perspective reconceptualizes the milieu as a continuous instructional environment requiring structured daily routines aligned with therapeutic goals, shared therapeutic language across disciplines, and microinterventions embedded in routine care.[61]
+
+---
+
+8. Regulatory Framework and Documentation Standards
+
+
+Joint Commission Requirements (2024 Update, R3 Report Issue 44)
+
+
+The Joint Commission issued new and revised requirements including: organizations must take action to reduce the need for S/R through initial assessments identifying escalation signs, trauma history, de-escalation preferences, and medical risk factors (CTS.05.05.07); written policies must address definitions, training, monitoring, time-limited orders, post-S/R debriefing, documentation, and data collection for performance improvement (CTS.05.05.01); continuous in-person monitoring with regular assessments of injury, vital signs, circulation, hydration, elimination, and readiness for discontinuation (CTS.05.05.09); debriefing with patient and staff within 24 hours of each episode (CTS.05.05.17).[62]
+
+CMS Requirements
+
+
+S/R may only be used when less restrictive interventions are ineffective; face-to-face evaluation by a physician/LIP within 1 hour of initiation; S/R may never be used as coercion, discipline, convenience, or retaliation; all patients have the right to be free from S/R.[41] CMS and TJC have not updated their S/R guidelines since 2005.[49]
+
+Required Documentation (Joint Commission CTS.05.05.19)
+
+
+Documentation for each S/R episode must include: in-person medical and behavioral evaluation; description of behavior and intervention used including less restrictive interventions attempted; condition/symptoms warranting S/R and rationale for type chosen; patient response and rationale for continued use; all assessments and reassessments; continuous monitoring records; revisions to care plan; any death or injury; names of all staff involved; physician/LIP notification and orders; family notification; behavior criteria for discontinuation; and post-episode debriefing documentation.[62]
+
+---
+
+9. Practical Resident Framework: The "ASSESS" Approach
+
+
+Based on the evidence synthesized above, the following framework provides a structured approach for psychiatric residents:
+
+A — Admission Risk Stratification
+
+- Complete violence risk assessment at admission using history, mental state examination, and collateral information[6]
+
+- Document static risk factors: prior violence history, criminal history, demographics, diagnosis
+
+- Screen for trauma history and document patient preferences (including psychiatric advance directives)[62]
+
+- Assign initial observation level based on risk assessment[63]
+
+S — Structured Daily Assessment
+
+- Score BVC or DASA at least twice daily (each nursing shift)[9][12]
+
+- Communicate scores at shift handoff and in team meetings
+
+- Document dynamic risk factors: substance use status, medication adherence, psychotic symptoms, anger/irritability, sleep quality
+
+S — Substance and Symptom Monitoring
+
+- Assess for active intoxication/withdrawal (strongest proximal risk factor)[20][30]
+
+- Monitor anger associated with persecutory delusions (mediates 55.9% of serious violence)[31]
+
+- Track command hallucinations to harm others and patient's coping capacity[37]
+
+- Assess medication adherence daily[23]
+
+E — Environmental and De-escalation Interventions
+
+- Implement trauma-informed milieu management[41]
+
+- Offer sensory modulation tools (weighted blankets, sensory rooms, music)[64][41]
+
+- Use verbal de-escalation as first-line intervention for agitation[41]
+
+- Ensure adequate staffing based on acuity[62]
+
+S — Safety Planning and Behavioral Interventions
+
+- Develop individualized behavioral safety plans with patient input[59]
+
+- Identify early warning signs, triggers, and preferred interventions
+
+- Use least restrictive interventions first; document escalation rationale
+
+- Implement pharmacological management per tiered protocol when de-escalation fails[55]
+
+S — Structured Debriefing and Documentation
+
+- Debrief with patient and staff within 24 hours of any S/R episode[62]
+
+- Document all elements required by Joint Commission CTS.05.05.19[62]
+
+- Update risk assessment and care plan after any incident
+
+- Report data for unit-level quality improvement[47]
+
+---
+
+10. Violence Risk Assessment Documentation Template
+
+
+Admission Violence Risk Assessment
+
+
+Static Risk Factors:
+
+- History of violence (type, severity, recency, frequency, targets)
+
+- Criminal history (arrests, convictions, incarcerations)
+
+- Age and sex
+
+- Diagnosis (psychotic disorder, personality disorder, SUD)
+
+- Admission status (voluntary/involuntary)
+
+- History of childhood conduct disorder or antisocial behavior
+
+- Family history of violence or substance misuse
+
+Dynamic Risk Factors:
+
+- Current substance use/intoxication/withdrawal status
+
+- Medication adherence status
+
+- Active psychotic symptoms (specify: persecutory delusions, command hallucinations, TCO symptoms)
+
+- Anger/hostility level
+
+- Impulsivity
+
+- Insight into illness
+
+- Recent victimization or self-harm
+
+Trauma-Informed Assessment:
+
+- Trauma history screened
+
+- Patient preferences for crisis management documented
+
+- Psychiatric advance directive reviewed (if available)
+
+- Preferred de-escalation strategies identified
+
+Risk Formulation:
+
+- Overall risk level: Low / Moderate / High
+
+- Specific risk scenarios identified
+
+- Protective factors noted
+
+- Management plan with specific interventions
+
+Daily Reassessment (BVC/DASA):
+
+- Score: /6 (BVC) or /7 (DASA)
+
+- Interventions triggered by score
+
+- Response to interventions
+
+- Updated risk level
+
+---
+
+11. Unit Safety Planning Checklist
+
+
+Organizational Leadership
+
+
+- Unit leadership committed to S/R reduction with explicit goals
+
+- S/R data tracked and reviewed monthly (rates, duration, injuries)
+
+- Racial/ethnic disparities in S/R use monitored[41]
+
+- Staff debriefing protocol in place for all S/R episodes
+
+Workforce Development
+
+
+- All staff trained in verbal de-escalation techniques
+
+- All staff trained in trauma-informed care principles
+
+- All staff competent in safe S/R application and monitoring
+
+- Staffing levels adequate for unit acuity; minimize temporary/agency staff[25][62]
+
+Risk Assessment Integration
+
+
+- Validated short-term tool (BVC or DASA) scored twice daily
+
+- Scores communicated at shift handoff
+
+- High scores trigger specific intervention protocol
+
+- Risk assessment results integrated into treatment planning
+
+Environmental Safety
+
+
+- Sensory modulation room/tools available (weighted blankets, aromatherapy, music)[64][41]
+
+- Comfort/quiet room available as alternative to seclusion
+
+- Access to outdoor space/garden when feasible[65]
+
+- Unit design minimizes crowding and maximizes privacy
+
+- Contraband screening protocol at admission[63]
+
+Patient-Centered Interventions
+
+
+- Individualized behavioral safety plans developed with patient input
+
+- Psychiatric advance directives reviewed and honored
+
+- Patient preferences for crisis management documented
+
+- Patient meetings/community meetings held regularly (Safewards)[50]
+
+- Positive handover comments used at shift change (Safewards)[50]
+
+Pharmacological Preparedness
+
+
+- PRN medication protocols available with tiered options (oral → IM)
+
+- First-line: oral olanzapine, oral lorazepam, or oral haloperidol + lorazepam[55]
+
+- IM options available: haloperidol + promethazine, IM olanzapine[55][56]
+
+- Monitoring protocols for post-medication vital signs
+
+Post-Incident Response
+
+
+- Patient debriefing within 24 hours of S/R episode[62]
+
+- Staff debriefing within 24 hours[62]
+
+- Injury assessment and documentation
+
+- Care plan updated with prevention strategies
+
+- Root cause analysis for serious incidents
+
+- Data entered into quality improvement tracking system
+
+---
+
+Evidence Gaps and Emerging Directions
+
+
+Several important uncertainties remain. Calibration is almost never reported in validation studies; most rely solely on AUC, which does not indicate whether predicted probabilities match observed rates.[5] CMS and Joint Commission regulations have not been updated since 2005 and do not incorporate current best practices like the Six Core Strategies.[49] De-escalation training lacks a validated evidence-based model despite being mandated in many settings.[66][67] Post-incident debriefing is widely recommended but a 2025 Cochrane review found no completed RCTs evaluating debriefing after coercive measures.[46] Racial and ethnic disparities in S/R use are recognized but understudied.[41] The DEMEANOR trial protocol describes a proactive behavioral intervention team approach that may provide higher-quality evidence on team-based prevention.[68]
+
+---
+
+Would you like to explore the specific implementation strategies for integrating the DASA with an aggression prevention protocol, given that this is the only tool-intervention combination with RCT evidence for actually reducing inpatient violence?
+
+References
+Prevalence and Risk Factors of Violence by Psychiatric Acute Inpatients: A Systematic Review and Meta-Analysis. Iozzino L, Ferrari C, Large M, Nielssen O, de Girolamo G. PloS One. 2015;10(6):e0128536. doi:10.1371/journal.pone.0128536.
+Use of Risk Assessment Instruments to Predict Violence in Forensic Psychiatric Hospitals: A Systematic Review and Meta-Analysis. Ramesh T, Igoumenou A, Vazquez Montes M, Fazel S. European Psychiatry : The Journal of the Association of European Psychiatrists. 2018;52:47-53. doi:10.1016/j.eurpsy.2018.02.007.
+Risk Assessment for Aggressive Behaviour in Schizophrenia. Välimäki M, Lantta T, Kontio R. The Cochrane Database of Systematic Reviews. 2024;5:CD012397. doi:10.1002/14651858.CD012397.pub2.
+The Empirical Evidence Base for the Use of the HCR-20: A Narrative Review of Study Designs and Transferability of Results to Clinical Practice. Challinor A, Ogundalu A, McIntyre JC, Bramwell V, Nathan R. International Journal of Law and Psychiatry. 2021 Sep-Oct;78:101729. doi:10.1016/j.ijlp.2021.101729.
+Violence Risk Assessment Instruments in Forensic Psychiatric Populations: A Systematic Review and Meta-Analysis. Ogonah MGT, Seyedsalehi A, Whiting D, Fazel S. The Lancet. Psychiatry. 2023;10(10):780-789. doi:10.1016/S2215-0366(23)00256-0.
+Psychiatric violence risk assessment. Alec Buchanan MD PhD, Renee Binder MD, Michael Norko MD, Marvin Swartz MD. American Psychiatric Association (2011).
+The Predictive Validity and Temporal Characteristics of the HCR-20v3 for Inpatient Violence in Forensic Inpatient Settings. An International Study. Picchioni M, Ruiz R, de Girolamo G, et al. Psychiatry Research. 2024;339:116079. doi:10.1016/j.psychres.2024.116079.
+Short‐term risk assessment in the long term: A scoping review and meta‐analysis of the Brøset Violence Checklist. Hvidhjelm J, Berring LL, Whittington R, et al. Journal of Psychiatric and Mental Health Nursing. 2023;30(4):637-648. doi:10.1111/jpm.12905.
+Structured Assessments for Imminent Aggression in Mental Health and Correctional Settings: Systematic Review and Meta-Analysis. Dickens GL, O'Shea LE, Christensen M. International Journal of Nursing Studies. 2020;104:103526. doi:10.1016/j.ijnurstu.2020.103526.
+Tools to Predict Imminent Risk of Patient Perpetrated Workplace Violence in Healthcare Settings: An Umbrella Review. Spencer C, Schoenbeck R, DeSanto K. BMC Public Health. 2025;25(1):4316. doi:10.1186/s12889-025-25742-1.
+The Predictive Properties of Violence Risk Instruments May Increase by Adding Items Assessing Sleep. Langsrud K, Vaaler A, Morken G, et al. Frontiers in Psychiatry. 2019;10:323. doi:10.3389/fpsyt.2019.00323.
+Violence Risk Prediction in Mental Health Inpatient Settings Using the Dynamic Appraisal of Situational Aggression. Moscovici M, Farrokhi F, Vangala L, et al. Frontiers in Psychiatry. 2024;15:1460332. doi:10.3389/fpsyt.2024.1460332.
+Static and Dynamic Variables Associated With Inpatient Aggression: A Two-Year Retrospective Study: Variables Statiques Et Dynamiques Associées Au Comportement Agressif Des Patients Hospitalisés : Étude Rétrospective De Deux Ans. Jones RM, Vangala L, Farrokhi F, et al. Canadian Journal of Psychiatry. Revue Canadienne De Psychiatrie. 2025;70(8):620-628. doi:10.1177/07067437251343293.
+A Clinical Decision Support System to Prevent Aggression and Reduce Restrictive Practices in a Forensic Mental Health Service. Griffith JJ, Meyer D, Maguire T, Ogloff JRP, Daffern M. Psychiatric Services (Washington, D.C.). 2021;72(8):885-890. doi:10.1176/appi.ps.202000315.
+The risk assessment of imminent inpatient aggression: A cross‐cultural validation study of the dynamic appraisal of situational aggression in Estonia. Lenk-Adusoo M, Kangro R, Haring L. Journal of Psychiatric and Mental Health Nursing. 2024;31(4):560-571. doi:10.1111/jpm.13010.
+The Classification of Violence Risk. Monahan J, Steadman HJ, Appelbaum PS, et al. Behavioral Sciences & the Law. 2006;24(6):721-30. doi:10.1002/bsl.725.
+Violent Behaviour by General Psychiatric Patients in Sweden - Validation of Classification of Violence Risk (COVR) Software. Sturup J, Kristiansson M, Lindqvist P. Psychiatry Research. 2011;188(1):161-5. doi:10.1016/j.psychres.2010.12.021.
+Issues Regarding the Clinical Use of the Classification of Violence Risk (COVR) Assessment Instrument. McCusker PJ. International Journal of Offender Therapy and Comparative Criminology. 2007;51(6):676-85. doi:10.1177/0306624X07299227.
+Investigating the Dynamic Nature of Multiple Risk Assessment Instruments in a Forensic Mental Health Hospital. Simmons ML, Ogloff JRP, Daffern M. Psychological Assessment. 2023;35(1):42-55. doi:10.1037/pas0001174.
+Violence and Mental Disorders: A Structured Review of Associations by Individual Diagnoses, Risk Factors, and Risk Assessment. Whiting D, Lichtenstein P, Fazel S. The Lancet. Psychiatry. 2021;8(2):150-161. doi:10.1016/S2215-0366(20)30262-5.
+Systematic Review of Risk Factors for Violence in Psychosis: 10-Year Update. Lagerberg T, Lambe S, Paulino A, Yu R, Fazel S. The British Journal of Psychiatry : The Journal of Mental Science. 2025;226(2):100-107. doi:10.1192/bjp.2024.120.
+Understanding Risk Factors for Physical Assault in a Large Inpatient Behavioral Health System. Wasser T, Xia K, O'Sullivan DM, Newfield A, Teitelbaum C. Psychiatric Services (Washington, D.C.). 2025;:appips20250075. doi:10.1176/appi.ps.20250075.
+Risk Factors for Violence in Psychosis: Systematic Review and Meta-Regression Analysis of 110 Studies. Witt K, van Dorn R, Fazel S. PloS One. 2013;8(2):e55942. doi:10.1371/journal.pone.0055942.
+Modifiable Risk Factors for Inpatient Violence in Psychiatric Hospital: Prospective Study and Prediction Model. Fazel S, Toynbee M, Ryland H, et al. Psychological Medicine. 2023;53(2):590-596. doi:10.1017/S0033291721002063.
+Aggression on the Psychiatric Ward: Prevalence and Risk Factors. A Systematic Review of the Literature. Weltens I, Bak M, Verhagen S, et al. PloS One. 2021;16(10):e0258346. doi:10.1371/journal.pone.0258346.
+Risk of Subjection to Violence and Perpetration of Violence in Persons With Psychiatric Disorders in Sweden. Sariaslan A, Arseneault L, Larsson H, Lichtenstein P, Fazel S. JAMA Psychiatry. 2020;77(4):359-367. doi:10.1001/jamapsychiatry.2019.4275.
+Association of Schizophrenia Spectrum Disorders and Violence Perpetration in Adults and Adolescents From 15 Countries: A Systematic Review and Meta-analysis. Whiting D, Gulati G, Geddes JR, Fazel S. JAMA Psychiatry. 2022;79(2):120-132. doi:10.1001/jamapsychiatry.2021.3721.
+Schizophrenia, Substance Abuse, and Violent Crime. Fazel S, Långström N, Hjern A, Grann M, Lichtenstein P. JAMA. 2009;301(19):2016-23. doi:10.1001/jama.2009.675.
+Use of Illicit Substances and Violent Behaviour in Psychotic Disorders: Two Nationwide Case-Control Studies and Meta-Analyses. Lamsma J, Cahn W, Fazel S. Psychological Medicine. 2020;50(12):2028-2033. doi:10.1017/S0033291719002125.
+Substance Use in Psychiatric Crisis: Relationship to Violence. Kalk NJ, Robins JE, Ross KR, et al. Psychological Medicine. 2022;52(9):1691-1697. doi:10.1017/S0033291720003451.
+The Relationship Between Delusions and Violence: Findings From the East London First Episode Psychosis Study. Coid JW, Ullrich S, Kallis C, et al. JAMA Psychiatry. 2013;70(5):465-71. doi:10.1001/jamapsychiatry.2013.12.
+Delusions, Anger, and Serious Violence: New Findings From the MacArthur Violence Risk Assessment Study. Ullrich S, Keers R, Coid JW. Schizophrenia Bulletin. 2014;40(5):1174-81. doi:10.1093/schbul/sbt126.
+Violence and Delusions: Data From the MacArthur Violence Risk Assessment Study. Appelbaum PS, Robbins PC, Monahan J. The American Journal of Psychiatry. 2000;157(4):566-72. doi:10.1176/appi.ajp.157.4.566.
+Clinical Risk Factors of Acute Severe or Fatal Violence Among Forensic Mental Health Patients. Chan B, Shehtman M. Psychiatry Research. 2019;275:20-26. doi:10.1016/j.psychres.2019.03.005.
+The Specificity of the Threat/Control-Override Concept in Schizophrenia - New Insights From a Retrospective Cross-Sectional Study of Forensic Homicide Offenders. Findeis H, Strauß M, Kröber HL. Frontiers in Psychiatry. 2025;16:1658271. doi:10.3389/fpsyt.2025.1658271.
+Threat/Control-Override Symptoms and Emotional Reactions to Positive Symptoms as Correlates of Aggressive Behavior in Psychotic Patients. Nederlof AF, Muris P, Hovens JE. The Journal of Nervous and Mental Disease. 2011;199(5):342-7. doi:10.1097/NMD.0b013e3182175167.
+The Relationship Between Command Hallucinations and Violence. McNiel DE, Eisner JP, Binder RL. Psychiatric Services (Washington, D.C.). 2000;51(10):1288-92. doi:10.1176/appi.ps.51.10.1288.
+Violence in Schizophrenia: Role of Hallucinations and Delusions. Cheung P, Schweitzer I, Crowley K, Tuckwell V. Schizophrenia Research. 1997;26(2-3):181-90. doi:10.1016/s0920-9964(97)00049-2.
+Violence and Phases of Illness: Differential Risk and Predictors. Hodgins S, Riaz M. European Psychiatry : The Journal of the Association of European Psychiatrists. 2011;26(8):518-24. doi:10.1016/j.eurpsy.2010.09.006.
+Resource Document on Prevention of Patient Assaults on Mental Healthcare Employees in Psychiatric Healthcare Settings. Jose A. Arriola Vigo MD MPH, Erick H. Cheung MD, Suliman El-Amin MD, et al. American Psychiatric Association (2025).
+Seclusion or Restraint. American Psychiatric Association (2022).
+A Scoping Review of Trauma Informed Approaches in Acute, Crisis, Emergency, and Residential Mental Health Care. Saunders KRK, McGuinness E, Barnett P, et al. BMC Psychiatry. 2023;23(1):567. doi:10.1186/s12888-023-05016-z.
+Trauma-Informed Care on Mental Health Wards: The Impact of Power Threat Meaning Framework Team Formulation and Psychological Stabilisation on Self-Harm and Restrictive Interventions. Nikopaschos F, Burrell G, Clark J, Salgueiro A. Frontiers in Psychology. 2023;14:1145100. doi:10.3389/fpsyg.2023.1145100.
+Systematic Investigation of Initiatives to Reduce Seclusion and Restraint in a State Psychiatric Hospital. Borckardt JJ, Madan A, Grubaugh AL, et al. Psychiatric Services (Washington, D.C.). 2011;62(5):477-83. doi:10.1176/ps.62.5.pss6205_0477.
+Health Professionals' Experiences of Providing Trauma-Informed Care in Acute Psychiatric Inpatient Settings: A Scoping Review. O'Dwyer C, Tarzia L, Fernbacher S, Hegarty K. Trauma, Violence & Abuse. 2021;22(5):1057-1067. doi:10.1177/1524838020903064.
+Post-Incident Debriefing for People With Schizophrenia After Coercive Measures. Välimäki M, Varpula J, Lantta T. The Cochrane Database of Systematic Reviews. 2025;5:CD014487. doi:10.1002/14651858.CD014487.pub2.
+Multisite Study of an Evidence-Based Practice to Reduce Seclusion and Restraint in Psychiatric Inpatient Facilities. Wieman DA, Camacho-Gonsalves T, Huckshorn KA, Leff S. Psychiatric Services (Washington, D.C.). 2014;65(3):345-51. doi:10.1176/appi.ps.201300210.
+Effects of Ending the Use of Seclusion and Mechanical Restraint in the Pennsylvania State Hospital System, 2011-2020. Smith GM, Altenor A, Altenor RJ, et al. Psychiatric Services (Washington, D.C.). 2023;74(2):173-181. doi:10.1176/appi.ps.202200004.
+Toward the Cessation of Seclusion and Mechanical Restraint Use in Psychiatric Hospitals: A Call for Regulatory Action. Atdjian S, Huckshorn KA. Psychiatric Services (Washington, D.C.). 2024;75(1):64-71. doi:10.1176/appi.ps.202100538.
+Reducing Conflict and Containment Rates on Acute Psychiatric Wards: The Safewards Cluster Randomised Controlled Trial. Bowers L, James K, Quirk A, et al. International Journal of Nursing Studies. 2015;52(9):1412-22. doi:10.1016/j.ijnurstu.2015.05.001.
+Implementation of the Safewards Model to Reduce the Use of Coercive Measures in Adult Psychiatric Inpatient Units: An Interrupted Time-Series Analysis. Stensgaard L, Andersen MK, Nordentoft M, Hjorthøj C. Journal of Psychiatric Research. 2018;105:147-152. doi:10.1016/j.jpsychires.2018.08.026.
+A Nominal Group Technique to finalise Safewards Secure model and interventions for forensic mental health services. Maguire T, Harrison M, Ryan J, Lang R, McKenna B. Journal of Psychiatric and Mental Health Nursing. 2024;31(4):543-559. doi:10.1111/jpm.13006.
+A Systematic Review of the Effectiveness of Safewards: Has Enthusiasm Exceeded Evidence?. Finch K, Lawrence D, Williams MO, Thompson AR, Hartwright C. Issues in Mental Health Nursing. 2022;43(2):119-136. doi:10.1080/01612840.2021.1967533.
+"Pharmacological Management of Acute Agitation in Psychiatric Patients: An Umbrella Review". Uribe ES, Rodríguez CAB, Juárez MEN, et al. BMC Psychiatry. 2025;25(1):273. doi:10.1186/s12888-024-06426-3.
+Psychopharmacology of Agitation in Acute Psychotic and Manic Episodes. Stetson SR, Osser DN. Current Opinion in Psychiatry. 2022;35(3):171-176. doi:10.1097/YCO.0000000000000787.
+The Pharmacological Management of Agitated and Aggressive Behaviour: A Systematic Review and Meta-Analysis. Bak M, Weltens I, Bervoets C, et al. European Psychiatry : The Journal of the Association of European Psychiatrists. 2019;57:78-100. doi:10.1016/j.eurpsy.2019.01.014.
+Comparative Effectiveness and Safety of Pharmacological Treatments for Rapid Tranquilisation in Emergency Settings: A Systematic Review and Individual Participant Data Network Meta-Analysis. Siafis S, Philipona F, Nomura N, et al. The Lancet. Psychiatry. 2026;13(7):567-580. doi:10.1016/S2215-0366(26)00097-0.
+Interventions Following a High Violence Risk Assessment Score: A Naturalistic Study on a Finnish Psychiatric Admission Ward. Kaunomäki J, Jokela M, Kontio R, et al. BMC Health Services Research. 2017;17(1):26. doi:10.1186/s12913-016-1942-0.
+An Inductive Content Analysis of Collaborative Violence Risk Management Plans in a High-Security Forensic Psychiatric Hospital. Berlin J, Hildebrand Karlén M, Nilsson T, Wallinius M. Issues in Mental Health Nursing. 2025;46(6):566-578. doi:10.1080/01612840.2025.2483248.
+Strategies for the Prevention of Violence in Institutional Care: A Qualitative Interview Study With Ward Managers. Lindow M, Kjellin L, Engström I, Pelto-Piri V. Frontiers in Psychiatry. 2022;13:853260. doi:10.3389/fpsyt.2022.853260.
+Updating Psychological Treatment During Inpatient Psychiatric Care. Kleiman EM, Hawes-Sousa MT, Rizvi SL, Nock MK. JAMA Psychiatry. 2026;:2848042. doi:10.1001/jamapsychiatry.2026.0443.
+R3 Report Issue 44: New and Revised Restraint and Seclusion Requirements for Behavioral Health Care and Human Services Organizations. The Joint Commission. Joint Commission (2024).
+Resource Document on Approaches to Address Patient Access to Important Personal Items While Psychiatrically Hospitalized. Danielle B. Kushner MD, Ashley J.B. MacLean MD, Ariana Nesbit Huselid MD MBE, Morgan Deal MD, Dhruv Gupta MD. American Psychiatric Association (2024).
+The Impact of Sensory Modulation Interventions on Practice in Acute Inpatient Mental Health Settings: A Meta-Ethnography. Molloy L, Chidarikire S, Pullman J, et al. Issues in Mental Health Nursing. 2024;45(6):580-588. doi:10.1080/01612840.2024.2341034.
+Design Features That Reduce the Use of Seclusion and Restraint in Mental Health Facilities: A Rapid Systematic Review. Oostermeijer S, Brasier C, Harvey C, et al. BMJ Open. 2021;11(7):e046647. doi:10.1136/bmjopen-2020-046647.
+Is Mental Health Staff Training in De-Escalation Techniques Effective in Reducing Violent Incidents in Forensic Psychiatric Settings? - A Systematic Review of the Literature. Brenig D, Gade P, Voellm B. BMC Psychiatry. 2023;23(1):246. doi:10.1186/s12888-023-04714-y.
+Development and Evaluation of a De-Escalation Training Intervention in Adult Acute and Forensic Units: The EDITION Systematic Review and Feasibility Trial. Price O, Papastavrou Brooks C, Johnston I, et al. Health Technology Assessment (Winchester, England). 2024;28(3):1-120. doi:10.3310/FGGW6874.
+The Disruptive bEhavior manageMEnt ANd Prevention in Hospitalized Patients Using a behaviORal Intervention Team (DEMEANOR) Study Protocol: A Pragmatic, Cluster, Crossover Trial. Morrison J, Hasselblad M, Kleinpell R, et al. Trials. 2020;21(1):417. doi:10.1186/s13063-020-04278-2.
+
+Tool | Items | Time Horizon | Pooled AUC | NPV | Key Strength | Key Limitation
+HCR-20v2/v3 | 20 | Months–years | 0.69 | — | Most extensively validated globally; good at identifying low risk | Moderate discrimination; performance degrades >6 months; mostly tested actuarially
+BVC | 6 | 24 hours | 0.83 | 97–99.5% | Highest pooled AUC; brief; nurse-administered | Low PPV (3–67.5%); variable sensitivity
+DASA | 7 | 24 hours | 0.73 | 98–99% | RCT evidence for reducing aggression when paired with intervention; dose-response | Slightly lower effect sizes than BVC
+COVR | Variable | Weeks–months | 0.70–0.77 | — | Software-guided; generates probability estimates | Designed for post-discharge community violence; fewer validations
+Tier | Oral Options | IM Options
+First-line | Haloperidol + lorazepam; lorazepam alone; olanzapine | Haloperidol + promethazine; olanzapine alone
+Second-line | Haloperidol + promethazine; loxapine inhaler; risperidone | Haloperidol + lorazepam; lorazepam alone
+Third-line | Asenapine; quetiapine | Ziprasidone; aripiprazole
