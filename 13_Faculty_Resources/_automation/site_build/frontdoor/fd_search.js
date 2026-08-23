@@ -71,6 +71,48 @@
 
 var FD_SEARCH_PINNED = ['mse.html', 'withdrawal.html', 'pg_interview.md'];
 
+/* Words that carry no topic signal. Unguarded, "on" matched 70 of 83 items and "the" 59 --
+   including as substrings inside other words -- so any multi-word query degenerated into a
+   near-wildcard and the cap-at-8 dropped the intended page. The raw-query substring check in
+   fdSearchHits still sees the full phrase, so exact-title queries keep working. */
+var FD_SEARCH_STOPWORDS={
+  'a':1,'an':1,'and':1,'are':1,'as':1,'at':1,'be':1,'by':1,'for':1,'from':1,'has':1,'in':1,
+  'is':1,'it':1,'of':1,'on':1,'or':1,'that':1,'the':1,'to':1,'was':1,'what':1,'when':1,
+  'which':1,'who':1,'with':1,'you':1,'your':1
+};
+
+/* Drops stopwords, but never returns empty: a query made only of stopwords keeps its words so
+   it still behaves as before rather than silently matching nothing. */
+function fdSearchContentWords(words){
+  var out=[],i;
+  for(i=0;i<words.length;i++){
+    if(words[i]&&words[i].length>1&&!FD_SEARCH_STOPWORDS[words[i]]) out.push(words[i]);
+  }
+  return out.length?out:words;
+}
+
+/* Higher is better. Title evidence outranks ref evidence outranks summary evidence, so an exact
+   title match cannot be displaced by a page that merely mentions the phrase in prose. */
+function fdSearchScore(item, rawQuery, contentWords){
+  var title=String(item.title||'').toLowerCase();
+  var ref=String(item.ref||'').toLowerCase();
+  var summary=String(item.summary||'').toLowerCase();
+  var score=0,i,w;
+  if(rawQuery){
+    if(title===rawQuery) score+=100;
+    else if(title.indexOf(rawQuery)!==-1) score+=70;
+    if(ref.indexOf(rawQuery)!==-1) score+=25;
+    if(summary.indexOf(rawQuery)!==-1) score+=10;
+  }
+  for(i=0;i<contentWords.length;i++){
+    w=contentWords[i];
+    if(title.indexOf(w)!==-1) score+=12;
+    else if(ref.indexOf(w)!==-1) score+=6;
+    else if(summary.indexOf(w)!==-1) score+=2;
+  }
+  return score;
+}
+
 /* Per-word synonym expansion. The ORIGINAL word always survives in the output (appended before
    its expansion, never replacing it) so a literal match on the abbreviation itself still works
    -- an unknown word passes through untouched. Lowercased internally so the synonyms map (all
@@ -155,19 +197,19 @@ function fdSearchResults(index, query, synonyms, state){
   var expandedWords=fdExpandQuery(rawQuery, synonyms).split(/\s+/);
   var qw=[];
   for(var e=0;e<expandedWords.length;e++){ if(expandedWords[e]) qw.push(expandedWords[e]); }
+  var contentWords=fdSearchContentWords(qw);
 
   var protoResults=[];
   for(var kk=0;kk<kit.length;kk++){
     var kitItem=kit[kk].item;
-    if(fdSearchHits(fdSearchHaystack(kitItem), rawQuery, qw)){
+    if(fdSearchHits(fdSearchHaystack(kitItem), rawQuery, contentWords)){
       protoResults.push({ item: kitItem, kind:'protocol', meta:'safety · protocol' });
       seenRefs[kitItem.ref]=true;
     }
   }
 
-  /* for..in order over byRef is insertion order in every engine this repo targets, but this file
-     does not lean on that -- refs are sorted for a deterministic, engine-independent order,
-     matching fd_data.js's own fdLibraryOnlyReads precedent. */
+  /* Refs are sorted first so the sort below is deterministic across engines: equal scores keep
+     alphabetical order, matching fd_data.js's fdLibraryOnlyReads precedent. */
   var refs=[];
   for(var ref in idx.byRef){ refs.push(ref); }
   refs.sort(function(a,b){ return a<b?-1:(a>b?1:0); });
@@ -176,10 +218,18 @@ function fdSearchResults(index, query, synonyms, state){
   for(var r=0;r<refs.length;r++){
     if(seenRefs[refs[r]]) continue;
     var it=idx.byRef[refs[r]];
-    if(fdSearchHits(fdSearchHaystack(it), rawQuery, qw)){
-      itemResults.push({ item: it, kind:'item', meta: fdSearchItemMeta(it) });
+    if(fdSearchHits(fdSearchHaystack(it), rawQuery, contentWords)){
+      itemResults.push({
+        item: it, kind:'item', meta: fdSearchItemMeta(it),
+        _score: fdSearchScore(it, rawQuery, contentWords)
+      });
     }
   }
+  /* Stable by construction: equal scores preserve the alphabetical order established above.
+     Protocols are concatenated ahead of every item and are never reordered -- the safety
+     contract is positional, not score-based. */
+  itemResults.sort(function(a,b){ return b._score-a._score; });
+  for(var s=0;s<itemResults.length;s++){ delete itemResults[s]._score; }
 
   return protoResults.concat(itemResults).slice(0,8);
 }

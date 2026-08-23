@@ -28,7 +28,8 @@ function make(governanceBadge) {
     return {
       fdExpandQuery: fdExpandQuery, fdSearchResults: fdSearchResults,
       fdSearchOverlay: fdSearchOverlay, fdSearchResultRow: fdSearchResultRow,
-      fdBuildIndex: fdBuildIndex,
+      fdBuildIndex: fdBuildIndex, fdSearchContentWords: fdSearchContentWords,
+      fdSearchScore: fdSearchScore,
     };
   `)(governanceBadge || function () { return ''; });
 }
@@ -246,4 +247,48 @@ test('synonyms are not hardcoded -- an empty synonym map falls back to plain sub
   const withoutSyn = F.fdSearchResults(REAL_INDEX, 'etoh', {}, {});
   assert.ok(withSyn.length >= withoutSyn.length,
     'the real synonyms map should never find FEWER results than no synonyms at all');
+});
+
+// ---- relevance ranking (Taplinger UX remediation, F2) ----------------------------------------
+
+const titles = (q) => F.fdSearchResults(REAL_INDEX, q, SYN, {}).map((r) => r.item.title);
+
+test('searching a page title exactly returns that page first', () => {
+  assert.equal(titles('therapy on the unit')[0], 'Therapy on the Unit');
+});
+
+test('a one-word topic query surfaces the attested pages for that topic', () => {
+  const t = titles('therapy');
+  assert.ok(t.includes('Therapy on the Unit'), 'Therapy on the Unit missing from "therapy"');
+  assert.ok(t.includes('The Therapy Reading Room'), 'The Therapy Reading Room missing from "therapy"');
+});
+
+test('stopwords do not displace content matches in a multi-word query', () => {
+  // "on" alone matched 70 of 83 items before the guard, and "the" 59, so every item result
+  // for this query used to be a stopword accident. Verified: all item results now contain
+  // the content word.
+  const items = F.fdSearchResults(REAL_INDEX, 'therapy on the unit', SYN, {})
+    .filter((r) => r.kind === 'item');
+  assert.ok(items.length > 0);
+  for (const r of items) {
+    const hay = `${r.item.title} ${r.item.ref} ${r.item.summary}`.toLowerCase();
+    assert.ok(hay.includes('therapy'), `stopword-only match leaked in: ${r.item.title}`);
+  }
+});
+
+test('an all-stopword query degrades to protocol-first rather than exploding', () => {
+  // fdSearchContentWords never returns empty, so a query with no topic signal keeps its
+  // words rather than silently matching nothing -- and the safety contract still governs
+  // what surfaces first.
+  assert.equal(F.fdSearchResults(REAL_INDEX, 'on', SYN, {})[0].kind, 'protocol');
+});
+
+test('protocols still rank ahead of ordinary items after scoring', () => {
+  // Regression guard for the safety contract -- scoring reorders items, never protocols.
+  const r = F.fdSearchResults(REAL_INDEX, 'suicide', SYN, {});
+  assert.equal(r[0].kind, 'protocol');
+});
+
+test('scoring does not break the cap-at-8 contract', () => {
+  assert.ok(F.fdSearchResults(REAL_INDEX, 'a', SYN, {}).length <= 8);
 });
