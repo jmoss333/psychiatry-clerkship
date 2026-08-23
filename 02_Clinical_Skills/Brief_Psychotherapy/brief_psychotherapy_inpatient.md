@@ -37,6 +37,6 @@ When you have five minutes, not fifty: lead with **support**, name the **affect*
 
 <!-- crisis-block -->
 
-**Pair with** — the [Motivational Interviewing](?page=motivational_interviewing.md) page, the [suicide-risk & safety pocket card](?page=pg_suicide.md), the [Personality Disorders](?page=t_personality.md) page (DBT-informed stance), the [Family Meeting Playbook](?page=family_playbook.md), and the [Evidence-Based Inpatient Psychiatry](?page=evidence_inpatient.md) reference for the underlying trials.
+**Pair with** — [Therapy on the Unit](?page=therapy_on_the_unit.md) for the full teaching module and the 5-minute bedside toolkit, [The Therapy Reading Room](?page=therapy_reading_room.md) for the verified reading list, the [Motivational Interviewing](?page=motivational_interviewing.md) page, the [suicide-risk & safety pocket card](?page=pg_suicide.md), the [Personality Disorders](?page=t_personality.md) page (DBT-informed stance), the [Family Meeting Playbook](?page=family_playbook.md), and the [Evidence-Based Inpatient Psychiatry](?page=evidence_inpatient.md) reference for the underlying trials.
 
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*

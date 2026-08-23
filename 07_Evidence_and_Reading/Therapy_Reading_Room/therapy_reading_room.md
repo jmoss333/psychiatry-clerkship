@@ -1,5 +1,7 @@
 # The Therapy Reading Room
 
+> Companion to [Therapy on the Unit](?page=therapy_on_the_unit.md) — that page teaches the bedside moves; this one is the evidence behind them.
+
 > **Review status:** Reviewed and attested by Joshua Moss, MD (2026-08-23). Every PMID passed identity + retraction verification (2026-08-20) and the Scholar Sidekick canonical pass (2026-08-21); open-access links are checked so the open ones really open. Educational; no PHI.
 
 **How to use this page.** This is a curated reading list, not a bibliography — a handful of papers per topic, each with one line on why it's worth your time. **Open** means the full text is free right now; **Library** means use the institutional proxy link. Start with your patient: whatever you admitted today, there's a section for it. If you read only one paper per week of the rotation, take the six marked ★.
