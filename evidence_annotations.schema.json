@@ -1,0 +1,186 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "evidence_annotations",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "owner",
+    "usageNotice",
+    "updated",
+    "policy",
+    "annotations"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "owner": {
+      "type": "string",
+      "minLength": 1
+    },
+    "usageNotice": {
+      "const": "Educational metadata only; faculty review remains required for clinical recommendations."
+    },
+    "updated": {
+      "$ref": "#/definitions/date"
+    },
+    "policy": {
+      "type": "object",
+      "required": [
+        "rule",
+        "maxAgeDays",
+        "onInversion"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "rule": {
+          "type": "string",
+          "minLength": 1
+        },
+        "maxAgeDays": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "onInversion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "orphanBacklog": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/stableId"
+          },
+          "uniqueItems": true
+        },
+        "orphanBacklogNote": {
+          "type": "string"
+        }
+      }
+    },
+    "annotations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/annotation"
+      }
+    }
+  },
+  "definitions": {
+    "date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+      "format": "date"
+    },
+    "stableId": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "annotation": {
+      "type": "object",
+      "required": [
+        "sourceId",
+        "verifiedAgainst",
+        "claims"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "sourceId": {
+          "$ref": "#/definitions/stableId"
+        },
+        "verifiedAgainst": {
+          "$ref": "#/definitions/verifiedAgainst"
+        },
+        "claims": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/claim"
+          }
+        }
+      }
+    },
+    "verifiedAgainst": {
+      "type": "object",
+      "required": [
+        "spanType",
+        "sourceEndpoint",
+        "retrievedAt",
+        "sourceSpan"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "spanType": {
+          "type": "string",
+          "enum": [
+            "abstract",
+            "fulltext",
+            "conclusion",
+            "guideline-statement"
+          ]
+        },
+        "sourceEndpoint": {
+          "type": "string",
+          "minLength": 1
+        },
+        "retrievedAt": {
+          "$ref": "#/definitions/date"
+        },
+        "pmid": {
+          "type": "string"
+        },
+        "doi": {
+          "type": "string"
+        },
+        "sourceSpan": {
+          "type": "string",
+          "minLength": 80
+        }
+      }
+    },
+    "claim": {
+      "type": "object",
+      "required": [
+        "claimId",
+        "claimText",
+        "claimTerms",
+        "direction",
+        "usedBy"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "claimId": {
+          "$ref": "#/definitions/stableId"
+        },
+        "claimText": {
+          "type": "string",
+          "minLength": 1
+        },
+        "claimTerms": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "direction": {
+          "type": "string",
+          "enum": [
+            "positive",
+            "negative",
+            "mixed",
+            "descriptive"
+          ]
+        },
+        "usedBy": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "retractedClaim": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

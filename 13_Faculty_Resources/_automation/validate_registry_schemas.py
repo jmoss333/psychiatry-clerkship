@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the seven root registries against their Draft-07 JSON Schemas."""
+"""Validate the eight root registries against their Draft-07 JSON Schemas."""
 
 import argparse
 import json
@@ -27,6 +27,7 @@ PAIRS = (
     ("evidence_registry.json", "evidence_registry.schema.json"),
     ("tool_registry.json", "tool_registry.schema.json"),
     ("curriculum.json", "curriculum.schema.json"),
+    ("evidence_annotations.json", "evidence_annotations.schema.json"),
 )
 
 

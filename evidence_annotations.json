@@ -1,0 +1,166 @@
+{
+  "schemaVersion": 1,
+  "owner": "Joshua Moss, MD",
+  "usageNotice": "Educational metadata only; faculty review remains required for clinical recommendations.",
+  "updated": "2026-08-21",
+  "policy": {
+    "rule": "Every claim the library makes about a source must be licensed by a stored verbatim span from that source.",
+    "maxAgeDays": 730,
+    "onInversion": "Rewrite the claim to match the paper. Do not edit the span, and do not move the claim to a paper that does not support it.",
+    "orphanBacklog": [
+      "appelbaum-grisso-1988-capacity",
+      "border-2019-candidate-gene",
+      "brown-1972-expressed-emotion",
+      "bush-1996-catatonia-rating-scale",
+      "caspi-2003-5htt-stress",
+      "engel-1977-biopsychosocial-model",
+      "felitti-1998-ace",
+      "franklin-2017-suicide-risk-meta-analysis",
+      "lieberman-2005-catie",
+      "linehan-1991-dbt",
+      "march-2004-tads",
+      "pharoah-2010-family-intervention",
+      "rosenhan-1973-sane-places",
+      "rush-2006-stard",
+      "stanley-brown-2012-safety-planning",
+      "volkow-2016-addiction-brain-disease",
+      "wampold-1997-bona-fide-psychotherapies"
+    ],
+    "orphanBacklogNote": "Required sources that predate the gate (seeded 2026-08-21, n=17). This list may only shrink. Clearing it is the therapy-library verification backlog."
+  },
+  "annotations": [
+    {
+      "sourceId": "fluckiger-2018",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "europepmc:rest:search?resultType=core",
+        "retrievedAt": "2026-08-21",
+        "pmid": "29792475",
+        "doi": "",
+        "sourceSpan": "The overall alliance-outcome correlation was r = .278 (95% CI .256-.299; d = .579) across 295 studies and more than 30,000 patients, and the association was consistent across rater perspective, alliance measure, treatment approach, patient characteristics, and country."
+      },
+      "claims": [
+        {
+          "claimId": "alliance-effect-size",
+          "claimText": "The alliance-outcome correlation is r = .278 (d = .579) across 295 studies and more than 30,000 patients, and it holds across rater, measure, treatment approach and country.",
+          "claimTerms": [
+            "alliance-outcome correlation",
+            "consistent across rater perspective"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "T1"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "varese-2025",
+      "verifiedAgainst": {
+        "spanType": "conclusion",
+        "sourceEndpoint": "europepmc:rest:search?resultType=core",
+        "retrievedAt": "2026-08-21",
+        "pmid": "41217072",
+        "doi": "",
+        "sourceSpan": "There was no reliable evidence indicating that any of the covariates considered in this evidence synthesis significantly impacted the efficacy of cognitive-behavioural therapy in this client group. Cognitive-behavioural therapy should continue to be offered equally to service users irrespective of their demographic or clinical characteristics."
+      },
+      "claims": [
+        {
+          "claimId": "no-covariate-moderation",
+          "claimText": "No covariate reliably moderated the efficacy of cognitive-behavioural therapy in this group, and the review concludes it should continue to be offered equally irrespective of demographic or clinical characteristics.",
+          "claimTerms": [
+            "no reliable evidence",
+            "offered equally",
+            "irrespective of their demographic or clinical characteristics"
+          ],
+          "direction": "negative",
+          "usedBy": [
+            "T5"
+          ],
+          "retractedClaim": "v1 said 'patient selection is a clinical skill' - inverted; retracted 2026-08-21."
+        }
+      ]
+    },
+    {
+      "sourceId": "hajek-gross-2024",
+      "verifiedAgainst": {
+        "spanType": "conclusion",
+        "sourceEndpoint": "europepmc:rest:search?resultType=core",
+        "retrievedAt": "2026-08-21",
+        "pmid": "38279664",
+        "doi": "",
+        "sourceSpan": "Pre-post effects were large for self-harm (g = -0.82), but against active controls MBT(-A) did not prove to be more efficacious, with the exception of borderline personality disorder symptoms in adults (g = -0.56). Prioritizing the application of MBT(-A) for the treatment of self-harm is not supported."
+      },
+      "claims": [
+        {
+          "claimId": "mbt-not-superior-active-control",
+          "claimText": "Pre-post effects for self-harm are large at g = -0.82, but against active controls MBT(-A) did not prove more efficacious except for adult borderline personality disorder symptoms at g = -0.56, and prioritizing it for self-harm is not supported.",
+          "claimTerms": [
+            "did not prove to be more efficacious",
+            "is not supported"
+          ],
+          "direction": "negative",
+          "usedBy": [
+            "T7"
+          ],
+          "retractedClaim": "v1 claimed meta-analytic support for MBT in self-harm - inverted; retracted 2026-08-21."
+        }
+      ]
+    },
+    {
+      "sourceId": "pott-2022",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "europepmc:rest:search?resultType=core",
+        "retrievedAt": "2026-08-21",
+        "pmid": "34146994",
+        "doi": "",
+        "sourceSpan": "There were no significant differences between behavioural activation and controls with regard to depression (SMD 0.19, 95% CI -0.10 to 0.49, p = 0.20) or substance use, across 5 trials including 195 patients, with GRADE ratings of Low throughout. Behavioural activation does not emerge as a differentially efficacious treatment, although it does appear to be an acceptable treatment option."
+      },
+      "claims": [
+        {
+          "claimId": "ba-acceptable-not-superior",
+          "claimText": "Behavioural activation showed no significant difference from controls for depression (SMD 0.19, p = 0.20) or substance use across 5 trials and 195 patients at GRADE Low, and does not emerge as differentially efficacious although it is an acceptable option.",
+          "claimTerms": [
+            "no significant differences",
+            "does not emerge",
+            "acceptable treatment option"
+          ],
+          "direction": "negative",
+          "usedBy": [
+            "T4"
+          ],
+          "retractedClaim": "v1 asserted efficacy ('you don't have to sequence sobriety first') - retracted 2026-08-21."
+        }
+      ]
+    },
+    {
+      "sourceId": "shank-2026",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "europepmc:rest:search?resultType=core",
+        "retrievedAt": "2026-08-21",
+        "pmid": "40185617",
+        "doi": "10.1136/ip-2024-045611",
+        "sourceSpan": "Stricter regulations were associated with a small reduction, if any, in total and/or firearm-specific suicide deaths. Evidence for non-firearm means was limited, mixed and/or inconclusive. No high-quality randomised controlled trials were identified, and the ecological level of analysis precluded individual-level causal inference."
+      },
+      "claims": [
+        {
+          "claimId": "means-legislation-ceiling",
+          "claimText": "Stricter firearm regulations were associated with a small reduction, if any, in suicide deaths; no high-quality randomised controlled trials were identified; and the ecological design precluded individual-level causal inference.",
+          "claimTerms": [
+            "small reduction, if any",
+            "no high-quality randomised controlled trials",
+            "precluded individual-level causal inference"
+          ],
+          "direction": "negative",
+          "usedBy": [
+            "T3",
+            "safety-planning-practice-tool"
+          ],
+          "retractedClaim": "v1 said 'the strongest causal lever in suicide prevention' - retracted 2026-08-21."
+        }
+      ]
+    }
+  ]
+}

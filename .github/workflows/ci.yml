@@ -82,6 +82,17 @@ jobs:
       - name: Validate — claim anchors resolve to declared evidence
         run: python3 13_Faculty_Resources/_automation/validate_claim_anchors.py
 
+      # Sits immediately after the claim-anchor gate because it is the next question in the
+      # same chain: claim anchors prove a claim CITES a declared source; this proves the source
+      # actually SAYS it, against a stored verbatim span. The first example in
+      # validate_claim_anchors.py's own docstring — a page citing a review that "concludes the
+      # opposite" — is the case only this gate can catch.
+      - name: Test — evidence-annotation gate
+        run: python3 13_Faculty_Resources/_automation/validate_evidence_annotations.py --self-test
+
+      - name: Validate — evidence annotations against source spans
+        run: python3 13_Faculty_Resources/_automation/validate_evidence_annotations.py
+
       - name: Test — evidence drill generator
         run: python3 13_Faculty_Resources/_automation/test_generate_evidence_drill.py
 

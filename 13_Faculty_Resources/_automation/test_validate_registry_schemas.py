@@ -22,6 +22,7 @@ PAIRS = (
     ("evidence_registry.json", "evidence_registry.schema.json"),
     ("tool_registry.json", "tool_registry.schema.json"),
     ("curriculum.json", "curriculum.schema.json"),
+    ("evidence_annotations.json", "evidence_annotations.schema.json"),
 )
 
 
@@ -82,7 +83,7 @@ class RegistrySchemaGateTests(unittest.TestCase):
             shutil.copy2(ROOT / schema, destination / schema)
         return temporary
 
-    def test_all_seven_current_document_schema_pairs_pass(self) -> None:
+    def test_all_eight_current_document_schema_pairs_pass(self) -> None:
         result = run_validator(ROOT)
 
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
