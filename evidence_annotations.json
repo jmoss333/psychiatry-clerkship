@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "owner": "Joshua Moss, MD",
   "usageNotice": "Educational metadata only; faculty review remains required for clinical recommendations.",
-  "updated": "2026-08-21",
+  "updated": "2026-08-23",
   "policy": {
     "rule": "Every claim the library makes about a source must be licensed by a stored verbatim span from that source.",
     "maxAgeDays": 730,
@@ -19,7 +19,6 @@
       "lieberman-2005-catie",
       "linehan-1991-dbt",
       "march-2004-tads",
-      "pharoah-2010-family-intervention",
       "rosenhan-1973-sane-places",
       "rush-2006-stard",
       "stanley-brown-2012-safety-planning",
@@ -159,6 +158,133 @@
             "safety-planning-practice-tool"
           ],
           "retractedClaim": "v1 said 'the strongest causal lever in suicide prevention' - retracted 2026-08-21."
+        }
+      ]
+    },
+    {
+      "sourceId": "cuijpers-2026",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-08-23",
+        "pmid": "42492146",
+        "doi": "10.1016/j.cpr.2026.102783",
+        "sourceSpan": "We included 105 trials (13,933 patients), including 40 with low risk of bias. The standardized mean difference (SMD) of BA for adult outpatients compared with control conditions was 0.67 (95% confidence interval [CI]: 0.54 to 0.80; k = 61) with high heterogeneity. This remained significant in most sensitivity analyses, and at 12 months after randomization. We found no significant difference between BA and other therapies (k = 27; SMD = 0.04; 95% CI: -0.10 to 0.18). Self-guided BA was also effective (k = 15; SMD = 0.36; 95% CI: 0.20 to 0.51)."
+      },
+      "claims": [
+        {
+          "claimId": "ba-effect-and-equivalence",
+          "claimText": "Across 105 trials (13,933 patients), behavioural activation outperformed control conditions with an SMD of 0.67 and remained significant at 12 months after randomization, with no significant difference between BA and other therapies (SMD 0.04); self-guided BA was also effective (SMD 0.36).",
+          "claimTerms": [
+            "standardized mean difference",
+            "no significant difference between BA and other therapies",
+            "Self-guided BA was also effective"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "T2"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "stanley-brown-2018",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-08-23",
+        "pmid": "29998307",
+        "doi": "10.1001/jamapsychiatry.2018.1776",
+        "sourceSpan": "Cohort comparison design with 6-month follow-up at 9 EDs (5 intervention sites and 4 control sites) in Veterans Health Administration hospital EDs. Of the 1640 total patients, 1186 were in the intervention group and 454 were in the comparison group. The SPI+ was associated with 45% fewer suicidal behaviors, approximately halving the odds of suicidal behavior over 6 months (odds ratio, 0.56; 95% CI, 0.33-0.95, P = .03). Intervention patients had more than double the odds of attending at least 1 outpatient mental health visit (odds ratio, 2.06; 95% CI, 1.57-2.71; P < .001)."
+      },
+      "claims": [
+        {
+          "claimId": "spi-suicidal-behaviour",
+          "claimText": "In a cohort comparison of 1640 emergency-department patients, the Safety Planning Intervention with follow-up was associated with 45% fewer suicidal behaviors over 6 months (odds ratio 0.56) and more than double the odds of attending at least 1 outpatient mental health visit (odds ratio 2.06).",
+          "claimTerms": [
+            "Cohort comparison design",
+            "was associated with 45% fewer suicidal behaviors"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "T1",
+            "T3"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "links-ross-2025",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-08-23",
+        "pmid": "38952224",
+        "doi": "10.1176/appi.psychotherapy.20230044",
+        "sourceSpan": "Good psychiatric management (GPM) was developed for patients with borderline personality disorder with the purpose of supporting wider community adoption and dissemination compared with existing therapies. GPM is in development but shows promise as a therapy that is effective and accessible and that can be widely disseminated."
+      },
+      "claims": [
+        {
+          "claimId": "gpm-generalist-frame",
+          "claimText": "Good psychiatric management was developed to support wider community adoption and dissemination than existing therapies, and shows promise as a therapy that is effective and accessible.",
+          "claimTerms": [
+            "supporting wider community adoption and dissemination",
+            "effective and accessible"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "T5"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "pharoah-2010-family-intervention",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-08-23",
+        "pmid": "21154340",
+        "doi": "10.1002/14651858.cd000088.pub3",
+        "sourceSpan": "This 2009-10 update adds 21 additional studies, with a total of 53 randomised controlled trials included. Family intervention may decrease the frequency of relapse (n = 2981, 32 RCTs, RR 0.55 CI 0.5 to 0.6, NNT 7 CI 6 to 8), although some small but negative studies might not have been identified by the search. Family intervention may also reduce hospital admission (n = 481, 8 RCTs, RR 0.78 CI 0.6 to 1.0, NNT 8 CI 6 to 13)."
+      },
+      "claims": [
+        {
+          "claimId": "family-intervention-relapse",
+          "claimText": "Across 53 randomised controlled trials, family intervention may decrease the frequency of relapse (RR 0.55, NNT 7) and may also reduce hospital admission (RR 0.78).",
+          "claimTerms": [
+            "may decrease the frequency of relapse",
+            "may also reduce hospital admission"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "T6"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "modini-large-2026",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-08-23",
+        "pmid": "41664893",
+        "doi": "10.1177/10398562261425069",
+        "sourceSpan": "Research has repeatedly failed to account for the high suicide rate post-discharge from a psychiatric hospital. It is apparent that research in this field largely focuses on simple categorical variables and fails to consider inpatient experiences of their admission and treatment. Empirically investigating how the treatment experience itself can contribute to post-discharge adverse outcomes is required."
+      },
+      "claims": [
+        {
+          "claimId": "post-discharge-research-critique",
+          "claimText": "Research has repeatedly failed to account for the high suicide rate post-discharge, focusing on simple categorical variables and failing to consider inpatient experiences of admission and treatment.",
+          "claimTerms": [
+            "failed to account for the high suicide rate",
+            "simple categorical variables"
+          ],
+          "direction": "negative",
+          "usedBy": [
+            "T3"
+          ]
         }
       ]
     }
