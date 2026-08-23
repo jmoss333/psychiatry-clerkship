@@ -1,13 +1,12 @@
 {
   "interaction-cards.html": {
-    "status": "pending",
+    "status": "reviewed",
     "risk": {
       "kind": "formulary",
       "level": "high"
     },
-    "reason": "New content awaiting faculty review.",
-    "at": "2026-08-04",
-    "by": "Pending faculty review"
+    "at": "2026-08-23",
+    "by": "Joshua Moss, MD"
   },
   "cotw_20260803_lithium_ms3.md": {
     "status": "pending",
