@@ -1018,6 +1018,133 @@
           ]
         }
       ]
+    },
+    {
+      "sourceId": "saxler-2024",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-08-23",
+        "pmid": "38993343",
+        "doi": "10.3389/fpsyg.2024.1293851",
+        "sourceSpan": "A current overview of 48 instruments for measuring TA (46 for F2F-PT, 2 for Online-PT) including their conceptual backgrounds, characteristics and main content aspects is presented. The broad variety of conceptualizations and measures of TA makes coherent research on TA difficult. There are conceptual challenges such as the role of attachment style in TA that remain to be clarified."
+      },
+      "claims": [
+        {
+          "claimId": "alliance-measurement-fragmentation",
+          "claimText": "An overview of 48 instruments for measuring therapeutic alliance found that the broad variety of conceptualizations and measures of TA makes coherent research on TA difficult.",
+          "claimTerms": [
+            "48 instruments for measuring TA",
+            "makes coherent research on TA difficult"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "RR"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "huggett-2024",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-08-23",
+        "pmid": "39098267",
+        "doi": "10.1016/j.cpr.2024.102469",
+        "sourceSpan": "Thirty-seven papers were included, generating two overarching themes; 'Working on the edge' and 'Being ready, willing, and able to build an alliance in the context of suicidal experiences'. Clinical implications emphasise the need to improve training, supervision, and support for therapists. Flexibly interweaving risk assessment into therapeutic conversation was beneficial to the alliance with suicidal clients and enhanced their safety."
+      },
+      "claims": [
+        {
+          "claimId": "risk-assessment-woven-into-conversation",
+          "claimText": "Flexibly interweaving risk assessment into therapeutic conversation was beneficial to the alliance with suicidal clients and enhanced their safety — weaving risk assessment into the conversation rather than bolting it on.",
+          "claimTerms": [
+            "Flexibly interweaving risk assessment into therapeutic conversation",
+            "enhanced their safety"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "RR"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "difronzo-2025",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-08-23",
+        "pmid": "40471224",
+        "doi": "10.4081/ripppo.2025.841",
+        "sourceSpan": "This study investigated the psychotherapeutic process in short-term psychoanalytic psychotherapy (STPP) with five adolescents with moderate/severe depression who had dropped out of STPP in a large randomized controlled trial and reported dissatisfaction with treatment. In each case, sessions were rated as featuring unresolved ruptures with the therapist. Results revealed a weak alliance preceding the adolescent dropping out of therapy, with a mismatch between self-reliant and disengaged adolescents presenting with strong negative affects and therapists seeking to maintain an active exploration of the adolescents' difficulties."
+      },
+      "claims": [
+        {
+          "claimId": "unresolved-ruptures-precede-dropout",
+          "claimText": "In five adolescents with moderate/severe depression who dropped out of short-term psychoanalytic psychotherapy, sessions featured unresolved ruptures with the therapist and a weak alliance preceding dropout — a qualitative adolescent sample, not an adult inpatient one.",
+          "claimTerms": [
+            "five adolescents with moderate/severe depression",
+            "unresolved ruptures with the therapist"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "RR"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "penzenik-2026",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-08-23",
+        "pmid": "41588871",
+        "doi": "10.1111/jrh.70103",
+        "sourceSpan": "Across these communities, 3,846 individuals responded to the survey. Whereas most respondents were at least somewhat willing to discuss access to firearms with health care providers, only 3.8%-10.8% reported that any provider had asked about such access. A low proportion reported discussions with providers regarding safe storage of medications (14.1%-21.66%). Many respondents did not agree that gun locks and safes reduce suicide risk (16.9%-23.5%)."
+      },
+      "claims": [
+        {
+          "claimId": "lethal-means-counselling-rarely-happens",
+          "claimText": "Most respondents were at least somewhat willing to discuss access to firearms with health care providers, yet only 3.8%-10.8% reported that any provider had asked about such access, and a low proportion reported discussions about safe storage of medications (14.1%-21.66%).",
+          "claimTerms": [
+            "at least somewhat willing to discuss access to firearms",
+            "only 3.8%-10.8% reported that any provider had asked"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "RR"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "xia-2011",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-08-23",
+        "pmid": "21678337",
+        "doi": "10.1002/14651858.CD002831.pub2",
+        "sourceSpan": "Relapse appeared to be lower in psychoeducation group (n = 1214, RR 0.70 CI 0.61 to 0.81, NNT 9 CI 7 to 14) and this also applied to readmission (n = 206, RR 0.71 CI 0.56 to 0.89, NNT 5 CI 4 to 13). Psychoeducation does seem to reduce relapse, readmission and encourage medication compliance, as well as reduce the length of hospital stay in these hospital-based studies of limited quality. The true size of effect is likely to be less than demonstrated in this review - but, nevertheless, some sort of psychoeducation could be clinically effective and potentially cost beneficial."
+      },
+      "claims": [
+        {
+          "claimId": "psychoeducation-relapse-readmission",
+          "claimText": "Psychoeducation in schizophrenia reduced relapse (NNT 9) and readmission (NNT 5), on hospital-based studies of limited quality whose true size of effect is likely to be less than demonstrated in the review.",
+          "claimTerms": [
+            "NNT 9",
+            "NNT 5",
+            "studies of limited quality",
+            "true size of effect is likely to be less than demonstrated"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "T4"
+          ]
+        }
+      ]
     }
   ]
 }
