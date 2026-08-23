@@ -1,6 +1,6 @@
 # Therapy on the Unit — What You Can Actually Do This Week
 
-> **Review status:** AI-drafted; pending review and attestation by Joshua Moss, MD. Every citation completed identity + retraction verification (Europe PMC, 2026-08-20) and the Scholar Sidekick canonical pass (Crossref/Retraction Watch, Unpaywall, formatCitation — 2026-08-21). Educational; fictional composites only, no PHI.
+> **Review status:** Reviewed and attested by Joshua Moss, MD (2026-08-23). Drafted with AI assistance and reviewed item by item. Every citation completed identity + retraction verification (Europe PMC, 2026-08-20) and the Scholar Sidekick canonical pass (Crossref/Retraction Watch, Unpaywall, formatCitation — 2026-08-21). Educational; fictional composites only, no PHI.
 > Learner level: **MS3 core**, with labeled **Resident extension** blocks (shown on both sites).
 
 ---
