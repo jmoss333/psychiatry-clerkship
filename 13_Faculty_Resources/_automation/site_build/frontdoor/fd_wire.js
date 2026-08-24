@@ -439,6 +439,12 @@ function fdOpenResource(ref, opts){
     (typeof renderGovernanceNotice==='function'?renderGovernanceNotice:function(){return '';});
   var renderReader=o.renderReader||
     (typeof fdReader==='function'?fdReader:function(_i,_s,body){return body;});
+  /* Genuine navigation lands at the top of the new resource; back/forward keeps whatever
+     position the browser restores. Injectable so the contract is testable without a DOM --
+     same pattern as host/governanceNotice/renderReader above. */
+  var scrollReset=o.scrollReset||function(){
+    if(typeof window!=='undefined'&&window.scrollTo) window.scrollTo(0,0);
+  };
   state.ref=ref;
   if(!state.fromTab) state.fromTab=state.tab||'today';
 
@@ -454,6 +460,7 @@ function fdOpenResource(ref, opts){
     if(!current()) return false;
     var bar=governance(legacy)||'';
     if(host) host.innerHTML=renderReader(index,currentRenderState(),bar+body);
+    if(!o.fromHistory) scrollReset();
     return true;
   }
   function fail(){

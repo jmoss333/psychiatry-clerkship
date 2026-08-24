@@ -368,3 +368,25 @@ test('initial faculty tool preview reaches governed preflight, iframe load, and 
   assert.deepEqual(harness.current(), { f: 'practice.html', t: 'Practice', k: 'tool' });
   assert.deepEqual(writes, [], 'faculty preview must not mutate the learner cw_last bookmark');
 });
+
+test('opening a resource resets scroll, but history navigation does not', async () => {
+  const calls = [];
+  const base = {
+    index: { byRef: {} },
+    state: {},
+    search: '?page=interview.md',
+    host: { innerHTML: '' },
+    renderReader: (_i, _s, body) => body,
+    governanceNotice: () => '',
+    parseMarkdown: (md) => md,
+    fetcher: () => Promise.resolve({ ok: true, text: () => Promise.resolve('# X\n\nbody') }),
+    scrollReset: () => { calls.push('reset'); },
+  };
+
+  await make().fdOpenResource('interview.md', { ...base });
+  assert.deepEqual(calls, ['reset'], 'a genuine navigation lands at the top of the new page');
+
+  calls.length = 0;
+  await make().fdOpenResource('interview.md', { ...base, fromHistory: true });
+  assert.deepEqual(calls, [], 'back/forward must restore the reader position, not jump to top');
+});

@@ -200,3 +200,24 @@ test('live Front Door Reader shares every existing wide-table mechanic', () => {
     }
   }
 });
+
+test('every .md-body .sec-* rule is also scoped to the Front Door reader body', () => {
+  // fd_reader.js renders into .fd-article__body, never .md-body. A .sec-* rule scoped
+  // only to .md-body is dead code on every Front Door page -- which silently disables
+  // the collapse mechanism rather than merely restyling it.
+  const secRules = shellCss
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line.startsWith('.md-body .sec-'));
+
+  assert.ok(secRules.length >= 8, 'expected the collapsible-section rules to be present');
+
+  for (const rule of secRules) {
+    const selector = rule.slice(0, rule.indexOf('{'));
+    assert.match(
+      selector,
+      /\.fd-article__body\s+\.sec-/,
+      `collapsible rule is dead inside the Front Door reader: ${selector.trim()}`,
+    );
+  }
+});

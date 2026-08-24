@@ -26,6 +26,14 @@ HTML_MARKER = "<!-- crisis-block-html -->"
 
 HEADING = "If someone is in crisis"
 
+# Durable render-time hook. The markdown block becomes an ordinary blockquote once marked.js has
+# run, indistinguishable from any other quote, so the shell's in-page collapse pass had no way to
+# recognise a safety surface and swept the whole block into a collapsed section (measured on the
+# built site: present in the DOM, display:none, absent from innerText). It travels with the
+# block and gives spa_index.html's makeCollapsible() something structural to key on instead of
+# matching the heading prose. Renamed or removed here, tests/fd-crisis-visibility.test.mjs fails.
+HOOK_CLASS = "crisis-block-hook"
+
 
 def load(lib_root):
     """Load and lightly sanity-check the crisis snapshot."""
@@ -56,7 +64,9 @@ def _line(resource):
 
 def render_markdown(data):
     """Render the block as markdown for content pages."""
-    out = ["> ### %s" % HEADING, ">"]
+    out = ['> <div class="%s" hidden></div>' % HOOK_CLASS, ">"]
+    out.append("> ### %s" % HEADING)
+    out.append(">")
     out.append("> %s" % data["unitEscalationNote"])
     out.append(">")
     for resource in data["resources"]:
