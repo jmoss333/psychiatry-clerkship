@@ -839,7 +839,6 @@ function App(){
     e('span',{className:'kicker'},'Clinical skills · Simulation'),
     e('div',{className:'titlerow'},
       e('h1',null,'The Interview Room'),
-      e('span',{className:'badge draft'},'Redesigned — pending faculty review'),
       e('button',{className:'badge mode',
         disabled:S.screen!=='select'||showVoiceConsent,
         onClick:function(){var nx=provMode==='mock'?'live':'mock';cancelProviderCheck();providerModeRef.current=nx;setProvMode(nx);setShowVoiceConsent(false);
