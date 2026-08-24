@@ -184,8 +184,16 @@ THERAPY_WP_T2_IDS = {
 # registered here fails the canary below, which is the point. Deriving the
 # expected count from the union keeps the count assertion honest (it still
 # catches duplicate ids) without making every batch a three-site magic-number edit.
+# Added by the post-discharge citation correction (reference 5 cited a viewpoint for a
+# time-course statistic it does not report).
+POSTDISCHARGE_CORRECTION_IDS = {
+    "chung-2017-postdischarge-suicide",
+    "chung-2019-first-week-month",
+}
+
 ALL_SOURCE_IDS = (
     EXISTING_IDS | TIER1_IDS | SURVEILLANCE_IDS | SAFETY_GATE_IDS | THERAPY_WP_T2_IDS
+    | POSTDISCHARGE_CORRECTION_IDS
 )
 REFERENCE_FILES = (
     "topic_meta.json",

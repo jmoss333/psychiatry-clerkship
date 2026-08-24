@@ -124,7 +124,7 @@
 ## After discharge
 
 - ★ **Post-discharge suicide: time for a rethink** — Modini & Large, *Australas Psychiatry* 2026. PMID 41664893 · Library
-  The statistic to carry out of this rotation — risk peaks in the weeks after discharge — and an argument piece contending the field keeps studying categorical predictors while ignoring how the admission itself was experienced. Read it before you write your last discharge summary.
+  An argument piece, not a data paper: the field keeps studying categorical predictors and ignoring what the admission itself was like for the patient. Read it after the Chung meta-analyses — those give you the magnitude, this asks why we still cannot explain it.
 - **Inpatient brief CBT and post-discharge ED use** — Diefenbach et al., *Gen Hosp Psychiatry* 2025. PMID 39837259 · Library
   Adding brief CBT during the stay cut post-discharge ED visits by about three quarters (OR 0.25) — but "only among participants without SUD." On a dual-diagnosis unit, that qualifier *is* the teaching point; the authors themselves call for work to make it hold in SUD.
 - **Caring contacts after psychiatric hospitalization** — Steinberg et al., *Suicide Life Threat Behav* 2024. PMID 38934489 · Open

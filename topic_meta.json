@@ -304,7 +304,8 @@
       "href": "?tool=bfcrs.html"
     },
     "evidenceIds": [
-      "bap-catatonia-2023"
+      "bap-catatonia-2023",
+      "bush-1996-catatonia-rating-scale"
     ],
     "relatedTools": [
       "bfcrs.html",
@@ -762,7 +763,8 @@
       "asam-alcohol-withdrawal-2020",
       "schwenker-2023",
       "bastos-maia-2025",
-      "pott-2022"
+      "pott-2022",
+      "volkow-2016-addiction-brain-disease"
     ],
     "relatedTools": [
       "withdrawal.html",
@@ -943,7 +945,8 @@
       "wibbelink-2026",
       "brodsky-2025",
       "arqueros-2026",
-      "appel-2026"
+      "appel-2026",
+      "linehan-1991-dbt"
     ]
   },
   "t_neurodev.md": {
@@ -1229,6 +1232,9 @@
     "epa": [
       "EPA1",
       "EPA2"
+    ],
+    "evidenceIds": [
+      "felitti-1998-ace"
     ]
   },
   "t_dissociative.md": {
@@ -2249,7 +2255,9 @@
       "steeg-2025",
       "stanley-brown-2018",
       "diefenbach-2025",
-      "shank-2026"
+      "shank-2026",
+      "stanley-brown-2012-safety-planning",
+      "franklin-2017-suicide-risk-meta-analysis"
     ],
     "relatedTools": [
       "cssrs.html",
@@ -2359,7 +2367,9 @@
       "steeg-2025",
       "stanley-brown-2018",
       "diefenbach-2025",
-      "shank-2026"
+      "shank-2026",
+      "stanley-brown-2012-safety-planning",
+      "franklin-2017-suicide-risk-meta-analysis"
     ],
     "relatedTools": [
       "cssrs.html",
@@ -2968,6 +2978,9 @@
     },
     "epa": [
       "EPA2"
+    ],
+    "evidenceIds": [
+      "rosenhan-1973-sane-places"
     ]
   },
   "pg_interview.md": {
@@ -3125,6 +3138,9 @@
     },
     "epa": [
       "EPA2"
+    ],
+    "evidenceIds": [
+      "engel-1977-biopsychosocial-model"
     ]
   },
   "doc_oral.md": {
@@ -3398,7 +3414,8 @@
     "evidenceIds": [
       "pharoah-2010-family-intervention",
       "ma-2021",
-      "camacho-gomez-2020"
+      "camacho-gomez-2020",
+      "brown-1972-expressed-emotion"
     ]
   },
   "family_modalities.md": {
@@ -3480,6 +3497,9 @@
     ],
     "epa": [
       "EPA9"
+    ],
+    "evidenceIds": [
+      "brown-1972-expressed-emotion"
     ]
   },
   "family_playbook.md": {
@@ -3946,6 +3966,10 @@
     },
     "epa": [
       "EPA7"
+    ],
+    "evidenceIds": [
+      "caspi-2003-5htt-stress",
+      "border-2019-candidate-gene"
     ]
   },
   "week1.md": {
@@ -4701,6 +4725,25 @@
     ],
     "epa": [
       "EPA7"
+    ],
+    "evidenceIds": [
+      "appelbaum-grisso-1988-capacity",
+      "border-2019-candidate-gene",
+      "brown-1972-expressed-emotion",
+      "bush-1996-catatonia-rating-scale",
+      "caspi-2003-5htt-stress",
+      "engel-1977-biopsychosocial-model",
+      "felitti-1998-ace",
+      "franklin-2017-suicide-risk-meta-analysis",
+      "lieberman-2005-catie",
+      "linehan-1991-dbt",
+      "march-2004-tads",
+      "pharoah-2010-family-intervention",
+      "rosenhan-1973-sane-places",
+      "rush-2006-stard",
+      "stanley-brown-2012-safety-planning",
+      "volkow-2016-addiction-brain-disease",
+      "wampold-1997-bona-fide-psychotherapies"
     ]
   },
   "rounds_questions.md": {
@@ -5443,6 +5486,9 @@
     },
     "epa": [
       "EPA2"
+    ],
+    "evidenceIds": [
+      "wampold-1997-bona-fide-psychotherapies"
     ]
   },
   "case_formulation.md": {
@@ -5473,6 +5519,9 @@
     },
     "epa": [
       "EPA2"
+    ],
+    "evidenceIds": [
+      "engel-1977-biopsychosocial-model"
     ]
   },
   "medical_workup.md": {
