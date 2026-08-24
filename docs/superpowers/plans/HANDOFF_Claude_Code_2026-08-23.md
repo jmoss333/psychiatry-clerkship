@@ -37,9 +37,15 @@ A 4-second, zero-step CI failure is a billing trip, not your bug.
 **JSON serialization — match byte-for-byte or the diff explodes.**
 | File | indent | ensure_ascii | trailing newline |
 |---|---|---|---|
-| `topic_meta.json` | `1` | `False` | **no** |
-| `evidence_registry.json` | `2` | `True` | **yes** |
-| `evidence_annotations.json` | match the file as it stands — round-trip before writing |
+| `topic_meta.json` | `2` | `False` | **yes** |
+| `evidence_registry.json` | `2` | `False` | **yes** |
+| `evidence_annotations.json` | `2` | `False` | **yes** |
+
+> **Corrected 2026-08-24.** This table previously said `topic_meta.json` was `indent=1` with no
+> trailing newline and `evidence_registry.json` was `ensure_ascii=True`. Neither round-trips today.
+> `topic_meta.json` was reformatted to `indent=2` + trailing newline by #390, which is why the old
+> values no longer match. All three root registries now share the same settings. **Round-trip and
+> diff before writing regardless** — that instruction is the durable part, and it is what caught this.
 Round-trip the bytes and diff against the original before you write anything.
 
 **New registry ids must be registered in the inventory lock.** `tools/evidence_registry/test_registry.py`
