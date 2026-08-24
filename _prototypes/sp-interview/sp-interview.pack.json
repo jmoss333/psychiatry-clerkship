@@ -641,7 +641,10 @@
             "worth living",
             "life (isn'?t|is not) worth it",
             "better off (not being here|without (me|you)|if i wasn'?t here)",
-            "no point (in )?(going on|carrying on|living)"
+            "no point (in )?(going on|carrying on|living)",
+            "hurt(ing)? yourself",
+            "harm(ing)? yourself",
+            "do(ing)? something to yourself"
           ]
         },
         {
@@ -1397,6 +1400,7 @@
             "not (want(ing)? to )?wake up",
             "better off dead",
             "hurt(ing)? yourself",
+            "harm(ing)? yourself",
             "worth living",
             "life (isn'?t|is not) worth it",
             "better off (not being here|without (me|you)|if i wasn'?t here)",
