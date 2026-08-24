@@ -181,7 +181,7 @@
         { "id": "energy", "label": "Asked about energy / fatigue", "category": "data", "coverage": "core", "patterns": ["\\benergy", "\\btired", "\\bfatigue", "\\bexhaust", "\\bworn (out|down)"] },
         { "id": "concentration", "label": "Asked about concentration", "category": "data", "coverage": "core", "patterns": ["\\bconcentrat", "\\bfocus", "\\battention", "\\bmemory", "keep(ing)? track", "\\bdistract"] },
         { "id": "guilt", "label": "Asked about guilt / worthlessness", "category": "data", "coverage": "core", "patterns": ["\\bguilt", "\\bworthless", "\\bburden", "hard on yourself", "\\bblam(e|ing) yourself", "\\bfailure"] },
-        { "id": "si_direct", "label": "Asked about suicide directly, in plain language", "category": "safety", "coverage": "core", "quality": "best", "patterns": ["kill(ing)? yourself", "end(ing)? your (own )?life", "\\bsuicid", "take (your|her) (own )?life", "thoughts? of dying", "wish(ed)? you (were dead|wouldn'?t wake)", "not (want(ing)? to )?wake up", "better off dead", "worth living", "life (isn'?t|is not) worth it", "better off (not being here|without (me|you)|if i wasn'?t here)", "no point (in )?(going on|carrying on|living)"] },
+        { "id": "si_direct", "label": "Asked about suicide directly, in plain language", "category": "safety", "coverage": "core", "quality": "best", "patterns": ["kill(ing)? yourself", "end(ing)? your (own )?life", "\\bsuicid", "take (your|her) (own )?life", "thoughts? of dying", "wish(ed)? you (were dead|wouldn'?t wake)", "not (want(ing)? to )?wake up", "better off dead", "\\b(isn'?t|is not|no longer|not) worth living", "life (isn'?t|is not) worth it", "better off (not being here|without (me|you)\\b|if i wasn'?t here)", "no point (in )?(going on|carrying on)"] },
         { "id": "si_euphemism", "label": "Approached suicide with a euphemism", "category": "safety", "coverage": "core", "quality": "partial", "patterns": ["hurt(ing)? yourself", "harm(ing)? yourself", "do(ing)? something (to yourself|drastic|stupid)", "dark (thoughts|places?)", "unsafe thoughts"] },
         { "id": "si_plan", "label": "Asked about plan (after disclosure)", "category": "safety", "coverage": "core", "patterns": ["\\bplan\\b", "how (you )?(would|might)", "thought about how", "\\bspecific\\b.*(thought|way)"] },
         { "id": "si_means", "label": "Asked about means / access (after disclosure)", "category": "safety", "coverage": "core", "patterns": ["\\baccess\\b", "\\bpills?\\b.*(home|have|husband)", "\\bmeans\\b", "at home.*(medic|pills?)", "get (a ?hold|ahold) of"] },
@@ -638,10 +638,10 @@
             "not (want(ing)? to )?wake up",
             "better off dead",
             "what'?s the point",
-            "worth living",
+            "\\b(isn'?t|is not|no longer|not) worth living",
             "life (isn'?t|is not) worth it",
-            "better off (not being here|without (me|you)|if i wasn'?t here)",
-            "no point (in )?(going on|carrying on|living)",
+            "better off (not being here|without (me|you)\\b|if i wasn'?t here)",
+            "no point (in )?(going on|carrying on)",
             "hurt(ing)? yourself",
             "harm(ing)? yourself",
             "do(ing)? something to yourself"
@@ -1402,10 +1402,10 @@
             "hurt(ing)? yourself",
             "harm(ing)? yourself",
             "do(ing)? something to yourself",
-            "worth living",
+            "\\b(isn'?t|is not|no longer|not) worth living",
             "life (isn'?t|is not) worth it",
-            "better off (not being here|without (me|you)|if i wasn'?t here)",
-            "no point (in )?(going on|carrying on|living)"
+            "better off (not being here|without (me|you)\\b|if i wasn'?t here)",
+            "no point (in )?(going on|carrying on)"
           ]
         },
         {

@@ -52,8 +52,13 @@ function matchingSafetyIntentIds(caseDef, text) {
     .map((it) => it.id);
 }
 
+// WP-B3 finding 8: assert the exact case count. `> 0` would pass silently if a
+// case were dropped from the pack, which would also silently drop every
+// per-case safety assertion below (the loops would simply iterate less).
+const EXPECTED_CASE_COUNT = 3;
+
 test('every case recognizes all three approved suicide-screen phrasing families as a safety intent', () => {
-  assert.ok(pack.cases.length > 0, 'pack has no cases');
+  assert.equal(pack.cases.length, EXPECTED_CASE_COUNT, 'pack case count changed');
   for (const caseDef of pack.cases) {
     for (const phrasing of APPROVED) {
       const hits = matchingSafetyIntentIds(caseDef, phrasing);
@@ -176,5 +181,123 @@ test('Dana keeps her deliberate euphemism pedagogy untouched (si_euphemism, not 
     const hitsEuphemism = siEuphemism.patterns.some((p) => new RegExp(p, 'i').test(phrasing));
     assert.ok(hitsEuphemism, `Dana: si_euphemism should still match "${phrasing}"`);
     assert.ok(!hitsDirect, `Dana: si_direct should NOT match "${phrasing}" — that would break the euphemism-deflection teaching mechanic`);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// WP-B3 finding 5: negative assertions.
+//
+// Coverage is scored by matched intent IDs, and every case's checklist scores
+// "Suicide screened plainly" against si_direct. An over-broad pattern therefore
+// tells a learner they completed a suicide screen they never performed — the
+// inverse of the bug the positive tests above guard, and strictly worse: a miss
+// under-credits a careful student, a false positive certifies a risk assessment
+// that did not happen.
+//
+// Findings 1/2/3 shipped precisely because nothing here tested for over-breadth:
+//   1. `without (me|you)` had no word boundary -> matched "without me·dication",
+//      "without me·ds", "without you·r father".
+//   2. bare `worth living` -> matched protective-factor questions ("What has
+//      felt worth living for lately?"), a different clinical move that Dana
+//      routes to si_intent_protective.
+//   3. `|living` in the no-point alternation was never faculty-authorized ->
+//      matched "no point in living in that apartment".
+const NON_SAFETY_PHRASINGS = [
+  // finding 1 — medication-adherence and collateral probes
+  "Do you think you'd be better off without medication?",
+  'Would you be better off without meds?',
+  'Is your family better off without your father in the house?',
+  // finding 2 — protective-factor / reasons-for-living questions
+  'What has felt worth living for lately?',
+  'Do you have things in your life worth living for?',
+  // finding 3 — literal use of "living"
+  "There's no point in living in that apartment.",
+  // ordinary review-of-systems and social-history questions
+  'How has your appetite been?',
+  'Are you sleeping alright?',
+  'Tell me about your job.',
+  'Do you have any family nearby?',
+];
+
+test('no ordinary question is miscredited as a safety intent in any case (over-breadth guard)', () => {
+  assert.equal(pack.cases.length, EXPECTED_CASE_COUNT, 'pack case count changed');
+  const falsePositives = [];
+  for (const caseDef of pack.cases) {
+    for (const phrasing of NON_SAFETY_PHRASINGS) {
+      for (const intent of safetyIntentIds(caseDef)) {
+        const culprits = intent.patterns.filter((p) => new RegExp(p, 'i').test(phrasing));
+        if (culprits.length) {
+          falsePositives.push(
+            `case "${caseDef.id}": ${JSON.stringify(phrasing)} -> ${intent.id} via ${JSON.stringify(culprits)}`,
+          );
+        }
+      }
+    }
+  }
+  assert.deepEqual(
+    falsePositives,
+    [],
+    `ordinary questions credited as a safety screen:\n  ${falsePositives.join('\n  ')}`,
+  );
+});
+
+// PRE-EXISTING over-breadth, deliberately NOT fixed in this wave (WP-B3 finding 10
+// is out of scope; the `what'?s the point` stem in sp_mania_redirect_001's
+// si_direct is faculty-authorized vocabulary and removing/narrowing it is a
+// content decision, not an agent decision). Marcus is on lithium, so
+// "What's the point of the lithium?" is a plausible learner question and it is
+// credited today as a plain suicide screen. Recorded here as a skipped test so it
+// is not silently forgotten. Un-skip when faculty rules on finding 10.
+test("PRE-EXISTING (finding 10, out of scope): Marcus's `what'?s the point` credits \"What's the point of the lithium?\" as a suicide screen", { skip: 'pre-existing over-breadth; awaiting faculty decision on WP-B3 finding 10' }, () => {
+  const caseDef = pack.cases.find((c) => c.id === 'sp_mania_redirect_001');
+  const hits = matchingSafetyIntentIds(caseDef, "What's the point of the lithium?");
+  assert.deepEqual(hits, [], 'medication-rationale question credited as a safety screen');
+});
+
+// The must-match contract from the WP-B3 brief, asserted per case at the intent
+// the checklist actually scores. Marcus and Ray score "Suicide screened plainly"
+// off si_direct, so "some safety intent" is not a strong enough assertion for
+// them. Dana is checked at category:'safety' because her euphemisms route to
+// si_euphemism by design (see the pedagogy guard above).
+const MUST_MATCH = [
+  'Are you having thoughts of suicide?',
+  'Have you thought about killing yourself?',
+  "Have you had any thoughts that life isn't worth living?",
+  "Do you ever feel like life isn't worth it anymore?",
+  "Do you ever feel like you'd be better off not being here?",
+  // The boundary probe: with the finding-1 `\b` added to `without (me|you)`, this
+  // must STILL match — "you" ends the phrase, so the boundary is satisfied.
+  'Do you ever feel your family would be better off without you?',
+  "Has it felt like there's no point in going on?",
+  "Sometimes I feel like there's no point carrying on.",
+  'Have you had any thoughts of hurting yourself?',
+  'Have you thought about harming yourself?',
+  'Have you had thoughts of doing something to yourself?',
+];
+
+test('Marcus and Ray credit every must-match screening phrasing to si_direct', () => {
+  for (const caseId of ['sp_mania_redirect_001', 'sp_psychosis_paranoid_001']) {
+    const caseDef = pack.cases.find((c) => c.id === caseId);
+    assert.ok(caseDef, `${caseId} not found in pack`);
+    const siDirect = caseDef.intents.find((it) => it.id === 'si_direct');
+    assert.ok(siDirect, `case "${caseId}": no si_direct intent found`);
+    for (const phrasing of MUST_MATCH) {
+      assert.ok(
+        siDirect.patterns.some((p) => new RegExp(p, 'i').test(phrasing)),
+        `case "${caseId}": si_direct did not match ${JSON.stringify(phrasing)} — checklist row "Suicide screened plainly" would not be credited`,
+      );
+    }
+  }
+});
+
+test('Dana credits every must-match screening phrasing to some safety intent', () => {
+  const caseDef = pack.cases.find((c) => c.id === 'sp_depression_gated_si_001');
+  assert.ok(caseDef, 'sp_depression_gated_si_001 not found in pack');
+  for (const phrasing of MUST_MATCH) {
+    const hits = matchingSafetyIntentIds(caseDef, phrasing);
+    assert.ok(
+      hits.length > 0,
+      `Dana: no category:'safety' intent matched ${JSON.stringify(phrasing)}`,
+    );
   }
 });
