@@ -130,7 +130,7 @@ A. A signed no-suicide contract  B. Unstructured supportive counseling  C. A per
 3. **Links & Ross 2025** [✓] — GPM foundations: the generalist stance for BPD. PMID 38952224.
 4. **Steeg et al. 2025** [✓ OA] — means restriction: overview of systematic reviews — the concrete population-level wins. PMID 41365522.
 
-*A fifth rail slot (on what near-equivalent therapies imply for training) is held pending a full-text faculty read — see the Reading Room's evidence-limits section. Full domain-by-domain reading list: see the Therapy Reading Room page.*
+*A fifth rail slot (on what near-equivalent therapies imply for training) is held pending a full-text faculty read — see the Reading Room's evidence-limits section. Full domain-by-domain reading list: see [The Therapy Reading Room](?page=therapy_reading_room.md).*
 
 ## References
 
