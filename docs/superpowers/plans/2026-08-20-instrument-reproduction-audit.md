@@ -64,8 +64,10 @@ ladders** — that is what "drop-in content spec" means. Under the new rule:
 > | **C-SSRS** | **Retires** — copyrighted, licensed by the Columbia Lighthouse Project, reproduced verbatim on two public sites. → **WP-06R-a** |
 > | **Stanley–Brown** | Never programmed. → **WP-06R-b** builds a rehearsal tool that reproduces nothing |
 > | **PHQ-9 / GAD-7** | Provisionally stay. Pfizer's standard form footer states no permission is required to reproduce, translate, display or distribute — **this must be verified against the current form before it is relied on.** → **WP-02c** |
-> | **CIWA-Ar / COWS / BFCRS** | Copyright status **not established**. Wide public reproduction is evidence of practice, not of permission. Establishing it is an author/counsel task. → **WP-02d**, blocks the Wave-4 anchor-ladder work |
-> | **WP-20 / WP-21 / WP-22** | Survive in principle, but stay blocked on WP-02d for CIWA-Ar and COWS specifically |
+> | **BFCRS** | **RESTRICTED — resolved 2026-08-23 (WP-02d).** Published by URMC under site-wide Web Terms of Use: contents *"may not be distributed, modified, reproduced, or used, in whole or in part without the prior written consent of the University of Rochester Medical Center"*, with use granted only for *"personal non-commercial use."* No instrument-specific licence exists on any URMC BFCRS page or PDF, and absence of a copyright notice is not a licence (works published after 1 March 1989 need none). **All 23 items and anchor ladders removed from `bfcrs.html`; WP-22 blocked on written permission, not on an open question.** |
+> | **COWS** | **Permission real, scope wrong (WP-02d).** The published instrument carries, in Appendix 1, *"This version may be copied and used clinically."* That licenses clinical copying; it does not plainly reach verbatim reproduction on a public educational website — and WHO dropped the line when re-typesetting. **WP-02's 45 verbatim anchors in `withdrawal.html` are outside the grant on a conservative reading. Flagged, not reverted, pending the author's call.** |
+> | **CIWA-Ar** | **Unresolved (WP-02d).** "Not copyrighted and may be reproduced freely" circulates widely, but every located instance is a note added by a *reproducer*, in three different wordings; the attribution to the 1989 article itself could not be verified (closed access). One ILL request settles it. |
+> | **WP-20 / WP-21 / WP-22** | WP-22 (BFCRS) is now blocked on **written permission from URMC**, not on an open question. WP-20/21 stay blocked on CIWA-Ar and COWS. Full evidence: `DECISION_BRIEF_2026-08-23.md` §2 |
 > | **WP-02b** | Unblocked and **done** — attribution added to `withdrawal.html`; see below |
 >
 > Option A resolves the scope question. It does **not** license an agent to infer that any
@@ -97,5 +99,7 @@ rather than to this page. No clinical content was authored.
 ## Recommended enforcement, once scope is decided
 
 A gate in `check-static-site.mjs` that fails on known verbatim item stems, seeded from the
-retirement list. Deliberately **not** built yet: encoding the wrong scope in a gate is worse than
-no gate, and per amendment A3 no new gate is promoted to hard while CI is down.
+retirement list. Deliberately **not** built yet, for one reason only: encoding the wrong scope in
+a gate is worse than no gate. The second reason has expired — **amendment A3 was retired in #396**
+(Actions billing restored 2026-08-22), so when this gate is built it should ship **hard**, not
+warn-only.
