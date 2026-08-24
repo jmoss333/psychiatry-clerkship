@@ -241,17 +241,69 @@ test('no ordinary question is miscredited as a safety intent in any case (over-b
   );
 });
 
-// PRE-EXISTING over-breadth, deliberately NOT fixed in this wave (WP-B3 finding 10
-// is out of scope; the `what'?s the point` stem in sp_mania_redirect_001's
-// si_direct is faculty-authorized vocabulary and removing/narrowing it is a
-// content decision, not an agent decision). Marcus is on lithium, so
-// "What's the point of the lithium?" is a plausible learner question and it is
-// credited today as a plain suicide screen. Recorded here as a skipped test so it
-// is not silently forgotten. Un-skip when faculty rules on finding 10.
-test("PRE-EXISTING (finding 10, out of scope): Marcus's `what'?s the point` credits \"What's the point of the lithium?\" as a suicide screen", { skip: 'pre-existing over-breadth; awaiting faculty decision on WP-B3 finding 10' }, () => {
+// WP-B3 finding 10, now faculty-authorized (docs/superpowers/plans/
+// 2026-08-24-faculty-decisions.md): Marcus's `what'?s the point` stem was a bare
+// substring, so it fired on any "What's the point of X?" question. Marcus is a
+// mania case on lithium, so "What's the point of the lithium?" is a question a
+// learner is very likely to ask — and the checklist scores "Suicide screened
+// plainly" (quality: "best") off si_direct, so the debrief would certify a
+// suicide screen that never happened.
+//
+// The distinction being encoded: "what's the point" is a hopelessness/SI
+// utterance when it stands alone or is about EXISTENCE or CONTINUING; it is an
+// ordinary clinical question when it is about an object, a treatment, or an
+// activity. The narrowed pattern therefore matches the bare form (nothing, or
+// anything other than of/in/to, follows) plus an explicit existential-object
+// alternation, and declines every other "point of <thing>".
+const MARCUS_POINT_MUST_NOT_MATCH = [
+  "What's the point of the lithium?",
+  "What's the point of the medication?",
+  'Whats the point of taking it every day?',
+  "What's the point of the mood chart?",
+  "What's the point of staying on the unit?",
+];
+
+const MARCUS_POINT_MUST_MATCH = [
+  "What's the point?",
+  'Whats the point anymore?',
+  "What's the point of going on?",
+  "What's the point of living?",
+  "What's the point of any of this?",
+  "You said what's the point — can you tell me more about that?",
+];
+
+test("Marcus: an ordinary \"what's the point of <thing>\" question is NOT credited as a suicide screen", () => {
   const caseDef = pack.cases.find((c) => c.id === 'sp_mania_redirect_001');
-  const hits = matchingSafetyIntentIds(caseDef, "What's the point of the lithium?");
-  assert.deepEqual(hits, [], 'medication-rationale question credited as a safety screen');
+  assert.ok(caseDef, 'sp_mania_redirect_001 not found in pack');
+  const falsePositives = [];
+  for (const phrasing of MARCUS_POINT_MUST_NOT_MATCH) {
+    for (const intent of safetyIntentIds(caseDef)) {
+      const culprits = intent.patterns.filter((p) => new RegExp(p, 'i').test(phrasing));
+      if (culprits.length) {
+        falsePositives.push(
+          `${JSON.stringify(phrasing)} -> ${intent.id} via ${JSON.stringify(culprits)}`,
+        );
+      }
+    }
+  }
+  assert.deepEqual(
+    falsePositives,
+    [],
+    `ordinary clinical questions credited as a plain suicide screen:\n  ${falsePositives.join('\n  ')}`,
+  );
+});
+
+test("Marcus: hopelessness \"what's the point\" phrasings still credit si_direct", () => {
+  const caseDef = pack.cases.find((c) => c.id === 'sp_mania_redirect_001');
+  assert.ok(caseDef, 'sp_mania_redirect_001 not found in pack');
+  const siDirect = caseDef.intents.find((it) => it.id === 'si_direct');
+  assert.ok(siDirect, 'Marcus: no si_direct intent found');
+  for (const phrasing of MARCUS_POINT_MUST_MATCH) {
+    assert.ok(
+      siDirect.patterns.some((p) => new RegExp(p, 'i').test(phrasing)),
+      `Marcus: si_direct did not match ${JSON.stringify(phrasing)} — checklist row "Suicide screened plainly" would not be credited`,
+    );
+  }
 });
 
 // The must-match contract from the WP-B3 brief, asserted per case at the intent
