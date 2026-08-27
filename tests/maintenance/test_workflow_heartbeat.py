@@ -114,7 +114,7 @@ class WorkflowHeartbeatTests(unittest.TestCase):
         self.assertEqual(
             EXPECTATIONS,
             {
-                "maintenance-sp-health-monitor.yml": 10,
+                "maintenance-sp-health-monitor.yml": 16,
                 "maintenance-production-canary.yml": 30,
                 "maintenance-rotation-readiness.yml": 30,
                 "ci.yml": 8 * 24,
