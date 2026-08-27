@@ -637,7 +637,7 @@
             "wish(ed)? you (were dead|wouldn'?t wake)",
             "not (want(ing)? to )?wake up",
             "better off dead",
-            "what'?s the point\\b(?!\\s+(?:of|in|to)\\b)|what'?s the point\\s+(?:of|in|to)\\s+(?:my |your |this |it )?(?:going on|carrying on|keep(?:ing)? going|continu(?:e|ing)|liv(?:e|ing)|life|be(?:ing)? here|waking up|getting up|any of (?:this|it)|(?:it|this) all|all (?:of )?(?:this|it)|anything)\\b",
+            "what(?:'?s| is) the point\\b(?!\\s+(?:of|in|to)\\b)|what(?:'?s| is) the point\\s+(?:of|in|to)\\s+(?:my |your |this |it )?(?:going on|carrying on|keep(?:ing)? going|continu(?:e|ing)|liv(?:e|ing)|life|be(?:ing)? here|waking up|getting up|any of (?:this|it)|(?:it|this) all|all (?:of )?(?:this|it)|anything)\\b",
             "\\b(isn'?t|is not|no longer|not) worth living",
             "life (isn'?t|is not) worth it",
             "better off (not being here|without (me|you)\\b|if i wasn'?t here)",

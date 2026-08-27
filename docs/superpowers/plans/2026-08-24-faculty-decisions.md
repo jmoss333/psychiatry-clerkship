@@ -199,9 +199,38 @@ neither blocks the PR:
    `"What's the point?"` scores `observed` on him and a **critical** `missed` on Dana. Same learner
    words, two grades.
 
-Also pre-existing and unchanged: `"what is the point"` unabbreviated never matched, because the
-stem has always been `what'?s`. Broadening the contraction was not authorized.
+~~Also pre-existing and unchanged: `"what is the point"` unabbreviated never matched.~~
+**Superseded by D8 (2026-08-27)** — the contraction was broadened and this now matches on Marcus.
 
+
+## D8 · Unabbreviated "what is the point" (issue #410 item A, partial)
+
+**DECIDED 2026-08-27: broaden the contraction.** Directed in session, same day.
+
+The stem had always been `what'?s`, so `"What is the point of going on?"` — an ordinary way to
+phrase it, and no less a screen — matched **nothing at all**, in any case. On Marcus, where `c_si`
+is `critical: true`, that scored as a critical safety miss for a learner who screened correctly.
+D6's narrowing did not cause this and did not touch it; `wpb4-report.md` flagged it as pre-existing
+and out of scope because broadening was not authorized at the time. This authorizes it.
+
+Change: `what'?s the point` → `what(?:'?s| is) the point`, in **both** branches of the pattern, so
+the object/treatment guard from D6 applies identically to the unabbreviated form. One line in
+`sp_mania_redirect_001`.
+
+Verified: 24/24 on an adversarial probe — 11 existential forms fire (both contractions), 13
+ordinary-clinical forms decline, including all four `"What is the point of <treatment|object>"`
+variants. The D6 guard is intact. The regression test was extended with both lists and
+teeth-checked: it fails on the pre-D8 pack and passes after.
+
+**Scope — this fixes Marcus only.** The `what's the point` stem exists in **no other case**; Dana
+and Ray have never carried it in any form. `"What is the point of going on?"` still scores as a miss
+on both of them, exactly as `"What's the point of going on?"` already did. Giving them the stem is a
+different decision — it is issue #410 item D (the Dana/Marcus asymmetry), which turns on whether a
+bare or reflected `"what's the point"` should count as a *plain* screen at all, and is not settled
+here. All three cases do carry `no point (in )?(going on|carrying on)`, so that family is unaffected.
+
+Unblocks: #410 item A, in part. Items A (remainder: `dark thoughts` / `unsafe thoughts` /
+`something drastic|stupid` missing from Marcus and Ray), B, C, D, E, F and G remain open.
 
 ## Operational follow-up owed
 

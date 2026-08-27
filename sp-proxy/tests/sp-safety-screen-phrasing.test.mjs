@@ -255,12 +255,24 @@ test('no ordinary question is miscredited as a safety intent in any case (over-b
 // activity. The narrowed pattern therefore matches the bare form (nothing, or
 // anything other than of/in/to, follows) plus an explicit existential-object
 // alternation, and declines every other "point of <thing>".
+//
+// D8 (2026-08-27) widened the stem's contraction from `what'?s` to
+// `what(?:'?s| is)`. Both branches carry it, so the object/treatment guard applies
+// to "What is the point of X?" exactly as it does to "What's the point of X?".
+// Scope note: this stem exists ONLY in Marcus. Dana and Ray have no
+// "what's the point" pattern at all, which is issue #410 item D, not this.
 const MARCUS_POINT_MUST_NOT_MATCH = [
   "What's the point of the lithium?",
   "What's the point of the medication?",
   'Whats the point of taking it every day?',
   "What's the point of the mood chart?",
   "What's the point of staying on the unit?",
+  // Unabbreviated forms must be declined for the same reasons — the D8 contraction
+  // widening must not have reopened the object/treatment branch.
+  'What is the point of the lithium?',
+  'What is the point of the medication?',
+  'What is the point in taking it daily?',
+  'What is the point of staying on the unit?',
 ];
 
 const MARCUS_POINT_MUST_MATCH = [
@@ -270,6 +282,12 @@ const MARCUS_POINT_MUST_MATCH = [
   "What's the point of living?",
   "What's the point of any of this?",
   "You said what's the point — can you tell me more about that?",
+  // D8: the stem was `what'?s`, so the unabbreviated form — an ordinary way to ask
+  // this, and no less a screen — matched nothing at all and scored as a critical miss.
+  'What is the point?',
+  'What is the point of going on?',
+  'What is the point of living?',
+  'What is the point of any of this?',
 ];
 
 test("Marcus: an ordinary \"what's the point of <thing>\" question is NOT credited as a suicide screen", () => {
