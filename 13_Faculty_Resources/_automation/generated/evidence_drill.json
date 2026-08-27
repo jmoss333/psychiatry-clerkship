@@ -28,8 +28,8 @@
      "key": "C"
     },
     {
-     "t": "Stanley et al. · 2012 · Cognitive and Behavioral Practice",
-     "sourceId": "stanley-brown-2012-safety-planning",
+     "t": "Kearns et al. · 2025 · Behav Ther",
+     "sourceId": "kearns-2025",
      "key": "D"
     }
    ],
@@ -68,8 +68,8 @@
      "key": "C"
     },
     {
-     "t": "Hansson et al. · 2022 · BMC Psychiatry",
-     "sourceId": "hansson-2022",
+     "t": "Tham et al. · 2024 · Psychiatr Serv",
+     "sourceId": "tham-solomon-2024",
      "key": "D"
     }
    ],
@@ -92,24 +92,24 @@
    "stem": "This claim on med_monitoring.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
+     "t": "Appel et al. · 2026 · Psychodyn Psychiatry",
+     "sourceId": "appel-2026",
+     "key": "A"
+    },
+    {
      "t": "Yatham et al. · 2018 · Bipolar Disorders",
      "sourceId": "canmat-isbd-bipolar-2018",
-     "key": "A"
+     "key": "B"
     },
     {
      "t": "U.S. Food and Drug Administration · 2025",
      "sourceId": "clozapine-rems",
-     "key": "B"
+     "key": "C"
     },
     {
      "t": "U.S. Food and Drug Administration · 2026",
      "c": true,
      "sourceId": "fda-drug-safety",
-     "key": "C"
-    },
-    {
-     "t": "American Association for Emergency Psychiatry Project BETA · 2012",
-     "sourceId": "project-beta-psychopharm-agitation-2012",
      "key": "D"
     }
    ],
@@ -132,14 +132,14 @@
    "stem": "This claim on psychopharm_primer.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Boyer et al. · 2005 · The New England Journal of Medicine",
-     "c": true,
-     "sourceId": "boyer-shannon-2005-serotonin-syndrome",
+     "t": "Appel et al. · 2026 · Psychodyn Psychiatry",
+     "sourceId": "appel-2026",
      "key": "A"
     },
     {
-     "t": "Brodsky et al. · 2025 · Am J Psychiatry",
-     "sourceId": "brodsky-2025",
+     "t": "Boyer et al. · 2005 · The New England Journal of Medicine",
+     "c": true,
+     "sourceId": "boyer-shannon-2005-serotonin-syndrome",
      "key": "B"
     },
     {
@@ -148,8 +148,8 @@
      "key": "C"
     },
     {
-     "t": "Wesseloo et al. · 2016 · The American Journal of Psychiatry",
-     "sourceId": "wesseloo-2016-postpartum-relapse",
+     "t": "Schwenker et al. · 2023 · Cochrane Database Syst Rev",
+     "sourceId": "schwenker-2023",
      "key": "D"
     }
    ],
@@ -172,24 +172,24 @@
    "stem": "This claim on psychopharm_primer.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
+     "t": "American Psychiatric Association · 2026",
+     "sourceId": "apa-practice-guidelines",
+     "key": "A"
+    },
+    {
      "t": "Boyer et al. · 2005 · The New England Journal of Medicine",
      "sourceId": "boyer-shannon-2005-serotonin-syndrome",
-     "key": "A"
+     "key": "B"
+    },
+    {
+     "t": "Diefenbach et al. · 2025 · Gen Hosp Psychiatry",
+     "sourceId": "diefenbach-2025",
+     "key": "C"
     },
     {
      "t": "U.S. Food and Drug Administration · 2026",
      "c": true,
      "sourceId": "fda-prozac-label-maoi-switching",
-     "key": "B"
-    },
-    {
-     "t": "Man et al. · 2023 · Clin Psychol Psychother",
-     "sourceId": "man-2023",
-     "key": "C"
-    },
-    {
-     "t": "Tham et al. · 2024 · Psychiatr Serv",
-     "sourceId": "tham-solomon-2024",
      "key": "D"
     }
    ],
@@ -212,24 +212,24 @@
    "stem": "This claim on t_mood.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
+     "t": "Appelbaum et al. · 1988 · The New England Journal of Medicine",
+     "sourceId": "appelbaum-grisso-1988-capacity",
+     "key": "A"
+    },
+    {
      "t": "Yatham et al. · 2018 · Bipolar Disorders",
      "c": true,
      "sourceId": "canmat-isbd-bipolar-2018",
-     "key": "A"
+     "key": "B"
     },
     {
      "t": "Cipriani et al. · 2013 · BMJ",
      "sourceId": "cipriani-2013-lithium-suicide",
-     "key": "B"
-    },
-    {
-     "t": "Goldstein et al. · 2024 · Perm J",
-     "sourceId": "goldstein-2024",
      "key": "C"
     },
     {
-     "t": "Tetzlaff et al. · 2025 · Clin Psychol Rev",
-     "sourceId": "tetzlaff-2025",
+     "t": "American Association for Emergency Psychiatry Project BETA · 2012",
+     "sourceId": "project-beta-deescalation-2012",
      "key": "D"
     }
    ],
@@ -252,24 +252,24 @@
    "stem": "This claim on t_mood.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Crone et al. · 2023 · The American Journal of Psychiatry",
-     "sourceId": "apa-eating-disorders-2023",
-     "key": "A"
-    },
-    {
      "t": "Yatham et al. · 2018 · Bipolar Disorders",
      "sourceId": "canmat-isbd-bipolar-2018",
-     "key": "B"
+     "key": "A"
     },
     {
      "t": "Cipriani et al. · 2013 · BMJ",
      "c": true,
      "sourceId": "cipriani-2013-lithium-suicide",
+     "key": "B"
+    },
+    {
+     "t": "McKeith et al. · 2017 · Neurology",
+     "sourceId": "mckeith-2017-dlb-consensus",
      "key": "C"
     },
     {
-     "t": "Engel · 1977 · Science",
-     "sourceId": "engel-1977-biopsychosocial-model",
+     "t": "Simmonds-Buckley et al. · 2019 · Behav Ther",
+     "sourceId": "simmonds-buckley-2019",
      "key": "D"
     }
    ],
@@ -452,13 +452,13 @@
    "stem": "This claim on t_perinatal.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "U.S. Food and Drug Administration · 2025",
-     "sourceId": "clozapine-rems",
+     "t": "Appel et al. · 2026 · Psychodyn Psychiatry",
+     "sourceId": "appel-2026",
      "key": "A"
     },
     {
-     "t": "U.S. Food and Drug Administration · 2026",
-     "sourceId": "fda-prozac-label-maoi-switching",
+     "t": "The Joint Commission · 2026",
+     "sourceId": "joint-commission-suicide-prevention",
      "key": "B"
     },
     {
@@ -492,24 +492,24 @@
    "stem": "This claim on t_perinatal.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Brown et al. · 1972 · The British Journal of Psychiatry",
-     "sourceId": "brown-1972-expressed-emotion",
+     "t": "Brodsky et al. · 2025 · Am J Psychiatry",
+     "sourceId": "brodsky-2025",
      "key": "A"
-    },
-    {
-     "t": "Schünemann et al. · 2025 · Clin Psychol Eur",
-     "sourceId": "schunemann-2025",
-     "key": "B"
     },
     {
      "t": "VanderKruik et al. · 2017 · BMC Psychiatry",
      "sourceId": "vanderkruik-2017-postpartum-psychosis-prevalence",
-     "key": "C"
+     "key": "B"
     },
     {
      "t": "Wesseloo et al. · 2016 · The American Journal of Psychiatry",
      "c": true,
      "sourceId": "wesseloo-2016-postpartum-relapse",
+     "key": "C"
+    },
+    {
+     "t": "Wienicke et al. · 2023 · Clin Psychol Rev",
+     "sourceId": "wienicke-2023",
      "key": "D"
     }
    ],
@@ -703,13 +703,13 @@
      "key": "B"
     },
     {
-     "t": "Steeg et al. · 2025 · BMJ Ment Health",
-     "sourceId": "steeg-2025",
+     "t": "Strawn et al. · 2007 · The American Journal of Psychiatry",
+     "sourceId": "strawn-2007-neuroleptic-malignant-syndrome",
      "key": "C"
     },
     {
-     "t": "Strawn et al. · 2007 · The American Journal of Psychiatry",
-     "sourceId": "strawn-2007-neuroleptic-malignant-syndrome",
+     "t": "Tetzlaff et al. · 2025 · Clin Psychol Rev",
+     "sourceId": "tetzlaff-2025",
      "key": "D"
     }
    ],
@@ -732,19 +732,19 @@
    "stem": "This claim on toxidromes.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "American Academy of Child and Adolescent Psychiatry · 2026",
-     "sourceId": "aacap-parameters",
-     "key": "A"
-    },
-    {
      "t": "British Association for Psychopharmacology · 2023",
      "sourceId": "bap-catatonia-2023",
-     "key": "B"
+     "key": "A"
     },
     {
      "t": "Boyer et al. · 2005 · The New England Journal of Medicine",
      "c": true,
      "sourceId": "boyer-shannon-2005-serotonin-syndrome",
+     "key": "B"
+    },
+    {
+     "t": "U.S. Food and Drug Administration · 2026",
+     "sourceId": "fda-prozac-label-maoi-switching",
      "key": "C"
     },
     {
@@ -782,8 +782,8 @@
      "key": "B"
     },
     {
-     "t": "Brown et al. · 1972 · The British Journal of Psychiatry",
-     "sourceId": "brown-1972-expressed-emotion",
+     "t": "Steeg et al. · 2025 · BMJ Ment Health",
+     "sourceId": "steeg-2025",
      "key": "C"
     },
     {
