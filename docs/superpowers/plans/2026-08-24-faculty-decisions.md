@@ -4,6 +4,10 @@ Captured live in session. These open gates recorded in
 `2026-08-23-taplinger-ux-remediation.md`. Each records what was decided, the evidence
 put in front of the decision, and what it unblocks.
 
+> **D6 and D7 were added 2026-08-27**, ratifying decisions made on the 24th that were never
+> written down at the time. Everything above them was captured on 2026-08-24. The filename keeps
+> the original date because the regression tests cite it by that path.
+
 ---
 
 ## D1 · MS3 Week 3 composition (Task 4a gate)
@@ -134,6 +138,70 @@ euphemism routes to `si_euphemism` -> `deflectEuphemism`, which is the case's te
 and a guard test now asserts her `si_direct` does NOT match the euphemistic phrasings.
 
 ---
+
+---
+
+## D6 · Marcus's `what'?s the point` narrowing (WP-B3 finding 10)
+
+**DECIDED: ratified.** Confirmed 2026-08-27, ratifying the authorization given 2026-08-24.
+Recorded late — the narrowing shipped in `f519b1e` on 08-24 and the regression test cited this
+document as its authority, but no entry was written here at the time. This closes that gap.
+
+Evidence presented: `si_direct` scores Marcus's checklist row "Suicide screened plainly"
+(`quality: "best"`), and the stem was a bare substring, so `"What's the point of the lithium?"`
+was credited as a plain-language suicide screen. Marcus is a mania case on lithium, so this is a
+question learners actually ask. Session ruling **R11** had deferred it ("fixing it means narrowing
+a pattern faculty never approved, mid-wave, on a safety intent"); that ruling is **superseded** by
+this decision.
+
+Rationale — the two failure directions are not equally bad. Leaving the bare substring produces a
+false **pass**: the debrief certifies a screen that never happened, which is the exact lesson the
+whole WP-B wave exists to stop teaching. Narrowing produces at worst a false **miss**: an SI
+utterance in unlisted words earns no credit. In a simulator whose purpose is teaching suicide
+screening, wrongly telling a competent student they missed is recoverable; wrongly telling an
+incompetent one they screened is not.
+
+The distinction encoded: `"what's the point"` is a hopelessness utterance when it stands alone or
+is about existence/continuing, and an ordinary clinical question when it is about an object, a
+treatment, or an activity. Two branches — the bare form, plus a closed existential-object
+alternation. Everything else after "point of" is declined.
+
+Verified: 30/31 on an independent adversarial probe (13 existential must-fire, 18 ordinary-clinical
+and protective-factor must-not-fire), **zero over-fires**. Dana and Ray structurally untouched.
+
+Unblocks: PR #406. Pack diff is one line; the regression test's citation now resolves.
+
+## D7 · Ambiguous "point of" phrasings (item 8c)
+
+**DECIDED: leave uncredited.** `"What's the point of trying?"` and
+`"What's the point of talking to you?"` are hopelessness-adjacent in one reading and ordinary
+frustration or rapport statements in another — `"What's the point of trying the lithium?"` is
+plainly a medication question. A regex cannot resolve this without the rest of the utterance.
+
+They currently match nothing, which is the safe direction: an ambiguous phrase never falsely
+certifies a screen. Recorded as decided so it stops resurfacing as an open item.
+
+The existential alternation is a **closed vocabulary by design** — anything unlisted falls to
+"not a screen". Additional existential objects (e.g. "waking up tomorrow", "getting better") are
+one alternation entry each if wanted later.
+
+### Noted, not decided — for a later WP, not PR #406
+
+Two pre-existing issues surfaced while ratifying the above. Neither was introduced by WP-B and
+neither blocks the PR:
+
+1. **The bare branch credits a reflection as a plain-language screen.** These patterns match the
+   *learner's* text. A student who says `"You said what's the point — can you tell me more?"` is
+   reflecting the patient's words back, not asking plainly — yet it scores `si_direct` at
+   `quality: "best"`. Arguably belongs at `partial`, the way Dana's `si_euphemism` →
+   `partialIfOnly` already works.
+2. **Dana/Marcus asymmetry.** The bare stem exists only in Marcus's case, so bare
+   `"What's the point?"` scores `observed` on him and a **critical** `missed` on Dana. Same learner
+   words, two grades.
+
+Also pre-existing and unchanged: `"what is the point"` unabbreviated never matched, because the
+stem has always been `what'?s`. Broadening the contraction was not authorized.
+
 
 ## Operational follow-up owed
 
