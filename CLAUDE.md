@@ -80,6 +80,25 @@ cd tests/smoke && npm ci && npx playwright test
   runs on Netlify).
 - **No PHI.** Clinical content is synthetic / de-identified only; never commit patient identifiers to
   git-tracked files, memory, or scratch outputs.
+- **Every claim the library makes about a paper needs that paper's own words.**
+  `evidence_annotations.json` stores a verbatim `sourceSpan` per source and
+  `_automation/validate_evidence_annotations.py` gates it (CI + `bin/verify.sh`). If you add or edit
+  a sentence asserting what a source found, add or update its span in the same change. **Read the
+  results section, not the title or the conclusion** — a 2026-08-21 pass found 54% of annotations
+  needed amendment and 7 said close to the opposite of the paper, all written from titles. `C5`
+  rejects a positively-voiced claim licensed by a null/negative span; the fix is to rewrite the
+  claim to match the paper, never to trim the span. Note the gate verifies the *stored* claim, not
+  page prose — keep the two saying the same thing yourself.
+- **Adding a step to `ci.yml` trips three separate contracts.** `bin/check-verify-coverage.py`
+  (mirror it in `bin/verify.sh` or justify an `ALLOWED` exemption);
+  `_automation/maintenance/validate_scheduled_workflows.py`, which pins the workflow by **exact step
+  inventory *and* a sha256 of the whole file** — recompute that digest by importing the validator's
+  own `_load`/`_contract_digest` rather than reimplementing its canonicalisation; and
+  `_automation/test_validate_registry_schemas.py`'s `PAIRS` tuple if you added a root registry.
+- **A red node test silently aborts the build.** `build_and_check.sh` is `set -euo pipefail` and runs
+  `node --test tests/*.test.mjs` *before* `build_deploy.py`, so a failing contract test exits early
+  and `_build/` keeps serving **stale output** while the script merely looks "failed". If a source
+  edit isn't showing up in the built site, run the node suite first.
 - **THE LIBRARY TEACHES ADMINISTRATION; IT DOES NOT REPRODUCE INSTRUMENTS.** Same standing as the
   dose-literal rule. Teach *how to give* an instrument — the elicitation, the confounds, what the
   score does and does not license, what a negative result fails to rule out — and link to the
@@ -90,4 +109,9 @@ cd tests/smoke && npm ci && npx playwright test
   (WP-06R-b) is a *rehearsal* tool and reproduces nothing.
   Scope is a governance decision, not an agent decision: if a WP asks you to add verbatim item or
   anchor text, **stop and ask** rather than inferring that a particular instrument is exempt.
+  **Resolved 2026-08-23 — Option A: the rule covers copyrighted instruments only** (#391). C-SSRS
+  retires (WP-06R-a); Stanley-Brown is never programmed (WP-06R-b); PHQ-9/GAD-7 provisionally stay
+  pending a check of the current permission footer (WP-02c); CIWA-Ar / COWS / BFCRS status is **not
+  established** (WP-02d) and that is what blocks Wave 4. An instrument is exempt only once its
+  status is recorded in the audit's decision table — Option A settles scope, not individual cases.
   Audit and current disposition: `docs/superpowers/plans/2026-08-20-instrument-reproduction-audit.md`.
