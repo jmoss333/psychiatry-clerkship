@@ -626,8 +626,6 @@ function assertSmokeLauncherContract(ci) {
   const smokeJob = extractWorkflowJob(ci, 'smoke-tests');
   const smokeRunSteps = extractRunSteps(smokeJob);
   const ordered = [
-    'bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh ms3',
-    'bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res',
     'npm ci',
     'npx playwright install chromium --with-deps',
     SMOKE_LAUNCHER_COMMAND,
@@ -718,13 +716,13 @@ test('smoke launcher contract ignores labels and rejects boundary drift', () => 
     '\n',
   );
   assert.notEqual(withoutLauncherStep, ci, 'test fixture must remove the launcher step');
-  const movedBeforeBuild = withoutLauncherStep.replace(
-    '          bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh ms3',
-    `          ${SMOKE_LAUNCHER_COMMAND}\n          bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh ms3`,
+  const movedBeforeInstall = withoutLauncherStep.replace(
+    '          npm ci',
+    `          ${SMOKE_LAUNCHER_COMMAND}\n          npm ci`,
   );
-  assert.notEqual(movedBeforeBuild, withoutLauncherStep, 'test fixture must move the launcher before builds');
+  assert.notEqual(movedBeforeInstall, withoutLauncherStep, 'test fixture must move the launcher before the Playwright install');
   assert.throws(
-    () => assertSmokeLauncherContract(movedBeforeBuild),
+    () => assertSmokeLauncherContract(movedBeforeInstall),
     /must follow the preceding smoke-job command/,
   );
 
