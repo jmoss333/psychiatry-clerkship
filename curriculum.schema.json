@@ -99,7 +99,13 @@
         "resident": { "$ref": "#/definitions/roleList" }
       }
     },
-    "synonyms": { "type": "object", "additionalProperties": { "type": "string" } }
+    "_synonymsNote": { "type": "string" },
+    "synonyms": {
+      "description": "Query expansion. A single-word key expands per word. A key CONTAINING A SPACE is a phrase, matched whole-phrase against the raw query — the safe way to express a multi-word intent whose individual words are too common to expand on their own.",
+      "type": "object",
+      "propertyNames": { "pattern": "^[a-z0-9][a-z0-9 -]*$" },
+      "additionalProperties": { "type": "string", "minLength": 1 }
+    }
   },
   "definitions": {
     "learningPath": {

@@ -391,3 +391,82 @@ test('the item comparator breaks score ties explicitly rather than trusting sort
   assert.match(src.slice(0, 400), /_score[\s\S]{0,120}\|\|[\s\S]{0,160}ref/,
     'itemResults.sort must fall back to a ref comparison when scores are equal');
 });
+
+// ---- phrase synonyms (Fresh Eyes Audit A5) ----------------------------------------------------
+// fdExpandQuery is per-word, and A5's two named gaps cannot be expressed that way without real
+// collateral. Measured before building this: a synonym on "first" fixes "first shift" but hijacks
+// "first line treatment" and "first episode psychosis" (both push welcome.md above the correct
+// page), and "shift" alone still breaks "night shift sleep". The limitation is the mechanism.
+//
+// Multi-word synonym keys are therefore matched WHOLE-PHRASE against the space-padded raw query —
+// the same shape as the safetyKit triggers — so "first shift" expands and "first line treatment"
+// does not. Single-word keys are untouched. The collateral queries below are the point of this
+// block: they are what a per-word fix would have broken.
+
+const topRefs = (q, n) => F.fdSearchResults(REAL_INDEX, q, SYN, {}).map((r) => r.item.ref).slice(0, n);
+const rankOf = (q, ref) => F.fdSearchResults(REAL_INDEX, q, SYN, {})
+  .map((r) => r.item.ref).indexOf(ref);
+
+test('"first shift" reaches the orientation trio instead of unrelated pages', () => {
+  // Baseline was cases.md, ddx.md, exp_family.md — summary-substring noise, no orientation page.
+  assert.ok(rankOf('first shift', 'welcome.md') > -1, `welcome.md missing: ${topRefs('first shift', 5)}`);
+});
+
+test('"first day" reaches the orientation trio too', () => {
+  assert.ok(rankOf('first day', 'welcome.md') > -1, `welcome.md missing: ${topRefs('first day', 5)}`);
+});
+
+test('"patient refuses medication" surfaces Decisional Capacity', () => {
+  assert.ok(rankOf('patient refuses medication', 'capacity.html') > -1,
+    `capacity.html missing: ${topRefs('patient refuses medication', 5)}`);
+});
+
+// ---- the collateral a per-word synonym would have caused --------------------------------------
+
+test('"first line treatment" is untouched — the phrase never matches', () => {
+  const refs = topRefs('first line treatment', 3);
+  assert.equal(refs.includes('welcome.md'), false, `orientation leaked in: ${refs}`);
+  assert.equal(refs[0], 'exp_tx.md');
+});
+
+test('"first episode psychosis" is untouched', () => {
+  const refs = topRefs('first episode psychosis', 3);
+  assert.equal(refs.includes('welcome.md'), false, `orientation leaked in: ${refs}`);
+  assert.equal(refs[0], 't_psychosis.md');
+});
+
+test('"night shift sleep" is untouched', () => {
+  const refs = topRefs('night shift sleep', 3);
+  assert.equal(refs.includes('welcome.md'), false, `orientation leaked in: ${refs}`);
+  assert.equal(refs[0], 't_sleep.md');
+});
+
+// ---- mechanism --------------------------------------------------------------------------------
+
+test('a multi-word synonym key expands only when the whole phrase is present', () => {
+  const syn = { 'first shift': 'orientation welcome' };
+  assert.match(F.fdExpandQuery('my first shift tomorrow', syn), /orientation welcome/);
+  assert.doesNotMatch(F.fdExpandQuery('first line treatment', syn), /orientation/);
+  assert.doesNotMatch(F.fdExpandQuery('shift first', syn), /orientation/,
+    'word order matters — this is a phrase, not a bag of words');
+});
+
+test('single-word synonyms keep working exactly as before', () => {
+  assert.match(F.fdExpandQuery('etoh', BRIEF_SYN), /alcohol/);
+  assert.match(F.fdExpandQuery('etoh', BRIEF_SYN), /etoh/);
+});
+
+test('phrase expansion never summons a safety protocol on its own', () => {
+  // Expanded words feed the protocol haystack pass; a phrase must not become a back door into
+  // the safety kit, which is trigger-governed (A1).
+  for (const q of ['first shift', 'first day']) {
+    assert.deepEqual(protocolRefs(q), [], `${q} summoned protocols: ${protocolRefs(q)}`);
+  }
+});
+
+test('every multi-word synonym key is lowercase and genuinely multi-word', () => {
+  for (const key of Object.keys(SYN).filter((k) => k.includes(' '))) {
+    assert.equal(key, key.trim().toLowerCase(), `"${key}" must be lowercase and trimmed`);
+    assert.ok(key.split(/\s+/).length > 1, `"${key}" is not a phrase`);
+  }
+});
