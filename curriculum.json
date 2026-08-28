@@ -260,11 +260,27 @@
     }
   },
   "safetyKit": [
-    { "ref": "pg_suicide.md", "sub": "Screen · stratify · safety plan" },
-    { "ref": "agitation.md", "sub": "Verbal first · PO before IM" },
-    { "ref": "exp_consult.md", "sub": "Choice · understand · appreciate · reason" },
-    { "ref": "t_sud.md", "sub": "Score · thiamine · escalate" },
-    { "ref": "delirium.md", "sub": "Vitals · meds · CAM" }
+    { "ref": "pg_suicide.md", "sub": "Screen · stratify · safety plan",
+      "triggers": ["suicidal", "suicide", "kill myself", "killing myself", "kill herself",
+        "kill himself", "kill themselves", "want to die", "wants to die", "wanted to die",
+        "better off dead", "end my life", "end her life", "end his life", "end it all",
+        "self harm", "self-harm", "hurt myself", "hurt herself", "hurt himself",
+        "cutting", "overdose", "hanging", "wants to leave", "eloping"] },
+    { "ref": "agitation.md", "sub": "Verbal first · PO before IM",
+      "triggers": ["agitated", "agitation", "combative", "aggressive", "violent", "threatening",
+        "hitting", "throwing", "restraint", "restraints", "seclusion", "escalating",
+        "out of control", "swinging"] },
+    { "ref": "exp_consult.md", "sub": "Choice · understand · appreciate · reason",
+      "triggers": ["capacity", "refusing", "refuses", "refused", "declining", "declines",
+        "ama", "against medical advice", "wants to leave", "leave the hospital", "consent",
+        "decisional"] },
+    { "ref": "t_sud.md", "sub": "Score · thiamine · escalate",
+      "triggers": ["withdrawal", "withdrawing", "dts", "delirium tremens", "detox", "shakes",
+        "shaking", "tremor", "tremulous", "ciwa", "cows", "last drink", "seizure",
+        "alcohol withdrawal", "opioid withdrawal"] },
+    { "ref": "delirium.md", "sub": "Vitals · meds · CAM",
+      "triggers": ["delirious", "confused", "confusion", "disoriented", "altered mental status",
+        "ams", "sundowning", "waxing and waning", "inattentive", "not making sense"] }
   ],
   "roles": {
     "ms3": [

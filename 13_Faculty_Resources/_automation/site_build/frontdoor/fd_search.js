@@ -147,6 +147,20 @@ function fdSearchHaystack(item){
   return (item.title+' '+item.ref+' '+item.summary).toLowerCase();
 }
 
+/* Crisis routing for the protocol pass. Triggers are matched against the SPACE-PADDED raw query
+   rather than the word list, which buys whole-word/phrase matching without a regex: " diet and
+   nutrition " does not contain " die ", and a multi-word trigger can be authored the way a
+   learner types it ("wants to die") instead of in filtered form ("wants die"). The raw query is
+   used, not the expanded one, so a synonym expansion can never conjure a crisis match that the
+   learner did not type. */
+function fdSearchTriggerHit(triggers, paddedQuery){
+  var list=triggers||[];
+  for(var i=0;i<list.length;i++){
+    if(list[i]&&paddedQuery.indexOf(' '+list[i]+' ')!==-1) return true;
+  }
+  return false;
+}
+
 function fdSearchItemMeta(item){
   if(item.kind==='tool') return 'tool';
   return (typeof item.minutes==='number')?(item.minutes+' min read'):'';
@@ -199,18 +213,33 @@ function fdSearchResults(index, query, synonyms, state){
   for(var e=0;e<expandedWords.length;e++){ if(expandedWords[e]) qw.push(expandedWords[e]); }
   var contentWords=fdSearchContentWords(qw);
 
-  /* The PROTOCOL pass deliberately keeps the UNFILTERED word list. The index carries no stem or
-     synonym coverage for "suicidal", "die", or "self-harm", so on a plain-language query --
-     "she said she wants to die", "patient wants to leave" -- the only thing that reaches a safety
-     sheet is a match on one of the query's own words. Filtering them here dropped the safety kit
-     out of those queries entirely. Stopword filtering exists to stop "on"/"the" acting as a
-     wildcard in the ITEM pass, where a spurious match displaces a real one inside the cap; the
-     protocol pass has no such failure mode -- protocols are 5 items, always rank first, and
-     always fit inside the cap. */
+  /* Two ways into the safety kit, both deliberate.
+
+     (1) an explicit TRIGGER phrase -- the crisis vocabulary each protocol carries in
+         curriculum.json's safetyKit. This is what routes the way a learner actually types
+         mid-shift ("i want to kill myself", "she said she wants to die").
+     (2) the ordinary haystack match, now on the FILTERED word list.
+
+     Until 2026-08-28 there was only (2), on the UNFILTERED list, and the comment here claimed
+     that WAS the safety contract. It was not: measured against the real index, the only token in
+     "i want to kill myself" that matched pg_suicide.md was the stopword "to", found inside
+     "thoughts" in that page's tldr -- the haystack carries none of kill/myself/die/suicidal and
+     the synonyms map has no crisis terms. So the same mechanism produced both the crisis route
+     and the leak where "on"/"the" wildcard-matched all five protocols and buried the page the
+     learner named (the 2026-08-27 audit's A1: typing the exact title "therapy on the unit" and
+     pressing Enter opened the suicide sheet). Removing one removed the other; filtering alone
+     returned zero protocols for every plain-language crisis query.
+
+     Splitting them makes the safety contract explicit and testable, and stops it depending on a
+     copy-edit: rewording a tldr can no longer silently delete the kit from a suicide query.
+     fdSearchContentWords never returns empty, so an all-stopword query still surfaces the kit --
+     fail-safe, and pinned by test. */
+  var paddedQuery=' '+rawQuery+' ';
   var protoResults=[];
   for(var kk=0;kk<kit.length;kk++){
     var kitItem=kit[kk].item;
-    if(fdSearchHits(fdSearchHaystack(kitItem), rawQuery, qw)){
+    if(fdSearchTriggerHit(kit[kk].triggers, paddedQuery)||
+       fdSearchHits(fdSearchHaystack(kitItem), rawQuery, contentWords)){
       protoResults.push({ item: kitItem, kind:'protocol', meta:'safety · protocol' });
       seenRefs[kitItem.ref]=true;
     }

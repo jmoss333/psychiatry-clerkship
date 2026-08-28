@@ -83,8 +83,13 @@ function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
     columns.push({ name: cc[c].name, accent: cc[c].accent, items: citems });
   }
 
+  /* triggers is the protocol's crisis vocabulary (curriculum.json), copied rather than aliased so
+     a consumer cannot mutate the source array. fd_search.js matches it against the padded raw
+     query; without it the safety kit is reachable only by stopword accident. */
   var kit=[], ck=cur.safetyKit||[];
-  for(var k=0;k<ck.length;k++){ kit.push({ item: ensure(ck[k].ref, null), sub: ck[k].sub }); }
+  for(var k=0;k<ck.length;k++){
+    kit.push({ item: ensure(ck[k].ref, null), sub: ck[k].sub, triggers: (ck[k].triggers||[]).slice() });
+  }
 
   var sourcePath=cur.path||{};
   var pathInfo={
