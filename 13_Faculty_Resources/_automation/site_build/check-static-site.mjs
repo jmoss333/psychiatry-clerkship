@@ -55,6 +55,7 @@
 import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { join, basename, dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { evaluateInstrumentRights } from './instrument-rights-gate.mjs';
 
 const SITE = process.argv[2];
 if (!SITE) { console.error('usage: node check-static-site.mjs <siteDir>'); process.exit(1); }
@@ -105,13 +106,10 @@ function doseWaiverLines(filename, lines) {
         }
       },
     },
-    {
-      // Pre-existing reviewed instrument copy also needs a line-bounded exception;
-      // unlike the old file-wide marker, this can never hide a future second dose.
-      name: 'validated-instrument-line',
-      filename: 'bfcrs.html',
-      validate(line) { return DOSE.test(line); },
-    },
+    // The 'validated-instrument-line' context (bfcrs.html) was retired 2026-08-27: the BFCRS
+    // reproduction it waived was removed in #400, so the context waived nothing — but a
+    // re-added dose line wrapped in its sentinels would still have validated. Its sentinels
+    // now hard-fail as unrecognized annotations, which is the intended behavior.
   ];
   const knownSentinels = new Set();
 
@@ -1058,6 +1056,57 @@ const RATCHET_EXEMPT_CLASSES = new Set(['lfs-stub-soft']);
         }
       }
     }
+  }
+}
+
+/* ---------- 11. instrument rights — the publication contract (INV-IR1) ---------- */
+/* A build may publish a page naming a listed instrument only in the state its recorded
+ * disposition allows. Dispositions live in instrument_rights.json (root registry,
+ * schema-paired, decisionRef-disciplined); gate logic in instrument-rights-gate.mjs.
+ * Enforcement per the 2026-08-20 instrument-reproduction audit ("Recommended enforcement,
+ * once scope is decided" — scope resolved 2026-08-23, Option A; ships HARD, not warn-only).
+ * The signature scan runs for EVERY build, fixtures included (fixture pages carry no
+ * signatures unless a test plants one to prove teeth); the governed-page pins reuse §10's
+ * claims-governance tri-state gate so unrelated fixture sites are never dragged in. */
+{
+  let rights = null;
+  try {
+    rights = JSON.parse(readFileSync(join(LIBROOT, 'instrument_rights.json'), 'utf8'));
+  } catch {
+    H('instrument-rights: instrument_rights.json missing or unparsable at the repo root — the publication contract is a required build input');
+  }
+  if (rights) {
+    let toolRegistry = null;
+    try {
+      toolRegistry = JSON.parse(readFileSync(join(LIBROOT, 'tool_registry.json'), 'utf8'));
+    } catch { /* absence surfaces through the disclaimerType pins below */ }
+    const pageList = [];
+    const collect = (dir, relPrefix) => {
+      if (!existsSync(dir)) return;
+      for (const name of readdirSync(dir)) {
+        if (!name.endsWith('.html')) continue;
+        const fp = join(dir, name);
+        if (!statSync(fp).isFile()) continue;
+        pageList.push({
+          file: name,
+          rel: relPrefix ? `${relPrefix}/${name}` : name,
+          text: readFileSync(fp, 'utf8'),
+        });
+      }
+    };
+    collect(SITE, '');
+    collect(p('tools'), 'tools');
+    collect(p('content'), 'content');
+    const navDoc = (existsSync(navPath) && parsed[navPath]) ? parsed[navPath] : null;
+    const navHasGov = Array.isArray(navDoc)
+      ? navDoc.some((sec) => (sec.items || []).some((it) => it && it.governance))
+      : false;
+    const claimsGovernance = existsSync(p('governance.json')) || navHasGov;
+    const result = evaluateInstrumentRights({
+      rights, pages: pageList, nav: navDoc, toolRegistry, claimsGovernance,
+    });
+    result.hard.forEach(H);
+    result.info.forEach(I);
   }
 }
 

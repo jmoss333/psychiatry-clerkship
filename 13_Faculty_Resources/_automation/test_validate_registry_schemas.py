@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Behavior tests for the seven-registry Draft-07 schema gate."""
+"""Behavior tests for the nine-registry Draft-07 schema gate."""
 
 import json
 import shutil
@@ -23,6 +23,7 @@ PAIRS = (
     ("tool_registry.json", "tool_registry.schema.json"),
     ("curriculum.json", "curriculum.schema.json"),
     ("evidence_annotations.json", "evidence_annotations.schema.json"),
+    ("instrument_rights.json", "instrument_rights.schema.json"),
 )
 
 
