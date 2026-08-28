@@ -121,12 +121,29 @@ function fdSearchScore(item, rawQuery, contentWords){
    reading it back out of this function. */
 function fdExpandQuery(q, synonyms){
   var syn=synonyms||{};
-  var words=String(q||'').toLowerCase().split(/\s+/);
+  var raw=String(q||'').toLowerCase();
+  var words=raw.split(/\s+/);
   var out=[];
   for(var i=0;i<words.length;i++){
     var w=words[i];
     if(!w) continue;
     out.push(syn[w]?(w+' '+syn[w]):w);
+  }
+  /* PHRASE pass. A synonyms key containing a space is matched whole-phrase against the
+     space-padded raw query -- the same shape as the safetyKit triggers -- and is inert to the
+     per-word loop above, so adding one cannot change any existing single-word behaviour.
+
+     This exists because per-word expansion cannot express the Fresh Eyes Audit's A5 gaps without
+     real collateral, which was measured before the mechanism was built: a synonym on "first"
+     fixes "first shift" but hijacks "first line treatment" AND "first episode psychosis" (both
+     push the orientation page above the correct one), and narrowing to "shift" alone still
+     breaks "night shift sleep" while leaving "first day" unfixed. A phrase key fires only on the
+     phrase, so those three queries are untouched -- tests/fd-search.test.mjs pins all three,
+     because they are what the cheap fix would have broken. */
+  var padded=' '+raw+' ';
+  for(var key in syn){
+    if(key.indexOf(' ')===-1) continue;
+    if(padded.indexOf(' '+key+' ')!==-1) out.push(syn[key]);
   }
   return out.join(' ');
 }

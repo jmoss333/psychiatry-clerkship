@@ -190,6 +190,24 @@ def main(argv):
     def bad(where, msg):
         errs.append("%s: %s" % (where, msg))
 
+    # Synonym keys: a key with a space is a PHRASE, matched whole-phrase against the raw query.
+    # Both forms must be lowercase and trimmed or they can never match a lowercased query — a
+    # silently-inert entry is worse than a rejected one, because it looks like coverage.
+    synonyms = cur.get("synonyms")
+    if not isinstance(synonyms, dict):
+        bad("synonyms", "must be an object")
+        synonyms = {}
+    for key, expansion in sorted(synonyms.items()):
+        if key != key.strip().lower() or not key:
+            bad("synonyms", "key %r must be lowercase and trimmed, or it can never match" % (key,))
+        if not isinstance(expansion, str) or not expansion.strip():
+            bad("synonyms", "key %r needs a non-empty expansion" % (key,))
+            continue
+        if expansion != expansion.strip().lower():
+            bad("synonyms", "expansion for %r must be lowercase and trimmed" % (key,))
+        if "  " in key:
+            bad("synonyms", "phrase key %r must use single spaces" % (key,))
+
     if contract_refs and rights_refs != contract_refs:
         bad("rightsReferences",
             "must equal the set of instrument_rights.json pages marked "
