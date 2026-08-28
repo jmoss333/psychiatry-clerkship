@@ -100,3 +100,73 @@ test('a bare index with no known set keeps the old degrade-gracefully path', () 
   const html = F.fdReader({ byRef: {}, weeks: [] }, { ref: 'anything.md' }, '');
   assert.doesNotMatch(html, /fd-reader--notfound/);
 });
+
+// ---- route level: the half that shipped broken --------------------------------------------
+// tests above pin fdReader, which renders the surface correctly. That was not enough: for a .md
+// ref the wire layer then fetched content/<ref>, got a 404, replaced the surface with "Page
+// unavailable", reported not-ok, and startup threw — so a dead ?page= link bounced to Today while
+// a dead ?tool= link (an iframe, mounted synchronously) showed the surface. Verified live on
+// production 2026-08-28. These tests pin the ROUTE, so a renderer-only fix cannot pass again.
+
+// eslint-disable-next-line no-new-func
+const W = new Function('governanceBadge', `
+  ${read('phase_policy.js')}
+  ${read('frontdoor/fd_state.js')}
+  ${read('frontdoor/fd_data.js')}
+  ${read('frontdoor/fd_edition_student.js')}
+  ${read('frontdoor/fd_today.js')}
+  ${read('frontdoor/fd_reader.js')}
+  ${read('frontdoor/fd_wire.js')}
+  return { fdOpenResource: fdOpenResource };
+`)(() => '');
+
+const openRef = async (ref) => {
+  const host = { innerHTML: '' };
+  let fetched = null;
+  const ok = await W.fdOpenResource(ref, {
+    index: INDEX,
+    state: { tab: 'today', week: 1, done: {} },
+    search: '',
+    host,
+    fetcher: (url) => { fetched = url; return Promise.resolve({ ok: false, status: 404 }); },
+    parseMarkdown: (md) => md,
+    scrollReset: () => {},
+  });
+  return { ok, html: host.innerHTML, fetched };
+};
+
+test('an unknown page ref never reaches the network', async () => {
+  const r = await openRef('nosuchpage.md');
+  assert.equal(r.fetched, null, `must not fetch a ref the site does not know (got ${r.fetched})`);
+});
+
+test('an unknown page ref renders the not-found surface, not "Page unavailable"', async () => {
+  const r = await openRef('nosuchpage.md');
+  assert.match(r.html, /fd-reader--notfound/);
+  assert.doesNotMatch(r.html, /Page unavailable/);
+});
+
+test('an unknown ref reports SUCCESS so startup does not throw and bounce to Today', async () => {
+  // fdOpenInitialResource throws on a not-ok receipt; that throw is what sent the learner to
+  // Today with no explanation. Showing the surface IS the correct outcome for this input.
+  assert.equal((await openRef('nosuchpage.md')).ok, true);
+});
+
+test('both ref kinds take the same route-level path', async () => {
+  const page = await openRef('nosuchpage.md');
+  const tool = await openRef('nope.html');
+  assert.equal(page.ok, tool.ok);
+  assert.match(tool.html, /fd-reader--notfound/);
+  assert.equal(tool.fetched, null);
+});
+
+test('a KNOWN page ref still fetches — the guard must not swallow real content', async () => {
+  const r = await openRef('welcome.md');
+  assert.equal(r.fetched, 'content/welcome.md');
+});
+
+test('a known-but-unprojected libraryExclude ref still fetches', async () => {
+  // orientation-video.html and friends are real pages; the guard must not strand them.
+  const r = await openRef('rotation.md');
+  assert.equal(r.fetched, 'content/rotation.md');
+});
