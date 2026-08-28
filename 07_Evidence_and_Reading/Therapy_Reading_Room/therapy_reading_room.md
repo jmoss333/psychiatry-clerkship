@@ -1,5 +1,7 @@
 # The Therapy Reading Room
 
+> Companion to [Therapy on the Unit](?page=therapy_on_the_unit.md) — that page teaches the bedside moves; this one is the evidence behind them.
+
 > **Review status:** Reviewed and attested by Joshua Moss, MD (2026-08-23). Every PMID passed identity + retraction verification (2026-08-20) and the Scholar Sidekick canonical pass (2026-08-21); open-access links are checked so the open ones really open. Educational; no PHI.
 
 **How to use this page.** This is a curated reading list, not a bibliography — a handful of papers per topic, each with one line on why it's worth your time. **Open** means the full text is free right now; **Library** means use the institutional proxy link. Start with your patient: whatever you admitted today, there's a section for it. If you read only one paper per week of the rotation, take the six marked ★.
@@ -122,7 +124,7 @@
 ## After discharge
 
 - ★ **Post-discharge suicide: time for a rethink** — Modini & Large, *Australas Psychiatry* 2026. PMID 41664893 · Library
-  The statistic to carry out of this rotation — risk peaks in the weeks after discharge — and an argument piece contending the field keeps studying categorical predictors while ignoring how the admission itself was experienced. Read it before you write your last discharge summary.
+  An argument piece, not a data paper: the field keeps studying categorical predictors and ignoring what the admission itself was like for the patient. Read it after the Chung meta-analyses — those give you the magnitude, this asks why we still cannot explain it.
 - **Inpatient brief CBT and post-discharge ED use** — Diefenbach et al., *Gen Hosp Psychiatry* 2025. PMID 39837259 · Library
   Adding brief CBT during the stay cut post-discharge ED visits by about three quarters (OR 0.25) — but "only among participants without SUD." On a dual-diagnosis unit, that qualifier *is* the teaching point; the authors themselves call for work to make it hold in SUD.
 - **Caring contacts after psychiatric hospitalization** — Steinberg et al., *Suicide Life Threat Behav* 2024. PMID 38934489 · Open

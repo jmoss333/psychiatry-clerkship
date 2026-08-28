@@ -198,6 +198,17 @@ jobs:
       - name: Build + static QA gate (res)
         run: bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res
 
+      # Hand the QA-gated builds to the smoke job so it exercises the exact
+      # tree this job validated instead of rebuilding (~74s/run) and risking drift.
+      # Transfer artifact only — 1-day retention, no always(): if a build gate
+      # fails there is nothing for smoke to consume (smoke is skipped anyway).
+      - name: Upload built sites for the smoke job
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: built-sites
+          path: _build
+          retention-days: 1
+
   smoke-tests:
     name: Smoke tests (nav crawl · faculty console · LFS · visual)
     runs-on: ubuntu-latest
@@ -208,21 +219,18 @@ jobs:
           lfs: false
           fetch-depth: 0
 
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
-        with:
-          python-version: "3.11"
-
-      - name: Install — registry schema validation dependencies
-        run: python3 -m pip install --requirement requirements.txt
-
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: "20"
 
-      - name: Build sites (ms3 + res)
-        run: |
-          bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh ms3
-          bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res
+      # Serve the exact QA-gated tree the build job published (media are LFS
+      # stubs on CI either way, so the artifact is ~13MB). The local review
+      # servers need only stdlib python3, which the runner image provides.
+      - name: Download built sites from the build job
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: built-sites
+          path: _build
 
       - name: Cache Playwright browsers
         id: pw-cache

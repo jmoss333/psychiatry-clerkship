@@ -25,7 +25,7 @@ EXPECTED = {
     "surveillance-link-monitor.yml": "0 6 * * 1",
     "surveillance-citations.yml": "0 7 * * 1",
     "surveillance-guideline.yml": "0 6 1 * *",
-    "maintenance-sp-health-monitor.yml": "15 */6 * * *",
+    "maintenance-sp-health-monitor.yml": "15 */12 * * *",
     "maintenance-production-canary.yml": "20 9 * * *",
     "maintenance-heartbeat.yml": "45 10 * * *",
     "maintenance-governance-digest.yml": "30 12 * * 1",
@@ -291,6 +291,7 @@ class ScheduledWorkflowTests(unittest.TestCase):
             "actions/setup-python": "5fda3b95a4ea91299a34e894583c3862153e4b97",
             "actions/setup-node": "820762786026740c76f36085b0efc47a31fe5020",
             "actions/upload-artifact": "043fb46d1a93c77aae656e7c1c64a875d1fc6a0a",
+            "actions/download-artifact": "37930b1c2abaa49bbe596cd826c3c89aef350131",
             "actions/cache": "55cc8345863c7cc4c66a329aec7e433d2d1c52a9",
             "lycheeverse/lychee-action": "e7477775783ea5526144ba13e8db5eec57747ce8",
         }
@@ -328,20 +329,18 @@ class ScheduledWorkflowTests(unittest.TestCase):
                 (
                     "          lfs: false\n"
                     "          fetch-depth: 0\n\n"
-                    "      - uses: actions/setup-python@"
-                    "5fda3b95a4ea91299a34e894583c3862153e4b97 # v7\n"
+                    "      - uses: actions/setup-node@"
+                    "820762786026740c76f36085b0efc47a31fe5020 # v7\n"
                     "        with:\n"
-                    "          python-version: \"3.11\"\n\n"
-                    "      - name: Install — registry schema"
+                    "          node-version: \"20\"\n\n"
                 ),
                 (
                     "          lfs: false\n"
                     "          fetch-depth: 0\n\n"
-                    "      - uses: actions/setup-python@"
-                    "5fda3b95a4ea91299a34e894583c3862153e4b97\n"
+                    "      - uses: actions/setup-node@"
+                    "820762786026740c76f36085b0efc47a31fe5020\n"
                     "        with:\n"
-                    "          python-version: \"3.11\"\n\n"
-                    "      - name: Install — registry schema"
+                    "          node-version: \"20\"\n\n"
                 ),
             ),
             (
@@ -448,9 +447,13 @@ class ScheduledWorkflowTests(unittest.TestCase):
                 self.assertLessEqual(retention, 90, name)
                 if name != "ci.yml":
                     self.assertEqual(retention, 90, name)
+                    self.assertEqual(step.get("if"), "always()", name)
+                elif step["with"].get("name") == "built-sites":
+                    self.assertEqual(retention, 1, name)
+                    self.assertNotIn("if", step)
                 else:
                     self.assertEqual(retention, 14, name)
-                self.assertEqual(step.get("if"), "always()", name)
+                    self.assertEqual(step.get("if"), "always()", name)
 
     def test_permissions_are_least_privilege(self):
         expected = {
@@ -1126,12 +1129,28 @@ class ScheduledWorkflowTests(unittest.TestCase):
         )
         self.assertLess(ms3_index, res_index)
 
-        smoke_runs = "\n".join(
-            step.get("run", "") for step in jobs["smoke-tests"]["steps"]
+        smoke_steps = jobs["smoke-tests"]["steps"]
+        downloads = [
+            step
+            for step in smoke_steps
+            if str(step.get("uses", "")).startswith("actions/download-artifact@")
+        ]
+        self.assertEqual(len(downloads), 1)
+        self.assertEqual(
+            downloads[0]["with"],
+            {"name": "built-sites", "path": "_build"},
         )
-        self.assertLess(
-            smoke_runs.index("build_and_check.sh ms3"),
-            smoke_runs.index("build_and_check.sh res"),
+        handoff_uploads = [
+            index
+            for index, step in enumerate(build_steps)
+            if str(step.get("uses", "")).startswith("actions/upload-artifact@")
+            and step.get("with", {}).get("name") == "built-sites"
+        ]
+        self.assertEqual(len(handoff_uploads), 1)
+        self.assertLess(res_index, handoff_uploads[0])
+
+        smoke_runs = "\n".join(
+            step.get("run", "") for step in smoke_steps
         )
         self.assertIn("github.event_name", smoke_runs)
         self.assertIn(

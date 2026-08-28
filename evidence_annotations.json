@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "owner": "Joshua Moss, MD",
   "usageNotice": "Educational metadata only; faculty review remains required for clinical recommendations.",
-  "updated": "2026-08-23",
+  "updated": "2026-08-24",
   "policy": {
     "rule": "Every claim the library makes about a source must be licensed by a stored verbatim span from that source.",
     "maxAgeDays": 730,
@@ -1142,6 +1142,56 @@
           "direction": "mixed",
           "usedBy": [
             "T4"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "chung-2017-postdischarge-suicide",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-08-24",
+        "pmid": "28564699",
+        "doi": "10.1001/jamapsychiatry.2017.1044",
+        "sourceSpan": "A total of 100 studies reported 183 patient samples. The pooled estimate postdischarge suicide rate was 484 suicides per 100 000 person-years (95% CI, 422-555 suicides per 100 000 person-years; prediction interval, 89-2641), with high between-sample heterogeneity (I2 = 98%). The suicide rate was highest within 3 months after discharge (1132; 95% CI, 874-1467) and among patients admitted with suicidal ideas or behaviors (2078; 95% CI, 1512-2856). Pooled suicide rates per 100 000 patients-years were 277 for studies with follow-up periods longer than 10 years. The immediate postdischarge period is a time of marked risk, but rates of suicide remain high for many years after discharge."
+      },
+      "claims": [
+        {
+          "claimId": "postdischarge-rate-and-gradient",
+          "claimText": "Pooled across 100 studies, the post-discharge suicide rate was 484 per 100 000 person-years overall, 1132 within 3 months after discharge and 2078 among patients admitted with suicidal ideas or behaviors, with rates remaining high for many years after discharge.",
+          "claimTerms": [
+            "highest within 3 months after discharge",
+            "rates of suicide remain high for many years after discharge"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "T3"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "chung-2019-first-week-month",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-08-24",
+        "pmid": "30904843",
+        "doi": "10.1136/bmjopen-2018-023883",
+        "sourceSpan": "The pooled estimate of the suicide rate in the first month postdischarge suicide was 2060 per 100 000 person years (95% CI=1300 to 3280, I2=90). The pooled estimate of the suicide rate in the first week postdischarge suicide was 2950 suicides per 100 000 person years (95% CI=1740 to 5000, I2=88). Eight studies that were included after personal communication had lower pooled rates of suicide than studies included after data extraction and there was evidence of publication bias towards papers reporting a higher rate of postdischarge suicide. Acknowledging the presence of marked heterogeneity between studies and the likelihood of bias towards publication of studies reporting a higher postdischarge suicide rate, the first week and first month postdischarge following psychiatric hospitalisation are periods of extraordinary suicide risk."
+      },
+      "claims": [
+        {
+          "claimId": "first-week-and-month-rates",
+          "claimText": "The pooled suicide rate was 2950 per 100 000 person years in the first week and 2060 in the first month after psychiatric hospitalisation, acknowledging marked heterogeneity and evidence of publication bias towards papers reporting a higher rate of postdischarge suicide.",
+          "claimTerms": [
+            "first week postdischarge",
+            "evidence of publication bias towards papers reporting a higher rate"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "T3"
           ]
         }
       ]

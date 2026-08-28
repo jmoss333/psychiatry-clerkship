@@ -6128,7 +6128,7 @@
         "status": "verified",
         "source": "scholar-sidekick canonical pass (PubMed/Crossref identity, Retraction Watch, Unpaywall)",
         "verifiedAt": "2026-08-21",
-        "note": "Promoted from therapy_library.staging.json (WP-T2). Verification: epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, OA per 2026-08-21 Unpaywall gate, formatCitation ama Annotation is AI-drafted from the abstract and awaits faculty signature (facultyReviewStatus: pending)."
+        "note": "Scope limits recorded 2026-08-24: the readmission estimate (RR 0.71, NNT 5) rests on n = 206 of 5,142 total participants; the reviewers' own conclusion is \"hospital-based studies of limited quality\" whose \"true size of effect is likely to be less than demonstrated\"; last search February 2010. Supports the NNTs as reported. Does NOT support a comparative superlative such as \"the strongest evidence base of any single psychological intervention\"."
       },
       "requiredAccess": "metadata",
       "governance": {
@@ -6149,6 +6149,11 @@
             "date": "2026-08-21",
             "note": "Promoted from therapy_library.staging.json (WP-T2). Verification: epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, OA per 2026-08-21 Unpaywall gate, formatCitation ama Annotation is AI-drafted from the abstract and awaits faculty signature (facultyReviewStatus: pending).",
             "reason": "therapy-curriculum WP-T2 promotion (Taplinger request #5; closes review finding F19 for the therapy domain)"
+          },
+          {
+            "date": "2026-08-24",
+            "note": "Scope limits recorded 2026-08-24: the readmission estimate (RR 0.71, NNT 5) rests on n = 206 of 5,142 total participants; the reviewers' own conclusion is \"hospital-based studies of limited quality\" whose \"true size of effect is likely to be less than demonstrated\"; last search February 2010. Supports the NNTs as reported. Does NOT support a comparative superlative such as \"the strongest evidence base of any single psychological intervention\".",
+            "reason": "therapy_on_the_unit.md carried an unsupported superlative alongside the correct NNTs; the numbers stay, the certainty claim goes."
           }
         ]
       }
@@ -6928,6 +6933,146 @@
             "date": "2026-08-21",
             "note": "Promoted from therapy_library.staging.json (WP-T2). Verification: epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, OA per 2026-08-21 Unpaywall gate, formatCitation ama Annotation is AI-drafted from the abstract and awaits faculty signature (facultyReviewStatus: pending).",
             "reason": "therapy-curriculum WP-T2 promotion (Taplinger request #5; closes review finding F19 for the therapy domain)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "chung-2017-postdischarge-suicide",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Suicide Rates After Discharge From Psychiatric Facilities: A Systematic Review and Meta-analysis",
+        "authors": [
+          {
+            "family": "Chung",
+            "given": "DT"
+          },
+          {
+            "family": "Ryan",
+            "given": "CJ"
+          },
+          {
+            "family": "Hadzi-Pavlovic",
+            "given": "D"
+          },
+          {
+            "family": "Singh",
+            "given": "SP"
+          },
+          {
+            "family": "Stanton",
+            "given": "C"
+          },
+          {
+            "family": "Large",
+            "given": "MM"
+          }
+        ],
+        "organization": "",
+        "year": 2017,
+        "journal": "JAMA Psychiatry",
+        "volume": "74",
+        "pages": "694-702",
+        "doi": "10.1001/jamapsychiatry.2017.1044",
+        "pmid": "28564699",
+        "url": "https://doi.org/10.1001/jamapsychiatry.2017.1044"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "NCBI E-utilities esummary/efetch (identity + figures), 2026-08-24",
+        "verifiedAt": "2026-08-24",
+        "note": "Supports the magnitude and the 3-month/post-discharge gradient. Does NOT support a first-week-specific figure — use chung-2019-first-week-month for that. Reports marked heterogeneity (I²=98%)."
+      },
+      "requiredAccess": "metadata",
+      "governance": {
+        "evidenceLevel": "systematic review / meta-analysis",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-08-24",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "suicide",
+          "safety",
+          "discharge"
+        ],
+        "clerkshipRelevance": "The magnitude and the gradient: 484 suicides per 100,000 person-years overall post-discharge, 1,132 within 3 months, 2,078 among patients admitted with suicidal ideas or behaviours — and rates stay elevated for years. Bridging is the start of aftercare, not the end of the admission.",
+        "noteHistory": [
+          {
+            "date": "2026-08-24",
+            "note": "Supports the magnitude and the 3-month/post-discharge gradient. Does NOT support a first-week-specific figure — use chung-2019-first-week-month for that. Reports marked heterogeneity (I²=98%).",
+            "reason": "Added by the post-discharge citation correction: reference 5 on therapy_on_the_unit.md cited a viewpoint (modini-large-2026) for a time-course statistic it does not report."
+          }
+        ]
+      }
+    },
+    {
+      "id": "chung-2019-first-week-month",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Meta-analysis of suicide rates in the first week and the first month after psychiatric hospitalisation",
+        "authors": [
+          {
+            "family": "Chung",
+            "given": "D"
+          },
+          {
+            "family": "Hadzi-Pavlovic",
+            "given": "D"
+          },
+          {
+            "family": "Wang",
+            "given": "M"
+          },
+          {
+            "family": "Swaraj",
+            "given": "S"
+          },
+          {
+            "family": "Olfson",
+            "given": "M"
+          },
+          {
+            "family": "Large",
+            "given": "M"
+          }
+        ],
+        "organization": "",
+        "year": 2019,
+        "journal": "BMJ Open",
+        "volume": "9",
+        "pages": "e023883",
+        "doi": "10.1136/bmjopen-2018-023883",
+        "pmid": "30904843",
+        "url": "https://doi.org/10.1136/bmjopen-2018-023883"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "NCBI E-utilities esummary/efetch (identity + figures), 2026-08-24",
+        "verifiedAt": "2026-08-24",
+        "note": "Supports first-week and first-month rates specifically. The authors report evidence of publication bias toward studies reporting higher post-discharge rates, and I²=88–90; do not present these as precise point estimates."
+      },
+      "requiredAccess": "metadata",
+      "governance": {
+        "evidenceLevel": "systematic review / meta-analysis",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-08-24",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "suicide",
+          "safety",
+          "discharge"
+        ],
+        "clerkshipRelevance": "The front-loading, specifically: pooled suicide rate 2,950 per 100,000 person-years in the first week and 2,060 in the first month after discharge — read with the authors’ own caution about publication bias and heterogeneity.",
+        "noteHistory": [
+          {
+            "date": "2026-08-24",
+            "note": "Supports first-week and first-month rates specifically. The authors report evidence of publication bias toward studies reporting higher post-discharge rates, and I²=88–90; do not present these as precise point estimates.",
+            "reason": "Added by the post-discharge citation correction: reference 5 on therapy_on_the_unit.md cited a viewpoint (modini-large-2026) for a time-course statistic it does not report."
           }
         ]
       }
