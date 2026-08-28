@@ -89,9 +89,11 @@ function fdRow(it, idx, doneMap, compact){
   var titleCls=on?'fd-row__title is-done':'fd-row__title';
   var checkCls=on?'fd-check is-done':'fd-check';
   var typeCls=(it.kind==='tool')?'fd-chip is-tool':'fd-chip';
-  /* 'rights' reads "reference": the page teaches administration and points at the official form.
-     Calling it a tool is what sent a learner reaching for a scorer to a removal notice. */
-  var typeLabel=(it.kind==='tool')?'tool':((it.kind==='rights')?'reference':'read');
+  /* A rights reference reads "reference": the page teaches administration and points at the
+     official form. Calling it a tool is what sent a learner reaching for a scorer to a removal
+     notice. The chip is the only thing that changes -- kind stays 'tool' so the page still loads
+     from /tools/. */
+  var typeLabel=it.rights?'reference':((it.kind==='tool')?'tool':'read');
   var minLabel=(it.kind!=='tool'&&typeof it.minutes==='number')?(it.minutes+' min'):'';
   var rowCls=compact?'fd-row is-compact':'fd-row';
   var editionMeta=fdEditionCoreMetaMarkup(it);
@@ -207,15 +209,17 @@ function fdProgressAccess(){
    tools by an id this repo's data does not carry, so this is a re-derivation from the join index
    rather than a port of that exact list -- CLASS-INVENTORY's ×5 cap is what is actually
    contractual here, not the selection order past "this week's tools first". */
+/* Rights references are excluded: Quick Tools is the reach-for-it-mid-shift rail, and a page
+   whose purpose is to say the instrument is not reproduced here is the opposite of that. */
 function fdQuickTools(index, weekItems){
   var out=[], seen={}, i, ref;
   for(i=0;i<weekItems.length;i++){
-    if(weekItems[i].kind==='tool'&&!seen[weekItems[i].ref]){ out.push(weekItems[i]); seen[weekItems[i].ref]=true; }
+    if(weekItems[i].kind==='tool'&&!weekItems[i].rights&&!seen[weekItems[i].ref]){ out.push(weekItems[i]); seen[weekItems[i].ref]=true; }
   }
   if(out.length<5){
     var all=[];
     for(ref in index.byRef){
-      if(index.byRef[ref].kind==='tool') all.push(index.byRef[ref]);
+      if(index.byRef[ref].kind==='tool'&&!index.byRef[ref].rights) all.push(index.byRef[ref]);
     }
     all.sort(function(a,b){ return a.ref<b.ref?-1:(a.ref>b.ref?1:0); });
     for(i=0;i<all.length&&out.length<5;i++){

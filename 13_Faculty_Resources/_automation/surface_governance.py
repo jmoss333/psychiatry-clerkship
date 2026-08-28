@@ -297,11 +297,7 @@ def _iter_nav_items(value):
 def _surface_kind(nav_kind: str) -> str:
     if nav_kind == "md":
         return "page"
-    # "rights" is a wayfinding distinction, not a governance one: it stops a retired
-    # instrument's reference page presenting as an interactive tool (Fresh Eyes Audit A3),
-    # but the shipped artifact is still an .html surface and is attested as a tool. Mapping
-    # it anywhere else would silently drop these pages out of the review ledger.
-    if nav_kind in ("tool", "rights"):
+    if nav_kind == "tool":
         return "tool"
     raise SurfaceGovernanceError(f"surface governance: invalid navigation kind {nav_kind!r}")
 

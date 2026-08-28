@@ -143,7 +143,7 @@
       "additionalProperties": false,
       "properties": {
         "ref": { "type": "string", "minLength": 1 },
-        "kind": { "type": "string", "enum": ["read", "tool", "rights"] }
+        "kind": { "type": "string", "enum": ["read", "tool"] }
       }
     },
     "siteLibraryEntry": {

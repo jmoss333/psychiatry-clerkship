@@ -6,10 +6,14 @@
 // "Interactive tools" column, and carried the `tool` chip; BFCRS was a tool-kind item in the
 // resident Week-1 path. A learner reaching for a scale mid-shift got a removal notice.
 //
-// The trap this file exists to guard: fd_data.js derives kind from the FILE EXTENSION
-// (fdIsTool = /\.html$/), so flipping the nav's "k" alone changes nothing — cssrs.html is an
-// .html file and stays a tool. The `rights` kind must override the extension heuristic, and
-// these tests fail if that override is removed even while the nav still says "rights".
+// The trap this file exists to guard, learned the hard way: `rights` is a PRESENTATION flag, not
+// a kind. A first attempt made it a third `kind` value; the served site then 404'd both pages,
+// because every loading/routing/location path in the SPA, the wiring layer and the smoke crawler
+// branches on kind==='tool' to choose between /tools/<f> and /content/<f>. No local gate caught
+// it — nothing local fetches built URLs — only the CI nav crawl did.
+//
+// So these tests assert BOTH halves: the page presents as a reference, AND it keeps kind 'tool'
+// so it still loads. A future change that demotes the kind to win the label breaks the site.
 
 import assert from 'node:assert/strict';
 import test from 'node:test';
@@ -44,23 +48,24 @@ const buildDeploy = read('build_deploy.py');
 const residentSection = read('resident_section.py');
 
 for (const ref of RETIRED) {
-  test(`${ref} is declared a rights reference in the MS3 nav, not a tool`, () => {
-    assert.match(buildDeploy, new RegExp(`_rights\\("${ref.replace('.', '\\.')}"`),
-      `${ref} must be registered with _rights(), not _tool()`);
+  test(`${ref} is registered in curriculum.json's rightsReferences`, () => {
+    assert.ok((CUR.rightsReferences || []).includes(ref),
+      `${ref} must be listed in rightsReferences (mirrored from instrument_rights.json)`);
   });
 
-  test(`${ref} is declared a rights reference in the resident nav, not a tool`, () => {
-    const entry = new RegExp(`"f":"${ref.replace('.', '\\.')}","k":"([a-z]+)"`);
-    const m = residentSection.match(entry);
+  test(`${ref} keeps nav kind "tool" in BOTH registries so it still loads from /tools/`, () => {
+    // Non-negotiable: demoting the nav kind 404s the page. See the header note.
+    assert.match(buildDeploy, new RegExp(`_tool\\("${ref.replace('.', '\\.')}"`));
+    const m = residentSection.match(new RegExp(`"f":"${ref.replace('.', '\\.')}","k":"([a-z]+)"`));
     assert.ok(m, `${ref} not found in resident_section.py nav`);
-    assert.equal(m[1], 'rights');
+    assert.equal(m[1], 'tool');
   });
 
-  test(`${ref} resolves to kind "rights" despite its .html extension`, () => {
-    // The regression this file exists for: fdIsTool would otherwise call it a tool.
+  test(`${ref} carries the rights flag on both audiences, with kind still "tool"`, () => {
     for (const audience of ['ms3', 'resident']) {
-      assert.equal(indexFor(audience).byRef[ref].kind, 'rights',
-        `${ref} is kind "${indexFor(audience).byRef[ref].kind}" on ${audience}`);
+      const item = indexFor(audience).byRef[ref];
+      assert.equal(item.rights, true, `${ref} lost its rights flag on ${audience}`);
+      assert.equal(item.kind, 'tool', `${ref} must stay kind "tool" to keep loading`);
     }
   });
 

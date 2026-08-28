@@ -351,7 +351,7 @@ function fdReader(index, state, bodyHtml){
      tool · self-paced" over a page whose whole purpose is to say the instrument is not reproduced
      here is the contradiction A3 reported. isTool stays extension-derived for the mechanics; only
      the copy branches. */
-  var isRights=(item.kind==='rights');
+  var isRights=(item.rights===true);
   var kindLabel=isRights?'Reference':(isTool?'Interactive tool':'Reading');
   var eyebrowText=inWeek?('Week '+fdEsc(st.week)+' · '+kindLabel):kindLabel;
   var metaText=isRights?'instrument not reproduced here'

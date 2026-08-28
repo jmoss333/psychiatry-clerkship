@@ -258,14 +258,7 @@ def main(argv):
                 if ref not in site_shipped[site]:
                     bad(week_label, "ref '%s' is not shipped on %s" % (ref, site))
                     continue
-                # A rights reference is a shipped .html page that must NOT present as an
-                # interactive tool: it exists to say an instrument is not reproduced here
-                # (Fresh Eyes Audit A3). Declaring one as 'tool' is the defect, so the expected
-                # kind is forced rather than merely permitted.
-                if ref in rights_refs:
-                    expected_kind = "rights"
-                else:
-                    expected_kind = "tool" if ref in tool_slugs else "read"
+                expected_kind = "tool" if ref in tool_slugs else "read"
                 if kind != expected_kind:
                     bad(week_label, "ref '%s' has kind '%s' but the build ships it as '%s'" %
                         (ref, kind, expected_kind))

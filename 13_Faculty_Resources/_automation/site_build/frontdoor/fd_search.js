@@ -162,10 +162,11 @@ function fdSearchTriggerHit(triggers, paddedQuery){
 }
 
 function fdSearchItemMeta(item){
-  if(item.kind==='tool') return 'tool';
   /* Say so in the result row itself: a learner searching "catatonia scale" mid-shift should learn
-     from the list, not from opening the page, that the scale is not reproduced here. */
-  if(item.kind==='rights') return 'reference · not reproduced';
+     from the list, not from opening the page, that the scale is not reproduced here. Checked
+     BEFORE the tool branch, since a rights page is still kind 'tool'. */
+  if(item.rights) return 'reference · not reproduced';
+  if(item.kind==='tool') return 'tool';
   return (typeof item.minutes==='number')?(item.minutes+' min read'):'';
 }
 
@@ -287,7 +288,7 @@ function fdSearchResultRow(r){
   var isProto=(r.kind==='protocol');
   var dotCls='fd-result__dot';
   if(isProto) dotCls+=' is-safety';
-  else if(it.kind==='tool') dotCls+=' is-tool';
+  else if(it.kind==='tool'&&!it.rights) dotCls+=' is-tool';
   var openAttrs=isProto
     ?(' data-fd-safety="'+fdEsc(it.ref)+'"')
     :(' data-fd-open="'+fdEsc(it.ref)+'" data-fd-sheet');
