@@ -88,3 +88,43 @@ for (const ref of RETIRED) {
     assert.equal(columns.length, 1, `${ref} should sit in exactly one column, found: ${columns}`);
   });
 }
+
+// ---- the reader's own kicker (the surface A3 named first) -------------------------------------
+// fdReader derives isTool from the file extension for its tool MECHANICS (toolbar, expand,
+// #fd-tool-region), which a rights page still needs — it is still an .html artifact in the tool
+// frame. Only the copy may branch, or "Interactive tool · self-paced" sits over a page whose
+// entire purpose is to say the instrument is not reproduced here.
+
+// eslint-disable-next-line no-new-func
+const R = new Function('governanceBadge', `
+  ${read('phase_policy.js')}
+  ${read('frontdoor/fd_state.js')}
+  ${read('frontdoor/fd_data.js')}
+  ${read('frontdoor/fd_edition_student.js')}
+  ${read('frontdoor/fd_today.js')}
+  ${read('frontdoor/fd_reader.js')}
+  return { fdReader: fdReader };
+`)(() => '');
+
+for (const [ref, week] of [['cssrs.html', 5], ['bfcrs.html', null]]) {
+  test(`${ref} is not labelled an "Interactive tool" in the reader`, () => {
+    const html = R.fdReader(indexFor('ms3'), { ref, week, done: {} }, '');
+    const eyebrow = (html.match(/fd-eyebrow">([^<]*)</) || [])[1];
+    assert.ok(eyebrow, 'eyebrow should render');
+    assert.doesNotMatch(eyebrow, /Interactive tool/, `eyebrow reads "${eyebrow}"`);
+    assert.match(eyebrow, /Reference/);
+  });
+
+  test(`${ref} does not advertise itself as "self-paced"`, () => {
+    const html = R.fdReader(indexFor('ms3'), { ref, week, done: {} }, '');
+    const meta = (html.match(/fd-article__meta">([^<]*)</) || [])[1];
+    assert.notEqual(meta, 'self-paced');
+    assert.match(meta, /not reproduced/);
+  });
+
+  test(`${ref} keeps the tool MECHANICS — it is still an .html artifact`, () => {
+    const html = R.fdReader(indexFor('ms3'), { ref, week, done: {} }, '<p>body</p>');
+    assert.match(html, /fd-reader--tool/, 'the tool frame must stay');
+    assert.match(html, /id="fd-tool-region"/);
+  });
+}

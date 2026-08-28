@@ -346,9 +346,16 @@ function fdReader(index, state, bodyHtml){
   var backLabel=fdReaderBackLabel(st.fromTab);
   var doneLabel=fdReaderDoneLabel(isDone, nextAfter, backLabel);
 
-  var kindLabel=isTool?'Interactive tool':'Reading';
+  /* A rights reference keeps every TOOL MECHANIC below (it is still an .html artifact in the tool
+     frame, with the same toolbar and expand control) but must not be LABELLED one: "Interactive
+     tool · self-paced" over a page whose whole purpose is to say the instrument is not reproduced
+     here is the contradiction A3 reported. isTool stays extension-derived for the mechanics; only
+     the copy branches. */
+  var isRights=(item.kind==='rights');
+  var kindLabel=isRights?'Reference':(isTool?'Interactive tool':'Reading');
   var eyebrowText=inWeek?('Week '+fdEsc(st.week)+' · '+kindLabel):kindLabel;
-  var metaText=isTool?'self-paced':((typeof item.minutes==='number')?(item.minutes+' min'):'');
+  var metaText=isRights?'instrument not reproduced here'
+    :(isTool?'self-paced':((typeof item.minutes==='number')?(item.minutes+' min'):''));
 
   /* The "·" dot only separates the eyebrow from the meta text, so it is emitted only when there
      IS meta text -- a read with no topic_meta.read entry has metaText==='', and a dot with
