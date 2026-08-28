@@ -28,7 +28,7 @@
       "id": "bfcrs",
       "instrument": "Bush-Francis Catatonia Rating Scale (BFCRS)",
       "status": "restricted",
-      "decisionRef": "docs/superpowers/plans/2026-08-20-instrument-reproduction-audit.md — WP-02d resolved 2026-08-23: RESTRICTED under URMC site-wide Web Terms of Use (prior written consent required); all 23 items and anchor ladders removed in PR #400; WP-22 blocked on written permission",
+      "decisionRef": "docs/superpowers/plans/2026-08-20-instrument-reproduction-audit.md — WP-02d resolved 2026-08-23: RESTRICTED under URMC site-wide Web Terms of Use (prior written consent required); all 23 items and anchor ladders removed in PR #400; WP-22 blocked on written permission. Presentation cleanup (retitle to reference framing, dead spotlight-embed removal) authorized by the author 2026-08-27",
       "signatures": [
         "Frantic, ceaseless catatonic excitement",
         "Stuporous; non-reactive even to painful stimuli",
@@ -40,7 +40,7 @@
       "pages": [
         {
           "file": "bfcrs.html",
-          "requiredTitle": "Bush-Francis Catatonia Scale (BFCRS)",
+          "requiredTitle": "Bush-Francis Catatonia Scale (BFCRS) — Official Form & Training",
           "requiredDisclaimerType": "instrument-not-reproduced",
           "requireNotReproducedStatement": true
         }
