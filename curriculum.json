@@ -171,9 +171,9 @@
         "mse.html", "interview-circle.html", "sp-interview.html",
         "communication-practice.html", "diagnostic-reasoning.html",
         "family-systems.html", "one-patient-six-weeks.html", "capacity.html",
-        "oral.html", "violence.html", "cssrs.html", "screeners.html",
+        "oral.html", "violence.html", "screeners.html",
         "withdrawal.html", "decision-aids.html", "interaction-cards.html",
-        "bfcrs.html", "reflection.html", "shelf-mode.html", "review.html",
+        "reflection.html", "shelf-mode.html", "review.html",
         "question-bank-practice.html"
       ]
     },
@@ -181,9 +181,10 @@
       "name": "Acute & safety",
       "accent": "safety",
       "refs": [
-        "pg_suicide.md", "suicide.md", "agitation.md", "delirium.md",
-        "catatonia.md", "violence.md", "exp_consult.md", "toxidromes.md",
-        "medical_workup.md", "protocol_library.md"
+        "pg_suicide.md", "suicide.md", "cssrs.html", "agitation.md",
+        "delirium.md", "catatonia.md", "bfcrs.html", "violence.md",
+        "exp_consult.md", "toxidromes.md", "medical_workup.md",
+        "protocol_library.md"
       ]
     },
     {
@@ -259,12 +260,30 @@
       "exclusions": []
     }
   },
+  "_rightsReferencesNote": "Shipped .html pages that are REFERENCES about an instrument this library does not reproduce. They must not present as interactive tools (Fresh Eyes Audit A3). Derived from instrument_rights.json — every page whose requiredDisclaimerType is 'instrument-not-reproduced' — and validate_curriculum.py fails if the two ever disagree, so this list cannot drift.",
+  "rightsReferences": ["bfcrs.html", "cssrs.html"],
   "safetyKit": [
-    { "ref": "pg_suicide.md", "sub": "Screen · stratify · safety plan" },
-    { "ref": "agitation.md", "sub": "Verbal first · PO before IM" },
-    { "ref": "exp_consult.md", "sub": "Choice · understand · appreciate · reason" },
-    { "ref": "t_sud.md", "sub": "Score · thiamine · escalate" },
-    { "ref": "delirium.md", "sub": "Vitals · meds · CAM" }
+    { "ref": "pg_suicide.md", "sub": "Screen · stratify · safety plan",
+      "triggers": ["suicidal", "suicide", "kill myself", "killing myself", "kill herself",
+        "kill himself", "kill themselves", "want to die", "wants to die", "wanted to die",
+        "better off dead", "end my life", "end her life", "end his life", "end it all",
+        "self harm", "self-harm", "hurt myself", "hurt herself", "hurt himself",
+        "cutting", "overdose", "hanging", "wants to leave", "eloping"] },
+    { "ref": "agitation.md", "sub": "Verbal first · PO before IM",
+      "triggers": ["agitated", "agitation", "combative", "aggressive", "violent", "threatening",
+        "hitting", "throwing", "restraint", "restraints", "seclusion", "escalating",
+        "out of control", "swinging"] },
+    { "ref": "exp_consult.md", "sub": "Choice · understand · appreciate · reason",
+      "triggers": ["capacity", "refusing", "refuses", "refused", "declining", "declines",
+        "ama", "against medical advice", "wants to leave", "leave the hospital", "consent",
+        "decisional"] },
+    { "ref": "t_sud.md", "sub": "Score · thiamine · escalate",
+      "triggers": ["withdrawal", "withdrawing", "dts", "delirium tremens", "detox", "shakes",
+        "shaking", "tremor", "tremulous", "ciwa", "cows", "last drink", "seizure",
+        "alcohol withdrawal", "opioid withdrawal"] },
+    { "ref": "delirium.md", "sub": "Vitals · meds · CAM",
+      "triggers": ["delirious", "confused", "confusion", "disoriented", "altered mental status",
+        "ams", "sundowning", "waxing and waning", "inattentive", "not making sense"] }
   ],
   "roles": {
     "ms3": [

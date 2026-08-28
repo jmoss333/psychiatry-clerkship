@@ -171,10 +171,34 @@ def main(argv):
     md_slugs |= {s for s in EXTRA_SHIPPED if s.endswith(".md")}
     shipped = tool_slugs | md_slugs
 
+    # ---- rights references: curriculum.json must agree with the publication contract ----
+    # instrument_rights.json (INV-IR1, #412) is the authority on which pages exist to say an
+    # instrument is NOT reproduced. curriculum.json repeats the list because fd_data.js builds the
+    # front-door index from curriculum alone; this check is what stops the copy from drifting.
+    rights_refs = set(cur.get("rightsReferences") or [])
+    rights_path = os.path.join(REPO, "instrument_rights.json")
+    contract_refs = set()
+    if os.path.exists(rights_path):
+        rights_doc = json.load(open(rights_path, encoding="utf-8"))
+        for entry in rights_doc.get("instruments", []):
+            for page in entry.get("pages", []):
+                if page.get("requiredDisclaimerType") == "instrument-not-reproduced":
+                    contract_refs.add(page.get("file"))
+
     errs = []
 
     def bad(where, msg):
         errs.append("%s: %s" % (where, msg))
+
+    if contract_refs and rights_refs != contract_refs:
+        bad("rightsReferences",
+            "must equal the set of instrument_rights.json pages marked "
+            "'instrument-not-reproduced'. curriculum has %s; the contract has %s"
+            % (sorted(rights_refs) or "nothing", sorted(contract_refs)))
+    for ref in sorted(rights_refs):
+        if ref not in tool_slugs:
+            bad("rightsReferences",
+                "'%s' must be a shipped .html page (a rights reference replaces a tool)" % ref)
 
     # ---- each audience path has the exact count, categories, and site-shipped refs ----
     paths = cur.get("learningPaths")
@@ -359,6 +383,20 @@ def main(argv):
         ref = ent.get("ref")
         if not isinstance(ent.get("sub"), str) or not ent.get("sub").strip():
             bad("safetyKit", "entry '%s' needs a non-empty 'sub'" % (ref,))
+        # Crisis routing is explicit vocabulary, not a stopword accident. Before 2026-08-28 the
+        # only token in "i want to kill myself" that reached pg_suicide.md was the stopword "to",
+        # substring-matched inside "thoughts" -- one copy-edit away from silently deleting the
+        # safety kit from every plain-language suicide query. An empty list re-opens that hole.
+        triggers = ent.get("triggers")
+        if not isinstance(triggers, list) or not triggers:
+            bad("safetyKit", "entry '%s' needs a non-empty 'triggers' list -- the protocol pass "
+                             "routes crisis queries by this vocabulary" % (ref,))
+        else:
+            for trig in triggers:
+                if not isinstance(trig, str) or trig != trig.strip().lower() or len(trig) < 2:
+                    bad("safetyKit",
+                        "entry '%s' trigger %r must be a lowercase, trimmed string of 2+ chars"
+                        % (ref, trig))
         if not isinstance(ref, str):
             bad("safetyKit", "entry ref must be a string (got %r)" % (ref,))
             continue
