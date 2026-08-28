@@ -37,9 +37,17 @@ test('the footer no longer understates the COWS reproduction', () => {
 });
 
 test('the corrected wording distinguishes the two instruments accurately', () => {
-  assert.match(html, /CIWA-Ar descriptors here are abbreviated for teaching/);
-  assert.match(html, /COWS items carry their published anchors and legal score values/);
-  assert.match(html, /CIWA-Ar anchors are abbreviated; COWS anchors follow the published instrument/);
+  // Updated 2026-08-28. The old pins asserted "CIWA-Ar descriptors here are abbreviated for
+  // teaching", which was accurate while those descriptors shipped. CIWA-Ar has since been retired
+  // to a stub (author's call), so that sentence is now FALSE and its absence is the contract.
+  assert.doesNotMatch(html, /descriptors here are abbreviated for teaching/,
+    'the page no longer ships CIWA-Ar descriptors, so it must not claim to');
+  assert.doesNotMatch(html, /CIWA-Ar anchors are abbreviated/,
+    'the same claim in the disclaimer must not survive the retirement');
+  assert.match(html, /The CIWA-Ar is NOT reproduced here/);
+  assert.match(html, /COWS items carry their published anchors and legal score values/,
+    'COWS is unchanged and must still be described accurately');
+  assert.match(html, /The CIWA-Ar is not reproduced here; COWS anchors follow the published instrument/);
 });
 
 test('attribution and bedside direction survive (keep-guards)', () => {

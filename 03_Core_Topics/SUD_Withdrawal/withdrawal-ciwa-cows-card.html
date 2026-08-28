@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- [RC-META] tool="Withdrawal Scales — CIWA-Ar & COWS" version="1.1" built="2026-08-27" category="core-topics" subcategory="SUD/Withdrawal" audience="trainee,ms3" settings="inpatient" time="10min" summary="Teaching pocket card for alcohol (CIWA-Ar) and opioid (COWS) withdrawal: item lists, interactive tally, severity bands. CIWA-Ar descriptors abbreviated for teaching; COWS anchors at their published text and legal values (recorded interim waiver, instrument_rights.json). Educational reference — NOT a dosing calculator. Fictional use only." -->
+<!-- [RC-META] tool="Withdrawal Scales — CIWA-Ar & COWS" version="1.1" built="2026-08-27" category="core-topics" subcategory="SUD/Withdrawal" audience="trainee,ms3" settings="inpatient" time="10min" summary="Teaching pocket card for opioid (COWS) withdrawal scoring plus the CIWA-Ar official-form reference: item list, interactive tally, severity bands. The CIWA-Ar is not reproduced (retired 2026-08-28); COWS anchors at their published text and legal values (recorded interim waiver, instrument_rights.json). Educational reference — NOT a dosing calculator. Fictional use only." -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Withdrawal Scales — CIWA-Ar &amp; COWS</title>
+<title>Withdrawal: COWS Tool · CIWA-Ar Official Form &amp; Training</title>
 <meta name="description" content="Teaching pocket card for alcohol and opioid withdrawal assessment: the CIWA-Ar and COWS item lists with an interactive tally and severity bands. Educational reference, not a dosing calculator.">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
@@ -85,18 +85,6 @@
 <script>
 var e=React.createElement; var useState=React.useState;
 
-var CIWA=[
-  {k:'nv',b:'Nausea / vomiting',d:'0 none → 7 constant nausea, frequent vomiting',max:7},
-  {k:'tremor',b:'Tremor',d:'0 none → 7 severe, even with arms not extended',max:7},
-  {k:'sweats',b:'Paroxysmal sweats',d:'0 none → 7 drenching sweats',max:7},
-  {k:'anx',b:'Anxiety',d:'0 at ease → 7 acute panic state',max:7},
-  {k:'agit',b:'Agitation',d:'0 normal → 7 paces or thrashes',max:7},
-  {k:'tact',b:'Tactile disturbances',d:'itching, pins & needles, formication (0 → 7)',max:7},
-  {k:'aud',b:'Auditory disturbances',d:'harshness/ability to frighten → hallucinations (0 → 7)',max:7},
-  {k:'vis',b:'Visual disturbances',d:'light sensitivity → hallucinations (0 → 7)',max:7},
-  {k:'head',b:'Headache / fullness in head',d:'0 none → 7 extremely severe',max:7},
-  {k:'orient',b:'Orientation / sensorium',d:'0 oriented → 4 disoriented to place/person',max:4}
-];
 /* Item content is GENERATED from SPEC section 2.2 by
    13_Faculty_Resources/_automation/gen_cows_from_spec.py -- every anchor below is a
    byte-for-byte copy of its spec row, never retyped (handoff Ground Rule 1).
@@ -132,16 +120,6 @@ var COWS=[
 ];
 /* max is derived, never hand-maintained: it drove the dense-range bug. */
 COWS.forEach(function(i){ i.max=i.vals[i.vals.length-1].v; });
-var CIWA_GAUGE={
-  track:30,
-  segments:[{flex:8,color:'color-mix(in srgb,var(--success) 30%,transparent)'},{flex:11,color:'color-mix(in srgb,var(--warning) 36%,transparent)'},{flex:11,color:'color-mix(in srgb,var(--danger) 32%,transparent)'}],
-  labels:[{t:'≤8 mild',c:'var(--success)'},{t:'9–19 mod',c:'var(--warning)'},{t:'≥20 severe',c:'var(--danger)'}],
-  info:function(t){
-    if(t<=8) return {tier:'Minimal',color:'var(--success)',bg:'var(--success-light)',pill:'Minimal / absent',action:'Often no medication — monitor and reassess.',timeline:null};
-    if(t<=19) return {tier:'Moderate',color:'var(--warning)',bg:'var(--warning-light)',pill:'Mild–moderate withdrawal',action:'Symptom-triggered benzodiazepine; reassess hourly.',timeline:'24–48 h'};
-    return {tier:'Severe',color:'var(--danger)',bg:'var(--danger-light)',pill:'Severe withdrawal',action:'High seizure / DT risk — escalate urgently per protocol.',timeline:'48–72 h'};
-  }
-};
 var COWS_GAUGE={
   track:48,
   segments:[{flex:12,color:'color-mix(in srgb,var(--success) 30%,transparent)'},{flex:12,color:'color-mix(in srgb,var(--warning) 36%,transparent)'},{flex:12,color:'color-mix(in srgb,var(--danger) 24%,transparent)'},{flex:12,color:'color-mix(in srgb,var(--danger) 40%,transparent)'}],
@@ -213,20 +191,32 @@ function Scale(props){
   );
 }
 function App(){
-  var tab=useState('ciwa'); var setTab=tab[1]; tab=tab[0];
-  // severity bands now live in CIWA_GAUGE / COWS_GAUGE (Enhancement 1: live gauge)
+  /* Opens on COWS: after the CIWA-Ar retirement (2026-08-28) that is the page's only scoring
+     surface, and this page is reached from Quick Tools and search AS A TOOL. Landing a learner
+     who tapped a scorer on a "not reproduced here" notice is precisely the failure the retired
+     instruments' presentation work exists to prevent; the CIWA-Ar reference stays one clearly
+     labelled tab away. tests/smoke/tool-expand.spec.js pins that the page presents live controls
+     on load. */
+  var tab=useState('cows'); var setTab=tab[1]; tab=tab[0];
+  // COWS severity bands live in COWS_GAUGE (Enhancement 1: live gauge). CIWA_GAUGE went with
+  // the CIWA-Ar reproduction when it was retired (2026-08-28) -- there is no CIWA score to band.
   return e('div',{className:'shell'},
     e('div',{className:'kicker'},'Core Topics · 03 · Substance Use / Withdrawal'),
-    e('h1',null,'Withdrawal Scales: CIWA-Ar & COWS'),
-    e('p',{className:'sub'},'Two structured scales you’ll use on the unit — alcohol (CIWA-Ar) and opioids (COWS). Score the current state, repeat over time, and act per your institution’s protocol. The trend matters as much as the number.'),
+    e('h1',null,'Withdrawal: COWS tool · CIWA-Ar official form'),
+    e('p',{className:'sub'},'Two structured scales you’ll use on the unit — alcohol (CIWA-Ar) and opioids (COWS). COWS is scored here; the CIWA-Ar is not reproduced on this page — score it from your unit’s approved form. The trend matters as much as the number.'),
     e('div',{className:'tabs'},
       e('button',{className:'tab'+(tab==='ciwa'?' on':''),onClick:function(){setTab('ciwa')}},'CIWA-Ar (alcohol)'),
       e('button',{className:'tab'+(tab==='cows'?' on':''),onClick:function(){setTab('cows')}},'COWS (opioid)')),
     tab==='ciwa'?
       e('div',{className:'card'},
-        e('h3',{style:{marginTop:0}},'CIWA-Ar — 10 items (max 67)'),
+        e('h3',{style:{marginTop:0}},'CIWA-Ar — official form & training'),
         e('div',{className:'pearl danger'}, e('b',null,'Safety: '),'a rising or high CIWA signals risk of withdrawal seizures and delirium tremens. Benzodiazepines are first-line per protocol; treat early. Thiamine before glucose.'),
-        e(Scale,{items:CIWA,gauge:CIWA_GAUGE}),
+        e('p',null,e('b',null,'This page no longer reproduces the CIWA-Ar. '),'Use your unit’s current approved form to score at the bedside.'),
+        e('p',null,e('b',null,'Why the items were removed. '),'Every located “may be reproduced freely” notice for the CIWA-Ar is a reproducer’s addition, in differing wordings; the 1989 article’s own permission text is unverified and behind a paywall. Rights that cannot be established are not rights, so the abbreviated descriptors this page used to show were withdrawn (2026-08-28) rather than left published on the strength of a second-hand notice.'),
+        e('p',null,e('b',null,'Primary source. '),'Sullivan JT, Sykora K, Schneiderman J, Naranjo CA, Sellers EM. Assessment of alcohol withdrawal: the revised Clinical Institute Withdrawal Assessment for Alcohol scale (CIWA-Ar). ',
+          e('i',null,'Br J Addict'),' 1989;84(11):1353–7 (',
+          e('a',{href:'https://pubmed.ncbi.nlm.nih.gov/2597811/',target:'_blank',rel:'noopener noreferrer'},'PMID 2597811'),').'),
+        e('p',null,e('b',null,'Official version. '),'Obtain the complete, current CIWA-Ar from your institution’s withdrawal protocol and score from that form at the bedside, not from any teaching page. Administration teaching for this scale — how the assessment is conducted and what the score does and does not license — is authored separately and is not yet published here.'),
         e('div',{className:'pearl'}, e('b',null,'Use it well: '),'symptom-triggered dosing (treat when CIWA ≥ ~8–10) usually beats fixed schedules in appropriate patients. CIWA assumes the patient can communicate — it is unreliable in delirium, intubation, or language barriers; use a protocol like RASS/PAWSS there.')
       )
     :
@@ -246,9 +236,9 @@ function App(){
       '). COWS: Wesson DR, Ling W. The Clinical Opiate Withdrawal Scale (COWS). ',
       e('i',null,'J Psychoactive Drugs'),' 2003;35(2):253–9 (',
       e('a',{href:'https://pubmed.ncbi.nlm.nih.gov/12924748/',target:'_blank',rel:'noopener noreferrer'},'PMID 12924748'),
-      '). CIWA-Ar descriptors here are abbreviated for teaching; COWS items carry their published anchors and legal score values. Obtain the complete, current form from your institution and score at the bedside from that form, not from this page.'),
-    e('div',{className:'disclaimer'},'Educational teaching tool for clinical trainees. This is a reference and tally — NOT a dosing calculator or a substitute for the validated instrument, supervision, or your institution’s withdrawal protocol and orders. CIWA-Ar anchors are abbreviated; COWS anchors follow the published instrument; use the full validated form at the bedside. For fictional/practice use only — no protected health information.'),
-    e('footer',null,'Withdrawal Scales — CIWA-Ar & COWS · Psychiatry Clerkship Library · Joshua Moss, MD | Psychiatrist')
+      '). The CIWA-Ar is NOT reproduced here — its rights could not be established and its descriptors were withdrawn (2026-08-28). COWS items carry their published anchors and legal score values under a recorded interim waiver. Obtain the complete, current form from your institution and score at the bedside from that form, not from this page.'),
+    e('div',{className:'disclaimer'},'Educational teaching tool for clinical trainees. This is a reference and tally — NOT a dosing calculator or a substitute for the validated instrument, supervision, or your institution’s withdrawal protocol and orders. The CIWA-Ar is not reproduced here; COWS anchors follow the published instrument; use the full validated form at the bedside. For fictional/practice use only — no protected health information.'),
+    e('footer',null,'Withdrawal: COWS tool · CIWA-Ar official form · Psychiatry Clerkship Library · Joshua Moss, MD | Psychiatrist')
   );
 }
 ReactDOM.createRoot(document.getElementById('root')).render(e(App));
