@@ -39,19 +39,18 @@ async function loadPlacedNavItems(page, request, baseURL) {
 
 function findItem(items, predicate, description) {
   const item = items.find(predicate);
-  if (!item) {
-    // Read this before concluding the renderer regressed. The Library is a curated allowlist
-    // (curriculum.json -> libraryColumns), so which governance states have a *placed* example is
-    // a property of current content, not of the code: attesting the last item in a state empties
-    // the set and this throws. That is what happened in #380, which correctly replayed four
-    // stranded attestations and, as a side effect, left no placed pending/non-high item at all.
-    throw new Error(
-      `no placed nav item is currently "${description}" — no placed item is in that governance `
-      + 'state right now. Check reviewed.json against curriculum.json libraryColumns before '
-      + 'suspecting the renderer; the state branches themselves are pinned against a synthetic '
-      + 'ledger by tests/surface-governance-ui.test.mjs.',
-    );
-  }
+  // Which governance states have a *placed* example is a property of current content, not of
+  // the code: the Library is a curated allowlist (curriculum.json -> libraryColumns), and
+  // attesting the last placed item in a state empties the set. #380 hit this as a hard throw;
+  // the 2026-08-27 unstranding (interaction-cards attested — then the MS3 Library's only
+  // placed pending item) made an empty state a legitimate steady state, so an empty state now
+  // SKIPS, visibly, instead of failing. The state branches themselves stay pinned against a
+  // synthetic ledger by tests/surface-governance-ui.test.mjs, and each audience project still
+  // runs every test its own content can exercise (nav-res covers pending-high via the rp-*
+  // draft tools while they remain pending).
+  test.skip(!item,
+    `no placed nav item is currently "${description}" — no placed item is in that governance `
+    + 'state right now; check reviewed.json against curriculum.json libraryColumns');
   return item;
 }
 
