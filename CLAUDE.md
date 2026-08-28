@@ -111,7 +111,11 @@ cd tests/smoke && npm ci && npx playwright test
   anchor text, **stop and ask** rather than inferring that a particular instrument is exempt.
   **Resolved 2026-08-23 — Option A: the rule covers copyrighted instruments only** (#391). C-SSRS
   retires (WP-06R-a); Stanley-Brown is never programmed (WP-06R-b); PHQ-9/GAD-7 provisionally stay
-  pending a check of the current permission footer (WP-02c); CIWA-Ar / COWS / BFCRS status is **not
-  established** (WP-02d) and that is what blocks Wave 4. An instrument is exempt only once its
-  status is recorded in the audit's decision table — Option A settles scope, not individual cases.
+  pending a check of the current permission footer (WP-02c); **BFCRS is RESTRICTED** (URMC written
+  consent required) and **CIWA-Ar RETIRES** (2026-08-28, author's call — rights unestablishable, so
+  the descriptors came down; WP-20 is closed with it). **COWS alone remains open**: permission real,
+  scope wrong, its 45 verbatim anchors in `withdrawal.html` published under a recorded interim
+  waiver pending the Taylor & Francis letter — that waiver is the one thing still blocking Wave 4,
+  and an agent must not narrow or lift it. An instrument is exempt only once its status is recorded
+  in the audit's decision table — Option A settles scope, not individual cases.
   Audit and current disposition: `docs/superpowers/plans/2026-08-20-instrument-reproduction-audit.md`.
