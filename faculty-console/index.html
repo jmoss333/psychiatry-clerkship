@@ -340,6 +340,11 @@
 
   .session-notice.blocked { border-inline-start-color: var(--blocked); background: var(--blocked-soft); }
 
+  /* Base-lag alarm (#415): stranded attestations / stale base, shown at load. */
+  .session-notice.branch-sync.alert { border-inline-start-color: var(--blocked); background: var(--blocked-soft); font-weight: 600; }
+  .session-notice.branch-sync.alert a { color: inherit; }
+  .session-notice.branch-sync.muted { border-inline-start-color: var(--warning); background: transparent; opacity: 0.85; }
+
   .session-notice.reset {
     border-inline-start-color: var(--warning);
     background: var(--warning-soft);
