@@ -208,7 +208,11 @@ if (existsSync(navPath) && parsed[navPath]) {
     for (const it of (sec.items || [])) {
       navItems++;
       if (it.k === 'md') { navMd.add(it.f); if (!existsSync(p('content', it.f))) H(`nav → missing content file: ${it.f}`); }
-      else if (it.k === 'tool') { navTools.add(it.f); if (!existsSync(p('tools', it.f))) H(`nav → missing tool file: ${it.f}`); }
+      // 'rights' ships the same .html artifact as 'tool' and is registered in nav exactly the
+      // same way — it only changes how the shell PRESENTS the page (Fresh Eyes Audit A3). It
+      // must stay in navTools or the orphaned-tool check reports every retired instrument as
+      // unregistered, which is the opposite of what happened: it is registered, just not a tool.
+      else if (it.k === 'tool' || it.k === 'rights') { navTools.add(it.f); if (!existsSync(p('tools', it.f))) H(`nav → missing tool file: ${it.f}`); }
     }
   }
 } else S('nav.json not found or unparsable (skipping nav checks)');

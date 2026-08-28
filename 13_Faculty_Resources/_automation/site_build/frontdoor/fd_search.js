@@ -163,6 +163,9 @@ function fdSearchTriggerHit(triggers, paddedQuery){
 
 function fdSearchItemMeta(item){
   if(item.kind==='tool') return 'tool';
+  /* Say so in the result row itself: a learner searching "catatonia scale" mid-shift should learn
+     from the list, not from opening the page, that the scale is not reproduced here. */
+  if(item.kind==='rights') return 'reference · not reproduced';
   return (typeof item.minutes==='number')?(item.minutes+' min read'):'';
 }
 

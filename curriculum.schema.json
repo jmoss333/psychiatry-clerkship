@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "curriculum.json — front door structure",
   "type": "object",
-  "required": ["learningPaths", "libraryColumns", "libraryExclude", "siteLibrary", "safetyKit", "roles", "synonyms"],
+  "required": ["learningPaths", "libraryColumns", "libraryExclude", "siteLibrary", "rightsReferences", "safetyKit", "roles", "synonyms"],
   "additionalProperties": false,
   "properties": {
     "_note": { "type": "string" },
@@ -64,6 +64,13 @@
         "ms3": { "$ref": "#/definitions/siteLibraryEntry" },
         "resident": { "$ref": "#/definitions/siteLibraryEntry" }
       }
+    },
+    "_rightsReferencesNote": { "type": "string" },
+    "rightsReferences": {
+      "description": "Shipped .html pages that are references ABOUT an instrument the library does not reproduce. Kept in lockstep with instrument_rights.json by validate_curriculum.py.",
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
     },
     "safetyKit": {
       "type": "array",
@@ -136,7 +143,7 @@
       "additionalProperties": false,
       "properties": {
         "ref": { "type": "string", "minLength": 1 },
-        "kind": { "type": "string", "enum": ["read", "tool"] }
+        "kind": { "type": "string", "enum": ["read", "tool", "rights"] }
       }
     },
     "siteLibraryEntry": {

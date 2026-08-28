@@ -21,10 +21,16 @@ function fdMakeItem(ref, kind, topicMeta, toolIndex, manifestIndex){
   var t=toolIndex[ref]||null;
   var fr=m.facultyReview||{};
   var manifest=manifestIndex[ref]||{};
-  var isTool=(kind==='tool')||fdIsTool(ref);
+  /* 'rights' OVERRIDES the extension heuristic, and must: fdIsTool is /\.html$/, so a retired
+     instrument's stub page (cssrs.html, bfcrs.html) would otherwise stay a "tool" no matter what
+     the nav declares -- a learner reaching for a scorer mid-shift gets a removal notice instead.
+     A rights page is a reference ABOUT an instrument this library does not reproduce: it never
+     enters Quick Tools, never wears the tool chip, and never lists as an interactive tool. */
+  var isRights=(kind==='rights');
+  var isTool=!isRights&&((kind==='tool')||fdIsTool(ref));
   return {
     ref: ref,
-    kind: isTool?'tool':'read',
+    kind: isRights?'rights':(isTool?'tool':'read'),
     /* Title comes from site_manifest.json, the registry of shipped pages. topic_meta has no
        title field on any entry -- it describes a page's content, not its identity -- so reading
        one there would silently degrade every .md row to its raw slug. Falling back to the ref is
@@ -57,9 +63,18 @@ function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
     }
   }
 
+  /* Rights references are a property of the PAGE, not of where it happens to be linked from, so
+     the lookup has to be global rather than per-call-site. ensure() memoises by ref and the first
+     caller wins: cssrs.html is a week item on ms3 (kind 'rights') but reaches the resident index
+     only through a library column, which passes kind null -- so without this the same page was a
+     "tool" on one site and a reference on the other. The list is derived from
+     instrument_rights.json and validate_curriculum.py fails if the two disagree. */
+  var rightsRefs={}, rr=cur.rightsReferences||[];
+  for(var rq=0;rq<rr.length;rq++){ rightsRefs[rr[rq]]=true; }
+
   var byRef={};
   function ensure(ref, kind){
-    if(!byRef[ref]) byRef[ref]=fdMakeItem(ref, kind, meta, toolIndex, manifestIndex);
+    if(!byRef[ref]) byRef[ref]=fdMakeItem(ref, rightsRefs[ref]?'rights':kind, meta, toolIndex, manifestIndex);
     return byRef[ref];
   }
 

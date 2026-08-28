@@ -89,7 +89,9 @@ function fdRow(it, idx, doneMap, compact){
   var titleCls=on?'fd-row__title is-done':'fd-row__title';
   var checkCls=on?'fd-check is-done':'fd-check';
   var typeCls=(it.kind==='tool')?'fd-chip is-tool':'fd-chip';
-  var typeLabel=(it.kind==='tool')?'tool':'read';
+  /* 'rights' reads "reference": the page teaches administration and points at the official form.
+     Calling it a tool is what sent a learner reaching for a scorer to a removal notice. */
+  var typeLabel=(it.kind==='tool')?'tool':((it.kind==='rights')?'reference':'read');
   var minLabel=(it.kind!=='tool'&&typeof it.minutes==='number')?(it.minutes+' min'):'';
   var rowCls=compact?'fd-row is-compact':'fd-row';
   var editionMeta=fdEditionCoreMetaMarkup(it);

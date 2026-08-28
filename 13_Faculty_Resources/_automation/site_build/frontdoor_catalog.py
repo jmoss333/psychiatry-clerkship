@@ -47,8 +47,12 @@ def _catalog_entries(catalog):
             ref, title, kind = item.get("f"), item.get("t"), item.get("k")
             if not isinstance(ref, str) or not isinstance(title, str):
                 raise ValueError("final catalog item needs string f and t")
-            if kind not in ("md", "tool"):
-                raise ValueError("final catalog item '%s' needs md or tool kind" % ref)
+            # "rights" is a third shipped kind: a reference page ABOUT an instrument the library
+            # does not reproduce, which must not present as an interactive tool (Fresh Eyes Audit
+            # A3). It reaches the Front Door payload unchanged so fd_data.js can carry it through
+            # to the item index -- collapsing it to "tool" here would undo the whole distinction.
+            if kind not in ("md", "tool", "rights"):
+                raise ValueError("final catalog item '%s' needs md, tool, or rights kind" % ref)
             governance = item.get("governance")
             if not isinstance(governance, dict) or set(governance) != GOVERNANCE_KEYS:
                 raise ValueError("final catalog item '%s' needs an exact governance triplet" % ref)
@@ -160,7 +164,15 @@ def build_frontdoor_payload(site, curriculum, catalog, revision, rotation_projec
             if ref not in catalog_entries:
                 raise ValueError("path ref '%s' has no final %s catalog entry" % (ref, site))
             _title, nav_kind, _governance = catalog_entries[ref]
-            expected_kind = "tool" if nav_kind == "tool" else "read"
+            # Three kinds now, and "rights" must round-trip exactly: a week item declaring
+            # kind "rights" has to match a catalog entry that also says "rights", or a retired
+            # instrument could be demoted in one registry and still ship as a tool in the other.
+            if nav_kind == "tool":
+                expected_kind = "tool"
+            elif nav_kind == "rights":
+                expected_kind = "rights"
+            else:
+                expected_kind = "read"
             if kind != expected_kind:
                 raise ValueError("path ref '%s' declares %s but final catalog is %s" %
                                  (ref, kind, expected_kind))

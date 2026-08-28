@@ -71,7 +71,7 @@
         { "ref": "agitation.md", "kind": "read" },
         { "ref": "delirium.md", "kind": "read" },
         { "ref": "catatonia.md", "kind": "read" },
-        { "ref": "cssrs.html", "kind": "tool" },
+        { "ref": "cssrs.html", "kind": "rights" },
         { "ref": "withdrawal.html", "kind": "tool" },
         { "ref": "capacity.html", "kind": "tool" },
         { "ref": "question-bank-practice.html", "kind": "tool" }
@@ -110,7 +110,7 @@
             { "ref": "violence.html", "kind": "tool" },
             { "ref": "delirium.md", "kind": "read" },
             { "ref": "withdrawal.html", "kind": "tool" },
-            { "ref": "bfcrs.html", "kind": "tool" },
+            { "ref": "bfcrs.html", "kind": "rights" },
             { "ref": "capacity.html", "kind": "tool" }
           ]
         },
@@ -171,9 +171,9 @@
         "mse.html", "interview-circle.html", "sp-interview.html",
         "communication-practice.html", "diagnostic-reasoning.html",
         "family-systems.html", "one-patient-six-weeks.html", "capacity.html",
-        "oral.html", "violence.html", "cssrs.html", "screeners.html",
+        "oral.html", "violence.html", "screeners.html",
         "withdrawal.html", "decision-aids.html", "interaction-cards.html",
-        "bfcrs.html", "reflection.html", "shelf-mode.html", "review.html",
+        "reflection.html", "shelf-mode.html", "review.html",
         "question-bank-practice.html"
       ]
     },
@@ -181,9 +181,10 @@
       "name": "Acute & safety",
       "accent": "safety",
       "refs": [
-        "pg_suicide.md", "suicide.md", "agitation.md", "delirium.md",
-        "catatonia.md", "violence.md", "exp_consult.md", "toxidromes.md",
-        "medical_workup.md", "protocol_library.md"
+        "pg_suicide.md", "suicide.md", "cssrs.html", "agitation.md",
+        "delirium.md", "catatonia.md", "bfcrs.html", "violence.md",
+        "exp_consult.md", "toxidromes.md", "medical_workup.md",
+        "protocol_library.md"
       ]
     },
     {
@@ -259,6 +260,8 @@
       "exclusions": []
     }
   },
+  "_rightsReferencesNote": "Shipped .html pages that are REFERENCES about an instrument this library does not reproduce. They must not present as interactive tools (Fresh Eyes Audit A3). Derived from instrument_rights.json — every page whose requiredDisclaimerType is 'instrument-not-reproduced' — and validate_curriculum.py fails if the two ever disagree, so this list cannot drift.",
+  "rightsReferences": ["bfcrs.html", "cssrs.html"],
   "safetyKit": [
     { "ref": "pg_suicide.md", "sub": "Screen · stratify · safety plan",
       "triggers": ["suicidal", "suicide", "kill myself", "killing myself", "kill herself",
