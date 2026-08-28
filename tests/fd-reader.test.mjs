@@ -446,9 +446,22 @@ test('every OTHER interpolated value is still escaped, even with a hostile title
 
 // ---- graceful degradation ------------------------------------------------------------------
 
-test('a ref with no index entry degrades to a titled placeholder rather than throwing', () => {
+test('a ref the site does not know gets the not-found surface, not a raw-filename title', () => {
+  // Contract changed 2026-08-28 (Fresh Eyes Audit A4). This used to pin the placeholder render
+  // -- <h1>nope.md</h1> over a framed 404 -- which is what made a dead link look like a broken
+  // page instead of a missing one. Full coverage lives in tests/fd-not-found.test.mjs; this
+  // assertion stays here so the reader's own contract file records the change.
   assert.doesNotThrow(() => F.fdReader(IDX, s({ ref: 'nope.md', week: null }), ''));
   const html = F.fdReader(IDX, s({ ref: 'nope.md', week: null }), '');
+  assert.match(html, /fd-reader--notfound/);
+  assert.doesNotMatch(html, /fd-article__h1">nope\.md</);
+});
+
+test('a bare index still degrades to a titled placeholder rather than throwing', () => {
+  // The old path is still live for callers without a built index (early boot, older harnesses):
+  // idx.known is absent, so the reader must not report every page as missing.
+  const bare = { byRef: {}, weeks: [] };
+  const html = F.fdReader(bare, s({ ref: 'nope.md', week: null }), '');
   assert.match(html, /fd-article__h1">nope\.md</);
   // The fallback item's minutes is null and its kind defaults to 'read', so metaText is '' --
   // the dot separator must not render with nothing on its right (fix round 1, Minor 3).

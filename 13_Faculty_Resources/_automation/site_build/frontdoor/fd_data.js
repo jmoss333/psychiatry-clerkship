@@ -112,7 +112,20 @@ function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
     weekCount:sourcePath.weekCount
   };
 
-  return { byRef:byRef, path:pathInfo, weeks:weeks, columns:columns, kit:kit };
+  /* known = "this ref names a real page on this site", which is NOT the same as "byRef has it".
+     libraryExclude registers pages that ship and are reachable but are deliberately absent from
+     the Library projection -- orientation-video.html ("surfaced from the Start-here card"), the
+     week*.md pages, the rp-* tools. Treating those as unknown would send a working link to a
+     not-found surface, so the reader needs both sets to tell a valid direct route apart from a
+     dead slug (Fresh Eyes Audit A4). */
+  var known={}, kr;
+  for(kr in byRef){ known[kr]=true; }
+  var lx=cur.libraryExclude||[];
+  for(var lxi=0;lxi<lx.length;lxi++){
+    if(lx[lxi]&&typeof lx[lxi].ref==='string') known[lx[lxi].ref]=true;
+  }
+
+  return { byRef:byRef, path:pathInfo, weeks:weeks, columns:columns, kit:kit, known:known };
 }
 
 /* The browser receives exactly one projected path. Treat that small object as untrusted at the
