@@ -93,9 +93,13 @@ function fdRow(it, idx, doneMap, compact){
   var minLabel=(it.kind!=='tool'&&typeof it.minutes==='number')?(it.minutes+' min'):'';
   var rowCls=compact?'fd-row is-compact':'fd-row';
   var editionMeta=fdEditionCoreMetaMarkup(it);
+  /* The name carries the item and tracks the state, so nine toggles in a week list are nine
+     distinct announcements ("Mark done: Interview & MSE") rather than "Mark done" nine times,
+     and the name says what the NEXT press does rather than restating aria-pressed. */
+  var toggleName=(on?'Mark undone: ':'Mark done: ')+it.title;
   return '<div class="'+rowCls+'" style="animation-delay:'+(idx*35)+'ms">'+
     '<button type="button" class="'+checkCls+'" data-fd-toggle="'+fdEsc(it.ref)+'" '+
-      'title="Mark done" aria-pressed="'+(on?'true':'false')+'">'+
+      'title="'+fdEsc(toggleName)+'" aria-pressed="'+(on?'true':'false')+'">'+
       '<span aria-hidden="true">✓</span></button>'+
     '<button type="button" class="fd-row__open" data-fd-open="'+fdEsc(it.ref)+'">'+
       '<span class="fd-row__content"><span class="'+titleCls+'">'+fdEsc(it.title)+'</span>'+editionMeta+'</span>'+
@@ -227,7 +231,10 @@ function fdToday(index, state){
   var dayName=FD_TODAY_DAYNAMES[new Date(nowMs).getDay()];
   var roleShort=st.role||'there';
   var period=hour<12?'Morning':(hour<18?'Afternoon':'Evening');
-  var greeting=period+', '+fdEsc(roleShort)+' —';
+  /* The trailing em dash is typographic lead-in to the line below, not content: a screen reader
+     announced "Evening, Core rotation, dash". Same treatment as the ✓ glyph in fdRow -- the
+     character stays exactly where it was and becomes decoration. */
+  var greeting=period+', '+fdEsc(roleShort)+' <span aria-hidden="true">—</span>';
 
   var wk=(typeof st.week==='number'&&!isNaN(st.week))?fdFindWeek(idx, st.week):null;
   var hasWeek=!!wk;

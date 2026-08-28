@@ -150,6 +150,19 @@ test('renders the panel skeleton with input, esc button, and footer copy', () =>
   assert.match(html, /<div class="fd-searchpanel__foot">↵ opens as a side sheet/);
 });
 
+test('the results list announces its count politely (Fresh Eyes Audit A6)', () => {
+  // Results updated silently: a screen-reader user typing had no signal that anything changed.
+  const html = F.fdSearchOverlay(REAL_INDEX, 'suicide', SYN, {});
+  assert.match(html, /class="fd-searchpanel__body"[^>]*aria-live="polite"/);
+  assert.match(html, /aria-label="\d+ results?"/);
+});
+
+test('the count in the live region matches the number of rows rendered', () => {
+  const results = F.fdSearchResults(REAL_INDEX, 'lithium', SYN, {});
+  const html = F.fdSearchOverlay(REAL_INDEX, 'lithium', SYN, {});
+  assert.match(html, new RegExp(`aria-label="${results.length} results?"`));
+});
+
 test('the current query round-trips into the input value, escaped', () => {
   const html = F.fdSearchOverlay(REAL_INDEX, 'ciwa "quotes"', SYN, {});
   assert.match(html, /value="ciwa &quot;quotes&quot;"/);

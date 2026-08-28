@@ -311,7 +311,12 @@ function fdSearchOverlay(index, query, synonyms, state){
     'placeholder="Symptom, drug, tool, or task…">';
   out+='<button type="button" class="fd-searchpanel__esc" data-fd-close-search aria-label="Close search">esc</button>';
   out+='</div>';
-  out+='<div class="fd-searchpanel__body">';
+  /* Results replace themselves on every keystroke with no visual transition a screen reader can
+     observe, so the region announces its own size. aria-label carries the count rather than a
+     visually-hidden node: the panel is rebuilt wholesale on each render, and an attribute cannot
+     drift out of sync with the rows the way a separate element can. */
+  out+='<div class="fd-searchpanel__body" role="region" aria-live="polite" '+
+    'aria-label="'+results.length+' result'+(results.length===1?'':'s')+'">';
   /* Empty-state only replaces the results when the user actually typed something and it matched
      nothing -- an empty query always has defaults (see fdSearchResults), so there is nothing to
      apologise for on first open. Matches the prototype's own noResults = q.length>0 && !results. */
