@@ -1,170 +1,69 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- [RC-META] tool="Columbia C-SSRS Screener — Teaching" version="1.0" built="2026-06-26" category="acute-safety" audience="trainee,ms3" settings="inpatient,ED" time="5min" summary="Teaching version of the Columbia Suicide Severity Rating Scale (C-SSRS) screener with branching and risk triage. Educational; use your institution's validated C-SSRS at the bedside. Fictional/practice use only; no PHI." -->
+<!-- [RC-META] tool="Columbia C-SSRS — Reference" version="2.0" built="2026-08-27" category="acute-safety" audience="trainee,ms3" settings="inpatient,ED" time="2min" summary="Reference page for the Columbia Suicide Severity Rating Scale (C-SSRS). The screener questions and branching logic are NOT reproduced: the instrument is copyrighted and licensed by the Columbia Lighthouse Project, and under the library's reproduction rule (Option A, 2026-08-23) it retires (WP-06R-a stage 1). Cites the primary source, links the official instrument and free training, and directs screening to the institution's approved form. Administration teaching is authored separately (WP-06R-a stage 2, faculty-gated)." -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Columbia C-SSRS Screener — Teaching Tool</title>
-<meta name="description" content="A teaching version of the Columbia Suicide Severity Rating Scale (C-SSRS) screener: the six screener questions with branching and risk triage. Educational only.">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<meta name="robots" content="noindex,nofollow">
+<title>Columbia C-SSRS — Official Form &amp; Training</title>
+<meta name="description" content="Columbia Suicide Severity Rating Scale (C-SSRS) — reference and attribution. The screener questions are not reproduced here; use your institution's approved form and the official Columbia Protocol training.">
 <style>
   :root{
     --bg:#f6f3ee; --bg-alt:#faf6f0; --surface:#ffffff; --border:#ddd3c6;
+    --text:#3b332c; --text-mid:#64574b; --text-light:#6b5d4f;
     --primary:#c25a3c; --primary-dark:#a84830; --primary-light:#f3ebe5;
     --accent:#2a6b5e; --accent-dark:#1e5248; --accent-light:#edf4f2;
-    --text:#3b332c; --text-mid:#64574b; --text-light:#87786a;
-    --success:#357160; --success-light:#e7f1ed;
-    --warning:#7a6234; --warning-light:#f5efe2;
-    --danger:#a34132; --danger-light:#fbece9;
-    --info:#41618a; --info-light:#eaf0f6;
-    --radius-sm:6px; --radius-md:10px; --radius-lg:14px; --radius-pill:999px;
-    --shadow-sm:0 1px 3px rgba(59,51,44,.06);
+    --shadow:0 1px 3px rgba(59,51,44,.06);
     --font-body:"Source Sans 3","Segoe UI",system-ui,-apple-system,sans-serif;
     --font-head:"Source Serif 4","Iowan Old Style",Georgia,serif;
-    --sp1:6px; --sp2:10px; --sp3:16px; --sp4:24px; --sp5:36px;
   }
   *,*::before,*::after{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:17px;line-height:1.6}
-  .shell{width:min(820px,100%);margin:0 auto;padding:var(--sp4) var(--sp3) var(--sp5)}
-  h1{font-family:var(--font-head);font-size:2rem;color:var(--primary);margin:0 0 6px}
-  .kicker{text-transform:uppercase;letter-spacing:.12em;font-size:.72rem;font-weight:700;color:var(--accent-dark);margin-bottom:var(--sp2)}
-  .sub{color:var(--text-mid);max-width:64ch;margin:0 0 var(--sp3)}
-  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--sp4);box-shadow:var(--shadow-sm);margin-bottom:var(--sp3)}
-  .q{padding:var(--sp3) 0;border-bottom:1px solid var(--border)}
-  .q:last-child{border-bottom:none}
-  .q.sub-q{padding-left:var(--sp3);border-left:3px solid var(--accent-light);background:var(--bg-alt);border-radius:0 var(--radius-sm) var(--radius-sm) 0;margin:6px 0;padding:var(--sp2) var(--sp3)}
-  .qnum{font-weight:700;color:var(--accent-dark);margin-right:6px}
-  .qtext{font-size:.97rem}
-  .qquote{font-style:italic;color:var(--text-mid);font-size:.9rem;margin:4px 0 8px}
-  .seg{display:inline-flex;border:1px solid var(--border);border-radius:var(--radius-pill);overflow:hidden}
-  .seg button{border:none;background:var(--surface);padding:6px 18px;font-size:.85rem;font-weight:600;color:var(--text-mid);cursor:pointer;font-family:inherit}
-  .seg button.yes.on{background:var(--danger);color:#fff}
-  .seg button.no.on{background:var(--success);color:#fff}
-  .verdict{padding:var(--sp3);border-radius:var(--radius-md);font-weight:600;margin-top:var(--sp2)}
-  .verdict.none{background:var(--success-light);color:var(--success);border:1px solid var(--success)}
-  .verdict.low{background:var(--info-light);color:var(--info);border:1px solid var(--info)}
-  .verdict.moderate{background:var(--warning-light);color:var(--warning);border:1px solid var(--warning)}
-  .verdict.high{background:var(--danger-light);color:var(--danger);border:1px solid var(--danger)}
-  .btn{border:none;border-radius:var(--radius-sm);padding:9px 16px;font-weight:600;cursor:pointer;font-family:inherit;background:transparent;color:var(--accent-dark);border:1px solid var(--border);margin-top:var(--sp3)}
-  .pearl{background:var(--warning-light);border-left:3px solid var(--warning);border-radius:var(--radius-sm);padding:var(--sp2) var(--sp3);font-size:.9rem;margin-top:var(--sp3)}
-  .pearl b{color:var(--warning)}
-  .disclaimer{background:var(--bg-alt);border:1px dashed var(--border);border-radius:var(--radius-md);padding:var(--sp3);font-size:.82rem;color:var(--text-mid);margin-top:var(--sp4)}
-  /* Enhancement 2 — C-SSRS walked path */
-  .path{position:relative}
-  .node{display:grid;grid-template-columns:34px 1fr;gap:14px;position:relative;padding:6px 0}
-  .path .node:not(:last-child)::before{content:'';position:absolute;left:16px;top:34px;bottom:-6px;width:3px;background:linear-gradient(var(--danger),var(--danger) 70%,var(--success));opacity:.30}
-  .marker{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:.9rem;z-index:1;font-family:var(--font-head);flex:none}
-  .nodecard{border:1px solid;border-radius:var(--radius-md);padding:10px 13px;min-width:0}
-  .node.dim .nodecard{opacity:.55}
-  .node.dim .marker{color:var(--text-light)}
-  .nodekick{text-transform:uppercase;letter-spacing:.07em;font-size:.62rem;font-weight:700;margin-bottom:3px}
-  .noderow{display:flex;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap}
-  .anspill{color:#fff;border-radius:999px;padding:2px 12px;font-size:.76rem;font-weight:700}
-  .subq6{display:flex;align-items:center;gap:10px;margin-top:10px;padding-top:8px;border-top:1px dashed var(--border);font-size:.9rem;flex-wrap:wrap}
-  .tiernode .marker{font-size:1.15rem}
-  footer{margin-top:var(--sp4);padding-top:var(--sp3);border-top:1px solid var(--border);font-size:.85rem;color:var(--text-light);text-align:center}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:16px;line-height:1.5}
+  .wrap{max-width:780px;margin:0 auto;padding:20px 16px 70px}
+  .eyebrow{font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-dark)}
+  h1{font-family:var(--font-head);color:var(--primary);font-size:1.55rem;margin:.12em 0 .1em;font-weight:600}
+  .sub{color:var(--text-light);font-size:.9rem;max-width:64ch;margin:0 0 6px}
+  .disc{font-size:.78rem;color:var(--text-light);border-top:1px solid var(--border);margin-top:24px;padding-top:12px}
+  a{color:var(--accent-dark)}
 </style>
 </head>
 <body>
-<div id="root"></div>
-<!-- Static (non-React) on purpose: crisis contacts must render even if the app script
-     fails. Build-injected from crisis_resources.json — do not hand-edit numbers here. -->
+<div id="root" class="wrap">
+  <div class="eyebrow">Acute &amp; Safety &middot; Suicide Risk</div>
+  <h1>Columbia C-SSRS</h1>
+  <p class="sub">This page no longer reproduces the C-SSRS screener. Use your institution&rsquo;s
+  current approved form to screen and document.</p>
+
+  <div class="disc" style="margin-top:18px">
+    <p style="margin:0 0 10px"><b>Why the screener was removed.</b> The Columbia Suicide Severity
+    Rating Scale is copyrighted and is licensed and distributed through the Columbia Lighthouse
+    Project. Under this library&rsquo;s reproduction rule (Option A, 2026-08-23), copyrighted
+    instruments are not reproduced here: the six screener questions and their branching logic
+    have been withdrawn (WP-06R-a). Reproducing the screener &mdash; or programming its form
+    &mdash; on a public teaching site is outside what this library ships.</p>
+
+    <p style="margin:0 0 10px"><b>Primary source.</b> Posner K, Brown GK, Stanley B, et al.
+    The Columbia&ndash;Suicide Severity Rating Scale: initial validity and internal consistency
+    findings from three multisite studies with adolescents and adults.
+    <em>Am J Psychiatry.</em> 2011;168(12):1266&ndash;77.
+    <a href="https://pubmed.ncbi.nlm.nih.gov/22193671/" target="_blank" rel="noopener noreferrer">PMID
+    22193671</a>.</p>
+
+    <p style="margin:0 0 10px"><b>Official version and free training.</b> The instrument, its
+    translations, and free training are published by The Columbia Lighthouse Project at
+    <a href="https://cssrs.columbia.edu/" target="_blank" rel="noopener noreferrer">cssrs.columbia.edu</a>.
+    Screen and document from your institution&rsquo;s current approved form and triage protocol
+    at the bedside, not from any teaching page.</p>
+
+    <p style="margin:0">Administration teaching for this instrument &mdash; how the interview is
+    conducted, why ideation and behavior are scored separately, and what a screen does and does
+    not license &mdash; is authored separately and is not yet published here. Any positive screen
+    warrants discussion with your supervising clinician now, per protocol.</p>
+    <br>Joshua Moss, MD | Psychiatrist
+  </div>
+</div>
+<!-- Static (non-React) on purpose: crisis contacts must render even without any app script.
+     Build-injected from crisis_resources.json — do not hand-edit numbers here. -->
 <!-- crisis-block-html -->
-<script>
-var e=React.createElement; var useState=React.useState;
-function Seg(props){
-  return e('span',{className:'seg'},
-    e('button',{className:'yes'+(props.v==='yes'?' on':''),onClick:function(){props.set('yes')}},'Yes'),
-    e('button',{className:'no'+(props.v==='no'?' on':''),onClick:function(){props.set('no')}},'No'));
-}
-function App(){
-  var a=useState({}); var set=a[1]; a=a[0];
-  function S(k){return function(v){var n=Object.assign({},a);n[k]=v;set(n);};}
-  var Q=[
-    {k:'q1',n:'1',cat:'Ideation',t:'Wish to be dead',q:'"Have you wished you were dead or wished you could go to sleep and not wake up?"'},
-    {k:'q2',n:'2',cat:'Ideation',t:'Suicidal thoughts',q:'"Have you actually had any thoughts of killing yourself?"'},
-    /* On the real C-SSRS, items 1–5 are ALL the Severity-of-Ideation subscale (3–5 are its
-       escalation steps); "Intensity of Ideation" is a separate subscale (frequency, duration,
-       controllability, deterrents, reasons) that this screener deliberately does not include.
-       Labeling 3–5 "Intensity" mistaught the instrument. */
-    {k:'q3',n:'3',cat:'Ideation',t:'Thoughts with method (no plan/intent)',q:'"Have you been thinking about how you might do this?"',sub:true},
-    {k:'q4',n:'4',cat:'Ideation',t:'Some intent to act (no specific plan)',q:'"Have you had these thoughts and had some intention of acting on them?"',sub:true},
-    {k:'q5',n:'5',cat:'Ideation',t:'Specific plan and intent',q:'"Have you started to work out the details of how to kill yourself, and do you intend to carry out this plan?"',sub:true},
-  ];
-  function band(){
-    var lvl='none';
-    if(a.q1==='yes'||a.q2==='yes') lvl='low';
-    if(a.q3==='yes') lvl='moderate';
-    if(a.q4==='yes'||a.q5==='yes') lvl='high';
-    /* Fail-SAFE on recency: behavior reported (6=yes) with 6a unanswered used to read as
-       not-recent and quietly settle at moderate. Unknown recency now stays HIGH until 6a is
-       actually answered "No" — a screen must never downgrade on missing information. */
-    var recencyPending=(a.q6==='yes'&&a.q6b!=='yes'&&a.q6b!=='no');
-    if(a.q6==='yes'){ lvl = (a.q6b==='no') ? (lvl==='high'?'high':'moderate') : 'high'; }
-    var txt={
-      none:'No positive responses on this screen. Continue clinical judgment and re-screen as the picture changes.',
-      low:'LOW risk on this screen — passive death wish or non-specific suicidal thoughts. Complete a full clinical assessment and a safety conversation.',
-      moderate:'MODERATE risk — suicidal thoughts with a method considered, or past suicidal behavior. Further evaluation + collaborative safety planning; discuss with your team.',
-      high:'HIGH risk — intent (with or without a plan), or suicidal behavior in the past 3 months. Ensure immediate safety and escalate to your supervising clinician now, per protocol.'
-    };
-    var t=txt[lvl];
-    if(recencyPending){ t='HIGH risk (provisional) — suicidal behavior reported and 6a (recency) is unanswered. Unknown recency is treated as recent: answer 6a, ensure immediate safety, and escalate per protocol.'; }
-    return {lvl:lvl,txt:t};
-  }
-  var b=band();
-  var showSub = a.q2==='yes';
-  return e('div',{className:'shell'},
-    e('div',{className:'kicker'},'Acute & Safety · 04 · Suicide Risk'),
-    e('h1',null,'Columbia C-SSRS — Screener'),
-    e('p',{className:'sub'},'A teaching version of the Columbia Suicide Severity Rating Scale (C-SSRS) screener. Ask in order; questions 3–5 open only if the patient answers Yes to question 2. This builds the habit and the language — use your institution’s official validated C-SSRS at the bedside.'),
-    (function(){
-      var catColor={Ideation:'var(--primary-dark)',Behavior:'var(--info)'};
-      var tierBg={none:'var(--success-light)',low:'var(--info-light)',moderate:'var(--warning-light)',high:'var(--danger-light)'};
-      var tierC={none:'var(--success)',low:'var(--info)',moderate:'var(--warning)',high:'var(--danger)'};
-      var tierLbl={none:'No positive screen',low:'Low risk',moderate:'Moderate risk',high:'High risk'};
-      function nc(ans){ if(ans==='yes')return{mk:'var(--danger)',bg:'var(--danger-light)',bd:'#e6bcb2',p:'var(--danger)'}; if(ans==='no')return{mk:'var(--success)',bg:'var(--success-light)',bd:'#bcd9c9',p:'var(--success)'}; return{mk:'var(--border)',bg:'var(--bg-alt)',bd:'var(--border)',p:null}; }
-      function ansPill(ans){ return ans? e('span',{className:'anspill',style:{background:(ans==='yes'?'var(--danger)':'var(--success)')}}, ans==='yes'?'Yes':'No') : null; }
-      var rows=[];
-      Q.forEach(function(q){
-        var active = !q.sub || showSub; var ans=a[q.k];
-        var c = active? nc(ans) : nc(null);
-        rows.push(e('div',{className:'node'+(active?'':' dim'),key:q.k},
-          e('div',{className:'marker',style:{background:c.mk}}, q.n),
-          e('div',{className:'nodecard',style:{background:c.bg,borderColor:c.bd}},
-            e('div',{className:'nodekick',style:{color:catColor[q.cat]}}, q.cat),
-            e('div',{className:'qtext'}, q.t),
-            e('div',{className:'qquote'}, active? q.q : 'Opens only if Q2 is answered “Yes”.'),
-            active? e('div',{className:'noderow'}, e(Seg,{v:ans,set:S(q.k)}), ansPill(ans)) : null)
-        ));
-      });
-      var c6=nc(a.q6);
-      rows.push(e('div',{className:'node',key:'q6'},
-        e('div',{className:'marker',style:{background:c6.mk}}, '6'),
-        e('div',{className:'nodecard',style:{background:c6.bg,borderColor:c6.bd}},
-          e('div',{className:'nodekick',style:{color:catColor.Behavior}}, 'Behavior (lifetime)'),
-          e('div',{className:'qtext'}, 'Suicidal behavior'),
-          e('div',{className:'qquote'}, '"Have you ever done anything, started to do anything, or prepared to do anything to end your life?"'),
-          e('div',{className:'noderow'}, e(Seg,{v:a.q6,set:S('q6')}), ansPill(a.q6)),
-          a.q6==='yes'? e('div',{className:'subq6'}, e('span',null,'6a. Within the past 3 months?'), e(Seg,{v:a.q6b,set:S('q6b')}), ansPill(a.q6b)) : null)
-      ));
-      rows.push(e('div',{className:'node tiernode',key:'tier'},
-        e('div',{className:'marker',style:{background:tierC[b.lvl]}}, '!'),
-        e('div',{className:'nodecard',style:{background:tierBg[b.lvl],borderColor:tierC[b.lvl]},'aria-live':'polite','aria-atomic':true},
-          e('div',{className:'nodekick',style:{color:tierC[b.lvl]}}, 'Triage · '+tierLbl[b.lvl]),
-          e('div',{style:{fontWeight:600}}, b.txt))
-      ));
-      return e('div',{className:'card path'}, rows);
-    })(),
-    e('div',{className:'card'},
-      e('div',{className:'pearl'}, e('b',null,'Always: '),'any positive screen warrants discussion with your supervising clinician and reducing access to lethal means. A screen guides — it never replaces — clinical judgment.'),
-      e('button',{className:'btn',onClick:function(){set({})}},'Reset')
-    ),
-    e('div',{className:'disclaimer'},'Educational teaching version of the C-SSRS Screener (Posner et al., 2011; The Columbia Lighthouse Project). Use your institution’s official, validated C-SSRS form and triage protocol for actual patient care. This tool stores nothing and is for fictional/practice use only — no protected health information. Not a substitute for clinical assessment or supervision.'),
-    e('footer',null,'Columbia C-SSRS Screener — Teaching Tool · Psychiatry Clerkship Library · Joshua Moss, MD | Psychiatrist')
-  );
-}
-ReactDOM.createRoot(document.getElementById('root')).render(e(App));
-</script>
 </body>
 </html>

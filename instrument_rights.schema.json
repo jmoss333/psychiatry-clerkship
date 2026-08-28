@@ -1,0 +1,76 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "instrument_rights",
+  "type": "object",
+  "required": ["schemaVersion", "instruments"],
+  "additionalProperties": false,
+  "properties": {
+    "_note": { "type": "string" },
+    "schemaVersion": { "const": 1 },
+    "instruments": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "instrument", "status", "decisionRef", "signatures", "pages"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "instrument": { "type": "string", "minLength": 3 },
+          "status": {
+            "enum": ["retired", "restricted", "flagged-interim", "unresolved", "provisional", "cleared"]
+          },
+          "decisionRef": {
+            "type": "string",
+            "minLength": 24,
+            "description": "The plan-doc anchor that recorded this disposition. A status without its decision record is not a disposition."
+          },
+          "signatures": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 12,
+              "description": "Verbatim fragment of reproduction that actually shipped. Never plain bedside language — short or generic fragments block legitimate clinical prose."
+            }
+          },
+          "pages": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["file"],
+              "additionalProperties": false,
+              "properties": {
+                "file": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*\\.html$" },
+                "requiredTitle": { "type": "string", "minLength": 3 },
+                "requiredDisclaimerType": { "type": "string", "minLength": 3 },
+                "requireNotReproducedStatement": { "type": "boolean" },
+                "requireNoScript": { "type": "boolean" }
+              }
+            }
+          },
+          "interimWaiver": {
+            "type": "object",
+            "required": ["grantedBy", "recordedIn", "scope", "files"],
+            "additionalProperties": false,
+            "properties": {
+              "grantedBy": { "type": "string", "minLength": 3 },
+              "recordedIn": { "type": "string", "minLength": 24 },
+              "scope": { "type": "string", "minLength": 12 },
+              "files": {
+                "type": "array",
+                "minItems": 1,
+                "items": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*\\.html$" }
+              }
+            }
+          }
+        },
+        "allOf": [
+          {
+            "if": { "properties": { "status": { "const": "flagged-interim" } } },
+            "then": { "required": ["interimWaiver"] }
+          }
+        ]
+      }
+    }
+  }
+}

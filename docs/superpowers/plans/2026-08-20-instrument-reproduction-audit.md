@@ -61,7 +61,7 @@ ladders** — that is what "drop-in content spec" means. Under the new rule:
 >
 > | Instrument | Standing under Option A |
 > |---|---|
-> | **C-SSRS** | **Retires** — copyrighted, licensed by the Columbia Lighthouse Project, reproduced verbatim on two public sites. → **WP-06R-a** |
+> | **C-SSRS** | **Retires** — copyrighted, licensed by the Columbia Lighthouse Project, reproduced verbatim on two public sites. → **WP-06R-a**. **Stage 1 executed 2026-08-27:** all six stems, the branching logic, and the triage engine removed; `cssrs.html` now ships as a rights stub (attribution, PMID 22193671, cssrs.columbia.edu, crisis block kept) on the `bfcrs.html` #400 pattern, guarded by `tests/cssrs-retirement.test.mjs`. Stage 2 — the authored administration teaching — remains author-gated. |
 > | **Stanley–Brown** | Never programmed. → **WP-06R-b** builds a rehearsal tool that reproduces nothing |
 > | **PHQ-9 / GAD-7** | Provisionally stay. Pfizer's standard form footer states no permission is required to reproduce, translate, display or distribute — **this must be verified against the current form before it is relied on.** → **WP-02c** |
 > | **BFCRS** | **RESTRICTED — resolved 2026-08-23 (WP-02d).** Published by URMC under site-wide Web Terms of Use: contents *"may not be distributed, modified, reproduced, or used, in whole or in part without the prior written consent of the University of Rochester Medical Center"*, with use granted only for *"personal non-commercial use."* No instrument-specific licence exists on any URMC BFCRS page or PDF, and absence of a copyright notice is not a licence (works published after 1 March 1989 need none). **All 23 items and anchor ladders removed from `bfcrs.html`; WP-22 blocked on written permission, not on an open question.** |
@@ -103,3 +103,18 @@ retirement list. Deliberately **not** built yet, for one reason only: encoding t
 a gate is worse than no gate. The second reason has expired — **amendment A3 was retired in #396**
 (Actions billing restored 2026-08-22), so when this gate is built it should ship **hard**, not
 warn-only.
+
+> **Built 2026-08-27 — shipped hard.** `instrument_rights.json` (root registry, schema-paired,
+> every entry citing its decision record) + `check-static-site.mjs` §11 via
+> `instrument-rights-gate.mjs`, tested by `tests/instrument-rights-gate.test.mjs`. The table
+> above is now executable: retired/restricted signatures hard-fail any build; the COWS interim
+> ("flagged, not reverted") is encoded as a **file-scoped waiver** citing this document — remove
+> the waiver while the anchors ship and the build fails; PHQ-9/GAD-7 is encoded `provisional`,
+> confined to `screeners.html`, and arms automatically if WP-02c resolves against it. Signature
+> discipline, verified empirically before seeding: signatures detect the reproduction that
+> shipped, never plain bedside language ("thoughts of killing yourself" lives legitimately in
+> `mse.html` and the SP pack and is deliberately NOT a signature), and scan scope is
+> learner-rendered HTML only. Status changes remain governance acts: change
+> `instrument_rights.json` only with the decision record that authorized the change. The dormant
+> `validated-instrument-line` dose-waiver context for `bfcrs.html` was retired in the same
+> change (it waived nothing since #400 but would still have validated a smuggled dose line).

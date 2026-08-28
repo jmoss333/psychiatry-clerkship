@@ -1,0 +1,99 @@
+{
+  "_note": "Machine-readable instrument dispositions — the executable form of the reproduction rule (CLAUDE.md; Option A, 2026-08-23). Seeded from the decision table in docs/superpowers/plans/2026-08-20-instrument-reproduction-audit.md. Enforced hard at build time by check-static-site.mjs §11 via instrument-rights-gate.mjs. Discipline: a status here is a governance decision — change it only with the decisionRef that recorded the change, never by agent inference. Signatures detect the reproduction that shipped, never plain bedside language ('thoughts of killing yourself' is legitimate clinical phrasing in mse.html and the SP pack and must never become a signature); scan scope is learner-rendered HTML only (matcher vocabulary in *.pack.json is not reproduction); waivers and provisional standings are file-scoped. This file is a build input and must never itself be shipped to either site.",
+  "schemaVersion": 1,
+  "instruments": [
+    {
+      "id": "cssrs",
+      "instrument": "Columbia-Suicide Severity Rating Scale (C-SSRS)",
+      "status": "retired",
+      "decisionRef": "docs/superpowers/plans/2026-08-20-instrument-reproduction-audit.md — Option A resolution (2026-08-23): C-SSRS retires, copyrighted and licensed by the Columbia Lighthouse Project (WP-06R-a); stage 1 shipped in PR #411 (2026-08-27)",
+      "signatures": [
+        "wished you were dead",
+        "go to sleep and not wake up",
+        "thinking about how you might do this",
+        "intention of acting on them",
+        "work out the details of how to kill yourself",
+        "prepared to do anything to end your life"
+      ],
+      "pages": [
+        {
+          "file": "cssrs.html",
+          "requiredTitle": "Columbia C-SSRS — Official Form & Training",
+          "requiredDisclaimerType": "instrument-not-reproduced",
+          "requireNotReproducedStatement": true
+        }
+      ]
+    },
+    {
+      "id": "bfcrs",
+      "instrument": "Bush-Francis Catatonia Rating Scale (BFCRS)",
+      "status": "restricted",
+      "decisionRef": "docs/superpowers/plans/2026-08-20-instrument-reproduction-audit.md — WP-02d resolved 2026-08-23: RESTRICTED under URMC site-wide Web Terms of Use (prior written consent required); all 23 items and anchor ladders removed in PR #400; WP-22 blocked on written permission. Presentation cleanup (retitle to reference framing, dead spotlight-embed removal) authorized by the author 2026-08-27",
+      "signatures": [
+        "Frantic, ceaseless catatonic excitement",
+        "Stuporous; non-reactive even to painful stimuli",
+        "Verbal unresponsiveness (not due to aphasia)",
+        "Speaks fewer than ~20 words over 5 minutes",
+        "Bizarre posture, or any posture held > 15 minutes",
+        "Fixed gaze, reduced visual scanning and blinking"
+      ],
+      "pages": [
+        {
+          "file": "bfcrs.html",
+          "requiredTitle": "Bush-Francis Catatonia Scale (BFCRS) — Official Form & Training",
+          "requiredDisclaimerType": "instrument-not-reproduced",
+          "requireNotReproducedStatement": true
+        }
+      ]
+    },
+    {
+      "id": "cows",
+      "instrument": "Clinical Opiate Withdrawal Scale (COWS)",
+      "status": "flagged-interim",
+      "decisionRef": "docs/superpowers/plans/2026-08-20-instrument-reproduction-audit.md — WP-02d (2026-08-23): permission real, scope wrong — 'This version may be copied and used clinically' licenses clinical copying, not plainly a public educational website; the 45 verbatim anchors (PR #375) are flagged, not reverted, pending the author's call. Full evidence: DECISION_BRIEF_2026-08-23.md §2",
+      "interimWaiver": {
+        "grantedBy": "Joshua Moss, MD (clinical author-of-record)",
+        "recordedIn": "docs/superpowers/plans/2026-08-20-instrument-reproduction-audit.md — COWS row: 'Flagged, not reverted, pending the author's call' (2026-08-23)",
+        "scope": "The verbatim COWS anchors in withdrawal.html remain published while publisher scope is clarified (Taylor & Francis letter, decision queue item 5)",
+        "files": ["withdrawal.html"]
+      },
+      "signatures": [
+        "sweat streaming off face",
+        "unable to sit still for more than a few seconds",
+        "pupils so dilated that only the rim of the iris is visible",
+        "beads of sweat on brow or face",
+        "frequent shifting or extraneous movements of legs/arms"
+      ],
+      "pages": [{ "file": "withdrawal.html" }]
+    },
+    {
+      "id": "ciwa-ar",
+      "instrument": "Clinical Institute Withdrawal Assessment for Alcohol, revised (CIWA-Ar)",
+      "status": "unresolved",
+      "decisionRef": "docs/superpowers/plans/2026-08-20-instrument-reproduction-audit.md — WP-02d (2026-08-23): unresolved — every located 'may be reproduced freely' notice is a reproducer's addition in differing wordings; the 1989 article's own text is unverified (closed access); one ILL request settles it. withdrawal.html ships abbreviated in-house descriptors, not the published anchor ladder, so no verbatim signatures exist to guard",
+      "signatures": [],
+      "pages": [{ "file": "withdrawal.html" }]
+    },
+    {
+      "id": "phq9-gad7",
+      "instrument": "PHQ-9 and GAD-7",
+      "status": "provisional",
+      "decisionRef": "docs/superpowers/plans/2026-08-20-instrument-reproduction-audit.md — Option A resolution (2026-08-23): provisionally stay — Pfizer's standard form footer states no permission is required, but this must be verified against the current form before it is relied on (WP-02c, open)",
+      "signatures": [
+        "little interest or pleasure in doing things",
+        "feeling down, depressed, or hopeless",
+        "thoughts that you would be better off dead",
+        "not being able to stop or control worrying"
+      ],
+      "pages": [{ "file": "screeners.html" }]
+    },
+    {
+      "id": "stanley-brown",
+      "instrument": "Stanley-Brown Safety Plan",
+      "status": "restricted",
+      "decisionRef": "docs/superpowers/plans/2026-08-20-instrument-reproduction-audit.md — Option A resolution (2026-08-23): never programmed — the instrument's own terms name 'programming the form' as reproduction; WP-06R-b builds a rehearsal tool that reproduces nothing. No content ever shipped, so no signatures exist; adding its text here as signatures would itself reproduce it",
+      "signatures": [],
+      "pages": []
+    }
+  ]
+}
