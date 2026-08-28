@@ -102,6 +102,48 @@ export function appendSessionAction(actions, action) {
   return [action, ...(Array.isArray(actions) ? actions : [])];
 }
 
+// Load-time base-lag alarm (#415 aftermath): the pure model behind the shell's
+// branch-sync banner. The server probe (describeBranchSync in attest.mjs) reports
+// how the attestation branch compares to the base; this decides what, if anything,
+// faculty must be told before they attest into a stale queue. The August 2026
+// freeze — three attestations stranded, base nine commits behind, four days
+// silent — is the state this exists to make impossible to miss. Kept pure and
+// exported so the wire format and its presentation are pinned together in tests.
+export function branchSyncNotice(branchSync) {
+  if (!branchSync || typeof branchSync !== 'object') return null;
+  if (branchSync.error) {
+    return {
+      tone: 'muted',
+      href: null,
+      message: 'Branch-sync status is unavailable for this load — staleness of the '
+        + 'queue below cannot be ruled out.',
+    };
+  }
+  if (!branchSync.alarmed || !Array.isArray(branchSync.reasons) || !branchSync.reasons.length) {
+    return null;
+  }
+  const ahead = Number(branchSync.aheadBy) || 0;
+  const behind = Number(branchSync.behindBy) || 0;
+  const parts = [
+    `${ahead} unmerged attestation${ahead === 1 ? '' : 's'} `
+      + `${ahead === 1 ? 'is' : 'are'} waiting on the attestation branch.`,
+  ];
+  if (branchSync.reasons.includes('stranded-no-pr')) {
+    parts.push('No rolling pull request is open — they have no route to main.');
+  }
+  if (branchSync.reasons.includes('base-lag')) {
+    parts.push(`Its base is ${behind} commit${behind === 1 ? '' : 's'} behind main, `
+      + 'so the queue below may be stale.');
+  }
+  parts.push('Merge the rolling pull request (merge commit, not squash) before attesting further.');
+  let href = null;
+  try {
+    const url = new URL(String(branchSync.rollingPr));
+    if (url.protocol === 'https:') href = url.href;
+  } catch { /* no link */ }
+  return { tone: 'alert', href, message: parts.join(' ') };
+}
+
 function parseDelimited(value) {
   return [...new Set(text(value)
     .split(/[\n,]/)
@@ -1996,6 +2038,22 @@ export function startFacultyConsole({
           }, ['Lock console']),
         ]),
       ]),
+      (() => {
+        const syncNotice = branchSyncNotice(state.server?.branchSync);
+        if (!syncNotice) return null;
+        return el('div', {
+          id: 'branch-sync-notice',
+          class: `session-notice branch-sync ${syncNotice.tone}`,
+          role: syncNotice.tone === 'alert' ? 'alert' : null,
+        }, [
+          el('p', {}, [syncNotice.message]),
+          syncNotice.href ? el('a', {
+            href: syncNotice.href,
+            target: '_blank',
+            rel: 'noopener noreferrer',
+          }, ['Open the rolling pull request']) : null,
+        ]);
+      })(),
       el('section', { class: 'reviewer-strip', 'aria-label': 'Reviewer context' }, [
         el('div', { class: 'field' }, [
           el('p', { class: 'reviewer-heading' }, ['Reviewer']),
