@@ -103,3 +103,18 @@ retirement list. Deliberately **not** built yet, for one reason only: encoding t
 a gate is worse than no gate. The second reason has expired — **amendment A3 was retired in #396**
 (Actions billing restored 2026-08-22), so when this gate is built it should ship **hard**, not
 warn-only.
+
+> **Built 2026-08-27 — shipped hard.** `instrument_rights.json` (root registry, schema-paired,
+> every entry citing its decision record) + `check-static-site.mjs` §11 via
+> `instrument-rights-gate.mjs`, tested by `tests/instrument-rights-gate.test.mjs`. The table
+> above is now executable: retired/restricted signatures hard-fail any build; the COWS interim
+> ("flagged, not reverted") is encoded as a **file-scoped waiver** citing this document — remove
+> the waiver while the anchors ship and the build fails; PHQ-9/GAD-7 is encoded `provisional`,
+> confined to `screeners.html`, and arms automatically if WP-02c resolves against it. Signature
+> discipline, verified empirically before seeding: signatures detect the reproduction that
+> shipped, never plain bedside language ("thoughts of killing yourself" lives legitimately in
+> `mse.html` and the SP pack and is deliberately NOT a signature), and scan scope is
+> learner-rendered HTML only. Status changes remain governance acts: change
+> `instrument_rights.json` only with the decision record that authorized the change. The dormant
+> `validated-instrument-line` dose-waiver context for `bfcrs.html` was retired in the same
+> change (it waived nothing since #400 but would still have validated a smuggled dose line).

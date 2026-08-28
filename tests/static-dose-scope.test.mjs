@@ -104,3 +104,16 @@ test('legacy whole-file QA-ALLOW-DOSE text cannot waive dose findings', () => {
   );
   assert.equal(doseFindings(result.output).length, 1, result.output);
 });
+
+test('the retired validated-instrument-line context no longer waives a bfcrs dose line', () => {
+  // The context was retired 2026-08-27 with the instrument-rights gate: #400 removed the
+  // BFCRS reproduction it waived, so the surviving context could only ever have validated a
+  // NEW dose line smuggled back under its sentinels. Both the sentinel and the dose must fail.
+  const result = runTool(
+    'bfcrs.html',
+    '/* QA-ALLOW-DOSE-START: validated-instrument-line */\nvar challenge="lorazepam 2 mg IV";\n/* QA-ALLOW-DOSE-END: validated-instrument-line */',
+  );
+  assert.notEqual(result.status, 0, result.output);
+  assert.equal(doseFindings(result.output).length, 1, result.output);
+  assert.match(result.output, /invalid dose-waiver sentinel/i);
+});
