@@ -377,7 +377,7 @@ test('Dana credits every must-match screening phrasing to some safety intent', (
 // habitability questions ("is that apartment not worth living IN?") are not
 // suicide screens, but the widened WP-B stems matched them — which scored c_si
 // (critical on Dana and Marcus) and unlocked g_si_mixed at rapport 0 on Marcus.
-// Decision provenance: D8 + D9 in docs/superpowers/plans/2026-08-24-faculty-decisions.md.
+// Decision provenance: D9 + D10 in docs/superpowers/plans/2026-08-24-faculty-decisions.md.
 // Only si_direct / si_euphemism can credit c_si or unlock the si gates, so these
 // assertions filter to those two ids: Dana's si_plan ("how (you )?(would|might)")
 // legitimately brushes one probe, is gated behind si_active, and is tracked as
@@ -396,7 +396,7 @@ const METHOD_CLAUSE_SCREENS = [
   'Have you had thoughts of harming yourself by overdosing?',
 ];
 
-test('consequence and habitability questions never credit a suicide screen (D8/D9)', () => {
+test('consequence and habitability questions never credit a suicide screen (D9/D10)', () => {
   for (const caseDef of pack.cases) {
     for (const phrasing of NON_SCREEN_PROBES) {
       const credited = matchingSafetyIntentIds(caseDef, phrasing)
@@ -410,7 +410,7 @@ test('consequence and habitability questions never credit a suicide screen (D8/D
   }
 });
 
-test('thought-framed screens with a method clause still credit a safety intent (D9)', () => {
+test('thought-framed screens with a method clause still credit a safety intent (D10)', () => {
   for (const caseDef of pack.cases) {
     for (const phrasing of METHOD_CLAUSE_SCREENS) {
       const credited = matchingSafetyIntentIds(caseDef, phrasing)
