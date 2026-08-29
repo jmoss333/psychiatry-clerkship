@@ -33,7 +33,10 @@
    (CLASS-INVENTORY section 1) -- one class, two call sites, rather than a second key-hint style. */
 
 function fdCollink(item){
-  var dotCls=(item.kind==='tool')?'fd-collink__dot is-tool':'fd-collink__dot';
+  /* A rights reference keeps kind 'tool' (it loads from /tools/) but must not wear the tool dot:
+     the dot is the Library's "this is an interactive tool" signal, and these pages reproduce
+     nothing (Fresh Eyes Audit A3). */
+  var dotCls=(item.kind==='tool'&&!item.rights)?'fd-collink__dot is-tool':'fd-collink__dot';
   return '<button type="button" class="fd-collink" data-fd-open="'+fdEsc(item.ref)+'">'+
     '<span class="'+dotCls+'"></span>'+
     '<span class="fd-collink__label">'+fdEsc(item.title)+'</span>'+

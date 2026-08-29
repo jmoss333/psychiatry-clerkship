@@ -89,13 +89,21 @@ function fdRow(it, idx, doneMap, compact){
   var titleCls=on?'fd-row__title is-done':'fd-row__title';
   var checkCls=on?'fd-check is-done':'fd-check';
   var typeCls=(it.kind==='tool')?'fd-chip is-tool':'fd-chip';
-  var typeLabel=(it.kind==='tool')?'tool':'read';
+  /* A rights reference reads "reference": the page teaches administration and points at the
+     official form. Calling it a tool is what sent a learner reaching for a scorer to a removal
+     notice. The chip is the only thing that changes -- kind stays 'tool' so the page still loads
+     from /tools/. */
+  var typeLabel=it.rights?'reference':((it.kind==='tool')?'tool':'read');
   var minLabel=(it.kind!=='tool'&&typeof it.minutes==='number')?(it.minutes+' min'):'';
   var rowCls=compact?'fd-row is-compact':'fd-row';
   var editionMeta=fdEditionCoreMetaMarkup(it);
+  /* The name carries the item and tracks the state, so nine toggles in a week list are nine
+     distinct announcements ("Mark done: Interview & MSE") rather than "Mark done" nine times,
+     and the name says what the NEXT press does rather than restating aria-pressed. */
+  var toggleName=(on?'Mark undone: ':'Mark done: ')+it.title;
   return '<div class="'+rowCls+'" style="animation-delay:'+(idx*35)+'ms">'+
     '<button type="button" class="'+checkCls+'" data-fd-toggle="'+fdEsc(it.ref)+'" '+
-      'title="Mark done" aria-pressed="'+(on?'true':'false')+'">'+
+      'title="'+fdEsc(toggleName)+'" aria-pressed="'+(on?'true':'false')+'">'+
       '<span aria-hidden="true">✓</span></button>'+
     '<button type="button" class="fd-row__open" data-fd-open="'+fdEsc(it.ref)+'">'+
       '<span class="fd-row__content"><span class="'+titleCls+'">'+fdEsc(it.title)+'</span>'+editionMeta+'</span>'+
@@ -201,15 +209,17 @@ function fdProgressAccess(){
    tools by an id this repo's data does not carry, so this is a re-derivation from the join index
    rather than a port of that exact list -- CLASS-INVENTORY's ×5 cap is what is actually
    contractual here, not the selection order past "this week's tools first". */
+/* Rights references are excluded: Quick Tools is the reach-for-it-mid-shift rail, and a page
+   whose purpose is to say the instrument is not reproduced here is the opposite of that. */
 function fdQuickTools(index, weekItems){
   var out=[], seen={}, i, ref;
   for(i=0;i<weekItems.length;i++){
-    if(weekItems[i].kind==='tool'&&!seen[weekItems[i].ref]){ out.push(weekItems[i]); seen[weekItems[i].ref]=true; }
+    if(weekItems[i].kind==='tool'&&!weekItems[i].rights&&!seen[weekItems[i].ref]){ out.push(weekItems[i]); seen[weekItems[i].ref]=true; }
   }
   if(out.length<5){
     var all=[];
     for(ref in index.byRef){
-      if(index.byRef[ref].kind==='tool') all.push(index.byRef[ref]);
+      if(index.byRef[ref].kind==='tool'&&!index.byRef[ref].rights) all.push(index.byRef[ref]);
     }
     all.sort(function(a,b){ return a.ref<b.ref?-1:(a.ref>b.ref?1:0); });
     for(i=0;i<all.length&&out.length<5;i++){
@@ -227,7 +237,10 @@ function fdToday(index, state){
   var dayName=FD_TODAY_DAYNAMES[new Date(nowMs).getDay()];
   var roleShort=st.role||'there';
   var period=hour<12?'Morning':(hour<18?'Afternoon':'Evening');
-  var greeting=period+', '+fdEsc(roleShort)+' —';
+  /* The trailing em dash is typographic lead-in to the line below, not content: a screen reader
+     announced "Evening, Core rotation, dash". Same treatment as the ✓ glyph in fdRow -- the
+     character stays exactly where it was and becomes decoration. */
+  var greeting=period+', '+fdEsc(roleShort)+' <span aria-hidden="true">—</span>';
 
   var wk=(typeof st.week==='number'&&!isNaN(st.week))?fdFindWeek(idx, st.week):null;
   var hasWeek=!!wk;

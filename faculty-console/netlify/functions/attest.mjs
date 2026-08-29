@@ -20,6 +20,7 @@ const DEFAULT_STUDENT_SITE = 'https://une-ms3-psychiatry.netlify.app';
 const DEFAULT_ATTESTER = 'Joshua Moss, MD';
 const DEFAULT_ATTESTER_EMAIL = 'faculty@clerkship.local';
 
+const DEFAULT_BASE_LAG_ALARM = 3;
 const REVIEWED_PATH = '13_Faculty_Resources/reviewed.json';
 const MANIFEST_PATH = '13_Faculty_Resources/_automation/site_build/site_manifest.json';
 const QBANK_PATH = 'question_bank.json';
@@ -223,7 +224,19 @@ function requireServerSettings(env, fetchImpl, originPolicy) {
   // Equal branches mean "write straight to the base" — nothing to sync, no PR to
   // keep. That is the pre-2026-08 behaviour, and how the handler tests run.
   const isolated = branch !== baseBranch;
-  return { token, key, repo, branch, baseBranch, isolated, student, attesterEmail, attester };
+
+  // Base-lag alarm threshold (#415 aftermath): the load-time probe alarms when
+  // unmerged attestations sit on a branch whose base lags the base branch by at
+  // least this many commits. The August 2026 freeze reached nine behind, three
+  // ahead, four days silent.
+  const configuredLag = Number.parseInt(readEnv(env, 'ATTEST_BASE_LAG_ALARM').trim(), 10);
+  const lagAlarmThreshold = Number.isInteger(configuredLag) && configuredLag >= 1
+    ? configuredLag : DEFAULT_BASE_LAG_ALARM;
+
+  return {
+    token, key, repo, branch, baseBranch, isolated, student, attesterEmail, attester,
+    lagAlarmThreshold,
+  };
 }
 
 function githubStatusError(status) {
@@ -512,8 +525,8 @@ function createRepositoryGateway({ settings, fetchImpl }) {
    * Housekeeping: a failure here must never lose an attestation that already
    * committed, so callers treat a thrown error as non-fatal.
    */
-  async function ensureRollingPullRequest() {
-    if (!settings.isolated) return null;
+  /** Read-only half of the rolling-PR housekeeping: the open PR's URL, or null. */
+  async function findRollingPullRequest() {
     const owner = settings.repo.split('/')[0];
     const query = `head=${encodeURIComponent(`${owner}:${settings.branch}`)}`
       + `&base=${encodeURIComponent(settings.baseBranch)}&state=open`;
@@ -530,9 +543,69 @@ function createRepositoryGateway({ settings, fetchImpl }) {
       throw new GithubError('github_response_invalid', 502);
     }
     if (!Array.isArray(open)) throw new GithubError('github_response_invalid', 502);
-    if (open.length) {
-      return githubHttpsUrl(open[0]?.html_url);
+    return open.length ? githubHttpsUrl(open[0]?.html_url) : null;
+  }
+
+  /**
+   * Read-only probe behind the load-time base-lag alarm. The August 2026 freeze
+   * was silent precisely because nothing looked at this state between writes:
+   * three attestations sat on the branch with no rolling PR while the base fell
+   * nine commits behind, for four days (#415 landed them). This reports the
+   * comparison and whether it deserves an alarm — and, being a probe, it never
+   * touches a ref and never opens a PR.
+   */
+  async function describeBranchSync() {
+    if (!settings.isolated) return { isolated: false, alarmed: false, reasons: [] };
+    const threshold = settings.lagAlarmThreshold;
+    const baseHead = await headOf(settings.baseBranch);
+
+    let branchHead;
+    try {
+      branchHead = await headOf(settings.branch);
+    } catch (error) {
+      if (!(error instanceof GithubError && error.notFound)) throw error;
+      // No branch yet: the next write creates it from the base. Nothing to alarm.
+      return {
+        isolated: true, branchMissing: true, aheadBy: 0, behindBy: 0,
+        rollingPr: null, threshold, reasons: [], alarmed: false,
+      };
     }
+
+    let aheadBy = 0;
+    let behindBy = 0;
+    if (branchHead !== baseHead) {
+      const compareResponse = await githubRequest(
+        fetchImpl,
+        `${GITHUB_API}/repos/${settings.repo}/compare/`
+          + `${encodeURIComponent(settings.baseBranch)}...${encodeURIComponent(settings.branch)}`,
+        { headers: githubHeaders(settings.token) },
+      );
+      const comparison = await githubJson(compareResponse);
+      if (typeof comparison.ahead_by !== 'number' || typeof comparison.behind_by !== 'number') {
+        throw new GithubError('github_response_invalid', 502);
+      }
+      aheadBy = comparison.ahead_by;
+      behindBy = comparison.behind_by;
+    }
+
+    // Only an AHEAD branch can strand: a merely-behind branch fast-forwards on
+    // the next write. Two alarm signatures, both requiring unmerged attestations:
+    // no route to main at all, or a base lag deep enough that the queue below is
+    // meaningfully stale (#380's failure mode).
+    const rollingPr = aheadBy > 0 ? await findRollingPullRequest() : null;
+    const reasons = [];
+    if (aheadBy > 0 && !rollingPr) reasons.push('stranded-no-pr');
+    if (aheadBy > 0 && behindBy >= threshold) reasons.push('base-lag');
+    return {
+      isolated: true, aheadBy, behindBy, rollingPr, threshold,
+      reasons, alarmed: reasons.length > 0,
+    };
+  }
+
+  async function ensureRollingPullRequest() {
+    if (!settings.isolated) return null;
+    const existing = await findRollingPullRequest();
+    if (existing) return existing;
 
     const createResponse = await githubRequest(
       fetchImpl,
@@ -683,7 +756,10 @@ function createRepositoryGateway({ settings, fetchImpl }) {
     return { commit, revision };
   }
 
-  return { read, write, head, headOf, writeAtHead, ensureBranchFresh, ensureRollingPullRequest };
+  return {
+    read, write, head, headOf, writeAtHead,
+    ensureBranchFresh, ensureRollingPullRequest, describeBranchSync,
+  };
 }
 
 function invalidRepositoryFile() {
@@ -1198,8 +1274,18 @@ export function createHandler({ env = process.env, fetchImpl = globalThis.fetch 
 
       const repository = createRepositoryGateway({ settings, fetchImpl });
       switch (request.method.toUpperCase()) {
-        case 'GET':
-          return jsonResponse(context, 200, await buildState(repository, settings));
+        case 'GET': {
+          const state = await buildState(repository, settings);
+          // The alarm is advisory; the queue is the payload. A GitHub hiccup on
+          // the probe must never turn a working console into a failed load.
+          let branchSync;
+          try {
+            branchSync = await repository.describeBranchSync();
+          } catch {
+            branchSync = { error: true };
+          }
+          return jsonResponse(context, 200, { ...state, branchSync });
+        }
         case 'POST': {
           const body = await readPostBody(request);
           return jsonResponse(context, 200, await handlePost({

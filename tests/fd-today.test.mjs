@@ -105,9 +105,37 @@ test('the greeting varies by time of day, derived from state.nowMs', () => {
   const morning = new Date(2026, 7, 10, 9, 0, 0).getTime();
   const afternoon = new Date(2026, 7, 10, 14, 0, 0).getTime();
   const evening = new Date(2026, 7, 10, 20, 0, 0).getTime();
-  assert.match(F.fdToday(IDX, s({ nowMs: morning })), /Morning, there —/);
-  assert.match(F.fdToday(IDX, s({ nowMs: afternoon })), /Afternoon, there —/);
-  assert.match(F.fdToday(IDX, s({ nowMs: evening })), /Evening, there —/);
+  assert.match(F.fdToday(IDX, s({ nowMs: morning })), /Morning, there /);
+  assert.match(F.fdToday(IDX, s({ nowMs: afternoon })), /Afternoon, there /);
+  assert.match(F.fdToday(IDX, s({ nowMs: evening })), /Evening, there /);
+});
+
+// ---- accessibility (Fresh Eyes Audit A2/A6) --------------------------------------------------
+
+test('the greeting’s trailing dash is decoration, not something a screen reader announces', () => {
+  // "Evening, Core rotation —" left a dangling em dash in the accessible name. Same treatment as
+  // the ✓ glyph in fdRow: the character stays visually and becomes aria-hidden.
+  const html = F.fdToday(IDX, s({}));
+  assert.match(html, /<span aria-hidden="true">—<\/span>/);
+  assert.doesNotMatch(html, /<h1 class="fd-today__h1">[^<]*—/);
+});
+
+test('each done-toggle carries its item title in the accessible name', () => {
+  // Nine rows all named "Mark done" told a screen-reader user nothing about WHICH item.
+  const html = F.fdToday(IDX, s({}));
+  const names = [...html.matchAll(/title="(Mark (?:done|undone): [^"]*)"/g)].map((m) => m[1]);
+  assert.ok(names.length > 1, `expected several toggles, got ${names.length}`);
+  assert.equal(new Set(names).size, names.length, `duplicate toggle names: ${names.join(' | ')}`);
+});
+
+test('the toggle name tracks aria-pressed so it says what the press will do', () => {
+  const html = F.fdToday(IDX, s({ done: { 'a.md': true } }));
+  const pairs = [...html.matchAll(/title="(Mark [^"]+)" aria-pressed="(true|false)"/g)];
+  assert.ok(pairs.length > 1);
+  for (const [, name, pressed] of pairs) {
+    assert.ok(name.startsWith(pressed === 'true' ? 'Mark undone:' : 'Mark done:'),
+      `"${name}" contradicts aria-pressed="${pressed}"`);
+  }
 });
 
 test('the week-complete kicker appears only at 100%', () => {
@@ -160,8 +188,8 @@ test('an undone item carries neither', () => {
 
 test('the row ✓ is hidden from assistive tech and the state is carried by aria-pressed', () => {
   const html = F.fdToday(IDX, s({ done: { 'a.md': true } }));
-  assert.match(html, /class="fd-check is-done" data-fd-toggle="a\.md" title="Mark done" aria-pressed="true">/);
-  assert.match(html, /class="fd-check" data-fd-toggle="t\.html" title="Mark done" aria-pressed="false">/);
+  assert.match(html, /class="fd-check is-done" data-fd-toggle="a\.md" title="Mark undone: [^"]+" aria-pressed="true">/);
+  assert.match(html, /class="fd-check" data-fd-toggle="t\.html" title="Mark done: [^"]+" aria-pressed="false">/);
 
   // Every ✓ in the whole surface is inside an aria-hidden wrapper -- no bare glyph survives.
   const glyphs = (html.match(/✓/g) || []).length;

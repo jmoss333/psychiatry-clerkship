@@ -50,12 +50,14 @@
       "id": "cows",
       "instrument": "Clinical Opiate Withdrawal Scale (COWS)",
       "status": "flagged-interim",
-      "decisionRef": "docs/superpowers/plans/2026-08-20-instrument-reproduction-audit.md — WP-02d (2026-08-23): permission real, scope wrong — 'This version may be copied and used clinically' licenses clinical copying, not plainly a public educational website; the 45 verbatim anchors (PR #375) are flagged, not reverted, pending the author's call. Full evidence: DECISION_BRIEF_2026-08-23.md §2",
+      "decisionRef": "docs/superpowers/plans/2026-08-20-instrument-reproduction-audit.md — WP-02d (2026-08-23): permission real, scope wrong — 'This version may be copied and used clinically' licenses clinical copying, not plainly a public educational website; the 45 verbatim anchors (PR #375) are flagged, not reverted, pending the author's call. Full evidence: DECISION_BRIEF_2026-08-23.md §2. Footer wording corrected 2026-08-27 (author-authorized): the page now states plainly that COWS anchors follow the published instrument while CIWA-Ar descriptors are abbreviated; dead spotlight embed removed by the same authorization",
       "interimWaiver": {
         "grantedBy": "Joshua Moss, MD (clinical author-of-record)",
         "recordedIn": "docs/superpowers/plans/2026-08-20-instrument-reproduction-audit.md — COWS row: 'Flagged, not reverted, pending the author's call' (2026-08-23)",
         "scope": "The verbatim COWS anchors in withdrawal.html remain published while publisher scope is clarified (Taylor & Francis letter, decision queue item 5)",
-        "files": ["withdrawal.html"]
+        "files": [
+          "withdrawal.html"
+        ]
       },
       "signatures": [
         "sweat streaming off face",
@@ -64,15 +66,31 @@
         "beads of sweat on brow or face",
         "frequent shifting or extraneous movements of legs/arms"
       ],
-      "pages": [{ "file": "withdrawal.html" }]
+      "pages": [
+        {
+          "file": "withdrawal.html"
+        }
+      ]
     },
     {
       "id": "ciwa-ar",
       "instrument": "Clinical Institute Withdrawal Assessment for Alcohol, revised (CIWA-Ar)",
-      "status": "unresolved",
-      "decisionRef": "docs/superpowers/plans/2026-08-20-instrument-reproduction-audit.md — WP-02d (2026-08-23): unresolved — every located 'may be reproduced freely' notice is a reproducer's addition in differing wordings; the 1989 article's own text is unverified (closed access); one ILL request settles it. withdrawal.html ships abbreviated in-house descriptors, not the published anchor ladder, so no verbatim signatures exist to guard",
-      "signatures": [],
-      "pages": [{ "file": "withdrawal.html" }]
+      "status": "retired",
+      "decisionRef": "docs/superpowers/plans/2026-08-20-instrument-reproduction-audit.md — WP-02d (2026-08-23): unresolved — every located 'may be reproduced freely' notice is a reproducer's addition in differing wordings; the 1989 article's own text is unverified (closed access); one ILL request settles it. withdrawal.html ships abbreviated in-house descriptors, not the published anchor ladder, so no verbatim signatures exist to guard RESOLVED 2026-08-28 (author's call, Joshua Moss, MD): CIWA-Ar retires to a stub on the BFCRS/C-SSRS pattern — the abbreviated descriptors are withdrawn and the page teaches administration and points at the institution's approved form. COWS is UNCHANGED on the same page under its separately recorded interim waiver; this decision does not touch it.",
+      "signatures": [
+        "constant nausea, frequent vomiting",
+        "severe, even with arms not extended",
+        "needles, formication",
+        "harshness/ability to frighten",
+        "disoriented to place/person"
+      ],
+      "pages": [
+        {
+          "file": "withdrawal.html",
+          "requiredTitle": "Withdrawal: COWS Tool · CIWA-Ar Official Form & Training",
+          "requireNotReproducedStatement": true
+        }
+      ]
     },
     {
       "id": "phq9-gad7",
@@ -85,7 +103,11 @@
         "thoughts that you would be better off dead",
         "not being able to stop or control worrying"
       ],
-      "pages": [{ "file": "screeners.html" }]
+      "pages": [
+        {
+          "file": "screeners.html"
+        }
+      ]
     },
     {
       "id": "stanley-brown",
