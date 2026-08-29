@@ -238,11 +238,25 @@ Unblocks: #410 item A, in part. Items A (remainder: `dark thoughts` / `unsafe th
 
 **PROPOSED — ratified by merging PR #406.** `"Is that apartment not worth living in?"` matched the
 D3 worth-of-living stem in every case; Ray's case is apartment-centered, so habitability questions
-are realistic learner moves there. Fixed by a trailing lookahead — `worth living(?!\s+(in|there|at)\b)` —
-which declines "worth living in/there/at …" while preserving every D3-approved phrasing
-(regression-tested). Known cost, accepted under the D7 heuristic: a rare genuine screen shaped like
-"not worth living in a world without her" now declines — an ambiguous form a regex cannot resolve,
-and declining is the safe direction.
+are realistic learner moves there. Fixed by a trailing lookahead —
+`worth living(?!\s+(in|there|at)\b(?!\s+all\b))` — which declines "worth living in/there/at <place>"
+while preserving every D3-approved phrasing (regression-tested).
+
+**Amended 2026-08-29** (final whole-branch review of #406, finding F1). The lookahead first shipped
+as `worth living(?!\s+(in|there|at)\b)`, and its `at` branch swallowed the intensifier:
+`"Do you ever feel like life isn't worth living at all?"` — an unambiguous screen, and the commonest
+way a learner emphasises the first D3 phrasing — declined in all three cases, scoring a **critical**
+`c_si` miss on Dana and Marcus. The original entry's claim that the narrowing preserved every
+approved phrasing was true only of the phrasings on the *list*: it lost a routine variant of the
+first item on that list, so the cost was never confined to the rare form named below. The nested
+`(?!\s+all\b)` re-admits "at all" and leaves "worth living in/there/at <place>" declined. Both
+directions are pinned in `sp-proxy/tests/sp-safety-screen-phrasing.test.mjs`: the "at all" forms as
+must-match, and `"Is the place not worth living in at all?"` as must-decline, so the recovery cannot
+reopen habitability when the intensifier trails the preposition's own object.
+
+Known cost, accepted under the D7 heuristic: a rare genuine screen shaped like "not worth living in
+a world without her" declines — an ambiguous form a regex cannot resolve, and declining is the safe
+direction.
 
 ## D10 · Causal "by"-forms of hurt/harm-yourself (Codex review of #406, comment 3)
 
@@ -250,13 +264,104 @@ and declining is the safe direction.
 two hours?"` — an insight/consequences question, not a screen — matched the D5 stems, certified
 Marcus's critical `c_si`, and unlocked `g_si_mixed` at rapport 0. D5 accepted *euphemistic screen →
 full credit* as better than a hard miss; it never contemplated crediting a non-screen. Fixed by
-`hurt/harm(ing)? yourself(?!\s+by\b)` plus a recovery stem —
+`hurt/harm(ing)? yourself(?!\s*,?\s*(?:by|with|when)\b)` plus a recovery stem —
 `(thoughts?|think(ing)?) (about|of) (hurt|harm)(ing)? yourself` — so thought-framed screens with a
 method clause ("thought about hurting yourself by taking pills?") still credit. Applied uniformly:
 Marcus `si_direct`, Ray `si_direct`, Dana `si_euphemism` (avoiding a new same-words-different-grade
 instance; Dana's deflection mechanic and her `si_direct` euphemism guard are untouched). Does not
 supersede #410 item C — the structural `si_euphemism` uniformity for Marcus/Ray remains the full
 resolution of euphemism *over-credit*; D10 only stops *non-screens* from crediting at all.
+
+**Amended 2026-08-29** (final whole-branch review of #406, finding F3). The lookahead first shipped
+as `(?!\s+by\b)`, which closed exactly one surface form of the consequence question. The same
+clinical move phrased with `with` — `"Do you think you're hurting yourself with all this
+spending?"` — with `when` — `"Are you harming yourself when you skip the lithium?"` — or with a
+comma before `by` — `"Do you think you're hurting yourself, by sleeping so little?"`, where `\s+by`
+cannot cross the comma and so revived the pinned counterexample almost verbatim — still credited
+`c_si` in every case. Shipped form: `(?!\s*,?\s*(?:by|with|when)\b)`, on all six occurrences
+(Marcus `si_direct` ×2, Ray `si_direct` ×2, Dana `si_euphemism` ×2). All three phrasings are pinned
+as must-decline rows.
+
+**Known cost, stated plainly** — this is the sentence the original entry owed and did not carry. A
+genuine screen that is *not* thought-framed and carries one of these clauses declines:
+`"Have you been hurting yourself by cutting?"` is a real screen and is uncredited **by design**. It
+is the D6/D7 heuristic applied consistently — the same words are a consequence question or a screen
+depending on the rest of the utterance, a regex cannot tell them apart, and a false pass certifies a
+risk assessment that never happened while a false miss only under-credits a competent learner. The
+recovery route is the thought frame (`"have you had thoughts of hurting yourself by …"` credits),
+which is also the phrasing the curriculum teaches.
+
+**Known residual, recorded rather than fixed.** A consequence question with a bare participial
+clause instead of a preposition — `"Do you think you're hurting yourself staying cooped up in your
+room?"` — still credits. No clean exclusion exists. The general form (`\w+ing`) was probed and
+declines two genuine screens for every false pass it closes: `"Are you hurting yourself during these
+episodes?"` and `"Are you hurting yourself, anything else I should know?"` both end up excluded
+because "during" and "anything" end in *-ing*. An ad-hoc participle list ("staying", "sitting", …)
+closes nothing a learner would reliably reach for. Carried to issue #410 rather than shipped.
+
+## D11 · Existential stems followed by their own object (final review of #406, finding F2)
+
+**PROPOSED — ratified by merging PR #406.** D6 built the existential vocabulary as an alternation of
+**verb phrases** terminated by a bare `\b`. A verb phrase takes an object, and an object satisfies
+`\b`, so the "closed vocabulary by design" of D7 was closed on its left and open on its right: every
+item admitted whatever followed it.
+
+What over-fired, each reproduced against the shipped pack:
+
+- Marcus's `what(?:'?s| is) the point of <existential>` alternation credited
+  `"What's the point of continuing the lithium?"`, `"What is the point of continuing to take the
+  lithium?"`, `"…of waking up at the same time every day?"`, `"…of getting up early for the
+  group?"`, `"…of being here on the unit another week?"` and `"…of going on about the irrigation
+  project?"`. D6 narrowed this stem *precisely because* "What's the point of the lithium?" is a
+  question learners actually ask a manic patient on lithium; the object branch let the same
+  question back in one word later. The irrigation form is worse than a scoring error: redirecting
+  Marcus off the irrigation project is the move his case exists to teach, and crediting it also
+  unlocks `g_si_mixed` at rapport 0.
+- `no point (in )?(going on|carrying on)` — which is in **all three** cases' `si_direct`, not only
+  Marcus's — credited `"There's no point in going on about the neighbors right now"` (a paranoia
+  redirect, realistic on Ray) and `"no point in going on the lithium?"` (an adherence question;
+  "going on <a drug>" is ordinary clinical English).
+
+**Shipped fix — a closing context, not an exclusion list.** Each verb-phrase item must now be
+followed by one of: punctuation (`[?.!,;:]`), end of text, or a closed continuation vocabulary —
+`anymore`/`any more`, `at all`, `any longer`, `much longer`, `ever again`, `like this`, `like that`,
+`right now`, `now`, `today`, `tonight`, `lately`, `these days`, `recently`, `anyway`,
+`at this point`, `living`, `in the morning`, `to live`, `to be here`, `to exist`. A positive
+allowlist was chosen over a denylist of objects because the denylist route kept re-declining genuine
+screens: excluding `at` would re-break "going on at all" exactly as D9's first form broke "worth
+living at all", and excluding `to` would decline "What's the point of continuing to live?". The
+admitted continuations are all adverbial or existential — none can introduce an object — so widening
+the list cannot revive any of the forms above.
+
+The narrowing applies to `going on`, `carrying on`, `keep(?:ing)? going`, `continu(?:e|ing)`,
+`liv(?:e|ing)`, `be(?:ing)? here`, `waking up` and `getting up`. The **nominal** items — `life`,
+`anything`, `(it|this) all`, `all (of) this|it`, `any of (this|it)` — take no object in practice and
+are deliberately untouched; narrowing what does not over-fire only manufactures misses. The
+alternation is now `(?:<verb items>)<closing context>|<nominal items>`, so a verb item that fails
+its closure falls through to the nominal items and then out — no leak back to the bare branch.
+
+**What must still match** (pinned in `sp-proxy/tests/sp-safety-screen-phrasing.test.mjs`): all six
+D3 approved phrasings; all ten D6/D8 existential forms; and the closure-sensitive forms — on Marcus,
+`"…going on at all?"`, `"…going on anymore?"`, `"…carrying on anymore?"`, `"…keeping going?"`,
+`"…continuing?"`, `"…continuing to live?"`, `"…living anymore?"`, `"…being here?"`,
+`"…waking up?"`, `"…waking up in the morning?"`, `"…getting up?"`, `"…going on much longer?"`,
+`"…carrying on anyway?"`; and in every case `"no point going on anymore"`, `"There's no point in
+carrying on anymore."`, `"I feel like there's no point going on, doctor."`, `"Do you ever feel like
+there's no point in going on at all?"`, `"Does it feel like there's no point going on like this?"`,
+plus the `lately` / `these days` / `right now` variants.
+
+**Known residuals.** The continuation vocabulary is closed by design, so an existential form
+trailing an unlisted word declines: `"There's no point in going on with my life."`, `"What's the
+point of going on for another day?"`, `"What's the point of continuing to fight this?"`, and any
+compound question that runs on without punctuation (`"…no point in going on and you'd rather not be
+here?"`). Each is one alternation entry if faculty want it — and `with`/`for`/`to <verb>` cannot be
+admitted wholesale, because those are exactly the frames the object forms use. Incidental gain: the
+no-point family previously had no right-hand boundary at all, so `"no point in going online"`
+credited; the closing context ends that too.
+
+Verified: **241/241** on the fix wave's probe matrix (three cases × the D3/D6/D8 must-match corpus,
+every reviewer-quoted survivor, and both pinned Codex counterexamples), up from 205/241 before. The
+two new regression tests fail on the pre-fix pack and pass after.
 
 ## Operational follow-up owed
 
