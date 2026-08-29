@@ -28,11 +28,11 @@ const APPROVED = [
 ];
 
 // Existing safety phrasings that must STAY matched (regression guard against the
-// new patterns accidentally displacing or narrowing coverage). Scoped per case to
-// the pre-existing baseline: "hurting yourself" was never a si_direct/si_euphemism
-// stem in sp_mania_redirect_001 (that case has no si_euphemism intent at all) —
-// that is a pre-existing gap, out of scope for WP-B D3, and is flagged in the
-// wpb-report rather than silently "fixed" here.
+// new patterns accidentally displacing or narrowing coverage). Historical note:
+// at D3 time "hurting yourself" was not a Marcus stem; D5 (2026-08-24) then added
+// hurt/harm/do-something-to-yourself to Marcus's and Ray's si_direct, so the
+// phrasing now matches in every case. The per-case scoping below predates D5 and
+// remains valid as a floor.
 const REGRESSION_GUARD = [
   { phrasing: 'Are you having thoughts of suicide?', caseIds: 'all' },
   { phrasing: 'Have you thought about killing yourself?', caseIds: 'all' },
@@ -369,5 +369,56 @@ test('Dana credits every must-match screening phrasing to some safety intent', (
       hits.length > 0,
       `Dana: no category:'safety' intent matched ${JSON.stringify(phrasing)}`,
     );
+  }
+});
+
+// ---- Codex review of PR #406 (2026-08-27), inline comments 2 & 3 ----
+// Consequence/insight questions ("are you hurting yourself BY <behavior>?") and
+// habitability questions ("is that apartment not worth living IN?") are not
+// suicide screens, but the widened WP-B stems matched them — which scored c_si
+// (critical on Dana and Marcus) and unlocked g_si_mixed at rapport 0 on Marcus.
+// Decision provenance: D8 + D9 in docs/superpowers/plans/2026-08-24-faculty-decisions.md.
+// Only si_direct / si_euphemism can credit c_si or unlock the si gates, so these
+// assertions filter to those two ids: Dana's si_plan ("how (you )?(would|might)")
+// legitimately brushes one probe, is gated behind si_active, and is tracked as
+// issue #410 item E — not re-litigated here.
+const C_SI_CREDITING = new Set(['si_direct', 'si_euphemism']);
+
+const NON_SCREEN_PROBES = [
+  'Is that apartment not worth living in?',
+  "Do you think you're hurting yourself by sleeping only two hours?",
+  'Do you see how you might be hurting yourself by not sleeping?',
+  "Aren't you harming yourself by skipping the lithium?",
+];
+
+const METHOD_CLAUSE_SCREENS = [
+  'Have you thought about hurting yourself by taking pills?',
+  'Have you had thoughts of harming yourself by overdosing?',
+];
+
+test('consequence and habitability questions never credit a suicide screen (D8/D9)', () => {
+  for (const caseDef of pack.cases) {
+    for (const phrasing of NON_SCREEN_PROBES) {
+      const credited = matchingSafetyIntentIds(caseDef, phrasing)
+        .filter((id) => C_SI_CREDITING.has(id));
+      assert.deepEqual(
+        credited,
+        [],
+        `${caseDef.id} credited ${JSON.stringify(credited)} for non-screen: "${phrasing}"`,
+      );
+    }
+  }
+});
+
+test('thought-framed screens with a method clause still credit a safety intent (D9)', () => {
+  for (const caseDef of pack.cases) {
+    for (const phrasing of METHOD_CLAUSE_SCREENS) {
+      const credited = matchingSafetyIntentIds(caseDef, phrasing)
+        .filter((id) => C_SI_CREDITING.has(id));
+      assert.ok(
+        credited.length > 0,
+        `${caseDef.id} failed to credit a genuine screen: "${phrasing}"`,
+      );
+    }
   }
 });
