@@ -330,8 +330,14 @@ followed by one of: punctuation (`[?.!,;:]`), end of text, or a closed continuat
 allowlist was chosen over a denylist of objects because the denylist route kept re-declining genuine
 screens: excluding `at` would re-break "going on at all" exactly as D9's first form broke "worth
 living at all", and excluding `to` would decline "What's the point of continuing to live?". The
-admitted continuations are all adverbial or existential — none can introduce an object — so widening
-the list cannot revive any of the forms above.
+admitted continuations are all adverbial or existential — but the closing context is a **lookahead,
+not a clause anchor**: it requires an admitted continuation to *follow* the verb phrase, never that
+the clause end there, so an adverbial followed by an object still satisfies it —
+`"There's no point in going on right now about the neighbors."` credits, a word-order rotation of
+the headline counterexample above (re-review of the fix wave, 2026-08-29). This **narrows the
+object-form class; it does not close it.** The pinned `OBJECT_FORM_NON_SCREENS` rows cover the
+adverbial-free word order only. Full closure needs clause-end anchoring — #410 item G territory —
+so the rotated forms are recorded below as a known residual.
 
 The narrowing applies to `going on`, `carrying on`, `keep(?:ing)? going`, `continu(?:e|ing)`,
 `liv(?:e|ing)`, `be(?:ing)? here`, `waking up` and `getting up`. The **nominal** items — `life`,
@@ -350,12 +356,21 @@ carrying on anymore."`, `"I feel like there's no point going on, doctor."`, `"Do
 there's no point in going on at all?"`, `"Does it feel like there's no point going on like this?"`,
 plus the `lately` / `these days` / `right now` variants.
 
-**Known residuals.** The continuation vocabulary is closed by design, so an existential form
-trailing an unlisted word declines: `"There's no point in going on with my life."`, `"What's the
-point of going on for another day?"`, `"What's the point of continuing to fight this?"`, and any
-compound question that runs on without punctuation (`"…no point in going on and you'd rather not be
-here?"`). Each is one alternation entry if faculty want it — and `with`/`for`/`to <verb>` cannot be
-admitted wholesale, because those are exactly the frames the object forms use. Incidental gain: the
+**Known residuals.** In the **false-pass** direction: the rotated object forms above — an admitted
+adverbial, then an object — still credit, exactly as they did before this wave
+(`"There's no point in going on right now about the neighbors."`,
+`"What's the point of continuing at this point with the lithium?"`); unchanged behavior, now
+recorded rather than claimed closed. In the **false-miss** direction, the continuation vocabulary
+is closed by design, so an existential form trailing an unlisted word declines: `"There's no point
+in going on with my life."`, `"What's the point of going on for another day?"`, `"What's the point
+of continuing to fight this?"`, and a compound question that runs on into a further clause with no
+separator (`"…no point in going on and you'd rather not be here?"`). Also declining, because the
+punctuation class `[?.!,;:]` omits dashes: a dash-joined reflection
+(`"You said there's no point in going on — can you tell me more?"`) — safe direction, but the
+golden transcript itself uses the em-dash idiom, so this one is a candidate for a one-character
+class fix. Each false-miss residual is one alternation entry (or one character) if faculty want
+it — and `with`/`for`/`to <verb>` cannot be admitted wholesale, because those are exactly the
+frames the object forms use. Incidental gain: the
 no-point family previously had no right-hand boundary at all, so `"no point in going online"`
 credited; the closing context ends that too.
 
