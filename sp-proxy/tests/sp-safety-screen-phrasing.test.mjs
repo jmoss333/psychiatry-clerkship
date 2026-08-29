@@ -85,18 +85,28 @@ test('every applicable case still recognizes the pre-existing safety phrasings (
 
 test('the family-well-being SI phrasing is not credited as ONLY a social question', () => {
   const phrasing = 'Do you ever feel your family would be better off without you?';
+  // Final review of #406, finding F5: the `continue` below skips cases whose
+  // family_social pattern does not match, so a future family_social narrowing
+  // could empty the loop body and leave this test vacuously green. Count the
+  // cases that actually reach the assertion and require at least one.
+  let casesExercised = 0;
   for (const caseDef of pack.cases) {
     const familySocial = caseDef.intents.find((it) => it.id === 'family_social');
     const familyMatches = familySocial
       ? familySocial.patterns.some((p) => new RegExp(p, 'i').test(phrasing))
       : false;
     if (!familyMatches) continue; // this case has no family_social intent, or it doesn't match — not the bug in question
+    casesExercised += 1;
     const safetyHits = matchingSafetyIntentIds(caseDef, phrasing);
     assert.ok(
       safetyHits.length > 0,
       `case "${caseDef.id}": "${phrasing}" matched family_social but no category:'safety' intent — passive-SI screen mis-classified as a social question`,
     );
   }
+  assert.ok(
+    casesExercised > 0,
+    `no case's family_social intent matched ${JSON.stringify(phrasing)} — this test asserted nothing. Either the phrasing or family_social changed; re-derive the probe rather than deleting the guard.`,
+  );
 });
 
 // WP-B follow-up (wpb2-brief + wpb2-brief correction): "hurting yourself" /
@@ -343,6 +353,15 @@ const MUST_MATCH = [
   'Have you had any thoughts of hurting yourself?',
   'Have you thought about harming yourself?',
   'Have you had thoughts of doing something to yourself?',
+  // D9 amendment (final review of #406, finding F1): the habitability lookahead's
+  // `at` branch swallowed the intensifier, so these — unambiguous screens, and the
+  // commonest way a learner adds emphasis — declined in every case, scoring a
+  // critical miss on Dana and Marcus.
+  "Do you ever feel like life isn't worth living at all?",
+  "Do you ever feel like life just isn't worth living at all?",
+  // The golden transcript's screening line, pinned so a stem narrowing can never
+  // take out the plainest phrasing the tool ships as its own worked example.
+  'When you say burden — have you had thoughts of killing yourself?',
 ];
 
 test('Marcus and Ray credit every must-match screening phrasing to si_direct', () => {
@@ -389,6 +408,16 @@ const NON_SCREEN_PROBES = [
   "Do you think you're hurting yourself by sleeping only two hours?",
   'Do you see how you might be hurting yourself by not sleeping?',
   "Aren't you harming yourself by skipping the lithium?",
+  // D10 amendment (final review of #406, finding F3): `(?!\s+by\b)` closed exactly
+  // one surface form of the consequence question. The same clinical move phrased
+  // with `with`, with `when`, or with a comma before `by` still credited c_si.
+  "Do you think you're hurting yourself with all this spending?",
+  'Are you harming yourself when you skip the lithium?',
+  "Do you think you're hurting yourself, by sleeping so little?",
+  // D9 amendment (finding F1): recovering "worth living at all" must not reopen
+  // habitability when the intensifier trails the preposition's own object.
+  'Is the place not worth living in at all?',
+  'Is it not worth living at home anymore?',
 ];
 
 const METHOD_CLAUSE_SCREENS = [
@@ -418,6 +447,112 @@ test('thought-framed screens with a method clause still credit a safety intent (
       assert.ok(
         credited.length > 0,
         `${caseDef.id} failed to credit a genuine screen: "${phrasing}"`,
+      );
+    }
+  }
+});
+
+// ---- Final review of PR #406 (2026-08-29), finding F2 ----
+// The existential vocabularies are alternations of VERB PHRASES, and a verb phrase
+// takes an object. Every item was terminated by a bare `\b`, which a following
+// object satisfies, so "What's the point of continuing THE LITHIUM?" and
+// "no point in going on ABOUT THE NEIGHBORS" scored as plain suicide screens.
+// Two families were affected: Marcus's `what(?:'?s| is) the point of <existential>`
+// alternation, and `no point (in )?(going on|carrying on)`, which is in all three
+// cases' si_direct. Both credit c_si — critical on Dana and Marcus — and the
+// Marcus one also unlocks g_si_mixed at rapport 0, on the very move the case is
+// built to teach (redirecting him off the irrigation project).
+//
+// Decision provenance: D11 in docs/superpowers/plans/2026-08-24-faculty-decisions.md.
+// Fix: each verb-phrase item must be followed by a CLOSING CONTEXT — punctuation,
+// end of text, or a closed list of existential continuations ("anymore", "at all",
+// "like this", "lately", "to live", …). The nominal items (`life`, `anything`,
+// `(it|this) all`, `any of this`) take no object in practice and are untouched,
+// per D7's closed-vocabulary design. The closing list is a positive allowlist, not
+// a denylist of objects: a denylist kept re-declining genuine screens — excluding
+// `at` would re-break "going on at all" exactly as D9's first form broke "worth
+// living at all", and excluding `to` would decline "continuing to live".
+const OBJECT_FORM_NON_SCREENS = [
+  // Marcus's alternation, one row per over-firing item
+  "What's the point of continuing the lithium?",
+  'What is the point of continuing to take the lithium?',
+  "What's the point of waking up at the same time every day?",
+  "What's the point of getting up early for the group?",
+  "What's the point of being here on the unit another week?",
+  "What's the point of going on about the irrigation project?",
+  "What's the point of carrying on with the irrigation plan?",
+  "What's the point of keeping going with the mood chart?",
+  "What's the point of living in that apartment?",
+  // the no-point family — present in all three cases
+  "There's no point in going on about the neighbors right now",
+  'no point in going on the lithium?',
+  "There's no point in carrying on about the irrigation project.",
+];
+
+// The other half of the contract: narrowing a safety stem is only acceptable if
+// the genuine forms survive. Rows scoped to Marcus use the `what's the point`
+// stem, which exists in no other case (D8 scope note).
+const EXISTENTIAL_CLOSURE_MUST_MATCH = [
+  { phrasing: "What's the point of going on at all?", caseIds: ['sp_mania_redirect_001'] },
+  { phrasing: 'What is the point of going on at all?', caseIds: ['sp_mania_redirect_001'] },
+  { phrasing: "What's the point of going on anymore?", caseIds: ['sp_mania_redirect_001'] },
+  { phrasing: "What's the point of carrying on anymore?", caseIds: ['sp_mania_redirect_001'] },
+  { phrasing: "What's the point of keeping going?", caseIds: ['sp_mania_redirect_001'] },
+  { phrasing: "What's the point of continuing?", caseIds: ['sp_mania_redirect_001'] },
+  { phrasing: "What's the point of continuing to live?", caseIds: ['sp_mania_redirect_001'] },
+  { phrasing: "What's the point of living anymore?", caseIds: ['sp_mania_redirect_001'] },
+  { phrasing: "What's the point of being here?", caseIds: ['sp_mania_redirect_001'] },
+  { phrasing: "What's the point of waking up?", caseIds: ['sp_mania_redirect_001'] },
+  { phrasing: "What's the point of waking up in the morning?", caseIds: ['sp_mania_redirect_001'] },
+  { phrasing: "What's the point of getting up?", caseIds: ['sp_mania_redirect_001'] },
+  { phrasing: "What's the point of going on much longer?", caseIds: ['sp_mania_redirect_001'] },
+  { phrasing: "What's the point of carrying on anyway?", caseIds: ['sp_mania_redirect_001'] },
+  // the no-point family, in every case
+  { phrasing: 'no point going on anymore', caseIds: 'all' },
+  { phrasing: "There's no point in carrying on anymore.", caseIds: 'all' },
+  { phrasing: "I feel like there's no point going on, doctor.", caseIds: 'all' },
+  { phrasing: "Do you ever feel like there's no point in going on at all?", caseIds: 'all' },
+  { phrasing: "Does it feel like there's no point going on like this?", caseIds: 'all' },
+  // Time adverbials belong in the closing vocabulary for the same reason they are
+  // safe there: an adverbial cannot introduce an object, so admitting it cannot
+  // revive any row in OBJECT_FORM_NON_SCREENS above.
+  { phrasing: "Do you ever feel like there's no point going on lately?", caseIds: 'all' },
+  { phrasing: "Has it felt like there's no point in carrying on these days?", caseIds: 'all' },
+  { phrasing: "Do you feel like there's no point in going on right now?", caseIds: 'all' },
+];
+
+test('an existential stem followed by its own object is not a suicide screen (D11)', () => {
+  assert.equal(pack.cases.length, EXPECTED_CASE_COUNT, 'pack case count changed');
+  const falsePositives = [];
+  for (const caseDef of pack.cases) {
+    for (const phrasing of OBJECT_FORM_NON_SCREENS) {
+      for (const intent of safetyIntentIds(caseDef)) {
+        if (!C_SI_CREDITING.has(intent.id)) continue;
+        const culprits = intent.patterns.filter((p) => new RegExp(p, 'i').test(phrasing));
+        if (culprits.length) {
+          falsePositives.push(
+            `case "${caseDef.id}": ${JSON.stringify(phrasing)} -> ${intent.id} via ${JSON.stringify(culprits)}`,
+          );
+        }
+      }
+    }
+  }
+  assert.deepEqual(
+    falsePositives,
+    [],
+    `object-form questions credited as a plain suicide screen:\n  ${falsePositives.join('\n  ')}`,
+  );
+});
+
+test('genuine existential forms still credit si_direct after the D11 object closure', () => {
+  for (const { phrasing, caseIds } of EXISTENTIAL_CLOSURE_MUST_MATCH) {
+    for (const caseDef of pack.cases) {
+      if (caseIds !== 'all' && !caseIds.includes(caseDef.id)) continue;
+      const siDirect = caseDef.intents.find((it) => it.id === 'si_direct');
+      assert.ok(siDirect, `case "${caseDef.id}": no si_direct intent found`);
+      assert.ok(
+        siDirect.patterns.some((p) => new RegExp(p, 'i').test(phrasing)),
+        `case "${caseDef.id}": si_direct did not match ${JSON.stringify(phrasing)} — the D11 closing context is too tight; widen the closing vocabulary rather than reopening the object branch`,
       );
     }
   }
