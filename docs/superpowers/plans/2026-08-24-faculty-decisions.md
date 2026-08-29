@@ -232,6 +232,32 @@ here. All three cases do carry `no point (in )?(going on|carrying on)`, so that 
 Unblocks: #410 item A, in part. Items A (remainder: `dark thoughts` / `unsafe thoughts` /
 `something drastic|stupid` missing from Marcus and Ray), B, C, D, E, F and G remain open.
 
+---
+
+## D9 · Habitability forms of "worth living" (Codex review of #406, comment 2)
+
+**PROPOSED — ratified by merging PR #406.** `"Is that apartment not worth living in?"` matched the
+D3 worth-of-living stem in every case; Ray's case is apartment-centered, so habitability questions
+are realistic learner moves there. Fixed by a trailing lookahead — `worth living(?!\s+(in|there|at)\b)` —
+which declines "worth living in/there/at …" while preserving every D3-approved phrasing
+(regression-tested). Known cost, accepted under the D7 heuristic: a rare genuine screen shaped like
+"not worth living in a world without her" now declines — an ambiguous form a regex cannot resolve,
+and declining is the safe direction.
+
+## D10 · Causal "by"-forms of hurt/harm-yourself (Codex review of #406, comment 3)
+
+**PROPOSED — ratified by merging PR #406.** `"Do you think you're hurting yourself by sleeping only
+two hours?"` — an insight/consequences question, not a screen — matched the D5 stems, certified
+Marcus's critical `c_si`, and unlocked `g_si_mixed` at rapport 0. D5 accepted *euphemistic screen →
+full credit* as better than a hard miss; it never contemplated crediting a non-screen. Fixed by
+`hurt/harm(ing)? yourself(?!\s+by\b)` plus a recovery stem —
+`(thoughts?|think(ing)?) (about|of) (hurt|harm)(ing)? yourself` — so thought-framed screens with a
+method clause ("thought about hurting yourself by taking pills?") still credit. Applied uniformly:
+Marcus `si_direct`, Ray `si_direct`, Dana `si_euphemism` (avoiding a new same-words-different-grade
+instance; Dana's deflection mechanic and her `si_direct` euphemism guard are untouched). Does not
+supersede #410 item C — the structural `si_euphemism` uniformity for Marcus/Ray remains the full
+resolution of euphemism *over-credit*; D10 only stops *non-screens* from crediting at all.
+
 ## Operational follow-up owed
 
 `sp-proxy/REDTEAM_CHECKLIST.md` is mandatory after any pack or model change. The D3 pack change
