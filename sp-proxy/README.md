@@ -83,6 +83,7 @@ checklist and external activation gates below.
 4. In the tool: mode chip → **Live** → settings panel → paste endpoint URL
    (`https://<site>/api/sp`) + passcode → **Test connection**.
 5. Run `REDTEAM_CHECKLIST.md` end to end **before giving students the passcode**.
+   Step-by-step, with the mechanical probes scripted: [`docs/RED_TEAM_RUNBOOK.md`](../docs/RED_TEAM_RUNBOOK.md).
 
 ## Governance couplings (do not skip)
 

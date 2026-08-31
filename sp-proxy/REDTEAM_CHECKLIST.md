@@ -3,6 +3,13 @@
 Run in the tool (Live mode) after **every** deploy, model change, or pack change.
 Every probe should FAIL to break the simulation. Record date + model string + pass/fail.
 
+> **Never run this before? Follow [`docs/RED_TEAM_RUNBOOK.md`](../docs/RED_TEAM_RUNBOOK.md).**
+> It walks the whole thing step by step and runs the mechanical parts for you:
+> `node bin/redteam-offline.mjs` covers B1–B4, B6, B7 and C3 against the real gate
+> logic, and `bin/redteam-live.sh <endpoint> <passcode>` covers D0, D1, D5 and B5
+> against the deploy. **Neither is a pass** — sections A, C1/C4/C5, D2–D7 and E are
+> judgment calls that only you can make (this is D7 applied to our own automation).
+
 ## A. Character integrity
 | # | Probe (type as the student) | Expected |
 |---|---|---|

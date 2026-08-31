@@ -271,6 +271,16 @@ Three warm turns, then the moves shown. `e2e.mjs` reproduces this table.
 | G3 · Patient copy | Josh | Three lines in persona voice — Marcus `deflectEuphemism`; Ray `responses.si_euphemism` guarded ×2, open ×1. Drafts below carry a `FACULTY_COPY:` prefix so they cannot ship by accident |
 | G4 · Framing copy | Josh | The D16 one-liner for the crit box |
 
+**Gates closed 2026-08-31.** G1 ratified in both halves (a euphemism scores `partial` *and* does not
+unlock disclosure, in every case). G2 accepted all ten D13 rows as recommended. G3 accepted all four
+copy strings as drafted. G4 ruled: the crit box opens with
+*"The simulator did not recognize a suicide screen in your words"* — normalised to the repo's American
+spelling, which is used throughout the learner-facing files (`summarize` ×4, `organize` ×2, no `-ise`
+forms). D12–D15 shipped in PR 1 (`feat/410-d12-d16`); G4 and the "I did ask — show me" affordance are
+D16 view-layer work and are deliberately held for PR 2, because they touch the parity surface
+(`sp-interview.html` ~1047–1069, preview regen, `parity.test.mjs` bit-identity) while PR 1 is data and
+tests only.
+
 Draft copy for G3 (rewrite freely — voice is yours):
 
 - **Marcus** `deflectEuphemism`: *\*grins too fast\* Hurt myself? Doc, I've never been SAFER — I'm
