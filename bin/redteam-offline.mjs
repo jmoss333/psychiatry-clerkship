@@ -41,6 +41,16 @@ function probe(who, msgs) {
   };
 }
 
+// NB: JUDGMENTAL must be phrasing the case's own `judgmental` intent actually matches.
+// Dana keys on "you should", "at least", "snap out", "look on the bright side"; "calm down"
+// is MARCUS's vocabulary. A probe that does not trip the flag proves nothing at all.
+const JUDGMENTAL = 'You should think about what this is doing to your kids.';
+const SCREEN = 'Have you had thoughts of killing yourself?';
+const REPAIR = [
+  "I'm sorry — that wasn't fair of me. Can we start again?",
+  "It sounds like you've been carrying this mostly alone.",
+];
+
 const RAPPORT = [
   "Hi, I'm Alex, one of the medical students. What would be most useful to talk about?",
   'That sounds really hard.',
@@ -82,13 +92,43 @@ const PROBES = [
     ],
   },
   {
+    // The other half of B3: a gate that fails closed forever is as broken as one that
+    // leaks. After a real screen, the follow-up detail gates MUST become reachable.
+    id: 'B3c', name: 'after disclosure, the real follow-up gates do open',
+    run: () => ({
+      plan: probe('Dana', [...RAPPORT, 'Have you had thoughts of killing yourself?', 'Do you have a plan?']),
+      means: probe('Dana', [...RAPPORT, 'Have you had thoughts of killing yourself?', 'Do you have access to the pills?']),
+      prot: probe('Dana', [...RAPPORT, 'Have you had thoughts of killing yourself?', 'What keeps you going?']),
+    }),
+    expect: (r) => [
+      r.plan.unlocked.includes('si_plan_detail') || 'si_plan_detail did not open after a real screen — D14 over-narrowed',
+      r.means.unlocked.includes('si_means_detail') || 'si_means_detail did not open after a real screen — D14 over-narrowed',
+      r.prot.unlocked.includes('si_protective_detail') || 'si_protective_detail did not open after a real screen — D15 over-narrowed',
+    ],
+  },
+  {
     id: 'B4', name: 'judgmental turn, then the screen — gate stays shut',
     // NB: the phrasing must actually trip Dana's `judgmental` intent. "Calm down"
     // is Marcus's flag vocabulary, not hers — hers keys on "you should", "at least",
     // "snap out", "look on the bright side". A probe that does not flag proves nothing.
-    run: () => probe('Dana', [...RAPPORT, 'You should think about what this is doing to your kids.', 'Have you had thoughts of killing yourself?']),
+    run: () => probe('Dana', [...RAPPORT, JUDGMENTAL, SCREEN]),
     expect: (r) => [
       !r.unlocked.includes('si_active') || 'si_active unlocked on a turn following a judgmental flag',
+    ],
+  },
+  {
+    // The other half of B4. The flag window is flagHistory.slice(-2), so a learner who
+    // was judgmental must put TWO clean turns between the flag and the re-ask before the
+    // disclosure is reachable again. That is a designed amount of forgiveness — pin it,
+    // or a change to the window silently makes the patient harsher or cheaper to win over.
+    id: 'B4b', name: 'the gate RECOVERS after the flag ages out (2 clean turns)',
+    run: () => ({
+      one: probe('Dana', [...RAPPORT, JUDGMENTAL, SCREEN, REPAIR[0], SCREEN]),
+      two: probe('Dana', [...RAPPORT, JUDGMENTAL, SCREEN, ...REPAIR, SCREEN]),
+    }),
+    expect: (r) => [
+      !r.one.unlocked.includes('si_active') || 'gate reopened after only ONE repair turn — the flag window shrank',
+      r.two.unlocked.includes('si_active') || 'gate never reopened after two repair turns — a single judgmental turn locks the disclosure out permanently',
     ],
   },
   {
