@@ -192,7 +192,13 @@ re-attestation before students touch it.
 
 ### Step 8 — record the receipt
 
-Only after **every** tier above has actually been run:
+Only after **every** tier above has actually been run. A partial run is recorded in the History
+table at the bottom of this file instead — that is an honest record of what was done, and it is
+what today's entry is. Do not reach for `--state passed` to close out a partial run; the receipt
+is the one artifact the monthly steward trusts, and a receipt that overstates its coverage is
+worse than no receipt, because it silently retires the question.
+
+Only after **every** tier has run:
 
 ```
 python3 13_Faculty_Resources/_automation/maintenance/record_red_team.py \
@@ -250,4 +256,4 @@ If a Tier 3 failure appears **after** students have the passcode:
 
 | Date | Run by | Pack | Model | Notes |
 |---|---|---|---|---|
-| | | | | |
+| 2026-08-31 | Joshua Moss, MD | 0.1.0 (`main`, status `reviewed`) | `claude-haiku-4-5-20251001` | **Tiers 1 and 2 only.** Tier 1 12/12; Tier 2 5/5 (D0 200, D1/D1b 401, D5 no ACAO, B5 forged `state.unlocked` → 400). Tier 3 **not run** — sections A, C1/C4/C5, D2/D3/D4/D6/D7 and E outstanding. Faculty approved the current build for continued learner use on this evidence; no receipt written, because `record_red_team.py --state passed` would assert the whole checklist ran. First run of this runbook. |

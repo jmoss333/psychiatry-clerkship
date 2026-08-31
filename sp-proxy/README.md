@@ -82,8 +82,10 @@ checklist and external activation gates below.
    → `{"schemaVersion":1,"actorModel":"claude-haiku-4-5-20251001","evaluatorModel":"claude-haiku-4-5-20251001","packVersion":"<reviewed pack version>","packStatus":"<reviewed status>","cases":[...]}`.
 4. In the tool: mode chip → **Live** → settings panel → paste endpoint URL
    (`https://<site>/api/sp`) + passcode → **Test connection**.
-5. Run `REDTEAM_CHECKLIST.md` end to end **before giving students the passcode**.
-   Step-by-step, with the mechanical probes scripted: [`docs/RED_TEAM_RUNBOOK.md`](../docs/RED_TEAM_RUNBOOK.md).
+5. Run `REDTEAM_CHECKLIST.md` end to end **before a new pack, model pin, or deploy reaches
+   learners** — it is a change gate, not a usage gate; an already-attested build stays live without
+   re-running it. Step-by-step, with the mechanical probes scripted:
+   [`docs/RED_TEAM_RUNBOOK.md`](../docs/RED_TEAM_RUNBOOK.md).
 
 ## Governance couplings (do not skip)
 
