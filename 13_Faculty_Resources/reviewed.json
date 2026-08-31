@@ -20,14 +20,13 @@
     "by": "Pending faculty review"
   },
   "interaction-cards.html": {
-    "status": "pending",
+    "status": "reviewed",
     "risk": {
       "kind": "formulary",
       "level": "high"
     },
-    "reason": "New content awaiting faculty review.",
-    "at": "2026-08-04",
-    "by": "Pending faculty review"
+    "at": "2026-08-23",
+    "by": "Joshua Moss, MD"
   },
   "cotw_20260803_lithium_ms3.md": {
     "status": "pending",
@@ -1116,14 +1115,13 @@
     "by": "Pending faculty review"
   },
   "rotation-curator.html": {
-    "status": "pending",
+    "status": "reviewed",
     "risk": {
       "kind": "local-policy",
       "level": "moderate"
     },
-    "reason": "New account-free faculty curation workflow awaiting faculty and privacy review.",
-    "at": "2026-08-19",
-    "by": "Pending faculty review"
+    "at": "2026-08-23",
+    "by": "Joshua Moss, MD"
   },
   "therapy_on_the_unit.md": {
     "status": "reviewed",

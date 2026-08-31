@@ -603,12 +603,16 @@ test('current repository bank has 189 blocker-free active items with a balanced 
   // and for three of them, whose correct option (A->B, A->C, A->D) — had since changed.
   // Only qb_anx_016 stayed attested; its text on main is the version that was reviewed.
   // A status is only meaningful against the content it was given for.
+  // qb_saf_016 (correct key D) was attested in the console on 2026-08-23, stranded on
+  // attest/pending, and landed 2026-08-27 — this time the replay was verified against that
+  // doctrine first: the item's content is byte-identical (status aside) between the branch
+  // base and main, so the status still describes the content it was given for.
   assert.equal(result.counts.total, 189);
-  assert.equal(result.counts.draft, 46);
-  assert.equal(result.counts.attested, 143);
+  assert.equal(result.counts.draft, 45);
+  assert.equal(result.counts.attested, 144);
   assert.equal(Object.keys(result.byId).length, 189);
   assert.equal(Object.values(result.byId).flatMap(entry => entry.blockers).length, 0);
-  assert.deepEqual(result.answerKeys, { A: 12, B: 12, C: 11, D: 11 });
+  assert.deepEqual(result.answerKeys, { A: 12, B: 12, C: 11, D: 10 });
   for (const item of bank.items.filter(entry => entry.retired)) {
     assert.equal(Object.hasOwn(result.byId, item.id), false);
   }

@@ -29,7 +29,7 @@ function make(governanceBadge) {
       fdExpandQuery: fdExpandQuery, fdSearchResults: fdSearchResults,
       fdSearchOverlay: fdSearchOverlay, fdSearchResultRow: fdSearchResultRow,
       fdBuildIndex: fdBuildIndex, fdSearchContentWords: fdSearchContentWords,
-      fdSearchScore: fdSearchScore,
+      fdSearchScore: fdSearchScore, fdSearchTriggerHit: fdSearchTriggerHit,
     };
   `)(governanceBadge || function () { return ''; });
 }
@@ -150,6 +150,19 @@ test('renders the panel skeleton with input, esc button, and footer copy', () =>
   assert.match(html, /<div class="fd-searchpanel__foot">↵ opens as a side sheet/);
 });
 
+test('the results list announces its count politely (Fresh Eyes Audit A6)', () => {
+  // Results updated silently: a screen-reader user typing had no signal that anything changed.
+  const html = F.fdSearchOverlay(REAL_INDEX, 'suicide', SYN, {});
+  assert.match(html, /class="fd-searchpanel__body"[^>]*aria-live="polite"/);
+  assert.match(html, /aria-label="\d+ results?"/);
+});
+
+test('the count in the live region matches the number of rows rendered', () => {
+  const results = F.fdSearchResults(REAL_INDEX, 'lithium', SYN, {});
+  const html = F.fdSearchOverlay(REAL_INDEX, 'lithium', SYN, {});
+  assert.match(html, new RegExp(`aria-label="${results.length} results?"`));
+});
+
 test('the current query round-trips into the input value, escaped', () => {
   const html = F.fdSearchOverlay(REAL_INDEX, 'ciwa "quotes"', SYN, {});
   assert.match(html, /value="ciwa &quot;quotes&quot;"/);
@@ -253,16 +266,15 @@ test('synonyms are not hardcoded -- an empty synonym map falls back to plain sub
 
 const titles = (q) => F.fdSearchResults(REAL_INDEX, q, SYN, {}).map((r) => r.item.title);
 
-test('searching a page title exactly returns that page at the head of the item block', () => {
-  // "Head of the ITEM block", not head of the whole list: protocols are matched on the
-  // UNFILTERED query and concatenated ahead of every item, so a multi-word query whose stopwords
-  // brush a safety sheet puts protocols above the title match. That is the stated safety
-  // contract, and it is what the base commit did too -- at d24f192 this query returned five
-  // protocols and no Therapy on the Unit at all. The relevance fix owns the item ordering.
+test('searching a page title exactly returns that page at the head of the whole list', () => {
+  // This assertion inverted on 2026-08-28 (Fresh Eyes Audit A1). Protocols used to be matched on
+  // the UNFILTERED query, so this query's stopwords brushed all five safety sheets and the exact
+  // title landed 6th of 8 -- pressing Enter opened the suicide protocol instead of the page the
+  // learner named. The protocol pass now filters stopwords (crisis routing moved to explicit
+  // safetyKit triggers), so the title leads the whole list, not just the item block.
   const r = F.fdSearchResults(REAL_INDEX, 'therapy on the unit', SYN, {});
-  const items = r.filter((x) => x.kind === 'item');
-  assert.equal(items[0].item.title, 'Therapy on the Unit');
-  assert.ok(r.indexOf(items[0]) < 8, 'the exact title match must survive the cap-at-8');
+  assert.equal(r[0].kind, 'item');
+  assert.equal(r[0].item.title, 'Therapy on the Unit');
 });
 
 test('a one-word topic query surfaces the attested pages for that topic', () => {
@@ -301,11 +313,55 @@ test('scoring does not break the cap-at-8 contract', () => {
   assert.ok(F.fdSearchResults(REAL_INDEX, 'a', SYN, {}).length <= 8);
 });
 
-// ---- protocol reachability for natural-language safety queries -------------------------------
-// The index carries no stem or synonym coverage for "suicidal", "die", or "self-harm", so the
-// UNFILTERED word list is the only thing that surfaces a protocol sheet for the way a learner
-// actually types mid-shift. Stopword filtering belongs to the item pass alone: applying it to the
-// protocol pass silently removed the safety kit from these queries.
+// ---- protocol reachability: explicit crisis vocabulary, not a stopword accident --------------
+// Before 2026-08-28 the ONLY thing routing "i want to kill myself" to pg_suicide.md was the
+// stopword "to", substring-matched inside "thoughts" in that page's tldr. The haystack carries
+// none of kill/myself/die/suicidal and curriculum.json's synonyms map has no crisis terms, so
+// filtering stopwords out of the protocol pass -- as the 2026-08-27 Fresh Eyes Audit recommended
+// for its exact-title leak -- returned ZERO protocols for that query. The leak and the crisis
+// route were the same mechanism.
+//
+// safetyKit triggers make the routing explicit. These tests pin the vocabulary, not the accident:
+// the "does not depend on any stopword" test below fails if anyone reverts to matching on the
+// unfiltered word list.
+
+const protocolRefs = (q) => F.fdSearchResults(REAL_INDEX, q, SYN, {})
+  .filter((x) => x.kind === 'protocol').map((x) => x.item.ref);
+
+for (const q of ['i want to kill myself', 'she said she wants to die',
+  'patient is suicidal', 'thinking about self harm']) {
+  test(`"${q}" reaches the suicide protocol by trigger, not by stopword`, () => {
+    assert.ok(protocolRefs(q).includes('pg_suicide.md'), `pg_suicide.md missing for "${q}"`);
+  });
+}
+
+test('the crisis route does not depend on any stopword in the query', () => {
+  // Strip every stopword from a real query and the protocol must STILL be reached: the route is
+  // carried by the content words, not by "to"/"a"/"the" wildcard-matching the haystack.
+  assert.ok(protocolRefs('kill myself').includes('pg_suicide.md'));         // "i want TO kill myself"
+  assert.ok(protocolRefs('want kill myself').includes('pg_suicide.md'));
+  assert.ok(protocolRefs('patient suicidal').includes('pg_suicide.md'));    // "patient IS suicidal"
+});
+
+test('a trigger matches whole words only, so "diet" does not summon the suicide sheet', () => {
+  assert.equal(protocolRefs('diet and nutrition').includes('pg_suicide.md'), false);
+});
+
+test('stopwords no longer summon the safety kit for an ordinary content query', () => {
+  // The A1 leak: "on"/"the" substring-matched every protocol haystack, so all five ranked above
+  // the page the learner named, and pressing Enter opened the suicide sheet.
+  assert.deepEqual(protocolRefs('therapy on the unit'), []);
+});
+
+test('every safety-kit protocol carries a non-empty trigger vocabulary', () => {
+  for (const k of REAL_CUR.safetyKit) {
+    assert.ok(Array.isArray(k.triggers) && k.triggers.length > 0, `${k.ref} has no triggers`);
+    for (const t of k.triggers) {
+      assert.equal(t, t.toLowerCase(), `trigger "${t}" on ${k.ref} must be lowercase`);
+      assert.ok(t.trim() === t && t.length > 1, `trigger "${t}" on ${k.ref} is malformed`);
+    }
+  }
+});
 
 test('a natural-language risk disclosure still returns the safety-kit protocol first', () => {
   const r = F.fdSearchResults(REAL_INDEX, 'she said she wants to die', SYN, {});
@@ -334,4 +390,83 @@ test('the item comparator breaks score ties explicitly rather than trusting sort
   const src = searchSrc.slice(searchSrc.indexOf('itemResults.sort('));
   assert.match(src.slice(0, 400), /_score[\s\S]{0,120}\|\|[\s\S]{0,160}ref/,
     'itemResults.sort must fall back to a ref comparison when scores are equal');
+});
+
+// ---- phrase synonyms (Fresh Eyes Audit A5) ----------------------------------------------------
+// fdExpandQuery is per-word, and A5's two named gaps cannot be expressed that way without real
+// collateral. Measured before building this: a synonym on "first" fixes "first shift" but hijacks
+// "first line treatment" and "first episode psychosis" (both push welcome.md above the correct
+// page), and "shift" alone still breaks "night shift sleep". The limitation is the mechanism.
+//
+// Multi-word synonym keys are therefore matched WHOLE-PHRASE against the space-padded raw query —
+// the same shape as the safetyKit triggers — so "first shift" expands and "first line treatment"
+// does not. Single-word keys are untouched. The collateral queries below are the point of this
+// block: they are what a per-word fix would have broken.
+
+const topRefs = (q, n) => F.fdSearchResults(REAL_INDEX, q, SYN, {}).map((r) => r.item.ref).slice(0, n);
+const rankOf = (q, ref) => F.fdSearchResults(REAL_INDEX, q, SYN, {})
+  .map((r) => r.item.ref).indexOf(ref);
+
+test('"first shift" reaches the orientation trio instead of unrelated pages', () => {
+  // Baseline was cases.md, ddx.md, exp_family.md — summary-substring noise, no orientation page.
+  assert.ok(rankOf('first shift', 'welcome.md') > -1, `welcome.md missing: ${topRefs('first shift', 5)}`);
+});
+
+test('"first day" reaches the orientation trio too', () => {
+  assert.ok(rankOf('first day', 'welcome.md') > -1, `welcome.md missing: ${topRefs('first day', 5)}`);
+});
+
+test('"patient refuses medication" surfaces Decisional Capacity', () => {
+  assert.ok(rankOf('patient refuses medication', 'capacity.html') > -1,
+    `capacity.html missing: ${topRefs('patient refuses medication', 5)}`);
+});
+
+// ---- the collateral a per-word synonym would have caused --------------------------------------
+
+test('"first line treatment" is untouched — the phrase never matches', () => {
+  const refs = topRefs('first line treatment', 3);
+  assert.equal(refs.includes('welcome.md'), false, `orientation leaked in: ${refs}`);
+  assert.equal(refs[0], 'exp_tx.md');
+});
+
+test('"first episode psychosis" is untouched', () => {
+  const refs = topRefs('first episode psychosis', 3);
+  assert.equal(refs.includes('welcome.md'), false, `orientation leaked in: ${refs}`);
+  assert.equal(refs[0], 't_psychosis.md');
+});
+
+test('"night shift sleep" is untouched', () => {
+  const refs = topRefs('night shift sleep', 3);
+  assert.equal(refs.includes('welcome.md'), false, `orientation leaked in: ${refs}`);
+  assert.equal(refs[0], 't_sleep.md');
+});
+
+// ---- mechanism --------------------------------------------------------------------------------
+
+test('a multi-word synonym key expands only when the whole phrase is present', () => {
+  const syn = { 'first shift': 'orientation welcome' };
+  assert.match(F.fdExpandQuery('my first shift tomorrow', syn), /orientation welcome/);
+  assert.doesNotMatch(F.fdExpandQuery('first line treatment', syn), /orientation/);
+  assert.doesNotMatch(F.fdExpandQuery('shift first', syn), /orientation/,
+    'word order matters — this is a phrase, not a bag of words');
+});
+
+test('single-word synonyms keep working exactly as before', () => {
+  assert.match(F.fdExpandQuery('etoh', BRIEF_SYN), /alcohol/);
+  assert.match(F.fdExpandQuery('etoh', BRIEF_SYN), /etoh/);
+});
+
+test('phrase expansion never summons a safety protocol on its own', () => {
+  // Expanded words feed the protocol haystack pass; a phrase must not become a back door into
+  // the safety kit, which is trigger-governed (A1).
+  for (const q of ['first shift', 'first day']) {
+    assert.deepEqual(protocolRefs(q), [], `${q} summoned protocols: ${protocolRefs(q)}`);
+  }
+});
+
+test('every multi-word synonym key is lowercase and genuinely multi-word', () => {
+  for (const key of Object.keys(SYN).filter((k) => k.includes(' '))) {
+    assert.equal(key, key.trim().toLowerCase(), `"${key}" must be lowercase and trimmed`);
+    assert.ok(key.split(/\s+/).length > 1, `"${key}" is not a phrase`);
+  }
 });

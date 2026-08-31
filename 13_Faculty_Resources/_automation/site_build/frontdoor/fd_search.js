@@ -121,12 +121,29 @@ function fdSearchScore(item, rawQuery, contentWords){
    reading it back out of this function. */
 function fdExpandQuery(q, synonyms){
   var syn=synonyms||{};
-  var words=String(q||'').toLowerCase().split(/\s+/);
+  var raw=String(q||'').toLowerCase();
+  var words=raw.split(/\s+/);
   var out=[];
   for(var i=0;i<words.length;i++){
     var w=words[i];
     if(!w) continue;
     out.push(syn[w]?(w+' '+syn[w]):w);
+  }
+  /* PHRASE pass. A synonyms key containing a space is matched whole-phrase against the
+     space-padded raw query -- the same shape as the safetyKit triggers -- and is inert to the
+     per-word loop above, so adding one cannot change any existing single-word behaviour.
+
+     This exists because per-word expansion cannot express the Fresh Eyes Audit's A5 gaps without
+     real collateral, which was measured before the mechanism was built: a synonym on "first"
+     fixes "first shift" but hijacks "first line treatment" AND "first episode psychosis" (both
+     push the orientation page above the correct one), and narrowing to "shift" alone still
+     breaks "night shift sleep" while leaving "first day" unfixed. A phrase key fires only on the
+     phrase, so those three queries are untouched -- tests/fd-search.test.mjs pins all three,
+     because they are what the cheap fix would have broken. */
+  var padded=' '+raw+' ';
+  for(var key in syn){
+    if(key.indexOf(' ')===-1) continue;
+    if(padded.indexOf(' '+key+' ')!==-1) out.push(syn[key]);
   }
   return out.join(' ');
 }
@@ -147,7 +164,25 @@ function fdSearchHaystack(item){
   return (item.title+' '+item.ref+' '+item.summary).toLowerCase();
 }
 
+/* Crisis routing for the protocol pass. Triggers are matched against the SPACE-PADDED raw query
+   rather than the word list, which buys whole-word/phrase matching without a regex: " diet and
+   nutrition " does not contain " die ", and a multi-word trigger can be authored the way a
+   learner types it ("wants to die") instead of in filtered form ("wants die"). The raw query is
+   used, not the expanded one, so a synonym expansion can never conjure a crisis match that the
+   learner did not type. */
+function fdSearchTriggerHit(triggers, paddedQuery){
+  var list=triggers||[];
+  for(var i=0;i<list.length;i++){
+    if(list[i]&&paddedQuery.indexOf(' '+list[i]+' ')!==-1) return true;
+  }
+  return false;
+}
+
 function fdSearchItemMeta(item){
+  /* Say so in the result row itself: a learner searching "catatonia scale" mid-shift should learn
+     from the list, not from opening the page, that the scale is not reproduced here. Checked
+     BEFORE the tool branch, since a rights page is still kind 'tool'. */
+  if(item.rights) return 'reference · not reproduced';
   if(item.kind==='tool') return 'tool';
   return (typeof item.minutes==='number')?(item.minutes+' min read'):'';
 }
@@ -199,18 +234,33 @@ function fdSearchResults(index, query, synonyms, state){
   for(var e=0;e<expandedWords.length;e++){ if(expandedWords[e]) qw.push(expandedWords[e]); }
   var contentWords=fdSearchContentWords(qw);
 
-  /* The PROTOCOL pass deliberately keeps the UNFILTERED word list. The index carries no stem or
-     synonym coverage for "suicidal", "die", or "self-harm", so on a plain-language query --
-     "she said she wants to die", "patient wants to leave" -- the only thing that reaches a safety
-     sheet is a match on one of the query's own words. Filtering them here dropped the safety kit
-     out of those queries entirely. Stopword filtering exists to stop "on"/"the" acting as a
-     wildcard in the ITEM pass, where a spurious match displaces a real one inside the cap; the
-     protocol pass has no such failure mode -- protocols are 5 items, always rank first, and
-     always fit inside the cap. */
+  /* Two ways into the safety kit, both deliberate.
+
+     (1) an explicit TRIGGER phrase -- the crisis vocabulary each protocol carries in
+         curriculum.json's safetyKit. This is what routes the way a learner actually types
+         mid-shift ("i want to kill myself", "she said she wants to die").
+     (2) the ordinary haystack match, now on the FILTERED word list.
+
+     Until 2026-08-28 there was only (2), on the UNFILTERED list, and the comment here claimed
+     that WAS the safety contract. It was not: measured against the real index, the only token in
+     "i want to kill myself" that matched pg_suicide.md was the stopword "to", found inside
+     "thoughts" in that page's tldr -- the haystack carries none of kill/myself/die/suicidal and
+     the synonyms map has no crisis terms. So the same mechanism produced both the crisis route
+     and the leak where "on"/"the" wildcard-matched all five protocols and buried the page the
+     learner named (the 2026-08-27 audit's A1: typing the exact title "therapy on the unit" and
+     pressing Enter opened the suicide sheet). Removing one removed the other; filtering alone
+     returned zero protocols for every plain-language crisis query.
+
+     Splitting them makes the safety contract explicit and testable, and stops it depending on a
+     copy-edit: rewording a tldr can no longer silently delete the kit from a suicide query.
+     fdSearchContentWords never returns empty, so an all-stopword query still surfaces the kit --
+     fail-safe, and pinned by test. */
+  var paddedQuery=' '+rawQuery+' ';
   var protoResults=[];
   for(var kk=0;kk<kit.length;kk++){
     var kitItem=kit[kk].item;
-    if(fdSearchHits(fdSearchHaystack(kitItem), rawQuery, qw)){
+    if(fdSearchTriggerHit(kit[kk].triggers, paddedQuery)||
+       fdSearchHits(fdSearchHaystack(kitItem), rawQuery, contentWords)){
       protoResults.push({ item: kitItem, kind:'protocol', meta:'safety · protocol' });
       seenRefs[kitItem.ref]=true;
     }
@@ -255,7 +305,7 @@ function fdSearchResultRow(r){
   var isProto=(r.kind==='protocol');
   var dotCls='fd-result__dot';
   if(isProto) dotCls+=' is-safety';
-  else if(it.kind==='tool') dotCls+=' is-tool';
+  else if(it.kind==='tool'&&!it.rights) dotCls+=' is-tool';
   var openAttrs=isProto
     ?(' data-fd-safety="'+fdEsc(it.ref)+'"')
     :(' data-fd-open="'+fdEsc(it.ref)+'" data-fd-sheet');
@@ -282,7 +332,12 @@ function fdSearchOverlay(index, query, synonyms, state){
     'placeholder="Symptom, drug, tool, or task…">';
   out+='<button type="button" class="fd-searchpanel__esc" data-fd-close-search aria-label="Close search">esc</button>';
   out+='</div>';
-  out+='<div class="fd-searchpanel__body">';
+  /* Results replace themselves on every keystroke with no visual transition a screen reader can
+     observe, so the region announces its own size. aria-label carries the count rather than a
+     visually-hidden node: the panel is rebuilt wholesale on each render, and an attribute cannot
+     drift out of sync with the rows the way a separate element can. */
+  out+='<div class="fd-searchpanel__body" role="region" aria-live="polite" '+
+    'aria-label="'+results.length+' result'+(results.length===1?'':'s')+'">';
   /* Empty-state only replaces the results when the user actually typed something and it matched
      nothing -- an empty query always has defaults (see fdSearchResults), so there is nothing to
      apologise for on first open. Matches the prototype's own noResults = q.length>0 && !results. */

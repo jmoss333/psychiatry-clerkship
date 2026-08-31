@@ -439,6 +439,7 @@ function fdOpenResource(ref, opts){
     (typeof renderGovernanceNotice==='function'?renderGovernanceNotice:function(){return '';});
   var renderReader=o.renderReader||
     (typeof fdReader==='function'?fdReader:function(_i,_s,body){return body;});
+
   /* Genuine navigation lands at the top of the new resource; back/forward keeps whatever
      position the browser restores. Injectable so the contract is testable without a DOM --
      same pattern as host/governanceNotice/renderReader above. */
@@ -471,6 +472,22 @@ function fdOpenResource(ref, opts){
     }
     if(o.previewStatus) o.previewStatus('error',request.kind==='tool'?'tool':'page');
     return false;
+  }
+
+  /* A ref the site does not know never reaches the network. fdReader already renders the
+     not-found surface for it, but for a .md ref that render was immediately overwritten: the
+     fetch of content/<ref> 404s, fail() replaces the surface with "Page unavailable",
+     fdOpenInitialResource reports not-ok and startup THROWS -- which is why a dead ?page= link
+     bounced to Today with no explanation, while a dead ?tool= link (an iframe, mounted
+     synchronously) showed the surface correctly. Same input, two different broken states: the
+     exact defect Fresh Eyes Audit A4 asked to collapse into one surface.
+
+     mount('') lets fdReader own the whole render, and returning TRUE is the point: showing
+     "we couldn't find that page" is the correct outcome for this input, not a failure to be
+     recovered from. Guarded on index.known so a caller without a built index keeps the old
+     fetch-and-fail path rather than declaring every page missing. */
+  if(index&&index.known&&!index.known[ref]){
+    return Promise.resolve(mount(''));
   }
 
   if(request.kind==='tool'){

@@ -39,7 +39,6 @@
   .titlerow{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin-top:2px}
   .lede{color:var(--text-mid);margin:4px 0 0;max-width:62ch}
   .badge{display:inline-block;font-size:.7rem;font-weight:700;border-radius:var(--radius-pill);padding:4px 12px;vertical-align:middle;min-height:0}
-  .badge.draft{background:var(--warning-light);color:var(--warning);border:1px dashed var(--warning)}
   .badge.mode{background:var(--info-light);color:var(--info);border:1px solid var(--info);cursor:pointer;font:inherit;font-size:.7rem;font-weight:700;min-height:44px;padding:8px 12px}
   .ribbon{display:flex;align-items:flex-start;gap:10px;margin:var(--sp3) 0 0;padding:var(--sp2) 14px;background:var(--accent-light);border-left:3px solid var(--accent);border-radius:0 var(--radius-md) var(--radius-md) 0;font-size:.83rem;color:var(--accent-dark);line-height:1.5}
   .ribbon .mark{font-family:var(--font-head);font-style:italic;padding-top:1px}
@@ -837,7 +836,6 @@ function App(){
     e('span',{className:'kicker'},'Clinical skills · Simulation'),
     e('div',{className:'titlerow'},
       e('h1',null,'The Interview Room'),
-      e('span',{className:'badge draft'},'Redesigned — pending faculty review'),
       e('button',{className:'badge mode',
         disabled:S.screen!=='select'||showVoiceConsent,
         onClick:function(){var nx=provMode==='mock'?'live':'mock';cancelProviderCheck();providerModeRef.current=nx;setProvMode(nx);setShowVoiceConsent(false);

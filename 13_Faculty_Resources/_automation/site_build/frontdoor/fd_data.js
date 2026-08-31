@@ -16,15 +16,24 @@ function fdIsTool(ref){ return /\.html$/.test(ref); }
 /* A page with no topic_meta entry still has to render -- the Library carries every shipped page
    and not all of them are topic-template pages. Degrade to a titled row rather than throwing:
    renderHome()'s history in this repo is that one unguarded throw blanks the whole surface. */
-function fdMakeItem(ref, kind, topicMeta, toolIndex, manifestIndex){
+function fdMakeItem(ref, kind, topicMeta, toolIndex, manifestIndex, rights){
   var m=topicMeta[ref]||{};
   var t=toolIndex[ref]||null;
   var fr=m.facultyReview||{};
   var manifest=manifestIndex[ref]||{};
+  /* `rights` is a PRESENTATION flag, deliberately NOT a kind. These pages are still .html
+     artifacts served from /tools/, so kind must keep saying "tool": every loading, routing and
+     location path in the SPA, the wiring layer and the smoke crawler branches on kind==='tool'
+     to decide between /tools/<f> and /content/<f>. An earlier attempt made 'rights' a third kind
+     and the served site 404'd both pages -- caught by the nav crawl, not by any local gate,
+     because nothing local fetches built URLs.
+     What the flag changes is only how the shell PRESENTS the page: no Quick Tools, no tool chip,
+     no "Interactive tool" kicker, no Interactive-tools column. */
   var isTool=(kind==='tool')||fdIsTool(ref);
   return {
     ref: ref,
     kind: isTool?'tool':'read',
+    rights: rights===true,
     /* Title comes from site_manifest.json, the registry of shipped pages. topic_meta has no
        title field on any entry -- it describes a page's content, not its identity -- so reading
        one there would silently degrade every .md row to its raw slug. Falling back to the ref is
@@ -57,9 +66,18 @@ function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
     }
   }
 
+  /* Rights references are a property of the PAGE, not of where it happens to be linked from, so
+     the lookup has to be global rather than per-call-site. ensure() memoises by ref and the first
+     caller wins: cssrs.html is a week item on ms3 but reaches the resident index only through a
+     library column -- so a per-call-site flag would leave the same page a plain tool on one site
+     and a reference on the other. The list is derived from instrument_rights.json and
+     validate_curriculum.py fails if the two disagree. */
+  var rightsRefs={}, rr=cur.rightsReferences||[];
+  for(var rq=0;rq<rr.length;rq++){ rightsRefs[rr[rq]]=true; }
+
   var byRef={};
   function ensure(ref, kind){
-    if(!byRef[ref]) byRef[ref]=fdMakeItem(ref, kind, meta, toolIndex, manifestIndex);
+    if(!byRef[ref]) byRef[ref]=fdMakeItem(ref, kind, meta, toolIndex, manifestIndex, rightsRefs[ref]===true);
     return byRef[ref];
   }
 
@@ -83,8 +101,13 @@ function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
     columns.push({ name: cc[c].name, accent: cc[c].accent, items: citems });
   }
 
+  /* triggers is the protocol's crisis vocabulary (curriculum.json), copied rather than aliased so
+     a consumer cannot mutate the source array. fd_search.js matches it against the padded raw
+     query; without it the safety kit is reachable only by stopword accident. */
   var kit=[], ck=cur.safetyKit||[];
-  for(var k=0;k<ck.length;k++){ kit.push({ item: ensure(ck[k].ref, null), sub: ck[k].sub }); }
+  for(var k=0;k<ck.length;k++){
+    kit.push({ item: ensure(ck[k].ref, null), sub: ck[k].sub, triggers: (ck[k].triggers||[]).slice() });
+  }
 
   var sourcePath=cur.path||{};
   var pathInfo={
@@ -92,7 +115,20 @@ function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
     weekCount:sourcePath.weekCount
   };
 
-  return { byRef:byRef, path:pathInfo, weeks:weeks, columns:columns, kit:kit };
+  /* known = "this ref names a real page on this site", which is NOT the same as "byRef has it".
+     libraryExclude registers pages that ship and are reachable but are deliberately absent from
+     the Library projection -- orientation-video.html ("surfaced from the Start-here card"), the
+     week*.md pages, the rp-* tools. Treating those as unknown would send a working link to a
+     not-found surface, so the reader needs both sets to tell a valid direct route apart from a
+     dead slug (Fresh Eyes Audit A4). */
+  var known={}, kr;
+  for(kr in byRef){ known[kr]=true; }
+  var lx=cur.libraryExclude||[];
+  for(var lxi=0;lxi<lx.length;lxi++){
+    if(lx[lxi]&&typeof lx[lxi].ref==='string') known[lx[lxi].ref]=true;
+  }
+
+  return { byRef:byRef, path:pathInfo, weeks:weeks, columns:columns, kit:kit, known:known };
 }
 
 /* The browser receives exactly one projected path. Treat that small object as untrusted at the

@@ -174,8 +174,8 @@ test('the detail card shows "you are here" only when viewing the current week', 
 
 test('a detail row hides its ✓ from assistive tech and carries the state on the button', () => {
   const html = F.fdPath(IDX, s({ week: 5, viewWeek: 5, done: { 'w5a.md': true } }));
-  assert.match(html, /class="fd-check is-done" data-fd-toggle="w5a\.md" title="Mark done" aria-pressed="true">/);
-  assert.match(html, /class="fd-check" data-fd-toggle="w5b\.html" title="Mark done" aria-pressed="false">/);
+  assert.match(html, /class="fd-check is-done" data-fd-toggle="w5a\.md" title="Mark undone: [^"]+" aria-pressed="true">/);
+  assert.match(html, /class="fd-check" data-fd-toggle="w5b\.html" title="Mark done: [^"]+" aria-pressed="false">/);
 
   const glyphs = (html.match(/✓/g) || []).length;
   assert.equal(glyphs, 2, 'one per detail row of the viewed week');

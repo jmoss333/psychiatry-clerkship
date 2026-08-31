@@ -127,12 +127,15 @@ step "node --test tests/*.test.mjs"         bash -c 'node --test tests/*.test.mj
 step "contrast-check"                       node tests/contrast-check.mjs
 
 # --- SP: the duplicated state machine and its parity gate ---
-# parity.test.mjs imports sp-proxy/netlify/functions/sp.mjs, so sp-proxy deps must exist or
-# the suite dies with ERR_MODULE_NOT_FOUND (@netlify/blobs) — an environment gap that reads
-# like a code failure. Install if missing rather than reporting a false red.
-if [ ! -d sp-proxy/node_modules ]; then
-  echo "  ....  installing sp-proxy deps (required by parity.test.mjs)"
-  npm --prefix sp-proxy ci >/dev/null 2>&1 || true
+# parity.test.mjs imports sp-proxy/netlify/functions/sp.mjs (@netlify/blobs) and
+# sp-deploy-manifest.test.mjs imports @netlify/zip-it-and-ship-it — a devDependency.
+# Deps must exist and include devDeps even under a user-level `npm config omit=dev`,
+# or Node resolves nothing (ERR_MODULE_NOT_FOUND) or, worse, a stale copy from a parent
+# node_modules and fails with a misleading assertion error. Install with --include=dev
+# whenever either package is missing rather than reporting a false red.
+if [ ! -d sp-proxy/node_modules/@netlify/blobs ] || [ ! -d sp-proxy/node_modules/@netlify/zip-it-and-ship-it ]; then
+  echo "  ....  installing sp-proxy deps incl. dev (required by parity + deploy-manifest tests)"
+  npm --prefix sp-proxy ci --include=dev >/dev/null 2>&1 || true
 fi
 step "sp-proxy test suite"                  npm --prefix sp-proxy test
 step "sp-interview suites (incl. parity)"   bash _prototypes/sp-interview/tests/run-all.sh

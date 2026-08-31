@@ -257,13 +257,17 @@ test('real dots are keyed on the item\'s kind, and today that always agrees with
         '<button type="button" class="fd-collink" data-fd-open="' + ref.replace(/\./g, '\\.') +
         '">\\s*<span class="([^"]*)">'));
       assert.ok(m, `no rendered row for ${ref}`);
-      const expected = kind === 'tool' ? 'fd-collink__dot is-tool' : 'fd-collink__dot';
-      assert.equal(m[1], expected, `${ref} (kind=${kind}, column accent=${c.accent}) dot class`);
-      // Today's data invariant, checked so a future divergence between kind and accent is visible
-      // here rather than silently changing which field "happens" to agree with the other.
-      assert.equal(kind === 'tool', c.accent === 'tool',
-        `${ref}: kind=${kind} but column accent=${c.accent} -- kind and accent no longer agree`);
-      if (kind === 'tool') sawTool = true; else sawRead = true;
+      // A rights reference is the ONE principled divergence: it keeps kind 'tool' so it still
+      // loads from /tools/, but it reproduces no instrument, so it wears a plain dot and lives in
+      // a content column rather than "Interactive tools" (Fresh Eyes Audit A3).
+      const rights = REAL_IDX.byRef[ref].rights === true;
+      const toolLike = kind === 'tool' && !rights;
+      const expected = toolLike ? 'fd-collink__dot is-tool' : 'fd-collink__dot';
+      assert.equal(m[1], expected, `${ref} (kind=${kind}, rights=${rights}, accent=${c.accent}) dot class`);
+      // The data invariant, still checked so an UNprincipled divergence stays visible here.
+      assert.equal(toolLike, c.accent === 'tool',
+        `${ref}: kind=${kind} rights=${rights} but column accent=${c.accent} -- no longer agree`);
+      if (toolLike) sawTool = true; else sawRead = true;
     }
   }
   assert.ok(sawTool && sawRead, 'fixture sanity: real data must exercise both dot states');
