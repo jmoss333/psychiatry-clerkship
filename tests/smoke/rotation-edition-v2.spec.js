@@ -746,6 +746,13 @@ async function exerciseLearnerSurfaces(page, artifact, audience) {
   await expect(omitted.locator('.fd-collink__label')).toHaveText(library.omitted.title);
   await keyboardActivate(omitted);
   await expect.poll(() => new URL(page.url()).searchParams.get('page')).toBe(library.omitted.ref);
+  // The reader shell -- real <h1>, "Loading..." body -- is painted synchronously on activation, so
+  // the route and the heading are both satisfied while content/<ref> is still in flight. When that
+  // fetch lands it calls announceRoute(), which moves focus to #content; landing between
+  // locator.focus() and locator.press()'s key dispatch, that steals the next Enter from the tab
+  // button (it goes to <main>) and the tab silently never switches. Mount and the focus move are
+  // one task, so once the placeholder is gone the focus move is guaranteed to be behind us.
+  await expect(page.locator('.fd-reader .loading')).toHaveCount(0);
   await expect(page.getByRole('heading', { name: library.omitted.title, exact: true }).first()).toBeVisible();
 
   await activateTab('Library');

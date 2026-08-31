@@ -637,7 +637,12 @@ class RepositoryProducerTests(unittest.TestCase):
         self.assertIn("ms3: 23 item(s)", result.stdout)
         self.assertIn("resident: 25 item(s)", result.stdout)
 
-    def test_rotation_curator_is_a_pending_faculty_local_policy_tool(self) -> None:
+    def test_rotation_curator_is_an_attested_faculty_local_policy_tool(self) -> None:
+        # Reviewed by Joshua Moss, MD in the faculty console on 2026-08-23; the attestation
+        # was stranded on attest/pending and landed 2026-08-27. The source was verified
+        # unchanged between review and landing, so the reviewed status describes the
+        # content it was given for. The remaining diagnostic is the legacy-metadata
+        # warning, which never belonged to the curator.
         diagnostics, documents = governance.validate_repository(ROOT)
 
         self.assertEqual(len(diagnostics), 1)
@@ -645,8 +650,8 @@ class RepositoryProducerTests(unittest.TestCase):
             items = {item["id"]: item for item in documents[site]["items"]}
             curator = items["tools/rotation-curator"]
             self.assertEqual(curator["audiences"], ["faculty"])
-            self.assertEqual(curator["reviewStatus"], "needs-review")
-            self.assertEqual(curator["attestationStatus"], "needs-attestation")
+            self.assertEqual(curator["reviewStatus"], "reviewed")
+            self.assertEqual(curator["attestationStatus"], "faculty-attested")
             self.assertEqual(curator["reviewCategory"], "local-policy")
             self.assertEqual(curator["safetySeverity"], "moderate")
             self.assertEqual(curator["clinicalClaim"], False)

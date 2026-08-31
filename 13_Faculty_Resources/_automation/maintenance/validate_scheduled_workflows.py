@@ -21,7 +21,7 @@ EXPECTED_CRONS = {
     "surveillance-link-monitor.yml": "0 6 * * 1",
     "surveillance-citations.yml": "0 7 * * 1",
     "surveillance-guideline.yml": "0 6 1 * *",
-    "maintenance-sp-health-monitor.yml": "15 */6 * * *",
+    "maintenance-sp-health-monitor.yml": "15 */12 * * *",
     "maintenance-production-canary.yml": "20 9 * * *",
     "maintenance-heartbeat.yml": "45 10 * * *",
     "maintenance-governance-digest.yml": "30 12 * * 1",
@@ -33,6 +33,7 @@ PINNED_ACTIONS = {
     "actions/setup-python": "5fda3b95a4ea91299a34e894583c3862153e4b97",
     "actions/setup-node": "820762786026740c76f36085b0efc47a31fe5020",
     "actions/upload-artifact": "043fb46d1a93c77aae656e7c1c64a875d1fc6a0a",
+    "actions/download-artifact": "37930b1c2abaa49bbe596cd826c3c89aef350131",
     "actions/cache": "55cc8345863c7cc4c66a329aec7e433d2d1c52a9",
     "lycheeverse/lychee-action": "e7477775783ea5526144ba13e8db5eec57747ce8",
 }
@@ -41,6 +42,7 @@ PIN_TAGS = {
     "actions/setup-python": "v7",
     "actions/setup-node": "v7",
     "actions/upload-artifact": "v7",
+    "actions/download-artifact": "v7",
     "actions/cache": "v6",
     "lycheeverse/lychee-action": "v2",
 }
@@ -168,13 +170,12 @@ EXPECTED_STEP_INVENTORIES = {
             ("name", "Test — SP Interview and managed proxy"),
             ("name", "Build + static QA gate (ms3)"),
             ("name", "Build + static QA gate (res)"),
+            ("uses", "actions/upload-artifact"),
         ),
         "smoke-tests": (
             ("uses", "actions/checkout"),
-            ("uses", "actions/setup-python"),
-            ("name", "Install — registry schema validation dependencies"),
             ("uses", "actions/setup-node"),
-            ("name", "Build sites (ms3 + res)"),
+            ("uses", "actions/download-artifact"),
             ("uses", "actions/cache"),
             ("name", "Install Playwright + Chromium"),
             ("name", "Start local review servers"),
@@ -309,7 +310,7 @@ EXPECTED_STEP_INVENTORIES = {
 # Native true/false values stay typed, `on` stays a string, and action inputs
 # use runner-coerced string semantics. Pin comments are validated separately.
 EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
-    "ci.yml": "f7980f8de6e21f6e4d37ee9ef1c97668c1487d0cf8c0916b188f6d6edd0f0138",
+    "ci.yml": "f927b9699aed7654e012b97c5e7b96238af42f4e04e86257e28cfef0585118db",
     "maintenance-governance-digest.yml": (
         "9869ba87704c40c9f5117b012ef7fea372644e318ccbb0df54d118b296675099"
     ),
@@ -326,7 +327,7 @@ EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
         "655504ee205ce4f27ddc63dc2a819dc1d1eb7987f56bbacbbfc452d1cc48476a"
     ),
     "maintenance-sp-health-monitor.yml": (
-        "dc644a9c81060952d2339617a383e26a5565ee7b49afe7acaae31dffece28a29"
+        "fa79af1e841096550e462774445a6b2a5a198c52aa24423301abf1d3bcb0501e"
     ),
     "surveillance-citations.yml": (
         "3ae306c847088fbfccdbe6abe95d7e5f0ea927df8122bdde1b2ac02bd37d5f7a"
@@ -502,15 +503,6 @@ CRITICAL_STEPS = {
             ),
         ),
         "smoke-tests": (
-            (
-                "Build sites (ms3 + res)",
-                "bash 13_Faculty_Resources/_automation/site_build/"
-                "build_and_check.sh ms3\n"
-                "bash 13_Faculty_Resources/_automation/site_build/"
-                "build_and_check.sh res",
-                None,
-                "required CI smoke build",
-            ),
             (
                 "Check 1: nav crawl + two-audience rotation edition journeys — ms3 + res",
                 "cd tests/smoke\n"
@@ -1075,6 +1067,14 @@ def _validate_uploads(name, steps, errors):
             _error(errors, name, "artifact retention must be between 1 and 90 days")
         if name in MAINTENANCE_FILES | SURVEILLANCE_FILES and retention != 90:
             _error(errors, name, "maintenance evidence retention must be 90 days")
+        if name == "ci.yml" and config.get("name") == "built-sites":
+            # Job-to-job transfer, not evidence: shortest allowed retention,
+            # and success-only (a failed build leaves nothing for smoke).
+            if retention != 1:
+                _error(errors, name, "built-sites transfer retention must be 1 day")
+            if "if" in step:
+                _error(errors, name, "built-sites transfer must upload only on success")
+            continue
         if name == "ci.yml" and retention != 14:
             _error(errors, name, "existing CI smoke artifact retention must remain 14 days")
         if step.get("if") != "always()":
@@ -1116,6 +1116,7 @@ def _validate_ci(workflow, errors):
     if not isinstance(build_steps, list) or not isinstance(smoke_steps, list):
         _error(errors, name, "authoritative CI steps are malformed")
         return
+    res = None
     try:
         ms3 = next(
             index
@@ -1132,13 +1133,43 @@ def _validate_ci(workflow, errors):
     except (StopIteration, ValueError, AttributeError):
         _error(errors, name, "build-test-validate must build ms3 then res")
 
-    smoke_builds = [
-        step
-        for step in smoke_steps
-        if step.get("name") == "Build sites (ms3 + res)"
+    handoff = [
+        index
+        for index, step in enumerate(build_steps)
+        if str(step.get("uses", "")).startswith("actions/upload-artifact@")
+        and isinstance(step.get("with"), dict)
+        and step["with"].get("name") == "built-sites"
     ]
-    if len(smoke_builds) != 1:
-        _error(errors, name, "smoke-tests must build ms3 then res")
+    if (
+        len(handoff) != 1
+        or build_steps[handoff[0]]["with"].get("path") != "_build"
+        or (res is not None and handoff[0] < res)
+    ):
+        _error(
+            errors,
+            name,
+            "build-test-validate must publish built-sites after both build gates",
+        )
+
+    downloads = [
+        index
+        for index, step in enumerate(smoke_steps)
+        if str(step.get("uses", "")).startswith("actions/download-artifact@")
+    ]
+    servers = [
+        index
+        for index, step in enumerate(smoke_steps)
+        if step.get("name") == "Start local review servers"
+    ]
+    if (
+        len(downloads) != 1
+        or not isinstance(smoke_steps[downloads[0]].get("with"), dict)
+        or smoke_steps[downloads[0]]["with"].get("name") != "built-sites"
+        or smoke_steps[downloads[0]]["with"].get("path") != "_build"
+        or len(servers) != 1
+        or downloads[0] >= servers[0]
+    ):
+        _error(errors, name, "smoke-tests must consume built-sites before serving")
 
 
 def _validate_production_canary(workflow, errors):

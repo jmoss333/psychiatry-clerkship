@@ -268,3 +268,162 @@ test('the conflict message names branch protection, not just a race', async () =
   assert.match(error.message, /GIT_BRANCH/);
   assert.equal(error.code, 'github_conflict', 'the stable error code is unchanged');
 });
+
+/* ------------------------------------------------------------------------- *
+ * Base-lag alarm (2026-08-28). The August freeze was silent for four days:
+ * three attestations sat on attest/pending with no rolling PR while the base
+ * fell nine commits behind main, and nothing surfaced it (#415 landed them).
+ * These tests pin the console's load-time probe: GET reports how the branch
+ * compares to the base and whether that state deserves an alarm — and a GET
+ * must never mutate anything (no fast-forward, no PR creation) on the way.
+ * ------------------------------------------------------------------------- */
+
+const MANIFEST_FIXTURE = { tools: [], md: [['x/anki.md', 'anki.md', 'Anki']] };
+const QBANK_FIXTURE = { items: [] };
+
+function contentsFor(url) {
+  if (url.includes('question_bank.json')) return QBANK_FIXTURE;
+  if (url.includes('site_manifest.json')) return MANIFEST_FIXTURE;
+  return REVIEWED;
+}
+
+function makeStateMock(options = {}) {
+  const base = makeMock(options);
+  const fetchImpl = async (input, init = {}) => {
+    const url = String(input);
+    const method = (init.method || 'GET').toUpperCase();
+    if (method === 'GET' && url.includes('/contents/')) {
+      base.calls.push({ url, method, body: null });
+      if (options.failCompare && url.includes('never-matches')) { /* unreachable */ }
+      const doc = contentsFor(url);
+      const serialized = JSON.stringify(doc);
+      return jsonResponse(200, {
+        sha: REVIEWED_SHA,
+        size: Buffer.byteLength(serialized, 'utf8'),
+        content: Buffer.from(serialized, 'utf8').toString('base64'),
+        encoding: 'base64',
+      });
+    }
+    if (options.failCompare && method === 'GET' && url.includes('/compare/')) {
+      base.calls.push({ url, method, body: null });
+      return jsonResponse(500, { message: 'compare unavailable' });
+    }
+    return base.fetchImpl(input, init);
+  };
+  return { fetchImpl, calls: base.calls };
+}
+
+function stateRequest() {
+  const headers = new Headers({ 'x-faculty-key': FACULTY_KEY, Origin: API_ORIGIN });
+  return new Request(API_URL, { method: 'GET', headers });
+}
+
+function mutations(calls) {
+  return calls.filter((c) => c.method !== 'GET');
+}
+
+test('GET reports a stranded branch with a lagging base as alarmed, with both reasons', async () => {
+  const mock = makeStateMock({ ahead: 3, behind: 9 });
+  const response = await handlerWith(mock)(stateRequest());
+  assert.equal(response.status, 200);
+  const payload = await response.json();
+  assert.ok(Array.isArray(payload.items), 'the queue still loads');
+  assert.equal(payload.branchSync.aheadBy, 3);
+  assert.equal(payload.branchSync.behindBy, 9);
+  assert.equal(payload.branchSync.rollingPr, null);
+  assert.equal(payload.branchSync.alarmed, true);
+  assert.deepEqual(payload.branchSync.reasons.sort(), ['base-lag', 'stranded-no-pr']);
+  assert.deepEqual(mutations(mock.calls), [], 'a GET must never mutate refs or open a PR');
+});
+
+test('GET with a rolling PR open alarms on base lag alone', async () => {
+  const openPull = { html_url: 'https://github.example/pull/9' };
+  const mock = makeStateMock({ ahead: 3, behind: 9, openPull });
+  const payload = await (await handlerWith(mock)(stateRequest())).json();
+  assert.equal(payload.branchSync.alarmed, true);
+  assert.deepEqual(payload.branchSync.reasons, ['base-lag']);
+  assert.equal(payload.branchSync.rollingPr, 'https://github.example/pull/9');
+});
+
+test('GET below the lag threshold with a rolling PR open does not alarm', async () => {
+  const openPull = { html_url: 'https://github.example/pull/9' };
+  const mock = makeStateMock({ ahead: 1, behind: 2, openPull });
+  const payload = await (await handlerWith(mock)(stateRequest())).json();
+  assert.equal(payload.branchSync.alarmed, false);
+  assert.deepEqual(payload.branchSync.reasons, []);
+});
+
+test('GET on a merely-behind branch does not alarm and does not fast-forward', async () => {
+  const mock = makeStateMock({ ahead: 0, behind: 9 });
+  const payload = await (await handlerWith(mock)(stateRequest())).json();
+  assert.equal(payload.branchSync.alarmed, false);
+  assert.equal(payload.branchSync.behindBy, 9);
+  assert.deepEqual(mutations(mock.calls), [], 'the write path fast-forwards; the probe never does');
+});
+
+test('ATTEST_BASE_LAG_ALARM overrides the lag threshold', async () => {
+  const openPull = { html_url: 'https://github.example/pull/9' };
+  const mock = makeStateMock({ ahead: 1, behind: 1, openPull });
+  const payload = await (await handlerWith(mock, { ATTEST_BASE_LAG_ALARM: '1' })(stateRequest())).json();
+  assert.equal(payload.branchSync.alarmed, true);
+  assert.deepEqual(payload.branchSync.reasons, ['base-lag']);
+  assert.equal(payload.branchSync.threshold, 1);
+});
+
+test('a failed probe degrades to an error marker without failing the load', async () => {
+  const mock = makeStateMock({ ahead: 3, behind: 9, failCompare: true });
+  const response = await handlerWith(mock)(stateRequest());
+  assert.equal(response.status, 200);
+  const payload = await response.json();
+  assert.ok(Array.isArray(payload.items), 'the queue still loads');
+  assert.deepEqual(payload.branchSync, { error: true });
+});
+
+/* The UI half: a pure notice model the shell renders as a load-time banner.
+ * Pinned here beside the probe so the wire format and its presentation cannot
+ * drift apart. */
+import { branchSyncNotice } from '../faculty-console/app.mjs';
+
+test('no notice when the probe is absent, healthy, or non-isolated', () => {
+  assert.equal(branchSyncNotice(undefined), null);
+  assert.equal(branchSyncNotice(null), null);
+  assert.equal(branchSyncNotice({ isolated: false, alarmed: false, reasons: [] }), null);
+  assert.equal(branchSyncNotice({
+    isolated: true, aheadBy: 1, behindBy: 2, rollingPr: 'https://github.example/pull/9',
+    threshold: 3, reasons: [], alarmed: false,
+  }), null);
+});
+
+test('a failed probe yields a quiet staleness caveat, not an alarm', () => {
+  const notice = branchSyncNotice({ error: true });
+  assert.equal(notice.tone, 'muted');
+  assert.match(notice.message, /unavailable/i);
+  assert.equal(notice.href, null);
+});
+
+test('the stranded-no-pr alarm says the attestations have no route to main', () => {
+  const notice = branchSyncNotice({
+    isolated: true, aheadBy: 3, behindBy: 9, rollingPr: null,
+    threshold: 3, reasons: ['stranded-no-pr', 'base-lag'], alarmed: true,
+  });
+  assert.equal(notice.tone, 'alert');
+  assert.match(notice.message, /3 unmerged attestations/);
+  assert.match(notice.message, /no rolling pull request is open/i);
+  assert.match(notice.message, /9 commits behind main/);
+  assert.match(notice.message, /queue below may be stale/i);
+  assert.match(notice.message, /merge commit, not squash/i);
+  assert.equal(notice.href, null);
+});
+
+test('the base-lag alarm links the rolling pull request, https only', () => {
+  const alarmed = {
+    isolated: true, aheadBy: 1, behindBy: 4, rollingPr: 'https://github.example/pull/9',
+    threshold: 3, reasons: ['base-lag'], alarmed: true,
+  };
+  const notice = branchSyncNotice(alarmed);
+  assert.equal(notice.tone, 'alert');
+  assert.match(notice.message, /1 unmerged attestation /);
+  assert.equal(notice.href, 'https://github.example/pull/9');
+  const insecure = branchSyncNotice({ ...alarmed, rollingPr: 'http://github.example/pull/9' });
+  assert.equal(insecure.href, null, 'a non-https PR URL must not become a link');
+});

@@ -290,9 +290,40 @@ function fdReaderToolToggle(expanded){
     '<span>Expand tool</span><span aria-hidden="true">↗</span></button>';
 }
 
+/* ONE not-found surface for both ref kinds. Before this, an unknown ?page= left the dead slug in
+   the address bar while the app showed something else (so a copied URL lied), and an unknown
+   ?tool= rendered the raw filename as the page title and framed a 404 -- two different broken
+   states for the same mistake (Fresh Eyes Audit A4).
+
+   The governance line stays exactly as it was. Failing closed on review status is correct: the
+   shell genuinely cannot vouch for a page it cannot identify, and saying so is the honest answer.
+   Only the presentation around it was broken. */
+function fdNotFound(ref){
+  return '<article class="fd-reader fd-reader--notfound">'+
+    '<button type="button" class="fd-reader__back" data-fd-back>‹ Back</button>'+
+    '<div class="fd-reader__cols"><div class="fd-article">'+
+    '<div class="fd-article__head"><span class="fd-eyebrow">Not found</span></div>'+
+    '<h1 class="fd-article__h1">We couldn’t find that page</h1>'+
+    '<p class="fd-article__lead">The link may be out of date, or the page may have been '+
+    'retired. Search for it, or browse the Library.</p>'+
+    '<div class="governance-notice unavailable">Review status unavailable—verify with faculty</div>'+
+    '<div class="fd-article__source"><span>Requested:</span>'+
+    '<span class="fd-src">'+fdEsc(ref||'')+'</span></div>'+
+    '<div class="fd-article__actions">'+
+    '<button type="button" class="fd-btn fd-btn--primary" data-fd-tab="today">Back to Today</button>'+
+    '<button type="button" class="fd-btn fd-btn--ghost" data-fd-tab="library">Browse the Library</button>'+
+    '</div>'+
+    '</div></div></article>';
+}
+
 function fdReader(index, state, bodyHtml){
   var idx=index||{byRef:{}, weeks:[]};
   var st=state||{};
+  /* A ref the site does not know at all gets the not-found surface rather than a reader built
+     around a synthesized item whose title is the raw filename. Guarded on idx.known so this only
+     applies to a fully-built index -- a caller passing a bare {byRef:{}} (tests, early boot)
+     keeps the old degrade-gracefully path rather than showing every page as missing. */
+  if(idx.known&&st.ref&&!idx.known[st.ref]) return fdNotFound(st.ref);
   var item=(idx.byRef&&idx.byRef[st.ref])|| {
     ref: st.ref||'', kind:'read', title: st.ref||'', minutes:null, summary:'',
     points:[], attested:false, toolRef:null, risk:null, href:'',
@@ -315,9 +346,16 @@ function fdReader(index, state, bodyHtml){
   var backLabel=fdReaderBackLabel(st.fromTab);
   var doneLabel=fdReaderDoneLabel(isDone, nextAfter, backLabel);
 
-  var kindLabel=isTool?'Interactive tool':'Reading';
+  /* A rights reference keeps every TOOL MECHANIC below (it is still an .html artifact in the tool
+     frame, with the same toolbar and expand control) but must not be LABELLED one: "Interactive
+     tool · self-paced" over a page whose whole purpose is to say the instrument is not reproduced
+     here is the contradiction A3 reported. isTool stays extension-derived for the mechanics; only
+     the copy branches. */
+  var isRights=(item.rights===true);
+  var kindLabel=isRights?'Reference':(isTool?'Interactive tool':'Reading');
   var eyebrowText=inWeek?('Week '+fdEsc(st.week)+' · '+kindLabel):kindLabel;
-  var metaText=isTool?'self-paced':((typeof item.minutes==='number')?(item.minutes+' min'):'');
+  var metaText=isRights?'instrument not reproduced here'
+    :(isTool?'self-paced':((typeof item.minutes==='number')?(item.minutes+' min'):''));
 
   /* The "·" dot only separates the eyebrow from the meta text, so it is emitted only when there
      IS meta text -- a read with no topic_meta.read entry has metaText==='', and a dot with

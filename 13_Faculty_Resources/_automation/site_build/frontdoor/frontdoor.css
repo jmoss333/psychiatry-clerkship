@@ -250,10 +250,12 @@
 }
 .fd-check.is-done{background:var(--fd-success);border-color:var(--fd-success);color:var(--fd-on-accent)}
 .fd-check.is-done.is-just-done{animation:fdCheckPop .3s cubic-bezier(.34,1.56,.64,1)}
-/* The 22px circle is the design's mark, not its target. On touch the tappable area is grown to
- * 44px with a transparent overlay so the visual stays put. */
+/* The 22px circle is the design's mark, not its target. A transparent overlay grows the tappable
+ * area without moving the visual: 24px on a fine pointer to clear WCAG 2.2 SC 2.5.8, 44px on
+ * touch. Before this the overlay was coarse-only, so a mouse user got the bare 22px. */
+.fd-check::after{content:'';position:absolute;top:50%;left:50%;width:24px;height:24px;transform:translate(-50%,-50%)}
 @media (pointer:coarse){
-  .fd-check::after{content:'';position:absolute;top:50%;left:50%;width:44px;height:44px;transform:translate(-50%,-50%)}
+  .fd-check::after{width:44px;height:44px}
 }
 /* The step checkbox inside the side sheet is 20px in the prototype. */
 .fd-step .fd-check{width:20px;height:20px;min-width:20px;min-height:20px;font-size:9px}

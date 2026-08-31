@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "curriculum.json — front door structure",
   "type": "object",
-  "required": ["learningPaths", "libraryColumns", "libraryExclude", "siteLibrary", "safetyKit", "roles", "synonyms"],
+  "required": ["learningPaths", "libraryColumns", "libraryExclude", "siteLibrary", "rightsReferences", "safetyKit", "roles", "synonyms"],
   "additionalProperties": false,
   "properties": {
     "_note": { "type": "string" },
@@ -65,15 +65,28 @@
         "resident": { "$ref": "#/definitions/siteLibraryEntry" }
       }
     },
+    "_rightsReferencesNote": { "type": "string" },
+    "rightsReferences": {
+      "description": "Shipped .html pages that are references ABOUT an instrument the library does not reproduce. Kept in lockstep with instrument_rights.json by validate_curriculum.py.",
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
     "safetyKit": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["ref", "sub"],
+        "required": ["ref", "sub", "triggers"],
         "additionalProperties": false,
         "properties": {
           "ref": { "type": "string", "minLength": 1 },
-          "sub": { "type": "string", "minLength": 1 }
+          "sub": { "type": "string", "minLength": 1 },
+          "triggers": {
+            "description": "Crisis vocabulary routing a plain-language query to this protocol. Matched whole-word/phrase against the space-padded raw query, so entries are written the way a learner types them.",
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string", "minLength": 2, "pattern": "^[a-z0-9'’ -]+$" }
+          }
         }
       }
     },
@@ -86,7 +99,13 @@
         "resident": { "$ref": "#/definitions/roleList" }
       }
     },
-    "synonyms": { "type": "object", "additionalProperties": { "type": "string" } }
+    "_synonymsNote": { "type": "string" },
+    "synonyms": {
+      "description": "Query expansion. A single-word key expands per word. A key CONTAINING A SPACE is a phrase, matched whole-phrase against the raw query — the safe way to express a multi-word intent whose individual words are too common to expand on their own.",
+      "type": "object",
+      "propertyNames": { "pattern": "^[a-z0-9][a-z0-9 -]*$" },
+      "additionalProperties": { "type": "string", "minLength": 1 }
+    }
   },
   "definitions": {
     "learningPath": {

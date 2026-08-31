@@ -18,7 +18,7 @@ import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 EXPECTATIONS = {
-    "maintenance-sp-health-monitor.yml": 10,
+    "maintenance-sp-health-monitor.yml": 16,
     "maintenance-production-canary.yml": 30,
     "maintenance-rotation-readiness.yml": 30,
     "ci.yml": 8 * 24,
@@ -604,7 +604,7 @@ def main(argv=None, *, opener=None, now=_utc_now):
 
 def _expected_cron(workflow_file):
     mapping = {
-        "maintenance-sp-health-monitor.yml": "15 */6 * * *",
+        "maintenance-sp-health-monitor.yml": "15 */12 * * *",
         "maintenance-production-canary.yml": "20 9 * * *",
         "maintenance-rotation-readiness.yml": "15 13 * * *",
         "ci.yml": "0 8 * * 0",

@@ -32,7 +32,7 @@ days, the repository-supported ceiling. The existing CI smoke artifact remains 1
 | Check | Cadence | Workflow or home | Artifact and retention |
 |---|---|---|---|
 | Interview Room authenticated GET | Every 6 hours, `0 */6 * * *` | Netlify `sp-health-canary` | Blob store `sp-health-canary`, key `latest`; not a GitHub artifact |
-| Interview Room receipt monitor | Every 6 hours at minute 15, `15 */6 * * *` | `maintenance-sp-health-monitor.yml` | `maintenance-sp-health-${{ github.run_id }}` — 90 days |
+| Interview Room receipt monitor | Every 12 hours at minute 15, `15 */12 * * *` | `maintenance-sp-health-monitor.yml` | `maintenance-sp-health-${{ github.run_id }}` — 90 days |
 | Production learner canary | Daily 09:20 UTC, `20 9 * * *` | `maintenance-production-canary.yml` | `maintenance-production-canary-${{ github.run_id }}` — 90 days |
 | Internal workflow heartbeat | Daily 10:45 UTC, `45 10 * * *` | `maintenance-heartbeat.yml` | `maintenance-workflow-heartbeat-${{ github.run_id }}` — 90 days |
 | Clean-room release rehearsal | Sunday 08:00 UTC, `0 8 * * 0` | `ci.yml` | `smoke-test-results-${{ github.run_number }}` — 14 days |
