@@ -1,0 +1,68 @@
+[
+  {
+    "finding_id": "link:localhost:8080::broken-link::b7424e5c2c8d7110",
+    "fingerprint": "link:localhost:8080::broken-link::b7424e5c2c8d7110",
+    "job": "link-source-monitor",
+    "source_id": "link:localhost:8080",
+    "source_name": "localhost:8080",
+    "source_url": "http://localhost:8080/13_Faculty_Resources/qbank-attest.html",
+    "source_type": "html",
+    "detected_at": "2026-08-03T07:19:29+00:00",
+    "change_type": "broken-link",
+    "severity": "P1",
+    "summary": "Broken link (no response) on docs/superpowers/plans/2026-08-01-audit-remediation-ws2-review-throughput.md: http://localhost:8080/13_Faculty_Resources/qbank-attest.html",
+    "evidence": {
+      "http_status": null
+    },
+    "affects": [
+      "docs/superpowers/plans/2026-08-01-audit-remediation-ws2-review-throughput.md"
+    ],
+    "recommended_action": "Fix or replace the link in `docs/superpowers/plans/2026-08-01-audit-remediation-ws2-review-throughput.md`; if the source moved, update the citation and re-stamp reviewed.json.",
+    "status": "issue-open",
+    "github_issue": "https://github.com/jmoss333/psychiatry-clerkship/issues/288"
+  },
+  {
+    "finding_id": "link:www.samhsa.gov::broken-link::6bae3107ce29193b",
+    "fingerprint": "link:www.samhsa.gov::broken-link::6bae3107ce29193b",
+    "job": "link-source-monitor",
+    "source_id": "link:www.samhsa.gov",
+    "source_name": "www.samhsa.gov",
+    "source_url": "https://www.samhsa.gov/resource-search/all",
+    "source_type": "html",
+    "detected_at": "2026-08-03T07:19:29+00:00",
+    "change_type": "broken-link",
+    "severity": "P1",
+    "summary": "Broken link (404) on 13_Faculty_Resources/_automation/surveillance/history/digest_2026-07.md: https://www.samhsa.gov/resource-search/all",
+    "evidence": {
+      "http_status": 404
+    },
+    "affects": [
+      "13_Faculty_Resources/_automation/surveillance/history/digest_2026-07.md"
+    ],
+    "recommended_action": "Fix or replace the link in `13_Faculty_Resources/_automation/surveillance/history/digest_2026-07.md`; if the source moved, update the citation and re-stamp reviewed.json.",
+    "status": "issue-open",
+    "github_issue": "https://github.com/jmoss333/psychiatry-clerkship/issues/289"
+  },
+  {
+    "finding_id": "link:www.fda.gov::broken-link::f48ddedaa541bacf",
+    "fingerprint": "link:www.fda.gov::broken-link::f48ddedaa541bacf",
+    "job": "link-source-monitor",
+    "source_id": "link:www.fda.gov",
+    "source_name": "www.fda.gov",
+    "source_url": "https://www.fda.gov/drugs/drug-safety-communications/fda-removes-risk-evaluation-and-mitigation-strategy-rems-program-antipsychotic-drug-clozapine",
+    "source_type": "html",
+    "detected_at": "2026-08-03T07:19:29+00:00",
+    "change_type": "broken-link",
+    "severity": "P1",
+    "summary": "Broken link (404) on 13_Faculty_Resources/_automation/surveillance/STATUS.md: https://www.fda.gov/drugs/drug-safety-communications/fda-removes-risk-evaluation-and-mitigation-strategy-rems-program-antipsychotic-drug-clozapine",
+    "evidence": {
+      "http_status": 404
+    },
+    "affects": [
+      "13_Faculty_Resources/_automation/surveillance/STATUS.md"
+    ],
+    "recommended_action": "Fix or replace the link in `13_Faculty_Resources/_automation/surveillance/STATUS.md`; if the source moved, update the citation and re-stamp reviewed.json.",
+    "status": "issue-open",
+    "github_issue": "https://github.com/jmoss333/psychiatry-clerkship/issues/290"
+  }
+]

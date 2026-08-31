@@ -1,0 +1,25 @@
+[
+  {
+    "finding_id": "link:reconnectpractice.com::broken-link::660b002e81baed0a",
+    "fingerprint": "link:reconnectpractice.com::broken-link::660b002e81baed0a",
+    "job": "link-source-monitor",
+    "source_id": "link:reconnectpractice.com",
+    "source_name": "reconnectpractice.com",
+    "source_url": "https://reconnectpractice.com/videos/autonomy-and-containment",
+    "source_type": "html",
+    "detected_at": "2026-07-03T21:34:51+00:00",
+    "change_type": "broken-link",
+    "severity": "P1",
+    "summary": "Broken link (no response) on 03_Core_Topics/Personality/_source/BPD_Understanding_Your_Diagnosis_PAT.md: https://reconnectpractice.com/videos/autonomy-and-containment",
+    "evidence": {
+      "http_status": null
+    },
+    "affects": [
+      "03_Core_Topics/Personality/_source/BPD_Understanding_Your_Diagnosis_PAT.md"
+    ],
+    "recommended_action": "Dead source-only video companion removed from `03_Core_Topics/Personality/_source/BPD_Understanding_Your_Diagnosis_PAT.md` and the NotebookLM import copy. No moved replacement was found.",
+    "status": "actioned",
+    "github_issue": "https://github.com/jmoss333/psychiatry-clerkship/issues/88",
+    "resolution": "dead-link-removed: reconnectpractice.com no longer resolves; removed source-only video companion on 2026-07-08"
+  }
+]
