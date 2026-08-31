@@ -76,6 +76,17 @@ Use Chrome for this — the Cowork Netlify integration is authenticated to a dif
 **Do not put the passcode on the command line.** It lands in your shell history and is visible in
 `ps` to every process on the machine. It is a live student credential.
 
+**If you run Tier 2 from inside an AI coding session, the passcode ends up in that session's
+transcript and in its on-disk log.** The Netlify path above exists specifically so the value never
+appears anywhere — prefer it. If a passcode does get into a transcript, treat it as exposed:
+
+| Is a rotation block active? | Do this |
+|---|---|
+| No | Rotate `SP_STUDENT_PASSCODE` in Netlify now. Costs nothing. |
+| Yes | Weigh it. Rotating mid-block locks out the current cohort, and the passcode is distributed in person, so re-issuing means catching them face to face. The endpoint carries no PHI and is capped at `$20` per rotation, so the realistic exposure is budget burn and simulator access — not patient data. Purge the local session log either way, and rotate at the block boundary unless the log left the machine. |
+
+Check the active block in `13_Faculty_Resources/_automation/maintenance/rotation_blocks.json`.
+
 ---
 
 ### Step 2 — Tier 2: the deployed endpoint
