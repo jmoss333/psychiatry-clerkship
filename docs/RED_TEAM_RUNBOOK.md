@@ -80,12 +80,17 @@ Use Chrome for this — the Cowork Netlify integration is authenticated to a dif
 transcript and in its on-disk log.** The Netlify path above exists specifically so the value never
 appears anywhere — prefer it. If a passcode does get into a transcript, treat it as exposed:
 
-| Is a rotation block active? | Do this |
-|---|---|
-| No | Rotate `SP_STUDENT_PASSCODE` in Netlify now. Costs nothing. |
-| Yes | Weigh it. Rotating mid-block locks out the current cohort, and the passcode is distributed in person, so re-issuing means catching them face to face. The endpoint carries no PHI and is capped at `$20` per rotation, so the realistic exposure is budget burn and simulator access — not patient data. Purge the local session log either way, and rotate at the block boundary unless the log left the machine. |
+**As of 2026-08-31 the passcode is fixed and does not rotate** (see *Passcode policy* in
+`sp-proxy/README.md`). There is therefore no block boundary at which an exposed passcode expires
+on its own. If it lands somewhere it should not:
 
-Check the active block in `13_Faculty_Resources/_automation/maintenance/rotation_blocks.json`.
+1. Purge the local copy (session log, shell history, wherever it landed).
+2. Decide whether to change it. The endpoint carries no PHI and each `SP_ROTATION_ID` is capped at
+   `$20`, so the realistic loss is budget burn and simulator access — but with no rotation, that
+   loss recurs every block rather than ending at one.
+3. If you change it, re-issue in person the same day. The active block is in
+   `13_Faculty_Resources/_automation/maintenance/rotation_blocks.json`; anyone mid-block is locked
+   out until they have the new value.
 
 ---
 
