@@ -50,10 +50,32 @@ elif command -v netlify >/dev/null 2>&1; then
   esac
   unset _raw
   if [ -z "$PASSCODE" ]; then
-    echo "         couldn't read it. Most likely sp-proxy is not linked yet." >&2
-    echo "         One-time setup (writes sp-proxy/.netlify/, which is gitignored):" >&2
-    echo "             cd sp-proxy && netlify link --id $SITE_ID && cd .." >&2
-    echo "         Not logged in?  netlify login" >&2
+    # Say WHICH thing is wrong. Guessing "probably not linked" when the real cause
+    # is a dead credential sends you to fix the wrong thing — the same failure mode
+    # as the passcode bug above, one layer up.
+    echo "         couldn't read it. Diagnosing:" >&2
+    if [ -n "${NETLIFY_AUTH_TOKEN:-}" ]; then
+      _code="$(curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $NETLIFY_AUTH_TOKEN" https://api.netlify.com/api/v1/user 2>/dev/null)"
+      if [ "$_code" != "200" ]; then
+        echo "           * \$NETLIFY_AUTH_TOKEN is set and REJECTED by Netlify (HTTP $_code)." >&2
+        echo "             The env var shadows the CLI's own login, so \`netlify login\` alone" >&2
+        echo "             will not fix this. Replace the token where it is exported, or run:" >&2
+        echo "                 env -u NETLIFY_AUTH_TOKEN ./bin/redteam-live.sh" >&2
+      fi
+      unset _code
+    fi
+    # `netlify status` exits 0 even when it prints "Not logged in", so the exit code
+    # is not usable here. Read the output. (Same CLI-as-API hazard as the passcode
+    # parse above: validate the shape of what you got, never the status code alone.)
+    if netlify status 2>&1 | grep -qi 'not logged in'; then
+      echo "           * the CLI is not logged in.  netlify login" >&2
+    fi
+    if [ ! -d "$(dirname "$0")/../sp-proxy/.netlify" ]; then
+      echo "           * sp-proxy is not linked (one-time, gitignored):" >&2
+      echo "                 cd sp-proxy && netlify link --id $SITE_ID && cd .." >&2
+    fi
+    echo "         Or skip Netlify entirely — read SP_STUDENT_PASSCODE from the dashboard" >&2
+    echo "         and paste it at the prompt. Tier 2 does not depend on the CLI." >&2
   else
     echo "         got it (${#PASSCODE} characters). Not printing it."
   fi
