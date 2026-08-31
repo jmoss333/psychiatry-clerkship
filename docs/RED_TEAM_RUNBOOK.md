@@ -30,7 +30,7 @@ reachability evidence, not release evidence.
 
 - [ ] Repo up to date: `git fetch origin && git status -sb` shows no divergence
 - [ ] Node installed (`node --version` — anything ≥ 20)
-- [ ] The **current rotation passcode** (`SP_STUDENT_PASSCODE` in the Netlify dashboard for the `sp-interview-proxy` site)
+- [ ] The **current rotation passcode**. You should never have to type or paste it — see below.
 - [ ] The endpoint URL — normally `https://sp-interview-proxy.netlify.app/api/sp`
 - [ ] Chrome, for the Netlify dashboard (the Cowork Netlify MCP is authed to a different account and 404s these sites)
 - [ ] ~45 minutes. Tiers 1 and 2 take two minutes; Tier 3 is the real work.
@@ -55,11 +55,37 @@ and what leaked. A Tier 1 failure is a code or pack bug, not a model behaviour q
 
 ---
 
+### Step 1b — one-time: link sp-proxy to Netlify
+
+The passcode is `SP_STUDENT_PASSCODE` on the `sp-interview-proxy` Netlify project. You do not
+need to look at it, copy it, or paste it anywhere — the script reads it straight from Netlify
+into the request header. That takes one setup command, once per clone:
+
+```
+cd sp-proxy && netlify link --id 455d2740-4020-4d9c-b9f8-82f72f4b2897 && cd ..
+```
+
+(`netlify login` first if the CLI is not authenticated. This writes `sp-proxy/.netlify/`, which
+is gitignored.)
+
+**If you would rather read it by eye:** Netlify dashboard → **sp-interview-proxy** → Project
+configuration → Environment variables → `SP_STUDENT_PASSCODE` → *Show value*, production context.
+Use Chrome for this — the Cowork Netlify integration is authenticated to a different account and
+404s these projects. Then run the script with no arguments and paste at the hidden prompt.
+
+**Do not put the passcode on the command line.** It lands in your shell history and is visible in
+`ps` to every process on the machine. It is a live student credential.
+
+---
+
 ### Step 2 — Tier 2: the deployed endpoint
 
 ```
-./bin/redteam-live.sh https://sp-interview-proxy.netlify.app/api/sp '<passcode>'
+./bin/redteam-live.sh
 ```
+
+No arguments. It resolves the passcode in this order: `$SP_STUDENT_PASSCODE` → Netlify (the link
+above) → a hidden prompt. It never prints the value.
 
 **Expected result:** `5 passed, 0 failed` — covering **D0** (the happy path), **D1/D1b** (wrong and
 missing passcode → 401), **D5** (a non-allowlisted origin gets no `Access-Control-Allow-Origin`,
@@ -182,7 +208,8 @@ If anything failed: `--state failed`, then fix, then re-run the whole checklist.
 | Symptom | Likely cause | Fix |
 |---|---|---|
 | Tier 1 probe fails right after a pack edit | The pack changed a gate or a pattern | Read the probe's message — it names the gate. Compare against the matrix: `node --test sp-proxy/tests/sp-safety-scoring-uniformity.test.mjs` |
-| D0 returns 401 with the right passcode | Passcode was rotated in Netlify | Pull the current `SP_STUDENT_PASSCODE` from the site's env vars |
+| D0 returns 401 with the right passcode | Passcode was rotated in Netlify | Re-run — the script re-reads it from Netlify each time. If it still 401s, the rotation has not propagated to the production context yet. |
+| "couldn't read it. Most likely sp-proxy is not linked yet" | The CLI resolves env vars against a linked project folder; `--site` alone is not enough | Run the `netlify link` command in Step 1b |
 | "Test connection" fails in the tool but curl works | Origin not in `SP_ALLOWED_ORIGINS` | Add the origin you are serving from (include `http://localhost:8888` while testing) |
 | A judgmental probe seems not to flag | **Your phrasing is not in that case's flag vocabulary** | Dana flags on `you should`, `at least`, `snap out`, `look on the bright side`. "Calm down" is *Marcus's*. Use a phrase the pack actually recognises, or you are testing nothing. |
 | Receipt reads `stale` in monthly_review | The pack changed after you signed | Re-run the checklist against the current pack, then re-record |

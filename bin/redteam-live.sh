@@ -6,14 +6,71 @@
 # state. They say NOTHING about whether the patient stays in character (A) or
 # whether the copy is clinically safe (C). This is not a red-team pass.
 #
-# Usage:
-#   bin/redteam-live.sh https://sp-interview-proxy.netlify.app/api/sp '<passcode>'
+# Usage — you should not need to type or paste the passcode at all:
+#
+#   bin/redteam-live.sh                       # fetches the passcode from Netlify
+#   bin/redteam-live.sh <endpoint> '' <origin>
+#
+# The passcode is resolved in this order, and is NEVER printed:
+#   1. $SP_STUDENT_PASSCODE, if already exported
+#   2. `netlify env:get` against the sp-interview-proxy site (you must be logged
+#      in: `netlify login`). This is the intended path — the live credential goes
+#      straight from Netlify into the request header.
+#   3. a silent prompt
+#   4. argv[2] — DEPRECATED. A passcode on the command line lands in your shell
+#      history and is visible in `ps` to every process on the machine. The script
+#      warns if you do this.
 set -u
-ENDPOINT="${1:-}"
+ENDPOINT="${1:-https://sp-interview-proxy.netlify.app/api/sp}"
 PASSCODE="${2:-}"
 ORIGIN="${3:-https://une-ms3-psychiatry.netlify.app}"
-if [ -z "$ENDPOINT" ] || [ -z "$PASSCODE" ]; then
-  echo "usage: $0 <endpoint-url> <passcode> [allowed-origin]" >&2; exit 2
+SITE="${SP_SITE:-sp-interview-proxy}"
+SITE_ID="${SP_SITE_ID:-455d2740-4020-4d9c-b9f8-82f72f4b2897}"
+
+if [ -n "$PASSCODE" ]; then
+  echo "warning: passing the passcode as an argument puts a live student credential" >&2
+  echo "         into your shell history and into ps output. Prefer running with no" >&2
+  echo "         second argument and letting the script fetch it from Netlify." >&2
+elif [ -n "${SP_STUDENT_PASSCODE:-}" ]; then
+  PASSCODE="$SP_STUDENT_PASSCODE"
+  echo "passcode: taken from \$SP_STUDENT_PASSCODE"
+elif command -v netlify >/dev/null 2>&1; then
+  # env:get resolves against a LINKED project folder; --site alone is not enough.
+  # sp-proxy/.netlify/ is gitignored, so the link is a one-time local setup.
+  echo "passcode: reading it from Netlify (project '$SITE', production context) ..."
+  # Accept ONLY something that looks like a credential. netlify prints its errors
+  # on stdout ("No project id found, please run inside a project folder..."), and an
+  # earlier version of this script stripped the whitespace out of that sentence and
+  # sent it as the passcode — every probe then failed 401 for the wrong reason.
+  _raw="$( (cd "$(dirname "$0")/../sp-proxy" 2>/dev/null &&
+      netlify env:get SP_STUDENT_PASSCODE --context production 2>/dev/null) | tail -1 )"
+  case "$_raw" in
+    ''|null|*' '*|*roject*|*etlify*|*ound*|*rror*) PASSCODE="" ;;
+    *) PASSCODE="$(printf '%s' "$_raw" | tr -d '[:space:]')" ;;
+  esac
+  unset _raw
+  if [ -z "$PASSCODE" ]; then
+    echo "         couldn't read it. Most likely sp-proxy is not linked yet." >&2
+    echo "         One-time setup (writes sp-proxy/.netlify/, which is gitignored):" >&2
+    echo "             cd sp-proxy && netlify link --id $SITE_ID && cd .." >&2
+    echo "         Not logged in?  netlify login" >&2
+  else
+    echo "         got it (${#PASSCODE} characters). Not printing it."
+  fi
+fi
+
+# Only prompt when there is a human at a terminal. Without this guard the script
+# blocks forever under CI, a hook, or any non-interactive runner.
+if [ -z "$PASSCODE" ] && [ -t 0 ]; then
+  printf 'passcode for %s (input hidden): ' "$SITE" >&2
+  stty -echo 2>/dev/null; read -r PASSCODE; stty echo 2>/dev/null; printf '\n' >&2
+fi
+if [ -z "$PASSCODE" ]; then
+  echo "no passcode — cannot run tier 2." >&2
+  echo "  interactive:  ./bin/redteam-live.sh            (prompts, or reads it from Netlify)" >&2
+  echo "  scripted:     SP_STUDENT_PASSCODE=... ./bin/redteam-live.sh" >&2
+  echo "  not logged in to Netlify?  netlify login" >&2
+  exit 2
 fi
 
 pass=0; fail=0
