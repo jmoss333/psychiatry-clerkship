@@ -135,7 +135,7 @@
  {
   "id": "RV11-F001",
   "audience": "Resident",
-  "file": "resident/02_CURRICULUM_V11.md",
+  "file": "resident/02_CURRICULUM_V12.md",
   "surface": "cotw_20260709_ssnms_res.md",
   "locus": "page_prose",
   "severity": "S1",
@@ -149,7 +149,8 @@
    "verdict": "partially confirmed",
    "reasoning": "Substantively fully confirmed; partial only for metadata and one framing trim. The quote is verbatim — but in docs/curriculum-review/resident/02_CURRICULUM_V11.md (line 589), not the ms3 _source_path the batch gives (the SS-vs-NMS resident case does not exist in the ms3 transcript). The omission is real: no depot/LAI caveat appears anywhere in the case (Q7, medication-reconciliation plan, or facilitator notes), while avoidance of long-acting/depot preparations on rechallenge after NMS is standard guidance across the canonical NMS reviews, including the page's own ref [5] (Pileggi & Cook, Ann Pharmacother 2016) and Strawn/Keck/Caroff — judged from knowledge; the mechanism (a depot cannot be withdrawn if NMS recurs, prolonging the syndrome) is uncontroversial. The volume-level priming is textually verified: this same resident volume's mania case says 'consider LAI' and 'LAI consideration in poor adherence.' S1 fits the rubric ('wrong drug, route... a dangerous omission'). One trim: the stem shows haloperidol up-titrated for worsening psychosis with group-home (supervised) administration, so 'implied adherence concerns' overreads it — the depot-instinct argument stands on the population and the sibling case, and is restated accordingly. Replacement is accurate resident-level guidance (2-week minimum, risk-factor correction, low-potency oral agent, no depot).",
    "batch": "VB06"
-  }
+  },
+  "file_at_review": "resident/02_CURRICULUM_V11.md"
  },
  {
   "id": "MS3V01-F001",
@@ -648,7 +649,7 @@
  {
   "id": "MS3V10-F002",
   "audience": "MS3",
-  "file": "ms3/02_CURRICULUM_V10.md",
+  "file": "ms3/02_CURRICULUM_V11.md",
   "surface": "cotw_20260720_bipolar_ms3.md",
   "locus": "page_prose",
   "severity": "S2",
@@ -662,12 +663,13 @@
    "verdict": "partially confirmed",
    "reasoning": "The quote is verbatim (ms3 transcript line 1051, Q1 teaching point). But the finding's central DSM claim is itself wrong: DSM-5-TR names hospitalization in BOTH places — Criterion A carries the duration exception ('lasting at least 1 week and present most of the day, nearly every day (or any duration if hospitalization is necessary)') and Criterion C independently lists it as a severity outcome ('sufficiently severe to cause marked impairment ... or to necessitate hospitalization ..., or there are psychotic features'). So the page's 'causing marked impairment, hospitalization, or psychotic features' is a faithful rendering of Criterion C, not a misfiling of the duration exception, and the finding's framing ('the hospitalisation clause IS the duration exception, not one of several severity outcomes') would teach a new error if pasted in. What survives, and is worth fixing, is the omission: the bare '≥1 week' drops both the duration exception and 'most of the day, nearly every day', while the page's own facilitator note (line 1102) states the rule fully ('mania ≥1 week (or any duration if hospitalized)') — learner text diverging from its own answer key, which is exactly the S2 'rationale that contradicts its own keyed answer'. The reviewer also overreads the stem: four days of observed behaviour change with roughly a week of reduced sleep is ambiguous, not clearly sub-week, so the replacement must not assert that the exception is the only route by which this patient meets criteria. Severity S2 stands; problem statement and replacement corrected below.",
    "batch": "VB05"
-  }
+  },
+  "file_at_review": "ms3/02_CURRICULUM_V10.md"
  },
  {
   "id": "MS3V10-F003",
   "audience": "MS3",
-  "file": "ms3/02_CURRICULUM_V10.md",
+  "file": "ms3/02_CURRICULUM_V11.md",
   "surface": "cotw_20260720_bipolar_ms3.md",
   "locus": "page_prose",
   "severity": "S2",
@@ -681,7 +683,8 @@
    "verdict": "confirmed",
    "reasoning": "Quote verbatim at ms3 transcript line 1069 (Q7 lithium counseling). 'thiazide/ACE-inhibitor diuretics' does file ACE inhibitors under diuretics, which is a wrong drug class, and it fuses two genuinely different routes to the same interaction. The finding's cross-reference basis checks out exactly: the MS3 Lithium Case of the Week in this same volume separates the mechanisms in its own interaction table — thiazide, 'volume depletion plus compensatory proximal sodium (and lithium) reabsorption'; ACE inhibitor (lisinopril), 'blunts angiotensin II-mediated efferent arteriolar tone → falling GFR when volume-depleted' — and names the triad as 'NSAIDs, ACE inhibitors/ARBs, and thiazide diuretics'. So the bipolar page contradicts the volume's own lithium teaching, and the consequence the finding names (a student who files ACE inhibitors as diuretics will not generalize to ARBs or to lisinopril without a diuretic) is real. The replacement is accurate — both mechanisms are standard and are pitched no higher than what this volume already teaches MS3s on the lithium page — and S2 ('wrong mechanism') is the right severity. This finding's _source_path is correct.",
    "batch": "VB05"
-  }
+  },
+  "file_at_review": "ms3/02_CURRICULUM_V10.md"
  },
  {
   "id": "MS3V11-F001",
@@ -1294,7 +1297,7 @@
  {
   "id": "RV09-F002",
   "audience": "Resident",
-  "file": "resident/02_CURRICULUM_V09.md",
+  "file": "resident/02_CURRICULUM_V10.md",
   "surface": "cotw_20260810_panic_res.md",
   "locus": "page_prose",
   "severity": "S2",
@@ -1308,12 +1311,13 @@
    "verdict": "partially confirmed",
    "reasoning": "Quote is verbatim in the transcript (line 1020) and in the true content source 08_Cases_and_Simulation/case-of-the-week/2026-08-10_anxiety-panic-disorder_Resident.md (line 124), and that source file contains no <!-- crisis-block --> marker anywhere — so the page both hard-codes 988 and lacks the injected crisis block, exactly as claimed. The problem is real under the site's standing policy (crisis contacts live in crisis_resources.json only; never hard-code a crisis number in content), and the scope-rule argument holds: Q7 has residents rehearsing pressing on suicidal ideation, structured risk assessment, and collaborative safety planning, and the page's own workflow narration says its safety content is oriented to 'recognition, escalation, and safety planning' — rehearsing risk work, not merely reading about suicide. The replacement, however, is itself a policy violation: it keeps the hard-coded '988 reaches the Suicide & Crisis Lifeline' sentence and merely appends the marker, preserving the exact violation pattern the finding's own problem statement names. The correct fix replaces the hard-coded sentence with the marker so the build injects the maintained crisis contacts. Corrected finding supplied with only the replacement changed.",
    "batch": "VB12"
-  }
+  },
+  "file_at_review": "resident/02_CURRICULUM_V09.md"
  },
  {
   "id": "RV09-F003",
   "audience": "Resident",
-  "file": "resident/02_CURRICULUM_V09.md",
+  "file": "resident/02_CURRICULUM_V10.md",
   "surface": "cotw_20260810_panic_res.md",
   "locus": "page_prose",
   "severity": "S2",
@@ -1327,12 +1331,13 @@
    "verdict": "confirmed",
    "reasoning": "Quote is verbatim at transcript line 1059 (facilitator notes, discussion-extension paragraph). Under standard Cochrane risk-of-bias semantics a low risk-of-bias rating means trustworthy studies and would strengthen, not temper, confidence in a ranking, so the sentence as written inverts the intended caution. The inversion is proven by the page's own Q4 (line 978), which states the actual condition correctly: the Cochrane panic NMA's reliability is limited by 'unclear or high risk of bias across multiple domains in all included studies.' A facilitator reading the note aloud would teach the inversion in a session explicitly framed as a critical-appraisal exercise. The one-word replacement ('high risk-of-bias ratings') is correct, minimal, internally consistent with Q4 and with the cited Cochrane review's own caution, and appropriate at resident level.",
    "batch": "VB12"
-  }
+  },
+  "file_at_review": "resident/02_CURRICULUM_V09.md"
  },
  {
   "id": "RV09-F004",
   "audience": "Resident",
-  "file": "resident/02_CURRICULUM_V09.md",
+  "file": "resident/02_CURRICULUM_V10.md",
   "surface": "cotw_20260810_panic_res.md",
   "locus": "page_prose",
   "severity": "S2",
@@ -1346,7 +1351,8 @@
    "verdict": "confirmed",
    "reasoning": "Quote is verbatim at transcript line 1004 and in the content source at line 108. The resident stem (transcript lines 909-923) describes a 41-year-old man — stopped exercising, no longer drives outside town, works from home, two beers nightly — with no partner, no accompaniment pattern, no pulse-checking, and no low-traffic scheduling anywhere in the case; grep across the whole case region finds those terms only in the flagged sentence. The reviewer's leakage hypothesis is directly verifiable: the same-date MS3 sibling case (08_Cases_and_Simulation/case-of-the-week/2026-08-10_anxiety-panic-disorder_MS3.md) features a 24-year-old woman who 'shops at 6 a.m. when it's empty' and whose 'boyfriend drives her most places' — the 'boyfriend-equivalent accompaniment pattern' and 'low-traffic scheduling' are imported from that case. The replacement lists only stem-established behaviors (PRN alprazolam at the first sensation; avoidance of exercise, driving beyond town, and client-facing work) and reframes the unestablished ones as items to uncover on further history, which is clinically sound and resident-appropriate; its mild overlap with the preceding in-vivo-exposure clause is stylistic, not an error.",
    "batch": "VB12"
-  }
+  },
+  "file_at_review": "resident/02_CURRICULUM_V09.md"
  },
  {
   "id": "RV10-F002",
@@ -1389,7 +1395,7 @@
  {
   "id": "RV10-F004",
   "audience": "Resident",
-  "file": "resident/02_CURRICULUM_V10.md",
+  "file": "resident/02_CURRICULUM_V11.md",
   "surface": "cotw_20260726_etohwd_res.md",
   "locus": "page_prose",
   "severity": "S2",
@@ -1403,12 +1409,13 @@
    "verdict": "confirmed",
    "reasoning": "Quote verbatim at resident transcript line 596 (Q1 teaching point; recorded _source_path again names the ms3 file rather than the resident one). The claimed error is real and is internally contradictory as the finding says. DSM-5-TR restricts the 'with perceptual disturbances' specifier on alcohol withdrawal to hallucinations with intact reality testing, or illusions, occurring in the ABSENCE of a delirium — so 'alcohol withdrawal, with perceptual disturbances, meeting criteria for a withdrawal delirium' names two mutually exclusive things in one clause. This patient has fluctuating attention and arousal, disorientation, and unredirectable visual hallucinations: that is alcohol withdrawal delirium, a substance withdrawal delirium, coded F10.231 in a patient with severe AUD, not F10.232. The page's own ranked differential gets it right ('1. Alcohol withdrawal delirium (delirium tremens), benzodiazepine-resistant'), so the Q1 teaching point contradicts the page's own answer — S2 is the right severity on a page that declares DSM-5-TR fluency assumed. The replacement is correct on both the DSM specifier text and the ICD-10-CM code, drops into the sentence cleanly, and preserves the hallucinosis-versus-DT distinction that drives level of care.",
    "batch": "VB05"
-  }
+  },
+  "file_at_review": "resident/02_CURRICULUM_V10.md"
  },
  {
   "id": "RV10-F005",
   "audience": "Resident",
-  "file": "resident/02_CURRICULUM_V10.md",
+  "file": "resident/02_CURRICULUM_V11.md",
   "surface": "cotw_20260726_etohwd_res.md",
   "locus": "page_prose",
   "severity": "S2",
@@ -1422,7 +1429,8 @@
    "verdict": "confirmed",
    "reasoning": "Quote verbatim at resident transcript line 650. The reading is fair, not strict: the clause sits under a bolded 'Liver caveat:', and the antecedent of 'a real reason' is the immediately preceding HE clause, so the sentence does convert sedative-precipitated hepatic encephalopathy into an affirmative argument FOR phenobarbital, in the same breath as recommending lorazepam/oxazepam. The pharmacology is correct: phenobarbital is largely hepatically metabolised (CYP2C9), its adult elimination half-life is already on the order of 80-120 h and is further prolonged in hepatic impairment, there is no reversal agent, and as a potent sedative it can precipitate HE exactly as benzodiazepines can — hepatic impairment argues for more caution with a barbiturate load, not less. The citation check the finding itself invited comes out in its favour: according to PubMed, ref [7] (Chand 2022, J Clin Exp Hepatol, https://doi.org/10.1016/j.jceh.2022.03.003) concludes that 'Lorazepam and oxazepam are preferred agents for the management of AWS in the setting of ALD' and that 'In severe ALD, benzodiazepines should be used cautiously with monitoring due to the risk of excessive sedation or precipitating hepatic encephalopathy' — it supports the first half of the page's sentence and offers nothing endorsing barbiturate loading in alcohol-related liver disease, so the citation is mis-attached to the conclusion it is hung on. The replacement is correct and relocates the phenobarbital rationale to benzodiazepine resistance, which this page's Q4 establishes well, so it does not accidentally argue phenobarbital out of a patient who needs it. S2 ('wrong mechanism') is right — the drug choice is defensible here, only the hepatic rationale is wrong. Minor, not enough to downgrade: the 'no reversal agent' point carries little practical weight, since flumazenil is not used in alcohol withdrawal either; the substantive half of that argument is the multi-day half-life.",
    "batch": "VB05"
-  }
+  },
+  "file_at_review": "resident/02_CURRICULUM_V10.md"
  },
  {
   "id": "RV10-F006",
@@ -1484,7 +1492,7 @@
  {
   "id": "RV11-F004",
   "audience": "Resident",
-  "file": "resident/02_CURRICULUM_V11.md",
+  "file": "resident/02_CURRICULUM_V12.md",
   "surface": "cotw_20260709_ssnms_res.md",
   "locus": "page_prose",
   "severity": "S2",
@@ -1498,7 +1506,8 @@
    "verdict": "partially confirmed",
    "reasoning": "The quoted line is verbatim in the resident transcript (docs/curriculum-review/resident/02_CURRICULUM_V11.md, line 600), but the finding's _source_path points at the ms3 file, where the text does not exist — the path is corrected (audience 'Resident' and the '_res.md' surface confirm the resident volume was the one reviewed). The omission is real: a grep of the whole volume finds no VTE/thromboprophylaxis/heparin/DVT mention anywhere, so nothing in the surrounding case (workup list, teaching points, or management summary) covers it, and under current US inpatient/ICU practice VTE prophylaxis is standard supportive care for a stuporous, rigid, volume-depleted NMS/malignant-catatonia patient — NMS reviews since Strawn 2007 recommend prophylactic heparin/LMWH and list PE among the leading causes of death, consistent with the finding's basis. One correction to the replacement: 'pharmacologic unless contraindicated, plus mechanical' prescribes routine combined prophylaxis, which the PREVENT trial (N Engl J Med 2019) showed adds no benefit over pharmacologic alone in critically ill patients; reworded to 'pharmacologic unless contraindicated; mechanical when it is.' Severity S2 rather than S1 is acceptable — the sentence is an incomplete list rather than an affirmatively unsafe instruction, and an actual ICU admission would usually carry prophylaxis by order set.",
    "batch": "VB07"
-  }
+  },
+  "file_at_review": "resident/02_CURRICULUM_V11.md"
  },
  {
   "id": "RV11-F005",
@@ -2177,7 +2186,7 @@
  {
   "id": "MS3V10-F008",
   "audience": "MS3",
-  "file": "ms3/02_CURRICULUM_V10.md",
+  "file": "ms3/02_CURRICULUM_V11.md",
   "surface": "cotw_20260720_mdd_ms3.md",
   "locus": "page_prose",
   "severity": "S4",
@@ -2190,12 +2199,13 @@
   "verification": {
    "verdict": "not run",
    "note": "S3-S5 findings were not individually re-verified; treat as reviewer judgment."
-  }
+  },
+  "file_at_review": "ms3/02_CURRICULUM_V10.md"
  },
  {
   "id": "MS3V10-F009",
   "audience": "MS3",
-  "file": "ms3/02_CURRICULUM_V10.md",
+  "file": "ms3/02_CURRICULUM_V11.md",
   "surface": "cotw_20260720_mdd_ms3.md",
   "locus": "page_prose",
   "severity": "S4",
@@ -2208,12 +2218,13 @@
   "verification": {
    "verdict": "not run",
    "note": "S3-S5 findings were not individually re-verified; treat as reviewer judgment."
-  }
+  },
+  "file_at_review": "ms3/02_CURRICULUM_V10.md"
  },
  {
   "id": "MS3V10-F010",
   "audience": "MS3",
-  "file": "ms3/02_CURRICULUM_V10.md",
+  "file": "ms3/02_CURRICULUM_V11.md",
   "surface": "cotw_20260720_mdd_ms3.md",
   "locus": "page_prose",
   "severity": "S4",
@@ -2226,12 +2237,13 @@
   "verification": {
    "verdict": "not run",
    "note": "S3-S5 findings were not individually re-verified; treat as reviewer judgment."
-  }
+  },
+  "file_at_review": "ms3/02_CURRICULUM_V10.md"
  },
  {
   "id": "MS3V10-F011",
   "audience": "MS3",
-  "file": "ms3/02_CURRICULUM_V10.md",
+  "file": "ms3/02_CURRICULUM_V11.md",
   "surface": "cotw_20260720_bipolar_ms3.md",
   "locus": "topic_meta.tldr",
   "severity": "S4",
@@ -2244,7 +2256,8 @@
   "verification": {
    "verdict": "not run",
    "note": "S3-S5 findings were not individually re-verified; treat as reviewer judgment."
-  }
+  },
+  "file_at_review": "ms3/02_CURRICULUM_V10.md"
  },
  {
   "id": "MS3V10-F012",
@@ -2771,7 +2784,7 @@
  {
   "id": "RV09-F005",
   "audience": "Resident",
-  "file": "resident/02_CURRICULUM_V09.md",
+  "file": "resident/02_CURRICULUM_V10.md",
   "surface": "cotw_20260810_panic_res.md",
   "locus": "page_prose",
   "severity": "S4",
@@ -2784,12 +2797,13 @@
   "verification": {
    "verdict": "not run",
    "note": "S3-S5 findings were not individually re-verified; treat as reviewer judgment."
-  }
+  },
+  "file_at_review": "resident/02_CURRICULUM_V09.md"
  },
  {
   "id": "RV10-F001",
   "audience": "Resident",
-  "file": "resident/02_CURRICULUM_V10.md",
+  "file": "resident/02_CURRICULUM_V11.md",
   "surface": "cotw_20260726_etohwd_res.md",
   "locus": "page_prose",
   "severity": "S4",
@@ -2803,7 +2817,8 @@
    "verdict": "partially confirmed",
    "reasoning": "The quote is verbatim, but it lives in the RESIDENT transcript (docs/curriculum-review/resident/02_CURRICULUM_V10.md line 649), not the ms3 path recorded in _source_path. The clinical substance is right: across four mentions of Wernicke encephalopathy — the differential table ('classic triad present in a minority — most cases are missed' / 'Parenteral thiamine now, before any dextrose'), this plan line, ranked differential #4 ('treat empirically; do not wait for the triad'), and the summary — the page never distinguishes prophylactic from treatment thiamine dosing, and the reflexive 100 mg IV daily is a prophylaxis dose that does not treat suspected WE. According to PubMed, the page's own ref [12] (Pruckner 2019, https://doi.org/10.1159/000499039) is a review of exactly this: guideline 'specifications on application modalities and indications varied considerably', most guidelines reserve parenteral thiamine for patients at high risk for WE, and WE goes undiagnosed in up to 80% of cases. Two corrections. (1) Severity: no S1 clause in this review's rubric fits — the page states no wrong drug, route, dose, or monitoring, and it does not miss the can't-miss (WE is flagged twice and treated empirically). This is S4, 'a nuance omitted that changes management'. (2) The replacement imports a hard dose literal ('500 mg IV three times daily for 2-3 days') into a page that closes with 'Specific dosing is intentionally omitted; follow your institution's protocol and consult pharmacy', and it presents one number as settled when [12]'s actual finding is that guideline doses vary widely (EFNS 2010 specifies 200 mg tds IV; UK RCP/BAP-derived practice commonly 500 mg tds). The corrected replacement keeps the load-bearing prophylaxis-versus-treatment distinction and the magnesium-cofactor point without contradicting the page's own convention; if the author wants the number in the body, the closing dosing disclaimer has to change with it.",
    "batch": "VB05"
-  }
+  },
+  "file_at_review": "resident/02_CURRICULUM_V10.md"
  },
  {
   "id": "RV10-F008",
@@ -2826,7 +2841,7 @@
  {
   "id": "RV10-F009",
   "audience": "Resident",
-  "file": "resident/02_CURRICULUM_V10.md",
+  "file": "resident/02_CURRICULUM_V11.md",
   "surface": "cotw_20260723_suiciderisk_res.md",
   "locus": "page_prose",
   "severity": "S4",
@@ -2839,12 +2854,13 @@
   "verification": {
    "verdict": "not run",
    "note": "S3-S5 findings were not individually re-verified; treat as reviewer judgment."
-  }
+  },
+  "file_at_review": "resident/02_CURRICULUM_V10.md"
  },
  {
   "id": "RV10-F010",
   "audience": "Resident",
-  "file": "resident/02_CURRICULUM_V10.md",
+  "file": "resident/02_CURRICULUM_V11.md",
   "surface": "cotw_20260726_etohwd_res.md",
   "locus": "page_prose",
   "severity": "S4",
@@ -2857,7 +2873,8 @@
   "verification": {
    "verdict": "not run",
    "note": "S3-S5 findings were not individually re-verified; treat as reviewer judgment."
-  }
+  },
+  "file_at_review": "resident/02_CURRICULUM_V10.md"
  },
  {
   "id": "RV10-F011",
@@ -2898,7 +2915,7 @@
  {
   "id": "RV11-F009",
   "audience": "Resident",
-  "file": "resident/02_CURRICULUM_V11.md",
+  "file": "resident/02_CURRICULUM_V12.md",
   "surface": "cotw_20260709_ssnms_res.md",
   "locus": "page_prose",
   "severity": "S4",
@@ -2911,12 +2928,13 @@
   "verification": {
    "verdict": "not run",
    "note": "S3-S5 findings were not individually re-verified; treat as reviewer judgment."
-  }
+  },
+  "file_at_review": "resident/02_CURRICULUM_V11.md"
  },
  {
   "id": "RV11-F010",
   "audience": "Resident",
-  "file": "resident/02_CURRICULUM_V11.md",
+  "file": "resident/02_CURRICULUM_V12.md",
   "surface": "cotw_20260709_ssnms_res.md",
   "locus": "page_prose",
   "severity": "S4",
@@ -2929,7 +2947,8 @@
   "verification": {
    "verdict": "not run",
    "note": "S3-S5 findings were not individually re-verified; treat as reviewer judgment."
-  }
+  },
+  "file_at_review": "resident/02_CURRICULUM_V11.md"
  },
  {
   "id": "RV13-F005",
