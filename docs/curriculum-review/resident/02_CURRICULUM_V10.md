@@ -6,6 +6,255 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 
 ---
 
+## Panic Disorder (Aug 10)
+
+- **Slug:** `cotw_20260810_panic_res.md` · **Type:** md · **Sidebar:** listed
+- **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-08-10_anxiety-panic-disorder_Resident.md`
+- **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
+- **Length:** 4,305 words
+
+<!-- topic_meta overlay -->
+#### Structured metadata (`topic_meta.json` → this page)
+
+> est. read 10 min · safetyLevel=`moderate` · cotwLevel=`res` (2026-08-10)
+
+**TL;DR (shown above the page text):**
+
+> The cardiac workup is negative and the patient goes home no better - panic disorder is a positive diagnosis with a short list of must-not-miss mimics, and the disability lives in the avoidance, not the attacks.
+
+**Key points (bulleted card):**
+
+- ~20-30 minute small-group discussion - no pre-reading required.
+- De-identified synthetic case; each discussion question is paired with a teaching point.
+- Resident level. Facilitator notes are kept separate from the learner-facing stem.
+
+**Clinical-workflow narration (per-stage coaching text):**
+
+- **ask** — Work the stem cold: take your own history, commit to a differential, and name your next step before reading a single teaching point. The guided questions are written to be answered, not skimmed.
+- **mse** — Say out loud what each exam finding in the vignette rules in and rules out — the discrimination between look-alike syndromes is what the case is drilling.
+- **safety** — Safety content in every case is oriented to recognition, escalation, and safety planning. Escalate to your supervising resident or attending rather than managing acuity alone.
+- **say** — Before moving on, rehearse one sentence you would actually say to this patient or family, in plain language and out loud.
+- **collateral** — Ask yourself what collateral would change your differential here, and who you would have to call to get it.
+- **rounds** — If you are running the session, the facilitator notes flag the errors this case most often surfaces and the evidence-quality distinctions worth naming out loud.
+- **exam** — Teaching takeaway: The cardiac workup is negative and the patient goes home no better - panic disorder is a positive diagnosis with a short list of must-not-miss mimics, and the disability lives in the avoidance, not the attacks.
+- **actions** — All Case of the Week cases
+
+**Cross-references and tagging:**
+
+- **Workflow stages:** `diagnosis`, `treatment`, `team`, `exam`
+- **Shelf blueprint tags:** `anxiety`, `pharm`
+- **EPA crosswalk:** `EPA1`, `EPA2`, `EPA3`, `EPA4`
+- **Faculty review:** {"status": "pending", "reviewer": "Joshua Moss, MD", "lastReviewed": "2026-08-10"}
+
+#### Page text (as shipped)
+
+# Case of the Week — Resident Edition
+## Panic Disorder: Differential Precision, Pharmacologic Optimization, and Undoing Iatrogenic Maintenance
+
+**Date:** 2026-08-10
+**Learner level:** Psychiatry residents (PGY-1 through PGY-4). DSM-5-TR fluency assumed.
+**Format:** ~20–30 min case conference or didactic block. No required pre-reading.
+**Citations:** Based on articles retrieved from PubMed. Full reference list at the end. All patient details are **synthetic and de-identified**.
+
+---
+
+### The Case (learner-facing stem)
+
+A 41-year-old man is referred to your outpatient clinic **by cardiology**, with a note that reads: *"Extensive workup negative. Suspect panic. Please assess — though the blood pressure readings give me pause."*
+
+**History of present illness.** For roughly fourteen months he has had discrete episodes: abrupt pounding in the chest, a band of pressure across the sternum, drenching sweats, a **pounding bifrontal headache**, and a sense of impending doom. Onset is sudden, peak is within five to ten minutes, and the episode fades over thirty to sixty minutes, leaving him drained. He counts eight to ten per month. Several have woken him from sleep. He cannot identify triggers; he insists they are "completely random."
+
+**The finding that stalled the workup.** During an episode in the cardiology waiting room, a nurse recorded **BP 194/112, HR 122**. Between episodes his pressures are consistently 118–128/72–80.
+
+**Workup to date:** ECG in sinus rhythm, no pre-excitation, QTc 424 ms. Echocardiogram normal. 48-hour Holter captured two symptomatic episodes — **sinus tachycardia only**, no arrhythmia. **Plasma free metanephrines normal on two occasions**, one drawn within an hour of an episode. 24-hour urinary fractionated metanephrines normal. **CT abdomen/pelvis with contrast: no adrenal or extra-adrenal mass.** TSH 2.1, free T4 normal. CMP, CBC, HbA1c 5.4% all normal. Urine drug screen negative.
+
+**Psychiatric history.** Never seen psychiatry. Fourteen months ago his primary care physician started **sertraline 25 mg daily** — "it took the edge off a bit" — and it has **never been titrated**. At the same visit he was given **alprazolam 0.5 mg as needed**. He initially used it once or twice a week. He now takes it **three to four times daily**, and describes needing it "before it starts, or I can't stop it." He notes the episodes seem to cluster in the **late morning and mid-afternoon**.
+
+**Course and function.** He has stopped exercising (his cardiologist cleared him; he is afraid to raise his heart rate). He no longer drives outside town. He works from home now, having stepped back from a client-facing role. He drinks two beers most evenings, "to come down." No stimulants, no cocaine, no decongestants. Caffeine: two cups in the morning.
+
+**Relevant background.** Fifteen months ago — one month before symptom onset — his father died suddenly of a myocardial infarction at age 68, at home, with the patient present and performing CPR until EMS arrived. He mentions this flatly, in passing, and moves on.
+
+**Exam.** Afebrile. **BP 124/78, HR 84** in clinic. No thyromegaly, no tremor, no exophthalmos. Cardiac, respiratory, abdominal, and neurologic exams unremarkable. Mildly anxious, guarded, no psychomotor abnormality. Cognition grossly intact. Denies current suicidal ideation; you note he answers quickly and moves on.
+
+---
+
+### Guided Discussion Questions
+
+**Q1. Cardiology's hesitation is reasonable — the blood pressure spikes are real and documented. Formulate the diagnosis. What is the label for this pattern, and does it exclude panic disorder?**
+
+*Teaching point:* This is a **pseudopheochromocytoma** pattern: severe, symptomatic **paroxysmal hypertension without biochemical evidence of catecholamine excess and without a demonstrable tumor** [10]. The negative plasma free metanephrines — a test with high sensitivity for pheochromocytoma, particularly when drawn near an episode — together with negative urinary fractionated metanephrines and a negative CT, make an adrenal or extra-adrenal catecholamine-secreting tumor very unlikely.
+
+The mechanism is not "nothing." The literature describes **augmented cardiovascular responsiveness to endogenous catecholamines alongside heightened sympathetic outflow**, so a normal or near-normal catecholamine surge produces an exaggerated hemodynamic response. Descriptively, the syndrome is often associated with **repressed emotion related to a prior traumatic episode, or a repressive coping style** — patients characteristically do *not* report fear as the leading symptom and may deny distress altogether. Management is described as requiring **collaboration between a hypertension specialist and a psychiatrist or psychologist with expertise in cognitive-behavioral panic management** [10].
+
+Hold two things at once here. Our patient has documented paroxysmal hypertension *and* meets DSM-5-TR criteria for panic disorder: recurrent unexpected panic attacks (≥4 symptoms, peaking within minutes), followed by more than a month of persistent concern about further attacks and conspicuous maladaptive behavior change — stopping exercise, restricting driving, leaving a client-facing role. Assess formally for comorbid **agoraphobia**, which his avoidance pattern suggests.
+
+Note also the **nocturnal panic attacks**. Waking from sleep in panic is well recognized in panic disorder, is *not* a red flag for an endocrine cause, and is a useful discriminator from many medical mimics — though it should prompt you to think about sleep apnea and nocturnal arrhythmia.
+
+And note the **temporal anchor everyone will want to skip**: symptom onset one month after witnessing his father's fatal MI while performing CPR. He reports it flatly and moves on. Screen deliberately for PTSD and for prolonged grief. This does not displace the panic diagnosis, but the catastrophic cognition in his attacks — *this is a heart attack, I am dying* — is not generic. It has a specific and recent origin, and that shapes both formulation and psychotherapy.
+
+**Q2. Give a ranked differential. What is on your list that a medical student's list would miss — and what iatrogenic contributor is hiding in this history?**
+
+*Teaching point:*
+
+| Rank | Diagnosis | For | Against / discriminator |
+|---|---|---|---|
+| 1 | **Panic disorder ± agoraphobia**, with a **pseudopheochromocytoma** hemodynamic phenotype | Full DSM-5-TR criteria; negative comprehensive workup; documented paroxysmal HTN with negative metanephrines; trauma-linked onset [10] | — |
+| 2 | **Benzodiazepine interdose withdrawal** (iatrogenic, and probably now co-driving the picture) | Alprazolam TID–QID escalation from PRN; episodes clustering late morning and mid-afternoon; "need it before it starts" | Predates alprazolam start — so it is an *amplifier*, not the origin |
+| 3 | **PTSD and/or prolonged grief disorder** | Witnessed his father's fatal MI one month pre-onset; flat, avoidant recounting; cardiac-specific catastrophic cognition | Needs explicit screening — re-experiencing, avoidance, negative cognitions, hyperarousal |
+| 4 | **True pheochromocytoma / paraganglioma** | Documented paroxysmal HTN, headache, diaphoresis, palpitations | **Metanephrines normal ×2 including near-episode; CT negative.** Very unlikely — but the classic triad demands it be formally excluded, which it has been |
+| 5 | **Paroxysmal arrhythmia (SVT) or POTS** | Palpitations, abrupt onset/offset, tachycardia to 122 | **Holter captured two symptomatic episodes: sinus tachycardia only.** Effectively excluded. Consider orthostatics if positional |
+| 6 | **Alcohol-related — withdrawal or rebound anxiety** | Two beers nightly "to come down" | Volume low for physiologic withdrawal, but quantify carefully; patients underreport |
+| 7 | **Temporal lobe epilepsy (ictal fear)** | Stereotyped paroxysmal episodes with autonomic features | Argues against: episodes last 30–60 min (ictal fear is typically seconds to ~2 min), no automatisms, no post-ictal confusion, no aura stereotypy, intact awareness |
+| 8 | **Thyrotoxicosis; carcinoid; mast cell activation** | Episodic autonomic symptoms | TSH/free T4 normal. No flushing/diarrhea/wheeze (carcinoid), no urticaria/hypotension/anaphylactoid features (MCAS) |
+
+**The item to push residents on is #2.** Alprazolam has a **short half-life and high potency**, an unfavorable combination that produces pronounced **interdose rebound**: as each dose falls off, sympathetic rebound generates symptoms indistinguishable from spontaneous panic. The patient interprets this as the disorder worsening, uses the drug more, and shortens the interval further. His symptom clustering in the **late morning and mid-afternoon** — plausible troughs after a morning dose — is the tell. His phrase *"I need it before it starts, or I can't stop it"* describes anticipatory dosing, which is the behavioral signature of a **safety behavior**, not of a treatment.
+
+He is, in other words, on a subtherapeutic antidepressant and a rising dose of a drug that is now partly generating the symptom it was prescribed to treat.
+
+**Q3. What is the mechanistic account of panic that makes interoceptive exposure a rational treatment rather than an arbitrary one?**
+
+*Teaching point:* The dominant models are complementary rather than competing.
+
+- **Interoceptive conditioning / fear-of-fear.** Benign somatic sensations become conditioned stimuli for a fear response through pairing with prior attacks. Hypervigilant interoceptive monitoring lowers the detection threshold, catastrophic appraisal amplifies the sympathetic response, and avoidance plus safety behaviors prevent extinction learning. In this patient, the conditioning has an obvious originating event — chest sensations acquired their meaning while he performed CPR on his dying father.
+- **Suffocation false-alarm / CO₂ hypersensitivity.** Panic disorder is characterized by heightened sensitivity of a putative suffocation-monitoring system, evidenced by the reproducible panicogenic effect of CO₂ inhalation and sodium lactate infusion in patients but not controls — and by the observation that respiratory symptoms are prominent in a large subset.
+- **Pharmacologic challenge as convergent evidence.** The **caffeine challenge** literature is the cleanest demonstration that this is a biologically distinct sensitivity, not a psychological artifact. A systematic review and meta-analysis of blinded placebo-controlled caffeine challenge studies found that at doses of roughly 400–750 mg, **panic attacks occurred in about half of patients with panic disorder (53.9%) versus 1.7% of healthy controls** (log RR 3.47, 95% CI 2.06–4.87), with a large between-group effect on subjective anxiety (Hedges' g = 1.02) [6]. Critically, **no patient panicked after placebo.** The authors note that the narrow dose range studied precludes conclusions about ordinary consumption, so counsel proportionately — the finding establishes mechanism far more strongly than it establishes a threshold.
+
+The therapeutic corollary: if benign interoceptive cues have been conditioned into danger signals, then **repeated, deliberate, un-avoided elicitation of those cues** — hyperventilation, straw breathing, spinning, stair-running, and, for this patient especially, **graded aerobic exercise that raises his heart rate** — is the mechanistically correct intervention. Every PRN alprazolam taken at the first sensation blocks precisely that extinction learning.
+
+**Q4. His sertraline has sat at 25 mg for fourteen months. Walk through the pharmacotherapy decision — and reconcile the two major network meta-analyses.**
+
+*Teaching point:* **He has not had a failed SSRI trial. He has had no SSRI trial.** 25 mg of sertraline for fourteen months is a subtherapeutic dose held indefinitely; documenting this as "sertraline didn't work" would corrupt every subsequent treatment decision. The first move is **dose optimization**, not a switch and not an augmentation.
+
+**Titration.** Escalate sertraline deliberately toward a therapeutic range (commonly 50–200 mg/day for panic disorder), in unhurried increments, with explicit anticipatory guidance about **early activation**. Panic patients are, by the mechanism in Q3, maximally primed to interpret SSRI-induced jitteriness as an attack; this is why the standard of care is to initiate at roughly half the usual starting dose and titrate slowly. Counsel that anti-panic response takes **weeks**.
+
+**Reconciling the evidence base — a worthwhile exercise in reading NMAs.** Two large network meta-analyses address the same question and rank drugs differently:
+
+- The **Cochrane NMA** (70 RCTs) found most agents superior to placebo for response, with **diazepam, alprazolam, and clonazepam ranking highest for response** and benzodiazepines ranking best for **acceptability** (lowest dropout). At the class level, TCAs ranked highest for response, then BDZs and MAOIs, with SSRIs fifth and SNRIs last — **but no statistically significant differences between classes**, and the authors explicitly caution that reliability is limited by **unclear or high risk of bias across multiple domains in all included studies**, with benzodiazepine-versus-placebo evidence rated **low quality** [1].
+- The **BMJ NMA** (87 RCTs, 12,800 participants) examined **remission jointly with adverse events**, and concluded that **SSRIs deliver high remission with comparatively low adverse-event risk**, with **sertraline and escitalopram** best-placed among individual SSRIs. It also found TCAs, BDZs, and SSRIs all significantly associated with increased adverse events versus placebo (RR 1.79, 1.76, and 1.19 respectively), and rated its own evidence base moderate to very low certainty [2].
+
+The apparent conflict resolves once you see that they optimize different objective functions. Cochrane ranks **short-term efficacy and trial dropout**; benzodiazepines look excellent on both — of course they do, they work within an hour and they are pleasant to take. The BMJ analysis ranks **remission against adverse events**, and it is over the longer horizon and the harms axis that SSRIs win. Neither analysis captures what matters most in panic disorder specifically: **tolerance, dependence, discontinuation difficulty, and the interference of PRN use with exposure-based learning** — none of which is a "dropout" event in a 8–12 week trial. Broader anxiety pharmacotherapy reviews accordingly continue to place SSRIs and SNRIs first-line [3].
+
+**If optimized sertraline fails:** switch within class (escitalopram) or to venlafaxine XR; TCAs (clomipramine, imipramine) retain genuine efficacy in panic disorder and are a legitimate later-line option with ECG monitoring, anticholinergic burden, and overdose toxicity weighed explicitly; MAOIs remain effective but are rarely the practical next step. **Beta-blockers are not an answer** — a 2024 systematic review and meta-analysis found no evidence of benefit over placebo or benzodiazepines in panic disorder or social anxiety disorder, despite substantially increased prescribing [7].
+
+**Q5. Construct the benzodiazepine plan. What are the failure modes?**
+
+*Teaching point:* The plan is a **slow, negotiated, structured taper, sequenced correctly** — and the sequencing is where residents most often go wrong.
+
+**Sequence.** Do **not** begin the taper before the SSRI is optimized and psychotherapy is engaged. Removing his only functioning coping tool while he is still on a subtherapeutic antidepressant and has no exposure skills is how tapers fail and how patients disengage from care.
+
+**Structure.** Consider converting short-half-life alprazolam to an equivalent dose of a **longer-half-life agent (e.g., clonazepam or diazepam)** to flatten interdose troughs, then reduce gradually — conventionally on the order of 5–10% of the current dose every 1–2 weeks, slowing further at lower doses, with the patient holding a share of control over pace. Move from PRN to a **fixed schedule** before tapering: scheduled dosing severs the reinforcement loop between symptom onset and pill-taking, which is the behavioral core of the problem.
+
+**Failure modes to name explicitly:**
+- **Tapering too fast**, producing withdrawal that both patient and physician misread as relapse — leading to reinstatement and a patient now convinced they cannot live without the drug.
+- **Tapering before the SSRI works.** Sequencing error; see above.
+- **Leaving PRN dosing in place** during CBT, which silently converts exposure sessions into safety-behavior-assisted exposure and blocks extinction.
+- **Framing the taper as withdrawal of something he needs**, rather than removal of something now generating his symptoms. The interdose-rebound formulation from Q2 is the single most persuasive thing you can offer him — it reframes the taper as treatment rather than deprivation.
+- **Not addressing the nightly alcohol**, which is additive sedation, an independent anxiety amplifier via rebound, and a genuine safety concern in combination.
+
+**Q6. What psychotherapy, delivered how — and what does the long-term outcome evidence actually support?**
+
+*Teaching point:* **CBT with interoceptive exposure is first-line**, not adjunctive. In a meta-analysis of 41 randomized *placebo-controlled* trials across anxiety-related disorders, CBT showed moderate placebo-controlled effects on target symptoms (Hedges' g = 0.56), with smaller effects on comorbid anxiety, depression, and quality of life — and interventions built primarily on **exposure** outperformed those using cognitive techniques alone, though that difference did not reach significance [4]. Note honestly that in this analysis panic disorder was among the disorders with **small-to-moderate** effect sizes, and the authors concluded more effective treatments are still needed for PD.
+
+Components for this patient: psychoeducation and the interdose-rebound formulation; interoceptive exposure targeting cardiac and respiratory sensations; **graded in-vivo exposure** to driving, to exercise, and to client-facing work; systematic elimination of safety behaviors — the PRN alprazolam, the boyfriend-equivalent accompaniment pattern, checking his pulse, the low-traffic scheduling. If PTSD screening is positive, sequence trauma-focused work deliberately rather than running two protocols in parallel.
+
+**The long-term nuance residents should carry.** A systematic review and meta-analysis of long-term CBT outcomes across 69 RCTs found benefits maintained versus control at post-treatment, 1–6 months, and 6–12 months for panic disorder (Hedges' g 0.22–0.35) — but at **follow-up of 12 months or more, the effect for panic disorder was no longer significant**, in contrast to sustained effects for GAD, social anxiety disorder, and PTSD [5]. Read that as a mandate for **maintenance strategy** — booster sessions, adequate pharmacotherapy duration before any discontinuation attempt, and relapse-prevention planning — not as evidence against CBT.
+
+**Alternatives and adjuncts.** Acceptance- and mindfulness-based interventions (ACT, MBCT, MBSR) show short-term anxiolytic effects added to treatment as usual across DSM-5 anxiety disorders; compared head-to-head with CBT, **ACT and MBCT performed comparably while MBSR was significantly inferior**, with effects not significantly different from TAU or CBT at 6 and 12 months and considerable heterogeneity [11]. Reasonable as an adjunct or for a CBT-refusing patient; not a substitute for exposure. For the broader anxiety-disorder context, the GAD psychotherapy NMA similarly identifies CBT as the first-line psychotherapy with the most durable evidence [12].
+
+**Q7. He denied suicidal ideation quickly and moved on. How hard do you press, and what does the epidemiology say?**
+
+*Teaching point:* Press properly. **Panic disorder is an independent risk factor for suicide**, and the reflex to treat anxiety as low-acuity is not supported.
+
+In a cohort drawn from Taiwan's National Health Insurance Research Database (171,737 individuals with panic disorder versus 686,948 matched comparisons, 2003–2017), panic disorder independently predicted **death by suicide (HR 1.85, 95% CI 1.59–2.14)** after adjustment for psychiatric comorbidity. Risk escalated sharply with comorbidity — **comorbid MDD carried the highest hazard (HR 6.08, 95% CI 5.48–6.74)**, followed by autism (4.52), schizophrenia (3.34), bipolar disorder (3.20), alcohol use disorder (2.99), substance use disorder (2.82), and OCD (2.10) [8].
+
+A separate systematic review and meta-analysis of risk factors *within* panic disorder populations (12 studies, 1,958 participants) identified factors associated with **suicide attempt**: comorbid depression (ES 4.47), depressive symptoms (1.98), older age (1.66), **younger age at panic disorder onset** (0.65), and **history of alcohol dependence** (8.70, wide CI). Factors associated with **suicidal ideation** included depressive symptoms (2.29), anxiety symptoms (1.90), **longer illness duration** (3.31), comorbid depressive disorder (3.88), and **agoraphobia** (4.60) [9].
+
+Map that onto this patient: fourteen months of illness, prominent avoidance consistent with agoraphobia, nightly alcohol use, an unscreened possible PTSD/grief syndrome, escalating benzodiazepine use, and functional contraction across work, driving, and exercise. **Several of the identified risk factors are present.** A rapid denial in a guarded patient with a repressive coping style — the very style described in the pseudopheochromocytoma literature [10] — is not reassurance.
+
+**Practically:** screen formally for MDD and PTSD; quantify alcohol properly; ask about suicidal ideation directly, unhurriedly, and again at follow-up rather than only at intake. **If ideation emerges**, complete a structured risk assessment, and move to **collaborative safety planning** — warning signs, internal coping strategies, social contacts and settings that provide distraction and support, professional and crisis contacts, and reducing access to lethal means, with the alcohol and the benzodiazepine supply both addressed as part of that conversation. Escalate to your attending same-day and document reasoning and disposition. In the US, **988** reaches the Suicide & Crisis Lifeline.
+
+---
+
+### Workup & Management — the short version
+
+**Workup — already sufficient; resist repeating it.** Metanephrines ×2 (one near-episode), 24-hour urinary fractionated metanephrines, CT abdomen/pelvis, echocardiogram, 48-hour Holter capturing two symptomatic episodes, TSH/free T4, CMP, CBC, HbA1c, UDS — all negative or normal. **Add instead:** formal PTSD and prolonged grief screening, structured depression screening, quantified alcohol history, orthostatic vitals, and a sleep history (OSA) given nocturnal attacks. Coordinate blood-pressure follow-up with the referring physician rather than re-opening the endocrine workup [10].
+
+**Management ladder:**
+1. **Deliver the formulation** — panic disorder with a pseudopheochromocytoma hemodynamic phenotype, amplified by benzodiazepine interdose rebound, anchored to a specific traumatic bereavement. This explanation is itself an intervention.
+2. **Optimize sertraline** toward a therapeutic dose with slow titration and explicit activation counseling [2,3].
+3. **Engage CBT with interoceptive exposure** now, in parallel with titration — including graded exercise and driving exposure [4].
+4. **Then** convert alprazolam to a longer-half-life agent on a fixed schedule and taper slowly, with the patient sharing control of pace.
+5. **Screen and treat comorbidity** — MDD, PTSD/prolonged grief, alcohol use.
+6. **Assess suicide risk directly and repeatedly; safety-plan and escalate if ideation emerges** [8,9].
+7. **Do not add a beta-blocker** [7].
+8. **Plan for maintenance** — adequate duration before any discontinuation attempt, booster CBT sessions, relapse-prevention plan, given the attenuation of CBT effects for panic disorder beyond 12 months [5].
+9. **Close the loop with cardiology** in writing — the referral question deserves an actual answer.
+
+---
+
+### Facilitator Notes *(not for distribution to learners before the session)*
+
+**Learning objectives.** Residents should be able to (1) recognize the pseudopheochromocytoma pattern and articulate why it does not exclude panic disorder; (2) identify benzodiazepine interdose withdrawal as an iatrogenic driver and cite the clinical tells; (3) explain the interoceptive-conditioning and CO₂-hypersensitivity models and derive interoceptive exposure from them; (4) distinguish an inadequate SSRI trial from a failed one; (5) reconcile the Cochrane and BMJ network meta-analyses by identifying their differing outcome hierarchies; (6) sequence SSRI optimization, psychotherapy, and benzodiazepine taper correctly; (7) apply panic-specific suicide-risk epidemiology to a guarded patient.
+
+**Timing (~30 min).** Q1 4 min · Q2 6 min · Q3 4 min · Q4 6 min · Q5 4 min · Q6 3 min · Q7 3 min. If compressed, Q2, Q4, and Q5 carry the most transferable value.
+
+**The three intended "clicks."**
+1. **The alprazolam is generating symptoms.** Most groups reach for a taper on general principle; far fewer notice the late-morning/mid-afternoon clustering and connect it to trough timing. If nobody raises it, ask: *"Why late morning and mid-afternoon? What is his blood level doing then?"*
+2. **This is not a failed SSRI trial.** Ask: *"Cardiology's note says he's on an antidepressant and still symptomatic. Do you agree he failed sertraline?"* Watch how many accept the framing before someone catches the dose.
+3. **The father.** He reports it flatly and the group often glides past it, exactly as he did. If the case discussion reaches Q4 without anyone returning to it, stop and ask why the catastrophic cognition is specifically cardiac.
+
+**Where residents predictably go wrong.**
+- Re-ordering metanephrines because the BP spikes feel unresolved. Ask what a third normal result would change, and what the pre-test probability now is after two negatives and a negative CT.
+- Switching or augmenting the antidepressant instead of titrating it.
+- Tapering the benzodiazepine first, before the SSRI is optimized and CBT is running.
+- Treating "denies SI" in a repressive-coping patient with several documented risk factors as an adequate assessment [9].
+- Diagnosing PTSD reflexively from the trauma history without applying criteria — screen properly rather than assuming.
+
+**Discussion extension if time allows.** The Cochrane and BMJ NMAs are an excellent 5-minute journal-club digression on why "which drug is best" is an ill-posed question absent a specified outcome, time horizon, and harm weighting — and on how **low risk-of-bias ratings across an entire literature** should temper confident ranking claims [1,2].
+
+**Safety framing.** Keep Q7 oriented to recognition, structured assessment, escalation, and collaborative safety planning. Redirect any real-patient details a participant introduces; identifiable information does not belong in teaching materials.
+
+**Attribution.** Literature retrieved from PubMed; all citations verified against PubMed metadata. Where evidence quality is low or certainty limited, the text says so — model that qualification for the group.
+
+---
+
+### References
+
+Based on articles retrieved from PubMed.
+
+1. Guaiana G, Meader N, Barbui C, Davies SJC, Furukawa TA, Imai H, Dias S, Caldwell DM, Koesters M, Tajika A, Bighelli I, Pompoli A, Cipriani A, Dawson S, Robertson L. Pharmacological treatments in panic disorder in adults: a network meta-analysis. *Cochrane Database of Systematic Reviews*. 2023;11(11):CD012729. [https://doi.org/10.1002/14651858.CD012729.pub3](https://doi.org/10.1002/14651858.CD012729.pub3)
+
+2. Chawla N, Anothaisintawee T, Charoenrungrueangchai K, Thaipisuttikul P, McKay GJ, Attia J, Thakkinstian A. Drug treatment for panic disorder with or without agoraphobia: systematic review and network meta-analysis of randomised controlled trials. *BMJ*. 2022;376:e066084. [https://doi.org/10.1136/bmj-2021-066084](https://doi.org/10.1136/bmj-2021-066084)
+
+3. O'Leary KB, Khan JS. Pharmacotherapy for anxiety disorders. *Psychiatric Clinics of North America*. 2024;47(4):689–709. [https://doi.org/10.1016/j.psc.2024.04.012](https://doi.org/10.1016/j.psc.2024.04.012)
+
+4. Carpenter JK, Andrews LA, Witcraft SM, Powers MB, Smits JAJ, Hofmann SG. Cognitive behavioral therapy for anxiety and related disorders: a meta-analysis of randomized placebo-controlled trials. *Depression and Anxiety*. 2018;35(6):502–514. [https://doi.org/10.1002/da.22728](https://doi.org/10.1002/da.22728)
+
+5. van Dis EAM, van Veen SC, Hagenaars MA, Batelaan NM, Bockting CLH, van den Heuvel RM, Cuijpers P, Engelhard IM. Long-term outcomes of cognitive behavioral therapy for anxiety-related disorders: a systematic review and meta-analysis. *JAMA Psychiatry*. 2020;77(3):265–273. [https://doi.org/10.1001/jamapsychiatry.2019.3986](https://doi.org/10.1001/jamapsychiatry.2019.3986)
+
+6. Klevebrant L, Frick A. Effects of caffeine on anxiety and panic attacks in patients with panic disorder: a systematic review and meta-analysis. *General Hospital Psychiatry*. 2022;74:22–31. [https://doi.org/10.1016/j.genhosppsych.2021.11.005](https://doi.org/10.1016/j.genhosppsych.2021.11.005)
+
+7. Archer C, Wiles N, Kessler D, Turner K, Caldwell DM. Beta-blockers for the treatment of anxiety disorders: a systematic review and meta-analysis. *Journal of Affective Disorders*. 2025;368:90–99. [https://doi.org/10.1016/j.jad.2024.09.068](https://doi.org/10.1016/j.jad.2024.09.068)
+
+8. Tsai SJ, Cheng CM, Chang WH, Bai YM, Su TP, Chen TJ, Chen MH. Panic disorder and suicide. *Psychological Medicine*. 2025;55:e38. [https://doi.org/10.1017/S0033291724003441](https://doi.org/10.1017/S0033291724003441)
+
+9. Tietbohl-Santos B, Chiamenti P, Librenza-Garcia D, Cassidy R, Zimerman A, Manfro GG, Kapczinski F, Passos IC. Risk factors for suicidality in patients with panic disorder: a systematic review and meta-analysis. *Neuroscience and Biobehavioral Reviews*. 2019;105:34–38. [https://doi.org/10.1016/j.neubiorev.2019.07.022](https://doi.org/10.1016/j.neubiorev.2019.07.022)
+
+10. Mamilla D, Gonzales MK, Esler MD, Pacak K. Pseudopheochromocytoma. *Endocrinology and Metabolism Clinics of North America*. 2019;48(4):751–764. [https://doi.org/10.1016/j.ecl.2019.08.004](https://doi.org/10.1016/j.ecl.2019.08.004)
+
+11. Haller H, Breilmann P, Schröter M, Dobos G, Cramer H. A systematic review and meta-analysis of acceptance- and mindfulness-based interventions for DSM-5 anxiety disorders. *Scientific Reports*. 2021;11(1):20385. [https://doi.org/10.1038/s41598-021-99882-w](https://doi.org/10.1038/s41598-021-99882-w)
+
+12. Papola D, Miguel C, Mazzaglia M, Franco P, Tedeschi F, Romero SA, Patel AR, Ostuzzi G, Gastaldon C, Karyotaki E, Harrer M, Purgato M, Sijbrandij M, Patel V, Furukawa TA, Cuijpers P, Barbui C. Psychotherapies for generalized anxiety disorder in adults: a systematic review and network meta-analysis of randomized clinical trials. *JAMA Psychiatry*. 2024;81(3):250–259. [https://doi.org/10.1001/jamapsychiatry.2023.3971](https://doi.org/10.1001/jamapsychiatry.2023.3971)
+
+---
+
+*Educational teaching case. Fictional composite; no protected health information. Pending faculty attestation.*
+
+*Joshua Moss, MD | Psychiatrist*
+
+
+---
+
 ## Lithium — Monitoring & Toxicity (Aug 3)
 
 - **Slug:** `cotw_20260803_lithium_res.md` · **Type:** md · **Sidebar:** listed
@@ -517,366 +766,5 @@ For **mortality**, the agonist evidence is the strongest thing we have: all-caus
 15. Bell J, Strang J. Medication treatment of opioid use disorder. *Biol Psychiatry.* 2019. [DOI](https://doi.org/10.1016/j.biopsych.2019.06.020) (PMID 31420089)
 
 *Citations retrieved from PubMed. This teaching case uses a synthetic, de-identified scenario for educational purposes only. Specific dosing is intentionally omitted; follow your institution's protocol and applicable federal and state regulations governing methadone and buprenorphine.*
-
-*Joshua Moss, MD | Psychiatrist*
-
-
----
-
-## Alcohol Withdrawal & DT (Jul 26)
-
-- **Slug:** `cotw_20260726_etohwd_res.md` · **Type:** md · **Sidebar:** listed
-- **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-26_alcohol-withdrawal-delirium-tremens_Resident.md`
-- **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 3,097 words
-
-<!-- topic_meta overlay -->
-#### Structured metadata (`topic_meta.json` → this page)
-
-> est. read 9 min · safetyLevel=`moderate` · cotwLevel=`res` (2026-07-26)
-
-**TL;DR (shown above the page text):**
-
-> Time since last drink organizes everything: DT arrives late (48-96 h), PAWSS predicts and CIWA-Ar measures, and thiamine goes before glucose.
-
-**Key points (bulleted card):**
-
-- ~20-30 minute small-group discussion - no pre-reading required.
-- De-identified synthetic case; each discussion question is paired with a teaching point.
-- Resident level. Facilitator notes are kept separate from the learner-facing stem.
-
-**Clinical-workflow narration (per-stage coaching text):**
-
-- **ask** — Work the stem cold: take your own history, commit to a differential, and name your next step before reading a single teaching point. The guided questions are written to be answered, not skimmed.
-- **mse** — Say out loud what each exam finding in the vignette rules in and rules out — the discrimination between look-alike syndromes is what the case is drilling.
-- **safety** — Safety content in every case is oriented to recognition, escalation, and safety planning. Escalate to your supervising resident or attending rather than managing acuity alone.
-- **say** — Before moving on, rehearse one sentence you would actually say to this patient or family, in plain language and out loud.
-- **collateral** — Ask yourself what collateral would change your differential here, and who you would have to call to get it.
-- **rounds** — If you are running the session, the facilitator notes flag the errors this case most often surfaces and the evidence-quality distinctions worth naming out loud.
-- **exam** — Teaching takeaway: Time since last drink organizes everything: DT arrives late (48-96 h), PAWSS predicts and CIWA-Ar measures, and thiamine goes before glucose.
-- **actions** — All Case of the Week cases
-
-**Cross-references and tagging:**
-
-- **Workflow stages:** `diagnosis`, `safety`, `treatment`, `team`, `exam`
-- **Shelf blueprint tags:** `substance`, `neurocog`
-- **EPA crosswalk:** `EPA1`, `EPA2`, `EPA10`
-- **Faculty review:** {"status": "pending", "reviewer": "Joshua Moss, MD", "lastReviewed": "2026-07-26"}
-
-#### Page text (as shipped)
-
-# Case of the Week — Resident Edition
-## Alcohol Withdrawal & Delirium Tremens: Risk Stratification, Benzodiazepine-Resistant Withdrawal, and the Phenobarbital Evidence
-
-**Date:** 2026-07-26
-**Learner level:** Psychiatry residents (PGY-1–4); consult-liaison and addiction-relevant. DSM-5-TR fluency assumed.
-**Format:** ~20–30 min small-group discussion. No required pre-reading.
-**Citations:** Based on articles retrieved from PubMed. Full reference list at the end. All patient details are **synthetic and de-identified**.
-
----
-
-### The Case (learner-facing stem)
-
-You are the psychiatry consult resident. Medicine calls at 21:00 about a 54-year-old man admitted 48 hours ago after a mechanical fall with a distal radius fracture, now post-operative day 0 from open reduction and internal fixation.
-
-**History (partly collateral, with consent):** approximately 1 pint of vodka daily for six years, last drink the morning before admission. Prior hospitalization three years ago for "the shakes." One episode described as "blacked out and woke up in the ER" — records confirm a **witnessed generalized seizure** during a prior withdrawal admission. No prior ICU admission. No psychiatric history, no other substances by history; UDS negative.
-
-**Admission labs:** Na 134, K 3.2, **Mg 1.4 mg/dL**, glucose 96, AST 88, ALT 41 (ratio ~2:1), T. bili 1.6, INR 1.3, **platelets 128,000**. BAL undetectable on arrival.
-
-**Course:** Started on a CIWA-Ar–triggered lorazepam protocol on admission. Scores hovered 8–12 for the first 24 h. Post-operatively he received fentanyl and, on the floor, has now received **26 mg of lorazepam in the preceding 9 hours** with CIWA-Ar scores that have not fallen below 18.
-
-**Now (hour ~62 since last drink):** T 38.6 °C, HR 138, BP 178/102, RR 26. He is inattentive with a fluctuating level of arousal, disoriented to place and time, picking at the bedsheets, and has pulled out one IV. He reports seeing "bugs on the wall" and cannot be reliably redirected. No focal neurologic deficit is appreciated on a limited exam.
-
----
-
-### Guided Discussion Questions
-
-**Q1. Formulate this. What is the diagnosis, and what is the *mechanistic* reason his benzodiazepine requirement is escalating rather than falling?**
-
-*Teaching point:* This is **delirium tremens** — DSM-5-TR *alcohol withdrawal, with perceptual disturbances*, meeting criteria for a withdrawal delirium: fluctuating attention and awareness, perceptual disturbance, and severe autonomic instability, in a temporal window (~48–96 h) that fits precisely.
-
-The mechanism to articulate: chronic ethanol exposure produces **GABA-A receptor subunit reconfiguration** — not merely fewer receptors, but a shift toward subunit compositions (notably reduced α1 and altered γ2/δ expression) that are **less sensitive to benzodiazepines**, while **NMDA receptor upregulation** (including NR2B-containing receptors) drives glutamatergic excitotoxic hyperarousal [1,2]. Benzodiazepines are **allosteric modulators**: they require an endogenous GABA-A receptor population competent to respond. When that population is remodeled, escalating benzodiazepine doses yield diminishing returns — the definition of **benzodiazepine-resistant alcohol withdrawal**. Barbiturates, by contrast, both potentiate GABA-A **and, at higher concentrations, directly gate the chloride channel independent of GABA**, and additionally antagonize AMPA/kainate glutamatergic transmission — which is the pharmacologic rationale for phenobarbital in exactly this scenario [1,3].
-
-There is also a **"kindling"** dimension: repeated withdrawal episodes progressively sensitize the neural substrate, so each subsequent withdrawal is more severe and more likely to be complicated by seizure or delirium [4,5]. His documented prior withdrawal seizure is therefore not just history — it is a mechanism-level prediction of tonight.
-
-**Q2. Retrospectively: what should have happened on admission that would have changed this trajectory?**
-
-*Teaching point:* Three failures worth naming without blame:
-
-1. **No prospective risk stratification.** The **PAWSS** is a 10-item admission screen derived from a systematic review of 233 articles; a score **≥4** identifies patients at risk for *complicated* withdrawal (hallucinosis, withdrawal seizures, DT) before symptoms emerge [4]. This patient would have scored well above threshold: heavy daily intake, prior withdrawal episodes, **prior withdrawal seizure**, and acute comorbid illness. High PAWSS should have driven a **front-loaded or fixed-schedule** regimen and an appropriate level of care from hour 0 — not a reactive, symptom-triggered protocol on a general floor.
-2. **Symptom-triggered dosing applied to a patient in whom CIWA-Ar is not valid.** CIWA-Ar was validated in awake, communicative patients whose symptoms are attributable to withdrawal. Post-operatively — with pain, opioids, and an evolving delirium — the scale becomes uninterpretable: pain and surgical stress inflate the score, while an obtunding delirium can deflate it. Current reviews emphasize this limitation explicitly, and identify **non-symptom-triggered and benzodiazepine-sparing protocols** as an active area of investigation for exactly these populations [1]. The **2020 ASAM guideline** frames symptom-triggered therapy as preferred *where it can be validly and safely applied*, with fixed-dose or front-loading reserved for higher-risk or non-assessable patients [6].
-3. **Unaddressed magnesium.** Mg 1.4 mg/dL was never repleted. Hypomagnesemia lowers the seizure threshold and is common in this population [1,2].
-
-**Q3. Build the differential for a hyperthermic, hyperadrenergic delirium in this patient. What are you obligated to exclude tonight, and how does that change your orders?**
-
-*Teaching point:* DT is a **diagnosis of exclusion in the delirious patient**, and this man has three independent reasons to have something else.
-
-| Consideration | Why it's live here | Action tonight |
-|---|---|---|
-| **Delirium tremens** | Timeline (62 h), prior seizure, escalating requirement | Treat empirically while working up |
-| **Intracranial hemorrhage (SDH)** | Mechanical **fall**, platelets 128k, INR 1.3, alcohol-related cortical atrophy → bridging-vein vulnerability | **Non-contrast head CT** — low threshold, do not defer |
-| **Sepsis / post-op infection** | POD 0; T 38.6 °C is indistinguishable from DT hyperthermia | Cultures, CXR, wound exam, lactate |
-| **Wernicke encephalopathy** | Chronic AUD; classic triad present in a minority — most cases are missed | **Parenteral thiamine now**, before any dextrose |
-| **Hepatic encephalopathy** | AST:ALT 2:1, plt 128k, INR 1.3, bili 1.6 → probable cirrhosis | Ammonia is *not* diagnostic; assess clinically; sedatives can precipitate HE [7] |
-| **Serotonin syndrome / NMS / anticholinergic delirium** | Perioperative polypharmacy | Med rec; check for clonus, rigidity, mydriasis, dry skin |
-| **Opioid/benzodiazepine interaction & post-op delirium** | Fentanyl + 26 mg lorazepam | Consider iatrogenic contribution to the fluctuating sensorium |
-
-The teaching move: **the workup runs in parallel with treatment, not before it.** You do not withhold benzodiazepines pending the CT.
-
-**Q4. Phenobarbital: what does the evidence actually support — monotherapy, adjunct, or rescue? Be specific about the quality of the data.**
-
-*Teaching point:* This is the highest-yield literature discussion in the case, and the honest answer is **"promising, heterogeneous, mostly non-randomized."**
-
-- A **systematic review of 20 studies** (9 ED, 11 floor/ICU) concluded that phenobarbital **as monotherapy without benzodiazepines may be a safe and effective alternative** in AWS, while explicitly flagging **considerable heterogeneity in dosing, outcome measures, and severity scales**, and noting that the two available ED RCTs were substantially underpowered. Its stated future agenda is standardization of dosing [3].
-- A **systematic review and meta-analysis** found a statistically significant reduction in **hospital length of stay** with phenobarbital vs. benzodiazepines (mean difference **−2.6 days**, 95% CI −4.48 to −0.72, p = 0.007), but **no significant difference in ICU LOS** (−1.17, p = 0.07) and no significant difference in intubation (RR 0.52, 95% CI 0.25–1.08), both with **considerable heterogeneity (I² 77–80%)** [8].
-- A **retrospective cohort of 224 patients with clearly defined severe AWS** (history of DT/seizures, CIWA-Ar >15, or PAWSS ≥4) using **fixed-dose, non-overlapping phenobarbital** found shorter median hospital LOS (**2.8 vs 4.7 days**, p < 0.0001), shorter progressive/ICU LOS (0.7 vs 1.3 days), less dexmedetomidine and antipsychotic use, and fewer patients newly mechanically ventilated (p = 0.045) [9]. Note the design detail worth emphasizing: **non-overlapping** — phenobarbital replaced benzodiazepines rather than stacking on top of them.
-- Against that, a **multicenter retrospective study of phenobarbital *added to* benzodiazepines** found faster AWS resolution (141.7 vs 165.7 h) but **higher mechanical ventilation (19.4% vs 1.0%), more aspiration pneumonia (22.3% vs 5.8%), and longer LOS (8 vs 6 days)** — with the important internal finding that **earlier initiation (within 24 h)** was associated with lower cumulative benzodiazepine dose (530 vs 887.5 mg) and shorter LOS (6 vs 10 days) [10]. Confounding by indication is severe here: sicker patients get the adjunct.
-- Head-to-head against another adjunct: a retrospective cohort comparing **phenobarbital vs. dexmedetomidine** added to lorazepam found the phenobarbital group had **lower odds of intubation (OR 0.33, 95% CI 0.15–0.70)** and shorter hospital and ICU LOS — but with the protective effect **attenuating as lorazepam dose rose** [11]. Dexmedetomidine, mechanistically, is an α2 agonist: it blunts autonomic signs **without GABAergic or anti-seizure activity**, which is precisely why it is an adjunct and never a substitute [1].
-
-**Synthesis for the resident:** the defensible position is that **early, protocolized, replacement-strategy phenobarbital in prospectively identified severe AWS** has the best supporting data; **late, stacked-on-top-of-high-dose-benzodiazepine phenobarbital** is where the respiratory harms cluster. That distinction — *replacement early* vs. *rescue late* — is the actual clinical lesson, and it is testable at the bedside tonight.
-
-**Q5. Write the plan for the next 4 hours. Level of care, pharmacology, monitoring, and what you personally do as the consultant.**
-
-*Teaching point:*
-
-**Level of care.** Escalate to **ICU or step-down** now. Criteria met: delirium, hyperthermia, hemodynamic instability, escalating sedative requirement, and airway risk. Do not manage refractory DT on a general floor.
-
-**Pharmacology.**
-- **Rapid titration to a defined endpoint** — light sedation (calm, rousable), not a CIWA-Ar number. Once delirium supervenes, CIWA-Ar is dead as an instrument; switch to a sedation scale (e.g., RASS) and objective autonomic parameters.
-- **Add phenobarbital** per institutional protocol, with an explicit preference for a **loading/replacement strategy rather than open-ended stacking**, given the ventilation and aspiration signal in the adjunct literature [3,9,10]. Airway monitoring is mandatory.
-- **Dexmedetomidine** may be added for autonomic control but **never as a benzodiazepine/barbiturate substitute** — no anti-seizure effect [1,11].
-- **Antipsychotics** only for refractory perceptual disturbance/agitation *after* adequate GABAergic therapy; they lower the seizure threshold and prolong QTc.
-- **Thiamine parenterally, before dextrose** [12]. Replete **magnesium** and potassium.
-- **Liver caveat:** with probable cirrhosis, prefer **lorazepam/oxazepam** (glucuronidation, no oxidative metabolism, no active metabolites) and recognize that sedatives can precipitate or worsen **hepatic encephalopathy** — a real reason to favor a controlled barbiturate load over an open-ended benzodiazepine escalation here [7].
-
-**Workup in parallel:** non-contrast head CT, cultures/CXR/lactate, glucose, repeat electrolytes and Mg, medication reconciliation.
-
-**Your job as the consultant:** (1) name the diagnosis explicitly in the note so the primary team stops titrating to a scale that no longer applies; (2) specify the **endpoint** of sedation; (3) specify **what would change the diagnosis** (i.e., the exclusion workup); (4) begin the **AUD treatment** conversation for the post-acute phase; and (5) address **stigma and staff dynamics** — refractory DT reliably generates frustration on the floor, and reframing it as a severe medical illness with a predictable trajectory is part of the consult.
-
-**Q6. He stabilizes over 72 hours. What is your discharge plan, and what does the evidence say about it?**
-
-*Teaching point:* **Detoxification is not treatment.** The withdrawal episode is the single highest-leverage engagement opportunity this patient will have, and it is routinely wasted.
-
-- **Pharmacotherapy.** A systematic review and meta-analysis of **118 trials / 20,976 participants** supports **oral naltrexone 50 mg/d** and **acamprosate** as first-line: NNT **11** (acamprosate) and **18** (naltrexone 50 mg/d) to prevent one person returning to *any* drinking, and NNT **11** for naltrexone to prevent return to *heavy* drinking; injectable naltrexone reduced drinking days (WMD −4.99 days over 30 days). Adverse effects were predominantly GI [13]. Note the naltrexone caveat in this specific patient: he is **post-operative on opioid analgesia**, so naltrexone initiation must be timed accordingly — **acamprosate** is the more practical immediate choice, and it is also the preferred agent in hepatic impairment (renally cleared).
-- **Psychosocial linkage** is not optional — the meta-analytic effect sizes above are *in conjunction with* psychosocial intervention [13].
-- **Anticipate the kindling problem.** Document the DT episode prominently. His next withdrawal will be worse, and the next admitting team needs to see that on page one [4,5].
-- **Counsel on the AUD → withdrawal-risk loop** explicitly, in non-stigmatizing language.
-
-**Q7. Where is this evidence base weakest, and what would you want to see?**
-
-*Teaching point:* Push residents to articulate research gaps — this is the ACGME-relevant "practice-based learning" muscle.
-
-- **Almost no adequately powered RCTs.** The phenobarbital literature is dominated by single-center retrospective cohorts with **confounding by indication**; the two ED RCTs are small [3].
-- **No dosing standardization** for phenobarbital across studies — the most-cited limitation in every review [3,8].
-- **Outcome heterogeneity** — hospital LOS is the dominant endpoint, which is administratively convenient but a weak proxy for patient-centered outcomes (seizure, DT incidence, mortality, post-discharge AUD engagement).
-- **Population gaps** — current reviews explicitly call for greater inclusion of **women and racial/ethnic minority populations**, and for more individualized risk-stratification approaches to guide treatment selection [1].
-- **Prediction, not just measurement** — PAWSS remains under-implemented despite being the only validated *predictive* tool for complicated AWS in the medically ill [4].
-- Curiosity item: even **ethanol itself** has been systematically reviewed as a withdrawal treatment (10 studies); overall study quality was poor and the review concluded the evidence does not support implementation [14]. Useful as a lesson in why mechanistic plausibility is not sufficient.
-
----
-
-### Ranked Differential
-
-1. **Alcohol withdrawal delirium (delirium tremens), benzodiazepine-resistant** — timeline, kindling history, escalating requirement.
-2. **Traumatic intracranial hemorrhage (subdural hematoma)** — fall + thrombocytopenia + coagulopathy; head CT is not optional.
-3. **Post-operative sepsis / occult infection** — POD 0 with fever; clinically indistinguishable from DT.
-4. **Wernicke encephalopathy** — treat empirically; do not wait for the triad.
-5. **Hepatic encephalopathy** — probable cirrhosis, sedative-precipitated.
-6. **Iatrogenic delirium** — opioid + high-dose benzodiazepine burden.
-7. **Serotonin syndrome / NMS / anticholinergic toxidrome** — perioperative medication exposure.
-8. **Metabolic** — hypomagnesemia, hypokalemia, hyponatremia, hypoglycemia.
-
----
-
-### Workup & Management (summary)
-
-**Acute:** ICU/step-down; titrate to light sedation on a validated sedation scale (abandon CIWA-Ar once delirious); phenobarbital via a **replacement**, protocolized strategy with airway monitoring; dexmedetomidine only as autonomic adjunct; antipsychotic only as adjunct; parenteral **thiamine before dextrose**; aggressive **magnesium/potassium** repletion; **head CT**, infectious workup, metabolic panel in parallel.
-
-**Sub-acute:** Taper as autonomic parameters normalize; re-orient; delirium-mitigation bundle; nutrition; monitor for re-emergent seizure risk.
-
-**Discharge:** AUD pharmacotherapy (**acamprosate** first here given opioid exposure and hepatic impairment; naltrexone once opioid-free) **plus** psychosocial linkage; explicit documentation of DT for future admissions; PAWSS-informed handoff [4,13].
-
----
-
-### Facilitator Notes (not for the learner handout)
-
-- **Time:** ~30 min. Q4 (the phenobarbital evidence) is the intellectual centerpiece; Q2 (what should have happened on admission) is the systems lesson; Q5 is the deliverable. If short on time, cut Q7.
-- **The single distinction to send them home with:** **early replacement phenobarbital ≠ late stacked phenobarbital.** Kessel et al.'s fixed-dose non-overlapping protocol [9] and Cheng et al.'s adjunct cohort [10] point in *apparently* opposite directions; the reconciliation is design + timing, not drug effect. This is a good live demonstration of reading two studies that "disagree" and finding the actual signal.
-- **Push on confounding by indication** whenever a resident cites the retrospective phenobarbital data as if it were causal. Ask: *who got the phenobarbital, and why?*
-- **CL-specific teaching:** the moment CIWA-Ar stops being valid is the moment the consult adds the most value. Residents should be able to say out loud, in a note, "CIWA-Ar is no longer an appropriate instrument in this patient; here is what to titrate to instead."
-- **Common resident errors:** (1) titrating to a scale rather than a physiologic endpoint; (2) adding antipsychotics early for "agitation" in DT; (3) treating dexmedetomidine as benzodiazepine-sparing in a seizure-risk patient; (4) missing the subdural in a patient who fell; (5) anchoring on withdrawal and never repeating a glucose; (6) discharging without AUD pharmacotherapy; (7) initiating naltrexone in a patient still on opioids.
-- **Systems angle worth 3 minutes:** does your institution have a PAWSS-triggered admission order set? If not, that is a genuinely fundable QI project, and residents can build it.
-- **Tone note:** model non-stigmatizing, quantified language throughout. Refractory DT generates staff frustration; part of the consultant's job is reframing it as a severe, predictable medical syndrome.
-
----
-
-### References
-
-1. Kast KA, Sidelnik SA, Nejad SH, Suzuki J. Management of alcohol withdrawal syndromes in general hospital settings. *BMJ.* 2025. [DOI](https://doi.org/10.1136/bmj-2024-080461) (PMID 39778965)
-2. Day E, Daly C. Clinical management of the alcohol withdrawal syndrome. *Addiction.* 2021. [DOI](https://doi.org/10.1111/add.15647) (PMID 34288186)
-3. Nishimura Y, Choi H, Colgan B, Kistler H, Mercado F. Current evidence and clinical utility of phenobarbital for alcohol withdrawal syndrome. *Eur J Intern Med.* 2023. [DOI](https://doi.org/10.1016/j.ejim.2023.03.006) (PMID 36935249)
-4. Maldonado JR, Sher Y, Ashouri JF, et al. The "Prediction of Alcohol Withdrawal Severity Scale" (PAWSS): systematic literature review and pilot study of a new scale for the prediction of complicated alcohol withdrawal syndrome. *Alcohol.* 2014. [DOI](https://doi.org/10.1016/j.alcohol.2014.01.004) (PMID 24657098)
-5. Meloy P, Rutz D, Bhambri A. Alcohol withdrawal. *J Educ Teach Emerg Med.* 2025. [DOI](https://doi.org/10.21980/J87S8Q) (PMID 39926251)
-6. Ganatra RB, Breu AC, Ronan MV. Clinical guideline highlights for the hospitalist: 2020 American Society of Addiction Medicine clinical practice guideline on alcohol withdrawal management. *J Hosp Med.* 2022. [DOI](https://doi.org/10.12788/jhm.3729) (PMID 34910619)
-7. Chand PK, Panda U, Mahadevan J, Murthy P. Management of alcohol withdrawal syndrome in patients with alcoholic liver disease. *J Clin Exp Hepatol.* 2022. [DOI](https://doi.org/10.1016/j.jceh.2022.03.003) (PMID 36340306)
-8. Umar Z, Haseeb Ul Rasool M, Muhammad S, et al. Phenobarbital and alcohol withdrawal syndrome: a systematic review and meta-analysis. *Cureus.* 2023. [DOI](https://doi.org/10.7759/cureus.33695) (PMID 36788902)
-9. Kessel KM, Olson LM, Kruse DA, et al. Phenobarbital versus benzodiazepines for the treatment of severe alcohol withdrawal. *Ann Pharmacother.* 2024. [DOI](https://doi.org/10.1177/10600280231221241) (PMID 38247044)
-10. Cheng XJC, Chung J, Yoo N, et al. Impact of phenobarbital when used in combination with benzodiazepines for the treatment of alcohol withdrawal syndrome: a retrospective analysis. *Am J Emerg Med.* 2025. [DOI](https://doi.org/10.1016/j.ajem.2025.03.008) (PMID 40080990)
-11. Matecki M, Noureldin A, Akkari R, et al. Phenobarbital addition to alcohol withdrawal treatment offers better outcomes than dexmedetomidine in hospitalized patients. *J Intensive Care Med.* 2025. [DOI](https://doi.org/10.1177/08850666251328881) (PMID 40152196)
-12. Pruckner N, Baumgartner J, Hinterbuchinger B, et al. Thiamine substitution in alcohol use disorder: a narrative review of medical guidelines. *Eur Addict Res.* 2019. [DOI](https://doi.org/10.1159/000499039) (PMID 30897571)
-13. McPheeters M, O'Connor EA, Riley S, et al. Pharmacotherapy for alcohol use disorder: a systematic review and meta-analysis. *JAMA.* 2023. [DOI](https://doi.org/10.1001/jama.2023.19761) (PMID 37934220)
-14. Quelch D, Davies N, McFauld C, et al. Ethanol for the management of alcohol withdrawal syndrome: a systematic review. *Clin Toxicol (Phila).* 2024. [DOI](https://doi.org/10.1080/15563650.2024.2422964) (PMID 39559850)
-
-*Citations retrieved from PubMed. This teaching case uses a synthetic, de-identified scenario for educational purposes only. Specific dosing is intentionally omitted; follow your institution's protocol and consult pharmacy.*
-
-*Joshua Moss, MD | Psychiatrist*
-
-
----
-
-## Suicide Risk & Safety Planning (Jul 23)
-
-- **Slug:** `cotw_20260723_suiciderisk_res.md` · **Type:** md · **Sidebar:** listed
-- **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-23_suicide-risk-assessment-safety-planning_Resident.md`
-- **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 2,283 words
-
-<!-- topic_meta overlay -->
-#### Structured metadata (`topic_meta.json` → this page)
-
-> est. read 8 min · safetyLevel=`moderate` · cotwLevel=`res` (2026-07-23)
-
-**TL;DR (shown above the page text):**
-
-> Risk formulation over risk category - the limits of stratification scores, and collaborative safety planning as the actual intervention.
-
-**Key points (bulleted card):**
-
-- ~20-30 minute small-group discussion - no pre-reading required.
-- De-identified synthetic case; each discussion question is paired with a teaching point.
-- Resident level. Facilitator notes are kept separate from the learner-facing stem.
-
-**Clinical-workflow narration (per-stage coaching text):**
-
-- **ask** — Work the stem cold: take your own history, commit to a differential, and name your next step before reading a single teaching point. The guided questions are written to be answered, not skimmed.
-- **mse** — Say out loud what each exam finding in the vignette rules in and rules out — the discrimination between look-alike syndromes is what the case is drilling.
-- **safety** — Safety content in every case is oriented to recognition, escalation, and safety planning. Escalate to your supervising resident or attending rather than managing acuity alone.
-- **say** — Before moving on, rehearse one sentence you would actually say to this patient or family, in plain language and out loud.
-- **collateral** — Ask yourself what collateral would change your differential here, and who you would have to call to get it.
-- **rounds** — If you are running the session, the facilitator notes flag the errors this case most often surfaces and the evidence-quality distinctions worth naming out loud.
-- **exam** — Teaching takeaway: Risk formulation over risk category - the limits of stratification scores, and collaborative safety planning as the actual intervention.
-- **actions** — All Case of the Week cases
-
-**Cross-references and tagging:**
-
-- **Workflow stages:** `diagnosis`, `safety`, `treatment`, `team`, `exam`
-- **Shelf blueprint tags:** `safety`
-- **EPA crosswalk:** `EPA1`, `EPA2`, `EPA10`
-- **Faculty review:** {"status": "pending", "reviewer": "Joshua Moss, MD", "lastReviewed": "2026-07-23"}
-
-#### Page text (as shipped)
-
-# Case of the Week — Resident Edition
-## Suicide Risk Assessment & Safety Planning: Evidence-Based Formulation, Risk Stratification's Limits, and Acute Management
-
-**Date:** 2026-07-23
-**Learner level:** Psychiatry residents (PGY-1–4) — assumes DSM-5-TR fluency; guideline- and evidence-forward
-**Format:** ~20–30 min case conference / small-group discussion. No required pre-reading.
-**Citations:** Based on articles retrieved from PubMed. Full reference list at the end. All patient details are **synthetic and de-identified**.
-
-> **Scope note.** This case is deliberately oriented toward **recognition, structured assessment, risk *formulation*, escalation, and collaborative safety planning**. It contains no method detail and requires none. Model that frame for junior learners.
-
----
-
-### The Case (learner-facing stem)
-
-A 34-year-old is evaluated on the consult service after presenting to the ED with 6 weeks of worsening depression following a relationship dissolution and a job loss. Symptoms include depressed mood, anhedonia, terminal insomnia, anorexia with weight loss, psychomotor slowing, guilt, and prominent **hopelessness**. The patient endorses active suicidal ideation "most of the day" with fluctuating intent but states they "haven't worked out any details." There is **one prior attempt** 8 years ago in a similar context, not previously disclosed to any clinician. The patient has been drinking heavily over the past 2 weeks and describes chronic access to lethal means at home. There is a first-degree family history of suicide.
-
-Mental status: alert, cooperative, tearful, with constricted affect and mood-congruent hopeless cognitions; no perceptual disturbance; insight partial; cognition grossly intact. The patient is reluctant to be admitted and asks to go home "to sleep it off."
-
----
-
-### Guided Discussion Questions
-
-**Q1. Build a *risk formulation*, not a risk *score*. What are the highest-yield factors here, and how do you weight acute versus chronic and static versus modifiable?**
-*Teaching point:* A defensible formulation integrates **chronic/static** vulnerability (prior attempt — the strongest historical predictor; family history of suicide), **acute/dynamic** drivers (active ideation with fluctuating intent, severe depression with hopelessness, terminal insomnia, escalating alcohol use, recent interpersonal and occupational losses), **access to lethal means**, and **protective factors** (which appear thin here). In depressive disorders, the most consistent clinical predictors of subsequent attempts and death include **prior attempt, prior/current suicidal ideation, hopelessness, and severe or psychotic depression** [1]. Frame this as a **narrative formulation** ("this patient's acute risk is elevated above their chronic baseline because…") that directly names the modifiable targets — the format that actually drives management and that documents your reasoning.
-
-**Q2. A resident proposes admitting because the patient is "high-risk." Interrogate the evidentiary limits of risk *categorization*.**
-*Teaching point:* Categorical high/low-risk labels are **poor predictors of individual outcomes.** Franklin et al.'s 50-year meta-analysis (365 studies) found risk-factor prediction only **slightly better than chance**, with no improvement across five decades [2]. Large et al. found that inpatient "high-risk" categorization pools to an OR ~7 but with a **positive predictive value under ~1%** and unacceptable heterogeneity — concluding risk models are "not a suitable basis for clinical decisions" [3]. The clinical translation: **do not let a "low-risk" label falsely reassure**, and do not treat "high-risk" as an automatic admission order. Use risk stratification to *identify modifiable factors and allocate intensity of intervention*, then decide disposition on the clinical picture, the patient's ability to engage in safety planning, and the feasibility of means reduction and follow-up.
-
-**Q3. Which structured instruments add value, and where do they stop?**
-*Teaching point:* The **C-SSRS** has validated convergent/divergent validity and sensitivity to change across adolescents and adults, and standardizes ideation severity, intensity, and behavior classification [4]. Screening tools such as the **ASQ** are validated for case-finding, particularly in youth and medical settings [5]. But instruments are **screening and standardization aids, not predictive rules** — consistent with Q2, a structured score should feed the formulation, not substitute for it. Teaching pearl: use the tool to ensure you asked the right questions and to communicate/documented severity, not to "clear" a patient.
-
-**Q4. Walk through the Safety Planning Intervention as an *evidence-based* clinical procedure. What is the effect size, and what are its boundaries?**
-*Teaching point:* SPI (Stanley & Brown) is a collaboratively constructed, prioritized hierarchy: warning signs → internal coping → social contacts/settings for distraction → people to ask for help → professionals/crisis resources → **means restriction**. In the VA ED cohort (n=1,640), **SPI + structured telephone follow-up** was associated with **~45% fewer suicidal behaviors** over 6 months (OR 0.56; 95% CI 0.33–0.95) and **>2× the odds** of outpatient engagement [6]. A meta-analysis of safety-planning-type interventions found a pooled **RR 0.570** for suicidal behavior (NNT ≈ 16) but **no significant effect on ideation** [7]; a systematic review of 26 studies supports feasibility, acceptability, and improvements across suicidality, hopelessness, and treatment engagement [8]. Boundaries to teach: SPI reduces *behavior*, works best **bundled with follow-up**, and is an adjunct to — not a replacement for — treating the underlying disorder and reducing means access.
-
-**Q5. Means restriction is often the highest-leverage intervention. How do you operationalize lethal-means counseling here without slipping into method detail?**
-*Teaching point:* **Means restriction is among the best-supported population- and individual-level suicide-prevention strategies** [9]. Operationally (framed generally, never specifically): collaboratively engage the patient — and, with consent, a trusted other — to **reduce or remove access to lethal means at home** during the high-risk period; leverage the family as partners in enacting the plan; and integrate this step into the written safety plan. The clinical craft is doing this **collaboratively and non-coercively** so the patient remains engaged. Note the acute confound here: heavy alcohol use both **elevates acute risk** (disinhibition, worsened mood/insomnia) and complicates capacity/engagement — address it as a modifiable acute factor.
-
-**Q6. Disposition and legal-ethical dimension: the patient wants to leave. Reason through voluntary vs. involuntary care.**
-*Teaching point:* Integrate acuity, modifiable-risk trajectory, capacity, and the feasibility of a safe outpatient plan. Given active ideation with fluctuating intent, a previously undisclosed prior attempt, severe depression with hopelessness, acute intoxication risk, ready means access, and thin supports, **acute risk is substantially above baseline and outpatient management is difficult to secure right now** — favoring admission. Teach the legal framework generically: **involuntary hold criteria vary by jurisdiction** but generally require a mental disorder plus imminent danger to self/others (or grave disability); pursue the **least restrictive option** that maintains safety, always attempt to **build voluntary engagement first**, and document capacity, the risk formulation, and the reasoning. "No-suicide contracts" have **no evidence base** and should not substitute for a safety plan or disposition decision.
-
-**Q7. Acute pharmacology: the team asks whether anything "rapidly reduces suicidal ideation." What can you say from the evidence?**
-*Teaching point:* Standard antidepressants **do not** rapidly reduce acute suicidal ideation (weeks to effect). **Esketamine** is FDA-approved (with a REMS) for depressive symptoms in MDD with acute suicidal ideation/behavior: the **ASPIRE I and II** phase-3 RCTs showed rapid, robust reduction in depressive symptoms (MADRS) at 24 hours versus placebo, each *added to comprehensive standard of care including hospitalization* — but in both trials the **between-group difference on the suicidality-specific measure (CGI-SS-r) was not statistically significant** [10,11]. Teaching nuances: (a) esketamine treats **depressive symptoms rapidly**, which is clinically valuable, but is **not** demonstrated to independently resolve suicidality beyond standard care; (b) it is an **adjunct within** a comprehensive plan (hospitalization, means restriction, safety planning, definitive treatment), not a stand-alone; (c) for the small subset with an established diagnosis, **lithium** and **clozapine** carry longer-term anti-suicidal signals (clozapine in schizophrenia/schizoaffective; lithium in mood disorders) — relevant to longitudinal planning, not the acute ED disposition.
-
-**Q8 (Systems/continuity). What converts a good ED encounter into durable risk reduction?**
-*Teaching point:* The **post-discharge window is a peak-risk period**; continuity is protective. Evidence-based, low-cost bundles include **structured follow-up contact / "caring contacts,"** rapid outpatient linkage with warm handoff, and system approaches (e.g., Zero Suicide-style care pathways). SPI's demonstrated benefit was **SPI *plus* follow-up** [6] — teach residents to treat the safety plan and the follow-up as a single intervention, and to communicate the formulation across the handoff so the receiving clinician inherits reasoning, not just a disposition.
-
----
-
-### Ranked Differential (drivers of suicidality — treat the underlying condition)
-
-1. **MDD, severe, single or recurrent episode, with suicidal ideation** (DSM-5-TR) — best fit; assess for **mixed features** and **psychotic features**, both of which raise risk and change treatment [1].
-2. **Bipolar disorder, current episode depressed** — mandatory to exclude past (hypo)mania/mixed states before initiating an antidepressant; bipolar depression carries high suicide risk.
-3. **Alcohol use disorder, acute intoxication/early withdrawal contribution** — independent acute-risk amplifier and a modifiable target; also a differential for the mood presentation.
-4. **Adjustment disorder with depressed mood** vs. acute stress reaction — plausible given losses, but severity/duration and neurovegetative burden favor MDD.
-5. **PTSD / complex trauma** — screen given interpersonal history; comorbidity elevates risk.
-6. **Personality pathology (e.g., borderline)** with chronic suicidality — different risk trajectory (chronic > acute-on-chronic); management leans on DBT-informed skills and safety planning; do not dismiss acute changes as "characterological."
-7. **Medical/organic contributors** — low prior probability with a clean exam, but consider if cognition/vitals change.
-
----
-
-### Workup & Management (resident-level)
-
-**Assessment/formulation:** Full risk assessment across ideation/intent/plan/means/prior behavior/protective factors; **corroborating collateral** (with consent); intoxication/withdrawal assessment (consider CIWA-Ar if withdrawal emerges); targeted labs as indicated; structured instrument (**C-SSRS**) to standardize and document [4]. Produce a **narrative risk formulation** naming modifiable targets.
-
-**Acute management:**
-1. **Safety and containment** appropriate to acuity while the formulation is completed.
-2. **Address acute modifiable factors** — intoxication, agitation, insomnia.
-3. **Collaborative Safety Plan (SPI)** + **lethal-means counseling** with the patient and (consented) supports [6,7,9].
-4. **Disposition** — least-restrictive setting that maintains safety; here, admission is favored; build voluntary engagement first, use involuntary pathways only if criteria are met and voluntary care fails.
-5. **Definitive treatment of the underlying disorder** — initiate/optimize evidence-based depression treatment; consider **esketamine within a comprehensive plan** for MDD with acute suicidal ideation where appropriate (with hospitalization/standard of care) [10,11]; consider **ECT** for severe, psychotic, or refractory depression with high acute risk.
-6. **Continuity** — structured follow-up/caring contacts, rapid outpatient linkage, warm handoff carrying the formulation [6].
-
----
-
-### Facilitator Notes (not for the learner handout)
-
-- **Time:** ~30 min. Anchor on Q1 (formulation vs. score), Q2 (limits of stratification), and Q4–Q5 (SPI + means restriction) — the concepts that most change resident practice.
-- **The central teaching tension:** we are ethically and medicolegally obligated to *assess* risk, yet the evidence shows we **cannot reliably predict individual acts** [2,3]. Resolve it by shifting from *prediction* to *modification and continuity*: the interventions with real effect sizes (SPI + follow-up, means restriction) act on modifiable factors regardless of predictive precision [6,7,9]. Discourage both false reassurance from "low-risk" labels and reflexive, defensive admission.
-- **Documentation coaching:** a strong note contains a **formulation** (why acute risk is above/below this patient's baseline now), the **modifiable factors targeted**, the **collaborative safety plan**, **means-restriction counseling**, the **disposition rationale**, and the **capacity assessment** — not a bare "SI/no plan, contracts for safety" line (which is both clinically and legally weak).
-- **Pharmacology caveat (Q7):** be precise — ASPIRE I/II showed rapid **MADRS** improvement but the **CGI-SS-r suicidality endpoint was not significant** vs. standard of care [10,11]. Don't let learners overstate esketamine as an "anti-suicide drug"; it rapidly treats depressive symptoms within a comprehensive plan.
-- **Level-adaptation:** for PGY-1s emphasize the assessment domains and SPI mechanics; for senior residents push on the epidemiology of prediction, capacity/legal reasoning, and system-level continuity (Zero Suicide, caring contacts).
-- **If a learner discloses personal distress:** exit the academic frame, respond supportively, and know institutional resident-wellness and crisis pathways.
-
----
-
-### References
-
-1. Riera-Serra P, Navarra-Ventura G, Castro A, et al. Clinical predictors of suicidal ideation, suicide attempts and suicide death in depressive disorder: a systematic review and meta-analysis. *Eur Arch Psychiatry Clin Neurosci.* 2023;274(7):1543–1563. [DOI](https://doi.org/10.1007/s00406-023-01716-5)
-2. Franklin JC, Ribeiro JD, Fox KR, et al. Risk factors for suicidal thoughts and behaviors: a meta-analysis of 50 years of research. *Psychol Bull.* 2017;143(2):187–232. [DOI](https://doi.org/10.1037/bul0000084)
-3. Large M, Myles N, Myles H, et al. Suicide risk assessment among psychiatric inpatients: a systematic review and meta-analysis of high-risk categories. *Psychol Med.* 2018;48(7):1119–1127. [DOI](https://doi.org/10.1017/S0033291717002537)
-4. Posner K, Brown GK, Stanley B, et al. The Columbia-Suicide Severity Rating Scale: initial validity and internal consistency findings from three multisite studies with adolescents and adults. *Am J Psychiatry.* 2011;168(12):1266–1277. [DOI](https://doi.org/10.1176/appi.ajp.2011.10111704)
-5. Hughes JL, Horowitz LM, Ackerman JP, et al. Suicide in young people: screening, risk assessment, and intervention. *BMJ.* 2023;381:e070630. [DOI](https://doi.org/10.1136/bmj-2022-070630)
-6. Stanley B, Brown GK, Brenner LA, et al. Comparison of the Safety Planning Intervention with follow-up vs usual care of suicidal patients treated in the emergency department. *JAMA Psychiatry.* 2018;75(9):894–900. [DOI](https://doi.org/10.1001/jamapsychiatry.2018.1776)
-7. Nuij C, van Ballegooijen W, de Beurs D, et al. Safety planning-type interventions for suicide prevention: meta-analysis. *Br J Psychiatry.* 2021;219(2):419–426. [DOI](https://doi.org/10.1192/bjp.2021.50)
-8. Ferguson M, Rhodes K, Loughhead M, McIntyre H, Procter N. The effectiveness of the Safety Planning Intervention for adults experiencing suicide-related distress: a systematic review. *Arch Suicide Res.* 2022;26(3):1022–1045. [DOI](https://doi.org/10.1080/13811118.2021.1915217)
-9. Fazel S, Runeson B. Suicide. *N Engl J Med.* 2020;382(3):266–274. [DOI](https://doi.org/10.1056/NEJMra1902944)
-10. Fu DJ, Ionescu DF, Li X, et al. Esketamine nasal spray for rapid reduction of major depressive disorder symptoms in patients who have active suicidal ideation with intent: double-blind, randomized study (ASPIRE I). *J Clin Psychiatry.* 2020;81(3):19m13191. [DOI](https://doi.org/10.4088/JCP.19m13191)
-11. Ionescu DF, Fu DJ, Qiu X, et al. Esketamine nasal spray for rapid reduction of depressive symptoms in patients with major depressive disorder who have active suicide ideation with intent: results of a phase 3, double-blind, randomized study (ASPIRE II). *Int J Neuropsychopharmacol.* 2021;24(1):22–31. [DOI](https://doi.org/10.1093/ijnp/pyaa068)
-
-*Citations retrieved from PubMed. This teaching case uses a synthetic, de-identified scenario for educational purposes only.*
-
-*If this material raises personal concerns for you or someone you know, in the U.S. you can call or text 988 (Suicide & Crisis Lifeline), available 24/7.*
 
 *Joshua Moss, MD | Psychiatrist*

@@ -6,6 +6,260 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 
 ---
 
+## Panic Disorder (Aug 10)
+
+- **Slug:** `cotw_20260810_panic_ms3.md` · **Type:** md · **Sidebar:** listed
+- **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-08-10_anxiety-panic-disorder_MS3.md`
+- **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
+- **Length:** 3,522 words
+
+<!-- topic_meta overlay -->
+#### Structured metadata (`topic_meta.json` → this page)
+
+> est. read 10 min · safetyLevel=`moderate` · cotwLevel=`ms3` (2026-08-10)
+
+**TL;DR (shown above the page text):**
+
+> The cardiac workup is negative and the patient goes home no better - panic disorder is a positive diagnosis with a short list of must-not-miss mimics, and the disability lives in the avoidance, not the attacks.
+
+**Key points (bulleted card):**
+
+- ~20-30 minute small-group discussion - no pre-reading required.
+- De-identified synthetic case; each discussion question is paired with a teaching point.
+- MS3 / Step 2 CK level. Facilitator notes are kept separate from the learner-facing stem.
+
+**Clinical-workflow narration (per-stage coaching text):**
+
+- **ask** — Work the stem cold: take your own history, commit to a differential, and name your next step before reading a single teaching point. The guided questions are written to be answered, not skimmed.
+- **mse** — Say out loud what each exam finding in the vignette rules in and rules out — the discrimination between look-alike syndromes is what the case is drilling.
+- **safety** — Safety content in every case is oriented to recognition, escalation, and safety planning. Escalate to your supervising resident or attending rather than managing acuity alone.
+- **say** — Before moving on, rehearse one sentence you would actually say to this patient or family, in plain language and out loud.
+- **collateral** — Ask yourself what collateral would change your differential here, and who you would have to call to get it.
+- **rounds** — Use the ranked differential and the workup-and-management ladder as the spine of your presentation; lead with the finding that changes management.
+- **exam** — Shelf-level takeaway: The cardiac workup is negative and the patient goes home no better - panic disorder is a positive diagnosis with a short list of must-not-miss mimics, and the disability lives in the avoidance, not the attacks.
+- **actions** — All Case of the Week cases
+
+**Cross-references and tagging:**
+
+- **Workflow stages:** `diagnosis`, `treatment`, `team`, `exam`
+- **Shelf blueprint tags:** `anxiety`, `pharm`
+- **EPA crosswalk:** `EPA1`, `EPA2`, `EPA3`, `EPA4`
+- **Faculty review:** {"status": "pending", "reviewer": "Joshua Moss, MD", "lastReviewed": "2026-08-10"}
+
+#### Page text (as shipped)
+
+# Case of the Week — MS3 Edition
+## Panic Disorder: Recognition, Differential, and First-Line Treatment
+
+**Date:** 2026-08-10
+**Learner level:** MS3 (inpatient/consult psychiatry clerkship) — USMLE Step 2 CK framing
+**Format:** ~20–30 min small-group discussion. No required pre-reading.
+**Citations:** Based on articles retrieved from PubMed. Full reference list at the end. All patient details are **synthetic and de-identified**.
+
+---
+
+### The Case (learner-facing stem)
+
+A 24-year-old woman comes to clinic to establish care. She hands you a folder.
+
+Inside are discharge papers from **three emergency department visits in the past four months**. Each visit reads about the same: sudden chest tightness, pounding heart, shortness of breath, tingling in her hands, and a conviction that she was having a heart attack. Each time, the ED checked an ECG and troponins and sent her home within a few hours. The last discharge summary says *"atypical chest pain, likely anxiety."* She is frustrated. "They keep telling me nothing's wrong. Something is obviously wrong."
+
+She describes the episodes: they come on **out of nowhere**, often when she is doing something ordinary — sitting on the couch, standing in line at the grocery store. The symptoms **peak in about five minutes** and mostly resolve within half an hour, leaving her wrung out for the rest of the day. She has had roughly ten of these. Twice they woke her from sleep.
+
+What has changed her life is not the episodes themselves but **the space between them**. She thinks about the next one constantly. She has stopped driving on the highway ("if it happens at 70 miles an hour, I'm dead"). She has stopped going to the grocery store alone and now shops at 6 a.m. when it's empty. She turned down a promotion because it required a commute. Her boyfriend drives her most places.
+
+She drinks **four to five large coffees a day** — more lately, because she is exhausted from poor sleep. She takes no prescription medications. She uses no other substances; a urine drug screen at the last ED visit was negative. She has never had a period of decreased need for sleep with elevated mood. She denies trauma. Family history: mother "had panic attacks" in her thirties.
+
+**Vitals:** T 36.9 °C, HR 88, BP 118/74, RR 14, SpO₂ 99% on room air. BMI 22.
+**Exam:** Well-appearing, mildly anxious, no tremor. Thyroid not enlarged, no nodules. Cardiac exam regular rate and rhythm, no murmur. Lungs clear. No exophthalmos. Neurologic exam non-focal.
+**From the last ED visit (3 weeks ago):** ECG normal sinus rhythm, no ischemic changes, QTc 410 ms. Troponin negative ×2. CBC, BMP normal. **TSH 1.8** (normal).
+
+She asks you directly: **"Am I going to have to live like this?"**
+
+---
+
+### Guided Discussion Questions
+
+**Q1. Before you name a diagnosis — what exactly is a "panic attack," and how is that different from "panic disorder"?**
+
+*Teaching point:* Students use these interchangeably. They are not the same, and the distinction drives the entire treatment plan.
+
+A **panic attack** is an event: an abrupt surge of intense fear or intense discomfort that **peaks within minutes**, accompanied by at least four of a defined symptom list — palpitations, sweating, trembling, shortness of breath, feeling of choking, chest pain, nausea, dizziness, chills or heat sensations, **paresthesias** (tingling or numbness), **derealization** (feeling that surroundings are unreal) or **depersonalization** (feeling detached from oneself), fear of losing control or "going crazy," and fear of dying.
+
+Two things worth knowing about the attack itself:
+
+- **A panic attack is not a diagnosis.** It is a descriptor that can occur in almost any psychiatric condition (and in some medical ones). A patient with PTSD, social anxiety disorder, or a specific phobia can have panic attacks. The exam will try to catch you here.
+- **Attacks are classified as "expected" or "unexpected."** An attack triggered reliably by a known cue (a person with a spider phobia seeing a spider) is *expected*. An attack that arrives with no cue — "out of nowhere," as this patient says — is *unexpected*. **Panic disorder requires recurrent unexpected attacks.**
+
+**Panic disorder** is the syndrome: recurrent unexpected panic attacks **plus at least one month** of either (a) persistent worry about having more attacks or about what the attacks mean ("I'm having a heart attack," "I'm going insane"), or (b) a **significant maladaptive change in behavior** because of the attacks — and the picture is not better explained by a substance, a medical condition, or another mental disorder.
+
+Notice how much of our patient's diagnosis lives in criterion (b). Her attacks last thirty minutes. Her *avoidance* is running her life — no highway, no grocery store, a declined promotion. **The disability in panic disorder is usually driven by the anticipatory anxiety and avoidance, not by the attacks.** That is also why treatment targets the avoidance.
+
+A related term: **agoraphobia** is fear or avoidance of situations where escape might be difficult or help unavailable if panic-like symptoms occurred — public transit, open spaces, enclosed spaces, lines or crowds, being outside the home alone. In DSM-5-TR it is a **separate diagnosis** that is frequently comorbid with panic disorder (the older "panic disorder with agoraphobia" single-code framing was retired). Our patient has features of it; she should be assessed for it explicitly.
+
+**Q2. The ED said "likely anxiety" and sent her home. Were they right to stop working her up? Give a ranked differential.**
+
+*Teaching point:* Panic disorder is a **positive diagnosis with a short list of must-not-miss mimics** — not a diagnosis of exclusion arrived at after unlimited testing. Both errors are common: the reflexive "it's just anxiety" that misses thyrotoxicosis, and the endless workup that reinforces the patient's belief that something physical is being missed.
+
+**Ranked differential for this presentation:**
+
+| Rank | Diagnosis | What supports it here | What would argue against / point elsewhere |
+|---|---|---|---|
+| 1 | **Panic disorder** (± agoraphobia) | Recurrent *unexpected* attacks peaking in minutes; >1 month of anticipatory worry and marked avoidance; normal exam and targeted workup; family history | — |
+| 2 | **Cardiac — arrhythmia (e.g., SVT) or ACS** | Palpitations, chest pain, abrupt onset/offset | Normal ECG and serial troponins; age 24 with no risk factors; symptoms with classic panic features. **Capture during an episode is what settles it** |
+| 3 | **Hyperthyroidism** | Palpitations, anxiety, poor sleep, heat intolerance | **TSH 1.8 is normal** — effectively excluded. No goiter, no tremor, no exophthalmos |
+| 4 | **Substance-related** — stimulant or **caffeine** effect; alcohol or sedative withdrawal | **4–5 large coffees daily**; negative UDS | UDS negative; no sedative use history. Caffeine is likely an *aggravator* here, not the whole diagnosis |
+| 5 | **Respiratory — asthma or pulmonary embolism** | Dyspnea, chest tightness | No hypoxia, clear lungs, no risk factors, recurrent stereotyped self-limited episodes over months |
+
+**The high-yield mimics to have reflexively:** thyroid disease, arrhythmia, stimulant/caffeine intoxication, sedative or alcohol withdrawal, asthma, and (rare but classic on exams) **pheochromocytoma**. A useful discriminator for pheochromocytoma: the episodic hypertension is *marked*, and the dominant complaint is usually **headache, sweating, and palpitations** rather than the fear-of-dying cognition — and it does not remit with reassurance.
+
+**Q3. What workup do you order today?**
+
+*Teaching point:* **Targeted, once, and then stop.** For a young patient with a classic history, normal vitals and exam:
+
+- **ECG** — arrhythmia and QTc (the latter also matters before you prescribe).
+- **TSH** — already done and normal.
+- **CBC and basic metabolic panel** — already done and normal.
+- **Urine drug screen** — already done and negative.
+- **Pregnancy test** if applicable, since it changes medication choice.
+
+That is essentially it. **Do not** order serial troponins, repeat stress testing, Holter monitors, or catecholamine studies in a patient with a normal ECG, normal TSH, and a textbook history — unless something specific points there.
+
+The reason is clinical, not economic. **Repeated negative testing is itself anti-therapeutic in panic disorder.** Each normal result gives brief relief and then feeds the cycle: the patient concludes the real problem has been missed, and reassurance-seeking becomes another avoidance behavior. The therapeutic move is to *make the positive diagnosis out loud*, explain it, and pivot to treatment.
+
+**Q4. She asks what a panic attack actually is — "is my heart really doing that?" How do you explain it?**
+
+*Teaching point:* Psychoeducation is a treatment, not a preamble. The explanation that works is the **fear-of-fear cycle**:
+
+1. A normal bodily sensation occurs (a skipped beat, lightheadedness on standing, breathlessness after stairs — or a jolt of caffeine).
+2. The sensation is **catastrophically misinterpreted**: *this is a heart attack / I'm going to pass out / I'm losing my mind.*
+3. That interpretation triggers a real sympathetic surge — a genuine fight-or-flight response with genuine tachycardia, real chest tightness, real hyperventilation.
+4. The surge produces **more** frightening sensations, which confirm the interpretation. The loop closes and accelerates.
+5. Between attacks, the patient scans their body for these sensations and avoids anything that might produce them, which prevents them from ever learning the sensations are harmless.
+
+Two lines that land with patients: **"Your heart really is racing — that part is not imaginary. What's misfiring is the alarm, not the engine."** And: **panic attacks are self-limited.** The sympathetic surge cannot sustain itself; attacks peak in minutes and come down on their own, whether or not anything is done.
+
+This explanation also sells the treatment. If the problem is a learned false alarm plus avoidance, then the fix is (a) turning down the alarm's sensitivity, and (b) deliberately re-approaching what's being avoided.
+
+**Q5. What is first-line treatment — and what do you actually prescribe on day one?**
+
+*Teaching point:* Two first-line options, and ideally both: **an SSRI and cognitive behavioral therapy (CBT).**
+
+**Pharmacotherapy.** **SSRIs are first-line.** A 2022 network meta-analysis in *BMJ* pooling 87 randomized trials and 12,800 participants with panic disorder found that SSRIs, SNRIs, tricyclics, benzodiazepines, and MAOIs all beat placebo for remission — but when efficacy and adverse events were considered *together*, **SSRIs offered the best balance, and among individual SSRIs sertraline and escitalopram had high remission with acceptable adverse-effect rates** [1]. A 2023 Cochrane network meta-analysis of 70 trials reached a compatible conclusion: multiple classes work with little difference between them, and the authors emphasize the **overall low quality of the underlying evidence** [2]. Reviews of anxiety pharmacotherapy likewise place SSRIs and SNRIs first-line across generalized anxiety, panic, and social anxiety disorder [3].
+
+**The prescribing pearl that matters most: start low and go slow.** Patients with panic disorder are hypervigilant to bodily sensations, and the early jitteriness/activation of an SSRI feels exactly like the thing they are afraid of. Start at roughly **half the usual starting dose** (e.g., sertraline 25 mg daily), warn the patient explicitly that the first week or two may feel *more* activated, and titrate up over weeks. If you skip that warning, a substantial number of patients take two doses, feel worse, conclude the medicine causes panic attacks, and stop. Also counsel that the **full anti-panic effect takes several weeks** — this is not a rescue medication.
+
+**Psychotherapy.** **CBT is first-line and should be offered to essentially everyone.** A meta-analysis of 41 randomized *placebo-controlled* trials found CBT moderately efficacious across anxiety-related disorders (Hedges' g = 0.56 for target-disorder symptoms), with interventions built primarily on **exposure** strategies showing larger effects than purely cognitive ones [4]. The panic-specific ingredient is **interoceptive exposure** — deliberately and repeatedly inducing the feared bodily sensations in a controlled setting (spinning in a chair to bring on dizziness, breathing through a straw to bring on breathlessness) until the sensation stops signaling catastrophe. That is the piece that directly dismantles the fear-of-fear cycle.
+
+**Two practical counseling points for this patient specifically:**
+
+- **Caffeine.** A systematic review and meta-analysis of placebo-controlled caffeine challenge studies found that caffeine at high doses induced panic attacks in about **half** of patients with panic disorder and in essentially none of the healthy controls, confirming that this population is distinctly sensitive to it [5]. Her 4–5 large coffees a day are not the diagnosis, but they are pouring fuel on it. Taper — abruptly stopping brings its own withdrawal headache and malaise.
+- **The avoidance is the target.** Getting back on the highway is not a nice-to-have at the end of treatment; it *is* the treatment. Name it at the first visit.
+
+**What about benzodiazepines?** They work fast, and in the network meta-analyses they perform well on short-term efficacy and dropout [1,2]. But as **standing** therapy in panic disorder they carry real problems: tolerance and dose escalation, physiologic dependence and a difficult taper, cognitive and psychomotor impairment, additive respiratory depression with opioids and alcohol, and falls. Most importantly for this diagnosis, **as-needed benzodiazepine use functions as an avoidance behavior** — the pill becomes the safety signal, and the patient never learns the attack would have ended on its own. That directly undercuts exposure-based therapy. A brief, dose-limited, time-limited bridge while an SSRI takes effect can be defensible in selected patients; open-ended PRN use is where the harm accumulates.
+
+**And beta-blockers?** Frequently prescribed, poorly supported. A 2024 systematic review and meta-analysis found **no evidence of benefit for beta-blockers over placebo or benzodiazepines** in panic disorder or social anxiety disorder, and concluded the evidence base is too weak to support their growing use in anxiety [6].
+
+**Q6. Where does safety fit into an anxiety visit?**
+
+*Teaching point:* Do not let "it's only anxiety" talk you out of screening. **Panic disorder carries meaningfully elevated suicide risk, independent of comorbidity.** A cohort study using Taiwan's national health insurance database, following 171,737 people with panic disorder against 686,948 matched comparisons, found panic disorder to be an **independent risk factor for suicide (HR 1.85, 95% CI 1.59–2.14)** even after adjusting for psychiatric comorbidities — and that risk rose sharply with comorbidity, most of all with **comorbid major depressive disorder (HR 6.08)** [7].
+
+The practical implications for this visit:
+
+- **Screen for depression and for suicidal ideation, every time**, in every anxiety patient — not because panic attacks are dangerous in themselves, but because the comorbidity that most often rides along with panic disorder is the one that carries the risk.
+- **Ask about alcohol and sedative use.** Self-medication is common and independently raises risk.
+- **If ideation is present:** shift into a full risk assessment, ask directly about intent and plan, involve your senior and the attending the same day, and move to **collaborative safety planning** — identifying personal warning signs, coping strategies, people and settings that provide distraction and support, who to contact in a crisis, and reducing access to lethal means. Document the plan and arrange concrete follow-up. **Escalate rather than manage alone.** In the US, **988** reaches the Suicide & Crisis Lifeline.
+
+**Q7. How do you answer her question — "Am I going to have to live like this?"**
+
+*Teaching point:* You can answer this one honestly and hopefully, which is unusual and worth savoring.
+
+Panic disorder is **among the more treatable conditions in psychiatry.** Most patients improve substantially with an SSRI, CBT, or both, and many achieve remission. Give her a concrete frame:
+
+- What she has **has a name**, is common, and is not dangerous in itself — her heart is structurally fine and the ED workup confirmed it.
+- **Both** treatments work, they work by different mechanisms, and they can be combined.
+- Medication takes **weeks**, not days, and may feel worse before better — say this now so it doesn't derail her later.
+- The goal is not only fewer attacks; it is **getting the highway, the grocery store, and the promotion back.**
+
+One caution worth internalizing early: a large meta-analysis of long-term CBT outcomes found benefits maintained through 6–12 months across anxiety disorders, but at follow-up **beyond 12 months the effect for panic disorder was no longer statistically significant** (unlike generalized anxiety, social anxiety, and PTSD) [8]. Read that as an argument for **maintenance and follow-up** — booster sessions, continuing the medication for an adequate duration, and keeping the exposure gains in use — not as an argument against treating. Do not promise "one course and you're cured."
+
+---
+
+### Workup & Management — the short version
+
+**Workup (targeted, once):**
+1. ECG — arrhythmia, and QTc before prescribing.
+2. TSH — exclude thyrotoxicosis.
+3. CBC, BMP — basic screen.
+4. Urine drug screen — stimulants.
+5. Pregnancy test if applicable.
+6. **Stop.** Resist repeat cardiac testing without a new indication.
+
+**Management ladder:**
+1. **Make and explain the diagnosis** — psychoeducation on the fear-of-fear cycle is an active treatment.
+2. **Start an SSRI** — sertraline or escitalopram are reasonable first choices [1]; begin at ~half the usual starting dose, warn about early activation, titrate over weeks.
+3. **Refer for CBT with interoceptive exposure** — first-line, not adjunctive [4].
+4. **Address aggravators** — taper caffeine [5]; review alcohol, stimulants, and sleep.
+5. **Target the avoidance explicitly** — set a graded, specific re-approach goal at visit one.
+6. **Screen for comorbid depression and suicidal ideation; escalate and safety-plan if present** [7].
+7. **Avoid standing benzodiazepines**; beta-blockers are not supported [6].
+8. **Follow up in 2–4 weeks** to catch early activation and prevent silent discontinuation.
+
+---
+
+### Facilitator Notes *(not for distribution to learners before the session)*
+
+**Learning objectives.** By the end, the MS3 should be able to (1) distinguish a panic attack from panic disorder and state the ≥1-month criterion; (2) generate a ranked differential with the must-not-miss mimics; (3) justify a *targeted* workup and articulate why repeat testing is harmful; (4) name SSRI + CBT as first-line and describe start-low-go-slow; (5) explain why standing benzodiazepines undercut exposure therapy; (6) screen for comorbid depression and suicidality in an anxiety presentation.
+
+**Timing (~25 min).** Q1 5 min · Q2–Q3 7 min · Q4 4 min · Q5 6 min · Q6–Q7 4 min. If short on time, Q1, Q2, and Q5 are the core; Q4 can be assigned as reading.
+
+**Where students predictably go wrong.**
+- Calling any panic attack "panic disorder." Push for the one-month criterion and the avoidance.
+- Treating panic disorder as a diagnosis of exclusion and ordering an escalating workup. Ask directly: *"What would a fourth negative troponin change?"*
+- Reaching for a benzodiazepine first because it works fastest. Ask: *"What does she learn about her body if the attack ends because she took a pill?"*
+- Forgetting that agoraphobia is now a separate, separately-coded diagnosis.
+- Skipping suicide screening because the visit is "just anxiety." Reference [7] is the counterargument.
+
+**Good facilitator questions to hold in reserve.**
+- *"The ED wasn't wrong about the diagnosis — so what did they get wrong?"* (They never made the positive diagnosis or started treatment; "nothing's wrong" was heard as "you weren't believed.")
+- *"She's on nothing and drinking five coffees. If you could change only one thing today, medication or caffeine — which, and why?"*
+- *"Her mother had panic attacks in her thirties and never got treated. How does that change what you say to this patient?"*
+
+**Safety framing.** Keep Q6 oriented to recognition, escalation, and collaborative safety planning. If a learner introduces a personal or real-patient example, redirect to the synthetic case and remind the group that identifiable patient details do not belong in teaching materials.
+
+**Attribution.** Literature retrieved from PubMed; every citation below was verified against PubMed metadata. Note for discussion that references [1] and [2] are two network meta-analyses of the same literature that rank drug classes somewhat differently — a useful, honest illustration that "first-line" reflects a balance of efficacy, tolerability, and evidence quality rather than a single winner.
+
+---
+
+### References
+
+Based on articles retrieved from PubMed.
+
+1. Chawla N, Anothaisintawee T, Charoenrungrueangchai K, Thaipisuttikul P, McKay GJ, Attia J, Thakkinstian A. Drug treatment for panic disorder with or without agoraphobia: systematic review and network meta-analysis of randomised controlled trials. *BMJ*. 2022;376:e066084. [https://doi.org/10.1136/bmj-2021-066084](https://doi.org/10.1136/bmj-2021-066084)
+
+2. Guaiana G, Meader N, Barbui C, Davies SJC, Furukawa TA, Imai H, et al. Pharmacological treatments in panic disorder in adults: a network meta-analysis. *Cochrane Database of Systematic Reviews*. 2023;11(11):CD012729. [https://doi.org/10.1002/14651858.CD012729.pub3](https://doi.org/10.1002/14651858.CD012729.pub3)
+
+3. O'Leary KB, Khan JS. Pharmacotherapy for anxiety disorders. *Psychiatric Clinics of North America*. 2024;47(4):689–709. [https://doi.org/10.1016/j.psc.2024.04.012](https://doi.org/10.1016/j.psc.2024.04.012)
+
+4. Carpenter JK, Andrews LA, Witcraft SM, Powers MB, Smits JAJ, Hofmann SG. Cognitive behavioral therapy for anxiety and related disorders: a meta-analysis of randomized placebo-controlled trials. *Depression and Anxiety*. 2018;35(6):502–514. [https://doi.org/10.1002/da.22728](https://doi.org/10.1002/da.22728)
+
+5. Klevebrant L, Frick A. Effects of caffeine on anxiety and panic attacks in patients with panic disorder: a systematic review and meta-analysis. *General Hospital Psychiatry*. 2022;74:22–31. [https://doi.org/10.1016/j.genhosppsych.2021.11.005](https://doi.org/10.1016/j.genhosppsych.2021.11.005)
+
+6. Archer C, Wiles N, Kessler D, Turner K, Caldwell DM. Beta-blockers for the treatment of anxiety disorders: a systematic review and meta-analysis. *Journal of Affective Disorders*. 2025;368:90–99. [https://doi.org/10.1016/j.jad.2024.09.068](https://doi.org/10.1016/j.jad.2024.09.068)
+
+7. Tsai SJ, Cheng CM, Chang WH, Bai YM, Su TP, Chen TJ, Chen MH. Panic disorder and suicide. *Psychological Medicine*. 2025;55:e38. [https://doi.org/10.1017/S0033291724003441](https://doi.org/10.1017/S0033291724003441)
+
+8. van Dis EAM, van Veen SC, Hagenaars MA, Batelaan NM, Bockting CLH, van den Heuvel RM, Cuijpers P, Engelhard IM. Long-term outcomes of cognitive behavioral therapy for anxiety-related disorders: a systematic review and meta-analysis. *JAMA Psychiatry*. 2020;77(3):265–273. [https://doi.org/10.1001/jamapsychiatry.2019.3986](https://doi.org/10.1001/jamapsychiatry.2019.3986)
+
+---
+
+*Educational teaching case. Fictional composite; no protected health information. Pending faculty attestation.*
+
+*Joshua Moss, MD | Psychiatrist*
+
+
+---
+
 ## Lithium — Monitoring & Toxicity (Aug 3)
 
 - **Slug:** `cotw_20260803_lithium_ms3.md` · **Type:** md · **Sidebar:** listed
@@ -842,279 +1096,3 @@ Suicidal ideation is a **symptom**, not a diagnosis — always identify and trea
 *If this material raises personal concerns for you or someone you know, in the U.S. you can call or text 988 (Suicide & Crisis Lifeline), available 24/7.*
 
 *Joshua Moss, MD | Psychiatrist*
-
-
----
-
-## MDD — Treatment Selection (Jul 20)
-
-- **Slug:** `cotw_20260720_mdd_ms3.md` · **Type:** md · **Sidebar:** listed
-- **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-20_mdd-treatment-selection-augmentation_MS3.md`
-- **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 1,290 words
-
-<!-- topic_meta overlay -->
-#### Structured metadata (`topic_meta.json` → this page)
-
-> est. read 8 min · safetyLevel=`moderate` · cotwLevel=`ms3` (2026-07-20)
-
-**TL;DR (shown above the page text):**
-
-> Switch, augment, or optimize when an antidepressant is not working - and how to tell an inadequate trial from a true non-response.
-
-**Key points (bulleted card):**
-
-- ~20-30 minute small-group discussion - no pre-reading required.
-- De-identified synthetic case; each discussion question is paired with a teaching point.
-- MS3 / Step 2 CK level. Facilitator notes are kept separate from the learner-facing stem.
-
-**Clinical-workflow narration (per-stage coaching text):**
-
-- **ask** — Work the stem cold: take your own history, commit to a differential, and name your next step before reading a single teaching point. The guided questions are written to be answered, not skimmed.
-- **mse** — Say out loud what each exam finding in the vignette rules in and rules out — the discrimination between look-alike syndromes is what the case is drilling.
-- **safety** — Safety content in every case is oriented to recognition, escalation, and safety planning. Escalate to your supervising resident or attending rather than managing acuity alone.
-- **say** — Before moving on, rehearse one sentence you would actually say to this patient or family, in plain language and out loud.
-- **collateral** — Ask yourself what collateral would change your differential here, and who you would have to call to get it.
-- **rounds** — Use the ranked differential and the workup-and-management ladder as the spine of your presentation; lead with the finding that changes management.
-- **exam** — Shelf-level takeaway: Switch, augment, or optimize when an antidepressant is not working - and how to tell an inadequate trial from a true non-response.
-- **actions** — All Case of the Week cases
-
-**Cross-references and tagging:**
-
-- **Workflow stages:** `diagnosis`, `treatment`, `team`, `exam`
-- **Shelf blueprint tags:** `mood`, `pharm`
-- **EPA crosswalk:** `EPA1`, `EPA2`, `EPA4`
-- **Faculty review:** {"status": "pending", "reviewer": "Joshua Moss, MD", "lastReviewed": "2026-07-20"}
-
-#### Page text (as shipped)
-
-# Case of the Week — MS3 Edition
-## Major Depressive Disorder: Treatment Selection & Augmentation
-
-**Date:** 2026-07-20
-**Learner level:** MS3 (inpatient/outpatient psychiatry clerkship) — USMLE Step 2 CK framing
-**Format:** ~20–30 min small-group discussion. No required pre-reading.
-**Citations:** Based on articles retrieved from PubMed. Full reference list at the end. All patient details are **synthetic and de-identified**.
-
----
-
-### The Case (learner-facing stem)
-
-A 34-year-old woman presents to an outpatient clinic with 8 weeks of low mood, loss of interest in activities she used to enjoy, poor concentration at work, early-morning awakening, low energy, and feelings of worthlessness. She denies current thoughts of suicide, has no prior psychiatric hospitalizations, and drinks alcohol rarely. She is not taking any medications and has no chronic medical conditions. Vital signs are normal. Physical and neurologic exams are unremarkable.
-
-She scores 16 on the PHQ-9 (a 9-item self-report depression severity scale; scores of 15–19 indicate moderately severe depression). Routine labs including TSH and CBC are within normal limits.
-
-You diagnose major depressive disorder (MDD) — a syndrome defined by ≥2 weeks of depressed mood and/or anhedonia (loss of pleasure) plus associated neurovegetative and cognitive symptoms, causing functional impairment. You and the patient agree to start an antidepressant.
-
-She returns at **6 weeks** on an adequately dosed selective serotonin reuptake inhibitor (SSRI). She reports "maybe a little better" but is still not functioning well. PHQ-9 is now 13.
-
----
-
-### Guided Discussion Questions
-
-**Q1. Before starting treatment, what must you screen for that would change your diagnosis and your drug choice?**
-*Teaching point:* Always screen for a **history of mania/hypomania** before prescribing an antidepressant. Giving an antidepressant to someone with bipolar disorder can precipitate a manic switch. Also screen for active suicidality, psychotic features, substance use, and secondary causes (e.g., hypothyroidism — hence the TSH). "Unipolar" MDD is a diagnosis of exclusion of the bipolar spectrum.
-
-**Q2. What is the expected first-line pharmacologic treatment, and how do you counsel her about the timeline?**
-*Teaching point:* First-line options are **SSRIs** (e.g., sertraline, escitalopram) — chosen for tolerability and safety in overdose. SNRIs, bupropion, and mirtazapine are reasonable alternatives. A landmark network meta-analysis of 21 antidepressants found *all* were more effective than placebo, with escitalopram and sertraline among those combining good efficacy and acceptability [1]. Counsel that **antidepressants take 4–6 weeks at an adequate dose** to show full effect, and that a partial response by 2–4 weeks predicts later response.
-
-**Q3. At 6 weeks she is only partially better (PHQ-9 16 → 13). What defines an "adequate trial," and what are her next options?**
-*Teaching point:* An adequate trial = **adequate dose for adequate duration (≥6–8 weeks)**. Because she had a *partial* response, reasonable next steps include (a) **optimizing the dose** of the current SSRI, (b) **switching** to a different antidepressant, or (c) **augmenting**. Distinguish the three: optimize = push the same drug up; switch = replace it; augment = add a second agent to the first. Partial responders often do well with dose optimization before more complex strategies.
-
-**Q4. Define "treatment-resistant depression" and name evidence-based augmentation options an MS3 should recognize.**
-*Teaching point:* **Treatment-resistant depression (TRD)** is commonly defined as failure to respond to ≥2 adequate antidepressant trials. High-yield augmentation agents: **atypical antipsychotics** (aripiprazole, quetiapine XR — the best-studied), **lithium**, and **thyroid hormone (T3)**. In the VA VAST-D randomized trial, augmenting with **aripiprazole** produced higher response rates than switching to bupropion, though the effect size was modest and aripiprazole carried more side effects (akathisia, somnolence, weight gain) [2]. Know that augmentation adds efficacy but also adds adverse-effect burden.
-
-**Q5. How do side-effect profiles guide your choice between agents?**
-*Teaching point:* Match the drug to the patient. Examples: **bupropion** is activating and weight-neutral/pro-weight-loss but lowers seizure threshold (avoid in eating disorders/seizure history); **mirtazapine** causes sedation and weight gain (useful if insomnia + poor appetite); SSRIs commonly cause **sexual dysfunction, GI upset, and early activation/anxiety**. A systematic review mapping antidepressant/antipsychotic side effects supports **personalized prescribing** by matching the drug's side-effect profile to the individual patient [3].
-
-**Q6. When is combining medication with psychotherapy indicated?**
-*Teaching point:* Combined pharmacotherapy + psychotherapy (e.g., CBT) is more than either alone for many patients, especially for preventing relapse. A meta-analysis of the **sequential model** (adding psychotherapy after medication response) found it reduces the risk of relapse/recurrence [4]. Psychotherapy is first-line for mild depression and a strong adjunct across severities.
-
-**Q7 (Safety). She mentions passive thoughts that "it wouldn't matter if I woke up." What do you do?**
-*Teaching point:* Passive death wishes require **direct, non-judgmental assessment** of suicidal ideation, intent, plan, and access to means, plus collaborative **safety planning** and appropriate level-of-care escalation. Recognition and escalation — not method detail — are the objectives. Document the assessment and the plan. When in doubt about safety, arrange same-day evaluation.
-
----
-
-### Ranked Differential (before committing to MDD)
-
-1. **Major depressive disorder, unipolar** — best fit given ≥2 weeks of anhedonia/depressed mood + neurovegetative symptoms and normal workup.
-2. **Bipolar depression** — must be excluded by history of mania/hypomania; changes treatment entirely.
-3. **Persistent depressive disorder (dysthymia)** — depressive symptoms ≥2 years at lower intensity.
-4. **Adjustment disorder with depressed mood** — identifiable stressor, does not meet full MDD criteria.
-5. **Depression due to a medical condition / substance** — e.g., hypothyroidism, anemia, alcohol; screened out here by normal TSH/CBC and minimal alcohol use.
-
----
-
-### Workup & Management (high-yield)
-
-**Workup:** History (including mania screen, suicide risk, substance use), PHQ-9 for severity/tracking, and targeted labs to exclude medical mimics (TSH, CBC; add others if indicated). No routine imaging.
-
-**Management ladder:**
-1. **Start** an SSRI at an adequate dose; set expectations (4–6 weeks). Offer psychotherapy.
-2. **Reassess at 4–6 weeks** with a repeat PHQ-9.
-   - No response → **switch** (to another SSRI, SNRI, or bupropion).
-   - Partial response → **optimize dose** or **augment**.
-3. **After ≥2 failed adequate trials (TRD)** → augment with an atypical antipsychotic (e.g., aripiprazole), lithium, or T3; consider psychiatry referral, and consider **ECT** for severe, psychotic, or treatment-refractory depression.
-4. **Continue** effective treatment for ≥6–12 months after remission to prevent relapse.
-
----
-
-### Facilitator Notes (not for the learner handout)
-
-- **Time:** ~25 min. Spend the most time on Q2–Q4 (the switch vs. augment vs. optimize logic is the highest-yield Step 2 concept).
-- **Common MS3 errors to correct:** (1) declaring a drug "failed" before 6 weeks/adequate dose; (2) forgetting the mania screen; (3) conflating switching and augmenting; (4) reflexively adding a benzodiazepine.
-- **One-liner to anchor:** *"Adequate dose × adequate duration × screened for bipolarity — then decide switch vs. augment."*
-- **If the group is strong,** push on why aripiprazole's statistically significant benefit in VAST-D [2] may not translate to every patient (modest effect size, side-effect trade-offs) — a nice intro to number-needed-to-treat vs. number-needed-to-harm thinking.
-- **Safety framing (Q7):** Keep the discussion on recognition, assessment structure, and escalation. No method detail.
-
----
-
-### References
-
-1. Cipriani A, Furukawa TA, Salanti G, et al. Comparative efficacy and acceptability of 21 antidepressant drugs for the acute treatment of adults with major depressive disorder: a systematic review and network meta-analysis. *Lancet.* 2018;391(10128):1357–1366. [DOI](https://doi.org/10.1016/S0140-6736(17)32802-7)
-2. Mohamed S, Johnson GR, Chen P, et al. Effect of antidepressant switching vs augmentation on remission among patients with major depressive disorder unresponsive to antidepressant treatment: the VAST-D randomized clinical trial. *JAMA.* 2017;318(2):132–145. [DOI](https://doi.org/10.1001/jama.2017.8036)
-3. Pillinger T, Howes OD, Correll CU, et al. Antidepressant and antipsychotic side-effects and personalised prescribing: a systematic review and digital tool development. *Lancet Psychiatry.* 2023. [DOI](https://doi.org/10.1016/S2215-0366(23)00262-6)
-4. Guidi J, Fava GA. Sequential combination of pharmacotherapy and psychotherapy in major depressive disorder: a systematic review and meta-analysis. *JAMA Psychiatry.* 2021. [DOI](https://doi.org/10.1001/jamapsychiatry.2020.3650)
-
-*Citations retrieved from PubMed. This teaching case uses a synthetic, de-identified scenario for educational purposes only.*
-
-*Joshua Moss, MD | Psychiatrist*
-
-
----
-
-## Bipolar Mania (Jul 20)
-
-- **Slug:** `cotw_20260720_bipolar_ms3.md` · **Type:** md · **Sidebar:** listed
-- **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-20_bipolar-mania_MS3.md`
-- **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 1,550 words
-
-<!-- topic_meta overlay -->
-#### Structured metadata (`topic_meta.json` → this page)
-
-> est. read 7 min · safetyLevel=`moderate` · cotwLevel=`ms3` (2026-07-20)
-
-**TL;DR (shown above the page text):**
-
-> Recognizing a manic episode, screening for mixed features and secondary mania, and choosing first-line acute treatment.
-
-**Key points (bulleted card):**
-
-- ~20-30 minute small-group discussion - no pre-reading required.
-- De-identified synthetic case; each discussion question is paired with a teaching point.
-- MS3 / Step 2 CK level. Facilitator notes are kept separate from the learner-facing stem.
-
-**Clinical-workflow narration (per-stage coaching text):**
-
-- **ask** — Work the stem cold: take your own history, commit to a differential, and name your next step before reading a single teaching point. The guided questions are written to be answered, not skimmed.
-- **mse** — Say out loud what each exam finding in the vignette rules in and rules out — the discrimination between look-alike syndromes is what the case is drilling.
-- **safety** — Safety content in every case is oriented to recognition, escalation, and safety planning. Escalate to your supervising resident or attending rather than managing acuity alone.
-- **say** — Before moving on, rehearse one sentence you would actually say to this patient or family, in plain language and out loud.
-- **collateral** — Ask yourself what collateral would change your differential here, and who you would have to call to get it.
-- **rounds** — Use the ranked differential and the workup-and-management ladder as the spine of your presentation; lead with the finding that changes management.
-- **exam** — Shelf-level takeaway: Recognizing a manic episode, screening for mixed features and secondary mania, and choosing first-line acute treatment.
-- **actions** — All Case of the Week cases
-
-**Cross-references and tagging:**
-
-- **Workflow stages:** `diagnosis`, `treatment`, `team`, `exam`
-- **Shelf blueprint tags:** `mood`
-- **EPA crosswalk:** `EPA1`, `EPA2`, `EPA4`
-- **Faculty review:** {"status": "pending", "reviewer": "Joshua Moss, MD", "lastReviewed": "2026-07-20"}
-
-#### Page text (as shipped)
-
-# Case of the Week — Bipolar Mania: Recognition & Acute Management
-### MS3 Version (Foundational / USMLE Step 2 CK Framing)
-
-**Date:** 2026-07-20
-**Learner level:** MS3 (inpatient psychiatry clerkship)
-**Format:** ~20–30 min small-group discussion. No pre-reading required.
-**Citations:** Based on articles retrieved from PubMed (see references). All patient details are **synthetic and de-identified** — this is a teaching composite, not a real patient.
-
----
-
-## Learner-Facing Case Stem
-
-A 24-year-old man is brought to the emergency department by his roommate, who is concerned about four days of unusual behavior. Over the past week the patient has slept "maybe two hours a night" but says he feels "amazing — better than ever." He has been talking rapidly and is difficult to interrupt. The roommate reports the patient maxed out a credit card on a plan to launch three businesses at once and has been texting former classmates at 4 a.m. with grand ideas.
-
-In the ED the patient is dressed in bright, mismatched clothing, pacing, and speaking so quickly it is hard to follow him as he jumps between topics. He tells you he has "figured out how to fix the whole city's transit system" and that he has "never needed doctors." He is irritable when asked to sit down. He denies drug use. There is no fever. Vital signs are within normal limits except mild tachycardia (HR 104). His roommate mentions the patient had a "really dark, couldn't-get-out-of-bed" stretch about a year ago that lasted a couple of months.
-
-Collateral from his mother (by phone) confirms a maternal aunt with bipolar disorder. The patient takes no medications and has no significant medical history.
-
----
-
-## Guided Discussion Questions
-
-**Q1. What is the most likely diagnosis, and what specific features support it?**
-*Teaching point:* This is a classic **manic episode**, and given the prior depressive episode the working diagnosis is **bipolar I disorder**. Use the mnemonic **DIG FAST** for manic symptoms: **D**istractibility, **I**mpulsivity/**I**ndiscretion (spending, risky behavior), **G**randiosity, **F**light of ideas, **A**ctivity increase/**A**gitation, **S**leep decreased (*no* perceived need for sleep), **T**alkativeness/pressured speech. DSM criteria for mania require **≥1 week** of persistently elevated/irritable mood **plus increased activity/energy** and ≥3 symptoms (≥4 if mood is only irritable), causing marked impairment, hospitalization, or psychotic features. A single manic episode is sufficient to diagnose bipolar I — a prior depressive episode is *supportive* but not required.
-
-**Q2. Why does the "increased energy/activity" criterion matter, and how does mania differ from hypomania?**
-*Teaching point:* DSM-5 added **increased goal-directed activity or energy** as a *required* Criterion A feature (alongside mood) — mood elevation alone is not enough. **Hypomania** = same symptom cluster but **≥4 days**, **no marked impairment, no psychosis, and no hospitalization**; hypomania + a major depressive episode = **bipolar II**. This patient's psychosis (grandiose delusion about the transit system), marked impairment, and need for hospitalization place him firmly in **mania**, not hypomania.
-
-**Q3. What must you rule out before anchoring on a primary psychiatric diagnosis? What is your initial workup?**
-*Teaching point:* Mania is a **diagnosis that requires excluding medical and substance causes**. Key mimics: **stimulant intoxication** (cocaine, methamphetamine — check a **urine drug screen**), **substance/medication-induced** (including **antidepressant-induced switch** and steroids), **hyperthyroidism** (check **TSH**), CNS insult, and delirium. Reasonable initial workup: urine drug screen, TSH, CBC, comprehensive metabolic panel (electrolytes, glucose, renal/hepatic function), and a **pregnancy test in patients who could be pregnant** (shapes medication choice). Because you may start lithium or valproate, obtain **baseline renal function, and a pregnancy test** up front.
-
-**Q4. The patient is agitated, intrusive, and refusing to sit. How do you keep everyone safe first?**
-*Teaching point:* Safety and behavioral containment precede pharmacology. Use a **least-restrictive, stepwise** approach: reduce stimulation, verbal de-escalation, offer oral medication. For acute agitation, **antipsychotics (e.g., an oral second-generation antipsychotic) ± a benzodiazepine** are standard. **Assess for danger to self or others**; mania impairs judgment and insight, so involuntary hold criteria may apply if he cannot be kept safe. The teaching orientation here is **recognition, escalation, and safety** — not specifics of restraint technique.
-
-**Q5. What are the first-line medication options for acute mania?**
-*Teaching point:* Per the **CANMAT/ISBD 2018 guidelines**, first-line monotherapy for acute mania includes **lithium, quetiapine, divalproex (valproate), asenapine, aripiprazole, paliperidone, risperidone, and cariprazine**; for more severe presentations, a **combination of lithium or divalproex PLUS an antipsychotic** is first-line and often more effective [1]. A large network meta-analysis confirmed that antipsychotics, lithium, and valproate all beat placebo for acute mania, with **aripiprazole, olanzapine, quetiapine, and risperidone** showing the best combination of efficacy and acceptability [2]. **Antidepressants should be stopped**, and **lamotrigine is NOT effective for acute mania** (it is a maintenance/depression agent) [1,5].
-
-**Q6. He asks, "Why can't I just take something for a few days and be done?" How do you frame the illness course and why adherence matters?**
-*Teaching point:* Bipolar I is a **recurrent, lifelong illness**; acute stabilization is only the first step, and effective acute agents are generally **continued into maintenance** to prevent relapse [1]. A real-world cohort found that patients treated with **guideline-concordant first-line regimens had significantly lower 30-day rehospitalization and longer time to readmission** than those on no or non-recommended treatment [4]. This is a concrete, learner-friendly way to make "guidelines matter" tangible.
-
-**Q7. What safety counseling and monitoring are essential if you start lithium?**
-*Teaching point:* Lithium has a **narrow therapeutic index**. Teach baseline and ongoing **renal function and TSH**, the concept of **serum level monitoring**, and signs of toxicity (coarse tremor, GI upset, ataxia, confusion). Emphasize that **dehydration, NSAIDs, and thiazide/ACE-inhibitor diuretics raise lithium levels**. Lithium also carries **teratogenic risk** — hence the pregnancy test and contraception counseling. (Valproate is also highly teratogenic and generally avoided in patients who may become pregnant.)
-
----
-
-## Ranked Differential (Top 5)
-
-1. **Bipolar I disorder, current episode manic with psychotic features** — best fit: elevated/irritable mood + increased energy, decreased need for sleep, grandiosity/delusion, pressured speech, impulsive spending, prior depressive episode, family history.
-2. **Substance-induced mood disorder / stimulant intoxication** — cocaine or methamphetamine can mimic mania precisely; must be excluded with UDS and history.
-3. **Primary psychotic disorder (e.g., schizophrenia/schizoaffective)** — considered given delusional content, but the prominent mood/energy symptoms and episodic course favor mania.
-4. **Hyperthyroidism** — can present with agitation, insomnia, tachycardia; screen with TSH.
-5. **Delirium / secondary mania from a medical or CNS cause** — less likely with a clear sensorium and normal vitals/exam, but always on the differential for new "psychiatric" presentations.
-
----
-
-## Workup & Management Summary
-
-**Workup:** urine drug screen; TSH; CBC; comprehensive metabolic panel (electrolytes, glucose, renal + hepatic function); **pregnancy test if applicable**; targeted evaluation (neuro exam, and imaging/LP only if history/exam suggests a CNS cause).
-
-**Acute management:**
-- **Safety first:** assess dangerousness, reduce stimulation, verbal de-escalation; consider involuntary hold if he cannot be kept safe.
-- **Stop antidepressants/stimulants.**
-- **Start a first-line agent:** lithium OR divalproex OR a first-line second-generation antipsychotic; for severe/psychotic mania, **lithium or divalproex + an antipsychotic** [1,2].
-- **Manage agitation** with an oral (or if needed IM) antipsychotic ± benzodiazepine.
-- **Baseline labs** before lithium (renal, TSH, pregnancy) or valproate (LFTs, CBC, pregnancy).
-
-**Disposition & follow-up:** most patients with psychotic mania and impaired insight need **inpatient admission**; plan for **continuation into maintenance** and outpatient psychiatric follow-up, with psychoeducation on adherence and relapse warning signs.
-
----
-
-## Facilitator Notes (not for the learner handout)
-
-- **Learning objectives:** (1) recognize a manic episode and the DSM-5 requirement for *both* mood change and increased energy/activity; (2) distinguish mania vs. hypomania vs. bipolar I vs. II; (3) always exclude substance/medical mimics; (4) name first-line acute mania treatments and know lamotrigine/antidepressants are *not* acute-mania drugs; (5) list core lithium monitoring/safety points.
-- **Common student errors:** calling any agitated/psychotic patient "schizophrenia"; forgetting the increased-activity criterion; proposing an antidepressant "because he was depressed last year"; proposing lamotrigine for acute mania; skipping the pregnancy test/UDS.
-- **High-yield Step 2 pearls:** DIG FAST; mania ≥1 week (or any duration if hospitalized); one manic episode = bipolar I; antidepressant monotherapy can precipitate a switch; lithium and valproate are teratogens.
-- **Time-management:** spend the first third on recognition (Q1–Q2), the middle on workup/safety (Q3–Q4), the last third on treatment and counseling (Q5–Q7). If short on time, prioritize Q1, Q3, Q5.
-- **Safety framing:** keep any dangerousness discussion oriented to recognition, escalation, and safety planning — avoid method-level detail.
-
----
-
-## References
-
-Based on articles retrieved from PubMed.
-
-1. Yatham LN, Kennedy SH, Parikh SV, et al. Canadian Network for Mood and Anxiety Treatments (CANMAT) and International Society for Bipolar Disorders (ISBD) 2018 guidelines for the management of patients with bipolar disorder. *Bipolar Disord.* 2018;20(2):97–170. [DOI](https://doi.org/10.1111/bdi.12609)
-2. Kishi T, Ikuta T, Matsuda Y, et al. Pharmacological treatment for bipolar mania: a systematic review and network meta-analysis of double-blind randomized controlled trials. *Mol Psychiatry.* 2022;27(2):1136–1144. [DOI](https://doi.org/10.1038/s41380-021-01334-4)
-4. Gomes FA, Dumay H, Fagen J, et al. Does the Ranking Matter? A Retrospective Cohort Study Investigating the Impact of the Treatment Recommendations for Acute Mania on Rehospitalization Rates. *Can J Psychiatry.* 2023;68(8):605–612. [DOI](https://doi.org/10.1177/07067437231156235)
-5. Haenen N, Kamperman AM, Prodan A, et al. The efficacy of lamotrigine in bipolar disorder: A systematic review and meta-analysis. *Bipolar Disord.* 2024;26(5):431–441. [DOI](https://doi.org/10.1111/bdi.13452)
-
-*(Reference numbering is shared with the Resident version for consistency; the MS3 case cites the anchoring subset [1,2,4,5].)*
-
----
-*Prepared for the inpatient psychiatry clerkship. Joshua Moss, MD | Psychiatrist*

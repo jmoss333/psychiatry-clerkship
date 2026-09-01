@@ -1,7 +1,7 @@
 # MS3 curriculum — complete content transcript for clinical review
 
 **Site:** `une-ms3-psychiatry` · **Audience:** MS3 — UNE medical students
-**Generated:** 2026-09-01 from build `455ee87` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
+**Generated:** 2026-09-01 from build `89864d7` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
 
 ## Who this is for
 
@@ -14,10 +14,10 @@ This transcript is assembled from the **built site**, not the source tree, so it
 | Content | Count |
 |---|---|
 | Sidebar sections | 12 |
-| Narrative pages (markdown) | 79 |
+| Narrative pages (markdown) | 80 |
 | Interactive tools | 23 |
 | Deep-link-only (hidden) surfaces | 10 |
-| Words of narrative curriculum | 95,844 |
+| Words of narrative curriculum | 97,515 |
 | Practice question-bank items | 192 |
 | Audio-companion quiz decks / questions | 79 / 437 |
 | Communication cases | 12 |
