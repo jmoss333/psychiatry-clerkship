@@ -1,6 +1,6 @@
 # Curriculum content transcripts — for clinical review
 
-Generated 2026-09-01 from build `26f76db` by
+Generated 2026-09-01 from build `ab58af9` by
 `13_Faculty_Resources/_automation/export_curriculum_review.py`.
 
 Two complete, human-readable transcripts of everything the two sites ship — one per audience.
@@ -23,9 +23,14 @@ summarised or truncated.
 
 ## How to use
 
-Start with `<audience>/00_REVIEW_BRIEF.md` — it states the audience, the inventory, the
-standing editorial constraints a reviewer should not mistake for omissions, and the severity
-rubric findings should come back in.
+`REVIEW_PROMPT.md` is the handoff prompt to give a reviewing model, plus the pass schedule that
+orders these files by yield. Hand over **one file per pass** — the complete transcripts are
+multi-megabyte, and handing over the whole thing buys a shallow read of everything instead of a
+real read of the parts that matter.
+
+`<audience>/00_REVIEW_BRIEF.md` states the audience, the inventory, the standing editorial
+constraints a reviewer should not mistake for omissions, and the severity rubric findings should
+come back in.
 
 Then either hand over the single `*_CURRICULUM_COMPLETE.md`, or work the split files in order:
 

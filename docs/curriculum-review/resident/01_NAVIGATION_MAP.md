@@ -1,6 +1,6 @@
 # RESIDENT · Navigation map
 
-Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-01 @ `26f76db`.
+Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-01 @ `ab58af9`.
 
 ## Orientation  *(pinned)*
 
