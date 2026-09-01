@@ -26,14 +26,17 @@ SAFE_ID = re.compile(r"^[A-Za-z0-9_.-]{1,128}$")
 SAFE_REPOSITORY = re.compile(r"^[A-Za-z0-9_.-]{1,100}/[A-Za-z0-9_.-]{1,100}$")
 MAX_COUNT = 1_000_000
 MAX_BODY = 16_000
-MANUAL_CHECKLIST = (
-    "issue a new non-identifying SP_ROTATION_ID",
-    "rotate the learner passcode and separate operations credential",
-    "preserve the prior content-free usage receipt",
-    "run the Interview Room red-team checklist and golden transcript",
-    "verify the latest production canary, release rehearsal, governance digest, and attestation gate",
-    "confirm managed voice remains disabled unless all external faculty/privacy gates are recorded",
-)
+# The checklist is a CODE constant, imported from its single definition. It is
+# deliberately NOT read from the report JSON this module is handed: that report is
+# written by another job, and rendering its checklist field would let tampered
+# input reach a GitHub issue body. The sentinel test in
+# tests/maintenance/test_maintenance_issue.py pins that boundary. Importing the
+# tuple keeps one definition without reopening it.
+# Dual-mode: this module runs both as a package (tests) and as a script (workflows).
+try:  # package
+    from .rotation_readiness import MANUAL_CHECKLIST
+except ImportError:  # script - siblings are on sys.path
+    from rotation_readiness import MANUAL_CHECKLIST
 
 
 class IssueRoutingError(RuntimeError):

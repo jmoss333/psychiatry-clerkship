@@ -22,8 +22,10 @@ forks: `14_Tracks/<audience>/` are link-only overlays.
 
 TWO MACHINES — KNOW WHICH ONE YOU ARE ON
 The Cowork shell runs in an isolated Linux VM that MOUNTS the repo; it is not Josh's Mac.
-That VM has no `git-lfs` and no `gh`, so ~106 LFS-tracked audio/video files show as
-"modified" and GitHub work appears impossible. Both are illusions.
+That VM has no `git-lfs` and no `gh`, so every LFS-tracked audio/video file shows as
+"modified" and GitHub work appears impossible. Both are illusions. (Don't memorise a
+file count - `git lfs ls-files | wc -l` on the Mac is the only number worth trusting,
+and it moves as media enters or leaves the repo.)
 - Josh's Mac HAS git-lfs 3.7.1 and gh 2.92.0, authenticated as `jmoss333`
   (scopes: repo, workflow, gist, read:org).
 - Do all git, gh, LFS and commit work through Desktop Commander (`start_process`), which
