@@ -1,0 +1,93 @@
+[
+  {
+    "id": "MS3V06-F001",
+    "audience": "both",
+    "file": "02_CURRICULUM_V06.md",
+    "surface": "brief_psychotherapy.md",
+    "locus": "topic_meta.points",
+    "severity": "S2",
+    "quote": "Psychoeducation has the strongest inpatient numbers: readmission NNT 5, relapse NNT 9 — give it as a conversation with family looped in, not a packet dump.",
+    "problem": "The 'readmission NNT 5' figure is not what Xia 2011 reports — the review's verified span records NNT ~9 (relapse/readmission, medium term) from hospital-based studies of limited quality, with the reviewers stating the true effect is likely less than demonstrated. The overlay card teaches a learner (student or resident) an effect roughly twice as strong as the source, stripped of the review's own caveat.",
+    "replacement": "Psychoeducation reduces relapse (NNT ~9 in the Xia 2011 Cochrane review — hospital-based studies of limited quality, and the reviewers judge the true effect likely smaller) — give it as a conversation with family looped in, not a packet dump.",
+    "basis": "Xia J, Merinder LB, Belgamwar MR. Psychoeducation for schizophrenia. Cochrane 2011: relapse RR ~0.80, NNT 9 (CI 6–22); the review itself notes the studies were hospital-based and of limited quality and that 'the true size of effect is likely to be less than demonstrated.' The library's own verified sourceSpan records ~9.",
+    "confidence": "high"
+  },
+  {
+    "id": "MS3V06-F002",
+    "audience": "both",
+    "file": "02_CURRICULUM_V06.md",
+    "surface": "brief_psychotherapy.md",
+    "locus": "page_prose",
+    "severity": "S2",
+    "quote": "Strongest single inpatient psychological intervention: readmission **NNT 5**, relapse **NNT 9** (Xia, *Cochrane* 2011)",
+    "problem": "Same mis-summary in the mechanism table: Xia 2011 supports NNT ~9 for relapse/readmission, not a separate readmission NNT of 5, and the superlative 'strongest single inpatient psychological intervention' is not licensed by a review whose authors state the true effect is likely smaller than demonstrated. A sibling page was already corrected for exactly this superlative shape.",
+    "replacement": "Reduces relapse, **NNT ~9** (Xia, *Cochrane* 2011 — hospital-based studies of limited quality; the reviewers judge the true effect likely smaller)",
+    "basis": "Xia 2011 Cochrane review: relapse RR ~0.80, NNT 9 (CI 6–22), with the reviewer-stated limits above; library's verified sourceSpan records ~9. C5-style rule: fix the claim to match the paper, not the other way around.",
+    "confidence": "high"
+  },
+  {
+    "id": "MS3V06-F003",
+    "audience": "both",
+    "file": "02_CURRICULUM_V06.md",
+    "surface": "brief_psychotherapy.md",
+    "locus": "page_prose",
+    "severity": "S2",
+    "quote": "**Psychoeducation** has the hardest inpatient numbers (readmission NNT 5) — and it's free.",
+    "problem": "The pearl repeats the unsupported readmission NNT 5 and adds a 'hardest numbers' superlative; Xia 2011's own figure is NNT ~9 from limited-quality hospital-based studies with an explicit caveat that the true effect is likely smaller. Pearls are what learners quote on rounds, so this is the highest-exposure instance of the error.",
+    "replacement": "**Psychoeducation** has real inpatient numbers (relapse NNT ~9 in the Cochrane review — limited-quality studies, true effect likely smaller) — and it's free.",
+    "basis": "Xia 2011 Cochrane review (relapse RR ~0.80, NNT 9, CI 6–22; reviewer-stated quality limits); library's verified sourceSpan records ~9.",
+    "confidence": "high"
+  },
+  {
+    "id": "MS3V06-F004",
+    "audience": "both",
+    "file": "02_CURRICULUM_V06.md",
+    "surface": "nutrition_metabolic.md",
+    "locus": "page_prose",
+    "severity": "S2",
+    "quote": "| **Fasting lipid panel** | Baseline → 12 wk → annually | Dyslipidemia, esp. triglycerides |",
+    "problem": "The table is explicitly presented as what 'the ADA/APA 2004 consensus establishes,' but the 2004 consensus specifies fasting lipids at baseline, 12 weeks, then every 5 years — not annually. Annual rechecking is defensible (and common) current practice, so the error is conservative in direction, but the attribution to the named consensus is factually wrong and a learner citing 'ADA/APA says annual lipids' would be misquoting the document.",
+    "replacement": "| **Fasting lipid panel** | Baseline → 12 wk → every 5 y per the 2004 consensus (most services now recheck annually) | Dyslipidemia, esp. triglycerides |",
+    "basis": "ADA/APA et al. Consensus Development Conference on Antipsychotic Drugs and Obesity and Diabetes, Diabetes Care 2004;27:596–601 — monitoring table lists fasting lipid profile at baseline, 12 weeks, then every 5 years (weight 4/8/12 wk then quarterly; glucose and BP 12 wk then annually).",
+    "confidence": "high"
+  },
+  {
+    "id": "MS3V06-F005",
+    "audience": "both",
+    "file": "02_CURRICULUM_V06.md",
+    "surface": "nutrition_metabolic.md",
+    "locus": "topic_meta.tldr",
+    "severity": "S4",
+    "quote": "Track metabolic health for every patient on an antipsychotic — weight, glucose, and lipids at baseline, 12 weeks, and annually — and know the dietary safety points for lithium, MAOIs, and grapefruit/CYP3A4.",
+    "problem": "Overlay-vs-prose disagreement: the page's central teaching point is that weight monitoring is deliberately front-loaded (baseline → 4 wk → 8 wk → 12 wk → quarterly) because early weight gain is the actionable signal, yet the TL;DR — the card a rushed learner reads — flattens weight to 'baseline, 12 weeks, and annually,' losing exactly the front-loading the prose calls intentional.",
+    "replacement": "Track metabolic health for every patient on an antipsychotic — weight monthly for the first 3 months then quarterly, glucose and lipids at baseline and 12 weeks then per schedule — and know the dietary safety points for lithium, MAOIs, and grapefruit/CYP3A4.",
+    "basis": "The page's own ADA/APA 2004 table (weight at baseline, 4, 8, 12 weeks, then quarterly) and its stated rationale for front-loading; ADA/APA 2004 consensus, Diabetes Care 2004;27:596–601.",
+    "confidence": "high"
+  },
+  {
+    "id": "MS3V06-F006",
+    "audience": "both",
+    "file": "02_CURRICULUM_V06.md",
+    "surface": "brief_psychotherapy.md",
+    "locus": "page_prose",
+    "severity": "S4",
+    "quote": "(pooled SMD ~0.24, NNT ~7; comparable effects for CBT, BA, and problem-solving, g≈0.42)",
+    "problem": "Three effect statistics attached only to 'Across trials' with no study identity anywhere in the passage — a learner cannot get from these numbers to a paper, and the evidence gate is structurally blind to an unannotated assertion. Every other number on this page carries an identity (Uphoff 2020, Linehan 2015, Hatcher 2011, Xia 2011, Stanley 2018); this parenthetical is the one orphan.",
+    "replacement": "(small-to-moderate pooled effects with no clear winner across modalities — the specific meta-analyses are traced on the Evidence-Based Inpatient Psychiatry page)",
+    "basis": "Reviewer traceability rule for statistics without a study identity; the page's own citation convention in the adjacent mechanism table. Naming the actual meta-analysis these figures came from (in the same style as the table rows) would equally resolve the finding.",
+    "confidence": "high"
+  },
+  {
+    "id": "MS3V06-F007",
+    "audience": "both",
+    "file": "02_CURRICULUM_V06.md",
+    "surface": "ect_neuromodulation.md",
+    "locus": "topic_meta.tldr",
+    "severity": "S4",
+    "quote": "ECT is the most effective treatment for severe, psychotic, or catatonic depression — no absolute contraindications, transient memory effects — and rTMS, ketamine/esketamine, VNS, and bright light therapy each have a distinct niche.",
+    "problem": "The flat 'transient memory effects' strips the prose's hedge ('usually improving over weeks') and omits that some retrograde/autobiographical memory gaps around the treatment period can persist, particularly with bitemporal placement — a nuance that matters in the consent and family conversations this page coaches. A student repeating 'memory effects are transient' to a family overpromises; also imprecise for residents obtaining consent.",
+    "replacement": "ECT is the most effective treatment for severe, psychotic, or catatonic depression — no absolute contraindications; anterograde memory effects resolve over weeks, though some retrograde gaps around the treatment period can persist — and rTMS, ketamine/esketamine, VNS, and bright light therapy each have a distinct niche.",
+    "basis": "Sackeim et al. 2007 (Neuropsychopharmacology) documented persistent retrograde amnesia at 6 months, greater with bitemporal placement; APA ECT task force consent guidance includes possible persistent memory loss for events near treatment. The page's own RUL-vs-bitemporal line already implies the distinction.",
+    "confidence": "high"
+  }
+]

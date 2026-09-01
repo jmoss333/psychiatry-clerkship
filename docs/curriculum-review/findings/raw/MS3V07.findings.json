@@ -1,0 +1,67 @@
+[
+  {
+    "id": "MS3V07-F001",
+    "audience": "both",
+    "file": "02_CURRICULUM_V07.md",
+    "surface": "exp_family.md",
+    "locus": "page_prose",
+    "severity": "S2",
+    "quote": "structured lethal-means counseling (CALM) cut attempts/deaths from 3.3% to 0.83% at 180 days",
+    "problem": "The 3.3%-to-0.83% figures come from a quasi-experimental observational cohort (Boggs et al., J Gen Intern Med 2020 — the probable source) in which the exposure was documented lethal-means ASSESSMENT, not delivery of CALM counseling, and 'cut' asserts a causal effect no randomized trial has shown; no means-counseling RCT is powered for attempts/deaths. It also carries no citation, so a learner cannot trace the number, and it contradicts this same volume's Therapy on the Unit page, which correctly states that controlled studies of means-change interventions show a small reduction, if any, in deaths. The topic_meta key point repeats it ('Structured lethal-means counseling cut attempts and deaths from 3.3% to 0.83% at 180 days') and needs the identical fix. Also wrong for residents, who will quote it in supervision.",
+    "replacement": "structured lethal-means counseling matters: in a large quasi-experimental cohort (Boggs et al. 2020), patients with documented lethal-means assessment had fewer suicide attempts and deaths at 180 days (0.83% vs 3.3%) — an association, not a randomized effect",
+    "basis": "Boggs JM et al., J Gen Intern Med 2020 (quasi-experimental analysis of lethal-means assessment, Kaiser Permanente Colorado) is the probable source of the 3.3%/0.83% figures; Shank et al. 2026 systematic review — cited as [9] in this volume's own Therapy on the Unit page — finds little or no demonstrated mortality effect in controlled studies of means-change interventions.",
+    "confidence": "high"
+  },
+  {
+    "id": "MS3V07-F002",
+    "audience": "both",
+    "file": "02_CURRICULUM_V07.md",
+    "surface": "exp_family.md",
+    "locus": "page_prose",
+    "severity": "S2",
+    "quote": "Suicide risk in the first week post-discharge is on the order of ~2,950 per 100,000 person-years — with days 0–3 the highest — roughly 100× the population rate (Chung et al., *JAMA Psychiatry* 2017)",
+    "problem": "Two errors in one sentence. The ~2,950 first-week figure is from Chung et al., BMJ Open 2019 (the first-week/first-month meta-analysis — this volume's own Therapy on the Unit page cites it as [32] for exactly this number), not the 2017 JAMA Psychiatry meta-analysis, whose finest time stratum was 3 months (1,132 per 100,000 person-years). And 2,950 per 100,000 person-years against a US general-population suicide rate of ~14 per 100,000 is roughly 200×, not 100× — the multiplier as written understates the risk the page is trying to teach. The topic_meta key point repeats 'roughly 100× the population rate' and needs the same fix.",
+    "replacement": "Suicide risk in the first week post-discharge is on the order of ~2,950 per 100,000 person-years — with days 0–3 the highest — roughly 200× the general-population rate (Chung et al., *BMJ Open* 2019; the overall post-discharge rate of 484 per 100,000 person-years is from Chung et al., *JAMA Psychiatry* 2017)",
+    "basis": "Chung et al., JAMA Psychiatry 2017 (pooled 484 per 100,000 person-years overall; 1,132 within 3 months) and Chung et al., BMJ Open 2019 (~2,950 in the first week) — both already in this volume's Therapy on the Unit reference list as [5] and [32]; US suicide rate ≈14 per 100,000 (CDC), so 2,950/14 ≈ 200×.",
+    "confidence": "high"
+  },
+  {
+    "id": "MS3V07-F003",
+    "audience": "both",
+    "file": "02_CURRICULUM_V07.md",
+    "surface": "family_modalities.md",
+    "locus": "page_prose",
+    "severity": "S2",
+    "quote": "**OR 0.18** — family psychoeducation led 11 models for 12-month relapse prevention (Rodolico et al., *Lancet Psychiatry* 2022; 90 RCTs, >10,000 patients).",
+    "problem": "My recollection of the Rodolico 2022 network meta-analysis is that the family-psychoeducation-vs-TAU estimate for 12-month relapse was nearer OR 0.33, and that the authors emphasized the intervention models did not clearly separate from one another; OR 0.18 may be a credible-interval bound or a transcription error, which would roughly double the taught effect. The figure is load-bearing: it recurs in this page's TL;DR ('OR 0.18, NNT 7 for relapse prevention'), in a key-points bullet, in the keyed quiz option and rationale, and on exp_family.md as 'Family psychoeducation lowers relapse from ~37% to ~10% (OR 0.18)' — the ~10% endpoint is back-derived from the same OR, so all instances stand or fall together. None of these carries an evidence annotation (the page's only registered evidence source is brown-1972-expressed-emotion), so the A4 gate cannot catch it. The keyed answer itself (family psychoeducation is the strongest-evidence choice) is correct regardless.",
+    "replacement": "**OR ~0.33** — family psychoeducation ranked best of the family-intervention models for 12-month relapse prevention (Rodolico et al., *Lancet Psychiatry* 2022; 90 RCTs, >10,000 patients).",
+    "basis": "Rodolico et al., Lancet Psychiatry 2022 — a single check of the paper's abstract/forest plot for the family-psychoeducation-vs-TAU 12-month relapse estimate settles this finding and the derived ~37%-to-~10% percentages on exp_family.md; I cannot specifically recall 0.18 as the point estimate.",
+    "confidence": "low"
+  },
+  {
+    "id": "MS3V07-F004",
+    "audience": "both",
+    "file": "02_CURRICULUM_V07.md",
+    "surface": "collateral_workflow.md",
+    "locus": "page_prose",
+    "severity": "S4",
+    "quote": "Do not use family as an interpreter for confidential or high-risk topics.",
+    "problem": "The qualifier implies family interpretation is acceptable for routine clinical topics. US regulation and ordinary hospital policy prohibit relying on an accompanying adult to interpret clinical encounters except in an emergency while a qualified interpreter is arranged (or on the patient's specific, documented request) — and on an inpatient psychiatry unit essentially every collateral, consent, and symptom conversation is confidential. A student acting on this exact sentence would let a relative interpret a 'routine' conversation, which is precisely the situation in which symptom and risk information gets filtered by the family member.",
+    "replacement": "Do not use family or friends as interpreters — use a qualified professional interpreter; family may bridge only in an emergency while an interpreter is being arranged.",
+    "basis": "ACA Section 1557 implementing regulations (45 CFR 92.201) restricting reliance on accompanying adults to interpret; Joint Commission language-access standards; standard US academic-hospital interpreter policy.",
+    "confidence": "high"
+  },
+  {
+    "id": "MS3V07-F005",
+    "audience": "both",
+    "file": "02_CURRICULUM_V07.md",
+    "surface": "therapy_on_the_unit.md",
+    "locus": "page_prose",
+    "severity": "S4",
+    "quote": "high expressed emotion multiplies relapse risk several-fold, and warmth is protective",
+    "problem": "'Several-fold' fits the odds ratio (~4.9 in Ma et al. 2021), not the risk: at the relapse rates in the classic expressed-emotion literature (about 65% high-EE vs 35% low-EE in Butzlaff & Hooley's pooled data), high expressed emotion roughly doubles relapse risk. The family_modalities.md overlay states this correctly as 'roughly quintuples relapse odds'; this prose converts odds into 'risk several-fold', and a learner will repeat the inflated multiplier on rounds or — against the site's own advice — to a family.",
+    "replacement": "high expressed emotion roughly doubles relapse risk (a near five-fold increase in relapse odds in pooled data), and warmth is protective",
+    "basis": "Butzlaff & Hooley, Arch Gen Psychiatry 1998 (relapse ~65% vs ~35%, high vs low EE); Ma et al., Psychol Med 2021 (OR ~4.87; warmth OR ~0.35) — an odds ratio overstates the risk ratio at high baseline event rates.",
+    "confidence": "medium"
+  }
+]

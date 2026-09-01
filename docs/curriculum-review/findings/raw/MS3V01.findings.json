@@ -1,0 +1,67 @@
+[
+  {
+    "id": "MS3V01-F001",
+    "audience": "both",
+    "file": "02_CURRICULUM_V01.md",
+    "surface": "week3.md",
+    "locus": "topic_meta.points",
+    "severity": "S2",
+    "quote": "The skill of the week is completing a supervised safety plan with a patient using the C-SSRS — practice building it collaboratively in real time, not as a form to fill.",
+    "problem": "The C-SSRS is a suicide risk-severity assessment scale, not a safety-planning instrument; the safety plan is the Stanley-Brown Safety Planning Intervention, which this same overlay's TL;DR correctly names. A student sent to 'complete a safety plan using the C-SSRS' would administer a severity screener and believe the safety-planning work was done — and the key-point card contradicts the TL;DR on its own page.",
+    "replacement": "The skill of the week is completing a supervised safety plan with a patient using the Stanley-Brown Safety Planning Intervention — practice building it collaboratively in real time, not as a form to fill; the C-SSRS structures the risk assessment that comes before it, not the plan itself.",
+    "basis": "Posner et al. 2011 (C-SSRS is a severity rating scale for suicidal ideation and behavior); Stanley & Brown 2012 (Safety Planning Intervention); VA/DoD suicide-risk CPG treats structured risk assessment and safety planning as distinct sequential steps.",
+    "confidence": "high"
+  },
+  {
+    "id": "MS3V01-F002",
+    "audience": "both",
+    "file": "02_CURRICULUM_V01.md",
+    "surface": "week3.md",
+    "locus": "page_prose",
+    "severity": "S2",
+    "quote": "complete a **safety plan** with a patient (supervised) using the Suicide tools (the suicide-risk & safety tools (C-SSRS))",
+    "problem": "Page prose repeats the overlay's instrument conflation (see MS3V01-F001): it directs the learner to complete a safety plan 'using ... (C-SSRS).' The C-SSRS rates ideation and behavior severity; it does not produce a safety plan — that is the Stanley-Brown model the TL;DR names. Fixing only the overlay card leaves this shipped sentence teaching the same error.",
+    "replacement": "complete a **safety plan** with a patient (supervised) using the Stanley-Brown model in the Suicide tools (the C-SSRS assesses risk severity; the Stanley-Brown Safety Planning Intervention is the safety plan)",
+    "basis": "Posner et al. 2011 (C-SSRS); Stanley & Brown 2012 (Safety Planning Intervention); VA/DoD suicide-risk CPG separates risk assessment from safety planning.",
+    "confidence": "high"
+  },
+  {
+    "id": "MS3V01-F003",
+    "audience": "both",
+    "file": "02_CURRICULUM_V01.md",
+    "surface": "mse.html",
+    "locus": "tool_string",
+    "severity": "S3",
+    "quote": "\"Oriented x4\" = person, place, time, situation. Screen formally (MoCA) when delirium or dementia is on the differential.",
+    "problem": "The MoCA is a dementia/MCI screen, not a delirium screen. When delirium is on the differential, the bedside move is attention testing plus a delirium instrument (4AT or CAM) and medical escalation — and a MoCA administered during delirium is not interpretable, so a student pointed here does a 10-minute dementia screen on a fluctuating patient instead of the delirium screen. The companion pocket guide on this site teaches the correct mini screen (orientation, attention, fluctuation, arousal).",
+    "replacement": "\"Oriented x4\" = person, place, time, situation. If delirium is possible, test attention and use a delirium screen (e.g., 4AT or CAM) now; reserve the MoCA for suspected dementia/MCI once delirium is excluded — a MoCA done during delirium is not interpretable.",
+    "basis": "MoCA validated for MCI/dementia (Nasreddine 2005); delirium detection uses CAM (Inouye 1990) or 4AT (Bellelli 2014; current NICE delirium guidance); dementia-oriented cognitive screens cannot be interpreted during a delirium episode.",
+    "confidence": "high"
+  },
+  {
+    "id": "MS3V01-F004",
+    "audience": "both",
+    "file": "02_CURRICULUM_V01.md",
+    "surface": "orientation.md",
+    "locus": "topic_meta.cant",
+    "severity": "S4",
+    "quote": "PHI leaves the clinical system in any form — not into AI tools, personal notes, cloud docs, texts, or email; the PHI firewall is absolute and applies to every device and platform.",
+    "problem": "As rendered on the standalone can't-miss card, the sentence states the opposite of the rule — read literally it asserts that PHI does leave the clinical system — where the page prose correctly says 'No real patient details leave the clinical system.' A dropped negation in the page's most assertive card slot; the overlay disagrees with its own prose.",
+    "replacement": "No PHI leaves the clinical system in any form — not into AI tools, personal notes, cloud docs, texts, or email; the PHI firewall is absolute and applies to every device and platform.",
+    "basis": "Internal consistency with the same page's shipped rule ('No real patient details leave the clinical system.'); standard HIPAA-derived PHI discipline.",
+    "confidence": "high"
+  },
+  {
+    "id": "MS3V01-F005",
+    "audience": "both",
+    "file": "02_CURRICULUM_V01.md",
+    "surface": "pg_interview.md",
+    "locus": "page_prose",
+    "severity": "S4",
+    "quote": "Ask directly and calmly.",
+    "problem": "This page has the learner rehearse verbatim suicide-elicitation questions (ideation, plan, steps taken, means access), which is risk-rehearsal work under the site's own crisis-block scope rule, yet no crisis block appears anywhere on the surface as transcribed — nor on the companion mse.html tool that carries the same safety-question ladder. If the live page truly lacks the injected block, a reader working these questions has no crisis contact (988 etc.) on the page.",
+    "replacement": "Ask directly and calmly.\n\n<!-- crisis-block -->",
+    "basis": "Repo crisis-block policy: a surface where the learner is assessing, rehearsing, or planning disposition around risk must opt into the build-injected crisis block. Settled by checking the source md for the crisis-block marker and the built page for the rendered block — this transcript may not capture build-injected content, hence low confidence that the omission is real rather than a transcription gap.",
+    "confidence": "low"
+  }
+]

@@ -60,6 +60,10 @@ cd tests/smoke && npm ci && npx playwright test
 - `sp-proxy/` — serverless LLM patient for The Interview Room. **API key stays server-side; the browser
   holds only a passcode.** Run `sp-proxy/REDTEAM_CHECKLIST.md` after every deploy and every model/pack change.
 - `docs/superpowers/{plans,specs}/` — dated design docs and implementation plans.
+- `13_Faculty_Resources/_automation/export_curriculum_review.py` → `docs/curriculum-review/`
+  — assembles a complete human-readable transcript of everything each site ships (one set per
+  audience) for external clinical review. Reads the **builds**, not the source tree, so it
+  reflects nav order and audience scoping. Report-only; regenerate after building both sites.
 
 ## Conventions & gotchas
 - **localStorage keys must be namespaced `cw_*` (shared hub) or `rp_*` (resident).** The QA gate

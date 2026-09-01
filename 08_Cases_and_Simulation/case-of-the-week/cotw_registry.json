@@ -2,6 +2,26 @@
   "_note": "Case of the Week registry - the single source of truth for the weekly case section. To add a week, PREPEND one object to 'weeks' (newest first) and drop the two source .md files (ms3_src, res_src) into this folder. build_deploy.py (MS3 site) and resident_section.py (resident site) read this file to copy the pages and generate the nav section; no edits to those scripts or to site_manifest.json are needed. Built slugs are derived deterministically: cotw_<YYYYMMDD>_<topic>_ms3.md and cotw_<YYYYMMDD>_<topic>_res.md. Keep 'topic' short, lowercase, and unique per date. OPTIONAL per-week fields, all defaulted so an entry written without them still builds: 'blueprint' (list of shelfBlueprint codes - this is what puts the case on the curriculum crosswalk; vocabulary in CROSSWALK_TAXONOMY.md), 'epa' (AAMC EPA1..EPA13), 'read' (int, estimated read minutes), 'tldr' (one-line summary shown above the prose). These feed cotw_meta.py, which derives each case's topic_meta entry at build time so topic_meta.json never needs a weekly hand-edit.",
   "weeks": [
     {
+      "date": "2026-08-31",
+      "topic": "catatonia",
+      "label": "Catatonia (Aug 31)",
+      "ms3_src": "2026-08-31_catatonia-recognition-workup-treatment_MS3.md",
+      "res_src": "2026-08-31_catatonia-recognition-workup-treatment_Resident.md",
+      "blueprint": [
+        "neurocog",
+        "safety",
+        "pharm"
+      ],
+      "epa": [
+        "EPA1",
+        "EPA2",
+        "EPA3",
+        "EPA10"
+      ],
+      "read": 10,
+      "tldr": "A mute, motionless patient is an emergency until proven otherwise - screen with the BFCRS, test-and-treat with the lorazepam challenge, hold the antipsychotics, and know the malignant-catatonia triggers that mean early ECT."
+    },
+    {
       "date": "2026-08-27",
       "topic": "bpd",
       "label": "Borderline Personality Disorder (Aug 27)",

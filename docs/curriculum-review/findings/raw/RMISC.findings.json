@@ -1,0 +1,54 @@
+[
+  {
+    "id": "RMISC-F001",
+    "audience": "Resident",
+    "file": "resident/02_CURRICULUM_V06.md",
+    "surface": "adv_psychopharm.md",
+    "locus": "topic_meta.cant",
+    "severity": "S2",
+    "quote": "Clozapine-associated constipation can progress to a fatal ileus — a bowel regimen is part of the prescription; and smoking cessation induces CYP1A2, so a patient who quits at admission may need a dose decrease, not an increase.",
+    "problem": "The mechanism is inverted: smoking induces CYP1A2; cessation removes that induction, so clozapine levels rise. As written the sentence is internally incoherent — if cessation induced CYP1A2, levels would fall and the dose would need to go up, the opposite of the (correct) directive attached. The page's own prose and pearl state it correctly ('smoking *induces* clearance', 'Smoking cessation raises clozapine levels'), so this is also an overlay-vs-prose disagreement, and the can't-miss card is exactly what a rushed resident reads and re-teaches.",
+    "replacement": "Clozapine-associated constipation can progress to a fatal ileus — a bowel regimen is part of the prescription; and smoking induces CYP1A2, so a patient who quits at admission loses that induction, clozapine levels rise, and they may need a dose decrease, not an increase.",
+    "basis": "Clozapine prescribing information and standard pharmacology: polycyclic aromatic hydrocarbons in smoke induce CYP1A2; abrupt cessation raises clozapine levels substantially (often 50%+), requiring dose reduction. Consistent with the same page's prose and high-yield pearl.",
+    "confidence": "high"
+  },
+  {
+    "id": "RMISC-F002",
+    "audience": "Resident",
+    "file": "resident/02_CURRICULUM_V07.md",
+    "surface": "rp-brief-psych.html",
+    "locus": "tool_string",
+    "severity": "S2",
+    "quote": "Reduces repeat self-harm re-presentation (13.5% vs 22.1%, NNT 12).",
+    "problem": "This is presented as the headline result of the cited trial (Hatcher 2011, Zelen RCT of problem-solving therapy after self-harm), but my recollection is that the trial's overall primary outcome (12-month hospital re-presentation for self-harm) was not significantly reduced, with benefit confined to the subgroup with previous self-harm — which is likely where 13.5% vs 22.1% comes from. If so, a subgroup effect is being taught as the trial's overall effect, and a resident would over-promise what a one-off PST micro-session does for a first-presentation patient.",
+    "replacement": "In the pivotal Zelen RCT (Hatcher 2011), overall 12-month re-presentation was not significantly reduced; benefit concentrated in patients with prior self-harm (13.5% vs 22.1%, NNT ~12) — highest yield in repeat presenters.",
+    "basis": "Hatcher S, et al. Br J Psychiatry 2011 (Zelen randomised controlled trial of problem-solving therapy for hospital-treated self-harm). What would settle it: the trial's results section — whether 13.5% vs 22.1% is the whole-sample primary outcome or the previous-self-harm subgroup, and whether the overall effect was null. This is the exact failure mode the repo's own evidence policy warns about (positive claim licensed by a null/subgroup result).",
+    "confidence": "low"
+  },
+  {
+    "id": "RMISC-F003",
+    "audience": "Resident",
+    "file": "resident/A2_CASE_SIMULATIONS.md",
+    "surface": "trd_augmentation_choice_001",
+    "locus": "case.feedback",
+    "severity": "S3",
+    "quote": "A patient admitted after an overdose with confirmed treatment resistance is exactly who should not leave the hospital without a next step already started or clearly planned — deferring the whole decision abandons the acute opportunity to act.",
+    "problem": "The patient has failed exactly one adequate antidepressant trial (sertraline 200mg x 8 weeks). Calling that 'confirmed treatment resistance' — and the case's learner goal ('Confirm true treatment resistance') and Step 1 prompt ('Before calling this treatment-resistant depression') teach the same thing — conflicts with the prevailing current definition of TRD as failure of at least two adequate trials (the FDA esketamine TRD indication, EMA, and most guidelines). A resident would document and counsel 'TRD' one trial early; escalation here is justified by acuity, not by the TRD label. Defensible only under older staging (Thase–Rush Stage I = one adequate-trial failure), hence S3 rather than S2. The clinical actions the case rewards (augment now, raise ECT, don't defer) are sound.",
+    "replacement": "A patient admitted after an overdose, with a confirmed adequate-trial failure and ongoing suicidal ideation, is exactly who should not leave the hospital without a next step already started or clearly planned — deferring the whole decision abandons the acute opportunity to act.",
+    "basis": "Standard current TRD convention: failure of >=2 adequate antidepressant trials in the current episode (FDA esketamine TRD labeling; EMA; most consensus definitions); Thase & Rush staging is the one framework under which one failed adequate trial counts as (Stage I) resistance. The fix should also touch the case's learner-goal line and Step 1 prompt, which carry the same mislabel.",
+    "confidence": "high"
+  },
+  {
+    "id": "RMISC-F004",
+    "audience": "Resident",
+    "file": "resident/02_CURRICULUM_V07.md",
+    "surface": "rp-brief-psych.html",
+    "locus": "tool_string",
+    "severity": "S4",
+    "quote": "No single school wins — fit beats brand (pooled SMD ~0.24, NNT ~7; CBT ≈ BA ≈ PST).",
+    "problem": "A pooled effect size and NNT with no retrievable study identity: the frame's attached citations are a narrative how-to article (Stein & Jacobo 2013) and an unpublished 'staging' OpenEvidence review, neither of which a learner can use to get from the number to a meta-analysis. The equivalence claim (CBT ≈ BA ≈ PST) is consistent with the literature, but the specific figures are unauditable as shipped, and the evidence-annotation gate is structurally blind to them.",
+    "replacement": "No single school wins — fit beats brand (CBT ≈ BA ≈ PST); pooled effects of brief inpatient psychotherapy are modest, so pick the technique that fits the mechanism and the moment.",
+    "basis": "The library's own traceability standard: every quantitative claim needs a named, retrievable source. If the figures are kept, attribute them to the specific meta-analysis they came from (a plausible candidate is the Cuijpers et al. meta-analysis of psychological treatment of depressed inpatients, d ≈ 0.3 — verify before citing); an unpublished staging review cannot carry a pooled SMD.",
+    "confidence": "high"
+  }
+]

@@ -1,0 +1,175 @@
+[
+  {
+    "finding_id": "link:www.psychiatry.org::broken-link::bd3915ec4648b4aa",
+    "fingerprint": "link:www.psychiatry.org::broken-link::bd3915ec4648b4aa",
+    "job": "link-source-monitor",
+    "source_id": "link:www.psychiatry.org",
+    "source_name": "www.psychiatry.org",
+    "source_url": "https://www.psychiatry.org/File%20Library/Psychiatrists/Practice/Professional-Topics/Integrated-Care/Private/Integration-of-Mental-Health-Into-Primary-Care-The-Collaborative-Care-Model.pptx",
+    "source_type": "html",
+    "detected_at": "2026-08-31T16:11:08+00:00",
+    "change_type": "broken-link",
+    "severity": "P1",
+    "summary": "Broken link (406) on 13_Faculty_Resources/APA_Downloads_2026-06-29/APA_SURFACE_CARDS.md: https://www.psychiatry.org/File%20Library/Psychiatrists/Practice/Professional-Topics/Integrated-Care/Private/Integration-of-Mental-Health-Into-Primary-Care-The-Collaborative-Care-Model.pptx",
+    "evidence": {
+      "http_status": 406
+    },
+    "affects": [
+      "13_Faculty_Resources/APA_Downloads_2026-06-29/APA_SURFACE_CARDS.md"
+    ],
+    "recommended_action": "Fix or replace the link in `13_Faculty_Resources/APA_Downloads_2026-06-29/APA_SURFACE_CARDS.md`; if the source moved, update the citation and re-stamp reviewed.json.",
+    "status": "issue-open",
+    "github_issue": "https://github.com/jmoss333/psychiatry-clerkship/issues/433"
+  },
+  {
+    "finding_id": "link:mmc-psychiatry-residents-sanford.netlify.app::broken-link::5f23c76090d86d50",
+    "fingerprint": "link:mmc-psychiatry-residents-sanford.netlify.app::broken-link::5f23c76090d86d50",
+    "job": "link-source-monitor",
+    "source_id": "link:mmc-psychiatry-residents-sanford.netlify.app",
+    "source_name": "mmc-psychiatry-residents-sanford.netlify.app",
+    "source_url": "https://mmc-psychiatry-residents-sanford.netlify.app/",
+    "source_type": "html",
+    "detected_at": "2026-08-31T16:11:08+00:00",
+    "change_type": "broken-link",
+    "severity": "P1",
+    "summary": "Broken link (no response) on 13_Faculty_Resources/Handoffs/library_review_2026-07-01.md: https://mmc-psychiatry-residents-sanford.netlify.app/",
+    "evidence": {
+      "http_status": null
+    },
+    "affects": [
+      "13_Faculty_Resources/Handoffs/library_review_2026-07-01.md"
+    ],
+    "recommended_action": "Fix or replace the link in `13_Faculty_Resources/Handoffs/library_review_2026-07-01.md`; if the source moved, update the citation and re-stamp reviewed.json.",
+    "status": "issue-open",
+    "github_issue": "https://github.com/jmoss333/psychiatry-clerkship/issues/434"
+  },
+  {
+    "finding_id": "link:www.admsep.org::broken-link::378d5c25815a68ca",
+    "fingerprint": "link:www.admsep.org::broken-link::378d5c25815a68ca",
+    "job": "link-source-monitor",
+    "source_id": "link:www.admsep.org",
+    "source_name": "www.admsep.org",
+    "source_url": "https://www.admsep.org/csi-emodules.php",
+    "source_type": "html",
+    "detected_at": "2026-08-31T16:11:08+00:00",
+    "change_type": "broken-link",
+    "severity": "P1",
+    "summary": "Broken link (404) on 13_Faculty_Resources/Handoffs/CURRICULUM_GAP_REVIEW_2026-07-08.md: https://www.admsep.org/csi-emodules.php",
+    "evidence": {
+      "http_status": 404
+    },
+    "affects": [
+      "13_Faculty_Resources/Handoffs/CURRICULUM_GAP_REVIEW_2026-07-08.md"
+    ],
+    "recommended_action": "Fix or replace the link in `13_Faculty_Resources/Handoffs/CURRICULUM_GAP_REVIEW_2026-07-08.md`; if the source moved, update the citation and re-stamp reviewed.json.",
+    "status": "triaged"
+  },
+  {
+    "finding_id": "link:www.fda.gov::broken-link::f48ddedaa541bacf",
+    "fingerprint": "link:www.fda.gov::broken-link::f48ddedaa541bacf",
+    "job": "link-source-monitor",
+    "source_id": "link:www.fda.gov",
+    "source_name": "www.fda.gov",
+    "source_url": "https://www.fda.gov/drugs/drug-safety-communications/fda-removes-risk-evaluation-and-mitigation-strategy-rems-program-antipsychotic-drug-clozapine",
+    "source_type": "html",
+    "detected_at": "2026-08-31T16:11:08+00:00",
+    "change_type": "broken-link",
+    "severity": "P1",
+    "summary": "Broken link (404) on 13_Faculty_Resources/Handoffs/CURRICULUM_GAP_REVIEW_2026-07-08.md: https://www.fda.gov/drugs/drug-safety-communications/fda-removes-risk-evaluation-and-mitigation-strategy-rems-program-antipsychotic-drug-clozapine",
+    "evidence": {
+      "http_status": 404
+    },
+    "affects": [
+      "13_Faculty_Resources/Handoffs/CURRICULUM_GAP_REVIEW_2026-07-08.md"
+    ],
+    "recommended_action": "Fix or replace the link in `13_Faculty_Resources/Handoffs/CURRICULUM_GAP_REVIEW_2026-07-08.md`; if the source moved, update the citation and re-stamp reviewed.json.",
+    "status": "triaged"
+  },
+  {
+    "finding_id": "link:www.admsep.org::broken-link::56951baa3f00270a",
+    "fingerprint": "link:www.admsep.org::broken-link::56951baa3f00270a",
+    "job": "link-source-monitor",
+    "source_id": "link:www.admsep.org",
+    "source_name": "www.admsep.org",
+    "source_url": "https://www.admsep.org/Educational-Objectives-for-a-Junior-Psychiatry-Clerkship.php",
+    "source_type": "html",
+    "detected_at": "2026-08-31T16:11:08+00:00",
+    "change_type": "broken-link",
+    "severity": "P1",
+    "summary": "Broken link (404) on 13_Faculty_Resources/Handoffs/CURRICULUM_GAP_REVIEW_2026-07-08.md: https://www.admsep.org/Educational-Objectives-for-a-Junior-Psychiatry-Clerkship.php",
+    "evidence": {
+      "http_status": 404
+    },
+    "affects": [
+      "13_Faculty_Resources/Handoffs/CURRICULUM_GAP_REVIEW_2026-07-08.md"
+    ],
+    "recommended_action": "Fix or replace the link in `13_Faculty_Resources/Handoffs/CURRICULUM_GAP_REVIEW_2026-07-08.md`; if the source moved, update the citation and re-stamp reviewed.json.",
+    "status": "triaged"
+  },
+  {
+    "finding_id": "link:mental-health-education-library.netlify.app::broken-link::fcccb5fd3259148f",
+    "fingerprint": "link:mental-health-education-library.netlify.app::broken-link::fcccb5fd3259148f",
+    "job": "link-source-monitor",
+    "source_id": "link:mental-health-education-library.netlify.app",
+    "source_name": "mental-health-education-library.netlify.app",
+    "source_url": "https://mental-health-education-library.netlify.app/",
+    "source_type": "html",
+    "detected_at": "2026-08-31T16:11:08+00:00",
+    "change_type": "broken-link",
+    "severity": "P1",
+    "summary": "Broken link (no response) on 13_Faculty_Resources/Outreach/alex-tour/index.html: https://mental-health-education-library.netlify.app/",
+    "evidence": {
+      "http_status": null
+    },
+    "affects": [
+      "13_Faculty_Resources/Outreach/alex-tour/index.html"
+    ],
+    "recommended_action": "Fix or replace the link in `13_Faculty_Resources/Outreach/alex-tour/index.html`; if the source moved, update the citation and re-stamp reviewed.json.",
+    "status": "issue-open",
+    "github_issue": "https://github.com/jmoss333/psychiatry-clerkship/issues/435"
+  },
+  {
+    "finding_id": "link:www.aacom.org::broken-link::6dd84325c5cc19fc",
+    "fingerprint": "link:www.aacom.org::broken-link::6dd84325c5cc19fc",
+    "job": "link-source-monitor",
+    "source_id": "link:www.aacom.org",
+    "source_name": "www.aacom.org",
+    "source_url": "https://www.aacom.org/become-a-doctor/about-osteopathic-medicine/omm-explained",
+    "source_type": "html",
+    "detected_at": "2026-08-31T16:11:08+00:00",
+    "change_type": "broken-link",
+    "severity": "P1",
+    "summary": "Broken link (405) on 03_Core_Topics/OMM_Resources/omm_in_psychiatry_resources.md: https://www.aacom.org/become-a-doctor/about-osteopathic-medicine/omm-explained",
+    "evidence": {
+      "http_status": 405
+    },
+    "affects": [
+      "03_Core_Topics/OMM_Resources/omm_in_psychiatry_resources.md"
+    ],
+    "recommended_action": "Fix or replace the link in `03_Core_Topics/OMM_Resources/omm_in_psychiatry_resources.md`; if the source moved, update the citation and re-stamp reviewed.json.",
+    "status": "issue-open",
+    "github_issue": "https://github.com/jmoss333/psychiatry-clerkship/issues/436"
+  },
+  {
+    "finding_id": "link:www.aacom.org::broken-link::1ddf232122ce855b",
+    "fingerprint": "link:www.aacom.org::broken-link::1ddf232122ce855b",
+    "job": "link-source-monitor",
+    "source_id": "link:www.aacom.org",
+    "source_name": "www.aacom.org",
+    "source_url": "https://www.aacom.org/medical-education/teaching-and-learning/competency-curriculum-resources",
+    "source_type": "html",
+    "detected_at": "2026-08-31T16:11:08+00:00",
+    "change_type": "broken-link",
+    "severity": "P1",
+    "summary": "Broken link (405) on 03_Core_Topics/OMM_Resources/omm_in_psychiatry_resources.md: https://www.aacom.org/medical-education/teaching-and-learning/competency-curriculum-resources",
+    "evidence": {
+      "http_status": 405
+    },
+    "affects": [
+      "03_Core_Topics/OMM_Resources/omm_in_psychiatry_resources.md"
+    ],
+    "recommended_action": "Fix or replace the link in `03_Core_Topics/OMM_Resources/omm_in_psychiatry_resources.md`; if the source moved, update the citation and re-stamp reviewed.json.",
+    "status": "issue-open",
+    "github_issue": "https://github.com/jmoss333/psychiatry-clerkship/issues/437"
+  }
+]
