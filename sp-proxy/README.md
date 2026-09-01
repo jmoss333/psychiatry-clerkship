@@ -34,16 +34,51 @@ sp-proxy/
 ## Scheduled health receipts
 
 The published proxy runs `sp-health-canary` every six hours. It reuses the server-side learner
-passcode, requires the exact canonical MS3 origin, and makes one authenticated `GET /api/sp`.
-Because the check is GET-only, it does not invoke the actor, evaluator, budget ledger,
-transcription, synthesis, or another paid provider operation.
+passcode, requires the exact canonical MS3 origin, and makes two authenticated calls in sequence:
+
+1. **Contract leg** — `GET /api/sp`. No provider call. Validates the model/pack contract and yields
+   the reviewed case IDs. If this leg fails, the run stops here and no turn is spent.
+2. **Capability leg** — **only when `learnerReady` is true** — one `POST /api/sp` with
+   `mode:converse`, a throwaway 22-character `encounterId`, `turnId: 1`, `turns: []`, and a fixed
+   neutral opening question. The run succeeds only if a non-empty `reply` comes back.
+
+The gate on `learnerReady` is load-bearing. `sp.mjs` refuses every POST unless the pack status is in
+`POST_PACK_STATUSES` (`reviewed`, `attested`) — which is exactly the set that makes `learnerReady`
+true. A draft pack therefore refuses the probe by design, so the canary does not send one and
+records `actorReady: false`. That is a healthy receipt, not an outage: nothing was probed because
+nothing is being served. The canary uses a live actor POST exactly when learners can, and never
+otherwise.
+
+The second leg exists because the first one is not evidence the Interview Room works. `mode:open`
+returns pack copy without calling the provider, so on 2026-09-01 `/api/sp/health-status` reported
+`{"state":"success","learnerReady":true}` while a dead `ANTHROPIC_API_KEY` meant the tool could not
+produce a single patient reply. Reachability was never capability. **This reverses the original
+GET-only design constraint — see the 2026-09-01 amendment in
+`docs/superpowers/specs/2026-07-28-scheduled-maintenance-steward-design.md` for the reasoning and
+what it costs.**
+
+The capability leg spends one real actor turn against the shared rotation budget, four times a day
+(~120 turns/month, roughly $0.60 against the $20 cap at the pinned Haiku rate). A `429` from that
+leg is recorded as `actor_budget` rather than `actor_status` precisely because it is the one failure
+the canary can inflict on itself.
 
 Each run replaces Blob key `latest` in the site-scoped, strong-consistency `sp-health-canary` store
-with a content-free receipt. Success records only timestamps, case count, learner-ready state, and a
-SHA-256 contract identifier; failure records only a bounded failure code and timestamp. It never
-stores credentials, raw model or pack identifiers, case content, learner activity, request headers,
-URLs, or exception text. A `draft-pending-attestation` pack can be reachable and healthy while
-`learnerReady` remains false; the receipt is not a faculty approval.
+with a content-free receipt. Success records only timestamps, case count, learner-ready state,
+actor-ready state, and a SHA-256 contract identifier; failure records only a bounded failure code
+and timestamp. **The patient reply is measured and dropped inside the probe — it is never returned,
+logged, or stored.** The receipt never stores credentials, raw model or pack identifiers, case
+content, learner activity, request headers, URLs, or exception text. A `draft-pending-attestation`
+pack can be reachable and healthy while `learnerReady` remains false; the receipt is not a faculty
+approval.
+
+`actorReady` is `true` only when a live turn actually completed; a probe that ran and could not get
+a reply writes a *failure* receipt instead. `learnerReady: true` with `actorReady: false` is
+rejected as malformed everywhere — that is precisely the shape the health surface had while the tool
+was mute. The reverse (`false`/`false`, a draft pack) is honest and valid. The earlier seven-key
+receipt fails validation and reads as `malformed` rather than being mistaken for a green result.
+**On first deploy this means `/api/sp/health-status` returns
+503 `malformed` until the next scheduled run writes a receipt in the new shape (up to six hours).
+Trigger the function manually from the Netlify UI to close that window.**
 
 Public `GET /api/sp/health-status` requires no credential and exposes only that bounded receipt with
 `Cache-Control: no-store`. A success becomes non-success when it is more than eight hours old or the
@@ -51,9 +86,12 @@ recorded `nextRun` is over ten minutes late, so a missed invocation or lost Blob
 behind the prior success. GitHub checks this surface after each scheduled slot, and the independent
 Codex deadman supplies the separate alert path.
 
-This check proves authenticated read-only reachability only. It does not exercise live actor POSTs,
-model or voice behavior, authorize managed voice, or replace the deploy/model/pack red-team
-checklist and external activation gates below.
+This check proves that the contract is intact and that the actor answered one neutral turn. It does
+**not** evaluate what the actor said, exercise the evaluator, the safety screen, voice behavior, or
+the coverage map; it does not authorize managed voice; and it does not replace the deploy/model/pack
+red-team checklist and external activation gates below. A green receipt still is not release
+evidence (D7) — it is now evidence that the tool can speak, which is strictly more than it proved
+before and still much less than a red-team pass.
 
 ## One-time setup (~10 min, Netlify dashboard)
 

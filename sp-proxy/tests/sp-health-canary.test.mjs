@@ -20,10 +20,27 @@ const SUCCESS_RECEIPT = Object.freeze({
   schemaVersion: 1,
   state: 'success',
   learnerReady: true,
+  actorReady: true,
   caseCount: 1,
   checkedAt: CHECKED_AT,
   nextRun: NEXT_RUN,
   contractSha256: 'ab'.repeat(32),
+});
+
+// The seven-key receipt the pre-probe canary wrote. It attested reachability
+// only, which is exactly how a dead provider once hid behind a green health
+// page, so the current contract must refuse to read it as success.
+const LEGACY_SUCCESS_RECEIPT = Object.freeze(Object.fromEntries(
+  Object.entries(SUCCESS_RECEIPT).filter(([key]) => key !== 'actorReady'),
+));
+
+// 16 bytes 0x00..0x0f, base64url, no padding -- a canonical encounterId.
+const PROBE_ENCOUNTER_ID = 'AAECAwQFBgcICQoLDA0ODw';
+const ACTOR_REPLY_SENTINEL = 'RAW_ACTOR_REPLY_SENTINEL not sleeping much lately';
+const VALID_ACTOR_TURN = Object.freeze({
+  reply: ACTOR_REPLY_SENTINEL,
+  state: Object.freeze({ rapport: 2, turnId: 1 }),
+  ticket: 'RAW_TICKET_SENTINEL',
 });
 
 let healthModulesPromise;
@@ -86,14 +103,32 @@ function responseFor(body = VALID_HEALTH, {
   });
 }
 
+// Routes by method the way the deployed function does: GET is the contract
+// leg, POST is the live converse turn.
+function routedFetch({
+  health = () => responseFor(),
+  actor = () => responseFor(VALID_ACTOR_TURN),
+  record = null,
+} = {}) {
+  return async (url, init) => {
+    record?.push({ url, init });
+    return init?.method === 'POST' ? actor(url, init) : health(url, init);
+  };
+}
+
+function postsIn(requests) {
+  return requests.filter(({ init }) => init?.method === 'POST');
+}
+
 async function createCanaryHarness({
   env = defaultEnv(),
-  fetchImpl = async () => responseFor(),
+  fetchImpl = routedFetch(),
   store = memoryStore(),
   now = () => CHECKED_AT,
   log = () => {},
   setTimeoutImpl,
   clearTimeoutImpl,
+  newEncounterId = () => PROBE_ENCOUNTER_ID,
 } = {}) {
   const { canary } = await healthModules();
   return {
@@ -104,6 +139,7 @@ async function createCanaryHarness({
       store,
       now,
       log,
+      ...(newEncounterId ? { newEncounterId } : {}),
       ...(setTimeoutImpl ? { setTimeoutImpl } : {}),
       ...(clearTimeoutImpl ? { clearTimeoutImpl } : {}),
     }),
@@ -196,9 +232,12 @@ test('validateHealth accepts only the bounded health contract and freezes its re
     const result = receipt.validateHealth({ ...VALID_HEALTH, packStatus });
     assert.deepEqual(Object.keys(result).sort(), [
       'caseCount',
+      'caseIds',
       'contractSha256',
       'learnerReady',
     ]);
+    assert.deepEqual(result.caseIds, ['case-1']);
+    assert.equal(Object.isFrozen(result.caseIds), true);
     assert.equal(result.learnerReady, learnerReady);
     assert.equal(result.caseCount, 1);
     assert.match(result.contractSha256, /^[a-f0-9]{64}$/);
@@ -248,21 +287,20 @@ test('validateHealth never returns or hashes case title text', async () => {
   assert.doesNotMatch(JSON.stringify(first), /Synthetic|different/i);
 });
 
-test('scheduled canary performs one exact authenticated GET and persists a redacted success receipt', async () => {
+test('scheduled canary performs an authenticated contract GET, then one live converse turn, and persists a redacted success receipt', async () => {
   const requests = [];
   const store = memoryStore();
   const { handler } = await createCanaryHarness({
     store,
-    fetchImpl: async (url, init) => {
-      requests.push({ url, init });
-      return responseFor();
-    },
+    fetchImpl: routedFetch({ record: requests }),
   });
 
   const result = await handler(scheduledRequest());
 
   assert.equal(result, undefined);
-  assert.equal(requests.length, 1);
+  assert.equal(requests.length, 2);
+
+  // Leg 1 -- the contract GET, unchanged.
   assert.equal(requests[0].url, `${SITE_URL}/api/sp`);
   assert.deepEqual(Object.keys(requests[0].init).sort(), ['headers', 'method', 'redirect', 'signal']);
   assert.equal(requests[0].init.method, 'GET');
@@ -273,9 +311,44 @@ test('scheduled canary performs one exact authenticated GET and persists a redac
     Accept: 'application/json',
   });
   assert.equal(requests[0].init.signal instanceof AbortSignal, true);
+
+  // Leg 2 -- a real turn. `mode:open` returns pack copy without calling the
+  // provider, so only `converse` proves the Interview Room can actually answer.
+  assert.equal(requests[1].url, `${SITE_URL}/api/sp`);
+  assert.deepEqual(
+    Object.keys(requests[1].init).sort(),
+    ['body', 'headers', 'method', 'redirect', 'signal'],
+  );
+  assert.equal(requests[1].init.method, 'POST');
+  assert.equal(requests[1].init.redirect, 'error');
+  assert.deepEqual(requests[1].init.headers, {
+    Origin: CANONICAL_ORIGIN,
+    'x-student-key': STUDENT_PASSCODE,
+    Accept: 'application/json',
+    'Content-Type': 'application/json',
+  });
+  assert.equal(requests[1].init.signal instanceof AbortSignal, true);
+  const probe = JSON.parse(requests[1].init.body);
+  assert.deepEqual(Object.keys(probe).sort(), [
+    'caseId',
+    'encounterId',
+    'message',
+    'mode',
+    'turnId',
+    'turns',
+  ]);
+  assert.equal(probe.mode, 'converse');
+  assert.equal(probe.caseId, 'case-1');
+  assert.equal(probe.turnId, 1);
+  assert.deepEqual(probe.turns, []);
+  assert.match(probe.encounterId, /^[A-Za-z0-9_-]{22}$/);
+  assert.equal(typeof probe.message, 'string');
+  assert.equal(probe.message.trim().length > 0, true);
+
   assert.equal(store.writes.length, 1);
   assert.equal(store.writes[0].key, 'latest');
   assert.deepEqual(Object.keys(store.writes[0].value).sort(), [
+    'actorReady',
     'caseCount',
     'checkedAt',
     'contractSha256',
@@ -286,6 +359,7 @@ test('scheduled canary performs one exact authenticated GET and persists a redac
   ]);
   assert.equal(store.writes[0].value.state, 'success');
   assert.equal(store.writes[0].value.learnerReady, true);
+  assert.equal(store.writes[0].value.actorReady, true);
   assert.equal(store.writes[0].value.caseCount, 1);
   assert.equal(store.writes[0].value.checkedAt, CHECKED_AT);
   assert.equal(store.writes[0].value.nextRun, NEXT_RUN);
@@ -767,4 +841,302 @@ test('public status is GET-only and still returns bounded no-store JSON', async 
     schemaVersion: 1,
     state: 'method-not-allowed',
   });
+});
+
+// ---------------------------------------------------------------------------
+// Actor capability probe (leg 2). These exist because a green receipt once
+// coexisted with an Interview Room that could not produce a single reply:
+// `mode:open` returns pack copy and never calls the provider, so reachability
+// was never evidence of capability.
+// ---------------------------------------------------------------------------
+
+test('scheduled canary mints a fresh canonical encounterId for every probe', async () => {
+  const { canary } = await healthModules();
+  const seen = new Set();
+  for (let run = 0; run < 8; run += 1) {
+    const requests = [];
+    // No newEncounterId override: this exercises the real generator.
+    const handler = canary.createHealthCanary({
+      readEnv: (key) => defaultEnv()[key],
+      fetchImpl: routedFetch({ record: requests }),
+      store: memoryStore(),
+      now: () => CHECKED_AT,
+    });
+    await handler(scheduledRequest());
+    const { encounterId } = JSON.parse(postsIn(requests)[0].init.body);
+    assert.match(encounterId, /^[A-Za-z0-9_-]{22}$/);
+    // The same canonicalization sp.mjs applies to a learner-supplied id.
+    const decoded = Buffer.from(encounterId, 'base64url');
+    assert.equal(decoded.byteLength, 16);
+    assert.equal(decoded.toString('base64url'), encounterId);
+    seen.add(encounterId);
+  }
+  assert.equal(seen.size, 8, 'every scheduled run must use a throwaway encounter');
+});
+
+test('scheduled canary rotates the probed case across scheduled slots', async () => {
+  const cases = [
+    { id: 'case-c', title: 'Third' },
+    { id: 'case-a', title: 'First' },
+    { id: 'case-b', title: 'Second' },
+  ];
+  const slots = [
+    '2026-07-28T00:00:00.000Z',
+    '2026-07-28T06:00:00.000Z',
+    '2026-07-28T12:00:00.000Z',
+  ];
+  const probed = [];
+  for (const checkedAt of slots) {
+    const requests = [];
+    const { handler } = await createCanaryHarness({
+      now: () => checkedAt,
+      fetchImpl: routedFetch({
+        record: requests,
+        health: () => responseFor({ ...VALID_HEALTH, cases }),
+      }),
+    });
+    await handler(scheduledRequest());
+    probed.push(JSON.parse(postsIn(requests)[0].init.body).caseId);
+  }
+  assert.deepEqual([...probed].sort(), ['case-a', 'case-b', 'case-c']);
+
+  // Deterministic: the same slot always selects the same case, so a flapping
+  // receipt is never explained away as "it probed a different case this time".
+  const repeat = [];
+  const requests = [];
+  const { handler } = await createCanaryHarness({
+    now: () => slots[1],
+    fetchImpl: routedFetch({
+      record: requests,
+      health: () => responseFor({ ...VALID_HEALTH, cases }),
+    }),
+  });
+  await handler(scheduledRequest());
+  repeat.push(JSON.parse(postsIn(requests)[0].init.body).caseId);
+  assert.deepEqual(repeat, [probed[1]]);
+});
+
+test('scheduled canary maps actor-leg failures to distinct sanitized codes', async () => {
+  const cases = [
+    // A dead ANTHROPIC_API_KEY surfaces here as 502 anthropic_provider_error.
+    { want: 'actor_status', actor: () => responseFor({ error: 'anthropic_provider_error' }, { status: 502 }) },
+    { want: 'actor_status', actor: () => responseFor({ error: 'anthropic_unavailable' }, { status: 503 }) },
+    // 429 is the one failure the canary can inflict on itself, since its own
+    // probe spends against the same rotation cap. It gets its own code so it is
+    // never read as a provider outage.
+    { want: 'actor_budget', actor: () => responseFor({ error: 'rotation_budget_reserved' }, { status: 429 }) },
+    { want: 'actor_contract', actor: () => responseFor({ state: { turnId: 1 }, ticket: 'x' }) },
+    { want: 'actor_contract', actor: () => responseFor({ ...VALID_ACTOR_TURN, reply: '   ' }) },
+    { want: 'actor_contract', actor: () => responseFor({ ...VALID_ACTOR_TURN, reply: 42 }) },
+    { want: 'actor_contract', actor: () => responseFor({ reply: 'a patient answer', ticket: 'x' }) },
+    { want: 'actor_contract', actor: () => responseFor(VALID_ACTOR_TURN, { contentType: 'text/html' }) },
+    { want: 'actor_contract', actor: () => responseFor(null, { rawBody: '{' }) },
+    {
+      want: 'transport',
+      actor: () => {
+        throw new Error('PRIVATE_ACTOR_TRANSPORT https://private.example');
+      },
+    },
+  ];
+  for (const item of cases) {
+    const logs = [];
+    const store = memoryStore();
+    const { handler } = await createCanaryHarness({
+      store,
+      log: (event) => logs.push(event),
+      fetchImpl: routedFetch({ actor: item.actor }),
+    });
+    await assert.rejects(handler(scheduledRequest()), /^Error: Interview Room health canary failed\.$/);
+    assert.deepEqual(store.writes.at(-1).value, {
+      schemaVersion: 1,
+      state: 'failed',
+      failureCode: item.want,
+      checkedAt: CHECKED_AT,
+    });
+    assert.doesNotMatch(
+      JSON.stringify({ writes: store.writes, logs }),
+      /PRIVATE_|private\.example|test-only-passcode|x-student-key|anthropic|rotation/i,
+    );
+  }
+});
+
+test('a failed actor probe is a failed receipt, never a success that admits actorReady:false', async () => {
+  const store = memoryStore();
+  const { handler } = await createCanaryHarness({
+    store,
+    fetchImpl: routedFetch({ actor: () => responseFor({ error: 'x' }, { status: 502 }) }),
+  });
+  await assert.rejects(handler(scheduledRequest()), /^Error: Interview Room health canary failed\.$/);
+  const written = store.writes.at(-1).value;
+  assert.equal(written.state, 'failed');
+  assert.equal('actorReady' in written, false);
+  assert.equal('learnerReady' in written, false);
+});
+
+test('the actor reply never reaches the receipt, the log, or the thrown error', async () => {
+  // Success path: the reply was read and measured, and must leave no trace.
+  const logs = [];
+  const store = memoryStore();
+  const { handler } = await createCanaryHarness({ store, log: (event) => logs.push(event) });
+  await handler(scheduledRequest());
+  assert.doesNotMatch(
+    JSON.stringify({ writes: store.writes, logs }),
+    /RAW_ACTOR_REPLY_SENTINEL|RAW_TICKET_SENTINEL|not sleeping/i,
+  );
+
+  // Failure path: a reply that is present but unusable must not be quoted back.
+  const failLogs = [];
+  const failStore = memoryStore();
+  const { handler: failing } = await createCanaryHarness({
+    store: failStore,
+    log: (event) => failLogs.push(event),
+    fetchImpl: routedFetch({
+      actor: () => responseFor({
+        reply: '',
+        state: { turnId: 1 },
+        ticket: 'RAW_TICKET_SENTINEL',
+        debug: 'RAW_ACTOR_REPLY_SENTINEL',
+      }),
+    }),
+  });
+  await assert.rejects(failing(scheduledRequest()), (error) => {
+    assert.equal(error.message, 'Interview Room health canary failed.');
+    assert.doesNotMatch(error.message, /RAW_|reply|ticket/i);
+    return true;
+  });
+  assert.doesNotMatch(
+    JSON.stringify({ writes: failStore.writes, logs: failLogs }),
+    /RAW_ACTOR_REPLY_SENTINEL|RAW_TICKET_SENTINEL/,
+  );
+});
+
+test('a failed contract leg writes its own code and never spends an actor turn', async () => {
+  const cases = [
+    { want: 'http_status', health: () => responseFor({}, { status: 503 }) },
+    { want: 'content_type', health: () => responseFor(VALID_HEALTH, { contentType: 'text/html' }) },
+    { want: 'invalid_json', health: () => responseFor(null, { rawBody: '{' }) },
+    { want: 'contract', health: () => responseFor({ ...VALID_HEALTH, schemaVersion: 9 }) },
+  ];
+  for (const item of cases) {
+    const requests = [];
+    const store = memoryStore();
+    const { handler } = await createCanaryHarness({
+      store,
+      fetchImpl: routedFetch({ record: requests, health: item.health }),
+    });
+    await assert.rejects(handler(scheduledRequest()), /^Error: Interview Room health canary failed\.$/);
+    assert.equal(store.writes.at(-1).value.failureCode, item.want);
+    // A broken deploy must not also burn a turn against the shared budget.
+    assert.deepEqual(postsIn(requests), []);
+  }
+});
+
+test('scheduled canary gives the actor leg twenty seconds and records actor_timeout', async () => {
+  const timerCalls = [];
+  const store = memoryStore();
+  const { handler } = await createCanaryHarness({
+    store,
+    setTimeoutImpl(callback, milliseconds) {
+      timerCalls.push({ method: 'set', milliseconds });
+      // Only the actor leg's deadline is allowed to expire; the contract leg
+      // must complete normally so the probe is what is being measured.
+      if (milliseconds === 20_000) queueMicrotask(callback);
+      return milliseconds;
+    },
+    clearTimeoutImpl(id) {
+      timerCalls.push({ method: 'clear', id });
+    },
+    fetchImpl: routedFetch({
+      actor: (_url, { signal }) => new Promise((resolve, reject) => {
+        signal.addEventListener('abort', () => {
+          reject(new DOMException('PRIVATE_ACTOR_TIMEOUT_EXCEPTION', 'AbortError'));
+        });
+      }),
+    }),
+  });
+
+  await assert.rejects(handler(scheduledRequest()), /^Error: Interview Room health canary failed\.$/);
+  assert.deepEqual(timerCalls, [
+    { method: 'set', milliseconds: 8_000 },
+    { method: 'clear', id: 8_000 },
+    { method: 'set', milliseconds: 20_000 },
+    { method: 'clear', id: 20_000 },
+  ]);
+  assert.equal(store.writes.at(-1).value.failureCode, 'actor_timeout');
+  assert.doesNotMatch(JSON.stringify(store.writes), /PRIVATE_ACTOR_TIMEOUT_EXCEPTION/);
+});
+
+test('public status refuses a reachability-only receipt written by the pre-probe canary', async () => {
+  const response = await statusResponse(LEGACY_SUCCESS_RECEIPT);
+  assert.equal(response.status, 503);
+  const body = await response.json();
+  assert.deepEqual(body, { schemaVersion: 1, state: 'malformed' });
+});
+
+test('a draft pack is probed with no actor turn at all, and says so honestly', async () => {
+  // sp.mjs refuses every POST unless the pack status is reviewed or attested --
+  // exactly the set that makes learnerReady true. Probing a draft pack would
+  // fail on every run forever, so the canary must not probe it, and must not
+  // claim actorReady either.
+  const requests = [];
+  const store = memoryStore();
+  const { handler } = await createCanaryHarness({
+    store,
+    fetchImpl: routedFetch({
+      record: requests,
+      health: () => responseFor({ ...VALID_HEALTH, packStatus: 'draft-pending-attestation' }),
+      actor: () => {
+        throw new Error('the canary must not POST to a pack that refuses POSTs');
+      },
+    }),
+  });
+
+  await handler(scheduledRequest());
+
+  assert.deepEqual(postsIn(requests), []);
+  assert.equal(store.writes.length, 1);
+  assert.equal(store.writes[0].value.state, 'success');
+  assert.equal(store.writes[0].value.learnerReady, false);
+  assert.equal(store.writes[0].value.actorReady, false);
+
+  // And that receipt is readable: a draft pack is not an outage.
+  const response = await statusResponse(store.readLatest());
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), store.readLatest());
+});
+
+test('validateHealthReceipt refuses a success receipt that admits the actor was not ready', async () => {
+  const { receipt } = await healthModules();
+  assert.deepEqual(receipt.validateHealthReceipt(SUCCESS_RECEIPT), SUCCESS_RECEIPT);
+
+  // learnerReady true + actorReady false is the shape the health surface had
+  // while the Interview Room was mute. It must never validate.
+  assert.throws(
+    () => receipt.validateHealthReceipt({ ...SUCCESS_RECEIPT, actorReady: false }),
+    /health receipt/i,
+  );
+  // The reverse is honest and must validate.
+  const draft = { ...SUCCESS_RECEIPT, learnerReady: false, actorReady: false };
+  assert.deepEqual(receipt.validateHealthReceipt(draft), draft);
+
+  for (const actorReady of ['true', 1, null, undefined]) {
+    assert.throws(
+      () => receipt.validateHealthReceipt({ ...SUCCESS_RECEIPT, actorReady }),
+      /health receipt/i,
+    );
+    assert.throws(
+      () => receipt.validateHealthReceipt({ ...draft, actorReady }),
+      /health receipt/i,
+    );
+  }
+  for (const failureCode of ['actor_timeout', 'actor_status', 'actor_budget', 'actor_contract']) {
+    const failed = {
+      schemaVersion: 1,
+      state: 'failed',
+      failureCode,
+      checkedAt: CHECKED_AT,
+    };
+    assert.deepEqual(receipt.validateHealthReceipt(failed), failed);
+    assert.deepEqual(receipt.createFailureReceipt(failureCode, CHECKED_AT), failed);
+  }
 });

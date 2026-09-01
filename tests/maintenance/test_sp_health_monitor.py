@@ -26,6 +26,7 @@ def success_payload(**overrides):
         "schemaVersion": 1,
         "state": "success",
         "learnerReady": False,
+        "actorReady": True,
         "caseCount": 3,
         "contractSha256": "a" * 64,
         "checkedAt": "2026-07-28T06:00:00.000Z",
@@ -87,10 +88,72 @@ class SpHealthMonitorTests(unittest.TestCase):
                 "receiptCheckedAt",
                 "nextRun",
                 "learnerReady",
+                "actorReady",
                 "caseCount",
                 "contractSha256",
             },
         )
+
+    def test_reachability_only_receipt_from_the_pre_probe_canary_is_malformed(self):
+        """A green health page once coexisted with a dead provider.
+
+        The pre-probe canary wrote a seven-key receipt attesting reachability
+        only. It must never read as a ready gate now that the contract
+        promises a completed live turn.
+        """
+        legacy = success_payload()
+        del legacy["actorReady"]
+        result = evaluate_status(legacy, now=NOW)
+        self.assertEqual(result["state"], "malformed")
+        self.assertEqual(result["gate"], "blocked")
+
+    def test_learner_ready_without_actor_ready_is_malformed(self):
+        """The shape the health surface had while the tool was mute."""
+        result = evaluate_status(
+            success_payload(learnerReady=True, actorReady=False),
+            now=NOW,
+        )
+        self.assertEqual(result["state"], "malformed")
+        self.assertEqual(result["gate"], "blocked")
+
+    def test_draft_pack_reports_actor_not_ready_without_being_malformed(self):
+        """sp.mjs refuses POSTs on a draft pack, so nothing was probed.
+
+        That is correct behaviour, not an outage, and must not blow up the
+        monitor the way an unconditional actor probe would.
+        """
+        result = evaluate_status(
+            success_payload(learnerReady=False, actorReady=False),
+            now=NOW,
+        )
+        self.assertEqual(result["state"], "success")
+        self.assertEqual(result["gate"], "ready")
+        self.assertIs(result["actorReady"], False)
+
+    def test_non_boolean_actor_ready_is_malformed(self):
+        for actor_ready in ("true", 1, None):
+            with self.subTest(actorReady=actor_ready):
+                result = evaluate_status(
+                    success_payload(actorReady=actor_ready),
+                    now=NOW,
+                )
+                self.assertEqual(result["state"], "malformed")
+                self.assertEqual(result["gate"], "blocked")
+
+    def test_actor_leg_failure_codes_are_accepted_and_block_the_gate(self):
+        for code in ("actor_timeout", "actor_status", "actor_budget", "actor_contract"):
+            with self.subTest(failureCode=code):
+                result = evaluate_status(
+                    {
+                        "schemaVersion": 1,
+                        "state": "failed",
+                        "failureCode": code,
+                        "checkedAt": "2026-07-28T06:00:00.000Z",
+                    },
+                    now=NOW,
+                )
+                self.assertEqual(result["state"], "failed")
+                self.assertEqual(result["gate"], "blocked")
 
     def test_exact_eight_hour_and_slot_boundaries_are_ready(self):
         result = evaluate_status(

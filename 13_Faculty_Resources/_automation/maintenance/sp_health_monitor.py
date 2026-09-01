@@ -28,11 +28,20 @@ FAILURE_CODES = {
     "invalid_json",
     "contract",
     "receipt_write",
+    # Second-leg codes: the canary's live mode:converse probe. See
+    # sp-proxy/netlify/functions/_shared/sp-health-receipt.mjs for what each
+    # one points at. actor_budget is the canary spending the rotation cap it
+    # shares with learners; it is not a provider outage.
+    "actor_timeout",
+    "actor_status",
+    "actor_budget",
+    "actor_contract",
 }
 SUCCESS_KEYS = {
     "schemaVersion",
     "state",
     "learnerReady",
+    "actorReady",
     "caseCount",
     "checkedAt",
     "nextRun",
@@ -106,6 +115,14 @@ def evaluate_status(payload, *, now):
         if (
             set(payload) != SUCCESS_KEYS
             or type(payload.get("learnerReady")) is not bool
+            or type(payload.get("actorReady")) is not bool
+            # A pack learners can reach must have answered. learnerReady
+            # without actorReady is the contradiction this monitor exists to
+            # catch -- it is the shape the health surface had while the
+            # Interview Room was mute. The reverse is honest: a draft pack
+            # refuses POSTs by design, so nothing was probed. The pre-probe
+            # seven-key receipt fails the key-set check above either way.
+            or (payload["learnerReady"] and payload["actorReady"] is not True)
             or type(payload.get("caseCount")) is not int
             or payload["caseCount"] <= 0
             or payload["caseCount"] > 10_000
@@ -134,6 +151,7 @@ def evaluate_status(payload, *, now):
             "receiptCheckedAt": payload["checkedAt"],
             "nextRun": payload["nextRun"],
             "learnerReady": payload["learnerReady"],
+            "actorReady": payload["actorReady"],
             "caseCount": payload["caseCount"],
             "contractSha256": payload["contractSha256"],
         }
