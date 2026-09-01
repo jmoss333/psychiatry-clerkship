@@ -1,0 +1,505 @@
+# RESIDENT · Curriculum content — volume 16
+
+Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
+
+# SECTION (cont.): Feedback
+
+---
+
+## Faculty: Curate a rotation edition
+
+- **Slug:** `rotation-curator.html` · **Type:** tool · **Sidebar:** hidden (deep link only)
+- **Source:** `13_Faculty_Resources/Rotation_Curation/rotation-curator.html`
+- **Governance:** status=`reviewed` · riskKind=`local-policy` · riskLevel=`moderate`
+
+#### Tool — clinical content
+
+_These tools are single-file HTML that render from inline JS data, so the clinical text below is recovered from the tool's own string literals. Ordering follows the file, not the runtime flow._
+
+**Static shell text:**
+
+- Faculty rotation edition builder Reviewed by Joshua Moss, MD on 2026-08-23
+- Skip to content Faculty worksheet · pending review
+- Faculty rotation edition builder
+- Audience locked by this site Canonical path locked by this site
+- ! Account-free and not access-controlled Pending faculty and privacy review. Identity is self-entered and is not verified; this tool does not imply endorsement or institutional approval.
+- Step 1 Edition
+- Step 2 Curriculum
+- Step 3 Schedule
+- Step 4 Local details
+- Step 5 Preview and share
+- Step 1 of 5: Edition
+- Edit Preview
+- 1. Edition
+- Review the following fields
+- Name this edition and identify its local curator. Dates are informational and do not expire or disable an existing edition.
+- Audience, canonical path, and duration are locked by this site Audience Current audience site Canonical path Current audience path Edition number Edition 1
+- Edition title A short trainee-facing name for this rotation edition.
+- Training-location display name The public location name students should recognize.
+- Short location code Use 2–8 letters or digits. It is normalized to uppercase.
+- Curator display name Self-entered public display name; identity is not digitally verified.
+- Curator professional role For example, attending psychiatrist or clerkship director.
+- Rotation start date Informational only; past dates remain valid.
+- Rotation end date Must not be before the rotation start date.
+- Informational last-verified date Shows when the curator last checked local details; it is not an expiration date.
+- Continue from a JSON backup Import one validated backup for this audience. Files larger than 64 KiB are rejected before being read.
+- Choose JSON backup
+- Save draft on this device Not yet saved on this device.
+- Continue to curriculum
+- Required means required by this local rotation only. It does not create a universal, institutional, licensing, or clinical requirement.
+- Omitting a core resource removes it only from this curated Path. The resource remains available in the student's complete Library.
+- Search this audience's Library Choices come only from the Library projected into this audience site. Add another placement when trainees should revisit one resource.
+- Every schedule action is available without drag and drop. Move selected resources within a week or to another locked week.
+- ! Public-link privacy boundary No PHI, learner information, evaluations, credentials, access codes, private contact details, doses, copied clinical protocols, or direct clinical directives.
+- For local protocols or access instructions, add an official HTTPS institutional link instead of copying the content here.
+- Structured local orientation
+- Plain text only. Each field is optional and limited to 600 characters.
+- First-day arrival guidance Public arrival timing and meeting-place guidance without access codes or private contact details.
+- 0 of 600 characters
+- Typical daily schedule A general trainee-facing outline of the day.
+- 0 of 600 characters
+- Rounds workflow Describe the local workflow, not clinical directives.
+- 0 of 600 characters
+- Presentation expectations Local format and supervision expectations only.
+- 0 of 600 characters
+- Documentation expectations Workflow expectations without copied protocols or patient details.
+- 0 of 600 characters
+- Attendance expectations Public expectations for participation and absences.
+- 0 of 600 characters
+- Feedback process How and when trainees can seek feedback; do not enter evaluations.
+- 0 of 600 characters
+- Approved institutional access or training Explain how to obtain approved access or training. Never enter credentials, codes, or private instructions; link the official HTTPS source below.
+- 0 of 600 characters
+- Role-based directory contacts
+- Add a public role label and official HTTPS institutional directory link only—never a direct email, phone, pager, or private contact value.
+- Role label For example, clerkship coordinator.
+- 0 of 100 characters
+- Official HTTPS directory URL Must begin with https:// and contain no embedded username or password.
+- 0 of 2048 characters
+- Add directory contact
+- First-day checklist
+- 0 of 24 items
+- Checklist label One concrete, non-clinical first-day action.
+- 0 of 100 characters
+- Local priority required recommended optional
+- Add checklist item
+- Local external resources
+- Every item is labeled “Attending-provided local resource.” Link official local protocols rather than copying them.
+- 0 of 12 items
+- Resource title A concise public title.
+- 0 of 100 characters
+- Official HTTPS URL The preview displays only the destination domain.
+- 0 of 2048 characters
+- Local priority required recommended optional
+- Week
+- Why I selected this Optional plain-text rationale.
+- 0 of 280 characters
+- Add local resource
+- Deliberate student preview review
+- Opening this step or resizing the browser does not count. Each action below validates a fresh envelope and projects it through the same student projector.
+- Desktop preview not yet reviewed · Mobile preview not yet reviewed
+
+**Authored clinical strings (1794, first 400 shown):**
+
+- Front door structure ONLY — week ordering, library columns, safety-kit membership, per-site roles, search synonyms. Facts about an item (minutes, summary, key points, attestation) live in topic_meta.json and join at render time; never duplicate them here. Validated by 13_Faculty_Resources/_automation/validate_curriculum.py.
+- a feedback form, not library content — reachable from the header
+- faculty curation utility; not learner Library content
+- surfaced by the Path tab, which is the week browse surface
+- orientation media, surfaced from the Start-here flow rather than the Library
+- Shipped .html pages that are REFERENCES about an instrument this library does not reproduce. They must not present as interactive tools (Fresh Eyes Audit A3). Derived from instrument_rights.json — every page whose requiredDisclaimerType is 'instrument-not-reproduced' — and validate_curriculum.py fails if the two ever disagree, so this list cannot drift.
+- Screen · stratify · safety plan
+- Verbal first · PO before IM
+- Choice · understand · appreciate · reason
+- Score · thiamine · escalate
+- Single-word keys expand per word. A key CONTAINING A SPACE is a phrase, matched whole-phrase against the raw query — use one whenever a single word would fire too broadly (Fresh Eyes Audit A5: a synonym on "first" hijacks "first line treatment").
+- orientation welcome rotation
+- withdrawal lorazepam agitation
+- agitation restraint de-escalation
+- delirium confused altered
+- Interview · MSE · acute risk · bedside syndromes
+- Diagnosis and psychopharmacology
+- Diagnostic reasoning · major syndromes · medication decisions
+- Systems, med-legal, and disposition
+- Consultation · collateral · family systems · defensible transitions
+- Integration, supervision, and scholarship
+- Formulation · rounds · EPAs · evidence retrieval
+- Structured topic-template metadata rendered above the prose by the SPA. AI-drafted, concise standard teaching aligned with the topic pages and Decision Aids; pending faculty attestation. Educational; fictional composites only; no PHI.
+- New, fluctuating inattention in a hospitalized patient is delirium until proven otherwise — a medical emergency, not a psychiatric label.
+- Acute onset + fluctuating course + inattention (anchor on arousal and attention).
+- It almost always has a medical cause — find and fix it.
+- Reorient and mobilize, restore the sleep-wake cycle, and remove tethers and deliriogenic meds.
+- Don't sedate your way past it — benzodiazepines worsen delirium except in alcohol or benzodiazepine withdrawal.
+- Metabolic (Na, glucose, uremia)
+- Treat the cause, stop deliriogenic meds, use nonpharmacologic measures; reserve low-dose antipsychotic for dangerous agitation.
+- An 80-year-old is inattentive and fluctuating two days post-op on oxycodone and diphenhydramine. Best first step?
+- Identify and treat the cause; stop deliriogenic meds
+- Start scheduled lorazepam
+- Reassure the family and observe
+- This is delirium; the priority is finding the cause and removing contributors (opioids + anticholinergic). Benzodiazepines worsen non-withdrawal delirium.
+- Practice caregiver baseline/adaptations
+- Vitals and fingerstick glucose first
+- Review the med list — anticholinergics, benzos, opioids
+- CAM screen: acute onset or fluctuating course + inattention + (disorganized thinking or altered consciousness)
+- Workup: infection, metabolic, withdrawal
+- the CAM result, suspected precipitant, and workup ordered.
+- Ask baseline cognition, acute onset, fluctuation, sleep-wake reversal, pain, infection, hypoxia, withdrawal, and medication changes.
+- Prioritize attention and arousal; note fluctuation, disorientation, perceptual disturbance, psychomotor subtype, and cognition.
+- Treat as medical emergency: remove deliriogenic medications, correct causes, prevent falls, and avoid benzodiazepines except withdrawal.
+- This looks like a brain-not-working-right-now problem, often from a medical cause, and it usually fluctuates during the day.
+- Ask family/nursing what is baseline, when it changed, whether it fluctuates, and what helps reorient the patient.
+- Present CAM-style features, likely causes, medication contributors, nonpharmacologic plan, and when medication is needed for dangerous agitation.
+- Delirium is acute/fluctuating inattention; benzodiazepines usually worsen it unless withdrawal is the cause.
+- Practice delirium reasoning
+- Treat the driver, not just the behavior — verbal de-escalation before PRN, and PRN before restraint.
+- Secure team and exit safety first.
+- Check vitals and glucose; rule out a medical cause.
+- Offer (don't force) oral medication; restraint is the last resort — time-limited and monitored.
+- Don't reach for an antipsychotic before excluding hypoglycemia, hypoxia, delirium, withdrawal, pain, and akathisia.
+- Intoxication / withdrawal
+- Lower stimulation, one calm voice, offer oral PRN; IM only if there is imminent danger.
+- First-line treatment for an agitated patient with normal vitals and no delirium?
+- IM haloperidol + lorazepam
+- Verbal de-escalation is first-line; medication is offered (preferably oral), and restraint is a last resort.
+- Practice de-escalation language
+- Ask collateral about triggers
+- Open trigger collateral workflow
+- Open the Agitation Ladder trainer
+- Verbal de-escalation while someone checks vitals and a fingerstick glucose
+- Find the driver — hypoglycemia, hypoxia, delirium, withdrawal, akathisia, pain — it changes the treatment
+- Offer PO before any IM — not a benzodiazepine in delirium or an older adult unless alcohol/benzo withdrawal
+- IM only for imminent danger to self or others
+- Debrief the patient and the team afterward
+- the behavior observed, least-restrictive steps tried, medication response, and patient debrief.
+- Ask briefly about pain, fear, intoxication/withdrawal, psychosis, needs, and what would help the patient regain control.
+- Track arousal, attention, psychosis, intoxication, akathisia, delirium signs, and capacity to engage.
+- Protect exits, call help early, reduce stimulation, check vitals/glucose, and use restraint only as last resort under policy.
+- I want to help, and I also need everyone to stay safe. Let us lower the volume and talk about one next step.
+- Ask staff/family what triggered escalation, what has worked before, trauma triggers, and medication reactions.
+- Present driver of agitation, medical rule-out, de-escalation attempts, medication offered, and monitoring/restraint status if used.
+- Verbal de-escalation is first-line when safe; treat the driver and avoid reflexive sedation.
+- Ask collateral about triggers and what helps
+- Mutism, immobility, posturing, or waxy flexibility — recognize catatonia, do a lorazepam challenge, and hold antipsychotics.
+- Use the Bush-Francis signs; describe motor findings objectively.
+- The lorazepam challenge is both diagnostic and therapeutic.
+- ECT is definitive, especially for malignant catatonia.
+- Antipsychotics can precipitate malignant catatonia / NMS — exclude those before giving one.
+- Malignant catatonia / NMS
+- Nonconvulsive status epilepticus
+- Severe metabolic / CNS cause
+- Lorazepam challenge; hold antipsychotics; consider ECT.
+- A mute, posturing patient with waxy flexibility — best initial step?
+- Start scheduled haloperidol
+- Physical restraint for safety
+- Catatonia responds to benzodiazepines; antipsychotics risk precipitating malignant catatonia.
+- Ask about onset, mood/psychosis, antipsychotic exposure, fever/autonomic signs, seizures, medical illness, and prior catatonia.
+- Describe motor signs objectively: mutism, stupor, posturing, waxy flexibility, negativism, echophenomena, rigidity, and staring.
+- Hold antipsychotics until malignant catatonia/NMS is addressed; monitor hydration, nutrition, DVT, autonomic instability, and airway risk.
+- The stillness and speech change can be part of a treatable motor syndrome, so we are going to assess it carefully.
+- Ask family/staff what changed, whether the patient eats/drinks, baseline movement/speech, and prior response to lorazepam or ECT.
+- Present BFCRS signs, medical/NMS rule-out, lorazepam challenge plan, supportive care, and ECT escalation threshold.
+- Lorazepam challenge is diagnostic and therapeutic; antipsychotics can worsen malignant catatonia/NMS.
+- Practice catatonia reasoning
+- First-episode psychosis is a workup, not a diagnosis — rule out secondary causes before calling it primary.
+- Screen for substances, delirium, autoimmune (anti-NMDA), seizure, and CNS causes.
+- Characterize positive, negative, and disorganized symptoms.
+- Choose an antipsychotic by side-effect profile; clozapine for treatment resistance.
+- Don't anchor on schizophrenia at a first presentation — secondary psychoses are missed when the workup is skipped.
+- Medical workup first; then an antipsychotic chosen by side-effect fit.
+- A 22-year-old has three weeks of hallucinations, low-grade fever, and orofacial dyskinesias. Most important to exclude?
+- Anti-NMDA receptor (autoimmune) encephalitis
+- Subacute psychosis with neurologic and autonomic features warrants an autoimmune-encephalitis workup before a primary psychiatric label.
+- Practice psychosis communication
+- Open psychosis collateral workflow
+- Clarify hallucinations, delusions, disorganization, negative symptoms, mood episodes, trauma, substances, medical/neurologic symptoms, and timeline.
+- Describe thought process, thought content, response to internal stimuli, affect, behavior, cognition, insight, and judgment without loaded language.
+- Assess command hallucinations, paranoia-driven defensive behavior, inability to care for self, access to weapons, and medication adverse effects.
+- I may not see it the same way, but I can tell this feels frightening, and I want to understand what you are experiencing.
+- Ask about first episode vs baseline, substance exposure, medical symptoms, functional decline, family history, and what helps the patient feel safe.
+- State primary vs secondary psychosis differential, medical workup, safety drivers, antipsychotic choice, and family engagement plan.
+- First-episode psychosis is a workup; do not anchor on schizophrenia when delirium, substances, seizures, or autoimmune encephalitis fit better.
+- Practice psychosis validation
+- Practice psychosis reasoning
+- Plan family psychoeducation
+- Before treating depression, screen for a past manic or hypomanic episode — antidepressant monotherapy can destabilize unrecognized bipolar illness.
+- Get collateral and ask specifically about prior mania/hypomania (MDQ).
+- Match severity to setting; consider ECT for severe, psychotic, or catatonic depression.
+- Lithium carries the strongest maintenance evidence and an anti-suicidal effect.
+- Acute mania: stop the antidepressant, start a mood stabilizer or second-generation antipsychotic, and protect sleep.
+- A patient with prior depressive episodes presents manic while on sertraline. Best next step?
+- Add a second antidepressant
+- Increase the sertraline dose
+- Stop sertraline; start a mood stabilizer or SGA
+- Order a brain MRI before any treatment
+- This is bipolar mania; discontinue the antidepressant and begin an antimanic agent while protecting sleep.
+- Open the Screeners (PHQ-9 / GAD-7)
+- Practice mania limit-setting
+- Map mania collateral and safety roles
+- Open mania collateral workflow
+- Anchor depressive, manic, and mixed symptoms to time course; ask about sleep, energy, impulsivity, psychosis, substances, antidepressants, and past episodes.
+- Look for psychomotor change, pressured or slowed speech, affect reactivity, thought speed, grandiosity, guilt, psychosis, and cognition.
+- Assess suicide, psychosis, inability to sleep, impulsive spending/sex/driving, access to means, and postpartum status when relevant.
+- It is important that we screen for past mania before choosing a depression medication, because the wrong medication can worsen bipolar illness.
+- Ask family about decreased need for sleep, episodic behavior change, spending, irritability, psychosis, medication adherence, and baseline functioning.
+- Present unipolar vs bipolar evidence, safety acuity, psychosis/catatonia features, and why today's medication plan fits the risk profile.
+- Always screen for mania before antidepressants; acute mania means stop antidepressant and start an antimanic agent while protecting sleep.
+- Intoxication or withdrawal
+- Proportionate grief/adjustment reaction
+- Screen for past mania before any antidepressant; rule out medical, substance, and proportionate-grief causes first.
+- SSRIs/SNRIs plus exposure-based therapy are first-line across anxiety, OCD, and PTSD — standing benzodiazepines are a trap on the unit.
+- Rule out medical mimics (hyperthyroidism, arrhythmia, substance withdrawal).
+- OCD: exposure and response prevention plus a higher-dose SSRI.
+- PTSD: trauma-focused therapy (CPT/PE) is first-line.
+- Don't start scheduled benzodiazepines for PTSD — they don't treat core symptoms and carry dependence risk.
+- First-line treatment for OCD?
+- Higher-dose SSRI + exposure and response prevention
+- Low-dose antipsychotic monotherapy
+- OCD responds to ERP and higher-dose SSRIs; antipsychotics are adjuncts, not monotherapy.
+- Separate panic, generalized worry, obsessions/compulsions, trauma re-experiencing, avoidance, substances, and medical mimics.
+- Look for autonomic arousal, avoidance, reassurance seeking, compulsions, dissociation, sleep disruption, and concentration changes.
+- Ask about suicide, self-harm, substance use, benzodiazepine dependence, domestic violence, and trauma-related vulnerability.
+- We can ask about trauma at your pace; you do not have to give details for me to understand what feels unsafe now.
+- Ask what avoidance or rituals are impairing function and whether symptoms are episodic, trauma-linked, or substance-linked.
+- Present the anxiety/OCD/PTSD syndrome, ruled-out mimics, functional impairment, and why the plan avoids reflexive benzodiazepines.
+- OCD is ERP plus higher-dose SSRI; PTSD is trauma-focused therapy; scheduled benzodiazepines are not first-line for PTSD.
+- Practice medication ambivalence
+- Time the withdrawal syndrome and treat it proactively — alcohol withdrawal is benzodiazepines (CIWA-guided) plus thiamine before glucose.
+- Use CIWA-Ar (alcohol) and COWS (opioid) to drive symptom-triggered dosing.
+- Offer medication for addiction: buprenorphine/methadone for opioids; naltrexone/acamprosate for alcohol.
+- Give thiamine before glucose to prevent Wernicke encephalopathy.
+- Delirium tremens (48–72h) is a medical emergency with real mortality — escalate early, don't wait.
+- Alcohol withdrawal (tremor → DTs)
+- Benzodiazepine withdrawal
+- Symptom-triggered benzodiazepine for alcohol; thiamine; begin medication-for-addiction planning early.
+- On hospital day 2, a heavy drinker is tremulous and tachycardic with visual hallucinations and a clear sensorium. Best management?
+- Restraints and observation
+- CIWA-guided benzodiazepine + thiamine
+- Alcohol withdrawal is treated with symptom-triggered benzodiazepines and thiamine before glucose.
+- Clarify discharge supports
+- Open discharge collateral workflow
+- Alcohol: CIWA-Ar q4h through the risk window; step down only after sustained low scores
+- Thiamine before or with glucose — never delay dextrose for hypoglycemia
+- CIWA ≥ 15 or seizure history → escalate protocol
+- Opioid: COWS to time buprenorphine induction — typically COWS 8-12
+- scores with times, protocol triggered, and cumulative benzodiazepine dose.
+- Ask last use, amount, route, withdrawal history, seizures/DTs, overdose, medications for addiction, readiness, and concurrent psychiatric symptoms.
+- Look for intoxication, withdrawal, delirium, tremor, diaphoresis, psychosis, mood symptoms, cognition, and pain.
+- Monitor alcohol/benzodiazepine withdrawal, opioid overdose risk, suicidality, violence risk when intoxicated, and medical instability.
+- Would it be okay if we talk about what the substance is doing for you and what it is costing you right now?
+- Clarify withdrawal timeline, overdose history, access to substances after discharge, family supports, and barriers to medication treatment.
+- Present withdrawal timing, CIWA/COWS trend, thiamine, medication-for-addiction options, and discharge linkage.
+- Alcohol withdrawal is benzodiazepines plus thiamine; opioid use disorder treatment includes buprenorphine or methadone.
+- Clarify family supports and discharge barriers
+- For borderline personality, the unit's job is a consistent, validating frame — not a medication for the diagnosis itself.
+- DBT-informed stance: validate and hold limits; debrief splitting as a team.
+- Treat comorbid depression or PTSD; medications target symptoms, not the disorder.
+- Name and tolerate countertransference rather than acting on it.
+- Avoid polypharmacy and reactive medication changes driven by crises — they rarely help and can harm.
+- Best inpatient response to staff splitting around a patient with borderline personality disorder?
+- Discharge for the behavior
+- Assign one nurse to meet all requests
+- Start a mood stabilizer for the personality disorder
+- A unified team plan with consistent, kind limits
+- Splitting is managed with team consistency and clear limits; medication does not treat the personality disorder itself.
+- Plan boundary-safe family involvement
+- Open boundary-safe collateral workflow
+- Ask about enduring patterns, trauma, relationships, self-harm, abandonment fears, affect shifts, and what has helped during past crises.
+- Track affect intensity, interpersonal stance, impulsivity, dissociation, self-harm cues, and countertransference in the team.
+- Separate chronic baseline risk from acute change; assess means, intoxication, recent losses, threats, and ability to collaborate on a plan.
+- I want to take the distress seriously and also keep our plan consistent, so we do not make reactive changes that later feel unhelpful.
+- Ask about baseline risk, effective limits, crisis plans, outpatient supports, and team-splitting patterns without blaming the patient.
+- Present a validating formulation, acute risk change, team consistency plan, and symptom-targeted medication rationale.
+- Personality disorders are enduring patterns; inpatient care focuses on safety, consistency, comorbidity, and avoiding reactive polypharmacy.
+- Practice formulation reasoning
+- On the unit, neurodevelopmental disorders (ADHD, autism, intellectual disability) are usually the context a patient arrives with, not the reason for admission — adapt how you communicate and avoid diagnostic overshadowing.
+- Get the developmental and baseline-functioning history from caregivers before interpreting behavior.
+- Behavior is communication — screen for pain, constipation, infection, and medication effects first.
+- Treat the comorbidity that actually brought them in (mood, anxiety, OCD, psychosis, catatonia, substance use).
+- Diagnostic overshadowing — don't write new symptoms off as 'their baseline'; a real change earns a workup. Keep catatonia on the differential in autistic patients.
+- Pain / constipation / dental
+- Medication effect / akathisia
+- Undiagnosed mood, anxiety, OCD or psychosis
+- Adapt communication and environment; medical workup for any behavior change; treat the diagnosed comorbidity; psychotropics judiciously (risperidone/aripiprazole for autism-associated irritability).
+- A nonverbal autistic adult becomes acutely agitated and self-injurious on the unit. Best first step?
+- Attribute it to baseline autism and observe
+- Start a scheduled antipsychotic for the autism
+- Evaluate for pain and medical causes (constipation, dental, infection) and unmet needs
+- Place the patient in restraints
+- Behavior is communication; new agitation or self-injury warrants a medical and functional workup before reflexive sedation — diagnostic overshadowing misses treatable causes.
+- Open caregiver collateral workflow
+- Ask baseline communication, sensory needs, routines, developmental history, supports, pain/constipation/infection, and what changed.
+- Describe communication style, sensory distress, attention, motor findings, affect, behavior, cognition, and possible catatonic signs objectively.
+- Assess self-injury, aggression, exploitation, elopement, medical causes, restraint risk, and caregiver capacity.
+- I want to understand what usually helps and what may be overwhelming here, not assume this behavior is just baseline.
+- Ask caregivers what is new, what communication signals mean, what adaptations work, and what medical issues commonly present as behavior change.
+- Present baseline vs acute change, adaptations needed, medical rule-out, comorbidity target, and restraint-prevention plan.
+- Avoid diagnostic overshadowing; new agitation or regression requires medical and psychiatric differential diagnosis.
+- Practice collateral questions
+- Recognize eating disorders, triage medical instability, and prevent refeeding syndrome — a normal weight never rules out bulimia, and anorexia has among the highest mortality in psychiatry.
+- AN, BN, BED: get weight, orthostatic vitals, temperature, and an ECG; check phosphate/K/Mg.
+- Decide the level of care by medical instability (bradycardia, orthostasis, electrolytes, QTc), not diagnosis alone.
+- Refeeding syndrome — start low, go slow, watch phosphate, give thiamine.
+- Refeeding hypophosphatemia can be fatal — monitor phosphate/K/Mg daily early and advance calories per protocol; the most malnourished are highest risk.
+- Medical instability (bradycardia, orthostasis, hypothermia)
+- Electrolyte derangement (K, phosphate, Mg)
+- QTc prolongation / arrhythmia
+- Hypoglycemia / dehydration
+- Comorbid mood, OCD, substance use, suicide risk
+- Stabilize medically first; multidisciplinary nutritional rehab with supervised meals; FBT (adolescent AN) / CBT-E (BN, BED); fluoxetine 60 mg for BN; no drug is first-line for AN.
+- A severely malnourished patient with anorexia is admitted and refeeding begins. Which lab change most signals dangerous refeeding syndrome?
+- Hypophosphatemia is the hallmark of refeeding syndrome and can precipitate cardiac and respiratory failure; monitor and replete phosphate (with K, Mg, and thiamine) as calories advance.
+- Ask weight trajectory, restriction, bingeing, purging, exercise, laxatives/diuretics, body image, amenorrhea, substances, and medical symptoms.
+- Look for anxiety, rigidity, body image distortion, secrecy, cognitive slowing, depression, suicidality, and compulsive exercise urges.
+- Check vitals, orthostasis, ECG/QTc, electrolytes including phosphate, suicidality, purging complications, and refeeding risk.
+- A normal weight does not rule out a dangerous eating disorder; the medical risk comes from behaviors and recent change too.
+- Ask family about meals, exercise, purging, weight change, conflict around food, and ability to support supervised nutrition.
+- Present medical stability, refeeding risk, diagnosis, comorbid mood/OCD risk, nutrition plan, and level-of-care needs.
+- Refeeding hypophosphatemia is dangerous; anorexia has high mortality and fluoxetine treats bulimia, not weight restoration in anorexia.
+- Distress or impairment beginning within 3 months of a stressor and resolving within 6 months of its end — the diagnosis for someone struggling more than expected who doesn't meet criteria for another disorder, and it still carries real suicide risk.
+- If full criteria for MDD, an anxiety disorder, or PTSD are met — it is not adjustment disorder.
+- PTSD/acute stress disorder require a traumatic event; adjustment disorder follows any stressor.
+- First-line treatment is time-limited psychotherapy (supportive, problem-solving); medication is adjunctive.
+- Don't be lulled by the 'subthreshold' label — assess suicide risk directly, as impulsive self-harm can occur.
+- Major depressive disorder
+- Acute stress disorder / PTSD
+- Normal reaction / prolonged grief
+- Substance-induced / medical
+- Anchor the timeline to the stressor, confirm criteria for other disorders aren't met, quantify suicide risk, and start brief supportive therapy.
+- Two months after a divorce, a patient has low mood and impaired work function but does not meet criteria for major depression. Best diagnosis and first-line treatment?
+- Adjustment disorder — time-limited psychotherapy
+- Major depressive disorder — start an SSRI as monotherapy
+- PTSD — begin trauma-focused therapy
+- No diagnosis — reassure and discharge without follow-up
+- Symptoms tied to a stressor, within 3 months, not meeting full criteria for another disorder, indicate an adjustment disorder; supportive/problem-solving psychotherapy is first-line, with suicide-risk assessment.
+- Anchor symptoms to the stressor, onset within three months, impairment, and whether full criteria for MDD, PTSD, anxiety, or substance-induced disorder are met.
+- Look for affect congruence, hopelessness, agitation, sleep change, substance use, and whether symptoms exceed expected coping.
+- Ask directly about suicide and impulsive self-harm even when symptoms seem subthreshold.
+- This diagnosis does not mean the distress is minor; it means the symptoms are stress-linked and we still take safety seriously.
+- Ask what changed after the stressor, supports, coping, substance use, and whether risk has escalated.
+- Present stressor timeline, excluded full syndromes, functional impairment, safety assessment, and brief therapy/support plan.
+- Adjustment disorder requires stressor-linked distress that does not meet criteria for another disorder and resolves after the stressor ends.
+- Rule out the medical, seizure, and substance mimics; keep dissociation separate from psychosis and malingering; and stabilize safety before any trauma work.
+- Exclude delirium, seizure, TBI, and substances before diagnosing a dissociative disorder.
+- Depersonalization/derealization disorder = detachment with intact reality testing.
+- Suicide/self-harm risk is high — assess it every time.
+- Don't reflexively start an antipsychotic for dissociative phenomena — no medication treats dissociation itself.
+- Seizure (temporal lobe) / TBI
+- Substance (ketamine, PCP, cannabis)
+- PTSD / acute stress disorder
+- Exclude organic causes, ground the patient, assess suicide risk, and treat comorbidities; refer for phase-based trauma therapy.
+- A trauma survivor reports feeling detached and unreal but knows the feeling isn't real. Best next step?
+- Start a scheduled antipsychotic
+- Grounding and safety, screen risk, treat comorbidities — after excluding organic causes
+- Begin trauma-processing therapy immediately
+- Depersonalization/derealization (intact reality testing) is managed with grounding, risk assessment, and comorbidity treatment once organic mimics are excluded; stabilization precedes trauma processing.
+- Ask about depersonalization, derealization, amnesia, identity disruption, trauma, substances, seizures, sleep, and neurologic symptoms.
+- Observe orientation, attention, memory gaps, affective detachment, psychosis markers, and neurologic red flags.
+- Assess suicide, self-harm, exploitation, unsafe wandering, intoxication, and trauma-related destabilization.
+- You do not have to describe trauma details now; I want to understand what happens when you lose time or feel unreal.
+- Ask about episodes, triggers, duration, injuries, substance use, seizures, and baseline functioning.
+- Present dissociation vs psychosis vs seizure/substance differential, safety risks, and stabilization plan.
+- Rule out seizures, substances, and neurologic causes before diagnosing dissociative disorders.
+- Look past the behavior for the driver — trace ODD → conduct disorder → antisocial personality disorder, and rule out mania, substances, ADHD, and trauma underneath the aggression.
+- ODD is defiance; conduct disorder violates others' rights; antisocial PD requires conduct disorder onset before age 15.
+- Episodic aggression with low sleep and grandiosity is mania — not a conduct disorder.
+- Psychosocial/family interventions are first-line; medication treats the comorbidity, not the 'behavior.'
+- Don't reach for a standing antipsychotic for 'behavior' — screen for and treat mania, substances, ADHD, and trauma first.
+- Bipolar mania / hypomania
+- Substance intoxication / withdrawal
+- Delirium / medical cause (new change)
+- Set a consistent behavioral frame, treat the driving comorbidity, and start parent-management/skills interventions in youth.
+- A 16-year-old has a lifelong pattern of aggression, theft, and rule violations. Which adult diagnosis requires this history to have begun before age 15?
+- Oppositional defiant disorder
+- Intermittent explosive disorder
+- Antisocial personality disorder
+- Antisocial personality disorder (age ≥18) requires evidence of conduct disorder with onset before age 15.
+- Open the Violence Risk (FRST) tool
+- Ask what happened before the behavior, developmental history, trauma, ADHD, conduct symptoms, mania, substances, access to weapons, and remorse.
+- Look for arousal, irritability, impulsivity, intoxication, grandiosity, paranoia, attention, and capacity for reflection.
+- Assess imminent violence, weapon access, target specificity, intoxication, command hallucinations, and environmental triggers.
+- I want to understand what set this off so we can reduce risk, not just label the behavior.
+- Ask family/schools/systems about longstanding patterns, recent escalation, triggers, victims, weapons, and supervision capacity.
+- Present driver of aggression, ruled-out mania/substances/psychosis, violence risk factors, and de-escalation plan.
+- Conduct disorder before age 15 is required for antisocial personality disorder; always rule out mania and substances.
+- Sort delirium vs dementia vs depression, rule out the reversible causes, and name the subtype — because subtype decides what you prescribe and what you must not.
+- Onset, course, and attention separate delirium (acute, fluctuating, inattentive) from dementia.
+- Screen every new diagnosis for reversible causes (B12/folate, TSH, CMP, ± RPR/HIV, NPH).
+- Antipsychotics carry a black-box mortality warning in dementia — and are dangerous in Lewy body disease.
+- New, fluctuating confusion with inattention is delirium, not 'worse dementia' — work it up before relabeling.
+- Depression (pseudodementia)
+- B12 / thyroid / metabolic
+- Normal-pressure hydrocephalus
+- Medication (anticholinergic / sedative)
+- Establish trajectory, run the reversible-cause panel, identify the subtype, and treat behavior nonpharmacologically first.
+- An older adult with dementia has fluctuating cognition, recurrent visual hallucinations, and parkinsonism. Which is most dangerous to give?
+- A cholinesterase inhibitor
+- A typical antipsychotic (severe neuroleptic sensitivity in Lewy body disease)
+- Nonpharmacologic reorientation
+- This is Lewy body dementia; antipsychotics can cause life-threatening neuroleptic sensitivity, so they are avoided or used only with great caution (quetiapine/pimavanserin).
+- Open the Decisional Capacity tool
+- Ask onset, course, ADLs/IADLs, medication changes, hallucinations, parkinsonism, vascular history, sleep behaviors, and caregiver burden.
+- Assess arousal, attention, memory, language, visuospatial function, executive function, psychosis, mood, and gait when possible.
+- Assess delirium, driving, cooking, weapons, wandering, exploitation, medication errors, capacity, and caregiver burnout.
+- The pattern of change helps us separate delirium, dementia subtype, and depression, which lead to different plans.
+- Ask caregivers about baseline, functional losses, fluctuations, behavior symptoms, home safety, and realistic supervision.
+- Present syndrome, subtype clues, reversible workup, capacity/safety issues, caregiver plan, and medication cautions.
+- Lewy body dementia has visual hallucinations/parkinsonism/fluctuations and antipsychotic sensitivity.
+- Three distinct topics: sexual dysfunctions (check meds first), paraphilic disorders (distress/impairment or non-consent defines the disorder), and gender dysphoria (distress from incongruence — not a disorder of being transgender).
+- SSRIs and antipsychotics are leading causes of sexual dysfunction — review meds before a primary diagnosis.
+- A paraphilia (interest) becomes a paraphilic disorder only with distress/impairment or harm to non-consenting others.
+- Gender dysphoria names the distress; use affirming care and screen the elevated suicide risk.
+- Paraphilic disorders involving a child or non-consenting person raise safety and reporting duties.
+- Medication-induced (SSRI, antipsychotic, beta-blocker)
+- Endocrine / vascular / neurologic cause
+- Depression or anxiety driver
+- Relationship or situational factor
+- For dysfunction, treat the cause (switch to bupropion/mirtazapine, add PDE5i); for gender dysphoria, provide affirming care and continuity; report when a child is at risk.
+- A patient on an SSRI reports new anorgasmia and distress. Best first step?
+- Tell the patient it is unrelated
+- Diagnose a primary orgasmic disorder immediately
+- Stop all psychiatric treatment
+- Address the medication (dose-reduce, switch to bupropion/mirtazapine, or augment)
+- SSRI-induced sexual dysfunction is common and reversible; manage the medication before diagnosing a primary sexual disorder.
+- Open the Psychopharmacology primer
+- Ask respectfully about function, distress, medication effects, consent, coercion, trauma, identity, and medical contributors.
+- Assess shame, anxiety, depression, trauma response, psychosis/mania when relevant, and capacity/consent concerns.
+- Assess non-consent, exploitation, violence risk, suicidality in gender dysphoria, and medication/medical contributors.
+- I ask everyone these questions because medications, mood, trauma, and safety can all affect sexual health.
+- Collateral is usually limited by confidentiality; involve others only with permission or when safety/legal duties require it.
+- Present the specific domain, medication/medical contributors, consent/safety concerns, and respectful treatment plan.
+- Paraphilic disorder requires distress/impairment or harm/risk to others; gender dysphoria is distress from incongruence, not identity itself.
+- Restoring the sleep-wake cycle is high-leverage — choose CBT-I over hypnotics, screen OSA in treatment-resistant depression, and don't sedate inpatients with benzodiazepines or antihistamines.
+- CBT-I is first-line for chronic insomnia and beats hypnotics long-term.
+- Untreated OSA mimics and perpetuates depression — a classic reversible cause of 'treatment resistance.'
+- Cataplexy = narcolepsy type 1 (low orexin); sleep paralysis/hypnagogic hallucinations are not psychosis.
+- In older inpatients, benzodiazepines and diphenhydramine cause falls and delirium — avoid them.
+- Substances / caffeine / meds
+- Restless legs (check ferritin)
+- REM sleep behavior disorder
+- Sleep hygiene + CBT-I; treat the specific disorder (CPAP, iron, modafinil, melatonin/clonazepam) and taper offending agents.
+- A patient with 'treatment-resistant' depression snores, is obese, and is sleepy all day. Best next step?
+- Start a long-acting benzodiazepine
+- Add a third antidepressant
+- Start nightly diphenhydramine
+- Evaluate for obstructive sleep apnea (polysomnography) and treat it
+- Untreated OSA is a common, reversible driver of apparent treatment resistance; diagnose with polysomnography and treat with CPAP before escalating pharmacotherapy.
+- Ask sleep schedule, insomnia pattern, decreased need for sleep, nightmares, OSA symptoms, substances, meds, caffeine, and restless legs.
+- Look for fatigue vs manic activation, attention impairment, psychomotor changes, irritability, and delirium risk.
+- Assess mania, delirium, falls, respiratory risk with sedatives, OSA, substance withdrawal, and suicidality when insomnia is severe.
+- The goal is to restore the sleep-wake rhythm without using medications that create dependence or worsen confusion.
+- Ask nursing/family about actual sleep, nighttime behavior, snoring/apnea, nightmares, and daytime naps.
+- Present sleep syndrome, psychiatric driver, medical contributors, behavioral plan, and medication risk/benefit.
+- CBT-I is first-line for chronic insomnia; decreased need for sleep suggests mania, not simple insomnia.
+- Treat the suffering without chasing endless workups — the diagnosis rests on the excessive response to symptoms, and the entities separate on two axes: conscious? and external incentive?
+- Somatic symptom disorder is defined by the excessive thoughts/feelings/behaviors, not by whether symptoms are 'explained.'
+- Conversion (functional neurological) is a rule-in diagnosis — Hoover sign, tremor entrainment, non-epileptic seizures.
+- Factitious = internal (sick role); malingering = external incentive and is not a disorder.
+- Factitious disorder imposed on another is child/vulnerable-adult abuse — a reporting duty; and real disease can coexist, so don't anchor either way.
+- Depression / anxiety / PTSD
+- Malingering (external incentive)
+- Focused workup once, then one consistent clinician with scheduled visits, validation, CBT, and treatment of comorbidities.
+- A patient has leg weakness that gives way on formal testing but shows a positive Hoover sign. Best framing?
+- Tell the patient nothing is wrong
+- Malingering for disability
+- Order repeat MRIs until something appears
+
+_1394 further strings omitted — this surface embeds the build's front-door catalog (item summaries, key points, search synonyms), which is transcribed in full elsewhere in this document set._
