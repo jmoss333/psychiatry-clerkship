@@ -291,7 +291,7 @@ class ScheduledWorkflowTests(unittest.TestCase):
             "actions/setup-python": "5fda3b95a4ea91299a34e894583c3862153e4b97",
             "actions/setup-node": "820762786026740c76f36085b0efc47a31fe5020",
             "actions/upload-artifact": "043fb46d1a93c77aae656e7c1c64a875d1fc6a0a",
-            "actions/download-artifact": "37930b1c2abaa49bbe596cd826c3c89aef350131",
+            "actions/download-artifact": "3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c",
             "actions/cache": "55cc8345863c7cc4c66a329aec7e433d2d1c52a9",
             "lycheeverse/lychee-action": "e7477775783ea5526144ba13e8db5eec57747ce8",
         }
