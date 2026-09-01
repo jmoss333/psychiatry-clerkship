@@ -1,0 +1,41 @@
+[
+  {
+    "id": "A1C3-F001",
+    "audience": "both",
+    "file": "A1_QUESTION_BANK.md",
+    "surface": "qb_sud_014",
+    "locus": "qbank.option",
+    "severity": "S3",
+    "quote": "Prior withdrawal seizure is a strong predictor of future seizures; this patient requires aggressive CIWA-Ar-guided benzodiazepine titration with close monitoring for progression to delirium tremens.",
+    "problem": "For a patient admitted AFTER a witnessed withdrawal seizure (with a prior withdrawal seizure), the keyed answer teaches CIWA-Ar-gated symptom-triggered dosing alone. Current inpatient practice for a withdrawal-seizure presentation is to give a benzodiazepine promptly and use front-loaded or fixed-schedule dosing (with symptom-triggered supplementation), because recurrent seizures cluster in the next 6-12 hours and can occur at low CIWA-Ar scores — a learner running a pure score-gated protocol would withhold benzodiazepines the moment the score dips below threshold, in the exact window of maximal seizure recurrence. The item's evidence anchor hedges ('escalating vigilance... in high-risk patients'); the keyed option extends symptom-triggered-only dosing to the one subgroup where it is out of step. The pearl repeats the same framing and needs the same fix. This is equally wrong for residents, who actually write these orders.",
+    "replacement": "Prior withdrawal seizure is a strong predictor of future seizures; give a benzodiazepine promptly and use front-loaded or fixed-schedule dosing with symptom-triggered supplementation — not score-gated dosing alone — with close monitoring for progression to delirium tremens.",
+    "basis": "ASAM Clinical Practice Guideline on Alcohol Withdrawal Management (2020): patients who experience a withdrawal seizure should receive a fast-acting benzodiazepine promptly, and a history of withdrawal seizure favors front-loading/fixed dosing over symptom-triggered-only regimens; withdrawal seizures can precede autonomic symptoms and occur at low CIWA-Ar scores. Re-checking the ASAM 2020 guideline's recommendations on seizure presentations would settle it.",
+    "confidence": "medium"
+  },
+  {
+    "id": "A1C3-F002",
+    "audience": "both",
+    "file": "A1_QUESTION_BANK.md",
+    "surface": "qb_saf_002",
+    "locus": "qbank.option",
+    "severity": "S4",
+    "quote": "Approach calmly, introduce yourself, acknowledge that he looks upset, and offer him a choice — 'Would it help to step somewhere quieter, or is there something I can get you?'",
+    "problem": "The keyed option — the graded model behavior — has a lone medical student engage a pacing, loud, hand-waving patient without telling any staff member, and offers to move him 'somewhere quieter' (a more isolated space). The bank's own qb_saf_011 keys the opposite for a near-identical scenario ('Signal a nearby staff member that you are approaching... stay near your exit and never block the patient's'). A learner rehearsing to this key practices solo engagement without backup and relocation of an agitated patient away from observation; the two items also leave the learner with contradictory patterns for the same first move.",
+    "replacement": "Let a nearby staff member know you are engaging, then approach calmly — without blocking his exit or yours — introduce yourself, acknowledge that he looks upset, and offer him a choice — 'Would it help to step somewhere quieter where staff can still see us, or is there something I can get you?'",
+    "basis": "Project BETA de-escalation (Richmond et al. 2012) pairs verbal de-escalation with environmental and personal safety — adequate staff nearby, exit awareness, no isolated spaces; internal consistency with the keyed teaching of qb_saf_011 in this same bank.",
+    "confidence": "medium"
+  },
+  {
+    "id": "A1C3-F003",
+    "audience": "both",
+    "file": "A1_QUESTION_BANK.md",
+    "surface": "qb_sud_003",
+    "locus": "qbank.pearl",
+    "severity": "S4",
+    "quote": "Thiamine before glucose — every time, before any IV dextrose in a malnourished or alcohol-dependent patient.",
+    "problem": "In the stems this pearl summarizes, glucose is never emergently needed (fingerstick low-normal, routine D5W), so the keyed answers are safe in context — but the pearl hardens the rule into 'every time, before any IV dextrose.' In documented hypoglycemia, dextrose must not be delayed to locate and infuse thiamine; the correct rule is thiamine before or with glucose, never withholding emergent dextrose. qb_sud_002's keyed option already carries the correct 'before or with the glucose' phrasing; this pearl drops the nuance, and a learner who internalizes the categorical form could delay dextrose in a hypoglycemic patient. Applies equally to residents.",
+    "replacement": "Thiamine before or with glucose in any malnourished or alcohol-dependent patient — but never delay emergent dextrose for documented hypoglycemia; give thiamine alongside.",
+    "basis": "Standard emergency practice (e.g., Schabelman & Kuo, J Emerg Med 2012 review): no evidence that a single emergent dextrose dose acutely precipitates Wernicke encephalopathy — the risk is sustained carbohydrate loading without thiamine — and glucose correction should not be delayed in hypoglycemia.",
+    "confidence": "medium"
+  }
+]

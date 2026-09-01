@@ -1,0 +1,93 @@
+[
+  {
+    "id": "RV13-F001",
+    "audience": "Resident",
+    "file": "resident/02_CURRICULUM_V13.md",
+    "surface": "canon_200.md",
+    "locus": "page_prose",
+    "severity": "S2",
+    "quote": "Introduced the p-factor concept and demonstrated that mental disorders are far more common, comorbid, and fluid than categorical diagnosis suggests.",
+    "problem": "The p-factor was introduced by Caspi et al. 2014, \"The p Factor: One General Psychopathology Factor in the Structure of Psychiatric Disorders?\" (Clin Psychol Sci) — which this same list carries as paper #157 with the correct annotation (\"General factor of psychopathology\"). The 2020 JAMA Network Open Dunedin paper reported the cohort's 4-decade longitudinal course; crediting it with originating the p-factor hands residents the wrong origin citation for journal club and contradicts the list's own entry #157.",
+    "replacement": "Demonstrated that mental disorders are far more common, comorbid, and fluid than categorical diagnosis suggests — extending the cohort's earlier p-factor work (Caspi et al. 2014, paper #157).",
+    "basis": "Caspi A, Houts RM, Belsky DW, et al. Clin Psychol Sci 2014;2(2):119-137 is the paper that coined and introduced the p factor; Caspi A, Houts RM, Ambler A, et al. JAMA Netw Open 2020;3(4):e203221 is the 4-decade course paper. Internal cross-check: this file's paper #157 annotation.",
+    "confidence": "high"
+  },
+  {
+    "id": "RV13-F002",
+    "audience": "Resident",
+    "file": "resident/02_CURRICULUM_V13.md",
+    "surface": "canon_200.md",
+    "locus": "page_prose",
+    "severity": "S2",
+    "quote": "Severity-dependent efficacy: d=0.11 mild, d=0.81 very severe",
+    "problem": "Fournier et al. JAMA 2010 reported Cohen d = 0.11 for mild-to-moderate, 0.17 for severe, and 0.47 for very severe depression (HDRS >= 23). d=0.81 nearly doubles the paper's very-severe effect size, so a resident citing this trial would overstate the antidepressant-placebo difference in severe depression.",
+    "replacement": "Severity-dependent efficacy: d=0.11 mild-to-moderate, d=0.47 very severe",
+    "basis": "Fournier JC, DeRubeis RJ, Hollon SD, et al. JAMA 2010;303(1):47-53 — patient-level meta-analysis of 6 trials (n=718); reported effect sizes 0.11 / 0.17 / 0.47 by severity stratum, with the drug-placebo difference crossing the NICE clinical-significance threshold around HDRS 25.",
+    "confidence": "high"
+  },
+  {
+    "id": "RV13-F003",
+    "audience": "Resident",
+    "file": "resident/02_CURRICULUM_V13.md",
+    "surface": "canon_200.md",
+    "locus": "page_prose",
+    "severity": "S2",
+    "quote": "31% incidence; 8% attributable to drug",
+    "problem": "Henssler et al. 2024 found ~31% incidence of at least one discontinuation symptom after stopping antidepressants versus ~17% after stopping placebo, and the authors' own interpretation was that roughly 15% — about one in six to seven patients — is drug-attributable. \"8%\" halves the true attributable rate and would lead residents to under-counsel patients about discontinuation symptoms when stopping or switching antidepressants.",
+    "replacement": "31% incidence; ~15% attributable to drug (about one in six to seven patients)",
+    "basis": "Henssler J, et al. Lancet Psychiatry 2024;11(7):526-535 — pooled incidence 31.0% after antidepressant discontinuation vs 17.3% after placebo discontinuation; authors summarize the drug-specific incidence as approximately 15% (\"one in six to seven patients\"), with severe symptoms in ~3%. The abstract's incidence figures settle this if in doubt.",
+    "confidence": "high"
+  },
+  {
+    "id": "RV13-F004",
+    "audience": "Resident",
+    "file": "resident/02_CURRICULUM_V13.md",
+    "surface": "canon_200.md",
+    "locus": "page_prose",
+    "severity": "S2",
+    "quote": "Elkin et al., \"NIMH Treatment of Depression Collaborative Research Program,\" J Consult Clin Psychol 1989",
+    "problem": "The primary TDCRP outcome paper is Elkin et al., \"NIMH Treatment of Depression Collaborative Research Program: General Effectiveness of Treatments,\" Archives of General Psychiatry 1989;46(11):971-982 — not J Consult Clin Psychol. The wrong journal misdirects retrieval: searching JCCP leads to the 1995 severity secondary analysis (which is what this page's own reference list contains, alongside the 1991 Sotsky AJP paper, while omitting the 1989 primary paper entirely).",
+    "replacement": "Elkin et al., \"NIMH Treatment of Depression Collaborative Research Program: General Effectiveness of Treatments,\" Arch Gen Psychiatry 1989",
+    "basis": "Elkin I, Shea MT, Watkins JT, et al. Arch Gen Psychiatry 1989;46(11):971-982. The JCCP TDCRP paper is Elkin et al. 1995;63(5):841-847 (initial severity and differential outcome), a secondary analysis.",
+    "confidence": "high"
+  },
+  {
+    "id": "RV13-F005",
+    "audience": "Resident",
+    "file": "resident/02_CURRICULUM_V13.md",
+    "surface": "canon_200.md",
+    "locus": "page_prose",
+    "severity": "S4",
+    "quote": "Overall SMD=0.47; 51% respond on drug vs. 30% placebo",
+    "problem": "In Leucht 2017 the 51% vs 30% figures are \"at least minimal\" response (roughly >=20% PANSS reduction / minimally improved); conventional \"good response\" (>=50% reduction / much improved) was 23% vs 14%. Quoting 51% as the antipsychotic response rate without the qualifier more than doubles the figure a resident would use when counseling patients or teaching about expected antipsychotic benefit.",
+    "replacement": "Overall SMD=0.47; 51% vs 30% at least minimally improved (good response 23% vs 14%)",
+    "basis": "Leucht S, Leucht C, Huhn M, et al. Am J Psychiatry 2017;174(10):927-942 — the paper itself distinguishes \"minimal\" response (51% drug vs 30% placebo) from \"good\" response (23% vs 14%).",
+    "confidence": "high"
+  },
+  {
+    "id": "RV13-F006",
+    "audience": "Resident",
+    "file": "resident/02_CURRICULUM_V13.md",
+    "surface": "canon_200.md",
+    "locus": "page_prose",
+    "severity": "S4",
+    "quote": "Would you like to explore any specific subdomain in greater depth, or discuss how this curriculum might be structured across the four years of residency training?",
+    "problem": "An unedited chatbot turn shipped as page content. Together with the bare \"OPENEVIDENCE TOP 200\" marker, it reveals the canon annotations are raw LLM output pasted in unvetted, contradicting the Format and Methodology block's claim that the list \"was compiled by systematically surveying the evidence landscape\" and the page's reviewed/attested governance status. On an attribution-dense surface residents will cite, this matters: several of the per-paper numeric claims in this same file are verifiably wrong (see RV13-F001 through F004), the failure mode this provenance predicts.",
+    "replacement": "",
+    "basis": "Internal inconsistency with the page's own methodology statement and its footer (\"Reviewed and attested by Joshua Moss, MD (2026-07-09)\"). The sentence is a conversational artifact, not content; delete it.",
+    "confidence": "high"
+  },
+  {
+    "id": "RV13-F007",
+    "audience": "Resident",
+    "file": "resident/02_CURRICULUM_V13.md",
+    "surface": "canon_200.md",
+    "locus": "page_prose",
+    "severity": "S4",
+    "quote": ". Food and Drug Administration. Updated date: 2025-12-17.",
+    "problem": "The References section is an unnumbered dump that cannot be mapped to the 200 papers: it contains entries corresponding to no listed paper (three bare \"Food and Drug Administration. Updated date...\" label lookups, CATIE commentaries by Nasrallah and Manschreck, a Cochrane review of antidepressants in the elderly, an incomplete VA author string with no title or journal), while omitting the primary citations for many listed trials (e.g., Walkup 2008 CAMS, Fudala 2003, Lee 2018 X:BOT, D'Onofrio 2015, Anthenelli 2016 EAGLES are absent). The footer instructs residents to \"verify citations against the primary sources,\" which this list makes impossible.",
+    "replacement": "Rebuild the reference list numbered 1-200, keyed to the papers, each entry carrying that paper's own citation (authors, title, journal, year, DOI); remove entries that belong to no listed paper.",
+    "basis": "Internal consistency with the page footer (\"Residency-level reference; verify citations against the primary sources.\") and one-to-one comparison of the reference block against the 200 listed papers in this file.",
+    "confidence": "high"
+  }
+]
