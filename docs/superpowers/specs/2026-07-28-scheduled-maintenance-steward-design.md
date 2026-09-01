@@ -191,6 +191,15 @@ evaluator, budget, ticket, transcription, synthesis, and provider calls.
 >   shape, not by a marker (`exactKeys` forbids adding one): always `turnId: 1` with `turns: []`,
 >   arriving on the six-hour slot boundary.
 >
+> **The receipt also records which pack content was serving** (`packSha256`), and that hash is
+> folded into `contractSha256`. This closes a gap the original design did not anticipate: the
+> contract digest was computed from model, version, status and case IDs, so it was blind to the
+> pack content that decides how suicidal ideation is scored. The D12/D13 wave is the proof — 70
+> lines of scoring changed, `packVersion` stayed at `0.1.0`, and every monitoring surface reported
+> an unchanged contract. Combined with `SP_PACK_URL` pointing at `?ref=main` with a 5-minute loader
+> TTL, student-facing safety behaviour could change with no deploy, no proxy commit, and no
+> observable trace. It now leaves one.
+>
 > **What it still does not do.** It does not judge what the actor said, exercise the evaluator or
 > the safety screen, or constitute release evidence (D7).
 

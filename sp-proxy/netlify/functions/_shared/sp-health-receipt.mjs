@@ -6,6 +6,7 @@ const HEALTH_KEYS = Object.freeze([
   'evaluatorModel',
   'packVersion',
   'packStatus',
+  'packSha256',
   'cases',
 ]);
 // `actorReady` says a live turn completed. A probe that ran and could not get a
@@ -25,6 +26,14 @@ const SUCCESS_KEYS = Object.freeze([
   'checkedAt',
   'nextRun',
   'contractSha256',
+  // The identity of the pack CONTENT that was serving at check time. Distinct
+  // from contractSha256, which summarises the model/version/status/case-set
+  // contract. Two packs can share a contract and score suicidal ideation
+  // differently — that is not hypothetical, it is what shipped: a 70-line
+  // safety-scoring change that left packVersion at 0.1.0. Compare this against
+  // `shasum -a 256 sp-interview.pack.json` on any commit to answer "which
+  // scoring was live at 06:00?" without guessing.
+  'packSha256',
 ]);
 // Coarse on purpose. The canary is the only thing that measures how long a live
 // turn takes, and four samples a day makes provider degradation visible days
@@ -125,6 +134,7 @@ export function validateHealth(body) {
     || !nonempty(body.actorModel)
     || body.actorModel !== body.evaluatorModel
     || !nonempty(body.packVersion)
+    || !SHA256.test(body.packSha256)
     || !HEALTHY_PACK_STATUSES.has(body.packStatus)
     || !Array.isArray(body.cases)
     || body.cases.length === 0) {
@@ -142,11 +152,17 @@ export function validateHealth(body) {
   }
   if (new Set(caseIds).size !== caseIds.length) throw invalidHealthContract();
 
+  // packSha256 is folded in deliberately. Without it this digest claimed to
+  // identify the contract while being blind to the pack content that decides
+  // how suicidal ideation is scored — two materially different safety builds
+  // produced the same "contract". A digest that cannot change when the thing
+  // it names changes is not an identifier.
   const normalizedContract = JSON.stringify({
     actorModel: body.actorModel,
     evaluatorModel: body.evaluatorModel,
     packVersion: body.packVersion,
     packStatus: body.packStatus,
+    packSha256: body.packSha256,
     caseIds: [...caseIds].sort(),
   });
   return Object.freeze({
@@ -156,6 +172,7 @@ export function validateHealth(body) {
     // of response ordering. These IDs are for addressing the actor probe only —
     // D6 keeps them out of every receipt and log line.
     caseIds: Object.freeze([...caseIds].sort()),
+    packSha256: body.packSha256,
     contractSha256: createHash('sha256').update(normalizedContract, 'utf8').digest('hex'),
   });
 }
@@ -183,7 +200,8 @@ export function validateHealthReceipt(receipt) {
     && receipt.caseCount > 0
     && utcTimestamp(receipt.checkedAt)
     && utcTimestamp(receipt.nextRun)
-    && SHA256.test(receipt.contractSha256)) {
+    && SHA256.test(receipt.contractSha256)
+    && SHA256.test(receipt.packSha256)) {
     return Object.freeze({ ...receipt });
   }
   if (exactKeys(receipt, FAILURE_KEYS)

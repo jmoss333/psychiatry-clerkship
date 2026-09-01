@@ -432,6 +432,11 @@ export function createHealthCanary({
         checkedAt,
         nextRun,
         contractSha256: health.contractSha256,
+        // Which pack content was serving. The proxy fetches the pack from
+        // `main` at runtime with a 5-minute TTL, so what students get can change
+        // without any deploy and without any commit to this repo's proxy code.
+        // This is the only durable record of which one was live at a given hour.
+        packSha256: health.packSha256,
       });
       try {
         await store.setJSON(HEALTH_STORE_KEY, successReceipt);

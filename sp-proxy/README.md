@@ -77,6 +77,15 @@ rejected as malformed everywhere — that is precisely the shape the health surf
 was mute. The reverse (`false`/`false`, a draft pack) is honest and valid. The earlier seven-key
 receipt fails validation and reads as `malformed` rather than being mistaken for a green result.
 
+`packSha256` records **which pack content** was serving, as the SHA-256 of the raw pack bytes the
+loader already computes. It exists because `packVersion` does not move when scoring does — the
+D12/D13 safety wave rewrote 70 lines of suicide-risk scoring and left `version` at `0.1.0` — and
+because `SP_PACK_URL` points at `?ref=main` with a 5-minute loader TTL, so what students get can
+change with **no deploy and no commit to the proxy at all**. It is folded into `contractSha256` as
+well: a digest that cannot change when the thing it names changes is not an identifier. To answer
+"which scoring was live at 06:00?", compare the receipt's `packSha256` against
+`shasum -a 256 _prototypes/sp-interview/sp-interview.pack.json` at any commit.
+
 `replyLatencyBucket` records how long the live turn took as one of `fast` (<3s), `normal` (3–8s),
 `slow` (≥8s), or `not-probed`. It is a bucket rather than a duration on purpose: a raw millisecond
 count tracks how much the patient said, and D6 is kept by construction rather than by judging that

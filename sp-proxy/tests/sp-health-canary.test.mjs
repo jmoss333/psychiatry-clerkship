@@ -13,6 +13,7 @@ const VALID_HEALTH = Object.freeze({
   evaluatorModel: 'model-pin-v1',
   packVersion: 'pack-version-v1',
   packStatus: 'reviewed',
+  packSha256: 'cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd',
   cases: [Object.freeze({ id: 'case-1', title: 'Synthetic case' })],
 });
 
@@ -26,6 +27,7 @@ const SUCCESS_RECEIPT = Object.freeze({
   checkedAt: CHECKED_AT,
   nextRun: NEXT_RUN,
   contractSha256: 'ab'.repeat(32),
+  packSha256: 'cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd',
 });
 
 // The seven-key receipt the pre-probe canary wrote. It attested reachability
@@ -33,7 +35,7 @@ const SUCCESS_RECEIPT = Object.freeze({
 // page, so the current contract must refuse to read it as success.
 const LEGACY_SUCCESS_RECEIPT = Object.freeze(Object.fromEntries(
   Object.entries(SUCCESS_RECEIPT).filter(
-    ([key]) => key !== 'actorReady' && key !== 'replyLatencyBucket',
+    ([key]) => !['actorReady', 'replyLatencyBucket', 'packSha256'].includes(key),
   ),
 ));
 
@@ -240,6 +242,7 @@ test('validateHealth accepts only the bounded health contract and freezes its re
       'caseIds',
       'contractSha256',
       'learnerReady',
+      'packSha256',
     ]);
     assert.deepEqual(result.caseIds, ['case-1']);
     assert.equal(Object.isFrozen(result.caseIds), true);
@@ -359,6 +362,7 @@ test('scheduled canary performs an authenticated contract GET, then one live con
     'contractSha256',
     'learnerReady',
     'nextRun',
+    'packSha256',
     'replyLatencyBucket',
     'schemaVersion',
     'state',
@@ -371,6 +375,7 @@ test('scheduled canary performs an authenticated contract GET, then one live con
   assert.equal(store.writes[0].value.checkedAt, CHECKED_AT);
   assert.equal(store.writes[0].value.nextRun, NEXT_RUN);
   assert.match(store.writes[0].value.contractSha256, /^[a-f0-9]{64}$/);
+  assert.equal(store.writes[0].value.packSha256, 'cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd');
   assert.doesNotMatch(JSON.stringify(store.writes), /test-only-passcode|model-pin|pack-version|Synthetic/);
 });
 
@@ -979,6 +984,7 @@ test('a failed actor probe is a failed receipt, never a success that admits acto
   assert.equal('actorReady' in written, false);
   assert.equal('learnerReady' in written, false);
   assert.equal('replyLatencyBucket' in written, false);
+  assert.equal('packSha256' in written, false);
 });
 
 test('the actor reply never reaches the receipt, the log, or the thrown error', async () => {
@@ -1262,4 +1268,96 @@ test('the receipt carries a bucket, never a duration', async () => {
     false,
     'no field may carry a millisecond-scale number',
   );
+});
+
+// ---------------------------------------------------------------------------
+// Pack content identity. The proxy fetches the pack from `main` at runtime with
+// a 5-minute TTL, so what students get can change with no deploy and no commit
+// to the proxy. packVersion does not move when scoring does. These tests pin
+// the property that makes the change visible at all.
+// ---------------------------------------------------------------------------
+
+test('two packs that differ only in content are told apart by the contract digest', async () => {
+  const { receipt } = await healthModules();
+  // Same model, same version, same status, same case set -- exactly the shape
+  // the D12/D13 safety wave shipped in: 70 lines of scoring changed, version
+  // left at 0.1.0. Before packSha256 was folded in, these were indistinguishable.
+  const before = receipt.validateHealth({ ...VALID_HEALTH, packSha256: 'aa'.repeat(32) });
+  const after = receipt.validateHealth({ ...VALID_HEALTH, packSha256: 'bb'.repeat(32) });
+
+  assert.notEqual(
+    before.contractSha256,
+    after.contractSha256,
+    'a digest that cannot change when the pack content changes is not an identifier',
+  );
+  assert.equal(before.packSha256, 'aa'.repeat(32));
+  assert.equal(after.packSha256, 'bb'.repeat(32));
+  // Everything else about them really is identical.
+  assert.equal(before.learnerReady, after.learnerReady);
+  assert.equal(before.caseCount, after.caseCount);
+  assert.deepEqual(before.caseIds, after.caseIds);
+});
+
+test('the same pack content always yields the same digest', async () => {
+  const { receipt } = await healthModules();
+  const first = receipt.validateHealth(VALID_HEALTH);
+  const second = receipt.validateHealth({ ...VALID_HEALTH });
+  assert.equal(first.contractSha256, second.contractSha256);
+  assert.equal(first.packSha256, second.packSha256);
+});
+
+test('a health response without a valid pack content hash is rejected', async () => {
+  const { receipt } = await healthModules();
+  for (const packSha256 of ['', 'not-a-hash', 'AB'.repeat(32), 'ab'.repeat(31), 'ab'.repeat(33), 42, null, undefined]) {
+    assert.throws(
+      () => receipt.validateHealth({ ...VALID_HEALTH, packSha256 }),
+      /health contract/i,
+    );
+  }
+  // And a health response that omits it entirely fails exactKeys.
+  const { packSha256, ...withoutHash } = VALID_HEALTH;
+  assert.throws(() => receipt.validateHealth(withoutHash), /health contract/i);
+});
+
+test('the canary records the live pack hash, and a pack swap is visible in the receipt', async () => {
+  const firstStore = memoryStore();
+  const { handler: first } = await createCanaryHarness({
+    store: firstStore,
+    fetchImpl: routedFetch({
+      health: () => responseFor({ ...VALID_HEALTH, packSha256: 'aa'.repeat(32) }),
+    }),
+  });
+  await first(scheduledRequest());
+
+  const secondStore = memoryStore();
+  const { handler: second } = await createCanaryHarness({
+    store: secondStore,
+    fetchImpl: routedFetch({
+      health: () => responseFor({ ...VALID_HEALTH, packSha256: 'bb'.repeat(32) }),
+    }),
+  });
+  await second(scheduledRequest());
+
+  const a = firstStore.writes[0].value;
+  const b = secondStore.writes[0].value;
+  assert.equal(a.packSha256, 'aa'.repeat(32));
+  assert.equal(b.packSha256, 'bb'.repeat(32));
+  assert.notEqual(a.contractSha256, b.contractSha256);
+  // Both are otherwise the same healthy receipt -- the hash is what carries the
+  // difference, which is the entire point.
+  assert.equal(a.state, 'success');
+  assert.equal(b.state, 'success');
+  assert.equal(a.learnerReady, b.learnerReady);
+});
+
+test('a receipt missing or malforming the pack hash does not read as success', async () => {
+  const { receipt } = await healthModules();
+  const { packSha256, ...withoutHash } = SUCCESS_RECEIPT;
+  assert.throws(() => receipt.validateHealthReceipt(withoutHash), /health receipt/i);
+  for (const bad of ['', 'nope', 'AB'.repeat(32), 7, null]) {
+    assert.throws(
+      () => receipt.validateHealthReceipt({ ...SUCCESS_RECEIPT, packSha256: bad }),
+      /health receipt/i,
+    );
+  }
 });

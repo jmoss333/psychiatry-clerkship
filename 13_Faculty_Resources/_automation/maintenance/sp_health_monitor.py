@@ -47,6 +47,11 @@ SUCCESS_KEYS = {
     "checkedAt",
     "nextRun",
     "contractSha256",
+    # Identity of the pack CONTENT that was serving. packVersion does not move
+    # when scoring does -- the D12/D13 wave changed 70 lines and left it at
+    # 0.1.0 -- and the proxy fetches the pack from main at runtime, so student-
+    # facing behaviour can change with no deploy. This is the durable record.
+    "packSha256",
 }
 # Coarse on purpose -- see the note beside LATENCY_BUCKETS in
 # sp-proxy/netlify/functions/_shared/sp-health-receipt.mjs. Drift from "fast"
@@ -137,6 +142,7 @@ def evaluate_status(payload, *, now):
             or payload["caseCount"] <= 0
             or payload["caseCount"] > 10_000
             or not _valid_sha256(payload.get("contractSha256"))
+            or not _valid_sha256(payload.get("packSha256"))
         ):
             return _base(now, "malformed", "blocked")
         try:
@@ -165,6 +171,7 @@ def evaluate_status(payload, *, now):
             "replyLatencyBucket": payload["replyLatencyBucket"],
             "caseCount": payload["caseCount"],
             "contractSha256": payload["contractSha256"],
+            "packSha256": payload["packSha256"],
         }
 
     if state == "failed":

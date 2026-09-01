@@ -30,6 +30,7 @@ def success_payload(**overrides):
         "replyLatencyBucket": "fast",
         "caseCount": 3,
         "contractSha256": "a" * 64,
+        "packSha256": "c" * 64,
         "checkedAt": "2026-07-28T06:00:00.000Z",
         "nextRun": "2026-07-28T12:00:00.000Z",
     }
@@ -93,6 +94,7 @@ class SpHealthMonitorTests(unittest.TestCase):
                 "replyLatencyBucket",
                 "caseCount",
                 "contractSha256",
+                "packSha256",
             },
         )
 
@@ -106,6 +108,7 @@ class SpHealthMonitorTests(unittest.TestCase):
         legacy = success_payload()
         del legacy["actorReady"]
         del legacy["replyLatencyBucket"]
+        del legacy["packSha256"]
         result = evaluate_status(legacy, now=NOW)
         self.assertEqual(result["state"], "malformed")
         self.assertEqual(result["gate"], "blocked")
