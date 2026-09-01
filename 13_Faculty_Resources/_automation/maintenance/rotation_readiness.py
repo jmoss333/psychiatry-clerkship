@@ -18,9 +18,20 @@ OPAQUE_ID_RE = re.compile(
 BLOCK_KEYS = {"id", "startsOn", "endsOn", "status"}
 FORBIDDEN_KEYS = {"name", "email", "learnerId", "patient", "passcode", "credential"}
 STATUSES = {"planned", "active", "completed"}
+# Rendered verbatim into the readiness passport and into the maintenance issue.
+# maintenance_issue.py imports this tuple rather than trusting the checklist field
+# on the report JSON it is handed - see the sentinel test in
+# tests/maintenance/test_maintenance_issue.py. Keep it a code constant.
+#
+# The learner-passcode rotation item was retired 2026-08-31 (Joshua Moss, MD):
+# SP_STUDENT_PASSCODE is now fixed and non-rotating. Rotation had been the
+# revocation path, so the two items that follow the credential line carry the
+# obligations that decision created. See sp-proxy/README.md, "Passcode policy".
 MANUAL_CHECKLIST = (
     "issue a new non-identifying SP_ROTATION_ID",
-    "rotate the learner passcode and separate operations credential",
+    "rotate the separate operations credential (the learner passcode is fixed per the 2026-08-31 decision)",
+    "keep SP_ALLOWED_ORIGINS tight; remove http://localhost:8888 unless actively testing",
+    "check the rotation ledger for usage that does not match a real cohort",
     "preserve the prior content-free usage receipt",
     "run the Interview Room red-team checklist and golden transcript",
     "verify the latest production canary, release rehearsal, governance digest, and attestation gate",
