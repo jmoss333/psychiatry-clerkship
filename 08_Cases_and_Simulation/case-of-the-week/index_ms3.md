@@ -8,6 +8,7 @@
 
 **This term's line-up (most recent first):**
 
+- **Catatonia — Recognition, Workup & Treatment** (Aug 31) — the patient who stops moving: spotting the signs at the bedside, the BFCRS screen, the lorazepam challenge, and recognizing when it becomes an emergency.
 - **Borderline Personality Disorder — Presentation & Management** (Aug 27) — reading the pattern, not the moment: BPD vs. bipolar, chronic vs. acute-on-chronic risk, psychotherapy as the definitive treatment, and naming the diagnosis without flinching.
 - **Panic Disorder — Recognition, Differential & First-Line Treatment** (Aug 10) — panic attack vs. panic disorder, the must-not-miss mimics, why repeating a negative workup backfires, and SSRI + CBT.
 - **Lithium — Monitoring, Toxicity & Interactions** (Aug 3) — why the level rises when the dose doesn't, level-vs-exam dissociation, and the dialysis criteria.
