@@ -192,6 +192,9 @@ jobs:
           bash _prototypes/sp-interview/tests/run-all.sh
           python3 13_Faculty_Resources/_automation/test_validate_attestation_consistency.py
 
+      - name: Red-team tier 1 — gate integrity (deterministic probes)
+        run: node bin/redteam-offline.mjs
+
       - name: Build + static QA gate (ms3)
         run: bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh ms3
 

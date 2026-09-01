@@ -68,7 +68,7 @@ checklist and external activation gates below.
 | Variable | Value |
 |---|---|
 | `ANTHROPIC_API_KEY` | your Anthropic key (console.anthropic.com) |
-| `SP_STUDENT_PASSCODE` | strong passcode; **rotate each rotation block** |
+| `SP_STUDENT_PASSCODE` | learner passcode. **Standing decision 2026-08-31: this is a fixed, non-rotating passcode** — see *Passcode policy* below for what that changes. |
 | `SP_OPERATIONS_KEY` | separate strong operations credential; never give it to learners |
 | `SP_SPEECH_TICKET_SECRET` | independent random signing secret; keep server-only |
 | `SP_ROTATION_ID` | unique non-identifying ID for this rotation's shared budget ledger |
@@ -82,7 +82,10 @@ checklist and external activation gates below.
    → `{"schemaVersion":1,"actorModel":"claude-haiku-4-5-20251001","evaluatorModel":"claude-haiku-4-5-20251001","packVersion":"<reviewed pack version>","packStatus":"<reviewed status>","cases":[...]}`.
 4. In the tool: mode chip → **Live** → settings panel → paste endpoint URL
    (`https://<site>/api/sp`) + passcode → **Test connection**.
-5. Run `REDTEAM_CHECKLIST.md` end to end **before giving students the passcode**.
+5. Run `REDTEAM_CHECKLIST.md` end to end **before a new pack, model pin, or deploy reaches
+   learners** — it is a change gate, not a usage gate; an already-attested build stays live without
+   re-running it. Step-by-step, with the mechanical probes scripted:
+   [`docs/RED_TEAM_RUNBOOK.md`](../docs/RED_TEAM_RUNBOOK.md).
 
 ## Governance couplings (do not skip)
 
@@ -96,8 +99,27 @@ checklist and external activation gates below.
   why `SP_PACK_URL` must point at `main`, where nothing lands without your PR review.
 - **Cost envelope:** the reviewed pack rate card and atomic rotation ledger are authoritative.
   Estimates in prose are not deployment controls.
-- **Passcode hygiene:** one passcode per rotation block, shared in person (not email),
-  and rotated at block end.
+- **Passcode policy (changed 2026-08-31, Joshua Moss, MD).** The learner passcode is now
+  **fixed and does not rotate**. It is chosen to be memorable and sayable out loud so it can be
+  given in a room without a handout. Still shared in person, not by email. The value never appears
+  in this repo, in a commit, or in a transcript.
+
+  This was a deliberate trade of a security property for classroom usability, and the property
+  traded away is the important one to name: **rotation was the revocation path.** With a fixed
+  passcode there is no date on which a leaked credential stops working. That shifts three things:
+
+  1. **A leak is permanent until someone acts.** The remedy is no longer "wait for the block to
+     end" — it is an explicit emergency rotation. That procedure is in
+     `docs/RED_TEAM_RUNBOOK.md` under *Rollback*, and it is now the ONLY containment available.
+  2. **Budget exposure compounds.** The `$20` hard cap is per `SP_ROTATION_ID`, not per passcode.
+     A credential that survives rotation boundaries can burn a fresh cap each block. Watch the
+     rotation ledger for usage that does not match a real cohort.
+  3. **`SP_ALLOWED_ORIGINS` is doing more work than before.** It is the remaining boundary on
+     casual misuse from a browser; curl is unaffected by it. Keep it tight, and remove
+     `http://localhost:8888` when not actively testing.
+
+  If the passcode is ever posted, screenshotted, or forwarded: change it that day and re-issue in
+  person. Do not wait for a block boundary — there is no longer one that helps.
 
 ## Managed voice remains disabled
 

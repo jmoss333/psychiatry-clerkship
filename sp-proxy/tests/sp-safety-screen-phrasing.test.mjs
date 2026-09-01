@@ -138,29 +138,45 @@ test('every case recognizes the common hurting/harming/doing-something-to-yourse
   }
 });
 
-// Every case's checklist scores "Suicide screened plainly" against si_direct ONLY
-// (si_euphemism appears in no checklist row, in any case). For Marcus and Ray —
-// the two cases with no deliberate-euphemism teaching mechanic — all three
-// phrasings must specifically hit si_direct, or a learner who screens correctly
-// gets no checklist credit. Dana (sp_depression_gated_si_001) is deliberately
-// excluded from THIS assertion: her euphemism handling routes to si_euphemism to
-// teach re-asking in plain language, and that must stay untouched — she is
-// covered instead by the "some safety intent" check above and by the dedicated
-// pedagogy guard below.
-test('Marcus and Ray specifically credit all three euphemistic SI phrasings to si_direct (checklist-scored intent)', () => {
-  const targetCaseIds = ['sp_mania_redirect_001', 'sp_psychosis_paranoid_001'];
+// D12 (#410, faculty-ratified 2026-08-31): a euphemism is a move, not a screen —
+// in EVERY case. Marcus and Ray previously routed these three phrasings to
+// si_direct at full credit, which meant the identical sentence scored `observed`
+// on them and `partial` on Dana purely by case assignment. Both now carry an
+// si_euphemism intent and `c_si.partialIfOnly: ["si_euphemism"]`, so all three
+// cases grade the same words the same way. This test is the uniformity contract:
+// euphemisms credit si_euphemism and must NOT credit si_direct, anywhere.
+test('every case routes euphemistic SI phrasings to si_euphemism, never si_direct (D12 uniformity)', () => {
+  assert.equal(pack.cases.length, EXPECTED_CASE_COUNT, 'pack case count changed');
   const phrasings = ['hurting yourself', 'harming yourself', 'doing something to yourself'];
   for (const caseDef of pack.cases) {
-    if (!targetCaseIds.includes(caseDef.id)) continue;
     const siDirect = caseDef.intents.find((it) => it.id === 'si_direct');
+    const siEuphemism = caseDef.intents.find((it) => it.id === 'si_euphemism');
     assert.ok(siDirect, `case "${caseDef.id}": no si_direct intent found`);
+    assert.ok(siEuphemism, `case "${caseDef.id}": no si_euphemism intent found — D12 requires one in every case`);
     for (const phrasing of phrasings) {
-      const matched = siDirect.patterns.some((p) => new RegExp(p, 'i').test(phrasing));
       assert.ok(
-        matched,
-        `case "${caseDef.id}": si_direct did not match "${phrasing}" — checklist row "Suicide screened plainly" would not be credited`,
+        siEuphemism.patterns.some((p) => new RegExp(p, 'i').test(phrasing)),
+        `case "${caseDef.id}": si_euphemism did not match "${phrasing}" — the c_si row would score 'missed', not 'partial'`,
+      );
+      assert.ok(
+        !siDirect.patterns.some((p) => new RegExp(p, 'i').test(phrasing)),
+        `case "${caseDef.id}": si_direct matched "${phrasing}" — a euphemism would be certified as a plain screen (D12 violation)`,
       );
     }
+  }
+});
+
+// The c_si row must actually be wired to award partial credit for a euphemism —
+// without partialIfOnly the D12 grading above would silently score `missed`.
+test('every case wires c_si.partialIfOnly to si_euphemism (D12)', () => {
+  for (const caseDef of pack.cases) {
+    const row = (caseDef.checklist || []).find((r) => r.id === 'c_si');
+    assert.ok(row, `case "${caseDef.id}": no c_si checklist row`);
+    assert.deepEqual(
+      row.partialIfOnly,
+      ['si_euphemism'],
+      `case "${caseDef.id}": c_si.partialIfOnly must be ["si_euphemism"] so a euphemism scores partial, not missed`,
+    );
   }
 });
 
@@ -217,9 +233,6 @@ const NON_SAFETY_PHRASINGS = [
   "Do you think you'd be better off without medication?",
   'Would you be better off without meds?',
   'Is your family better off without your father in the house?',
-  // finding 2 — protective-factor / reasons-for-living questions
-  'What has felt worth living for lately?',
-  'Do you have things in your life worth living for?',
   // finding 3 — literal use of "living"
   "There's no point in living in that apartment.",
   // ordinary review-of-systems and social-history questions
@@ -228,6 +241,43 @@ const NON_SAFETY_PHRASINGS = [
   'Tell me about your job.',
   'Do you have any family nearby?',
 ];
+
+// Only si_direct and si_euphemism can credit the c_si checklist row or unlock the
+// SI gates. (Declared here rather than beside the D9/D10 block below, because the
+// over-breadth guard now needs it too.)
+const C_SI_CREDITING = new Set(['si_direct', 'si_euphemism']);
+
+// D15 (#410 item F, faculty-ratified 2026-08-31): reasons-for-living questions are
+// a real clinical move — they belong to si_intent_protective, which D15 fills out.
+// They are still not SUICIDE SCREENS, so they must never credit c_si; but the old
+// guard checked them against every category:'safety' intent, which was broader than
+// finding 2's intent and would now fail on the very intent that should own them.
+const NON_SCREEN_PROTECTIVE_PHRASINGS = [
+  'What has felt worth living for lately?',
+  'Do you have things in your life worth living for?',
+];
+
+test('protective-factor questions never credit a suicide screen, in any case (D15)', () => {
+  const falsePositives = [];
+  for (const caseDef of pack.cases) {
+    for (const phrasing of NON_SCREEN_PROTECTIVE_PHRASINGS) {
+      for (const intent of safetyIntentIds(caseDef)) {
+        if (!C_SI_CREDITING.has(intent.id)) continue;
+        const culprits = intent.patterns.filter((p) => new RegExp(p, 'i').test(phrasing));
+        if (culprits.length) {
+          falsePositives.push(
+            `case "${caseDef.id}": ${JSON.stringify(phrasing)} -> ${intent.id} via ${JSON.stringify(culprits)}`,
+          );
+        }
+      }
+    }
+  }
+  assert.deepEqual(
+    falsePositives,
+    [],
+    `reasons-for-living questions credited as a suicide screen:\n  ${falsePositives.join('\n  ')}`,
+  );
+});
 
 test('no ordinary question is miscredited as a safety intent in any case (over-breadth guard)', () => {
   assert.equal(pack.cases.length, EXPECTED_CASE_COUNT, 'pack case count changed');
@@ -285,19 +335,27 @@ const MARCUS_POINT_MUST_NOT_MATCH = [
   'What is the point of staying on the unit?',
 ];
 
-const MARCUS_POINT_MUST_MATCH = [
-  "What's the point?",
-  'Whats the point anymore?',
+// D12 splits this family the same way in all three cases. An existential OBJECT
+// ("of going on", "of living", "of any of this") is a plain screen and credits
+// si_direct. The bare or reflected form is a euphemism — the learner has gestured
+// at hopelessness without asking the question — and credits si_euphemism, which
+// scores the c_si row `partial`. Same words, same grade, every case.
+const MARCUS_POINT_MUST_MATCH_DIRECT = [
   "What's the point of going on?",
   "What's the point of living?",
   "What's the point of any of this?",
-  "You said what's the point — can you tell me more about that?",
   // D8: the stem was `what'?s`, so the unabbreviated form — an ordinary way to ask
   // this, and no less a screen — matched nothing at all and scored as a critical miss.
-  'What is the point?',
   'What is the point of going on?',
   'What is the point of living?',
   'What is the point of any of this?',
+];
+
+const MARCUS_POINT_MUST_MATCH_EUPHEMISM = [
+  "What's the point?",
+  'Whats the point anymore?',
+  "You said what's the point — can you tell me more about that?",
+  'What is the point?',
 ];
 
 test("Marcus: an ordinary \"what's the point of <thing>\" question is NOT credited as a suicide screen", () => {
@@ -321,16 +379,34 @@ test("Marcus: an ordinary \"what's the point of <thing>\" question is NOT credit
   );
 });
 
-test("Marcus: hopelessness \"what's the point\" phrasings still credit si_direct", () => {
-  const caseDef = pack.cases.find((c) => c.id === 'sp_mania_redirect_001');
-  assert.ok(caseDef, 'sp_mania_redirect_001 not found in pack');
-  const siDirect = caseDef.intents.find((it) => it.id === 'si_direct');
-  assert.ok(siDirect, 'Marcus: no si_direct intent found');
-  for (const phrasing of MARCUS_POINT_MUST_MATCH) {
-    assert.ok(
-      siDirect.patterns.some((p) => new RegExp(p, 'i').test(phrasing)),
-      `Marcus: si_direct did not match ${JSON.stringify(phrasing)} — checklist row "Suicide screened plainly" would not be credited`,
-    );
+test("existential-object \"what's the point of <living>\" credits si_direct in every case (D12)", () => {
+  for (const caseDef of pack.cases) {
+    const siDirect = caseDef.intents.find((it) => it.id === 'si_direct');
+    assert.ok(siDirect, `case "${caseDef.id}": no si_direct intent found`);
+    for (const phrasing of MARCUS_POINT_MUST_MATCH_DIRECT) {
+      assert.ok(
+        siDirect.patterns.some((p) => new RegExp(p, 'i').test(phrasing)),
+        `case "${caseDef.id}": si_direct did not match ${JSON.stringify(phrasing)} — checklist row "Suicide screened plainly" would not be credited`,
+      );
+    }
+  }
+});
+
+test("bare or reflected \"what's the point\" credits si_euphemism, not si_direct, in every case (D12)", () => {
+  for (const caseDef of pack.cases) {
+    const siDirect = caseDef.intents.find((it) => it.id === 'si_direct');
+    const siEuphemism = caseDef.intents.find((it) => it.id === 'si_euphemism');
+    assert.ok(siEuphemism, `case "${caseDef.id}": no si_euphemism intent found`);
+    for (const phrasing of MARCUS_POINT_MUST_MATCH_EUPHEMISM) {
+      assert.ok(
+        siEuphemism.patterns.some((p) => new RegExp(p, 'i').test(phrasing)),
+        `case "${caseDef.id}": si_euphemism did not match ${JSON.stringify(phrasing)} — the c_si row would score 'missed', not 'partial'`,
+      );
+      assert.ok(
+        !siDirect.patterns.some((p) => new RegExp(p, 'i').test(phrasing)),
+        `case "${caseDef.id}": si_direct matched ${JSON.stringify(phrasing)} — a bare hopelessness gesture would be certified as a plain screen`,
+      );
+    }
   }
 });
 
@@ -350,9 +426,6 @@ const MUST_MATCH = [
   'Do you ever feel your family would be better off without you?',
   "Has it felt like there's no point in going on?",
   "Sometimes I feel like there's no point carrying on.",
-  'Have you had any thoughts of hurting yourself?',
-  'Have you thought about harming yourself?',
-  'Have you had thoughts of doing something to yourself?',
   // D9 amendment (final review of #406, finding F1): the habitability lookahead's
   // `at` branch swallowed the intensifier, so these — unambiguous screens, and the
   // commonest way a learner adds emphasis — declined in every case, scoring a
@@ -364,30 +437,55 @@ const MUST_MATCH = [
   'When you say burden — have you had thoughts of killing yourself?',
 ];
 
-test('Marcus and Ray credit every must-match screening phrasing to si_direct', () => {
-  for (const caseId of ['sp_mania_redirect_001', 'sp_psychosis_paranoid_001']) {
-    const caseDef = pack.cases.find((c) => c.id === caseId);
-    assert.ok(caseDef, `${caseId} not found in pack`);
+// D13 (#410 items A remainder + B, faculty-ratified 2026-08-31). Each of these was
+// a critical miss in ALL THREE cases at baseline — including "Do you want to die?",
+// the plainest screen there is, and the C-SSRS screen-question wording.
+const MUST_MATCH_D13_PLAIN = [
+  'Do you want to die?',
+  'Have you wanted to die?',
+  'Have you had thoughts of death?',
+  'Any thoughts of ending it all?',
+  "Do you ever wish you weren't here?",
+];
+
+// D13 euphemism additions: these credit si_euphemism (partial), never si_direct.
+const MUST_MATCH_EUPHEMISM = [
+  'Have you had any thoughts of hurting yourself?',
+  'Have you thought about harming yourself?',
+  'Have you had thoughts of doing something to yourself?',
+  'Any thoughts of self-harm?',
+  'Do you ever wish you could just disappear?',
+];
+
+test('every case credits every must-match plain screening phrasing to si_direct (D13)', () => {
+  assert.equal(pack.cases.length, EXPECTED_CASE_COUNT, 'pack case count changed');
+  for (const caseDef of pack.cases) {
     const siDirect = caseDef.intents.find((it) => it.id === 'si_direct');
-    assert.ok(siDirect, `case "${caseId}": no si_direct intent found`);
-    for (const phrasing of MUST_MATCH) {
+    assert.ok(siDirect, `case "${caseDef.id}": no si_direct intent found`);
+    for (const phrasing of [...MUST_MATCH, ...MUST_MATCH_D13_PLAIN]) {
       assert.ok(
         siDirect.patterns.some((p) => new RegExp(p, 'i').test(phrasing)),
-        `case "${caseId}": si_direct did not match ${JSON.stringify(phrasing)} — checklist row "Suicide screened plainly" would not be credited`,
+        `case "${caseDef.id}": si_direct did not match ${JSON.stringify(phrasing)} — checklist row "Suicide screened plainly" would not be credited`,
       );
     }
   }
 });
 
-test('Dana credits every must-match screening phrasing to some safety intent', () => {
-  const caseDef = pack.cases.find((c) => c.id === 'sp_depression_gated_si_001');
-  assert.ok(caseDef, 'sp_depression_gated_si_001 not found in pack');
-  for (const phrasing of MUST_MATCH) {
-    const hits = matchingSafetyIntentIds(caseDef, phrasing);
-    assert.ok(
-      hits.length > 0,
-      `Dana: no category:'safety' intent matched ${JSON.stringify(phrasing)}`,
-    );
+test('every case credits every must-match euphemistic phrasing to si_euphemism only (D12/D13)', () => {
+  for (const caseDef of pack.cases) {
+    const siDirect = caseDef.intents.find((it) => it.id === 'si_direct');
+    const siEuphemism = caseDef.intents.find((it) => it.id === 'si_euphemism');
+    assert.ok(siEuphemism, `case "${caseDef.id}": no si_euphemism intent found`);
+    for (const phrasing of MUST_MATCH_EUPHEMISM) {
+      assert.ok(
+        siEuphemism.patterns.some((p) => new RegExp(p, 'i').test(phrasing)),
+        `case "${caseDef.id}": si_euphemism did not match ${JSON.stringify(phrasing)}`,
+      );
+      assert.ok(
+        !siDirect.patterns.some((p) => new RegExp(p, 'i').test(phrasing)),
+        `case "${caseDef.id}": si_direct matched ${JSON.stringify(phrasing)} — euphemisms must not certify a plain screen`,
+      );
+    }
   }
 });
 
@@ -398,10 +496,10 @@ test('Dana credits every must-match screening phrasing to some safety intent', (
 // (critical on Dana and Marcus) and unlocked g_si_mixed at rapport 0 on Marcus.
 // Decision provenance: D9 + D10 in docs/superpowers/plans/2026-08-24-faculty-decisions.md.
 // Only si_direct / si_euphemism can credit c_si or unlock the si gates, so these
-// assertions filter to those two ids: Dana's si_plan ("how (you )?(would|might)")
-// legitimately brushes one probe, is gated behind si_active, and is tracked as
-// issue #410 item E — not re-litigated here.
-const C_SI_CREDITING = new Set(['si_direct', 'si_euphemism']);
+// assertions filter to those two ids. (C_SI_CREDITING is declared above, beside the
+// over-breadth guard, which needs it too since D15.) Dana's si_plan follow-up
+// intents were bounded by D14, so they no longer brush these probes.
+
 
 const NON_SCREEN_PROBES = [
   'Is that apartment not worth living in?',
