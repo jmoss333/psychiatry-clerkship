@@ -326,6 +326,7 @@ containing a manual checklist:
 
 - issue a new non-identifying `SP_ROTATION_ID`;
 - rotate the learner passcode and separate operations credential;
+  > **Superseded 2026-08-31.** SP_STUDENT_PASSCODE is now fixed and non-rotating (Joshua Moss, MD); rotation was the revocation path, so this item became "rotate the separate operations credential" plus an origins-hygiene and a ledger-watch item. Live text: `rotation_readiness.py::MANUAL_CHECKLIST`. Rationale: `sp-proxy/README.md`, "Passcode policy".
 - preserve the prior content-free usage receipt;
 - run the Interview Room red-team checklist and golden transcript;
 - verify the latest production canary, release rehearsal, governance digest, and attestation gate;
