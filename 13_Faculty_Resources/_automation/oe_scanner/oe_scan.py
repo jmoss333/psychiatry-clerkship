@@ -58,7 +58,8 @@ PENDING_MARK = "pending re-attestation"
 # path segments to skip: input/automation/archive/build dirs, not learner-facing teaching pages
 _SKIP_SEGMENTS = {"99_Archive", "Handoffs", "node_modules", "outputs", "tmp", "tests",
                   "staging", "docs", "sp-proxy", "faculty-console", "quick-wins",
-                  "00_START_HERE", "OPENEVIDENCE RAW FILES TO REVIEW"}
+                  "00_START_HERE", "OPENEVIDENCE RAW FILES TO REVIEW",
+                  "Evidence Inbox", "_inbox"}
 
 def _sha(path):
     h = hashlib.sha256()
@@ -85,6 +86,8 @@ def _candidates():
         if not os.path.isfile(p):
             continue
         if fn.startswith("~$") or fn.startswith("."):
+            continue
+        if fn.lower() == "readme.md":     # a drop folder's own instructions are not a drop
             continue
         if os.path.splitext(fn)[1].lower() not in EXTS:
             continue
@@ -321,8 +324,33 @@ def _pop_opts(args):
     return rest, opts
 
 
+def _pop_inbox_opts(args):
+    """Retarget the scanner at a different drop folder / ledger.
+
+    Defaults are unchanged, so every existing invocation and the OpenEvidence
+    manifest behave exactly as before. This exists so one scanner can serve more
+    than one inbox: the OpenEvidence review folder and the general evidence
+    inbox each keep their own ledger.
+
+        oe_scan.py --folder "<abs path>" --manifest "<abs path>" [--list|--commit ...]
+    """
+    global FOLDER, MANIFEST, STAGING
+    rest = []
+    i = 0
+    while i < len(args):
+        if args[i] == "--folder" and i + 1 < len(args):
+            FOLDER = os.path.abspath(os.path.expanduser(args[i + 1])); i += 2
+        elif args[i] == "--manifest" and i + 1 < len(args):
+            MANIFEST = os.path.abspath(os.path.expanduser(args[i + 1]))
+            STAGING = os.path.join(os.path.dirname(MANIFEST), "staging")
+            i += 2
+        else:
+            rest.append(args[i]); i += 1
+    return rest
+
+
 if __name__ == "__main__":
-    args = sys.argv[1:]
+    args = _pop_inbox_opts(sys.argv[1:])
     if not args:
         cmd_report(extract=True)
     elif args[0] == "--list":
