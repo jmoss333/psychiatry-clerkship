@@ -1,0 +1,57 @@
+[
+ {
+  "id": "MS3V08-F001",
+  "verdict": "confirmed",
+  "reasoning": "Quote is verbatim (V08 line 445). Per the PubMed abstract of Williams et al., Cochrane Database Syst Rev 2022 (doi:10.1002/14651858.CD002795.pub3), the review reports for its primary treatment-response outcome 'beneficial effect for SSRIs compared with placebo (RR 0.66, 95% CI 0.59 to 0.74; 8 studies, 1078 participants)' with 58% of SSRI vs 35% of placebo participants improving; 0.42/0.65 = 0.65 confirms the RR is the risk of NOT responding, so RR<1 favors SSRIs exactly as the finding says. As shipped — no outcome definition, no proportions, no review identity or year, and Q39's key-paper line pointing to Schnurr 2024 rather than the Cochrane review — the line is internally contradictory ('improved... RR 0.66' reads as SSRIs one-third less likely to improve) and untraceable. The page evidently compressed the Cochrane abstract's own loose phrasing, which explains the origin but does not rescue the shipped sentence. The replacement is faithful to the source (correct review identity, correct direction, correct CI) and pitched appropriately for MS3s and residents."
+ },
+ {
+  "id": "MS3V08-F002",
+  "verdict": "confirmed",
+  "reasoning": "Quote is verbatim (V08 line 555). Judged from knowledge of the published instrument (the Cochrane-style abstract does not carry these details): Wesson & Ling, J Psychoactive Drugs 2003 — the page's own cited key paper — publishes 11 items whose maxima (4,4,5,5,4,4,5,4,4,4,5) sum to 48, and the published interpretation bands are 5-12 mild, 13-24 moderate, 25-36 moderately severe, >36 severe; the same range and bands appear in the standard SAMHSA/ASAM reproductions. Both claimed errors are therefore real: '0–47' mis-states the maximum, and '>24: severe' collapses the moderately-severe and severe categories, so a COWS of 26 gets presented on rounds as 'severe.' The replacement restores the correct range and all four published bands — interpretation guidance, not reproduced instrument text — and stays at the right level for both audiences."
+ },
+ {
+  "id": "MS3V08-F003",
+  "verdict": "confirmed",
+  "reasoning": "Quote is verbatim (V08 line 937, the Q87 pearl). The claimed problem is real: the pearl's absolute — a child with intellectual disability 'will not show' restricted/repetitive behaviors — contradicts DSM-5/DSM-5-TR, whose ASD differential-diagnosis text explicitly notes that repetitive behaviors often occur in individuals with intellectual disability without ASD (stereotypic movement disorder is specifically common in severe ID), and which locates the actual discriminator in social communication and interaction impaired relative to the individual's general developmental level. Taught as written, presence of stereotypies in a patient with ID would wrongly clinch ASD — the classic shelf distractor the finding names — and the pearl even undercuts the adjacent answer (line 931) acknowledging ~30% co-occurrence. The replacement states the correct DSM-consistent differentiator, is accurate, and is level-appropriate for MS3s."
+ },
+ {
+  "id": "MS3V08-F004",
+  "verdict": "partially confirmed",
+  "reasoning": "Quote is verbatim (V08 line 485; the Q43 key-paper line at 487 repeats it). The core is right: per PubMed, the RCT showing EX/RP augmentation superior to risperidone augmentation of SRIs in OCD is Simpson HB, Foa EB, Liebowitz MR, et al., JAMA Psychiatry 2013;70(11):1190-1199 (doi:10.1001/jamapsychiatry.2013.1932), so the shipped citation is wrong and the proposed replacement is correct. But the finding's framing fails on one point: 'Foa et al., JAMA Psychiatry 2022' is not a paper that does not exist — Foa EB, Simpson HB, et al., JAMA Psychiatry 2022;79(3):193-200 (doi:10.1001/jamapsychiatry.2021.3997) is real, the maintenance-of-wellness trial of SRI discontinuation after EX/RP augmentation, which contains no ERP-vs-risperidone comparison. The page thus conflated two trials from the same research program rather than misdating one, and a learner citing 'Foa 2022' names a real paper that does not support the claim — arguably a subtler error than the finding describes. Problem and basis corrected accordingly; replacement, severity, and locus stand.",
+  "corrected_finding": {
+   "id": "MS3V08-F004",
+   "audience": "both",
+   "file": "02_CURRICULUM_V08.md",
+   "surface": "rounds_questions.md",
+   "locus": "page_prose",
+   "severity": "S2",
+   "quote": "Foa et al., JAMA Psychiatry 2022 showed ERP augmentation was superior to risperidone augmentation.",
+   "problem": "Wrong trial identity: the RCT showing ERP (EX/RP) superior to risperidone for augmenting SRIs in SRI-partial-responder OCD is Simpson et al., JAMA Psychiatry 2013;70(11):1190-1199 (Foa was second author). A 'Foa et al., JAMA Psychiatry 2022' paper does exist — the maintenance-of-wellness trial of SRI discontinuation after EX/RP augmentation (JAMA Psychiatry 2022;79(3):193-200) — but it made no ERP-vs-risperidone comparison, so the page conflates two trials from the same research program and attaches the 2013 result to the 2022 citation. A learner citing 'Foa 2022' for this result points to a real paper that does not support the claim. The 'Key paper' line for Q43 repeats the same citation and needs the same fix.",
+   "replacement": "Simpson et al., JAMA Psychiatry 2013 showed ERP augmentation was superior to risperidone augmentation.",
+   "basis": "Simpson HB, Foa EB, Liebowitz MR, et al. Cognitive-behavioral therapy vs risperidone for augmenting serotonin reuptake inhibitors in obsessive-compulsive disorder: a randomized clinical trial. JAMA Psychiatry 2013;70(11):1190-1199 (doi:10.1001/jamapsychiatry.2013.1932) — EX/RP superior to both risperidone and pill placebo. Distinguish from Foa EB, Simpson HB, et al. Maintenance of wellness in patients with obsessive-compulsive disorder who discontinue medication after exposure/response prevention augmentation. JAMA Psychiatry 2022;79(3):193-200 (doi:10.1001/jamapsychiatry.2021.3997), which tested SRI taper vs continuation after EX/RP and included no risperidone arm. Both verified via PubMed abstracts.",
+   "confidence": "high",
+   "_pass": "MS3V08",
+   "_source_path": "/home/user/psychiatry-clerkship/docs/curriculum-review/ms3/02_CURRICULUM_V08.md"
+  }
+ },
+ {
+  "id": "MS3V08-F005",
+  "verdict": "confirmed",
+  "reasoning": "Quote is verbatim (V08 line 151). Per the PubMed abstract of KINECT 3 (Hauser RA et al., Am J Psychiatry 2017;174(5):476-484, doi:10.1176/appi.ajp.2017.16091037): 'Least squares mean change from baseline to week 6 in AIMS dyskinesia score was -3.2 for the 80 mg/day group, compared with -0.1 for the placebo group' (40 mg/day: -1.9 vs -0.1). The page's '-2.9 vs. +0.3' matches neither arm of the pivotal 80-mg trial, matches no trial I can identify (KINECT-2 and the deutetrabenazine trials also report different pairs), and is attached to no study name — the page's key paper is a 2021 review — so the untraceable-and-apparently-wrong characterization is accurate. The replacement's numbers match the abstract exactly and naming KINECT-3 restores traceability at an appropriate level for both audiences. The finder's low confidence is resolved by the primary-endpoint sentence of the abstract; confirmed as written."
+ },
+ {
+  "id": "MS3V08-F006",
+  "verdict": "rejected",
+  "reasoning": "Quote is verbatim (V08 line 547) and the page's key paper is McPheeters et al., JAMA 2023 — but verification reverses the finding. Per that paper's PubMed abstract (doi:10.1001/jama.2023.19761): 'The numbers needed to treat to prevent 1 person from returning to any drinking were 11 (95% CI, 1-32) for acamprosate and 18 (95% CI, 4-32) for oral naltrexone at a dose of 50 mg/d. Compared with placebo, oral naltrexone (50 mg/d) was associated with lower rates of return to heavy drinking, with a number needed to treat of 11 (95% CI, 5-41).' The page's sentence — naltrexone NNT 11 for preventing return to heavy drinking; acamprosate NNT 11 for preventing any drinking — therefore matches its cited source exactly on both drugs and both outcomes. The reviewer transposed the outcomes: NNT 18 is oral naltrexone for return to ANY drinking, not heavy drinking. The proposed replacement ('naltrexone NNT = 18 for preventing return to heavy drinking') would insert a factual error into currently correct material. No real problem exists; rejected."
+ },
+ {
+  "id": "MS3V08-F007",
+  "verdict": "confirmed",
+  "reasoning": "Quote is verbatim (V08 line 771). Per the PubMed abstract of Storebø OJ et al., Cochrane Database Syst Rev 2020 (doi:10.1002/14651858.CD012955.pub2): 'Compared to TAU, DBT was more effective at reducing BPD severity (SMD -0.60, 95% CI -1.05 to -0.14; 3 trials, 149 participants), self-harm (SMD -0.28, 95% CI -0.48 to -0.07; 7 trials, 376 participants)...'. The page's severity figure (-0.60) matches this review exactly, confirming the paired numbers' provenance, while '-0.54' for self-harm appears nowhere in it and roughly doubles the measured effect; the page's key-paper line (Linehan et al., JAMA Psychiatry 2015, a DBT component-analysis RCT) reports no such DBT-vs-TAU SMDs, so the shipped number is both wrong and untraceable, as claimed. The replacement's figures and Cochrane-2020 attribution match the abstract and stay level-appropriate. The finder's low confidence is resolved by the abstract; confirmed as written."
+ },
+ {
+  "id": "MS3V09-F001",
+  "verdict": "confirmed",
+  "reasoning": "The quote trims the full buzzword line (V09 line 272: 'Alcohol withdrawal peak 48–96 h, autonomic instability + confusion → **delirium tremens** → benzodiazepines (CIWA-driven)') but preserves its meaning faithfully — the sheet pairs established DT with CIWA-driven dosing. The problem is real under current US adult-inpatient practice: CIWA-Ar is weighted toward patient-reported symptoms and, per the ASAM 2020 Clinical Practice Guideline on Alcohol Withdrawal Management, symptom-triggered dosing requires a patient who can be reliably assessed and communicate — which a delirious patient cannot — while established withdrawal delirium calls for benzodiazepines given scheduled/front-loaded and titrated to light sedation with sedation-scale-guided, usually ICU-level monitoring; waiting on CIWA thresholds delays treatment in the highest-mortality scenario. The site's own surfaces agree: the V08 CIWA question's pearl reserves fixed-dose protocols for patients who cannot be reliably assessed, and V09 OSCE Station 4 (verified at lines 455 and 600-606) scopes the symptom-triggered protocol to withdrawal-risk management, not DT — so the basis's internal-consistency claim checks out. The replacement is clinically correct, keeps the recall-line arrow format, and is MS3-appropriate. Confirmed."
+ }
+]

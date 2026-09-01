@@ -1,0 +1,41 @@
+[
+  {
+    "id": "A3C1-F001",
+    "audience": "both",
+    "file": "A3_AUDIO_COMPANION_QUIZZES.md",
+    "surface": "AR-48 Q3",
+    "locus": "qbank.rationale",
+    "severity": "S2",
+    "quote": "Amitriptyline had the highest Odds Ratio for efficacy (2.13) but was noted for having the worst side-effect profile among the agents studied.",
+    "problem": "Mis-states Cipriani 2018. Amitriptyline was indeed the most efficacious agent (OR 2.13), but in the study's acceptability (all-cause dropout) analysis the worst performer was clomipramine — the only drug with significantly more dropouts than placebo — not amitriptyline, whose dropout rate did not differ significantly from placebo. The stem embeds the same false premise ('limited by the worst side-effect profile (lowest acceptability)') and needs the same correction; a learner citing this on rounds mis-reports one of the trial's two headline results. Applies equally to residents.",
+    "replacement": "Amitriptyline had the highest Odds Ratio for efficacy (2.13). Its anticholinergic and cardiac side-effect burden makes it a later-line choice in practice, but in the study's acceptability (dropout) analysis it was clomipramine — not amitriptyline — that performed worst, as the only agent with significantly more dropouts than placebo.",
+    "basis": "Cipriani et al., Lancet 2018: efficacy ORs vs placebo ranged from 2.13 (amitriptyline) to 1.37 (reboxetine); for acceptability, agomelatine (OR 0.84) and fluoxetine (OR 0.88) had fewer dropouts than placebo, and clomipramine was the only drug worse than placebo (OR 1.30). Amitriptyline was not identified as lowest-acceptability.",
+    "confidence": "high"
+  },
+  {
+    "id": "A3C1-F002",
+    "audience": "both",
+    "file": "A3_AUDIO_COMPANION_QUIZZES.md",
+    "surface": "AR-35 Q7",
+    "locus": "qbank.stem",
+    "severity": "S2",
+    "quote": "A network meta-analysis in 'Lancet Psychiatry' (2022) found that family psychoeducation in schizophrenia reduced 12-month relapse rates from 37% to what percentage?",
+    "problem": "The keyed answer (10%) asserts a 73% relative reduction in 12-month relapse from an adjunctive psychosocial intervention — far beyond anything the family-intervention meta-analytic literature reports (roughly a halving of relapse, i.e. ~17-25% from a 37% baseline), and stronger than the effect of maintenance antipsychotics themselves. The 25% distractor is closer to the evidence, and its feedback ('This would be a significant reduction, but the actual data showed an even more robust effect') actively teaches the inflated figure. Likely a machine-extraction garble; the item should be re-keyed to 25% (or rewritten with the NMA's actual proportions) and both feedback strings fixed. Applies equally to residents.",
+    "replacement": "Meta-analytic data, including the 2022 Lancet Psychiatry network meta-analysis of family interventions, show that family psychoeducation roughly halves 12-month relapse in schizophrenia. If relapse with usual care is 37%, approximately what relapse rate would be expected with family psychoeducation?",
+    "basis": "Rodolico et al., Lancet Psychiatry 2022 (family interventions for relapse prevention in schizophrenia, NMA) and Bighelli et al., Lancet Psychiatry 2021 report roughly a halving of relapse odds vs usual care; Pitschel-Walz 2001 and the Cochrane review (Pharoah 2010) likewise show ~40-55% relative reduction, not 73%. Checking the relapse proportions in the 2022 NMA's results table would settle the exact keyed figure.",
+    "confidence": "medium"
+  },
+  {
+    "id": "A3C1-F003",
+    "audience": "both",
+    "file": "A3_AUDIO_COMPANION_QUIZZES.md",
+    "surface": "AR-42 Q6",
+    "locus": "qbank.rationale",
+    "severity": "S2",
+    "quote": "A 2025 RCT showed that DBT produced significantly fewer suicide-related events than SSRI and clinical management, emphasizing the role of psychotherapy.",
+    "problem": "Cites an RCT I cannot identify in the literature through January 2026, and the same untraceable citation is echoed in Q2's feedback ('later research (2025) indicates DBT produces fewer suicide-related events than clinical management with SSRIs'). An effect claim hung on a design-plus-year with no study identity gives the learner nothing to trace and, if the NotebookLM extraction invented or garbled the reference, the deck teaches learners to cite a nonexistent trial. The underlying clinical point — psychotherapy, not SSRIs, is the primary treatment for suicide-related behavior in BPD — is correct and does not need this citation. Applies equally to residents.",
+    "replacement": "Evidence-based psychotherapy is the primary treatment for reducing self-harm and suicide-related behavior in BPD; SSRIs have not been shown to prevent suicide-related events in BPD and are at most adjuncts for comorbid symptoms.",
+    "basis": "No RCT randomizing patients with BPD to DBT versus SSRI-plus-clinical-management with a suicide-related-events outcome is identifiable as of January 2026 (Linehan 1991/2006 used TAU and community treatment by experts; McMain 2009 compared DBT with general psychiatric management). Locating the citation named in the source audio, or a PubMed search for it, would settle whether the trial exists; APA and NICE guidance for BPD support the corrected framing.",
+    "confidence": "low"
+  }
+]

@@ -1,0 +1,102 @@
+[
+ {
+  "id": "A3C2-F003",
+  "verdict": "partially confirmed",
+  "reasoning": "Quote is verbatim (AR-34 Q6 keyed option). Both prongs of the problem verify against the item itself: the stem asks for 'a common overstatement or limitation', the uniform-benefit distractor's own feedback explicitly labels it 'a common overstatement' yet it is graded wrong, and the keyed option converts RAISE-ETP's DUP moderator analysis (greater benefit below the ~74-week median DUP; Kane 2016) into an efficacy boundary ('only effective') the trial did not show — with feedback endorsing it as true. However, the proposed replacement fixes only the factual over-read: with the stem still asking for 'a common overstatement', the labeled-overstatement distractor still satisfies the stem, so the double-keying the finding leads with survives. Every other 'overstatement' item in this deck (AR-33 Q6, AR-24 Q7, AR-23 Q6) keys the false claim, so the cleanest fix re-keys to the uniform-benefit option and demotes the current key into a true-statement distractor using the reviewer's corrected sentence. Corrected finding supplied with that replacement; problem, severity, and basis stand.",
+  "corrected_finding": {
+   "id": "A3C2-F003",
+   "audience": "both",
+   "file": "A3_AUDIO_COMPANION_QUIZZES.md",
+   "surface": "AR-34 Q6",
+   "locus": "qbank.option",
+   "severity": "S2",
+   "quote": "CSC is only effective for those with a duration of untreated psychosis (<74 weeks).",
+   "problem": "Double-keyed item plus an over-read. The stem asks for 'a common overstatement or limitation', and the deck's own feedback on the distractor about uniform benefit regardless of DUP explicitly calls that option 'a common overstatement' — so two options satisfy the stem and a learner choosing the labeled overstatement is graded wrong. The keyed sentence itself converts RAISE-ETP's moderator analysis (greater benefit below the 74-week median DUP) into an efficacy boundary ('only effective'), which the trial did not show, and the keyed feedback endorses it as true. Equally wrong for residents.",
+   "replacement": "Re-key the item to match the deck's own overstatement-item convention (the key is the false claim): key 'The benefits of the program are uniform regardless of how long the patient was psychotic before treatment' as the common overstatement (its existing feedback already explains the DUP moderation), and reword the current keyed option into a true-statement distractor: 'The benefits were concentrated in patients with shorter duration of untreated psychosis (below the ~74-week median), so gains may be smaller when treatment starts late' — with feedback that this is an accurate limitation, not an overstatement: RAISE-ETP's moderator analysis showed greater benefit with shorter DUP, not that CSC is ineffective beyond 74 weeks.",
+   "basis": "Kane JM et al., Am J Psychiatry 2016 (RAISE-ETP): DUP-by-treatment moderation with median DUP 74 weeks; the internal contradiction between the key and the distractor feedback is verifiable within the item itself, and the deck's other overstatement items (AR-33 Q6, AR-24 Q7, AR-23 Q6) key the false claim.",
+   "confidence": "high",
+   "_pass": "A3C2",
+   "_source_path": "/home/user/psychiatry-clerkship/docs/curriculum-review/ms3/A3_AUDIO_COMPANION_QUIZZES.md"
+  }
+ },
+ {
+  "id": "A3C2-F004",
+  "verdict": "confirmed",
+  "reasoning": "Quote is verbatim (AR-24 Q2, feedback on the movement-disorder distractor). The problem is real and settled by the trial's own abstract, verified via PubMed (Lieberman et al., NEJM 2005, https://doi.org/10.1056/NEJMoa051688): 'the rates differed (P=0.04); ... perphenazine was associated with more discontinuation for extrapyramidal effects.' The deck's rationale asserts the exact opposite of that reported metric; the trial's genuine surprise was that rating-scale-measured EPS did not differ across drugs, which the finding correctly identifies. The replacement is accurate — perphenazine's overall time to discontinuation was comparable, rated EPS did not differ, and EPS-specific discontinuation was modestly more common with perphenazine (8% vs 2-4%, consistent with the paper's results table) — and it still rejects the distractor for the right reason ('discontinued much earlier' remains false). Level-appropriate for MS3 and residents."
+ },
+ {
+  "id": "A3C2-F005",
+  "verdict": "confirmed",
+  "reasoning": "Quote is verbatim (AR-38 Q3, feedback on the 'Monthly for the first year, then every 2 years' distractor). The stem is explicitly about weight monitoring, and the 2004 ADA/APA/AACE/NAASO consensus schedules weight at baseline, 4, 8, and 12 weeks and then quarterly; annual frequency belongs to waist circumference, blood pressure, fasting glucose, and history (lipids every 5 years) — which the deck's own Q4 and Q5 state correctly. Teaching a 'transition to annual checks' for weight quadruples the interval and would delay recognition of ongoing antipsychotic-associated weight gain, so the problem is real under current US inpatient practice and S2 is fair for a monitoring-protocol error a service might follow. The replacement ('followed by quarterly weight checks thereafter') matches the consensus monitoring table, fits the feedback slot without disturbing the correctly keyed answer, and is level-appropriate. Judged from knowledge of the consensus table (Diabetes Care 2004;27:596-601); no lookup needed for this well-established schedule."
+ },
+ {
+  "id": "A3C2-F006",
+  "verdict": "partially confirmed",
+  "reasoning": "Quote is verbatim (AR-27 Q3, keyed feedback). Verification via PubMed (Geddes et al., BALANCE, Lancet 2010, https://doi.org/10.1016/S0140-6736(09)61828-6) confirms the reviewer's suspicion as far as the published abstract allows: the primary outcome was initiation of new intervention for ANY emergent mood episode, with lithium vs valproate HR 0.71 (95% CI 0.51-1.00, p=0.0472) and combination vs valproate 0.59; the abstract contains no polarity-specific hazard ratios and headlines no depressive-pole advantage, and no PMC full text exists to source an 'HR of 0.63 for depressive episodes'. Keying 'depressive relapses' as where lithium's advantage was 'most apparent' — while the 'Manic relapses' distractor feedback affirmatively denies the pole where lithium's prophylactic edge is classically at least as strong (Severus 2014 and the broader maintenance literature) — teaches an unsourced statistic and a probably inverted polarity claim as a trial fact. The core problem is real, but the original replacement is a verification directive rather than usable text and its framing can now be tightened with what the abstract settles; corrected finding supplied with a concrete rewrite and confidence raised from low to medium (exact polarity-specific secondary outcomes remain unverifiable through the allowed tools).",
+  "corrected_finding": {
+   "id": "A3C2-F006",
+   "audience": "both",
+   "file": "A3_AUDIO_COMPANION_QUIZZES.md",
+   "surface": "AR-27 Q3",
+   "locus": "qbank.rationale",
+   "severity": "S2",
+   "quote": "Lithium's benefit was particularly strong in this area, demonstrated by an HR of 0.63 for depressive episodes.",
+   "problem": "The published BALANCE report headlines only overall relapse prevention — lithium vs valproate HR 0.71 (95% CI 0.51-1.00) for new intervention for any emergent mood episode, combination vs valproate 0.59 — with no polarity-specific hazard ratio in the abstract, so the 'HR of 0.63 for depressive episodes' cannot be traced to the trial as published. Keying 'depressive relapses' as the pole where lithium's advantage over valproate was 'most apparent' — while the 'Manic relapses' distractor feedback denies that pole — also runs against the maintenance literature, where lithium's prophylactic edge is classically at least as strong against manic relapse. As written the item teaches an unsourced statistic and a likely inverted polarity claim as the basis for maintenance-agent selection — wrong for residents making those choices as well.",
+   "replacement": "Rewrite the item to the trial's published finding, e.g. stem: 'In BALANCE, how did lithium monotherapy compare with valproate monotherapy for relapse prevention?' keyed to 'Lithium was superior at preventing new intervention for an emergent mood episode of either pole (HR 0.71, 95% CI 0.51-1.00)', with feedback noting the primary outcome covered relapse of any polarity and the trial did not establish a specific depressive-pole advantage. Do not key a polarity-specific claim or the 0.63 figure unless it is verified against the paper's polarity-specific secondary outcomes in the full report.",
+   "basis": "Geddes JR et al. (BALANCE), Lancet 2010;375:385-95, abstract verified via PubMed (doi:10.1016/S0140-6736(09)61828-6): primary-outcome HRs 0.71 (lithium vs valproate, p=0.0472) and 0.59 (combination vs valproate) for any emergent mood episode; no polarity-specific HRs in the abstract and no open-access full text to source an HR of 0.63 for depressive episodes. Background: lithium maintenance meta-analyses (e.g., Severus et al. 2014) show stronger prevention of manic than depressive episodes.",
+   "confidence": "medium",
+   "_pass": "A3C2",
+   "_source_path": "/home/user/psychiatry-clerkship/docs/curriculum-review/ms3/A3_AUDIO_COMPANION_QUIZZES.md"
+  }
+ },
+ {
+  "id": "A3C2-F007",
+  "verdict": "partially confirmed",
+  "reasoning": "Quote is verbatim (AR-20 Q2 stem). The reviewer's low-confidence recollection is fully vindicated by the abstract, verified via PubMed (Aoki et al., Cochrane Database Syst Rev 2022, CD007297.pub3, https://doi.org/10.1002/14651858.CD007297.pub3): the update included '13 new studies, for a total of 15 RCTs' (not 14); the review is explicitly uncertain whether SDM improves knowledge (very-low-certainty evidence) and uncertain about overall user satisfaction (single-study moderate-certainty gains only for aspects of satisfaction with received information); and its one positive headline was that SDM may improve users' perceived involvement immediately after the encounter (SMD 0.63, low certainty), with 'most evidence ... of low or very low certainty' overall. So the keyed 'Patient satisfaction and knowledge ... consistently improved' mis-summarises the named review, and Q6's feedback repeats the satisfaction claim. Core problem confirmed; the original replacement was a conditional verification directive, so the corrected finding supplies the verified facts, a concrete rewrite, and confidence raised to high.",
+  "corrected_finding": {
+   "id": "A3C2-F007",
+   "audience": "both",
+   "file": "A3_AUDIO_COMPANION_QUIZZES.md",
+   "surface": "AR-20 Q2",
+   "locus": "qbank.stem",
+   "severity": "S2",
+   "quote": "A 2022 Cochrane review of 14 RCTs evaluated the efficacy of Shared Decision-Making (SDM) interventions in mental health. Which outcome was found to be consistently improved?",
+   "problem": "The named review (Aoki et al. 2022, CD007297.pub3) included 15 RCTs, not 14, and did not find satisfaction and knowledge 'consistently improved': it was explicitly uncertain whether SDM improves knowledge and overall user satisfaction (very-low-certainty evidence; single-study moderate-certainty gains only for aspects of satisfaction with received information). Its one positive result was that SDM may improve users' perceived involvement in the decision immediately after the encounter (SMD 0.63, low-certainty evidence), and it concluded most evidence was of low or very low certainty. The keyed answer and feedback mis-summarise the named review — and Q6's feedback ('satisfaction and engagement improve') repeats the claim; the satisfaction/knowledge finding belongs to the broader patient decision-aid literature, not this Cochrane review.",
+   "replacement": "Rewrite the item to the review's actual result, e.g. stem: 'A 2022 Cochrane review of 15 RCTs evaluated Shared Decision-Making (SDM) interventions in mental health care. Which outcome showed some evidence of improvement?' keyed to 'Patients' perceived involvement in the decision-making process immediately after the encounter', with feedback that effects on knowledge, overall satisfaction, and clinical outcomes were uncertain (low- to very-low-certainty evidence). Align Q6's feedback with the same summary, and attribute knowledge/decisional-conflict gains to the general patient decision-aid literature if that teaching point is kept.",
+   "basis": "Aoki Y et al., Cochrane Database Syst Rev 2022;11:CD007297 (doi:10.1002/14651858.CD007297.pub3), abstract verified via PubMed: 15 RCTs; 'We are uncertain whether SDM interventions improve knowledge'; overall satisfaction uncertain; SDM-specific user-reported involvement immediately post-encounter SMD 0.63 (low certainty); 'most evidence was of low or very low certainty.'",
+   "confidence": "high",
+   "_pass": "A3C2",
+   "_source_path": "/home/user/psychiatry-clerkship/docs/curriculum-review/ms3/A3_AUDIO_COMPANION_QUIZZES.md"
+  }
+ },
+ {
+  "id": "A3C2-F008",
+  "verdict": "confirmed",
+  "reasoning": "Quote is verbatim (AR-23 Q1, feedback on the 'placebo was dangerous' distractor). The finding's flagged uncertainty about the exact medians is resolved in its favor by the abstract, verified via PubMed (Schneider et al., NEJM 2006, https://doi.org/10.1056/NEJMoa061240): time to discontinuation for any reason showed no significant differences — olanzapine median 8.1 weeks, quetiapine 5.3, risperidone 7.4, placebo 8.0 (P=0.52) — so placebo was NOT the longest (olanzapine was numerically longest), and 'suggesting it was better tolerated' leans on the wrong metric, though placebo did have the fewest intolerability discontinuations (5% vs 16-24%, P=0.009). The clinical thrust is preserved by the correction, exactly as the finding says. The replacement matches the abstract figure-for-figure, works in the feedback slot without disturbing the correctly keyed answer, and is level-appropriate for both audiences. Confirmed as written, with the verification upgrading its stated low confidence."
+ },
+ {
+  "id": "A3C3-F001",
+  "verdict": "partially confirmed",
+  "reasoning": "Quote is verbatim (AR-09 Q2, distractor plus its inline feedback). The core problem is real and settled by the trial's abstract, verified via PubMed (Elkin et al., Arch Gen Psychiatry 1989, https://doi.org/10.1001/archpsyc.1989.01810110013002): all four conditions, including placebo plus clinical management, improved significantly; comparing the psychotherapies with placebo-CM there was 'limited evidence of the specific effectiveness of interpersonal psychotherapy and none for cognitive behavior therapy'; and 'there were no significant differences among treatments, including placebo plus clinical management, for the less severely depressed' — so the graded-wrong option approximates the trial's finding for the stem's mild-to-moderate frame while the feedback ('All active treatments ... beyond the placebo control group') teaches the opposite of the trial. However, the proposed replacement's clause 'superiority over placebo emerged only in the more severe subgroup' overstates the confinement: the abstract reports superior recovery rates for both IPT and imipramine-CM versus placebo-CM in the primary total-sample analyses; only the between-treatment mean-score differences were restricted to the more severe subgroup. Corrected finding tightens that clause; everything else stands.",
+  "corrected_finding": {
+   "id": "A3C3-F001",
+   "audience": "both",
+   "file": "A3_AUDIO_COMPANION_QUIZZES.md",
+   "surface": "AR-09 Q2",
+   "locus": "qbank.option",
+   "severity": "S2",
+   "quote": "Placebo was found to be just as effective as CBT and IPT. All active treatments were found to produce significant improvement beyond the placebo control group.",
+   "problem": "This mis-summarises the TDCRP's most examined result. Elkin et al. found that patients in all four conditions, including placebo plus clinical management, improved significantly; CBT never significantly separated from placebo-CM, evidence for IPT was limited (superior recovery rates), and among less severely depressed patients (the stem's 'mild-to-moderate' frame) no condition separated from placebo. So the option being marked wrong is actually close to the trial's real finding for that subgroup, and the attached feedback teaches the opposite of the trial — a learner repeating 'all active treatments beat placebo in TDCRP' on rounds or the shelf is repeating an error, and it undercuts this same deck's Q4/Q5 severity nuance.",
+   "replacement": "Placebo plus clinical management produced no improvement at all. In fact, patients in every condition, including placebo plus clinical management, improved significantly. Specific superiority over placebo was limited — superior recovery rates for imipramine plus clinical management and IPT, and none for CBT — and among less severely depressed patients no treatment separated from placebo; clear between-treatment differences were confined to the more severely depressed subgroup, strongest for imipramine plus clinical management.",
+   "basis": "Elkin et al., Arch Gen Psychiatry 1989 (doi:10.1001/archpsyc.1989.01810110013002), abstract verified via PubMed: 'limited evidence of the specific effectiveness of interpersonal psychotherapy and none for cognitive behavior therapy' vs placebo-CM; 'Superior recovery rates were found for both interpersonal psychotherapy and imipramine plus clinical management, as compared with placebo plus clinical management'; significant treatment differences present only in the more severely depressed subgroup; 'no significant differences among treatments, including placebo plus clinical management, for the less severely depressed.'",
+   "confidence": "high",
+   "_pass": "A3C3",
+   "_source_path": "/home/user/psychiatry-clerkship/docs/curriculum-review/ms3/A3_AUDIO_COMPANION_QUIZZES.md"
+  }
+ },
+ {
+  "id": "A3C3-F002",
+  "verdict": "confirmed",
+  "reasoning": "Quote is verbatim (AR-09 Q5, distractor plus its inline feedback). The problem is real: in an item whose keyed answer is the overstatement to avoid, this distractor certifies as 'a key finding of the study ... supported by the data' the claim that all active treatments showed improvement over placebo — which the trial's own abstract, verified via PubMed (Elkin et al., Arch Gen Psychiatry 1989, https://doi.org/10.1001/archpsyc.1989.01810110013002), contradicts: there was 'limited evidence of the specific effectiveness of interpersonal psychotherapy and none for cognitive behavior therapy' versus placebo-CM. The finding's severity-subgroup clause is a slight compression (total-sample recovery rates did favor IPT and imipramine-CM), but the core assertion — the option certifies a false claim as fact, and a knowledgeable learner could even pick it as the overstatement and be graded wrong — stands. The replacement ('patients in all four conditions ... showed significant improvement') is supported nearly verbatim by the abstract ('Patients in all treatments showed significant reduction in depressive symptoms and improvement in functioning'), preserves the item's true-statement distractor logic against the imipramine-severity key, and is level-appropriate for both audiences."
+ }
+]
