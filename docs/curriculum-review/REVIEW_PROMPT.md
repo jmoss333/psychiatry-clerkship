@@ -104,6 +104,11 @@ Highest yield first:
    (NMS / serotonin syndrome), withdrawal, capacity.
 4. Anything numeric: doses, thresholds, monitoring intervals, lab cutoffs, timeframes.
 5. Overlay-vs-prose disagreement within a single page.
+6. **A statistic in page prose with nothing to trace it to.** An effect size, NNT, or
+   percentage attached to a study *design* ("meta-analysis of 14 studies", "RCT (n=200)")
+   rather than a study *identity* is a finding: a learner cannot get from the number to a
+   paper. Appendix A4 cannot catch these — it only checks claims that were annotated, and is
+   structurally blind to an assertion nobody annotated.
 
 ## Calibration
 
@@ -170,6 +175,11 @@ For pass 4, add this line to the prompt:
 > beside it. A positively-voiced claim resting on a null or negative span is a finding — the fix
 > is to rewrite the claim to match the paper, never to widen the span. Read the span as the
 > paper's own words, not as a summary you may extend.
+
+`bin/sweep_unlicensed_claims.py` covers the mechanical half of concentration point 6 —
+it greps shipped surfaces for numbers without attribution. Run it first and read its handoff
+in `13_Faculty_Resources/Handoffs/`; the reviewer's job is the half a grep cannot do, which is
+judging whether an untraceable number is also *wrong*.
 
 For pass 3, add:
 
