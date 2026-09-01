@@ -176,3 +176,28 @@ applied at all.**
 `- **Source:**` line on the surface in the transcript. Raw per-pass output is under
 `raw/`, verifier verdicts under `raw/verdicts/`, keyed by finding id. Regenerate transcripts
 after content changes per `REVIEW_PROMPT.md` §4.
+
+## Addendum — 2026-09-01, post-merge supplement
+
+After the main review closed, #447 merged and main brought in the 2026-08-31 catatonia Case
+of the Week (#424); the transcripts were regenerated, shifting volume boundaries. Two
+follow-ups keep this review's claims true against the current transcripts:
+
+1. **Re-anchoring.** All 171 recorded quotes still resolve verbatim; 19 findings moved one
+   volume file over and now carry the current path in `file`, with the original snapshot
+   path preserved as `file_at_review`.
+2. **Supplemental pass (SUPP1)** over everything that shipped after the reviewed snapshot:
+   both catatonia COTW editions in full, plus diffs of every changed already-reviewed block
+   (all diffs proved whitespace/separator-only). The new catatonia content is clinically
+   sound and consistent with the library's own catatonia standard — lorazepam-challenge
+   first move, antipsychotics held, malignant catatonia → early ECT, BFCRS kept at
+   administration teaching with no instrument-policy violation. One finding: **SUPP1-F001
+   (S5)** — the MS3 edition's Q7 assigns the student the full suicide-risk chain
+   ("complete a structured suicide risk assessment … build a safety plan") solo,
+   contradicting the page's own escalate-don't-manage-alone coaching. Caveat: the COTW case
+   stems render from the case page itself; stem-internal details were judged as restated in
+   the teaching points.
+
+**Final ledger: 165 findings (8 S1 · 76 S2 · 10 S3 · 68 S4 · 3 S5)**; the verification
+ledger (59 confirmed · 29 corrected · 7 rejected of 95 S1/S2) is unchanged — the one
+supplemental finding is S5 and carries reviewer-judgment status like all S3–S5.

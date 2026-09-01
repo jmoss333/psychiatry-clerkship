@@ -1393,6 +1393,25 @@
   }
  },
  {
+  "id": "RV10-F006",
+  "audience": "Resident",
+  "file": "resident/02_CURRICULUM_V10.md",
+  "surface": "cotw_20260803_lithium_res.md",
+  "locus": "page_prose",
+  "severity": "S2",
+  "quote": "Hypercalcemia can itself produce confusion and contributes to nephrogenic DI. Two lithium effects converging.",
+  "problem": "A corrected calcium of 10.9 mg/dL is mild hypercalcaemia, well below the range at which hypercalcaemia produces neuropsychiatric depression of consciousness — obtundation is generally a feature above roughly 12-13 mg/dL and frank encephalopathy above about 14. Offering it as a contributor to this delirium supplies a false alternative explanation for an encephalopathy the page correctly assigns to chronic lithium neurotoxicity, and teaches the resident to attribute causal weight to a lab value that does not carry it. The error is asserted at three loci and all three need the fix: this Q3 differential entry; the summary line '**Hypercalcemic encephalopathy** from lithium-associated hyperparathyroidism — *concurrent contributor*', ranked #3, above uraemic/metabolic encephalopathy at #5; and — most consequentially, because it is the answer key — facilitator common-error #6, which tells the facilitator that not connecting the hypercalcaemia to lithium-associated hyperparathyroidism means 'missing a treatable contributor to both the encephalopathy and the polyuria'. Her concentrating defect is separately and better explained by lithium itself, as this page's own Q4 teaches (ENaC entry into collecting-duct principal cells, impaired AQP2), so hypercalcaemia should not be doing explanatory work for the polyuria either.",
+  "replacement": "Her corrected calcium of 10.9 with an inappropriately elevated PTH is real and is lithium's doing, but read it as a *marker* of lithium-associated hyperparathyroidism (Q6) rather than as a contributor to tonight's picture: mild hypercalcaemia at this level does not produce encephalopathy — that generally requires >12-13 mg/dL — and her concentrating defect is already fully accounted for by lithium's direct effect on the collecting duct (Q4). Two lithium effects converging, but only one of them is driving the neurologic picture. [Apply the same correction to the summary differential — demote the hypercalcaemia line below uraemic/metabolic encephalopathy and relabel it 'marker of lithium-associated hyperparathyroidism, not a driver of the encephalopathy' — and to facilitator common-error #6, where the point to teach is connecting the hypercalcaemia to lithium-associated hyperparathyroidism as a monitorable endocrine effect requiring follow-up, not as a treatable contributor to the encephalopathy.]",
+  "basis": "Standard thresholds for symptomatic hypercalcaemia: mild (roughly 10.5-12 mg/dL) is usually asymptomatic or minimally symptomatic; neuropsychiatric features and obtundation belong to the moderate-to-severe range (about 12-14 mg/dL and above), with hypercalcaemic crisis above that. Endocrine Society primary-hyperparathyroidism guidance and standard internal-medicine teaching on hypercalcaemia. Hypercalcaemia-induced nephrogenic DI (calcium-sensing-receptor-mediated AQP2 downregulation) likewise requires higher calcium levels than this; the page's own Q4 attributes her concentrating defect to lithium via ENaC and AQP2.",
+  "confidence": "high",
+  "pass": "RV10",
+  "verification": {
+   "verdict": "partially confirmed",
+   "reasoning": "Both quoted strings are verbatim (resident transcript line 121 in Q3, and the ranked-differential line at 197; _source_path again names the ms3 file). The core is right and, if anything, understated: a corrected calcium of 10.9 mg/dL is mild hypercalcaemia, usually asymptomatic or minimally symptomatic below about 12, with neuropsychiatric obtundation and frank encephalopathy belonging to the 12-14+ range — so it cannot be read as a driver of a delirium the page itself attributes to chronic lithium neurotoxicity, and ranking 'Hypercalcemic encephalopathy ... concurrent contributor' at #3, above uraemic/metabolic encephalopathy at #5, mis-calibrates the resident. The finding misses the strongest instance: facilitator-note common error #6 (line 247) instructs facilitators that failing to connect the hypercalcaemia back to lithium-associated hyperparathyroidism means 'missing a treatable contributor to both the encephalopathy and the polyuria' — that is the answer key teaching the error, and it needs the same correction, so the finding's scope must widen. Two things need correcting in the finding itself. (1) 'invites acute treatment of a calcium that needs none' is unsupported: the page's management only monitors calcium (serial calcium; repeat calcium, PTH, vitamin D, 24-hour urine calcium; endocrinology referral) and recommends no calcium-lowering therapy anywhere — drop the claim rather than leave an overreach in a finding whose core is sound. (2) The replacement concedes that hypercalcaemia at this level 'does contribute to the concentrating defect', which is itself weakly supported — hypercalcaemia-induced nephrogenic DI is likewise a phenomenon of higher calcium levels, and the page's own Q4 attributes her concentrating defect to lithium entering collecting-duct principal cells via ENaC and impairing AQP2. Severity S2 stands: the ranked-differential line and the facilitator note make affirmative causal claims about this patient that her calcium does not support.",
+   "batch": "VB05"
+  }
+ },
+ {
   "id": "RV10-F004",
   "audience": "Resident",
   "file": "resident/02_CURRICULUM_V11.md",
@@ -1433,25 +1452,6 @@
   "file_at_review": "resident/02_CURRICULUM_V10.md"
  },
  {
-  "id": "RV10-F006",
-  "audience": "Resident",
-  "file": "resident/02_CURRICULUM_V10.md",
-  "surface": "cotw_20260803_lithium_res.md",
-  "locus": "page_prose",
-  "severity": "S2",
-  "quote": "Hypercalcemia can itself produce confusion and contributes to nephrogenic DI. Two lithium effects converging.",
-  "problem": "A corrected calcium of 10.9 mg/dL is mild hypercalcaemia, well below the range at which hypercalcaemia produces neuropsychiatric depression of consciousness — obtundation is generally a feature above roughly 12-13 mg/dL and frank encephalopathy above about 14. Offering it as a contributor to this delirium supplies a false alternative explanation for an encephalopathy the page correctly assigns to chronic lithium neurotoxicity, and teaches the resident to attribute causal weight to a lab value that does not carry it. The error is asserted at three loci and all three need the fix: this Q3 differential entry; the summary line '**Hypercalcemic encephalopathy** from lithium-associated hyperparathyroidism — *concurrent contributor*', ranked #3, above uraemic/metabolic encephalopathy at #5; and — most consequentially, because it is the answer key — facilitator common-error #6, which tells the facilitator that not connecting the hypercalcaemia to lithium-associated hyperparathyroidism means 'missing a treatable contributor to both the encephalopathy and the polyuria'. Her concentrating defect is separately and better explained by lithium itself, as this page's own Q4 teaches (ENaC entry into collecting-duct principal cells, impaired AQP2), so hypercalcaemia should not be doing explanatory work for the polyuria either.",
-  "replacement": "Her corrected calcium of 10.9 with an inappropriately elevated PTH is real and is lithium's doing, but read it as a *marker* of lithium-associated hyperparathyroidism (Q6) rather than as a contributor to tonight's picture: mild hypercalcaemia at this level does not produce encephalopathy — that generally requires >12-13 mg/dL — and her concentrating defect is already fully accounted for by lithium's direct effect on the collecting duct (Q4). Two lithium effects converging, but only one of them is driving the neurologic picture. [Apply the same correction to the summary differential — demote the hypercalcaemia line below uraemic/metabolic encephalopathy and relabel it 'marker of lithium-associated hyperparathyroidism, not a driver of the encephalopathy' — and to facilitator common-error #6, where the point to teach is connecting the hypercalcaemia to lithium-associated hyperparathyroidism as a monitorable endocrine effect requiring follow-up, not as a treatable contributor to the encephalopathy.]",
-  "basis": "Standard thresholds for symptomatic hypercalcaemia: mild (roughly 10.5-12 mg/dL) is usually asymptomatic or minimally symptomatic; neuropsychiatric features and obtundation belong to the moderate-to-severe range (about 12-14 mg/dL and above), with hypercalcaemic crisis above that. Endocrine Society primary-hyperparathyroidism guidance and standard internal-medicine teaching on hypercalcaemia. Hypercalcaemia-induced nephrogenic DI (calcium-sensing-receptor-mediated AQP2 downregulation) likewise requires higher calcium levels than this; the page's own Q4 attributes her concentrating defect to lithium via ENaC and AQP2.",
-  "confidence": "high",
-  "pass": "RV10",
-  "verification": {
-   "verdict": "partially confirmed",
-   "reasoning": "Both quoted strings are verbatim (resident transcript line 121 in Q3, and the ranked-differential line at 197; _source_path again names the ms3 file). The core is right and, if anything, understated: a corrected calcium of 10.9 mg/dL is mild hypercalcaemia, usually asymptomatic or minimally symptomatic below about 12, with neuropsychiatric obtundation and frank encephalopathy belonging to the 12-14+ range — so it cannot be read as a driver of a delirium the page itself attributes to chronic lithium neurotoxicity, and ranking 'Hypercalcemic encephalopathy ... concurrent contributor' at #3, above uraemic/metabolic encephalopathy at #5, mis-calibrates the resident. The finding misses the strongest instance: facilitator-note common error #6 (line 247) instructs facilitators that failing to connect the hypercalcaemia back to lithium-associated hyperparathyroidism means 'missing a treatable contributor to both the encephalopathy and the polyuria' — that is the answer key teaching the error, and it needs the same correction, so the finding's scope must widen. Two things need correcting in the finding itself. (1) 'invites acute treatment of a calcium that needs none' is unsupported: the page's management only monitors calcium (serial calcium; repeat calcium, PTH, vitamin D, 24-hour urine calcium; endocrinology referral) and recommends no calcium-lowering therapy anywhere — drop the claim rather than leave an overreach in a finding whose core is sound. (2) The replacement concedes that hypercalcaemia at this level 'does contribute to the concentrating defect', which is itself weakly supported — hypercalcaemia-induced nephrogenic DI is likewise a phenomenon of higher calcium levels, and the page's own Q4 attributes her concentrating defect to lithium entering collecting-duct principal cells via ENaC and impairing AQP2. Severity S2 stands: the ranked-differential line and the facilitator note make affirmative causal claims about this patient that her calcium does not support.",
-   "batch": "VB05"
-  }
- },
- {
   "id": "RV11-F002",
   "audience": "Resident",
   "file": "resident/02_CURRICULUM_V11.md",
@@ -1490,6 +1490,25 @@
   }
  },
  {
+  "id": "RV11-F005",
+  "audience": "Resident",
+  "file": "resident/02_CURRICULUM_V11.md",
+  "surface": "cotw_20260720_mdd_res.md",
+  "locus": "page_prose",
+  "severity": "S2",
+  "quote": "metabolic baseline (weight, BMI, lipids, HbA1c) before an atypical antipsychotic; ECG if considering agents with QT liability; pregnancy planning discussion; consider genotype only if it will change dosing decisions.",
+  "problem": "The pre-prescribing checklist is complete for the atypical-antipsychotic option and empty for lithium, which the very next paragraph offers as a co-equal first choice for augmentation. Nothing tells the resident to obtain baseline creatinine/eGFR, TSH and calcium, or to draw a 12-hour trough level roughly five days after initiation and after every dose change — and nothing connects this patient's migraine history to the NSAID interaction that is the commonest outpatient route to lithium toxicity. The asymmetry teaches that lithium is the lower-effort option, which is the opposite of true; a resident following this list starts lithium blind and monitors it by symptom.",
+  "replacement": "metabolic baseline (weight, BMI, lipids, HbA1c) before an atypical antipsychotic; **before lithium: creatinine/eGFR, TSH, calcium, urine pregnancy test, and a plan for a 12-hour trough level ~5 days after initiation and after every dose change, with counselling that NSAIDs (directly relevant to her migraines), thiazides, and ACE inhibitors/ARBs raise lithium levels**; ECG if considering agents with QT liability; pregnancy planning discussion; consider genotype only if it will change dosing decisions.",
+  "basis": "APA and CANMAT lithium-initiation standards (baseline renal, thyroid and calcium studies; trough level approximately five days after initiation or any dose change). Note the interaction set is stated correctly elsewhere in this same volume — the mania case's 'NSAIDs/thiazides/ACE-I raise lithium' — but is absent from the one case that actually recommends starting lithium.",
+  "confidence": "high",
+  "pass": "RV11",
+  "verification": {
+   "verdict": "partially confirmed",
+   "reasoning": "The quote is verbatim (docs/curriculum-review/resident/02_CURRICULUM_V11.md, line 116); the recorded _source_path names the ms3 file, which does not contain this text, so the path is corrected — that is the only correction, the clinical substance is fully confirmed. The asymmetry is exactly as claimed: the management sequence immediately below (line 119) offers lithium as a co-equal first augmentation choice ('aripiprazole/brexpiprazole/cariprazine or lithium'), while the workup line's only pre-prescribing baselines are for atypicals; the case's sole lithium-monitoring language is the generic 'requires monitoring and has a narrow therapeutic index' (line 83), with no creatinine/eGFR, TSH, calcium, or trough-level plan anywhere in the case, and the stem's migraine history (line 65) is never connected to the NSAID interaction. The basis's cross-reference also checks out — the bipolar case in this same volume (line 235) states 'NSAIDs/thiazides/ACE-I raise lithium' while the one case recommending lithium initiation omits it. The replacement matches APA/CANMAT lithium-initiation standards (baseline renal, thyroid, calcium, pregnancy status; 12-hour trough roughly 5 days after initiation and after dose changes; interaction counselling) and is pitched correctly for residents.",
+   "batch": "VB07"
+  }
+ },
+ {
   "id": "RV11-F004",
   "audience": "Resident",
   "file": "resident/02_CURRICULUM_V12.md",
@@ -1508,25 +1527,6 @@
    "batch": "VB07"
   },
   "file_at_review": "resident/02_CURRICULUM_V11.md"
- },
- {
-  "id": "RV11-F005",
-  "audience": "Resident",
-  "file": "resident/02_CURRICULUM_V11.md",
-  "surface": "cotw_20260720_mdd_res.md",
-  "locus": "page_prose",
-  "severity": "S2",
-  "quote": "metabolic baseline (weight, BMI, lipids, HbA1c) before an atypical antipsychotic; ECG if considering agents with QT liability; pregnancy planning discussion; consider genotype only if it will change dosing decisions.",
-  "problem": "The pre-prescribing checklist is complete for the atypical-antipsychotic option and empty for lithium, which the very next paragraph offers as a co-equal first choice for augmentation. Nothing tells the resident to obtain baseline creatinine/eGFR, TSH and calcium, or to draw a 12-hour trough level roughly five days after initiation and after every dose change — and nothing connects this patient's migraine history to the NSAID interaction that is the commonest outpatient route to lithium toxicity. The asymmetry teaches that lithium is the lower-effort option, which is the opposite of true; a resident following this list starts lithium blind and monitors it by symptom.",
-  "replacement": "metabolic baseline (weight, BMI, lipids, HbA1c) before an atypical antipsychotic; **before lithium: creatinine/eGFR, TSH, calcium, urine pregnancy test, and a plan for a 12-hour trough level ~5 days after initiation and after every dose change, with counselling that NSAIDs (directly relevant to her migraines), thiazides, and ACE inhibitors/ARBs raise lithium levels**; ECG if considering agents with QT liability; pregnancy planning discussion; consider genotype only if it will change dosing decisions.",
-  "basis": "APA and CANMAT lithium-initiation standards (baseline renal, thyroid and calcium studies; trough level approximately five days after initiation or any dose change). Note the interaction set is stated correctly elsewhere in this same volume — the mania case's 'NSAIDs/thiazides/ACE-I raise lithium' — but is absent from the one case that actually recommends starting lithium.",
-  "confidence": "high",
-  "pass": "RV11",
-  "verification": {
-   "verdict": "partially confirmed",
-   "reasoning": "The quote is verbatim (docs/curriculum-review/resident/02_CURRICULUM_V11.md, line 116); the recorded _source_path names the ms3 file, which does not contain this text, so the path is corrected — that is the only correction, the clinical substance is fully confirmed. The asymmetry is exactly as claimed: the management sequence immediately below (line 119) offers lithium as a co-equal first augmentation choice ('aripiprazole/brexpiprazole/cariprazine or lithium'), while the workup line's only pre-prescribing baselines are for atypicals; the case's sole lithium-monitoring language is the generic 'requires monitoring and has a narrow therapeutic index' (line 83), with no creatinine/eGFR, TSH, calcium, or trough-level plan anywhere in the case, and the stem's migraine history (line 65) is never connected to the NSAID interaction. The basis's cross-reference also checks out — the bipolar case in this same volume (line 235) states 'NSAIDs/thiazides/ACE-I raise lithium' while the one case recommending lithium initiation omits it. The replacement matches APA/CANMAT lithium-initiation standards (baseline renal, thyroid, calcium, pregnancy status; 12-hour trough roughly 5 days after initiation and after dose changes; interaction counselling) and is pitched correctly for residents.",
-   "batch": "VB07"
-  }
  },
  {
   "id": "RV13-F001",
@@ -2184,6 +2184,42 @@
   }
  },
  {
+  "id": "MS3V10-F012",
+  "audience": "MS3",
+  "file": "ms3/02_CURRICULUM_V10.md",
+  "surface": "cotw_20260723_suiciderisk_ms3.md",
+  "locus": "page_prose",
+  "severity": "S4",
+  "quote": "Favor **discharge with a robust safety plan and rapid follow-up** when ideation is passive/low-intent, the patient can collaborate on and commit to a plan, means access can be reduced, and reliable supports and timely outpatient follow-up exist.",
+  "problem": "Two phrases undo work the page does elsewhere. \"Commit to a plan\" reimports the logic of the no-suicide contract that Q4 and Q5 have just discarded — a patient's promise is not evidence of safety, and making it a discharge criterion is how the contract survives under a new name. \"Means access **can be** reduced\" is conditional: it licenses discharge on the theory that means could be secured rather than on confirmation that a named person has secured them. Together they let an ED discharge rest on a promise plus an intention, on the one page whose stated purpose is to teach that risk labels do not predict who acts.",
+  "replacement": "Favor **discharge with a robust safety plan and rapid follow-up** when ideation is passive and of low intent, the patient can **engage collaboratively** in building the plan (their ability to work on it with you is the signal — a promise to stay safe is not, which is exactly why the no-harm contract was abandoned), means access **has actually been reduced** (a named person has secured or removed the means by an agreed time, and you have documented who and when), and reliable supports plus a confirmed, timely outpatient appointment are in place.",
+  "basis": "VA/DoD suicide risk CPG on safety planning and means restriction as enacted rather than intended steps; Stanley & Brown Safety Planning Intervention, in which collaborative engagement — not a commitment or contract — is the active element; the page's own Q4/Q5 rejection of the no-suicide contract.",
+  "confidence": "high",
+  "pass": "MS3V10",
+  "verification": {
+   "verdict": "not run",
+   "note": "S3-S5 findings were not individually re-verified; treat as reviewer judgment."
+  }
+ },
+ {
+  "id": "MS3V10-F013",
+  "audience": "MS3",
+  "file": "ms3/02_CURRICULUM_V10.md",
+  "surface": "cotw_20260723_suiciderisk_ms3.md",
+  "locus": "page_prose",
+  "severity": "S4",
+  "quote": "7. **Treat the underlying disorder** (start/optimize depression treatment; address alcohol use).",
+  "problem": "The patient is 19 with active ideation and escalating alcohol use, and this is the step at which an antidepressant gets started. Nothing on the page mentions that starting an antidepressant under age 25 carries the FDA boxed warning for treatment-emergent suicidal ideation and behaviour, or that this obliges explicit counselling of the patient and, with consent, a support person about emergent agitation, akathisia, insomnia or worsening ideation, plus close contact through the first weeks — the same weeks in which the drug has not yet worked. A student following this step as written starts an SSRI and books routine follow-up.",
+  "replacement": "7. **Treat the underlying disorder** (start/optimize depression treatment; address alcohol use). If an antidepressant is started, note that this patient is under 25: counsel them, and with consent a support person, that emergent agitation, akathisia, insomnia, or worsening suicidal thoughts in the first weeks must be reported the same day, and arrange close contact across that window — the interval before the drug works is also the interval of greatest concern. Means reduction and treating the alcohol use are part of this plan, not separate from it.",
+  "basis": "FDA class boxed warning for antidepressants (increased risk of suicidal thinking and behaviour in patients aged under 25) and the associated monitoring/counselling expectation; APA MDD guideline on close early follow-up in patients with suicidal ideation.",
+  "confidence": "high",
+  "pass": "MS3V10",
+  "verification": {
+   "verdict": "not run",
+   "note": "S3-S5 findings were not individually re-verified; treat as reviewer judgment."
+  }
+ },
+ {
   "id": "MS3V10-F008",
   "audience": "MS3",
   "file": "ms3/02_CURRICULUM_V11.md",
@@ -2258,42 +2294,6 @@
    "note": "S3-S5 findings were not individually re-verified; treat as reviewer judgment."
   },
   "file_at_review": "ms3/02_CURRICULUM_V10.md"
- },
- {
-  "id": "MS3V10-F012",
-  "audience": "MS3",
-  "file": "ms3/02_CURRICULUM_V10.md",
-  "surface": "cotw_20260723_suiciderisk_ms3.md",
-  "locus": "page_prose",
-  "severity": "S4",
-  "quote": "Favor **discharge with a robust safety plan and rapid follow-up** when ideation is passive/low-intent, the patient can collaborate on and commit to a plan, means access can be reduced, and reliable supports and timely outpatient follow-up exist.",
-  "problem": "Two phrases undo work the page does elsewhere. \"Commit to a plan\" reimports the logic of the no-suicide contract that Q4 and Q5 have just discarded — a patient's promise is not evidence of safety, and making it a discharge criterion is how the contract survives under a new name. \"Means access **can be** reduced\" is conditional: it licenses discharge on the theory that means could be secured rather than on confirmation that a named person has secured them. Together they let an ED discharge rest on a promise plus an intention, on the one page whose stated purpose is to teach that risk labels do not predict who acts.",
-  "replacement": "Favor **discharge with a robust safety plan and rapid follow-up** when ideation is passive and of low intent, the patient can **engage collaboratively** in building the plan (their ability to work on it with you is the signal — a promise to stay safe is not, which is exactly why the no-harm contract was abandoned), means access **has actually been reduced** (a named person has secured or removed the means by an agreed time, and you have documented who and when), and reliable supports plus a confirmed, timely outpatient appointment are in place.",
-  "basis": "VA/DoD suicide risk CPG on safety planning and means restriction as enacted rather than intended steps; Stanley & Brown Safety Planning Intervention, in which collaborative engagement — not a commitment or contract — is the active element; the page's own Q4/Q5 rejection of the no-suicide contract.",
-  "confidence": "high",
-  "pass": "MS3V10",
-  "verification": {
-   "verdict": "not run",
-   "note": "S3-S5 findings were not individually re-verified; treat as reviewer judgment."
-  }
- },
- {
-  "id": "MS3V10-F013",
-  "audience": "MS3",
-  "file": "ms3/02_CURRICULUM_V10.md",
-  "surface": "cotw_20260723_suiciderisk_ms3.md",
-  "locus": "page_prose",
-  "severity": "S4",
-  "quote": "7. **Treat the underlying disorder** (start/optimize depression treatment; address alcohol use).",
-  "problem": "The patient is 19 with active ideation and escalating alcohol use, and this is the step at which an antidepressant gets started. Nothing on the page mentions that starting an antidepressant under age 25 carries the FDA boxed warning for treatment-emergent suicidal ideation and behaviour, or that this obliges explicit counselling of the patient and, with consent, a support person about emergent agitation, akathisia, insomnia or worsening ideation, plus close contact through the first weeks — the same weeks in which the drug has not yet worked. A student following this step as written starts an SSRI and books routine follow-up.",
-  "replacement": "7. **Treat the underlying disorder** (start/optimize depression treatment; address alcohol use). If an antidepressant is started, note that this patient is under 25: counsel them, and with consent a support person, that emergent agitation, akathisia, insomnia, or worsening suicidal thoughts in the first weeks must be reported the same day, and arrange close contact across that window — the interval before the drug works is also the interval of greatest concern. Means reduction and treating the alcohol use are part of this plan, not separate from it.",
-  "basis": "FDA class boxed warning for antidepressants (increased risk of suicidal thinking and behaviour in patients aged under 25) and the associated monitoring/counselling expectation; APA MDD guideline on close early follow-up in patients with suicidal ideation.",
-  "confidence": "high",
-  "pass": "MS3V10",
-  "verification": {
-   "verdict": "not run",
-   "note": "S3-S5 findings were not individually re-verified; treat as reviewer judgment."
-  }
  },
  {
   "id": "MS3V11-F005",
@@ -2801,6 +2801,42 @@
   "file_at_review": "resident/02_CURRICULUM_V09.md"
  },
  {
+  "id": "RV10-F008",
+  "audience": "Resident",
+  "file": "resident/02_CURRICULUM_V10.md",
+  "surface": "cotw_20260727_oud_res.md",
+  "locus": "page_prose",
+  "severity": "S4",
+  "quote": "telling a patient in precipitated withdrawal that this is \"the medicine working\" is both inaccurate and, predictably, treatment-ending",
+  "problem": "The case is built entirely on a precipitated-withdrawal event and never says what to do while one is happening. The management is counterintuitive and residents get it wrong in the same direction the day-1 team did: buprenorphine-precipitated withdrawal is generally treated by giving *more* buprenorphine, promptly and in substantially larger increments, to complete the transition to buprenorphine occupancy, alongside aggressive symptomatic treatment — not by stopping the drug. A resident who learns only that the reassurance was wrong will still stop the buprenorphine, which is precisely how this patient lost her MOUD.",
+  "replacement": "telling a patient in precipitated withdrawal that this is \"the medicine working\" is both inaccurate and, predictably, treatment-ending — and the team also needs to know what to do instead, because the correct move is counterintuitive: precipitated withdrawal is generally treated by *continuing and rapidly escalating* buprenorphine to carry the patient through to full buprenorphine occupancy, not by stopping it, together with aggressive symptomatic treatment (antiemetic, alpha-2 agonist, non-opioid analgesia) and full-agonist analgesia where pain requires it",
+  "basis": "Standard addiction-medicine management of buprenorphine-precipitated withdrawal — rescue by additional/escalating buprenorphine plus symptomatic adjuncts rather than discontinuation; the page's own refs [1] (Harris 2026 JAMA review) and [2] (Englander 2024 hospital-OUD review) cover this.",
+  "confidence": "high",
+  "pass": "RV10",
+  "verification": {
+   "verdict": "not run",
+   "note": "S3-S5 findings were not individually re-verified; treat as reviewer judgment."
+  }
+ },
+ {
+  "id": "RV10-F011",
+  "audience": "Resident",
+  "file": "resident/02_CURRICULUM_V10.md",
+  "surface": "cotw_20260803_lithium_res.md",
+  "locus": "page_prose",
+  "severity": "S4",
+  "quote": "Plan explicitly for **delivery**, when clearance abruptly normalizes and the risk direction reverses toward toxicity; hydration status during labor matters.",
+  "problem": "The bullet names the physiology and stops before the management, inside a list the page titles \"Practical monitoring changes in pregnancy\" and inside a question the facilitator notes rank as one of three priorities. What a resident must actually decide is whether to continue, reduce, or withhold lithium around labour; that a level should be checked at delivery and in the early postpartum; and that the dose returns to the pre-pregnancy dose rather than the higher pregnancy dose once GFR falls — the single most common route to postpartum lithium toxicity. Lactation is omitted entirely, and it is the next question this patient will ask; residents commonly believe lithium is an absolute contraindication to breastfeeding, which is not current practice.",
+  "replacement": "Plan explicitly for **delivery**, when clearance abruptly normalizes and the risk direction reverses toward toxicity. Decide in advance with obstetrics whether to continue lithium with close level monitoring and assured hydration or to reduce/withhold around labour (practice genuinely varies; reducing toward the pre-pregnancy dose in the 24–48 h before a planned delivery is one common approach). Check a level at delivery and in the early postpartum, and return to the **pre-pregnancy** dose rather than the higher pregnancy dose once GFR falls — this is the commonest route to postpartum toxicity. Counsel on transient neonatal effects (hypotonia, poor feeding), and address **breastfeeding** explicitly: lithium is not an absolute contraindication in a healthy term infant, but it requires a shared decision, infant monitoring, and a plan for infant hydration and levels during illness.",
+  "basis": "Peripartum lithium management as described in perinatal-psychiatry guidance (NICE CG192 antenatal and postnatal mental health; the Bergink/Wesseloo peripartum lithium literature) and the standard postpartum dose-reversion point given the abrupt fall in GFR at delivery; current lactation guidance treats lithium as usable with infant monitoring rather than contraindicated. Whether to hold or continue at labour varies by centre, so the fix is to state the decision and its options, not to prescribe one.",
+  "confidence": "high",
+  "pass": "RV10",
+  "verification": {
+   "verdict": "not run",
+   "note": "S3-S5 findings were not individually re-verified; treat as reviewer judgment."
+  }
+ },
+ {
   "id": "RV10-F001",
   "audience": "Resident",
   "file": "resident/02_CURRICULUM_V11.md",
@@ -2819,24 +2855,6 @@
    "batch": "VB05"
   },
   "file_at_review": "resident/02_CURRICULUM_V10.md"
- },
- {
-  "id": "RV10-F008",
-  "audience": "Resident",
-  "file": "resident/02_CURRICULUM_V10.md",
-  "surface": "cotw_20260727_oud_res.md",
-  "locus": "page_prose",
-  "severity": "S4",
-  "quote": "telling a patient in precipitated withdrawal that this is \"the medicine working\" is both inaccurate and, predictably, treatment-ending",
-  "problem": "The case is built entirely on a precipitated-withdrawal event and never says what to do while one is happening. The management is counterintuitive and residents get it wrong in the same direction the day-1 team did: buprenorphine-precipitated withdrawal is generally treated by giving *more* buprenorphine, promptly and in substantially larger increments, to complete the transition to buprenorphine occupancy, alongside aggressive symptomatic treatment — not by stopping the drug. A resident who learns only that the reassurance was wrong will still stop the buprenorphine, which is precisely how this patient lost her MOUD.",
-  "replacement": "telling a patient in precipitated withdrawal that this is \"the medicine working\" is both inaccurate and, predictably, treatment-ending — and the team also needs to know what to do instead, because the correct move is counterintuitive: precipitated withdrawal is generally treated by *continuing and rapidly escalating* buprenorphine to carry the patient through to full buprenorphine occupancy, not by stopping it, together with aggressive symptomatic treatment (antiemetic, alpha-2 agonist, non-opioid analgesia) and full-agonist analgesia where pain requires it",
-  "basis": "Standard addiction-medicine management of buprenorphine-precipitated withdrawal — rescue by additional/escalating buprenorphine plus symptomatic adjuncts rather than discontinuation; the page's own refs [1] (Harris 2026 JAMA review) and [2] (Englander 2024 hospital-OUD review) cover this.",
-  "confidence": "high",
-  "pass": "RV10",
-  "verification": {
-   "verdict": "not run",
-   "note": "S3-S5 findings were not individually re-verified; treat as reviewer judgment."
-  }
  },
  {
   "id": "RV10-F009",
@@ -2875,24 +2893,6 @@
    "note": "S3-S5 findings were not individually re-verified; treat as reviewer judgment."
   },
   "file_at_review": "resident/02_CURRICULUM_V10.md"
- },
- {
-  "id": "RV10-F011",
-  "audience": "Resident",
-  "file": "resident/02_CURRICULUM_V10.md",
-  "surface": "cotw_20260803_lithium_res.md",
-  "locus": "page_prose",
-  "severity": "S4",
-  "quote": "Plan explicitly for **delivery**, when clearance abruptly normalizes and the risk direction reverses toward toxicity; hydration status during labor matters.",
-  "problem": "The bullet names the physiology and stops before the management, inside a list the page titles \"Practical monitoring changes in pregnancy\" and inside a question the facilitator notes rank as one of three priorities. What a resident must actually decide is whether to continue, reduce, or withhold lithium around labour; that a level should be checked at delivery and in the early postpartum; and that the dose returns to the pre-pregnancy dose rather than the higher pregnancy dose once GFR falls — the single most common route to postpartum lithium toxicity. Lactation is omitted entirely, and it is the next question this patient will ask; residents commonly believe lithium is an absolute contraindication to breastfeeding, which is not current practice.",
-  "replacement": "Plan explicitly for **delivery**, when clearance abruptly normalizes and the risk direction reverses toward toxicity. Decide in advance with obstetrics whether to continue lithium with close level monitoring and assured hydration or to reduce/withhold around labour (practice genuinely varies; reducing toward the pre-pregnancy dose in the 24–48 h before a planned delivery is one common approach). Check a level at delivery and in the early postpartum, and return to the **pre-pregnancy** dose rather than the higher pregnancy dose once GFR falls — this is the commonest route to postpartum toxicity. Counsel on transient neonatal effects (hypotonia, poor feeding), and address **breastfeeding** explicitly: lithium is not an absolute contraindication in a healthy term infant, but it requires a shared decision, infant monitoring, and a plan for infant hydration and levels during illness.",
-  "basis": "Peripartum lithium management as described in perinatal-psychiatry guidance (NICE CG192 antenatal and postnatal mental health; the Bergink/Wesseloo peripartum lithium literature) and the standard postpartum dose-reversion point given the abrupt fall in GFR at delivery; current lactation guidance treats lithium as usable with infant monitoring rather than contraindicated. Whether to hold or continue at labour varies by centre, so the fix is to state the decision and its options, not to prescribe one.",
-  "confidence": "high",
-  "pass": "RV10",
-  "verification": {
-   "verdict": "not run",
-   "note": "S3-S5 findings were not individually re-verified; treat as reviewer judgment."
-  }
  },
  {
   "id": "RV11-F008",
@@ -3017,6 +3017,24 @@
   "basis": "42 CFR Part 2 confidentiality of substance use disorder patient records; the 2024 Part 2 final rule aligns consent for treatment/payment/operations more closely with HIPAA — confirm the current rule text and local applicability, which is what would settle the exact wording here.",
   "confidence": "medium",
   "pass": "RSAF",
+  "verification": {
+   "verdict": "not run",
+   "note": "S3-S5 findings were not individually re-verified; treat as reviewer judgment."
+  }
+ },
+ {
+  "id": "SUPP1-F001",
+  "audience": "MS3",
+  "file": "ms3/02_CURRICULUM_V09.md",
+  "surface": "cotw_20260831_catatonia_ms3.md",
+  "locus": "page_prose",
+  "severity": "S5",
+  "quote": "complete a structured suicide risk assessment, ensure appropriate observation, and build a safety plan with her before any transition of care",
+  "problem": "Q7 assigns the MS3 the entire suicide-risk chain as independent tasks: conducting the assessment, ensuring the observation level, and completing safety planning that gates a transition of care. Observation-level orders and disposition gating are resident/attending decisions, and the framing contradicts the page's own safety coaching ('Escalate to your supervising resident or attending rather than managing acuity alone'); the only escalation cue in this passage is conditional on the patient voicing self-harm thoughts. A student acting on this sentence could treat the observation decision and the safety plan as handled without team review.",
+  "replacement": "complete a structured suicide risk assessment with your resident or attending, recommend an observation level to the team, and participate in building a safety plan with her before any transition of care",
+  "basis": "Clerkship supervision norms (AAMC Core EPAs: students gather data and recommend; observation levels and transition-of-care decisions are ordered by the supervising physician) and the page's own topic_meta safety narration for this case.",
+  "confidence": "medium",
+  "pass": "SUPP1",
   "verification": {
    "verdict": "not run",
    "note": "S3-S5 findings were not individually re-verified; treat as reviewer judgment."
