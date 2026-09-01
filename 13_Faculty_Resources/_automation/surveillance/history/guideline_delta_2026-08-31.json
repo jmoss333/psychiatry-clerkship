@@ -1,0 +1,101 @@
+[
+  {
+    "finding_id": "spravato-rems::removed::a4030c90bee637b5",
+    "fingerprint": "spravato-rems::removed::a4030c90bee637b5",
+    "job": "guideline-surveillance",
+    "source_id": "spravato-rems",
+    "source_name": "Spravato (esketamine) REMS",
+    "source_url": "https://www.spravatorems.com/pdfs/REMSProgramOverview",
+    "source_type": "pdf",
+    "modality": "full_text",
+    "detected_at": "2026-08-31T15:53:22+00:00",
+    "change_type": "removed",
+    "severity": "P1",
+    "summary": "0 characters extracted from Spravato (esketamine) REMS (source down or scraper broken).",
+    "evidence": {
+      "new_hash": "",
+      "prev_hash": ""
+    },
+    "affects": [
+      "03_Core_Topics/Mood/mood_disorders_inpatient_teaching.md",
+      "05_Psychopharmacology/ECT_Neuromodulation/ect_neuromodulation_inpatient_teaching.md",
+      "05_Psychopharmacology/Protocol_Library/protocol_library_inpatient.md",
+      "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
+      "13_Faculty_Resources/Handoffs/MASTER_attestation_ledger_2026-07-01.md",
+      "13_Faculty_Resources/Handoffs/library_review_2026-07-01.md",
+      "14_Tracks/Resident/adv_psychopharmacology.md",
+      "14_Tracks/Resident/canon_200.md"
+    ],
+    "recommended_action": "Review Spravato (esketamine) REMS; if guidance changed, update the affected teaching page(s) and re-stamp reviewed.json.",
+    "status": "triaged"
+  },
+  {
+    "finding_id": "apa-practice-guidelines::modified::2d0cd2d4ec9454f7",
+    "fingerprint": "apa-practice-guidelines::modified::2d0cd2d4ec9454f7",
+    "job": "guideline-surveillance",
+    "source_id": "apa-practice-guidelines",
+    "source_name": "APA Practice Guidelines (index)",
+    "source_url": "https://www.psychiatry.org/psychiatrists/practice/clinical-practice-guidelines",
+    "source_type": "html+pdf",
+    "modality": "full_text",
+    "detected_at": "2026-08-31T15:53:39+00:00",
+    "change_type": "modified",
+    "severity": "P0",
+    "summary": "Content changed at APA Practice Guidelines (index)",
+    "evidence": {
+      "prev_hash": "d2af46193f2cbd7e60d6e0998401ac93386bb13bb33eb0c68fad176698cf985c",
+      "new_hash": "47f0dc0d5cf6d7098169c17e78ebf52384650aa58cfc4d5cd06d8bb5c59959e9",
+      "prev_seen_at": "2026-08-01T06:47:32+00:00",
+      "diff_excerpt": "-Other Practice Guidelines* The Committee on Practice Guidelines has specifically reviewed the following practice guidelines and makes them available as additional information for psychiatrists: AASM Chronic Insomnia Disorder in Adults AASM Clinical Practice Guideline on Behavioral and Psychological Treatments for Chronic Insomnia Disorder in Adults - 2026 AASM Clinical Practice Guideline on Combination Treatment for Chronic Insomnia Disorder in Adults - 2026 VA/DoD CBT-i Coach App - 2026 Joint Clinical Practice Guideline on Benzodiazepine Tapering: Considerations When Benzodiazepine Risks Outweigh Benefits - 2025 VA/DoD Clinical Practice Guideline on the Management of Major Depressive Disorder - 2022 WPATH Standards of Care for the Health of Transgender and Gender Diverse People, Version 8 - 2022 ASAM Clinical Practice Guideline on Alcohol Withdrawal Management - 2020 VA/DoD Clinical Practice Guideline on the Assessment and Management of Patients at Risk for Suicide - 2019 VA/DoD Clinical Practice Guideline on the Management of Posttraumatic Stress Disorder and Acute Stress Reaction - 2017 APA guidelines generally describe treatment of adult patients\n+Other Practice Guidelines* The Committee on Practice Guidelines has specifically reviewed the following practice guidelines and makes them available as additional information for psychiatrists: AASM Chronic Insomnia Disorder in Adults AASM Clinical Practice Guideline on Behavioral and Psychological Treatments for Chronic Insomnia Disorder in Adults - 2026 AASM Clinical Practice Guideline on Combination Treatment for Chronic Insomnia Disorder in Adults - 2026 VA/DoD CBT-i Coach App - 2026 Joint Clinical Practice Guideline on Benzodiazepine Tapering: Considerations When Benzodiazepine Risks Outweigh Benefits - 2025 VA/DoD Clinical Practice Guideline for Management of Posttraumatic Stress Disorder and Acute Stress Disorder - 2023 Although the patient population of interest for this Guideline is defined as \"adults with PTSD or acute stress disorder (ASD) caused by any type of trauma who are eligible for care in VA or DoD health care delivery systems\u201d, the Guideline may be relevant when caring for other adult populations with PTSD or ASD\n+Clinicians should use their independent judgment to evaluate the appropriateness of applying the Guideline in any clinical situation\n+VA/DoD Clinical Practice Guideline on the Management of Major Depressive Disorder - 2022 WPATH Standards of Care for the Health of Transgender and Gender Diverse People, Version 8 - 2022 ASAM Clinical Practice Guideline on Alcohol Withdrawal Management - 2020 VA/DoD Clinical Practice Guideline on the Assessment and Management of Patients at Risk for Suicide - 2019 APA guidelines generally describe treatment of adult patients"
+    },
+    "affects": [
+      "02_Clinical_Skills/Interviewing/README.md",
+      "02_Clinical_Skills/Screeners/README.md",
+      "03_Core_Topics/Eating_Disorders/eating_disorders_inpatient_teaching.md",
+      "03_Core_Topics/Geriatric/README.md",
+      "03_Core_Topics/Mood/mood_disorders_inpatient_teaching.md",
+      "03_Core_Topics/Nutrition/README.md",
+      "03_Core_Topics/Perinatal/perinatal_psychiatry_inpatient_teaching.md",
+      "03_Core_Topics/Personality/README.md",
+      "03_Core_Topics/Psychosis/README.md",
+      "03_Core_Topics/Psychosis/psychotic_disorders_inpatient_teaching.md",
+      "03_Core_Topics/SUD_Withdrawal/README.md",
+      "04_Acute_and_Safety/Delirium/README.md",
+      "04_Acute_and_Safety/Suicide_Risk_and_Safety_Planning/columbia-cssrs-screener.html",
+      "07_Evidence_and_Reading/Landmark_Library/Primary_Source_Download_List.md",
+      "13_Faculty_Resources/APA_Downloads_2026-06-29/APA_SURFACE_CARDS.md",
+      "13_Faculty_Resources/APA_Downloads_2026-06-29/catalog.html",
+      "13_Faculty_Resources/APA_membership_resource_scan_2026-06-29.md",
+      "13_Faculty_Resources/README.md",
+      "14_Tracks/MS3/README.md",
+      "14_Tracks/MS3/Student_Ready_Pack/00_index/README.md"
+    ],
+    "recommended_action": "Review APA Practice Guidelines (index); if guidance changed, update the affected teaching page(s) and re-stamp reviewed.json.",
+    "status": "issue-open",
+    "_escalation": "P1->P0 (acute-safety path affected)",
+    "github_issue": "https://github.com/jmoss333/psychiatry-clerkship/issues/432"
+  },
+  {
+    "finding_id": "aacap-parameters::modified::0044b046b4f32574",
+    "fingerprint": "aacap-parameters::modified::0044b046b4f32574",
+    "job": "guideline-surveillance",
+    "source_id": "aacap-parameters",
+    "source_name": "AACAP Clinical Practice Guidelines / Practice Parameters",
+    "source_url": "https://www.aacap.org/AACAP/Practice/Clinical%20Practice%20Guidelines/AACAP/Resources_for_Primary_Care/Practice_Parameters_and_Resource_Centers/Practice_Parameters.aspx",
+    "source_type": "html",
+    "modality": "full_text",
+    "detected_at": "2026-08-31T15:54:30+00:00",
+    "change_type": "modified",
+    "severity": "P2",
+    "summary": "Content changed at AACAP Clinical Practice Guidelines / Practice Parameters",
+    "evidence": {
+      "prev_hash": "f4efdeaf80a48e9e9631523afa6a3b9e38cca704c140409a0479814e6c54620b",
+      "new_hash": "9cb5848dbc7beb8b4a92be65ef758894aeadd72afcf3b5ac4d4690e2d2d8156c",
+      "prev_seen_at": "2026-08-01T06:48:20+00:00",
+      "diff_excerpt": "-Practice Parameters Clinical Updates and Practice Parameters Clinical Updates, authored by AACAP Committees and the CQI, are intended to address three topic areas: the psychiatric assessment and management of specific populations of children and adolescents; the psychiatric assessment and management of children and adolescents in specific settings; and the application of specific psychiatric techniques to children and adolescents\n+Clinical Practice Guidelines Clinical Updates and Practice Parameters Clinical Updates, authored by AACAP Committees and the CQI, are intended to address three topic areas: the psychiatric assessment and management of specific populations of children and adolescents; the psychiatric assessment and management of children and adolescents in specific settings; and the application of specific psychiatric techniques to children and adolescents"
+    },
+    "affects": [],
+    "recommended_action": "Review AACAP Clinical Practice Guidelines / Practice Parameters; if guidance changed, update the affected teaching page(s) and re-stamp reviewed.json.",
+    "status": "new"
+  }
+]

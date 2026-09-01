@@ -1,4 +1,41 @@
 {
   "schemaVersion": 1,
-  "blocks": []
+  "blocks": [
+    {
+      "id": "rot-2026-hx-dd33705841771469",
+      "startsOn": "2026-08-17",
+      "endsOn": "2026-09-27",
+      "status": "active"
+    },
+    {
+      "id": "rot-2026-hx-ac7db15dabcc0835",
+      "startsOn": "2026-09-28",
+      "endsOn": "2026-11-08",
+      "status": "planned"
+    },
+    {
+      "id": "rot-2027-hx-c395e776a460ba2f",
+      "startsOn": "2027-01-04",
+      "endsOn": "2027-02-14",
+      "status": "planned"
+    },
+    {
+      "id": "rot-2027-hx-d7eb13b3f2bf858b",
+      "startsOn": "2027-02-15",
+      "endsOn": "2027-03-28",
+      "status": "planned"
+    },
+    {
+      "id": "rot-2027-hx-ba03c78db0acc971",
+      "startsOn": "2027-03-29",
+      "endsOn": "2027-05-09",
+      "status": "planned"
+    },
+    {
+      "id": "rot-2027-hx-1e356e1ab30f20c5",
+      "startsOn": "2027-05-10",
+      "endsOn": "2027-06-20",
+      "status": "planned"
+    }
+  ]
 }

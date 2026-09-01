@@ -1,0 +1,28 @@
+[
+  {
+    "id": "A2MS3-F001",
+    "audience": "both",
+    "file": "A2_CASE_SIMULATIONS.md",
+    "surface": "delirium_vs_psychosis_001 — Delirium Or New Psychosis?",
+    "locus": "case.choice",
+    "severity": "S1",
+    "quote": "Review deliriogenic medications, check infection/metabolic/hypoxia contributors, and use reorientation/sleep-wake measures.",
+    "problem": "The keyed-best cause list for delirium omits substance withdrawal entirely, in a vignette whose time course makes it a live cause: confusion beginning two days after surgery with vivid visual hallucinations worse at night is the classic window and phenotype for alcohol (or sedative-hypnotic) withdrawal delirium, and the case facts never establish a substance history in either direction. A learner who adopts this schema on a real post-op consult misses the one delirium etiology that is rapidly fatal untreated and whose specific treatment (benzodiazepines) runs opposite to the usual sedative-sparing delirium reflex.",
+    "replacement": "Review deliriogenic medications, check infection/metabolic/hypoxia and alcohol or sedative withdrawal contributors, and use reorientation/sleep-wake measures.",
+    "basis": "DSM-5-TR substance-withdrawal delirium and every standard delirium etiology framework (e.g., I WATCH DEATH) include withdrawal; NICE CG103 directs identifying and managing the underlying cause; alcohol-withdrawal delirium classically emerges 48-96 h after last drink, i.e., postoperative day 2-3, and undiagnosed drinking is a well-documented cause of missed post-op withdrawal.",
+    "confidence": "high"
+  },
+  {
+    "id": "A2MS3-F002",
+    "audience": "both",
+    "file": "A2_CASE_SIMULATIONS.md",
+    "surface": "family_conflict_discharge_001 — De-escalate Family Conflict Around Discharge",
+    "locus": "case.choice",
+    "severity": "S4",
+    "quote": "Can you tell us exactly what you think he is hiding from us?  *(rated: **partial**)*",
+    "problem": "The rating contradicts its own feedback, which says this phrasing \"can shame the patient and intensify triangulation.\" Every other option rated partial in this file is a sound move with wrong timing or incomplete execution; this one — asking the family, in front of a patient who has just gone silent under parental attack, what he is \"hiding\" — presumes patient deception and enlists the family as informants, and has no context in which it becomes acceptable as worded. Partial credit teaches learners the move is half-right, and a learner who uses it in a real family meeting damages the alliance the case is built to protect.",
+    "replacement": "Can you tell us exactly what you think he is hiding from us?  *(rated: **missed**)*",
+    "basis": "Internal consistency with the case's own feedback text and rating idiom (cf. its options rated missed for shutting down collateral), and standard family-meeting practice: elicit specific family concerns without framing the patient as deceptive or cross-examining them in the room — the same principle this file states in family_meeting_opening_001 (\"Do not allow the patient to be cross-examined\").",
+    "confidence": "medium"
+  }
+]
