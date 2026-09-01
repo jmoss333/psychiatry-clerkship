@@ -6,6 +6,282 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 
 ---
 
+## MDD — Treatment Selection (Jul 20)
+
+- **Slug:** `cotw_20260720_mdd_ms3.md` · **Type:** md · **Sidebar:** listed
+- **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-20_mdd-treatment-selection-augmentation_MS3.md`
+- **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
+- **Length:** 1,290 words
+
+<!-- topic_meta overlay -->
+#### Structured metadata (`topic_meta.json` → this page)
+
+> est. read 8 min · safetyLevel=`moderate` · cotwLevel=`ms3` (2026-07-20)
+
+**TL;DR (shown above the page text):**
+
+> Switch, augment, or optimize when an antidepressant is not working - and how to tell an inadequate trial from a true non-response.
+
+**Key points (bulleted card):**
+
+- ~20-30 minute small-group discussion - no pre-reading required.
+- De-identified synthetic case; each discussion question is paired with a teaching point.
+- MS3 / Step 2 CK level. Facilitator notes are kept separate from the learner-facing stem.
+
+**Clinical-workflow narration (per-stage coaching text):**
+
+- **ask** — Work the stem cold: take your own history, commit to a differential, and name your next step before reading a single teaching point. The guided questions are written to be answered, not skimmed.
+- **mse** — Say out loud what each exam finding in the vignette rules in and rules out — the discrimination between look-alike syndromes is what the case is drilling.
+- **safety** — Safety content in every case is oriented to recognition, escalation, and safety planning. Escalate to your supervising resident or attending rather than managing acuity alone.
+- **say** — Before moving on, rehearse one sentence you would actually say to this patient or family, in plain language and out loud.
+- **collateral** — Ask yourself what collateral would change your differential here, and who you would have to call to get it.
+- **rounds** — Use the ranked differential and the workup-and-management ladder as the spine of your presentation; lead with the finding that changes management.
+- **exam** — Shelf-level takeaway: Switch, augment, or optimize when an antidepressant is not working - and how to tell an inadequate trial from a true non-response.
+- **actions** — All Case of the Week cases
+
+**Cross-references and tagging:**
+
+- **Workflow stages:** `diagnosis`, `treatment`, `team`, `exam`
+- **Shelf blueprint tags:** `mood`, `pharm`
+- **EPA crosswalk:** `EPA1`, `EPA2`, `EPA4`
+- **Faculty review:** {"status": "pending", "reviewer": "Joshua Moss, MD", "lastReviewed": "2026-07-20"}
+
+#### Page text (as shipped)
+
+# Case of the Week — MS3 Edition
+## Major Depressive Disorder: Treatment Selection & Augmentation
+
+**Date:** 2026-07-20
+**Learner level:** MS3 (inpatient/outpatient psychiatry clerkship) — USMLE Step 2 CK framing
+**Format:** ~20–30 min small-group discussion. No required pre-reading.
+**Citations:** Based on articles retrieved from PubMed. Full reference list at the end. All patient details are **synthetic and de-identified**.
+
+---
+
+### The Case (learner-facing stem)
+
+A 34-year-old woman presents to an outpatient clinic with 8 weeks of low mood, loss of interest in activities she used to enjoy, poor concentration at work, early-morning awakening, low energy, and feelings of worthlessness. She denies current thoughts of suicide, has no prior psychiatric hospitalizations, and drinks alcohol rarely. She is not taking any medications and has no chronic medical conditions. Vital signs are normal. Physical and neurologic exams are unremarkable.
+
+She scores 16 on the PHQ-9 (a 9-item self-report depression severity scale; scores of 15–19 indicate moderately severe depression). Routine labs including TSH and CBC are within normal limits.
+
+You diagnose major depressive disorder (MDD) — a syndrome defined by ≥2 weeks of depressed mood and/or anhedonia (loss of pleasure) plus associated neurovegetative and cognitive symptoms, causing functional impairment. You and the patient agree to start an antidepressant.
+
+She returns at **6 weeks** on an adequately dosed selective serotonin reuptake inhibitor (SSRI). She reports "maybe a little better" but is still not functioning well. PHQ-9 is now 13.
+
+---
+
+### Guided Discussion Questions
+
+**Q1. Before starting treatment, what must you screen for that would change your diagnosis and your drug choice?**
+*Teaching point:* Always screen for a **history of mania/hypomania** before prescribing an antidepressant. Giving an antidepressant to someone with bipolar disorder can precipitate a manic switch. Also screen for active suicidality, psychotic features, substance use, and secondary causes (e.g., hypothyroidism — hence the TSH). "Unipolar" MDD is a diagnosis of exclusion of the bipolar spectrum.
+
+**Q2. What is the expected first-line pharmacologic treatment, and how do you counsel her about the timeline?**
+*Teaching point:* First-line options are **SSRIs** (e.g., sertraline, escitalopram) — chosen for tolerability and safety in overdose. SNRIs, bupropion, and mirtazapine are reasonable alternatives. A landmark network meta-analysis of 21 antidepressants found *all* were more effective than placebo, with escitalopram and sertraline among those combining good efficacy and acceptability [1]. Counsel that **antidepressants take 4–6 weeks at an adequate dose** to show full effect, and that a partial response by 2–4 weeks predicts later response.
+
+**Q3. At 6 weeks she is only partially better (PHQ-9 16 → 13). What defines an "adequate trial," and what are her next options?**
+*Teaching point:* An adequate trial = **adequate dose for adequate duration (≥6–8 weeks)**. Because she had a *partial* response, reasonable next steps include (a) **optimizing the dose** of the current SSRI, (b) **switching** to a different antidepressant, or (c) **augmenting**. Distinguish the three: optimize = push the same drug up; switch = replace it; augment = add a second agent to the first. Partial responders often do well with dose optimization before more complex strategies.
+
+**Q4. Define "treatment-resistant depression" and name evidence-based augmentation options an MS3 should recognize.**
+*Teaching point:* **Treatment-resistant depression (TRD)** is commonly defined as failure to respond to ≥2 adequate antidepressant trials. High-yield augmentation agents: **atypical antipsychotics** (aripiprazole, quetiapine XR — the best-studied), **lithium**, and **thyroid hormone (T3)**. In the VA VAST-D randomized trial, augmenting with **aripiprazole** produced higher response rates than switching to bupropion, though the effect size was modest and aripiprazole carried more side effects (akathisia, somnolence, weight gain) [2]. Know that augmentation adds efficacy but also adds adverse-effect burden.
+
+**Q5. How do side-effect profiles guide your choice between agents?**
+*Teaching point:* Match the drug to the patient. Examples: **bupropion** is activating and weight-neutral/pro-weight-loss but lowers seizure threshold (avoid in eating disorders/seizure history); **mirtazapine** causes sedation and weight gain (useful if insomnia + poor appetite); SSRIs commonly cause **sexual dysfunction, GI upset, and early activation/anxiety**. A systematic review mapping antidepressant/antipsychotic side effects supports **personalized prescribing** by matching the drug's side-effect profile to the individual patient [3].
+
+**Q6. When is combining medication with psychotherapy indicated?**
+*Teaching point:* Combined pharmacotherapy + psychotherapy (e.g., CBT) is more than either alone for many patients, especially for preventing relapse. A meta-analysis of the **sequential model** (adding psychotherapy after medication response) found it reduces the risk of relapse/recurrence [4]. Psychotherapy is first-line for mild depression and a strong adjunct across severities.
+
+**Q7 (Safety). She mentions passive thoughts that "it wouldn't matter if I woke up." What do you do?**
+*Teaching point:* Passive death wishes require **direct, non-judgmental assessment** of suicidal ideation, intent, plan, and access to means, plus collaborative **safety planning** and appropriate level-of-care escalation. Recognition and escalation — not method detail — are the objectives. Document the assessment and the plan. When in doubt about safety, arrange same-day evaluation.
+
+---
+
+### Ranked Differential (before committing to MDD)
+
+1. **Major depressive disorder, unipolar** — best fit given ≥2 weeks of anhedonia/depressed mood + neurovegetative symptoms and normal workup.
+2. **Bipolar depression** — must be excluded by history of mania/hypomania; changes treatment entirely.
+3. **Persistent depressive disorder (dysthymia)** — depressive symptoms ≥2 years at lower intensity.
+4. **Adjustment disorder with depressed mood** — identifiable stressor, does not meet full MDD criteria.
+5. **Depression due to a medical condition / substance** — e.g., hypothyroidism, anemia, alcohol; screened out here by normal TSH/CBC and minimal alcohol use.
+
+---
+
+### Workup & Management (high-yield)
+
+**Workup:** History (including mania screen, suicide risk, substance use), PHQ-9 for severity/tracking, and targeted labs to exclude medical mimics (TSH, CBC; add others if indicated). No routine imaging.
+
+**Management ladder:**
+1. **Start** an SSRI at an adequate dose; set expectations (4–6 weeks). Offer psychotherapy.
+2. **Reassess at 4–6 weeks** with a repeat PHQ-9.
+   - No response → **switch** (to another SSRI, SNRI, or bupropion).
+   - Partial response → **optimize dose** or **augment**.
+3. **After ≥2 failed adequate trials (TRD)** → augment with an atypical antipsychotic (e.g., aripiprazole), lithium, or T3; consider psychiatry referral, and consider **ECT** for severe, psychotic, or treatment-refractory depression.
+4. **Continue** effective treatment for ≥6–12 months after remission to prevent relapse.
+
+---
+
+### Facilitator Notes (not for the learner handout)
+
+- **Time:** ~25 min. Spend the most time on Q2–Q4 (the switch vs. augment vs. optimize logic is the highest-yield Step 2 concept).
+- **Common MS3 errors to correct:** (1) declaring a drug "failed" before 6 weeks/adequate dose; (2) forgetting the mania screen; (3) conflating switching and augmenting; (4) reflexively adding a benzodiazepine.
+- **One-liner to anchor:** *"Adequate dose × adequate duration × screened for bipolarity — then decide switch vs. augment."*
+- **If the group is strong,** push on why aripiprazole's statistically significant benefit in VAST-D [2] may not translate to every patient (modest effect size, side-effect trade-offs) — a nice intro to number-needed-to-treat vs. number-needed-to-harm thinking.
+- **Safety framing (Q7):** Keep the discussion on recognition, assessment structure, and escalation. No method detail.
+
+---
+
+### References
+
+1. Cipriani A, Furukawa TA, Salanti G, et al. Comparative efficacy and acceptability of 21 antidepressant drugs for the acute treatment of adults with major depressive disorder: a systematic review and network meta-analysis. *Lancet.* 2018;391(10128):1357–1366. [DOI](https://doi.org/10.1016/S0140-6736(17)32802-7)
+2. Mohamed S, Johnson GR, Chen P, et al. Effect of antidepressant switching vs augmentation on remission among patients with major depressive disorder unresponsive to antidepressant treatment: the VAST-D randomized clinical trial. *JAMA.* 2017;318(2):132–145. [DOI](https://doi.org/10.1001/jama.2017.8036)
+3. Pillinger T, Howes OD, Correll CU, et al. Antidepressant and antipsychotic side-effects and personalised prescribing: a systematic review and digital tool development. *Lancet Psychiatry.* 2023. [DOI](https://doi.org/10.1016/S2215-0366(23)00262-6)
+4. Guidi J, Fava GA. Sequential combination of pharmacotherapy and psychotherapy in major depressive disorder: a systematic review and meta-analysis. *JAMA Psychiatry.* 2021. [DOI](https://doi.org/10.1001/jamapsychiatry.2020.3650)
+
+*Citations retrieved from PubMed. This teaching case uses a synthetic, de-identified scenario for educational purposes only.*
+
+*Joshua Moss, MD | Psychiatrist*
+
+
+---
+
+## Bipolar Mania (Jul 20)
+
+- **Slug:** `cotw_20260720_bipolar_ms3.md` · **Type:** md · **Sidebar:** listed
+- **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-20_bipolar-mania_MS3.md`
+- **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
+- **Length:** 1,550 words
+
+<!-- topic_meta overlay -->
+#### Structured metadata (`topic_meta.json` → this page)
+
+> est. read 7 min · safetyLevel=`moderate` · cotwLevel=`ms3` (2026-07-20)
+
+**TL;DR (shown above the page text):**
+
+> Recognizing a manic episode, screening for mixed features and secondary mania, and choosing first-line acute treatment.
+
+**Key points (bulleted card):**
+
+- ~20-30 minute small-group discussion - no pre-reading required.
+- De-identified synthetic case; each discussion question is paired with a teaching point.
+- MS3 / Step 2 CK level. Facilitator notes are kept separate from the learner-facing stem.
+
+**Clinical-workflow narration (per-stage coaching text):**
+
+- **ask** — Work the stem cold: take your own history, commit to a differential, and name your next step before reading a single teaching point. The guided questions are written to be answered, not skimmed.
+- **mse** — Say out loud what each exam finding in the vignette rules in and rules out — the discrimination between look-alike syndromes is what the case is drilling.
+- **safety** — Safety content in every case is oriented to recognition, escalation, and safety planning. Escalate to your supervising resident or attending rather than managing acuity alone.
+- **say** — Before moving on, rehearse one sentence you would actually say to this patient or family, in plain language and out loud.
+- **collateral** — Ask yourself what collateral would change your differential here, and who you would have to call to get it.
+- **rounds** — Use the ranked differential and the workup-and-management ladder as the spine of your presentation; lead with the finding that changes management.
+- **exam** — Shelf-level takeaway: Recognizing a manic episode, screening for mixed features and secondary mania, and choosing first-line acute treatment.
+- **actions** — All Case of the Week cases
+
+**Cross-references and tagging:**
+
+- **Workflow stages:** `diagnosis`, `treatment`, `team`, `exam`
+- **Shelf blueprint tags:** `mood`
+- **EPA crosswalk:** `EPA1`, `EPA2`, `EPA4`
+- **Faculty review:** {"status": "pending", "reviewer": "Joshua Moss, MD", "lastReviewed": "2026-07-20"}
+
+#### Page text (as shipped)
+
+# Case of the Week — Bipolar Mania: Recognition & Acute Management
+### MS3 Version (Foundational / USMLE Step 2 CK Framing)
+
+**Date:** 2026-07-20
+**Learner level:** MS3 (inpatient psychiatry clerkship)
+**Format:** ~20–30 min small-group discussion. No pre-reading required.
+**Citations:** Based on articles retrieved from PubMed (see references). All patient details are **synthetic and de-identified** — this is a teaching composite, not a real patient.
+
+---
+
+## Learner-Facing Case Stem
+
+A 24-year-old man is brought to the emergency department by his roommate, who is concerned about four days of unusual behavior. Over the past week the patient has slept "maybe two hours a night" but says he feels "amazing — better than ever." He has been talking rapidly and is difficult to interrupt. The roommate reports the patient maxed out a credit card on a plan to launch three businesses at once and has been texting former classmates at 4 a.m. with grand ideas.
+
+In the ED the patient is dressed in bright, mismatched clothing, pacing, and speaking so quickly it is hard to follow him as he jumps between topics. He tells you he has "figured out how to fix the whole city's transit system" and that he has "never needed doctors." He is irritable when asked to sit down. He denies drug use. There is no fever. Vital signs are within normal limits except mild tachycardia (HR 104). His roommate mentions the patient had a "really dark, couldn't-get-out-of-bed" stretch about a year ago that lasted a couple of months.
+
+Collateral from his mother (by phone) confirms a maternal aunt with bipolar disorder. The patient takes no medications and has no significant medical history.
+
+---
+
+## Guided Discussion Questions
+
+**Q1. What is the most likely diagnosis, and what specific features support it?**
+*Teaching point:* This is a classic **manic episode**, and given the prior depressive episode the working diagnosis is **bipolar I disorder**. Use the mnemonic **DIG FAST** for manic symptoms: **D**istractibility, **I**mpulsivity/**I**ndiscretion (spending, risky behavior), **G**randiosity, **F**light of ideas, **A**ctivity increase/**A**gitation, **S**leep decreased (*no* perceived need for sleep), **T**alkativeness/pressured speech. DSM criteria for mania require **≥1 week** of persistently elevated/irritable mood **plus increased activity/energy** and ≥3 symptoms (≥4 if mood is only irritable), causing marked impairment, hospitalization, or psychotic features. A single manic episode is sufficient to diagnose bipolar I — a prior depressive episode is *supportive* but not required.
+
+**Q2. Why does the "increased energy/activity" criterion matter, and how does mania differ from hypomania?**
+*Teaching point:* DSM-5 added **increased goal-directed activity or energy** as a *required* Criterion A feature (alongside mood) — mood elevation alone is not enough. **Hypomania** = same symptom cluster but **≥4 days**, **no marked impairment, no psychosis, and no hospitalization**; hypomania + a major depressive episode = **bipolar II**. This patient's psychosis (grandiose delusion about the transit system), marked impairment, and need for hospitalization place him firmly in **mania**, not hypomania.
+
+**Q3. What must you rule out before anchoring on a primary psychiatric diagnosis? What is your initial workup?**
+*Teaching point:* Mania is a **diagnosis that requires excluding medical and substance causes**. Key mimics: **stimulant intoxication** (cocaine, methamphetamine — check a **urine drug screen**), **substance/medication-induced** (including **antidepressant-induced switch** and steroids), **hyperthyroidism** (check **TSH**), CNS insult, and delirium. Reasonable initial workup: urine drug screen, TSH, CBC, comprehensive metabolic panel (electrolytes, glucose, renal/hepatic function), and a **pregnancy test in patients who could be pregnant** (shapes medication choice). Because you may start lithium or valproate, obtain **baseline renal function, and a pregnancy test** up front.
+
+**Q4. The patient is agitated, intrusive, and refusing to sit. How do you keep everyone safe first?**
+*Teaching point:* Safety and behavioral containment precede pharmacology. Use a **least-restrictive, stepwise** approach: reduce stimulation, verbal de-escalation, offer oral medication. For acute agitation, **antipsychotics (e.g., an oral second-generation antipsychotic) ± a benzodiazepine** are standard. **Assess for danger to self or others**; mania impairs judgment and insight, so involuntary hold criteria may apply if he cannot be kept safe. The teaching orientation here is **recognition, escalation, and safety** — not specifics of restraint technique.
+
+**Q5. What are the first-line medication options for acute mania?**
+*Teaching point:* Per the **CANMAT/ISBD 2018 guidelines**, first-line monotherapy for acute mania includes **lithium, quetiapine, divalproex (valproate), asenapine, aripiprazole, paliperidone, risperidone, and cariprazine**; for more severe presentations, a **combination of lithium or divalproex PLUS an antipsychotic** is first-line and often more effective [1]. A large network meta-analysis confirmed that antipsychotics, lithium, and valproate all beat placebo for acute mania, with **aripiprazole, olanzapine, quetiapine, and risperidone** showing the best combination of efficacy and acceptability [2]. **Antidepressants should be stopped**, and **lamotrigine is NOT effective for acute mania** (it is a maintenance/depression agent) [1,5].
+
+**Q6. He asks, "Why can't I just take something for a few days and be done?" How do you frame the illness course and why adherence matters?**
+*Teaching point:* Bipolar I is a **recurrent, lifelong illness**; acute stabilization is only the first step, and effective acute agents are generally **continued into maintenance** to prevent relapse [1]. A real-world cohort found that patients treated with **guideline-concordant first-line regimens had significantly lower 30-day rehospitalization and longer time to readmission** than those on no or non-recommended treatment [4]. This is a concrete, learner-friendly way to make "guidelines matter" tangible.
+
+**Q7. What safety counseling and monitoring are essential if you start lithium?**
+*Teaching point:* Lithium has a **narrow therapeutic index**. Teach baseline and ongoing **renal function and TSH**, the concept of **serum level monitoring**, and signs of toxicity (coarse tremor, GI upset, ataxia, confusion). Emphasize that **dehydration, NSAIDs, and thiazide/ACE-inhibitor diuretics raise lithium levels**. Lithium also carries **teratogenic risk** — hence the pregnancy test and contraception counseling. (Valproate is also highly teratogenic and generally avoided in patients who may become pregnant.)
+
+---
+
+## Ranked Differential (Top 5)
+
+1. **Bipolar I disorder, current episode manic with psychotic features** — best fit: elevated/irritable mood + increased energy, decreased need for sleep, grandiosity/delusion, pressured speech, impulsive spending, prior depressive episode, family history.
+2. **Substance-induced mood disorder / stimulant intoxication** — cocaine or methamphetamine can mimic mania precisely; must be excluded with UDS and history.
+3. **Primary psychotic disorder (e.g., schizophrenia/schizoaffective)** — considered given delusional content, but the prominent mood/energy symptoms and episodic course favor mania.
+4. **Hyperthyroidism** — can present with agitation, insomnia, tachycardia; screen with TSH.
+5. **Delirium / secondary mania from a medical or CNS cause** — less likely with a clear sensorium and normal vitals/exam, but always on the differential for new "psychiatric" presentations.
+
+---
+
+## Workup & Management Summary
+
+**Workup:** urine drug screen; TSH; CBC; comprehensive metabolic panel (electrolytes, glucose, renal + hepatic function); **pregnancy test if applicable**; targeted evaluation (neuro exam, and imaging/LP only if history/exam suggests a CNS cause).
+
+**Acute management:**
+- **Safety first:** assess dangerousness, reduce stimulation, verbal de-escalation; consider involuntary hold if he cannot be kept safe.
+- **Stop antidepressants/stimulants.**
+- **Start a first-line agent:** lithium OR divalproex OR a first-line second-generation antipsychotic; for severe/psychotic mania, **lithium or divalproex + an antipsychotic** [1,2].
+- **Manage agitation** with an oral (or if needed IM) antipsychotic ± benzodiazepine.
+- **Baseline labs** before lithium (renal, TSH, pregnancy) or valproate (LFTs, CBC, pregnancy).
+
+**Disposition & follow-up:** most patients with psychotic mania and impaired insight need **inpatient admission**; plan for **continuation into maintenance** and outpatient psychiatric follow-up, with psychoeducation on adherence and relapse warning signs.
+
+---
+
+## Facilitator Notes (not for the learner handout)
+
+- **Learning objectives:** (1) recognize a manic episode and the DSM-5 requirement for *both* mood change and increased energy/activity; (2) distinguish mania vs. hypomania vs. bipolar I vs. II; (3) always exclude substance/medical mimics; (4) name first-line acute mania treatments and know lamotrigine/antidepressants are *not* acute-mania drugs; (5) list core lithium monitoring/safety points.
+- **Common student errors:** calling any agitated/psychotic patient "schizophrenia"; forgetting the increased-activity criterion; proposing an antidepressant "because he was depressed last year"; proposing lamotrigine for acute mania; skipping the pregnancy test/UDS.
+- **High-yield Step 2 pearls:** DIG FAST; mania ≥1 week (or any duration if hospitalized); one manic episode = bipolar I; antidepressant monotherapy can precipitate a switch; lithium and valproate are teratogens.
+- **Time-management:** spend the first third on recognition (Q1–Q2), the middle on workup/safety (Q3–Q4), the last third on treatment and counseling (Q5–Q7). If short on time, prioritize Q1, Q3, Q5.
+- **Safety framing:** keep any dangerousness discussion oriented to recognition, escalation, and safety planning — avoid method-level detail.
+
+---
+
+## References
+
+Based on articles retrieved from PubMed.
+
+1. Yatham LN, Kennedy SH, Parikh SV, et al. Canadian Network for Mood and Anxiety Treatments (CANMAT) and International Society for Bipolar Disorders (ISBD) 2018 guidelines for the management of patients with bipolar disorder. *Bipolar Disord.* 2018;20(2):97–170. [DOI](https://doi.org/10.1111/bdi.12609)
+2. Kishi T, Ikuta T, Matsuda Y, et al. Pharmacological treatment for bipolar mania: a systematic review and network meta-analysis of double-blind randomized controlled trials. *Mol Psychiatry.* 2022;27(2):1136–1144. [DOI](https://doi.org/10.1038/s41380-021-01334-4)
+4. Gomes FA, Dumay H, Fagen J, et al. Does the Ranking Matter? A Retrospective Cohort Study Investigating the Impact of the Treatment Recommendations for Acute Mania on Rehospitalization Rates. *Can J Psychiatry.* 2023;68(8):605–612. [DOI](https://doi.org/10.1177/07067437231156235)
+5. Haenen N, Kamperman AM, Prodan A, et al. The efficacy of lamotrigine in bipolar disorder: A systematic review and meta-analysis. *Bipolar Disord.* 2024;26(5):431–441. [DOI](https://doi.org/10.1111/bdi.13452)
+
+*(Reference numbering is shared with the Resident version for consistency; the MS3 case cites the anchoring subset [1,2,4,5].)*
+
+---
+*Prepared for the inpatient psychiatry clerkship. Joshua Moss, MD | Psychiatrist*
+
+
+---
+
 ## Acute Agitation & Delirium (Jul 13)
 
 - **Slug:** `cotw_20260713_agitation_ms3.md` · **Type:** md · **Sidebar:** listed
@@ -1230,188 +1506,3 @@ Would you like to explore any of these domains in greater depth — for example,
 
 ---
 *Evidence summary for teaching; verify against current guidelines and primary sources before clinical use. Reviewed and attested by Joshua Moss, MD (2026-07-09). Joshua Moss, MD | Psychiatrist*
-
-
----
-
-## The Therapy Reading Room
-
-- **Slug:** `therapy_reading_room.md` · **Type:** md · **Sidebar:** listed
-- **Source:** `07_Evidence_and_Reading/Therapy_Reading_Room/therapy_reading_room.md`
-- **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`low`
-- **Length:** 2,839 words
-
-<!-- topic_meta overlay -->
-#### Structured metadata (`topic_meta.json` → this page)
-
-> est. read 8 min
-
-**TL;DR (shown above the page text):**
-
-> A curated, verified therapy reading list: a handful of papers per domain with one line each on why it's worth your time — six ★ picks for the six weeks, open-access links checked, and the evidence-limits section as the lens for everything above it.
-
-**Key points (bulleted card):**
-
-- Read one ★ paper per rotation week: alliance (Flückiger), behavioral activation (Cuijpers 2026), safety planning (Stanley 2018), GPM for BPD (Links & Ross), family intervention (Pharoah), and the post-discharge risk rethink (Modini & Large).
-- Open means the full text is free right now (links are checked so the open ones really open); Library means use the institutional proxy.
-- The honest nulls stay in on purpose — a thin evidence base under a confident clinical habit is itself a teaching point, and each annotation carries the paper's own numbers.
-
-**Can't-miss / red-flag line:**
-
-> Don't quote an annotation as the paper's finding without opening the paper — annotations are one-line orientations drafted from abstracts, and the anchors' own hedges (Pharoah's 'may decrease relapse') are part of the finding.
-
-**Cross-references and tagging:**
-
-- **Related tools:** `question-bank-practice.html`, `review.html`
-- **Evidence sources:** `fluckiger-2018`, `cuijpers-2026`, `stanley-brown-2018`, `links-ross-2025`, `pharoah-2010-family-intervention`, `modini-large-2026`
-- **Workflow stages:** `treatment`, `exam`
-- **Workflow modes:** `ward`, `shelf`
-- **EPA crosswalk:** `EPA7`
-- **Call-to-action buttons:** Open Therapy on the Unit
-- **Faculty review:** {"status": "reviewed", "reviewer": "Joshua Moss, MD", "lastReviewed": "2026-08-23"}
-
-#### Page text (as shipped)
-
-# The Therapy Reading Room
-
-> Companion to [Therapy on the Unit](?page=therapy_on_the_unit.md) — that page teaches the bedside moves; this one is the evidence behind them.
-
-
-**How to use this page.** This is a curated reading list, not a bibliography — a handful of papers per topic, each with one line on why it's worth your time. **Open** means the full text is free right now; **Library** means use the institutional proxy link. Start with your patient: whatever you admitted today, there's a section for it. If you read only one paper per week of the rotation, take the six marked ★.
-
-*A note on honesty: psychotherapy research has real limitations — dropout, measurement fragmentation, and the stubborn finding that different therapies often perform about the same. The last section is about exactly that, and it's not an afterthought; it's the lens for everything above it.*
-
----
-
-## The working relationship (alliance)
-
-- ★ **The alliance in adult psychotherapy: a meta-analytic synthesis** — Flückiger et al., *Psychotherapy* 2018. PMID 29792475 · Open
-  The foundational number: across 295 studies and 30,000+ patients, alliance quality predicts outcome — r = .278 (≈ d = .58), consistent across therapy approaches, assessor perspectives, and even internet delivery. Read this before any modality.
-- **Alliance quality in severe mental illness** — Tetzlaff et al., *Clin Psychol Rev* 2025. PMID 41110399 · Open
-  48 studies on what tracks alliance quality in SMI. The sharpest finding is a mismatch: symptom severity influenced clinician-rated alliance but not patient-rated — how sick a patient looks changes what the clinician thinks of the relationship, not what the patient thinks. Observational associations, not trial effects.
-- **Alliance and suicidal experiences** — Huggett et al., *Clin Psychol Psychother* 2022. PMID 35168297 · Open
-  A robust alliance formed early in therapy predicted later reductions in suicidal ideation and attempts — and suicidal experiences themselves did not preclude forming one. The practice point: attend to patients' concerns about discussing suicidality.
-
-*Go deeper:* what "alliance" even measures — Saxler et al. 2024, a systematic review of 48 different alliance instruments whose own conclusion is that "the broad variety of conceptualizations and measures of TA makes coherent research on TA difficult"; the exhibit for why alliance numbers vary (PMID 38993343 · Open) · client and therapist voices on building alliance around suicidal experiences — weaving risk assessment *into* the conversation, rather than bolting it on, helped both alliance and safety; Huggett et al. 2024 (PMID 39098267 · Open) · unresolved alliance ruptures preceding dropout — five depressed **adolescents** (qualitative; pediatric sample, flagged), Difronzo et al. 2025 (PMID 40471224 · Open).
-
-## What an inpatient unit can deliver
-
-- **Indirect psychological intervention in acute inpatient settings** — Man et al., *Clin Psychol Psychother* 2023. PMID 35997039 · Open
-  "Indirect" = psychology delivered through the team and milieu — case formulation sessions, supervision, reflective practice — which is what an acute unit can actually staff. Ten small studies; promise, not proof.
-- **Inpatient psychotherapy for major depression: meta-analysis** — Schefft et al., *Acta Psychiatr Scand* 2019. PMID 30520019 · Library
-  Pooled benefit over control is small and durable — g = 0.24, NNT 7.4, holding at 12 months (g = 0.21) — and comparisons against waitlist or non-standardized control tended to run larger than against structured routine care. The authors' own phrase: "a small but sustained effect." Carry the number, not the slogan.
-- **Psychotherapy in the inpatient setting: moderators** — Cohen-Chazani et al., *Psychiatry* 2022. PMID 35442174 · Library
-  Across 37 samples (4,443 inpatients), psychotherapy's specific contribution was d = 0.43 (CI 0.06–0.81); therapy orientation had no significant effect, and diagnosis moderated outcome. A real effect — not a brand effect.
-
-*Worth saying out loud: this literature is thin — that's a finding, not an omission. What a real ward team can deliver is an under-studied question.*
-
-## Behavioral activation
-
-- ★ **BA for depression: comprehensive systematic review and meta-analysis** — Cuijpers et al., *Clin Psychol Rev* 2026. PMID 42492146 · Open
-  105 trials, 13,933 patients: BA vs control SMD 0.67, effects holding at 12 months, no difference vs other therapies (SMD 0.04) — and still effective self-guided (0.36) and in institutional settings (0.36). Same first author as the 2007 anchor below, twenty years on. Simple, teachable, still standing.
-- **Behavioral activation treatments of depression: meta-analysis** — Cuijpers et al., *Clin Psychol Rev* 2007. PMID 17184887 · Library
-  Where the modern claim started: activity scheduling alone vs control d = 0.87, and vs cognitive therapy d = 0.02. Activation is a treatment, not a warm-up for cognitive work.
-- **Cognitive restructuring vs BA vs CBT: network meta-analysis** — Ciharova et al., *J Consult Clin Psychol* 2021. PMID 34264703 · Open
-  The dismantling question: restructuring, activation, and the full CBT package were statistically indistinguishable head-to-head, and all beat care-as-usual (SMDs 0.44–0.57). Treatments are packages, and the parts test out about equally.
-- **Group BA: acceptability and efficacy** — Simmonds-Buckley et al., *Behav Ther* 2019. PMID 31422844 · Library
-  The evidence under the unit's actual delivery format: group BA beat controls (SMD 0.72), matched other active therapies, and dropout (14%) was no worse.
-- **BA for co-occurring depression and substance use** — Pott et al., *J Subst Abuse Treat* 2022. PMID 34146994 · Library
-  The honest null: across five trials (195 patients total), BA was not differentially effective for co-occurring depression and substance use (SMD 0.19, p = 0.20; GRADE Low throughout) — though attendance ran 72% and the authors call it "an acceptable treatment option." Kept for the lesson: this is how thin the evidence under a confident clinical habit can be.
-
-## Safety planning and lethal means
-
-- ★ **Safety Planning Intervention with follow-up vs usual care** — Stanley & Brown et al., *JAMA Psychiatry* 2018. PMID 29998307 · Open (PMC)
-  The foundational cohort (1,640 ED patients): safety planning plus follow-up contact was associated with 45% fewer suicidal behaviors (OR 0.56) and double the odds of attending outpatient care. A cohort comparison, not an RCT — but the tool you'll use most is built on it.
-- **Means restriction: overview of systematic reviews** — Steeg et al., *BMJ Ment Health* 2025. PMID 41365522 · Open
-  The umbrella view (20 reviews, 179 primary studies), and the concrete wins behind the counseling: physical barriers at jumping sites show strong effects, platform screen doors cut site-specific deaths without displacement, paracetamol pack limits reduced self-poisoning admissions, and bans on highly hazardous pesticides reduced suicide rates. Review quality varies — the authors say so — but this is where means restriction earns its place.
-
-*Go deeper:* the sobering trial-level review — stricter firearm regulation was associated with "a small reduction, if any" in suicide deaths, no high-quality RCTs exist, and the ecological designs preclude individual-level causal inference; counsel about means honestly, on population-level evidence; Shank et al. 2026 (PMID 40185617 · Library) · how rural communities — ours — actually hear this counseling: most respondents would discuss firearm access with a provider, but only 4–11% had ever been asked; Penzenik et al. 2026 (PMID 41588871 · Library).
-
-## CBT for psychosis
-
-- **Who benefits from CBT in psychosis: IPD meta-analysis** — Varese et al., *Health Technol Assess* 2025. PMID 41217072 · Open
-  The most sophisticated current answer, and it's a corrected instinct: this IPD meta-analysis (27 trials, n = 2,870) tested every modifier a clinician might select on — age, gender, ethnicity, illness duration, phase, severity, dose, format — and found **no reliable evidence that any of them changes CBTp's efficacy**. Its conclusion: offer CBTp equally, irrespective of demographic or clinical characteristics.
-- **CBT for negative symptoms: SR and meta-analysis** — Hong et al., *PLoS One* 2025. PMID 40392926 · Open
-  CBT improved negative symptoms versus treatment-as-usual (MD −1.65 PANSS points) with gains in overall function (SMD 0.38) and social skills (SMD 0.87). Real — and modest: a 1.65-point PANSS shift is statistically robust and clinically small, which is exactly why the hardest target in psychosis needs honest numbers.
-- **A cautious or cautionary tale?** — Tarrier & Wykes, *Behav Res Ther* 2004. PMID 15500811 · Library
-  Effect sizes shrink as trial rigor rises — the significant negative correlation between methodological quality and effect. The single most transferable methods lesson on this page.
-
-## BPD: DBT and the generalist stance
-
-- ★ **Good Psychiatric Management: foundations** — Links & Ross, *Am J Psychother* 2025. PMID 38952224 · Library
-  The reframe that changes behavior: GPM was built so any competent generalist can treat BPD — "refer out" is not a plan. Reviews the foundations and the original Canadian trial, and is candid about what's unproven (noninferiority against specialist therapies is listed as future work).
-- **DBT vs schema therapy: the BOOTS trial** — Wibbelink et al., *JAMA Psychiatry* 2026. PMID 42018336 · Library
-  The newest head-to-head (n = 204, nine sites, 3-year horizon): no significant difference between DBT and schema therapy (d = 0.15), large improvements in both — and two-year dropout near half in each arm. How the field adjudicates between credible treatments.
-- **DBT vs SSRI for suicidal behavior in BPD** — Brodsky et al., *Am J Psychiatry* 2025. PMID 41190740 · Library
-  The meds-versus-therapy question tested where it matters: six months of DBT produced fewer suicide-related events and less self-injury than SSRI plus clinical management, while depression improved comparably in both arms and outcomes converged by 12 months.
-- **Stand-alone DBT skills training: SR and meta-analysis** — Arqueros et al., *Personal Disord* 2026. PMID 42275028 · Library
-  What the affordable, skills-only version buys: large within-arm improvements (BPD severity d = −1.32) with 71% retention — but these are mostly pre-post benchmarks, not controlled comparisons. A discharge-planning fact with an evidence-grade caveat.
-- **Family engagement in BPD** — Appel et al., *Psychodyn Psychiatry* 2026. PMID 41849148 · Library
-  The family is usually in the room and rarely addressed: commonsense guidance for generalists drawn from TFP and GPM. Practical road map, not trial data.
-
-## Family intervention and expressed emotion
-
-- ★ **Family intervention for schizophrenia** — Pharoah et al., *Cochrane* 2010. PMID 21154340 · Open (PMC)
-  The canonical review (53 RCTs): family intervention "may decrease the frequency of relapse" (RR 0.55, NNT 7) and "may also reduce hospital admission" (RR 0.78, CI 0.6–1.0, NNT 8), with better medication adherence too. The authors' own hedge — effects "may be overestimated due to the poor methodological quality" — is part of the finding: the same rigor lesson Tarrier & Wykes teach, arriving in the domain's foundational citation.
-- **Expressed emotion and relapse: meta-analysis** — Ma et al., *Psychol Med* 2021. PMID 33568244 · Library
-  The empirical floor under family work: high expressed emotion predicts early relapse (OR 4.87 within 12 months), criticism predicts relapse (OR 2.22), and warmth protects (OR 0.35). A measured, modifiable relapse predictor.
-- **Family intervention in first-episode psychosis to 24 months** — Camacho-Gomez & Castellví, *Schizophr Bull* 2020. PMID 31050757 · Open (PMC)
-  Intervene early with families and relapse falls hard: RR 0.42 out to 24 months in first-episode psychosis, with shorter admissions and better functioning. Durable, not just immediate.
-
-## Motivational interviewing
-
-- **MI for substance use reduction** — Schwenker et al., *Cochrane* 2023. PMID 38084817 · Open (PMC)
-  The definitive review (93 trials, 22,776 participants), valuable for its restraint: small effects versus no intervention that fade over follow-up, little-to-no difference versus treatment as usual or other active treatments, and mostly low-certainty evidence. Hold the stance *and* the calibration.
-- **MI in dual diagnosis: systematic review** — Bastos Maia et al., *J Dual Diagn* 2025. PMID 39798118 · Library
-  The MI paper that matches our census: most outcomes improved without reaching significance; the clear signals were fewer relapses and fewer alcohol-binge days. An add-on with a narrow, real benefit.
-
-## Trauma-informed care
-
-- **Trauma-informed approaches to suicide prevention** — Ferguson et al., *Crisis* 2026. PMID 41267566 · Open
-  Maps the field (27 papers — **most focused on children and young people; extrapolate to adult units with care**): the case for risk assessment and safety procedures that don't retraumatize. Framework and gaps, not outcome data.
-- **TIC implementation: review of reviews** — Goldstein et al., *Perm J* 2024. PMID 38444328 · Open
-  What actually happens when systems implement TIC: mechanisms and outcomes mapped to SAMHSA's ten implementation domains. The implementation manual behind the aspiration.
-- **Umbrella review of trauma-informed approaches** — Mahon, *Community Ment Health J* 2024. PMID 39046622 · Library
-  The honest status report: across 14 systematic reviews (half rated low quality; **many youth/school settings**), effectiveness evidence remains mixed — enthusiasm currently outruns outcome data. Commitment plus candor.
-
-## Psychodynamic therapy and mentalization
-
-- **Short-term psychodynamic psychotherapy for depression: IPD meta-analysis** — Wienicke et al., *Clin Psychol Rev* 2023. PMID 36958077 · Open
-  Retires the reflex that "psychodynamic" means "unevidenced": individual-participant data from 11 of 13 eligible trials (n = 771) show STPP beats control conditions for depression (d = −0.62 at post-treatment), with larger effects in longer index episodes.
-- **Who benefits from adding STPP to antidepressants?** — Driessen et al., *Psychol Med* 2023. PMID 36404677 · Open
-  The combined-treatment question in its most ward-relevant form: adding STPP to antidepressants helped most in severe and chronic (>2-year) depression — the patients we actually admit.
-- **MBT for self-harm: SR and meta-analysis** — Hajek Gross et al., *Suicide Life Threat Behav* 2024. PMID 38279664 · Open
-  Kept for the comparator lesson: MBT's pre-post effects on self-harm look large (g = −0.82), but against active controls it "did not prove to be more efficacious," and the authors conclude that "prioritizing the application of MBT(-A) for the treatment of self-harm is not supported" (**includes MBT-A adolescent arms**). Read past the pre-post effect size to the comparator — always.
-
-## Therapy in the medically ill (consult-liaison)
-
-*Under construction with our CL colleagues — the demoralization/meaning-centered core is being co-curated. Starting points:*
-
-- **The demoralization construct** — de Figueiredo, *J Clin Psychiatry* 2026. PMID 41920002 · Library
-  Construct orientation — a commentary distinguishing demoralization from depression. Full text pending faculty review.
-- **Meaning-centered psychotherapy** — StatPearls 2026. PMID 42207918 · Open
-  A free reference orientation to meaning-centered work (the Frankl → Breitbart lineage) before the trial literature. Tertiary study guide — orient with it, don't cite it as evidence.
-- **STPP for functional somatic disorders** — Abbass et al., *Psychother Psychosom* 2020. PMID 32428905 · Library
-  Functional presentations are consult bread-and-butter, and a specific brief therapy helps: across 17 RCTs, STPP beat minimal treatment, TAU, and waitlist on somatic symptoms at every time frame (small-to-large effects). Carries a published erratum (a correction — the paper stands).
-
-## After discharge
-
-- ★ **Post-discharge suicide: time for a rethink** — Modini & Large, *Australas Psychiatry* 2026. PMID 41664893 · Library
-  An argument piece, not a data paper: the field keeps studying categorical predictors and ignoring what the admission itself was like for the patient. Read it after the Chung meta-analyses — those give you the magnitude, this asks why we still cannot explain it.
-- **Inpatient brief CBT and post-discharge ED use** — Diefenbach et al., *Gen Hosp Psychiatry* 2025. PMID 39837259 · Library
-  Adding brief CBT during the stay cut post-discharge ED visits by about three quarters (OR 0.25) — but "only among participants without SUD." On a dual-diagnosis unit, that qualifier *is* the teaching point; the authors themselves call for work to make it hold in SUD.
-- **Caring contacts after psychiatric hospitalization** — Steinberg et al., *Suicide Life Threat Behav* 2024. PMID 38934489 · Open
-  One of the cheapest interventions in psychiatry, refined with patient input: brief caring-contact messages on days 2 and 7 post-discharge, with pilot-scale (n = 27) reductions in depressive symptoms and better connectedness. Cheap, kind — and still early-stage evidence.
-
-## Evidence limits, honestly
-
-- **Allegiance and treatment quality as moderators** — Schünemann et al., *Clin Psychol Eur* 2025. PMID 40177337 · Open
-  The allegiance hypothesis, tested — and not confirmed: in trials comparing humanistic therapy to other approaches, researcher allegiance and treatment quality were "not as relevant for outcomes… as expected." That is a richer evidence-limits lesson than the slogan: a bias everyone "knows" matters failed to show up when someone checked (scope: humanistic-vs-other comparisons).
-- **Dropout in psychotherapy for personality disorders** — De Salve et al., *Clin Psychol Psychother* 2025. PMID 40325843 · Open
-  The outcome nobody advertises: dropout runs 10–58% in personality-disorder psychotherapy, predicted by younger age, comorbid substance use, and emotion dysregulation — while strong alliances and phone coaching protect. A therapy the patient leaves is not a therapy that worked.
-
-*The closing-paper slot for this section is deliberately held pending a full-text faculty read (Westra 2023, on what near-equivalent therapies imply for how you train). Until that read, the section closes on the dropout paper above.*
-
----
-
-*What this page deliberately does not do: host PDFs, reproduce abstracts, or substitute for supervision. Every paper here was verified for identity and retraction status before listing; link types are checked so the open ones really open. Annotations are drafted from the papers' abstracts with AI assistance and carry faculty signature as of 2026-08-23.*

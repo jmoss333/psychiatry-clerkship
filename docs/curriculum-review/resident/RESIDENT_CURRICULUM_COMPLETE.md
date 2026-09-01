@@ -3,7 +3,7 @@
 # RESIDENT curriculum — complete content transcript for clinical review
 
 **Site:** `mmc-psychiatry-residents-sanford` · **Audience:** Residents — MMC/Sanford psychiatry residents
-**Generated:** 2026-09-01 from build `455ee87` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
+**Generated:** 2026-09-01 from build `89864d7` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
 
 ## Who this is for
 
@@ -16,10 +16,10 @@ This transcript is assembled from the **built site**, not the source tree, so it
 | Content | Count |
 |---|---|
 | Sidebar sections | 12 |
-| Narrative pages (markdown) | 85 |
+| Narrative pages (markdown) | 86 |
 | Interactive tools | 25 |
 | Deep-link-only (hidden) surfaces | 26 |
-| Words of narrative curriculum | 114,338 |
+| Words of narrative curriculum | 116,551 |
 | Practice question-bank items | 192 |
 | Audio-companion quiz decks / questions | 79 / 437 |
 | Communication cases | 12 |
@@ -86,7 +86,7 @@ High-yield places to concentrate: the `topic_meta` **can't-miss**, **rule-out** 
 
 # RESIDENT · Navigation map
 
-Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-01 @ `455ee87`.
+Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-01 @ `89864d7`.
 
 ## Orientation  *(pinned)*
 
@@ -206,17 +206,18 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 
 | # | Title | Slug | Type | Sidebar | Governance | Source path | Words |
 |---|---|---|---|---|---|---|---|
-| 1 | Index — All Cases | `cotw_index.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `08_Cases_and_Simulation/case-of-the-week/index_ms3.md` | 391 |
-| 2 | Borderline Personality Disorder (Aug 27) | `cotw_20260827_bpd_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-27_borderline-personality-disorder_Resident.md` | 2452 |
-| 3 | Panic Disorder (Aug 10) | `cotw_20260810_panic_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-10_anxiety-panic-disorder_Resident.md` | 4305 |
-| 4 | Lithium — Monitoring & Toxicity (Aug 3) | `cotw_20260803_lithium_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-03_lithium-monitoring-toxicity-interactions_Resident.md` | 3811 |
-| 5 | Opioid Use Disorder (Jul 27) | `cotw_20260727_oud_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-27_opioid-use-disorder_Resident.md` | 3399 |
-| 6 | Alcohol Withdrawal & DT (Jul 26) | `cotw_20260726_etohwd_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-26_alcohol-withdrawal-delirium-tremens_Resident.md` | 3097 |
-| 7 | Suicide Risk & Safety Planning (Jul 23) | `cotw_20260723_suiciderisk_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`high` | `08_Cases_and_Simulation/case-of-the-week/2026-07-23_suicide-risk-assessment-safety-planning_Resident.md` | 2283 |
-| 8 | MDD — Treatment Selection (Jul 20) | `cotw_20260720_mdd_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-20_mdd-treatment-selection-augmentation_Resident.md` | 1748 |
-| 9 | Bipolar Mania (Jul 20) | `cotw_20260720_bipolar_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-20_bipolar-mania_Resident.md` | 1631 |
-| 10 | Acute Agitation & Delirium (Jul 13) | `cotw_20260713_agitation_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-13_acute-agitation-delirium_Resident.md` | 2204 |
-| 11 | Serotonin Syndrome vs NMS (Jul 9) | `cotw_20260709_ssnms_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-09_serotonin-syndrome-vs-nms_Resident.md` | 1947 |
+| 1 | Index — All Cases | `cotw_index.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `08_Cases_and_Simulation/case-of-the-week/index_ms3.md` | 422 |
+| 2 | Catatonia (Aug 31) | `cotw_20260831_catatonia_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-31_catatonia-recognition-workup-treatment_Resident.md` | 2182 |
+| 3 | Borderline Personality Disorder (Aug 27) | `cotw_20260827_bpd_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-27_borderline-personality-disorder_Resident.md` | 2452 |
+| 4 | Panic Disorder (Aug 10) | `cotw_20260810_panic_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-10_anxiety-panic-disorder_Resident.md` | 4305 |
+| 5 | Lithium — Monitoring & Toxicity (Aug 3) | `cotw_20260803_lithium_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-03_lithium-monitoring-toxicity-interactions_Resident.md` | 3811 |
+| 6 | Opioid Use Disorder (Jul 27) | `cotw_20260727_oud_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-27_opioid-use-disorder_Resident.md` | 3399 |
+| 7 | Alcohol Withdrawal & DT (Jul 26) | `cotw_20260726_etohwd_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-26_alcohol-withdrawal-delirium-tremens_Resident.md` | 3097 |
+| 8 | Suicide Risk & Safety Planning (Jul 23) | `cotw_20260723_suiciderisk_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`high` | `08_Cases_and_Simulation/case-of-the-week/2026-07-23_suicide-risk-assessment-safety-planning_Resident.md` | 2283 |
+| 9 | MDD — Treatment Selection (Jul 20) | `cotw_20260720_mdd_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-20_mdd-treatment-selection-augmentation_Resident.md` | 1748 |
+| 10 | Bipolar Mania (Jul 20) | `cotw_20260720_bipolar_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-20_bipolar-mania_Resident.md` | 1631 |
+| 11 | Acute Agitation & Delirium (Jul 13) | `cotw_20260713_agitation_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-13_acute-agitation-delirium_Resident.md` | 2204 |
+| 12 | Serotonin Syndrome vs NMS (Jul 9) | `cotw_20260709_ssnms_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-09_serotonin-syndrome-vs-nms_Resident.md` | 1947 |
 
 ## Evidence and Reference
 
@@ -13138,7 +13139,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **Slug:** `cotw_index.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/index_ms3.md`
 - **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
-- **Length:** 391 words
+- **Length:** 422 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -13182,6 +13183,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 
 **This term's line-up (most recent first):**
 
+- **Catatonia — Recognition, Workup & Treatment** (Aug 31) — disentangling NMS from malignant catatonia, high-dose lorazepam strategy, early ECT triggers, the serum + CSF autoimmune workup, and the catatonia–delirium overlap.
 - **Borderline Personality Disorder — Presentation & Management** (Aug 27) — the meta-analytic evidence in real numbers, deprescribing the inherited five-drug regimen, chronic vs. acute-on-chronic risk documentation, splitting and the milieu, and GPM when DBT is waitlisted.
 - **Panic Disorder — Differential Precision & Pharmacologic Optimization** (Aug 10) — the pseudopheochromocytoma phenotype, benzodiazepine interdose rebound as an iatrogenic driver, and reconciling the Cochrane and BMJ network meta-analyses.
 - **Lithium — Monitoring, Toxicity & Interactions** (Aug 3) — two-compartment kinetics and post-dialysis rebound, SILENT, nephrogenic DI vs. lithium nephropathy, and preconception counselling with effect sizes.
@@ -13196,6 +13198,158 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 New cases are added weekly. A matching MS3-level version of each case lives on the UNE MS3 site.
 
 *Joshua Moss, MD | Psychiatrist*
+
+
+---
+
+## Catatonia (Aug 31)
+
+- **Slug:** `cotw_20260831_catatonia_res.md` · **Type:** md · **Sidebar:** listed
+- **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-08-31_catatonia-recognition-workup-treatment_Resident.md`
+- **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
+- **Length:** 2,182 words
+
+<!-- topic_meta overlay -->
+#### Structured metadata (`topic_meta.json` → this page)
+
+> est. read 10 min · safetyLevel=`moderate` · cotwLevel=`res` (2026-08-31)
+
+**TL;DR (shown above the page text):**
+
+> A mute, motionless patient is an emergency until proven otherwise - screen with the BFCRS, test-and-treat with the lorazepam challenge, hold the antipsychotics, and know the malignant-catatonia triggers that mean early ECT.
+
+**Key points (bulleted card):**
+
+- ~20-30 minute small-group discussion - no pre-reading required.
+- De-identified synthetic case; each discussion question is paired with a teaching point.
+- Resident level. Facilitator notes are kept separate from the learner-facing stem.
+
+**Clinical-workflow narration (per-stage coaching text):**
+
+- **ask** — Work the stem cold: take your own history, commit to a differential, and name your next step before reading a single teaching point. The guided questions are written to be answered, not skimmed.
+- **mse** — Say out loud what each exam finding in the vignette rules in and rules out — the discrimination between look-alike syndromes is what the case is drilling.
+- **safety** — Safety content in every case is oriented to recognition, escalation, and safety planning. Escalate to your supervising resident or attending rather than managing acuity alone.
+- **say** — Before moving on, rehearse one sentence you would actually say to this patient or family, in plain language and out loud.
+- **collateral** — Ask yourself what collateral would change your differential here, and who you would have to call to get it.
+- **rounds** — If you are running the session, the facilitator notes flag the errors this case most often surfaces and the evidence-quality distinctions worth naming out loud.
+- **exam** — Teaching takeaway: A mute, motionless patient is an emergency until proven otherwise - screen with the BFCRS, test-and-treat with the lorazepam challenge, hold the antipsychotics, and know the malignant-catatonia triggers that mean early ECT.
+- **actions** — All Case of the Week cases
+
+**Cross-references and tagging:**
+
+- **Workflow stages:** `diagnosis`, `safety`, `treatment`, `team`, `exam`
+- **Shelf blueprint tags:** `neurocog`, `safety`, `pharm`
+- **EPA crosswalk:** `EPA1`, `EPA2`, `EPA3`, `EPA10`
+- **Faculty review:** {"status": "pending", "reviewer": "Joshua Moss, MD", "lastReviewed": "2026-08-31"}
+
+#### Page text (as shipped)
+
+# Case of the Week — August 31, 2026 (Resident Version)
+
+## Catatonia: Recognition, Workup, and Treatment
+
+**Learner level:** Psychiatry residents (PGY-2–4; well suited to the C-L service)
+**Format:** Facilitator-led discussion, ~20–30 minutes. Assumes DSM-5-TR fluency.
+**Note:** This is a fully synthetic, de-identified teaching case. It describes no real patient; any resemblance to a real person is coincidental.
+
+---
+
+## Learner-facing case stem
+
+You are the consultation-liaison resident. Medicine consults you for a 46-year-old man admitted two days ago with "altered mental status and failure to thrive." He has a history of bipolar I disorder, off all medications for about a year. Per his sister, he had a flu-like illness roughly three weeks ago, then over two weeks became progressively withdrawn, near-mute, and stopped eating reliably; for the last five days he has barely taken anything by mouth. In the emergency department three days ago he was "agitated and resistive" and received **haloperidol 5 mg IM twice**. The primary team reports he has since seemed "stiffer and more shut down."
+
+On exam he is awake, eyes open, with fixed staring and almost no spontaneous movement. He does not speak beyond occasional repetition of the same short phrase (**verbigeration**). He holds his head several inches off the pillow for minutes at a time (**psychological pillow**, a form of posturing). Passive movement reveals **gegenhalten** (oppositional paratonia — resistance proportional to the force applied) and intermittent **waxy flexibility**; he mirrors some of your movements (**echopraxia**). He resists mouth opening and eye examination (**negativism**). There is mild diffuse rigidity without cogwheeling and no tremor or clonus.
+
+Vitals: T 37.6 °C, HR 104, BP 142/88 (nurse notes readings from 108/70 to 150/92 today), RR 16, SpO₂ 98%. Labs: Na 148, BUN/Cr 32/1.3, CK 850 U/L, WBC 11.2; TSH and glucose normal; urine toxicology negative. BFCRS screening is positive at 8 of 14 screening items.
+
+---
+
+## Guided discussion questions
+
+**Q1. Make the syndromic diagnosis precisely. How do DSM-5-TR, ICD-11, and the BFCRS each frame catatonia, and why does the framing matter?**
+
+*Teaching point:* He easily meets DSM-5-TR criteria (≥3 of 12 signs — here mutism/verbigeration, posturing, waxy flexibility, negativism, echopraxia, staring on the BFCRS). DSM-5 moved catatonia out from under schizophrenia to a **specifier** applicable across mood, psychotic, and medical conditions, reflecting that mood disorders are the most common psychiatric context [5]. ICD-11 now recognizes catatonia as an **independent diagnostic entity** (since 2022) [3]. The **BFCRS** remains the workhorse instrument: 23-item severity scale, 14-item screen (positive at ≥2), standardized exam, inter-rater reliability ~0.93 [4]. Framing matters clinically: prevalence is roughly **5–18% on psychiatric inpatient units and ~3.3% on medical units** [3], and unrecognized catatonia is what kills — via VTE, aspiration, dehydration, and progression to malignant catatonia.
+
+**Q2. What in this stem demands a workup for secondary (medical) catatonia, and what exactly do you send?**
+
+*Teaching point:* Red flags: first catatonic episode at 46, subacute course after a **viral prodrome**, dysautonomia out of proportion to psychiatric history, and admission to a medical service. The BAP guideline's assessment framework: careful history and physical/neurological exam, then **neuroimaging (MRI preferred), EEG, and neuronal autoantibody testing in serum and CSF** — anti-NMDA-receptor encephalitis is the paradigmatic mimic/cause and can present catatonic [1,2]. Add here: CMP with Ca/Mg/phosphate, LFTs, B12, HIV and syphilis serology, serial CK, and an LP with cell count, protein, oligoclonal bands, and autoimmune panel. EEG also screens for **nonconvulsive status epilepticus**, which belongs on this differential. Delirium and catatonia are *not* mutually exclusive — they frequently co-occur in the medically ill, and both should be coded and tracked [3,6].
+
+**Q3. Haloperidol was given, and he worsened. Disentangle NMS, antipsychotic-worsened catatonia, and malignant catatonia — conceptually and practically.**
+
+*Teaching point:* Many authors treat **NMS as a drug-induced (malignant) variant of catatonia** — the phenotypes overlap almost completely (rigidity, mutism, autonomic instability, elevated CK) [2,6]. Practical synthesis for the bedside: (a) his catatonic signs **predated** haloperidol, so this is primary catatonia **worsened by a dopamine antagonist**, a well-described phenomenon and the reason antipsychotics — especially high-potency D2 blockers — are relatively contraindicated in active catatonia [2]; (b) whatever the label, T 37.6 with labile BP, HR 104, rigidity, and CK 850 means he is **evolving toward malignant catatonia**, which is life-threatening and can be fatal untreated [6]; (c) management converges: **stop dopamine blockers, start lorazepam, escalate monitoring, and mobilize ECT early** [1,2,6]. The BAP guideline gives specific regard to malignant catatonia, NMS, and antipsychotic-induced catatonia as special situations [1].
+
+**Q4. Design the benzodiazepine trial: challenge, titration, endpoints, and what response rates you should quote.**
+
+*Teaching point:* **Lorazepam challenge** (typically 1–2 mg IV in a monitored medical setting; IV is preferred for reliability of effect and because PO absorption is uncertain with poor intake), re-examine with the BFCRS within ~15–60 minutes; video or documented serial exams make response objective. If positive (often dramatic), convert to **scheduled dosing with structured uptitration** — effective regimens frequently exceed conventional anxiolytic dosing, and the BAP guideline explicitly notes lorazepam is "sometimes used in very high doses"; catatonic patients often tolerate these with surprisingly little sedation [1,2]. Titrate to BFCRS resolution, not to sedation. Quote honestly: benzodiazepines are first-line, but **up to ~27% of catatonia fails to respond to benzodiazepines alone** [8] — a pre-committed escalation plan is part of the initial order set. Mechanistically, GABA-A hypofunction is the leading model, consistent with benzodiazepine response and with premotor/motor-network dysfunction on imaging [3,5]. The α1-selective GABA-A agonist **zolpidem** has case-level evidence as an alternative challenge or augmentation agent when lorazepam response is equivocal [8].
+
+**Q5. When does ECT enter, and how do you operationalize it on a medical service?**
+
+*Teaching point:* **ECT is first-line together with benzodiazepines**, and is the treatment of choice for **malignant catatonia, benzodiazepine-refractory catatonia, and when a rapid response is needed** (e.g., no oral intake, dysautonomia) [1,2,6]. Operationally: early ECT consultation (do not wait for a completed benzodiazepine failure if malignant features progress), anesthesia review, capacity assessment — catatonic patients usually lack capacity, so involve surrogate consent per jurisdiction, and know your local emergency-treatment pathway. Discuss with learners: continuing lorazepam during an ECT course is common practice (with attention to seizure threshold and timing of doses) — an excellent point for residents to argue from first principles and local protocol.
+
+**Q6. The patient cannot get ECT quickly and has only partially responded to lorazepam. What are your evidence-informed adjuncts and their cautions?**
+
+*Teaching point:* The adjunct evidence base is largely observational — case series and systematic reviews of cases — which the guideline authors themselves flag as the field's main limitation [1,2]. Best-supported alternatives: **NMDA-receptor antagonists (amantadine, memantine)**, with anti-epileptic drugs and certain atypical antipsychotics also described [3,7]. If psychosis demands antipsychotic treatment, prefer agents with lower D2 antagonism — **clozapine and aripiprazole are effective in some populations** [3] — introduced cautiously after catatonia is improving, with benzodiazepine cover and serial BFCRS/CK monitoring. Never re-challenge with high-potency agents in someone whose catatonia worsened on them.
+
+**Q7. Write the safety-and-systems plan: complications, monitoring, disposition, and prognosis.**
+
+*Teaching point:* Catatonia's morbidity is mostly **medical**: VTE (immobility — prophylaxis from day one), aspiration pneumonia (swallow evaluation before PO; NG feeding if intake fails), dehydration, AKI and electrolyte derangement (already present: Na 148, BUN/Cr 32/1.3), rhabdomyolysis (serial CK), pressure injuries, and contractures. Orders: continuous or q4h vitals with autonomic-instability parameters, strict I/O, daily BFCRS by a consistent examiner, DVT prophylaxis, PT/OT. Escalation triggers to ICU: temperature rise, worsening autonomic lability, CK trajectory, or declining arousal. Prognosis framing for the team and family: with early recognition and appropriate treatment (benzodiazepines/ECT), most catatonia responds well; delayed recognition drives the high morbidity and mortality [3]. As his mood episode declares itself during recovery, complete structured suicide-risk assessment and safety planning before stepping down observation — keep this at the level of recognition, structured assessment, and escalation.
+
+---
+
+## Ranked differential diagnosis (with discriminators)
+
+1. **Catatonia in the context of a bipolar I mood episode, worsened by antipsychotic exposure** — prior bipolar I, subacute psychomotor decline, classic signs predating haloperidol, deterioration after D2 blockade [2,5].
+2. **Catatonia due to another medical condition — autoimmune (anti-NMDA-receptor) encephalitis first among them** — viral-like prodrome, first presentation this severe at 46, dysautonomia; requires MRI, EEG, serum + CSF autoantibodies to exclude [1,2].
+3. **Evolving malignant catatonia** — low-grade fever, labile BP, tachycardia, rigidity, CK 850; this is a trajectory, not a separate box, and it changes tempo of care [6].
+4. **Neuroleptic malignant syndrome** — haloperidol exposure with rigidity and CK elevation; argued against by clear pre-exposure catatonic syndrome and only modest fever/CK; management overlaps with #3 regardless [2,6].
+5. **Catatonia–delirium comorbidity / hypoactive delirium** — medically ill, dehydrated, fluctuating vitals; screen attention (e.g., months backward), CAM-ICU-style assessment; the two co-occur and both matter [3,6].
+6. **Nonconvulsive status epilepticus** — staring, mutism, minimal movement; EEG is the only way to know.
+7. **Serotonin syndrome** — no serotonergic exposure, no clonus/hyperreflexia; include to teach the toxidrome grid (drug history + neuromuscular exam distinguish SS, NMS, and malignant catatonia).
+8. **Structural/metabolic akinetic mutism** (frontal or mesodiencephalic lesions, severe hypernatremia contribution) — imaging plus correction of Na 148 and reassessment.
+
+---
+
+## Workup & management summary
+
+**Tier 1 (today):** stop all dopamine antagonists; BFCRS-scored standardized exam and daily re-scoring; CBC, CMP + Ca/Mg/Phos, LFTs, serial CK, TSH, B12, HIV/RPR, blood cultures if febrile; ECG; IV fluids for hypernatremia/prerenal azotemia; VTE prophylaxis; NPO pending swallow evaluation with NG plan; q4h vitals with autonomic parameters.
+
+**Tier 2 (this admission, expedited):** MRI brain, EEG (rule out NCSE; encephalitis patterns), LP with CSF cell count/protein/oligoclonal bands and neuronal autoantibody panel in serum and CSF [1,2].
+
+**Treatment ladder:** lorazepam challenge 1–2 mg IV → scheduled lorazepam with structured uptitration titrated to BFCRS response [1,2] → **early ECT** for malignant features, benzodiazepine failure (up to ~27% [8]), or need for rapid response [1,2,6] → adjuncts where ECT/benzodiazepines are unavailable or insufficient: amantadine/memantine; cautious clozapine or aripiprazole if psychosis requires treatment [3,7]; zolpidem as challenge/augmentation alternative [8].
+
+**Do not:** start or resume high-potency antipsychotics during active catatonia; attribute the syndrome to "noncompliance with bipolar meds" before the secondary workup is done; forget that the mortality lives in the supportive-care column.
+
+---
+---
+
+## Facilitator notes — keep separate; not for learner distribution
+
+**Flow (20–30 min):** 3–4 min stem → Q1 briefly (they should nail it) → spend the session's core on Q3, Q4, and Q5 (the NMS/malignant-catatonia disentangling and the treatment ladder are the highest-yield resident content) → Q7 as rapid-fire order-writing → close with evidence-quality caveat.
+
+**Points to press residents on:** Have them defend *why* antipsychotics are held (D2 blockade worsening catatonia/precipitating malignant conversion) rather than reciting the rule. Ask what specifically they would document to make a lorazepam response objective (serial BFCRS, timed video with consent, nursing observations). Ask who consents for ECT when the patient lacks capacity in your state, and what the emergency pathway is. Push on the catatonia–delirium overlap: what does a CAM-positive, BFCRS-positive patient get treated with first, and why (treat catatonia with lorazepam while treating delirium's cause; avoid reflexive antipsychotics).
+
+**Evidence-quality caveat to state explicitly:** the BAP guideline recommendations rest mainly on small observational studies, case series, and case reports — clinical trials are uncommon [1,2]; the zolpidem literature is case-level with likely reporting bias [8]. Model calibrated language for trainees.
+
+**Anticipated wrong turns:** treating this as pure NMS and stopping at "supportive care + dantrolene" (redirect: benzodiazepines/ECT treat the underlying catatonic process); waiting for the full autoimmune panel before any treatment (lorazepam trial and workup proceed in parallel); dosing lorazepam 0.5 mg BID and calling it a failed trial.
+
+**Optional extension (if >30 min):** assign one resident to argue for early ECT and another for maximizing pharmacotherapy first, then debrief using the malignant-features trajectory as the deciding variable.
+
+**Safety framing:** all suicide-risk content stays at recognition, structured assessment, observation, and escalation — no method-level detail in discussion or documentation examples.
+
+---
+
+## References
+
+Based on articles retrieved from PubMed (National Library of Medicine). Citation fields below (journal, year, volume/pages, DOI) were verified against PubMed records on 2026-08-31.
+
+1. Rogers JP, Oldham MA, Fricchione G, et al. Evidence-based consensus guidelines for the management of catatonia: Recommendations from the British Association for Psychopharmacology. *J Psychopharmacol*. 2023;37(4):327-369. [DOI: 10.1177/02698811231158232](https://doi.org/10.1177/02698811231158232)
+2. Rogers JP, Zandi MS, David AS. The diagnosis and treatment of catatonia. *Clin Med (Lond)*. 2023;23(3):242-245. [DOI: 10.7861/clinmed.2023-0113](https://doi.org/10.7861/clinmed.2023-0113)
+3. Hirjak D, Rogers JP, Wolf RC, et al. Catatonia. *Nat Rev Dis Primers*. 2024;10(1):49. [DOI: 10.1038/s41572-024-00534-w](https://doi.org/10.1038/s41572-024-00534-w)
+4. Bush G, Fink M, Petrides G, Dowling F, Francis A. Catatonia. I. Rating scale and standardized examination. *Acta Psychiatr Scand*. 1996;93(2):129-136. [DOI: 10.1111/j.1600-0447.1996.tb09814.x](https://doi.org/10.1111/j.1600-0447.1996.tb09814.x)
+5. Walther S, Stegmayer K, Wilson JE, Heckers S. Structure and neural mechanisms of catatonia. *Lancet Psychiatry*. 2019;6(7):610-619. [DOI: 10.1016/S2215-0366(18)30474-7](https://doi.org/10.1016/S2215-0366(18)30474-7)
+6. Connell J, Oldham M, Pandharipande P, et al. Malignant Catatonia: A Review for the Intensivist. *J Intensive Care Med*. 2022;38(2):137-150. [DOI: 10.1177/08850666221114303](https://doi.org/10.1177/08850666221114303)
+7. Beach SR, Gomez-Bernal F, Huffman JC, Fricchione GL. Alternative treatment strategies for catatonia: A systematic review. *Gen Hosp Psychiatry*. 2017;48:1-19. [DOI: 10.1016/j.genhosppsych.2017.06.011](https://doi.org/10.1016/j.genhosppsych.2017.06.011)
+8. Gunther M, Tran N, Jiang S. Zolpidem for the Management of Catatonia: A Systematic Review. *J Acad Consult Liaison Psychiatry*. 2024;66(1):49-56. [DOI: 10.1016/j.jaclp.2024.10.004](https://doi.org/10.1016/j.jaclp.2024.10.004)
 
 
 ---
@@ -13343,6 +13497,14 @@ Based on articles retrieved from PubMed. Citation fields (journal, year, volume/
 
 *Prepared for the Psychiatry Clerkship / Residency teaching series — Case of the Week. Joshua Moss, MD | Psychiatrist*
 
+
+<!-- ==================== 02_CURRICULUM_V10.md ==================== -->
+
+# RESIDENT · Curriculum content — volume 10
+
+Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
+
+# SECTION (cont.): Case of the Week
 
 ---
 
@@ -13592,14 +13754,6 @@ Based on articles retrieved from PubMed.
 
 *Joshua Moss, MD | Psychiatrist*
 
-
-<!-- ==================== 02_CURRICULUM_V10.md ==================== -->
-
-# RESIDENT · Curriculum content — volume 10
-
-Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
-
-# SECTION (cont.): Case of the Week
 
 ---
 
@@ -14118,6 +14272,14 @@ For **mortality**, the agonist evidence is the strongest thing we have: all-caus
 *Joshua Moss, MD | Psychiatrist*
 
 
+<!-- ==================== 02_CURRICULUM_V11.md ==================== -->
+
+# RESIDENT · Curriculum content — volume 11
+
+Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
+
+# SECTION (cont.): Case of the Week
+
 ---
 
 ## Alcohol Withdrawal & DT (Jul 26)
@@ -14478,14 +14640,6 @@ Mental status: alert, cooperative, tearful, with constricted affect and mood-con
 
 *Joshua Moss, MD | Psychiatrist*
 
-
-<!-- ==================== 02_CURRICULUM_V11.md ==================== -->
-
-# RESIDENT · Curriculum content — volume 11
-
-Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
-
-# SECTION (cont.): Case of the Week
 
 ---
 
@@ -14930,6 +15084,14 @@ Dangerousness here is **agitation-related risk to self and staff**; keep teachin
 *Joshua Moss, MD | Psychiatrist*
 
 
+<!-- ==================== 02_CURRICULUM_V12.md ==================== -->
+
+# RESIDENT · Curriculum content — volume 12
+
+Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
+
+# SECTION (cont.): Case of the Week
+
 ---
 
 ## Serotonin Syndrome vs NMS (Jul 9)
@@ -15110,15 +15272,6 @@ If any component were an **intentional ingestion**, medical stabilization comes 
 ---
 
 # SECTION: Evidence and Reference
-
-
-<!-- ==================== 02_CURRICULUM_V12.md ==================== -->
-
-# RESIDENT · Curriculum content — volume 12
-
-Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
-
-# SECTION (cont.): Evidence and Reference
 
 ---
 
@@ -20679,7 +20832,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Opening this step or resizing the browser does not count. Each action below validates a fresh envelope and projects it through the same student projector.
 - Desktop preview not yet reviewed · Mobile preview not yet reviewed
 
-**Authored clinical strings (1794, first 400 shown):**
+**Authored clinical strings (1796, first 400 shown):**
 
 - Front door structure ONLY — week ordering, library columns, safety-kit membership, per-site roles, search synonyms. Facts about an item (minutes, summary, key points, attestation) live in topic_meta.json and join at render time; never duplicate them here. Validated by 13_Faculty_Resources/_automation/validate_curriculum.py.
 - a feedback form, not library content — reachable from the header
@@ -21082,7 +21235,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Malingering for disability
 - Order repeat MRIs until something appears
 
-_1394 further strings omitted — this surface embeds the build's front-door catalog (item summaries, key points, search synonyms), which is transcribed in full elsewhere in this document set._
+_1396 further strings omitted — this surface embeds the build's front-door catalog (item summaries, key points, search synonyms), which is transcribed in full elsewhere in this document set._
 
 
 <!-- ==================== A1_QUESTION_BANK.md ==================== -->
@@ -30466,11 +30619,11 @@ Where the curriculum claims coverage. Use these to spot a blueprint area or EPA 
 
 | tag | n | pages |
 |---|---|---|
-| `pharm` | 11 | `cotw_20260709_ssnms_res.md`, `cotw_20260720_mdd_res.md`, `cotw_20260727_oud_res.md`, `cotw_20260803_lithium_res.md`, `cotw_20260810_panic_res.md`, `ect_neuromodulation.md`, `landmark_trials.md`, `med_monitoring.md`, `protocol_library.md`, `psychopharm_primer.md`, `toxidromes.md` |
-| `neurocog` | 10 | `catatonia.md`, `cotw_20260709_ssnms_res.md`, `cotw_20260713_agitation_res.md`, `cotw_20260726_etohwd_res.md`, `delirium.md`, `exp_consult.md`, `medical_workup.md`, `t_geri.md`, `t_neurocog.md`, `toxidromes.md` |
+| `pharm` | 12 | `cotw_20260709_ssnms_res.md`, `cotw_20260720_mdd_res.md`, `cotw_20260727_oud_res.md`, `cotw_20260803_lithium_res.md`, `cotw_20260810_panic_res.md`, `cotw_20260831_catatonia_res.md`, `ect_neuromodulation.md`, `landmark_trials.md`, `med_monitoring.md`, `protocol_library.md`, `psychopharm_primer.md`, `toxidromes.md` |
+| `neurocog` | 11 | `catatonia.md`, `cotw_20260709_ssnms_res.md`, `cotw_20260713_agitation_res.md`, `cotw_20260726_etohwd_res.md`, `cotw_20260831_catatonia_res.md`, `delirium.md`, `exp_consult.md`, `medical_workup.md`, `t_geri.md`, `t_neurocog.md`, `toxidromes.md` |
 | `otherdx` | 8 | `nutrition_metabolic.md`, `t_adjustment.md`, `t_dissociative.md`, `t_eating.md`, `t_perinatal.md`, `t_sexual.md`, `t_sleep.md`, `t_somatic.md` |
+| `safety` | 8 | `agitation.md`, `cotw_20260713_agitation_res.md`, `cotw_20260723_suiciderisk_res.md`, `cotw_20260827_bpd_res.md`, `cotw_20260831_catatonia_res.md`, `pg_suicide.md`, `suicide.md`, `violence.md` |
 | `relational` | 7 | `brief_psychotherapy.md`, `cultural_psychiatry.md`, `doc_oral.md`, `exp_family.md`, `family_modalities.md`, `family_playbook.md`, `motivational_interviewing.md` |
-| `safety` | 7 | `agitation.md`, `cotw_20260713_agitation_res.md`, `cotw_20260723_suiciderisk_res.md`, `cotw_20260827_bpd_res.md`, `pg_suicide.md`, `suicide.md`, `violence.md` |
 | `mood` | 5 | `cotw_20260720_bipolar_res.md`, `cotw_20260720_mdd_res.md`, `cotw_20260803_lithium_res.md`, `ect_neuromodulation.md`, `t_mood.md` |
 | `substance` | 4 | `cotw_20260726_etohwd_res.md`, `cotw_20260727_oud_res.md`, `protocol_library.md`, `t_sud.md` |
 | `anxiety` | 2 | `cotw_20260810_panic_res.md`, `t_anxiety.md` |
@@ -30483,11 +30636,11 @@ Where the curriculum claims coverage. Use these to spot a blueprint area or EPA 
 
 | tag | n | pages |
 |---|---|---|
-| `EPA2` | 43 | `agitation.md`, `case_formulation.md`, `catatonia.md`, `cotw_20260709_ssnms_res.md`, `cotw_20260713_agitation_res.md`, `cotw_20260720_bipolar_res.md`, `cotw_20260720_mdd_res.md`, `cotw_20260723_suiciderisk_res.md`, `cotw_20260726_etohwd_res.md`, `cotw_20260727_oud_res.md`, `cotw_20260810_panic_res.md`, `cotw_20260827_bpd_res.md`, `ddx.md`, `delirium.md`, `ect_neuromodulation.md`, `ethics_legal.md`, `exp_consult.md`, `exp_tx.md`, `medical_workup.md`, `nutrition_metabolic.md`, `pg_formulation.md`, `pg_suicide.md`, `psychopharm_primer.md`, `psychotherapy.md`, `suicide.md`, `t_adjustment.md`, `t_anxiety.md`, `t_dissociative.md`, `t_eating.md`, `t_geri.md`, `t_impulse.md`, `t_mood.md`, `t_neurocog.md`, `t_neurodev.md`, `t_perinatal.md`, `t_personality.md`, `t_psychosis.md`, `t_sexual.md`, `t_sleep.md`, `t_somatic.md`, `t_sud.md`, `toxidromes.md`, `violence.md` |
-| `EPA1` | 30 | `catatonia.md`, `cotw_20260720_bipolar_res.md`, `cotw_20260720_mdd_res.md`, `cotw_20260723_suiciderisk_res.md`, `cotw_20260726_etohwd_res.md`, `cotw_20260727_oud_res.md`, `cotw_20260810_panic_res.md`, `cotw_20260827_bpd_res.md`, `cultural_psychiatry.md`, `delirium.md`, `pg_interview.md`, `pg_suicide.md`, `suicide.md`, `t_adjustment.md`, `t_anxiety.md`, `t_dissociative.md`, `t_eating.md`, `t_geri.md`, `t_impulse.md`, `t_mood.md`, `t_neurocog.md`, `t_neurodev.md`, `t_perinatal.md`, `t_personality.md`, `t_psychosis.md`, `t_sexual.md`, `t_sleep.md`, `t_somatic.md`, `t_sud.md`, `violence.md` |
-| `EPA10` | 18 | `agitation.md`, `catatonia.md`, `cotw_20260709_ssnms_res.md`, `cotw_20260713_agitation_res.md`, `cotw_20260723_suiciderisk_res.md`, `cotw_20260726_etohwd_res.md`, `cotw_20260727_oud_res.md`, `cotw_20260803_lithium_res.md`, `cotw_20260827_bpd_res.md`, `delirium.md`, `pg_suicide.md`, `protocol_library.md`, `suicide.md`, `t_eating.md`, `t_perinatal.md`, `t_sud.md`, `toxidromes.md`, `violence.md` |
+| `EPA2` | 44 | `agitation.md`, `case_formulation.md`, `catatonia.md`, `cotw_20260709_ssnms_res.md`, `cotw_20260713_agitation_res.md`, `cotw_20260720_bipolar_res.md`, `cotw_20260720_mdd_res.md`, `cotw_20260723_suiciderisk_res.md`, `cotw_20260726_etohwd_res.md`, `cotw_20260727_oud_res.md`, `cotw_20260810_panic_res.md`, `cotw_20260827_bpd_res.md`, `cotw_20260831_catatonia_res.md`, `ddx.md`, `delirium.md`, `ect_neuromodulation.md`, `ethics_legal.md`, `exp_consult.md`, `exp_tx.md`, `medical_workup.md`, `nutrition_metabolic.md`, `pg_formulation.md`, `pg_suicide.md`, `psychopharm_primer.md`, `psychotherapy.md`, `suicide.md`, `t_adjustment.md`, `t_anxiety.md`, `t_dissociative.md`, `t_eating.md`, `t_geri.md`, `t_impulse.md`, `t_mood.md`, `t_neurocog.md`, `t_neurodev.md`, `t_perinatal.md`, `t_personality.md`, `t_psychosis.md`, `t_sexual.md`, `t_sleep.md`, `t_somatic.md`, `t_sud.md`, `toxidromes.md`, `violence.md` |
+| `EPA1` | 31 | `catatonia.md`, `cotw_20260720_bipolar_res.md`, `cotw_20260720_mdd_res.md`, `cotw_20260723_suiciderisk_res.md`, `cotw_20260726_etohwd_res.md`, `cotw_20260727_oud_res.md`, `cotw_20260810_panic_res.md`, `cotw_20260827_bpd_res.md`, `cotw_20260831_catatonia_res.md`, `cultural_psychiatry.md`, `delirium.md`, `pg_interview.md`, `pg_suicide.md`, `suicide.md`, `t_adjustment.md`, `t_anxiety.md`, `t_dissociative.md`, `t_eating.md`, `t_geri.md`, `t_impulse.md`, `t_mood.md`, `t_neurocog.md`, `t_neurodev.md`, `t_perinatal.md`, `t_personality.md`, `t_psychosis.md`, `t_sexual.md`, `t_sleep.md`, `t_somatic.md`, `t_sud.md`, `violence.md` |
+| `EPA10` | 19 | `agitation.md`, `catatonia.md`, `cotw_20260709_ssnms_res.md`, `cotw_20260713_agitation_res.md`, `cotw_20260723_suiciderisk_res.md`, `cotw_20260726_etohwd_res.md`, `cotw_20260727_oud_res.md`, `cotw_20260803_lithium_res.md`, `cotw_20260827_bpd_res.md`, `cotw_20260831_catatonia_res.md`, `delirium.md`, `pg_suicide.md`, `protocol_library.md`, `suicide.md`, `t_eating.md`, `t_perinatal.md`, `t_sud.md`, `toxidromes.md`, `violence.md` |
 | `EPA4` | 14 | `agitation.md`, `cotw_20260713_agitation_res.md`, `cotw_20260720_bipolar_res.md`, `cotw_20260720_mdd_res.md`, `cotw_20260803_lithium_res.md`, `cotw_20260810_panic_res.md`, `ect_neuromodulation.md`, `exp_tx.md`, `med_monitoring.md`, `nutrition_metabolic.md`, `protocol_library.md`, `psychopharm_primer.md`, `t_mood.md`, `t_psychosis.md` |
-| `EPA3` | 9 | `cotw_20260709_ssnms_res.md`, `cotw_20260803_lithium_res.md`, `cotw_20260810_panic_res.md`, `delirium.md`, `med_monitoring.md`, `medical_workup.md`, `t_geri.md`, `t_neurocog.md`, `toxidromes.md` |
+| `EPA3` | 10 | `cotw_20260709_ssnms_res.md`, `cotw_20260803_lithium_res.md`, `cotw_20260810_panic_res.md`, `cotw_20260831_catatonia_res.md`, `delirium.md`, `med_monitoring.md`, `medical_workup.md`, `t_geri.md`, `t_neurocog.md`, `toxidromes.md` |
 | `EPA9` | 8 | `brief_psychotherapy.md`, `collateral_workflow.md`, `cultural_psychiatry.md`, `exp_family.md`, `family_modalities.md`, `family_playbook.md`, `motivational_interviewing.md`, `therapy_on_the_unit.md` |
 | `EPA7` | 7 | `book_library.md`, `core_readings.md`, `evidence_inpatient.md`, `landmark_trials.md`, `podcast_library.md`, `reading_map.md`, `therapy_reading_room.md` |
 | `EPA8` | 3 | `collateral_workflow.md`, `exp_consult.md`, `therapy_on_the_unit.md` |
@@ -30500,7 +30653,7 @@ Where the curriculum claims coverage. Use these to spot a blueprint area or EPA 
 | tag | n | pages |
 |---|---|---|
 | `high` | 18 | `adv_psychopharm.md`, `agitation.md`, `catatonia.md`, `delirium.md`, `exp_consult.md`, `med_monitoring.md`, `pg_suicide.md`, `psychopharm_primer.md`, `suicide.md`, `t_anxiety.md`, `t_eating.md`, `t_mood.md`, `t_neurocog.md`, `t_perinatal.md`, `t_psychosis.md`, `t_sud.md`, `toxidromes.md`, `violence.md` |
-| `moderate` | 15 | `collateral_workflow.md`, `cotw_20260709_ssnms_res.md`, `cotw_20260713_agitation_res.md`, `cotw_20260720_bipolar_res.md`, `cotw_20260720_mdd_res.md`, `cotw_20260723_suiciderisk_res.md`, `cotw_20260726_etohwd_res.md`, `cotw_20260727_oud_res.md`, `cotw_20260803_lithium_res.md`, `cotw_20260810_panic_res.md`, `cotw_20260827_bpd_res.md`, `cotw_index.md`, `ethics_legal.md`, `medical_workup.md`, `protocol_library.md` |
+| `moderate` | 16 | `collateral_workflow.md`, `cotw_20260709_ssnms_res.md`, `cotw_20260713_agitation_res.md`, `cotw_20260720_bipolar_res.md`, `cotw_20260720_mdd_res.md`, `cotw_20260723_suiciderisk_res.md`, `cotw_20260726_etohwd_res.md`, `cotw_20260727_oud_res.md`, `cotw_20260803_lithium_res.md`, `cotw_20260810_panic_res.md`, `cotw_20260827_bpd_res.md`, `cotw_20260831_catatonia_res.md`, `cotw_index.md`, `ethics_legal.md`, `medical_workup.md`, `protocol_library.md` |
 
 ## Shipped pages with no shelf-blueprint tag
 
