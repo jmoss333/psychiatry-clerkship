@@ -64,9 +64,9 @@ the canary can inflict on itself.
 
 Each run replaces Blob key `latest` in the site-scoped, strong-consistency `sp-health-canary` store
 with a content-free receipt. Success records only timestamps, case count, learner-ready state,
-actor-ready state, and a SHA-256 contract identifier; failure records only a bounded failure code
-and timestamp. **The patient reply is measured and dropped inside the probe — it is never returned,
-logged, or stored.** The receipt never stores credentials, raw model or pack identifiers, case
+actor-ready state, a coarse reply-latency bucket, and a SHA-256 contract identifier; failure records
+only a bounded failure code and timestamp. **The patient reply is measured and dropped inside the
+probe — it is never returned, logged, or stored.** The receipt never stores credentials, raw model or pack identifiers, case
 content, learner activity, request headers, URLs, or exception text. A `draft-pending-attestation`
 pack can be reachable and healthy while `learnerReady` remains false; the receipt is not a faculty
 approval.
@@ -76,9 +76,19 @@ a reply writes a *failure* receipt instead. `learnerReady: true` with `actorRead
 rejected as malformed everywhere — that is precisely the shape the health surface had while the tool
 was mute. The reverse (`false`/`false`, a draft pack) is honest and valid. The earlier seven-key
 receipt fails validation and reads as `malformed` rather than being mistaken for a green result.
-**On first deploy this means `/api/sp/health-status` returns
-503 `malformed` until the next scheduled run writes a receipt in the new shape (up to six hours).
-Trigger the function manually from the Netlify UI to close that window.**
+
+`replyLatencyBucket` records how long the live turn took as one of `fast` (<3s), `normal` (3–8s),
+`slow` (≥8s), or `not-probed`. It is a bucket rather than a duration on purpose: a raw millisecond
+count tracks how much the patient said, and D6 is kept by construction rather than by judging that
+channel too weak to matter. The bucket and `actorReady` are two views of one fact and may never
+disagree — a turn that completed has a timing, one that was never sent has none — and a mismatch is
+malformed. **Watch it across days, not runs:** four samples a day drifting from `fast` toward `slow`
+is the earliest available signal of provider degradation, throttling, or a silent model change, and
+it shows up well before anyone opens a ticket. A single `slow` reading is noise.
+
+**On first deploy the stored receipt is the old shape, so `/api/sp/health-status` returns 503
+`malformed` until the next scheduled run writes a new one (up to six hours). Trigger the function
+manually from the Netlify UI to close that window.**
 
 Public `GET /api/sp/health-status` requires no credential and exposes only that bounded receipt with
 `Cache-Control: no-store`. A success becomes non-success when it is more than eight hours old or the

@@ -21,6 +21,7 @@ const SUCCESS_RECEIPT = Object.freeze({
   state: 'success',
   learnerReady: true,
   actorReady: true,
+  replyLatencyBucket: 'fast',
   caseCount: 1,
   checkedAt: CHECKED_AT,
   nextRun: NEXT_RUN,
@@ -31,7 +32,9 @@ const SUCCESS_RECEIPT = Object.freeze({
 // only, which is exactly how a dead provider once hid behind a green health
 // page, so the current contract must refuse to read it as success.
 const LEGACY_SUCCESS_RECEIPT = Object.freeze(Object.fromEntries(
-  Object.entries(SUCCESS_RECEIPT).filter(([key]) => key !== 'actorReady'),
+  Object.entries(SUCCESS_RECEIPT).filter(
+    ([key]) => key !== 'actorReady' && key !== 'replyLatencyBucket',
+  ),
 ));
 
 // 16 bytes 0x00..0x0f, base64url, no padding -- a canonical encounterId.
@@ -129,6 +132,7 @@ async function createCanaryHarness({
   setTimeoutImpl,
   clearTimeoutImpl,
   newEncounterId = () => PROBE_ENCOUNTER_ID,
+  elapsedNow = null,
 } = {}) {
   const { canary } = await healthModules();
   return {
@@ -140,6 +144,7 @@ async function createCanaryHarness({
       now,
       log,
       ...(newEncounterId ? { newEncounterId } : {}),
+      ...(elapsedNow ? { elapsedNow } : {}),
       ...(setTimeoutImpl ? { setTimeoutImpl } : {}),
       ...(clearTimeoutImpl ? { clearTimeoutImpl } : {}),
     }),
@@ -354,12 +359,14 @@ test('scheduled canary performs an authenticated contract GET, then one live con
     'contractSha256',
     'learnerReady',
     'nextRun',
+    'replyLatencyBucket',
     'schemaVersion',
     'state',
   ]);
   assert.equal(store.writes[0].value.state, 'success');
   assert.equal(store.writes[0].value.learnerReady, true);
   assert.equal(store.writes[0].value.actorReady, true);
+  assert.equal(store.writes[0].value.replyLatencyBucket, 'fast');
   assert.equal(store.writes[0].value.caseCount, 1);
   assert.equal(store.writes[0].value.checkedAt, CHECKED_AT);
   assert.equal(store.writes[0].value.nextRun, NEXT_RUN);
@@ -971,6 +978,7 @@ test('a failed actor probe is a failed receipt, never a success that admits acto
   assert.equal(written.state, 'failed');
   assert.equal('actorReady' in written, false);
   assert.equal('learnerReady' in written, false);
+  assert.equal('replyLatencyBucket' in written, false);
 });
 
 test('the actor reply never reaches the receipt, the log, or the thrown error', async () => {
@@ -1098,6 +1106,7 @@ test('a draft pack is probed with no actor turn at all, and says so honestly', a
   assert.equal(store.writes[0].value.state, 'success');
   assert.equal(store.writes[0].value.learnerReady, false);
   assert.equal(store.writes[0].value.actorReady, false);
+  assert.equal(store.writes[0].value.replyLatencyBucket, 'not-probed');
 
   // And that receipt is readable: a draft pack is not an outage.
   const response = await statusResponse(store.readLatest());
@@ -1112,11 +1121,20 @@ test('validateHealthReceipt refuses a success receipt that admits the actor was 
   // learnerReady true + actorReady false is the shape the health surface had
   // while the Interview Room was mute. It must never validate.
   assert.throws(
-    () => receipt.validateHealthReceipt({ ...SUCCESS_RECEIPT, actorReady: false }),
+    () => receipt.validateHealthReceipt({
+      ...SUCCESS_RECEIPT,
+      actorReady: false,
+      replyLatencyBucket: 'not-probed',
+    }),
     /health receipt/i,
   );
   // The reverse is honest and must validate.
-  const draft = { ...SUCCESS_RECEIPT, learnerReady: false, actorReady: false };
+  const draft = {
+    ...SUCCESS_RECEIPT,
+    learnerReady: false,
+    actorReady: false,
+    replyLatencyBucket: 'not-probed',
+  };
   assert.deepEqual(receipt.validateHealthReceipt(draft), draft);
 
   for (const actorReady of ['true', 1, null, undefined]) {
@@ -1139,4 +1157,109 @@ test('validateHealthReceipt refuses a success receipt that admits the actor was 
     assert.deepEqual(receipt.validateHealthReceipt(failed), failed);
     assert.deepEqual(receipt.createFailureReceipt(failureCode, CHECKED_AT), failed);
   }
+});
+
+// ---------------------------------------------------------------------------
+// Reply latency. The canary is the only thing that measures how long a live
+// turn takes; four samples a day makes provider degradation visible before it
+// becomes an outage a student reports.
+// ---------------------------------------------------------------------------
+
+test('scheduled canary buckets the live turn at the exact boundaries', async () => {
+  // The clock is read twice per run: once before the probe, once after.
+  const cases = [
+    { elapsed: 0, want: 'fast' },
+    { elapsed: 2_999, want: 'fast' },
+    { elapsed: 3_000, want: 'normal' },
+    { elapsed: 7_999, want: 'normal' },
+    { elapsed: 8_000, want: 'slow' },
+    { elapsed: 19_999, want: 'slow' },
+  ];
+  for (const item of cases) {
+    const store = memoryStore();
+    const readings = [1_000, 1_000 + item.elapsed];
+    let index = 0;
+    const { handler } = await createCanaryHarness({
+      store,
+      elapsedNow: () => readings[Math.min(index++, readings.length - 1)],
+    });
+    await handler(scheduledRequest());
+    assert.equal(
+      store.writes[0].value.replyLatencyBucket,
+      item.want,
+      `${item.elapsed}ms should bucket as ${item.want}`,
+    );
+    assert.equal(store.writes[0].value.actorReady, true);
+  }
+});
+
+test('an unreadable clock reports slow, never fast', async () => {
+  // A broken measurement must not be able to say everything is quick.
+  for (const readings of [[NaN, NaN], [0, NaN], [5_000, 1_000], [Infinity, Infinity]]) {
+    const store = memoryStore();
+    let index = 0;
+    const { handler } = await createCanaryHarness({
+      store,
+      elapsedNow: () => readings[Math.min(index++, readings.length - 1)],
+    });
+    await handler(scheduledRequest());
+    assert.equal(store.writes[0].value.replyLatencyBucket, 'slow');
+  }
+});
+
+test('the latency bucket and the readiness flag can never disagree', async () => {
+  const { receipt } = await healthModules();
+  // A completed turn always has a timing.
+  for (const replyLatencyBucket of ['fast', 'normal', 'slow']) {
+    const probed = { ...SUCCESS_RECEIPT, replyLatencyBucket };
+    assert.deepEqual(receipt.validateHealthReceipt(probed), probed);
+    // ...and the same bucket alongside "nothing was probed" is a contradiction.
+    assert.throws(
+      () => receipt.validateHealthReceipt({
+        ...SUCCESS_RECEIPT,
+        learnerReady: false,
+        actorReady: false,
+        replyLatencyBucket,
+      }),
+      /health receipt/i,
+    );
+  }
+  // A turn that was never sent has no timing.
+  assert.throws(
+    () => receipt.validateHealthReceipt({
+      ...SUCCESS_RECEIPT,
+      replyLatencyBucket: 'not-probed',
+    }),
+    /health receipt/i,
+  );
+  for (const replyLatencyBucket of ['', 'FAST', 'quick', 0, 3_000, null, undefined, {}]) {
+    assert.throws(
+      () => receipt.validateHealthReceipt({ ...SUCCESS_RECEIPT, replyLatencyBucket }),
+      /health receipt/i,
+    );
+  }
+});
+
+test('the receipt carries a bucket, never a duration', async () => {
+  // A raw millisecond count tracks how much the patient said. Buckets do not,
+  // and D6 is kept by construction rather than by judging the channel weak.
+  const store = memoryStore();
+  const readings = [1_000, 4_567];
+  let index = 0;
+  const { handler } = await createCanaryHarness({
+    store,
+    elapsedNow: () => readings[Math.min(index++, readings.length - 1)],
+  });
+  await handler(scheduledRequest());
+  const { contractSha256, ...rest } = store.writes[0].value;
+  assert.equal(rest.replyLatencyBucket, 'normal');
+  // contractSha256 is excluded deliberately: it is 64 hex characters that can
+  // contain any digit run by chance, which would make this a fixture-dependent
+  // flake rather than a check on the timing fields.
+  assert.doesNotMatch(JSON.stringify(rest), /3567|4567|1000/);
+  assert.equal(
+    Object.values(rest).some((value) => typeof value === 'number' && value > 100),
+    false,
+    'no field may carry a millisecond-scale number',
+  );
 });

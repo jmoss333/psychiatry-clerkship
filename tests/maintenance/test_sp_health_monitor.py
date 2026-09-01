@@ -27,6 +27,7 @@ def success_payload(**overrides):
         "state": "success",
         "learnerReady": False,
         "actorReady": True,
+        "replyLatencyBucket": "fast",
         "caseCount": 3,
         "contractSha256": "a" * 64,
         "checkedAt": "2026-07-28T06:00:00.000Z",
@@ -89,6 +90,7 @@ class SpHealthMonitorTests(unittest.TestCase):
                 "nextRun",
                 "learnerReady",
                 "actorReady",
+                "replyLatencyBucket",
                 "caseCount",
                 "contractSha256",
             },
@@ -103,6 +105,7 @@ class SpHealthMonitorTests(unittest.TestCase):
         """
         legacy = success_payload()
         del legacy["actorReady"]
+        del legacy["replyLatencyBucket"]
         result = evaluate_status(legacy, now=NOW)
         self.assertEqual(result["state"], "malformed")
         self.assertEqual(result["gate"], "blocked")
@@ -123,12 +126,46 @@ class SpHealthMonitorTests(unittest.TestCase):
         monitor the way an unconditional actor probe would.
         """
         result = evaluate_status(
-            success_payload(learnerReady=False, actorReady=False),
+            success_payload(
+                learnerReady=False,
+                actorReady=False,
+                replyLatencyBucket="not-probed",
+            ),
             now=NOW,
         )
         self.assertEqual(result["state"], "success")
         self.assertEqual(result["gate"], "ready")
         self.assertIs(result["actorReady"], False)
+        self.assertEqual(result["replyLatencyBucket"], "not-probed")
+
+    def test_latency_bucket_and_actor_ready_must_agree(self):
+        """A completed turn has a timing; one never sent has none."""
+        contradictions = (
+            {"actorReady": True, "replyLatencyBucket": "not-probed"},
+            {"learnerReady": False, "actorReady": False, "replyLatencyBucket": "fast"},
+        )
+        for overrides in contradictions:
+            with self.subTest(**overrides):
+                result = evaluate_status(success_payload(**overrides), now=NOW)
+                self.assertEqual(result["state"], "malformed")
+                self.assertEqual(result["gate"], "blocked")
+
+    def test_known_latency_buckets_pass_and_unknown_ones_are_malformed(self):
+        for bucket in ("fast", "normal", "slow"):
+            with self.subTest(replyLatencyBucket=bucket):
+                result = evaluate_status(
+                    success_payload(replyLatencyBucket=bucket),
+                    now=NOW,
+                )
+                self.assertEqual(result["gate"], "ready")
+                self.assertEqual(result["replyLatencyBucket"], bucket)
+        for bucket in ("", "FAST", "quick", 0, 3000, None):
+            with self.subTest(replyLatencyBucket=bucket):
+                result = evaluate_status(
+                    success_payload(replyLatencyBucket=bucket),
+                    now=NOW,
+                )
+                self.assertEqual(result["state"], "malformed")
 
     def test_non_boolean_actor_ready_is_malformed(self):
         for actor_ready in ("true", 1, None):

@@ -30,6 +30,14 @@ const ACTOR_PROBE_MESSAGE = 'Hello, I am one of the doctors here. What brings yo
 // single always-probed case.
 const PROBE_SLOT_MS = 6 * 60 * 60 * 1_000;
 
+// Latency buckets for the live turn. A pinned-Haiku reply capped at 300 output
+// tokens normally lands well inside FAST; NORMAL is unremarkable; SLOW means the
+// provider is degrading, throttling, or something upstream changed. Four samples
+// a day is enough to see drift long before it becomes an outage, and coarse
+// buckets keep the receipt free of anything that tracks reply length.
+const FAST_LATENCY_MS = 3_000;
+const NORMAL_LATENCY_MS = 8_000;
+
 const HEALTH_LEG_CODES = Object.freeze({
   timeout: 'timeout',
   transport: 'transport',
@@ -261,6 +269,15 @@ function defaultEncounterId() {
   return randomBytes(16).toString('base64url');
 }
 
+// An unreadable clock classifies as `slow` rather than `fast`: a broken
+// measurement must not be able to report that everything is quick.
+function latencyBucket(elapsedMs) {
+  if (!Number.isFinite(elapsedMs) || elapsedMs < 0) return 'slow';
+  if (elapsedMs < FAST_LATENCY_MS) return 'fast';
+  if (elapsedMs < NORMAL_LATENCY_MS) return 'normal';
+  return 'slow';
+}
+
 // Returns nothing. The actor's words are read, measured, and dropped inside
 // this function — there is no return path, log line, or receipt field through
 // which a patient reply can leave it (D6).
@@ -322,6 +339,10 @@ export function createHealthCanary({
   setTimeoutImpl = globalThis.setTimeout,
   clearTimeoutImpl = globalThis.clearTimeout,
   newEncounterId = defaultEncounterId,
+  // Separate from `now`, which produces the receipt's ISO timestamps. Durations
+  // want a millisecond counter, and keeping them apart means measuring the turn
+  // cannot perturb what the receipt records as its checked-at time.
+  elapsedNow = () => Date.now(),
 } = {}) {
   if (typeof readEnv !== 'function'
     || typeof fetchImpl !== 'function'
@@ -329,7 +350,8 @@ export function createHealthCanary({
     || typeof now !== 'function'
     || typeof setTimeoutImpl !== 'function'
     || typeof clearTimeoutImpl !== 'function'
-    || typeof newEncounterId !== 'function') {
+    || typeof newEncounterId !== 'function'
+    || typeof elapsedNow !== 'function') {
     throw new Error('Invalid health canary dependencies.');
   }
 
@@ -379,7 +401,13 @@ export function createHealthCanary({
       // every run forever and paint the health surface red for what is correct
       // behaviour. So the canary uses a live actor POST exactly when learners
       // can, and never otherwise.
+      //
+      // The clock stays out here rather than inside probeActor, so that function
+      // keeps returning nothing at all and the D6 argument above it holds
+      // literally: it has no return path a reply could ever travel.
+      let replyLatencyBucket = 'not-probed';
       if (health.learnerReady) {
+        const startedAt = elapsedNow();
         await probeActor({
           fetchImpl,
           siteOrigin,
@@ -389,6 +417,7 @@ export function createHealthCanary({
           setTimeoutImpl,
           clearTimeoutImpl,
         });
+        replyLatencyBucket = latencyBucket(elapsedNow() - startedAt);
       }
 
       const successReceipt = Object.freeze({
@@ -398,6 +427,7 @@ export function createHealthCanary({
         // True only when a live turn actually completed. On a draft pack this is
         // an honest false: nothing was probed because nothing is being served.
         actorReady: health.learnerReady,
+        replyLatencyBucket,
         caseCount: health.caseCount,
         checkedAt,
         nextRun,

@@ -8,22 +8,31 @@ const HEALTH_KEYS = Object.freeze([
   'packStatus',
   'cases',
 ]);
-// `actorReady` is present on every success receipt written by this contract and
-// is always true: a probe that could not obtain a live actor reply writes a
-// FAILURE receipt instead. It exists so a success receipt states affirmatively
-// that a real turn was completed, and so that a receipt written by the earlier
-// reachability-only canary fails `exactKeys` and reads as `malformed` rather
-// than being mistaken for evidence that the Interview Room can answer.
+// `actorReady` says a live turn completed. A probe that ran and could not get a
+// reply writes a FAILURE receipt instead, so within a success receipt it is
+// false only when no probe was sent at all — a draft pack, which sp.mjs refuses
+// to serve POSTs for by design. It exists so a success states affirmatively what
+// was proven, and so a receipt written by the earlier reachability-only canary
+// fails `exactKeys` and reads as `malformed` rather than being mistaken for
+// evidence that the Interview Room can answer.
 const SUCCESS_KEYS = Object.freeze([
   'schemaVersion',
   'state',
   'learnerReady',
   'actorReady',
+  'replyLatencyBucket',
   'caseCount',
   'checkedAt',
   'nextRun',
   'contractSha256',
 ]);
+// Coarse on purpose. The canary is the only thing that measures how long a live
+// turn takes, and four samples a day makes provider degradation visible days
+// before it becomes an outage someone reports. A bucket rather than a duration:
+// a raw millisecond count is a weak side channel about how much the patient
+// said, and D6 keeps learner-visible content out of receipts by construction,
+// not by judgement about how weak the channel is.
+const LATENCY_BUCKETS = new Set(['fast', 'normal', 'slow', 'not-probed']);
 const FAILURE_KEYS = Object.freeze([
   'schemaVersion',
   'state',
@@ -163,6 +172,13 @@ export function validateHealthReceipt(receipt) {
     // reverse is honest and allowed: a draft pack refuses POSTs by design, so
     // nothing was probed because nothing is being served.
     && (receipt.learnerReady === false || receipt.actorReady === true)
+    && LATENCY_BUCKETS.has(receipt.replyLatencyBucket)
+    // The bucket and the readiness flag are two views of one fact, so they can
+    // never disagree: a turn that completed has a timing, and one that was never
+    // sent has none. Without this pairing a receipt could claim `not-probed`
+    // latency alongside `actorReady: true` and read as green while saying, in
+    // the same breath, that nothing was measured.
+    && receipt.actorReady === (receipt.replyLatencyBucket !== 'not-probed')
     && Number.isInteger(receipt.caseCount)
     && receipt.caseCount > 0
     && utcTimestamp(receipt.checkedAt)

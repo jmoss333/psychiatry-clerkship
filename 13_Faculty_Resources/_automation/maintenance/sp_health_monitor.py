@@ -42,11 +42,16 @@ SUCCESS_KEYS = {
     "state",
     "learnerReady",
     "actorReady",
+    "replyLatencyBucket",
     "caseCount",
     "checkedAt",
     "nextRun",
     "contractSha256",
 }
+# Coarse on purpose -- see the note beside LATENCY_BUCKETS in
+# sp-proxy/netlify/functions/_shared/sp-health-receipt.mjs. Drift from "fast"
+# toward "slow" across days is the earliest signal of provider degradation.
+LATENCY_BUCKETS = {"fast", "normal", "slow", "not-probed"}
 FAILURE_KEYS = {
     "schemaVersion",
     "state",
@@ -123,6 +128,11 @@ def evaluate_status(payload, *, now):
             # refuses POSTs by design, so nothing was probed. The pre-probe
             # seven-key receipt fails the key-set check above either way.
             or (payload["learnerReady"] and payload["actorReady"] is not True)
+            or payload.get("replyLatencyBucket") not in LATENCY_BUCKETS
+            # The bucket and the readiness flag are two views of one fact and
+            # can never disagree: a turn that completed has a timing, one that
+            # was never sent has none.
+            or payload["actorReady"] != (payload["replyLatencyBucket"] != "not-probed")
             or type(payload.get("caseCount")) is not int
             or payload["caseCount"] <= 0
             or payload["caseCount"] > 10_000
@@ -152,6 +162,7 @@ def evaluate_status(payload, *, now):
             "nextRun": payload["nextRun"],
             "learnerReady": payload["learnerReady"],
             "actorReady": payload["actorReady"],
+            "replyLatencyBucket": payload["replyLatencyBucket"],
             "caseCount": payload["caseCount"],
             "contractSha256": payload["contractSha256"],
         }

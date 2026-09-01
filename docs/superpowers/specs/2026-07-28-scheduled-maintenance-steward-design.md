@@ -157,7 +157,14 @@ evaluator, budget, ticket, transcription, synthesis, and provider calls.
 > **What the canary does now.** After the contract GET succeeds, and **only when `learnerReady` is
 > true**, it sends one `mode:converse` POST on a throwaway `encounterId` with a fixed neutral
 > opening question, and requires a non-empty `reply`. The reply is measured and discarded inside the
-> probe; D4/D6 are unchanged, and the new `actorReady` field is the only addition to the receipt.
+> probe; D4/D6 are unchanged, and the receipt gains exactly two fields: `actorReady`, and
+> `replyLatencyBucket` — `fast` (<3s) / `normal` (3–8s) / `slow` (≥8s) / `not-probed`. The bucket is
+> coarse by design: a raw duration tracks how much the patient said, so D6 is kept by construction
+> rather than by judging that channel too weak to matter. It exists because the canary is the only
+> thing that measures a live turn at all, and four samples a day make provider degradation,
+> throttling, or a silent model change visible days before they become an outage. An unreadable
+> clock classifies as `slow`, never `fast`. The bucket and `actorReady` are two views of one fact
+> and may never disagree.
 >
 > **The `learnerReady` gate keeps the sentence above this amendment true.** `sp.mjs` refuses every
 > POST unless the pack status is in `POST_PACK_STATUSES` (`reviewed`, `attested`) — the same set
@@ -189,9 +196,9 @@ evaluator, budget, ticket, transcription, synthesis, and provider calls.
 
 Each invocation writes one bounded receipt to the site-scoped, strong-consistency Netlify Blob store
 `sp-health-canary` at key `latest`. A successful receipt contains only schema version, state,
-learner-ready boolean, actor-ready boolean (see the 2026-09-01 amendment), case count, UTC
-checked/next-run timestamps, and SHA-256 identifiers for the model/pack contract.
-On a validation failure, the function best-effort writes a receipt containing
+learner-ready boolean, actor-ready boolean, a coarse reply-latency bucket (both per the 2026-09-01
+amendment), case count, UTC checked/next-run timestamps, and SHA-256 identifiers for the model/pack
+contract. On a validation failure, the function best-effort writes a receipt containing
 only a bounded failure code and timestamp, then throws so Netlify also records a failed invocation.
 It must never store or log request headers, passcodes, URLs containing credentials, raw model or
 pack identifiers, case content, exception messages, or learner activity.
