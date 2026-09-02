@@ -12,8 +12,12 @@
 #   1st of the next month. See NETLIFY_LFS_RUNBOOK.md ("Incident pattern 2").
 #
 # What this does instead:
-#   1. Runs ONLY on Netlify (NETLIFY=true). Locally and in GitHub Actions it is a no-op — the
-#      local checkout (or the deliberate lfs:false CI checkout) is left alone.
+#   1. Runs ONLY on Netlify (NETLIFY=true), and by default only in the `production` and
+#      `branch-deploy` contexts — deploy previews never fetched LFS (they ship stubs behind a
+#      soft gate) and keep doing so, whatever Netlify's cache scoping per branch turns out to
+#      be. Opt previews in with LFS_CACHE_CONTEXTS=production,branch-deploy,deploy-preview.
+#      Locally and in GitHub Actions it is a no-op — the local checkout (or the deliberate
+#      lfs:false CI checkout) is left alone.
 #   2. If the clone already materialised real bytes (GIT_LFS_ENABLED still set in the UI), it
 #      does nothing but say so — the bandwidth was already spent at clone time.
 #   3. Otherwise it points `lfs.storage` at $NETLIFY_CACHE_DIR/git-lfs — a directory Netlify
@@ -43,6 +47,13 @@ if [ "${NETLIFY:-}" != "true" ] && [ -z "${LFS_CACHE_DIR:-}" ]; then
 fi
 if [ "${GITHUB_ACTIONS:-}" = "true" ] && [ -z "${LFS_CACHE_DIR:-}" ]; then
   log "GitHub Actions checks out with lfs:false on purpose -> skip"
+  exit 0
+fi
+
+CTX="${CONTEXT:-production}"
+ALLOWED_CTX="${LFS_CACHE_CONTEXTS:-production,branch-deploy}"
+if [ -z "${LFS_CACHE_DIR:-}" ] && ! printf ',%s,' "$ALLOWED_CTX" | grep -qF ",$CTX,"; then
+  log "context '$CTX' not in LFS_CACHE_CONTEXTS=$ALLOWED_CTX -> skip (previews ship stubs; the media gate is soft there)"
   exit 0
 fi
 

@@ -30,7 +30,7 @@ const POINTER = 'version https://git-lfs.github.com/spec/v1\noid sha256:' + 'ab'
 function scrubbedEnv(extra = {}) {
   const env = { ...process.env };
   for (const k of ['NETLIFY', 'NETLIFY_CACHE_DIR', 'NETLIFY_BUILD_BASE', 'GITHUB_ACTIONS', 'LFS_CACHE_DIR',
-    'GIT_LFS_FETCH_INCLUDE', 'LFS_SHIM_LOG', 'LFS_SHIM_FAIL']) {
+    'GIT_LFS_FETCH_INCLUDE', 'LFS_SHIM_LOG', 'LFS_SHIM_FAIL', 'CONTEXT', 'LFS_CACHE_CONTEXTS']) {
     delete env[k];
   }
   return { ...env, ...extra };
@@ -117,6 +117,24 @@ test('inside GitHub Actions the step defers to the deliberate lfs:false checkout
   const r = run(scrubbedEnv({ NETLIFY: 'true', GITHUB_ACTIONS: 'true' }));
   assert.equal(r.status, 0, r.stdout + r.stderr);
   assert.match(r.stdout, /GitHub Actions checks out with lfs:false on purpose -> skip/);
+});
+
+test('deploy previews keep shipping stubs unless opted in — they never spent LFS bandwidth and must not start', () => {
+  const repo = makeRepo();
+  const cache = mkdtempSync(join(tmpdir(), 'lfs-cache-'));
+  const log = join(cache, 'shim.log');
+  const base = { NETLIFY: 'true', NETLIFY_CACHE_DIR: cache, LFS_SHIM_LOG: log, PATH: `${makeShim()}:${process.env.PATH}` };
+  const skipped = run(scrubbedEnv({ ...base, CONTEXT: 'deploy-preview' }), repo);
+  assert.equal(skipped.status, 0, skipped.stdout + skipped.stderr);
+  assert.match(skipped.stdout, /context 'deploy-preview' not in LFS_CACHE_CONTEXTS=production,branch-deploy -> skip/);
+  assert.equal(readFileSync(join(repo, 'audio', 'a.m4a'), 'utf8'), POINTER, 'no pull may happen in a skipped context');
+  const branch = run(scrubbedEnv({ ...base, CONTEXT: 'branch-deploy' }), repo);
+  assert.match(branch.stdout, /pulling via cache/, 'branch deploys are production-like and use the cache');
+  writeFileSync(join(repo, 'audio', 'a.m4a'), POINTER);
+  writeFileSync(join(repo, 'audio', 'b.m4a'), POINTER);
+  const optedIn = run(scrubbedEnv({ ...base, CONTEXT: 'deploy-preview', LFS_CACHE_CONTEXTS: 'production,deploy-preview' }), repo);
+  assert.equal(optedIn.status, 0, optedIn.stdout + optedIn.stderr);
+  assert.match(optedIn.stdout, /pulling via cache/);
 });
 
 test('on Netlify it pulls through lfs.storage under the persistent cache and reports the download', () => {

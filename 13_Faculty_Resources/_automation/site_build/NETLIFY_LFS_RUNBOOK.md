@@ -23,7 +23,7 @@ Legacy Netlify environment variables (both sites) — **remove them** to switch 
 | `GIT_LFS_ENABLED` | `true` | builds | Netlify fetches every LFS object during checkout, before the build command runs. |
 | `GIT_LFS_FETCH_INCLUDE` | `*.m4a,*.mp4` | builds | Narrows that clone-time fetch. `lfs_pull_cached.sh` honours it too if left set. |
 
-While `GIT_LFS_ENABLED` is still set, `lfs_pull_cached.sh` finds real bytes already in the tree, does nothing, and prints a reminder — nothing breaks, but nothing is saved either. Keep build command and publish directory in the Netlify UI. Do not move any of this into `netlify.toml`; two sites share one repo with different build outputs, and a clone-time LFS fetch happens before `netlify.toml` is read.
+While `GIT_LFS_ENABLED` is still set, `lfs_pull_cached.sh` finds real bytes already in the tree, does nothing, and prints a reminder — nothing breaks, but nothing is saved either. The cached pull runs only in the `production` and `branch-deploy` contexts by default; deploy previews keep shipping pointer stubs behind the soft gate exactly as before, so a new PR never costs LFS bandwidth. To give previews real audio too, set `LFS_CACHE_CONTEXTS=production,branch-deploy,deploy-preview` on the site (one full fetch per site cache, then ~0 — provided Netlify shares the build cache across branches, which is worth confirming from the `lfs-cache:` meter line before leaving it on). Keep build command and publish directory in the Netlify UI. Do not move any of this into `netlify.toml`; two sites share one repo with different build outputs, and a clone-time LFS fetch happens before `netlify.toml` is read.
 
 **Switch-over (per site, Netlify UI → Site configuration → Environment variables):**
 
