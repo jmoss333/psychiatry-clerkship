@@ -6,6 +6,113 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 
 ---
 
+## Treatment Team Rounding Prep
+
+- **Slug:** `oral.html` · **Type:** tool · **Sidebar:** listed
+- **Source:** `02_Clinical_Skills/Oral_Presentations/oral-presentation-module.html`
+- **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
+
+#### Tool — clinical content
+
+_These tools are single-file HTML that render from inline JS data, so the clinical text below is recovered from the tool's own string literals. Ordering follows the file, not the runtime flow._
+
+**Static shell text:**
+
+- Treatment Team Rounding Prep Reviewed by Joshua Moss, MD on 2026-06-30
+- Skip to content
+
+**Authored clinical strings (87):**
+
+- Events, nursing notes, incidents, PRNs given
+- Hours slept; pattern vs. prior nights
+- Agitation, isolation, interactions, groups attended
+- PO intake, appetite, hydration; refusals
+- Current psychotropics, changes, missed/refused doses, levels
+- Pertinent vitals, labs, drug levels, pending studies
+- SI/HI status, observation level, restraint/seclusion use
+- Barriers to discharge, family/collateral, aftercare, legal status
+- ID + chief concern + key context, in one sentence.
+- "Mr. A is a 34-year-old man with bipolar I, admitted on a hold for a manic episode after stopping lithium."
+- What changed since the last presentation: events, behavior, sleep, intake, PRNs.
+- "Overnight he slept 3 hours, was redirectable, took one PRN olanzapine for agitation."
+- Subjective + MSE highlights
+- Patient report plus the 2-3 MSE findings that matter today — not the whole exam.
+- "Reports he feels great; still pressured, expansive affect, grandiose themes, no SI/HI."
+- Objective: meds, vitals, labs
+- Relevant data and changes only: current psychotropics + adjustments, pertinent vitals/labs/levels.
+- "Lithium restarted, level pending; valproate at goal; vitals stable."
+- Explicit SI/HI, agitation, elopement, and observation level — never skipped.
+- "No SI/HI; one agitation episode managed verbally; remains on Q15 checks."
+- One to two lines: who, what, why now — biological + relational. Not a re-read of the HPI.
+- "Manic relapse precipitated by lithium discontinuation and sleep loss, with high family expressed emotion."
+- Problem-based, concrete next steps: meds, monitoring, milieu/family, disposition.
+- "1) Mania: resume lithium, recheck level. 2) Sleep: protect with scheduled meds. 3) Family meeting today. 4) Dispo: needs 1 more day of stability."
+- Use after a collateral call, family call, outpatient-clinician call, or nursing update.
+- Source -> baseline -> timeline -> risk/discharge -> plan change
+- Who you spoke with and the consent/policy frame.
+- "I spoke with his sister with patient permission."
+- What the patient is like when well.
+- "Baseline is organized, employed, and usually sleeps 7 hours."
+- "Sleep dropped 5 days ago, spending increased, then paranoia escalated."
+- What changes safety or disposition.
+- "Family can secure meds, but cannot supervise overnight."
+- One sentence on what this changes.
+- "This supports mania and makes discharge premature today."
+- Use for a daily patient update when the team already knows the admission story.
+- Hospital day -> overnight -> one subjective/MSE change -> risk -> plan question
+- Orient the team immediately.
+- "Hospital day 4 for mania with psychosis."
+- Sleep, PRNs, safety events, vitals/labs only if relevant.
+- "Slept 5 hours, no IMs, accepted lithium and olanzapine."
+- One patient report and one observed change.
+- "Feels slower; speech is less pressured but grandiosity persists."
+- What is safer, worse, or still unresolved.
+- "Violence risk is lower with sleep, but discharge risk remains high."
+- End with the decision you need from the team.
+- "My question is whether to request limited collateral today."
+- Give a real assessment — who/what/why-now, not a recap.
+- Plan by problem with concrete next steps.
+- End without a plan or disposition thought.
+- s 5th line, "Know your numbers", doesn
+- t-card // line ever changes, re-check this label stays in sync. {k:
+- } ]; var FORMAT_LABEL={full:
+- }; function loadOralReps(){ try{ var raw=localStorage.getItem(
+- ); if(!raw) return []; var parsed=JSON.parse(raw); if(!parsed||!Array.isArray(parsed.reps)) return []; return parsed.reps; }catch(err){ return []; } } function saveOralReps(list){ try{ localStorage.setItem(
+- , JSON.stringify({v:1,reps:list})); }catch(err){} } function targetForFormat(format){ if(format===
+- ) return TARGET; var m=MICRO.filter(function(x){return x.key===format;})[0]; return m?m.target:null; } function fmtRepDate(iso){ var d=new Date(iso); if(isNaN(d.getTime())) return iso; return (d.getMonth()+1)+
+- +d.getFullYear(); } function rubricScore(rubric){ if(!rubric) return null; var keys=[
+- ]; var n=0; for(var i=0;i<keys.length;i++){ if(rubric[keys[i]]) n++; } return n; } function App(){ var tab=useState(
+- ); var setTab=tab[1]; tab=tab[0]; var sec=useState(0); var setSec=sec[1]; sec=sec[0]; var microKey=useState(
+- ); var setMicroKey=microKey[1]; microKey=microKey[0]; var microSec=useState(0); var setMicroSec=microSec[1]; microSec=microSec[0]; var microRun=useState(false); var setMicroRun=microRun[1]; microRun=microRun[0]; var run=useState(false); var setRun=run[1]; run=run[0]; var done=useState({}); var setDone=done[1]; done=done[0]; var microDone=useState({}); var setMicroDone=microDone[1]; microDone=microDone[0]; var prep=useState({}); var setPrep=prep[1]; prep=prep[0]; var stepMark=useState({}); var setStepMark=stepMark[1]; stepMark=stepMark[0]; var reps=useState(loadOralReps); var setReps=reps[1]; reps=reps[0]; var pending=useState(null); var setPending=pending[1]; pending=pending[0]; var rubricDraft=useState({}); var setRubricDraft=rubricDraft[1]; rubricDraft=rubricDraft[0]; var fullRepAt=useState(null); var setFullRepAt=fullRepAt[1]; fullRepAt=fullRepAt[0]; var microRepAt=useState(null); var setMicroRepAt=microRepAt[1]; microRepAt=microRepAt[0]; var ref=useRef(null); var microRef=useRef(null); useEffect(function(){ if(run){ ref.current=setInterval(function(){ setSec(function(s){return s+1}); },1000);} return function(){ if(ref.current) clearInterval(ref.current);} },[run]); useEffect(function(){ if(microRun){ microRef.current=setInterval(function(){ setMicroSec(function(s){return s+1}); },1000);} return function(){ if(microRef.current) clearInterval(microRef.current);} },[microRun]); function activeStep(){ var acc=0; for(var i=0;i<STEPS.length;i++){ acc+=STEPS[i].sec; if(sec<acc) return i;} return STEPS.length-1; } function activeMicroStep(steps){ var acc=0; for(var i=0;i<steps.length;i++){ acc+=steps[i].sec; if(microSec<acc) return i;} return steps.length-1; } function togglePrep(k){ var x=Object.assign({},prep); x[k]=!x[k]; setPrep(x); } function toggleDone(n){ var x=Object.assign({},done); var turningOn=!x[n]; x[n]=turningOn; setDone(x); var m=Object.assign({},stepMark); if(turningOn){ m[n]=sec; } else { delete m[n]; } setStepMark(m); } function toggleMicroDone(k){ var x=Object.assign({},microDone); x[k]=!x[k]; setMicroDone(x); } function computeFullPerStep(){ var out=[]; var prevT=0; for(var i=0;i<STEPS.length;i++){ var s=STEPS[i]; if(stepMark[s.n]===undefined) return null; var actual=stepMark[s.n]-prevT; if(actual<0) return null; out.push({k:s.t,target:s.sec,actual:actual}); prevT=stepMark[s.n]; } return out; } // One record per continuous timeline (the span between Reset/mode-switches that zero a // timer). `existingAt` is the current timeline
+- s total/perStep in place instead of appending a duplicate. Returns the // record
+- this timeline already has a rep.
+- Optional self-check — tap what you did, or skip.
+- Over time — wrap up and stop.
+- Over time — stop and trim one sentence.
+- Clinical Skills · optional aid
+- Treatment Team Rounding Prep
+- Optional — use it if it helps
+- Walk into treatment-team rounds with the right data, then present it crisply. Gather, present, rehearse the 3-minute structure, or practice a focused 30-second collateral update and 60-second rounds update. Nothing here is required — it is a scaffold you can lean on while you build the habit.
+- Before rounds — have these ready
+- The pre-round sweep. Tick what you have; the gaps are your to-do before the team sits down.
+- Safety is the non-negotiable.
+- Even on a quiet patient, know the SI/HI status and observation level before you walk in.
+- How to say it: the seven-part, ~3-minute inpatient presentation. The one-liner does the heavy lifting.
+- Lead with the one-liner; never bury SI/HI.
+- If your first sentence names age, key diagnosis, and why-they-are-here, the team is oriented before the HPI.
+- — who/what/why-now, not a recap.
+- with concrete next steps.
+- (levels, vitals, days admitted).
+- ("difficult patient") — describe behavior.
+- deg, var(--primary-light) 0deg)
+- Tick each section as you say it. The highlighted step is where a well-paced presentation should be right now.
+- Two short formats for the moments students actually get interrupted on rounds: a 30-second collateral update and a 60-second daily rounds update. Say them out loud; do not type patient information here.
+- Tick each section as you say it. The highlighted line is where this update should be right now.
+- Optional educational aid for clinical trainees. Examples are fictional composites — no protected health information. The format is a scaffold; follow your team and institution conventions.
+- Treatment Team Rounding Prep · Psychiatry Clerkship Library · Joshua Moss, MD | Psychiatrist
+
+---
+
 ## High-Yield Rounds Questions
 
 - **Slug:** `rounds_questions.md` · **Type:** md · **Sidebar:** listed
@@ -1288,96 +1395,3 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - . Correct, confident cards stretch further out; missed ones come back soon. Questions are drawn from the hub’s board-style bank (
 - Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.
 - Spacing schedule is stored only in this browser.
-
----
-
-## Shelf Mode — Exam Simulation
-
-- **Slug:** `shelf-mode.html` · **Type:** tool · **Sidebar:** hidden (deep link only)
-- **Source:** `07_Evidence_and_Reading/Landmark_Trials/shelf-mode.html`
-- **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`moderate`
-
-#### Tool — clinical content
-
-_These tools are single-file HTML that render from inline JS data, so the clinical text below is recovered from the tool's own string literals. Ordering follows the file, not the runtime flow._
-
-**Static shell text:**
-
-- Shelf Mode — Exam Simulation Reviewed by Joshua Moss, MD on 2026-07-05
-- Skip to content
-
-**Authored clinical strings (73):**
-
-- Strong — exam-ready range.
-- Solid — tighten the misses.
-- Passing range — keep drilling.
-- Psychopharm & Med Emergencies
-- t label a draft mid-block without breaking the simulation, so the conservative subset is the attested 142. Categories map onto the existing BLUEPRINT topic regexes. */ var CAT_TOPIC={mood:"Mood",psychosis:"Psychosis",anxiety:"Anxiety, OCD & Trauma",substance:"Substance Use",pharm:"Psychopharm & Med Emergencies",neurocog:"Delirium, Dementia & MCI",personality:"Personality",childdev:"Child & Adolescent",otherdx:"Somatic & Related",safety:"Psychiatric Emergencies",ethics:"Interview, Ethics & Law",relational:"Relational & Family"}; function bankPool(data){ var out=[]; (((data&&data.items)||[])).forEach(function(it){ if(it.status!=="attested") return; if(!it.stem||!Array.isArray(it.options)||it.options.length<2) return; var hasCorrect=false; it.options.forEach(function(op){ if(op&&op.c)hasCorrect=true; }); if(!hasCorrect) return; /* Options are shuffled ONCE here (bank storage order is authoring order — the draft pool is known to lean on first-position answers) and letters relabel automatically because every render site derives them from array index (KEYS[i]). Correct option explains via the item
-- A 26-year-old woman is admitted after 5 days of decreased need for sleep, rapid speech, increased spending, and a belief that she has been chosen to reform the hospital. She has had two prior depressive episodes treated with sertraline. On exam she is irritable with pressured speech and flight of ideas. Which of the following is the most appropriate next step?
-- Continue sertraline and add cognitive behavioral therapy
-- Antidepressant monotherapy can sustain or worsen mania; the priority is to stop it and start an antimanic agent.
-- Discontinue sertraline and start a mood stabilizer or second-generation antipsychotic
-- Correct — acute mania (bipolar I): stop the antidepressant, begin lithium/valproate or an SGA, and protect sleep.
-- Start fluoxetine for treatment-resistant depression
-- The presentation is mania, not depression; an antidepressant is contraindicated.
-- Obtain brain MRI before initiating any treatment
-- Classic mania with prior mood episodes does not require imaging before treatment; do not delay antimanic therapy.
-- Begin lorazepam as monotherapy
-- A benzodiazepine is adjunctive for agitation/sleep but does not treat the manic episode.
-- Acute mania: stop the antidepressant, start a mood stabilizer or SGA, and protect sleep.
-- A 30-year-old man on fluoxetine is brought in 8 hours after a friend gave him tramadol for back pain. He is agitated and diaphoretic. Temperature is 39.1°C, heart rate 124. Exam shows hyperreflexia and inducible clonus, greater in the lower extremities. Which of the following is the most likely diagnosis?
-- Correct — rapid onset after adding a serotonergic agent (tramadol), with hyperthermia, autonomic instability, and neuromuscular hyperexcitability (clonus, hyperreflexia). Stop the agents, supportive care, consider cyproheptadine.
-- Neuroleptic malignant syndrome
-- NMS follows dopamine antagonists, evolves over days, and features 'lead-pipe' rigidity and bradyreflexia — not clonus/hyperreflexia.
-- Anticholinergic toxidrome gives dry skin, absent bowel sounds, and normal reflexes — not diaphoresis with clonus.
-- Malignant hyperthermia is triggered by volatile anesthetics/succinylcholine, not oral serotonergics.
-- Sympathomimetic intoxication
-- Stimulant toxicity can mimic this but lacks the prominent clonus/hyperreflexia and the clear serotonergic trigger.
-- Serotonin syndrome = serotonergic trigger + hyperthermia + clonus/hyperreflexia (lower-limb predominant); NMS = dopamine blocker + rigidity + hyporeflexia over days.
-- A 52-year-old man admitted for pancreatitis becomes tremulous and diaphoretic on hospital day 2, with heart rate 116, blood pressure 168/98, and visual misperceptions. He reports drinking a pint of vodka daily until admission. Which of the following is the most appropriate management?
-- Symptom-triggered benzodiazepine dosing with CIWA-Ar monitoring, plus thiamine
-- Correct — alcohol withdrawal: benzodiazepines (often CIWA-Ar–guided) are first-line, with thiamine to prevent Wernicke encephalopathy.
-- Antipsychotics lower the seizure threshold and do not treat the underlying GABA/glutamate dysregulation; they are at most adjunctive for agitation.
-- Intravenous dextrose before any other intervention
-- Give thiamine before/with glucose in at-risk patients — a glucose load alone can precipitate Wernicke encephalopathy.
-- Physical restraints and observation
-- Restraints do not treat withdrawal and can worsen autonomic arousal; pharmacologic treatment is needed.
-- Clonidine may blunt autonomic signs but does not prevent withdrawal seizures or delirium tremens.
-- Alcohol withdrawal: benzodiazepines (CIWA-Ar–guided) first-line; give thiamine before glucose.
-- A 78-year-old woman is inattentive and intermittently drowsy two days after hip surgery. Her family says she was cognitively intact at baseline; symptoms fluctuate and worsen at night. She is on oxycodone and diphenhydramine for sleep. Which of the following is the most appropriate first step?
-- Identify and treat underlying causes and remove deliriogenic medications
-- Correct — acute, fluctuating inattention with altered arousal is delirium. First-line is to find and fix the cause (pain meds, anticholinergics, infection, metabolic) and use nonpharmacologic measures.
-- Start a scheduled long-acting benzodiazepine
-- Benzodiazepines worsen delirium (except in alcohol/benzo withdrawal) and increase fall risk.
-- Begin donepezil for cognitive decline
-- Cholinesterase inhibitors treat chronic dementia, not acute delirium, and have no role here.
-- Obtain an outpatient neuropsychology referral
-- This is an acute medical problem requiring inpatient workup, not deferred testing.
-- Reassure the family this is expected post-operative confusion and observe
-- Delirium signals an underlying disturbance and predicts poor outcomes; it requires active workup, not watchful waiting.
-- Delirium is a medical emergency: treat the cause and stop deliriogenic drugs; avoid benzodiazepines unless withdrawal-related.
-- A 60-year-old man with diabetes and a necrotic foot refuses a recommended amputation. He can describe the gangrene, the risk of fatal sepsis without surgery, the option of amputation, and explains he would rather risk death than lose his leg, citing consistent long-held values. He has no psychosis or cognitive deficit. Which of the following best describes his decision-making capacity?
-- He has capacity to refuse the amputation
-- Correct — he demonstrates the four abilities (understanding, appreciation, reasoning, and a stable choice). Capacity is decision-specific; a 'wrong-seeming' choice with intact reasoning is still a capacitated refusal.
-- He lacks capacity because the refusal is medically dangerous
-- Capacity is about the process of decision-making, not whether the choice matches the medical recommendation.
-- He lacks capacity and a guardian should consent to surgery
-- There is no impairment in the four abilities; overriding a capacitated refusal would violate autonomy.
-- Capacity cannot be assessed without neuropsychological testing
-- Capacity is a clinical, decision-specific bedside determination, not a test score.
-- He has capacity only if he agrees to surgery
-- Capacity does not depend on agreeing with the team; that reasoning is circular.
-- Capacity is decision-specific and rests on four abilities; a high-risk refusal with intact reasoning is still capacitated.
-- Could not load the question bank (question_bank.json).
-- Loading the question bank…
-- Optional practice · exam simulation
-- A timed, blueprint-weighted vignette set that mirrors the psychiatry COMAT / shelf. Choose your length, topics, and pacing. Single best answer, with feedback and a teaching point on every item.
-- The attested question bank didn't load, so this is running on a small set of sample items so you can see how it works. Reload when you're back online for the full blueprint-weighted exam.
-- Tutor — feedback after each
-- Tip: press 1–5 to answer, Enter to advance.
-- Optional exam-prep simulation. Items are educational and use fictional composites only (no patient information). Verify management against current guidelines and your team. Progress is saved only in this browser.
-- Joshua Moss, MD | Psychiatrist
-- Nothing to review — every item correct.
-- Joshua Moss, MD | Psychiatrist · Educational simulation; fictional composites only. Verify management against current guidelines.
-- End this set and discard progress?
-- Educational simulation; fictional composites only (no patient information). Joshua Moss, MD | Psychiatrist
