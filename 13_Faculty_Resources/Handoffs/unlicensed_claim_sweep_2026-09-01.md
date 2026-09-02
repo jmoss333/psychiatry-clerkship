@@ -36,7 +36,7 @@ from a number to a paper.
 
 ## The four hard findings — a number, no bibliography, nothing to trace
 
-### 1. `02_Clinical_Skills/Brief_Psychotherapy/brief_psychotherapy_inpatient.md` L34 — **highest priority**
+### 1. `02_Clinical_Skills/Brief_Psychotherapy/brief_psychotherapy_inpatient.md` L34 — **FIXED 2026-09-01**
 
 > **Psychoeducation** has the hardest inpatient numbers (readmission NNT 5) — and it's free.
 
@@ -47,8 +47,18 @@ psychological intervention" with wording carrying the reviewers' own limits — 
 be less than demonstrated", last search 2010. This page still carries the uncorrected
 form. The correction landed on one page and missed a sibling.
 
-The verified span already exists (`xia-2011`, direction `mixed`). Nothing new needs
-verifying — the claim needs rewording to match the span the library already holds.
+The verified span already exists (`xia-2011`, direction `mixed`). Nothing new needed
+verifying — the claim was reworded to match the span the library already holds.
+
+**Fixing it turned up a second instance on the same page that the sweep cannot see.**
+The L18 table cell read *"Strongest single inpatient psychological intervention: readmission
+NNT 5, relapse NNT 9 (Xia, Cochrane 2011)"* — the exact superlative #402 removed, and it **is**
+attributed, which is why the sweep passed it. The citation does not license the superlative.
+
+That claim sits in the gap between both tools: the sweep only finds claims with *nothing*,
+and the span gate never sees this page because its `topic_meta.json` entry has no
+`evidenceIds`. Both cells are now corrected. Wiring `evidenceIds` on this page is a separate
+pass — per the rule 3 lesson in #402, adding ids to a page obligates anchoring it.
 
 ### 2. `03_Core_Topics/Perinatal/perinatal_psychiatry_inpatient_teaching.md` L27
 

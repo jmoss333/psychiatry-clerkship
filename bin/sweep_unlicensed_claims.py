@@ -42,7 +42,8 @@ MANIFEST = ROOT / "13_Faculty_Resources" / "_automation" / "site_build" / "site_
 
 # --- what counts as attribution, read generously -----------------------------
 ATTRIBUTION = re.compile(
-    r"\[\d+\s*[✓✔]\]"                    # [5 ✓] anchor
+    # anchors are single or multi-reference: [5 ✓] and [27 ✓, 28 ✓]
+    r"\[\s*\d+\s*[✓✔](?:\s*,\s*\d+\s*[✓✔])*\s*\]"
     r"|doi\.org/|\bdoi:|\[DOI\]"                   # DOI in any form
     r"|\bPMID\b"                                   # PMID
     r"|\*\*(?:Key paper|Evidence|Source|Citation|Reference)s?:?\*\*"
@@ -57,7 +58,10 @@ ATTRIBUTION = re.compile(
 
 # --- what counts as an assertion ---------------------------------------------
 STAT = re.compile(
-    r"\b(?:RR|OR|HR|SMD|NNT|NNH|AUC)\s*[=:]?\s*[\d.]"     # effect measures
+    # effect measures. The connector is deliberately loose: "NNT 5", "NNT = 5",
+    # "NNT of 5" and "an NNT around 5" are the same claim, and the prose forms are
+    # exactly where an unattributed number hides.
+    r"\b(?:RR|OR|HR|SMD|NNT|NNH|AUC)\b\s*(?:[=:]|of|around|near|about|approximately)?\s*[\d.]"
     r"|\b95%\s*CI|\bCI\s*[\d.]"                            # confidence intervals
     r"|\bp\s*[<>=]\s*0?\.\d"                               # p values
     r"|\b[nN]\s*=\s*\d"                                    # sample sizes
