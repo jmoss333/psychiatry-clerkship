@@ -66,13 +66,21 @@ def main() -> int:
         print(f"  ... plus {len(stubs) - 40} more")
     print(
         "\n"
-        "These files are LFS placeholders, not playable media. For production deploys:\n"
+        "These files are LFS placeholders, not playable media.\n"
+        "  0. FIRST check the GitHub Git-LFS BANDWIDTH QUOTA (per account, 10 GB/month, resets\n"
+        "     on the 1st): a 90%/100% 'Git LFS bandwidth' email from GitHub means downloads are\n"
+        "     refused and every production build fails until the reset or a data pack is bought\n"
+        "     (github.com/settings/billing). The 2026-08-30 outage was exactly this. Look for the\n"
+        "     'lfs-cache:' lines above — the build pulls media from Netlify's persistent cache and\n"
+        "     reports MB downloaded; see NETLIFY_LFS_RUNBOOK.md, 'Incident pattern 2'.\n"
+        "  Otherwise, for a genuinely missing object:\n"
         "  1. git lfs install\n"
         "  2. git lfs pull\n"
         "  3. git lfs fsck\n"
         "  4. git lfs push --all origin\n"
-        "  5. Confirm Netlify env vars: GIT_LFS_ENABLED=true and "
-        "GIT_LFS_FETCH_INCLUDE=*.m4a,*.mp4\n"
+        "  5. Confirm the site is on the cached-pull path (lfs_pull_cached.sh runs in the build;\n"
+        "     GIT_LFS_ENABLED removed from the site's env vars) — or, on the legacy path,\n"
+        "     GIT_LFS_ENABLED=true and GIT_LFS_FETCH_INCLUDE=*.m4a,*.mp4\n"
         "  6. Retry the Netlify production deploy without cache if needed\n"
     )
     return 0 if is_soft_context() else 1
