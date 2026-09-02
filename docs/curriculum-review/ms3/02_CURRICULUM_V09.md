@@ -6,6 +6,109 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 
 ---
 
+## Daily Review (Spaced Repetition)
+
+- **Slug:** `review.html` · **Type:** tool · **Sidebar:** hidden (deep link only)
+- **Source:** `07_Evidence_and_Reading/Landmark_Trials/review.html`
+- **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`moderate`
+
+#### Tool — clinical content
+
+_These tools are single-file HTML that render from inline JS data, so the clinical text below is recovered from the tool's own string literals. Ordering follows the file, not the runtime flow._
+
+**Static shell text:**
+
+- Daily Review — Spaced Repetition Reviewed by Joshua Moss, MD on 2026-07-05
+- Skip to content
+
+**Authored clinical strings (83):**
+
+- t lean on position memory. Letters are display-position-derived (String.fromCharCode(65+pos)), so relabeling is automatic. */ /* FNV-1a seed + xorshift32 steps — NOT a bare LCG: an LCG
+- s inject_shared_snippets() expands at build time (same mechanism as crisis blocks). Grades are the strings
+- . Semantics: ease floor 1.3, Easy ease ceiling 4.0, interval cap 365 d, lapse halves the interval (min 1 d) and re-dues the card immediately. Requires `var DAY = 86400000` in scope. Behaviour is pinned by tests/sm2-behavior.test.mjs; consumer wiring is pinned by tests/family-srs-parity.test.mjs. applyGrade(card, grade, opts) — opts is optional; opts.fuzzKey (string, usually the card id) enables deterministic ±15% interval fuzz (see sm2Fuzz below) so cohort-seeded cards de-synchronize instead of avalanching due on the same day. Omitting opts (or fuzzKey) is byte-identical to the pre-fuzz grader — every existing caller keeps its exact legacy schedule until it opts in. cw_srs_v1 STATS CONTRACT — who may write stats.seen / stats.correct: - question-bank-practice.html srsUpdate(): YES (ground-truth correctness). - review.html grade(): YES (ground-truth correctness). - family-systems-practice.html srsGradeFamily(): NO — cards only. A self-rating has no ground truth, and review.html renders Retention as correct/seen. - Practice sims write cw_practice_events_v1 instead — never cw_srs_v1.stats. Per-event history (chosen grade vs. suggested grade, requeue flag) is a separate concern logged to cw_calib_v1 via calibLog() (build-injected from calib_log.js, the CALIB_LOG marker) — this file
+- s own bounds. */ function sm2Fuzz(ivl, key, reps){ if(ivl < 3 || !key) return ivl; var h = 2166136261, s = key +
+- + reps; for(var i=0;i >> 0; } var f = ((h % 2001) / 1000) - 1; /* [-1, 1] */ return Math.min(365, Math.max(1, Math.round(ivl + ivl * 0.15 * f))); } function applyGrade(card, grade, opts){ /* SM-2 variant: ease floor 1.3, interval cap 365 d */ var c = Object.assign({}, card); var fuzzKey = opts && opts.fuzzKey; c.reps = (c.reps||0) + 1; if(c.ivl===0){ /* first encounter */ if(grade===
+- ){ c.lapses=(c.lapses||0)+1; c.ivl=1; c.due=Date.now(); } else if(grade===
+- ){ c.ivl=1; c.due=Date.now()+DAY; } else if(grade===
+- ){ c.ivl=1; c.due=Date.now()+DAY; } else { c.ivl=sm2Fuzz(4, fuzzKey, c.reps); c.due=Date.now()+c.ivl*DAY; } /* Easy */ } else { if(grade===
+- ){ /* Again is never fuzzed — lapses re-due immediately regardless of fuzzKey. */ c.lapses=(c.lapses||0)+1; c.ease=Math.max(1.3, (c.ease||2.5)-0.2); c.ivl=Math.max(1, Math.round(c.ivl*0.5)); c.due=Date.now(); } else if(grade===
+- ){ c.ease=Math.max(1.3, (c.ease||2.5)-0.15); c.ivl=Math.max(1, Math.round(c.ivl*1.2)); c.ivl=sm2Fuzz(c.ivl, fuzzKey, c.reps); c.due=Date.now()+Math.min(365,c.ivl)*DAY; } else if(grade===
+- ){ c.ivl=Math.max(1, Math.round(c.ivl*(c.ease||2.5))); c.ivl=Math.min(365,c.ivl); c.ivl=sm2Fuzz(c.ivl, fuzzKey, c.reps); c.due=Date.now()+c.ivl*DAY; } else { /* Easy */ c.ease=Math.min(4, (c.ease||2.5)+0.15); c.ivl=Math.max(1, Math.round(c.ivl*(c.ease)*1.3)); c.ivl=Math.min(365,c.ivl); c.ivl=sm2Fuzz(c.ivl, fuzzKey, c.reps); c.due=Date.now()+c.ivl*DAY; } } c.last=Date.now(); return c; } /* Calibration ledger cw_calib_v1 — append-only judgment-vs-outcome history. Enum fields + existing ids ONLY; no free text ever (PHI firewall is structural). cw_qb_v1 stays the current-state store; this is the history store; no reader joins both into one number (spec: 2026-08-05-shared-state-spine-design.md). Writers: qbank qbRecord (re flag), review.html grade() (sug/rq). cw_practice_events_v1 remains reserved for sim process events — a different thing. */ function calibLog(evt){ try{ var S={qb:[
+- ]}; if(!evt || !S[evt.s] || S[evt.s].indexOf(evt.p)<0) return; var d=null; try{ d=JSON.parse(localStorage.getItem(
+- ); }catch(_e){ d=null; } if(!d || d.v!==1 || !Array.isArray(d.qb) || !Array.isArray(d.rev)) d={v:1,qb:[],rev:[]}; var ring=d[evt.s===
+- ]; ring.push(evt); while(ring.length>400) ring.shift(); localStorage.setItem(
+- , JSON.stringify(d)); }catch(_){ } } function calibRead(){ try{ var d=JSON.parse(localStorage.getItem(
+- ); if(d && d.v===1 && Array.isArray(d.qb) && Array.isArray(d.rev)) return d; }catch(_){ } return {v:1,qb:[],rev:[]}; } function calibClear(){ try{ localStorage.removeItem(
+- ); }catch(_){ } } /* Rotation phase policy — cw_shelf_date finally governs the study diet. shelfDaysUntil() is THE local-midnight date helper: spa_index.html
+- s range. Copy rule: labels ship to both sites — audience-neutral, "Exam", never "Shelf". */ function shelfDaysUntil(shelfStr, nowMs){ if(!shelfStr) return null; var t=new Date(shelfStr+
+- ).getTime(); if(isNaN(t)) return null; return Math.ceil((t-(nowMs||Date.now()))/86400000); } function phasePolicy(nowMs){ var shelf=null; try{ shelf=localStorage.getItem(
+- ); }catch(_){ } var days=shelfDaysUntil(shelf, nowMs); if(days===null) return {phase:
+- }; if(days<0) return {phase:
+- }; if(days<=7) return {phase:
+- }; if(days<=14)return {phase:
+- }; if(days<=28)return {phase:
+- }; } /* localDayStr()/localDayIndex() are the front door
+- s progress on Today) and by the session receipt inside a tool (to mark the step that just finished and offer the next one). Injected via /*__BLOCK_STORE__*\/ so the shell and every tool share one implementation. Shape: {v:1, minutes, createdAt, steps:[{kind:
+- , ref, title, min, n?, cat?, done?, doneAt?}]}. A page step is never marked here — its done state is derived from cw_progress_v1 at render time, so ticking the page anywhere counts. A block older than CW_BLOCK_TTL_MS is pruned on load: a plan built for one morning
+- s own primary (spec.actions) beside "Back to Today"; 3. marks the tool
+- s openPage message — a plain href would be caught by the in-iframe interceptor and lose its query, so the delegated listener below posts the full route instead; outside an iframe it falls back to a real navigation. */ function cwReceiptEsc(s){ return String(s===undefined||s===null?
+- ); } function cwReceiptLocalDay(nowMs){ var d=new Date(nowMs), m=d.getMonth()+1, day=d.getDate(); return d.getFullYear()+
+- )+day; } /* Writes the legacy {done:true,at} entry the front door reads. Returns true only when this call changed the store, so "Marked done on Today" is said once, not on every re-render. */ function cwReceiptMarkDone(ref, nowMs){ if(!ref) return false; try{ var p=JSON.parse(localStorage.getItem(
+- ) p={}; if(p[ref]&&p[ref].done===true) return false; p[ref]={done:true,at:cwReceiptLocalDay(nowMs)}; localStorage.setItem(
+- , JSON.stringify(p)); return true; }catch(_){ return false; } } function cwReceiptStepRoute(step){ var s=step||{}; if(s.kind===
+- +encodeURIComponent(String(s.n||1)); if(s.kind===
+- )); } function cwReceiptNextStep(block, doneMap){ var b=block||{}, list=b.steps||[], d=doneMap||{}, i, s, done=0; var next=null; for(i=0;i<list.length;i++){ s=list[i]||{}; var isDone=(s.kind===
+- )?(d[s.ref]===true):(s.done===true); if(isDone) done++; else if(!next) next=s; } return {next:next, done:done, total:list.length}; } function cwReceiptDoneMap(){ var out={}; try{ var p=JSON.parse(localStorage.getItem(
+- ){ for(var k in p){ if(Object.prototype.hasOwnProperty.call(p,k)&&p[k]&&p[k].done===true) out[k]=true; } } }catch(_){ } return out; } var CW_RECEIPT_CSS=
+- ; function cwReceiptEnsureStyle(){ try{ if(typeof document===
+- )) return; var st=document.createElement(
+- ; st.textContent=CW_RECEIPT_CSS; document.head.appendChild(st); }catch(_){ } } var cwReceiptWired=false; function cwReceiptNavigate(ref, search){ var framed=false; try{ framed=(typeof window!==
+- )&&window.self!==window.top; }catch(_){ framed=true; } if(framed){ try{ window.parent.postMessage({type:
+- ); return; }catch(_){ } } try{ location.href=
+- +encodeURIComponent(ref)))); }catch(_){ } } function cwReceiptWire(){ if(cwReceiptWired||typeof document===
+- ) return; cwReceiptWired=true; document.addEventListener(
+- , function(ev){ var t=ev.target&&ev.target.closest?ev.target.closest(
+- ):null; if(!t) return; ev.preventDefault(); if(t.hasAttribute(
+- ); return; } cwReceiptNavigate(t.getAttribute(
+- ); }, true); } function cwReceipt(spec){ var s=spec||{}, nowMs=(typeof s.nowMs===
+- )?s.nowMs:Date.now(), i; cwReceiptEnsureStyle(); cwReceiptWire(); var marked=cwReceiptMarkDone(s.ref, nowMs); var block=null, progress=null; if(typeof blockLoad===
+- ){ if(s.blockKind&&typeof blockMarkStep===
+- ) blockMarkStep(s.blockKind, nowMs); block=blockLoad(nowMs); if(block) progress=cwReceiptNextStep(block, cwReceiptDoneMap()); } var h=
+- ; var stats=s.stats||[]; if(stats.length){ h+=
+- ; for(i=0;i<stats.length;i++){ var st=stats[i]||{}, tone=st.tone===
+- ; } var reread=s.reread||[]; if(reread.length){ h+=
+- ; for(i=0;i<reread.length;i++){ var r=reread[i]||{}; h+=
+- cw-receipt__tag'+(r.warn?' is-warn':'')+'
+- ; var next=progress&&progress.next; if(next){ var route=cwReceiptStepRoute(next); h+=
+- cw-receipt__btn is-primary
+- ; }else{ var acts=s.actions||[]; for(i=0;i<acts.length;i++){ var a=acts[i]||{}; h+=
+- cw-receipt__btn'+(a.primary?' is-primary':'')+'
+- ; if(!next&&typeof blockClear===
+- ; return {html:h, marked:marked, next:next||null}; } /* effectiveNewPerDay: the single helper BOTH the metrics() display and start()
+- s 2nd grade sets calibLog
+- t out-rank short- interval cards that are badly late. Shuffle only within bands of 5 to keep light variety without undoing the ordering. */ function ratio(c){var st=s.cards[c.id]; return (now-st.due)/((st.ivl||1)*DAY);} due.sort(function(a,b){ return ratio(b)-ratio(a); }); for(var i=0;i<due.length;i+=5){ var band=due.slice(i,i+5); shuffle(band); for(var j=0;j<band.length;j++) due[i+j]=band[j]; } shuffle(neu); var newRemain=Math.max(0,effectiveNewPerDay(s)-(s.day.newToday||0)); var q=due.concat(neu.slice(0,newRemain)); if(ahead){ fut.sort(function(a,b){return a[1]-b[1];}); q=q.concat(fut.map(function(x){return x[0];})); } if(!q.length){ setSess({empty:true}); return; } /* A timed block asks for a bounded slice (?block=1&limit=N) — most-overdue first, as above. */ var limit=blockLimit.current; blockLimit.current=null; var fromBlock=(typeof limit===
+- &&limit>=1); if(fromBlock&&limit Again or Hard only; the buttons disable to match, and this guard also covers the keyboard shortcuts (keys 3/4). */ if(g>1 && s.chosen!==correctIdx(s.card)) return; var st=loadS(); st=rollDay(st); var card=s.card; var existed=!!st.cards[card.id]; var was=st.cards[card.id]||{ease:2.5,ivl:0,reps:0,lapses:0,due:Date.now(),last:0}; st.cards[card.id]=applyGrade(was,GRADE_NAMES[g],{fuzzKey:card.id}); if(!existed){ st.day.newToday=(st.day.newToday||0)+1; } bumpStreak(st); st.stats.totalReviews=(st.stats.totalReviews||0)+1; var ci=correctIdx(card); var gotIt=(s.chosen===ci); st.stats.seen=(st.stats.seen||0)+1; if(gotIt)st.stats.correct=(st.stats.correct||0)+1; saveS(st); setStore(Object.assign({},st)); var rq=gradedThisSession[card.id]?1:0; gradedThisSession[card.id]=1; calibLog({s:
+- ,id:card.id,p:GRADE_NAMES[g]||g,sug:sug,a:gotIt?1:0,rq:rq,ts:Date.now()}); // advance queue var q=s.queue.slice(); var pos=s.pos; if(g===0){ q.push(card); } // requeue lapses to end of this session var nextPos=pos+1; var reviewed=s.reviewed+1, correct=s.correct+(gotIt?1:0); var misses=(s.misses||[]).slice(); if(!gotIt&&!misses.some(function(m){return m.id===card.id;})) misses.push({id:card.id,deckTitle:card.deckTitle,q:card.q}); if(nextPos>=q.length){ setSess({finished:true,reviewed:reviewed,correct:correct,misses:misses,fromBlock:!!s.fromBlock}); return; } setSess({queue:q,pos:nextPos,card:q[nextPos],chosen:-1,revealed:false,reviewed:reviewed,correct:correct,total:s.total,misses:misses,fromBlock:!!s.fromBlock}); } function endSession(){ setSess(null); setTick(function(x){return x+1;}); } function setNewPerDay(v){ var s=loadS(); s.settings.newPerDay=v; s.settings.userSet=true; persist(s); } function resetAll(){ if(!window.confirm("Reset all spaced-repetition progress? This clears your review schedule and streak. This also clears your calibration history. Reading progress elsewhere is unaffected."))return; try{localStorage.removeItem(KEY);}catch(_){ } calibClear(); setStore(freshStore()); setSess(null); setTick(function(x){return x+1;}); } var head=e("div",{className:"topline"}, e("div",{className:"logo"},"ψ"), e("div",null,e("div",{className:"ttl"},"Daily Review"),e("div",{className:"by"},"Spaced repetition · Joshua Moss, MD")), e("button",{className:"thmbtn",onClick:function(){toggleTheme(setTheme);},title:"Toggle dark mode","aria-label":"Toggle dark mode"}, theme==="dark"?"☀":"☾")); if(err) return e("div",{className:"wrap"},head,e("div",{className:"err"},"Could not load the question bank (quizzes.json). Open this tool from the hub so it can find its data, then try again.")); if(!cards) return e("div",{className:"wrap"},head,e("div",{className:"panel muted"},"Loading the question bank…")); /* ---- active session ---- */ if(sess && sess.queue){ var c=sess.card, ci=correctIdx(c), pctp=Math.round(100*sess.pos/Math.max(1,sess.total)); var gotIt=(sess.chosen===ci); var sug=gotIt?
+- ; // single source of truth: feeds the
+- className below AND grade()
+- 🎧 Listen — paper overview
+- Missed items can only be graded Again or Hard
+- Pick the best answer (or press 1–
+- One card came back for another look.
+- cards came back for another look.
+- A miss here is scheduled sooner, not scored — it returns within the day so the second pass is the one that sticks.
+- Held cards move out; the next pass is further away.
+- -day streak in Daily Review.
+- Nothing is due right now and you’ve hit today’s new-card limit. Come back tomorrow, or study ahead below.
+- Spaced repetition schedules each board-style question to return just before you’d forget it. A few minutes a day beats cramming. Grade yourself honestly.
+- Each question carries its own schedule. Answer, then grade:
+- (missed — comes back this session),
+- . Correct, confident cards stretch further out; missed ones come back soon. Questions are drawn from the hub’s board-style bank (
+- Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.
+- Spacing schedule is stored only in this browser.
+
+---
+
 ## Shelf Mode — Exam Simulation
 
 - **Slug:** `shelf-mode.html` · **Type:** tool · **Sidebar:** hidden (deep link only)
@@ -21,77 +124,51 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Shelf Mode — Exam Simulation Reviewed by Joshua Moss, MD on 2026-07-05
 - Skip to content
 
-**Authored clinical strings (73):**
+**Authored clinical strings (47):**
 
 - Strong — exam-ready range.
 - Solid — tighten the misses.
 - Passing range — keep drilling.
 - Psychopharm & Med Emergencies
 - t label a draft mid-block without breaking the simulation, so the conservative subset is the attested 142. Categories map onto the existing BLUEPRINT topic regexes. */ var CAT_TOPIC={mood:"Mood",psychosis:"Psychosis",anxiety:"Anxiety, OCD & Trauma",substance:"Substance Use",pharm:"Psychopharm & Med Emergencies",neurocog:"Delirium, Dementia & MCI",personality:"Personality",childdev:"Child & Adolescent",otherdx:"Somatic & Related",safety:"Psychiatric Emergencies",ethics:"Interview, Ethics & Law",relational:"Relational & Family"}; function bankPool(data){ var out=[]; (((data&&data.items)||[])).forEach(function(it){ if(it.status!=="attested") return; if(!it.stem||!Array.isArray(it.options)||it.options.length<2) return; var hasCorrect=false; it.options.forEach(function(op){ if(op&&op.c)hasCorrect=true; }); if(!hasCorrect) return; /* Options are shuffled ONCE here (bank storage order is authoring order — the draft pool is known to lean on first-position answers) and letters relabel automatically because every render site derives them from array index (KEYS[i]). Correct option explains via the item
-- A 26-year-old woman is admitted after 5 days of decreased need for sleep, rapid speech, increased spending, and a belief that she has been chosen to reform the hospital. She has had two prior depressive episodes treated with sertraline. On exam she is irritable with pressured speech and flight of ideas. Which of the following is the most appropriate next step?
-- Continue sertraline and add cognitive behavioral therapy
-- Antidepressant monotherapy can sustain or worsen mania; the priority is to stop it and start an antimanic agent.
-- Discontinue sertraline and start a mood stabilizer or second-generation antipsychotic
-- Correct — acute mania (bipolar I): stop the antidepressant, begin lithium/valproate or an SGA, and protect sleep.
-- Start fluoxetine for treatment-resistant depression
-- The presentation is mania, not depression; an antidepressant is contraindicated.
-- Obtain brain MRI before initiating any treatment
-- Classic mania with prior mood episodes does not require imaging before treatment; do not delay antimanic therapy.
-- Begin lorazepam as monotherapy
-- A benzodiazepine is adjunctive for agitation/sleep but does not treat the manic episode.
-- Acute mania: stop the antidepressant, start a mood stabilizer or SGA, and protect sleep.
-- A 30-year-old man on fluoxetine is brought in 8 hours after a friend gave him tramadol for back pain. He is agitated and diaphoretic. Temperature is 39.1°C, heart rate 124. Exam shows hyperreflexia and inducible clonus, greater in the lower extremities. Which of the following is the most likely diagnosis?
-- Correct — rapid onset after adding a serotonergic agent (tramadol), with hyperthermia, autonomic instability, and neuromuscular hyperexcitability (clonus, hyperreflexia). Stop the agents, supportive care, consider cyproheptadine.
-- Neuroleptic malignant syndrome
-- NMS follows dopamine antagonists, evolves over days, and features 'lead-pipe' rigidity and bradyreflexia — not clonus/hyperreflexia.
-- Anticholinergic toxidrome gives dry skin, absent bowel sounds, and normal reflexes — not diaphoresis with clonus.
-- Malignant hyperthermia is triggered by volatile anesthetics/succinylcholine, not oral serotonergics.
-- Sympathomimetic intoxication
-- Stimulant toxicity can mimic this but lacks the prominent clonus/hyperreflexia and the clear serotonergic trigger.
-- Serotonin syndrome = serotonergic trigger + hyperthermia + clonus/hyperreflexia (lower-limb predominant); NMS = dopamine blocker + rigidity + hyporeflexia over days.
-- A 52-year-old man admitted for pancreatitis becomes tremulous and diaphoretic on hospital day 2, with heart rate 116, blood pressure 168/98, and visual misperceptions. He reports drinking a pint of vodka daily until admission. Which of the following is the most appropriate management?
-- Symptom-triggered benzodiazepine dosing with CIWA-Ar monitoring, plus thiamine
-- Correct — alcohol withdrawal: benzodiazepines (often CIWA-Ar–guided) are first-line, with thiamine to prevent Wernicke encephalopathy.
-- Antipsychotics lower the seizure threshold and do not treat the underlying GABA/glutamate dysregulation; they are at most adjunctive for agitation.
-- Intravenous dextrose before any other intervention
-- Give thiamine before/with glucose in at-risk patients — a glucose load alone can precipitate Wernicke encephalopathy.
-- Physical restraints and observation
-- Restraints do not treat withdrawal and can worsen autonomic arousal; pharmacologic treatment is needed.
-- Clonidine may blunt autonomic signs but does not prevent withdrawal seizures or delirium tremens.
-- Alcohol withdrawal: benzodiazepines (CIWA-Ar–guided) first-line; give thiamine before glucose.
-- A 78-year-old woman is inattentive and intermittently drowsy two days after hip surgery. Her family says she was cognitively intact at baseline; symptoms fluctuate and worsen at night. She is on oxycodone and diphenhydramine for sleep. Which of the following is the most appropriate first step?
-- Identify and treat underlying causes and remove deliriogenic medications
-- Correct — acute, fluctuating inattention with altered arousal is delirium. First-line is to find and fix the cause (pain meds, anticholinergics, infection, metabolic) and use nonpharmacologic measures.
-- Start a scheduled long-acting benzodiazepine
-- Benzodiazepines worsen delirium (except in alcohol/benzo withdrawal) and increase fall risk.
-- Begin donepezil for cognitive decline
-- Cholinesterase inhibitors treat chronic dementia, not acute delirium, and have no role here.
-- Obtain an outpatient neuropsychology referral
-- This is an acute medical problem requiring inpatient workup, not deferred testing.
-- Reassure the family this is expected post-operative confusion and observe
-- Delirium signals an underlying disturbance and predicts poor outcomes; it requires active workup, not watchful waiting.
-- Delirium is a medical emergency: treat the cause and stop deliriogenic drugs; avoid benzodiazepines unless withdrawal-related.
-- A 60-year-old man with diabetes and a necrotic foot refuses a recommended amputation. He can describe the gangrene, the risk of fatal sepsis without surgery, the option of amputation, and explains he would rather risk death than lose his leg, citing consistent long-held values. He has no psychosis or cognitive deficit. Which of the following best describes his decision-making capacity?
-- He has capacity to refuse the amputation
-- Correct — he demonstrates the four abilities (understanding, appreciation, reasoning, and a stable choice). Capacity is decision-specific; a 'wrong-seeming' choice with intact reasoning is still a capacitated refusal.
-- He lacks capacity because the refusal is medically dangerous
-- Capacity is about the process of decision-making, not whether the choice matches the medical recommendation.
-- He lacks capacity and a guardian should consent to surgery
-- There is no impairment in the four abilities; overriding a capacitated refusal would violate autonomy.
-- Capacity cannot be assessed without neuropsychological testing
-- Capacity is a clinical, decision-specific bedside determination, not a test score.
-- He has capacity only if he agrees to surgery
-- Capacity does not depend on agreeing with the team; that reasoning is circular.
-- Capacity is decision-specific and rests on four abilities; a high-risk refusal with intact reasoning is still capacitated.
-- Could not load the question bank (question_bank.json).
-- Loading the question bank…
-- Optional practice · exam simulation
-- A timed, blueprint-weighted vignette set that mirrors the psychiatry COMAT / shelf. Choose your length, topics, and pacing. Single best answer, with feedback and a teaching point on every item.
-- The attested question bank didn't load, so this is running on a small set of sample items so you can see how it works. Reload when you're back online for the full blueprint-weighted exam.
-- Tutor — feedback after each
-- Tip: press 1–5 to answer, Enter to advance.
-- Optional exam-prep simulation. Items are educational and use fictional composites only (no patient information). Verify management against current guidelines and your team. Progress is saved only in this browser.
-- Joshua Moss, MD | Psychiatrist
+- s own primary (spec.actions) beside "Back to Today"; 3. marks the tool
+- s openPage message — a plain href would be caught by the in-iframe interceptor and lose its query, so the delegated listener below posts the full route instead; outside an iframe it falls back to a real navigation. */ function cwReceiptEsc(s){ return String(s===undefined||s===null?
+- ); } function cwReceiptLocalDay(nowMs){ var d=new Date(nowMs), m=d.getMonth()+1, day=d.getDate(); return d.getFullYear()+
+- )+day; } /* Writes the legacy {done:true,at} entry the front door reads. Returns true only when this call changed the store, so "Marked done on Today" is said once, not on every re-render. */ function cwReceiptMarkDone(ref, nowMs){ if(!ref) return false; try{ var p=JSON.parse(localStorage.getItem(
+- ) p={}; if(p[ref]&&p[ref].done===true) return false; p[ref]={done:true,at:cwReceiptLocalDay(nowMs)}; localStorage.setItem(
+- , JSON.stringify(p)); return true; }catch(_){ return false; } } function cwReceiptStepRoute(step){ var s=step||{}; if(s.kind===
+- +encodeURIComponent(String(s.n||1)); if(s.kind===
+- )); } function cwReceiptNextStep(block, doneMap){ var b=block||{}, list=b.steps||[], d=doneMap||{}, i, s, done=0; var next=null; for(i=0;i<list.length;i++){ s=list[i]||{}; var isDone=(s.kind===
+- )?(d[s.ref]===true):(s.done===true); if(isDone) done++; else if(!next) next=s; } return {next:next, done:done, total:list.length}; } function cwReceiptDoneMap(){ var out={}; try{ var p=JSON.parse(localStorage.getItem(
+- ){ for(var k in p){ if(Object.prototype.hasOwnProperty.call(p,k)&&p[k]&&p[k].done===true) out[k]=true; } } }catch(_){ } return out; } var CW_RECEIPT_CSS=
+- ; function cwReceiptEnsureStyle(){ try{ if(typeof document===
+- )) return; var st=document.createElement(
+- ; st.textContent=CW_RECEIPT_CSS; document.head.appendChild(st); }catch(_){ } } var cwReceiptWired=false; function cwReceiptNavigate(ref, search){ var framed=false; try{ framed=(typeof window!==
+- )&&window.self!==window.top; }catch(_){ framed=true; } if(framed){ try{ window.parent.postMessage({type:
+- ); return; }catch(_){ } } try{ location.href=
+- +encodeURIComponent(ref)))); }catch(_){ } } function cwReceiptWire(){ if(cwReceiptWired||typeof document===
+- ) return; cwReceiptWired=true; document.addEventListener(
+- , function(ev){ var t=ev.target&&ev.target.closest?ev.target.closest(
+- ):null; if(!t) return; ev.preventDefault(); if(t.hasAttribute(
+- ); return; } cwReceiptNavigate(t.getAttribute(
+- ); }, true); } function cwReceipt(spec){ var s=spec||{}, nowMs=(typeof s.nowMs===
+- )?s.nowMs:Date.now(), i; cwReceiptEnsureStyle(); cwReceiptWire(); var marked=cwReceiptMarkDone(s.ref, nowMs); var block=null, progress=null; if(typeof blockLoad===
+- ){ if(s.blockKind&&typeof blockMarkStep===
+- ) blockMarkStep(s.blockKind, nowMs); block=blockLoad(nowMs); if(block) progress=cwReceiptNextStep(block, cwReceiptDoneMap()); } var h=
+- ; var stats=s.stats||[]; if(stats.length){ h+=
+- ; for(i=0;i<stats.length;i++){ var st=stats[i]||{}, tone=st.tone===
+- ; } var reread=s.reread||[]; if(reread.length){ h+=
+- ; for(i=0;i<reread.length;i++){ var r=reread[i]||{}; h+=
+- cw-receipt__tag'+(r.warn?' is-warn':'')+'
+- ; var next=progress&&progress.next; if(next){ var route=cwReceiptStepRoute(next); h+=
+- cw-receipt__btn is-primary
+- ; }else{ var acts=s.actions||[]; for(i=0;i<acts.length;i++){ var a=acts[i]||{}; h+=
+- cw-receipt__btn'+(a.primary?' is-primary':'')+'
+- ; if(!next&&typeof blockClear===
+- ; return {html:h, marked:marked, next:next||null}; } function refHref(ref){ if(!ref) return null; return /\.html(\?|#|$)/.test(ref)? ("./"+ref) : ("../index.html?page="+encodeURIComponent(ref)); } function correctIdx(o){for(var i=0;i<o.length;i++){if(o[i]&&o[i].c)return i;}return -1;} // ---- Sample preview items (original, classic teaching points). Only used when no SHELF-* decks exist yet. // Clearly labeled as preview; NOT scored content for assessment until the faculty-reviewed bank lands. var SAMPLE=[ {topic:"Mood",diff:"easy",ref:"t_mood.md", q:"A 26-year-old woman is admitted after 5 days of decreased need for sleep, rapid speech, increased spending, and a belief that she has been chosen to reform the hospital. She has had two prior depressive episodes treated with sertraline. On exam she is irritable with pressured speech and flight of ideas. Which of the following is the most appropriate next step?", o:[{t:"Continue sertraline and add cognitive behavioral therapy",c:false,fb:"Antidepressant monotherapy can sustain or worsen mania; the priority is to stop it and start an antimanic agent."}, {t:"Discontinue sertraline and start a mood stabilizer or second-generation antipsychotic",c:true,fb:"Correct — acute mania (bipolar I): stop the antidepressant, begin lithium/valproate or an SGA, and protect sleep."}, {t:"Start fluoxetine for treatment-resistant depression",c:false,fb:"The presentation is mania, not depression; an antidepressant is contraindicated."}, {t:"Obtain brain MRI before initiating any treatment",c:false,fb:"Classic mania with prior mood episodes does not require imaging before treatment; do not delay antimanic therapy."}, {t:"Begin lorazepam as monotherapy",c:false,fb:"A benzodiazepine is adjunctive for agitation/sleep but does not treat the manic episode."}], tp:"Acute mania: stop the antidepressant, start a mood stabilizer or SGA, and protect sleep."}, {topic:"Psychopharm & Med Emergencies",diff:"med",ref:"psychopharm_primer.md", q:"A 30-year-old man on fluoxetine is brought in 8 hours after a friend gave him tramadol for back pain. He is agitated and diaphoretic. Temperature is 39.1°C, heart rate 124. Exam shows hyperreflexia and inducible clonus, greater in the lower extremities. Which of the following is the most likely diagnosis?", o:[{t:"Serotonin syndrome",c:true,fb:"Correct — rapid onset after adding a serotonergic agent (tramadol), with hyperthermia, autonomic instability, and neuromuscular hyperexcitability (clonus, hyperreflexia). Stop the agents, supportive care, consider cyproheptadine."}, {t:"Neuroleptic malignant syndrome",c:false,fb:"NMS follows dopamine antagonists, evolves over days, and features
+- rigidity and bradyreflexia — not clonus/hyperreflexia."}, {t:"Anticholinergic toxicity",c:false,fb:"Anticholinergic toxidrome gives dry skin, absent bowel sounds, and normal reflexes — not diaphoresis with clonus."}, {t:"Malignant hyperthermia",c:false,fb:"Malignant hyperthermia is triggered by volatile anesthetics/succinylcholine, not oral serotonergics."}, {t:"Sympathomimetic intoxication",c:false,fb:"Stimulant toxicity can mimic this but lacks the prominent clonus/hyperreflexia and the clear serotonergic trigger."}], tp:"Serotonin syndrome = serotonergic trigger + hyperthermia + clonus/hyperreflexia (lower-limb predominant); NMS = dopamine blocker + rigidity + hyporeflexia over days."}, {topic:"Substance Use",diff:"easy",ref:"withdrawal.html", q:"A 52-year-old man admitted for pancreatitis becomes tremulous and diaphoretic on hospital day 2, with heart rate 116, blood pressure 168/98, and visual misperceptions. He reports drinking a pint of vodka daily until admission. Which of the following is the most appropriate management?", o:[{t:"Symptom-triggered benzodiazepine dosing with CIWA-Ar monitoring, plus thiamine",c:true,fb:"Correct — alcohol withdrawal: benzodiazepines (often CIWA-Ar–guided) are first-line, with thiamine to prevent Wernicke encephalopathy."}, {t:"Scheduled haloperidol",c:false,fb:"Antipsychotics lower the seizure threshold and do not treat the underlying GABA/glutamate dysregulation; they are at most adjunctive for agitation."}, {t:"Intravenous dextrose before any other intervention",c:false,fb:"Give thiamine before/with glucose in at-risk patients — a glucose load alone can precipitate Wernicke encephalopathy."}, {t:"Physical restraints and observation",c:false,fb:"Restraints do not treat withdrawal and can worsen autonomic arousal; pharmacologic treatment is needed."}, {t:"Clonidine monotherapy",c:false,fb:"Clonidine may blunt autonomic signs but does not prevent withdrawal seizures or delirium tremens."}], tp:"Alcohol withdrawal: benzodiazepines (CIWA-Ar–guided) first-line; give thiamine before glucose."}, {topic:"Delirium, Dementia & MCI",diff:"med",ref:"delirium.md", q:"A 78-year-old woman is inattentive and intermittently drowsy two days after hip surgery. Her family says she was cognitively intact at baseline; symptoms fluctuate and worsen at night. She is on oxycodone and diphenhydramine for sleep. Which of the following is the most appropriate first step?", o:[{t:"Identify and treat underlying causes and remove deliriogenic medications",c:true,fb:"Correct — acute, fluctuating inattention with altered arousal is delirium. First-line is to find and fix the cause (pain meds, anticholinergics, infection, metabolic) and use nonpharmacologic measures."}, {t:"Start a scheduled long-acting benzodiazepine",c:false,fb:"Benzodiazepines worsen delirium (except in alcohol/benzo withdrawal) and increase fall risk."}, {t:"Begin donepezil for cognitive decline",c:false,fb:"Cholinesterase inhibitors treat chronic dementia, not acute delirium, and have no role here."}, {t:"Obtain an outpatient neuropsychology referral",c:false,fb:"This is an acute medical problem requiring inpatient workup, not deferred testing."}, {t:"Reassure the family this is expected post-operative confusion and observe",c:false,fb:"Delirium signals an underlying disturbance and predicts poor outcomes; it requires active workup, not watchful waiting."}], tp:"Delirium is a medical emergency: treat the cause and stop deliriogenic drugs; avoid benzodiazepines unless withdrawal-related."}, {topic:"Psychiatric Emergencies",diff:"med",ref:"capacity.html", q:"A 60-year-old man with diabetes and a necrotic foot refuses a recommended amputation. He can describe the gangrene, the risk of fatal sepsis without surgery, the option of amputation, and explains he would rather risk death than lose his leg, citing consistent long-held values. He has no psychosis or cognitive deficit. Which of the following best describes his decision-making capacity?", o:[{t:"He has capacity to refuse the amputation",c:true,fb:"Correct — he demonstrates the four abilities (understanding, appreciation, reasoning, and a stable choice). Capacity is decision-specific; a
+- choice with intact reasoning is still a capacitated refusal."}, {t:"He lacks capacity because the refusal is medically dangerous",c:false,fb:"Capacity is about the process of decision-making, not whether the choice matches the medical recommendation."}, {t:"He lacks capacity and a guardian should consent to surgery",c:false,fb:"There is no impairment in the four abilities; overriding a capacitated refusal would violate autonomy."}, {t:"Capacity cannot be assessed without neuropsychological testing",c:false,fb:"Capacity is a clinical, decision-specific bedside determination, not a test score."}, {t:"He has capacity only if he agrees to surgery",c:false,fb:"Capacity does not depend on agreeing with the team; that reasoning is circular."}], tp:"Capacity is decision-specific and rests on four abilities; a high-risk refusal with intact reasoning is still capacitated."} ]; function App(){ var d=useState(null),data=d[0],setData=d[1]; var er=useState(null),err=er[0],setErr=er[1]; var S=useState({view:"config",len:20,diff:"all",mode:"tutor",timed:true,topics:[], items:[],picks:[],flags:{},idx:0,secs:0,total:0,result:null,saved:false,preview:false,revFilter:"missed"}); var st=S[0],setS=S[1]; function set(p){setS(function(prev){return Object.assign({},prev,p);});} useEffect(function(){ fetch("../question_bank.json").then(function(r){return r.json()}).then(setData).catch(function(){setErr("Could not load the question bank (question_bank.json).");}); },[]); // derive pool + topics once data lands var pool=[], preview=false, topicsAll=[]; if(data){ pool=bankPool(data); if(pool.length===0){ pool=SAMPLE.slice(); preview=true; } var seen={}; pool.forEach(function(it){seen[it.topic]=(seen[it.topic]||0)+1;}); topicsAll=Object.keys(seen).sort(function(a,b){return orderRank(a)-orderRank(b);}).map(function(t){return {t:t,n:seen[t]};}); } // default-select all topics on first data load useEffect(function(){ if(data && st.topics.length===0 && topicsAll.length){ set({topics:topicsAll.map(function(x){return x.t;}), preview:preview}); } },[data]); // exam timer useEffect(function(){ if(st.view!=="exam") return; var id=setInterval(function(){ setS(function(p){ if(p.view!=="exam") return p; if(p.timed){ if(p.secs ="1" && ev.key =q.o.length) return p; if(p.mode==="tutor" && p.picks[p.idx]!=null) return p; // locked after answering in tutor mode var picks=p.picks.slice(); picks[p.idx]=oi; return Object.assign({},p,{picks:picks}); }); } function canAdvance(){ if(st.mode==="tutor") return st.picks[st.idx]!=null; return true; } function advance(){ setS(function(p){ if(p.idx+1 0?Object.assign({},p,{idx:p.idx-1}):p;}); } function toggleFlag(){ setS(function(p){var f=Object.assign({},p.flags);f[p.idx]=!f[p.idx];return Object.assign({},p,{flags:f});}); } function grade(p){ var correct=0, byTopic={}; p.items.forEach(function(q,i){ var ci=correctIdx(q.o), ok=(p.picks[i]===ci && ci>=0); if(ok) correct++; var bt=byTopic[q.topic]=byTopic[q.topic]||{c:0,n:0}; bt.n++; if(ok)bt.c++; }); var secsUsed = p.timed? (p.total-p.secs) : p.secs; var res={n:p.items.length,correct:correct,pct:Math.round(100*correct/Math.max(1,p.items.length)),byTopic:byTopic,secs:secsUsed}; return Object.assign({},p,{view:"result",result:res}); } // Persistent, unconditional live region: same DOM node across every view (config/exam/result), // so a screen reader binds to it once and hears only the CONTENT change when a result lands. var resultMsg = (st.view==="result" && st.result) ? resultMsgFor(st.result.pct) : ""; var liveRegion = e("div",{className:"visually-hidden","aria-live":"polite","aria-atomic":"true"}, (st.view==="result" && st.result) ? (st.result.correct+" of "+st.result.n+" correct, "+st.result.pct+" percent. "+resultMsg) : ""); if(err) return e("div",{className:"wrap"},liveRegion,e("h1",null,"Shelf Mode"),e("div",{className:"card"},err)); if(!data) return e("div",{className:"wrap"},liveRegion,e("div",{className:"loading"},"Loading the question bank…")); // ---------------- CONFIG ---------------- if(st.view==="config"){ var L=loadLS(); var recent=(L.attempts||[]).slice(0,3); var avail=pool.filter(function(it){ var dd=normDiff(it.diff); if(dd==="review")return false; if(st.diff!=="all"&&dd!==st.diff)return false; return st.topics.indexOf(it.topic)>=0; }).length; var lens=[10,20,40].filter(function(n){return true;}); return e("div",{className:"wrap"}, liveRegion, e("h1",null,"Shelf Mode"), e("span",{className:"opt-pill"},"Optional practice · exam simulation"), e("div",{className:"sub"},"A timed, blueprint-weighted vignette set that mirrors the psychiatry COMAT / shelf. Choose your length, topics, and pacing. Single best answer, with feedback and a teaching point on every item."), preview? e("div",{className:"banner"},e("strong",null,"Preview mode. "),"The attested question bank didn
+- re back online for the full blueprint-weighted exam.") : null, e("div",{className:"card"}, e("div",{className:"field"}, e("label",{className:"h"},"Length"), e("div",{className:"seg"}, lens.map(function(n){ return e("button",{key:n,className:st.len===n?"on":"",onClick:function(){set({len:n})}}, n+" Q"); })) ), e("div",{className:"field"}, e("label",{className:"h"},"Difficulty"), e("div",{className:"seg"}, [["all","All"],["easy","Easy"],["med","Medium"],["hard","Hard"]].map(function(p){ return e("button",{key:p[0],className:st.diff===p[0]?"on":"",onClick:function(){set({diff:p[0]})}}, p[1]); })) ), e("div",{className:"field"}, e("label",{className:"h"},"Mode"), e("div",{className:"seg"}, e("button",{className:st.mode==="tutor"?"on":"",onClick:function(){set({mode:"tutor"})}},"Tutor — feedback after each"), e("button",{className:st.mode==="exam"?"on":"",onClick:function(){set({mode:"exam"})}},"Exam — feedback at end") ) ), e("div",{className:"field"}, e("label",{className:"h"},"Pacing"), e("div",{className:"seg"}, e("button",{className:st.timed?"on":"",onClick:function(){set({timed:true})}},"Timed · 1.5 min/Q"), e("button",{className:!st.timed?"on":"",onClick:function(){set({timed:false})}},"Untimed") ) ), e("div",{className:"field"}, e("label",{className:"h"},"Topics"), e("div",{className:"linkrow"}, e("button",{onClick:function(){set({topics:topicsAll.map(function(x){return x.t;})})}},"Select all"), e("button",{onClick:function(){set({topics:[]})}},"Clear") ), e("div",{className:"chips",style:{marginTop:"7px"}}, topicsAll.map(function(x){ var on=st.topics.indexOf(x.t)>=0; return e("button",{key:x.t,className:"chip"+(on?" on":""),onClick:function(){ var t=st.topics.slice(),i=t.indexOf(x.t); if(i>=0)t.splice(i,1); else t.push(x.t); set({topics:t}); }}, e("span",null,x.t), e("span",{className:"n"},x.n)); })) ), e("div",{className:"row between",style:{marginTop:"6px"}}, e("span",{className:"meta"}, avail+" item"+(avail===1?"":"s")+" available · drawing "+Math.min(st.len,avail)), e("button",{className:"btn primary",disabled:avail===0,onClick:startExam}, "Start "+Math.min(st.len,avail)+"-question set") ), e("div",{className:"kbd",style:{marginTop:"8px"}},"Tip: press 1–5 to answer, Enter to advance.") ), recent.length? e("div",{className:"card"}, e("label",{className:"h",style:{display:"block",marginBottom:"6px"}},"Recent attempts"), e("div",{className:"recent"}, recent.map(function(r,i){ return e("div",{className:"r",key:i}, e("span",null, r.at+" · "+(r.mode==="tutor"?"Tutor":"Exam")+(r.preview?" · sample":"")), e("span",null, r.correct+"/"+r.n+" ("+r.pct+"%)")); })) ):null, e("div",{className:"disc"},"Optional exam-prep simulation. Items are educational and use fictional composites only (no patient information). Verify management against current guidelines and your team. Progress is saved only in this browser. ",e("br"),"Joshua Moss, MD | Psychiatrist") ); } // ---------------- RESULT ---------------- if(st.view==="result"){ var R=st.result, msg=resultMsg; var bts=Object.keys(R.byTopic).sort(function(a,b){return orderRank(a)-orderRank(b);}); var revItems=st.items.map(function(q,i){return {q:q,i:i};}).filter(function(x){ if(st.revFilter==="all") return true; var ci=correctIdx(x.q.o); return st.picks[x.i]!==ci; }); if(!st.receipt){ var missedItems=st.items.map(function(q,i){return {q:q,i:i};}).filter(function(x){ var ci=correctIdx(x.q.o); return st.picks[x.i]!==ci; }); var weakTopic=null; bts.forEach(function(t){ var b=R.byTopic[t]; var pc=b.c/Math.max(1,b.n); if(b.n>=2&&(weakTopic===null||pc<weakTopic.pc)) weakTopic={t:t,pc:pc}; }); st.receipt=cwReceipt({ tool:
 - Nothing to review — every item correct.
 - Joshua Moss, MD | Psychiatrist · Educational simulation; fictional composites only. Verify management against current guidelines.
 - End this set and discard progress?
@@ -1533,150 +1610,3 @@ Based on articles retrieved from PubMed (National Library of Medicine). Citation
 1. Heckers S, Walther S. Catatonia. *N Engl J Med*. 2023;389(19):1797-1802. [DOI: 10.1056/NEJMra2116304](https://doi.org/10.1056/NEJMra2116304)
 2. Rogers JP, Zandi MS, David AS. The diagnosis and treatment of catatonia. *Clin Med (Lond)*. 2023;23(3):242-245. [DOI: 10.7861/clinmed.2023-0113](https://doi.org/10.7861/clinmed.2023-0113)
 3. Bush G, Fink M, Petrides G, Dowling F, Francis A. Catatonia. I. Rating scale and standardized examination. *Acta Psychiatr Scand*. 1996;93(2):129-136. [DOI: 10.1111/j.1600-0447.1996.tb09814.x](https://doi.org/10.1111/j.1600-0447.1996.tb09814.x)
-
-
----
-
-## Borderline Personality Disorder (Aug 27)
-
-- **Slug:** `cotw_20260827_bpd_ms3.md` · **Type:** md · **Sidebar:** listed
-- **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-08-27_borderline-personality-disorder_MS3.md`
-- **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 1,919 words
-
-<!-- topic_meta overlay -->
-#### Structured metadata (`topic_meta.json` → this page)
-
-> est. read 10 min · safetyLevel=`moderate` · cotwLevel=`ms3` (2026-08-27)
-
-**TL;DR (shown above the page text):**
-
-> A third admission, a five-drug regimen, and a 'treatment-resistant bipolar' label that was never right - BPD is diagnosed from the longitudinal pattern, treated definitively with psychotherapy, and managed on a chronic vs. acute-on-chronic risk frame.
-
-**Key points (bulleted card):**
-
-- ~20-30 minute small-group discussion - no pre-reading required.
-- De-identified synthetic case; each discussion question is paired with a teaching point.
-- MS3 / Step 2 CK level. Facilitator notes are kept separate from the learner-facing stem.
-
-**Clinical-workflow narration (per-stage coaching text):**
-
-- **ask** — Work the stem cold: take your own history, commit to a differential, and name your next step before reading a single teaching point. The guided questions are written to be answered, not skimmed.
-- **mse** — Say out loud what each exam finding in the vignette rules in and rules out — the discrimination between look-alike syndromes is what the case is drilling.
-- **safety** — Safety content in every case is oriented to recognition, escalation, and safety planning. Escalate to your supervising resident or attending rather than managing acuity alone.
-- **say** — Before moving on, rehearse one sentence you would actually say to this patient or family, in plain language and out loud.
-- **collateral** — Ask yourself what collateral would change your differential here, and who you would have to call to get it.
-- **rounds** — Use the ranked differential and the workup-and-management ladder as the spine of your presentation; lead with the finding that changes management.
-- **exam** — Shelf-level takeaway: A third admission, a five-drug regimen, and a 'treatment-resistant bipolar' label that was never right - BPD is diagnosed from the longitudinal pattern, treated definitively with psychotherapy, and managed on a chronic vs. acute-on-chronic risk frame.
-- **actions** — All Case of the Week cases
-
-**Cross-references and tagging:**
-
-- **Workflow stages:** `diagnosis`, `safety`, `treatment`, `communication`, `team`, `exam`
-- **Shelf blueprint tags:** `personality`, `safety`
-- **EPA crosswalk:** `EPA1`, `EPA2`, `EPA10`
-- **Faculty review:** {"status": "pending", "reviewer": "Joshua Moss, MD", "lastReviewed": "2026-08-27"}
-
-#### Page text (as shipped)
-
-# Case of the Week — August 27, 2026 (MS3 Edition)
-
-## Borderline Personality Disorder: Presentation & Management
-
-> **De-identified synthetic teaching case.** This case is a fictional composite created for teaching. It contains no real patient details. Citations below are based on articles retrieved from PubMed; DOI links are provided in the reference list.
->
-> **Learner level:** MS3 (psychiatry clerkship) · **Format:** ~20–30 minute guided discussion · **Framing:** USMLE Step 2 CK–relevant
-
----
-
-# PART 1 — LEARNER-FACING CASE
-
-## Case Stem
-
-Ms. J is a 22-year-old college student brought to the emergency department by her roommate after the roommate found superficial self-inflicted injuries on Ms. J's forearm. This occurred about an hour after Ms. J's partner of three months ended their relationship by text. Ms. J tells you, "I don't even know who I am without her. Everyone always leaves me."
-
-On interview, she describes intense mood shifts that last "a few hours, maybe a day" — she can go from "fine" to "devastated or furious" in response to arguments, perceived slights, or unanswered messages. She describes chronic feelings of emptiness, a long pattern of relationships that begin as "perfect" and collapse within months, and impulsive behaviors when upset (binge spending, episodic heavy drinking, texting "hundreds of times" when she fears someone is pulling away). She has had passing thoughts that "everyone would be better off without me" during past crises, and tonight had similar thoughts, which she says faded after her roommate arrived. She denies a current wish to die, denies any plan or preparation, and is asking for help "feeling less out of control."
-
-She was told at age 19 that she "might be bipolar" after a similar crisis, and briefly took quetiapine, which she stopped because of sedation. She has never had a period of days of persistently elevated mood, decreased need for sleep, or increased goal-directed activity. She drinks 4–6 drinks on weekend nights, denies other substance use, and takes no current medications. Vital signs are normal; the forearm injuries require only simple dressing. She is alert, cooperative, tearful then briefly irritable when discharge logistics are raised, with linear thought process and no psychotic symptoms.
-
-## Discussion Questions (learner version)
-
-1. Ms. J's mood is clearly unstable. What features of her history point toward borderline personality disorder (BPD) rather than bipolar disorder?
-2. What is BPD, and how is the diagnosis actually made? Should you share the diagnosis with her tonight?
-3. What is your ranked differential diagnosis, and which co-occurring conditions should you actively screen for?
-4. How do you assess her suicide risk tonight, and what is the difference between her *chronic* risk and her *acute-on-chronic* risk?
-5. What is the first-line treatment for BPD, and what role — if any — do medications play?
-6. What is an appropriate disposition from the ED tonight, and how would you communicate the plan to Ms. J in a way that is validating rather than dismissive?
-
----
-
-# PART 2 — FACILITATOR GUIDE (not for learner distribution)
-
-## Discussion Questions with Teaching Points
-
-**Q1. Why BPD rather than bipolar disorder?**
-*Teaching point:* The key discriminator is the **time course and trigger pattern of mood shifts**. BPD mood instability (*affective instability* — rapid, reactive mood shifts) lasts hours to a day or two and is almost always **interpersonally triggered** (rejection, perceived abandonment). Bipolar mood episodes are **sustained** (≥4–7 days for hypomania/mania, weeks for depression), often arise without a clear trigger, and include changes in sleep need, energy, and goal-directed activity. Ms. J has never had a sustained elevated-mood episode. A "bipolar" label given during a crisis, without sustained episodes, should prompt re-examination — misdiagnosis is common and leads to ineffective medication trials [1,2].
-
-**Q2. What is BPD and how is it diagnosed?**
-*Teaching point:* BPD affects roughly 0.7–2.7% of adults and is characterized by instability in **identity, relationships, and affect**, plus impulsivity, intense anger, chronic emptiness, frantic efforts to avoid abandonment, recurrent suicidal or self-injurious behavior, and transient stress-related paranoid ideation or dissociation (feeling unreal or detached) [1]. Diagnosis is **clinical**, made by structured or semistructured interview showing a pervasive, persistent pattern (DSM-5-TR: ≥5 of 9 criteria) beginning by early adulthood — not by any lab or imaging test. Onset is typically in adolescence, and earlier recognition allows earlier effective treatment [2]. **Yes — share the working diagnosis.** Naming BPD (with psychoeducation: explaining the illness model in plain language) is respectful, reduces confusion from serial mislabels, and is the gateway to effective therapy. Frame it as a treatable disorder with a hopeful trajectory.
-
-**Q3. Ranked differential and comorbidity screening.**
-*Teaching point:* Comorbidity is the rule in BPD — mood disorders ~83%, anxiety disorders ~85%, substance use disorders ~78% among people with BPD [1] — so the question is usually "BPD *and* what else," not "BPD *or*." Screen actively for depression, PTSD/trauma history, alcohol and other substance use, and eating pathology. (Full ranked differential below.)
-
-**Q4. Suicide risk assessment: chronic vs. acute-on-chronic.**
-*Teaching point:* People with BPD often carry **chronically elevated** risk (recurrent suicidal thoughts and self-injury over years). What demands escalation is an **acute-on-chronic spike**: new or intensifying wish to die, a plan or preparatory behavior, command hallucinations, intoxication, a major loss, or a recent serious attempt. Tonight: ask directly about current suicidal ideation, intent, plan, access to lethal means; gather collateral from the roommate; and complete **safety planning** — a structured, collaborative list of warning signs, internal coping strategies, social contacts, professional contacts, and steps to make the environment safer (lethal-means counseling), plus crisis contacts. Self-injury without suicidal intent (common in BPD, often serving emotion-regulation) must still be taken seriously but is distinct from a suicide attempt; document the distinction. When risk is acute, escalate: one-to-one observation, psychiatric consultation, and consideration of admission [1,2].
-
-**Q5. First-line treatment.**
-*Teaching point:* **Psychotherapy is the treatment of choice** — the Step 2 CK answer. Structured therapies such as **dialectical behavior therapy (DBT)** (a skills-based cognitive-behavioral therapy targeting emotion regulation, distress tolerance, and interpersonal effectiveness) and psychodynamic therapies (e.g., mentalization-based treatment) reduce BPD severity with medium effect sizes versus usual care [1,3]. **No medication reliably improves core BPD symptoms**, and none is FDA-approved for BPD [1]. Medications are reserved for (a) discrete comorbid disorders (e.g., SSRIs for major depression) and (b) short-term crisis management, where low-dose antipsychotics or sedative antihistamines are preferred and **benzodiazepines are avoided** (disinhibition, misuse risk) [1]. Avoid accumulating polypharmacy from serial crises.
-
-**Q6. Disposition and communication.**
-*Teaching point:* If acute risk is manageable (ideation without intent or plan, engaged with safety planning, sober, with social support and follow-up), brief ED stabilization and structured outpatient referral is often *better* care than reflexive admission — long nonspecific hospitalizations can be iatrogenic (regression, reinforcement of crisis-driven care), though brief admission is appropriate for acute-on-chronic escalation. Communicate with **validation + structure**: acknowledge that her distress is real and severe, name the diagnosis and its treatability, set the expectation that therapy is the definitive treatment, and give concrete next steps (referral, safety plan in hand, crisis line, return precautions). Expect and tolerate brief anger without withdrawing care — consistency is therapeutic. Prognosis is genuinely hopeful: most patients achieve symptomatic remission over years, though functional recovery lags and requires treatment [1,2].
-
-## Ranked Differential Diagnosis
-
-1. **Borderline personality disorder** — pervasive pattern of abandonment fear, unstable relationships and identity, reactive affect lasting hours, chronic emptiness, recurrent self-injury in interpersonal crises. Best fit.
-2. **Bipolar II disorder** — argued against by absence of any sustained hypomanic episode; mood shifts here are hour-scale and interpersonally cued. The most common mislabel in this population [1,2].
-3. **Major depressive disorder (current episode)** — screen for persistent ≥2-week neurovegetative syndrome; may coexist and would change medication calculus.
-4. **PTSD / trauma-related disorder** — high overlap with BPD; screen for trauma history, intrusions, avoidance, hyperarousal.
-5. **Alcohol use disorder** — weekend binge pattern warrants AUDIT-C and brief intervention; intoxication amplifies impulsivity and suicide risk.
-
-## Workup & Management (ED-appropriate)
-
-- **Workup:** History + collateral; focused exam and wound care; pregnancy test if applicable; blood alcohol level/urine toxicology when intoxication is possible; TSH and basic labs if mood workup is being initiated; no imaging or "BPD labs" — diagnosis is clinical [1].
-- **Tonight:** Direct suicide risk assessment; collaborative safety plan with lethal-means counseling; brief psychoeducation naming BPD as treatable; avoid starting a benzodiazepine; if a crisis medication is truly needed, a one-time low-dose antipsychotic or sedative antihistamine is preferred [1].
-- **Bridge:** Referral to structured psychotherapy (DBT or equivalent evidence-based program); treat comorbid depression/AUD on their own merits; discourage polypharmacy; schedule near-term follow-up and provide crisis contacts.
-
-> <div class="crisis-block-hook" hidden></div>
->
-> ### If someone is in crisis
->
-> On the unit, a patient in immediate danger is an escalation to your supervising resident or attending and the charge nurse — not a phone call. These lines are what you put IN a patient's safety plan, what families use after discharge, and what you can use yourself.
->
-> - **988 Suicide & Crisis Lifeline** — Call or text 988. Chat at chat.988lifeline.org. 24/7, free, confidential. Spanish available by call, text, and chat; a dedicated line serves Deaf/Hard-of-Hearing callers. Calls placed in Maine route to Maine crisis specialists.
-> - **Crisis Text Line** — Text HOME to 741741. Text HOLA to 741741 for Spanish. 24/7, free. Text-only. Often the most acceptable option for adolescents and young adults who will not make a phone call.
-> - **Maine Crisis Line** — 1-888-568-1112. Text and chat available via the Maine Crisis Line website. 24/7. Staffed by clinically trained crisis workers and the gateway to Maine's mobile crisis teams — the number that actually dispatches a face-to-face response.
-> - **Veterans Crisis Line** — Dial 988 then press 1. Text 838255. 24/7. No VA enrollment required. Ask about service history — it changes which line is the right referral.
-> - **Emergency services** — 911. 24/7. For imminent danger to life.
->
-> *Contacts verified 2026-07-27 against official sources. Maintained in `crisis_resources.json`; do not edit these numbers inline.*
-
-## Facilitator Notes
-
-- **Timing (25 min):** Stem read-aloud 3 min → Q1–Q3 ~10 min (diagnosis/differential) → Q4 ~6 min (risk) → Q5–Q6 ~6 min (treatment/disposition).
-- **Common learner pitfalls:** (1) equating any mood lability with bipolar disorder; (2) treating self-injury as automatically equal to a suicide attempt (or, conversely, dismissing it); (3) believing admission is always the safest choice; (4) "there's a pill for this" — reinforce psychotherapy-first; (5) hesitance to name the diagnosis to the patient.
-- **Tone modeling:** Demonstrate validating language ("It makes sense that a breakup felt unbearable given how hard you fight to keep people close") paired with clear limits and a concrete plan. Learners imitate what they hear.
-- **Safety framing:** Keep discussion of self-injury at the level of recognition, risk stratification, escalation, and safety planning — do not elaborate on methods.
-
----
-
-## References
-
-Based on articles retrieved from PubMed. Citation fields (journal, year, volume/issue/pages, PMID, DOI) verified via PubMed metadata.
-
-1. Leichsenring F, Heim N, Leweke F, Spitzer C, Steinert C, Kernberg OF. Borderline Personality Disorder: A Review. *JAMA*. 2023;329(8):670-679. PMID: 36853245. [DOI: 10.1001/jama.2023.0589](https://doi.org/10.1001/jama.2023.0589)
-2. Bohus M, Stoffers-Winterling J, Sharp C, Krause-Utz A, Schmahl C, Lieb K. Borderline personality disorder. *Lancet*. 2021;398(10310):1528-1540. PMID: 34688371. [DOI: 10.1016/S0140-6736(21)00476-1](https://doi.org/10.1016/S0140-6736(21)00476-1)
-3. Storebø OJ, Stoffers-Winterling JM, Völlm BA, et al. Psychological therapies for people with borderline personality disorder. *Cochrane Database Syst Rev*. 2020;5(5):CD012955. PMID: 32368793. [DOI: 10.1002/14651858.CD012955.pub2](https://doi.org/10.1002/14651858.CD012955.pub2)
-
----
-
-*Prepared for the Psychiatry Clerkship — Case of the Week series. Joshua Moss, MD | Psychiatrist*

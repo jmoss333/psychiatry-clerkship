@@ -165,7 +165,7 @@ Twenty trials and analyses that shaped modern prescribing, ranked by impact. Pap
 
 **Can't-miss / red-flag line:**
 
-> Clozapine-associated constipation can progress to a fatal ileus — a bowel regimen is part of the prescription; and smoking cessation induces CYP1A2, so a patient who quits at admission may need a dose decrease, not an increase.
+> Clozapine-associated constipation can progress to a fatal ileus — a bowel regimen is part of the prescription; and smoking induces CYP1A2, so a patient who quits at admission loses that induction, clozapine levels rise, and they may need a dose decrease, not an increase.
 
 **Clinical-workflow narration (per-stage coaching text):**
 
@@ -567,7 +567,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 
 **TL;DR (shown above the page text):**
 
-> Track metabolic health for every patient on an antipsychotic — weight, glucose, and lipids at baseline, 12 weeks, and annually — and know the dietary safety points for lithium, MAOIs, and grapefruit/CYP3A4.
+> Track metabolic health for every patient on an antipsychotic — weight monthly for the first 3 months then quarterly, glucose and lipids at baseline and 12 weeks then per schedule — and know the dietary safety points for lithium, MAOIs, and grapefruit/CYP3A4.
 
 **Key points (bulleted card):**
 
@@ -997,7 +997,7 @@ Substance use, medication adherence, lifestyle/metabolic change, follow-up engag
 **Key points (bulleted card):**
 
 - Behavioral activation is the highest-yield, lowest cognitive-demand inpatient move for the withdrawn anhedonic patient — it works by scheduling one small valued activity, not by asking a depressed person to think their way out.
-- Psychoeducation has the strongest inpatient numbers: readmission NNT 5, relapse NNT 9 — give it as a conversation with family looped in, not a packet dump.
+- Psychoeducation has strong inpatient numbers — readmission NNT 5, relapse NNT 9 (Xia 2011 Cochrane; limited-quality hospital-based trials, and the reviewers judge the true effect likely smaller) — give it as a conversation with family looped in, not a packet dump.
 - Safety planning with follow-up reduces suicidal behaviors by approximately 50%; no-suicide contracts have no evidence and create false reassurance — abandon them.
 
 **Can't-miss / red-flag line:**

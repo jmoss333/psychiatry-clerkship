@@ -3,7 +3,7 @@
 # RESIDENT curriculum — complete content transcript for clinical review
 
 **Site:** `mmc-psychiatry-residents-sanford` · **Audience:** Residents — MMC/Sanford psychiatry residents
-**Generated:** 2026-09-02 from build `e844b6b` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
+**Generated:** 2026-09-02 from build `2f21c32` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
 
 ## Who this is for
 
@@ -86,7 +86,7 @@ High-yield places to concentrate: the `topic_meta` **can't-miss**, **rule-out** 
 
 # RESIDENT · Navigation map
 
-Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-02 @ `e844b6b`.
+Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-02 @ `2f21c32`.
 
 ## Orientation  *(pinned)*
 
@@ -4967,7 +4967,7 @@ and [responding to guardedness without escalating it](?tool=communication-practi
 
 **TL;DR (shown above the page text):**
 
-> SSRIs/SNRIs plus exposure-based therapy are first-line across anxiety, OCD, and PTSD — standing benzodiazepines are a trap on the unit.
+> SSRIs plus exposure-based therapy are first-line across anxiety, OCD, and PTSD (SNRIs are alternatives for anxiety disorders and PTSD, not OCD) — standing benzodiazepines are a trap on the unit.
 
 **Key points (bulleted card):**
 
@@ -5480,7 +5480,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 
 - Postpartum psychosis typically appears in the first 1–4 weeks, recurs in 30–50% of subsequent deliveries, and is bipolar-spectrum until proven otherwise — screen for prior mania.
 - The EPDS screens for depression, not psychosis — ask directly about delusions and perceptual disturbance, and screen for manic symptoms separately.
-- Stopping maintenance medication in bipolar disorder roughly doubles postpartum relapse risk — 'stop everything' is itself a high-risk clinical decision.
+- Stopping maintenance medication in bipolar disorder nearly triples postpartum relapse risk (~66% off medication vs ~23% on prophylaxis) — 'stop everything' is itself a high-risk clinical decision.
 
 **Can't-miss / red-flag line:**
 
@@ -8272,7 +8272,7 @@ Serotonin syndrome, NMS, lithium toxicity, and a prolonging QTc are all **"tell 
 
 **Key points (bulleted card):**
 
-- Document the reasoning behind risk and observation level, not just a score — most patients who die by suicide screen low-risk at last contact.
+- Document the reasoning behind risk and observation level, not just a score — risk categorisation has poor predictive value, and about half of suicide deaths occur in patients last classified low-risk.
 - An involuntary hold is not authorization to medicate over objection; non-emergency forced medication needs its own legal/administrative process.
 - Disposition starts at admission: least-restrictive level of care, a dated follow-up ≤7 days, a warm handoff, and problem-solving boarding/housing/guardianship.
 
@@ -8522,7 +8522,7 @@ Twenty trials and analyses that shaped modern prescribing, ranked by impact. Pap
 
 **Can't-miss / red-flag line:**
 
-> Clozapine-associated constipation can progress to a fatal ileus — a bowel regimen is part of the prescription; and smoking cessation induces CYP1A2, so a patient who quits at admission may need a dose decrease, not an increase.
+> Clozapine-associated constipation can progress to a fatal ileus — a bowel regimen is part of the prescription; and smoking induces CYP1A2, so a patient who quits at admission loses that induction, clozapine levels rise, and they may need a dose decrease, not an increase.
 
 **Clinical-workflow narration (per-stage coaching text):**
 
@@ -8924,7 +8924,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 
 **TL;DR (shown above the page text):**
 
-> Track metabolic health for every patient on an antipsychotic — weight, glucose, and lipids at baseline, 12 weeks, and annually — and know the dietary safety points for lithium, MAOIs, and grapefruit/CYP3A4.
+> Track metabolic health for every patient on an antipsychotic — weight monthly for the first 3 months then quarterly, glucose and lipids at baseline and 12 weeks then per schedule — and know the dietary safety points for lithium, MAOIs, and grapefruit/CYP3A4.
 
 **Key points (bulleted card):**
 
@@ -9354,7 +9354,7 @@ Substance use, medication adherence, lifestyle/metabolic change, follow-up engag
 **Key points (bulleted card):**
 
 - Behavioral activation is the highest-yield, lowest cognitive-demand inpatient move for the withdrawn anhedonic patient — it works by scheduling one small valued activity, not by asking a depressed person to think their way out.
-- Psychoeducation has the strongest inpatient numbers: readmission NNT 5, relapse NNT 9 — give it as a conversation with family looped in, not a packet dump.
+- Psychoeducation has strong inpatient numbers — readmission NNT 5, relapse NNT 9 (Xia 2011 Cochrane; limited-quality hospital-based trials, and the reviewers judge the true effect likely smaller) — give it as a conversation with family looped in, not a packet dump.
 - Safety planning with follow-up reduces suicidal behaviors by approximately 50%; no-suicide contracts have no evidence and create false reassurance — abandon them.
 
 **Can't-miss / red-flag line:**
@@ -12426,36 +12426,76 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Skip to content Practice Questions
 - Loading question bank…
 
-**Authored clinical strings (99):**
+**Authored clinical strings (228):**
 
 - s toolExtraFromParams passthrough (spa_index.html) — no shell change needed to reach this tool
-- s inject_shared_snippets() expands at build time (same mechanism as crisis blocks). Grades are the strings
-- . Semantics: ease floor 1.3, Easy ease ceiling 4.0, interval cap 365 d, lapse halves the interval (min 1 d) and re-dues the card immediately. Requires `var DAY = 86400000` in scope. Behaviour is pinned by tests/sm2-behavior.test.mjs; consumer wiring is pinned by tests/family-srs-parity.test.mjs. applyGrade(card, grade, opts) — opts is optional; opts.fuzzKey (string, usually the card id) enables deterministic ±15% interval fuzz (see sm2Fuzz below) so cohort-seeded cards de-synchronize instead of avalanching due on the same day. Omitting opts (or fuzzKey) is byte-identical to the pre-fuzz grader — every existing caller keeps its exact legacy schedule until it opts in. cw_srs_v1 STATS CONTRACT — who may write stats.seen / stats.correct: - question-bank-practice.html srsUpdate(): YES (ground-truth correctness). - review.html grade(): YES (ground-truth correctness). - family-systems-practice.html srsGradeFamily(): NO — cards only. A self-rating has no ground truth, and review.html renders Retention as correct/seen. - Practice sims write cw_practice_events_v1 instead — never cw_srs_v1.stats. Per-event history (chosen grade vs. suggested grade, requeue flag) is a separate concern logged to cw_calib_v1 via calibLog() (build-injected from calib_log.js, the CALIB_LOG marker) — this file
-- s own bounds. */ function sm2Fuzz(ivl, key, reps){ if(ivl < 3 || !key) return ivl; var h = 2166136261, s = key +
-- + reps; for(var i=0;i >> 0; } var f = ((h % 2001) / 1000) - 1; /* [-1, 1] */ return Math.min(365, Math.max(1, Math.round(ivl + ivl * 0.15 * f))); } function applyGrade(card, grade, opts){ /* SM-2 variant: ease floor 1.3, interval cap 365 d */ var c = Object.assign({}, card); var fuzzKey = opts && opts.fuzzKey; c.reps = (c.reps||0) + 1; if(c.ivl===0){ /* first encounter */ if(grade===
-- ){ c.lapses=(c.lapses||0)+1; c.ivl=1; c.due=Date.now(); } else if(grade===
-- ){ c.ivl=1; c.due=Date.now()+DAY; } else if(grade===
-- ){ c.ivl=1; c.due=Date.now()+DAY; } else { c.ivl=sm2Fuzz(4, fuzzKey, c.reps); c.due=Date.now()+c.ivl*DAY; } /* Easy */ } else { if(grade===
-- ){ /* Again is never fuzzed — lapses re-due immediately regardless of fuzzKey. */ c.lapses=(c.lapses||0)+1; c.ease=Math.max(1.3, (c.ease||2.5)-0.2); c.ivl=Math.max(1, Math.round(c.ivl*0.5)); c.due=Date.now(); } else if(grade===
-- ){ c.ease=Math.max(1.3, (c.ease||2.5)-0.15); c.ivl=Math.max(1, Math.round(c.ivl*1.2)); c.ivl=sm2Fuzz(c.ivl, fuzzKey, c.reps); c.due=Date.now()+Math.min(365,c.ivl)*DAY; } else if(grade===
-- ){ c.ivl=Math.max(1, Math.round(c.ivl*(c.ease||2.5))); c.ivl=Math.min(365,c.ivl); c.ivl=sm2Fuzz(c.ivl, fuzzKey, c.reps); c.due=Date.now()+c.ivl*DAY; } else { /* Easy */ c.ease=Math.min(4, (c.ease||2.5)+0.15); c.ivl=Math.max(1, Math.round(c.ivl*(c.ease)*1.3)); c.ivl=Math.min(365,c.ivl); c.ivl=sm2Fuzz(c.ivl, fuzzKey, c.reps); c.due=Date.now()+c.ivl*DAY; } } c.last=Date.now(); return c; } /* Calibration ledger cw_calib_v1 — append-only judgment-vs-outcome history. Enum fields + existing ids ONLY; no free text ever (PHI firewall is structural). cw_qb_v1 stays the current-state store; this is the history store; no reader joins both into one number (spec: 2026-08-05-shared-state-spine-design.md). Writers: qbank qbRecord (re flag), review.html grade() (sug/rq). cw_practice_events_v1 remains reserved for sim process events — a different thing. */ function calibLog(evt){ try{ var S={qb:[
-- ]}; if(!evt || !S[evt.s] || S[evt.s].indexOf(evt.p)<0) return; var d=null; try{ d=JSON.parse(localStorage.getItem(
-- ); }catch(_e){ d=null; } if(!d || d.v!==1 || !Array.isArray(d.qb) || !Array.isArray(d.rev)) d={v:1,qb:[],rev:[]}; var ring=d[evt.s===
-- ]; ring.push(evt); while(ring.length>400) ring.shift(); localStorage.setItem(
-- , JSON.stringify(d)); }catch(_){ } } function calibRead(){ try{ var d=JSON.parse(localStorage.getItem(
-- ); if(d && d.v===1 && Array.isArray(d.qb) && Array.isArray(d.rev)) return d; }catch(_){ } return {v:1,qb:[],rev:[]}; } function calibClear(){ try{ localStorage.removeItem(
-- ); }catch(_){ } } /* Qbank session capsule cw_sess_v1 — per-tool checkpoint store for an interrupted session. Checkpointed at question boundaries only (advance/skip), never mid-question — the caller
-- s (design spec §PR-3). sessLoad owns load-validate-expire so two hand-rolled expiry copies can
-- s home Resume row (read-only; guards queueIds/idx shape itself since sessLoad only validates expiry). */ function sessLoad(tool, nowMs){ try{ var d=JSON.parse(localStorage.getItem(
-- ); if(!d || d.v!==1 || !d.sessions || typeof d.sessions!==
-- ) return null; var s=d.sessions[tool]; if(!s || typeof s!==
-- ){ return null; } var now=(nowMs===undefined||nowMs===null)?Date.now():nowMs; if(typeof s.expiresAt!==
-- || now>s.expiresAt){ delete d.sessions[tool]; localStorage.setItem(
-- , JSON.stringify(d)); return null; } return s; }catch(_){ return null; } } function sessSave(tool, session){ try{ var d=JSON.parse(localStorage.getItem(
-- ) d={v:1,sessions:{}}; d.sessions[tool]=session; localStorage.setItem(
-- , JSON.stringify(d)); }catch(_){ } } function sessClear(tool){ try{ var d=JSON.parse(localStorage.getItem(
-- ) return; delete d.sessions[tool]; localStorage.setItem(
-- , JSON.stringify(d)); }catch(_){ } } function srsUpdate(item, confidence, correct, twoTierResult){ var s = srsLoad(); var cardId =
+- s next step. */ var BLOCK_REQUEST = (function(){ try{ var sp=new URLSearchParams(location.search); if(sp.get(
+- ) return null; var n=parseInt(sp.get(
+- ,10); if(!(n>=1&&n<=50)) n=5; var cat=sp.get(
+- ; return {n:n, cat:/^[a-z]+$/.test(cat)?cat:
+- }; }catch(_){ return null; } })(); var CAT_LABELS = { mood:
+- }; var SUBTYPE_LABELS = {
+- }; /* ---- utilities ---------------------------------------------------------------- */ function esc(s){ return String(s||
+- ); } function shuffle(arr){ var a=arr.slice(),i=a.length,j,t; while(i--){j=Math.floor(Math.random()*(i+1));t=a[i];a[i]=a[j];a[j]=t;} return a; } function readReviewContext(){ var sp = new URLSearchParams(location.search); var reviewItem = sp.get(
+- ; var reviewKey = sp.get(
+- ; var reviewToken = sp.get(
+- ).length !== 1 || sp.getAll(
+- ).length !== 1) return null; if(!/^qb_[a-z]+_[0-9]{3}$/.test(reviewItem)) return null; if(reviewKey !==
+- + reviewItem) return null; if(!/^[0-9a-f]{32}$/.test(reviewToken)) return null; return Object.freeze({reviewItem:reviewItem, reviewKey:reviewKey, reviewToken:reviewToken}); } function postReviewItemStatus(status){ if(!REVIEW_CONTEXT || [
+- ].indexOf(status) < 0) return; window.parent.postMessage({ type:
+- , reviewKey:REVIEW_CONTEXT.reviewKey, reviewToken:REVIEW_CONTEXT.reviewToken, reviewItem:REVIEW_CONTEXT.reviewItem, status:status, surface:
+- }, location.origin); } /* ---- localStorage helpers ----------------------------------------------------- */ function lsGet(k){ try{return JSON.parse(localStorage.getItem(k)||
+- );}catch(_){return null;} } function lsSet(k,v){ try{localStorage.setItem(k,JSON.stringify(v));}catch(_){} } /* ---- cw_qb_v1 response store -------------------------------------------------- */ function qbLoad(){ return lsGet(
+- )||{}; } function qbSave(data){ lsSet(
+- ,data); } function qbRecord(item, key, tier2Key, confidence, correct, twoTierResult){ var data = qbLoad(); var prev = data[item.id]; var re = (prev && prev.ts && (new Date(prev.ts)).toDateString() === (new Date()).toDateString()) ? 1 : 0; var rec = { id: item.id, key: key, tier2Key: tier2Key||null, confidence: confidence, correct: correct, pages: item.pages||[], ts: Date.now() }; if(confidence===
+- && !correct) rec.certWrong = true; data[item.id] = rec; qbSave(data); calibLog({s:
+- ,id:item.id,pages:item.pages||[],p:confidence,a:correct?1:0,t2:twoTierResult||null,re:re,ts:Date.now()}); return rec; } /* ---- cw_srs_v1 SRS seeding + grading ----------------------------------------- */ function srsLoad(){ var s = lsGet(
+- ); if(!s||s.v!==1){ s={v:1,cards:{},day:{lastDay:
+- ,newToday:0}, stats:{streak:0,lastStudy:
+- ,totalReviews:0,correct:0,seen:0}, settings:{newPerDay:12}}; } return s; } function srsSave(s){ lsSet(
+- ,s); } function srsGrade(item, confidence, correct, twoTierResult){ /* Map confidence×correct to SM-2 grade, respecting two-tier shaky cap */ if(!correct) return
+- ; /* cap: right answer, wrong reason */ if(confidence===
+- ; /* guess + correct = Hard (lucky guess ≠ mastery) */ return
+- ; } var DAY = 86400000; /* ==== Canonical SM-2 grader (build-injected — do not edit inside consumer files) ==== Source of truth: 13_Faculty_Resources/_automation/site_build/sm2_apply_grade.js. Consumers carry a SM2_APPLY_GRADE marker comment that common.py
+- s cw_srs_v1 writes stay aggregate/current-state only and are unaffected by that logging. */ /* Deterministic ±15% interval fuzz (opts.fuzzKey): de-synchronizes cohort-seeded cards so due-load avalanches spread out. No fuzzKey (legacy callers) = no fuzz. Also a no-op below ivl 3 d (too short to meaningfully fuzz). Always clamped to [1, 365] regardless of the input interval
+- t drift between the two consumers; an expired or malformed per-tool entry is pruned from the store on load, not just hidden, so a stale slot never lingers past its own read. Consumers: question-bank-practice.html (checkpointSession/ tryResumeSession — writer + authoritative resume) and the shell
+- s progress on Today) and by the session receipt inside a tool (to mark the step that just finished and offer the next one). Injected via /*__BLOCK_STORE__*\/ so the shell and every tool share one implementation. Shape: {v:1, minutes, createdAt, steps:[{kind:
+- , ref, title, min, n?, cat?, done?, doneAt?}]}. A page step is never marked here — its done state is derived from cw_progress_v1 at render time, so ticking the page anywhere counts. A block older than CW_BLOCK_TTL_MS is pruned on load: a plan built for one morning
+- s own primary (spec.actions) beside "Back to Today"; 3. marks the tool
+- s openPage message — a plain href would be caught by the in-iframe interceptor and lose its query, so the delegated listener below posts the full route instead; outside an iframe it falls back to a real navigation. */ function cwReceiptEsc(s){ return String(s===undefined||s===null?
+- ); } function cwReceiptLocalDay(nowMs){ var d=new Date(nowMs), m=d.getMonth()+1, day=d.getDate(); return d.getFullYear()+
+- )+day; } /* Writes the legacy {done:true,at} entry the front door reads. Returns true only when this call changed the store, so "Marked done on Today" is said once, not on every re-render. */ function cwReceiptMarkDone(ref, nowMs){ if(!ref) return false; try{ var p=JSON.parse(localStorage.getItem(
+- ) p={}; if(p[ref]&&p[ref].done===true) return false; p[ref]={done:true,at:cwReceiptLocalDay(nowMs)}; localStorage.setItem(
+- , JSON.stringify(p)); return true; }catch(_){ return false; } } function cwReceiptStepRoute(step){ var s=step||{}; if(s.kind===
+- +encodeURIComponent(String(s.n||1)); if(s.kind===
+- )); } function cwReceiptNextStep(block, doneMap){ var b=block||{}, list=b.steps||[], d=doneMap||{}, i, s, done=0; var next=null; for(i=0;i<list.length;i++){ s=list[i]||{}; var isDone=(s.kind===
+- )?(d[s.ref]===true):(s.done===true); if(isDone) done++; else if(!next) next=s; } return {next:next, done:done, total:list.length}; } function cwReceiptDoneMap(){ var out={}; try{ var p=JSON.parse(localStorage.getItem(
+- ){ for(var k in p){ if(Object.prototype.hasOwnProperty.call(p,k)&&p[k]&&p[k].done===true) out[k]=true; } } }catch(_){ } return out; } var CW_RECEIPT_CSS=
+- ; function cwReceiptEnsureStyle(){ try{ if(typeof document===
+- )) return; var st=document.createElement(
+- ; st.textContent=CW_RECEIPT_CSS; document.head.appendChild(st); }catch(_){ } } var cwReceiptWired=false; function cwReceiptNavigate(ref, search){ var framed=false; try{ framed=(typeof window!==
+- )&&window.self!==window.top; }catch(_){ framed=true; } if(framed){ try{ window.parent.postMessage({type:
+- ); return; }catch(_){ } } try{ location.href=
+- +encodeURIComponent(ref)))); }catch(_){ } } function cwReceiptWire(){ if(cwReceiptWired||typeof document===
+- ) return; cwReceiptWired=true; document.addEventListener(
+- , function(ev){ var t=ev.target&&ev.target.closest?ev.target.closest(
+- ):null; if(!t) return; ev.preventDefault(); if(t.hasAttribute(
+- ); return; } cwReceiptNavigate(t.getAttribute(
+- ); }, true); } function cwReceipt(spec){ var s=spec||{}, nowMs=(typeof s.nowMs===
+- )?s.nowMs:Date.now(), i; cwReceiptEnsureStyle(); cwReceiptWire(); var marked=cwReceiptMarkDone(s.ref, nowMs); var block=null, progress=null; if(typeof blockLoad===
+- ){ if(s.blockKind&&typeof blockMarkStep===
+- ) blockMarkStep(s.blockKind, nowMs); block=blockLoad(nowMs); if(block) progress=cwReceiptNextStep(block, cwReceiptDoneMap()); } var h=
+- ; var stats=s.stats||[]; if(stats.length){ h+=
+- ; for(i=0;i<stats.length;i++){ var st=stats[i]||{}, tone=st.tone===
+- ; } var reread=s.reread||[]; if(reread.length){ h+=
+- ; for(i=0;i<reread.length;i++){ var r=reread[i]||{}; h+=
+- cw-receipt__tag'+(r.warn?' is-warn':'')+'
+- ; var next=progress&&progress.next; if(next){ var route=cwReceiptStepRoute(next); h+=
+- cw-receipt__btn is-primary
+- ; }else{ var acts=s.actions||[]; for(i=0;i<acts.length;i++){ var a=acts[i]||{}; h+=
+- cw-receipt__btn'+(a.primary?' is-primary':'')+'
+- ; if(!next&&typeof blockClear===
+- ; return {html:h, marked:marked, next:next||null}; } function srsUpdate(item, confidence, correct, twoTierResult){ var s = srsLoad(); var cardId =
 - +item.id; var card = s.cards[cardId]||{ease:2.5,ivl:0,reps:0,lapses:0,due:Date.now(),last:0}; var grade = srsGrade(item, confidence, correct, twoTierResult); s.cards[cardId] = applyGrade(card, grade, {fuzzKey:cardId}); /* update aggregate stats */ s.stats.totalReviews = (s.stats.totalReviews||0)+1; if(correct) s.stats.correct=(s.stats.correct||0)+1; s.stats.seen=(s.stats.seen||0)+1; srsSave(s); return grade; } /* ---- queue building ----------------------------------------------------------- */ function buildQueue(items, catFilter, diffFilter, sizeLimit){ var q = items.filter(function(it){ if(catFilter!==
 - && it.category!==catFilter) return false; if(diffFilter!==
 - && String(it.difficulty)!==diffFilter) return false; return true; }); q = shuffle(q); if(sizeLimit!==
@@ -12489,44 +12529,142 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - ⚠ Draft — not yet faculty-reviewed.
 - This question and its explanation have not been checked by faculty. Practise with it,
 - but verify anything you would act on against a primary source.
+- s own. */ var certWrongList = responses.filter(function(r){return r.confidence===
+- &&!r.correct;}); var certWrong = certWrongList.length; var guessRight = responses.filter(function(r){return r.confidence===
+- &&r.correct;}).length; var wrong = total-correct; var headline = correct+
+- )); var sub = certWrong ?
+- ); var reread = []; responses.forEach(function(r){ if(r.correct && r.confidence!==
+- ) return; if(reread.length>=5) return; var chosen = (r.item.options||[]).filter(function(o){ return o && o.key===r.key; })[0]; var trap = chosen && chosen.trap ? chosen.trap : null; var trapName = trap && trap.name ? trap.name : null; var page = (r.item.pages&&r.item.pages[0]) || null; reread.push({ tag: r.correct ?
+- ), warn: !r.correct && r.confidence===
+- , title: String(r.item.stem||
+- ), ref: page, refTitle: page ? pageTitle(page) : null }); }); var stats = [ {label:
+- , value:String(certWrong), tone:certWrong?
+- , value:String(guessRight)}, {label:
+- , value:String(wrong), tone:wrong?
+- } ]; var receipt = cwReceipt({ /* Only a session the block itself opened (?block=1) may mark the block
 - Calibration gap: You were certain
 - Miscalibration on the wards is more dangerous than ignorance —
 - replay your confidently-wrong items from this summary.
-- No questions match the selected filters.
-- t reconstructable), so a mid-question restore would be structurally broken and is not attempted; the checkpoint is deleted instead, in showSummary(), on session completion. Never written for a reviewOnly (faculty-preview) session. Grading state is never duplicated here — qbRecord()/srsUpdate() already persist each answer per-interaction (commitResponse); the capsule stores position + session bookkeeping only, so a resumed showSummary() covers the WHOLE session without a second write against the SM-2 stats contract. */ function checkpointSession(){ if(!SESSION || SESSION.reviewOnly) return; var now = Date.now(); sessSave(
-- , { at: now, expiresAt: now + DAY, queueIds: SESSION.queue.map(function(it){ return it.id; }), idx: SESSION.idx, responses: SESSION.responses.map(function(r){ return { id: r.item.id, correct: r.correct, confidence: r.confidence }; }) }); } /* Resume path for ?resume=1. Rebuilds the queue from the capsule
-- tier 2 still shown and answered — the feedback teaches against both selections
-- Right answer, shaky reasoning.
-- s sessClear instead. */ if(SESSION.idx < SESSION.queue.length) checkpointSession(); showQuestion(); } function showSummary(){ /* Session complete (or a resume landed exactly at the end) — clear the capsule so a stale slot never lingers past its own session. Never touched for reviewOnly, which never reaches this function via advance() (no Next button is rendered for a faculty-preview session — see getFeedbackHtml/showFeedback). */ if(!(SESSION && SESSION.reviewOnly)) sessClear(
-- ); progLabel.textContent=
-- ; qprog.hidden=false; qprogFill.style.width=
-- ; setRoot(renderSummary()); var moreBtn=document.getElementById(
-- ); if(moreBtn) moreBtn.addEventListener(
-- ,showSetup); var homeBtn=document.getElementById(
-- ); if(homeBtn) homeBtn.addEventListener(
-- ,function(){ /* send parent SPA to Home page */ try{ window.parent.postMessage({type:
-- ); } catch(_){} }); } /* ---- init --------------------------------------------------------------------- */ (function init(){ /* try relative path (built: /tools/question-bank-practice.html → /question_bank.json) */ fetch(
-- ) .then(function(r){ if(!r.ok) throw new Error(
-- +r.status); return r.json(); }) .then(function(data){ BANK = data; if(REVIEW_CONTEXT){ var reviewItem = (data.items || []).find(function(item){ return item && item.id === REVIEW_CONTEXT.reviewItem && item.retired !== true; }); if(!reviewItem){ root.innerHTML =
-- ); return; } showReviewItem(reviewItem); return; } if(RESUME_REQUESTED && tryResumeSession()) return; showSetup(); /* adaptive engine handoff: home may set cw_qb_focus to a blueprint category so the learner lands in their weakest area with the filter preselected. */ try{ var _focus=localStorage.getItem(
-- ); if(_focus){ localStorage.removeItem(
-- ); var _cs=document.getElementById(
-- ); if(_cs){ for(var _i=0;_i<_cs.options.length;_i++){ if(_cs.options[_i].value===_focus){ _cs.value=_focus; break; } } var _cnt=document.getElementById(
-- ), _n=activeItems().filter(function(it){return it.category===_focus;}).length; if(_cnt) _cnt.textContent=_n+
-- ; } } }catch(_){ } }) .catch(function(err){ root.innerHTML=
-- ); }); /* handle filter count updates before bank loads */ root.addEventListener(
-- ,function(ev){ var t=ev.target; if(t&&(t.id===
-- )){ var catSel=document.getElementById(
-- ); if(!BANK||!countEl) return; var cat=catSel?catSel.value:
-- ; var n=activeItems().filter(function(it){ return (cat===
-- ||String(it.difficulty)===diff); }).length; var size=sizeSel?sizeSel.value:
-- )?n:Math.min(n,parseInt(size,10)||20); countEl.textContent=(showing===n?n:showing+
-- ; } }); /* dark mode sync from parent SPA */ window.addEventListener(
-- ,function(ev){ var d=ev.data||{}; if(d.type===
-- )){ document.documentElement.setAttribute(
-- ,d.mode); try{localStorage.setItem(
-- ,d.mode);}catch(_){} } }); try{ var t=localStorage.getItem(
-- ) document.documentElement.setAttribute(
+- s own link label when it points at that page, else a readable form of the file name (the tool has no nav registry of its own). */ function pageTitle(file){ var f=String(file||
+- ); return f.replace(/^pg_/,
+- ).replace(/\b\w/g,function(c){return c.toUpperCase();}); } /* ---- DOM helpers -------------------------------------------------------------- */ var root = document.getElementById(
+- ); var progLabel = document.getElementById(
+- ); var qprog = document.getElementById(
+- ); var qprogFill = document.getElementById(
+- ); function setRoot(html){ root.innerHTML=html; } function updateProgress(){ if(!SESSION) return; var idx=SESSION.idx, total=SESSION.queue.length; if(total===0) return; var pct=Math.round((idx/total)*100); progLabel.textContent =
+- +total; qprog.hidden=false; qprogFill.style.width=pct+
+- ; } /* ---- app state transitions ---------------------------------------------------- */ function showSetup(){ SESSION=null; progLabel.textContent=
+- ; qprog.hidden=true; setRoot(renderSetup()); bindSetup(); } function bindSetup(){ var catSel=document.getElementById(
+- ); var diffSel=document.getElementById(
+- ); var sizeSel=document.getElementById(
+- ); var countEl=document.getElementById(
+- ); var startBtn=document.getElementById(
+- ); var redoMissesBtn=document.getElementById(
+- ); var certWrongBtn=document.getElementById(
+- ); var dueBtn=document.getElementById(
+- ); function updateCount(){ var cat=catSel?catSel.value:
+- , diff=diffSel?diffSel.value:
+- ; var n = activeItems().filter(function(it){ if(cat!==
+- &&it.category!==cat) return false; if(diff!==
+- &&String(it.difficulty)!==diff) return false; return true; }).length; var size=sizeSel?sizeSel.value:
+- )?n:Math.min(n,parseInt(size,10)||20); if(countEl) countEl.textContent=(showing===n?n:showing+
+- ; if(startBtn) startBtn.disabled=(n===0); } if(catSel) catSel.addEventListener(
+- ,updateCount); if(diffSel) diffSel.addEventListener(
+- ,updateCount); if(sizeSel) sizeSel.addEventListener(
+- ,updateCount); updateCount(); if(startBtn) startBtn.addEventListener(
+- ,function(){ var cat=catSel?catSel.value:
+- ; var diff=diffSel?diffSel.value:
+- ; var size=sizeSel?sizeSel.value:
+- ; startSession(cat,diff,size); }); if(redoMissesBtn) redoMissesBtn.addEventListener(
+- ,function(){ startSessionWithQueue(missedItems()); }); if(certWrongBtn) certWrongBtn.addEventListener(
+- ,function(){ startSessionWithQueue(certWrongItems()); }); /* Deliberately NOT startSessionWithQueue: due cards keep most-overdue-first order rather than being shuffled — the schedule is the point of this focus mode. */ if(dueBtn) dueBtn.addEventListener(
+- ,function(){ beginSession(dueQbItems()); }); /* Draft opt-in (WP-37). Persist, then re-render the whole setup so every count (pool size, match count, focus-mode buttons) reflects the new pool; refocus the toggle so keyboard users are not dropped at the top of the re-rendered screen. */ var draftToggle=document.getElementById(
+- ); if(draftToggle) draftToggle.addEventListener(
+- ,function(){ setIncludeDrafts(draftToggle.checked); showSetup(); var t=document.getElementById(
+- ); if(t) t.focus(); }); } function startSession(catFilter, diffFilter, sizeLimit){ /* Due cards matching the same filters serve FIRST (most-overdue first, unshuffled — priority order is the point); the shuffled fresh selection fills the remainder of the size limit. A due card never appears twice in one queue. */ var due = dueQbItems().filter(function(it){ if(catFilter!==
+- && String(it.difficulty)!==diffFilter) return false; return true; }); var cap = (sizeLimit===
+- ) ? Infinity : (parseInt(sizeLimit,10)||20); due = due.slice(0, cap===Infinity ? due.length : cap); var dueIds = {}; due.forEach(function(it){ dueIds[it.id]=1; }); var rest = buildQueue(activeItems().filter(function(it){ return !dueIds[it.id]; }), catFilter, diffFilter,
+- ); if(cap!==Infinity) rest = rest.slice(0, Math.max(0, cap-due.length)); beginSession(due.concat(rest)); } /* Focus-mode entry point: starts the exact queue passed in (shuffled), bypassing the category/difficulty/size filters entirely. */ function startSessionWithQueue(queue){ beginSession(shuffle(queue)); } function beginSession(queue){ if(!queue.length){ setRoot(
+- ); return; } SESSION = { queue: queue, idx: 0, responses: [], confidence: null, tier1Key: null, displayOrder: [], tier2DisplayOrder: [], state:
+- /* conf | tier2 | feedback */ }; showQuestion(); } function showReviewItem(item){ SESSION = { queue:[item], idx:0, responses:[], confidence:null, tier1Key:null, displayOrder:[], tier2DisplayOrder:[], state:
+- , reviewOnly:true }; showQuestion(); postReviewItemStatus(
+- ); } /* ---- session capsule (cw_sess_v1) — question-boundary checkpoint + resume -------- Written ONLY from advance(), and only when there is a next question to show — never mid-question. showQuestion() resets confidence/tier1Key/state/displayOrder/ tier2DisplayOrder on every entry (the option shuffles aren
+- s queueIds filtered through activeItems() — an id removed or retired by a deploy between checkpoint and resume is silently dropped rather than crashing the restore (queueIds order is preserved). idx is RE-DERIVED by counting how many of the front (pre-checkpoint) queueIds survive that same filter, rather than trusted verbatim: trusting the stored idx directly would silently skip a still-unanswered question whenever a deploy retires/removes an item positioned BEFORE the checkpointed idx (the raw idx overshoots once the queue is filtered shorter). This exploits the invariant that responses.length === idx at every checkpoint — advance() checkpoints immediately after commitResponse() pushes a response, and this app has no skip-without-answering path, so counting surviving front ids gives the correct new position. Reconstructed responses are built from that identical surviving-front-id set, so the resumed summary population can never disagree with the resumed queue position. Absent/expired capsule (sessLoad owns load-validate-expire) or an empty resulting queue falls through to a normal setup start. Returns true iff a session was actually resumed. */ function tryResumeSession(){ var cap = sessLoad(
+- , Date.now()); if(!cap || !cap.queueIds || !cap.queueIds.length) return false; var idMap = {}; activeItems().forEach(function(it){ idMap[it.id]=it; }); var queue = cap.queueIds.map(function(id){ return idMap[id]; }).filter(Boolean); if(!queue.length) return false; var capIdx = (typeof cap.idx===
+- && cap.idx>=0) ? cap.idx : 0; var survivingFrontIds = cap.queueIds.slice(0, capIdx).filter(function(id){ return !!idMap[id]; }); var idx = survivingFrontIds.length; var respById = {}; (cap.responses||[]).forEach(function(r){ respById[r.id]=r; }); var responses = survivingFrontIds.map(function(id){ var r = respById[id]; if(!r) return null; return { item: idMap[id], key: null, tier2Key: null, confidence: r.confidence, correct: r.correct, twoTierResult: null, ts: cap.at }; }).filter(Boolean); SESSION = { queue: queue, idx: idx, responses: responses, confidence: null, tier1Key: null, displayOrder: [], tier2DisplayOrder: [], state:
+- }; showQuestion(); return true; } function showQuestion(){ if(!SESSION || SESSION.idx >= SESSION.queue.length){ showSummary(); return; } SESSION.confidence = null; SESSION.tier1Key = null; SESSION.state =
+- ; SESSION.displayOrder = []; SESSION.tier2DisplayOrder = []; updateProgress(); var item = SESSION.queue[SESSION.idx]; setRoot(renderQuestion(item)); bindQuestion(item); } function bindQuestion(item){ /* confidence buttons */ var confBtns = root.querySelectorAll(
+- ); var confHint = document.getElementById(
+- ); confBtns.forEach(function(btn){ btn.addEventListener(
+- ,function(){ if(SESSION.state!==
+- ) return; confBtns.forEach(function(b){ b.classList.remove(
+- ); }); btn.classList.add(
+- ); SESSION.confidence = btn.getAttribute(
+- ); if(confHint) confHint.classList.remove(
+- ); }); }); /* tier1 option buttons */ var optBtns = root.querySelectorAll(
+- ); optBtns.forEach(function(btn){ btn.addEventListener(
+- ) return; if(!SESSION.confidence){ if(confHint) confHint.classList.add(
+- ); /* briefly shake the confidence section */ var cs=root.querySelector(
+- ); if(cs){ cs.style.outline=
+- ; setTimeout(function(){cs.style.outline=
+- ;},600); } return; } var key = btn.getAttribute(
+- ); onTier1Answer(item, key); }); }); } function onTier1Answer(item, key){ SESSION.tier1Key = key; var isCorrect = item.options.some(function(o){ return o.key===key && o.c; }); /* lock tier1 options and highlight */ var optBtns = root.querySelectorAll(
+- ); optBtns.forEach(function(btn){ btn.disabled = true; btn.classList.add(
+- ); var k = btn.getAttribute(
+- ); if(k===key && isCorrect) btn.classList.add(
+- ); else if(k===key && !isCorrect) btn.classList.add(
+- ); else if(item.options.some(function(o){return o.key===k&&o.c;})) btn.classList.add(
+- ); }); /* lock confidence buttons */ root.querySelectorAll(
+- ).forEach(function(b){ b.disabled=true; }); if(item.type===
+- && isCorrect){ /* show tier2 before feedback */ SESSION.state =
+- ; var qcard = root.querySelector(
+- ); if(qcard){ var t2html = renderTier2(item); qcard.insertAdjacentHTML(
+- , t2html); bindTier2(item); } } else { /* for wrong tier1 on two-tier, still show tier2 (spec: "tier 2 still shown and answered — the feedback teaches against both selections") */ if(item.type===
+- && !isCorrect){ SESSION.state =
+- ; var qcard2 = root.querySelector(
+- ); if(qcard2){ var t2html2 = renderTier2(item); qcard2.insertAdjacentHTML(
+- , t2html2); bindTier2(item); } } else { /* sba / relational: show feedback directly */ SESSION.state =
+- ; var twoTierResult = null; commitResponse(item, key, null, SESSION.confidence, isCorrect, twoTierResult); showFeedback(item, key, null, SESSION.confidence, isCorrect, null); } } } function bindTier2(item){ var t2Btns = root.querySelectorAll(
+- ); t2Btns.forEach(function(btn){ btn.addEventListener(
+- ) return; var tier2Key = btn.getAttribute(
+- ); onTier2Answer(item, tier2Key); }); }); } function onTier2Answer(item, tier2Key){ SESSION.state =
+- ; var tier1Key = SESSION.tier1Key; var tier1Correct = item.options.some(function(o){ return o.key===tier1Key && o.c; }); var tier2Correct = item.tier2.options.some(function(o){ return o.key===tier2Key && o.c; }); /* lock tier2 options + highlight */ var t2Btns = root.querySelectorAll(
+- ); t2Btns.forEach(function(btn){ btn.disabled=true; btn.classList.add(
+- ); var k=btn.getAttribute(
+- ); if(k===tier2Key && tier2Correct) btn.classList.add(
+- ); else if(k===tier2Key && !tier2Correct) btn.classList.add(
+- ); else if(item.tier2.options.some(function(o){return o.key===k&&o.c;})) btn.classList.add(
+- ); }); /* scoring: both right = correct; right answer/wrong reason = shaky; wrong tier1 = wrong */ var correct, twoTierResult; if(!tier1Correct){ correct=false; twoTierResult=
+- ; } else if(tier2Correct){ correct=true; twoTierResult=
+- ; } else { correct=true; twoTierResult=
+- ; /* right answer, wrong reason — cap at Hard */ } commitResponse(item, tier1Key, tier2Key, SESSION.confidence, correct, twoTierResult); showFeedback(item, tier1Key, tier2Key, SESSION.confidence, correct, twoTierResult); } function commitResponse(item, key, tier2Key, confidence, correct, twoTierResult){ if(SESSION && SESSION.reviewOnly){ SESSION.responses.push({ item:item, key:key, tier2Key:tier2Key, confidence:confidence, correct:correct, twoTierResult:twoTierResult, ts:Date.now() }); return; } var rec = qbRecord(item, key, tier2Key, confidence, correct, twoTierResult); srsUpdate(item, confidence, correct, twoTierResult); SESSION.responses.push({ item: item, key: key, tier2Key: tier2Key, confidence: confidence, correct: correct, twoTierResult: twoTierResult, ts: rec.ts }); } function showFeedback(item, key, tier2Key, confidence, correct, twoTierResult){ var fbHtml = getFeedbackHtml(item, key, tier2Key, confidence, correct, twoTierResult); var qcard = root.querySelector(
+- ); if(qcard){ /* remove any tier2 section first if it already exists */ var existing = qcard.querySelector(
+- ); if(existing) existing.parentNode.removeChild(existing); qcard.insertAdjacentHTML(
+- , fbHtml); var _live=document.getElementById(
+- ); if(_live){ _live.textContent = (twoTierResult===
+- ); } /* scroll feedback into view */ var fb = document.getElementById(
+- ); if(fb) setTimeout(function(){ fb.scrollIntoView({behavior:
+- }); },80); } if(SESSION && SESSION.reviewOnly) return; /* bind spa nav links */ root.querySelectorAll(
+- ).forEach(function(a){ a.addEventListener(
+- ,function(ev){ ev.preventDefault(); var href=a.getAttribute(
+- ; try{ window.parent.postMessage({type:
+- ); } catch(_){ window.location.href=href; } }); }); /* next button */ var nextBtn = document.getElementById(
+- ); if(nextBtn) nextBtn.addEventListener(
+- , advance); } function advance(){ if(!SESSION) return; SESSION.idx++; /* Checkpoint at this question boundary only when there is a next question to resume into — completion is handled by showSummary()
+- s own button (data-cw-receipt-home); the receipt snippet routes it through the shell
+- This question is not present on the current deployment
+- Could not load question bank.
+- question_bank.json was not found alongside this tool.
+- Make sure the build ran successfully and question_bank.json is at the site root.
+
+
+<!-- ==================== 02_CURRICULUM_V09.md ==================== -->
+
+# RESIDENT · Curriculum content — volume 9
+
+Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
+
+# SECTION (cont.): Practice and Exam Prep
 
 ---
 
@@ -12585,15 +12723,6 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - ).then(function(r){if(!r.ok)throw new Error(
 - );return r.json();}).then(function(data){state.caseData=data;state.current=Math.max(0,Math.min(data.weeks.length-1,state.progress.current||state.current));render();}).catch(function(){app.innerHTML=
 
-
-<!-- ==================== 02_CURRICULUM_V09.md ==================== -->
-
-# RESIDENT · Curriculum content — volume 9
-
-Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
-
-# SECTION (cont.): Practice and Exam Prep
-
 ---
 
 ## Daily Review (Spaced Repetition)
@@ -12611,7 +12740,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Daily Review — Spaced Repetition Reviewed by Joshua Moss, MD on 2026-07-05
 - Skip to content
 
-**Authored clinical strings (42):**
+**Authored clinical strings (83):**
 
 - t lean on position memory. Letters are display-position-derived (String.fromCharCode(65+pos)), so relabeling is automatic. */ /* FNV-1a seed + xorshift32 steps — NOT a bare LCG: an LCG
 - s inject_shared_snippets() expands at build time (same mechanism as crisis blocks). Grades are the strings
@@ -12638,16 +12767,57 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - }; if(days<=14)return {phase:
 - }; if(days<=28)return {phase:
 - }; } /* localDayStr()/localDayIndex() are the front door
-- s queue-build call — patching only one leaves the other unthrottled. An explicit learner choice (setNewPerDay, which sets settings.userSet) always wins over the rotation-phase cap; phasePolicy() itself never throws, but the try/catch keeps this helper safe even if that contract ever changes. */ function effectiveNewPerDay(s){ var set=(s.settings&&s.settings.newPerDay)||12; if(s.settings&&s.settings.userSet) return set; /* explicit choice always wins */ var cap=12; try{ cap=phasePolicy().newPerDayCap; }catch(_){ } return Math.min(set, cap); } var gradedThisSession={}; // session-local: has card.id already been graded once this session? (a requeued Again-card
-- s rq flag). Reset in start(). function maturity(st){if(!st||!st.reps)return "new";if(st.ivl>=21)return "mature";if(st.lapses&&st.ivl 0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;} /* ---------- theme ---------- */ function toggleTheme(setTheme){var nx=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",nx);try{localStorage.setItem("cw_theme",nx);}catch(_){ } setTheme(nx); if(framed){try{window.parent.postMessage({type:"theme",mode:nx},"*");}catch(_){ }}} function App(){ var ld=useState(null),cards=ld[0],setCards=ld[1]; var er=useState(false),err=er[0],setErr=er[1]; var sv=useState(loadS()),store=sv[0],setStore=sv[1]; var ses=useState(null),sess=ses[0],setSess=ses[1]; // {queue,pos,chosen,revealed,reviewed,correct,fresh} var th=useState((document.documentElement.getAttribute("data-theme")==="dark")?"dark":"light"),theme=th[0],setTheme=th[1]; var tick=useState(0),setTick=tick[1]; var sessRef=useRef(null); sessRef.current=sess; useEffect(function(){ Promise.all([ fetch("quizzes.json?v=9c0ec6c95a11").then(function(r){return r.ok?r.json():{decks:[]};}).catch(function(){return {decks:[]};}), fetch("../topic_meta.json").then(function(r){return r.ok?r.json():{};}).catch(function(){return {};}) ]).then(function(res){ var j=res[0]||{}, tm=res[1]||{}, out=[]; (j.decks||[]).forEach(function(d){ (d.questions||[]).forEach(function(q,i){ if(!q||!q.q||!q.o)return; out.push({id:d.id+"#"+i,deck:d.id,deckTitle:d.title||d.id,q:q.q,o:q.o,audio:d.audio||null,audioDur:d.audioDur||null}); }); }); function pretty(k){ return k.replace(/^t_/,"").replace(/\.md$/,"").replace(/_/g," ").replace(/\b\w/g,function(c){return c.toUpperCase();}); } Object.keys(tm).forEach(function(k){ if(k.charAt(0)==="_")return; var m=tm[k]; if(m&&m.quiz&&m.quiz.q&&m.quiz.o&&m.quiz.o.length){ out.push({id:"TOPIC#"+k,deck:"TOPIC",deckTitle:"Topic · "+pretty(k),q:m.quiz.q,o:m.quiz.o.map(function(o){return {t:o.t,c:!!o.c,fb:(o.c?(m.quiz.why||""):"")};})}); } }); if(!out.length){ setErr(true); return; } setCards(out); }).catch(function(){setErr(true);}); },[]); useEffect(function(){ function onMsg(ev){var d=ev.data||{};if(d.type==="theme"&&(d.mode==="dark"||d.mode==="light")){document.documentElement.setAttribute("data-theme",d.mode);setTheme(d.mode);}} window.addEventListener("message",onMsg); return function(){window.removeEventListener("message",onMsg);}; },[]); useEffect(function(){ function onKey(ev){ var s=sessRef.current; if(!s)return; var k=ev.key; if(!s.revealed){ var n=parseInt(k,10); if(n>=1&&n<=s.card.o.length){choose(optOrder(s.card)[n-1]);} } else { if(k==="1")grade(0); else if(k==="2")grade(1); else if(k==="3")grade(2); else if(k==="4")grade(3); } } window.addEventListener("keydown",onKey); return function(){window.removeEventListener("keydown",onKey);}; },[]); function persist(s){saveS(s);setStore(Object.assign({},s));} /* dashboard metrics */ function metrics(){ var now=Date.now(),due=0,neu=0,learn=0,young=0,mature=0,seen=0; if(cards){ var s=rollDay(loadS()); cards.forEach(function(c){var st=s.cards[c.id]; if(!st){neu++;return;} seen++; var m=maturity(st); if(m==="mature")mature++; else if(m==="young")young++; else learn++; if(st.due<=now)due++; }); } var newRemain=cards?Math.max(0,effectiveNewPerDay(store)-(rollDay(loadS()).day.newToday||0)):0; return {due:due,neu:neu,newRemain:Math.min(newRemain,neu),learn:learn,young:young,mature:mature,seen:seen}; } function start(ahead){ var s=rollDay(loadS()); var now=Date.now(); var due=[],neu=[],fut=[]; cards.forEach(function(c){var st=s.cards[c.id]; if(!st)neu.push(c); else if(st.due<=now)due.push(c); else fut.push([c,st.due]);}); /* Overdue-first: sort by how overdue each card is (ratio, not raw days) so long-interval cards that are only slightly late don
-- Reset all spaced-repetition progress? This clears your review schedule and streak. This also clears your calibration history. Reading progress elsewhere is unaffected.
-- Spaced repetition · Joshua Moss, MD
-- Could not load the question bank (quizzes.json). Open this tool from the hub so it can find its data, then try again.
-- Loading the question bank…
-- s calibLog event via closure var fbOpt=c.o[sess.chosen]||{}; var corrOpt=c.o[ci]||{}; var isNew=!loadS().cards[c.id]; return e("div",{className:"wrap"},head, e("div",{className:"sess"}, e("div",{className:"sbar"},e("i",{style:{width:pctp+"%"}})), e("div",{className:"sinner"}, e("div",{className:"smeta"}, e("span",{className:"deckchip"+(isNew?" snew":"")}, isNew?"New":"Review"), e("span",{className:"deckchip",style:{background:"var(--bg-alt)",color:"var(--text-light)"}}, c.deckTitle.length>42?c.deckTitle.slice(0,40)+"…":c.deckTitle), e("span",{className:"scount"}, (sess.pos+1)+" / "+sess.total)), e("div",{className:"qtext"}, c.q), c.audio? e("details",{className:"oeaudio"}, e("summary",null,"🎧 Listen — paper overview"+(c.audioDur?(" · "+c.audioDur):"")), e("audio",{controls:true,preload:"none",src:"../audio_oe/"+c.audio,"aria-label":"Paper overview audio"})) : null, e("div",{className:"opts"}, optOrder(c).map(function(oi,pos){ var o=c.o[oi]; var cls="opt"; if(sess.revealed){ if(oi===ci)cls+=" correct"; else if(oi===sess.chosen)cls+=" wrong"; else cls+=" dim"; } return e("button",{key:oi,className:cls,disabled:sess.revealed,onClick:function(){choose(oi);}}, e("span",{className:"kx"}, String.fromCharCode(65+pos)), e("span",null,o.t)); })), sess.revealed? e("div",{className:"fb"}, e("b",null, gotIt?"✓ Correct. ":"✗ Not quite. "), (fbOpt.fb||corrOpt.fb||"") ) : null, e("div",{className:"visually-hidden","aria-live":"polite","aria-atomic":"true"}, sess.revealed ? (gotIt?"Correct. ":"Not quite. ")+(fbOpt.fb||corrOpt.fb||"") : ""), sess.revealed? e("div",{className:"grades"}, e("button",{className:"gr again"+(sug===
-- ?" sug":""),onClick:function(){grade(0);}},"Again",e("span",{className:"gk"},"<10m")), e("button",{className:"gr hard",onClick:function(){grade(1);}},"Hard",e("span",{className:"gk"},"1")), e("button",{className:"gr good"+(sug===
+- s progress on Today) and by the session receipt inside a tool (to mark the step that just finished and offer the next one). Injected via /*__BLOCK_STORE__*\/ so the shell and every tool share one implementation. Shape: {v:1, minutes, createdAt, steps:[{kind:
+- , ref, title, min, n?, cat?, done?, doneAt?}]}. A page step is never marked here — its done state is derived from cw_progress_v1 at render time, so ticking the page anywhere counts. A block older than CW_BLOCK_TTL_MS is pruned on load: a plan built for one morning
+- s own primary (spec.actions) beside "Back to Today"; 3. marks the tool
+- s openPage message — a plain href would be caught by the in-iframe interceptor and lose its query, so the delegated listener below posts the full route instead; outside an iframe it falls back to a real navigation. */ function cwReceiptEsc(s){ return String(s===undefined||s===null?
+- ); } function cwReceiptLocalDay(nowMs){ var d=new Date(nowMs), m=d.getMonth()+1, day=d.getDate(); return d.getFullYear()+
+- )+day; } /* Writes the legacy {done:true,at} entry the front door reads. Returns true only when this call changed the store, so "Marked done on Today" is said once, not on every re-render. */ function cwReceiptMarkDone(ref, nowMs){ if(!ref) return false; try{ var p=JSON.parse(localStorage.getItem(
+- ) p={}; if(p[ref]&&p[ref].done===true) return false; p[ref]={done:true,at:cwReceiptLocalDay(nowMs)}; localStorage.setItem(
+- , JSON.stringify(p)); return true; }catch(_){ return false; } } function cwReceiptStepRoute(step){ var s=step||{}; if(s.kind===
+- +encodeURIComponent(String(s.n||1)); if(s.kind===
+- )); } function cwReceiptNextStep(block, doneMap){ var b=block||{}, list=b.steps||[], d=doneMap||{}, i, s, done=0; var next=null; for(i=0;i<list.length;i++){ s=list[i]||{}; var isDone=(s.kind===
+- )?(d[s.ref]===true):(s.done===true); if(isDone) done++; else if(!next) next=s; } return {next:next, done:done, total:list.length}; } function cwReceiptDoneMap(){ var out={}; try{ var p=JSON.parse(localStorage.getItem(
+- ){ for(var k in p){ if(Object.prototype.hasOwnProperty.call(p,k)&&p[k]&&p[k].done===true) out[k]=true; } } }catch(_){ } return out; } var CW_RECEIPT_CSS=
+- ; function cwReceiptEnsureStyle(){ try{ if(typeof document===
+- )) return; var st=document.createElement(
+- ; st.textContent=CW_RECEIPT_CSS; document.head.appendChild(st); }catch(_){ } } var cwReceiptWired=false; function cwReceiptNavigate(ref, search){ var framed=false; try{ framed=(typeof window!==
+- )&&window.self!==window.top; }catch(_){ framed=true; } if(framed){ try{ window.parent.postMessage({type:
+- ); return; }catch(_){ } } try{ location.href=
+- +encodeURIComponent(ref)))); }catch(_){ } } function cwReceiptWire(){ if(cwReceiptWired||typeof document===
+- ) return; cwReceiptWired=true; document.addEventListener(
+- , function(ev){ var t=ev.target&&ev.target.closest?ev.target.closest(
+- ):null; if(!t) return; ev.preventDefault(); if(t.hasAttribute(
+- ); return; } cwReceiptNavigate(t.getAttribute(
+- ); }, true); } function cwReceipt(spec){ var s=spec||{}, nowMs=(typeof s.nowMs===
+- )?s.nowMs:Date.now(), i; cwReceiptEnsureStyle(); cwReceiptWire(); var marked=cwReceiptMarkDone(s.ref, nowMs); var block=null, progress=null; if(typeof blockLoad===
+- ){ if(s.blockKind&&typeof blockMarkStep===
+- ) blockMarkStep(s.blockKind, nowMs); block=blockLoad(nowMs); if(block) progress=cwReceiptNextStep(block, cwReceiptDoneMap()); } var h=
+- ; var stats=s.stats||[]; if(stats.length){ h+=
+- ; for(i=0;i<stats.length;i++){ var st=stats[i]||{}, tone=st.tone===
+- ; } var reread=s.reread||[]; if(reread.length){ h+=
+- ; for(i=0;i<reread.length;i++){ var r=reread[i]||{}; h+=
+- cw-receipt__tag'+(r.warn?' is-warn':'')+'
+- ; var next=progress&&progress.next; if(next){ var route=cwReceiptStepRoute(next); h+=
+- cw-receipt__btn is-primary
+- ; }else{ var acts=s.actions||[]; for(i=0;i<acts.length;i++){ var a=acts[i]||{}; h+=
+- cw-receipt__btn'+(a.primary?' is-primary':'')+'
+- ; if(!next&&typeof blockClear===
+- ; return {html:h, marked:marked, next:next||null}; } /* effectiveNewPerDay: the single helper BOTH the metrics() display and start()
+- s 2nd grade sets calibLog
+- t out-rank short- interval cards that are badly late. Shuffle only within bands of 5 to keep light variety without undoing the ordering. */ function ratio(c){var st=s.cards[c.id]; return (now-st.due)/((st.ivl||1)*DAY);} due.sort(function(a,b){ return ratio(b)-ratio(a); }); for(var i=0;i<due.length;i+=5){ var band=due.slice(i,i+5); shuffle(band); for(var j=0;j<band.length;j++) due[i+j]=band[j]; } shuffle(neu); var newRemain=Math.max(0,effectiveNewPerDay(s)-(s.day.newToday||0)); var q=due.concat(neu.slice(0,newRemain)); if(ahead){ fut.sort(function(a,b){return a[1]-b[1];}); q=q.concat(fut.map(function(x){return x[0];})); } if(!q.length){ setSess({empty:true}); return; } /* A timed block asks for a bounded slice (?block=1&limit=N) — most-overdue first, as above. */ var limit=blockLimit.current; blockLimit.current=null; var fromBlock=(typeof limit===
+- &&limit>=1); if(fromBlock&&limit Again or Hard only; the buttons disable to match, and this guard also covers the keyboard shortcuts (keys 3/4). */ if(g>1 && s.chosen!==correctIdx(s.card)) return; var st=loadS(); st=rollDay(st); var card=s.card; var existed=!!st.cards[card.id]; var was=st.cards[card.id]||{ease:2.5,ivl:0,reps:0,lapses:0,due:Date.now(),last:0}; st.cards[card.id]=applyGrade(was,GRADE_NAMES[g],{fuzzKey:card.id}); if(!existed){ st.day.newToday=(st.day.newToday||0)+1; } bumpStreak(st); st.stats.totalReviews=(st.stats.totalReviews||0)+1; var ci=correctIdx(card); var gotIt=(s.chosen===ci); st.stats.seen=(st.stats.seen||0)+1; if(gotIt)st.stats.correct=(st.stats.correct||0)+1; saveS(st); setStore(Object.assign({},st)); var rq=gradedThisSession[card.id]?1:0; gradedThisSession[card.id]=1; calibLog({s:
+- ,id:card.id,p:GRADE_NAMES[g]||g,sug:sug,a:gotIt?1:0,rq:rq,ts:Date.now()}); // advance queue var q=s.queue.slice(); var pos=s.pos; if(g===0){ q.push(card); } // requeue lapses to end of this session var nextPos=pos+1; var reviewed=s.reviewed+1, correct=s.correct+(gotIt?1:0); var misses=(s.misses||[]).slice(); if(!gotIt&&!misses.some(function(m){return m.id===card.id;})) misses.push({id:card.id,deckTitle:card.deckTitle,q:card.q}); if(nextPos>=q.length){ setSess({finished:true,reviewed:reviewed,correct:correct,misses:misses,fromBlock:!!s.fromBlock}); return; } setSess({queue:q,pos:nextPos,card:q[nextPos],chosen:-1,revealed:false,reviewed:reviewed,correct:correct,total:s.total,misses:misses,fromBlock:!!s.fromBlock}); } function endSession(){ setSess(null); setTick(function(x){return x+1;}); } function setNewPerDay(v){ var s=loadS(); s.settings.newPerDay=v; s.settings.userSet=true; persist(s); } function resetAll(){ if(!window.confirm("Reset all spaced-repetition progress? This clears your review schedule and streak. This also clears your calibration history. Reading progress elsewhere is unaffected."))return; try{localStorage.removeItem(KEY);}catch(_){ } calibClear(); setStore(freshStore()); setSess(null); setTick(function(x){return x+1;}); } var head=e("div",{className:"topline"}, e("div",{className:"logo"},"ψ"), e("div",null,e("div",{className:"ttl"},"Daily Review"),e("div",{className:"by"},"Spaced repetition · Joshua Moss, MD")), e("button",{className:"thmbtn",onClick:function(){toggleTheme(setTheme);},title:"Toggle dark mode","aria-label":"Toggle dark mode"}, theme==="dark"?"☀":"☾")); if(err) return e("div",{className:"wrap"},head,e("div",{className:"err"},"Could not load the question bank (quizzes.json). Open this tool from the hub so it can find its data, then try again.")); if(!cards) return e("div",{className:"wrap"},head,e("div",{className:"panel muted"},"Loading the question bank…")); /* ---- active session ---- */ if(sess && sess.queue){ var c=sess.card, ci=correctIdx(c), pctp=Math.round(100*sess.pos/Math.max(1,sess.total)); var gotIt=(sess.chosen===ci); var sug=gotIt?
+- ; // single source of truth: feeds the
+- className below AND grade()
+- 🎧 Listen — paper overview
 - Missed items can only be graded Again or Hard
 - Pick the best answer (or press 1–
+- One card came back for another look.
+- cards came back for another look.
+- A miss here is scheduled sooner, not scored — it returns within the day so the second pass is the one that sticks.
+- Held cards move out; the next pass is further away.
+- -day streak in Daily Review.
 - Nothing is due right now and you’ve hit today’s new-card limit. Come back tomorrow, or study ahead below.
 - Spaced repetition schedules each board-style question to return just before you’d forget it. A few minutes a day beats cramming. Grade yourself honestly.
 - Each question carries its own schedule. Answer, then grade:
@@ -12673,77 +12843,51 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Shelf Mode — Exam Simulation Reviewed by Joshua Moss, MD on 2026-07-05
 - Skip to content
 
-**Authored clinical strings (73):**
+**Authored clinical strings (47):**
 
 - Strong — exam-ready range.
 - Solid — tighten the misses.
 - Passing range — keep drilling.
 - Psychopharm & Med Emergencies
 - t label a draft mid-block without breaking the simulation, so the conservative subset is the attested 142. Categories map onto the existing BLUEPRINT topic regexes. */ var CAT_TOPIC={mood:"Mood",psychosis:"Psychosis",anxiety:"Anxiety, OCD & Trauma",substance:"Substance Use",pharm:"Psychopharm & Med Emergencies",neurocog:"Delirium, Dementia & MCI",personality:"Personality",childdev:"Child & Adolescent",otherdx:"Somatic & Related",safety:"Psychiatric Emergencies",ethics:"Interview, Ethics & Law",relational:"Relational & Family"}; function bankPool(data){ var out=[]; (((data&&data.items)||[])).forEach(function(it){ if(it.status!=="attested") return; if(!it.stem||!Array.isArray(it.options)||it.options.length<2) return; var hasCorrect=false; it.options.forEach(function(op){ if(op&&op.c)hasCorrect=true; }); if(!hasCorrect) return; /* Options are shuffled ONCE here (bank storage order is authoring order — the draft pool is known to lean on first-position answers) and letters relabel automatically because every render site derives them from array index (KEYS[i]). Correct option explains via the item
-- A 26-year-old woman is admitted after 5 days of decreased need for sleep, rapid speech, increased spending, and a belief that she has been chosen to reform the hospital. She has had two prior depressive episodes treated with sertraline. On exam she is irritable with pressured speech and flight of ideas. Which of the following is the most appropriate next step?
-- Continue sertraline and add cognitive behavioral therapy
-- Antidepressant monotherapy can sustain or worsen mania; the priority is to stop it and start an antimanic agent.
-- Discontinue sertraline and start a mood stabilizer or second-generation antipsychotic
-- Correct — acute mania (bipolar I): stop the antidepressant, begin lithium/valproate or an SGA, and protect sleep.
-- Start fluoxetine for treatment-resistant depression
-- The presentation is mania, not depression; an antidepressant is contraindicated.
-- Obtain brain MRI before initiating any treatment
-- Classic mania with prior mood episodes does not require imaging before treatment; do not delay antimanic therapy.
-- Begin lorazepam as monotherapy
-- A benzodiazepine is adjunctive for agitation/sleep but does not treat the manic episode.
-- Acute mania: stop the antidepressant, start a mood stabilizer or SGA, and protect sleep.
-- A 30-year-old man on fluoxetine is brought in 8 hours after a friend gave him tramadol for back pain. He is agitated and diaphoretic. Temperature is 39.1°C, heart rate 124. Exam shows hyperreflexia and inducible clonus, greater in the lower extremities. Which of the following is the most likely diagnosis?
-- Correct — rapid onset after adding a serotonergic agent (tramadol), with hyperthermia, autonomic instability, and neuromuscular hyperexcitability (clonus, hyperreflexia). Stop the agents, supportive care, consider cyproheptadine.
-- Neuroleptic malignant syndrome
-- NMS follows dopamine antagonists, evolves over days, and features 'lead-pipe' rigidity and bradyreflexia — not clonus/hyperreflexia.
-- Anticholinergic toxidrome gives dry skin, absent bowel sounds, and normal reflexes — not diaphoresis with clonus.
-- Malignant hyperthermia is triggered by volatile anesthetics/succinylcholine, not oral serotonergics.
-- Sympathomimetic intoxication
-- Stimulant toxicity can mimic this but lacks the prominent clonus/hyperreflexia and the clear serotonergic trigger.
-- Serotonin syndrome = serotonergic trigger + hyperthermia + clonus/hyperreflexia (lower-limb predominant); NMS = dopamine blocker + rigidity + hyporeflexia over days.
-- A 52-year-old man admitted for pancreatitis becomes tremulous and diaphoretic on hospital day 2, with heart rate 116, blood pressure 168/98, and visual misperceptions. He reports drinking a pint of vodka daily until admission. Which of the following is the most appropriate management?
-- Symptom-triggered benzodiazepine dosing with CIWA-Ar monitoring, plus thiamine
-- Correct — alcohol withdrawal: benzodiazepines (often CIWA-Ar–guided) are first-line, with thiamine to prevent Wernicke encephalopathy.
-- Antipsychotics lower the seizure threshold and do not treat the underlying GABA/glutamate dysregulation; they are at most adjunctive for agitation.
-- Intravenous dextrose before any other intervention
-- Give thiamine before/with glucose in at-risk patients — a glucose load alone can precipitate Wernicke encephalopathy.
-- Physical restraints and observation
-- Restraints do not treat withdrawal and can worsen autonomic arousal; pharmacologic treatment is needed.
-- Clonidine may blunt autonomic signs but does not prevent withdrawal seizures or delirium tremens.
-- Alcohol withdrawal: benzodiazepines (CIWA-Ar–guided) first-line; give thiamine before glucose.
-- A 78-year-old woman is inattentive and intermittently drowsy two days after hip surgery. Her family says she was cognitively intact at baseline; symptoms fluctuate and worsen at night. She is on oxycodone and diphenhydramine for sleep. Which of the following is the most appropriate first step?
-- Identify and treat underlying causes and remove deliriogenic medications
-- Correct — acute, fluctuating inattention with altered arousal is delirium. First-line is to find and fix the cause (pain meds, anticholinergics, infection, metabolic) and use nonpharmacologic measures.
-- Start a scheduled long-acting benzodiazepine
-- Benzodiazepines worsen delirium (except in alcohol/benzo withdrawal) and increase fall risk.
-- Begin donepezil for cognitive decline
-- Cholinesterase inhibitors treat chronic dementia, not acute delirium, and have no role here.
-- Obtain an outpatient neuropsychology referral
-- This is an acute medical problem requiring inpatient workup, not deferred testing.
-- Reassure the family this is expected post-operative confusion and observe
-- Delirium signals an underlying disturbance and predicts poor outcomes; it requires active workup, not watchful waiting.
-- Delirium is a medical emergency: treat the cause and stop deliriogenic drugs; avoid benzodiazepines unless withdrawal-related.
-- A 60-year-old man with diabetes and a necrotic foot refuses a recommended amputation. He can describe the gangrene, the risk of fatal sepsis without surgery, the option of amputation, and explains he would rather risk death than lose his leg, citing consistent long-held values. He has no psychosis or cognitive deficit. Which of the following best describes his decision-making capacity?
-- He has capacity to refuse the amputation
-- Correct — he demonstrates the four abilities (understanding, appreciation, reasoning, and a stable choice). Capacity is decision-specific; a 'wrong-seeming' choice with intact reasoning is still a capacitated refusal.
-- He lacks capacity because the refusal is medically dangerous
-- Capacity is about the process of decision-making, not whether the choice matches the medical recommendation.
-- He lacks capacity and a guardian should consent to surgery
-- There is no impairment in the four abilities; overriding a capacitated refusal would violate autonomy.
-- Capacity cannot be assessed without neuropsychological testing
-- Capacity is a clinical, decision-specific bedside determination, not a test score.
-- He has capacity only if he agrees to surgery
-- Capacity does not depend on agreeing with the team; that reasoning is circular.
-- Capacity is decision-specific and rests on four abilities; a high-risk refusal with intact reasoning is still capacitated.
-- Could not load the question bank (question_bank.json).
-- Loading the question bank…
-- Optional practice · exam simulation
-- A timed, blueprint-weighted vignette set that mirrors the psychiatry COMAT / shelf. Choose your length, topics, and pacing. Single best answer, with feedback and a teaching point on every item.
-- The attested question bank didn't load, so this is running on a small set of sample items so you can see how it works. Reload when you're back online for the full blueprint-weighted exam.
-- Tutor — feedback after each
-- Tip: press 1–5 to answer, Enter to advance.
-- Optional exam-prep simulation. Items are educational and use fictional composites only (no patient information). Verify management against current guidelines and your team. Progress is saved only in this browser.
-- Joshua Moss, MD | Psychiatrist
+- s own primary (spec.actions) beside "Back to Today"; 3. marks the tool
+- s openPage message — a plain href would be caught by the in-iframe interceptor and lose its query, so the delegated listener below posts the full route instead; outside an iframe it falls back to a real navigation. */ function cwReceiptEsc(s){ return String(s===undefined||s===null?
+- ); } function cwReceiptLocalDay(nowMs){ var d=new Date(nowMs), m=d.getMonth()+1, day=d.getDate(); return d.getFullYear()+
+- )+day; } /* Writes the legacy {done:true,at} entry the front door reads. Returns true only when this call changed the store, so "Marked done on Today" is said once, not on every re-render. */ function cwReceiptMarkDone(ref, nowMs){ if(!ref) return false; try{ var p=JSON.parse(localStorage.getItem(
+- ) p={}; if(p[ref]&&p[ref].done===true) return false; p[ref]={done:true,at:cwReceiptLocalDay(nowMs)}; localStorage.setItem(
+- , JSON.stringify(p)); return true; }catch(_){ return false; } } function cwReceiptStepRoute(step){ var s=step||{}; if(s.kind===
+- +encodeURIComponent(String(s.n||1)); if(s.kind===
+- )); } function cwReceiptNextStep(block, doneMap){ var b=block||{}, list=b.steps||[], d=doneMap||{}, i, s, done=0; var next=null; for(i=0;i<list.length;i++){ s=list[i]||{}; var isDone=(s.kind===
+- )?(d[s.ref]===true):(s.done===true); if(isDone) done++; else if(!next) next=s; } return {next:next, done:done, total:list.length}; } function cwReceiptDoneMap(){ var out={}; try{ var p=JSON.parse(localStorage.getItem(
+- ){ for(var k in p){ if(Object.prototype.hasOwnProperty.call(p,k)&&p[k]&&p[k].done===true) out[k]=true; } } }catch(_){ } return out; } var CW_RECEIPT_CSS=
+- ; function cwReceiptEnsureStyle(){ try{ if(typeof document===
+- )) return; var st=document.createElement(
+- ; st.textContent=CW_RECEIPT_CSS; document.head.appendChild(st); }catch(_){ } } var cwReceiptWired=false; function cwReceiptNavigate(ref, search){ var framed=false; try{ framed=(typeof window!==
+- )&&window.self!==window.top; }catch(_){ framed=true; } if(framed){ try{ window.parent.postMessage({type:
+- ); return; }catch(_){ } } try{ location.href=
+- +encodeURIComponent(ref)))); }catch(_){ } } function cwReceiptWire(){ if(cwReceiptWired||typeof document===
+- ) return; cwReceiptWired=true; document.addEventListener(
+- , function(ev){ var t=ev.target&&ev.target.closest?ev.target.closest(
+- ):null; if(!t) return; ev.preventDefault(); if(t.hasAttribute(
+- ); return; } cwReceiptNavigate(t.getAttribute(
+- ); }, true); } function cwReceipt(spec){ var s=spec||{}, nowMs=(typeof s.nowMs===
+- )?s.nowMs:Date.now(), i; cwReceiptEnsureStyle(); cwReceiptWire(); var marked=cwReceiptMarkDone(s.ref, nowMs); var block=null, progress=null; if(typeof blockLoad===
+- ){ if(s.blockKind&&typeof blockMarkStep===
+- ) blockMarkStep(s.blockKind, nowMs); block=blockLoad(nowMs); if(block) progress=cwReceiptNextStep(block, cwReceiptDoneMap()); } var h=
+- ; var stats=s.stats||[]; if(stats.length){ h+=
+- ; for(i=0;i<stats.length;i++){ var st=stats[i]||{}, tone=st.tone===
+- ; } var reread=s.reread||[]; if(reread.length){ h+=
+- ; for(i=0;i<reread.length;i++){ var r=reread[i]||{}; h+=
+- cw-receipt__tag'+(r.warn?' is-warn':'')+'
+- ; var next=progress&&progress.next; if(next){ var route=cwReceiptStepRoute(next); h+=
+- cw-receipt__btn is-primary
+- ; }else{ var acts=s.actions||[]; for(i=0;i<acts.length;i++){ var a=acts[i]||{}; h+=
+- cw-receipt__btn'+(a.primary?' is-primary':'')+'
+- ; if(!next&&typeof blockClear===
+- ; return {html:h, marked:marked, next:next||null}; } function refHref(ref){ if(!ref) return null; return /\.html(\?|#|$)/.test(ref)? ("./"+ref) : ("../index.html?page="+encodeURIComponent(ref)); } function correctIdx(o){for(var i=0;i<o.length;i++){if(o[i]&&o[i].c)return i;}return -1;} // ---- Sample preview items (original, classic teaching points). Only used when no SHELF-* decks exist yet. // Clearly labeled as preview; NOT scored content for assessment until the faculty-reviewed bank lands. var SAMPLE=[ {topic:"Mood",diff:"easy",ref:"t_mood.md", q:"A 26-year-old woman is admitted after 5 days of decreased need for sleep, rapid speech, increased spending, and a belief that she has been chosen to reform the hospital. She has had two prior depressive episodes treated with sertraline. On exam she is irritable with pressured speech and flight of ideas. Which of the following is the most appropriate next step?", o:[{t:"Continue sertraline and add cognitive behavioral therapy",c:false,fb:"Antidepressant monotherapy can sustain or worsen mania; the priority is to stop it and start an antimanic agent."}, {t:"Discontinue sertraline and start a mood stabilizer or second-generation antipsychotic",c:true,fb:"Correct — acute mania (bipolar I): stop the antidepressant, begin lithium/valproate or an SGA, and protect sleep."}, {t:"Start fluoxetine for treatment-resistant depression",c:false,fb:"The presentation is mania, not depression; an antidepressant is contraindicated."}, {t:"Obtain brain MRI before initiating any treatment",c:false,fb:"Classic mania with prior mood episodes does not require imaging before treatment; do not delay antimanic therapy."}, {t:"Begin lorazepam as monotherapy",c:false,fb:"A benzodiazepine is adjunctive for agitation/sleep but does not treat the manic episode."}], tp:"Acute mania: stop the antidepressant, start a mood stabilizer or SGA, and protect sleep."}, {topic:"Psychopharm & Med Emergencies",diff:"med",ref:"psychopharm_primer.md", q:"A 30-year-old man on fluoxetine is brought in 8 hours after a friend gave him tramadol for back pain. He is agitated and diaphoretic. Temperature is 39.1°C, heart rate 124. Exam shows hyperreflexia and inducible clonus, greater in the lower extremities. Which of the following is the most likely diagnosis?", o:[{t:"Serotonin syndrome",c:true,fb:"Correct — rapid onset after adding a serotonergic agent (tramadol), with hyperthermia, autonomic instability, and neuromuscular hyperexcitability (clonus, hyperreflexia). Stop the agents, supportive care, consider cyproheptadine."}, {t:"Neuroleptic malignant syndrome",c:false,fb:"NMS follows dopamine antagonists, evolves over days, and features
+- rigidity and bradyreflexia — not clonus/hyperreflexia."}, {t:"Anticholinergic toxicity",c:false,fb:"Anticholinergic toxidrome gives dry skin, absent bowel sounds, and normal reflexes — not diaphoresis with clonus."}, {t:"Malignant hyperthermia",c:false,fb:"Malignant hyperthermia is triggered by volatile anesthetics/succinylcholine, not oral serotonergics."}, {t:"Sympathomimetic intoxication",c:false,fb:"Stimulant toxicity can mimic this but lacks the prominent clonus/hyperreflexia and the clear serotonergic trigger."}], tp:"Serotonin syndrome = serotonergic trigger + hyperthermia + clonus/hyperreflexia (lower-limb predominant); NMS = dopamine blocker + rigidity + hyporeflexia over days."}, {topic:"Substance Use",diff:"easy",ref:"withdrawal.html", q:"A 52-year-old man admitted for pancreatitis becomes tremulous and diaphoretic on hospital day 2, with heart rate 116, blood pressure 168/98, and visual misperceptions. He reports drinking a pint of vodka daily until admission. Which of the following is the most appropriate management?", o:[{t:"Symptom-triggered benzodiazepine dosing with CIWA-Ar monitoring, plus thiamine",c:true,fb:"Correct — alcohol withdrawal: benzodiazepines (often CIWA-Ar–guided) are first-line, with thiamine to prevent Wernicke encephalopathy."}, {t:"Scheduled haloperidol",c:false,fb:"Antipsychotics lower the seizure threshold and do not treat the underlying GABA/glutamate dysregulation; they are at most adjunctive for agitation."}, {t:"Intravenous dextrose before any other intervention",c:false,fb:"Give thiamine before/with glucose in at-risk patients — a glucose load alone can precipitate Wernicke encephalopathy."}, {t:"Physical restraints and observation",c:false,fb:"Restraints do not treat withdrawal and can worsen autonomic arousal; pharmacologic treatment is needed."}, {t:"Clonidine monotherapy",c:false,fb:"Clonidine may blunt autonomic signs but does not prevent withdrawal seizures or delirium tremens."}], tp:"Alcohol withdrawal: benzodiazepines (CIWA-Ar–guided) first-line; give thiamine before glucose."}, {topic:"Delirium, Dementia & MCI",diff:"med",ref:"delirium.md", q:"A 78-year-old woman is inattentive and intermittently drowsy two days after hip surgery. Her family says she was cognitively intact at baseline; symptoms fluctuate and worsen at night. She is on oxycodone and diphenhydramine for sleep. Which of the following is the most appropriate first step?", o:[{t:"Identify and treat underlying causes and remove deliriogenic medications",c:true,fb:"Correct — acute, fluctuating inattention with altered arousal is delirium. First-line is to find and fix the cause (pain meds, anticholinergics, infection, metabolic) and use nonpharmacologic measures."}, {t:"Start a scheduled long-acting benzodiazepine",c:false,fb:"Benzodiazepines worsen delirium (except in alcohol/benzo withdrawal) and increase fall risk."}, {t:"Begin donepezil for cognitive decline",c:false,fb:"Cholinesterase inhibitors treat chronic dementia, not acute delirium, and have no role here."}, {t:"Obtain an outpatient neuropsychology referral",c:false,fb:"This is an acute medical problem requiring inpatient workup, not deferred testing."}, {t:"Reassure the family this is expected post-operative confusion and observe",c:false,fb:"Delirium signals an underlying disturbance and predicts poor outcomes; it requires active workup, not watchful waiting."}], tp:"Delirium is a medical emergency: treat the cause and stop deliriogenic drugs; avoid benzodiazepines unless withdrawal-related."}, {topic:"Psychiatric Emergencies",diff:"med",ref:"capacity.html", q:"A 60-year-old man with diabetes and a necrotic foot refuses a recommended amputation. He can describe the gangrene, the risk of fatal sepsis without surgery, the option of amputation, and explains he would rather risk death than lose his leg, citing consistent long-held values. He has no psychosis or cognitive deficit. Which of the following best describes his decision-making capacity?", o:[{t:"He has capacity to refuse the amputation",c:true,fb:"Correct — he demonstrates the four abilities (understanding, appreciation, reasoning, and a stable choice). Capacity is decision-specific; a
+- choice with intact reasoning is still a capacitated refusal."}, {t:"He lacks capacity because the refusal is medically dangerous",c:false,fb:"Capacity is about the process of decision-making, not whether the choice matches the medical recommendation."}, {t:"He lacks capacity and a guardian should consent to surgery",c:false,fb:"There is no impairment in the four abilities; overriding a capacitated refusal would violate autonomy."}, {t:"Capacity cannot be assessed without neuropsychological testing",c:false,fb:"Capacity is a clinical, decision-specific bedside determination, not a test score."}, {t:"He has capacity only if he agrees to surgery",c:false,fb:"Capacity does not depend on agreeing with the team; that reasoning is circular."}], tp:"Capacity is decision-specific and rests on four abilities; a high-risk refusal with intact reasoning is still capacitated."} ]; function App(){ var d=useState(null),data=d[0],setData=d[1]; var er=useState(null),err=er[0],setErr=er[1]; var S=useState({view:"config",len:20,diff:"all",mode:"tutor",timed:true,topics:[], items:[],picks:[],flags:{},idx:0,secs:0,total:0,result:null,saved:false,preview:false,revFilter:"missed"}); var st=S[0],setS=S[1]; function set(p){setS(function(prev){return Object.assign({},prev,p);});} useEffect(function(){ fetch("../question_bank.json").then(function(r){return r.json()}).then(setData).catch(function(){setErr("Could not load the question bank (question_bank.json).");}); },[]); // derive pool + topics once data lands var pool=[], preview=false, topicsAll=[]; if(data){ pool=bankPool(data); if(pool.length===0){ pool=SAMPLE.slice(); preview=true; } var seen={}; pool.forEach(function(it){seen[it.topic]=(seen[it.topic]||0)+1;}); topicsAll=Object.keys(seen).sort(function(a,b){return orderRank(a)-orderRank(b);}).map(function(t){return {t:t,n:seen[t]};}); } // default-select all topics on first data load useEffect(function(){ if(data && st.topics.length===0 && topicsAll.length){ set({topics:topicsAll.map(function(x){return x.t;}), preview:preview}); } },[data]); // exam timer useEffect(function(){ if(st.view!=="exam") return; var id=setInterval(function(){ setS(function(p){ if(p.view!=="exam") return p; if(p.timed){ if(p.secs ="1" && ev.key =q.o.length) return p; if(p.mode==="tutor" && p.picks[p.idx]!=null) return p; // locked after answering in tutor mode var picks=p.picks.slice(); picks[p.idx]=oi; return Object.assign({},p,{picks:picks}); }); } function canAdvance(){ if(st.mode==="tutor") return st.picks[st.idx]!=null; return true; } function advance(){ setS(function(p){ if(p.idx+1 0?Object.assign({},p,{idx:p.idx-1}):p;}); } function toggleFlag(){ setS(function(p){var f=Object.assign({},p.flags);f[p.idx]=!f[p.idx];return Object.assign({},p,{flags:f});}); } function grade(p){ var correct=0, byTopic={}; p.items.forEach(function(q,i){ var ci=correctIdx(q.o), ok=(p.picks[i]===ci && ci>=0); if(ok) correct++; var bt=byTopic[q.topic]=byTopic[q.topic]||{c:0,n:0}; bt.n++; if(ok)bt.c++; }); var secsUsed = p.timed? (p.total-p.secs) : p.secs; var res={n:p.items.length,correct:correct,pct:Math.round(100*correct/Math.max(1,p.items.length)),byTopic:byTopic,secs:secsUsed}; return Object.assign({},p,{view:"result",result:res}); } // Persistent, unconditional live region: same DOM node across every view (config/exam/result), // so a screen reader binds to it once and hears only the CONTENT change when a result lands. var resultMsg = (st.view==="result" && st.result) ? resultMsgFor(st.result.pct) : ""; var liveRegion = e("div",{className:"visually-hidden","aria-live":"polite","aria-atomic":"true"}, (st.view==="result" && st.result) ? (st.result.correct+" of "+st.result.n+" correct, "+st.result.pct+" percent. "+resultMsg) : ""); if(err) return e("div",{className:"wrap"},liveRegion,e("h1",null,"Shelf Mode"),e("div",{className:"card"},err)); if(!data) return e("div",{className:"wrap"},liveRegion,e("div",{className:"loading"},"Loading the question bank…")); // ---------------- CONFIG ---------------- if(st.view==="config"){ var L=loadLS(); var recent=(L.attempts||[]).slice(0,3); var avail=pool.filter(function(it){ var dd=normDiff(it.diff); if(dd==="review")return false; if(st.diff!=="all"&&dd!==st.diff)return false; return st.topics.indexOf(it.topic)>=0; }).length; var lens=[10,20,40].filter(function(n){return true;}); return e("div",{className:"wrap"}, liveRegion, e("h1",null,"Shelf Mode"), e("span",{className:"opt-pill"},"Optional practice · exam simulation"), e("div",{className:"sub"},"A timed, blueprint-weighted vignette set that mirrors the psychiatry COMAT / shelf. Choose your length, topics, and pacing. Single best answer, with feedback and a teaching point on every item."), preview? e("div",{className:"banner"},e("strong",null,"Preview mode. "),"The attested question bank didn
+- re back online for the full blueprint-weighted exam.") : null, e("div",{className:"card"}, e("div",{className:"field"}, e("label",{className:"h"},"Length"), e("div",{className:"seg"}, lens.map(function(n){ return e("button",{key:n,className:st.len===n?"on":"",onClick:function(){set({len:n})}}, n+" Q"); })) ), e("div",{className:"field"}, e("label",{className:"h"},"Difficulty"), e("div",{className:"seg"}, [["all","All"],["easy","Easy"],["med","Medium"],["hard","Hard"]].map(function(p){ return e("button",{key:p[0],className:st.diff===p[0]?"on":"",onClick:function(){set({diff:p[0]})}}, p[1]); })) ), e("div",{className:"field"}, e("label",{className:"h"},"Mode"), e("div",{className:"seg"}, e("button",{className:st.mode==="tutor"?"on":"",onClick:function(){set({mode:"tutor"})}},"Tutor — feedback after each"), e("button",{className:st.mode==="exam"?"on":"",onClick:function(){set({mode:"exam"})}},"Exam — feedback at end") ) ), e("div",{className:"field"}, e("label",{className:"h"},"Pacing"), e("div",{className:"seg"}, e("button",{className:st.timed?"on":"",onClick:function(){set({timed:true})}},"Timed · 1.5 min/Q"), e("button",{className:!st.timed?"on":"",onClick:function(){set({timed:false})}},"Untimed") ) ), e("div",{className:"field"}, e("label",{className:"h"},"Topics"), e("div",{className:"linkrow"}, e("button",{onClick:function(){set({topics:topicsAll.map(function(x){return x.t;})})}},"Select all"), e("button",{onClick:function(){set({topics:[]})}},"Clear") ), e("div",{className:"chips",style:{marginTop:"7px"}}, topicsAll.map(function(x){ var on=st.topics.indexOf(x.t)>=0; return e("button",{key:x.t,className:"chip"+(on?" on":""),onClick:function(){ var t=st.topics.slice(),i=t.indexOf(x.t); if(i>=0)t.splice(i,1); else t.push(x.t); set({topics:t}); }}, e("span",null,x.t), e("span",{className:"n"},x.n)); })) ), e("div",{className:"row between",style:{marginTop:"6px"}}, e("span",{className:"meta"}, avail+" item"+(avail===1?"":"s")+" available · drawing "+Math.min(st.len,avail)), e("button",{className:"btn primary",disabled:avail===0,onClick:startExam}, "Start "+Math.min(st.len,avail)+"-question set") ), e("div",{className:"kbd",style:{marginTop:"8px"}},"Tip: press 1–5 to answer, Enter to advance.") ), recent.length? e("div",{className:"card"}, e("label",{className:"h",style:{display:"block",marginBottom:"6px"}},"Recent attempts"), e("div",{className:"recent"}, recent.map(function(r,i){ return e("div",{className:"r",key:i}, e("span",null, r.at+" · "+(r.mode==="tutor"?"Tutor":"Exam")+(r.preview?" · sample":"")), e("span",null, r.correct+"/"+r.n+" ("+r.pct+"%)")); })) ):null, e("div",{className:"disc"},"Optional exam-prep simulation. Items are educational and use fictional composites only (no patient information). Verify management against current guidelines and your team. Progress is saved only in this browser. ",e("br"),"Joshua Moss, MD | Psychiatrist") ); } // ---------------- RESULT ---------------- if(st.view==="result"){ var R=st.result, msg=resultMsg; var bts=Object.keys(R.byTopic).sort(function(a,b){return orderRank(a)-orderRank(b);}); var revItems=st.items.map(function(q,i){return {q:q,i:i};}).filter(function(x){ if(st.revFilter==="all") return true; var ci=correctIdx(x.q.o); return st.picks[x.i]!==ci; }); if(!st.receipt){ var missedItems=st.items.map(function(q,i){return {q:q,i:i};}).filter(function(x){ var ci=correctIdx(x.q.o); return st.picks[x.i]!==ci; }); var weakTopic=null; bts.forEach(function(t){ var b=R.byTopic[t]; var pc=b.c/Math.max(1,b.n); if(b.n>=2&&(weakTopic===null||pc<weakTopic.pc)) weakTopic={t:t,pc:pc}; }); st.receipt=cwReceipt({ tool:
 - Nothing to review — every item correct.
 - Joshua Moss, MD | Psychiatrist · Educational simulation; fictional composites only. Verify management against current guidelines.
 - End this set and discard progress?
@@ -13447,6 +13591,14 @@ Based on articles retrieved from PubMed (National Library of Medicine). Citation
 8. Gunther M, Tran N, Jiang S. Zolpidem for the Management of Catatonia: A Systematic Review. *J Acad Consult Liaison Psychiatry*. 2024;66(1):49-56. [DOI: 10.1016/j.jaclp.2024.10.004](https://doi.org/10.1016/j.jaclp.2024.10.004)
 
 
+<!-- ==================== 02_CURRICULUM_V10.md ==================== -->
+
+# RESIDENT · Curriculum content — volume 10
+
+Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
+
+# SECTION (cont.): Case of the Week
+
 ---
 
 ## Borderline Personality Disorder (Aug 27)
@@ -13606,14 +13758,6 @@ Based on articles retrieved from PubMed. Citation fields (journal, year, volume/
 
 *Prepared for the Psychiatry Clerkship / Residency teaching series — Case of the Week. Joshua Moss, MD | Psychiatrist*
 
-
-<!-- ==================== 02_CURRICULUM_V10.md ==================== -->
-
-# RESIDENT · Curriculum content — volume 10
-
-Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
-
-# SECTION (cont.): Case of the Week
 
 ---
 
@@ -14149,6 +14293,14 @@ The **EXTRIP workgroup** recommendations (systematic review plus two-round modif
 *Joshua Moss, MD | Psychiatrist*
 
 
+<!-- ==================== 02_CURRICULUM_V11.md ==================== -->
+
+# RESIDENT · Curriculum content — volume 11
+
+Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
+
+# SECTION (cont.): Case of the Week
+
 ---
 
 ## Opioid Use Disorder (Jul 27)
@@ -14165,7 +14317,7 @@ The **EXTRIP workgroup** recommendations (systematic review plus two-round modif
 
 **TL;DR (shown above the page text):**
 
-> Two opposite toxidromes in one encounter: opioid overdose reversed by naloxone, then precipitated withdrawal - and why buprenorphine has to be started in withdrawal.
+> One encounter, two failures: a COWS-threshold buprenorphine start precipitated withdrawal in a fentanyl-exposed patient, and the recovery is methadone or low-dose initiation - with acute pain treated alongside the MOUD, never instead of it.
 
 **Key points (bulleted card):**
 
@@ -14181,7 +14333,7 @@ The **EXTRIP workgroup** recommendations (systematic review plus two-round modif
 - **say** — Before moving on, rehearse one sentence you would actually say to this patient or family, in plain language and out loud.
 - **collateral** — Ask yourself what collateral would change your differential here, and who you would have to call to get it.
 - **rounds** — If you are running the session, the facilitator notes flag the errors this case most often surfaces and the evidence-quality distinctions worth naming out loud.
-- **exam** — Teaching takeaway: Two opposite toxidromes in one encounter: opioid overdose reversed by naloxone, then precipitated withdrawal - and why buprenorphine has to be started in withdrawal.
+- **exam** — Teaching takeaway: One encounter, two failures: a COWS-threshold buprenorphine start precipitated withdrawal in a fentanyl-exposed patient, and the recovery is methadone or low-dose initiation - with acute pain treated alongside the MOUD, never instead of it.
 - **actions** — All Case of the Week cases
 
 **Cross-references and tagging:**
@@ -14394,14 +14546,6 @@ For **mortality**, the agonist evidence is the strongest thing we have: all-caus
 
 *Joshua Moss, MD | Psychiatrist*
 
-
-<!-- ==================== 02_CURRICULUM_V11.md ==================== -->
-
-# RESIDENT · Curriculum content — volume 11
-
-Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
-
-# SECTION (cont.): Case of the Week
 
 ---
 
@@ -14941,7 +15085,7 @@ Given her obesity and weight concern, a **low-metabolic-risk partial agonist** (
 
 **TL;DR (shown above the page text):**
 
-> Recognizing a manic episode, screening for mixed features and secondary mania, and choosing first-line acute treatment.
+> Recognizing a manic episode, screening for secondary mania, and choosing first-line acute treatment.
 
 **Key points (bulleted card):**
 
@@ -14957,7 +15101,7 @@ Given her obesity and weight concern, a **low-metabolic-risk partial agonist** (
 - **say** — Before moving on, rehearse one sentence you would actually say to this patient or family, in plain language and out loud.
 - **collateral** — Ask yourself what collateral would change your differential here, and who you would have to call to get it.
 - **rounds** — If you are running the session, the facilitator notes flag the errors this case most often surfaces and the evidence-quality distinctions worth naming out loud.
-- **exam** — Teaching takeaway: Recognizing a manic episode, screening for mixed features and secondary mania, and choosing first-line acute treatment.
+- **exam** — Teaching takeaway: Recognizing a manic episode, screening for secondary mania, and choosing first-line acute treatment.
 - **actions** — All Case of the Week cases
 
 **Cross-references and tagging:**
@@ -15067,6 +15211,14 @@ Based on articles retrieved from PubMed.
 ---
 *Prepared for the psychiatry residency rotation. Joshua Moss, MD | Psychiatrist*
 
+
+<!-- ==================== 02_CURRICULUM_V12.md ==================== -->
+
+# RESIDENT · Curriculum content — volume 12
+
+Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
+
+# SECTION (cont.): Case of the Week
 
 ---
 
@@ -15218,14 +15370,6 @@ Dangerousness here is **agitation-related risk to self and staff**; keep teachin
 ---
 *Joshua Moss, MD | Psychiatrist*
 
-
-<!-- ==================== 02_CURRICULUM_V12.md ==================== -->
-
-# RESIDENT · Curriculum content — volume 12
-
-Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
-
-# SECTION (cont.): Case of the Week
 
 ---
 
@@ -17823,7 +17967,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 
 **Can't-miss / red-flag line:**
 
-> PHI leaves the clinical system in any form — not into AI tools, personal notes, cloud docs, texts, or email; the PHI firewall is absolute and applies to every device and platform.
+> No PHI leaves the clinical system in any form — not into AI tools, personal notes, cloud docs, texts, or email; the PHI firewall is absolute and applies to every device and platform.
 
 **Clinical-workflow narration (per-stage coaching text):**
 
@@ -18173,7 +18317,7 @@ skills rather than vague exposure.
 
 **Key points (bulleted card):**
 
-- The skill of the week is completing a supervised safety plan with a patient using the C-SSRS — practice building it collaboratively in real time, not as a form to fill.
+- The skill of the week is completing a supervised safety plan with a patient using the Stanley-Brown Safety Planning Intervention — practice building it collaboratively in real time, not as a form to fill; the C-SSRS structures the risk assessment that comes before it, not the plan itself.
 - Suggested landmarks: Wampold 1997 (common factors) and Linehan 1991 (DBT for BPD) — Journal Club 3 (Safety Planning) ties them to the clinical week.
 - On the unit: draft a full biopsychosocial and relational formulation, and notice a rupture-and-repair moment in the therapeutic relationship for the Week 3 reflection.
 
@@ -18854,7 +18998,7 @@ therapy, milieu, family, and discharge back to the formulation.
 
 **TL;DR (shown above the page text):**
 
-> ECT is the most effective treatment for severe, psychotic, or catatonic depression — no absolute contraindications, transient memory effects — and rTMS, ketamine/esketamine, VNS, and bright light therapy each have a distinct niche.
+> ECT is the most effective treatment for severe, psychotic, or catatonic depression — no absolute contraindications; anterograde memory effects resolve over weeks, though some retrograde gaps around the treatment period can persist — and rTMS, ketamine/esketamine, VNS, and bright light therapy each have a distinct niche.
 
 **Key points (bulleted card):**
 
@@ -21112,7 +21256,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Intoxication or withdrawal
 - Proportionate grief/adjustment reaction
 - Screen for past mania before any antidepressant; rule out medical, substance, and proportionate-grief causes first.
-- SSRIs/SNRIs plus exposure-based therapy are first-line across anxiety, OCD, and PTSD — standing benzodiazepines are a trap on the unit.
+- SSRIs plus exposure-based therapy are first-line across anxiety, OCD, and PTSD (SNRIs are alternatives for anxiety disorders and PTSD, not OCD) — standing benzodiazepines are a trap on the unit.
 - Rule out medical mimics (hyperthyroidism, arrhythmia, substance withdrawal).
 - OCD: exposure and response prevention plus a higher-dose SSRI.
 - PTSD: trauma-focused therapy (CPT/PE) is first-line.
@@ -22856,7 +23000,7 @@ _1399 further strings omitted — this surface embeds the build's front-door cat
 
 **Pearl.** Postpartum psychosis is a psychiatric emergency — abrupt onset, waxing/waning course, infant-focused delusions within days of delivery; a lucid interval does NOT rule it out.
 
-**Tier-2 / stretch.** {"q": "What psychiatric history most strongly predicts postpartum psychosis, and why does this influence the medication decision at discharge?", "options": [{"key": "A", "t": "A history of major depressive disorder — postpartum psychosis is an extension of unipolar depression and responds best to antidepressants."}, {"key": "B", "t": "A history of bipolar disorder — postpartum psychosis is strongly linked to bipolar spectrum illness; stopping maintenance mood stabilizer roughly doubles the risk of postpartum relapse.", "c": true}, {"key": "C", "t": "A history of schizophrenia — postpartum psychosis is simply a schizophrenic relapse triggered by the hormonal changes of delivery."}, {"key": "D", "t": "No prior psychiatric history predicts postpartum psychosis — it is idiopathic and equally likely in any postpartum patient."}], "why": "Postpartum psychosis is strongly linked to bipolar disorder — patients with bipolar disorder have a risk approximately 100-fold higher than the general population. This matters for discharge because 'stopping maintenance medication roughly doubles postpartum relapse (pooled ~35% overall; ~66% off medication vs ~23% on prophylaxis).' The medication-stop decision in a postpartum patient with bipolar disorder is itself a high-risk intervention — 'stop everything' is not a safe default."}
+**Tier-2 / stretch.** {"q": "What psychiatric history most strongly predicts postpartum psychosis, and why does this influence the medication decision at discharge?", "options": [{"key": "A", "t": "A history of major depressive disorder — postpartum psychosis is an extension of unipolar depression and responds best to antidepressants."}, {"key": "B", "t": "A history of bipolar disorder — postpartum psychosis is strongly linked to bipolar spectrum illness; stopping maintenance mood stabilizer nearly triples the risk of postpartum relapse.", "c": true}, {"key": "C", "t": "A history of schizophrenia — postpartum psychosis is simply a schizophrenic relapse triggered by the hormonal changes of delivery."}, {"key": "D", "t": "No prior psychiatric history predicts postpartum psychosis — it is idiopathic and equally likely in any postpartum patient."}], "why": "Postpartum psychosis is strongly linked to bipolar disorder — patients with bipolar disorder have a risk approximately 100-fold higher than the general population. This matters for discharge because 'stopping maintenance medication nearly triples postpartum relapse (pooled ~35% overall; ~66% off medication vs ~23% on prophylaxis).' The medication-stop decision in a postpartum patient with bipolar disorder is itself a high-risk intervention — 'stop everything' is not a safe default."}
 
 ### qb_otherdx_004
 

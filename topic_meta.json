@@ -623,7 +623,7 @@
   },
   "t_anxiety.md": {
     "read": 4,
-    "tldr": "SSRIs/SNRIs plus exposure-based therapy are first-line across anxiety, OCD, and PTSD — standing benzodiazepines are a trap on the unit.",
+    "tldr": "SSRIs plus exposure-based therapy are first-line across anxiety, OCD, and PTSD (SNRIs are alternatives for anxiety disorders and PTSD, not OCD) — standing benzodiazepines are a trap on the unit.",
     "points": [
       "Rule out medical mimics (hyperthyroidism, arrhythmia, substance withdrawal).",
       "OCD: exposure and response prevention plus a higher-dose SSRI.",
@@ -1963,7 +1963,7 @@
   "ect_neuromodulation.md": {
     "read": 5,
     "hy": true,
-    "tldr": "ECT is the most effective treatment for severe, psychotic, or catatonic depression — no absolute contraindications, transient memory effects — and rTMS, ketamine/esketamine, VNS, and bright light therapy each have a distinct niche.",
+    "tldr": "ECT is the most effective treatment for severe, psychotic, or catatonic depression — no absolute contraindications; anterograde memory effects resolve over weeks, though some retrograde gaps around the treatment period can persist — and rTMS, ketamine/esketamine, VNS, and bright light therapy each have a distinct niche.",
     "points": [
       "Choose ECT when a rapid, definitive response is needed: psychotic or catatonic depression, active suicidality, refusal to eat/drink, pregnancy, or prior ECT response.",
       "Hold benzodiazepines and anticonvulsants pre-ECT (they blunt the seizure), and plan continuation treatment — relapse is the rule without it.",
@@ -2531,7 +2531,7 @@
     "points": [
       "Postpartum psychosis typically appears in the first 1–4 weeks, recurs in 30–50% of subsequent deliveries, and is bipolar-spectrum until proven otherwise — screen for prior mania.",
       "The EPDS screens for depression, not psychosis — ask directly about delusions and perceptual disturbance, and screen for manic symptoms separately.",
-      "Stopping maintenance medication in bipolar disorder roughly doubles postpartum relapse risk — 'stop everything' is itself a high-risk clinical decision."
+      "Stopping maintenance medication in bipolar disorder nearly triples postpartum relapse risk (~66% off medication vs ~23% on prophylaxis) — 'stop everything' is itself a high-risk clinical decision."
     ],
     "cant": "A calm, lucid interval does not rule out postpartum psychosis — the waxing/waning course is the illness, not a sign the crisis has passed.",
     "ruleOut": [
@@ -2626,7 +2626,7 @@
   },
   "nutrition_metabolic.md": {
     "read": 5,
-    "tldr": "Track metabolic health for every patient on an antipsychotic — weight, glucose, and lipids at baseline, 12 weeks, and annually — and know the dietary safety points for lithium, MAOIs, and grapefruit/CYP3A4.",
+    "tldr": "Track metabolic health for every patient on an antipsychotic — weight monthly for the first 3 months then quarterly, glucose and lipids at baseline and 12 weeks then per schedule — and know the dietary safety points for lithium, MAOIs, and grapefruit/CYP3A4.",
     "points": [
       "Olanzapine and clozapine carry the highest metabolic burden; aripiprazole, lurasidone, ziprasidone, and cariprazine carry the lowest — choose by side-effect profile when efficacy is comparable.",
       "Lithium levels shift with sodium and hydration changes; MAOI patients must avoid tyramine-rich foods (aged cheeses, cured meats, tap beer) to prevent hypertensive crisis.",
@@ -3597,7 +3597,7 @@
     "tldr": "Match the technique to the mechanism — behavioral activation for shutdown/anhedonia, safety planning for suicidal states, psychoeducation for illness confusion — rather than choosing a school; the modality matters less than the fit.",
     "points": [
       "Behavioral activation is the highest-yield, lowest cognitive-demand inpatient move for the withdrawn anhedonic patient — it works by scheduling one small valued activity, not by asking a depressed person to think their way out.",
-      "Psychoeducation has the strongest inpatient numbers: readmission NNT 5, relapse NNT 9 — give it as a conversation with family looped in, not a packet dump.",
+      "Psychoeducation has strong inpatient numbers — readmission NNT 5, relapse NNT 9 (Xia 2011 Cochrane; limited-quality hospital-based trials, and the reviewers judge the true effect likely smaller) — give it as a conversation with family looped in, not a packet dump.",
       "Safety planning with follow-up reduces suicidal behaviors by approximately 50%; no-suicide contracts have no evidence and create false reassurance — abandon them."
     ],
     "cant": "No-suicide contracts have no evidence and can create false reassurance — replace every contract with a collaborative safety plan in the patient's own words, with a scheduled follow-up contact.",
@@ -3864,7 +3864,7 @@
       "Use four questions for every patient: what is the syndrome? What medical/substance/sleep/medication factor is driving it? What family/social/discharge context changes the plan? What must be safer before discharge?",
       "Students may interview patients, draft notes, suggest differentials, and observe family meetings with a defined role — but may not make independent safety or discharge decisions, promise anything, or provide unsupervised therapy."
     ],
-    "cant": "PHI leaves the clinical system in any form — not into AI tools, personal notes, cloud docs, texts, or email; the PHI firewall is absolute and applies to every device and platform.",
+    "cant": "No PHI leaves the clinical system in any form — not into AI tools, personal notes, cloud docs, texts, or email; the PHI firewall is absolute and applies to every device and platform.",
     "cta": {
       "label": "Open the Weekly Reading Map",
       "href": "?page=reading_map.md"
@@ -4106,7 +4106,7 @@
     "read": 3,
     "tldr": "Week 3 — Psychotherapy, Personality & the Relationship: understand common factors, practice DBT-informed care for borderline-pattern crises, and complete a supervised collaborative safety plan using the Stanley-Brown model.",
     "points": [
-      "The skill of the week is completing a supervised safety plan with a patient using the C-SSRS — practice building it collaboratively in real time, not as a form to fill.",
+      "The skill of the week is completing a supervised safety plan with a patient using the Stanley-Brown Safety Planning Intervention — practice building it collaboratively in real time, not as a form to fill; the C-SSRS structures the risk assessment that comes before it, not the plan itself.",
       "Suggested landmarks: Wampold 1997 (common factors) and Linehan 1991 (DBT for BPD) — Journal Club 3 (Safety Planning) ties them to the clinical week.",
       "On the unit: draft a full biopsychosocial and relational formulation, and notice a rupture-and-repair moment in the therapeutic relationship for the Week 3 reflection."
     ],
@@ -4915,7 +4915,7 @@
       "Two failed adequate antipsychotic trials defines treatment-resistant schizophrenia — clozapine is the only superior agent and is started too late; do not keep cycling.",
       "Build monitoring at order entry: lithium renal/thyroid/PTH, clozapine ANC + bowel regimen, antipsychotic metabolic panel, QTc when stacking."
     ],
-    "cant": "Clozapine-associated constipation can progress to a fatal ileus — a bowel regimen is part of the prescription; and smoking cessation induces CYP1A2, so a patient who quits at admission may need a dose decrease, not an increase.",
+    "cant": "Clozapine-associated constipation can progress to a fatal ileus — a bowel regimen is part of the prescription; and smoking induces CYP1A2, so a patient who quits at admission loses that induction, clozapine levels rise, and they may need a dose decrease, not an increase.",
     "quiz": {
       "q": "A patient with schizophrenia has failed two adequate antipsychotic trials with documented adherence. Best next step?",
       "o": [
@@ -5080,7 +5080,7 @@
     "read": 7,
     "tldr": "Your documentation, your handling of voluntary/involuntary status, and your disposition planning are clinical acts with legal weight — do them deliberately and verify every statute-specific detail against current Maine law (Title 34-B) and hospital policy.",
     "points": [
-      "Document the reasoning behind risk and observation level, not just a score — most patients who die by suicide screen low-risk at last contact.",
+      "Document the reasoning behind risk and observation level, not just a score — risk categorisation has poor predictive value, and about half of suicide deaths occur in patients last classified low-risk.",
       "An involuntary hold is not authorization to medicate over objection; non-emergency forced medication needs its own legal/administrative process.",
       "Disposition starts at admission: least-restrictive level of care, a dated follow-up ≤7 days, a warm handoff, and problem-solving boarding/housing/guardianship."
     ],

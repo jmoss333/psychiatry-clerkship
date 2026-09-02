@@ -1436,36 +1436,76 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Skip to content Practice Questions
 - Loading question bank…
 
-**Authored clinical strings (99):**
+**Authored clinical strings (228):**
 
 - s toolExtraFromParams passthrough (spa_index.html) — no shell change needed to reach this tool
-- s inject_shared_snippets() expands at build time (same mechanism as crisis blocks). Grades are the strings
-- . Semantics: ease floor 1.3, Easy ease ceiling 4.0, interval cap 365 d, lapse halves the interval (min 1 d) and re-dues the card immediately. Requires `var DAY = 86400000` in scope. Behaviour is pinned by tests/sm2-behavior.test.mjs; consumer wiring is pinned by tests/family-srs-parity.test.mjs. applyGrade(card, grade, opts) — opts is optional; opts.fuzzKey (string, usually the card id) enables deterministic ±15% interval fuzz (see sm2Fuzz below) so cohort-seeded cards de-synchronize instead of avalanching due on the same day. Omitting opts (or fuzzKey) is byte-identical to the pre-fuzz grader — every existing caller keeps its exact legacy schedule until it opts in. cw_srs_v1 STATS CONTRACT — who may write stats.seen / stats.correct: - question-bank-practice.html srsUpdate(): YES (ground-truth correctness). - review.html grade(): YES (ground-truth correctness). - family-systems-practice.html srsGradeFamily(): NO — cards only. A self-rating has no ground truth, and review.html renders Retention as correct/seen. - Practice sims write cw_practice_events_v1 instead — never cw_srs_v1.stats. Per-event history (chosen grade vs. suggested grade, requeue flag) is a separate concern logged to cw_calib_v1 via calibLog() (build-injected from calib_log.js, the CALIB_LOG marker) — this file
-- s own bounds. */ function sm2Fuzz(ivl, key, reps){ if(ivl < 3 || !key) return ivl; var h = 2166136261, s = key +
-- + reps; for(var i=0;i >> 0; } var f = ((h % 2001) / 1000) - 1; /* [-1, 1] */ return Math.min(365, Math.max(1, Math.round(ivl + ivl * 0.15 * f))); } function applyGrade(card, grade, opts){ /* SM-2 variant: ease floor 1.3, interval cap 365 d */ var c = Object.assign({}, card); var fuzzKey = opts && opts.fuzzKey; c.reps = (c.reps||0) + 1; if(c.ivl===0){ /* first encounter */ if(grade===
-- ){ c.lapses=(c.lapses||0)+1; c.ivl=1; c.due=Date.now(); } else if(grade===
-- ){ c.ivl=1; c.due=Date.now()+DAY; } else if(grade===
-- ){ c.ivl=1; c.due=Date.now()+DAY; } else { c.ivl=sm2Fuzz(4, fuzzKey, c.reps); c.due=Date.now()+c.ivl*DAY; } /* Easy */ } else { if(grade===
-- ){ /* Again is never fuzzed — lapses re-due immediately regardless of fuzzKey. */ c.lapses=(c.lapses||0)+1; c.ease=Math.max(1.3, (c.ease||2.5)-0.2); c.ivl=Math.max(1, Math.round(c.ivl*0.5)); c.due=Date.now(); } else if(grade===
-- ){ c.ease=Math.max(1.3, (c.ease||2.5)-0.15); c.ivl=Math.max(1, Math.round(c.ivl*1.2)); c.ivl=sm2Fuzz(c.ivl, fuzzKey, c.reps); c.due=Date.now()+Math.min(365,c.ivl)*DAY; } else if(grade===
-- ){ c.ivl=Math.max(1, Math.round(c.ivl*(c.ease||2.5))); c.ivl=Math.min(365,c.ivl); c.ivl=sm2Fuzz(c.ivl, fuzzKey, c.reps); c.due=Date.now()+c.ivl*DAY; } else { /* Easy */ c.ease=Math.min(4, (c.ease||2.5)+0.15); c.ivl=Math.max(1, Math.round(c.ivl*(c.ease)*1.3)); c.ivl=Math.min(365,c.ivl); c.ivl=sm2Fuzz(c.ivl, fuzzKey, c.reps); c.due=Date.now()+c.ivl*DAY; } } c.last=Date.now(); return c; } /* Calibration ledger cw_calib_v1 — append-only judgment-vs-outcome history. Enum fields + existing ids ONLY; no free text ever (PHI firewall is structural). cw_qb_v1 stays the current-state store; this is the history store; no reader joins both into one number (spec: 2026-08-05-shared-state-spine-design.md). Writers: qbank qbRecord (re flag), review.html grade() (sug/rq). cw_practice_events_v1 remains reserved for sim process events — a different thing. */ function calibLog(evt){ try{ var S={qb:[
-- ]}; if(!evt || !S[evt.s] || S[evt.s].indexOf(evt.p)<0) return; var d=null; try{ d=JSON.parse(localStorage.getItem(
-- ); }catch(_e){ d=null; } if(!d || d.v!==1 || !Array.isArray(d.qb) || !Array.isArray(d.rev)) d={v:1,qb:[],rev:[]}; var ring=d[evt.s===
-- ]; ring.push(evt); while(ring.length>400) ring.shift(); localStorage.setItem(
-- , JSON.stringify(d)); }catch(_){ } } function calibRead(){ try{ var d=JSON.parse(localStorage.getItem(
-- ); if(d && d.v===1 && Array.isArray(d.qb) && Array.isArray(d.rev)) return d; }catch(_){ } return {v:1,qb:[],rev:[]}; } function calibClear(){ try{ localStorage.removeItem(
-- ); }catch(_){ } } /* Qbank session capsule cw_sess_v1 — per-tool checkpoint store for an interrupted session. Checkpointed at question boundaries only (advance/skip), never mid-question — the caller
-- s (design spec §PR-3). sessLoad owns load-validate-expire so two hand-rolled expiry copies can
-- s home Resume row (read-only; guards queueIds/idx shape itself since sessLoad only validates expiry). */ function sessLoad(tool, nowMs){ try{ var d=JSON.parse(localStorage.getItem(
-- ); if(!d || d.v!==1 || !d.sessions || typeof d.sessions!==
-- ) return null; var s=d.sessions[tool]; if(!s || typeof s!==
-- ){ return null; } var now=(nowMs===undefined||nowMs===null)?Date.now():nowMs; if(typeof s.expiresAt!==
-- || now>s.expiresAt){ delete d.sessions[tool]; localStorage.setItem(
-- , JSON.stringify(d)); return null; } return s; }catch(_){ return null; } } function sessSave(tool, session){ try{ var d=JSON.parse(localStorage.getItem(
-- ) d={v:1,sessions:{}}; d.sessions[tool]=session; localStorage.setItem(
-- , JSON.stringify(d)); }catch(_){ } } function sessClear(tool){ try{ var d=JSON.parse(localStorage.getItem(
-- ) return; delete d.sessions[tool]; localStorage.setItem(
-- , JSON.stringify(d)); }catch(_){ } } function srsUpdate(item, confidence, correct, twoTierResult){ var s = srsLoad(); var cardId =
+- s next step. */ var BLOCK_REQUEST = (function(){ try{ var sp=new URLSearchParams(location.search); if(sp.get(
+- ) return null; var n=parseInt(sp.get(
+- ,10); if(!(n>=1&&n<=50)) n=5; var cat=sp.get(
+- ; return {n:n, cat:/^[a-z]+$/.test(cat)?cat:
+- }; }catch(_){ return null; } })(); var CAT_LABELS = { mood:
+- }; var SUBTYPE_LABELS = {
+- }; /* ---- utilities ---------------------------------------------------------------- */ function esc(s){ return String(s||
+- ); } function shuffle(arr){ var a=arr.slice(),i=a.length,j,t; while(i--){j=Math.floor(Math.random()*(i+1));t=a[i];a[i]=a[j];a[j]=t;} return a; } function readReviewContext(){ var sp = new URLSearchParams(location.search); var reviewItem = sp.get(
+- ; var reviewKey = sp.get(
+- ; var reviewToken = sp.get(
+- ).length !== 1 || sp.getAll(
+- ).length !== 1) return null; if(!/^qb_[a-z]+_[0-9]{3}$/.test(reviewItem)) return null; if(reviewKey !==
+- + reviewItem) return null; if(!/^[0-9a-f]{32}$/.test(reviewToken)) return null; return Object.freeze({reviewItem:reviewItem, reviewKey:reviewKey, reviewToken:reviewToken}); } function postReviewItemStatus(status){ if(!REVIEW_CONTEXT || [
+- ].indexOf(status) < 0) return; window.parent.postMessage({ type:
+- , reviewKey:REVIEW_CONTEXT.reviewKey, reviewToken:REVIEW_CONTEXT.reviewToken, reviewItem:REVIEW_CONTEXT.reviewItem, status:status, surface:
+- }, location.origin); } /* ---- localStorage helpers ----------------------------------------------------- */ function lsGet(k){ try{return JSON.parse(localStorage.getItem(k)||
+- );}catch(_){return null;} } function lsSet(k,v){ try{localStorage.setItem(k,JSON.stringify(v));}catch(_){} } /* ---- cw_qb_v1 response store -------------------------------------------------- */ function qbLoad(){ return lsGet(
+- )||{}; } function qbSave(data){ lsSet(
+- ,data); } function qbRecord(item, key, tier2Key, confidence, correct, twoTierResult){ var data = qbLoad(); var prev = data[item.id]; var re = (prev && prev.ts && (new Date(prev.ts)).toDateString() === (new Date()).toDateString()) ? 1 : 0; var rec = { id: item.id, key: key, tier2Key: tier2Key||null, confidence: confidence, correct: correct, pages: item.pages||[], ts: Date.now() }; if(confidence===
+- && !correct) rec.certWrong = true; data[item.id] = rec; qbSave(data); calibLog({s:
+- ,id:item.id,pages:item.pages||[],p:confidence,a:correct?1:0,t2:twoTierResult||null,re:re,ts:Date.now()}); return rec; } /* ---- cw_srs_v1 SRS seeding + grading ----------------------------------------- */ function srsLoad(){ var s = lsGet(
+- ); if(!s||s.v!==1){ s={v:1,cards:{},day:{lastDay:
+- ,newToday:0}, stats:{streak:0,lastStudy:
+- ,totalReviews:0,correct:0,seen:0}, settings:{newPerDay:12}}; } return s; } function srsSave(s){ lsSet(
+- ,s); } function srsGrade(item, confidence, correct, twoTierResult){ /* Map confidence×correct to SM-2 grade, respecting two-tier shaky cap */ if(!correct) return
+- ; /* cap: right answer, wrong reason */ if(confidence===
+- ; /* guess + correct = Hard (lucky guess ≠ mastery) */ return
+- ; } var DAY = 86400000; /* ==== Canonical SM-2 grader (build-injected — do not edit inside consumer files) ==== Source of truth: 13_Faculty_Resources/_automation/site_build/sm2_apply_grade.js. Consumers carry a SM2_APPLY_GRADE marker comment that common.py
+- s cw_srs_v1 writes stay aggregate/current-state only and are unaffected by that logging. */ /* Deterministic ±15% interval fuzz (opts.fuzzKey): de-synchronizes cohort-seeded cards so due-load avalanches spread out. No fuzzKey (legacy callers) = no fuzz. Also a no-op below ivl 3 d (too short to meaningfully fuzz). Always clamped to [1, 365] regardless of the input interval
+- t drift between the two consumers; an expired or malformed per-tool entry is pruned from the store on load, not just hidden, so a stale slot never lingers past its own read. Consumers: question-bank-practice.html (checkpointSession/ tryResumeSession — writer + authoritative resume) and the shell
+- s progress on Today) and by the session receipt inside a tool (to mark the step that just finished and offer the next one). Injected via /*__BLOCK_STORE__*\/ so the shell and every tool share one implementation. Shape: {v:1, minutes, createdAt, steps:[{kind:
+- , ref, title, min, n?, cat?, done?, doneAt?}]}. A page step is never marked here — its done state is derived from cw_progress_v1 at render time, so ticking the page anywhere counts. A block older than CW_BLOCK_TTL_MS is pruned on load: a plan built for one morning
+- s own primary (spec.actions) beside "Back to Today"; 3. marks the tool
+- s openPage message — a plain href would be caught by the in-iframe interceptor and lose its query, so the delegated listener below posts the full route instead; outside an iframe it falls back to a real navigation. */ function cwReceiptEsc(s){ return String(s===undefined||s===null?
+- ); } function cwReceiptLocalDay(nowMs){ var d=new Date(nowMs), m=d.getMonth()+1, day=d.getDate(); return d.getFullYear()+
+- )+day; } /* Writes the legacy {done:true,at} entry the front door reads. Returns true only when this call changed the store, so "Marked done on Today" is said once, not on every re-render. */ function cwReceiptMarkDone(ref, nowMs){ if(!ref) return false; try{ var p=JSON.parse(localStorage.getItem(
+- ) p={}; if(p[ref]&&p[ref].done===true) return false; p[ref]={done:true,at:cwReceiptLocalDay(nowMs)}; localStorage.setItem(
+- , JSON.stringify(p)); return true; }catch(_){ return false; } } function cwReceiptStepRoute(step){ var s=step||{}; if(s.kind===
+- +encodeURIComponent(String(s.n||1)); if(s.kind===
+- )); } function cwReceiptNextStep(block, doneMap){ var b=block||{}, list=b.steps||[], d=doneMap||{}, i, s, done=0; var next=null; for(i=0;i<list.length;i++){ s=list[i]||{}; var isDone=(s.kind===
+- )?(d[s.ref]===true):(s.done===true); if(isDone) done++; else if(!next) next=s; } return {next:next, done:done, total:list.length}; } function cwReceiptDoneMap(){ var out={}; try{ var p=JSON.parse(localStorage.getItem(
+- ){ for(var k in p){ if(Object.prototype.hasOwnProperty.call(p,k)&&p[k]&&p[k].done===true) out[k]=true; } } }catch(_){ } return out; } var CW_RECEIPT_CSS=
+- ; function cwReceiptEnsureStyle(){ try{ if(typeof document===
+- )) return; var st=document.createElement(
+- ; st.textContent=CW_RECEIPT_CSS; document.head.appendChild(st); }catch(_){ } } var cwReceiptWired=false; function cwReceiptNavigate(ref, search){ var framed=false; try{ framed=(typeof window!==
+- )&&window.self!==window.top; }catch(_){ framed=true; } if(framed){ try{ window.parent.postMessage({type:
+- ); return; }catch(_){ } } try{ location.href=
+- +encodeURIComponent(ref)))); }catch(_){ } } function cwReceiptWire(){ if(cwReceiptWired||typeof document===
+- ) return; cwReceiptWired=true; document.addEventListener(
+- , function(ev){ var t=ev.target&&ev.target.closest?ev.target.closest(
+- ):null; if(!t) return; ev.preventDefault(); if(t.hasAttribute(
+- ); return; } cwReceiptNavigate(t.getAttribute(
+- ); }, true); } function cwReceipt(spec){ var s=spec||{}, nowMs=(typeof s.nowMs===
+- )?s.nowMs:Date.now(), i; cwReceiptEnsureStyle(); cwReceiptWire(); var marked=cwReceiptMarkDone(s.ref, nowMs); var block=null, progress=null; if(typeof blockLoad===
+- ){ if(s.blockKind&&typeof blockMarkStep===
+- ) blockMarkStep(s.blockKind, nowMs); block=blockLoad(nowMs); if(block) progress=cwReceiptNextStep(block, cwReceiptDoneMap()); } var h=
+- ; var stats=s.stats||[]; if(stats.length){ h+=
+- ; for(i=0;i<stats.length;i++){ var st=stats[i]||{}, tone=st.tone===
+- ; } var reread=s.reread||[]; if(reread.length){ h+=
+- ; for(i=0;i<reread.length;i++){ var r=reread[i]||{}; h+=
+- cw-receipt__tag'+(r.warn?' is-warn':'')+'
+- ; var next=progress&&progress.next; if(next){ var route=cwReceiptStepRoute(next); h+=
+- cw-receipt__btn is-primary
+- ; }else{ var acts=s.actions||[]; for(i=0;i<acts.length;i++){ var a=acts[i]||{}; h+=
+- cw-receipt__btn'+(a.primary?' is-primary':'')+'
+- ; if(!next&&typeof blockClear===
+- ; return {html:h, marked:marked, next:next||null}; } function srsUpdate(item, confidence, correct, twoTierResult){ var s = srsLoad(); var cardId =
 - +item.id; var card = s.cards[cardId]||{ease:2.5,ivl:0,reps:0,lapses:0,due:Date.now(),last:0}; var grade = srsGrade(item, confidence, correct, twoTierResult); s.cards[cardId] = applyGrade(card, grade, {fuzzKey:cardId}); /* update aggregate stats */ s.stats.totalReviews = (s.stats.totalReviews||0)+1; if(correct) s.stats.correct=(s.stats.correct||0)+1; s.stats.seen=(s.stats.seen||0)+1; srsSave(s); return grade; } /* ---- queue building ----------------------------------------------------------- */ function buildQueue(items, catFilter, diffFilter, sizeLimit){ var q = items.filter(function(it){ if(catFilter!==
 - && it.category!==catFilter) return false; if(diffFilter!==
 - && String(it.difficulty)!==diffFilter) return false; return true; }); q = shuffle(q); if(sizeLimit!==
@@ -1499,98 +1539,130 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - ⚠ Draft — not yet faculty-reviewed.
 - This question and its explanation have not been checked by faculty. Practise with it,
 - but verify anything you would act on against a primary source.
+- s own. */ var certWrongList = responses.filter(function(r){return r.confidence===
+- &&!r.correct;}); var certWrong = certWrongList.length; var guessRight = responses.filter(function(r){return r.confidence===
+- &&r.correct;}).length; var wrong = total-correct; var headline = correct+
+- )); var sub = certWrong ?
+- ); var reread = []; responses.forEach(function(r){ if(r.correct && r.confidence!==
+- ) return; if(reread.length>=5) return; var chosen = (r.item.options||[]).filter(function(o){ return o && o.key===r.key; })[0]; var trap = chosen && chosen.trap ? chosen.trap : null; var trapName = trap && trap.name ? trap.name : null; var page = (r.item.pages&&r.item.pages[0]) || null; reread.push({ tag: r.correct ?
+- ), warn: !r.correct && r.confidence===
+- , title: String(r.item.stem||
+- ), ref: page, refTitle: page ? pageTitle(page) : null }); }); var stats = [ {label:
+- , value:String(certWrong), tone:certWrong?
+- , value:String(guessRight)}, {label:
+- , value:String(wrong), tone:wrong?
+- } ]; var receipt = cwReceipt({ /* Only a session the block itself opened (?block=1) may mark the block
 - Calibration gap: You were certain
 - Miscalibration on the wards is more dangerous than ignorance —
 - replay your confidently-wrong items from this summary.
-- No questions match the selected filters.
-- t reconstructable), so a mid-question restore would be structurally broken and is not attempted; the checkpoint is deleted instead, in showSummary(), on session completion. Never written for a reviewOnly (faculty-preview) session. Grading state is never duplicated here — qbRecord()/srsUpdate() already persist each answer per-interaction (commitResponse); the capsule stores position + session bookkeeping only, so a resumed showSummary() covers the WHOLE session without a second write against the SM-2 stats contract. */ function checkpointSession(){ if(!SESSION || SESSION.reviewOnly) return; var now = Date.now(); sessSave(
-- , { at: now, expiresAt: now + DAY, queueIds: SESSION.queue.map(function(it){ return it.id; }), idx: SESSION.idx, responses: SESSION.responses.map(function(r){ return { id: r.item.id, correct: r.correct, confidence: r.confidence }; }) }); } /* Resume path for ?resume=1. Rebuilds the queue from the capsule
-- tier 2 still shown and answered — the feedback teaches against both selections
-- Right answer, shaky reasoning.
-- s sessClear instead. */ if(SESSION.idx < SESSION.queue.length) checkpointSession(); showQuestion(); } function showSummary(){ /* Session complete (or a resume landed exactly at the end) — clear the capsule so a stale slot never lingers past its own session. Never touched for reviewOnly, which never reaches this function via advance() (no Next button is rendered for a faculty-preview session — see getFeedbackHtml/showFeedback). */ if(!(SESSION && SESSION.reviewOnly)) sessClear(
-- ); progLabel.textContent=
-- ; qprog.hidden=false; qprogFill.style.width=
-- ; setRoot(renderSummary()); var moreBtn=document.getElementById(
-- ); if(moreBtn) moreBtn.addEventListener(
-- ,showSetup); var homeBtn=document.getElementById(
-- ); if(homeBtn) homeBtn.addEventListener(
-- ,function(){ /* send parent SPA to Home page */ try{ window.parent.postMessage({type:
-- ); } catch(_){} }); } /* ---- init --------------------------------------------------------------------- */ (function init(){ /* try relative path (built: /tools/question-bank-practice.html → /question_bank.json) */ fetch(
-- ) .then(function(r){ if(!r.ok) throw new Error(
-- +r.status); return r.json(); }) .then(function(data){ BANK = data; if(REVIEW_CONTEXT){ var reviewItem = (data.items || []).find(function(item){ return item && item.id === REVIEW_CONTEXT.reviewItem && item.retired !== true; }); if(!reviewItem){ root.innerHTML =
-- ); return; } showReviewItem(reviewItem); return; } if(RESUME_REQUESTED && tryResumeSession()) return; showSetup(); /* adaptive engine handoff: home may set cw_qb_focus to a blueprint category so the learner lands in their weakest area with the filter preselected. */ try{ var _focus=localStorage.getItem(
-- ); if(_focus){ localStorage.removeItem(
-- ); var _cs=document.getElementById(
-- ); if(_cs){ for(var _i=0;_i<_cs.options.length;_i++){ if(_cs.options[_i].value===_focus){ _cs.value=_focus; break; } } var _cnt=document.getElementById(
-- ), _n=activeItems().filter(function(it){return it.category===_focus;}).length; if(_cnt) _cnt.textContent=_n+
-- ; } } }catch(_){ } }) .catch(function(err){ root.innerHTML=
-- ); }); /* handle filter count updates before bank loads */ root.addEventListener(
-- ,function(ev){ var t=ev.target; if(t&&(t.id===
-- )){ var catSel=document.getElementById(
-- ); if(!BANK||!countEl) return; var cat=catSel?catSel.value:
-- ; var n=activeItems().filter(function(it){ return (cat===
-- ||String(it.difficulty)===diff); }).length; var size=sizeSel?sizeSel.value:
-- )?n:Math.min(n,parseInt(size,10)||20); countEl.textContent=(showing===n?n:showing+
-- ; } }); /* dark mode sync from parent SPA */ window.addEventListener(
-- ,function(ev){ var d=ev.data||{}; if(d.type===
-- )){ document.documentElement.setAttribute(
-- ,d.mode); try{localStorage.setItem(
-- ,d.mode);}catch(_){} } }); try{ var t=localStorage.getItem(
-- ) document.documentElement.setAttribute(
-
----
-
-## One Patient, Six Weeks
-
-- **Slug:** `one-patient-six-weeks.html` · **Type:** tool · **Sidebar:** listed
-- **Source:** `08_Cases_and_Simulation/one-patient-six-weeks.html`
-- **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Category:** longitudinal-simulation · **Risk level:** `moderate` · **Disclaimer:** `fictional-simulation-supervision`
-- **Related pages:** `pg_interview.md`, `ddx.md`, `medical_workup.md`, `psychopharm_primer.md`, `med_monitoring.md`, `collateral_workflow.md`, `family_playbook.md`, `exp_family.md`, `pg_suicide.md`, `agitation.md`, `doc_oral.md`, `shelf.md`, `evidence_inpatient.md`
-- **Storage keys:** `cw_longitudinal_v1`
-
-#### Tool — clinical content
-
-_These tools are single-file HTML that render from inline JS data, so the clinical text below is recovered from the tool's own string literals. Ordering follows the file, not the runtime flow._
-
-**Static shell text:**
-
-- One Patient, Six Weeks Reviewed by Joshua Moss, MD on 2026-08-11
-- Skip to content Longitudinal case arc
-- One Patient, Six Weeks
-- Follow one fictional inpatient across changing information, relationships, safety questions, treatment conversations, and the final handoff.
-- Boundary: fictional composite only. Do not enter patient information. This is a learning simulation, not a clinical decision tool or substitute for supervision and local policy.
-- Loading the longitudinal case...
-- If someone is in crisis
-- On the unit, a patient in immediate danger is an escalation to your supervising resident or attending and the charge nurse — not a phone call. These lines are what you put IN a patient's safety plan, what families use after discharge, and what you can use yourself.
-- 988 Suicide & Crisis Lifeline — Call or text 988. Chat at chat.988lifeline.org. 24/7, free, confidential. Spanish available by call, text, and chat; a dedicated line serves Deaf/Hard-of-Hearing callers. Calls placed in Maine route to Maine crisis specialists.
-- Crisis Text Line — Text HOME to 741741. Text HOLA to 741741 for Spanish. 24/7, free. Text-only. Often the most acceptable option for adolescents and young adults who will not make a phone call.
-- Maine Crisis Line — 1-888-568-1112. Text and chat available via the Maine Crisis Line website. 24/7. Staffed by clinically trained crisis workers and the gateway to Maine's mobile crisis teams — the number that actually dispatches a face-to-face response.
-- Veterans Crisis Line — Dial 988 then press 1. Text 838255. 24/7. No VA enrollment required. Ask about service history — it changes which line is the right referral.
-- Emergency services — 911. 24/7. For imminent danger to life.
-- Contacts verified 2026-07-27 against official sources. Maintained in crisis_resources.json ; do not edit these numbers inline.
-
-**Authored clinical strings (22):**
-
-- ]/g,function(c){return {'&':'&',' ':'>','"':'"'}[c];});} function requestedWeek(){try{var n=parseInt(new URLSearchParams(location.search).get('week')||'1',10);return Math.max(0,Math.min(5,n-1));}catch(_){return 0;}} function loadProgress(){try{var p=JSON.parse(localStorage.getItem('cw_longitudinal_v1')||'{}');return p&&p.version===1?p:{version:1,current:0,completed:{}};}catch(_){return {version:1,current:0,completed:{}};}} function saveProgress(){try{localStorage.setItem('cw_longitudinal_v1',JSON.stringify(state.progress));}catch(_){} } function week(){return state.caseData.weeks[state.current];} function record(id){return state.progress.completed[id]||{checks:{}};} function complete(w){var r=record(w.id);return (w.checklist||[]).length>0&&(w.checklist||[]).every(function(_,i){return !!r.checks['c'+i];});} function completedCount(){return state.caseData.weeks.filter(complete).length;} function setWeek(i){state.current=Math.max(0,Math.min(state.caseData.weeks.length-1,i));state.progress.current=state.current;saveProgress();try{history.replaceState(null,'','?week='+(state.current+1));}catch(_){}render();} function weekList(){return '<div class=
-- >'+state.caseData.weeks.map(function(w,i){var on=i===state.current,done=complete(w);return '<button type=
-- ;} function sidebar(){var done=completedCount(),total=state.caseData.weeks.length,pct=Math.round(done*100/total);return
-- Longitudinal case progress
-- ;} function patientCard(){var p=state.caseData.patient;return
-- ;} function checklist(w){ var r=record(w.id); return
-- +w.checklist.map(function(item,i){ var key=
-- +i; var on=!!r.checks[key]; var inputId=
-- checkitem'+(on?' done':'')+'
-- ; } function links(w){return
-- +w.links.map(function(link){var param=link.kind===
-- ;} function weekCard(w){var done=complete(w);var r=record(w.id);return
-- status'+(done?' done':'')+'
-- +links(w);} function render(){if(!state.caseData){app.innerHTML=
-- ;return;}var w=week();app.innerHTML=
-- ,function(ev){var weekButton=ev.target.closest&&ev.target.closest(
-- )){state.progress={version:1,current:0,completed:{}};setWeek(0);}}}); app.addEventListener(
-- ,function(ev){var input=ev.target.closest&&ev.target.closest(
-- );if(!input)return;var w=week(),r=record(w.id);r.checks=r.checks||{};r.checks[input.getAttribute(
-- )]=!!input.checked;r.at=new Date().toISOString().slice(0,10);state.progress.completed[w.id]=r;saveProgress();render();}); fetch(
-- ).then(function(r){if(!r.ok)throw new Error(
-- );return r.json();}).then(function(data){state.caseData=data;state.current=Math.max(0,Math.min(data.weeks.length-1,state.progress.current||state.current));render();}).catch(function(){app.innerHTML=
+- s own link label when it points at that page, else a readable form of the file name (the tool has no nav registry of its own). */ function pageTitle(file){ var f=String(file||
+- ); return f.replace(/^pg_/,
+- ).replace(/\b\w/g,function(c){return c.toUpperCase();}); } /* ---- DOM helpers -------------------------------------------------------------- */ var root = document.getElementById(
+- ); var progLabel = document.getElementById(
+- ); var qprog = document.getElementById(
+- ); var qprogFill = document.getElementById(
+- ); function setRoot(html){ root.innerHTML=html; } function updateProgress(){ if(!SESSION) return; var idx=SESSION.idx, total=SESSION.queue.length; if(total===0) return; var pct=Math.round((idx/total)*100); progLabel.textContent =
+- +total; qprog.hidden=false; qprogFill.style.width=pct+
+- ; } /* ---- app state transitions ---------------------------------------------------- */ function showSetup(){ SESSION=null; progLabel.textContent=
+- ; qprog.hidden=true; setRoot(renderSetup()); bindSetup(); } function bindSetup(){ var catSel=document.getElementById(
+- ); var diffSel=document.getElementById(
+- ); var sizeSel=document.getElementById(
+- ); var countEl=document.getElementById(
+- ); var startBtn=document.getElementById(
+- ); var redoMissesBtn=document.getElementById(
+- ); var certWrongBtn=document.getElementById(
+- ); var dueBtn=document.getElementById(
+- ); function updateCount(){ var cat=catSel?catSel.value:
+- , diff=diffSel?diffSel.value:
+- ; var n = activeItems().filter(function(it){ if(cat!==
+- &&it.category!==cat) return false; if(diff!==
+- &&String(it.difficulty)!==diff) return false; return true; }).length; var size=sizeSel?sizeSel.value:
+- )?n:Math.min(n,parseInt(size,10)||20); if(countEl) countEl.textContent=(showing===n?n:showing+
+- ; if(startBtn) startBtn.disabled=(n===0); } if(catSel) catSel.addEventListener(
+- ,updateCount); if(diffSel) diffSel.addEventListener(
+- ,updateCount); if(sizeSel) sizeSel.addEventListener(
+- ,updateCount); updateCount(); if(startBtn) startBtn.addEventListener(
+- ,function(){ var cat=catSel?catSel.value:
+- ; var diff=diffSel?diffSel.value:
+- ; var size=sizeSel?sizeSel.value:
+- ; startSession(cat,diff,size); }); if(redoMissesBtn) redoMissesBtn.addEventListener(
+- ,function(){ startSessionWithQueue(missedItems()); }); if(certWrongBtn) certWrongBtn.addEventListener(
+- ,function(){ startSessionWithQueue(certWrongItems()); }); /* Deliberately NOT startSessionWithQueue: due cards keep most-overdue-first order rather than being shuffled — the schedule is the point of this focus mode. */ if(dueBtn) dueBtn.addEventListener(
+- ,function(){ beginSession(dueQbItems()); }); /* Draft opt-in (WP-37). Persist, then re-render the whole setup so every count (pool size, match count, focus-mode buttons) reflects the new pool; refocus the toggle so keyboard users are not dropped at the top of the re-rendered screen. */ var draftToggle=document.getElementById(
+- ); if(draftToggle) draftToggle.addEventListener(
+- ,function(){ setIncludeDrafts(draftToggle.checked); showSetup(); var t=document.getElementById(
+- ); if(t) t.focus(); }); } function startSession(catFilter, diffFilter, sizeLimit){ /* Due cards matching the same filters serve FIRST (most-overdue first, unshuffled — priority order is the point); the shuffled fresh selection fills the remainder of the size limit. A due card never appears twice in one queue. */ var due = dueQbItems().filter(function(it){ if(catFilter!==
+- && String(it.difficulty)!==diffFilter) return false; return true; }); var cap = (sizeLimit===
+- ) ? Infinity : (parseInt(sizeLimit,10)||20); due = due.slice(0, cap===Infinity ? due.length : cap); var dueIds = {}; due.forEach(function(it){ dueIds[it.id]=1; }); var rest = buildQueue(activeItems().filter(function(it){ return !dueIds[it.id]; }), catFilter, diffFilter,
+- ); if(cap!==Infinity) rest = rest.slice(0, Math.max(0, cap-due.length)); beginSession(due.concat(rest)); } /* Focus-mode entry point: starts the exact queue passed in (shuffled), bypassing the category/difficulty/size filters entirely. */ function startSessionWithQueue(queue){ beginSession(shuffle(queue)); } function beginSession(queue){ if(!queue.length){ setRoot(
+- ); return; } SESSION = { queue: queue, idx: 0, responses: [], confidence: null, tier1Key: null, displayOrder: [], tier2DisplayOrder: [], state:
+- /* conf | tier2 | feedback */ }; showQuestion(); } function showReviewItem(item){ SESSION = { queue:[item], idx:0, responses:[], confidence:null, tier1Key:null, displayOrder:[], tier2DisplayOrder:[], state:
+- , reviewOnly:true }; showQuestion(); postReviewItemStatus(
+- ); } /* ---- session capsule (cw_sess_v1) — question-boundary checkpoint + resume -------- Written ONLY from advance(), and only when there is a next question to show — never mid-question. showQuestion() resets confidence/tier1Key/state/displayOrder/ tier2DisplayOrder on every entry (the option shuffles aren
+- s queueIds filtered through activeItems() — an id removed or retired by a deploy between checkpoint and resume is silently dropped rather than crashing the restore (queueIds order is preserved). idx is RE-DERIVED by counting how many of the front (pre-checkpoint) queueIds survive that same filter, rather than trusted verbatim: trusting the stored idx directly would silently skip a still-unanswered question whenever a deploy retires/removes an item positioned BEFORE the checkpointed idx (the raw idx overshoots once the queue is filtered shorter). This exploits the invariant that responses.length === idx at every checkpoint — advance() checkpoints immediately after commitResponse() pushes a response, and this app has no skip-without-answering path, so counting surviving front ids gives the correct new position. Reconstructed responses are built from that identical surviving-front-id set, so the resumed summary population can never disagree with the resumed queue position. Absent/expired capsule (sessLoad owns load-validate-expire) or an empty resulting queue falls through to a normal setup start. Returns true iff a session was actually resumed. */ function tryResumeSession(){ var cap = sessLoad(
+- , Date.now()); if(!cap || !cap.queueIds || !cap.queueIds.length) return false; var idMap = {}; activeItems().forEach(function(it){ idMap[it.id]=it; }); var queue = cap.queueIds.map(function(id){ return idMap[id]; }).filter(Boolean); if(!queue.length) return false; var capIdx = (typeof cap.idx===
+- && cap.idx>=0) ? cap.idx : 0; var survivingFrontIds = cap.queueIds.slice(0, capIdx).filter(function(id){ return !!idMap[id]; }); var idx = survivingFrontIds.length; var respById = {}; (cap.responses||[]).forEach(function(r){ respById[r.id]=r; }); var responses = survivingFrontIds.map(function(id){ var r = respById[id]; if(!r) return null; return { item: idMap[id], key: null, tier2Key: null, confidence: r.confidence, correct: r.correct, twoTierResult: null, ts: cap.at }; }).filter(Boolean); SESSION = { queue: queue, idx: idx, responses: responses, confidence: null, tier1Key: null, displayOrder: [], tier2DisplayOrder: [], state:
+- }; showQuestion(); return true; } function showQuestion(){ if(!SESSION || SESSION.idx >= SESSION.queue.length){ showSummary(); return; } SESSION.confidence = null; SESSION.tier1Key = null; SESSION.state =
+- ; SESSION.displayOrder = []; SESSION.tier2DisplayOrder = []; updateProgress(); var item = SESSION.queue[SESSION.idx]; setRoot(renderQuestion(item)); bindQuestion(item); } function bindQuestion(item){ /* confidence buttons */ var confBtns = root.querySelectorAll(
+- ); var confHint = document.getElementById(
+- ); confBtns.forEach(function(btn){ btn.addEventListener(
+- ,function(){ if(SESSION.state!==
+- ) return; confBtns.forEach(function(b){ b.classList.remove(
+- ); }); btn.classList.add(
+- ); SESSION.confidence = btn.getAttribute(
+- ); if(confHint) confHint.classList.remove(
+- ); }); }); /* tier1 option buttons */ var optBtns = root.querySelectorAll(
+- ); optBtns.forEach(function(btn){ btn.addEventListener(
+- ) return; if(!SESSION.confidence){ if(confHint) confHint.classList.add(
+- ); /* briefly shake the confidence section */ var cs=root.querySelector(
+- ); if(cs){ cs.style.outline=
+- ; setTimeout(function(){cs.style.outline=
+- ;},600); } return; } var key = btn.getAttribute(
+- ); onTier1Answer(item, key); }); }); } function onTier1Answer(item, key){ SESSION.tier1Key = key; var isCorrect = item.options.some(function(o){ return o.key===key && o.c; }); /* lock tier1 options and highlight */ var optBtns = root.querySelectorAll(
+- ); optBtns.forEach(function(btn){ btn.disabled = true; btn.classList.add(
+- ); var k = btn.getAttribute(
+- ); if(k===key && isCorrect) btn.classList.add(
+- ); else if(k===key && !isCorrect) btn.classList.add(
+- ); else if(item.options.some(function(o){return o.key===k&&o.c;})) btn.classList.add(
+- ); }); /* lock confidence buttons */ root.querySelectorAll(
+- ).forEach(function(b){ b.disabled=true; }); if(item.type===
+- && isCorrect){ /* show tier2 before feedback */ SESSION.state =
+- ; var qcard = root.querySelector(
+- ); if(qcard){ var t2html = renderTier2(item); qcard.insertAdjacentHTML(
+- , t2html); bindTier2(item); } } else { /* for wrong tier1 on two-tier, still show tier2 (spec: "tier 2 still shown and answered — the feedback teaches against both selections") */ if(item.type===
+- && !isCorrect){ SESSION.state =
+- ; var qcard2 = root.querySelector(
+- ); if(qcard2){ var t2html2 = renderTier2(item); qcard2.insertAdjacentHTML(
+- , t2html2); bindTier2(item); } } else { /* sba / relational: show feedback directly */ SESSION.state =
+- ; var twoTierResult = null; commitResponse(item, key, null, SESSION.confidence, isCorrect, twoTierResult); showFeedback(item, key, null, SESSION.confidence, isCorrect, null); } } } function bindTier2(item){ var t2Btns = root.querySelectorAll(
+- ); t2Btns.forEach(function(btn){ btn.addEventListener(
+- ) return; var tier2Key = btn.getAttribute(
+- ); onTier2Answer(item, tier2Key); }); }); } function onTier2Answer(item, tier2Key){ SESSION.state =
+- ; var tier1Key = SESSION.tier1Key; var tier1Correct = item.options.some(function(o){ return o.key===tier1Key && o.c; }); var tier2Correct = item.tier2.options.some(function(o){ return o.key===tier2Key && o.c; }); /* lock tier2 options + highlight */ var t2Btns = root.querySelectorAll(
+- ); t2Btns.forEach(function(btn){ btn.disabled=true; btn.classList.add(
+- ); var k=btn.getAttribute(
+- ); if(k===tier2Key && tier2Correct) btn.classList.add(
+- ); else if(k===tier2Key && !tier2Correct) btn.classList.add(
+- ); else if(item.tier2.options.some(function(o){return o.key===k&&o.c;})) btn.classList.add(
+- ); }); /* scoring: both right = correct; right answer/wrong reason = shaky; wrong tier1 = wrong */ var correct, twoTierResult; if(!tier1Correct){ correct=false; twoTierResult=
+- ; } else if(tier2Correct){ correct=true; twoTierResult=
+- ; } else { correct=true; twoTierResult=
+- ; /* right answer, wrong reason — cap at Hard */ } commitResponse(item, tier1Key, tier2Key, SESSION.confidence, correct, twoTierResult); showFeedback(item, tier1Key, tier2Key, SESSION.confidence, correct, twoTierResult); } function commitResponse(item, key, tier2Key, confidence, correct, twoTierResult){ if(SESSION && SESSION.reviewOnly){ SESSION.responses.push({ item:item, key:key, tier2Key:tier2Key, confidence:confidence, correct:correct, twoTierResult:twoTierResult, ts:Date.now() }); return; } var rec = qbRecord(item, key, tier2Key, confidence, correct, twoTierResult); srsUpdate(item, confidence, correct, twoTierResult); SESSION.responses.push({ item: item, key: key, tier2Key: tier2Key, confidence: confidence, correct: correct, twoTierResult: twoTierResult, ts: rec.ts }); } function showFeedback(item, key, tier2Key, confidence, correct, twoTierResult){ var fbHtml = getFeedbackHtml(item, key, tier2Key, confidence, correct, twoTierResult); var qcard = root.querySelector(
+- ); if(qcard){ /* remove any tier2 section first if it already exists */ var existing = qcard.querySelector(
+- ); if(existing) existing.parentNode.removeChild(existing); qcard.insertAdjacentHTML(
+- , fbHtml); var _live=document.getElementById(
+- ); if(_live){ _live.textContent = (twoTierResult===
+- ); } /* scroll feedback into view */ var fb = document.getElementById(
+- ); if(fb) setTimeout(function(){ fb.scrollIntoView({behavior:
+- }); },80); } if(SESSION && SESSION.reviewOnly) return; /* bind spa nav links */ root.querySelectorAll(
+- ).forEach(function(a){ a.addEventListener(
+- ,function(ev){ ev.preventDefault(); var href=a.getAttribute(
+- ; try{ window.parent.postMessage({type:
+- ); } catch(_){ window.location.href=href; } }); }); /* next button */ var nextBtn = document.getElementById(
+- ); if(nextBtn) nextBtn.addEventListener(
+- , advance); } function advance(){ if(!SESSION) return; SESSION.idx++; /* Checkpoint at this question boundary only when there is a next question to resume into — completion is handled by showSummary()
+- s own button (data-cw-receipt-home); the receipt snippet routes it through the shell
+- This question is not present on the current deployment
+- Could not load question bank.
+- question_bank.json was not found alongside this tool.
+- Make sure the build ran successfully and question_bank.json is at the site root.

@@ -1720,7 +1720,7 @@ Serotonin syndrome, NMS, lithium toxicity, and a prolonging QTc are all **"tell 
 
 **Key points (bulleted card):**
 
-- Document the reasoning behind risk and observation level, not just a score — most patients who die by suicide screen low-risk at last contact.
+- Document the reasoning behind risk and observation level, not just a score — risk categorisation has poor predictive value, and about half of suicide deaths occur in patients last classified low-risk.
 - An involuntary hold is not authorization to medicate over objection; non-emergency forced medication needs its own legal/administrative process.
 - Disposition starts at admission: least-restrictive level of care, a dated follow-up ≤7 days, a warm handoff, and problem-solving boarding/housing/guardianship.
 
