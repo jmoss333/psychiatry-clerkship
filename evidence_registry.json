@@ -7137,7 +7137,7 @@
         "noteHistory": [
           {
             "date": "2026-09-02",
-            "note": "Added with a verified abstract span while correcting the '~90%' figure on cl_reference.md.",
+            "note": "Added for curriculum-review finding RSAF-F010: cl_reference.md stated benzodiazepine response in catatonia as '~90%', which this meta-analysis (53 studies) contradicts at 77% response / 55% remission. Annotation is AI-drafted from the abstract and awaits faculty signature.",
             "reason": "curriculum-review remediation WP-5a (finding RSAF-F010)"
           }
         ]
