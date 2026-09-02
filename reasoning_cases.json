@@ -194,7 +194,7 @@
           "choices": [
             {
               "id": "a",
-              "text": "Review deliriogenic medications, check infection/metabolic/hypoxia contributors, and use reorientation/sleep-wake measures.",
+              "text": "Review deliriogenic medications, check infection/metabolic/hypoxia and alcohol or sedative withdrawal contributors, and use reorientation/sleep-wake measures.",
               "quality": "best",
               "feedback": "Best. The student can help by organizing causes and nonpharmacologic prevention."
             },
