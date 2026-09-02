@@ -257,6 +257,9 @@ scoped by path in the prompt and never attest, merge, or narrow an instrument wa
 3. **B1** — extend `bin/install-hooks.sh` with a pre-commit that reuses the same scripts.
 4. **G1 + G8** — two agent files under `.claude/agents/`; no contract trips; usable the same day from Cowork,
    Claude Code, and the `Agent` tool. G1 gets an eval like `topic-meta-author` has.
+   **Shipped 2026-09-02 on this branch:** `.claude/agents/evidence-verifier.md`,
+   `.claude/agents/deploy-verifier.md`, and `tests/agent-definitions.test.mjs`, which pins each
+   agent's tool scope in the node suite. The eval for G1 is still to do.
 
 ---
 
