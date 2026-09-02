@@ -138,10 +138,76 @@ The request is a GET, so it cannot invoke the actor, evaluator, budget ledger, o
 An integration test calls the real `createSpHandler` health route with fakes and asserts zero actor,
 evaluator, budget, ticket, transcription, synthesis, and provider calls.
 
+> **AMENDED 2026-09-01 — the canary now makes a live actor POST.**
+>
+> The paragraph above is superseded for `sp-health-canary` only. The `createSpHandler` *health
+> route* remains GET-only and its zero-provider-call integration test still stands; what changed is
+> that the canary no longer stops at that route.
+>
+> **Why the constraint was wrong.** It assumed authenticated reachability was a proxy for
+> capability. It is not. `mode:open` returns pack copy from the case pack with no provider call at
+> all, so every layer below the API key is exercised by a GET while the API key itself is not. On
+> 2026-09-01 `/api/sp/health-status` served
+> `{"state":"success","learnerReady":true,"caseCount":3}` while the deployed
+> `ANTHROPIC_API_KEY` was dead and the Interview Room could not return a single patient reply. The
+> monitor, the GitHub slot check, and the Codex deadman were all green throughout. The outage was
+> found by a person opening the tool. A canary that cannot fail when the product is down is not a
+> canary.
+>
+> **What the canary does now.** After the contract GET succeeds, and **only when `learnerReady` is
+> true**, it sends one `mode:converse` POST on a throwaway `encounterId` with a fixed neutral
+> opening question, and requires a non-empty `reply`. The reply is measured and discarded inside the
+> probe; D4/D6 are unchanged, and the receipt gains exactly two fields: `actorReady`, and
+> `replyLatencyBucket` — `fast` (<3s) / `normal` (3–8s) / `slow` (≥8s) / `not-probed`. The bucket is
+> coarse by design: a raw duration tracks how much the patient said, so D6 is kept by construction
+> rather than by judging that channel too weak to matter. It exists because the canary is the only
+> thing that measures a live turn at all, and four samples a day make provider degradation,
+> throttling, or a silent model change visible days before they become an outage. An unreadable
+> clock classifies as `slow`, never `fast`. The bucket and `actorReady` are two views of one fact
+> and may never disagree.
+>
+> **The `learnerReady` gate keeps the sentence above this amendment true.** `sp.mjs` refuses every
+> POST unless the pack status is in `POST_PACK_STATUSES` (`reviewed`, `attested`) — the same set
+> that makes `learnerReady` true. So the original claim that a `draft-pending-attestation` pack is
+> "not permission to use live actor POSTs" still holds exactly as written: on a draft pack the
+> canary sends no POST, spends nothing, and records `actorReady: false`, which is a healthy receipt
+> rather than an outage. What the amendment changes is only the case the original spec did not
+> separate out — a pack that *has* been approved for learners, where a GET is no longer sufficient
+> evidence. An unconditional probe would have failed on every run against a draft pack and painted
+> the health surface permanently red.
+>
+> `learnerReady: true` with `actorReady: false` is rejected as malformed by the receipt validator,
+> the public status route, and `sp_health_monitor.py` — that combination is the shape the health
+> surface had during the outage, and nothing may write or read it as success.
+>
+> **What it costs, stated plainly.** Four real actor turns a day, ~120/month, drawn from the same
+> rotation budget learners spend (~$0.60/month against the $20 cap at the pinned Haiku rate). This
+> is the substance of the original objection and it is accepted deliberately: the alternative is a
+> health surface that reports success during a total outage. Two consequences follow and are
+> handled rather than ignored:
+> - The canary can exhaust the budget it monitors. A `429` on the actor leg is therefore recorded
+>   as its own code, `actor_budget`, so a self-inflicted cap is never read as a provider outage.
+> - Canary turns appear in `budget_settled` logs alongside learner turns. They are identifiable by
+>   shape, not by a marker (`exactKeys` forbids adding one): always `turnId: 1` with `turns: []`,
+>   arriving on the six-hour slot boundary.
+>
+> **The receipt also records which pack content was serving** (`packSha256`), and that hash is
+> folded into `contractSha256`. This closes a gap the original design did not anticipate: the
+> contract digest was computed from model, version, status and case IDs, so it was blind to the
+> pack content that decides how suicidal ideation is scored. The D12/D13 wave is the proof — 70
+> lines of scoring changed, `packVersion` stayed at `0.1.0`, and every monitoring surface reported
+> an unchanged contract. Combined with `SP_PACK_URL` pointing at `?ref=main` with a 5-minute loader
+> TTL, student-facing safety behaviour could change with no deploy, no proxy commit, and no
+> observable trace. It now leaves one.
+>
+> **What it still does not do.** It does not judge what the actor said, exercise the evaluator or
+> the safety screen, or constitute release evidence (D7).
+
 Each invocation writes one bounded receipt to the site-scoped, strong-consistency Netlify Blob store
 `sp-health-canary` at key `latest`. A successful receipt contains only schema version, state,
-learner-ready boolean, case count, UTC checked/next-run timestamps, and SHA-256 identifiers for the
-model/pack contract. On a validation failure, the function best-effort writes a receipt containing
+learner-ready boolean, actor-ready boolean, a coarse reply-latency bucket (both per the 2026-09-01
+amendment), case count, UTC checked/next-run timestamps, and SHA-256 identifiers for the model/pack
+contract. On a validation failure, the function best-effort writes a receipt containing
 only a bounded failure code and timestamp, then throws so Netlify also records a failed invocation.
 It must never store or log request headers, passcodes, URLs containing credentials, raw model or
 pack identifiers, case content, exception messages, or learner activity.
@@ -326,6 +392,7 @@ containing a manual checklist:
 
 - issue a new non-identifying `SP_ROTATION_ID`;
 - rotate the learner passcode and separate operations credential;
+  > **Superseded 2026-08-31.** SP_STUDENT_PASSCODE is now fixed and non-rotating (Joshua Moss, MD); rotation was the revocation path, so this item became "rotate the separate operations credential" plus an origins-hygiene and a ledger-watch item. Live text: `rotation_readiness.py::MANUAL_CHECKLIST`. Rationale: `sp-proxy/README.md`, "Passcode policy".
 - preserve the prior content-free usage receipt;
 - run the Interview Room red-team checklist and golden transcript;
 - verify the latest production canary, release rehearsal, governance digest, and attestation gate;

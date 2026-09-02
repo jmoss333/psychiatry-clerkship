@@ -1,0 +1,67 @@
+[
+  {
+    "id": "RV09-F001",
+    "audience": "Resident",
+    "file": "resident/02_CURRICULUM_V09.md",
+    "surface": "cotw_20260827_bpd_res.md",
+    "locus": "page_prose",
+    "severity": "S2",
+    "quote": "Before discharge: collaborative **safety plan** (warning signs → internal coping → social contacts → professional contacts → environment safety with lethal-means counseling → crisis lines/988), sobriety-contingent elements given AUD, collateral engagement, and near-term follow-up.",
+    "problem": "This page has the learner rehearsing suicide-risk formulation, safety planning, and discharge disposition — squarely the site's definition of risk work — yet no injected crisis block appears anywhere on the page; the only crisis contact is a hard-coded '988' inside a parenthetical, which both under-serves a distressed reader and bypasses the single-source crisis-contact policy.",
+    "replacement": "Before discharge: collaborative **safety plan** (warning signs → internal coping → social contacts → professional contacts → environment safety with lethal-means counseling → crisis lines/988), sobriety-contingent elements given AUD, collateral engagement, and near-term follow-up.\n\n<!-- crisis-block -->",
+    "basis": "Site standing policy: crisis contacts live in crisis_resources.json and are build-injected into pages that opt in via the crisis-block marker; a page doing real risk work (assessing, rehearsing, or planning disposition) with no crisis block is a reportable gap. This page's suicide-risk and safety-planning rehearsal meets that scope rule.",
+    "confidence": "high"
+  },
+  {
+    "id": "RV09-F002",
+    "audience": "Resident",
+    "file": "resident/02_CURRICULUM_V09.md",
+    "surface": "cotw_20260810_panic_res.md",
+    "locus": "page_prose",
+    "severity": "S2",
+    "quote": "In the US, **988** reaches the Suicide & Crisis Lifeline.",
+    "problem": "Q7 walks the resident through suicide-risk assessment, structured screening, and collaborative safety planning — risk work per the site's own scope rule — but the page carries no injected crisis block; 988 is instead hard-coded in the prose, violating the single-source crisis-contact policy and omitting the fuller crisis surface the injected block provides.",
+    "replacement": "In the US, **988** reaches the Suicide & Crisis Lifeline.\n\n<!-- crisis-block -->",
+    "basis": "Site standing policy: crisis contacts live in crisis_resources.json and are build-injected into opted-in pages; a risk-work page without the crisis block is a finding, and hard-coding a crisis number in content prose is the violation pattern the policy exists to prevent.",
+    "confidence": "high"
+  },
+  {
+    "id": "RV09-F003",
+    "audience": "Resident",
+    "file": "resident/02_CURRICULUM_V09.md",
+    "surface": "cotw_20260810_panic_res.md",
+    "locus": "page_prose",
+    "severity": "S2",
+    "quote": "how **low risk-of-bias ratings across an entire literature** should temper confident ranking claims [1,2].",
+    "problem": "This inverts risk-of-bias semantics: a low risk-of-bias rating means trustworthy studies and would strengthen, not temper, confidence in a ranking. The page's own Q4 states the actual condition correctly ('unclear or high risk of bias across multiple domains in all included studies'), so a facilitator reading this note aloud teaches residents the inversion in a session explicitly devoted to critical appraisal.",
+    "replacement": "how **high risk-of-bias ratings across an entire literature** should temper confident ranking claims [1,2].",
+    "basis": "Cochrane risk-of-bias tool semantics (low risk of bias = higher-quality, more trustworthy evidence) and internal consistency with the same page's Q4 characterization of the Cochrane panic NMA's evidence base.",
+    "confidence": "high"
+  },
+  {
+    "id": "RV09-F004",
+    "audience": "Resident",
+    "file": "resident/02_CURRICULUM_V09.md",
+    "surface": "cotw_20260810_panic_res.md",
+    "locus": "page_prose",
+    "severity": "S2",
+    "quote": "systematic elimination of safety behaviors — the PRN alprazolam, the boyfriend-equivalent accompaniment pattern, checking his pulse, the low-traffic scheduling.",
+    "problem": "Three of the four listed safety behaviors — the 'boyfriend-equivalent accompaniment pattern', pulse-checking, and 'low-traffic scheduling' — appear nowhere in the stem; the patient is a 41-year-old man with no partner or accompaniment pattern described, and 'boyfriend-equivalent' reads as leakage from a different case. A facilitator working from the stem cannot reconcile this list, and the teaching point models asserting patient specifics that were never elicited.",
+    "replacement": "systematic elimination of safety behaviors — the PRN alprazolam taken at the first sensation, the avoidance of exercise, driving beyond town, and client-facing work, and any pulse-checking, safe-person accompaniment, or route-and-timing rituals uncovered on further history.",
+    "basis": "Internal consistency with the case's own stem ('Course and function' paragraph: stopped exercising, no longer drives outside town, works from home); a teaching case's feedback must not invent case facts its stem never established.",
+    "confidence": "high"
+  },
+  {
+    "id": "RV09-F005",
+    "audience": "Resident",
+    "file": "resident/02_CURRICULUM_V09.md",
+    "surface": "cotw_20260810_panic_res.md",
+    "locus": "page_prose",
+    "severity": "S4",
+    "quote": "7. **Do not add a beta-blocker** [7].",
+    "problem": "The unqualified imperative overreaches its citation: the referenced meta-analysis addressed anxiety-symptom outcomes in panic disorder and social anxiety disorder, not blood-pressure management, while this patient has documented paroxysms to 194/112 in a pseudopheochromocytoma pattern for which the hypertension literature does use episodic antihypertensive cover including adrenergic blockade. As written, a resident could cite this line to argue against a legitimately indicated antihypertensive started by the hypertension specialist the case itself says to involve.",
+    "replacement": "7. **Do not add a beta-blocker for the panic disorder** [7] — it has no anti-panic efficacy; whether the hypertensive paroxysms themselves warrant episodic antihypertensive cover is a decision shared with the hypertension specialist.",
+    "basis": "Scope of Archer et al. 2024 systematic review and meta-analysis (beta-blockers vs placebo or benzodiazepines for panic disorder and social anxiety disorder symptom outcomes); pseudopheochromocytoma management literature (Mann; Mamilla et al. 2019) describes treating severe symptomatic hypertensive paroxysms, including with adrenergic blockade or clonidine.",
+    "confidence": "medium"
+  }
+]

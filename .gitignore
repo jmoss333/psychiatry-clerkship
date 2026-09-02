@@ -86,3 +86,10 @@ node_modules/
 
 # Regenerable PDF-review screenshots.
 tmp/
+
+# ---- Evidence Inbox: general drop folder for studies/documents awaiting triage ----
+# Same posture as the OpenEvidence inbox: raw sources are staged here and processed into
+# curated pages + span-verified annotations; they are never committed from here.
+# The README is tracked so the folder and its procedure survive a fresh clone.
+/Evidence Inbox/*
+!/Evidence Inbox/README.md

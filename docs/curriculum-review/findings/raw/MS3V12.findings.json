@@ -1,0 +1,28 @@
+[
+  {
+    "id": "MS3V12-F001",
+    "audience": "MS3",
+    "file": "02_CURRICULUM_V12.md",
+    "surface": "book_library.md",
+    "locus": "page_prose",
+    "severity": "S2",
+    "quote": "**[Surviving Schizophrenia for Families](https://www.amazon.com/dp/1593852738)** — Kim Mueser & Susan Gingerich.",
+    "problem": "Title/author conflation: \"Surviving Schizophrenia\" is E. Fuller Torrey's family manual, while the linked ISBN (978-1593852733, Guilford) and the annotation (\"Updated comprehensive family guide... from leading researchers\") match Mueser & Gingerich's \"The Complete Family Guide to Schizophrenia.\" A student who recommends \"Surviving Schizophrenia by Mueser and Gingerich\" to a family sends them hunting for a book that does not exist under that pairing, or lands them on Torrey's differently-authored book, and repeats a false attribution on rounds.",
+    "replacement": "**[The Complete Family Guide to Schizophrenia](https://www.amazon.com/dp/1593852738)** — Kim Mueser & Susan Gingerich.",
+    "basis": "Publisher records: Guilford ISBN 978-1593852733 is Mueser & Gingerich, The Complete Family Guide to Schizophrenia (2006); \"Surviving Schizophrenia: A Family Manual\" is Torrey (Harper). Checking the linked product page against the printed title would settle it.",
+    "confidence": "medium"
+  },
+  {
+    "id": "MS3V12-F002",
+    "audience": "both",
+    "file": "02_CURRICULUM_V12.md",
+    "surface": "rotation-curator.html",
+    "locus": "tool_string",
+    "severity": "S4",
+    "quote": "SSRIs/SNRIs plus exposure-based therapy are first-line across anxiety, OCD, and PTSD — standing benzodiazepines are a trap on the unit.",
+    "problem": "Read distributively — the way a shelf-prepping MS3 will read a can't-miss-style summary line — this licenses \"an SNRI is first-line for OCD,\" which no major guideline supports: first-line OCD pharmacotherapy is an SSRI (clomipramine next), and the same catalog's own OCD string says \"exposure and response prevention plus a higher-dose SSRI.\" SNRIs (venlafaxine, duloxetine) are first-line for GAD, panic, social anxiety, and PTSD only; on the shelf, choosing an SNRI as first-line for OCD is a wrong answer this sentence would have taught.",
+    "replacement": "SSRIs plus exposure-based therapy are first-line across anxiety, OCD, and PTSD (SNRIs are first-line alternatives for the anxiety disorders and PTSD, not OCD) — standing benzodiazepines are a trap on the unit.",
+    "basis": "APA practice guideline for OCD (SSRIs first-line, clomipramine second; venlafaxine less well studied) and NICE CG31 (SSRI or clomipramine); venlafaxine is first-line for PTSD in VA/DoD and APA PTSD guidance and for GAD/panic/social anxiety in APA/NICE guidance. Internal consistency: the adjacent string \"OCD: exposure and response prevention plus a higher-dose SSRI.\"",
+    "confidence": "high"
+  }
+]
