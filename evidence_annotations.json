@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "owner": "Joshua Moss, MD",
   "usageNotice": "Educational metadata only; faculty review remains required for clinical recommendations.",
-  "updated": "2026-08-24",
+  "updated": "2026-09-02",
   "policy": {
     "rule": "Every claim the library makes about a source must be licensed by a stored verbatim span from that source.",
     "maxAgeDays": 730,
@@ -1192,6 +1192,32 @@
           "direction": "mixed",
           "usedBy": [
             "T3"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "bot-2026-benzodiazepines-catatonia",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-09-02",
+        "pmid": "42009596",
+        "doi": "10.1111/acps.70102",
+        "sourceSpan": "Of 1336 screened articles, 53 met inclusion criteria. Most were case series using lorazepam (a benzodiazepine) to treat catatonia, with dosages ranging from 2 to 60 mg/day with a median dose of 8 mg/day. The overall remission rate was 55%; overall response was 77%."
+      },
+      "claims": [
+        {
+          "claimId": "catatonia-benzodiazepine-response-rate",
+          "claimText": "Across 53 studies, benzodiazepine treatment of catatonia produced an overall response rate of 77% and an overall remission rate of 55%.",
+          "claimTerms": [
+            "overall remission rate",
+            "overall response",
+            "catatonia"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "cl_reference"
           ]
         }
       ]

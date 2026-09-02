@@ -1,6 +1,6 @@
 # RESIDENT · Appendix A4 — Evidence base
 
-104 registered sources and 46 annotated claims. Each annotation stores the verbatim span from the paper that licenses the claim the library makes — the highest-value target for clinical review, because a claim that drifts from its span is a factual error with a citation attached.
+105 registered sources and 47 annotated claims. Each annotation stores the verbatim span from the paper that licenses the claim the library makes — the highest-value target for clinical review, because a claim that drifts from its span is a factual error with a citation attached.
 
 **Annotation policy.** {
  "rule": "Every claim the library makes about a source must be licensed by a stored verbatim span from that source.",
@@ -673,6 +673,20 @@
 
 - claim terms: `first week postdischarge`, `evidence of publication bias towards papers reporting a higher rate`
 
+### `bot-2026-benzodiazepines-catatonia`
+
+- span type `abstract` · retrieved 2026-09-02 · PMID 42009596 · DOI 10.1111/acps.70102
+
+**Verbatim source span.**
+
+> Of 1336 screened articles, 53 met inclusion criteria. Most were case series using lorazepam (a benzodiazepine) to treat catatonia, with dosages ranging from 2 to 60 mg/day with a median dose of 8 mg/day. The overall remission rate was 55%; overall response was 77%.
+
+**Claim `catatonia-benzodiazepine-response-rate`** (direction: `descriptive`, used by cl_reference)
+
+> Across 53 studies, benzodiazepine treatment of catatonia produced an overall response rate of 77% and an overall remission rate of 55%.
+
+- claim terms: `overall remission rate`, `overall response`, `catatonia`
+
 ## Full source registry
 
 | id | type | access | citation |
@@ -781,3 +795,4 @@
 | `hansson-2022` | primary-study | metadata | {'authors': [{'family': 'Hansson', 'given': 'KM'}, {'family': 'Romøren', 'given': 'M'}, {'family': 'Weimand', 'given': 'B'}, {'family': 'Heiervang', 'given': 'KS'}, {'family': 'Hestmark', 'given': 'L'}, {'family': 'Landeweer', 'given': 'EGM'}, {'family': 'Pedersen', 'given': 'R'}], 'doi': '10.1186/s12888-022-04461-6', 'journal': 'BMC Psychiatry', 'organization': '', 'pages': '812', 'pmid': '36539741', 'title': 'The duty of confidentiality during family involvement: ethical challenges and possible solutions in the treatment of persons with psychotic disorders', 'url': 'https://doi.org/10.1186/s12888-022-04461-6', 'volume': '22', 'year': 2022} |
 | `chung-2017-postdischarge-suicide` | systematic-review | metadata | {'authors': [{'family': 'Chung', 'given': 'DT'}, {'family': 'Ryan', 'given': 'CJ'}, {'family': 'Hadzi-Pavlovic', 'given': 'D'}, {'family': 'Singh', 'given': 'SP'}, {'family': 'Stanton', 'given': 'C'}, {'family': 'Large', 'given': 'MM'}], 'doi': '10.1001/jamapsychiatry.2017.1044', 'journal': 'JAMA Psychiatry', 'organization': '', 'pages': '694-702', 'pmid': '28564699', 'title': 'Suicide Rates After Discharge From Psychiatric Facilities: A Systematic Review and Meta-analysis', 'url': 'https://doi.org/10.1001/jamapsychiatry.2017.1044', 'volume': '74', 'year': 2017} |
 | `chung-2019-first-week-month` | systematic-review | metadata | {'authors': [{'family': 'Chung', 'given': 'D'}, {'family': 'Hadzi-Pavlovic', 'given': 'D'}, {'family': 'Wang', 'given': 'M'}, {'family': 'Swaraj', 'given': 'S'}, {'family': 'Olfson', 'given': 'M'}, {'family': 'Large', 'given': 'M'}], 'doi': '10.1136/bmjopen-2018-023883', 'journal': 'BMJ Open', 'organization': '', 'pages': 'e023883', 'pmid': '30904843', 'title': 'Meta-analysis of suicide rates in the first week and the first month after psychiatric hospitalisation', 'url': 'https://doi.org/10.1136/bmjopen-2018-023883', 'volume': '9', 'year': 2019} |
+| `bot-2026-benzodiazepines-catatonia` | systematic-review | abstract | {'authors': [{'family': 'Bot', 'given': 'L'}, {'family': 'Schotsman', 'given': 'B'}, {'family': 'Oostra', 'given': 'E'}, {'family': 'Hoogendoorn', 'given': 'AW'}, {'family': 'van Exel', 'given': 'E'}], 'doi': '10.1111/acps.70102', 'journal': 'Acta Psychiatr Scand', 'organization': '', 'pages': '99-115', 'pmid': '42009596', 'title': 'The Effect of Benzodiazepines on Catatonia: A Systematic Review and Meta-Analysis', 'url': 'https://doi.org/10.1111/acps.70102', 'volume': '154', 'year': 2026} |
