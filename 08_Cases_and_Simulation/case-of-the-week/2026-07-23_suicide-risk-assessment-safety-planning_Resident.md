@@ -99,6 +99,6 @@ Mental status: alert, cooperative, tearful, with constricted affect and mood-con
 
 *Citations retrieved from PubMed. This teaching case uses a synthetic, de-identified scenario for educational purposes only.*
 
-*If this material raises personal concerns for you or someone you know, in the U.S. you can call or text 988 (Suicide & Crisis Lifeline), available 24/7.*
+<!-- crisis-block -->
 
 *Joshua Moss, MD | Psychiatrist*
