@@ -7200,6 +7200,68 @@
           }
         ]
       }
+    },
+    {
+      "id": "boggs-2020-lethal-means-assessment",
+      "type": "primary-study",
+      "citation": {
+        "title": "A Quasi-Experimental Analysis of Lethal Means Assessment and Risk for Subsequent Suicide Attempts and Deaths",
+        "authors": [
+          {
+            "family": "Boggs",
+            "given": "JM"
+          },
+          {
+            "family": "Beck",
+            "given": "A"
+          },
+          {
+            "family": "Ritzwoller",
+            "given": "DP"
+          },
+          {
+            "family": "Lindrooth",
+            "given": "RC"
+          }
+        ],
+        "organization": "",
+        "year": 2020,
+        "journal": "J Gen Intern Med",
+        "volume": "35",
+        "pages": "1709-1714",
+        "doi": "10.1007/s11606-020-05641-4",
+        "pmid": "32040838",
+        "url": "https://doi.org/10.1007/s11606-020-05641-4"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 32040838): title, authors, journal, volume, pages, DOI and PMC id all match",
+        "verifiedAt": "2026-09-02",
+        "note": "Added for curriculum-review finding MS3V07-F001: three surfaces credited 'structured lethal-means counseling (CALM)' with cutting attempts/deaths 3.3%->0.83%. The exposure in this study is documented lethal-means ASSESSMENT, not CALM delivery, and the design is quasi-experimental (instrumental variable), not randomised. Annotation is AI-drafted from the abstract and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "quasi-experimental cohort (instrumental variable)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-02",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "suicide",
+          "lethal-means",
+          "discharge"
+        ],
+        "clerkshipRelevance": "The number behind means-restriction teaching, with its design attached: in a Kaiser Colorado cohort, documented lethal-means assessment was followed by fewer suicide attempts and deaths at 180 days (0.83% vs 3.3%). The exposure is assessment documented in the note, not delivery of CALM counselling, and the authors note that unmeasured co-occurring prevention practices may contribute - so teach it as a strong association, not a randomised effect.",
+        "noteHistory": [
+          {
+            "date": "2026-09-02",
+            "note": "Added for curriculum-review finding MS3V07-F001: three surfaces credited 'structured lethal-means counseling (CALM)' with cutting attempts/deaths 3.3%->0.83%. The exposure in this study is documented lethal-means ASSESSMENT, not CALM delivery, and the design is quasi-experimental (instrumental variable), not randomised. Annotation is AI-drafted from the abstract and awaits faculty signature.",
+            "reason": "curriculum-review remediation WP-5c (finding MS3V07-F001)"
+          }
+        ]
+      }
     }
   ]
 }

@@ -15,7 +15,7 @@ For anyone starting an antipsychotic, the **ADA/APA 2004 consensus** establishes
 | **Weight / BMI** (and waist circumference) | Baseline → **4 wk → 8 wk → 12 wk → then quarterly** | Antipsychotic weight gain begins within weeks; monthly checks in the first 3 months catch the window where switching or intervening is most effective |
 | **Blood pressure** | Baseline → 12 wk → annually | Metabolic syndrome criterion |
 | **Fasting glucose or HbA1c** | Baseline → 12 wk → annually | Antipsychotic-associated diabetes |
-| **Fasting lipid panel** | Baseline → 12 wk → annually | Dyslipidemia, esp. triglycerides |
+| **Fasting lipid panel** | Baseline → 12 wk → every 5 y per the 2004 consensus (most services now recheck annually) | Dyslipidemia, esp. triglycerides |
 | Personal/family cardiometabolic history | Baseline | Risk stratification |
 
 The weight/BMI front-loading is intentional: early antipsychotic weight gain is the highest-yield signal and the best opportunity to switch agents or add metformin before the trajectory becomes entrenched. Monitor more frequently for any parameter that is elevated at baseline or worsens during titration.

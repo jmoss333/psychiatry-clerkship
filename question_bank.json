@@ -132,7 +132,7 @@
       ],
       "why": "The best response validates first, stays inside the student role, and converts 'put away' into a concrete, verifiable step — who secures the items and how the team will know. Quoting lethality statistics at the family is the righting reflex in evidence clothing; accepting reassurance leaves means safety unconfirmed at the exact moment risk peaks; and an ultimatum makes the family responsible for treatment while overstepping the student's role.",
       "pearl": "Means safety is a lethality intervention, not a formality — 'who can confirm items are secured before discharge?' is a clinical act.",
-      "evidence": "exp_family.md 'Why It Matters' — structured lethal-means counseling (CALM) cut attempts/deaths from 3.3% to 0.83% at 180 days; suicide risk peaks in the first week post-discharge (Chung et al., JAMA Psychiatry 2017)."
+      "evidence": "exp_family.md 'Why It Matters' — documented lethal-means assessment was associated with fewer suicide attempts and deaths at 180 days (0.83% vs 3.3%; Boggs et al. 2020, quasi-experimental); suicide risk peaks in the first week post-discharge (Chung et al., JAMA Psychiatry 2017)."
     },
     {
       "id": "qb_cog_001",
@@ -2047,7 +2047,7 @@
           }
         }
       ],
-      "why": "Underestimate the emergency and Agitation = antipsychotic are the two clinical catastrophes. This is NMS/malignant catatonia: fever, autonomic instability, lead-pipe rigidity, elevated CK after antipsychotic escalation. The correct sequence is stop all antipsychotics, transfer to a medical unit, and emergently consider ECT for malignant or refractory catatonia — not more benzodiazepines on the psychiatric unit and certainly not more antipsychotic.",
+      "why": "Underestimate the emergency and Agitation = antipsychotic are the two clinical catastrophes. This is NMS/malignant catatonia: fever, autonomic instability, lead-pipe rigidity, elevated CK after antipsychotic escalation. The correct sequence is stop all antipsychotics, transfer to a medical unit for hemodynamic monitoring, continue lorazepam — benzodiazepines remain first-line pharmacotherapy for malignant catatonia while ECT is arranged — and pursue ECT emergently if the patient does not rapidly improve; the error in option A is observation on the psychiatric unit, not the lorazepam, and certainly not more antipsychotic.",
       "pearl": "Malignant catatonia overlaps with NMS: fever + rigidity + elevated CK + autonomic instability after antipsychotic exposure — stop antipsychotics, transfer to medical, and consider ECT urgently.",
       "evidence": "catatonia.md — The emergency you must never miss is malignant catatonia: autonomic instability, hyperthermia, and rigidity that clinically overlaps with neuroleptic malignant syndrome (NMS). ECT is the treatment for severe, malignant, or benzodiazepine-refractory catatonia and should not be delayed when the patient is deteriorating.",
       "tier2": {
@@ -5740,7 +5740,7 @@
           }
         }
       ],
-      "why": "Anticholinergic first-line, Clozapine immediately, and Benzodiazepine first-line all misorient the management hierarchy. Propranolol (B) has the strongest evidence for akathisia: it is effective in multiple small RCTs reviewed in the Cochrane systematic analysis (Lima et al. 2004). The management sequence is: (1) reduce antipsychotic dose or switch if possible — the mechanism fix; (2) propranolol when dose reduction isn't immediately available; (3) benztropine if parkinsonism co-exists; (4) benzodiazepine adjunct if symptoms remain severe. Avoid escalating the antipsychotic — the cardinal error.",
+      "why": "Anticholinergic first-line, Clozapine immediately, and Benzodiazepine first-line all misorient the management hierarchy. Propranolol (B) remains the standard first-line pharmacotherapy for akathisia when dose reduction or switching is not immediately available, and among the options offered it is the best-supported choice — but characterize the evidence honestly: the 2004 Cochrane review (Lima et al., CD001946) found only three small placebo-controlled RCTs (total n=51, ≤72 hours), could draw no firm conclusions, and judged the data insufficient to recommend beta-blockers for akathisia. The recommendation rests on early small trials and accumulated clinical practice rather than on positive systematic-review evidence. The management sequence is: (1) reduce antipsychotic dose or switch if possible — the mechanism fix; (2) propranolol when dose reduction isn't immediately available; (3) benztropine if parkinsonism co-exists; (4) benzodiazepine adjunct if symptoms remain severe. Avoid escalating the antipsychotic — the cardinal error.",
       "pearl": "Akathisia pharmacotherapy: propranolol 20–40 mg BID is first-line (strongest evidence); add benztropine if parkinsonism co-exists; benzodiazepine is third-line adjunct.",
       "evidence": "t_anxiety.md 'When akathisia is identified' — Propranolol 20–40 mg BID is the pharmacological first-line for akathisia with the strongest evidence from multiple small RCTs and Cochrane review (Lima et al., Cochrane Database Syst Rev 2004). Management hierarchy: reduce dose or switch → propranolol → benztropine if parkinsonism co-exists → benzodiazepine adjunct."
     },
@@ -6786,7 +6786,7 @@
           "c": true
         }
       ],
-      "why": "Age-based BPD exclusion and Sequence error miss the core error. Option C has the correct clinical description but key D is the answer that specifically names the error and its mechanism. The page calls this 'the cardinal error: diagnostic overshadowing — letting a personality label cause you to under-treat a real, acute, treatable illness.'",
+      "why": "Age-based BPD exclusion and Sequence error miss the core error. Option C is the error itself in clinical clothing — its accurate opening (BPD mood lability is transient and reactive) is used to license the false conclusion that sustained anhedonia and neurovegetative symptoms need no evaluation for superimposed major depression; key D names that error and its mechanism. The page calls this 'the cardinal error: diagnostic overshadowing — letting a personality label cause you to under-treat a real, acute, treatable illness.'",
       "pearl": "Diagnostic overshadowing in BPD: never let a personality diagnosis suppress investigation of a treatable comorbid mood, psychotic, or substance disorder.",
       "evidence": "t_personality.md — The cardinal error is diagnostic overshadowing: letting a personality label cause you to under-treat a real, acute, treatable illness. A BPD diagnosis does not protect a patient from also having a serious mood, psychotic, or medical condition."
     },
@@ -6944,7 +6944,7 @@
           "c": true
         }
       ],
-      "why": "ADHD intensification for episodic change and ADHD excludes bipolar both apply the wrong clinical framework. Option C also describes the correct reasoning but D is more complete in naming the key discriminators. The page explicitly states: 'ADHD is chronic, pervasive, and cross-situational from childhood; mania is episodic with mood elevation, decreased need for sleep, and grandiosity — episodic ADHD-like symptoms are a mood or substance flag.'",
+      "why": "ADHD intensification for episodic change and ADHD excludes bipolar both apply the wrong clinical framework. Option C is also incorrect: the stem never establishes stimulant treatment, and several days of decreased need for sleep, grandiosity, and pressured speech constitute a manic syndrome rather than a stimulant side effect — the correct move is a first manic episode evaluation now (holding any stimulant), not a dose reduction with a deferred mood assessment. The page explicitly states: 'ADHD is chronic, pervasive, and cross-situational from childhood; mania is episodic with mood elevation, decreased need for sleep, and grandiosity — episodic ADHD-like symptoms are a mood or substance flag.'",
       "pearl": "ADHD is chronic and cross-situational from childhood; a new episodic presentation with decreased sleep, grandiosity, and pressured speech is a first manic episode flag — not an ADHD exacerbation.",
       "evidence": "t_neurodev.md — ADHD is chronic, pervasive, and cross-situational from childhood; mania is episodic with mood elevation, decreased need for sleep, and grandiosity. Episodic 'ADHD-like' symptoms are a mood or substance flag."
     },

@@ -44,7 +44,7 @@
 
 ## Psychosis & serious mental illness
 - **[I Am Not Sick I Don't Need Help!](https://www.amazon.com/dp/0985206705)** — Xavier Amador. The LEAP method for families when a loved one doesn't recognize they're ill—Listen, Empathize, Agree, Partner to help them accept treatment.
-- **[Surviving Schizophrenia for Families](https://www.amazon.com/dp/1593852738)** — Kim Mueser & Susan Gingerich. Updated comprehensive family guide to schizophrenia from leading researchers—practical strategies for recovery.
+- **[The Complete Family Guide to Schizophrenia](https://www.amazon.com/dp/1593852738)** — Kim Mueser & Susan Gingerich. Updated comprehensive family guide to schizophrenia from leading researchers—practical strategies for recovery.
 - **[The Center Cannot Hold](https://www.amazon.com/dp/1401309445)** — Elyn Saks. Memoir by law professor living with schizophrenia—powerful testimony that recovery and achievement are possible.
 
 ## ADHD (Russell Barkley)

@@ -203,10 +203,17 @@ CURRICULUM_REVIEW_WP5A_IDS = {
 CURRICULUM_REVIEW_WP5B_IDS = {
     "fountoulakis-2025-esketamine",
 }
+# Added by curriculum-review remediation WP-5c (finding MS3V07-F001): three surfaces credited
+# "structured lethal-means counseling (CALM)" with cutting attempts/deaths 3.3%->0.83%, where the
+# study's exposure is documented lethal-means ASSESSMENT and the design is quasi-experimental.
+CURRICULUM_REVIEW_WP5C_IDS = {
+    "boggs-2020-lethal-means-assessment",
+}
 
 ALL_SOURCE_IDS = (
     EXISTING_IDS | TIER1_IDS | SURVEILLANCE_IDS | SAFETY_GATE_IDS | THERAPY_WP_T2_IDS
     | POSTDISCHARGE_CORRECTION_IDS | CURRICULUM_REVIEW_WP5A_IDS | CURRICULUM_REVIEW_WP5B_IDS
+    | CURRICULUM_REVIEW_WP5C_IDS
 )
 REFERENCE_FILES = (
     "topic_meta.json",
