@@ -1,6 +1,6 @@
 # MS3 · Navigation map
 
-Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-02 @ `4110ad7`.
+Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-02 @ `e844b6b`.
 
 ## Orientation  *(pinned)*
 
@@ -8,11 +8,11 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 |---|---|---|---|---|---|---|---|
 | 1 | Welcome to the Rotation | `welcome.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `13_Faculty_Resources/Outreach/MS3_Inpatient_Rotation_OnePager.md` | 416 |
 | 2 | Orientation Packet | `orientation.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `14_Tracks/MS3/Student_Ready_Pack/01_orientation/MS3_orientation_packet.md` | 1004 |
-| 3 | Core Reading List | `core_readings.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `14_Tracks/MS3/Student_Ready_Pack/core_reading_list.md` | 387 |
+| 3 | Core Reading List | `core_readings.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `14_Tracks/MS3/Student_Ready_Pack/core_reading_list.md` | 397 |
 | 4 | Orientation Video | `orientation-video.html` | tool | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `_prototypes/video-library/ (build-generated shell)` |  |
-| 5 | Week 1 — Foundations | `week1.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_1_Foundations/README.md` | 343 |
+| 5 | Week 1 — Foundations | `week1.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_1_Foundations/README.md` | 345 |
 | 6 | Week 2 — Mood/Psychosis/Pharm | `week2.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_2_Mood_Psychosis_Pharm/README.md` | 106 |
-| 7 | Week 3 — Psychotherapy/Personality | `week3.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_3_Psychotherapy_Personality/README.md` | 123 |
+| 7 | Week 3 — Psychotherapy/Personality | `week3.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_3_Psychotherapy_Personality/README.md` | 119 |
 | 8 | Week 4 — Family/Systems/EE | `week4.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_4_Family_Systems_EE/README.md` | 99 |
 | 9 | Week 5 — Acute/Emergency | `week5.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_5_Acute_Emergency/README.md` | 178 |
 | 10 | Week 6 — Integration/Exam | `week6.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_6_Integration_Exam/README.md` | 79 |
@@ -42,7 +42,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 9 | Personality | `t_personality.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Personality/personality_disorders_inpatient_teaching.md` | 1322 |
 | 10 | Substance Use | `t_sud.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md` | 1262 |
 | 11 | Geriatric | `t_geri.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Geriatric/geriatric_psychiatry_inpatient_teaching.md` | 893 |
-| 12 | Perinatal | `t_perinatal.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/Perinatal/perinatal_psychiatry_inpatient_teaching.md` | 1141 |
+| 12 | Perinatal | `t_perinatal.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/Perinatal/perinatal_psychiatry_inpatient_teaching.md` | 1145 |
 | 13 | Neurodevelopmental Disorders | `t_neurodev.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Neurodevelopmental/neurodevelopmental_disorders_inpatient_teaching.md` | 1143 |
 | 14 | Eating Disorders | `t_eating.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/Eating_Disorders/eating_disorders_inpatient_teaching.md` | 1308 |
 | 15 | Neurocognitive (Dementia) | `t_neurocog.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/Neurocognitive/neurocognitive_disorders_inpatient_teaching.md` | 880 |
@@ -51,7 +51,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 18 | Dissociative Disorders | `t_dissociative.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Dissociative/dissociative_disorders_inpatient_teaching.md` | 893 |
 | 19 | Sexual, Paraphilic & Gender | `t_sexual.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Sexual_Gender/sexual_paraphilic_gender_inpatient_teaching.md` | 666 |
 | 20 | Impulse-Control & Conduct | `t_impulse.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Impulse_Control/impulse_control_conduct_inpatient_teaching.md` | 719 |
-| 21 | Adjustment Disorders | `t_adjustment.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Adjustment/adjustment_disorders_inpatient_teaching.md` | 906 |
+| 21 | Adjustment Disorders | `t_adjustment.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Adjustment/adjustment_disorders_inpatient_teaching.md` | 910 |
 | 22 | Culture, Disparities & Formulation | `cultural_psychiatry.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Cultural_Psychiatry/cultural_psychiatry_inpatient_teaching.md` | 622 |
 
 ## Assess Safety and Acuity  *(pinned)*

@@ -642,7 +642,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 ## Index — All Cases
 
 - **Slug:** `cotw_index.md` · **Type:** md · **Sidebar:** listed
-- **Source:** `08_Cases_and_Simulation/case-of-the-week/index_ms3.md`
+- **Source:** `08_Cases_and_Simulation/case-of-the-week/index_resident.md`
 - **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
 - **Length:** 422 words
 

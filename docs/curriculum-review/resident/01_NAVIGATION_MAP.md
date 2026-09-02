@@ -1,14 +1,14 @@
 # RESIDENT · Navigation map
 
-Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-02 @ `4110ad7`.
+Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-02 @ `e844b6b`.
 
 ## Orientation  *(pinned)*
 
 | # | Title | Slug | Type | Sidebar | Governance | Source path | Words |
 |---|---|---|---|---|---|---|---|
-| 1 | Welcome — Resident Rotation | `welcome.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `13_Faculty_Resources/Outreach/MS3_Inpatient_Rotation_OnePager.md` | 375 |
+| 1 | Welcome — Resident Rotation | `welcome.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `14_Tracks/Resident/resident_welcome.md` | 385 |
 | 2 | 4-Week Rotation Plan | `rotation.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `14_Tracks/Resident/resident_curriculum.md` | 298 |
-| 3 | Core Reading List | `core_readings.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `14_Tracks/MS3/Student_Ready_Pack/core_reading_list.md` | 387 |
+| 3 | Core Reading List | `core_readings.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `14_Tracks/MS3/Student_Ready_Pack/core_reading_list.md` | 397 |
 | 4 | Supervision, EPAs & Teaching | `supervision_teaching.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `14_Tracks/Resident/supervision_teaching.md` | 999 |
 
 ## Start the Encounter
@@ -36,7 +36,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 9 | Personality | `t_personality.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Personality/personality_disorders_inpatient_teaching.md` | 1322 |
 | 10 | Substance Use | `t_sud.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md` | 1262 |
 | 11 | Geriatric | `t_geri.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Geriatric/geriatric_psychiatry_inpatient_teaching.md` | 893 |
-| 12 | Perinatal | `t_perinatal.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/Perinatal/perinatal_psychiatry_inpatient_teaching.md` | 1141 |
+| 12 | Perinatal | `t_perinatal.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/Perinatal/perinatal_psychiatry_inpatient_teaching.md` | 1145 |
 | 13 | Neurodevelopmental Disorders | `t_neurodev.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Neurodevelopmental/neurodevelopmental_disorders_inpatient_teaching.md` | 1143 |
 | 14 | Eating Disorders | `t_eating.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/Eating_Disorders/eating_disorders_inpatient_teaching.md` | 1308 |
 
@@ -120,7 +120,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 
 | # | Title | Slug | Type | Sidebar | Governance | Source path | Words |
 |---|---|---|---|---|---|---|---|
-| 1 | Index — All Cases | `cotw_index.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `08_Cases_and_Simulation/case-of-the-week/index_ms3.md` | 422 |
+| 1 | Index — All Cases | `cotw_index.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `08_Cases_and_Simulation/case-of-the-week/index_resident.md` | 422 |
 | 2 | Catatonia (Aug 31) | `cotw_20260831_catatonia_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-31_catatonia-recognition-workup-treatment_Resident.md` | 2182 |
 | 3 | Borderline Personality Disorder (Aug 27) | `cotw_20260827_bpd_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-27_borderline-personality-disorder_Resident.md` | 2692 |
 | 4 | Panic Disorder (Aug 10) | `cotw_20260810_panic_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-10_anxiety-panic-disorder_Resident.md` | 4535 |
@@ -143,9 +143,9 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 4 | Book Library | `book_library.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `07_Evidence_and_Reading/Book_Summaries/ms3_book_library.md` | 1198 |
 | 5 | Podcast Library (Psychiatry & Psychotherapy) | `podcast_library.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `12_Media/psychiatry_psychotherapy_podcast_library.md` | 2617 |
 | 6 | Orientation Packet | `orientation.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `14_Tracks/MS3/Student_Ready_Pack/01_orientation/MS3_orientation_packet.md` | 1004 |
-| 7 | Week 1 — Foundations | `week1.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_1_Foundations/README.md` | 343 |
+| 7 | Week 1 — Foundations | `week1.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_1_Foundations/README.md` | 345 |
 | 8 | Week 2 — Mood/Psychosis/Pharm | `week2.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_2_Mood_Psychosis_Pharm/README.md` | 106 |
-| 9 | Week 3 — Psychotherapy/Personality | `week3.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_3_Psychotherapy_Personality/README.md` | 123 |
+| 9 | Week 3 — Psychotherapy/Personality | `week3.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_3_Psychotherapy_Personality/README.md` | 119 |
 | 10 | Week 4 — Family/Systems/EE | `week4.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_4_Family_Systems_EE/README.md` | 99 |
 | 11 | Week 5 — Acute/Emergency | `week5.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_5_Acute_Emergency/README.md` | 178 |
 | 12 | Week 6 — Integration/Exam | `week6.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_6_Integration_Exam/README.md` | 79 |
@@ -160,7 +160,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 21 | Dissociative Disorders | `t_dissociative.md` | md | hidden | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Dissociative/dissociative_disorders_inpatient_teaching.md` | 893 |
 | 22 | Sexual, Paraphilic & Gender | `t_sexual.md` | md | hidden | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Sexual_Gender/sexual_paraphilic_gender_inpatient_teaching.md` | 666 |
 | 23 | Impulse-Control & Conduct | `t_impulse.md` | md | hidden | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Impulse_Control/impulse_control_conduct_inpatient_teaching.md` | 719 |
-| 24 | Adjustment Disorders | `t_adjustment.md` | md | hidden | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Adjustment/adjustment_disorders_inpatient_teaching.md` | 906 |
+| 24 | Adjustment Disorders | `t_adjustment.md` | md | hidden | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Adjustment/adjustment_disorders_inpatient_teaching.md` | 910 |
 | 25 | Weekly Reading Map | `reading_map.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `14_Tracks/MS3/Student_Ready_Pack/03_weekly_map/week_by_week_reading_map.md` | 588 |
 | 26 | COMAT & Shelf Review | `shelf.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `14_Tracks/MS3/Student_Ready_Pack/07_shelf_guide/shelf_review_guide.md` | 742 |
 | 27 | OSCE Stations | `osce.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `14_Tracks/MS3/Student_Ready_Pack/06_osce_cases/osce_station_set.md` | 1544 |
