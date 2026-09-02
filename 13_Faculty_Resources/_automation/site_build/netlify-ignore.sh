@@ -5,10 +5,11 @@
 # Exit !0 => PROCEED with the build.
 #
 # What this saves: build minutes and a redundant production redeploy on doc-only pushes.
-# What it does NOT save: Git-LFS bandwidth. Netlify fetches LFS objects during the repo
-# clone, which happens BEFORE this ignore hook runs (netlify.toml is read post-clone), so a
-# skipped build has already paid the LFS transfer. To curb LFS bandwidth, batch pushes or
-# buy the data pack (see GIT_AND_DEPLOY_PLAN.md §6).
+# Git-LFS bandwidth: saved ONLY on the cached-pull path (lfs_pull_cached.sh fetches media
+# inside the build command, after this hook, from Netlify's persistent cache). On the legacy
+# path (GIT_LFS_ENABLED=true in the site's env) Netlify fetches LFS objects during the repo
+# clone, which happens BEFORE this hook runs (netlify.toml is read post-clone), so a skipped
+# build has already paid the transfer. See GIT_AND_DEPLOY_PLAN.md §6 / §6a.
 #
 # Skip when every changed file is EITHER a Markdown doc under
 # 13_Faculty_Resources/_automation/ (planning/status docs) OR any file under

@@ -10,7 +10,9 @@
 # The ONE thing that legitimately belongs here (shared by both sites, and safe post-clone)
 # is the build-ignore hook: it cancels a rebuild + redeploy when a push changes only
 # _automation/*.md planning docs. It saves build minutes and avoids a redundant production
-# redeploy — but NOT Git-LFS bandwidth (Netlify fetches LFS during clone, before this hook
-# runs). See GIT_AND_DEPLOY_PLAN.md §7.
+# redeploy. It saves Git-LFS bandwidth only once a site is on the cached-pull path
+# (lfs_pull_cached.sh in the build command; GIT_LFS_ENABLED removed from the site's env) —
+# on the legacy path Netlify fetches LFS during clone, before this hook runs.
+# See GIT_AND_DEPLOY_PLAN.md §6a and §7.
 [build]
   ignore = "bash 13_Faculty_Resources/_automation/site_build/netlify-ignore.sh"

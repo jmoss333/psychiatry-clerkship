@@ -52,6 +52,12 @@ node --test "$LIB"/tests/*.test.mjs
 echo "── WCAG contrast tokens: tests/contrast-check.mjs"
 node "$LIB/tests/contrast-check.mjs"
 
+# Git-LFS media via Netlify's persistent build cache (no-op locally / in GitHub Actions).
+# Downloads only the objects the per-site cache lacks, so a merge no longer spends the
+# account's monthly LFS bandwidth quota — the 2026-08-30 outage. See lfs_pull_cached.sh.
+echo "── LFS media from cache: lfs_pull_cached.sh"
+bash "$HERE/lfs_pull_cached.sh"
+
 case "$SITE" in
   ms3)
     echo "── build: MS3 → $MS3_OUT"

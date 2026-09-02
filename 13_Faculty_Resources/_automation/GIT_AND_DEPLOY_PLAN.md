@@ -16,7 +16,7 @@
 - **Pushed to GitHub** — private repo `jmoss333/psychiatry-clerkship`, `main` in sync.
 - **Media → Git LFS** — 100 `.m4a` (~344 MB) plus 7 `.mp4` files tracked and pushed; `git lfs fsck` OK. `.gitattributes` covers `*.mp3/*.m4a/*.wav/*.mp4`; deploy-critical media types are un-ignored in `.gitignore`.
 - **Resident source/deploy drift reconciled** — 4 tools that were hand-copied into the deploy dir (`orientation-video`, `rp-agitation`, `rp-brief-psych`, `rp-canon-quiz`) are now built from git-tracked `_prototypes/` via `resident_section.py`, with faithful nav placement + search keywords. A fresh resident build is now **byte-identical** to the live site (was missing these 4 before).
-- **Netlify LFS env vars set** on both sites: `GIT_LFS_ENABLED=true` and `GIT_LFS_FETCH_INCLUDE=*.m4a,*.mp4` for builds. These are required before the repo is cloned, so they must stay in Netlify site environment settings.
+- **Netlify LFS env vars set** on both sites: `GIT_LFS_ENABLED=true` and `GIT_LFS_FETCH_INCLUDE=*.m4a,*.mp4` for builds. *(Superseded 2026-09-02 — §6a: these are now to be **removed** per site so the cached pull takes over; leaving them set is what spends the LFS bandwidth quota on every build.)*
 - **`.netlify/` gitignored** (CLI local state must never be committed).
 
 ## 1. ⚠️ One-time cleanup — run in your NATIVE terminal (not Cowork)
@@ -65,10 +65,10 @@ Today both sites deploy manually via `netlify deploy --dir=…` from whatever se
 - Resident `mmc-psychiatry-residents-sanford` — `af64d5d4-e0b5-4f03-9857-be40e3b48329`
 
 **Both sites**
-- ⚠️ **Git LFS must be enabled or media deploys as pointer stubs.** Set `GIT_LFS_ENABLED=true` plus `GIT_LFS_FETCH_INCLUDE=*.m4a,*.mp4` in each Netlify site's build environment. **This must live in the Netlify UI env vars, NOT `netlify.toml`** — `netlify.toml` is read *after* the repo is cloned, too late to affect the LFS checkout. This is why the committed `netlify.toml` only carries the shared build-ignore hook.
-- Build image includes Python 3 by default; if needed set env `PYTHON_VERSION=3.11`. The scripts use only the standard library (no `pip install`).
+- ⚠️ **Media must reach the build as real bytes, not pointer stubs.** Target state (§6a, 2026-09-02): **no** LFS env vars on the site — `site_build/lfs_pull_cached.sh` runs inside the build command and pulls media from Netlify's persistent cache, spending GitHub LFS bandwidth only on objects the cache lacks. Legacy state (2026-07 → 2026-09): `GIT_LFS_ENABLED=true` plus `GIT_LFS_FETCH_INCLUDE=*.m4a,*.mp4` in each site's build environment, which makes Netlify fetch all ~433 MB at clone time on every production build and exhausted the monthly quota on 2026-08-30. Whichever state a site is in, the setting lives in the **Netlify UI env vars, NOT `netlify.toml`** — `netlify.toml` is read *after* the repo is cloned, too late to affect a clone-time fetch. This is why the committed `netlify.toml` only carries the shared build-ignore hook. Switch-over steps: `site_build/NETLIFY_LFS_RUNBOOK.md`.
+- Build image includes Python 3 by default; if needed set env `PYTHON_VERSION=3.11`. Netlify installs `requirements.txt` (jsonschema, needed by the build-gate validators) automatically during dependency install.
 - Confirm each site's **publish dir** and **build command** in its own settings (one repo can back multiple sites with different commands).
-- Keep build command / publish dir / LFS env vars in each site's **UI settings** (two sites need different commands from one repo, and the LFS env var can't live in `netlify.toml` anyway). The repo `netlify.toml` is deliberately minimal — it carries **only** the shared build-ignore hook (§7), no build command or env, so it does not override either site's UI build settings.
+- Keep build command / publish dir in each site's **UI settings** (two sites need different commands from one repo). Any legacy LFS env var still present is UI-only too, and §6a is retiring it. The repo `netlify.toml` is deliberately minimal — it carries **only** the shared build-ignore hook (§7), no build command or env, so it does not override either site's UI build settings.
 
 After this, the workflow is: **edit source → commit → push → both sites rebuild and deploy automatically.** No more `netlify deploy` by hand, no more two-session clobbering.
 
@@ -89,7 +89,7 @@ netlify deploy --prod --dir=~/mmc-resident-deploy       # Resident
 > ~~Note: the deployed sites currently carry ~10 pages beyond this build script's list…~~ **Resolved 2026-07-02:** a from-scratch build was diffed against both live deploys. MS3 had **no** real-content gap (the 4 "extra" files were `.netlify/plugins/node_modules` junk). Resident was missing **4 tools**, now reconciled into `resident_section.py` (see §0b). Fresh builds are now byte-identical to live. Re-run this diff after any parallel-session edits.
 
 ## 6. ✅ MEDIA — migrated to Git LFS (2026-07-02; hardened 2026-07-07)
-**Done:** the **100 `.m4a` files (~344 MB)** — landmark-trial overviews (`07_Evidence_and_Reading/Landmark_Trials/audio/`) and NotebookLM briefs (`12_Media/audio_oe/`) — plus **7 `.mp4` files** are now Git LFS-tracked and pushed (`git lfs fsck` OK). Both Netlify sites must have `GIT_LFS_ENABLED=true` and `GIT_LFS_FETCH_INCLUDE=*.m4a,*.mp4`. A local build confirms media lands in both `_build/ms3` and `_build/res`. **Still verify empirically after LFS changes:** media URLs should return real multi-MB files (HTTP 200, appropriate audio/video content type), not ~130-byte pointer stubs — see §3 caution. Historical context (why this mattered) below.
+**Done:** the **100 `.m4a` files (~344 MB)** — landmark-trial overviews (`07_Evidence_and_Reading/Landmark_Trials/audio/`) and NotebookLM briefs (`12_Media/audio_oe/`) — plus **7 `.mp4` files** are now Git LFS-tracked and pushed (`git lfs fsck` OK). Until 2026-09-02 both Netlify sites needed `GIT_LFS_ENABLED=true` and `GIT_LFS_FETCH_INCLUDE=*.m4a,*.mp4`; §6a replaces that with the in-build cached pull and those vars are now to be removed. A local build confirms media lands in both `_build/ms3` and `_build/res`. **Still verify empirically after LFS changes:** media URLs should return real multi-MB files (HTTP 200, appropriate audio/video content type), not ~130-byte pointer stubs — see §3 caution. Historical context (why this mattered) below.
 
 <sub>Originally these were **gitignored**, so a git-CI build would have deployed both sites **without audio** (silent regression); the manual `netlify deploy --dir` flow didn't hit this because it copies audio from local disk. That risk is closed once the empirical check passes.</sub>
 
@@ -107,13 +107,15 @@ git commit -m "chore: track site audio via Git LFS (landmark + NotebookLM briefs
 git push
 ```
 **2026-07-07 incident note:** the MS3 production build failed when Netlify checked out LFS pointer stubs for audio. Recovery was: `git lfs push --all origin`, confirm `GIT_LFS_ENABLED=true`, add `GIT_LFS_FETCH_INCLUDE=*.m4a,*.mp4`, and trigger a new production deploy. The targeted guard is now `13_Faculty_Resources/_automation/site_build/check_lfs_media.py`, and the operational checklist is `13_Faculty_Resources/_automation/site_build/NETLIFY_LFS_RUNBOOK.md`.
-**Quota note:** the current tree has roughly 433 MB of LFS-tracked media, which fits GitHub LFS free storage (1 GB), but LFS **bandwidth** is 1 GB/mo free and full CI checkouts can pull those objects → budget a **$5/mo 50 GB data pack** if you build often. Also confirm Netlify builds actually check out LFS objects (Netlify supports Git LFS; verify `/audio`, `/audio_oe`, and video URLs are populated on the deployed site).
+**Quota note:** the current tree has roughly 433 MB of LFS-tracked media, which fits GitHub LFS storage, but LFS **bandwidth** is metered per account (10 GB/mo on the current plan, reset on the 1st). **2026-08-30 incident:** it bit. With `GIT_LFS_ENABLED=true` Netlify re-fetched all ~433 MB on every production build of each site (previews and CI never fetch), so ~11 merges to `main` spent the month; GitHub's 90% and 100% notices arrived 40 minutes apart and every production deploy of both sites failed the LFS gate until the 2026-09-01 reset. Runbook: `site_build/NETLIFY_LFS_RUNBOOK.md`, "Incident pattern 2".
 
-### 6a. If LFS bandwidth becomes a real problem — escape hatch (NOT needed yet)
-**Decision recorded 2026-07-02; do not act unless GitHub LFS bandwidth actually bites.** First just watch GitHub → repo → Settings → "Git LFS" usage for a couple of weeks. Netlify likely caches LFS objects across builds, so the 1 GB/mo bandwidth is mainly consumed when the audio *changes*, not every build. If it stays low, leave everything as-is.
+### 6a. LFS bandwidth — cached pull (IMPLEMENTED 2026-09-02) and the remaining escape hatches
+**Decision recorded 2026-07-02, revised 2026-09-02 after the 2026-08-30 outage.** The assumption that "Netlify likely caches LFS objects across builds" was wrong for the clone-time fetch; it does not.
 
-If it does creep toward the limit, in order of preference:
-1. **Zero-effort stopgap:** buy the **$5/mo GitHub 50 GB LFS data pack**. No re-architecture.
+**0. Implemented — fetch inside the build, from Netlify's persistent cache.** `site_build/lfs_pull_cached.sh` (run by `build_and_check.sh` before the site build) points `lfs.storage` at `$NETLIFY_CACHE_DIR/git-lfs` — a directory Netlify persists between builds of a site, all contexts — and runs `git lfs pull`, which downloads only objects the store lacks. Steady-state bandwidth ≈ 0 MB/build; one full fetch after a "Clear cache and deploy"; the log prints `~N MB downloaded from GitHub this build` as a running meter. It is a no-op locally and in GitHub Actions. **Activation is a UI step, per site: delete `GIT_LFS_ENABLED` and `GIT_LFS_FETCH_INCLUDE`, then clear-cache deploy once** — until then the clone still pays first and the script just says so. A side effect worth having: once a site is on this path the §7 build-ignore hook finally *does* save LFS bandwidth, because the fetch now runs after it.
+
+If bandwidth still creeps (media churn, frequent cache clears), in order of preference:
+1. **Zero-effort stopgap:** buy the **$5/mo GitHub 50 GB LFS data pack** (also the only way to deploy *before* the monthly reset once the quota is spent). No re-architecture.
 2. **Real fix — move audio off git to object storage + CDN, reference by absolute URL.** Removes audio from the repo entirely: no LFS, no build-time checkout, no GitHub LFS bandwidth meter. The build scripts would emit `<audio src="https://cdn/…/xyz.m4a">` instead of copying local files into `_build/*/audio*`.
    - **Cloudflare R2** (recommended): S3-compatible, **zero egress fees**, cheap storage, public bucket + custom domain. Best fit for "serve static audio forever, cheaply."
    - **Backblaze B2**: similar; free egress via the Cloudflare CDN alliance.
@@ -127,7 +129,7 @@ If it does creep toward the limit, in order of preference:
 ## 7. Build-ignore hook — skip redundant doc-only rebuilds (2026-07-02)
 Both sites build-on-push, so a commit that changes only planning docs would still trigger two full rebuilds + redeploys. `netlify.toml` registers a shared build-ignore hook to skip those:
 
-> ⚠️ **What it does and doesn't save.** It saves **build minutes** and avoids a **redundant production redeploy**. It does **NOT** save Git-LFS bandwidth: Netlify fetches LFS objects during the repo *clone*, which runs **before** the ignore hook (netlify.toml is read post-clone), so a skipped build has already paid the transfer. Curb LFS bandwidth via §6 (batch pushes / data pack), not this hook.
+> ⚠️ **What it does and doesn't save.** It saves **build minutes** and avoids a **redundant production redeploy**. Git-LFS bandwidth it saves **only on the §6a cached-pull path**, where the fetch runs inside the build command, after this hook. On the legacy path (`GIT_LFS_ENABLED=true`) Netlify fetches LFS objects during the repo *clone*, which runs **before** the ignore hook (netlify.toml is read post-clone), so a skipped build has already paid the transfer.
 
 - **Script:** `13_Faculty_Resources/_automation/site_build/netlify-ignore.sh`
 - **Rule:** SKIP the build only when **every** changed file is either a Markdown doc under
