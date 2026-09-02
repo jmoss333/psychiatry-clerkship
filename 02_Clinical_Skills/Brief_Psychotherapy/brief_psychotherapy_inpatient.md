@@ -15,7 +15,7 @@
 | Just self-harmed or nearly did | Behavior serving a function | **Chain analysis** — walk the sequence *with* the patient, non-punitively | Turns an incident into a formulation and a plan; core DBT move |
 | Repeatedly returns in crisis, overwhelmed by problems | Problem-solving deficit | **Problem-solving therapy (PST)** — the 4-step format (define → brainstorm → choose → try) | Repeat self-harm re-presentation 13.5% vs 22.1%, **NNT 12** (Hatcher 2011) |
 | Ambivalent about meds, treatment, or substance use | Motivational conflict | **Motivational interviewing (MI)** — roll with resistance, evoke change talk | Improves engagement and substance outcomes; see the [Motivational Interviewing](?page=motivational_interviewing.md) page |
-| Confused or frightened by the illness itself | Knowledge/coping gap | **Psychoeducation** — illness model + warning-signs plan, include family | Strongest single inpatient psychological intervention: readmission **NNT 5**, relapse **NNT 9** (Xia, *Cochrane* 2011) |
+| Confused or frightened by the illness itself | Knowledge/coping gap | **Psychoeducation** — illness model + warning-signs plan, include family | Among the best-supported inpatient psychological interventions: relapse **NNT 9**, readmission **NNT 5** — the latter on only 206 participants, in studies the reviewers called limited quality (Xia, *Cochrane* 2011) |
 | Actively suicidal | Acute risk state | **Safety planning (Stanley-Brown)** + crisis response planning | Safety Planning Intervention with follow-up ≈ **50% fewer suicidal behaviors** (Stanley 2018); **abandon no-suicide "contracts"** — they don't work |
 
 ## The bedside frame (MGH-style)
@@ -31,7 +31,7 @@ When you have five minutes, not fifty: lead with **support**, name the **affect*
 ## High-yield pearls
 - Match the skill to the mechanism; the modality matters less than the fit (no clear winner across schools).
 - **Behavioral activation** is the highest-yield, lowest-effort inpatient move for the shut-down, depressed patient.
-- **Psychoeducation** has the hardest inpatient numbers (readmission NNT 5) — and it's free.
+- **Psychoeducation** is among the best-supported inpatient psychological interventions, and it's free — but the readmission NNT of 5 rests on 206 participants in what the Cochrane reviewers (Xia et al., 2011) called *"hospital-based studies of limited quality."* Do it anyway; don't quote the number as though it were precise. ([Therapy on the Unit](?page=therapy_on_the_unit.md) carries the full figures and the caveat.)
 - Chain analysis *replaces* a punitive response to self-harm — understand the behavior, don't just document it.
 - Safety planning with follow-up beats a "contract for safety," which has no evidence and can create false reassurance.
 
