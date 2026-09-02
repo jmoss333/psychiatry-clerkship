@@ -6,7 +6,7 @@
 **Format:** ~20–30 min small-group discussion. No required pre-reading.
 **Citations:** Based on articles retrieved from PubMed. Full reference list at the end. All patient details are **synthetic and de-identified**.
 
-> **A note on this topic.** This case is oriented entirely toward **recognition, structured assessment, escalation, and collaborative safety planning**. It contains no method detail, and none is needed to teach the clinical skill. Keep the discussion in that frame throughout.
+> **A note on this topic.** This case is oriented entirely toward **recognition, structured assessment, escalation, and collaborative safety planning**. It contains no method detail, and none is needed to teach the clinical skill. Note that this is not a bar on lethal-means-safety counselling: asking what a patient can reach — firearms, medications, alcohol — and arranging for it to be secured is part of assessment and safety planning, not method detail. Keep the discussion in that frame throughout.
 
 ---
 
@@ -41,7 +41,7 @@ You are the student's first clinician contact in the ED.
 *Teaching point:* Disposition is a **clinical judgment integrating acuity and modifiable risk**, not a checklist score. Favor **higher level of care / psychiatric admission** when there is active ideation with intent or a plan, recent preparatory behavior, inability to engage in safety planning, poor impulse control (including significant intoxication), or absent supports. Favor **discharge with a robust safety plan and rapid follow-up** when ideation is passive/low-intent, the patient can collaborate on and commit to a plan, means access can be reduced, and reliable supports and timely outpatient follow-up exist. Importantly, **risk-stratification labels are weak predictors of who will actually act** — so the plan and follow-up matter as much as the "risk level" you assign (see facilitator notes) [6].
 
 **Q7 (Safety/systems). What concrete steps round out the ED encounter beyond the interview?**
-*Teaching point:* (1) **Means-reduction counseling** — collaboratively work with the patient and, when appropriate, family to reduce access to lethal means at home (framed generally: securing or removing access — no specifics needed). (2) **Involve supports/collateral** with appropriate consent — corroboration and a person who can help enact the plan. (3) **Warm handoff and follow-up** — timely outpatient linkage; brief follow-up contact ("caring contacts") after discharge is associated with better engagement [4]. (4) **Document** the assessment, the reasoning, and the plan. (5) Treat the **underlying disorder** (here, likely depression ± alcohol use).
+*Teaching point:* (1) **Means-reduction counseling** — collaboratively work with the patient and, when appropriate, family to reduce access to lethal means at home. Ask explicitly about **firearms** (the method behind about half of US suicide deaths, and the one with by far the highest case fatality), and also about medications — stockpiled prescriptions, over-the-counter analgesics — and alcohol. Counsel on **temporary storage outside the home, or locked storage with the key held by someone else**, and settle before disposition who will do it and by when. Naming what to secure is standard lethal-means-safety counselling and is not "method detail"; leaving it general is how it stops happening. (2) **Involve supports/collateral** with appropriate consent — corroboration and a person who can help enact the plan. (3) **Warm handoff and follow-up** — timely outpatient linkage; brief follow-up contact ("caring contacts") after discharge is associated with better engagement [4]. (4) **Document** the assessment, the reasoning, and the plan. (5) Treat the **underlying disorder** (here, likely depression ± alcohol use).
 
 ---
 
@@ -75,7 +75,7 @@ Suicidal ideation is a **symptom**, not a diagnosis — always identify and trea
 ### Facilitator Notes (not for the learner handout)
 
 - **Time:** ~25 min. Spend the most time on Q2 (structured assessment) and Q5 (safety planning) — these are the transferable clinical skills.
-- **Frame throughout:** recognition → structured assessment → escalation → collaborative safety planning. Keep it away from any method detail; it is unnecessary for the learning objective.
+- **Frame throughout:** recognition → structured assessment → escalation → collaborative safety planning. Keep it away from any method detail — the mechanics of an attempt are unnecessary for the learning objective. Do **not** extend that to means access: asking explicitly about firearms and medication access, and settling who secures them and by when, is the counselling, and a group that never names them has not practised it.
 - **The key humility point (Q6):** teach that **no risk score reliably predicts an individual's suicide.** A 50-year meta-analysis found risk-factor prediction only slightly better than chance [6], and inpatient "high-risk" categorization carries a positive predictive value under ~1% [7]. The clinical implication is *not* nihilism — it is that we should (a) not discharge someone reassured only by a "low-risk" label, and (b) invest in **modifiable factors, safety planning, means reduction, and follow-up**, which actually change outcomes [4,5].
 - **Common MS3 errors to correct:** (1) using a "no-suicide contract" as if it were protective; (2) believing that asking about suicide increases risk; (3) treating a risk-stratification label as a disposition decision; (4) forgetting collateral and means-reduction; (5) forgetting to screen for bipolarity and substances.
 - **One-liner to anchor:** *"Screen everyone, assess the domains, plan collaboratively, reduce access, and follow up — the score is not the plan."*
@@ -95,6 +95,6 @@ Suicidal ideation is a **symptom**, not a diagnosis — always identify and trea
 
 *Citations retrieved from PubMed. This teaching case uses a synthetic, de-identified scenario for educational purposes only.*
 
-*If this material raises personal concerns for you or someone you know, in the U.S. you can call or text 988 (Suicide & Crisis Lifeline), available 24/7.*
+<!-- crisis-block -->
 
 *Joshua Moss, MD | Psychiatrist*

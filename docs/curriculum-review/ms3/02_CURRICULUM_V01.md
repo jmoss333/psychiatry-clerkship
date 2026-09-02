@@ -306,7 +306,7 @@ skills rather than vague exposure.
 - **Slug:** `core_readings.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `14_Tracks/MS3/Student_Ready_Pack/core_reading_list.md`
 - **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
-- **Length:** 387 words
+- **Length:** 397 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -361,7 +361,7 @@ The boiled-down starting set for the inpatient rotation. Read these fourteen and
 
 ## Acute & safety — the can't-miss
 
-- **[Suicide risk & safety planning](?page=pg_suicide.md)** — structured risk assessment and a collaborative safety plan; pairs with the C-SSRS tool in the sidebar.
+- **[Suicide risk & safety planning](?page=pg_suicide.md)** — structured risk assessment and a collaborative safety plan; pairs with the C-SSRS official-form & training page in the sidebar.
 - **[Agitation & de-escalation](?page=agitation.md)** — treat the driver, not just the behavior; verbal de-escalation before PRN, PRN before restraint. Pairs with the visual Decision Aids.
 - **[Consult essentials: capacity, delirium, catatonia & withdrawal](?page=exp_consult.md)** — the four bedside calls you'll be asked about most, in one place.
 
@@ -380,7 +380,7 @@ The boiled-down starting set for the inpatient rotation. Read these fourteen and
 
 ---
 
-*Keep two pocket cards on you — [Interview & MSE](?page=pg_interview.md) and [Formulation & DDx](?page=pg_formulation.md). The interactive tools (C-SSRS, CIWA-Ar/COWS, Decisional Capacity, MSE builder, Algorithms & Decision Aids) are in the sidebar. Joshua Moss, MD | Psychiatrist*
+*Keep two pocket cards on you — [Interview & MSE](?page=pg_interview.md) and [Formulation & DDx](?page=pg_formulation.md). The interactive tools (Withdrawal CIWA-Ar/COWS, Decisional Capacity, MSE builder, Algorithms & Decision Aids) and the C-SSRS official-form & training page are in the sidebar. Joshua Moss, MD | Psychiatrist*
 
 
 ---
@@ -417,7 +417,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **Slug:** `week1.md` · **Type:** md · **Sidebar:** hidden (deep link only)
 - **Source:** `01_Six_Week_Curriculum/Week_1_Foundations/README.md`
 - **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
-- **Length:** 343 words
+- **Length:** 345 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -467,7 +467,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 
 **Required Week 1 safety recognition set:**
 
-- **Suicide:** ask directly about suicidal thoughts, current intent, plan, preparation, and access to lethal means; use the [Suicide Risk & Safety card](?page=pg_suicide.md) and practice the [C-SSRS teaching tool](?tool=cssrs.html). Escalate current intent, preparatory behavior, means access, intoxication/withdrawal, severe agitation, psychosis, or contradictory collateral.
+- **Suicide:** ask directly about suicidal thoughts, current intent, plan, preparation, and access to lethal means; use the [Suicide Risk & Safety card](?page=pg_suicide.md) and the [C-SSRS official form & training page](?tool=cssrs.html). Escalate current intent, preparatory behavior, means access, intoxication/withdrawal, severe agitation, psychosis, or contradictory collateral.
 - **Agitation:** flag escalating threats, inability to collaborate, weapon/exit concerns, intoxication or withdrawal, pain, akathisia, or delirium signs; review [Agitation & Restraint](?page=agitation.md) for the least-restrictive verbal de-escalation sequence. Do not manage an unsafe interaction alone.
 - **Delirium/catatonia:** new or fluctuating inattention, altered arousal, fever, rigidity, autonomic instability, mutism, immobility, poor intake, or purposeless agitation should be treated as a medical/safety escalation; start with [Delirium](?page=delirium.md) and [Catatonia](?page=catatonia.md).
 - **Withdrawal:** ask last use and prior seizures/DTs for alcohol or benzodiazepines, and look for tremor, diaphoresis, tachycardia, vomiting, confusion, or escalating autonomic instability; use the [CIWA-Ar/COWS teaching tool](?tool=withdrawal.html) for language and trends, not independent dosing.
@@ -559,7 +559,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **Slug:** `week3.md` · **Type:** md · **Sidebar:** hidden (deep link only)
 - **Source:** `01_Six_Week_Curriculum/Week_3_Psychotherapy_Personality/README.md`
 - **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
-- **Length:** 123 words
+- **Length:** 119 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -604,7 +604,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 
 **Suggested reading:** Wampold 1997 (common factors) · Linehan 1991 (DBT). **Journal Club #3 (Safety Planning).**
 
-**Skill of the week:** complete a **safety plan** with a patient (supervised) using the Suicide tools (the suicide-risk & safety tools (C-SSRS)); draft a BPS + relational **formulation** (the Case Formulation guide).
+**Skill of the week:** complete a **safety plan** with a patient (supervised) using the suicide-risk & safety tools; draft a BPS + relational **formulation** (the Case Formulation guide).
 
 **Topic pages:** Personality and Anxiety/Trauma/OCD one-pagers; **[Brief Psychotherapy on the Unit](?page=brief_psychotherapy.md)** (match the skill to the mechanism) and the [Motivational Interviewing](?page=motivational_interviewing.md) page.
 

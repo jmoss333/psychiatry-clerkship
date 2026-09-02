@@ -225,7 +225,7 @@ skills rather than vague exposure.
 - **Slug:** `week1.md` · **Type:** md · **Sidebar:** hidden (deep link only)
 - **Source:** `01_Six_Week_Curriculum/Week_1_Foundations/README.md`
 - **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
-- **Length:** 343 words
+- **Length:** 345 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -275,7 +275,7 @@ skills rather than vague exposure.
 
 **Required Week 1 safety recognition set:**
 
-- **Suicide:** ask directly about suicidal thoughts, current intent, plan, preparation, and access to lethal means; use the [Suicide Risk & Safety card](?page=pg_suicide.md) and practice the [C-SSRS teaching tool](?tool=cssrs.html). Escalate current intent, preparatory behavior, means access, intoxication/withdrawal, severe agitation, psychosis, or contradictory collateral.
+- **Suicide:** ask directly about suicidal thoughts, current intent, plan, preparation, and access to lethal means; use the [Suicide Risk & Safety card](?page=pg_suicide.md) and the [C-SSRS official form & training page](?tool=cssrs.html). Escalate current intent, preparatory behavior, means access, intoxication/withdrawal, severe agitation, psychosis, or contradictory collateral.
 - **Agitation:** flag escalating threats, inability to collaborate, weapon/exit concerns, intoxication or withdrawal, pain, akathisia, or delirium signs; review [Agitation & Restraint](?page=agitation.md) for the least-restrictive verbal de-escalation sequence. Do not manage an unsafe interaction alone.
 - **Delirium/catatonia:** new or fluctuating inattention, altered arousal, fever, rigidity, autonomic instability, mutism, immobility, poor intake, or purposeless agitation should be treated as a medical/safety escalation; start with [Delirium](?page=delirium.md) and [Catatonia](?page=catatonia.md).
 - **Withdrawal:** ask last use and prior seizures/DTs for alcohol or benzodiazepines, and look for tremor, diaphoresis, tachycardia, vomiting, confusion, or escalating autonomic instability; use the [CIWA-Ar/COWS teaching tool](?tool=withdrawal.html) for language and trends, not independent dosing.
@@ -367,7 +367,7 @@ skills rather than vague exposure.
 - **Slug:** `week3.md` · **Type:** md · **Sidebar:** hidden (deep link only)
 - **Source:** `01_Six_Week_Curriculum/Week_3_Psychotherapy_Personality/README.md`
 - **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
-- **Length:** 123 words
+- **Length:** 119 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -412,7 +412,7 @@ skills rather than vague exposure.
 
 **Suggested reading:** Wampold 1997 (common factors) · Linehan 1991 (DBT). **Journal Club #3 (Safety Planning).**
 
-**Skill of the week:** complete a **safety plan** with a patient (supervised) using the Suicide tools (the suicide-risk & safety tools (C-SSRS)); draft a BPS + relational **formulation** (the Case Formulation guide).
+**Skill of the week:** complete a **safety plan** with a patient (supervised) using the suicide-risk & safety tools; draft a BPS + relational **formulation** (the Case Formulation guide).
 
 **Topic pages:** Personality and Anxiety/Trauma/OCD one-pagers; **[Brief Psychotherapy on the Unit](?page=brief_psychotherapy.md)** (match the skill to the mechanism) and the [Motivational Interviewing](?page=motivational_interviewing.md) page.
 

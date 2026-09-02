@@ -11,7 +11,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **Slug:** `cotw_20260709_ssnms_res.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-09_serotonin-syndrome-vs-nms_Resident.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 1,947 words
+- **Length:** 1,978 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -143,7 +143,7 @@ NMS is widely conceptualized as a **drug-induced form of malignant (lethal) cata
 - **Reconciliation plan:** stop all dopamine antagonists, hold serotonergic and lithium agents, obtain levels, and document the event prominently to govern rechallenge.
 
 **Q7 — Recovery and rechallenge.**
-NMS typically resolves over **days to ~2 weeks** with agent withdrawal and supportive care — slower than SS, which usually clears in 24–72 h [1][4][5]. For antipsychotic **rechallenge**: wait **at least 2 weeks** after full resolution, choose a **lower-potency or atypical agent** at a low starting dose, titrate slowly, and monitor temperature, CK, and autonomic signs; recurrence can occur at any point after resolution, so shared decision-making and close follow-up are essential [5]. Where feasible, address the psychiatric indication with the lowest-risk effective option and consider ECT if antipsychotics are high-risk.
+NMS typically resolves over **days to ~2 weeks** with agent withdrawal and supportive care — slower than SS, which usually clears in 24–72 h [1][4][5]. For antipsychotic **rechallenge**: wait **at least 2 weeks** after full resolution (longer if the offending agent was a depot), correct dehydration, electrolyte derangement, and iron deficiency first, then choose a **lower-potency or atypical oral agent** — **never a long-acting injectable, which cannot be withdrawn if NMS recurs** — at a low starting dose, titrate slowly, and monitor temperature, CK, and autonomic signs; recurrence can occur at any point after resolution, so shared decision-making and close follow-up are essential [5]. Where feasible, address the psychiatric indication with the lowest-risk effective option and consider ECT if antipsychotics are high-risk.
 
 ### Ranked differential diagnosis (resident depth)
 1. **Neuroleptic malignant syndrome** — best fit (D2 antagonist up-titration + metoclopramide, subacute onset, lead-pipe rigidity, hyporeflexia, CK ~10k, leukocytosis, low iron).
@@ -201,12 +201,12 @@ If any component were an **intentional ingestion**, medical stabilization comes 
 
 **TL;DR (shown above the page text):**
 
-> The strongest inpatient evidence: environmental safety checklists cut inpatient suicide 82%; brief CBT (up to 4 sessions) reduces post-discharge attempts 60% (NNT 7); family psychoeducation cuts 12-month relapse (OR 0.18); antipsychotics do not improve delirium outcomes.
+> The strongest inpatient evidence: environmental safety checklists cut inpatient suicide 67%; brief CBT (up to 4 sessions) reduces post-discharge attempts 60% (NNT 7); family psychoeducation cuts 12-month relapse (OR 0.18); antipsychotics do not improve delirium outcomes.
 
 **Key points (bulleted card):**
 
 - MIND-USA (n=566) and AID-ICU (n=1,000) both found no benefit for antipsychotics vs. placebo on delirium outcomes — the PADIS guidelines recommend against routine antipsychotic use for delirium.
-- The VHA MHEOCC environmental safety checklist produced an 82% reduction in the inpatient suicide rate — ligature point removal is the single strongest structural inpatient suicide prevention intervention.
+- The VHA MHEOCC environmental safety checklist produced a 67% reduction in the inpatient suicide rate — ligature point removal is the single strongest structural inpatient suicide prevention intervention.
 - Pre-discharge 7-day follow-up (actually scheduled, not 'patient will call') is associated with substantially lower suicide risk, and family involvement during admission nearly triples the odds of achieving it.
 
 **Can't-miss / red-flag line:**
@@ -231,7 +231,7 @@ If any component were an **intentional ingestion**, medical stabilization comes 
    - A low-dose atypical antipsychotic is preferred over haloperidol for delirium because it is better tolerated
    - Non-pharmacological multicomponent bundles are first-line; antipsychotics showed no benefit in MIND-USA and AID-ICU and should be reserved for severe refractory hyperactive symptoms **← keyed correct**
    - Benzodiazepines are the evidence-based first choice for non-withdrawal delirium
-   - *Rationale:* MIND-USA and AID-ICU both showed no benefit for antipsychotics vs. placebo on days alive without delirium or coma; the PADIS guidelines recommend against routine use. Multicomponent non-pharmacological bundles (HELP-based) reduced incident delirium by 53%. Benzodiazepines are reserved for alcohol/benzo withdrawal delirium — they worsen non-withdrawal delirium.
+   - *Rationale:* MIND-USA showed no benefit for antipsychotics vs. placebo on days alive without delirium or coma, and AID-ICU showed none on days alive and out of the hospital at 90 days; the PADIS guidelines recommend against routine use. Multicomponent non-pharmacological bundles (HELP-based) reduced incident delirium by 53%. Benzodiazepines are reserved for alcohol/benzo withdrawal delirium — they worsen non-withdrawal delirium.
 
 **Cross-references and tagging:**
 
@@ -258,7 +258,7 @@ The **Columbia-Suicide Severity Rating Scale (C-SSRS)** is the most widely endor
 
 The **SAD PERSONS scale should not be used**: multiple studies demonstrate it performs no better than chance (AUC 0.55–0.59), with sensitivity as low as 1% for repeat self-harm. The VA/DoD 2024 guideline explicitly excludes it.
 
-**Environmental safety** has the strongest single-intervention evidence. The VHA Mental Health Environment of Care Checklist (MHEOCC) produced an **82% reduction in inpatient suicide rate** (from 2.64 to 0.87 per 100,000 admissions, P < .001), sustained over 7 years. Hanging accounts for 71% of inpatient suicide deaths, and ligature point removal was associated with significant reductions in suicide by hanging in a UK national study.
+**Environmental safety** has the strongest single-intervention evidence. The VHA Mental Health Environment of Care Checklist (MHEOCC) produced a **67% reduction in inpatient suicide rate** (from 2.64 to 0.87 per 100,000 admissions, P < .001), sustained over 7 years. Hanging accounts for 71% of inpatient suicide deaths, and ligature point removal was associated with significant reductions in suicide by hanging in a UK national study.
 
 ### Landmark Studies
 
@@ -601,7 +601,7 @@ The **DIAMOND initiative** highlights the implementation gap: despite increased 
 
 | Domain | Strongest Intervention | Effect Size | Evidence Quality |
 | --- | --- | --- | --- |
-| Inpatient suicide prevention | Environmental safety (MHEOCC) | 82% reduction in inpatient suicide | Before-after, system-wide |
+| Inpatient suicide prevention | Environmental safety (MHEOCC) | 67% reduction in inpatient suicide | Before-after, system-wide |
 | Post-discharge suicide prevention | Brief CBT for suicidal inpatients | 60% reduction in attempts (NNT=7) | RCT (n=200) |
 | Violence risk (imminent) | BVC/DASA screening | Hedges' g = 1.04–1.35 | Meta-analysis of 31 studies |
 | Agitation pharmacotherapy | Antipsychotic + BZD combination | OR 12.93 vs. haloperidol alone | IPD network meta-analysis |

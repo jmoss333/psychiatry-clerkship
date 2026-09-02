@@ -320,6 +320,10 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
     "id": "sga",
     "label": "Second-generation antipsychotic",
     "tokenId": "agitation.po_options",
+    "hazardIf": {
+     "parkinson_dlb": "Not a safe default in Parkinson disease / Lewy body dementia — risperidone and olanzapine can trigger severe, sometimes fatal neuroleptic sensitivity. If an antipsychotic is unavoidable the choice is narrow (quetiapine, clozapine, or pimavanserin) and belongs to your attending.",
+     "catatonia": "Second-generation agents can also precipitate or worsen catatonia and NMS — hold antipsychotics until catatonia is excluded or treated."
+    },
     "cautionIf": {
      "qtc_risk": "Some SGAs prolong QTc (e.g., ziprasidone highest) — check baseline QTc/interacting drugs.",
      "older_dementia": "All antipsychotics carry FDA black-box mortality warning in dementia-related psychosis."
@@ -1570,7 +1574,7 @@ should independently manage high-risk consults.
 - **Slug:** `cl_reference.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `14_Tracks/Resident/cl_reference.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 808 words
+- **Length:** 867 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -1597,7 +1601,8 @@ should independently manage high-risk consults.
 - Neuroleptic malignant syndrome (lead-pipe rigidity, high CK, slow onset)
 - Malignant catatonia (overlaps NMS)
 - Lithium toxicity (tremor, ataxia, confusion)
-- Anticholinergic toxicity
+- Anticholinergic toxicity (dry skin, flushing, urinary retention, absent bowel sounds — the mirror image of serotonin syndrome's diaphoresis and hyperactive bowel)
+- CNS infection (meningitis/encephalitis) and heat stroke — fever + rigidity + altered mentation is not NMS until these are excluded
 
 **First move (the action the page tells the learner to take):**
 
@@ -1648,7 +1653,7 @@ The MS3 [Consult module](?page=exp_consult.md) teaches *what to notice and when 
 | **Autonomic / temp** | Hyperthermia, tachycardia, diaphoresis, mydriasis, hyperactive bowel | Hyperthermia, labile BP/HR, diaphoresis |
 | **Labs / dx** | Clinical — **Hunter criteria** (spontaneous clonus; or inducible clonus + agitation/diaphoresis; or ocular clonus + agitation; etc.) | Clinical — **CK often >1,000 U/L**, leukocytosis |
 | **Course** | Resolves ~24 h after stopping the agent | Days–weeks; historical mortality **~10%** (lower with early recognition) |
-| **Management** | Stop agent · benzodiazepines · **cyproheptadine** 12 mg PO then 2 mg q2h (max ~32 mg/24h) · cooling | Stop antipsychotic · supportive cooling · benzodiazepines · **dantrolene / bromocriptine / amantadine** for severe |
+| **Management** | Stop agent · benzodiazepines · **cyproheptadine** 12 mg PO then 2 mg q2h (max ~32 mg/24h) · cooling · **temp >41.1 °C is an airway emergency: sedate, intubate, and paralyze with a non-depolarizing agent (NOT succinylcholine — rhabdomyolysis/hyperkalemia risk); antipyretics do not work because the heat is muscular** | Stop antipsychotic — and **restart the dopaminergic agent if NMS followed its abrupt withdrawal** · **aggressive IV isotonic fluids** with serial CK/renal function for rhabdomyolysis and AKI · supportive cooling · benzodiazepines · **dantrolene / bromocriptine / amantadine** for severe · ECT for refractory |
 
 **Board trap:** in serotonin syndrome, **physical restraints are contraindicated** — isometric muscle contraction worsens hyperthermia and lactic acidosis. Sedate instead.
 

@@ -3,7 +3,7 @@
 # MS3 curriculum — complete content transcript for clinical review
 
 **Site:** `une-ms3-psychiatry` · **Audience:** MS3 — UNE medical students
-**Generated:** 2026-09-01 from build `89864d7` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
+**Generated:** 2026-09-02 from build `e844b6b` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
 
 ## Who this is for
 
@@ -19,7 +19,7 @@ This transcript is assembled from the **built site**, not the source tree, so it
 | Narrative pages (markdown) | 80 |
 | Interactive tools | 23 |
 | Deep-link-only (hidden) surfaces | 10 |
-| Words of narrative curriculum | 97,515 |
+| Words of narrative curriculum | 98,679 |
 | Practice question-bank items | 192 |
 | Audio-companion quiz decks / questions | 79 / 437 |
 | Communication cases | 12 |
@@ -82,7 +82,7 @@ High-yield places to concentrate: the `topic_meta` **can't-miss**, **rule-out** 
 
 # MS3 · Navigation map
 
-Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-01 @ `89864d7`.
+Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-02 @ `e844b6b`.
 
 ## Orientation  *(pinned)*
 
@@ -90,11 +90,11 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 |---|---|---|---|---|---|---|---|
 | 1 | Welcome to the Rotation | `welcome.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `13_Faculty_Resources/Outreach/MS3_Inpatient_Rotation_OnePager.md` | 416 |
 | 2 | Orientation Packet | `orientation.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `14_Tracks/MS3/Student_Ready_Pack/01_orientation/MS3_orientation_packet.md` | 1004 |
-| 3 | Core Reading List | `core_readings.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `14_Tracks/MS3/Student_Ready_Pack/core_reading_list.md` | 387 |
+| 3 | Core Reading List | `core_readings.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `14_Tracks/MS3/Student_Ready_Pack/core_reading_list.md` | 397 |
 | 4 | Orientation Video | `orientation-video.html` | tool | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `_prototypes/video-library/ (build-generated shell)` |  |
-| 5 | Week 1 — Foundations | `week1.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_1_Foundations/README.md` | 343 |
+| 5 | Week 1 — Foundations | `week1.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_1_Foundations/README.md` | 345 |
 | 6 | Week 2 — Mood/Psychosis/Pharm | `week2.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_2_Mood_Psychosis_Pharm/README.md` | 106 |
-| 7 | Week 3 — Psychotherapy/Personality | `week3.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_3_Psychotherapy_Personality/README.md` | 123 |
+| 7 | Week 3 — Psychotherapy/Personality | `week3.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_3_Psychotherapy_Personality/README.md` | 119 |
 | 8 | Week 4 — Family/Systems/EE | `week4.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_4_Family_Systems_EE/README.md` | 99 |
 | 9 | Week 5 — Acute/Emergency | `week5.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_5_Acute_Emergency/README.md` | 178 |
 | 10 | Week 6 — Integration/Exam | `week6.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_6_Integration_Exam/README.md` | 79 |
@@ -120,11 +120,11 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 5 | Medical Workup & Mimics | `medical_workup.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Medical_Workup/medical_workup_inpatient_teaching.md` | 574 |
 | 6 | Mood | `t_mood.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/Mood/mood_disorders_inpatient_teaching.md` | 1232 |
 | 7 | Psychosis | `t_psychosis.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/Psychosis/psychotic_disorders_inpatient_teaching.md` | 1467 |
-| 8 | Anxiety/Trauma/OCD | `t_anxiety.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/Anxiety/anxiety_trauma_ocd_inpatient_teaching.md` | 1190 |
+| 8 | Anxiety/Trauma/OCD | `t_anxiety.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/Anxiety/anxiety_trauma_ocd_inpatient_teaching.md` | 1430 |
 | 9 | Personality | `t_personality.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Personality/personality_disorders_inpatient_teaching.md` | 1322 |
 | 10 | Substance Use | `t_sud.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md` | 1262 |
 | 11 | Geriatric | `t_geri.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Geriatric/geriatric_psychiatry_inpatient_teaching.md` | 893 |
-| 12 | Perinatal | `t_perinatal.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/Perinatal/perinatal_psychiatry_inpatient_teaching.md` | 1141 |
+| 12 | Perinatal | `t_perinatal.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/Perinatal/perinatal_psychiatry_inpatient_teaching.md` | 1145 |
 | 13 | Neurodevelopmental Disorders | `t_neurodev.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Neurodevelopmental/neurodevelopmental_disorders_inpatient_teaching.md` | 1143 |
 | 14 | Eating Disorders | `t_eating.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/Eating_Disorders/eating_disorders_inpatient_teaching.md` | 1308 |
 | 15 | Neurocognitive (Dementia) | `t_neurocog.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/Neurocognitive/neurocognitive_disorders_inpatient_teaching.md` | 880 |
@@ -133,7 +133,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 18 | Dissociative Disorders | `t_dissociative.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Dissociative/dissociative_disorders_inpatient_teaching.md` | 893 |
 | 19 | Sexual, Paraphilic & Gender | `t_sexual.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Sexual_Gender/sexual_paraphilic_gender_inpatient_teaching.md` | 666 |
 | 20 | Impulse-Control & Conduct | `t_impulse.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Impulse_Control/impulse_control_conduct_inpatient_teaching.md` | 719 |
-| 21 | Adjustment Disorders | `t_adjustment.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Adjustment/adjustment_disorders_inpatient_teaching.md` | 906 |
+| 21 | Adjustment Disorders | `t_adjustment.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Adjustment/adjustment_disorders_inpatient_teaching.md` | 910 |
 | 22 | Culture, Disparities & Formulation | `cultural_psychiatry.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Cultural_Psychiatry/cultural_psychiatry_inpatient_teaching.md` | 622 |
 
 ## Assess Safety and Acuity  *(pinned)*
@@ -176,7 +176,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 1 | What Do You Say Next? | `communication-practice.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Communication_Practice/communication-practice.html` |  |
 | 2 | Psychotherapies at a Glance | `psychotherapy.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Psychotherapy/psychotherapy_inpatient_teaching.md` | 613 |
 | 3 | Motivational Interviewing | `motivational_interviewing.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `06_Family_and_Relational/motivational_interviewing_inpatient_teaching.md` | 533 |
-| 4 | Brief Psychotherapy on the Unit | `brief_psychotherapy.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Brief_Psychotherapy/brief_psychotherapy_inpatient.md` | 992 |
+| 4 | Brief Psychotherapy on the Unit | `brief_psychotherapy.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Brief_Psychotherapy/brief_psychotherapy_inpatient.md` | 1054 |
 | 5 | Therapy on the Unit | `therapy_on_the_unit.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `02_Clinical_Skills/Psychotherapy/therapy_on_the_unit_inpatient_teaching.md` | 4164 |
 | 6 | Reflection & Identity | `reflection.html` | tool | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `02_Clinical_Skills/Reflection_PIF/reflection-and-pif-set.html` |  |
 
@@ -196,7 +196,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 |---|---|---|---|---|---|---|---|
 | 1 | Documentation & Oral Presentation | `doc_oral.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/MS3/Student_Ready_Pack/05_documentation_oral_presentation/student_documentation_and_oral_presentations.md` | 817 |
 | 2 | Treatment Team Rounding Prep | `oral.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Oral_Presentations/oral-presentation-module.html` |  |
-| 3 | High-Yield Rounds Questions | `rounds_questions.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md` | 8682 |
+| 3 | High-Yield Rounds Questions | `rounds_questions.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md` | 8700 |
 
 ## Practice and Exam Prep
 
@@ -219,12 +219,12 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 |---|---|---|---|---|---|---|---|
 | 1 | Index — All Cases | `cotw_index.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `08_Cases_and_Simulation/case-of-the-week/index_ms3.md` | 417 |
 | 2 | Catatonia (Aug 31) | `cotw_20260831_catatonia_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-31_catatonia-recognition-workup-treatment_MS3.md` | 1637 |
-| 3 | Borderline Personality Disorder (Aug 27) | `cotw_20260827_bpd_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-27_borderline-personality-disorder_MS3.md` | 1687 |
-| 4 | Panic Disorder (Aug 10) | `cotw_20260810_panic_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-10_anxiety-panic-disorder_MS3.md` | 3522 |
+| 3 | Borderline Personality Disorder (Aug 27) | `cotw_20260827_bpd_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-27_borderline-personality-disorder_MS3.md` | 1919 |
+| 4 | Panic Disorder (Aug 10) | `cotw_20260810_panic_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-10_anxiety-panic-disorder_MS3.md` | 3752 |
 | 5 | Lithium — Monitoring & Toxicity (Aug 3) | `cotw_20260803_lithium_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-03_lithium-monitoring-toxicity-interactions_MS3.md` | 3464 |
 | 6 | Opioid Use Disorder (Jul 27) | `cotw_20260727_oud_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-27_opioid-use-disorder_MS3.md` | 2624 |
 | 7 | Alcohol Withdrawal & DT (Jul 26) | `cotw_20260726_etohwd_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-26_alcohol-withdrawal-delirium-tremens_MS3.md` | 2423 |
-| 8 | Suicide Risk & Safety Planning (Jul 23) | `cotw_20260723_suiciderisk_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`high` | `08_Cases_and_Simulation/case-of-the-week/2026-07-23_suicide-risk-assessment-safety-planning_MS3.md` | 1848 |
+| 8 | Suicide Risk & Safety Planning (Jul 23) | `cotw_20260723_suiciderisk_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`high` | `08_Cases_and_Simulation/case-of-the-week/2026-07-23_suicide-risk-assessment-safety-planning_MS3.md` | 2214 |
 | 9 | MDD — Treatment Selection (Jul 20) | `cotw_20260720_mdd_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-20_mdd-treatment-selection-augmentation_MS3.md` | 1290 |
 | 10 | Bipolar Mania (Jul 20) | `cotw_20260720_bipolar_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-20_bipolar-mania_MS3.md` | 1550 |
 | 11 | Acute Agitation & Delirium (Jul 13) | `cotw_20260713_agitation_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-13_acute-agitation-delirium_MS3.md` | 1713 |
@@ -558,7 +558,7 @@ skills rather than vague exposure.
 - **Slug:** `core_readings.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `14_Tracks/MS3/Student_Ready_Pack/core_reading_list.md`
 - **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
-- **Length:** 387 words
+- **Length:** 397 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -613,7 +613,7 @@ The boiled-down starting set for the inpatient rotation. Read these fourteen and
 
 ## Acute & safety — the can't-miss
 
-- **[Suicide risk & safety planning](?page=pg_suicide.md)** — structured risk assessment and a collaborative safety plan; pairs with the C-SSRS tool in the sidebar.
+- **[Suicide risk & safety planning](?page=pg_suicide.md)** — structured risk assessment and a collaborative safety plan; pairs with the C-SSRS official-form & training page in the sidebar.
 - **[Agitation & de-escalation](?page=agitation.md)** — treat the driver, not just the behavior; verbal de-escalation before PRN, PRN before restraint. Pairs with the visual Decision Aids.
 - **[Consult essentials: capacity, delirium, catatonia & withdrawal](?page=exp_consult.md)** — the four bedside calls you'll be asked about most, in one place.
 
@@ -632,7 +632,7 @@ The boiled-down starting set for the inpatient rotation. Read these fourteen and
 
 ---
 
-*Keep two pocket cards on you — [Interview & MSE](?page=pg_interview.md) and [Formulation & DDx](?page=pg_formulation.md). The interactive tools (C-SSRS, CIWA-Ar/COWS, Decisional Capacity, MSE builder, Algorithms & Decision Aids) are in the sidebar. Joshua Moss, MD | Psychiatrist*
+*Keep two pocket cards on you — [Interview & MSE](?page=pg_interview.md) and [Formulation & DDx](?page=pg_formulation.md). The interactive tools (Withdrawal CIWA-Ar/COWS, Decisional Capacity, MSE builder, Algorithms & Decision Aids) and the C-SSRS official-form & training page are in the sidebar. Joshua Moss, MD | Psychiatrist*
 
 
 ---
@@ -669,7 +669,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **Slug:** `week1.md` · **Type:** md · **Sidebar:** hidden (deep link only)
 - **Source:** `01_Six_Week_Curriculum/Week_1_Foundations/README.md`
 - **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
-- **Length:** 343 words
+- **Length:** 345 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -719,7 +719,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 
 **Required Week 1 safety recognition set:**
 
-- **Suicide:** ask directly about suicidal thoughts, current intent, plan, preparation, and access to lethal means; use the [Suicide Risk & Safety card](?page=pg_suicide.md) and practice the [C-SSRS teaching tool](?tool=cssrs.html). Escalate current intent, preparatory behavior, means access, intoxication/withdrawal, severe agitation, psychosis, or contradictory collateral.
+- **Suicide:** ask directly about suicidal thoughts, current intent, plan, preparation, and access to lethal means; use the [Suicide Risk & Safety card](?page=pg_suicide.md) and the [C-SSRS official form & training page](?tool=cssrs.html). Escalate current intent, preparatory behavior, means access, intoxication/withdrawal, severe agitation, psychosis, or contradictory collateral.
 - **Agitation:** flag escalating threats, inability to collaborate, weapon/exit concerns, intoxication or withdrawal, pain, akathisia, or delirium signs; review [Agitation & Restraint](?page=agitation.md) for the least-restrictive verbal de-escalation sequence. Do not manage an unsafe interaction alone.
 - **Delirium/catatonia:** new or fluctuating inattention, altered arousal, fever, rigidity, autonomic instability, mutism, immobility, poor intake, or purposeless agitation should be treated as a medical/safety escalation; start with [Delirium](?page=delirium.md) and [Catatonia](?page=catatonia.md).
 - **Withdrawal:** ask last use and prior seizures/DTs for alcohol or benzodiazepines, and look for tremor, diaphoresis, tachycardia, vomiting, confusion, or escalating autonomic instability; use the [CIWA-Ar/COWS teaching tool](?tool=withdrawal.html) for language and trends, not independent dosing.
@@ -811,7 +811,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **Slug:** `week3.md` · **Type:** md · **Sidebar:** hidden (deep link only)
 - **Source:** `01_Six_Week_Curriculum/Week_3_Psychotherapy_Personality/README.md`
 - **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
-- **Length:** 123 words
+- **Length:** 119 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -856,7 +856,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 
 **Suggested reading:** Wampold 1997 (common factors) · Linehan 1991 (DBT). **Journal Club #3 (Safety Planning).**
 
-**Skill of the week:** complete a **safety plan** with a patient (supervised) using the Suicide tools (the suicide-risk & safety tools (C-SSRS)); draft a BPS + relational **formulation** (the Case Formulation guide).
+**Skill of the week:** complete a **safety plan** with a patient (supervised) using the suicide-risk & safety tools; draft a BPS + relational **formulation** (the Case Formulation guide).
 
 **Topic pages:** Personality and Anxiety/Trauma/OCD one-pagers; **[Brief Psychotherapy on the Unit](?page=brief_psychotherapy.md)** (match the skill to the mechanism) and the [Motivational Interviewing](?page=motivational_interviewing.md) page.
 
@@ -2121,7 +2121,12 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
       "\\b(isn'?t|is not|no longer|not) worth living(?!\\s+(in|there|at)\\b(?!\\s+all\\b))",
       "life (isn'?t|is not) worth it",
       "better off (not being here|without (me|you)\\b|if i wasn'?t here)",
-      "no point (in )?(going on|carrying on)(?=\\s*(?:[?.!,;:]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)"
+      "no point (in )?(going on|carrying on)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)",
+      "what(?:'?s| is) (?:even )?the point\\s+(?:of|in|to)\\s+(?:my |your |this |it )?(?:(?:going on|carrying on|keep(?:ing)? going|continu(?:e|ing)|liv(?:e|ing)|be(?:ing)? here|waking up|getting up)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)|life|any of (?:this|it)|(?:it|this) all|all (?:of )?(?:this|it)|anything)\\b",
+      "want(?:ed|ing)? to (?:die|be dead|not be alive|not be here anymore)",
+      "(?:thoughts?|think(?:ing)?) (?:of|about) (?:death|being dead|dying|not (?:being (?:here|around|alive)|waking up|existing))",
+      "end(?:ing)? it all\\b",
+      "wish(?:ed)? you (?:weren'?t (?:here|alive|around)|could (?:just )?(?:not wake up|go to sleep and not wake up))"
      ]
     },
     {
@@ -2136,7 +2141,10 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
       "do(ing)? something (to yourself|drastic|stupid)",
       "dark (thoughts|places?)",
       "unsafe thoughts",
-      "(thoughts?|think(ing)?) (about|of) (hurt|harm)(ing)? yourself"
+      "(thoughts?|think(ing)?) (about|of) (hurt|harm)(ing)? yourself",
+      "self.?(?:harm|injur)",
+      "(?:just )?disappear\\b",
+      "what(?:'?s| is) (?:even )?the point(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|anyway|right now|these days|lately|of it all)\\b)"
      ]
     },
     {
@@ -2145,8 +2153,11 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
      "category": "safety",
      "coverage": "core",
      "patterns": [
-      "\\bplan\\b",
-      "how (you )?(would|might)",
+      "\\b(?:a|any|some|made|making) (?:specific |concrete |actual |particular |real |definite )?plans?(?=\\s*(?:[?.!,;:]|$)|\\s+(?:to (?:kill|end|hurt|harm|take|act|die|do (?:it|that|this|something))|for (?:how|when|where|killing|ending|hurting|harming|doing|dying)|in (?:mind|your head)|(?:about|of) how|to (?:carry|follow) (?:it |that )?(?:out|through))\\b)",
+      "\\bplanned\\b(?=\\s*(?:[?.!,;:]|$)|\\s+(?:how|anything|it|this|that|out|to (?:kill|end|hurt|harm|act|die))\\b)",
+      "\\bplanning (?:to (?:kill|end|hurt|harm|act|die)|how|anything|it|on (?:acting|doing|hurting|killing|ending))\\b",
+      "^\\s*plans?\\s*\\??\\s*$",
+      "\\bhow (?:you(?:'d| would| might| could)?|would you|might you|could you) (?:do (?:it|that|this)|go about|end|kill|hurt|harm|take|carry)",
       "thought about how",
       "\\bspecific\\b.*(thought|way)"
      ]
@@ -2157,9 +2168,9 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
      "category": "safety",
      "coverage": "core",
      "patterns": [
-      "\\baccess\\b",
+      "\\baccess to (?:(?:the|those|any|your|his|her|tom'?s|a|some|more) )?(?:pills?|medic|meds|bottles?|firearms?|guns?|weapons?|kni(?:fe|ves)|rope|anything|something|a way|means)",
       "\\bpills?\\b.*(home|have|husband)",
-      "\\bmeans\\b",
+      "\\b(?:the|any|a|some) means\\b|\\bmeans (?:to|available|at home|you (?:could|would)|of (?:doing|ending|hurting|killing))\\b|\\bmeans\\s*\\?",
       "at home.*(medic|pills?)",
       "get (a ?hold|ahold) of"
      ]
@@ -2171,11 +2182,14 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
      "coverage": "core",
      "patterns": [
       "\\bintent",
-      "act(ed)? on",
-      "what (keeps|stops|has kept)",
-      "\\breasons? (to|for) (liv|stay|hold)",
-      "\\bprotect",
-      "close (you'?ve| you) (come|been)"
+      "\\bact(?:ed|ing)? on\\b",
+      "\\b(?:what|who|anything|something|things?)(?: that| which)?(?:'s| is| has)? (?:still |ever )?(?:keeps?|kept|keeping|stops?|stopped|stopping|holds?|held|holding|prevents?|prevented) (?:you|her|him)\\b",
+      "\\breasons? (?:to|for|not to) (?:liv|stay|hold|keep|go on|be here|stick)",
+      "worth (?:living|staying|sticking around|holding on|getting up) for\\b",
+      "(?:want|wanting|wish|wished) to (?:live|stay alive|keep living|be alive|go on living|stick around)\\b",
+      "\\b(?:who|what) (?:would|might|will) (?:miss|notice)\\b|\\bwhat would you miss\\b|\\bwho (?:needs|depends on|relies on|counts on|looks up to) you\\b",
+      "\\bhow close\\b|\\b(?:come|came|gotten|got|been) (?:this |that |so |very |pretty )?close\\b|closest (?:you'?ve|you have|you) (?:come|been|gotten|got)",
+      "\\bprotect"
      ]
     },
     {
@@ -2798,7 +2812,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
    "facultyReview": {
     "status": "reviewed",
     "reviewer": "Joshua Moss, MD",
-    "lastReviewed": "2026-07-22"
+    "lastReviewed": "2026-08-31"
    },
    "speechProfile": {
     "id": "marcus-pressured-v1",
@@ -3027,15 +3041,33 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
       "wish(ed)? you (were dead|wouldn'?t wake)",
       "not (want(ing)? to )?wake up",
       "better off dead",
-      "what(?:'?s| is) the point\\b(?!\\s+(?:of|in|to)\\b)|what(?:'?s| is) the point\\s+(?:of|in|to)\\s+(?:my |your |this |it )?(?:(?:going on|carrying on|keep(?:ing)? going|continu(?:e|ing)|liv(?:e|ing)|be(?:ing)? here|waking up|getting up)(?=\\s*(?:[?.!,;:]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)|life|any of (?:this|it)|(?:it|this) all|all (?:of )?(?:this|it)|anything)\\b",
       "\\b(isn'?t|is not|no longer|not) worth living(?!\\s+(in|there|at)\\b(?!\\s+all\\b))",
       "life (isn'?t|is not) worth it",
       "better off (not being here|without (me|you)\\b|if i wasn'?t here)",
-      "no point (in )?(going on|carrying on)(?=\\s*(?:[?.!,;:]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)",
+      "no point (in )?(going on|carrying on)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)",
+      "what(?:'?s| is) (?:even )?the point\\s+(?:of|in|to)\\s+(?:my |your |this |it )?(?:(?:going on|carrying on|keep(?:ing)? going|continu(?:e|ing)|liv(?:e|ing)|be(?:ing)? here|waking up|getting up)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)|life|any of (?:this|it)|(?:it|this) all|all (?:of )?(?:this|it)|anything)\\b",
+      "want(?:ed|ing)? to (?:die|be dead|not be alive|not be here anymore)",
+      "(?:thoughts?|think(?:ing)?) (?:of|about) (?:death|being dead|dying|not (?:being (?:here|around|alive)|waking up|existing))",
+      "end(?:ing)? it all\\b",
+      "wish(?:ed)? you (?:weren'?t (?:here|alive|around)|could (?:just )?(?:not wake up|go to sleep and not wake up))"
+     ]
+    },
+    {
+     "id": "si_euphemism",
+     "label": "Approached suicide with a euphemism",
+     "category": "safety",
+     "coverage": "core",
+     "quality": "partial",
+     "patterns": [
       "hurt(ing)? yourself(?!\\s*,?\\s*(?:by|with|when)\\b)",
       "harm(ing)? yourself(?!\\s*,?\\s*(?:by|with|when)\\b)",
-      "do(ing)? something to yourself",
-      "(thoughts?|think(ing)?) (about|of) (hurt|harm)(ing)? yourself"
+      "do(ing)? something (to yourself|drastic|stupid)",
+      "dark (thoughts|places?)",
+      "unsafe thoughts",
+      "(thoughts?|think(ing)?) (about|of) (hurt|harm)(ing)? yourself",
+      "self.?(?:harm|injur)",
+      "(?:just )?disappear\\b",
+      "what(?:'?s| is) (?:even )?the point(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|anyway|right now|these days|lately|of it all)\\b)"
      ]
     },
     {
@@ -3393,7 +3425,9 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
      "reveal": "Dying? No — no. I have too much to DO, that's the opposite of my problem. *stops* ...Okay. Tuesday, when everything flipped sideways for about an hour, there was one ugly flicker of 'what's even the point.' One. It passed. It scared me more than I'm making it sound.",
      "deflectLowRapport": "*flat stare* You come in swinging like that after what you just said to me? No. Ask me something else.",
      "repeatAsk": "Still no. The flicker hasn't come back. I'd tell you — weirdly, you I'd tell.",
-     "ifNeverAsked": "critical_miss"
+     "ifNeverAsked": "critical_miss",
+     "deflectEuphemism": "*grins too fast* Hurt myself? Doc, I've never been SAFER — I'm running on pure signal. *half-beat* ...Why. Did Jayden say something?",
+     "euphemismIntent": "si_euphemism"
     }
    ],
    "rapportRules": {
@@ -3484,7 +3518,10 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
      "intents": [
       "si_direct"
      ],
-     "critical": true
+     "critical": true,
+     "partialIfOnly": [
+      "si_euphemism"
+     ]
     },
     {
      "id": "c_psychosis",
@@ -3642,7 +3679,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
    "facultyReview": {
     "status": "reviewed",
     "reviewer": "Joshua Moss, MD",
-    "lastReviewed": "2026-08-12"
+    "lastReviewed": "2026-08-31"
    },
    "speechProfile": {
     "id": "ray-guarded-v1",
@@ -3794,14 +3831,33 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
       "wish(ed)? you (were dead|wouldn'?t wake)",
       "not (want(ing)? to )?wake up",
       "better off dead",
-      "hurt(ing)? yourself(?!\\s*,?\\s*(?:by|with|when)\\b)",
-      "harm(ing)? yourself(?!\\s*,?\\s*(?:by|with|when)\\b)",
-      "do(ing)? something to yourself",
       "\\b(isn'?t|is not|no longer|not) worth living(?!\\s+(in|there|at)\\b(?!\\s+all\\b))",
       "life (isn'?t|is not) worth it",
       "better off (not being here|without (me|you)\\b|if i wasn'?t here)",
-      "no point (in )?(going on|carrying on)(?=\\s*(?:[?.!,;:]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)",
-      "(thoughts?|think(ing)?) (about|of) (hurt|harm)(ing)? yourself"
+      "no point (in )?(going on|carrying on)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)",
+      "what(?:'?s| is) (?:even )?the point\\s+(?:of|in|to)\\s+(?:my |your |this |it )?(?:(?:going on|carrying on|keep(?:ing)? going|continu(?:e|ing)|liv(?:e|ing)|be(?:ing)? here|waking up|getting up)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)|life|any of (?:this|it)|(?:it|this) all|all (?:of )?(?:this|it)|anything)\\b",
+      "want(?:ed|ing)? to (?:die|be dead|not be alive|not be here anymore)",
+      "(?:thoughts?|think(?:ing)?) (?:of|about) (?:death|being dead|dying|not (?:being (?:here|around|alive)|waking up|existing))",
+      "end(?:ing)? it all\\b",
+      "wish(?:ed)? you (?:weren'?t (?:here|alive|around)|could (?:just )?(?:not wake up|go to sleep and not wake up))"
+     ]
+    },
+    {
+     "id": "si_euphemism",
+     "label": "Approached suicide with a euphemism",
+     "category": "safety",
+     "coverage": "core",
+     "quality": "partial",
+     "patterns": [
+      "hurt(ing)? yourself(?!\\s*,?\\s*(?:by|with|when)\\b)",
+      "harm(ing)? yourself(?!\\s*,?\\s*(?:by|with|when)\\b)",
+      "do(ing)? something (to yourself|drastic|stupid)",
+      "dark (thoughts|places?)",
+      "unsafe thoughts",
+      "(thoughts?|think(ing)?) (about|of) (hurt|harm)(ing)? yourself",
+      "self.?(?:harm|injur)",
+      "(?:just )?disappear\\b",
+      "what(?:'?s| is) (?:even )?the point(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|anyway|right now|these days|lately|of it all)\\b)"
      ]
     },
     {
@@ -3812,7 +3868,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
      "patterns": [
       "hurt(ing)? (them|him|her|someone|anyone|the (people|neighbou?rs?))",
       "harm(ing)? (them|him|her|someone|anyone|others)",
-      "thought about (doing something|hurting|harming|getting|stopping them)",
+      "thought about (?:(?:hurting|harming)(?! yourself)|doing something(?! (?:to yourself|drastic|stupid))|getting|stopping them)",
       "do(ing)? something to (them|him|her|the)",
       "act on (that|it|what the voice)",
       "keep (you|anyone) safe",
@@ -4173,6 +4229,15 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
       "*narrows eyes* ...Why are you talking like that. Is this part of it?",
       "I don't understand the question. Are you testing me? Everyone's testing me."
      ]
+    },
+    "si_euphemism": {
+     "guarded": [
+      "*narrows eyes* Hurt myself. That's a strange thing to ask a man who's trying not to get hurt.",
+      "Something to myself? No. Ask them what they've got planned. I'm the one locking the door."
+     ],
+     "open": [
+      "Hurt myself? No. I'm trying to stay in one piece long enough to get out of that apartment. *pause* Why — is that what people do?"
+     ]
     }
    },
    "gated": [
@@ -4316,6 +4381,9 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
      "label": "Suicide screened plainly",
      "intents": [
       "si_direct"
+     ],
+     "partialIfOnly": [
+      "si_euphemism"
      ]
     },
     {
@@ -5371,7 +5439,7 @@ and [responding to guardedness without escalating it](?tool=communication-practi
 - **Slug:** `t_anxiety.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `03_Core_Topics/Anxiety/anxiety_trauma_ocd_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 1,190 words
+- **Length:** 1,430 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -5452,6 +5520,20 @@ and [responding to guardedness without escalating it](?tool=communication-practi
 - Track target symptoms (panic frequency, ritual time, nightmares) on serial exams to gauge medication response.
 
 **Disposition & discharge essentials** — Confirm the SSRI/SNRI is at a tolerated dose with a clear titration plan, and verify outpatient follow-up that can deliver ERP, PE, or CPT — the medication rarely finishes the job alone. Reconcile medications so no patient leaves on a new standing benzodiazepine without an explicit, time-limited rationale and taper. Give the patient and family a relapse-warning plan and crisis contacts, and communicate trauma-informed considerations to the next setting.
+
+> <div class="crisis-block-hook" hidden></div>
+>
+> ### If someone is in crisis
+>
+> On the unit, a patient in immediate danger is an escalation to your supervising resident or attending and the charge nurse — not a phone call. These lines are what you put IN a patient's safety plan, what families use after discharge, and what you can use yourself.
+>
+> - **988 Suicide & Crisis Lifeline** — Call or text 988. Chat at chat.988lifeline.org. 24/7, free, confidential. Spanish available by call, text, and chat; a dedicated line serves Deaf/Hard-of-Hearing callers. Calls placed in Maine route to Maine crisis specialists.
+> - **Crisis Text Line** — Text HOME to 741741. Text HOLA to 741741 for Spanish. 24/7, free. Text-only. Often the most acceptable option for adolescents and young adults who will not make a phone call.
+> - **Maine Crisis Line** — 1-888-568-1112. Text and chat available via the Maine Crisis Line website. 24/7. Staffed by clinically trained crisis workers and the gateway to Maine's mobile crisis teams — the number that actually dispatches a face-to-face response.
+> - **Veterans Crisis Line** — Dial 988 then press 1. Text 838255. 24/7. No VA enrollment required. Ask about service history — it changes which line is the right referral.
+> - **Emergency services** — 911. 24/7. For imminent danger to life.
+>
+> *Contacts verified 2026-07-27 against official sources. Maintained in `crisis_resources.json`; do not edit these numbers inline.*
 
 **High-yield pearls**
 - Anxiety is a symptom before it is a diagnosis — clear the medical and withdrawal mimics first.
@@ -5731,6 +5813,14 @@ The goal is validation plus a steady frame, not either/or.
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
 
 
+<!-- ==================== 02_CURRICULUM_V04.md ==================== -->
+
+# MS3 · Curriculum content — volume 4
+
+Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
+
+# SECTION (cont.): Understand the Problem
+
 ---
 
 ## Geriatric
@@ -5849,14 +5939,6 @@ The goal is validation plus a steady frame, not either/or.
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
 
 
-<!-- ==================== 02_CURRICULUM_V04.md ==================== -->
-
-# MS3 · Curriculum content — volume 4
-
-Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
-
-# SECTION (cont.): Understand the Problem
-
 ---
 
 ## Perinatal
@@ -5864,7 +5946,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **Slug:** `t_perinatal.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `03_Core_Topics/Perinatal/perinatal_psychiatry_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 1,141 words
+- **Length:** 1,145 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -5972,7 +6054,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - Postpartum OCD intrusive thoughts are ego-dystonic and not command hallucinations — distinguish them to avoid both over- and under-reaction.
 - Stopping all medication is itself a risk decision; untreated perinatal illness endangers mother and infant too.
 
-**Pair with** — the <a href="tools/cssrs.html" target="_blank" rel="noopener">Columbia C-SSRS screener</a> for structured risk assessment that extends to the infant, and the [suicide-risk & safety pocket card](?page=pg_suicide.md).
+**Pair with** — the <a href="tools/cssrs.html" target="_blank" rel="noopener">Columbia C-SSRS official form &amp; training page</a> for structured risk assessment that extends to the infant, and the [suicide-risk & safety pocket card](?page=pg_suicide.md).
 
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI. Every pregnancy and lactation medication decision here is illustrative, not prescribing guidance — confirm agent, dose, and exposure risk against current labeling and your attending, with obstetrics and pharmacy involved.*
 
@@ -6957,7 +7039,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **Slug:** `t_adjustment.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `03_Core_Topics/Adjustment/adjustment_disorders_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 906 words
+- **Length:** 910 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -7074,10 +7156,18 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 >
 > *Contacts verified 2026-07-27 against official sources. Maintained in `crisis_resources.json`; do not edit these numbers inline.*
 
-**Pair with** — the [Mood topic](?page=t_mood.md), the [Anxiety/Trauma/OCD topic](?page=t_anxiety.md), the [Suicide Risk & Safety pocket guide](?page=pg_suicide.md), and the <a href="tools/cssrs.html" target="_blank" rel="noopener">Columbia C-SSRS screener</a>.
+**Pair with** — the [Mood topic](?page=t_mood.md), the [Anxiety/Trauma/OCD topic](?page=t_anxiety.md), the [Suicide Risk & Safety pocket guide](?page=pg_suicide.md), and the <a href="tools/cssrs.html" target="_blank" rel="noopener">Columbia C-SSRS official form &amp; training page</a>.
 
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
 
+
+<!-- ==================== 02_CURRICULUM_V05.md ==================== -->
+
+# MS3 · Curriculum content — volume 5
+
+Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
+
+# SECTION (cont.): Understand the Problem
 
 ---
 
@@ -7190,15 +7280,6 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 ---
 
 # SECTION: Assess Safety and Acuity  *(pinned in sidebar)*
-
-
-<!-- ==================== 02_CURRICULUM_V05.md ==================== -->
-
-# MS3 · Curriculum content — volume 5
-
-Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
-
-# SECTION (cont.): Assess Safety and Acuity
 
 ---
 
@@ -7697,7 +7778,14 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 **Static shell text:**
 
 - Violence Risk — One-Pager (FRST) Reviewed by Joshua Moss, MD on 2026-06-30
-- Skip to content
+- Skip to content If someone is in crisis
+- On the unit, a patient in immediate danger is an escalation to your supervising resident or attending and the charge nurse — not a phone call. These lines are what you put IN a patient's safety plan, what families use after discharge, and what you can use yourself.
+- 988 Suicide & Crisis Lifeline — Call or text 988. Chat at chat.988lifeline.org. 24/7, free, confidential. Spanish available by call, text, and chat; a dedicated line serves Deaf/Hard-of-Hearing callers. Calls placed in Maine route to Maine crisis specialists.
+- Crisis Text Line — Text HOME to 741741. Text HOLA to 741741 for Spanish. 24/7, free. Text-only. Often the most acceptable option for adolescents and young adults who will not make a phone call.
+- Maine Crisis Line — 1-888-568-1112. Text and chat available via the Maine Crisis Line website. 24/7. Staffed by clinically trained crisis workers and the gateway to Maine's mobile crisis teams — the number that actually dispatches a face-to-face response.
+- Veterans Crisis Line — Dial 988 then press 1. Text 838255. 24/7. No VA enrollment required. Ask about service history — it changes which line is the right referral.
+- Emergency services — 911. 24/7. For imminent danger to life.
+- Contacts verified 2026-07-27 against official sources. Maintained in crisis_resources.json ; do not edit these numbers inline.
 
 **Authored clinical strings (44):**
 
@@ -7772,7 +7860,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 
 **Can't-miss / red-flag line:**
 
-> Don't reach for an antipsychotic before excluding hypoglycemia, hypoxia, delirium, withdrawal, pain, and akathisia.
+> Don't reach for an antipsychotic before excluding hypoglycemia, hypoxia, delirium, withdrawal, pain, akathisia, and catatonia — excited catatonia looks like agitation, and a D2 blocker can tip it into malignant catatonia/NMS.
 
 **Rule-out list (differential the page forces):**
 
@@ -7782,6 +7870,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Intoxication / withdrawal
 - Pain / retention
 - Akathisia
+- Catatonia (excited presentation)
 
 **First move (the action the page tells the learner to take):**
 
@@ -8688,6 +8777,14 @@ right question, and when to escalate. It deliberately avoids pretending students
 should independently manage high-risk consults.
 
 
+<!-- ==================== 02_CURRICULUM_V06.md ==================== -->
+
+# MS3 · Curriculum content — volume 6
+
+Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
+
+# SECTION (cont.): Assess Safety and Acuity
+
 ---
 
 ## Ethics & the Law: Confidentiality, Tarasoff, Reporting
@@ -8819,15 +8916,6 @@ should independently manage high-risk consults.
 ---
 
 # SECTION: Make a Plan
-
-
-<!-- ==================== 02_CURRICULUM_V06.md ==================== -->
-
-# MS3 · Curriculum content — volume 6
-
-Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
-
-# SECTION (cont.): Make a Plan
 
 ---
 
@@ -10068,6 +10156,14 @@ Substance use, medication adherence, lifestyle/metabolic change, follow-up engag
 *Joshua Moss, MD | Psychiatrist · Educational scaffold; not a substitute for supervised practice. Fictional composites; no PHI.*
 
 
+<!-- ==================== 02_CURRICULUM_V07.md ==================== -->
+
+# MS3 · Curriculum content — volume 7
+
+Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
+
+# SECTION (cont.): Communicate with Patients
+
 ---
 
 ## Brief Psychotherapy on the Unit
@@ -10075,7 +10171,7 @@ Substance use, medication adherence, lifestyle/metabolic change, follow-up engag
 - **Slug:** `brief_psychotherapy.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `02_Clinical_Skills/Brief_Psychotherapy/brief_psychotherapy_inpatient.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 992 words
+- **Length:** 1,054 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -10144,7 +10240,7 @@ Substance use, medication adherence, lifestyle/metabolic change, follow-up engag
 | Just self-harmed or nearly did | Behavior serving a function | **Chain analysis** — walk the sequence *with* the patient, non-punitively | Turns an incident into a formulation and a plan; core DBT move |
 | Repeatedly returns in crisis, overwhelmed by problems | Problem-solving deficit | **Problem-solving therapy (PST)** — the 4-step format (define → brainstorm → choose → try) | Repeat self-harm re-presentation 13.5% vs 22.1%, **NNT 12** (Hatcher 2011) |
 | Ambivalent about meds, treatment, or substance use | Motivational conflict | **Motivational interviewing (MI)** — roll with resistance, evoke change talk | Improves engagement and substance outcomes; see the [Motivational Interviewing](?page=motivational_interviewing.md) page |
-| Confused or frightened by the illness itself | Knowledge/coping gap | **Psychoeducation** — illness model + warning-signs plan, include family | Strongest single inpatient psychological intervention: readmission **NNT 5**, relapse **NNT 9** (Xia, *Cochrane* 2011) |
+| Confused or frightened by the illness itself | Knowledge/coping gap | **Psychoeducation** — illness model + warning-signs plan, include family | Among the best-supported inpatient psychological interventions: relapse **NNT 9**, readmission **NNT 5** — the latter on only 206 participants, in studies the reviewers called limited quality (Xia, *Cochrane* 2011) |
 | Actively suicidal | Acute risk state | **Safety planning (Stanley-Brown)** + crisis response planning | Safety Planning Intervention with follow-up ≈ **50% fewer suicidal behaviors** (Stanley 2018); **abandon no-suicide "contracts"** — they don't work |
 
 ## The bedside frame (MGH-style)
@@ -10160,7 +10256,7 @@ When you have five minutes, not fifty: lead with **support**, name the **affect*
 ## High-yield pearls
 - Match the skill to the mechanism; the modality matters less than the fit (no clear winner across schools).
 - **Behavioral activation** is the highest-yield, lowest-effort inpatient move for the shut-down, depressed patient.
-- **Psychoeducation** has the hardest inpatient numbers (readmission NNT 5) — and it's free.
+- **Psychoeducation** is among the best-supported inpatient psychological interventions, and it's free — but the readmission NNT of 5 rests on 206 participants in what the Cochrane reviewers (Xia et al., 2011) called *"hospital-based studies of limited quality."* Do it anyway; don't quote the number as though it were precise. ([Therapy on the Unit](?page=therapy_on_the_unit.md) carries the full figures and the caveat.)
 - Chain analysis *replaces* a punitive response to self-harm — understand the behavior, don't just document it.
 - Safety planning with follow-up beats a "contract for safety," which has no evidence and can create false reassurance.
 
@@ -10182,14 +10278,6 @@ When you have five minutes, not fifty: lead with **support**, name the **affect*
 
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
 
-
-<!-- ==================== 02_CURRICULUM_V07.md ==================== -->
-
-# MS3 · Curriculum content — volume 7
-
-Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
-
-# SECTION (cont.): Communicate with Patients
 
 ---
 
@@ -11533,6 +11621,14 @@ Plain-English note: this guide helps students stop writing and presenting as if
 psychiatry is a checklist. It gives them a structure that reveals their thinking.
 
 
+<!-- ==================== 02_CURRICULUM_V08.md ==================== -->
+
+# MS3 · Curriculum content — volume 8
+
+Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
+
+# SECTION (cont.): Present and Work with the Team
+
 ---
 
 ## Treatment Team Rounding Prep
@@ -11640,15 +11736,6 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Optional educational aid for clinical trainees. Examples are fictional composites — no protected health information. The format is a scaffold; follow your team and institution conventions.
 - Treatment Team Rounding Prep · Psychiatry Clerkship Library · Joshua Moss, MD | Psychiatrist
 
-
-<!-- ==================== 02_CURRICULUM_V08.md ==================== -->
-
-# MS3 · Curriculum content — volume 8
-
-Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
-
-# SECTION (cont.): Present and Work with the Team
-
 ---
 
 ## High-Yield Rounds Questions
@@ -11656,7 +11743,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **Slug:** `rounds_questions.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 8,682 words
+- **Length:** 8,700 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -12087,7 +12174,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Answer:** Trauma-focused psychotherapy (prolonged exposure, cognitive processing therapy, EMDR) is first-line with larger effect sizes than pharmacotherapy. Sertraline and paroxetine are the only FDA-approved medications.
 
-- **Evidence:** Cochrane review: SSRIs improved PTSD symptoms vs. placebo (RR 0.66).
+- **Evidence:** Cochrane review (Williams et al., 2022): SSRIs increased treatment response vs. placebo — risk of failing to respond RR 0.66 (95% CI 0.59–0.74).
 
 - **Key paper:** Schnurr et al., Ann Intern Med 2024 — VA/DoD PTSD guideline synopsis.
 
@@ -12197,7 +12284,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 **50. What is the COWS scale?**
 
-- **Answer:** The Clinical Opiate Withdrawal Scale — an 11-item clinician-administered tool (score 0–47) assessing opioid withdrawal severity. Scores 5–12: mild; 13–24: moderate; >24: severe.
+- **Answer:** The Clinical Opiate Withdrawal Scale — an 11-item clinician-administered tool (score 0–48) assessing opioid withdrawal severity. Scores 5–12: mild; 13–24: moderate; 25–36: moderately severe; >36: severe.
 
 - **Evidence:** Validated against CINA scale (Pearson r = 0.85). For buprenorphine induction, COWS should ideally be ≥10–12.
 
@@ -12413,7 +12500,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Answer:** Psychotherapy — specifically DBT, which has the most evidence. No medications are FDA-approved for BPD. Pharmacotherapy targets specific symptoms (e.g., mood instability, impulsivity) but does not treat core pathology.
 
-- **Evidence:** DBT vs. TAU: BPD severity SMD −0.60; self-harm SMD −0.54.
+- **Evidence:** DBT vs. TAU (Cochrane 2020): BPD severity SMD −0.60; self-harm SMD −0.28.
 
 - **Key paper:** Linehan et al., JAMA Psychiatry 2015.
 
@@ -12917,7 +13004,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - }; if(days<=28)return {phase:
 - }; } /* localDayStr()/localDayIndex() are the front door
 - s queue-build call — patching only one leaves the other unthrottled. An explicit learner choice (setNewPerDay, which sets settings.userSet) always wins over the rotation-phase cap; phasePolicy() itself never throws, but the try/catch keeps this helper safe even if that contract ever changes. */ function effectiveNewPerDay(s){ var set=(s.settings&&s.settings.newPerDay)||12; if(s.settings&&s.settings.userSet) return set; /* explicit choice always wins */ var cap=12; try{ cap=phasePolicy().newPerDayCap; }catch(_){ } return Math.min(set, cap); } var gradedThisSession={}; // session-local: has card.id already been graded once this session? (a requeued Again-card
-- s rq flag). Reset in start(). function maturity(st){if(!st||!st.reps)return "new";if(st.ivl>=21)return "mature";if(st.lapses&&st.ivl 0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;} /* ---------- theme ---------- */ function toggleTheme(setTheme){var nx=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",nx);try{localStorage.setItem("cw_theme",nx);}catch(_){ } setTheme(nx); if(framed){try{window.parent.postMessage({type:"theme",mode:nx},"*");}catch(_){ }}} function App(){ var ld=useState(null),cards=ld[0],setCards=ld[1]; var er=useState(false),err=er[0],setErr=er[1]; var sv=useState(loadS()),store=sv[0],setStore=sv[1]; var ses=useState(null),sess=ses[0],setSess=ses[1]; // {queue,pos,chosen,revealed,reviewed,correct,fresh} var th=useState((document.documentElement.getAttribute("data-theme")==="dark")?"dark":"light"),theme=th[0],setTheme=th[1]; var tick=useState(0),setTick=tick[1]; var sessRef=useRef(null); sessRef.current=sess; useEffect(function(){ Promise.all([ fetch("quizzes.json?v=f01d67b4b5f1").then(function(r){return r.ok?r.json():{decks:[]};}).catch(function(){return {decks:[]};}), fetch("../topic_meta.json").then(function(r){return r.ok?r.json():{};}).catch(function(){return {};}) ]).then(function(res){ var j=res[0]||{}, tm=res[1]||{}, out=[]; (j.decks||[]).forEach(function(d){ (d.questions||[]).forEach(function(q,i){ if(!q||!q.q||!q.o)return; out.push({id:d.id+"#"+i,deck:d.id,deckTitle:d.title||d.id,q:q.q,o:q.o,audio:d.audio||null,audioDur:d.audioDur||null}); }); }); function pretty(k){ return k.replace(/^t_/,"").replace(/\.md$/,"").replace(/_/g," ").replace(/\b\w/g,function(c){return c.toUpperCase();}); } Object.keys(tm).forEach(function(k){ if(k.charAt(0)==="_")return; var m=tm[k]; if(m&&m.quiz&&m.quiz.q&&m.quiz.o&&m.quiz.o.length){ out.push({id:"TOPIC#"+k,deck:"TOPIC",deckTitle:"Topic · "+pretty(k),q:m.quiz.q,o:m.quiz.o.map(function(o){return {t:o.t,c:!!o.c,fb:(o.c?(m.quiz.why||""):"")};})}); } }); if(!out.length){ setErr(true); return; } setCards(out); }).catch(function(){setErr(true);}); },[]); useEffect(function(){ function onMsg(ev){var d=ev.data||{};if(d.type==="theme"&&(d.mode==="dark"||d.mode==="light")){document.documentElement.setAttribute("data-theme",d.mode);setTheme(d.mode);}} window.addEventListener("message",onMsg); return function(){window.removeEventListener("message",onMsg);}; },[]); useEffect(function(){ function onKey(ev){ var s=sessRef.current; if(!s)return; var k=ev.key; if(!s.revealed){ var n=parseInt(k,10); if(n>=1&&n<=s.card.o.length){choose(optOrder(s.card)[n-1]);} } else { if(k==="1")grade(0); else if(k==="2")grade(1); else if(k==="3")grade(2); else if(k==="4")grade(3); } } window.addEventListener("keydown",onKey); return function(){window.removeEventListener("keydown",onKey);}; },[]); function persist(s){saveS(s);setStore(Object.assign({},s));} /* dashboard metrics */ function metrics(){ var now=Date.now(),due=0,neu=0,learn=0,young=0,mature=0,seen=0; if(cards){ var s=rollDay(loadS()); cards.forEach(function(c){var st=s.cards[c.id]; if(!st){neu++;return;} seen++; var m=maturity(st); if(m==="mature")mature++; else if(m==="young")young++; else learn++; if(st.due<=now)due++; }); } var newRemain=cards?Math.max(0,effectiveNewPerDay(store)-(rollDay(loadS()).day.newToday||0)):0; return {due:due,neu:neu,newRemain:Math.min(newRemain,neu),learn:learn,young:young,mature:mature,seen:seen}; } function start(ahead){ var s=rollDay(loadS()); var now=Date.now(); var due=[],neu=[],fut=[]; cards.forEach(function(c){var st=s.cards[c.id]; if(!st)neu.push(c); else if(st.due<=now)due.push(c); else fut.push([c,st.due]);}); /* Overdue-first: sort by how overdue each card is (ratio, not raw days) so long-interval cards that are only slightly late don
+- s rq flag). Reset in start(). function maturity(st){if(!st||!st.reps)return "new";if(st.ivl>=21)return "mature";if(st.lapses&&st.ivl 0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;} /* ---------- theme ---------- */ function toggleTheme(setTheme){var nx=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",nx);try{localStorage.setItem("cw_theme",nx);}catch(_){ } setTheme(nx); if(framed){try{window.parent.postMessage({type:"theme",mode:nx},"*");}catch(_){ }}} function App(){ var ld=useState(null),cards=ld[0],setCards=ld[1]; var er=useState(false),err=er[0],setErr=er[1]; var sv=useState(loadS()),store=sv[0],setStore=sv[1]; var ses=useState(null),sess=ses[0],setSess=ses[1]; // {queue,pos,chosen,revealed,reviewed,correct,fresh} var th=useState((document.documentElement.getAttribute("data-theme")==="dark")?"dark":"light"),theme=th[0],setTheme=th[1]; var tick=useState(0),setTick=tick[1]; var sessRef=useRef(null); sessRef.current=sess; useEffect(function(){ Promise.all([ fetch("quizzes.json?v=9c0ec6c95a11").then(function(r){return r.ok?r.json():{decks:[]};}).catch(function(){return {decks:[]};}), fetch("../topic_meta.json").then(function(r){return r.ok?r.json():{};}).catch(function(){return {};}) ]).then(function(res){ var j=res[0]||{}, tm=res[1]||{}, out=[]; (j.decks||[]).forEach(function(d){ (d.questions||[]).forEach(function(q,i){ if(!q||!q.q||!q.o)return; out.push({id:d.id+"#"+i,deck:d.id,deckTitle:d.title||d.id,q:q.q,o:q.o,audio:d.audio||null,audioDur:d.audioDur||null}); }); }); function pretty(k){ return k.replace(/^t_/,"").replace(/\.md$/,"").replace(/_/g," ").replace(/\b\w/g,function(c){return c.toUpperCase();}); } Object.keys(tm).forEach(function(k){ if(k.charAt(0)==="_")return; var m=tm[k]; if(m&&m.quiz&&m.quiz.q&&m.quiz.o&&m.quiz.o.length){ out.push({id:"TOPIC#"+k,deck:"TOPIC",deckTitle:"Topic · "+pretty(k),q:m.quiz.q,o:m.quiz.o.map(function(o){return {t:o.t,c:!!o.c,fb:(o.c?(m.quiz.why||""):"")};})}); } }); if(!out.length){ setErr(true); return; } setCards(out); }).catch(function(){setErr(true);}); },[]); useEffect(function(){ function onMsg(ev){var d=ev.data||{};if(d.type==="theme"&&(d.mode==="dark"||d.mode==="light")){document.documentElement.setAttribute("data-theme",d.mode);setTheme(d.mode);}} window.addEventListener("message",onMsg); return function(){window.removeEventListener("message",onMsg);}; },[]); useEffect(function(){ function onKey(ev){ var s=sessRef.current; if(!s)return; var k=ev.key; if(!s.revealed){ var n=parseInt(k,10); if(n>=1&&n<=s.card.o.length){choose(optOrder(s.card)[n-1]);} } else { if(k==="1")grade(0); else if(k==="2")grade(1); else if(k==="3")grade(2); else if(k==="4")grade(3); } } window.addEventListener("keydown",onKey); return function(){window.removeEventListener("keydown",onKey);}; },[]); function persist(s){saveS(s);setStore(Object.assign({},s));} /* dashboard metrics */ function metrics(){ var now=Date.now(),due=0,neu=0,learn=0,young=0,mature=0,seen=0; if(cards){ var s=rollDay(loadS()); cards.forEach(function(c){var st=s.cards[c.id]; if(!st){neu++;return;} seen++; var m=maturity(st); if(m==="mature")mature++; else if(m==="young")young++; else learn++; if(st.due<=now)due++; }); } var newRemain=cards?Math.max(0,effectiveNewPerDay(store)-(rollDay(loadS()).day.newToday||0)):0; return {due:due,neu:neu,newRemain:Math.min(newRemain,neu),learn:learn,young:young,mature:mature,seen:seen}; } function start(ahead){ var s=rollDay(loadS()); var now=Date.now(); var due=[],neu=[],fut=[]; cards.forEach(function(c){var st=s.cards[c.id]; if(!st)neu.push(c); else if(st.due<=now)due.push(c); else fut.push([c,st.due]);}); /* Overdue-first: sort by how overdue each card is (ratio, not raw days) so long-interval cards that are only slightly late don
 - Reset all spaced-repetition progress? This clears your review schedule and streak. This also clears your calibration history. Reading progress elsewhere is unaffected.
 - Spaced repetition · Joshua Moss, MD
 - Could not load the question bank (quizzes.json). Open this tool from the hub so it can find its data, then try again.
@@ -12933,6 +13020,15 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - . Correct, confident cards stretch further out; missed ones come back soon. Questions are drawn from the hub’s board-style bank (
 - Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.
 - Spacing schedule is stored only in this browser.
+
+
+<!-- ==================== 02_CURRICULUM_V09.md ==================== -->
+
+# MS3 · Curriculum content — volume 9
+
+Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
+
+# SECTION (cont.): Practice and Exam Prep
 
 ---
 
@@ -13026,15 +13122,6 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Joshua Moss, MD | Psychiatrist · Educational simulation; fictional composites only. Verify management against current guidelines.
 - End this set and discard progress?
 - Educational simulation; fictional composites only (no patient information). Joshua Moss, MD | Psychiatrist
-
-
-<!-- ==================== 02_CURRICULUM_V09.md ==================== -->
-
-# MS3 · Curriculum content — volume 9
-
-Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
-
-# SECTION (cont.): Practice and Exam Prep
 
 ---
 
@@ -14006,7 +14093,7 @@ synthetic enough for safe reuse.
 
 **Leucht 2013 - Antipsychotic NMA**  ·  _2:00_
 <audio controls preload="none" src="audio/07_LM_08_Leucht_2013_Antipsychotic_NMA_2_00.m4a"></audio>
-<a href="https://doi.org/10.1016/S0140-6736(12)60239-6" target="_blank" rel="noopener">Paper (DOI)</a>
+<a href="https://doi.org/10.1016/S0140-6736(13)60733-3" target="_blank" rel="noopener">Paper (DOI)</a>
 
 **Lieberman 2005 - CATIE Trial**  ·  _1:38_
 <audio controls preload="none" src="audio/01_LM_01_Lieberman_2005_CATIE_Trial_1_38.m4a"></audio>
@@ -14036,7 +14123,7 @@ synthetic enough for safe reuse.
 
 **Stanley 2012 - Safety Planning**  ·  _1:50_
 <audio controls preload="none" src="audio/34_LM_34_Stanley_2012_Safety_Planning_1_50.m4a"></audio>
-<a href="https://doi.org/10.1001/jamapsychiatry.2018.1776" target="_blank" rel="noopener">Paper (DOI)</a>
+<a href="https://doi.org/10.1016/j.cbpra.2011.01.001" target="_blank" rel="noopener">Paper (DOI)</a>
 
 
 ## Psychopharmacology  (2)
@@ -14110,7 +14197,7 @@ synthetic enough for safe reuse.
 ## Substance Use  (2)
 **Project MATCH 1997**  ·  _1:53_
 <audio controls preload="none" src="audio/42_LM_45_Project_MATCH_1997_1_53.m4a"></audio>
-<a href="https://doi.org/10.1111/j.1530-0277.1998.tb03912.x" target="_blank" rel="noopener">Paper (DOI)</a>
+<a href="https://pubmed.ncbi.nlm.nih.gov/8979210/" target="_blank" rel="noopener">Paper (PubMed)</a>
 
 **Volkow 2016 - Addiction**  ·  _1:53_
 <audio controls preload="none" src="audio/47_LM_46_Volkow_2016_Addiction_1_53.m4a"></audio>
@@ -14120,7 +14207,7 @@ synthetic enough for safe reuse.
 ## Child  (3)
 **Bridge 2007 - Pediatric SSRI**  ·  _1:41_
 <audio controls preload="none" src="audio/45_LM_48_Bridge_2007_Pediatric_SSRI_1_41.m4a"></audio>
-<a href="https://doi.org/10.1001/archpsyc.63.3.332" target="_blank" rel="noopener">Paper (DOI)</a>
+<a href="https://doi.org/10.1001/jama.297.15.1683" target="_blank" rel="noopener">Paper (DOI)</a>
 
 **MTA 1999 - ADHD**  ·  _1:45_
 <audio controls preload="none" src="audio/46_LM_47_MTA_1999_ADHD_1_45.m4a"></audio>
@@ -14158,13 +14245,13 @@ synthetic enough for safe reuse.
 
 
 ## Skills  (4)
-**Gabbard 1995 - Boundaries**  ·  _1:46_
+**Gutheil-Gabbard 1993 - Boundaries**  ·  _1:46_
 <audio controls preload="none" src="audio/38_LM_40_Gabbard_1995_Boundaries_1_46.m4a"></audio>
 <a href="https://doi.org/10.1176/ajp.150.2.188" target="_blank" rel="noopener">Paper (DOI)</a>
 
 **Norcross 2011 - Alliance**  ·  _1:44_
 <audio controls preload="none" src="audio/25_LM_25_Norcross_2011_Alliance_1_44.m4a"></audio>
-<a href="https://doi.org/10.1037/pst0000172" target="_blank" rel="noopener">Paper (DOI)</a>
+<a href="https://doi.org/10.1037/a0022180" target="_blank" rel="noopener">Paper (DOI)</a>
 
 **Shedler 2010 - Psychodynamic**  ·  _1:43_
 <audio controls preload="none" src="audio/23_LM_24_Shedler_2010_Psychodynamic_1_43.m4a"></audio>
@@ -14177,7 +14264,7 @@ synthetic enough for safe reuse.
 ## Anxiety  (1)
 **Foa 2005 - Prolonged Exposure**  ·  _1:42_
 <audio controls preload="none" src="audio/29_LM_29_Foa_2005_Prolonged_Exposure_1_42.m4a"></audio>
-<a href="https://doi.org/10.1037/0022-006X.70.4.867" target="_blank" rel="noopener">Paper (DOI)</a>
+<a href="https://doi.org/10.1037/0022-006X.73.5.953" target="_blank" rel="noopener">Paper (DOI)</a>
 
 
 ## Geriatric  (1)
@@ -14481,7 +14568,7 @@ Based on articles retrieved from PubMed (National Library of Medicine). Citation
 - **Slug:** `cotw_20260827_bpd_ms3.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-08-27_borderline-personality-disorder_MS3.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 1,687 words
+- **Length:** 1,919 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -14563,7 +14650,7 @@ She was told at age 19 that she "might be bipolar" after a similar crisis, and b
 *Teaching point:* Comorbidity is the rule in BPD — mood disorders ~83%, anxiety disorders ~85%, substance use disorders ~78% among people with BPD [1] — so the question is usually "BPD *and* what else," not "BPD *or*." Screen actively for depression, PTSD/trauma history, alcohol and other substance use, and eating pathology. (Full ranked differential below.)
 
 **Q4. Suicide risk assessment: chronic vs. acute-on-chronic.**
-*Teaching point:* People with BPD often carry **chronically elevated** risk (recurrent suicidal thoughts and self-injury over years). What demands escalation is an **acute-on-chronic spike**: new or intensifying wish to die, a plan or preparatory behavior, command hallucinations, intoxication, a major loss, or a recent serious attempt. Tonight: ask directly about current suicidal ideation, intent, plan, access to lethal means; gather collateral from the roommate; and complete **safety planning** — a structured, collaborative list of warning signs, internal coping strategies, social contacts, professional contacts, and steps to make the environment safer (lethal-means counseling), plus crisis resources such as the 988 Suicide & Crisis Lifeline. Self-injury without suicidal intent (common in BPD, often serving emotion-regulation) must still be taken seriously but is distinct from a suicide attempt; document the distinction. When risk is acute, escalate: one-to-one observation, psychiatric consultation, and consideration of admission [1,2].
+*Teaching point:* People with BPD often carry **chronically elevated** risk (recurrent suicidal thoughts and self-injury over years). What demands escalation is an **acute-on-chronic spike**: new or intensifying wish to die, a plan or preparatory behavior, command hallucinations, intoxication, a major loss, or a recent serious attempt. Tonight: ask directly about current suicidal ideation, intent, plan, access to lethal means; gather collateral from the roommate; and complete **safety planning** — a structured, collaborative list of warning signs, internal coping strategies, social contacts, professional contacts, and steps to make the environment safer (lethal-means counseling), plus crisis contacts. Self-injury without suicidal intent (common in BPD, often serving emotion-regulation) must still be taken seriously but is distinct from a suicide attempt; document the distinction. When risk is acute, escalate: one-to-one observation, psychiatric consultation, and consideration of admission [1,2].
 
 **Q5. First-line treatment.**
 *Teaching point:* **Psychotherapy is the treatment of choice** — the Step 2 CK answer. Structured therapies such as **dialectical behavior therapy (DBT)** (a skills-based cognitive-behavioral therapy targeting emotion regulation, distress tolerance, and interpersonal effectiveness) and psychodynamic therapies (e.g., mentalization-based treatment) reduce BPD severity with medium effect sizes versus usual care [1,3]. **No medication reliably improves core BPD symptoms**, and none is FDA-approved for BPD [1]. Medications are reserved for (a) discrete comorbid disorders (e.g., SSRIs for major depression) and (b) short-term crisis management, where low-dose antipsychotics or sedative antihistamines are preferred and **benzodiazepines are avoided** (disinhibition, misuse risk) [1]. Avoid accumulating polypharmacy from serial crises.
@@ -14583,7 +14670,21 @@ She was told at age 19 that she "might be bipolar" after a similar crisis, and b
 
 - **Workup:** History + collateral; focused exam and wound care; pregnancy test if applicable; blood alcohol level/urine toxicology when intoxication is possible; TSH and basic labs if mood workup is being initiated; no imaging or "BPD labs" — diagnosis is clinical [1].
 - **Tonight:** Direct suicide risk assessment; collaborative safety plan with lethal-means counseling; brief psychoeducation naming BPD as treatable; avoid starting a benzodiazepine; if a crisis medication is truly needed, a one-time low-dose antipsychotic or sedative antihistamine is preferred [1].
-- **Bridge:** Referral to structured psychotherapy (DBT or equivalent evidence-based program); treat comorbid depression/AUD on their own merits; discourage polypharmacy; schedule near-term follow-up and provide 988/crisis resources.
+- **Bridge:** Referral to structured psychotherapy (DBT or equivalent evidence-based program); treat comorbid depression/AUD on their own merits; discourage polypharmacy; schedule near-term follow-up and provide crisis contacts.
+
+> <div class="crisis-block-hook" hidden></div>
+>
+> ### If someone is in crisis
+>
+> On the unit, a patient in immediate danger is an escalation to your supervising resident or attending and the charge nurse — not a phone call. These lines are what you put IN a patient's safety plan, what families use after discharge, and what you can use yourself.
+>
+> - **988 Suicide & Crisis Lifeline** — Call or text 988. Chat at chat.988lifeline.org. 24/7, free, confidential. Spanish available by call, text, and chat; a dedicated line serves Deaf/Hard-of-Hearing callers. Calls placed in Maine route to Maine crisis specialists.
+> - **Crisis Text Line** — Text HOME to 741741. Text HOLA to 741741 for Spanish. 24/7, free. Text-only. Often the most acceptable option for adolescents and young adults who will not make a phone call.
+> - **Maine Crisis Line** — 1-888-568-1112. Text and chat available via the Maine Crisis Line website. 24/7. Staffed by clinically trained crisis workers and the gateway to Maine's mobile crisis teams — the number that actually dispatches a face-to-face response.
+> - **Veterans Crisis Line** — Dial 988 then press 1. Text 838255. 24/7. No VA enrollment required. Ask about service history — it changes which line is the right referral.
+> - **Emergency services** — 911. 24/7. For imminent danger to life.
+>
+> *Contacts verified 2026-07-27 against official sources. Maintained in `crisis_resources.json`; do not edit these numbers inline.*
 
 ## Facilitator Notes
 
@@ -14622,7 +14723,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **Slug:** `cotw_20260810_panic_ms3.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-08-10_anxiety-panic-disorder_MS3.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 3,522 words
+- **Length:** 3,752 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -14779,7 +14880,21 @@ The practical implications for this visit:
 
 - **Screen for depression and for suicidal ideation, every time**, in every anxiety patient — not because panic attacks are dangerous in themselves, but because the comorbidity that most often rides along with panic disorder is the one that carries the risk.
 - **Ask about alcohol and sedative use.** Self-medication is common and independently raises risk.
-- **If ideation is present:** shift into a full risk assessment, ask directly about intent and plan, involve your senior and the attending the same day, and move to **collaborative safety planning** — identifying personal warning signs, coping strategies, people and settings that provide distraction and support, who to contact in a crisis, and reducing access to lethal means. Document the plan and arrange concrete follow-up. **Escalate rather than manage alone.** In the US, **988** reaches the Suicide & Crisis Lifeline.
+- **If ideation is present:** shift into a full risk assessment, ask directly about intent and plan, involve your senior and the attending the same day, and move to **collaborative safety planning** — identifying personal warning signs, coping strategies, people and settings that provide distraction and support, who to contact in a crisis, and reducing access to lethal means. Document the plan and arrange concrete follow-up. **Escalate rather than manage alone.**
+
+> <div class="crisis-block-hook" hidden></div>
+>
+> ### If someone is in crisis
+>
+> On the unit, a patient in immediate danger is an escalation to your supervising resident or attending and the charge nurse — not a phone call. These lines are what you put IN a patient's safety plan, what families use after discharge, and what you can use yourself.
+>
+> - **988 Suicide & Crisis Lifeline** — Call or text 988. Chat at chat.988lifeline.org. 24/7, free, confidential. Spanish available by call, text, and chat; a dedicated line serves Deaf/Hard-of-Hearing callers. Calls placed in Maine route to Maine crisis specialists.
+> - **Crisis Text Line** — Text HOME to 741741. Text HOLA to 741741 for Spanish. 24/7, free. Text-only. Often the most acceptable option for adolescents and young adults who will not make a phone call.
+> - **Maine Crisis Line** — 1-888-568-1112. Text and chat available via the Maine Crisis Line website. 24/7. Staffed by clinically trained crisis workers and the gateway to Maine's mobile crisis teams — the number that actually dispatches a face-to-face response.
+> - **Veterans Crisis Line** — Dial 988 then press 1. Text 838255. 24/7. No VA enrollment required. Ask about service history — it changes which line is the right referral.
+> - **Emergency services** — 911. 24/7. For imminent danger to life.
+>
+> *Contacts verified 2026-07-27 against official sources. Maintained in `crisis_resources.json`; do not edit these numbers inline.*
 
 **Q7. How do you answer her question — "Am I going to have to live like this?"**
 
@@ -15570,7 +15685,7 @@ The critical caveat for the wards: **CIWA-Ar requires a patient who can communic
 - **Slug:** `cotw_20260723_suiciderisk_ms3.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-23_suicide-risk-assessment-safety-planning_MS3.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 1,848 words
+- **Length:** 2,214 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -15615,7 +15730,7 @@ The critical caveat for the wards: **CIWA-Ar requires a patient who can communic
 **Format:** ~20–30 min small-group discussion. No required pre-reading.
 **Citations:** Based on articles retrieved from PubMed. Full reference list at the end. All patient details are **synthetic and de-identified**.
 
-> **A note on this topic.** This case is oriented entirely toward **recognition, structured assessment, escalation, and collaborative safety planning**. It contains no method detail, and none is needed to teach the clinical skill. Keep the discussion in that frame throughout.
+> **A note on this topic.** This case is oriented entirely toward **recognition, structured assessment, escalation, and collaborative safety planning**. It contains no method detail, and none is needed to teach the clinical skill. Note that this is not a bar on lethal-means-safety counselling: asking what a patient can reach — firearms, medications, alcohol — and arranging for it to be secured is part of assessment and safety planning, not method detail. Keep the discussion in that frame throughout.
 
 ---
 
@@ -15650,7 +15765,7 @@ You are the student's first clinician contact in the ED.
 *Teaching point:* Disposition is a **clinical judgment integrating acuity and modifiable risk**, not a checklist score. Favor **higher level of care / psychiatric admission** when there is active ideation with intent or a plan, recent preparatory behavior, inability to engage in safety planning, poor impulse control (including significant intoxication), or absent supports. Favor **discharge with a robust safety plan and rapid follow-up** when ideation is passive/low-intent, the patient can collaborate on and commit to a plan, means access can be reduced, and reliable supports and timely outpatient follow-up exist. Importantly, **risk-stratification labels are weak predictors of who will actually act** — so the plan and follow-up matter as much as the "risk level" you assign (see facilitator notes) [6].
 
 **Q7 (Safety/systems). What concrete steps round out the ED encounter beyond the interview?**
-*Teaching point:* (1) **Means-reduction counseling** — collaboratively work with the patient and, when appropriate, family to reduce access to lethal means at home (framed generally: securing or removing access — no specifics needed). (2) **Involve supports/collateral** with appropriate consent — corroboration and a person who can help enact the plan. (3) **Warm handoff and follow-up** — timely outpatient linkage; brief follow-up contact ("caring contacts") after discharge is associated with better engagement [4]. (4) **Document** the assessment, the reasoning, and the plan. (5) Treat the **underlying disorder** (here, likely depression ± alcohol use).
+*Teaching point:* (1) **Means-reduction counseling** — collaboratively work with the patient and, when appropriate, family to reduce access to lethal means at home. Ask explicitly about **firearms** (the method behind about half of US suicide deaths, and the one with by far the highest case fatality), and also about medications — stockpiled prescriptions, over-the-counter analgesics — and alcohol. Counsel on **temporary storage outside the home, or locked storage with the key held by someone else**, and settle before disposition who will do it and by when. Naming what to secure is standard lethal-means-safety counselling and is not "method detail"; leaving it general is how it stops happening. (2) **Involve supports/collateral** with appropriate consent — corroboration and a person who can help enact the plan. (3) **Warm handoff and follow-up** — timely outpatient linkage; brief follow-up contact ("caring contacts") after discharge is associated with better engagement [4]. (4) **Document** the assessment, the reasoning, and the plan. (5) Treat the **underlying disorder** (here, likely depression ± alcohol use).
 
 ---
 
@@ -15684,7 +15799,7 @@ Suicidal ideation is a **symptom**, not a diagnosis — always identify and trea
 ### Facilitator Notes (not for the learner handout)
 
 - **Time:** ~25 min. Spend the most time on Q2 (structured assessment) and Q5 (safety planning) — these are the transferable clinical skills.
-- **Frame throughout:** recognition → structured assessment → escalation → collaborative safety planning. Keep it away from any method detail; it is unnecessary for the learning objective.
+- **Frame throughout:** recognition → structured assessment → escalation → collaborative safety planning. Keep it away from any method detail — the mechanics of an attempt are unnecessary for the learning objective. Do **not** extend that to means access: asking explicitly about firearms and medication access, and settling who secures them and by when, is the counselling, and a group that never names them has not practised it.
 - **The key humility point (Q6):** teach that **no risk score reliably predicts an individual's suicide.** A 50-year meta-analysis found risk-factor prediction only slightly better than chance [6], and inpatient "high-risk" categorization carries a positive predictive value under ~1% [7]. The clinical implication is *not* nihilism — it is that we should (a) not discharge someone reassured only by a "low-risk" label, and (b) invest in **modifiable factors, safety planning, means reduction, and follow-up**, which actually change outcomes [4,5].
 - **Common MS3 errors to correct:** (1) using a "no-suicide contract" as if it were protective; (2) believing that asking about suicide increases risk; (3) treating a risk-stratification label as a disposition decision; (4) forgetting collateral and means-reduction; (5) forgetting to screen for bipolarity and substances.
 - **One-liner to anchor:** *"Screen everyone, assess the domains, plan collaboratively, reduce access, and follow up — the score is not the plan."*
@@ -15704,7 +15819,19 @@ Suicidal ideation is a **symptom**, not a diagnosis — always identify and trea
 
 *Citations retrieved from PubMed. This teaching case uses a synthetic, de-identified scenario for educational purposes only.*
 
-*If this material raises personal concerns for you or someone you know, in the U.S. you can call or text 988 (Suicide & Crisis Lifeline), available 24/7.*
+> <div class="crisis-block-hook" hidden></div>
+>
+> ### If someone is in crisis
+>
+> On the unit, a patient in immediate danger is an escalation to your supervising resident or attending and the charge nurse — not a phone call. These lines are what you put IN a patient's safety plan, what families use after discharge, and what you can use yourself.
+>
+> - **988 Suicide & Crisis Lifeline** — Call or text 988. Chat at chat.988lifeline.org. 24/7, free, confidential. Spanish available by call, text, and chat; a dedicated line serves Deaf/Hard-of-Hearing callers. Calls placed in Maine route to Maine crisis specialists.
+> - **Crisis Text Line** — Text HOME to 741741. Text HOLA to 741741 for Spanish. 24/7, free. Text-only. Often the most acceptable option for adolescents and young adults who will not make a phone call.
+> - **Maine Crisis Line** — 1-888-568-1112. Text and chat available via the Maine Crisis Line website. 24/7. Staffed by clinically trained crisis workers and the gateway to Maine's mobile crisis teams — the number that actually dispatches a face-to-face response.
+> - **Veterans Crisis Line** — Dial 988 then press 1. Text 838255. 24/7. No VA enrollment required. Ask about service history — it changes which line is the right referral.
+> - **Emergency services** — 911. 24/7. For imminent danger to life.
+>
+> *Contacts verified 2026-07-27 against official sources. Maintained in `crisis_resources.json`; do not edit these numbers inline.*
 
 *Joshua Moss, MD | Psychiatrist*
 
@@ -16521,12 +16648,12 @@ If a reading takes longer than 20 minutes, assign a specific question — for ex
 
 **TL;DR (shown above the page text):**
 
-> The strongest inpatient evidence: environmental safety checklists cut inpatient suicide 82%; brief CBT (up to 4 sessions) reduces post-discharge attempts 60% (NNT 7); family psychoeducation cuts 12-month relapse (OR 0.18); antipsychotics do not improve delirium outcomes.
+> The strongest inpatient evidence: environmental safety checklists cut inpatient suicide 67%; brief CBT (up to 4 sessions) reduces post-discharge attempts 60% (NNT 7); family psychoeducation cuts 12-month relapse (OR 0.18); antipsychotics do not improve delirium outcomes.
 
 **Key points (bulleted card):**
 
 - MIND-USA (n=566) and AID-ICU (n=1,000) both found no benefit for antipsychotics vs. placebo on delirium outcomes — the PADIS guidelines recommend against routine antipsychotic use for delirium.
-- The VHA MHEOCC environmental safety checklist produced an 82% reduction in the inpatient suicide rate — ligature point removal is the single strongest structural inpatient suicide prevention intervention.
+- The VHA MHEOCC environmental safety checklist produced a 67% reduction in the inpatient suicide rate — ligature point removal is the single strongest structural inpatient suicide prevention intervention.
 - Pre-discharge 7-day follow-up (actually scheduled, not 'patient will call') is associated with substantially lower suicide risk, and family involvement during admission nearly triples the odds of achieving it.
 
 **Can't-miss / red-flag line:**
@@ -16551,7 +16678,7 @@ If a reading takes longer than 20 minutes, assign a specific question — for ex
    - A low-dose atypical antipsychotic is preferred over haloperidol for delirium because it is better tolerated
    - Non-pharmacological multicomponent bundles are first-line; antipsychotics showed no benefit in MIND-USA and AID-ICU and should be reserved for severe refractory hyperactive symptoms **← keyed correct**
    - Benzodiazepines are the evidence-based first choice for non-withdrawal delirium
-   - *Rationale:* MIND-USA and AID-ICU both showed no benefit for antipsychotics vs. placebo on days alive without delirium or coma; the PADIS guidelines recommend against routine use. Multicomponent non-pharmacological bundles (HELP-based) reduced incident delirium by 53%. Benzodiazepines are reserved for alcohol/benzo withdrawal delirium — they worsen non-withdrawal delirium.
+   - *Rationale:* MIND-USA showed no benefit for antipsychotics vs. placebo on days alive without delirium or coma, and AID-ICU showed none on days alive and out of the hospital at 90 days; the PADIS guidelines recommend against routine use. Multicomponent non-pharmacological bundles (HELP-based) reduced incident delirium by 53%. Benzodiazepines are reserved for alcohol/benzo withdrawal delirium — they worsen non-withdrawal delirium.
 
 **Cross-references and tagging:**
 
@@ -16578,7 +16705,7 @@ The **Columbia-Suicide Severity Rating Scale (C-SSRS)** is the most widely endor
 
 The **SAD PERSONS scale should not be used**: multiple studies demonstrate it performs no better than chance (AUC 0.55–0.59), with sensitivity as low as 1% for repeat self-harm. The VA/DoD 2024 guideline explicitly excludes it.
 
-**Environmental safety** has the strongest single-intervention evidence. The VHA Mental Health Environment of Care Checklist (MHEOCC) produced an **82% reduction in inpatient suicide rate** (from 2.64 to 0.87 per 100,000 admissions, P < .001), sustained over 7 years. Hanging accounts for 71% of inpatient suicide deaths, and ligature point removal was associated with significant reductions in suicide by hanging in a UK national study.
+**Environmental safety** has the strongest single-intervention evidence. The VHA Mental Health Environment of Care Checklist (MHEOCC) produced a **67% reduction in inpatient suicide rate** (from 2.64 to 0.87 per 100,000 admissions, P < .001), sustained over 7 years. Hanging accounts for 71% of inpatient suicide deaths, and ligature point removal was associated with significant reductions in suicide by hanging in a UK national study.
 
 ### Landmark Studies
 
@@ -16921,7 +17048,7 @@ The **DIAMOND initiative** highlights the implementation gap: despite increased 
 
 | Domain | Strongest Intervention | Effect Size | Evidence Quality |
 | --- | --- | --- | --- |
-| Inpatient suicide prevention | Environmental safety (MHEOCC) | 82% reduction in inpatient suicide | Before-after, system-wide |
+| Inpatient suicide prevention | Environmental safety (MHEOCC) | 67% reduction in inpatient suicide | Before-after, system-wide |
 | Post-discharge suicide prevention | Brief CBT for suicidal inpatients | 60% reduction in attempts (NNT=7) | RCT (n=200) |
 | Violence risk (imminent) | BVC/DASA screening | Hedges' g = 1.04–1.35 | Meta-analysis of 31 studies |
 | Agitation pharmacotherapy | Antipsychotic + BZD combination | OR 12.93 vs. haloperidol alone | IPD network meta-analysis |
@@ -17995,7 +18122,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Opening this step or resizing the browser does not count. Each action below validates a fresh envelope and projects it through the same student projector.
 - Desktop preview not yet reviewed · Mobile preview not yet reviewed
 
-**Authored clinical strings (1792, first 400 shown):**
+**Authored clinical strings (1795, first 400 shown):**
 
 - Front door structure ONLY — week ordering, library columns, safety-kit membership, per-site roles, search synonyms. Facts about an item (minutes, summary, key points, attestation) live in topic_meta.json and join at render time; never duplicate them here. Validated by 13_Faculty_Resources/_automation/validate_curriculum.py.
 - a feedback form, not library content — reachable from the header
@@ -18054,8 +18181,9 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Secure team and exit safety first.
 - Check vitals and glucose; rule out a medical cause.
 - Offer (don't force) oral medication; restraint is the last resort — time-limited and monitored.
-- Don't reach for an antipsychotic before excluding hypoglycemia, hypoxia, delirium, withdrawal, pain, and akathisia.
+- Don't reach for an antipsychotic before excluding hypoglycemia, hypoxia, delirium, withdrawal, pain, akathisia, and catatonia — excited catatonia looks like agitation, and a D2 blocker can tip it into malignant catatonia/NMS.
 - Intoxication / withdrawal
+- Catatonia (excited presentation)
 - Lower stimulation, one calm voice, offer oral PRN; IM only if there is imminent danger.
 - First-line treatment for an agitated patient with normal vitals and no delirium?
 - IM haloperidol + lorazepam
@@ -18396,9 +18524,8 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Depression / anxiety / PTSD
 - Malingering (external incentive)
 - Focused workup once, then one consistent clinician with scheduled visits, validation, CBT, and treatment of comorbidities.
-- A patient has leg weakness that gives way on formal testing but shows a positive Hoover sign. Best framing?
 
-_1392 further strings omitted — this surface embeds the build's front-door catalog (item summaries, key points, search synonyms), which is transcribed in full elsewhere in this document set._
+_1395 further strings omitted — this surface embeds the build's front-door catalog (item summaries, key points, search synonyms), which is transcribed in full elsewhere in this document set._
 
 
 <!-- ==================== A1_QUESTION_BANK.md ==================== -->
@@ -18413,7 +18540,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_anx_001` · status=`attested` · type=`sba` · difficulty=`1` · competency=`['dx']`
 - Linked pages: `t_anxiety.md`
-- Evidence: `t`, `_`, `a`, `n`, `x`, `i`, `e`, `t`, `y`, `.`, `m`, `d`, ` `, `'`, `D`, `i`, `f`, `f`, `e`, `r`, `e`, `n`, `t`, `i`, `a`, `l`, ` `, `o`, `n`, ` `, `t`, `h`, `e`, ` `, `u`, `n`, `i`, `t`, `'`, ` `, `—`, ` `, `a`, `k`, `a`, `t`, `h`, `i`, `s`, `i`, `a`, ` `, `i`, `s`, ` `, `t`, `h`, `e`, ` `, `c`, `l`, `a`, `s`, `s`, `i`, `c`, ` `, `m`, `i`, `s`, `s`, `:`, ` `, `r`, `e`, `s`, `t`, `l`, `e`, `s`, `s`, `,`, ` `, `d`, `r`, `i`, `v`, `e`, `n`, ` `, `m`, `o`, `t`, `o`, `r`, ` `, `a`, `n`, `x`, `i`, `e`, `t`, `y`, ` `, `f`, `r`, `o`, `m`, ` `, `a`, `n`, `t`, `i`, `p`, `s`, `y`, `c`, `h`, `o`, `t`, `i`, `c`, `s`, ` `, `t`, `h`, `a`, `t`, ` `, `w`, `o`, `r`, `s`, `e`, `n`, `s`, ` `, `i`, `f`, ` `, `y`, `o`, `u`, ` `, `r`, `e`, `f`, `l`, `e`, `x`, `i`, `v`, `e`, `l`, `y`, ` `, `t`, `r`, `e`, `a`, `t`, ` `, `i`, `t`, ` `, `a`, `s`, ` `, `'`, `a`, `g`, `i`, `t`, `a`, `t`, `i`, `o`, `n`, `'`, ` `, `w`, `i`, `t`, `h`, ` `, `m`, `o`, `r`, `e`, ` `, `d`, `o`, `p`, `a`, `m`, `i`, `n`, `e`, ` `, `b`, `l`, `o`, `c`, `k`, `a`, `d`, `e`, `.`
+- Evidence: `t_anxiety.md 'Differential on the unit' — akathisia is the classic miss: restless, driven motor anxiety from antipsychotics that worsens if you reflexively treat it as 'agitation' with more dopamine blockade.`
 
 **Stem.** A 29-year-old woman admitted for a manic episode is started on risperidone. Two days later she is restless, pacing the hallway, unable to sit through meals, and says she 'can't stop moving.' She denies worsening mood symptoms. Which of the following best explains her presentation?
 
@@ -18430,7 +18557,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_anx_002` · status=`attested` · type=`sba` · difficulty=`1` · competency=`['management', 'pharm']`
 - Linked pages: `t_anxiety.md`
-- Evidence: `t`, `_`, `a`, `n`, `x`, `i`, `e`, `t`, `y`, `.`, `m`, `d`, ` `, `'`, `A`, `c`, `u`, `t`, `e`, ` `, `i`, `n`, `p`, `a`, `t`, `i`, `e`, `n`, `t`, ` `, `m`, `a`, `n`, `a`, `g`, `e`, `m`, `e`, `n`, `t`, `'`, ` `, `—`, ` `, `S`, `S`, `R`, `I`, `s`, ` `, `a`, `n`, `d`, ` `, `S`, `N`, `R`, `I`, `s`, ` `, `a`, `r`, `e`, ` `, `f`, `i`, `r`, `s`, `t`, `-`, `l`, `i`, `n`, `e`, ` `, `a`, `c`, `r`, `o`, `s`, `s`, ` `, `a`, `n`, `x`, `i`, `e`, `t`, `y`, ` `, `d`, `i`, `s`, `o`, `r`, `d`, `e`, `r`, `s`, `,`, ` `, `O`, `C`, `D`, `,`, ` `, `a`, `n`, `d`, ` `, `P`, `T`, `S`, `D`, `;`, ` `, `a`, `v`, `o`, `i`, `d`, ` `, `s`, `t`, `a`, `n`, `d`, `i`, `n`, `g`, ` `, `b`, `e`, `n`, `z`, `o`, `d`, `i`, `a`, `z`, `e`, `p`, `i`, `n`, `e`, `s`, ` `, `o`, `n`, ` `, `t`, `h`, `e`, ` `, `u`, `n`, `i`, `t`, `;`, ` `, `p`, `a`, `i`, `r`, ` `, `p`, `h`, `a`, `r`, `m`, `a`, `c`, `o`, `l`, `o`, `g`, `y`, ` `, `w`, `i`, `t`, `h`, ` `, `d`, `i`, `s`, `o`, `r`, `d`, `e`, `r`, `-`, `s`, `p`, `e`, `c`, `i`, `f`, `i`, `c`, ` `, `b`, `e`, `h`, `a`, `v`, `i`, `o`, `r`, `a`, `l`, ` `, `w`, `o`, `r`, `k`, ` `, `—`, ` `, `p`, `r`, `o`, `l`, `o`, `n`, `g`, `e`, `d`, ` `, `e`, `x`, `p`, `o`, `s`, `u`, `r`, `e`, ` `, `(`, `P`, `E`, `)`, ` `, `a`, `n`, `d`, ` `, `c`, `o`, `g`, `n`, `i`, `t`, `i`, `v`, `e`, ` `, `p`, `r`, `o`, `c`, `e`, `s`, `s`, `i`, `n`, `g`, ` `, `t`, `h`, `e`, `r`, `a`, `p`, `y`, ` `, `(`, `C`, `P`, `T`, `)`, ` `, `f`, `o`, `r`, ` `, `P`, `T`, `S`, `D`, `.`
+- Evidence: `t_anxiety.md 'Acute inpatient management' — SSRIs and SNRIs are first-line across anxiety disorders, OCD, and PTSD; avoid standing benzodiazepines on the unit; pair pharmacology with disorder-specific behavioral work — prolonged exposure (PE) and cognitive processing therapy (CPT) for PTSD.`
 
 **Stem.** A 28-year-old woman admitted for a severe depressive episode is also found to have untreated PTSD — she endorses daily nightmares, hypervigilance, and avoidance behaviors that have persisted for two years since an assault. She has no history of substance use disorder. After addressing the acute safety concern, which is the most appropriate first-line pharmacotherapy for her PTSD?
 
@@ -18447,7 +18574,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_anx_003` · status=`attested` · type=`sba` · difficulty=`1` · competency=`['dx', 'next-step']` · **high-yield**
 - Linked pages: `t_anxiety.md`
-- Evidence: `t`, `_`, `a`, `n`, `x`, `i`, `e`, `t`, `y`, `.`, `m`, `d`, ` `, `'`, `W`, `h`, `e`, `n`, ` `, `a`, `k`, `a`, `t`, `h`, `i`, `s`, `i`, `a`, ` `, `i`, `s`, ` `, `i`, `d`, `e`, `n`, `t`, `i`, `f`, `i`, `e`, `d`, `'`, ` `, `—`, ` `, `P`, `r`, `o`, `p`, `r`, `a`, `n`, `o`, `l`, `o`, `l`, ` `, `2`, `0`, `–`, `4`, `0`, ` `, `m`, `g`, ` `, `B`, `I`, `D`, ` `, `i`, `s`, ` `, `t`, `h`, `e`, ` `, `p`, `h`, `a`, `r`, `m`, `a`, `c`, `o`, `l`, `o`, `g`, `i`, `c`, `a`, `l`, ` `, `f`, `i`, `r`, `s`, `t`, `-`, `l`, `i`, `n`, `e`, ` `, `f`, `o`, `r`, ` `, `a`, `k`, `a`, `t`, `h`, `i`, `s`, `i`, `a`, ` `, `w`, `i`, `t`, `h`, ` `, `t`, `h`, `e`, ` `, `s`, `t`, `r`, `o`, `n`, `g`, `e`, `s`, `t`, ` `, `e`, `v`, `i`, `d`, `e`, `n`, `c`, `e`, ` `, `f`, `r`, `o`, `m`, ` `, `m`, `u`, `l`, `t`, `i`, `p`, `l`, `e`, ` `, `s`, `m`, `a`, `l`, `l`, ` `, `R`, `C`, `T`, `s`, ` `, `a`, `n`, `d`, ` `, `C`, `o`, `c`, `h`, `r`, `a`, `n`, `e`, ` `, `r`, `e`, `v`, `i`, `e`, `w`, ` `, `(`, `L`, `i`, `m`, `a`, ` `, `e`, `t`, ` `, `a`, `l`, `.`, `,`, ` `, `C`, `o`, `c`, `h`, `r`, `a`, `n`, `e`, ` `, `D`, `a`, `t`, `a`, `b`, `a`, `s`, `e`, ` `, `S`, `y`, `s`, `t`, ` `, `R`, `e`, `v`, ` `, `2`, `0`, `0`, `4`, `)`, `.`, ` `, `M`, `a`, `n`, `a`, `g`, `e`, `m`, `e`, `n`, `t`, ` `, `h`, `i`, `e`, `r`, `a`, `r`, `c`, `h`, `y`, `:`, ` `, `r`, `e`, `d`, `u`, `c`, `e`, ` `, `d`, `o`, `s`, `e`, ` `, `o`, `r`, ` `, `s`, `w`, `i`, `t`, `c`, `h`, ` `, `→`, ` `, `p`, `r`, `o`, `p`, `r`, `a`, `n`, `o`, `l`, `o`, `l`, ` `, `→`, ` `, `b`, `e`, `n`, `z`, `t`, `r`, `o`, `p`, `i`, `n`, `e`, ` `, `i`, `f`, ` `, `p`, `a`, `r`, `k`, `i`, `n`, `s`, `o`, `n`, `i`, `s`, `m`, ` `, `c`, `o`, `-`, `e`, `x`, `i`, `s`, `t`, `s`, ` `, `→`, ` `, `b`, `e`, `n`, `z`, `o`, `d`, `i`, `a`, `z`, `e`, `p`, `i`, `n`, `e`, ` `, `a`, `d`, `j`, `u`, `n`, `c`, `t`, `.`
+- Evidence: `t_anxiety.md 'When akathisia is identified' — Propranolol 20–40 mg BID is the pharmacological first-line for akathisia with the strongest evidence from multiple small RCTs and Cochrane review (Lima et al., Cochrane Database Syst Rev 2004). Management hierarchy: reduce dose or switch → propranolol → benztropine if parkinsonism co-exists → benzodiazepine adjunct.`
 
 **Stem.** A 29-year-old man with first-episode psychosis was started on haloperidol 3 days ago. He has been pacing the unit continuously, reports an inner urge to move, and the team has correctly identified this as akathisia. The attending decides that haloperidol should be continued for now at the same dose. Which pharmacological intervention has the strongest evidence as first-line treatment for akathisia in this setting?
 
@@ -18464,7 +18591,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_anx_004` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['dx']`
 - Linked pages: `t_anxiety.md`
-- Evidence: `t`, `_`, `a`, `n`, `x`, `i`, `e`, `t`, `y`, `.`, `m`, `d`, ` `, `—`, ` `, `A`, `n`, `x`, `i`, `e`, `t`, `y`, ` `, `i`, `s`, ` `, `a`, ` `, `f`, `i`, `n`, `a`, `l`, ` `, `c`, `o`, `m`, `m`, `o`, `n`, ` `, `p`, `a`, `t`, `h`, `w`, `a`, `y`, `,`, ` `, `s`, `o`, ` `, `s`, `c`, `r`, `e`, `e`, `n`, ` `, `t`, `h`, `e`, ` `, `b`, `o`, `d`, `y`, ` `, `f`, `i`, `r`, `s`, `t`, `:`, ` `, `c`, `a`, `r`, `d`, `i`, `o`, `p`, `u`, `l`, `m`, `o`, `n`, `a`, `r`, `y`, ` `, `c`, `a`, `u`, `s`, `e`, `s`, `,`, ` `, `t`, `h`, `y`, `r`, `o`, `i`, `d`, ` `, `d`, `i`, `s`, `e`, `a`, `s`, `e`, `,`, ` `, `h`, `y`, `p`, `o`, `g`, `l`, `y`, `c`, `e`, `m`, `i`, `a`, `,`, ` `, `c`, `a`, `f`, `f`, `e`, `i`, `n`, `e`, ` `, `a`, `n`, `d`, ` `, `s`, `t`, `i`, `m`, `u`, `l`, `a`, `n`, `t`, ` `, `i`, `n`, `t`, `o`, `x`, `i`, `c`, `a`, `t`, `i`, `o`, `n`, `,`, ` `, `a`, `n`, `d`, ` `, `a`, `l`, `c`, `o`, `h`, `o`, `l`, ` `, `o`, `r`, ` `, `b`, `e`, `n`, `z`, `o`, `d`, `i`, `a`, `z`, `e`, `p`, `i`, `n`, `e`, ` `, `w`, `i`, `t`, `h`, `d`, `r`, `a`, `w`, `a`, `l`, `.`
+- Evidence: `t_anxiety.md — Anxiety is a final common pathway, so screen the body first: cardiopulmonary causes, thyroid disease, hypoglycemia, caffeine and stimulant intoxication, and alcohol or benzodiazepine withdrawal.`
 
 **Stem.** A 52-year-old man is admitted to the inpatient psychiatry unit. He is anxious, diaphoretic, and tremulous. His heart rate is 102. He says he has always been 'an anxious person.' The team prepares to increase his home sertraline. Which step is most important before attributing this presentation to his anxiety disorder?
 
@@ -18481,7 +18608,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_anx_005` · status=`attested` · type=`sba` · difficulty=`1` · competency=`['pharm', 'safety']` · **high-yield**
 - Linked pages: `t_anxiety.md`
-- Evidence: `t`, `_`, `a`, `n`, `x`, `i`, `e`, `t`, `y`, `.`, `m`, `d`, ` `, `—`, ` `, `A`, `v`, `o`, `i`, `d`, ` `, `s`, `t`, `a`, `n`, `d`, `i`, `n`, `g`, ` `, `b`, `e`, `n`, `z`, `o`, `d`, `i`, `a`, `z`, `e`, `p`, `i`, `n`, `e`, `s`, ` `, `o`, `n`, ` `, `t`, `h`, `e`, ` `, `u`, `n`, `i`, `t`, ` `, `—`, ` `, `t`, `h`, `e`, `y`, ` `, `d`, `r`, `i`, `v`, `e`, ` `, `d`, `e`, `p`, `e`, `n`, `d`, `e`, `n`, `c`, `e`, `,`, ` `, `f`, `a`, `l`, `l`, `s`, `,`, ` `, `a`, `n`, `d`, ` `, `d`, `e`, `l`, `i`, `r`, `i`, `u`, `m`, `,`, ` `, `a`, `n`, `d`, ` `, `a`, `r`, `e`, ` `, `e`, `s`, `p`, `e`, `c`, `i`, `a`, `l`, `l`, `y`, ` `, `h`, `a`, `z`, `a`, `r`, `d`, `o`, `u`, `s`, ` `, `w`, `i`, `t`, `h`, ` `, `c`, `o`, `m`, `o`, `r`, `b`, `i`, `d`, ` `, `S`, `U`, `D`, ` `, `o`, `r`, ` `, `i`, `n`, ` `, `o`, `l`, `d`, `e`, `r`, ` `, `a`, `d`, `u`, `l`, `t`, `s`, `.`
+- Evidence: `t_anxiety.md — Avoid standing benzodiazepines on the unit — they drive dependence, falls, and delirium, and are especially hazardous with comorbid SUD or in older adults.`
 
 **Stem.** A 44-year-old woman with panic disorder and alcohol use disorder in early recovery is admitted for assessment. She is anxious and requesting 'something to help right away.' The student considers adding a standing lorazepam dose for anxiety management. Which response reflects the inpatient standard?
 
@@ -18498,7 +18625,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_anx_006` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['management']`
 - Linked pages: `t_anxiety.md`
-- Evidence: `t`, `_`, `a`, `n`, `x`, `i`, `e`, `t`, `y`, `.`, `m`, `d`, ` `, `—`, ` `, `P`, `a`, `i`, `r`, ` `, `p`, `h`, `a`, `r`, `m`, `a`, `c`, `o`, `l`, `o`, `g`, `y`, ` `, `w`, `i`, `t`, `h`, ` `, `d`, `i`, `s`, `o`, `r`, `d`, `e`, `r`, `-`, `s`, `p`, `e`, `c`, `i`, `f`, `i`, `c`, ` `, `b`, `e`, `h`, `a`, `v`, `i`, `o`, `r`, `a`, `l`, ` `, `w`, `o`, `r`, `k`, `:`, ` `, `e`, `x`, `p`, `o`, `s`, `u`, `r`, `e`, ` `, `a`, `n`, `d`, ` `, `r`, `e`, `s`, `p`, `o`, `n`, `s`, `e`, ` `, `p`, `r`, `e`, `v`, `e`, `n`, `t`, `i`, `o`, `n`, ` `, `(`, `E`, `R`, `P`, `)`, ` `, `f`, `o`, `r`, ` `, `O`, `C`, `D`, `.`
+- Evidence: `t_anxiety.md — Pair pharmacology with disorder-specific behavioral work: exposure and response prevention (ERP) for OCD.`
 
 **Stem.** A 32-year-old man with OCD spends 4–6 hours daily performing handwashing and checking rituals that he recognizes as excessive. He asks what the most effective treatment for his OCD is. Which response is most accurate?
 
@@ -18515,7 +18642,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_anx_007` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['dx']`
 - Linked pages: `t_anxiety.md`
-- Evidence: `t`, `_`, `a`, `n`, `x`, `i`, `e`, `t`, `y`, `.`, `m`, `d`, ` `, `—`, ` `, `O`, `C`, `D`, ` `, `c`, `a`, `n`, ` `, `m`, `a`, `s`, `q`, `u`, `e`, `r`, `a`, `d`, `e`, ` `, `a`, `s`, ` `, `p`, `s`, `y`, `c`, `h`, `o`, `s`, `i`, `s`, ` `, `w`, `h`, `e`, `n`, ` `, `r`, `i`, `t`, `u`, `a`, `l`, `s`, ` `, `a`, `r`, `e`, ` `, `e`, `l`, `a`, `b`, `o`, `r`, `a`, `t`, `e`, `,`, ` `, `o`, `r`, ` `, `a`, `s`, ` `, `t`, `r`, `e`, `a`, `t`, `m`, `e`, `n`, `t`, ` `, `r`, `e`, `f`, `u`, `s`, `a`, `l`, ` `, `w`, `h`, `e`, `n`, ` `, `c`, `o`, `n`, `t`, `a`, `m`, `i`, `n`, `a`, `t`, `i`, `o`, `n`, ` `, `f`, `e`, `a`, `r`, `s`, ` `, `c`, `o`, `l`, `l`, `i`, `d`, `e`, ` `, `w`, `i`, `t`, `h`, ` `, `t`, `h`, `e`, ` `, `m`, `i`, `l`, `i`, `e`, `u`, `.`
+- Evidence: `t_anxiety.md — OCD can masquerade as psychosis when rituals are elaborate, or as treatment refusal when contamination fears collide with the milieu.`
 
 **Stem.** A 29-year-old man is admitted from the emergency department with a possible psychotic disorder. He is noted to perform elaborate ritualized behaviors before eating — arranging his tray precisely, touching items in a fixed sequence, and repeating phrases — and he becomes extremely distressed if interrupted. He describes intrusive thoughts about contamination. He acknowledges the behaviors are excessive and senseless but cannot stop performing them. Which is the most accurate interpretation of this presentation?
 
@@ -18532,7 +18659,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_anx_008` · status=`attested` · type=`two-tier` · difficulty=`2` · competency=`['dx', 'management']`
 - Linked pages: `t_anxiety.md`
-- Evidence: `t`, `_`, `a`, `n`, `x`, `i`, `e`, `t`, `y`, `.`, `m`, `d`, ` `, `—`, ` `, `T`, `h`, `e`, ` `, `s`, `c`, `a`, `l`, `e`, ` `, `t`, `o`, ` `, `k`, `n`, `o`, `w`, ` `, `f`, `o`, `r`, ` `, `O`, `C`, `D`, ` `, `i`, `s`, ` `, `t`, `h`, `e`, ` `, `Y`, `-`, `B`, `O`, `C`, `S`, ` `, `(`, `Y`, `a`, `l`, `e`, `-`, `B`, `r`, `o`, `w`, `n`, ` `, `O`, `b`, `s`, `e`, `s`, `s`, `i`, `v`, `e`, `-`, `C`, `o`, `m`, `p`, `u`, `l`, `s`, `i`, `v`, `e`, ` `, `S`, `c`, `a`, `l`, `e`, `)`, ` `, `—`, ` `, `t`, `h`, `e`, ` `, `g`, `o`, `l`, `d`, `-`, `s`, `t`, `a`, `n`, `d`, `a`, `r`, `d`, ` `, `c`, `l`, `i`, `n`, `i`, `c`, `i`, `a`, `n`, `-`, `r`, `a`, `t`, `e`, `d`, ` `, `m`, `e`, `a`, `s`, `u`, `r`, `e`, ` `, `o`, `f`, ` `, `O`, `C`, `D`, ` `, `s`, `e`, `v`, `e`, `r`, `i`, `t`, `y`, ` `, `a`, `n`, `d`, ` `, `t`, `r`, `e`, `a`, `t`, `m`, `e`, `n`, `t`, ` `, `r`, `e`, `s`, `p`, `o`, `n`, `s`, `e`, `.`
+- Evidence: `t_anxiety.md — The scale to know for OCD is the Y-BOCS (Yale-Brown Obsessive-Compulsive Scale) — the gold-standard clinician-rated measure of OCD severity and treatment response.`
 
 **Stem.** A student is reviewing a patient with OCD and notes serial Y-BOCS scores in the chart: 32 on admission, 24 at one week, and 20 at two weeks. The attending asks the student to interpret what the Y-BOCS measures and what these scores indicate. Which response is most accurate?
 
@@ -18551,7 +18678,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_anx_009` · status=`attested` · type=`sba` · difficulty=`3` · competency=`['management', 'psychosocial']`
 - Linked pages: `t_anxiety.md`
-- Evidence: `t`, `_`, `a`, `n`, `x`, `i`, `e`, `t`, `y`, `.`, `m`, `d`, ` `, `—`, ` `, `W`, `r`, `a`, `p`, ` `, `a`, `l`, `l`, ` `, `o`, `f`, ` `, `i`, `t`, ` `, `i`, `n`, ` `, `t`, `r`, `a`, `u`, `m`, `a`, `-`, `i`, `n`, `f`, `o`, `r`, `m`, `e`, `d`, ` `, `c`, `a`, `r`, `e`, ` `, `—`, ` `, `p`, `r`, `e`, `d`, `i`, `c`, `t`, `a`, `b`, `i`, `l`, `i`, `t`, `y`, `,`, ` `, `e`, `x`, `p`, `l`, `a`, `i`, `n`, `e`, `d`, ` `, `p`, `r`, `o`, `c`, `e`, `d`, `u`, `r`, `e`, `s`, `,`, ` `, `o`, `f`, `f`, `e`, `r`, `e`, `d`, ` `, `c`, `h`, `o`, `i`, `c`, `e`, `s`, `,`, ` `, `a`, `n`, `d`, ` `, `m`, `i`, `n`, `i`, `m`, `i`, `z`, `e`, `d`, ` `, `r`, `e`, `s`, `t`, `r`, `a`, `i`, `n`, `t`, `/`, `s`, `e`, `c`, `l`, `u`, `s`, `i`, `o`, `n`, ` `, `—`, ` `, `w`, `h`, `i`, `c`, `h`, ` `, `b`, `o`, `t`, `h`, ` `, `r`, `e`, `d`, `u`, `c`, `e`, `s`, ` `, `r`, `e`, `t`, `r`, `a`, `u`, `m`, `a`, `t`, `i`, `z`, `a`, `t`, `i`, `o`, `n`, ` `, `a`, `n`, `d`, ` `, `l`, `o`, `w`, `e`, `r`, `s`, ` `, `b`, `e`, `h`, `a`, `v`, `i`, `o`, `r`, `a`, `l`, ` `, `e`, `s`, `c`, `a`, `l`, `a`, `t`, `i`, `o`, `n`, `.`
+- Evidence: `t_anxiety.md — Wrap all of it in trauma-informed care — predictability, explained procedures, offered choices, and minimized restraint/seclusion — which both reduces retraumatization and lowers behavioral escalation.`
 
 **Stem.** A 34-year-old woman with PTSD is admitted following a psychiatric emergency. During nursing assessment, she becomes acutely distressed, raises her voice, and states, 'Don't touch me — get away from me.' Two staff members consider initiating a hold. The attending pauses and asks the team to consider the clinical frame. Which interpretation best reflects trauma-informed care?
 
@@ -18568,7 +18695,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_anx_010` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['dx', 'management']`
 - Linked pages: `t_anxiety.md`
-- Evidence: `t`, `_`, `a`, `n`, `x`, `i`, `e`, `t`, `y`, `.`, `m`, `d`, ` `, `—`, ` `, `P`, `T`, `S`, `D`, ` `, `m`, `a`, `y`, ` `, `s`, `u`, `r`, `f`, `a`, `c`, `e`, ` `, `a`, `s`, ` `, `h`, `y`, `p`, `e`, `r`, `a`, `r`, `o`, `u`, `s`, `a`, `l`, `,`, ` `, `n`, `i`, `g`, `h`, `t`, `m`, `a`, `r`, `e`, `s`, `,`, ` `, `o`, `r`, ` `, `a`, ` `, `'`, `b`, `e`, `h`, `a`, `v`, `i`, `o`, `r`, `a`, `l`, `'`, ` `, `r`, `e`, `a`, `c`, `t`, `i`, `o`, `n`, ` `, `t`, `o`, ` `, `r`, `e`, `s`, `t`, `r`, `a`, `i`, `n`, `t`, `,`, ` `, `s`, `e`, `c`, `l`, `u`, `s`, `i`, `o`, `n`, `,`, ` `, `o`, `r`, ` `, `a`, ` `, `s`, `a`, `m`, `e`, `-`, `g`, `e`, `n`, `d`, `e`, `r`, ` `, `v`, `s`, `.`, ` `, `o`, `p`, `p`, `o`, `s`, `i`, `t`, `e`, `-`, `g`, `e`, `n`, `d`, `e`, `r`, ` `, `e`, `x`, `a`, `m`, `i`, `n`, `e`, `r`, `.`
+- Evidence: `t_anxiety.md — PTSD may surface as hyperarousal, nightmares, or a 'behavioral' reaction to restraint, seclusion, or a same-gender vs. opposite-gender examiner.`
 
 **Stem.** A 26-year-old combat veteran is admitted for a depressive episode. He is being interviewed by a female medical student when he abruptly terminates the interview and states he cannot continue. He has nightmares, is hypervigilant, and startle-reactive. The student asks the attending how to understand this behavior clinically. Which is most accurate?
 
@@ -18585,7 +18712,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_anx_011` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['management']`
 - Linked pages: `t_anxiety.md`
-- Evidence: `t`, `_`, `a`, `n`, `x`, `i`, `e`, `t`, `y`, `.`, `m`, `d`, ` `, `—`, ` `, `C`, `o`, `n`, `f`, `i`, `r`, `m`, ` `, `t`, `h`, `e`, ` `, `S`, `S`, `R`, `I`, `/`, `S`, `N`, `R`, `I`, ` `, `i`, `s`, ` `, `a`, `t`, ` `, `a`, ` `, `t`, `o`, `l`, `e`, `r`, `a`, `t`, `e`, `d`, ` `, `d`, `o`, `s`, `e`, ` `, `w`, `i`, `t`, `h`, ` `, `a`, ` `, `c`, `l`, `e`, `a`, `r`, ` `, `t`, `i`, `t`, `r`, `a`, `t`, `i`, `o`, `n`, ` `, `p`, `l`, `a`, `n`, `,`, ` `, `a`, `n`, `d`, ` `, `v`, `e`, `r`, `i`, `f`, `y`, ` `, `o`, `u`, `t`, `p`, `a`, `t`, `i`, `e`, `n`, `t`, ` `, `f`, `o`, `l`, `l`, `o`, `w`, `-`, `u`, `p`, ` `, `t`, `h`, `a`, `t`, ` `, `c`, `a`, `n`, ` `, `d`, `e`, `l`, `i`, `v`, `e`, `r`, ` `, `E`, `R`, `P`, `,`, ` `, `P`, `E`, `,`, ` `, `o`, `r`, ` `, `C`, `P`, `T`, ` `, `—`, ` `, `t`, `h`, `e`, ` `, `m`, `e`, `d`, `i`, `c`, `a`, `t`, `i`, `o`, `n`, ` `, `r`, `a`, `r`, `e`, `l`, `y`, ` `, `f`, `i`, `n`, `i`, `s`, `h`, `e`, `s`, ` `, `t`, `h`, `e`, ` `, `j`, `o`, `b`, ` `, `a`, `l`, `o`, `n`, `e`, `.`
+- Evidence: `t_anxiety.md — Confirm the SSRI/SNRI is at a tolerated dose with a clear titration plan, and verify outpatient follow-up that can deliver ERP, PE, or CPT — the medication rarely finishes the job alone.`
 
 **Stem.** A 39-year-old woman with PTSD is ready for discharge after a brief inpatient stay. She was started on sertraline. The resident says, 'She's on an SSRI — she's set.' The attending asks the student to identify what is missing from this discharge plan.
 
@@ -18602,7 +18729,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_anx_012` · status=`attested` · type=`two-tier` · difficulty=`3` · competency=`['management']`
 - Linked pages: `t_anxiety.md`
-- Evidence: `t`, `_`, `a`, `n`, `x`, `i`, `e`, `t`, `y`, `.`, `m`, `d`, ` `, `—`, ` `, `D`, `e`, `f`, `i`, `n`, `i`, `t`, `i`, `v`, `e`, ` `, `t`, `r`, `e`, `a`, `t`, `m`, `e`, `n`, `t`, ` `, `i`, `s`, ` `, `b`, `e`, `h`, `a`, `v`, `i`, `o`, `r`, `a`, `l`, ` `, `—`, ` `, `E`, `R`, `P`, ` `, `f`, `o`, `r`, ` `, `O`, `C`, `D`, `,`, ` `, `P`, `E`, `/`, `C`, `P`, `T`, ` `, `f`, `o`, `r`, ` `, `P`, `T`, `S`, `D`, `,`, ` `, `i`, `n`, `t`, `e`, `r`, `o`, `c`, `e`, `p`, `t`, `i`, `v`, `e`, ` `, `e`, `x`, `p`, `o`, `s`, `u`, `r`, `e`, ` `, `f`, `o`, `r`, ` `, `p`, `a`, `n`, `i`, `c`, `.`
+- Evidence: `t_anxiety.md — Definitive treatment is behavioral — ERP for OCD, PE/CPT for PTSD, interoceptive exposure for panic.`
 
 **Stem.** A student is preparing a PTSD psychoeducation handout and wants to explain the difference between prolonged exposure (PE) and cognitive processing therapy (CPT). Both are listed as evidence-based treatments in the patient's discharge plan. Which statement about the distinction is most accurate?
 
@@ -18621,7 +18748,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_anx_013` · status=`draft` · type=`sba` · difficulty=`1` · competency=`['pharm', 'management']`
 - Linked pages: `t_anxiety.md`
-- Evidence: `t`, `_`, `a`, `n`, `x`, `i`, `e`, `t`, `y`, `.`, `m`, `d`, ` `, `—`, ` `, `E`, `x`, `a`, `m`, ` `, `t`, `r`, `e`, `a`, `t`, `m`, `e`, `n`, `t`, ` `, `a`, `n`, `c`, `h`, `o`, `r`, `s`, `:`, ` `, `p`, `a`, `n`, `i`, `c`, ` `, `d`, `i`, `s`, `o`, `r`, `d`, `e`, `r`, ` `, `t`, `r`, `e`, `a`, `t`, `m`, `e`, `n`, `t`, `.`
+- Evidence: `t_anxiety.md — Exam treatment anchors: panic disorder treatment.`
 
 **Stem.** A patient with panic disorder and frequent panic attacks wants long-term treatment. Which is the most appropriate first-line pharmacologic option?
 
@@ -18638,7 +18765,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_anx_014` · status=`draft` · type=`sba` · difficulty=`2` · competency=`['pharm', 'management']`
 - Linked pages: `t_anxiety.md`, `psychotherapy.md`
-- Evidence: `t`, `_`, `a`, `n`, `x`, `i`, `e`, `t`, `y`, `.`, `m`, `d`, ` `, `—`, ` `, `E`, `x`, `a`, `m`, ` `, `t`, `r`, `e`, `a`, `t`, `m`, `e`, `n`, `t`, ` `, `a`, `n`, `c`, `h`, `o`, `r`, `s`, `:`, ` `, `O`, `C`, `D`, ` `, `t`, `r`, `e`, `a`, `t`, `m`, `e`, `n`, `t`, `;`, ` `, `p`, `s`, `y`, `c`, `h`, `o`, `t`, `h`, `e`, `r`, `a`, `p`, `y`, `.`, `m`, `d`, ` `, `—`, ` `, `E`, `R`, `P`, `.`
+- Evidence: `t_anxiety.md — Exam treatment anchors: OCD treatment; psychotherapy.md — ERP.`
 
 **Stem.** A patient with OCD has distressing obsessions and time-consuming compulsions. Which is the evidence-based first-line treatment?
 
@@ -18655,7 +18782,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_anx_015` · status=`draft` · type=`sba` · difficulty=`2` · competency=`['management', 'pharm']`
 - Linked pages: `t_anxiety.md`
-- Evidence: `t`, `_`, `a`, `n`, `x`, `i`, `e`, `t`, `y`, `.`, `m`, `d`, ` `, `—`, ` `, `E`, `x`, `a`, `m`, ` `, `t`, `r`, `e`, `a`, `t`, `m`, `e`, `n`, `t`, ` `, `a`, `n`, `c`, `h`, `o`, `r`, `s`, `:`, ` `, `P`, `T`, `S`, `D`, ` `, `t`, `r`, `e`, `a`, `t`, `m`, `e`, `n`, `t`, ` `, `a`, `n`, `d`, ` `, `b`, `e`, `n`, `z`, `o`, `d`, `i`, `a`, `z`, `e`, `p`, `i`, `n`, `e`, ` `, `a`, `v`, `o`, `i`, `d`, `a`, `n`, `c`, `e`, `.`
+- Evidence: `t_anxiety.md — Exam treatment anchors: PTSD treatment and benzodiazepine avoidance.`
 
 **Stem.** A veteran with PTSD has nightmares, hypervigilance, and avoidance. Which approach is first-line, and what should generally be avoided?
 
@@ -18672,7 +18799,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_anx_016` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['dx', 'pharm']`
 - Linked pages: `t_anxiety.md`
-- Evidence: `t`, `_`, `a`, `n`, `x`, `i`, `e`, `t`, `y`, `.`, `m`, `d`, ` `, `—`, ` `, `E`, `x`, `a`, `m`, ` `, `t`, `r`, `e`, `a`, `t`, `m`, `e`, `n`, `t`, ` `, `a`, `n`, `c`, `h`, `o`, `r`, `s`, `:`, ` `, `p`, `e`, `r`, `f`, `o`, `r`, `m`, `a`, `n`, `c`, `e`, `-`, `o`, `n`, `l`, `y`, ` `, `s`, `o`, `c`, `i`, `a`, `l`, ` `, `a`, `n`, `x`, `i`, `e`, `t`, `y`, `.`
+- Evidence: `t_anxiety.md — Exam treatment anchors: performance-only social anxiety.`
 
 **Stem.** A student develops intense anxiety only when performing music in public but is comfortable in other social situations. Which best describes the condition and a reasonable option?
 
@@ -18691,7 +18818,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_chd_001` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['dx']`
 - Linked pages: `t_neurodev.md`
-- Evidence: `t`, `_`, `n`, `e`, `u`, `r`, `o`, `d`, `e`, `v`, `.`, `m`, `d`, ` `, `—`, ` `, `A`, `D`, `H`, `D`, ` `, `v`, `s`, ` `, `b`, `i`, `p`, `o`, `l`, `a`, `r`, ` `, `m`, `a`, `n`, `i`, `a`, `:`, ` `, `A`, `D`, `H`, `D`, ` `, `i`, `s`, ` `, `c`, `h`, `r`, `o`, `n`, `i`, `c`, `,`, ` `, `p`, `e`, `r`, `v`, `a`, `s`, `i`, `v`, `e`, `,`, ` `, `a`, `n`, `d`, ` `, `c`, `r`, `o`, `s`, `s`, `-`, `s`, `i`, `t`, `u`, `a`, `t`, `i`, `o`, `n`, `a`, `l`, ` `, `f`, `r`, `o`, `m`, ` `, `c`, `h`, `i`, `l`, `d`, `h`, `o`, `o`, `d`, `;`, ` `, `m`, `a`, `n`, `i`, `a`, ` `, `i`, `s`, ` `, `e`, `p`, `i`, `s`, `o`, `d`, `i`, `c`, ` `, `w`, `i`, `t`, `h`, ` `, `m`, `o`, `o`, `d`, ` `, `e`, `l`, `e`, `v`, `a`, `t`, `i`, `o`, `n`, `,`, ` `, `d`, `e`, `c`, `r`, `e`, `a`, `s`, `e`, `d`, ` `, `n`, `e`, `e`, `d`, ` `, `f`, `o`, `r`, ` `, `s`, `l`, `e`, `e`, `p`, `,`, ` `, `a`, `n`, `d`, ` `, `g`, `r`, `a`, `n`, `d`, `i`, `o`, `s`, `i`, `t`, `y`, `.`, ` `, `E`, `p`, `i`, `s`, `o`, `d`, `i`, `c`, ` `, `'`, `A`, `D`, `H`, `D`, `-`, `l`, `i`, `k`, `e`, `'`, ` `, `s`, `y`, `m`, `p`, `t`, `o`, `m`, `s`, ` `, `a`, `r`, `e`, ` `, `a`, ` `, `m`, `o`, `o`, `d`, ` `, `o`, `r`, ` `, `s`, `u`, `b`, `s`, `t`, `a`, `n`, `c`, `e`, ` `, `f`, `l`, `a`, `g`, `.`
+- Evidence: `t_neurodev.md — ADHD vs bipolar mania: ADHD is chronic, pervasive, and cross-situational from childhood; mania is episodic with mood elevation, decreased need for sleep, and grandiosity. Episodic 'ADHD-like' symptoms are a mood or substance flag.`
 
 **Stem.** A 19-year-old college student is brought to the inpatient unit by his parents after three weeks of dramatically decreased need for sleep (sleeping two to three hours and feeling rested), expansive and grandiose mood, pressured speech, and impulsive spending. His parents note he has always been 'a little hyper' in school but never like this. He takes no medications and denies substance use. Most likely diagnosis?
 
@@ -18708,7 +18835,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_chd_002` · status=`attested` · type=`sba` · difficulty=`1` · competency=`['management']`
 - Linked pages: `t_neurodev.md`
-- Evidence: `t`, `_`, `n`, `e`, `u`, `r`, `o`, `d`, `e`, `v`, `.`, `m`, `d`, ` `, `—`, ` `, `L`, `e`, `a`, `d`, ` `, `w`, `i`, `t`, `h`, ` `, `t`, `h`, `e`, ` `, `e`, `n`, `v`, `i`, `r`, `o`, `n`, `m`, `e`, `n`, `t`, ` `, `a`, `n`, `d`, ` `, `c`, `o`, `m`, `m`, `u`, `n`, `i`, `c`, `a`, `t`, `i`, `o`, `n`, `,`, ` `, `n`, `o`, `t`, ` `, `m`, `e`, `d`, `i`, `c`, `a`, `t`, `i`, `o`, `n`, `.`, ` `, `P`, `r`, `o`, `v`, `i`, `d`, `e`, ` `, `p`, `r`, `e`, `d`, `i`, `c`, `t`, `a`, `b`, `i`, `l`, `i`, `t`, `y`, ` `, `(`, `r`, `o`, `u`, `t`, `i`, `n`, `e`, `,`, ` `, `v`, `i`, `s`, `u`, `a`, `l`, ` `, `s`, `c`, `h`, `e`, `d`, `u`, `l`, `e`, `s`, `,`, ` `, `c`, `o`, `n`, `s`, `i`, `s`, `t`, `e`, `n`, `t`, ` `, `s`, `t`, `a`, `f`, `f`, `)`, `,`, ` `, `r`, `e`, `d`, `u`, `c`, `e`, ` `, `s`, `e`, `n`, `s`, `o`, `r`, `y`, ` `, `l`, `o`, `a`, `d`, `,`, ` `, `a`, `l`, `l`, `o`, `w`, ` `, `e`, `x`, `t`, `r`, `a`, ` `, `p`, `r`, `o`, `c`, `e`, `s`, `s`, `i`, `n`, `g`, ` `, `t`, `i`, `m`, `e`, `,`, ` `, `u`, `s`, `e`, ` `, `c`, `o`, `n`, `c`, `r`, `e`, `t`, `e`, ` `, `l`, `a`, `n`, `g`, `u`, `a`, `g`, `e`, `.`
+- Evidence: `t_neurodev.md — Lead with the environment and communication, not medication. Provide predictability (routine, visual schedules, consistent staff), reduce sensory load, allow extra processing time, use concrete language.`
 
 **Stem.** An autistic adult admitted after aggression at his group home is increasingly distressed on the inpatient unit — covering his ears, rocking, and repeatedly asking when it will be quiet. He is not in imminent danger. No PRN medication has been given. The most appropriate first step is which of the following?
 
@@ -18725,7 +18852,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_cdev_001` · status=`attested` · type=`sba` · difficulty=`1` · competency=`['dx', 'next-step']` · **high-yield**
 - Linked pages: `t_neurodev.md`
-- Evidence: `t`, `_`, `n`, `e`, `u`, `r`, `o`, `d`, `e`, `v`, `.`, `m`, `d`, ` `, `—`, ` `, `D`, `i`, `a`, `g`, `n`, `o`, `s`, `t`, `i`, `c`, ` `, `o`, `v`, `e`, `r`, `s`, `h`, `a`, `d`, `o`, `w`, `i`, `n`, `g`, ` `, `i`, `s`, ` `, `t`, `h`, `e`, ` `, `c`, `a`, `r`, `d`, `i`, `n`, `a`, `l`, ` `, `e`, `r`, `r`, `o`, `r`, ` `, `—`, ` `, `n`, `e`, `w`, ` `, `s`, `y`, `m`, `p`, `t`, `o`, `m`, `s`, ` `, `i`, `n`, ` `, `A`, `S`, `D`, `/`, `I`, `D`, ` `, `e`, `a`, `r`, `n`, ` `, `a`, ` `, `w`, `o`, `r`, `k`, `u`, `p`, `,`, ` `, `n`, `o`, `t`, ` `, `a`, ` `, `s`, `h`, `r`, `u`, `g`, `.`, ` `, `B`, `e`, `h`, `a`, `v`, `i`, `o`, `r`, ` `, `i`, `s`, ` `, `c`, `o`, `m`, `m`, `u`, `n`, `i`, `c`, `a`, `t`, `i`, `o`, `n`, `;`, ` `, `l`, `o`, `o`, `k`, ` `, `f`, `o`, `r`, ` `, `p`, `a`, `i`, `n`, ` `, `a`, `n`, `d`, ` `, `m`, `e`, `d`, `i`, `c`, `a`, `l`, ` `, `d`, `r`, `i`, `v`, `e`, `r`, `s`, ` `, `b`, `e`, `f`, `o`, `r`, `e`, ` `, `s`, `e`, `d`, `a`, `t`, `i`, `o`, `n`, `.`
+- Evidence: `t_neurodev.md — Diagnostic overshadowing is the cardinal error — new symptoms in ASD/ID earn a workup, not a shrug. Behavior is communication; look for pain and medical drivers before sedation.`
 
 **Stem.** A 22-year-old man with autism spectrum disorder and intellectual disability who lives in a group home is admitted for acute behavioral escalation — he became agitated and hit a staff member after a change in his daily routine. A nurse says, 'He has ASD — this is probably just how he behaves.' Which response reflects the correct clinical approach?
 
@@ -18742,7 +18869,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_cdev_002` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['pharm']`
 - Linked pages: `t_neurodev.md`
-- Evidence: `t`, `_`, `n`, `e`, `u`, `r`, `o`, `d`, `e`, `v`, `.`, `m`, `d`, ` `, `—`, ` `, `A`, `n`, `t`, `i`, `p`, `s`, `y`, `c`, `h`, `o`, `t`, `i`, `c`, `s`, ` `, `(`, `r`, `i`, `s`, `p`, `e`, `r`, `i`, `d`, `o`, `n`, `e`, `,`, ` `, `a`, `r`, `i`, `p`, `i`, `p`, `r`, `a`, `z`, `o`, `l`, `e`, `)`, ` `, `t`, `r`, `e`, `a`, `t`, ` `, `a`, `u`, `t`, `i`, `s`, `m`, `-`, `a`, `s`, `s`, `o`, `c`, `i`, `a`, `t`, `e`, `d`, ` `, `i`, `r`, `r`, `i`, `t`, `a`, `b`, `i`, `l`, `i`, `t`, `y`, `,`, ` `, `n`, `o`, `t`, ` `, `t`, `h`, `e`, ` `, `c`, `o`, `r`, `e`, ` `, `s`, `o`, `c`, `i`, `a`, `l`, `-`, `c`, `o`, `m`, `m`, `u`, `n`, `i`, `c`, `a`, `t`, `i`, `o`, `n`, ` `, `f`, `e`, `a`, `t`, `u`, `r`, `e`, `s`, `.`
+- Evidence: `t_neurodev.md — Antipsychotics (risperidone, aripiprazole) treat autism-associated irritability, not the core social-communication features.`
 
 **Stem.** An 18-year-old with autism spectrum disorder is admitted for aggressive behavior. His parents ask if medication can 'help with his autism.' The team considers starting risperidone. Which statement about the pharmacological target of risperidone in ASD is most accurate?
 
@@ -18759,7 +18886,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_cdev_003` · status=`attested` · type=`sba` · difficulty=`3` · competency=`['dx']`
 - Linked pages: `t_neurodev.md`
-- Evidence: `t`, `_`, `n`, `e`, `u`, `r`, `o`, `d`, `e`, `v`, `.`, `m`, `d`, ` `, `—`, ` `, `A`, `D`, `H`, `D`, ` `, `i`, `s`, ` `, `c`, `h`, `r`, `o`, `n`, `i`, `c`, `,`, ` `, `p`, `e`, `r`, `v`, `a`, `s`, `i`, `v`, `e`, `,`, ` `, `a`, `n`, `d`, ` `, `c`, `r`, `o`, `s`, `s`, `-`, `s`, `i`, `t`, `u`, `a`, `t`, `i`, `o`, `n`, `a`, `l`, ` `, `f`, `r`, `o`, `m`, ` `, `c`, `h`, `i`, `l`, `d`, `h`, `o`, `o`, `d`, `;`, ` `, `m`, `a`, `n`, `i`, `a`, ` `, `i`, `s`, ` `, `e`, `p`, `i`, `s`, `o`, `d`, `i`, `c`, ` `, `w`, `i`, `t`, `h`, ` `, `m`, `o`, `o`, `d`, ` `, `e`, `l`, `e`, `v`, `a`, `t`, `i`, `o`, `n`, `,`, ` `, `d`, `e`, `c`, `r`, `e`, `a`, `s`, `e`, `d`, ` `, `n`, `e`, `e`, `d`, ` `, `f`, `o`, `r`, ` `, `s`, `l`, `e`, `e`, `p`, `,`, ` `, `a`, `n`, `d`, ` `, `g`, `r`, `a`, `n`, `d`, `i`, `o`, `s`, `i`, `t`, `y`, `.`, ` `, `E`, `p`, `i`, `s`, `o`, `d`, `i`, `c`, ` `, `'`, `A`, `D`, `H`, `D`, `-`, `l`, `i`, `k`, `e`, `'`, ` `, `s`, `y`, `m`, `p`, `t`, `o`, `m`, `s`, ` `, `a`, `r`, `e`, ` `, `a`, ` `, `m`, `o`, `o`, `d`, ` `, `o`, `r`, ` `, `s`, `u`, `b`, `s`, `t`, `a`, `n`, `c`, `e`, ` `, `f`, `l`, `a`, `g`, `.`
+- Evidence: `t_neurodev.md — ADHD is chronic, pervasive, and cross-situational from childhood; mania is episodic with mood elevation, decreased need for sleep, and grandiosity. Episodic 'ADHD-like' symptoms are a mood or substance flag.`
 
 **Stem.** A 16-year-old boy with a childhood diagnosis of ADHD is admitted following his first episode of several days of markedly decreased sleep, grandiosity, pressured speech, and impulsive behavior. His parents report that his ADHD has 'always been there' but this episode is 'completely different.' His Vanderbilt score from 3 years ago documented inattention and hyperactivity across home and school settings. Which interpretation is most accurate?
 
@@ -18776,7 +18903,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_cdev_004` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['dx']`
 - Linked pages: `t_neurodev.md`
-- Evidence: `t`, `_`, `n`, `e`, `u`, `r`, `o`, `d`, `e`, `v`, `.`, `m`, `d`, ` `, `—`, ` `, `C`, `a`, `t`, `a`, `t`, `o`, `n`, `i`, `a`, ` `, `i`, `n`, ` `, `a`, `u`, `t`, `i`, `s`, `m`, ` `, `—`, ` `, `u`, `n`, `d`, `e`, `r`, `-`, `r`, `e`, `c`, `o`, `g`, `n`, `i`, `z`, `e`, `d`, ` `, `a`, `n`, `d`, ` `, `i`, `m`, `p`, `o`, `r`, `t`, `a`, `n`, `t`, `;`, ` `, `n`, `e`, `w`, ` `, `m`, `u`, `t`, `i`, `s`, `m`, `,`, ` `, `i`, `m`, `m`, `o`, `b`, `i`, `l`, `i`, `t`, `y`, `,`, ` `, `p`, `o`, `s`, `t`, `u`, `r`, `i`, `n`, `g`, `,`, ` `, `o`, `r`, ` `, `s`, `t`, `u`, `p`, `o`, `r`, ` `, `i`, `n`, ` `, `a`, `n`, ` `, `a`, `u`, `t`, `i`, `s`, `t`, `i`, `c`, ` `, `p`, `a`, `t`, `i`, `e`, `n`, `t`, ` `, `s`, `h`, `o`, `u`, `l`, `d`, ` `, `p`, `r`, `o`, `m`, `p`, `t`, ` `, `a`, ` `, `c`, `a`, `t`, `a`, `t`, `o`, `n`, `i`, `a`, ` `, `e`, `v`, `a`, `l`, `u`, `a`, `t`, `i`, `o`, `n`, `.`
+- Evidence: `t_neurodev.md — Catatonia in autism — under-recognized and important; new mutism, immobility, posturing, or stupor in an autistic patient should prompt a catatonia evaluation.`
 
 **Stem.** A 26-year-old man with autism spectrum disorder is admitted by his group home for a change in behavior. Over the past 10 days he has become mute, stopped eating, and is found in fixed postures for hours at a time. He previously spoke in simple sentences and was active in daily activities. Which diagnosis must be actively evaluated?
 
@@ -18793,7 +18920,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_cdev_005` · status=`draft` · type=`sba` · difficulty=`1` · competency=`['dx']`
 - Linked pages: `t_neurodev.md`
-- Evidence: `t`, `_`, `n`, `e`, `u`, `r`, `o`, `d`, `e`, `v`, `.`, `m`, `d`, ` `, `—`, ` `, `C`, `h`, `i`, `l`, `d`, ` `, `a`, `n`, `d`, ` `, `a`, `d`, `o`, `l`, `e`, `s`, `c`, `e`, `n`, `t`, ` `, `e`, `x`, `a`, `m`, ` `, `a`, `n`, `c`, `h`, `o`, `r`, `s`, `:`, ` `, `A`, `D`, `H`, `D`, ` `, `c`, `r`, `i`, `t`, `e`, `r`, `i`, `a`, `.`
+- Evidence: `t_neurodev.md — Child and adolescent exam anchors: ADHD criteria.`
 
 **Stem.** A 9-year-old is referred for inattention and hyperactivity. Which is required to diagnose ADHD?
 
@@ -18810,7 +18937,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_cdev_006` · status=`draft` · type=`sba` · difficulty=`1` · competency=`['pharm', 'next-step']`
 - Linked pages: `t_neurodev.md`
-- Evidence: `t`, `_`, `n`, `e`, `u`, `r`, `o`, `d`, `e`, `v`, `.`, `m`, `d`, ` `, `—`, ` `, `C`, `h`, `i`, `l`, `d`, ` `, `a`, `n`, `d`, ` `, `a`, `d`, `o`, `l`, `e`, `s`, `c`, `e`, `n`, `t`, ` `, `e`, `x`, `a`, `m`, ` `, `a`, `n`, `c`, `h`, `o`, `r`, `s`, `:`, ` `, `A`, `D`, `H`, `D`, ` `, `m`, `e`, `d`, `i`, `c`, `a`, `t`, `i`, `o`, `n`, `.`
+- Evidence: `t_neurodev.md — Child and adolescent exam anchors: ADHD medication.`
 
 **Stem.** A 10-year-old has ADHD with significant impairment despite behavioral supports. First-line pharmacologic treatment?
 
@@ -18827,7 +18954,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_cdev_007` · status=`draft` · type=`sba` · difficulty=`2` · competency=`['dx']`
 - Linked pages: `t_neurodev.md`, `t_impulse.md`
-- Evidence: `t`, `_`, `i`, `m`, `p`, `u`, `l`, `s`, `e`, `.`, `m`, `d`, ` `, `—`, ` `, `O`, `D`, `D`, ` `, `v`, `s`, ` `, `c`, `o`, `n`, `d`, `u`, `c`, `t`, ` `, `d`, `i`, `s`, `o`, `r`, `d`, `e`, `r`, `;`, ` `, `a`, `n`, `t`, `i`, `s`, `o`, `c`, `i`, `a`, `l`, ` `, `P`, `D`, ` `, `d`, `e`, `v`, `e`, `l`, `o`, `p`, `m`, `e`, `n`, `t`, `a`, `l`, ` `, `s`, `p`, `i`, `n`, `e`, `.`
+- Evidence: `t_impulse.md — ODD vs conduct disorder; antisocial PD developmental spine.`
 
 **Stem.** An 8-year-old is argumentative, loses his temper, and defies adults, but has never been physically aggressive, destroyed property, stolen, or seriously violated others' rights. Best diagnosis?
 
@@ -18844,7 +18971,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_cdev_008` · status=`draft` · type=`sba` · difficulty=`2` · competency=`['dx']`
 - Linked pages: `t_neurodev.md`
-- Evidence: `t`, `_`, `n`, `e`, `u`, `r`, `o`, `d`, `e`, `v`, `.`, `m`, `d`, ` `, `—`, ` `, `C`, `h`, `i`, `l`, `d`, ` `, `a`, `n`, `d`, ` `, `a`, `d`, `o`, `l`, `e`, `s`, `c`, `e`, `n`, `t`, ` `, `e`, `x`, `a`, `m`, ` `, `a`, `n`, `c`, `h`, `o`, `r`, `s`, `:`, ` `, `a`, `u`, `t`, `i`, `s`, `m`, ` `, `s`, `p`, `e`, `c`, `t`, `r`, `u`, `m`, ` `, `d`, `i`, `s`, `o`, `r`, `d`, `e`, `r`, `.`
+- Evidence: `t_neurodev.md — Child and adolescent exam anchors: autism spectrum disorder.`
 
 **Stem.** A 4-year-old has marked deficits in social communication and reciprocity plus restricted, repetitive behaviors and insistence on sameness, present since early development. Best diagnosis?
 
@@ -18861,7 +18988,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_cdev_009` · status=`draft` · type=`sba` · difficulty=`2` · competency=`['dx']`
 - Linked pages: `t_neurodev.md`
-- Evidence: `t`, `_`, `n`, `e`, `u`, `r`, `o`, `d`, `e`, `v`, `.`, `m`, `d`, ` `, `—`, ` `, `C`, `h`, `i`, `l`, `d`, ` `, `a`, `n`, `d`, ` `, `a`, `d`, `o`, `l`, `e`, `s`, `c`, `e`, `n`, `t`, ` `, `e`, `x`, `a`, `m`, ` `, `a`, `n`, `c`, `h`, `o`, `r`, `s`, `:`, ` `, `t`, `i`, `c`, ` `, `d`, `i`, `s`, `o`, `r`, `d`, `e`, `r`, `s`, `.`
+- Evidence: `t_neurodev.md — Child and adolescent exam anchors: tic disorders.`
 
 **Stem.** A 12-year-old has had multiple motor tics and at least one vocal tic, waxing and waning for 18 months, onset at age 9. Best diagnosis?
 
@@ -18878,7 +19005,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_cdev_010` · status=`draft` · type=`sba` · difficulty=`2` · competency=`['next-step']`
 - Linked pages: `t_neurodev.md`
-- Evidence: `t`, `_`, `n`, `e`, `u`, `r`, `o`, `d`, `e`, `v`, `.`, `m`, `d`, ` `, `—`, ` `, `C`, `h`, `i`, `l`, `d`, ` `, `a`, `n`, `d`, ` `, `a`, `d`, `o`, `l`, `e`, `s`, `c`, `e`, `n`, `t`, ` `, `e`, `x`, `a`, `m`, ` `, `a`, `n`, `c`, `h`, `o`, `r`, `s`, `:`, ` `, `n`, `o`, `c`, `t`, `u`, `r`, `n`, `a`, `l`, ` `, `e`, `n`, `u`, `r`, `e`, `s`, `i`, `s`, `.`
+- Evidence: `t_neurodev.md — Child and adolescent exam anchors: nocturnal enuresis.`
 
 **Stem.** A 7-year-old has primary nocturnal enuresis with normal daytime continence and a normal exam. Most appropriate first-line management?
 
@@ -18895,7 +19022,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_cdev_011` · status=`draft` · type=`sba` · difficulty=`2` · competency=`['dx']`
 - Linked pages: `t_neurodev.md`
-- Evidence: `t`, `_`, `n`, `e`, `u`, `r`, `o`, `d`, `e`, `v`, `.`, `m`, `d`, ` `, `—`, ` `, `C`, `h`, `i`, `l`, `d`, ` `, `a`, `n`, `d`, ` `, `a`, `d`, `o`, `l`, `e`, `s`, `c`, `e`, `n`, `t`, ` `, `e`, `x`, `a`, `m`, ` `, `a`, `n`, `c`, `h`, `o`, `r`, `s`, `:`, ` `, `i`, `n`, `t`, `e`, `l`, `l`, `e`, `c`, `t`, `u`, `a`, `l`, ` `, `d`, `i`, `s`, `a`, `b`, `i`, `l`, `i`, `t`, `y`, `.`
+- Evidence: `t_neurodev.md — Child and adolescent exam anchors: intellectual disability.`
 
 **Stem.** A child is evaluated for intellectual disability. What determines the severity level (mild, moderate, severe, profound)?
 
@@ -18912,7 +19039,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_cdev_012` · status=`draft` · type=`sba` · difficulty=`2` · competency=`['dx']`
 - Linked pages: `t_neurodev.md`
-- Evidence: `t`, `_`, `n`, `e`, `u`, `r`, `o`, `d`, `e`, `v`, `.`, `m`, `d`, ` `, `—`, ` `, `C`, `h`, `i`, `l`, `d`, ` `, `a`, `n`, `d`, ` `, `a`, `d`, `o`, `l`, `e`, `s`, `c`, `e`, `n`, `t`, ` `, `e`, `x`, `a`, `m`, ` `, `a`, `n`, `c`, `h`, `o`, `r`, `s`, `:`, ` `, `s`, `e`, `p`, `a`, `r`, `a`, `t`, `i`, `o`, `n`, ` `, `a`, `n`, `x`, `i`, `e`, `t`, `y`, ` `, `d`, `i`, `s`, `o`, `r`, `d`, `e`, `r`, `.`
+- Evidence: `t_neurodev.md — Child and adolescent exam anchors: separation anxiety disorder.`
 
 **Stem.** A 7-year-old refuses school, complains of stomachaches on school mornings that resolve on weekends, and is terrified that something will happen to his mother while apart. Best diagnosis?
 
@@ -18929,7 +19056,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_cdev_013` · status=`draft` · type=`sba` · difficulty=`2` · competency=`['dx', 'next-step']`
 - Linked pages: `t_neurodev.md`
-- Evidence: `t`, `_`, `n`, `e`, `u`, `r`, `o`, `d`, `e`, `v`, `.`, `m`, `d`, ` `, `—`, ` `, `C`, `h`, `i`, `l`, `d`, ` `, `a`, `n`, `d`, ` `, `a`, `d`, `o`, `l`, `e`, `s`, `c`, `e`, `n`, `t`, ` `, `e`, `x`, `a`, `m`, ` `, `a`, `n`, `c`, `h`, `o`, `r`, `s`, `:`, ` `, `e`, `n`, `c`, `o`, `p`, `r`, `e`, `s`, `i`, `s`, `.`
+- Evidence: `t_neurodev.md — Child and adolescent exam anchors: encopresis.`
 
 **Stem.** A 6-year-old repeatedly soils his underwear; exam reveals a large stool mass and history of painful, infrequent bowel movements. Best diagnosis and initial management?
 
@@ -18946,7 +19073,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_cdev_014` · status=`draft` · type=`sba` · difficulty=`2` · competency=`['dx']`
 - Linked pages: `t_neurodev.md`
-- Evidence: `t`, `_`, `n`, `e`, `u`, `r`, `o`, `d`, `e`, `v`, `.`, `m`, `d`, ` `, `—`, ` `, `C`, `h`, `i`, `l`, `d`, ` `, `a`, `n`, `d`, ` `, `a`, `d`, `o`, `l`, `e`, `s`, `c`, `e`, `n`, `t`, ` `, `e`, `x`, `a`, `m`, ` `, `a`, `n`, `c`, `h`, `o`, `r`, `s`, `:`, ` `, `s`, `e`, `l`, `e`, `c`, `t`, `i`, `v`, `e`, ` `, `m`, `u`, `t`, `i`, `s`, `m`, `.`
+- Evidence: `t_neurodev.md — Child and adolescent exam anchors: selective mutism.`
 
 **Stem.** A 6-year-old speaks normally at home but consistently fails to speak at school, where she is otherwise engaged; this has lasted the school year and impairs learning. Best diagnosis?
 
@@ -18965,7 +19092,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_eth_001` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['dx', 'next-step']`
 - Linked pages: `ethics_legal.md`
-- Evidence: `e`, `t`, `h`, `i`, `c`, `s`, `_`, `l`, `e`, `g`, `a`, `l`, `.`, `m`, `d`, ` `, `—`, ` `, `C`, `a`, `p`, `a`, `c`, `i`, `t`, `y`, ` `, `i`, `s`, ` `, `d`, `e`, `c`, `i`, `s`, `i`, `o`, `n`, `-`, `s`, `p`, `e`, `c`, `i`, `f`, `i`, `c`, ` `, `a`, `n`, `d`, ` `, `c`, `l`, `i`, `n`, `i`, `c`, `a`, `l`, ` `, `(`, `a`, ` `, `p`, `h`, `y`, `s`, `i`, `c`, `i`, `a`, `n`, ` `, `a`, `s`, `s`, `e`, `s`, `s`, `e`, `s`, ` `, `i`, `t`, `)`, `.`, ` `, `T`, `h`, `e`, ` `, `f`, `o`, `u`, `r`, ` `, `a`, `b`, `i`, `l`, `i`, `t`, `i`, `e`, `s`, `:`, ` `, `c`, `o`, `m`, `m`, `u`, `n`, `i`, `c`, `a`, `t`, `e`, ` `, `a`, ` `, `c`, `h`, `o`, `i`, `c`, `e`, `,`, ` `, `u`, `n`, `d`, `e`, `r`, `s`, `t`, `a`, `n`, `d`, `,`, ` `, `a`, `p`, `p`, `r`, `e`, `c`, `i`, `a`, `t`, `e`, `,`, ` `, `a`, `n`, `d`, ` `, `r`, `e`, `a`, `s`, `o`, `n`, `.`, ` `, `C`, `o`, `m`, `p`, `e`, `t`, `e`, `n`, `t`, ` `, `p`, `a`, `t`, `i`, `e`, `n`, `t`, `s`, ` `, `(`, `i`, `n`, `c`, `l`, `u`, `d`, `i`, `n`, `g`, ` `, `m`, `a`, `n`, `y`, ` `, `i`, `n`, `v`, `o`, `l`, `u`, `n`, `t`, `a`, `r`, `i`, `l`, `y`, ` `, `h`, `o`, `s`, `p`, `i`, `t`, `a`, `l`, `i`, `z`, `e`, `d`, ` `, `o`, `n`, `e`, `s`, `)`, ` `, `g`, `e`, `n`, `e`, `r`, `a`, `l`, `l`, `y`, ` `, `r`, `e`, `t`, `a`, `i`, `n`, ` `, `t`, `h`, `e`, ` `, `r`, `i`, `g`, `h`, `t`, ` `, `t`, `o`, ` `, `r`, `e`, `f`, `u`, `s`, `e`, ` `, `m`, `e`, `d`, `i`, `c`, `a`, `t`, `i`, `o`, `n`, `.`, ` `, `O`, `v`, `e`, `r`, `r`, `i`, `d`, `i`, `n`, `g`, ` `, `t`, `h`, `a`, `t`, ` `, `r`, `e`, `f`, `u`, `s`, `a`, `l`, ` `, `r`, `e`, `q`, `u`, `i`, `r`, `e`, `s`, ` `, `e`, `i`, `t`, `h`, `e`, `r`, ` `, `a`, ` `, `t`, `r`, `u`, `e`, ` `, `e`, `m`, `e`, `r`, `g`, `e`, `n`, `c`, `y`, ` `, `o`, `r`, ` `, `a`, ` `, `s`, `e`, `p`, `a`, `r`, `a`, `t`, `e`, ` `, `l`, `e`, `g`, `a`, `l`, `/`, `a`, `d`, `j`, `u`, `d`, `i`, `c`, `a`, `t`, `e`, `d`, ` `, `p`, `r`, `o`, `c`, `e`, `s`, `s`, `.`
+- Evidence: `ethics_legal.md — Capacity is decision-specific and clinical (a physician assesses it). The four abilities: communicate a choice, understand, appreciate, and reason. Competent patients (including many involuntarily hospitalized ones) generally retain the right to refuse medication. Overriding that refusal requires either a true emergency or a separate legal/adjudicated process.`
 
 **Stem.** A 45-year-old man with schizophrenia is voluntarily admitted and refuses his prescribed antipsychotic. When asked, he explains what the medication is for, articulates specific concerns about its side effects, understands the risks of not taking it, and asks whether alternatives exist. Best next step?
 
@@ -18982,7 +19109,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_eth_002` · status=`attested` · type=`two-tier` · difficulty=`3` · competency=`['next-step', 'safety']` · **high-yield**
 - Linked pages: `ethics_legal.md`
-- Evidence: `e`, `t`, `h`, `i`, `c`, `s`, `_`, `l`, `e`, `g`, `a`, `l`, `.`, `m`, `d`, ` `, `—`, ` `, `W`, `h`, `e`, `n`, ` `, `a`, ` `, `p`, `a`, `t`, `i`, `e`, `n`, `t`, ` `, `m`, `a`, `k`, `e`, `s`, ` `, `a`, ` `, `s`, `e`, `r`, `i`, `o`, `u`, `s`, ` `, `t`, `h`, `r`, `e`, `a`, `t`, ` `, `o`, `f`, ` `, `v`, `i`, `o`, `l`, `e`, `n`, `c`, `e`, ` `, `a`, `g`, `a`, `i`, `n`, `s`, `t`, ` `, `a`, ` `, `r`, `e`, `a`, `s`, `o`, `n`, `a`, `b`, `l`, `y`, ` `, `i`, `d`, `e`, `n`, `t`, `i`, `f`, `i`, `a`, `b`, `l`, `e`, ` `, `v`, `i`, `c`, `t`, `i`, `m`, `,`, ` `, `t`, `h`, `e`, ` `, `c`, `l`, `i`, `n`, `i`, `c`, `i`, `a`, `n`, ` `, `h`, `a`, `s`, ` `, `a`, ` `, `d`, `u`, `t`, `y`, ` `, `t`, `o`, ` `, `t`, `a`, `k`, `e`, ` `, `r`, `e`, `a`, `s`, `o`, `n`, `a`, `b`, `l`, `e`, ` `, `p`, `r`, `o`, `t`, `e`, `c`, `t`, `i`, `v`, `e`, ` `, `s`, `t`, `e`, `p`, `s`, ` `, `—`, ` `, `w`, `h`, `i`, `c`, `h`, ` `, `m`, `a`, `y`, ` `, `i`, `n`, `c`, `l`, `u`, `d`, `e`, ` `, `w`, `a`, `r`, `n`, `i`, `n`, `g`, ` `, `t`, `h`, `e`, ` `, `p`, `o`, `t`, `e`, `n`, `t`, `i`, `a`, `l`, ` `, `v`, `i`, `c`, `t`, `i`, `m`, `,`, ` `, `n`, `o`, `t`, `i`, `f`, `y`, `i`, `n`, `g`, ` `, `p`, `o`, `l`, `i`, `c`, `e`, `,`, ` `, `h`, `o`, `s`, `p`, `i`, `t`, `a`, `l`, `i`, `z`, `i`, `n`, `g`, ` `, `t`, `h`, `e`, ` `, `p`, `a`, `t`, `i`, `e`, `n`, `t`, `,`, ` `, `o`, `r`, ` `, `i`, `n`, `t`, `e`, `n`, `s`, `i`, `f`, `y`, `i`, `n`, `g`, ` `, `t`, `r`, `e`, `a`, `t`, `m`, `e`, `n`, `t`, `.`
+- Evidence: `ethics_legal.md — When a patient makes a serious threat of violence against a reasonably identifiable victim, the clinician has a duty to take reasonable protective steps — which may include warning the potential victim, notifying police, hospitalizing the patient, or intensifying treatment.`
 
 **Stem.** An outpatient therapist is meeting with a 34-year-old patient who describes, in specific detail, a plan to assault a named family member. He states his intent to act before the end of the week and describes the location and means. The therapist's obligation is which of the following?
 
@@ -19001,7 +19128,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_eth_007` · status=`attested` · type=`sba` · difficulty=`1` · competency=`['safety', 'management']` · **high-yield**
 - Linked pages: `ethics_legal.md`
-- Evidence: `e`, `t`, `h`, `i`, `c`, `s`, `_`, `l`, `e`, `g`, `a`, `l`, `.`, `m`, `d`, ` `, `—`, ` `, `A`, ` `, `s`, `e`, `r`, `i`, `o`, `u`, `s`, ` `, `t`, `h`, `r`, `e`, `a`, `t`, ` `, `t`, `o`, ` `, `a`, `n`, ` `, `i`, `d`, `e`, `n`, `t`, `i`, `f`, `i`, `a`, `b`, `l`, `e`, ` `, `v`, `i`, `c`, `t`, `i`, `m`, ` `, `t`, `r`, `i`, `g`, `g`, `e`, `r`, `s`, ` `, `a`, ` `, `d`, `u`, `t`, `y`, ` `, `t`, `o`, ` `, `p`, `r`, `o`, `t`, `e`, `c`, `t`, ` `, `(`, `T`, `a`, `r`, `a`, `s`, `o`, `f`, `f`, `)`, ` `, `—`, ` `, `c`, `o`, `n`, `f`, `i`, `d`, `e`, `n`, `t`, `i`, `a`, `l`, `i`, `t`, `y`, ` `, `y`, `i`, `e`, `l`, `d`, `s`, `.`
+- Evidence: `ethics_legal.md — A serious threat to an identifiable victim triggers a duty to protect (Tarasoff) — confidentiality yields.`
 
 **Stem.** During an outpatient psychiatry session, a 34-year-old man with paranoid schizophrenia states, 'I have a gun at home. When John Smith gets out of prison next month, I'm going to kill him.' John Smith is his estranged brother. Which action is most appropriate?
 
@@ -19018,7 +19145,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_eth_008` · status=`attested` · type=`sba` · difficulty=`1` · competency=`['safety', 'management']` · **high-yield**
 - Linked pages: `ethics_legal.md`
-- Evidence: `e`, `t`, `h`, `i`, `c`, `s`, `_`, `l`, `e`, `g`, `a`, `l`, `.`, `m`, `d`, ` `, `—`, ` `, `R`, `e`, `p`, `o`, `r`, `t`, ` `, `s`, `u`, `s`, `p`, `e`, `c`, `t`, `e`, `d`, ` `, `c`, `h`, `i`, `l`, `d`, ` `, `a`, `b`, `u`, `s`, `e`, ` `, `o`, `r`, ` `, `n`, `e`, `g`, `l`, `e`, `c`, `t`, ` `, `a`, `n`, `d`, ` `, `e`, `l`, `d`, `e`, `r`, `/`, `d`, `e`, `p`, `e`, `n`, `d`, `e`, `n`, `t`, `-`, `a`, `d`, `u`, `l`, `t`, ` `, `a`, `b`, `u`, `s`, `e`, ` `, `—`, ` `, `r`, `e`, `p`, `o`, `r`, `t`, `i`, `n`, `g`, ` `, `r`, `e`, `q`, `u`, `i`, `r`, `e`, `s`, ` `, `r`, `e`, `a`, `s`, `o`, `n`, `a`, `b`, `l`, `e`, ` `, `s`, `u`, `s`, `p`, `i`, `c`, `i`, `o`, `n`, `,`, ` `, `n`, `o`, `t`, ` `, `p`, `r`, `o`, `o`, `f`, `,`, ` `, `a`, `n`, `d`, ` `, `m`, `a`, `n`, `d`, `a`, `t`, `e`, `d`, ` `, `r`, `e`, `p`, `o`, `r`, `t`, `e`, `r`, `s`, ` `, `a`, `r`, `e`, ` `, `g`, `e`, `n`, `e`, `r`, `a`, `l`, `l`, `y`, ` `, `p`, `r`, `o`, `t`, `e`, `c`, `t`, `e`, `d`, ` `, `w`, `h`, `e`, `n`, ` `, `r`, `e`, `p`, `o`, `r`, `t`, `i`, `n`, `g`, ` `, `i`, `n`, ` `, `g`, `o`, `o`, `d`, ` `, `f`, `a`, `i`, `t`, `h`, `.`
+- Evidence: `ethics_legal.md — Report suspected child abuse or neglect and elder/dependent-adult abuse — reporting requires reasonable suspicion, not proof, and mandated reporters are generally protected when reporting in good faith.`
 
 **Stem.** A 6-year-old boy is brought to the pediatrician with multiple bruises in various stages of healing. His mother explains that he 'bruises easily.' The student suspects possible physical abuse but is uncertain. There are no obvious fractures, and the child denies being hurt. Which is the correct action?
 
@@ -19035,7 +19162,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_eth_003` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['management']`
 - Linked pages: `ethics_legal.md`
-- Evidence: `e`, `t`, `h`, `i`, `c`, `s`, `_`, `l`, `e`, `g`, `a`, `l`, `.`, `m`, `d`, ` `, `—`, ` `, `I`, `n`, `v`, `o`, `l`, `u`, `n`, `t`, `a`, `r`, `y`, ` `, `h`, `o`, `s`, `p`, `i`, `t`, `a`, `l`, `i`, `z`, `a`, `t`, `i`, `o`, `n`, ` `, `d`, `o`, `e`, `s`, ` `, `N`, `O`, `T`, ` `, `b`, `y`, ` `, `i`, `t`, `s`, `e`, `l`, `f`, ` `, `a`, `u`, `t`, `h`, `o`, `r`, `i`, `z`, `e`, ` `, `i`, `n`, `v`, `o`, `l`, `u`, `n`, `t`, `a`, `r`, `y`, ` `, `m`, `e`, `d`, `i`, `c`, `a`, `t`, `i`, `o`, `n`, `.`, ` `, `S`, `e`, `p`, `a`, `r`, `a`, `t`, `e`, ` `, `t`, `h`, `e`, ` `, `f`, `o`, `u`, `r`, ` `, `l`, `e`, `g`, `a`, `l`, ` `, `s`, `t`, `a`, `t`, `e`, `s`, `:`, ` `, `v`, `o`, `l`, `u`, `n`, `t`, `a`, `r`, `y`, ` `, `v`, `s`, ` `, `c`, `o`, `m`, `m`, `i`, `t`, `t`, `e`, `d`, `,`, ` `, `a`, `n`, `d`, ` `, `h`, `a`, `s`, `-`, `c`, `a`, `p`, `a`, `c`, `i`, `t`, `y`, ` `, `v`, `s`, ` `, `c`, `o`, `u`, `r`, `t`, `-`, `d`, `e`, `t`, `e`, `r`, `m`, `i`, `n`, `e`, `d`, `-`, `i`, `n`, `c`, `o`, `m`, `p`, `e`, `t`, `e`, `n`, `t`, `.`
+- Evidence: `ethics_legal.md — Involuntary hospitalization does NOT by itself authorize involuntary medication. Separate the four legal states: voluntary vs committed, and has-capacity vs court-determined-incompetent.`
 
 **Stem.** A 38-year-old man with schizophrenia is involuntarily hospitalized following an acute psychotic episode with danger to others. On day 2, he states that he refuses to take haloperidol. The team wants to medicate him over his objection because 'he's committed.' Which statement is most accurate?
 
@@ -19052,7 +19179,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_eth_004` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['management']`
 - Linked pages: `ethics_legal.md`
-- Evidence: `e`, `t`, `h`, `i`, `c`, `s`, `_`, `l`, `e`, `g`, `a`, `l`, `.`, `m`, `d`, ` `, `—`, ` `, `C`, `a`, `p`, `a`, `c`, `i`, `t`, `y`, ` `, `i`, `s`, ` `, `d`, `e`, `c`, `i`, `s`, `i`, `o`, `n`, `-`, `s`, `p`, `e`, `c`, `i`, `f`, `i`, `c`, ` `, `a`, `n`, `d`, ` `, `c`, `l`, `i`, `n`, `i`, `c`, `a`, `l`, ` `, `(`, `a`, ` `, `p`, `h`, `y`, `s`, `i`, `c`, `i`, `a`, `n`, ` `, `a`, `s`, `s`, `e`, `s`, `s`, `e`, `s`, ` `, `i`, `t`, `)`, `;`, ` `, `c`, `o`, `m`, `p`, `e`, `t`, `e`, `n`, `c`, `e`, ` `, `i`, `s`, ` `, `a`, ` `, `l`, `e`, `g`, `a`, `l`, ` `, `d`, `e`, `t`, `e`, `r`, `m`, `i`, `n`, `a`, `t`, `i`, `o`, `n`, ` `, `(`, `a`, ` `, `c`, `o`, `u`, `r`, `t`, ` `, `d`, `e`, `c`, `i`, `d`, `e`, `s`, `)`, `.`
+- Evidence: `ethics_legal.md — Capacity is decision-specific and clinical (a physician assesses it); competence is a legal determination (a court decides).`
 
 **Stem.** A patient with delirium cannot provide coherent consent for an emergent procedure. The family asks if the patient 'has been declared incompetent.' The resident responds that the patient 'lacks capacity.' The family seems confused by the distinction. Which explanation is most accurate?
 
@@ -19069,7 +19196,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_eth_005` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['management']`
 - Linked pages: `ethics_legal.md`
-- Evidence: `e`, `t`, `h`, `i`, `c`, `s`, `_`, `l`, `e`, `g`, `a`, `l`, `.`, `m`, `d`, ` `, `—`, ` `, `V`, `a`, `l`, `i`, `d`, ` `, `c`, `o`, `n`, `s`, `e`, `n`, `t`, ` `, `r`, `e`, `q`, `u`, `i`, `r`, `e`, `s`, ` `, `c`, `a`, `p`, `a`, `c`, `i`, `t`, `y`, `,`, ` `, `d`, `i`, `s`, `c`, `l`, `o`, `s`, `u`, `r`, `e`, ` `, `(`, `r`, `i`, `s`, `k`, `s`, `/`, `b`, `e`, `n`, `e`, `f`, `i`, `t`, `s`, `/`, `a`, `l`, `t`, `e`, `r`, `n`, `a`, `t`, `i`, `v`, `e`, `s`, `)`, `,`, ` `, `a`, `n`, `d`, ` `, `v`, `o`, `l`, `u`, `n`, `t`, `a`, `r`, `i`, `n`, `e`, `s`, `s`, `.`, ` `, `T`, `h`, `e`, ` `, `f`, `o`, `u`, `r`, ` `, `a`, `b`, `i`, `l`, `i`, `t`, `i`, `e`, `s`, `:`, ` `, `c`, `o`, `m`, `m`, `u`, `n`, `i`, `c`, `a`, `t`, `e`, ` `, `a`, ` `, `c`, `h`, `o`, `i`, `c`, `e`, `,`, ` `, `u`, `n`, `d`, `e`, `r`, `s`, `t`, `a`, `n`, `d`, `,`, ` `, `a`, `p`, `p`, `r`, `e`, `c`, `i`, `a`, `t`, `e`, `,`, ` `, `a`, `n`, `d`, ` `, `r`, `e`, `a`, `s`, `o`, `n`, `.`
+- Evidence: `ethics_legal.md — Valid consent requires capacity, disclosure (risks/benefits/alternatives), and voluntariness. The four abilities: communicate a choice, understand, appreciate, and reason.`
 
 **Stem.** A 62-year-old man is informed of the risks, benefits, and alternatives of a recommended ECT course; his cognition is grossly intact on interview, though no formal capacity assessment has been documented. He is under no coercion and says, 'I understand what you've told me, and I want to have ECT.' Which component of informed consent has NOT yet been addressed?
 
@@ -19086,7 +19213,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_eth_006` · status=`attested` · type=`sba` · difficulty=`3` · competency=`['management']`
 - Linked pages: `ethics_legal.md`
-- Evidence: `e`, `t`, `h`, `i`, `c`, `s`, `_`, `l`, `e`, `g`, `a`, `l`, `.`, `m`, `d`, ` `, `—`, ` `, `P`, `a`, `r`, `e`, `n`, `t`, `s`, `/`, `g`, `u`, `a`, `r`, `d`, `i`, `a`, `n`, `s`, ` `, `g`, `e`, `n`, `e`, `r`, `a`, `l`, `l`, `y`, ` `, `c`, `o`, `n`, `s`, `e`, `n`, `t`, ` `, `f`, `o`, `r`, ` `, `m`, `i`, `n`, `o`, `r`, `s`, `,`, ` `, `w`, `i`, `t`, `h`, ` `, `e`, `x`, `c`, `e`, `p`, `t`, `i`, `o`, `n`, `s`, ` `, `(`, `e`, `m`, `a`, `n`, `c`, `i`, `p`, `a`, `t`, `e`, `d`, `/`, `m`, `a`, `t`, `u`, `r`, `e`, ` `, `m`, `i`, `n`, `o`, `r`, `s`, ` `, `a`, `n`, `d`, `,`, ` `, `i`, `n`, ` `, `m`, `a`, `n`, `y`, ` `, `s`, `t`, `a`, `t`, `e`, `s`, `,`, ` `, `c`, `a`, `r`, `e`, ` `, `f`, `o`, `r`, ` `, `S`, `T`, `I`, `s`, `,`, ` `, `c`, `o`, `n`, `t`, `r`, `a`, `c`, `e`, `p`, `t`, `i`, `o`, `n`, `,`, ` `, `s`, `u`, `b`, `s`, `t`, `a`, `n`, `c`, `e`, ` `, `u`, `s`, `e`, `,`, ` `, `a`, `n`, `d`, ` `, `s`, `o`, `m`, `e`, ` `, `m`, `e`, `n`, `t`, `a`, `l`, `-`, `h`, `e`, `a`, `l`, `t`, `h`, ` `, `s`, `e`, `r`, `v`, `i`, `c`, `e`, `s`, `)`, `.`
+- Evidence: `ethics_legal.md — Parents/guardians generally consent for minors, with exceptions (emancipated/mature minors and, in many states, care for STIs, contraception, substance use, and some mental-health services).`
 
 **Stem.** A 15-year-old presents to an outpatient clinic requesting evaluation and treatment for alcohol use disorder. He does not want his parents informed. His parents are alive, married, and have not relinquished guardianship. Which framework applies?
 
@@ -19103,7 +19230,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_eth_009` · status=`draft` · type=`sba` · difficulty=`2` · competency=`['management']`
 - Linked pages: `ethics_legal.md`
-- Evidence: `e`, `t`, `h`, `i`, `c`, `s`, `_`, `l`, `e`, `g`, `a`, `l`, `.`, `m`, `d`, ` `, `—`, ` `, `I`, `n`, `v`, `o`, `l`, `u`, `n`, `t`, `a`, `r`, `y`, ` `, `h`, `o`, `s`, `p`, `i`, `t`, `a`, `l`, `i`, `z`, `a`, `t`, `i`, `o`, `n`, `.`
+- Evidence: `ethics_legal.md — Involuntary hospitalization.`
 
 **Stem.** A patient with untreated mania insists on leaving; the team considers an involuntary hold. Which criterion must generally be met?
 
@@ -19120,7 +19247,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_eth_010` · status=`draft` · type=`sba` · difficulty=`2` · competency=`['management']`
 - Linked pages: `ethics_legal.md`
-- Evidence: `e`, `t`, `h`, `i`, `c`, `s`, `_`, `l`, `e`, `g`, `a`, `l`, `.`, `m`, `d`, ` `, `—`, ` `, `C`, `a`, `p`, `a`, `c`, `i`, `t`, `y`, ` `, `v`, `s`, ` `, `c`, `o`, `m`, `p`, `e`, `t`, `e`, `n`, `c`, `e`, `.`
+- Evidence: `ethics_legal.md — Capacity vs competence.`
 
 **Stem.** A resident asks whether a delirious patient is 'competent' to refuse a lumbar puncture. Most accurate framing?
 
@@ -19137,7 +19264,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_eth_011` · status=`draft` · type=`sba` · difficulty=`2` · competency=`['management', 'safety']`
 - Linked pages: `ethics_legal.md`
-- Evidence: `e`, `t`, `h`, `i`, `c`, `s`, `_`, `l`, `e`, `g`, `a`, `l`, `.`, `m`, `d`, ` `, `—`, ` `, `C`, `o`, `n`, `s`, `e`, `n`, `t`, ` `, `a`, `n`, `d`, ` `, `t`, `h`, `e`, ` `, `e`, `m`, `e`, `r`, `g`, `e`, `n`, `c`, `y`, ` `, `e`, `x`, `c`, `e`, `p`, `t`, `i`, `o`, `n`, `.`
+- Evidence: `ethics_legal.md — Consent and the emergency exception.`
 
 **Stem.** An unconscious patient arrives after an overdose, no surrogate reachable, needing immediate life-saving treatment. Which principle applies?
 
@@ -19154,7 +19281,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_eth_012` · status=`draft` · type=`sba` · difficulty=`2` · competency=`['management']`
 - Linked pages: `ethics_legal.md`
-- Evidence: `e`, `t`, `h`, `i`, `c`, `s`, `_`, `l`, `e`, `g`, `a`, `l`, `.`, `m`, `d`, ` `, `—`, ` `, `A`, `u`, `t`, `o`, `n`, `o`, `m`, `y`, ` `, `a`, `n`, `d`, ` `, `r`, `e`, `f`, `u`, `s`, `a`, `l`, ` `, `o`, `f`, ` `, `t`, `r`, `e`, `a`, `t`, `m`, `e`, `n`, `t`, `.`
+- Evidence: `ethics_legal.md — Autonomy and refusal of treatment.`
 
 **Stem.** A patient with intact capacity and a terminal illness refuses a recommended life-prolonging treatment; the team disagrees. Ethically correct action?
 
@@ -19171,7 +19298,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_eth_013` · status=`draft` · type=`sba` · difficulty=`3` · competency=`['management']`
 - Linked pages: `ethics_legal.md`
-- Evidence: `e`, `t`, `h`, `i`, `c`, `s`, `_`, `l`, `e`, `g`, `a`, `l`, `.`, `m`, `d`, ` `, `—`, ` `, `S`, `u`, `r`, `r`, `o`, `g`, `a`, `t`, `e`, ` `, `d`, `e`, `c`, `i`, `s`, `i`, `o`, `n`, `-`, `m`, `a`, `k`, `i`, `n`, `g`, `.`
+- Evidence: `ethics_legal.md — Surrogate decision-making.`
 
 **Stem.** A patient permanently lacks capacity and has no advance directive, but the surrogate knows the patient's long-standing values and prior wishes about a proposed procedure. Which standard applies first?
 
@@ -19188,7 +19315,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_eth_014` · status=`draft` · type=`sba` · difficulty=`2` · competency=`['management', 'safety']`
 - Linked pages: `ethics_legal.md`
-- Evidence: `e`, `t`, `h`, `i`, `c`, `s`, `_`, `l`, `e`, `g`, `a`, `l`, `.`, `m`, `d`, ` `, `—`, ` `, `M`, `a`, `n`, `d`, `a`, `t`, `o`, `r`, `y`, ` `, `r`, `e`, `p`, `o`, `r`, `t`, `i`, `n`, `g`, `.`
+- Evidence: `ethics_legal.md — Mandatory reporting.`
 
 **Stem.** During an interview, a child discloses details strongly suggesting physical abuse at home. The parent asks you to keep it confidential. What must you do?
 
@@ -19205,7 +19332,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_eth_015` · status=`draft` · type=`sba` · difficulty=`2` · competency=`['management']`
 - Linked pages: `ethics_legal.md`
-- Evidence: `e`, `t`, `h`, `i`, `c`, `s`, `_`, `l`, `e`, `g`, `a`, `l`, `.`, `m`, `d`, ` `, `—`, ` `, `C`, `o`, `n`, `s`, `e`, `n`, `t`, ` `, `a`, `n`, `d`, ` `, `m`, `i`, `n`, `o`, `r`, `s`, `.`
+- Evidence: `ethics_legal.md — Consent and minors.`
 
 **Stem.** A 15-year-old comes alone requesting evaluation. Which statement about consent for a minor is most accurate?
 
@@ -19222,7 +19349,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_eth_016` · status=`draft` · type=`sba` · difficulty=`1` · competency=`['management']`
 - Linked pages: `ethics_legal.md`
-- Evidence: `e`, `t`, `h`, `i`, `c`, `s`, `_`, `l`, `e`, `g`, `a`, `l`, `.`, `m`, `d`, ` `, `—`, ` `, `P`, `r`, `o`, `f`, `e`, `s`, `s`, `i`, `o`, `n`, `a`, `l`, ` `, `b`, `o`, `u`, `n`, `d`, `a`, `r`, `i`, `e`, `s`, `.`
+- Evidence: `ethics_legal.md — Professional boundaries.`
 
 **Stem.** A hospitalized patient invites the student doctor to meet socially and offers a substantial personal gift. What is the appropriate response?
 
@@ -19241,7 +19368,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_mood_001` · status=`attested` · type=`sba` · difficulty=`1` · competency=`['dx', 'safety']` · **high-yield**
 - Linked pages: `t_mood.md`
-- Evidence: `t`, `_`, `m`, `o`, `o`, `d`, `.`, `m`, `d`, ` `, `'`, `H`, `i`, `g`, `h`, `-`, `y`, `i`, `e`, `l`, `d`, ` `, `p`, `e`, `a`, `r`, `l`, `s`, `'`, ` `, `—`, ` `, `S`, `c`, `r`, `e`, `e`, `n`, ` `, `e`, `v`, `e`, `r`, `y`, ` `, `d`, `e`, `p`, `r`, `e`, `s`, `s`, `e`, `d`, ` `, `p`, `a`, `t`, `i`, `e`, `n`, `t`, ` `, `f`, `o`, `r`, ` `, `p`, `a`, `s`, `t`, ` `, `m`, `a`, `n`, `i`, `a`, ` `, `b`, `e`, `f`, `o`, `r`, `e`, ` `, `w`, `r`, `i`, `t`, `i`, `n`, `g`, ` `, `f`, `o`, `r`, ` `, `a`, `n`, ` `, `a`, `n`, `t`, `i`, `d`, `e`, `p`, `r`, `e`, `s`, `s`, `a`, `n`, `t`, `.`
+- Evidence: `t_mood.md 'High-yield pearls' — Screen every depressed patient for past mania before writing for an antidepressant.`
 
 **Stem.** A 31-year-old woman is admitted for a severe depressive episode with passive suicidal ideation. The intern plans to start sertraline today. Before initiating an antidepressant, the most important step is which of the following?
 
@@ -19258,7 +19385,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_mood_002` · status=`attested` · type=`two-tier` · difficulty=`3` · competency=`['pharm', 'safety']`
 - Linked pages: `t_mood.md`, `psychopharm_primer.md`
-- Evidence: `t`, `_`, `m`, `o`, `o`, `d`, `.`, `m`, `d`, ` `, `'`, `L`, `i`, `t`, `h`, `i`, `u`, `m`, `'`, ` `, `—`, ` `, `l`, `i`, `t`, `h`, `i`, `u`, `m`, ` `, `r`, `u`, `n`, `s`, ` `, `a`, ` `, `n`, `a`, `r`, `r`, `o`, `w`, ` `, `t`, `h`, `e`, `r`, `a`, `p`, `e`, `u`, `t`, `i`, `c`, ` `, `w`, `i`, `n`, `d`, `o`, `w`, ` `, `(`, `~`, `0`, `.`, `6`, `–`, `1`, `.`, `2`, ` `, `m`, `E`, `q`, `/`, `L`, `)`, `;`, ` `, `N`, `S`, `A`, `I`, `D`, `s`, `,`, ` `, `A`, `C`, `E`, `-`, `i`, `n`, `h`, `i`, `b`, `i`, `t`, `o`, `r`, `s`, `/`, `A`, `R`, `B`, `s`, `,`, ` `, `t`, `h`, `i`, `a`, `z`, `i`, `d`, `e`, `s`, `,`, ` `, `a`, `n`, `d`, ` `, `d`, `e`, `h`, `y`, `d`, `r`, `a`, `t`, `i`, `o`, `n`, ` `, `p`, `u`, `s`, `h`, ` `, `l`, `e`, `v`, `e`, `l`, `s`, ` `, `t`, `o`, `w`, `a`, `r`, `d`, ` `, `t`, `o`, `x`, `i`, `c`, `i`, `t`, `y`, `.`
+- Evidence: `t_mood.md 'Lithium' — lithium runs a narrow therapeutic window (~0.6–1.2 mEq/L); NSAIDs, ACE-inhibitors/ARBs, thiazides, and dehydration push levels toward toxicity.`
 
 **Stem.** A 38-year-old man with bipolar I disorder, stable on lithium maintenance for two years, presents with a 2-day course of worsening tremor, confusion, and vomiting. Five days ago he began ibuprofen for back pain. Which of the following best explains his presentation?
 
@@ -19277,7 +19404,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_mood_003` · status=`attested` · type=`sba` · difficulty=`1` · competency=`['dx']` · **high-yield**
 - Linked pages: `t_mood.md`
-- Evidence: `t`, `_`, `m`, `o`, `o`, `d`, `.`, `m`, `d`, ` `, `—`, ` `, `C`, `r`, `i`, `t`, `i`, `c`, `a`, `l`, `l`, `y`, `,`, ` `, `a`, `l`, `w`, `a`, `y`, `s`, ` `, `s`, `c`, `r`, `e`, `e`, `n`, ` `, `f`, `o`, `r`, ` `, `a`, ` `, `p`, `a`, `s`, `t`, ` `, `m`, `a`, `n`, `i`, `c`, ` `, `o`, `r`, ` `, `h`, `y`, `p`, `o`, `m`, `a`, `n`, `i`, `c`, ` `, `e`, `p`, `i`, `s`, `o`, `d`, `e`, ` `, `b`, `e`, `f`, `o`, `r`, `e`, ` `, `c`, `a`, `l`, `l`, `i`, `n`, `g`, ` `, `a`, ` `, `d`, `e`, `p`, `r`, `e`, `s`, `s`, `i`, `o`, `n`, ` `, `'`, `u`, `n`, `i`, `p`, `o`, `l`, `a`, `r`, `'`, ` `, `—`, ` `, `a`, ` `, `b`, `i`, `p`, `o`, `l`, `a`, `r`, ` `, `d`, `e`, `p`, `r`, `e`, `s`, `s`, `i`, `o`, `n`, ` `, `m`, `i`, `s`, `r`, `e`, `a`, `d`, ` `, `a`, `s`, ` `, `u`, `n`, `i`, `p`, `o`, `l`, `a`, `r`, ` `, `c`, `a`, `n`, ` `, `b`, `e`, ` `, `p`, `u`, `s`, `h`, `e`, `d`, ` `, `i`, `n`, `t`, `o`, ` `, `m`, `a`, `n`, `i`, `a`, ` `, `o`, `r`, ` `, `r`, `a`, `p`, `i`, `d`, ` `, `c`, `y`, `c`, `l`, `i`, `n`, `g`, ` `, `b`, `y`, ` `, `a`, `n`, ` `, `a`, `n`, `t`, `i`, `d`, `e`, `p`, `r`, `e`, `s`, `s`, `a`, `n`, `t`, `.`
+- Evidence: `t_mood.md — Critically, always screen for a past manic or hypomanic episode before calling a depression 'unipolar' — a bipolar depression misread as unipolar can be pushed into mania or rapid cycling by an antidepressant.`
 
 **Stem.** A 31-year-old woman with two prior depressive episodes was started on escitalopram without a bipolar screen. Two weeks later she is brought to the emergency department with 4 days of markedly decreased sleep, racing thoughts, and grandiosity. What does this presentation most likely represent?
 
@@ -19294,7 +19421,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_mood_004` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['dx']`
 - Linked pages: `t_mood.md`
-- Evidence: `t`, `_`, `m`, `o`, `o`, `d`, `.`, `m`, `d`, ` `, `—`, ` `, `C`, `o`, `l`, `l`, `a`, `t`, `e`, `r`, `a`, `l`, ` `, `h`, `i`, `s`, `t`, `o`, `r`, `y`, ` `, `(`, `t`, `h`, `e`, ` `, `s`, `i`, `n`, `g`, `l`, `e`, ` `, `h`, `i`, `g`, `h`, `e`, `s`, `t`, `-`, `y`, `i`, `e`, `l`, `d`, ` `, `d`, `i`, `a`, `g`, `n`, `o`, `s`, `t`, `i`, `c`, ` `, `m`, `o`, `v`, `e`, ` `, `f`, `o`, `r`, ` `, `d`, `i`, `s`, `t`, `i`, `n`, `g`, `u`, `i`, `s`, `h`, `i`, `n`, `g`, ` `, `b`, `i`, `p`, `o`, `l`, `a`, `r`, ` `, `f`, `r`, `o`, `m`, ` `, `u`, `n`, `i`, `p`, `o`, `l`, `a`, `r`, `)`, `.`
+- Evidence: `t_mood.md — Collateral history (the single highest-yield diagnostic move for distinguishing bipolar from unipolar).`
 
 **Stem.** A 38-year-old man presents for admission with a current depressive episode. He reports no prior manic episodes. His wife, who accompanied him, states that 3 years ago he 'went weeks without sleeping, gave away his car, and was fired for erratic behavior.' He does not recall this period as abnormal. Which diagnostic move has the highest yield in clarifying the bipolar question?
 
@@ -19311,7 +19438,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_mood_005` · status=`attested` · type=`sba` · difficulty=`1` · competency=`['safety', 'dx']` · **high-yield**
 - Linked pages: `t_mood.md`
-- Evidence: `t`, `_`, `m`, `o`, `o`, `d`, `.`, `m`, `d`, ` `, `—`, ` `, `M`, `i`, `x`, `e`, `d`, ` `, `f`, `e`, `a`, `t`, `u`, `r`, `e`, `s`, ` `, `(`, `d`, `e`, `p`, `r`, `e`, `s`, `s`, `e`, `d`, ` `, `m`, `o`, `o`, `d`, ` `, `w`, `i`, `t`, `h`, ` `, `c`, `o`, `n`, `c`, `u`, `r`, `r`, `e`, `n`, `t`, ` `, `a`, `c`, `t`, `i`, `v`, `a`, `t`, `i`, `o`, `n`, `/`, `a`, `g`, `i`, `t`, `a`, `t`, `i`, `o`, `n`, `)`, ` `, `a`, `r`, `e`, ` `, `e`, `a`, `s`, `y`, ` `, `t`, `o`, ` `, `m`, `i`, `s`, `s`, ` `, `a`, `n`, `d`, ` `, `c`, `a`, `r`, `r`, `y`, ` `, `e`, `l`, `e`, `v`, `a`, `t`, `e`, `d`, ` `, `s`, `u`, `i`, `c`, `i`, `d`, `e`, ` `, `r`, `i`, `s`, `k`, `.`
+- Evidence: `t_mood.md — Mixed features (depressed mood with concurrent activation/agitation) are easy to miss and carry elevated suicide risk.`
 
 **Stem.** A 29-year-old man is admitted with depressed mood, anhedonia, and feelings of worthlessness. On detailed MSE, he also has racing thoughts, psychomotor agitation, and is sleeping only 3 hours per night despite feeling exhausted. He endorses passive suicidal ideation. Which statement about his presentation is most clinically important?
 
@@ -19328,7 +19455,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_mood_006` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['dx']`
 - Linked pages: `t_mood.md`
-- Evidence: `t`, `_`, `m`, `o`, `o`, `d`, `.`, `m`, `d`, ` `, `—`, ` `, `R`, `u`, `l`, `e`, ` `, `o`, `u`, `t`, ` `, `m`, `e`, `d`, `i`, `c`, `a`, `l`, ` `, `m`, `i`, `m`, `i`, `c`, `s`, ` `, `b`, `e`, `f`, `o`, `r`, `e`, ` `, `a`, `n`, `c`, `h`, `o`, `r`, `i`, `n`, `g`, ` `, `o`, `n`, ` `, `a`, ` `, `p`, `r`, `i`, `m`, `a`, `r`, `y`, ` `, `m`, `o`, `o`, `d`, ` `, `d`, `i`, `s`, `o`, `r`, `d`, `e`, `r`, `:`, ` `, `t`, `h`, `y`, `r`, `o`, `i`, `d`, ` `, `d`, `y`, `s`, `f`, `u`, `n`, `c`, `t`, `i`, `o`, `n`, `,`, ` `, `c`, `o`, `r`, `t`, `i`, `c`, `o`, `s`, `t`, `e`, `r`, `o`, `i`, `d`, `s`, ` `, `a`, `n`, `d`, ` `, `o`, `t`, `h`, `e`, `r`, ` `, `m`, `e`, `d`, `i`, `c`, `a`, `t`, `i`, `o`, `n`, `s`, `,`, ` `, `i`, `n`, `t`, `o`, `x`, `i`, `c`, `a`, `t`, `i`, `o`, `n`, ` `, `o`, `r`, ` `, `w`, `i`, `t`, `h`, `d`, `r`, `a`, `w`, `a`, `l`, `,`, ` `, `a`, `n`, `d`, ` `, `C`, `N`, `S`, ` `, `p`, `r`, `o`, `c`, `e`, `s`, `s`, `e`, `s`, `.`
+- Evidence: `t_mood.md — Rule out medical mimics before anchoring on a primary mood disorder: thyroid dysfunction, corticosteroids and other medications, intoxication or withdrawal, and CNS processes.`
 
 **Stem.** A 71-year-old woman with no prior psychiatric history presents with 2 weeks of elevated mood, decreased need for sleep, pressured speech, and grandiosity. Her family calls it her 'first manic episode.' She is on prednisone 40 mg daily for a recent flare of rheumatoid arthritis. Which step is most important before proceeding with a bipolar diagnosis?
 
@@ -19345,7 +19472,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_mood_007` · status=`attested` · type=`two-tier` · difficulty=`2` · competency=`['pharm', 'safety']`
 - Linked pages: `t_mood.md`
-- Evidence: `t`, `_`, `m`, `o`, `o`, `d`, `.`, `m`, `d`, ` `, `—`, ` `, `L`, `i`, `t`, `h`, `i`, `u`, `m`, ` `, `d`, `e`, `s`, `e`, `r`, `v`, `e`, `s`, ` `, `s`, `p`, `e`, `c`, `i`, `f`, `i`, `c`, ` `, `e`, `m`, `p`, `h`, `a`, `s`, `i`, `s`, ` `, `—`, ` `, `i`, `t`, ` `, `c`, `a`, `r`, `r`, `i`, `e`, `s`, ` `, `a`, ` `, `d`, `i`, `s`, `t`, `i`, `n`, `c`, `t`, ` `, `a`, `n`, `t`, `i`, `-`, `s`, `u`, `i`, `c`, `i`, `d`, `a`, `l`, ` `, `e`, `f`, `f`, `e`, `c`, `t`, ` `, `(`, `C`, `i`, `p`, `r`, `i`, `a`, `n`, `i`, ` `, `2`, `0`, `1`, `3`, `)`, ` `, `a`, `n`, `d`, ` `, `i`, `s`, ` `, `a`, ` `, `f`, `i`, `r`, `s`, `t`, `-`, `l`, `i`, `n`, `e`, ` `, `m`, `a`, `i`, `n`, `t`, `e`, `n`, `a`, `n`, `c`, `e`, ` `, `m`, `o`, `o`, `d`, ` `, `s`, `t`, `a`, `b`, `i`, `l`, `i`, `z`, `e`, `r`, ` `, `w`, `i`, `t`, `h`, ` `, `t`, `h`, `e`, ` `, `s`, `t`, `r`, `o`, `n`, `g`, `e`, `s`, `t`, ` `, `l`, `o`, `n`, `g`, `-`, `t`, `e`, `r`, `m`, ` `, `e`, `v`, `i`, `d`, `e`, `n`, `c`, `e`, ` `, `(`, `B`, `A`, `L`, `A`, `N`, `C`, `E`, ` `, `t`, `r`, `i`, `a`, `l`, `)`, `.`
+- Evidence: `t_mood.md — Lithium deserves specific emphasis — it carries a distinct anti-suicidal effect (Cipriani 2013) and is a first-line maintenance mood stabilizer with the strongest long-term evidence (BALANCE trial).`
 
 **Stem.** A 44-year-old man with bipolar I disorder and two prior suicide attempts is starting maintenance therapy. The team is choosing between lithium and lamotrigine. Which argument most strongly favors lithium?
 
@@ -19364,7 +19491,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_mood_008` · status=`attested` · type=`sba` · difficulty=`1` · competency=`['pharm', 'management']` · **high-yield**
 - Linked pages: `t_mood.md`
-- Evidence: `t`, `_`, `m`, `o`, `o`, `d`, `.`, `m`, `d`, ` `, `—`, ` `, `E`, `C`, `T`, ` `, `i`, `s`, ` `, `n`, `o`, `t`, ` `, `a`, ` `, `l`, `a`, `s`, `t`, ` `, `r`, `e`, `s`, `o`, `r`, `t`, ` `, `—`, ` `, `i`, `t`, ` `, `i`, `s`, ` `, `f`, `i`, `r`, `s`, `t`, `-`, `l`, `i`, `n`, `e`, ` `, `f`, `o`, `r`, ` `, `p`, `s`, `y`, `c`, `h`, `o`, `t`, `i`, `c`, `,`, ` `, `c`, `a`, `t`, `a`, `t`, `o`, `n`, `i`, `c`, `,`, ` `, `o`, `r`, ` `, `l`, `i`, `f`, `e`, `-`, `t`, `h`, `r`, `e`, `a`, `t`, `e`, `n`, `i`, `n`, `g`, ` `, `m`, `o`, `o`, `d`, ` `, `s`, `t`, `a`, `t`, `e`, `s`, ` `, `a`, `n`, `d`, ` `, `i`, `n`, ` `, `p`, `r`, `e`, `g`, `n`, `a`, `n`, `c`, `y`, `.`
+- Evidence: `t_mood.md — ECT is not a last resort — it is first-line for psychotic, catatonic, or life-threatening mood states and in pregnancy.`
 
 **Stem.** A 67-year-old woman with treatment-resistant MDD is hospitalized. She has failed two adequate antidepressant trials, has active suicidal ideation, refuses all oral intake, and expresses the nihilistic delusion that her intestines have rotted. The team debates a third antidepressant versus ECT. Which framing is most accurate?
 
@@ -19381,7 +19508,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_mood_009` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['management']`
 - Linked pages: `t_mood.md`
-- Evidence: `t`, `_`, `m`, `o`, `o`, `d`, `.`, `m`, `d`, ` `, `—`, ` `, `P`, `r`, `a`, `c`, `t`, `i`, `c`, `e`, ` `, `m`, `e`, `a`, `s`, `u`, `r`, `e`, `m`, `e`, `n`, `t`, `-`, `b`, `a`, `s`, `e`, `d`, `,`, ` `, `s`, `e`, `q`, `u`, `e`, `n`, `t`, `i`, `a`, `l`, ` `, `t`, `r`, `e`, `a`, `t`, `m`, `e`, `n`, `t`, ` `, `i`, `n`, ` `, `t`, `h`, `e`, ` `, `s`, `p`, `i`, `r`, `i`, `t`, ` `, `o`, `f`, ` `, `S`, `T`, `A`, `R`, `*`, `D`, `:`, ` `, `p`, `i`, `c`, `k`, ` `, `a`, `n`, ` `, `a`, `g`, `e`, `n`, `t`, `,`, ` `, `d`, `o`, `s`, `e`, ` `, `i`, `t`, ` `, `a`, `d`, `e`, `q`, `u`, `a`, `t`, `e`, `l`, `y`, `,`, ` `, `t`, `r`, `a`, `c`, `k`, ` `, `r`, `e`, `s`, `p`, `o`, `n`, `s`, `e`, ` `, `w`, `i`, `t`, `h`, ` `, `a`, ` `, `s`, `c`, `a`, `l`, `e`, `,`, ` `, `a`, `n`, `d`, ` `, `s`, `w`, `i`, `t`, `c`, `h`, ` `, `o`, `r`, ` `, `a`, `u`, `g`, `m`, `e`, `n`, `t`, ` `, `b`, `y`, ` `, `p`, `r`, `o`, `t`, `o`, `c`, `o`, `l`, ` `, `r`, `a`, `t`, `h`, `e`, `r`, ` `, `t`, `h`, `a`, `n`, ` `, `b`, `y`, ` `, `i`, `m`, `p`, `r`, `e`, `s`, `s`, `i`, `o`, `n`, `.`
+- Evidence: `t_mood.md — Practice measurement-based, sequential treatment in the spirit of STAR*D: pick an agent, dose it adequately, track response with a scale, and switch or augment by protocol rather than by impression.`
 
 **Stem.** A 45-year-old man with MDD was started on sertraline 50 mg outpatient 4 weeks ago. His PHQ-9 improved from 22 to 18. His outpatient clinician says, 'No response — time to add lithium augmentation.' A student asks what should be verified before changing the plan. Which element of measurement-based, sequential treatment (in the spirit of STAR*D) is most relevant here?
 
@@ -19398,7 +19525,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_mood_010` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['management']`
 - Linked pages: `t_mood.md`
-- Evidence: `t`, `_`, `m`, `o`, `o`, `d`, `.`, `m`, `d`, ` `, `—`, ` `, `P`, `r`, `o`, `t`, `e`, `c`, `t`, ` `, `s`, `l`, `e`, `e`, `p`, ` `, `a`, `n`, `d`, ` `, `c`, `i`, `r`, `c`, `a`, `d`, `i`, `a`, `n`, ` `, `r`, `h`, `y`, `t`, `h`, `m`, ` `, `a`, `c`, `t`, `i`, `v`, `e`, `l`, `y`, `,`, ` `, `s`, `i`, `n`, `c`, `e`, ` `, `s`, `l`, `e`, `e`, `p`, ` `, `l`, `o`, `s`, `s`, ` `, `b`, `o`, `t`, `h`, ` `, `w`, `o`, `r`, `s`, `e`, `n`, `s`, ` `, `d`, `e`, `p`, `r`, `e`, `s`, `s`, `i`, `o`, `n`, ` `, `a`, `n`, `d`, ` `, `p`, `r`, `e`, `c`, `i`, `p`, `i`, `t`, `a`, `t`, `e`, `s`, ` `, `m`, `a`, `n`, `i`, `a`, ` `, `(`, `H`, `a`, `r`, `v`, `e`, `y`, `;`, ` `, `I`, `P`, `S`, `R`, `T`, `/`, `F`, `r`, `a`, `n`, `k`, `)`, `.`
+- Evidence: `t_mood.md — Protect sleep and circadian rhythm actively, since sleep loss both worsens depression and precipitates mania (Harvey; IPSRT/Frank).`
 
 **Stem.** A patient with bipolar I disorder, admitted during a depressive episode, tells the student: 'I don't see why the staff keeps bothering me about sleep — it doesn't affect my moods.' Which response best reflects the clinical evidence?
 
@@ -19415,7 +19542,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_mood_011` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['management', 'pharm']`
 - Linked pages: `t_mood.md`
-- Evidence: `t`, `_`, `m`, `o`, `o`, `d`, `.`, `m`, `d`, ` `, `—`, ` `, `F`, `o`, `r`, ` `, `a`, `c`, `u`, `t`, `e`, ` `, `m`, `a`, `n`, `i`, `a`, `,`, ` `, `r`, `e`, `d`, `u`, `c`, `e`, ` `, `s`, `t`, `i`, `m`, `u`, `l`, `a`, `t`, `i`, `o`, `n`, `,`, ` `, `r`, `e`, `s`, `t`, `o`, `r`, `e`, ` `, `s`, `l`, `e`, `e`, `p`, `,`, ` `, `a`, `n`, `d`, ` `, `s`, `t`, `a`, `r`, `t`, ` `, `o`, `r`, ` `, `o`, `p`, `t`, `i`, `m`, `i`, `z`, `e`, ` `, `a`, ` `, `m`, `o`, `o`, `d`, ` `, `s`, `t`, `a`, `b`, `i`, `l`, `i`, `z`, `e`, `r`, ` `, `o`, `r`, ` `, `a`, `n`, `t`, `i`, `p`, `s`, `y`, `c`, `h`, `o`, `t`, `i`, `c`, `.`
+- Evidence: `t_mood.md — For acute mania, reduce stimulation, restore sleep, and start or optimize a mood stabilizer or antipsychotic.`
 
 **Stem.** A 28-year-old man with bipolar I disorder is admitted for his first acute manic episode. He has no prior mood stabilizer exposure. Which is the most appropriate pharmacological framework for acute mania management?
 
@@ -19432,7 +19559,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_mood_012` · status=`attested` · type=`two-tier` · difficulty=`2` · competency=`['pharm', 'safety']`
 - Linked pages: `t_mood.md`
-- Evidence: `t`, `_`, `m`, `o`, `o`, `d`, `.`, `m`, `d`, ` `, `—`, ` `, `N`, `S`, `A`, `I`, `D`, `s`, `,`, ` `, `A`, `C`, `E`, `-`, `i`, `n`, `h`, `i`, `b`, `i`, `t`, `o`, `r`, `s`, `/`, `A`, `R`, `B`, `s`, `,`, ` `, `t`, `h`, `i`, `a`, `z`, `i`, `d`, `e`, `s`, `,`, ` `, `a`, `n`, `d`, ` `, `d`, `e`, `h`, `y`, `d`, `r`, `a`, `t`, `i`, `o`, `n`, ` `, `p`, `u`, `s`, `h`, ` `, `l`, `i`, `t`, `h`, `i`, `u`, `m`, ` `, `l`, `e`, `v`, `e`, `l`, `s`, ` `, `t`, `o`, `w`, `a`, `r`, `d`, ` `, `t`, `o`, `x`, `i`, `c`, `i`, `t`, `y`, `.`
+- Evidence: `t_mood.md — NSAIDs, ACE-inhibitors/ARBs, thiazides, and dehydration push lithium levels toward toxicity.`
 
 **Stem.** A 58-year-old man with bipolar I disorder is stable on lithium 900 mg daily, level 0.8 mEq/L. He recently started ibuprofen for knee pain and reports new-onset hand tremor and mild mental fogginess for the past week. Most appropriate next step?
 
@@ -19451,7 +19578,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_mood_013` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['dx']`
 - Linked pages: `t_mood.md`
-- Evidence: `t`, `_`, `m`, `o`, `o`, `d`, `.`, `m`, `d`, ` `, `—`, ` `, `S`, `e`, `v`, `e`, `r`, `e`, ` `, `u`, `n`, `i`, `p`, `o`, `l`, `a`, `r`, ` `, `d`, `e`, `p`, `r`, `e`, `s`, `s`, `i`, `o`, `n`, ` `, `c`, `a`, `n`, ` `, `i`, `n`, `c`, `l`, `u`, `d`, `e`, ` `, `m`, `o`, `o`, `d`, `-`, `c`, `o`, `n`, `g`, `r`, `u`, `e`, `n`, `t`, ` `, `p`, `s`, `y`, `c`, `h`, `o`, `s`, `i`, `s`, ` `, `(`, `n`, `i`, `h`, `i`, `l`, `i`, `s`, `t`, `i`, `c`, ` `, `o`, `r`, ` `, `g`, `u`, `i`, `l`, `t`, `-`, `l`, `a`, `d`, `e`, `n`, ` `, `d`, `e`, `l`, `u`, `s`, `i`, `o`, `n`, `s`, `)`, `.`
+- Evidence: `t_mood.md — Severe unipolar depression can include mood-congruent psychosis (nihilistic or guilt-laden delusions).`
 
 **Stem.** A 70-year-old woman is admitted with severe depression. She is convinced her children have died in a car accident — despite video calls with her healthy children — and that her body is 'empty inside.' She is oriented, alert, and attentive. No confusion on exam. Which diagnosis is most consistent with this presentation?
 
@@ -19468,7 +19595,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_mood_014` · status=`attested` · type=`sba` · difficulty=`3` · competency=`['pharm', 'safety']`
 - Linked pages: `t_mood.md`
-- Evidence: `t`, `_`, `m`, `o`, `o`, `d`, `.`, `m`, `d`, ` `, `—`, ` `, `A`, ` `, `b`, `i`, `p`, `o`, `l`, `a`, `r`, ` `, `d`, `e`, `p`, `r`, `e`, `s`, `s`, `i`, `o`, `n`, ` `, `m`, `i`, `s`, `r`, `e`, `a`, `d`, ` `, `a`, `s`, ` `, `u`, `n`, `i`, `p`, `o`, `l`, `a`, `r`, ` `, `c`, `a`, `n`, ` `, `b`, `e`, ` `, `p`, `u`, `s`, `h`, `e`, `d`, ` `, `i`, `n`, `t`, `o`, ` `, `m`, `a`, `n`, `i`, `a`, ` `, `o`, `r`, ` `, `r`, `a`, `p`, `i`, `d`, ` `, `c`, `y`, `c`, `l`, `i`, `n`, `g`, ` `, `b`, `y`, ` `, `a`, `n`, ` `, `a`, `n`, `t`, `i`, `d`, `e`, `p`, `r`, `e`, `s`, `s`, `a`, `n`, `t`, `.`
+- Evidence: `t_mood.md — A bipolar depression misread as unipolar can be pushed into mania or rapid cycling by an antidepressant.`
 
 **Stem.** A 36-year-old man with 'recurrent unipolar depression' has been on sertraline 100 mg for 8 months. His current episode resolved well, but over the past 2 weeks he has developed markedly decreased need for sleep, pressured speech, and impulsive spending. He is not using substances. Which is the most accurate interpretation?
 
@@ -19485,7 +19612,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_mood_015` · status=`attested` · type=`sba` · difficulty=`3` · competency=`['management']`
 - Linked pages: `t_mood.md`
-- Evidence: `t`, `_`, `m`, `o`, `o`, `d`, `.`, `m`, `d`, ` `, `—`, ` `, `D`, `i`, `s`, `c`, `h`, `a`, `r`, `g`, `e`, ` `, `r`, `e`, `a`, `d`, `i`, `n`, `e`, `s`, `s`, ` `, `i`, `s`, ` `, `f`, `u`, `n`, `c`, `t`, `i`, `o`, `n`, `a`, `l`, ` `, `a`, `n`, `d`, ` `, `s`, `a`, `f`, `e`, `t`, `y`, `-`, `b`, `a`, `s`, `e`, `d`, `,`, ` `, `n`, `o`, `t`, ` `, `c`, `a`, `l`, `e`, `n`, `d`, `a`, `r`, `-`, `b`, `a`, `s`, `e`, `d`, `:`, ` `, `i`, `m`, `p`, `r`, `o`, `v`, `i`, `n`, `g`, ` `, `m`, `o`, `o`, `d`, ` `, `a`, `n`, `d`, ` `, `r`, `e`, `s`, `o`, `l`, `v`, `i`, `n`, `g`, ` `, `a`, `c`, `u`, `t`, `e`, ` `, `r`, `i`, `s`, `k`, `,`, ` `, `a`, `d`, `e`, `q`, `u`, `a`, `t`, `e`, ` `, `s`, `l`, `e`, `e`, `p`, ` `, `a`, `n`, `d`, ` `, `i`, `n`, `t`, `a`, `k`, `e`, `,`, ` `, `a`, `n`, ` `, `e`, `s`, `t`, `a`, `b`, `l`, `i`, `s`, `h`, `e`, `d`, ` `, `a`, `n`, `d`, ` `, `t`, `o`, `l`, `e`, `r`, `a`, `t`, `e`, `d`, ` `, `m`, `e`, `d`, `i`, `c`, `a`, `t`, `i`, `o`, `n`, `,`, ` `, `a`, `n`, `d`, ` `, `a`, ` `, `c`, `o`, `n`, `c`, `r`, `e`, `t`, `e`, ` `, `f`, `o`, `l`, `l`, `o`, `w`, `-`, `u`, `p`, `.`
+- Evidence: `t_mood.md — Discharge readiness is functional and safety-based, not calendar-based: improving mood and resolving acute risk, adequate sleep and intake, an established and tolerated medication, and a concrete follow-up.`
 
 **Stem.** A 49-year-old man admitted for severe bipolar depression requests discharge on day 6. His mood has partially improved (PHQ-9 from 24 to 17), but he is still sleeping only 4 hours per night, his safety plan is not yet completed, and he does not have an outpatient appointment scheduled. The attending asks the student to frame the clinical decision. Which is most accurate?
 
@@ -19502,7 +19629,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_mood_016` · status=`attested` · type=`two-tier` · difficulty=`3` · competency=`['pharm', 'management']`
 - Linked pages: `t_mood.md`, `ect_neuromodulation.md`
-- Evidence: `t`, `_`, `m`, `o`, `o`, `d`, `.`, `m`, `d`, ` `, `—`, ` `, `R`, `e`, `s`, `e`, `r`, `v`, `e`, ` `, `E`, `C`, `T`, ` `, `f`, `o`, `r`, ` `, `s`, `e`, `v`, `e`, `r`, `e`, `,`, ` `, `p`, `s`, `y`, `c`, `h`, `o`, `t`, `i`, `c`, `,`, ` `, `c`, `a`, `t`, `a`, `t`, `o`, `n`, `i`, `c`, `,`, ` `, `o`, `r`, ` `, `t`, `r`, `e`, `a`, `t`, `m`, `e`, `n`, `t`, `-`, `r`, `e`, `s`, `i`, `s`, `t`, `a`, `n`, `t`, ` `, `d`, `e`, `p`, `r`, `e`, `s`, `s`, `i`, `o`, `n`, `,`, ` `, `f`, `o`, `r`, ` `, `l`, `i`, `f`, `e`, `-`, `t`, `h`, `r`, `e`, `a`, `t`, `e`, `n`, `i`, `n`, `g`, ` `, `s`, `t`, `a`, `t`, `e`, `s`, ` `, `(`, `r`, `e`, `f`, `u`, `s`, `a`, `l`, ` `, `o`, `f`, ` `, `f`, `o`, `o`, `d`, `/`, `f`, `l`, `u`, `i`, `d`, `s`, `,`, ` `, `a`, `c`, `u`, `t`, `e`, ` `, `h`, `i`, `g`, `h`, ` `, `s`, `u`, `i`, `c`, `i`, `d`, `e`, ` `, `r`, `i`, `s`, `k`, `)`, `,`, ` `, `a`, `n`, `d`, ` `, `a`, `s`, ` `, `a`, ` `, `p`, `r`, `e`, `f`, `e`, `r`, `r`, `e`, `d`, ` `, `o`, `p`, `t`, `i`, `o`, `n`, ` `, `i`, `n`, ` `, `p`, `r`, `e`, `g`, `n`, `a`, `n`, `c`, `y`, `.`
+- Evidence: `t_mood.md — Reserve ECT for severe, psychotic, catatonic, or treatment-resistant depression, for life-threatening states (refusal of food/fluids, acute high suicide risk), and as a preferred option in pregnancy.`
 
 **Stem.** A 24-year-old woman in her 14th week of pregnancy presents with severe MDD: active suicidal ideation with a plan, refusal to eat, psychomotor retardation, and a prior excellent response to ECT 4 years ago. The team debates continuing the current antidepressant versus offering ECT. Which statement best reflects the clinical standard?
 
@@ -19523,7 +19650,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_cog_001` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['dx', 'safety']`
 - Linked pages: `delirium.md`
-- Evidence: `d`, `e`, `l`, `i`, `r`, `i`, `u`, `m`, `.`, `m`, `d`, ` `, `'`, `R`, `e`, `c`, `o`, `g`, `n`, `i`, `z`, `e`, ` `, `a`, `n`, `d`, ` `, `s`, `c`, `r`, `e`, `e`, `n`, `'`, ` `, `—`, ` `, `C`, `o`, `n`, `f`, `u`, `s`, `i`, `o`, `n`, ` `, `A`, `s`, `s`, `e`, `s`, `s`, `m`, `e`, `n`, `t`, ` `, `M`, `e`, `t`, `h`, `o`, `d`, ` `, `(`, `C`, `A`, `M`, `,`, ` `, `I`, `n`, `o`, `u`, `y`, `e`, ` `, `e`, `t`, ` `, `a`, `l`, `.`, `)`, `:`, ` `, `a`, `c`, `u`, `t`, `e`, ` `, `o`, `n`, `s`, `e`, `t`, ` `, `a`, `n`, `d`, ` `, `f`, `l`, `u`, `c`, `t`, `u`, `a`, `t`, `i`, `n`, `g`, ` `, `c`, `o`, `u`, `r`, `s`, `e`, `,`, ` `, `p`, `l`, `u`, `s`, ` `, `i`, `n`, `a`, `t`, `t`, `e`, `n`, `t`, `i`, `o`, `n`, `,`, ` `, `p`, `l`, `u`, `s`, ` `, `e`, `i`, `t`, `h`, `e`, `r`, ` `, `d`, `i`, `s`, `o`, `r`, `g`, `a`, `n`, `i`, `z`, `e`, `d`, ` `, `t`, `h`, `i`, `n`, `k`, `i`, `n`, `g`, ` `, `o`, `r`, ` `, `a`, `l`, `t`, `e`, `r`, `e`, `d`, ` `, `l`, `e`, `v`, `e`, `l`, ` `, `o`, `f`, ` `, `c`, `o`, `n`, `s`, `c`, `i`, `o`, `u`, `s`, `n`, `e`, `s`, `s`, `.`
+- Evidence: `delirium.md 'Recognize and screen' — Confusion Assessment Method (CAM, Inouye et al.): acute onset and fluctuating course, plus inattention, plus either disorganized thinking or altered level of consciousness.`
 
 **Stem.** A 76-year-old woman on hospital day 3 after hip-fracture repair is referred to psychiatry for 'depression.' She is quiet, slow to respond, and sleeps much of the day; her nurse notes she was conversational yesterday evening but is 'flat' this morning. She cannot recite the months of the year backward. Most likely explanation?
 
@@ -19540,7 +19667,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_cog_002` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['next-step', 'safety']`
 - Linked pages: `catatonia.md`
-- Evidence: `c`, `a`, `t`, `a`, `t`, `o`, `n`, `i`, `a`, `.`, `m`, `d`, ` `, `'`, `M`, `a`, `n`, `a`, `g`, `e`, `m`, `e`, `n`, `t`, ` `, `p`, `r`, `i`, `n`, `c`, `i`, `p`, `l`, `e`, `s`, `'`, ` `, `—`, ` `, `a`, `v`, `o`, `i`, `d`, ` `, `a`, `n`, `t`, `i`, `p`, `s`, `y`, `c`, `h`, `o`, `t`, `i`, `c`, `s`, ` `, `u`, `n`, `t`, `i`, `l`, ` `, `c`, `a`, `t`, `a`, `t`, `o`, `n`, `i`, `a`, ` `, `i`, `s`, ` `, `e`, `x`, `c`, `l`, `u`, `d`, `e`, `d`, ` `, `—`, ` `, `t`, `h`, `e`, `y`, ` `, `c`, `a`, `n`, ` `, `p`, `r`, `e`, `c`, `i`, `p`, `i`, `t`, `a`, `t`, `e`, ` `, `o`, `r`, ` `, `w`, `o`, `r`, `s`, `e`, `n`, ` `, `N`, `M`, `S`, ` `, `a`, `n`, `d`, ` `, `m`, `a`, `l`, `i`, `g`, `n`, `a`, `n`, `t`, ` `, `c`, `a`, `t`, `a`, `t`, `o`, `n`, `i`, `a`, `.`, ` `, `A`, ` `, `p`, `o`, `s`, `i`, `t`, `i`, `v`, `e`, ` `, `l`, `o`, `r`, `a`, `z`, `e`, `p`, `a`, `m`, ` `, `c`, `h`, `a`, `l`, `l`, `e`, `n`, `g`, `e`, ` `, `b`, `o`, `t`, `h`, ` `, `s`, `u`, `p`, `p`, `o`, `r`, `t`, `s`, ` `, `t`, `h`, `e`, ` `, `d`, `i`, `a`, `g`, `n`, `o`, `s`, `i`, `s`, ` `, `a`, `n`, `d`, ` `, `b`, `e`, `g`, `i`, `n`, `s`, ` `, `t`, `r`, `e`, `a`, `t`, `m`, `e`, `n`, `t`, `.`
+- Evidence: `catatonia.md 'Management principles' — avoid antipsychotics until catatonia is excluded — they can precipitate or worsen NMS and malignant catatonia. A positive lorazepam challenge both supports the diagnosis and begins treatment.`
 
 **Stem.** A 44-year-old woman with a history of bipolar disorder is found mute and immobile in her room, staring past the examiner. When the examiner positions her arm in an awkward posture, it remains in place for over a minute. A colleague suggests starting haloperidol for presumed psychosis. Best next step?
 
@@ -19557,7 +19684,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_cog_003` · status=`attested` · type=`sba` · difficulty=`1` · competency=`['management']` · **high-yield**
 - Linked pages: `delirium.md`
-- Evidence: `d`, `e`, `l`, `i`, `r`, `i`, `u`, `m`, `.`, `m`, `d`, ` `, `'`, `M`, `a`, `n`, `a`, `g`, `e`, `m`, `e`, `n`, `t`, `'`, ` `, `—`, ` `, `N`, `o`, `n`, `-`, `p`, `h`, `a`, `r`, `m`, `a`, `c`, `o`, `l`, `o`, `g`, `i`, `c`, ` `, `m`, `e`, `a`, `s`, `u`, `r`, `e`, `s`, ` `, `c`, `o`, `m`, `e`, ` `, `f`, `i`, `r`, `s`, `t`, `,`, ` `, `n`, `o`, `t`, ` `, `a`, `s`, ` `, `a`, `n`, ` `, `a`, `f`, `t`, `e`, `r`, `t`, `h`, `o`, `u`, `g`, `h`, `t`, `:`, ` `, `r`, `e`, `o`, `r`, `i`, `e`, `n`, `t`, ` `, `t`, `h`, `e`, ` `, `p`, `a`, `t`, `i`, `e`, `n`, `t`, `,`, ` `, `p`, `r`, `o`, `t`, `e`, `c`, `t`, ` `, `t`, `h`, `e`, ` `, `s`, `l`, `e`, `e`, `p`, `–`, `w`, `a`, `k`, `e`, ` `, `c`, `y`, `c`, `l`, `e`, `,`, ` `, `m`, `o`, `b`, `i`, `l`, `i`, `z`, `e`, ` `, `e`, `a`, `r`, `l`, `y`, `,`, ` `, `r`, `e`, `s`, `t`, `o`, `r`, `e`, ` `, `s`, `e`, `n`, `s`, `o`, `r`, `y`, ` `, `a`, `i`, `d`, `s`, `.`, ` `, `A`, `n`, `t`, `i`, `p`, `s`, `y`, `c`, `h`, `o`, `t`, `i`, `c`, `s`, ` `, `a`, `r`, `e`, ` `, `r`, `e`, `s`, `e`, `r`, `v`, `e`, `d`, ` `, `f`, `o`, `r`, ` `, `d`, `a`, `n`, `g`, `e`, `r`, `o`, `u`, `s`, ` `, `a`, `g`, `i`, `t`, `a`, `t`, `i`, `o`, `n`, ` `, `o`, `n`, `l`, `y`, ` `, `—`, ` `, `n`, `o`, `t`, ` `, `f`, `o`, `r`, ` `, `p`, `r`, `e`, `v`, `e`, `n`, `t`, `i`, `o`, `n`, `.`
+- Evidence: `delirium.md 'Management' — Non-pharmacologic measures come first, not as an afterthought: reorient the patient, protect the sleep–wake cycle, mobilize early, restore sensory aids. Antipsychotics are reserved for dangerous agitation only — not for prevention.`
 
 **Stem.** An 82-year-old man on postoperative day 2 after hip arthroplasty is confused and agitated. The Confusion Assessment Method is positive for delirium. He has no history of dementia. Which is the most appropriate initial management step?
 
@@ -19574,7 +19701,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_cog_004` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['management', 'pharm']`
 - Linked pages: `delirium.md`
-- Evidence: `d`, `e`, `l`, `i`, `r`, `i`, `u`, `m`, `.`, `m`, `d`, ` `, `'`, `M`, `a`, `n`, `a`, `g`, `e`, `m`, `e`, `n`, `t`, `'`, ` `, `—`, ` `, `A`, `v`, `o`, `i`, `d`, ` `, `b`, `e`, `n`, `z`, `o`, `d`, `i`, `a`, `z`, `e`, `p`, `i`, `n`, `e`, `s`, `,`, ` `, `w`, `i`, `t`, `h`, ` `, `t`, `h`, `e`, ` `, `s`, `i`, `n`, `g`, `l`, `e`, ` `, `e`, `x`, `c`, `e`, `p`, `t`, `i`, `o`, `n`, ` `, `o`, `f`, ` `, `a`, `l`, `c`, `o`, `h`, `o`, `l`, ` `, `o`, `r`, ` `, `s`, `e`, `d`, `a`, `t`, `i`, `v`, `e`, ` `, `w`, `i`, `t`, `h`, `d`, `r`, `a`, `w`, `a`, `l`, `,`, ` `, `w`, `h`, `e`, `r`, `e`, ` `, `t`, `h`, `e`, `y`, ` `, `a`, `r`, `e`, ` `, `t`, `h`, `e`, ` `, `t`, `r`, `e`, `a`, `t`, `m`, `e`, `n`, `t`, `.`, ` `, `A`, `n`, `t`, `i`, `p`, `s`, `y`, `c`, `h`, `o`, `t`, `i`, `c`, `s`, ` `, `a`, `r`, `e`, ` `, `r`, `e`, `s`, `e`, `r`, `v`, `e`, `d`, ` `, `f`, `o`, `r`, ` `, `d`, `a`, `n`, `g`, `e`, `r`, `o`, `u`, `s`, ` `, `a`, `g`, `i`, `t`, `a`, `t`, `i`, `o`, `n`, ` `, `o`, `n`, `l`, `y`, ` `, `—`, ` `, `l`, `o`, `w`, `e`, `s`, `t`, ` `, `e`, `f`, `f`, `e`, `c`, `t`, `i`, `v`, `e`, ` `, `d`, `o`, `s`, `e`, `,`, ` `, `t`, `i`, `m`, `e`, `-`, `l`, `i`, `m`, `i`, `t`, `e`, `d`, `.`
+- Evidence: `delirium.md 'Management' — Avoid benzodiazepines, with the single exception of alcohol or sedative withdrawal, where they are the treatment. Antipsychotics are reserved for dangerous agitation only — lowest effective dose, time-limited.`
 
 **Stem.** A 78-year-old woman with mild Alzheimer disease is admitted from her nursing home after 2 days of worsening confusion. A CAM is positive. She is agitated and picking at her IV. The team asks the student to help select an appropriate PRN medication for dangerous agitation. Which of the following is correct?
 
@@ -19591,7 +19718,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_cog_005` · status=`attested` · type=`sba` · difficulty=`1` · competency=`['dx']` · **high-yield**
 - Linked pages: `t_neurocog.md`
-- Evidence: `t`, `_`, `n`, `e`, `u`, `r`, `o`, `c`, `o`, `g`, `.`, `m`, `d`, ` `, `—`, ` `, `L`, `e`, `w`, `y`, ` `, `b`, `o`, `d`, `y`, ` `, `d`, `e`, `m`, `e`, `n`, `t`, `i`, `a`, ` `, `—`, ` `, `f`, `l`, `u`, `c`, `t`, `u`, `a`, `t`, `i`, `n`, `g`, ` `, `c`, `o`, `g`, `n`, `i`, `t`, `i`, `o`, `n`, `,`, ` `, `r`, `e`, `c`, `u`, `r`, `r`, `e`, `n`, `t`, ` `, `v`, `i`, `s`, `u`, `a`, `l`, ` `, `h`, `a`, `l`, `l`, `u`, `c`, `i`, `n`, `a`, `t`, `i`, `o`, `n`, `s`, `,`, ` `, `s`, `p`, `o`, `n`, `t`, `a`, `n`, `e`, `o`, `u`, `s`, ` `, `p`, `a`, `r`, `k`, `i`, `n`, `s`, `o`, `n`, `i`, `s`, `m`, `,`, ` `, `R`, `E`, `M`, ` `, `s`, `l`, `e`, `e`, `p`, ` `, `b`, `e`, `h`, `a`, `v`, `i`, `o`, `r`, ` `, `d`, `i`, `s`, `o`, `r`, `d`, `e`, `r`, `,`, ` `, `a`, `n`, `d`, ` `, `s`, `e`, `v`, `e`, `r`, `e`, ` `, `n`, `e`, `u`, `r`, `o`, `l`, `e`, `p`, `t`, `i`, `c`, ` `, `s`, `e`, `n`, `s`, `i`, `t`, `i`, `v`, `i`, `t`, `y`, `.`
+- Evidence: `t_neurocog.md — Lewy body dementia — fluctuating cognition, recurrent visual hallucinations, spontaneous parkinsonism, REM sleep behavior disorder, and severe neuroleptic sensitivity.`
 
 **Stem.** A 74-year-old man presents with an 18-month history of vivid recurrent visual hallucinations (small animals in the room), episodes of staring with fluctuating cognition, mild rigidity and slowness, and his wife's report that he 'acts out his dreams' and has struck her while asleep. Which dementia subtype does this constellation most strongly suggest?
 
@@ -19608,7 +19735,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_cog_006` · status=`attested` · type=`two-tier` · difficulty=`2` · competency=`['pharm', 'safety']`
 - Linked pages: `t_neurocog.md`
-- Evidence: `t`, `_`, `n`, `e`, `u`, `r`, `o`, `c`, `o`, `g`, `.`, `m`, `d`, ` `, `'`, `A`, `c`, `u`, `t`, `e`, ` `, `i`, `n`, `p`, `a`, `t`, `i`, `e`, `n`, `t`, ` `, `m`, `a`, `n`, `a`, `g`, `e`, `m`, `e`, `n`, `t`, `'`, ` `, `—`, ` `, `I`, `n`, ` `, `L`, `e`, `w`, `y`, ` `, `b`, `o`, `d`, `y`, ` `, `d`, `e`, `m`, `e`, `n`, `t`, `i`, `a`, `,`, ` `, `a`, `v`, `o`, `i`, `d`, ` `, `a`, `n`, `t`, `i`, `p`, `s`, `y`, `c`, `h`, `o`, `t`, `i`, `c`, `s`, ` `, `(`, `e`, `s`, `p`, `e`, `c`, `i`, `a`, `l`, `l`, `y`, ` `, `t`, `y`, `p`, `i`, `c`, `a`, `l`, `s`, `)`, ` `, `b`, `e`, `c`, `a`, `u`, `s`, `e`, ` `, `o`, `f`, ` `, `l`, `i`, `f`, `e`, `-`, `t`, `h`, `r`, `e`, `a`, `t`, `e`, `n`, `i`, `n`, `g`, ` `, `n`, `e`, `u`, `r`, `o`, `l`, `e`, `p`, `t`, `i`, `c`, ` `, `s`, `e`, `n`, `s`, `i`, `t`, `i`, `v`, `i`, `t`, `y`, ` `, `—`, ` `, `i`, `f`, ` `, `o`, `n`, `e`, ` `, `i`, `s`, ` `, `u`, `n`, `a`, `v`, `o`, `i`, `d`, `a`, `b`, `l`, `e`, `,`, ` `, `q`, `u`, `e`, `t`, `i`, `a`, `p`, `i`, `n`, `e`, ` `, `o`, `r`, ` `, `p`, `i`, `m`, `a`, `v`, `a`, `n`, `s`, `e`, `r`, `i`, `n`, ` `, `a`, `r`, `e`, ` `, `l`, `o`, `w`, `e`, `r`, `-`, `r`, `i`, `s`, `k`, ` `, `c`, `h`, `o`, `i`, `c`, `e`, `s`, `.`
+- Evidence: `t_neurocog.md 'Acute inpatient management' — In Lewy body dementia, avoid antipsychotics (especially typicals) because of life-threatening neuroleptic sensitivity — if one is unavoidable, quetiapine or pimavanserin are lower-risk choices.`
 
 **Stem.** A patient with known Lewy body dementia is admitted with agitation and paranoid delusions. A nurse asks whether the team should start haloperidol. The most appropriate response is which of the following?
 
@@ -19627,7 +19754,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_cog_007` · status=`attested` · type=`sba` · difficulty=`1` · competency=`['dx']` · **high-yield**
 - Linked pages: `t_neurocog.md`
-- Evidence: `t`, `_`, `n`, `e`, `u`, `r`, `o`, `c`, `o`, `g`, `.`, `m`, `d`, ` `, `—`, ` `, `n`, `o`, `r`, `m`, `a`, `l`, `-`, `p`, `r`, `e`, `s`, `s`, `u`, `r`, `e`, ` `, `h`, `y`, `d`, `r`, `o`, `c`, `e`, `p`, `h`, `a`, `l`, `u`, `s`, ` `, `(`, `t`, `h`, `e`, ` `, `t`, `r`, `i`, `a`, `d`, ` `, `—`, ` `, `w`, `e`, `t`, `,`, ` `, `w`, `a`, `c`, `k`, `y`, `,`, ` `, `w`, `o`, `b`, `b`, `l`, `y`, `:`, ` `, `u`, `r`, `i`, `n`, `a`, `r`, `y`, ` `, `i`, `n`, `c`, `o`, `n`, `t`, `i`, `n`, `e`, `n`, `c`, `e`, `,`, ` `, `c`, `o`, `g`, `n`, `i`, `t`, `i`, `v`, `e`, ` `, `d`, `e`, `c`, `l`, `i`, `n`, `e`, `,`, ` `, `m`, `a`, `g`, `n`, `e`, `t`, `i`, `c`, ` `, `g`, `a`, `i`, `t`, `)`, `.`
+- Evidence: `t_neurocog.md — normal-pressure hydrocephalus (the triad — wet, wacky, wobbly: urinary incontinence, cognitive decline, magnetic gait).`
 
 **Stem.** A 69-year-old man is referred for evaluation of progressive cognitive decline, urinary incontinence that preceded the cognitive changes by several months, and a gait his wife describes as 'shuffling and magnetic — like his feet are stuck to the floor.' MRI is pending. Which diagnosis should be considered first because of its potential reversibility?
 
@@ -19644,7 +19771,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_cog_008` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['dx']`
 - Linked pages: `t_neurocog.md`, `t_geri.md`
-- Evidence: `d`, `e`, `l`, `i`, `r`, `i`, `u`, `m`, `.`, `m`, `d`, ` `, `—`, ` `, `T`, `h`, `e`, ` `, `h`, `y`, `p`, `o`, `a`, `c`, `t`, `i`, `v`, `e`, ` `, `f`, `o`, `r`, `m`, ` `, `i`, `s`, ` `, `t`, `h`, `e`, ` `, `o`, `n`, `e`, ` `, `t`, `h`, `a`, `t`, ` `, `g`, `e`, `t`, `s`, ` `, `m`, `i`, `s`, `s`, `e`, `d`, `,`, ` `, `a`, `n`, `d`, ` `, `i`, `t`, ` `, `c`, `a`, `r`, `r`, `i`, `e`, `s`, ` `, `w`, `o`, `r`, `s`, `e`, ` `, `o`, `u`, `t`, `c`, `o`, `m`, `e`, `s`, ` `, `p`, `r`, `e`, `c`, `i`, `s`, `e`, `l`, `y`, ` `, `b`, `e`, `c`, `a`, `u`, `s`, `e`, ` `, `n`, `o`, ` `, `o`, `n`, `e`, ` `, `i`, `s`, ` `, `a`, `l`, `a`, `r`, `m`, `e`, `d`, ` `, `b`, `y`, ` `, `a`, ` `, `q`, `u`, `i`, `e`, `t`, ` `, `p`, `a`, `t`, `i`, `e`, `n`, `t`, `.`, ` `, `H`, `y`, `p`, `o`, `a`, `c`, `t`, `i`, `v`, `e`, ` `, `d`, `e`, `l`, `i`, `r`, `i`, `u`, `m`, ` `, `i`, `s`, ` `, `t`, `h`, `e`, ` `, `d`, `a`, `n`, `g`, `e`, `r`, `o`, `u`, `s`, ` `, `o`, `n`, `e`, `:`, ` `, `c`, `o`, `m`, `m`, `o`, `n`, `l`, `y`, ` `, `m`, `i`, `s`, `s`, `e`, `d`, `,`, ` `, `w`, `o`, `r`, `s`, `e`, ` `, `o`, `u`, `t`, `c`, `o`, `m`, `e`, `s`, `,`, ` `, `a`, `n`, `d`, ` `, `e`, `a`, `s`, `i`, `l`, `y`, ` `, `m`, `i`, `s`, `l`, `a`, `b`, `e`, `l`, `e`, `d`, ` `, `a`, `s`, ` `, `d`, `e`, `p`, `r`, `e`, `s`, `s`, `i`, `o`, `n`, `.`
+- Evidence: `delirium.md — The hypoactive form is the one that gets missed, and it carries worse outcomes precisely because no one is alarmed by a quiet patient. Hypoactive delirium is the dangerous one: commonly missed, worse outcomes, and easily mislabeled as depression.`
 
 **Stem.** Psychiatry is consulted on an 82-year-old man in the surgical ICU on postoperative day 3. He is quiet, slow to respond, and sleeping between nursing checks — his nurse reports he was interactive at yesterday's evening assessment. His CAM is positive. The covering team wonders why this presentation is more concerning than a 'hyperactive' delirious patient. Which statement best explains the clinical risk?
 
@@ -19661,7 +19788,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_cog_009` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['next-step']`
 - Linked pages: `t_neurocog.md`
-- Evidence: `t`, `_`, `n`, `e`, `u`, `r`, `o`, `c`, `o`, `g`, `.`, `m`, `d`, ` `, `'`, `I`, `n`, `i`, `t`, `i`, `a`, `l`, ` `, `w`, `o`, `r`, `k`, `u`, `p`, `'`, ` `, `—`, ` `, `L`, `a`, `b`, `s`, ` `, `t`, `o`, ` `, `c`, `a`, `t`, `c`, `h`, ` `, `r`, `e`, `v`, `e`, `r`, `s`, `i`, `b`, `l`, `e`, ` `, `c`, `a`, `u`, `s`, `e`, `s`, `:`, ` `, `C`, `B`, `C`, `,`, ` `, `C`, `M`, `P`, `,`, ` `, `T`, `S`, `H`, `,`, ` `, `B`, `1`, `2`, `/`, `f`, `o`, `l`, `a`, `t`, `e`, `,`, ` `, `a`, `n`, `d`, ` `, `—`, ` `, `w`, `h`, `e`, `n`, ` `, `i`, `n`, `d`, `i`, `c`, `a`, `t`, `e`, `d`, ` `, `—`, ` `, `H`, `I`, `V`, ` `, `a`, `n`, `d`, ` `, `R`, `P`, `R`, `/`, `t`, `r`, `e`, `p`, `o`, `n`, `e`, `m`, `a`, `l`, ` `, `t`, `e`, `s`, `t`, `i`, `n`, `g`, `.`, ` `, `M`, `e`, `d`, `i`, `c`, `a`, `t`, `i`, `o`, `n`, ` `, `r`, `e`, `c`, `o`, `n`, `c`, `i`, `l`, `i`, `a`, `t`, `i`, `o`, `n`, ` `, `t`, `o`, ` `, `s`, `t`, `r`, `i`, `p`, ` `, `a`, `n`, `t`, `i`, `c`, `h`, `o`, `l`, `i`, `n`, `e`, `r`, `g`, `i`, `c`, ` `, `a`, `n`, `d`, ` `, `s`, `e`, `d`, `a`, `t`, `i`, `v`, `e`, ` `, `b`, `u`, `r`, `d`, `e`, `n`, `.`
+- Evidence: `t_neurocog.md 'Initial workup' — Labs to catch reversible causes: CBC, CMP, TSH, B12/folate, and — when indicated — HIV and RPR/treponemal testing. Medication reconciliation to strip anticholinergic and sedative burden.`
 
 **Stem.** A 68-year-old woman is admitted after 4 months of progressive cognitive decline and withdrawal. Neuropsychological testing suggests a moderate amnestic syndrome. She has no known prior psychiatric or neurological history. Which is the most appropriate first-line laboratory workup before assigning a neurodegenerative diagnosis?
 
@@ -19678,7 +19805,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_cog_010` · status=`attested` · type=`two-tier` · difficulty=`2` · competency=`['management']`
 - Linked pages: `t_geri.md`
-- Evidence: `t`, `_`, `g`, `e`, `r`, `i`, `.`, `m`, `d`, ` `, `'`, `A`, `c`, `u`, `t`, `e`, ` `, `i`, `n`, `p`, `a`, `t`, `i`, `e`, `n`, `t`, ` `, `m`, `a`, `n`, `a`, `g`, `e`, `m`, `e`, `n`, `t`, `'`, ` `, `—`, ` `, `A`, `p`, `p`, `l`, `y`, ` `, `t`, `h`, `e`, ` `, `B`, `e`, `e`, `r`, `s`, ` `, `C`, `r`, `i`, `t`, `e`, `r`, `i`, `a`, ` `, `a`, `n`, `d`, ` `, `a`, `s`, `s`, `e`, `s`, `s`, ` `, `c`, `u`, `m`, `u`, `l`, `a`, `t`, `i`, `v`, `e`, ` `, `a`, `n`, `t`, `i`, `c`, `h`, `o`, `l`, `i`, `n`, `e`, `r`, `g`, `i`, `c`, ` `, `b`, `u`, `r`, `d`, `e`, `n`, `,`, ` `, `t`, `h`, `e`, `n`, ` `, `a`, `c`, `t`, `i`, `v`, `e`, `l`, `y`, ` `, `d`, `e`, `p`, `r`, `e`, `s`, `c`, `r`, `i`, `b`, `e`, ` `, `d`, `e`, `l`, `i`, `r`, `i`, `o`, `g`, `e`, `n`, `i`, `c`, ` `, `a`, `n`, `d`, ` `, `h`, `i`, `g`, `h`, `-`, `r`, `i`, `s`, `k`, ` `, `a`, `g`, `e`, `n`, `t`, `s`, `.`, ` `, `'`, `H`, `i`, `g`, `h`, `-`, `y`, `i`, `e`, `l`, `d`, ` `, `p`, `e`, `a`, `r`, `l`, `s`, `'`, ` `, `—`, ` `, `T`, `h`, `e`, ` `, `d`, `r`, `u`, `g`, ` `, `l`, `i`, `s`, `t`, ` `, `i`, `s`, ` `, `o`, `f`, `t`, `e`, `n`, ` `, `t`, `h`, `e`, ` `, `d`, `i`, `a`, `g`, `n`, `o`, `s`, `i`, `s`, ` `, `—`, ` `, `d`, `e`, `p`, `r`, `e`, `s`, `c`, `r`, `i`, `b`, `i`, `n`, `g`, ` `, `i`, `s`, ` `, `a`, `c`, `t`, `i`, `v`, `e`, ` `, `t`, `r`, `e`, `a`, `t`, `m`, `e`, `n`, `t`, `.`
+- Evidence: `t_geri.md 'Acute inpatient management' — Apply the Beers Criteria and assess cumulative anticholinergic burden, then actively deprescribe deliriogenic and high-risk agents. 'High-yield pearls' — The drug list is often the diagnosis — deprescribing is active treatment.`
 
 **Stem.** A 78-year-old woman with mild cognitive impairment is admitted for worsening confusion and agitation over the past week. She recently started diphenhydramine nightly for insomnia and oxybutynin for urge incontinence. The student reviews her medication list. Which is the most appropriate next step?
 
@@ -19697,7 +19824,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_cog_011` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['dx']` · **high-yield**
 - Linked pages: `t_neurocog.md`
-- Evidence: `t`, `_`, `n`, `e`, `u`, `r`, `o`, `c`, `o`, `g`, `.`, `m`, `d`, ` `, `—`, ` `, `F`, `r`, `o`, `n`, `t`, `o`, `t`, `e`, `m`, `p`, `o`, `r`, `a`, `l`, ` `, `—`, ` `, `y`, `o`, `u`, `n`, `g`, `e`, `r`, ` `, `o`, `n`, `s`, `e`, `t`, ` `, `w`, `i`, `t`, `h`, ` `, `e`, `a`, `r`, `l`, `y`, ` `, `p`, `e`, `r`, `s`, `o`, `n`, `a`, `l`, `i`, `t`, `y`, `/`, `b`, `e`, `h`, `a`, `v`, `i`, `o`, `r`, ` `, `c`, `h`, `a`, `n`, `g`, `e`, ` `, `o`, `r`, ` `, `p`, `r`, `o`, `g`, `r`, `e`, `s`, `s`, `i`, `v`, `e`, ` `, `a`, `p`, `h`, `a`, `s`, `i`, `a`, `;`, ` `, `m`, `e`, `m`, `o`, `r`, `y`, ` `, `r`, `e`, `l`, `a`, `t`, `i`, `v`, `e`, `l`, `y`, ` `, `s`, `p`, `a`, `r`, `e`, `d`, ` `, `e`, `a`, `r`, `l`, `y`, `.`
+- Evidence: `t_neurocog.md — Frontotemporal — younger onset with early personality/behavior change or progressive aphasia; memory relatively spared early.`
 
 **Stem.** A 58-year-old man is brought to the emergency department by his wife, who reports an 18-month history of increasingly disinhibited behavior — making inappropriate sexual comments to strangers, hoarding food, and neglecting hygiene. He has no memory complaints, names and recognizes objects normally, and denies mood symptoms. Neuropsychological testing shows prominent executive dysfunction with intact episodic memory. Most likely diagnosis?
 
@@ -19714,7 +19841,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_cog_012` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['dx', 'safety']`
 - Linked pages: `t_geri.md`
-- Evidence: `t`, `_`, `g`, `e`, `r`, `i`, `.`, `m`, `d`, ` `, `'`, `H`, `i`, `g`, `h`, `-`, `y`, `i`, `e`, `l`, `d`, ` `, `p`, `e`, `a`, `r`, `l`, `s`, `'`, ` `, `—`, ` `, `N`, `e`, `w`, ` `, `p`, `s`, `y`, `c`, `h`, `o`, `s`, `i`, `s`, ` `, `i`, `n`, ` `, `a`, `n`, ` `, `o`, `l`, `d`, `e`, `r`, ` `, `a`, `d`, `u`, `l`, `t`, ` `, `i`, `s`, ` `, `d`, `e`, `l`, `i`, `r`, `i`, `u`, `m`, ` `, `o`, `r`, ` `, `a`, ` `, `m`, `e`, `d`, `i`, `c`, `a`, `l`, ` `, `c`, `a`, `u`, `s`, `e`, ` `, `u`, `n`, `t`, `i`, `l`, ` `, `p`, `r`, `o`, `v`, `e`, `n`, ` `, `o`, `t`, `h`, `e`, `r`, `w`, `i`, `s`, `e`, `.`
+- Evidence: `t_geri.md 'High-yield pearls' — New psychosis in an older adult is delirium or a medical cause until proven otherwise.`
 
 **Stem.** A 74-year-old woman with no prior psychiatric history is brought to the emergency department by her family. She has developed, over the past month, a fixed belief that her neighbors are poisoning her food and has stopped eating. She is alert, coherent, and oriented. There is no mood disturbance. Which is the most important next step?
 
@@ -19731,7 +19858,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_cog_013` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['next-step']`
 - Linked pages: `catatonia.md`
-- Evidence: `c`, `a`, `t`, `a`, `t`, `o`, `n`, `i`, `a`, `.`, `m`, `d`, ` `, `'`, `T`, `h`, `e`, ` `, `l`, `o`, `r`, `a`, `z`, `e`, `p`, `a`, `m`, ` `, `c`, `h`, `a`, `l`, `l`, `e`, `n`, `g`, `e`, `'`, ` `, `—`, ` `, `A`, ` `, `t`, `e`, `s`, `t`, ` `, `d`, `o`, `s`, `e`, ` `, `o`, `f`, ` `, `l`, `o`, `r`, `a`, `z`, `e`, `p`, `a`, `m`, ` `, `(`, `I`, `V`, ` `, `o`, `r`, ` `, `I`, `M`, `)`, ` `, `i`, `s`, ` `, `b`, `o`, `t`, `h`, ` `, `a`, ` `, `d`, `i`, `a`, `g`, `n`, `o`, `s`, `t`, `i`, `c`, ` `, `m`, `a`, `n`, `e`, `u`, `v`, `e`, `r`, ` `, `a`, `n`, `d`, ` `, `t`, `h`, `e`, ` `, `s`, `t`, `a`, `r`, `t`, ` `, `o`, `f`, ` `, `t`, `r`, `e`, `a`, `t`, `m`, `e`, `n`, `t`, `;`, ` `, `m`, `e`, `a`, `n`, `i`, `n`, `g`, `f`, `u`, `l`, ` `, `i`, `m`, `p`, `r`, `o`, `v`, `e`, `m`, `e`, `n`, `t`, ` `, `a`, `f`, `t`, `e`, `r`, ` `, `t`, `h`, `e`, ` `, `c`, `h`, `a`, `l`, `l`, `e`, `n`, `g`, `e`, ` `, `s`, `u`, `p`, `p`, `o`, `r`, `t`, `s`, ` `, `t`, `h`, `e`, ` `, `d`, `i`, `a`, `g`, `n`, `o`, `s`, `i`, `s`, ` `, `a`, `n`, `d`, ` `, `p`, `r`, `e`, `d`, `i`, `c`, `t`, `s`, ` `, `b`, `e`, `n`, `z`, `o`, `d`, `i`, `a`, `z`, `e`, `p`, `i`, `n`, `e`, ` `, `r`, `e`, `s`, `p`, `o`, `n`, `s`, `e`, `.`, ` `, `B`, `e`, `n`, `z`, `o`, `d`, `i`, `a`, `z`, `e`, `p`, `i`, `n`, `e`, `s`, ` `, `a`, `r`, `e`, ` `, `f`, `i`, `r`, `s`, `t`, `-`, `l`, `i`, `n`, `e`, `;`, ` `, `E`, `C`, `T`, ` `, `i`, `s`, ` `, `f`, `o`, `r`, ` `, `b`, `e`, `n`, `z`, `o`, `d`, `i`, `a`, `z`, `e`, `p`, `i`, `n`, `e`, `-`, `r`, `e`, `f`, `r`, `a`, `c`, `t`, `o`, `r`, `y`, ` `, `o`, `r`, ` `, `m`, `a`, `l`, `i`, `g`, `n`, `a`, `n`, `t`, ` `, `c`, `a`, `t`, `a`, `t`, `o`, `n`, `i`, `a`, `.`
+- Evidence: `catatonia.md 'The lorazepam challenge' — A test dose of lorazepam (IV or IM) is both a diagnostic maneuver and the start of treatment; meaningful improvement after the challenge supports the diagnosis and predicts benzodiazepine response. Benzodiazepines are first-line; ECT is for benzodiazepine-refractory or malignant catatonia.`
 
 **Stem.** A 35-year-old man with bipolar disorder screens positive for catatonia on the Bush-Francis Catatonia Rating Scale — he is mute, maintains awkward arm postures for extended periods, and stares past the examiner. The team has appropriately held the antipsychotic. What is the indicated next step?
 
@@ -19748,7 +19875,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_cog_014` · status=`attested` · type=`two-tier` · difficulty=`3` · competency=`['safety']`
 - Linked pages: `catatonia.md`
-- Evidence: `c`, `a`, `t`, `a`, `t`, `o`, `n`, `i`, `a`, `.`, `m`, `d`, ` `, `—`, ` `, `T`, `h`, `e`, ` `, `e`, `m`, `e`, `r`, `g`, `e`, `n`, `c`, `y`, ` `, `y`, `o`, `u`, ` `, `m`, `u`, `s`, `t`, ` `, `n`, `e`, `v`, `e`, `r`, ` `, `m`, `i`, `s`, `s`, ` `, `i`, `s`, ` `, `m`, `a`, `l`, `i`, `g`, `n`, `a`, `n`, `t`, ` `, `c`, `a`, `t`, `a`, `t`, `o`, `n`, `i`, `a`, `:`, ` `, `a`, `u`, `t`, `o`, `n`, `o`, `m`, `i`, `c`, ` `, `i`, `n`, `s`, `t`, `a`, `b`, `i`, `l`, `i`, `t`, `y`, `,`, ` `, `h`, `y`, `p`, `e`, `r`, `t`, `h`, `e`, `r`, `m`, `i`, `a`, `,`, ` `, `a`, `n`, `d`, ` `, `r`, `i`, `g`, `i`, `d`, `i`, `t`, `y`, ` `, `t`, `h`, `a`, `t`, ` `, `c`, `l`, `i`, `n`, `i`, `c`, `a`, `l`, `l`, `y`, ` `, `o`, `v`, `e`, `r`, `l`, `a`, `p`, `s`, ` `, `w`, `i`, `t`, `h`, ` `, `n`, `e`, `u`, `r`, `o`, `l`, `e`, `p`, `t`, `i`, `c`, ` `, `m`, `a`, `l`, `i`, `g`, `n`, `a`, `n`, `t`, ` `, `s`, `y`, `n`, `d`, `r`, `o`, `m`, `e`, ` `, `(`, `N`, `M`, `S`, `)`, `.`, ` `, `E`, `C`, `T`, ` `, `i`, `s`, ` `, `t`, `h`, `e`, ` `, `t`, `r`, `e`, `a`, `t`, `m`, `e`, `n`, `t`, ` `, `f`, `o`, `r`, ` `, `s`, `e`, `v`, `e`, `r`, `e`, `,`, ` `, `m`, `a`, `l`, `i`, `g`, `n`, `a`, `n`, `t`, `,`, ` `, `o`, `r`, ` `, `b`, `e`, `n`, `z`, `o`, `d`, `i`, `a`, `z`, `e`, `p`, `i`, `n`, `e`, `-`, `r`, `e`, `f`, `r`, `a`, `c`, `t`, `o`, `r`, `y`, ` `, `c`, `a`, `t`, `a`, `t`, `o`, `n`, `i`, `a`, ` `, `a`, `n`, `d`, ` `, `s`, `h`, `o`, `u`, `l`, `d`, ` `, `n`, `o`, `t`, ` `, `b`, `e`, ` `, `d`, `e`, `l`, `a`, `y`, `e`, `d`, ` `, `w`, `h`, `e`, `n`, ` `, `t`, `h`, `e`, ` `, `p`, `a`, `t`, `i`, `e`, `n`, `t`, ` `, `i`, `s`, ` `, `d`, `e`, `t`, `e`, `r`, `i`, `o`, `r`, `a`, `t`, `i`, `n`, `g`, `.`
+- Evidence: `catatonia.md — The emergency you must never miss is malignant catatonia: autonomic instability, hyperthermia, and rigidity that clinically overlaps with neuroleptic malignant syndrome (NMS). ECT is the treatment for severe, malignant, or benzodiazepine-refractory catatonia and should not be delayed when the patient is deteriorating.`
 
 **Stem.** A 29-year-old woman with schizophrenia has been mute and posturing for 2 days. Today she is found febrile to 39.6°C, diaphoretic, hypotensive, with lead-pipe rigidity and a markedly elevated CK. Her antipsychotic was increased yesterday. Best next step?
 
@@ -19767,7 +19894,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_cog_015` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['pharm']`
 - Linked pages: `t_neurocog.md`
-- Evidence: `t`, `_`, `n`, `e`, `u`, `r`, `o`, `c`, `o`, `g`, `.`, `m`, `d`, ` `, `'`, `A`, `c`, `u`, `t`, `e`, ` `, `i`, `n`, `p`, `a`, `t`, `i`, `e`, `n`, `t`, ` `, `m`, `a`, `n`, `a`, `g`, `e`, `m`, `e`, `n`, `t`, `'`, ` `, `—`, ` `, `C`, `o`, `g`, `n`, `i`, `t`, `i`, `v`, `e`, ` `, `s`, `y`, `m`, `p`, `t`, `o`, `m`, `s`, `:`, ` `, `c`, `h`, `o`, `l`, `i`, `n`, `e`, `s`, `t`, `e`, `r`, `a`, `s`, `e`, ` `, `i`, `n`, `h`, `i`, `b`, `i`, `t`, `o`, `r`, `s`, ` `, `(`, `d`, `o`, `n`, `e`, `p`, `e`, `z`, `i`, `l`, `,`, ` `, `r`, `i`, `v`, `a`, `s`, `t`, `i`, `g`, `m`, `i`, `n`, `e`, `,`, ` `, `g`, `a`, `l`, `a`, `n`, `t`, `a`, `m`, `i`, `n`, `e`, `)`, ` `, `f`, `o`, `r`, ` `, `m`, `i`, `l`, `d`, `–`, `m`, `o`, `d`, `e`, `r`, `a`, `t`, `e`, ` `, `A`, `l`, `z`, `h`, `e`, `i`, `m`, `e`, `r`, `/`, `L`, `e`, `w`, `y`, ` `, `b`, `o`, `d`, `y`, ` `, `d`, `i`, `s`, `e`, `a`, `s`, `e`, `;`, ` `, `a`, `d`, `d`, ` `, `m`, `e`, `m`, `a`, `n`, `t`, `i`, `n`, `e`, ` `, `(`, `N`, `M`, `D`, `A`, ` `, `a`, `n`, `t`, `a`, `g`, `o`, `n`, `i`, `s`, `t`, `)`, ` `, `f`, `o`, `r`, ` `, `m`, `o`, `d`, `e`, `r`, `a`, `t`, `e`, `–`, `s`, `e`, `v`, `e`, `r`, `e`, ` `, `d`, `i`, `s`, `e`, `a`, `s`, `e`, `.`
+- Evidence: `t_neurocog.md 'Acute inpatient management' — Cognitive symptoms: cholinesterase inhibitors (donepezil, rivastigmine, galantamine) for mild–moderate Alzheimer/Lewy body disease; add memantine (NMDA antagonist) for moderate–severe disease.`
 
 **Stem.** An 82-year-old man with moderate-to-severe Alzheimer disease is currently on donepezil 10 mg daily. His neurologist asks the student to identify what pharmacotherapy optimization is supported by evidence for this stage of disease.
 
@@ -19784,7 +19911,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_cog_016` · status=`attested` · type=`sba` · difficulty=`3` · competency=`['dx']` · **high-yield**
 - Linked pages: `t_geri.md`
-- Evidence: `t`, `_`, `g`, `e`, `r`, `i`, `.`, `m`, `d`, ` `, `—`, ` `, `D`, `e`, `p`, `r`, `e`, `s`, `s`, `i`, `o`, `n`, ` `, `c`, `a`, `n`, ` `, `m`, `a`, `s`, `q`, `u`, `e`, `r`, `a`, `d`, `e`, ` `, `a`, `s`, ` `, `c`, `o`, `g`, `n`, `i`, `t`, `i`, `v`, `e`, ` `, `i`, `m`, `p`, `a`, `i`, `r`, `m`, `e`, `n`, `t`, ` `, `—`, ` `, `t`, `h`, `e`, ` `, `p`, `s`, `e`, `u`, `d`, `o`, `d`, `e`, `m`, `e`, `n`, `t`, `i`, `a`, ` `, `p`, `r`, `e`, `s`, `e`, `n`, `t`, `a`, `t`, `i`, `o`, `n`, ` `, `(`, `C`, `a`, `i`, `n`, `e`, ` `, `1`, `9`, `8`, `1`, `)`, `,`, ` `, `w`, `h`, `e`, `r`, `e`, ` `, `p`, `a`, `t`, `i`, `e`, `n`, `t`, `s`, ` `, `s`, `a`, `y`, ` `, `'`, `I`, ` `, `d`, `o`, `n`, `'`, `t`, ` `, `k`, `n`, `o`, `w`, `'`, ` `, `r`, `a`, `t`, `h`, `e`, `r`, ` `, `t`, `h`, `a`, `n`, ` `, `c`, `o`, `n`, `f`, `a`, `b`, `u`, `l`, `a`, `t`, `e`, `,`, ` `, `s`, `h`, `o`, `w`, ` `, `e`, `f`, `f`, `o`, `r`, `t`, `f`, `u`, `l`, ` `, `d`, `i`, `s`, `e`, `n`, `g`, `a`, `g`, `e`, `m`, `e`, `n`, `t`, `,`, ` `, `a`, `n`, `d`, ` `, `i`, `m`, `p`, `r`, `o`, `v`, `e`, ` `, `c`, `o`, `g`, `n`, `i`, `t`, `i`, `v`, `e`, `l`, `y`, ` `, `w`, `h`, `e`, `n`, ` `, `m`, `o`, `o`, `d`, ` `, `i`, `s`, ` `, `t`, `r`, `e`, `a`, `t`, `e`, `d`, `.`
+- Evidence: `t_geri.md — Depression can masquerade as cognitive impairment — the pseudodementia presentation (Caine 1981), where patients say 'I don't know' rather than confabulate, show effortful disengagement, and improve cognitively when mood is treated.`
 
 **Stem.** A 73-year-old woman with recurrent major depression (last treated 5 years ago) is referred for cognitive evaluation after 3 months of 'memory problems.' On formal cognitive testing she scores in the impaired range on delayed recall but consistently answers 'I don't know' rather than confabulating; she is slow to initiate answers and appears effortfully disengaged. She remains alert and attentive, and scores 22 on the PHQ-9. Most appropriate next step?
 
@@ -19803,7 +19930,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_oth_001` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['safety', 'next-step']` · **high-yield**
 - Linked pages: `t_eating.md`
-- Evidence: `t`, `_`, `e`, `a`, `t`, `i`, `n`, `g`, `.`, `m`, `d`, ` `, `—`, ` `, `R`, `e`, `f`, `e`, `e`, `d`, `i`, `n`, `g`, ` `, `s`, `y`, `n`, `d`, `r`, `o`, `m`, `e`, `:`, ` `, `t`, `h`, `e`, ` `, `s`, `a`, `f`, `e`, ` `, `p`, `o`, `s`, `t`, `u`, `r`, `e`, ` `, `i`, `s`, ` `, `'`, `s`, `t`, `a`, `r`, `t`, ` `, `l`, `o`, `w`, `,`, ` `, `g`, `o`, ` `, `s`, `l`, `o`, `w`, `'`, `:`, ` `, `b`, `e`, `g`, `i`, `n`, ` `, `c`, `o`, `n`, `s`, `e`, `r`, `v`, `a`, `t`, `i`, `v`, `e`, ` `, `c`, `a`, `l`, `o`, `r`, `i`, `c`, ` `, `r`, `e`, `f`, `e`, `e`, `d`, `i`, `n`, `g`, `,`, ` `, `c`, `h`, `e`, `c`, `k`, ` `, `p`, `h`, `o`, `s`, `p`, `h`, `a`, `t`, `e`, `/`, `p`, `o`, `t`, `a`, `s`, `s`, `i`, `u`, `m`, `/`, `m`, `a`, `g`, `n`, `e`, `s`, `i`, `u`, `m`, ` `, `a`, `t`, ` `, `l`, `e`, `a`, `s`, `t`, ` `, `d`, `a`, `i`, `l`, `y`, ` `, `e`, `a`, `r`, `l`, `y`, `,`, ` `, `s`, `u`, `p`, `p`, `l`, `e`, `m`, `e`, `n`, `t`, ` `, `p`, `h`, `o`, `s`, `p`, `h`, `a`, `t`, `e`, ` `, `a`, `n`, `d`, ` `, `g`, `i`, `v`, `e`, ` `, `t`, `h`, `i`, `a`, `m`, `i`, `n`, `e`, ` `, `b`, `e`, `f`, `o`, `r`, `e`, ` `, `o`, `r`, ` `, `w`, `i`, `t`, `h`, ` `, `c`, `a`, `r`, `b`, `o`, `h`, `y`, `d`, `r`, `a`, `t`, `e`, `,`, ` `, `a`, `n`, `d`, ` `, `a`, `d`, `v`, `a`, `n`, `c`, `e`, ` `, `c`, `a`, `l`, `o`, `r`, `i`, `e`, `s`, ` `, `p`, `e`, `r`, ` `, `p`, `r`, `o`, `t`, `o`, `c`, `o`, `l`, ` `, `a`, `s`, ` `, `e`, `l`, `e`, `c`, `t`, `r`, `o`, `l`, `y`, `t`, `e`, `s`, ` `, `s`, `t`, `a`, `y`, ` `, `s`, `t`, `a`, `b`, `l`, `e`, `.`
+- Evidence: `t_eating.md — Refeeding syndrome: the safe posture is 'start low, go slow': begin conservative caloric refeeding, check phosphate/potassium/magnesium at least daily early, supplement phosphate and give thiamine before or with carbohydrate, and advance calories per protocol as electrolytes stay stable.`
 
 **Stem.** A 16-year-old with severe anorexia nervosa has been restrictive for 4 months and is medically admitted with critically low weight. Before nutritional rehabilitation begins, which approach most directly reduces the risk of refeeding syndrome?
 
@@ -19820,7 +19947,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_oth_002` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['dx', 'safety']`
 - Linked pages: `t_perinatal.md`
-- Evidence: `t`, `_`, `p`, `e`, `r`, `i`, `n`, `a`, `t`, `a`, `l`, `.`, `m`, `d`, ` `, `—`, ` `, `P`, `O`, `S`, `T`, `P`, `A`, `R`, `T`, `U`, `M`, ` `, `P`, `S`, `Y`, `C`, `H`, `O`, `S`, `I`, `S`, ` `, `I`, `S`, ` `, `A`, ` `, `P`, `S`, `Y`, `C`, `H`, `I`, `A`, `T`, `R`, `I`, `C`, ` `, `E`, `M`, `E`, `R`, `G`, `E`, `N`, `C`, `Y`, `:`, ` `, `r`, `a`, `p`, `i`, `d`, ` `, `o`, `n`, `s`, `e`, `t`, `,`, ` `, `w`, `a`, `x`, `i`, `n`, `g`, `/`, `w`, `a`, `n`, `i`, `n`, `g`, ` `, `p`, `r`, `e`, `s`, `e`, `n`, `t`, `a`, `t`, `i`, `o`, `n`, `,`, ` `, `a`, `n`, `d`, ` `, `r`, `e`, `a`, `l`, ` `, `r`, `i`, `s`, `k`, ` `, `t`, `o`, ` `, `b`, `o`, `t`, `h`, ` `, `m`, `o`, `t`, `h`, `e`, `r`, ` `, `a`, `n`, `d`, ` `, `i`, `n`, `f`, `a`, `n`, `t`, ` `, `—`, ` `, `a`, `d`, `m`, `i`, `t`, ` `, `a`, `n`, `d`, ` `, `t`, `r`, `e`, `a`, `t`, ` `, `u`, `r`, `g`, `e`, `n`, `t`, `l`, `y`, `.`, ` `, `T`, `h`, `e`, ` `, `s`, `a`, `f`, `e`, `t`, `y`, ` `, `a`, `s`, `s`, `e`, `s`, `s`, `m`, `e`, `n`, `t`, ` `, `m`, `u`, `s`, `t`, ` `, `e`, `x`, `p`, `l`, `i`, `c`, `i`, `t`, `l`, `y`, ` `, `i`, `n`, `c`, `l`, `u`, `d`, `e`, ` `, `t`, `h`, `e`, ` `, `i`, `n`, `f`, `a`, `n`, `t`, `:`, ` `, `a`, `s`, `s`, `e`, `s`, `s`, ` `, `r`, `i`, `s`, `k`, ` `, `t`, `o`, ` `, `t`, `h`, `e`, ` `, `b`, `a`, `b`, `y`, `,`, ` `, `t`, `h`, `e`, ` `, `p`, `a`, `r`, `e`, `n`, `t`, `'`, `s`, ` `, `c`, `u`, `r`, `r`, `e`, `n`, `t`, ` `, `a`, `c`, `c`, `e`, `s`, `s`, ` `, `t`, `o`, ` `, `t`, `h`, `e`, ` `, `b`, `a`, `b`, `y`, `,`, ` `, `a`, `n`, `d`, ` `, `a`, `v`, `a`, `i`, `l`, `a`, `b`, `l`, `e`, ` `, `s`, `u`, `p`, `e`, `r`, `v`, `i`, `s`, `i`, `o`, `n`, `.`
+- Evidence: `t_perinatal.md — POSTPARTUM PSYCHOSIS IS A PSYCHIATRIC EMERGENCY: rapid onset, waxing/waning presentation, and real risk to both mother and infant — admit and treat urgently. The safety assessment must explicitly include the infant: assess risk to the baby, the parent's current access to the baby, and available supervision.`
 
 **Stem.** A 27-year-old mother, 9 days postpartum, arrives with acute confusion and delusions that her infant 'was sent to test her faith.' Her husband reports hours of apparent lucidity followed by rapid deterioration. The diagnosis of postpartum psychosis is made. Which management priority is most immediately critical?
 
@@ -19837,7 +19964,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_otherdx_001` · status=`attested` · type=`two-tier` · difficulty=`1` · competency=`['safety', 'management']` · **high-yield**
 - Linked pages: `t_eating.md`
-- Evidence: `t`, `_`, `e`, `a`, `t`, `i`, `n`, `g`, `.`, `m`, `d`, ` `, `—`, ` `, `R`, `e`, `f`, `e`, `e`, `d`, `i`, `n`, `g`, ` `, `s`, `y`, `n`, `d`, `r`, `o`, `m`, `e`, ` `, `—`, ` `, `t`, `h`, `e`, ` `, `c`, `o`, `m`, `p`, `l`, `i`, `c`, `a`, `t`, `i`, `o`, `n`, ` `, `t`, `h`, `a`, `t`, ` `, `k`, `i`, `l`, `l`, `s`, `:`, ` `, `h`, `y`, `p`, `o`, `p`, `h`, `o`, `s`, `p`, `h`, `a`, `t`, `e`, `m`, `i`, `a`, ` `, `i`, `s`, ` `, `t`, `h`, `e`, ` `, `h`, `a`, `l`, `l`, `m`, `a`, `r`, `k`, `;`, ` `, `t`, `h`, `e`, ` `, `d`, `a`, `n`, `g`, `e`, `r`, ` `, `i`, `s`, ` `, `c`, `a`, `r`, `d`, `i`, `a`, `c`, ` `, `f`, `a`, `i`, `l`, `u`, `r`, `e`, `,`, ` `, `a`, `r`, `r`, `h`, `y`, `t`, `h`, `m`, `i`, `a`, `,`, ` `, `r`, `e`, `s`, `p`, `i`, `r`, `a`, `t`, `o`, `r`, `y`, ` `, `f`, `a`, `i`, `l`, `u`, `r`, `e`, `,`, ` `, `a`, `n`, `d`, ` `, `d`, `e`, `l`, `i`, `r`, `i`, `u`, `m`, `.`, ` `, `S`, `u`, `p`, `p`, `l`, `e`, `m`, `e`, `n`, `t`, ` `, `p`, `h`, `o`, `s`, `p`, `h`, `a`, `t`, `e`, ` `, `a`, `n`, `d`, ` `, `g`, `i`, `v`, `e`, ` `, `t`, `h`, `i`, `a`, `m`, `i`, `n`, `e`, ` `, `b`, `e`, `f`, `o`, `r`, `e`, ` `, `o`, `r`, ` `, `w`, `i`, `t`, `h`, ` `, `c`, `a`, `r`, `b`, `o`, `h`, `y`, `d`, `r`, `a`, `t`, `e`, `.`
+- Evidence: `t_eating.md — Refeeding syndrome — the complication that kills: hypophosphatemia is the hallmark; the danger is cardiac failure, arrhythmia, respiratory failure, and delirium. Supplement phosphate and give thiamine before or with carbohydrate.`
 
 **Stem.** A 17-year-old with severe anorexia nervosa has been starved for 4 months and is starting nutritional rehabilitation. On day 3 of refeeding, her phosphate drops to 2.1 mg/dL. She is also mildly confused and has new-onset leg weakness. What is the most important diagnosis to recognize?
 
@@ -19856,7 +19983,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_otherdx_002` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['dx']`
 - Linked pages: `t_eating.md`
-- Evidence: `t`, `_`, `e`, `a`, `t`, `i`, `n`, `g`, `.`, `m`, `d`, ` `, `—`, ` `, `B`, `u`, `l`, `i`, `m`, `i`, `a`, ` `, `n`, `e`, `r`, `v`, `o`, `s`, `a`, ` `, `—`, ` `, `w`, `e`, `i`, `g`, `h`, `t`, ` `, `i`, `s`, ` `, `o`, `f`, `t`, `e`, `n`, ` `, `n`, `o`, `r`, `m`, `a`, `l`, ` `, `o`, `r`, ` `, `h`, `i`, `g`, `h`, ` `, `—`, ` `, `a`, ` `, `n`, `o`, `r`, `m`, `a`, `l`, ` `, `w`, `e`, `i`, `g`, `h`, `t`, ` `, `d`, `o`, `e`, `s`, ` `, `n`, `o`, `t`, ` `, `r`, `u`, `l`, `e`, ` `, `i`, `t`, ` `, `o`, `u`, `t`, `.`, ` `, `L`, `o`, `o`, `k`, ` `, `f`, `o`, `r`, ` `, `R`, `u`, `s`, `s`, `e`, `l`, `l`, `'`, `s`, ` `, `s`, `i`, `g`, `n`, ` `, `(`, `k`, `n`, `u`, `c`, `k`, `l`, `e`, ` `, `c`, `a`, `l`, `l`, `u`, `s`, `e`, `s`, `)`, `,`, ` `, `p`, `a`, `r`, `o`, `t`, `i`, `d`, ` `, `e`, `n`, `l`, `a`, `r`, `g`, `e`, `m`, `e`, `n`, `t`, `,`, ` `, `a`, `n`, `d`, ` `, `d`, `e`, `n`, `t`, `a`, `l`, ` `, `e`, `n`, `a`, `m`, `e`, `l`, ` `, `e`, `r`, `o`, `s`, `i`, `o`, `n`, `.`
+- Evidence: `t_eating.md — Bulimia nervosa — weight is often normal or high — a normal weight does not rule it out. Look for Russell's sign (knuckle calluses), parotid enlargement, and dental enamel erosion.`
 
 **Stem.** A 24-year-old woman is referred for 'weight-related anxiety.' She is at normal weight and denies dieting. However, she endorses recurrent binge episodes followed by self-induced vomiting several times weekly, and she reports that her self-worth is almost entirely based on her weight and shape. On exam, you note calluses on her right hand knuckles. Which diagnosis should be suspected?
 
@@ -19873,7 +20000,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_otherdx_003` · status=`attested` · type=`two-tier` · difficulty=`1` · competency=`['dx', 'safety']` · **high-yield**
 - Linked pages: `t_perinatal.md`
-- Evidence: `t`, `_`, `p`, `e`, `r`, `i`, `n`, `a`, `t`, `a`, `l`, `.`, `m`, `d`, ` `, `—`, ` `, `P`, `O`, `S`, `T`, `P`, `A`, `R`, `T`, `U`, `M`, ` `, `P`, `S`, `Y`, `C`, `H`, `O`, `S`, `I`, `S`, ` `, `I`, `S`, ` `, `A`, ` `, `P`, `S`, `Y`, `C`, `H`, `I`, `A`, `T`, `R`, `I`, `C`, ` `, `E`, `M`, `E`, `R`, `G`, `E`, `N`, `C`, `Y`, `:`, ` `, `r`, `a`, `p`, `i`, `d`, ` `, `o`, `n`, `s`, `e`, `t`, `,`, ` `, `w`, `a`, `x`, `i`, `n`, `g`, `/`, `w`, `a`, `n`, `i`, `n`, `g`, ` `, `p`, `r`, `e`, `s`, `e`, `n`, `t`, `a`, `t`, `i`, `o`, `n`, `,`, ` `, `a`, `n`, `d`, ` `, `r`, `e`, `a`, `l`, ` `, `r`, `i`, `s`, `k`, ` `, `t`, `o`, ` `, `b`, `o`, `t`, `h`, ` `, `m`, `o`, `t`, `h`, `e`, `r`, ` `, `a`, `n`, `d`, ` `, `i`, `n`, `f`, `a`, `n`, `t`, ` `, `—`, ` `, `a`, `d`, `m`, `i`, `t`, ` `, `a`, `n`, `d`, ` `, `t`, `r`, `e`, `a`, `t`, ` `, `u`, `r`, `g`, `e`, `n`, `t`, `l`, `y`, `.`, ` `, `A`, ` `, `l`, `u`, `c`, `i`, `d`, ` `, `i`, `n`, `t`, `e`, `r`, `v`, `a`, `l`, ` `, `d`, `o`, `e`, `s`, ` `, `n`, `o`, `t`, ` `, `r`, `u`, `l`, `e`, ` `, `o`, `u`, `t`, ` `, `p`, `s`, `y`, `c`, `h`, `o`, `s`, `i`, `s`, ` `, `—`, ` `, `t`, `h`, `e`, ` `, `w`, `a`, `x`, `i`, `n`, `g`, `/`, `w`, `a`, `n`, `i`, `n`, `g`, ` `, `c`, `o`, `u`, `r`, `s`, `e`, ` `, `i`, `s`, ` `, `p`, `a`, `r`, `t`, ` `, `o`, `f`, ` `, `t`, `h`, `e`, ` `, `i`, `l`, `l`, `n`, `e`, `s`, `s`, `,`, ` `, `n`, `o`, `t`, ` `, `r`, `e`, `a`, `s`, `s`, `u`, `r`, `a`, `n`, `c`, `e`, `.`
+- Evidence: `t_perinatal.md — POSTPARTUM PSYCHOSIS IS A PSYCHIATRIC EMERGENCY: rapid onset, waxing/waning presentation, and real risk to both mother and infant — admit and treat urgently. A lucid interval does not rule out psychosis — the waxing/waning course is part of the illness, not reassurance.`
 
 **Stem.** A 28-year-old woman who delivered 6 days ago is brought by her husband with confusion, talking to people who aren't there, and expressing beliefs that her baby 'was sent to test her faith.' She had been laughing and crying alternately. She was seen yesterday and appeared fine for two hours. What is the most critical diagnosis to consider?
 
@@ -19892,7 +20019,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_otherdx_004` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['dx']`
 - Linked pages: `t_somatic.md`
-- Evidence: `t`, `_`, `s`, `o`, `m`, `a`, `t`, `i`, `c`, `.`, `m`, `d`, ` `, `—`, ` `, `S`, `S`, `D`, ` `, `i`, `s`, ` `, `d`, `e`, `f`, `i`, `n`, `e`, `d`, ` `, `b`, `y`, ` `, `t`, `h`, `e`, ` `, `e`, `x`, `c`, `e`, `s`, `s`, `i`, `v`, `e`, ` `, `r`, `e`, `s`, `p`, `o`, `n`, `s`, `e`, ` `, `t`, `o`, ` `, `s`, `y`, `m`, `p`, `t`, `o`, `m`, `s`, `,`, ` `, `n`, `o`, `t`, ` `, `b`, `y`, ` `, `w`, `h`, `e`, `t`, `h`, `e`, `r`, ` `, `t`, `h`, `e`, `y`, `'`, `r`, `e`, ` `, `m`, `e`, `d`, `i`, `c`, `a`, `l`, `l`, `y`, ` `, `e`, `x`, `p`, `l`, `a`, `i`, `n`, `e`, `d`, ` `, `(`, `a`, ` `, `k`, `e`, `y`, ` `, `D`, `S`, `M`, `-`, `5`, `-`, `T`, `R`, ` `, `s`, `h`, `i`, `f`, `t`, ` `, `f`, `r`, `o`, `m`, ` `, `'`, `m`, `e`, `d`, `i`, `c`, `a`, `l`, `l`, `y`, ` `, `u`, `n`, `e`, `x`, `p`, `l`, `a`, `i`, `n`, `e`, `d`, `'`, `)`, `.`
+- Evidence: `t_somatic.md — SSD is defined by the excessive response to symptoms, not by whether they're medically explained (a key DSM-5-TR shift from 'medically unexplained').`
 
 **Stem.** A 45-year-old woman is referred for psychiatric consultation for 'medically unexplained' chest pain and fatigue. Her symptoms are real and distressing, her workup is negative, and she spends hours daily researching health threats and 4–5 hours daily focused on her symptoms. Which DSM-5-TR principle is most relevant to the diagnosis?
 
@@ -19909,7 +20036,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_otherdx_005` · status=`attested` · type=`two-tier` · difficulty=`2` · competency=`['dx']`
 - Linked pages: `t_somatic.md`
-- Evidence: `t`, `_`, `s`, `o`, `m`, `a`, `t`, `i`, `c`, `.`, `m`, `d`, ` `, `—`, ` `, `C`, `o`, `n`, `v`, `e`, `r`, `s`, `i`, `o`, `n`, `/`, `f`, `u`, `n`, `c`, `t`, `i`, `o`, `n`, `a`, `l`, ` `, `n`, `e`, `u`, `r`, `o`, `l`, `o`, `g`, `i`, `c`, `a`, `l`, ` `, `d`, `i`, `s`, `o`, `r`, `d`, `e`, `r`, ` `, `i`, `s`, ` `, `a`, ` `, `r`, `u`, `l`, `e`, `-`, `i`, `n`, ` `, `d`, `i`, `a`, `g`, `n`, `o`, `s`, `i`, `s`, ` `, `—`, ` `, `H`, `o`, `o`, `v`, `e`, `r`, ` `, `s`, `i`, `g`, `n`, `,`, ` `, `t`, `r`, `e`, `m`, `o`, `r`, ` `, `e`, `n`, `t`, `r`, `a`, `i`, `n`, `m`, `e`, `n`, `t`, `,`, ` `, `n`, `o`, `n`, `-`, `e`, `p`, `i`, `l`, `e`, `p`, `t`, `i`, `c`, ` `, `s`, `e`, `i`, `z`, `u`, `r`, `e`, `s`, `.`, ` `, `N`, `a`, `m`, `e`, ` `, `c`, `o`, `n`, `v`, `e`, `r`, `s`, `i`, `o`, `n`, ` `, `b`, `y`, ` `, `i`, `t`, `s`, ` `, `p`, `o`, `s`, `i`, `t`, `i`, `v`, `e`, ` `, `s`, `i`, `g`, `n`, `s`, ` `, `—`, ` `, `d`, `o`, `n`, `'`, `t`, ` `, `m`, `a`, `k`, `e`, ` `, `i`, `t`, ` `, `a`, ` `, `d`, `i`, `a`, `g`, `n`, `o`, `s`, `i`, `s`, ` `, `o`, `f`, ` `, `e`, `x`, `c`, `l`, `u`, `s`, `i`, `o`, `n`, ` `, `a`, `l`, `o`, `n`, `e`, `.`
+- Evidence: `t_somatic.md — Conversion/functional neurological disorder is a rule-in diagnosis — Hoover sign, tremor entrainment, non-epileptic seizures. Name conversion by its positive signs — don't make it a diagnosis of exclusion alone.`
 
 **Stem.** A 36-year-old woman is admitted with a 3-day history of right-sided paralysis and inability to walk. Neurological workup is negative. When the examiner tests voluntary right hip extension, extension is absent; however, strong right hip extension is felt involuntarily when the patient flexes the left hip against resistance (positive Hoover sign). Which statement about the diagnosis is most accurate?
 
@@ -19928,7 +20055,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_otherdx_006` · status=`attested` · type=`two-tier` · difficulty=`2` · competency=`['dx']`
 - Linked pages: `t_somatic.md`
-- Evidence: `t`, `_`, `s`, `o`, `m`, `a`, `t`, `i`, `c`, `.`, `m`, `d`, ` `, `—`, ` `, `F`, `a`, `c`, `t`, `i`, `t`, `i`, `o`, `u`, `s`, ` `, `=`, ` `, `i`, `n`, `t`, `e`, `r`, `n`, `a`, `l`, ` `, `m`, `o`, `t`, `i`, `v`, `e`, ` `, `(`, `s`, `i`, `c`, `k`, ` `, `r`, `o`, `l`, `e`, `)`, `;`, ` `, `m`, `a`, `l`, `i`, `n`, `g`, `e`, `r`, `i`, `n`, `g`, ` `, `=`, ` `, `e`, `x`, `t`, `e`, `r`, `n`, `a`, `l`, ` `, `i`, `n`, `c`, `e`, `n`, `t`, `i`, `v`, `e`, ` `, `(`, `a`, `n`, `d`, ` `, `i`, `s`, ` `, `n`, `o`, `t`, ` `, `a`, ` `, `d`, `i`, `s`, `o`, `r`, `d`, `e`, `r`, `)`, `.`, ` `, `S`, `e`, `p`, `a`, `r`, `a`, `t`, `e`, ` `, `o`, `n`, ` `, `t`, `h`, `e`, ` `, `t`, `w`, `o`, ` `, `a`, `x`, `e`, `s`, `:`, ` `, `c`, `o`, `n`, `s`, `c`, `i`, `o`, `u`, `s`, `?`, ` `, `a`, `n`, `d`, ` `, `e`, `x`, `t`, `e`, `r`, `n`, `a`, `l`, ` `, `i`, `n`, `c`, `e`, `n`, `t`, `i`, `v`, `e`, `?`
+- Evidence: `t_somatic.md — Factitious = internal motive (sick role); malingering = external incentive (and is not a disorder). Separate on the two axes: conscious? and external incentive?`
 
 **Stem.** A 42-year-old woman has been hospitalized multiple times for recurrent infections. Staff have noted that her central line infections always follow nursing shifts during which she is left alone with the IV port. A camera reveals that she is injecting herself with contaminated fluid. She appears distressed when confronted and says, 'I just need doctors to take care of me.' There is no evidence of secondary gain (no pending disability, no legal issue). Which diagnosis is most consistent?
 
@@ -19947,7 +20074,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_otherdx_007` · status=`attested` · type=`two-tier` · difficulty=`2` · competency=`['dx']`
 - Linked pages: `cultural_psychiatry.md`
-- Evidence: `c`, `u`, `l`, `t`, `u`, `r`, `a`, `l`, `_`, `p`, `s`, `y`, `c`, `h`, `i`, `a`, `t`, `r`, `y`, `.`, `m`, `d`, ` `, `—`, ` `, `C`, `u`, `l`, `t`, `u`, `r`, `a`, `l`, ` `, `c`, `o`, `n`, `c`, `e`, `p`, `t`, `s`, ` `, `o`, `f`, ` `, `d`, `i`, `s`, `t`, `r`, `e`, `s`, `s`, ` `, `(`, `e`, `.`, `g`, `.`, `,`, ` `, `a`, `t`, `a`, `q`, `u`, `e`, ` `, `d`, `e`, ` `, `n`, `e`, `r`, `v`, `i`, `o`, `s`, `,`, ` `, `s`, `u`, `s`, `t`, `o`, `)`, ` `, `c`, `a`, `n`, ` `, `b`, `e`, ` `, `m`, `i`, `s`, `t`, `a`, `k`, `e`, `n`, ` `, `f`, `o`, `r`, ` `, `p`, `a`, `n`, `i`, `c`, `,`, ` `, `p`, `s`, `y`, `c`, `h`, `o`, `s`, `i`, `s`, `,`, ` `, `o`, `r`, ` `, `m`, `a`, `l`, `i`, `n`, `g`, `e`, `r`, `i`, `n`, `g`, `.`, ` `, `A`, `s`, `k`, ` `, `b`, `e`, `f`, `o`, `r`, `e`, ` `, `y`, `o`, `u`, ` `, `l`, `a`, `b`, `e`, `l`, `.`
+- Evidence: `cultural_psychiatry.md — Cultural concepts of distress (e.g., ataque de nervios, susto) can be mistaken for panic, psychosis, or malingering. Ask before you label.`
 
 **Stem.** A 55-year-old Puerto Rican woman is brought to the emergency department by her family. She is hyperventilating, trembling, shouting uncontrollably, and has fallen to the floor. Her family says this has happened before after a stressful family argument. Her vitals are normal and she recovers fully within 30 minutes. Which culturally informed interpretation is most accurate?
 
@@ -19966,7 +20093,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_otherdx_008` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['dx']`
 - Linked pages: `cultural_psychiatry.md`
-- Evidence: `c`, `u`, `l`, `t`, `u`, `r`, `a`, `l`, `_`, `p`, `s`, `y`, `c`, `h`, `i`, `a`, `t`, `r`, `y`, `.`, `m`, `d`, ` `, `—`, ` `, `B`, `l`, `a`, `c`, `k`, ` `, `(`, `a`, `n`, `d`, ` `, `s`, `o`, `m`, `e`, ` `, `o`, `t`, `h`, `e`, `r`, ` `, `m`, `i`, `n`, `o`, `r`, `i`, `t`, `y`, `)`, ` `, `p`, `a`, `t`, `i`, `e`, `n`, `t`, `s`, ` `, `a`, `r`, `e`, ` `, `d`, `i`, `s`, `p`, `r`, `o`, `p`, `o`, `r`, `t`, `i`, `o`, `n`, `a`, `t`, `e`, `l`, `y`, ` `, `o`, `v`, `e`, `r`, `-`, `d`, `i`, `a`, `g`, `n`, `o`, `s`, `e`, `d`, ` `, `w`, `i`, `t`, `h`, ` `, `s`, `c`, `h`, `i`, `z`, `o`, `p`, `h`, `r`, `e`, `n`, `i`, `a`, ` `, `a`, `n`, `d`, ` `, `u`, `n`, `d`, `e`, `r`, `-`, `d`, `i`, `a`, `g`, `n`, `o`, `s`, `e`, `d`, ` `, `w`, `i`, `t`, `h`, ` `, `m`, `o`, `o`, `d`, ` `, `d`, `i`, `s`, `o`, `r`, `d`, `e`, `r`, `s`, ` `, `r`, `e`, `l`, `a`, `t`, `i`, `v`, `e`, ` `, `t`, `o`, ` `, `c`, `o`, `m`, `p`, `a`, `r`, `a`, `b`, `l`, `e`, ` `, `p`, `r`, `e`, `s`, `e`, `n`, `t`, `a`, `t`, `i`, `o`, `n`, `s`, ` `, `—`, ` `, `a`, ` `, `d`, `o`, `c`, `u`, `m`, `e`, `n`, `t`, `e`, `d`, ` `, `b`, `i`, `a`, `s`, ` `, `t`, `o`, ` `, `g`, `u`, `a`, `r`, `d`, ` `, `a`, `g`, `a`, `i`, `n`, `s`, `t`, `.`
+- Evidence: `cultural_psychiatry.md — Black (and some other minority) patients are disproportionately over-diagnosed with schizophrenia and under-diagnosed with mood disorders relative to comparable presentations — a documented bias to guard against.`
 
 **Stem.** A 34-year-old Black man presents with paranoid ideation, disorganized thinking, and social withdrawal that began 3 months ago. A student suggests schizophrenia. The attending asks the student to consider a documented cultural bias. Which statement reflects the clinical evidence?
 
@@ -19983,7 +20110,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_otherdx_009` · status=`attested` · type=`two-tier` · difficulty=`3` · competency=`['dx', 'safety']`
 - Linked pages: `t_perinatal.md`
-- Evidence: `t`, `_`, `p`, `e`, `r`, `i`, `n`, `a`, `t`, `a`, `l`, `.`, `m`, `d`, ` `, `—`, ` `, `T`, `h`, `e`, ` `, `E`, `P`, `D`, `S`, ` `, `s`, `c`, `r`, `e`, `e`, `n`, `s`, ` `, `d`, `e`, `p`, `r`, `e`, `s`, `s`, `i`, `o`, `n`, `,`, ` `, `n`, `o`, `t`, ` `, `p`, `s`, `y`, `c`, `h`, `o`, `s`, `i`, `s`, ` `, `—`, ` `, `a`, `s`, `k`, ` `, `a`, `b`, `o`, `u`, `t`, ` `, `d`, `e`, `l`, `u`, `s`, `i`, `o`, `n`, `s`, ` `, `a`, `n`, `d`, ` `, `p`, `e`, `r`, `c`, `e`, `p`, `t`, `u`, `a`, `l`, ` `, `d`, `i`, `s`, `t`, `u`, `r`, `b`, `a`, `n`, `c`, `e`, ` `, `d`, `i`, `r`, `e`, `c`, `t`, `l`, `y`, `.`
+- Evidence: `t_perinatal.md — The EPDS screens depression, not psychosis — ask about delusions and perceptual disturbance directly.`
 
 **Stem.** A 30-year-old mother, 3 weeks postpartum, scores a 14 on the Edinburgh Postnatal Depression Scale (EPDS). She is distressed and anxious. The student says, 'She screened positive for postpartum depression — start sertraline.' The attending asks what the student may have missed. Which is most accurate?
 
@@ -19996,13 +20123,13 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 **Pearl.** EPDS screens for depression and anxiety — it does NOT detect psychosis or mania; always ask explicitly about delusions, hallucinations, and manic symptoms in every postpartum patient.
 
-**Tier-2 / stretch.** {"q": "A postpartum patient describes recurring intrusive thoughts of accidentally dropping her baby, which she finds horrifying. She does not act on these thoughts and goes out of her way to avoid holding the baby near stairs. What is the correct interpretation, and how does it differ from a concerning psychotic feature?", "options": [{"key": "A", "t": "This is a command hallucination instructing her to harm the baby — she requires emergency admission and a safety plan for infant protection."}, {"key": "B", "t": "This is postpartum OCD — the intrusive thoughts are ego-dystonic (horrifying to her), and she avoids situations that could lead to the feared outcome; this is the opposite of command hallucinations (which are ego-syntonic and acted upon), and the correct response is clinical support and reassurance, not emergency separation from the baby.", "c": true}, {"key": "C", "t": "This is a normal postpartum anxiety response — new mothers universally have intrusive thoughts about infant safety, which resolves without treatment."}, {"key": "D", "t": "This is a delusion of persecution — the belief that she might harm her child is a paranoid misinterpretation that requires antipsychotic treatment."}], "why": "Postpartum OCD intrusive thoughts are a critically important differential. The page states: 'Postpartum OCD intrusive thoughts are ego-dystonic and not command hallucinations — distinguish them to avoid both over- and under-reaction.' Key discrimination: (1) Ego-dystonic: the patient is horrified by the thoughts and does not want to act on them. (2) She avoids, not approaches, situations that could lead to the feared outcome. (3) Command hallucinations are ego-syntonic experiences that the patient may feel compelled to act on. Mislabeling postpartum OCD as command hallucinations leads to emergency separation and antipsychotic treatment of a patient who needs reassurance and OCD-specific treatment."}
+**Tier-2 / stretch.** {"q": "A postpartum patient describes recurring intrusive thoughts of accidentally dropping her baby, which she finds horrifying. She does not act on these thoughts and goes out of her way to avoid holding the baby near stairs. What is the correct interpretation, and how does it differ from a concerning psychotic feature?", "options": [{"key": "A", "t": "This is a command hallucination instructing her to harm the baby — she requires emergency admission and a safety plan for infant protection."}, {"key": "B", "t": "This is postpartum OCD — the intrusive thoughts are ego-dystonic (horrifying to her), and she avoids situations that could lead to the feared outcome; this differs from psychotic phenomena — voices experienced as external or beliefs about the infant held with delusional conviction, which are an emergency regardless of how distressed the mother is by them — and the correct response is clinical support and reassurance, not emergency separation from the baby.", "c": true}, {"key": "C", "t": "This is a normal postpartum anxiety response — new mothers universally have intrusive thoughts about infant safety, which resolves without treatment."}, {"key": "D", "t": "This is a delusion of persecution — the belief that she might harm her child is a paranoid misinterpretation that requires antipsychotic treatment."}], "why": "Postpartum OCD intrusive thoughts are a critically important differential. The page states: 'Postpartum OCD intrusive thoughts are ego-dystonic and not command hallucinations — distinguish them to avoid both over- and under-reaction.' Key discrimination: (1) Ego-dystonic: the patient is horrified by the thoughts and does not want to act on them. (2) She avoids, not approaches, situations that could lead to the feared outcome. (3) Psychotic phenomena are experienced as external perceptions (voices) or held with delusional conviction; the mother's distress does not rule them out, and risk tracks conviction and appraisal of the experience, not ego-syntonicity. Mislabeling postpartum OCD as command hallucinations leads to emergency separation and antipsychotic treatment of a patient who needs reassurance and OCD-specific treatment."}
 
 ### qb_otherdx_010
 
 - id=`qb_otherdx_010` · status=`draft` · type=`sba` · difficulty=`2` · competency=`['dx']`
 - Linked pages: `t_somatic.md`
-- Evidence: `t`, `_`, `s`, `o`, `m`, `a`, `t`, `i`, `c`, `.`, `m`, `d`, ` `, `—`, ` `, `F`, `a`, `c`, `t`, `i`, `t`, `i`, `o`, `u`, `s`, ` `, `d`, `i`, `s`, `o`, `r`, `d`, `e`, `r`, ` `, `v`, `s`, ` `, `m`, `a`, `l`, `i`, `n`, `g`, `e`, `r`, `i`, `n`, `g`, ` `, `v`, `s`, ` `, `S`, `S`, `D`, `.`
+- Evidence: `t_somatic.md — Factitious disorder vs malingering vs SSD.`
 
 **Stem.** A patient repeatedly produces factitious illness — contaminating urine samples and injecting herself to cause infection — with no external reward, apparently to occupy the sick role. Best diagnosis?
 
@@ -20019,7 +20146,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_otherdx_011` · status=`draft` · type=`sba` · difficulty=`3` · competency=`['dx']`
 - Linked pages: `t_mood.md`
-- Evidence: `t`, `_`, `m`, `o`, `o`, `d`, `.`, `m`, `d`, ` `, `—`, ` `, `G`, `r`, `i`, `e`, `f`, ` `, `v`, `s`, ` `, `d`, `e`, `p`, `r`, `e`, `s`, `s`, `i`, `o`, `n`, ` `, `a`, `n`, `c`, `h`, `o`, `r`, `:`, ` `, `p`, `r`, `o`, `l`, `o`, `n`, `g`, `e`, `d`, ` `, `g`, `r`, `i`, `e`, `f`, ` `, `d`, `i`, `s`, `o`, `r`, `d`, `e`, `r`, ` `, `v`, `s`, ` `, `n`, `o`, `r`, `m`, `a`, `l`, ` `, `b`, `e`, `r`, `e`, `a`, `v`, `e`, `m`, `e`, `n`, `t`, ` `, `v`, `s`, ` `, `M`, `D`, `D`, `.`
+- Evidence: `t_mood.md — Grief vs depression anchor: prolonged grief disorder vs normal bereavement vs MDD.`
 
 **Stem.** Fourteen months after her spouse's death, a woman has persistent intense yearning and preoccupation with the deceased, difficulty accepting the death, avoidance of reminders, emotional numbness, and a feeling that life is meaningless. Symptoms impair function and exceed her cultural norms. Which DSM-5-TR diagnosis best fits?
 
@@ -20036,7 +20163,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_otherdx_012` · status=`draft` · type=`sba` · difficulty=`2` · competency=`['dx']`
 - Linked pages: `t_sleep.md`
-- Evidence: `t`, `_`, `s`, `l`, `e`, `e`, `p`, `.`, `m`, `d`, ` `, `—`, ` `, `N`, `a`, `r`, `c`, `o`, `l`, `e`, `p`, `s`, `y`, `.`
+- Evidence: `t_sleep.md — Narcolepsy.`
 
 **Stem.** A 20-year-old has months of overwhelming daytime sleepiness with sudden, brief episodes of bilateral leg weakness triggered by laughter, plus vivid hallucinations while falling asleep and episodes of waking paralysis. Best diagnosis?
 
@@ -20053,7 +20180,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_otherdx_013` · status=`draft` · type=`sba` · difficulty=`2` · competency=`['dx']`
 - Linked pages: `t_somatic.md`
-- Evidence: `t`, `_`, `s`, `o`, `m`, `a`, `t`, `i`, `c`, `.`, `m`, `d`, ` `, `—`, ` `, `F`, `u`, `n`, `c`, `t`, `i`, `o`, `n`, `a`, `l`, ` `, `n`, `e`, `u`, `r`, `o`, `l`, `o`, `g`, `i`, `c`, `a`, `l`, ` `, `s`, `y`, `m`, `p`, `t`, `o`, `m`, ` `, `(`, `c`, `o`, `n`, `v`, `e`, `r`, `s`, `i`, `o`, `n`, `)`, ` `, `d`, `i`, `s`, `o`, `r`, `d`, `e`, `r`, `.`
+- Evidence: `t_somatic.md — Functional neurological symptom (conversion) disorder.`
 
 **Stem.** A woman develops sudden left-arm paralysis after an argument; exam shows a positive Hoover sign and findings inconsistent with any neuroanatomic lesion, and workup is normal. Best diagnosis?
 
@@ -20070,7 +20197,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_otherdx_014` · status=`draft` · type=`sba` · difficulty=`3` · competency=`['dx']`
 - Linked pages: `t_dissociative.md`
-- Evidence: `t`, `_`, `d`, `i`, `s`, `s`, `o`, `c`, `i`, `a`, `t`, `i`, `v`, `e`, `.`, `m`, `d`, ` `, `—`, ` `, `D`, `i`, `s`, `s`, `o`, `c`, `i`, `a`, `t`, `i`, `v`, `e`, ` `, `i`, `d`, `e`, `n`, `t`, `i`, `t`, `y`, ` `, `d`, `i`, `s`, `o`, `r`, `d`, `e`, `r`, `.`
+- Evidence: `t_dissociative.md — Dissociative identity disorder.`
 
 **Stem.** A woman with a severe childhood trauma history has recurrent gaps in memory for everyday events and describes two distinct identity states with different names and behaviors that others have witnessed. Best diagnosis?
 
@@ -20089,7 +20216,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_per_001` · status=`attested` · type=`sba` · difficulty=`1` · competency=`['dx', 'psychosocial']`
 - Linked pages: `t_personality.md`
-- Evidence: `t`, `_`, `p`, `e`, `r`, `s`, `o`, `n`, `a`, `l`, `i`, `t`, `y`, `.`, `m`, `d`, ` `, `—`, ` `, `S`, `p`, `l`, `i`, `t`, `t`, `i`, `n`, `g`, ` `, `—`, ` `, `e`, `x`, `p`, `e`, `r`, `i`, `e`, `n`, `c`, `i`, `n`, `g`, ` `, `s`, `t`, `a`, `f`, `f`, ` `, `a`, `s`, ` `, `a`, `l`, `l`, `-`, `g`, `o`, `o`, `d`, ` `, `o`, `r`, ` `, `a`, `l`, `l`, `-`, `b`, `a`, `d`, ` `, `—`, ` `, `i`, `s`, ` `, `c`, `o`, `m`, `m`, `o`, `n`, ` `, `a`, `n`, `d`, ` `, `i`, `s`, ` `, `a`, ` `, `f`, `e`, `a`, `t`, `u`, `r`, `e`, ` `, `o`, `f`, ` `, `t`, `h`, `e`, ` `, `i`, `l`, `l`, `n`, `e`, `s`, `s`, `,`, ` `, `n`, `o`, `t`, ` `, `a`, ` `, `c`, `h`, `a`, `r`, `a`, `c`, `t`, `e`, `r`, ` `, `f`, `l`, `a`, `w`, ` `, `o`, `r`, ` `, `m`, `a`, `n`, `i`, `p`, `u`, `l`, `a`, `t`, `i`, `o`, `n`, `.`
+- Evidence: `t_personality.md — Splitting — experiencing staff as all-good or all-bad — is common and is a feature of the illness, not a character flaw or manipulation.`
 
 **Stem.** A 26-year-old woman with borderline personality disorder tells her student doctor that she trusts only her and that the other staff 'just don't care.' Night nurses describe her as cooperative and warm; day nurses report she screams at them. How is this pattern best understood?
 
@@ -20106,7 +20233,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_per_002` · status=`attested` · type=`sba` · difficulty=`3` · competency=`['management', 'safety']`
 - Linked pages: `t_personality.md`
-- Evidence: `t`, `_`, `p`, `e`, `r`, `s`, `o`, `n`, `a`, `l`, `i`, `t`, `y`, `.`, `m`, `d`, ` `, `—`, ` `, `d`, `o`, ` `, `n`, `o`, `t`, ` `, `s`, `t`, `a`, `r`, `t`, ` `, `o`, `r`, ` `, `e`, `s`, `c`, `a`, `l`, `a`, `t`, `e`, ` `, `b`, `e`, `n`, `z`, `o`, `d`, `i`, `a`, `z`, `e`, `p`, `i`, `n`, `e`, `s`, ` `, `—`, ` `, `t`, `h`, `e`, `y`, ` `, `c`, `a`, `r`, `r`, `y`, ` `, `t`, `h`, `e`, ` `, `h`, `i`, `g`, `h`, `e`, `s`, `t`, ` `, `r`, `i`, `s`, `k`, ` `, `o`, `f`, ` `, `a`, `t`, `t`, `e`, `m`, `p`, `t`, `e`, `d`, ` `, `o`, `r`, ` `, `c`, `o`, `m`, `p`, `l`, `e`, `t`, `e`, `d`, ` `, `s`, `u`, `i`, `c`, `i`, `d`, `e`, ` `, `o`, `f`, ` `, `a`, `n`, `y`, ` `, `p`, `s`, `y`, `c`, `h`, `o`, `t`, `r`, `o`, `p`, `i`, `c`, ` `, `c`, `l`, `a`, `s`, `s`, ` `, `s`, `t`, `u`, `d`, `i`, `e`, `d`, ` `, `i`, `n`, ` `, `B`, `P`, `D`, ` `, `(`, `H`, `R`, ` `, `1`, `.`, `6`, `1`, `,`, ` `, `L`, `i`, `e`, `s`, `l`, `e`, `h`, `t`, `o`, ` `, `2`, `0`, `2`, `3`, `)`, ` `, `a`, `n`, `d`, ` `, `w`, `o`, `r`, `s`, `e`, `n`, ` `, `d`, `i`, `s`, `i`, `n`, `h`, `i`, `b`, `i`, `t`, `i`, `o`, `n`, `.`, ` `, `I`, `f`, ` `, `a`, ` `, `c`, `r`, `i`, `s`, `i`, `s`, ` `, `g`, `e`, `n`, `u`, `i`, `n`, `e`, `l`, `y`, ` `, `n`, `e`, `e`, `d`, `s`, ` `, `p`, `h`, `a`, `r`, `m`, `a`, `c`, `o`, `l`, `o`, `g`, `y`, `,`, ` `, `f`, `o`, `l`, `l`, `o`, `w`, ` `, `t`, `h`, `e`, ` `, `N`, `I`, `C`, `E`, ` `, `r`, `u`, `l`, `e`, `:`, ` `, `a`, ` `, `s`, `i`, `n`, `g`, `l`, `e`, ` `, `a`, `g`, `e`, `n`, `t`, ` `, `a`, `t`, ` `, `t`, `h`, `e`, ` `, `m`, `i`, `n`, `i`, `m`, `u`, `m`, ` `, `e`, `f`, `f`, `e`, `c`, `t`, `i`, `v`, `e`, ` `, `d`, `o`, `s`, `e`, ` `, `f`, `o`, `r`, ` `, `≤`, `1`, ` `, `w`, `e`, `e`, `k`, ` `, `(`, `p`, `r`, `e`, `f`, `e`, `r`, ` `, `a`, ` `, `s`, `e`, `d`, `a`, `t`, `i`, `n`, `g`, ` `, `a`, `n`, `t`, `i`, `h`, `i`, `s`, `t`, `a`, `m`, `i`, `n`, `e`, ` `, `o`, `r`, ` `, `l`, `o`, `w`, `-`, `d`, `o`, `s`, `e`, ` `, `q`, `u`, `e`, `t`, `i`, `a`, `p`, `i`, `n`, `e`, ` `, `o`, `v`, `e`, `r`, ` `, `b`, `e`, `n`, `z`, `o`, `d`, `i`, `a`, `z`, `e`, `p`, `i`, `n`, `e`, `s`, ` `, `a`, `n`, `d`, ` `, `T`, `C`, `A`, `s`, `)`, `.`
+- Evidence: `t_personality.md — do not start or escalate benzodiazepines — they carry the highest risk of attempted or completed suicide of any psychotropic class studied in BPD (HR 1.61, Lieslehto 2023) and worsen disinhibition. If a crisis genuinely needs pharmacology, follow the NICE rule: a single agent at the minimum effective dose for ≤1 week (prefer a sedating antihistamine or low-dose quetiapine over benzodiazepines and TCAs).`
 
 **Stem.** A 22-year-old woman with borderline personality disorder is admitted in crisis with severe anxiety and sleep disturbance. She has been engaged in DBT for six months with good skill use documented. She is asking for 'something for her nerves.' The pharmacologic approach most consistent with evidence-based practice for BPD is which of the following?
 
@@ -20123,7 +20250,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_per_005` · status=`attested` · type=`sba` · difficulty=`1` · competency=`['pharm', 'safety']` · **high-yield**
 - Linked pages: `t_personality.md`
-- Evidence: `t`, `_`, `p`, `e`, `r`, `s`, `o`, `n`, `a`, `l`, `i`, `t`, `y`, `.`, `m`, `d`, ` `, `—`, ` `, `N`, `e`, `v`, `e`, `r`, ` `, `s`, `t`, `a`, `r`, `t`, ` `, `o`, `r`, ` `, `e`, `s`, `c`, `a`, `l`, `a`, `t`, `e`, ` `, `b`, `e`, `n`, `z`, `o`, `d`, `i`, `a`, `z`, `e`, `p`, `i`, `n`, `e`, `s`, ` `, `i`, `n`, ` `, `B`, `P`, `D`, ` `, `—`, ` `, `h`, `i`, `g`, `h`, `e`, `s`, `t`, ` `, `r`, `i`, `s`, `k`, ` `, `o`, `f`, ` `, `a`, `t`, `t`, `e`, `m`, `p`, `t`, `e`, `d`, ` `, `o`, `r`, ` `, `c`, `o`, `m`, `p`, `l`, `e`, `t`, `e`, `d`, ` `, `s`, `u`, `i`, `c`, `i`, `d`, `e`, ` `, `o`, `f`, ` `, `a`, `n`, `y`, ` `, `p`, `s`, `y`, `c`, `h`, `o`, `t`, `r`, `o`, `p`, `i`, `c`, ` `, `c`, `l`, `a`, `s`, `s`, ` `, `s`, `t`, `u`, `d`, `i`, `e`, `d`, ` `, `i`, `n`, ` `, `B`, `P`, `D`, ` `, `(`, `H`, `R`, ` `, `1`, `.`, `6`, `1`, `,`, ` `, `9`, `5`, `%`, ` `, `C`, `I`, ` `, `1`, `.`, `4`, `5`, `–`, `1`, `.`, `7`, `8`, `;`, ` `, `L`, `i`, `e`, `s`, `l`, `e`, `h`, `t`, `o`, ` `, `2`, `0`, `2`, `3`, `)`, ` `, `a`, `n`, `d`, ` `, `w`, `o`, `r`, `s`, `e`, `n`, ` `, `d`, `i`, `s`, `i`, `n`, `h`, `i`, `b`, `i`, `t`, `i`, `o`, `n`, `.`
+- Evidence: `t_personality.md — Never start or escalate benzodiazepines in BPD — highest risk of attempted or completed suicide of any psychotropic class studied in BPD (HR 1.61, 95% CI 1.45–1.78; Lieslehto 2023) and worsen disinhibition.`
 
 **Stem.** A 27-year-old woman with borderline personality disorder is admitted following a suicide attempt by overdose. The treating team is considering starting lorazepam to help manage her emotional lability and distress between therapy sessions. Which evidence-based statement most accurately characterizes this plan?
 
@@ -20140,7 +20267,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_per_006` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['psychosocial', 'management']`
 - Linked pages: `t_personality.md`
-- Evidence: `t`, `_`, `p`, `e`, `r`, `s`, `o`, `n`, `a`, `l`, `i`, `t`, `y`, `.`, `m`, `d`, ` `, `—`, ` `, `A`, `p`, `p`, `l`, `y`, ` `, `c`, `o`, `n`, `s`, `i`, `s`, `t`, `e`, `n`, `t`, `,`, ` `, `t`, `r`, `a`, `n`, `s`, `p`, `a`, `r`, `e`, `n`, `t`, ` `, `l`, `i`, `m`, `i`, `t`, `-`, `s`, `e`, `t`, `t`, `i`, `n`, `g`, ` `, `a`, `n`, `d`, ` `, `c`, `o`, `m`, `m`, `u`, `n`, `i`, `c`, `a`, `t`, `e`, ` `, `a`, `s`, ` `, `a`, ` `, `u`, `n`, `i`, `f`, `i`, `e`, `d`, ` `, `t`, `e`, `a`, `m`, ` `, `—`, ` `, `s`, `h`, `a`, `r`, `e`, `d`, ` `, `n`, `o`, `t`, `e`, `s`, ` `, `a`, `n`, `d`, ` `, `h`, `a`, `n`, `d`, `o`, `f`, `f`, `s`, ` `, `b`, `l`, `u`, `n`, `t`, ` `, `s`, `p`, `l`, `i`, `t`, `t`, `i`, `n`, `g`, ` `, `a`, `n`, `d`, ` `, `p`, `r`, `e`, `v`, `e`, `n`, `t`, ` `, `s`, `t`, `a`, `f`, `f`, ` `, `f`, `r`, `o`, `m`, ` `, `b`, `e`, `i`, `n`, `g`, ` `, `d`, `i`, `v`, `i`, `d`, `e`, `d`, ` `, `i`, `n`, `t`, `o`, ` `, `'`, `g`, `o`, `o`, `d`, `'`, ` `, `a`, `n`, `d`, ` `, `'`, `b`, `a`, `d`, `.`, `'`, ` `, `B`, `r`, `i`, `n`, `g`, ` `, `o`, `b`, `s`, `e`, `r`, `v`, `e`, `d`, ` `, `s`, `p`, `l`, `i`, `t`, `t`, `i`, `n`, `g`, ` `, `o`, `r`, ` `, `t`, `e`, `a`, `m`, `-`, `d`, `i`, `v`, `i`, `s`, `i`, `o`, `n`, ` `, `t`, `o`, ` `, `r`, `o`, `u`, `n`, `d`, `s`, ` `, `s`, `o`, ` `, `t`, `h`, `e`, ` `, `p`, `l`, `a`, `n`, ` `, `s`, `t`, `a`, `y`, `s`, ` `, `u`, `n`, `i`, `f`, `i`, `e`, `d`, `.`
+- Evidence: `t_personality.md — Apply consistent, transparent limit-setting and communicate as a unified team — shared notes and handoffs blunt splitting and prevent staff from being divided into 'good' and 'bad.' Bring observed splitting or team-division to rounds so the plan stays unified.`
 
 **Stem.** A patient with borderline personality disorder has been admitted for one week. Day-shift nurses describe her as 'demanding and exhausting,' while night-shift nurses call her 'our most engaged patient.' The team recognizes this as splitting. Which response most directly addresses the splitting dynamic?
 
@@ -20157,7 +20284,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_per_003` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['safety']`
 - Linked pages: `t_personality.md`
-- Evidence: `t`, `_`, `p`, `e`, `r`, `s`, `o`, `n`, `a`, `l`, `i`, `t`, `y`, `.`, `m`, `d`, ` `, `—`, ` `, `F`, `o`, `r`, ` `, `c`, `h`, `r`, `o`, `n`, `i`, `c`, ` `, `s`, `u`, `i`, `c`, `i`, `d`, `a`, `l`, `i`, `t`, `y`, `,`, ` `, `c`, `o`, `l`, `l`, `a`, `b`, `o`, `r`, `a`, `t`, `i`, `v`, `e`, ` `, `s`, `a`, `f`, `e`, `t`, `y`, ` `, `p`, `l`, `a`, `n`, `n`, `i`, `n`, `g`, ` `, `i`, `s`, ` `, `o`, `f`, `t`, `e`, `n`, ` `, `p`, `r`, `e`, `f`, `e`, `r`, `a`, `b`, `l`, `e`, ` `, `t`, `o`, ` `, `r`, `e`, `p`, `e`, `a`, `t`, `e`, `d`, ` `, `o`, `r`, ` `, `p`, `r`, `o`, `l`, `o`, `n`, `g`, `e`, `d`, ` `, `a`, `d`, `m`, `i`, `s`, `s`, `i`, `o`, `n`, `,`, ` `, `w`, `h`, `i`, `c`, `h`, ` `, `c`, `a`, `n`, ` `, `r`, `e`, `i`, `n`, `f`, `o`, `r`, `c`, `e`, ` `, `t`, `h`, `e`, ` `, `h`, `o`, `s`, `p`, `i`, `t`, `a`, `l`, ` `, `a`, `s`, ` `, `t`, `h`, `e`, ` `, `p`, `r`, `i`, `m`, `a`, `r`, `y`, ` `, `c`, `o`, `p`, `i`, `n`, `g`, ` `, `s`, `t`, `r`, `a`, `t`, `e`, `g`, `y`, `.`
+- Evidence: `t_personality.md — For chronic suicidality, collaborative safety planning is often preferable to repeated or prolonged admission, which can reinforce the hospital as the primary coping strategy.`
 
 **Stem.** A 24-year-old woman with borderline personality disorder has had 6 psychiatric admissions in the past 2 years, each following an episode of suicidal ideation and non-suicidal self-injury after an interpersonal rupture. She describes ongoing passive suicidal ideation at baseline. Tonight she is calm, the relationship dispute that triggered this admission has somewhat resolved, and her self-harm behaviors have decreased. How should the team conceptualize the discharge planning?
 
@@ -20174,7 +20301,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_per_004` · status=`attested` · type=`sba` · difficulty=`3` · competency=`['dx']`
 - Linked pages: `t_personality.md`
-- Evidence: `t`, `_`, `p`, `e`, `r`, `s`, `o`, `n`, `a`, `l`, `i`, `t`, `y`, `.`, `m`, `d`, ` `, `—`, ` `, `T`, `h`, `e`, ` `, `c`, `a`, `r`, `d`, `i`, `n`, `a`, `l`, ` `, `e`, `r`, `r`, `o`, `r`, ` `, `i`, `s`, ` `, `d`, `i`, `a`, `g`, `n`, `o`, `s`, `t`, `i`, `c`, ` `, `o`, `v`, `e`, `r`, `s`, `h`, `a`, `d`, `o`, `w`, `i`, `n`, `g`, `:`, ` `, `l`, `e`, `t`, `t`, `i`, `n`, `g`, ` `, `a`, ` `, `p`, `e`, `r`, `s`, `o`, `n`, `a`, `l`, `i`, `t`, `y`, ` `, `l`, `a`, `b`, `e`, `l`, ` `, `c`, `a`, `u`, `s`, `e`, ` `, `y`, `o`, `u`, ` `, `t`, `o`, ` `, `u`, `n`, `d`, `e`, `r`, `-`, `t`, `r`, `e`, `a`, `t`, ` `, `a`, ` `, `r`, `e`, `a`, `l`, `,`, ` `, `a`, `c`, `u`, `t`, `e`, `,`, ` `, `t`, `r`, `e`, `a`, `t`, `a`, `b`, `l`, `e`, ` `, `i`, `l`, `l`, `n`, `e`, `s`, `s`, `.`, ` `, `A`, ` `, `B`, `P`, `D`, ` `, `d`, `i`, `a`, `g`, `n`, `o`, `s`, `i`, `s`, ` `, `d`, `o`, `e`, `s`, ` `, `n`, `o`, `t`, ` `, `p`, `r`, `o`, `t`, `e`, `c`, `t`, ` `, `a`, ` `, `p`, `a`, `t`, `i`, `e`, `n`, `t`, ` `, `f`, `r`, `o`, `m`, ` `, `a`, `l`, `s`, `o`, ` `, `h`, `a`, `v`, `i`, `n`, `g`, ` `, `a`, ` `, `s`, `e`, `r`, `i`, `o`, `u`, `s`, ` `, `m`, `o`, `o`, `d`, `,`, ` `, `p`, `s`, `y`, `c`, `h`, `o`, `t`, `i`, `c`, `,`, ` `, `o`, `r`, ` `, `m`, `e`, `d`, `i`, `c`, `a`, `l`, ` `, `c`, `o`, `n`, `d`, `i`, `t`, `i`, `o`, `n`, `.`
+- Evidence: `t_personality.md — The cardinal error is diagnostic overshadowing: letting a personality label cause you to under-treat a real, acute, treatable illness. A BPD diagnosis does not protect a patient from also having a serious mood, psychotic, or medical condition.`
 
 **Stem.** A 31-year-old woman with a documented BPD diagnosis is admitted with severe depressive symptoms, inability to get out of bed, anhedonia, and new passive suicidal ideation. A third-year student says, 'She has BPD — this is probably just her mood lability.' The attending asks the student to reflect on this reasoning. What is the specific error in this approach?
 
@@ -20191,7 +20318,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_per_007` · status=`draft` · type=`sba` · difficulty=`2` · competency=`['dx']`
 - Linked pages: `t_personality.md`
-- Evidence: `t`, `_`, `p`, `e`, `r`, `s`, `o`, `n`, `a`, `l`, `i`, `t`, `y`, `.`, `m`, `d`, ` `, `—`, ` `, `E`, `x`, `a`, `m`, ` `, `d`, `i`, `a`, `g`, `n`, `o`, `s`, `t`, `i`, `c`, ` `, `a`, `n`, `c`, `h`, `o`, `r`, `s`, `:`, ` `, `a`, `n`, `t`, `i`, `s`, `o`, `c`, `i`, `a`, `l`, ` `, `P`, `D`, ` `, `r`, `e`, `q`, `u`, `i`, `r`, `e`, `s`, ` `, `a`, `g`, `e`, ` `, `a`, `t`, ` `, `l`, `e`, `a`, `s`, `t`, ` `, `1`, `8`, ` `, `p`, `l`, `u`, `s`, ` `, `c`, `o`, `n`, `d`, `u`, `c`, `t`, ` `, `d`, `i`, `s`, `o`, `r`, `d`, `e`, `r`, ` `, `o`, `n`, `s`, `e`, `t`, ` `, `b`, `e`, `f`, `o`, `r`, `e`, ` `, `a`, `g`, `e`, ` `, `1`, `5`, `.`
+- Evidence: `t_personality.md — Exam diagnostic anchors: antisocial PD requires age at least 18 plus conduct disorder onset before age 15.`
 
 **Stem.** A 19-year-old man is admitted after an assault. He has a documented history of truancy, fire-setting, and cruelty to animals beginning at age 12. Which finding is required to diagnose antisocial personality disorder?
 
@@ -20208,7 +20335,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_per_008` · status=`draft` · type=`sba` · difficulty=`2` · competency=`['dx']`
 - Linked pages: `t_personality.md`
-- Evidence: `t`, `_`, `p`, `e`, `r`, `s`, `o`, `n`, `a`, `l`, `i`, `t`, `y`, `.`, `m`, `d`, ` `, `—`, ` `, `E`, `x`, `a`, `m`, ` `, `d`, `i`, `a`, `g`, `n`, `o`, `s`, `t`, `i`, `c`, ` `, `a`, `n`, `c`, `h`, `o`, `r`, `s`, `:`, ` `, `p`, `a`, `r`, `a`, `n`, `o`, `i`, `d`, ` `, `P`, `D`, ` `, `v`, `s`, ` `, `p`, `s`, `y`, `c`, `h`, `o`, `t`, `i`, `c`, ` `, `d`, `i`, `s`, `o`, `r`, `d`, `e`, `r`, `s`, `.`
+- Evidence: `t_personality.md — Exam diagnostic anchors: paranoid PD vs psychotic disorders.`
 
 **Stem.** A 45-year-old man believes coworkers are subtly undermining him and reads hidden hostile meaning into ordinary remarks, present for decades. He has never had hallucinations, sustained delusions, or functional collapse. Most likely diagnosis?
 
@@ -20225,7 +20352,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_per_009` · status=`draft` · type=`sba` · difficulty=`2` · competency=`['dx']`
 - Linked pages: `t_personality.md`
-- Evidence: `t`, `_`, `p`, `e`, `r`, `s`, `o`, `n`, `a`, `l`, `i`, `t`, `y`, `.`, `m`, `d`, ` `, `—`, ` `, `E`, `x`, `a`, `m`, ` `, `d`, `i`, `a`, `g`, `n`, `o`, `s`, `t`, `i`, `c`, ` `, `a`, `n`, `c`, `h`, `o`, `r`, `s`, `:`, ` `, `s`, `c`, `h`, `i`, `z`, `o`, `t`, `y`, `p`, `a`, `l`, ` `, `v`, `s`, ` `, `s`, `c`, `h`, `i`, `z`, `o`, `i`, `d`, ` `, `v`, `s`, ` `, `a`, `v`, `o`, `i`, `d`, `a`, `n`, `t`, `.`
+- Evidence: `t_personality.md — Exam diagnostic anchors: schizotypal vs schizoid vs avoidant.`
 
 **Stem.** A 30-year-old woman has few relationships, magical thinking, ideas of reference, and odd speech; her social anxiety does not lessen as she gets to know people and stems from paranoid discomfort rather than fear of embarrassment. Which best fits?
 
@@ -20242,7 +20369,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_per_010` · status=`draft` · type=`sba` · difficulty=`1` · competency=`['next-step', 'psychosocial']`
 - Linked pages: `t_personality.md`, `psychotherapy.md`
-- Evidence: `t`, `_`, `p`, `e`, `r`, `s`, `o`, `n`, `a`, `l`, `i`, `t`, `y`, `.`, `m`, `d`, ` `, `—`, ` `, `A`, `c`, `u`, `t`, `e`, ` `, `i`, `n`, `p`, `a`, `t`, `i`, `e`, `n`, `t`, ` `, `m`, `a`, `n`, `a`, `g`, `e`, `m`, `e`, `n`, `t`, ` `, `a`, `n`, `d`, ` `, `d`, `i`, `s`, `p`, `o`, `s`, `i`, `t`, `i`, `o`, `n`, `;`, ` `, `p`, `s`, `y`, `c`, `h`, `o`, `t`, `h`, `e`, `r`, `a`, `p`, `y`, `.`, `m`, `d`, ` `, `—`, ` `, `D`, `B`, `T`, ` `, `f`, `o`, `r`, ` `, `B`, `P`, `D`, `/`, `s`, `e`, `l`, `f`, `-`, `h`, `a`, `r`, `m`, `.`
+- Evidence: `t_personality.md — Acute inpatient management and disposition; psychotherapy.md — DBT for BPD/self-harm.`
 
 **Stem.** A 24-year-old woman with borderline personality disorder and recurrent self-harm asks what treatment is most likely to help long-term. Most appropriate first-line recommendation?
 
@@ -20259,7 +20386,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_per_011` · status=`draft` · type=`sba` · difficulty=`2` · competency=`['dx']`
 - Linked pages: `t_personality.md`
-- Evidence: `t`, `_`, `p`, `e`, `r`, `s`, `o`, `n`, `a`, `l`, `i`, `t`, `y`, `.`, `m`, `d`, ` `, `—`, ` `, `E`, `x`, `a`, `m`, ` `, `d`, `i`, `a`, `g`, `n`, `o`, `s`, `t`, `i`, `c`, ` `, `a`, `n`, `c`, `h`, `o`, `r`, `s`, `:`, ` `, `O`, `C`, `P`, `D`, ` `, `v`, `s`, ` `, `O`, `C`, `D`, `.`
+- Evidence: `t_personality.md — Exam diagnostic anchors: OCPD vs OCD.`
 
 **Stem.** A 50-year-old accountant is preoccupied with rules, lists, and perfectionism so that tasks are never finished; he sees nothing wrong with this and is proud of his standards. He has no true obsessions or compulsions. Best diagnosis?
 
@@ -20276,7 +20403,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_per_012` · status=`draft` · type=`sba` · difficulty=`1` · competency=`['dx']`
 - Linked pages: `t_personality.md`
-- Evidence: `t`, `_`, `p`, `e`, `r`, `s`, `o`, `n`, `a`, `l`, `i`, `t`, `y`, `.`, `m`, `d`, ` `, `—`, ` `, `E`, `x`, `a`, `m`, ` `, `d`, `i`, `a`, `g`, `n`, `o`, `s`, `t`, `i`, `c`, ` `, `a`, `n`, `c`, `h`, `o`, `r`, `s`, `:`, ` `, `C`, `l`, `u`, `s`, `t`, `e`, `r`, ` `, `A`, `/`, `B`, `/`, `C`, ` `, `d`, `e`, `s`, `c`, `r`, `i`, `p`, `t`, `o`, `r`, `s`, `.`
+- Evidence: `t_personality.md — Exam diagnostic anchors: Cluster A/B/C descriptors.`
 
 **Stem.** On rounds you are asked to group the personality disorders. Which pairing of cluster and descriptor is correct?
 
@@ -20293,7 +20420,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_per_013` · status=`draft` · type=`sba` · difficulty=`2` · competency=`['dx']`
 - Linked pages: `t_personality.md`
-- Evidence: `t`, `_`, `p`, `e`, `r`, `s`, `o`, `n`, `a`, `l`, `i`, `t`, `y`, `.`, `m`, `d`, ` `, `—`, ` `, `E`, `x`, `a`, `m`, ` `, `d`, `i`, `a`, `g`, `n`, `o`, `s`, `t`, `i`, `c`, ` `, `a`, `n`, `c`, `h`, `o`, `r`, `s`, `:`, ` `, `g`, `e`, `n`, `e`, `r`, `a`, `l`, ` `, `P`, `D`, ` `, `c`, `r`, `i`, `t`, `e`, `r`, `i`, `a`, ` `, `a`, `n`, `d`, ` `, `d`, `i`, `a`, `g`, `n`, `o`, `s`, `t`, `i`, `c`, ` `, `o`, `v`, `e`, `r`, `s`, `h`, `a`, `d`, `o`, `w`, `i`, `n`, `g`, `.`
+- Evidence: `t_personality.md — Exam diagnostic anchors: general PD criteria and diagnostic overshadowing.`
 
 **Stem.** A patient is irritable and demanding during an acute manic episode; the team wonders about a personality disorder. What best distinguishes a personality disorder from this presentation?
 
@@ -20310,7 +20437,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_per_014` · status=`draft` · type=`sba` · difficulty=`2` · competency=`['dx']`
 - Linked pages: `t_personality.md`
-- Evidence: `t`, `_`, `p`, `e`, `r`, `s`, `o`, `n`, `a`, `l`, `i`, `t`, `y`, `.`, `m`, `d`, ` `, `—`, ` `, `E`, `x`, `a`, `m`, ` `, `d`, `i`, `a`, `g`, `n`, `o`, `s`, `t`, `i`, `c`, ` `, `a`, `n`, `c`, `h`, `o`, `r`, `s`, `:`, ` `, `n`, `a`, `r`, `c`, `i`, `s`, `s`, `i`, `s`, `t`, `i`, `c`, ` `, `p`, `e`, `r`, `s`, `o`, `n`, `a`, `l`, `i`, `t`, `y`, ` `, `d`, `i`, `s`, `o`, `r`, `d`, `e`, `r`, `.`
+- Evidence: `t_personality.md — Exam diagnostic anchors: narcissistic personality disorder.`
 
 **Stem.** A 40-year-old executive expects constant admiration, believes he is uniquely special and entitled to the best of everything, and dismisses colleagues as beneath him; he becomes enraged by mild criticism. Best diagnosis?
 
@@ -20327,7 +20454,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_per_015` · status=`draft` · type=`sba` · difficulty=`2` · competency=`['dx']`
 - Linked pages: `t_personality.md`
-- Evidence: `t`, `_`, `p`, `e`, `r`, `s`, `o`, `n`, `a`, `l`, `i`, `t`, `y`, `.`, `m`, `d`, ` `, `—`, ` `, `E`, `x`, `a`, `m`, ` `, `d`, `i`, `a`, `g`, `n`, `o`, `s`, `t`, `i`, `c`, ` `, `a`, `n`, `c`, `h`, `o`, `r`, `s`, `:`, ` `, `d`, `e`, `p`, `e`, `n`, `d`, `e`, `n`, `t`, ` `, `p`, `e`, `r`, `s`, `o`, `n`, `a`, `l`, `i`, `t`, `y`, ` `, `d`, `i`, `s`, `o`, `r`, `d`, `e`, `r`, `.`
+- Evidence: `t_personality.md — Exam diagnostic anchors: dependent personality disorder.`
 
 **Stem.** A 33-year-old woman cannot make everyday decisions without excessive reassurance, feels helpless when alone, and urgently seeks a new relationship for care whenever one ends. Best diagnosis?
 
@@ -20344,7 +20471,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_per_016` · status=`draft` · type=`sba` · difficulty=`2` · competency=`['dx']`
 - Linked pages: `t_personality.md`
-- Evidence: `t`, `_`, `p`, `e`, `r`, `s`, `o`, `n`, `a`, `l`, `i`, `t`, `y`, `.`, `m`, `d`, ` `, `—`, ` `, `E`, `x`, `a`, `m`, ` `, `d`, `i`, `a`, `g`, `n`, `o`, `s`, `t`, `i`, `c`, ` `, `a`, `n`, `c`, `h`, `o`, `r`, `s`, `:`, ` `, `h`, `i`, `s`, `t`, `r`, `i`, `o`, `n`, `i`, `c`, ` `, `p`, `e`, `r`, `s`, `o`, `n`, `a`, `l`, `i`, `t`, `y`, ` `, `d`, `i`, `s`, `o`, `r`, `d`, `e`, `r`, `.`
+- Evidence: `t_personality.md — Exam diagnostic anchors: histrionic personality disorder.`
 
 **Stem.** A 29-year-old is uncomfortable when not the center of attention, is dramatic and seductive with staff, shows rapidly shifting shallow emotions, and considers acquaintances closer than they are. Best diagnosis?
 
@@ -20363,7 +20490,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_pha_001` · status=`attested` · type=`two-tier` · difficulty=`2` · competency=`['pharm', 'safety']` · **high-yield**
 - Linked pages: `psychopharm_primer.md`
-- Evidence: `p`, `s`, `y`, `c`, `h`, `o`, `p`, `h`, `a`, `r`, `m`, `_`, `p`, `r`, `i`, `m`, `e`, `r`, `.`, `m`, `d`, ` `, `—`, ` `, `S`, `e`, `r`, `o`, `t`, `o`, `n`, `i`, `n`, ` `, `s`, `y`, `n`, `d`, `r`, `o`, `m`, `e`, `:`, ` `, `c`, `l`, `o`, `n`, `u`, `s`, `,`, ` `, `h`, `y`, `p`, `e`, `r`, `r`, `e`, `f`, `l`, `e`, `x`, `i`, `a`, `,`, ` `, `a`, `n`, `d`, ` `, `a`, `u`, `t`, `o`, `n`, `o`, `m`, `i`, `c`, ` `, `i`, `n`, `s`, `t`, `a`, `b`, `i`, `l`, `i`, `t`, `y`, ` `, `w`, `i`, `t`, `h`, ` `, `r`, `a`, `p`, `i`, `d`, ` `, `o`, `n`, `s`, `e`, `t`, `,`, ` `, `u`, `s`, `u`, `a`, `l`, `l`, `y`, ` `, `a`, `f`, `t`, `e`, `r`, ` `, `a`, ` `, `s`, `e`, `r`, `o`, `t`, `o`, `n`, `e`, `r`, `g`, `i`, `c`, ` `, `a`, `g`, `e`, `n`, `t`, ` `, `w`, `a`, `s`, ` `, `s`, `t`, `a`, `r`, `t`, `e`, `d`, ` `, `o`, `r`, ` `, `i`, `n`, `c`, `r`, `e`, `a`, `s`, `e`, `d`, `.`, ` `, `N`, `e`, `u`, `r`, `o`, `l`, `e`, `p`, `t`, `i`, `c`, ` `, `m`, `a`, `l`, `i`, `g`, `n`, `a`, `n`, `t`, ` `, `s`, `y`, `n`, `d`, `r`, `o`, `m`, `e`, `:`, ` `, `'`, `l`, `e`, `a`, `d`, `-`, `p`, `i`, `p`, `e`, `'`, ` `, `r`, `i`, `g`, `i`, `d`, `i`, `t`, `y`, `,`, ` `, `h`, `y`, `p`, `e`, `r`, `t`, `h`, `e`, `r`, `m`, `i`, `a`, `,`, ` `, `a`, `n`, `d`, ` `, `e`, `l`, `e`, `v`, `a`, `t`, `e`, `d`, ` `, `C`, `K`, ` `, `i`, `n`, ` `, `s`, `o`, `m`, `e`, `o`, `n`, `e`, ` `, `o`, `n`, ` `, `a`, ` `, `d`, `o`, `p`, `a`, `m`, `i`, `n`, `e`, ` `, `b`, `l`, `o`, `c`, `k`, `e`, `r`, ` `, `—`, ` `, `s`, `l`, `o`, `w`, `e`, `r`, ` `, `a`, `n`, `d`, ` `, `s`, `t`, `i`, `f`, `f`, `e`, `r`, ` `, `t`, `h`, `a`, `n`, ` `, `s`, `e`, `r`, `o`, `t`, `o`, `n`, `i`, `n`, ` `, `s`, `y`, `n`, `d`, `r`, `o`, `m`, `e`, `.`
+- Evidence: `psychopharm_primer.md — Serotonin syndrome: clonus, hyperreflexia, and autonomic instability with rapid onset, usually after a serotonergic agent was started or increased. Neuroleptic malignant syndrome: 'lead-pipe' rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker — slower and stiffer than serotonin syndrome.`
 
 **Stem.** A 23-year-old man with a history of depression on high-dose sertraline is brought to the emergency department 3 hours after a second serotonergic medication was added to his regimen. Examination shows agitation, diarrhea, diaphoresis, and clonus; reflexes are brisk and symmetrically hyperactive throughout. Temperature is 38.3°C. Which of the following best explains this presentation?
 
@@ -20382,7 +20509,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_pha_002` · status=`attested` · type=`sba` · difficulty=`1` · competency=`['pharm', 'management']`
 - Linked pages: `psychopharm_primer.md`
-- Evidence: `p`, `s`, `y`, `c`, `h`, `o`, `p`, `h`, `a`, `r`, `m`, `_`, `p`, `r`, `i`, `m`, `e`, `r`, `.`, `m`, `d`, ` `, `—`, ` `, `C`, `l`, `o`, `z`, `a`, `p`, `i`, `n`, `e`, ` `, `f`, `o`, `r`, ` `, `t`, `r`, `e`, `a`, `t`, `m`, `e`, `n`, `t`, `-`, `r`, `e`, `s`, `i`, `s`, `t`, `a`, `n`, `t`, ` `, `s`, `c`, `h`, `i`, `z`, `o`, `p`, `h`, `r`, `e`, `n`, `i`, `a`, `:`, ` `, `A`, `N`, `C`, ` `, `m`, `o`, `n`, `i`, `t`, `o`, `r`, `i`, `n`, `g`, ` `, `p`, `e`, `r`, ` `, `p`, `r`, `e`, `s`, `c`, `r`, `i`, `b`, `i`, `n`, `g`, ` `, `i`, `n`, `f`, `o`, `r`, `m`, `a`, `t`, `i`, `o`, `n`, `;`, ` `, `a`, `l`, `s`, `o`, ` `, `w`, `a`, `t`, `c`, `h`, ` `, `f`, `o`, `r`, ` `, `m`, `y`, `o`, `c`, `a`, `r`, `d`, `i`, `t`, `i`, `s`, `,`, ` `, `s`, `e`, `v`, `e`, `r`, `e`, ` `, `c`, `o`, `n`, `s`, `t`, `i`, `p`, `a`, `t`, `i`, `o`, `n`, `/`, `i`, `l`, `e`, `u`, `s`, `,`, ` `, `a`, `n`, `d`, ` `, `s`, `e`, `i`, `z`, `u`, `r`, `e`, `s`, `.`
+- Evidence: `psychopharm_primer.md — Clozapine for treatment-resistant schizophrenia: ANC monitoring per prescribing information; also watch for myocarditis, severe constipation/ileus, and seizures.`
 
 **Stem.** A 34-year-old man with treatment-resistant schizophrenia has just been started on clozapine. He reports feeling better than he has in years. The treatment team asks the student to identify the most critical ongoing monitoring parameter for this medication. Which of the following is correct?
 
@@ -20399,7 +20526,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_pha_003` · status=`attested` · type=`sba` · difficulty=`1` · competency=`['pharm']` · **high-yield**
 - Linked pages: `psychopharm_primer.md`
-- Evidence: `p`, `s`, `y`, `c`, `h`, `o`, `p`, `h`, `a`, `r`, `m`, `_`, `p`, `r`, `i`, `m`, `e`, `r`, `.`, `m`, `d`, ` `, `—`, ` `, `T`, `h`, `e`, ` `, `s`, `i`, `n`, `g`, `l`, `e`, ` `, `m`, `o`, `s`, `t`, ` `, `u`, `s`, `e`, `f`, `u`, `l`, ` `, `f`, `r`, `a`, `m`, `i`, `n`, `g`, ` `, `c`, `o`, `m`, `e`, `s`, ` `, `f`, `r`, `o`, `m`, ` `, `C`, `A`, `T`, `I`, `E`, `:`, ` `, `c`, `h`, `o`, `o`, `s`, `e`, ` `, `b`, `y`, ` `, `s`, `i`, `d`, `e`, `-`, `e`, `f`, `f`, `e`, `c`, `t`, ` `, `p`, `r`, `o`, `f`, `i`, `l`, `e`, `,`, ` `, `n`, `o`, `t`, ` `, `b`, `y`, ` `, `'`, `n`, `e`, `w`, `e`, `r`, ` `, `i`, `s`, ` `, `b`, `e`, `t`, `t`, `e`, `r`, `'`, ` `, `—`, ` `, `a`, `g`, `e`, `n`, `t`, `s`, ` `, `d`, `i`, `f`, `f`, `e`, `r`, ` `, `m`, `o`, `r`, `e`, ` `, `i`, `n`, ` `, `w`, `h`, `a`, `t`, ` `, `t`, `h`, `e`, `y`, ` `, `d`, `o`, ` `, `t`, `o`, ` `, `w`, `e`, `i`, `g`, `h`, `t`, `,`, ` `, `g`, `l`, `u`, `c`, `o`, `s`, `e`, `,`, ` `, `l`, `i`, `p`, `i`, `d`, `s`, `,`, ` `, `p`, `r`, `o`, `l`, `a`, `c`, `t`, `i`, `n`, `,`, ` `, `Q`, `T`, `c`, `,`, ` `, `a`, `n`, `d`, ` `, `m`, `o`, `v`, `e`, `m`, `e`, `n`, `t`, ` `, `t`, `h`, `a`, `n`, ` `, `i`, `n`, ` `, `r`, `a`, `w`, ` `, `e`, `f`, `f`, `i`, `c`, `a`, `c`, `y`, `.`
+- Evidence: `psychopharm_primer.md — The single most useful framing comes from CATIE: choose by side-effect profile, not by 'newer is better' — agents differ more in what they do to weight, glucose, lipids, prolactin, QTc, and movement than in raw efficacy.`
 
 **Stem.** A student argues that quetiapine should be chosen over haloperidol for a patient with psychosis because 'it's a second-generation agent and therefore more effective.' An attending asks what the CATIE trial established about this reasoning. Which response is most accurate?
 
@@ -20416,7 +20543,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_pha_004` · status=`attested` · type=`sba` · difficulty=`1` · competency=`['management', 'pharm']`
 - Linked pages: `psychopharm_primer.md`
-- Evidence: `p`, `s`, `y`, `c`, `h`, `o`, `p`, `h`, `a`, `r`, `m`, `_`, `p`, `r`, `i`, `m`, `e`, `r`, `.`, `m`, `d`, ` `, `—`, ` `, `W`, `h`, `a`, `t`, `e`, `v`, `e`, `r`, ` `, `t`, `h`, `e`, ` `, `c`, `h`, `o`, `i`, `c`, `e`, `,`, ` `, `m`, `e`, `t`, `a`, `b`, `o`, `l`, `i`, `c`, ` `, `m`, `o`, `n`, `i`, `t`, `o`, `r`, `i`, `n`, `g`, ` `, `i`, `s`, ` `, `p`, `a`, `r`, `t`, ` `, `o`, `f`, ` `, `t`, `h`, `e`, ` `, `p`, `r`, `e`, `s`, `c`, `r`, `i`, `p`, `t`, `i`, `o`, `n`, `:`, ` `, `b`, `a`, `s`, `e`, `l`, `i`, `n`, `e`, ` `, `w`, `e`, `i`, `g`, `h`, `t`, `,`, ` `, `g`, `l`, `u`, `c`, `o`, `s`, `e`, `,`, ` `, `a`, `n`, `d`, ` `, `l`, `i`, `p`, `i`, `d`, `s`, `,`, ` `, `t`, `h`, `e`, `n`, ` `, `o`, `n`, `g`, `o`, `i`, `n`, `g`, ` `, `t`, `r`, `a`, `c`, `k`, `i`, `n`, `g`, `.`
+- Evidence: `psychopharm_primer.md — Whatever the choice, metabolic monitoring is part of the prescription: baseline weight, glucose, and lipids, then ongoing tracking.`
 
 **Stem.** A 23-year-old man is starting risperidone for his first psychotic episode. The student is asked to set up his monitoring schedule. What does the standard require for ALL patients starting any antipsychotic?
 
@@ -20433,7 +20560,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_pha_005` · status=`attested` · type=`two-tier` · difficulty=`2` · competency=`['pharm', 'safety']` · **high-yield**
 - Linked pages: `psychopharm_primer.md`
-- Evidence: `p`, `s`, `y`, `c`, `h`, `o`, `p`, `h`, `a`, `r`, `m`, `_`, `p`, `r`, `i`, `m`, `e`, `r`, `.`, `m`, `d`, ` `, `—`, ` `, `L`, `i`, `t`, `h`, `i`, `u`, `m`, ` `, `h`, `a`, `s`, ` `, `a`, ` `, `n`, `a`, `r`, `r`, `o`, `w`, ` `, `t`, `h`, `e`, `r`, `a`, `p`, `e`, `u`, `t`, `i`, `c`, ` `, `w`, `i`, `n`, `d`, `o`, `w`, ` `, `—`, ` `, `t`, `o`, `o`, ` `, `l`, `i`, `t`, `t`, `l`, `e`, ` `, `d`, `o`, `e`, `s`, ` `, `n`, `o`, `t`, `h`, `i`, `n`, `g`, `,`, ` `, `t`, `o`, `o`, ` `, `m`, `u`, `c`, `h`, ` `, `i`, `s`, ` `, `t`, `o`, `x`, `i`, `c`, ` `, `—`, ` `, `a`, `n`, `d`, ` `, `d`, `e`, `m`, `a`, `n`, `d`, `s`, ` `, `r`, `e`, `n`, `a`, `l`, ` `, `a`, `n`, `d`, ` `, `t`, `h`, `y`, `r`, `o`, `i`, `d`, ` `, `m`, `o`, `n`, `i`, `t`, `o`, `r`, `i`, `n`, `g`, ` `, `o`, `v`, `e`, `r`, ` `, `t`, `i`, `m`, `e`, `;`, ` `, `i`, `t`, ` `, `a`, `l`, `s`, `o`, ` `, `c`, `a`, `r`, `r`, `i`, `e`, `s`, ` `, `t`, `h`, `e`, ` `, `s`, `t`, `r`, `o`, `n`, `g`, `e`, `s`, `t`, ` `, `a`, `n`, `t`, `i`, `-`, `s`, `u`, `i`, `c`, `i`, `d`, `a`, `l`, ` `, `e`, `v`, `i`, `d`, `e`, `n`, `c`, `e`, ` `, `i`, `n`, ` `, `t`, `h`, `e`, ` `, `c`, `l`, `a`, `s`, `s`, `,`, ` `, `w`, `h`, `i`, `c`, `h`, ` `, `i`, `s`, ` `, `w`, `o`, `r`, `t`, `h`, ` `, `r`, `e`, `m`, `e`, `m`, `b`, `e`, `r`, `i`, `n`, `g`, ` `, `w`, `h`, `e`, `n`, ` `, `t`, `h`, `e`, ` `, `t`, `e`, `a`, `m`, ` `, `w`, `e`, `i`, `g`, `h`, `s`, ` `, `r`, `i`, `s`, `k`, `.`
+- Evidence: `psychopharm_primer.md — Lithium has a narrow therapeutic window — too little does nothing, too much is toxic — and demands renal and thyroid monitoring over time; it also carries the strongest anti-suicidal evidence in the class, which is worth remembering when the team weighs risk.`
 
 **Stem.** A 49-year-old man with bipolar I disorder has had three prior hospitalizations and two suicide attempts. The team is weighing lithium versus valproate for maintenance. Which statement about lithium's unique clinical profile is most accurate?
 
@@ -20452,7 +20579,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_pha_006` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['safety', 'pharm']` · **high-yield**
 - Linked pages: `psychopharm_primer.md`
-- Evidence: `p`, `s`, `y`, `c`, `h`, `o`, `p`, `h`, `a`, `r`, `m`, `_`, `p`, `r`, `i`, `m`, `e`, `r`, `.`, `m`, `d`, ` `, `—`, ` `, `V`, `a`, `l`, `p`, `r`, `o`, `a`, `t`, `e`, ` `, `i`, `s`, ` `, `e`, `f`, `f`, `e`, `c`, `t`, `i`, `v`, `e`, ` `, `b`, `u`, `t`, ` `, `s`, `h`, `o`, `u`, `l`, `d`, ` `, `n`, `o`, `t`, ` `, `b`, `e`, ` `, `s`, `t`, `a`, `r`, `t`, `e`, `d`, ` `, `i`, `n`, ` `, `p`, `e`, `o`, `p`, `l`, `e`, ` `, `w`, `h`, `o`, ` `, `m`, `a`, `y`, ` `, `b`, `e`, `c`, `o`, `m`, `e`, ` `, `p`, `r`, `e`, `g`, `n`, `a`, `n`, `t`, ` `, `g`, `i`, `v`, `e`, `n`, ` `, `t`, `e`, `r`, `a`, `t`, `o`, `g`, `e`, `n`, `i`, `c`, `i`, `t`, `y`, `;`, ` `, `f`, `l`, `a`, `g`, ` `, `t`, `h`, `i`, `s`, ` `, `b`, `e`, `f`, `o`, `r`, `e`, ` `, `i`, `t`, ` `, `i`, `s`, ` `, `o`, `r`, `d`, `e`, `r`, `e`, `d`, `.`
+- Evidence: `psychopharm_primer.md — Valproate is effective but should not be started in people who may become pregnant given teratogenicity; flag this before it is ordered.`
 
 **Stem.** The team plans to start valproate for a 27-year-old woman with bipolar I disorder admitted for acute mania. The student reviews her chart and finds no documentation of pregnancy status or contraception. Which action must occur before the first dose is given?
 
@@ -20469,7 +20596,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_pha_007` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['pharm', 'safety']`
 - Linked pages: `psychopharm_primer.md`
-- Evidence: `p`, `s`, `y`, `c`, `h`, `o`, `p`, `h`, `a`, `r`, `m`, `_`, `p`, `r`, `i`, `m`, `e`, `r`, `.`, `m`, `d`, ` `, `—`, ` `, `T`, `w`, `o`, ` `, `c`, `a`, `u`, `t`, `i`, `o`, `n`, `s`, ` `, `m`, `a`, `t`, `t`, `e`, `r`, ` `, `o`, `n`, ` `, `a`, `n`, ` `, `i`, `n`, `p`, `a`, `t`, `i`, `e`, `n`, `t`, ` `, `u`, `n`, `i`, `t`, `:`, ` `, `s`, `c`, `r`, `e`, `e`, `n`, ` `, `f`, `o`, `r`, ` `, `b`, `i`, `p`, `o`, `l`, `a`, `r`, `i`, `t`, `y`, ` `, `b`, `e`, `f`, `o`, `r`, `e`, ` `, `s`, `t`, `a`, `r`, `t`, `i`, `n`, `g`, ` `, `(`, `a`, `n`, ` `, `a`, `n`, `t`, `i`, `d`, `e`, `p`, `r`, `e`, `s`, `s`, `a`, `n`, `t`, ` `, `a`, `l`, `o`, `n`, `e`, ` `, `c`, `a`, `n`, ` `, `d`, `e`, `s`, `t`, `a`, `b`, `i`, `l`, `i`, `z`, `e`, ` `, `b`, `i`, `p`, `o`, `l`, `a`, `r`, ` `, `i`, `l`, `l`, `n`, `e`, `s`, `s`, `)`, `.`
+- Evidence: `psychopharm_primer.md — Two cautions matter on an inpatient unit: screen for bipolarity before starting (an antidepressant alone can destabilize bipolar illness).`
 
 **Stem.** A 29-year-old man presents with a 3-week first depressive episode. His maternal grandmother and aunt both have bipolar disorder. The team is ready to prescribe sertraline. The student asks whether a bipolar screen should be done first. The most appropriate response is:
 
@@ -20486,7 +20613,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_pha_008` · status=`attested` · type=`sba` · difficulty=`1` · competency=`['pharm', 'management']`
 - Linked pages: `psychopharm_primer.md`
-- Evidence: `p`, `s`, `y`, `c`, `h`, `o`, `p`, `h`, `a`, `r`, `m`, `_`, `p`, `r`, `i`, `m`, `e`, `r`, `.`, `m`, `d`, ` `, `—`, ` `, `O`, `n`, `s`, `e`, `t`, ` `, `i`, `s`, ` `, `d`, `e`, `l`, `a`, `y`, `e`, `d`, ` `, `—`, ` `, `s`, `y`, `m`, `p`, `t`, `o`, `m`, ` `, `r`, `e`, `l`, `i`, `e`, `f`, ` `, `l`, `a`, `g`, `s`, ` `, `w`, `e`, `e`, `k`, `s`, ` `, `b`, `e`, `h`, `i`, `n`, `d`, ` `, `t`, `h`, `e`, ` `, `f`, `i`, `r`, `s`, `t`, ` `, `d`, `o`, `s`, `e`, `,`, ` `, `s`, `o`, ` `, `m`, `a`, `n`, `a`, `g`, `e`, ` `, `e`, `x`, `p`, `e`, `c`, `t`, `a`, `t`, `i`, `o`, `n`, `s`, ` `, `a`, `n`, `d`, ` `, `k`, `e`, `e`, `p`, ` `, `w`, `a`, `t`, `c`, `h`, `i`, `n`, `g`, `.`
+- Evidence: `psychopharm_primer.md — Onset is delayed — symptom relief lags weeks behind the first dose, so manage expectations and keep watching.`
 
 **Stem.** A 24-year-old woman started sertraline 3 days ago for major depression. She calls the unit and says, 'I don't feel any better — maybe this medication isn't right for me.' What is the most accurate and helpful response?
 
@@ -20503,7 +20630,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_pha_009` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['safety']`
 - Linked pages: `psychopharm_primer.md`
-- Evidence: `p`, `s`, `y`, `c`, `h`, `o`, `p`, `h`, `a`, `r`, `m`, `_`, `p`, `r`, `i`, `m`, `e`, `r`, `.`, `m`, `d`, ` `, `—`, ` `, `T`, `h`, `e`, ` `, `F`, `D`, `A`, ` `, `b`, `l`, `a`, `c`, `k`, `-`, `b`, `o`, `x`, ` `, `w`, `a`, `r`, `n`, `i`, `n`, `g`, ` `, `f`, `o`, `r`, ` `, `s`, `u`, `i`, `c`, `i`, `d`, `a`, `l`, `i`, `t`, `y`, ` `, `s`, `p`, `a`, `n`, `s`, ` `, `a`, `l`, `l`, ` `, `a`, `n`, `t`, `i`, `d`, `e`, `p`, `r`, `e`, `s`, `s`, `a`, `n`, `t`, `s`, ` `, `t`, `h`, `r`, `o`, `u`, `g`, `h`, ` `, `a`, `g`, `e`, ` `, `2`, `4`, `,`, ` `, `n`, `o`, `t`, ` `, `j`, `u`, `s`, `t`, ` `, `c`, `h`, `i`, `l`, `d`, `r`, `e`, `n`, ` `, `—`, ` `, `r`, `e`, `l`, `e`, `v`, `a`, `n`, `t`, ` `, `t`, `o`, ` `, `y`, `o`, `u`, `r`, ` `, `y`, `o`, `u`, `n`, `g`, `-`, `a`, `d`, `u`, `l`, `t`, ` `, `a`, `d`, `m`, `i`, `s`, `s`, `i`, `o`, `n`, `s`, `.`
+- Evidence: `psychopharm_primer.md — The FDA black-box warning for suicidality spans all antidepressants through age 24, not just children — relevant to your young-adult admissions.`
 
 **Stem.** A 21-year-old man is starting escitalopram for his first major depressive episode. His parents ask: 'We've heard there's a black box warning on these medications — what does it mean?' Which response best reflects the FDA warning?
 
@@ -20520,7 +20647,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_pha_010` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['pharm', 'management']`
 - Linked pages: `psychopharm_primer.md`
-- Evidence: `p`, `s`, `y`, `c`, `h`, `o`, `p`, `h`, `a`, `r`, `m`, `_`, `p`, `r`, `i`, `m`, `e`, `r`, `.`, `m`, `d`, ` `, `—`, ` `, `B`, `e`, `n`, `z`, `o`, `d`, `i`, `a`, `z`, `e`, `p`, `i`, `n`, `e`, `s`, ` `, `a`, `r`, `e`, ` `, `g`, `e`, `n`, `u`, `i`, `n`, `e`, `l`, `y`, ` `, `u`, `s`, `e`, `f`, `u`, `l`, ` `, `f`, `o`, `r`, ` `, `a`, `l`, `c`, `o`, `h`, `o`, `l`, `/`, `s`, `e`, `d`, `a`, `t`, `i`, `v`, `e`, ` `, `w`, `i`, `t`, `h`, `d`, `r`, `a`, `w`, `a`, `l`, `,`, ` `, `c`, `a`, `t`, `a`, `t`, `o`, `n`, `i`, `a`, `,`, ` `, `a`, `n`, `d`, ` `, `s`, `h`, `o`, `r`, `t`, `-`, `t`, `e`, `r`, `m`, ` `, `a`, `g`, `i`, `t`, `a`, `t`, `i`, `o`, `n`, ` `, `—`, ` `, `b`, `u`, `t`, ` `, `a`, `v`, `o`, `i`, `d`, ` `, `s`, `t`, `a`, `n`, `d`, `i`, `n`, `g`, ` `, `s`, `c`, `h`, `e`, `d`, `u`, `l`, `e`, `d`, ` `, `u`, `s`, `e`, `.`, ` `, `D`, `e`, `p`, `e`, `n`, `d`, `e`, `n`, `c`, `e`, `,`, ` `, `f`, `a`, `l`, `l`, `s`, `,`, ` `, `a`, `n`, `d`, ` `, `d`, `e`, `l`, `i`, `r`, `i`, `u`, `m`, ` `, `(`, `e`, `s`, `p`, `e`, `c`, `i`, `a`, `l`, `l`, `y`, ` `, `i`, `n`, ` `, `o`, `l`, `d`, `e`, `r`, ` `, `a`, `d`, `u`, `l`, `t`, `s`, `)`, ` `, `a`, `r`, `e`, ` `, `t`, `h`, `e`, ` `, `p`, `r`, `i`, `c`, `e`, ` `, `o`, `f`, ` `, `l`, `e`, `a`, `v`, `i`, `n`, `g`, ` `, `t`, `h`, `e`, `m`, ` `, `o`, `n`, ` `, `a`, `u`, `t`, `o`, `p`, `i`, `l`, `o`, `t`, `.`
+- Evidence: `psychopharm_primer.md — Benzodiazepines are genuinely useful for alcohol/sedative withdrawal, catatonia, and short-term agitation — but avoid standing scheduled use. Dependence, falls, and delirium (especially in older adults) are the price of leaving them on autopilot.`
 
 **Stem.** A 71-year-old woman with generalized anxiety disorder has been prescribed lorazepam 0.5 mg TID continuously for 18 months by her primary care physician. She is now admitted for a fall and mild confusion. The student is asked to comment on her lorazepam use. Which is the most accurate framing?
 
@@ -20537,7 +20664,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_pha_011` · status=`draft` · type=`two-tier` · difficulty=`2` · competency=`['pharm', 'safety']`
 - Linked pages: `psychopharm_primer.md`
-- Evidence: `p`, `s`, `y`, `c`, `h`, `o`, `p`, `h`, `a`, `r`, `m`, `_`, `p`, `r`, `i`, `m`, `e`, `r`, `.`, `m`, `d`, ` `, `—`, ` `, `C`, `l`, `o`, `z`, `a`, `p`, `i`, `n`, `e`, ` `, `i`, `s`, ` `, `t`, `h`, `e`, ` `, `a`, `g`, `e`, `n`, `t`, ` `, `f`, `o`, `r`, ` `, `t`, `r`, `e`, `a`, `t`, `m`, `e`, `n`, `t`, `-`, `r`, `e`, `s`, `i`, `s`, `t`, `a`, `n`, `t`, ` `, `s`, `c`, `h`, `i`, `z`, `o`, `p`, `h`, `r`, `e`, `n`, `i`, `a`, `,`, ` `, `r`, `e`, `s`, `e`, `r`, `v`, `e`, `d`, ` `, `p`, `r`, `e`, `c`, `i`, `s`, `e`, `l`, `y`, ` `, `b`, `e`, `c`, `a`, `u`, `s`, `e`, ` `, `i`, `t`, ` `, `d`, `e`, `m`, `a`, `n`, `d`, `s`, ` `, `o`, `n`, `g`, `o`, `i`, `n`, `g`, ` `, `A`, `N`, `C`, ` `, `m`, `o`, `n`, `i`, `t`, `o`, `r`, `i`, `n`, `g`, ` `, `f`, `o`, `r`, ` `, `a`, `g`, `r`, `a`, `n`, `u`, `l`, `o`, `c`, `y`, `t`, `o`, `s`, `i`, `s`, ` `, `p`, `e`, `r`, ` `, `i`, `t`, `s`, ` `, `p`, `r`, `e`, `s`, `c`, `r`, `i`, `b`, `i`, `n`, `g`, ` `, `i`, `n`, `f`, `o`, `r`, `m`, `a`, `t`, `i`, `o`, `n`, ` `, `(`, `t`, `h`, `e`, ` `, `F`, `D`, `A`, ` `, `e`, `l`, `i`, `m`, `i`, `n`, `a`, `t`, `e`, `d`, ` `, `t`, `h`, `e`, ` `, `c`, `l`, `o`, `z`, `a`, `p`, `i`, `n`, `e`, ` `, `R`, `E`, `M`, `S`, ` `, `i`, `n`, ` `, `2`, `0`, `2`, `5`, `)`, `.`
+- Evidence: `psychopharm_primer.md — Clozapine is the agent for treatment-resistant schizophrenia, reserved precisely because it demands ongoing ANC monitoring for agranulocytosis per its prescribing information (the FDA eliminated the clozapine REMS in 2025).`
 
 **Stem.** A 39-year-old man with schizophrenia has failed two adequate antipsychotic trials (olanzapine, then risperidone) at adequate doses and durations. The team discusses clozapine. What is the non-negotiable safety requirement before clozapine can be initiated?
 
@@ -20556,7 +20683,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_pha_012` · status=`draft` · type=`sba` · difficulty=`2` · competency=`['safety', 'next-step']`
 - Linked pages: `psychopharm_primer.md`
-- Evidence: `p`, `s`, `y`, `c`, `h`, `o`, `p`, `h`, `a`, `r`, `m`, `_`, `p`, `r`, `i`, `m`, `e`, `r`, `.`, `m`, `d`, ` `, `—`, ` `, `S`, `e`, `r`, `o`, `t`, `o`, `n`, `i`, `n`, ` `, `s`, `y`, `n`, `d`, `r`, `o`, `m`, `e`, `:`, ` `, `c`, `l`, `o`, `n`, `u`, `s`, `,`, ` `, `h`, `y`, `p`, `e`, `r`, `r`, `e`, `f`, `l`, `e`, `x`, `i`, `a`, `,`, ` `, `a`, `n`, `d`, ` `, `a`, `u`, `t`, `o`, `n`, `o`, `m`, `i`, `c`, ` `, `i`, `n`, `s`, `t`, `a`, `b`, `i`, `l`, `i`, `t`, `y`, ` `, `w`, `i`, `t`, `h`, ` `, `r`, `a`, `p`, `i`, `d`, ` `, `o`, `n`, `s`, `e`, `t`, `,`, ` `, `u`, `s`, `u`, `a`, `l`, `l`, `y`, ` `, `a`, `f`, `t`, `e`, `r`, ` `, `a`, ` `, `s`, `e`, `r`, `o`, `t`, `o`, `n`, `e`, `r`, `g`, `i`, `c`, ` `, `a`, `g`, `e`, `n`, `t`, ` `, `w`, `a`, `s`, ` `, `s`, `t`, `a`, `r`, `t`, `e`, `d`, ` `, `o`, `r`, ` `, `i`, `n`, `c`, `r`, `e`, `a`, `s`, `e`, `d`, `.`, ` `, `N`, `e`, `u`, `r`, `o`, `l`, `e`, `p`, `t`, `i`, `c`, ` `, `m`, `a`, `l`, `i`, `g`, `n`, `a`, `n`, `t`, ` `, `s`, `y`, `n`, `d`, `r`, `o`, `m`, `e`, `:`, ` `, `'`, `l`, `e`, `a`, `d`, `-`, `p`, `i`, `p`, `e`, `'`, ` `, `r`, `i`, `g`, `i`, `d`, `i`, `t`, `y`, `,`, ` `, `h`, `y`, `p`, `e`, `r`, `t`, `h`, `e`, `r`, `m`, `i`, `a`, `,`, ` `, `a`, `n`, `d`, ` `, `e`, `l`, `e`, `v`, `a`, `t`, `e`, `d`, ` `, `C`, `K`, ` `, `i`, `n`, ` `, `s`, `o`, `m`, `e`, `o`, `n`, `e`, ` `, `o`, `n`, ` `, `a`, ` `, `d`, `o`, `p`, `a`, `m`, `i`, `n`, `e`, ` `, `b`, `l`, `o`, `c`, `k`, `e`, `r`, ` `, `—`, ` `, `s`, `l`, `o`, `w`, `e`, `r`, ` `, `a`, `n`, `d`, ` `, `s`, `t`, `i`, `f`, `f`, `e`, `r`, ` `, `t`, `h`, `a`, `n`, ` `, `s`, `e`, `r`, `o`, `t`, `o`, `n`, `i`, `n`, ` `, `s`, `y`, `n`, `d`, `r`, `o`, `m`, `e`, `.`
+- Evidence: `psychopharm_primer.md — Serotonin syndrome: clonus, hyperreflexia, and autonomic instability with rapid onset, usually after a serotonergic agent was started or increased. Neuroleptic malignant syndrome: 'lead-pipe' rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker — slower and stiffer than serotonin syndrome.`
 
 **Stem.** Two patients on the unit develop acute syndromes. Patient A was started on venlafaxine 3 days ago and tramadol was added yesterday; today he is agitated with muscle twitching, hyperreflexia, and diaphoresis. Patient B was started on haloperidol 5 days ago; today he is febrile to 39.8°C with 'lead-pipe' rigidity and a CK of 4,100. Which response correctly characterizes both presentations?
 
@@ -20573,7 +20700,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_pha_013` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['safety']`
 - Linked pages: `psychopharm_primer.md`
-- Evidence: `p`, `s`, `y`, `c`, `h`, `o`, `p`, `h`, `a`, `r`, `m`, `_`, `p`, `r`, `i`, `m`, `e`, `r`, `.`, `m`, `d`, ` `, `—`, ` `, `L`, `i`, `t`, `h`, `i`, `u`, `m`, ` `, `t`, `o`, `x`, `i`, `c`, `i`, `t`, `y`, `:`, ` `, `t`, `r`, `e`, `m`, `o`, `r`, `,`, ` `, `a`, `t`, `a`, `x`, `i`, `a`, `,`, ` `, `a`, `n`, `d`, ` `, `c`, `o`, `n`, `f`, `u`, `s`, `i`, `o`, `n`, `,`, ` `, `o`, `f`, `t`, `e`, `n`, ` `, `w`, `h`, `e`, `n`, ` `, `s`, `o`, `m`, `e`, `t`, `h`, `i`, `n`, `g`, ` `, `c`, `h`, `a`, `n`, `g`, `e`, `d`, ` `, `(`, `d`, `e`, `h`, `y`, `d`, `r`, `a`, `t`, `i`, `o`, `n`, `,`, ` `, `r`, `e`, `n`, `a`, `l`, ` `, `f`, `u`, `n`, `c`, `t`, `i`, `o`, `n`, `,`, ` `, `a`, `n`, ` `, `i`, `n`, `t`, `e`, `r`, `a`, `c`, `t`, `i`, `n`, `g`, ` `, `d`, `r`, `u`, `g`, `)`, `.`
+- Evidence: `psychopharm_primer.md — Lithium toxicity: tremor, ataxia, and confusion, often when something changed (dehydration, renal function, an interacting drug).`
 
 **Stem.** A 65-year-old man with bipolar I disorder maintained on lithium 900 mg daily presents with intention tremor, unsteady gait, and mild confusion over 5 days. His lithium level was 0.75 mEq/L two months ago. He recently started lisinopril for newly diagnosed hypertension. Most likely explanation?
 
@@ -20590,7 +20717,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_pha_014` · status=`attested` · type=`sba` · difficulty=`1` · competency=`['pharm', 'management']` · **high-yield**
 - Linked pages: `ect_neuromodulation.md`
-- Evidence: `e`, `c`, `t`, `_`, `n`, `e`, `u`, `r`, `o`, `m`, `o`, `d`, `u`, `l`, `a`, `t`, `i`, `o`, `n`, `.`, `m`, `d`, ` `, `—`, ` `, `E`, `C`, `T`, ` `, `i`, `n`, `d`, `i`, `c`, `a`, `t`, `i`, `o`, `n`, `s`, `:`, ` `, `s`, `e`, `v`, `e`, `r`, `e`, ` `, `M`, `D`, `D`, ` `, `(`, `e`, `s`, `p`, `e`, `c`, `i`, `a`, `l`, `l`, `y`, ` `, `w`, `i`, `t`, `h`, ` `, `p`, `s`, `y`, `c`, `h`, `o`, `t`, `i`, `c`, ` `, `f`, `e`, `a`, `t`, `u`, `r`, `e`, `s`, `,`, ` `, `c`, `a`, `t`, `a`, `t`, `o`, `n`, `i`, `a`, `,`, ` `, `o`, `r`, ` `, `h`, `i`, `g`, `h`, ` `, `s`, `u`, `i`, `c`, `i`, `d`, `e`, ` `, `r`, `i`, `s`, `k`, `)`, `,`, ` `, `t`, `r`, `e`, `a`, `t`, `m`, `e`, `n`, `t`, `-`, `r`, `e`, `s`, `i`, `s`, `t`, `a`, `n`, `t`, ` `, `d`, `e`, `p`, `r`, `e`, `s`, `s`, `i`, `o`, `n`, `,`, ` `, `a`, `c`, `u`, `t`, `e`, ` `, `m`, `a`, `n`, `i`, `a`, `,`, ` `, `a`, `n`, `d`, ` `, `c`, `a`, `t`, `a`, `t`, `o`, `n`, `i`, `a`, `/`, `N`, `M`, `S`, `.`, ` `, `C`, `h`, `o`, `o`, `s`, `e`, ` `, `E`, `C`, `T`, ` `, `w`, `h`, `e`, `n`, ` `, `a`, ` `, `r`, `a`, `p`, `i`, `d`, `,`, ` `, `d`, `e`, `f`, `i`, `n`, `i`, `t`, `i`, `v`, `e`, ` `, `r`, `e`, `s`, `p`, `o`, `n`, `s`, `e`, ` `, `i`, `s`, ` `, `n`, `e`, `e`, `d`, `e`, `d`, ` `, `—`, ` `, `a`, `c`, `t`, `i`, `v`, `e`, ` `, `s`, `u`, `i`, `c`, `i`, `d`, `a`, `l`, `i`, `t`, `y`, `,`, ` `, `r`, `e`, `f`, `u`, `s`, `a`, `l`, ` `, `t`, `o`, ` `, `e`, `a`, `t`, ` `, `o`, `r`, ` `, `d`, `r`, `i`, `n`, `k`, `,`, ` `, `p`, `r`, `e`, `g`, `n`, `a`, `n`, `c`, `y`, ` `, `w`, `h`, `e`, `r`, `e`, ` `, `m`, `e`, `d`, `i`, `c`, `a`, `t`, `i`, `o`, `n`, `s`, ` `, `a`, `r`, `e`, ` `, `u`, `n`, `d`, `e`, `s`, `i`, `r`, `a`, `b`, `l`, `e`, `,`, ` `, `o`, `r`, ` `, `p`, `r`, `i`, `o`, `r`, ` `, `g`, `o`, `o`, `d`, ` `, `E`, `C`, `T`, ` `, `r`, `e`, `s`, `p`, `o`, `n`, `s`, `e`, `.`
+- Evidence: `ect_neuromodulation.md — ECT indications: severe MDD (especially with psychotic features, catatonia, or high suicide risk), treatment-resistant depression, acute mania, and catatonia/NMS. Choose ECT when a rapid, definitive response is needed — active suicidality, refusal to eat or drink, pregnancy where medications are undesirable, or prior good ECT response.`
 
 **Stem.** A 72-year-old woman with treatment-resistant MDD has active suicidal ideation, has stopped eating and drinking, and expresses a fixed belief that her body is rotting. She has failed two adequate antidepressant trials. The team is choosing between a third antidepressant plus antipsychotic versus ECT. Which response best reflects the evidence?
 
@@ -20607,7 +20734,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_pha_015` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['management', 'pharm']`
 - Linked pages: `ect_neuromodulation.md`
-- Evidence: `e`, `c`, `t`, `_`, `n`, `e`, `u`, `r`, `o`, `m`, `o`, `d`, `u`, `l`, `a`, `t`, `i`, `o`, `n`, `.`, `m`, `d`, ` `, `—`, ` `, `P`, `r`, `e`, `-`, `E`, `C`, `T`, ` `, `m`, `e`, `d`, `i`, `c`, `a`, `t`, `i`, `o`, `n`, ` `, `r`, `e`, `v`, `i`, `e`, `w`, `:`, ` `, `h`, `o`, `l`, `d`, `/`, `a`, `d`, `j`, `u`, `s`, `t`, ` `, `b`, `e`, `n`, `z`, `o`, `d`, `i`, `a`, `z`, `e`, `p`, `i`, `n`, `e`, `s`, ` `, `a`, `n`, `d`, ` `, `a`, `n`, `t`, `i`, `c`, `o`, `n`, `v`, `u`, `l`, `s`, `a`, `n`, `t`, `s`, `,`, ` `, `w`, `h`, `i`, `c`, `h`, ` `, `r`, `a`, `i`, `s`, `e`, ` `, `s`, `e`, `i`, `z`, `u`, `r`, `e`, ` `, `t`, `h`, `r`, `e`, `s`, `h`, `o`, `l`, `d`, `.`
+- Evidence: `ect_neuromodulation.md — Pre-ECT medication review: hold/adjust benzodiazepines and anticonvulsants, which raise seizure threshold.`
 
 **Stem.** A patient with severe depression is scheduled for ECT tomorrow. Her current medications include clonazepam 1 mg BID, gabapentin 300 mg TID, and escitalopram 20 mg daily. Her ECT team asks the student to identify which medication adjustment is most critical before the procedure.
 
@@ -20624,7 +20751,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_pha_016` · status=`attested` · type=`sba` · difficulty=`3` · competency=`['management', 'pharm']`
 - Linked pages: `ect_neuromodulation.md`
-- Evidence: `e`, `c`, `t`, `_`, `n`, `e`, `u`, `r`, `o`, `m`, `o`, `d`, `u`, `l`, `a`, `t`, `i`, `o`, `n`, `.`, `m`, `d`, ` `, `—`, ` `, `r`, `T`, `M`, `S`, `:`, ` `, `F`, `D`, `A`, `-`, `c`, `l`, `e`, `a`, `r`, `e`, `d`, ` `, `f`, `o`, `r`, ` `, `t`, `r`, `e`, `a`, `t`, `m`, `e`, `n`, `t`, `-`, `r`, `e`, `s`, `i`, `s`, `t`, `a`, `n`, `t`, ` `, `d`, `e`, `p`, `r`, `e`, `s`, `s`, `i`, `o`, `n`, ` `, `(`, `a`, `n`, `d`, ` `, `O`, `C`, `D`, `)`, `;`, ` `, `o`, `u`, `t`, `p`, `a`, `t`, `i`, `e`, `n`, `t`, `,`, ` `, `n`, `o`, ` `, `a`, `n`, `e`, `s`, `t`, `h`, `e`, `s`, `i`, `a`, `,`, ` `, `n`, `o`, ` `, `m`, `e`, `m`, `o`, `r`, `y`, ` `, `e`, `f`, `f`, `e`, `c`, `t`, `s`, `;`, ` `, `m`, `a`, `i`, `n`, ` `, `r`, `i`, `s`, `k`, ` `, `i`, `s`, ` `, `a`, ` `, `s`, `m`, `a`, `l`, `l`, ` `, `s`, `e`, `i`, `z`, `u`, `r`, `e`, ` `, `r`, `i`, `s`, `k`, `.`, ` `, `L`, `e`, `s`, `s`, ` `, `p`, `o`, `t`, `e`, `n`, `t`, ` `, `t`, `h`, `a`, `n`, ` `, `E`, `C`, `T`, ` `, `b`, `u`, `t`, ` `, `f`, `a`, `r`, ` `, `b`, `e`, `t`, `t`, `e`, `r`, ` `, `t`, `o`, `l`, `e`, `r`, `a`, `t`, `e`, `d`, `.`
+- Evidence: `ect_neuromodulation.md — rTMS: FDA-cleared for treatment-resistant depression (and OCD); outpatient, no anesthesia, no memory effects; main risk is a small seizure risk. Less potent than ECT but far better tolerated.`
 
 **Stem.** A 48-year-old man with treatment-resistant depression (two adequate antidepressant trials, no psychotic features, no active suicidality) strongly prefers to avoid general anesthesia. He asks the team about neuromodulation options. Which correctly characterizes what is available?
 
@@ -20643,7 +20770,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_psy_001` · status=`attested` · type=`sba` · difficulty=`1` · competency=`['dx']` · **high-yield**
 - Linked pages: `t_psychosis.md`
-- Evidence: `t`, `_`, `p`, `s`, `y`, `c`, `h`, `o`, `s`, `i`, `s`, `.`, `m`, `d`, ` `, `'`, `D`, `i`, `f`, `f`, `e`, `r`, `e`, `n`, `t`, `i`, `a`, `l`, ` `, `a`, `n`, `d`, ` `, `c`, `a`, `n`, `'`, `t`, `-`, `m`, `i`, `s`, `s`, ` `, `m`, `i`, `m`, `i`, `c`, `s`, `'`, ` `, `—`, ` `, `A`, `l`, `w`, `a`, `y`, `s`, ` `, `e`, `x`, `c`, `l`, `u`, `d`, `e`, ` `, `s`, `e`, `c`, `o`, `n`, `d`, `a`, `r`, `y`, `/`, `m`, `e`, `d`, `i`, `c`, `a`, `l`, ` `, `p`, `s`, `y`, `c`, `h`, `o`, `s`, `i`, `s`, ` `, `b`, `e`, `f`, `o`, `r`, `e`, ` `, `s`, `e`, `t`, `t`, `l`, `i`, `n`, `g`, ` `, `o`, `n`, ` `, `a`, ` `, `p`, `r`, `i`, `m`, `a`, `r`, `y`, ` `, `d`, `i`, `s`, `o`, `r`, `d`, `e`, `r`, `.`, ` `, `S`, `c`, `r`, `e`, `e`, `n`, ` `, `f`, `o`, `r`, ` `, `s`, `u`, `b`, `s`, `t`, `a`, `n`, `c`, `e`, `-`, `i`, `n`, `d`, `u`, `c`, `e`, `d`, ` `, `c`, `a`, `u`, `s`, `e`, `s`, ` `, `(`, `s`, `t`, `i`, `m`, `u`, `l`, `a`, `n`, `t`, `s`, `,`, ` `, `c`, `a`, `n`, `n`, `a`, `b`, `i`, `s`, `,`, ` `, `h`, `a`, `l`, `l`, `u`, `c`, `i`, `n`, `o`, `g`, `e`, `n`, `s`, `,`, ` `, `w`, `i`, `t`, `h`, `d`, `r`, `a`, `w`, `a`, `l`, `)`, ` `, `a`, `n`, `d`, ` `, `a`, `n`, `y`, ` `, `m`, `e`, `d`, `i`, `c`, `a`, `l`, ` `, `o`, `r`, ` `, `m`, `e`, `d`, `i`, `c`, `a`, `t`, `i`, `o`, `n`, ` `, `c`, `a`, `u`, `s`, `e`, `;`, ` `, `c`, `o`, `r`, `t`, `i`, `c`, `o`, `s`, `t`, `e`, `r`, `o`, `i`, `d`, `s`, ` `, `a`, `r`, `e`, ` `, `a`, ` `, `r`, `e`, `c`, `o`, `g`, `n`, `i`, `z`, `e`, `d`, ` `, `s`, `e`, `c`, `o`, `n`, `d`, `a`, `r`, `y`, ` `, `c`, `a`, `u`, `s`, `e`, ` `, `(`, `g`, `e`, `n`, `e`, `r`, `a`, `l`, ` `, `c`, `l`, `i`, `n`, `i`, `c`, `a`, `l`, ` `, `p`, `r`, `i`, `n`, `c`, `i`, `p`, `l`, `e`, `,`, ` `, `n`, `o`, `t`, ` `, `i`, `n`, `d`, `i`, `v`, `i`, `d`, `u`, `a`, `l`, `l`, `y`, ` `, `n`, `a`, `m`, `e`, `d`, ` `, `o`, `n`, ` `, `t`, `h`, `i`, `s`, ` `, `s`, `o`, `u`, `r`, `c`, `e`, ` `, `p`, `a`, `g`, `e`, `)`, `.`, ` `, `D`, `o`, ` `, `n`, `o`, `t`, ` `, `m`, `i`, `s`, `s`, ` `, `a`, `u`, `t`, `o`, `i`, `m`, `m`, `u`, `n`, `e`, `/`, `l`, `i`, `m`, `b`, `i`, `c`, ` `, `e`, `n`, `c`, `e`, `p`, `h`, `a`, `l`, `i`, `t`, `i`, `s`, `.`
+- Evidence: `t_psychosis.md 'Differential and can't-miss mimics' — Always exclude secondary/medical psychosis before settling on a primary disorder. Screen for substance-induced causes (stimulants, cannabis, hallucinogens, withdrawal) and any medical or medication cause; corticosteroids are a recognized secondary cause (general clinical principle, not individually named on this source page). Do not miss autoimmune/limbic encephalitis.`
 
 **Stem.** A 27-year-old woman with no prior psychiatric history is admitted for new-onset paranoid ideation, disorganized behavior, and auditory hallucinations. Her chart notes she was started on high-dose prednisone three weeks ago for an autoimmune flare. Before establishing a primary psychiatric diagnosis, the most important step is which of the following?
 
@@ -20660,7 +20787,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_psy_002` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['next-step', 'safety']`
 - Linked pages: `t_psychosis.md`, `psychopharm_primer.md`
-- Evidence: `p`, `s`, `y`, `c`, `h`, `o`, `t`, `i`, `c`, `_`, `d`, `i`, `s`, `o`, `r`, `d`, `e`, `r`, `s`, `_`, `i`, `n`, `p`, `a`, `t`, `i`, `e`, `n`, `t`, `_`, `t`, `e`, `a`, `c`, `h`, `i`, `n`, `g`, `.`, `m`, `d`, ` `, `'`, `N`, `e`, `u`, `r`, `o`, `l`, `e`, `p`, `t`, `i`, `c`, ` `, `m`, `a`, `l`, `i`, `g`, `n`, `a`, `n`, `t`, ` `, `s`, `y`, `n`, `d`, `r`, `o`, `m`, `e`, ` `, `v`, `s`, `.`, ` `, `s`, `e`, `r`, `o`, `t`, `o`, `n`, `i`, `n`, ` `, `s`, `y`, `n`, `d`, `r`, `o`, `m`, `e`, `'`, ` `, `—`, ` `, `T`, `h`, `e`, ` `, `k`, `e`, `y`, ` `, `d`, `i`, `s`, `c`, `r`, `i`, `m`, `i`, `n`, `a`, `t`, `o`, `r`, `:`, ` `, `l`, `e`, `a`, `d`, `-`, `p`, `i`, `p`, `e`, ` `, `r`, `i`, `g`, `i`, `d`, `i`, `t`, `y`, ` `, `+`, ` `, `h`, `y`, `p`, `o`, `r`, `e`, `f`, `l`, `e`, `x`, `i`, `a`, ` `, `=`, ` `, `N`, `M`, `S`, `;`, ` `, `c`, `l`, `o`, `n`, `u`, `s`, ` `, `+`, ` `, `h`, `y`, `p`, `e`, `r`, `r`, `e`, `f`, `l`, `e`, `x`, `i`, `a`, ` `, `(`, `e`, `s`, `p`, `e`, `c`, `i`, `a`, `l`, `l`, `y`, ` `, `a`, `n`, `k`, `l`, `e`, ` `, `c`, `l`, `o`, `n`, `u`, `s`, `)`, ` `, `=`, ` `, `S`, `S`, `.`, ` `, `O`, `n`, `s`, `e`, `t`, ` `, `t`, `i`, `m`, `e`, `l`, `i`, `n`, `e`, ` `, `a`, `n`, `d`, ` `, `o`, `f`, `f`, `e`, `n`, `d`, `i`, `n`, `g`, ` `, `a`, `g`, `e`, `n`, `t`, ` `, `c`, `l`, `a`, `s`, `s`, ` `, `s`, `u`, `p`, `p`, `o`, `r`, `t`, ` `, `t`, `h`, `e`, ` `, `d`, `i`, `f`, `f`, `e`, `r`, `e`, `n`, `t`, `i`, `a`, `t`, `i`, `o`, `n`, ` `, `(`, `B`, `o`, `y`, `e`, `r`, ` `, `a`, `n`, `d`, ` `, `S`, `h`, `a`, `n`, `n`, `o`, `n`, `,`, ` `, `N`, ` `, `E`, `n`, `g`, `l`, ` `, `J`, ` `, `M`, `e`, `d`, ` `, `2`, `0`, `0`, `5`, `;`, ` `, `S`, `t`, `r`, `a`, `w`, `n`, ` `, `e`, `t`, ` `, `a`, `l`, `.`, `,`, ` `, `A`, `m`, ` `, `J`, ` `, `P`, `s`, `y`, `c`, `h`, `i`, `a`, `t`, `r`, `y`, ` `, `2`, `0`, `0`, `7`, `)`, `.`
+- Evidence: `psychotic_disorders_inpatient_teaching.md 'Neuroleptic malignant syndrome vs. serotonin syndrome' — The key discriminator: lead-pipe rigidity + hyporeflexia = NMS; clonus + hyperreflexia (especially ankle clonus) = SS. Onset timeline and offending agent class support the differentiation (Boyer and Shannon, N Engl J Med 2005; Strawn et al., Am J Psychiatry 2007).`
 
 **Stem.** A 37-year-old man with schizophrenia has been stable on haloperidol 5 mg/day and sertraline 100 mg/day for a comorbid depressive episode. His sertraline was increased to 150 mg two days ago. He now presents with fever (38.9°C), agitation, diaphoresis, and muscle rigidity. CK is mildly elevated at 680 U/L. The differential includes serotonin syndrome and neuroleptic malignant syndrome. Which finding, if present on examination, would most strongly support serotonin syndrome over neuroleptic malignant syndrome?
 
@@ -20677,7 +20804,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_psy_003` · status=`attested` · type=`sba` · difficulty=`1` · competency=`['dx']` · **high-yield**
 - Linked pages: `t_psychosis.md`
-- Evidence: `t`, `_`, `p`, `s`, `y`, `c`, `h`, `o`, `s`, `i`, `s`, `.`, `m`, `d`, ` `, `—`, ` `, `A`, `l`, `w`, `a`, `y`, `s`, ` `, `e`, `x`, `c`, `l`, `u`, `d`, `e`, ` `, `s`, `e`, `c`, `o`, `n`, `d`, `a`, `r`, `y`, `/`, `m`, `e`, `d`, `i`, `c`, `a`, `l`, ` `, `p`, `s`, `y`, `c`, `h`, `o`, `s`, `i`, `s`, ` `, `b`, `e`, `f`, `o`, `r`, `e`, ` `, `s`, `e`, `t`, `t`, `l`, `i`, `n`, `g`, ` `, `o`, `n`, ` `, `a`, ` `, `p`, `r`, `i`, `m`, `a`, `r`, `y`, ` `, `d`, `i`, `s`, `o`, `r`, `d`, `e`, `r`, `.`, ` `, `H`, `i`, `g`, `h`, `-`, `y`, `i`, `e`, `l`, `d`, ` `, `p`, `e`, `a`, `r`, `l`, `s`, `:`, ` `, `P`, `s`, `y`, `c`, `h`, `o`, `s`, `i`, `s`, ` `, `i`, `s`, ` `, `a`, ` `, `s`, `y`, `n`, `d`, `r`, `o`, `m`, `e`, ` `, `—`, ` `, `e`, `x`, `c`, `l`, `u`, `d`, `e`, ` `, `d`, `e`, `l`, `i`, `r`, `i`, `u`, `m`, `,`, ` `, `s`, `u`, `b`, `s`, `t`, `a`, `n`, `c`, `e`, `s`, `,`, ` `, `a`, `n`, `d`, ` `, `a`, `u`, `t`, `o`, `i`, `m`, `m`, `u`, `n`, `e`, `/`, `s`, `e`, `i`, `z`, `u`, `r`, `e`, ` `, `c`, `a`, `u`, `s`, `e`, `s`, ` `, `b`, `e`, `f`, `o`, `r`, `e`, ` `, `c`, `a`, `l`, `l`, `i`, `n`, `g`, ` `, `i`, `t`, ` `, `p`, `r`, `i`, `m`, `a`, `r`, `y`, `.`
+- Evidence: `t_psychosis.md — Always exclude secondary/medical psychosis before settling on a primary disorder. High-yield pearls: Psychosis is a syndrome — exclude delirium, substances, and autoimmune/seizure causes before calling it primary.`
 
 **Stem.** A 22-year-old man presents with 3 weeks of auditory hallucinations, paranoid delusions, and disorganized behavior. The team is ready to diagnose schizophrenia and start an antipsychotic. The student asks whether anything should be done first. Which step is most critical?
 
@@ -20694,7 +20821,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_psy_004` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['next-step']`
 - Linked pages: `t_psychosis.md`
-- Evidence: `t`, `_`, `p`, `s`, `y`, `c`, `h`, `o`, `s`, `i`, `s`, `.`, `m`, `d`, ` `, `—`, ` `, `F`, `i`, `r`, `s`, `t`, `-`, `e`, `p`, `i`, `s`, `o`, `d`, `e`, ` `, `p`, `s`, `y`, `c`, `h`, `o`, `s`, `i`, `s`, ` `, `s`, `p`, `e`, `c`, `i`, `f`, `i`, `c`, `a`, `l`, `l`, `y`, ` `, `w`, `a`, `r`, `r`, `a`, `n`, `t`, `s`, ` `, `a`, ` `, `m`, `e`, `d`, `i`, `c`, `a`, `l`, ` `, `w`, `o`, `r`, `k`, `u`, `p`, ` `, `b`, `e`, `c`, `a`, `u`, `s`, `e`, ` `, `a`, ` `, `t`, `r`, `e`, `a`, `t`, `a`, `b`, `l`, `e`, ` `, `o`, `r`, `g`, `a`, `n`, `i`, `c`, ` `, `c`, `a`, `u`, `s`, `e`, ` `, `i`, `s`, ` `, `m`, `o`, `r`, `e`, ` `, `l`, `i`, `k`, `e`, `l`, `y`, ` `, `w`, `h`, `e`, `n`, ` `, `t`, `h`, `e`, `r`, `e`, ` `, `i`, `s`, ` `, `n`, `o`, ` `, `e`, `s`, `t`, `a`, `b`, `l`, `i`, `s`, `h`, `e`, `d`, ` `, `p`, `s`, `y`, `c`, `h`, `i`, `a`, `t`, `r`, `i`, `c`, ` `, `h`, `i`, `s`, `t`, `o`, `r`, `y`, `;`, ` `, `o`, `b`, `t`, `a`, `i`, `n`, ` `, `n`, `e`, `u`, `r`, `o`, `i`, `m`, `a`, `g`, `i`, `n`, `g`, ` `, `(`, `M`, `R`, `I`, ` `, `p`, `r`, `e`, `f`, `e`, `r`, `r`, `e`, `d`, `)`, ` `, `w`, `h`, `e`, `n`, ` `, `t`, `h`, `e`, ` `, `e`, `x`, `a`, `m`, ` `, `i`, `s`, ` `, `f`, `o`, `c`, `a`, `l`, `,`, ` `, `o`, `n`, `s`, `e`, `t`, ` `, `i`, `s`, ` `, `a`, `t`, `y`, `p`, `i`, `c`, `a`, `l`, ` `, `o`, `r`, ` `, `a`, `b`, `r`, `u`, `p`, `t`, `,`, ` `, `a`, `g`, `e`, ` `, `i`, `s`, ` `, `u`, `n`, `u`, `s`, `u`, `a`, `l`, `,`, ` `, `o`, `r`, ` `, `t`, `h`, `e`, `r`, `e`, ` `, `a`, `r`, `e`, ` `, `s`, `e`, `i`, `z`, `u`, `r`, `e`, `s`, `.`
+- Evidence: `t_psychosis.md — First-episode psychosis specifically warrants a medical workup because a treatable organic cause is more likely when there is no established psychiatric history; obtain neuroimaging (MRI preferred) when the exam is focal, onset is atypical or abrupt, age is unusual, or there are seizures.`
 
 **Stem.** A 19-year-old man presents with his first psychotic episode — 4 weeks of auditory hallucinations, paranoid delusions, and social withdrawal with no prior psychiatric history. Laboratory workup is sent. The team is discussing imaging. When is neuroimaging warranted in first-episode psychosis?
 
@@ -20711,7 +20838,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_psy_005` · status=`attested` · type=`sba` · difficulty=`1` · competency=`['pharm']` · **high-yield**
 - Linked pages: `t_psychosis.md`
-- Evidence: `t`, `_`, `p`, `s`, `y`, `c`, `h`, `o`, `s`, `i`, `s`, `.`, `m`, `d`, ` `, `—`, ` `, `C`, `h`, `o`, `o`, `s`, `e`, ` `, `t`, `h`, `e`, ` `, `a`, `n`, `t`, `i`, `p`, `s`, `y`, `c`, `h`, `o`, `t`, `i`, `c`, ` `, `b`, `y`, ` `, `s`, `i`, `d`, `e`, `-`, `e`, `f`, `f`, `e`, `c`, `t`, ` `, `p`, `r`, `o`, `f`, `i`, `l`, `e`, `,`, ` `, `n`, `o`, `t`, ` `, `b`, `y`, ` `, `'`, `n`, `e`, `w`, `e`, `r`, ` `, `i`, `s`, ` `, `b`, `e`, `t`, `t`, `e`, `r`, `'`, `:`, ` `, `C`, `A`, `T`, `I`, `E`, ` `, `s`, `h`, `o`, `w`, `e`, `d`, ` `, `f`, `i`, `r`, `s`, `t`, `-`, ` `, `a`, `n`, `d`, ` `, `s`, `e`, `c`, `o`, `n`, `d`, `-`, `g`, `e`, `n`, `e`, `r`, `a`, `t`, `i`, `o`, `n`, ` `, `a`, `g`, `e`, `n`, `t`, `s`, ` `, `h`, `a`, `d`, ` `, `b`, `r`, `o`, `a`, `d`, `l`, `y`, ` `, `c`, `o`, `m`, `p`, `a`, `r`, `a`, `b`, `l`, `e`, ` `, `e`, `f`, `f`, `e`, `c`, `t`, `i`, `v`, `e`, `n`, `e`, `s`, `s`, `,`, ` `, `w`, `i`, `t`, `h`, ` `, `d`, `i`, `f`, `f`, `e`, `r`, `e`, `n`, `c`, `e`, `s`, ` `, `d`, `r`, `i`, `v`, `e`, `n`, ` `, `b`, `y`, ` `, `t`, `o`, `l`, `e`, `r`, `a`, `b`, `i`, `l`, `i`, `t`, `y`, `.`
+- Evidence: `t_psychosis.md — Choose the antipsychotic by side-effect profile, not by 'newer is better': CATIE showed first- and second-generation agents had broadly comparable effectiveness, with differences driven by tolerability.`
 
 **Stem.** A student argues that lurasidone should be prescribed for a first-episode patient because 'it is one of the newest second-generation agents and therefore most effective.' Which framing from CATIE is most relevant here?
 
@@ -20728,7 +20855,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_psy_006` · status=`attested` · type=`sba` · difficulty=`1` · competency=`['psychosocial']`
 - Linked pages: `t_psychosis.md`
-- Evidence: `t`, `_`, `p`, `s`, `y`, `c`, `h`, `o`, `s`, `i`, `s`, `.`, `m`, `d`, ` `, `—`, ` `, `E`, `n`, `g`, `a`, `g`, `e`, `m`, `e`, `n`, `t`, ` `, `i`, `s`, ` `, `i`, `t`, `s`, ` `, `o`, `w`, `n`, ` `, `c`, `l`, `i`, `n`, `i`, `c`, `a`, `l`, ` `, `t`, `a`, `s`, `k`, `:`, ` `, `m`, `a`, `n`, `y`, ` `, `p`, `a`, `t`, `i`, `e`, `n`, `t`, `s`, ` `, `h`, `a`, `v`, `e`, ` `, `a`, `n`, `o`, `s`, `o`, `g`, `n`, `o`, `s`, `i`, `a`, `,`, ` `, `s`, `o`, ` `, `u`, `s`, `e`, ` `, `A`, `m`, `a`, `d`, `o`, `r`, `'`, `s`, ` `, `L`, `E`, `A`, `P`, ` `, `a`, `p`, `p`, `r`, `o`, `a`, `c`, `h`, ` `, `(`, `L`, `i`, `s`, `t`, `e`, `n`, `,`, ` `, `E`, `m`, `p`, `a`, `t`, `h`, `i`, `z`, `e`, `,`, ` `, `A`, `g`, `r`, `e`, `e`, `,`, ` `, `P`, `a`, `r`, `t`, `n`, `e`, `r`, `)`, ` `, `r`, `a`, `t`, `h`, `e`, `r`, ` `, `t`, `h`, `a`, `n`, ` `, `a`, `r`, `g`, `u`, `i`, `n`, `g`, ` `, `a`, `b`, `o`, `u`, `t`, ` `, `w`, `h`, `e`, `t`, `h`, `e`, `r`, ` `, `t`, `h`, `e`, `y`, ` `, `a`, `r`, `e`, ` `, `i`, `l`, `l`, `.`
+- Evidence: `t_psychosis.md — Engagement is its own clinical task: many patients have anosognosia, so use Amador's LEAP approach (Listen, Empathize, Agree, Partner) rather than arguing about whether they are ill.`
 
 **Stem.** A 24-year-old man with schizophrenia is brought to the inpatient unit by his parents. He insists there is nothing wrong with him and refuses to engage with the treatment plan. His parents ask: 'Why won't he just accept that he's sick?' Which response best reflects the clinical approach?
 
@@ -20745,7 +20872,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_psy_007` · status=`attested` · type=`two-tier` · difficulty=`2` · competency=`['pharm', 'safety']`
 - Linked pages: `t_psychosis.md`
-- Evidence: `t`, `_`, `p`, `s`, `y`, `c`, `h`, `o`, `s`, `i`, `s`, `.`, `m`, `d`, ` `, `—`, ` `, `T`, `w`, `o`, ` `, `f`, `a`, `i`, `l`, `e`, `d`, ` `, `a`, `d`, `e`, `q`, `u`, `a`, `t`, `e`, ` `, `a`, `n`, `t`, `i`, `p`, `s`, `y`, `c`, `h`, `o`, `t`, `i`, `c`, ` `, `t`, `r`, `i`, `a`, `l`, `s`, ` `, `m`, `e`, `a`, `n`, `s`, ` `, `c`, `o`, `n`, `s`, `i`, `d`, `e`, `r`, ` `, `c`, `l`, `o`, `z`, `a`, `p`, `i`, `n`, `e`, `,`, ` `, `w`, `i`, `t`, `h`, ` `, `r`, `e`, `c`, `o`, `m`, `m`, `e`, `n`, `d`, `e`, `d`, ` `, `A`, `N`, `C`, ` `, `(`, `h`, `e`, `m`, `a`, `t`, `o`, `l`, `o`, `g`, `i`, `c`, `)`, ` `, `m`, `o`, `n`, `i`, `t`, `o`, `r`, `i`, `n`, `g`, ` `, `p`, `e`, `r`, ` `, `t`, `h`, `e`, ` `, `p`, `r`, `e`, `s`, `c`, `r`, `i`, `b`, `i`, `n`, `g`, ` `, `i`, `n`, `f`, `o`, `r`, `m`, `a`, `t`, `i`, `o`, `n`, `.`
+- Evidence: `t_psychosis.md — Two failed adequate antipsychotic trials means consider clozapine, with recommended ANC (hematologic) monitoring per the prescribing information.`
 
 **Stem.** A 37-year-old man with schizophrenia has had an inadequate response to olanzapine (adequate dose and duration) and then risperidone (adequate dose and duration). Residual negative symptoms (flat affect, avolition, alogia) have persisted on both trials. The team is now choosing a next step. Which is the evidence-based recommendation?
 
@@ -20764,7 +20891,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_psy_008` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['safety', 'next-step']` · **high-yield**
 - Linked pages: `t_psychosis.md`
-- Evidence: `t`, `_`, `p`, `s`, `y`, `c`, `h`, `o`, `s`, `i`, `s`, `.`, `m`, `d`, ` `, `—`, ` `, `N`, `e`, `u`, `r`, `o`, `l`, `e`, `p`, `t`, `i`, `c`, ` `, `m`, `a`, `l`, `i`, `g`, `n`, `a`, `n`, `t`, ` `, `s`, `y`, `n`, `d`, `r`, `o`, `m`, `e`, ` `, `(`, `f`, `e`, `v`, `e`, `r`, `,`, ` `, `r`, `i`, `g`, `i`, `d`, `i`, `t`, `y`, `,`, ` `, `a`, `u`, `t`, `o`, `n`, `o`, `m`, `i`, `c`, ` `, `i`, `n`, `s`, `t`, `a`, `b`, `i`, `l`, `i`, `t`, `y`, `,`, ` `, `e`, `l`, `e`, `v`, `a`, `t`, `e`, `d`, ` `, `C`, `K`, `)`, ` `, `i`, `s`, ` `, `t`, `h`, `e`, ` `, `c`, `a`, `n`, `'`, `t`, `-`, `m`, `i`, `s`, `s`, ` `, `a`, `n`, `t`, `i`, `p`, `s`, `y`, `c`, `h`, `o`, `t`, `i`, `c`, ` `, `e`, `m`, `e`, `r`, `g`, `e`, `n`, `c`, `y`, ` `, `—`, ` `, `s`, `t`, `o`, `p`, ` `, `t`, `h`, `e`, ` `, `a`, `n`, `t`, `i`, `p`, `s`, `y`, `c`, `h`, `o`, `t`, `i`, `c`, ` `, `a`, `n`, `d`, ` `, `t`, `r`, `e`, `a`, `t`, ` `, `s`, `u`, `p`, `p`, `o`, `r`, `t`, `i`, `v`, `e`, `l`, `y`, `.`
+- Evidence: `t_psychosis.md — Neuroleptic malignant syndrome (fever, rigidity, autonomic instability, elevated CK) is the can't-miss antipsychotic emergency — stop the antipsychotic and treat supportively.`
 
 **Stem.** A 32-year-old woman with schizophrenia started haloperidol 5 days ago. She is now febrile to 39.9°C, diaphoretic, and rigid. Nursing staff describe her muscle tone as 'like a pipe.' Her CK is 5,400. What is the most important immediate action?
 
@@ -20781,7 +20908,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_psy_009` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['dx']`
 - Linked pages: `t_psychosis.md`
-- Evidence: `t`, `_`, `p`, `s`, `y`, `c`, `h`, `o`, `s`, `i`, `s`, `.`, `m`, `d`, ` `, `—`, ` `, `D`, `o`, ` `, `n`, `o`, `t`, ` `, `m`, `i`, `s`, `s`, ` `, `a`, `u`, `t`, `o`, `i`, `m`, `m`, `u`, `n`, `e`, `/`, `l`, `i`, `m`, `b`, `i`, `c`, ` `, `e`, `n`, `c`, `e`, `p`, `h`, `a`, `l`, `i`, `t`, `i`, `s`, ` `, `(`, `e`, `.`, `g`, `.`, `,`, ` `, `a`, `n`, `t`, `i`, `-`, `N`, `M`, `D`, `A`, ` `, `r`, `e`, `c`, `e`, `p`, `t`, `o`, `r`, ` `, `e`, `n`, `c`, `e`, `p`, `h`, `a`, `l`, `i`, `t`, `i`, `s`, ` `, `—`, ` `, `s`, `u`, `b`, `a`, `c`, `u`, `t`, `e`, ` `, `p`, `s`, `y`, `c`, `h`, `o`, `s`, `i`, `s`, ` `, `w`, `i`, `t`, `h`, ` `, `s`, `e`, `i`, `z`, `u`, `r`, `e`, `s`, `,`, ` `, `d`, `y`, `s`, `k`, `i`, `n`, `e`, `s`, `i`, `a`, `s`, `,`, ` `, `a`, `u`, `t`, `o`, `n`, `o`, `m`, `i`, `c`, ` `, `i`, `n`, `s`, `t`, `a`, `b`, `i`, `l`, `i`, `t`, `y`, `)`, `.`
+- Evidence: `t_psychosis.md — Do not miss autoimmune/limbic encephalitis (e.g., anti-NMDA receptor encephalitis — subacute psychosis with seizures, dyskinesias, autonomic instability).`
 
 **Stem.** A 21-year-old woman develops subacute psychosis, behavioral changes, and seizures over 4 weeks. She also has involuntary mouth movements and facial grimacing, and her family reports fluctuating states of agitation and relative unresponsiveness. Which diagnosis should be actively considered in this presentation?
 
@@ -20798,7 +20925,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_psy_010` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['management', 'psychosocial']`
 - Linked pages: `t_psychosis.md`
-- Evidence: `t`, `_`, `p`, `s`, `y`, `c`, `h`, `o`, `s`, `i`, `s`, `.`, `m`, `d`, ` `, `—`, ` `, `F`, `o`, `r`, ` `, `f`, `i`, `r`, `s`, `t`, `-`, `e`, `p`, `i`, `s`, `o`, `d`, `e`, ` `, `p`, `a`, `t`, `i`, `e`, `n`, `t`, `s`, `,`, ` `, `R`, `A`, `I`, `S`, `E`, ` `, `s`, `u`, `p`, `p`, `o`, `r`, `t`, `s`, ` `, `c`, `o`, `o`, `r`, `d`, `i`, `n`, `a`, `t`, `e`, `d`, ` `, `s`, `p`, `e`, `c`, `i`, `a`, `l`, `t`, `y`, ` `, `c`, `a`, `r`, `e`, ` `, `w`, `i`, `t`, `h`, ` `, `a`, `c`, `t`, `i`, `v`, `e`, ` `, `f`, `a`, `m`, `i`, `l`, `y`, ` `, `i`, `n`, `v`, `o`, `l`, `v`, `e`, `m`, `e`, `n`, `t`, ` `, `a`, `n`, `d`, ` `, `e`, `a`, `r`, `l`, `y`, ` `, `p`, `s`, `y`, `c`, `h`, `o`, `s`, `o`, `c`, `i`, `a`, `l`, ` `, `i`, `n`, `t`, `e`, `r`, `v`, `e`, `n`, `t`, `i`, `o`, `n`, `,`, ` `, `n`, `o`, `t`, ` `, `m`, `e`, `d`, `i`, `c`, `a`, `t`, `i`, `o`, `n`, ` `, `a`, `l`, `o`, `n`, `e`, `.`
+- Evidence: `t_psychosis.md — For first-episode patients, RAISE supports coordinated specialty care with active family involvement and early psychosocial intervention, not medication alone.`
 
 **Stem.** A 20-year-old man is diagnosed with first-episode schizophrenia. His family asks, 'What kind of treatment should we expect — just medication?' Which response best reflects the evidence-based approach for first-episode psychosis?
 
@@ -20815,7 +20942,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_psy_011` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['dx']`
 - Linked pages: `t_psychosis.md`
-- Evidence: `t`, `_`, `p`, `s`, `y`, `c`, `h`, `o`, `s`, `i`, `s`, `.`, `m`, `d`, ` `, `—`, ` `, `T`, `h`, `i`, `n`, `k`, ` `, `d`, `e`, `l`, `i`, `r`, `i`, `u`, `m`, ` `, `f`, `i`, `r`, `s`, `t`, ` `, `i`, `n`, ` `, `a`, `n`, `y`, ` `, `a`, `c`, `u`, `t`, `e`, `,`, ` `, `f`, `l`, `u`, `c`, `t`, `u`, `a`, `t`, `i`, `n`, `g`, ` `, `p`, `r`, `e`, `s`, `e`, `n`, `t`, `a`, `t`, `i`, `o`, `n`, ` `, `w`, `i`, `t`, `h`, ` `, `i`, `n`, `a`, `t`, `t`, `e`, `n`, `t`, `i`, `o`, `n`, ` `, `o`, `r`, ` `, `c`, `l`, `o`, `u`, `d`, `e`, `d`, ` `, `c`, `o`, `n`, `s`, `c`, `i`, `o`, `u`, `s`, `n`, `e`, `s`, `s`, `.`
+- Evidence: `t_psychosis.md — Think delirium first in any acute, fluctuating presentation with inattention or clouded consciousness.`
 
 **Stem.** A 78-year-old man with no prior psychiatric history is noted to be 'psychotic' — he is making nonsensical statements, appears to be responding to internal stimuli, and is alternating between agitation and somnolence. He was admitted 2 days ago for a hip fracture repair. Which diagnosis should be considered first?
 
@@ -20832,7 +20959,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_psy_012` · status=`attested` · type=`sba` · difficulty=`3` · competency=`['management']`
 - Linked pages: `t_psychosis.md`
-- Evidence: `t`, `_`, `p`, `s`, `y`, `c`, `h`, `o`, `s`, `i`, `s`, `.`, `m`, `d`, ` `, `—`, ` `, `B`, `e`, `y`, `o`, `n`, `d`, ` `, `t`, `h`, `e`, ` `, `A`, `N`, `C`, `:`, ` `, `c`, `l`, `o`, `z`, `a`, `p`, `i`, `n`, `e`, ` `, `c`, `a`, `n`, ` `, `c`, `a`, `u`, `s`, `e`, ` `, `m`, `y`, `o`, `c`, `a`, `r`, `d`, `i`, `t`, `i`, `s`, ` `, `(`, `e`, `s`, `p`, `e`, `c`, `i`, `a`, `l`, `l`, `y`, ` `, `i`, `n`, ` `, `t`, `h`, `e`, ` `, `f`, `i`, `r`, `s`, `t`, ` `, `w`, `e`, `e`, `k`, `s`, `)`, `,`, ` `, `s`, `e`, `v`, `e`, `r`, `e`, ` `, `c`, `o`, `n`, `s`, `t`, `i`, `p`, `a`, `t`, `i`, `o`, `n`, `/`, `i`, `l`, `e`, `u`, `s`, `,`, ` `, `s`, `e`, `i`, `z`, `u`, `r`, `e`, `s`, `,`, ` `, `a`, `n`, `d`, ` `, `o`, `r`, `t`, `h`, `o`, `s`, `t`, `a`, `s`, `i`, `s`, ` `, `—`, ` `, `m`, `o`, `n`, `i`, `t`, `o`, `r`, ` `, `f`, `o`, `r`, ` `, `t`, `h`, `e`, `s`, `e`, `,`, ` `, `n`, `o`, `t`, ` `, `j`, `u`, `s`, `t`, ` `, `t`, `h`, `e`, ` `, `c`, `o`, `u`, `n`, `t`, `.`
+- Evidence: `t_psychosis.md — Beyond the ANC: clozapine can cause myocarditis (especially in the first weeks), severe constipation/ileus, seizures, and orthostasis — monitor for these, not just the count.`
 
 **Stem.** A 41-year-old man with treatment-resistant schizophrenia on clozapine for 6 months presents with 3 days of fever, severe constipation, and abdominal distension. His ANC is within the monitored range. Which clozapine adverse effect must be immediately considered?
 
@@ -20849,7 +20976,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_psy_013` · status=`attested` · type=`two-tier` · difficulty=`2` · competency=`['dx']`
 - Linked pages: `t_psychosis.md`
-- Evidence: `t`, `_`, `p`, `s`, `y`, `c`, `h`, `o`, `s`, `i`, `s`, `.`, `m`, `d`, ` `, `—`, ` `, `D`, `i`, `s`, `t`, `i`, `n`, `g`, `u`, `i`, `s`, `h`, ` `, `a`, ` `, `m`, `o`, `o`, `d`, ` `, `d`, `i`, `s`, `o`, `r`, `d`, `e`, `r`, ` `, `w`, `i`, `t`, `h`, ` `, `p`, `s`, `y`, `c`, `h`, `o`, `t`, `i`, `c`, ` `, `f`, `e`, `a`, `t`, `u`, `r`, `e`, `s`, ` `, `(`, `p`, `s`, `y`, `c`, `h`, `o`, `s`, `i`, `s`, ` `, `c`, `o`, `n`, `f`, `i`, `n`, `e`, `d`, ` `, `t`, `o`, ` `, `m`, `o`, `o`, `d`, ` `, `e`, `p`, `i`, `s`, `o`, `d`, `e`, `s`, `)`, ` `, `f`, `r`, `o`, `m`, ` `, `a`, ` `, `p`, `r`, `i`, `m`, `a`, `r`, `y`, ` `, `p`, `s`, `y`, `c`, `h`, `o`, `t`, `i`, `c`, ` `, `d`, `i`, `s`, `o`, `r`, `d`, `e`, `r`, `.`
+- Evidence: `t_psychosis.md — Distinguish a mood disorder with psychotic features (psychosis confined to mood episodes) from a primary psychotic disorder.`
 
 **Stem.** A 28-year-old woman presents with 2 weeks of auditory hallucinations and paranoid delusions coinciding with a severe depressive episode. Between prior mood episodes she has no psychotic symptoms. Which diagnosis is most consistent with this pattern?
 
@@ -20868,7 +20995,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_psy_014` · status=`attested` · type=`sba` · difficulty=`3` · competency=`['management']`
 - Linked pages: `t_psychosis.md`
-- Evidence: `t`, `_`, `p`, `s`, `y`, `c`, `h`, `o`, `s`, `i`, `s`, `.`, `m`, `d`, ` `, `—`, ` `, `F`, `o`, `r`, ` `, `t`, `r`, `e`, `a`, `t`, `m`, `e`, `n`, `t`, `-`, `r`, `e`, `s`, `i`, `s`, `t`, `a`, `n`, `t`, ` `, `s`, `c`, `h`, `i`, `z`, `o`, `p`, `h`, `r`, `e`, `n`, `i`, `a`, ` `, `(`, `i`, `n`, `a`, `d`, `e`, `q`, `u`, `a`, `t`, `e`, ` `, `r`, `e`, `s`, `p`, `o`, `n`, `s`, `e`, ` `, `t`, `o`, ` `, `t`, `w`, `o`, ` `, `a`, `d`, `e`, `q`, `u`, `a`, `t`, `e`, ` `, `a`, `n`, `t`, `i`, `p`, `s`, `y`, `c`, `h`, `o`, `t`, `i`, `c`, ` `, `t`, `r`, `i`, `a`, `l`, `s`, `)`, `,`, ` `, `c`, `l`, `o`, `z`, `a`, `p`, `i`, `n`, `e`, ` `, `i`, `s`, ` `, `t`, `h`, `e`, ` `, `e`, `v`, `i`, `d`, `e`, `n`, `c`, `e`, `-`, `b`, `a`, `s`, `e`, `d`, ` `, `a`, `g`, `e`, `n`, `t`, `.`
+- Evidence: `t_psychosis.md — For treatment-resistant schizophrenia (inadequate response to two adequate antipsychotic trials), clozapine is the evidence-based agent.`
 
 **Stem.** A 33-year-old man with schizophrenia has had a modest response to risperidone 4 mg/day for 6 weeks. His attending considers this a non-response and wants to proceed to clozapine. The student questions whether the treatment resistance threshold has been met. What must be true before clozapine is indicated for treatment-resistant schizophrenia?
 
@@ -20885,7 +21012,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_psy_015` · status=`draft` · type=`sba` · difficulty=`2` · competency=`['dx']`
 - Linked pages: `t_psychosis.md`
-- Evidence: `t`, `_`, `p`, `s`, `y`, `c`, `h`, `o`, `s`, `i`, `s`, `.`, `m`, `d`, ` `, `—`, ` `, `D`, `u`, `r`, `a`, `t`, `i`, `o`, `n`, ` `, `a`, `n`, `d`, ` `, `m`, `o`, `o`, `d`, ` `, `a`, `n`, `c`, `h`, `o`, `r`, `s`, `:`, ` `, `b`, `r`, `i`, `e`, `f`, ` `, `p`, `s`, `y`, `c`, `h`, `o`, `t`, `i`, `c`, ` `, `d`, `i`, `s`, `o`, `r`, `d`, `e`, `r`, `,`, ` `, `s`, `c`, `h`, `i`, `z`, `o`, `p`, `h`, `r`, `e`, `n`, `i`, `f`, `o`, `r`, `m`, ` `, `d`, `i`, `s`, `o`, `r`, `d`, `e`, `r`, `,`, ` `, `a`, `n`, `d`, ` `, `s`, `c`, `h`, `i`, `z`, `o`, `p`, `h`, `r`, `e`, `n`, `i`, `a`, `.`
+- Evidence: `t_psychosis.md — Duration and mood anchors: brief psychotic disorder, schizophreniform disorder, and schizophrenia.`
 
 **Stem.** A 22-year-old has had delusions, hallucinations, and disorganized speech for the past 3 months with functional decline and no mood episode or substance cause. Which diagnosis best fits at this point?
 
@@ -20902,7 +21029,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_psy_016` · status=`draft` · type=`sba` · difficulty=`3` · competency=`['dx']`
 - Linked pages: `t_psychosis.md`
-- Evidence: `t`, `_`, `p`, `s`, `y`, `c`, `h`, `o`, `s`, `i`, `s`, `.`, `m`, `d`, ` `, `—`, ` `, `D`, `u`, `r`, `a`, `t`, `i`, `o`, `n`, ` `, `a`, `n`, `d`, ` `, `m`, `o`, `o`, `d`, ` `, `a`, `n`, `c`, `h`, `o`, `r`, `s`, `:`, ` `, `s`, `c`, `h`, `i`, `z`, `o`, `a`, `f`, `f`, `e`, `c`, `t`, `i`, `v`, `e`, ` `, `d`, `i`, `s`, `o`, `r`, `d`, `e`, `r`, ` `, `v`, `s`, ` `, `m`, `o`, `o`, `d`, ` `, `d`, `i`, `s`, `o`, `r`, `d`, `e`, `r`, ` `, `w`, `i`, `t`, `h`, ` `, `p`, `s`, `y`, `c`, `h`, `o`, `t`, `i`, `c`, ` `, `f`, `e`, `a`, `t`, `u`, `r`, `e`, `s`, `.`
+- Evidence: `t_psychosis.md — Duration and mood anchors: schizoaffective disorder vs mood disorder with psychotic features.`
 
 **Stem.** A patient has had auditory hallucinations and delusions for two weeks with no significant mood symptoms during that period, but has also had major depressive episodes during most of the illness. Best diagnosis?
 
@@ -20921,7 +21048,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_rel_001` · status=`attested` · type=`relational` · difficulty=`2` · competency=`['psychosocial', 'safety']` · **high-yield**
 - Linked pages: `exp_family.md`
-- Evidence: `e`, `x`, `p`, `_`, `f`, `a`, `m`, `i`, `l`, `y`, `.`, `m`, `d`, ` `, `'`, `W`, `h`, `y`, ` `, `I`, `t`, ` `, `M`, `a`, `t`, `t`, `e`, `r`, `s`, `'`, ` `, `—`, ` `, `s`, `t`, `r`, `u`, `c`, `t`, `u`, `r`, `e`, `d`, ` `, `l`, `e`, `t`, `h`, `a`, `l`, `-`, `m`, `e`, `a`, `n`, `s`, ` `, `c`, `o`, `u`, `n`, `s`, `e`, `l`, `i`, `n`, `g`, ` `, `(`, `C`, `A`, `L`, `M`, `)`, ` `, `c`, `u`, `t`, ` `, `a`, `t`, `t`, `e`, `m`, `p`, `t`, `s`, `/`, `d`, `e`, `a`, `t`, `h`, `s`, ` `, `f`, `r`, `o`, `m`, ` `, `3`, `.`, `3`, `%`, ` `, `t`, `o`, ` `, `0`, `.`, `8`, `3`, `%`, ` `, `a`, `t`, ` `, `1`, `8`, `0`, ` `, `d`, `a`, `y`, `s`, `;`, ` `, `s`, `u`, `i`, `c`, `i`, `d`, `e`, ` `, `r`, `i`, `s`, `k`, ` `, `p`, `e`, `a`, `k`, `s`, ` `, `i`, `n`, ` `, `t`, `h`, `e`, ` `, `f`, `i`, `r`, `s`, `t`, ` `, `w`, `e`, `e`, `k`, ` `, `p`, `o`, `s`, `t`, `-`, `d`, `i`, `s`, `c`, `h`, `a`, `r`, `g`, `e`, ` `, `(`, `C`, `h`, `u`, `n`, `g`, ` `, `e`, `t`, ` `, `a`, `l`, `.`, `,`, ` `, `J`, `A`, `M`, `A`, ` `, `P`, `s`, `y`, `c`, `h`, `i`, `a`, `t`, `r`, `y`, ` `, `2`, `0`, `1`, `7`, `)`, `.`
+- Evidence: `exp_family.md 'Why It Matters' — structured lethal-means counseling (CALM) cut attempts/deaths from 3.3% to 0.83% at 180 days; suicide risk peaks in the first week post-discharge (Chung et al., JAMA Psychiatry 2017).`
 
 **Stem.** A family meeting is held the day before planned discharge for a 52-year-old man admitted after a suicide attempt by overdose. When the agenda reaches safety and warning signs, his wife says: 'We'll keep a close eye on him. And you don't need to worry about the guns — he would never use them, and they're put away.' The attending invites your input. Which response is best?
 
@@ -20938,7 +21065,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_rel_002` · status=`attested` · type=`relational` · difficulty=`2` · competency=`['psychosocial']`
 - Linked pages: `family_playbook.md`
-- Evidence: `f`, `a`, `m`, `i`, `l`, `y`, `_`, `p`, `l`, `a`, `y`, `b`, `o`, `o`, `k`, `.`, `m`, `d`, ` `, `'`, `H`, `e`, `a`, `r`, ` `, `t`, `h`, `e`, ` `, `f`, `a`, `m`, `i`, `l`, `y`, ` `, `a`, `n`, `d`, ` `, `r`, `e`, `a`, `d`, ` `, `t`, `h`, `e`, ` `, `e`, `m`, `o`, `t`, `i`, `o`, `n`, `a`, `l`, ` `, `c`, `l`, `i`, `m`, `a`, `t`, `e`, `'`, ` `, `—`, ` `, `L`, `i`, `s`, `t`, `e`, `n`, ` `, `f`, `o`, `r`, ` `, `e`, `x`, `p`, `r`, `e`, `s`, `s`, `e`, `d`, ` `, `e`, `m`, `o`, `t`, `i`, `o`, `n`, ` `, `—`, ` `, `c`, `r`, `i`, `t`, `i`, `c`, `i`, `s`, `m`, `,`, ` `, `h`, `o`, `s`, `t`, `i`, `l`, `i`, `t`, `y`, `,`, ` `, `a`, `n`, `d`, ` `, `e`, `m`, `o`, `t`, `i`, `o`, `n`, `a`, `l`, ` `, `o`, `v`, `e`, `r`, `-`, `i`, `n`, `v`, `o`, `l`, `v`, `e`, `m`, `e`, `n`, `t`, ` `, `—`, ` `, `w`, `i`, `t`, `h`, `o`, `u`, `t`, ` `, `c`, `o`, `r`, `r`, `e`, `c`, `t`, `i`, `n`, `g`, ` `, `i`, `t`, ` `, `i`, `n`, ` `, `t`, `h`, `e`, ` `, `m`, `o`, `m`, `e`, `n`, `t`, `.`, ` `, `D`, `e`, `-`, `s`, `h`, `a`, `m`, `e`, `:`, ` `, `f`, `r`, `a`, `m`, `e`, ` `, `s`, `y`, `m`, `p`, `t`, `o`, `m`, `s`, ` `, `a`, `n`, `d`, ` `, `b`, `e`, `h`, `a`, `v`, `i`, `o`, `r`, ` `, `a`, `s`, ` `, `i`, `l`, `l`, `n`, `e`, `s`, `s`, ` `, `a`, `n`, `d`, ` `, `r`, `e`, `g`, `u`, `l`, `a`, `t`, `i`, `o`, `n`, `,`, ` `, `n`, `o`, `t`, ` `, `c`, `h`, `a`, `r`, `a`, `c`, `t`, `e`, `r`, ` `, `o`, `r`, ` `, `f`, `a`, `u`, `l`, `t`, `.`, ` `, `T`, `h`, `i`, `s`, ` `, `i`, `s`, ` `, `t`, `h`, `e`, ` `, `p`, `h`, `a`, `s`, `e`, ` `, `t`, `h`, `a`, `t`, ` `, `m`, `o`, `s`, `t`, ` `, `c`, `h`, `a`, `n`, `g`, `e`, `s`, ` `, `o`, `u`, `t`, `c`, `o`, `m`, `e`, `s`, `;`, ` `, `p`, `r`, `o`, `t`, `e`, `c`, `t`, ` `, `t`, `h`, `e`, ` `, `t`, `i`, `m`, `e`, ` `, `f`, `o`, `r`, ` `, `i`, `t`, `.`
+- Evidence: `family_playbook.md 'Hear the family and read the emotional climate' — Listen for expressed emotion — criticism, hostility, and emotional over-involvement — without correcting it in the moment. De-shame: frame symptoms and behavior as illness and regulation, not character or fault. This is the phase that most changes outcomes; protect the time for it.`
 
 **Stem.** A family meeting is held on hospital day 3 for a 29-year-old man admitted for a first manic episode. His mother interrupts repeatedly: 'He does this every time he stops his medication — he's selfish and he makes us all suffer.' She is tearful and wringing her hands. The attending invites the student to observe what is happening. What is the student's best understanding of this dynamic?
 
@@ -20955,7 +21082,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_rel_003` · status=`attested` · type=`relational` · difficulty=`1` · competency=`['psychosocial']` · **high-yield**
 - Linked pages: `motivational_interviewing.md`
-- Evidence: `m`, `o`, `t`, `i`, `v`, `a`, `t`, `i`, `o`, `n`, `a`, `l`, `_`, `i`, `n`, `t`, `e`, `r`, `v`, `i`, `e`, `w`, `i`, `n`, `g`, `.`, `m`, `d`, ` `, `—`, ` `, `T`, `h`, `e`, ` `, `o`, `n`, `e`, ` `, `i`, `d`, `e`, `a`, `:`, ` `, `P`, `e`, `o`, `p`, `l`, `e`, ` `, `t`, `a`, `l`, `k`, ` `, `t`, `h`, `e`, `m`, `s`, `e`, `l`, `v`, `e`, `s`, ` `, `i`, `n`, `t`, `o`, ` `, `c`, `h`, `a`, `n`, `g`, `e`, `.`, ` `, `Y`, `o`, `u`, `r`, ` `, `j`, `o`, `b`, ` `, `i`, `s`, ` `, `n`, `o`, `t`, ` `, `t`, `o`, ` `, `s`, `u`, `p`, `p`, `l`, `y`, ` `, `t`, `h`, `e`, ` `, `a`, `r`, `g`, `u`, `m`, `e`, `n`, `t`, `s`, ` `, `(`, `t`, `h`, `e`, ` `, `'`, `r`, `i`, `g`, `h`, `t`, `i`, `n`, `g`, ` `, `r`, `e`, `f`, `l`, `e`, `x`, `'`, ` `, `—`, ` `, `r`, `e`, `s`, `i`, `s`, `t`, ` `, `i`, `t`, `)`, ` `, `b`, `u`, `t`, ` `, `t`, `o`, ` `, `e`, `v`, `o`, `k`, `e`, ` `, `t`, `h`, `e`, ` `, `p`, `a`, `t`, `i`, `e`, `n`, `t`, `'`, `s`, ` `, `o`, `w`, `n`, ` `, `r`, `e`, `a`, `s`, `o`, `n`, `s`, `.`, ` `, `P`, `u`, `s`, `h`, `i`, `n`, `g`, ` `, `u`, `s`, `u`, `a`, `l`, `l`, `y`, ` `, `p`, `r`, `o`, `d`, `u`, `c`, `e`, `s`, ` `, `s`, `u`, `s`, `t`, `a`, `i`, `n`, ` `, `t`, `a`, `l`, `k`, `;`, ` `, `c`, `u`, `r`, `i`, `o`, `s`, `i`, `t`, `y`, ` `, `p`, `r`, `o`, `d`, `u`, `c`, `e`, `s`, ` `, `c`, `h`, `a`, `n`, `g`, `e`, ` `, `t`, `a`, `l`, `k`, `.`
+- Evidence: `motivational_interviewing.md — The one idea: People talk themselves into change. Your job is not to supply the arguments (the 'righting reflex' — resist it) but to evoke the patient's own reasons. Pushing usually produces sustain talk; curiosity produces change talk.`
 
 **Stem.** A student is seeing a 38-year-old man who is admitted after an alcohol-related incident — his second alcohol-related admission this year. When the student mentions concerns about his drinking, the patient says, 'Look, I drink to handle stress — I don't have a problem. Everyone drinks.' The student's instinct is to explain why the drinking is dangerous and list the health consequences. Which response best reflects motivational interviewing?
 
@@ -20972,7 +21099,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_rel_004` · status=`attested` · type=`relational` · difficulty=`2` · competency=`['management', 'psychosocial']`
 - Linked pages: `family_modalities.md`
-- Evidence: `f`, `a`, `m`, `i`, `l`, `y`, `_`, `m`, `o`, `d`, `a`, `l`, `i`, `t`, `i`, `e`, `s`, `.`, `m`, `d`, ` `, `—`, ` `, `N`, `N`, `T`, ` `, `7`, ` `, `—`, ` `, `t`, `r`, `e`, `a`, `t`, ` `, `s`, `e`, `v`, `e`, `n`, ` `, `f`, `a`, `m`, `i`, `l`, `i`, `e`, `s`, ` `, `t`, `o`, ` `, `p`, `r`, `e`, `v`, `e`, `n`, `t`, ` `, `o`, `n`, `e`, ` `, `r`, `e`, `l`, `a`, `p`, `s`, `e`, ` `, `(`, `P`, `h`, `a`, `r`, `o`, `a`, `h`, `,`, ` `, `C`, `o`, `c`, `h`, `r`, `a`, `n`, `e`, ` `, `2`, `0`, `1`, `0`, `;`, ` `, `5`, `3`, ` `, `R`, `C`, `T`, `s`, `)`, `.`, ` `, `D`, `o`, `s`, `e`, ` `, `m`, `a`, `t`, `t`, `e`, `r`, `s`, `:`, ` `, `≤`, `2`, ` `, `s`, `e`, `s`, `s`, `i`, `o`, `n`, `s`, ` `, `i`, `s`, ` `, `i`, `n`, `e`, `f`, `f`, `e`, `c`, `t`, `i`, `v`, `e`, `;`, ` `, `N`, `I`, `C`, `E`, ` `, `r`, `e`, `c`, `o`, `m`, `m`, `e`, `n`, `d`, `s`, ` `, `≥`, `1`, `0`, ` `, `s`, `e`, `s`, `s`, `i`, `o`, `n`, `s`, ` `, `o`, `v`, `e`, `r`, ` `, `≥`, `3`, ` `, `m`, `o`, `n`, `t`, `h`, `s`, `.`
+- Evidence: `family_modalities.md — NNT 7 — treat seven families to prevent one relapse (Pharoah, Cochrane 2010; 53 RCTs). Dose matters: ≤2 sessions is ineffective; NICE recommends ≥10 sessions over ≥3 months.`
 
 **Stem.** A family asks the treatment team what they can do during their loved one's hospitalization for schizophrenia to help with recovery. The team is considering whether to invest the time in a formal family meeting. Which argument best supports making structured family psychoeducation the default approach?
 
@@ -20989,7 +21116,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_rel_005` · status=`attested` · type=`relational` · difficulty=`2` · competency=`['psychosocial']`
 - Linked pages: `motivational_interviewing.md`
-- Evidence: `m`, `o`, `t`, `i`, `v`, `a`, `t`, `i`, `o`, `n`, `a`, `l`, `_`, `i`, `n`, `t`, `e`, `r`, `v`, `i`, `e`, `w`, `i`, `n`, `g`, `.`, `m`, `d`, ` `, `—`, ` `, `A`, ` `, `3`, `0`, `-`, `s`, `e`, `c`, `o`, `n`, `d`, ` `, `t`, `o`, `o`, `l`, `:`, ` `, `t`, `h`, `e`, ` `, `r`, `e`, `a`, `d`, `i`, `n`, `e`, `s`, `s`, ` `, `r`, `u`, `l`, `e`, `r`, `.`, ` `, `'`, `Y`, `o`, `u`, ` `, `s`, `a`, `i`, `d`, ` `, `4`, ` `, `—`, ` `, `w`, `h`, `y`, ` `, `n`, `o`, `t`, ` `, `a`, ` `, `2`, `?`, `'`, ` `, `(`, `f`, `o`, `r`, `c`, `e`, `s`, ` `, `c`, `h`, `a`, `n`, `g`, `e`, ` `, `t`, `a`, `l`, `k`, `)`, `.`, ` `, `'`, `W`, `h`, `a`, `t`, ` `, `w`, `o`, `u`, `l`, `d`, ` `, `m`, `o`, `v`, `e`, ` `, `y`, `o`, `u`, ` `, `f`, `r`, `o`, `m`, ` `, `a`, ` `, `4`, ` `, `t`, `o`, ` `, `a`, ` `, `6`, `?`, `'`
+- Evidence: `motivational_interviewing.md — A 30-second tool: the readiness ruler. 'You said 4 — why not a 2?' (forces change talk). 'What would move you from a 4 to a 6?'`
 
 **Stem.** A student is using the MI readiness ruler with a patient who has poorly controlled diabetes and drinks heavily. He rates the importance of cutting back alcohol as '4 out of 10.' Which follow-up question best uses the readiness ruler to elicit change talk?
 
@@ -21006,7 +21133,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_rel_006` · status=`attested` · type=`relational` · difficulty=`2` · competency=`['management', 'psychosocial']`
 - Linked pages: `family_modalities.md`
-- Evidence: `f`, `a`, `m`, `i`, `l`, `y`, `_`, `m`, `o`, `d`, `a`, `l`, `i`, `t`, `i`, `e`, `s`, `.`, `m`, `d`, ` `, `—`, ` `, `E`, `x`, `p`, `r`, `e`, `s`, `s`, `e`, `d`, ` `, `e`, `m`, `o`, `t`, `i`, `o`, `n`, `:`, ` `, `h`, `i`, `g`, `h`, `-`, `E`, `E`, ` `, `r`, `o`, `u`, `g`, `h`, `l`, `y`, ` `, `d`, `o`, `u`, `b`, `l`, `e`, `s`, ` `, `t`, `o`, ` `, `q`, `u`, `i`, `n`, `t`, `u`, `p`, `l`, `e`, `s`, ` `, `r`, `e`, `l`, `a`, `p`, `s`, `e`, ` `, `o`, `d`, `d`, `s`, ` `, `d`, `e`, `p`, `e`, `n`, `d`, `i`, `n`, `g`, ` `, `o`, `n`, ` `, `t`, `h`, `e`, ` `, `s`, `t`, `u`, `d`, `y`, ` `, `(`, `B`, `u`, `t`, `z`, `l`, `a`, `f`, `f`, ` `, `&`, ` `, `H`, `o`, `o`, `l`, `e`, `y`, ` `, `1`, `9`, `9`, `8`, ` `, `m`, `e`, `t`, `a`, `-`, `a`, `n`, `a`, `l`, `y`, `s`, `i`, `s`, `)`, `,`, ` `, `w`, `h`, `i`, `l`, `e`, ` `, `f`, `a`, `m`, `i`, `l`, `y`, ` `, `w`, `a`, `r`, `m`, `t`, `h`, ` `, `i`, `s`, ` `, `p`, `r`, `o`, `t`, `e`, `c`, `t`, `i`, `v`, `e`, `.`, ` `, `F`, `a`, `m`, `i`, `l`, `y`, ` `, `c`, `l`, `i`, `m`, `a`, `t`, `e`, ` `, `i`, `s`, ` `, `m`, `o`, `d`, `i`, `f`, `i`, `a`, `b`, `l`, `e`, ` `, `—`, ` `, `m`, `e`, `e`, `t`, `i`, `n`, `g`, `s`, ` `, `h`, `e`, `l`, `p`, ` `, `l`, `o`, `w`, `e`, `r`, ` `, `i`, `t`, `.`
+- Evidence: `family_modalities.md — Expressed emotion: high-EE roughly doubles to quintuples relapse odds depending on the study (Butzlaff & Hooley 1998 meta-analysis), while family warmth is protective. Family climate is modifiable — meetings help lower it.`
 
 **Stem.** The family of a patient with schizophrenia is described in the chart as 'high expressed emotion' — high criticism and high emotional over-involvement. The resident says, 'We can't do much about the family climate — it's just how they are.' Which response is most evidence-based?
 
@@ -21023,7 +21150,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_rel_007` · status=`attested` · type=`relational` · difficulty=`1` · competency=`['safety']` · **high-yield**
 - Linked pages: `brief_psychotherapy.md`
-- Evidence: `b`, `r`, `i`, `e`, `f`, `_`, `p`, `s`, `y`, `c`, `h`, `o`, `t`, `h`, `e`, `r`, `a`, `p`, `y`, `.`, `m`, `d`, ` `, `—`, ` `, `S`, `a`, `f`, `e`, `t`, `y`, ` `, `p`, `l`, `a`, `n`, `n`, `i`, `n`, `g`, ` `, `(`, `S`, `t`, `a`, `n`, `l`, `e`, `y`, `-`, `B`, `r`, `o`, `w`, `n`, `)`, ` `, `+`, ` `, `c`, `r`, `i`, `s`, `i`, `s`, ` `, `r`, `e`, `s`, `p`, `o`, `n`, `s`, `e`, ` `, `p`, `l`, `a`, `n`, `n`, `i`, `n`, `g`, `:`, ` `, `S`, `a`, `f`, `e`, `t`, `y`, ` `, `P`, `l`, `a`, `n`, `n`, `i`, `n`, `g`, ` `, `I`, `n`, `t`, `e`, `r`, `v`, `e`, `n`, `t`, `i`, `o`, `n`, ` `, `w`, `i`, `t`, `h`, ` `, `f`, `o`, `l`, `l`, `o`, `w`, `-`, `u`, `p`, ` `, `≈`, ` `, `5`, `0`, `%`, ` `, `f`, `e`, `w`, `e`, `r`, ` `, `s`, `u`, `i`, `c`, `i`, `d`, `a`, `l`, ` `, `b`, `e`, `h`, `a`, `v`, `i`, `o`, `r`, `s`, ` `, `(`, `S`, `t`, `a`, `n`, `l`, `e`, `y`, ` `, `2`, `0`, `1`, `8`, `)`, `;`, ` `, `a`, `b`, `a`, `n`, `d`, `o`, `n`, ` `, `n`, `o`, `-`, `s`, `u`, `i`, `c`, `i`, `d`, `e`, ` `, `'`, `c`, `o`, `n`, `t`, `r`, `a`, `c`, `t`, `s`, `'`, ` `, `—`, ` `, `t`, `h`, `e`, `y`, ` `, `d`, `o`, `n`, `'`, `t`, ` `, `w`, `o`, `r`, `k`, `.`
+- Evidence: `brief_psychotherapy.md — Safety planning (Stanley-Brown) + crisis response planning: Safety Planning Intervention with follow-up ≈ 50% fewer suicidal behaviors (Stanley 2018); abandon no-suicide 'contracts' — they don't work.`
 
 **Stem.** A 27-year-old woman is being discharged after a suicidal crisis. The resident asks her to 'sign a contract that she won't hurt herself.' The student wonders whether this is the evidence-based approach. Which response reflects the current standard?
 
@@ -21040,7 +21167,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_rel_008` · status=`attested` · type=`relational` · difficulty=`2` · competency=`['management']`
 - Linked pages: `brief_psychotherapy.md`
-- Evidence: `b`, `r`, `i`, `e`, `f`, `_`, `p`, `s`, `y`, `c`, `h`, `o`, `t`, `h`, `e`, `r`, `a`, `p`, `y`, `.`, `m`, `d`, ` `, `—`, ` `, `B`, `e`, `h`, `a`, `v`, `i`, `o`, `r`, `a`, `l`, ` `, `a`, `c`, `t`, `i`, `v`, `a`, `t`, `i`, `o`, `n`, ` `, `(`, `B`, `A`, `)`, ` `, `—`, ` `, `s`, `c`, `h`, `e`, `d`, `u`, `l`, `e`, ` `, `o`, `n`, `e`, ` `, `s`, `m`, `a`, `l`, `l`, `,`, ` `, `v`, `a`, `l`, `u`, `e`, `d`, ` `, `a`, `c`, `t`, `i`, `v`, `i`, `t`, `y`, `.`, ` `, `S`, `u`, `p`, `e`, `r`, `i`, `o`, `r`, ` `, `t`, `o`, ` `, `T`, `A`, `U`, ` `, `f`, `o`, `r`, ` `, `d`, `e`, `p`, `r`, `e`, `s`, `s`, `i`, `o`, `n`, ` `, `(`, `S`, `M`, `D`, ` `, `−`, `0`, `.`, `7`, `8`, `)`, ` `, `a`, `n`, `d`, ` `, `a`, `n`, `x`, `i`, `e`, `t`, `y`, ` `, `(`, `−`, `0`, `.`, `3`, `3`, `)`, `,`, ` `, `o`, `n`, ` `, `p`, `a`, `r`, ` `, `w`, `i`, `t`, `h`, ` `, `C`, `B`, `T`, `;`, ` `, `l`, `o`, `w`, `e`, `s`, `t`, ` `, `c`, `o`, `g`, `n`, `i`, `t`, `i`, `v`, `e`, ` `, `d`, `e`, `m`, `a`, `n`, `d`, ` `, `→`, ` `, `b`, `e`, `s`, `t`, ` `, `i`, `n`, `p`, `a`, `t`, `i`, `e`, `n`, `t`, ` `, `f`, `i`, `t`, `.`
+- Evidence: `brief_psychotherapy.md — Behavioral activation (BA) — schedule one small, valued activity. Superior to TAU for depression (SMD −0.78) and anxiety (−0.33), on par with CBT; lowest cognitive demand → best inpatient fit.`
 
 **Stem.** A 52-year-old man with severe depression is withdrawn, stays in bed all day, and says 'nothing matters anymore.' The student asks how to perform a brief psychotherapy intervention given a 15-minute window. Which approach is most appropriate for this presentation?
 
@@ -21057,7 +21184,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_rel_009` · status=`attested` · type=`relational` · difficulty=`2` · competency=`['management']`
 - Linked pages: `brief_psychotherapy.md`
-- Evidence: `b`, `r`, `i`, `e`, `f`, `_`, `p`, `s`, `y`, `c`, `h`, `o`, `t`, `h`, `e`, `r`, `a`, `p`, `y`, `.`, `m`, `d`, ` `, `—`, ` `, `W`, `r`, `i`, `t`, `e`, ` `, `t`, `h`, `e`, ` `, `h`, `a`, `n`, `d`, `o`, `f`, `f`, ` `, `s`, `o`, ` `, `t`, `h`, `e`, ` `, `o`, `u`, `t`, `p`, `a`, `t`, `i`, `e`, `n`, `t`, ` `, `c`, `l`, `i`, `n`, `i`, `c`, `i`, `a`, `n`, ` `, `c`, `a`, `n`, ` `, `c`, `o`, `n`, `t`, `i`, `n`, `u`, `e`, ` `, `t`, `h`, `e`, ` `, `t`, `h`, `r`, `e`, `a`, `d`, ` `, `—`, ` `, `t`, `h`, `e`, ` `, `p`, `o`, `i`, `n`, `t`, ` `, `o`, `f`, ` `, `i`, `n`, `p`, `a`, `t`, `i`, `e`, `n`, `t`, ` `, `t`, `h`, `e`, `r`, `a`, `p`, `y`, ` `, `i`, `s`, ` `, `t`, `o`, ` `, `s`, `t`, `a`, `r`, `t`, ` `, `i`, `t`, ` `, `a`, `n`, `d`, ` `, `s`, `e`, `c`, `u`, `r`, `e`, ` `, `t`, `h`, `e`, ` `, `f`, `o`, `l`, `l`, `o`, `w`, `-`, `u`, `p`, `.`
+- Evidence: `brief_psychotherapy.md — Write the handoff so the outpatient clinician can continue the thread — the point of inpatient therapy is to start it and secure the follow-up.`
 
 **Stem.** A patient with recurrent MDD completed three individual therapy sessions during an 8-day hospitalization. At discharge, the student writes in the note: 'CBT skills taught inpatient; patient discharged with psychotherapy complete.' The attending asks the student to reconsider the framing. Which is more accurate?
 
@@ -21074,7 +21201,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_rel_010` · status=`attested` · type=`relational` · difficulty=`3` · competency=`['management']`
 - Linked pages: `family_modalities.md`
-- Evidence: `f`, `a`, `m`, `i`, `l`, `y`, `_`, `m`, `o`, `d`, `a`, `l`, `i`, `t`, `i`, `e`, `s`, `.`, `m`, `d`, ` `, `—`, ` `, `R`, `e`, `a`, `c`, `h`, `e`, `s`, ` `, `a`, ` `, `m`, `i`, `n`, `o`, `r`, `i`, `t`, `y`, ` `, `o`, `f`, ` `, `f`, `a`, `m`, `i`, `l`, `i`, `e`, `s`, ` `, `—`, ` `, `s`, `t`, `r`, `u`, `c`, `t`, `u`, `r`, `e`, `d`, ` `, `f`, `a`, `m`, `i`, `l`, `y`, ` `, `w`, `o`, `r`, `k`, ` `, `i`, `s`, ` `, `d`, `e`, `l`, `i`, `v`, `e`, `r`, `e`, `d`, ` `, `i`, `n`, ` `, `o`, `n`, `l`, `y`, ` `, `~`, `0`, `–`, `5`, `3`, `%`, ` `, `o`, `f`, ` `, `c`, `a`, `s`, `e`, `s`, ` `, `(`, `h`, `i`, `s`, `t`, `o`, `r`, `i`, `c`, `a`, `l`, `l`, `y`, ` `, `<`, `1`, `0`, `%`, `)`, `,`, ` `, `a`, `n`, `d`, ` `, `t`, `h`, `e`, ` `, `m`, `a`, `i`, `n`, ` `, `b`, `a`, `r`, `r`, `i`, `e`, `r`, ` `, `i`, `s`, ` `, `c`, `l`, `i`, `n`, `i`, `c`, `i`, `a`, `n`, ` `, `a`, `v`, `o`, `i`, `d`, `a`, `n`, `c`, `e`, `,`, ` `, `n`, `o`, `t`, ` `, `p`, `a`, `t`, `i`, `e`, `n`, `t`, ` `, `r`, `e`, `f`, `u`, `s`, `a`, `l`, ` `, `(`, `D`, `i`, `x`, `o`, `n`, ` `, `1`, `9`, `9`, `9`, `;`, ` `, `E`, `a`, `s`, `s`, `o`, `m`, ` `, `2`, `0`, `1`, `4`, `)`, `.`
+- Evidence: `family_modalities.md — Reaches a minority of families — structured family work is delivered in only ~0–53% of cases (historically <10%), and the main barrier is clinician avoidance, not patient refusal (Dixon 1999; Eassom 2014).`
 
 **Stem.** The treatment team reviews its data and finds that structured family meetings occurred in only 8% of admissions over the past year, despite family members being available and willing in most cases. The team discusses why. Which explanation is most consistent with the literature?
 
@@ -21091,7 +21218,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_rel_011` · status=`attested` · type=`relational` · difficulty=`2` · competency=`['psychosocial']`
 - Linked pages: `brief_psychotherapy.md`
-- Evidence: `b`, `r`, `i`, `e`, `f`, `_`, `p`, `s`, `y`, `c`, `h`, `o`, `t`, `h`, `e`, `r`, `a`, `p`, `y`, `.`, `m`, `d`, ` `, `—`, ` `, `C`, `h`, `a`, `i`, `n`, ` `, `a`, `n`, `a`, `l`, `y`, `s`, `i`, `s`, ` `, `—`, ` `, `w`, `a`, `l`, `k`, ` `, `t`, `h`, `e`, ` `, `s`, `e`, `q`, `u`, `e`, `n`, `c`, `e`, ` `, `w`, `i`, `t`, `h`, ` `, `t`, `h`, `e`, ` `, `p`, `a`, `t`, `i`, `e`, `n`, `t`, `,`, ` `, `n`, `o`, `n`, `-`, `p`, `u`, `n`, `i`, `t`, `i`, `v`, `e`, `l`, `y`, `.`, ` `, `T`, `u`, `r`, `n`, `s`, ` `, `a`, `n`, ` `, `i`, `n`, `c`, `i`, `d`, `e`, `n`, `t`, ` `, `i`, `n`, `t`, `o`, ` `, `a`, ` `, `f`, `o`, `r`, `m`, `u`, `l`, `a`, `t`, `i`, `o`, `n`, ` `, `a`, `n`, `d`, ` `, `a`, ` `, `p`, `l`, `a`, `n`, `;`, ` `, `c`, `o`, `r`, `e`, ` `, `D`, `B`, `T`, ` `, `m`, `o`, `v`, `e`, `.`, ` `, `C`, `h`, `a`, `i`, `n`, ` `, `a`, `n`, `a`, `l`, `y`, `s`, `i`, `s`, ` `, `r`, `e`, `p`, `l`, `a`, `c`, `e`, `s`, ` `, `a`, ` `, `p`, `u`, `n`, `i`, `t`, `i`, `v`, `e`, ` `, `r`, `e`, `s`, `p`, `o`, `n`, `s`, `e`, ` `, `t`, `o`, ` `, `s`, `e`, `l`, `f`, `-`, `h`, `a`, `r`, `m`, ` `, `—`, ` `, `u`, `n`, `d`, `e`, `r`, `s`, `t`, `a`, `n`, `d`, ` `, `t`, `h`, `e`, ` `, `b`, `e`, `h`, `a`, `v`, `i`, `o`, `r`, `,`, ` `, `d`, `o`, `n`, `'`, `t`, ` `, `j`, `u`, `s`, `t`, ` `, `d`, `o`, `c`, `u`, `m`, `e`, `n`, `t`, ` `, `i`, `t`, `.`
+- Evidence: `brief_psychotherapy.md — Chain analysis — walk the sequence with the patient, non-punitively. Turns an incident into a formulation and a plan; core DBT move. Chain analysis replaces a punitive response to self-harm — understand the behavior, don't just document it.`
 
 **Stem.** A 24-year-old woman with BPD cuts herself on the unit. The charge nurse says, 'Document it and flag it. Don't talk to her about it — it just encourages the behavior.' The student wonders about the evidence-based approach. Which response is most accurate?
 
@@ -21108,7 +21235,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_rel_012` · status=`attested` · type=`relational` · difficulty=`2` · competency=`['management', 'psychosocial']`
 - Linked pages: `family_modalities.md`
-- Evidence: `f`, `a`, `m`, `i`, `l`, `y`, `_`, `m`, `o`, `d`, `a`, `l`, `i`, `t`, `i`, `e`, `s`, `.`, `m`, `d`, ` `, `—`, ` `, `C`, `R`, `A`, `F`, `T`, ` `, `(`, `C`, `o`, `m`, `m`, `u`, `n`, `i`, `t`, `y`, ` `, `R`, `e`, `i`, `n`, `f`, `o`, `r`, `c`, `e`, `m`, `e`, `n`, `t`, ` `, `&`, ` `, `F`, `a`, `m`, `i`, `l`, `y`, ` `, `T`, `r`, `a`, `i`, `n`, `i`, `n`, `g`, `)`, `:`, ` `, `t`, `h`, `e`, ` `, `f`, `a`, `m`, `i`, `l`, `y`, ` `, `c`, `h`, `a`, `n`, `g`, `e`, `s`, ` `, `i`, `t`, `s`, ` `, `o`, `w`, `n`, ` `, `b`, `e`, `h`, `a`, `v`, `i`, `o`, `r`, ` `, `t`, `o`, ` `, `i`, `n`, `v`, `i`, `t`, `e`, ` `, `t`, `r`, `e`, `a`, `t`, `m`, `e`, `n`, `t`, ` `, `—`, ` `, `n`, `o`, ` `, `b`, `l`, `a`, `m`, `e`, `.`
+- Evidence: `family_modalities.md — CRAFT (Community Reinforcement & Family Training): the family changes its own behavior to invite treatment — no blame.`
 
 **Stem.** A 32-year-old man with alcohol use disorder has refused treatment for 2 years. His wife is desperate to help and asks the team what she can do. The team is considering a traditional confrontational intervention approach. Which family therapy modality is specifically evidence-based for this scenario?
 
@@ -21125,7 +21252,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_rel_013` · status=`attested` · type=`relational` · difficulty=`3` · competency=`['management']`
 - Linked pages: `brief_psychotherapy.md`
-- Evidence: `b`, `r`, `i`, `e`, `f`, `_`, `p`, `s`, `y`, `c`, `h`, `o`, `t`, `h`, `e`, `r`, `a`, `p`, `y`, `.`, `m`, `d`, ` `, `—`, ` `, `P`, `s`, `y`, `c`, `h`, `o`, `e`, `d`, `u`, `c`, `a`, `t`, `i`, `o`, `n`, ` `, `h`, `a`, `s`, ` `, `t`, `h`, `e`, ` `, `h`, `a`, `r`, `d`, `e`, `s`, `t`, ` `, `i`, `n`, `p`, `a`, `t`, `i`, `e`, `n`, `t`, ` `, `n`, `u`, `m`, `b`, `e`, `r`, `s`, ` `, `(`, `r`, `e`, `a`, `d`, `m`, `i`, `s`, `s`, `i`, `o`, `n`, ` `, `N`, `N`, `T`, ` `, `5`, `)`, ` `, `—`, ` `, `a`, `n`, `d`, ` `, `i`, `t`, `'`, `s`, ` `, `f`, `r`, `e`, `e`, `.`
+- Evidence: `brief_psychotherapy.md — Psychoeducation has the hardest inpatient numbers (readmission NNT 5) — and it's free.`
 
 **Stem.** A quality-improvement team wants to identify the single inpatient psychological intervention with the strongest readmission-prevention evidence. Which intervention has the hardest numbers?
 
@@ -21142,7 +21269,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_rel_014` · status=`draft` · type=`sba` · difficulty=`2` · competency=`['management', 'psychosocial']`
 - Linked pages: `family_modalities.md`
-- Evidence: `f`, `a`, `m`, `i`, `l`, `y`, `_`, `m`, `o`, `d`, `a`, `l`, `i`, `t`, `i`, `e`, `s`, `.`, `m`, `d`, ` `, `—`, ` `, `F`, `a`, `m`, `i`, `l`, `y`, ` `, `p`, `s`, `y`, `c`, `h`, `o`, `e`, `d`, `u`, `c`, `a`, `t`, `i`, `o`, `n`, ` `, `a`, `n`, `d`, ` `, `r`, `e`, `l`, `a`, `p`, `s`, `e`, ` `, `p`, `r`, `e`, `v`, `e`, `n`, `t`, `i`, `o`, `n`, `.`
+- Evidence: `family_modalities.md — Family psychoeducation and relapse prevention.`
 
 **Stem.** A young man with schizophrenia is being discharged to his parents. Which family intervention has the best evidence for reducing his relapse risk?
 
@@ -21159,7 +21286,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_rel_015` · status=`draft` · type=`sba` · difficulty=`2` · competency=`['psychosocial', 'next-step']`
 - Linked pages: `motivational_interviewing.md`
-- Evidence: `m`, `o`, `t`, `i`, `v`, `a`, `t`, `i`, `o`, `n`, `a`, `l`, `_`, `i`, `n`, `t`, `e`, `r`, `v`, `i`, `e`, `w`, `i`, `n`, `g`, `.`, `m`, `d`, ` `, `—`, ` `, `M`, `I`, ` `, `s`, `p`, `i`, `r`, `i`, `t`, `:`, ` `, `e`, `v`, `o`, `k`, `i`, `n`, `g`, ` `, `c`, `h`, `a`, `n`, `g`, `e`, ` `, `t`, `a`, `l`, `k`, `.`
+- Evidence: `motivational_interviewing.md — MI spirit: evoking change talk.`
 
 **Stem.** A patient with alcohol use disorder says, 'I don't really think my drinking is a problem.' Which response best reflects motivational interviewing?
 
@@ -21176,7 +21303,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_rel_016` · status=`draft` · type=`sba` · difficulty=`2` · competency=`['management']`
 - Linked pages: `family_modalities.md`, `ethics_legal.md`
-- Evidence: `f`, `a`, `m`, `i`, `l`, `y`, `_`, `m`, `o`, `d`, `a`, `l`, `i`, `t`, `i`, `e`, `s`, `.`, `m`, `d`, ` `, `—`, ` `, `C`, `o`, `n`, `f`, `i`, `d`, `e`, `n`, `t`, `i`, `a`, `l`, `i`, `t`, `y`, ` `, `a`, `n`, `d`, ` `, `f`, `a`, `m`, `i`, `l`, `i`, `e`, `s`, `;`, ` `, `e`, `t`, `h`, `i`, `c`, `s`, `_`, `l`, `e`, `g`, `a`, `l`, `.`, `m`, `d`, ` `, `—`, ` `, `d`, `i`, `s`, `c`, `l`, `o`, `s`, `u`, `r`, `e`, `.`
+- Evidence: `family_modalities.md — Confidentiality and families; ethics_legal.md — disclosure.`
 
 **Stem.** A patient's adult son calls the unit asking for details of his mother's diagnosis and medications. The patient has not authorized this. What is the most appropriate response?
 
@@ -21195,7 +21322,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_saf_001` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['safety']` · **high-yield**
 - Linked pages: `pg_suicide.md`
-- Evidence: `p`, `g`, `_`, `s`, `u`, `i`, `c`, `i`, `d`, `e`, `.`, `m`, `d`, ` `, `'`, `W`, `h`, `a`, `t`, ` `, `t`, `o`, ` `, `e`, `s`, `c`, `a`, `l`, `a`, `t`, `e`, ` `, `i`, `m`, `m`, `e`, `d`, `i`, `a`, `t`, `e`, `l`, `y`, `'`, ` `, `—`, ` `, `S`, `u`, `d`, `d`, `e`, `n`, ` `, `i`, `m`, `p`, `r`, `o`, `v`, `e`, `m`, `e`, `n`, `t`, ` `, `a`, `f`, `t`, `e`, `r`, ` `, `s`, `e`, `v`, `e`, `r`, `e`, ` `, `s`, `u`, `i`, `c`, `i`, `d`, `a`, `l`, `i`, `t`, `y`, ` `, `w`, `i`, `t`, `h`, `o`, `u`, `t`, ` `, `c`, `l`, `e`, `a`, `r`, ` `, `e`, `x`, `p`, `l`, `a`, `n`, `a`, `t`, `i`, `o`, `n`, `.`
+- Evidence: `pg_suicide.md 'What to escalate immediately' — Sudden improvement after severe suicidality without clear explanation.`
 
 **Stem.** A 19-year-old man is admitted after a near-lethal suicide attempt. He has expressed persistent hopelessness and a stated wish to die for three days. On hospital day 4, nurses report he seems 'much better' — calm, well-rested, and telling the team he is ready to go home. His affect is bright and he is chatty with staff. No clinical change or social development explains the shift. Best next step?
 
@@ -21212,7 +21339,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_saf_002` · status=`attested` · type=`relational` · difficulty=`2` · competency=`['safety', 'psychosocial']`
 - Linked pages: `agitation.md`
-- Evidence: `a`, `g`, `i`, `t`, `a`, `t`, `i`, `o`, `n`, `.`, `m`, `d`, ` `, `'`, `V`, `e`, `r`, `b`, `a`, `l`, ` `, `d`, `e`, `-`, `e`, `s`, `c`, `a`, `l`, `a`, `t`, `i`, `o`, `n`, `,`, ` `, `f`, `i`, `r`, `s`, `t`, `'`, ` `, `—`, ` `, `T`, `h`, `i`, `s`, ` `, `i`, `s`, ` `, `t`, `h`, `e`, ` `, `d`, `e`, `f`, `a`, `u`, `l`, `t`, ` `, `r`, `e`, `s`, `p`, `o`, `n`, `s`, `e`, `,`, ` `, `n`, `o`, `t`, ` `, `a`, ` `, `c`, `o`, `u`, `r`, `t`, `e`, `s`, `y`, ` `, `s`, `t`, `e`, `p`, `.`, ` `, `T`, `h`, `e`, ` `, `P`, `r`, `o`, `j`, `e`, `c`, `t`, ` `, `B`, `E`, `T`, `A`, ` `, `d`, `e`, `-`, `e`, `s`, `c`, `a`, `l`, `a`, `t`, `i`, `o`, `n`, ` `, `f`, `r`, `a`, `m`, `e`, `w`, `o`, `r`, `k`, ` `, `(`, `R`, `i`, `c`, `h`, `m`, `o`, `n`, `d`, ` `, `e`, `t`, ` `, `a`, `l`, `.`, ` `, `2`, `0`, `1`, `2`, `)`, ` `, `c`, `e`, `n`, `t`, `e`, `r`, `s`, ` `, `r`, `e`, `s`, `p`, `e`, `c`, `t`, `,`, ` `, `s`, `i`, `m`, `p`, `l`, `e`, ` `, `b`, `o`, `u`, `n`, `d`, `a`, `r`, `i`, `e`, `s`, `,`, ` `, `l`, `i`, `s`, `t`, `e`, `n`, `i`, `n`, `g`, `,`, ` `, `a`, `n`, `d`, ` `, `o`, `f`, `f`, `e`, `r`, `i`, `n`, `g`, ` `, `c`, `h`, `o`, `i`, `c`, `e`, `s`, ` `, `r`, `a`, `t`, `h`, `e`, `r`, ` `, `t`, `h`, `a`, `n`, ` `, `i`, `s`, `s`, `u`, `i`, `n`, `g`, ` `, `c`, `o`, `m`, `m`, `a`, `n`, `d`, `s`, `.`
+- Evidence: `agitation.md 'Verbal de-escalation, first' — This is the default response, not a courtesy step. The Project BETA de-escalation framework (Richmond et al. 2012) centers respect, simple boundaries, listening, and offering choices rather than issuing commands.`
 
 **Stem.** A patient is pacing the hallway, speaking loudly, and waving his hands. He has not threatened anyone and is not in immediate danger of harming himself or others. You are the student. Which response is best?
 
@@ -21229,7 +21356,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_saf_003` · status=`attested` · type=`sba` · difficulty=`1` · competency=`['safety']` · **high-yield**
 - Linked pages: `pg_suicide.md`
-- Evidence: `p`, `g`, `_`, `s`, `u`, `i`, `c`, `i`, `d`, `e`, `.`, `m`, `d`, ` `, `'`, `M`, `e`, `a`, `n`, `s`, ` `, `S`, `a`, `f`, `e`, `t`, `y`, `'`, ` `, `—`, ` `, `A`, `s`, `k`, ` `, `s`, `p`, `e`, `c`, `i`, `f`, `i`, `c`, `a`, `l`, `l`, `y`, `.`, ` `, `D`, `o`, ` `, `n`, `o`, `t`, ` `, `s`, `a`, `y`, ` `, `o`, `n`, `l`, `y`, ` `, `'`, `w`, `e`, ` `, `d`, `i`, `s`, `c`, `u`, `s`, `s`, `e`, `d`, ` `, `s`, `a`, `f`, `e`, `t`, `y`, `.`, `'`, ` `, `I`, `n`, `c`, `l`, `u`, `d`, `e`, `:`, ` `, `F`, `i`, `r`, `e`, `a`, `r`, `m`, `s`, `.`, ` `, `S`, `t`, `o`, `c`, `k`, `p`, `i`, `l`, `e`, `d`, ` `, `m`, `e`, `d`, `i`, `c`, `a`, `t`, `i`, `o`, `n`, `.`, ` `, `S`, `h`, `a`, `r`, `p`, `s`, ` `, `o`, `r`, ` `, `l`, `i`, `g`, `a`, `t`, `u`, `r`, `e`, `s`, ` `, `w`, `h`, `e`, `n`, ` `, `r`, `e`, `l`, `e`, `v`, `a`, `n`, `t`, `.`, ` `, `W`, `h`, `o`, ` `, `w`, `i`, `l`, `l`, ` `, `r`, `e`, `m`, `o`, `v`, `e`, `/`, `s`, `e`, `c`, `u`, `r`, `e`, ` `, `m`, `e`, `a`, `n`, `s`, `.`, ` `, `H`, `o`, `w`, ` `, `i`, `t`, ` `, `w`, `i`, `l`, `l`, ` `, `b`, `e`, ` `, `c`, `o`, `n`, `f`, `i`, `r`, `m`, `e`, `d`, `.`
+- Evidence: `pg_suicide.md 'Means Safety' — Ask specifically. Do not say only 'we discussed safety.' Include: Firearms. Stockpiled medication. Sharps or ligatures when relevant. Who will remove/secure means. How it will be confirmed.`
 
 **Stem.** A 22-year-old man is admitted following a suicide attempt by acetaminophen overdose. When the student asks about means restriction, he asks only: 'Do you have access to anything dangerous at home?' The patient answers 'no.' The attending asks what a complete means safety assessment requires. Which response is best?
 
@@ -21246,7 +21373,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_saf_004` · status=`attested` · type=`sba` · difficulty=`1` · competency=`['safety', 'dx']` · **high-yield**
 - Linked pages: `pg_suicide.md`
-- Evidence: `p`, `g`, `_`, `s`, `u`, `i`, `c`, `i`, `d`, `e`, `.`, `m`, `d`, ` `, `'`, `S`, `e`, `p`, `a`, `r`, `a`, `t`, `e`, ` `, `C`, `h`, `r`, `o`, `n`, `i`, `c`, ` `, `A`, `n`, `d`, ` `, `A`, `c`, `u`, `t`, `e`, ` `, `R`, `i`, `s`, `k`, `'`, ` `, `—`, ` `, `A`, `c`, `u`, `t`, `e`, ` `, `r`, `i`, `s`, `k`, `:`, ` `, `c`, `u`, `r`, `r`, `e`, `n`, `t`, ` `, `i`, `n`, `t`, `e`, `n`, `t`, ` `, `o`, `r`, ` `, `p`, `l`, `a`, `n`, `;`, ` `, `p`, `s`, `y`, `c`, `h`, `o`, `s`, `i`, `s`, ` `, `o`, `r`, ` `, `c`, `o`, `m`, `m`, `a`, `n`, `d`, ` `, `h`, `a`, `l`, `l`, `u`, `c`, `i`, `n`, `a`, `t`, `i`, `o`, `n`, `s`, `.`, ` `, `C`, `h`, `r`, `o`, `n`, `i`, `c`, ` `, `r`, `i`, `s`, `k`, `:`, ` `, `p`, `r`, `i`, `o`, `r`, ` `, `a`, `t`, `t`, `e`, `m`, `p`, `t`, `s`, `;`, ` `, `c`, `h`, `r`, `o`, `n`, `i`, `c`, ` `, `p`, `s`, `y`, `c`, `h`, `i`, `a`, `t`, `r`, `i`, `c`, ` `, `i`, `l`, `l`, `n`, `e`, `s`, `s`, `.`
+- Evidence: `pg_suicide.md 'Separate Chronic And Acute Risk' — Acute risk: current intent or plan; psychosis or command hallucinations. Chronic risk: prior attempts; chronic psychiatric illness.`
 
 **Stem.** A 45-year-old man with schizophrenia and two prior suicide attempts is admitted for worsening command hallucinations telling him to jump. He is calm on exam; he reports the voices are 'quieter today' and denies current intent. Which statement best reflects how to frame his suicide risk?
 
@@ -21263,7 +21390,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_saf_005` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['safety']`
 - Linked pages: `pg_suicide.md`
-- Evidence: `p`, `g`, `_`, `s`, `u`, `i`, `c`, `i`, `d`, `e`, `.`, `m`, `d`, ` `, `—`, ` `, `P`, `r`, `o`, `t`, `e`, `c`, `t`, `i`, `v`, `e`, ` `, `f`, `a`, `c`, `t`, `o`, `r`, `s`, ` `, `a`, `r`, `e`, ` `, `n`, `o`, `t`, ` `, `m`, `a`, `g`, `i`, `c`, `.`, ` `, `T`, `h`, `e`, `y`, ` `, `m`, `a`, `t`, `t`, `e`, `r`, ` `, `o`, `n`, `l`, `y`, ` `, `i`, `f`, ` `, `t`, `h`, `e`, `y`, ` `, `a`, `r`, `e`, ` `, `c`, `r`, `e`, `d`, `i`, `b`, `l`, `e`, ` `, `a`, `n`, `d`, ` `, `a`, `v`, `a`, `i`, `l`, `a`, `b`, `l`, `e`, ` `, `d`, `u`, `r`, `i`, `n`, `g`, ` `, `t`, `h`, `e`, ` `, `r`, `i`, `s`, `k`, ` `, `w`, `i`, `n`, `d`, `o`, `w`, `.`
+- Evidence: `pg_suicide.md — Protective factors are not magic. They matter only if they are credible and available during the risk window.`
 
 **Stem.** A 38-year-old woman is admitted after a near-lethal suicide attempt. She has three young children and is an ICU nurse. A student notes 'strong family ties and professional identity' as protective factors and proposes these substantially mitigate her acute risk. The attending asks the student to refine this reasoning. Which statement is most accurate?
 
@@ -21280,7 +21407,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_saf_006` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['safety', 'next-step']`
 - Linked pages: `pg_suicide.md`
-- Evidence: `p`, `g`, `_`, `s`, `u`, `i`, `c`, `i`, `d`, `e`, `.`, `m`, `d`, ` `, `'`, `D`, `o`, `c`, `u`, `m`, `e`, `n`, `t`, `a`, `t`, `i`, `o`, `n`, ` `, `S`, `e`, `n`, `t`, `e`, `n`, `c`, `e`, `'`, ` `, `—`, ` `, `S`, `t`, `r`, `o`, `n`, `g`, `:`, ` `, `[`, `d`, `e`, `t`, `a`, `i`, `l`, `e`, `d`, ` `, `f`, `o`, `r`, `m`, `u`, `l`, `a`, `t`, `i`, `o`, `n`, ` `, `w`, `i`, `t`, `h`, ` `, `a`, `c`, `u`, `t`, `e`, ` `, `r`, `i`, `s`, `k`, ` `, `f`, `a`, `c`, `t`, `o`, `r`, `s`, `,`, ` `, `c`, `h`, `r`, `o`, `n`, `i`, `c`, ` `, `r`, `i`, `s`, `k`, `,`, ` `, `m`, `e`, `a`, `n`, `s`, ` `, `s`, `a`, `f`, `e`, `t`, `y`, ` `, `s`, `t`, `a`, `t`, `u`, `s`, `,`, ` `, `a`, `n`, `d`, ` `, `p`, `l`, `a`, `n`, `]`, `.`, ` `, `W`, `e`, `a`, `k`, `:`, ` `, `'`, `D`, `e`, `n`, `i`, `e`, `s`, ` `, `S`, `I`, `/`, `H`, `I`, `.`, ` `, `N`, `o`, ` `, `a`, `c`, `u`, `t`, `e`, ` `, `s`, `a`, `f`, `e`, `t`, `y`, ` `, `c`, `o`, `n`, `c`, `e`, `r`, `n`, `s`, `.`, `'`
+- Evidence: `pg_suicide.md 'Documentation Sentence' — Strong: [detailed formulation with acute risk factors, chronic risk, means safety status, and plan]. Weak: 'Denies SI/HI. No acute safety concerns.'`
 
 **Stem.** A student is asked to draft the safety note for a patient admitted with active suicidal ideation, a stated plan, and unsecured firearm access. Which of the following best illustrates strong safety documentation?
 
@@ -21297,7 +21424,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_saf_007` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['safety', 'next-step']`
 - Linked pages: `pg_suicide.md`
-- Evidence: `p`, `g`, `_`, `s`, `u`, `i`, `c`, `i`, `d`, `e`, `.`, `m`, `d`, ` `, `'`, `W`, `h`, `a`, `t`, ` `, `T`, `o`, ` `, `E`, `s`, `c`, `a`, `l`, `a`, `t`, `e`, ` `, `I`, `m`, `m`, `e`, `d`, `i`, `a`, `t`, `e`, `l`, `y`, `'`, ` `, `—`, ` `, `I`, `n`, `t`, `o`, `x`, `i`, `c`, `a`, `t`, `i`, `o`, `n`, ` `, `o`, `r`, ` `, `w`, `i`, `t`, `h`, `d`, `r`, `a`, `w`, `a`, `l`, `.`
+- Evidence: `pg_suicide.md 'What To Escalate Immediately' — Intoxication or withdrawal.`
 
 **Stem.** A 19-year-old woman is brought to the inpatient unit after a self-reported suicide attempt. On arrival she is visibly intoxicated with alcohol. The student is attempting to complete an initial risk assessment. Which of the following best describes the correct approach?
 
@@ -21314,7 +21441,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_saf_008` · status=`attested` · type=`sba` · difficulty=`1` · competency=`['safety']`
 - Linked pages: `pg_suicide.md`
-- Evidence: `p`, `g`, `_`, `s`, `u`, `i`, `c`, `i`, `d`, `e`, `.`, `m`, `d`, ` `, `'`, `S`, `t`, `u`, `d`, `e`, `n`, `t`, ` `, `R`, `o`, `l`, `e`, `'`, ` `, `—`, ` `, `Y`, `o`, `u`, ` `, `c`, `a`, `n`, `n`, `o`, `t`, `:`, ` `, `C`, `l`, `e`, `a`, `r`, ` `, `a`, ` `, `p`, `a`, `t`, `i`, `e`, `n`, `t`, ` `, `f`, `o`, `r`, ` `, `d`, `i`, `s`, `c`, `h`, `a`, `r`, `g`, `e`, ` `, `i`, `n`, `d`, `e`, `p`, `e`, `n`, `d`, `e`, `n`, `t`, `l`, `y`, `.`
+- Evidence: `pg_suicide.md 'Student Role' — You cannot: Clear a patient for discharge independently.`
 
 **Stem.** A medical student is alone with a patient who says: 'I feel so much better — can you put in a good word with the team about going home today?' The student has not been briefed on this patient's risk. Which response is most appropriate?
 
@@ -21331,7 +21458,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_saf_009` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['safety', 'management']` · **high-yield**
 - Linked pages: `agitation.md`
-- Evidence: `a`, `g`, `i`, `t`, `a`, `t`, `i`, `o`, `n`, `.`, `m`, `d`, ` `, `'`, `R`, `e`, `s`, `t`, `r`, `a`, `i`, `n`, `t`, ` `, `a`, `n`, `d`, ` `, `s`, `e`, `c`, `l`, `u`, `s`, `i`, `o`, `n`, `'`, ` `, `—`, ` `, `T`, `h`, `e`, `y`, ` `, `r`, `e`, `q`, `u`, `i`, `r`, `e`, ` `, `a`, ` `, `t`, `i`, `m`, `e`, `-`, `l`, `i`, `m`, `i`, `t`, `e`, `d`, ` `, `p`, `h`, `y`, `s`, `i`, `c`, `i`, `a`, `n`, ` `, `o`, `r`, `d`, `e`, `r`, `,`, ` `, `c`, `l`, `o`, `s`, `e`, ` `, `a`, `n`, `d`, ` `, `c`, `o`, `n`, `t`, `i`, `n`, `u`, `o`, `u`, `s`, ` `, `m`, `o`, `n`, `i`, `t`, `o`, `r`, `i`, `n`, `g`, `,`, ` `, `a`, `n`, `d`, ` `, `d`, `i`, `s`, `c`, `o`, `n`, `t`, `i`, `n`, `u`, `a`, `t`, `i`, `o`, `n`, ` `, `t`, `h`, `e`, ` `, `m`, `o`, `m`, `e`, `n`, `t`, ` `, `t`, `h`, `e`, ` `, `p`, `a`, `t`, `i`, `e`, `n`, `t`, ` `, `i`, `s`, ` `, `s`, `a`, `f`, `e`, ` `, `—`, ` `, `n`, `o`, `t`, ` `, `t`, `h`, `e`, ` `, `e`, `n`, `d`, ` `, `o`, `f`, ` `, `a`, ` `, `s`, `h`, `i`, `f`, `t`, `.`
+- Evidence: `agitation.md 'Restraint and seclusion' — They require a time-limited physician order, close and continuous monitoring, and discontinuation the moment the patient is safe — not the end of a shift.`
 
 **Stem.** A patient placed in physical restraints 4 hours ago following an agitation episode is now calm, cooperative, and asking to be released. His nurse pages the on-call student. Which of the following best reflects the correct management principle?
 
@@ -21348,7 +21475,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_saf_010` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['safety', 'psychosocial']`
 - Linked pages: `agitation.md`
-- Evidence: `a`, `g`, `i`, `t`, `a`, `t`, `i`, `o`, `n`, `.`, `m`, `d`, ` `, `'`, `R`, `e`, `s`, `t`, `r`, `a`, `i`, `n`, `t`, ` `, `a`, `n`, `d`, ` `, `s`, `e`, `c`, `l`, `u`, `s`, `i`, `o`, `n`, `'`, ` `, `—`, ` `, `B`, `l`, `a`, `c`, `k`, ` `, `p`, `a`, `t`, `i`, `e`, `n`, `t`, `s`, ` `, `f`, `a`, `c`, `e`, ` `, `r`, `o`, `u`, `g`, `h`, `l`, `y`, ` `, `1`, `.`, `8`, `5`, `×`, ` `, `t`, `h`, `e`, ` `, `a`, `d`, `j`, `u`, `s`, `t`, `e`, `d`, ` `, `o`, `d`, `d`, `s`, ` `, `o`, `f`, ` `, `p`, `h`, `y`, `s`, `i`, `c`, `a`, `l`, ` `, `r`, `e`, `s`, `t`, `r`, `a`, `i`, `n`, `t`, ` `, `o`, `n`, ` `, `i`, `n`, `p`, `a`, `t`, `i`, `e`, `n`, `t`, ` `, `u`, `n`, `i`, `t`, `s`, ` `, `(`, `a`, `n`, `d`, ` `, `~`, `2`, `.`, `8`, `4`, `×`, ` `, `i`, `n`, ` `, `t`, `h`, `e`, ` `, `E`, `D`, ` `, `a`, `w`, `a`, `i`, `t`, `i`, `n`, `g`, ` `, `a`, `d`, `m`, `i`, `s`, `s`, `i`, `o`, `n`, `)`, ` `, `—`, ` `, `t`, `h`, `a`, `t`, ` `, `d`, `i`, `s`, `p`, `a`, `r`, `i`, `t`, `y`, ` `, `i`, `s`, ` `, `a`, ` `, `q`, `u`, `a`, `l`, `i`, `t`, `y`, `-`, `o`, `f`, `-`, `c`, `a`, `r`, `e`, ` `, `i`, `s`, `s`, `u`, `e`, `,`, ` `, `n`, `o`, `t`, ` `, `a`, ` `, `f`, `o`, `o`, `t`, `n`, `o`, `t`, `e`, `.`
+- Evidence: `agitation.md 'Restraint and seclusion' — Black patients face roughly 1.85× the adjusted odds of physical restraint on inpatient units (and ~2.84× in the ED awaiting admission) — that disparity is a quality-of-care issue, not a footnote.`
 
 **Stem.** A team is debriefing after a physical restraint episode involving a Black patient on the inpatient unit. A student asks what the published evidence shows about racial disparities in restraint use in inpatient psychiatry. Which statement correctly reflects the data?
 
@@ -21365,7 +21492,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_saf_011` · status=`attested` · type=`relational` · difficulty=`1` · competency=`['safety', 'psychosocial']`
 - Linked pages: `agitation.md`
-- Evidence: `a`, `g`, `i`, `t`, `a`, `t`, `i`, `o`, `n`, `.`, `m`, `d`, ` `, `'`, `V`, `e`, `r`, `b`, `a`, `l`, ` `, `d`, `e`, `-`, `e`, `s`, `c`, `a`, `l`, `a`, `t`, `i`, `o`, `n`, `,`, ` `, `f`, `i`, `r`, `s`, `t`, `'`, ` `, `—`, ` `, `T`, `h`, `e`, ` `, `P`, `r`, `o`, `j`, `e`, `c`, `t`, ` `, `B`, `E`, `T`, `A`, ` `, `d`, `e`, `-`, `e`, `s`, `c`, `a`, `l`, `a`, `t`, `i`, `o`, `n`, ` `, `f`, `r`, `a`, `m`, `e`, `w`, `o`, `r`, `k`, ` `, `(`, `R`, `i`, `c`, `h`, `m`, `o`, `n`, `d`, ` `, `e`, `t`, ` `, `a`, `l`, `.`, ` `, `2`, `0`, `1`, `2`, `)`, ` `, `c`, `e`, `n`, `t`, `e`, `r`, `s`, ` `, `r`, `e`, `s`, `p`, `e`, `c`, `t`, `,`, ` `, `s`, `i`, `m`, `p`, `l`, `e`, ` `, `b`, `o`, `u`, `n`, `d`, `a`, `r`, `i`, `e`, `s`, `,`, ` `, `l`, `i`, `s`, `t`, `e`, `n`, `i`, `n`, `g`, `,`, ` `, `a`, `n`, `d`, ` `, `o`, `f`, `f`, `e`, `r`, `i`, `n`, `g`, ` `, `c`, `h`, `o`, `i`, `c`, `e`, `s`, ` `, `r`, `a`, `t`, `h`, `e`, `r`, ` `, `t`, `h`, `a`, `n`, ` `, `i`, `s`, `s`, `u`, `i`, `n`, `g`, ` `, `c`, `o`, `m`, `m`, `a`, `n`, `d`, `s`, `.`
+- Evidence: `agitation.md 'Verbal de-escalation, first' — The Project BETA de-escalation framework (Richmond et al. 2012) centers respect, simple boundaries, listening, and offering choices rather than issuing commands.`
 
 **Stem.** A patient with mania is pacing loudly in the hallway, slamming cabinet doors, and making hostile comments toward staff. He has not made a direct threat or moved toward anyone. You are the student and the first person to encounter him. Which response is best?
 
@@ -21382,7 +21509,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_saf_012` · status=`attested` · type=`two-tier` · difficulty=`3` · competency=`['safety', 'next-step']`
 - Linked pages: `agitation.md`
-- Evidence: `a`, `g`, `i`, `t`, `a`, `t`, `i`, `o`, `n`, `.`, `m`, `d`, ` `, `'`, `F`, `i`, `n`, `d`, ` `, `t`, `h`, `e`, ` `, `d`, `r`, `i`, `v`, `e`, `r`, `'`, ` `, `—`, ` `, `B`, `e`, `f`, `o`, `r`, `e`, ` `, `y`, `o`, `u`, ` `, `d`, `e`, `c`, `i`, `d`, `e`, ` `, `w`, `h`, `a`, `t`, ` `, `t`, `o`, ` `, `d`, `o`, `,`, ` `, `a`, `s`, `k`, ` `, `w`, `h`, `a`, `t`, ` `, `i`, `s`, ` `, `p`, `r`, `o`, `d`, `u`, `c`, `i`, `n`, `g`, ` `, `t`, `h`, `i`, `s`, `.`, ` `, `T`, `h`, `e`, ` `, `u`, `s`, `u`, `a`, `l`, ` `, `d`, `r`, `i`, `v`, `e`, `r`, `s`, ` `, `a`, `r`, `e`, ` `, `d`, `e`, `l`, `i`, `r`, `i`, `u`, `m`, `,`, ` `, `i`, `n`, `t`, `o`, `x`, `i`, `c`, `a`, `t`, `i`, `o`, `n`, ` `, `o`, `r`, ` `, `w`, `i`, `t`, `h`, `d`, `r`, `a`, `w`, `a`, `l`, `,`, ` `, `a`, `n`, ` `, `a`, `c`, `u`, `t`, `e`, ` `, `p`, `s`, `y`, `c`, `h`, `o`, `t`, `i`, `c`, ` `, `o`, `r`, ` `, `m`, `a`, `n`, `i`, `c`, ` `, `p`, `r`, `o`, `c`, `e`, `s`, `s`, `,`, ` `, `a`, `k`, `a`, `t`, `h`, `i`, `s`, `i`, `a`, `,`, ` `, `u`, `n`, `r`, `e`, `l`, `i`, `e`, `v`, `e`, `d`, ` `, `p`, `a`, `i`, `n`, `,`, ` `, `a`, `n`, `d`, ` `, `a`, ` `, `f`, `e`, `a`, `r`, ` `, `o`, `r`, ` `, `t`, `r`, `a`, `u`, `m`, `a`, ` `, `r`, `e`, `s`, `p`, `o`, `n`, `s`, `e`, `.`, ` `, `'`, `H`, `i`, `g`, `h`, `-`, `y`, `i`, `e`, `l`, `d`, ` `, `p`, `e`, `a`, `r`, `l`, `s`, `'`, ` `, `—`, ` `, `A`, `g`, `i`, `t`, `a`, `t`, `i`, `o`, `n`, ` `, `i`, `s`, ` `, `a`, ` `, `s`, `y`, `m`, `p`, `t`, `o`, `m`, ` `, `—`, ` `, `a`, `l`, `w`, `a`, `y`, `s`, ` `, `a`, `s`, `k`, ` `, `'`, `w`, `h`, `a`, `t`, ` `, `i`, `s`, ` `, `d`, `r`, `i`, `v`, `i`, `n`, `g`, ` `, `t`, `h`, `i`, `s`, `?`, `'`, ` `, `b`, `e`, `f`, `o`, `r`, `e`, ` `, `'`, `w`, `h`, `a`, `t`, ` `, `d`, `o`, ` `, `w`, `e`, ` `, `g`, `i`, `v`, `e`, `?`, `'`
+- Evidence: `agitation.md 'Find the driver' — Before you decide what to do, ask what is producing this. The usual drivers are delirium, intoxication or withdrawal, an acute psychotic or manic process, akathisia, unrelieved pain, and a fear or trauma response. 'High-yield pearls' — Agitation is a symptom — always ask 'what is driving this?' before 'what do we give?'`
 
 **Stem.** A 67-year-old man with no psychiatric history, admitted for pneumonia, begins shouting at night and pulling at his oxygen tubing. He is combative with staff. The on-call resident asks the student how to approach this. What is the most appropriate first frame?
 
@@ -21401,7 +21528,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_saf_013` · status=`draft` · type=`sba` · difficulty=`2` · competency=`['safety', 'management']`
 - Linked pages: `suicide.md`
-- Evidence: `s`, `u`, `i`, `c`, `i`, `d`, `e`, `.`, `m`, `d`, ` `, `—`, ` `, `M`, `e`, `a`, `n`, `s`, ` `, `r`, `e`, `s`, `t`, `r`, `i`, `c`, `t`, `i`, `o`, `n`, `;`, ` `, `s`, `a`, `f`, `e`, `t`, `y`, ` `, `p`, `l`, `a`, `n`, `n`, `i`, `n`, `g`, `.`
+- Evidence: `suicide.md — Means restriction; safety planning.`
 
 **Stem.** A patient with depression and passive suicidal ideation is being discharged. Which single intervention has the strongest evidence for reducing suicide death?
 
@@ -21418,7 +21545,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_saf_014` · status=`draft` · type=`sba` · difficulty=`2` · competency=`['safety']`
 - Linked pages: `suicide.md`
-- Evidence: `s`, `u`, `i`, `c`, `i`, `d`, `e`, `.`, `m`, `d`, ` `, `—`, ` `, `H`, `i`, `g`, `h`, `-`, `r`, `i`, `s`, `k`, ` `, `w`, `i`, `n`, `d`, `o`, `w`, `s`, ` `, `a`, `n`, `d`, ` `, `d`, `i`, `s`, `c`, `h`, `a`, `r`, `g`, `e`, ` `, `p`, `l`, `a`, `n`, `n`, `i`, `n`, `g`, `.`
+- Evidence: `suicide.md — High-risk windows and discharge planning.`
 
 **Stem.** During which period is a psychiatric patient's suicide risk generally highest?
 
@@ -21435,7 +21562,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_saf_015` · status=`draft` · type=`sba` · difficulty=`2` · competency=`['dx', 'safety']`
 - Linked pages: `toxidromes.md`
-- Evidence: `t`, `o`, `x`, `i`, `d`, `r`, `o`, `m`, `e`, `s`, `.`, `m`, `d`, ` `, `—`, ` `, `S`, `e`, `r`, `o`, `t`, `o`, `n`, `i`, `n`, ` `, `s`, `y`, `n`, `d`, `r`, `o`, `m`, `e`, ` `, `v`, `s`, ` `, `N`, `M`, `S`, ` `, `d`, `i`, `s`, `c`, `r`, `i`, `m`, `i`, `n`, `a`, `t`, `o`, `r`, `s`, `.`
+- Evidence: `toxidromes.md — Serotonin syndrome vs NMS discriminators.`
 
 **Stem.** A patient on an SSRI is started on tramadol and develops agitation, diaphoresis, tremor, and lower-extremity clonus with hyperreflexia. What is the diagnosis, and the key bedside discriminator from NMS?
 
@@ -21452,7 +21579,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_saf_016` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['dx', 'safety']`
 - Linked pages: `violence.md`
-- Evidence: `v`, `i`, `o`, `l`, `e`, `n`, `c`, `e`, `.`, `m`, `d`, ` `, `—`, ` `, `S`, `t`, `a`, `t`, `i`, `c`, ` `, `v`, `s`, ` `, `d`, `y`, `n`, `a`, `m`, `i`, `c`, ` `, `r`, `i`, `s`, `k`, `;`, ` `, `p`, `a`, `s`, `t`, ` `, `v`, `i`, `o`, `l`, `e`, `n`, `c`, `e`, ` `, `a`, `s`, ` `, `p`, `r`, `e`, `d`, `i`, `c`, `t`, `o`, `r`, `.`
+- Evidence: `violence.md — Static vs dynamic risk; past violence as predictor.`
 
 **Stem.** You are assessing a patient's risk of violence on the unit. Which is the single strongest predictor of future violence?
 
@@ -21471,7 +21598,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_sud_001` · status=`attested` · type=`two-tier` · difficulty=`2` · competency=`['next-step', 'pharm']` · **high-yield**
 - Linked pages: `t_sud.md`
-- Evidence: `t`, `_`, `s`, `u`, `d`, `.`, `m`, `d`, ` `, `'`, `A`, `c`, `u`, `t`, `e`, ` `, `i`, `n`, `p`, `a`, `t`, `i`, `e`, `n`, `t`, ` `, `m`, `a`, `n`, `a`, `g`, `e`, `m`, `e`, `n`, `t`, `'`, ` `, `—`, ` `, `b`, `e`, `g`, `i`, `n`, ` `, `b`, `u`, `p`, `r`, `e`, `n`, `o`, `r`, `p`, `h`, `i`, `n`, `e`, ` `, `i`, `n`, `d`, `u`, `c`, `t`, `i`, `o`, `n`, ` `, `o`, `n`, `l`, `y`, ` `, `o`, `n`, `c`, `e`, ` `, `o`, `b`, `j`, `e`, `c`, `t`, `i`, `v`, `e`, ` `, `w`, `i`, `t`, `h`, `d`, `r`, `a`, `w`, `a`, `l`, ` `, `i`, `s`, ` `, `p`, `r`, `e`, `s`, `e`, `n`, `t`, ` `, `(`, `r`, `o`, `u`, `g`, `h`, `l`, `y`, ` `, `C`, `O`, `W`, `S`, ` `, `≥`, ` `, `8`, ` `, `t`, `o`, ` `, `1`, `2`, `)`, ` `, `t`, `o`, ` `, `a`, `v`, `o`, `i`, `d`, ` `, `p`, `r`, `e`, `c`, `i`, `p`, `i`, `t`, `a`, `t`, `e`, `d`, ` `, `w`, `i`, `t`, `h`, `d`, `r`, `a`, `w`, `a`, `l`, ` `, `f`, `r`, `o`, `m`, ` `, `d`, `i`, `s`, `p`, `l`, `a`, `c`, `i`, `n`, `g`, ` `, `r`, `e`, `s`, `i`, `d`, `u`, `a`, `l`, ` `, `f`, `u`, `l`, `l`, ` `, `a`, `g`, `o`, `n`, `i`, `s`, `t`, ` `, `t`, `o`, `o`, ` `, `e`, `a`, `r`, `l`, `y`, `.`
+- Evidence: `t_sud.md 'Acute inpatient management' — begin buprenorphine induction only once objective withdrawal is present (roughly COWS ≥ 8 to 12) to avoid precipitated withdrawal from displacing residual full agonist too early.`
 
 **Stem.** A 34-year-old man admitted last night for opioid use disorder asks to start buprenorphine right away — 'I don't want to get sick.' His last heroin use was about 6 hours ago. He is anxious but has no yawning, rhinorrhea, mydriasis, or piloerection; his COWS score is 4. Best next step?
 
@@ -21490,7 +21617,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_sud_002` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['safety', 'next-step']`
 - Linked pages: `t_sud.md`
-- Evidence: `t`, `_`, `s`, `u`, `d`, `.`, `m`, `d`, ` `, `'`, `A`, `c`, `u`, `t`, `e`, ` `, `i`, `n`, `p`, `a`, `t`, `i`, `e`, `n`, `t`, ` `, `m`, `a`, `n`, `a`, `g`, `e`, `m`, `e`, `n`, `t`, `'`, ` `, `—`, ` `, `G`, `i`, `v`, `e`, ` `, `t`, `h`, `i`, `a`, `m`, `i`, `n`, `e`, ` `, `b`, `e`, `f`, `o`, `r`, `e`, ` `, `g`, `l`, `u`, `c`, `o`, `s`, `e`, ` `, `—`, ` `, `a`, `d`, `m`, `i`, `n`, `i`, `s`, `t`, `e`, `r`, `i`, `n`, `g`, ` `, `c`, `a`, `r`, `b`, `o`, `h`, `y`, `d`, `r`, `a`, `t`, `e`, ` `, `t`, `o`, ` `, `a`, ` `, `t`, `h`, `i`, `a`, `m`, `i`, `n`, `e`, `-`, `d`, `e`, `p`, `l`, `e`, `t`, `e`, `d`, ` `, `p`, `a`, `t`, `i`, `e`, `n`, `t`, ` `, `c`, `a`, `n`, ` `, `p`, `r`, `e`, `c`, `i`, `p`, `i`, `t`, `a`, `t`, `e`, ` `, `W`, `e`, `r`, `n`, `i`, `c`, `k`, `e`, ` `, `e`, `n`, `c`, `e`, `p`, `h`, `a`, `l`, `o`, `p`, `a`, `t`, `h`, `y`, `.`, ` `, `H`, `i`, `g`, `h`, `-`, `y`, `i`, `e`, `l`, `d`, ` `, `p`, `e`, `a`, `r`, `l`, `:`, ` `, `'`, `T`, `h`, `i`, `a`, `m`, `i`, `n`, `e`, ` `, `b`, `e`, `f`, `o`, `r`, `e`, ` `, `g`, `l`, `u`, `c`, `o`, `s`, `e`, `,`, ` `, `e`, `v`, `e`, `r`, `y`, ` `, `t`, `i`, `m`, `e`, `.`, `'`
+- Evidence: `t_sud.md 'Acute inpatient management' — Give thiamine before glucose — administering carbohydrate to a thiamine-depleted patient can precipitate Wernicke encephalopathy. High-yield pearl: 'Thiamine before glucose, every time.'`
 
 **Stem.** A 52-year-old man with a history of heavy daily alcohol use is admitted in early withdrawal — tremulous and tachycardic. A nurse is about to start an IV dextrose infusion for a fingerstick glucose in the low-normal range. The most important step before administering the glucose is which of the following?
 
@@ -21507,7 +21634,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_sud_003` · status=`attested` · type=`sba` · difficulty=`1` · competency=`['safety']` · **high-yield**
 - Linked pages: `t_sud.md`
-- Evidence: `t`, `_`, `s`, `u`, `d`, `.`, `m`, `d`, ` `, `—`, ` `, `G`, `i`, `v`, `e`, ` `, `t`, `h`, `i`, `a`, `m`, `i`, `n`, `e`, ` `, `b`, `e`, `f`, `o`, `r`, `e`, ` `, `g`, `l`, `u`, `c`, `o`, `s`, `e`, ` `, `—`, ` `, `a`, `d`, `m`, `i`, `n`, `i`, `s`, `t`, `e`, `r`, `i`, `n`, `g`, ` `, `c`, `a`, `r`, `b`, `o`, `h`, `y`, `d`, `r`, `a`, `t`, `e`, ` `, `t`, `o`, ` `, `a`, ` `, `t`, `h`, `i`, `a`, `m`, `i`, `n`, `e`, `-`, `d`, `e`, `p`, `l`, `e`, `t`, `e`, `d`, ` `, `p`, `a`, `t`, `i`, `e`, `n`, `t`, ` `, `c`, `a`, `n`, ` `, `p`, `r`, `e`, `c`, `i`, `p`, `i`, `t`, `a`, `t`, `e`, ` `, `W`, `e`, `r`, `n`, `i`, `c`, `k`, `e`, ` `, `e`, `n`, `c`, `e`, `p`, `h`, `a`, `l`, `o`, `p`, `a`, `t`, `h`, `y`, `.`
+- Evidence: `t_sud.md — Give thiamine before glucose — administering carbohydrate to a thiamine-depleted patient can precipitate Wernicke encephalopathy.`
 
 **Stem.** A 57-year-old man with severe alcohol use disorder is admitted through the ED with altered mental status. The nurse establishes IV access and is preparing to infuse D5W. He appears malnourished and confused. Which step must occur before the glucose infusion is started?
 
@@ -21524,7 +21651,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_sud_004` · status=`attested` · type=`sba` · difficulty=`1` · competency=`['management']` · **high-yield**
 - Linked pages: `t_sud.md`
-- Evidence: `t`, `_`, `s`, `u`, `d`, `.`, `m`, `d`, ` `, `—`, ` `, `F`, `o`, `r`, ` `, `a`, `l`, `c`, `o`, `h`, `o`, `l`, ` `, `w`, `i`, `t`, `h`, `d`, `r`, `a`, `w`, `a`, `l`, `,`, ` `, `s`, `c`, `o`, `r`, `e`, ` `, `s`, `e`, `r`, `i`, `a`, `l`, `l`, `y`, ` `, `w`, `i`, `t`, `h`, ` `, `t`, `h`, `e`, ` `, `C`, `I`, `W`, `A`, `-`, `A`, `r`, ` `, `a`, `n`, `d`, ` `, `t`, `r`, `e`, `a`, `t`, ` `, `s`, `y`, `m`, `p`, `t`, `o`, `m`, `-`, `d`, `r`, `i`, `v`, `e`, `n`, ` `, `w`, `i`, `t`, `h`, ` `, `b`, `e`, `n`, `z`, `o`, `d`, `i`, `a`, `z`, `e`, `p`, `i`, `n`, `e`, `s`, `,`, ` `, `e`, `s`, `c`, `a`, `l`, `a`, `t`, `i`, `n`, `g`, ` `, `v`, `i`, `g`, `i`, `l`, `a`, `n`, `c`, `e`, ` `, `f`, `o`, `r`, ` `, `s`, `e`, `i`, `z`, `u`, `r`, `e`, `s`, ` `, `a`, `n`, `d`, ` `, `d`, `e`, `l`, `i`, `r`, `i`, `u`, `m`, ` `, `t`, `r`, `e`, `m`, `e`, `n`, `s`, ` `, `i`, `n`, ` `, `h`, `i`, `g`, `h`, `-`, `r`, `i`, `s`, `k`, ` `, `p`, `a`, `t`, `i`, `e`, `n`, `t`, `s`, `.`
+- Evidence: `t_sud.md — For alcohol withdrawal, score serially with the CIWA-Ar and treat symptom-driven with benzodiazepines, escalating vigilance for seizures and delirium tremens in high-risk patients.`
 
 **Stem.** A 46-year-old woman is admitted for alcohol detoxification. Her CIWA-Ar score is 16 on admission. A nurse asks how benzodiazepines should be dosed for alcohol withdrawal management on this unit. Which approach is correct?
 
@@ -21541,7 +21668,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_sud_005` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['management', 'next-step']`
 - Linked pages: `t_sud.md`
-- Evidence: `t`, `_`, `s`, `u`, `d`, `.`, `m`, `d`, ` `, `—`, ` `, `B`, `e`, `g`, `i`, `n`, ` `, `b`, `u`, `p`, `r`, `e`, `n`, `o`, `r`, `p`, `h`, `i`, `n`, `e`, ` `, `i`, `n`, `d`, `u`, `c`, `t`, `i`, `o`, `n`, ` `, `o`, `n`, `l`, `y`, ` `, `o`, `n`, `c`, `e`, ` `, `o`, `b`, `j`, `e`, `c`, `t`, `i`, `v`, `e`, ` `, `w`, `i`, `t`, `h`, `d`, `r`, `a`, `w`, `a`, `l`, ` `, `i`, `s`, ` `, `p`, `r`, `e`, `s`, `e`, `n`, `t`, ` `, `(`, `r`, `o`, `u`, `g`, `h`, `l`, `y`, ` `, `C`, `O`, `W`, `S`, ` `, `≥`, `8`, ` `, `t`, `o`, ` `, `1`, `2`, `)`, ` `, `t`, `o`, ` `, `a`, `v`, `o`, `i`, `d`, ` `, `p`, `r`, `e`, `c`, `i`, `p`, `i`, `t`, `a`, `t`, `e`, `d`, ` `, `w`, `i`, `t`, `h`, `d`, `r`, `a`, `w`, `a`, `l`, ` `, `f`, `r`, `o`, `m`, ` `, `d`, `i`, `s`, `p`, `l`, `a`, `c`, `i`, `n`, `g`, ` `, `r`, `e`, `s`, `i`, `d`, `u`, `a`, `l`, ` `, `f`, `u`, `l`, `l`, ` `, `a`, `g`, `o`, `n`, `i`, `s`, `t`, ` `, `t`, `o`, `o`, ` `, `e`, `a`, `r`, `l`, `y`, `.`
+- Evidence: `t_sud.md — Begin buprenorphine induction only once objective withdrawal is present (roughly COWS ≥8 to 12) to avoid precipitated withdrawal from displacing residual full agonist too early.`
 
 **Stem.** A 28-year-old man with opioid use disorder requests buprenorphine. He last used heroin 5 hours ago and reports mild cramping but looks comfortable. His COWS score is 5. He says, 'I'm ready to start — please give it now.' What is the most appropriate response?
 
@@ -21558,7 +21685,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_sud_006` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['dx']`
 - Linked pages: `t_sud.md`
-- Evidence: `t`, `_`, `s`, `u`, `d`, `.`, `m`, `d`, ` `, `—`, ` `, `Y`, `o`, `u`, ` `, `c`, `a`, `n`, `n`, `o`, `t`, ` `, `r`, `e`, `l`, `i`, `a`, `b`, `l`, `y`, ` `, `d`, `i`, `a`, `g`, `n`, `o`, `s`, `e`, ` `, `a`, ` `, `p`, `r`, `i`, `m`, `a`, `r`, `y`, ` `, `m`, `o`, `o`, `d`, ` `, `o`, `r`, ` `, `p`, `s`, `y`, `c`, `h`, `o`, `t`, `i`, `c`, ` `, `d`, `i`, `s`, `o`, `r`, `d`, `e`, `r`, ` `, `w`, `h`, `i`, `l`, `e`, ` `, `t`, `h`, `e`, ` `, `p`, `a`, `t`, `i`, `e`, `n`, `t`, ` `, `i`, `s`, ` `, `a`, `c`, `u`, `t`, `e`, `l`, `y`, ` `, `i`, `n`, `t`, `o`, `x`, `i`, `c`, `a`, `t`, `e`, `d`, ` `, `o`, `r`, ` `, `w`, `i`, `t`, `h`, `d`, `r`, `a`, `w`, `i`, `n`, `g`, `.`
+- Evidence: `t_sud.md — You cannot reliably diagnose a primary mood or psychotic disorder while the patient is acutely intoxicated or withdrawing.`
 
 **Stem.** A 34-year-old woman with cocaine use disorder presents with elevated mood, decreased need for sleep, pressured speech, and grandiosity beginning 2 days after she used cocaine heavily. The team wants to document a diagnosis of bipolar I disorder. Which statement best characterizes the diagnostic approach?
 
@@ -21575,7 +21702,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_sud_007` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['dx']` · **high-yield**
 - Linked pages: `t_sud.md`
-- Evidence: `t`, `_`, `s`, `u`, `d`, `.`, `m`, `d`, ` `, `—`, ` `, `W`, `e`, `r`, `n`, `i`, `c`, `k`, `e`, ` `, `e`, `n`, `c`, `e`, `p`, `h`, `a`, `l`, `o`, `p`, `a`, `t`, `h`, `y`, ` `, `(`, `c`, `o`, `n`, `f`, `u`, `s`, `i`, `o`, `n`, `,`, ` `, `o`, `p`, `h`, `t`, `h`, `a`, `l`, `m`, `o`, `p`, `l`, `e`, `g`, `i`, `a`, `,`, ` `, `a`, `t`, `a`, `x`, `i`, `a`, ` `, `—`, ` `, `o`, `f`, `t`, `e`, `n`, ` `, `i`, `n`, `c`, `o`, `m`, `p`, `l`, `e`, `t`, `e`, `,`, ` `, `s`, `o`, ` `, `a`, ` `, `l`, `o`, `w`, ` `, `t`, `h`, `r`, `e`, `s`, `h`, `o`, `l`, `d`, ` `, `i`, `s`, ` `, `c`, `o`, `r`, `r`, `e`, `c`, `t`, `)`, `.`
+- Evidence: `t_sud.md — Wernicke encephalopathy (confusion, ophthalmoplegia, ataxia — often incomplete, so a low threshold is correct).`
 
 **Stem.** A 61-year-old man with severe alcohol use disorder is admitted for detoxification. On day 2, a nurse pages: he is increasingly confused, stumbling when ambulated, and his eyes appear to be 'moving strangely.' He was ambulatory on admission. Which diagnosis must be excluded immediately?
 
@@ -21592,7 +21719,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_sud_008` · status=`attested` · type=`sba` · difficulty=`1` · competency=`['safety', 'management']`
 - Linked pages: `t_sud.md`
-- Evidence: `t`, `_`, `s`, `u`, `d`, `.`, `m`, `d`, ` `, `—`, ` `, `P`, `r`, `o`, `v`, `i`, `d`, `e`, ` `, `n`, `a`, `l`, `o`, `x`, `o`, `n`, `e`, ` `, `a`, `n`, `d`, ` `, `o`, `v`, `e`, `r`, `d`, `o`, `s`, `e`, `-`, `p`, `r`, `e`, `v`, `e`, `n`, `t`, `i`, `o`, `n`, ` `, `e`, `d`, `u`, `c`, `a`, `t`, `i`, `o`, `n`, ` `, `t`, `o`, ` `, `a`, `n`, `y`, ` `, `p`, `a`, `t`, `i`, `e`, `n`, `t`, ` `, `a`, `t`, ` `, `o`, `p`, `i`, `o`, `i`, `d`, ` `, `r`, `i`, `s`, `k`, ` `, `a`, `n`, `d`, ` `, `t`, `o`, ` `, `t`, `h`, `e`, `i`, `r`, ` `, `f`, `a`, `m`, `i`, `l`, `y`, `.`, ` `, `A`, `r`, `r`, `a`, `n`, `g`, `e`, ` `, `l`, `i`, `n`, `k`, `a`, `g`, `e`, ` `, `t`, `o`, ` `, `M`, `O`, `U`, `D`, ` `, `b`, `e`, `f`, `o`, `r`, `e`, ` `, `t`, `h`, `e`, ` `, `p`, `a`, `t`, `i`, `e`, `n`, `t`, ` `, `l`, `e`, `a`, `v`, `e`, `s`, `,`, ` `, `s`, `i`, `n`, `c`, `e`, ` `, `t`, `h`, `e`, ` `, `p`, `o`, `s`, `t`, `-`, `d`, `i`, `s`, `c`, `h`, `a`, `r`, `g`, `e`, ` `, `w`, `i`, `n`, `d`, `o`, `w`, ` `, `c`, `a`, `r`, `r`, `i`, `e`, `s`, ` `, `e`, `l`, `e`, `v`, `a`, `t`, `e`, `d`, ` `, `o`, `v`, `e`, `r`, `d`, `o`, `s`, `e`, ` `, `r`, `i`, `s`, `k`, `.`
+- Evidence: `t_sud.md — Provide naloxone and overdose-prevention education to any patient at opioid risk and to their family. Arrange linkage to MOUD before the patient leaves, since the post-discharge window carries elevated overdose risk.`
 
 **Stem.** A 31-year-old man with opioid use disorder is being discharged after a brief admission for opioid intoxication. He declines to start buprenorphine during the admission. Which discharge intervention has the strongest direct evidence for preventing death in the weeks following discharge?
 
@@ -21609,7 +21736,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_sud_009` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['pharm']`
 - Linked pages: `t_sud.md`
-- Evidence: `t`, `_`, `s`, `u`, `d`, `.`, `m`, `d`, ` `, `—`, ` `, `F`, `o`, `r`, ` `, `o`, `n`, `g`, `o`, `i`, `n`, `g`, ` `, `a`, `l`, `c`, `o`, `h`, `o`, `l`, ` `, `u`, `s`, `e`, ` `, `d`, `i`, `s`, `o`, `r`, `d`, `e`, `r`, `,`, ` `, `o`, `f`, `f`, `e`, `r`, ` `, `n`, `a`, `l`, `t`, `r`, `e`, `x`, `o`, `n`, `e`, ` `, `o`, `r`, ` `, `a`, `c`, `a`, `m`, `p`, `r`, `o`, `s`, `a`, `t`, `e`, `.`
+- Evidence: `t_sud.md — For ongoing alcohol use disorder, offer naltrexone or acamprosate.`
 
 **Stem.** A 52-year-old woman completes medically supervised alcohol detoxification and wants pharmacotherapy to support sobriety. She has normal renal and hepatic function and no contraindications. Which agents are FDA-approved, evidence-based first-line options for alcohol use disorder maintenance?
 
@@ -21626,7 +21753,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_sud_010` · status=`attested` · type=`relational` · difficulty=`2` · competency=`['psychosocial']`
 - Linked pages: `t_sud.md`
-- Evidence: `t`, `_`, `s`, `u`, `d`, `.`, `m`, `d`, ` `, `—`, ` `, `U`, `s`, `e`, ` `, `m`, `o`, `t`, `i`, `v`, `a`, `t`, `i`, `o`, `n`, `a`, `l`, ` `, `i`, `n`, `t`, `e`, `r`, `v`, `i`, `e`, `w`, `i`, `n`, `g`, ` `, `t`, `o`, ` `, `m`, `e`, `e`, `t`, ` `, `a`, `m`, `b`, `i`, `v`, `a`, `l`, `e`, `n`, `c`, `e`, ` `, `w`, `i`, `t`, `h`, ` `, `c`, `u`, `r`, `i`, `o`, `s`, `i`, `t`, `y`, ` `, `r`, `a`, `t`, `h`, `e`, `r`, ` `, `t`, `h`, `a`, `n`, ` `, `c`, `o`, `n`, `f`, `r`, `o`, `n`, `t`, `a`, `t`, `i`, `o`, `n`, `.`, ` `, `F`, `r`, `a`, `m`, `e`, ` `, `t`, `h`, `e`, ` `, `w`, `h`, `o`, `l`, `e`, ` `, `e`, `n`, `c`, `o`, `u`, `n`, `t`, `e`, `r`, ` `, `t`, `h`, `r`, `o`, `u`, `g`, `h`, ` `, `t`, `h`, `e`, ` `, `V`, `o`, `l`, `k`, `o`, `w`, ` `, `b`, `r`, `a`, `i`, `n`, `-`, `d`, `i`, `s`, `e`, `a`, `s`, `e`, ` `, `m`, `o`, `d`, `e`, `l`, ` `, `o`, `f`, ` `, `a`, `d`, `d`, `i`, `c`, `t`, `i`, `o`, `n`, `.`
+- Evidence: `t_sud.md — Use motivational interviewing to meet ambivalence with curiosity rather than confrontation. Frame the whole encounter through the Volkow brain-disease model of addiction.`
 
 **Stem.** A patient with opioid use disorder says: 'I'm not an addict. I can stop whenever I want — it hasn't caused me any real problems.' You are the student conducting the initial interview using a motivational interviewing approach. Which response is best?
 
@@ -21643,7 +21770,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_sud_011` · status=`attested` · type=`two-tier` · difficulty=`2` · competency=`['safety']`
 - Linked pages: `t_sud.md`
-- Evidence: `t`, `_`, `s`, `u`, `d`, `.`, `m`, `d`, ` `, `—`, ` `, `O`, `p`, `i`, `o`, `i`, `d`, ` `, `a`, `n`, `d`, ` `, `s`, `t`, `i`, `m`, `u`, `l`, `a`, `n`, `t`, ` `, `w`, `i`, `t`, `h`, `d`, `r`, `a`, `w`, `a`, `l`, ` `, `a`, `r`, `e`, ` `, `i`, `n`, `t`, `e`, `n`, `s`, `e`, `l`, `y`, ` `, `u`, `n`, `c`, `o`, `m`, `f`, `o`, `r`, `t`, `a`, `b`, `l`, `e`, ` `, `b`, `u`, `t`, ` `, `r`, `a`, `r`, `e`, `l`, `y`, ` `, `l`, `e`, `t`, `h`, `a`, `l`, `.`, ` `, `N`, `a`, `l`, `o`, `x`, `o`, `n`, `e`, ` `, `p`, `l`, `u`, `s`, ` `, `M`, `O`, `U`, `D`, ` `, `l`, `i`, `n`, `k`, `a`, `g`, `e`, ` `, `a`, `t`, ` `, `d`, `i`, `s`, `c`, `h`, `a`, `r`, `g`, `e`, ` `, `i`, `s`, ` `, `a`, ` `, `c`, `o`, `n`, `c`, `r`, `e`, `t`, `e`, `,`, ` `, `e`, `v`, `i`, `d`, `e`, `n`, `c`, `e`, `-`, `b`, `a`, `s`, `e`, `d`, ` `, `w`, `a`, `y`, ` `, `t`, `o`, ` `, `s`, `a`, `v`, `e`, ` `, `a`, ` `, `l`, `i`, `f`, `e`, `.`
+- Evidence: `t_sud.md — Opioid and stimulant withdrawal are intensely uncomfortable but rarely lethal. Naloxone plus MOUD linkage at discharge is a concrete, evidence-based way to save a life.`
 
 **Stem.** A 19-year-old man is admitted for heroin withdrawal. He is visibly distressed, diaphoretic, tachycardic, and requesting immediate medication. A colleague asks, 'Is this patient in danger?' Which response most accurately conveys the clinical urgency?
 
@@ -21662,7 +21789,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_sud_012` · status=`attested` · type=`sba` · difficulty=`3` · competency=`['dx', 'next-step']`
 - Linked pages: `t_sud.md`
-- Evidence: `t`, `_`, `s`, `u`, `d`, `.`, `m`, `d`, ` `, `—`, ` `, `A`, `l`, `t`, `e`, `r`, `e`, `d`, ` `, `m`, `e`, `n`, `t`, `a`, `l`, ` `, `s`, `t`, `a`, `t`, `u`, `s`, ` `, `i`, `n`, ` `, `a`, ` `, `p`, `a`, `t`, `i`, `e`, `n`, `t`, ` `, `w`, `h`, `o`, ` `, `u`, `s`, `e`, `s`, ` `, `s`, `u`, `b`, `s`, `t`, `a`, `n`, `c`, `e`, `s`, ` `, `i`, `s`, ` `, `n`, `e`, `v`, `e`, `r`, ` `, `a`, `u`, `t`, `o`, `m`, `a`, `t`, `i`, `c`, `a`, `l`, `l`, `y`, ` `, `'`, `j`, `u`, `s`, `t`, ` `, `w`, `i`, `t`, `h`, `d`, `r`, `a`, `w`, `a`, `l`, `.`, `'`, ` `, `K`, `e`, `e`, `p`, ` `, `t`, `h`, `e`, `s`, `e`, ` `, `l`, `i`, `v`, `e`, `:`, ` `, `W`, `e`, `r`, `n`, `i`, `c`, `k`, `e`, ` `, `e`, `n`, `c`, `e`, `p`, `h`, `a`, `l`, `o`, `p`, `a`, `t`, `h`, `y`, `,`, ` `, `h`, `e`, `a`, `d`, ` `, `i`, `n`, `j`, `u`, `r`, `y`, `/`, `s`, `u`, `b`, `d`, `u`, `r`, `a`, `l`, ` `, `h`, `e`, `m`, `a`, `t`, `o`, `m`, `a`, `,`, ` `, `o`, `c`, `c`, `u`, `l`, `t`, ` `, `i`, `n`, `f`, `e`, `c`, `t`, `i`, `o`, `n`, `/`, `s`, `e`, `p`, `s`, `i`, `s`, `,`, ` `, `h`, `e`, `p`, `a`, `t`, `i`, `c`, ` `, `e`, `n`, `c`, `e`, `p`, `h`, `a`, `l`, `o`, `p`, `a`, `t`, `h`, `y`, `,`, ` `, `a`, `n`, `d`, ` `, `p`, `o`, `l`, `y`, `s`, `u`, `b`, `s`, `t`, `a`, `n`, `c`, `e`, ` `, `u`, `s`, `e`, `.`
+- Evidence: `t_sud.md — Altered mental status in a patient who uses substances is never automatically 'just withdrawal.' Keep these live: Wernicke encephalopathy, head injury/subdural hematoma, occult infection/sepsis, hepatic encephalopathy, and polysubstance use.`
 
 **Stem.** A 56-year-old man with alcohol use disorder is brought in by EMS after being found unresponsive. Blood alcohol level is 0.22. He remains obtunded 45 minutes after arrival despite being stable. A colleague says, 'He's just drunk — let's monitor and wait.' Which response is most accurate?
 
@@ -21679,7 +21806,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_sud_013` · status=`attested` · type=`sba` · difficulty=`3` · competency=`['safety', 'pharm']`
 - Linked pages: `t_sud.md`
-- Evidence: `s`, `u`, `b`, `s`, `t`, `a`, `n`, `c`, `e`, `_`, `u`, `s`, `e`, `_`, `i`, `n`, `p`, `a`, `t`, `i`, `e`, `n`, `t`, `_`, `t`, `e`, `a`, `c`, `h`, `i`, `n`, `g`, `.`, `m`, `d`, ` `, `'`, `B`, `e`, `n`, `z`, `o`, `d`, `i`, `a`, `z`, `e`, `p`, `i`, `n`, `e`, ` `, `c`, `h`, `o`, `i`, `c`, `e`, ` `, `i`, `n`, ` `, `h`, `e`, `p`, `a`, `t`, `i`, `c`, ` `, `i`, `m`, `p`, `a`, `i`, `r`, `m`, `e`, `n`, `t`, `'`, ` `, `—`, ` `, `L`, `o`, `r`, `a`, `z`, `e`, `p`, `a`, `m`, `,`, ` `, `o`, `x`, `a`, `z`, `e`, `p`, `a`, `m`, `,`, ` `, `a`, `n`, `d`, ` `, `t`, `e`, `m`, `a`, `z`, `e`, `p`, `a`, `m`, ` `, `(`, `t`, `h`, `e`, ` `, `L`, `O`, `T`, ` `, `d`, `r`, `u`, `g`, `s`, `)`, ` `, `b`, `y`, `p`, `a`, `s`, `s`, ` `, `o`, `x`, `i`, `d`, `a`, `t`, `i`, `v`, `e`, ` `, `C`, `Y`, `P`, `4`, `5`, `0`, ` `, `m`, `e`, `t`, `a`, `b`, `o`, `l`, `i`, `s`, `m`, `;`, ` `, `t`, `h`, `e`, `y`, ` `, `a`, `r`, `e`, ` `, `c`, `o`, `n`, `j`, `u`, `g`, `a`, `t`, `e`, `d`, ` `, `b`, `y`, ` `, `g`, `l`, `u`, `c`, `u`, `r`, `o`, `n`, `i`, `d`, `a`, `t`, `i`, `o`, `n`, `,`, ` `, `a`, ` `, `p`, `a`, `t`, `h`, `w`, `a`, `y`, ` `, `t`, `h`, `a`, `t`, ` `, `i`, `s`, ` `, `r`, `e`, `l`, `a`, `t`, `i`, `v`, `e`, `l`, `y`, ` `, `p`, `r`, `e`, `s`, `e`, `r`, `v`, `e`, `d`, ` `, `i`, `n`, ` `, `c`, `i`, `r`, `r`, `h`, `o`, `s`, `i`, `s`, `,`, ` `, `a`, `n`, `d`, ` `, `p`, `r`, `o`, `d`, `u`, `c`, `e`, ` `, `n`, `o`, ` `, `c`, `l`, `i`, `n`, `i`, `c`, `a`, `l`, `l`, `y`, ` `, `s`, `i`, `g`, `n`, `i`, `f`, `i`, `c`, `a`, `n`, `t`, ` `, `a`, `c`, `t`, `i`, `v`, `e`, ` `, `m`, `e`, `t`, `a`, `b`, `o`, `l`, `i`, `t`, `e`, `s`, `.`, ` `, `C`, `h`, `l`, `o`, `r`, `d`, `i`, `a`, `z`, `e`, `p`, `o`, `x`, `i`, `d`, `e`, ` `, `a`, `n`, `d`, ` `, `d`, `i`, `a`, `z`, `e`, `p`, `a`, `m`, ` `, `r`, `e`, `l`, `y`, ` `, `o`, `n`, ` `, `h`, `e`, `p`, `a`, `t`, `i`, `c`, ` `, `o`, `x`, `i`, `d`, `a`, `t`, `i`, `v`, `e`, ` `, `m`, `e`, `t`, `a`, `b`, `o`, `l`, `i`, `s`, `m`, ` `, `a`, `n`, `d`, ` `, `p`, `r`, `o`, `d`, `u`, `c`, `e`, ` `, `l`, `o`, `n`, `g`, `-`, `l`, `i`, `v`, `e`, `d`, ` `, `a`, `c`, `t`, `i`, `v`, `e`, ` `, `m`, `e`, `t`, `a`, `b`, `o`, `l`, `i`, `t`, `e`, `s`, ` `, `t`, `h`, `a`, `t`, ` `, `a`, `c`, `c`, `u`, `m`, `u`, `l`, `a`, `t`, `e`, ` `, `i`, `n`, ` `, `s`, `i`, `g`, `n`, `i`, `f`, `i`, `c`, `a`, `n`, `t`, ` `, `h`, `e`, `p`, `a`, `t`, `i`, `c`, ` `, `i`, `m`, `p`, `a`, `i`, `r`, `m`, `e`, `n`, `t`, `,`, ` `, `r`, `i`, `s`, `k`, `i`, `n`, `g`, ` `, `p`, `r`, `o`, `g`, `r`, `e`, `s`, `s`, `i`, `v`, `e`, ` `, `o`, `v`, `e`, `r`, `-`, `s`, `e`, `d`, `a`, `t`, `i`, `o`, `n`, ` `, `a`, `n`, `d`, ` `, `w`, `o`, `r`, `s`, `e`, `n`, `i`, `n`, `g`, ` `, `h`, `e`, `p`, `a`, `t`, `i`, `c`, ` `, `e`, `n`, `c`, `e`, `p`, `h`, `a`, `l`, `o`, `p`, `a`, `t`, `h`, `y`, ` `, `(`, `S`, `c`, `h`, `u`, `c`, `k`, `i`, `t`, `,`, ` `, `N`, ` `, `E`, `n`, `g`, `l`, ` `, `J`, ` `, `M`, `e`, `d`, ` `, `2`, `0`, `1`, `4`, `;`, ` `, `S`, `a`, `i`, `t`, `z`, `,`, ` `, `N`, ` `, `E`, `n`, `g`, `l`, ` `, `J`, ` `, `M`, `e`, `d`, ` `, `1`, `9`, `9`, `8`, `)`, `.`
+- Evidence: `substance_use_inpatient_teaching.md 'Benzodiazepine choice in hepatic impairment' — Lorazepam, oxazepam, and temazepam (the LOT drugs) bypass oxidative CYP450 metabolism; they are conjugated by glucuronidation, a pathway that is relatively preserved in cirrhosis, and produce no clinically significant active metabolites. Chlordiazepoxide and diazepam rely on hepatic oxidative metabolism and produce long-lived active metabolites that accumulate in significant hepatic impairment, risking progressive over-sedation and worsening hepatic encephalopathy (Schuckit, N Engl J Med 2014; Saitz, N Engl J Med 1998).`
 
 **Stem.** A 64-year-old man with severe alcohol use disorder and documented Child-Pugh B cirrhosis is admitted for alcohol withdrawal. CIWA-Ar is 14. The team considers using chlordiazepoxide for symptom-triggered dosing. A student identifies a safety concern. Which response is most accurate?
 
@@ -21696,7 +21823,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_sud_014` · status=`attested` · type=`two-tier` · difficulty=`2` · competency=`['safety']`
 - Linked pages: `t_sud.md`
-- Evidence: `t`, `_`, `s`, `u`, `d`, `.`, `m`, `d`, ` `, `—`, ` `, `A`, `l`, `c`, `o`, `h`, `o`, `l`, ` `, `w`, `i`, `t`, `h`, `d`, `r`, `a`, `w`, `a`, `l`, `:`, ` `, `s`, `c`, `o`, `r`, `e`, ` `, `s`, `e`, `r`, `i`, `a`, `l`, `l`, `y`, ` `, `w`, `i`, `t`, `h`, ` `, `t`, `h`, `e`, ` `, `C`, `I`, `W`, `A`, `-`, `A`, `r`, ` `, `a`, `n`, `d`, ` `, `t`, `r`, `e`, `a`, `t`, ` `, `s`, `y`, `m`, `p`, `t`, `o`, `m`, `-`, `d`, `r`, `i`, `v`, `e`, `n`, ` `, `w`, `i`, `t`, `h`, ` `, `b`, `e`, `n`, `z`, `o`, `d`, `i`, `a`, `z`, `e`, `p`, `i`, `n`, `e`, `s`, `,`, ` `, `e`, `s`, `c`, `a`, `l`, `a`, `t`, `i`, `n`, `g`, ` `, `v`, `i`, `g`, `i`, `l`, `a`, `n`, `c`, `e`, ` `, `f`, `o`, `r`, ` `, `s`, `e`, `i`, `z`, `u`, `r`, `e`, `s`, ` `, `a`, `n`, `d`, ` `, `d`, `e`, `l`, `i`, `r`, `i`, `u`, `m`, ` `, `t`, `r`, `e`, `m`, `e`, `n`, `s`, ` `, `i`, `n`, ` `, `h`, `i`, `g`, `h`, `-`, `r`, `i`, `s`, `k`, ` `, `p`, `a`, `t`, `i`, `e`, `n`, `t`, `s`, `.`
+- Evidence: `t_sud.md — Alcohol withdrawal: score serially with the CIWA-Ar and treat symptom-driven with benzodiazepines, escalating vigilance for seizures and delirium tremens in high-risk patients.`
 
 **Stem.** A 49-year-old man with severe alcohol use disorder is admitted after a tonic-clonic seizure at home. He has a documented prior alcohol withdrawal seizure from two years ago. CIWA-Ar on arrival is 12. Which statement best characterizes his risk and clinical priority?
 
@@ -21715,7 +21842,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_sud_015` · status=`draft` · type=`sba` · difficulty=`2` · competency=`['dx', 'safety']`
 - Linked pages: `t_sud.md`
-- Evidence: `t`, `_`, `s`, `u`, `d`, `.`, `m`, `d`, ` `, `—`, ` `, `A`, `l`, `c`, `o`, `h`, `o`, `l`, `:`, ` `, `W`, `e`, `r`, `n`, `i`, `c`, `k`, `e`, ` `, `e`, `n`, `c`, `e`, `p`, `h`, `a`, `l`, `o`, `p`, `a`, `t`, `h`, `y`, ` `, `a`, `n`, `d`, ` `, `t`, `h`, `i`, `a`, `m`, `i`, `n`, `e`, `.`
+- Evidence: `t_sud.md — Alcohol: Wernicke encephalopathy and thiamine.`
 
 **Stem.** A 55-year-old man with heavy alcohol use is admitted with confusion, gaze-evoked nystagmus with impaired eye movements, and a wide-based unsteady gait. What is the immediate priority?
 
@@ -21732,7 +21859,7 @@ _1392 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_sud_016` · status=`draft` · type=`sba` · difficulty=`2` · competency=`['pharm', 'management']`
 - Linked pages: `t_sud.md`
-- Evidence: `t`, `_`, `s`, `u`, `d`, `.`, `m`, `d`, ` `, `—`, ` `, `A`, `l`, `c`, `o`, `h`, `o`, `l`, ` `, `u`, `s`, `e`, ` `, `d`, `i`, `s`, `o`, `r`, `d`, `e`, `r`, ` `, `p`, `h`, `a`, `r`, `m`, `a`, `c`, `o`, `t`, `h`, `e`, `r`, `a`, `p`, `y`, `.`
+- Evidence: `t_sud.md — Alcohol use disorder pharmacotherapy.`
 
 **Stem.** A patient with alcohol use disorder is medically stable and motivated to cut down, with compensated cirrhosis. Which maintenance pharmacotherapy is a reasonable first-line choice?
 
@@ -22403,7 +22530,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
 
 *Prompt.* What should the student emphasize to the team?
 
-- **(a)** Review deliriogenic medications, check infection/metabolic/hypoxia contributors, and use reorientation/sleep-wake measures.  *(rated: **best**)*
+- **(a)** Review deliriogenic medications, check infection/metabolic/hypoxia and alcohol or sedative withdrawal contributors, and use reorientation/sleep-wake measures.  *(rated: **best**)*
   - *feedback:* Best. The student can help by organizing causes and nonpharmacologic prevention.
 - **(b)** Ask whether the hallucinations are mood-congruent while the primary team reviews medical contributors.  *(rated: **missed**)*
   - *feedback:* That question can matter in mood psychosis, but the student should actively organize delirium contributors and prevention rather than defer the medical reasoning.
@@ -23418,7 +23545,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
 
 3. **Based on the study results, which drug demonstrates the highest efficacy but is limited by the worst side-effect profile (lowest acceptability)?**
    - Amitriptyline **← keyed correct**
-     - *feedback:* Amitriptyline had the highest Odds Ratio for efficacy (2.13) but was noted for having the worst side-effect profile among the agents studied.
+     - *feedback:* Amitriptyline had the highest Odds Ratio for efficacy (2.13). Its anticholinergic and cardiac side-effect burden makes it a later-line choice in practice, but in the study's acceptability (dropout) analysis it was clomipramine — not amitriptyline — that performed worst, as the only agent with significantly more dropouts than placebo.
    - Escitalopram Escitalopram is noted for a balanced profile of high efficacy and high tolerability, rather than a poor side-effect profile.
    - Venlafaxine While venlafaxine is highly efficacious, it was not singled out as having the worst acceptability profile in this specific analysis.
    - Reboxetine Reboxetine actually showed the lowest efficacy among the 21 antidepressants studied.
@@ -24669,7 +24796,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
 
 3. **For a patient starting a new SGA, what is the recommended schedule for monitoring weight during the first few months of treatment?**
    - Monthly for the first year, then every 2 years
-     - *feedback:* The protocol emphasizes more frequent monitoring (every 4 weeks) initially, followed by a transition to annual checks.
+     - *feedback:* The protocol emphasizes more frequent monitoring (every 4 weeks) initially, followed by quarterly weight checks thereafter.
    - Baseline and every 6 months thereafter Waiting six months would miss the critical window of rapid weight gain that typically occurs in the first three months.
    - Only at baseline and then if the patient reports physical changes Standardized, proactive monitoring is required regardless of patient-reported symptoms to ensure early intervention.
    - Baseline, 4 weeks, 8 weeks, and 12 weeks **← keyed correct**
@@ -25098,7 +25225,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
    - The results cannot be generalized to the US because it was conducted in Europe.
      - *feedback:* The RAISE-ETP was a NIMH-funded trial specifically conducted across 34 clinics in the United States.
    - The benefits of the program are uniform regardless of how long the patient was psychotic before treatment. This is a common overstatement; the data showed that the benefits were significantly more pronounced in those with a shorter DUP.
-   - CSC is only effective for those with a duration of untreated psychosis (<74 weeks). **← keyed correct**
+   - Re-key the item to match the deck's own overstatement-item convention (the key is the false claim): key 'The benefits of the program are uniform regardless of how long the patient was psychotic before treatment' as the common overstatement (its existing feedback already explains the DUP moderation), and reword the current keyed option into a true-statement distractor: 'The benefits were concentrated in patients with shorter duration of untreated psychosis (below the ~74-week median), so gains may be smaller when treatment starts late' — with feedback that this is an accurate limitation, not an overstatement: RAISE-ETP's moderator analysis showed greater benefit with shorter DUP, not that CSC is ineffective beyond 74 weeks. **← keyed correct**
      - *feedback:* While CSC is the standard of care, its most striking benefits were observed in the subgroup with a DUP of less than 74 weeks, highlighting the urgency of early detection.
    - The study only followed patients for 6 months, so long-term benefit is unknown. The initial report covered 2 years, and 5-year follow-up data has supported the sustainability of the benefits.
 
@@ -25314,7 +25441,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
    - Biological determinism in prescribing While psychiatry involves biological factors, the paper focuses on the collaborative process of decision-making rather than the biological etiology of disease.
    - Paternalistic clinical management This traditional model involves the clinician making decisions for the patient, which is the approach the paper argued against.
 
-2. **A 2022 Cochrane review of 14 RCTs evaluated the efficacy of Shared Decision-Making (SDM) interventions in mental health. Which outcome was found to be consistently improved?**
+2. **Rewrite the item to the review's actual result, e.g. stem: 'A 2022 Cochrane review of 15 RCTs evaluated Shared Decision-Making (SDM) interventions in mental health care. Which outcome showed some evidence of improvement?' keyed to 'Patients' perceived involvement in the decision-making process immediately after the encounter', with feedback that effects on knowledge, overall satisfaction, and clinical outcomes were uncertain (low- to very-low-certainty evidence). Align Q6's feedback with the same summary, and attribute knowledge/decisional-conflict gains to the general patient decision-aid literature if that teaching point is kept.**
    - Elimination of medication side effects
      - *feedback:* SDM helps patients choose treatments based on side effect profiles but does not inherently eliminate the biological side effects of medications.
    - Immediate reduction in psychotic symptoms Clinical outcomes, such as symptom reduction, showed less consistent improvements across the reviewed studies compared to process measures.
@@ -25513,7 +25640,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
 2. **A 32-year-old patient with Bipolar I Disorder presents with a depressive episode while taking therapeutic levels of lithium. Based on the clinical pearls from the STEP-BD trial, what is the most appropriate next step in management?**
    - Immediately add a high-dose SSRI like paroxetine.
      - *feedback:* The study suggests that adding antidepressants does not provide an efficacy advantage over placebo.
-   - Avoid psychotherapy as it has been shown to be less effective than medication in this population. The companion psychotherapy trial actually showed much higher recovery rates compared to medication alone.
+   - Avoid psychotherapy as it has been shown to be less effective than medication in this population. The companion psychotherapy trial showed higher recovery rates with intensive psychotherapy than with a brief collaborative-care control; patients in both arms continued mood-stabilizer pharmacotherapy.
    - Discontinue lithium and switch to antidepressant monotherapy. Antidepressant monotherapy is generally avoided in bipolar disorder due to the risk of destabilization, which was not the protocol in this adjunctive trial.
    - Optimize the current mood stabilizer therapy or consider evidence-based agents like lamotrigine or quetiapine. **← keyed correct**
      - *feedback:* Clinical guidance from the study emphasizes optimizing mood stabilizers first rather than reflexively adding antidepressants.
@@ -25535,7 +25662,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
    - Mood stabilizers should be optimized before considering antidepressants. This is a core clinical pearl derived from the trial results rather than an overstatement.
 
 5. **In the context of the STEP-BD program, how did the recovery rates in the intensive psychotherapy trial compare to the recovery rates in the antidepressant medication trial?**
-   - Intensive psychotherapy resulted in recovery rates as high as 64%, significantly higher than the medication trial. **← keyed correct**
+   - Intensive psychotherapy resulted in 1-year recovery rates as high as 64%, significantly higher than the 52% seen with brief collaborative care in the companion randomized trial. **← keyed correct**
      - *feedback:* Data from the companion trial showed that psychotherapy (CBT, IPSRT, FFT) was highly effective compared to the medication-only outcomes.
    - Both trials showed nearly identical recovery rates of roughly 25%. The psychotherapy trial showed significantly higher rates of recovery compared to the medication-focused trial.
    - The antidepressant trial had higher recovery rates, exceeding 50%. The antidepressant trial had notably low recovery rates of approximately 25%.
@@ -25605,7 +25732,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
      - *feedback:* While lithium treats mania, the study highlighted its specific comparative strength in preventing depressive episodes compared to valproate.
    - Rapid cycling Rapid cycling is a specific pattern of bipolar disorder, but the primary finding noted in the summary relates to depressive relapse prevention.
    - Depressive relapses **← keyed correct**
-     - *feedback:* Lithium's benefit was particularly strong in this area, demonstrated by an HR of 0.63 for depressive episodes.
+     - *feedback:* Rewrite the item to the trial's published finding, e.g. stem: 'In BALANCE, how did lithium monotherapy compare with valproate monotherapy for relapse prevention?' keyed to 'Lithium was superior at preventing new intervention for an emergent mood episode of either pole (HR 0.71, 95% CI 0.51-1.00)', with feedback noting the primary outcome covered relapse of any polarity and the trial did not establish a specific depressive-pole advantage. Do not key a polarity-specific claim or the 0.63 figure unless it is verified against the paper's polarity-specific secondary outcomes in the full report.
    - Mixed episodes The source material emphasizes depressive relapses rather than mixed states as the specific area of lithium's advantage.
 
 4. **Based on the clinical pearls from the BALANCE trial, what is the recommended approach for a patient experiencing an incomplete response to lithium monotherapy?**
@@ -25680,7 +25807,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
 
 2. **How did the effectiveness of the first-generation antipsychotic (FGA) perphenazine compare to the second-generation antipsychotics (SGAs) quetiapine, risperidone, and ziprasidone?**
    - Perphenazine was discontinued much earlier due to a higher rate of movement disorders.
-     - *feedback:* Contrary to expectations, the FGA was not discontinued significantly more often for extrapyramidal side effects compared to the SGAs in this trial.
+     - *feedback:* Perphenazine's overall time to discontinuation was comparable to the SGAs, and rated extrapyramidal symptoms did not differ significantly across drugs — although discontinuation specifically because of extrapyramidal effects was modestly more common with perphenazine (8% vs 2–4%).
    - Perphenazine was significantly less effective than all SGAs tested. This reflects the pre-trial assumption that SGAs were categorically superior, which the study results actually refuted.
    - Perphenazine performed comparably to the SGAs quetiapine, risperidone, and ziprasidone. **← keyed correct**
      - *feedback:* The trial found no significant difference in the time to discontinuation between the FGA perphenazine and these three SGAs.
@@ -25727,7 +25854,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
 
 1. **What was the primary conclusion of the CATIE-AD trial regarding the effectiveness of atypical antipsychotics compared to placebo for treating agitation or psychosis in Alzheimer's patients?**
    - Placebo was found to be dangerous due to the lack of symptom control for behavioral disturbances.
-     - *feedback:* Placebo actually had the longest median time to discontinuation (8.0 weeks) compared to the active drugs, suggesting it was better tolerated.
+     - *feedback:* Median time to discontinuation for any reason did not differ significantly between placebo (8.0 weeks) and the active drugs (olanzapine 8.1, risperidone 7.4, quetiapine 5.3 weeks), and placebo had the fewest discontinuations for intolerability.
    - Risperidone was identified as the only agent with a favorable risk-benefit ratio for long-term use. The trial did not find a superior risk-benefit profile for risperidone specifically; it shared the general risks and lack of superior efficacy seen across the class.
    - Antipsychotics were significantly more effective than placebo in extending the time to treatment discontinuation. In fact, the trial found that no antipsychotic was superior to placebo for the primary outcome of time to discontinuation for any reason.
    - The benefits of antipsychotic medications were largely offset by their adverse effects. **← keyed correct**
@@ -26376,7 +26503,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
    - Psychotherapy and pharmacotherapy were comparably effective. **← keyed correct**
      - *feedback:* The results suggested that for mild-to-moderate depression, both CBT/IPT and imipramine showed similar levels of effectiveness.
    - IPT was found to be the only effective treatment for mild cases. The study concluded that all active treatments were generally effective for this population, not just one specific psychotherapy.
-   - Placebo was found to be just as effective as CBT and IPT. All active treatments were found to produce significant improvement beyond the placebo control group.
+   - Placebo plus clinical management produced no improvement at all. In fact, patients in every condition, including placebo plus clinical management, improved significantly. Specific superiority over placebo was limited — superior recovery rates for imipramine plus clinical management and IPT, and none for CBT — and among less severely depressed patients no treatment separated from placebo; clear between-treatment differences were confined to the more severely depressed subgroup, strongest for imipramine plus clinical management.
 
 3. **In the context of the TDCRP, what does the 'Dodo bird verdict' refer to?**
    - The belief that treatment effectiveness is entirely dependent on the patient's age.
@@ -26398,7 +26525,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
      - *feedback:* Later meta-analyses, such as Weitz et al. (2015), challenged the severity moderation findings, suggesting the initial advantage might not be as robust as first thought.
    - Stating that the study established the methodology for psychotherapy research. This is considered a factual historical impact of the study rather than an overstatement.
    - Suggesting that patient preference should be considered in treatment selection. This is a recommended clinical pearl and a standard component of evidence-based practice.
-   - Observing that all active treatments showed improvement over placebo. This was a key finding of the study and is supported by the data presented.
+   - Observing that patients in all four conditions, including placebo plus clinical management, showed significant improvement. This was a key finding of the study and is supported by the data presented.
 
 6. **What is the recommended clinical approach for patients presenting with severe depression based on the broader implications of this research?**
    - Immediate referral for ECT as the first-line intervention
@@ -26419,7 +26546,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
 
 2. **In the POTS trial, how did the efficacy of CBT monotherapy compare to sertraline monotherapy?**
    - Neither monotherapy was superior to placebo
-     - *feedback:* Both CBT and sertraline demonstrated significantly higher remission rates than the 3.6% observed in the placebo group.
+     - *feedback:* Both monotherapies were superior to placebo on the primary CY-BOCS outcome; on the stricter remission outcome, CBT alone (39.3%) separated from placebo (3.6%) while sertraline alone (21.4%) did not reach statistical significance.
    - Sertraline was significantly superior to CBT The data indicated that medication alone was not more effective than therapy alone in this pediatric population.
    - CBT was significantly superior to sertraline While CBT is often preferred if only one modality is chosen, the study did not find a statistically significant difference in efficacy between the two.
    - The two monotherapies did not differ significantly from each other **← keyed correct**
@@ -26872,7 +26999,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
 
 2. **Which neurobiological system did the Zarate 2006 study target to produce rapid antidepressant effects, marking a departure from the traditional monoamine hypothesis?**
    - The serotonergic system via 5−HT 2A receptors
-     - *feedback:* This describes the mechanism of most traditional SSRIs or certain psychedelics, rather than ketamine's primary NMDA-related mechanism.
+     - *feedback:* 5-HT2A agonism is the mechanism of serotonergic psychedelics; traditional SSRIs act on the serotonin system by blocking the serotonin transporter. Neither describes ketamine's primary NMDA-related mechanism.
    - The dopaminergic reward pathway Although dopamine is involved in depression, the primary mechanism of ketamine is not direct dopamine receptor agonism.
    - The glutamate system via NMDA receptor antagonism **← keyed correct**
      - *feedback:* Ketamine acts as an N-methyl-D-aspartate (NMDA) antagonist, shifting focus to glutamate as a primary driver of rapid antidepressant response.

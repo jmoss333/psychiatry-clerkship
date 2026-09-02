@@ -6,6 +6,99 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 
 ---
 
+## Shelf Mode — Exam Simulation
+
+- **Slug:** `shelf-mode.html` · **Type:** tool · **Sidebar:** hidden (deep link only)
+- **Source:** `07_Evidence_and_Reading/Landmark_Trials/shelf-mode.html`
+- **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`moderate`
+
+#### Tool — clinical content
+
+_These tools are single-file HTML that render from inline JS data, so the clinical text below is recovered from the tool's own string literals. Ordering follows the file, not the runtime flow._
+
+**Static shell text:**
+
+- Shelf Mode — Exam Simulation Reviewed by Joshua Moss, MD on 2026-07-05
+- Skip to content
+
+**Authored clinical strings (73):**
+
+- Strong — exam-ready range.
+- Solid — tighten the misses.
+- Passing range — keep drilling.
+- Psychopharm & Med Emergencies
+- t label a draft mid-block without breaking the simulation, so the conservative subset is the attested 142. Categories map onto the existing BLUEPRINT topic regexes. */ var CAT_TOPIC={mood:"Mood",psychosis:"Psychosis",anxiety:"Anxiety, OCD & Trauma",substance:"Substance Use",pharm:"Psychopharm & Med Emergencies",neurocog:"Delirium, Dementia & MCI",personality:"Personality",childdev:"Child & Adolescent",otherdx:"Somatic & Related",safety:"Psychiatric Emergencies",ethics:"Interview, Ethics & Law",relational:"Relational & Family"}; function bankPool(data){ var out=[]; (((data&&data.items)||[])).forEach(function(it){ if(it.status!=="attested") return; if(!it.stem||!Array.isArray(it.options)||it.options.length<2) return; var hasCorrect=false; it.options.forEach(function(op){ if(op&&op.c)hasCorrect=true; }); if(!hasCorrect) return; /* Options are shuffled ONCE here (bank storage order is authoring order — the draft pool is known to lean on first-position answers) and letters relabel automatically because every render site derives them from array index (KEYS[i]). Correct option explains via the item
+- A 26-year-old woman is admitted after 5 days of decreased need for sleep, rapid speech, increased spending, and a belief that she has been chosen to reform the hospital. She has had two prior depressive episodes treated with sertraline. On exam she is irritable with pressured speech and flight of ideas. Which of the following is the most appropriate next step?
+- Continue sertraline and add cognitive behavioral therapy
+- Antidepressant monotherapy can sustain or worsen mania; the priority is to stop it and start an antimanic agent.
+- Discontinue sertraline and start a mood stabilizer or second-generation antipsychotic
+- Correct — acute mania (bipolar I): stop the antidepressant, begin lithium/valproate or an SGA, and protect sleep.
+- Start fluoxetine for treatment-resistant depression
+- The presentation is mania, not depression; an antidepressant is contraindicated.
+- Obtain brain MRI before initiating any treatment
+- Classic mania with prior mood episodes does not require imaging before treatment; do not delay antimanic therapy.
+- Begin lorazepam as monotherapy
+- A benzodiazepine is adjunctive for agitation/sleep but does not treat the manic episode.
+- Acute mania: stop the antidepressant, start a mood stabilizer or SGA, and protect sleep.
+- A 30-year-old man on fluoxetine is brought in 8 hours after a friend gave him tramadol for back pain. He is agitated and diaphoretic. Temperature is 39.1°C, heart rate 124. Exam shows hyperreflexia and inducible clonus, greater in the lower extremities. Which of the following is the most likely diagnosis?
+- Correct — rapid onset after adding a serotonergic agent (tramadol), with hyperthermia, autonomic instability, and neuromuscular hyperexcitability (clonus, hyperreflexia). Stop the agents, supportive care, consider cyproheptadine.
+- Neuroleptic malignant syndrome
+- NMS follows dopamine antagonists, evolves over days, and features 'lead-pipe' rigidity and bradyreflexia — not clonus/hyperreflexia.
+- Anticholinergic toxidrome gives dry skin, absent bowel sounds, and normal reflexes — not diaphoresis with clonus.
+- Malignant hyperthermia is triggered by volatile anesthetics/succinylcholine, not oral serotonergics.
+- Sympathomimetic intoxication
+- Stimulant toxicity can mimic this but lacks the prominent clonus/hyperreflexia and the clear serotonergic trigger.
+- Serotonin syndrome = serotonergic trigger + hyperthermia + clonus/hyperreflexia (lower-limb predominant); NMS = dopamine blocker + rigidity + hyporeflexia over days.
+- A 52-year-old man admitted for pancreatitis becomes tremulous and diaphoretic on hospital day 2, with heart rate 116, blood pressure 168/98, and visual misperceptions. He reports drinking a pint of vodka daily until admission. Which of the following is the most appropriate management?
+- Symptom-triggered benzodiazepine dosing with CIWA-Ar monitoring, plus thiamine
+- Correct — alcohol withdrawal: benzodiazepines (often CIWA-Ar–guided) are first-line, with thiamine to prevent Wernicke encephalopathy.
+- Antipsychotics lower the seizure threshold and do not treat the underlying GABA/glutamate dysregulation; they are at most adjunctive for agitation.
+- Intravenous dextrose before any other intervention
+- Give thiamine before/with glucose in at-risk patients — a glucose load alone can precipitate Wernicke encephalopathy.
+- Physical restraints and observation
+- Restraints do not treat withdrawal and can worsen autonomic arousal; pharmacologic treatment is needed.
+- Clonidine may blunt autonomic signs but does not prevent withdrawal seizures or delirium tremens.
+- Alcohol withdrawal: benzodiazepines (CIWA-Ar–guided) first-line; give thiamine before glucose.
+- A 78-year-old woman is inattentive and intermittently drowsy two days after hip surgery. Her family says she was cognitively intact at baseline; symptoms fluctuate and worsen at night. She is on oxycodone and diphenhydramine for sleep. Which of the following is the most appropriate first step?
+- Identify and treat underlying causes and remove deliriogenic medications
+- Correct — acute, fluctuating inattention with altered arousal is delirium. First-line is to find and fix the cause (pain meds, anticholinergics, infection, metabolic) and use nonpharmacologic measures.
+- Start a scheduled long-acting benzodiazepine
+- Benzodiazepines worsen delirium (except in alcohol/benzo withdrawal) and increase fall risk.
+- Begin donepezil for cognitive decline
+- Cholinesterase inhibitors treat chronic dementia, not acute delirium, and have no role here.
+- Obtain an outpatient neuropsychology referral
+- This is an acute medical problem requiring inpatient workup, not deferred testing.
+- Reassure the family this is expected post-operative confusion and observe
+- Delirium signals an underlying disturbance and predicts poor outcomes; it requires active workup, not watchful waiting.
+- Delirium is a medical emergency: treat the cause and stop deliriogenic drugs; avoid benzodiazepines unless withdrawal-related.
+- A 60-year-old man with diabetes and a necrotic foot refuses a recommended amputation. He can describe the gangrene, the risk of fatal sepsis without surgery, the option of amputation, and explains he would rather risk death than lose his leg, citing consistent long-held values. He has no psychosis or cognitive deficit. Which of the following best describes his decision-making capacity?
+- He has capacity to refuse the amputation
+- Correct — he demonstrates the four abilities (understanding, appreciation, reasoning, and a stable choice). Capacity is decision-specific; a 'wrong-seeming' choice with intact reasoning is still a capacitated refusal.
+- He lacks capacity because the refusal is medically dangerous
+- Capacity is about the process of decision-making, not whether the choice matches the medical recommendation.
+- He lacks capacity and a guardian should consent to surgery
+- There is no impairment in the four abilities; overriding a capacitated refusal would violate autonomy.
+- Capacity cannot be assessed without neuropsychological testing
+- Capacity is a clinical, decision-specific bedside determination, not a test score.
+- He has capacity only if he agrees to surgery
+- Capacity does not depend on agreeing with the team; that reasoning is circular.
+- Capacity is decision-specific and rests on four abilities; a high-risk refusal with intact reasoning is still capacitated.
+- Could not load the question bank (question_bank.json).
+- Loading the question bank…
+- Optional practice · exam simulation
+- A timed, blueprint-weighted vignette set that mirrors the psychiatry COMAT / shelf. Choose your length, topics, and pacing. Single best answer, with feedback and a teaching point on every item.
+- The attested question bank didn't load, so this is running on a small set of sample items so you can see how it works. Reload when you're back online for the full blueprint-weighted exam.
+- Tutor — feedback after each
+- Tip: press 1–5 to answer, Enter to advance.
+- Optional exam-prep simulation. Items are educational and use fictional composites only (no patient information). Verify management against current guidelines and your team. Progress is saved only in this browser.
+- Joshua Moss, MD | Psychiatrist
+- Nothing to review — every item correct.
+- Joshua Moss, MD | Psychiatrist · Educational simulation; fictional composites only. Verify management against current guidelines.
+- End this set and discard progress?
+- Educational simulation; fictional composites only (no patient information). Joshua Moss, MD | Psychiatrist
+
+---
+
 ## COMAT & Shelf Review
 
 - **Slug:** `shelf.md` · **Type:** md · **Sidebar:** listed
@@ -974,7 +1067,7 @@ synthetic enough for safe reuse.
 
 **Leucht 2013 - Antipsychotic NMA**  ·  _2:00_
 <audio controls preload="none" src="audio/07_LM_08_Leucht_2013_Antipsychotic_NMA_2_00.m4a"></audio>
-<a href="https://doi.org/10.1016/S0140-6736(12)60239-6" target="_blank" rel="noopener">Paper (DOI)</a>
+<a href="https://doi.org/10.1016/S0140-6736(13)60733-3" target="_blank" rel="noopener">Paper (DOI)</a>
 
 **Lieberman 2005 - CATIE Trial**  ·  _1:38_
 <audio controls preload="none" src="audio/01_LM_01_Lieberman_2005_CATIE_Trial_1_38.m4a"></audio>
@@ -1004,7 +1097,7 @@ synthetic enough for safe reuse.
 
 **Stanley 2012 - Safety Planning**  ·  _1:50_
 <audio controls preload="none" src="audio/34_LM_34_Stanley_2012_Safety_Planning_1_50.m4a"></audio>
-<a href="https://doi.org/10.1001/jamapsychiatry.2018.1776" target="_blank" rel="noopener">Paper (DOI)</a>
+<a href="https://doi.org/10.1016/j.cbpra.2011.01.001" target="_blank" rel="noopener">Paper (DOI)</a>
 
 
 ## Psychopharmacology  (2)
@@ -1078,7 +1171,7 @@ synthetic enough for safe reuse.
 ## Substance Use  (2)
 **Project MATCH 1997**  ·  _1:53_
 <audio controls preload="none" src="audio/42_LM_45_Project_MATCH_1997_1_53.m4a"></audio>
-<a href="https://doi.org/10.1111/j.1530-0277.1998.tb03912.x" target="_blank" rel="noopener">Paper (DOI)</a>
+<a href="https://pubmed.ncbi.nlm.nih.gov/8979210/" target="_blank" rel="noopener">Paper (PubMed)</a>
 
 **Volkow 2016 - Addiction**  ·  _1:53_
 <audio controls preload="none" src="audio/47_LM_46_Volkow_2016_Addiction_1_53.m4a"></audio>
@@ -1088,7 +1181,7 @@ synthetic enough for safe reuse.
 ## Child  (3)
 **Bridge 2007 - Pediatric SSRI**  ·  _1:41_
 <audio controls preload="none" src="audio/45_LM_48_Bridge_2007_Pediatric_SSRI_1_41.m4a"></audio>
-<a href="https://doi.org/10.1001/archpsyc.63.3.332" target="_blank" rel="noopener">Paper (DOI)</a>
+<a href="https://doi.org/10.1001/jama.297.15.1683" target="_blank" rel="noopener">Paper (DOI)</a>
 
 **MTA 1999 - ADHD**  ·  _1:45_
 <audio controls preload="none" src="audio/46_LM_47_MTA_1999_ADHD_1_45.m4a"></audio>
@@ -1126,13 +1219,13 @@ synthetic enough for safe reuse.
 
 
 ## Skills  (4)
-**Gabbard 1995 - Boundaries**  ·  _1:46_
+**Gutheil-Gabbard 1993 - Boundaries**  ·  _1:46_
 <audio controls preload="none" src="audio/38_LM_40_Gabbard_1995_Boundaries_1_46.m4a"></audio>
 <a href="https://doi.org/10.1176/ajp.150.2.188" target="_blank" rel="noopener">Paper (DOI)</a>
 
 **Norcross 2011 - Alliance**  ·  _1:44_
 <audio controls preload="none" src="audio/25_LM_25_Norcross_2011_Alliance_1_44.m4a"></audio>
-<a href="https://doi.org/10.1037/pst0000172" target="_blank" rel="noopener">Paper (DOI)</a>
+<a href="https://doi.org/10.1037/a0022180" target="_blank" rel="noopener">Paper (DOI)</a>
 
 **Shedler 2010 - Psychodynamic**  ·  _1:43_
 <audio controls preload="none" src="audio/23_LM_24_Shedler_2010_Psychodynamic_1_43.m4a"></audio>
@@ -1145,7 +1238,7 @@ synthetic enough for safe reuse.
 ## Anxiety  (1)
 **Foa 2005 - Prolonged Exposure**  ·  _1:42_
 <audio controls preload="none" src="audio/29_LM_29_Foa_2005_Prolonged_Exposure_1_42.m4a"></audio>
-<a href="https://doi.org/10.1037/0022-006X.70.4.867" target="_blank" rel="noopener">Paper (DOI)</a>
+<a href="https://doi.org/10.1037/0022-006X.73.5.953" target="_blank" rel="noopener">Paper (DOI)</a>
 
 
 ## Geriatric  (1)
@@ -1449,7 +1542,7 @@ Based on articles retrieved from PubMed (National Library of Medicine). Citation
 - **Slug:** `cotw_20260827_bpd_ms3.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-08-27_borderline-personality-disorder_MS3.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 1,687 words
+- **Length:** 1,919 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -1531,7 +1624,7 @@ She was told at age 19 that she "might be bipolar" after a similar crisis, and b
 *Teaching point:* Comorbidity is the rule in BPD — mood disorders ~83%, anxiety disorders ~85%, substance use disorders ~78% among people with BPD [1] — so the question is usually "BPD *and* what else," not "BPD *or*." Screen actively for depression, PTSD/trauma history, alcohol and other substance use, and eating pathology. (Full ranked differential below.)
 
 **Q4. Suicide risk assessment: chronic vs. acute-on-chronic.**
-*Teaching point:* People with BPD often carry **chronically elevated** risk (recurrent suicidal thoughts and self-injury over years). What demands escalation is an **acute-on-chronic spike**: new or intensifying wish to die, a plan or preparatory behavior, command hallucinations, intoxication, a major loss, or a recent serious attempt. Tonight: ask directly about current suicidal ideation, intent, plan, access to lethal means; gather collateral from the roommate; and complete **safety planning** — a structured, collaborative list of warning signs, internal coping strategies, social contacts, professional contacts, and steps to make the environment safer (lethal-means counseling), plus crisis resources such as the 988 Suicide & Crisis Lifeline. Self-injury without suicidal intent (common in BPD, often serving emotion-regulation) must still be taken seriously but is distinct from a suicide attempt; document the distinction. When risk is acute, escalate: one-to-one observation, psychiatric consultation, and consideration of admission [1,2].
+*Teaching point:* People with BPD often carry **chronically elevated** risk (recurrent suicidal thoughts and self-injury over years). What demands escalation is an **acute-on-chronic spike**: new or intensifying wish to die, a plan or preparatory behavior, command hallucinations, intoxication, a major loss, or a recent serious attempt. Tonight: ask directly about current suicidal ideation, intent, plan, access to lethal means; gather collateral from the roommate; and complete **safety planning** — a structured, collaborative list of warning signs, internal coping strategies, social contacts, professional contacts, and steps to make the environment safer (lethal-means counseling), plus crisis contacts. Self-injury without suicidal intent (common in BPD, often serving emotion-regulation) must still be taken seriously but is distinct from a suicide attempt; document the distinction. When risk is acute, escalate: one-to-one observation, psychiatric consultation, and consideration of admission [1,2].
 
 **Q5. First-line treatment.**
 *Teaching point:* **Psychotherapy is the treatment of choice** — the Step 2 CK answer. Structured therapies such as **dialectical behavior therapy (DBT)** (a skills-based cognitive-behavioral therapy targeting emotion regulation, distress tolerance, and interpersonal effectiveness) and psychodynamic therapies (e.g., mentalization-based treatment) reduce BPD severity with medium effect sizes versus usual care [1,3]. **No medication reliably improves core BPD symptoms**, and none is FDA-approved for BPD [1]. Medications are reserved for (a) discrete comorbid disorders (e.g., SSRIs for major depression) and (b) short-term crisis management, where low-dose antipsychotics or sedative antihistamines are preferred and **benzodiazepines are avoided** (disinhibition, misuse risk) [1]. Avoid accumulating polypharmacy from serial crises.
@@ -1551,7 +1644,21 @@ She was told at age 19 that she "might be bipolar" after a similar crisis, and b
 
 - **Workup:** History + collateral; focused exam and wound care; pregnancy test if applicable; blood alcohol level/urine toxicology when intoxication is possible; TSH and basic labs if mood workup is being initiated; no imaging or "BPD labs" — diagnosis is clinical [1].
 - **Tonight:** Direct suicide risk assessment; collaborative safety plan with lethal-means counseling; brief psychoeducation naming BPD as treatable; avoid starting a benzodiazepine; if a crisis medication is truly needed, a one-time low-dose antipsychotic or sedative antihistamine is preferred [1].
-- **Bridge:** Referral to structured psychotherapy (DBT or equivalent evidence-based program); treat comorbid depression/AUD on their own merits; discourage polypharmacy; schedule near-term follow-up and provide 988/crisis resources.
+- **Bridge:** Referral to structured psychotherapy (DBT or equivalent evidence-based program); treat comorbid depression/AUD on their own merits; discourage polypharmacy; schedule near-term follow-up and provide crisis contacts.
+
+> <div class="crisis-block-hook" hidden></div>
+>
+> ### If someone is in crisis
+>
+> On the unit, a patient in immediate danger is an escalation to your supervising resident or attending and the charge nurse — not a phone call. These lines are what you put IN a patient's safety plan, what families use after discharge, and what you can use yourself.
+>
+> - **988 Suicide & Crisis Lifeline** — Call or text 988. Chat at chat.988lifeline.org. 24/7, free, confidential. Spanish available by call, text, and chat; a dedicated line serves Deaf/Hard-of-Hearing callers. Calls placed in Maine route to Maine crisis specialists.
+> - **Crisis Text Line** — Text HOME to 741741. Text HOLA to 741741 for Spanish. 24/7, free. Text-only. Often the most acceptable option for adolescents and young adults who will not make a phone call.
+> - **Maine Crisis Line** — 1-888-568-1112. Text and chat available via the Maine Crisis Line website. 24/7. Staffed by clinically trained crisis workers and the gateway to Maine's mobile crisis teams — the number that actually dispatches a face-to-face response.
+> - **Veterans Crisis Line** — Dial 988 then press 1. Text 838255. 24/7. No VA enrollment required. Ask about service history — it changes which line is the right referral.
+> - **Emergency services** — 911. 24/7. For imminent danger to life.
+>
+> *Contacts verified 2026-07-27 against official sources. Maintained in `crisis_resources.json`; do not edit these numbers inline.*
 
 ## Facilitator Notes
 

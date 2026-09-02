@@ -46,7 +46,7 @@ cd ~/Psychiatry-Clerkship-Library
 node bin/redteam-offline.mjs
 ```
 
-**Expected result:** `10/10 deterministic probes pass`, followed by the reminder that this is not
+**Expected result:** `12/12 deterministic probes pass`, followed by the reminder that this is not
 a pass. This runs checklist **B1–B4, B6, B7** and **C3** against the real `sp.mjs` gate logic —
 the same functions the live deploy uses.
 
@@ -217,7 +217,7 @@ If anything failed: `--state failed`, then fix, then re-run the whole checklist.
 
 ## Verification
 
-- [ ] `node bin/redteam-offline.mjs` → 10/10
+- [ ] `node bin/redteam-offline.mjs` → 12/12
 - [ ] `./bin/redteam-live.sh …` → 5 passed, 0 failed
 - [ ] Sections A, C, D2–D6 and E walked in Live mode, with the model string and pack version written down
 - [ ] `receipts/sp-red-team.json` exists, `state: passed`, `packSha256` matches the deployed pack

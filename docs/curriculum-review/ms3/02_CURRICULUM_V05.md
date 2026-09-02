@@ -2,7 +2,119 @@
 
 Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
 
-# SECTION (cont.): Assess Safety and Acuity
+# SECTION (cont.): Understand the Problem
+
+---
+
+## Culture, Disparities & Formulation
+
+- **Slug:** `cultural_psychiatry.md` · **Type:** md · **Sidebar:** listed
+- **Source:** `03_Core_Topics/Cultural_Psychiatry/cultural_psychiatry_inpatient_teaching.md`
+- **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
+- **Length:** 622 words
+
+<!-- topic_meta overlay -->
+#### Structured metadata (`topic_meta.json` → this page)
+
+> est. read 4 min
+
+**TL;DR (shown above the page text):**
+
+> Elicit the patient's explanatory model, use the DSM-5-TR Cultural Formulation Interview, work through trained interpreters — never family — and guard against documented diagnostic bias.
+
+**Key points (bulleted card):**
+
+- Kleinman's explanatory-model questions surface what the illness means to the patient.
+- Cultural concepts of distress (e.g., ataque de nervios) can mimic panic or psychosis — ask before you label.
+- Minority patients are over-diagnosed with schizophrenia and under-diagnosed with mood disorders — a documented bias to guard against.
+
+**Can't-miss / red-flag line:**
+
+> Never use family members — especially children — as interpreters; book a trained professional and speak directly to the patient.
+
+**Rule-out list (differential the page forces):**
+
+- Misdiagnosis from language or cultural bias
+- Cultural idiom of distress vs primary disorder
+- Religious or spiritual experience vs psychosis
+- Trauma or migration-related distress
+
+**First move (the action the page tells the learner to take):**
+
+> Ask the explanatory-model questions early, then structure a real cultural formulation with the CFI's four domains.
+
+**Clinical-workflow narration (per-stage coaching text):**
+
+- **ask** — Ask the patient what they call the problem, what they think caused it, what they fear most, what help they expect, and what would make care feel respectful.
+- **mse** — Separate culturally shaped expression from psychopathology; describe affect, beliefs, language, and behavior without assuming your own norm is neutral.
+- **safety** — Use trained interpreters for safety questions, assess discrimination/trauma and structural barriers, and avoid family interpreters for confidential or high-risk topics.
+- **say** — I do not want to assume my framework fits yours. Can you tell me how you understand what is happening?
+- **collateral** — Ask about baseline, family meaning, community supports, immigration/language barriers, religious or cultural practices, and what the patient permits sharing.
+- **rounds** — Present the cultural formulation as clinical reasoning: explanatory model, identity/context, supports, barriers, bias risks, and treatment implications.
+- **exam** — DSM-5-TR Cultural Formulation Interview, trained interpreters, and diagnostic bias around psychosis vs mood disorders are high-yield.
+- **actions** — Open Interview & MSE; Practice guardedness; Practice interpreter/culture family contact
+
+**Embedded check-for-understanding**
+
+1. *Stem:* A Spanish-speaking patient describes sudden trembling, screaming, and a sense of losing control after a family conflict. Her son offers to interpret. Best first step?
+   - Book a professional interpreter and explore the episode through the patient's explanatory model before assigning a diagnosis **← keyed correct**
+   - Diagnose panic disorder and start an SSRI
+   - Diagnose brief psychotic disorder and start an antipsychotic
+   - Let her son interpret to save time
+   - *Rationale:* This presentation is consistent with ataque de nervios, a cultural concept of distress that can mimic panic or psychosis; a professional interpreter (never family) and the explanatory model prevent mislabeling.
+
+**Cross-references and tagging:**
+
+- **Related tools:** `mse.html`, `interview-circle.html`, `communication-practice.html`, `family-systems.html`
+- **Communication cases:** `guardedness_privacy_001`, `collateral_questions_001`
+- **Workflow stages:** `encounter`, `diagnosis`, `communication`, `family`, `team`
+- **Workflow modes:** `ward`, `family`, `5min`, `shelf`
+- **Shelf blueprint tags:** `relational`
+- **EPA crosswalk:** `EPA1`, `EPA9`
+- **Call-to-action buttons:** Open Ethics & the Law; Practice interpreter/culture family contact
+
+#### Page text (as shipped)
+
+# Culture, Disparities & the Cultural Formulation
+
+
+**In one line** — Culture shapes how distress is experienced, expressed, and treated — and ignoring it produces misdiagnosis and inequity — so the core clerkship skills are eliciting the patient's own **explanatory model**, using the **Cultural Formulation Interview**, working correctly with **interpreters**, and recognizing the **disparities and biases** that distort psychiatric care.
+
+**Why it matters on the unit** — The same inner experience can present as an "idiom of distress" you won't recognize unless you ask. Diagnostic accuracy, rapport, adherence, and safety all depend on understanding the patient's context — and documented biases (see below) mean cultural humility is a patient-safety issue, not a courtesy.
+
+**Elicit the explanatory model** — Ask, in the patient's own terms: *What do you call this problem? What do you think caused it? How does it affect you? What are you most afraid of? What treatment do you expect?* (Kleinman's explanatory-model questions.) This surfaces beliefs, expectations, and **cultural concepts of distress** — culturally patterned ways of experiencing/expressing suffering (e.g., *ataque de nervios*, *susto*) that can be mistaken for panic, psychosis, or malingering.
+
+**Cultural Formulation Interview (CFI)** — DSM-5-TR provides the **CFI**, a set of standardized questions across four domains: (1) cultural definition of the problem, (2) cultural perceptions of cause, context, and support, (3) cultural factors affecting self-coping and past help-seeking, and (4) cultural factors affecting current help-seeking. Use it to build the **cultural formulation** within your biopsychosocial assessment.
+
+**Disparities & bias — what's tested and true** — Mental-health disparities are driven by access, stigma, social determinants, and clinician bias, not by different rates of underlying illness. A classic, exam-relevant example: **Black (and some other minority) patients are disproportionately *over*-diagnosed with schizophrenia and *under*-diagnosed with mood disorders** relative to comparable presentations. Social determinants — poverty, housing, trauma, discrimination — are core clinical data, not background. Structural and cultural humility means examining how the *system* and *your own defaults* contribute.
+
+**Working with interpreters** — Use a **trained professional interpreter** (in person or via phone/video) for any language barrier — **not family members or children**, who introduce error and confidentiality/role problems. Speak **to the patient** in the first and second person, in short segments; allow extra time; and remember interpreters convey meaning, not just words.
+
+**Religion, spirituality & community** — Ask about faith and community supports, which can be protective and central to recovery; distinguish culturally normative beliefs and experiences (e.g., bereavement visions, religious practices) from psychopathology before labeling them.
+
+**What the student does** —
+- Ask the explanatory-model questions early; don't assume your framework matches the patient's.
+- Use the CFI to structure a real cultural formulation, not a one-line demographic label.
+- Book a professional interpreter and address the patient directly — never lean on family to interpret.
+- Distinguish culturally normative beliefs/experiences from psychopathology.
+- Name social determinants and watch for diagnostic bias (e.g., schizophrenia over-diagnosis) in yourself and the team.
+
+**High-yield pearls**
+- Kleinman's explanatory-model questions surface what the illness *means* to the patient.
+- The DSM-5-TR Cultural Formulation Interview is the standardized tool — know it exists and what it covers.
+- Cultural concepts of distress (e.g., *ataque de nervios*) can mimic panic or psychosis — ask before you label.
+- Use trained interpreters, not family/children; speak directly to the patient.
+- Minority patients are over-diagnosed with schizophrenia and under-diagnosed with mood disorders — a documented bias to guard against.
+- Social determinants of mental health are clinical data; address them in the formulation and plan.
+
+**Pair with** — the [Interview & MSE pocket guide](?page=pg_interview.md), the [Formulation & DDx pocket guide](?page=pg_formulation.md), [Ethics & the Law](?page=ethics_legal.md), and the <a href="tools/mse.html" target="_blank" rel="noopener">Mental Status Exam trainer</a>.
+
+*Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
+
+
+---
+
+# SECTION: Assess Safety and Acuity  *(pinned in sidebar)*
 
 ---
 
@@ -501,7 +613,14 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 **Static shell text:**
 
 - Violence Risk — One-Pager (FRST) Reviewed by Joshua Moss, MD on 2026-06-30
-- Skip to content
+- Skip to content If someone is in crisis
+- On the unit, a patient in immediate danger is an escalation to your supervising resident or attending and the charge nurse — not a phone call. These lines are what you put IN a patient's safety plan, what families use after discharge, and what you can use yourself.
+- 988 Suicide & Crisis Lifeline — Call or text 988. Chat at chat.988lifeline.org. 24/7, free, confidential. Spanish available by call, text, and chat; a dedicated line serves Deaf/Hard-of-Hearing callers. Calls placed in Maine route to Maine crisis specialists.
+- Crisis Text Line — Text HOME to 741741. Text HOLA to 741741 for Spanish. 24/7, free. Text-only. Often the most acceptable option for adolescents and young adults who will not make a phone call.
+- Maine Crisis Line — 1-888-568-1112. Text and chat available via the Maine Crisis Line website. 24/7. Staffed by clinically trained crisis workers and the gateway to Maine's mobile crisis teams — the number that actually dispatches a face-to-face response.
+- Veterans Crisis Line — Dial 988 then press 1. Text 838255. 24/7. No VA enrollment required. Ask about service history — it changes which line is the right referral.
+- Emergency services — 911. 24/7. For imminent danger to life.
+- Contacts verified 2026-07-27 against official sources. Maintained in crisis_resources.json ; do not edit these numbers inline.
 
 **Authored clinical strings (44):**
 
@@ -576,7 +695,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 
 **Can't-miss / red-flag line:**
 
-> Don't reach for an antipsychotic before excluding hypoglycemia, hypoxia, delirium, withdrawal, pain, and akathisia.
+> Don't reach for an antipsychotic before excluding hypoglycemia, hypoxia, delirium, withdrawal, pain, akathisia, and catatonia — excited catatonia looks like agitation, and a D2 blocker can tip it into malignant catatonia/NMS.
 
 **Rule-out list (differential the page forces):**
 
@@ -586,6 +705,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Intoxication / withdrawal
 - Pain / retention
 - Akathisia
+- Catatonia (excited presentation)
 
 **First move (the action the page tells the learner to take):**
 
@@ -1490,136 +1610,3 @@ Use this structure:
 Plain-English note: this module teaches students what to notice, how to ask the
 right question, and when to escalate. It deliberately avoids pretending students
 should independently manage high-risk consults.
-
-
----
-
-## Ethics & the Law: Confidentiality, Tarasoff, Reporting
-
-- **Slug:** `ethics_legal.md` · **Type:** md · **Sidebar:** listed
-- **Source:** `03_Core_Topics/Ethics_Legal/ethics_law_confidentiality_inpatient_teaching.md`
-- **Governance:** status=`reviewed` · riskKind=`legal` · riskLevel=`high`
-- **Length:** 1,084 words
-
-<!-- topic_meta overlay -->
-#### Structured metadata (`topic_meta.json` → this page)
-
-> flagged **high-yield** · est. read 5 min · safetyLevel=`moderate`
-
-**TL;DR (shown above the page text):**
-
-> Confidentiality is the default — know exactly when it yields: a credible threat to an identifiable victim, suspected child/elder abuse, and danger-based commitment — and remember commitment does not equal consent to medicate.
-
-**Key points (bulleted card):**
-
-- Duty to protect (Tarasoff): a serious threat to a reasonably identifiable person overrides confidentiality — warn, notify police, or hospitalize.
-- Child and elder abuse are mandated reports on reasonable suspicion, not proof; good-faith reporters are protected.
-- Capacity is clinical and decision-specific; competence is a legal (court) determination.
-
-**Can't-miss / red-flag line:**
-
-> Involuntary hospitalization does not authorize involuntary medication — refusal stands absent a true emergency or a separate legal process.
-
-**Rule-out list (differential the page forces):**
-
-- Identifiable-victim threat (duty to protect)
-- Child / elder / dependent-adult abuse (mandated report)
-- Imminent danger to self
-- Grave disability / decisional incapacity
-
-**First move (the action the page tells the learner to take):**
-
-> Default to confidentiality; when risk appears, name which exception applies (identifiable-victim threat, abuse, danger to self) and take the least restrictive protective action — then document your reasoning.
-
-**Clinical-workflow narration (per-stage coaching text):**
-
-- **ask** — Clarify the exact ethical or legal question: confidentiality, duty to protect, mandated reporting, capacity, commitment, consent, or refusal.
-- **mse** — Document observations relevant to capacity, risk, coercion, intoxication, psychosis, mania, delirium, and ability to communicate a stable choice.
-- **safety** — Escalate identifiable threats, abuse concerns, imminent self-harm, grave disability, or urgent refusal of high-stakes medical care to the supervising team immediately.
-- **say** — I want to protect your privacy, and I also need to explain the few safety situations where clinicians must involve others.
-- **collateral** — Share the minimum necessary information; ask family or systems partners only what changes risk, capacity, disposition, or mandatory reporting duties.
-- **rounds** — Name the legal frame, the patient-specific facts, the local-policy dependency, and the supervising/faculty decision still needed.
-- **exam** — Capacity is clinical and decision-specific; competence is legal. Involuntary hospitalization does not automatically authorize involuntary medication.
-- **actions** — Open capacity tool; Open violence risk tool; Practice interpreter/culture family contact
-
-**Embedded check-for-understanding**
-
-1. *Stem:* An inpatient tells you he plans to kill his ex-girlfriend when discharged, naming her. What must you do?
-   - Take protective action — warn the victim and/or notify police, and continue hospitalization **← keyed correct**
-   - Keep it confidential — HIPAA forbids disclosure
-   - Discharge as planned but document the statement
-   - Ask his family to pass along a warning
-   - *Rationale:* A serious threat against a reasonably identifiable victim triggers the duty to protect (Tarasoff): confidentiality yields, and reasonable steps include warning the victim, notifying police, and continued hospitalization.
-
-**Cross-references and tagging:**
-
-- **Related tools:** `capacity.html`, `violence.html`, `cssrs.html`, `family-systems.html`
-- **Communication cases:** `suicide_direct_question_001`, `collateral_questions_001`
-- **Workflow stages:** `safety`, `communication`, `family`, `team`, `exam`
-- **Workflow modes:** `ward`, `safety`, `family`, `5min`, `shelf`
-- **Shelf blueprint tags:** `ethics`
-- **EPA crosswalk:** `EPA2`, `EPA11`
-- **Call-to-action buttons:** Read Culture, Disparities & Formulation; Practice interpreter/culture family contact
-
-#### Page text (as shipped)
-
-# Ethics & the Law: Confidentiality, Tarasoff & Reporting
-
-
-**In one line** — Psychiatry runs on confidentiality, but the exam and the ward turn on knowing its **limits** — when you *must* break it to protect a third party, when you *must* report abuse, and when you can treat or hold a patient *against their will* — always choosing the **least restrictive** option that keeps people safe.
-
-**Confidentiality and its limits** — Protect patient information by default. The recognized exceptions where disclosure is permitted or required include: a **serious, credible threat to an identifiable person** (duty to protect), **mandatory reporting of abuse**, **imminent danger to self**, certain communicable-disease reporting, and specific legal/court mandates. Disclose the **minimum necessary**. Note that HIPAA permits sharing for treatment, payment, and operations.
-
-**Duty to protect / warn (Tarasoff)** — When a patient makes a **serious threat of violence against a reasonably identifiable victim**, the clinician has a duty to take reasonable protective steps — which may include **warning the potential victim, notifying police, hospitalizing the patient, or intensifying treatment**. Specifics vary by state (some mandate warning, some permit it), but the tested principle is: *a specific threat to a specific person overrides confidentiality.*
-
-**Mandatory reporting** — Report suspected **child abuse or neglect** and **elder/dependent-adult abuse** to the appropriate agency — reporting requires **reasonable suspicion, not proof**, and mandated reporters are generally protected when reporting in good faith. Remember: **factitious disorder imposed on another (medical child abuse)** is reportable, and many jurisdictions add specific duties (e.g., certain injuries, some intimate-partner situations). When in doubt, protect the vulnerable person.
-
-**Involuntary hospitalization (civil commitment)** — The usual criteria are a mental illness *plus* **danger to self, danger to others, or grave disability** (inability to meet basic needs). Emergency holds allow short-term detention for evaluation; longer commitment requires due process (hearing), and the constitutionally required standard of proof is **"clear and convincing evidence"** (*Addington v. Texas*, 1979). A person who is **not dangerous and can survive safely in the community cannot be confined** against their will (*O'Connor v. Donaldson*, 1975). Involuntary hospitalization does **not** by itself authorize involuntary medication.
-
-**Right to refuse & involuntary medication** — Competent patients (including many involuntarily hospitalized ones) generally retain the **right to refuse medication**. Overriding that refusal requires either a **true emergency** (imminent danger) or a **separate legal/adjudicated process** (e.g., a court or independent review depending on jurisdiction) — for example, an **administrative review** for a dangerous, mentally ill prisoner (*Washington v. Harper*, 1990), or the **four-part *Sell* test** to medicate a defendant solely to restore competency to stand trial (*Sell v. United States*, 2003). Commitment status ≠ consent.
-
-**Informed consent & capacity** — Valid consent requires **capacity, disclosure (risks/benefits/alternatives), and voluntariness**. **Capacity is decision-specific and clinical** (a physician assesses it); **competence is a legal determination** (a court decides). The four abilities: *communicate a choice, understand, appreciate, and reason.* The **emergency exception** permits necessary treatment when consent can't be obtained and delay would cause harm. For patients who lack capacity, use advance directives or a surrogate/substituted judgment.
-
-**Minors & special situations** — Parents/guardians generally consent for minors, with exceptions (emancipated/mature minors and, in many states, care for STIs, contraception, substance use, and some mental-health services). Balance adolescent confidentiality against safety.
-
-**Boundaries & professionalism** — Maintain professional boundaries; **sexual relationships with patients are never acceptable**. Avoid dual relationships and manage conflicts of interest. Document decisions — especially risk assessments and any breach of confidentiality — with your reasoning.
-
-**What the student does** —
-- Treat confidentiality as the default and know the specific exceptions cold.
-- For a threat to an identifiable person, escalate (warn/notify/hospitalize) — don't sit on it.
-- Report suspected child or elder abuse on *reasonable suspicion* — you don't need proof.
-- Separate the four legal states: voluntary vs committed, and has-capacity vs court-determined-incompetent — commitment doesn't equal consent to medicate.
-- Document capacity assessments and the reasoning behind any disclosure or involuntary intervention.
-
-**High-yield pearls**
-- A serious threat to an identifiable victim triggers a duty to protect (Tarasoff) — confidentiality yields.
-- Child and elder abuse are mandated reports on *reasonable suspicion*; good-faith reporters are protected.
-- Commitment criteria: danger to self, danger to others, or grave disability — and use the least restrictive option.
-- The commitment standard of proof is *clear and convincing evidence* (*Addington v. Texas*); a non-dangerous patient who can survive safely in the community cannot be confined (*O'Connor v. Donaldson*).
-- Involuntary hospitalization ≠ involuntary medication; refusal stands absent an emergency or legal process.
-- Capacity is clinical and decision-specific; competence is a legal (court) determination.
-- Informed consent = capacity + disclosure + voluntariness; the emergency exception covers necessary urgent care.
-- Sexual contact with a patient is always an ethics violation.
-
-> <div class="crisis-block-hook" hidden></div>
->
-> ### If someone is in crisis
->
-> On the unit, a patient in immediate danger is an escalation to your supervising resident or attending and the charge nurse — not a phone call. These lines are what you put IN a patient's safety plan, what families use after discharge, and what you can use yourself.
->
-> - **988 Suicide & Crisis Lifeline** — Call or text 988. Chat at chat.988lifeline.org. 24/7, free, confidential. Spanish available by call, text, and chat; a dedicated line serves Deaf/Hard-of-Hearing callers. Calls placed in Maine route to Maine crisis specialists.
-> - **Crisis Text Line** — Text HOME to 741741. Text HOLA to 741741 for Spanish. 24/7, free. Text-only. Often the most acceptable option for adolescents and young adults who will not make a phone call.
-> - **Maine Crisis Line** — 1-888-568-1112. Text and chat available via the Maine Crisis Line website. 24/7. Staffed by clinically trained crisis workers and the gateway to Maine's mobile crisis teams — the number that actually dispatches a face-to-face response.
-> - **Veterans Crisis Line** — Dial 988 then press 1. Text 838255. 24/7. No VA enrollment required. Ask about service history — it changes which line is the right referral.
-> - **Emergency services** — 911. 24/7. For imminent danger to life.
->
-> *Contacts verified 2026-07-27 against official sources. Maintained in `crisis_resources.json`; do not edit these numbers inline.*
-
-**Pair with** — the <a href="tools/capacity.html" target="_blank" rel="noopener">Decisional Capacity tool</a>, the [Suicide Risk & Safety pocket guide](?page=pg_suicide.md), the <a href="tools/violence.html" target="_blank" rel="noopener">Violence Risk (FRST) tool</a>, and [Culture, Disparities & Formulation](?page=cultural_psychiatry.md).
-
-*Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI. Laws vary by state — follow your institution's policy and local statute.*
-
-
----
-
-# SECTION: Make a Plan
