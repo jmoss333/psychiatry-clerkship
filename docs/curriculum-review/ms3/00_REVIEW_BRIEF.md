@@ -1,7 +1,7 @@
 # MS3 curriculum — complete content transcript for clinical review
 
 **Site:** `une-ms3-psychiatry` · **Audience:** MS3 — UNE medical students
-**Generated:** 2026-09-02 from build `e844b6b` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
+**Generated:** 2026-09-02 from build `2f21c32` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
 
 ## Who this is for
 
@@ -43,6 +43,7 @@ This transcript is assembled from the **built site**, not the source tree, so it
 | `02_CURRICULUM_V10.md` | Curriculum volume 10 |
 | `02_CURRICULUM_V11.md` | Curriculum volume 11 |
 | `02_CURRICULUM_V12.md` | Curriculum volume 12 |
+| `02_CURRICULUM_V13.md` | Curriculum volume 13 |
 | `A1_QUESTION_BANK.md` | Question bank |
 | `A2_CASE_SIMULATIONS.md` | Case simulations and rehearsal banks |
 | `A3_AUDIO_COMPANION_QUIZZES.md` | Audio companion quiz decks |

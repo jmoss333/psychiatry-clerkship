@@ -1,4 +1,4 @@
-# RESIDENT · Curriculum content — volume 16
+# MS3 · Curriculum content — volume 13
 
 Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
 
@@ -99,13 +99,15 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Opening this step or resizing the browser does not count. Each action below validates a fresh envelope and projects it through the same student projector.
 - Desktop preview not yet reviewed · Mobile preview not yet reviewed
 
-**Authored clinical strings (1799, first 400 shown):**
+**Authored clinical strings (1795, first 400 shown):**
 
 - Front door structure ONLY — week ordering, library columns, safety-kit membership, per-site roles, search synonyms. Facts about an item (minutes, summary, key points, attestation) live in topic_meta.json and join at render time; never duplicate them here. Validated by 13_Faculty_Resources/_automation/validate_curriculum.py.
 - a feedback form, not library content — reachable from the header
 - faculty curation utility; not learner Library content
 - surfaced by the Path tab, which is the week browse surface
 - orientation media, surfaced from the Start-here flow rather than the Library
+- resident-only tool; library columns ship to both sites, so placing it would dead-link on MS3
+- resident-only page; library columns ship to both sites, so placing it would dead-link on MS3
 - Shipped .html pages that are REFERENCES about an instrument this library does not reproduce. They must not present as interactive tools (Fresh Eyes Audit A3). Derived from instrument_rights.json — every page whose requiredDisclaimerType is 'instrument-not-reproduced' — and validate_curriculum.py fails if the two ever disagree, so this list cannot drift.
 - Screen · stratify · safety plan
 - Verbal first · PO before IM
@@ -116,13 +118,15 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - withdrawal lorazepam agitation
 - agitation restraint de-escalation
 - delirium confused altered
-- Interview · MSE · acute risk · bedside syndromes
-- Diagnosis and psychopharmacology
-- Diagnostic reasoning · major syndromes · medication decisions
-- Systems, med-legal, and disposition
-- Consultation · collateral · family systems · defensible transitions
-- Integration, supervision, and scholarship
-- Formulation · rounds · EPAs · evidence retrieval
+- Foundations \u0026 the MSE
+- Orientation · interviewing · MSE
+- Mood, Psychosis \u0026 Pharm
+- Dx frameworks · the top-10 drugs
+- Psychotherapy \u0026 Personality
+- Alliance · brief therapy · PDs
+- Family meetings · collateral
+- Safety · agitation · withdrawal
+- Exam · OSCE · putting it together
 - Structured topic-template metadata rendered above the prose by the SPA. AI-drafted, concise standard teaching aligned with the topic pages and Decision Aids; pending faculty attestation. Educational; fictional composites only; no PHI.
 - New, fluctuating inattention in a hospitalized patient is delirium until proven otherwise — a medical emergency, not a psychiatric label.
 - Acute onset + fluctuating course + inattention (anchor on arousal and attention).
@@ -164,7 +168,6 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Practice de-escalation language
 - Ask collateral about triggers
 - Open trigger collateral workflow
-- Open the Agitation Ladder trainer
 - Verbal de-escalation while someone checks vitals and a fingerstick glucose
 - Find the driver — hypoglycemia, hypoxia, delirium, withdrawal, akathisia, pain — it changes the treatment
 - Offer PO before any IM — not a benzodiazepine in delirium or an older adult unless alcohol/benzo withdrawal
@@ -498,8 +501,5 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Depression / anxiety / PTSD
 - Malingering (external incentive)
 - Focused workup once, then one consistent clinician with scheduled visits, validation, CBT, and treatment of comorbidities.
-- A patient has leg weakness that gives way on formal testing but shows a positive Hoover sign. Best framing?
-- Tell the patient nothing is wrong
-- Malingering for disability
 
-_1399 further strings omitted — this surface embeds the build's front-door catalog (item summaries, key points, search synonyms), which is transcribed in full elsewhere in this document set._
+_1395 further strings omitted — this surface embeds the build's front-door catalog (item summaries, key points, search synonyms), which is transcribed in full elsewhere in this document set._

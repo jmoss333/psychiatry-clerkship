@@ -434,7 +434,7 @@ Know *which* protocol applies and *why*; open the EHR order set for the specific
 
 **TL;DR (shown above the page text):**
 
-> ECT is the most effective treatment for severe, psychotic, or catatonic depression — no absolute contraindications, transient memory effects — and rTMS, ketamine/esketamine, VNS, and bright light therapy each have a distinct niche.
+> ECT is the most effective treatment for severe, psychotic, or catatonic depression — no absolute contraindications; anterograde memory effects resolve over weeks, though some retrograde gaps around the treatment period can persist — and rTMS, ketamine/esketamine, VNS, and bright light therapy each have a distinct niche.
 
 **Key points (bulleted card):**
 
@@ -892,7 +892,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 
 **TL;DR (shown above the page text):**
 
-> Track metabolic health for every patient on an antipsychotic — weight, glucose, and lipids at baseline, 12 weeks, and annually — and know the dietary safety points for lithium, MAOIs, and grapefruit/CYP3A4.
+> Track metabolic health for every patient on an antipsychotic — weight monthly for the first 3 months then quarterly, glucose and lipids at baseline and 12 weeks then per schedule — and know the dietary safety points for lithium, MAOIs, and grapefruit/CYP3A4.
 
 **Key points (bulleted card):**
 
