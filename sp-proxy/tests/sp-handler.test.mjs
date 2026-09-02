@@ -511,6 +511,11 @@ test('GET exposes exact reviewed summaries while opening is canonical and provid
     evaluatorModel: MODEL,
     packVersion: '0.1.0',
     packStatus: 'reviewed',
+    // The pack content hash the loader already computed. Exposed so the health
+    // contract can tell two packs apart when packVersion cannot -- which is the
+    // real case, not a hypothetical: the D12/D13 safety-scoring wave rewrote 70
+    // lines and left packVersion at 0.1.0.
+    packSha256: PACK_HASH,
     cases: [{
       id: 'sp_depression_gated_si_001',
       title: 'Dana — Day 1 Admission Interview',

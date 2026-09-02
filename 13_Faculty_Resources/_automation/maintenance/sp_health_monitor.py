@@ -28,16 +28,35 @@ FAILURE_CODES = {
     "invalid_json",
     "contract",
     "receipt_write",
+    # Second-leg codes: the canary's live mode:converse probe. See
+    # sp-proxy/netlify/functions/_shared/sp-health-receipt.mjs for what each
+    # one points at. actor_budget is the canary spending the rotation cap it
+    # shares with learners; it is not a provider outage.
+    "actor_timeout",
+    "actor_status",
+    "actor_budget",
+    "actor_contract",
 }
 SUCCESS_KEYS = {
     "schemaVersion",
     "state",
     "learnerReady",
+    "actorReady",
+    "replyLatencyBucket",
     "caseCount",
     "checkedAt",
     "nextRun",
     "contractSha256",
+    # Identity of the pack CONTENT that was serving. packVersion does not move
+    # when scoring does -- the D12/D13 wave changed 70 lines and left it at
+    # 0.1.0 -- and the proxy fetches the pack from main at runtime, so student-
+    # facing behaviour can change with no deploy. This is the durable record.
+    "packSha256",
 }
+# Coarse on purpose -- see the note beside LATENCY_BUCKETS in
+# sp-proxy/netlify/functions/_shared/sp-health-receipt.mjs. Drift from "fast"
+# toward "slow" across days is the earliest signal of provider degradation.
+LATENCY_BUCKETS = {"fast", "normal", "slow", "not-probed"}
 FAILURE_KEYS = {
     "schemaVersion",
     "state",
@@ -106,10 +125,24 @@ def evaluate_status(payload, *, now):
         if (
             set(payload) != SUCCESS_KEYS
             or type(payload.get("learnerReady")) is not bool
+            or type(payload.get("actorReady")) is not bool
+            # A pack learners can reach must have answered. learnerReady
+            # without actorReady is the contradiction this monitor exists to
+            # catch -- it is the shape the health surface had while the
+            # Interview Room was mute. The reverse is honest: a draft pack
+            # refuses POSTs by design, so nothing was probed. The pre-probe
+            # seven-key receipt fails the key-set check above either way.
+            or (payload["learnerReady"] and payload["actorReady"] is not True)
+            or payload.get("replyLatencyBucket") not in LATENCY_BUCKETS
+            # The bucket and the readiness flag are two views of one fact and
+            # can never disagree: a turn that completed has a timing, one that
+            # was never sent has none.
+            or payload["actorReady"] != (payload["replyLatencyBucket"] != "not-probed")
             or type(payload.get("caseCount")) is not int
             or payload["caseCount"] <= 0
             or payload["caseCount"] > 10_000
             or not _valid_sha256(payload.get("contractSha256"))
+            or not _valid_sha256(payload.get("packSha256"))
         ):
             return _base(now, "malformed", "blocked")
         try:
@@ -134,8 +167,11 @@ def evaluate_status(payload, *, now):
             "receiptCheckedAt": payload["checkedAt"],
             "nextRun": payload["nextRun"],
             "learnerReady": payload["learnerReady"],
+            "actorReady": payload["actorReady"],
+            "replyLatencyBucket": payload["replyLatencyBucket"],
             "caseCount": payload["caseCount"],
             "contractSha256": payload["contractSha256"],
+            "packSha256": payload["packSha256"],
         }
 
     if state == "failed":
