@@ -5,10 +5,19 @@
 into a concrete, prioritized list of clinical **accuracy/completeness** improvements for the
 MS3 and psychiatry-resident clerkship libraries.
 
+> **Two inboxes, one scanner.** This runbook covers the OpenEvidence review folder. A second,
+> general drop folder — `Evidence Inbox/`, for primary studies, guidelines and any other document —
+> uses the same scanner with its own ledger via `--folder` / `--manifest`, wrapped as
+> `bash bin/evidence-inbox.sh`. Its procedure, including the step this runbook stops short of
+> (landing an adopted source in `evidence_registry.json` + `evidence_annotations.json` with a
+> verbatim span), is in `EVIDENCE_INBOX_RUNBOOK.md`. Defaults here are unchanged.
+
 ## Files
 - `oe_scan.py` — detects new/changed files vs `oe_manifest.json`, extracts their text to `staging/`, and scans teaching pages for the pending-attestation queue.
 - `oe_manifest.json` — processed-file ledger (filename → sha256 + date). Do not hand-edit unless resetting.
 - `staging/` — extracted plain text of new files (scratch; safe to clear).
+- `--folder PATH` / `--manifest PATH` — retarget the scanner at another inbox with its own
+  ledger (staging follows the manifest's directory). Omit both for the OpenEvidence defaults.
 
 ## Pending-attestation queue (built into the scan)
 When a review finding is promoted into an actual page edit *before* Dr. Moss has re-attested it, tag the page's review-status line with `**Pending re-attestation:** <fact> added <date> (<source>)`. The default `oe_scan.py` run reports every such page under `pending_attestation` (and a `pending_attestation_count`); `python3 oe_scan.py --pending` runs just that scan. This keeps the attestation to-do visible in every weekly run instead of living only in a memo. **Clear an item** by deleting its `Pending re-attestation` tag once Dr. Moss signs off. (The scan skips input/automation/archive/build dirs, so only learner-facing teaching pages appear.)

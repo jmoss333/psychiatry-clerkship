@@ -129,5 +129,44 @@ await run('warm redirection raises alliance and earns the focused answer',[
   return errs;
 });
 
+// D12 (#410, ratified 2026-08-31): a euphemism is a move, not a screen — on Marcus
+// too. Before this wave "hurting yourself" hit si_direct, unlocked g_si_mixed at
+// rapport 0, and certified a plain screen that never happened. Modelled on
+// smoke.test.js scenario 2 (the same contract, on Dana).
+await run('euphemism only — gate stays locked, c_si partial, deflection in character',[
+ "Why are you here?",
+ "How much are you sleeping?",
+ "Any changes in your energy?",
+ "Have you thought about hurting yourself?"
+],(s,cov,rub,nar,replies)=>{
+  const errs=[];
+  if(s.unlocked['g_si_mixed'])errs.push('gate unlocked on a euphemism — D12 violation');
+  if(!s.covered['si_euphemism'])errs.push('si_euphemism not counted as asked');
+  if(s.covered['si_direct'])errs.push('si_direct credited for a euphemism — D12 violation');
+  if(!(replies[3]||'').toLowerCase().includes('hurt myself'))errs.push('euphemism deflect not used: '+replies[3]);
+  const si=cov.find(c=>c.id==='c_si');
+  if(!si)errs.push('no c_si coverage row');
+  else if(si.status!=='partial')errs.push('c_si = '+si.status+' (expected partial)');
+  if(!nar.growth.some(g=>g.t.includes('euphemism')))errs.push('euphemism growth point missing');
+  return errs;
+});
+
+// The other half of D12: the plain screen still works, and a euphemism first does
+// not consume or block it.
+await run('euphemism then plain screen — the plain screen still credits and unlocks',[
+ "Hi, my name is Alex — I'm one of the medical students. Is this okay with you?",
+ "Tell me what's been going on, in your own words.",
+ "It sounds like everything sped up fast — that must be really intense.",
+ "Have you thought about hurting yourself?",
+ "Have you had thoughts of killing yourself?"
+],(s,cov,rub,nar,replies)=>{
+  const errs=[];
+  if(!s.covered['si_euphemism'])errs.push('si_euphemism not counted as asked');
+  if(!s.covered['si_direct'])errs.push('si_direct not counted after the plain screen');
+  const si=cov.find(c=>c.id==='c_si');
+  if(!si||si.status!=='observed')errs.push('c_si = '+(si&&si.status)+' (expected observed)');
+  return errs;
+});
+
 process.exit(failures?1:0);
 })().catch(e=>{console.log('CRASH',e);process.exit(1);});

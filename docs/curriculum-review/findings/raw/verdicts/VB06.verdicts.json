@@ -1,0 +1,117 @@
+[
+ {
+  "id": "RV10-F007",
+  "verdict": "rejected",
+  "reasoning": "Quote fidelity: verbatim — though not at the batch's _source_path (ms3 tree); the OUD resident case exists only in docs/curriculum-review/resident/02_CURRICULUM_V10.md (line 413), where the quote matches exactly. On substance the finding is wrong: per the PubMed abstract of the page's own ref [9], Santo et al., JAMA Psychiatry 2021 ([DOI](https://doi.org/10.1001/jamapsychiatry.2021.0976)), 'All-cause mortality was 6 times higher in the 4 weeks after OAT cessation (RR, 6.01; 95% CI, 4.32-8.36), remaining double the rate for the remainder of time not receiving OAT (RR, 1.81; 95% CI, 1.50-2.18).' The page's 'roughly six-fold higher in the four weeks after opioid agonist treatment stops compared with time in treatment' is a faithful rendering of the cited paper. The reviewer's two- to three-fold recollection corresponds to the overall out-of-OAT average (RR 0.47 during OAT, i.e., ~2.1x out of it), which the page's Q6 separately and correctly reports as 'roughly half' — the two figures coexist in the same abstract with no tension, because the 4-week post-cessation stratum is the spike within the out-of-treatment average. The proposed replacement would insert an error into a counselling script."
+ },
+ {
+  "id": "MS3V11-F001",
+  "verdict": "partially confirmed",
+  "reasoning": "Quote verbatim at ms3/02_CURRICULUM_V11.md line 592. The core problem is real and the replacement is correct: per the PubMed abstract, Watts et al., Arch Gen Psychiatry 2012 ([DOI](https://doi.org/10.1001/archgenpsychiatry.2011.1514)) reports 2.64 to 0.87 per 100,000 admissions (P < .001), a 67% reduction, so the shipped 82% headline contradicts its own parenthetical. The framing needs one correction: 82% is not a simple inflation — it is exactly the Watts 2017 sustained-effect analysis's figure ([DOI](https://doi.org/10.1176/appi.ps.201600080): 4.2 to 0.74 per 100,000 admissions, ~82%, 'no loss of effect in the seven years after implementation'). The sentence welds the 2017 headline onto the 2012 rates. Without this provenance a later editor could 'restore' 82% from the 2017 abstract against the 2.64→0.87 parenthetical; the corrected finding pins headline and rates to the same paper. The 67% fix (keeping the parenthetical the page already ships, with 7-year sustainment still licensed by Watts 2017) is correct and MS3-appropriate.",
+  "corrected_finding": {
+   "id": "MS3V11-F001",
+   "audience": "both",
+   "file": "02_CURRICULUM_V11.md",
+   "surface": "evidence_inpatient.md",
+   "locus": "page_prose",
+   "severity": "S2",
+   "quote": "produced an **82% reduction in inpatient suicide rate** (from 2.64 to 0.87 per 100,000 admissions, P < .001), sustained over 7 years.",
+   "problem": "The headline percentage contradicts its own parenthetical: 2.64 to 0.87 per 100,000 admissions is a 67% reduction, and those are the Watts 2012 (Arch Gen Psychiatry) figures. The 82% is not an arithmetic phantom — it matches the updated rate pair in the Watts 2017 sustained-effect analysis (4.2 to 0.74 per 100,000 admissions, ~82%) — but the sentence welds the 2017 headline onto the 2012 rates, so the flagship suicide-prevention number and its supporting rates contradict each other. The summary-table row ('82% reduction in inpatient suicide') repeats the unmatched headline, so learners will quote 82% on rounds against cited rates that license 67%.",
+   "replacement": "produced a **67% reduction in inpatient suicide rate** (from 2.64 to 0.87 per 100,000 admissions, P < .001), sustained over 7 years.",
+   "basis": "Per PubMed abstracts (verified this pass): Watts BV et al., Arch Gen Psychiatry 2012 — 2.64 to 0.87 per 100,000 admissions, P < .001 (https://doi.org/10.1001/archgenpsychiatry.2011.1514); (2.64-0.87)/2.64 = 67%. Watts BV et al., Psychiatr Serv 2017 — 4.2 to 0.74 per 100,000 admissions, 'no loss of effect in the seven years after implementation' (https://doi.org/10.1176/appi.ps.201600080); (4.2-0.74)/4.2 = 82%. Either pairing is faithful — 67% with 2.64→0.87 (used here), or 82% with 4.2→0.74 citing the 2017 update — but headline and rates must come from the same paper. Apply consistently with MS3V11-F002, the key-points card, and the summary-table row.",
+   "confidence": "high",
+   "_pass": "MS3V11",
+   "_source_path": "/home/user/psychiatry-clerkship/docs/curriculum-review/ms3/02_CURRICULUM_V11.md"
+  }
+ },
+ {
+  "id": "MS3V11-F002",
+  "verdict": "partially confirmed",
+  "reasoning": "Quote verbatim in the TL;DR at ms3/02_CURRICULUM_V11.md line 535, and the key-points card (line 540) and summary-table row (line 935) do repeat the figure. The core problem is real and the 67% replacement is correct, per the same Watts 2012 abstract as MS3V11-F001 (PubMed, [DOI](https://doi.org/10.1001/archgenpsychiatry.2011.1514): 2.64 to 0.87 per 100,000 admissions = 67%; 82% is licensed only by Watts 2017's different rate pair, [DOI](https://doi.org/10.1176/appi.ps.201600080)). Two framing corrections: (1) same provenance note as F001 so the fix pins headline and rates to one paper; (2) the finding's aside calling the co-resident 'OR 0.18' unverified is withdrawn — that figure verifies verbatim against Rodolico 2022's abstract (see the MS3V11-F004 verdict) and must not be touched when this sentence is edited.",
+  "corrected_finding": {
+   "id": "MS3V11-F002",
+   "audience": "both",
+   "file": "02_CURRICULUM_V11.md",
+   "surface": "evidence_inpatient.md",
+   "locus": "topic_meta.tldr",
+   "severity": "S2",
+   "quote": "environmental safety checklists cut inpatient suicide 82%",
+   "problem": "The overlay TL;DR — the stripped-of-context card a rushed learner reads — carries the 82% figure while the page's cited rates (2.64 to 0.87 per 100,000; Watts 2012) work out to 67%; 82% belongs to the different rate pair in Watts 2017 (4.2 to 0.74), so as shipped the card's number is unsupported by the rates the page itself cites. The key-points card ('produced an 82% reduction in the inpatient suicide rate') carries the same mismatch. The same TL;DR sentence separately carries the '60%' odds-as-risk gloss (MS3V11-F006); its 'OR 0.18' clause, by contrast, verifies verbatim against Rodolico 2022 and needs no change.",
+   "replacement": "environmental safety checklists cut inpatient suicide 67%",
+   "basis": "Watts BV et al., Arch Gen Psychiatry 2012 (PubMed abstract, https://doi.org/10.1001/archgenpsychiatry.2011.1514): 2.64 to 0.87 per 100,000 admissions = 67% reduction. 82% is licensed only by Watts 2017's updated rates (4.2 to 0.74; https://doi.org/10.1176/appi.ps.201600080) and may only be used with those rates. Keep consistent with the MS3V11-F001 page-prose fix (67%) and mirror in the key-points card.",
+   "confidence": "high",
+   "_pass": "MS3V11",
+   "_source_path": "/home/user/psychiatry-clerkship/docs/curriculum-review/ms3/02_CURRICULUM_V11.md"
+  }
+ },
+ {
+  "id": "MS3V11-F003",
+  "verdict": "confirmed",
+  "reasoning": "Quote verbatim in the quiz rationale at ms3/02_CURRICULUM_V11.md line 565. Settled from knowledge (endpoints are unambiguous): MIND-USA's primary endpoint was days alive without delirium or coma (Girard et al., NEJM 2018), while AID-ICU's primary outcome was days alive and out of the hospital at 90 days (Andersen-Ranberg et al., NEJM 2022; haloperidol 35.8 vs placebo 32.9 days, adjusted difference 2.9 days, 95% CI -1.2 to 7.0) — so the rationale misattributes MIND-USA's endpoint to both trials. The finding's context claim also checks out: the page prose at line 713 states AID-ICU correctly and generically ('no significant difference in the primary outcome'), so the overlay and prose disagree exactly as claimed. The clinical takeaway (no antipsychotic benefit) is unchanged, making S2 ('a trial result mis-summarised') the right severity, and the replacement names each trial's primary endpoint accurately at a level appropriate for both audiences."
+ },
+ {
+  "id": "MS3V11-F004",
+  "verdict": "rejected",
+  "reasoning": "Quote verbatim at ms3/02_CURRICULUM_V11.md line 821. The suspicion of mis-extraction is disproven by the cited paper's own abstract: per PubMed, Rodolico et al., Lancet Psychiatry 2022 ([DOI](https://doi.org/10.1016/S2215-0366(21)00437-5)) reports 'ORs compared with treatment as usual ranged from 0.18 (95% CI 0.12-0.27) for family psychoeducation alone to 0.63 (0.42-0.94) for community-based interventions,' with the conclusion that family psychoeducation alone was superior to more complex models — the page's OR, CI, comparator (TAU), timepoint (12-month primary), and 'most efficacious' framing all match the source exactly. A network-meta-analysis estimate for the best-performing model legitimately differs from Pharoah's older pairwise Cochrane RR 0.55, so no reconciliation is owed. The 10%-vs-37% absolute proportions are not in the abstract but are arithmetically consistent with OR 0.18 (0.37 odds 0.587 x 0.18 = 0.106 odds, i.e. ~10%) and were not independently shown wrong. The proposed replacement would strip a correct, correctly-attributed, load-bearing number and weaken the material."
+ },
+ {
+  "id": "RV11-F001",
+  "verdict": "partially confirmed",
+  "reasoning": "Substantively fully confirmed; partial only for metadata and one framing trim. The quote is verbatim — but in docs/curriculum-review/resident/02_CURRICULUM_V11.md (line 589), not the ms3 _source_path the batch gives (the SS-vs-NMS resident case does not exist in the ms3 transcript). The omission is real: no depot/LAI caveat appears anywhere in the case (Q7, medication-reconciliation plan, or facilitator notes), while avoidance of long-acting/depot preparations on rechallenge after NMS is standard guidance across the canonical NMS reviews, including the page's own ref [5] (Pileggi & Cook, Ann Pharmacother 2016) and Strawn/Keck/Caroff — judged from knowledge; the mechanism (a depot cannot be withdrawn if NMS recurs, prolonging the syndrome) is uncontroversial. The volume-level priming is textually verified: this same resident volume's mania case says 'consider LAI' and 'LAI consideration in poor adherence.' S1 fits the rubric ('wrong drug, route... a dangerous omission'). One trim: the stem shows haloperidol up-titrated for worsening psychosis with group-home (supervised) administration, so 'implied adherence concerns' overreads it — the depot-instinct argument stands on the population and the sibling case, and is restated accordingly. Replacement is accurate resident-level guidance (2-week minimum, risk-factor correction, low-potency oral agent, no depot).",
+  "corrected_finding": {
+   "id": "RV11-F001",
+   "audience": "Resident",
+   "file": "02_CURRICULUM_V11.md",
+   "surface": "cotw_20260709_ssnms_res.md",
+   "locus": "page_prose",
+   "severity": "S1",
+   "quote": "For antipsychotic **rechallenge**: wait **at least 2 weeks** after full resolution, choose a **lower-potency or atypical agent** at a low starting dose, titrate slowly, and monitor temperature, CK, and autonomic signs; recurrence can occur at any point after resolution, so shared decision-making and close follow-up are essential [5].",
+   "problem": "The rechallenge guidance omits the standard prohibition on long-acting injectable/depot antipsychotics after NMS. The stem is a group-home patient with schizoaffective disorder on long-standing haloperidol whose psychosis worsened on oral treatment — a population where depot use is routine — and this same volume's mania case pushes 'LAI consideration in poor adherence,' so a resident's reflex here can be a depot, and 'atypical agent at a low starting dose' superficially permits paliperidone or aripiprazole LAI. If NMS recurs, a depot cannot be withdrawn; the exposure continues for weeks while the syndrome runs its course, which is the mechanism by which depot-associated NMS is more prolonged and more lethal. Nothing elsewhere in the case (Q7, the medication-reconciliation plan, or the facilitator notes) supplies the route caveat.",
+   "replacement": "For antipsychotic **rechallenge**: wait **at least 2 weeks** after full resolution (longer if the offending agent was a depot), correct dehydration, electrolyte derangement, and iron deficiency first, then choose a **lower-potency or atypical oral agent** — **never a long-acting injectable, which cannot be withdrawn if NMS recurs** — at a low starting dose, titrate slowly, and monitor temperature, CK, and autonomic signs; recurrence can occur at any point after resolution, so shared decision-making and close follow-up are essential [5].",
+   "basis": "Standard NMS rechallenge guidance (Caroff & Mann and Strawn/Keck/Caroff NMS reviews; Pileggi & Cook, Ann Pharmacother 2016 — this page's own reference [5]): minimum two-week interval after complete resolution, lowest-potency effective agent, slow titration, correction of dehydration and iron deficiency, avoidance of the original agent, and explicit avoidance of depot preparations.",
+   "confidence": "high",
+   "_pass": "RV11",
+   "_source_path": "/home/user/psychiatry-clerkship/docs/curriculum-review/resident/02_CURRICULUM_V11.md"
+  }
+ },
+ {
+  "id": "RV11-F002",
+  "verdict": "partially confirmed",
+  "reasoning": "The core problem is confirmed and is stronger than the finding claimed, but the proposed replacement itself needs correction. Quote verbatim in docs/curriculum-review/resident/02_CURRICULUM_V11.md (line 91; the batch's ms3 _source_path is wrong — this resident TRD case is not in the ms3 transcript). Per the PubMed abstract of the page's own ref [8], Fountoulakis, Saitis & Schatzberg, Am J Psychiatry 2025 ([DOI](https://doi.org/10.1176/appi.ajp.20240515)): 'The effect size concerning suicidality was not significant at any time point' and efficacy 'is absent against suicidality itself,' with only a weak depression effect (ES 0.15-0.23 at weeks 2-4, comparable to atypical-antipsychotic augmentation). So the sentence says close to the opposite of its cited source on a suicide-relevant claim, on top of the reviewer's correct points about ASPIRE I/II missing the CGI-SS-r endpoint and the US label's Limitations of Use (both settled from knowledge). However, the reviewer's replacement still attributes to [8] support for 'rapid symptom reduction in patients presenting with acute suicidal ideation,' which this deflationary source does not carry — under this repo's own-words rule that would recreate the same class of error. The corrected replacement states what [8] actually found and keeps the label limitation. The page's neighboring 'does not replace safety planning' line mitigates the harm pathway, so S2 (mis-stated evidence) rather than S1 remains right. Confidence raised to high; _source_path corrected.",
+  "corrected_finding": {
+   "id": "RV11-F002",
+   "audience": "Resident",
+   "file": "02_CURRICULUM_V11.md",
+   "surface": "cotw_20260720_mdd_res.md",
+   "locus": "page_prose",
+   "severity": "S2",
+   "quote": "A 2025 systematic review/meta-analysis supports **efficacy against depressive symptoms and, in the acute setting, suicidality**, with dissociation, sedation, and transient blood-pressure elevation as the main tolerability issues and REMS-mandated monitoring [8].",
+   "problem": "This teaches residents that esketamine has demonstrated efficacy against suicidality itself — and it misstates its own cited source. Ref [8] (Fountoulakis, Saitis & Schatzberg, Am J Psychiatry 2025) found the effect size for suicidality 'was not significant at any time point' and concludes esketamine's efficacy 'is absent against suicidality itself,' alongside only a modest depression effect (ES 0.15-0.23 at weeks 2-4, comparable to atypical-antipsychotic augmentation). The pivotal MDSI trials (ASPIRE I/II) separated from placebo on MADRS depressive symptoms at 24 hours but not on the suicidality-severity endpoint (CGI-SS-r), and the US label carries an explicit limitation that effectiveness in preventing suicide or reducing suicidal ideation has not been demonstrated. The page's neighboring 'does not replace safety planning' line mitigates but does not fix a false efficacy claim: this case reaches for esketamine 'given emerging TRD status and passive SI,' and a resident who believes the drug treats suicidality may down-weight the monitoring, means-safety work, and disposition an acutely suicidal patient needs.",
+   "replacement": "A 2025 systematic review/meta-analysis found **modest efficacy against depressive symptoms** (effect sizes ~0.15-0.23 at weeks 2-4, comparable to atypical-antipsychotic augmentation) and **no significant effect on suicidality at any time point**, with dissociation, sedation, and transient blood-pressure elevation as the main tolerability issues and REMS-mandated monitoring [8]. State the limit explicitly: the MDSI indication rests on rapid improvement in *depressive symptoms*, not on a demonstrated effect on suicidality — the pivotal ASPIRE trials did not separate from placebo on the suicidality-severity endpoint (CGI-SS-r), and the label states that effectiveness in preventing suicide or reducing suicidal ideation has not been demonstrated. Esketamine does not reduce the need for monitoring, means restriction, or safety planning.",
+   "basis": "Fountoulakis KN, Saitis A, Schatzberg AF. Esketamine treatment for depression in adults: a PRISMA systematic review and meta-analysis. Am J Psychiatry 2025 — this page's ref [8]; abstract verified via PubMed this pass (https://doi.org/10.1176/appi.ajp.20240515): suicidality effect 'not significant at any time point'; depression effect sizes 0.15-0.23 at weeks 2-4. Spravato (esketamine) US prescribing information, Limitations of Use. Fu et al., J Clin Psychiatry 2020 (ASPIRE I) and Ionescu et al., Int J Neuropsychopharmacol 2021 (ASPIRE II): key secondary CGI-SS-r at 24 hours not statistically significant.",
+   "confidence": "high",
+   "_pass": "RV11",
+   "_source_path": "/home/user/psychiatry-clerkship/docs/curriculum-review/resident/02_CURRICULUM_V11.md"
+  }
+ },
+ {
+  "id": "RV11-F003",
+  "verdict": "partially confirmed",
+  "reasoning": "Clinically fully confirmed; partial solely to correct the _source_path (the quote is verbatim in docs/curriculum-review/resident/02_CURRICULUM_V11.md, line 229 — the bipolar resident case is not in the ms3 transcript the batch names). Judged from knowledge of current US practice: teaching that lithium, like valproate, is 'avoided when pregnancy is possible' misgrades the tiers. Valproate carries a boxed warning and is avoided in pregnancy-capable patients absent effective pregnancy prevention (~9-11% major malformations, dose-dependent neurodevelopmental harm — the page's own figures). Lithium is not withheld from patients of childbearing potential: modern estimates put absolute first-trimester Ebstein-type risk on the order of 1 in 1,000-2,000 (Patorno NEJM 2017 found overall cardiac malformations 2.41 vs 1.15 per 100 live births, adjusted RR 1.65), it remains a guideline option with contraception/preconception counselling, trimester-adjusted level monitoring and fetal echocardiography, and abrupt peripartum discontinuation is the higher-risk move given relapse rates. The page's internal evidence supports the finding: its own facilitator notes list only 'valproate in patients who could become pregnant' among pitfalls, so the Q3 sentence overreaches its own case's teaching. The replacement is accurate and resident-level; its 'pregnancy-prevention programme' phrasing is MHRA-flavored but conveys the correct US behavior (valproate only with active pregnancy prevention). Severity S2 is right: the sentence steers agent selection wrongly but the abrupt-discontinuation harm requires an extrapolation beyond the quoted text.",
+  "corrected_finding": {
+   "id": "RV11-F003",
+   "audience": "Resident",
+   "file": "02_CURRICULUM_V11.md",
+   "surface": "cotw_20260720_bipolar_res.md",
+   "locus": "page_prose",
+   "severity": "S2",
+   "quote": "**pregnancy status is decisive** — both lithium (Ebstein anomaly risk, though lower than historically cited) and especially **valproate (neural-tube defects, ~9–11% major malformation and dose-dependent neurodevelopmental harm)** are avoided when pregnancy is possible.",
+   "problem": "The sentence places lithium in the same avoidance tier as valproate while conceding in its own parenthesis that the Ebstein risk is lower than historically cited — it draws the historical conclusion from the corrected number. Lithium is not withheld from patients who could become pregnant: absolute first-trimester Ebstein risk is roughly 1 in 1,000–2,000, and the relapse risk of stopping a mood stabiliser peripartum is an order of magnitude larger. A resident applying this rule will deny the one agent with an anti-suicidal signal to a large share of the women they treat, or stop it abruptly on a positive pregnancy test, which is the highest-risk move available.",
+   "replacement": "**pregnancy status is decisive** — **valproate (neural-tube defects, ~9–11% major malformation and dose-dependent neurodevelopmental harm) is avoided in anyone who could become pregnant** unless a pregnancy-prevention programme is in place; **lithium is not in that tier** — the absolute Ebstein risk is far lower than historically cited (on the order of 1 in 1,000–2,000), so lithium is used with contraception and preconception counselling, level monitoring across the trimesters, and fetal echocardiography where indicated, and is rarely stopped abruptly given the high peripartum relapse risk.",
+   "basis": "CANMAT/ISBD 2018 (this page's reference [1]) and ACOG guidance on bipolar disorder in pregnancy; Patorno et al., NEJM 2017 (lithium and first-trimester cardiac malformations); MHRA/FDA valproate pregnancy-prevention requirements. Valproate and lithium do not share a risk tier and should not be taught as if they do. The case's own facilitator notes list only 'valproate in patients who could become pregnant' as a pitfall, consistent with this correction.",
+   "confidence": "high",
+   "_pass": "RV11",
+   "_source_path": "/home/user/psychiatry-clerkship/docs/curriculum-review/resident/02_CURRICULUM_V11.md"
+  }
+ }
+]

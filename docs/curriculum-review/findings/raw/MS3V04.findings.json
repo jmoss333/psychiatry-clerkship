@@ -1,0 +1,54 @@
+[
+  {
+    "id": "MS3V04-F001",
+    "audience": "both",
+    "file": "02_CURRICULUM_V04.md",
+    "surface": "t_perinatal.md",
+    "locus": "topic_meta.points",
+    "severity": "S2",
+    "quote": "Stopping maintenance medication in bipolar disorder roughly doubles postpartum relapse risk — 'stop everything' is itself a high-risk clinical decision.",
+    "problem": "The overlay card contradicts its own page and the cited source: the prose states stopping maintenance medication \"nearly triples postpartum relapse (pooled ~35% overall; ~66% off medication vs ~23% on prophylaxis)\" — 66% vs 23% is a near-tripling (~2.9x), not a doubling. The card is the stripped-of-context version a rushed learner quotes on rounds, and it halves the magnitude of the strongest number on the page; the same card ships to residents, for whom the mis-stated effect size matters more.",
+    "replacement": "Stopping maintenance medication in bipolar disorder nearly triples postpartum relapse risk (~66% off medication vs ~23% on prophylaxis) — 'stop everything' is itself a high-risk clinical decision.",
+    "basis": "Wesseloo et al., Am J Psychiatry 2016 (the page's own listed evidence source, wesseloo-2016-postpartum-relapse): postpartum relapse 66% (95% CI 57–75) after discontinuation during pregnancy vs 23% (95% CI 14–37) with prophylaxis; the page prose states the same figures.",
+    "confidence": "high"
+  },
+  {
+    "id": "MS3V04-F002",
+    "audience": "both",
+    "file": "02_CURRICULUM_V04.md",
+    "surface": "t_eating.md",
+    "locus": "page_prose",
+    "severity": "S3",
+    "quote": "The safe posture is **\"start low, go slow\"**: begin conservative caloric refeeding",
+    "problem": "Blanket 'start low, go slow' framed as THE safe posture is the pre-2021 teaching, and it is out of step with the current guidance of the very bodies this page's source line claims alignment with: SAHM's 2022 position and the RCPsych's MEED (which replaced MARSIPAN in 2022) endorse higher-calorie refeeding under close electrolyte monitoring, because underfeeding prolongs starvation and admission without preventing refeeding syndrome. A learner taught 'safe = slow' will read a modern refeeding order set as reckless and may advocate underfeeding on rounds; the page's citation of MARSIPAN, superseded since 2022, compounds the staleness.",
+    "replacement": "The safe posture is close monitoring, not prolonged underfeeding — current guidance (SAHM 2022; MEED, which replaced MARSIPAN in 2022) supports higher-calorie refeeding with electrolyte surveillance, reserving the most conservative starts for the most severely malnourished: begin refeeding per protocol",
+    "basis": "Garber et al., JAMA Pediatrics 2021 (StRONG RCT: higher-calorie refeeding reached medical stability faster with no excess electrolyte abnormality); SAHM 2022 refeeding position paper; RCPsych MEED (CR233, 2022) replacing MARSIPAN; the APA 2023 eating-disorders guideline's renourishment text would settle exact wording. Note the page's monitoring/thiamine/phosphate content is correct and should be kept.",
+    "confidence": "medium"
+  },
+  {
+    "id": "MS3V04-F003",
+    "audience": "both",
+    "file": "02_CURRICULUM_V04.md",
+    "surface": "t_perinatal.md",
+    "locus": "page_prose",
+    "severity": "S4",
+    "quote": "note specific cautions around lithium and valproate, and weigh that untreated maternal illness itself carries real risk to mother and infant",
+    "problem": "This is the page's only statement on valproate in pregnancy, and it files valproate and lithium under the same word, 'cautions,' on a page whose loudest message is that stopping medication is itself high-risk. Valproate is not a 'caution' — it is the agent to avoid in pregnancy and in anyone who could become pregnant (~10% major malformations, 30–40% neurodevelopmental harm), while lithium is often continued for severe bipolar disorder and is first-line for postpartum psychosis. A learner could carry 'continuing beats stopping' onto a valproate patient; lamotrigine, the usual safer maintenance option, goes unmentioned. Residents receive the same text and do hold this decision, so the flattened framing is worse for them.",
+    "replacement": "note that the mood stabilizers are not interchangeable here — valproate should be avoided in pregnancy and in anyone who could become pregnant (highest teratogenic and neurodevelopmental risk of the group; plan contraception and a pre-conception switch), lithium's absolute malformation risk is small and it is often continued for severe bipolar disorder with level monitoring, and lamotrigine is the comparatively safer maintenance option — and weigh that untreated maternal illness itself carries real risk to mother and infant",
+    "basis": "ACOG Clinical Practice Guideline No. 5 (2023), treating mental health conditions in pregnancy and postpartum (avoid valproate for psychiatric indications in pregnancy; do not reflexively discontinue effective agents); MHRA valproate pregnancy-prevention programme; registry data (e.g., NEAD) on dose-dependent neurodevelopmental effects.",
+    "confidence": "high"
+  },
+  {
+    "id": "MS3V04-F004",
+    "audience": "both",
+    "file": "02_CURRICULUM_V04.md",
+    "surface": "t_neurocog.md",
+    "locus": "page_prose",
+    "severity": "S4",
+    "quote": "Neuroimaging (CT or MRI) for atypical, rapid, focal, or early-onset presentations.",
+    "problem": "The page makes imaging conditional while its own must-screen reversible list — and the overlay key point 'Screen every new diagnosis for reversible causes (B12/folate, TSH, CMP, ± RPR/HIV, NPH)' — includes normal-pressure hydrocephalus and chronic subdural hematoma, which only imaging can detect. A learner following this sentence documents the reversible screen as complete without ever imaging the patient, and routine structural imaging in the initial evaluation of a new major neurocognitive disorder is standard US practice and the expected shelf answer.",
+    "replacement": "Neuroimaging (CT or MRI) as part of the initial workup of any new cognitive diagnosis — it is the only way to catch NPH and chronic subdural hematoma on the reversible list — with MRI preferred and expedited for atypical, rapid, focal, or early-onset presentations.",
+    "basis": "AAN practice parameter on dementia diagnosis (structural imaging in the routine initial evaluation); NICE NG97 (offer structural imaging unless the diagnosis is well established and subtype is clear); internal consistency with the page's own rule-out list. Confirming current AAN/NICE text would settle whether 'routine' remains the stated recommendation.",
+    "confidence": "medium"
+  }
+]

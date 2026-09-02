@@ -140,6 +140,12 @@ fi
 step "sp-proxy test suite"                  npm --prefix sp-proxy test
 step "sp-interview suites (incl. parity)"   bash _prototypes/sp-interview/tests/run-all.sh
 
+# Red-team tier 1: the deterministic gate probes from sp-proxy/REDTEAM_CHECKLIST.md,
+# run against the real sp.mjs gate logic. No model call, ~1s, so it belongs in the gate.
+# It is NOT a red-team pass — sections A, C1/C4/C5, D and E are human/live checks.
+# See docs/RED_TEAM_RUNBOOK.md.
+step "red-team tier 1 (gate integrity)"     node bin/redteam-offline.mjs
+
 # --- build + static QA gate, both sites ---
 if [ $QUICK -eq 0 ]; then
   step "build_and_check ms3"                bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh ms3

@@ -154,7 +154,9 @@ class RotationReadinessTests(unittest.TestCase):
             list(MANUAL_CHECKLIST),
             [
                 "issue a new non-identifying SP_ROTATION_ID",
-                "rotate the learner passcode and separate operations credential",
+                "rotate the separate operations credential (the learner passcode is fixed per the 2026-08-31 decision)",
+                "keep SP_ALLOWED_ORIGINS tight; remove http://localhost:8888 unless actively testing",
+                "check the rotation ledger for usage that does not match a real cohort",
                 "preserve the prior content-free usage receipt",
                 "run the Interview Room red-team checklist and golden transcript",
                 "verify the latest production canary, release rehearsal, governance digest, and attestation gate",

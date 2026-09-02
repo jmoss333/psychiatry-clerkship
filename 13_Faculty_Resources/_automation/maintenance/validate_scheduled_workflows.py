@@ -168,6 +168,7 @@ EXPECTED_STEP_INVENTORIES = {
             ("name", "Validate — WCAG AA contrast tokens"),
             ("name", "Install — managed SP proxy dependencies"),
             ("name", "Test — SP Interview and managed proxy"),
+            ("name", "Red-team tier 1 — gate integrity (deterministic probes)"),
             ("name", "Build + static QA gate (ms3)"),
             ("name", "Build + static QA gate (res)"),
             ("uses", "actions/upload-artifact"),
@@ -310,7 +311,7 @@ EXPECTED_STEP_INVENTORIES = {
 # Native true/false values stay typed, `on` stays a string, and action inputs
 # use runner-coerced string semantics. Pin comments are validated separately.
 EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
-    "ci.yml": "f927b9699aed7654e012b97c5e7b96238af42f4e04e86257e28cfef0585118db",
+    "ci.yml": "fac98b7f022642d9e0c7c50d745b3b81596b1b3799c9b69017bc448d21dc6296",
     "maintenance-governance-digest.yml": (
         "9869ba87704c40c9f5117b012ef7fea372644e318ccbb0df54d118b296675099"
     ),

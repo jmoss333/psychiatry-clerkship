@@ -1283,6 +1283,13 @@ export function createSpHandler({
           evaluatorModel: contract.evaluatorModel,
           packVersion: snapshot.pack.version,
           packStatus: snapshot.pack.status,
+          // SHA-256 of the raw pack bytes. Already computed on every load and
+          // validated in loadFrozenSnapshot; it was simply never exposed. It is
+          // here because packVersion does not move when pack CONTENT moves: the
+          // D12/D13 safety-scoring wave rewrote 70 lines and left version at
+          // 0.1.0, so nothing downstream could tell which scoring was serving.
+          // A hash of the bytes can. It reveals no pack content (D6).
+          packSha256: snapshot.packHash,
           cases: reviewedCaseSummaries(governance, snapshot.pack, runtime.now),
         }, { origin });
       }

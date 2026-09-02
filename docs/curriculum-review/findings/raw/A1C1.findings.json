@@ -1,0 +1,54 @@
+[
+  {
+    "id": "A1C1-F001",
+    "audience": "both",
+    "file": "A1_QUESTION_BANK.md",
+    "surface": "qb_cog_014",
+    "locus": "qbank.rationale",
+    "severity": "S2",
+    "quote": "The correct sequence is stop all antipsychotics, transfer to a medical unit, and emergently consider ECT for malignant or refractory catatonia — not more benzodiazepines on the psychiatric unit and certainly not more antipsychotic.",
+    "problem": "The phrase 'not more benzodiazepines' teaches that benzodiazepines are part of the error in malignant catatonia, when in fact lorazepam (often uptitrated, IV) remains first-line pharmacotherapy, continued through medical transfer and while ECT is being arranged — the error in option A is observing on the psychiatric unit, not the lorazepam. A learner (or resident) who absorbs this could withhold the one immediately available effective drug from a deteriorating malignant-catatonia patient during the days it takes to mobilize ECT; the keyed option also never mentions benzodiazepines, so the rationale is the only place the omission could have been corrected.",
+    "replacement": "The correct sequence is stop all antipsychotics, transfer to a medical unit for hemodynamic monitoring, continue lorazepam — benzodiazepines remain first-line pharmacotherapy for malignant catatonia while ECT is arranged — and pursue ECT emergently if the patient does not rapidly improve; the error in option A is observation on the psychiatric unit, not the lorazepam, and certainly not more antipsychotic.",
+    "basis": "BAP evidence-based consensus guideline on catatonia (Rogers et al., J Psychopharmacol 2023): benzodiazepines and ECT are the treatments for catatonia including malignant catatonia, with lorazepam continued while ECT is organized; standard NMS management also permits benzodiazepines. The item's own tier-2 'why' cites this same BAP 2023 guideline.",
+    "confidence": "high"
+  },
+  {
+    "id": "A1C1-F002",
+    "audience": "both",
+    "file": "A1_QUESTION_BANK.md",
+    "surface": "qb_anx_003",
+    "locus": "qbank.rationale",
+    "severity": "S2",
+    "quote": "Propranolol (B) has the strongest evidence for akathisia: it is effective in multiple small RCTs reviewed in the Cochrane systematic analysis (Lima et al. 2004).",
+    "problem": "This cites the Cochrane review as demonstrating propranolol's efficacy, but Lima et al. 2004 (CD001946, central-action beta-blockers for neuroleptic-induced acute akathisia) concluded there was no reliable evidence to support or refute beta-blocker use — close to the opposite of what the item claims the review found. Propranolol as first-line is defensible standard practice, but the evidence characterization is inverted, and the same claim is carried in the stem ('strongest evidence'), the keyed option, the Evidence line, and per that anchor the source page t_anxiety.md itself — so a rationale-only fix leaves the page asserting the same error.",
+    "replacement": "Propranolol (B) is the standard first-line pharmacotherapy for akathisia, supported by several small positive RCTs; note that the 2004 Cochrane review (Lima et al.) judged this trial base too small to confirm or refute benefit, so the recommendation rests on consistent small trials and accumulated practice rather than strong systematic-review evidence.",
+    "basis": "Lima AR et al., Central action beta-blockers versus placebo for neuroleptic-induced acute akathisia, Cochrane Database Syst Rev 2004, CD001946 — authors' conclusions state there is no reliable evidence to support or refute the use of these drugs for acute akathisia. Reading that review's Authors' Conclusions (or its abstract) would settle this. This matches the repo's documented pattern of annotations written from titles rather than results sections.",
+    "confidence": "medium"
+  },
+  {
+    "id": "A1C1-F003",
+    "audience": "both",
+    "file": "A1_QUESTION_BANK.md",
+    "surface": "qb_cdev_003",
+    "locus": "qbank.rationale",
+    "severity": "S2",
+    "quote": "Option C also describes the correct reasoning but D is more complete in naming the key discriminators.",
+    "problem": "The rationale endorses distractor C — 'likely stimulant side effects... reduce the dose and reassess before considering a mood diagnosis' — as 'the correct reasoning', directly contradicting the keyed answer, which states this picture 'warrants a first manic episode evaluation, not a stimulant adjustment'. C is not correct reasoning: the stem never establishes that the boy takes stimulants, and several days of decreased need for sleep, grandiosity, and pressured speech is a manic syndrome, not a stimulant side effect; a learner taught that dose-reduce-and-wait is 'correct' would defer the mania workup in an admitted adolescent.",
+    "replacement": "Option C is also incorrect: the stem never establishes stimulant treatment, and several days of decreased need for sleep, grandiosity, and pressured speech constitute a manic syndrome rather than a stimulant side effect — the correct move is a first manic episode evaluation now (holding any stimulant), not a dose reduction with a deferred mood assessment.",
+    "basis": "DSM-5-TR manic episode criteria and standard adolescent bipolar teaching (episodic decreased need for sleep plus grandiosity flags mania, per the item's own Evidence line); single-best-answer convention that a rationale must not endorse a distractor as correct.",
+    "confidence": "high"
+  },
+  {
+    "id": "A1C1-F004",
+    "audience": "both",
+    "file": "A1_QUESTION_BANK.md",
+    "surface": "qb_mood_014",
+    "locus": "qbank.option",
+    "severity": "S4",
+    "quote": "Antidepressant monotherapy has precipitated a manic switch in a patient likely misdiagnosed as unipolar — the diagnosis should be reconsidered as bipolar disorder and the antidepressant should not be continued as monotherapy.",
+    "problem": "'Should not be continued as monotherapy' implies that continuing sertraline is acceptable so long as a mood stabilizer is added; the standard action during an antidepressant-emergent manic switch is to discontinue the antidepressant and start antimanic treatment. This also contradicts the bank's own qb_mood_011 pearl that antidepressants are contraindicated in acute mania — a learner acting on this exact sentence could keep the sertraline running through a manic episode.",
+    "replacement": "Antidepressant monotherapy has precipitated a manic switch in a patient likely misdiagnosed as unipolar — the diagnosis should be reconsidered as bipolar disorder, the antidepressant should be discontinued, and antimanic treatment started.",
+    "basis": "CANMAT/ISBD 2018 bipolar guidelines and ordinary inpatient practice: stop the antidepressant during an acute manic or treatment-emergent manic episode; internal consistency with qb_mood_011 ('antidepressants are contraindicated').",
+    "confidence": "high"
+  }
+]
