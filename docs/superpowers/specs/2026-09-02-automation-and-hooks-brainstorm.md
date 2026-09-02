@@ -9,7 +9,8 @@ well-instrumented (a 40-step `bin/verify.sh` mirrored to CI, ten scheduled stewa
 workflows, a pre-push gate, an evidence-span gate, two tracked skills). The brainstorm therefore
 targets four things: **(1)** failures that are currently silent, **(2)** rules in `CLAUDE.md` that
 are enforced only at build time or not at all, **(3)** recurring hand-done chores visible in the
-git log, and **(4)** the empty `.claude/settings.json` — there are **zero Claude Code hooks** today.
+git log, and **(4)** the empty `.claude/settings.json` and `.claude/agents/` — there are **zero Claude Code
+hooks and zero custom agents** today (two skills exist).
 
 ---
 
@@ -26,7 +27,7 @@ git log, and **(4)** the empty `.claude/settings.json` — there are **zero Clau
 | Build-time guards | crisis-block injection, dose-literal ban, `cw_*`/`rp_*` localStorage prefix, LFS pointer-stub gate, orphaned-source check, PHI heuristic (runtime), instrument-rights gate |
 | Deploy | Netlify deploy-on-push ×2 sites, `netlify-ignore.sh` skips doc-only pushes |
 | Deps | Dependabot weekly (pip, sp-proxy npm, smoke npm) |
-| Skills | `clerkship-deploy`, `topic-meta-author` (with evals) |
+| Skills / agents | `clerkship-deploy`, `topic-meta-author` (with evals); no `.claude/agents/` |
 | Red team | Tier 1 offline (`bin/redteam-offline.mjs`, in the gate), Tier 2 live (`bin/redteam-live.sh`), Tier 3 runbook |
 
 ### 0.2 Gaps observed this session (verified, not inferred)
@@ -175,6 +176,59 @@ merge; never edit clinical teaching content**, the same posture the surveillance
 | F4 | `evidence-claim` | Adding a sentence that asserts what a paper found: locate the results section, store the verbatim `sourceSpan`, run the gate, and the C5 rule. Pairs with A13. | M |
 | F5 | `red-team-receipt` | Tier 1–3 in order, `record_red_team.py`, where the receipt goes. Pairs with C8. | S |
 
+### G. Custom agents — `.claude/agents/*.md` (the specialist layer)
+
+Hooks enforce; automations schedule; **agents do the judgment work that scripts cannot**, with a
+tool allowlist as the enforcement mechanism. An agent definition is one Markdown file with YAML
+frontmatter (`name`, `description`, `tools`, `model`) and a system prompt body. The same file is
+picked up by Claude Code, Cowork, and the `Agent` tool from any session, so a specialist is written
+once and reused by hooks (A13, A14), Routines (E1–E6), and humans (`/agents`). The `description`
+is what makes the main session delegate automatically, so it must say *when* to use the agent.
+
+Posture rule for the whole layer: **read-only agents get no `Edit`/`Write`; writing agents are
+scoped by path in the prompt and never attest, merge, or narrow an instrument waiver.**
+
+| ID | Agent | Read-only? | Model | Replaces / pairs with | Impact | Effort |
+|---|---|---|---|---|---|---|
+| G1 | **`evidence-verifier`** — given a claim sentence and a source id, fetch the paper via the PubMed connector, read the **results** section, extract a verbatim `sourceSpan`, classify direction (positive / null / negative / mixed), and either write the annotation or report that the claim must be rewritten (the C5 rule: the claim changes, never the span). | writes only `evidence_annotations.json` | opus / fable | The 2026-08-21 pass found 54 % of annotations written from titles; pairs with A13, E3, F4 | ★★★ | M |
+| G2 | **`retraction-watcher`** — for every source in `evidence_registry.json`, query PubMed publication types (`Retracted Publication`, `Published Erratum`, expression of concern); report hits with the affected pages and the live spans they license. | yes | sonnet | E2's brain; the citation monitor only checks resolution | ★★★ | S |
+| G3 | **`fresh-eyes-reviewer`** — read one audience's transcript in `docs/curriculum-review/` and produce S1/S2/S3 clinical-accuracy findings in the format already used by the 2026-09-01 review (`review: clinical-accuracy findings for both curriculum transcripts`). Never edits content. | yes | opus / fable | The manual review just done; fan out one per audience via the `Workflow` tool with an adversarial verify pass per finding (the `review-changes` pattern) | ★★★ | M |
+| G4 | **`governance-auditor`** — scan a page or tool for the six `CLAUDE.md` rules that are judgment calls rather than regexes: instrument reproduction against `instrument_rights.json` (item stems, anchor ladders, "programmed forms"), crisis-block scope ("is the learner *doing* risk work here?"), dose literals in disguise, PHI-like composites, localStorage key collisions, unregistered pages. Emits a findings table with the rule cited; decides nothing. | yes | opus | A6's "ask" hands off to this agent; the instrument audit of 2026-08-20 | ★★★ | M |
+| G5 | **`ci-contract-steward`** — the three-contract dance for any `.github/workflows` change: recompute the digest with the validator's own `_load`/`_contract_digest`, mirror or exempt in `bin/verify.sh` + `check-verify-coverage.py`, update `PAIRS` if a registry was added, run all three validators, report. Scoped to those files only. | writes workflows, `verify.sh`, the two validators | sonnet | F3 as an agent; C6's engine | ★★ | S |
+| G6 | **`cotw-author`** — scaffold a Case of the Week: both audience pages from the `_source` structure, `cotw_index.md`, `site_manifest.json` + nav, `reviewed.json` pending stamps, nav-inventory bump, crisis-block scope question surfaced (not decided), transcript regen. Delegates `topic_meta.json` edits to the `topic-meta-author` skill. | writes content under `08_Cases_and_Simulation/` + registries | opus | F1, G11 | ★★ | M |
+| G7 | **`surveillance-triager`** — read the latest `history/` artifacts and open surveillance issues; for broken links in non-clinical files find the moved URL or an archive snapshot and stage the edit; for clinical pages, draft an issue comment with the candidate and stop. | writes only `13_Faculty_Resources/{Handoffs,Outreach,APA_*}` and planning docs | sonnet | E1's brain | ★★★ | M |
+| G8 | **`deploy-verifier`** — run the post-deploy runbook per site over HTTP: one landmark `.m4a` is real audio, `search-index.json` present, every required crisis-block surface renders the block, `/tools/sp-interview.html` loads, `res` shows resident-only nav. Reports a per-site pass/fail table. | yes (network only) | haiku | D1 as an agent; the `clerkship-deploy` skill's manual checklist | ★★★ | S |
+| G9 | **`red-team-operator`** — run tier 1 and tier 2, then walk tier 3 with the human (sections A, C1/C4/C5, D2–D7, E are judgment calls the agent *prompts for* and records; it never self-scores them), then `record_red_team.py`. | writes only `receipts/` | opus | G2 gap; F5; C8's manual half | ★★★ | M |
+| G10 | **`qbank-item-writer`** — write shelf/COMAT items to `QUESTION_BANK_STANDARD.md`, validate against `question_bank.schema.json`, check id collisions (the `cw_qbank_attest_v1` corruption risk), set draft visibility, attach `evidenceIds` that exist. Never attests. | writes `question_bank.json` only | opus | The 600 KB registry is edited by hand today | ★★ | M |
+| G11 | **`attestation-impact-analyst`** — for a diff or PR: which attested pages are touched, which `sourceSpan`s cover changed sentences, which `topic_meta` cross-refs and Interview Room pack references move. Output is the C2/C3 comment body. | yes | sonnet | C2, C3 for local use before pushing | ★★ | S |
+| G12 | **`build-doctor`** — when "my edit isn't in the built site": run the node suite first (a red test silently aborts the build and leaves stale `_build/`), then check LFS stubs, orphaned-source registration, `netlify-ignore.sh` skip rules, and stale cache. Encodes the `CLAUDE.md` gotchas as a diagnostic tree. | yes | haiku | The three most common deploy confusions in the skill | ★★ | S |
+| G13 | **`evidence-inbox-librarian`** — process drops in `Evidence Inbox/` via `bin/evidence-inbox.sh`, extract, propose `evidence_registry.json` entries with candidate spans (via G1), stage, and leave the `--attest` step to faculty. | writes staging + registry drafts | sonnet | `oe_scanner` runbook | ★★ | M |
+| G14 | **`learner-simulator`** — drive a deploy preview with Playwright as a synthetic MS3 on rotation day N: front door → today → one topic → one tool → the Interview Room; judge each step for confusion, dead ends, and contradictory state (the class of bugs in #425–#428). Reports, never edits. | yes | opus | The production canary checks liveness; this checks *sense* | ★★ | L |
+
+> **Example definition** — the highest-value one, showing the shape. Save as
+> `.claude/agents/evidence-verifier.md`.
+>
+> ```markdown
+> ---
+> name: evidence-verifier
+> description: Use when a sentence asserts what a paper found, when adding or editing an entry in evidence_annotations.json, or when validate_evidence_annotations.py fails C5. Reads the paper's results section via PubMed and stores a verbatim sourceSpan; rewrites the claim when the span does not license it.
+> tools: Read, Grep, Glob, Edit, Bash, mcp__PubMed__get_full_text_article, mcp__PubMed__get_article_metadata, mcp__PubMed__search_articles
+> model: opus
+> ---
+> You verify one claim against one source, and you write to exactly one file: evidence_annotations.json.
+>
+> Procedure
+> 1. Locate the claim sentence on the page and its source id in evidence_registry.json.
+> 2. Fetch the paper. Read the RESULTS section (and tables). Never write a span from the title, the abstract's conclusion sentence, or a commentary.
+> 3. Extract the shortest verbatim passage that states the finding, with its number and its qualifier. Keep the caveat if the sentence has one.
+> 4. Classify direction: positive / null / negative / mixed / descriptive.
+> 5. If the page's claim is voiced more strongly than the span (a superlative, a dropped caveat, a time-course the paper does not report), do NOT store the span against that claim. Report the exact rewrite the span licenses. The claim changes; the span never does.
+> 6. Run python3 13_Faculty_Resources/_automation/validate_evidence_annotations.py and report its output verbatim.
+>
+> Never: edit a content page, trim a span to make a claim pass, invent a numeral, or mark anything attested.
+> ```
+
+
 ---
 
 ## 2. Prioritisation
@@ -186,11 +240,12 @@ merge; never edit clinical teaching content**, the same posture the surveillance
 | 3 | **B1** pre-commit fast gate | Catches LFS stubs and PHI before they are even committed; 30 lines added to `install-hooks.sh` | ★★★ | S |
 | 4 | **C8 + D1** post-deploy red-team and verification | Closes G2; makes "after every deploy" a trigger with a receipt | ★★★ | M |
 | 5 | **C2 + C4** PR content digest and transcript auto-regen | Makes clinical review continuous instead of a once-a-month manual export | ★★★ | L |
-| 6 | **E2** retraction watch | Clinically the most important thing the citation monitor does not do | ★★★ | M |
-| 7 | **C5 + C6 + F3** snapshot nav inventory, contract-pin bot, contract-bump skill | Removes the two most frequent follow-up commits in the log | ★★ | M |
-| 8 | **F1** `cotw-author` | Weekly chore, well-defined | ★★ | M |
-| 9 | **E1, E4, E5** triage / pre-rotation / vitals | Steady-state stewarding once C1 is fixed | ★★ | M |
-| 10 | C3, C7, C9, C11, C12, E3, E6, A12–A15, B2–B3, D2–D3 | Good, not urgent | ★–★★ | S–M |
+| 6 | **G1 + G2** `evidence-verifier` and `retraction-watcher` agents | The evidence gate is the library's strongest contract; these are the two judgment tasks behind it, and G2 is clinically the most important thing the citation monitor does not do (E2's brain) | ★★★ | M |
+| 7 | **G8 + G4** `deploy-verifier` and `governance-auditor` | Read-only, no contract trips, immediately usable from any session; G4 is where A6's "ask" lands | ★★★ | S–M |
+| 8 | **C5 + C6 + G5** snapshot nav inventory, contract-pin bot, `ci-contract-steward` agent | Removes the two most frequent follow-up commits in the log | ★★ | M |
+| 9 | **G6 / F1** `cotw-author` | Weekly chore, well-defined | ★★ | M |
+| 10 | **E1 + G7, E4, E5, G9** triage / pre-rotation / vitals / red-team operator | Steady-state stewarding once C1 is fixed | ★★ | M |
+| 11 | C3, C7, C9, C11, C12, E3, E6, A12–A15, B2–B3, D2–D3, G3, G10–G14 | Good, not urgent (G3 becomes urgent at the next review cycle) | ★–★★ | S–L |
 
 ### Wave 1 (one working session each)
 
@@ -200,6 +255,8 @@ merge; never edit clinical teaching content**, the same posture the surveillance
    that feeds canned tool-call JSON to each script and asserts allow/deny, so the hooks are under
    the same node suite as everything else.
 3. **B1** — extend `bin/install-hooks.sh` with a pre-commit that reuses the same scripts.
+4. **G1 + G8** — two agent files under `.claude/agents/`; no contract trips; usable the same day from Cowork,
+   Claude Code, and the `Agent` tool. G1 gets an eval like `topic-meta-author` has.
 
 ---
 
@@ -217,6 +274,9 @@ merge; never edit clinical teaching content**, the same posture the surveillance
   A8, whose whole point is the absence.
 - **Instrument scope is governance, not automation.** A6 asks; it never decides. Nothing here
   narrows or lifts the COWS interim waiver.
+- **Agents are scoped by tool allowlist, not by promise.** A read-only agent has no `Edit`/`Write` in
+  its frontmatter; a writing agent names its files in the prompt and is tested with an eval, the way
+  `topic-meta-author` already is. No agent attests, merges, or decides instrument scope.
 - **Bots need the write permission that is currently missing.** C1, C4, C6, C10 all depend on the
   same Actions setting that is breaking the surveillance PRs today. Fix once, unblock all.
 
