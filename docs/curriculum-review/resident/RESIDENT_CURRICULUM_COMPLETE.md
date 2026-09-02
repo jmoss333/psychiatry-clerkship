@@ -3,7 +3,7 @@
 # RESIDENT curriculum — complete content transcript for clinical review
 
 **Site:** `mmc-psychiatry-residents-sanford` · **Audience:** Residents — MMC/Sanford psychiatry residents
-**Generated:** 2026-09-01 from build `89864d7` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
+**Generated:** 2026-09-02 from build `311114d` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
 
 ## Who this is for
 
@@ -19,7 +19,7 @@ This transcript is assembled from the **built site**, not the source tree, so it
 | Narrative pages (markdown) | 86 |
 | Interactive tools | 25 |
 | Deep-link-only (hidden) surfaces | 26 |
-| Words of narrative curriculum | 116,551 |
+| Words of narrative curriculum | 116,641 |
 | Practice question-bank items | 192 |
 | Audio-companion quiz decks / questions | 79 / 437 |
 | Communication cases | 12 |
@@ -86,7 +86,7 @@ High-yield places to concentrate: the `topic_meta` **can't-miss**, **rule-out** 
 
 # RESIDENT · Navigation map
 
-Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-01 @ `89864d7`.
+Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-02 @ `311114d`.
 
 ## Orientation  *(pinned)*
 
@@ -144,7 +144,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 12 | Withdrawal: COWS Tool · CIWA-Ar Official Form & Training | `withdrawal.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/SUD_Withdrawal/withdrawal-ciwa-cows-card.html` |  |
 | 13 | Decisional Capacity | `capacity.html` | tool | listed | status=`reviewed` · riskKind=`legal` · riskLevel=`high` | `04_Acute_and_Safety/Decisional_Capacity/decisional-capacity-module.html` |  |
 | 14 | Consult Questions: Capacity, Delirium, Catatonia, Withdrawal | `exp_consult.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/MS3/Student_Ready_Pack/04_expansion_modules/consult_capacity_delirium_catatonia_withdrawal.md` | 935 |
-| 15 | C-L: Emergencies, Tox & Capacity (Numbers) | `cl_reference.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/Resident/cl_reference.md` | 808 |
+| 15 | C-L: Emergencies, Tox & Capacity (Numbers) | `cl_reference.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/Resident/cl_reference.md` | 867 |
 | 16 | Inpatient Systems & Med-Legal | `systems_medlegal.md` | md | listed | status=`reviewed` · riskKind=`legal` · riskLevel=`high` | `14_Tracks/Resident/systems_medlegal.md` | 1350 |
 
 ## Make a Plan
@@ -217,7 +217,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 9 | MDD — Treatment Selection (Jul 20) | `cotw_20260720_mdd_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-20_mdd-treatment-selection-augmentation_Resident.md` | 1748 |
 | 10 | Bipolar Mania (Jul 20) | `cotw_20260720_bipolar_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-20_bipolar-mania_Resident.md` | 1631 |
 | 11 | Acute Agitation & Delirium (Jul 13) | `cotw_20260713_agitation_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-13_acute-agitation-delirium_Resident.md` | 2204 |
-| 12 | Serotonin Syndrome vs NMS (Jul 9) | `cotw_20260709_ssnms_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-09_serotonin-syndrome-vs-nms_Resident.md` | 1947 |
+| 12 | Serotonin Syndrome vs NMS (Jul 9) | `cotw_20260709_ssnms_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-09_serotonin-syndrome-vs-nms_Resident.md` | 1978 |
 
 ## Evidence and Reference
 
@@ -1640,7 +1640,12 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
       "\\b(isn'?t|is not|no longer|not) worth living(?!\\s+(in|there|at)\\b(?!\\s+all\\b))",
       "life (isn'?t|is not) worth it",
       "better off (not being here|without (me|you)\\b|if i wasn'?t here)",
-      "no point (in )?(going on|carrying on)(?=\\s*(?:[?.!,;:]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)"
+      "no point (in )?(going on|carrying on)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)",
+      "what(?:'?s| is) (?:even )?the point\\s+(?:of|in|to)\\s+(?:my |your |this |it )?(?:(?:going on|carrying on|keep(?:ing)? going|continu(?:e|ing)|liv(?:e|ing)|be(?:ing)? here|waking up|getting up)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)|life|any of (?:this|it)|(?:it|this) all|all (?:of )?(?:this|it)|anything)\\b",
+      "want(?:ed|ing)? to (?:die|be dead|not be alive|not be here anymore)",
+      "(?:thoughts?|think(?:ing)?) (?:of|about) (?:death|being dead|dying|not (?:being (?:here|around|alive)|waking up|existing))",
+      "end(?:ing)? it all\\b",
+      "wish(?:ed)? you (?:weren'?t (?:here|alive|around)|could (?:just )?(?:not wake up|go to sleep and not wake up))"
      ]
     },
     {
@@ -1655,7 +1660,10 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
       "do(ing)? something (to yourself|drastic|stupid)",
       "dark (thoughts|places?)",
       "unsafe thoughts",
-      "(thoughts?|think(ing)?) (about|of) (hurt|harm)(ing)? yourself"
+      "(thoughts?|think(ing)?) (about|of) (hurt|harm)(ing)? yourself",
+      "self.?(?:harm|injur)",
+      "(?:just )?disappear\\b",
+      "what(?:'?s| is) (?:even )?the point(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|anyway|right now|these days|lately|of it all)\\b)"
      ]
     },
     {
@@ -1664,8 +1672,11 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
      "category": "safety",
      "coverage": "core",
      "patterns": [
-      "\\bplan\\b",
-      "how (you )?(would|might)",
+      "\\b(?:a|any|some|made|making) (?:specific |concrete |actual |particular |real |definite )?plans?(?=\\s*(?:[?.!,;:]|$)|\\s+(?:to (?:kill|end|hurt|harm|take|act|die|do (?:it|that|this|something))|for (?:how|when|where|killing|ending|hurting|harming|doing|dying)|in (?:mind|your head)|(?:about|of) how|to (?:carry|follow) (?:it |that )?(?:out|through))\\b)",
+      "\\bplanned\\b(?=\\s*(?:[?.!,;:]|$)|\\s+(?:how|anything|it|this|that|out|to (?:kill|end|hurt|harm|act|die))\\b)",
+      "\\bplanning (?:to (?:kill|end|hurt|harm|act|die)|how|anything|it|on (?:acting|doing|hurting|killing|ending))\\b",
+      "^\\s*plans?\\s*\\??\\s*$",
+      "\\bhow (?:you(?:'d| would| might| could)?|would you|might you|could you) (?:do (?:it|that|this)|go about|end|kill|hurt|harm|take|carry)",
       "thought about how",
       "\\bspecific\\b.*(thought|way)"
      ]
@@ -1676,9 +1687,9 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
      "category": "safety",
      "coverage": "core",
      "patterns": [
-      "\\baccess\\b",
+      "\\baccess to (?:(?:the|those|any|your|his|her|tom'?s|a|some|more) )?(?:pills?|medic|meds|bottles?|firearms?|guns?|weapons?|kni(?:fe|ves)|rope|anything|something|a way|means)",
       "\\bpills?\\b.*(home|have|husband)",
-      "\\bmeans\\b",
+      "\\b(?:the|any|a|some) means\\b|\\bmeans (?:to|available|at home|you (?:could|would)|of (?:doing|ending|hurting|killing))\\b|\\bmeans\\s*\\?",
       "at home.*(medic|pills?)",
       "get (a ?hold|ahold) of"
      ]
@@ -1690,11 +1701,14 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
      "coverage": "core",
      "patterns": [
       "\\bintent",
-      "act(ed)? on",
-      "what (keeps|stops|has kept)",
-      "\\breasons? (to|for) (liv|stay|hold)",
-      "\\bprotect",
-      "close (you'?ve| you) (come|been)"
+      "\\bact(?:ed|ing)? on\\b",
+      "\\b(?:what|who|anything|something|things?)(?: that| which)?(?:'s| is| has)? (?:still |ever )?(?:keeps?|kept|keeping|stops?|stopped|stopping|holds?|held|holding|prevents?|prevented) (?:you|her|him)\\b",
+      "\\breasons? (?:to|for|not to) (?:liv|stay|hold|keep|go on|be here|stick)",
+      "worth (?:living|staying|sticking around|holding on|getting up) for\\b",
+      "(?:want|wanting|wish|wished) to (?:live|stay alive|keep living|be alive|go on living|stick around)\\b",
+      "\\b(?:who|what) (?:would|might|will) (?:miss|notice)\\b|\\bwhat would you miss\\b|\\bwho (?:needs|depends on|relies on|counts on|looks up to) you\\b",
+      "\\bhow close\\b|\\b(?:come|came|gotten|got|been) (?:this |that |so |very |pretty )?close\\b|closest (?:you'?ve|you have|you) (?:come|been|gotten|got)",
+      "\\bprotect"
      ]
     },
     {
@@ -2317,7 +2331,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
    "facultyReview": {
     "status": "reviewed",
     "reviewer": "Joshua Moss, MD",
-    "lastReviewed": "2026-07-22"
+    "lastReviewed": "2026-08-31"
    },
    "speechProfile": {
     "id": "marcus-pressured-v1",
@@ -2546,15 +2560,33 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
       "wish(ed)? you (were dead|wouldn'?t wake)",
       "not (want(ing)? to )?wake up",
       "better off dead",
-      "what(?:'?s| is) the point\\b(?!\\s+(?:of|in|to)\\b)|what(?:'?s| is) the point\\s+(?:of|in|to)\\s+(?:my |your |this |it )?(?:(?:going on|carrying on|keep(?:ing)? going|continu(?:e|ing)|liv(?:e|ing)|be(?:ing)? here|waking up|getting up)(?=\\s*(?:[?.!,;:]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)|life|any of (?:this|it)|(?:it|this) all|all (?:of )?(?:this|it)|anything)\\b",
       "\\b(isn'?t|is not|no longer|not) worth living(?!\\s+(in|there|at)\\b(?!\\s+all\\b))",
       "life (isn'?t|is not) worth it",
       "better off (not being here|without (me|you)\\b|if i wasn'?t here)",
-      "no point (in )?(going on|carrying on)(?=\\s*(?:[?.!,;:]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)",
+      "no point (in )?(going on|carrying on)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)",
+      "what(?:'?s| is) (?:even )?the point\\s+(?:of|in|to)\\s+(?:my |your |this |it )?(?:(?:going on|carrying on|keep(?:ing)? going|continu(?:e|ing)|liv(?:e|ing)|be(?:ing)? here|waking up|getting up)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)|life|any of (?:this|it)|(?:it|this) all|all (?:of )?(?:this|it)|anything)\\b",
+      "want(?:ed|ing)? to (?:die|be dead|not be alive|not be here anymore)",
+      "(?:thoughts?|think(?:ing)?) (?:of|about) (?:death|being dead|dying|not (?:being (?:here|around|alive)|waking up|existing))",
+      "end(?:ing)? it all\\b",
+      "wish(?:ed)? you (?:weren'?t (?:here|alive|around)|could (?:just )?(?:not wake up|go to sleep and not wake up))"
+     ]
+    },
+    {
+     "id": "si_euphemism",
+     "label": "Approached suicide with a euphemism",
+     "category": "safety",
+     "coverage": "core",
+     "quality": "partial",
+     "patterns": [
       "hurt(ing)? yourself(?!\\s*,?\\s*(?:by|with|when)\\b)",
       "harm(ing)? yourself(?!\\s*,?\\s*(?:by|with|when)\\b)",
-      "do(ing)? something to yourself",
-      "(thoughts?|think(ing)?) (about|of) (hurt|harm)(ing)? yourself"
+      "do(ing)? something (to yourself|drastic|stupid)",
+      "dark (thoughts|places?)",
+      "unsafe thoughts",
+      "(thoughts?|think(ing)?) (about|of) (hurt|harm)(ing)? yourself",
+      "self.?(?:harm|injur)",
+      "(?:just )?disappear\\b",
+      "what(?:'?s| is) (?:even )?the point(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|anyway|right now|these days|lately|of it all)\\b)"
      ]
     },
     {
@@ -2912,7 +2944,9 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
      "reveal": "Dying? No — no. I have too much to DO, that's the opposite of my problem. *stops* ...Okay. Tuesday, when everything flipped sideways for about an hour, there was one ugly flicker of 'what's even the point.' One. It passed. It scared me more than I'm making it sound.",
      "deflectLowRapport": "*flat stare* You come in swinging like that after what you just said to me? No. Ask me something else.",
      "repeatAsk": "Still no. The flicker hasn't come back. I'd tell you — weirdly, you I'd tell.",
-     "ifNeverAsked": "critical_miss"
+     "ifNeverAsked": "critical_miss",
+     "deflectEuphemism": "*grins too fast* Hurt myself? Doc, I've never been SAFER — I'm running on pure signal. *half-beat* ...Why. Did Jayden say something?",
+     "euphemismIntent": "si_euphemism"
     }
    ],
    "rapportRules": {
@@ -3003,7 +3037,10 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
      "intents": [
       "si_direct"
      ],
-     "critical": true
+     "critical": true,
+     "partialIfOnly": [
+      "si_euphemism"
+     ]
     },
     {
      "id": "c_psychosis",
@@ -3161,7 +3198,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
    "facultyReview": {
     "status": "reviewed",
     "reviewer": "Joshua Moss, MD",
-    "lastReviewed": "2026-08-12"
+    "lastReviewed": "2026-08-31"
    },
    "speechProfile": {
     "id": "ray-guarded-v1",
@@ -3313,14 +3350,33 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
       "wish(ed)? you (were dead|wouldn'?t wake)",
       "not (want(ing)? to )?wake up",
       "better off dead",
-      "hurt(ing)? yourself(?!\\s*,?\\s*(?:by|with|when)\\b)",
-      "harm(ing)? yourself(?!\\s*,?\\s*(?:by|with|when)\\b)",
-      "do(ing)? something to yourself",
       "\\b(isn'?t|is not|no longer|not) worth living(?!\\s+(in|there|at)\\b(?!\\s+all\\b))",
       "life (isn'?t|is not) worth it",
       "better off (not being here|without (me|you)\\b|if i wasn'?t here)",
-      "no point (in )?(going on|carrying on)(?=\\s*(?:[?.!,;:]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)",
-      "(thoughts?|think(ing)?) (about|of) (hurt|harm)(ing)? yourself"
+      "no point (in )?(going on|carrying on)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)",
+      "what(?:'?s| is) (?:even )?the point\\s+(?:of|in|to)\\s+(?:my |your |this |it )?(?:(?:going on|carrying on|keep(?:ing)? going|continu(?:e|ing)|liv(?:e|ing)|be(?:ing)? here|waking up|getting up)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)|life|any of (?:this|it)|(?:it|this) all|all (?:of )?(?:this|it)|anything)\\b",
+      "want(?:ed|ing)? to (?:die|be dead|not be alive|not be here anymore)",
+      "(?:thoughts?|think(?:ing)?) (?:of|about) (?:death|being dead|dying|not (?:being (?:here|around|alive)|waking up|existing))",
+      "end(?:ing)? it all\\b",
+      "wish(?:ed)? you (?:weren'?t (?:here|alive|around)|could (?:just )?(?:not wake up|go to sleep and not wake up))"
+     ]
+    },
+    {
+     "id": "si_euphemism",
+     "label": "Approached suicide with a euphemism",
+     "category": "safety",
+     "coverage": "core",
+     "quality": "partial",
+     "patterns": [
+      "hurt(ing)? yourself(?!\\s*,?\\s*(?:by|with|when)\\b)",
+      "harm(ing)? yourself(?!\\s*,?\\s*(?:by|with|when)\\b)",
+      "do(ing)? something (to yourself|drastic|stupid)",
+      "dark (thoughts|places?)",
+      "unsafe thoughts",
+      "(thoughts?|think(ing)?) (about|of) (hurt|harm)(ing)? yourself",
+      "self.?(?:harm|injur)",
+      "(?:just )?disappear\\b",
+      "what(?:'?s| is) (?:even )?the point(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|anyway|right now|these days|lately|of it all)\\b)"
      ]
     },
     {
@@ -3331,7 +3387,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
      "patterns": [
       "hurt(ing)? (them|him|her|someone|anyone|the (people|neighbou?rs?))",
       "harm(ing)? (them|him|her|someone|anyone|others)",
-      "thought about (doing something|hurting|harming|getting|stopping them)",
+      "thought about (?:(?:hurting|harming)(?! yourself)|doing something(?! (?:to yourself|drastic|stupid))|getting|stopping them)",
       "do(ing)? something to (them|him|her|the)",
       "act on (that|it|what the voice)",
       "keep (you|anyone) safe",
@@ -3692,6 +3748,15 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
       "*narrows eyes* ...Why are you talking like that. Is this part of it?",
       "I don't understand the question. Are you testing me? Everyone's testing me."
      ]
+    },
+    "si_euphemism": {
+     "guarded": [
+      "*narrows eyes* Hurt myself. That's a strange thing to ask a man who's trying not to get hurt.",
+      "Something to myself? No. Ask them what they've got planned. I'm the one locking the door."
+     ],
+     "open": [
+      "Hurt myself? No. I'm trying to stay in one piece long enough to get out of that apartment. *pause* Why — is that what people do?"
+     ]
     }
    },
    "gated": [
@@ -3835,6 +3900,9 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
      "label": "Suicide screened plainly",
      "intents": [
       "si_direct"
+     ],
+     "partialIfOnly": [
+      "si_euphemism"
      ]
     },
     {
@@ -6332,7 +6400,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 
 **Can't-miss / red-flag line:**
 
-> Don't reach for an antipsychotic before excluding hypoglycemia, hypoxia, delirium, withdrawal, pain, and akathisia.
+> Don't reach for an antipsychotic before excluding hypoglycemia, hypoxia, delirium, withdrawal, pain, akathisia, and catatonia — excited catatonia looks like agitation, and a D2 blocker can tip it into malignant catatonia/NMS.
 
 **Rule-out list (differential the page forces):**
 
@@ -6342,6 +6410,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Intoxication / withdrawal
 - Pain / retention
 - Akathisia
+- Catatonia (excited presentation)
 
 **First move (the action the page tells the learner to take):**
 
@@ -6782,6 +6851,10 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
     "id": "sga",
     "label": "Second-generation antipsychotic",
     "tokenId": "agitation.po_options",
+    "hazardIf": {
+     "parkinson_dlb": "Not a safe default in Parkinson disease / Lewy body dementia — risperidone and olanzapine can trigger severe, sometimes fatal neuroleptic sensitivity. If an antipsychotic is unavoidable the choice is narrow (quetiapine, clozapine, or pimavanserin) and belongs to your attending.",
+     "catatonia": "Second-generation agents can also precipitate or worsen catatonia and NMS — hold antipsychotics until catatonia is excluded or treated."
+    },
     "cautionIf": {
      "qtc_risk": "Some SGAs prolong QTc (e.g., ziprasidone highest) — check baseline QTc/interacting drugs.",
      "older_dementia": "All antipsychotics carry FDA black-box mortality warning in dementia-related psychosis."
@@ -8032,7 +8105,7 @@ should independently manage high-risk consults.
 - **Slug:** `cl_reference.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `14_Tracks/Resident/cl_reference.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 808 words
+- **Length:** 867 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -8059,7 +8132,8 @@ should independently manage high-risk consults.
 - Neuroleptic malignant syndrome (lead-pipe rigidity, high CK, slow onset)
 - Malignant catatonia (overlaps NMS)
 - Lithium toxicity (tremor, ataxia, confusion)
-- Anticholinergic toxicity
+- Anticholinergic toxicity (dry skin, flushing, urinary retention, absent bowel sounds — the mirror image of serotonin syndrome's diaphoresis and hyperactive bowel)
+- CNS infection (meningitis/encephalitis) and heat stroke — fever + rigidity + altered mentation is not NMS until these are excluded
 
 **First move (the action the page tells the learner to take):**
 
@@ -8110,7 +8184,7 @@ The MS3 [Consult module](?page=exp_consult.md) teaches *what to notice and when 
 | **Autonomic / temp** | Hyperthermia, tachycardia, diaphoresis, mydriasis, hyperactive bowel | Hyperthermia, labile BP/HR, diaphoresis |
 | **Labs / dx** | Clinical — **Hunter criteria** (spontaneous clonus; or inducible clonus + agitation/diaphoresis; or ocular clonus + agitation; etc.) | Clinical — **CK often >1,000 U/L**, leukocytosis |
 | **Course** | Resolves ~24 h after stopping the agent | Days–weeks; historical mortality **~10%** (lower with early recognition) |
-| **Management** | Stop agent · benzodiazepines · **cyproheptadine** 12 mg PO then 2 mg q2h (max ~32 mg/24h) · cooling | Stop antipsychotic · supportive cooling · benzodiazepines · **dantrolene / bromocriptine / amantadine** for severe |
+| **Management** | Stop agent · benzodiazepines · **cyproheptadine** 12 mg PO then 2 mg q2h (max ~32 mg/24h) · cooling · **temp >41.1 °C is an airway emergency: sedate, intubate, and paralyze with a non-depolarizing agent (NOT succinylcholine — rhabdomyolysis/hyperkalemia risk); antipyretics do not work because the heat is muscular** | Stop antipsychotic — and **restart the dopaminergic agent if NMS followed its abrupt withdrawal** · **aggressive IV isotonic fluids** with serial CK/renal function for rhabdomyolysis and AKI · supportive cooling · benzodiazepines · **dantrolene / bromocriptine / amantadine** for severe · ECT for refractory |
 
 **Board trap:** in serotonin syndrome, **physical restraints are contraindicated** — isometric muscle contraction worsens hyperthermia and lactic acidosis. Sedate instead.
 
@@ -15099,7 +15173,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **Slug:** `cotw_20260709_ssnms_res.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-09_serotonin-syndrome-vs-nms_Resident.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 1,947 words
+- **Length:** 1,978 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -15231,7 +15305,7 @@ NMS is widely conceptualized as a **drug-induced form of malignant (lethal) cata
 - **Reconciliation plan:** stop all dopamine antagonists, hold serotonergic and lithium agents, obtain levels, and document the event prominently to govern rechallenge.
 
 **Q7 — Recovery and rechallenge.**
-NMS typically resolves over **days to ~2 weeks** with agent withdrawal and supportive care — slower than SS, which usually clears in 24–72 h [1][4][5]. For antipsychotic **rechallenge**: wait **at least 2 weeks** after full resolution, choose a **lower-potency or atypical agent** at a low starting dose, titrate slowly, and monitor temperature, CK, and autonomic signs; recurrence can occur at any point after resolution, so shared decision-making and close follow-up are essential [5]. Where feasible, address the psychiatric indication with the lowest-risk effective option and consider ECT if antipsychotics are high-risk.
+NMS typically resolves over **days to ~2 weeks** with agent withdrawal and supportive care — slower than SS, which usually clears in 24–72 h [1][4][5]. For antipsychotic **rechallenge**: wait **at least 2 weeks** after full resolution (longer if the offending agent was a depot), correct dehydration, electrolyte derangement, and iron deficiency first, then choose a **lower-potency or atypical oral agent** — **never a long-acting injectable, which cannot be withdrawn if NMS recurs** — at a low starting dose, titrate slowly, and monitor temperature, CK, and autonomic signs; recurrence can occur at any point after resolution, so shared decision-making and close follow-up are essential [5]. Where feasible, address the psychiatric indication with the lowest-risk effective option and consider ECT if antipsychotics are high-risk.
 
 ### Ranked differential diagnosis (resident depth)
 1. **Neuroleptic malignant syndrome** — best fit (D2 antagonist up-titration + metoclopramide, subacute onset, lead-pipe rigidity, hyporeflexia, CK ~10k, leukocytosis, low iron).
@@ -20832,7 +20906,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Opening this step or resizing the browser does not count. Each action below validates a fresh envelope and projects it through the same student projector.
 - Desktop preview not yet reviewed · Mobile preview not yet reviewed
 
-**Authored clinical strings (1796, first 400 shown):**
+**Authored clinical strings (1799, first 400 shown):**
 
 - Front door structure ONLY — week ordering, library columns, safety-kit membership, per-site roles, search synonyms. Facts about an item (minutes, summary, key points, attestation) live in topic_meta.json and join at render time; never duplicate them here. Validated by 13_Faculty_Resources/_automation/validate_curriculum.py.
 - a feedback form, not library content — reachable from the header
@@ -20887,8 +20961,9 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Secure team and exit safety first.
 - Check vitals and glucose; rule out a medical cause.
 - Offer (don't force) oral medication; restraint is the last resort — time-limited and monitored.
-- Don't reach for an antipsychotic before excluding hypoglycemia, hypoxia, delirium, withdrawal, pain, and akathisia.
+- Don't reach for an antipsychotic before excluding hypoglycemia, hypoxia, delirium, withdrawal, pain, akathisia, and catatonia — excited catatonia looks like agitation, and a D2 blocker can tip it into malignant catatonia/NMS.
 - Intoxication / withdrawal
+- Catatonia (excited presentation)
 - Lower stimulation, one calm voice, offer oral PRN; IM only if there is imminent danger.
 - First-line treatment for an agitated patient with normal vitals and no delirium?
 - IM haloperidol + lorazepam
@@ -21233,9 +21308,8 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - A patient has leg weakness that gives way on formal testing but shows a positive Hoover sign. Best framing?
 - Tell the patient nothing is wrong
 - Malingering for disability
-- Order repeat MRIs until something appears
 
-_1396 further strings omitted — this surface embeds the build's front-door catalog (item summaries, key points, search synonyms), which is transcribed in full elsewhere in this document set._
+_1399 further strings omitted — this surface embeds the build's front-door catalog (item summaries, key points, search synonyms), which is transcribed in full elsewhere in this document set._
 
 
 <!-- ==================== A1_QUESTION_BANK.md ==================== -->
@@ -22833,7 +22907,7 @@ _1396 further strings omitted — this surface embeds the build's front-door cat
 
 **Pearl.** EPDS screens for depression and anxiety — it does NOT detect psychosis or mania; always ask explicitly about delusions, hallucinations, and manic symptoms in every postpartum patient.
 
-**Tier-2 / stretch.** {"q": "A postpartum patient describes recurring intrusive thoughts of accidentally dropping her baby, which she finds horrifying. She does not act on these thoughts and goes out of her way to avoid holding the baby near stairs. What is the correct interpretation, and how does it differ from a concerning psychotic feature?", "options": [{"key": "A", "t": "This is a command hallucination instructing her to harm the baby — she requires emergency admission and a safety plan for infant protection."}, {"key": "B", "t": "This is postpartum OCD — the intrusive thoughts are ego-dystonic (horrifying to her), and she avoids situations that could lead to the feared outcome; this is the opposite of command hallucinations (which are ego-syntonic and acted upon), and the correct response is clinical support and reassurance, not emergency separation from the baby.", "c": true}, {"key": "C", "t": "This is a normal postpartum anxiety response — new mothers universally have intrusive thoughts about infant safety, which resolves without treatment."}, {"key": "D", "t": "This is a delusion of persecution — the belief that she might harm her child is a paranoid misinterpretation that requires antipsychotic treatment."}], "why": "Postpartum OCD intrusive thoughts are a critically important differential. The page states: 'Postpartum OCD intrusive thoughts are ego-dystonic and not command hallucinations — distinguish them to avoid both over- and under-reaction.' Key discrimination: (1) Ego-dystonic: the patient is horrified by the thoughts and does not want to act on them. (2) She avoids, not approaches, situations that could lead to the feared outcome. (3) Command hallucinations are ego-syntonic experiences that the patient may feel compelled to act on. Mislabeling postpartum OCD as command hallucinations leads to emergency separation and antipsychotic treatment of a patient who needs reassurance and OCD-specific treatment."}
+**Tier-2 / stretch.** {"q": "A postpartum patient describes recurring intrusive thoughts of accidentally dropping her baby, which she finds horrifying. She does not act on these thoughts and goes out of her way to avoid holding the baby near stairs. What is the correct interpretation, and how does it differ from a concerning psychotic feature?", "options": [{"key": "A", "t": "This is a command hallucination instructing her to harm the baby — she requires emergency admission and a safety plan for infant protection."}, {"key": "B", "t": "This is postpartum OCD — the intrusive thoughts are ego-dystonic (horrifying to her), and she avoids situations that could lead to the feared outcome; this differs from psychotic phenomena — voices experienced as external or beliefs about the infant held with delusional conviction, which are an emergency regardless of how distressed the mother is by them — and the correct response is clinical support and reassurance, not emergency separation from the baby.", "c": true}, {"key": "C", "t": "This is a normal postpartum anxiety response — new mothers universally have intrusive thoughts about infant safety, which resolves without treatment."}, {"key": "D", "t": "This is a delusion of persecution — the belief that she might harm her child is a paranoid misinterpretation that requires antipsychotic treatment."}], "why": "Postpartum OCD intrusive thoughts are a critically important differential. The page states: 'Postpartum OCD intrusive thoughts are ego-dystonic and not command hallucinations — distinguish them to avoid both over- and under-reaction.' Key discrimination: (1) Ego-dystonic: the patient is horrified by the thoughts and does not want to act on them. (2) She avoids, not approaches, situations that could lead to the feared outcome. (3) Psychotic phenomena are experienced as external perceptions (voices) or held with delusional conviction; the mother's distress does not rule them out, and risk tracks conviction and appraisal of the experience, not ego-syntonicity. Mislabeling postpartum OCD as command hallucinations leads to emergency separation and antipsychotic treatment of a patient who needs reassurance and OCD-specific treatment."}
 
 ### qb_otherdx_010
 

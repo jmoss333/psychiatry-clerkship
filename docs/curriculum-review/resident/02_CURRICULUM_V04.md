@@ -960,7 +960,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 
 **Can't-miss / red-flag line:**
 
-> Don't reach for an antipsychotic before excluding hypoglycemia, hypoxia, delirium, withdrawal, pain, and akathisia.
+> Don't reach for an antipsychotic before excluding hypoglycemia, hypoxia, delirium, withdrawal, pain, akathisia, and catatonia — excited catatonia looks like agitation, and a D2 blocker can tip it into malignant catatonia/NMS.
 
 **Rule-out list (differential the page forces):**
 
@@ -970,6 +970,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Intoxication / withdrawal
 - Pain / retention
 - Akathisia
+- Catatonia (excited presentation)
 
 **First move (the action the page tells the learner to take):**
 

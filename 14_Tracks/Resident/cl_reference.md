@@ -14,7 +14,7 @@ The MS3 [Consult module](?page=exp_consult.md) teaches *what to notice and when 
 | **Autonomic / temp** | Hyperthermia, tachycardia, diaphoresis, mydriasis, hyperactive bowel | Hyperthermia, labile BP/HR, diaphoresis |
 | **Labs / dx** | Clinical — **Hunter criteria** (spontaneous clonus; or inducible clonus + agitation/diaphoresis; or ocular clonus + agitation; etc.) | Clinical — **CK often >1,000 U/L**, leukocytosis |
 | **Course** | Resolves ~24 h after stopping the agent | Days–weeks; historical mortality **~10%** (lower with early recognition) |
-| **Management** | Stop agent · benzodiazepines · **cyproheptadine** 12 mg PO then 2 mg q2h (max ~32 mg/24h) · cooling | Stop antipsychotic · supportive cooling · benzodiazepines · **dantrolene / bromocriptine / amantadine** for severe |
+| **Management** | Stop agent · benzodiazepines · **cyproheptadine** 12 mg PO then 2 mg q2h (max ~32 mg/24h) · cooling · **temp >41.1 °C is an airway emergency: sedate, intubate, and paralyze with a non-depolarizing agent (NOT succinylcholine — rhabdomyolysis/hyperkalemia risk); antipyretics do not work because the heat is muscular** | Stop antipsychotic — and **restart the dopaminergic agent if NMS followed its abrupt withdrawal** · **aggressive IV isotonic fluids** with serial CK/renal function for rhabdomyolysis and AKI · supportive cooling · benzodiazepines · **dantrolene / bromocriptine / amantadine** for severe · ECT for refractory |
 
 **Board trap:** in serotonin syndrome, **physical restraints are contraindicated** — isometric muscle contraction worsens hyperthermia and lactic acidosis. Sedate instead.
 
