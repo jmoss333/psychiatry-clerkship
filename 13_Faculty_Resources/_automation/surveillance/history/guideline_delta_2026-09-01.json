@@ -1,0 +1,32 @@
+[
+  {
+    "finding_id": "spravato-rems::removed::a4030c90bee637b5",
+    "fingerprint": "spravato-rems::removed::a4030c90bee637b5",
+    "job": "guideline-surveillance",
+    "source_id": "spravato-rems",
+    "source_name": "Spravato (esketamine) REMS",
+    "source_url": "https://www.spravatorems.com/pdfs/REMSProgramOverview",
+    "source_type": "pdf",
+    "modality": "full_text",
+    "detected_at": "2026-09-01T06:06:40+00:00",
+    "change_type": "removed",
+    "severity": "P1",
+    "summary": "0 characters extracted from Spravato (esketamine) REMS (source down or scraper broken).",
+    "evidence": {
+      "new_hash": "",
+      "prev_hash": ""
+    },
+    "affects": [
+      "03_Core_Topics/Mood/mood_disorders_inpatient_teaching.md",
+      "05_Psychopharmacology/ECT_Neuromodulation/ect_neuromodulation_inpatient_teaching.md",
+      "05_Psychopharmacology/Protocol_Library/protocol_library_inpatient.md",
+      "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
+      "13_Faculty_Resources/Handoffs/MASTER_attestation_ledger_2026-07-01.md",
+      "13_Faculty_Resources/Handoffs/library_review_2026-07-01.md",
+      "14_Tracks/Resident/adv_psychopharmacology.md",
+      "14_Tracks/Resident/canon_200.md"
+    ],
+    "recommended_action": "Review Spravato (esketamine) REMS; if guidance changed, update the affected teaching page(s) and re-stamp reviewed.json.",
+    "status": "triaged"
+  }
+]
