@@ -261,6 +261,15 @@ scoped by path in the prompt and never attest, merge, or narrow an instrument wa
    `.claude/agents/deploy-verifier.md`, and `tests/agent-definitions.test.mjs`, which pins each
    agent's tool scope in the node suite. The eval for G1 is still to do.
 
+**Shipped 2026-09-02 (items 2 and 3):** `.claude/settings.json` with `.claude/hooks/`
+(`clerkship_guards.py` shared checks; `pre_edit_guard.py` = A3, A4, A5, A6, A7 + machine paths;
+`lfs_guard.py` = A8; `post_edit_validate.py` = A1, A2, A9, A11, A12, A13; `session_vitals.sh` = A10,
+report-only; `stop_quick_gate.py` = A14), `precommit_gate.py` installed by `bin/install-hooks.sh`
+(B1), and `tests/hooks.test.mjs`. Two facts learned while building: **project hooks do not run
+inside subagents** (the agents' tool allowlists remain their enforcement), and crisis numbers are
+derived from `crisis_resources.json` at runtime so no hook file carries one. Item 1 (C1) and the
+Actions permission toggle remain.
+
 ---
 
 ## 3. Guardrails that apply to every item

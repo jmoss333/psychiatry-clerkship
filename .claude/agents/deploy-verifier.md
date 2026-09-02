@@ -27,18 +27,27 @@ lines.
 
 # Checks, in order
 
-1. **Release twin (existing canary).** Copy `maintenance_config.json` to the scratchpad, replace
-   each `baseUrl` with the target URL (keep `siteId` and `spProxy` unchanged), and run:
+0. **Reachability.** `curl -sS -o /dev/null -w '%{http_code}' <base>/` for each target first. If
+   the request is refused by the environment's egress policy (a `403` on `CONNECT`, a proxy
+   denial) rather than by the site, stop: every check for that site is `UNVERIFIED`, the verdict
+   says so, and you name the hosts that were denied. Do not retry, tunnel, or route around a
+   policy denial; run again from an environment that can reach `*.netlify.app`.
+
+1. **Release twin (existing canary), one site at a time.** Copy `maintenance_config.json` to
+   the scratchpad **once per site**, keeping only that site in `sites[]` with its `baseUrl`
+   replaced by the target (keep `siteId` and `spProxy` unchanged), and run:
 
    ```bash
    python3 13_Faculty_Resources/_automation/maintenance/production_canary.py \
-     --config <scratch>/canary.json --source-sha "$(git rev-parse HEAD)" --out <scratch>/twin.json
+     --config <scratch>/canary-<site>.json --source-sha "$(git rev-parse HEAD)" --out <scratch>/twin-<site>.json
    ```
 
-   This already probes the root headers and CSP, `nav.json`, `search-index.json`, every served
-   media file with a 512-byte ranged request and a content-type check, and the Interview Room
-   pack contract. Exit 0 is PASS. On failure, quote the one-line `production canary failed:`
-   reason; do not re-implement its probes.
+   The canary aborts on its first failure and its one-line reason does not always name the URL,
+   so a single two-site config would hide the second site behind a failure on the first. It
+   probes the root headers and CSP, `nav.json`, `search-index.json`, every served media file
+   with a 512-byte ranged request and a content-type check, and the Interview Room pack
+   contract. Exit 0 is PASS. On failure, quote the `production canary failed:` line and add the
+   base URL yourself; do not re-implement its probes.
 
 2. **One full audio fetch per site.** The canary's ranged probe proves the first 512 bytes are
    not an LFS pointer; this proves the whole object is there. Pick the first `served: true`
@@ -48,24 +57,29 @@ lines.
 
 3. **Crisis block on every required surface.** The required source list is the `markedSources`
    map in `tests/crisis-block.test.mjs`; map each source path to its shipped slug through
-   `13_Faculty_Resources/_automation/site_build/site_manifest.json`. For each slug that appears
-   in that site's `nav.json` (`items[].f`), fetch `/content/<slug>` and assert the body contains
-   the heading `If someone is in crisis` and the class `crisis-block-hook`. For the governed
-   shell, fetch `/` and assert the same. A surface that is in the marked list but not in that
-   site's nav is SKIPPED with a note, not failed.
+   `13_Faculty_Resources/_automation/site_build/site_manifest.json` (its `md` entries ship to
+   `/content/<slug>`, its `tools` entries to `/tools/<slug>`; the governed shell
+   `site_build/spa_index.html` is `/`). `nav.json` is an array of sections, each
+   `{section, items:[{t, f, k, hidden?}]}`, so the shipped slugs are `[].items[].f`. For each
+   marked slug that appears in that site's nav, fetch its URL and assert the body contains the
+   heading `If someone is in crisis` and the class `crisis-block-hook`. A surface that is in the
+   marked list but not in that site's nav is SKIPPED with a note, not failed.
 
 4. **Interview Room.** `GET /tools/sp-interview.html` returns 200 with `text/html`, and the body
    references `sp-interview-proxy.netlify.app`. Do not send a passcode and do not start an
    encounter; the live red-team is a separate, human-run checklist.
 
 5. **Audience scoping.** Resident-only pages are the `14_Tracks/Resident/*` entries in
-   `site_build/resident_section.py` (shipped slugs such as `welcome.md`, `rotation.md`,
-   `adv_psychopharm.md`, `canon_200.md`, `cl_reference.md`). Assert each is present in the
-   resident site's `nav.json` and absent from the MS3 site's `nav.json`. Then fetch one of them
-   from the MS3 site and assert it is not served as a 200 with resident content.
+   `site_build/resident_section.py`; enumerate the shipped slugs from that file rather than
+   from memory (seven at the time of writing: `welcome.md`, `rotation.md`, `adv_psychopharm.md`,
+   `systems_medlegal.md`, `supervision_teaching.md`, `canon_200.md`, `cl_reference.md`). Assert
+   each is present in the resident site's `nav.json` and absent from the MS3 site's. Then fetch
+   one of them from the MS3 site and assert it is not served as a 200 with resident content.
 
-6. **Search spot-check.** From `search-index.json`, confirm `n` equals the number of `docs` and
-   that at least one doc id from the crisis-surface list is present.
+6. **Search spot-check.** From `search-index.json`, confirm `n` equals the number of `docs`,
+   and that at least one crisis-surface slug appears as a doc's `f` (docs are keyed by `f`, the
+   shipped slug; there is no `id` field). Nav items marked `hidden: true` are excluded from the
+   index by design, so their absence is not a finding.
 
 # Report format
 
@@ -84,6 +98,8 @@ Verdict: SERVING CORRECTLY
 ```
 
 A single FAIL makes the site verdict `NOT SERVING CORRECTLY`. Name the failing URL exactly.
+If reachability (step 0) failed, every row is `UNVERIFIED` and the verdict is
+`UNVERIFIED — egress denied to <host>`; that is not evidence either way.
 
 # When something fails
 
