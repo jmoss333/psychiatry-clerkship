@@ -44,6 +44,11 @@ MANIFEST = ROOT / "13_Faculty_Resources" / "_automation" / "site_build" / "site_
 ATTRIBUTION = re.compile(
     # anchors are single or multi-reference: [5 ✓] and [27 ✓, 28 ✓]
     r"\[\s*\d+\s*[✓✔](?:\s*,\s*\d+\s*[✓✔])*\s*\]"
+    # THE REPO'S OWN CLAIM ANCHOR, and the strongest attribution it has:
+    # `[^source-id]` binds one claim to one evidence_registry id, is validated by
+    # validate_claim_anchors.py, and is stripped by build_deploy.py so learners
+    # never see it. Missing this made a properly anchored page look unsourced.
+    r"|\[\^[a-z0-9][a-z0-9-]*\]"
     r"|doi\.org/|\bdoi:|\[DOI\]"                   # DOI in any form
     r"|\bPMID\b"                                   # PMID
     r"|\*\*(?:Key paper|Evidence|Source|Citation|Reference)s?:?\*\*"
