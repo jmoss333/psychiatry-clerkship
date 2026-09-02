@@ -7076,6 +7076,72 @@
           }
         ]
       }
+    },
+    {
+      "id": "bot-2026-benzodiazepines-catatonia",
+      "type": "systematic-review",
+      "citation": {
+        "title": "The Effect of Benzodiazepines on Catatonia: A Systematic Review and Meta-Analysis",
+        "authors": [
+          {
+            "family": "Bot",
+            "given": "L"
+          },
+          {
+            "family": "Schotsman",
+            "given": "B"
+          },
+          {
+            "family": "Oostra",
+            "given": "E"
+          },
+          {
+            "family": "Hoogendoorn",
+            "given": "AW"
+          },
+          {
+            "family": "van Exel",
+            "given": "E"
+          }
+        ],
+        "organization": "",
+        "year": 2026,
+        "journal": "Acta Psychiatr Scand",
+        "volume": "154",
+        "pages": "99-115",
+        "doi": "10.1111/acps.70102",
+        "pmid": "42009596",
+        "url": "https://doi.org/10.1111/acps.70102"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 42009596): title, authors, journal, volume, pages, DOI and PMC id all match",
+        "verifiedAt": "2026-09-02",
+        "note": "Added for curriculum-review finding RSAF-F010: cl_reference.md stated benzodiazepine response in catatonia as '~90%', which this meta-analysis (53 studies) contradicts at 77% response / 55% remission. Annotation is AI-drafted from the abstract and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "systematic review / meta-analysis",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-02",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "catatonia",
+          "benzodiazepines",
+          "lorazepam"
+        ],
+        "clerkshipRelevance": "The calibration number for the lorazepam challenge: response 77% and full remission 55% across 53 studies — effective, but far from the near-universal response the older teaching implies, which is why a partial or absent response should start the ECT conversation rather than further dose escalation. The meta-regression found no significant dose-response relationship.",
+        "noteHistory": [
+          {
+            "date": "2026-09-02",
+            "note": "Added with a verified abstract span while correcting the '~90%' figure on cl_reference.md.",
+            "reason": "curriculum-review remediation WP-5a (finding RSAF-F010)"
+          }
+        ]
+      }
     }
   ]
 }

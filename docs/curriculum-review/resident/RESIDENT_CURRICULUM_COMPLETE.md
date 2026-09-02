@@ -3,7 +3,7 @@
 # RESIDENT curriculum — complete content transcript for clinical review
 
 **Site:** `mmc-psychiatry-residents-sanford` · **Audience:** Residents — MMC/Sanford psychiatry residents
-**Generated:** 2026-09-02 from build `2f21c32` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
+**Generated:** 2026-09-02 from build `bfced1f` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
 
 ## Who this is for
 
@@ -19,14 +19,14 @@ This transcript is assembled from the **built site**, not the source tree, so it
 | Narrative pages (markdown) | 86 |
 | Interactive tools | 25 |
 | Deep-link-only (hidden) surfaces | 26 |
-| Words of narrative curriculum | 117,677 |
+| Words of narrative curriculum | 117,851 |
 | Practice question-bank items | 192 |
 | Audio-companion quiz decks / questions | 79 / 437 |
 | Communication cases | 12 |
 | Diagnostic reasoning cases | 5 |
 | Family systems scenarios | 8 |
-| Registered evidence sources | 104 |
-| Annotated claims with verbatim source spans | 46 |
+| Registered evidence sources | 105 |
+| Annotated claims with verbatim source spans | 47 |
 
 ## Document set
 
@@ -86,7 +86,7 @@ High-yield places to concentrate: the `topic_meta` **can't-miss**, **rule-out** 
 
 # RESIDENT · Navigation map
 
-Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-02 @ `2f21c32`.
+Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-02 @ `bfced1f`.
 
 ## Orientation  *(pinned)*
 
@@ -131,11 +131,11 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | # | Title | Slug | Type | Sidebar | Governance | Source path | Words |
 |---|---|---|---|---|---|---|---|
 | 1 | Suicide Risk & Safety | `pg_suicide.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `14_Tracks/MS3/Student_Ready_Pack/02_pocket_guides/suicide_risk_and_safety_pocket_card.md` | 868 |
-| 2 | Suicide Risk & Safety Planning | `suicide.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `04_Acute_and_Safety/Suicide_Risk_and_Safety_Planning/suicide_risk_safety_planning_inpatient_teaching.md` | 973 |
+| 2 | Suicide Risk & Safety Planning | `suicide.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `04_Acute_and_Safety/Suicide_Risk_and_Safety_Planning/suicide_risk_safety_planning_inpatient_teaching.md` | 994 |
 | 3 | Columbia C-SSRS — Official Form & Training | `cssrs.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `04_Acute_and_Safety/Suicide_Risk_and_Safety_Planning/columbia-cssrs-screener.html` |  |
-| 4 | Violence Risk | `violence.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `04_Acute_and_Safety/Violence_Risk/violence_risk_inpatient_teaching.md` | 939 |
+| 4 | Violence Risk | `violence.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `04_Acute_and_Safety/Violence_Risk/violence_risk_inpatient_teaching.md` | 957 |
 | 5 | Violence Risk (FRST) | `violence.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `04_Acute_and_Safety/Violence_Risk/violence-risk-one-pager.html` |  |
-| 6 | Agitation & Restraint | `agitation.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `04_Acute_and_Safety/Agitation_and_Restraint/agitation_restraint_inpatient_teaching.md` | 1069 |
+| 6 | Agitation & Restraint | `agitation.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `04_Acute_and_Safety/Agitation_and_Restraint/agitation_restraint_inpatient_teaching.md` | 1093 |
 | 7 | Agitation Ladder — PRN Trainer | `rp-agitation.html` | tool | listed | status=`pending` · riskKind=`local-policy` · riskLevel=`high` | `_prototypes/agitation-trainer/rp-agitation.html` |  |
 | 8 | Catatonia | `catatonia.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `04_Acute_and_Safety/Catatonia/catatonia_inpatient_teaching.md` | 639 |
 | 9 | Bush-Francis Catatonia Scale (BFCRS) — Official Form & Training | `bfcrs.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `04_Acute_and_Safety/Catatonia/bfcrs.html` |  |
@@ -144,7 +144,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 12 | Withdrawal: COWS Tool · CIWA-Ar Official Form & Training | `withdrawal.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/SUD_Withdrawal/withdrawal-ciwa-cows-card.html` |  |
 | 13 | Decisional Capacity | `capacity.html` | tool | listed | status=`reviewed` · riskKind=`legal` · riskLevel=`high` | `04_Acute_and_Safety/Decisional_Capacity/decisional-capacity-module.html` |  |
 | 14 | Consult Questions: Capacity, Delirium, Catatonia, Withdrawal | `exp_consult.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/MS3/Student_Ready_Pack/04_expansion_modules/consult_capacity_delirium_catatonia_withdrawal.md` | 935 |
-| 15 | C-L: Emergencies, Tox & Capacity (Numbers) | `cl_reference.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/Resident/cl_reference.md` | 867 |
+| 15 | C-L: Emergencies, Tox & Capacity (Numbers) | `cl_reference.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/Resident/cl_reference.md` | 978 |
 | 16 | Inpatient Systems & Med-Legal | `systems_medlegal.md` | md | listed | status=`reviewed` · riskKind=`legal` · riskLevel=`high` | `14_Tracks/Resident/systems_medlegal.md` | 1350 |
 
 ## Make a Plan
@@ -6093,7 +6093,7 @@ directly and then turn answers into a real risk formulation.
 - **Slug:** `suicide.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `04_Acute_and_Safety/Suicide_Risk_and_Safety_Planning/suicide_risk_safety_planning_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 973 words
+- **Length:** 994 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -6150,7 +6150,7 @@ directly and then turn answers into a real risk formulation.
 
 **Ask directly — it does not plant the idea.** Asking about suicide does not increase suicidal thinking; avoiding the question only forfeits information. Move stepwise from passive death wish → active ideation → plan → intent → access to means → any preparatory acts, and document what the patient actually said, not a global "denies SI." Structure the screen with the **Columbia Suicide Severity Rating Scale (C-SSRS)**, remembering it is a screening and severity tool, not a device that predicts who will die.
 
-**Separate risk factors from warning signs.** *Static* risk factors set the baseline and cannot be changed: a prior attempt is the single strongest long-term predictor, alongside older age, male sex, access to firearms, chronic or painful illness, and family history of suicide. *Dynamic, modifiable* factors are the treatment targets: active depression, hopelessness, agitation and insomnia, substance use, command hallucinations, and acute psychosocial loss. *Warning signs* are the near-term behavioral shifts (a sudden calm after agitation, giving things away, saying goodbye) that change the picture tonight. Protective factors (strong supports, treatment engagement, responsibility for children) are real and worth documenting, but they never override acute high-risk findings.
+**Separate risk factors from warning signs.** *Static* risk factors set the baseline and cannot be changed: a prior attempt is the single strongest long-term predictor, alongside older age, male sex, chronic or painful illness, and family history of suicide. Access to firearms raises baseline risk sharply — but unlike the others it is modifiable, which is exactly why means restriction is the intervention. *Dynamic, modifiable* factors are the treatment targets: active depression, hopelessness, agitation and insomnia, substance use, command hallucinations, and acute psychosocial loss. *Warning signs* are the near-term behavioral shifts (a sudden calm after agitation, giving things away, saying goodbye) that change the picture tonight. Protective factors (strong supports, treatment engagement, responsibility for children) are real and worth documenting, but they never override acute high-risk findings.
 
 **Mind the high-risk windows.** Risk is not flat across the admission. The peri-discharge and immediate post-discharge period is the highest-risk window of the entire episode — the transition, not the acute inpatient stay, is when many deaths occur. Treat discharge planning as a safety intervention, not paperwork.
 
@@ -6230,7 +6230,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **Slug:** `violence.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `04_Acute_and_Safety/Violence_Risk/violence_risk_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 939 words
+- **Length:** 957 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -6283,7 +6283,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 
 **How it presents on the unit.** Serious violence rarely erupts without a prodrome. Watch for the escalation curve: rising motor activity (pacing, restlessness), a louder and faster voice, clenched jaw or fists, prolonged staring, refusal to sit, and intrusion into others' physical space. Verbal threats and striking objects sit just below assault on that curve. The single most important distinction is between *static* risk — history you cannot change — and *dynamic* risk — the modifiable state driving this patient right now. Static factors (a past act of violence above all, younger age, male sex, substance use, prior weapon access) tell you the baseline; dynamic factors (acute psychosis, intoxication or withdrawal, agitation, untreated pain, a provocative environment) tell you what is treatable tonight and are where the clinical work lives.
 
-**Recognize and screen.** Past violence is the strongest single predictor of future violence — take a specific history of it rather than a global impression. Among psychotic symptoms, the highest-risk pattern is persecutory delusions paired with command hallucinations the patient feels compelled to obey ("threat/control-override"). For short-term, unit-level prediction, structure the bedside read with the **Brøset Violence Checklist (BVC)**: confusion, irritability, boisterousness, verbal threats, physical threats, and attacking objects — each present/absent, summed to gauge the risk of violence over the next 24 hours. More comprehensive structured instruments exist (e.g., HCR-20) but belong to formal forensic assessment, not the daily student read.
+**Recognize and screen.** Past violence is the strongest single predictor of future violence — take a specific history of it rather than a global impression. Among psychotic symptoms, the highest-risk pattern is persecutory delusions paired with command hallucinations the patient feels compelled to obey. ("Threat/control-override" is a related but distinct construct — persecutory beliefs plus the sense that outside forces override one's self-control.) For short-term, unit-level prediction, structure the bedside read with the **Brøset Violence Checklist (BVC)**: confusion, irritability, boisterousness, verbal threats, physical threats, and attacking objects — each present/absent, summed to gauge the risk of violence over the next 24 hours. More comprehensive structured instruments exist (e.g., HCR-20) but belong to formal forensic assessment, not the daily student read.
 
 **Keep yourself and the milieu safe — the room setup is the intervention.** If you are at all concerned, do not interview alone. Position yourself nearer the door than the patient so neither of you is trapped and your exit is never blocked. Know where the duress alarm is before you sit down. Remove obvious ligatures and throwable objects from reach. Keep a calm, low, non-confrontational posture, give the patient space, and avoid cornering, sudden movements, or a challenging stance.
 
@@ -6402,7 +6402,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **Slug:** `agitation.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `04_Acute_and_Safety/Agitation_and_Restraint/agitation_restraint_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 1,069 words
+- **Length:** 1,093 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -6509,7 +6509,7 @@ Treat the suspected cause. Prefer the oral, collaborative route over an intramus
 
 ## Restraint and seclusion
 
-Restraint and seclusion are safety interventions, never treatments. They do not fix the underlying problem; they buy time. They require a time-limited physician order, close and continuous monitoring, and discontinuation the moment the patient is safe — not the end of a shift. A post-event debrief with the team (and, where appropriate, the patient) is part of the standard, not an extra. These practices are governed by CMS and Joint Commission standards, and they carry real physical risk (injury, aspiration) and psychological risk (re-traumatization). Apply trauma-informed care throughout, and stay alert to the documented inequities in who gets restrained and how often: Black patients face roughly **1.85× the adjusted odds of physical restraint** on inpatient units (and ~2.84× in the ED awaiting admission; *Psychiatric Services* 2022–2023) — that disparity is a quality-of-care issue, not a footnote.
+Restraint and seclusion are safety interventions, never treatments. They do not fix the underlying problem; they buy time. They require a time-limited physician order, close and continuous monitoring, and discontinuation the moment the patient is safe — not the end of a shift. A post-event debrief with the team (and, where appropriate, the patient) is part of the standard, not an extra. These practices are governed by CMS and Joint Commission standards, and they carry real physical risk (injury, aspiration) and psychological risk (re-traumatization). Apply trauma-informed care throughout, and stay alert to the documented inequities in who gets restrained and how often: Black patients face roughly **1.85× the adjusted odds of a restraint event** on inpatient psychiatric units (Singal et al., *Psychiatric Services* 2024), and higher adjusted odds of physical and chemical restraint during emergency psychiatric evaluation in the ED as well (aOR ~1.35; Smith et al., *Psychiatric Services* 2022) — that disparity is a quality-of-care issue, not a footnote.
 
 ## What the student does
 
@@ -6734,6 +6734,12 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
    "ref": "American Geriatrics Society 2023 Updated AGS Beers Criteria. J Am Geriatr Soc. 2023.",
    "doi": "",
    "url": ""
+  },
+  {
+   "id": "nikooie2019",
+   "ref": "Nikooie R, et al. Antipsychotics for Treating Delirium in Hospitalized Adults: A Systematic Review. Ann Intern Med. 2019;171(7):485-495.",
+   "doi": "10.7326/M19-1860",
+   "url": "https://doi.org/10.7326/M19-1860"
   },
   {
    "id": "cole2025",
@@ -7058,10 +7064,11 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
       ]
      },
      {
-      "text": "Benzodiazepines worsen non-withdrawal delirium; if an agent is needed for dangerous agitation, a second-generation antipsychotic is generally preferred over haloperidol for faster onset and fewer EPS. No medication is FDA-approved for delirium.",
+      "text": "Benzodiazepines worsen non-withdrawal delirium. Haloperidol and second-generation agents are both used; the case for an SGA is a lower EPS burden, not faster onset — and because no antipsychotic shortens delirium or lowers mortality, reserve one for agitation that endangers the patient or staff after non-pharmacologic measures fail, at the lowest dose for the shortest time. No medication is FDA-approved for delirium.",
       "citationIds": [
        "beers2023",
-       "zaman2017"
+       "zaman2017",
+       "nikooie2019"
       ]
      }
     ],
@@ -7185,7 +7192,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
      "spo2": 97,
      "temp": 36.8
     },
-    "history": "Parkinson disease on dopaminergic therapy; recent evening confusion/hallucinations.",
+    "history": "Parkinson disease on dopaminergic therapy; long-standing, non-fluctuating visual hallucinations attributed to PD psychosis. No new medication change, infection, or metabolic derangement; attention intact on exam.",
     "currentMeds": [
      "dopaminergic therapy"
     ],
@@ -8126,7 +8133,7 @@ should independently manage high-risk consults.
 - **Slug:** `cl_reference.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `14_Tracks/Resident/cl_reference.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 867 words
+- **Length:** 978 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -8211,9 +8218,10 @@ The MS3 [Consult module](?page=exp_consult.md) teaches *what to notice and when 
 
 ## Catatonia — the lorazepam challenge
 - Screen with the BFCRS. **Lorazepam challenge 2 mg IV** (1 mg if elderly or respiratory risk); a **≥50% reduction in BFCRS** within ~10–30 min is a positive challenge — both diagnostic and therapeutic.
-- Effective in ~90%; titrate to a standing regimen, often up to ~16 mg/day (higher only under close monitoring).
+- Response is generally reported at roughly **60–80%** (2026 meta-analysis: 77% response, 55% full remission) — good, but not near-universal; titrate to an adequate standing regimen, often up to ~16 mg/day (higher only under close monitoring), and when the response is still partial or absent after an adequate trial, move to ECT rather than continuing to climb — immediately in malignant catatonia.
 - **ECT is definitive** — effective in 60–100%, and first-line for malignant catatonia or benzodiazepine non-response.
 - **Avoid antipsychotics** in suspected catatonia — they can precipitate or worsen NMS (malignant catatonia and NMS overlap on a spectrum).
+- Source: benzodiazepine response/remission rates from Bot et al., *Acta Psychiatr Scand* 2026;154:99-115 (systematic review and meta-analysis, 53 studies).
 - *By design, the MS3 catatonia teaching page stays dose-free; these numbers live here on the resident reference.*
 
 ## Lithium toxicity
@@ -8225,7 +8233,8 @@ The MS3 [Consult module](?page=exp_consult.md) teaches *what to notice and when 
 
 ## QTc / torsades de pointes
 - **Act at QTc ≥500 ms, or an increase ≥60 ms** from baseline.
-- Replete **K⁺ >4.0** and **Mg²⁺ >2.0**; reconcile every QT-prolonging drug and interaction.
+- Replete **K⁺ >4.0 mEq/L** and **Mg²⁺ >2.0 mg/dL**; reconcile every QT-prolonging drug and interaction.
+- **If torsades actually fires:** call the code, give **IV magnesium sulfate 2 g** over 1–2 min *regardless of the serum magnesium level*, stop every offending drug, correct K⁺ and Ca²⁺, treat pause/bradycardia dependence with overdrive pacing or isoproterenol, and defibrillate if it degenerates to sustained VT/VF.
 - Higher-risk psychotropics: **IV haloperidol, ziprasidone, thioridazine (avoid), pimozide**; **citalopram capped at 20 mg** if age >60, hepatic impairment, or CYP2C19 poor metabolizer.
 - Source: AHA scientific statement on drug-induced arrhythmias (Tisdale et al., *Circulation* 2020).
 
@@ -24462,18 +24471,18 @@ _1399 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_saf_010` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['safety', 'psychosocial']`
 - Linked pages: `agitation.md`
-- Evidence: `agitation.md 'Restraint and seclusion' — Black patients face roughly 1.85× the adjusted odds of physical restraint on inpatient units (and ~2.84× in the ED awaiting admission) — that disparity is a quality-of-care issue, not a footnote.`
+- Evidence: `agitation.md 'Restraint and seclusion' — Black patients face roughly 1.85× the adjusted odds of a restraint event on inpatient psychiatric units (Singal et al., Psychiatric Services 2024), and higher adjusted odds of physical and chemical restraint during emergency psychiatric evaluation in the ED as well (aOR ~1.35; Smith et al., Psychiatric Services 2022) — that disparity is a quality-of-care issue, not a footnote.`
 
 **Stem.** A team is debriefing after a physical restraint episode involving a Black patient on the inpatient unit. A student asks what the published evidence shows about racial disparities in restraint use in inpatient psychiatry. Which statement correctly reflects the data?
 
 - Black patients are restrained at similar rates to White patients after adjusting for clinical acuity — the apparent disparity is explained by severity of presentation.
 - Black patients are more likely to receive verbal de-escalation before physical restraint — the data show greater resource deployment, not disparity.
-- Black patients face roughly 1.85× the adjusted odds of physical restraint on inpatient units — this disparity is a quality-of-care issue, not an acuity artifact. **← keyed correct**
+- Black patients face roughly 1.85× the adjusted odds of a restraint event on inpatient psychiatric units — this disparity is a quality-of-care issue, not an acuity artifact. **← keyed correct**
 - Joint Commission non-discrimination standards adopted in 2015 have eliminated racial disparities in restraint use.
 
-**Rationale.** No disparity exists in three forms. The page explicitly states: 'Black patients face roughly 1.85× the adjusted odds of physical restraint on inpatient units (and ~2.84× in the ED awaiting admission) — that disparity is a quality-of-care issue, not a footnote.' This is the only data point cited on the page for this topic and is explicitly framed as belonging in a post-restraint debrief.
+**Rationale.** No disparity exists in three forms. The page explicitly states: 'Black patients face roughly 1.85× the adjusted odds of a restraint event on inpatient psychiatric units (Singal et al., Psychiatric Services 2024), and higher adjusted odds of physical and chemical restraint during emergency psychiatric evaluation in the ED as well (aOR ~1.35; Smith et al., Psychiatric Services 2022) — that disparity is a quality-of-care issue, not a footnote.' This is the only data point cited on the page for this topic and is explicitly framed as belonging in a post-restraint debrief.
 
-**Pearl.** Black patients face ~1.85× the adjusted odds of physical restraint on inpatient units — a quality-of-care disparity that belongs in every post-restraint debrief.
+**Pearl.** Black patients face ~1.85× the adjusted odds of a restraint event on inpatient psychiatric units — a quality-of-care disparity that belongs in every post-restraint debrief.
 
 ### qb_saf_011
 
@@ -30103,7 +30112,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
 
 # RESIDENT · Appendix A4 — Evidence base
 
-104 registered sources and 46 annotated claims. Each annotation stores the verbatim span from the paper that licenses the claim the library makes — the highest-value target for clinical review, because a claim that drifts from its span is a factual error with a citation attached.
+105 registered sources and 47 annotated claims. Each annotation stores the verbatim span from the paper that licenses the claim the library makes — the highest-value target for clinical review, because a claim that drifts from its span is a factual error with a citation attached.
 
 **Annotation policy.** {
  "rule": "Every claim the library makes about a source must be licensed by a stored verbatim span from that source.",
@@ -30776,6 +30785,20 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
 
 - claim terms: `first week postdischarge`, `evidence of publication bias towards papers reporting a higher rate`
 
+### `bot-2026-benzodiazepines-catatonia`
+
+- span type `abstract` · retrieved 2026-09-02 · PMID 42009596 · DOI 10.1111/acps.70102
+
+**Verbatim source span.**
+
+> Of 1336 screened articles, 53 met inclusion criteria. Most were case series using lorazepam (a benzodiazepine) to treat catatonia, with dosages ranging from 2 to 60 mg/day with a median dose of 8 mg/day. The overall remission rate was 55%; overall response was 77%.
+
+**Claim `catatonia-benzodiazepine-response-rate`** (direction: `descriptive`, used by cl_reference)
+
+> Across 53 studies, benzodiazepine treatment of catatonia produced an overall response rate of 77% and an overall remission rate of 55%.
+
+- claim terms: `overall remission rate`, `overall response`, `catatonia`
+
 ## Full source registry
 
 | id | type | access | citation |
@@ -30884,6 +30907,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
 | `hansson-2022` | primary-study | metadata | {'authors': [{'family': 'Hansson', 'given': 'KM'}, {'family': 'Romøren', 'given': 'M'}, {'family': 'Weimand', 'given': 'B'}, {'family': 'Heiervang', 'given': 'KS'}, {'family': 'Hestmark', 'given': 'L'}, {'family': 'Landeweer', 'given': 'EGM'}, {'family': 'Pedersen', 'given': 'R'}], 'doi': '10.1186/s12888-022-04461-6', 'journal': 'BMC Psychiatry', 'organization': '', 'pages': '812', 'pmid': '36539741', 'title': 'The duty of confidentiality during family involvement: ethical challenges and possible solutions in the treatment of persons with psychotic disorders', 'url': 'https://doi.org/10.1186/s12888-022-04461-6', 'volume': '22', 'year': 2022} |
 | `chung-2017-postdischarge-suicide` | systematic-review | metadata | {'authors': [{'family': 'Chung', 'given': 'DT'}, {'family': 'Ryan', 'given': 'CJ'}, {'family': 'Hadzi-Pavlovic', 'given': 'D'}, {'family': 'Singh', 'given': 'SP'}, {'family': 'Stanton', 'given': 'C'}, {'family': 'Large', 'given': 'MM'}], 'doi': '10.1001/jamapsychiatry.2017.1044', 'journal': 'JAMA Psychiatry', 'organization': '', 'pages': '694-702', 'pmid': '28564699', 'title': 'Suicide Rates After Discharge From Psychiatric Facilities: A Systematic Review and Meta-analysis', 'url': 'https://doi.org/10.1001/jamapsychiatry.2017.1044', 'volume': '74', 'year': 2017} |
 | `chung-2019-first-week-month` | systematic-review | metadata | {'authors': [{'family': 'Chung', 'given': 'D'}, {'family': 'Hadzi-Pavlovic', 'given': 'D'}, {'family': 'Wang', 'given': 'M'}, {'family': 'Swaraj', 'given': 'S'}, {'family': 'Olfson', 'given': 'M'}, {'family': 'Large', 'given': 'M'}], 'doi': '10.1136/bmjopen-2018-023883', 'journal': 'BMJ Open', 'organization': '', 'pages': 'e023883', 'pmid': '30904843', 'title': 'Meta-analysis of suicide rates in the first week and the first month after psychiatric hospitalisation', 'url': 'https://doi.org/10.1136/bmjopen-2018-023883', 'volume': '9', 'year': 2019} |
+| `bot-2026-benzodiazepines-catatonia` | systematic-review | abstract | {'authors': [{'family': 'Bot', 'given': 'L'}, {'family': 'Schotsman', 'given': 'B'}, {'family': 'Oostra', 'given': 'E'}, {'family': 'Hoogendoorn', 'given': 'AW'}, {'family': 'van Exel', 'given': 'E'}], 'doi': '10.1111/acps.70102', 'journal': 'Acta Psychiatr Scand', 'organization': '', 'pages': '99-115', 'pmid': '42009596', 'title': 'The Effect of Benzodiazepines on Catatonia: A Systematic Review and Meta-Analysis', 'url': 'https://doi.org/10.1111/acps.70102', 'volume': '154', 'year': 2026} |
 
 
 <!-- ==================== A5_COVERAGE_MATRICES.md ==================== -->

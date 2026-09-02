@@ -2587,7 +2587,7 @@
         },
         {
           "key": "C",
-          "t": "Black patients face roughly 1.85× the adjusted odds of physical restraint on inpatient units — this disparity is a quality-of-care issue, not an acuity artifact.",
+          "t": "Black patients face roughly 1.85× the adjusted odds of a restraint event on inpatient psychiatric units — this disparity is a quality-of-care issue, not an acuity artifact.",
           "c": true
         },
         {
@@ -2599,9 +2599,9 @@
           }
         }
       ],
-      "why": "No disparity exists in three forms. The page explicitly states: 'Black patients face roughly 1.85× the adjusted odds of physical restraint on inpatient units (and ~2.84× in the ED awaiting admission) — that disparity is a quality-of-care issue, not a footnote.' This is the only data point cited on the page for this topic and is explicitly framed as belonging in a post-restraint debrief.",
-      "pearl": "Black patients face ~1.85× the adjusted odds of physical restraint on inpatient units — a quality-of-care disparity that belongs in every post-restraint debrief.",
-      "evidence": "agitation.md 'Restraint and seclusion' — Black patients face roughly 1.85× the adjusted odds of physical restraint on inpatient units (and ~2.84× in the ED awaiting admission) — that disparity is a quality-of-care issue, not a footnote."
+      "why": "No disparity exists in three forms. The page explicitly states: 'Black patients face roughly 1.85× the adjusted odds of a restraint event on inpatient psychiatric units (Singal et al., Psychiatric Services 2024), and higher adjusted odds of physical and chemical restraint during emergency psychiatric evaluation in the ED as well (aOR ~1.35; Smith et al., Psychiatric Services 2022) — that disparity is a quality-of-care issue, not a footnote.' This is the only data point cited on the page for this topic and is explicitly framed as belonging in a post-restraint debrief.",
+      "pearl": "Black patients face ~1.85× the adjusted odds of a restraint event on inpatient psychiatric units — a quality-of-care disparity that belongs in every post-restraint debrief.",
+      "evidence": "agitation.md 'Restraint and seclusion' — Black patients face roughly 1.85× the adjusted odds of a restraint event on inpatient psychiatric units (Singal et al., Psychiatric Services 2024), and higher adjusted odds of physical and chemical restraint during emergency psychiatric evaluation in the ED as well (aOR ~1.35; Smith et al., Psychiatric Services 2022) — that disparity is a quality-of-care issue, not a footnote."
     },
     {
       "id": "qb_saf_011",
