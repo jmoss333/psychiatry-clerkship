@@ -542,7 +542,7 @@ Given her obesity and weight concern, a **low-metabolic-risk partial agonist** (
 
 **TL;DR (shown above the page text):**
 
-> Recognizing a manic episode, screening for mixed features and secondary mania, and choosing first-line acute treatment.
+> Recognizing a manic episode, screening for secondary mania, and choosing first-line acute treatment.
 
 **Key points (bulleted card):**
 
@@ -558,7 +558,7 @@ Given her obesity and weight concern, a **low-metabolic-risk partial agonist** (
 - **say** — Before moving on, rehearse one sentence you would actually say to this patient or family, in plain language and out loud.
 - **collateral** — Ask yourself what collateral would change your differential here, and who you would have to call to get it.
 - **rounds** — If you are running the session, the facilitator notes flag the errors this case most often surfaces and the evidence-quality distinctions worth naming out loud.
-- **exam** — Teaching takeaway: Recognizing a manic episode, screening for mixed features and secondary mania, and choosing first-line acute treatment.
+- **exam** — Teaching takeaway: Recognizing a manic episode, screening for secondary mania, and choosing first-line acute treatment.
 - **actions** — All Case of the Week cases
 
 **Cross-references and tagging:**

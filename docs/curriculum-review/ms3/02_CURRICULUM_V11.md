@@ -157,7 +157,7 @@ She returns at **6 weeks** on an adequately dosed selective serotonin reuptake i
 
 **TL;DR (shown above the page text):**
 
-> Recognizing a manic episode, screening for mixed features and secondary mania, and choosing first-line acute treatment.
+> Recognizing a manic episode, screening for secondary mania, and choosing first-line acute treatment.
 
 **Key points (bulleted card):**
 
@@ -173,7 +173,7 @@ She returns at **6 weeks** on an adequately dosed selective serotonin reuptake i
 - **say** — Before moving on, rehearse one sentence you would actually say to this patient or family, in plain language and out loud.
 - **collateral** — Ask yourself what collateral would change your differential here, and who you would have to call to get it.
 - **rounds** — Use the ranked differential and the workup-and-management ladder as the spine of your presentation; lead with the finding that changes management.
-- **exam** — Shelf-level takeaway: Recognizing a manic episode, screening for mixed features and secondary mania, and choosing first-line acute treatment.
+- **exam** — Shelf-level takeaway: Recognizing a manic episode, screening for secondary mania, and choosing first-line acute treatment.
 - **actions** — All Case of the Week cases
 
 **Cross-references and tagging:**

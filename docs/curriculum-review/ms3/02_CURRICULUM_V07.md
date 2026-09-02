@@ -25,7 +25,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 **Key points (bulleted card):**
 
 - Behavioral activation is the highest-yield, lowest cognitive-demand inpatient move for the withdrawn anhedonic patient — it works by scheduling one small valued activity, not by asking a depressed person to think their way out.
-- Psychoeducation has the strongest inpatient numbers: readmission NNT 5, relapse NNT 9 — give it as a conversation with family looped in, not a packet dump.
+- Psychoeducation has strong inpatient numbers — readmission NNT 5, relapse NNT 9 (Xia 2011 Cochrane; limited-quality hospital-based trials, and the reviewers judge the true effect likely smaller) — give it as a conversation with family looped in, not a packet dump.
 - Safety planning with follow-up reduces suicidal behaviors by approximately 50%; no-suicide contracts have no evidence and create false reassurance — abandon them.
 
 **Can't-miss / red-flag line:**

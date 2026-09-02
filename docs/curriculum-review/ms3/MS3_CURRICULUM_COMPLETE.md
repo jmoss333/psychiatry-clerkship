@@ -3,7 +3,7 @@
 # MS3 curriculum — complete content transcript for clinical review
 
 **Site:** `une-ms3-psychiatry` · **Audience:** MS3 — UNE medical students
-**Generated:** 2026-09-02 from build `e844b6b` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
+**Generated:** 2026-09-02 from build `71f8600` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
 
 ## Who this is for
 
@@ -82,7 +82,7 @@ High-yield places to concentrate: the `topic_meta` **can't-miss**, **rule-out** 
 
 # MS3 · Navigation map
 
-Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-02 @ `e844b6b`.
+Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-02 @ `71f8600`.
 
 ## Orientation  *(pinned)*
 
@@ -363,7 +363,7 @@ Next: [open the Orientation Packet](?page=orientation.md).
 
 **Can't-miss / red-flag line:**
 
-> PHI leaves the clinical system in any form — not into AI tools, personal notes, cloud docs, texts, or email; the PHI firewall is absolute and applies to every device and platform.
+> No PHI leaves the clinical system in any form — not into AI tools, personal notes, cloud docs, texts, or email; the PHI firewall is absolute and applies to every device and platform.
 
 **Clinical-workflow narration (per-stage coaching text):**
 
@@ -824,7 +824,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 
 **Key points (bulleted card):**
 
-- The skill of the week is completing a supervised safety plan with a patient using the C-SSRS — practice building it collaboratively in real time, not as a form to fill.
+- The skill of the week is completing a supervised safety plan with a patient using the Stanley-Brown Safety Planning Intervention — practice building it collaboratively in real time, not as a form to fill; the C-SSRS structures the risk assessment that comes before it, not the plan itself.
 - Suggested landmarks: Wampold 1997 (common factors) and Linehan 1991 (DBT for BPD) — Journal Club 3 (Safety Planning) ties them to the clinical week.
 - On the unit: draft a full biopsychosocial and relational formulation, and notice a rupture-and-repair moment in the therapeutic relationship for the Week 3 reflection.
 
@@ -5448,7 +5448,7 @@ and [responding to guardedness without escalating it](?tool=communication-practi
 
 **TL;DR (shown above the page text):**
 
-> SSRIs/SNRIs plus exposure-based therapy are first-line across anxiety, OCD, and PTSD — standing benzodiazepines are a trap on the unit.
+> SSRIs plus exposure-based therapy are first-line across anxiety, OCD, and PTSD (SNRIs are alternatives for anxiety disorders and PTSD, not OCD) — standing benzodiazepines are a trap on the unit.
 
 **Key points (bulleted card):**
 
@@ -5961,7 +5961,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 
 - Postpartum psychosis typically appears in the first 1–4 weeks, recurs in 30–50% of subsequent deliveries, and is bipolar-spectrum until proven otherwise — screen for prior mania.
 - The EPDS screens for depression, not psychosis — ask directly about delusions and perceptual disturbance, and screen for manic symptoms separately.
-- Stopping maintenance medication in bipolar disorder roughly doubles postpartum relapse risk — 'stop everything' is itself a high-risk clinical decision.
+- Stopping maintenance medication in bipolar disorder nearly triples postpartum relapse risk (~66% off medication vs ~23% on prophylaxis) — 'stop everything' is itself a high-risk clinical decision.
 
 **Can't-miss / red-flag line:**
 
@@ -9215,7 +9215,7 @@ Know *which* protocol applies and *why*; open the EHR order set for the specific
 
 **TL;DR (shown above the page text):**
 
-> ECT is the most effective treatment for severe, psychotic, or catatonic depression — no absolute contraindications, transient memory effects — and rTMS, ketamine/esketamine, VNS, and bright light therapy each have a distinct niche.
+> ECT is the most effective treatment for severe, psychotic, or catatonic depression — no absolute contraindications; anterograde memory effects resolve over weeks, though some retrograde gaps around the treatment period can persist — and rTMS, ketamine/esketamine, VNS, and bright light therapy each have a distinct niche.
 
 **Key points (bulleted card):**
 
@@ -9673,7 +9673,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 
 **TL;DR (shown above the page text):**
 
-> Track metabolic health for every patient on an antipsychotic — weight, glucose, and lipids at baseline, 12 weeks, and annually — and know the dietary safety points for lithium, MAOIs, and grapefruit/CYP3A4.
+> Track metabolic health for every patient on an antipsychotic — weight monthly for the first 3 months then quarterly, glucose and lipids at baseline and 12 weeks then per schedule — and know the dietary safety points for lithium, MAOIs, and grapefruit/CYP3A4.
 
 **Key points (bulleted card):**
 
@@ -10185,7 +10185,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 **Key points (bulleted card):**
 
 - Behavioral activation is the highest-yield, lowest cognitive-demand inpatient move for the withdrawn anhedonic patient — it works by scheduling one small valued activity, not by asking a depressed person to think their way out.
-- Psychoeducation has the strongest inpatient numbers: readmission NNT 5, relapse NNT 9 — give it as a conversation with family looped in, not a packet dump.
+- Psychoeducation has strong inpatient numbers — readmission NNT 5, relapse NNT 9 (Xia 2011 Cochrane; limited-quality hospital-based trials, and the reviewers judge the true effect likely smaller) — give it as a conversation with family looped in, not a packet dump.
 - Safety planning with follow-up reduces suicidal behaviors by approximately 50%; no-suicide contracts have no evidence and create false reassurance — abandon them.
 
 **Can't-miss / red-flag line:**
@@ -15266,7 +15266,7 @@ And on the clinician side: **whoever adds the thiazide should check a lithium le
 
 **TL;DR (shown above the page text):**
 
-> Two opposite toxidromes in one encounter: opioid overdose reversed by naloxone, then precipitated withdrawal - and why buprenorphine has to be started in withdrawal.
+> One encounter, two failures: a COWS-threshold buprenorphine start precipitated withdrawal in a fentanyl-exposed patient, and the recovery is methadone or low-dose initiation - with acute pain treated alongside the MOUD, never instead of it.
 
 **Key points (bulleted card):**
 
@@ -15282,7 +15282,7 @@ And on the clinician side: **whoever adds the thiazide should check a lithium le
 - **say** — Before moving on, rehearse one sentence you would actually say to this patient or family, in plain language and out loud.
 - **collateral** — Ask yourself what collateral would change your differential here, and who you would have to call to get it.
 - **rounds** — Use the ranked differential and the workup-and-management ladder as the spine of your presentation; lead with the finding that changes management.
-- **exam** — Shelf-level takeaway: Two opposite toxidromes in one encounter: opioid overdose reversed by naloxone, then precipitated withdrawal - and why buprenorphine has to be started in withdrawal.
+- **exam** — Shelf-level takeaway: One encounter, two failures: a COWS-threshold buprenorphine start precipitated withdrawal in a fentanyl-exposed patient, and the recovery is methadone or low-dose initiation - with acute pain treated alongside the MOUD, never instead of it.
 - **actions** — All Case of the Week cases
 
 **Cross-references and tagging:**
@@ -15997,7 +15997,7 @@ She returns at **6 weeks** on an adequately dosed selective serotonin reuptake i
 
 **TL;DR (shown above the page text):**
 
-> Recognizing a manic episode, screening for mixed features and secondary mania, and choosing first-line acute treatment.
+> Recognizing a manic episode, screening for secondary mania, and choosing first-line acute treatment.
 
 **Key points (bulleted card):**
 
@@ -16013,7 +16013,7 @@ She returns at **6 weeks** on an adequately dosed selective serotonin reuptake i
 - **say** — Before moving on, rehearse one sentence you would actually say to this patient or family, in plain language and out loud.
 - **collateral** — Ask yourself what collateral would change your differential here, and who you would have to call to get it.
 - **rounds** — Use the ranked differential and the workup-and-management ladder as the spine of your presentation; lead with the finding that changes management.
-- **exam** — Shelf-level takeaway: Recognizing a manic episode, screening for mixed features and secondary mania, and choosing first-line acute treatment.
+- **exam** — Shelf-level takeaway: Recognizing a manic episode, screening for secondary mania, and choosing first-line acute treatment.
 - **actions** — All Case of the Week cases
 
 **Cross-references and tagging:**
@@ -18272,7 +18272,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Intoxication or withdrawal
 - Proportionate grief/adjustment reaction
 - Screen for past mania before any antidepressant; rule out medical, substance, and proportionate-grief causes first.
-- SSRIs/SNRIs plus exposure-based therapy are first-line across anxiety, OCD, and PTSD — standing benzodiazepines are a trap on the unit.
+- SSRIs plus exposure-based therapy are first-line across anxiety, OCD, and PTSD (SNRIs are alternatives for anxiety disorders and PTSD, not OCD) — standing benzodiazepines are a trap on the unit.
 - Rule out medical mimics (hyperthyroidism, arrhythmia, substance withdrawal).
 - OCD: exposure and response prevention plus a higher-dose SSRI.
 - PTSD: trauma-focused therapy (CPT/PE) is first-line.

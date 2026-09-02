@@ -144,7 +144,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 
 - Postpartum psychosis typically appears in the first 1–4 weeks, recurs in 30–50% of subsequent deliveries, and is bipolar-spectrum until proven otherwise — screen for prior mania.
 - The EPDS screens for depression, not psychosis — ask directly about delusions and perceptual disturbance, and screen for manic symptoms separately.
-- Stopping maintenance medication in bipolar disorder roughly doubles postpartum relapse risk — 'stop everything' is itself a high-risk clinical decision.
+- Stopping maintenance medication in bipolar disorder nearly triples postpartum relapse risk (~66% off medication vs ~23% on prophylaxis) — 'stop everything' is itself a high-risk clinical decision.
 
 **Can't-miss / red-flag line:**
 

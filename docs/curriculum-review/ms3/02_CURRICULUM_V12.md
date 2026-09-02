@@ -920,7 +920,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Intoxication or withdrawal
 - Proportionate grief/adjustment reaction
 - Screen for past mania before any antidepressant; rule out medical, substance, and proportionate-grief causes first.
-- SSRIs/SNRIs plus exposure-based therapy are first-line across anxiety, OCD, and PTSD — standing benzodiazepines are a trap on the unit.
+- SSRIs plus exposure-based therapy are first-line across anxiety, OCD, and PTSD (SNRIs are alternatives for anxiety disorders and PTSD, not OCD) — standing benzodiazepines are a trap on the unit.
 - Rule out medical mimics (hyperthyroidism, arrhythmia, substance withdrawal).
 - OCD: exposure and response prevention plus a higher-dose SSRI.
 - PTSD: trauma-focused therapy (CPT/PE) is first-line.

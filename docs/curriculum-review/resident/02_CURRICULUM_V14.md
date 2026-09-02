@@ -30,7 +30,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 
 **Can't-miss / red-flag line:**
 
-> PHI leaves the clinical system in any form — not into AI tools, personal notes, cloud docs, texts, or email; the PHI firewall is absolute and applies to every device and platform.
+> No PHI leaves the clinical system in any form — not into AI tools, personal notes, cloud docs, texts, or email; the PHI firewall is absolute and applies to every device and platform.
 
 **Clinical-workflow narration (per-stage coaching text):**
 
@@ -380,7 +380,7 @@ skills rather than vague exposure.
 
 **Key points (bulleted card):**
 
-- The skill of the week is completing a supervised safety plan with a patient using the C-SSRS — practice building it collaboratively in real time, not as a form to fill.
+- The skill of the week is completing a supervised safety plan with a patient using the Stanley-Brown Safety Planning Intervention — practice building it collaboratively in real time, not as a form to fill; the C-SSRS structures the risk assessment that comes before it, not the plan itself.
 - Suggested landmarks: Wampold 1997 (common factors) and Linehan 1991 (DBT for BPD) — Journal Club 3 (Safety Planning) ties them to the clinical week.
 - On the unit: draft a full biopsychosocial and relational formulation, and notice a rupture-and-repair moment in the therapeutic relationship for the Week 3 reflection.
 
@@ -1061,7 +1061,7 @@ therapy, milieu, family, and discharge back to the formulation.
 
 **TL;DR (shown above the page text):**
 
-> ECT is the most effective treatment for severe, psychotic, or catatonic depression — no absolute contraindications, transient memory effects — and rTMS, ketamine/esketamine, VNS, and bright light therapy each have a distinct niche.
+> ECT is the most effective treatment for severe, psychotic, or catatonic depression — no absolute contraindications; anterograde memory effects resolve over weeks, though some retrograde gaps around the treatment period can persist — and rTMS, ketamine/esketamine, VNS, and bright light therapy each have a distinct niche.
 
 **Key points (bulleted card):**
 

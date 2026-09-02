@@ -554,7 +554,7 @@ And on the clinician side: **whoever adds the thiazide should check a lithium le
 
 **TL;DR (shown above the page text):**
 
-> Two opposite toxidromes in one encounter: opioid overdose reversed by naloxone, then precipitated withdrawal - and why buprenorphine has to be started in withdrawal.
+> One encounter, two failures: a COWS-threshold buprenorphine start precipitated withdrawal in a fentanyl-exposed patient, and the recovery is methadone or low-dose initiation - with acute pain treated alongside the MOUD, never instead of it.
 
 **Key points (bulleted card):**
 
@@ -570,7 +570,7 @@ And on the clinician side: **whoever adds the thiazide should check a lithium le
 - **say** — Before moving on, rehearse one sentence you would actually say to this patient or family, in plain language and out loud.
 - **collateral** — Ask yourself what collateral would change your differential here, and who you would have to call to get it.
 - **rounds** — Use the ranked differential and the workup-and-management ladder as the spine of your presentation; lead with the finding that changes management.
-- **exam** — Shelf-level takeaway: Two opposite toxidromes in one encounter: opioid overdose reversed by naloxone, then precipitated withdrawal - and why buprenorphine has to be started in withdrawal.
+- **exam** — Shelf-level takeaway: One encounter, two failures: a COWS-threshold buprenorphine start precipitated withdrawal in a fentanyl-exposed patient, and the recovery is methadone or low-dose initiation - with acute pain treated alongside the MOUD, never instead of it.
 - **actions** — All Case of the Week cases
 
 **Cross-references and tagging:**

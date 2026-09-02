@@ -111,7 +111,7 @@ Next: [open the Orientation Packet](?page=orientation.md).
 
 **Can't-miss / red-flag line:**
 
-> PHI leaves the clinical system in any form — not into AI tools, personal notes, cloud docs, texts, or email; the PHI firewall is absolute and applies to every device and platform.
+> No PHI leaves the clinical system in any form — not into AI tools, personal notes, cloud docs, texts, or email; the PHI firewall is absolute and applies to every device and platform.
 
 **Clinical-workflow narration (per-stage coaching text):**
 
@@ -572,7 +572,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 
 **Key points (bulleted card):**
 
-- The skill of the week is completing a supervised safety plan with a patient using the C-SSRS — practice building it collaboratively in real time, not as a form to fill.
+- The skill of the week is completing a supervised safety plan with a patient using the Stanley-Brown Safety Planning Intervention — practice building it collaboratively in real time, not as a form to fill; the C-SSRS structures the risk assessment that comes before it, not the plan itself.
 - Suggested landmarks: Wampold 1997 (common factors) and Linehan 1991 (DBT for BPD) — Journal Club 3 (Safety Planning) ties them to the clinical week.
 - On the unit: draft a full biopsychosocial and relational formulation, and notice a rupture-and-repair moment in the therapeutic relationship for the Week 3 reflection.
 
