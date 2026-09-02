@@ -257,16 +257,61 @@ test('Today keeps core progress refs while showing edition priority and rational
   assert.match(html, /Reviewed clerkship Library/);
 });
 
-test('the streak suffix appears at 2+ days and is omitted below that', () => {
-  assert.doesNotMatch(F.fdToday(IDX, s({ streak: 1 })), /days in a row/);
-  assert.doesNotMatch(F.fdToday(IDX, s({ streak: 0 })), /days in a row/);
-  assert.match(F.fdToday(IDX, s({ streak: 2 })), /2 days in a row/);
+// ---- the seven-day activity strip (replaces the Daily-Review-only streak clause) ---------
+
+const NONE = [false, false, false, false, false, false, false];
+const FOUR_OF_SEVEN = [true, true, false, false, true, true, false];
+
+test('the streak clause is gone from the subhead for good', () => {
+  assert.doesNotMatch(F.fdToday(IDX, s({ streak: 5 })), /days in a row/,
+    'a stale state.streak must not resurrect the old clause');
+  assert.doesNotMatch(todaySrc, /days in a row/);
+});
+
+test('the strip is absent until the learner has been active on at least one day', () => {
+  assert.doesNotMatch(F.fdToday(IDX, s({})), /fd-consistency/, 'no activityDays at all');
+  assert.doesNotMatch(F.fdToday(IDX, s({ activityDays: NONE })), /fd-consistency/,
+    'a fresh device must not read "Active 0 of the last 7 days"');
+  assert.doesNotMatch(F.fdToday(IDX, s({ activityDays: [true, true] })), /fd-consistency/,
+    'anything but seven entries is malformed and renders nothing');
+});
+
+test('the strip counts active days and names itself for assistive tech', () => {
+  const html = F.fdToday(IDX, s({ activityDays: FOUR_OF_SEVEN }));
+  assert.match(html, /<div class="fd-consistency" role="img" aria-label="Active 4 of the last 7 days">/);
+  assert.equal((html.match(/fd-consistency__dot is-on/g) || []).length, 4);
+  assert.equal((html.match(/class="fd-consistency__dot(?: is-on)?"/g) || []).length, 7);
+  assert.match(html, /<span class="fd-consistency__dots" aria-hidden="true">/);
+  assert.match(html, /<span class="fd-consistency__text" aria-hidden="true">Active 4 of the last 7 days<\/span>/);
+});
+
+test('the strip sits directly under the subhead, before the columns', () => {
+  const html = F.fdToday(IDX, s({ activityDays: FOUR_OF_SEVEN }));
+  const sub = html.indexOf('<p class="fd-today__sub">');
+  const strip = html.indexOf('<div class="fd-consistency"');
+  const cols = html.indexOf('<div class="fd-today__cols">');
+  assert.ok(sub > -1 && sub < strip && strip < cols);
+});
+
+test('day letters walk back from nowMs and end on today, oldest first', () => {
+  // BASE_STATE.nowMs is Monday 2026-08-10, so the seven labels run Tue..Mon.
+  const html = F.fdToday(IDX, s({ activityDays: FOUR_OF_SEVEN }));
+  const letters = [...html.matchAll(/fd-consistency__label">([A-Z])</g)].map((m) => m[1]);
+  assert.deepEqual(letters, ['T', 'W', 'T', 'F', 'S', 'S', 'M']);
+});
+
+test('an unusable nowMs drops the strip rather than throwing the whole Today render', () => {
+  assert.doesNotMatch(F.fdToday(IDX, s({ activityDays: FOUR_OF_SEVEN, nowMs: undefined })), /fd-consistency/);
+});
+
+test('the strip copy is audience-neutral', () => {
+  assert.doesNotMatch(F.fdToday(IDX, s({ activityDays: FOUR_OF_SEVEN })), AUDIENCE_TOKEN_RE);
 });
 
 // ---- the subhead, joined -- the front door's most-read line --------------------------
 //
 // fdExamCountdown returns a bare fragment ('· exam in ~5 days'): separator dot included, leading
-// space NOT -- the caller owns the join, exactly as it does for the streak clause. Concatenating
+// space NOT -- the caller owns the join. Concatenating
 // it directly printed "Sunday· exam in ~5 days" through weeks 5 and 6. tests/fd-state.test.mjs
 // pins the fragment; these pin the JOINED string, which is what a learner actually reads and
 // which no test covered before.
@@ -286,9 +331,9 @@ test('the exam countdown joins onto the subhead with a separating space', () => 
     'Week 5 · W5 · Sunday · exam in ~5 days');
 });
 
-test('the countdown follows the streak clause, still spaced', () => {
-  assert.equal(subOf(F.fdToday(IDX, s({ week: 5, streak: 3, nowMs: SUNDAY_W5 }))),
-    'Week 5 · W5 · Sunday · 3 days in a row · exam in ~5 days');
+test('the countdown joins directly after the day name now that the streak clause is gone', () => {
+  assert.equal(subOf(F.fdToday(IDX, s({ week: 5, streak: 3, activityDays: FOUR_OF_SEVEN, nowMs: SUNDAY_W5 }))),
+    'Week 5 · W5 · Sunday · exam in ~5 days');
 });
 
 test('a week with no countdown leaves no trailing space behind', () => {

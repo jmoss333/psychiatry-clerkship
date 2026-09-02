@@ -36,6 +36,8 @@ const make = new Function('localStorage', `
     fdExamCountdown: fdExamCountdown,
     fdDailyPick: fdDailyPick,
     fdRingStep: fdRingStep,
+    fdActivityDays: fdActivityDays,
+    fdActivityDayIndex: fdActivityDayIndex,
   };
 `);
 
@@ -355,4 +357,58 @@ test('fdRingStep animates downward too', () => {
   const { fdRingStep } = make(memStorage());
   assert.equal(fdRingStep(80, 20, 600, 600), 20);
   assert.ok(fdRingStep(80, 20, 300, 600) < 50);
+});
+
+// ---- seven-day activity strip -----------------------------------------------------------
+//
+// fdActivityDays reads the timestamps every tool already writes and returns seven booleans,
+// oldest first, ending on the day containing nowMs. Fixture: nowMs is Sunday 2026-08-09 09:00,
+// so the window is Mon 08-03 .. Sun 08-09 and atDay(0..6) lands on each of those days.
+
+const F2 = make(memStorage());
+const SUNDAY = atDay(6);
+
+test('an empty or malformed store set yields seven quiet days rather than throwing', () => {
+  assert.deepEqual(F2.fdActivityDays({}, SUNDAY), [false, false, false, false, false, false, false]);
+  assert.deepEqual(F2.fdActivityDays(null, SUNDAY), [false, false, false, false, false, false, false]);
+  assert.deepEqual(F2.fdActivityDays({ srs: 'junk', qb: 4, calib: { qb: 'x' }, capture: {} }, SUNDAY),
+    [false, false, false, false, false, false, false]);
+});
+
+test('every store shape the tools write is recognised, each on its own day', () => {
+  const days = F2.fdActivityDays({
+    srs: { cards: { 'QB#1': { last: atDay(0) } }, stats: { lastStudy: '2026-8-4' } }, // Mon (ms), Tue (Y-M-D unpadded)
+    qb: { q1: { ts: atDay(2) } },                                                    // Wed (ms)
+    comm: { c1: { at: '2026-08-06' } },                                              // Thu (ISO date)
+    reason: { r1: { updatedAt: '2026-08-07', steps: { s1: { at: '2026-08-07' } } } }, // Fri (ISO date)
+    progress: { 'a.md': { done: true, at: '2026-08-08' } },                          // Sat (localDayStr)
+    capture: [{ at: atDay(6) }],                                                     // Sun (ms)
+  }, SUNDAY);
+  assert.deepEqual(days, [true, true, true, true, true, true, true]);
+});
+
+test('the calibration ledger counts for both question and review events', () => {
+  const days = F2.fdActivityDays({ calib: { v: 1, qb: [{ ts: atDay(1) }], rev: [{ ts: atDay(5) }] } }, SUNDAY);
+  assert.deepEqual(days, [false, true, false, false, false, true, false]);
+});
+
+test('activity outside the window is ignored in both directions', () => {
+  const days = F2.fdActivityDays({
+    qb: { old: { ts: atDay(-1) }, future: { ts: atDay(7) }, edge: { ts: atDay(0) } },
+  }, SUNDAY);
+  assert.deepEqual(days, [true, false, false, false, false, false, false]);
+});
+
+test('a page merely present in progress does not count unless it is done', () => {
+  const days = F2.fdActivityDays({ progress: { 'a.md': { done: false, at: '2026-08-09' } } }, SUNDAY);
+  assert.deepEqual(days, [false, false, false, false, false, false, false]);
+});
+
+test('the day normaliser accepts ms and Y-M-D strings only', () => {
+  const noon = new Date(2026, 7, 9, 12, 0, 0).getTime();
+  assert.equal(F2.fdActivityDayIndex('2026-08-09'), F2.fdActivityDayIndex(noon));
+  assert.equal(F2.fdActivityDayIndex('2026-8-9'), F2.fdActivityDayIndex(noon));
+  assert.equal(F2.fdActivityDayIndex(0), null, 'zero is the capsule\'s "unset" value, not epoch day');
+  assert.equal(F2.fdActivityDayIndex('yesterday'), null);
+  assert.equal(F2.fdActivityDayIndex(null), null);
 });

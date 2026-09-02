@@ -1715,7 +1715,17 @@
     out.progressRaw=raw;
     out.nowMs=Date.now();
     out.rotationStart=LS('cw_rotation_start')||'';
-    out.streak=(s&&s.stats&&typeof s.stats.streak==='number')?s.stats.streak:0;
+    /* Seven-day activity strip: derived, never stored -- see fdActivityDays. Every store is
+       read defensively; a missing or malformed one simply contributes no days. */
+    out.activityDays=fdActivityDays({
+      srs:s,
+      qb:safeLS('cw_qb_v1'),
+      calib:(typeof calibRead==='function')?calibRead():null,
+      comm:safeLS('cw_comm_v1'),
+      reason:safeLS('cw_reason_v1'),
+      progress:raw,
+      capture:capRead().items
+    },out.nowMs);
     var current=fdFindWeek(FD_INDEX,out.week);
     if(!current){
       var computed=fdRotationWeek(out.rotationStart,FD_INDEX.weeks,out.nowMs);

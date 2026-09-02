@@ -229,6 +229,37 @@ function fdQuickTools(index, weekItems){
   return out.slice(0,5);
 }
 
+/* Seven-day activity strip. state.activityDays arrives pre-derived (fdActivityDays, fd_state.js:
+   seven booleans, oldest first, ending today) so this stays a pure function of state + nowMs.
+   Renders nothing until the learner has been active on at least one of the seven days: a fresh
+   device gets no "0 of the last 7 days" line to be nagged by. The dots are decoration -- the
+   sentence carries the meaning, so the wrapper is one image with the sentence as its name and
+   the dot row is hidden from assistive tech (same treatment as the ✓ glyph in fdRow). Day
+   letters are derived by walking back from nowMs with the local Date constructor, which keeps
+   DST transitions from shifting a label. */
+function fdConsistency(activityDays, nowMs){
+  var days=Object.prototype.toString.call(activityDays)==='[object Array]'?activityDays:[];
+  if(days.length!==7) return '';
+  var count=0, i;
+  for(i=0;i<7;i++){ if(days[i]===true) count++; }
+  if(count===0) return '';
+  var base=new Date(nowMs), dots='';
+  if(isNaN(base.getTime())) return '';
+  for(i=0;i<7;i++){
+    var d=new Date(base.getFullYear(), base.getMonth(), base.getDate()-(6-i));
+    var letter=FD_TODAY_DAYNAMES[d.getDay()].charAt(0);
+    dots+='<span class="fd-consistency__day">'+
+      '<span class="fd-consistency__dot'+(days[i]===true?' is-on':'')+'"></span>'+
+      '<span class="fd-consistency__label">'+letter+'</span>'+
+    '</span>';
+  }
+  var text='Active '+count+' of the last 7 days';
+  return '<div class="fd-consistency" role="img" aria-label="'+text+'">'+
+    '<span class="fd-consistency__dots" aria-hidden="true">'+dots+'</span>'+
+    '<span class="fd-consistency__text" aria-hidden="true">'+text+'</span>'+
+  '</div>';
+}
+
 function fdToday(index, state){
   var st=state||{};
   var idx=index||{byRef:{}, weeks:[], columns:[], kit:[]};
@@ -250,21 +281,24 @@ function fdToday(index, state){
   var sub=hasWeek
     ?('Week '+fdEsc(st.week)+' · '+fdEsc(wk.title)+' · '+dayName)
     :(dayName+' · browsing — no week set');
-  if((st.streak||0)>=2) sub+=' · '+fdEsc(st.streak)+' days in a row';
   /* fdExamCountdown returns a bare fragment -- its separator dot included, its leading space NOT
-     ('· exam in ~5 days'), the same split the streak clause above uses when it supplies its own
-     ' · '. The caller owns the join, so it must supply that space: concatenating the fragment
+     ('· exam in ~5 days'). The caller owns the join, so it must supply that space: concatenating the fragment
      directly printed "Sunday· exam in ~5 days" through the final two path weeks, on the single most-read line
      of the front door. Guarded rather than unconditional because the empty return is the common
      case (every week outside the final two, and after the exam), and ' '+'' would leave a trailing space on
      the subhead for all of them. tests/fd-state.test.mjs pins the fragment's shape at one end and
-     tests/fd-today.test.mjs pins this joined output at the other. */
+     tests/fd-today.test.mjs pins this joined output at the other.
+
+     The subhead no longer carries the Daily-Review-only streak clause; the seven-day
+     activity strip rendered by fdConsistency directly below it replaced that clause (see
+     fdActivityDays in fd_state.js for why). */
   var countdown=fdExamCountdown(st.week,idx.weeks,nowMs,st.rotationStart);
   if(countdown) sub+=' '+countdown;
 
   var out='<section class="fd-today">';
   out+='<h1 class="fd-today__h1">'+greeting+'</h1>';
   out+='<p class="fd-today__sub">'+sub+'</p>';
+  out+=fdConsistency(st.activityDays, nowMs);
   out+='<div class="fd-today__cols"><div class="fd-today__main">';
 
   out+=hasWeek?fdContinue(idx,st, wk, progress):fdSetupCta();

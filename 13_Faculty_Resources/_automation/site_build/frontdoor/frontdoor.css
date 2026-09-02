@@ -171,6 +171,24 @@
 .fd-today{animation:fdFadeUp .24s cubic-bezier(.2,.8,.2,1)}
 .fd-today__h1{margin:0 0 2px;font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:31px;line-height:1.2;letter-spacing:.2px;color:var(--fd-text)}
 .fd-today__sub{margin:0 0 22px;font-size:14px;color:var(--fd-text-mid)}
+/* Seven-day activity strip (fdConsistency). Sits between the subhead and the columns; the
+ * negative top margin closes the subhead's 22px to a 10px gap only when the strip renders, so a
+ * fresh device (strip absent) keeps the prototype's spacing unchanged. Dot colours are the
+ * done-state pair already used by .fd-check, so "active" reads as the same green as "done". */
+.fd-consistency{
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  margin:-12px 0 22px;padding:10px 14px;
+  background:var(--fd-surface-warm);border:1px solid var(--fd-line);border-radius:10px;
+}
+.fd-consistency__dots{display:flex;gap:10px}
+.fd-consistency__day{display:flex;flex-direction:column;align-items:center;gap:4px}
+.fd-consistency__dot{
+  width:12px;height:12px;border-radius:50%;
+  background:var(--fd-surface);border:1.5px solid var(--fd-line-strong);
+}
+.fd-consistency__dot.is-on{background:var(--fd-success);border-color:var(--fd-success)}
+.fd-consistency__label{font-size:10px;font-weight:600;line-height:1;color:var(--fd-text-dim)}
+.fd-consistency__text{font-size:12.5px;font-weight:600;color:var(--fd-text-mid)}
 .fd-today__cols{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start}
 .fd-today__main{flex:10 1 520px;min-width:0}
 
