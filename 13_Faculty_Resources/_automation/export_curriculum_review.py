@@ -101,29 +101,36 @@ def _words(text: str) -> int:
     return len(text.split())
 
 
-def _slug_source_map() -> dict[str, str]:
-    """Built filename → repo-relative source path."""
+def _slug_source_map(aud_key: str = "ms3") -> dict[str, str]:
+    """Built filename → repo-relative source path, for one audience's build.
+
+    Slugs are looked up bare, so shared slugs (welcome.md, cotw_index.md) must map to
+    the file the *requested* audience actually builds from. The old audience-blind
+    setdefault let the MS3 manifest win those collisions, so two resident surfaces
+    carried MS3 Source lines (found by the 2026-09-01 review).
+    """
     manifest = _load(SITE_BUILD / "site_manifest.json")
     out: dict[str, str] = {}
     for src, dst, _title in manifest["tools"]:
         out[dst] = src
     for src, dst, _title in manifest["md"]:
         out[dst] = src
-    # resident-only overrides (mirrors RES_EXTRA / PROTO_TOOLS in resident_section.py)
-    for src, dst in [
-        ("14_Tracks/Resident/resident_welcome.md", "welcome.md"),
-        ("14_Tracks/Resident/resident_curriculum.md", "rotation.md"),
-        ("14_Tracks/Resident/adv_psychopharmacology.md", "adv_psychopharm.md"),
-        ("14_Tracks/Resident/systems_medlegal.md", "systems_medlegal.md"),
-        ("14_Tracks/Resident/supervision_teaching.md", "supervision_teaching.md"),
-        ("14_Tracks/Resident/canon_200.md", "canon_200.md"),
-        ("14_Tracks/Resident/cl_reference.md", "cl_reference.md"),
-        ("08_Cases_and_Simulation/case-of-the-week/index_resident.md", "cotw_index.md#resident"),
-        ("_prototypes/agitation-trainer/rp-agitation.html", "rp-agitation.html"),
-        ("_prototypes/brief-psych/rp-brief-psych.html", "rp-brief-psych.html"),
-        ("_prototypes/canon-quiz/rp-canon-quiz.html", "rp-canon-quiz.html"),
-    ]:
-        out.setdefault(dst, src)
+    if aud_key == "resident":
+        # resident-only overrides WIN here (mirrors RES_EXTRA / PROTO_TOOLS in resident_section.py)
+        for src, dst in [
+            ("14_Tracks/Resident/resident_welcome.md", "welcome.md"),
+            ("14_Tracks/Resident/resident_curriculum.md", "rotation.md"),
+            ("14_Tracks/Resident/adv_psychopharmacology.md", "adv_psychopharm.md"),
+            ("14_Tracks/Resident/systems_medlegal.md", "systems_medlegal.md"),
+            ("14_Tracks/Resident/supervision_teaching.md", "supervision_teaching.md"),
+            ("14_Tracks/Resident/canon_200.md", "canon_200.md"),
+            ("14_Tracks/Resident/cl_reference.md", "cl_reference.md"),
+            ("08_Cases_and_Simulation/case-of-the-week/index_resident.md", "cotw_index.md"),
+            ("_prototypes/agitation-trainer/rp-agitation.html", "rp-agitation.html"),
+            ("_prototypes/brief-psych/rp-brief-psych.html", "rp-brief-psych.html"),
+            ("_prototypes/canon-quiz/rp-canon-quiz.html", "rp-canon-quiz.html"),
+        ]:
+            out[dst] = src
     # Case of the Week is registry-driven
     cotw_dir = "08_Cases_and_Simulation/case-of-the-week"
     reg = _load(LIB / cotw_dir / "cotw_registry.json", {"weeks": []})
@@ -389,7 +396,7 @@ def build_audience(aud_key: str, out_root: Path, build_root: Path) -> dict:
     nav = _load(B / "nav.json")
     topic_meta = _load(B / "topic_meta.json", {})
     tool_registry = {t["file"]: t for t in _load(LIB / "tool_registry.json", {"tools": []})["tools"]}
-    srcmap = _slug_source_map()
+    srcmap = _slug_source_map(aud_key)
     today = date.today().isoformat()
     sha = _git_sha()
 
@@ -568,7 +575,10 @@ def build_audience(aud_key: str, out_root: Path, build_root: Path) -> dict:
             if it.get("pages"):
                 qdoc.add("- Linked pages: " + ", ".join(f"`{p}`" for p in it["pages"]))
             if it.get("evidence"):
-                qdoc.add("- Evidence: " + ", ".join(f"`{e}`" for e in it["evidence"]))
+                # question_bank.json stores evidence as a single string; joining a str
+                # iterates characters (the A1 one-char-per-backtick garbage, 2026-09-01)
+                _ev = it["evidence"]
+                qdoc.add("- Evidence: " + ", ".join(f"`{e}`" for e in (_ev if isinstance(_ev, list) else [_ev])))
             qdoc.add("", f"**Stem.** {it.get('stem','')}", "")
             for o in it.get("options", []):
                 if isinstance(o, str):
