@@ -6,6 +6,166 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 
 ---
 
+## Borderline Personality Disorder (Aug 27)
+
+- **Slug:** `cotw_20260827_bpd_res.md` · **Type:** md · **Sidebar:** listed
+- **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-08-27_borderline-personality-disorder_Resident.md`
+- **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
+- **Length:** 2,692 words
+
+<!-- topic_meta overlay -->
+#### Structured metadata (`topic_meta.json` → this page)
+
+> est. read 10 min · safetyLevel=`moderate` · cotwLevel=`res` (2026-08-27)
+
+**TL;DR (shown above the page text):**
+
+> A third admission, a five-drug regimen, and a 'treatment-resistant bipolar' label that was never right - BPD is diagnosed from the longitudinal pattern, treated definitively with psychotherapy, and managed on a chronic vs. acute-on-chronic risk frame.
+
+**Key points (bulleted card):**
+
+- ~20-30 minute small-group discussion - no pre-reading required.
+- De-identified synthetic case; each discussion question is paired with a teaching point.
+- Resident level. Facilitator notes are kept separate from the learner-facing stem.
+
+**Clinical-workflow narration (per-stage coaching text):**
+
+- **ask** — Work the stem cold: take your own history, commit to a differential, and name your next step before reading a single teaching point. The guided questions are written to be answered, not skimmed.
+- **mse** — Say out loud what each exam finding in the vignette rules in and rules out — the discrimination between look-alike syndromes is what the case is drilling.
+- **safety** — Safety content in every case is oriented to recognition, escalation, and safety planning. Escalate to your supervising resident or attending rather than managing acuity alone.
+- **say** — Before moving on, rehearse one sentence you would actually say to this patient or family, in plain language and out loud.
+- **collateral** — Ask yourself what collateral would change your differential here, and who you would have to call to get it.
+- **rounds** — If you are running the session, the facilitator notes flag the errors this case most often surfaces and the evidence-quality distinctions worth naming out loud.
+- **exam** — Teaching takeaway: A third admission, a five-drug regimen, and a 'treatment-resistant bipolar' label that was never right - BPD is diagnosed from the longitudinal pattern, treated definitively with psychotherapy, and managed on a chronic vs. acute-on-chronic risk frame.
+- **actions** — All Case of the Week cases
+
+**Cross-references and tagging:**
+
+- **Workflow stages:** `diagnosis`, `safety`, `treatment`, `communication`, `team`, `exam`
+- **Shelf blueprint tags:** `personality`, `safety`
+- **EPA crosswalk:** `EPA1`, `EPA2`, `EPA10`
+- **Faculty review:** {"status": "pending", "reviewer": "Joshua Moss, MD", "lastReviewed": "2026-08-27"}
+
+#### Page text (as shipped)
+
+# Case of the Week — August 27, 2026 (Resident Edition)
+
+## Borderline Personality Disorder: Presentation & Management
+
+> **De-identified synthetic teaching case.** This case is a fictional composite created for teaching. It contains no real patient details. Citations below are based on articles retrieved from PubMed; DOI links are provided in the reference list.
+>
+> **Learner level:** Psychiatry residents (PGY-1–3) · **Format:** ~25–30 minute guided discussion · **Assumes:** DSM-5-TR fluency, familiarity with common agents
+
+---
+
+# PART 1 — LEARNER-FACING CASE
+
+## Case Stem
+
+Ms. R is a 24-year-old graduate student admitted overnight to the inpatient unit after presenting with escalating suicidal ideation in the context of a rupture with her thesis advisor, whom she describes as "the only person who ever believed in me — until he abandoned me like everyone else." This is her third psychiatric presentation in 14 months; prior discharge diagnoses include "bipolar II, treatment-refractory," "recurrent MDD," and "unspecified mood disorder."
+
+Her current regimen, accumulated across these episodes, is quetiapine 300 mg qHS, lamotrigine 200 mg daily, sertraline 150 mg daily, and lorazepam 1 mg TID PRN, of which she takes "two or three most days." She reports mood shifts measured in hours, nearly always triggered by perceived rejection; chronic emptiness "since middle school"; a string of intense relationships with idealization–devaluation cycles; recurrent superficial self-injury during states of dissociative numbness ("to feel something again"); and stress-related episodes of feeling that people are conspiring against her, lasting hours and resolving with reassurance. She meets no criteria for a current or past hypomanic episode on careful longitudinal review. She reports nightmares and hypervigilance dating to childhood emotional abuse, and drinks to intoxication 2–3 nights weekly, more during crises.
+
+Overnight she was described by night staff as "the most insightful patient on the unit"; by morning she has filed a complaint against her assigned nurse and requested a different treatment team. On rounds she is articulate and engaging, then abruptly hostile when her attending mentions discharge planning, stating, "If you discharge me, whatever happens is on you." She later apologizes tearfully, saying she was terrified of being "thrown away again." She denies current intent or plan; she wants "a medication that finally works."
+
+## Discussion Questions (learner version)
+
+1. Walk through the discriminating features between BPD and bipolar II disorder in this history. Why does the distinction keep getting missed, and what are the costs of the mislabel?
+2. How would you formally establish the diagnosis and severity, and how do you handle the co-occurring PTSD and alcohol use in your formulation?
+3. Appraise the psychotherapy evidence base for BPD: what do the major meta-analyses actually show, which modalities have the strongest support, and how robust are those effects?
+4. Critically evaluate her medication regimen against the pharmacotherapy evidence. Design a concrete deprescribing plan, including sequencing and what you tell her.
+5. She says, "If you discharge me, whatever happens is on you." Formulate her suicide risk (chronic vs. acute-on-chronic), and describe how you document and manage risk around discharge, including safety planning.
+6. The overnight/day-shift split and the team complaint are already fracturing the milieu. What is happening psychodynamically, and what concrete team-level interventions prevent iatrogenic harm?
+7. No DBT program has openings for five months. What does generalist, evidence-informed management (e.g., Good Psychiatric Management) look like as a bridge, and what do you tell her about prognosis?
+
+---
+
+# PART 2 — FACILITATOR GUIDE (not for learner distribution)
+
+## Discussion Questions with Teaching Points
+
+**Q1. BPD vs. bipolar II: discrimination and the cost of mislabeling.**
+*Teaching point:* Push residents past the checklist to the **longitudinal architecture**: episode duration (hours–days, interpersonally indexed vs. ≥4-day sustained hypomania), phenomenology of "highs" (relief/excitement within relationships vs. autonomous drive states with decreased need for sleep), inter-episode baseline (chronic emptiness and identity diffusion vs. euthymic intervals), and reactivity signature (rejection-cued vs. spontaneous or seasonal). Stress-related paranoid ideation and dissociation lasting hours are BPD criterion-9 phenomena, not psychotic-spectrum or mixed features. The cost of mislabeling: years of ineffective polypharmacy, escalating regimens each crisis, foreclosed access to the psychotherapies that actually work, and reinforcement of an externalizing illness model ("my meds aren't working") that undermines agency [1,2].
+
+**Q2. Formal diagnosis, severity, and comorbidity in the formulation.**
+*Teaching point:* Establish DSM-5-TR criteria via semistructured assessment (e.g., SCID-5-PD module; MSI-BPD as a screen), anchored in longitudinal course and collateral. Expect comorbidity as the rule — mood disorders ~83%, anxiety disorders ~85%, SUD ~78% [1] — and formulate hierarchically: BPD as the organizing diagnosis explaining the pattern; PTSD and AUD as co-primary targets, not afterthoughts. Etiologically, integrate gene–environment interplay: heritable emotional sensitivity plus adverse childhood experiences (her emotional abuse history) shaping rejection hypersensitivity [1,2]. Naming the diagnosis explicitly, with psychoeducation, is guideline-consistent care — concealment predicts treatment incoherence. Severity staging (self-injury frequency, hospitalization pattern, functioning) sets the outcome metrics for everything that follows.
+
+**Q3. What the psychotherapy evidence actually shows.**
+*Teaching point:* Residents should be able to cite the numbers, not just the slogan "therapy works." The 2020 Cochrane review (75 RCTs, n=4507): psychotherapy vs. TAU reduces BPD severity with SMD −0.52 (95% CI −0.70 to −0.33; moderate certainty) — the only primary outcome crossing the minimal clinically relevant difference — with smaller, low-certainty effects on self-harm (SMD −0.32) and suicide-related outcomes (SMD −0.34); DBT and MBT are the best-studied modalities, and subgroup analyses show **no clear superiority of any specific brand** vs. TAU [3]. The focused 2022 re-analysis of adult trials: DBT reduced self-harm (SMD −0.54) and improved psychosocial functioning; MBT reduced self-harm (RR 0.51) and suicide-related outcomes (RR 0.10); adjunctive DBT skills training carried moderate-certainty benefit for BPD severity (SMD −0.66) [4]. Cristea et al.'s independent meta-analysis (33 RCTs): borderline-relevant outcomes g≈0.32–0.40, durable at follow-up (g=0.45), with DBT and psychodynamic approaches the only clusters beating controls — but effects are **small-to-moderate, inflated by risk of bias and publication bias, and unstable at follow-up** [5]. Honest synthesis: structured, BPD-specific therapy is clearly better than unstructured care; brand loyalty is weakly supported; common factors (coherent frame, hierarchy of targets, therapist stance) likely carry much of the effect [3,4,5].
+
+**Q4. Pharmacotherapy appraisal and deprescribing design.**
+*Teaching point:* The evidence is stark: the 2022 Cochrane review (46 RCTs, n=2769) found **no medication class beat placebo on any primary outcome** — BPD severity, self-harm, suicide-related outcomes, psychosocial functioning — with mostly very-low-certainty evidence; secondary signals are thin (SGAs: slight reduction in interpersonal problems, SMD −0.21; mood stabilizers: interpersonal problems SMD −0.58, low certainty) [6]. Gartlehner et al. similarly: of ~87 agents in clinical use, trials exist for nine; anticonvulsants may improve anger/affective lability on low-certainty, mostly single-study evidence — this against a backdrop where up to 96% of patients with BPD receive psychotropics [7]. No agent is FDA-approved for BPD; guideline-consistent practice reserves medication for discrete comorbid disorders and time-limited crisis use (low-dose antipsychotic or sedative antihistamine preferred; **benzodiazepines avoided** — disinhibition, misuse liability, and she is already using lorazepam daily with alcohol) [1,6,7].
+*Deprescribing plan for Ms. R:* (1) Frame first — "we are un-burying you from medications that were never going to treat this" — tie every step to the illness model so taper ≠ abandonment. (2) **Lorazepam first**: it is the active harm (daily use + AUD + disinhibition); convert to scheduled taper with withdrawal monitoring given concurrent alcohol use. (3) Reassess sertraline against a *cleanly established* comorbid MDD or PTSD indication — it may earn its place; if retained, retain deliberately. (4) Taper quetiapine next (metabolic burden, sedation masquerading as mood benefit), possibly retaining a brief low-dose crisis-only plan. (5) Lamotrigine last and slowly. One change at a time, defined outcome metrics (self-injury frequency, crisis presentations), explicit relapse plan, and documentation that this is evidence-based de-escalation, not withdrawal of care.
+
+**Q5. "Whatever happens is on you": risk formulation and discharge management.**
+*Teaching point:* Formulate explicitly in the **chronic vs. acute-on-chronic** framework: her chronic risk is elevated at baseline (recurrent SI, self-injury, AUD, trauma history); the assessment question is whether acute-on-chronic elevation persists (intent, plan, preparatory behavior, command phenomena, intoxication, recent severe loss without stabilization). The statement on rounds is best understood functionally — an attachment-driven bid to prevent abandonment — and is managed by **naming the fear, not capitulating or counter-threatening**: validate the terror of discharge, restate the shared plan, and involve her in criteria-based discharge planning. Prolonged nonspecific admission reinforces crisis-contingent care and is itself iatrogenic; brief, goal-defined admission with a structured landing is the evidence-informed middle path [1,2]. Before discharge: collaborative **safety plan** (warning signs → internal coping → social contacts → professional contacts → environment safety with lethal-means counseling → crisis contacts), sobriety-contingent elements given AUD, collateral engagement, and near-term follow-up. **Documentation:** record the chronic/acute-on-chronic formulation, protective factors, the functional analysis of the statement, capacity, the risk-benefit reasoning for discharge *including the risks of continued hospitalization*, and the contingency plan. This is both good care and the correct medicolegal posture.
+
+> <div class="crisis-block-hook" hidden></div>
+>
+> ### If someone is in crisis
+>
+> On the unit, a patient in immediate danger is an escalation to your supervising resident or attending and the charge nurse — not a phone call. These lines are what you put IN a patient's safety plan, what families use after discharge, and what you can use yourself.
+>
+> - **988 Suicide & Crisis Lifeline** — Call or text 988. Chat at chat.988lifeline.org. 24/7, free, confidential. Spanish available by call, text, and chat; a dedicated line serves Deaf/Hard-of-Hearing callers. Calls placed in Maine route to Maine crisis specialists.
+> - **Crisis Text Line** — Text HOME to 741741. Text HOLA to 741741 for Spanish. 24/7, free. Text-only. Often the most acceptable option for adolescents and young adults who will not make a phone call.
+> - **Maine Crisis Line** — 1-888-568-1112. Text and chat available via the Maine Crisis Line website. 24/7. Staffed by clinically trained crisis workers and the gateway to Maine's mobile crisis teams — the number that actually dispatches a face-to-face response.
+> - **Veterans Crisis Line** — Dial 988 then press 1. Text 838255. 24/7. No VA enrollment required. Ask about service history — it changes which line is the right referral.
+> - **Emergency services** — 911. 24/7. For imminent danger to life.
+>
+> *Contacts verified 2026-07-27 against official sources. Maintained in `crisis_resources.json`; do not edit these numbers inline.*
+
+**Q6. Splitting and the milieu: team-level management.**
+*Teaching point:* The night/day discrepancy and the complaint are textbook **splitting** — but teach it as a two-person phenomenon: the patient's unintegrated self- and object-representations *recruit* real staff disagreements (projective identification), and teams then enact the split ("she's manipulative" vs. "she's misunderstood"). Interventions are structural, not exhortative: a single voice for the plan (one attending communicates decisions), brief daily staff huddle to surface and metabolize countertransference, explicit behavioral frame shared with the patient, complaint handled through the normal process without either punitive drift or special exception, and supervision that names staff feelings as diagnostic data rather than failings. "Manipulative" is reframed as *the best available strategy of a person with rejection hypersensitivity and few regulation skills* — this single reframe measurably changes team behavior [1,2].
+
+**Q7. Bridging without DBT: generalist management and prognosis.**
+*Teaching point:* Brand-name therapy scarcity is the norm, and the trial literature justifies a generalist alternative: **Good Psychiatric Management (GPM)** — case management plus psychodynamically informed supportive therapy, organized around the interpersonal hypersensitivity model: psychoeducation and explicit diagnostic disclosure, "life outside treatment" focus (work/school before intense affect exploration), conservative prescribing with deprescribing, chronic-vs-acute risk frame, and defined intersession contact expectations. GPM performed comparably to DBT in the principal head-to-head trial and is designed for dissemination to general psychiatrists and residents [8]. Weekly GPM-informed individual contact + adjunctive DBT skills group (moderate-certainty adjunctive evidence [4]) + AUD treatment (motivational interviewing ± naltrexone) + trauma-focused therapy sequenced once stabilized is a defensible, evidence-informed bridge. **Prognosis:** communicate honest hope — longitudinal cohorts show most patients achieve symptomatic remission over 5–10 years with low relapse, while *functional* recovery lags and tracks with structured treatment; early intervention in adolescence/young adulthood improves trajectory [1,2].
+
+## Ranked Differential Diagnosis
+
+1. **Borderline personality disorder** — criterion-level fit across all four sectors (interpersonal, identity, affective, behavioral) with criterion-9 stress-related paranoid ideation/dissociation; longitudinal course diagnostic.
+2. **PTSD (comorbid, probable)** — childhood emotional abuse, nightmares, hypervigilance; co-primary treatment target, and dissociative self-injury overlaps both constructs.
+3. **Alcohol use disorder (comorbid, active)** — 2–3×/week intoxication escalating with crises; independent driver of impulsivity, suicide risk, and benzodiazepine harm.
+4. **Bipolar II disorder** — the standing mislabel; excluded on careful longitudinal review (no sustained hypomania, no autonomous episodes); keep on the differential formally given diagnostic stickiness, revisit if course changes.
+5. **Recurrent MDD** — discrete episodes may supervene on BPD; requires clean cross-sectional criteria during a period of interpersonal stability to call.
+6. **Complex PTSD (ICD-11 frame)** — worth discussing as a formulation alternative; overlapping disturbances of self-organization, but BPD-specific features (abandonment panic, idealization–devaluation) argue for BPD as primary.
+
+## Workup & Management Summary
+
+- **Diagnostics:** SCID-5-PD (BPD module) or equivalent; MSI-BPD screen; PCL-5 and trauma history; AUDIT; longitudinal mood timeline with collateral; CIWA monitoring if withdrawal risk; baseline labs/metabolic panel (quetiapine), LFTs (AUD).
+- **Inpatient phase:** Goal-defined brief admission; diagnostic disclosure + psychoeducation; begin lorazepam consolidation/taper; single-voice team frame; safety plan built collaboratively before discharge day.
+- **Bridge phase:** GPM-informed weekly individual follow-up; DBT skills group referral (adjunctive evidence moderate [4]); AUD intervention ± naltrexone; deprescribing sequence per Q4; defined crisis pathway (what she does, whom she calls, what the ED does) to break the admission-contingent cycle.
+- **Definitive phase:** Full structured psychotherapy (DBT, MBT, TFP, or schema-based per availability) [3,4,5]; sequenced trauma-focused work; medication list minimized to indicated agents only.
+
+## Facilitator Notes
+
+- **Timing (30 min):** Stem 3 min → Q1–Q2 ~7 min (diagnosis/formulation) → Q3–Q4 ~9 min (evidence appraisal — make them cite numbers) → Q5–Q6 ~8 min (risk, milieu) → Q7 ~3 min (systems/prognosis).
+- **Level calibration:** PGY-1s: prioritize Q1, Q2, Q5. PGY-2/3s: press hardest on Q3–Q4 (critical appraisal — certainty of evidence, MIREDIF, publication bias) and Q6 (countertransference articulacy).
+- **Common resident pitfalls:** (1) accepting the inherited bipolar label; (2) deprescribing abruptly or moralistically; (3) documenting "contracted for safety" instead of a risk formulation; (4) meeting the discharge threat with defensiveness or capitulation rather than functional analysis; (5) letting "manipulative" stand unchallenged in team discourse.
+- **Safety framing:** Keep all suicide/self-harm discussion at the level of recognition, formulation, escalation, documentation, and safety planning. Do not discuss methods or lethality specifics; redirect if learners drift there.
+- **Discussion spice (if time):** Is the psychotherapy evidence base's brand-agnosticism (Cochrane subgroup null [3]) an argument for common-factors training over expensive certification pipelines? Good 5-minute debate.
+
+---
+
+## References
+
+Based on articles retrieved from PubMed. Citation fields (journal, year, volume/issue/pages, PMID, DOI) verified via PubMed metadata.
+
+1. Leichsenring F, Heim N, Leweke F, Spitzer C, Steinert C, Kernberg OF. Borderline Personality Disorder: A Review. *JAMA*. 2023;329(8):670-679. PMID: 36853245. [DOI: 10.1001/jama.2023.0589](https://doi.org/10.1001/jama.2023.0589)
+2. Bohus M, Stoffers-Winterling J, Sharp C, Krause-Utz A, Schmahl C, Lieb K. Borderline personality disorder. *Lancet*. 2021;398(10310):1528-1540. PMID: 34688371. [DOI: 10.1016/S0140-6736(21)00476-1](https://doi.org/10.1016/S0140-6736(21)00476-1)
+3. Storebø OJ, Stoffers-Winterling JM, Völlm BA, et al. Psychological therapies for people with borderline personality disorder. *Cochrane Database Syst Rev*. 2020;5(5):CD012955. PMID: 32368793. [DOI: 10.1002/14651858.CD012955.pub2](https://doi.org/10.1002/14651858.CD012955.pub2)
+4. Stoffers-Winterling JM, Storebø OJ, Kongerslev MT, et al. Psychotherapies for borderline personality disorder: a focused systematic review and meta-analysis. *Br J Psychiatry*. 2022;221(3):538-552. PMID: 35088687. [DOI: 10.1192/bjp.2021.204](https://doi.org/10.1192/bjp.2021.204)
+5. Cristea IA, Gentili C, Cotet CD, Palomba D, Barbui C, Cuijpers P. Efficacy of Psychotherapies for Borderline Personality Disorder: A Systematic Review and Meta-analysis. *JAMA Psychiatry*. 2017;74(4):319-328. PMID: 28249086. [DOI: 10.1001/jamapsychiatry.2016.4287](https://doi.org/10.1001/jamapsychiatry.2016.4287)
+6. Stoffers-Winterling JM, Storebø OJ, Pereira Ribeiro J, et al. Pharmacological interventions for people with borderline personality disorder. *Cochrane Database Syst Rev*. 2022;11(11):CD012956. PMID: 36375174. [DOI: 10.1002/14651858.CD012956.pub2](https://doi.org/10.1002/14651858.CD012956.pub2)
+7. Gartlehner G, Crotty K, Kennedy S, et al. Pharmacological Treatments for Borderline Personality Disorder: A Systematic Review and Meta-Analysis. *CNS Drugs*. 2021;35(10):1053-1067. PMID: 34495494. [DOI: 10.1007/s40263-021-00855-4](https://doi.org/10.1007/s40263-021-00855-4)
+8. Links PS, Ross J. Good Psychiatric Management of Borderline Personality Disorder: Foundations and Future Challenges. *Am J Psychother*. 2024;78(1):4-10. PMID: 38952224. [DOI: 10.1176/appi.psychotherapy.20230044](https://doi.org/10.1176/appi.psychotherapy.20230044)
+
+---
+
+*Prepared for the Psychiatry Clerkship / Residency teaching series — Case of the Week. Joshua Moss, MD | Psychiatrist*
+
+
+---
+
 ## Panic Disorder (Aug 10)
 
 - **Slug:** `cotw_20260810_panic_res.md` · **Type:** md · **Sidebar:** listed
@@ -534,251 +694,5 @@ The **EXTRIP workgroup** recommendations (systematic review plus two-round modif
 13. Shulman KI, Almeida OP, Herrmann N, et al. Delphi survey of maintenance lithium treatment in older adults with bipolar disorder: an ISBD task force report. *Bipolar Disord.* 2018. [DOI](https://doi.org/10.1111/bdi.12714) (PMID 30375703)
 
 *Citations retrieved from PubMed. This teaching case uses a synthetic, de-identified scenario for educational purposes only. Monitoring intervals and target ranges vary between guidelines; follow your institution's protocol and applicable local practice.*
-
-*Joshua Moss, MD | Psychiatrist*
-
-
----
-
-## Opioid Use Disorder (Jul 27)
-
-- **Slug:** `cotw_20260727_oud_res.md` · **Type:** md · **Sidebar:** listed
-- **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-27_opioid-use-disorder_Resident.md`
-- **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 3,399 words
-
-<!-- topic_meta overlay -->
-#### Structured metadata (`topic_meta.json` → this page)
-
-> est. read 9 min · safetyLevel=`moderate` · cotwLevel=`res` (2026-07-27)
-
-**TL;DR (shown above the page text):**
-
-> One encounter, two failures: a COWS-threshold buprenorphine start precipitated withdrawal in a fentanyl-exposed patient, and the recovery is methadone or low-dose initiation - with acute pain treated alongside the MOUD, never instead of it.
-
-**Key points (bulleted card):**
-
-- ~20-30 minute small-group discussion - no pre-reading required.
-- De-identified synthetic case; each discussion question is paired with a teaching point.
-- Resident level. Facilitator notes are kept separate from the learner-facing stem.
-
-**Clinical-workflow narration (per-stage coaching text):**
-
-- **ask** — Work the stem cold: take your own history, commit to a differential, and name your next step before reading a single teaching point. The guided questions are written to be answered, not skimmed.
-- **mse** — Say out loud what each exam finding in the vignette rules in and rules out — the discrimination between look-alike syndromes is what the case is drilling.
-- **safety** — Safety content in every case is oriented to recognition, escalation, and safety planning. Escalate to your supervising resident or attending rather than managing acuity alone.
-- **say** — Before moving on, rehearse one sentence you would actually say to this patient or family, in plain language and out loud.
-- **collateral** — Ask yourself what collateral would change your differential here, and who you would have to call to get it.
-- **rounds** — If you are running the session, the facilitator notes flag the errors this case most often surfaces and the evidence-quality distinctions worth naming out loud.
-- **exam** — Teaching takeaway: One encounter, two failures: a COWS-threshold buprenorphine start precipitated withdrawal in a fentanyl-exposed patient, and the recovery is methadone or low-dose initiation - with acute pain treated alongside the MOUD, never instead of it.
-- **actions** — All Case of the Week cases
-
-**Cross-references and tagging:**
-
-- **Workflow stages:** `diagnosis`, `safety`, `treatment`, `team`, `exam`
-- **Shelf blueprint tags:** `substance`, `pharm`
-- **EPA crosswalk:** `EPA1`, `EPA2`, `EPA10`
-- **Faculty review:** {"status": "pending", "reviewer": "Joshua Moss, MD", "lastReviewed": "2026-07-27"}
-
-#### Page text (as shipped)
-
-# Case of the Week — Resident Edition
-## Opioid Use Disorder: Intoxication, Withdrawal, and MOUD in the Fentanyl Era
-
-**Date:** 2026-07-27
-**Learner level:** Psychiatry residents (PGY-1–4) — assumes DSM-5-TR fluency; guideline- and evidence-forward
-**Format:** ~20–30 min case conference. No required pre-reading.
-**Citations:** Based on articles retrieved from PubMed. Full reference list at the end. All patient details are **synthetic and de-identified**.
-
----
-
-### The Case (learner-facing stem)
-
-**Consult question:** *"34-year-old with OUD, precipitated withdrawal after buprenorphine start, now refusing all opioid treatment and threatening to leave. Please advise."*
-
-A 34-year-old woman was admitted four days ago with fever, progressive low back pain, and lower-extremity weakness. MRI demonstrated **L3–L4 vertebral osteomyelitis with a small epidural phlegmon**; blood cultures grew methicillin-susceptible *Staphylococcus aureus*. Infectious disease recommends **six weeks of IV antibiotics**. Neurosurgery is following non-operatively.
-
-She reports daily use of non-prescribed fentanyl for approximately three years, initially via prescription opioids after a work injury. She estimates her last use as roughly eight hours before ED arrival. She has never been on methadone or buprenorphine; two prior admissions ended in **patient-directed discharge** on hospital day 2 and day 3.
-
-**Hospital course:** On hospital day 1, the primary team obtained a COWS of 11 and administered a standard buprenorphine induction dose. Within 45 minutes she developed severe vomiting, diaphoresis, agitation, and diffuse pain — worse than her pre-treatment state. She was told this was "the medicine working" and refused all further doses. Since then she has received as-needed short-acting full agonists for pain, with escalating requests and increasing conflict with nursing.
-
-**Today (hospital day 4):** T 37.8 °C, HR 112, BP 156/94, RR 20. She is tearful, restless, rating her back pain 9/10, and says: *"That medicine made me sicker than anything I've ever felt. I'm not doing it again. I'll finish the antibiotics at home."* She has a peripheral IV; no PICC has been placed. Chart notes from the primary team describe her as "drug seeking."
-
-**Labs/studies:** WBC 13.2, ESR and CRP elevated. QTc 448 ms. LFTs mildly elevated; HCV antibody positive, HCV RNA pending. HIV negative. Pregnancy test negative. UDS positive for fentanyl; negative for benzodiazepines, stimulants, and alcohol.
-
----
-
-### Guided Discussion Questions
-
-**Q1. What actually happened on hospital day 1, and why is a COWS of 11 not the reassurance the team thought it was?**
-
-*Teaching point:* This is **buprenorphine-precipitated withdrawal**, and the fentanyl era has changed its epidemiology in ways that invalidate the reflexes many of us trained on.
-
-The mechanism is unchanged: buprenorphine is a **partial mu agonist with very high receptor affinity**. Given while full agonist occupancy is still substantial, it displaces the full agonist and substitutes lower intrinsic activity — a net abrupt drop in mu signaling, and a withdrawal syndrome that is typically **more severe than spontaneous withdrawal** [1,2].
-
-What has changed is the **pharmacokinetics of the drug being displaced**. Illicitly manufactured fentanyl and its analogues are highly lipophilic and, with sustained heavy use, accumulate in peripheral compartments and redistribute. The practical consequence: a patient may display *clinical* withdrawal (COWS 11) while still carrying enough mu occupancy for buprenorphine to precipitate. **COWS-threshold-based standard initiation is less reliable in fentanyl-exposed patients than it was in the heroin era** [2,3].
-
-The magnitude matters for calibration. In a cohort of hospitalized patients using fentanyl who underwent standard buprenorphine initiation, precipitated withdrawal occurred in a **minority** of patients — meaningful and non-trivial, but far from universal [3]. Two implications: standard initiation is not obsolete and should not be abandoned reflexively, *and* the risk is high enough to warrant an explicit consent conversation and a considered choice of strategy.
-
-*Also worth naming:* telling a patient in precipitated withdrawal that this is "the medicine working" is both inaccurate and, predictably, treatment-ending. The iatrogenic harm here is not only physiologic — it is a durable negative association with the single most effective treatment she could receive.
-
-**Q2. She now refuses buprenorphine. Lay out the realistic options and their trade-offs.**
-
-*Teaching point:* Four viable paths. The wrong answer is the one that is happening now — as-needed full agonists with no disease-directed treatment [15].
-
-| Option | Mechanism / approach | Trade-offs |
-|---|---|---|
-| **Methadone** | Full mu agonist, titrated up | No precipitated withdrawal risk; strongest **retention** data [4]; inpatient initiation is permissible while treating another condition; discharge continuity requires OTP linkage — arrange it *before* discharge. QTc and interaction monitoring. |
-| **Low-dose buprenorphine initiation** ("micro-dosing," Bernese method) | Gradually escalating small buprenorphine doses **while continuing the full agonist**, then taper the full agonist | Avoids requiring a withdrawal window; well suited to patients who cannot tolerate withdrawal or who have failed standard initiation [5,6,7]. Requires days, a cooperative team, and a written protocol. |
-| **High-dose / rapid initiation** | Larger initial buprenorphine dosing in patients already in clear withdrawal | Faster to therapeutic blockade; still carries precipitation risk; least acceptable to *this* patient. |
-| **XR-naltrexone** | Mu antagonist | Requires a **7–10 day opioid-free interval**; not feasible in a patient with acute pain requiring opioid analgesia. Practically excluded here. |
-
-**Two options are genuinely live for her: methadone, or low-dose buprenorphine initiation.** Given a traumatic buprenorphine experience, acute pain requiring full-agonist analgesia, and six weeks of IV antibiotics ahead, **methadone** is often the more pragmatic inpatient answer — it treats withdrawal and craving, is compatible with concurrent full-agonist analgesia, and does not ask her to re-experience the thing that harmed her. Low-dose buprenorphine initiation remains a strong alternative if she prefers buprenorphine's safety profile or if OTP access is a barrier [1,2,5,6,7,13].
-
-**Q3. Take low-dose initiation seriously as a strategy. What is the actual evidence, and what should we tell patients to expect?**
-
-*Teaching point:* Residents should be able to describe this protocol and its limits, not just name it.
-
-- **Principle:** exploit buprenorphine's slow receptor association by escalating gradually from very small doses while the full agonist continues, so that occupancy shifts without an abrupt drop in signaling. The full agonist is then discontinued once buprenorphine reaches a therapeutic dose [5,6].
-- **Evidence quality:** predominantly **observational** — case series, retrospective cohorts, and narrative syntheses. There is no large RCT establishing superiority over standard initiation. Protocols vary substantially in starting dose, escalation interval, and total duration [5,6,7].
-- **It is not withdrawal-free.** In a retrospective cohort of outpatients using fentanyl who underwent low-dose initiation, withdrawal symptoms during the process were **common**, though generally milder than frank precipitated withdrawal [6]. Promising it as painless sets up a second betrayal.
-- **Inpatient advantage:** hospitalization supplies exactly what the protocol needs — supervised administration, reliable dosing intervals, and rapid response to symptoms. Rapid inpatient low-dose protocols have been described and are attractive when length of stay is constrained [7].
-
-**Framing for the patient:** *"This approach is designed to avoid what happened to you on Monday. You may still feel some withdrawal, and we will treat it as it comes. Nothing gets given without telling you first."*
-
-**Q4. Her pain is real, her back is infected, and the chart says "drug seeking." How do you manage acute pain in a patient with OUD?**
-
-*Teaching point:* This is where consult psychiatry adds the most value, and where the evidence base is thinner than the confidence with which people opine.
-
-Core principles:
-
-1. **Treat the OUD and the acute pain as two separate problems.** MOUD dosing does not provide analgesia at the usual dosing interval. **Continue the MOUD and add analgesia on top** — do not withhold or reduce it to "make room."
-2. **Expect higher opioid requirements.** Tolerance and opioid-induced hyperalgesia are real; standard opioid-naive dosing will underserve her and drive exactly the escalating-request pattern the team is now interpreting as pathology.
-3. **Maximize multimodal analgesia** — non-opioid systemic agents, regional/interventional options where appropriate, and treating the underlying infection, which is the definitive analgesic here.
-4. **Buprenorphine's high mu affinity does complicate co-administered full-agonist analgesia**, though it is generally manageable and is not a reason to stop buprenorphine perioperatively or during acute illness. A systematic review of acute pain management in OUD found the overall evidence base **limited and low-certainty**, with no clear superiority among strategies — argue from principles and individualize, and say so out loud rather than asserting false certainty [8].
-5. **Set the analgesic plan in writing, with a schedule and a rationale**, and communicate it to nursing. Most "difficult patient" dynamics on this service are actually **undertreated withdrawal plus undertreated pain plus an unwritten plan**.
-
-**On the documentation:** "drug seeking" is not a clinical finding. It is worth addressing directly with the primary team — stigmatizing language in the record propagates, changes downstream care, and is itself a modifiable driver of patient-directed discharge [2].
-
-**Q5. She wants to complete six weeks of IV antibiotics at home. Two prior admissions ended in patient-directed discharge. How do you think about disposition risk?**
-
-*Teaching point:* Patient-directed discharge in this population is best understood as a **treatable symptom of undertreated withdrawal and pain**, not a fixed patient characteristic [2].
-
-Address the modifiable drivers first:
-- **Adequate MOUD** — the single most effective retention intervention available on day 4. The principle generalizes across settings: treatment *started at the point of contact* drives downstream engagement far more than a referral does, as the ED-initiated buprenorphine trial showed starkly (78% engaged in treatment at 30 days vs. 37% with referral alone) [14].
-- **A written, non-negotiated-daily analgesic plan.**
-- **Nicotine replacement** — frequently forgotten, frequently decisive.
-- **Autonomy and predictability** — smoking breaks, phone access, visitor policy, and a named point of contact. Rigid unit policies drive more early discharges than craving does.
-- **Repair the day-1 rupture explicitly.** Name what happened, name that it was iatrogenic, and apologize. This is often the intervention that changes the trajectory.
-
-If she leaves anyway, the plan should already exist:
-- **Naloxone and overdose-prevention counseling regardless of disposition** [1].
-- The **highest-risk window for fatal overdose follows any period of reduced use** — hospitalization included. Mortality is roughly **six-fold higher in the four weeks after opioid agonist treatment stops** compared with time in treatment [9]. Say this to her plainly, as information rather than as a threat.
-- **Bridge MOUD supply** and a same-week appointment.
-- Discuss oral antibiotic alternatives with ID rather than framing the choice as full IV course or nothing.
-- **Capacity assessment** if refusal appears driven by delirium, untreated withdrawal, or a treatable psychiatric state — but note that a capacitated refusal of recommended care is a right, not a psychiatric emergency.
-
-**Q6. Compare the agonist and antagonist strategies on outcomes. What does X:BOT actually show, and what is the most common misreading?**
-
-*Teaching point:* Residents should hold both the intention-to-treat and the per-protocol result, because the misreading is consequential.
-
-**X:BOT** was a 24-week, multicentre, open-label RCT comparing **XR-naltrexone** with **buprenorphine-naloxone** for relapse prevention in adults with OUD [10]. The essential findings:
-
-- **Induction failure was markedly asymmetric** — substantially harder for XR-naltrexone, because of the required opioid-free interval.
-- In the **intention-to-treat** analysis, relapse was more common in the XR-naltrexone arm, driven largely by that induction hurdle.
-- Among participants **successfully inducted**, outcomes were more comparable.
-
-The common misreading is "XR-naltrexone doesn't work." The defensible reading is: **XR-naltrexone is effective once you get patients onto it, and getting them onto it is the problem** — which makes the *setting* decisive. It is a reasonable option after a completed withdrawal period, in controlled settings, or for patients who decline agonist therapy. It is a poor fit for a patient in active withdrawal with acute pain, as here. Comparative effectiveness has also been examined in Black adults specifically, an important consideration given persistent inequities in buprenorphine access [11].
-
-For **mortality**, the agonist evidence is the strongest thing we have: all-cause mortality during opioid agonist treatment is roughly **half** that during time out of treatment, with reductions across drug-related, suicide, alcohol-related, and cardiovascular causes — with elevated risk in the **first four weeks of methadone** and, again, in the **four weeks after any treatment cessation** [9]. Head-to-head, buprenorphine and methadone are broadly comparable on mortality, with **methadone favored on retention** [4].
-
-**Q7. Change one variable: she is 26 weeks pregnant. What changes?**
-
-*Teaching point:* Less than residents expect, and the direction of the answer surprises people.
-
-- **Opioid agonist therapy remains the standard of care in pregnancy** — both methadone and buprenorphine. Medically supervised withdrawal is **not** recommended, because relapse rates are high and relapse carries greater fetal and maternal risk than continued agonist treatment [12].
-- **Anticipate neonatal opioid withdrawal syndrome (NOWS)** and plan for it with pediatrics. NOWS is expected, treatable, and is **not** a reason to withhold maternal treatment. Buprenorphine exposure is generally associated with a less severe neonatal course than methadone; both are acceptable.
-- **Dose requirements often increase** in the third trimester (volume of distribution, metabolism), and split dosing is sometimes needed. Under-dosing to protect the fetus is a common and harmful error.
-- **Coordinate early** with obstetrics, pediatrics, addiction medicine, and — where relevant — child protective reporting requirements, which vary by state and should be discussed with the patient transparently and in advance.
-- The infection, the antibiotics, and the imaging all still need managing; pregnancy changes the agents, not the principle.
-
----
-
-### Ranked Differential (for the presenting picture)
-
-1. **Buprenorphine-precipitated withdrawal** (day 1) evolving into **ongoing untreated opioid withdrawal + undertreated acute pain** — *most likely, and the two are additive*
-2. **Progression of spinal infection** — worsening epidural collection or new neurologic compromise; the fever and rising inflammatory markers demand this stay live, and any new deficit is an emergency
-3. **Systemic complications of bacteremia** — endocarditis, septic emboli, metastatic foci
-4. **Delirium** — infection, sepsis, medication effects; distinguish from withdrawal-driven agitation
-5. **Occult sedative or alcohol withdrawal** — negative UDS and history make this less likely but it remains the dangerous miss
-6. **Co-occurring psychiatric illness** — depression, PTSD, and suicidality are highly prevalent and worsen acutely in withdrawal
-7. **Opioid-induced hyperalgesia** contributing to the pain-request escalation
-
----
-
-### Workup & Management
-
-**Immediate:**
-1. **Repair and re-consent.** Name the day-1 event accurately as precipitated withdrawal, take responsibility, and present the options in Q2 as a genuine choice.
-2. **Start disease-directed treatment today** — methadone titration or a written low-dose buprenorphine initiation protocol [1,2,5,6,7].
-3. **Write the analgesic plan**: MOUD *plus* scheduled multimodal analgesia *plus* clearly defined breakthrough dosing, with rationale documented [8].
-4. **Adjunctive withdrawal management** per institutional protocol; **nicotine replacement**.
-5. **Reassess the spine** — neurologic checks, and imaging for any new deficit or clinical deterioration.
-
-**Ongoing:**
-6. **Monitor QTc** on methadone (448 ms at baseline) and review interacting medications, including antibiotics and antiemetics.
-7. **Serial COWS** — for titration, not gatekeeping.
-8. **HCV RNA follow-up** and linkage to treatment; confirm hepatitis A/B immunity; repeat HIV testing per risk.
-9. **Screen for depression, PTSD, and suicidality**; treat co-occurring illness rather than deferring it to "after the addiction is stable."
-10. **Address stigmatizing documentation** with the primary team directly.
-
-**Discharge planning — start on day 4, not day 40:**
-11. **OTP intake arranged before discharge** if methadone, or a confirmed buprenorphine prescriber with a bridge supply. Continuity is the whole ballgame [9].
-12. **Naloxone kit and overdose-prevention counseling**, with explicit discussion of reduced tolerance after hospitalization [1,9].
-13. **Realistic antibiotic plan** with ID, including oral alternatives, rather than an all-or-nothing IV course.
-14. **Contingency plan documented** for patient-directed discharge — what she leaves with, and how she gets back in.
-
----
-
-### Facilitator Notes (not for the learner handout)
-
-- **Time:** ~30 min. **Q1–Q3** are the pharmacologic core; **Q4–Q5** are where consult psychiatry does the actual work. Q6 is the evidence-appraisal beat. Q7 is optional if time is short.
-- **Best teaching move:** ask the group to articulate *why* a COWS of 11 was insufficient reassurance. The answer requires holding receptor affinity, intrinsic activity, and fentanyl pharmacokinetics simultaneously — and it is the conceptual hinge for everything downstream.
-- **Second-best move:** ask what the consult note should say about "drug seeking." Residents rarely get explicit coaching on how to challenge stigmatizing documentation without alienating the primary team. Practice the sentence out loud.
-- **Common resident errors to correct:**
-  1. Treating low-dose initiation as established standard of care rather than an observationally supported alternative with heterogeneous protocols [5,6,7].
-  2. Promising low-dose initiation will be withdrawal-free [6].
-  3. Reducing or holding MOUD to "make room" for analgesia.
-  4. Reading X:BOT as "naltrexone doesn't work" rather than as an induction-barrier finding [10].
-  5. Deferring MOUD until the acute medical problem resolves — the admission *is* the treatment window.
-  6. Framing patient-directed discharge as a character trait rather than a modifiable outcome [2].
-  7. Recommending medically supervised withdrawal in pregnancy [12].
-  8. Forgetting nicotine replacement.
-  9. Arranging MOUD without arranging the *next dose after discharge* — the four weeks post-cessation are the highest-mortality window [9].
-- **Evidence-appraisal beat:** ask the group to rate the certainty of the evidence behind each recommendation they make. Mortality benefit of agonist therapy is strong observational and trial evidence [4,9]. Low-dose initiation is observational [5,6,7]. Acute pain management in OUD is explicitly low-certainty [8]. Residents should be able to say "we do this on principle, not on trial data" without discomfort.
-- **Systems note:** if your institution lacks a written low-dose initiation protocol, a same-day OTP linkage pathway, or naloxone-at-discharge, those are QI projects sitting in plain view.
-- **Safety note:** keep overdose discussion oriented to **recognition, escalation, and prevention** — tolerance loss, naloxone access, not using alone, continuity of MOUD. Avoid substance, amount, or route specifics. If suicidality surfaces, move to a full risk assessment and safety planning rather than folding it into the addiction discussion.
-
----
-
-### References
-
-1. Harris MTH, Weinstein ZM, Walley AY. Medications for opioid use disorder, opioid withdrawal, and opioid overdose: a review. *JAMA.* 2026. [DOI](https://doi.org/10.1001/jama.2025.26348) (PMID 41671014)
-2. Englander H, Thakrar AP, Bagley SM, et al. Caring for hospitalized adults with opioid use disorder in the era of fentanyl: a review. *JAMA Intern Med.* 2024. [DOI](https://doi.org/10.1001/jamainternmed.2023.7282) (PMID 38683591)
-3. Thakrar AP, Christine PJ, Siaw-Asamoah A, et al. Buprenorphine-precipitated withdrawal among hospitalized patients using fentanyl. *JAMA Netw Open.* 2024. [DOI](https://doi.org/10.1001/jamanetworkopen.2024.35895) (PMID 39331392)
-4. Degenhardt L, Clark B, Macpherson G, et al. Buprenorphine versus methadone for the treatment of opioid dependence: a systematic review and meta-analysis of randomised and observational studies. *Lancet Psychiatry.* 2023. [DOI](https://doi.org/10.1016/S2215-0366(23)00095-0) (PMID 37167985)
-5. Edinoff AN, Fahmy OH, Spillers NJ, et al. Low-dose initiation of buprenorphine: a narrative review. *Curr Pain Headache Rep.* 2023. [DOI](https://doi.org/10.1007/s11916-023-01116-3) (PMID 37083890)
-6. Jones BLH, Geier M, Neuhaus J, et al. Withdrawal during outpatient low dose buprenorphine initiation in people who use fentanyl: a retrospective cohort study. *Harm Reduct J.* 2024. [DOI](https://doi.org/10.1186/s12954-024-00998-9) (PMID 38594721)
-7. Sokolski E, Skogrand E, Goff A, et al. Rapid low-dose buprenorphine initiation for hospitalized patients with opioid use disorder. *J Addict Med.* 2023. [DOI](https://doi.org/10.1097/ADM.0000000000001133) (PMID 37579112)
-8. Buonora MJ, Mackey K, Khalid L, et al. Acute pain management in people with opioid use disorder: a systematic review. *Ann Intern Med.* 2025. [DOI](https://doi.org/10.7326/ANNALS-24-01917) (PMID 40096692)
-9. Santo T, Clark B, Hickman M, et al. Association of opioid agonist treatment with all-cause mortality and specific causes of death among people with opioid dependence: a systematic review and meta-analysis. *JAMA Psychiatry.* 2021. [DOI](https://doi.org/10.1001/jamapsychiatry.2021.0976) (PMID 34076676)
-10. Lee JD, Nunes EV, Novo P, et al. Comparative effectiveness of extended-release naltrexone versus buprenorphine-naloxone for opioid relapse prevention (X:BOT): a multicentre, open-label, randomised controlled trial. *Lancet.* 2018. [DOI](https://doi.org/10.1016/S0140-6736(17)32812-X) (PMID 29150198)
-11. Haeny AM, Montgomery L, Burlew AK, et al. Extended-release naltrexone versus buprenorphine-naloxone to treat opioid use disorder among Black adults. *Addict Behav.* 2020. [DOI](https://doi.org/10.1016/j.addbeh.2020.106514) (PMID 32619868)
-12. Sanjanwala AR, Lim G, Krans EE. Opioids and opioid use disorder in pregnancy. *Obstet Gynecol Clin North Am.* 2023. [DOI](https://doi.org/10.1016/j.ogc.2022.10.015) (PMID 36822706)
-13. Yakovenko I, Mukaneza Y, Germé K, et al. Management of opioid use disorder: 2024 update to the national clinical practice guideline. *CMAJ.* 2024. [DOI](https://doi.org/10.1503/cmaj.241173) (PMID 39532476)
-14. D'Onofrio G, O'Connor PG, Pantalon MV, et al. Emergency department–initiated buprenorphine/naloxone treatment for opioid dependence: a randomized clinical trial. *JAMA.* 2015. [DOI](https://doi.org/10.1001/jama.2015.3474) (PMID 25919527)
-15. Bell J, Strang J. Medication treatment of opioid use disorder. *Biol Psychiatry.* 2019. [DOI](https://doi.org/10.1016/j.biopsych.2019.06.020) (PMID 31420089)
-
-*Citations retrieved from PubMed. This teaching case uses a synthetic, de-identified scenario for educational purposes only. Specific dosing is intentionally omitted; follow your institution's protocol and applicable federal and state regulations governing methadone and buprenorphine.*
 
 *Joshua Moss, MD | Psychiatrist*
