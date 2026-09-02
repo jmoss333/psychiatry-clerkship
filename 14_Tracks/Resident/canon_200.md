@@ -70,7 +70,7 @@ The most cited modern formulation of the dopamine hypothesis, synthesizing >6,70
 
 The foundational systematic review establishing that physician education in depression recognition and restricting access to lethal means are the only strategies with clear evidence of reducing suicide rates. The starting point for all evidence-based suicide prevention.
 
-**14. Elkin et al., "NIMH Treatment of Depression Collaborative Research Program," J Consult Clin Psychol 1989**
+**14. Elkin et al., "NIMH Treatment of Depression Collaborative Research Program: General Effectiveness of Treatments," Arch Gen Psychiatry 1989**
 
 The most influential comparative psychotherapy trial (N=239), comparing IPT, CBT, imipramine, and placebo. Established the template for psychotherapy research and sparked decades of debate about the relative efficacy of psychotherapy and pharmacotherapy.
 
@@ -108,7 +108,7 @@ GBD 2010 data establishing mental disorders as the leading cause of years lived 
 
 **23. Caspi et al., "Longitudinal Assessment of Mental Health Disorders Across 4 Decades (Dunedin Study)," JAMA Network Open 2020**
 
-Across 4 decades, 86% of cohort members met criteria for a disorder at some point, with 692 unique life-history patterns among 1,037 participants. Introduced the p-factor concept and demonstrated that mental disorders are far more common, comorbid, and fluid than categorical diagnosis suggests.
+Across 4 decades, 86% of cohort members met criteria for a disorder at some point, with 692 unique life-history patterns among 1,037 participants. Demonstrated that mental disorders are far more common, comorbid, and fluid than categorical diagnosis suggests — extending the cohort's earlier p-factor work (Caspi et al. 2014, paper #157).
 
 **24. Anton et al., "Combined Pharmacotherapies and Behavioral Interventions for Alcohol Dependence (COMBINE)," JAMA 2006**
 
@@ -124,7 +124,7 @@ Demonstrated that the Safety Planning Intervention reduced suicidal behaviors by
 
 ### A. PSYCHOPHARMACOLOGY — DEPRESSION (Papers 26–45)
 
-**26.** Fournier et al., "Antidepressant Drug Effects and Depression Severity: A Patient-Level Meta-analysis," JAMA 2010 — Severity-dependent efficacy: d=0.11 mild, d=0.81 very severe
+**26.** Fournier et al., "Antidepressant Drug Effects and Depression Severity: A Patient-Level Meta-analysis," JAMA 2010 — Severity-dependent efficacy: d=0.11 mild-to-moderate, d=0.47 very severe
 
 **27.** Kirsch et al., "Initial Severity and Antidepressant Benefits," PLoS Med 2008 — Drug-placebo differences clinically significant only in very severe depression
 
@@ -146,7 +146,7 @@ Demonstrated that the Safety Planning Intervention reduced suicidal behaviors by
 
 **36.** Reif et al., "Esketamine Nasal Spray vs Quetiapine for Treatment-Resistant Depression," NEJM 2023 — Esketamine superior to quetiapine for TRD remission
 
-**37.** Henssler et al., "Incidence of Antidepressant Discontinuation Symptoms," Lancet Psychiatry 2024 — 31% incidence; 8% attributable to drug
+**37.** Henssler et al., "Incidence of Antidepressant Discontinuation Symptoms," Lancet Psychiatry 2024 — 31% incidence (vs 17% after placebo); authors estimate ~15% attributable (one in six to seven patients), though the within-RCT drug-placebo difference was 8%
 
 **38.** Geddes et al., "Relapse Prevention with Antidepressant Drug Treatment in Depressive Disorders," Lancet 2003 — Continuing antidepressants reduces relapse by 70%
 
@@ -202,7 +202,7 @@ Demonstrated that the Safety Planning Intervention reduced suicidal behaviors by
 
 **62.** Samara et al., "Antipsychotics in Treatment-Resistant Schizophrenia (NMA)," JAMA Psychiatry 2016 — Clozapine not significantly superior to most SGAs in NMA
 
-**63.** Leucht et al., "60 Years of Placebo-Controlled Antipsychotic Trials," AJP 2017 — Overall SMD=0.47; 51% respond on drug vs. 30% placebo
+**63.** Leucht et al., "60 Years of Placebo-Controlled Antipsychotic Trials," AJP 2017 — Overall SMD=0.47; 51% vs 30% at least minimally improved (good response 23% vs 14%)
 
 **64.** Delay & Deniker, "Discovery of Chlorpromazine," 1952 — The beginning of psychopharmacology
 
@@ -523,8 +523,6 @@ Demonstrated that the Safety Planning Intervention reduced suicidal behaviors by
 ## A Note on Scope
 
 This list necessarily omits important papers in several areas that a comprehensive curriculum would also address, including: sleep medicine and psychiatry, consultation-liaison psychiatry (delirium management), forensic psychiatry, cultural psychiatry, telepsychiatry, and the social determinants of mental health. Several classic texts (Kraepelin's nosology, Freud's foundational works, Jaspers' General Psychopathology) are better assigned as book chapters than individual papers. The list also does not include the many excellent NEJM, JAMA, and Lancet review articles that serve as outstanding teaching tools for each disorder — these are better curated at the rotation level.
-
-Would you like to explore any specific subdomain in greater depth, or discuss how this curriculum might be structured across the four years of residency training?
 
 ### References
 

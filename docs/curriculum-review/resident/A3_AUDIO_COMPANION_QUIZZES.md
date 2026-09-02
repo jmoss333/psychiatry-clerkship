@@ -379,7 +379,7 @@
 
 3. **Based on the study results, which drug demonstrates the highest efficacy but is limited by the worst side-effect profile (lowest acceptability)?**
    - Amitriptyline **← keyed correct**
-     - *feedback:* Amitriptyline had the highest Odds Ratio for efficacy (2.13) but was noted for having the worst side-effect profile among the agents studied.
+     - *feedback:* Amitriptyline had the highest Odds Ratio for efficacy (2.13). Its anticholinergic and cardiac side-effect burden makes it a later-line choice in practice, but in the study's acceptability (dropout) analysis it was clomipramine — not amitriptyline — that performed worst, as the only agent with significantly more dropouts than placebo.
    - Escitalopram Escitalopram is noted for a balanced profile of high efficacy and high tolerability, rather than a poor side-effect profile.
    - Venlafaxine While venlafaxine is highly efficacious, it was not singled out as having the worst acceptability profile in this specific analysis.
    - Reboxetine Reboxetine actually showed the lowest efficacy among the 21 antidepressants studied.
@@ -1630,7 +1630,7 @@
 
 3. **For a patient starting a new SGA, what is the recommended schedule for monitoring weight during the first few months of treatment?**
    - Monthly for the first year, then every 2 years
-     - *feedback:* The protocol emphasizes more frequent monitoring (every 4 weeks) initially, followed by a transition to annual checks.
+     - *feedback:* The protocol emphasizes more frequent monitoring (every 4 weeks) initially, followed by quarterly weight checks thereafter.
    - Baseline and every 6 months thereafter Waiting six months would miss the critical window of rapid weight gain that typically occurs in the first three months.
    - Only at baseline and then if the patient reports physical changes Standardized, proactive monitoring is required regardless of patient-reported symptoms to ensure early intervention.
    - Baseline, 4 weeks, 8 weeks, and 12 weeks **← keyed correct**
@@ -2059,7 +2059,7 @@
    - The results cannot be generalized to the US because it was conducted in Europe.
      - *feedback:* The RAISE-ETP was a NIMH-funded trial specifically conducted across 34 clinics in the United States.
    - The benefits of the program are uniform regardless of how long the patient was psychotic before treatment. This is a common overstatement; the data showed that the benefits were significantly more pronounced in those with a shorter DUP.
-   - CSC is only effective for those with a duration of untreated psychosis (<74 weeks). **← keyed correct**
+   - Re-key the item to match the deck's own overstatement-item convention (the key is the false claim): key 'The benefits of the program are uniform regardless of how long the patient was psychotic before treatment' as the common overstatement (its existing feedback already explains the DUP moderation), and reword the current keyed option into a true-statement distractor: 'The benefits were concentrated in patients with shorter duration of untreated psychosis (below the ~74-week median), so gains may be smaller when treatment starts late' — with feedback that this is an accurate limitation, not an overstatement: RAISE-ETP's moderator analysis showed greater benefit with shorter DUP, not that CSC is ineffective beyond 74 weeks. **← keyed correct**
      - *feedback:* While CSC is the standard of care, its most striking benefits were observed in the subgroup with a DUP of less than 74 weeks, highlighting the urgency of early detection.
    - The study only followed patients for 6 months, so long-term benefit is unknown. The initial report covered 2 years, and 5-year follow-up data has supported the sustainability of the benefits.
 
@@ -2275,7 +2275,7 @@
    - Biological determinism in prescribing While psychiatry involves biological factors, the paper focuses on the collaborative process of decision-making rather than the biological etiology of disease.
    - Paternalistic clinical management This traditional model involves the clinician making decisions for the patient, which is the approach the paper argued against.
 
-2. **A 2022 Cochrane review of 14 RCTs evaluated the efficacy of Shared Decision-Making (SDM) interventions in mental health. Which outcome was found to be consistently improved?**
+2. **Rewrite the item to the review's actual result, e.g. stem: 'A 2022 Cochrane review of 15 RCTs evaluated Shared Decision-Making (SDM) interventions in mental health care. Which outcome showed some evidence of improvement?' keyed to 'Patients' perceived involvement in the decision-making process immediately after the encounter', with feedback that effects on knowledge, overall satisfaction, and clinical outcomes were uncertain (low- to very-low-certainty evidence). Align Q6's feedback with the same summary, and attribute knowledge/decisional-conflict gains to the general patient decision-aid literature if that teaching point is kept.**
    - Elimination of medication side effects
      - *feedback:* SDM helps patients choose treatments based on side effect profiles but does not inherently eliminate the biological side effects of medications.
    - Immediate reduction in psychotic symptoms Clinical outcomes, such as symptom reduction, showed less consistent improvements across the reviewed studies compared to process measures.
@@ -2474,7 +2474,7 @@
 2. **A 32-year-old patient with Bipolar I Disorder presents with a depressive episode while taking therapeutic levels of lithium. Based on the clinical pearls from the STEP-BD trial, what is the most appropriate next step in management?**
    - Immediately add a high-dose SSRI like paroxetine.
      - *feedback:* The study suggests that adding antidepressants does not provide an efficacy advantage over placebo.
-   - Avoid psychotherapy as it has been shown to be less effective than medication in this population. The companion psychotherapy trial actually showed much higher recovery rates compared to medication alone.
+   - Avoid psychotherapy as it has been shown to be less effective than medication in this population. The companion psychotherapy trial showed higher recovery rates with intensive psychotherapy than with a brief collaborative-care control; patients in both arms continued mood-stabilizer pharmacotherapy.
    - Discontinue lithium and switch to antidepressant monotherapy. Antidepressant monotherapy is generally avoided in bipolar disorder due to the risk of destabilization, which was not the protocol in this adjunctive trial.
    - Optimize the current mood stabilizer therapy or consider evidence-based agents like lamotrigine or quetiapine. **← keyed correct**
      - *feedback:* Clinical guidance from the study emphasizes optimizing mood stabilizers first rather than reflexively adding antidepressants.
@@ -2496,7 +2496,7 @@
    - Mood stabilizers should be optimized before considering antidepressants. This is a core clinical pearl derived from the trial results rather than an overstatement.
 
 5. **In the context of the STEP-BD program, how did the recovery rates in the intensive psychotherapy trial compare to the recovery rates in the antidepressant medication trial?**
-   - Intensive psychotherapy resulted in recovery rates as high as 64%, significantly higher than the medication trial. **← keyed correct**
+   - Intensive psychotherapy resulted in 1-year recovery rates as high as 64%, significantly higher than the 52% seen with brief collaborative care in the companion randomized trial. **← keyed correct**
      - *feedback:* Data from the companion trial showed that psychotherapy (CBT, IPSRT, FFT) was highly effective compared to the medication-only outcomes.
    - Both trials showed nearly identical recovery rates of roughly 25%. The psychotherapy trial showed significantly higher rates of recovery compared to the medication-focused trial.
    - The antidepressant trial had higher recovery rates, exceeding 50%. The antidepressant trial had notably low recovery rates of approximately 25%.
@@ -2566,7 +2566,7 @@
      - *feedback:* While lithium treats mania, the study highlighted its specific comparative strength in preventing depressive episodes compared to valproate.
    - Rapid cycling Rapid cycling is a specific pattern of bipolar disorder, but the primary finding noted in the summary relates to depressive relapse prevention.
    - Depressive relapses **← keyed correct**
-     - *feedback:* Lithium's benefit was particularly strong in this area, demonstrated by an HR of 0.63 for depressive episodes.
+     - *feedback:* Rewrite the item to the trial's published finding, e.g. stem: 'In BALANCE, how did lithium monotherapy compare with valproate monotherapy for relapse prevention?' keyed to 'Lithium was superior at preventing new intervention for an emergent mood episode of either pole (HR 0.71, 95% CI 0.51-1.00)', with feedback noting the primary outcome covered relapse of any polarity and the trial did not establish a specific depressive-pole advantage. Do not key a polarity-specific claim or the 0.63 figure unless it is verified against the paper's polarity-specific secondary outcomes in the full report.
    - Mixed episodes The source material emphasizes depressive relapses rather than mixed states as the specific area of lithium's advantage.
 
 4. **Based on the clinical pearls from the BALANCE trial, what is the recommended approach for a patient experiencing an incomplete response to lithium monotherapy?**
@@ -2641,7 +2641,7 @@
 
 2. **How did the effectiveness of the first-generation antipsychotic (FGA) perphenazine compare to the second-generation antipsychotics (SGAs) quetiapine, risperidone, and ziprasidone?**
    - Perphenazine was discontinued much earlier due to a higher rate of movement disorders.
-     - *feedback:* Contrary to expectations, the FGA was not discontinued significantly more often for extrapyramidal side effects compared to the SGAs in this trial.
+     - *feedback:* Perphenazine's overall time to discontinuation was comparable to the SGAs, and rated extrapyramidal symptoms did not differ significantly across drugs — although discontinuation specifically because of extrapyramidal effects was modestly more common with perphenazine (8% vs 2–4%).
    - Perphenazine was significantly less effective than all SGAs tested. This reflects the pre-trial assumption that SGAs were categorically superior, which the study results actually refuted.
    - Perphenazine performed comparably to the SGAs quetiapine, risperidone, and ziprasidone. **← keyed correct**
      - *feedback:* The trial found no significant difference in the time to discontinuation between the FGA perphenazine and these three SGAs.
@@ -2688,7 +2688,7 @@
 
 1. **What was the primary conclusion of the CATIE-AD trial regarding the effectiveness of atypical antipsychotics compared to placebo for treating agitation or psychosis in Alzheimer's patients?**
    - Placebo was found to be dangerous due to the lack of symptom control for behavioral disturbances.
-     - *feedback:* Placebo actually had the longest median time to discontinuation (8.0 weeks) compared to the active drugs, suggesting it was better tolerated.
+     - *feedback:* Median time to discontinuation for any reason did not differ significantly between placebo (8.0 weeks) and the active drugs (olanzapine 8.1, risperidone 7.4, quetiapine 5.3 weeks), and placebo had the fewest discontinuations for intolerability.
    - Risperidone was identified as the only agent with a favorable risk-benefit ratio for long-term use. The trial did not find a superior risk-benefit profile for risperidone specifically; it shared the general risks and lack of superior efficacy seen across the class.
    - Antipsychotics were significantly more effective than placebo in extending the time to treatment discontinuation. In fact, the trial found that no antipsychotic was superior to placebo for the primary outcome of time to discontinuation for any reason.
    - The benefits of antipsychotic medications were largely offset by their adverse effects. **← keyed correct**
@@ -3337,7 +3337,7 @@
    - Psychotherapy and pharmacotherapy were comparably effective. **← keyed correct**
      - *feedback:* The results suggested that for mild-to-moderate depression, both CBT/IPT and imipramine showed similar levels of effectiveness.
    - IPT was found to be the only effective treatment for mild cases. The study concluded that all active treatments were generally effective for this population, not just one specific psychotherapy.
-   - Placebo was found to be just as effective as CBT and IPT. All active treatments were found to produce significant improvement beyond the placebo control group.
+   - Placebo plus clinical management produced no improvement at all. In fact, patients in every condition, including placebo plus clinical management, improved significantly. Specific superiority over placebo was limited — superior recovery rates for imipramine plus clinical management and IPT, and none for CBT — and among less severely depressed patients no treatment separated from placebo; clear between-treatment differences were confined to the more severely depressed subgroup, strongest for imipramine plus clinical management.
 
 3. **In the context of the TDCRP, what does the 'Dodo bird verdict' refer to?**
    - The belief that treatment effectiveness is entirely dependent on the patient's age.
@@ -3359,7 +3359,7 @@
      - *feedback:* Later meta-analyses, such as Weitz et al. (2015), challenged the severity moderation findings, suggesting the initial advantage might not be as robust as first thought.
    - Stating that the study established the methodology for psychotherapy research. This is considered a factual historical impact of the study rather than an overstatement.
    - Suggesting that patient preference should be considered in treatment selection. This is a recommended clinical pearl and a standard component of evidence-based practice.
-   - Observing that all active treatments showed improvement over placebo. This was a key finding of the study and is supported by the data presented.
+   - Observing that patients in all four conditions, including placebo plus clinical management, showed significant improvement. This was a key finding of the study and is supported by the data presented.
 
 6. **What is the recommended clinical approach for patients presenting with severe depression based on the broader implications of this research?**
    - Immediate referral for ECT as the first-line intervention
@@ -3380,7 +3380,7 @@
 
 2. **In the POTS trial, how did the efficacy of CBT monotherapy compare to sertraline monotherapy?**
    - Neither monotherapy was superior to placebo
-     - *feedback:* Both CBT and sertraline demonstrated significantly higher remission rates than the 3.6% observed in the placebo group.
+     - *feedback:* Both monotherapies were superior to placebo on the primary CY-BOCS outcome; on the stricter remission outcome, CBT alone (39.3%) separated from placebo (3.6%) while sertraline alone (21.4%) did not reach statistical significance.
    - Sertraline was significantly superior to CBT The data indicated that medication alone was not more effective than therapy alone in this pediatric population.
    - CBT was significantly superior to sertraline While CBT is often preferred if only one modality is chosen, the study did not find a statistically significant difference in efficacy between the two.
    - The two monotherapies did not differ significantly from each other **← keyed correct**
@@ -3833,7 +3833,7 @@
 
 2. **Which neurobiological system did the Zarate 2006 study target to produce rapid antidepressant effects, marking a departure from the traditional monoamine hypothesis?**
    - The serotonergic system via 5−HT 2A receptors
-     - *feedback:* This describes the mechanism of most traditional SSRIs or certain psychedelics, rather than ketamine's primary NMDA-related mechanism.
+     - *feedback:* 5-HT2A agonism is the mechanism of serotonergic psychedelics; traditional SSRIs act on the serotonin system by blocking the serotonin transporter. Neither describes ketamine's primary NMDA-related mechanism.
    - The dopaminergic reward pathway Although dopamine is involved in depression, the primary mechanism of ketamine is not direct dopamine receptor agonism.
    - The glutamate system via NMDA receptor antagonism **← keyed correct**
      - *feedback:* Ketamine acts as an N-methyl-D-aspartate (NMDA) antagonist, shifting focus to glutamate as a primary driver of rapid antidepressant response.

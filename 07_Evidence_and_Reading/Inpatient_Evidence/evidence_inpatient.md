@@ -12,7 +12,7 @@ The **Columbia-Suicide Severity Rating Scale (C-SSRS)** is the most widely endor
 
 The **SAD PERSONS scale should not be used**: multiple studies demonstrate it performs no better than chance (AUC 0.55–0.59), with sensitivity as low as 1% for repeat self-harm. The VA/DoD 2024 guideline explicitly excludes it.
 
-**Environmental safety** has the strongest single-intervention evidence. The VHA Mental Health Environment of Care Checklist (MHEOCC) produced an **82% reduction in inpatient suicide rate** (from 2.64 to 0.87 per 100,000 admissions, P < .001), sustained over 7 years. Hanging accounts for 71% of inpatient suicide deaths, and ligature point removal was associated with significant reductions in suicide by hanging in a UK national study.
+**Environmental safety** has the strongest single-intervention evidence. The VHA Mental Health Environment of Care Checklist (MHEOCC) produced a **67% reduction in inpatient suicide rate** (from 2.64 to 0.87 per 100,000 admissions, P < .001), sustained over 7 years. Hanging accounts for 71% of inpatient suicide deaths, and ligature point removal was associated with significant reductions in suicide by hanging in a UK national study.
 
 ### Landmark Studies
 
@@ -355,7 +355,7 @@ The **DIAMOND initiative** highlights the implementation gap: despite increased 
 
 | Domain | Strongest Intervention | Effect Size | Evidence Quality |
 | --- | --- | --- | --- |
-| Inpatient suicide prevention | Environmental safety (MHEOCC) | 82% reduction in inpatient suicide | Before-after, system-wide |
+| Inpatient suicide prevention | Environmental safety (MHEOCC) | 67% reduction in inpatient suicide | Before-after, system-wide |
 | Post-discharge suicide prevention | Brief CBT for suicidal inpatients | 60% reduction in attempts (NNT=7) | RCT (n=200) |
 | Violence risk (imminent) | BVC/DASA screening | Hedges' g = 1.04–1.35 | Meta-analysis of 31 studies |
 | Agitation pharmacotherapy | Antipsychotic + BZD combination | OR 12.93 vs. haloperidol alone | IPD network meta-analysis |

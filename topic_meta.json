@@ -3671,10 +3671,10 @@
   },
   "evidence_inpatient.md": {
     "read": 8,
-    "tldr": "The strongest inpatient evidence: environmental safety checklists cut inpatient suicide 82%; brief CBT (up to 4 sessions) reduces post-discharge attempts 60% (NNT 7); family psychoeducation cuts 12-month relapse (OR 0.18); antipsychotics do not improve delirium outcomes.",
+    "tldr": "The strongest inpatient evidence: environmental safety checklists cut inpatient suicide 67%; brief CBT (up to 4 sessions) reduces post-discharge attempts 60% (NNT 7); family psychoeducation cuts 12-month relapse (OR 0.18); antipsychotics do not improve delirium outcomes.",
     "points": [
       "MIND-USA (n=566) and AID-ICU (n=1,000) both found no benefit for antipsychotics vs. placebo on delirium outcomes — the PADIS guidelines recommend against routine antipsychotic use for delirium.",
-      "The VHA MHEOCC environmental safety checklist produced an 82% reduction in the inpatient suicide rate — ligature point removal is the single strongest structural inpatient suicide prevention intervention.",
+      "The VHA MHEOCC environmental safety checklist produced a 67% reduction in the inpatient suicide rate — ligature point removal is the single strongest structural inpatient suicide prevention intervention.",
       "Pre-discharge 7-day follow-up (actually scheduled, not 'patient will call') is associated with substantially lower suicide risk, and family involvement during admission nearly triples the odds of achieving it."
     ],
     "cant": "Antipsychotics for non-withdrawal delirium — the MIND-USA and AID-ICU trials showed no benefit; reserve them for severe hyperactive delirium refractory to non-pharmacological bundles.",
@@ -3695,7 +3695,7 @@
           "t": "Benzodiazepines are the evidence-based first choice for non-withdrawal delirium"
         }
       ],
-      "why": "MIND-USA and AID-ICU both showed no benefit for antipsychotics vs. placebo on days alive without delirium or coma; the PADIS guidelines recommend against routine use. Multicomponent non-pharmacological bundles (HELP-based) reduced incident delirium by 53%. Benzodiazepines are reserved for alcohol/benzo withdrawal delirium — they worsen non-withdrawal delirium."
+      "why": "MIND-USA showed no benefit for antipsychotics vs. placebo on days alive without delirium or coma, and AID-ICU showed none on days alive and out of the hospital at 90 days; the PADIS guidelines recommend against routine use. Multicomponent non-pharmacological bundles (HELP-based) reduced incident delirium by 53%. Benzodiazepines are reserved for alcohol/benzo withdrawal delirium — they worsen non-withdrawal delirium."
     },
     "cta": {
       "label": "Open the Acute Consult module",
