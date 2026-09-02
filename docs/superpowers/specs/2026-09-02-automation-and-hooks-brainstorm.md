@@ -249,8 +249,23 @@ scoped by path in the prompt and never attest, merge, or narrow an instrument wa
 
 ### Wave 1 (one working session each)
 
-1. **C1** — new `automation-failure-escalation.yml` (`workflow_run`, `github-script`, rolling issue), added to
+1. **C1** — new `automation-failure-escalation.yml` (`workflow_run`, rolling issue), added to
    `validate_scheduled_workflows.py` scope; plus the Settings toggle, which is a human action.
+   **Shipped 2026-09-02 (PR #464).** All ten `maintenance-*`/`surveillance-*` workflows report through
+   `workflow_run` into one rolling issue, `automation: scheduled job failures`; logic in
+   `_automation/maintenance/escalation_issue.py` with 24 tests, state round-tripping through a JSON
+   block in the issue body so the escalation depends on nothing but GitHub itself. Two deviations
+   from this row, both governance-driven:
+   **(a) `gh` CLI, not `actions/github-script`** — `_validate_forbidden` builds its haystack from
+   `run:` bodies only, so a github-script implementation would have been structurally invisible to
+   this repo's own "no automatic issue closure" and "no direct issues API" guards; the CLI keeps the
+   workflow inside the guard and adds no new pinned action.
+   **(b) recovery is recorded, not auto-closed** — the maintenance README states that automation
+   never closes these issues and the validator enforces it, so the rule was left intact. Exempting
+   automation-health issues is defensible but is a governance call; if taken, extend
+   `_validate_forbidden` to scan github-script bodies in the same change so the rule stays honest.
+   Also settled: **C1 needs no new Actions permission** — it creates issues, not PRs, so it does not
+   depend on the "create and approve pull requests" toggle still blocking C4/C6/C10.
 2. **A-bundle** — `.claude/settings.json` + four scripts under `.claude/hooks/`; a `tests/hooks.test.mjs`
    that feeds canned tool-call JSON to each script and asserts allow/deny, so the hooks are under
    the same node suite as everything else.
@@ -270,8 +285,10 @@ report-only; `stop_quick_gate.py` = A14), `precommit_gate.py` installed by `bin/
 session-level, so an agent's tool allowlist stays its primary enforcement; and crisis numbers are
 derived from `crisis_resources.json` at runtime so no hook file carries one. The 2026-09-02
 review added: guards skip paths outside the repo, the PHI pass skips script code, and the
-PubMed connector is allowlisted under both of its server prefixes. Item 1 (C1) and the Actions
-permission toggle remain.
+PubMed connector is allowlisted under both of its server prefixes. **Item 1 (C1) shipped
+2026-09-02 in PR #464 — Wave 1 is complete.** The Actions "create and approve pull requests"
+toggle remains a human action, but it no longer blocks anything in Wave 1; it gates C4, C6 and
+C10. The one Wave 1 remainder is the `evidence-verifier` eval.
 
 ---
 
