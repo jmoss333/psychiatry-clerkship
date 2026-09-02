@@ -379,7 +379,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **Slug:** `rounds_questions.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 8,682 words
+- **Length:** 8,700 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -810,7 +810,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Answer:** Trauma-focused psychotherapy (prolonged exposure, cognitive processing therapy, EMDR) is first-line with larger effect sizes than pharmacotherapy. Sertraline and paroxetine are the only FDA-approved medications.
 
-- **Evidence:** Cochrane review: SSRIs improved PTSD symptoms vs. placebo (RR 0.66).
+- **Evidence:** Cochrane review (Williams et al., 2022): SSRIs increased treatment response vs. placebo — risk of failing to respond RR 0.66 (95% CI 0.59–0.74).
 
 - **Key paper:** Schnurr et al., Ann Intern Med 2024 — VA/DoD PTSD guideline synopsis.
 
@@ -920,7 +920,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 **50. What is the COWS scale?**
 
-- **Answer:** The Clinical Opiate Withdrawal Scale — an 11-item clinician-administered tool (score 0–47) assessing opioid withdrawal severity. Scores 5–12: mild; 13–24: moderate; >24: severe.
+- **Answer:** The Clinical Opiate Withdrawal Scale — an 11-item clinician-administered tool (score 0–48) assessing opioid withdrawal severity. Scores 5–12: mild; 13–24: moderate; 25–36: moderately severe; >36: severe.
 
 - **Evidence:** Validated against CINA scale (Pearson r = 0.85). For buprenorphine induction, COWS should ideally be ≥10–12.
 
@@ -1136,7 +1136,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Answer:** Psychotherapy — specifically DBT, which has the most evidence. No medications are FDA-approved for BPD. Pharmacotherapy targets specific symptoms (e.g., mood instability, impulsivity) but does not treat core pathology.
 
-- **Evidence:** DBT vs. TAU: BPD severity SMD −0.60; self-harm SMD −0.54.
+- **Evidence:** DBT vs. TAU (Cochrane 2020): BPD severity SMD −0.60; self-harm SMD −0.28.
 
 - **Key paper:** Linehan et al., JAMA Psychiatry 2015.
 
