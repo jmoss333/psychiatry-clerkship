@@ -3,11 +3,11 @@
 The complete contract between `frontdoor.css` and the markup that tasks 3–9 emit.
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(235 distinct `fd-*` selector names, 14 `is-*` state classes). Every class below has a rule in that file unless
+(257 distinct `fd-*` selector names, 20 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **Why this file exists.** The implementation plan names 39 contract classes. The stylesheet styles
-235. The remaining 196 are `__element` and `--modifier` names introduced while porting the
+257. The remaining 218 are `__element` and `--modifier` names introduced while porting the
 prototype's inline styles into a stylesheet — a renderer briefed only on the 39 would emit markup
 that misses most of the CSS, and the failure is silent: the page renders, tests pass, the surface
 just looks wrong. Read the surface you are building before writing its markup.
@@ -170,6 +170,11 @@ ancestor; there is no modifier class for it.
 ```
 .fd-today
   .fd-today__h1 / .fd-today__sub
+  .fd-consistency                     role="img" aria-label="Active N of the last 7 days" (absent until N ≥ 1)
+    .fd-consistency__dots  <span>     aria-hidden
+      .fd-consistency__day ×7
+        .fd-consistency__dot(.is-on) / .fd-consistency__label
+    .fd-consistency__text  <span>     aria-hidden
   .fd-today__cols
     .fd-today__main
       .fd-continue    <button>
@@ -204,6 +209,7 @@ ancestor; there is no modifier class for it.
 | `.fd-continue__kicker.is-complete` | Switches teal → terracotta when the week is finished. |
 | `.fd-ring.is-celebrating` | One-shot pulse on week completion. |
 | `.fd-list` | Supplies the 8px gap between `.fd-row`s — rows have no sibling margin. |
+| `.fd-consistency` | Seven-day activity strip (2026-09-02, not in the prototype). Replaces the subhead's `· N days in a row` clause, which only Daily Review could write. Derived at render time by `fdActivityDays` from the timestamps every tool already stores; nothing new is persisted. Carries a `-12px` top margin so the subhead's 22px gap closes only when the strip is present. |
 
 Task 5 composes device-local activity around the pure Today renderer and reuses the Reader for
 internal Progress. These are part of the same shipped class contract:
@@ -212,6 +218,7 @@ internal Progress. These are part of the same shipped class contract:
 |---|---|
 | `.fd-due` | Due-review button; contains `.fd-due__label`, `.fd-due__breakdown`, and `.fd-due__action`. |
 | `.fd-resume` | Session-resume section; `.fd-resume__link` is the query-preserving link. |
+| `.fd-block` | Timed block card (2026-09-02, not in the prototype), spliced in with the due row and resume card by `fdTodayLive`. Planner face: `.fd-block__head` (`__kicker`, `__chips` › `__chip(.is-sel)`, `__hint`), `.fd-block__steps` › `__step` (`__dot.is-review/.is-page/.is-qb`, `__title`, `__min`), `.fd-block__actions` (a `.fd-btn--primary` carrying `data-block-start`), or `.fd-block__empty`. Live face adds `.is-live` on the card, `__count`, `__check` on each `__step(.is-done)`, and `__doneline`. Click attributes are `data-block-minutes` / `-start` / `-continue` / `-end`, owned by the shell's auxiliary click handler — deliberately outside the `data-fd-*` controller namespace. Rendered by `fdBlockCard` (`frontdoor/fd_block.js`). |
 | `.fd-capture-launch` | Full-width capture-dialog launcher. |
 | `.fd-capture-launch--global` | Stable learner-route launcher hook; its in-flow utility-row positioning comes from `#fdCaptureMount`, so it cannot cover Reader or Today content. *(no rule)* |
 | `.fd-capture` | Today triage section; contains `.fd-capture__head`, `.fd-capture__new`, `.fd-capture__purpose`, `.fd-capture__item`, `.fd-capture__question`, `.fd-capture__action`, and `.fd-capture__copy`. |
