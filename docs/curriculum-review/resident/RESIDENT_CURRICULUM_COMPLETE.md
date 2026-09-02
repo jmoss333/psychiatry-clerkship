@@ -3,7 +3,7 @@
 # RESIDENT curriculum — complete content transcript for clinical review
 
 **Site:** `mmc-psychiatry-residents-sanford` · **Audience:** Residents — MMC/Sanford psychiatry residents
-**Generated:** 2026-09-02 from build `5b980e9` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
+**Generated:** 2026-09-02 from build `25b2afa` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
 
 ## Who this is for
 
@@ -19,7 +19,7 @@ This transcript is assembled from the **built site**, not the source tree, so it
 | Narrative pages (markdown) | 86 |
 | Interactive tools | 25 |
 | Deep-link-only (hidden) surfaces | 26 |
-| Words of narrative curriculum | 117,564 |
+| Words of narrative curriculum | 117,626 |
 | Practice question-bank items | 192 |
 | Audio-companion quiz decks / questions | 79 / 437 |
 | Communication cases | 12 |
@@ -86,7 +86,7 @@ High-yield places to concentrate: the `topic_meta` **can't-miss**, **rule-out** 
 
 # RESIDENT · Navigation map
 
-Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-02 @ `5b980e9`.
+Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-02 @ `25b2afa`.
 
 ## Orientation  *(pinned)*
 
@@ -166,7 +166,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 1 | What Do You Say Next? | `communication-practice.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Communication_Practice/communication-practice.html` |  |
 | 2 | Psychotherapies at a Glance | `psychotherapy.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Psychotherapy/psychotherapy_inpatient_teaching.md` | 613 |
 | 3 | Motivational Interviewing | `motivational_interviewing.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `06_Family_and_Relational/motivational_interviewing_inpatient_teaching.md` | 533 |
-| 4 | Brief Psychotherapy on the Unit | `brief_psychotherapy.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Brief_Psychotherapy/brief_psychotherapy_inpatient.md` | 992 |
+| 4 | Brief Psychotherapy on the Unit | `brief_psychotherapy.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Brief_Psychotherapy/brief_psychotherapy_inpatient.md` | 1054 |
 | 5 | Therapy on the Unit | `therapy_on_the_unit.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `02_Clinical_Skills/Psychotherapy/therapy_on_the_unit_inpatient_teaching.md` | 4164 |
 | 6 | Five Good Minutes — Brief Psych Coach | `rp-brief-psych.html` | tool | listed | status=`pending` · riskKind=`local-policy` · riskLevel=`high` | `_prototypes/brief-psych/rp-brief-psych.html` |  |
 | 7 | Reflection & Identity | `reflection.html` | tool | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `02_Clinical_Skills/Reflection_PIF/reflection-and-pif-set.html` |  |
@@ -9340,7 +9340,7 @@ Substance use, medication adherence, lifestyle/metabolic change, follow-up engag
 - **Slug:** `brief_psychotherapy.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `02_Clinical_Skills/Brief_Psychotherapy/brief_psychotherapy_inpatient.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 992 words
+- **Length:** 1,054 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -9409,7 +9409,7 @@ Substance use, medication adherence, lifestyle/metabolic change, follow-up engag
 | Just self-harmed or nearly did | Behavior serving a function | **Chain analysis** — walk the sequence *with* the patient, non-punitively | Turns an incident into a formulation and a plan; core DBT move |
 | Repeatedly returns in crisis, overwhelmed by problems | Problem-solving deficit | **Problem-solving therapy (PST)** — the 4-step format (define → brainstorm → choose → try) | Repeat self-harm re-presentation 13.5% vs 22.1%, **NNT 12** (Hatcher 2011) |
 | Ambivalent about meds, treatment, or substance use | Motivational conflict | **Motivational interviewing (MI)** — roll with resistance, evoke change talk | Improves engagement and substance outcomes; see the [Motivational Interviewing](?page=motivational_interviewing.md) page |
-| Confused or frightened by the illness itself | Knowledge/coping gap | **Psychoeducation** — illness model + warning-signs plan, include family | Strongest single inpatient psychological intervention: readmission **NNT 5**, relapse **NNT 9** (Xia, *Cochrane* 2011) |
+| Confused or frightened by the illness itself | Knowledge/coping gap | **Psychoeducation** — illness model + warning-signs plan, include family | Among the best-supported inpatient psychological interventions: relapse **NNT 9**, readmission **NNT 5** — the latter on only 206 participants, in studies the reviewers called limited quality (Xia, *Cochrane* 2011) |
 | Actively suicidal | Acute risk state | **Safety planning (Stanley-Brown)** + crisis response planning | Safety Planning Intervention with follow-up ≈ **50% fewer suicidal behaviors** (Stanley 2018); **abandon no-suicide "contracts"** — they don't work |
 
 ## The bedside frame (MGH-style)
@@ -9425,7 +9425,7 @@ When you have five minutes, not fifty: lead with **support**, name the **affect*
 ## High-yield pearls
 - Match the skill to the mechanism; the modality matters less than the fit (no clear winner across schools).
 - **Behavioral activation** is the highest-yield, lowest-effort inpatient move for the shut-down, depressed patient.
-- **Psychoeducation** has the hardest inpatient numbers (readmission NNT 5) — and it's free.
+- **Psychoeducation** is among the best-supported inpatient psychological interventions, and it's free — but the readmission NNT of 5 rests on 206 participants in what the Cochrane reviewers (Xia et al., 2011) called *"hospital-based studies of limited quality."* Do it anyway; don't quote the number as though it were precise. ([Therapy on the Unit](?page=therapy_on_the_unit.md) carries the full figures and the caveat.)
 - Chain analysis *replaces* a punitive response to self-harm — understand the behavior, don't just document it.
 - Safety planning with follow-up beats a "contract for safety," which has no evidence and can create false reassurance.
 

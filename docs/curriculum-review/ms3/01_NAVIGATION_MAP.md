@@ -1,6 +1,6 @@
 # MS3 · Navigation map
 
-Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-02 @ `5b980e9`.
+Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-02 @ `25b2afa`.
 
 ## Orientation  *(pinned)*
 
@@ -94,7 +94,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 1 | What Do You Say Next? | `communication-practice.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Communication_Practice/communication-practice.html` |  |
 | 2 | Psychotherapies at a Glance | `psychotherapy.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Psychotherapy/psychotherapy_inpatient_teaching.md` | 613 |
 | 3 | Motivational Interviewing | `motivational_interviewing.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `06_Family_and_Relational/motivational_interviewing_inpatient_teaching.md` | 533 |
-| 4 | Brief Psychotherapy on the Unit | `brief_psychotherapy.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Brief_Psychotherapy/brief_psychotherapy_inpatient.md` | 992 |
+| 4 | Brief Psychotherapy on the Unit | `brief_psychotherapy.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Brief_Psychotherapy/brief_psychotherapy_inpatient.md` | 1054 |
 | 5 | Therapy on the Unit | `therapy_on_the_unit.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `02_Clinical_Skills/Psychotherapy/therapy_on_the_unit_inpatient_teaching.md` | 4164 |
 | 6 | Reflection & Identity | `reflection.html` | tool | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `02_Clinical_Skills/Reflection_PIF/reflection-and-pif-set.html` |  |
 
