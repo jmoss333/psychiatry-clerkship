@@ -1,6 +1,6 @@
 # MS3 · Appendix A4 — Evidence base
 
-104 registered sources and 46 annotated claims. Each annotation stores the verbatim span from the paper that licenses the claim the library makes — the highest-value target for clinical review, because a claim that drifts from its span is a factual error with a citation attached.
+107 registered sources and 49 annotated claims. Each annotation stores the verbatim span from the paper that licenses the claim the library makes — the highest-value target for clinical review, because a claim that drifts from its span is a factual error with a citation attached.
 
 **Annotation policy.** {
  "rule": "Every claim the library makes about a source must be licensed by a stored verbatim span from that source.",
@@ -235,7 +235,7 @@
 
 **Claim `inpatient-psychotherapy-specific-contribution`** (direction: `mixed`, used by RR)
 
-> Across 37 samples (4,443 patients), the specific contribution of psychotherapy during psychiatric hospitalization was d = 0.43 (95% CI 0.06 to 0.81); no significant effects were found for psychotherapy orientation, while diagnosis moderated the contribution.
+> Across 37 samples (4,443 patients), the meta-analysis of the 15 samples with a control group put the specific contribution of psychotherapy during psychiatric hospitalization at d = 0.43 (95% CI 0.06 to 0.81); no significant effects were found for psychotherapy orientation, while diagnosis moderated the contribution.
 
 - claim terms: `No significant effects were uncovered for psychotherapy orientation`, `Diagnosis was found to moderate`
 
@@ -673,6 +673,48 @@
 
 - claim terms: `first week postdischarge`, `evidence of publication bias towards papers reporting a higher rate`
 
+### `bot-2026-benzodiazepines-catatonia`
+
+- span type `abstract` · retrieved 2026-09-02 · PMID 42009596 · DOI 10.1111/acps.70102
+
+**Verbatim source span.**
+
+> Of 1336 screened articles, 53 met inclusion criteria. Most were case series using lorazepam (a benzodiazepine) to treat catatonia, with dosages ranging from 2 to 60 mg/day with a median dose of 8 mg/day. The overall remission rate was 55%; overall response was 77%.
+
+**Claim `catatonia-benzodiazepine-response-rate`** (direction: `descriptive`, used by cl_reference)
+
+> Across 53 studies, benzodiazepine treatment of catatonia produced an overall response rate of 77% and an overall remission rate of 55%.
+
+- claim terms: `overall remission rate`, `overall response`, `catatonia`
+
+### `fountoulakis-2025-esketamine`
+
+- span type `abstract` · retrieved 2026-09-02 · PMID 39876682 · DOI 10.1176/appi.ajp.20240515
+
+**Verbatim source span.**
+
+> At weeks 2-4, randomized controlled trials were mostly negative or failed; however, the meta-analysis returned a weak but significant positive effect for depression (effect size range, 0.15-0.23 at weeks 2-4), similar to augmentation strategies with atypical antipsychotics for treatment-resistant depression. The effect size concerning suicidality was not significant at any time point.
+
+**Claim `esketamine-depression-modest-suicidality-null`** (direction: `mixed`, used by cotw_20260720_mdd_res)
+
+> Esketamine showed a weak but significant positive effect for depression (effect size range 0.15-0.23 at weeks 2-4), while the effect size concerning suicidality was not significant at any time point.
+
+- claim terms: `effect size concerning suicidality`, `not significant at any time point`, `depression`
+
+### `boggs-2020-lethal-means-assessment`
+
+- span type `abstract` · retrieved 2026-09-02 · PMID 32040838 · DOI 10.1007/s11606-020-05641-4
+
+**Verbatim source span.**
+
+> We found 33% of patients with suicide ideation reported on the PHQ-9 received lethal means assessment in the 30 days following identification. Lethal means assessment reduced the risk of a suicide attempt or death within 180 days from 3.3 to 0.83% (p = .034, 95% CI = .069-.9).
+
+**Claim `lethal-means-assessment-180-day-risk`** (direction: `positive`, used by exp_family)
+
+> Lethal means assessment reduced the risk of a suicide attempt or death within 180 days from 3.3 to 0.83%.
+
+- claim terms: `lethal means assessment`, `within 180 days`
+
 ## Full source registry
 
 | id | type | access | citation |
@@ -781,3 +823,6 @@
 | `hansson-2022` | primary-study | metadata | {'authors': [{'family': 'Hansson', 'given': 'KM'}, {'family': 'Romøren', 'given': 'M'}, {'family': 'Weimand', 'given': 'B'}, {'family': 'Heiervang', 'given': 'KS'}, {'family': 'Hestmark', 'given': 'L'}, {'family': 'Landeweer', 'given': 'EGM'}, {'family': 'Pedersen', 'given': 'R'}], 'doi': '10.1186/s12888-022-04461-6', 'journal': 'BMC Psychiatry', 'organization': '', 'pages': '812', 'pmid': '36539741', 'title': 'The duty of confidentiality during family involvement: ethical challenges and possible solutions in the treatment of persons with psychotic disorders', 'url': 'https://doi.org/10.1186/s12888-022-04461-6', 'volume': '22', 'year': 2022} |
 | `chung-2017-postdischarge-suicide` | systematic-review | metadata | {'authors': [{'family': 'Chung', 'given': 'DT'}, {'family': 'Ryan', 'given': 'CJ'}, {'family': 'Hadzi-Pavlovic', 'given': 'D'}, {'family': 'Singh', 'given': 'SP'}, {'family': 'Stanton', 'given': 'C'}, {'family': 'Large', 'given': 'MM'}], 'doi': '10.1001/jamapsychiatry.2017.1044', 'journal': 'JAMA Psychiatry', 'organization': '', 'pages': '694-702', 'pmid': '28564699', 'title': 'Suicide Rates After Discharge From Psychiatric Facilities: A Systematic Review and Meta-analysis', 'url': 'https://doi.org/10.1001/jamapsychiatry.2017.1044', 'volume': '74', 'year': 2017} |
 | `chung-2019-first-week-month` | systematic-review | metadata | {'authors': [{'family': 'Chung', 'given': 'D'}, {'family': 'Hadzi-Pavlovic', 'given': 'D'}, {'family': 'Wang', 'given': 'M'}, {'family': 'Swaraj', 'given': 'S'}, {'family': 'Olfson', 'given': 'M'}, {'family': 'Large', 'given': 'M'}], 'doi': '10.1136/bmjopen-2018-023883', 'journal': 'BMJ Open', 'organization': '', 'pages': 'e023883', 'pmid': '30904843', 'title': 'Meta-analysis of suicide rates in the first week and the first month after psychiatric hospitalisation', 'url': 'https://doi.org/10.1136/bmjopen-2018-023883', 'volume': '9', 'year': 2019} |
+| `bot-2026-benzodiazepines-catatonia` | systematic-review | abstract | {'authors': [{'family': 'Bot', 'given': 'L'}, {'family': 'Schotsman', 'given': 'B'}, {'family': 'Oostra', 'given': 'E'}, {'family': 'Hoogendoorn', 'given': 'AW'}, {'family': 'van Exel', 'given': 'E'}], 'doi': '10.1111/acps.70102', 'journal': 'Acta Psychiatr Scand', 'organization': '', 'pages': '99-115', 'pmid': '42009596', 'title': 'The Effect of Benzodiazepines on Catatonia: A Systematic Review and Meta-Analysis', 'url': 'https://doi.org/10.1111/acps.70102', 'volume': '154', 'year': 2026} |
+| `fountoulakis-2025-esketamine` | systematic-review | abstract | {'authors': [{'family': 'Fountoulakis', 'given': 'KN'}, {'family': 'Saitis', 'given': 'A'}, {'family': 'Schatzberg', 'given': 'AF'}], 'doi': '10.1176/appi.ajp.20240515', 'journal': 'Am J Psychiatry', 'organization': '', 'pages': '259-275', 'pmid': '39876682', 'title': 'Esketamine Treatment for Depression in Adults: A PRISMA Systematic Review and Meta-Analysis', 'url': 'https://doi.org/10.1176/appi.ajp.20240515', 'volume': '182', 'year': 2025} |
+| `boggs-2020-lethal-means-assessment` | primary-study | abstract | {'authors': [{'family': 'Boggs', 'given': 'JM'}, {'family': 'Beck', 'given': 'A'}, {'family': 'Ritzwoller', 'given': 'DP'}, {'family': 'Lindrooth', 'given': 'RC'}], 'doi': '10.1007/s11606-020-05641-4', 'journal': 'J Gen Intern Med', 'organization': '', 'pages': '1709-1714', 'pmid': '32040838', 'title': 'A Quasi-Experimental Analysis of Lethal Means Assessment and Risk for Subsequent Suicide Attempts and Deaths', 'url': 'https://doi.org/10.1007/s11606-020-05641-4', 'volume': '35', 'year': 2020} |

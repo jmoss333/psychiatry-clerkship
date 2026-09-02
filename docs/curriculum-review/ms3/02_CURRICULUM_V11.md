@@ -306,7 +306,7 @@ She returns at **6 weeks** on an adequately dosed selective serotonin reuptake i
 - **Slug:** `cotw_20260720_bipolar_ms3.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-20_bipolar-mania_MS3.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 1,550 words
+- **Length:** 1,664 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -366,7 +366,7 @@ Collateral from his mother (by phone) confirms a maternal aunt with bipolar diso
 ## Guided Discussion Questions
 
 **Q1. What is the most likely diagnosis, and what specific features support it?**
-*Teaching point:* This is a classic **manic episode**, and given the prior depressive episode the working diagnosis is **bipolar I disorder**. Use the mnemonic **DIG FAST** for manic symptoms: **D**istractibility, **I**mpulsivity/**I**ndiscretion (spending, risky behavior), **G**randiosity, **F**light of ideas, **A**ctivity increase/**A**gitation, **S**leep decreased (*no* perceived need for sleep), **T**alkativeness/pressured speech. DSM criteria for mania require **≥1 week** of persistently elevated/irritable mood **plus increased activity/energy** and ≥3 symptoms (≥4 if mood is only irritable), causing marked impairment, hospitalization, or psychotic features. A single manic episode is sufficient to diagnose bipolar I — a prior depressive episode is *supportive* but not required.
+*Teaching point:* This is a classic **manic episode**, and given the prior depressive episode the working diagnosis is **bipolar I disorder**. Use the mnemonic **DIG FAST** for manic symptoms: **D**istractibility, **I**mpulsivity/**I**ndiscretion (spending, risky behavior), **G**randiosity, **F**light of ideas, **A**ctivity increase/**A**gitation, **S**leep decreased (*no* perceived need for sleep), **T**alkativeness/pressured speech. DSM criteria for mania require a distinct period of abnormally and persistently elevated, expansive, or irritable mood **plus abnormally increased goal-directed activity or energy**, lasting **≥1 week and present most of the day, nearly every day — or any duration if hospitalization is necessary** — with ≥3 associated symptoms (≥4 if mood is only irritable), and causing marked impairment, necessitating hospitalization, or with psychotic features. Note that hospitalization does double duty in the criteria: it satisfies the duration requirement at *any* duration, and it also counts as a severity outcome — so a patient admitted on day four of clear mania meets criteria even if you cannot pin the episode to a full week. A single manic episode is sufficient to diagnose bipolar I — a prior depressive episode is *supportive* but not required.
 
 **Q2. Why does the "increased energy/activity" criterion matter, and how does mania differ from hypomania?**
 *Teaching point:* DSM-5 added **increased goal-directed activity or energy** as a *required* Criterion A feature (alongside mood) — mood elevation alone is not enough. **Hypomania** = same symptom cluster but **≥4 days**, **no marked impairment, no psychosis, and no hospitalization**; hypomania + a major depressive episode = **bipolar II**. This patient's psychosis (grandiose delusion about the transit system), marked impairment, and need for hospitalization place him firmly in **mania**, not hypomania.
@@ -384,7 +384,7 @@ Collateral from his mother (by phone) confirms a maternal aunt with bipolar diso
 *Teaching point:* Bipolar I is a **recurrent, lifelong illness**; acute stabilization is only the first step, and effective acute agents are generally **continued into maintenance** to prevent relapse [1]. A real-world cohort found that patients treated with **guideline-concordant first-line regimens had significantly lower 30-day rehospitalization and longer time to readmission** than those on no or non-recommended treatment [4]. This is a concrete, learner-friendly way to make "guidelines matter" tangible.
 
 **Q7. What safety counseling and monitoring are essential if you start lithium?**
-*Teaching point:* Lithium has a **narrow therapeutic index**. Teach baseline and ongoing **renal function and TSH**, the concept of **serum level monitoring**, and signs of toxicity (coarse tremor, GI upset, ataxia, confusion). Emphasize that **dehydration, NSAIDs, and thiazide/ACE-inhibitor diuretics raise lithium levels**. Lithium also carries **teratogenic risk** — hence the pregnancy test and contraception counseling. (Valproate is also highly teratogenic and generally avoided in patients who may become pregnant.)
+*Teaching point:* Lithium has a **narrow therapeutic index**. Teach baseline and ongoing **renal function and TSH**, the concept of **serum level monitoring**, and signs of toxicity (coarse tremor, GI upset, ataxia, confusion). Emphasize that **dehydration, NSAIDs, thiazide diuretics, and ACE inhibitors or ARBs raise lithium levels** — the last two are not diuretics; they raise the level by reducing GFR, while thiazides drive compensatory proximal reabsorption of sodium and, with it, lithium. Lithium also carries **teratogenic risk** — hence the pregnancy test and contraception counseling. (Valproate is also highly teratogenic and generally avoided in patients who may become pregnant.)
 
 ---
 

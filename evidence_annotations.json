@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "owner": "Joshua Moss, MD",
   "usageNotice": "Educational metadata only; faculty review remains required for clinical recommendations.",
-  "updated": "2026-08-24",
+  "updated": "2026-09-02",
   "policy": {
     "rule": "Every claim the library makes about a source must be licensed by a stored verbatim span from that source.",
     "maxAgeDays": 730,
@@ -402,7 +402,7 @@
       "claims": [
         {
           "claimId": "inpatient-psychotherapy-specific-contribution",
-          "claimText": "Across 37 samples (4,443 patients), the specific contribution of psychotherapy during psychiatric hospitalization was d = 0.43 (95% CI 0.06 to 0.81); no significant effects were found for psychotherapy orientation, while diagnosis moderated the contribution.",
+          "claimText": "Across 37 samples (4,443 patients), the meta-analysis of the 15 samples with a control group put the specific contribution of psychotherapy during psychiatric hospitalization at d = 0.43 (95% CI 0.06 to 0.81); no significant effects were found for psychotherapy orientation, while diagnosis moderated the contribution.",
           "claimTerms": [
             "No significant effects were uncovered for psychotherapy orientation",
             "Diagnosis was found to moderate"
@@ -1192,6 +1192,83 @@
           "direction": "mixed",
           "usedBy": [
             "T3"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "bot-2026-benzodiazepines-catatonia",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-09-02",
+        "pmid": "42009596",
+        "doi": "10.1111/acps.70102",
+        "sourceSpan": "Of 1336 screened articles, 53 met inclusion criteria. Most were case series using lorazepam (a benzodiazepine) to treat catatonia, with dosages ranging from 2 to 60 mg/day with a median dose of 8 mg/day. The overall remission rate was 55%; overall response was 77%."
+      },
+      "claims": [
+        {
+          "claimId": "catatonia-benzodiazepine-response-rate",
+          "claimText": "Across 53 studies, benzodiazepine treatment of catatonia produced an overall response rate of 77% and an overall remission rate of 55%.",
+          "claimTerms": [
+            "overall remission rate",
+            "overall response",
+            "catatonia"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "cl_reference"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "fountoulakis-2025-esketamine",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-09-02",
+        "pmid": "39876682",
+        "doi": "10.1176/appi.ajp.20240515",
+        "sourceSpan": "At weeks 2-4, randomized controlled trials were mostly negative or failed; however, the meta-analysis returned a weak but significant positive effect for depression (effect size range, 0.15-0.23 at weeks 2-4), similar to augmentation strategies with atypical antipsychotics for treatment-resistant depression. The effect size concerning suicidality was not significant at any time point."
+      },
+      "claims": [
+        {
+          "claimId": "esketamine-depression-modest-suicidality-null",
+          "claimText": "Esketamine showed a weak but significant positive effect for depression (effect size range 0.15-0.23 at weeks 2-4), while the effect size concerning suicidality was not significant at any time point.",
+          "claimTerms": [
+            "effect size concerning suicidality",
+            "not significant at any time point",
+            "depression"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "cotw_20260720_mdd_res"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "boggs-2020-lethal-means-assessment",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-09-02",
+        "pmid": "32040838",
+        "doi": "10.1007/s11606-020-05641-4",
+        "sourceSpan": "We found 33% of patients with suicide ideation reported on the PHQ-9 received lethal means assessment in the 30 days following identification. Lethal means assessment reduced the risk of a suicide attempt or death within 180 days from 3.3 to 0.83% (p = .034, 95% CI = .069-.9)."
+      },
+      "claims": [
+        {
+          "claimId": "lethal-means-assessment-180-day-risk",
+          "claimText": "Lethal means assessment reduced the risk of a suicide attempt or death within 180 days from 3.3 to 0.83%.",
+          "claimTerms": [
+            "lethal means assessment",
+            "within 180 days"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "exp_family"
           ]
         }
       ]

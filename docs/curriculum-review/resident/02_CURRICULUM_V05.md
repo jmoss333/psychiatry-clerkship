@@ -184,6 +184,12 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
    "url": ""
   },
   {
+   "id": "nikooie2019",
+   "ref": "Nikooie R, et al. Antipsychotics for Treating Delirium in Hospitalized Adults: A Systematic Review. Ann Intern Med. 2019;171(7):485-495.",
+   "doi": "10.7326/M19-1860",
+   "url": "https://doi.org/10.7326/M19-1860"
+  },
+  {
    "id": "cole2025",
    "ref": "Cole JB, et al. Oral medications for treating agitation in a safety-net emergency department. JAMA Netw Open. 2025.",
    "doi": "",
@@ -506,10 +512,11 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
       ]
      },
      {
-      "text": "Benzodiazepines worsen non-withdrawal delirium; if an agent is needed for dangerous agitation, a second-generation antipsychotic is generally preferred over haloperidol for faster onset and fewer EPS. No medication is FDA-approved for delirium.",
+      "text": "Benzodiazepines worsen non-withdrawal delirium. Haloperidol and second-generation agents are both used; the case for an SGA is a lower EPS burden, not faster onset — and because no antipsychotic shortens delirium or lowers mortality, reserve one for agitation that endangers the patient or staff after non-pharmacologic measures fail, at the lowest dose for the shortest time. No medication is FDA-approved for delirium.",
       "citationIds": [
        "beers2023",
-       "zaman2017"
+       "zaman2017",
+       "nikooie2019"
       ]
      }
     ],
@@ -633,7 +640,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
      "spo2": 97,
      "temp": 36.8
     },
-    "history": "Parkinson disease on dopaminergic therapy; recent evening confusion/hallucinations.",
+    "history": "Parkinson disease on dopaminergic therapy; long-standing, non-fluctuating visual hallucinations attributed to PD psychosis. No new medication change, infection, or metabolic derangement; attention intact on exam.",
     "currentMeds": [
      "dopaminergic therapy"
     ],
@@ -1574,7 +1581,7 @@ should independently manage high-risk consults.
 - **Slug:** `cl_reference.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `14_Tracks/Resident/cl_reference.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 867 words
+- **Length:** 978 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -1659,9 +1666,10 @@ The MS3 [Consult module](?page=exp_consult.md) teaches *what to notice and when 
 
 ## Catatonia — the lorazepam challenge
 - Screen with the BFCRS. **Lorazepam challenge 2 mg IV** (1 mg if elderly or respiratory risk); a **≥50% reduction in BFCRS** within ~10–30 min is a positive challenge — both diagnostic and therapeutic.
-- Effective in ~90%; titrate to a standing regimen, often up to ~16 mg/day (higher only under close monitoring).
+- Response is generally reported at roughly **60–80%** (2026 meta-analysis: 77% response, 55% full remission) — good, but not near-universal; titrate to an adequate standing regimen, often up to ~16 mg/day (higher only under close monitoring), and when the response is still partial or absent after an adequate trial, move to ECT rather than continuing to climb — immediately in malignant catatonia.
 - **ECT is definitive** — effective in 60–100%, and first-line for malignant catatonia or benzodiazepine non-response.
 - **Avoid antipsychotics** in suspected catatonia — they can precipitate or worsen NMS (malignant catatonia and NMS overlap on a spectrum).
+- Source: benzodiazepine response/remission rates from Bot et al., *Acta Psychiatr Scand* 2026;154:99-115 (systematic review and meta-analysis, 53 studies).
 - *By design, the MS3 catatonia teaching page stays dose-free; these numbers live here on the resident reference.*
 
 ## Lithium toxicity
@@ -1673,7 +1681,8 @@ The MS3 [Consult module](?page=exp_consult.md) teaches *what to notice and when 
 
 ## QTc / torsades de pointes
 - **Act at QTc ≥500 ms, or an increase ≥60 ms** from baseline.
-- Replete **K⁺ >4.0** and **Mg²⁺ >2.0**; reconcile every QT-prolonging drug and interaction.
+- Replete **K⁺ >4.0 mEq/L** and **Mg²⁺ >2.0 mg/dL**; reconcile every QT-prolonging drug and interaction.
+- **If torsades actually fires:** call the code, give **IV magnesium sulfate 2 g** over 1–2 min *regardless of the serum magnesium level*, stop every offending drug, correct K⁺ and Ca²⁺, treat pause/bradycardia dependence with overdrive pacing or isoproterenol, and defibrillate if it degenerates to sustained VT/VF.
 - Higher-risk psychotropics: **IV haloperidol, ziprasidone, thioridazine (avoid), pimozide**; **citalopram capped at 20 mg** if age >60, hepatic impairment, or CYP2C19 poor metabolizer.
 - Source: AHA scientific statement on drug-induced arrhythmias (Tisdale et al., *Circulation* 2020).
 

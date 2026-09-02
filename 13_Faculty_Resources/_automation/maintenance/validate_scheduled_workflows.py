@@ -55,7 +55,11 @@ SURVEILLANCE_FILES = {
     "surveillance-guideline.yml",
     "surveillance-resource-intake.yml",
 }
-SCOPED_FILES = set(EXPECTED_CRONS) | {"surveillance-resource-intake.yml"}
+ESCALATION_FILE = "automation-failure-escalation.yml"
+SCOPED_FILES = set(EXPECTED_CRONS) | {
+    "surveillance-resource-intake.yml",
+    ESCALATION_FILE,
+}
 EXPECTED_PERMISSIONS = {
     "ci.yml": {"contents": "read"},
     "maintenance-sp-health-monitor.yml": {"contents": "read"},
@@ -70,6 +74,11 @@ EXPECTED_PERMISSIONS = {
         "issues": "write",
     },
     "maintenance-rotation-readiness.yml": {
+        "contents": "read",
+        "issues": "write",
+    },
+    ESCALATION_FILE: {
+        "actions": "read",
         "contents": "read",
         "issues": "write",
     },
@@ -102,6 +111,10 @@ EXPECTED_CONCURRENCY = {
         "group": "maintenance-rotation",
         "cancel-in-progress": False,
     },
+    ESCALATION_FILE: {
+        "group": "automation-escalation",
+        "cancel-in-progress": False,
+    },
     **{
         name: {
             "group": "surveillance-inbox",
@@ -122,6 +135,7 @@ EXPECTED_JOB_IDS = {
     "surveillance-guideline.yml": {"guideline-delta"},
     "surveillance-link-monitor.yml": {"link-audit"},
     "surveillance-resource-intake.yml": {"resource-intake"},
+    ESCALATION_FILE: {"escalate"},
 }
 EXPECTED_STEP_INVENTORIES = {
     "ci.yml": {
@@ -307,11 +321,24 @@ EXPECTED_STEP_INVENTORIES = {
             ("name", "Publish rolling surveillance inbox"),
         ),
     },
+    ESCALATION_FILE: {
+        "escalate": (
+            ("uses", "actions/checkout"),
+            ("uses", "actions/setup-python"),
+            ("name", "Read the rolling escalation issue"),
+            ("name", "Capture the first error line from the failed run"),
+            ("name", "Render the escalation decision"),
+            ("name", "Upsert the rolling escalation issue"),
+        ),
+    },
 }
 # SHA-256 of each GitHub-compatible workflow projection serialized canonically.
 # Native true/false values stay typed, `on` stays a string, and action inputs
 # use runner-coerced string semantics. Pin comments are validated separately.
 EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
+    ESCALATION_FILE: (
+        "97cce854ae22f6fcbf24a87d220582ea4f125d8136d4c8d306deb9492bcdf5be"
+    ),
     "ci.yml": "281a4dd9d78f94e9d33b55f93b5976183652b20606a2302a5f17bf3e6297f6f2",
     "maintenance-governance-digest.yml": (
         "d819d2eafa59d6d62fcdf5f4d82b5eaf374f2b58d728d7c7f748fa7160bf6c10"

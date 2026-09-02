@@ -912,7 +912,7 @@ Would you like to explore any of these domains in greater depth — for example,
 - **Slug:** `book_library.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `07_Evidence_and_Reading/Book_Summaries/ms3_book_library.md`
 - **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
-- **Length:** 1,198 words
+- **Length:** 1,200 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -996,7 +996,7 @@ Would you like to explore any of these domains in greater depth — for example,
 
 ## Psychosis & serious mental illness
 - **[I Am Not Sick I Don't Need Help!](https://www.amazon.com/dp/0985206705)** — Xavier Amador. The LEAP method for families when a loved one doesn't recognize they're ill—Listen, Empathize, Agree, Partner to help them accept treatment.
-- **[Surviving Schizophrenia for Families](https://www.amazon.com/dp/1593852738)** — Kim Mueser & Susan Gingerich. Updated comprehensive family guide to schizophrenia from leading researchers—practical strategies for recovery.
+- **[The Complete Family Guide to Schizophrenia](https://www.amazon.com/dp/1593852738)** — Kim Mueser & Susan Gingerich. Updated comprehensive family guide to schizophrenia from leading researchers—practical strategies for recovery.
 - **[The Center Cannot Hold](https://www.amazon.com/dp/1401309445)** — Elyn Saks. Memoir by law professor living with schizophrenia—powerful testimony that recovery and achievement are possible.
 
 ## ADHD (Russell Barkley)
