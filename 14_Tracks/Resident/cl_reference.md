@@ -20,9 +20,10 @@ The MS3 [Consult module](?page=exp_consult.md) teaches *what to notice and when 
 
 ## Catatonia — the lorazepam challenge
 - Screen with the BFCRS. **Lorazepam challenge 2 mg IV** (1 mg if elderly or respiratory risk); a **≥50% reduction in BFCRS** within ~10–30 min is a positive challenge — both diagnostic and therapeutic.
-- Effective in ~90%; titrate to a standing regimen, often up to ~16 mg/day (higher only under close monitoring).
+- Response is generally reported at roughly **60–80%** (2026 meta-analysis: 77% response, 55% full remission) — good, but not near-universal; titrate to an adequate standing regimen, often up to ~16 mg/day (higher only under close monitoring), and when the response is still partial or absent after an adequate trial, move to ECT rather than continuing to climb — immediately in malignant catatonia.
 - **ECT is definitive** — effective in 60–100%, and first-line for malignant catatonia or benzodiazepine non-response.
 - **Avoid antipsychotics** in suspected catatonia — they can precipitate or worsen NMS (malignant catatonia and NMS overlap on a spectrum).
+- Source: benzodiazepine response/remission rates from Bot et al., *Acta Psychiatr Scand* 2026;154:99-115 (systematic review and meta-analysis, 53 studies).
 - *By design, the MS3 catatonia teaching page stays dose-free; these numbers live here on the resident reference.*
 
 ## Lithium toxicity
@@ -34,7 +35,8 @@ The MS3 [Consult module](?page=exp_consult.md) teaches *what to notice and when 
 
 ## QTc / torsades de pointes
 - **Act at QTc ≥500 ms, or an increase ≥60 ms** from baseline.
-- Replete **K⁺ >4.0** and **Mg²⁺ >2.0**; reconcile every QT-prolonging drug and interaction.
+- Replete **K⁺ >4.0 mEq/L** and **Mg²⁺ >2.0 mg/dL**; reconcile every QT-prolonging drug and interaction.
+- **If torsades actually fires:** call the code, give **IV magnesium sulfate 2 g** over 1–2 min *regardless of the serum magnesium level*, stop every offending drug, correct K⁺ and Ca²⁺, treat pause/bradycardia dependence with overdrive pacing or isoproterenol, and defibrillate if it degenerates to sustained VT/VF.
 - Higher-risk psychotropics: **IV haloperidol, ziprasidone, thioridazine (avoid), pimozide**; **citalopram capped at 20 mg** if age >60, hepatic impairment, or CYP2C19 poor metabolizer.
 - Source: AHA scientific statement on drug-induced arrhythmias (Tisdale et al., *Circulation* 2020).
 
