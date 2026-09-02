@@ -137,7 +137,7 @@
       "Check vitals and glucose; rule out a medical cause.",
       "Offer (don't force) oral medication; restraint is the last resort — time-limited and monitored."
     ],
-    "cant": "Don't reach for an antipsychotic before excluding hypoglycemia, hypoxia, delirium, withdrawal, pain, and akathisia.",
+    "cant": "Don't reach for an antipsychotic before excluding hypoglycemia, hypoxia, delirium, withdrawal, pain, akathisia, and catatonia — excited catatonia looks like agitation, and a D2 blocker can tip it into malignant catatonia/NMS.",
     "ruleOut": [
       "Hypoglycemia",
       "Hypoxia",
@@ -5004,7 +5004,8 @@
       "Neuroleptic malignant syndrome (lead-pipe rigidity, high CK, slow onset)",
       "Malignant catatonia (overlaps NMS)",
       "Lithium toxicity (tremor, ataxia, confusion)",
-      "Anticholinergic toxicity"
+      "Anticholinergic toxicity (dry skin, flushing, urinary retention, absent bowel sounds — the mirror image of serotonin syndrome's diaphoresis and hyperactive bowel)",
+      "CNS infection (meningitis/encephalitis) and heat stroke — fever + rigidity + altered mentation is not NMS until these are excluded"
     ],
     "firstMove": "Stop the offending agent, cool and support, give a benzodiazepine, and match the antidote to the syndrome — cyproheptadine for serotonin syndrome, dantrolene/bromocriptine for severe NMS.",
     "quiz": {
