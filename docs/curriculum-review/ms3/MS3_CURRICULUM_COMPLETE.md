@@ -3,7 +3,7 @@
 # MS3 curriculum — complete content transcript for clinical review
 
 **Site:** `une-ms3-psychiatry` · **Audience:** MS3 — UNE medical students
-**Generated:** 2026-09-02 from build `16ea475` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
+**Generated:** 2026-09-02 from build `5b980e9` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
 
 ## Who this is for
 
@@ -19,7 +19,7 @@ This transcript is assembled from the **built site**, not the source tree, so it
 | Narrative pages (markdown) | 80 |
 | Interactive tools | 23 |
 | Deep-link-only (hidden) surfaces | 10 |
-| Words of narrative curriculum | 97,668 |
+| Words of narrative curriculum | 98,583 |
 | Practice question-bank items | 192 |
 | Audio-companion quiz decks / questions | 79 / 437 |
 | Communication cases | 12 |
@@ -82,7 +82,7 @@ High-yield places to concentrate: the `topic_meta` **can't-miss**, **rule-out** 
 
 # MS3 · Navigation map
 
-Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-02 @ `16ea475`.
+Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-02 @ `5b980e9`.
 
 ## Orientation  *(pinned)*
 
@@ -120,7 +120,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 5 | Medical Workup & Mimics | `medical_workup.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Medical_Workup/medical_workup_inpatient_teaching.md` | 574 |
 | 6 | Mood | `t_mood.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/Mood/mood_disorders_inpatient_teaching.md` | 1232 |
 | 7 | Psychosis | `t_psychosis.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/Psychosis/psychotic_disorders_inpatient_teaching.md` | 1467 |
-| 8 | Anxiety/Trauma/OCD | `t_anxiety.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/Anxiety/anxiety_trauma_ocd_inpatient_teaching.md` | 1190 |
+| 8 | Anxiety/Trauma/OCD | `t_anxiety.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/Anxiety/anxiety_trauma_ocd_inpatient_teaching.md` | 1430 |
 | 9 | Personality | `t_personality.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Personality/personality_disorders_inpatient_teaching.md` | 1322 |
 | 10 | Substance Use | `t_sud.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md` | 1262 |
 | 11 | Geriatric | `t_geri.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Geriatric/geriatric_psychiatry_inpatient_teaching.md` | 893 |
@@ -219,12 +219,12 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 |---|---|---|---|---|---|---|---|
 | 1 | Index — All Cases | `cotw_index.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `08_Cases_and_Simulation/case-of-the-week/index_ms3.md` | 417 |
 | 2 | Catatonia (Aug 31) | `cotw_20260831_catatonia_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-31_catatonia-recognition-workup-treatment_MS3.md` | 1637 |
-| 3 | Borderline Personality Disorder (Aug 27) | `cotw_20260827_bpd_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-27_borderline-personality-disorder_MS3.md` | 1687 |
-| 4 | Panic Disorder (Aug 10) | `cotw_20260810_panic_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-10_anxiety-panic-disorder_MS3.md` | 3522 |
+| 3 | Borderline Personality Disorder (Aug 27) | `cotw_20260827_bpd_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-27_borderline-personality-disorder_MS3.md` | 1919 |
+| 4 | Panic Disorder (Aug 10) | `cotw_20260810_panic_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-10_anxiety-panic-disorder_MS3.md` | 3752 |
 | 5 | Lithium — Monitoring & Toxicity (Aug 3) | `cotw_20260803_lithium_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-03_lithium-monitoring-toxicity-interactions_MS3.md` | 3464 |
 | 6 | Opioid Use Disorder (Jul 27) | `cotw_20260727_oud_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-27_opioid-use-disorder_MS3.md` | 2624 |
 | 7 | Alcohol Withdrawal & DT (Jul 26) | `cotw_20260726_etohwd_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-26_alcohol-withdrawal-delirium-tremens_MS3.md` | 2423 |
-| 8 | Suicide Risk & Safety Planning (Jul 23) | `cotw_20260723_suiciderisk_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`high` | `08_Cases_and_Simulation/case-of-the-week/2026-07-23_suicide-risk-assessment-safety-planning_MS3.md` | 2001 |
+| 8 | Suicide Risk & Safety Planning (Jul 23) | `cotw_20260723_suiciderisk_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`high` | `08_Cases_and_Simulation/case-of-the-week/2026-07-23_suicide-risk-assessment-safety-planning_MS3.md` | 2214 |
 | 9 | MDD — Treatment Selection (Jul 20) | `cotw_20260720_mdd_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-20_mdd-treatment-selection-augmentation_MS3.md` | 1290 |
 | 10 | Bipolar Mania (Jul 20) | `cotw_20260720_bipolar_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-20_bipolar-mania_MS3.md` | 1550 |
 | 11 | Acute Agitation & Delirium (Jul 13) | `cotw_20260713_agitation_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-13_acute-agitation-delirium_MS3.md` | 1713 |
@@ -5439,7 +5439,7 @@ and [responding to guardedness without escalating it](?tool=communication-practi
 - **Slug:** `t_anxiety.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `03_Core_Topics/Anxiety/anxiety_trauma_ocd_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 1,190 words
+- **Length:** 1,430 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -5520,6 +5520,20 @@ and [responding to guardedness without escalating it](?tool=communication-practi
 - Track target symptoms (panic frequency, ritual time, nightmares) on serial exams to gauge medication response.
 
 **Disposition & discharge essentials** — Confirm the SSRI/SNRI is at a tolerated dose with a clear titration plan, and verify outpatient follow-up that can deliver ERP, PE, or CPT — the medication rarely finishes the job alone. Reconcile medications so no patient leaves on a new standing benzodiazepine without an explicit, time-limited rationale and taper. Give the patient and family a relapse-warning plan and crisis contacts, and communicate trauma-informed considerations to the next setting.
+
+> <div class="crisis-block-hook" hidden></div>
+>
+> ### If someone is in crisis
+>
+> On the unit, a patient in immediate danger is an escalation to your supervising resident or attending and the charge nurse — not a phone call. These lines are what you put IN a patient's safety plan, what families use after discharge, and what you can use yourself.
+>
+> - **988 Suicide & Crisis Lifeline** — Call or text 988. Chat at chat.988lifeline.org. 24/7, free, confidential. Spanish available by call, text, and chat; a dedicated line serves Deaf/Hard-of-Hearing callers. Calls placed in Maine route to Maine crisis specialists.
+> - **Crisis Text Line** — Text HOME to 741741. Text HOLA to 741741 for Spanish. 24/7, free. Text-only. Often the most acceptable option for adolescents and young adults who will not make a phone call.
+> - **Maine Crisis Line** — 1-888-568-1112. Text and chat available via the Maine Crisis Line website. 24/7. Staffed by clinically trained crisis workers and the gateway to Maine's mobile crisis teams — the number that actually dispatches a face-to-face response.
+> - **Veterans Crisis Line** — Dial 988 then press 1. Text 838255. 24/7. No VA enrollment required. Ask about service history — it changes which line is the right referral.
+> - **Emergency services** — 911. 24/7. For imminent danger to life.
+>
+> *Contacts verified 2026-07-27 against official sources. Maintained in `crisis_resources.json`; do not edit these numbers inline.*
 
 **High-yield pearls**
 - Anxiety is a symptom before it is a diagnosis — clear the medical and withdrawal mimics first.
@@ -5799,6 +5813,14 @@ The goal is validation plus a steady frame, not either/or.
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
 
 
+<!-- ==================== 02_CURRICULUM_V04.md ==================== -->
+
+# MS3 · Curriculum content — volume 4
+
+Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
+
+# SECTION (cont.): Understand the Problem
+
 ---
 
 ## Geriatric
@@ -5916,14 +5938,6 @@ The goal is validation plus a steady frame, not either/or.
 
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
 
-
-<!-- ==================== 02_CURRICULUM_V04.md ==================== -->
-
-# MS3 · Curriculum content — volume 4
-
-Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
-
-# SECTION (cont.): Understand the Problem
 
 ---
 
@@ -7147,6 +7161,14 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
 
 
+<!-- ==================== 02_CURRICULUM_V05.md ==================== -->
+
+# MS3 · Curriculum content — volume 5
+
+Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
+
+# SECTION (cont.): Understand the Problem
+
 ---
 
 ## Culture, Disparities & Formulation
@@ -7258,15 +7280,6 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 ---
 
 # SECTION: Assess Safety and Acuity  *(pinned in sidebar)*
-
-
-<!-- ==================== 02_CURRICULUM_V05.md ==================== -->
-
-# MS3 · Curriculum content — volume 5
-
-Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
-
-# SECTION (cont.): Assess Safety and Acuity
 
 ---
 
@@ -7765,7 +7778,14 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 **Static shell text:**
 
 - Violence Risk — One-Pager (FRST) Reviewed by Joshua Moss, MD on 2026-06-30
-- Skip to content
+- Skip to content If someone is in crisis
+- On the unit, a patient in immediate danger is an escalation to your supervising resident or attending and the charge nurse — not a phone call. These lines are what you put IN a patient's safety plan, what families use after discharge, and what you can use yourself.
+- 988 Suicide & Crisis Lifeline — Call or text 988. Chat at chat.988lifeline.org. 24/7, free, confidential. Spanish available by call, text, and chat; a dedicated line serves Deaf/Hard-of-Hearing callers. Calls placed in Maine route to Maine crisis specialists.
+- Crisis Text Line — Text HOME to 741741. Text HOLA to 741741 for Spanish. 24/7, free. Text-only. Often the most acceptable option for adolescents and young adults who will not make a phone call.
+- Maine Crisis Line — 1-888-568-1112. Text and chat available via the Maine Crisis Line website. 24/7. Staffed by clinically trained crisis workers and the gateway to Maine's mobile crisis teams — the number that actually dispatches a face-to-face response.
+- Veterans Crisis Line — Dial 988 then press 1. Text 838255. 24/7. No VA enrollment required. Ask about service history — it changes which line is the right referral.
+- Emergency services — 911. 24/7. For imminent danger to life.
+- Contacts verified 2026-07-27 against official sources. Maintained in crisis_resources.json ; do not edit these numbers inline.
 
 **Authored clinical strings (44):**
 
@@ -8757,6 +8777,14 @@ right question, and when to escalate. It deliberately avoids pretending students
 should independently manage high-risk consults.
 
 
+<!-- ==================== 02_CURRICULUM_V06.md ==================== -->
+
+# MS3 · Curriculum content — volume 6
+
+Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
+
+# SECTION (cont.): Assess Safety and Acuity
+
 ---
 
 ## Ethics & the Law: Confidentiality, Tarasoff, Reporting
@@ -8888,15 +8916,6 @@ should independently manage high-risk consults.
 ---
 
 # SECTION: Make a Plan
-
-
-<!-- ==================== 02_CURRICULUM_V06.md ==================== -->
-
-# MS3 · Curriculum content — volume 6
-
-Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
-
-# SECTION (cont.): Make a Plan
 
 ---
 
@@ -10137,6 +10156,14 @@ Substance use, medication adherence, lifestyle/metabolic change, follow-up engag
 *Joshua Moss, MD | Psychiatrist · Educational scaffold; not a substitute for supervised practice. Fictional composites; no PHI.*
 
 
+<!-- ==================== 02_CURRICULUM_V07.md ==================== -->
+
+# MS3 · Curriculum content — volume 7
+
+Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
+
+# SECTION (cont.): Communicate with Patients
+
 ---
 
 ## Brief Psychotherapy on the Unit
@@ -10251,14 +10278,6 @@ When you have five minutes, not fifty: lead with **support**, name the **affect*
 
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
 
-
-<!-- ==================== 02_CURRICULUM_V07.md ==================== -->
-
-# MS3 · Curriculum content — volume 7
-
-Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
-
-# SECTION (cont.): Communicate with Patients
 
 ---
 
@@ -11602,6 +11621,14 @@ Plain-English note: this guide helps students stop writing and presenting as if
 psychiatry is a checklist. It gives them a structure that reveals their thinking.
 
 
+<!-- ==================== 02_CURRICULUM_V08.md ==================== -->
+
+# MS3 · Curriculum content — volume 8
+
+Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
+
+# SECTION (cont.): Present and Work with the Team
+
 ---
 
 ## Treatment Team Rounding Prep
@@ -11708,15 +11735,6 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Tick each section as you say it. The highlighted line is where this update should be right now.
 - Optional educational aid for clinical trainees. Examples are fictional composites — no protected health information. The format is a scaffold; follow your team and institution conventions.
 - Treatment Team Rounding Prep · Psychiatry Clerkship Library · Joshua Moss, MD | Psychiatrist
-
-
-<!-- ==================== 02_CURRICULUM_V08.md ==================== -->
-
-# MS3 · Curriculum content — volume 8
-
-Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
-
-# SECTION (cont.): Present and Work with the Team
 
 ---
 
@@ -13003,6 +13021,15 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.
 - Spacing schedule is stored only in this browser.
 
+
+<!-- ==================== 02_CURRICULUM_V09.md ==================== -->
+
+# MS3 · Curriculum content — volume 9
+
+Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
+
+# SECTION (cont.): Practice and Exam Prep
+
 ---
 
 ## Shelf Mode — Exam Simulation
@@ -13095,15 +13122,6 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Joshua Moss, MD | Psychiatrist · Educational simulation; fictional composites only. Verify management against current guidelines.
 - End this set and discard progress?
 - Educational simulation; fictional composites only (no patient information). Joshua Moss, MD | Psychiatrist
-
-
-<!-- ==================== 02_CURRICULUM_V09.md ==================== -->
-
-# MS3 · Curriculum content — volume 9
-
-Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
-
-# SECTION (cont.): Practice and Exam Prep
 
 ---
 
@@ -14550,7 +14568,7 @@ Based on articles retrieved from PubMed (National Library of Medicine). Citation
 - **Slug:** `cotw_20260827_bpd_ms3.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-08-27_borderline-personality-disorder_MS3.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 1,687 words
+- **Length:** 1,919 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -14632,7 +14650,7 @@ She was told at age 19 that she "might be bipolar" after a similar crisis, and b
 *Teaching point:* Comorbidity is the rule in BPD — mood disorders ~83%, anxiety disorders ~85%, substance use disorders ~78% among people with BPD [1] — so the question is usually "BPD *and* what else," not "BPD *or*." Screen actively for depression, PTSD/trauma history, alcohol and other substance use, and eating pathology. (Full ranked differential below.)
 
 **Q4. Suicide risk assessment: chronic vs. acute-on-chronic.**
-*Teaching point:* People with BPD often carry **chronically elevated** risk (recurrent suicidal thoughts and self-injury over years). What demands escalation is an **acute-on-chronic spike**: new or intensifying wish to die, a plan or preparatory behavior, command hallucinations, intoxication, a major loss, or a recent serious attempt. Tonight: ask directly about current suicidal ideation, intent, plan, access to lethal means; gather collateral from the roommate; and complete **safety planning** — a structured, collaborative list of warning signs, internal coping strategies, social contacts, professional contacts, and steps to make the environment safer (lethal-means counseling), plus crisis resources such as the 988 Suicide & Crisis Lifeline. Self-injury without suicidal intent (common in BPD, often serving emotion-regulation) must still be taken seriously but is distinct from a suicide attempt; document the distinction. When risk is acute, escalate: one-to-one observation, psychiatric consultation, and consideration of admission [1,2].
+*Teaching point:* People with BPD often carry **chronically elevated** risk (recurrent suicidal thoughts and self-injury over years). What demands escalation is an **acute-on-chronic spike**: new or intensifying wish to die, a plan or preparatory behavior, command hallucinations, intoxication, a major loss, or a recent serious attempt. Tonight: ask directly about current suicidal ideation, intent, plan, access to lethal means; gather collateral from the roommate; and complete **safety planning** — a structured, collaborative list of warning signs, internal coping strategies, social contacts, professional contacts, and steps to make the environment safer (lethal-means counseling), plus crisis contacts. Self-injury without suicidal intent (common in BPD, often serving emotion-regulation) must still be taken seriously but is distinct from a suicide attempt; document the distinction. When risk is acute, escalate: one-to-one observation, psychiatric consultation, and consideration of admission [1,2].
 
 **Q5. First-line treatment.**
 *Teaching point:* **Psychotherapy is the treatment of choice** — the Step 2 CK answer. Structured therapies such as **dialectical behavior therapy (DBT)** (a skills-based cognitive-behavioral therapy targeting emotion regulation, distress tolerance, and interpersonal effectiveness) and psychodynamic therapies (e.g., mentalization-based treatment) reduce BPD severity with medium effect sizes versus usual care [1,3]. **No medication reliably improves core BPD symptoms**, and none is FDA-approved for BPD [1]. Medications are reserved for (a) discrete comorbid disorders (e.g., SSRIs for major depression) and (b) short-term crisis management, where low-dose antipsychotics or sedative antihistamines are preferred and **benzodiazepines are avoided** (disinhibition, misuse risk) [1]. Avoid accumulating polypharmacy from serial crises.
@@ -14652,7 +14670,21 @@ She was told at age 19 that she "might be bipolar" after a similar crisis, and b
 
 - **Workup:** History + collateral; focused exam and wound care; pregnancy test if applicable; blood alcohol level/urine toxicology when intoxication is possible; TSH and basic labs if mood workup is being initiated; no imaging or "BPD labs" — diagnosis is clinical [1].
 - **Tonight:** Direct suicide risk assessment; collaborative safety plan with lethal-means counseling; brief psychoeducation naming BPD as treatable; avoid starting a benzodiazepine; if a crisis medication is truly needed, a one-time low-dose antipsychotic or sedative antihistamine is preferred [1].
-- **Bridge:** Referral to structured psychotherapy (DBT or equivalent evidence-based program); treat comorbid depression/AUD on their own merits; discourage polypharmacy; schedule near-term follow-up and provide 988/crisis resources.
+- **Bridge:** Referral to structured psychotherapy (DBT or equivalent evidence-based program); treat comorbid depression/AUD on their own merits; discourage polypharmacy; schedule near-term follow-up and provide crisis contacts.
+
+> <div class="crisis-block-hook" hidden></div>
+>
+> ### If someone is in crisis
+>
+> On the unit, a patient in immediate danger is an escalation to your supervising resident or attending and the charge nurse — not a phone call. These lines are what you put IN a patient's safety plan, what families use after discharge, and what you can use yourself.
+>
+> - **988 Suicide & Crisis Lifeline** — Call or text 988. Chat at chat.988lifeline.org. 24/7, free, confidential. Spanish available by call, text, and chat; a dedicated line serves Deaf/Hard-of-Hearing callers. Calls placed in Maine route to Maine crisis specialists.
+> - **Crisis Text Line** — Text HOME to 741741. Text HOLA to 741741 for Spanish. 24/7, free. Text-only. Often the most acceptable option for adolescents and young adults who will not make a phone call.
+> - **Maine Crisis Line** — 1-888-568-1112. Text and chat available via the Maine Crisis Line website. 24/7. Staffed by clinically trained crisis workers and the gateway to Maine's mobile crisis teams — the number that actually dispatches a face-to-face response.
+> - **Veterans Crisis Line** — Dial 988 then press 1. Text 838255. 24/7. No VA enrollment required. Ask about service history — it changes which line is the right referral.
+> - **Emergency services** — 911. 24/7. For imminent danger to life.
+>
+> *Contacts verified 2026-07-27 against official sources. Maintained in `crisis_resources.json`; do not edit these numbers inline.*
 
 ## Facilitator Notes
 
@@ -14691,7 +14723,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **Slug:** `cotw_20260810_panic_ms3.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-08-10_anxiety-panic-disorder_MS3.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 3,522 words
+- **Length:** 3,752 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -14848,7 +14880,21 @@ The practical implications for this visit:
 
 - **Screen for depression and for suicidal ideation, every time**, in every anxiety patient — not because panic attacks are dangerous in themselves, but because the comorbidity that most often rides along with panic disorder is the one that carries the risk.
 - **Ask about alcohol and sedative use.** Self-medication is common and independently raises risk.
-- **If ideation is present:** shift into a full risk assessment, ask directly about intent and plan, involve your senior and the attending the same day, and move to **collaborative safety planning** — identifying personal warning signs, coping strategies, people and settings that provide distraction and support, who to contact in a crisis, and reducing access to lethal means. Document the plan and arrange concrete follow-up. **Escalate rather than manage alone.** In the US, **988** reaches the Suicide & Crisis Lifeline.
+- **If ideation is present:** shift into a full risk assessment, ask directly about intent and plan, involve your senior and the attending the same day, and move to **collaborative safety planning** — identifying personal warning signs, coping strategies, people and settings that provide distraction and support, who to contact in a crisis, and reducing access to lethal means. Document the plan and arrange concrete follow-up. **Escalate rather than manage alone.**
+
+> <div class="crisis-block-hook" hidden></div>
+>
+> ### If someone is in crisis
+>
+> On the unit, a patient in immediate danger is an escalation to your supervising resident or attending and the charge nurse — not a phone call. These lines are what you put IN a patient's safety plan, what families use after discharge, and what you can use yourself.
+>
+> - **988 Suicide & Crisis Lifeline** — Call or text 988. Chat at chat.988lifeline.org. 24/7, free, confidential. Spanish available by call, text, and chat; a dedicated line serves Deaf/Hard-of-Hearing callers. Calls placed in Maine route to Maine crisis specialists.
+> - **Crisis Text Line** — Text HOME to 741741. Text HOLA to 741741 for Spanish. 24/7, free. Text-only. Often the most acceptable option for adolescents and young adults who will not make a phone call.
+> - **Maine Crisis Line** — 1-888-568-1112. Text and chat available via the Maine Crisis Line website. 24/7. Staffed by clinically trained crisis workers and the gateway to Maine's mobile crisis teams — the number that actually dispatches a face-to-face response.
+> - **Veterans Crisis Line** — Dial 988 then press 1. Text 838255. 24/7. No VA enrollment required. Ask about service history — it changes which line is the right referral.
+> - **Emergency services** — 911. 24/7. For imminent danger to life.
+>
+> *Contacts verified 2026-07-27 against official sources. Maintained in `crisis_resources.json`; do not edit these numbers inline.*
 
 **Q7. How do you answer her question — "Am I going to have to live like this?"**
 
@@ -15639,7 +15685,7 @@ The critical caveat for the wards: **CIWA-Ar requires a patient who can communic
 - **Slug:** `cotw_20260723_suiciderisk_ms3.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-23_suicide-risk-assessment-safety-planning_MS3.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 2,001 words
+- **Length:** 2,214 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -15773,7 +15819,19 @@ Suicidal ideation is a **symptom**, not a diagnosis — always identify and trea
 
 *Citations retrieved from PubMed. This teaching case uses a synthetic, de-identified scenario for educational purposes only.*
 
-*If this material raises personal concerns for you or someone you know, in the U.S. you can call or text 988 (Suicide & Crisis Lifeline), available 24/7.*
+> <div class="crisis-block-hook" hidden></div>
+>
+> ### If someone is in crisis
+>
+> On the unit, a patient in immediate danger is an escalation to your supervising resident or attending and the charge nurse — not a phone call. These lines are what you put IN a patient's safety plan, what families use after discharge, and what you can use yourself.
+>
+> - **988 Suicide & Crisis Lifeline** — Call or text 988. Chat at chat.988lifeline.org. 24/7, free, confidential. Spanish available by call, text, and chat; a dedicated line serves Deaf/Hard-of-Hearing callers. Calls placed in Maine route to Maine crisis specialists.
+> - **Crisis Text Line** — Text HOME to 741741. Text HOLA to 741741 for Spanish. 24/7, free. Text-only. Often the most acceptable option for adolescents and young adults who will not make a phone call.
+> - **Maine Crisis Line** — 1-888-568-1112. Text and chat available via the Maine Crisis Line website. 24/7. Staffed by clinically trained crisis workers and the gateway to Maine's mobile crisis teams — the number that actually dispatches a face-to-face response.
+> - **Veterans Crisis Line** — Dial 988 then press 1. Text 838255. 24/7. No VA enrollment required. Ask about service history — it changes which line is the right referral.
+> - **Emergency services** — 911. 24/7. For imminent danger to life.
+>
+> *Contacts verified 2026-07-27 against official sources. Maintained in `crisis_resources.json`; do not edit these numbers inline.*
 
 *Joshua Moss, MD | Psychiatrist*
 

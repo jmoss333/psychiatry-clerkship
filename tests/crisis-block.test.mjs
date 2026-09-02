@@ -41,6 +41,13 @@ const markedSources = new Map([
   ['14_Tracks/MS3/Student_Ready_Pack/04_expansion_modules/family_discharge_student_module.md', MD],
   ['06_Family_and_Relational/family_meeting_playbook_90min.md', MD],
   ['06_Family_and_Relational/collateral_micro_workflow.md', MD],
+  ['03_Core_Topics/Anxiety/anxiety_trauma_ocd_inpatient_teaching.md', MD],
+  // Case-of-the-Week pages that rehearse risk work. The MS3 files reach build_deploy.py's md
+  // loop via its _cotw_slug(w,'ms3') entries; the resident files do not — see the note below.
+  ['08_Cases_and_Simulation/case-of-the-week/2026-07-23_suicide-risk-assessment-safety-planning_MS3.md', MD],
+  ['08_Cases_and_Simulation/case-of-the-week/2026-08-10_anxiety-panic-disorder_MS3.md', MD],
+  ['08_Cases_and_Simulation/case-of-the-week/2026-08-27_borderline-personality-disorder_MS3.md', MD],
+  ['08_Cases_and_Simulation/case-of-the-week/2026-07-23_suicide-risk-assessment-safety-planning_Resident.md', MD],
   // resident-only Case-of-the-Week pages that rehearse risk work. These do NOT reach
   // build_deploy.py's md loop — resident_section.py writes them fresh from source and runs
   // its own crisis_block.inject_markdown pass, gated by _CRISIS_REQUIRED_RES_MD there.
@@ -48,6 +55,7 @@ const markedSources = new Map([
   ['08_Cases_and_Simulation/case-of-the-week/2026-08-27_borderline-personality-disorder_Resident.md', MD],
   // tools where the learner is actively assessing or rehearsing risk
   ['04_Acute_and_Safety/Suicide_Risk_and_Safety_Planning/columbia-cssrs-screener.html', HTML],
+  ['04_Acute_and_Safety/Violence_Risk/violence-risk-one-pager.html', HTML],
   // PHQ-9 item 9 is itself a suicide-risk screen; the tool escalates its band on it
   ['02_Clinical_Skills/Screeners/screeners.html', HTML],
   ['_prototypes/sp-interview/sp-interview.html', HTML],
@@ -84,17 +92,24 @@ function canonicalContactSignatures(entry) {
   return [...signatures].filter((signature) => signature.length >= 3);
 }
 
-// A DOI is never a crisis contact, but its digits survive compactContact() and can spell one:
-// 10.1038/s41598-021-99882-w compacts to a run containing "988", which is the digit signature of
-// lifeline_988. Reference lists are dense with DOIs, so every safety surface that carries citations
-// would false-positive here without this. Only the DOI itself is exempted — every other URL and all
-// prose stays subject to the guard, so a genuinely hand-maintained contact is still caught.
-const DOI_PATTERN = /\b(?:doi:\s*|https?:\/\/(?:dx\.)?doi\.org\/)?10\.\d{4,9}\/[^\s)\]]+/gi;
+// A digit signature like "988" or "911" is only three characters, so testing it against a
+// whole-file alphanumeric compaction fires on any incidental adjacency. Bibliographies are full
+// of them: 10.1038/s41598-021-99882-w spells 988, and 2018;48(7):1119-1127 spells 911. Match
+// digit signatures against the ORIGINAL text instead, allowing punctuation or spacing between the
+// digits so "9 8 8" is still caught, but requiring the run to stand alone rather than sit inside a
+// longer number. The full compacted contact string stays a whole-text check — it is long and
+// specific enough not to collide.
+function digitRunPattern(digits) {
+  return new RegExp(`(?<!\\d)${digits.split('').join('[^a-z0-9]*')}(?![^a-z0-9]*\\d)`, 'i');
+}
 
 function canonicalContactLeaks(text) {
-  const compactSource = compactContact(String(text || '').replace(DOI_PATTERN, ' '));
+  const source = String(text || '');
+  const compactSource = compactContact(source);
   return canonicalContactFields().filter((entry) =>
-    canonicalContactSignatures(entry).some((signature) => compactSource.includes(signature)));
+    canonicalContactSignatures(entry).some((signature) => (/^\d+$/.test(signature)
+      ? digitRunPattern(signature).test(source)
+      : compactSource.includes(signature))));
 }
 
 const requiredContactIds = [

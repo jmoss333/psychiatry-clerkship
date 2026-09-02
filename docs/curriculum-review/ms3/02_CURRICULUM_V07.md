@@ -6,6 +6,121 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 
 ---
 
+## Brief Psychotherapy on the Unit
+
+- **Slug:** `brief_psychotherapy.md` · **Type:** md · **Sidebar:** listed
+- **Source:** `02_Clinical_Skills/Brief_Psychotherapy/brief_psychotherapy_inpatient.md`
+- **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
+- **Length:** 992 words
+
+<!-- topic_meta overlay -->
+#### Structured metadata (`topic_meta.json` → this page)
+
+> est. read 4 min
+
+**TL;DR (shown above the page text):**
+
+> Match the technique to the mechanism — behavioral activation for shutdown/anhedonia, safety planning for suicidal states, psychoeducation for illness confusion — rather than choosing a school; the modality matters less than the fit.
+
+**Key points (bulleted card):**
+
+- Behavioral activation is the highest-yield, lowest cognitive-demand inpatient move for the withdrawn anhedonic patient — it works by scheduling one small valued activity, not by asking a depressed person to think their way out.
+- Psychoeducation has the strongest inpatient numbers: readmission NNT 5, relapse NNT 9 — give it as a conversation with family looped in, not a packet dump.
+- Safety planning with follow-up reduces suicidal behaviors by approximately 50%; no-suicide contracts have no evidence and create false reassurance — abandon them.
+
+**Can't-miss / red-flag line:**
+
+> No-suicide contracts have no evidence and can create false reassurance — replace every contract with a collaborative safety plan in the patient's own words, with a scheduled follow-up contact.
+
+**Clinical-workflow narration (per-stage coaching text):**
+
+- **ask** — Ask what feels most urgent today, what they have tried, what helps even a little, and what would make the next hour safer or more tolerable.
+- **mse** — Use affect, thought process, defenses, alliance, and readiness to choose supportive, CBT, DBT-informed, or MI micro-skills.
+- **safety** — Keep bedside therapy within scope: stabilize, validate, problem-solve, and escalate risk or trauma flooding to supervision.
+- **say** — We may not solve everything today, but we can make the next step clearer and less lonely.
+- **collateral** — Ask the team what pattern they are seeing and align the intervention with the shared treatment frame.
+- **rounds** — Present the skill used, patient response, risk change, and what the team should reinforce consistently.
+- **exam** — Supportive therapy strengthens coping and alliance; DBT-informed inpatient work emphasizes validation plus limits.
+- **actions** — Practice rupture repair
+
+**Embedded check-for-understanding**
+
+1. *Stem:* A patient admitted after a suicide attempt is now medically stable but withdrawn, has stopped attending groups, and says 'nothing matters.' The student wants to do a brief bedside intervention. What is the best match for the mechanism driving the crisis?
+   - Cognitive restructuring — identify and challenge the automatic thoughts driving hopelessness
+   - Behavioral activation — schedule one small, concrete, valued activity; behavioral shutdown responds better to action than to thought-change in the acute setting **← keyed correct**
+   - Chain analysis — walk the sequence leading to the suicidal crisis to understand its function
+   - Motivational interviewing — roll with ambivalence about treatment and evoke change talk
+   - *Rationale:* The mechanism is behavioral shutdown — withdrawn, anhedonic, inactive. Behavioral activation is the match: it targets this mechanism directly by scheduling activity and requires the lowest cognitive demand, which is why the page flags it as the best inpatient fit. Cognitive restructuring requires cognitive engagement a deeply depressed patient may not have; chain analysis is for a self-harm incident; MI is for motivational ambivalence.
+
+**Cross-references and tagging:**
+
+- **Related tools:** `communication-practice.html`, `reflection.html`
+- **Communication cases:** `bpd_rupture_repair_001`, `medication_ambivalence_001`
+- **Workflow stages:** `communication`, `treatment`, `encounter`
+- **Workflow modes:** `ward`, `5min`
+- **Shelf blueprint tags:** `relational`
+- **EPA crosswalk:** `EPA9`
+- **Call-to-action buttons:** Open the Motivational Interviewing page; Practice rupture repair
+
+#### Page text (as shipped)
+
+# Brief Psychotherapy on the Unit
+
+
+**In one line** — You will not complete a course of therapy on an inpatient unit, but almost every encounter is a *micro-intervention*. The skill is to read the mechanism driving this patient's crisis right now and match one brief technique to it — then hand the work off to outpatient care.
+
+**Why brief therapy is worth doing inpatient** — Across trials, inpatient psychotherapy adds a small-to-moderate benefit over treatment-as-usual, and **no single modality is clearly superior** (pooled SMD ~0.24, NNT ~7; comparable effects for CBT, BA, and problem-solving, g≈0.42). The practical takeaway is liberating: *stop agonizing over which "school" to use and match the technique to the mechanism in front of you.* Diagnosis and the driver of the crisis matter more than the brand of therapy.
+
+## Match the skill to the mechanism
+
+| What you see | Likely mechanism | Reach for | Why (evidence) |
+|---|---|---|---|
+| Withdrawn, inactive, anhedonic, "nothing matters" | Behavioral shutdown | **Behavioral activation (BA)** — schedule one small, valued activity | Superior to TAU for depression (SMD −0.78) and anxiety (−0.33), on par with CBT; **lowest cognitive demand → best inpatient fit** (Uphoff, *Cochrane* 2020) |
+| Escalating, flooded, about to act | Acute emotional dysregulation | **DBT skills — TIPP** (temperature, intense exercise, paced breathing, paired relaxation) | Skills-containing DBT arms outperform for self-injury in dismantling trials (Linehan 2015) |
+| Just self-harmed or nearly did | Behavior serving a function | **Chain analysis** — walk the sequence *with* the patient, non-punitively | Turns an incident into a formulation and a plan; core DBT move |
+| Repeatedly returns in crisis, overwhelmed by problems | Problem-solving deficit | **Problem-solving therapy (PST)** — the 4-step format (define → brainstorm → choose → try) | Repeat self-harm re-presentation 13.5% vs 22.1%, **NNT 12** (Hatcher 2011) |
+| Ambivalent about meds, treatment, or substance use | Motivational conflict | **Motivational interviewing (MI)** — roll with resistance, evoke change talk | Improves engagement and substance outcomes; see the [Motivational Interviewing](?page=motivational_interviewing.md) page |
+| Confused or frightened by the illness itself | Knowledge/coping gap | **Psychoeducation** — illness model + warning-signs plan, include family | Strongest single inpatient psychological intervention: readmission **NNT 5**, relapse **NNT 9** (Xia, *Cochrane* 2011) |
+| Actively suicidal | Acute risk state | **Safety planning (Stanley-Brown)** + crisis response planning | Safety Planning Intervention with follow-up ≈ **50% fewer suicidal behaviors** (Stanley 2018); **abandon no-suicide "contracts"** — they don't work |
+
+## The bedside frame (MGH-style)
+When you have five minutes, not fifty: lead with **support**, name the **affect**, do a quick **chain analysis** of what just happened, and notice the **relational pattern** playing out on the unit (Stein & Jacobo). A useful daily scaffold — three quick **assessments** (safety, sleep, function), three **interventions** (one skill, one activity, one connection), three **discharge tasks** (appointment, means safety, warning-signs plan).
+
+## What the student does
+- Name the mechanism out loud on rounds before proposing a technique — "this looks like behavioral shutdown" beats "he seems depressed."
+- Do one concrete thing at the bedside: schedule a single valued activity (BA), teach one TIPP skill, or walk a chain analysis after an incident.
+- For any patient at risk, build a **collaborative** safety plan in the patient's words — never a no-suicide contract.
+- Give psychoeducation as a conversation, not a packet dump; loop in family when you can.
+- Write the handoff so the outpatient clinician can continue the thread — the point of inpatient therapy is to *start* it and secure the follow-up.
+
+## High-yield pearls
+- Match the skill to the mechanism; the modality matters less than the fit (no clear winner across schools).
+- **Behavioral activation** is the highest-yield, lowest-effort inpatient move for the shut-down, depressed patient.
+- **Psychoeducation** has the hardest inpatient numbers (readmission NNT 5) — and it's free.
+- Chain analysis *replaces* a punitive response to self-harm — understand the behavior, don't just document it.
+- Safety planning with follow-up beats a "contract for safety," which has no evidence and can create false reassurance.
+
+> <div class="crisis-block-hook" hidden></div>
+>
+> ### If someone is in crisis
+>
+> On the unit, a patient in immediate danger is an escalation to your supervising resident or attending and the charge nurse — not a phone call. These lines are what you put IN a patient's safety plan, what families use after discharge, and what you can use yourself.
+>
+> - **988 Suicide & Crisis Lifeline** — Call or text 988. Chat at chat.988lifeline.org. 24/7, free, confidential. Spanish available by call, text, and chat; a dedicated line serves Deaf/Hard-of-Hearing callers. Calls placed in Maine route to Maine crisis specialists.
+> - **Crisis Text Line** — Text HOME to 741741. Text HOLA to 741741 for Spanish. 24/7, free. Text-only. Often the most acceptable option for adolescents and young adults who will not make a phone call.
+> - **Maine Crisis Line** — 1-888-568-1112. Text and chat available via the Maine Crisis Line website. 24/7. Staffed by clinically trained crisis workers and the gateway to Maine's mobile crisis teams — the number that actually dispatches a face-to-face response.
+> - **Veterans Crisis Line** — Dial 988 then press 1. Text 838255. 24/7. No VA enrollment required. Ask about service history — it changes which line is the right referral.
+> - **Emergency services** — 911. 24/7. For imminent danger to life.
+>
+> *Contacts verified 2026-07-27 against official sources. Maintained in `crisis_resources.json`; do not edit these numbers inline.*
+
+**Pair with** — [Therapy on the Unit](?page=therapy_on_the_unit.md) for the full teaching module and the 5-minute bedside toolkit, [The Therapy Reading Room](?page=therapy_reading_room.md) for the verified reading list, the [Motivational Interviewing](?page=motivational_interviewing.md) page, the [suicide-risk & safety pocket card](?page=pg_suicide.md), the [Personality Disorders](?page=t_personality.md) page (DBT-informed stance), the [Family Meeting Playbook](?page=family_playbook.md), and the [Evidence-Based Inpatient Psychiatry](?page=evidence_inpatient.md) reference for the underlying trials.
+
+*Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
+
+
+---
+
 ## Therapy on the Unit
 
 - **Slug:** `therapy_on_the_unit.md` · **Type:** md · **Sidebar:** listed
@@ -1344,111 +1459,3 @@ Use when handing off a psychiatric patient:
 
 Plain-English note: this guide helps students stop writing and presenting as if
 psychiatry is a checklist. It gives them a structure that reveals their thinking.
-
-
----
-
-## Treatment Team Rounding Prep
-
-- **Slug:** `oral.html` · **Type:** tool · **Sidebar:** listed
-- **Source:** `02_Clinical_Skills/Oral_Presentations/oral-presentation-module.html`
-- **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-
-#### Tool — clinical content
-
-_These tools are single-file HTML that render from inline JS data, so the clinical text below is recovered from the tool's own string literals. Ordering follows the file, not the runtime flow._
-
-**Static shell text:**
-
-- Treatment Team Rounding Prep Reviewed by Joshua Moss, MD on 2026-06-30
-- Skip to content
-
-**Authored clinical strings (87):**
-
-- Events, nursing notes, incidents, PRNs given
-- Hours slept; pattern vs. prior nights
-- Agitation, isolation, interactions, groups attended
-- PO intake, appetite, hydration; refusals
-- Current psychotropics, changes, missed/refused doses, levels
-- Pertinent vitals, labs, drug levels, pending studies
-- SI/HI status, observation level, restraint/seclusion use
-- Barriers to discharge, family/collateral, aftercare, legal status
-- ID + chief concern + key context, in one sentence.
-- "Mr. A is a 34-year-old man with bipolar I, admitted on a hold for a manic episode after stopping lithium."
-- What changed since the last presentation: events, behavior, sleep, intake, PRNs.
-- "Overnight he slept 3 hours, was redirectable, took one PRN olanzapine for agitation."
-- Subjective + MSE highlights
-- Patient report plus the 2-3 MSE findings that matter today — not the whole exam.
-- "Reports he feels great; still pressured, expansive affect, grandiose themes, no SI/HI."
-- Objective: meds, vitals, labs
-- Relevant data and changes only: current psychotropics + adjustments, pertinent vitals/labs/levels.
-- "Lithium restarted, level pending; valproate at goal; vitals stable."
-- Explicit SI/HI, agitation, elopement, and observation level — never skipped.
-- "No SI/HI; one agitation episode managed verbally; remains on Q15 checks."
-- One to two lines: who, what, why now — biological + relational. Not a re-read of the HPI.
-- "Manic relapse precipitated by lithium discontinuation and sleep loss, with high family expressed emotion."
-- Problem-based, concrete next steps: meds, monitoring, milieu/family, disposition.
-- "1) Mania: resume lithium, recheck level. 2) Sleep: protect with scheduled meds. 3) Family meeting today. 4) Dispo: needs 1 more day of stability."
-- Use after a collateral call, family call, outpatient-clinician call, or nursing update.
-- Source -> baseline -> timeline -> risk/discharge -> plan change
-- Who you spoke with and the consent/policy frame.
-- "I spoke with his sister with patient permission."
-- What the patient is like when well.
-- "Baseline is organized, employed, and usually sleeps 7 hours."
-- "Sleep dropped 5 days ago, spending increased, then paranoia escalated."
-- What changes safety or disposition.
-- "Family can secure meds, but cannot supervise overnight."
-- One sentence on what this changes.
-- "This supports mania and makes discharge premature today."
-- Use for a daily patient update when the team already knows the admission story.
-- Hospital day -> overnight -> one subjective/MSE change -> risk -> plan question
-- Orient the team immediately.
-- "Hospital day 4 for mania with psychosis."
-- Sleep, PRNs, safety events, vitals/labs only if relevant.
-- "Slept 5 hours, no IMs, accepted lithium and olanzapine."
-- One patient report and one observed change.
-- "Feels slower; speech is less pressured but grandiosity persists."
-- What is safer, worse, or still unresolved.
-- "Violence risk is lower with sleep, but discharge risk remains high."
-- End with the decision you need from the team.
-- "My question is whether to request limited collateral today."
-- Give a real assessment — who/what/why-now, not a recap.
-- Plan by problem with concrete next steps.
-- End without a plan or disposition thought.
-- s 5th line, "Know your numbers", doesn
-- t-card // line ever changes, re-check this label stays in sync. {k:
-- } ]; var FORMAT_LABEL={full:
-- }; function loadOralReps(){ try{ var raw=localStorage.getItem(
-- ); if(!raw) return []; var parsed=JSON.parse(raw); if(!parsed||!Array.isArray(parsed.reps)) return []; return parsed.reps; }catch(err){ return []; } } function saveOralReps(list){ try{ localStorage.setItem(
-- , JSON.stringify({v:1,reps:list})); }catch(err){} } function targetForFormat(format){ if(format===
-- ) return TARGET; var m=MICRO.filter(function(x){return x.key===format;})[0]; return m?m.target:null; } function fmtRepDate(iso){ var d=new Date(iso); if(isNaN(d.getTime())) return iso; return (d.getMonth()+1)+
-- +d.getFullYear(); } function rubricScore(rubric){ if(!rubric) return null; var keys=[
-- ]; var n=0; for(var i=0;i<keys.length;i++){ if(rubric[keys[i]]) n++; } return n; } function App(){ var tab=useState(
-- ); var setTab=tab[1]; tab=tab[0]; var sec=useState(0); var setSec=sec[1]; sec=sec[0]; var microKey=useState(
-- ); var setMicroKey=microKey[1]; microKey=microKey[0]; var microSec=useState(0); var setMicroSec=microSec[1]; microSec=microSec[0]; var microRun=useState(false); var setMicroRun=microRun[1]; microRun=microRun[0]; var run=useState(false); var setRun=run[1]; run=run[0]; var done=useState({}); var setDone=done[1]; done=done[0]; var microDone=useState({}); var setMicroDone=microDone[1]; microDone=microDone[0]; var prep=useState({}); var setPrep=prep[1]; prep=prep[0]; var stepMark=useState({}); var setStepMark=stepMark[1]; stepMark=stepMark[0]; var reps=useState(loadOralReps); var setReps=reps[1]; reps=reps[0]; var pending=useState(null); var setPending=pending[1]; pending=pending[0]; var rubricDraft=useState({}); var setRubricDraft=rubricDraft[1]; rubricDraft=rubricDraft[0]; var fullRepAt=useState(null); var setFullRepAt=fullRepAt[1]; fullRepAt=fullRepAt[0]; var microRepAt=useState(null); var setMicroRepAt=microRepAt[1]; microRepAt=microRepAt[0]; var ref=useRef(null); var microRef=useRef(null); useEffect(function(){ if(run){ ref.current=setInterval(function(){ setSec(function(s){return s+1}); },1000);} return function(){ if(ref.current) clearInterval(ref.current);} },[run]); useEffect(function(){ if(microRun){ microRef.current=setInterval(function(){ setMicroSec(function(s){return s+1}); },1000);} return function(){ if(microRef.current) clearInterval(microRef.current);} },[microRun]); function activeStep(){ var acc=0; for(var i=0;i<STEPS.length;i++){ acc+=STEPS[i].sec; if(sec<acc) return i;} return STEPS.length-1; } function activeMicroStep(steps){ var acc=0; for(var i=0;i<steps.length;i++){ acc+=steps[i].sec; if(microSec<acc) return i;} return steps.length-1; } function togglePrep(k){ var x=Object.assign({},prep); x[k]=!x[k]; setPrep(x); } function toggleDone(n){ var x=Object.assign({},done); var turningOn=!x[n]; x[n]=turningOn; setDone(x); var m=Object.assign({},stepMark); if(turningOn){ m[n]=sec; } else { delete m[n]; } setStepMark(m); } function toggleMicroDone(k){ var x=Object.assign({},microDone); x[k]=!x[k]; setMicroDone(x); } function computeFullPerStep(){ var out=[]; var prevT=0; for(var i=0;i<STEPS.length;i++){ var s=STEPS[i]; if(stepMark[s.n]===undefined) return null; var actual=stepMark[s.n]-prevT; if(actual<0) return null; out.push({k:s.t,target:s.sec,actual:actual}); prevT=stepMark[s.n]; } return out; } // One record per continuous timeline (the span between Reset/mode-switches that zero a // timer). `existingAt` is the current timeline
-- s total/perStep in place instead of appending a duplicate. Returns the // record
-- this timeline already has a rep.
-- Optional self-check — tap what you did, or skip.
-- Over time — wrap up and stop.
-- Over time — stop and trim one sentence.
-- Clinical Skills · optional aid
-- Treatment Team Rounding Prep
-- Optional — use it if it helps
-- Walk into treatment-team rounds with the right data, then present it crisply. Gather, present, rehearse the 3-minute structure, or practice a focused 30-second collateral update and 60-second rounds update. Nothing here is required — it is a scaffold you can lean on while you build the habit.
-- Before rounds — have these ready
-- The pre-round sweep. Tick what you have; the gaps are your to-do before the team sits down.
-- Safety is the non-negotiable.
-- Even on a quiet patient, know the SI/HI status and observation level before you walk in.
-- How to say it: the seven-part, ~3-minute inpatient presentation. The one-liner does the heavy lifting.
-- Lead with the one-liner; never bury SI/HI.
-- If your first sentence names age, key diagnosis, and why-they-are-here, the team is oriented before the HPI.
-- — who/what/why-now, not a recap.
-- with concrete next steps.
-- (levels, vitals, days admitted).
-- ("difficult patient") — describe behavior.
-- deg, var(--primary-light) 0deg)
-- Tick each section as you say it. The highlighted step is where a well-paced presentation should be right now.
-- Two short formats for the moments students actually get interrupted on rounds: a 30-second collateral update and a 60-second daily rounds update. Say them out loud; do not type patient information here.
-- Tick each section as you say it. The highlighted line is where this update should be right now.
-- Optional educational aid for clinical trainees. Examples are fictional composites — no protected health information. The format is a scaffold; follow your team and institution conventions.
-- Treatment Team Rounding Prep · Psychiatry Clerkship Library · Joshua Moss, MD | Psychiatrist

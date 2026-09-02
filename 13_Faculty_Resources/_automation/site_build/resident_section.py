@@ -105,6 +105,8 @@ _CRISIS_REQUIRED_RES_MD={
     # Q5 has the resident formulating chronic vs acute-on-chronic suicide risk, building
     # the safety plan, and making the discharge call (RV09-F001) — the same scope rule.
     "cotw_20260827_bpd_res.md",
+    # The suicide-risk case itself: assessment, safety planning, and disposition throughout.
+    "cotw_20260723_suiciderisk_res.md",
 }
 _crisis_res_gap=sorted(_CRISIS_REQUIRED_RES_MD-_crisis_res_done)
 if _crisis_res_gap:
