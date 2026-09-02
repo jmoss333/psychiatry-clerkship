@@ -3,7 +3,7 @@
 # MS3 curriculum — complete content transcript for clinical review
 
 **Site:** `une-ms3-psychiatry` · **Audience:** MS3 — UNE medical students
-**Generated:** 2026-09-02 from build `fc66f4f` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
+**Generated:** 2026-09-02 from build `bda0a99` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
 
 ## Who this is for
 
@@ -19,7 +19,7 @@ This transcript is assembled from the **built site**, not the source tree, so it
 | Narrative pages (markdown) | 80 |
 | Interactive tools | 23 |
 | Deep-link-only (hidden) surfaces | 10 |
-| Words of narrative curriculum | 98,990 |
+| Words of narrative curriculum | 99,040 |
 | Practice question-bank items | 192 |
 | Audio-companion quiz decks / questions | 79 / 437 |
 | Communication cases | 12 |
@@ -83,7 +83,7 @@ High-yield places to concentrate: the `topic_meta` **can't-miss**, **rule-out** 
 
 # MS3 · Navigation map
 
-Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-02 @ `fc66f4f`.
+Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-02 @ `bda0a99`.
 
 ## Orientation  *(pinned)*
 
@@ -127,7 +127,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 11 | Geriatric | `t_geri.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Geriatric/geriatric_psychiatry_inpatient_teaching.md` | 893 |
 | 12 | Perinatal | `t_perinatal.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/Perinatal/perinatal_psychiatry_inpatient_teaching.md` | 1145 |
 | 13 | Neurodevelopmental Disorders | `t_neurodev.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Neurodevelopmental/neurodevelopmental_disorders_inpatient_teaching.md` | 1143 |
-| 14 | Eating Disorders | `t_eating.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/Eating_Disorders/eating_disorders_inpatient_teaching.md` | 1308 |
+| 14 | Eating Disorders | `t_eating.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/Eating_Disorders/eating_disorders_inpatient_teaching.md` | 1336 |
 | 15 | Neurocognitive (Dementia) | `t_neurocog.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/Neurocognitive/neurocognitive_disorders_inpatient_teaching.md` | 880 |
 | 16 | Somatic Symptom & Related | `t_somatic.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Somatic/somatic_symptom_disorders_inpatient_teaching.md` | 757 |
 | 17 | Sleep-Wake Disorders | `t_sleep.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Sleep/sleep_wake_disorders_inpatient_teaching.md` | 675 |
@@ -197,7 +197,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 |---|---|---|---|---|---|---|---|
 | 1 | Documentation & Oral Presentation | `doc_oral.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/MS3/Student_Ready_Pack/05_documentation_oral_presentation/student_documentation_and_oral_presentations.md` | 817 |
 | 2 | Treatment Team Rounding Prep | `oral.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Oral_Presentations/oral-presentation-module.html` |  |
-| 3 | High-Yield Rounds Questions | `rounds_questions.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md` | 8702 |
+| 3 | High-Yield Rounds Questions | `rounds_questions.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md` | 8724 |
 
 ## Practice and Exam Prep
 
@@ -1352,7 +1352,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Note both what the patient reports and what you observe (e.g., appearing to respond to internal stimuli).
 - Alertness, orientation, attention, memory, fund of knowledge. Use a tool (MoCA/MMSE) when indicated.
 - impaired short-term memory
-- "Oriented x4" = person, place, time, situation. Screen formally (MoCA) when delirium or dementia is on the differential.
+- "Oriented x4" = person, place, time, situation. If delirium is possible, test attention and use a delirium screen (e.g., 4AT or CAM) now; reserve the MoCA for suspected dementia/MCI once delirium is excluded — a MoCA done during delirium is not interpretable.
 - Awareness of illness and need for treatment.
 - Insight predicts adherence. In psychosis, anosognosia (not denial) may be the barrier — see Amador’s LEAP.
 - Capacity to make reasoned, safe decisions; recent real-world decisions are the best evidence.
@@ -6198,7 +6198,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **Slug:** `t_eating.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `03_Core_Topics/Eating_Disorders/eating_disorders_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 1,308 words
+- **Length:** 1,336 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -6278,7 +6278,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 
 **Medical instability — the admission question** — The high-yield student skill is recognizing who needs a *medical* bed. Criteria that commonly trigger medical admission (confirm against your institution's protocol) include **bradycardia (often <40–50 bpm), hypotension, orthostatic vital-sign changes, hypothermia, hypoglycemia, electrolyte derangement (K⁺, phosphate, Mg²⁺), QTc prolongation or arrhythmia, marked or rapid weight loss, syncope, dehydration, and failure of outpatient/PHP care.** Bradycardia is one of the most common reasons for medical admission in AN. Match the *level of care* to acuity: medical floor for instability, psychiatric/behavioral eating-disorder unit or residential/PHP for weight and behavioral work once medically stable.
 
-**Refeeding syndrome — the complication that kills** — When nutrition restarts, the shift from catabolic to anabolic metabolism drives phosphate, potassium, and magnesium *into* cells; **hypophosphatemia is the hallmark**, and the danger is cardiac failure, arrhythmia, respiratory failure, and delirium. Risk is highest in the **most malnourished** and after the longest starvation. The safe posture is **"start low, go slow"**: begin conservative caloric refeeding, **check phosphate/potassium/magnesium at least daily early**, **supplement phosphate and give thiamine before or with carbohydrate**, and advance calories per protocol as electrolytes stay stable. Defer exact caloric targets and repletion doses to your institution's refeeding order set — the student job is to *anticipate and monitor*, not to prescribe.
+**Refeeding syndrome — the complication that kills** — When nutrition restarts, the shift from catabolic to anabolic metabolism drives phosphate, potassium, and magnesium *into* cells; **hypophosphatemia is the hallmark**, and the danger is cardiac failure, arrhythmia, respiratory failure, and delirium. Risk is highest in the **most malnourished** and after the longest starvation. The safe posture is close monitoring, not prolonged underfeeding — current guidance (SAHM 2022; MEED, which replaced MARSIPAN in 2022) supports higher-calorie refeeding with electrolyte surveillance, reserving the most conservative starts for the most severely malnourished: begin refeeding per protocol, **check phosphate/potassium/magnesium at least daily early**, **supplement phosphate and give thiamine before or with carbohydrate**, and advance calories per protocol as electrolytes stay stable. Defer exact caloric targets and repletion doses to your institution's refeeding order set — the student job is to *anticipate and monitor*, not to prescribe.
 
 **Acute inpatient management** — Medical stabilization first, then structured nutritional rehabilitation with a **multidisciplinary team** (medicine, nutrition/dietetics, nursing, psychiatry, and often social work). Use **supervised meals and a post-meal observation period**, monitor for covert purging and **water-loading** (which falsely raises weight — a "too-fast" weight jump is a flag), and weigh on a consistent schedule/gown. Psychotherapy is the backbone: **Family-Based Treatment (Maudsley/FBT)** for adolescents with AN, and **CBT-E** for BN and BED. On medications: **no drug is first-line for AN** — weight restoration is; **olanzapine** may modestly help weight and obsessionality in AN; **fluoxetine (target 60 mg/day)** is the classic pharmacotherapy for BN; **lisdexamfetamine** is approved for moderate–severe BED. **Avoid bupropion in patients who purge or are underweight (seizure risk)**, and be cautious with QT-prolonging agents given the baseline cardiac risk.
 
@@ -7033,6 +7033,14 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
 
 
+<!-- ==================== 02_CURRICULUM_V05.md ==================== -->
+
+# MS3 · Curriculum content — volume 5
+
+Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
+
+# SECTION (cont.): Understand the Problem
+
 ---
 
 ## Adjustment Disorders
@@ -7161,14 +7169,6 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
 
-
-<!-- ==================== 02_CURRICULUM_V05.md ==================== -->
-
-# MS3 · Curriculum content — volume 5
-
-Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
-
-# SECTION (cont.): Understand the Problem
 
 ---
 
@@ -8491,6 +8491,15 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Educational teaching tool for clinical trainees. Generates draft documentation from your inputs using fictional composite scenarios only — no protected health information. Not a clinical or legal decision-support device; capacity determinations and any surrogate/guardianship pathway must follow supervision and institutional/legal policy.
 - Decisional Capacity — Bedside Module · Psychiatry Clerkship Library · Joshua Moss, MD | Psychiatrist · Framework: Appelbaum & Grisso (1988)
 
+
+<!-- ==================== 02_CURRICULUM_V06.md ==================== -->
+
+# MS3 · Curriculum content — volume 6
+
+Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
+
+# SECTION (cont.): Assess Safety and Acuity
+
 ---
 
 ## Consult Questions: Capacity, Delirium, Catatonia, Withdrawal
@@ -8777,14 +8786,6 @@ Plain-English note: this module teaches students what to notice, how to ask the
 right question, and when to escalate. It deliberately avoids pretending students
 should independently manage high-risk consults.
 
-
-<!-- ==================== 02_CURRICULUM_V06.md ==================== -->
-
-# MS3 · Curriculum content — volume 6
-
-Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
-
-# SECTION (cont.): Assess Safety and Acuity
 
 ---
 
@@ -10043,6 +10044,14 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
 
 
+<!-- ==================== 02_CURRICULUM_V07.md ==================== -->
+
+# MS3 · Curriculum content — volume 7
+
+Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
+
+# SECTION (cont.): Communicate with Patients
+
 ---
 
 ## Motivational Interviewing
@@ -10156,14 +10165,6 @@ Substance use, medication adherence, lifestyle/metabolic change, follow-up engag
 
 *Joshua Moss, MD | Psychiatrist · Educational scaffold; not a substitute for supervised practice. Fictional composites; no PHI.*
 
-
-<!-- ==================== 02_CURRICULUM_V07.md ==================== -->
-
-# MS3 · Curriculum content — volume 7
-
-Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
-
-# SECTION (cont.): Communicate with Patients
 
 ---
 
@@ -11361,6 +11362,15 @@ Multipartiality over neutrality ("not a courtroom; multiple truths") · the **tr
 
 # SECTION: Present and Work with the Team
 
+
+<!-- ==================== 02_CURRICULUM_V08.md ==================== -->
+
+# MS3 · Curriculum content — volume 8
+
+Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
+
+# SECTION (cont.): Present and Work with the Team
+
 ---
 
 ## Documentation & Oral Presentation
@@ -11622,14 +11632,6 @@ Plain-English note: this guide helps students stop writing and presenting as if
 psychiatry is a checklist. It gives them a structure that reveals their thinking.
 
 
-<!-- ==================== 02_CURRICULUM_V08.md ==================== -->
-
-# MS3 · Curriculum content — volume 8
-
-Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
-
-# SECTION (cont.): Present and Work with the Team
-
 ---
 
 ## Treatment Team Rounding Prep
@@ -11744,7 +11746,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **Slug:** `rounds_questions.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 8,702 words
+- **Length:** 8,724 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -12185,7 +12187,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Answer:** Prazosin (alpha-1 adrenergic antagonist) is suggested for trauma-related nightmares.
 
-- **Evidence:** Evidence rating B per VA/DoD guidelines; titrate from 1 mg at bedtime.
+- **Evidence:** The 2023 VA/DoD guideline found insufficient evidence for or against prazosin for PTSD nightmares (the PACT trial was negative), but it remains a reasonable and widely used option; titrate from 1 mg at bedtime.
 
 - **Key paper:** Sartor et al., Am Fam Physician 2023.
 
@@ -12783,6 +12785,15 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 # SECTION: Practice and Exam Prep
 
+
+<!-- ==================== 02_CURRICULUM_V09.md ==================== -->
+
+# MS3 · Curriculum content — volume 9
+
+Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
+
+# SECTION (cont.): Practice and Exam Prep
+
 ---
 
 ## Practice Questions — Question Bank
@@ -13088,15 +13099,6 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - )]=!!input.checked;r.at=new Date().toISOString().slice(0,10);state.progress.completed[w.id]=r;saveProgress();render();}); fetch(
 - ).then(function(r){if(!r.ok)throw new Error(
 - );return r.json();}).then(function(data){state.caseData=data;state.current=Math.max(0,Math.min(data.weeks.length-1,state.progress.current||state.current));render();}).catch(function(){app.innerHTML=
-
-
-<!-- ==================== 02_CURRICULUM_V09.md ==================== -->
-
-# MS3 · Curriculum content — volume 9
-
-Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
-
-# SECTION (cont.): Practice and Exam Prep
 
 ---
 
@@ -14141,6 +14143,14 @@ real patient details. They are deliberately common enough to teach patterns but
 synthetic enough for safe reuse.
 
 
+<!-- ==================== 02_CURRICULUM_V10.md ==================== -->
+
+# MS3 · Curriculum content — volume 10
+
+Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
+
+# SECTION (cont.): Practice and Exam Prep
+
 ---
 
 ## Landmark Trials — Listen & Test
@@ -14705,14 +14715,6 @@ Based on articles retrieved from PubMed (National Library of Medicine). Citation
 2. Rogers JP, Zandi MS, David AS. The diagnosis and treatment of catatonia. *Clin Med (Lond)*. 2023;23(3):242-245. [DOI: 10.7861/clinmed.2023-0113](https://doi.org/10.7861/clinmed.2023-0113)
 3. Bush G, Fink M, Petrides G, Dowling F, Francis A. Catatonia. I. Rating scale and standardized examination. *Acta Psychiatr Scand*. 1996;93(2):129-136. [DOI: 10.1111/j.1600-0447.1996.tb09814.x](https://doi.org/10.1111/j.1600-0447.1996.tb09814.x)
 
-
-<!-- ==================== 02_CURRICULUM_V10.md ==================== -->
-
-# MS3 · Curriculum content — volume 10
-
-Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
-
-# SECTION (cont.): Case of the Week
 
 ---
 
@@ -15395,6 +15397,14 @@ And on the clinician side: **whoever adds the thiazide should check a lithium le
 *Joshua Moss, MD | Psychiatrist*
 
 
+<!-- ==================== 02_CURRICULUM_V11.md ==================== -->
+
+# MS3 · Curriculum content — volume 11
+
+Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
+
+# SECTION (cont.): Case of the Week
+
 ---
 
 ## Opioid Use Disorder (Jul 27)
@@ -15822,14 +15832,6 @@ The critical caveat for the wards: **CIWA-Ar requires a patient who can communic
 
 *Joshua Moss, MD | Psychiatrist*
 
-
-<!-- ==================== 02_CURRICULUM_V11.md ==================== -->
-
-# MS3 · Curriculum content — volume 11
-
-Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
-
-# SECTION (cont.): Case of the Week
 
 ---
 
@@ -16589,6 +16591,15 @@ If the presentation involved an **intentional overdose**, management is the same
 
 # SECTION: Evidence and Reference
 
+
+<!-- ==================== 02_CURRICULUM_V12.md ==================== -->
+
+# MS3 · Curriculum content — volume 12
+
+Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
+
+# SECTION (cont.): Evidence and Reference
+
 ---
 
 ## Weekly Reading Map
@@ -16776,14 +16787,6 @@ If a reading takes longer than 20 minutes, assign a specific question — for ex
 
 *Each week has a small suggested core, optional deeper resources, and one observable clinical skill — so the curriculum never becomes a document dump.*
 
-
-<!-- ==================== 02_CURRICULUM_V12.md ==================== -->
-
-# MS3 · Curriculum content — volume 12
-
-Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
-
-# SECTION (cont.): Evidence and Reference
 
 ---
 
@@ -17817,6 +17820,14 @@ Would you like to explore any of these domains in greater depth — for example,
 *Joshua Moss, MD | Psychiatrist · Curated from the library book database. Educational; suggested reading, not required.*
 
 
+<!-- ==================== 02_CURRICULUM_V13.md ==================== -->
+
+# MS3 · Curriculum content — volume 13
+
+Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
+
+# SECTION (cont.): Evidence and Reference
+
 ---
 
 ## Podcast Library (Psychiatry & Psychotherapy)
@@ -18171,15 +18182,6 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Thank you — that helps.
 - Your feedback shapes what gets built and fixed next.
 - Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.
-
-
-<!-- ==================== 02_CURRICULUM_V13.md ==================== -->
-
-# MS3 · Curriculum content — volume 13
-
-Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
-
-# SECTION (cont.): Feedback
 
 ---
 
@@ -21984,7 +21986,7 @@ _1394 further strings omitted — this surface embeds the build's front-door cat
 - The seizure occurred before admission; since he is now calmer, observation without immediate pharmacologic intervention is appropriate.
 - The seizure risk has passed — withdrawal seizures occur in the first 24–48 hours; further seizures are not expected after a first event.
 - Start a fixed-schedule antipsychotic — antipsychotics lower seizure threshold and provide targeted coverage for alcohol withdrawal psychosis.
-- Prior withdrawal seizure is a strong predictor of future seizures; this patient requires aggressive CIWA-Ar-guided benzodiazepine titration with close monitoring for progression to delirium tremens. **← keyed correct**
+- Prior withdrawal seizure is a strong predictor of future seizures; give a benzodiazepine promptly and use front-loaded or fixed-schedule dosing with symptom-triggered supplementation — not score-gated dosing alone — with close monitoring for progression to delirium tremens. **← keyed correct**
 
 **Rationale.** Underestimate the emergency in two forms, and Agitation = antipsychotic. Prior withdrawal seizure is explicitly the most robust predictor of future seizure risk. Antipsychotics lower seizure threshold and are contraindicated for seizure prevention in alcohol withdrawal. CIWA-Ar-guided benzodiazepines are the treatment, and DT vigilance is the priority.
 
@@ -24963,7 +24965,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
    - A formal dietary consultation and exercise stress test While lifestyle intervention is encouraged, baseline labs and vitals are the specific standardized monitoring requirements.
    - Electroencephalogram (EEG) to screen for seizure risk An EEG is not part of the standard metabolic monitoring protocol established by the ADA/APA consensus.
 
-5. **Based on the ADA/APA monitoring protocol, when should fasting glucose and lipids be reassessed after the baseline labs have been completed?**
+5. **Based on the ADA/APA monitoring protocol, when should fasting glucose be reassessed after the baseline labs have been completed?**
    - At 4 weeks and then every 3 months
      - *feedback:* Weight is checked at 4 and 8 weeks, but fasting labs are deferred until the 12-week mark unless otherwise clinically indicated.
    - At 12 weeks and then annually **← keyed correct**

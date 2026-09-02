@@ -548,7 +548,7 @@
               "id": "d",
               "text": "Defer the augmentation decision entirely to the outpatient team after discharge.",
               "quality": "harmful",
-              "feedback": "A patient admitted after an overdose with confirmed treatment resistance is exactly who should not leave the hospital without a next step already started or clearly planned — deferring the whole decision abandons the acute opportunity to act."
+              "feedback": "A patient admitted after an overdose, with a confirmed adequate-trial failure and ongoing suicidal ideation, is exactly who should not leave the hospital without a next step already started or clearly planned — deferring the whole decision abandons the acute opportunity to act."
             }
           ]
         },

@@ -6,6 +6,194 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 
 ---
 
+## Weekly Reading Map
+
+- **Slug:** `reading_map.md` · **Type:** md · **Sidebar:** listed
+- **Source:** `14_Tracks/MS3/Student_Ready_Pack/03_weekly_map/week_by_week_reading_map.md`
+- **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
+- **Length:** 588 words
+
+<!-- topic_meta overlay -->
+#### Structured metadata (`topic_meta.json` → this page)
+
+> est. read 4 min
+
+**TL;DR (shown above the page text):**
+
+> Six weeks of suggested readings paired with one clinical skill and one observable task each week — a coverage map, not a reading list; nothing here should take longer than 20 minutes.
+
+**Key points (bulleted card):**
+
+- Each week has a small suggested core plus optional deeper resources — the weekly skill anchor is the clinical behavior you are building toward, not the reading itself.
+- Week 4 is the most reading-intensive, covering the Family Meeting Playbook, family therapy modalities, and the family/discharge module — reflecting this rotation's signature focus on family work.
+- Week 6 reading is deliberately light because the skill of the week is a full OSCE-style case presentation integrating everything from the prior five weeks.
+
+**Clinical-workflow narration (per-stage coaching text):**
+
+- **ask** — For the current week, identify the skill anchor, one patient-linked reading, and one observable task you can actually do on the unit.
+- **mse** — Use the weekly focus to decide what part of the MSE deserves extra attention this week.
+- **safety** — When a weekly task touches risk, capacity, withdrawal, delirium, catatonia, or family safety, do it with supervision rather than as a solo checklist.
+- **say** — This week I am practicing one clinical behavior, not trying to read everything.
+- **collateral** — Use the family/systems weeks to practice permission, baseline questions, and discharge feasibility with supervision.
+- **rounds** — Bring one weekly reading into rounds as a clinical question, not a literature summary.
+- **exam** — The reading map is a spaced sequence; pair each week with review cards or one question-bank session.
+- **actions** — Open Week 1; Open daily review
+
+**Cross-references and tagging:**
+
+- **Related tools:** `review.html`, `communication-practice.html`, `family-systems.html`
+- **Communication cases:** `guardedness_privacy_001`, `family_meeting_opening_001`, `collateral_questions_001`
+- **Workflow stages:** `encounter`, `communication`, `family`, `exam`
+- **Workflow modes:** `ward`, `family`, `5min`, `shelf`
+- **EPA crosswalk:** `EPA7`
+
+#### Page text (as shipped)
+
+# Week-by-Week Reading & Skills Map
+
+Design principle: suggested reading should be short enough to protect clinical learning. Most source material stays optional or faculty-facing. The weeks below match the six-week curriculum in the sidebar. Links open the matching page on this site.
+
+## Week 1 — Foundations & Orientation
+
+**Suggested**
+
+- [Orientation packet](?page=orientation.md).
+- [Interview / MSE pocket guide](?page=pg_interview.md).
+- [Suicide-risk & safety pocket card](?page=pg_suicide.md).
+- Week 1 safety recognition links: [Agitation & restraint](?page=agitation.md), [Delirium](?page=delirium.md), and the [Withdrawal (CIWA-Ar/COWS) teaching tool](?tool=withdrawal.html).
+- [One landmark summary — Engel biopsychosocial model](?page=landmark_trials.md).
+
+**Optional**
+
+- [Biopsychosocial formulation worksheet](?page=pg_formulation.md).
+- [Differential diagnosis scaffolds](?page=ddx.md).
+
+**Skill**
+
+Conduct a focused interview, present MSE findings, write an admission note, and name what safety finding would make you interrupt the usual workflow to get the resident or attending now.
+
+**Assignment**
+
+One de-identified MSE plus a one-paragraph formulation and one sentence that separates "routine follow-up" from "call now" safety escalation.
+
+## Week 2 — Mood, Psychosis & Pharmacology
+
+**Suggested**
+
+- [Mood disorders](?page=t_mood.md) and [Psychosis](?page=t_psychosis.md) teaching pages.
+- [Psychopharmacology primer](?page=psychopharm_primer.md).
+- [One psychopharm landmark — CATIE, STAR*D, STEP-BD, lithium/suicide, or clozapine](?page=landmark_trials.md).
+
+**Optional**
+
+- [Differential diagnosis scaffolds](?page=ddx.md).
+- Bush-Francis Catatonia Rating Scale (the BFCRS tool in the sidebar).
+
+**Skill**
+
+Explain why one medication fits the patient; recognize and score catatonia with the BFCRS.
+
+**Assignment**
+
+A treatment-rationale paragraph for a mood or psychosis patient.
+
+## Week 3 — Psychotherapy, Personality & the Relationship
+
+**Suggested**
+
+- [Supportive psychotherapy basics](?page=exp_tx.md).
+- [Personality disorders](?page=t_personality.md) teaching page.
+- [One psychotherapy landmark — Wampold common factors or Linehan DBT](?page=landmark_trials.md).
+
+**Optional**
+
+- [Motivational interviewing](?page=motivational_interviewing.md).
+- [Suicide-risk & safety pocket card](?page=pg_suicide.md).
+
+**Skill**
+
+Build a therapeutic alliance; complete a Stanley–Brown safety plan.
+
+**Assignment**
+
+A safety plan plus a brief therapy rationale.
+
+## Week 4 — Family, Systems & Expressed Emotion
+
+**Suggested**
+
+- [Family Meeting Playbook (90-min)](?page=family_playbook.md).
+- [Family therapy modalities](?page=family_modalities.md).
+- [Family & discharge module](?page=exp_family.md).
+
+**Optional**
+
+- [One family/EE landmark — Brown expressed emotion or Pharoah Cochrane family](?page=landmark_trials.md).
+- [Family-therapy inpatient evidence](?page=evidence_inpatient.md).
+
+**Skill**
+
+Prepare and co-facilitate a 90-minute family meeting; spot expressed emotion.
+
+**Assignment**
+
+A family-meeting agenda using synthetic or de-identified facts.
+
+## Week 5 — Acute & Emergency Psychiatry
+
+**Suggested**
+
+- [Consult module — capacity / delirium / catatonia / withdrawal](?page=exp_consult.md).
+- [Agitation & restraint](?page=agitation.md) with the Algorithms & Decision Aids tool.
+- [Violence risk](?tool=violence.html), [C-SSRS](?tool=cssrs.html), and [Withdrawal: CIWA-Ar/COWS](?tool=withdrawal.html) tools for supervised structured practice.
+
+**Optional**
+
+- Revisit the [Suicide-risk & safety pocket card](?page=pg_suicide.md) and [Delirium](?page=delirium.md) teaching page with a real patient presentation in mind.
+- [Stanley–Brown safety-planning summary](?page=landmark_trials.md).
+
+**Skill**
+
+Move beyond Week 1 recognition: formulate the likely driver, use least-restrictive de-escalation when safe, trend structured tools with supervision, and document why the plan did or did not escalate.
+
+**Assignment**
+
+A risk formulation plus a consult question.
+
+## Week 6 — Integration, Disposition & Exam Readiness
+
+**Suggested**
+
+- [OSCE station set](?page=osce.md).
+- [COMAT & shelf review guide](?page=shelf.md).
+- [Documentation & presenting guide](?page=doc_oral.md).
+
+**Optional**
+
+- [High-Yield Rounds Questions](?page=rounds_questions.md); the Daily Review and Shelf Mode tools.
+- [A Landmark Trials summary or audio of your choice](?page=landmark_trials.md).
+
+**Skill**
+
+Present a full case with formulation, risk reasoning, and a disposition plan.
+
+**Assignment**
+
+A final synthetic or de-identified case presentation and reflection.
+
+## Faculty Note
+
+If a reading takes longer than 20 minutes, assign a specific question — for example:
+
+- "Read for how this changes your risk formulation."
+- "Read for one medication adverse effect that matters inpatient."
+- "Read for one family-system variable to ask about on rounds."
+
+*Each week has a small suggested core, optional deeper resources, and one observable clinical skill — so the curriculum never becomes a document dump.*
+
+
+---
+
 ## Evidence-Based Inpatient Psychiatry
 
 - **Slug:** `evidence_inpatient.md` · **Type:** md · **Sidebar:** listed
@@ -1034,359 +1222,3 @@ Would you like to explore any of these domains in greater depth — for example,
 - **[A Beginner's Guide to the End](https://www.amazon.com/dp/1501157167)** — BJ Miller & Shoshana Berger. A practical, warm guide to preparing for end of life—covers medical decisions, paperwork, relationships, and finding peace in the process.
 
 *Joshua Moss, MD | Psychiatrist · Curated from the library book database. Educational; suggested reading, not required.*
-
-
----
-
-## Podcast Library (Psychiatry & Psychotherapy)
-
-- **Slug:** `podcast_library.md` · **Type:** md · **Sidebar:** listed
-- **Source:** `12_Media/psychiatry_psychotherapy_podcast_library.md`
-- **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
-- **Length:** 2,617 words
-
-<!-- topic_meta overlay -->
-#### Structured metadata (`topic_meta.json` → this page)
-
-> est. read 8 min
-
-**TL;DR (shown above the page text):**
-
-> Dr. David Puder's Psychiatry & Psychotherapy Podcast — 250+ episodes in 10 categories with YouTube links; start with the therapeutic alliance series (Ep. 28/32/36/62/69) and use the library as a point-of-care reference matched to your patient panel.
-
-**Key points (bulleted card):**
-
-- The Foundations section (38 episodes) covers psychiatric interview, therapeutic alliance, suicide, capacity, and Big Five personality — the highest-yield cluster for the clinical rotation.
-- Full episode pages and CME credit are available at psychiatrypodcast.com; YouTube links are provided for direct access without subscription or download.
-- Start with a patient in front of you and find the category that matches today's clinical question — use it as a point-of-care resource rather than listening linearly.
-
-**Clinical-workflow narration (per-stage coaching text):**
-
-- **ask** — Start from a live clinical question, then choose one short episode or clip that helps you ask a better question today.
-- **mse** — Use interview and alliance episodes to improve observation of affect, stance, defenses, rupture, and the patient's experience of the interview.
-- **safety** — Do not listen during patient care or use podcast content as a protocol; confirm safety and medication decisions with faculty and local standards.
-- **say** — Convert what you learn into one patient-centered phrase or one question you will try on the unit.
-- **collateral** — Use collateral-focused episodes to sharpen what you ask and what you avoid disclosing without consent.
-- **rounds** — Bring one concise learning point when it improves the assessment, formulation, or medication conversation.
-- **exam** — Use podcast notes as an entry point, then test yourself with active recall or the question bank.
-- **actions** — Practice a communication drill
-
-**Cross-references and tagging:**
-
-- **Related tools:** `review.html`, `communication-practice.html`, `oral.html`
-- **Communication cases:** `guardedness_privacy_001`, `medication_ambivalence_001`
-- **Workflow stages:** `communication`, `treatment`, `exam`
-- **Workflow modes:** `ward`, `5min`, `shelf`
-- **EPA crosswalk:** `EPA7`
-
-#### Page text (as shipped)
-
-# Psychiatry & Psychotherapy Podcast — Episode Library (categorized)
-
-> Dr. David Puder's **Psychiatry & Psychotherapy Podcast**, organized by topic from your podcast database. Items marked **▶ YouTube** link straight to the verified video; a few marked **▶ search channel** had no exact public-video match. Full episode pages + CME: [psychiatrypodcast.com](https://www.psychiatrypodcast.com/). Suggested listening, not required.
-
-## Foundations & the psychiatric interview  (38)
-- Episode 1: The Basics of the Psychiatric Interview — [▶ YouTube](https://www.youtube.com/watch?v=-9SekuYZ1_Y)
-- Episode 3: Psychopathy with Michael A. Cummings M.D. — [▶ YouTube](https://www.youtube.com/watch?v=rlBZ-jvXClw)
-- Episode 4: Inpatient Child and Adolescent Suicidality — [▶ YouTube](https://www.youtube.com/watch?v=AW8SLOXsWXk)
-- Episode 15: Microexpressions Part 1 — [▶ YouTube](https://www.youtube.com/watch?v=AkWMEe9pDCA)
-- Episode 16: Microexpressions Part 2 — [▶ YouTube](https://www.youtube.com/watch?v=jFhFcoVTZdI)
-- Episode 17: Microexpressions in Psychotherapy Part 3 — [▶ YouTube](https://www.youtube.com/watch?v=kb_cXrVFjsY)
-- Episode 28: Therapeutic Alliance Part 1 — [▶ YouTube](https://www.youtube.com/watch?v=AAl2JRBcoJc)
-- Episode 32: Therapeutic Alliance Part 2: Logotherapy — [▶ YouTube](https://www.youtube.com/watch?v=ezgEMZFR0LY)
-- Episode 36: Therapeutic Alliance Part 3: Empathy — [▶ YouTube](https://www.youtube.com/watch?v=-5IavceeEqU)
-- Episode 47: Schizophrenia Differential Diagnosis — [▶ YouTube](https://www.youtube.com/watch?v=C9AhzCcSbek)
-- Episode 54: Suicide Epidemiology and Prevention — [▶ YouTube](https://www.youtube.com/watch?v=_5ebgHRNmCw)
-- Episode 61: Involuntary Holds and Capacity — [▶ YouTube](https://www.youtube.com/watch?v=PSL5rF7UJdY)
-- Episode 62: Therapeutic Alliance Part 5: Emotion — [▶ YouTube](https://www.youtube.com/watch?v=CQgnLZ4c1bw)
-- Episode 68: IQ and Environmental Factors — [▶ YouTube](https://www.youtube.com/watch?v=-jmXWOCsXts)
-- Episode 69: Therapeutic Alliance Part 6: Attachment — [▶ YouTube](https://www.youtube.com/watch?v=ZBapSvanmMg)
-- Episode 82: Mental Pain and Suicidality — [▶ YouTube](https://www.youtube.com/watch?v=8jwrIf-s3v4)
-- Episode 92: Big Five Neuroticism Part 1 — [▶ YouTube](https://www.youtube.com/watch?v=kxGGuQgfBUk)
-- Episode 93: Forensic Pedophilia — [▶ YouTube](https://www.youtube.com/watch?v=fZ5CkBfuXbU)
-- Episode 95: Big Five Neuroticism Part 2 — [▶ YouTube](https://www.youtube.com/watch?v=t-rKwbtHF8k)
-- Episode 97: Big Five Conscientiousness Part 1 — [▶ YouTube](https://www.youtube.com/watch?v=Rb7JuaarA7s)
-- Episode 98: Big Five Openness — [▶ YouTube](https://www.youtube.com/watch?v=kE7UYVy7hPU)
-- Episode 100: Big Five Agreeableness — [▶ YouTube](https://www.youtube.com/watch?v=iMNk2Z7h_GM)
-- Episode 101: Big Five Extraversion — [▶ YouTube](https://www.youtube.com/watch?v=rsC9WT4K1LU)
-- Episode 103: Acceptance and Commitment Therapy — [▶ YouTube](https://www.youtube.com/watch?v=5TAYCeD1QGs)
-- Episode 114: Female Psychopathy — [▶ YouTube](https://www.youtube.com/watch?v=7c3SwebWYtQ)
-- Episode 116: Psychopathy Expert Interview — [▶ YouTube](https://www.youtube.com/watch?v=Mgw9rHHjjqg)
-- Episode 118: Microexpressions for Empathy — [▶ YouTube](https://www.youtube.com/watch?v=jEOU_ukX61s)
-- Episode 166: Identifying Malingering — [▶ YouTube](https://www.youtube.com/watch?v=RpFBtfFezEY)
-- Episode 171: Nancy McWilliams Interview — [▶ YouTube](https://www.youtube.com/watch?v=b1M2RBvHMhM)
-- Episode 195: Robert Sapolsky Interview — [▶ YouTube](https://www.youtube.com/watch?v=BxpKp0Zp6OA)
-- Episode 197: Eating Disorders Medical Care — [▶ YouTube](https://www.youtube.com/watch?v=dZOH0jbPXo4)
-- Episode 199: Motivational Interviewing — [▶ YouTube](https://www.youtube.com/watch?v=FpnaJFStVGQ)
-- Episode 203: Adverse Childhood Experiences — [▶ YouTube](https://www.youtube.com/watch?v=TuAJ__CrMaE)
-- Episode 204: ACEs Part 2 — [▶ YouTube](https://www.youtube.com/watch?v=xMkt1WyZzAw)
-- Episode 207: 5 Domains of Psychiatric Care — [▶ YouTube](https://www.youtube.com/watch?v=3EZEnMDduQs)
-- Episode 213: Reflective Functioning — [▶ YouTube](https://www.youtube.com/watch?v=zleBvvm5kfU)
-- Episode 215: Complex PTSD vs BPD — [▶ YouTube](https://www.youtube.com/watch?v=OXDDY5vsm2g)
-- Episode 217: ACEs and Brain Changes — [▶ YouTube](https://www.youtube.com/watch?v=kxSSwesz7oQ)
-
-## Psychotherapy process — transference & dynamics  (25)
-- Episode 21: How to Fix Emotional Detachment — [▶ YouTube](https://www.youtube.com/watch?v=4wM_cw7qY5A)
-- Episode 29: What is Psychodynamic Theory? — [▶ YouTube](https://www.youtube.com/watch?v=nYk2C42WHgY)
-- Episode 41: Transference and Countertransference — [▶ YouTube](https://www.youtube.com/watch?v=Xxa7-tC-ypM)
-- Episode 50: The Process of Grief — [▶ YouTube](https://www.youtube.com/watch?v=qvXptukXxOc)
-- Episode 87: Disorganized Attachment Part 1 — [▶ YouTube](https://www.youtube.com/watch?v=ZS45l18sWAg)
-- Episode 88: Disorganized Attachment Part 2 — [▶ YouTube](https://www.youtube.com/watch?v=Y3eW7mvX4f0)
-- Episode 144: Psychodynamic Therapy Evidence — [▶ YouTube](https://www.youtube.com/watch?v=Wxmzk8IE0ew)
-- Episode 164: Listening Psychodynamically — [▶ YouTube](https://www.youtube.com/watch?v=8PKUD6XVHz4)
-- Episode 168: Obsessive-Compulsive Personality — [▶ YouTube](https://www.youtube.com/watch?v=4ZRLXSZZECo)
-- Episode 170: Using Transference — [▶ YouTube](https://www.youtube.com/watch?v=nEw449ACUUo)
-- Episode 185: Narcissism with Shedler — [▶ YouTube](https://www.youtube.com/watch?v=KZSD3lauzDo)
-- Episode 194: Emotionally Focused Therapy — [▶ YouTube](https://www.youtube.com/watch?v=wwXroEAMbOU)
-- Episode 198: Connection in Medical Education — [▶ YouTube](https://www.youtube.com/watch?v=QYEf5vbfDWo)
-- Episode 205: Beginning Treatment — [▶ YouTube](https://www.youtube.com/watch?v=puddZhRgRNI)
-- Episode 209: Cognitive Processing Therapy — [▶ YouTube](https://www.youtube.com/watch?v=-cOXrHsp0Js)
-- Episode 220: Writing for Trauma Healing — [▶ YouTube](https://www.youtube.com/watch?v=Zk281N43rt8)
-- Episode 222: Paul Wachtel on Attachment — [▶ YouTube](https://www.youtube.com/watch?v=SloGQ88Bi6E)
-- Episode 231: BPD Splitting and Identity — [▶ search channel](https://www.youtube.com/@psychiatrypsychotherapy6939/search?query=Psychiatry+Psychotherapy+Podcast+Episode+231%3A+BPD+Splitting+and+Identity)
-- Episode 234: Transference Focused Psychotherapy — [▶ YouTube](https://www.youtube.com/watch?v=uyPquOVhO-c)
-- Episode 239: Transference Focused Psychotherapy & Personality Disorders with Dr. Otto Kernberg — [▶ YouTube](https://www.youtube.com/watch?v=uyPquOVhO-c)
-- Episode 242: The Bear - Trauma, Personality, and Attachment with Dr. Eric Bender and Dr. David Puder — [▶ YouTube](https://www.youtube.com/watch?v=IewBzMztsB4)
-- Episode 244: Psychodynamic Psychopharmacology - Insights from Dr. David Mintz — [▶ YouTube](https://www.youtube.com/watch?v=kqRlbzU3ukw)
-- Episode 249: Intergenerational Trauma Explained - The Role of Reflective Function and Mentalization in Healing Attachment — [▶ YouTube](https://www.youtube.com/watch?v=2S9wXrEJOIY)
-- Episode 250: Devaluation, Transference, Narcissism with Diana Diamond — [▶ YouTube](https://www.youtube.com/watch?v=oy-2eDCZaQY)
-- Episode 254: Countertransference and Transference with Frank Yeomans, MD — [▶ YouTube](https://www.youtube.com/watch?v=P3nUeqD7l0Q)
-
-## Trauma & PTSD  (9)
-- Episode 23: Emotional Shutdown - Polyvagal Theory — [▶ YouTube](https://www.youtube.com/watch?v=dVrT_QqqyZs)
-- Episode 27: How to Treat Emotional Trauma — [▶ YouTube](https://www.youtube.com/watch?v=CRwlo7AP4tc)
-- Episode 43: How to Help Patients with Sexual Abuse — [▶ YouTube](https://www.youtube.com/watch?v=W_K1Rcx4XWA)
-- Episode 48: The Unspeakable Mind - PTSD — [▶ YouTube](https://www.youtube.com/watch?v=MTSvqVNgZy0)
-- Episode 83: Racism and Trauma — [▶ YouTube](https://www.youtube.com/watch?v=bnAd_LfHRj0)
-- Episode 177: Anxiety Leading to Growth — [▶ YouTube](https://www.youtube.com/watch?v=mzEfyoTL_2M)
-- Episode 188: Depersonalization and Derealization — [▶ YouTube](https://www.youtube.com/watch?v=Vj-Z9du3gJg)
-- Episode 212: Bruce Perry on Trauma — [▶ YouTube](https://www.youtube.com/watch?v=wH24aM-enzc)
-- Episode 246: Cannabis and Depression, Anxiety, PTSD, Sleep, and Cognitive Function Update and Review — [▶ YouTube](https://www.youtube.com/watch?v=lnbindCcQbM)
-
-## Mood & bipolar; suicide  (28)
-- Episode 2: Cognitive Distortions and Practicing Truth — [▶ YouTube](https://www.youtube.com/watch?v=-KqHdPspSYo)
-- Episode 10: Exercise as a Prescription for Depression — [▶ YouTube](https://www.youtube.com/watch?v=s9yJsv6O3yQ)
-- Episode 13: Postpartum Depression — [▶ YouTube](https://www.youtube.com/watch?v=KIeGlbrqfJM)
-- Episode 14: Hormonal Contraceptives and Mental Health — [▶ YouTube](https://www.youtube.com/watch?v=Z_MRaEZ-4NI)
-- Episode 18: Prescribing Strength Training for Depression — [▶ YouTube](https://www.youtube.com/watch?v=NI9_MsKuUxc)
-- Episode 24: History and Use of Antidepressants — [▶ YouTube](https://www.youtube.com/watch?v=6-t8_RN2vX4)
-- Episode 25: The History and Nuances of Bipolar Illness — [▶ YouTube](https://www.youtube.com/watch?v=vBeB6V-KA70)
-- Episode 30: Ketamine and Psychedelics — [▶ YouTube](https://www.youtube.com/watch?v=KhLS5uPTeKQ)
-- Episode 33: Perinatal Mood and Anxiety Disorders — [▶ YouTube](https://www.youtube.com/watch?v=7TeeK8ruaA8)
-- Episode 39: Depression in Geriatric Patients — [▶ YouTube](https://www.youtube.com/watch?v=uoXypIuHpo0)
-- Episode 57: Why Lithium Works for Bipolar — [▶ YouTube](https://www.youtube.com/watch?v=-j67sto5OZs)
-- Episode 60: Genetics and Suicide — [▶ YouTube](https://www.youtube.com/watch?v=Dwu5TRhl2jA)
-- Episode 71: Valproic Acid Deep Dive — [▶ YouTube](https://www.youtube.com/watch?v=8dnqdB03bks)
-- Episode 75: Cancer and Mental Health — [▶ YouTube](https://www.youtube.com/watch?v=Ilv9OoMaZW4)
-- Episode 81: Unemployment Depression and Suicide — [▶ YouTube](https://www.youtube.com/watch?v=lGbKbeh4CwE)
-- Episode 91: Tricyclic Antidepressants — [▶ YouTube](https://www.youtube.com/watch?v=ClU2wUvw9wk)
-- Episode 96: Best Exercise for Depression — [▶ YouTube](https://www.youtube.com/watch?v=n1pxAsGo4Dw)
-- Episode 131: Diet for Depression and Anxiety — [▶ YouTube](https://www.youtube.com/watch?v=PCDuyanhr-w)
-- Episode 137: Ketamine Update — [▶ YouTube](https://www.youtube.com/watch?v=2mw7Fv8N-WU)
-- Episode 155: Is Depression Chemical Imbalance? — [▶ YouTube](https://www.youtube.com/watch?v=AnZ98Iq7CV4)
-- Episode 161: Conrad Roy Case Analysis — [▶ YouTube](https://www.youtube.com/watch?v=Ri3Z-2nLssk)
-- Episode 187: Best Diet for Mood Update — [▶ YouTube](https://www.youtube.com/watch?v=bLS8qhXGU5k)
-- Episode 201: Psychotic Depression — [▶ YouTube](https://www.youtube.com/watch?v=OoXGcXxvojQ)
-- Episode 230: Exercise vs Medications — [▶ YouTube](https://www.youtube.com/watch?v=AC3P-SrTj1M)
-- Episode 235: Serotonin Hypothesis Debate — [▶ YouTube](https://www.youtube.com/watch?v=zrHrjQOIqhw)
-- Episode 237: Ketogenic Diet Review and Update with Dr. Matt Bernstein — [▶ YouTube](https://www.youtube.com/watch?v=4AtMlzuqiRI)
-- Episode 238: Creatine for Mental Health — [▶ YouTube](https://www.youtube.com/watch?v=ZA9IqozNCFI)
-- Episode 241: Depressive Personality Style with Jonathan Shedler — [▶ YouTube](https://www.youtube.com/watch?v=J2TiCHMsOls)
-
-## Psychosis & schizophrenia  (19)
-- Episode 8: Schizophrenia with Dr. Cummings — [▶ YouTube](https://www.youtube.com/watch?v=Hoj5M5iDOn0)
-- Episode 20: The History and Use of Antipsychotics — [▶ YouTube](https://www.youtube.com/watch?v=bpAYy5Yf6ZA)
-- Episode 45: Schizophrenia in Film and History — [▶ YouTube](https://www.youtube.com/watch?v=IU_SSEt51AU)
-- Episode 46: Do I Have Schizophrenia? — [▶ YouTube](https://www.youtube.com/watch?v=Gp5kJdV6shc)
-- Episode 49: Clozapine for Treatment Resistant Schizophrenia — [▶ YouTube](https://www.youtube.com/watch?v=aRY_U-7K520)
-- Episode 70: Connecting with Psychotic Patients — [▶ YouTube](https://www.youtube.com/watch?v=i2CUaHlXtRw)
-- Episode 117: Psychotic Disorders Comorbidity — [▶ YouTube](https://www.youtube.com/watch?v=u-w8TrQY34A)
-- Episode 127: Antipsychotic Plasma Levels — [▶ YouTube](https://www.youtube.com/watch?v=ScTU1TaCH30)
-- Episode 129: Complex Psychosis Management — [▶ YouTube](https://www.youtube.com/watch?v=TW5RuzvZ4aw)
-- Episode 143: Schizophrenia Overdiagnosis in Black Patients — [▶ YouTube](https://www.youtube.com/watch?v=RPqWgAoaAlo)
-- Episode 167: Long-Acting Injectables — [▶ YouTube](https://www.youtube.com/watch?v=Qf53Cajvfbc)
-- Episode 180: Psychotherapy for Psychosis — [▶ YouTube](https://www.youtube.com/watch?v=2tW7YYRwyH8)
-- Episode 190: Schizophrenia Treatment Equity — [▶ YouTube](https://www.youtube.com/watch?v=p9rB9okhhS8)
-- Episode 211: Early Psychosis — [▶ YouTube](https://www.youtube.com/watch?v=Pw63OFaC4uQ)
-- Episode 229: Beyond Psychosis Myths — [▶ YouTube](https://www.youtube.com/watch?v=i0aiGArW9x4)
-- Episode 236: Clozapine Update — [▶ YouTube](https://www.youtube.com/watch?v=3nv3XLluQ1Q)
-- Episode 240: Cannabis and Psychosis - The Link Between THC Use and Mental Health Risks — [▶ YouTube](https://www.youtube.com/watch?v=cHez9-uS-8I)
-- Episode 252: Genetic and Environmental Influences of Schizophrenia — [▶ YouTube](https://www.youtube.com/watch?v=MZ90Gthvj8w)
-- Episode 253: AI Psychosis - Emerging Cases of Delusion Amplification Associated with ChatGPT and LLM Chatbot Use — [▶ YouTube](https://www.youtube.com/watch?v=CllJPWmm9So)
-
-## Anxiety, OCD & stress  (11)
-- Episode 12: Performance Enhancement — [▶ YouTube](https://www.youtube.com/watch?v=TMgZrh5KS7E)
-- Episode 22: The Psychology of Procrastination — [▶ YouTube](https://www.youtube.com/watch?v=UQEyqNDbMf0)
-- Episode 76: COVID-19 Mental Health — [▶ YouTube](https://www.youtube.com/watch?v=W6pNUNPZ7vs)
-- Episode 90: How to Rock the USMLE — [▶ YouTube](https://www.youtube.com/watch?v=kyJcF5GQLT8)
-- Episode 119: Obsessive Compulsive Disorder — [▶ search channel](https://www.youtube.com/@psychiatrypsychotherapy6939/search?query=Psychiatry+Psychotherapy+Podcast+Episode+119%3A+Obsessive+Compulsive+Disorder)
-- Episode 126: OCD Psychotherapy — [▶ search channel](https://www.youtube.com/@psychiatrypsychotherapy6939/search?query=Psychiatry+Psychotherapy+Podcast+Episode+126%3A+OCD+Psychotherapy)
-- Episode 169: Social Anxiety Treatment — [▶ YouTube](https://www.youtube.com/watch?v=4hR4UUz70KI)
-- Episode 178: Social Anxiety and Blushing — [▶ YouTube](https://www.youtube.com/watch?v=IC3HHazYINo)
-- Episode 228: OCD Treatment Guide — [▶ YouTube](https://www.youtube.com/watch?v=flP_z4XByk4)
-- Episode 245: Regulating Our Emotions as Parents with Alissa Jerud, PhD — [▶ YouTube](https://www.youtube.com/watch?v=9CalH5Qzc-Y)
-- Episode 248: Understanding Real Event OCD - When the Past Fuels Obsession — [▶ YouTube](https://www.youtube.com/watch?v=bYZwFZ4ZKGs)
-
-## Personality  (9)
-- Episode 38: The Dark Triad — [▶ YouTube](https://www.youtube.com/watch?v=06zorLRqk8o)
-- Episode 115: Borderline Personality Disorder Overview — [▶ YouTube](https://www.youtube.com/watch?v=dfSLHXaPTek)
-- Episode 130: Schema Therapy for BPD — [▶ YouTube](https://www.youtube.com/watch?v=AOJaCM-GiMo)
-- Episode 140: BPD Common Factors — [▶ YouTube](https://www.youtube.com/watch?v=VE8ObBUp96c)
-- Episode 148: Karen Horney — [▶ YouTube](https://www.youtube.com/watch?v=AiuntNGdc10)
-- Episode 206: Mentalization-Based Therapy — [▶ YouTube](https://www.youtube.com/watch?v=OlaHnCCi8kE)
-- Episode 224: BPD Medications and Treatment — [▶ YouTube](https://www.youtube.com/watch?v=EOQXLFdzCUU)
-- Episode 227: Mentalization for Narcissism — [▶ YouTube](https://www.youtube.com/watch?v=fJ3fVZ0GegI)
-- Episode 247: Identity Diffusion Borderline Personality Organization — [▶ YouTube](https://www.youtube.com/watch?v=4pR4E8s0dgQ)
-
-## Substance use & addiction  (6)
-- Episode 11: Sensorium Part 4: Medications and Substances — [▶ YouTube](https://www.youtube.com/watch?v=VwU8bQpofiE)
-- Episode 66: Fentanyl and the Opioid Crisis — [▶ YouTube](https://www.youtube.com/watch?v=7ZiJKV-sy9Q)
-- Episode 133: Blitzed - Drugs in Nazi Germany — [▶ YouTube](https://www.youtube.com/watch?v=8FpRSd0YQOo)
-- Episode 181: Alcohol Use Disorder — [▶ YouTube](https://www.youtube.com/watch?v=W5-dbQFqVbs)
-- Episode 182: Opioid Use Disorder — [▶ YouTube](https://www.youtube.com/watch?v=6tLzBZNTvZA)
-- Episode 193: Buprenorphine Management — [▶ YouTube](https://www.youtube.com/watch?v=YhKvhaQwUs4)
-
-## Psychopharmacology  (20)
-- Episode 19: How Psychiatric Medications Work — [▶ YouTube](https://www.youtube.com/watch?v=if5eQeIMcEw)
-- Episode 34: Understanding Placebo — [▶ YouTube](https://www.youtube.com/watch?v=OLQb-WVfitw)
-- Episode 35: ADHD Diagnosis and Treatment — [▶ YouTube](https://www.youtube.com/watch?v=-6aVGlYUBas)
-- Episode 58: Lithium Monitoring and Side Effects — [▶ search channel](https://www.youtube.com/@psychiatrypsychotherapy6939/search?query=Psychiatry+Psychotherapy+Podcast+Episode+058%3A+Lithium+Monitoring+and+Side+Effects)
-- Episode 102: Anticholinergic Burden — [▶ YouTube](https://www.youtube.com/watch?v=K_e_aKu2Wu0)
-- Episode 106: Psilocybin Therapy Part 2 — [▶ YouTube](https://www.youtube.com/watch?v=XC7KP43U3DY)
-- Episode 109: SNRIs Deep Dive Part 1 — [▶ YouTube](https://www.youtube.com/watch?v=MsOVGtstdEM)
-- Episode 112: SNRIs Deep Dive Part 2 — [▶ YouTube](https://www.youtube.com/watch?v=5a8BdHV9Go0)
-- Episode 124: Sleep Medications and Insomnia — [▶ YouTube](https://www.youtube.com/watch?v=yXJxkQqXRtY)
-- Episode 132: Practical Psychopharmacology — [▶ YouTube](https://www.youtube.com/watch?v=W1XhEaBLnZI)
-- Episode 141: Psychopharmacology Mediators — [▶ YouTube](https://www.youtube.com/watch?v=jmrOCOOEEjA)
-- Episode 145: Managing Inpatient Aggression — [▶ YouTube](https://www.youtube.com/watch?v=5CwSReUrvjY)
-- Episode 152: ECT Efficacy and Controversies — [▶ YouTube](https://www.youtube.com/watch?v=QynkM07nvk0)
-- Episode 157: Polypharmacy in Psychiatry — [▶ YouTube](https://www.youtube.com/watch?v=s-N87s9VJ0s)
-- Episode 174: Serotonin Syndrome — [▶ YouTube](https://www.youtube.com/watch?v=T2zOj6S72bs)
-- Episode 183: Emerging Drugs — [▶ YouTube](https://www.youtube.com/watch?v=0lQlRRSOiZM)
-- Episode 184: Pregnancy and Psych Meds — [▶ YouTube](https://www.youtube.com/watch?v=ba8MyUs3I2g)
-- Episode 210: Q&A with Dr. Cummings — [▶ YouTube](https://www.youtube.com/watch?v=FOlmOKGCBIE)
-- Episode 214: Q&A Part 2 — [▶ YouTube](https://www.youtube.com/watch?v=KgrpJEcExps)
-- Episode 223: Weight Gain from Psych Meds — [▶ YouTube](https://www.youtube.com/watch?v=JMHLFLCU7Qc)
-
-## Neuroscience & the brain  (12)
-- Episode 6: Sensorium Part 1: Total Brain Function Optimization — [▶ YouTube](https://www.youtube.com/watch?v=HKzGWEZLbe0)
-- Episode 9: Diet Optimization for Cognitive Function — [▶ YouTube](https://www.youtube.com/watch?v=d-4jH4ftszg)
-- Episode 53: Frontal Lobe Damage — [▶ YouTube](https://www.youtube.com/watch?v=3nvjTIl3kcw)
-- Episode 56: Neuralink and Mental Health — [▶ YouTube](https://www.youtube.com/watch?v=PhxZ33kAhMI)
-- Episode 73: Catatonia Diagnosis and Treatment — [▶ YouTube](https://www.youtube.com/watch?v=lwOHZfRYw8c)
-- Episode 78: COVID-19 and the Brain — [▶ YouTube](https://www.youtube.com/watch?v=FUw6b_QZW2s)
-- Episode 134: Strengths of Dyslexia — [▶ YouTube](https://www.youtube.com/watch?v=DBReAcmaXcE)
-- Episode 139: Affective Neuroscience — [▶ YouTube](https://www.youtube.com/watch?v=hTmUZF2zJrk)
-- Episode 153: Consciousness and Emotion — [▶ YouTube](https://www.youtube.com/watch?v=G70CLtf2RYo)
-- Episode 165: Exercise for the Brain — [▶ YouTube](https://www.youtube.com/watch?v=NdNJ7F8bmdo)
-- Episode 232: Cold Exposure Benefits — [▶ YouTube](https://www.youtube.com/watch?v=Xnvy6MA4jGY)
-- Episode 243: Catatonia in Children and Teens — [▶ YouTube](https://www.youtube.com/watch?v=nZCav67MXBs)
-
-## Child, adolescent & development  (9)
-- Episode 5: A Journey Learning Psychotherapy — [▶ YouTube](https://www.youtube.com/watch?v=orJL8LrK8FA)
-- Episode 94: Oversexualization of Children — [▶ YouTube](https://www.youtube.com/watch?v=W1YeewVRSsU)
-- Episode 99: Big Five Conscientiousness Part 2 — [▶ YouTube](https://www.youtube.com/watch?v=QsbuCMJs56o)
-- Episode 110: Hero's Journey for Professionals — [▶ YouTube](https://www.youtube.com/watch?v=XX-eDb6JLjY)
-- Episode 136: Turn Autism Around — [▶ YouTube](https://www.youtube.com/watch?v=fmVaXoLwfaY)
-- Episode 159: Parental Alienation — [▶ YouTube](https://www.youtube.com/watch?v=y5HOCMWYjtY)
-- Episode 162: The Autism Wave — [▶ YouTube](https://www.youtube.com/watch?v=UlmNqJqEC-Y)
-- Episode 175: IOP for Psychosomatic Illness — [▶ YouTube](https://www.youtube.com/watch?v=WddsbY7QQa8)
-- Episode 225: Inside Out 2 Psychology — [▶ YouTube](https://www.youtube.com/watch?v=IaRSIGa_pDs)
-
-## Clinician wellbeing & professional growth  (7)
-- Episode 7: Physicians Receiving Treatment — [▶ YouTube](https://www.youtube.com/watch?v=LK3y3Hef84I)
-- Episode 42: The Science Behind Forgiveness — [▶ YouTube](https://www.youtube.com/watch?v=101PWhbQaSQ)
-- Episode 80: Meaning in Crisis — [▶ YouTube](https://www.youtube.com/watch?v=GSNxceY-JoE)
-- Episode 135: From Survive to Thrive — [▶ YouTube](https://www.youtube.com/watch?v=7yHOrRleEOo)
-- Episode 173: Real Self-Care — [▶ YouTube](https://www.youtube.com/watch?v=yVHeHCaNPzs)
-- Episode 219: Eating Disorders Psychology — [▶ YouTube](https://www.youtube.com/watch?v=6xl4b2v538o)
-- Episode 226: Healthcare Burnout — [▶ YouTube](https://www.youtube.com/watch?v=LDFch7RSSyY)
-
-## Other & special topics  (52)
-- Episode 26: Setting Boundaries in Relationships — [▶ YouTube](https://www.youtube.com/watch?v=BCf6x9FmZ-Q)
-- Episode 31: Psychiatric Approach to Delirium — [▶ YouTube](https://www.youtube.com/watch?v=bsOt4z33PNU)
-- Episode 37: How to Treat Violent Patients — [▶ YouTube](https://www.youtube.com/watch?v=QTwzuuF1hP4)
-- Episode 40: Reducing Inpatient Violence — [▶ YouTube](https://www.youtube.com/watch?v=MiuULzAdls4)
-- Episode 51: Eating Disorders Overview — [▶ YouTube](https://www.youtube.com/watch?v=ZZgEz8c_NzI)
-- Episode 52: Psychodermatology — [▶ YouTube](https://www.youtube.com/watch?v=9zMi8Yba8oc)
-- Episode 55: How to Pick a Good Therapist — [▶ YouTube](https://www.youtube.com/watch?v=f2LR9LADvOI)
-- Episode 59: Foods for Mental Health — [▶ YouTube](https://www.youtube.com/watch?v=yhtDEu4FA2g)
-- Episode 65: Is Social Media Good for Mental Health — [▶ YouTube](https://www.youtube.com/watch?v=ISGpNJnImPM)
-- Episode 67: Joker Character Analysis — [▶ YouTube](https://www.youtube.com/watch?v=_xv240cm_to)
-- Episode 72: Violence and Mental Illness — [▶ YouTube](https://www.youtube.com/watch?v=F61IriYEyRQ)
-- Episode 77: Getting Better Therapy Results — [▶ YouTube](https://www.youtube.com/watch?v=gdhg97_RKwQ)
-- Episode 79: Tough Conversations in COVID-19 — [▶ YouTube](https://www.youtube.com/watch?v=gsI3fw8fj-U)
-- Episode 84: Free Will in Psychiatry Part 1 — [▶ YouTube](https://www.youtube.com/watch?v=N9gYwgMkT-k)
-- Episode 85: Free Will Part 2 — [▶ YouTube](https://www.youtube.com/watch?v=zxM9opzlycI)
-- Episode 86: Free Will Part 3 — [▶ YouTube](https://www.youtube.com/watch?v=4HRjlTn1adM)
-- Episode 89: How to Retire Happy — [▶ search channel](https://www.youtube.com/@psychiatrypsychotherapy6939/search?query=Psychiatry+Psychotherapy+Podcast+Episode+089%3A+How+to+Retire+Happy)
-- Episode 104: Psilocybin Therapy Part 1 — [▶ YouTube](https://www.youtube.com/watch?v=6atRgjYIip0)
-- Episode 105: Vulnerability and Imposter Syndrome — [▶ YouTube](https://www.youtube.com/watch?v=LqA5PPtoFkY)
-- Episode 107: Hero's Journey — [▶ YouTube](https://www.youtube.com/watch?v=cWXrKYqRUUE)
-- Episode 113: Man's Search for Meaning — [▶ YouTube](https://www.youtube.com/watch?v=r_cm4K8hzZk)
-- Episode 120: Marcus Aurelius Meditations — [▶ YouTube](https://www.youtube.com/watch?v=-qsiRkjzjNM)
-- Episode 121: Britney Spears Conservatorship — [▶ YouTube](https://www.youtube.com/watch?v=KKpTQIgj_EE)
-- Episode 122: Alzheimer's Dementia — [▶ YouTube](https://www.youtube.com/watch?v=4qGRGtiuIDg)
-- Episode 123: Mass Shootings Research — [▶ YouTube](https://www.youtube.com/watch?v=9EQ6XjSZOiE)
-- Episode 125: Treating VIP Patients — [▶ YouTube](https://www.youtube.com/watch?v=WFzhMU2z7Pw)
-- Episode 128: Crime and Punishment — [▶ YouTube](https://www.youtube.com/watch?v=eGefv4fjE20)
-- Episode 138: Spiritual Struggles in Therapy — [▶ YouTube](https://www.youtube.com/watch?v=K4ZULYyJTJI)
-- Episode 142: Exercise as Medicine — [▶ YouTube](https://www.youtube.com/watch?v=YQrhLzKcDW4)
-- Episode 150: Couples Therapy Approaches — [▶ YouTube](https://www.youtube.com/watch?v=KQ8d_fxKIbw)
-- Episode 151: Learning Psychotherapy — [▶ YouTube](https://www.youtube.com/watch?v=NAjJP_recak)
-- Episode 154: Integrating Psychotherapy — [▶ YouTube](https://www.youtube.com/watch?v=p2XkYUZRsJ0)
-- Episode 156: What Causes Mass Shootings — [▶ YouTube](https://www.youtube.com/watch?v=ojyFnZG-loc)
-- Episode 158: Obesity and Weight Loss — [▶ YouTube](https://www.youtube.com/watch?v=tmCH6ti1K2c)
-- Episode 160: Psychology of Catfishing — [▶ YouTube](https://www.youtube.com/watch?v=VPrysQ-XT3c)
-- Episode 163: Ketogenic Diet for Mental Health — [▶ YouTube](https://www.youtube.com/watch?v=T89FWNZjKcM)
-- Episode 172: Ancient Prisons — [▶ YouTube](https://www.youtube.com/watch?v=IeahWYAoCW8)
-- Episode 176: Microdosing Psychedelics — [▶ YouTube](https://www.youtube.com/watch?v=e4l1TiKnX9s)
-- Episode 179: Exercise Mental Health Update — [▶ YouTube](https://www.youtube.com/watch?v=2yU-mVntcnk)
-- Episode 186: Deliberate Practice in Therapy — [▶ YouTube](https://www.youtube.com/watch?v=0EiwZRdnIx4)
-- Episode 189: Non-Violent Communication — [▶ search channel](https://www.youtube.com/@psychiatrypsychotherapy6939/search?query=Psychiatry+Psychotherapy+Podcast+Episode+189%3A+Non-Violent+Communication)
-- Episode 191: Body Dysmorphic Disorder — [▶ YouTube](https://www.youtube.com/watch?v=gOdvEPQs-d4)
-- Episode 196: Resisting Conformity — [▶ YouTube](https://www.youtube.com/watch?v=1LlxOHciMZg)
-- Episode 200: 200 Episodes Milestone — [▶ YouTube](https://www.youtube.com/watch?v=zmXNSMvKn_Y)
-- Episode 202: CBT with Judith Beck — [▶ YouTube](https://www.youtube.com/watch?v=hTFPAO8bwYM)
-- Episode 208: What People Want From Therapy — [▶ YouTube](https://www.youtube.com/watch?v=qWlY0t_quLo)
-- Episode 216: Shrink Next Door Analysis — [▶ YouTube](https://www.youtube.com/watch?v=1KzTqSTSDoo)
-- Episode 218: The Goldwater Rule — [▶ YouTube](https://www.youtube.com/watch?v=DCKRQ0zC7Qk)
-- Episode 221: Sauna and Mental Health — [▶ YouTube](https://www.youtube.com/watch?v=WFqL8Yf-_go)
-- Episode 233: Therapy Termination — [▶ YouTube](https://www.youtube.com/watch?v=uvtw_zsSDjw)
-- Episode 251: Combatting the Negative Effects of Sleep Deprivation — [▶ YouTube](https://www.youtube.com/watch?v=WPbIGywn-MI)
-- Episode 255: Disavowed Anger and Positive Emotions with Paul Wachtel — [▶ YouTube](https://www.youtube.com/watch?v=5TQKQslAFmA)
-
-*Joshua Moss, MD | Psychiatrist · Built from the library podcast database; exact video links resolved against the show's YouTube channel. Educational; suggested listening.*
-
-
----
-
-# SECTION: Feedback
-
----
-
-## Improve this library — send feedback
-
-- **Slug:** `feedback.html` · **Type:** tool · **Sidebar:** listed
-- **Source:** `13_Faculty_Resources/Feedback/feedback.html`
-- **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
-
-#### Tool — clinical content
-
-_These tools are single-file HTML that render from inline JS data, so the clinical text below is recovered from the tool's own string literals. Ordering follows the file, not the runtime flow._
-
-**Static shell text:**
-
-- Feedback on the library Reviewed by Joshua Moss, MD on 2026-07-05
-- Skip to content ψ
-- Improve this library
-- Feedback on the site · Joshua Moss, MD
-- Tell me what helped, what was confusing, a broken link, or a resource worth adding. This shapes what gets built next.
-- About the learning site only — not your preceptor and not any patient. Please include no patient information (PHI) . For feedback about the rotation or clinical supervision, use your school's official evaluation.
-- Leave blank:
-- Which page or part of the library? Type of feedback This was helpful Confusing or unclear Broken link or error Missing content — suggest a resource Idea / other How useful was this? (optional) 1 2 3 4 5
-- Your feedback * You are (optional) Prefer not to say MS3 student Resident Faculty / other Name or email (optional — leave blank to stay anonymous) Send feedback Goes privately to Dr. Moss. Anonymous unless you add your name.
-- Something went wrong sending that. Please try again, or email jmoss333@gmail.com.
-- Thank you — that helps.
-- Your feedback shapes what gets built and fixed next.
-- Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.

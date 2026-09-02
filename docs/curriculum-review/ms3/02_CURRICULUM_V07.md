@@ -6,6 +6,120 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 
 ---
 
+## Motivational Interviewing
+
+- **Slug:** `motivational_interviewing.md` · **Type:** md · **Sidebar:** listed
+- **Source:** `06_Family_and_Relational/motivational_interviewing_inpatient_teaching.md`
+- **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
+- **Length:** 533 words
+
+<!-- topic_meta overlay -->
+#### Structured metadata (`topic_meta.json` → this page)
+
+> est. read 4 min
+
+**TL;DR (shown above the page text):**
+
+> Resist the righting reflex — people talk themselves into change. Use OARS to evoke the patient's own reasons, listen for change talk, and reflect it back instead of arguing.
+
+**Key points (bulleted card):**
+
+- PACE spirit: Partnership, Acceptance, Compassion, Evocation — work with the patient, not on them.
+- OARS moves: Open questions, Affirmations, Reflections, Summaries — reflecting change talk does the heavy lifting.
+- Readiness ruler: 'You said 4 — why not a 2?' forces the patient to voice their own reasons for change.
+
+**Can't-miss / red-flag line:**
+
+> Arguing for change (the righting reflex) reliably produces sustain talk — the harder you push, the more the patient defends the status quo.
+
+**Clinical-workflow narration (per-stage coaching text):**
+
+- **ask** — Ask permission before advice: what matters, what worries them, and what would make change feel worth it.
+- **mse** — Listen for ambivalence, sustain talk, change talk, affective tone, and whether the patient feels judged or understood.
+- **safety** — If ambivalence involves suicide, violence, withdrawal, intoxication, medication refusal, or discharge risk, escalate the safety question rather than treating it as routine counseling.
+- **say** — Part of you sees a reason to change, and part of you has good reasons to hesitate. What feels most important right now?
+- **collateral** — With permission, ask supports what helps engagement and what conversations predict shutdown, relapse, or nonadherence.
+- **rounds** — Name the patient's own change language and the next collaborative option; do not present motivation as a fixed trait.
+- **exam** — MI answers reflect, evoke, and ask permission; directive confrontation is usually the trap.
+- **actions** — Practice medication ambivalence; Open Substance Use topic
+
+**Embedded check-for-understanding**
+
+1. *Stem:* A patient admitted after his second alcohol-related hospitalization says, 'I'm not an alcoholic.' Which response is most consistent with motivational interviewing?
+   - 'The labs and your history clearly meet criteria for alcohol use disorder.'
+   - 'That label doesn't fit you. And the drinking has landed you here twice this year — what's your read on that?' **← keyed correct**
+   - 'You need to stop drinking or you'll be back a third time.'
+   - 'Let's move on to something you're more comfortable discussing.'
+   - *Rationale:* A reflection plus a neutral fact and an open question sidesteps the argument and invites change talk. Quoting criteria or issuing warnings is the righting reflex and evokes sustain talk; dropping the subject avoids the conversation the patient actually needs.
+
+**Cross-references and tagging:**
+
+- **Related tools:** `communication-practice.html`
+- **Communication cases:** `medication_ambivalence_001`
+- **Workflow stages:** `communication`, `treatment`
+- **Workflow modes:** `ward`, `family`, `5min`
+- **Shelf blueprint tags:** `relational`
+- **EPA crosswalk:** `EPA9`
+- **Call-to-action buttons:** Open the Substance Use topic; Practice medication ambivalence
+
+#### Page text (as shipped)
+
+# Motivational Interviewing — A Student's Quick Guide
+
+
+**For:** MS3 on the unit. MI is named in the clerkship objectives (psychotherapy principles + applying basic MI). It's the highest-yield communication skill you can practice this rotation — for substance use, medication adherence, and any "I don't want to change" conversation. Educational scaffold; fictional examples only.
+
+## The one idea
+People talk themselves into change. Your job is **not** to supply the arguments (the "righting reflex" — resist it) but to *evoke* the patient's own reasons. Pushing usually produces **sustain talk**; curiosity produces **change talk**.
+
+## The spirit — PACE
+- **Partnership** — work *with*, not *on*, the patient.
+- **Acceptance** — respect autonomy and worth; affirm strengths.
+- **Compassion** — act in their best interest.
+- **Evocation** — draw out their motivations rather than installing yours.
+
+## The four processes
+1. **Engaging** — build the relationship ("What matters most to you right now?").
+2. **Focusing** — agree on a target ("Would it be OK to talk about your drinking?").
+3. **Evoking** — elicit change talk (the heart of MI).
+4. **Planning** — only when readiness is there; build a concrete next step.
+
+## Your core moves — OARS
+- **Open questions** — "What worries you about your blood pressure and the alcohol?"
+- **Affirmations** — name a real strength: "You came in on your own — that took resolve."
+- **Reflections** — mirror meaning, especially change talk: "Part of you is tired of feeling this way."
+- **Summaries** — gather the change talk back to them: "So you're frustrated, your family's worried, and you've quit before — what's the next small step?"
+
+## Listen for change talk — DARN-CAT
+Preparatory: **D**esire, **A**bility, **R**easons, **N**eed. Mobilizing: **C**ommitment, **A**ctivation, **T**aking steps. When you hear it, **reflect and reinforce it** — don't rush past it.
+
+## A 30-second tool: the readiness ruler
+"On a 0–10 scale, how important is changing this? … You said 4 — why not a 2?" (forces change talk) … "What would move you from a 4 to a 6?" Repeat for **confidence**.
+
+## Sample inpatient snippet (composite)
+> **Student:** "Would it be OK to talk about the drinking before discharge?"
+> **Patient:** "I'm not an alcoholic."
+> **Student:** "That label doesn't fit you. *(reflection)* And the drinking has landed you here twice this year. *(no argument — just the fact)* What's your read on that?"
+> **Patient:** "…I guess I don't want a third time."
+> **Student:** "You don't want a third time. *(reflect change talk)* What's one thing that might lower the odds?"
+
+## Practice What To Say Next
+
+Use the communication practice tool to rehearse
+[medication ambivalence without the persuasion reflex](?tool=communication-practice.html&case=medication_ambivalence_001).
+Listen for sustain talk, reflect the concern, and ask what would make the
+choice feel workable to the patient.
+
+## Where it fits
+Substance use, medication adherence, lifestyle/metabolic change, follow-up engagement. It pairs with — not replaces — diagnosis-specific treatment.
+
+**Pair with** — the [Substance Use teaching page](?page=t_sud.md), [Treatment Basics](?page=exp_tx.md), the [Nutrition & Metabolic Health page](?page=nutrition_metabolic.md), and the Project MATCH / Miller & Rollnick entries on the [Landmark Trials](?page=landmark_trials.md) page.
+
+*Joshua Moss, MD | Psychiatrist · Educational scaffold; not a substitute for supervised practice. Fictional composites; no PHI.*
+
+
+---
+
 ## Brief Psychotherapy on the Unit
 
 - **Slug:** `brief_psychotherapy.md` · **Type:** md · **Sidebar:** listed
@@ -1199,263 +1313,3 @@ Multipartiality over neutrality ("not a courtroom; multiple truths") · the **tr
 ---
 
 # SECTION: Present and Work with the Team
-
----
-
-## Documentation & Oral Presentation
-
-- **Slug:** `doc_oral.md` · **Type:** md · **Sidebar:** listed
-- **Source:** `14_Tracks/MS3/Student_Ready_Pack/05_documentation_oral_presentation/student_documentation_and_oral_presentations.md`
-- **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 817 words
-
-<!-- topic_meta overlay -->
-#### Structured metadata (`topic_meta.json` → this page)
-
-> est. read 5 min
-
-**TL;DR (shown above the page text):**
-
-> Write notes and give presentations that reveal reasoning — every note should let the next clinician know what you are treating, what else it could be, what the risk is today, what changed, and what has to happen before discharge.
-
-**Key points (bulleted card):**
-
-- Daily rounds presentations run 60–90 seconds: hospital day, overnight events, one subjective point and one MSE change, a risk update, and a plan question — lead with what changed, not the full history.
-- Organize the note plan by problem: safety → medications/medical/substance/sleep → psychotherapy/milieu → family/collateral → disposition — so the structure mirrors the clinical priorities.
-- The handoff template names the main overnight risks, a trigger-plan pair (if X happens, do Y), and what escalates and what helps with this patient — generic handoffs create coverage gaps.
-- Practice two micro-updates out loud: a 30-second collateral update and a 60-second rounds update.
-
-**Can't-miss / red-flag line:**
-
-> Copying forward yesterday's risk language without updating the reasoning — 'denies SI/HI, low acute risk' on hospital day 7 without noting today's context — erases the clinical event and creates a documentation gap.
-
-**Clinical-workflow narration (per-stage coaching text):**
-
-- **ask** — Before rounds, ask what changed overnight, what data are missing, what risk changed, and what decision the team needs today.
-- **mse** — Report MSE findings that support the assessment, especially changes from yesterday and safety-relevant observations.
-- **safety** — Always include current suicide/violence/vulnerability risk, observation level, restrictions, and discharge barriers when relevant.
-- **say** — My assessment is... because... and the next decision is...
-- **collateral** — Include collateral only when it changes diagnosis, risk, treatment, or discharge planning.
-- **rounds** — Use problem representation, focused interval events, MSE delta, assessment, and prioritized plan.
-- **exam** — Oral presentations reveal clinical reasoning: what changed, why it matters, and what you will do next.
-- **actions** — Open rounding prep; Use 30-second collateral update; Practice micro-updates
-
-**Embedded check-for-understanding**
-
-1. *Stem:* During a 90-second rounds update, a student presents 5 minutes of history and ends with 'so the plan is to continue current medications.' The attending asks what the student should have led with instead. What is correct?
-   - A full review of the patient's psychiatric history to give the team context
-   - The complete medication list with doses and adherence
-   - A review of the patient's insurance and discharge plan
-   - Hospital day, what changed overnight, one MSE point, a risk update, and the clinical question for the team **← keyed correct**
-   - *Rationale:* A daily rounds presentation is a structured 60–90 second clinical update — it begins with the hospital day and what changed overnight, not a retelling of the history. The attending already knows the background; they need to know what shifted and what decision is needed today. A plan question names the uncertainty and invites attending input.
-
-**Cross-references and tagging:**
-
-- **Related tools:** `oral.html`, `communication-practice.html`
-- **Communication cases:** `rounds_naming_uncertainty_001`
-- **Workflow stages:** `team`, `diagnosis`, `safety`, `exam`, `family`
-- **Workflow modes:** `ward`, `5min`, `shelf`, `family`
-- **Shelf blueprint tags:** `relational`
-- **EPA crosswalk:** `EPA5`, `EPA6`
-- **Call-to-action buttons:** Open the Formulation & DDx Pocket Guide; Use 30-second collateral update; Practice micro-updates
-
-#### Page text (as shipped)
-
-# Student Documentation And Oral Presentation Guide
-
-Generated: 2026-06-27
-
-Audience: MS3 students.
-
-## Core Principle
-
-Good psychiatric documentation shows reasoning. It does not merely list symptoms.
-
-Every note should help the next clinician answer:
-
-1. What are we treating?
-2. What else could this be?
-3. What is the risk today?
-4. What changed since yesterday?
-5. What has to happen before discharge?
-
-## Student Progress Note Template
-
-### One-Liner
-
-`[Age]-year-old [person] admitted for [reason], hospital day [X], with current
-priority of [risk/diagnosis/treatment/disposition].`
-
-### Interval Events
-
-- Sleep.
-- PRNs.
-- Safety events.
-- Medication changes/adverse effects.
-- Nursing/milieu observations.
-- Family/collateral/discharge updates.
-
-### Subjective
-
-Use patient language. Include:
-
-- Mood/anxiety/psychosis/mania/trauma/substance symptoms as relevant.
-- SI/HI/self-harm update.
-- Medication effects/adverse effects.
-- Goals or concerns for the day.
-
-### MSE
-
-Focus on changes and clinically relevant findings.
-
-### Formulation Update
-
-Use a short paragraph:
-
-> "Today, the leading formulation remains [syndrome/problem], with [medical/
-> substance/sleep] contributors, [psychological/interpersonal] contributors,
-> and [discharge/system] barriers. The main change today is [X], which affects
-> risk/plan by [Y]."
-
-### Risk
-
-Separate:
-
-- Chronic risk.
-- Acute risk.
-- Protective factors.
-- Modifiable targets.
-- Means restriction/safety planning when relevant.
-
-Avoid:
-
-- "Denies SI/HI, no risk."
-- Copy-forward risk language that ignores today's context.
-
-### Plan
-
-Organize by problem:
-
-1. Safety.
-2. Medications/medical/substance/sleep.
-3. Psychotherapy/milieu/groups.
-4. Family/collateral.
-5. Disposition/follow-up.
-
-## Admission Presentation Template
-
-Use 4-6 minutes.
-
-1. One-liner.
-2. Chief concern and timeline.
-3. Safety reason for admission.
-4. Psychiatric symptoms by syndrome.
-5. Substance/medical/medication contributors.
-6. Psychiatric history.
-7. Family/social/discharge context.
-8. MSE.
-9. Differential diagnosis.
-10. Formulation and plan.
-
-## Daily Rounds Presentation Template
-
-Use 60-90 seconds.
-
-1. "Hospital day X for Y."
-2. Overnight: sleep, PRNs, safety, vitals/labs if relevant.
-3. Patient today: one subjective point and one MSE point.
-4. Risk update.
-5. Plan question: medication, safety, family, discharge, or diagnosis.
-
-Example:
-
-> "Hospital day 4 for mania with psychosis. Slept 5 hours, no IMs, accepted
-> lithium and olanzapine, mild tremor this morning. He reports thoughts are
-> slower but still believes neighbors are monitoring him. MSE shows less
-> pressured speech, still grandiose. Acute violence risk is lower than admission
-> because sleep and agitation improved, but discharge risk remains high because
-> he refuses family collateral. My question is whether today is the right time to
-> revisit collateral with a limited call."
-
-## Two Micro-Updates To Practice Out Loud
-
-Use these when the team already knows the admission story and needs the update,
-not the whole chart.
-
-### 30-Second Collateral Update
-
-Structure:
-
-1. Source and permission/policy frame.
-2. Baseline.
-3. Timeline.
-4. Risk or discharge data.
-5. What changes in the plan.
-
-Template:
-
-> "I spoke with [source/role] [with permission / under the team's safety
-> rationale]. Baseline is [X]. The key timeline point is [Y]. Risk/discharge
-> information is [Z]. This changes our plan because [next decision]."
-
-### 60-Second Rounds Update
-
-Structure:
-
-1. Hospital day and active problem.
-2. Overnight events: sleep, PRNs, safety, vitals/labs if relevant.
-3. One patient-reported point and one MSE change.
-4. Risk update.
-5. Plan question.
-
-Template:
-
-> "Hospital day [X] for [problem]. Overnight [sleep/PRNs/safety]. Today the
-> patient reports [one point], and MSE shows [one change]. Risk is [better/worse/
-> unchanged] because [reason]. My plan question is [decision needed]."
-
-Practice both in the [Treatment Team Rounding Prep](?tool=oral.html) tool.
-
-## Oral Case Presentation Rubric
-
-| Skill | Strong Performance |
-|---|---|
-| Concision | Leads with the clinical problem, not every fact |
-| Organization | Timeline is clear |
-| MSE | Uses observable language |
-| Differential | Includes medical/substance contributors |
-| Risk | Separates chronic and acute risk |
-| Formulation | Integrates biological, psychological, family/social, and systems factors |
-| Plan | Matches the formulation |
-| Uncertainty | Names what is not yet known |
-
-## Common Student Pitfalls
-
-- Over-presenting distant history.
-- Treating "denies SI" as a full risk assessment.
-- Forgetting sleep and substances.
-- Forgetting collateral.
-- Treating family as logistics rather than clinical context.
-- Listing diagnoses without a differential.
-- Copying assessment language from prior notes without updating reasoning.
-- Presenting medication changes without adverse-effect monitoring.
-
-## Handoff Template
-
-Use when handing off a psychiatric patient:
-
-> "This is [patient], admitted for [reason]. Tonight, the main risks are [safety/
-> withdrawal/agitation/medical]. If [trigger], do [plan]. Avoid [known
-> escalating intervention]. The patient responds best to [approach]. Family/
-> collateral issue to know: [X]."
-
-## Faculty Feedback Prompts
-
-- "What was the clinical question in that presentation?"
-- "What did you leave out, and why?"
-- "What would make you change the risk level?"
-- "Where did the formulation change the plan?"
-- "What would the overnight covering clinician need to know?"
-
-Plain-English note: this guide helps students stop writing and presenting as if
-psychiatry is a checklist. It gives them a structure that reveals their thinking.
