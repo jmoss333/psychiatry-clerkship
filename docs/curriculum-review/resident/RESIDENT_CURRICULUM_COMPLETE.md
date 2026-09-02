@@ -3,7 +3,7 @@
 # RESIDENT curriculum — complete content transcript for clinical review
 
 **Site:** `mmc-psychiatry-residents-sanford` · **Audience:** Residents — MMC/Sanford psychiatry residents
-**Generated:** 2026-09-02 from build `25b2afa` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
+**Generated:** 2026-09-02 from build `c64ef2c` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
 
 ## Who this is for
 
@@ -19,7 +19,7 @@ This transcript is assembled from the **built site**, not the source tree, so it
 | Narrative pages (markdown) | 86 |
 | Interactive tools | 25 |
 | Deep-link-only (hidden) surfaces | 26 |
-| Words of narrative curriculum | 117,626 |
+| Words of narrative curriculum | 117,651 |
 | Practice question-bank items | 192 |
 | Audio-companion quiz decks / questions | 79 / 437 |
 | Communication cases | 12 |
@@ -86,7 +86,7 @@ High-yield places to concentrate: the `topic_meta` **can't-miss**, **rule-out** 
 
 # RESIDENT · Navigation map
 
-Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-02 @ `25b2afa`.
+Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-02 @ `c64ef2c`.
 
 ## Orientation  *(pinned)*
 
@@ -187,7 +187,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 |---|---|---|---|---|---|---|---|
 | 1 | Documentation & Oral Presentation | `doc_oral.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/MS3/Student_Ready_Pack/05_documentation_oral_presentation/student_documentation_and_oral_presentations.md` | 817 |
 | 2 | Treatment Team Rounding Prep | `oral.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Oral_Presentations/oral-presentation-module.html` |  |
-| 3 | High-Yield Rounds Questions | `rounds_questions.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md` | 8682 |
+| 3 | High-Yield Rounds Questions | `rounds_questions.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md` | 8700 |
 
 ## Practice and Exam Prep
 
@@ -225,7 +225,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 |---|---|---|---|---|---|---|---|
 | 1 | Evidence-Based Inpatient Psychiatry | `evidence_inpatient.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `07_Evidence_and_Reading/Inpatient_Evidence/evidence_inpatient.md` | 5855 |
 | 2 | The Therapy Reading Room | `therapy_reading_room.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`low` | `07_Evidence_and_Reading/Therapy_Reading_Room/therapy_reading_room.md` | 2839 |
-| 3 | The Psychiatry Canon (200) | `canon_200.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/Resident/canon_200.md` | 8748 |
+| 3 | The Psychiatry Canon (200) | `canon_200.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/Resident/canon_200.md` | 8755 |
 | 4 | Book Library | `book_library.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `07_Evidence_and_Reading/Book_Summaries/ms3_book_library.md` | 1198 |
 | 5 | Podcast Library (Psychiatry & Psychotherapy) | `podcast_library.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `12_Media/psychiatry_psychotherapy_podcast_library.md` | 2617 |
 | 6 | Orientation Packet | `orientation.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `14_Tracks/MS3/Student_Ready_Pack/01_orientation/MS3_orientation_packet.md` | 1004 |
@@ -11369,7 +11369,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **Slug:** `rounds_questions.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 8,682 words
+- **Length:** 8,700 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -11800,7 +11800,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Answer:** Trauma-focused psychotherapy (prolonged exposure, cognitive processing therapy, EMDR) is first-line with larger effect sizes than pharmacotherapy. Sertraline and paroxetine are the only FDA-approved medications.
 
-- **Evidence:** Cochrane review: SSRIs improved PTSD symptoms vs. placebo (RR 0.66).
+- **Evidence:** Cochrane review (Williams et al., 2022): SSRIs increased treatment response vs. placebo — risk of failing to respond RR 0.66 (95% CI 0.59–0.74).
 
 - **Key paper:** Schnurr et al., Ann Intern Med 2024 — VA/DoD PTSD guideline synopsis.
 
@@ -11910,7 +11910,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 **50. What is the COWS scale?**
 
-- **Answer:** The Clinical Opiate Withdrawal Scale — an 11-item clinician-administered tool (score 0–47) assessing opioid withdrawal severity. Scores 5–12: mild; 13–24: moderate; >24: severe.
+- **Answer:** The Clinical Opiate Withdrawal Scale — an 11-item clinician-administered tool (score 0–48) assessing opioid withdrawal severity. Scores 5–12: mild; 13–24: moderate; 25–36: moderately severe; >36: severe.
 
 - **Evidence:** Validated against CINA scale (Pearson r = 0.85). For buprenorphine induction, COWS should ideally be ≥10–12.
 
@@ -12126,7 +12126,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Answer:** Psychotherapy — specifically DBT, which has the most evidence. No medications are FDA-approved for BPD. Pharmacotherapy targets specific symptoms (e.g., mood instability, impulsivity) but does not treat core pathology.
 
-- **Evidence:** DBT vs. TAU: BPD severity SMD −0.60; self-harm SMD −0.54.
+- **Evidence:** DBT vs. TAU (Cochrane 2020): BPD severity SMD −0.60; self-harm SMD −0.28.
 
 - **Key paper:** Linehan et al., JAMA Psychiatry 2015.
 
@@ -12639,7 +12639,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - }; if(days<=28)return {phase:
 - }; } /* localDayStr()/localDayIndex() are the front door
 - s queue-build call — patching only one leaves the other unthrottled. An explicit learner choice (setNewPerDay, which sets settings.userSet) always wins over the rotation-phase cap; phasePolicy() itself never throws, but the try/catch keeps this helper safe even if that contract ever changes. */ function effectiveNewPerDay(s){ var set=(s.settings&&s.settings.newPerDay)||12; if(s.settings&&s.settings.userSet) return set; /* explicit choice always wins */ var cap=12; try{ cap=phasePolicy().newPerDayCap; }catch(_){ } return Math.min(set, cap); } var gradedThisSession={}; // session-local: has card.id already been graded once this session? (a requeued Again-card
-- s rq flag). Reset in start(). function maturity(st){if(!st||!st.reps)return "new";if(st.ivl>=21)return "mature";if(st.lapses&&st.ivl 0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;} /* ---------- theme ---------- */ function toggleTheme(setTheme){var nx=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",nx);try{localStorage.setItem("cw_theme",nx);}catch(_){ } setTheme(nx); if(framed){try{window.parent.postMessage({type:"theme",mode:nx},"*");}catch(_){ }}} function App(){ var ld=useState(null),cards=ld[0],setCards=ld[1]; var er=useState(false),err=er[0],setErr=er[1]; var sv=useState(loadS()),store=sv[0],setStore=sv[1]; var ses=useState(null),sess=ses[0],setSess=ses[1]; // {queue,pos,chosen,revealed,reviewed,correct,fresh} var th=useState((document.documentElement.getAttribute("data-theme")==="dark")?"dark":"light"),theme=th[0],setTheme=th[1]; var tick=useState(0),setTick=tick[1]; var sessRef=useRef(null); sessRef.current=sess; useEffect(function(){ Promise.all([ fetch("quizzes.json?v=f01d67b4b5f1").then(function(r){return r.ok?r.json():{decks:[]};}).catch(function(){return {decks:[]};}), fetch("../topic_meta.json").then(function(r){return r.ok?r.json():{};}).catch(function(){return {};}) ]).then(function(res){ var j=res[0]||{}, tm=res[1]||{}, out=[]; (j.decks||[]).forEach(function(d){ (d.questions||[]).forEach(function(q,i){ if(!q||!q.q||!q.o)return; out.push({id:d.id+"#"+i,deck:d.id,deckTitle:d.title||d.id,q:q.q,o:q.o,audio:d.audio||null,audioDur:d.audioDur||null}); }); }); function pretty(k){ return k.replace(/^t_/,"").replace(/\.md$/,"").replace(/_/g," ").replace(/\b\w/g,function(c){return c.toUpperCase();}); } Object.keys(tm).forEach(function(k){ if(k.charAt(0)==="_")return; var m=tm[k]; if(m&&m.quiz&&m.quiz.q&&m.quiz.o&&m.quiz.o.length){ out.push({id:"TOPIC#"+k,deck:"TOPIC",deckTitle:"Topic · "+pretty(k),q:m.quiz.q,o:m.quiz.o.map(function(o){return {t:o.t,c:!!o.c,fb:(o.c?(m.quiz.why||""):"")};})}); } }); if(!out.length){ setErr(true); return; } setCards(out); }).catch(function(){setErr(true);}); },[]); useEffect(function(){ function onMsg(ev){var d=ev.data||{};if(d.type==="theme"&&(d.mode==="dark"||d.mode==="light")){document.documentElement.setAttribute("data-theme",d.mode);setTheme(d.mode);}} window.addEventListener("message",onMsg); return function(){window.removeEventListener("message",onMsg);}; },[]); useEffect(function(){ function onKey(ev){ var s=sessRef.current; if(!s)return; var k=ev.key; if(!s.revealed){ var n=parseInt(k,10); if(n>=1&&n<=s.card.o.length){choose(optOrder(s.card)[n-1]);} } else { if(k==="1")grade(0); else if(k==="2")grade(1); else if(k==="3")grade(2); else if(k==="4")grade(3); } } window.addEventListener("keydown",onKey); return function(){window.removeEventListener("keydown",onKey);}; },[]); function persist(s){saveS(s);setStore(Object.assign({},s));} /* dashboard metrics */ function metrics(){ var now=Date.now(),due=0,neu=0,learn=0,young=0,mature=0,seen=0; if(cards){ var s=rollDay(loadS()); cards.forEach(function(c){var st=s.cards[c.id]; if(!st){neu++;return;} seen++; var m=maturity(st); if(m==="mature")mature++; else if(m==="young")young++; else learn++; if(st.due<=now)due++; }); } var newRemain=cards?Math.max(0,effectiveNewPerDay(store)-(rollDay(loadS()).day.newToday||0)):0; return {due:due,neu:neu,newRemain:Math.min(newRemain,neu),learn:learn,young:young,mature:mature,seen:seen}; } function start(ahead){ var s=rollDay(loadS()); var now=Date.now(); var due=[],neu=[],fut=[]; cards.forEach(function(c){var st=s.cards[c.id]; if(!st)neu.push(c); else if(st.due<=now)due.push(c); else fut.push([c,st.due]);}); /* Overdue-first: sort by how overdue each card is (ratio, not raw days) so long-interval cards that are only slightly late don
+- s rq flag). Reset in start(). function maturity(st){if(!st||!st.reps)return "new";if(st.ivl>=21)return "mature";if(st.lapses&&st.ivl 0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;} /* ---------- theme ---------- */ function toggleTheme(setTheme){var nx=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",nx);try{localStorage.setItem("cw_theme",nx);}catch(_){ } setTheme(nx); if(framed){try{window.parent.postMessage({type:"theme",mode:nx},"*");}catch(_){ }}} function App(){ var ld=useState(null),cards=ld[0],setCards=ld[1]; var er=useState(false),err=er[0],setErr=er[1]; var sv=useState(loadS()),store=sv[0],setStore=sv[1]; var ses=useState(null),sess=ses[0],setSess=ses[1]; // {queue,pos,chosen,revealed,reviewed,correct,fresh} var th=useState((document.documentElement.getAttribute("data-theme")==="dark")?"dark":"light"),theme=th[0],setTheme=th[1]; var tick=useState(0),setTick=tick[1]; var sessRef=useRef(null); sessRef.current=sess; useEffect(function(){ Promise.all([ fetch("quizzes.json?v=9c0ec6c95a11").then(function(r){return r.ok?r.json():{decks:[]};}).catch(function(){return {decks:[]};}), fetch("../topic_meta.json").then(function(r){return r.ok?r.json():{};}).catch(function(){return {};}) ]).then(function(res){ var j=res[0]||{}, tm=res[1]||{}, out=[]; (j.decks||[]).forEach(function(d){ (d.questions||[]).forEach(function(q,i){ if(!q||!q.q||!q.o)return; out.push({id:d.id+"#"+i,deck:d.id,deckTitle:d.title||d.id,q:q.q,o:q.o,audio:d.audio||null,audioDur:d.audioDur||null}); }); }); function pretty(k){ return k.replace(/^t_/,"").replace(/\.md$/,"").replace(/_/g," ").replace(/\b\w/g,function(c){return c.toUpperCase();}); } Object.keys(tm).forEach(function(k){ if(k.charAt(0)==="_")return; var m=tm[k]; if(m&&m.quiz&&m.quiz.q&&m.quiz.o&&m.quiz.o.length){ out.push({id:"TOPIC#"+k,deck:"TOPIC",deckTitle:"Topic · "+pretty(k),q:m.quiz.q,o:m.quiz.o.map(function(o){return {t:o.t,c:!!o.c,fb:(o.c?(m.quiz.why||""):"")};})}); } }); if(!out.length){ setErr(true); return; } setCards(out); }).catch(function(){setErr(true);}); },[]); useEffect(function(){ function onMsg(ev){var d=ev.data||{};if(d.type==="theme"&&(d.mode==="dark"||d.mode==="light")){document.documentElement.setAttribute("data-theme",d.mode);setTheme(d.mode);}} window.addEventListener("message",onMsg); return function(){window.removeEventListener("message",onMsg);}; },[]); useEffect(function(){ function onKey(ev){ var s=sessRef.current; if(!s)return; var k=ev.key; if(!s.revealed){ var n=parseInt(k,10); if(n>=1&&n<=s.card.o.length){choose(optOrder(s.card)[n-1]);} } else { if(k==="1")grade(0); else if(k==="2")grade(1); else if(k==="3")grade(2); else if(k==="4")grade(3); } } window.addEventListener("keydown",onKey); return function(){window.removeEventListener("keydown",onKey);}; },[]); function persist(s){saveS(s);setStore(Object.assign({},s));} /* dashboard metrics */ function metrics(){ var now=Date.now(),due=0,neu=0,learn=0,young=0,mature=0,seen=0; if(cards){ var s=rollDay(loadS()); cards.forEach(function(c){var st=s.cards[c.id]; if(!st){neu++;return;} seen++; var m=maturity(st); if(m==="mature")mature++; else if(m==="young")young++; else learn++; if(st.due<=now)due++; }); } var newRemain=cards?Math.max(0,effectiveNewPerDay(store)-(rollDay(loadS()).day.newToday||0)):0; return {due:due,neu:neu,newRemain:Math.min(newRemain,neu),learn:learn,young:young,mature:mature,seen:seen}; } function start(ahead){ var s=rollDay(loadS()); var now=Date.now(); var due=[],neu=[],fut=[]; cards.forEach(function(c){var st=s.cards[c.id]; if(!st)neu.push(c); else if(st.due<=now)due.push(c); else fut.push([c,st.due]);}); /* Overdue-first: sort by how overdue each card is (ratio, not raw days) so long-interval cards that are only slightly late don
 - Reset all spaced-repetition progress? This clears your review schedule and streak. This also clears your calibration history. Reading progress elsewhere is unaffected.
 - Spaced repetition · Joshua Moss, MD
 - Could not load the question bank (quizzes.json). Open this tool from the hub so it can find its data, then try again.
@@ -12973,7 +12973,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 
 **Leucht 2013 - Antipsychotic NMA**  ·  _2:00_
 <audio controls preload="none" src="audio/07_LM_08_Leucht_2013_Antipsychotic_NMA_2_00.m4a"></audio>
-<a href="https://doi.org/10.1016/S0140-6736(12)60239-6" target="_blank" rel="noopener">Paper (DOI)</a>
+<a href="https://doi.org/10.1016/S0140-6736(13)60733-3" target="_blank" rel="noopener">Paper (DOI)</a>
 
 **Lieberman 2005 - CATIE Trial**  ·  _1:38_
 <audio controls preload="none" src="audio/01_LM_01_Lieberman_2005_CATIE_Trial_1_38.m4a"></audio>
@@ -13003,7 +13003,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 
 **Stanley 2012 - Safety Planning**  ·  _1:50_
 <audio controls preload="none" src="audio/34_LM_34_Stanley_2012_Safety_Planning_1_50.m4a"></audio>
-<a href="https://doi.org/10.1001/jamapsychiatry.2018.1776" target="_blank" rel="noopener">Paper (DOI)</a>
+<a href="https://doi.org/10.1016/j.cbpra.2011.01.001" target="_blank" rel="noopener">Paper (DOI)</a>
 
 
 ## Psychopharmacology  (2)
@@ -13077,7 +13077,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 ## Substance Use  (2)
 **Project MATCH 1997**  ·  _1:53_
 <audio controls preload="none" src="audio/42_LM_45_Project_MATCH_1997_1_53.m4a"></audio>
-<a href="https://doi.org/10.1111/j.1530-0277.1998.tb03912.x" target="_blank" rel="noopener">Paper (DOI)</a>
+<a href="https://pubmed.ncbi.nlm.nih.gov/8979210/" target="_blank" rel="noopener">Paper (PubMed)</a>
 
 **Volkow 2016 - Addiction**  ·  _1:53_
 <audio controls preload="none" src="audio/47_LM_46_Volkow_2016_Addiction_1_53.m4a"></audio>
@@ -13087,7 +13087,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 ## Child  (3)
 **Bridge 2007 - Pediatric SSRI**  ·  _1:41_
 <audio controls preload="none" src="audio/45_LM_48_Bridge_2007_Pediatric_SSRI_1_41.m4a"></audio>
-<a href="https://doi.org/10.1001/archpsyc.63.3.332" target="_blank" rel="noopener">Paper (DOI)</a>
+<a href="https://doi.org/10.1001/jama.297.15.1683" target="_blank" rel="noopener">Paper (DOI)</a>
 
 **MTA 1999 - ADHD**  ·  _1:45_
 <audio controls preload="none" src="audio/46_LM_47_MTA_1999_ADHD_1_45.m4a"></audio>
@@ -13125,13 +13125,13 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 
 
 ## Skills  (4)
-**Gabbard 1995 - Boundaries**  ·  _1:46_
+**Gutheil-Gabbard 1993 - Boundaries**  ·  _1:46_
 <audio controls preload="none" src="audio/38_LM_40_Gabbard_1995_Boundaries_1_46.m4a"></audio>
 <a href="https://doi.org/10.1176/ajp.150.2.188" target="_blank" rel="noopener">Paper (DOI)</a>
 
 **Norcross 2011 - Alliance**  ·  _1:44_
 <audio controls preload="none" src="audio/25_LM_25_Norcross_2011_Alliance_1_44.m4a"></audio>
-<a href="https://doi.org/10.1037/pst0000172" target="_blank" rel="noopener">Paper (DOI)</a>
+<a href="https://doi.org/10.1037/a0022180" target="_blank" rel="noopener">Paper (DOI)</a>
 
 **Shedler 2010 - Psychodynamic**  ·  _1:43_
 <audio controls preload="none" src="audio/23_LM_24_Shedler_2010_Psychodynamic_1_43.m4a"></audio>
@@ -13144,7 +13144,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 ## Anxiety  (1)
 **Foa 2005 - Prolonged Exposure**  ·  _1:42_
 <audio controls preload="none" src="audio/29_LM_29_Foa_2005_Prolonged_Exposure_1_42.m4a"></audio>
-<a href="https://doi.org/10.1037/0022-006X.70.4.867" target="_blank" rel="noopener">Paper (DOI)</a>
+<a href="https://doi.org/10.1037/0022-006X.73.5.953" target="_blank" rel="noopener">Paper (DOI)</a>
 
 
 ## Geriatric  (1)
@@ -15424,12 +15424,12 @@ If any component were an **intentional ingestion**, medical stabilization comes 
 
 **TL;DR (shown above the page text):**
 
-> The strongest inpatient evidence: environmental safety checklists cut inpatient suicide 82%; brief CBT (up to 4 sessions) reduces post-discharge attempts 60% (NNT 7); family psychoeducation cuts 12-month relapse (OR 0.18); antipsychotics do not improve delirium outcomes.
+> The strongest inpatient evidence: environmental safety checklists cut inpatient suicide 67%; brief CBT (up to 4 sessions) reduces post-discharge attempts 60% (NNT 7); family psychoeducation cuts 12-month relapse (OR 0.18); antipsychotics do not improve delirium outcomes.
 
 **Key points (bulleted card):**
 
 - MIND-USA (n=566) and AID-ICU (n=1,000) both found no benefit for antipsychotics vs. placebo on delirium outcomes — the PADIS guidelines recommend against routine antipsychotic use for delirium.
-- The VHA MHEOCC environmental safety checklist produced an 82% reduction in the inpatient suicide rate — ligature point removal is the single strongest structural inpatient suicide prevention intervention.
+- The VHA MHEOCC environmental safety checklist produced a 67% reduction in the inpatient suicide rate — ligature point removal is the single strongest structural inpatient suicide prevention intervention.
 - Pre-discharge 7-day follow-up (actually scheduled, not 'patient will call') is associated with substantially lower suicide risk, and family involvement during admission nearly triples the odds of achieving it.
 
 **Can't-miss / red-flag line:**
@@ -15454,7 +15454,7 @@ If any component were an **intentional ingestion**, medical stabilization comes 
    - A low-dose atypical antipsychotic is preferred over haloperidol for delirium because it is better tolerated
    - Non-pharmacological multicomponent bundles are first-line; antipsychotics showed no benefit in MIND-USA and AID-ICU and should be reserved for severe refractory hyperactive symptoms **← keyed correct**
    - Benzodiazepines are the evidence-based first choice for non-withdrawal delirium
-   - *Rationale:* MIND-USA and AID-ICU both showed no benefit for antipsychotics vs. placebo on days alive without delirium or coma; the PADIS guidelines recommend against routine use. Multicomponent non-pharmacological bundles (HELP-based) reduced incident delirium by 53%. Benzodiazepines are reserved for alcohol/benzo withdrawal delirium — they worsen non-withdrawal delirium.
+   - *Rationale:* MIND-USA showed no benefit for antipsychotics vs. placebo on days alive without delirium or coma, and AID-ICU showed none on days alive and out of the hospital at 90 days; the PADIS guidelines recommend against routine use. Multicomponent non-pharmacological bundles (HELP-based) reduced incident delirium by 53%. Benzodiazepines are reserved for alcohol/benzo withdrawal delirium — they worsen non-withdrawal delirium.
 
 **Cross-references and tagging:**
 
@@ -15481,7 +15481,7 @@ The **Columbia-Suicide Severity Rating Scale (C-SSRS)** is the most widely endor
 
 The **SAD PERSONS scale should not be used**: multiple studies demonstrate it performs no better than chance (AUC 0.55–0.59), with sensitivity as low as 1% for repeat self-harm. The VA/DoD 2024 guideline explicitly excludes it.
 
-**Environmental safety** has the strongest single-intervention evidence. The VHA Mental Health Environment of Care Checklist (MHEOCC) produced an **82% reduction in inpatient suicide rate** (from 2.64 to 0.87 per 100,000 admissions, P < .001), sustained over 7 years. Hanging accounts for 71% of inpatient suicide deaths, and ligature point removal was associated with significant reductions in suicide by hanging in a UK national study.
+**Environmental safety** has the strongest single-intervention evidence. The VHA Mental Health Environment of Care Checklist (MHEOCC) produced a **67% reduction in inpatient suicide rate** (from 2.64 to 0.87 per 100,000 admissions, P < .001), sustained over 7 years. Hanging accounts for 71% of inpatient suicide deaths, and ligature point removal was associated with significant reductions in suicide by hanging in a UK national study.
 
 ### Landmark Studies
 
@@ -15824,7 +15824,7 @@ The **DIAMOND initiative** highlights the implementation gap: despite increased 
 
 | Domain | Strongest Intervention | Effect Size | Evidence Quality |
 | --- | --- | --- | --- |
-| Inpatient suicide prevention | Environmental safety (MHEOCC) | 82% reduction in inpatient suicide | Before-after, system-wide |
+| Inpatient suicide prevention | Environmental safety (MHEOCC) | 67% reduction in inpatient suicide | Before-after, system-wide |
 | Post-discharge suicide prevention | Brief CBT for suicidal inpatients | 60% reduction in attempts (NNT=7) | RCT (n=200) |
 | Violence risk (imminent) | BVC/DASA screening | Hedges' g = 1.04–1.35 | Meta-analysis of 31 studies |
 | Agitation pharmacotherapy | Antipsychotic + BZD combination | OR 12.93 vs. haloperidol alone | IPD network meta-analysis |
@@ -16324,7 +16324,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **Slug:** `canon_200.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `14_Tracks/Resident/canon_200.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 8,748 words
+- **Length:** 8,755 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -16431,7 +16431,7 @@ The most cited modern formulation of the dopamine hypothesis, synthesizing >6,70
 
 The foundational systematic review establishing that physician education in depression recognition and restricting access to lethal means are the only strategies with clear evidence of reducing suicide rates. The starting point for all evidence-based suicide prevention.
 
-**14. Elkin et al., "NIMH Treatment of Depression Collaborative Research Program," J Consult Clin Psychol 1989**
+**14. Elkin et al., "NIMH Treatment of Depression Collaborative Research Program: General Effectiveness of Treatments," Arch Gen Psychiatry 1989**
 
 The most influential comparative psychotherapy trial (N=239), comparing IPT, CBT, imipramine, and placebo. Established the template for psychotherapy research and sparked decades of debate about the relative efficacy of psychotherapy and pharmacotherapy.
 
@@ -16469,7 +16469,7 @@ GBD 2010 data establishing mental disorders as the leading cause of years lived 
 
 **23. Caspi et al., "Longitudinal Assessment of Mental Health Disorders Across 4 Decades (Dunedin Study)," JAMA Network Open 2020**
 
-Across 4 decades, 86% of cohort members met criteria for a disorder at some point, with 692 unique life-history patterns among 1,037 participants. Introduced the p-factor concept and demonstrated that mental disorders are far more common, comorbid, and fluid than categorical diagnosis suggests.
+Across 4 decades, 86% of cohort members met criteria for a disorder at some point, with 692 unique life-history patterns among 1,037 participants. Demonstrated that mental disorders are far more common, comorbid, and fluid than categorical diagnosis suggests — extending the cohort's earlier p-factor work (Caspi et al. 2014, paper #157).
 
 **24. Anton et al., "Combined Pharmacotherapies and Behavioral Interventions for Alcohol Dependence (COMBINE)," JAMA 2006**
 
@@ -16485,7 +16485,7 @@ Demonstrated that the Safety Planning Intervention reduced suicidal behaviors by
 
 ### A. PSYCHOPHARMACOLOGY — DEPRESSION (Papers 26–45)
 
-**26.** Fournier et al., "Antidepressant Drug Effects and Depression Severity: A Patient-Level Meta-analysis," JAMA 2010 — Severity-dependent efficacy: d=0.11 mild, d=0.81 very severe
+**26.** Fournier et al., "Antidepressant Drug Effects and Depression Severity: A Patient-Level Meta-analysis," JAMA 2010 — Severity-dependent efficacy: d=0.11 mild-to-moderate, d=0.47 very severe
 
 **27.** Kirsch et al., "Initial Severity and Antidepressant Benefits," PLoS Med 2008 — Drug-placebo differences clinically significant only in very severe depression
 
@@ -16507,7 +16507,7 @@ Demonstrated that the Safety Planning Intervention reduced suicidal behaviors by
 
 **36.** Reif et al., "Esketamine Nasal Spray vs Quetiapine for Treatment-Resistant Depression," NEJM 2023 — Esketamine superior to quetiapine for TRD remission
 
-**37.** Henssler et al., "Incidence of Antidepressant Discontinuation Symptoms," Lancet Psychiatry 2024 — 31% incidence; 8% attributable to drug
+**37.** Henssler et al., "Incidence of Antidepressant Discontinuation Symptoms," Lancet Psychiatry 2024 — 31% incidence (vs 17% after placebo); authors estimate ~15% attributable (one in six to seven patients), though the within-RCT drug-placebo difference was 8%
 
 **38.** Geddes et al., "Relapse Prevention with Antidepressant Drug Treatment in Depressive Disorders," Lancet 2003 — Continuing antidepressants reduces relapse by 70%
 
@@ -16563,7 +16563,7 @@ Demonstrated that the Safety Planning Intervention reduced suicidal behaviors by
 
 **62.** Samara et al., "Antipsychotics in Treatment-Resistant Schizophrenia (NMA)," JAMA Psychiatry 2016 — Clozapine not significantly superior to most SGAs in NMA
 
-**63.** Leucht et al., "60 Years of Placebo-Controlled Antipsychotic Trials," AJP 2017 — Overall SMD=0.47; 51% respond on drug vs. 30% placebo
+**63.** Leucht et al., "60 Years of Placebo-Controlled Antipsychotic Trials," AJP 2017 — Overall SMD=0.47; 51% vs 30% at least minimally improved (good response 23% vs 14%)
 
 **64.** Delay & Deniker, "Discovery of Chlorpromazine," 1952 — The beginning of psychopharmacology
 
@@ -16884,8 +16884,6 @@ Demonstrated that the Safety Planning Intervention reduced suicidal behaviors by
 ## A Note on Scope
 
 This list necessarily omits important papers in several areas that a comprehensive curriculum would also address, including: sleep medicine and psychiatry, consultation-liaison psychiatry (delirium management), forensic psychiatry, cultural psychiatry, telepsychiatry, and the social determinants of mental health. Several classic texts (Kraepelin's nosology, Freud's foundational works, Jaspers' General Psychopathology) are better assigned as book chapters than individual papers. The list also does not include the many excellent NEJM, JAMA, and Lancet review articles that serve as outstanding teaching tools for each disorder — these are better curated at the rotation level.
-
-Would you like to explore any specific subdomain in greater depth, or discuss how this curriculum might be structured across the four years of residency training?
 
 ### References
 
@@ -26465,7 +26463,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
 
 3. **Based on the study results, which drug demonstrates the highest efficacy but is limited by the worst side-effect profile (lowest acceptability)?**
    - Amitriptyline **← keyed correct**
-     - *feedback:* Amitriptyline had the highest Odds Ratio for efficacy (2.13) but was noted for having the worst side-effect profile among the agents studied.
+     - *feedback:* Amitriptyline had the highest Odds Ratio for efficacy (2.13). Its anticholinergic and cardiac side-effect burden makes it a later-line choice in practice, but in the study's acceptability (dropout) analysis it was clomipramine — not amitriptyline — that performed worst, as the only agent with significantly more dropouts than placebo.
    - Escitalopram Escitalopram is noted for a balanced profile of high efficacy and high tolerability, rather than a poor side-effect profile.
    - Venlafaxine While venlafaxine is highly efficacious, it was not singled out as having the worst acceptability profile in this specific analysis.
    - Reboxetine Reboxetine actually showed the lowest efficacy among the 21 antidepressants studied.
@@ -27716,7 +27714,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
 
 3. **For a patient starting a new SGA, what is the recommended schedule for monitoring weight during the first few months of treatment?**
    - Monthly for the first year, then every 2 years
-     - *feedback:* The protocol emphasizes more frequent monitoring (every 4 weeks) initially, followed by a transition to annual checks.
+     - *feedback:* The protocol emphasizes more frequent monitoring (every 4 weeks) initially, followed by quarterly weight checks thereafter.
    - Baseline and every 6 months thereafter Waiting six months would miss the critical window of rapid weight gain that typically occurs in the first three months.
    - Only at baseline and then if the patient reports physical changes Standardized, proactive monitoring is required regardless of patient-reported symptoms to ensure early intervention.
    - Baseline, 4 weeks, 8 weeks, and 12 weeks **← keyed correct**
@@ -28145,7 +28143,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
    - The results cannot be generalized to the US because it was conducted in Europe.
      - *feedback:* The RAISE-ETP was a NIMH-funded trial specifically conducted across 34 clinics in the United States.
    - The benefits of the program are uniform regardless of how long the patient was psychotic before treatment. This is a common overstatement; the data showed that the benefits were significantly more pronounced in those with a shorter DUP.
-   - CSC is only effective for those with a duration of untreated psychosis (<74 weeks). **← keyed correct**
+   - Re-key the item to match the deck's own overstatement-item convention (the key is the false claim): key 'The benefits of the program are uniform regardless of how long the patient was psychotic before treatment' as the common overstatement (its existing feedback already explains the DUP moderation), and reword the current keyed option into a true-statement distractor: 'The benefits were concentrated in patients with shorter duration of untreated psychosis (below the ~74-week median), so gains may be smaller when treatment starts late' — with feedback that this is an accurate limitation, not an overstatement: RAISE-ETP's moderator analysis showed greater benefit with shorter DUP, not that CSC is ineffective beyond 74 weeks. **← keyed correct**
      - *feedback:* While CSC is the standard of care, its most striking benefits were observed in the subgroup with a DUP of less than 74 weeks, highlighting the urgency of early detection.
    - The study only followed patients for 6 months, so long-term benefit is unknown. The initial report covered 2 years, and 5-year follow-up data has supported the sustainability of the benefits.
 
@@ -28361,7 +28359,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
    - Biological determinism in prescribing While psychiatry involves biological factors, the paper focuses on the collaborative process of decision-making rather than the biological etiology of disease.
    - Paternalistic clinical management This traditional model involves the clinician making decisions for the patient, which is the approach the paper argued against.
 
-2. **A 2022 Cochrane review of 14 RCTs evaluated the efficacy of Shared Decision-Making (SDM) interventions in mental health. Which outcome was found to be consistently improved?**
+2. **Rewrite the item to the review's actual result, e.g. stem: 'A 2022 Cochrane review of 15 RCTs evaluated Shared Decision-Making (SDM) interventions in mental health care. Which outcome showed some evidence of improvement?' keyed to 'Patients' perceived involvement in the decision-making process immediately after the encounter', with feedback that effects on knowledge, overall satisfaction, and clinical outcomes were uncertain (low- to very-low-certainty evidence). Align Q6's feedback with the same summary, and attribute knowledge/decisional-conflict gains to the general patient decision-aid literature if that teaching point is kept.**
    - Elimination of medication side effects
      - *feedback:* SDM helps patients choose treatments based on side effect profiles but does not inherently eliminate the biological side effects of medications.
    - Immediate reduction in psychotic symptoms Clinical outcomes, such as symptom reduction, showed less consistent improvements across the reviewed studies compared to process measures.
@@ -28560,7 +28558,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
 2. **A 32-year-old patient with Bipolar I Disorder presents with a depressive episode while taking therapeutic levels of lithium. Based on the clinical pearls from the STEP-BD trial, what is the most appropriate next step in management?**
    - Immediately add a high-dose SSRI like paroxetine.
      - *feedback:* The study suggests that adding antidepressants does not provide an efficacy advantage over placebo.
-   - Avoid psychotherapy as it has been shown to be less effective than medication in this population. The companion psychotherapy trial actually showed much higher recovery rates compared to medication alone.
+   - Avoid psychotherapy as it has been shown to be less effective than medication in this population. The companion psychotherapy trial showed higher recovery rates with intensive psychotherapy than with a brief collaborative-care control; patients in both arms continued mood-stabilizer pharmacotherapy.
    - Discontinue lithium and switch to antidepressant monotherapy. Antidepressant monotherapy is generally avoided in bipolar disorder due to the risk of destabilization, which was not the protocol in this adjunctive trial.
    - Optimize the current mood stabilizer therapy or consider evidence-based agents like lamotrigine or quetiapine. **← keyed correct**
      - *feedback:* Clinical guidance from the study emphasizes optimizing mood stabilizers first rather than reflexively adding antidepressants.
@@ -28582,7 +28580,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
    - Mood stabilizers should be optimized before considering antidepressants. This is a core clinical pearl derived from the trial results rather than an overstatement.
 
 5. **In the context of the STEP-BD program, how did the recovery rates in the intensive psychotherapy trial compare to the recovery rates in the antidepressant medication trial?**
-   - Intensive psychotherapy resulted in recovery rates as high as 64%, significantly higher than the medication trial. **← keyed correct**
+   - Intensive psychotherapy resulted in 1-year recovery rates as high as 64%, significantly higher than the 52% seen with brief collaborative care in the companion randomized trial. **← keyed correct**
      - *feedback:* Data from the companion trial showed that psychotherapy (CBT, IPSRT, FFT) was highly effective compared to the medication-only outcomes.
    - Both trials showed nearly identical recovery rates of roughly 25%. The psychotherapy trial showed significantly higher rates of recovery compared to the medication-focused trial.
    - The antidepressant trial had higher recovery rates, exceeding 50%. The antidepressant trial had notably low recovery rates of approximately 25%.
@@ -28652,7 +28650,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
      - *feedback:* While lithium treats mania, the study highlighted its specific comparative strength in preventing depressive episodes compared to valproate.
    - Rapid cycling Rapid cycling is a specific pattern of bipolar disorder, but the primary finding noted in the summary relates to depressive relapse prevention.
    - Depressive relapses **← keyed correct**
-     - *feedback:* Lithium's benefit was particularly strong in this area, demonstrated by an HR of 0.63 for depressive episodes.
+     - *feedback:* Rewrite the item to the trial's published finding, e.g. stem: 'In BALANCE, how did lithium monotherapy compare with valproate monotherapy for relapse prevention?' keyed to 'Lithium was superior at preventing new intervention for an emergent mood episode of either pole (HR 0.71, 95% CI 0.51-1.00)', with feedback noting the primary outcome covered relapse of any polarity and the trial did not establish a specific depressive-pole advantage. Do not key a polarity-specific claim or the 0.63 figure unless it is verified against the paper's polarity-specific secondary outcomes in the full report.
    - Mixed episodes The source material emphasizes depressive relapses rather than mixed states as the specific area of lithium's advantage.
 
 4. **Based on the clinical pearls from the BALANCE trial, what is the recommended approach for a patient experiencing an incomplete response to lithium monotherapy?**
@@ -28727,7 +28725,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
 
 2. **How did the effectiveness of the first-generation antipsychotic (FGA) perphenazine compare to the second-generation antipsychotics (SGAs) quetiapine, risperidone, and ziprasidone?**
    - Perphenazine was discontinued much earlier due to a higher rate of movement disorders.
-     - *feedback:* Contrary to expectations, the FGA was not discontinued significantly more often for extrapyramidal side effects compared to the SGAs in this trial.
+     - *feedback:* Perphenazine's overall time to discontinuation was comparable to the SGAs, and rated extrapyramidal symptoms did not differ significantly across drugs — although discontinuation specifically because of extrapyramidal effects was modestly more common with perphenazine (8% vs 2–4%).
    - Perphenazine was significantly less effective than all SGAs tested. This reflects the pre-trial assumption that SGAs were categorically superior, which the study results actually refuted.
    - Perphenazine performed comparably to the SGAs quetiapine, risperidone, and ziprasidone. **← keyed correct**
      - *feedback:* The trial found no significant difference in the time to discontinuation between the FGA perphenazine and these three SGAs.
@@ -28774,7 +28772,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
 
 1. **What was the primary conclusion of the CATIE-AD trial regarding the effectiveness of atypical antipsychotics compared to placebo for treating agitation or psychosis in Alzheimer's patients?**
    - Placebo was found to be dangerous due to the lack of symptom control for behavioral disturbances.
-     - *feedback:* Placebo actually had the longest median time to discontinuation (8.0 weeks) compared to the active drugs, suggesting it was better tolerated.
+     - *feedback:* Median time to discontinuation for any reason did not differ significantly between placebo (8.0 weeks) and the active drugs (olanzapine 8.1, risperidone 7.4, quetiapine 5.3 weeks), and placebo had the fewest discontinuations for intolerability.
    - Risperidone was identified as the only agent with a favorable risk-benefit ratio for long-term use. The trial did not find a superior risk-benefit profile for risperidone specifically; it shared the general risks and lack of superior efficacy seen across the class.
    - Antipsychotics were significantly more effective than placebo in extending the time to treatment discontinuation. In fact, the trial found that no antipsychotic was superior to placebo for the primary outcome of time to discontinuation for any reason.
    - The benefits of antipsychotic medications were largely offset by their adverse effects. **← keyed correct**
@@ -29423,7 +29421,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
    - Psychotherapy and pharmacotherapy were comparably effective. **← keyed correct**
      - *feedback:* The results suggested that for mild-to-moderate depression, both CBT/IPT and imipramine showed similar levels of effectiveness.
    - IPT was found to be the only effective treatment for mild cases. The study concluded that all active treatments were generally effective for this population, not just one specific psychotherapy.
-   - Placebo was found to be just as effective as CBT and IPT. All active treatments were found to produce significant improvement beyond the placebo control group.
+   - Placebo plus clinical management produced no improvement at all. In fact, patients in every condition, including placebo plus clinical management, improved significantly. Specific superiority over placebo was limited — superior recovery rates for imipramine plus clinical management and IPT, and none for CBT — and among less severely depressed patients no treatment separated from placebo; clear between-treatment differences were confined to the more severely depressed subgroup, strongest for imipramine plus clinical management.
 
 3. **In the context of the TDCRP, what does the 'Dodo bird verdict' refer to?**
    - The belief that treatment effectiveness is entirely dependent on the patient's age.
@@ -29445,7 +29443,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
      - *feedback:* Later meta-analyses, such as Weitz et al. (2015), challenged the severity moderation findings, suggesting the initial advantage might not be as robust as first thought.
    - Stating that the study established the methodology for psychotherapy research. This is considered a factual historical impact of the study rather than an overstatement.
    - Suggesting that patient preference should be considered in treatment selection. This is a recommended clinical pearl and a standard component of evidence-based practice.
-   - Observing that all active treatments showed improvement over placebo. This was a key finding of the study and is supported by the data presented.
+   - Observing that patients in all four conditions, including placebo plus clinical management, showed significant improvement. This was a key finding of the study and is supported by the data presented.
 
 6. **What is the recommended clinical approach for patients presenting with severe depression based on the broader implications of this research?**
    - Immediate referral for ECT as the first-line intervention
@@ -29466,7 +29464,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
 
 2. **In the POTS trial, how did the efficacy of CBT monotherapy compare to sertraline monotherapy?**
    - Neither monotherapy was superior to placebo
-     - *feedback:* Both CBT and sertraline demonstrated significantly higher remission rates than the 3.6% observed in the placebo group.
+     - *feedback:* Both monotherapies were superior to placebo on the primary CY-BOCS outcome; on the stricter remission outcome, CBT alone (39.3%) separated from placebo (3.6%) while sertraline alone (21.4%) did not reach statistical significance.
    - Sertraline was significantly superior to CBT The data indicated that medication alone was not more effective than therapy alone in this pediatric population.
    - CBT was significantly superior to sertraline While CBT is often preferred if only one modality is chosen, the study did not find a statistically significant difference in efficacy between the two.
    - The two monotherapies did not differ significantly from each other **← keyed correct**
@@ -29919,7 +29917,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
 
 2. **Which neurobiological system did the Zarate 2006 study target to produce rapid antidepressant effects, marking a departure from the traditional monoamine hypothesis?**
    - The serotonergic system via 5−HT 2A receptors
-     - *feedback:* This describes the mechanism of most traditional SSRIs or certain psychedelics, rather than ketamine's primary NMDA-related mechanism.
+     - *feedback:* 5-HT2A agonism is the mechanism of serotonergic psychedelics; traditional SSRIs act on the serotonin system by blocking the serotonin transporter. Neither describes ketamine's primary NMDA-related mechanism.
    - The dopaminergic reward pathway Although dopamine is involved in depression, the primary mechanism of ketamine is not direct dopamine receptor agonism.
    - The glutamate system via NMDA receptor antagonism **← keyed correct**
      - *feedback:* Ketamine acts as an N-methyl-D-aspartate (NMDA) antagonist, shifting focus to glutamate as a primary driver of rapid antidepressant response.
