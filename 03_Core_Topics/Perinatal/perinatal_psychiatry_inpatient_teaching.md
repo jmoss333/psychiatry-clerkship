@@ -30,6 +30,6 @@
 - Postpartum OCD intrusive thoughts are ego-dystonic and not command hallucinations — distinguish them to avoid both over- and under-reaction.
 - Stopping all medication is itself a risk decision; untreated perinatal illness endangers mother and infant too.
 
-**Pair with** — the <a href="tools/cssrs.html" target="_blank" rel="noopener">Columbia C-SSRS screener</a> for structured risk assessment that extends to the infant, and the [suicide-risk & safety pocket card](?page=pg_suicide.md).
+**Pair with** — the <a href="tools/cssrs.html" target="_blank" rel="noopener">Columbia C-SSRS official form &amp; training page</a> for structured risk assessment that extends to the infant, and the [suicide-risk & safety pocket card](?page=pg_suicide.md).
 
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI. Every pregnancy and lactation medication decision here is illustrative, not prescribing guidance — confirm agent, dose, and exposure risk against current labeling and your attending, with obstetrics and pharmacy involved.*
