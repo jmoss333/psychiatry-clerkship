@@ -379,7 +379,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **Slug:** `rounds_questions.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 8,700 words
+- **Length:** 8,702 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -516,7 +516,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Answer:** Involuntary orofacial and extremity movements after months-to-years of dopamine receptor-blocking agent exposure. First-line treatment: VMAT2 inhibitors (valbenazine, deutetrabenazine).
 
-- **Evidence:** Annualized incidence ~3.9% with SGAs vs. ~5.5% with FGAs. Valbenazine 80 mg showed AIMS improvement of −2.9 vs. +0.3 placebo.
+- **Evidence:** Annualized incidence ~3.9% with SGAs vs. ~5.5% with FGAs. In KINECT-3, valbenazine 80 mg improved AIMS by −3.2 vs. −0.1 with placebo.
 
 - **Key paper:** Correll & Citrome, J Clin Psychiatry 2021.
 
@@ -850,7 +850,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Answer:** Adding ERP is superior to adding risperidone or stress management for SSRI partial responders. Low-dose antipsychotic augmentation (particularly aripiprazole or risperidone) has evidence, especially in patients with comorbid tics.
 
-- **Evidence:** Foa et al., JAMA Psychiatry 2022 showed ERP augmentation was superior to risperidone augmentation.
+- **Evidence:** Simpson et al., JAMA Psychiatry 2013 showed ERP augmentation was superior to risperidone augmentation.
 
 - **Key paper:** Foa et al., JAMA Psychiatry 2022.
 
@@ -1302,7 +1302,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Key paper:** Lord et al., Lancet 2018.
 
-- **Pearl:** A child with intellectual disability may have social difficulties due to cognitive limitations, but will not show the **restricted/repetitive behaviors** characteristic of ASD — this is the key differentiator.
+- **Pearl:** Repetitive behaviors and stereotypies also occur in intellectual disability without ASD — the key differentiator is social communication that falls below what the child's general developmental level would predict.
 
 ## SLEEP DISORDERS (Questions 88–90)
 

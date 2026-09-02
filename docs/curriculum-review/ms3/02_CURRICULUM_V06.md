@@ -425,7 +425,7 @@ Know *which* protocol applies and *why*; open the EHR order set for the specific
 - **Slug:** `ect_neuromodulation.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `05_Psychopharmacology/ECT_Neuromodulation/ect_neuromodulation_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 595 words
+- **Length:** 660 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -440,7 +440,7 @@ Know *which* protocol applies and *why*; open the EHR order set for the specific
 
 - Choose ECT when a rapid, definitive response is needed: psychotic or catatonic depression, active suicidality, refusal to eat/drink, pregnancy, or prior ECT response.
 - Hold benzodiazepines and anticonvulsants pre-ECT (they blunt the seizure), and plan continuation treatment — relapse is the rule without it.
-- rTMS is outpatient with no anesthesia or memory effects; ketamine/esketamine act within hours and reduce suicidal ideation (esketamine requires REMS monitoring).
+- rTMS is outpatient with no anesthesia or memory effects; ketamine/esketamine act within hours on depressive symptoms — not on suicidality itself, so they never replace monitoring, means restriction, or safety planning (esketamine requires REMS monitoring).
 
 **Can't-miss / red-flag line:**
 
@@ -498,7 +498,7 @@ Know *which* protocol applies and *why*; open the EHR order set for the specific
 
 ## Rapid-acting and light-based options
 
-- **Esketamine (intranasal) and IV ketamine** — glutamatergic (NMDA) agents with **rapid antidepressant and anti-suicidal effects** in treatment-resistant depression (Zarate 2006 established the IV signal). Esketamine is delivered under a **REMS** with in-office monitoring; watch dissociation, sedation, and blood-pressure spikes.
+- **Esketamine (intranasal) and IV ketamine** — glutamatergic (NMDA) agents with **rapid antidepressant effects** in treatment-resistant depression, including in patients presenting with acute suicidal ideation — but note the limit: the pivotal trials showed rapid improvement in *depressive symptoms*, not a demonstrated effect on suicidality itself, and the label states that effectiveness in preventing suicide or reducing suicidal ideation has not been demonstrated (Zarate 2006 established the IV signal). Esketamine is delivered under a **REMS** with in-office monitoring; watch dissociation, sedation, and blood-pressure spikes.
 - **Bright light therapy** — first-line for **seasonal** depression, and — per a 2024 *JAMA Psychiatry* meta-analysis — an **effective *adjunctive* treatment for *nonseasonal* depression** as well (roughly doubling remission odds). Cheap and well-tolerated; screen for bipolar (can precipitate switch) and eye disease.
 
 **What the student does** —
@@ -513,7 +513,7 @@ Know *which* protocol applies and *why*; open the EHR order set for the specific
 - No absolute contraindications to ECT; raised ICP and unstable cardiac disease are the key relative ones.
 - Hold benzodiazepines/anticonvulsants before ECT (they blunt the seizure).
 - rTMS: outpatient, no anesthesia, small seizure risk, for treatment-resistant depression and OCD.
-- Ketamine/esketamine act within hours and reduce suicidal ideation; esketamine needs REMS monitoring.
+- Ketamine/esketamine act within hours on *depressive symptoms* — they do not substitute for monitoring, means restriction, or safety planning, and effectiveness in reducing suicidal ideation itself is not established; esketamine needs REMS monitoring.
 - Bright light therapy now has evidence as an adjunct in *nonseasonal* depression, not just SAD.
 
 **Pair with** — the [Mood topic](?page=t_mood.md), [Catatonia](?page=catatonia.md), the [Psychopharmacology primer](?page=psychopharm_primer.md), and the [Landmark Trials audio library](?page=landmark_trials.md).
@@ -883,7 +883,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **Slug:** `nutrition_metabolic.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `03_Core_Topics/Nutrition/nutrition_metabolic_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 693 words
+- **Length:** 704 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -962,7 +962,7 @@ For anyone starting an antipsychotic, the **ADA/APA 2004 consensus** establishes
 | **Weight / BMI** (and waist circumference) | Baseline → **4 wk → 8 wk → 12 wk → then quarterly** | Antipsychotic weight gain begins within weeks; monthly checks in the first 3 months catch the window where switching or intervening is most effective |
 | **Blood pressure** | Baseline → 12 wk → annually | Metabolic syndrome criterion |
 | **Fasting glucose or HbA1c** | Baseline → 12 wk → annually | Antipsychotic-associated diabetes |
-| **Fasting lipid panel** | Baseline → 12 wk → annually | Dyslipidemia, esp. triglycerides |
+| **Fasting lipid panel** | Baseline → 12 wk → every 5 y per the 2004 consensus (most services now recheck annually) | Dyslipidemia, esp. triglycerides |
 | Personal/family cardiometabolic history | Baseline | Risk stratification |
 
 The weight/BMI front-loading is intentional: early antipsychotic weight gain is the highest-yield signal and the best opportunity to switch agents or add metformin before the trajectory becomes entrenched. Monitor more frequently for any parameter that is elevated at baseline or worsens during titration.

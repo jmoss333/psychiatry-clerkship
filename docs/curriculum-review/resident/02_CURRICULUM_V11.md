@@ -257,7 +257,7 @@ For **mortality**, the agonist evidence is the strongest thing we have: all-caus
 - **Slug:** `cotw_20260726_etohwd_res.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-26_alcohol-withdrawal-delirium-tremens_Resident.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 3,097 words
+- **Length:** 3,185 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -322,7 +322,7 @@ You are the psychiatry consult resident. Medicine calls at 21:00 about a 54-year
 
 **Q1. Formulate this. What is the diagnosis, and what is the *mechanistic* reason his benzodiazepine requirement is escalating rather than falling?**
 
-*Teaching point:* This is **delirium tremens** — DSM-5-TR *alcohol withdrawal, with perceptual disturbances*, meeting criteria for a withdrawal delirium: fluctuating attention and awareness, perceptual disturbance, and severe autonomic instability, in a temporal window (~48–96 h) that fits precisely.
+*Teaching point:* This is **delirium tremens** — DSM-5-TR **alcohol withdrawal delirium** — a substance withdrawal delirium (ICD-10-CM F10.231), *not* alcohol withdrawal "with perceptual disturbances", a specifier reserved for hallucinations or illusions with intact reality testing occurring in the **absence** of delirium: fluctuating attention and awareness, perceptual disturbance, and severe autonomic instability, in a temporal window (~48–96 h) that fits precisely.
 
 The mechanism to articulate: chronic ethanol exposure produces **GABA-A receptor subunit reconfiguration** — not merely fewer receptors, but a shift toward subunit compositions (notably reduced α1 and altered γ2/δ expression) that are **less sensitive to benzodiazepines**, while **NMDA receptor upregulation** (including NR2B-containing receptors) drives glutamatergic excitotoxic hyperarousal [1,2]. Benzodiazepines are **allosteric modulators**: they require an endogenous GABA-A receptor population competent to respond. When that population is remodeled, escalating benzodiazepine doses yield diminishing returns — the definition of **benzodiazepine-resistant alcohol withdrawal**. Barbiturates, by contrast, both potentiate GABA-A **and, at higher concentrations, directly gate the chloride channel independent of GABA**, and additionally antagonize AMPA/kainate glutamatergic transmission — which is the pharmacologic rationale for phenobarbital in exactly this scenario [1,3].
 
@@ -376,7 +376,7 @@ The teaching move: **the workup runs in parallel with treatment, not before it.*
 - **Dexmedetomidine** may be added for autonomic control but **never as a benzodiazepine/barbiturate substitute** — no anti-seizure effect [1,11].
 - **Antipsychotics** only for refractory perceptual disturbance/agitation *after* adequate GABAergic therapy; they lower the seizure threshold and prolong QTc.
 - **Thiamine parenterally, before dextrose** [12]. Replete **magnesium** and potassium.
-- **Liver caveat:** with probable cirrhosis, prefer **lorazepam/oxazepam** (glucuronidation, no oxidative metabolism, no active metabolites) and recognize that sedatives can precipitate or worsen **hepatic encephalopathy** — a real reason to favor a controlled barbiturate load over an open-ended benzodiazepine escalation here [7].
+- **Liver caveat:** with probable cirrhosis, prefer **lorazepam/oxazepam** (glucuronidation, no oxidative metabolism, no active metabolites) and recognize that sedatives can precipitate or worsen **hepatic encephalopathy** — a real reason to avoid open-ended benzodiazepine escalation — but not, on hepatic grounds, an argument *for* phenobarbital: phenobarbital is partly hepatically metabolised, its already long half-life (~80–120 h) is further prolonged in cirrhosis, there is no reversal agent, and it can precipitate hepatic encephalopathy just as benzodiazepines can. If phenobarbital is used here it is because the withdrawal is benzodiazepine-resistant, and it must be used expecting a longer and less reversible effect than in a patient with normal hepatic function [7].
 
 **Workup in parallel:** non-contrast head CT, cultures/CXR/lactate, glucose, repeat electrolytes and Mg, medication reconciliation.
 
@@ -630,7 +630,7 @@ Mental status: alert, cooperative, tearful, with constricted affect and mood-con
 - **Slug:** `cotw_20260720_mdd_res.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-20_mdd-treatment-selection-augmentation_Resident.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 1,748 words
+- **Length:** 1,870 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -707,7 +707,7 @@ Given her obesity and weight concern, a **low-metabolic-risk partial agonist** (
 *Teaching point:* The **PRIME Care** RCT found that pharmacogenomic testing modestly influenced prescribing and produced a **small, time-limited improvement in remission** — the effect was statistically detectable but clinically modest and attenuated over follow-up [9]. The **CPIC guideline** provides actionable dosing guidance where a genotype is *already known* (e.g., **CYP2C19** and **CYP2D6** metabolizer status for SSRIs — poor metabolizers may need dose reduction; ultrarapid metabolizers may underexpose) but does not endorse routine pre-emptive testing to *select* the drug class [10]. Bottom line for the patient: testing can refine dosing and flag metabolism outliers, but it is not a validated "which drug will work" oracle; shared decision-making about efficacy vs. tolerability trade-offs remains primary.
 
 **Q5. When and how do you deploy esketamine/ketamine, and where does it sit in sequencing?**
-*Teaching point:* Intranasal **esketamine** is FDA-approved as adjunct for TRD and for MDD with acute suicidal ideation/behavior. A 2025 systematic review/meta-analysis supports **efficacy against depressive symptoms and, in the acute setting, suicidality**, with dissociation, sedation, and transient blood-pressure elevation as the main tolerability issues and REMS-mandated monitoring [8]. Discuss sequencing: esketamine is typically reserved after ≥2 oral failures, requires in-clinic administration/observation, and does not replace safety planning. Contrast with racemic IV ketamine (off-label, rapid but access/durability limits).
+*Teaching point:* Intranasal **esketamine** is FDA-approved as adjunct for TRD and for MDD with acute suicidal ideation/behavior. A 2025 systematic review/meta-analysis found **modest efficacy against depressive symptoms** (effect sizes ~0.15-0.23 at weeks 2-4, comparable to atypical-antipsychotic augmentation) and **no significant effect on suicidality at any time point**, with dissociation, sedation, and transient blood-pressure elevation as the main tolerability issues and REMS-mandated monitoring [8]. State the limit explicitly: the MDSI indication rests on rapid improvement in *depressive symptoms*, not on a demonstrated effect on suicidality — the pivotal ASPIRE trials did not separate from placebo on the suicidality-severity endpoint (CGI-SS-r), and the label states that effectiveness in preventing suicide or reducing suicidal ideation has not been demonstrated. Esketamine does not reduce the need for monitoring, means restriction, or safety planning. Discuss sequencing: esketamine is typically reserved after ≥2 oral failures, requires in-clinic administration/observation, and does not replace safety planning. Contrast with racemic IV ketamine (off-label, rapid but access/durability limits).
 
 **Q6. Integrate psychotherapy and relapse prevention into the plan.**
 *Teaching point:* For a recurrent (3rd-episode) patient, **relapse prevention is a primary goal**, not an afterthought. The **sequential model** — adding structured psychotherapy (CBT, well-being therapy, MBCT) after pharmacologic response to target residual symptoms — reduces relapse/recurrence in meta-analysis [4]. Residual insomnia and anhedonia are high-yield relapse predictors worth targeting directly. Plan for **maintenance pharmacotherapy** given ≥3 episodes (many guidelines favor indefinite maintenance after ≥3 recurrences).
@@ -732,7 +732,7 @@ Given her obesity and weight concern, a **low-metabolic-risk partial agonist** (
 
 ### Workup & Management
 
-**Workup / assessment:** Confirm adequacy of prior trials (dose, duration, adherence — verify via pharmacy refill history); structured mania screen and mood charting; measurement-based care (QIDS/PHQ-9 at each visit); metabolic baseline (weight, BMI, lipids, HbA1c) before an atypical antipsychotic; ECG if considering agents with QT liability; pregnancy planning discussion; consider genotype only if it will change dosing decisions.
+**Workup / assessment:** Confirm adequacy of prior trials (dose, duration, adherence — verify via pharmacy refill history); structured mania screen and mood charting; measurement-based care (QIDS/PHQ-9 at each visit); metabolic baseline (weight, BMI, lipids, HbA1c) before an atypical antipsychotic; **before lithium: creatinine/eGFR, TSH, calcium, urine pregnancy test, and a plan for a 12-hour trough level ~5 days after initiation and after every dose change, with counselling that NSAIDs (directly relevant to her migraines), thiazides, and ACE inhibitors/ARBs raise lithium levels**; ECG if considering agents with QT liability; pregnancy planning discussion; consider genotype only if it will change dosing decisions.
 
 **Management sequence for this patient:**
 1. **Augment** the (adequately dosed) sertraline with a **low-metabolic-risk agent** — aripiprazole/brexpiprazole/cariprazine or lithium — chosen collaboratively around her weight and sexual-function priorities [2,6,7].
@@ -779,7 +779,7 @@ Given her obesity and weight concern, a **low-metabolic-risk partial agonist** (
 - **Slug:** `cotw_20260720_bipolar_res.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-20_bipolar-mania_Resident.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 1,631 words
+- **Length:** 1,682 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -845,7 +845,7 @@ Consider: he mentions that during this episode he has also felt "wired but on ed
 *Teaching point:* Beyond stimulant intoxication and hyperthyroidism, residents should generate: **antidepressant/steroid/dopaminergic-induced mania**, **secondary ("organic") mania** from frontal/temporal or right-hemisphere lesions, MS, epilepsy, HIV/neurosyphilis, autoimmune/limbic encephalitis (e.g., anti-NMDA-R), and delirium. Late/atypical age of onset, focal neuro findings, or a fluctuating sensorium should lower the threshold for **neuroimaging, LP, and autoimmune/infectious workup**. Also weigh **schizoaffective disorder** (requires ≥2 weeks of psychosis absent a mood episode) and cluster-B/ADHD overlaps.
 
 **Q3. What is your workup, and how does it gate pharmacology?**
-*Teaching point:* Baseline: UDS, TSH, CBC, CMP (renal/hepatic), **beta-hCG in patients of childbearing potential**; ECG when QT-prolonging antipsychotics or high-risk profiles are in play; consider ammonia if valproate encephalopathy is suspected later. **Renal function anchors lithium** dosing/safety; **hepatic function and CBC anchor valproate**; **pregnancy status is decisive** — both lithium (Ebstein anomaly risk, though lower than historically cited) and especially **valproate (neural-tube defects, ~9–11% major malformation and dose-dependent neurodevelopmental harm)** are avoided when pregnancy is possible.
+*Teaching point:* Baseline: UDS, TSH, CBC, CMP (renal/hepatic), **beta-hCG in patients of childbearing potential**; ECG when QT-prolonging antipsychotics or high-risk profiles are in play; consider ammonia if valproate encephalopathy is suspected later. **Renal function anchors lithium** dosing/safety; **hepatic function and CBC anchor valproate**; **pregnancy status is decisive** — **valproate (neural-tube defects, ~9–11% major malformation and dose-dependent neurodevelopmental harm) is avoided in anyone who could become pregnant** unless a pregnancy-prevention programme is in place; **lithium is not in that tier** — the absolute Ebstein risk is far lower than historically cited (on the order of 1 in 1,000–2,000), so lithium is used with contraception and preconception counselling, level monitoring across the trimesters, and fetal echocardiography where indicated, and is rarely stopped abruptly given the high peripartum relapse risk.
 
 **Q4. Monotherapy vs. combination for acute mania — what does the evidence say, and how do you choose?**
 *Teaching point:* **CANMAT/ISBD 2018** first-line monotherapy: **lithium, quetiapine, divalproex, asenapine, aripiprazole, paliperidone, risperidone, cariprazine**; first-line **combinations** = lithium or divalproex **+** aripiprazole/asenapine/quetiapine/risperidone [1]. **Kishi et al. network meta-analysis (72 double-blind RCTs, n≈16,442)**: aripiprazole, asenapine, carbamazepine, cariprazine, haloperidol, lithium, olanzapine, paliperidone, quetiapine, risperidone, tamoxifen, valproate, and ziprasidone all beat placebo for response; however, only **aripiprazole, olanzapine, quetiapine, and risperidone** had better acceptability (all-cause discontinuation) than placebo, and **topiramate was worse** [2]. Practical drivers: **symptom severity and psychosis** (favor combination and an antipsychotic), **mixed features** (favor SGAs/valproate over lithium; avoid antidepressants), **prior response**, **metabolic/QTc/EPS risk tolerance**, and **maintenance intent**. Combination therapy generally yields faster/greater response at the cost of tolerability.

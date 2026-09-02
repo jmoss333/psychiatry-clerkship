@@ -119,7 +119,10 @@ if [ -n "${GIT_LFS_FETCH_INCLUDE:-}" ]; then
   log "honouring GIT_LFS_FETCH_INCLUDE=$GIT_LFS_FETCH_INCLUDE"
 fi
 start=$(date +%s)
-if out=$(git lfs pull "${PULL_ARGS[@]}" 2>&1); then
+# ${PULL_ARGS[@]+...}: bash < 4.4 (macOS ships 3.2) treats "${empty[@]}" as unset under `set -u`,
+# which aborts this substitution with rc=1 and an EMPTY $out — the script would then report
+# `git lfs pull failed (exit 1)` with no cause, exactly the diagnosis this step exists to give.
+if out=$(git lfs pull ${PULL_ARGS[@]+"${PULL_ARGS[@]}"} 2>&1); then
   rc=0
 else
   rc=$?

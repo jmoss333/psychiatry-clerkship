@@ -32,4 +32,22 @@ bash "$TOP/bin/verify.sh" || {
 HOOK
 chmod +x "$HOOK_DIR/pre-push"
 echo "installed: $HOOK_DIR/pre-push"
+
+# pre-commit: the fast gate (< 2 s) over STAGED content — LFS pointer integrity, agent-doc
+# parity, machine paths, crisis literals, dose literals, localStorage namespaces. It shares
+# its checks with the Claude Code hooks in .claude/hooks/, so an edit that a session hook
+# would have refused is refused again at commit time for anyone editing by hand.
+cat > "$HOOK_DIR/pre-commit" <<'HOOK'
+#!/usr/bin/env bash
+# Installed by bin/install-hooks.sh. Fast staged-content gate; the full gate is pre-push.
+set -uo pipefail
+TOP="$(git rev-parse --show-toplevel)"
+[ -f "$TOP/.claude/hooks/precommit_gate.py" ] || exit 0   # branch predates the gate
+python3 "$TOP/.claude/hooks/precommit_gate.py" || {
+  echo "pre-commit BLOCKED — fix the findings above, or commit with --no-verify and justify it in the PR."
+  exit 1
+}
+HOOK
+chmod +x "$HOOK_DIR/pre-commit"
+echo "installed: $HOOK_DIR/pre-commit"
 echo "(shared by all worktrees of this repo; re-run after a fresh clone)"
