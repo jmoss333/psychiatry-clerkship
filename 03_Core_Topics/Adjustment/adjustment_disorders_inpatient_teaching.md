@@ -39,6 +39,6 @@
 
 <!-- crisis-block -->
 
-**Pair with** — the [Mood topic](?page=t_mood.md), the [Anxiety/Trauma/OCD topic](?page=t_anxiety.md), the [Suicide Risk & Safety pocket guide](?page=pg_suicide.md), and the <a href="tools/cssrs.html" target="_blank" rel="noopener">Columbia C-SSRS screener</a>.
+**Pair with** — the [Mood topic](?page=t_mood.md), the [Anxiety/Trauma/OCD topic](?page=t_anxiety.md), the [Suicide Risk & Safety pocket guide](?page=pg_suicide.md), and the <a href="tools/cssrs.html" target="_blank" rel="noopener">Columbia C-SSRS official form &amp; training page</a>.
 
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*

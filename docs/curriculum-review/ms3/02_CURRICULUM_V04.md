@@ -6,12 +6,130 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 
 ---
 
+## Geriatric
+
+- **Slug:** `t_geri.md` · **Type:** md · **Sidebar:** listed
+- **Source:** `03_Core_Topics/Geriatric/geriatric_psychiatry_inpatient_teaching.md`
+- **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
+- **Length:** 893 words
+
+<!-- topic_meta overlay -->
+#### Structured metadata (`topic_meta.json` → this page)
+
+> flagged **high-yield** · est. read 5 min
+
+**TL;DR (shown above the page text):**
+
+> Separate delirium vs dementia vs depression in every confused elder, treat the reversible, and deprescribe before you prescribe — the drug list is often the diagnosis.
+
+**Key points (bulleted card):**
+
+- Inattention is the fingerprint of delirium — test it at the bedside (digit span, months backward) rather than inferring it.
+- Effortful 'I don't know' answers with disengagement suggest pseudodementia — treat the depression and cognition improves.
+- Beers Criteria plus anticholinergic-burden review on every med list; start low, go slow on anything new.
+
+**Can't-miss / red-flag line:**
+
+> New psychosis in an older adult is delirium or another medical cause until proven otherwise — work it up before you call it psychiatric.
+
+**Rule-out list (differential the page forces):**
+
+- Delirium (inattention, fluctuation)
+- Medication effects / anticholinergic load
+- Infection, retention, constipation, pain
+- Depression (pseudodementia)
+- Vascular depression
+
+**First move (the action the page tells the learner to take):**
+
+> Test attention formally, get collateral for the true baseline and tempo of change, review every medication against Beers — then treat what's reversible.
+
+**Clinical-workflow narration (per-stage coaching text):**
+
+- **ask** — Establish baseline cognition, acute change, medications, falls, sleep, pain, infection symptoms, function, and caregiver observations.
+- **mse** — Prioritize arousal, attention, orientation, memory, language, executive function, psychosis, affect, and gait/psychomotor change.
+- **safety** — Assess delirium, falls, wandering, medication toxicity, self-neglect, driving/weapons, exploitation, and caregiver capacity.
+- **say** — A sudden change in attention or alertness makes us look for a medical cause before assuming this is dementia or depression.
+- **collateral** — Ask family what changed from baseline, who manages medications, what home risks exist, and what support is realistic.
+- **rounds** — Present delirium vs dementia vs depression, reversible causes, medication burden, capacity concerns, and discharge supports.
+- **exam** — Delirium is acute/fluctuating inattention; dementia is chronic decline; depression can mimic cognitive impairment.
+- **actions** — Open capacity tool; Open delirium page
+
+**Embedded check-for-understanding**
+
+1. *Stem:* An 82-year-old admitted for 'failure to thrive' answers 'I don't know' to most cognitive questions, gives up easily, and stopped cooking after her husband died. A structured cognitive screen is mildly impaired. Most likely explanation?
+   - Early Alzheimer dementia — start a cholinesterase inhibitor
+   - Depressive pseudodementia — treat the depression and retest cognition **← keyed correct**
+   - Delirium — search for a UTI
+   - Normal aging — reassure and discharge
+   - *Rationale:* Effortful 'I don't know' answers, giving up easily, and a clear mood context are the pseudodementia pattern — cognition improves when the depression is treated. Delirium requires inattention and fluctuation, and dementia patients more often minimize or confabulate than disengage.
+
+**Cross-references and tagging:**
+
+- **Related tools:** `capacity.html`, `decision-aids.html`
+- **Workflow stages:** `diagnosis`, `safety`, `treatment`, `family`, `exam`
+- **Workflow modes:** `ward`, `family`, `safety`, `5min`, `shelf`
+- **Shelf blueprint tags:** `neurocog`
+- **EPA crosswalk:** `EPA1`, `EPA2`, `EPA3`
+
+#### Page text (as shipped)
+
+# Geriatric Psychiatry on the Inpatient Unit
+
+
+**In one line** — On the geriatric inpatient unit, your central job is to separate reversible from irreversible causes of cognitive and behavioral change, treat the treatable, and avoid iatrogenic harm from the very drugs meant to help.
+
+**How it presents on the unit** — Older adults rarely arrive with a tidy chief complaint. Watch for late-life depression (often somatic, apathetic, or framed as "I just want to go home"), new or worsening psychosis (which in this age group is a red flag for an organic cause until proven otherwise), agitation in the setting of dementia, and the overlapping delirium-dementia-depression triad. Functional decline, falls, poor intake, and "failure to thrive" are common admitting framings that hide a psychiatric or medical driver.
+
+**Differential & can't-miss mimics** — The skill that defines competent geriatric psychiatry is distinguishing delirium vs dementia vs depression. Delirium is acute, fluctuating, and marked by inattention; it is a medical emergency and the can't-miss diagnosis on every confused elder. Dementia is chronic and progressive with preserved alertness early. Depression can masquerade as cognitive impairment — the pseudodementia presentation (Caine 1981), where patients say "I don't know" rather than confabulate, show effortful disengagement, and improve cognitively when mood is treated. Do not forget vascular depression (Alexopoulos 1997): late-onset depression with executive dysfunction and white-matter burden, often less responsive to monotherapy. These three states coexist; finding one does not exclude the others.
+
+**Initial workup** — Keep it focused and bedside-anchored. Formally test attention (digit span, months-of-the-year backward, serial subtraction) — inattention reorients you toward delirium. Perform a structured cognitive screen and document a baseline. Review every medication for deliriogenic and anticholinergic load. Screen for infection (UTI, pneumonia), metabolic derangement, hypoxia, urinary retention, constipation, and pain. Collateral history is not optional; establish the true baseline and the tempo of change.
+
+**Acute inpatient management** — Apply the Beers Criteria and assess cumulative anticholinergic burden, then actively deprescribe deliriogenic and high-risk agents. Dose with start-low-go-slow titration. Treat fall risk and orthostasis as primary safety issues, not afterthoughts — many psychotropics worsen both. Respect the antipsychotic boxed warning for dementia-related behavioral disturbance: non-pharmacologic strategies come first, and antipsychotics are used only when necessary, at the lowest effective dose, time-limited, with documented risk-benefit discussion. Capacity assessment is frequently in play (treatment refusal, disposition disputes); assess it for the specific decision at hand. For severe, treatment-resistant, psychotic, or catatonic late-life depression, ECT is effective and often well-tolerated in older adults — keep it on the table early rather than as a last resort.
+
+**What the student does** —
+- Test attention at the bedside daily and document fluctuation.
+- Build a complete medication reconciliation and flag every Beers/anticholinergic agent for the team.
+- Call family or the facility for collateral on baseline cognition and function.
+- Screen for and report constipation, retention, pain, and infection signs.
+- Sit with the patient unhurried — orientation, sensory aids (glasses, hearing aids), and presence are real interventions.
+
+**Disposition & discharge essentials** — Confirm cognitive and functional baseline before discharge; clarify whether the patient can return to prior setting or needs a higher level of care. Reconcile medications again, document what was deprescribed and why, and ensure a clear taper plan for any time-limited antipsychotic. Confirm follow-up, caregiver education, and safety supports (fall precautions, supervision of meds).
+
+**High-yield pearls**
+- New psychosis in an older adult is delirium or a medical cause until proven otherwise.
+- Inattention is the fingerprint of delirium — test it, don't infer it.
+- "I don't know" answers and effortful disengagement suggest pseudodementia; treat the depression.
+- The drug list is often the diagnosis — deprescribing is active treatment.
+- Non-pharmacologic management is first-line for dementia-related agitation; antipsychotics are time-limited exceptions.
+
+> <div class="crisis-block-hook" hidden></div>
+>
+> ### If someone is in crisis
+>
+> On the unit, a patient in immediate danger is an escalation to your supervising resident or attending and the charge nurse — not a phone call. These lines are what you put IN a patient's safety plan, what families use after discharge, and what you can use yourself.
+>
+> - **988 Suicide & Crisis Lifeline** — Call or text 988. Chat at chat.988lifeline.org. 24/7, free, confidential. Spanish available by call, text, and chat; a dedicated line serves Deaf/Hard-of-Hearing callers. Calls placed in Maine route to Maine crisis specialists.
+> - **Crisis Text Line** — Text HOME to 741741. Text HOLA to 741741 for Spanish. 24/7, free. Text-only. Often the most acceptable option for adolescents and young adults who will not make a phone call.
+> - **Maine Crisis Line** — 1-888-568-1112. Text and chat available via the Maine Crisis Line website. 24/7. Staffed by clinically trained crisis workers and the gateway to Maine's mobile crisis teams — the number that actually dispatches a face-to-face response.
+> - **Veterans Crisis Line** — Dial 988 then press 1. Text 838255. 24/7. No VA enrollment required. Ask about service history — it changes which line is the right referral.
+> - **Emergency services** — 911. 24/7. For imminent danger to life.
+>
+> *Contacts verified 2026-07-27 against official sources. Maintained in `crisis_resources.json`; do not edit these numbers inline.*
+
+**Pair with** — the [Delirium guidance](?page=delirium.md), the <a href="tools/capacity.html" target="_blank" rel="noopener">Decisional Capacity tool</a>, and the [Differential Diagnosis scaffolds](?page=ddx.md).
+
+*Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
+
+
+---
+
 ## Perinatal
 
 - **Slug:** `t_perinatal.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `03_Core_Topics/Perinatal/perinatal_psychiatry_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 1,141 words
+- **Length:** 1,145 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -119,7 +237,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - Postpartum OCD intrusive thoughts are ego-dystonic and not command hallucinations — distinguish them to avoid both over- and under-reaction.
 - Stopping all medication is itself a risk decision; untreated perinatal illness endangers mother and infant too.
 
-**Pair with** — the <a href="tools/cssrs.html" target="_blank" rel="noopener">Columbia C-SSRS screener</a> for structured risk assessment that extends to the infant, and the [suicide-risk & safety pocket card](?page=pg_suicide.md).
+**Pair with** — the <a href="tools/cssrs.html" target="_blank" rel="noopener">Columbia C-SSRS official form &amp; training page</a> for structured risk assessment that extends to the infant, and the [suicide-risk & safety pocket card](?page=pg_suicide.md).
 
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI. Every pregnancy and lactation medication decision here is illustrative, not prescribing guidance — confirm agent, dose, and exposure risk against current labeling and your attending, with obstetrics and pharmacy involved.*
 
@@ -1104,7 +1222,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **Slug:** `t_adjustment.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `03_Core_Topics/Adjustment/adjustment_disorders_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 906 words
+- **Length:** 910 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -1221,119 +1339,6 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 >
 > *Contacts verified 2026-07-27 against official sources. Maintained in `crisis_resources.json`; do not edit these numbers inline.*
 
-**Pair with** — the [Mood topic](?page=t_mood.md), the [Anxiety/Trauma/OCD topic](?page=t_anxiety.md), the [Suicide Risk & Safety pocket guide](?page=pg_suicide.md), and the <a href="tools/cssrs.html" target="_blank" rel="noopener">Columbia C-SSRS screener</a>.
+**Pair with** — the [Mood topic](?page=t_mood.md), the [Anxiety/Trauma/OCD topic](?page=t_anxiety.md), the [Suicide Risk & Safety pocket guide](?page=pg_suicide.md), and the <a href="tools/cssrs.html" target="_blank" rel="noopener">Columbia C-SSRS official form &amp; training page</a>.
 
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
-
-
----
-
-## Culture, Disparities & Formulation
-
-- **Slug:** `cultural_psychiatry.md` · **Type:** md · **Sidebar:** listed
-- **Source:** `03_Core_Topics/Cultural_Psychiatry/cultural_psychiatry_inpatient_teaching.md`
-- **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 622 words
-
-<!-- topic_meta overlay -->
-#### Structured metadata (`topic_meta.json` → this page)
-
-> est. read 4 min
-
-**TL;DR (shown above the page text):**
-
-> Elicit the patient's explanatory model, use the DSM-5-TR Cultural Formulation Interview, work through trained interpreters — never family — and guard against documented diagnostic bias.
-
-**Key points (bulleted card):**
-
-- Kleinman's explanatory-model questions surface what the illness means to the patient.
-- Cultural concepts of distress (e.g., ataque de nervios) can mimic panic or psychosis — ask before you label.
-- Minority patients are over-diagnosed with schizophrenia and under-diagnosed with mood disorders — a documented bias to guard against.
-
-**Can't-miss / red-flag line:**
-
-> Never use family members — especially children — as interpreters; book a trained professional and speak directly to the patient.
-
-**Rule-out list (differential the page forces):**
-
-- Misdiagnosis from language or cultural bias
-- Cultural idiom of distress vs primary disorder
-- Religious or spiritual experience vs psychosis
-- Trauma or migration-related distress
-
-**First move (the action the page tells the learner to take):**
-
-> Ask the explanatory-model questions early, then structure a real cultural formulation with the CFI's four domains.
-
-**Clinical-workflow narration (per-stage coaching text):**
-
-- **ask** — Ask the patient what they call the problem, what they think caused it, what they fear most, what help they expect, and what would make care feel respectful.
-- **mse** — Separate culturally shaped expression from psychopathology; describe affect, beliefs, language, and behavior without assuming your own norm is neutral.
-- **safety** — Use trained interpreters for safety questions, assess discrimination/trauma and structural barriers, and avoid family interpreters for confidential or high-risk topics.
-- **say** — I do not want to assume my framework fits yours. Can you tell me how you understand what is happening?
-- **collateral** — Ask about baseline, family meaning, community supports, immigration/language barriers, religious or cultural practices, and what the patient permits sharing.
-- **rounds** — Present the cultural formulation as clinical reasoning: explanatory model, identity/context, supports, barriers, bias risks, and treatment implications.
-- **exam** — DSM-5-TR Cultural Formulation Interview, trained interpreters, and diagnostic bias around psychosis vs mood disorders are high-yield.
-- **actions** — Open Interview & MSE; Practice guardedness; Practice interpreter/culture family contact
-
-**Embedded check-for-understanding**
-
-1. *Stem:* A Spanish-speaking patient describes sudden trembling, screaming, and a sense of losing control after a family conflict. Her son offers to interpret. Best first step?
-   - Book a professional interpreter and explore the episode through the patient's explanatory model before assigning a diagnosis **← keyed correct**
-   - Diagnose panic disorder and start an SSRI
-   - Diagnose brief psychotic disorder and start an antipsychotic
-   - Let her son interpret to save time
-   - *Rationale:* This presentation is consistent with ataque de nervios, a cultural concept of distress that can mimic panic or psychosis; a professional interpreter (never family) and the explanatory model prevent mislabeling.
-
-**Cross-references and tagging:**
-
-- **Related tools:** `mse.html`, `interview-circle.html`, `communication-practice.html`, `family-systems.html`
-- **Communication cases:** `guardedness_privacy_001`, `collateral_questions_001`
-- **Workflow stages:** `encounter`, `diagnosis`, `communication`, `family`, `team`
-- **Workflow modes:** `ward`, `family`, `5min`, `shelf`
-- **Shelf blueprint tags:** `relational`
-- **EPA crosswalk:** `EPA1`, `EPA9`
-- **Call-to-action buttons:** Open Ethics & the Law; Practice interpreter/culture family contact
-
-#### Page text (as shipped)
-
-# Culture, Disparities & the Cultural Formulation
-
-
-**In one line** — Culture shapes how distress is experienced, expressed, and treated — and ignoring it produces misdiagnosis and inequity — so the core clerkship skills are eliciting the patient's own **explanatory model**, using the **Cultural Formulation Interview**, working correctly with **interpreters**, and recognizing the **disparities and biases** that distort psychiatric care.
-
-**Why it matters on the unit** — The same inner experience can present as an "idiom of distress" you won't recognize unless you ask. Diagnostic accuracy, rapport, adherence, and safety all depend on understanding the patient's context — and documented biases (see below) mean cultural humility is a patient-safety issue, not a courtesy.
-
-**Elicit the explanatory model** — Ask, in the patient's own terms: *What do you call this problem? What do you think caused it? How does it affect you? What are you most afraid of? What treatment do you expect?* (Kleinman's explanatory-model questions.) This surfaces beliefs, expectations, and **cultural concepts of distress** — culturally patterned ways of experiencing/expressing suffering (e.g., *ataque de nervios*, *susto*) that can be mistaken for panic, psychosis, or malingering.
-
-**Cultural Formulation Interview (CFI)** — DSM-5-TR provides the **CFI**, a set of standardized questions across four domains: (1) cultural definition of the problem, (2) cultural perceptions of cause, context, and support, (3) cultural factors affecting self-coping and past help-seeking, and (4) cultural factors affecting current help-seeking. Use it to build the **cultural formulation** within your biopsychosocial assessment.
-
-**Disparities & bias — what's tested and true** — Mental-health disparities are driven by access, stigma, social determinants, and clinician bias, not by different rates of underlying illness. A classic, exam-relevant example: **Black (and some other minority) patients are disproportionately *over*-diagnosed with schizophrenia and *under*-diagnosed with mood disorders** relative to comparable presentations. Social determinants — poverty, housing, trauma, discrimination — are core clinical data, not background. Structural and cultural humility means examining how the *system* and *your own defaults* contribute.
-
-**Working with interpreters** — Use a **trained professional interpreter** (in person or via phone/video) for any language barrier — **not family members or children**, who introduce error and confidentiality/role problems. Speak **to the patient** in the first and second person, in short segments; allow extra time; and remember interpreters convey meaning, not just words.
-
-**Religion, spirituality & community** — Ask about faith and community supports, which can be protective and central to recovery; distinguish culturally normative beliefs and experiences (e.g., bereavement visions, religious practices) from psychopathology before labeling them.
-
-**What the student does** —
-- Ask the explanatory-model questions early; don't assume your framework matches the patient's.
-- Use the CFI to structure a real cultural formulation, not a one-line demographic label.
-- Book a professional interpreter and address the patient directly — never lean on family to interpret.
-- Distinguish culturally normative beliefs/experiences from psychopathology.
-- Name social determinants and watch for diagnostic bias (e.g., schizophrenia over-diagnosis) in yourself and the team.
-
-**High-yield pearls**
-- Kleinman's explanatory-model questions surface what the illness *means* to the patient.
-- The DSM-5-TR Cultural Formulation Interview is the standardized tool — know it exists and what it covers.
-- Cultural concepts of distress (e.g., *ataque de nervios*) can mimic panic or psychosis — ask before you label.
-- Use trained interpreters, not family/children; speak directly to the patient.
-- Minority patients are over-diagnosed with schizophrenia and under-diagnosed with mood disorders — a documented bias to guard against.
-- Social determinants of mental health are clinical data; address them in the formulation and plan.
-
-**Pair with** — the [Interview & MSE pocket guide](?page=pg_interview.md), the [Formulation & DDx pocket guide](?page=pg_formulation.md), [Ethics & the Law](?page=ethics_legal.md), and the <a href="tools/mse.html" target="_blank" rel="noopener">Mental Status Exam trainer</a>.
-
-*Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
-
-
----
-
-# SECTION: Assess Safety and Acuity  *(pinned in sidebar)*

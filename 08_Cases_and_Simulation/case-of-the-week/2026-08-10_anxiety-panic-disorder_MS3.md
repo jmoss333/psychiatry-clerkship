@@ -118,7 +118,9 @@ The practical implications for this visit:
 
 - **Screen for depression and for suicidal ideation, every time**, in every anxiety patient — not because panic attacks are dangerous in themselves, but because the comorbidity that most often rides along with panic disorder is the one that carries the risk.
 - **Ask about alcohol and sedative use.** Self-medication is common and independently raises risk.
-- **If ideation is present:** shift into a full risk assessment, ask directly about intent and plan, involve your senior and the attending the same day, and move to **collaborative safety planning** — identifying personal warning signs, coping strategies, people and settings that provide distraction and support, who to contact in a crisis, and reducing access to lethal means. Document the plan and arrange concrete follow-up. **Escalate rather than manage alone.** In the US, **988** reaches the Suicide & Crisis Lifeline.
+- **If ideation is present:** shift into a full risk assessment, ask directly about intent and plan, involve your senior and the attending the same day, and move to **collaborative safety planning** — identifying personal warning signs, coping strategies, people and settings that provide distraction and support, who to contact in a crisis, and reducing access to lethal means. Document the plan and arrange concrete follow-up. **Escalate rather than manage alone.**
+
+<!-- crisis-block -->
 
 **Q7. How do you answer her question — "Am I going to have to live like this?"**
 

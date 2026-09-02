@@ -121,7 +121,9 @@ A separate systematic review and meta-analysis of risk factors *within* panic di
 
 Map that onto this patient: fourteen months of illness, prominent avoidance consistent with agoraphobia, nightly alcohol use, an unscreened possible PTSD/grief syndrome, escalating benzodiazepine use, and functional contraction across work, driving, and exercise. **Several of the identified risk factors are present.** A rapid denial in a guarded patient with a repressive coping style — the very style described in the pseudopheochromocytoma literature [10] — is not reassurance.
 
-**Practically:** screen formally for MDD and PTSD; quantify alcohol properly; ask about suicidal ideation directly, unhurriedly, and again at follow-up rather than only at intake. **If ideation emerges**, complete a structured risk assessment, and move to **collaborative safety planning** — warning signs, internal coping strategies, social contacts and settings that provide distraction and support, professional and crisis contacts, and reducing access to lethal means, with the alcohol and the benzodiazepine supply both addressed as part of that conversation. Escalate to your attending same-day and document reasoning and disposition. In the US, **988** reaches the Suicide & Crisis Lifeline.
+**Practically:** screen formally for MDD and PTSD; quantify alcohol properly; ask about suicidal ideation directly, unhurriedly, and again at follow-up rather than only at intake. **If ideation emerges**, complete a structured risk assessment, and move to **collaborative safety planning** — warning signs, internal coping strategies, social contacts and settings that provide distraction and support, professional and crisis contacts, and reducing access to lethal means, with the alcohol and the benzodiazepine supply both addressed as part of that conversation. Escalate to your attending same-day and document reasoning and disposition.
+
+<!-- crisis-block -->
 
 ---
 
