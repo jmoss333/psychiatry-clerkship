@@ -72,6 +72,26 @@ RES_EXTRA=[
 # Fail closed (2026-08-01 audit): the copytree base means a missing resident-only
 # source would silently ship the inherited MS3 file under the resident nav title.
 common.copy_required_sources(RES_EXTRA, LIB, OUT+"/content", label="resident content")
+# Crisis-block markers in resident-only markdown (2026-09-01): RES_EXTRA pages are written
+# fresh here and never pass through build_deploy's inject-at-copy loop, so a marker in a
+# resident-only source was silently inert. Mirror the MS3 semantics — inject right after the
+# copy, then fail closed if a required resident safety surface lost its block.
+_crisis_data=_crisis.load(LIB)
+_res_crisis_done=set()
+for _src,_dst in RES_EXTRA:
+    _p=os.path.join(OUT,"content",_dst)
+    _t=open(_p,encoding="utf-8").read()
+    _t,_did=_crisis.inject_markdown(_t,_crisis_data)
+    if _did:
+        open(_p,"w",encoding="utf-8").write(_t)
+        _res_crisis_done.add(_dst)
+_RES_CRISIS_REQUIRED_MD={"cotw_20260810_panic_res.md"}
+_res_crisis_gap=sorted(_RES_CRISIS_REQUIRED_MD-_res_crisis_done)
+if _res_crisis_gap:
+    print("BUILD ABORTED — crisis-contact block missing from required resident safety surface(s):")
+    for _g in _res_crisis_gap: print("   -",_g,"(expected the crisis-block marker in its source)")
+    raise SystemExit(1)
+print("crisis block injected (resident-only md):",len(_res_crisis_done),"page(s)")
 # Resident-only markdown is written fresh above (not inherited via the copytree), so it
 # needs the same banner-strip + contrast fix every MS3 content page already received.
 common.strip_review_banners(OUT)
