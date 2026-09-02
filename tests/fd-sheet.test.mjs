@@ -139,6 +139,9 @@ function liveShellBoundary(index, topicMeta, templateHtml) {
     function fdClone(value){var out={};for(var key in value){out[key]=value[key];}return out;}
     function progLoad(){return {};}
     function srsState(){return {stats:{streak:0}};}
+    function safeLS(){return null;}
+    function capRead(){return {v:1,items:[]};}
+    function fdActivityDays(){return [false,false,false,false,false,false,false];}
     function fdProgressDoneMap(){return {};}
     function LS(){return '';}
     function fdFindWeek(index,n){for(var i=0;i<index.weeks.length;i++){if(index.weeks[i].n===n)return index.weeks[i];}return null;}
