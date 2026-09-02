@@ -14,7 +14,7 @@ The boiled-down starting set for the inpatient rotation. Read these fourteen and
 
 ## Acute & safety — the can't-miss
 
-- **[Suicide risk & safety planning](?page=pg_suicide.md)** — structured risk assessment and a collaborative safety plan; pairs with the C-SSRS tool in the sidebar.
+- **[Suicide risk & safety planning](?page=pg_suicide.md)** — structured risk assessment and a collaborative safety plan; pairs with the C-SSRS official-form & training page in the sidebar.
 - **[Agitation & de-escalation](?page=agitation.md)** — treat the driver, not just the behavior; verbal de-escalation before PRN, PRN before restraint. Pairs with the visual Decision Aids.
 - **[Consult essentials: capacity, delirium, catatonia & withdrawal](?page=exp_consult.md)** — the four bedside calls you'll be asked about most, in one place.
 
@@ -33,4 +33,4 @@ The boiled-down starting set for the inpatient rotation. Read these fourteen and
 
 ---
 
-*Keep two pocket cards on you — [Interview & MSE](?page=pg_interview.md) and [Formulation & DDx](?page=pg_formulation.md). The interactive tools (C-SSRS, CIWA-Ar/COWS, Decisional Capacity, MSE builder, Algorithms & Decision Aids) are in the sidebar. Joshua Moss, MD | Psychiatrist*
+*Keep two pocket cards on you — [Interview & MSE](?page=pg_interview.md) and [Formulation & DDx](?page=pg_formulation.md). The interactive tools (Withdrawal CIWA-Ar/COWS, Decisional Capacity, MSE builder, Algorithms & Decision Aids) and the C-SSRS official-form & training page are in the sidebar. Joshua Moss, MD | Psychiatrist*
