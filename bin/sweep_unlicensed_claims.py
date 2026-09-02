@@ -42,7 +42,13 @@ MANIFEST = ROOT / "13_Faculty_Resources" / "_automation" / "site_build" / "site_
 
 # --- what counts as attribution, read generously -----------------------------
 ATTRIBUTION = re.compile(
-    r"\[\d+\s*[✓✔]\]"                    # [5 ✓] anchor
+    # anchors are single or multi-reference: [5 ✓] and [27 ✓, 28 ✓]
+    r"\[\s*\d+\s*[✓✔](?:\s*,\s*\d+\s*[✓✔])*\s*\]"
+    # THE REPO'S OWN CLAIM ANCHOR, and the strongest attribution it has:
+    # `[^source-id]` binds one claim to one evidence_registry id, is validated by
+    # validate_claim_anchors.py, and is stripped by build_deploy.py so learners
+    # never see it. Missing this made a properly anchored page look unsourced.
+    r"|\[\^[a-z0-9][a-z0-9-]*\]"
     r"|doi\.org/|\bdoi:|\[DOI\]"                   # DOI in any form
     r"|\bPMID\b"                                   # PMID
     r"|\*\*(?:Key paper|Evidence|Source|Citation|Reference)s?:?\*\*"
@@ -57,7 +63,10 @@ ATTRIBUTION = re.compile(
 
 # --- what counts as an assertion ---------------------------------------------
 STAT = re.compile(
-    r"\b(?:RR|OR|HR|SMD|NNT|NNH|AUC)\s*[=:]?\s*[\d.]"     # effect measures
+    # effect measures. The connector is deliberately loose: "NNT 5", "NNT = 5",
+    # "NNT of 5" and "an NNT around 5" are the same claim, and the prose forms are
+    # exactly where an unattributed number hides.
+    r"\b(?:RR|OR|HR|SMD|NNT|NNH|AUC)\b\s*(?:[=:]|of|around|near|about|approximately)?\s*[\d.]"
     r"|\b95%\s*CI|\bCI\s*[\d.]"                            # confidence intervals
     r"|\bp\s*[<>=]\s*0?\.\d"                               # p values
     r"|\b[nN]\s*=\s*\d"                                    # sample sizes

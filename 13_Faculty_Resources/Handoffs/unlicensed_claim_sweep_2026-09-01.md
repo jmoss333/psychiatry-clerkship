@@ -12,15 +12,24 @@ accident while triaging an unrelated P0. This sweep looks for the rest on purpos
 | | |
 |---|---:|
 | Shipped surfaces swept (`site_manifest.json`) | 91 |
-| Lines flagged | 66 |
-| …carrying a statistic | **28** |
-| …on a page with **no bibliography at all** | **4** |
+| Lines flagged | 60 |
+| …carrying a statistic | **26** |
+| …on a page with **no bibliography at all** | **2** |
 
 **The number is small, and that is the finding.** A naive first pass flagged 199 lines.
-Three classes of false positive accounted for two-thirds of them and were removed before
-anything was reported: CSS in HTML tools (`width:100%` reads as a percentage — 100% of
-HTML hits), URL percent-encoding (`Episode+126%3A`), and the `Author et al. (2024)` form
-the library actually uses, which the first attribution pattern did not match.
+Five classes of false positive accounted for two-thirds, each removed only after reading
+the hits by hand:
+
+| Class | Why it fired |
+|---|---|
+| CSS in HTML tools | `width:100%` reads as a percentage — **100%** of HTML hits |
+| URL percent-encoding | `Episode+126%3A` reads as `26%` |
+| `Author et al. (2024)` | the parenthesised year form the library actually uses |
+| `[27 ✓, 28 ✓]` | multi-reference anchors, vs a pattern expecting `[27 ✓]` |
+| `[^source-id]` | **the repo's own claim-anchor syntax** — the strongest attribution it has |
+
+The last one mattered most: it made seven correctly-anchored teaching pages look unsourced.
+Calibration was the work; the first number was noise.
 
 ## The distinction that matters
 
@@ -36,7 +45,7 @@ from a number to a paper.
 
 ## The four hard findings — a number, no bibliography, nothing to trace
 
-### 1. `02_Clinical_Skills/Brief_Psychotherapy/brief_psychotherapy_inpatient.md` L34 — **highest priority**
+### 1. `02_Clinical_Skills/Brief_Psychotherapy/brief_psychotherapy_inpatient.md` L34 — **FIXED 2026-09-01**
 
 > **Psychoeducation** has the hardest inpatient numbers (readmission NNT 5) — and it's free.
 
@@ -47,20 +56,37 @@ psychological intervention" with wording carrying the reviewers' own limits — 
 be less than demonstrated", last search 2010. This page still carries the uncorrected
 form. The correction landed on one page and missed a sibling.
 
-The verified span already exists (`xia-2011`, direction `mixed`). Nothing new needs
-verifying — the claim needs rewording to match the span the library already holds.
+The verified span already exists (`xia-2011`, direction `mixed`). Nothing new needed
+verifying — the claim was reworded to match the span the library already holds.
 
-### 2. `03_Core_Topics/Perinatal/perinatal_psychiatry_inpatient_teaching.md` L27
+**Fixing it turned up a second instance on the same page that the sweep cannot see.**
+The L18 table cell read *"Strongest single inpatient psychological intervention: readmission
+NNT 5, relapse NNT 9 (Xia, Cochrane 2011)"* — the exact superlative #402 removed, and it **is**
+attributed, which is why the sweep passed it. The citation does not license the superlative.
 
-> Reported incidence across population studies is **~0.9…**
+That claim sits in the gap between both tools: the sweep only finds claims with *nothing*,
+and the span gate never sees this page because its `topic_meta.json` entry has no
+`evidenceIds`. Both cells are now corrected. Wiring `evidenceIds` on this page is a separate
+pass — per the rule 3 lesson in #402, adding ids to a page obligates anchoring it.
 
-A specific incidence for postpartum psychosis attributed to "population studies." No
-study named, no bibliography on the page.
+### 2–3. Perinatal L27 and L13 — **BOTH FALSE POSITIVES, corrected 2026-09-01**
 
-### 3. `03_Core_Topics/Perinatal/…` L13 — weaker
+The sweep did not recognise `[^source-id]`, which is **this repo's own claim-anchor
+syntax** — not a markdown footnote. A claim anchor binds one claim to one
+`evidence_registry.json` id, is validated by `validate_claim_anchors.py`, and is stripped
+by `build_deploy.py` so learners never see it. It is the strongest attribution mechanism
+in the library, and the sweep was blind to it.
 
-A management-recommendation line combining a comparative with a figure. Worth a read;
-lower confidence than #2.
+`validate_claim_anchors.py` reports **20 anchors across 7 opted-in pages, all resolving to
+declared evidence.** The perinatal page was correctly anchored the whole time — its L27
+incidence figure carries `[^vanderkruik-2017-postpartum-psychosis-prevalence]` and its
+recurrence figure `[^wesseloo-2016-postpartum-relapse]`.
+
+The sweep now recognises anchors. Perinatal drops from 2 hits to 1: L13, a long management
+paragraph whose "nearly triples postpartum relapse (~66% off medication vs ~23% on
+prophylaxis)" is un-anchored on an otherwise-anchored page. Worth an anchor; not an
+unsourced claim — and note `validate_claim_anchors.py`'s own docstring records that this
+exact figure was already corrected once, from "roughly doubles" to "nearly triples".
 
 ### 4. `05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md` L25
 
@@ -69,9 +95,8 @@ lower confidence than #2.
 
 **Attested, but un-anchored.** The oe_scanner attestation log shows this exact figure
 signed off on 2026-07-31 ("CATIE discontinuation figure (74% by 18 mo; perphenazine
-comparable) added 2026-07-23 (Lieberman 2005, NEJM)"). CATIE is named, so it is traceable
-in principle. What is missing is the inline citation — a low-severity instance of the
-same pattern.
+comparable) added 2026-07-23 (Lieberman 2005, NEJM)"). The page already carries anchors
+elsewhere, so this is the same half-anchored shape as perinatal L13.
 
 ## Recommended disposition
 
