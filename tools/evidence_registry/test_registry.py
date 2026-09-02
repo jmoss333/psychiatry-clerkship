@@ -197,10 +197,16 @@ POSTDISCHARGE_CORRECTION_IDS = {
 CURRICULUM_REVIEW_WP5A_IDS = {
     "bot-2026-benzodiazepines-catatonia",
 }
+# Added by curriculum-review remediation WP-5b (finding RV11-F002): the resident TRD case said a 2025
+# review supports esketamine efficacy "in the acute setting, suicidality", where that review reports the
+# effect on suicidality was not significant at any time point — a claim close to the opposite of its source.
+CURRICULUM_REVIEW_WP5B_IDS = {
+    "fountoulakis-2025-esketamine",
+}
 
 ALL_SOURCE_IDS = (
     EXISTING_IDS | TIER1_IDS | SURVEILLANCE_IDS | SAFETY_GATE_IDS | THERAPY_WP_T2_IDS
-    | POSTDISCHARGE_CORRECTION_IDS | CURRICULUM_REVIEW_WP5A_IDS
+    | POSTDISCHARGE_CORRECTION_IDS | CURRICULUM_REVIEW_WP5A_IDS | CURRICULUM_REVIEW_WP5B_IDS
 )
 REFERENCE_FILES = (
     "topic_meta.json",

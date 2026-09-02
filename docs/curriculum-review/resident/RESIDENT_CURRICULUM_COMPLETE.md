@@ -3,7 +3,7 @@
 # RESIDENT curriculum — complete content transcript for clinical review
 
 **Site:** `mmc-psychiatry-residents-sanford` · **Audience:** Residents — MMC/Sanford psychiatry residents
-**Generated:** 2026-09-02 from build `8a842f3` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
+**Generated:** 2026-09-02 from build `08ea900` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
 
 ## Who this is for
 
@@ -19,14 +19,14 @@ This transcript is assembled from the **built site**, not the source tree, so it
 | Narrative pages (markdown) | 86 |
 | Interactive tools | 25 |
 | Deep-link-only (hidden) surfaces | 26 |
-| Words of narrative curriculum | 117,851 |
+| Words of narrative curriculum | 118,325 |
 | Practice question-bank items | 192 |
 | Audio-companion quiz decks / questions | 79 / 437 |
 | Communication cases | 12 |
 | Diagnostic reasoning cases | 5 |
 | Family systems scenarios | 8 |
-| Registered evidence sources | 105 |
-| Annotated claims with verbatim source spans | 47 |
+| Registered evidence sources | 106 |
+| Annotated claims with verbatim source spans | 48 |
 
 ## Document set
 
@@ -86,7 +86,7 @@ High-yield places to concentrate: the `topic_meta` **can't-miss**, **rule-out** 
 
 # RESIDENT · Navigation map
 
-Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-02 @ `8a842f3`.
+Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-02 @ `08ea900`.
 
 ## Orientation  *(pinned)*
 
@@ -209,15 +209,15 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 1 | Index — All Cases | `cotw_index.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `08_Cases_and_Simulation/case-of-the-week/index_resident.md` | 422 |
 | 2 | Catatonia (Aug 31) | `cotw_20260831_catatonia_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-31_catatonia-recognition-workup-treatment_Resident.md` | 2182 |
 | 3 | Borderline Personality Disorder (Aug 27) | `cotw_20260827_bpd_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-27_borderline-personality-disorder_Resident.md` | 2692 |
-| 4 | Panic Disorder (Aug 10) | `cotw_20260810_panic_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-10_anxiety-panic-disorder_Resident.md` | 4535 |
-| 5 | Lithium — Monitoring & Toxicity (Aug 3) | `cotw_20260803_lithium_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-03_lithium-monitoring-toxicity-interactions_Resident.md` | 3811 |
+| 4 | Panic Disorder (Aug 10) | `cotw_20260810_panic_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-10_anxiety-panic-disorder_Resident.md` | 4552 |
+| 5 | Lithium — Monitoring & Toxicity (Aug 3) | `cotw_20260803_lithium_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-03_lithium-monitoring-toxicity-interactions_Resident.md` | 3915 |
 | 6 | Opioid Use Disorder (Jul 27) | `cotw_20260727_oud_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-27_opioid-use-disorder_Resident.md` | 3399 |
-| 7 | Alcohol Withdrawal & DT (Jul 26) | `cotw_20260726_etohwd_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-26_alcohol-withdrawal-delirium-tremens_Resident.md` | 3097 |
+| 7 | Alcohol Withdrawal & DT (Jul 26) | `cotw_20260726_etohwd_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-26_alcohol-withdrawal-delirium-tremens_Resident.md` | 3185 |
 | 8 | Suicide Risk & Safety Planning (Jul 23) | `cotw_20260723_suiciderisk_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`high` | `08_Cases_and_Simulation/case-of-the-week/2026-07-23_suicide-risk-assessment-safety-planning_Resident.md` | 2496 |
-| 9 | MDD — Treatment Selection (Jul 20) | `cotw_20260720_mdd_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-20_mdd-treatment-selection-augmentation_Resident.md` | 1748 |
-| 10 | Bipolar Mania (Jul 20) | `cotw_20260720_bipolar_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-20_bipolar-mania_Resident.md` | 1631 |
+| 9 | MDD — Treatment Selection (Jul 20) | `cotw_20260720_mdd_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-20_mdd-treatment-selection-augmentation_Resident.md` | 1870 |
+| 10 | Bipolar Mania (Jul 20) | `cotw_20260720_bipolar_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-20_bipolar-mania_Resident.md` | 1682 |
 | 11 | Acute Agitation & Delirium (Jul 13) | `cotw_20260713_agitation_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-13_acute-agitation-delirium_Resident.md` | 2204 |
-| 12 | Serotonin Syndrome vs NMS (Jul 9) | `cotw_20260709_ssnms_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-09_serotonin-syndrome-vs-nms_Resident.md` | 1978 |
+| 12 | Serotonin Syndrome vs NMS (Jul 9) | `cotw_20260709_ssnms_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-09_serotonin-syndrome-vs-nms_Resident.md` | 2005 |
 
 ## Evidence and Reference
 
@@ -238,7 +238,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 13 | Culture, Disparities & Formulation | `cultural_psychiatry.md` | md | hidden | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Cultural_Psychiatry/cultural_psychiatry_inpatient_teaching.md` | 622 |
 | 14 | Ethics & the Law | `ethics_legal.md` | md | hidden | status=`reviewed` · riskKind=`legal` · riskLevel=`high` | `03_Core_Topics/Ethics_Legal/ethics_law_confidentiality_inpatient_teaching.md` | 1084 |
 | 15 | Treatment Basics | `exp_tx.md` | md | hidden | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/MS3/Student_Ready_Pack/04_expansion_modules/treatment_basics_digest.md` | 648 |
-| 16 | ECT & Neuromodulation | `ect_neuromodulation.md` | md | hidden | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `05_Psychopharmacology/ECT_Neuromodulation/ect_neuromodulation_inpatient_teaching.md` | 595 |
+| 16 | ECT & Neuromodulation | `ect_neuromodulation.md` | md | hidden | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `05_Psychopharmacology/ECT_Neuromodulation/ect_neuromodulation_inpatient_teaching.md` | 660 |
 | 17 | Osteopathic (OMM) Resources | `omm_resources.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `03_Core_Topics/OMM_Resources/omm_in_psychiatry_resources.md` | 456 |
 | 18 | Neurocognitive (Dementia) | `t_neurocog.md` | md | hidden | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/Neurocognitive/neurocognitive_disorders_inpatient_teaching.md` | 880 |
 | 19 | Somatic Symptom & Related | `t_somatic.md` | md | hidden | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Somatic/somatic_symptom_disorders_inpatient_teaching.md` | 757 |
@@ -13775,7 +13775,7 @@ Based on articles retrieved from PubMed. Citation fields (journal, year, volume/
 - **Slug:** `cotw_20260810_panic_res.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-08-10_anxiety-panic-disorder_Resident.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 4,535 words
+- **Length:** 4,552 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -13919,7 +13919,7 @@ The apparent conflict resolves once you see that they optimize different objecti
 
 *Teaching point:* **CBT with interoceptive exposure is first-line**, not adjunctive. In a meta-analysis of 41 randomized *placebo-controlled* trials across anxiety-related disorders, CBT showed moderate placebo-controlled effects on target symptoms (Hedges' g = 0.56), with smaller effects on comorbid anxiety, depression, and quality of life — and interventions built primarily on **exposure** outperformed those using cognitive techniques alone, though that difference did not reach significance [4]. Note honestly that in this analysis panic disorder was among the disorders with **small-to-moderate** effect sizes, and the authors concluded more effective treatments are still needed for PD.
 
-Components for this patient: psychoeducation and the interdose-rebound formulation; interoceptive exposure targeting cardiac and respiratory sensations; **graded in-vivo exposure** to driving, to exercise, and to client-facing work; systematic elimination of safety behaviors — the PRN alprazolam, the boyfriend-equivalent accompaniment pattern, checking his pulse, the low-traffic scheduling. If PTSD screening is positive, sequence trauma-focused work deliberately rather than running two protocols in parallel.
+Components for this patient: psychoeducation and the interdose-rebound formulation; interoceptive exposure targeting cardiac and respiratory sensations; **graded in-vivo exposure** to driving, to exercise, and to client-facing work; systematic elimination of safety behaviors — the PRN alprazolam taken at the first sensation, the avoidance of exercise, driving beyond town, and client-facing work, and any pulse-checking, safe-person accompaniment, or route-and-timing rituals uncovered on further history. If PTSD screening is positive, sequence trauma-focused work deliberately rather than running two protocols in parallel.
 
 **The long-term nuance residents should carry.** A systematic review and meta-analysis of long-term CBT outcomes across 69 RCTs found benefits maintained versus control at post-treatment, 1–6 months, and 6–12 months for panic disorder (Hedges' g 0.22–0.35) — but at **follow-up of 12 months or more, the effect for panic disorder was no longer significant**, in contrast to sustained effects for GAD, social anxiety disorder, and PTSD [5]. Read that as a mandate for **maintenance strategy** — booster sessions, adequate pharmacotherapy duration before any discontinuation attempt, and relapse-prevention planning — not as evidence against CBT.
 
@@ -13988,7 +13988,7 @@ Map that onto this patient: fourteen months of illness, prominent avoidance cons
 - Treating "denies SI" in a repressive-coping patient with several documented risk factors as an adequate assessment [9].
 - Diagnosing PTSD reflexively from the trauma history without applying criteria — screen properly rather than assuming.
 
-**Discussion extension if time allows.** The Cochrane and BMJ NMAs are an excellent 5-minute journal-club digression on why "which drug is best" is an ill-posed question absent a specified outcome, time horizon, and harm weighting — and on how **low risk-of-bias ratings across an entire literature** should temper confident ranking claims [1,2].
+**Discussion extension if time allows.** The Cochrane and BMJ NMAs are an excellent 5-minute journal-club digression on why "which drug is best" is an ill-posed question absent a specified outcome, time horizon, and harm weighting — and on how **high risk-of-bias ratings across an entire literature** should temper confident ranking claims [1,2].
 
 **Safety framing.** Keep Q7 oriented to recognition, structured assessment, escalation, and collaborative safety planning. Redirect any real-patient details a participant introduces; identifiable information does not belong in teaching materials.
 
@@ -14038,7 +14038,7 @@ Based on articles retrieved from PubMed.
 - **Slug:** `cotw_20260803_lithium_res.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-08-03_lithium-monitoring-toxicity-interactions_Resident.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 3,811 words
+- **Length:** 3,915 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -14145,7 +14145,7 @@ Two corollaries worth stating explicitly:
 1. **Chronic lithium neurotoxicity** — *most likely.* Cerebellar and pyramidal signs with encephalopathy at a near-therapeutic level.
 2. **Serotonin syndrome** — the closest mimic; clonus and hyperreflexia overlap almost completely. Distinguishing features: serotonergic agent exposure with a **temporally tight** onset, hyperthermia, diaphoresis, GI hyperactivity, and **lower-extremity-predominant** clonus. She is on lithium monotherapy — but always confirm, since lithium is itself serotonergic and is a recognized contributor when combined.
 3. **NMS** — argues against: afebrile, no rigidity, normal CK. Keep it live if an antipsychotic is on board; lithium plus antipsychotic is a described risk combination.
-4. **Hypercalcemic encephalopathy** — note the loop-back: her **corrected calcium is 10.9 with an inappropriately elevated PTH**, i.e. lithium-associated hyperparathyroidism (Q6). Hypercalcemia can itself produce confusion and contributes to nephrogenic DI. Two lithium effects converging.
+4. **Hypercalcemia — a marker, not a driver** — note the loop-back: her **corrected calcium is 10.9 with an inappropriately elevated PTH**, i.e. lithium-associated hyperparathyroidism (Q6). Read it as a *marker* of that endocrine effect rather than as a contributor to tonight's picture: mild hypercalcemia at this level does not produce encephalopathy — that generally requires >12–13 mg/dL — and her concentrating defect is already fully accounted for by lithium's direct effect on the collecting duct (Q4). Two lithium effects converging, but only one of them is driving the neurologic picture.
 5. **Metabolic/uremic contribution** — eGFR 45 and volume depletion.
 6. **Nonconvulsive status epilepticus** — lithium lowers seizure threshold; if the encephalopathy does not track the falling level, get an EEG.
 7. **Wernicke encephalopathy** — ataxia, nystagmus, confusion is the triad; poor oral intake for eight weeks makes this non-trivial. Thiamine is cheap.
@@ -14221,9 +14221,9 @@ The **EXTRIP workgroup** recommendations (systematic review plus two-round modif
 
 1. **Chronic lithium neurotoxicity** from combined GLP-1 RA and NSAID exposure on a background of Li-NDI — *most likely*
 2. **Serotonin syndrome** — closest phenotypic mimic; separate by exposure timeline and fever
-3. **Hypercalcemic encephalopathy** from lithium-associated hyperparathyroidism — *concurrent contributor*
-4. **NMS** — argued against by normal tone, temperature, and CK, but must be excluded if any antipsychotic is on board
-5. **Uremic/metabolic encephalopathy** from AKI and volume depletion
+3. **NMS** — argued against by normal tone, temperature, and CK, but must be excluded if any antipsychotic is on board
+4. **Uremic/metabolic encephalopathy** from AKI and volume depletion
+5. **Hypercalcemia** from lithium-associated hyperparathyroidism — *a marker of that endocrine effect, not a driver of the encephalopathy at 10.9 mg/dL*
 6. **Nonconvulsive status epilepticus** — consider EEG if the exam lags the falling level
 7. **Wernicke encephalopathy** — eight weeks of poor intake; treat empirically
 8. **SILENT** — not a differential for today, but the outcome the acute management is trying to prevent
@@ -14271,7 +14271,7 @@ The **EXTRIP workgroup** recommendations (systematic review plus two-round modif
   3. Declaring a post-dialysis level reassuring without rechecking for rebound.
   4. Discontinuing lithium permanently on the basis of an AKI-era eGFR.
   5. Stopping lithium for subclinical hypothyroidism instead of adding levothyroxine [1].
-  6. Not connecting hypercalcemia back to lithium-associated hyperparathyroidism — and therefore missing a treatable contributor to both the encephalopathy and the polyuria [1].
+  6. Not connecting hypercalcemia back to lithium-associated hyperparathyroidism — and therefore missing a monitorable endocrine effect that needs endocrine follow-up. Note the converse error too: at a corrected calcium of 10.9 it is a marker, not a treatable contributor to tonight's encephalopathy (which needs >12–13 mg/dL) or to her polyuria (already explained by lithium's direct collecting-duct effect, Q4) [1].
   7. Reflexively citing "Ebstein anomaly" as an absolute contraindication in pregnancy without the actual effect sizes or the dose–response relationship [8].
   8. Abrupt discontinuation, with its own relapse risk [2].
 - **For older-adult services:** an ISBD task force Delphi panel recommended lower maintenance targets in older adults with bipolar disorder — roughly **0.4–0.8 mmol/L for ages 60–79** and **0.4–0.7 mmol/L for 80+** — and recommended that laboratories report the older-adult therapeutic range separately [13]. Worth flagging that "0.6–1.2" printed on the lab report is not age-adjusted.
@@ -14563,7 +14563,7 @@ For **mortality**, the agonist evidence is the strongest thing we have: all-caus
 - **Slug:** `cotw_20260726_etohwd_res.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-26_alcohol-withdrawal-delirium-tremens_Resident.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 3,097 words
+- **Length:** 3,185 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -14628,7 +14628,7 @@ You are the psychiatry consult resident. Medicine calls at 21:00 about a 54-year
 
 **Q1. Formulate this. What is the diagnosis, and what is the *mechanistic* reason his benzodiazepine requirement is escalating rather than falling?**
 
-*Teaching point:* This is **delirium tremens** — DSM-5-TR *alcohol withdrawal, with perceptual disturbances*, meeting criteria for a withdrawal delirium: fluctuating attention and awareness, perceptual disturbance, and severe autonomic instability, in a temporal window (~48–96 h) that fits precisely.
+*Teaching point:* This is **delirium tremens** — DSM-5-TR **alcohol withdrawal delirium** — a substance withdrawal delirium (ICD-10-CM F10.231), *not* alcohol withdrawal "with perceptual disturbances", a specifier reserved for hallucinations or illusions with intact reality testing occurring in the **absence** of delirium: fluctuating attention and awareness, perceptual disturbance, and severe autonomic instability, in a temporal window (~48–96 h) that fits precisely.
 
 The mechanism to articulate: chronic ethanol exposure produces **GABA-A receptor subunit reconfiguration** — not merely fewer receptors, but a shift toward subunit compositions (notably reduced α1 and altered γ2/δ expression) that are **less sensitive to benzodiazepines**, while **NMDA receptor upregulation** (including NR2B-containing receptors) drives glutamatergic excitotoxic hyperarousal [1,2]. Benzodiazepines are **allosteric modulators**: they require an endogenous GABA-A receptor population competent to respond. When that population is remodeled, escalating benzodiazepine doses yield diminishing returns — the definition of **benzodiazepine-resistant alcohol withdrawal**. Barbiturates, by contrast, both potentiate GABA-A **and, at higher concentrations, directly gate the chloride channel independent of GABA**, and additionally antagonize AMPA/kainate glutamatergic transmission — which is the pharmacologic rationale for phenobarbital in exactly this scenario [1,3].
 
@@ -14682,7 +14682,7 @@ The teaching move: **the workup runs in parallel with treatment, not before it.*
 - **Dexmedetomidine** may be added for autonomic control but **never as a benzodiazepine/barbiturate substitute** — no anti-seizure effect [1,11].
 - **Antipsychotics** only for refractory perceptual disturbance/agitation *after* adequate GABAergic therapy; they lower the seizure threshold and prolong QTc.
 - **Thiamine parenterally, before dextrose** [12]. Replete **magnesium** and potassium.
-- **Liver caveat:** with probable cirrhosis, prefer **lorazepam/oxazepam** (glucuronidation, no oxidative metabolism, no active metabolites) and recognize that sedatives can precipitate or worsen **hepatic encephalopathy** — a real reason to favor a controlled barbiturate load over an open-ended benzodiazepine escalation here [7].
+- **Liver caveat:** with probable cirrhosis, prefer **lorazepam/oxazepam** (glucuronidation, no oxidative metabolism, no active metabolites) and recognize that sedatives can precipitate or worsen **hepatic encephalopathy** — a real reason to avoid open-ended benzodiazepine escalation — but not, on hepatic grounds, an argument *for* phenobarbital: phenobarbital is partly hepatically metabolised, its already long half-life (~80–120 h) is further prolonged in cirrhosis, there is no reversal agent, and it can precipitate hepatic encephalopathy just as benzodiazepines can. If phenobarbital is used here it is because the withdrawal is benzodiazepine-resistant, and it must be used expecting a longer and less reversible effect than in a patient with normal hepatic function [7].
 
 **Workup in parallel:** non-contrast head CT, cultures/CXR/lactate, glucose, repeat electrolytes and Mg, medication reconciliation.
 
@@ -14936,7 +14936,7 @@ Mental status: alert, cooperative, tearful, with constricted affect and mood-con
 - **Slug:** `cotw_20260720_mdd_res.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-20_mdd-treatment-selection-augmentation_Resident.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 1,748 words
+- **Length:** 1,870 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -15013,7 +15013,7 @@ Given her obesity and weight concern, a **low-metabolic-risk partial agonist** (
 *Teaching point:* The **PRIME Care** RCT found that pharmacogenomic testing modestly influenced prescribing and produced a **small, time-limited improvement in remission** — the effect was statistically detectable but clinically modest and attenuated over follow-up [9]. The **CPIC guideline** provides actionable dosing guidance where a genotype is *already known* (e.g., **CYP2C19** and **CYP2D6** metabolizer status for SSRIs — poor metabolizers may need dose reduction; ultrarapid metabolizers may underexpose) but does not endorse routine pre-emptive testing to *select* the drug class [10]. Bottom line for the patient: testing can refine dosing and flag metabolism outliers, but it is not a validated "which drug will work" oracle; shared decision-making about efficacy vs. tolerability trade-offs remains primary.
 
 **Q5. When and how do you deploy esketamine/ketamine, and where does it sit in sequencing?**
-*Teaching point:* Intranasal **esketamine** is FDA-approved as adjunct for TRD and for MDD with acute suicidal ideation/behavior. A 2025 systematic review/meta-analysis supports **efficacy against depressive symptoms and, in the acute setting, suicidality**, with dissociation, sedation, and transient blood-pressure elevation as the main tolerability issues and REMS-mandated monitoring [8]. Discuss sequencing: esketamine is typically reserved after ≥2 oral failures, requires in-clinic administration/observation, and does not replace safety planning. Contrast with racemic IV ketamine (off-label, rapid but access/durability limits).
+*Teaching point:* Intranasal **esketamine** is FDA-approved as adjunct for TRD and for MDD with acute suicidal ideation/behavior. A 2025 systematic review/meta-analysis found **modest efficacy against depressive symptoms** (effect sizes ~0.15-0.23 at weeks 2-4, comparable to atypical-antipsychotic augmentation) and **no significant effect on suicidality at any time point**, with dissociation, sedation, and transient blood-pressure elevation as the main tolerability issues and REMS-mandated monitoring [8]. State the limit explicitly: the MDSI indication rests on rapid improvement in *depressive symptoms*, not on a demonstrated effect on suicidality — the pivotal ASPIRE trials did not separate from placebo on the suicidality-severity endpoint (CGI-SS-r), and the label states that effectiveness in preventing suicide or reducing suicidal ideation has not been demonstrated. Esketamine does not reduce the need for monitoring, means restriction, or safety planning. Discuss sequencing: esketamine is typically reserved after ≥2 oral failures, requires in-clinic administration/observation, and does not replace safety planning. Contrast with racemic IV ketamine (off-label, rapid but access/durability limits).
 
 **Q6. Integrate psychotherapy and relapse prevention into the plan.**
 *Teaching point:* For a recurrent (3rd-episode) patient, **relapse prevention is a primary goal**, not an afterthought. The **sequential model** — adding structured psychotherapy (CBT, well-being therapy, MBCT) after pharmacologic response to target residual symptoms — reduces relapse/recurrence in meta-analysis [4]. Residual insomnia and anhedonia are high-yield relapse predictors worth targeting directly. Plan for **maintenance pharmacotherapy** given ≥3 episodes (many guidelines favor indefinite maintenance after ≥3 recurrences).
@@ -15038,7 +15038,7 @@ Given her obesity and weight concern, a **low-metabolic-risk partial agonist** (
 
 ### Workup & Management
 
-**Workup / assessment:** Confirm adequacy of prior trials (dose, duration, adherence — verify via pharmacy refill history); structured mania screen and mood charting; measurement-based care (QIDS/PHQ-9 at each visit); metabolic baseline (weight, BMI, lipids, HbA1c) before an atypical antipsychotic; ECG if considering agents with QT liability; pregnancy planning discussion; consider genotype only if it will change dosing decisions.
+**Workup / assessment:** Confirm adequacy of prior trials (dose, duration, adherence — verify via pharmacy refill history); structured mania screen and mood charting; measurement-based care (QIDS/PHQ-9 at each visit); metabolic baseline (weight, BMI, lipids, HbA1c) before an atypical antipsychotic; **before lithium: creatinine/eGFR, TSH, calcium, urine pregnancy test, and a plan for a 12-hour trough level ~5 days after initiation and after every dose change, with counselling that NSAIDs (directly relevant to her migraines), thiazides, and ACE inhibitors/ARBs raise lithium levels**; ECG if considering agents with QT liability; pregnancy planning discussion; consider genotype only if it will change dosing decisions.
 
 **Management sequence for this patient:**
 1. **Augment** the (adequately dosed) sertraline with a **low-metabolic-risk agent** — aripiprazole/brexpiprazole/cariprazine or lithium — chosen collaboratively around her weight and sexual-function priorities [2,6,7].
@@ -15085,7 +15085,7 @@ Given her obesity and weight concern, a **low-metabolic-risk partial agonist** (
 - **Slug:** `cotw_20260720_bipolar_res.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-20_bipolar-mania_Resident.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 1,631 words
+- **Length:** 1,682 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -15151,7 +15151,7 @@ Consider: he mentions that during this episode he has also felt "wired but on ed
 *Teaching point:* Beyond stimulant intoxication and hyperthyroidism, residents should generate: **antidepressant/steroid/dopaminergic-induced mania**, **secondary ("organic") mania** from frontal/temporal or right-hemisphere lesions, MS, epilepsy, HIV/neurosyphilis, autoimmune/limbic encephalitis (e.g., anti-NMDA-R), and delirium. Late/atypical age of onset, focal neuro findings, or a fluctuating sensorium should lower the threshold for **neuroimaging, LP, and autoimmune/infectious workup**. Also weigh **schizoaffective disorder** (requires ≥2 weeks of psychosis absent a mood episode) and cluster-B/ADHD overlaps.
 
 **Q3. What is your workup, and how does it gate pharmacology?**
-*Teaching point:* Baseline: UDS, TSH, CBC, CMP (renal/hepatic), **beta-hCG in patients of childbearing potential**; ECG when QT-prolonging antipsychotics or high-risk profiles are in play; consider ammonia if valproate encephalopathy is suspected later. **Renal function anchors lithium** dosing/safety; **hepatic function and CBC anchor valproate**; **pregnancy status is decisive** — both lithium (Ebstein anomaly risk, though lower than historically cited) and especially **valproate (neural-tube defects, ~9–11% major malformation and dose-dependent neurodevelopmental harm)** are avoided when pregnancy is possible.
+*Teaching point:* Baseline: UDS, TSH, CBC, CMP (renal/hepatic), **beta-hCG in patients of childbearing potential**; ECG when QT-prolonging antipsychotics or high-risk profiles are in play; consider ammonia if valproate encephalopathy is suspected later. **Renal function anchors lithium** dosing/safety; **hepatic function and CBC anchor valproate**; **pregnancy status is decisive** — **valproate (neural-tube defects, ~9–11% major malformation and dose-dependent neurodevelopmental harm) is avoided in anyone who could become pregnant** unless a pregnancy-prevention programme is in place; **lithium is not in that tier** — the absolute Ebstein risk is far lower than historically cited (on the order of 1 in 1,000–2,000), so lithium is used with contraception and preconception counselling, level monitoring across the trimesters, and fetal echocardiography where indicated, and is rarely stopped abruptly given the high peripartum relapse risk.
 
 **Q4. Monotherapy vs. combination for acute mania — what does the evidence say, and how do you choose?**
 *Teaching point:* **CANMAT/ISBD 2018** first-line monotherapy: **lithium, quetiapine, divalproex, asenapine, aripiprazole, paliperidone, risperidone, cariprazine**; first-line **combinations** = lithium or divalproex **+** aripiprazole/asenapine/quetiapine/risperidone [1]. **Kishi et al. network meta-analysis (72 double-blind RCTs, n≈16,442)**: aripiprazole, asenapine, carbamazepine, cariprazine, haloperidol, lithium, olanzapine, paliperidone, quetiapine, risperidone, tamoxifen, valproate, and ziprasidone all beat placebo for response; however, only **aripiprazole, olanzapine, quetiapine, and risperidone** had better acceptability (all-cause discontinuation) than placebo, and **topiramate was worse** [2]. Practical drivers: **symptom severity and psychosis** (favor combination and an antipsychotic), **mixed features** (favor SGAs/valproate over lithium; avoid antidepressants), **prior response**, **metabolic/QTc/EPS risk tolerance**, and **maintenance intent**. Combination therapy generally yields faster/greater response at the cost of tolerability.
@@ -15387,7 +15387,7 @@ Dangerousness here is **agitation-related risk to self and staff**; keep teachin
 - **Slug:** `cotw_20260709_ssnms_res.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-09_serotonin-syndrome-vs-nms_Resident.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 1,978 words
+- **Length:** 2,005 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -15530,7 +15530,7 @@ NMS typically resolves over **days to ~2 weeks** with agent withdrawal and suppo
 
 ### Workup & management summary
 - **Workup:** CK, CMP (renal/hepatic), CBC, serum iron, coags/DIC panel, lithium level, blood/urine cultures and CNS infection work-up as indicated, ECG, continuous temperature and hemodynamic monitoring; consider EEG if catatonia/NCSE is in question.
-- **Immediate management:** **stop all dopamine antagonists** (including metoclopramide); ICU-level supportive care — IV fluids, active cooling, correct electrolytes, protect renal function against rhabdomyolysis.
+- **Immediate management:** **stop all dopamine antagonists** (including metoclopramide); ICU-level supportive care — IV fluids, active cooling, correct electrolytes, protect renal function against rhabdomyolysis, and start **VTE prophylaxis** (pharmacologic unless contraindicated; mechanical when it is) given prolonged immobility and rigidity; attend to aspiration risk and skin/pressure care for the same reason.
 - **Pharmacotherapy:** benzodiazepine (lorazepam) early (agitation + possible catatonia); **dantrolene** and **bromocriptine/amantadine** for moderate–severe NMS; **ECT** for refractory NMS/malignant catatonia.
 - **If the phenotype had been SS:** stop serotonergic agents, benzodiazepines, **cyproheptadine**, ICU with sedation/paralysis if severe.
 
@@ -18998,7 +18998,7 @@ therapy, milieu, family, and discharge back to the formulation.
 - **Slug:** `ect_neuromodulation.md` · **Type:** md · **Sidebar:** hidden (deep link only)
 - **Source:** `05_Psychopharmacology/ECT_Neuromodulation/ect_neuromodulation_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 595 words
+- **Length:** 660 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -19013,7 +19013,7 @@ therapy, milieu, family, and discharge back to the formulation.
 
 - Choose ECT when a rapid, definitive response is needed: psychotic or catatonic depression, active suicidality, refusal to eat/drink, pregnancy, or prior ECT response.
 - Hold benzodiazepines and anticonvulsants pre-ECT (they blunt the seizure), and plan continuation treatment — relapse is the rule without it.
-- rTMS is outpatient with no anesthesia or memory effects; ketamine/esketamine act within hours and reduce suicidal ideation (esketamine requires REMS monitoring).
+- rTMS is outpatient with no anesthesia or memory effects; ketamine/esketamine act within hours on depressive symptoms — not on suicidality itself, so they never replace monitoring, means restriction, or safety planning (esketamine requires REMS monitoring).
 
 **Can't-miss / red-flag line:**
 
@@ -19071,7 +19071,7 @@ therapy, milieu, family, and discharge back to the formulation.
 
 ## Rapid-acting and light-based options
 
-- **Esketamine (intranasal) and IV ketamine** — glutamatergic (NMDA) agents with **rapid antidepressant and anti-suicidal effects** in treatment-resistant depression (Zarate 2006 established the IV signal). Esketamine is delivered under a **REMS** with in-office monitoring; watch dissociation, sedation, and blood-pressure spikes.
+- **Esketamine (intranasal) and IV ketamine** — glutamatergic (NMDA) agents with **rapid antidepressant effects** in treatment-resistant depression, including in patients presenting with acute suicidal ideation — but note the limit: the pivotal trials showed rapid improvement in *depressive symptoms*, not a demonstrated effect on suicidality itself, and the label states that effectiveness in preventing suicide or reducing suicidal ideation has not been demonstrated (Zarate 2006 established the IV signal). Esketamine is delivered under a **REMS** with in-office monitoring; watch dissociation, sedation, and blood-pressure spikes.
 - **Bright light therapy** — first-line for **seasonal** depression, and — per a 2024 *JAMA Psychiatry* meta-analysis — an **effective *adjunctive* treatment for *nonseasonal* depression** as well (roughly doubling remission odds). Cheap and well-tolerated; screen for bipolar (can precipitate switch) and eye disease.
 
 **What the student does** —
@@ -19086,7 +19086,7 @@ therapy, milieu, family, and discharge back to the formulation.
 - No absolute contraindications to ECT; raised ICP and unstable cardiac disease are the key relative ones.
 - Hold benzodiazepines/anticonvulsants before ECT (they blunt the seizure).
 - rTMS: outpatient, no anesthesia, small seizure risk, for treatment-resistant depression and OCD.
-- Ketamine/esketamine act within hours and reduce suicidal ideation; esketamine needs REMS monitoring.
+- Ketamine/esketamine act within hours on *depressive symptoms* — they do not substitute for monitoring, means restriction, or safety planning, and effectiveness in reducing suicidal ideation itself is not established; esketamine needs REMS monitoring.
 - Bright light therapy now has evidence as an adjunct in *nonseasonal* depression, not just SAD.
 
 **Pair with** — the [Mood topic](?page=t_mood.md), [Catatonia](?page=catatonia.md), the [Psychopharmacology primer](?page=psychopharm_primer.md), and the [Landmark Trials audio library](?page=landmark_trials.md).
@@ -30112,7 +30112,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
 
 # RESIDENT · Appendix A4 — Evidence base
 
-105 registered sources and 47 annotated claims. Each annotation stores the verbatim span from the paper that licenses the claim the library makes — the highest-value target for clinical review, because a claim that drifts from its span is a factual error with a citation attached.
+106 registered sources and 48 annotated claims. Each annotation stores the verbatim span from the paper that licenses the claim the library makes — the highest-value target for clinical review, because a claim that drifts from its span is a factual error with a citation attached.
 
 **Annotation policy.** {
  "rule": "Every claim the library makes about a source must be licensed by a stored verbatim span from that source.",
@@ -30799,6 +30799,20 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
 
 - claim terms: `overall remission rate`, `overall response`, `catatonia`
 
+### `fountoulakis-2025-esketamine`
+
+- span type `abstract` · retrieved 2026-09-02 · PMID 39876682 · DOI 10.1176/appi.ajp.20240515
+
+**Verbatim source span.**
+
+> At weeks 2-4, randomized controlled trials were mostly negative or failed; however, the meta-analysis returned a weak but significant positive effect for depression (effect size range, 0.15-0.23 at weeks 2-4), similar to augmentation strategies with atypical antipsychotics for treatment-resistant depression. The effect size concerning suicidality was not significant at any time point.
+
+**Claim `esketamine-depression-modest-suicidality-null`** (direction: `mixed`, used by cotw_20260720_mdd_res)
+
+> Esketamine showed a weak but significant positive effect for depression (effect size range 0.15-0.23 at weeks 2-4), while the effect size concerning suicidality was not significant at any time point.
+
+- claim terms: `effect size concerning suicidality`, `not significant at any time point`, `depression`
+
 ## Full source registry
 
 | id | type | access | citation |
@@ -30908,6 +30922,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
 | `chung-2017-postdischarge-suicide` | systematic-review | metadata | {'authors': [{'family': 'Chung', 'given': 'DT'}, {'family': 'Ryan', 'given': 'CJ'}, {'family': 'Hadzi-Pavlovic', 'given': 'D'}, {'family': 'Singh', 'given': 'SP'}, {'family': 'Stanton', 'given': 'C'}, {'family': 'Large', 'given': 'MM'}], 'doi': '10.1001/jamapsychiatry.2017.1044', 'journal': 'JAMA Psychiatry', 'organization': '', 'pages': '694-702', 'pmid': '28564699', 'title': 'Suicide Rates After Discharge From Psychiatric Facilities: A Systematic Review and Meta-analysis', 'url': 'https://doi.org/10.1001/jamapsychiatry.2017.1044', 'volume': '74', 'year': 2017} |
 | `chung-2019-first-week-month` | systematic-review | metadata | {'authors': [{'family': 'Chung', 'given': 'D'}, {'family': 'Hadzi-Pavlovic', 'given': 'D'}, {'family': 'Wang', 'given': 'M'}, {'family': 'Swaraj', 'given': 'S'}, {'family': 'Olfson', 'given': 'M'}, {'family': 'Large', 'given': 'M'}], 'doi': '10.1136/bmjopen-2018-023883', 'journal': 'BMJ Open', 'organization': '', 'pages': 'e023883', 'pmid': '30904843', 'title': 'Meta-analysis of suicide rates in the first week and the first month after psychiatric hospitalisation', 'url': 'https://doi.org/10.1136/bmjopen-2018-023883', 'volume': '9', 'year': 2019} |
 | `bot-2026-benzodiazepines-catatonia` | systematic-review | abstract | {'authors': [{'family': 'Bot', 'given': 'L'}, {'family': 'Schotsman', 'given': 'B'}, {'family': 'Oostra', 'given': 'E'}, {'family': 'Hoogendoorn', 'given': 'AW'}, {'family': 'van Exel', 'given': 'E'}], 'doi': '10.1111/acps.70102', 'journal': 'Acta Psychiatr Scand', 'organization': '', 'pages': '99-115', 'pmid': '42009596', 'title': 'The Effect of Benzodiazepines on Catatonia: A Systematic Review and Meta-Analysis', 'url': 'https://doi.org/10.1111/acps.70102', 'volume': '154', 'year': 2026} |
+| `fountoulakis-2025-esketamine` | systematic-review | abstract | {'authors': [{'family': 'Fountoulakis', 'given': 'KN'}, {'family': 'Saitis', 'given': 'A'}, {'family': 'Schatzberg', 'given': 'AF'}], 'doi': '10.1176/appi.ajp.20240515', 'journal': 'Am J Psychiatry', 'organization': '', 'pages': '259-275', 'pmid': '39876682', 'title': 'Esketamine Treatment for Depression in Adults: A PRISMA Systematic Review and Meta-Analysis', 'url': 'https://doi.org/10.1176/appi.ajp.20240515', 'volume': '182', 'year': 2025} |
 
 
 <!-- ==================== A5_COVERAGE_MATRICES.md ==================== -->

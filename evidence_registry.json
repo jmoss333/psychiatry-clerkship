@@ -7142,6 +7142,64 @@
           }
         ]
       }
+    },
+    {
+      "id": "fountoulakis-2025-esketamine",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Esketamine Treatment for Depression in Adults: A PRISMA Systematic Review and Meta-Analysis",
+        "authors": [
+          {
+            "family": "Fountoulakis",
+            "given": "KN"
+          },
+          {
+            "family": "Saitis",
+            "given": "A"
+          },
+          {
+            "family": "Schatzberg",
+            "given": "AF"
+          }
+        ],
+        "organization": "",
+        "year": 2025,
+        "journal": "Am J Psychiatry",
+        "volume": "182",
+        "pages": "259-275",
+        "doi": "10.1176/appi.ajp.20240515",
+        "pmid": "39876682",
+        "url": "https://doi.org/10.1176/appi.ajp.20240515"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 39876682): title, all three authors, journal, volume, pages and DOI match",
+        "verifiedAt": "2026-09-02",
+        "note": "Added for curriculum-review finding RV11-F002: the resident TRD case stated that this review supports esketamine efficacy 'in the acute setting, suicidality', which is close to the opposite of what the paper reports. Annotation is AI-drafted from the abstract and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "systematic review / meta-analysis",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-02",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "esketamine",
+          "treatment-resistant depression",
+          "suicidality"
+        ],
+        "clerkshipRelevance": "The deflationary read on esketamine: a weak but significant effect on depressive symptoms (ES 0.15-0.23 at weeks 2-4, comparable to atypical-antipsychotic augmentation) and no significant effect on suicidality at any time point. Load-bearing for the MDSI indication, which rests on depressive-symptom improvement rather than on a demonstrated anti-suicidal effect - esketamine does not reduce the need for monitoring, means restriction, or safety planning.",
+        "noteHistory": [
+          {
+            "date": "2026-09-02",
+            "note": "Added for curriculum-review finding RV11-F002: the resident TRD case stated that this review supports esketamine efficacy 'in the acute setting, suicidality', which is close to the opposite of what the paper reports. Annotation is AI-drafted from the abstract and awaits faculty signature.",
+            "reason": "curriculum-review remediation WP-5b (finding RV11-F002)"
+          }
+        ]
+      }
     }
   ]
 }

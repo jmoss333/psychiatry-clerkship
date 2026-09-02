@@ -4092,7 +4092,7 @@
           "t": "Esketamine — rapid-acting antidepressants with same-day onset should be tried before ECT for any treatment-resistant presentation.",
           "trap": {
             "name": "Ordering by recency",
-            "note": "Esketamine has rapid anti-suicidal effects but is not established as superior to ECT for this clinical picture; ECT is indicated for severe, psychotic, treatment-resistant depression and should not be deferred by default."
+            "note": "Esketamine acts rapidly on depressive symptoms — an effect on suicidality itself is not established — and it is not established as superior to ECT for this clinical picture; ECT is indicated for severe, psychotic, treatment-resistant depression and should not be deferred by default."
           }
         }
       ],
@@ -4983,7 +4983,7 @@
           "t": "Ketamine infusion should be chosen over ECT — it avoids anesthesia and is equally effective for suicidal ideation in pregnancy.",
           "trap": {
             "name": "Newer = better",
-            "note": "Ketamine/esketamine has rapid anti-suicidal effects but requires REMS monitoring and is not established as equivalent to ECT for this clinical severity; ECT has the longer safety record in pregnancy."
+            "note": "Ketamine/esketamine acts rapidly on depressive symptoms — an effect on suicidality itself is not established — requires REMS monitoring, and is not established as equivalent to ECT for this clinical severity; ECT has the longer safety record in pregnancy."
           }
         }
       ],
