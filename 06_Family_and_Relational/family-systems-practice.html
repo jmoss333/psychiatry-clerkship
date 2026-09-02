@@ -142,7 +142,7 @@ var DAY = 86400000;
 function srsFresh(){return {v:1,cards:{},day:{lastDay:'',newToday:0},stats:{streak:0,lastStudy:'',totalReviews:0,correct:0,seen:0},settings:{newPerDay:12}};}
 function srsLoadStore(){try{var s=JSON.parse(localStorage.getItem(SRS_KEY)||'null');if(s&&s.v===1){s.cards=s.cards||{};s.stats=s.stats||srsFresh().stats;return s;}}catch(_){}return srsFresh();}
 function srsSaveStore(s){try{localStorage.setItem(SRS_KEY,JSON.stringify(s));}catch(_){}}
-function famCardId(scenarioId,promptId){return 'FAM#'+scenarioId+'#'+promptId;}
+/*__FAM_RETRIEVAL__*/
 /*__SM2_APPLY_GRADE__*/
 function srsGradeFamily(scenarioId,promptId,grade){
   var s=srsLoadStore(), id=famCardId(scenarioId,promptId);
@@ -220,23 +220,9 @@ function checklistHtml(it){var rec=state.progress[it.id]||{}, checks=rec.checks|
 function pageHref(f){return f&&f.endsWith('.html')?'../index.html?tool='+encodeURIComponent(f):'../index.html?page='+encodeURIComponent(f);}
 function pageLabel(f){return PAGE_LABELS[f]||String(f||'').replace(/\.md$|\.html$/g,'').replace(/^t_/,'').replace(/^pg_/,'').replace(/_/g,' ').replace(/\b\w/g,function(m){return m.toUpperCase();});}
 function linksHtml(it){var out=[];(it.linkedPages||[]).forEach(function(f){out.push('<a href="'+pageHref(f)+'">'+esc(pageLabel(f))+'</a>');});(it.communicationCases||[]).forEach(function(id){out.push('<a href="../index.html?tool=communication-practice.html&case='+encodeURIComponent(id)+'">'+esc(CASE_LABELS[id]||'Communication Practice')+'</a>');});return out.length?'<div class="links">'+out.join('')+'</div>':'';}
-var DEFAULT_RETRIEVAL=[
-  {id:'opening',prompt:'Say your opening line for this family out loud.',revealFrom:'opening'},
-  {id:'ask',prompt:'Name the collateral questions you would ask — out loud or on scratch.',revealFrom:'ask'},
-  {id:'avoid',prompt:'Name the trap here: what would you deliberately NOT do?',revealFrom:'avoid'},
-  {id:'handoff',prompt:'Say the rounds handoff for this family — what must it separate?',revealFrom:'handoff'},
-  {id:'safety',prompt:'When do you stop ordinary information-gathering and escalate — and to whom?',revealFrom:'safety'}
-];
-function revealContent(it,rp){
-  if(rp.revealText)return rp.revealText;
-  if(rp.revealFrom==='opening')return it.opening||null;
-  var sec=(it.sections||{})[rp.revealFrom];
-  return (sec&&sec.length)?sec:null;
-}
-function retrievalFor(it){
-  if(Array.isArray(it.retrieval)&&it.retrieval.length)return it.retrieval;
-  return DEFAULT_RETRIEVAL.filter(function(rp){return revealContent(it,rp)!=null;});
-}
+/* The prompt list, its reveal resolution and famCardId are build-injected above from
+   site_build/fam_retrieval.js — shared with review.html, which serves these same cards when
+   they come due. Never re-declare them here: the card id embeds the prompt id. */
 function revealBodyHtml(content){
   if(content==null)return '';
   if(typeof content==='string')return '<p>'+esc(content)+'</p>';
@@ -253,7 +239,7 @@ function modeToggleHtml(){
     +'</div>';
 }
 function practiceHtml(it){
-  var prompts=retrievalFor(it), d=srsDueForScenario(it.id,prompts);
+  var prompts=famRetrievalFor(it), d=srsDueForScenario(it.id,prompts);
   var chip=d.due>0?(d.due+' due for review'):(d.started+' of '+d.total+' started');
   var prep=(it.sections&&it.sections.prepare)?it.sections.prepare:[];
   var cards=prompts.map(function(rp,i){
@@ -264,7 +250,7 @@ function practiceHtml(it){
     if(!shown){
       body+='<button type="button" class="revealbtn" data-reveal="'+esc(rp.id)+'" aria-expanded="false">Reveal one way to do it</button>';
     } else {
-      body+='<div class="preveal"><span class="preveal-k">One way to do it</span>'+revealBodyHtml(revealContent(it,rp))+'</div>';
+      body+='<div class="preveal"><span class="preveal-k">One way to do it</span>'+revealBodyHtml(famRevealContent(it,rp))+'</div>';
       if(graded){
         body+='<div class="pdone" aria-live="polite">'+esc(scheduledLabel(graded))+'</div>';
       } else {
