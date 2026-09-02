@@ -393,6 +393,18 @@ test('a completed exam-simulation set counts as an active day', () => {
   assert.deepEqual(F2.fdActivityDays({ shelf: { attempts: 'junk' } }, SUNDAY), [false, false, false, false, false, false, false]);
 });
 
+test('topic quizzes, oral reps, the interview circle and reflection saves each light their day', () => {
+  const days = F2.fdActivityDays({
+    quiz: { 'a.md': { seen: 2, wrong: 1, last: '2026-08-03' } },                 // Mon (ISO date)
+    orals: { v: 1, reps: [{ at: '2026-08-04T21:15:00.000Z', format: 'x' }] },   // Tue (ISO datetime)
+    circle: { v: 1, lastTested: '2026-08-06' },                                  // Thu
+    reflect: { v: 1, on: true, entries: {}, savedAt: '2026-08-08T13:00:00.000Z' }, // Sat
+  }, SUNDAY);
+  assert.deepEqual(days, [true, true, false, true, false, true, false]);
+  assert.deepEqual(F2.fdActivityDays({ quiz: 'x', orals: { reps: 'x' }, circle: 4, reflect: null }, SUNDAY),
+    [false, false, false, false, false, false, false]);
+});
+
 test('the calibration ledger counts for both question and review events', () => {
   const days = F2.fdActivityDays({ calib: { v: 1, qb: [{ ts: atDay(1) }], rev: [{ ts: atDay(5) }] } }, SUNDAY);
   assert.deepEqual(days, [false, true, false, false, false, true, false]);
