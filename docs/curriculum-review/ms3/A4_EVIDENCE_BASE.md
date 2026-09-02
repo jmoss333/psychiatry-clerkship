@@ -1,6 +1,6 @@
 # MS3 · Appendix A4 — Evidence base
 
-105 registered sources and 47 annotated claims. Each annotation stores the verbatim span from the paper that licenses the claim the library makes — the highest-value target for clinical review, because a claim that drifts from its span is a factual error with a citation attached.
+106 registered sources and 48 annotated claims. Each annotation stores the verbatim span from the paper that licenses the claim the library makes — the highest-value target for clinical review, because a claim that drifts from its span is a factual error with a citation attached.
 
 **Annotation policy.** {
  "rule": "Every claim the library makes about a source must be licensed by a stored verbatim span from that source.",
@@ -687,6 +687,20 @@
 
 - claim terms: `overall remission rate`, `overall response`, `catatonia`
 
+### `fountoulakis-2025-esketamine`
+
+- span type `abstract` · retrieved 2026-09-02 · PMID 39876682 · DOI 10.1176/appi.ajp.20240515
+
+**Verbatim source span.**
+
+> At weeks 2-4, randomized controlled trials were mostly negative or failed; however, the meta-analysis returned a weak but significant positive effect for depression (effect size range, 0.15-0.23 at weeks 2-4), similar to augmentation strategies with atypical antipsychotics for treatment-resistant depression. The effect size concerning suicidality was not significant at any time point.
+
+**Claim `esketamine-depression-modest-suicidality-null`** (direction: `mixed`, used by cotw_20260720_mdd_res)
+
+> Esketamine showed a weak but significant positive effect for depression (effect size range 0.15-0.23 at weeks 2-4), while the effect size concerning suicidality was not significant at any time point.
+
+- claim terms: `effect size concerning suicidality`, `not significant at any time point`, `depression`
+
 ## Full source registry
 
 | id | type | access | citation |
@@ -796,3 +810,4 @@
 | `chung-2017-postdischarge-suicide` | systematic-review | metadata | {'authors': [{'family': 'Chung', 'given': 'DT'}, {'family': 'Ryan', 'given': 'CJ'}, {'family': 'Hadzi-Pavlovic', 'given': 'D'}, {'family': 'Singh', 'given': 'SP'}, {'family': 'Stanton', 'given': 'C'}, {'family': 'Large', 'given': 'MM'}], 'doi': '10.1001/jamapsychiatry.2017.1044', 'journal': 'JAMA Psychiatry', 'organization': '', 'pages': '694-702', 'pmid': '28564699', 'title': 'Suicide Rates After Discharge From Psychiatric Facilities: A Systematic Review and Meta-analysis', 'url': 'https://doi.org/10.1001/jamapsychiatry.2017.1044', 'volume': '74', 'year': 2017} |
 | `chung-2019-first-week-month` | systematic-review | metadata | {'authors': [{'family': 'Chung', 'given': 'D'}, {'family': 'Hadzi-Pavlovic', 'given': 'D'}, {'family': 'Wang', 'given': 'M'}, {'family': 'Swaraj', 'given': 'S'}, {'family': 'Olfson', 'given': 'M'}, {'family': 'Large', 'given': 'M'}], 'doi': '10.1136/bmjopen-2018-023883', 'journal': 'BMJ Open', 'organization': '', 'pages': 'e023883', 'pmid': '30904843', 'title': 'Meta-analysis of suicide rates in the first week and the first month after psychiatric hospitalisation', 'url': 'https://doi.org/10.1136/bmjopen-2018-023883', 'volume': '9', 'year': 2019} |
 | `bot-2026-benzodiazepines-catatonia` | systematic-review | abstract | {'authors': [{'family': 'Bot', 'given': 'L'}, {'family': 'Schotsman', 'given': 'B'}, {'family': 'Oostra', 'given': 'E'}, {'family': 'Hoogendoorn', 'given': 'AW'}, {'family': 'van Exel', 'given': 'E'}], 'doi': '10.1111/acps.70102', 'journal': 'Acta Psychiatr Scand', 'organization': '', 'pages': '99-115', 'pmid': '42009596', 'title': 'The Effect of Benzodiazepines on Catatonia: A Systematic Review and Meta-Analysis', 'url': 'https://doi.org/10.1111/acps.70102', 'volume': '154', 'year': 2026} |
+| `fountoulakis-2025-esketamine` | systematic-review | abstract | {'authors': [{'family': 'Fountoulakis', 'given': 'KN'}, {'family': 'Saitis', 'given': 'A'}, {'family': 'Schatzberg', 'given': 'AF'}], 'doi': '10.1176/appi.ajp.20240515', 'journal': 'Am J Psychiatry', 'organization': '', 'pages': '259-275', 'pmid': '39876682', 'title': 'Esketamine Treatment for Depression in Adults: A PRISMA Systematic Review and Meta-Analysis', 'url': 'https://doi.org/10.1176/appi.ajp.20240515', 'volume': '182', 'year': 2025} |

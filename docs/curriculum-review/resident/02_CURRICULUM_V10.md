@@ -171,7 +171,7 @@ Based on articles retrieved from PubMed. Citation fields (journal, year, volume/
 - **Slug:** `cotw_20260810_panic_res.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-08-10_anxiety-panic-disorder_Resident.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 4,535 words
+- **Length:** 4,552 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -315,7 +315,7 @@ The apparent conflict resolves once you see that they optimize different objecti
 
 *Teaching point:* **CBT with interoceptive exposure is first-line**, not adjunctive. In a meta-analysis of 41 randomized *placebo-controlled* trials across anxiety-related disorders, CBT showed moderate placebo-controlled effects on target symptoms (Hedges' g = 0.56), with smaller effects on comorbid anxiety, depression, and quality of life — and interventions built primarily on **exposure** outperformed those using cognitive techniques alone, though that difference did not reach significance [4]. Note honestly that in this analysis panic disorder was among the disorders with **small-to-moderate** effect sizes, and the authors concluded more effective treatments are still needed for PD.
 
-Components for this patient: psychoeducation and the interdose-rebound formulation; interoceptive exposure targeting cardiac and respiratory sensations; **graded in-vivo exposure** to driving, to exercise, and to client-facing work; systematic elimination of safety behaviors — the PRN alprazolam, the boyfriend-equivalent accompaniment pattern, checking his pulse, the low-traffic scheduling. If PTSD screening is positive, sequence trauma-focused work deliberately rather than running two protocols in parallel.
+Components for this patient: psychoeducation and the interdose-rebound formulation; interoceptive exposure targeting cardiac and respiratory sensations; **graded in-vivo exposure** to driving, to exercise, and to client-facing work; systematic elimination of safety behaviors — the PRN alprazolam taken at the first sensation, the avoidance of exercise, driving beyond town, and client-facing work, and any pulse-checking, safe-person accompaniment, or route-and-timing rituals uncovered on further history. If PTSD screening is positive, sequence trauma-focused work deliberately rather than running two protocols in parallel.
 
 **The long-term nuance residents should carry.** A systematic review and meta-analysis of long-term CBT outcomes across 69 RCTs found benefits maintained versus control at post-treatment, 1–6 months, and 6–12 months for panic disorder (Hedges' g 0.22–0.35) — but at **follow-up of 12 months or more, the effect for panic disorder was no longer significant**, in contrast to sustained effects for GAD, social anxiety disorder, and PTSD [5]. Read that as a mandate for **maintenance strategy** — booster sessions, adequate pharmacotherapy duration before any discontinuation attempt, and relapse-prevention planning — not as evidence against CBT.
 
@@ -384,7 +384,7 @@ Map that onto this patient: fourteen months of illness, prominent avoidance cons
 - Treating "denies SI" in a repressive-coping patient with several documented risk factors as an adequate assessment [9].
 - Diagnosing PTSD reflexively from the trauma history without applying criteria — screen properly rather than assuming.
 
-**Discussion extension if time allows.** The Cochrane and BMJ NMAs are an excellent 5-minute journal-club digression on why "which drug is best" is an ill-posed question absent a specified outcome, time horizon, and harm weighting — and on how **low risk-of-bias ratings across an entire literature** should temper confident ranking claims [1,2].
+**Discussion extension if time allows.** The Cochrane and BMJ NMAs are an excellent 5-minute journal-club digression on why "which drug is best" is an ill-posed question absent a specified outcome, time horizon, and harm weighting — and on how **high risk-of-bias ratings across an entire literature** should temper confident ranking claims [1,2].
 
 **Safety framing.** Keep Q7 oriented to recognition, structured assessment, escalation, and collaborative safety planning. Redirect any real-patient details a participant introduces; identifiable information does not belong in teaching materials.
 
@@ -434,7 +434,7 @@ Based on articles retrieved from PubMed.
 - **Slug:** `cotw_20260803_lithium_res.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-08-03_lithium-monitoring-toxicity-interactions_Resident.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 3,811 words
+- **Length:** 3,915 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -541,7 +541,7 @@ Two corollaries worth stating explicitly:
 1. **Chronic lithium neurotoxicity** — *most likely.* Cerebellar and pyramidal signs with encephalopathy at a near-therapeutic level.
 2. **Serotonin syndrome** — the closest mimic; clonus and hyperreflexia overlap almost completely. Distinguishing features: serotonergic agent exposure with a **temporally tight** onset, hyperthermia, diaphoresis, GI hyperactivity, and **lower-extremity-predominant** clonus. She is on lithium monotherapy — but always confirm, since lithium is itself serotonergic and is a recognized contributor when combined.
 3. **NMS** — argues against: afebrile, no rigidity, normal CK. Keep it live if an antipsychotic is on board; lithium plus antipsychotic is a described risk combination.
-4. **Hypercalcemic encephalopathy** — note the loop-back: her **corrected calcium is 10.9 with an inappropriately elevated PTH**, i.e. lithium-associated hyperparathyroidism (Q6). Hypercalcemia can itself produce confusion and contributes to nephrogenic DI. Two lithium effects converging.
+4. **Hypercalcemia — a marker, not a driver** — note the loop-back: her **corrected calcium is 10.9 with an inappropriately elevated PTH**, i.e. lithium-associated hyperparathyroidism (Q6). Read it as a *marker* of that endocrine effect rather than as a contributor to tonight's picture: mild hypercalcemia at this level does not produce encephalopathy — that generally requires >12–13 mg/dL — and her concentrating defect is already fully accounted for by lithium's direct effect on the collecting duct (Q4). Two lithium effects converging, but only one of them is driving the neurologic picture.
 5. **Metabolic/uremic contribution** — eGFR 45 and volume depletion.
 6. **Nonconvulsive status epilepticus** — lithium lowers seizure threshold; if the encephalopathy does not track the falling level, get an EEG.
 7. **Wernicke encephalopathy** — ataxia, nystagmus, confusion is the triad; poor oral intake for eight weeks makes this non-trivial. Thiamine is cheap.
@@ -617,9 +617,9 @@ The **EXTRIP workgroup** recommendations (systematic review plus two-round modif
 
 1. **Chronic lithium neurotoxicity** from combined GLP-1 RA and NSAID exposure on a background of Li-NDI — *most likely*
 2. **Serotonin syndrome** — closest phenotypic mimic; separate by exposure timeline and fever
-3. **Hypercalcemic encephalopathy** from lithium-associated hyperparathyroidism — *concurrent contributor*
-4. **NMS** — argued against by normal tone, temperature, and CK, but must be excluded if any antipsychotic is on board
-5. **Uremic/metabolic encephalopathy** from AKI and volume depletion
+3. **NMS** — argued against by normal tone, temperature, and CK, but must be excluded if any antipsychotic is on board
+4. **Uremic/metabolic encephalopathy** from AKI and volume depletion
+5. **Hypercalcemia** from lithium-associated hyperparathyroidism — *a marker of that endocrine effect, not a driver of the encephalopathy at 10.9 mg/dL*
 6. **Nonconvulsive status epilepticus** — consider EEG if the exam lags the falling level
 7. **Wernicke encephalopathy** — eight weeks of poor intake; treat empirically
 8. **SILENT** — not a differential for today, but the outcome the acute management is trying to prevent
@@ -667,7 +667,7 @@ The **EXTRIP workgroup** recommendations (systematic review plus two-round modif
   3. Declaring a post-dialysis level reassuring without rechecking for rebound.
   4. Discontinuing lithium permanently on the basis of an AKI-era eGFR.
   5. Stopping lithium for subclinical hypothyroidism instead of adding levothyroxine [1].
-  6. Not connecting hypercalcemia back to lithium-associated hyperparathyroidism — and therefore missing a treatable contributor to both the encephalopathy and the polyuria [1].
+  6. Not connecting hypercalcemia back to lithium-associated hyperparathyroidism — and therefore missing a monitorable endocrine effect that needs endocrine follow-up. Note the converse error too: at a corrected calcium of 10.9 it is a marker, not a treatable contributor to tonight's encephalopathy (which needs >12–13 mg/dL) or to her polyuria (already explained by lithium's direct collecting-duct effect, Q4) [1].
   7. Reflexively citing "Ebstein anomaly" as an absolute contraindication in pregnancy without the actual effect sizes or the dose–response relationship [8].
   8. Abrupt discontinuation, with its own relapse risk [2].
 - **For older-adult services:** an ISBD task force Delphi panel recommended lower maintenance targets in older adults with bipolar disorder — roughly **0.4–0.8 mmol/L for ages 60–79** and **0.4–0.7 mmol/L for 80+** — and recommended that laboratories report the older-adult therapeutic range separately [13]. Worth flagging that "0.6–1.2" printed on the lab report is not age-adjusted.

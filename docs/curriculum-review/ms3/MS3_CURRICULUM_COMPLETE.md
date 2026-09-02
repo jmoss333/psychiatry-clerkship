@@ -3,7 +3,7 @@
 # MS3 curriculum — complete content transcript for clinical review
 
 **Site:** `une-ms3-psychiatry` · **Audience:** MS3 — UNE medical students
-**Generated:** 2026-09-02 from build `8a842f3` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
+**Generated:** 2026-09-02 from build `08ea900` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
 
 ## Who this is for
 
@@ -19,14 +19,14 @@ This transcript is assembled from the **built site**, not the source tree, so it
 | Narrative pages (markdown) | 80 |
 | Interactive tools | 23 |
 | Deep-link-only (hidden) surfaces | 10 |
-| Words of narrative curriculum | 98,742 |
+| Words of narrative curriculum | 98,921 |
 | Practice question-bank items | 192 |
 | Audio-companion quiz decks / questions | 79 / 437 |
 | Communication cases | 12 |
 | Diagnostic reasoning cases | 4 |
 | Family systems scenarios | 8 |
-| Registered evidence sources | 105 |
-| Annotated claims with verbatim source spans | 47 |
+| Registered evidence sources | 106 |
+| Annotated claims with verbatim source spans | 48 |
 
 ## Document set
 
@@ -83,7 +83,7 @@ High-yield places to concentrate: the `topic_meta` **can't-miss**, **rule-out** 
 
 # MS3 · Navigation map
 
-Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-02 @ `8a842f3`.
+Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-02 @ `08ea900`.
 
 ## Orientation  *(pinned)*
 
@@ -163,7 +163,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 1 | Psychopharmacology Primer | `psychopharm_primer.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md` | 1287 |
 | 2 | Medication Monitoring & Labs | `med_monitoring.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md` | 583 |
 | 3 | Protocol Library | `protocol_library.md` | md | listed | status=`reviewed` · riskKind=`local-policy` · riskLevel=`high` | `05_Psychopharmacology/Protocol_Library/protocol_library_inpatient.md` | 325 |
-| 4 | ECT & Neuromodulation | `ect_neuromodulation.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `05_Psychopharmacology/ECT_Neuromodulation/ect_neuromodulation_inpatient_teaching.md` | 595 |
+| 4 | ECT & Neuromodulation | `ect_neuromodulation.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `05_Psychopharmacology/ECT_Neuromodulation/ect_neuromodulation_inpatient_teaching.md` | 660 |
 | 5 | Treatment Basics | `exp_tx.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/MS3/Student_Ready_Pack/04_expansion_modules/treatment_basics_digest.md` | 648 |
 | 6 | Algorithms & Decision Aids | `decision-aids.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `04_Acute_and_Safety/Decision_Aids/decision-aids.html` |  |
 | 7 | Interaction Cards — One Action | `interaction-cards.html` | tool | listed | status=`reviewed` · riskKind=`formulary` · riskLevel=`high` | `05_Psychopharmacology/Monitoring_and_Labs/interaction-cards.html` |  |
@@ -227,7 +227,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 7 | Alcohol Withdrawal & DT (Jul 26) | `cotw_20260726_etohwd_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-26_alcohol-withdrawal-delirium-tremens_MS3.md` | 2423 |
 | 8 | Suicide Risk & Safety Planning (Jul 23) | `cotw_20260723_suiciderisk_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`high` | `08_Cases_and_Simulation/case-of-the-week/2026-07-23_suicide-risk-assessment-safety-planning_MS3.md` | 2214 |
 | 9 | MDD — Treatment Selection (Jul 20) | `cotw_20260720_mdd_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-20_mdd-treatment-selection-augmentation_MS3.md` | 1290 |
-| 10 | Bipolar Mania (Jul 20) | `cotw_20260720_bipolar_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-20_bipolar-mania_MS3.md` | 1550 |
+| 10 | Bipolar Mania (Jul 20) | `cotw_20260720_bipolar_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-20_bipolar-mania_MS3.md` | 1664 |
 | 11 | Acute Agitation & Delirium (Jul 13) | `cotw_20260713_agitation_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-13_acute-agitation-delirium_MS3.md` | 1713 |
 | 12 | Serotonin Syndrome vs NMS (Jul 9) | `cotw_20260709_ssnms_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-09_serotonin-syndrome-vs-nms_MS3.md` | 1504 |
 
@@ -9207,7 +9207,7 @@ Know *which* protocol applies and *why*; open the EHR order set for the specific
 - **Slug:** `ect_neuromodulation.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `05_Psychopharmacology/ECT_Neuromodulation/ect_neuromodulation_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 595 words
+- **Length:** 660 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -9222,7 +9222,7 @@ Know *which* protocol applies and *why*; open the EHR order set for the specific
 
 - Choose ECT when a rapid, definitive response is needed: psychotic or catatonic depression, active suicidality, refusal to eat/drink, pregnancy, or prior ECT response.
 - Hold benzodiazepines and anticonvulsants pre-ECT (they blunt the seizure), and plan continuation treatment — relapse is the rule without it.
-- rTMS is outpatient with no anesthesia or memory effects; ketamine/esketamine act within hours and reduce suicidal ideation (esketamine requires REMS monitoring).
+- rTMS is outpatient with no anesthesia or memory effects; ketamine/esketamine act within hours on depressive symptoms — not on suicidality itself, so they never replace monitoring, means restriction, or safety planning (esketamine requires REMS monitoring).
 
 **Can't-miss / red-flag line:**
 
@@ -9280,7 +9280,7 @@ Know *which* protocol applies and *why*; open the EHR order set for the specific
 
 ## Rapid-acting and light-based options
 
-- **Esketamine (intranasal) and IV ketamine** — glutamatergic (NMDA) agents with **rapid antidepressant and anti-suicidal effects** in treatment-resistant depression (Zarate 2006 established the IV signal). Esketamine is delivered under a **REMS** with in-office monitoring; watch dissociation, sedation, and blood-pressure spikes.
+- **Esketamine (intranasal) and IV ketamine** — glutamatergic (NMDA) agents with **rapid antidepressant effects** in treatment-resistant depression, including in patients presenting with acute suicidal ideation — but note the limit: the pivotal trials showed rapid improvement in *depressive symptoms*, not a demonstrated effect on suicidality itself, and the label states that effectiveness in preventing suicide or reducing suicidal ideation has not been demonstrated (Zarate 2006 established the IV signal). Esketamine is delivered under a **REMS** with in-office monitoring; watch dissociation, sedation, and blood-pressure spikes.
 - **Bright light therapy** — first-line for **seasonal** depression, and — per a 2024 *JAMA Psychiatry* meta-analysis — an **effective *adjunctive* treatment for *nonseasonal* depression** as well (roughly doubling remission odds). Cheap and well-tolerated; screen for bipolar (can precipitate switch) and eye disease.
 
 **What the student does** —
@@ -9295,7 +9295,7 @@ Know *which* protocol applies and *why*; open the EHR order set for the specific
 - No absolute contraindications to ECT; raised ICP and unstable cardiac disease are the key relative ones.
 - Hold benzodiazepines/anticonvulsants before ECT (they blunt the seizure).
 - rTMS: outpatient, no anesthesia, small seizure risk, for treatment-resistant depression and OCD.
-- Ketamine/esketamine act within hours and reduce suicidal ideation; esketamine needs REMS monitoring.
+- Ketamine/esketamine act within hours on *depressive symptoms* — they do not substitute for monitoring, means restriction, or safety planning, and effectiveness in reducing suicidal ideation itself is not established; esketamine needs REMS monitoring.
 - Bright light therapy now has evidence as an adjunct in *nonseasonal* depression, not just SAD.
 
 **Pair with** — the [Mood topic](?page=t_mood.md), [Catatonia](?page=catatonia.md), the [Psychopharmacology primer](?page=psychopharm_primer.md), and the [Landmark Trials audio library](?page=landmark_trials.md).
@@ -16133,7 +16133,7 @@ She returns at **6 weeks** on an adequately dosed selective serotonin reuptake i
 - **Slug:** `cotw_20260720_bipolar_ms3.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-20_bipolar-mania_MS3.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 1,550 words
+- **Length:** 1,664 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -16193,7 +16193,7 @@ Collateral from his mother (by phone) confirms a maternal aunt with bipolar diso
 ## Guided Discussion Questions
 
 **Q1. What is the most likely diagnosis, and what specific features support it?**
-*Teaching point:* This is a classic **manic episode**, and given the prior depressive episode the working diagnosis is **bipolar I disorder**. Use the mnemonic **DIG FAST** for manic symptoms: **D**istractibility, **I**mpulsivity/**I**ndiscretion (spending, risky behavior), **G**randiosity, **F**light of ideas, **A**ctivity increase/**A**gitation, **S**leep decreased (*no* perceived need for sleep), **T**alkativeness/pressured speech. DSM criteria for mania require **≥1 week** of persistently elevated/irritable mood **plus increased activity/energy** and ≥3 symptoms (≥4 if mood is only irritable), causing marked impairment, hospitalization, or psychotic features. A single manic episode is sufficient to diagnose bipolar I — a prior depressive episode is *supportive* but not required.
+*Teaching point:* This is a classic **manic episode**, and given the prior depressive episode the working diagnosis is **bipolar I disorder**. Use the mnemonic **DIG FAST** for manic symptoms: **D**istractibility, **I**mpulsivity/**I**ndiscretion (spending, risky behavior), **G**randiosity, **F**light of ideas, **A**ctivity increase/**A**gitation, **S**leep decreased (*no* perceived need for sleep), **T**alkativeness/pressured speech. DSM criteria for mania require a distinct period of abnormally and persistently elevated, expansive, or irritable mood **plus abnormally increased goal-directed activity or energy**, lasting **≥1 week and present most of the day, nearly every day — or any duration if hospitalization is necessary** — with ≥3 associated symptoms (≥4 if mood is only irritable), and causing marked impairment, necessitating hospitalization, or with psychotic features. Note that hospitalization does double duty in the criteria: it satisfies the duration requirement at *any* duration, and it also counts as a severity outcome — so a patient admitted on day four of clear mania meets criteria even if you cannot pin the episode to a full week. A single manic episode is sufficient to diagnose bipolar I — a prior depressive episode is *supportive* but not required.
 
 **Q2. Why does the "increased energy/activity" criterion matter, and how does mania differ from hypomania?**
 *Teaching point:* DSM-5 added **increased goal-directed activity or energy** as a *required* Criterion A feature (alongside mood) — mood elevation alone is not enough. **Hypomania** = same symptom cluster but **≥4 days**, **no marked impairment, no psychosis, and no hospitalization**; hypomania + a major depressive episode = **bipolar II**. This patient's psychosis (grandiose delusion about the transit system), marked impairment, and need for hospitalization place him firmly in **mania**, not hypomania.
@@ -16211,7 +16211,7 @@ Collateral from his mother (by phone) confirms a maternal aunt with bipolar diso
 *Teaching point:* Bipolar I is a **recurrent, lifelong illness**; acute stabilization is only the first step, and effective acute agents are generally **continued into maintenance** to prevent relapse [1]. A real-world cohort found that patients treated with **guideline-concordant first-line regimens had significantly lower 30-day rehospitalization and longer time to readmission** than those on no or non-recommended treatment [4]. This is a concrete, learner-friendly way to make "guidelines matter" tangible.
 
 **Q7. What safety counseling and monitoring are essential if you start lithium?**
-*Teaching point:* Lithium has a **narrow therapeutic index**. Teach baseline and ongoing **renal function and TSH**, the concept of **serum level monitoring**, and signs of toxicity (coarse tremor, GI upset, ataxia, confusion). Emphasize that **dehydration, NSAIDs, and thiazide/ACE-inhibitor diuretics raise lithium levels**. Lithium also carries **teratogenic risk** — hence the pregnancy test and contraception counseling. (Valproate is also highly teratogenic and generally avoided in patients who may become pregnant.)
+*Teaching point:* Lithium has a **narrow therapeutic index**. Teach baseline and ongoing **renal function and TSH**, the concept of **serum level monitoring**, and signs of toxicity (coarse tremor, GI upset, ataxia, confusion). Emphasize that **dehydration, NSAIDs, thiazide diuretics, and ACE inhibitors or ARBs raise lithium levels** — the last two are not diuretics; they raise the level by reducing GFR, while thiazides drive compensatory proximal reabsorption of sodium and, with it, lithium. Lithium also carries **teratogenic risk** — hence the pregnancy test and contraception counseling. (Valproate is also highly teratogenic and generally avoided in patients who may become pregnant.)
 
 ---
 
@@ -27195,7 +27195,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
 
 # MS3 · Appendix A4 — Evidence base
 
-105 registered sources and 47 annotated claims. Each annotation stores the verbatim span from the paper that licenses the claim the library makes — the highest-value target for clinical review, because a claim that drifts from its span is a factual error with a citation attached.
+106 registered sources and 48 annotated claims. Each annotation stores the verbatim span from the paper that licenses the claim the library makes — the highest-value target for clinical review, because a claim that drifts from its span is a factual error with a citation attached.
 
 **Annotation policy.** {
  "rule": "Every claim the library makes about a source must be licensed by a stored verbatim span from that source.",
@@ -27882,6 +27882,20 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
 
 - claim terms: `overall remission rate`, `overall response`, `catatonia`
 
+### `fountoulakis-2025-esketamine`
+
+- span type `abstract` · retrieved 2026-09-02 · PMID 39876682 · DOI 10.1176/appi.ajp.20240515
+
+**Verbatim source span.**
+
+> At weeks 2-4, randomized controlled trials were mostly negative or failed; however, the meta-analysis returned a weak but significant positive effect for depression (effect size range, 0.15-0.23 at weeks 2-4), similar to augmentation strategies with atypical antipsychotics for treatment-resistant depression. The effect size concerning suicidality was not significant at any time point.
+
+**Claim `esketamine-depression-modest-suicidality-null`** (direction: `mixed`, used by cotw_20260720_mdd_res)
+
+> Esketamine showed a weak but significant positive effect for depression (effect size range 0.15-0.23 at weeks 2-4), while the effect size concerning suicidality was not significant at any time point.
+
+- claim terms: `effect size concerning suicidality`, `not significant at any time point`, `depression`
+
 ## Full source registry
 
 | id | type | access | citation |
@@ -27991,6 +28005,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
 | `chung-2017-postdischarge-suicide` | systematic-review | metadata | {'authors': [{'family': 'Chung', 'given': 'DT'}, {'family': 'Ryan', 'given': 'CJ'}, {'family': 'Hadzi-Pavlovic', 'given': 'D'}, {'family': 'Singh', 'given': 'SP'}, {'family': 'Stanton', 'given': 'C'}, {'family': 'Large', 'given': 'MM'}], 'doi': '10.1001/jamapsychiatry.2017.1044', 'journal': 'JAMA Psychiatry', 'organization': '', 'pages': '694-702', 'pmid': '28564699', 'title': 'Suicide Rates After Discharge From Psychiatric Facilities: A Systematic Review and Meta-analysis', 'url': 'https://doi.org/10.1001/jamapsychiatry.2017.1044', 'volume': '74', 'year': 2017} |
 | `chung-2019-first-week-month` | systematic-review | metadata | {'authors': [{'family': 'Chung', 'given': 'D'}, {'family': 'Hadzi-Pavlovic', 'given': 'D'}, {'family': 'Wang', 'given': 'M'}, {'family': 'Swaraj', 'given': 'S'}, {'family': 'Olfson', 'given': 'M'}, {'family': 'Large', 'given': 'M'}], 'doi': '10.1136/bmjopen-2018-023883', 'journal': 'BMJ Open', 'organization': '', 'pages': 'e023883', 'pmid': '30904843', 'title': 'Meta-analysis of suicide rates in the first week and the first month after psychiatric hospitalisation', 'url': 'https://doi.org/10.1136/bmjopen-2018-023883', 'volume': '9', 'year': 2019} |
 | `bot-2026-benzodiazepines-catatonia` | systematic-review | abstract | {'authors': [{'family': 'Bot', 'given': 'L'}, {'family': 'Schotsman', 'given': 'B'}, {'family': 'Oostra', 'given': 'E'}, {'family': 'Hoogendoorn', 'given': 'AW'}, {'family': 'van Exel', 'given': 'E'}], 'doi': '10.1111/acps.70102', 'journal': 'Acta Psychiatr Scand', 'organization': '', 'pages': '99-115', 'pmid': '42009596', 'title': 'The Effect of Benzodiazepines on Catatonia: A Systematic Review and Meta-Analysis', 'url': 'https://doi.org/10.1111/acps.70102', 'volume': '154', 'year': 2026} |
+| `fountoulakis-2025-esketamine` | systematic-review | abstract | {'authors': [{'family': 'Fountoulakis', 'given': 'KN'}, {'family': 'Saitis', 'given': 'A'}, {'family': 'Schatzberg', 'given': 'AF'}], 'doi': '10.1176/appi.ajp.20240515', 'journal': 'Am J Psychiatry', 'organization': '', 'pages': '259-275', 'pmid': '39876682', 'title': 'Esketamine Treatment for Depression in Adults: A PRISMA Systematic Review and Meta-Analysis', 'url': 'https://doi.org/10.1176/appi.ajp.20240515', 'volume': '182', 'year': 2025} |
 
 
 <!-- ==================== A5_COVERAGE_MATRICES.md ==================== -->

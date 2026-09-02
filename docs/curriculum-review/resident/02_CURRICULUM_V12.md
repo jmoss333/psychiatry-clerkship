@@ -162,7 +162,7 @@ Dangerousness here is **agitation-related risk to self and staff**; keep teachin
 - **Slug:** `cotw_20260709_ssnms_res.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-09_serotonin-syndrome-vs-nms_Resident.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 1,978 words
+- **Length:** 2,005 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -305,7 +305,7 @@ NMS typically resolves over **days to ~2 weeks** with agent withdrawal and suppo
 
 ### Workup & management summary
 - **Workup:** CK, CMP (renal/hepatic), CBC, serum iron, coags/DIC panel, lithium level, blood/urine cultures and CNS infection work-up as indicated, ECG, continuous temperature and hemodynamic monitoring; consider EEG if catatonia/NCSE is in question.
-- **Immediate management:** **stop all dopamine antagonists** (including metoclopramide); ICU-level supportive care — IV fluids, active cooling, correct electrolytes, protect renal function against rhabdomyolysis.
+- **Immediate management:** **stop all dopamine antagonists** (including metoclopramide); ICU-level supportive care — IV fluids, active cooling, correct electrolytes, protect renal function against rhabdomyolysis, and start **VTE prophylaxis** (pharmacologic unless contraindicated; mechanical when it is) given prolonged immobility and rigidity; attend to aspiration risk and skin/pressure care for the same reason.
 - **Pharmacotherapy:** benzodiazepine (lorazepam) early (agitation + possible catatonia); **dantrolene** and **bromocriptine/amantadine** for moderate–severe NMS; **ECT** for refractory NMS/malignant catatonia.
 - **If the phenotype had been SS:** stop serotonergic agents, benzodiazepines, **cyproheptadine**, ICU with sedation/paralysis if severe.
 
