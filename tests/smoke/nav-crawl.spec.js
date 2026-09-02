@@ -16,6 +16,17 @@
  */
 
 import { test, expect } from '@playwright/test';
+import { readFileSync } from 'node:fs';
+
+// Case of the Week adds exactly one nav page per audience per registry week
+// (cotw_registry.json is the single source the builds derive those pages from), so the
+// exact-inventory pin derives its CotW share from the registry too. A weekly case PR now
+// passes without touching this file, while any OTHER nav change still fails exactly.
+// A registry read failure throws here and fails the suite loudly — never a silent pass.
+const COTW_WEEKS = JSON.parse(readFileSync(
+  new URL('../../08_Cases_and_Simulation/case-of-the-week/cotw_registry.json', import.meta.url),
+  'utf8',
+)).weeks.length;
 
 const MIN_BYTES = 200;
 // LFS pointer stubs begin with this ASCII header (~133 bytes total)
@@ -75,9 +86,10 @@ async function waitForContent(page) {
 
 test('nav items: exact inventory + HTTP 200 + non-empty content', async ({ request, baseURL }, testInfo) => {
   const items = await loadNav(request, baseURL);
-  // +2 per audience: therapy_on_the_unit.md and therapy_reading_room.md (WP-T3).
-  // +1 per audience: 2026-08-31 catatonia Case of the Week.
-  expect(items).toHaveLength(testInfo.project.name === 'nav-res' ? 111 : 103);
+  // Non-CotW baseline: 92 ms3 / 100 res (equal to the 2026-09-01 pins of 103/111 minus the
+  // 11 registry weeks then shipping). +2 per audience within that baseline: WP-T3's
+  // therapy_on_the_unit.md and therapy_reading_room.md.
+  expect(items).toHaveLength((testInfo.project.name === 'nav-res' ? 100 : 92) + COTW_WEEKS);
   expect(items.filter(item => item.f === 'rotation-curator.html').map(({
     t, f, k, hidden,
   }) => ({ t, f, k, hidden }))).toEqual([{
