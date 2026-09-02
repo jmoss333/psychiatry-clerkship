@@ -17,9 +17,10 @@ assembles them into `_build/ms3` and `_build/res`.
 bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh ms3   # → _build/ms3
 bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res   # → _build/res
 ```
-- **Two sites, one repo.** Build command, publish dir, and `GIT_LFS_ENABLED` are set **per-site in
-  the Netlify UI**, not in `netlify.toml` (kept intentionally minimal — one toml can't express two
-  sites, and it's read *after* the LFS checkout). See `13_Faculty_Resources/_automation/GIT_AND_DEPLOY_PLAN.md`.
+- **Two sites, one repo.** Build command and publish dir are set **per-site in the Netlify UI**, not
+  in `netlify.toml` (kept intentionally minimal — one toml can't express two sites, and it's read
+  *after* the clone). The legacy `GIT_LFS_ENABLED` / `GIT_LFS_FETCH_INCLUDE` env vars also live
+  there and are being **retired** (next bullet but one). See `13_Faculty_Resources/_automation/GIT_AND_DEPLOY_PLAN.md`.
 - Deploy-on-push to `main`. Deploy previews: `https://deploy-preview-{PR}--{slug}.netlify.app`.
 - **Git LFS** tracks `*.mp3 *.m4a *.wav *.mp4`. Never commit LFS **pointer stubs** (~133 B) in place
   of real media — the build's LFS gate fails the deploy. In sandboxes without LFS installed, audio

@@ -7,7 +7,7 @@ description: Use when deploying, verifying, or debugging the two clerkship Netli
 
 One repo (`jmoss333/psychiatry-clerkship`) feeds **two** Netlify sites that build on push:
 `une-ms3-psychiatry` (UNE COM MS3) and `mmc-psychiatry-residents-sanford` (MMC residents).
-Build command, publish dir, and `GIT_LFS_ENABLED` live **per-site in the Netlify UI**, not in
+Build command and publish dir live **per-site in the Netlify UI**, not in
 `netlify.toml` (which is intentionally minimal — see its header comment and
 `GIT_AND_DEPLOY_PLAN.md` §6–7 for why).
 
