@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { test, expect } from '@playwright/test';
+import { requestGetWithRetry, routeFetchWithRetry } from './net-resilience.js';
 import { replaceRotationEditionCatalog } from './rotation-edition-fixture.js';
 
 const TOOL = '/tools/rotation-curator.html';
@@ -104,7 +105,7 @@ function projection(audience, revision, gate = 'enabled') {
 
 async function useSyntheticCatalog(page, gate = 'enabled') {
   await page.route(`**${TOOL}`, async route => {
-    const response = await route.fetch();
+    const response = await routeFetchWithRetry(route);
     let html = await response.text();
     const audienceMatch = html.match(/var FD_AUDIENCE=("(?:[^"\\]|\\.)*");/);
     if (!audienceMatch) throw new Error('built curator bootstrap was not found');
@@ -251,7 +252,7 @@ test('enabled synthetic Step 5 requires real receipts and affirmations, then cre
   await panel.locator('[data-curator-copy]').click(); expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(link);
   const downloadEvent = page.waitForEvent('download'); await panel.locator('[data-curator-download]').click(); const download = await downloadEvent;
   expect(download.suggestedFilename()).toBe(`SYN-${audience}-rotation-edition-1.json`); expect(readFileSync(await download.path(), 'utf8')).toBe(backup);
-  const shell = await page.request.get('/'); expect(await shell.text()).not.toContain('QR Code Generator for JavaScript');
+  const shell = await requestGetWithRetry(page.request, '/'); expect(await shell.text()).not.toContain('QR Code Generator for JavaScript');
 });
 
 test('Step 5 real imported edition reports exact core and catalog drift', async ({ page }) => {

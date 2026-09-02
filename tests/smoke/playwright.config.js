@@ -1,14 +1,27 @@
 import { defineConfig, devices } from '@playwright/test';
 
+import { isRemoteTarget } from './net-resilience.js';
+
 const MS3_URL = process.env.MS3_BASE_URL || 'http://localhost:4200';
 const RES_URL = process.env.RES_BASE_URL || 'http://localhost:4201';
 const FACULTY_URL = process.env.FACULTY_CONSOLE_BASE_URL || 'http://localhost:4202';
 const SP_INTERVIEW_URL = process.env.SP_INTERVIEW_BASE_URL || new URL('/tools/', `${MS3_URL}/`).href;
 
+// The production canary and the CI deploy-preview projects point these same specs at Netlify
+// over the public internet, where a round-trip costs ~100x a loopback one. The budgets below
+// are the ONLY thing that changes for those runs — everything about a localhost run stays
+// exactly as it was. Detected from the base URLs the run is already given, so no workflow edit
+// is needed (the scheduled-workflow validator pins that file by step inventory and sha256).
+const REMOTE = [MS3_URL, RES_URL, FACULTY_URL, SP_INTERVIEW_URL].some(isRemoteTarget);
+
 export default defineConfig({
   testDir: '.',
-  timeout: 60_000,
-  // One retry in CI covers transient startup races; none locally for fast feedback
+  // Remote runs crawl ~200 routes per project across a real CDN; 60s is a loopback budget.
+  timeout: REMOTE ? 120_000 : 60_000,
+  // One retry in CI covers transient startup races; none locally for fast feedback.
+  // Deliberately NOT raised for remote runs: transport noise is now handled at the transport
+  // layer (net-resilience.js), and a larger whole-test retry budget would start masking real
+  // intermittent product bugs, which is exactly what the canary exists to surface.
   retries: process.env.CI ? 1 : 0,
   reporter: [
     ['list'],
@@ -21,6 +34,11 @@ export default defineConfig({
   snapshotDir: './baseline',
   snapshotPathTemplate: '{snapshotDir}/{arg}{ext}',
   expect: {
+    // 5s is right for loopback. Against a real origin a first paint can depend on a ~600KB
+    // JSON fetch, and the default expired mid-fetch — the canary's "route.fetch: Test ended"
+    // failures were the expectation giving up while its own network call was still in flight.
+    // A longer budget delays a genuine failure; it never converts one into a pass.
+    timeout: REMOTE ? 15_000 : 5_000,
     toHaveScreenshot: {
       maxDiffPixelRatio: 0.20,
       animations: 'disabled',

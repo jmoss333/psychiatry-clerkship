@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { requestGetWithRetry } from './net-resilience.js';
 
 const DESKTOP = { width: 1440, height: 900 };
 const PHONE = { width: 390, height: 844 };
@@ -37,7 +38,7 @@ test('every published tool route gets the shared control, including unindexed ht
   test.setTimeout(120_000);
   await page.setViewportSize(DESKTOP);
   await seedCompleteSetup(page);
-  const navResponse = await request.get('/nav.json');
+  const navResponse = await requestGetWithRetry(request, '/nav.json');
   expect(navResponse.ok()).toBe(true);
   const nav = await navResponse.json();
   const tools = [...new Set(nav.flatMap(section => section.items || [])
