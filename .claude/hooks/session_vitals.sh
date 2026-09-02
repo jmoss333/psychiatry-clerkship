@@ -57,7 +57,7 @@ if command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1; then
   timeout 10 gh run list --event schedule --limit 12 --json name,conclusion,createdAt \
     -q '.[] | "  \(.conclusion // "running")  \(.name)  \(.createdAt[0:10])"' 2>/dev/null | sort -u -k2 | head -12
 else
-  echo "github: gh not authenticated here — check scheduled-workflow health in the Actions tab (they were failing daily at write-back as of 2026-09-02)"
+  echo "github: gh not authenticated here — check scheduled-workflow health in the Actions tab yourself (the heartbeat cannot escalate its own failure)"
 fi
 echo "== end vitals =="
 exit 0

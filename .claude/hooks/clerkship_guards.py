@@ -132,6 +132,12 @@ def relpath(path: str, root: Path) -> str:
         return path.replace(os.sep, "/")
 
 
+def is_outside_repo(rel: str) -> bool:
+    """relpath() passes an absolute path through unchanged when the file is not under the
+    repo root (scratchpad scripts, /tmp fixtures). No repo rule applies to those."""
+    return os.path.isabs(rel) or rel.startswith(("../", "..\\"))
+
+
 def is_test_path(rel: str) -> bool:
     return bool(TEST_DIR_RE.search(rel)) or rel.endswith((".test.mjs", ".spec.js", "_test.py"))
 
@@ -246,11 +252,19 @@ def check_machine_paths(text: str, rel: str) -> list[tuple[str, str, str]]:
 
 # --------------------------------------------------------------------------- PHI
 
+SCRIPT_BLOCK_RE = re.compile(r"<script\b[^>]*>.*?</script>", re.I | re.S)
+
+
 def check_phi(text: str, rel: str) -> list[tuple[str, str, str]]:
     if not is_learner_surface(rel):
         return []
-    if not rel.endswith((".md", ".html", ".json", ".js", ".txt")):
+    # Prose surfaces only. Script code (the governed shell, *.js, <script> blocks inside a
+    # tool) carries long numeric literals — timeouts, cache keys — that are not identifiers,
+    # and a recurring false warn teaches people to ignore the class.
+    if rel.startswith(SHELL_PREFIXES) or not rel.endswith((".md", ".html", ".json", ".txt")):
         return []
+    if rel.endswith(".html"):
+        text = SCRIPT_BLOCK_RE.sub(" ", text)
     scrubbed = IDENTIFIER_CONTEXT_RE.sub(" ", text)
     hits = [name for name, pattern in PHI_PATTERNS if pattern.search(scrubbed)]
     if not hits:
@@ -295,6 +309,8 @@ def mentions_finding(text: str, rel: str) -> bool:
 # --------------------------------------------------------------------------- all
 
 def run_text_checks(text: str, rel: str, root: Path) -> list[tuple[str, str, str]]:
+    if is_outside_repo(rel):
+        return []
     findings = []
     findings += check_crisis(text, rel, root)
     findings += check_dose(text, rel)

@@ -1,12 +1,14 @@
 ---
 name: deploy-verifier
-description: Use after any production deploy or deploy preview of une-ms3-psychiatry or mmc-psychiatry-residents-sanford, or when asked whether a site is serving correctly. Runs the post-deploy runbook over HTTP: real audio rather than Git-LFS pointer stubs, nav and search index, the crisis block on every required safety surface, the Interview Room page, and resident-only pages scoped to the resident site. Read-only; never edits, deploys, or clears a cache.
+description: Use after any production deploy or deploy preview of une-ms3-psychiatry or mmc-psychiatry-residents-sanford, or when asked whether a site is serving correctly. Runs the post-deploy runbook over HTTP: real audio rather than Git-LFS pointer stubs, nav and search index, the crisis block on every required safety surface, the Interview Room page, and resident-only pages scoped to the resident site. No editing tools; Bash is allowed for curl and the canary and is read-only by instruction. Never edits, deploys, or clears a cache.
 tools: Bash, Read, Grep, Glob
 model: haiku
 ---
 
 You verify a deployed clerkship site over HTTP and report a per-site pass/fail table. You
-change nothing: no edits, no deploys, no cache clears, no git operations.
+change nothing: no edits, no deploys, no cache clears, no git operations. Your allowlist has no
+editing tool, but Bash can do anything, so the read-only guarantee is this instruction: use Bash
+only for `curl`, `python3` on the scripts named below, and read-only `git rev-parse`.
 
 # Targets
 

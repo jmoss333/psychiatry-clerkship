@@ -142,6 +142,21 @@ test('pre_edit_guard denies machine paths in tracked python', () => {
   assert.equal(decision(runHook('pre_edit_guard.py', editCall('docs/notes.md', `ROOT = "${machine}"`))), 'allow');
 });
 
+test('pre_edit_guard ignores files outside the repository (scratchpad scripts)', () => {
+  const machine = '/' + 'Users' + '/someone/repo';
+  const outside = path.join(os.tmpdir(), 'clerkship-scratch', 'helper.py');
+  const call = { hook_event_name: 'PreToolUse', tool_name: 'Write', cwd: repo, tool_input: { file_path: outside, content: `ROOT = "${machine}"\nprint(${lifelineDigits})` } };
+  assert.equal(decision(runHook('pre_edit_guard.py', call)), 'allow');
+});
+
+test('pre_edit_guard PHI pass skips script code and the governed shell', () => {
+  const tool = '<p>Synthetic case.</p><script>var cacheMs = 86400000; var seed = 12345678;</script>';
+  assert.equal(decision(runHook('pre_edit_guard.py', editCall('tools/x.html', tool))), 'allow');
+  assert.equal(decision(runHook('pre_edit_guard.py', editCall('13_Faculty_Resources/_automation/site_build/spa_index.html', 'var id = 12345678;'))), 'allow');
+  assert.equal(decision(runHook('pre_edit_guard.py', editCall('13_Faculty_Resources/_automation/site_build/frontdoor/fd_data.js', 'var id = 12345678;'))), 'allow');
+  assert.equal(decision(runHook('pre_edit_guard.py', editCall('tools/x.html', '<p>Chart MRN 12345678</p>'))), 'ask');
+});
+
 test('pre_edit_guard reads Write content and MultiEdit edits, and denies win over asks', () => {
   const write = { hook_event_name: 'PreToolUse', tool_name: 'Write', cwd: repo, tool_input: { file_path: path.join(repo, 'tools/rp-new.html'), content: 'dose 2 mg; MRN noted' } };
   const r = runHook('pre_edit_guard.py', write);

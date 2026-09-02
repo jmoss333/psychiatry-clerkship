@@ -265,10 +265,13 @@ scoped by path in the prompt and never attest, merge, or narrow an instrument wa
 (`clerkship_guards.py` shared checks; `pre_edit_guard.py` = A3, A4, A5, A6, A7 + machine paths;
 `lfs_guard.py` = A8; `post_edit_validate.py` = A1, A2, A9, A11, A12, A13; `session_vitals.sh` = A10,
 report-only; `stop_quick_gate.py` = A14), `precommit_gate.py` installed by `bin/install-hooks.sh`
-(B1), and `tests/hooks.test.mjs`. Two facts learned while building: **project hooks do not run
-inside subagents** (the agents' tool allowlists remain their enforcement), and crisis numbers are
-derived from `crisis_resources.json` at runtime so no hook file carries one. Item 1 (C1) and the
-Actions permission toggle remain.
+(B1), and `tests/hooks.test.mjs`. Two facts learned while building: the tool hooks
+(PreToolUse/PostToolUse) also fire for a subagent's tool calls while SessionStart/Stop are
+session-level, so an agent's tool allowlist stays its primary enforcement; and crisis numbers are
+derived from `crisis_resources.json` at runtime so no hook file carries one. The 2026-09-02
+review added: guards skip paths outside the repo, the PHI pass skips script code, and the
+PubMed connector is allowlisted under both of its server prefixes. Item 1 (C1) and the Actions
+permission toggle remain.
 
 ---
 

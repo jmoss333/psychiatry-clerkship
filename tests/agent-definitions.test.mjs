@@ -21,11 +21,16 @@ const CONTRACTS = {
   'evidence-verifier': {
     readOnly: false,
     // Edit only — no Write, so the agent cannot create files; the body scopes Edit to one file.
-    mustHave: ['Read', 'Grep', 'Edit', 'Bash', 'mcp__PubMed__get_article_metadata'],
+    // The PubMed connector surfaces as mcp__PubMed__* on the web and mcp__claude_ai_PubMed__*
+    // on a desktop with the claude.ai connector; both must be allowlisted or the agent silently
+    // loses its core tools on one host.
+    mustHave: ['Read', 'Grep', 'Edit', 'Bash', 'mcp__PubMed__get_article_metadata', 'mcp__claude_ai_PubMed__get_article_metadata'],
     mustNotHave: ['Write', 'MultiEdit', 'NotebookEdit'],
     bodyMustMention: ['evidence_annotations.json', 'sourceSpan', 'C5', 'Never'],
   },
   'deploy-verifier': {
+    // "readOnly" pins the absence of editing tools. Bash is allowed (curl, the canary), so
+    // the read-only guarantee beyond that is the agent's instruction, not the allowlist.
     readOnly: true,
     mustHave: ['Bash', 'Read'],
     mustNotHave: [],
