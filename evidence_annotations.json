@@ -402,7 +402,7 @@
       "claims": [
         {
           "claimId": "inpatient-psychotherapy-specific-contribution",
-          "claimText": "Across 37 samples (4,443 patients), the specific contribution of psychotherapy during psychiatric hospitalization was d = 0.43 (95% CI 0.06 to 0.81); no significant effects were found for psychotherapy orientation, while diagnosis moderated the contribution.",
+          "claimText": "Across 37 samples (4,443 patients), the meta-analysis of the 15 samples with a control group put the specific contribution of psychotherapy during psychiatric hospitalization at d = 0.43 (95% CI 0.06 to 0.81); no significant effects were found for psychotherapy orientation, while diagnosis moderated the contribution.",
           "claimTerms": [
             "No significant effects were uncovered for psychotherapy orientation",
             "Diagnosis was found to moderate"
@@ -1244,6 +1244,31 @@
           "direction": "mixed",
           "usedBy": [
             "cotw_20260720_mdd_res"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "boggs-2020-lethal-means-assessment",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-09-02",
+        "pmid": "32040838",
+        "doi": "10.1007/s11606-020-05641-4",
+        "sourceSpan": "We found 33% of patients with suicide ideation reported on the PHQ-9 received lethal means assessment in the 30 days following identification. Lethal means assessment reduced the risk of a suicide attempt or death within 180 days from 3.3 to 0.83% (p = .034, 95% CI = .069-.9)."
+      },
+      "claims": [
+        {
+          "claimId": "lethal-means-assessment-180-day-risk",
+          "claimText": "Lethal means assessment reduced the risk of a suicide attempt or death within 180 days from 3.3 to 0.83%.",
+          "claimTerms": [
+            "lethal means assessment",
+            "within 180 days"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "exp_family"
           ]
         }
       ]

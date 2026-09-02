@@ -3320,8 +3320,8 @@
     "read": 5,
     "tldr": "Discharge risk peaks in the first week post-discharge — map every barrier (housing, medications, follow-up, family capacity, means safety) before any note says 'plan for discharge,' and always leave with a scheduled 7-day appointment, not a phone number.",
     "points": [
-      "Suicide risk in the first week post-discharge is roughly 100× the population rate — a pre-scheduled 7-day follow-up appointment (not 'they will call to arrange one') is itself an evidence-based intervention.",
-      "Structured lethal-means counseling cut attempts and deaths from 3.3% to 0.83% at 180 days — 'who can confirm items are secured before discharge?' is a clinical act, not a formality.",
+      "Suicide risk in the first week post-discharge is roughly 200× the general-population rate (~2,950 per 100,000 person-years; Chung 2019) — a pre-scheduled 7-day follow-up appointment (not 'they will call to arrange one') is itself an evidence-based intervention.",
+      "Documented lethal-means assessment was followed by fewer attempts and deaths at 180 days (0.83% vs 3.3%; Boggs 2020, quasi-experimental — an association, not a randomized effect) — 'who can confirm items are secured before discharge?' is a clinical act, not a formality.",
       "Family involvement during admission nearly triples the odds of 7-day follow-up, and family psychoeducation lowers 12-month relapse from ~37% to ~10% — bringing family in is treatment, not logistics."
     ],
     "cant": "'The family is supportive' is an observation, not a discharge plan — verify concretely who can do what (medications, transportation, means safety, appointments) before any note says 'safe for discharge.'",
@@ -3416,7 +3416,9 @@
       "pharoah-2010-family-intervention",
       "ma-2021",
       "camacho-gomez-2020",
-      "brown-1972-expressed-emotion"
+      "brown-1972-expressed-emotion",
+      "boggs-2020-lethal-means-assessment",
+      "chung-2019-first-week-month"
     ]
   },
   "family_modalities.md": {

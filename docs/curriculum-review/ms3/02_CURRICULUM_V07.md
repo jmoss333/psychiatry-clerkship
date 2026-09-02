@@ -729,7 +729,7 @@ Using a fictional, synthetic, or fully de-identified case:
 - **Slug:** `exp_family.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `14_Tracks/MS3/Student_Ready_Pack/04_expansion_modules/family_discharge_student_module.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 1,213 words
+- **Length:** 1,254 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -742,8 +742,8 @@ Using a fictional, synthetic, or fully de-identified case:
 
 **Key points (bulleted card):**
 
-- Suicide risk in the first week post-discharge is roughly 100× the population rate — a pre-scheduled 7-day follow-up appointment (not 'they will call to arrange one') is itself an evidence-based intervention.
-- Structured lethal-means counseling cut attempts and deaths from 3.3% to 0.83% at 180 days — 'who can confirm items are secured before discharge?' is a clinical act, not a formality.
+- Suicide risk in the first week post-discharge is roughly 200× the general-population rate (~2,950 per 100,000 person-years; Chung 2019) — a pre-scheduled 7-day follow-up appointment (not 'they will call to arrange one') is itself an evidence-based intervention.
+- Documented lethal-means assessment was followed by fewer attempts and deaths at 180 days (0.83% vs 3.3%; Boggs 2020, quasi-experimental — an association, not a randomized effect) — 'who can confirm items are secured before discharge?' is a clinical act, not a formality.
 - Family involvement during admission nearly triples the odds of 7-day follow-up, and family psychoeducation lowers 12-month relapse from ~37% to ~10% — bringing family in is treatment, not logistics.
 
 **Can't-miss / red-flag line:**
@@ -776,7 +776,7 @@ Using a fictional, synthetic, or fully de-identified case:
 
 - **Related tools:** `communication-practice.html`, `family-systems.html`
 - **Communication cases:** `collateral_questions_001`, `family_meeting_opening_001`, `family_conflict_discharge_001`
-- **Evidence sources:** `pharoah-2010-family-intervention`, `ma-2021`, `camacho-gomez-2020`, `brown-1972-expressed-emotion`
+- **Evidence sources:** `pharoah-2010-family-intervention`, `ma-2021`, `camacho-gomez-2020`, `brown-1972-expressed-emotion`, `boggs-2020-lethal-means-assessment`, `chung-2019-first-week-month`
 - **Workflow stages:** `family`, `safety`, `team`, `communication`
 - **Workflow modes:** `ward`, `family`, `safety`
 - **Shelf blueprint tags:** `relational`
@@ -803,9 +803,9 @@ not done.
 
 ## Why It Matters — The Numbers
 
-- **The window is highest right after discharge.** Suicide risk in the first week post-discharge is on the order of ~2,950 per 100,000 person-years — with days 0–3 the highest — roughly 100× the population rate (Chung et al., *JAMA Psychiatry* 2017). The realism of the plan matters *most* in exactly the days after the patient leaves.
+- **The window is highest right after discharge.** Suicide risk in the first week post-discharge is on the order of ~2,950 per 100,000 person-years — with days 0–3 the highest — roughly 200× the general-population rate (Chung et al., *BMJ Open* 2019; the overall post-discharge rate of 484 per 100,000 person-years is from Chung et al., *JAMA Psychiatry* 2017). The realism of the plan matters *most* in exactly the days after the patient leaves.
 - **Follow-up is often the weak link.** About 12–15% of psychiatric patients are readmitted within 30 days (20–25% for schizophrenia), and only ~50% receive a mental-health visit within 7 days. A *scheduled* appointment (not "they'll call to arrange one") is itself the intervention — pre-discharge 7-day follow-up is associated with substantially lower suicide risk.
-- **Means safety is a lethality intervention, not a formality.** Firearms are involved in ~50% of US suicides and are lethal in 85–90% of attempts; structured lethal-means counseling (CALM) cut attempts/deaths from 3.3% to 0.83% at 180 days. This is why the "who can confirm items are secured?" phrase below is a clinical act.
+- **Means safety is a lethality intervention, not a formality.** Firearms are involved in ~50% of US suicides and are lethal in 85–90% of attempts; structured lethal-means counseling matters: in a large quasi-experimental cohort (Boggs et al. 2020), patients with documented lethal-means assessment had fewer suicide attempts and deaths at 180 days (0.83% vs 3.3%) — an association, not a randomized effect. This is why the "who can confirm items are secured?" phrase below is a clinical act.
 - **Bringing the family in changes outcomes.** Family psychoeducation lowers relapse from ~37% to ~10% (OR 0.18), and family involvement during admission nearly triples the odds of 7-day follow-up (Haselden 2019).
 
 *Numbers are evidence-anchored and reviewed and attested by Joshua Moss, MD (2026-07-09); use them to explain the "why," not to quote at families.*
