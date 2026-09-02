@@ -146,8 +146,11 @@ test('a live block renders done marks, the count, Continue to the next step, and
     { kind: 'qb', title: '4 practice questions', min: 3 },
   ] };
   const html = F.fdBlockCard(null, 10, block, {});
-  assert.match(html, /<section class="fd-block is-live"/);
-  assert.match(html, /Your 10-minute block/);
+  assert.match(html, /<section class="fd-block is-live" aria-labelledby="fdBlockTitle">/);
+  assert.match(html, /<span class="fd-block__kicker" id="fdBlockTitle">Your 10-minute block</,
+    'the section is named by its kicker, not the first step');
+  assert.equal((html.match(/fd-visually-hidden">Done: /g) || []).length, 1);
+  assert.equal((html.match(/fd-visually-hidden">Not yet: /g) || []).length, 2);
   assert.match(html, /1 of 3 done/);
   assert.equal((html.match(/fd-block__step is-done/g) || []).length, 1);
   assert.match(html, /data-block-continue="1">Continue: Alpha →/);
@@ -158,8 +161,11 @@ test('a live block renders done marks, the count, Continue to the next step, and
 test('a completed block says so and offers only Clear', () => {
   const block = { minutes: 5, steps: [{ kind: 'review', title: 'r', min: 2, done: true }, { kind: 'page', ref: 'a.md', title: 'Alpha', min: 3 }] };
   const html = F.fdBlockCard(null, 5, block, { 'a.md': true });
-  assert.match(html, /Block complete/);
+  assert.match(html, /<span class="fd-block__kicker" id="fdBlockTitle">Block complete</);
   assert.match(html, /2 of 2 done/);
+  assert.match(html, /All 2 steps done\./, 'the closing line counts the steps the block actually held');
+  const one = F.fdBlockCard(null, 5, { minutes: 5, steps: [{ kind: 'qb', title: 'q', min: 3, done: true }] }, {});
+  assert.match(one, /The one step is done\./);
   assert.doesNotMatch(html, /data-block-continue/);
   assert.match(html, /data-block-end="1">Clear</);
 });

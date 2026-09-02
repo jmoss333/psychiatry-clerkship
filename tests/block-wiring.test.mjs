@@ -34,7 +34,8 @@ test('no consumer re-implements the snippet functions locally', () => {
 test('the question bank starts a bounded, optionally filtered session from ?block=1', () => {
   assert.match(qbank, /sp\.get\('block'\)!=='1'/);
   assert.match(qbank, /startSession\(_blockCat, 'all', String\(BLOCK_REQUEST\.n\)\)/);
-  assert.match(qbank, /blockKind:'qb'/);
+  assert.match(qbank, /blockKind:\(SESSION&&SESSION\.fromBlock\)\?'qb':null/, 'only a block-started session may mark the block step');
+  assert.match(qbank, /SESSION\.fromBlock = true/);
   assert.match(qbank, /ref:'question-bank-practice\.html'/, 'the qbank IS a week item, so it marks itself done');
 });
 
@@ -42,8 +43,8 @@ test('Daily Review slices its queue to ?limit=N under ?block=1 and keeps the pin
   assert.match(review, /function start\(ahead\)\{/);
   assert.match(review, /bp\.get\("block"\)==="1"/);
   assert.match(review, /q=q\.slice\(0,limit\)/);
-  assert.match(review, /blockKind:'review'/);
-  assert.match(review, /ref:null, blockKind:'review'/, 'Daily Review is not a week item');
+  assert.match(review, /ref:null, blockKind:sess\.fromBlock\?'review':null/, 'Daily Review is not a week item, and only a block-started session marks the step');
+  assert.match(review, /fromBlock:fromBlock/);
 });
 
 test('the shell splices the block card beside the due row and resume card, never in a faculty preview', () => {

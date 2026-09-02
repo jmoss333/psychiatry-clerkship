@@ -210,11 +210,11 @@ function App(){
     if(ahead){ fut.sort(function(a,b){return a[1]-b[1];}); q=q.concat(fut.map(function(x){return x[0];})); }
     if(!q.length){ setSess({empty:true}); return; }
     /* A timed block asks for a bounded slice (?block=1&limit=N) — most-overdue first, as above. */
-    var limit=blockLimit.current; blockLimit.current=null;
-    if(typeof limit==='number'&&limit>=1&&limit<q.length) q=q.slice(0,limit);
+    var limit=blockLimit.current; blockLimit.current=null; var fromBlock=(typeof limit==='number'&&limit>=1);
+    if(fromBlock&&limit<q.length) q=q.slice(0,limit);
     saveS(s); setStore(Object.assign({},s));
     gradedThisSession={};
-    setSess({queue:q,pos:0,card:q[0],chosen:-1,revealed:false,reviewed:0,correct:0,total:q.length,misses:[]});
+    setSess({queue:q,pos:0,card:q[0],chosen:-1,revealed:false,reviewed:0,correct:0,total:q.length,misses:[],fromBlock:fromBlock});
   }
   function choose(i){ var s=sessRef.current; if(!s||s.revealed)return; var ns=Object.assign({},s); ns.chosen=i; ns.revealed=true; setSess(ns); }
   function correctIdx(card){ for(var i=0;i<card.o.length;i++){if(card.o[i].c)return i;} return -1; }
@@ -242,8 +242,8 @@ function App(){
     var nextPos=pos+1;
     var reviewed=s.reviewed+1, correct=s.correct+(gotIt?1:0);
     var misses=(s.misses||[]).slice(); if(!gotIt&&!misses.some(function(m){return m.id===card.id;})) misses.push({id:card.id,deckTitle:card.deckTitle,q:card.q});
-    if(nextPos>=q.length){ setSess({finished:true,reviewed:reviewed,correct:correct,misses:misses}); return; }
-    setSess({queue:q,pos:nextPos,card:q[nextPos],chosen:-1,revealed:false,reviewed:reviewed,correct:correct,total:s.total,misses:misses});
+    if(nextPos>=q.length){ setSess({finished:true,reviewed:reviewed,correct:correct,misses:misses,fromBlock:!!s.fromBlock}); return; }
+    setSess({queue:q,pos:nextPos,card:q[nextPos],chosen:-1,revealed:false,reviewed:reviewed,correct:correct,total:s.total,misses:misses,fromBlock:!!s.fromBlock});
   }
   function endSession(){ setSess(null); setTick(function(x){return x+1;}); }
   function setNewPerDay(v){ var s=loadS(); s.settings.newPerDay=v; s.settings.userSet=true; persist(s); }
@@ -306,7 +306,7 @@ function App(){
       /* Built once per finished session: cwReceipt writes (block step, never a page here) and
          must not re-run on every re-render of this screen. */
       sess.receipt=cwReceipt({
-        tool:'review', ref:null, blockKind:'review',
+        tool:'review', ref:null, blockKind:sess.fromBlock?'review':null,
         context: sess.reviewed+" card"+(sess.reviewed===1?"":"s")+" · "+rt+"% correct",
         headline: missed? (missed===1?"One card came back for another look.":missed+" cards came back for another look.") : "Every card held.",
         sub: missed? "A miss here is scheduled sooner, not scored — it returns within the day so the second pass is the one that sticks." : "Held cards move out; the next pass is further away. "+(store.stats.streak||1)+"-day streak in Daily Review.",

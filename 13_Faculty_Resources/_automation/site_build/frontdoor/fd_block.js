@@ -125,22 +125,25 @@ function fdBlockCard(plan, minutes, block, doneMap){
   var budget=fdBlockBudget(minutes), i;
   if(block&&block.steps&&block.steps.length){
     var status=fdBlockStatus(block, doneMap);
+    /* The section is named by its kicker, so a screen reader hears "Your 10-minute block" (or
+       "Block complete"), not the first step's title. Each step's done state is spoken through a
+       visually-hidden prefix — the check glyph is decoration and the strike-through is CSS. */
     var out='<section class="fd-block is-live" aria-labelledby="fdBlockTitle">';
-    out+='<div class="fd-block__head"><span class="fd-block__kicker">'+(status.complete?'Block complete':'Your '+fdEsc(block.minutes)+'-minute block')+'</span>'+
+    out+='<div class="fd-block__head"><span class="fd-block__kicker" id="fdBlockTitle">'+(status.complete?'Block complete':'Your '+fdEsc(block.minutes)+'-minute block')+'</span>'+
       '<span class="fd-block__count">'+status.done+' of '+status.total+' done</span></div>';
     out+='<div class="fd-block__steps">';
     for(i=0;i<status.steps.length;i++){
       var row=status.steps[i], s=row.step;
       out+='<div class="fd-block__step'+(row.done?' is-done':'')+'">'+
         '<span class="fd-block__check" aria-hidden="true">✓</span>'+
-        '<span class="fd-block__title" id="'+(i===0?'fdBlockTitle':'fdBlockStep'+i)+'">'+fdEsc(s.title)+'</span>'+
+        '<span class="fd-block__title"><span class="fd-visually-hidden">'+(row.done?'Done: ':'Not yet: ')+'</span>'+fdEsc(s.title)+'</span>'+
         '<span class="fd-block__min">~'+fdEsc(s.min)+' min</span></div>';
     }
     out+='</div><div class="fd-block__actions">';
     if(status.next){
       out+='<button type="button" class="fd-btn fd-btn--primary" data-block-continue="1">Continue: '+fdEsc(status.next.title)+' →</button>';
     }else{
-      out+='<span class="fd-block__doneline">All three moves made. Tomorrow’s block will be built from tomorrow’s dues.</span>';
+      out+='<span class="fd-block__doneline">'+(status.total===1?'The one step is done.':'All '+status.total+' steps done.')+' Tomorrow’s block will be built from tomorrow’s dues.</span>';
     }
     out+='<button type="button" class="fd-btn fd-btn--ghost" data-block-end="1">'+(status.next?'End block':'Clear')+'</button>';
     out+='</div></section>';

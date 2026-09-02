@@ -659,7 +659,9 @@ function renderSummary(){
     {label:'Sent to review', value:String(wrong), tone:wrong?'good':'plain'}
   ];
   var receipt = cwReceipt({
-    tool:'qbank', ref:'question-bank-practice.html', refTitle:'Practice Questions', blockKind:'qb',
+    /* Only a session the block itself opened (?block=1) may mark the block's question step —
+       a one-question sitting in an unrelated category must not tick it. */
+    tool:'qbank', ref:'question-bank-practice.html', refTitle:'Practice Questions', blockKind:(SESSION&&SESSION.fromBlock)?'qb':null,
     context: total+' question'+(total!==1?'s':'')+(SESSION.catLabel?' · '+SESSION.catLabel:''),
     headline: headline, sub: sub, stats: stats, reread: reread,
     actions: [{id:'practiceMoreBtn', label:'Practice more', primary:true}], homeId:'goHomeBtn'
@@ -1125,7 +1127,7 @@ function showSummary(){
       if(BLOCK_REQUEST){
         var _blockCat = (BLOCK_REQUEST.cat!=='all' && CAT_LABELS[BLOCK_REQUEST.cat]) ? BLOCK_REQUEST.cat : 'all';
         startSession(_blockCat, 'all', String(BLOCK_REQUEST.n));
-        if(SESSION){ SESSION.catLabel = _blockCat==='all' ? '' : (CAT_LABELS[_blockCat]||''); }
+        if(SESSION){ SESSION.catLabel = _blockCat==='all' ? '' : (CAT_LABELS[_blockCat]||''); SESSION.fromBlock = true; }
         return;
       }
       showSetup();
