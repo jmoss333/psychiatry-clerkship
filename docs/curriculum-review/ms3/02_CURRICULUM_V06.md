@@ -2,7 +2,139 @@
 
 Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
 
-# SECTION (cont.): Make a Plan
+# SECTION (cont.): Assess Safety and Acuity
+
+---
+
+## Ethics & the Law: Confidentiality, Tarasoff, Reporting
+
+- **Slug:** `ethics_legal.md` · **Type:** md · **Sidebar:** listed
+- **Source:** `03_Core_Topics/Ethics_Legal/ethics_law_confidentiality_inpatient_teaching.md`
+- **Governance:** status=`reviewed` · riskKind=`legal` · riskLevel=`high`
+- **Length:** 1,084 words
+
+<!-- topic_meta overlay -->
+#### Structured metadata (`topic_meta.json` → this page)
+
+> flagged **high-yield** · est. read 5 min · safetyLevel=`moderate`
+
+**TL;DR (shown above the page text):**
+
+> Confidentiality is the default — know exactly when it yields: a credible threat to an identifiable victim, suspected child/elder abuse, and danger-based commitment — and remember commitment does not equal consent to medicate.
+
+**Key points (bulleted card):**
+
+- Duty to protect (Tarasoff): a serious threat to a reasonably identifiable person overrides confidentiality — warn, notify police, or hospitalize.
+- Child and elder abuse are mandated reports on reasonable suspicion, not proof; good-faith reporters are protected.
+- Capacity is clinical and decision-specific; competence is a legal (court) determination.
+
+**Can't-miss / red-flag line:**
+
+> Involuntary hospitalization does not authorize involuntary medication — refusal stands absent a true emergency or a separate legal process.
+
+**Rule-out list (differential the page forces):**
+
+- Identifiable-victim threat (duty to protect)
+- Child / elder / dependent-adult abuse (mandated report)
+- Imminent danger to self
+- Grave disability / decisional incapacity
+
+**First move (the action the page tells the learner to take):**
+
+> Default to confidentiality; when risk appears, name which exception applies (identifiable-victim threat, abuse, danger to self) and take the least restrictive protective action — then document your reasoning.
+
+**Clinical-workflow narration (per-stage coaching text):**
+
+- **ask** — Clarify the exact ethical or legal question: confidentiality, duty to protect, mandated reporting, capacity, commitment, consent, or refusal.
+- **mse** — Document observations relevant to capacity, risk, coercion, intoxication, psychosis, mania, delirium, and ability to communicate a stable choice.
+- **safety** — Escalate identifiable threats, abuse concerns, imminent self-harm, grave disability, or urgent refusal of high-stakes medical care to the supervising team immediately.
+- **say** — I want to protect your privacy, and I also need to explain the few safety situations where clinicians must involve others.
+- **collateral** — Share the minimum necessary information; ask family or systems partners only what changes risk, capacity, disposition, or mandatory reporting duties.
+- **rounds** — Name the legal frame, the patient-specific facts, the local-policy dependency, and the supervising/faculty decision still needed.
+- **exam** — Capacity is clinical and decision-specific; competence is legal. Involuntary hospitalization does not automatically authorize involuntary medication.
+- **actions** — Open capacity tool; Open violence risk tool; Practice interpreter/culture family contact
+
+**Embedded check-for-understanding**
+
+1. *Stem:* An inpatient tells you he plans to kill his ex-girlfriend when discharged, naming her. What must you do?
+   - Take protective action — warn the victim and/or notify police, and continue hospitalization **← keyed correct**
+   - Keep it confidential — HIPAA forbids disclosure
+   - Discharge as planned but document the statement
+   - Ask his family to pass along a warning
+   - *Rationale:* A serious threat against a reasonably identifiable victim triggers the duty to protect (Tarasoff): confidentiality yields, and reasonable steps include warning the victim, notifying police, and continued hospitalization.
+
+**Cross-references and tagging:**
+
+- **Related tools:** `capacity.html`, `violence.html`, `cssrs.html`, `family-systems.html`
+- **Communication cases:** `suicide_direct_question_001`, `collateral_questions_001`
+- **Workflow stages:** `safety`, `communication`, `family`, `team`, `exam`
+- **Workflow modes:** `ward`, `safety`, `family`, `5min`, `shelf`
+- **Shelf blueprint tags:** `ethics`
+- **EPA crosswalk:** `EPA2`, `EPA11`
+- **Call-to-action buttons:** Read Culture, Disparities & Formulation; Practice interpreter/culture family contact
+
+#### Page text (as shipped)
+
+# Ethics & the Law: Confidentiality, Tarasoff & Reporting
+
+
+**In one line** — Psychiatry runs on confidentiality, but the exam and the ward turn on knowing its **limits** — when you *must* break it to protect a third party, when you *must* report abuse, and when you can treat or hold a patient *against their will* — always choosing the **least restrictive** option that keeps people safe.
+
+**Confidentiality and its limits** — Protect patient information by default. The recognized exceptions where disclosure is permitted or required include: a **serious, credible threat to an identifiable person** (duty to protect), **mandatory reporting of abuse**, **imminent danger to self**, certain communicable-disease reporting, and specific legal/court mandates. Disclose the **minimum necessary**. Note that HIPAA permits sharing for treatment, payment, and operations.
+
+**Duty to protect / warn (Tarasoff)** — When a patient makes a **serious threat of violence against a reasonably identifiable victim**, the clinician has a duty to take reasonable protective steps — which may include **warning the potential victim, notifying police, hospitalizing the patient, or intensifying treatment**. Specifics vary by state (some mandate warning, some permit it), but the tested principle is: *a specific threat to a specific person overrides confidentiality.*
+
+**Mandatory reporting** — Report suspected **child abuse or neglect** and **elder/dependent-adult abuse** to the appropriate agency — reporting requires **reasonable suspicion, not proof**, and mandated reporters are generally protected when reporting in good faith. Remember: **factitious disorder imposed on another (medical child abuse)** is reportable, and many jurisdictions add specific duties (e.g., certain injuries, some intimate-partner situations). When in doubt, protect the vulnerable person.
+
+**Involuntary hospitalization (civil commitment)** — The usual criteria are a mental illness *plus* **danger to self, danger to others, or grave disability** (inability to meet basic needs). Emergency holds allow short-term detention for evaluation; longer commitment requires due process (hearing), and the constitutionally required standard of proof is **"clear and convincing evidence"** (*Addington v. Texas*, 1979). A person who is **not dangerous and can survive safely in the community cannot be confined** against their will (*O'Connor v. Donaldson*, 1975). Involuntary hospitalization does **not** by itself authorize involuntary medication.
+
+**Right to refuse & involuntary medication** — Competent patients (including many involuntarily hospitalized ones) generally retain the **right to refuse medication**. Overriding that refusal requires either a **true emergency** (imminent danger) or a **separate legal/adjudicated process** (e.g., a court or independent review depending on jurisdiction) — for example, an **administrative review** for a dangerous, mentally ill prisoner (*Washington v. Harper*, 1990), or the **four-part *Sell* test** to medicate a defendant solely to restore competency to stand trial (*Sell v. United States*, 2003). Commitment status ≠ consent.
+
+**Informed consent & capacity** — Valid consent requires **capacity, disclosure (risks/benefits/alternatives), and voluntariness**. **Capacity is decision-specific and clinical** (a physician assesses it); **competence is a legal determination** (a court decides). The four abilities: *communicate a choice, understand, appreciate, and reason.* The **emergency exception** permits necessary treatment when consent can't be obtained and delay would cause harm. For patients who lack capacity, use advance directives or a surrogate/substituted judgment.
+
+**Minors & special situations** — Parents/guardians generally consent for minors, with exceptions (emancipated/mature minors and, in many states, care for STIs, contraception, substance use, and some mental-health services). Balance adolescent confidentiality against safety.
+
+**Boundaries & professionalism** — Maintain professional boundaries; **sexual relationships with patients are never acceptable**. Avoid dual relationships and manage conflicts of interest. Document decisions — especially risk assessments and any breach of confidentiality — with your reasoning.
+
+**What the student does** —
+- Treat confidentiality as the default and know the specific exceptions cold.
+- For a threat to an identifiable person, escalate (warn/notify/hospitalize) — don't sit on it.
+- Report suspected child or elder abuse on *reasonable suspicion* — you don't need proof.
+- Separate the four legal states: voluntary vs committed, and has-capacity vs court-determined-incompetent — commitment doesn't equal consent to medicate.
+- Document capacity assessments and the reasoning behind any disclosure or involuntary intervention.
+
+**High-yield pearls**
+- A serious threat to an identifiable victim triggers a duty to protect (Tarasoff) — confidentiality yields.
+- Child and elder abuse are mandated reports on *reasonable suspicion*; good-faith reporters are protected.
+- Commitment criteria: danger to self, danger to others, or grave disability — and use the least restrictive option.
+- The commitment standard of proof is *clear and convincing evidence* (*Addington v. Texas*); a non-dangerous patient who can survive safely in the community cannot be confined (*O'Connor v. Donaldson*).
+- Involuntary hospitalization ≠ involuntary medication; refusal stands absent an emergency or legal process.
+- Capacity is clinical and decision-specific; competence is a legal (court) determination.
+- Informed consent = capacity + disclosure + voluntariness; the emergency exception covers necessary urgent care.
+- Sexual contact with a patient is always an ethics violation.
+
+> <div class="crisis-block-hook" hidden></div>
+>
+> ### If someone is in crisis
+>
+> On the unit, a patient in immediate danger is an escalation to your supervising resident or attending and the charge nurse — not a phone call. These lines are what you put IN a patient's safety plan, what families use after discharge, and what you can use yourself.
+>
+> - **988 Suicide & Crisis Lifeline** — Call or text 988. Chat at chat.988lifeline.org. 24/7, free, confidential. Spanish available by call, text, and chat; a dedicated line serves Deaf/Hard-of-Hearing callers. Calls placed in Maine route to Maine crisis specialists.
+> - **Crisis Text Line** — Text HOME to 741741. Text HOLA to 741741 for Spanish. 24/7, free. Text-only. Often the most acceptable option for adolescents and young adults who will not make a phone call.
+> - **Maine Crisis Line** — 1-888-568-1112. Text and chat available via the Maine Crisis Line website. 24/7. Staffed by clinically trained crisis workers and the gateway to Maine's mobile crisis teams — the number that actually dispatches a face-to-face response.
+> - **Veterans Crisis Line** — Dial 988 then press 1. Text 838255. 24/7. No VA enrollment required. Ask about service history — it changes which line is the right referral.
+> - **Emergency services** — 911. 24/7. For imminent danger to life.
+>
+> *Contacts verified 2026-07-27 against official sources. Maintained in `crisis_resources.json`; do not edit these numbers inline.*
+
+**Pair with** — the <a href="tools/capacity.html" target="_blank" rel="noopener">Decisional Capacity tool</a>, the [Suicide Risk & Safety pocket guide](?page=pg_suicide.md), the <a href="tools/violence.html" target="_blank" rel="noopener">Violence Risk (FRST) tool</a>, and [Culture, Disparities & Formulation](?page=cultural_psychiatry.md).
+
+*Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI. Laws vary by state — follow your institution's policy and local statute.*
+
+
+---
+
+# SECTION: Make a Plan
 
 ---
 
@@ -1241,118 +1373,3 @@ Substance use, medication adherence, lifestyle/metabolic change, follow-up engag
 **Pair with** — the [Substance Use teaching page](?page=t_sud.md), [Treatment Basics](?page=exp_tx.md), the [Nutrition & Metabolic Health page](?page=nutrition_metabolic.md), and the Project MATCH / Miller & Rollnick entries on the [Landmark Trials](?page=landmark_trials.md) page.
 
 *Joshua Moss, MD | Psychiatrist · Educational scaffold; not a substitute for supervised practice. Fictional composites; no PHI.*
-
-
----
-
-## Brief Psychotherapy on the Unit
-
-- **Slug:** `brief_psychotherapy.md` · **Type:** md · **Sidebar:** listed
-- **Source:** `02_Clinical_Skills/Brief_Psychotherapy/brief_psychotherapy_inpatient.md`
-- **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 992 words
-
-<!-- topic_meta overlay -->
-#### Structured metadata (`topic_meta.json` → this page)
-
-> est. read 4 min
-
-**TL;DR (shown above the page text):**
-
-> Match the technique to the mechanism — behavioral activation for shutdown/anhedonia, safety planning for suicidal states, psychoeducation for illness confusion — rather than choosing a school; the modality matters less than the fit.
-
-**Key points (bulleted card):**
-
-- Behavioral activation is the highest-yield, lowest cognitive-demand inpatient move for the withdrawn anhedonic patient — it works by scheduling one small valued activity, not by asking a depressed person to think their way out.
-- Psychoeducation has the strongest inpatient numbers: readmission NNT 5, relapse NNT 9 — give it as a conversation with family looped in, not a packet dump.
-- Safety planning with follow-up reduces suicidal behaviors by approximately 50%; no-suicide contracts have no evidence and create false reassurance — abandon them.
-
-**Can't-miss / red-flag line:**
-
-> No-suicide contracts have no evidence and can create false reassurance — replace every contract with a collaborative safety plan in the patient's own words, with a scheduled follow-up contact.
-
-**Clinical-workflow narration (per-stage coaching text):**
-
-- **ask** — Ask what feels most urgent today, what they have tried, what helps even a little, and what would make the next hour safer or more tolerable.
-- **mse** — Use affect, thought process, defenses, alliance, and readiness to choose supportive, CBT, DBT-informed, or MI micro-skills.
-- **safety** — Keep bedside therapy within scope: stabilize, validate, problem-solve, and escalate risk or trauma flooding to supervision.
-- **say** — We may not solve everything today, but we can make the next step clearer and less lonely.
-- **collateral** — Ask the team what pattern they are seeing and align the intervention with the shared treatment frame.
-- **rounds** — Present the skill used, patient response, risk change, and what the team should reinforce consistently.
-- **exam** — Supportive therapy strengthens coping and alliance; DBT-informed inpatient work emphasizes validation plus limits.
-- **actions** — Practice rupture repair
-
-**Embedded check-for-understanding**
-
-1. *Stem:* A patient admitted after a suicide attempt is now medically stable but withdrawn, has stopped attending groups, and says 'nothing matters.' The student wants to do a brief bedside intervention. What is the best match for the mechanism driving the crisis?
-   - Cognitive restructuring — identify and challenge the automatic thoughts driving hopelessness
-   - Behavioral activation — schedule one small, concrete, valued activity; behavioral shutdown responds better to action than to thought-change in the acute setting **← keyed correct**
-   - Chain analysis — walk the sequence leading to the suicidal crisis to understand its function
-   - Motivational interviewing — roll with ambivalence about treatment and evoke change talk
-   - *Rationale:* The mechanism is behavioral shutdown — withdrawn, anhedonic, inactive. Behavioral activation is the match: it targets this mechanism directly by scheduling activity and requires the lowest cognitive demand, which is why the page flags it as the best inpatient fit. Cognitive restructuring requires cognitive engagement a deeply depressed patient may not have; chain analysis is for a self-harm incident; MI is for motivational ambivalence.
-
-**Cross-references and tagging:**
-
-- **Related tools:** `communication-practice.html`, `reflection.html`
-- **Communication cases:** `bpd_rupture_repair_001`, `medication_ambivalence_001`
-- **Workflow stages:** `communication`, `treatment`, `encounter`
-- **Workflow modes:** `ward`, `5min`
-- **Shelf blueprint tags:** `relational`
-- **EPA crosswalk:** `EPA9`
-- **Call-to-action buttons:** Open the Motivational Interviewing page; Practice rupture repair
-
-#### Page text (as shipped)
-
-# Brief Psychotherapy on the Unit
-
-
-**In one line** — You will not complete a course of therapy on an inpatient unit, but almost every encounter is a *micro-intervention*. The skill is to read the mechanism driving this patient's crisis right now and match one brief technique to it — then hand the work off to outpatient care.
-
-**Why brief therapy is worth doing inpatient** — Across trials, inpatient psychotherapy adds a small-to-moderate benefit over treatment-as-usual, and **no single modality is clearly superior** (pooled SMD ~0.24, NNT ~7; comparable effects for CBT, BA, and problem-solving, g≈0.42). The practical takeaway is liberating: *stop agonizing over which "school" to use and match the technique to the mechanism in front of you.* Diagnosis and the driver of the crisis matter more than the brand of therapy.
-
-## Match the skill to the mechanism
-
-| What you see | Likely mechanism | Reach for | Why (evidence) |
-|---|---|---|---|
-| Withdrawn, inactive, anhedonic, "nothing matters" | Behavioral shutdown | **Behavioral activation (BA)** — schedule one small, valued activity | Superior to TAU for depression (SMD −0.78) and anxiety (−0.33), on par with CBT; **lowest cognitive demand → best inpatient fit** (Uphoff, *Cochrane* 2020) |
-| Escalating, flooded, about to act | Acute emotional dysregulation | **DBT skills — TIPP** (temperature, intense exercise, paced breathing, paired relaxation) | Skills-containing DBT arms outperform for self-injury in dismantling trials (Linehan 2015) |
-| Just self-harmed or nearly did | Behavior serving a function | **Chain analysis** — walk the sequence *with* the patient, non-punitively | Turns an incident into a formulation and a plan; core DBT move |
-| Repeatedly returns in crisis, overwhelmed by problems | Problem-solving deficit | **Problem-solving therapy (PST)** — the 4-step format (define → brainstorm → choose → try) | Repeat self-harm re-presentation 13.5% vs 22.1%, **NNT 12** (Hatcher 2011) |
-| Ambivalent about meds, treatment, or substance use | Motivational conflict | **Motivational interviewing (MI)** — roll with resistance, evoke change talk | Improves engagement and substance outcomes; see the [Motivational Interviewing](?page=motivational_interviewing.md) page |
-| Confused or frightened by the illness itself | Knowledge/coping gap | **Psychoeducation** — illness model + warning-signs plan, include family | Strongest single inpatient psychological intervention: readmission **NNT 5**, relapse **NNT 9** (Xia, *Cochrane* 2011) |
-| Actively suicidal | Acute risk state | **Safety planning (Stanley-Brown)** + crisis response planning | Safety Planning Intervention with follow-up ≈ **50% fewer suicidal behaviors** (Stanley 2018); **abandon no-suicide "contracts"** — they don't work |
-
-## The bedside frame (MGH-style)
-When you have five minutes, not fifty: lead with **support**, name the **affect**, do a quick **chain analysis** of what just happened, and notice the **relational pattern** playing out on the unit (Stein & Jacobo). A useful daily scaffold — three quick **assessments** (safety, sleep, function), three **interventions** (one skill, one activity, one connection), three **discharge tasks** (appointment, means safety, warning-signs plan).
-
-## What the student does
-- Name the mechanism out loud on rounds before proposing a technique — "this looks like behavioral shutdown" beats "he seems depressed."
-- Do one concrete thing at the bedside: schedule a single valued activity (BA), teach one TIPP skill, or walk a chain analysis after an incident.
-- For any patient at risk, build a **collaborative** safety plan in the patient's words — never a no-suicide contract.
-- Give psychoeducation as a conversation, not a packet dump; loop in family when you can.
-- Write the handoff so the outpatient clinician can continue the thread — the point of inpatient therapy is to *start* it and secure the follow-up.
-
-## High-yield pearls
-- Match the skill to the mechanism; the modality matters less than the fit (no clear winner across schools).
-- **Behavioral activation** is the highest-yield, lowest-effort inpatient move for the shut-down, depressed patient.
-- **Psychoeducation** has the hardest inpatient numbers (readmission NNT 5) — and it's free.
-- Chain analysis *replaces* a punitive response to self-harm — understand the behavior, don't just document it.
-- Safety planning with follow-up beats a "contract for safety," which has no evidence and can create false reassurance.
-
-> <div class="crisis-block-hook" hidden></div>
->
-> ### If someone is in crisis
->
-> On the unit, a patient in immediate danger is an escalation to your supervising resident or attending and the charge nurse — not a phone call. These lines are what you put IN a patient's safety plan, what families use after discharge, and what you can use yourself.
->
-> - **988 Suicide & Crisis Lifeline** — Call or text 988. Chat at chat.988lifeline.org. 24/7, free, confidential. Spanish available by call, text, and chat; a dedicated line serves Deaf/Hard-of-Hearing callers. Calls placed in Maine route to Maine crisis specialists.
-> - **Crisis Text Line** — Text HOME to 741741. Text HOLA to 741741 for Spanish. 24/7, free. Text-only. Often the most acceptable option for adolescents and young adults who will not make a phone call.
-> - **Maine Crisis Line** — 1-888-568-1112. Text and chat available via the Maine Crisis Line website. 24/7. Staffed by clinically trained crisis workers and the gateway to Maine's mobile crisis teams — the number that actually dispatches a face-to-face response.
-> - **Veterans Crisis Line** — Dial 988 then press 1. Text 838255. 24/7. No VA enrollment required. Ask about service history — it changes which line is the right referral.
-> - **Emergency services** — 911. 24/7. For imminent danger to life.
->
-> *Contacts verified 2026-07-27 against official sources. Maintained in `crisis_resources.json`; do not edit these numbers inline.*
-
-**Pair with** — [Therapy on the Unit](?page=therapy_on_the_unit.md) for the full teaching module and the 5-minute bedside toolkit, [The Therapy Reading Room](?page=therapy_reading_room.md) for the verified reading list, the [Motivational Interviewing](?page=motivational_interviewing.md) page, the [suicide-risk & safety pocket card](?page=pg_suicide.md), the [Personality Disorders](?page=t_personality.md) page (DBT-informed stance), the [Family Meeting Playbook](?page=family_playbook.md), and the [Evidence-Based Inpatient Psychiatry](?page=evidence_inpatient.md) reference for the underlying trials.
-
-*Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
