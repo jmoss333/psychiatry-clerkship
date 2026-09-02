@@ -246,6 +246,9 @@ _CRISIS_REQUIRED_TOOLS={
     "family-systems.html","one-patient-six-weeks.html",
     # PHQ-9 item 9 is itself a suicide-risk screen (the tool escalates on it) — risk work.
     "screeners.html",
+    # FRST one-pager: the learner screens imminent-violence warning signs, and its sibling
+    # page violence.md already carries the block (MS3V05-F005).
+    "violence.html",
 }
 _CRISIS_REQUIRED_MD={
     # direct risk assessment & acute safety
@@ -259,6 +262,15 @@ _CRISIS_REQUIRED_MD={
     # bridging — the learner is doing risk work, not merely reading about it (the Reading
     # Room page, by contrast, is a reading list and deliberately carries no crisis block)
     "therapy_on_the_unit.md",
+    # safetyLevel:high, coaches suicide/self-harm/DV screening, and its discharge paragraph
+    # tells the learner to hand the patient and family crisis contacts (MS3V03-F001).
+    "t_anxiety.md",
+    # Case-of-the-Week pages that rehearse risk work. These reach the injection pass through
+    # the _cotw_slug(w,"ms3") entries appended to `md` above, so no pipeline change is needed
+    # on this side; the resident twins are gated in resident_section.py instead.
+    "cotw_20260723_suiciderisk_ms3.md",
+    "cotw_20260810_panic_ms3.md",
+    "cotw_20260827_bpd_ms3.md",
 }
 _crisis_tools_done=set()
 for _tool_html in [os.path.join(OUT,"tools",_f) for _f in os.listdir(os.path.join(OUT,"tools")) if _f.endswith(".html")]:

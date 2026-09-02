@@ -27,6 +27,8 @@
 
 **Disposition & discharge essentials** — Confirm the SSRI/SNRI is at a tolerated dose with a clear titration plan, and verify outpatient follow-up that can deliver ERP, PE, or CPT — the medication rarely finishes the job alone. Reconcile medications so no patient leaves on a new standing benzodiazepine without an explicit, time-limited rationale and taper. Give the patient and family a relapse-warning plan and crisis contacts, and communicate trauma-informed considerations to the next setting.
 
+<!-- crisis-block -->
+
 **High-yield pearls**
 - Anxiety is a symptom before it is a diagnosis — clear the medical and withdrawal mimics first.
 - Akathisia is the great inpatient impostor; treat the cause, not with more dopamine blockade.
