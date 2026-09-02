@@ -167,6 +167,18 @@ var REVIEW_CONTEXT = readReviewContext();
 var RESUME_REQUESTED = (function(){
   try{ return new URLSearchParams(location.search).get('resume')==='1'; }catch(_){ return false; }
 })();
+/* ?block=1&n=N[&cat=C] — a timed block step from Today: start straight into a session of N
+   questions (category-filtered when the block named a weakest area), no setup screen. The
+   receipt at the end offers the block's next step. */
+var BLOCK_REQUEST = (function(){
+  try{
+    var sp=new URLSearchParams(location.search);
+    if(sp.get('block')!=='1') return null;
+    var n=parseInt(sp.get('n')||'',10); if(!(n>=1&&n<=50)) n=5;
+    var cat=sp.get('cat')||'all';
+    return {n:n, cat:/^[a-z]+$/.test(cat)?cat:'all'};
+  }catch(_){ return null; }
+})();
 var CAT_LABELS = {
   mood:'Mood',psychosis:'Psychosis',anxiety:'Anxiety/Trauma',
   substance:'Substance Use',neurocog:'Neurocognitive',pharm:'Pharmacology',
@@ -266,6 +278,8 @@ var DAY = 86400000;
 /*__CALIB_LOG__*/
 
 /*__SESS_CAPSULE__*/
+/*__BLOCK_STORE__*/
+/*__SESSION_RECEIPT__*/
 
 function srsUpdate(item, confidence, correct, twoTierResult){
   var s = srsLoad();
@@ -612,20 +626,45 @@ function renderSummary(){
     if(!byCat[c]) byCat[c]={cert:0,certC:0};
     if(r.confidence==='certain'){ byCat[c].cert++; if(r.correct)byCat[c].certC++; }
   });
-  var h = '<div class="summary">';
-  h += '<h2>Session complete</h2>';
-  h += '<div class="sum-score">'+correct+'/'+total+'</div>';
-  h += '<div class="sum-sub">'+pct+'% correct &nbsp;&#183;&nbsp; '+total+' question'+(total!==1?'s':'')+' answered</div>';
-  h += '<div class="sum-grid">';
-  h += '<div class="sum-card"><div class="k">Correct</div><div class="v">'+correct+'<small> / '+total+'</small></div></div>';
-  if(certTotal>0){
-    h += '<div class="sum-card"><div class="k">When certain</div><div class="v">'+certPct+'%<small> accurate</small></div></div>';
-  }
-  var certWrong = responses.filter(function(r){return r.confidence==='certain'&&!r.correct;}).length;
-  if(certWrong>0){
-    h += '<div class="sum-card"><div class="k">Confidently wrong</div><div class="v">'+certWrong+'<small> flagged</small></div></div>';
-  }
-  h += '</div>';
+  /* The shared session receipt carries the headline, the stat grid, the "worth a second look"
+     list and the next action; the calibration analysis that follows is this tool's own. */
+  var certWrongList = responses.filter(function(r){return r.confidence==='certain'&&!r.correct;});
+  var certWrong = certWrongList.length;
+  var guessRight = responses.filter(function(r){return r.confidence==='guess'&&r.correct;}).length;
+  var wrong = total-correct;
+  var headline = correct+' of '+total+(certWrong?(' — and '+(certWrong===1?'one':certWrong)+' you were sure about.'):(wrong?'.':' — clean set.'));
+  var sub = certWrong
+    ? 'The score matters less than the '+(certWrong===1?'item':'items')+' below: you marked Certain and were wrong. Those are the ones an exam catches.'
+    : (guessRight?'You got '+guessRight+' right while guessing — a re-read turns a guess into a rule you own.':'Every miss is scheduled to come back in Daily Review.');
+  var reread = [];
+  responses.forEach(function(r){
+    if(r.correct && r.confidence!=='guess') return;
+    if(reread.length>=5) return;
+    var chosen = (r.item.options||[]).filter(function(o){ return o && o.key===r.key; })[0];
+    var trap = chosen && chosen.trap ? chosen.trap : null;
+    var trapName = trap && trap.name ? trap.name : null;
+    var page = (r.item.pages&&r.item.pages[0]) || null;
+    reread.push({
+      tag: r.correct ? 'Guess · right' : (r.confidence==='certain' ? 'Certain · wrong' : 'Wrong'),
+      warn: !r.correct && r.confidence==='certain',
+      title: String(r.item.stem||'').slice(0,140)+(String(r.item.stem||'').length>140?'…':''),
+      note: trapName ? ('Trap: '+trapName+(trap.note?' — '+trap.note:'')) : (r.item.pearl||''),
+      ref: page, refTitle: page ? pageTitle(page) : null
+    });
+  });
+  var stats = [
+    {label:'Correct', value:correct+' / '+total},
+    {label:'Certain & wrong', value:String(certWrong), tone:certWrong?'warn':'plain'},
+    {label:'Guess & right', value:String(guessRight)},
+    {label:'Sent to review', value:String(wrong), tone:wrong?'good':'plain'}
+  ];
+  var receipt = cwReceipt({
+    tool:'qbank', ref:'question-bank-practice.html', refTitle:'Practice Questions', blockKind:'qb',
+    context: total+' question'+(total!==1?'s':'')+(SESSION.catLabel?' · '+SESSION.catLabel:''),
+    headline: headline, sub: sub, stats: stats, reread: reread,
+    actions: [{id:'practiceMoreBtn', label:'Practice more', primary:true}], homeId:'goHomeBtn'
+  });
+  var h = '<div class="summary">' + receipt.html;
   /* calibration warning */
   if(certTotal>=3 && certPct!==null && certPct<80){
     h += '<div class="cal-warn">'
@@ -647,11 +686,15 @@ function renderSummary(){
     });
     h += '</div>';
   }
-  h += '<div class="sum-actions">'
-     +'<button class="btn btn-primary" id="practiceMoreBtn">Practice more</button>'
-     +'<button class="btn btn-ghost" id="goHomeBtn">Go to Home</button>'
-     +'</div></div>';
+  h += '</div>';
   return h;
+}
+
+/* Page title for a re-read link: the bank's own link label when it points at that page, else
+   a readable form of the file name (the tool has no nav registry of its own). */
+function pageTitle(file){
+  var f=String(file||'');
+  return f.replace(/^pg_/,'').replace(/^t_/,'').replace(/\.md$/,'').replace(/_/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase();});
 }
 
 /* ---- DOM helpers -------------------------------------------------------------- */
@@ -1055,12 +1098,8 @@ function showSummary(){
   setRoot(renderSummary());
   var moreBtn=document.getElementById('practiceMoreBtn');
   if(moreBtn) moreBtn.addEventListener('click',showSetup);
-  var homeBtn=document.getElementById('goHomeBtn');
-  if(homeBtn) homeBtn.addEventListener('click',function(){
-    /* send parent SPA to Home page */
-    try{ window.parent.postMessage({type:'openPage',f:'__home__'},'*'); }
-    catch(_){}
-  });
+  /* "Back to Today" is the receipt's own button (data-cw-receipt-home); the receipt snippet
+     routes it through the shell's openPage message, exactly as goHomeBtn used to. */
 }
 
 /* ---- init --------------------------------------------------------------------- */
@@ -1083,6 +1122,12 @@ function showSummary(){
         return;
       }
       if(RESUME_REQUESTED && tryResumeSession()) return;
+      if(BLOCK_REQUEST){
+        var _blockCat = (BLOCK_REQUEST.cat!=='all' && CAT_LABELS[BLOCK_REQUEST.cat]) ? BLOCK_REQUEST.cat : 'all';
+        startSession(_blockCat, 'all', String(BLOCK_REQUEST.n));
+        if(SESSION){ SESSION.catLabel = _blockCat==='all' ? '' : (CAT_LABELS[_blockCat]||''); }
+        return;
+      }
       showSetup();
       /* adaptive engine handoff: home may set cw_qb_focus to a blueprint category
          so the learner lands in their weakest area with the filter preselected. */

@@ -1452,6 +1452,8 @@
 
   /*__FD_DUE__*/
 
+  /*__FD_BLOCK__*/
+
   /*__FD_SHELL__*/
 
   /*__FD_PATH__*/
@@ -1467,6 +1469,8 @@
   /*__FD_WIRE__*/
 
   /*__SESS_CAPSULE__*/
+
+  /*__BLOCK_STORE__*/
 
   /* ---- calib panel ---- */
   /* Metacognition panel (phase 1): swaps in for the legacy calibrationSummary() card on
@@ -1709,6 +1713,44 @@
     return '';
   }
 
+  /* Timed block ("I have N minutes"): the chip selection is transient UI state (never
+     persisted — every visit starts at ten minutes), the live block itself lives in cw_block_v1
+     via the shared block store, and the weakest blueprint area is re-derived from mastery each
+     render so the plan follows the learner's actual misses. */
+  var fdBlockMinutes=10;
+  function fdWeakestCategory(){
+    try{
+      var rows=masteryByBlueprint(), best=null;
+      for(var i=0;i<rows.length;i++){
+        var r=rows[i];
+        if(!r||typeof r.score!=='number'||!r.n||!r.miss||r.score>=70) continue;
+        if(!best||r.score<best.score) best=r;
+      }
+      return best?{c:best.c,label:best.label,score:best.score}:null;
+    }catch(_){ return null; }
+  }
+  function fdBlockInputs(){
+    return {due:dueBreakdown(), weakest:fdWeakestCategory()};
+  }
+  function fdOpenBlockStep(step){
+    if(!step||!step.ref) return;
+    fdOpenRef(step.ref, fdBlockRouteForStep(step));
+  }
+  function fdBlockStart(minutes){
+    var live=fdLiveState(fdController?fdController.getState():{});
+    var plan=fdBlockPlan(FD_INDEX, live, minutes, fdBlockInputs());
+    if(!plan.steps.length) return;
+    blockSave({v:1, minutes:plan.minutes, createdAt:live.nowMs, steps:plan.steps});
+    fdOpenBlockStep(plan.steps[0]);
+  }
+  function fdBlockContinue(){
+    var live=fdLiveState(fdController?fdController.getState():{});
+    var block=blockLoad(live.nowMs);
+    if(!block) return;
+    var status=fdBlockStatus(block, live.done);
+    if(status.next) fdOpenBlockStep(status.next);
+    else { blockClear(); specialRefresh(); }
+  }
   function fdLiveState(state){
     var out=fdClone(state||{}), raw=progLoad(), s=srsState();
     out.done=(state&&state.done&&typeof state.done==='object')?fdClone(state.done):fdProgressDoneMap(raw);
@@ -1769,6 +1811,12 @@
     var sess=null;
     try{ sess=(typeof sessLoad==='function')?sessLoad('qbank'):null; }catch(_){ sess=null; }
     var inserted=fdDueRow(dueBreakdown())+fdResumeCard(sess);
+    /* The timed block sits with the other device-store rows. In a faculty preview there is no
+       learner session to plan for, so the card is omitted with the capture launcher. */
+    if(!facultyPreviewRequest){
+      var liveForBlock=fdLiveState(state), liveBlock=blockLoad(liveForBlock.nowMs);
+      inserted+=fdBlockCard(liveBlock?null:fdBlockPlan(FD_INDEX,liveForBlock,fdBlockMinutes,fdBlockInputs()),fdBlockMinutes,liveBlock,liveForBlock.done);
+    }
     if(!facultyPreviewRequest)inserted+=fdCaptureTriage(fdCaptureRows());
     return html.replace('<div class="fd-today__main">','<div class="fd-today__main">'+inserted);
   }
@@ -2016,6 +2064,14 @@
     if(el){event.preventDefault();var pa=el.getAttribute('data-progress-action');if(pa==='progress')fdOpenProgress(fdController.getState(),{host:contentEl});else if(pa==='save-exam'){var date=document.getElementById('fdExamDate'),value=date&&date.value;try{if(value)localStorage.setItem('cw_shelf_date',value);else localStorage.removeItem('cw_shelf_date');}catch(_){}fdOpenProgress(fdController.getState(),{host:contentEl});}return;}
     el=target.closest&&target.closest('[data-pt]');
     if(el){event.preventDefault();var pt=el.getAttribute('data-pt');if(pt==='submit')submitPretest();else if(pt==='pretest')startPretest();else if(pt==='plan')renderStoredPlan();else if(pt==='start'){fdOpenProgress(fdController.getState(),{host:contentEl});var exam=document.getElementById('fdExamDate');if(exam)exam.focus();}return;}
+    el=target.closest&&target.closest('[data-block-minutes]');
+    if(el){event.preventDefault();var bm=parseInt(el.getAttribute('data-block-minutes'),10);if(bm===5||bm===10||bm===20){fdBlockMinutes=bm;specialRefresh();}return;}
+    el=target.closest&&target.closest('[data-block-start]');
+    if(el){event.preventDefault();if(facultyPreviewRequest){showFacultyPreviewLockNotice();return;}fdBlockStart(parseInt(el.getAttribute('data-block-start'),10));return;}
+    el=target.closest&&target.closest('[data-block-continue]');
+    if(el){event.preventDefault();fdBlockContinue();return;}
+    el=target.closest&&target.closest('[data-block-end]');
+    if(el){event.preventDefault();blockClear();specialRefresh();return;}
     el=target.closest&&target.closest('[data-practice]');
     if(el){event.preventDefault();try{localStorage.setItem('cw_qb_focus',el.getAttribute('data-practice'));}catch(_){}fdOpenRef('question-bank-practice.html');return;}
     el=target.closest&&target.closest('[data-act="studyexport"]');
@@ -2046,7 +2102,14 @@
       }
       return;
     }
-    if(data.type==='openPage'&&data.f){fdOpenRef(data.f);return;}
+    if(data.type==='openPage'&&data.f){
+      /* A tool may name the full route it wants (the session receipt's next-step and re-read
+         buttons do, so ?block=1&limit=N survives the hop). Only a short, plain query string is
+         honoured; anything else falls back to the bare resource open. */
+      var searchOk=(typeof data.search==='string'&&data.search.length<=200&&/^\?[A-Za-z0-9_.%=&-]*$/.test(data.search));
+      fdOpenRef(data.f, searchOk?data.search:undefined);
+      return;
+    }
     if(data.type==='openLibrary'&&fdController){fdController.dispatch({'data-fd-tab':'library'});return;}
     if(data.type==='search'&&fdController){fdController.dispatch({'data-fd-search':''});return;}
     if(data.type==='theme'&&(data.mode==='dark'||data.mode==='light')){

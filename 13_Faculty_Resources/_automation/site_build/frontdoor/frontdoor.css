@@ -715,6 +715,51 @@
 .fd-nudge__dismiss{flex:0 0 auto;width:28px;height:28px;border-radius:7px;background:none;border:none;color:var(--fd-line-hover);font-size:13px;cursor:pointer}
 .fd-nudge__dismiss:hover{color:var(--fd-bg)}
 
+/* Timed block ("I have N minutes") — planner face and live-block face share one card. Not in
+ * the prototype; tokens only, so it follows the theme. Dots reuse the row-kind colours the
+ * rest of Today already speaks: terracotta = due review, olive = a page to read, teal = a tool. */
+.fd-block{
+  margin:0 0 14px;padding:16px 18px 18px;
+  background:var(--fd-surface);border:1px solid var(--fd-line);border-radius:12px;box-shadow:var(--fd-shadow-sm);
+}
+.fd-block.is-live{border-left:3px solid var(--fd-teal)}
+.fd-block__head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 12px}
+.fd-block__kicker{font-size:14px;font-weight:700;color:var(--fd-text)}
+.fd-block.is-live .fd-block__kicker{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--fd-teal-deep)}
+.fd-block__count{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--fd-text-mid)}
+.fd-block__chips{display:flex;gap:8px}
+.fd-block__chip{
+  min-width:64px;padding:8px 14px;border-radius:999px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;
+  border:1.5px solid var(--fd-line-strong);background:var(--fd-surface);color:var(--fd-text-mid);
+}
+.fd-block__chip:hover{border-color:var(--fd-line-hover)}
+.fd-block__chip.is-sel{border-color:var(--fd-teal);background:var(--fd-teal-wash);color:var(--fd-teal-deep);font-weight:700}
+.fd-block__hint{font-size:12px;color:var(--fd-text-dim);flex:1 1 220px;min-width:0}
+.fd-block__head .fd-block__hint{text-align:right}
+.fd-block__steps{display:flex;flex-direction:column;gap:6px;margin:0 0 12px}
+.fd-block__step{
+  display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;
+  background:var(--fd-callout);border:1px solid var(--fd-line);
+}
+.fd-block__dot{width:7px;height:7px;border-radius:50%;flex:0 0 auto;background:var(--fd-teal)}
+.fd-block__dot.is-review{background:var(--fd-terracotta)}
+.fd-block__dot.is-page{background:var(--fd-olive)}
+.fd-block__check{
+  width:18px;height:18px;border-radius:50%;flex:0 0 auto;display:flex;align-items:center;justify-content:center;
+  font-size:9px;font-weight:700;background:var(--fd-surface);border:1.5px solid var(--fd-line-strong);color:transparent;
+}
+.fd-block__step.is-done .fd-block__check{background:var(--fd-success);border-color:var(--fd-success);color:var(--fd-on-accent)}
+.fd-block__title{flex:1;min-width:0;font-size:13.5px;font-weight:600;color:var(--fd-text)}
+.fd-block__step.is-done .fd-block__title{color:var(--fd-text-dim);text-decoration:line-through}
+.fd-block__min{font-size:12px;color:var(--fd-text-dim);white-space:nowrap}
+.fd-block__actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.fd-block__doneline,.fd-block__empty{font-size:13px;line-height:1.5;color:var(--fd-text-mid);margin:0}
+@media (max-width:640px){
+  .fd-block__head .fd-block__hint{text-align:left;flex-basis:100%}
+  .fd-block__chip{flex:1;min-height:44px}
+  .fd-block__actions .fd-btn{min-height:44px}
+}
+
 /* Task 5 governed runtime rows */
 .fd-due,.fd-resume__link,.fd-progresscard{
   display:flex;align-items:center;gap:12px;width:100%;text-align:left;
