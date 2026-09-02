@@ -149,7 +149,8 @@ function fdRingStep(from, to, elapsed, duration){
    Reads the timestamps every tool already writes rather than adding a store: cw_srs_v1 card
    .last (ms) and stats.lastStudy (Y-M-D, unpadded), cw_qb_v1 .ts (ms), the cw_calib_v1 ledger
    .ts (ms), cw_comm_v1 .at and cw_reason_v1 .at/.updatedAt (ISO dates), cw_progress_v1 .at
-   (local Y-M-D from localDayStr) and cw_capture_v1 .at (ms). Nothing here is persisted and
+   (local Y-M-D from localDayStr), cw_shelf_v1 attempts .at (ISO date) and cw_capture_v1 .at
+   (ms). Nothing here is persisted and
    nothing new is written, so the strip is correct retroactively for every learner on first
    deploy and the cw_frontdoor_v1 no-duplication contract (tests/fd-shell-boot) is untouched.
 
@@ -196,6 +197,10 @@ function fdActivityDays(stores, nowMs){
     if(r&&typeof r==='object'){ mark(r.updatedAt); each(r.steps, function(step){ if(step&&typeof step==='object') mark(step.at); }); }
   });
   each(st.progress, function(e){ if(e&&typeof e==='object'&&e.done===true) mark(e.at); });
+  if(st.shelf&&typeof st.shelf==='object'){
+    var attempts=Object.prototype.toString.call(st.shelf.attempts)==='[object Array]'?st.shelf.attempts:[];
+    for(i=0;i<attempts.length;i++){ if(attempts[i]&&typeof attempts[i]==='object') mark(attempts[i].at); }
+  }
   var caps=Object.prototype.toString.call(st.capture)==='[object Array]'?st.capture:[];
   for(i=0;i<caps.length;i++){ if(caps[i]&&typeof caps[i]==='object') mark(caps[i].at); }
   for(i=6;i>=0;i--){ out.push(on[today-i]===true); }

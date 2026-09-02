@@ -387,6 +387,12 @@ test('every store shape the tools write is recognised, each on its own day', () 
   assert.deepEqual(days, [true, true, true, true, true, true, true]);
 });
 
+test('a completed exam-simulation set counts as an active day', () => {
+  const days = F2.fdActivityDays({ shelf: { attempts: [{ at: '2026-08-05', n: 10, correct: 7 }] } }, SUNDAY);
+  assert.deepEqual(days, [false, false, true, false, false, false, false]);
+  assert.deepEqual(F2.fdActivityDays({ shelf: { attempts: 'junk' } }, SUNDAY), [false, false, false, false, false, false, false]);
+});
+
 test('the calibration ledger counts for both question and review events', () => {
   const days = F2.fdActivityDays({ calib: { v: 1, qb: [{ ts: atDay(1) }], rev: [{ ts: atDay(5) }] } }, SUNDAY);
   assert.deepEqual(days, [false, true, false, false, false, true, false]);

@@ -29,13 +29,14 @@ function fdBlockBudget(minutes){
   return 10;
 }
 
+/* Only the `daily` bucket (deck# and TOPIC# cards) is Daily Review's to serve — QB# cards are
+   served first by the question bank's own session and FAM# cards by Family Systems Practice,
+   so counting them here would promise cards review.html cannot show and let the receipt mark
+   the step done after unrelated ones. Due question-bank cards still reach the block: the
+   question step's session puts them first (startSession, question-bank-practice.html). */
 function fdBlockDueTotal(breakdown){
-  var b=breakdown||{}, names=['daily','qb','fam','other'], total=0;
-  for(var i=0;i<names.length;i++){
-    var row=b[names[i]]||{};
-    if(typeof row.due==='number'&&row.due>0) total+=row.due;
-  }
-  return total;
+  var b=breakdown||{}, row=b.daily||{};
+  return (typeof row.due==='number'&&row.due>0)?row.due:0;
 }
 
 function fdBlockPlan(index, state, minutes, inputs){

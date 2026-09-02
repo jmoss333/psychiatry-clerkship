@@ -57,6 +57,14 @@ test('a ten-minute block is reviews, then the next unread page that fits, then q
   assert.ok(plan.total <= 10, `total ${plan.total} must fit the window`);
 });
 
+test('only Daily Review\'s own bucket makes a review step — question and family dues belong to their tools', () => {
+  const plan = F.fdBlockPlan(IDX, state(), 10, { due: { daily: { due: 0 }, qb: { due: 6 }, fam: { due: 2 }, other: { due: 1 } }, weakest: null });
+  assert.deepEqual(plan.steps.map((s) => s.kind), ['page', 'qb'],
+    'review.html cannot serve QB#/FAM# cards, so they must not be promised as a review step');
+  const mixed = F.fdBlockPlan(IDX, state(), 10, { due: { daily: { due: 3 }, qb: { due: 6 }, fam: { due: 2 }, other: { due: 0 } }, weakest: null });
+  assert.equal(mixed.steps[0].n, 3, 'the review step counts daily dues only');
+});
+
 test('no dues means no review step; no weak area means unfiltered questions', () => {
   const plan = F.fdBlockPlan(IDX, state(), 10, { due: due(0), weakest: null });
   assert.deepEqual(plan.steps.map((s) => s.kind), ['page', 'qb']);

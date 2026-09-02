@@ -12,8 +12,9 @@ on; its "I have N minutes" launcher was deferred there for want of duration data
 ## Plain-language summary
 
 Between rounds a learner has a pocket of minutes, not a plan. Today now asks **"I have…"** —
-5, 10 or 20 minutes — and packs the window from what is due and what is next: the due reviews
-first (retrieval decays fastest), then one unread page from this week that fits, then practice
+5, 10 or 20 minutes — and packs the window from what is due and what is next: the due Daily Review
+cards first (retrieval decays fastest; question-bank dues are served first by the question
+step's own session), then one unread page from this week that fits, then practice
 questions aimed at the weakest blueprint area. Starting the block opens the first step; every
 practice tool now ends on the same **session receipt**, which names what to re-read, offers
 one next action (the block's next step when one is live), and marks the Today item done so
