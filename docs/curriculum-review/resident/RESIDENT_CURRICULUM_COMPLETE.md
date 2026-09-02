@@ -3,7 +3,7 @@
 # RESIDENT curriculum — complete content transcript for clinical review
 
 **Site:** `mmc-psychiatry-residents-sanford` · **Audience:** Residents — MMC/Sanford psychiatry residents
-**Generated:** 2026-09-02 from build `71f8600` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
+**Generated:** 2026-09-02 from build `a34f3b2` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
 
 ## Who this is for
 
@@ -86,7 +86,7 @@ High-yield places to concentrate: the `topic_meta` **can't-miss**, **rule-out** 
 
 # RESIDENT · Navigation map
 
-Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-02 @ `71f8600`.
+Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-02 @ `a34f3b2`.
 
 ## Orientation  *(pinned)*
 
@@ -22856,7 +22856,7 @@ _1399 further strings omitted — this surface embeds the build's front-door cat
 
 **Pearl.** Postpartum psychosis is a psychiatric emergency — abrupt onset, waxing/waning course, infant-focused delusions within days of delivery; a lucid interval does NOT rule it out.
 
-**Tier-2 / stretch.** {"q": "What psychiatric history most strongly predicts postpartum psychosis, and why does this influence the medication decision at discharge?", "options": [{"key": "A", "t": "A history of major depressive disorder — postpartum psychosis is an extension of unipolar depression and responds best to antidepressants."}, {"key": "B", "t": "A history of bipolar disorder — postpartum psychosis is strongly linked to bipolar spectrum illness; stopping maintenance mood stabilizer roughly doubles the risk of postpartum relapse.", "c": true}, {"key": "C", "t": "A history of schizophrenia — postpartum psychosis is simply a schizophrenic relapse triggered by the hormonal changes of delivery."}, {"key": "D", "t": "No prior psychiatric history predicts postpartum psychosis — it is idiopathic and equally likely in any postpartum patient."}], "why": "Postpartum psychosis is strongly linked to bipolar disorder — patients with bipolar disorder have a risk approximately 100-fold higher than the general population. This matters for discharge because 'stopping maintenance medication roughly doubles postpartum relapse (pooled ~35% overall; ~66% off medication vs ~23% on prophylaxis).' The medication-stop decision in a postpartum patient with bipolar disorder is itself a high-risk intervention — 'stop everything' is not a safe default."}
+**Tier-2 / stretch.** {"q": "What psychiatric history most strongly predicts postpartum psychosis, and why does this influence the medication decision at discharge?", "options": [{"key": "A", "t": "A history of major depressive disorder — postpartum psychosis is an extension of unipolar depression and responds best to antidepressants."}, {"key": "B", "t": "A history of bipolar disorder — postpartum psychosis is strongly linked to bipolar spectrum illness; stopping maintenance mood stabilizer nearly triples the risk of postpartum relapse.", "c": true}, {"key": "C", "t": "A history of schizophrenia — postpartum psychosis is simply a schizophrenic relapse triggered by the hormonal changes of delivery."}, {"key": "D", "t": "No prior psychiatric history predicts postpartum psychosis — it is idiopathic and equally likely in any postpartum patient."}], "why": "Postpartum psychosis is strongly linked to bipolar disorder — patients with bipolar disorder have a risk approximately 100-fold higher than the general population. This matters for discharge because 'stopping maintenance medication nearly triples postpartum relapse (pooled ~35% overall; ~66% off medication vs ~23% on prophylaxis).' The medication-stop decision in a postpartum patient with bipolar disorder is itself a high-risk intervention — 'stop everything' is not a safe default."}
 
 ### qb_otherdx_004
 
