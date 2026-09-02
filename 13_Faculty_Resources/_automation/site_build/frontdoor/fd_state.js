@@ -144,3 +144,73 @@ function fdRingStep(from, to, elapsed, duration){
   var e=1-Math.pow(1-k,3);
   return Math.round(from+(to-from)*e);
 }
+
+/* Seven-day activity strip -- the arithmetic behind Today's "Active N of the last 7 days" line.
+   Reads the timestamps every tool already writes rather than adding a store: cw_srs_v1 card
+   .last (ms) and stats.lastStudy (Y-M-D, unpadded), cw_qb_v1 .ts (ms), the cw_calib_v1 ledger
+   .ts (ms), cw_comm_v1 .at and cw_reason_v1 .at/.updatedAt (ISO dates), cw_progress_v1 .at
+   (local Y-M-D from localDayStr), cw_shelf_v1 attempts .at (ISO date), cw_quiz_v1 .last (ISO
+   date), cw_orals_v1 reps .at (ISO datetime), cw_circle_v1 .lastTested (ISO date), cw_reflect_v1
+   .savedAt (ISO datetime) and cw_capture_v1 .at (ms). Nothing here is persisted and
+   nothing new is written, so the strip is correct retroactively for every learner on first
+   deploy and the cw_frontdoor_v1 no-duplication contract (tests/fd-shell-boot) is untouched.
+
+   Replaces the "N days in a row" streak clause: that number is written only by Daily Review
+   (review.html bumpStreak), so a learner who did forty questions yesterday and a family
+   scenario today read "0" -- and one missed call night reset whatever they had. A
+   seven-day window survives a missed day and counts every tool the same.
+
+   Pure. Returns seven booleans, OLDEST first, ending on the day that contains nowMs; a day is
+   on when any accepted timestamp falls on it. Dates arrive in three shapes, so one normaliser
+   handles all: a positive number is epoch ms; a string starting Y-M-D is a calendar day and is
+   read as a LOCAL day at noon (the ISO-date writers slice a UTC string, which at worst shifts
+   one evening's activity by a day -- acceptable, and no reader can do better with a date). */
+function fdActivityDayIndex(value){
+  if(typeof value==='number'&&isFinite(value)&&value>0) return localDayIndex(value);
+  if(typeof value==='string'){
+    var m=/^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(value);
+    if(m) return localDayIndex(new Date(+m[1],+m[2]-1,+m[3],12,0,0).getTime());
+  }
+  return null;
+}
+
+function fdActivityDays(stores, nowMs){
+  var today=localDayIndex(nowMs), on={}, st=stores||{}, i, j, out=[];
+  function mark(v){ var d=fdActivityDayIndex(v); if(d!==null&&d<=today&&d>today-7) on[d]=true; }
+  function each(obj, fn){
+    if(!obj||typeof obj!=='object') return;
+    for(var key in obj){ if(Object.prototype.hasOwnProperty.call(obj,key)) fn(obj[key]); }
+  }
+  if(st.srs&&typeof st.srs==='object'){
+    each(st.srs.cards, function(c){ if(c&&typeof c==='object') mark(c.last); });
+    if(st.srs.stats&&typeof st.srs.stats==='object') mark(st.srs.stats.lastStudy);
+  }
+  each(st.qb, function(r){ if(r&&typeof r==='object') mark(r.ts); });
+  if(st.calib&&typeof st.calib==='object'){
+    var lists=[st.calib.qb, st.calib.rev];
+    for(i=0;i<lists.length;i++){
+      var list=Object.prototype.toString.call(lists[i])==='[object Array]'?lists[i]:[];
+      for(j=0;j<list.length;j++){ if(list[j]&&typeof list[j]==='object') mark(list[j].ts); }
+    }
+  }
+  each(st.comm, function(r){ if(r&&typeof r==='object') mark(r.at); });
+  each(st.reason, function(r){
+    if(r&&typeof r==='object'){ mark(r.updatedAt); each(r.steps, function(step){ if(step&&typeof step==='object') mark(step.at); }); }
+  });
+  each(st.progress, function(e){ if(e&&typeof e==='object'&&e.done===true) mark(e.at); });
+  if(st.shelf&&typeof st.shelf==='object'){
+    var attempts=Object.prototype.toString.call(st.shelf.attempts)==='[object Array]'?st.shelf.attempts:[];
+    for(i=0;i<attempts.length;i++){ if(attempts[i]&&typeof attempts[i]==='object') mark(attempts[i].at); }
+  }
+  each(st.quiz, function(e){ if(e&&typeof e==='object') mark(e.last); });
+  if(st.orals&&typeof st.orals==='object'){
+    var reps=Object.prototype.toString.call(st.orals.reps)==='[object Array]'?st.orals.reps:[];
+    for(i=0;i<reps.length;i++){ if(reps[i]&&typeof reps[i]==='object') mark(reps[i].at); }
+  }
+  if(st.circle&&typeof st.circle==='object') mark(st.circle.lastTested);
+  if(st.reflect&&typeof st.reflect==='object') mark(st.reflect.savedAt);
+  var caps=Object.prototype.toString.call(st.capture)==='[object Array]'?st.capture:[];
+  for(i=0;i<caps.length;i++){ if(caps[i]&&typeof caps[i]==='object') mark(caps[i].at); }
+  for(i=6;i>=0;i--){ out.push(on[today-i]===true); }
+  return out;
+}

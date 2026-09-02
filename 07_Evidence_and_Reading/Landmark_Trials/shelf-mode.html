@@ -178,6 +178,7 @@ function bankPool(data){
   return out;
 }
 
+/*__SESSION_RECEIPT__*/
 function refHref(ref){ if(!ref) return null; return /\.html(\?|#|$)/.test(ref)? ("./"+ref) : ("../index.html?page="+encodeURIComponent(ref)); }
 function correctIdx(o){for(var i=0;i<o.length;i++){if(o[i]&&o[i].c)return i;}return -1;}
 
@@ -414,9 +415,23 @@ function App(){
       if(st.revFilter==="all") return true;
       var ci=correctIdx(x.q.o); return st.picks[x.i]!==ci;
     });
+    if(!st.receipt){
+      var missedItems=st.items.map(function(q,i){return {q:q,i:i};}).filter(function(x){ var ci=correctIdx(x.q.o); return st.picks[x.i]!==ci; });
+      var weakTopic=null; bts.forEach(function(t){ var b=R.byTopic[t]; var pc=b.c/Math.max(1,b.n); if(b.n>=2&&(weakTopic===null||pc<weakTopic.pc)) weakTopic={t:t,pc:pc}; });
+      st.receipt=cwReceipt({
+        tool:'shelf', ref:null, blockKind:null,
+        context: R.n+" item"+(R.n===1?"":"s")+" · "+(st.timed?"timed":"untimed")+" · "+fmt(R.secs),
+        headline: R.correct+" of "+R.n+(missedItems.length?" — "+missedItems.length+" to look at again.":" — clean set."),
+        sub: weakTopic? ("Weakest topic this set: "+weakTopic.t+". "+msg) : msg,
+        stats:[{label:"Correct",value:R.correct+" / "+R.n},{label:"Score",value:R.pct+"%",tone:R.pct>=70?"good":"warn"},{label:"Missed",value:String(missedItems.length),tone:missedItems.length?"warn":"plain"}],
+        reread: missedItems.slice(0,5).map(function(x){ var ref=x.q.ref&&!/\.html/.test(x.q.ref)?x.q.ref:null; return {tag:x.q.topic||"Missed",warn:true,title:String(x.q.q||"").slice(0,140),note:String(x.q.tp||x.q.exp||"").slice(0,160),ref:ref,refTitle:ref?ref.replace(/^t_/,"").replace(/\.md$/,"").replace(/_/g," "):null}; }),
+        actions:[{id:"cwShelfNewSetBtn",label:"New set",primary:true}]
+      });
+    }
     return e("div",{className:"wrap"},
       liveRegion,
       e("a",{className:"back",onClick:function(){set({view:"config",saved:false});}},"← New set"),
+      e("div",{onClick:function(ev){ var t=ev.target&&ev.target.closest?ev.target.closest("#cwShelfNewSetBtn"):null; if(t){ ev.preventDefault(); set({view:"config",saved:false}); } },dangerouslySetInnerHTML:{__html:st.receipt.html}}),
       e("div",{className:"card res"},
         e("div",{className:"score"}, R.correct+" / "+R.n),
         e("div",{className:"sub",style:{textAlign:"center"}}, R.pct+"% · "+msg+" · "+(st.timed?"used ":"took ")+fmt(R.secs)+(st.preview?" · sample set":"")),
