@@ -1221,6 +1221,32 @@
           ]
         }
       ]
+    },
+    {
+      "sourceId": "fountoulakis-2025-esketamine",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-09-02",
+        "pmid": "39876682",
+        "doi": "10.1176/appi.ajp.20240515",
+        "sourceSpan": "At weeks 2-4, randomized controlled trials were mostly negative or failed; however, the meta-analysis returned a weak but significant positive effect for depression (effect size range, 0.15-0.23 at weeks 2-4), similar to augmentation strategies with atypical antipsychotics for treatment-resistant depression. The effect size concerning suicidality was not significant at any time point."
+      },
+      "claims": [
+        {
+          "claimId": "esketamine-depression-modest-suicidality-null",
+          "claimText": "Esketamine showed a weak but significant positive effect for depression (effect size range 0.15-0.23 at weeks 2-4), while the effect size concerning suicidality was not significant at any time point.",
+          "claimTerms": [
+            "effect size concerning suicidality",
+            "not significant at any time point",
+            "depression"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "cotw_20260720_mdd_res"
+          ]
+        }
+      ]
     }
   ]
 }
