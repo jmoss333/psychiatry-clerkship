@@ -193,6 +193,7 @@ EXPECTED_STEP_INVENTORIES = {
         "governance": (
             ("uses", "actions/checkout"),
             ("uses", "actions/setup-python"),
+            ("name", "Install — governance digest dependencies"),
             ("uses", "actions/setup-node"),
             ("name", "Build faculty governance digest"),
             ("uses", "actions/upload-artifact"),
@@ -313,7 +314,7 @@ EXPECTED_STEP_INVENTORIES = {
 EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
     "ci.yml": "281a4dd9d78f94e9d33b55f93b5976183652b20606a2302a5f17bf3e6297f6f2",
     "maintenance-governance-digest.yml": (
-        "9869ba87704c40c9f5117b012ef7fea372644e318ccbb0df54d118b296675099"
+        "d819d2eafa59d6d62fcdf5f4d82b5eaf374f2b58d728d7c7f748fa7160bf6c10"
     ),
     "maintenance-heartbeat.yml": (
         "349273a885cb7d2aae2fab884ac4e3ef104452f9a1db7ecc26e813f7b6dcd806"

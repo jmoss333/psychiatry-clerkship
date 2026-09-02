@@ -25,6 +25,13 @@ jobs:
         with:
           python-version: "3.11"
 
+      # The digest shells out to validate_attestation_consistency.py, which imports
+      # surface_governance -> jsonschema (requirements.txt). Without this install the
+      # validator tracebacks, the digest treats the stderr as a contract breach, and the
+      # job has failed on every run — which then blocks the daily heartbeat too.
+      - name: Install — governance digest dependencies
+        run: python3 -m pip install --requirement requirements.txt
+
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: "20"

@@ -7,7 +7,7 @@ description: Use when deploying, verifying, or debugging the two clerkship Netli
 
 One repo (`jmoss333/psychiatry-clerkship`) feeds **two** Netlify sites that build on push:
 `une-ms3-psychiatry` (UNE COM MS3) and `mmc-psychiatry-residents-sanford` (MMC residents).
-Build command, publish dir, and `GIT_LFS_ENABLED` live **per-site in the Netlify UI**, not in
+Build command and publish dir live **per-site in the Netlify UI**, not in
 `netlify.toml` (which is intentionally minimal — see its header comment and
 `GIT_AND_DEPLOY_PLAN.md` §6–7 for why).
 
@@ -30,6 +30,15 @@ Build command, publish dir, and `GIT_LFS_ENABLED` live **per-site in the Netlify
 4. **Planning-doc pushes don't deploy.** Pushes touching only `_automation/*.md` are
    cancelled by the build-ignore hook (`netlify-ignore.sh`) — a "skipped" deploy after
    such a push is correct behavior, not a failure.
+5. **"Every production deploy fails, nothing changed" = GitHub LFS bandwidth quota.**
+   Signature: both sites red at `lfs-media: ERROR — 105 Git LFS pointer stub(s)` (or
+   `lfs-cache: ERROR … over its data quota`), deploy previews green, CI green, and a GitHub
+   email "You have used 90%/100% of the Git LFS bandwidth". 10 GB/month per account, reset
+   on the 1st (2026-08-30 outage). Retrying, clearing cache, or `git lfs push` cannot fix it.
+   Fix = move the site to the cached-pull path (`NETLIFY_LFS_RUNBOOK.md`, Switch-over: delete
+   `GIT_LFS_ENABLED` + `GIT_LFS_FETCH_INCLUDE`, clear-cache deploy once); need a deploy
+   *before* the reset = buy a GitHub data pack. Read `~N MB downloaded from GitHub this
+   build` in the log as the meter.
 
 ## Deploy runbook
 
