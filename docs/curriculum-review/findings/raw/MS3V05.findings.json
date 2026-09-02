@@ -1,0 +1,80 @@
+[
+  {
+    "id": "MS3V05-F001",
+    "audience": "both",
+    "file": "02_CURRICULUM_V05.md",
+    "surface": "suicide.md",
+    "locus": "page_prose",
+    "severity": "S2",
+    "quote": "*Static* risk factors set the baseline and cannot be changed: a prior attempt is the single strongest long-term predictor, alongside older age, male sex, access to firearms, chronic or painful illness, and family history of suicide.",
+    "problem": "Firearm access is filed under static factors that \"cannot be changed,\" which contradicts the same page's management section — where means restriction (securing firearms) is taught as the single most evidence-based intervention — and it is also absent from the page's dynamic/modifiable list. A learner will present firearm access on rounds as an unmodifiable baseline fact instead of the highest-yield modifiable target.",
+    "replacement": "*Static* risk factors set the baseline and cannot be changed: a prior attempt is the single strongest long-term predictor, alongside older age, male sex, chronic or painful illness, and family history of suicide. Access to firearms raises baseline risk sharply — but unlike the others it is modifiable, which is exactly why means restriction is the intervention.",
+    "basis": "VA/DoD suicide risk CPG (2024) and standard risk-formulation teaching treat lethal-means access as a modifiable/dynamic factor and lethal-means safety as a first-line intervention; the page's own Management paragraph says the same.",
+    "confidence": "high"
+  },
+  {
+    "id": "MS3V05-F002",
+    "audience": "both",
+    "file": "02_CURRICULUM_V05.md",
+    "surface": "violence.md",
+    "locus": "page_prose",
+    "severity": "S2",
+    "quote": "Among psychotic symptoms, the highest-risk pattern is persecutory delusions paired with command hallucinations the patient feels compelled to obey (\"threat/control-override\").",
+    "problem": "\"Threat/control-override\" is mis-defined: the construct (Link & Stueve; Swanson) is persecutory beliefs that others intend harm (threat) plus the sense that outside forces override one's internal self-control (thought insertion/control) — it does not mean command hallucinations. The clinical pattern taught (persecutory delusions + command hallucinations with intent to obey) is a reasonable high-risk marker, but the parenthetical teaches learners a wrong definition of a named construct.",
+    "replacement": "Among psychotic symptoms, the highest-risk pattern is persecutory delusions paired with command hallucinations the patient feels compelled to obey. (\"Threat/control-override\" is a related but distinct construct — persecutory beliefs plus the sense that outside forces override one's self-control.)",
+    "basis": "Link & Stueve 1994 and Swanson et al. 1996 define TCO as threat delusions plus control-override (mind-control/thought-insertion) symptoms; command hallucinations are a separate risk marker. Note the MacArthur follow-up (Appelbaum et al. 2000) found TCO did not predict violence in discharged patients, so the construct should not be presented as the definitional high-risk pattern anyway.",
+    "confidence": "high"
+  },
+  {
+    "id": "MS3V05-F003",
+    "audience": "MS3",
+    "file": "02_CURRICULUM_V05.md",
+    "surface": "agitation.md",
+    "locus": "page_prose",
+    "severity": "S2",
+    "quote": "Black patients face roughly **1.85× the adjusted odds of physical restraint** on inpatient units (and ~2.84× in the ED awaiting admission; *Psychiatric Services* 2022–2023)",
+    "problem": "The setting attributions appear swapped or unsourced: the aOR ≈1.85 for physical restraint of Black patients is, as best I can recall, the finding for patients undergoing emergency psychiatric evaluation in the ED (Smith et al., Psychiatric Services 2022), not for inpatient units, and I cannot place the 2.84 figure at all. Both numbers are attributed only to a journal-plus-year-range, so a learner (and Appendix A4) cannot trace either figure to a specific paper to check it.",
+    "replacement": "Black patients face roughly **1.85× the adjusted odds of physical restraint** during emergency psychiatric evaluation in the ED (Smith et al., *Psychiatric Services* 2022), with disparities also documented on inpatient psychiatric units",
+    "basis": "Smith CM et al., Psychiatric Services 2022;73(7):730-736 (Duke ED emergency psychiatric evaluations) reported adjusted OR ≈1.85 for physical restraint of Black patients. What would settle it: pull that abstract to confirm the setting of the 1.85, and identify the actual paper and setting behind the 2.84 (then cite both by author-year, matching each OR to its true setting).",
+    "confidence": "low"
+  },
+  {
+    "id": "MS3V05-F004",
+    "audience": "both",
+    "file": "02_CURRICULUM_V05.md",
+    "surface": "withdrawal.html",
+    "locus": "tool_string",
+    "severity": "S4",
+    "quote": "Benzodiazepines are first-line per protocol; treat early. Thiamine before glucose.",
+    "problem": "The bare slogan \"Thiamine before glucose,\" acted on literally, teaches a learner to hold emergency dextrose in a hypoglycemic alcohol-using patient until thiamine is given — a recognized teaching-myth harm pathway (delayed treatment of hypoglycemia causes neuronal injury; a single glucose load without thiamine has weak evidence of precipitating Wernicke). The library's own consult module carries the corrected version (\"before or with glucose... do not delay emergency glucose for true hypoglycemia\"), so this tool string is the outlier.",
+    "replacement": "Benzodiazepines are first-line per protocol; treat early. Thiamine before or with glucose — never delay emergency dextrose for true hypoglycemia.",
+    "basis": "ASAM Alcohol Withdrawal Management guideline (2020) and standard emergency practice: give thiamine promptly in at-risk patients but do not withhold dextrose for symptomatic hypoglycemia; the sibling surface exp_consult.md states this correctly on the same site.",
+    "confidence": "high"
+  },
+  {
+    "id": "MS3V05-F005",
+    "audience": "both",
+    "file": "02_CURRICULUM_V05.md",
+    "surface": "violence.html",
+    "locus": "tool_string",
+    "severity": "S4",
+    "quote": "Educational teaching tool for clinical trainees. The warning-signs checklist is a learning prompt, not a validated scored instrument; the FRST itself should be completed using your institution’s official version and protocol. Not a substitute for clinical judgment, supervision, or institutional policy. Fictional composites only — no protected health information.",
+    "problem": "This tool has a learner actively doing risk work — screening and checking imminent violence warning signs — yet it is the only risk-assessment surface in the volume with no injected crisis block: its sibling page violence.md carries the block, and even the retired C-SSRS stub carries it. Under the library's own crisis-contacts policy, a surface where the learner is assessing risk with no crisis block is a gap (families and post-discharge situations reached from this tool lose the Maine Crisis Line / 988 contacts).",
+    "replacement": "Educational teaching tool for clinical trainees. The warning-signs checklist is a learning prompt, not a validated scored instrument; the FRST itself should be completed using your institution’s official version and protocol. Not a substitute for clinical judgment, supervision, or institutional policy. Fictional composites only — no protected health information.\n<!-- crisis-block-html -->",
+    "basis": "Site crisis-contacts policy: a page doing real risk work (assessing, rehearsing, or planning disposition) opts into the build-injected crisis block; violence.md, agitation.md, both suicide surfaces, and cssrs.html all carry it, making this tool's omission look like an oversight rather than a scope decision.",
+    "confidence": "medium"
+  },
+  {
+    "id": "MS3V05-F006",
+    "audience": "both",
+    "file": "02_CURRICULUM_V05.md",
+    "surface": "violence.md",
+    "locus": "page_prose",
+    "severity": "S4",
+    "quote": "**Pair with** the Agitation & Restraint guidance, the interactive Violence Risk / Brøset tool, the Psychosis page, and the Decisional Capacity module.",
+    "problem": "The pointer is stale: the shipped tool is the FRST one-pager, whose checklist explicitly states it is \"not a scored instrument\" with no threshold — it is not a Brøset scorer. Combined with the prose teaching learners to \"structure the bedside read with the Brøset Violence Checklist (BVC)\" while the tool states the institutional screen at MaineHealth is the FRST, a learner is left believing the site ships a validated BVC scorer and that BVC is the expected local instrument, and may treat the tool's unscored warning-sign checklist as a summed BVC.",
+    "replacement": "**Pair with** the Agitation & Restraint guidance, the interactive Violence Risk (FRST) tool, the Psychosis page, and the Decisional Capacity module.",
+    "basis": "Internal consistency: the paired tool violence.html identifies itself as \"Violence Risk — One-Pager (FRST)\", teaches the FRST as the MaineHealth screen, and disclaims that its checklist is not a validated scored instrument.",
+    "confidence": "high"
+  }
+]

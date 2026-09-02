@@ -1,0 +1,102 @@
+[
+ {
+  "id": "MS3V05-F003",
+  "verdict": "partially confirmed",
+  "reasoning": "Quote is verbatim (agitation.md, Restraint and seclusion section). The finding's primary claim — that the 1.85 aOR belongs to the Smith 2022 ED study and the settings are swapped — is refuted by PubMed: Singal et al., Psychiatric Services 2023;75(4):308-315 (doi:10.1176/appi.ps.20230057) is a psychiatric INPATIENT study (n=29,739, 2012-2019) reporting exactly AOR 1.85 for restraint events in Black patients, so the page's 'on inpatient units ... Psychiatric Services 2022-2023' attribution is correct and must not be changed; meanwhile Smith et al., Psychiatric Services 2022;73(7):730-736 (doi:10.1176/appi.ps.202100474, emergency psychiatric evaluation at Duke) reports physical restraint AOR 1.35 (CI 1.07-1.72), not 1.85, so the proposed replacement would introduce a new error. What survives is the finding's secondary prong: the '~2.84x in the ED awaiting admission' figure could not be matched to any Psychiatric Services 2022-2023 abstract despite targeted searches (the closest ED figure is Smith's 1.35 physical / 1.33 chemical), and the journal-plus-year-range citation leaves both numbers untraceable for learners and the A4 evidence gate. Corrected finding keeps the verified 1.85/Singal, flags 2.84 as unverifiable pending a real source, and adds author-year citations.",
+  "corrected_finding": {
+   "id": "MS3V05-F003",
+   "audience": "MS3",
+   "file": "02_CURRICULUM_V05.md",
+   "surface": "agitation.md",
+   "locus": "page_prose",
+   "severity": "S2",
+   "quote": "Black patients face roughly **1.85× the adjusted odds of physical restraint** on inpatient units (and ~2.84× in the ED awaiting admission; *Psychiatric Services* 2022–2023)",
+   "problem": "The inpatient attribution is correct and must stand: Singal et al., Psychiatric Services 2023 (29,739 psychiatric inpatients) reported exactly aOR 1.85 for restraint events in Black patients. The problems are (a) the parenthetical '~2.84× in the ED awaiting admission' cannot be matched to any Psychiatric Services 2022–2023 abstract — the closest ED paper, Smith et al. 2022 (emergency psychiatric evaluation, Duke), reports physical restraint aOR 1.35 (chemical 1.33) — so 2.84 is unverifiable as cited and likely overstates the documented ED disparity roughly twofold; and (b) the journal-plus-year-range citation leaves both figures untraceable for a learner and for Appendix A4.",
+   "replacement": "Black patients face roughly **1.85× the adjusted odds of a restraint event** on inpatient psychiatric units (Singal et al., *Psychiatric Services* 2023), and higher adjusted odds of physical and chemical restraint during emergency psychiatric evaluation in the ED as well (aOR ~1.35; Smith et al., *Psychiatric Services* 2022)",
+   "basis": "PubMed abstracts: Singal et al., Psychiatr Serv 2023;75(4):308-315, doi:10.1176/appi.ps.20230057 — inpatient psychiatric setting, Black AOR=1.85 for restraint events (multiracial 1.36), Black race also associated with longer restraint duration. Smith CM et al., Psychiatr Serv 2022;73(7):730-736, doi:10.1176/appi.ps.202100474 — emergency psychiatric evaluation, physical restraint AOR=1.35 (95% CI 1.07-1.72), chemical AOR=1.33. Targeted PubMed searches found no Psychiatric Services 2022-2023 paper reporting ~2.84 for restraint while awaiting admission; if the author holds a full-text source for 2.84 it should be cited by author-year, otherwise replace it with the verified Smith figure.",
+   "confidence": "medium",
+   "_pass": "MS3V05",
+   "_source_path": "/home/user/psychiatry-clerkship/docs/curriculum-review/ms3/02_CURRICULUM_V05.md"
+  }
+ },
+ {
+  "id": "MS3V06-F001",
+  "verdict": "partially confirmed",
+  "reasoning": "Quote is verbatim (topic_meta key point, line 1267). The finding's central factual claim is wrong: the Xia 2011 Cochrane abstract (PubMed, PMID 21678337, doi:10.1002/14651858.CD002831.pub2) reports relapse (n=1,214, RR 0.70, NNT 9 CI 7-14) 'and this also applied to readmission (n = 206, RR 0.71 CI 0.56 to 0.89, NNT 5 CI 4 to 13)' — readmission NNT 5 IS what Xia reports, and the library's verified sourceSpan for xia-2011 records exactly this text (the finding misquotes that span as 'NNT ~9 relapse/readmission' and misremembers the relapse RR as ~0.80). So the card does not teach an effect twice as strong as the source, and the proposed replacement would delete a correct, library-verified figure on a false premise. What survives is the calibration prong the finding also raises: the reviewers' own caveat ('hospital-based studies of limited quality ... true size of effect is likely to be less than demonstrated') is stripped, and 'strongest inpatient numbers' is a ranking Xia never makes — this library's own Therapy on the Unit page (V07) carries the caveat and explicitly warns 'don't quote NNT 5 as though it were precise' (the readmission estimate rests on 206 participants). Corrected finding keeps both NNTs, drops the unlicensed superlative, adds the caveat, and downgrades severity S2 to S3.",
+  "corrected_finding": {
+   "id": "MS3V06-F001",
+   "audience": "both",
+   "file": "02_CURRICULUM_V06.md",
+   "surface": "brief_psychotherapy.md",
+   "locus": "topic_meta.points",
+   "severity": "S3",
+   "quote": "Psychoeducation has the strongest inpatient numbers: readmission NNT 5, relapse NNT 9 — give it as a conversation with family looped in, not a packet dump.",
+   "problem": "The numbers are faithful to the source — the Xia 2011 abstract reports readmission NNT 5 (n=206, RR 0.71) and relapse NNT 9 (n=1,214, RR 0.70) — so they must not be changed. What the card drops is the review's own calibration ('hospital-based studies of limited quality ... the true size of effect is likely to be less than demonstrated'), and 'strongest inpatient numbers' is a comparative ranking a single-intervention review cannot license. The library's own Therapy on the Unit page (V07) renders the same result with the caveat and an explicit 'don't quote NNT 5 as though it were precise'; this uncaveated key point is what students will quote on rounds.",
+   "replacement": "Psychoeducation has strong inpatient numbers — readmission NNT 5, relapse NNT 9 (Xia 2011 Cochrane; limited-quality hospital-based trials, and the reviewers judge the true effect likely smaller) — give it as a conversation with family looped in, not a packet dump.",
+   "basis": "PubMed abstract, Xia J, Merinder LB, Belgamwar MR, Cochrane 2011 (PMID 21678337, doi:10.1002/14651858.CD002831.pub2): 'Relapse appeared to be lower in psychoeducation group (n = 1214, RR 0.70 CI 0.61 to 0.81, NNT 9 CI 7 to 14) and this also applied to readmission (n = 206, RR 0.71 CI 0.56 to 0.89, NNT 5 CI 4 to 13)', with the limited-quality / true-effect-likely-smaller caveats in the authors' conclusions. The library's verified xia-2011 sourceSpan records the same text, and the V07 Therapy on the Unit page ([4 ✓]) models the calibrated rendering.",
+   "confidence": "high",
+   "_pass": "MS3V06",
+   "_source_path": "/home/user/psychiatry-clerkship/docs/curriculum-review/ms3/02_CURRICULUM_V06.md"
+  }
+ },
+ {
+  "id": "MS3V06-F002",
+  "verdict": "partially confirmed",
+  "reasoning": "Quote is verbatim (mechanism table, line 1322). The numeric claim fails: per the PubMed abstract of Xia 2011 (PMID 21678337, doi:10.1002/14651858.CD002831.pub2), the review reports a separate readmission outcome (n=206, RR 0.71, NNT 5 CI 4-13) alongside relapse (n=1,214, RR 0.70, NNT 9 CI 7-14) — the table's 'readmission NNT 5, relapse NNT 9' is exactly what the source says, the library's verified xia-2011 span records the same sentence, and the proposed replacement (relapse NNT ~9 only, with readmission deleted as unsupported) would misdescribe the review. The finding's second prong is real: 'Strongest single inpatient psychological intervention' is attributed to Xia 2011, a non-comparative single-intervention review whose authors state the true effect is likely less than demonstrated — the citation licenses the NNTs, not the superlative — and the same library's Therapy on the Unit page uses the calibrated 'among the best-supported psychological interventions' and warns against quoting NNT 5 as precise. Corrected finding targets the superlative and missing caveat, keeps both NNTs, severity S2 downgraded to S3.",
+  "corrected_finding": {
+   "id": "MS3V06-F002",
+   "audience": "both",
+   "file": "02_CURRICULUM_V06.md",
+   "surface": "brief_psychotherapy.md",
+   "locus": "page_prose",
+   "severity": "S3",
+   "quote": "Strongest single inpatient psychological intervention: readmission **NNT 5**, relapse **NNT 9** (Xia, *Cochrane* 2011)",
+   "problem": "The NNTs are faithful — the Xia 2011 abstract reports relapse NNT 9 (n=1,214, RR 0.70) and readmission NNT 5 (n=206, RR 0.71) — so the figures must stand. The defects are (a) the superlative 'Strongest single inpatient psychological intervention', which Xia 2011 (a single-intervention review, not a comparison across interventions) cannot license, and (b) the absence of the calibration the review itself insists on ('hospital-based studies of limited quality ... the true size of effect is likely to be less than demonstrated'); the library's own Therapy on the Unit page renders the same result as 'among the best-supported' and explicitly warns 'don't quote NNT 5 as though it were precise' (the readmission estimate rests on 206 participants).",
+   "replacement": "Among the best-supported inpatient psychological interventions: readmission **NNT 5**, relapse **NNT 9** (Xia, *Cochrane* 2011 — limited-quality hospital-based trials; reviewers judge the true effect likely smaller)",
+   "basis": "PubMed abstract, Xia 2011 Cochrane CD002831.pub2 (PMID 21678337, doi:10.1002/14651858.CD002831.pub2): relapse n=1,214, RR 0.70, NNT 9 (CI 7-14); readmission n=206, RR 0.71, NNT 5 (CI 4-13); authors' conclusions carry the limited-quality / true-effect-likely-smaller caveats. Library's verified xia-2011 sourceSpan matches; V07 Therapy on the Unit ([4 ✓]) models the calibrated rendering and the sibling superlative correction the original finding cites.",
+   "confidence": "high",
+   "_pass": "MS3V06",
+   "_source_path": "/home/user/psychiatry-clerkship/docs/curriculum-review/ms3/02_CURRICULUM_V06.md"
+  }
+ },
+ {
+  "id": "MS3V06-F003",
+  "verdict": "partially confirmed",
+  "reasoning": "Quote is verbatim (High-yield pearls, line 1338). The 'unsupported readmission NNT 5' claim is refuted: the Xia 2011 abstract (PubMed PMID 21678337, doi:10.1002/14651858.CD002831.pub2) reports readmission n=206, RR 0.71, NNT 5 (CI 4-13) as a distinct outcome, matching the library's verified span, so the pearl's figure is faithful and the original replacement — which swaps in relapse NNT ~9 on the premise that NNT 5 is unsupported — rests on a false premise. What is real is the calibration problem the finding also names: 'hardest inpatient numbers' plus a bare NNT 5 in a pearl (the highest-exposure, quote-on-rounds surface) is exactly what the library's own Therapy on the Unit page warns against ('the readmission estimate rests on just 206 participants ... don't quote NNT 5 as though it were precise'), and Xia's authors state the true effect is likely smaller than demonstrated. Corrected finding keeps the number, adds the approximation flag, drops the superlative; severity S2 downgraded to S3.",
+  "corrected_finding": {
+   "id": "MS3V06-F003",
+   "audience": "both",
+   "file": "02_CURRICULUM_V06.md",
+   "surface": "brief_psychotherapy.md",
+   "locus": "page_prose",
+   "severity": "S3",
+   "quote": "**Psychoeducation** has the hardest inpatient numbers (readmission NNT 5) — and it's free.",
+   "problem": "The figure is faithful — Xia 2011 reports readmission NNT 5 (n=206, RR 0.71, NNT CI 4-13) — so the number is not the error. The issue is calibration at the highest-exposure surface: 'hardest inpatient numbers' plus a bare NNT 5 invites learners to quote on rounds exactly what the library's own Therapy on the Unit page warns against ('don't quote NNT 5 as though it were precise'), given the 206-participant base and the reviewers' statement that the true size of effect is likely less than demonstrated.",
+   "replacement": "**Psychoeducation** has real inpatient numbers (readmission NNT 5, relapse NNT 9 — approximate, from limited-quality trials) — and it's free.",
+   "basis": "PubMed abstract, Xia 2011 Cochrane CD002831.pub2 (PMID 21678337, doi:10.1002/14651858.CD002831.pub2): readmission n=206, RR 0.71, NNT 5 (CI 4-13); relapse n=1,214, RR 0.70, NNT 9 (CI 7-14); limited-quality / true-effect-likely-smaller caveats in the authors' conclusions. Library's verified xia-2011 sourceSpan matches; V07 Therapy on the Unit page supplies the 'don't quote NNT 5 as though it were precise' standard.",
+   "confidence": "high",
+   "_pass": "MS3V06",
+   "_source_path": "/home/user/psychiatry-clerkship/docs/curriculum-review/ms3/02_CURRICULUM_V06.md"
+  }
+ },
+ {
+  "id": "MS3V06-F004",
+  "verdict": "confirmed",
+  "reasoning": "Quote is verbatim (line 833), and the surrounding text removes any ambiguity about attribution: the table is introduced as what 'the **ADA/APA 2004 consensus** establishes' (line 826) and closed with 'This is the **ADA/APA consensus monitoring** standard (... Diabetes Care 2004)' (line 838). The 2004 ADA/APA/AACE/NAASO Consensus Development Conference statement (Diabetes Care 2004;27:596-601) schedules the fasting lipid profile at baseline, 12 weeks, then every 5 years — annually is not in the consensus (its annual items are BP, fasting glucose, waist circumference, and family history updates; weight is 4/8/12 weeks then quarterly, which the table renders correctly). The problem is real and precisely scoped: the direction is conservative, but a learner citing 'ADA/APA says annual lipids' would be misquoting the named document, exactly the claim-source mismatch this library's evidence policy targets. The replacement keeps the row accurate to the consensus while noting that annual rechecking is common current practice — correct on both halves and appropriate for both audiences. The embedded quiz (line 804) only tests the 12-week recheck, so it stays correct under the fix."
+ },
+ {
+  "id": "MS3V07-F001",
+  "verdict": "confirmed",
+  "reasoning": "Quote is verbatim (line 693), and the topic_meta key point repeats it word-for-word at line 631 as the finding states. Per the PubMed abstract of Boggs et al., J Gen Intern Med 2020;35(6):1709-1714 (PMID 32040838, doi:10.1007/s11606-020-05641-4), the study is a quasi-experimental instrumental-variable analysis at Kaiser Permanente Colorado in which the exposure was provider DOCUMENTATION of lethal means assessment (NLP-detected) among patients endorsing suicidal ideation on the PHQ-9, with attempt/death within 180 days falling from 3.3% to 0.83% — so the page's attribution of the result to delivery of 'structured lethal-means counseling (CALM)' misdescribes the exposure, 'cut' overstates a non-randomized design whose authors themselves caution that co-occurring prevention practices may contribute, and the sentence carries no citation. The internal contradiction is verified: the same volume's Therapy on the Unit page states that controlled studies of means-change interventions show 'a small reduction, if any, in deaths' with citation [9] = Shank et al., Inj Prev 2026 (lines 110 and 216). The replacement is faithful to Boggs (quasi-experimental, documented assessment, 0.83% vs 3.3% at 180 days, framed as association rather than randomized effect) and is level-appropriate for MS3s and residents alike."
+ },
+ {
+  "id": "MS3V07-F002",
+  "verdict": "confirmed",
+  "reasoning": "Quote is verbatim (line 691), and both claimed errors check out. Attribution: the library's own verified spans settle it — chung-2017 (PMID 28564699, JAMA Psychiatry) reports 484 per 100,000 person-years overall with the finest stratum at 3 months (1,132) and contains no first-week figure, while chung-2019 (PMID 30904843, BMJ Open) reports the first-week pooled rate of 2,950 (and first month 2,060); this same volume's Therapy on the Unit page already cites [32] (Chung 2019 BMJ Open, reference line 239) for exactly the 2,950 figure (lines 114 and 169), so the exp_family attribution to 'Chung et al., JAMA Psychiatry 2017' is wrong. Arithmetic: 2,950 per 100,000 person-years against a US general-population suicide rate of ~14 per 100,000 is ~210×, so 'roughly 100×' understates the taught risk by half and 'roughly 200×' is correct (no plausible comparator yields 100× for the first-week figure; 100× likely migrated from the 2017 three-month stratum). The topic_meta key point at line 630 repeats 'roughly 100×' and needs the same fix, as the finding says. The replacement is accurate on every element — it reassigns 2,950 to BMJ Open 2019, corrects the multiplier, and correctly notes 484 as the 2017 paper's overall rate — and leaves the untouched 'days 0–3 the highest' clause as it found it. Level-appropriate for both audiences."
+ },
+ {
+  "id": "MS3V07-F003",
+  "verdict": "rejected",
+  "reasoning": "Quote is verbatim (line 1069), but the claimed problem is not real: per the PubMed abstract of Rodolico et al., Lancet Psychiatry 2022;9(3):211-221 (PMID 35093198, doi:10.1016/S2215-0366(21)00437-5), the network meta-analysis compared 11 family intervention models across 90 RCTs with 10,340 participants, and 'ORs compared with treatment as usual ranged from 0·18 (95% CI 0·12-0·27) for family psychoeducation alone to 0·63 ... for community-based interventions', with the authors concluding family psychoeducation alone 'was superior to the more complex models.' OR 0.18 is therefore the point estimate, not a credible-interval bound or transcription error, and every element of the quoted sentence (0.18, led the 11 models, 90 RCTs, >10,000 patients) is faithful. The reviewer's OR ~0.33 recollection belongs to the companion NMA (Bighelli et al., Lancet Psychiatry 2021;8:969-980, doi:10.1016/S2215-0366(21)00243-1), whose differently-defined nodes gave family interventions OR 0.35, relapse-prevention programmes 0.33, and a family-psychoeducation node of 0.56 — a different analysis. Applying the proposed replacement would make the material wrong. The dependent instances (TL;DR, key point, quiz key, and exp_family's ~37%→~10%, which back-derives correctly from OR 0.18) all stand; the finding's own low confidence anticipated exactly this check, which resolves against it."
+ }
+]

@@ -1,0 +1,54 @@
+[
+  {
+    "id": "MS3V03-F001",
+    "audience": "both",
+    "file": "02_CURRICULUM_V03.md",
+    "surface": "t_anxiety.md",
+    "locus": "page_prose",
+    "severity": "S2",
+    "quote": "Give the patient and family a relapse-warning plan and crisis contacts, and communicate trauma-informed considerations to the next setting.",
+    "problem": "This page coaches suicide, self-harm, and domestic-violence screening (safety workflow stage), is flagged safetyLevel=high, and here instructs the learner to hand crisis contacts to the patient and family — yet it is the only core topic page in this volume shipped without the injected crisis block, so the contacts it tells the learner to give are nowhere on the page. Under the library's own rule (a page where the learner is doing risk work carries the block), this reads as a dropped `<!-- crisis-block -->` marker rather than a scope decision; all five sibling pages (t_mood, t_psychosis, t_personality, t_sud, t_geri) carry it.",
+    "replacement": "Give the patient and family a relapse-warning plan and crisis contacts, and communicate trauma-informed considerations to the next setting.\n\n<!-- crisis-block -->",
+    "basis": "Library crisis-block policy: contacts live in crisis_resources.json and are injected into pages that opt in via the marker; the scope rule is that the learner must plausibly be assessing, rehearsing, or planning disposition around risk — which this page's safety stage and discharge instructions do. Checking the required-safety-surface list in the build config (build_deploy.py / crisis_block.py) would settle whether this surface was intended to opt in.",
+    "confidence": "medium"
+  },
+  {
+    "id": "MS3V03-F002",
+    "audience": "both",
+    "file": "02_CURRICULUM_V03.md",
+    "surface": "t_anxiety.md",
+    "locus": "topic_meta.tldr",
+    "severity": "S2",
+    "quote": "SSRIs/SNRIs plus exposure-based therapy are first-line across anxiety, OCD, and PTSD — standing benzodiazepines are a trap on the unit.",
+    "problem": "Read as a free-standing card, this asserts SNRIs are first-line for OCD. They are not: first-line OCD pharmacotherapy is an SSRI (typically at higher-than-depression doses), with clomipramine as the next step; SNRI evidence in OCD is limited and off-guideline. The page's own exam anchor and embedded quiz correctly say 'ERP and an SSRI,' so the overlay contradicts the prose, and a learner acting on the TL;DR could choose (or answer) venlafaxine/duloxetine for OCD. The prose sentence 'SSRIs and SNRIs are first-line across anxiety disorders, OCD, and PTSD' carries the same compression.",
+    "replacement": "SSRIs plus exposure-based therapy are first-line across anxiety, OCD, and PTSD (SNRIs are alternatives for anxiety disorders and PTSD, not OCD) — standing benzodiazepines are a trap on the unit.",
+    "basis": "APA Practice Guideline for OCD (2007, reaffirmed) and NICE CG31: SSRIs are first-line pharmacotherapy for OCD, clomipramine second-line; SNRIs are not guideline first-line for OCD. The same page's 'Exam treatment anchors' paragraph states the correct rule.",
+    "confidence": "high"
+  },
+  {
+    "id": "MS3V03-F003",
+    "audience": "both",
+    "file": "02_CURRICULUM_V03.md",
+    "surface": "t_mood.md",
+    "locus": "page_prose",
+    "severity": "S4",
+    "quote": "ECT is not a last resort — it is first-line for psychotic, catatonic, or life-threatening mood states and in pregnancy.",
+    "problem": "The trailing 'and in pregnancy' makes pregnancy itself read as a standalone first-line ECT indication. ECT in pregnancy is preferred only when the episode is severe, psychotic, catatonic, refractory, or life-threatening, or when rapid response is essential; for a pregnant patient with uncomplicated moderate depression, first-line remains psychotherapy and/or an SSRI. A learner carrying this pearl would propose or answer ECT for pregnant patients who do not meet severity criteria — a shelf-style question with a moderately depressed pregnant patient keys sertraline/CBT, not ECT. The management paragraph's 'and as a preferred option in pregnancy' has the same drift; this is a mis-emphasis for residents as well, since they carry the consent conversation.",
+    "replacement": "ECT is not a last resort — it is first-line for psychotic, catatonic, or life-threatening mood states, and in pregnancy it is a preferred option when illness of that severity demands rapid, definitive treatment.",
+    "basis": "APA ECT Task Force guidance and ACOG: ECT in pregnancy is an effective, relatively safe option reserved for severe, psychotic, refractory, or life-threatening illness or need for rapid response — not a default first-line treatment for depression in pregnancy.",
+    "confidence": "high"
+  },
+  {
+    "id": "MS3V03-F004",
+    "audience": "both",
+    "file": "02_CURRICULUM_V03.md",
+    "surface": "t_sud.md",
+    "locus": "page_prose",
+    "severity": "S4",
+    "quote": "Thiamine before glucose, every time.",
+    "problem": "As an absolute, this teaches learners to hold dextrose until thiamine is located. In documented hypoglycemia the correction is immediate: give dextrose without delay and give thiamine as soon as it is available (concurrent is fine) — the risk of precipitating Wernicke from a single dextrose bolus is theoretical (the concern derives from prolonged carbohydrate loading without thiamine), while delayed correction of hypoglycemia causes real neuronal injury. On a unit where the same page tells the student to check a fingerstick, 'every time' points the wrong way in exactly the emergency where sequencing matters. The unqualified rule is repeated in the ddx.md key points and the t_sud overlay.",
+    "replacement": "Thiamine before (or with) glucose in withdrawal and refeeding — but never delay dextrose for documented hypoglycemia; give the sugar immediately and the thiamine as soon as it is in hand.",
+    "basis": "ASAM Clinical Practice Guideline on Alcohol Withdrawal Management (2020) and standard emergency-medicine teaching (e.g., Tintinalli): do not withhold or delay glucose for thiamine in hypoglycemia; give thiamine promptly alongside repletion.",
+    "confidence": "high"
+  }
+]

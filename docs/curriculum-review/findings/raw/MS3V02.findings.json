@@ -1,0 +1,41 @@
+[
+  {
+    "id": "MS3V02-F001",
+    "audience": "both",
+    "file": "02_CURRICULUM_V02.md",
+    "surface": "sp-interview.html — Marcus case si_direct intent (Ray case has the same defect)",
+    "locus": "tool_string",
+    "severity": "S2",
+    "quote": "\"label\": \"Screened for suicidal thoughts plainly (mixed features)\"",
+    "problem": "Marcus's si_direct intent (quality \"best\", critical checklist item c_si \"Suicide screened plainly despite elevation\") and Ray's parallel si_direct (\"Screened suicidal thoughts plainly\") include the euphemistic patterns \"hurt(ing)? yourself\", \"harm(ing)? yourself\", \"do(ing)? something to yourself\", and \"(thoughts?|think(ing)?) (about|of) (hurt|harm)(ing)? yourself\" — so a learner who asks only \"have you thought about hurting yourself?\" unlocks the gated SI reveal, satisfies the critical safety item, and is told they screened plainly. This contradicts the same pack's Dana case, where those identical patterns are keyed as si_euphemism with partial credit and a critical-miss card (\"Euphemisms ('hurt yourself') get tested, not answered\"), contradicts Marcus's own rubric anchor \"Screened suicide plainly despite the elevated surface\" and debrief claim that the flicker \"only surfaces when asked plainly,\" and grades as adequate the exact phrasing the tool teaches produces false negatives on a real unit.",
+    "replacement": "Remove \"hurt(ing)? yourself…\", \"harm(ing)? yourself…\", \"do(ing)? something to yourself\", and \"(thoughts?|think(ing)?) (about|of) (hurt|harm)(ing)? yourself\" from si_direct in the Marcus and Ray cases; key them to an si_euphemism intent with \"quality\": \"partial\", add \"partialIfOnly\": [\"si_euphemism\"] to each case's c_si checklist item, and give each SI gate an euphemism deflect — mirroring the Dana case's existing structure. (This also supplies the mechanism for Marcus's criticalMiss.partial copy, which currently has no euphemism path that could produce a partial.)",
+    "basis": "Internal contradiction verifiable within the pack itself (Dana si_euphemism vs Marcus/Ray si_direct; Marcus rubric anchor and debriefTeachingPoints say 'plainly'). External standard: direct, unambiguous suicide inquiry ('thoughts of killing yourself') is the house standard and general guideline teaching; 'hurt yourself' conflates non-suicidal self-injury with suicide and under-detects ideation, which is exactly the lesson the Dana case exists to teach.",
+    "confidence": "high"
+  },
+  {
+    "id": "MS3V02-F002",
+    "audience": "both",
+    "file": "02_CURRICULUM_V02.md",
+    "surface": "sp-interview.html — generic coaching string for incomplete SI follow-through",
+    "locus": "tool_string",
+    "severity": "S4",
+    "quote": "After the disclosure, the follow-through was incomplete. Next time, walk the chain: plan, means and access, intent, and what keeps them going.",
+    "problem": "The taught post-disclosure chain — repeated in Dana's checklist label \"After disclosure: plan, means, intent, protective factors\" and hint \"Plan, means, intent, and what keeps her going all still need airtime\" — omits prior suicidal behavior (past attempts, aborted attempts, preparations), the strongest single predictor of suicide. A learner who walks exactly this chain after a disclosure on a real unit hands over a risk assessment missing its most heavily weighted element; the case even encodes the answer (\"no rehearsal\", \"I never opened the bottle\") but never asks the interviewer to elicit it.",
+    "replacement": "After the disclosure, the follow-through was incomplete. Next time, walk the chain: plan, means and access, intent, any past attempts or preparations, and what keeps them going.",
+    "basis": "SAFE-T suicide inquiry (ideation, plan, behavior, intent) and the VA/DoD Suicide Risk CPG both make prior suicidal behavior a core element of the post-disclosure assessment — history of attempt is the strongest single risk factor for suicide death; C-SSRS pairs its ideation ladder with a behavior scale for the same reason.",
+    "confidence": "high"
+  },
+  {
+    "id": "MS3V02-F003",
+    "audience": "both",
+    "file": "02_CURRICULUM_V02.md",
+    "surface": "sp-interview.html — Dana criticalMiss.missed card",
+    "locus": "tool_string",
+    "severity": "S4",
+    "quote": "Dana was having active thoughts of not waking up and had looked at a means at home — and left the interview without anyone knowing.",
+    "problem": "\"Thoughts of not waking up\" is the canonical example of passive suicidal ideation, and this highest-salience feedback card (plus criticalMiss.partial's \"She was having active thoughts.\") labels it \"active,\" conflating the passive/active taxonomy the shelf exam and the library's own suicide teaching rely on. Dana's composite picture — a wish not to wake plus standing at the pill bottle — is defensibly active ideation with method contemplation, but pinning the word \"active\" to the wish-not-to-wake phrase teaches an MS3 to mislabel passive ideation in documentation and on rounds.",
+    "replacement": "Dana was having thoughts most nights of not waking up and had looked at a means at home — and left the interview without anyone knowing.",
+    "basis": "C-SSRS ideation taxonomy: wish-to-be-dead / not-wake-up content is passive ideation (item 1); \"active\" denotes thoughts of killing oneself (items 2-5), with method contemplation raising severity. Cross-checking pg_suicide.md's passive/active teaching would settle the internal-consistency half; the taxonomy itself is standard.",
+    "confidence": "medium"
+  }
+]

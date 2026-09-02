@@ -1,0 +1,54 @@
+[
+  {
+    "id": "A4-F001",
+    "audience": "both",
+    "file": "A4_EVIDENCE_BASE.md",
+    "surface": "cohen-chazani-2022",
+    "locus": "evidence.claim",
+    "severity": "S2",
+    "quote": "Across 37 samples (4,443 patients), the specific contribution of psychotherapy during psychiatric hospitalization was d = 0.43 (95% CI 0.06 to 0.81); no significant effects were found for psychotherapy orientation, while diagnosis moderated the contribution.",
+    "problem": "The stored span attributes d = 0.43 to 'the meta-analysis of 15 samples with a control group', but the claim states the estimate was obtained across 37 samples (4,443 patients) — the 37 include uncontrolled samples, so the claim more than doubles the apparent base of a controlled estimate whose confidence interval already nearly touches zero (lower bound 0.06). A learner citing this would misstate the evidence base of a fragile result.",
+    "replacement": "Across 37 samples (4,443 patients), the meta-analysis of the 15 samples with a control group put the specific contribution of psychotherapy during psychiatric hospitalization at d = 0.43 (95% CI 0.06 to 0.81); no significant effects were found for psychotherapy orientation, while diagnosis moderated the contribution.",
+    "basis": "Internal span-vs-claim check: the stored span for cohen-chazani-2022 reads 'The meta-analysis of 15 samples with a control group resulted in ... (k = 15, Cohen's d = 0.43, and 95% CI 0.06 to 0.81)'. Cohen-Chazani et al., Psychiatry 2022.",
+    "confidence": "high"
+  },
+  {
+    "id": "A4-F002",
+    "audience": "both",
+    "file": "A4_EVIDENCE_BASE.md",
+    "surface": "pott-2022",
+    "locus": "evidence.claim",
+    "severity": "S4",
+    "quote": "Behavioural activation showed no significant difference from controls for depression (SMD 0.19, p = 0.20) or substance use across 5 trials and 195 patients at GRADE Low, and does not emerge as differentially efficacious although it is an acceptable option.",
+    "problem": "The claim never names the paper's population — co-occurring depression and substance use disorders — so as a free-standing assertion it reads as 'BA is no better than controls for depression', which contradicts the library's own cuijpers-2026 and ciharova-2021 claims (BA superior to control, SMD 0.67 and 0.52). A learner meeting this claim on T4 would carry away the wrong conclusion about behavioural activation for depression generally.",
+    "replacement": "In co-occurring depression and substance use disorders, behavioural activation showed no significant difference from controls for depression (SMD 0.19, p = 0.20) or substance use across 5 trials and 195 patients at GRADE Low, and does not emerge as differentially efficacious although it is an acceptable option.",
+    "basis": "Pott, Delgadillo & Kellett 2022 (J Subst Abuse Treat) is a meta-analysis restricted to co-occurring depression and substance use disorders — its registered title in this same file names the population; the general-depression BA claims in this appendix (cuijpers-2026, ciharova-2021, simmonds-buckley-2019) show clear superiority over controls.",
+    "confidence": "high"
+  },
+  {
+    "id": "A4-F003",
+    "audience": "both",
+    "file": "A4_EVIDENCE_BASE.md",
+    "surface": "cuijpers-2026",
+    "locus": "evidence.claim",
+    "severity": "S4",
+    "quote": "Across 105 trials (13,933 patients), behavioural activation outperformed control conditions with an SMD of 0.67 and remained significant at 12 months after randomization, with no significant difference between BA and other therapies (SMD 0.04); self-guided BA was also effective (SMD 0.36).",
+    "problem": "The stored span says 'The standardized mean difference (SMD) of BA for adult outpatients compared with control conditions was 0.67 ... k = 61'; the claim drops 'adult outpatients' and frames the estimate under all 105 trials. On an inpatient-clerkship site whose own inpatient estimates are far smaller (schefft-2019 g = 0.24; cohen-chazani-2022 d = 0.43), quoting 0.67 without the outpatient qualifier invites applying an outpatient effect size to the inpatient setting.",
+    "replacement": "Across 105 trials (13,933 patients), behavioural activation for adult outpatients outperformed control conditions with an SMD of 0.67 (61 comparisons) and remained significant at 12 months after randomization, with no significant difference between BA and other therapies (SMD 0.04); self-guided BA was also effective (SMD 0.36).",
+    "basis": "Internal span-vs-claim check: the stored span itself names 'adult outpatients' and k = 61 for the 0.67 estimate (Cuijpers et al., Clin Psychol Rev 2026). Contrast the inpatient effect sizes stored in this same appendix (schefft-2019, cohen-chazani-2022).",
+    "confidence": "high"
+  },
+  {
+    "id": "A4-F004",
+    "audience": "both",
+    "file": "A4_EVIDENCE_BASE.md",
+    "surface": "brodsky-2025",
+    "locus": "evidence.claim",
+    "severity": "S4",
+    "quote": "Over a 6-month treatment phase, DBT produced significantly fewer suicide-related events, fewer suicide attempts and lower non-suicidal self-injury counts than SSRI plus clinical management, while severity of depression and suicidal ideation decreased comparably in both groups and outcomes were comparable between the two groups at 12-month follow-up.",
+    "problem": "The trial population — suicidal behavior in borderline personality disorder — is absent from the claim, which as a free-standing assertion generalizes 'DBT beats SSRI for suicidal behavior' beyond BPD. DBT's superiority evidence for suicidal behavior is BPD-specific, and generalizing it could wrongly deprioritize pharmacotherapy for suicidal patients with, for example, major depression.",
+    "replacement": "In borderline personality disorder, over a 6-month treatment phase DBT produced significantly fewer suicide-related events, fewer suicide attempts and lower non-suicidal self-injury counts than SSRI plus clinical management, while severity of depression and suicidal ideation decreased comparably in both groups and outcomes were comparable between the two groups at 12-month follow-up.",
+    "basis": "Brodsky et al., Am J Psychiatry 2025 — registered title in this file: 'Dialectical Behavior Therapy Versus Serotonin Reuptake Inhibitor Treatment for Suicidal Behavior in Borderline Personality Disorder'; the DBT suicidal-behavior evidence base (Linehan 2015, also registered here) is BPD-specific. Materiality would be settled by checking whether the claim renders adjacent to its titled source on the RR surface.",
+    "confidence": "medium"
+  }
+]

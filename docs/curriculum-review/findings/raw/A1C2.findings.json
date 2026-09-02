@@ -1,0 +1,67 @@
+[
+  {
+    "id": "A1C2-F001",
+    "audience": "both",
+    "file": "A1_QUESTION_BANK.md",
+    "surface": "qb_otherdx_009",
+    "locus": "qbank.option",
+    "severity": "S1",
+    "quote": "this is the opposite of command hallucinations (which are ego-syntonic and acted upon)",
+    "problem": "The keyed-correct tier-2 option teaches that command hallucinations are by definition ego-syntonic and acted upon. That is false — command hallucinations are frequently distressing and resisted, and compliance is variable — and in this perinatal context it functions as the discriminator: a learner who applies it to a postpartum mother who is horrified by voices commanding her to harm her infant will classify the hallucinations as 'ego-dystonic, therefore OCD-like' and reassure rather than treat a psychiatric emergency. The safe discriminator is thought-versus-percept (intrusive thoughts recognized as one's own, versus voices experienced as external or beliefs held with delusional conviction), not the mother's distress. Wrong for residents as well as MS3s.",
+    "replacement": "this differs from psychotic phenomena — voices experienced as external or beliefs about the infant held with delusional conviction, which are an emergency regardless of how distressed the mother is by them",
+    "basis": "Phenomenology and risk literature on command hallucinations (e.g., Junginger 1990; Chadwick & Birchwood 1994; McNiel et al. 2000): commands are often resisted and distressing, and risk tracks appraisal/conviction, not ego-syntonicity. Standard perinatal teaching distinguishes postpartum OCD from psychosis by intrusive self-recognized thoughts with avoidance versus hallucinations/delusions with altered reality testing.",
+    "confidence": "high"
+  },
+  {
+    "id": "A1C2-F002",
+    "audience": "both",
+    "file": "A1_QUESTION_BANK.md",
+    "surface": "qb_otherdx_009",
+    "locus": "qbank.rationale",
+    "severity": "S2",
+    "quote": "Command hallucinations are ego-syntonic experiences that the patient may feel compelled to act on.",
+    "problem": "The tier-2 'why' text restates the same false generalization flagged in A1C2-F001, so fixing the option alone leaves the explanation still teaching it. Command hallucinations are perceptual phenomena that are often ego-dystonic — patients frequently experience them as alien, distressing, and resist them — so ego-syntonicity cannot be the feature that separates them from OCD intrusive thoughts.",
+    "replacement": "Command hallucinations are perceived as external voices — often distressing and sometimes resisted — and any hallucinated command concerning the infant is an emergency regardless of the mother's distress; the OCD discriminator is that intrusive thoughts are recognized as the patient's own thoughts, with intact reality testing and avoidance of the feared situation.",
+    "basis": "Same as A1C2-F001: phenomenology of command hallucinations (Junginger 1990; Chadwick & Birchwood 1994); perinatal OCD-versus-psychosis teaching rests on thought-versus-percept and reality testing, not on whether the experience is distressing.",
+    "confidence": "high"
+  },
+  {
+    "id": "A1C2-F003",
+    "audience": "both",
+    "file": "A1_QUESTION_BANK.md",
+    "surface": "qb_per_004",
+    "locus": "qbank.rationale",
+    "severity": "S2",
+    "quote": "Option C has the correct clinical description but key D is the answer that specifically names the error and its mechanism.",
+    "problem": "The rationale endorses distractor C as 'the correct clinical description,' but C asserts that sustained anhedonia and neurovegetative symptoms are 'fully explained by BPD dysregulation and do not warrant evaluation for superimposed major depression' — which is the diagnostic-overshadowing error the item exists to prevent, in a patient with severe depression and new passive suicidal ideation. As written, the rationale contradicts its own keyed answer and could leave a learner believing C's conclusion is clinically true, licensing under-evaluation of a treatable major depressive episode.",
+    "replacement": "Option C is the error itself in clinical clothing — its accurate opening (BPD mood lability is transient and reactive) is used to license the false conclusion that sustained anhedonia and neurovegetative symptoms need no evaluation for superimposed major depression; key D names that error and its mechanism.",
+    "basis": "The item's own evidence anchor ('A BPD diagnosis does not protect a patient from also having a serious mood, psychotic, or medical condition') and standard teaching that episodic major depression superimposed on BPD requires assessment and treatment (APA/Gunderson Good Psychiatric Management).",
+    "confidence": "high"
+  },
+  {
+    "id": "A1C2-F004",
+    "audience": "both",
+    "file": "A1_QUESTION_BANK.md",
+    "surface": "qb_oth_002",
+    "locus": "qbank.rationale",
+    "severity": "S4",
+    "quote": "Outpatient sufficient, Medical workup before treatment, and Lucid interval = reassurance all miss the emergency framing.",
+    "problem": "The rationale dismisses the medical-workup distractor wholesale without stating that the workup still happens — concurrently. The stem describes acute confusion with a fluctuating course 9 days postpartum, a phenotype where eclampsia/PRES, thyroid disease, infection, and autoimmune encephalitis are on the differential; the distractor is wrong only in its sequencing ('before any psychiatric treatment'), not in the need for the workup. A learner could conclude no organic evaluation is needed in postpartum psychosis, which also contradicts the library's own psychosis items (qb_psy_001, qb_psy_003) teaching exclusion of secondary causes; qb_otherdx_003's rationale ('Medical cause only') repeats the same pattern in softer form.",
+    "replacement": "Outpatient sufficient and Lucid interval = reassurance miss the emergency framing. Medical workup before treatment is wrong only in its sequencing: delirium, eclampsia, thyroid disease, infection, and autoimmune encephalitis are excluded concurrently with emergency psychiatric admission — the organic workup proceeds in parallel and must never delay hospitalization or treatment.",
+    "basis": "Standard perinatal psychiatry practice (e.g., Bergink et al., Am J Psychiatry 2016 review of first-onset postpartum psychosis): admit urgently and perform a medical/delirium workup in parallel because organic mimics are part of the presentation.",
+    "confidence": "high"
+  },
+  {
+    "id": "A1C2-F005",
+    "audience": "both",
+    "file": "A1_QUESTION_BANK.md",
+    "surface": "qb_otherdx_002",
+    "locus": "qbank.rationale",
+    "severity": "S4",
+    "quote": "Normal weight rules out AN, Binge = BED, and Normal weight = malingering all miss the defining features.",
+    "problem": "The rationale labels a distractor ('Normal weight = malingering') that does not exist in the item — the fourth option is purging disorder, whose text is an accurate definition and is the closest competitor to the keyed answer. The learner therefore never gets the one explanation this item needs: why bulimia nervosa rather than purging disorder (the presence of recurrent, objectively large binge episodes). The mismatch also suggests the rationale was written against a different option set than the one shipped.",
+    "replacement": "Normal weight rules out AN, Binge = BED, and Purging without binges = purging disorder all miss the defining features — her recurrent binge episodes with compensatory purging make this bulimia nervosa rather than purging disorder, which requires purging in the absence of objectively large binges.",
+    "basis": "DSM-5-TR: bulimia nervosa requires recurrent binge-eating episodes plus compensatory behavior; purging disorder (OSFED) is purging without binge episodes. Internal check: the item's own option list contains no malingering option.",
+    "confidence": "high"
+  }
+]

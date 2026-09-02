@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "owner": "Joshua Moss, MD",
+  "note": "Curated teaching narrative for the How We Know page. Statistics and the correction ledger are derived automatically from evidence_annotations.json and its git history by bin/build_how_we_know.py; this file supplies only the prose that cannot be derived — why a correction matters, and the exercise. Edit this, then re-run the builder.",
+  "corrections": [
+    {
+      "id": "modini-mis-attribution",
+      "heading": "The paper that had no number in it",
+      "caughtOn": "2026-08-24",
+      "sourceId": "modini-large-2026",
+      "lede": "Modini et al. (PMID 41664893) is a <strong>viewpoint</strong> — an argument about how the field should study post-discharge risk. It reports no time-course statistic of its own. It was cited for one at four places in the library. The worst of the four was a quiz answer, which is the version students actually memorise.",
+      "beforeLabel": "What the library said",
+      "before": "A post-discharge time-course figure, attributed to Modini.",
+      "revealLabel": "Show what Modini actually says",
+      "spanNote": "a critique of the literature, not a measurement of it. There is no rate in this paragraph.",
+      "fixLede": "<strong>The fix.</strong> The claim was re-sourced to two papers that do carry the figures, both verified against PubMed before use:",
+      "fixedSourceIds": ["chung-2017-postdischarge-suicide", "chung-2019-first-week-month"],
+      "closer": "<strong>Why the automated check missed it.</strong> PubMed types Modini as \"Journal Article\", not \"Editorial\", so an article-type filter is blind to it. And the claim carried no numeral of its own, so a numeric-assertion trigger never fired. A person reading the paper caught this. That is not a failure of the tooling — it is the boundary of it."
+    },
+    {
+      "id": "psychoeducation-superlative",
+      "heading": "The numbers were right and the sentence was still wrong",
+      "caughtOn": "2026-08-24",
+      "sourceId": "xia-2011",
+      "lede": "The library described psychoeducation in schizophrenia as having <em>\"the strongest evidence base of any single psychological intervention.\"</em> The effect sizes quoted alongside it were accurate. The superlative was not — and it sat directly beside the Cochrane reviewers' own warning about the quality of the studies producing it.",
+      "beforeLabel": "What the library said",
+      "before": "Relapse RR 0.70 (NNT 9); readmission RR 0.71 (NNT 5) — \"the strongest evidence base of any single psychological intervention.\"",
+      "revealLabel": "Show what the Cochrane review actually says",
+      "spanNote": "the reviewers' own limits sit in the same paragraph as the effect sizes.",
+      "spanEmphasis": ["hospital-based studies of limited quality", "The true size of effect is likely to be less than demonstrated in this review"],
+      "fixLede": "<strong>The fix.</strong> The claim now says what the paper says:",
+      "fixedSourceIds": ["xia-2011"],
+      "closer": "Three facts the original copy had dropped were added back: the readmission estimate rests on <strong>n = 206</strong> of 5,142 participants, the reviewers' own quality caveat, and the fact that the last search was run in <strong>2010</strong>. Nothing about the numbers changed. What changed is that the sentence now says what the paper says."
+    }
+  ],
+  "rules": [
+    ["Every claim carries the source's own words.", "A sentence asserting what a paper found must ship with that paper's verbatim span in the same change. No span, no build."],
+    ["Read the results, not the title or the conclusion.", "A review pass found that a majority of early annotations needed amendment, and a handful said close to the opposite of the paper — all of them written from titles."],
+    ["When claim and paper disagree, the claim is what changes.", "The stored policy is explicit: <em>\"Rewrite the claim to match the paper. Do not edit the span, and do not move the claim to a paper that does not support it.\"</em> Trimming the inconvenient half of a quotation is the error, not the fix."],
+    ["Evidence expires.", "A span older than the policy's maximum age must be re-verified against the source before the claim it licenses can keep standing."],
+    ["The backlog may only shrink.", "Sources that predate this gate are listed by name in the file and are still unverified. Nothing may be added to that list — it is a debt register, not a loophole."]
+  ],
+  "exercise": {
+    "sourceId": "chung-2019-first-week-month",
+    "prompt": "Here is a verbatim span. Which claim does it license?",
+    "options": [
+      {"key": "a", "verdict": "no", "text": "\"The first week after discharge carries a suicide rate of 2950 per 100 000 person-years.\"", "feedback": "Close, but it drops the uncertainty. The span reports a pooled estimate with a wide confidence interval, I² = 88 and acknowledged publication bias. Stating the point estimate alone as fact is exactly the omission that produced Correction 2."},
+      {"key": "b", "verdict": "no", "text": "\"The first week after discharge is the highest-risk period in all of psychiatry.\"", "feedback": "Not licensed. The paper measures a rate; it makes no comparison to any other period or population. A superlative is its own claim and needs its own evidence — that is Correction 2 in one sentence."},
+      {"key": "c", "verdict": "ok", "text": "\"The pooled first-week rate was 2950 per 100 000 person-years, with marked heterogeneity and evidence of publication bias toward higher reported rates.\"", "feedback": "Correct. It keeps the figure and the caveats that came attached to it. This is what the stored claim actually says."}
+    ]
+  }
+}

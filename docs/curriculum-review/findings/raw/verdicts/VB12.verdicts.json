@@ -1,0 +1,67 @@
+[
+ {
+  "id": "RV09-F002",
+  "verdict": "partially confirmed",
+  "reasoning": "Quote is verbatim in the transcript (line 1020) and in the true content source 08_Cases_and_Simulation/case-of-the-week/2026-08-10_anxiety-panic-disorder_Resident.md (line 124), and that source file contains no <!-- crisis-block --> marker anywhere — so the page both hard-codes 988 and lacks the injected crisis block, exactly as claimed. The problem is real under the site's standing policy (crisis contacts live in crisis_resources.json only; never hard-code a crisis number in content), and the scope-rule argument holds: Q7 has residents rehearsing pressing on suicidal ideation, structured risk assessment, and collaborative safety planning, and the page's own workflow narration says its safety content is oriented to 'recognition, escalation, and safety planning' — rehearsing risk work, not merely reading about suicide. The replacement, however, is itself a policy violation: it keeps the hard-coded '988 reaches the Suicide & Crisis Lifeline' sentence and merely appends the marker, preserving the exact violation pattern the finding's own problem statement names. The correct fix replaces the hard-coded sentence with the marker so the build injects the maintained crisis contacts. Corrected finding supplied with only the replacement changed.",
+  "corrected_finding": {
+   "id": "RV09-F002",
+   "audience": "Resident",
+   "file": "resident/02_CURRICULUM_V09.md",
+   "surface": "cotw_20260810_panic_res.md",
+   "locus": "page_prose",
+   "severity": "S2",
+   "quote": "In the US, **988** reaches the Suicide & Crisis Lifeline.",
+   "problem": "Q7 walks the resident through suicide-risk assessment, structured screening, and collaborative safety planning — risk work per the site's own scope rule — but the page carries no injected crisis block; 988 is instead hard-coded in the prose, violating the single-source crisis-contact policy and omitting the fuller crisis surface the injected block provides.",
+   "replacement": "<!-- crisis-block -->",
+   "basis": "Site standing policy: crisis contacts live in crisis_resources.json and are build-injected into opted-in pages; a risk-work page without the crisis block is a finding, and hard-coding a crisis number in content prose is the violation pattern the policy exists to prevent. The fix must therefore remove the hard-coded sentence, not retain it alongside the marker — the marker replaces the prose 988 mention, and the injected block supplies 988 and the fuller maintained contact set. Verified in the content source: 08_Cases_and_Simulation/case-of-the-week/2026-08-10_anxiety-panic-disorder_Resident.md line 124 hard-codes 988 and the file contains no crisis-block marker.",
+   "confidence": "high",
+   "_pass": "RV09",
+   "_source_path": "/home/user/psychiatry-clerkship/docs/curriculum-review/resident/02_CURRICULUM_V09.md"
+  }
+ },
+ {
+  "id": "RV09-F003",
+  "verdict": "confirmed",
+  "reasoning": "Quote is verbatim at transcript line 1059 (facilitator notes, discussion-extension paragraph). Under standard Cochrane risk-of-bias semantics a low risk-of-bias rating means trustworthy studies and would strengthen, not temper, confidence in a ranking, so the sentence as written inverts the intended caution. The inversion is proven by the page's own Q4 (line 978), which states the actual condition correctly: the Cochrane panic NMA's reliability is limited by 'unclear or high risk of bias across multiple domains in all included studies.' A facilitator reading the note aloud would teach the inversion in a session explicitly framed as a critical-appraisal exercise. The one-word replacement ('high risk-of-bias ratings') is correct, minimal, internally consistent with Q4 and with the cited Cochrane review's own caution, and appropriate at resident level."
+ },
+ {
+  "id": "RV09-F004",
+  "verdict": "confirmed",
+  "reasoning": "Quote is verbatim at transcript line 1004 and in the content source at line 108. The resident stem (transcript lines 909-923) describes a 41-year-old man — stopped exercising, no longer drives outside town, works from home, two beers nightly — with no partner, no accompaniment pattern, no pulse-checking, and no low-traffic scheduling anywhere in the case; grep across the whole case region finds those terms only in the flagged sentence. The reviewer's leakage hypothesis is directly verifiable: the same-date MS3 sibling case (08_Cases_and_Simulation/case-of-the-week/2026-08-10_anxiety-panic-disorder_MS3.md) features a 24-year-old woman who 'shops at 6 a.m. when it's empty' and whose 'boyfriend drives her most places' — the 'boyfriend-equivalent accompaniment pattern' and 'low-traffic scheduling' are imported from that case. The replacement lists only stem-established behaviors (PRN alprazolam at the first sensation; avoidance of exercise, driving beyond town, and client-facing work) and reframes the unestablished ones as items to uncover on further history, which is clinically sound and resident-appropriate; its mild overlap with the preceding in-vivo-exposure clause is stylistic, not an error."
+ },
+ {
+  "id": "RV13-F001",
+  "verdict": "confirmed",
+  "reasoning": "Quote is verbatim at transcript line 159 (canon entry #23). The p-factor was introduced by Caspi et al., 'The p Factor: One General Psychopathology Factor in the Structure of Psychiatric Disorders?', Clin Psychol Sci 2014 (using the same Dunedin cohort) — settled bibliographic knowledge — and the list itself confirms this at entry #157 (line 465: 'The p-Factor: One General Psychopathology Factor,' Clin Psychol Sci 2014 — 'General factor of psychopathology'), so the #23 annotation both mis-assigns the concept's origin and contradicts its own list. The 2020 JAMA Network Open paper (Caspi et al., 3(4):e203221) is the 4-decade longitudinal course study; the annotation's other content (86% lifetime disorder, 692 life-history patterns among 1,037) is not in dispute. The replacement preserves the 2020 paper's actual contribution, accurately frames it as extending the cohort's earlier p-factor work, and cross-references #157 — correct and appropriately concise for a resident reading-list annotation."
+ },
+ {
+  "id": "RV13-F002",
+  "verdict": "confirmed",
+  "reasoning": "Quote is verbatim at transcript line 175 (entry #26). According to PubMed, the Fournier et al. JAMA 2010 abstract (doi:10.1001/jama.2009.1943) reports 6 studies (718 patients), Cohen d effect sizes below 0.20 for all patients with baseline HDRS under 23, and drug-placebo superiority crossing the NICE clinical-significance threshold only at baseline HDRS 25 — which is incompatible with a very-severe effect of d=0.81 and corroborates the canonical stratum estimates of 0.11 (mild-to-moderate), 0.17 (severe), and 0.47 (very severe) from the paper's results. 'd=0.81 very severe' appears nowhere in the paper and nearly doubles the reported very-severe effect, so a resident citing the annotation would overstate the antidepressant-placebo difference. The replacement matches the paper and also fixes 'mild' to 'mild-to-moderate', the paper's actual stratum label. Confirmed as written."
+ },
+ {
+  "id": "RV13-F003",
+  "verdict": "partially confirmed",
+  "reasoning": "Quote is verbatim at transcript line 197 (entry #37). According to PubMed, the Henssler et al. Lancet Psychiatry 2024 abstract (doi:10.1016/S2215-0366(24)00133-0) reports incidence 0.31 (95% CI 0.27-0.35) after antidepressant discontinuation vs 0.17 (0.14-0.21) after placebo, and the authors' interpretation that 'the incidence of antidepressant discontinuation symptoms is approximately 15%, affecting one in six to seven patients' — so the reviewer is right that '8% attributable' does not represent the authors' own conclusion. But the finding's framing is wrong about the number's provenance: the abstract also reports 'Between antidepressant and placebo groups of included RCTs, the summary difference in incidence was 0.08 [0.04-0.12]' — 8% is the paper's own within-RCT drug-placebo difference, a legitimate (arguably the most rigorous) attributable estimate, not an arithmetic error that 'halves the true attributable rate.' The real problem is selective summarization: a one-line canon annotation presents the conservative within-RCT figure as the paper's bottom line while omitting the authors' stated ~15% estimate. The proposed replacement is also incomplete — it substitutes one contested figure for the other. Corrected finding reframes the problem as a mis-summarised bottom line (still S2 under the rubric) and gives a replacement carrying both figures.",
+  "corrected_finding": {
+   "id": "RV13-F003",
+   "audience": "Resident",
+   "file": "resident/02_CURRICULUM_V13.md",
+   "surface": "canon_200.md",
+   "locus": "page_prose",
+   "severity": "S2",
+   "quote": "31% incidence; 8% attributable to drug",
+   "problem": "The annotation pairs the 31% overall incidence with '8% attributable to drug' — which is the paper's within-RCT antidepressant-placebo summary difference (0.08, 95% CI 0.04-0.12) — while omitting the authors' own stated conclusion that, accounting for non-specific (nocebo) effects seen in placebo groups (17%), discontinuation-symptom incidence is approximately 15%, about one in six to seven patients. Presenting only the lower figure as 'attributable' mis-summarises the paper's bottom line and could lead residents to under-counsel patients stopping or switching antidepressants; both figures come from the same abstract and a canon annotation should not silently pick the lower one.",
+   "replacement": "31% incidence (vs 17% after placebo); authors estimate ~15% attributable (one in six to seven patients), though the within-RCT drug-placebo difference was 8%",
+   "basis": "Henssler J, et al. Lancet Psychiatry 2024;11(7):526-535 (abstract verified via PubMed, doi:10.1016/S2215-0366(24)00133-0): incidence of at least one discontinuation symptom 0.31 (95% CI 0.27-0.35) after antidepressant vs 0.17 (0.14-0.21) after placebo discontinuation; within-RCT summary difference 0.08 (0.04-0.12); severe symptoms 0.028; authors' interpretation: 'the incidence of antidepressant discontinuation symptoms is approximately 15%, affecting one in six to seven patients.'",
+   "confidence": "high",
+   "_pass": "RV13",
+   "_source_path": "/home/user/psychiatry-clerkship/docs/curriculum-review/resident/02_CURRICULUM_V13.md"
+  }
+ },
+ {
+  "id": "RV13-F004",
+  "verdict": "confirmed",
+  "reasoning": "Quote is verbatim at transcript line 121 (canon entry #14). The TDCRP primary outcome paper is Elkin et al., 'National Institute of Mental Health Treatment of Depression Collaborative Research Program: General Effectiveness of Treatments,' Arch Gen Psychiatry 1989;46(11):971-982 — settled bibliographic knowledge; no 1989 JCCP TDCRP paper exists. The entry's own annotation (N=239, IPT vs CBT vs imipramine-plus-clinical-management vs placebo, the template comparative psychotherapy trial) describes that 1989 primary paper, so only the journal attribution is wrong. The finding's retrieval-misdirection claim is verified inside the same file: the reference list contains Elkin I, Gibbons RD, Shea MT, et al., J Consult Clin Psychol 1995;63(5):841-7 (line 619, the initial-severity secondary analysis a JCCP search would surface) and Sotsky et al., Am J Psychiatry 1991;148(8):997-1008 (line 617), with no Arch Gen Psychiatry 1989 entry anywhere. The replacement supplies the correct title and journal in the list's citation style. Confirmed as written."
+ }
+]
