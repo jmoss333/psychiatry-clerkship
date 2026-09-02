@@ -1,6 +1,6 @@
 # Curriculum content transcripts — for clinical review
 
-Generated 2026-09-02 from build `311114d` by
+Generated 2026-09-02 from build `16ea475` by
 `13_Faculty_Resources/_automation/export_curriculum_review.py`.
 
 Two complete, human-readable transcripts of everything the two sites ship — one per audience.
@@ -11,7 +11,7 @@ summarised or truncated.
 | | MS3 (`une-ms3-psychiatry`) | Residents (`mmc-psychiatry-residents-sanford`) |
 |---|---|---|
 | Narrative pages | 80 | 86 |
-| Words of curriculum | 97,668 | 116,641 |
+| Words of curriculum | 97,668 | 117,111 |
 | Interactive tools | 23 | 25 |
 | Question-bank items | 192 | 192 |
 | Audio-companion questions | 437 | 437 |
@@ -19,7 +19,7 @@ summarised or truncated.
 | Reasoning cases | 4 | 5 |
 | Family systems scenarios | 8 | 8 |
 | Evidence sources / annotated claims | 104 / 46 | 104 / 46 |
-| Complete transcript | `ms3/MS3_CURRICULUM_COMPLETE.md` (2,447,613 B) | `resident/RESIDENT_CURRICULUM_COMPLETE.md` (2,694,533 B) |
+| Complete transcript | `ms3/MS3_CURRICULUM_COMPLETE.md` (2,447,613 B) | `resident/RESIDENT_CURRICULUM_COMPLETE.md` (2,697,430 B) |
 
 ## How to use
 

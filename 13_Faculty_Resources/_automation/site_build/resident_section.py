@@ -72,6 +72,47 @@ RES_EXTRA=[
 # Fail closed (2026-08-01 audit): the copytree base means a missing resident-only
 # source would silently ship the inherited MS3 file under the resident nav title.
 common.copy_required_sources(RES_EXTRA, LIB, OUT+"/content", label="resident content")
+
+# ---- CRISIS-CONTACT BLOCK on resident-only markdown ----------------------------------
+# The pages inherited via the MS3 copytree already carry the RENDERED block, because
+# build_deploy.py injected it as it copied them. RES_EXTRA pages do not: they are written
+# fresh from source above, by a path that never called crisis_block.inject_markdown. Until
+# 2026-09-02 nothing caught that, only because no resident-only source had yet opted in —
+# the first `<!-- crisis-block -->` added to one would have shipped as an invisible HTML
+# comment with no contacts at all, on a page that asked for them.
+#
+# Sweep every content page rather than just RES_EXTRA: injection consumes the marker, so
+# the already-injected MS3 pages are a no-op, and any future resident-only page added by
+# some other path is covered too. Runs BEFORE the strip/contrast passes so the rendered
+# block gets the same treatment its MS3 counterpart did.
+_crisis_res_data=_crisis.load(LIB)
+_crisis_res_done=set()
+for _md_path in sorted(glob.glob(OUT+"/content/*.md")):
+    _t=open(_md_path,encoding="utf-8").read()
+    _t,_did=_crisis.inject_markdown(_t,_crisis_res_data)
+    if _did:
+        open(_md_path,"w",encoding="utf-8").write(_t)
+        _crisis_res_done.add(os.path.basename(_md_path))
+
+# Resident-only safety surfaces that must carry the block, same contract build_deploy.py
+# enforces for MS3: a marker deleted, a page renamed, or a source dropped from RES_EXTRA
+# fails the build instead of silently shipping a risk page with no crisis contacts. MS3
+# surfaces are not re-listed here — they arrive pre-injected and are gated on that side.
+_CRISIS_REQUIRED_RES_MD={
+    # Q7 walks the resident through risk assessment, structured screening, and
+    # collaborative safety planning (RV09-F002) — risk work under the scope rule.
+    "cotw_20260810_panic_res.md",
+    # Q5 has the resident formulating chronic vs acute-on-chronic suicide risk, building
+    # the safety plan, and making the discharge call (RV09-F001) — the same scope rule.
+    "cotw_20260827_bpd_res.md",
+}
+_crisis_res_gap=sorted(_CRISIS_REQUIRED_RES_MD-_crisis_res_done)
+if _crisis_res_gap:
+    print("BUILD ABORTED — crisis-contact block missing from required resident safety surface(s):")
+    for _g in _crisis_res_gap: print("   -",_g,"(expected the crisis-block marker in its source)")
+    raise SystemExit(1)
+print("crisis block injected (resident-only pass):",len(_crisis_res_done),"content page(s)")
+
 # Resident-only markdown is written fresh above (not inherited via the copytree), so it
 # needs the same banner-strip + contrast fix every MS3 content page already received.
 common.strip_review_banners(OUT)

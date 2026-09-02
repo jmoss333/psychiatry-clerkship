@@ -3,7 +3,7 @@
 # RESIDENT curriculum — complete content transcript for clinical review
 
 **Site:** `mmc-psychiatry-residents-sanford` · **Audience:** Residents — MMC/Sanford psychiatry residents
-**Generated:** 2026-09-02 from build `311114d` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
+**Generated:** 2026-09-02 from build `16ea475` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
 
 ## Who this is for
 
@@ -19,7 +19,7 @@ This transcript is assembled from the **built site**, not the source tree, so it
 | Narrative pages (markdown) | 86 |
 | Interactive tools | 25 |
 | Deep-link-only (hidden) surfaces | 26 |
-| Words of narrative curriculum | 116,641 |
+| Words of narrative curriculum | 117,111 |
 | Practice question-bank items | 192 |
 | Audio-companion quiz decks / questions | 79 / 437 |
 | Communication cases | 12 |
@@ -86,7 +86,7 @@ High-yield places to concentrate: the `topic_meta` **can't-miss**, **rule-out** 
 
 # RESIDENT · Navigation map
 
-Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-02 @ `311114d`.
+Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-02 @ `16ea475`.
 
 ## Orientation  *(pinned)*
 
@@ -208,8 +208,8 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 |---|---|---|---|---|---|---|---|
 | 1 | Index — All Cases | `cotw_index.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `08_Cases_and_Simulation/case-of-the-week/index_ms3.md` | 422 |
 | 2 | Catatonia (Aug 31) | `cotw_20260831_catatonia_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-31_catatonia-recognition-workup-treatment_Resident.md` | 2182 |
-| 3 | Borderline Personality Disorder (Aug 27) | `cotw_20260827_bpd_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-27_borderline-personality-disorder_Resident.md` | 2452 |
-| 4 | Panic Disorder (Aug 10) | `cotw_20260810_panic_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-10_anxiety-panic-disorder_Resident.md` | 4305 |
+| 3 | Borderline Personality Disorder (Aug 27) | `cotw_20260827_bpd_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-27_borderline-personality-disorder_Resident.md` | 2692 |
+| 4 | Panic Disorder (Aug 10) | `cotw_20260810_panic_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-10_anxiety-panic-disorder_Resident.md` | 4535 |
 | 5 | Lithium — Monitoring & Toxicity (Aug 3) | `cotw_20260803_lithium_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-03_lithium-monitoring-toxicity-interactions_Resident.md` | 3811 |
 | 6 | Opioid Use Disorder (Jul 27) | `cotw_20260727_oud_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-27_opioid-use-disorder_Resident.md` | 3399 |
 | 7 | Alcohol Withdrawal & DT (Jul 26) | `cotw_20260726_etohwd_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-26_alcohol-withdrawal-delirium-tremens_Resident.md` | 3097 |
@@ -13433,7 +13433,7 @@ Based on articles retrieved from PubMed (National Library of Medicine). Citation
 - **Slug:** `cotw_20260827_bpd_res.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-08-27_borderline-personality-disorder_Resident.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 2,452 words
+- **Length:** 2,692 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -13520,7 +13520,21 @@ Overnight she was described by night staff as "the most insightful patient on th
 *Deprescribing plan for Ms. R:* (1) Frame first — "we are un-burying you from medications that were never going to treat this" — tie every step to the illness model so taper ≠ abandonment. (2) **Lorazepam first**: it is the active harm (daily use + AUD + disinhibition); convert to scheduled taper with withdrawal monitoring given concurrent alcohol use. (3) Reassess sertraline against a *cleanly established* comorbid MDD or PTSD indication — it may earn its place; if retained, retain deliberately. (4) Taper quetiapine next (metabolic burden, sedation masquerading as mood benefit), possibly retaining a brief low-dose crisis-only plan. (5) Lamotrigine last and slowly. One change at a time, defined outcome metrics (self-injury frequency, crisis presentations), explicit relapse plan, and documentation that this is evidence-based de-escalation, not withdrawal of care.
 
 **Q5. "Whatever happens is on you": risk formulation and discharge management.**
-*Teaching point:* Formulate explicitly in the **chronic vs. acute-on-chronic** framework: her chronic risk is elevated at baseline (recurrent SI, self-injury, AUD, trauma history); the assessment question is whether acute-on-chronic elevation persists (intent, plan, preparatory behavior, command phenomena, intoxication, recent severe loss without stabilization). The statement on rounds is best understood functionally — an attachment-driven bid to prevent abandonment — and is managed by **naming the fear, not capitulating or counter-threatening**: validate the terror of discharge, restate the shared plan, and involve her in criteria-based discharge planning. Prolonged nonspecific admission reinforces crisis-contingent care and is itself iatrogenic; brief, goal-defined admission with a structured landing is the evidence-informed middle path [1,2]. Before discharge: collaborative **safety plan** (warning signs → internal coping → social contacts → professional contacts → environment safety with lethal-means counseling → crisis lines/988), sobriety-contingent elements given AUD, collateral engagement, and near-term follow-up. **Documentation:** record the chronic/acute-on-chronic formulation, protective factors, the functional analysis of the statement, capacity, the risk-benefit reasoning for discharge *including the risks of continued hospitalization*, and the contingency plan. This is both good care and the correct medicolegal posture.
+*Teaching point:* Formulate explicitly in the **chronic vs. acute-on-chronic** framework: her chronic risk is elevated at baseline (recurrent SI, self-injury, AUD, trauma history); the assessment question is whether acute-on-chronic elevation persists (intent, plan, preparatory behavior, command phenomena, intoxication, recent severe loss without stabilization). The statement on rounds is best understood functionally — an attachment-driven bid to prevent abandonment — and is managed by **naming the fear, not capitulating or counter-threatening**: validate the terror of discharge, restate the shared plan, and involve her in criteria-based discharge planning. Prolonged nonspecific admission reinforces crisis-contingent care and is itself iatrogenic; brief, goal-defined admission with a structured landing is the evidence-informed middle path [1,2]. Before discharge: collaborative **safety plan** (warning signs → internal coping → social contacts → professional contacts → environment safety with lethal-means counseling → crisis contacts), sobriety-contingent elements given AUD, collateral engagement, and near-term follow-up. **Documentation:** record the chronic/acute-on-chronic formulation, protective factors, the functional analysis of the statement, capacity, the risk-benefit reasoning for discharge *including the risks of continued hospitalization*, and the contingency plan. This is both good care and the correct medicolegal posture.
+
+> <div class="crisis-block-hook" hidden></div>
+>
+> ### If someone is in crisis
+>
+> On the unit, a patient in immediate danger is an escalation to your supervising resident or attending and the charge nurse — not a phone call. These lines are what you put IN a patient's safety plan, what families use after discharge, and what you can use yourself.
+>
+> - **988 Suicide & Crisis Lifeline** — Call or text 988. Chat at chat.988lifeline.org. 24/7, free, confidential. Spanish available by call, text, and chat; a dedicated line serves Deaf/Hard-of-Hearing callers. Calls placed in Maine route to Maine crisis specialists.
+> - **Crisis Text Line** — Text HOME to 741741. Text HOLA to 741741 for Spanish. 24/7, free. Text-only. Often the most acceptable option for adolescents and young adults who will not make a phone call.
+> - **Maine Crisis Line** — 1-888-568-1112. Text and chat available via the Maine Crisis Line website. 24/7. Staffed by clinically trained crisis workers and the gateway to Maine's mobile crisis teams — the number that actually dispatches a face-to-face response.
+> - **Veterans Crisis Line** — Dial 988 then press 1. Text 838255. 24/7. No VA enrollment required. Ask about service history — it changes which line is the right referral.
+> - **Emergency services** — 911. 24/7. For imminent danger to life.
+>
+> *Contacts verified 2026-07-27 against official sources. Maintained in `crisis_resources.json`; do not edit these numbers inline.*
 
 **Q6. Splitting and the milieu: team-level management.**
 *Teaching point:* The night/day discrepancy and the complaint are textbook **splitting** — but teach it as a two-person phenomenon: the patient's unintegrated self- and object-representations *recruit* real staff disagreements (projective identification), and teams then enact the split ("she's manipulative" vs. "she's misunderstood"). Interventions are structural, not exhortative: a single voice for the plan (one attending communicates decisions), brief daily staff huddle to surface and metabolize countertransference, explicit behavioral frame shared with the patient, complaint handled through the normal process without either punitive drift or special exception, and supervision that names staff feelings as diagnostic data rather than failings. "Manipulative" is reframed as *the best available strategy of a person with rejection hypersensitivity and few regulation skills* — this single reframe measurably changes team behavior [1,2].
@@ -13587,7 +13601,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **Slug:** `cotw_20260810_panic_res.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-08-10_anxiety-panic-disorder_Resident.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 4,305 words
+- **Length:** 4,535 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -13747,7 +13761,21 @@ A separate systematic review and meta-analysis of risk factors *within* panic di
 
 Map that onto this patient: fourteen months of illness, prominent avoidance consistent with agoraphobia, nightly alcohol use, an unscreened possible PTSD/grief syndrome, escalating benzodiazepine use, and functional contraction across work, driving, and exercise. **Several of the identified risk factors are present.** A rapid denial in a guarded patient with a repressive coping style — the very style described in the pseudopheochromocytoma literature [10] — is not reassurance.
 
-**Practically:** screen formally for MDD and PTSD; quantify alcohol properly; ask about suicidal ideation directly, unhurriedly, and again at follow-up rather than only at intake. **If ideation emerges**, complete a structured risk assessment, and move to **collaborative safety planning** — warning signs, internal coping strategies, social contacts and settings that provide distraction and support, professional and crisis contacts, and reducing access to lethal means, with the alcohol and the benzodiazepine supply both addressed as part of that conversation. Escalate to your attending same-day and document reasoning and disposition. In the US, **988** reaches the Suicide & Crisis Lifeline.
+**Practically:** screen formally for MDD and PTSD; quantify alcohol properly; ask about suicidal ideation directly, unhurriedly, and again at follow-up rather than only at intake. **If ideation emerges**, complete a structured risk assessment, and move to **collaborative safety planning** — warning signs, internal coping strategies, social contacts and settings that provide distraction and support, professional and crisis contacts, and reducing access to lethal means, with the alcohol and the benzodiazepine supply both addressed as part of that conversation. Escalate to your attending same-day and document reasoning and disposition.
+
+> <div class="crisis-block-hook" hidden></div>
+>
+> ### If someone is in crisis
+>
+> On the unit, a patient in immediate danger is an escalation to your supervising resident or attending and the charge nurse — not a phone call. These lines are what you put IN a patient's safety plan, what families use after discharge, and what you can use yourself.
+>
+> - **988 Suicide & Crisis Lifeline** — Call or text 988. Chat at chat.988lifeline.org. 24/7, free, confidential. Spanish available by call, text, and chat; a dedicated line serves Deaf/Hard-of-Hearing callers. Calls placed in Maine route to Maine crisis specialists.
+> - **Crisis Text Line** — Text HOME to 741741. Text HOLA to 741741 for Spanish. 24/7, free. Text-only. Often the most acceptable option for adolescents and young adults who will not make a phone call.
+> - **Maine Crisis Line** — 1-888-568-1112. Text and chat available via the Maine Crisis Line website. 24/7. Staffed by clinically trained crisis workers and the gateway to Maine's mobile crisis teams — the number that actually dispatches a face-to-face response.
+> - **Veterans Crisis Line** — Dial 988 then press 1. Text 838255. 24/7. No VA enrollment required. Ask about service history — it changes which line is the right referral.
+> - **Emergency services** — 911. 24/7. For imminent danger to life.
+>
+> *Contacts verified 2026-07-27 against official sources. Maintained in `crisis_resources.json`; do not edit these numbers inline.*
 
 ---
 
