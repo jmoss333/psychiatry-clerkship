@@ -76,7 +76,8 @@ async function waitForContent(page) {
 test('nav items: exact inventory + HTTP 200 + non-empty content', async ({ request, baseURL }, testInfo) => {
   const items = await loadNav(request, baseURL);
   // +2 per audience: therapy_on_the_unit.md and therapy_reading_room.md (WP-T3).
-  expect(items).toHaveLength(testInfo.project.name === 'nav-res' ? 110 : 102);
+  // +1 per audience: 2026-08-31 catatonia Case of the Week.
+  expect(items).toHaveLength(testInfo.project.name === 'nav-res' ? 111 : 103);
   expect(items.filter(item => item.f === 'rotation-curator.html').map(({
     t, f, k, hidden,
   }) => ({ t, f, k, hidden }))).toEqual([{

@@ -1,0 +1,15 @@
+[
+  {
+    "id": "SUPP1-F001",
+    "audience": "MS3",
+    "file": "ms3/02_CURRICULUM_V09.md",
+    "surface": "cotw_20260831_catatonia_ms3.md",
+    "locus": "page_prose",
+    "severity": "S5",
+    "quote": "complete a structured suicide risk assessment, ensure appropriate observation, and build a safety plan with her before any transition of care",
+    "problem": "Q7 assigns the MS3 the entire suicide-risk chain as independent tasks: conducting the assessment, ensuring the observation level, and completing safety planning that gates a transition of care. Observation-level orders and disposition gating are resident/attending decisions, and the framing contradicts the page's own safety coaching ('Escalate to your supervising resident or attending rather than managing acuity alone'); the only escalation cue in this passage is conditional on the patient voicing self-harm thoughts. A student acting on this sentence could treat the observation decision and the safety plan as handled without team review.",
+    "replacement": "complete a structured suicide risk assessment with your resident or attending, recommend an observation level to the team, and participate in building a safety plan with her before any transition of care",
+    "basis": "Clerkship supervision norms (AAMC Core EPAs: students gather data and recommend; observation levels and transition-of-care decisions are ordered by the supervising physician) and the page's own topic_meta safety narration for this case.",
+    "confidence": "medium"
+  }
+]

@@ -33,7 +33,7 @@ PINNED_ACTIONS = {
     "actions/setup-python": "5fda3b95a4ea91299a34e894583c3862153e4b97",
     "actions/setup-node": "820762786026740c76f36085b0efc47a31fe5020",
     "actions/upload-artifact": "043fb46d1a93c77aae656e7c1c64a875d1fc6a0a",
-    "actions/download-artifact": "37930b1c2abaa49bbe596cd826c3c89aef350131",
+    "actions/download-artifact": "3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c",
     "actions/cache": "55cc8345863c7cc4c66a329aec7e433d2d1c52a9",
     "lycheeverse/lychee-action": "e7477775783ea5526144ba13e8db5eec57747ce8",
 }
@@ -42,7 +42,7 @@ PIN_TAGS = {
     "actions/setup-python": "v7",
     "actions/setup-node": "v7",
     "actions/upload-artifact": "v7",
-    "actions/download-artifact": "v7",
+    "actions/download-artifact": "v8.0.1",
     "actions/cache": "v6",
     "lycheeverse/lychee-action": "v2",
 }
@@ -168,6 +168,7 @@ EXPECTED_STEP_INVENTORIES = {
             ("name", "Validate — WCAG AA contrast tokens"),
             ("name", "Install — managed SP proxy dependencies"),
             ("name", "Test — SP Interview and managed proxy"),
+            ("name", "Red-team tier 1 — gate integrity (deterministic probes)"),
             ("name", "Build + static QA gate (ms3)"),
             ("name", "Build + static QA gate (res)"),
             ("uses", "actions/upload-artifact"),
@@ -310,7 +311,7 @@ EXPECTED_STEP_INVENTORIES = {
 # Native true/false values stay typed, `on` stays a string, and action inputs
 # use runner-coerced string semantics. Pin comments are validated separately.
 EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
-    "ci.yml": "f927b9699aed7654e012b97c5e7b96238af42f4e04e86257e28cfef0585118db",
+    "ci.yml": "281a4dd9d78f94e9d33b55f93b5976183652b20606a2302a5f17bf3e6297f6f2",
     "maintenance-governance-digest.yml": (
         "9869ba87704c40c9f5117b012ef7fea372644e318ccbb0df54d118b296675099"
     ),

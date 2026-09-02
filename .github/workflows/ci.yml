@@ -192,6 +192,9 @@ jobs:
           bash _prototypes/sp-interview/tests/run-all.sh
           python3 13_Faculty_Resources/_automation/test_validate_attestation_consistency.py
 
+      - name: Red-team tier 1 — gate integrity (deterministic probes)
+        run: node bin/redteam-offline.mjs
+
       - name: Build + static QA gate (ms3)
         run: bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh ms3
 
@@ -227,7 +230,7 @@ jobs:
       # stubs on CI either way, so the artifact is ~13MB). The local review
       # servers need only stdlib python3, which the runner image provides.
       - name: Download built sites from the build job
-        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: built-sites
           path: _build

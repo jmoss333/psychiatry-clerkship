@@ -34,16 +34,70 @@ sp-proxy/
 ## Scheduled health receipts
 
 The published proxy runs `sp-health-canary` every six hours. It reuses the server-side learner
-passcode, requires the exact canonical MS3 origin, and makes one authenticated `GET /api/sp`.
-Because the check is GET-only, it does not invoke the actor, evaluator, budget ledger,
-transcription, synthesis, or another paid provider operation.
+passcode, requires the exact canonical MS3 origin, and makes two authenticated calls in sequence:
+
+1. **Contract leg** — `GET /api/sp`. No provider call. Validates the model/pack contract and yields
+   the reviewed case IDs. If this leg fails, the run stops here and no turn is spent.
+2. **Capability leg** — **only when `learnerReady` is true** — one `POST /api/sp` with
+   `mode:converse`, a throwaway 22-character `encounterId`, `turnId: 1`, `turns: []`, and a fixed
+   neutral opening question. The run succeeds only if a non-empty `reply` comes back.
+
+The gate on `learnerReady` is load-bearing. `sp.mjs` refuses every POST unless the pack status is in
+`POST_PACK_STATUSES` (`reviewed`, `attested`) — which is exactly the set that makes `learnerReady`
+true. A draft pack therefore refuses the probe by design, so the canary does not send one and
+records `actorReady: false`. That is a healthy receipt, not an outage: nothing was probed because
+nothing is being served. The canary uses a live actor POST exactly when learners can, and never
+otherwise.
+
+The second leg exists because the first one is not evidence the Interview Room works. `mode:open`
+returns pack copy without calling the provider, so on 2026-09-01 `/api/sp/health-status` reported
+`{"state":"success","learnerReady":true}` while a dead `ANTHROPIC_API_KEY` meant the tool could not
+produce a single patient reply. Reachability was never capability. **This reverses the original
+GET-only design constraint — see the 2026-09-01 amendment in
+`docs/superpowers/specs/2026-07-28-scheduled-maintenance-steward-design.md` for the reasoning and
+what it costs.**
+
+The capability leg spends one real actor turn against the shared rotation budget, four times a day
+(~120 turns/month, roughly $0.60 against the $20 cap at the pinned Haiku rate). A `429` from that
+leg is recorded as `actor_budget` rather than `actor_status` precisely because it is the one failure
+the canary can inflict on itself.
 
 Each run replaces Blob key `latest` in the site-scoped, strong-consistency `sp-health-canary` store
-with a content-free receipt. Success records only timestamps, case count, learner-ready state, and a
-SHA-256 contract identifier; failure records only a bounded failure code and timestamp. It never
-stores credentials, raw model or pack identifiers, case content, learner activity, request headers,
-URLs, or exception text. A `draft-pending-attestation` pack can be reachable and healthy while
-`learnerReady` remains false; the receipt is not a faculty approval.
+with a content-free receipt. Success records only timestamps, case count, learner-ready state,
+actor-ready state, a coarse reply-latency bucket, and a SHA-256 contract identifier; failure records
+only a bounded failure code and timestamp. **The patient reply is measured and dropped inside the
+probe — it is never returned, logged, or stored.** The receipt never stores credentials, raw model or pack identifiers, case
+content, learner activity, request headers, URLs, or exception text. A `draft-pending-attestation`
+pack can be reachable and healthy while `learnerReady` remains false; the receipt is not a faculty
+approval.
+
+`actorReady` is `true` only when a live turn actually completed; a probe that ran and could not get
+a reply writes a *failure* receipt instead. `learnerReady: true` with `actorReady: false` is
+rejected as malformed everywhere — that is precisely the shape the health surface had while the tool
+was mute. The reverse (`false`/`false`, a draft pack) is honest and valid. The earlier seven-key
+receipt fails validation and reads as `malformed` rather than being mistaken for a green result.
+
+`packSha256` records **which pack content** was serving, as the SHA-256 of the raw pack bytes the
+loader already computes. It exists because `packVersion` does not move when scoring does — the
+D12/D13 safety wave rewrote 70 lines of suicide-risk scoring and left `version` at `0.1.0` — and
+because `SP_PACK_URL` points at `?ref=main` with a 5-minute loader TTL, so what students get can
+change with **no deploy and no commit to the proxy at all**. It is folded into `contractSha256` as
+well: a digest that cannot change when the thing it names changes is not an identifier. To answer
+"which scoring was live at 06:00?", compare the receipt's `packSha256` against
+`shasum -a 256 _prototypes/sp-interview/sp-interview.pack.json` at any commit.
+
+`replyLatencyBucket` records how long the live turn took as one of `fast` (<3s), `normal` (3–8s),
+`slow` (≥8s), or `not-probed`. It is a bucket rather than a duration on purpose: a raw millisecond
+count tracks how much the patient said, and D6 is kept by construction rather than by judging that
+channel too weak to matter. The bucket and `actorReady` are two views of one fact and may never
+disagree — a turn that completed has a timing, one that was never sent has none — and a mismatch is
+malformed. **Watch it across days, not runs:** four samples a day drifting from `fast` toward `slow`
+is the earliest available signal of provider degradation, throttling, or a silent model change, and
+it shows up well before anyone opens a ticket. A single `slow` reading is noise.
+
+**On first deploy the stored receipt is the old shape, so `/api/sp/health-status` returns 503
+`malformed` until the next scheduled run writes a new one (up to six hours). Trigger the function
+manually from the Netlify UI to close that window.**
 
 Public `GET /api/sp/health-status` requires no credential and exposes only that bounded receipt with
 `Cache-Control: no-store`. A success becomes non-success when it is more than eight hours old or the
@@ -51,9 +105,12 @@ recorded `nextRun` is over ten minutes late, so a missed invocation or lost Blob
 behind the prior success. GitHub checks this surface after each scheduled slot, and the independent
 Codex deadman supplies the separate alert path.
 
-This check proves authenticated read-only reachability only. It does not exercise live actor POSTs,
-model or voice behavior, authorize managed voice, or replace the deploy/model/pack red-team
-checklist and external activation gates below.
+This check proves that the contract is intact and that the actor answered one neutral turn. It does
+**not** evaluate what the actor said, exercise the evaluator, the safety screen, voice behavior, or
+the coverage map; it does not authorize managed voice; and it does not replace the deploy/model/pack
+red-team checklist and external activation gates below. A green receipt still is not release
+evidence (D7) — it is now evidence that the tool can speak, which is strictly more than it proved
+before and still much less than a red-team pass.
 
 ## One-time setup (~10 min, Netlify dashboard)
 
@@ -68,7 +125,7 @@ checklist and external activation gates below.
 | Variable | Value |
 |---|---|
 | `ANTHROPIC_API_KEY` | your Anthropic key (console.anthropic.com) |
-| `SP_STUDENT_PASSCODE` | strong passcode; **rotate each rotation block** |
+| `SP_STUDENT_PASSCODE` | learner passcode. **Standing decision 2026-08-31: this is a fixed, non-rotating passcode** — see *Passcode policy* below for what that changes. |
 | `SP_OPERATIONS_KEY` | separate strong operations credential; never give it to learners |
 | `SP_SPEECH_TICKET_SECRET` | independent random signing secret; keep server-only |
 | `SP_ROTATION_ID` | unique non-identifying ID for this rotation's shared budget ledger |
@@ -82,7 +139,10 @@ checklist and external activation gates below.
    → `{"schemaVersion":1,"actorModel":"claude-haiku-4-5-20251001","evaluatorModel":"claude-haiku-4-5-20251001","packVersion":"<reviewed pack version>","packStatus":"<reviewed status>","cases":[...]}`.
 4. In the tool: mode chip → **Live** → settings panel → paste endpoint URL
    (`https://<site>/api/sp`) + passcode → **Test connection**.
-5. Run `REDTEAM_CHECKLIST.md` end to end **before giving students the passcode**.
+5. Run `REDTEAM_CHECKLIST.md` end to end **before a new pack, model pin, or deploy reaches
+   learners** — it is a change gate, not a usage gate; an already-attested build stays live without
+   re-running it. Step-by-step, with the mechanical probes scripted:
+   [`docs/RED_TEAM_RUNBOOK.md`](../docs/RED_TEAM_RUNBOOK.md).
 
 ## Governance couplings (do not skip)
 
@@ -96,8 +156,27 @@ checklist and external activation gates below.
   why `SP_PACK_URL` must point at `main`, where nothing lands without your PR review.
 - **Cost envelope:** the reviewed pack rate card and atomic rotation ledger are authoritative.
   Estimates in prose are not deployment controls.
-- **Passcode hygiene:** one passcode per rotation block, shared in person (not email),
-  and rotated at block end.
+- **Passcode policy (changed 2026-08-31, Joshua Moss, MD).** The learner passcode is now
+  **fixed and does not rotate**. It is chosen to be memorable and sayable out loud so it can be
+  given in a room without a handout. Still shared in person, not by email. The value never appears
+  in this repo, in a commit, or in a transcript.
+
+  This was a deliberate trade of a security property for classroom usability, and the property
+  traded away is the important one to name: **rotation was the revocation path.** With a fixed
+  passcode there is no date on which a leaked credential stops working. That shifts three things:
+
+  1. **A leak is permanent until someone acts.** The remedy is no longer "wait for the block to
+     end" — it is an explicit emergency rotation. That procedure is in
+     `docs/RED_TEAM_RUNBOOK.md` under *Rollback*, and it is now the ONLY containment available.
+  2. **Budget exposure compounds.** The `$20` hard cap is per `SP_ROTATION_ID`, not per passcode.
+     A credential that survives rotation boundaries can burn a fresh cap each block. Watch the
+     rotation ledger for usage that does not match a real cohort.
+  3. **`SP_ALLOWED_ORIGINS` is doing more work than before.** It is the remaining boundary on
+     casual misuse from a browser; curl is unaffected by it. Keep it tight, and remove
+     `http://localhost:8888` when not actively testing.
+
+  If the passcode is ever posted, screenshotted, or forwarded: change it that day and re-issue in
+  person. Do not wait for a block boundary — there is no longer one that helps.
 
 ## Managed voice remains disabled
 

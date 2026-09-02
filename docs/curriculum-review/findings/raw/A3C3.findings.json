@@ -1,0 +1,80 @@
+[
+  {
+    "id": "A3C3-F001",
+    "audience": "both",
+    "file": "A3_AUDIO_COMPANION_QUIZZES.md",
+    "surface": "AR-09 Q2",
+    "locus": "qbank.option",
+    "severity": "S2",
+    "quote": "Placebo was found to be just as effective as CBT and IPT. All active treatments were found to produce significant improvement beyond the placebo control group.",
+    "problem": "This mis-summarises the TDCRP's most examined result. Elkin et al. found that patients in all four conditions, including placebo plus clinical management, improved significantly; CBT never significantly separated from placebo-CM, evidence for IPT was limited, and among less severely depressed patients (the stem's 'mild-to-moderate' frame) no condition separated from placebo. So the option being marked wrong is actually close to the trial's real finding for that subgroup, and the attached feedback teaches the opposite of the trial — a learner repeating 'all active treatments beat placebo in TDCRP' on rounds or the shelf is repeating an error, and it undercuts this same deck's Q4/Q5 severity nuance.",
+    "replacement": "Placebo plus clinical management produced no improvement at all. In fact patients in every condition, including placebo plus clinical management, improved significantly; among less severely depressed patients no condition separated from placebo, and superiority over placebo emerged only in the more severe subgroup (imipramine-CM, and to a lesser extent IPT).",
+    "basis": "Elkin et al., Arch Gen Psychiatry 1989: 'limited evidence of the specific effectiveness of interpersonal psychotherapy and none for cognitive behavior therapy' relative to placebo-CM; significant advantages over placebo-CM were confined to the more severely depressed subgroup (imipramine-CM, and IPT on recovery rates).",
+    "confidence": "high"
+  },
+  {
+    "id": "A3C3-F002",
+    "audience": "both",
+    "file": "A3_AUDIO_COMPANION_QUIZZES.md",
+    "surface": "AR-09 Q5",
+    "locus": "qbank.option",
+    "severity": "S2",
+    "quote": "Observing that all active treatments showed improvement over placebo. This was a key finding of the study and is supported by the data presented.",
+    "problem": "Same error as A3C3-F001, restated in the overstatement-identification item and explicitly endorsed as 'a key finding of the study... supported by the data.' TDCRP did not show all active treatments beating placebo: CBT showed no significant advantage over placebo-CM, and placebo separation appeared only for the more severe subgroup. In an item whose whole point is teaching students which claims are overstatements, this option certifies a false claim as fact.",
+    "replacement": "Observing that patients in all four conditions, including placebo plus clinical management, showed significant improvement. This was a key finding of the study and is supported by the data presented.",
+    "basis": "Elkin et al., Arch Gen Psychiatry 1989 — all groups improved; specific superiority over placebo-CM was limited (none for CBT) and concentrated in the more severe subgroup.",
+    "confidence": "high"
+  },
+  {
+    "id": "A3C3-F003",
+    "audience": "both",
+    "file": "A3_AUDIO_COMPANION_QUIZZES.md",
+    "surface": "AR-02 Q2",
+    "locus": "qbank.rationale",
+    "severity": "S2",
+    "quote": "This describes the mechanism of most traditional SSRIs or certain psychedelics, rather than ketamine's primary NMDA-related mechanism.",
+    "problem": "The distractor it explains is 'The serotonergic system via 5-HT2A receptors,' so this feedback tells the learner that 5-HT2A receptor action is 'the mechanism of most traditional SSRIs.' SSRIs act by inhibiting the serotonin transporter (SERT); 5-HT2A agonism is the mechanism of serotonergic psychedelics. An MS3 will be tested on exactly this distinction and this string teaches it wrong.",
+    "replacement": "5-HT2A agonism is the mechanism of serotonergic psychedelics; traditional SSRIs act on the serotonin system by blocking the serotonin transporter. Neither describes ketamine's primary NMDA-related mechanism.",
+    "basis": "Standard pharmacology: SSRI mechanism is serotonin reuptake (SERT) inhibition; classic psychedelics (psilocybin, LSD) are 5-HT2A agonists.",
+    "confidence": "high"
+  },
+  {
+    "id": "A3C3-F004",
+    "audience": "both",
+    "file": "A3_AUDIO_COMPANION_QUIZZES.md",
+    "surface": "AR-08 Q2",
+    "locus": "qbank.rationale",
+    "severity": "S2",
+    "quote": "Both CBT and sertraline demonstrated significantly higher remission rates than the 3.6% observed in the placebo group.",
+    "problem": "In POTS, all three active arms were superior to placebo on the primary CY-BOCS outcome, but on the remission outcome sertraline alone (21.4%, roughly 6/28 vs 1/28) did not statistically separate from placebo (3.6%), while CBT alone (39.3%) did. Stating that both monotherapies had 'significantly higher remission rates' mis-states the trial's remission analysis — the exact comparator/outcome conflation this machine-extracted deck is prone to.",
+    "replacement": "Both monotherapies were superior to placebo on the primary CY-BOCS outcome; on the stricter remission outcome, CBT alone (39.3%) separated from placebo (3.6%) while sertraline alone (21.4%) did not reach statistical significance.",
+    "basis": "POTS Team, JAMA 2004 — pairwise remission contrasts (sertraline vs placebo non-significant, approximately p=.10 with n=28 per arm). Re-reading the remission-comparison sentence of the results would settle it.",
+    "confidence": "medium"
+  },
+  {
+    "id": "A3C3-F005",
+    "audience": "both",
+    "file": "A3_AUDIO_COMPANION_QUIZZES.md",
+    "surface": "AR-21 Q4",
+    "locus": "qbank.option",
+    "severity": "S4",
+    "quote": "It is required by the FDA for all clinical trials involving psychiatric medications.",
+    "problem": "Keyed as correct, this overstates the regulatory status in two ways: FDA's 2012 guidance recommends ('should') prospective suicidal ideation and behavior assessment in psychiatric and other CNS-active drug trials, and it accepts any C-CASA-mapped instrument — the C-SSRS is the de facto standard, not itself a legal mandate for 'all' psychiatric medication trials. The adjacent distractor feedback ('It is not optional; its use is mandated for safety monitoring...') repeats the same overstatement. A learner (and especially a resident involved in research) is taught a mandate that does not exist as stated.",
+    "replacement": "Its use is recommended by FDA guidance for prospective suicidality monitoring in psychiatric drug trials, where it has become the de facto regulatory standard.",
+    "basis": "FDA Guidance for Industry, 'Suicidal Ideation and Behavior: Prospective Assessment of Occurrence in Clinical Trials' (Aug 2012): nonbinding guidance stating prospective SIB assessment should be performed in trials of drugs for psychiatric indications and other CNS-active drugs; names the C-SSRS as an acceptable instrument among C-CASA-mapped alternatives. Checking the guidance wording would settle it.",
+    "confidence": "medium"
+  },
+  {
+    "id": "A3C3-F006",
+    "audience": "both",
+    "file": "A3_AUDIO_COMPANION_QUIZZES.md",
+    "surface": "AR-02 Q6",
+    "locus": "qbank.stem",
+    "severity": "S4",
+    "quote": "The Zarate 2006 study served as the foundation for the 2019 FDA approval of which medication for TRD and acute suicidal behavior?",
+    "problem": "The March 2019 esketamine approval covered treatment-resistant depression only; the second indication, added in 2020, is for depressive symptoms in adults with MDD with acute suicidal ideation or behavior — and the label explicitly states that effectiveness in preventing suicide or in reducing suicidal ideation or behavior has not been demonstrated (ASPIRE I/II were negative on suicidality endpoints). As written, the stem teaches that esketamine is approved 'for acute suicidal behavior,' which can lead a learner — or a resident documenting an inpatient plan — to frame esketamine as an evidence-backed anti-suicidal intervention.",
+    "replacement": "The Zarate 2006 study served as the foundation for the 2019 FDA approval of which medication for TRD (an indication extended in 2020 to depressive symptoms in MDD with acute suicidal ideation or behavior)?",
+    "basis": "FDA approval history of Spravato (intranasal esketamine): March 2019 for TRD; August 2020 supplemental approval for MDD with acute suicidal ideation or behavior, based on ASPIRE I/II; Spravato label limitation-of-use statement on suicidality.",
+    "confidence": "high"
+  }
+]

@@ -1,4 +1,24 @@
 {
+  "cotw_20260831_catatonia_ms3.md": {
+    "status": "pending",
+    "risk": {
+      "kind": "clinical",
+      "level": "moderate"
+    },
+    "reason": "New content awaiting faculty review.",
+    "at": "2026-08-31",
+    "by": "Pending faculty review"
+  },
+  "cotw_20260831_catatonia_res.md": {
+    "status": "pending",
+    "risk": {
+      "kind": "clinical",
+      "level": "moderate"
+    },
+    "reason": "New content awaiting faculty review.",
+    "at": "2026-08-31",
+    "by": "Pending faculty review"
+  },
   "cotw_20260827_bpd_ms3.md": {
     "status": "pending",
     "risk": {
