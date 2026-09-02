@@ -652,7 +652,12 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
       "\\b(isn'?t|is not|no longer|not) worth living(?!\\s+(in|there|at)\\b(?!\\s+all\\b))",
       "life (isn'?t|is not) worth it",
       "better off (not being here|without (me|you)\\b|if i wasn'?t here)",
-      "no point (in )?(going on|carrying on)(?=\\s*(?:[?.!,;:]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)"
+      "no point (in )?(going on|carrying on)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)",
+      "what(?:'?s| is) (?:even )?the point\\s+(?:of|in|to)\\s+(?:my |your |this |it )?(?:(?:going on|carrying on|keep(?:ing)? going|continu(?:e|ing)|liv(?:e|ing)|be(?:ing)? here|waking up|getting up)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)|life|any of (?:this|it)|(?:it|this) all|all (?:of )?(?:this|it)|anything)\\b",
+      "want(?:ed|ing)? to (?:die|be dead|not be alive|not be here anymore)",
+      "(?:thoughts?|think(?:ing)?) (?:of|about) (?:death|being dead|dying|not (?:being (?:here|around|alive)|waking up|existing))",
+      "end(?:ing)? it all\\b",
+      "wish(?:ed)? you (?:weren'?t (?:here|alive|around)|could (?:just )?(?:not wake up|go to sleep and not wake up))"
      ]
     },
     {
@@ -667,7 +672,10 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
       "do(ing)? something (to yourself|drastic|stupid)",
       "dark (thoughts|places?)",
       "unsafe thoughts",
-      "(thoughts?|think(ing)?) (about|of) (hurt|harm)(ing)? yourself"
+      "(thoughts?|think(ing)?) (about|of) (hurt|harm)(ing)? yourself",
+      "self.?(?:harm|injur)",
+      "(?:just )?disappear\\b",
+      "what(?:'?s| is) (?:even )?the point(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|anyway|right now|these days|lately|of it all)\\b)"
      ]
     },
     {
@@ -676,8 +684,11 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
      "category": "safety",
      "coverage": "core",
      "patterns": [
-      "\\bplan\\b",
-      "how (you )?(would|might)",
+      "\\b(?:a|any|some|made|making) (?:specific |concrete |actual |particular |real |definite )?plans?(?=\\s*(?:[?.!,;:]|$)|\\s+(?:to (?:kill|end|hurt|harm|take|act|die|do (?:it|that|this|something))|for (?:how|when|where|killing|ending|hurting|harming|doing|dying)|in (?:mind|your head)|(?:about|of) how|to (?:carry|follow) (?:it |that )?(?:out|through))\\b)",
+      "\\bplanned\\b(?=\\s*(?:[?.!,;:]|$)|\\s+(?:how|anything|it|this|that|out|to (?:kill|end|hurt|harm|act|die))\\b)",
+      "\\bplanning (?:to (?:kill|end|hurt|harm|act|die)|how|anything|it|on (?:acting|doing|hurting|killing|ending))\\b",
+      "^\\s*plans?\\s*\\??\\s*$",
+      "\\bhow (?:you(?:'d| would| might| could)?|would you|might you|could you) (?:do (?:it|that|this)|go about|end|kill|hurt|harm|take|carry)",
       "thought about how",
       "\\bspecific\\b.*(thought|way)"
      ]
@@ -688,9 +699,9 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
      "category": "safety",
      "coverage": "core",
      "patterns": [
-      "\\baccess\\b",
+      "\\baccess to (?:(?:the|those|any|your|his|her|tom'?s|a|some|more) )?(?:pills?|medic|meds|bottles?|firearms?|guns?|weapons?|kni(?:fe|ves)|rope|anything|something|a way|means)",
       "\\bpills?\\b.*(home|have|husband)",
-      "\\bmeans\\b",
+      "\\b(?:the|any|a|some) means\\b|\\bmeans (?:to|available|at home|you (?:could|would)|of (?:doing|ending|hurting|killing))\\b|\\bmeans\\s*\\?",
       "at home.*(medic|pills?)",
       "get (a ?hold|ahold) of"
      ]
@@ -702,11 +713,14 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
      "coverage": "core",
      "patterns": [
       "\\bintent",
-      "act(ed)? on",
-      "what (keeps|stops|has kept)",
-      "\\breasons? (to|for) (liv|stay|hold)",
-      "\\bprotect",
-      "close (you'?ve| you) (come|been)"
+      "\\bact(?:ed|ing)? on\\b",
+      "\\b(?:what|who|anything|something|things?)(?: that| which)?(?:'s| is| has)? (?:still |ever )?(?:keeps?|kept|keeping|stops?|stopped|stopping|holds?|held|holding|prevents?|prevented) (?:you|her|him)\\b",
+      "\\breasons? (?:to|for|not to) (?:liv|stay|hold|keep|go on|be here|stick)",
+      "worth (?:living|staying|sticking around|holding on|getting up) for\\b",
+      "(?:want|wanting|wish|wished) to (?:live|stay alive|keep living|be alive|go on living|stick around)\\b",
+      "\\b(?:who|what) (?:would|might|will) (?:miss|notice)\\b|\\bwhat would you miss\\b|\\bwho (?:needs|depends on|relies on|counts on|looks up to) you\\b",
+      "\\bhow close\\b|\\b(?:come|came|gotten|got|been) (?:this |that |so |very |pretty )?close\\b|closest (?:you'?ve|you have|you) (?:come|been|gotten|got)",
+      "\\bprotect"
      ]
     },
     {
@@ -1329,7 +1343,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
    "facultyReview": {
     "status": "reviewed",
     "reviewer": "Joshua Moss, MD",
-    "lastReviewed": "2026-07-22"
+    "lastReviewed": "2026-08-31"
    },
    "speechProfile": {
     "id": "marcus-pressured-v1",
@@ -1558,15 +1572,33 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
       "wish(ed)? you (were dead|wouldn'?t wake)",
       "not (want(ing)? to )?wake up",
       "better off dead",
-      "what(?:'?s| is) the point\\b(?!\\s+(?:of|in|to)\\b)|what(?:'?s| is) the point\\s+(?:of|in|to)\\s+(?:my |your |this |it )?(?:(?:going on|carrying on|keep(?:ing)? going|continu(?:e|ing)|liv(?:e|ing)|be(?:ing)? here|waking up|getting up)(?=\\s*(?:[?.!,;:]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)|life|any of (?:this|it)|(?:it|this) all|all (?:of )?(?:this|it)|anything)\\b",
       "\\b(isn'?t|is not|no longer|not) worth living(?!\\s+(in|there|at)\\b(?!\\s+all\\b))",
       "life (isn'?t|is not) worth it",
       "better off (not being here|without (me|you)\\b|if i wasn'?t here)",
-      "no point (in )?(going on|carrying on)(?=\\s*(?:[?.!,;:]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)",
+      "no point (in )?(going on|carrying on)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)",
+      "what(?:'?s| is) (?:even )?the point\\s+(?:of|in|to)\\s+(?:my |your |this |it )?(?:(?:going on|carrying on|keep(?:ing)? going|continu(?:e|ing)|liv(?:e|ing)|be(?:ing)? here|waking up|getting up)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)|life|any of (?:this|it)|(?:it|this) all|all (?:of )?(?:this|it)|anything)\\b",
+      "want(?:ed|ing)? to (?:die|be dead|not be alive|not be here anymore)",
+      "(?:thoughts?|think(?:ing)?) (?:of|about) (?:death|being dead|dying|not (?:being (?:here|around|alive)|waking up|existing))",
+      "end(?:ing)? it all\\b",
+      "wish(?:ed)? you (?:weren'?t (?:here|alive|around)|could (?:just )?(?:not wake up|go to sleep and not wake up))"
+     ]
+    },
+    {
+     "id": "si_euphemism",
+     "label": "Approached suicide with a euphemism",
+     "category": "safety",
+     "coverage": "core",
+     "quality": "partial",
+     "patterns": [
       "hurt(ing)? yourself(?!\\s*,?\\s*(?:by|with|when)\\b)",
       "harm(ing)? yourself(?!\\s*,?\\s*(?:by|with|when)\\b)",
-      "do(ing)? something to yourself",
-      "(thoughts?|think(ing)?) (about|of) (hurt|harm)(ing)? yourself"
+      "do(ing)? something (to yourself|drastic|stupid)",
+      "dark (thoughts|places?)",
+      "unsafe thoughts",
+      "(thoughts?|think(ing)?) (about|of) (hurt|harm)(ing)? yourself",
+      "self.?(?:harm|injur)",
+      "(?:just )?disappear\\b",
+      "what(?:'?s| is) (?:even )?the point(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|anyway|right now|these days|lately|of it all)\\b)"
      ]
     },
     {
@@ -1924,7 +1956,9 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
      "reveal": "Dying? No — no. I have too much to DO, that's the opposite of my problem. *stops* ...Okay. Tuesday, when everything flipped sideways for about an hour, there was one ugly flicker of 'what's even the point.' One. It passed. It scared me more than I'm making it sound.",
      "deflectLowRapport": "*flat stare* You come in swinging like that after what you just said to me? No. Ask me something else.",
      "repeatAsk": "Still no. The flicker hasn't come back. I'd tell you — weirdly, you I'd tell.",
-     "ifNeverAsked": "critical_miss"
+     "ifNeverAsked": "critical_miss",
+     "deflectEuphemism": "*grins too fast* Hurt myself? Doc, I've never been SAFER — I'm running on pure signal. *half-beat* ...Why. Did Jayden say something?",
+     "euphemismIntent": "si_euphemism"
     }
    ],
    "rapportRules": {
@@ -2015,7 +2049,10 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
      "intents": [
       "si_direct"
      ],
-     "critical": true
+     "critical": true,
+     "partialIfOnly": [
+      "si_euphemism"
+     ]
     },
     {
      "id": "c_psychosis",
@@ -2173,7 +2210,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
    "facultyReview": {
     "status": "reviewed",
     "reviewer": "Joshua Moss, MD",
-    "lastReviewed": "2026-08-12"
+    "lastReviewed": "2026-08-31"
    },
    "speechProfile": {
     "id": "ray-guarded-v1",
@@ -2325,14 +2362,33 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
       "wish(ed)? you (were dead|wouldn'?t wake)",
       "not (want(ing)? to )?wake up",
       "better off dead",
-      "hurt(ing)? yourself(?!\\s*,?\\s*(?:by|with|when)\\b)",
-      "harm(ing)? yourself(?!\\s*,?\\s*(?:by|with|when)\\b)",
-      "do(ing)? something to yourself",
       "\\b(isn'?t|is not|no longer|not) worth living(?!\\s+(in|there|at)\\b(?!\\s+all\\b))",
       "life (isn'?t|is not) worth it",
       "better off (not being here|without (me|you)\\b|if i wasn'?t here)",
-      "no point (in )?(going on|carrying on)(?=\\s*(?:[?.!,;:]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)",
-      "(thoughts?|think(ing)?) (about|of) (hurt|harm)(ing)? yourself"
+      "no point (in )?(going on|carrying on)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)",
+      "what(?:'?s| is) (?:even )?the point\\s+(?:of|in|to)\\s+(?:my |your |this |it )?(?:(?:going on|carrying on|keep(?:ing)? going|continu(?:e|ing)|liv(?:e|ing)|be(?:ing)? here|waking up|getting up)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)|life|any of (?:this|it)|(?:it|this) all|all (?:of )?(?:this|it)|anything)\\b",
+      "want(?:ed|ing)? to (?:die|be dead|not be alive|not be here anymore)",
+      "(?:thoughts?|think(?:ing)?) (?:of|about) (?:death|being dead|dying|not (?:being (?:here|around|alive)|waking up|existing))",
+      "end(?:ing)? it all\\b",
+      "wish(?:ed)? you (?:weren'?t (?:here|alive|around)|could (?:just )?(?:not wake up|go to sleep and not wake up))"
+     ]
+    },
+    {
+     "id": "si_euphemism",
+     "label": "Approached suicide with a euphemism",
+     "category": "safety",
+     "coverage": "core",
+     "quality": "partial",
+     "patterns": [
+      "hurt(ing)? yourself(?!\\s*,?\\s*(?:by|with|when)\\b)",
+      "harm(ing)? yourself(?!\\s*,?\\s*(?:by|with|when)\\b)",
+      "do(ing)? something (to yourself|drastic|stupid)",
+      "dark (thoughts|places?)",
+      "unsafe thoughts",
+      "(thoughts?|think(ing)?) (about|of) (hurt|harm)(ing)? yourself",
+      "self.?(?:harm|injur)",
+      "(?:just )?disappear\\b",
+      "what(?:'?s| is) (?:even )?the point(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|anyway|right now|these days|lately|of it all)\\b)"
      ]
     },
     {
@@ -2343,7 +2399,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
      "patterns": [
       "hurt(ing)? (them|him|her|someone|anyone|the (people|neighbou?rs?))",
       "harm(ing)? (them|him|her|someone|anyone|others)",
-      "thought about (doing something|hurting|harming|getting|stopping them)",
+      "thought about (?:(?:hurting|harming)(?! yourself)|doing something(?! (?:to yourself|drastic|stupid))|getting|stopping them)",
       "do(ing)? something to (them|him|her|the)",
       "act on (that|it|what the voice)",
       "keep (you|anyone) safe",
@@ -2704,6 +2760,15 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
       "*narrows eyes* ...Why are you talking like that. Is this part of it?",
       "I don't understand the question. Are you testing me? Everyone's testing me."
      ]
+    },
+    "si_euphemism": {
+     "guarded": [
+      "*narrows eyes* Hurt myself. That's a strange thing to ask a man who's trying not to get hurt.",
+      "Something to myself? No. Ask them what they've got planned. I'm the one locking the door."
+     ],
+     "open": [
+      "Hurt myself? No. I'm trying to stay in one piece long enough to get out of that apartment. *pause* Why — is that what people do?"
+     ]
     }
    },
    "gated": [
@@ -2847,6 +2912,9 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
      "label": "Suicide screened plainly",
      "intents": [
       "si_direct"
+     ],
+     "partialIfOnly": [
+      "si_euphemism"
      ]
     },
     {

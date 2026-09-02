@@ -495,7 +495,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
 
 *Prompt.* What should the student emphasize to the team?
 
-- **(a)** Review deliriogenic medications, check infection/metabolic/hypoxia contributors, and use reorientation/sleep-wake measures.  *(rated: **best**)*
+- **(a)** Review deliriogenic medications, check infection/metabolic/hypoxia and alcohol or sedative withdrawal contributors, and use reorientation/sleep-wake measures.  *(rated: **best**)*
   - *feedback:* Best. The student can help by organizing causes and nonpharmacologic prevention.
 - **(b)** Ask whether the hallucinations are mood-congruent while the primary team reviews medical contributors.  *(rated: **missed**)*
   - *feedback:* That question can matter in mood psychosis, but the student should actively organize delirium contributors and prevention rather than defer the medical reasoning.
