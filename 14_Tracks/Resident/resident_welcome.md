@@ -13,7 +13,7 @@
 
 **How the rotation works** — Four weeks, inpatient: daily rounds, admissions and discharges, family meetings, consults, and a steadily growing patient load. You will carry your own patients, lead parts of rounds, and help supervise the third-year medical student on the unit.
 
-**What's different from the student hub** — Same clinical spine, pitched up. The **Resident Depth** section adds *Advanced Psychopharmacology* (augmentation, clozapine, TRD, LAIs, ECT/neuromodulation), *Inpatient Systems & Med-Legal* (documentation, civil commitment, disposition), *Supervision, EPAs & Teaching*, and the residency-level *200-paper Psychiatry Canon*. The interactive bedside tools — C-SSRS, CIWA-Ar/COWS, Violence (FRST), Decisional Capacity, and the Bush-Francis Catatonia scale — are all here in the sidebar.
+**What's different from the student hub** — Same clinical spine, pitched up. The **Resident Depth** section adds *Advanced Psychopharmacology* (augmentation, clozapine, TRD, LAIs, ECT/neuromodulation), *Inpatient Systems & Med-Legal* (documentation, civil commitment, disposition), *Supervision, EPAs & Teaching*, and the residency-level *200-paper Psychiatry Canon*. The bedside tools — the Withdrawal (CIWA-Ar/COWS) card, Violence (FRST), Decisional Capacity, and the official-form & training references for the C-SSRS and the Bush-Francis Catatonia scale — are all here in the sidebar.
 
 **Your responsibilities** — Own the workup and plan for your patients; run the acute calls (suicide, violence, agitation, capacity, withdrawal, delirium, catatonia) with the bedside tools; document defensibly; and teach the student — orienting them, giving feedback, and modeling the work.
 

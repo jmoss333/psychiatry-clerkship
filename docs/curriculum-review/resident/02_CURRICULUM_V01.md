@@ -11,9 +11,9 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 ## Welcome — Resident Rotation
 
 - **Slug:** `welcome.md` · **Type:** md · **Sidebar:** listed
-- **Source:** `13_Faculty_Resources/Outreach/MS3_Inpatient_Rotation_OnePager.md`
+- **Source:** `14_Tracks/Resident/resident_welcome.md`
 - **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
-- **Length:** 375 words
+- **Length:** 385 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -64,7 +64,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 
 **How the rotation works** — Four weeks, inpatient: daily rounds, admissions and discharges, family meetings, consults, and a steadily growing patient load. You will carry your own patients, lead parts of rounds, and help supervise the third-year medical student on the unit.
 
-**What's different from the student hub** — Same clinical spine, pitched up. The **Resident Depth** section adds *Advanced Psychopharmacology* (augmentation, clozapine, TRD, LAIs, ECT/neuromodulation), *Inpatient Systems & Med-Legal* (documentation, civil commitment, disposition), *Supervision, EPAs & Teaching*, and the residency-level *200-paper Psychiatry Canon*. The interactive bedside tools — C-SSRS, CIWA-Ar/COWS, Violence (FRST), Decisional Capacity, and the Bush-Francis Catatonia scale — are all here in the sidebar.
+**What's different from the student hub** — Same clinical spine, pitched up. The **Resident Depth** section adds *Advanced Psychopharmacology* (augmentation, clozapine, TRD, LAIs, ECT/neuromodulation), *Inpatient Systems & Med-Legal* (documentation, civil commitment, disposition), *Supervision, EPAs & Teaching*, and the residency-level *200-paper Psychiatry Canon*. The bedside tools — the Withdrawal (CIWA-Ar/COWS) card, Violence (FRST), Decisional Capacity, and the official-form & training references for the C-SSRS and the Bush-Francis Catatonia scale — are all here in the sidebar.
 
 **Your responsibilities** — Own the workup and plan for your patients; run the acute calls (suicide, violence, agitation, capacity, withdrawal, delirium, catatonia) with the bedside tools; document defensibly; and teach the student — orienting them, giving feedback, and modeling the work.
 
@@ -149,7 +149,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **Slug:** `core_readings.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `14_Tracks/MS3/Student_Ready_Pack/core_reading_list.md`
 - **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
-- **Length:** 387 words
+- **Length:** 397 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -204,7 +204,7 @@ The boiled-down starting set for the inpatient rotation. Read these fourteen and
 
 ## Acute & safety — the can't-miss
 
-- **[Suicide risk & safety planning](?page=pg_suicide.md)** — structured risk assessment and a collaborative safety plan; pairs with the C-SSRS tool in the sidebar.
+- **[Suicide risk & safety planning](?page=pg_suicide.md)** — structured risk assessment and a collaborative safety plan; pairs with the C-SSRS official-form & training page in the sidebar.
 - **[Agitation & de-escalation](?page=agitation.md)** — treat the driver, not just the behavior; verbal de-escalation before PRN, PRN before restraint. Pairs with the visual Decision Aids.
 - **[Consult essentials: capacity, delirium, catatonia & withdrawal](?page=exp_consult.md)** — the four bedside calls you'll be asked about most, in one place.
 
@@ -223,7 +223,7 @@ The boiled-down starting set for the inpatient rotation. Read these fourteen and
 
 ---
 
-*Keep two pocket cards on you — [Interview & MSE](?page=pg_interview.md) and [Formulation & DDx](?page=pg_formulation.md). The interactive tools (C-SSRS, CIWA-Ar/COWS, Decisional Capacity, MSE builder, Algorithms & Decision Aids) are in the sidebar. Joshua Moss, MD | Psychiatrist*
+*Keep two pocket cards on you — [Interview & MSE](?page=pg_interview.md) and [Formulation & DDx](?page=pg_formulation.md). The interactive tools (Withdrawal CIWA-Ar/COWS, Decisional Capacity, MSE builder, Algorithms & Decision Aids) and the C-SSRS official-form & training page are in the sidebar. Joshua Moss, MD | Psychiatrist*
 
 
 ---

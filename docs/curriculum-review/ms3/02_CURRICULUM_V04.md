@@ -129,7 +129,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **Slug:** `t_perinatal.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `03_Core_Topics/Perinatal/perinatal_psychiatry_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 1,141 words
+- **Length:** 1,145 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -237,7 +237,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - Postpartum OCD intrusive thoughts are ego-dystonic and not command hallucinations — distinguish them to avoid both over- and under-reaction.
 - Stopping all medication is itself a risk decision; untreated perinatal illness endangers mother and infant too.
 
-**Pair with** — the <a href="tools/cssrs.html" target="_blank" rel="noopener">Columbia C-SSRS screener</a> for structured risk assessment that extends to the infant, and the [suicide-risk & safety pocket card](?page=pg_suicide.md).
+**Pair with** — the <a href="tools/cssrs.html" target="_blank" rel="noopener">Columbia C-SSRS official form &amp; training page</a> for structured risk assessment that extends to the infant, and the [suicide-risk & safety pocket card](?page=pg_suicide.md).
 
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI. Every pregnancy and lactation medication decision here is illustrative, not prescribing guidance — confirm agent, dose, and exposure risk against current labeling and your attending, with obstetrics and pharmacy involved.*
 
@@ -1222,7 +1222,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **Slug:** `t_adjustment.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `03_Core_Topics/Adjustment/adjustment_disorders_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 906 words
+- **Length:** 910 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -1339,6 +1339,6 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 >
 > *Contacts verified 2026-07-27 against official sources. Maintained in `crisis_resources.json`; do not edit these numbers inline.*
 
-**Pair with** — the [Mood topic](?page=t_mood.md), the [Anxiety/Trauma/OCD topic](?page=t_anxiety.md), the [Suicide Risk & Safety pocket guide](?page=pg_suicide.md), and the <a href="tools/cssrs.html" target="_blank" rel="noopener">Columbia C-SSRS screener</a>.
+**Pair with** — the [Mood topic](?page=t_mood.md), the [Anxiety/Trauma/OCD topic](?page=t_anxiety.md), the [Suicide Risk & Safety pocket guide](?page=pg_suicide.md), and the <a href="tools/cssrs.html" target="_blank" rel="noopener">Columbia C-SSRS official form &amp; training page</a>.
 
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*

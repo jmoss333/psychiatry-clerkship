@@ -1067,7 +1067,7 @@ synthetic enough for safe reuse.
 
 **Leucht 2013 - Antipsychotic NMA**  ·  _2:00_
 <audio controls preload="none" src="audio/07_LM_08_Leucht_2013_Antipsychotic_NMA_2_00.m4a"></audio>
-<a href="https://doi.org/10.1016/S0140-6736(12)60239-6" target="_blank" rel="noopener">Paper (DOI)</a>
+<a href="https://doi.org/10.1016/S0140-6736(13)60733-3" target="_blank" rel="noopener">Paper (DOI)</a>
 
 **Lieberman 2005 - CATIE Trial**  ·  _1:38_
 <audio controls preload="none" src="audio/01_LM_01_Lieberman_2005_CATIE_Trial_1_38.m4a"></audio>
@@ -1097,7 +1097,7 @@ synthetic enough for safe reuse.
 
 **Stanley 2012 - Safety Planning**  ·  _1:50_
 <audio controls preload="none" src="audio/34_LM_34_Stanley_2012_Safety_Planning_1_50.m4a"></audio>
-<a href="https://doi.org/10.1001/jamapsychiatry.2018.1776" target="_blank" rel="noopener">Paper (DOI)</a>
+<a href="https://doi.org/10.1016/j.cbpra.2011.01.001" target="_blank" rel="noopener">Paper (DOI)</a>
 
 
 ## Psychopharmacology  (2)
@@ -1171,7 +1171,7 @@ synthetic enough for safe reuse.
 ## Substance Use  (2)
 **Project MATCH 1997**  ·  _1:53_
 <audio controls preload="none" src="audio/42_LM_45_Project_MATCH_1997_1_53.m4a"></audio>
-<a href="https://doi.org/10.1111/j.1530-0277.1998.tb03912.x" target="_blank" rel="noopener">Paper (DOI)</a>
+<a href="https://pubmed.ncbi.nlm.nih.gov/8979210/" target="_blank" rel="noopener">Paper (PubMed)</a>
 
 **Volkow 2016 - Addiction**  ·  _1:53_
 <audio controls preload="none" src="audio/47_LM_46_Volkow_2016_Addiction_1_53.m4a"></audio>
@@ -1181,7 +1181,7 @@ synthetic enough for safe reuse.
 ## Child  (3)
 **Bridge 2007 - Pediatric SSRI**  ·  _1:41_
 <audio controls preload="none" src="audio/45_LM_48_Bridge_2007_Pediatric_SSRI_1_41.m4a"></audio>
-<a href="https://doi.org/10.1001/archpsyc.63.3.332" target="_blank" rel="noopener">Paper (DOI)</a>
+<a href="https://doi.org/10.1001/jama.297.15.1683" target="_blank" rel="noopener">Paper (DOI)</a>
 
 **MTA 1999 - ADHD**  ·  _1:45_
 <audio controls preload="none" src="audio/46_LM_47_MTA_1999_ADHD_1_45.m4a"></audio>
@@ -1219,13 +1219,13 @@ synthetic enough for safe reuse.
 
 
 ## Skills  (4)
-**Gabbard 1995 - Boundaries**  ·  _1:46_
+**Gutheil-Gabbard 1993 - Boundaries**  ·  _1:46_
 <audio controls preload="none" src="audio/38_LM_40_Gabbard_1995_Boundaries_1_46.m4a"></audio>
 <a href="https://doi.org/10.1176/ajp.150.2.188" target="_blank" rel="noopener">Paper (DOI)</a>
 
 **Norcross 2011 - Alliance**  ·  _1:44_
 <audio controls preload="none" src="audio/25_LM_25_Norcross_2011_Alliance_1_44.m4a"></audio>
-<a href="https://doi.org/10.1037/pst0000172" target="_blank" rel="noopener">Paper (DOI)</a>
+<a href="https://doi.org/10.1037/a0022180" target="_blank" rel="noopener">Paper (DOI)</a>
 
 **Shedler 2010 - Psychodynamic**  ·  _1:43_
 <audio controls preload="none" src="audio/23_LM_24_Shedler_2010_Psychodynamic_1_43.m4a"></audio>
@@ -1238,7 +1238,7 @@ synthetic enough for safe reuse.
 ## Anxiety  (1)
 **Foa 2005 - Prolonged Exposure**  ·  _1:42_
 <audio controls preload="none" src="audio/29_LM_29_Foa_2005_Prolonged_Exposure_1_42.m4a"></audio>
-<a href="https://doi.org/10.1037/0022-006X.70.4.867" target="_blank" rel="noopener">Paper (DOI)</a>
+<a href="https://doi.org/10.1037/0022-006X.73.5.953" target="_blank" rel="noopener">Paper (DOI)</a>
 
 
 ## Geriatric  (1)
