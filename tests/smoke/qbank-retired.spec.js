@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { requestGetWithRetry } from './net-resilience.js';
 
 // Policy (WP-37, PLAN_Taplinger_Feedback_and_Therapy_Library_2026-08-20.md §A2, decided by
 // Dr. Moss): the practice bank serves FACULTY-ATTESTED items only by default; un-attested
@@ -10,7 +11,7 @@ import { test, expect } from '@playwright/test';
 // site end-to-end: pool math in both toggle states, persistence, and per-question labels.
 
 async function bank(page, baseURL) {
-  const res = await page.request.get(`${baseURL}/question_bank.json`);
+  const res = await requestGetWithRetry(page.request, `${baseURL}/question_bank.json`);
   expect(res.ok()).toBeTruthy();
   const data = await res.json();
   const items = data.items || data;

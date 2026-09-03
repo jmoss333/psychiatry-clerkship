@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { routeFetchWithRetry } from './net-resilience.js';
 
 const TOOL = '/tools/communication-practice.html';
 const SAFETY = 'Safety boundary: fictional practice only. Do not enter patient information. There are no free-text patient fields; this tool stores only anonymous practice choices in this browser. It is not clinical advice, legal advice, or a substitute for supervision, local policy, or validated instruments.';
@@ -393,7 +394,7 @@ test('spoken reps request no media and accept no text', async ({ page }) => {
 test('all faculty review statuses are labeled truthfully within the orient budget', async ({ page }) => {
   const reviewer = 'Faculty <Review> & Longitudinal Quality Council';
   await page.route('**/communication_cases.json', async (route) => {
-    const response = await route.fetch();
+    const response = await routeFetchWithRetry(route);
     const data = await response.json();
     data.cases[0].facultyReview = { status: 'reviewed', reviewer, lastReviewed: '2026-08-01' };
     data.cases[1].facultyReview = { status: 'pending', reviewer: '', lastReviewed: '' };
@@ -419,7 +420,7 @@ test('all faculty review statuses are labeled truthfully within the orient budge
 test('reviewer attribution remains escaped inside deeper coaching', async ({ page }) => {
   const reviewer = 'Faculty <Review> & Longitudinal Quality Council';
   await page.route('**/communication_cases.json', async (route) => {
-    const response = await route.fetch();
+    const response = await routeFetchWithRetry(route);
     const data = await response.json();
     data.cases[0].facultyReview = { status: 'reviewed', reviewer, lastReviewed: '2026-08-01' };
     await route.fulfill({ response, json: data });
@@ -442,6 +443,16 @@ test('storage contract preserves prior and unrelated data', async ({ page }) => 
       psychosis_validation_001: { choiceId: 'b', quality: 'best', at: '2026-07-31' },
     }));
     localStorage.setItem('cw_unrelated_test', JSON.stringify({ keep: true }));
+    // A card another tool scheduled into the SHARED review store. This tool writes COMM#
+    // cards there now, so the contract that matters is no longer "creates no cw_ key" but
+    // "adds its own card and leaves every other tool's alone".
+    localStorage.setItem('cw_srs_v1', JSON.stringify({
+      v: 1,
+      cards: { 'FAM#collateral_baseline_safety_001#opening': { ease: 2.5, ivl: 4, reps: 3, lapses: 0, due: 1, last: 0 } },
+      day: { lastDay: '', newToday: 0 },
+      stats: { streak: 2, lastStudy: '2026-07-31', totalReviews: 9, correct: 7, seen: 9 },
+      settings: { newPerDay: 12 },
+    }));
   });
   const cwKeysBefore = await page.evaluate(() => Object.keys(localStorage).filter((key) => key.startsWith('cw_')).sort());
   await page.reload({ waitUntil: 'domcontentloaded' });
@@ -463,6 +474,21 @@ test('storage contract preserves prior and unrelated data', async ({ page }) => 
   });
   await expect.poll(() => page.evaluate(() => localStorage.getItem('cw_unrelated_test'))).toBe(JSON.stringify({ keep: true }));
   await expect.poll(() => page.evaluate(() => Object.keys(localStorage).filter((key) => key.startsWith('cw_')).sort())).toEqual(cwKeysBefore);
+
+  // The rep scheduled its own card for daily review, under the id review.html builds.
+  await expect.poll(() => page.evaluate(() => {
+    const s = JSON.parse(localStorage.getItem('cw_srs_v1'));
+    return Object.keys(s.cards).sort();
+  })).toEqual(['COMM#suicide_direct_question_001', 'FAM#collateral_baseline_safety_001#opening']);
+  // ...without disturbing the other tool's card, or the retention stats, which count only
+  // what Daily Review itself served.
+  await expect.poll(() => page.evaluate(() => {
+    const s = JSON.parse(localStorage.getItem('cw_srs_v1'));
+    return { fam: s.cards['FAM#collateral_baseline_safety_001#opening'], stats: s.stats };
+  })).toEqual({
+    fam: { ease: 2.5, ivl: 4, reps: 3, lapses: 0, due: 1, last: 0 },
+    stats: { streak: 2, lastStudy: '2026-07-31', totalReviews: 9, correct: 7, seen: 9 },
+  });
 });
 
 for (const [name, raw] of [
@@ -502,6 +528,18 @@ test('history reset removes only communication attempts', async ({ page }) => {
       guardedness_privacy_001: { choiceId: 'b', quality: 'best', at: '2026-08-01' },
     }));
     localStorage.setItem('cw_unrelated_test', JSON.stringify({ keep: true }));
+    // Reset now reaches into the SHARED review store to drop this tool's own cards. The
+    // card below belongs to another tool and must survive; the COMM# one must not.
+    localStorage.setItem('cw_srs_v1', JSON.stringify({
+      v: 1,
+      cards: {
+        'COMM#guardedness_privacy_001': { ease: 2.5, ivl: 1, reps: 1, lapses: 0, due: 1, last: 0 },
+        'TOPIC#t_mood.md': { ease: 2.5, ivl: 6, reps: 4, lapses: 0, due: 2, last: 0 },
+      },
+      day: { lastDay: '', newToday: 0 },
+      stats: { streak: 2, lastStudy: '2026-08-01', totalReviews: 9, correct: 7, seen: 9 },
+      settings: { newPerDay: 12 },
+    }));
   });
   await page.reload({ waitUntil: 'domcontentloaded' });
   const details = page.locator('[data-desktop-navigator] [data-practice-details]');
@@ -516,7 +554,10 @@ test('history reset removes only communication attempts', async ({ page }) => {
   });
   await reset.click();
   await expect.poll(() => page.evaluate(() => localStorage.getItem('cw_comm_v1'))).not.toBeNull();
-  expect(dismissedMessage).toBe('Reset all What Do You Say Next practice history stored in this browser? This does not affect page progress, daily review, dashboard settings, or other tools.');
+  expect(dismissedMessage).toBe('Reset all What Do You Say Next practice history stored in this browser? This also removes these cases from daily review. It does not affect page progress, dashboard settings, or other tools.');
+  // Dismissing the dialog must leave the shared store untouched too, not just cw_comm_v1.
+  await expect.poll(() => page.evaluate(() => Object.keys(JSON.parse(localStorage.getItem('cw_srs_v1')).cards).sort()))
+    .toEqual(['COMM#guardedness_privacy_001', 'TOPIC#t_mood.md']);
 
   await page.getByRole('button', { name: 'Start 20-second response' }).click();
   await observeAnnouncements(page);
@@ -531,6 +572,11 @@ test('history reset removes only communication attempts', async ({ page }) => {
   await expect(page.locator('#rep-status')).toHaveText('');
   await expect.poll(() => page.evaluate(() => localStorage.getItem('cw_comm_v1'))).toBeNull();
   await expect.poll(() => page.evaluate(() => localStorage.getItem('cw_unrelated_test'))).toBe(JSON.stringify({ keep: true }));
+  // Confirming drops this tool's scheduled cards and nothing else in the shared store.
+  await expect.poll(() => page.evaluate(() => Object.keys(JSON.parse(localStorage.getItem('cw_srs_v1')).cards).sort()))
+    .toEqual(['TOPIC#t_mood.md']);
+  await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('cw_srs_v1')).stats))
+    .toEqual({ streak: 2, lastStudy: '2026-08-01', totalReviews: 9, correct: 7, seen: 9 });
   const snapshot = await page.evaluate(() => ({
     phase: document.querySelector('[data-rep-panel]')?.getAttribute('data-phase'),
     countdown: document.querySelector('[data-countdown]')?.textContent || null,
@@ -903,7 +949,7 @@ test('mobile case browser is modal and returns focus', async ({ page }) => {
 
 test('no cases recovery never leaves a stale rep', async ({ page }) => {
   await page.route('**/communication_cases.json', async (route) => {
-    const response = await route.fetch();
+    const response = await routeFetchWithRetry(route);
     const data = await response.json();
     data.cases = data.cases.filter((item) => item.id === 'psychosis_validation_001');
     await route.fulfill({ response, json: data });
@@ -922,7 +968,7 @@ test('no-match filters interrupt speaking and recover at orient', async ({ page 
   await page.clock.install({ time: new Date('2026-08-01T12:00:00Z') });
   const errors = collectRuntimeErrors(page);
   await page.route('**/communication_cases.json', async (route) => {
-    const response = await route.fetch();
+    const response = await routeFetchWithRetry(route);
     const data = await response.json();
     data.cases = data.cases.filter((item) => item.id === 'psychosis_validation_001');
     await route.fulfill({ response, json: data });

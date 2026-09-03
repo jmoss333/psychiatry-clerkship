@@ -323,7 +323,7 @@ Based on articles retrieved from PubMed. Citation fields (journal, year, volume/
 - **Slug:** `cotw_20260810_panic_res.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-08-10_anxiety-panic-disorder_Resident.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 4,552 words
+- **Length:** 4,579 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -512,7 +512,7 @@ Map that onto this patient: fourteen months of illness, prominent avoidance cons
 4. **Then** convert alprazolam to a longer-half-life agent on a fixed schedule and taper slowly, with the patient sharing control of pace.
 5. **Screen and treat comorbidity** — MDD, PTSD/prolonged grief, alcohol use.
 6. **Assess suicide risk directly and repeatedly; safety-plan and escalate if ideation emerges** [8,9].
-7. **Do not add a beta-blocker** [7].
+7. **Do not add a beta-blocker for the panic disorder** [7] — it has no anti-panic efficacy; whether the hypertensive paroxysms themselves warrant episodic antihypertensive cover is a decision shared with the hypertension specialist.
 8. **Plan for maintenance** — adequate duration before any discontinuation attempt, booster CBT sessions, relapse-prevention plan, given the attenuation of CBT effects for panic disorder beyond 12 months [5].
 9. **Close the loop with cardiology** in writing — the referral question deserves an actual answer.
 
@@ -586,7 +586,7 @@ Based on articles retrieved from PubMed.
 - **Slug:** `cotw_20260803_lithium_res.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-08-03_lithium-monitoring-toxicity-interactions_Resident.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 3,915 words
+- **Length:** 4,027 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -757,7 +757,7 @@ The **EXTRIP workgroup** recommendations (systematic review plus two-round modif
 
 **Practical monitoring changes in pregnancy:**
 - Renal clearance rises through pregnancy → levels tend to **fall**; more frequent level checks are required.
-- Plan explicitly for **delivery**, when clearance abruptly normalizes and the risk direction reverses toward toxicity; hydration status during labor matters.
+- Plan explicitly for **delivery**, when clearance abruptly normalizes and the risk direction reverses toward toxicity. Decide in advance with obstetrics whether to continue lithium with close level monitoring and assured hydration or to reduce/withhold around labour — practice genuinely varies by centre, so the resident-level task is to have made the decision, not to have applied one rule. Check a level at delivery and in the early postpartum, and return to the **pre-pregnancy** dose rather than the higher pregnancy dose once GFR falls; this is the commonest route to postpartum toxicity. Counsel on transient neonatal effects (hypotonia, poor feeding), and address **breastfeeding** explicitly: lithium is not an absolute contraindication in a healthy term infant, but it requires a shared decision, infant monitoring, and a plan for infant hydration and levels during illness.
 - Fetal echocardiography and coordination with maternal–fetal medicine.
 - Use the **lowest effective dose**, given the dose–response signal [8].
 

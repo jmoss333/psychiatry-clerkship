@@ -19,6 +19,7 @@
  */
 
 import { test } from '@playwright/test';
+import { requestGetWithRetry, requestHeadWithRetry } from './net-resilience.js';
 import { readdirSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -66,7 +67,7 @@ for (const site of ['ms3', 'res']) {
     }
 
     // Probe the deploy (it may not be live yet)
-    const probe = await request.head(deployUrl, {
+    const probe = await requestHeadWithRetry(request, deployUrl, {
       timeout: 15_000,
       failOnStatusCode: false,
     });
@@ -89,7 +90,7 @@ for (const site of ['ms3', 'res']) {
 
     for (const relPath of audioFiles) {
       const url = `${deployUrl}/${relPath}`;
-      const resp = await request.get(url, {
+      const resp = await requestGetWithRetry(request, url, {
         timeout: 20_000,
         failOnStatusCode: false,
       });

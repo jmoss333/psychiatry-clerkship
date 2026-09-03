@@ -79,7 +79,7 @@ The critical caveat for the wards: **CIWA-Ar requires a patient who can communic
    - **Long-acting (chlordiazepoxide, diazepam)** — self-tapering, smoother course; preferred in most patients.
    - **Short/intermediate-acting without oxidative metabolism (lorazepam, oxazepam)** — preferred in **significant liver disease** and in **older adults**, because they avoid hepatic oxidation and accumulation; note the risk of precipitating or worsening hepatic encephalopathy with sedatives in advanced liver disease [8].
    - *In this case:* AST 88 with AST:ALT ≈ 2:1 and platelets 128k suggest liver disease — **lorazepam** is the safer choice.
-2. **Thiamine BEFORE glucose.** Give **parenteral thiamine** to any patient with heavy alcohol use and suspected or possible Wernicke encephalopathy, and always **before** IV dextrose — a glucose load in a thiamine-deficient patient can precipitate Wernicke [6]. Practice guidelines are consistent that parenteral thiamine belongs in high-risk patients, though they vary widely on dose and duration, and evidence for universal prophylactic dosing is thin [6].
+2. **Thiamine before or with glucose.** Give **parenteral (IV or IM) thiamine** to any patient with heavy alcohol use, and give **high-dose parenteral thiamine, continued over several days** — substantially more than the thiamine in a routine "banana bag" — whenever Wernicke encephalopathy is suspected; under-dosing is the commonest reason a treated Wernicke still progresses to Korsakoff. Give thiamine **before or together with** IV dextrose, because a glucose load in a thiamine-deficient patient can precipitate Wernicke [6] — but **never delay dextrose in symptomatic hypoglycemia** to hunt for thiamine; give the glucose and give the thiamine with it. Practice guidelines are consistent that parenteral thiamine belongs in high-risk patients, though they vary widely on dose and duration, and evidence for universal prophylactic dosing is thin [6].
 3. **Correct electrolytes** — replete **magnesium** and **potassium** (both low here); check glucose and sodium.
 4. **Set the level of care and monitoring** — frequent vitals and mental-status checks, especially across the 48–96 h DT window and around his operation. Escalate to a step-down/ICU setting for severe or refractory withdrawal.
 5. **Treat the underlying disorder.** Detoxification is *not* treatment of alcohol use disorder (AUD). Before discharge, offer **AUD pharmacotherapy** — **oral naltrexone 50 mg/d** and **acamprosate** are first-line with the strongest evidence (number needed to treat ~11–18 to prevent one person returning to any drinking), alongside psychosocial treatment [9].
@@ -115,7 +115,7 @@ The critical caveat for the wards: **CIWA-Ar requires a patient who can communic
 **Management ladder:**
 1. **Risk-stratify on admission** (PAWSS) → decide prophylaxis vs. monitoring, and the right level of care [5].
 2. **Benzodiazepines** — symptom-triggered (CIWA-Ar) *only* if the patient can be validly assessed; otherwise fixed-schedule or front-loaded [1,2,7].
-3. **Parenteral thiamine before glucose**; replete **magnesium** and potassium [6].
+3. **Parenteral thiamine before or with glucose** (high-dose and continued for several days if Wernicke is suspected); replete **magnesium** and potassium [6].
 4. **Monitor across the full 48–96 h DT window**, and around any procedure or surgery.
 5. **Escalate** for delirium, refractory autonomic instability, or rapidly rising benzodiazepine requirements — consider phenobarbital and ICU care [10,11].
 6. **Rule out mimics** whenever the picture doesn't fit — head CT, infection, metabolic.
@@ -130,7 +130,7 @@ The critical caveat for the wards: **CIWA-Ar requires a patient who can communic
 - **Common MS3 errors to correct:**
   1. Treating CIWA-Ar as a diagnostic test rather than a severity scale — and applying it to patients who cannot be validly scored.
   2. Assuming a patient who looks well at 12 hours is "past" withdrawal.
-  3. Giving glucose before thiamine.
+  3. Omitting thiamine, or under-dosing it, when carbohydrate is given — and the mirror-image error of delaying emergency dextrose in a hypoglycemic patient in order to give thiamine first.
   4. Reaching for an antipsychotic (or a beta-blocker) as monotherapy for agitation in withdrawal.
   5. Conflating **hallucinosis** (clear sensorium) with **DT** (delirium).
   6. Anchoring on withdrawal in a patient who fell — missing the subdural.

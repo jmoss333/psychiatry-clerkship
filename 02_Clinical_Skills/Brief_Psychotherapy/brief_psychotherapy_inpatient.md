@@ -4,7 +4,7 @@
 
 **In one line** — You will not complete a course of therapy on an inpatient unit, but almost every encounter is a *micro-intervention*. The skill is to read the mechanism driving this patient's crisis right now and match one brief technique to it — then hand the work off to outpatient care.
 
-**Why brief therapy is worth doing inpatient** — Across trials, inpatient psychotherapy adds a small-to-moderate benefit over treatment-as-usual, and **no single modality is clearly superior** (pooled SMD ~0.24, NNT ~7; comparable effects for CBT, BA, and problem-solving, g≈0.42). The practical takeaway is liberating: *stop agonizing over which "school" to use and match the technique to the mechanism in front of you.* Diagnosis and the driver of the crisis matter more than the brand of therapy.
+**Why brief therapy is worth doing inpatient** — Across trials, inpatient psychotherapy adds a small-to-moderate benefit over treatment-as-usual, and **no single modality is clearly superior** (small-to-moderate pooled effects with no clear winner across modalities — the specific meta-analyses are traced on the Evidence-Based Inpatient Psychiatry page). The practical takeaway is liberating: *stop agonizing over which "school" to use and match the technique to the mechanism in front of you.* Diagnosis and the driver of the crisis matter more than the brand of therapy.
 
 ## Match the skill to the mechanism
 

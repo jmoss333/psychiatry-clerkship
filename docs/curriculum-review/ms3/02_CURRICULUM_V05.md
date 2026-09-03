@@ -805,7 +805,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **Slug:** `agitation.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `04_Acute_and_Safety/Agitation_and_Restraint/agitation_restraint_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 1,093 words
+- **Length:** 1,208 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -912,7 +912,7 @@ Treat the suspected cause. Prefer the oral, collaborative route over an intramus
 
 ## Restraint and seclusion
 
-Restraint and seclusion are safety interventions, never treatments. They do not fix the underlying problem; they buy time. They require a time-limited physician order, close and continuous monitoring, and discontinuation the moment the patient is safe — not the end of a shift. A post-event debrief with the team (and, where appropriate, the patient) is part of the standard, not an extra. These practices are governed by CMS and Joint Commission standards, and they carry real physical risk (injury, aspiration) and psychological risk (re-traumatization). Apply trauma-informed care throughout, and stay alert to the documented inequities in who gets restrained and how often: Black patients face roughly **1.85× the adjusted odds of a restraint event** on inpatient psychiatric units (Singal et al., *Psychiatric Services* 2024), and higher adjusted odds of physical and chemical restraint during emergency psychiatric evaluation in the ED as well (aOR ~1.35; Smith et al., *Psychiatric Services* 2022) — that disparity is a quality-of-care issue, not a footnote.
+Restraint and seclusion are safety interventions, never treatments. They do not fix the underlying problem; they buy time. They require a time-limited physician order, close and continuous monitoring, and discontinuation the moment the patient is safe — not the end of a shift. A post-event debrief with the team (and, where appropriate, the patient) is part of the standard, not an extra. These practices are governed by CMS and Joint Commission standards, and the standards are specific rather than aspirational: for restraint or seclusion used for **violent or self-destructive behaviour**, the CMS Conditions of Participation (42 CFR §482.13(e)) require a **face-to-face** (in-person) evaluation by a physician/LIP or trained RN **within 1 hour** of initiation, cap a single order at **4 hours for adults 18 and over** (shorter for minors) with renewal only after re-evaluation, and **prohibit PRN and standing restraint orders** outright. The cap is a ceiling, not an allowance. Non-violent restraint used for medical purposes — the soft wrist restraint protecting a line — runs on a different rule set with no 1-hour face-to-face requirement, so do not carry the behavioural numbers onto a medical floor. They also carry real physical risk (injury, aspiration) and psychological risk (re-traumatization). Apply trauma-informed care throughout, and stay alert to the documented inequities in who gets restrained and how often: Black patients face roughly **1.85× the adjusted odds of a restraint event** on inpatient psychiatric units (Singal et al., *Psychiatric Services* 2024), and higher adjusted odds of physical and chemical restraint during emergency psychiatric evaluation in the ED as well (aOR ~1.35; Smith et al., *Psychiatric Services* 2022) — that disparity is a quality-of-care issue, not a footnote.
 
 ## What the student does
 
@@ -1359,7 +1359,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Withdrawal: COWS tool · CIWA-Ar official form
 - Two structured scales you’ll use on the unit — alcohol (CIWA-Ar) and opioids (COWS). COWS is scored here; the CIWA-Ar is not reproduced on this page — score it from your unit’s approved form. The trend matters as much as the number.
 - CIWA-Ar — official form & training
-- a rising or high CIWA signals risk of withdrawal seizures and delirium tremens. Benzodiazepines are first-line per protocol; treat early. Thiamine before glucose.
+- a rising or high CIWA signals risk of withdrawal seizures and delirium tremens. Benzodiazepines are first-line per protocol; treat early. Thiamine before or with glucose — never delay emergency dextrose for true hypoglycemia.
 - This page no longer reproduces the CIWA-Ar.
 - Use your unit’s current approved form to score at the bedside.
 - Why the items were removed.

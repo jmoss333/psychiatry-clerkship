@@ -421,7 +421,7 @@ Core student tasks:
   seizures or delirium tremens, overdose history, and current symptoms.
 - Use CIWA-Ar or COWS only as supervised local tools, not as independent dosing
   calculators.
-- Remember thiamine before glucose when alcohol-related thiamine deficiency is
+- Remember thiamine before or with glucose when alcohol-related thiamine deficiency is
   plausible.
 - Link opioid-risk patients to naloxone and MOUD planning before discharge.
 - Use motivational interviewing and nonjudgmental language.

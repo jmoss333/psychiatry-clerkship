@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { requestGetWithRetry } from './net-resilience.js';
 
 // Risk-aware review status against the final built Front Door. Route-level notices still use the
 // full governance ledger; Library and Search use the compact build-projected triplet. Targets are
@@ -14,7 +15,7 @@ function flattenNav(nav) {
 }
 
 async function loadNavItems(request, baseURL) {
-  const res = await request.get(`${baseURL}/nav.json`);
+  const res = await requestGetWithRetry(request, `${baseURL}/nav.json`);
   const nav = await res.json();
   return flattenNav(nav);
 }
