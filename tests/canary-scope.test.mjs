@@ -126,6 +126,41 @@ test('the client-runtime fault-injection suites stay out of the canary', () => {
   }
 });
 
+test('no canary spec identifies its audience by an exact project name', () => {
+  // The hole this test closes. #473 added canary-ms3/canary-res, but the specs derived audience
+  // from `testInfo.project.name === 'nav-res'`, so canary-res fell through to the MS3 branch and
+  // asserted 83 routes against the resident site's 92 on the canary's first live run. Two red
+  // tests, zero production signal — the exact failure mode #473 set out to remove.
+  //
+  // The scope test above passed throughout, because composition was never the problem: a spec can
+  // be correctly chosen and still be unable to tell which site it is pointed at. Audience must
+  // come from audience.js, which derives it from the project's suffix.
+  const BARE_PREDICATE = /project\.name\s*===\s*['"]nav-(res|ms3)['"]/;
+  for (const spec of new Set(Object.values(EXPECTED).flat())) {
+    const source = fs.readFileSync(path.join(smokeDir, spec), 'utf8');
+    assert.ok(
+      !BARE_PREDICATE.test(source),
+      `${spec} compares project.name to a literal 'nav-*'. A canary project is named canary-*, `
+        + 'so that test silently answers for the wrong audience. Use isResidentProject/audienceOf '
+        + 'from tests/smoke/audience.js instead.',
+    );
+  }
+});
+
+test('audience.js resolves every project name in the config', async () => {
+  const { audienceOf } = await import(path.join(smokeDir, 'audience.js'));
+  const names = [...config.matchAll(/name: '([^']+)'/g)].map(m => m[1]);
+  assert.ok(names.includes('canary-res') && names.includes('nav-res'), 'expected the -res projects');
+  for (const name of names) {
+    const expected = name.endsWith('-res') ? 'resident' : 'ms3';
+    assert.equal(
+      audienceOf(name),
+      expected,
+      `project ${name} must resolve to the ${expected} audience`,
+    );
+  }
+});
+
 test('CI still runs the full nav-* projects, so nothing loses coverage', () => {
   const ci = fs.readFileSync(path.join(repo, '.github', 'workflows', 'ci.yml'), 'utf8');
   assert.match(
