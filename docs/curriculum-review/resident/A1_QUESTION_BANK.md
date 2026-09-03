@@ -3298,7 +3298,7 @@
 - The seizure occurred before admission; since he is now calmer, observation without immediate pharmacologic intervention is appropriate.
 - The seizure risk has passed — withdrawal seizures occur in the first 24–48 hours; further seizures are not expected after a first event.
 - Start a fixed-schedule antipsychotic — antipsychotics lower seizure threshold and provide targeted coverage for alcohol withdrawal psychosis.
-- Prior withdrawal seizure is a strong predictor of future seizures; this patient requires aggressive CIWA-Ar-guided benzodiazepine titration with close monitoring for progression to delirium tremens. **← keyed correct**
+- Prior withdrawal seizure is a strong predictor of future seizures; give a benzodiazepine promptly and use front-loaded or fixed-schedule dosing with symptom-triggered supplementation — not score-gated dosing alone — with close monitoring for progression to delirium tremens. **← keyed correct**
 
 **Rationale.** Underestimate the emergency in two forms, and Agitation = antipsychotic. Prior withdrawal seizure is explicitly the most robust predictor of future seizure risk. Antipsychotics lower seizure threshold and are contraindicated for seizure prevention in alcohol withdrawal. CIWA-Ar-guided benzodiazepines are the treatment, and DT vigilance is the priority.
 

@@ -1,6 +1,6 @@
 # MS3 · Navigation map
 
-Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-02 @ `fc66f4f`.
+Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-02 @ `bda0a99`.
 
 ## Orientation  *(pinned)*
 
@@ -44,7 +44,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 11 | Geriatric | `t_geri.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Geriatric/geriatric_psychiatry_inpatient_teaching.md` | 893 |
 | 12 | Perinatal | `t_perinatal.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/Perinatal/perinatal_psychiatry_inpatient_teaching.md` | 1145 |
 | 13 | Neurodevelopmental Disorders | `t_neurodev.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Neurodevelopmental/neurodevelopmental_disorders_inpatient_teaching.md` | 1143 |
-| 14 | Eating Disorders | `t_eating.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/Eating_Disorders/eating_disorders_inpatient_teaching.md` | 1308 |
+| 14 | Eating Disorders | `t_eating.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/Eating_Disorders/eating_disorders_inpatient_teaching.md` | 1336 |
 | 15 | Neurocognitive (Dementia) | `t_neurocog.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/Neurocognitive/neurocognitive_disorders_inpatient_teaching.md` | 880 |
 | 16 | Somatic Symptom & Related | `t_somatic.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Somatic/somatic_symptom_disorders_inpatient_teaching.md` | 757 |
 | 17 | Sleep-Wake Disorders | `t_sleep.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Sleep/sleep_wake_disorders_inpatient_teaching.md` | 675 |
@@ -114,7 +114,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 |---|---|---|---|---|---|---|---|
 | 1 | Documentation & Oral Presentation | `doc_oral.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/MS3/Student_Ready_Pack/05_documentation_oral_presentation/student_documentation_and_oral_presentations.md` | 817 |
 | 2 | Treatment Team Rounding Prep | `oral.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Oral_Presentations/oral-presentation-module.html` |  |
-| 3 | High-Yield Rounds Questions | `rounds_questions.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md` | 8702 |
+| 3 | High-Yield Rounds Questions | `rounds_questions.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md` | 8724 |
 
 ## Practice and Exam Prep
 
