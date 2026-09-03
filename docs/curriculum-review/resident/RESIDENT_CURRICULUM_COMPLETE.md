@@ -3,7 +3,7 @@
 # RESIDENT curriculum — complete content transcript for clinical review
 
 **Site:** `mmc-psychiatry-residents-sanford` · **Audience:** Residents — MMC/Sanford psychiatry residents
-**Generated:** 2026-09-03 from build `f0c5300` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
+**Generated:** 2026-09-03 from build `cae930e` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
 
 ## Who this is for
 
@@ -86,7 +86,7 @@ High-yield places to concentrate: the `topic_meta` **can't-miss**, **rule-out** 
 
 # RESIDENT · Navigation map
 
-Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-03 @ `f0c5300`.
+Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-03 @ `cae930e`.
 
 ## Orientation  *(pinned)*
 
@@ -6928,7 +6928,9 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
     "label": "Antipsychotic + benzodiazepine combination",
     "tokenId": "agitation.im_options",
     "hazardIf": {
-     "delirium": "Benzodiazepine component worsens non-withdrawal delirium."
+     "delirium": "Benzodiazepine component worsens non-withdrawal delirium.",
+     "catatonia": "The antipsychotic component can precipitate or worsen catatonia and NMS — give the benzodiazepine alone and hold the antipsychotic.",
+     "parkinson_dlb": "The antipsychotic component carries the same D2 hazard in Parkinson disease/Lewy body dementia as a typical agent — do not use this combination here."
     },
     "cautionIf": {
      "im_olanzapine_benzo": "Do not combine IM olanzapine with a parenteral benzodiazepine (FDA label — respiratory/CV risk).",

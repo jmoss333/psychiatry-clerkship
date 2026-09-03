@@ -364,7 +364,9 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
     "label": "Antipsychotic + benzodiazepine combination",
     "tokenId": "agitation.im_options",
     "hazardIf": {
-     "delirium": "Benzodiazepine component worsens non-withdrawal delirium."
+     "delirium": "Benzodiazepine component worsens non-withdrawal delirium.",
+     "catatonia": "The antipsychotic component can precipitate or worsen catatonia and NMS — give the benzodiazepine alone and hold the antipsychotic.",
+     "parkinson_dlb": "The antipsychotic component carries the same D2 hazard in Parkinson disease/Lewy body dementia as a typical agent — do not use this combination here."
     },
     "cautionIf": {
      "im_olanzapine_benzo": "Do not combine IM olanzapine with a parenteral benzodiazepine (FDA label — respiratory/CV risk).",
