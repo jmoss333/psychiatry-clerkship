@@ -64,7 +64,7 @@
         "hazardIf": { "delirium": "Benzodiazepines worsen non-withdrawal delirium — avoid unless alcohol/sedative withdrawal or end-of-life." },
         "cautionIf": { "older_dementia": "Falls, cognitive worsening, and delirium risk in older adults (Beers); midazolam has the highest adverse-event rate.", "respiratory": "Respiratory depression risk; caution with pulmonary disease/hepatic impairment." } },
       { "id": "combo", "label": "Antipsychotic + benzodiazepine combination", "tokenId": "agitation.im_options",
-        "hazardIf": { "delirium": "Benzodiazepine component worsens non-withdrawal delirium." },
+        "hazardIf": { "delirium": "Benzodiazepine component worsens non-withdrawal delirium.", "catatonia": "The antipsychotic component can precipitate or worsen catatonia and NMS — give the benzodiazepine alone and hold the antipsychotic.", "parkinson_dlb": "The antipsychotic component carries the same D2 hazard in Parkinson disease/Lewy body dementia as a typical agent — do not use this combination here." },
         "cautionIf": { "im_olanzapine_benzo": "Do not combine IM olanzapine with a parenteral benzodiazepine (FDA label — respiratory/CV risk).", "note": "Combination is often most effective for moderate/severe agitation (Siafis 2026) but stacks sedation/respiratory risk — monitor closely." } },
       { "id": "treat_cause", "label": "Treat the underlying cause first", "tokenId": null },
       { "id": "im_if_danger", "label": "IM medication only if imminently dangerous & PO refused", "tokenId": "agitation.restraint_policy" }
