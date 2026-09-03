@@ -30,7 +30,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Emergency services — 911. 24/7. For imminent danger to life.
 - Contacts verified 2026-07-27 against official sources. Maintained in crisis_resources.json ; do not edit these numbers inline.
 
-**Authored clinical strings (24):**
+**Authored clinical strings (27):**
 
 - Little interest or pleasure in doing things
 - Feeling down, depressed, or hopeless
@@ -55,7 +55,10 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Two of the screeners named in the clerkship objectives. Tap the response for each item to score live. These support — they don't replace — a clinical interview, and a positive screen warrants a focused assessment.
 - PHQ-9 bands: 0–4 minimal · 5–9 mild · 10–14 moderate · 15–19 moderately severe · 20–27 severe. ≥10 has good sensitivity/specificity for major depression. Always review item 9 (self-harm) regardless of total.
 - GAD-7 bands: 0–4 minimal · 5–9 mild · 10–14 moderate · 15–21 severe. ≥10 is the usual threshold for further evaluation of generalized anxiety; it also screens reasonably for panic, social anxiety, and PTSD.
-- Educational tool for clinical trainees. PHQ-9 and GAD-7 are freely available public instruments (Spitzer, Kroenke, Williams). Scoring is a screen, not a diagnosis — confirm clinically and follow your team's protocols. No PHI is stored. Joshua Moss, MD | Psychiatrist
+- The tally here is for learning the instruments. Pfizer publishes the whole PHQ family and the GAD-7 — the printable forms, the scoring instructions and translations in roughly 80 languages — which is what you hand a patient and document from.
+- PHQ-9 & GAD-7 at phqscreeners.com →
+- Free, no registration; leaves this site for phqscreeners.com. Use your clinic’s current version where one is in the EHR — that is the copy your documentation refers to.
+- Educational tool for clinical trainees. PHQ-9 and GAD-7 are published by Pfizer (Spitzer, Kroenke, Williams) and are the two instruments this library still reproduces; the official forms are linked above. Scoring is a screen, not a diagnosis — confirm clinically and follow your team's protocols. No PHI is stored. Joshua Moss, MD | Psychiatrist
 
 ---
 
