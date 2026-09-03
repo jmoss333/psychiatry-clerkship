@@ -1,6 +1,7 @@
 # On-the-Unit Practice and Tools Panel — Relevance Plan
 
 **Date:** 2026-09-03 · **Status:** plan, not yet implemented · **Surface:** the pinned practice panel on every topic page, both sites.
+**Decisions taken:** D-1 (2026-09-03) — panel stays collapsed, fix its contents; no CSS change, no visual-baseline regeneration. See §7.
 
 **Goal:** Make the panel that is pinned to all 74 topic pages say something true and specific about *that page* — correct tool names, governance-correct instrument handling, audience-neutral copy, one obvious next action instead of a nine-link dump.
 
@@ -169,18 +170,18 @@ Ordered so each lands independently and green.
 
 - [ ] **Kill the fake mode UI.** Remove `practiceModeCfg`, `sortPracticeTools`, `sortPracticeCases`, `window.__casePriority`, and the non-interactive `.tpl-chip.mode` chips (F4). *(Alternative, if chips should stay: make them real filters — costed in §6.)*
 - [ ] Replace `practiceModeText` with a **page-specific reason** that is not a duplicate of the grid: prefer `cant` → `ruleOut[0]` → `clinicalWorkflow.ask`, and **never** `clinicalWorkflow.rounds` while the grid renders it (F5). Drop the "Ward mode: " prefix.
-- [ ] Add a single **"Do this next"** primary action chosen by the §3 ranking, rendered at the top of the panel body with the rest demoted to a secondary row.
+- [ ] Add a single **"Do this next"** primary action chosen by the §3 ranking, rendered as the first row **inside the panel body**, with the rest demoted to a secondary row. Per D-1 the panel stays collapsed, so this changes ordering and emphasis within the existing `.practice-body`, not the summary and not anything above the fold.
 - [ ] Make the primary action phase-aware via the existing `phasePolicy()` — in `taper`/`consolidate` prefer retrieval (`review.html`, page quiz); otherwise prefer the page's safety or rehearsal tool. `phasePolicy` already reads `cw_shelf_date`; **no new storage key.**
 
-**Acceptance:** every page shows exactly one primary action; no sentence appears twice in one panel. **Test:** pure-function test over all 74 metas — one primary, reason ≠ any grid value, deterministic for a fixed `nowMs`.
+**Acceptance:** every page shows exactly one primary action; no sentence appears twice in one panel; `.practice-summary` markup and the collapsed-state rendering are byte-identical to today. **Test:** pure-function test over all 74 metas — one primary, reason ≠ any grid value, deterministic for a fixed `nowMs`; plus an assertion that the summary block is unchanged.
 
 ### WP-E · Density and grouping
 
 - [ ] Group the secondary row into **Assess · Rehearse · Reference · Review**, mapped from `tool_registry.category` + the rights flag. Suppress an empty group.
 - [ ] Cap visible secondary actions (proposed: 4) behind a "More for this page" disclosure; drills keep their existing dedicated block.
-- [ ] Consider `open` by default when `safetyLevel === 'high'` — a risk page's panel is the point of the page. *(Author decision, §7.)*
+- [ ] **Reuse the existing `.practice-*` classes and the `practice-drills` grouping idiom rather than adding new ones.** Per D-1 this workstream introduces no new CSS: grouping is achieved by emitting the existing `practice-actions` block once per group with a `practice-drill-head`-style heading, which is already styled.
 
-**Acceptance:** no page renders more than 5 visible actions before disclosure; the worst page (`week1.md`, 17) is legible. **Test:** assert the visible-action cap across all metas.
+**Acceptance:** no page renders more than 5 visible actions before disclosure; the worst page (`week1.md`, 17) is legible; `clinical-warm.css` and the panel's CSS block in `spa_index.html` are unmodified, so no visual baseline needs regenerating. **Test:** assert the visible-action cap across all metas; assert the stylesheet diff is empty.
 
 ### WP-F · Content fills *(authoring, gated by `topic-meta-author` skill)*
 
@@ -199,8 +200,8 @@ Ordered so each lands independently and green.
 |---|---|---|---|
 | 1 | **WP-B + WP-C** | governance-correct, neutral copy | low — string + branch changes, no layout |
 | 2 | **WP-A** | registry-sourced labels and links | low — behaviour-preserving, big deletion |
-| 3 | **WP-D** | the actual relevance change | medium — visible redesign of the panel head |
-| 4 | **WP-E** | density | medium — layout + CSS |
+| 3 | **WP-D** | the actual relevance change | low — body-only ordering and copy (D-1) |
+| 4 | **WP-E** | density | low-medium — body-only regrouping, no new CSS (D-1) |
 | 5 | **WP-F** | content | low, but the slowest; unblocked by 1–4 |
 
 Phases 1–2 are worth doing on their own even if 3–5 are deferred: they remove a live governance mislabel and a drift class, and they delete 2.5 KB of hand-maintained duplication across four maps.
@@ -221,12 +222,22 @@ Phases 1–2 are worth doing on their own even if 3–5 are deferred: they remov
 
 ---
 
-## 7. Decisions for the author
+## 7. Decisions
 
-1. **Mode chips: remove or make real?** They are decorative today and imply a filter that does not exist. *Recommend removing* (WP-D) — the same relevance is better served by one ranked primary action than by five filters a learner must operate. Making them real is ~1 extra day: chips become buttons, `practiceModeCfg` gains genuine per-mode tool priorities, and mode persists in a `cw_*` key.
-2. **Default-open on high-safety pages?** Currently every panel is collapsed behind "Click to open" — including on suicide, violence, agitation, catatonia and withdrawal pages, where the panel *is* the point.
-3. **Quiz-less pages (31 of 74):** author quizzes, or suppress the empty section?
-4. **Withdrawal wording.** The registry title leads with COWS, which is correct. Confirm the panel should print the registry title verbatim rather than any shortened form.
+### Taken
+
+**D-1 (2026-09-03) — the panel stays a collapsed accessory; fix its contents.** Rejected: default-open on high-safety pages, and hoisting the reason or primary action above the fold. Consequences, binding on WP-D and WP-E:
+
+- `.practice-summary` markup, the "Click to open" affordance and the collapsed-state rendering are **unchanged**. Everything below happens inside `.practice-body`.
+- **No CSS change** — reuse the existing `.practice-*` classes. This is what keeps the Playwright visual baselines valid; regenerating them requires the "Refresh visual baselines" workflow_dispatch on the Ubuntu/Chromium runner and cannot be done from a laptop, so avoiding the need is worth a real constraint.
+- WP-D and WP-E drop from medium to low risk and from ~2-3 days to ~1 (§5).
+- The correctness findings F1-F5 are all still fixed in full; what is deferred is only the question of whether a learner who never opens the panel should see any of it. Worth revisiting once WP-F closes the content gaps — an empty panel is a bad thing to open by default, a complete one is not.
+
+### Open
+
+1. **Mode chips: remove or make real?** They are decorative today and imply a filter that does not exist. *Recommend removing* (WP-D) — the same relevance is better served by one ranked primary action than by five filters a learner must operate. Making them real is ~1 extra day: chips become buttons, `practiceModeCfg` gains genuine per-mode tool priorities, and mode persists in a `cw_*` key. **Note D-1 raises the cost of keeping them**: a real filter inside a collapsed panel is two interactions deep.
+2. **Quiz-less pages (31 of 74):** author quizzes, or suppress the empty section?
+3. **Withdrawal wording.** The registry title leads with COWS, which is correct. Confirm the panel should print the registry title verbatim rather than any shortened form.
 
 ---
 
@@ -237,5 +248,6 @@ Phases 1–2 are worth doing on their own even if 3–5 are deferred: they remov
 - `AUDIENCE_TOKEN_RE` matches nothing in `buildTpl` output across all 74 metas.
 - Exactly one primary action per page; no duplicated sentence within a panel.
 - ≤5 visible actions before disclosure (from a median of 9, max 17).
+- Per D-1: `.practice-summary` and the panel's CSS are unmodified, and the smoke suite passes **without** regenerating visual baselines.
 - 0 pages on the generic ward sentence; 0 pages with a near-empty panel.
 - `bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh ms3` and `res` both green; `node --test tests/*.test.mjs` green; smoke suite green.
