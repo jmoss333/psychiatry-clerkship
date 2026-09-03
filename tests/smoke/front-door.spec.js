@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { requestGetWithRetry, routeFetchWithRetry } from './net-resilience.js';
 
 const FROZEN_NOW = new Date('2026-08-17T12:00:00-04:00');
 const PHONE = { width: 390, height: 844 };
@@ -94,7 +95,7 @@ test('Path projects each audience duration without mobile overflow', async ({ pa
   await expect(page.locator('.fd-timeline__row')).toHaveCount(site.weekCount);
   expect(await page.locator('.fd-path').evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
   expect(await page.content()).toContain(site.pathId);
-  const retired = await page.request.get('/tools/learning-path.html');
+  const retired = await requestGetWithRetry(page.request, '/tools/learning-path.html');
   expect(retired.status()).toBe(404);
   await expectHealthy(page);
 });
@@ -261,7 +262,7 @@ test('Safety Kit, theme, and Progress remain usable and restore their invokers',
 test('malformed built protocol fails closed with every canonical crisis resource', async ({ page }, testInfo) => {
   await seedApp(page, testInfo);
   await page.route(/\/\?(?:$|#)|\/$/, async route => {
-    const response = await route.fetch();
+    const response = await routeFetchWithRetry(route);
     const needle = [
       'var FD_CANONICAL_INDEX=fdBuildIndex(FD_CURRICULUM,FD_TOPIC_META,FD_TOOL_REGISTRY,FD_SITE_MANIFEST);',
       '  var FD_INDEX=FD_CANONICAL_INDEX;',
