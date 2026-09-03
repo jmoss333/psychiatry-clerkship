@@ -33,12 +33,22 @@ const { evaluateInstrumentRights } = await import(MODULE);
 
 // ---------- fixture helpers ----------
 
+// A VALID entry: retired, and therefore carrying the route a withdrawal must leave
+// behind (INV-IR2). Tests that want the missing-route case delete officialSource.
 function entry(overrides = {}) {
   return {
     id: 'fx',
     instrument: 'Fixture Instrument',
     status: 'retired',
     decisionRef: 'docs/fixture-decision.md — recorded 2026-08-27',
+    officialSource: {
+      custodian: 'Fixture Custodian',
+      access: 'free-download',
+      formUrl: 'https://forms.example.org/fixture-scale',
+      formLabel: 'the fixture scale and its coding guide',
+      redistribution: 'link-only',
+      verified: '2026-09-03',
+    },
     signatures: ['a distinctive shipped fixture stem'],
     pages: [],
     ...overrides,
@@ -215,6 +225,104 @@ test('pins apply only to pages the site actually ships', () => {
   assert.deepEqual(r.hard, [], 'a page the build does not ship cannot fail its pins here — nav wiring is §2’s job');
 });
 
+// ---------- INV-IR2: a withdrawal must leave a route ----------
+//
+// Removing a reproduction takes away the only copy of the instrument the learner had. A page
+// that says "not reproduced here" and names no way to get the real form is a dead end — the
+// same shape of failure as ODC-4, where an attested page sent students to a tool that did not
+// exist. officialSource records the custodian's own download; these tests pin both halves:
+// the page must ship it, and it must be the custodian's URL rather than a copy hosted here.
+
+const routed = () => entry({
+  pages: [{
+    file: 'stub.html',
+    requireNotReproducedStatement: true,
+    requireOfficialSourceLink: true,
+  }],
+});
+const ROUTED_OK = {
+  file: 'stub.html', rel: 'tools/stub.html',
+  text: '<p>This page no longer reproduces the instrument.</p>'
+      + '<a href="https://forms.example.org/fixture-scale">Get the official form</a>',
+};
+
+test('a retired page that ships its recorded route passes', () => {
+  const r = run({ instruments: [routed()], pages: [ROUTED_OK], claimsGovernance: true });
+  assert.deepEqual(r.hard, []);
+});
+
+test('dropping the official-source link from a pinned page fails hard', () => {
+  const page = { ...ROUTED_OK, text: '<p>This page no longer reproduces the instrument.</p>' };
+  const r = run({ instruments: [routed()], pages: [page], claimsGovernance: true });
+  assert.equal(r.hard.length, 1);
+  assert.match(r.hard[0], /official-source link/i);
+  assert.match(r.hard[0], /forms\.example\.org/);
+  assert.match(r.hard[0], /dead end/i);
+});
+
+test('naming the custodian in prose is not a route — the learner needs the href', () => {
+  // The whole point is a link someone can follow off a page that no longer has the form.
+  const page = { ...ROUTED_OK, text: '<p>Not reproduced. Ask Fixture Custodian for the form.</p>' };
+  const r = run({ instruments: [routed()], pages: [page], claimsGovernance: true });
+  assert.equal(r.hard.length, 1);
+  assert.match(r.hard[0], /official-source link/i);
+});
+
+test('a pin cannot demand a route the registry never recorded', () => {
+  const bare = routed();
+  delete bare.officialSource;
+  const r = run({ instruments: [bare], pages: [ROUTED_OK], claimsGovernance: true });
+  // Two findings, deliberately: the retired-without-a-route failure AND the dangling pin.
+  assert.equal(r.hard.length, 2);
+  assert.ok(r.hard.some((m) => /no officialSource/.test(m)));
+  assert.ok(r.hard.some((m) => /records no officialSource\.formUrl/.test(m)));
+});
+
+test('retiring an instrument without recording a route fails hard', () => {
+  const bare = entry();
+  delete bare.officialSource;
+  const r = run({ instruments: [bare], pages: [CLEAN_PAGE] });
+  assert.equal(r.hard.length, 1);
+  assert.match(r.hard[0], /must leave a route/i);
+});
+
+test('a restricted instrument needs a route too (the BFCRS standing)', () => {
+  const bare = entry({ status: 'restricted' });
+  delete bare.officialSource;
+  const r = run({ instruments: [bare], pages: [CLEAN_PAGE] });
+  assert.equal(r.hard.length, 1);
+  assert.match(r.hard[0], /must leave a route/i);
+});
+
+test('mirroring the form here instead of linking the custodian fails hard', () => {
+  // Hosting the whole form is BROADER redistribution than the excerpts that were withdrawn.
+  // Recording a repo-relative path is the shape that mistake would take.
+  for (const bad of ['/forms/fixture-scale.pdf', 'forms/fixture-scale.pdf', 'http://forms.example.org/x']) {
+    const mirrored = entry();
+    mirrored.officialSource.formUrl = bad;
+    const r = run({ instruments: [mirrored], pages: [CLEAN_PAGE] });
+    assert.equal(r.hard.length, 1, `expected a finding for ${bad}`);
+    assert.match(r.hard[0], /link-only route must be an absolute https URL/);
+  }
+});
+
+test('a mirrored trainingUrl fails on the same rule', () => {
+  const mirrored = entry();
+  mirrored.officialSource.trainingUrl = '/training/fixture.html';
+  const r = run({ instruments: [mirrored], pages: [CLEAN_PAGE] });
+  assert.equal(r.hard.length, 1);
+  assert.match(r.hard[0], /trainingUrl/);
+});
+
+test('the mirror rule guards the registry, so it runs on ungoverned builds too', () => {
+  // Unlike the presentation pins, this is not a per-site choice: a mirrored form is a rights
+  // problem wherever it ships.
+  const mirrored = entry();
+  mirrored.officialSource.formUrl = 'forms/fixture-scale.pdf';
+  const r = run({ instruments: [mirrored], pages: [CLEAN_PAGE], claimsGovernance: false });
+  assert.equal(r.hard.length, 1);
+});
+
 // ---------- the real registry ----------
 
 test('the real instrument_rights.json parses and keeps signature discipline', () => {
@@ -232,6 +340,51 @@ test('the real instrument_rights.json parses and keeps signature discipline', ()
         `${e.id}: flagged-interim requires a file-scoped recorded waiver`);
     }
   }
+});
+
+test('every real instrument records a route, and every route points at its custodian', () => {
+  // Not only the retired/restricted ones the schema requires. COWS and PHQ-9/GAD-7 still
+  // ship reproductions, and the route is what makes "score from the real form, not from this
+  // page" an instruction a learner can follow; Stanley-Brown has no page at all, and carries
+  // its route so WP-06R-b's rehearsal tool inherits one instead of inventing it.
+  const rights = JSON.parse(fs.readFileSync(REGISTRY, 'utf8'));
+  for (const e of rights.instruments) {
+    const src = e.officialSource;
+    assert.ok(src, `${e.id}: no officialSource — a learner meeting this instrument needs the form`);
+    assert.match(src.formUrl, /^https:\/\/[^/\s]+\./,
+      `${e.id}: formUrl must be an absolute https custodian URL — this library links, never mirrors`);
+    assert.ok(src.formLabel && src.formLabel.length >= 8,
+      `${e.id}: say what the learner gets, not "click here"`);
+    assert.match(src.verified, /^\d{4}-\d{2}-\d{2}$/, `${e.id}: verified must be a date`);
+    if (src.trainingUrl) assert.match(src.trainingUrl, /^https:\/\/[^/\s]+\./);
+  }
+});
+
+test('the CIWA-Ar route is honest about being a third-party posting', () => {
+  // It is the one instrument here with no custodian still distributing a form — which is the
+  // same fact that made its rights unestablishable (2026-08-28). A route recorded as though
+  // CSAM were the rights-holder would quietly re-argue a settled question.
+  const rights = JSON.parse(fs.readFileSync(REGISTRY, 'utf8'));
+  const ciwa = rights.instruments.find((i) => i.id === 'ciwa-ar');
+  assert.equal(ciwa.officialSource.access, 'institution-protocol',
+    'the form the learner scores from is the unit’s, not the linked copy');
+  assert.match(ciwa.officialSource.note, /not (the rights-holder|a licensor)/i,
+    'the note must say whose copy this is');
+});
+
+test('recording a route did not disturb any disposition', () => {
+  // Routes are wayfinding and get refreshed freely; statuses move only with a decisionRef.
+  // Pinned so a future link fix cannot ride a status change in with it.
+  const rights = JSON.parse(fs.readFileSync(REGISTRY, 'utf8'));
+  const statuses = Object.fromEntries(rights.instruments.map((i) => [i.id, i.status]));
+  assert.deepEqual(statuses, {
+    cssrs: 'retired',
+    bfcrs: 'restricted',
+    cows: 'flagged-interim',
+    'ciwa-ar': 'retired',
+    'phq9-gad7': 'provisional',
+    'stanley-brown': 'restricted',
+  });
 });
 
 // ---------- end-to-end: the wired checker ----------
