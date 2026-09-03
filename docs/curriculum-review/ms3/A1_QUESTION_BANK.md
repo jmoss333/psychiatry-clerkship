@@ -1070,7 +1070,7 @@
 - The patient is experiencing sertraline discontinuation syndrome — the mania-like symptoms are medication side effects that will resolve spontaneously.
 - He has developed a superimposed stimulant use disorder — the pattern is classic methamphetamine intoxication.
 - This represents sertraline's therapeutic effect — the energy and motivation improvement of depression recovery can resemble hypomania.
-- Antidepressant monotherapy has precipitated a manic switch in a patient likely misdiagnosed as unipolar — the diagnosis should be reconsidered as bipolar disorder and the antidepressant should not be continued as monotherapy. **← keyed correct**
+- Antidepressant monotherapy has precipitated a manic switch in a patient likely misdiagnosed as unipolar — the diagnosis should be reconsidered as bipolar disorder, the antidepressant should be discontinued, and antimanic treatment started. **← keyed correct**
 
 **Rationale.** Side effect attribution, Substance first, and Recovery looks like hypomania all avoid the correct diagnosis. The mood page explicitly states: 'a bipolar depression misread as unipolar can be pushed into mania or rapid cycling by an antidepressant.' This is the clinical manifestation of that process — treatment-emergent mania revealing unrecognized bipolar disorder.
 
@@ -1424,7 +1424,7 @@
 - Prioritize medical workup to rule out thyroid dysfunction and eclampsia before any psychiatric treatment — pharmacotherapy is premature until medical causes are excluded.
 - The lucid interval between episodes provides reassurance — waxing-and-waning symptoms are inconsistent with psychosis; this is most likely a severe postpartum adjustment reaction.
 
-**Rationale.** Outpatient sufficient, Medical workup before treatment, and Lucid interval = reassurance all miss the emergency framing. The source states: 'POSTPARTUM PSYCHOSIS IS A PSYCHIATRIC EMERGENCY: rapid onset, waxing/waning presentation, and real risk to both mother and infant — admit and treat urgently.' The safety assessment must explicitly include the infant.
+**Rationale.** Outpatient sufficient and Lucid interval = reassurance miss the emergency framing. Medical workup before treatment is wrong only in its sequencing: delirium, eclampsia, thyroid disease, infection, and autoimmune encephalitis are excluded concurrently with emergency psychiatric admission — the organic workup proceeds in parallel and must never delay hospitalization or treatment. The source states: 'POSTPARTUM PSYCHOSIS IS A PSYCHIATRIC EMERGENCY: rapid onset, waxing/waning presentation, and real risk to both mother and infant — admit and treat urgently.' The safety assessment must explicitly include the infant.
 
 **Pearl.** Postpartum psychosis = immediate hospitalization, restrict unsupervised infant access, start lithium or antipsychotic urgently.
 
@@ -1460,7 +1460,7 @@
 - Bulimia nervosa — normal weight does not rule out bulimia; the binge-purge cycle, weight/shape self-evaluation, and Russell's sign (knuckle calluses) are the diagnostic markers. **← keyed correct**
 - Purging disorder — recurrent purging in the absence of objectively large binge episodes, with weight/shape concern, is classified as purging disorder.
 
-**Rationale.** Normal weight rules out AN, Binge = BED, and Normal weight = malingering all miss the defining features. The page: 'Bulimia nervosa — weight is often normal or high — a normal weight does not rule it out. Look for Russell's sign (knuckle calluses), parotid enlargement, and dental enamel erosion.' All three examination findings distinguish BN from BED: the presence of compensatory behaviors (purging) is the key.
+**Rationale.** Normal weight rules out AN, Binge = BED, and Purging without binges = purging disorder all miss the defining features — her recurrent, objectively large binge episodes with compensatory purging make this bulimia nervosa rather than purging disorder, which requires purging in the absence of binges. The page: 'Bulimia nervosa — weight is often normal or high — a normal weight does not rule it out. Look for Russell's sign (knuckle calluses), parotid enlargement, and dental enamel erosion.' All three examination findings distinguish BN from BED: the presence of compensatory behaviors (purging) is the key.
 
 **Pearl.** Normal weight DOES NOT rule out bulimia nervosa — look for binge-purge cycle + Russell's sign (knuckle calluses) + parotid swelling + dental erosion.
 
@@ -2811,14 +2811,14 @@
 
 **Stem.** A patient is pacing the hallway, speaking loudly, and waving his hands. He has not threatened anyone and is not in immediate danger of harming himself or others. You are the student. Which response is best?
 
-- Approach calmly, introduce yourself, acknowledge that he looks upset, and offer him a choice — 'Would it help to step somewhere quieter, or is there something I can get you?' **← keyed correct**
+- Let a nearby staff member know you are engaging, then approach calmly — without blocking his exit or yours — introduce yourself, acknowledge that he looks upset, and offer him a choice — 'Would it help to step somewhere quieter where staff can still see us, or is there something I can get you?' **← keyed correct**
 - Return to the nursing station and request a PRN intramuscular medication order before approaching
 - Call for additional staff and prepare for restraint in case the patient escalates
 - Instruct him firmly to return to his room or staff will have to intervene
 
 **Rationale.** Agitation = antipsychotic, Restraint first, and Commands over choices are the three forms of the same error: defaulting to force or medication before de-escalation. The Project BETA framework begins with calm presence, acknowledgment of distress, and genuine choices — not commands or preemptive escalation.
 
-**Pearl.** Verbal de-escalation — calm presence, acknowledgment, and genuine choices — is the default first response to agitation, not a courtesy step before medication.
+**Pearl.** Verbal de-escalation — calm presence, acknowledgment, and genuine choices — is the default first response to agitation, not a courtesy step before medication; tell a staff member before you engage, and stay near your exit without blocking the patient's.
 
 ### qb_saf_003
 

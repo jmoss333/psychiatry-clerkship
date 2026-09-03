@@ -841,7 +841,7 @@
       "options": [
         {
           "key": "A",
-          "t": "Approach calmly, introduce yourself, acknowledge that he looks upset, and offer him a choice — 'Would it help to step somewhere quieter, or is there something I can get you?'",
+          "t": "Let a nearby staff member know you are engaging, then approach calmly — without blocking his exit or yours — introduce yourself, acknowledge that he looks upset, and offer him a choice — 'Would it help to step somewhere quieter where staff can still see us, or is there something I can get you?'",
           "c": true
         },
         {
@@ -870,7 +870,7 @@
         }
       ],
       "why": "Agitation = antipsychotic, Restraint first, and Commands over choices are the three forms of the same error: defaulting to force or medication before de-escalation. The Project BETA framework begins with calm presence, acknowledgment of distress, and genuine choices — not commands or preemptive escalation.",
-      "pearl": "Verbal de-escalation — calm presence, acknowledgment, and genuine choices — is the default first response to agitation, not a courtesy step before medication.",
+      "pearl": "Verbal de-escalation — calm presence, acknowledgment, and genuine choices — is the default first response to agitation, not a courtesy step before medication; tell a staff member before you engage, and stay near your exit without blocking the patient's.",
       "evidence": "agitation.md 'Verbal de-escalation, first' — This is the default response, not a courtesy step. The Project BETA de-escalation framework (Richmond et al. 2012) centers respect, simple boundaries, listening, and offering choices rather than issuing commands."
     },
     {
@@ -1186,7 +1186,7 @@
           }
         }
       ],
-      "why": "Outpatient sufficient, Medical workup before treatment, and Lucid interval = reassurance all miss the emergency framing. The source states: 'POSTPARTUM PSYCHOSIS IS A PSYCHIATRIC EMERGENCY: rapid onset, waxing/waning presentation, and real risk to both mother and infant — admit and treat urgently.' The safety assessment must explicitly include the infant.",
+      "why": "Outpatient sufficient and Lucid interval = reassurance miss the emergency framing. Medical workup before treatment is wrong only in its sequencing: delirium, eclampsia, thyroid disease, infection, and autoimmune encephalitis are excluded concurrently with emergency psychiatric admission — the organic workup proceeds in parallel and must never delay hospitalization or treatment. The source states: 'POSTPARTUM PSYCHOSIS IS A PSYCHIATRIC EMERGENCY: rapid onset, waxing/waning presentation, and real risk to both mother and infant — admit and treat urgently.' The safety assessment must explicitly include the infant.",
       "pearl": "Postpartum psychosis = immediate hospitalization, restrict unsupervised infant access, start lithium or antipsychotic urgently.",
       "evidence": "t_perinatal.md — POSTPARTUM PSYCHOSIS IS A PSYCHIATRIC EMERGENCY: rapid onset, waxing/waning presentation, and real risk to both mother and infant — admit and treat urgently. The safety assessment must explicitly include the infant: assess risk to the baby, the parent's current access to the baby, and available supervision."
     },
@@ -4877,7 +4877,7 @@
         },
         {
           "key": "D",
-          "t": "Antidepressant monotherapy has precipitated a manic switch in a patient likely misdiagnosed as unipolar — the diagnosis should be reconsidered as bipolar disorder and the antidepressant should not be continued as monotherapy.",
+          "t": "Antidepressant monotherapy has precipitated a manic switch in a patient likely misdiagnosed as unipolar — the diagnosis should be reconsidered as bipolar disorder, the antidepressant should be discontinued, and antimanic treatment started.",
           "c": true
         }
       ],
@@ -7713,7 +7713,7 @@
           }
         }
       ],
-      "why": "Normal weight rules out AN, Binge = BED, and Normal weight = malingering all miss the defining features. The page: 'Bulimia nervosa — weight is often normal or high — a normal weight does not rule it out. Look for Russell's sign (knuckle calluses), parotid enlargement, and dental enamel erosion.' All three examination findings distinguish BN from BED: the presence of compensatory behaviors (purging) is the key.",
+      "why": "Normal weight rules out AN, Binge = BED, and Purging without binges = purging disorder all miss the defining features — her recurrent, objectively large binge episodes with compensatory purging make this bulimia nervosa rather than purging disorder, which requires purging in the absence of binges. The page: 'Bulimia nervosa — weight is often normal or high — a normal weight does not rule it out. Look for Russell's sign (knuckle calluses), parotid enlargement, and dental enamel erosion.' All three examination findings distinguish BN from BED: the presence of compensatory behaviors (purging) is the key.",
       "pearl": "Normal weight DOES NOT rule out bulimia nervosa — look for binge-purge cycle + Russell's sign (knuckle calluses) + parotid swelling + dental erosion.",
       "evidence": "t_eating.md — Bulimia nervosa — weight is often normal or high — a normal weight does not rule it out. Look for Russell's sign (knuckle calluses), parotid enlargement, and dental enamel erosion."
     },
