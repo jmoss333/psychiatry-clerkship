@@ -433,6 +433,7 @@ for (const f of toolFiles) {
     const msg = `dose literal in ${f}:${i + 1} → "${line.trim().slice(0, 70)}"`;
     if (doseHard) H(msg); else S(msg + ' (validated instrument? use an approved line sentinel or route to LOCAL_POLICY)');
   });
+  // DECISION: storage-namespaces  (decisions.json; bin/check_decision_drift.py)
   // Sanctioned localStorage namespaces: cw_* (shared hub) and rp_* (resident platform).
   const keys = [...html.matchAll(/localStorage\.(?:getItem|setItem|removeItem)\(\s*['"]([^'"]+)['"]/g)].map(m => m[1]);
   for (const k of keys) if (!k.startsWith('cw_') && !k.startsWith('rp_')) H(`non-namespaced storage key in ${f}: "${k}" (use cw_* or rp_*)`);
