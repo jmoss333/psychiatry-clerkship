@@ -61,6 +61,7 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:"Source Sans 3"
 .deckchip{background:var(--accent-light);color:var(--accent-dark);border-radius:999px;padding:3px 11px;font-size:.74rem;font-weight:600;letter-spacing:.02em}
 .snew{background:var(--info-light);color:var(--info)}
 .scount{margin-left:auto;color:var(--text-light);font-size:.8rem}
+.stemtext{font-size:.9rem;line-height:1.5;color:var(--text-light);margin:2px 0 10px;padding-left:10px;border-left:3px solid var(--border)}
 .qtext{font-family:"Source Serif 4",Georgia,serif;font-size:1.12rem;line-height:1.4;margin:2px 0 15px}
 .oeaudio{margin:0 0 14px;border:1px solid var(--border2);border-radius:9px;padding:8px 11px;background:var(--bg-alt)}
 .oeaudio summary{cursor:pointer;font-size:.85rem;color:var(--accent-dark);font-weight:600;list-style:none}
@@ -75,6 +76,13 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:"Source Sans 3"
 .opt[disabled]{cursor:default}
 .fb{margin:13px 0 4px;padding:11px 13px;border-radius:10px;background:var(--bg-alt);border:1px solid var(--border2);font-size:.9rem;color:var(--text-mid)}
 .fb b{color:var(--text)}
+.revealbtn{border:1.5px solid var(--accent);background:var(--surface);color:var(--accent-dark);border-radius:999px;padding:9px 16px;font:inherit;font-size:.9rem;font-weight:700;cursor:pointer}
+.revealbtn:hover{background:var(--accent-light)}
+.rvl{border:1.5px solid var(--accent);background:var(--accent-light);border-radius:11px;padding:11px 13px;margin:2px 0 4px}
+.rvl__k{display:block;text-transform:uppercase;letter-spacing:.09em;font-size:.68rem;font-weight:800;color:var(--accent-dark);margin-bottom:5px}
+.rvl__p{margin:0;font-size:.97rem;line-height:1.5}
+.rvl__list{margin:0;padding-left:1.1rem;font-size:.95rem;line-height:1.55}
+.rvl__list li{margin:3px 0}
 .grades{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
 .gr{border:1.5px solid var(--border);background:var(--surface);border-radius:11px;padding:10px 6px;cursor:pointer;font-family:inherit;font-weight:600;font-size:.9rem;color:var(--text);text-align:center}
 .gr:disabled{opacity:.38;cursor:default}
@@ -137,6 +145,125 @@ var GRADE_NAMES=["Again","Hard","Good","Easy"]; // grade buttons stay 0-3; mappe
 /*__PHASE_POLICY__*/
 /*__BLOCK_STORE__*/
 /*__SESSION_RECEIPT__*/
+/*__FAM_RETRIEVAL__*/
+
+/* Readable label for a content ref ("t_mood.md" -> "Mood"). Shared by the topic-card titles and
+   the receipt's re-read links so one page never gets two spellings. */
+function prettyRef(k){ return String(k||"").replace(/^t_/,"").replace(/^pg_/,"").replace(/\.md$/,"").replace(/_/g," ").replace(/\b\w/g,function(c){return c.toUpperCase();}); }
+
+/* Family retrieval cards for the daily queue — the third card source, after the landmark decks
+   and the per-topic quizzes. One card per authored prompt per scenario, under the SAME ids
+   family-systems-practice.html writes (famCardId, injected above), so a prompt graded in either
+   place moves one schedule rather than two. The reveal text is the scenario's own authored
+   content; nothing clinical originates here.
+
+   These cards are why the queue needed a second shape: a family prompt has no options to pick,
+   so it is answered aloud and then self-rated against the model. See card.kind below. */
+function famRecallCards(data){
+  var list=(data&&data.scenarios)||[], out=[], i, j;
+  if(Object.prototype.toString.call(list)!=='[object Array]') return out;
+  for(i=0;i<list.length;i++){
+    var it=list[i]; if(!it||!it.id) continue;
+    var prompts=famRetrievalFor(it);
+    for(j=0;j<prompts.length;j++){
+      var rp=prompts[j]; if(!rp||!rp.id||!rp.prompt) continue;
+      var reveal=famRevealContent(it,rp); if(reveal==null) continue;
+      out.push({
+        id:famCardId(it.id,rp.id), deck:"FAM", deckTitle:"Family · "+(it.title||it.id),
+        kind:"recall", seededOnly:true, q:rp.prompt, reveal:reveal,
+        page:(it.linkedPages&&it.linkedPages[0])||null
+      });
+    }
+  }
+  return out;
+}
+
+/* Which cards this tool may put in front of a learner. A card marked `seededOnly` qualifies
+   only once it already has a schedule — i.e. the learner has met it in the tool that authored
+   it. That is deliberate on both ends: the due row counts DUE cards, which by definition
+   already have a schedule, so serving exactly those closes the counted-but-never-served gap;
+   and every seededOnly card is written to be answered with its own tool's context on screen (a
+   family prompt beside its scenario, a reasoning step beside its patient brief), not sprung
+   cold as a new card here. So this page reviews what the tools taught; it never introduces.
+
+   The flag is per-card and not per-kind: the family cards are `recall` and the communication
+   and reasoning cards are `choice`, but all three are seeded by their own tool. Decks and topic
+   quizzes carry no flag and remain the only sources feeding the daily new-card allowance. */
+function queueable(card, cardState){ return !card || !card.seededOnly || !!cardState; }
+
+/* Map a tool's authored choices onto the queue's option shape. Both tools grade an option by
+   `quality` rather than a boolean, so `best` becomes the correct answer and the option's own
+   feedback becomes its explanation.
+
+   Rejecting anything but exactly one `best` is the point of the guard, not a formality:
+   correctIdx() takes the FIRST option flagged correct, so a case authored with two bests would
+   score a learner who picked the second one wrong, and one authored with none would mark every
+   answer wrong. Returning null drops that case from the queue instead — the tools themselves
+   still teach it, and the schema validators still see it. */
+function choiceOptions(choices){
+  var arr=(Object.prototype.toString.call(choices)==='[object Array]')?choices:[], out=[], best=0, i;
+  for(i=0;i<arr.length;i++){
+    var ch=arr[i];
+    if(!ch||typeof ch.text!=='string'||!ch.text) return null;
+    var isBest=(ch.quality==='best'); if(isBest) best++;
+    out.push({t:ch.text, c:isBest, fb:typeof ch.feedback==='string'?ch.feedback:""});
+  }
+  return (out.length>1&&best===1)?out:null;
+}
+
+/* Communication cards — one per case, under the SAME ids communication-practice.html writes.
+   The case prompt is self-contained (it quotes the patient), so it needs no stem. What the
+   review cannot reproduce is that tool's twenty-second spoken rep before the choices appear;
+   this is recognition practice on a line the learner has already tried to say. */
+function commChoiceCards(data){
+  var list=(data&&data.cases)||[], out=[], i;
+  if(Object.prototype.toString.call(list)!=='[object Array]') return out;
+  for(i=0;i<list.length;i++){
+    var c=list[i]; if(!c||!c.id||!c.prompt) continue;
+    var opts=choiceOptions(c.choices); if(!opts) continue;
+    out.push({
+      id:"COMM#"+c.id, deck:"COMM", deckTitle:"Communication · "+(c.title||c.id),
+      kind:"choice", seededOnly:true, q:c.prompt, o:opts, stem:c.setting||null
+    });
+  }
+  return out;
+}
+
+/* Reasoning cards — one per STEP, under the same ids diagnostic-reasoning.html writes. A case's
+   steps test different moves and a learner can be solid on one and lost on the next, so they
+   schedule separately.
+
+   The patient brief rides along as the card's stem because it is NOT optional context: a step
+   asks things like "which one-liner best captures the syndrome", which is unanswerable without
+   the case. In the tool the brief is on screen throughout; a step without it here would be a
+   different, harder, and unfair question. A step whose case has no brief is dropped rather than
+   served bare. */
+function reasonChoiceCards(data){
+  var list=(data&&data.cases)||[], out=[], i, j;
+  if(Object.prototype.toString.call(list)!=='[object Array]') return out;
+  for(i=0;i<list.length;i++){
+    var c=list[i]; if(!c||!c.id||!c.patientBrief) continue;
+    var steps=(Object.prototype.toString.call(c.steps)==='[object Array]')?c.steps:[];
+    for(j=0;j<steps.length;j++){
+      var st=steps[j]; if(!st||!st.id||!st.prompt) continue;
+      var opts=choiceOptions(st.choices); if(!opts) continue;
+      out.push({
+        id:"REASON#"+c.id+"#"+st.id, deck:"REASON",
+        deckTitle:"Reasoning · "+(c.title||c.id)+" · "+(st.title||st.id),
+        kind:"choice", seededOnly:true, q:st.prompt, o:opts, stem:c.patientBrief
+      });
+    }
+  }
+  return out;
+}
+
+/* A reveal is either the scenario's opening line (a string) or one of its authored sections
+   (a list). Rendered as text, never as markup. */
+function revealNodes(reveal){
+  if(typeof reveal==='string') return e("p",{className:"rvl__p"}, reveal);
+  var arr=(Object.prototype.toString.call(reveal)==='[object Array]')?reveal:[];
+  return e("ul",{className:"rvl__list"}, arr.map(function(x,i){ return e("li",{key:i}, x); }));
+}
 /* effectiveNewPerDay: the single helper BOTH the metrics() display and start()'s
    queue-build call — patching only one leaves the other unthrottled. An explicit
    learner choice (setNewPerDay, which sets settings.userSet) always wins over the
@@ -169,12 +296,23 @@ function App(){
   useEffect(function(){
     Promise.all([
       fetch("quizzes.json").then(function(r){return r.ok?r.json():{decks:[]};}).catch(function(){return {decks:[]};}),
-      fetch("../topic_meta.json").then(function(r){return r.ok?r.json():{};}).catch(function(){return {};})
+      fetch("../topic_meta.json").then(function(r){return r.ok?r.json():{};}).catch(function(){return {};}),
+      fetch("../family_systems_scenarios.json").then(function(r){return r.ok?r.json():{scenarios:[]};}).catch(function(){return {scenarios:[]};}),
+      fetch("../communication_cases.json").then(function(r){return r.ok?r.json():{cases:[]};}).catch(function(){return {cases:[]};}),
+      /* the res build overwrites this file with reasoning_cases_resident.json, so one path
+         serves the right audience without the page knowing which site it is on */
+      fetch("../reasoning_cases.json").then(function(r){return r.ok?r.json():{cases:[]};}).catch(function(){return {cases:[]};})
     ]).then(function(res){
-      var j=res[0]||{}, tm=res[1]||{}, out=[];
-      (j.decks||[]).forEach(function(d){ (d.questions||[]).forEach(function(q,i){ if(!q||!q.q||!q.o)return; out.push({id:d.id+"#"+i,deck:d.id,deckTitle:d.title||d.id,q:q.q,o:q.o,audio:d.audio||null,audioDur:d.audioDur||null}); }); });
-      function pretty(k){ return k.replace(/^t_/,"").replace(/\.md$/,"").replace(/_/g," ").replace(/\b\w/g,function(c){return c.toUpperCase();}); }
-      Object.keys(tm).forEach(function(k){ if(k.charAt(0)==="_")return; var m=tm[k]; if(m&&m.quiz&&m.quiz.q&&m.quiz.o&&m.quiz.o.length){ out.push({id:"TOPIC#"+k,deck:"TOPIC",deckTitle:"Topic · "+pretty(k),q:m.quiz.q,o:m.quiz.o.map(function(o){return {t:o.t,c:!!o.c,fb:(o.c?(m.quiz.why||""):"")};})}); } });
+      /* One builder per source, concatenated into the single queue. A source that fails to load
+         contributes nothing and the rest still runs; another source later is a builder plus a
+         fetch. Order matters only for which cards a same-due-time tie serves first — the queue
+         is sorted by due date below. */
+      var j=res[0]||{}, tm=res[1]||{}, fam=res[2]||{}, comm=res[3]||{}, reason=res[4]||{}, out=[];
+      (j.decks||[]).forEach(function(d){ (d.questions||[]).forEach(function(q,i){ if(!q||!q.q||!q.o)return; out.push({id:d.id+"#"+i,deck:d.id,deckTitle:d.title||d.id,kind:"choice",q:q.q,o:q.o,audio:d.audio||null,audioDur:d.audioDur||null}); }); });
+      Object.keys(tm).forEach(function(k){ if(k.charAt(0)==="_")return; var m=tm[k]; if(m&&m.quiz&&m.quiz.q&&m.quiz.o&&m.quiz.o.length){ out.push({id:"TOPIC#"+k,deck:"TOPIC",deckTitle:"Topic · "+prettyRef(k),kind:"choice",q:m.quiz.q,o:m.quiz.o.map(function(o){return {t:o.t,c:!!o.c,fb:(o.c?(m.quiz.why||""):"")};})}); } });
+      out=out.concat(famRecallCards(fam));
+      out=out.concat(commChoiceCards(comm));
+      out=out.concat(reasonChoiceCards(reason));
       if(!out.length){ setErr(true); return; }
       setCards(out);
       /* ?block=1&limit=N — a timed block step from Today starts straight into a bounded session. */
@@ -182,21 +320,21 @@ function App(){
     }).catch(function(){setErr(true);});
   },[]);
   useEffect(function(){ function onMsg(ev){var d=ev.data||{};if(d.type==="theme"&&(d.mode==="dark"||d.mode==="light")){document.documentElement.setAttribute("data-theme",d.mode);setTheme(d.mode);}} window.addEventListener("message",onMsg); return function(){window.removeEventListener("message",onMsg);}; },[]);
-  useEffect(function(){ function onKey(ev){ var s=sessRef.current; if(!s)return; var k=ev.key; if(!s.revealed){ var n=parseInt(k,10); if(n>=1&&n<=s.card.o.length){choose(optOrder(s.card)[n-1]);} } else { if(k==="1")grade(0); else if(k==="2")grade(1); else if(k==="3")grade(2); else if(k==="4")grade(3); } } window.addEventListener("keydown",onKey); return function(){window.removeEventListener("keydown",onKey);}; },[]);
+  useEffect(function(){ function onKey(ev){ var s=sessRef.current; if(!s||!s.card)return; var k=ev.key; if(!s.revealed){ if(s.card.kind==='recall'){ if(k==="Enter")revealCard(); } else { var n=parseInt(k,10); if(s.card.o&&n>=1&&n<=s.card.o.length){choose(optOrder(s.card)[n-1]);} } } else { if(k==="1")grade(0); else if(k==="2")grade(1); else if(k==="3")grade(2); else if(k==="4")grade(3); } } window.addEventListener("keydown",onKey); return function(){window.removeEventListener("keydown",onKey);}; },[]);
 
   function persist(s){saveS(s);setStore(Object.assign({},s));}
 
   /* dashboard metrics */
   function metrics(){
     var now=Date.now(),due=0,neu=0,learn=0,young=0,mature=0,seen=0;
-    if(cards){ var s=rollDay(loadS()); cards.forEach(function(c){var st=s.cards[c.id]; if(!st){neu++;return;} seen++; var m=maturity(st); if(m==="mature")mature++; else if(m==="young")young++; else learn++; if(st.due<=now)due++; }); }
+    if(cards){ var s=rollDay(loadS()); cards.forEach(function(c){var st=s.cards[c.id]; if(!queueable(c,st))return; if(!st){neu++;return;} seen++; var m=maturity(st); if(m==="mature")mature++; else if(m==="young")young++; else learn++; if(st.due<=now)due++; }); }
     var newRemain=cards?Math.max(0,effectiveNewPerDay(store)-(rollDay(loadS()).day.newToday||0)):0;
     return {due:due,neu:neu,newRemain:Math.min(newRemain,neu),learn:learn,young:young,mature:mature,seen:seen};
   }
 
   function start(ahead){
     var s=rollDay(loadS()); var now=Date.now(); var due=[],neu=[],fut=[];
-    cards.forEach(function(c){var st=s.cards[c.id]; if(!st)neu.push(c); else if(st.due<=now)due.push(c); else fut.push([c,st.due]);});
+    cards.forEach(function(c){var st=s.cards[c.id]; if(!queueable(c,st))return; if(!st)neu.push(c); else if(st.due<=now)due.push(c); else fut.push([c,st.due]);});
     /* Overdue-first: sort by how overdue each card is (ratio, not raw days) so
        long-interval cards that are only slightly late don't out-rank short-
        interval cards that are badly late. Shuffle only within bands of 5 to
@@ -217,13 +355,18 @@ function App(){
     setSess({queue:q,pos:0,card:q[0],chosen:-1,revealed:false,reviewed:0,correct:0,total:q.length,misses:[],fromBlock:fromBlock});
   }
   function choose(i){ var s=sessRef.current; if(!s||s.revealed)return; var ns=Object.assign({},s); ns.chosen=i; ns.revealed=true; setSess(ns); }
-  function correctIdx(card){ for(var i=0;i<card.o.length;i++){if(card.o[i].c)return i;} return -1; }
+  /* A recall card carries no options, so -1 is the honest answer rather than a crash. */
+  function correctIdx(card){ if(!card||!card.o)return -1; for(var i=0;i<card.o.length;i++){if(card.o[i].c)return i;} return -1; }
+  function revealCard(){ var s=sessRef.current; if(!s||s.revealed)return; var ns=Object.assign({},s); ns.chosen=-1; ns.revealed=true; setSess(ns); }
   function grade(g){
     var s=sessRef.current; if(!s||!s.revealed)return;
+    var isRecall=!!(s.card&&s.card.kind==='recall');
     /* Objectively missed answers cannot self-grade Good/Easy — tapping Easy on a miss
        inflated SM-2 intervals. Wrong => Again or Hard only; the buttons disable to match,
-       and this guard also covers the keyboard shortcuts (keys 3/4). */
-    if(g>1 && s.chosen!==correctIdx(s.card)) return;
+       and this guard also covers the keyboard shortcuts (keys 3/4). A recall card has no
+       objective outcome — the learner is rating their own answer against the model — so all
+       four grades stand and the grade itself is what "held" means. */
+    if(!isRecall && g>1 && s.chosen!==correctIdx(s.card)) return;
     var st=loadS(); st=rollDay(st);
     var card=s.card; var existed=!!st.cards[card.id];
     var was=st.cards[card.id]||{ease:2.5,ivl:0,reps:0,lapses:0,due:Date.now(),last:0};
@@ -231,7 +374,7 @@ function App(){
     if(!existed){ st.day.newToday=(st.day.newToday||0)+1; }
     bumpStreak(st);
     st.stats.totalReviews=(st.stats.totalReviews||0)+1;
-    var ci=correctIdx(card); var gotIt=(s.chosen===ci);
+    var ci=correctIdx(card); var gotIt=isRecall?(g>=2):(s.chosen===ci);
     st.stats.seen=(st.stats.seen||0)+1; if(gotIt)st.stats.correct=(st.stats.correct||0)+1;
     saveS(st); setStore(Object.assign({},st));
     var rq=gradedThisSession[card.id]?1:0; gradedThisSession[card.id]=1;
@@ -241,7 +384,7 @@ function App(){
     if(g===0){ q.push(card); } // requeue lapses to end of this session
     var nextPos=pos+1;
     var reviewed=s.reviewed+1, correct=s.correct+(gotIt?1:0);
-    var misses=(s.misses||[]).slice(); if(!gotIt&&!misses.some(function(m){return m.id===card.id;})) misses.push({id:card.id,deckTitle:card.deckTitle,q:card.q});
+    var misses=(s.misses||[]).slice(); if(!gotIt&&!misses.some(function(m){return m.id===card.id;})) misses.push({id:card.id,deckTitle:card.deckTitle,q:card.q,page:card.page||null});
     if(nextPos>=q.length){ setSess({finished:true,reviewed:reviewed,correct:correct,misses:misses,fromBlock:!!s.fromBlock}); return; }
     setSess({queue:q,pos:nextPos,card:q[nextPos],chosen:-1,revealed:false,reviewed:reviewed,correct:correct,total:s.total,misses:misses,fromBlock:!!s.fromBlock});
   }
@@ -259,10 +402,13 @@ function App(){
 
   /* ---- active session ---- */
   if(sess && sess.queue){
-    var c=sess.card, ci=correctIdx(c), pctp=Math.round(100*sess.pos/Math.max(1,sess.total));
-    var gotIt=(sess.chosen===ci);
-    var sug=gotIt?'Good':'Again'; // single source of truth: feeds the 'sug' className below AND grade()'s calibLog event via closure
-    var fbOpt=c.o[sess.chosen]||{}; var corrOpt=c.o[ci]||{};
+    var c=sess.card, isRecall=(c.kind==='recall');
+    var ci=correctIdx(c), pctp=Math.round(100*sess.pos/Math.max(1,sess.total));
+    var gotIt=(!isRecall&&sess.chosen===ci);
+    /* single source of truth: feeds the 'sug' className below AND grade()'s calibLog event via
+       closure. A recall card suggests nothing — there is no outcome to suggest from. */
+    var sug=isRecall?'':(gotIt?'Good':'Again');
+    var fbOpt=(!isRecall&&c.o[sess.chosen])||{}; var corrOpt=(!isRecall&&c.o[ci])||{};
     var isNew=!loadS().cards[c.id];
     return e("div",{className:"wrap"},head,
       e("div",{className:"sess"},
@@ -272,26 +418,43 @@ function App(){
             e("span",{className:"deckchip"+(isNew?" snew":"")}, isNew?"New":"Review"),
             e("span",{className:"deckchip",style:{background:"var(--bg-alt)",color:"var(--text-light)"}}, c.deckTitle.length>42?c.deckTitle.slice(0,40)+"…":c.deckTitle),
             e("span",{className:"scount"}, (sess.pos+1)+" / "+sess.total)),
+          /* Context the card cannot be answered without (a reasoning case's patient brief).
+             Rendered above the question and visually subordinate to it, so the eye still
+             lands on what is being asked. Text only — never markup. */
+          c.stem? e("p",{className:"stemtext"}, c.stem) : null,
           e("div",{className:"qtext"}, c.q),
           c.audio? e("details",{className:"oeaudio"}, e("summary",null,"🎧 Listen — paper overview"+(c.audioDur?(" · "+c.audioDur):"")), e("audio",{controls:true,preload:"none",src:"../audio_oe/"+c.audio,"aria-label":"Paper overview audio"})) : null,
-          e("div",{className:"opts"}, optOrder(c).map(function(oi,pos){
-            var o=c.o[oi];
-            var cls="opt"; if(sess.revealed){ if(oi===ci)cls+=" correct"; else if(oi===sess.chosen)cls+=" wrong"; else cls+=" dim"; }
-            return e("button",{key:oi,className:cls,disabled:sess.revealed,onClick:function(){choose(oi);}},
-              e("span",{className:"kx"}, String.fromCharCode(65+pos)),
-              e("span",null,o.t));
-          })),
-          sess.revealed? e("div",{className:"fb"},
+          isRecall
+            ? (sess.revealed
+                ? e("div",{className:"rvl"},
+                    e("span",{className:"rvl__k"},"One way to do it"),
+                    revealNodes(c.reveal))
+                : e("button",{className:"revealbtn",onClick:revealCard},"Reveal one way to do it"))
+            : e("div",{className:"opts"}, optOrder(c).map(function(oi,pos){
+                var o=c.o[oi];
+                var cls="opt"; if(sess.revealed){ if(oi===ci)cls+=" correct"; else if(oi===sess.chosen)cls+=" wrong"; else cls+=" dim"; }
+                return e("button",{key:oi,className:cls,disabled:sess.revealed,onClick:function(){choose(oi);}},
+                  e("span",{className:"kx"}, String.fromCharCode(65+pos)),
+                  e("span",null,o.t));
+              })),
+          (!isRecall&&sess.revealed)? e("div",{className:"fb"},
             e("b",null, gotIt?"✓ Correct. ":"✗ Not quite. "),
             (fbOpt.fb||corrOpt.fb||"") ) : null,
           e("div",{className:"visually-hidden","aria-live":"polite","aria-atomic":"true"},
-            sess.revealed ? (gotIt?"Correct. ":"Not quite. ")+(fbOpt.fb||corrOpt.fb||"") : ""),
+            sess.revealed
+              ? (isRecall
+                  ? "One way to do it is shown. Rate how close your answer was."
+                  : (gotIt?"Correct. ":"Not quite. ")+(fbOpt.fb||corrOpt.fb||""))
+              : ""),
           sess.revealed? e("div",{className:"grades"},
             e("button",{className:"gr again"+(sug==='Again'?" sug":""),onClick:function(){grade(0);}},"Again",e("span",{className:"gk"},"<10m")),
             e("button",{className:"gr hard",onClick:function(){grade(1);}},"Hard",e("span",{className:"gk"},"1")),
-            e("button",{className:"gr good"+(sug==='Good'?" sug":""),onClick:function(){grade(2);},disabled:!gotIt,title:gotIt?null:"Missed items can only be graded Again or Hard"},"Good",e("span",{className:"gk"},"↑")),
-            e("button",{className:"gr easy",onClick:function(){grade(3);},disabled:!gotIt,title:gotIt?null:"Missed items can only be graded Again or Hard"},"Easy",e("span",{className:"gk"},"↑↑"))
-          ) : e("div",{className:"muted",style:{marginTop:"10px"}},"Pick the best answer (or press 1–"+c.o.length+")."),
+            e("button",{className:"gr good"+(sug==='Good'?" sug":""),onClick:function(){grade(2);},disabled:!isRecall&&!gotIt,title:(isRecall||gotIt)?null:"Missed items can only be graded Again or Hard"},"Good",e("span",{className:"gk"},"↑")),
+            e("button",{className:"gr easy",onClick:function(){grade(3);},disabled:!isRecall&&!gotIt,title:(isRecall||gotIt)?null:"Missed items can only be graded Again or Hard"},"Easy",e("span",{className:"gk"},"↑↑"))
+          ) : e("div",{className:"muted",style:{marginTop:"10px"}},
+              isRecall
+                ? "Answer out loud or on scratch first, then reveal. Nothing is recorded."
+                : ("Pick the best answer (or press 1–"+c.o.length+").")),
           e("div",{className:"sfoot"},
             e("span",null,"✓ "+sess.correct+" correct"),
             e("button",{className:"end",onClick:endSession},"End session"))
@@ -311,7 +474,7 @@ function App(){
         headline: missed? (missed===1?"One card came back for another look.":missed+" cards came back for another look.") : "Every card held.",
         sub: missed? "A miss here is scheduled sooner, not scored — it returns within the day so the second pass is the one that sticks." : "Held cards move out; the next pass is further away. "+(store.stats.streak||1)+"-day streak in Daily Review.",
         stats:[{label:"Reviewed",value:String(sess.reviewed)},{label:"Held",value:String(sess.correct),tone:"good"},{label:"Came back",value:String(missed),tone:missed?"warn":"plain"}],
-        reread:(sess.misses||[]).slice(0,5).map(function(m){ var topic=/^TOPIC#/.test(m.id)?m.id.slice(6):null; return {tag:"Missed",warn:true,title:m.q,note:m.deckTitle,ref:topic,refTitle:topic?m.deckTitle.replace(/^Topic · /,""):null}; }),
+        reread:(sess.misses||[]).slice(0,5).map(function(m){ var topic=/^TOPIC#/.test(m.id)?m.id.slice(6):null; var ref=topic||m.page||null; return {tag:"Missed",warn:true,title:m.q,note:m.deckTitle,ref:ref,refTitle:ref?prettyRef(ref):null}; }),
         actions:[{id:"cwReviewDashBtn",label:"Back to dashboard",primary:true}]
       });
     }
