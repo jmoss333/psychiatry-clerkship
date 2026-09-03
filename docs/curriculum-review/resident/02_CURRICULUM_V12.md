@@ -11,7 +11,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **Slug:** `cotw_20260713_agitation_res.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-13_acute-agitation-delirium_Resident.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 2,328 words
+- **Length:** 2,336 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -123,7 +123,7 @@ Exam (obtained in fragments): **inattentive** (cannot complete "days of the week
 8. **Primary psychiatric illness (late-onset psychosis/mania)** — diagnosis of exclusion; late-onset psychosis mandates a secondary-cause search rather than presumption of a primary disorder [8].
 
 ### One-screen management summary
-- **Stabilize/safety:** space, sitter, de-escalation; glucose/SpO₂/vitals; thiamine before glucose if any withdrawal/malnutrition concern.
+- **Stabilize/safety:** space, sitter, de-escalation; glucose/SpO₂/vitals; thiamine before or with glucose if any withdrawal/malnutrition concern (never delaying dextrose for documented hypoglycemia).
 - **Etiology-driven pharmacology:** *delirium-agitation* → low-dose high-potency antipsychotic, ECG/QTc-aware; *withdrawal* → benzodiazepine/phenobarbital + thiamine; *anticholinergic* → supportive, remove agent, benzodiazepine ± physostigmine in select cases; **avoid reflexive haloperidol+lorazepam combos and IM olanzapine+benzodiazepine co-administration.**
 - **Diagnostics:** CBC, CMP, UA/culture, ± cultures/lactate, ECG, med rec, withdrawal assessment; CT/LP/EEG per pretest reasoning.
 - **Treat the cause + delirium precautions;** antipsychotic is symptomatic only (MIND-USA) [5].

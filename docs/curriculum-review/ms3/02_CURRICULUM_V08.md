@@ -379,7 +379,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **Slug:** `rounds_questions.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 8,724 words
+- **Length:** 8,744 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -896,7 +896,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Key paper:** Haber, NEJM 2025.
 
-- **Pearl:** Always give **thiamine before glucose** in suspected alcohol use disorder — glucose metabolism consumes thiamine and can precipitate Wernicke's encephalopathy.
+- **Pearl:** Give **thiamine before or with glucose** in suspected alcohol use disorder — glucose metabolism consumes thiamine and can precipitate Wernicke's encephalopathy. The one thing this rule never licenses is withholding emergency dextrose from a hypoglycemic patient while thiamine is located.
 
 **48. What is delirium tremens and when does it occur?**
 

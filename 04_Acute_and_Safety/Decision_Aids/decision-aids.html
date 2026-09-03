@@ -302,7 +302,7 @@ function App(){
     );
     if(view==="withdrawal") return e("div",{className:"card"},
       e("h2",null,"Alcohol withdrawal timeline"),
-      e("div",{className:"cap"},"Time since the last drink predicts the syndrome. Treat with symptom-triggered benzodiazepines (CIWA-Ar) and give thiamine before glucose."),
+      e("div",{className:"cap"},"Time since the last drink predicts the syndrome. Treat with symptom-triggered benzodiazepines (CIWA-Ar) and give thiamine before or with glucose — never delaying emergency dextrose for true hypoglycemia."),
       e("div",{className:"tl"}, TIMELINE.map(function(s,i){
         return e("div",{className:"tstep "+(s.tone||""),key:i},
           e("div",{className:"tt"}, s.t),

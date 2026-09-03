@@ -79,7 +79,7 @@ The teaching move: **the workup runs in parallel with treatment, not before it.*
 - **Add phenobarbital** per institutional protocol, with an explicit preference for a **loading/replacement strategy rather than open-ended stacking**, given the ventilation and aspiration signal in the adjunct literature [3,9,10]. Airway monitoring is mandatory.
 - **Dexmedetomidine** may be added for autonomic control but **never as a benzodiazepine/barbiturate substitute** — no anti-seizure effect [1,11].
 - **Antipsychotics** only for refractory perceptual disturbance/agitation *after* adequate GABAergic therapy; they lower the seizure threshold and prolong QTc.
-- **Thiamine parenterally, before dextrose** [12]. Replete **magnesium** and potassium.
+- **Thiamine parenterally, before or with dextrose** [12] — high-dose and continued for several days if Wernicke is suspected, and never at the cost of delaying dextrose in symptomatic hypoglycemia. Replete **magnesium** and potassium.
 - **Liver caveat:** with probable cirrhosis, prefer **lorazepam/oxazepam** (glucuronidation, no oxidative metabolism, no active metabolites) and recognize that sedatives can precipitate or worsen **hepatic encephalopathy** — a real reason to avoid open-ended benzodiazepine escalation — but not, on hepatic grounds, an argument *for* phenobarbital: phenobarbital is partly hepatically metabolised, its already long half-life (~80–120 h) is further prolonged in cirrhosis, there is no reversal agent, and it can precipitate hepatic encephalopathy just as benzodiazepines can. If phenobarbital is used here it is because the withdrawal is benzodiazepine-resistant, and it must be used expecting a longer and less reversible effect than in a patient with normal hepatic function [7].
 
 **Workup in parallel:** non-contrast head CT, cultures/CXR/lactate, glucose, repeat electrolytes and Mg, medication reconciliation.
@@ -123,7 +123,7 @@ The teaching move: **the workup runs in parallel with treatment, not before it.*
 
 ### Workup & Management (summary)
 
-**Acute:** ICU/step-down; titrate to light sedation on a validated sedation scale (abandon CIWA-Ar once delirious); phenobarbital via a **replacement**, protocolized strategy with airway monitoring; dexmedetomidine only as autonomic adjunct; antipsychotic only as adjunct; parenteral **thiamine before dextrose**; aggressive **magnesium/potassium** repletion; **head CT**, infectious workup, metabolic panel in parallel.
+**Acute:** ICU/step-down; titrate to light sedation on a validated sedation scale (abandon CIWA-Ar once delirious); phenobarbital via a **replacement**, protocolized strategy with airway monitoring; dexmedetomidine only as autonomic adjunct; antipsychotic only as adjunct; parenteral **thiamine before or with dextrose**; aggressive **magnesium/potassium** repletion; **head CT**, infectious workup, metabolic panel in parallel.
 
 **Sub-acute:** Taper as autonomic parameters normalize; re-orient; delirium-mitigation bundle; nutrition; monitor for re-emergent seizure risk.
 

@@ -3,7 +3,7 @@
 # MS3 curriculum — complete content transcript for clinical review
 
 **Site:** `une-ms3-psychiatry` · **Audience:** MS3 — UNE medical students
-**Generated:** 2026-09-03 from build `d2e6e0a` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
+**Generated:** 2026-09-03 from build `59ff497` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
 
 ## Who this is for
 
@@ -19,7 +19,7 @@ This transcript is assembled from the **built site**, not the source tree, so it
 | Narrative pages (markdown) | 80 |
 | Interactive tools | 23 |
 | Deep-link-only (hidden) surfaces | 10 |
-| Words of narrative curriculum | 99,478 |
+| Words of narrative curriculum | 99,700 |
 | Practice question-bank items | 192 |
 | Audio-companion quiz decks / questions | 79 / 437 |
 | Communication cases | 12 |
@@ -83,7 +83,7 @@ High-yield places to concentrate: the `topic_meta` **can't-miss**, **rule-out** 
 
 # MS3 · Navigation map
 
-Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-03 @ `d2e6e0a`.
+Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-03 @ `59ff497`.
 
 ## Orientation  *(pinned)*
 
@@ -91,7 +91,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 |---|---|---|---|---|---|---|---|
 | 1 | Welcome to the Rotation | `welcome.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `13_Faculty_Resources/Outreach/MS3_Inpatient_Rotation_OnePager.md` | 416 |
 | 2 | Orientation Packet | `orientation.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `14_Tracks/MS3/Student_Ready_Pack/01_orientation/MS3_orientation_packet.md` | 1004 |
-| 3 | Core Reading List | `core_readings.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `14_Tracks/MS3/Student_Ready_Pack/core_reading_list.md` | 397 |
+| 3 | Core Reading List | `core_readings.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `14_Tracks/MS3/Student_Ready_Pack/core_reading_list.md` | 399 |
 | 4 | Orientation Video | `orientation-video.html` | tool | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `_prototypes/video-library/ (build-generated shell)` |  |
 | 5 | Week 1 — Foundations | `week1.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_1_Foundations/README.md` | 345 |
 | 6 | Week 2 — Mood/Psychosis/Pharm | `week2.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_2_Mood_Psychosis_Pharm/README.md` | 106 |
@@ -114,7 +114,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 
 | # | Title | Slug | Type | Sidebar | Governance | Source path | Words |
 |---|---|---|---|---|---|---|---|
-| 1 | Differential Dx Scaffolds | `ddx.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Differential_Diagnosis/inpatient_differential_scaffolds.md` | 632 |
+| 1 | Differential Dx Scaffolds | `ddx.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Differential_Diagnosis/inpatient_differential_scaffolds.md` | 640 |
 | 2 | Diagnostic Reasoning Workbench | `diagnostic-reasoning.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Clinical_Reasoning/diagnostic-reasoning.html` |  |
 | 3 | Formulation & DDx | `pg_formulation.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/MS3/Student_Ready_Pack/02_pocket_guides/formulation_differential_pocket_guide.md` | 643 |
 | 4 | Case Formulation | `case_formulation.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Case_Formulation/case_formulation_inpatient_teaching.md` | 634 |
@@ -123,7 +123,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 7 | Psychosis | `t_psychosis.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/Psychosis/psychotic_disorders_inpatient_teaching.md` | 1467 |
 | 8 | Anxiety/Trauma/OCD | `t_anxiety.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/Anxiety/anxiety_trauma_ocd_inpatient_teaching.md` | 1430 |
 | 9 | Personality | `t_personality.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Personality/personality_disorders_inpatient_teaching.md` | 1322 |
-| 10 | Substance Use | `t_sud.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md` | 1262 |
+| 10 | Substance Use | `t_sud.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md` | 1345 |
 | 11 | Geriatric | `t_geri.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Geriatric/geriatric_psychiatry_inpatient_teaching.md` | 893 |
 | 12 | Perinatal | `t_perinatal.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/Perinatal/perinatal_psychiatry_inpatient_teaching.md` | 1145 |
 | 13 | Neurodevelopmental Disorders | `t_neurodev.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Neurodevelopmental/neurodevelopmental_disorders_inpatient_teaching.md` | 1143 |
@@ -162,7 +162,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 |---|---|---|---|---|---|---|---|
 | 1 | Psychopharmacology Primer | `psychopharm_primer.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md` | 1287 |
 | 2 | Medication Monitoring & Labs | `med_monitoring.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md` | 583 |
-| 3 | Protocol Library | `protocol_library.md` | md | listed | status=`reviewed` · riskKind=`local-policy` · riskLevel=`high` | `05_Psychopharmacology/Protocol_Library/protocol_library_inpatient.md` | 325 |
+| 3 | Protocol Library | `protocol_library.md` | md | listed | status=`reviewed` · riskKind=`local-policy` · riskLevel=`high` | `05_Psychopharmacology/Protocol_Library/protocol_library_inpatient.md` | 327 |
 | 4 | ECT & Neuromodulation | `ect_neuromodulation.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `05_Psychopharmacology/ECT_Neuromodulation/ect_neuromodulation_inpatient_teaching.md` | 660 |
 | 5 | Treatment Basics | `exp_tx.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/MS3/Student_Ready_Pack/04_expansion_modules/treatment_basics_digest.md` | 648 |
 | 6 | Algorithms & Decision Aids | `decision-aids.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `04_Acute_and_Safety/Decision_Aids/decision-aids.html` |  |
@@ -197,7 +197,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 |---|---|---|---|---|---|---|---|
 | 1 | Documentation & Oral Presentation | `doc_oral.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/MS3/Student_Ready_Pack/05_documentation_oral_presentation/student_documentation_and_oral_presentations.md` | 817 |
 | 2 | Treatment Team Rounding Prep | `oral.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Oral_Presentations/oral-presentation-module.html` |  |
-| 3 | High-Yield Rounds Questions | `rounds_questions.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md` | 8724 |
+| 3 | High-Yield Rounds Questions | `rounds_questions.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md` | 8744 |
 
 ## Practice and Exam Prep
 
@@ -208,8 +208,8 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 3 | Daily Review (Spaced Repetition) | `review.html` | tool | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`moderate` | `07_Evidence_and_Reading/Landmark_Trials/review.html` |  |
 | 4 | Shelf Mode — Exam Simulation | `shelf-mode.html` | tool | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`moderate` | `07_Evidence_and_Reading/Landmark_Trials/shelf-mode.html` |  |
 | 5 | COMAT & Shelf Review | `shelf.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `14_Tracks/MS3/Student_Ready_Pack/07_shelf_guide/shelf_review_guide.md` | 742 |
-| 6 | Rapid Review — Buzzwords | `rapid_review.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `09_Exam_Prep/Shelf_High_Yield/rapid_review_buzzwords.md` | 981 |
-| 7 | OSCE Stations | `osce.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `14_Tracks/MS3/Student_Ready_Pack/06_osce_cases/osce_station_set.md` | 1544 |
+| 6 | Rapid Review — Buzzwords | `rapid_review.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `09_Exam_Prep/Shelf_High_Yield/rapid_review_buzzwords.md` | 989 |
+| 7 | OSCE Stations | `osce.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `14_Tracks/MS3/Student_Ready_Pack/06_osce_cases/osce_station_set.md` | 1546 |
 | 8 | Practice Cases | `cases.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/MS3/Student_Ready_Pack/08_synthetic_cases/synthetic_practice_cases.md` | 849 |
 | 9 | Landmark Trials — Listen & Test | `landmark_trials.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `07_Evidence_and_Reading/Landmark_Trials/landmark_trials_page.md` | 881 |
 | 10 | Anki Flashcard Decks | `anki.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `09_Exam_Prep/anki_export/anki.md` | 310 |
@@ -224,7 +224,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 4 | Panic Disorder (Aug 10) | `cotw_20260810_panic_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-10_anxiety-panic-disorder_MS3.md` | 3752 |
 | 5 | Lithium — Monitoring & Toxicity (Aug 3) | `cotw_20260803_lithium_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-03_lithium-monitoring-toxicity-interactions_MS3.md` | 3464 |
 | 6 | Opioid Use Disorder (Jul 27) | `cotw_20260727_oud_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-27_opioid-use-disorder_MS3.md` | 2624 |
-| 7 | Alcohol Withdrawal & DT (Jul 26) | `cotw_20260726_etohwd_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-26_alcohol-withdrawal-delirium-tremens_MS3.md` | 2423 |
+| 7 | Alcohol Withdrawal & DT (Jul 26) | `cotw_20260726_etohwd_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-26_alcohol-withdrawal-delirium-tremens_MS3.md` | 2520 |
 | 8 | Suicide Risk & Safety Planning (Jul 23) | `cotw_20260723_suiciderisk_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`high` | `08_Cases_and_Simulation/case-of-the-week/2026-07-23_suicide-risk-assessment-safety-planning_MS3.md` | 2287 |
 | 9 | MDD — Treatment Selection (Jul 20) | `cotw_20260720_mdd_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-20_mdd-treatment-selection-augmentation_MS3.md` | 1290 |
 | 10 | Bipolar Mania (Jul 20) | `cotw_20260720_bipolar_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-20_bipolar-mania_MS3.md` | 1664 |
@@ -559,7 +559,7 @@ skills rather than vague exposure.
 - **Slug:** `core_readings.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `14_Tracks/MS3/Student_Ready_Pack/core_reading_list.md`
 - **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
-- **Length:** 397 words
+- **Length:** 399 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -607,7 +607,7 @@ The boiled-down starting set for the inpatient rotation. Read these fourteen and
 - **[Mood disorders](?page=t_mood.md)** — depression and bipolar; screen for a past manic or hypomanic episode before starting any antidepressant.
 - **[Psychotic disorders](?page=t_psychosis.md)** — first-episode psychosis is a workup, not a diagnosis; rule out secondary causes before anchoring on schizophrenia.
 - **[Anxiety, trauma & OCD](?page=t_anxiety.md)** — SSRIs/SNRIs plus exposure-based therapy are first-line; standing benzodiazepines are a trap on the unit.
-- **[Substance use & withdrawal](?page=t_sud.md)** — CIWA/COWS-guided care, medication for addiction, and thiamine before glucose.
+- **[Substance use & withdrawal](?page=t_sud.md)** — CIWA/COWS-guided care, medication for addiction, and thiamine before or with glucose.
 - **[Personality disorders](?page=t_personality.md)** — a consistent, validating frame with team-wide limits; medications target comorbid symptoms, not the disorder.
 - **[Neurodevelopmental disorders](?page=t_neurodev.md)** — ADHD, autism, and intellectual disability; adapt communication and avoid diagnostic overshadowing.
 - **[Delirium & catatonia](?page=delirium.md)** — acute fluctuating inattention is delirium until proven otherwise; recognize catatonia and do a lorazepam challenge *(see also [Catatonia](?page=catatonia.md))*.
@@ -4601,7 +4601,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **Slug:** `ddx.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `02_Clinical_Skills/Differential_Diagnosis/inpatient_differential_scaffolds.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 632 words
+- **Length:** 640 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -4616,7 +4616,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 
 - For new psychosis, delirium is the can't-miss before schizophrenia — confirm attention, get a tox screen and basic labs, and do not assume a primary psychotic disorder on first episode without a workup.
 - In mania or severe agitation, akathisia — drug-induced restlessness from antipsychotics — is frequently missed because it looks like anxiety or behavioral escalation.
-- In withdrawal, give thiamine before glucose — a glucose load in a thiamine-deficient patient can precipitate Wernicke's encephalopathy.
+- In withdrawal, give thiamine before or with glucose — a glucose load in a thiamine-deficient patient can precipitate Wernicke's encephalopathy — but never delay dextrose for documented hypoglycemia.
 
 **Can't-miss / red-flag line:**
 
@@ -4697,7 +4697,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **First move:** rule out the cardiopulmonary/withdrawal mimics; favor SSRIs + skills over standing benzodiazepines (dependence, falls, SUD).
 
 ## 8. Substance intoxication / withdrawal
-- **Can't-miss mimics:** co-occurring head injury, infection, hepatic encephalopathy, Wernicke's (give **thiamine before glucose**), polysubstance masking.
+- **Can't-miss mimics:** co-occurring head injury, infection, hepatic encephalopathy, Wernicke's (give **thiamine before or with glucose**; never delay dextrose for true hypoglycemia), polysubstance masking.
 - **Psychiatric DDx:** primary mood/psychotic disorder co-occurring with use; substance-induced disorders.
 - **First move:** CIWA-Ar / COWS, withdrawal protocol per institution, naloxone education at discharge. → the Withdrawal (CIWA-Ar/COWS) card.
 
@@ -5689,7 +5689,7 @@ The goal is validation plus a steady frame, not either/or.
 - **Slug:** `t_sud.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 1,262 words
+- **Length:** 1,345 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -5698,13 +5698,13 @@ The goal is validation plus a steady frame, not either/or.
 
 **TL;DR (shown above the page text):**
 
-> Time the withdrawal syndrome and treat it proactively — alcohol withdrawal is benzodiazepines (CIWA-guided) plus thiamine before glucose.
+> Time the withdrawal syndrome and treat it proactively — alcohol withdrawal is benzodiazepines (CIWA-guided) plus thiamine before or with glucose.
 
 **Key points (bulleted card):**
 
 - Use CIWA-Ar (alcohol) and COWS (opioid) to drive symptom-triggered dosing.
 - Offer medication for addiction: buprenorphine/methadone for opioids; naltrexone/acamprosate for alcohol.
-- Give thiamine before glucose to prevent Wernicke encephalopathy.
+- Give thiamine before or with glucose to prevent Wernicke encephalopathy — and never delay dextrose in documented hypoglycemia.
 
 **Can't-miss / red-flag line:**
 
@@ -5739,7 +5739,7 @@ The goal is validation plus a steady frame, not either/or.
    - Scheduled haloperidol
    - IV dextrose first
    - CIWA-guided benzodiazepine + thiamine **← keyed correct**
-   - *Rationale:* Alcohol withdrawal is treated with symptom-triggered benzodiazepines and thiamine before glucose.
+   - *Rationale:* Alcohol withdrawal is treated with symptom-triggered benzodiazepines plus thiamine, given before or with any glucose-containing fluids. Dextrose is not the priority here — nothing in the stem suggests hypoglycemia — and carbohydrate given to a thiamine-depleted patient without thiamine can precipitate Wernicke encephalopathy.
 
 **Family overlay:** `sud_family_discharge_supports_and_boundaries`
 
@@ -5768,7 +5768,7 @@ The goal is validation plus a steady frame, not either/or.
 
 **Initial workup** — Focused and pragmatic: full vitals with a neurologic exam, fingerstick glucose, basic metabolic panel and magnesium, liver function tests, CBC, a urine drug screen and blood/breath alcohol, and a pregnancy test where relevant. Add ECG when QTc-affecting agents or methadone are in play. Image the head if there is trauma, a focal deficit, or unexplained or out-of-proportion altered mental status.
 
-**Acute inpatient management** — For **alcohol withdrawal**, score serially with the **CIWA-Ar** and treat symptom-driven with **benzodiazepines**, escalating vigilance for **seizures and delirium tremens** in high-risk patients. Give **thiamine before glucose** — administering carbohydrate to a thiamine-depleted patient can precipitate Wernicke encephalopathy. For **opioid withdrawal**, track severity with the **COWS**, and begin **buprenorphine induction only once objective withdrawal is present (roughly COWS greater than or equal to 8 to 12)** to avoid precipitated withdrawal from displacing residual full agonist too early. For ongoing **alcohol use disorder**, offer **naltrexone or acamprosate**. Frame the whole encounter through the **Volkow brain-disease model** of addiction — naming addiction as a chronic, treatable brain condition rather than a moral failing directly combats stigma — and use **motivational interviewing** to meet ambivalence with curiosity rather than confrontation.
+**Acute inpatient management** — For **alcohol withdrawal**, score serially with the **CIWA-Ar** and treat symptom-driven with **benzodiazepines**, escalating vigilance for **seizures and delirium tremens** in high-risk patients. Give **thiamine before or with glucose** — administering carbohydrate to a thiamine-depleted patient can precipitate Wernicke encephalopathy. The sequencing matters for maintenance and repletion fluids; it is **not** a reason to withhold emergency dextrose in documented hypoglycemia, where delay causes real neuronal injury — give the sugar immediately and the thiamine as soon as it is in hand. For **opioid withdrawal**, track severity with the **COWS**, and begin **buprenorphine induction only once objective withdrawal is present (roughly COWS greater than or equal to 8 to 12)** to avoid precipitated withdrawal from displacing residual full agonist too early. For ongoing **alcohol use disorder**, offer **naltrexone or acamprosate**. Frame the whole encounter through the **Volkow brain-disease model** of addiction — naming addiction as a chronic, treatable brain condition rather than a moral failing directly combats stigma — and use **motivational interviewing** to meet ambivalence with curiosity rather than confrontation.
 
 **Alcohol use disorder pharmacotherapy anchor** — Naltrexone and acamprosate are first-line maintenance medications for alcohol use disorder when not contraindicated. Naltrexone reduces heavy drinking but cannot be used with opioids and requires liver-risk review; in compensated cirrhosis it may be considered with monitoring, while acute hepatitis or advanced decompensation pushes you away from it. Acamprosate supports abstinence, is renally cleared, and is the cleaner first-line choice when the question asks you to avoid hepatic metabolism; adjust or avoid it in renal impairment. Disulfiram is adherence-dependent and avoided in liver disease; benzodiazepines treat withdrawal, not maintenance.
 
@@ -5781,7 +5781,7 @@ The goal is validation plus a steady frame, not either/or.
 **What the student does**
 - Perform and document serial **CIWA-Ar** or **COWS** scores at the bedside and flag trends to the team.
 - Lay hands on the patient: vitals, hydration status, pupils, gait, asterixis — and report concerning changes early.
-- Verify **thiamine was given before any glucose-containing fluids**.
+- Verify **thiamine was given before or with any glucose-containing fluids** — and that nobody delayed emergency dextrose to go looking for it.
 - Take a non-judgmental substance history (substances, routes, last use, prior withdrawal/seizures) using open questions.
 - Practice one motivational-interviewing reflection and bring it to rounds.
 
@@ -5790,7 +5790,7 @@ The goal is validation plus a steady frame, not either/or.
 **High-yield pearls**
 - Alcohol and benzodiazepine withdrawal can be lethal; opioid and stimulant withdrawal are miserable but rarely fatal — match your urgency accordingly.
 - In hepatic impairment, reach for a **LOT drug** (Lorazepam, Oxazepam, Temazepam) — glucuronidation is preserved in cirrhosis; the oxidative CYP450 pathway (chlordiazepoxide, diazepam) is not.
-- Thiamine before glucose, every time.
+- Thiamine before (or with) glucose in withdrawal and refeeding — but never delay dextrose for documented hypoglycemia; give the sugar immediately and the thiamine as soon as it is in hand.
 - Do not start buprenorphine until objective withdrawal is on board (COWS roughly greater than or equal to 8 to 12) or you may precipitate withdrawal.
 - A patient who uses substances with new confusion gets a real differential — Wernicke, trauma, infection, hepatic encephalopathy — not a reflex withdrawal label.
 - Naloxone plus MOUD linkage at discharge is a concrete, evidence-based way to save a life.
@@ -8396,7 +8396,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Withdrawal: COWS tool · CIWA-Ar official form
 - Two structured scales you’ll use on the unit — alcohol (CIWA-Ar) and opioids (COWS). COWS is scored here; the CIWA-Ar is not reproduced on this page — score it from your unit’s approved form. The trend matters as much as the number.
 - CIWA-Ar — official form & training
-- a rising or high CIWA signals risk of withdrawal seizures and delirium tremens. Benzodiazepines are first-line per protocol; treat early. Thiamine before glucose.
+- a rising or high CIWA signals risk of withdrawal seizures and delirium tremens. Benzodiazepines are first-line per protocol; treat early. Thiamine before or with glucose — never delay emergency dextrose for true hypoglycemia.
 - This page no longer reproduces the CIWA-Ar.
 - Use your unit’s current approved form to score at the bedside.
 - Why the items were removed.
@@ -9137,7 +9137,7 @@ Twenty trials and analyses that shaped modern prescribing, ranked by impact. Pap
 - **Slug:** `protocol_library.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `05_Psychopharmacology/Protocol_Library/protocol_library_inpatient.md`
 - **Governance:** status=`reviewed` · riskKind=`local-policy` · riskLevel=`high`
-- **Length:** 325 words
+- **Length:** 327 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -9150,7 +9150,7 @@ Twenty trials and analyses that shaped modern prescribing, ranked by impact. Pap
 
 **Key points (bulleted card):**
 
-- Withdrawal protocols use symptom-triggered scoring (CIWA-Ar for alcohol/benzo, COWS for opioids); always give thiamine before glucose in any withdrawal or nutritional risk.
+- Withdrawal protocols use symptom-triggered scoring (CIWA-Ar for alcohol/benzo, COWS for opioids); give thiamine before or with glucose in any withdrawal or nutritional risk, never delaying dextrose for hypoglycemia.
 - Clozapine initiation requires mandatory ANC monitoring per the hematologic schedule — know the workflow before the patient starts, not after the first dose.
 - Delirium prevention bundles non-pharmacologic measures first; the restraint and agitation pathway is least-restrictive, time-limited, and always followed by a debrief.
 
@@ -9181,7 +9181,7 @@ Twenty trials and analyses that shaped modern prescribing, ranked by impact. Pap
 **What this is.** A teaching index of the structured order sets used on the unit. These are *institutional protocols* — this page orients you to what each is for and when it's used. **Always pull exact medications, doses, and monitoring from the live EHR order set, not from memory or from this page.**
 
 ## Withdrawal
-- **Alcohol withdrawal (CIWA-Ar–driven).** Symptom-triggered benzodiazepine dosing scored on the CIWA-Ar, with escalation for seizure/delirium-tremens risk; thiamine before glucose. Practice the scoring with the **Withdrawal (CIWA-Ar/COWS) card**.
+- **Alcohol withdrawal (CIWA-Ar–driven).** Symptom-triggered benzodiazepine dosing scored on the CIWA-Ar, with escalation for seizure/delirium-tremens risk; thiamine before or with glucose. Practice the scoring with the **Withdrawal (CIWA-Ar/COWS) card**.
 - **Opioid withdrawal (COWS-driven).** COWS scoring guides supportive care and buprenorphine induction once objective withdrawal is present. Same card.
 - **Benzodiazepine taper.** A structured, gradual taper to prevent withdrawal seizures/destabilization (the unit's BHU2 benzodiazepine-taper order-set spec).
 
@@ -9565,7 +9565,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - NMS vs serotonin syndrome
 - Two hyperthermic emergencies that look alike at the door. The reflexes split them: rigidity + hyporeflexia (NMS) vs clonus + hyperreflexia (serotonin).
 - Alcohol withdrawal timeline
-- Time since the last drink predicts the syndrome. Treat with symptom-triggered benzodiazepines (CIWA-Ar) and give thiamine before glucose.
+- Time since the last drink predicts the syndrome. Treat with symptom-triggered benzodiazepines (CIWA-Ar) and give thiamine before or with glucose — never delaying emergency dextrose for true hypoglycemia.
 - Symptom-triggered dosing keyed to the total score — less total benzodiazepine than fixed schedules.
 - Minimal–mild — supportive care, PRN only.
 - Moderate — symptom-triggered benzodiazepine; reassess hourly.
@@ -11746,7 +11746,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **Slug:** `rounds_questions.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 8,724 words
+- **Length:** 8,744 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -12263,7 +12263,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Key paper:** Haber, NEJM 2025.
 
-- **Pearl:** Always give **thiamine before glucose** in suspected alcohol use disorder — glucose metabolism consumes thiamine and can precipitate Wernicke's encephalopathy.
+- **Pearl:** Give **thiamine before or with glucose** in suspected alcohol use disorder — glucose metabolism consumes thiamine and can precipitate Wernicke's encephalopathy. The one thing this rule never licenses is withholding emergency dextrose from a hypoglycemic patient while thiamine is located.
 
 **48. What is delirium tremens and when does it occur?**
 
@@ -13262,7 +13262,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - cw-receipt__btn'+(a.primary?' is-primary':'')+'
 - ; if(!next&&typeof blockClear===
 - ; return {html:h, marked:marked, next:next||null}; } function refHref(ref){ if(!ref) return null; return /\.html(\?|#|$)/.test(ref)? ("./"+ref) : ("../index.html?page="+encodeURIComponent(ref)); } function correctIdx(o){for(var i=0;i<o.length;i++){if(o[i]&&o[i].c)return i;}return -1;} // ---- Sample preview items (original, classic teaching points). Only used when no SHELF-* decks exist yet. // Clearly labeled as preview; NOT scored content for assessment until the faculty-reviewed bank lands. var SAMPLE=[ {topic:"Mood",diff:"easy",ref:"t_mood.md", q:"A 26-year-old woman is admitted after 5 days of decreased need for sleep, rapid speech, increased spending, and a belief that she has been chosen to reform the hospital. She has had two prior depressive episodes treated with sertraline. On exam she is irritable with pressured speech and flight of ideas. Which of the following is the most appropriate next step?", o:[{t:"Continue sertraline and add cognitive behavioral therapy",c:false,fb:"Antidepressant monotherapy can sustain or worsen mania; the priority is to stop it and start an antimanic agent."}, {t:"Discontinue sertraline and start a mood stabilizer or second-generation antipsychotic",c:true,fb:"Correct — acute mania (bipolar I): stop the antidepressant, begin lithium/valproate or an SGA, and protect sleep."}, {t:"Start fluoxetine for treatment-resistant depression",c:false,fb:"The presentation is mania, not depression; an antidepressant is contraindicated."}, {t:"Obtain brain MRI before initiating any treatment",c:false,fb:"Classic mania with prior mood episodes does not require imaging before treatment; do not delay antimanic therapy."}, {t:"Begin lorazepam as monotherapy",c:false,fb:"A benzodiazepine is adjunctive for agitation/sleep but does not treat the manic episode."}], tp:"Acute mania: stop the antidepressant, start a mood stabilizer or SGA, and protect sleep."}, {topic:"Psychopharm & Med Emergencies",diff:"med",ref:"psychopharm_primer.md", q:"A 30-year-old man on fluoxetine is brought in 8 hours after a friend gave him tramadol for back pain. He is agitated and diaphoretic. Temperature is 39.1°C, heart rate 124. Exam shows hyperreflexia and inducible clonus, greater in the lower extremities. Which of the following is the most likely diagnosis?", o:[{t:"Serotonin syndrome",c:true,fb:"Correct — rapid onset after adding a serotonergic agent (tramadol), with hyperthermia, autonomic instability, and neuromuscular hyperexcitability (clonus, hyperreflexia). Stop the agents, supportive care, consider cyproheptadine."}, {t:"Neuroleptic malignant syndrome",c:false,fb:"NMS follows dopamine antagonists, evolves over days, and features
-- rigidity and bradyreflexia — not clonus/hyperreflexia."}, {t:"Anticholinergic toxicity",c:false,fb:"Anticholinergic toxidrome gives dry skin, absent bowel sounds, and normal reflexes — not diaphoresis with clonus."}, {t:"Malignant hyperthermia",c:false,fb:"Malignant hyperthermia is triggered by volatile anesthetics/succinylcholine, not oral serotonergics."}, {t:"Sympathomimetic intoxication",c:false,fb:"Stimulant toxicity can mimic this but lacks the prominent clonus/hyperreflexia and the clear serotonergic trigger."}], tp:"Serotonin syndrome = serotonergic trigger + hyperthermia + clonus/hyperreflexia (lower-limb predominant); NMS = dopamine blocker + rigidity + hyporeflexia over days."}, {topic:"Substance Use",diff:"easy",ref:"withdrawal.html", q:"A 52-year-old man admitted for pancreatitis becomes tremulous and diaphoretic on hospital day 2, with heart rate 116, blood pressure 168/98, and visual misperceptions. He reports drinking a pint of vodka daily until admission. Which of the following is the most appropriate management?", o:[{t:"Symptom-triggered benzodiazepine dosing with CIWA-Ar monitoring, plus thiamine",c:true,fb:"Correct — alcohol withdrawal: benzodiazepines (often CIWA-Ar–guided) are first-line, with thiamine to prevent Wernicke encephalopathy."}, {t:"Scheduled haloperidol",c:false,fb:"Antipsychotics lower the seizure threshold and do not treat the underlying GABA/glutamate dysregulation; they are at most adjunctive for agitation."}, {t:"Intravenous dextrose before any other intervention",c:false,fb:"Give thiamine before/with glucose in at-risk patients — a glucose load alone can precipitate Wernicke encephalopathy."}, {t:"Physical restraints and observation",c:false,fb:"Restraints do not treat withdrawal and can worsen autonomic arousal; pharmacologic treatment is needed."}, {t:"Clonidine monotherapy",c:false,fb:"Clonidine may blunt autonomic signs but does not prevent withdrawal seizures or delirium tremens."}], tp:"Alcohol withdrawal: benzodiazepines (CIWA-Ar–guided) first-line; give thiamine before glucose."}, {topic:"Delirium, Dementia & MCI",diff:"med",ref:"delirium.md", q:"A 78-year-old woman is inattentive and intermittently drowsy two days after hip surgery. Her family says she was cognitively intact at baseline; symptoms fluctuate and worsen at night. She is on oxycodone and diphenhydramine for sleep. Which of the following is the most appropriate first step?", o:[{t:"Identify and treat underlying causes and remove deliriogenic medications",c:true,fb:"Correct — acute, fluctuating inattention with altered arousal is delirium. First-line is to find and fix the cause (pain meds, anticholinergics, infection, metabolic) and use nonpharmacologic measures."}, {t:"Start a scheduled long-acting benzodiazepine",c:false,fb:"Benzodiazepines worsen delirium (except in alcohol/benzo withdrawal) and increase fall risk."}, {t:"Begin donepezil for cognitive decline",c:false,fb:"Cholinesterase inhibitors treat chronic dementia, not acute delirium, and have no role here."}, {t:"Obtain an outpatient neuropsychology referral",c:false,fb:"This is an acute medical problem requiring inpatient workup, not deferred testing."}, {t:"Reassure the family this is expected post-operative confusion and observe",c:false,fb:"Delirium signals an underlying disturbance and predicts poor outcomes; it requires active workup, not watchful waiting."}], tp:"Delirium is a medical emergency: treat the cause and stop deliriogenic drugs; avoid benzodiazepines unless withdrawal-related."}, {topic:"Psychiatric Emergencies",diff:"med",ref:"capacity.html", q:"A 60-year-old man with diabetes and a necrotic foot refuses a recommended amputation. He can describe the gangrene, the risk of fatal sepsis without surgery, the option of amputation, and explains he would rather risk death than lose his leg, citing consistent long-held values. He has no psychosis or cognitive deficit. Which of the following best describes his decision-making capacity?", o:[{t:"He has capacity to refuse the amputation",c:true,fb:"Correct — he demonstrates the four abilities (understanding, appreciation, reasoning, and a stable choice). Capacity is decision-specific; a
+- rigidity and bradyreflexia — not clonus/hyperreflexia."}, {t:"Anticholinergic toxicity",c:false,fb:"Anticholinergic toxidrome gives dry skin, absent bowel sounds, and normal reflexes — not diaphoresis with clonus."}, {t:"Malignant hyperthermia",c:false,fb:"Malignant hyperthermia is triggered by volatile anesthetics/succinylcholine, not oral serotonergics."}, {t:"Sympathomimetic intoxication",c:false,fb:"Stimulant toxicity can mimic this but lacks the prominent clonus/hyperreflexia and the clear serotonergic trigger."}], tp:"Serotonin syndrome = serotonergic trigger + hyperthermia + clonus/hyperreflexia (lower-limb predominant); NMS = dopamine blocker + rigidity + hyporeflexia over days."}, {topic:"Substance Use",diff:"easy",ref:"withdrawal.html", q:"A 52-year-old man admitted for pancreatitis becomes tremulous and diaphoretic on hospital day 2, with heart rate 116, blood pressure 168/98, and visual misperceptions. He reports drinking a pint of vodka daily until admission. Which of the following is the most appropriate management?", o:[{t:"Symptom-triggered benzodiazepine dosing with CIWA-Ar monitoring, plus thiamine",c:true,fb:"Correct — alcohol withdrawal: benzodiazepines (often CIWA-Ar–guided) are first-line, with thiamine to prevent Wernicke encephalopathy."}, {t:"Scheduled haloperidol",c:false,fb:"Antipsychotics lower the seizure threshold and do not treat the underlying GABA/glutamate dysregulation; they are at most adjunctive for agitation."}, {t:"Intravenous dextrose before any other intervention",c:false,fb:"Give thiamine before/with glucose in at-risk patients — a glucose load alone can precipitate Wernicke encephalopathy."}, {t:"Physical restraints and observation",c:false,fb:"Restraints do not treat withdrawal and can worsen autonomic arousal; pharmacologic treatment is needed."}, {t:"Clonidine monotherapy",c:false,fb:"Clonidine may blunt autonomic signs but does not prevent withdrawal seizures or delirium tremens."}], tp:"Alcohol withdrawal: benzodiazepines (CIWA-Ar–guided) first-line; give thiamine before or with glucose."}, {topic:"Delirium, Dementia & MCI",diff:"med",ref:"delirium.md", q:"A 78-year-old woman is inattentive and intermittently drowsy two days after hip surgery. Her family says she was cognitively intact at baseline; symptoms fluctuate and worsen at night. She is on oxycodone and diphenhydramine for sleep. Which of the following is the most appropriate first step?", o:[{t:"Identify and treat underlying causes and remove deliriogenic medications",c:true,fb:"Correct — acute, fluctuating inattention with altered arousal is delirium. First-line is to find and fix the cause (pain meds, anticholinergics, infection, metabolic) and use nonpharmacologic measures."}, {t:"Start a scheduled long-acting benzodiazepine",c:false,fb:"Benzodiazepines worsen delirium (except in alcohol/benzo withdrawal) and increase fall risk."}, {t:"Begin donepezil for cognitive decline",c:false,fb:"Cholinesterase inhibitors treat chronic dementia, not acute delirium, and have no role here."}, {t:"Obtain an outpatient neuropsychology referral",c:false,fb:"This is an acute medical problem requiring inpatient workup, not deferred testing."}, {t:"Reassure the family this is expected post-operative confusion and observe",c:false,fb:"Delirium signals an underlying disturbance and predicts poor outcomes; it requires active workup, not watchful waiting."}], tp:"Delirium is a medical emergency: treat the cause and stop deliriogenic drugs; avoid benzodiazepines unless withdrawal-related."}, {topic:"Psychiatric Emergencies",diff:"med",ref:"capacity.html", q:"A 60-year-old man with diabetes and a necrotic foot refuses a recommended amputation. He can describe the gangrene, the risk of fatal sepsis without surgery, the option of amputation, and explains he would rather risk death than lose his leg, citing consistent long-held values. He has no psychosis or cognitive deficit. Which of the following best describes his decision-making capacity?", o:[{t:"He has capacity to refuse the amputation",c:true,fb:"Correct — he demonstrates the four abilities (understanding, appreciation, reasoning, and a stable choice). Capacity is decision-specific; a
 - choice with intact reasoning is still a capacitated refusal."}, {t:"He lacks capacity because the refusal is medically dangerous",c:false,fb:"Capacity is about the process of decision-making, not whether the choice matches the medical recommendation."}, {t:"He lacks capacity and a guardian should consent to surgery",c:false,fb:"There is no impairment in the four abilities; overriding a capacitated refusal would violate autonomy."}, {t:"Capacity cannot be assessed without neuropsychological testing",c:false,fb:"Capacity is a clinical, decision-specific bedside determination, not a test score."}, {t:"He has capacity only if he agrees to surgery",c:false,fb:"Capacity does not depend on agreeing with the team; that reasoning is circular."}], tp:"Capacity is decision-specific and rests on four abilities; a high-risk refusal with intact reasoning is still capacitated."} ]; function App(){ var d=useState(null),data=d[0],setData=d[1]; var er=useState(null),err=er[0],setErr=er[1]; var S=useState({view:"config",len:20,diff:"all",mode:"tutor",timed:true,topics:[], items:[],picks:[],flags:{},idx:0,secs:0,total:0,result:null,saved:false,preview:false,revFilter:"missed"}); var st=S[0],setS=S[1]; function set(p){setS(function(prev){return Object.assign({},prev,p);});} useEffect(function(){ fetch("../question_bank.json").then(function(r){return r.json()}).then(setData).catch(function(){setErr("Could not load the question bank (question_bank.json).");}); },[]); // derive pool + topics once data lands var pool=[], preview=false, topicsAll=[]; if(data){ pool=bankPool(data); if(pool.length===0){ pool=SAMPLE.slice(); preview=true; } var seen={}; pool.forEach(function(it){seen[it.topic]=(seen[it.topic]||0)+1;}); topicsAll=Object.keys(seen).sort(function(a,b){return orderRank(a)-orderRank(b);}).map(function(t){return {t:t,n:seen[t]};}); } // default-select all topics on first data load useEffect(function(){ if(data && st.topics.length===0 && topicsAll.length){ set({topics:topicsAll.map(function(x){return x.t;}), preview:preview}); } },[data]); // exam timer useEffect(function(){ if(st.view!=="exam") return; var id=setInterval(function(){ setS(function(p){ if(p.view!=="exam") return p; if(p.timed){ if(p.secs ="1" && ev.key =q.o.length) return p; if(p.mode==="tutor" && p.picks[p.idx]!=null) return p; // locked after answering in tutor mode var picks=p.picks.slice(); picks[p.idx]=oi; return Object.assign({},p,{picks:picks}); }); } function canAdvance(){ if(st.mode==="tutor") return st.picks[st.idx]!=null; return true; } function advance(){ setS(function(p){ if(p.idx+1 0?Object.assign({},p,{idx:p.idx-1}):p;}); } function toggleFlag(){ setS(function(p){var f=Object.assign({},p.flags);f[p.idx]=!f[p.idx];return Object.assign({},p,{flags:f});}); } function grade(p){ var correct=0, byTopic={}; p.items.forEach(function(q,i){ var ci=correctIdx(q.o), ok=(p.picks[i]===ci && ci>=0); if(ok) correct++; var bt=byTopic[q.topic]=byTopic[q.topic]||{c:0,n:0}; bt.n++; if(ok)bt.c++; }); var secsUsed = p.timed? (p.total-p.secs) : p.secs; var res={n:p.items.length,correct:correct,pct:Math.round(100*correct/Math.max(1,p.items.length)),byTopic:byTopic,secs:secsUsed}; return Object.assign({},p,{view:"result",result:res}); } // Persistent, unconditional live region: same DOM node across every view (config/exam/result), // so a screen reader binds to it once and hears only the CONTENT change when a result lands. var resultMsg = (st.view==="result" && st.result) ? resultMsgFor(st.result.pct) : ""; var liveRegion = e("div",{className:"visually-hidden","aria-live":"polite","aria-atomic":"true"}, (st.view==="result" && st.result) ? (st.result.correct+" of "+st.result.n+" correct, "+st.result.pct+" percent. "+resultMsg) : ""); if(err) return e("div",{className:"wrap"},liveRegion,e("h1",null,"Shelf Mode"),e("div",{className:"card"},err)); if(!data) return e("div",{className:"wrap"},liveRegion,e("div",{className:"loading"},"Loading the question bank…")); // ---------------- CONFIG ---------------- if(st.view==="config"){ var L=loadLS(); var recent=(L.attempts||[]).slice(0,3); var avail=pool.filter(function(it){ var dd=normDiff(it.diff); if(dd==="review")return false; if(st.diff!=="all"&&dd!==st.diff)return false; return st.topics.indexOf(it.topic)>=0; }).length; var lens=[10,20,40].filter(function(n){return true;}); return e("div",{className:"wrap"}, liveRegion, e("h1",null,"Shelf Mode"), e("span",{className:"opt-pill"},"Optional practice · exam simulation"), e("div",{className:"sub"},"A timed, blueprint-weighted vignette set that mirrors the psychiatry COMAT / shelf. Choose your length, topics, and pacing. Single best answer, with feedback and a teaching point on every item."), preview? e("div",{className:"banner"},e("strong",null,"Preview mode. "),"The attested question bank didn
 - re back online for the full blueprint-weighted exam.") : null, e("div",{className:"card"}, e("div",{className:"field"}, e("label",{className:"h"},"Length"), e("div",{className:"seg"}, lens.map(function(n){ return e("button",{key:n,className:st.len===n?"on":"",onClick:function(){set({len:n})}}, n+" Q"); })) ), e("div",{className:"field"}, e("label",{className:"h"},"Difficulty"), e("div",{className:"seg"}, [["all","All"],["easy","Easy"],["med","Medium"],["hard","Hard"]].map(function(p){ return e("button",{key:p[0],className:st.diff===p[0]?"on":"",onClick:function(){set({diff:p[0]})}}, p[1]); })) ), e("div",{className:"field"}, e("label",{className:"h"},"Mode"), e("div",{className:"seg"}, e("button",{className:st.mode==="tutor"?"on":"",onClick:function(){set({mode:"tutor"})}},"Tutor — feedback after each"), e("button",{className:st.mode==="exam"?"on":"",onClick:function(){set({mode:"exam"})}},"Exam — feedback at end") ) ), e("div",{className:"field"}, e("label",{className:"h"},"Pacing"), e("div",{className:"seg"}, e("button",{className:st.timed?"on":"",onClick:function(){set({timed:true})}},"Timed · 1.5 min/Q"), e("button",{className:!st.timed?"on":"",onClick:function(){set({timed:false})}},"Untimed") ) ), e("div",{className:"field"}, e("label",{className:"h"},"Topics"), e("div",{className:"linkrow"}, e("button",{onClick:function(){set({topics:topicsAll.map(function(x){return x.t;})})}},"Select all"), e("button",{onClick:function(){set({topics:[]})}},"Clear") ), e("div",{className:"chips",style:{marginTop:"7px"}}, topicsAll.map(function(x){ var on=st.topics.indexOf(x.t)>=0; return e("button",{key:x.t,className:"chip"+(on?" on":""),onClick:function(){ var t=st.topics.slice(),i=t.indexOf(x.t); if(i>=0)t.splice(i,1); else t.push(x.t); set({topics:t}); }}, e("span",null,x.t), e("span",{className:"n"},x.n)); })) ), e("div",{className:"row between",style:{marginTop:"6px"}}, e("span",{className:"meta"}, avail+" item"+(avail===1?"":"s")+" available · drawing "+Math.min(st.len,avail)), e("button",{className:"btn primary",disabled:avail===0,onClick:startExam}, "Start "+Math.min(st.len,avail)+"-question set") ), e("div",{className:"kbd",style:{marginTop:"8px"}},"Tip: press 1–5 to answer, Enter to advance.") ), recent.length? e("div",{className:"card"}, e("label",{className:"h",style:{display:"block",marginBottom:"6px"}},"Recent attempts"), e("div",{className:"recent"}, recent.map(function(r,i){ return e("div",{className:"r",key:i}, e("span",null, r.at+" · "+(r.mode==="tutor"?"Tutor":"Exam")+(r.preview?" · sample":"")), e("span",null, r.correct+"/"+r.n+" ("+r.pct+"%)")); })) ):null, e("div",{className:"disc"},"Optional exam-prep simulation. Items are educational and use fictional composites only (no patient information). Verify management against current guidelines and your team. Progress is saved only in this browser. ",e("br"),"Joshua Moss, MD | Psychiatrist") ); } // ---------------- RESULT ---------------- if(st.view==="result"){ var R=st.result, msg=resultMsg; var bts=Object.keys(R.byTopic).sort(function(a,b){return orderRank(a)-orderRank(b);}); var revItems=st.items.map(function(q,i){return {q:q,i:i};}).filter(function(x){ if(st.revFilter==="all") return true; var ci=correctIdx(x.q.o); return st.picks[x.i]!==ci; }); if(!st.receipt){ var missedItems=st.items.map(function(q,i){return {q:q,i:i};}).filter(function(x){ var ci=correctIdx(x.q.o); return st.picks[x.i]!==ci; }); var weakTopic=null; bts.forEach(function(t){ var b=R.byTopic[t]; var pc=b.c/Math.max(1,b.n); if(b.n>=2&&(weakTopic===null||pc<weakTopic.pc)) weakTopic={t:t,pc:pc}; }); st.receipt=cwReceipt({ tool:
 - Nothing to review — every item correct.
@@ -13495,7 +13495,7 @@ students do not treat test prep and clinical reasoning as separate tasks.
 - **Slug:** `rapid_review.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `09_Exam_Prep/Shelf_High_Yield/rapid_review_buzzwords.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 981 words
+- **Length:** 989 words
 
 #### Page text (as shipped)
 
@@ -13534,7 +13534,7 @@ students do not treat test prep and clinical reasoning as separate tasks.
 - ≥18 + conduct disorder before 15 → **antisocial PD**.
 
 ## Substance / Withdrawal
-- Confusion + ophthalmoplegia + ataxia in alcohol use → **Wernicke** → **thiamine before glucose**. *(→ SUD)*
+- Confusion + ophthalmoplegia + ataxia in alcohol use → **Wernicke** → **thiamine before or with glucose** (never delay dextrose for true hypoglycemia). *(→ SUD)*
 - Alcohol withdrawal peak 48–96 h, autonomic instability + confusion → **delirium tremens** → benzodiazepines — scheduled/front-loaded, titrated to light sedation (CIWA symptom-triggered dosing is for withdrawal *without* delirium). *(→ Withdrawal card)*
 - Opioid withdrawal → track with **COWS**; start buprenorphine only when objective withdrawal present (COWS ≈ 8–12). *(→ SUD)*
 - AUD maintenance → **naltrexone or acamprosate** first-line; disulfiram adherence-dependent.
@@ -13592,7 +13592,7 @@ students do not treat test prep and clinical reasoning as separate tasks.
 - **Slug:** `osce.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `14_Tracks/MS3/Student_Ready_Pack/06_osce_cases/osce_station_set.md`
 - **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
-- **Length:** 1,544 words
+- **Length:** 1,546 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -13869,7 +13869,7 @@ and present clearly.
 - Asks about prior withdrawal, **seizure, and DTs** (revealed only if asked) — 2
 - Checks current symptoms and vital signs — 2
 - Recognizes elevated withdrawal/seizure risk — 2
-- Escalates to a protocol (symptom-triggered benzodiazepine per team) and names **thiamine before glucose** — 1
+- Escalates to a protocol (symptom-triggered benzodiazepine per team) and names **thiamine before or with glucose** — 1
 - Does **not** propose unsupervised management — 1
 
 **Critical-fail:** proposes unsupervised/self-directed management or discharge · never asks the withdrawal-seizure history (misses it) · fails to escalate a high-risk withdrawal.
@@ -15635,7 +15635,7 @@ The translation for the wards: *a referral is not a treatment.* Every ED or inpa
 - **Slug:** `cotw_20260726_etohwd_ms3.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-26_alcohol-withdrawal-delirium-tremens_MS3.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 2,423 words
+- **Length:** 2,520 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -15644,7 +15644,7 @@ The translation for the wards: *a referral is not a treatment.* Every ED or inpa
 
 **TL;DR (shown above the page text):**
 
-> Time since last drink organizes everything: DT arrives late (48-96 h), PAWSS predicts and CIWA-Ar measures, and thiamine goes before glucose.
+> Time since last drink organizes everything: DT arrives late (48-96 h), PAWSS predicts and CIWA-Ar measures, and thiamine goes before or with glucose.
 
 **Key points (bulleted card):**
 
@@ -15660,7 +15660,7 @@ The translation for the wards: *a referral is not a treatment.* Every ED or inpa
 - **say** — Before moving on, rehearse one sentence you would actually say to this patient or family, in plain language and out loud.
 - **collateral** — Ask yourself what collateral would change your differential here, and who you would have to call to get it.
 - **rounds** — Use the ranked differential and the workup-and-management ladder as the spine of your presentation; lead with the finding that changes management.
-- **exam** — Shelf-level takeaway: Time since last drink organizes everything: DT arrives late (48-96 h), PAWSS predicts and CIWA-Ar measures, and thiamine goes before glucose.
+- **exam** — Shelf-level takeaway: Time since last drink organizes everything: DT arrives late (48-96 h), PAWSS predicts and CIWA-Ar measures, and thiamine goes before or with glucose.
 - **actions** — All Case of the Week cases
 
 **Cross-references and tagging:**
@@ -15753,7 +15753,7 @@ The critical caveat for the wards: **CIWA-Ar requires a patient who can communic
    - **Long-acting (chlordiazepoxide, diazepam)** — self-tapering, smoother course; preferred in most patients.
    - **Short/intermediate-acting without oxidative metabolism (lorazepam, oxazepam)** — preferred in **significant liver disease** and in **older adults**, because they avoid hepatic oxidation and accumulation; note the risk of precipitating or worsening hepatic encephalopathy with sedatives in advanced liver disease [8].
    - *In this case:* AST 88 with AST:ALT ≈ 2:1 and platelets 128k suggest liver disease — **lorazepam** is the safer choice.
-2. **Thiamine BEFORE glucose.** Give **parenteral thiamine** to any patient with heavy alcohol use and suspected or possible Wernicke encephalopathy, and always **before** IV dextrose — a glucose load in a thiamine-deficient patient can precipitate Wernicke [6]. Practice guidelines are consistent that parenteral thiamine belongs in high-risk patients, though they vary widely on dose and duration, and evidence for universal prophylactic dosing is thin [6].
+2. **Thiamine before or with glucose.** Give **parenteral (IV or IM) thiamine** to any patient with heavy alcohol use, and give **high-dose parenteral thiamine, continued over several days** — substantially more than the thiamine in a routine "banana bag" — whenever Wernicke encephalopathy is suspected; under-dosing is the commonest reason a treated Wernicke still progresses to Korsakoff. Give thiamine **before or together with** IV dextrose, because a glucose load in a thiamine-deficient patient can precipitate Wernicke [6] — but **never delay dextrose in symptomatic hypoglycemia** to hunt for thiamine; give the glucose and give the thiamine with it. Practice guidelines are consistent that parenteral thiamine belongs in high-risk patients, though they vary widely on dose and duration, and evidence for universal prophylactic dosing is thin [6].
 3. **Correct electrolytes** — replete **magnesium** and **potassium** (both low here); check glucose and sodium.
 4. **Set the level of care and monitoring** — frequent vitals and mental-status checks, especially across the 48–96 h DT window and around his operation. Escalate to a step-down/ICU setting for severe or refractory withdrawal.
 5. **Treat the underlying disorder.** Detoxification is *not* treatment of alcohol use disorder (AUD). Before discharge, offer **AUD pharmacotherapy** — **oral naltrexone 50 mg/d** and **acamprosate** are first-line with the strongest evidence (number needed to treat ~11–18 to prevent one person returning to any drinking), alongside psychosocial treatment [9].
@@ -15789,7 +15789,7 @@ The critical caveat for the wards: **CIWA-Ar requires a patient who can communic
 **Management ladder:**
 1. **Risk-stratify on admission** (PAWSS) → decide prophylaxis vs. monitoring, and the right level of care [5].
 2. **Benzodiazepines** — symptom-triggered (CIWA-Ar) *only* if the patient can be validly assessed; otherwise fixed-schedule or front-loaded [1,2,7].
-3. **Parenteral thiamine before glucose**; replete **magnesium** and potassium [6].
+3. **Parenteral thiamine before or with glucose** (high-dose and continued for several days if Wernicke is suspected); replete **magnesium** and potassium [6].
 4. **Monitor across the full 48–96 h DT window**, and around any procedure or surgery.
 5. **Escalate** for delirium, refractory autonomic instability, or rapidly rising benzodiazepine requirements — consider phenobarbital and ICU care [10,11].
 6. **Rule out mimics** whenever the picture doesn't fit — head CT, infection, metabolic.
@@ -15804,7 +15804,7 @@ The critical caveat for the wards: **CIWA-Ar requires a patient who can communic
 - **Common MS3 errors to correct:**
   1. Treating CIWA-Ar as a diagnostic test rather than a severity scale — and applying it to patients who cannot be validly scored.
   2. Assuming a patient who looks well at 12 hours is "past" withdrawal.
-  3. Giving glucose before thiamine.
+  3. Omitting thiamine, or under-dosing it, when carbohydrate is given — and the mirror-image error of delaying emergency dextrose in a hypoglycemic patient in order to give thiamine first.
   4. Reaching for an antipsychotic (or a beta-blocker) as monotherapy for agitation in withdrawal.
   5. Conflating **hallucinosis** (clear sensorium) with **DT** (delirium).
   6. Anchoring on withdrawal in a patient who fell — missing the subdural.
@@ -16406,6 +16406,14 @@ Dangerousness in this case is **risk of harm to self and staff from agitation**,
 *Joshua Moss, MD | Psychiatrist*
 
 
+<!-- ==================== 02_CURRICULUM_V12.md ==================== -->
+
+# MS3 · Curriculum content — volume 12
+
+Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
+
+# SECTION (cont.): Case of the Week
+
 ---
 
 ## Serotonin Syndrome vs NMS (Jul 9)
@@ -16590,15 +16598,6 @@ If the presentation involved an **intentional overdose**, management is the same
 ---
 
 # SECTION: Evidence and Reference
-
-
-<!-- ==================== 02_CURRICULUM_V12.md ==================== -->
-
-# MS3 · Curriculum content — volume 12
-
-Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
-
-# SECTION (cont.): Evidence and Reference
 
 ---
 
@@ -18449,10 +18448,10 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Present the anxiety/OCD/PTSD syndrome, ruled-out mimics, functional impairment, and why the plan avoids reflexive benzodiazepines.
 - OCD is ERP plus higher-dose SSRI; PTSD is trauma-focused therapy; scheduled benzodiazepines are not first-line for PTSD.
 - Practice medication ambivalence
-- Time the withdrawal syndrome and treat it proactively — alcohol withdrawal is benzodiazepines (CIWA-guided) plus thiamine before glucose.
+- Time the withdrawal syndrome and treat it proactively — alcohol withdrawal is benzodiazepines (CIWA-guided) plus thiamine before or with glucose.
 - Use CIWA-Ar (alcohol) and COWS (opioid) to drive symptom-triggered dosing.
 - Offer medication for addiction: buprenorphine/methadone for opioids; naltrexone/acamprosate for alcohol.
-- Give thiamine before glucose to prevent Wernicke encephalopathy.
+- Give thiamine before or with glucose to prevent Wernicke encephalopathy — and never delay dextrose in documented hypoglycemia.
 - Delirium tremens (48–72h) is a medical emergency with real mortality — escalate early, don't wait.
 - Alcohol withdrawal (tremor → DTs)
 - Benzodiazepine withdrawal
@@ -18460,7 +18459,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - On hospital day 2, a heavy drinker is tremulous and tachycardic with visual hallucinations and a clear sensorium. Best management?
 - Restraints and observation
 - CIWA-guided benzodiazepine + thiamine
-- Alcohol withdrawal is treated with symptom-triggered benzodiazepines and thiamine before glucose.
+- Alcohol withdrawal is treated with symptom-triggered benzodiazepines plus thiamine, given before or with any glucose-containing fluids. Dextrose is not the priority here — nothing in the stem suggests hypoglycemia — and carbohydrate given to a thiamine-depleted patient without thiamine can precipitate Wernicke encephalopathy.
 - Clarify discharge supports
 - Open discharge collateral workflow
 - Alcohol: CIWA-Ar q4h through the risk window; step down only after sustained low scores
@@ -21777,7 +21776,7 @@ _1394 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_sud_002` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['safety', 'next-step']`
 - Linked pages: `t_sud.md`
-- Evidence: `t_sud.md 'Acute inpatient management' — Give thiamine before glucose — administering carbohydrate to a thiamine-depleted patient can precipitate Wernicke encephalopathy. High-yield pearl: 'Thiamine before glucose, every time.'`
+- Evidence: `t_sud.md 'Acute inpatient management' — Give thiamine before or with glucose; administering carbohydrate to a thiamine-depleted patient can precipitate Wernicke encephalopathy. The sequencing governs maintenance and repletion fluids and never justifies delaying dextrose in documented hypoglycemia.`
 
 **Stem.** A 52-year-old man with a history of heavy daily alcohol use is admitted in early withdrawal — tremulous and tachycardic. A nurse is about to start an IV dextrose infusion for a fingerstick glucose in the low-normal range. The most important step before administering the glucose is which of the following?
 
@@ -21786,26 +21785,26 @@ _1394 further strings omitted — this surface embeds the build's front-door cat
 - Administer thiamine before or with the glucose to prevent Wernicke encephalopathy **← keyed correct**
 - Reassure the team that Wernicke encephalopathy risk applies only to patients with a documented prior episode
 
-**Rationale.** Sequence error and It's just withdrawal are the traps. Administering carbohydrate to a thiamine-depleted patient precipitates Wernicke encephalopathy — a preventable neurologic emergency. The rule is simple and categorical: thiamine before glucose, every time, without requiring a prior history of encephalopathy.
+**Rationale.** Sequence error and It's just withdrawal are the traps. Administering carbohydrate to a thiamine-depleted patient can precipitate Wernicke encephalopathy — a preventable neurologic emergency. Thiamine goes before or with the glucose, and it does not require a prior history of encephalopathy. The rule governs planned and maintenance carbohydrate, as here: it is not a licence to withhold emergency dextrose from a hypoglycemic patient while thiamine is located.
 
-**Pearl.** Thiamine before glucose, every time — carbohydrate loading in a thiamine-depleted patient can precipitate Wernicke encephalopathy.
+**Pearl.** Thiamine before or with glucose in a thiamine-depleted patient — carbohydrate loading can precipitate Wernicke encephalopathy. Never delay emergency dextrose for documented hypoglycemia — give the sugar immediately and the thiamine alongside it.
 
 ### qb_sud_003
 
 - id=`qb_sud_003` · status=`attested` · type=`sba` · difficulty=`1` · competency=`['safety']` · **high-yield**
 - Linked pages: `t_sud.md`
-- Evidence: `t_sud.md — Give thiamine before glucose — administering carbohydrate to a thiamine-depleted patient can precipitate Wernicke encephalopathy.`
+- Evidence: `t_sud.md — Give thiamine before or with glucose; administering carbohydrate to a thiamine-depleted patient can precipitate Wernicke encephalopathy, and the sequencing never justifies withholding emergency dextrose.`
 
 **Stem.** A 57-year-old man with severe alcohol use disorder is admitted through the ED with altered mental status. The nurse establishes IV access and is preparing to infuse D5W. He appears malnourished and confused. Which step must occur before the glucose infusion is started?
 
 - Start a CIWA-Ar protocol — the altered mental status indicates active alcohol withdrawal requiring immediate benzodiazepine dosing.
 - Obtain a CT head to exclude intracranial pathology before administering any fluids.
-- Administer IV thiamine before any glucose-containing fluids — carbohydrate loading in a thiamine-depleted patient can precipitate Wernicke encephalopathy. **← keyed correct**
+- Administer IV thiamine before or together with the glucose-containing fluids — carbohydrate loading in a thiamine-depleted patient can precipitate Wernicke encephalopathy. **← keyed correct**
 - Confirm blood alcohol level — management depends on whether the AMS is from intoxication or withdrawal.
 
-**Rationale.** It's just withdrawal and Imaging before treatment both bypass the irreversible intervention: thiamine before glucose. Wernicke encephalopathy — confusion, ophthalmoplegia, ataxia — is precipitated when carbohydrate is infused into a thiamine-depleted nervous system. The intervention costs almost nothing and the omission is catastrophic. Labs before treatment similarly delays a maneuver that should be reflexive.
+**Rationale.** It's just withdrawal and Imaging before treatment both bypass the cheap, time-critical intervention: thiamine given before or together with the glucose. Wernicke encephalopathy — confusion, ophthalmoplegia, ataxia — can be precipitated when carbohydrate is infused into a thiamine-depleted nervous system. Here the D5W is routine maintenance and nothing is lost by giving thiamine with it. Read the rule correctly, though: in symptomatic hypoglycemia the dextrose goes in immediately and the thiamine goes in with it, because delayed correction of hypoglycemia causes its own neuronal injury.
 
-**Pearl.** Thiamine before glucose — every time, before any IV dextrose in a malnourished or alcohol-dependent patient.
+**Pearl.** Thiamine before or with glucose in any malnourished or alcohol-dependent patient — but never delay emergent dextrose for documented hypoglycemia; give thiamine alongside.
 
 ### qb_sud_004
 
@@ -22006,14 +22005,14 @@ _1394 further strings omitted — this surface embeds the build's front-door cat
 
 **Stem.** A 55-year-old man with heavy alcohol use is admitted with confusion, gaze-evoked nystagmus with impaired eye movements, and a wide-based unsteady gait. What is the immediate priority?
 
-- Give parenteral thiamine before any glucose **← keyed correct**
+- Give parenteral thiamine before or together with the glucose **← keyed correct**
 - Give IV dextrose immediately to correct presumed hypoglycemia
 - Start a benzodiazepine taper and defer thiamine
 - Obtain an MRI before any treatment
 
-**Rationale.** The triad of encephalopathy, ophthalmoplegia, and ataxia is Wernicke encephalopathy. Give thiamine before glucose, because a glucose load in a thiamine-deficient patient can precipitate or worsen it.
+**Rationale.** The triad of encephalopathy, ophthalmoplegia, and ataxia is Wernicke encephalopathy. Give thiamine before or together with glucose, because a carbohydrate load in a thiamine-deficient patient can precipitate or worsen it — but never withhold dextrose from a patient who is actually hypoglycemic.
 
-**Pearl.** Wernicke = confusion + ophthalmoplegia + ataxia; give thiamine BEFORE glucose.
+**Pearl.** Wernicke = confusion + ophthalmoplegia + ataxia; give thiamine before or with glucose.
 
 ### qb_sud_016
 

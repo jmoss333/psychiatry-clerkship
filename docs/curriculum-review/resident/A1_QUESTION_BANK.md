@@ -3085,7 +3085,7 @@
 
 - id=`qb_sud_002` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['safety', 'next-step']`
 - Linked pages: `t_sud.md`
-- Evidence: `t_sud.md 'Acute inpatient management' — Give thiamine before glucose — administering carbohydrate to a thiamine-depleted patient can precipitate Wernicke encephalopathy. High-yield pearl: 'Thiamine before glucose, every time.'`
+- Evidence: `t_sud.md 'Acute inpatient management' — Give thiamine before or with glucose; administering carbohydrate to a thiamine-depleted patient can precipitate Wernicke encephalopathy. The sequencing governs maintenance and repletion fluids and never justifies delaying dextrose in documented hypoglycemia.`
 
 **Stem.** A 52-year-old man with a history of heavy daily alcohol use is admitted in early withdrawal — tremulous and tachycardic. A nurse is about to start an IV dextrose infusion for a fingerstick glucose in the low-normal range. The most important step before administering the glucose is which of the following?
 
@@ -3094,26 +3094,26 @@
 - Administer thiamine before or with the glucose to prevent Wernicke encephalopathy **← keyed correct**
 - Reassure the team that Wernicke encephalopathy risk applies only to patients with a documented prior episode
 
-**Rationale.** Sequence error and It's just withdrawal are the traps. Administering carbohydrate to a thiamine-depleted patient precipitates Wernicke encephalopathy — a preventable neurologic emergency. The rule is simple and categorical: thiamine before glucose, every time, without requiring a prior history of encephalopathy.
+**Rationale.** Sequence error and It's just withdrawal are the traps. Administering carbohydrate to a thiamine-depleted patient can precipitate Wernicke encephalopathy — a preventable neurologic emergency. Thiamine goes before or with the glucose, and it does not require a prior history of encephalopathy. The rule governs planned and maintenance carbohydrate, as here: it is not a licence to withhold emergency dextrose from a hypoglycemic patient while thiamine is located.
 
-**Pearl.** Thiamine before glucose, every time — carbohydrate loading in a thiamine-depleted patient can precipitate Wernicke encephalopathy.
+**Pearl.** Thiamine before or with glucose in a thiamine-depleted patient — carbohydrate loading can precipitate Wernicke encephalopathy. Never delay emergency dextrose for documented hypoglycemia — give the sugar immediately and the thiamine alongside it.
 
 ### qb_sud_003
 
 - id=`qb_sud_003` · status=`attested` · type=`sba` · difficulty=`1` · competency=`['safety']` · **high-yield**
 - Linked pages: `t_sud.md`
-- Evidence: `t_sud.md — Give thiamine before glucose — administering carbohydrate to a thiamine-depleted patient can precipitate Wernicke encephalopathy.`
+- Evidence: `t_sud.md — Give thiamine before or with glucose; administering carbohydrate to a thiamine-depleted patient can precipitate Wernicke encephalopathy, and the sequencing never justifies withholding emergency dextrose.`
 
 **Stem.** A 57-year-old man with severe alcohol use disorder is admitted through the ED with altered mental status. The nurse establishes IV access and is preparing to infuse D5W. He appears malnourished and confused. Which step must occur before the glucose infusion is started?
 
 - Start a CIWA-Ar protocol — the altered mental status indicates active alcohol withdrawal requiring immediate benzodiazepine dosing.
 - Obtain a CT head to exclude intracranial pathology before administering any fluids.
-- Administer IV thiamine before any glucose-containing fluids — carbohydrate loading in a thiamine-depleted patient can precipitate Wernicke encephalopathy. **← keyed correct**
+- Administer IV thiamine before or together with the glucose-containing fluids — carbohydrate loading in a thiamine-depleted patient can precipitate Wernicke encephalopathy. **← keyed correct**
 - Confirm blood alcohol level — management depends on whether the AMS is from intoxication or withdrawal.
 
-**Rationale.** It's just withdrawal and Imaging before treatment both bypass the irreversible intervention: thiamine before glucose. Wernicke encephalopathy — confusion, ophthalmoplegia, ataxia — is precipitated when carbohydrate is infused into a thiamine-depleted nervous system. The intervention costs almost nothing and the omission is catastrophic. Labs before treatment similarly delays a maneuver that should be reflexive.
+**Rationale.** It's just withdrawal and Imaging before treatment both bypass the cheap, time-critical intervention: thiamine given before or together with the glucose. Wernicke encephalopathy — confusion, ophthalmoplegia, ataxia — can be precipitated when carbohydrate is infused into a thiamine-depleted nervous system. Here the D5W is routine maintenance and nothing is lost by giving thiamine with it. Read the rule correctly, though: in symptomatic hypoglycemia the dextrose goes in immediately and the thiamine goes in with it, because delayed correction of hypoglycemia causes its own neuronal injury.
 
-**Pearl.** Thiamine before glucose — every time, before any IV dextrose in a malnourished or alcohol-dependent patient.
+**Pearl.** Thiamine before or with glucose in any malnourished or alcohol-dependent patient — but never delay emergent dextrose for documented hypoglycemia; give thiamine alongside.
 
 ### qb_sud_004
 
@@ -3314,14 +3314,14 @@
 
 **Stem.** A 55-year-old man with heavy alcohol use is admitted with confusion, gaze-evoked nystagmus with impaired eye movements, and a wide-based unsteady gait. What is the immediate priority?
 
-- Give parenteral thiamine before any glucose **← keyed correct**
+- Give parenteral thiamine before or together with the glucose **← keyed correct**
 - Give IV dextrose immediately to correct presumed hypoglycemia
 - Start a benzodiazepine taper and defer thiamine
 - Obtain an MRI before any treatment
 
-**Rationale.** The triad of encephalopathy, ophthalmoplegia, and ataxia is Wernicke encephalopathy. Give thiamine before glucose, because a glucose load in a thiamine-deficient patient can precipitate or worsen it.
+**Rationale.** The triad of encephalopathy, ophthalmoplegia, and ataxia is Wernicke encephalopathy. Give thiamine before or together with glucose, because a carbohydrate load in a thiamine-deficient patient can precipitate or worsen it — but never withhold dextrose from a patient who is actually hypoglycemic.
 
-**Pearl.** Wernicke = confusion + ophthalmoplegia + ataxia; give thiamine BEFORE glucose.
+**Pearl.** Wernicke = confusion + ophthalmoplegia + ataxia; give thiamine before or with glucose.
 
 ### qb_sud_016
 

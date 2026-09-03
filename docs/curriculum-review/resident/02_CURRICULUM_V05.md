@@ -1192,7 +1192,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Withdrawal: COWS tool · CIWA-Ar official form
 - Two structured scales you’ll use on the unit — alcohol (CIWA-Ar) and opioids (COWS). COWS is scored here; the CIWA-Ar is not reproduced on this page — score it from your unit’s approved form. The trend matters as much as the number.
 - CIWA-Ar — official form & training
-- a rising or high CIWA signals risk of withdrawal seizures and delirium tremens. Benzodiazepines are first-line per protocol; treat early. Thiamine before glucose.
+- a rising or high CIWA signals risk of withdrawal seizures and delirium tremens. Benzodiazepines are first-line per protocol; treat early. Thiamine before or with glucose — never delay emergency dextrose for true hypoglycemia.
 - This page no longer reproduces the CIWA-Ar.
 - Use your unit’s current approved form to score at the bedside.
 - Why the items were removed.

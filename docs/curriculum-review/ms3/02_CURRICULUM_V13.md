@@ -621,10 +621,10 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Present the anxiety/OCD/PTSD syndrome, ruled-out mimics, functional impairment, and why the plan avoids reflexive benzodiazepines.
 - OCD is ERP plus higher-dose SSRI; PTSD is trauma-focused therapy; scheduled benzodiazepines are not first-line for PTSD.
 - Practice medication ambivalence
-- Time the withdrawal syndrome and treat it proactively — alcohol withdrawal is benzodiazepines (CIWA-guided) plus thiamine before glucose.
+- Time the withdrawal syndrome and treat it proactively — alcohol withdrawal is benzodiazepines (CIWA-guided) plus thiamine before or with glucose.
 - Use CIWA-Ar (alcohol) and COWS (opioid) to drive symptom-triggered dosing.
 - Offer medication for addiction: buprenorphine/methadone for opioids; naltrexone/acamprosate for alcohol.
-- Give thiamine before glucose to prevent Wernicke encephalopathy.
+- Give thiamine before or with glucose to prevent Wernicke encephalopathy — and never delay dextrose in documented hypoglycemia.
 - Delirium tremens (48–72h) is a medical emergency with real mortality — escalate early, don't wait.
 - Alcohol withdrawal (tremor → DTs)
 - Benzodiazepine withdrawal
@@ -632,7 +632,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - On hospital day 2, a heavy drinker is tremulous and tachycardic with visual hallucinations and a clear sensorium. Best management?
 - Restraints and observation
 - CIWA-guided benzodiazepine + thiamine
-- Alcohol withdrawal is treated with symptom-triggered benzodiazepines and thiamine before glucose.
+- Alcohol withdrawal is treated with symptom-triggered benzodiazepines plus thiamine, given before or with any glucose-containing fluids. Dextrose is not the priority here — nothing in the stem suggests hypoglycemia — and carbohydrate given to a thiamine-depleted patient without thiamine can precipitate Wernicke encephalopathy.
 - Clarify discharge supports
 - Open discharge collateral workflow
 - Alcohol: CIWA-Ar q4h through the risk window; step down only after sustained low scores

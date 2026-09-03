@@ -317,7 +317,7 @@ Twenty trials and analyses that shaped modern prescribing, ranked by impact. Pap
 - **Slug:** `protocol_library.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `05_Psychopharmacology/Protocol_Library/protocol_library_inpatient.md`
 - **Governance:** status=`reviewed` · riskKind=`local-policy` · riskLevel=`high`
-- **Length:** 325 words
+- **Length:** 327 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -330,7 +330,7 @@ Twenty trials and analyses that shaped modern prescribing, ranked by impact. Pap
 
 **Key points (bulleted card):**
 
-- Withdrawal protocols use symptom-triggered scoring (CIWA-Ar for alcohol/benzo, COWS for opioids); always give thiamine before glucose in any withdrawal or nutritional risk.
+- Withdrawal protocols use symptom-triggered scoring (CIWA-Ar for alcohol/benzo, COWS for opioids); give thiamine before or with glucose in any withdrawal or nutritional risk, never delaying dextrose for hypoglycemia.
 - Clozapine initiation requires mandatory ANC monitoring per the hematologic schedule — know the workflow before the patient starts, not after the first dose.
 - Delirium prevention bundles non-pharmacologic measures first; the restraint and agitation pathway is least-restrictive, time-limited, and always followed by a debrief.
 
@@ -361,7 +361,7 @@ Twenty trials and analyses that shaped modern prescribing, ranked by impact. Pap
 **What this is.** A teaching index of the structured order sets used on the unit. These are *institutional protocols* — this page orients you to what each is for and when it's used. **Always pull exact medications, doses, and monitoring from the live EHR order set, not from memory or from this page.**
 
 ## Withdrawal
-- **Alcohol withdrawal (CIWA-Ar–driven).** Symptom-triggered benzodiazepine dosing scored on the CIWA-Ar, with escalation for seizure/delirium-tremens risk; thiamine before glucose. Practice the scoring with the **Withdrawal (CIWA-Ar/COWS) card**.
+- **Alcohol withdrawal (CIWA-Ar–driven).** Symptom-triggered benzodiazepine dosing scored on the CIWA-Ar, with escalation for seizure/delirium-tremens risk; thiamine before or with glucose. Practice the scoring with the **Withdrawal (CIWA-Ar/COWS) card**.
 - **Opioid withdrawal (COWS-driven).** COWS scoring guides supportive care and buprenorphine induction once objective withdrawal is present. Same card.
 - **Benzodiazepine taper.** A structured, gradual taper to prevent withdrawal seizures/destabilization (the unit's BHU2 benzodiazepine-taper order-set spec).
 
@@ -457,7 +457,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - NMS vs serotonin syndrome
 - Two hyperthermic emergencies that look alike at the door. The reflexes split them: rigidity + hyporeflexia (NMS) vs clonus + hyperreflexia (serotonin).
 - Alcohol withdrawal timeline
-- Time since the last drink predicts the syndrome. Treat with symptom-triggered benzodiazepines (CIWA-Ar) and give thiamine before glucose.
+- Time since the last drink predicts the syndrome. Treat with symptom-triggered benzodiazepines (CIWA-Ar) and give thiamine before or with glucose — never delaying emergency dextrose for true hypoglycemia.
 - Symptom-triggered dosing keyed to the total score — less total benzodiazepine than fixed schedules.
 - Minimal–mild — supportive care, PRN only.
 - Moderate — symptom-triggered benzodiazepine; reassess hourly.
