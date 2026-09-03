@@ -12,16 +12,43 @@
 // TARGET, not of one hard-coded name, so derive it from the name's audience suffix and let any
 // future `<purpose>-res` / `<purpose>-ms3` pair work without touching a spec.
 //
-// tests/canary-scope.test.mjs fails if a canary spec reintroduces the exact-name comparison.
+// An unrecognised name THROWS rather than defaulting to 'ms3'. Defaulting is the precise shape
+// of the bug above — a name nobody taught the helper about quietly becoming the MS3 answer — so
+// a helper that defaults still carries the defect it was written to remove, just one project
+// name further away. A name encoding no audience is a configuration mistake, and a loud one is
+// cheap: every spec that imports this file runs only under the audience-bearing projects
+// (nav-* and canary-*). The five audience-agnostic projects — lfs, visual, interview-room,
+// faculty-console, offline — each run a single spec that does not import this module, and
+// tests/canary-scope.test.mjs pins that invariant so the throw cannot start firing by accident.
+//
+// tests/canary-scope.test.mjs also fails if a canary spec reintroduces the exact-name comparison.
 
-const RESIDENT_SUFFIX = '-res';
+/** Audience suffixes, longest first so '-ms3' cannot shadow a future '-res-ms3'. */
+const AUDIENCE_BY_SUFFIX = [
+  ['-res', 'resident'],
+  ['-ms3', 'ms3'],
+];
+
+/**
+ * The audience token the learner shell and its storage keys use.
+ * @param {string} projectName a Playwright project name, e.g. 'nav-res', 'canary-ms3'
+ * @returns {'resident'|'ms3'}
+ * @throws if the name encodes no audience
+ */
+export function audienceOf(projectName) {
+  const name = String(projectName ?? '');
+  for (const [suffix, audience] of AUDIENCE_BY_SUFFIX) {
+    if (name.endsWith(suffix)) return audience;
+  }
+  throw new Error(
+    `project name "${name}" encodes no audience; expected a name ending in `
+      + AUDIENCE_BY_SUFFIX.map(([suffix]) => `"${suffix}"`).join(' or ')
+      + '. If this is an audience-agnostic project (lfs, visual, interview-room, '
+      + 'faculty-console, offline), its spec should not be importing audience.js.',
+  );
+}
 
 /** True when `projectName` targets the resident site (mmc-psychiatry-residents-sanford). */
 export function isResidentProject(projectName) {
-  return typeof projectName === 'string' && projectName.endsWith(RESIDENT_SUFFIX);
-}
-
-/** The audience token the learner shell and its storage keys use. */
-export function audienceOf(projectName) {
-  return isResidentProject(projectName) ? 'resident' : 'ms3';
+  return audienceOf(projectName) === 'resident';
 }

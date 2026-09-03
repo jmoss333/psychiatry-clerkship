@@ -27,6 +27,7 @@ STATUSES = {"planned", "active", "completed"}
 # SP_STUDENT_PASSCODE is now fixed and non-rotating. Rotation had been the
 # revocation path, so the two items that follow the credential line carry the
 # obligations that decision created. See sp-proxy/README.md, "Passcode policy".
+# DECISION: passcode-fixed  (decisions.json; bin/check_decision_drift.py)
 MANUAL_CHECKLIST = (
     "issue a new non-identifying SP_ROTATION_ID",
     "rotate the separate operations credential (the learner passcode is fixed per the 2026-08-31 decision)",

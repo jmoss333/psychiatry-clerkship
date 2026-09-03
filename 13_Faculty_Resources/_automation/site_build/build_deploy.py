@@ -241,6 +241,7 @@ _crisis_data=_crisis.load(LIB)
 # Required surfaces = where a learner is plausibly DOING risk work (assessing, rehearsing, or
 # planning disposition around self-harm/violence), not merely reading about it. Reference and
 # reading pages are deliberately excluded so the block stays meaningful rather than wallpaper.
+# DECISION: crisis-single-source  (decisions.json; scope rule: the learner must be DOING risk work here)
 _CRISIS_REQUIRED_TOOLS={
     "cssrs.html","sp-interview.html","communication-practice.html",
     "family-systems.html","one-patient-six-weeks.html",
