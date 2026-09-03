@@ -6,6 +6,158 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 
 ---
 
+## Catatonia (Aug 31)
+
+- **Slug:** `cotw_20260831_catatonia_res.md` · **Type:** md · **Sidebar:** listed
+- **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-08-31_catatonia-recognition-workup-treatment_Resident.md`
+- **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
+- **Length:** 2,182 words
+
+<!-- topic_meta overlay -->
+#### Structured metadata (`topic_meta.json` → this page)
+
+> est. read 10 min · safetyLevel=`moderate` · cotwLevel=`res` (2026-08-31)
+
+**TL;DR (shown above the page text):**
+
+> A mute, motionless patient is an emergency until proven otherwise - screen with the BFCRS, test-and-treat with the lorazepam challenge, hold the antipsychotics, and know the malignant-catatonia triggers that mean early ECT.
+
+**Key points (bulleted card):**
+
+- ~20-30 minute small-group discussion - no pre-reading required.
+- De-identified synthetic case; each discussion question is paired with a teaching point.
+- Resident level. Facilitator notes are kept separate from the learner-facing stem.
+
+**Clinical-workflow narration (per-stage coaching text):**
+
+- **ask** — Work the stem cold: take your own history, commit to a differential, and name your next step before reading a single teaching point. The guided questions are written to be answered, not skimmed.
+- **mse** — Say out loud what each exam finding in the vignette rules in and rules out — the discrimination between look-alike syndromes is what the case is drilling.
+- **safety** — Safety content in every case is oriented to recognition, escalation, and safety planning. Escalate to your supervising resident or attending rather than managing acuity alone.
+- **say** — Before moving on, rehearse one sentence you would actually say to this patient or family, in plain language and out loud.
+- **collateral** — Ask yourself what collateral would change your differential here, and who you would have to call to get it.
+- **rounds** — If you are running the session, the facilitator notes flag the errors this case most often surfaces and the evidence-quality distinctions worth naming out loud.
+- **exam** — Teaching takeaway: A mute, motionless patient is an emergency until proven otherwise - screen with the BFCRS, test-and-treat with the lorazepam challenge, hold the antipsychotics, and know the malignant-catatonia triggers that mean early ECT.
+- **actions** — All Case of the Week cases
+
+**Cross-references and tagging:**
+
+- **Workflow stages:** `diagnosis`, `safety`, `treatment`, `team`, `exam`
+- **Shelf blueprint tags:** `neurocog`, `safety`, `pharm`
+- **EPA crosswalk:** `EPA1`, `EPA2`, `EPA3`, `EPA10`
+- **Faculty review:** {"status": "pending", "reviewer": "Joshua Moss, MD", "lastReviewed": "2026-08-31"}
+
+#### Page text (as shipped)
+
+# Case of the Week — August 31, 2026 (Resident Version)
+
+## Catatonia: Recognition, Workup, and Treatment
+
+**Learner level:** Psychiatry residents (PGY-2–4; well suited to the C-L service)
+**Format:** Facilitator-led discussion, ~20–30 minutes. Assumes DSM-5-TR fluency.
+**Note:** This is a fully synthetic, de-identified teaching case. It describes no real patient; any resemblance to a real person is coincidental.
+
+---
+
+## Learner-facing case stem
+
+You are the consultation-liaison resident. Medicine consults you for a 46-year-old man admitted two days ago with "altered mental status and failure to thrive." He has a history of bipolar I disorder, off all medications for about a year. Per his sister, he had a flu-like illness roughly three weeks ago, then over two weeks became progressively withdrawn, near-mute, and stopped eating reliably; for the last five days he has barely taken anything by mouth. In the emergency department three days ago he was "agitated and resistive" and received **haloperidol 5 mg IM twice**. The primary team reports he has since seemed "stiffer and more shut down."
+
+On exam he is awake, eyes open, with fixed staring and almost no spontaneous movement. He does not speak beyond occasional repetition of the same short phrase (**verbigeration**). He holds his head several inches off the pillow for minutes at a time (**psychological pillow**, a form of posturing). Passive movement reveals **gegenhalten** (oppositional paratonia — resistance proportional to the force applied) and intermittent **waxy flexibility**; he mirrors some of your movements (**echopraxia**). He resists mouth opening and eye examination (**negativism**). There is mild diffuse rigidity without cogwheeling and no tremor or clonus.
+
+Vitals: T 37.6 °C, HR 104, BP 142/88 (nurse notes readings from 108/70 to 150/92 today), RR 16, SpO₂ 98%. Labs: Na 148, BUN/Cr 32/1.3, CK 850 U/L, WBC 11.2; TSH and glucose normal; urine toxicology negative. BFCRS screening is positive at 8 of 14 screening items.
+
+---
+
+## Guided discussion questions
+
+**Q1. Make the syndromic diagnosis precisely. How do DSM-5-TR, ICD-11, and the BFCRS each frame catatonia, and why does the framing matter?**
+
+*Teaching point:* He easily meets DSM-5-TR criteria (≥3 of 12 signs — here mutism/verbigeration, posturing, waxy flexibility, negativism, echopraxia, staring on the BFCRS). DSM-5 moved catatonia out from under schizophrenia to a **specifier** applicable across mood, psychotic, and medical conditions, reflecting that mood disorders are the most common psychiatric context [5]. ICD-11 now recognizes catatonia as an **independent diagnostic entity** (since 2022) [3]. The **BFCRS** remains the workhorse instrument: 23-item severity scale, 14-item screen (positive at ≥2), standardized exam, inter-rater reliability ~0.93 [4]. Framing matters clinically: prevalence is roughly **5–18% on psychiatric inpatient units and ~3.3% on medical units** [3], and unrecognized catatonia is what kills — via VTE, aspiration, dehydration, and progression to malignant catatonia.
+
+**Q2. What in this stem demands a workup for secondary (medical) catatonia, and what exactly do you send?**
+
+*Teaching point:* Red flags: first catatonic episode at 46, subacute course after a **viral prodrome**, dysautonomia out of proportion to psychiatric history, and admission to a medical service. The BAP guideline's assessment framework: careful history and physical/neurological exam, then **neuroimaging (MRI preferred), EEG, and neuronal autoantibody testing in serum and CSF** — anti-NMDA-receptor encephalitis is the paradigmatic mimic/cause and can present catatonic [1,2]. Add here: CMP with Ca/Mg/phosphate, LFTs, B12, HIV and syphilis serology, serial CK, and an LP with cell count, protein, oligoclonal bands, and autoimmune panel. EEG also screens for **nonconvulsive status epilepticus**, which belongs on this differential. Delirium and catatonia are *not* mutually exclusive — they frequently co-occur in the medically ill, and both should be coded and tracked [3,6].
+
+**Q3. Haloperidol was given, and he worsened. Disentangle NMS, antipsychotic-worsened catatonia, and malignant catatonia — conceptually and practically.**
+
+*Teaching point:* Many authors treat **NMS as a drug-induced (malignant) variant of catatonia** — the phenotypes overlap almost completely (rigidity, mutism, autonomic instability, elevated CK) [2,6]. Practical synthesis for the bedside: (a) his catatonic signs **predated** haloperidol, so this is primary catatonia **worsened by a dopamine antagonist**, a well-described phenomenon and the reason antipsychotics — especially high-potency D2 blockers — are relatively contraindicated in active catatonia [2]; (b) whatever the label, T 37.6 with labile BP, HR 104, rigidity, and CK 850 means he is **evolving toward malignant catatonia**, which is life-threatening and can be fatal untreated [6]; (c) management converges: **stop dopamine blockers, start lorazepam, escalate monitoring, and mobilize ECT early** [1,2,6]. The BAP guideline gives specific regard to malignant catatonia, NMS, and antipsychotic-induced catatonia as special situations [1].
+
+**Q4. Design the benzodiazepine trial: challenge, titration, endpoints, and what response rates you should quote.**
+
+*Teaching point:* **Lorazepam challenge** (typically 1–2 mg IV in a monitored medical setting; IV is preferred for reliability of effect and because PO absorption is uncertain with poor intake), re-examine with the BFCRS within ~15–60 minutes; video or documented serial exams make response objective. If positive (often dramatic), convert to **scheduled dosing with structured uptitration** — effective regimens frequently exceed conventional anxiolytic dosing, and the BAP guideline explicitly notes lorazepam is "sometimes used in very high doses"; catatonic patients often tolerate these with surprisingly little sedation [1,2]. Titrate to BFCRS resolution, not to sedation. Quote honestly: benzodiazepines are first-line, but **up to ~27% of catatonia fails to respond to benzodiazepines alone** [8] — a pre-committed escalation plan is part of the initial order set. Mechanistically, GABA-A hypofunction is the leading model, consistent with benzodiazepine response and with premotor/motor-network dysfunction on imaging [3,5]. The α1-selective GABA-A agonist **zolpidem** has case-level evidence as an alternative challenge or augmentation agent when lorazepam response is equivocal [8].
+
+**Q5. When does ECT enter, and how do you operationalize it on a medical service?**
+
+*Teaching point:* **ECT is first-line together with benzodiazepines**, and is the treatment of choice for **malignant catatonia, benzodiazepine-refractory catatonia, and when a rapid response is needed** (e.g., no oral intake, dysautonomia) [1,2,6]. Operationally: early ECT consultation (do not wait for a completed benzodiazepine failure if malignant features progress), anesthesia review, capacity assessment — catatonic patients usually lack capacity, so involve surrogate consent per jurisdiction, and know your local emergency-treatment pathway. Discuss with learners: continuing lorazepam during an ECT course is common practice (with attention to seizure threshold and timing of doses) — an excellent point for residents to argue from first principles and local protocol.
+
+**Q6. The patient cannot get ECT quickly and has only partially responded to lorazepam. What are your evidence-informed adjuncts and their cautions?**
+
+*Teaching point:* The adjunct evidence base is largely observational — case series and systematic reviews of cases — which the guideline authors themselves flag as the field's main limitation [1,2]. Best-supported alternatives: **NMDA-receptor antagonists (amantadine, memantine)**, with anti-epileptic drugs and certain atypical antipsychotics also described [3,7]. If psychosis demands antipsychotic treatment, prefer agents with lower D2 antagonism — **clozapine and aripiprazole are effective in some populations** [3] — introduced cautiously after catatonia is improving, with benzodiazepine cover and serial BFCRS/CK monitoring. Never re-challenge with high-potency agents in someone whose catatonia worsened on them.
+
+**Q7. Write the safety-and-systems plan: complications, monitoring, disposition, and prognosis.**
+
+*Teaching point:* Catatonia's morbidity is mostly **medical**: VTE (immobility — prophylaxis from day one), aspiration pneumonia (swallow evaluation before PO; NG feeding if intake fails), dehydration, AKI and electrolyte derangement (already present: Na 148, BUN/Cr 32/1.3), rhabdomyolysis (serial CK), pressure injuries, and contractures. Orders: continuous or q4h vitals with autonomic-instability parameters, strict I/O, daily BFCRS by a consistent examiner, DVT prophylaxis, PT/OT. Escalation triggers to ICU: temperature rise, worsening autonomic lability, CK trajectory, or declining arousal. Prognosis framing for the team and family: with early recognition and appropriate treatment (benzodiazepines/ECT), most catatonia responds well; delayed recognition drives the high morbidity and mortality [3]. As his mood episode declares itself during recovery, complete structured suicide-risk assessment and safety planning before stepping down observation — keep this at the level of recognition, structured assessment, and escalation.
+
+---
+
+## Ranked differential diagnosis (with discriminators)
+
+1. **Catatonia in the context of a bipolar I mood episode, worsened by antipsychotic exposure** — prior bipolar I, subacute psychomotor decline, classic signs predating haloperidol, deterioration after D2 blockade [2,5].
+2. **Catatonia due to another medical condition — autoimmune (anti-NMDA-receptor) encephalitis first among them** — viral-like prodrome, first presentation this severe at 46, dysautonomia; requires MRI, EEG, serum + CSF autoantibodies to exclude [1,2].
+3. **Evolving malignant catatonia** — low-grade fever, labile BP, tachycardia, rigidity, CK 850; this is a trajectory, not a separate box, and it changes tempo of care [6].
+4. **Neuroleptic malignant syndrome** — haloperidol exposure with rigidity and CK elevation; argued against by clear pre-exposure catatonic syndrome and only modest fever/CK; management overlaps with #3 regardless [2,6].
+5. **Catatonia–delirium comorbidity / hypoactive delirium** — medically ill, dehydrated, fluctuating vitals; screen attention (e.g., months backward), CAM-ICU-style assessment; the two co-occur and both matter [3,6].
+6. **Nonconvulsive status epilepticus** — staring, mutism, minimal movement; EEG is the only way to know.
+7. **Serotonin syndrome** — no serotonergic exposure, no clonus/hyperreflexia; include to teach the toxidrome grid (drug history + neuromuscular exam distinguish SS, NMS, and malignant catatonia).
+8. **Structural/metabolic akinetic mutism** (frontal or mesodiencephalic lesions, severe hypernatremia contribution) — imaging plus correction of Na 148 and reassessment.
+
+---
+
+## Workup & management summary
+
+**Tier 1 (today):** stop all dopamine antagonists; BFCRS-scored standardized exam and daily re-scoring; CBC, CMP + Ca/Mg/Phos, LFTs, serial CK, TSH, B12, HIV/RPR, blood cultures if febrile; ECG; IV fluids for hypernatremia/prerenal azotemia; VTE prophylaxis; NPO pending swallow evaluation with NG plan; q4h vitals with autonomic parameters.
+
+**Tier 2 (this admission, expedited):** MRI brain, EEG (rule out NCSE; encephalitis patterns), LP with CSF cell count/protein/oligoclonal bands and neuronal autoantibody panel in serum and CSF [1,2].
+
+**Treatment ladder:** lorazepam challenge 1–2 mg IV → scheduled lorazepam with structured uptitration titrated to BFCRS response [1,2] → **early ECT** for malignant features, benzodiazepine failure (up to ~27% [8]), or need for rapid response [1,2,6] → adjuncts where ECT/benzodiazepines are unavailable or insufficient: amantadine/memantine; cautious clozapine or aripiprazole if psychosis requires treatment [3,7]; zolpidem as challenge/augmentation alternative [8].
+
+**Do not:** start or resume high-potency antipsychotics during active catatonia; attribute the syndrome to "noncompliance with bipolar meds" before the secondary workup is done; forget that the mortality lives in the supportive-care column.
+
+---
+---
+
+## Facilitator notes — keep separate; not for learner distribution
+
+**Flow (20–30 min):** 3–4 min stem → Q1 briefly (they should nail it) → spend the session's core on Q3, Q4, and Q5 (the NMS/malignant-catatonia disentangling and the treatment ladder are the highest-yield resident content) → Q7 as rapid-fire order-writing → close with evidence-quality caveat.
+
+**Points to press residents on:** Have them defend *why* antipsychotics are held (D2 blockade worsening catatonia/precipitating malignant conversion) rather than reciting the rule. Ask what specifically they would document to make a lorazepam response objective (serial BFCRS, timed video with consent, nursing observations). Ask who consents for ECT when the patient lacks capacity in your state, and what the emergency pathway is. Push on the catatonia–delirium overlap: what does a CAM-positive, BFCRS-positive patient get treated with first, and why (treat catatonia with lorazepam while treating delirium's cause; avoid reflexive antipsychotics).
+
+**Evidence-quality caveat to state explicitly:** the BAP guideline recommendations rest mainly on small observational studies, case series, and case reports — clinical trials are uncommon [1,2]; the zolpidem literature is case-level with likely reporting bias [8]. Model calibrated language for trainees.
+
+**Anticipated wrong turns:** treating this as pure NMS and stopping at "supportive care + dantrolene" (redirect: benzodiazepines/ECT treat the underlying catatonic process); waiting for the full autoimmune panel before any treatment (lorazepam trial and workup proceed in parallel); dosing lorazepam 0.5 mg BID and calling it a failed trial.
+
+**Optional extension (if >30 min):** assign one resident to argue for early ECT and another for maximizing pharmacotherapy first, then debrief using the malignant-features trajectory as the deciding variable.
+
+**Safety framing:** all suicide-risk content stays at recognition, structured assessment, observation, and escalation — no method-level detail in discussion or documentation examples.
+
+---
+
+## References
+
+Based on articles retrieved from PubMed (National Library of Medicine). Citation fields below (journal, year, volume/pages, DOI) were verified against PubMed records on 2026-08-31.
+
+1. Rogers JP, Oldham MA, Fricchione G, et al. Evidence-based consensus guidelines for the management of catatonia: Recommendations from the British Association for Psychopharmacology. *J Psychopharmacol*. 2023;37(4):327-369. [DOI: 10.1177/02698811231158232](https://doi.org/10.1177/02698811231158232)
+2. Rogers JP, Zandi MS, David AS. The diagnosis and treatment of catatonia. *Clin Med (Lond)*. 2023;23(3):242-245. [DOI: 10.7861/clinmed.2023-0113](https://doi.org/10.7861/clinmed.2023-0113)
+3. Hirjak D, Rogers JP, Wolf RC, et al. Catatonia. *Nat Rev Dis Primers*. 2024;10(1):49. [DOI: 10.1038/s41572-024-00534-w](https://doi.org/10.1038/s41572-024-00534-w)
+4. Bush G, Fink M, Petrides G, Dowling F, Francis A. Catatonia. I. Rating scale and standardized examination. *Acta Psychiatr Scand*. 1996;93(2):129-136. [DOI: 10.1111/j.1600-0447.1996.tb09814.x](https://doi.org/10.1111/j.1600-0447.1996.tb09814.x)
+5. Walther S, Stegmayer K, Wilson JE, Heckers S. Structure and neural mechanisms of catatonia. *Lancet Psychiatry*. 2019;6(7):610-619. [DOI: 10.1016/S2215-0366(18)30474-7](https://doi.org/10.1016/S2215-0366(18)30474-7)
+6. Connell J, Oldham M, Pandharipande P, et al. Malignant Catatonia: A Review for the Intensivist. *J Intensive Care Med*. 2022;38(2):137-150. [DOI: 10.1177/08850666221114303](https://doi.org/10.1177/08850666221114303)
+7. Beach SR, Gomez-Bernal F, Huffman JC, Fricchione GL. Alternative treatment strategies for catatonia: A systematic review. *Gen Hosp Psychiatry*. 2017;48:1-19. [DOI: 10.1016/j.genhosppsych.2017.06.011](https://doi.org/10.1016/j.genhosppsych.2017.06.011)
+8. Gunther M, Tran N, Jiang S. Zolpidem for the Management of Catatonia: A Systematic Review. *J Acad Consult Liaison Psychiatry*. 2024;66(1):49-56. [DOI: 10.1016/j.jaclp.2024.10.004](https://doi.org/10.1016/j.jaclp.2024.10.004)
+
+
+---
+
 ## Borderline Personality Disorder (Aug 27)
 
 - **Slug:** `cotw_20260827_bpd_res.md` · **Type:** md · **Sidebar:** listed
@@ -171,7 +323,7 @@ Based on articles retrieved from PubMed. Citation fields (journal, year, volume/
 - **Slug:** `cotw_20260810_panic_res.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-08-10_anxiety-panic-disorder_Resident.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 4,535 words
+- **Length:** 4,552 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -315,7 +467,7 @@ The apparent conflict resolves once you see that they optimize different objecti
 
 *Teaching point:* **CBT with interoceptive exposure is first-line**, not adjunctive. In a meta-analysis of 41 randomized *placebo-controlled* trials across anxiety-related disorders, CBT showed moderate placebo-controlled effects on target symptoms (Hedges' g = 0.56), with smaller effects on comorbid anxiety, depression, and quality of life — and interventions built primarily on **exposure** outperformed those using cognitive techniques alone, though that difference did not reach significance [4]. Note honestly that in this analysis panic disorder was among the disorders with **small-to-moderate** effect sizes, and the authors concluded more effective treatments are still needed for PD.
 
-Components for this patient: psychoeducation and the interdose-rebound formulation; interoceptive exposure targeting cardiac and respiratory sensations; **graded in-vivo exposure** to driving, to exercise, and to client-facing work; systematic elimination of safety behaviors — the PRN alprazolam, the boyfriend-equivalent accompaniment pattern, checking his pulse, the low-traffic scheduling. If PTSD screening is positive, sequence trauma-focused work deliberately rather than running two protocols in parallel.
+Components for this patient: psychoeducation and the interdose-rebound formulation; interoceptive exposure targeting cardiac and respiratory sensations; **graded in-vivo exposure** to driving, to exercise, and to client-facing work; systematic elimination of safety behaviors — the PRN alprazolam taken at the first sensation, the avoidance of exercise, driving beyond town, and client-facing work, and any pulse-checking, safe-person accompaniment, or route-and-timing rituals uncovered on further history. If PTSD screening is positive, sequence trauma-focused work deliberately rather than running two protocols in parallel.
 
 **The long-term nuance residents should carry.** A systematic review and meta-analysis of long-term CBT outcomes across 69 RCTs found benefits maintained versus control at post-treatment, 1–6 months, and 6–12 months for panic disorder (Hedges' g 0.22–0.35) — but at **follow-up of 12 months or more, the effect for panic disorder was no longer significant**, in contrast to sustained effects for GAD, social anxiety disorder, and PTSD [5]. Read that as a mandate for **maintenance strategy** — booster sessions, adequate pharmacotherapy duration before any discontinuation attempt, and relapse-prevention planning — not as evidence against CBT.
 
@@ -384,7 +536,7 @@ Map that onto this patient: fourteen months of illness, prominent avoidance cons
 - Treating "denies SI" in a repressive-coping patient with several documented risk factors as an adequate assessment [9].
 - Diagnosing PTSD reflexively from the trauma history without applying criteria — screen properly rather than assuming.
 
-**Discussion extension if time allows.** The Cochrane and BMJ NMAs are an excellent 5-minute journal-club digression on why "which drug is best" is an ill-posed question absent a specified outcome, time horizon, and harm weighting — and on how **low risk-of-bias ratings across an entire literature** should temper confident ranking claims [1,2].
+**Discussion extension if time allows.** The Cochrane and BMJ NMAs are an excellent 5-minute journal-club digression on why "which drug is best" is an ill-posed question absent a specified outcome, time horizon, and harm weighting — and on how **high risk-of-bias ratings across an entire literature** should temper confident ranking claims [1,2].
 
 **Safety framing.** Keep Q7 oriented to recognition, structured assessment, escalation, and collaborative safety planning. Redirect any real-patient details a participant introduces; identifiable information does not belong in teaching materials.
 
@@ -434,7 +586,7 @@ Based on articles retrieved from PubMed.
 - **Slug:** `cotw_20260803_lithium_res.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-08-03_lithium-monitoring-toxicity-interactions_Resident.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 3,811 words
+- **Length:** 3,915 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -541,7 +693,7 @@ Two corollaries worth stating explicitly:
 1. **Chronic lithium neurotoxicity** — *most likely.* Cerebellar and pyramidal signs with encephalopathy at a near-therapeutic level.
 2. **Serotonin syndrome** — the closest mimic; clonus and hyperreflexia overlap almost completely. Distinguishing features: serotonergic agent exposure with a **temporally tight** onset, hyperthermia, diaphoresis, GI hyperactivity, and **lower-extremity-predominant** clonus. She is on lithium monotherapy — but always confirm, since lithium is itself serotonergic and is a recognized contributor when combined.
 3. **NMS** — argues against: afebrile, no rigidity, normal CK. Keep it live if an antipsychotic is on board; lithium plus antipsychotic is a described risk combination.
-4. **Hypercalcemic encephalopathy** — note the loop-back: her **corrected calcium is 10.9 with an inappropriately elevated PTH**, i.e. lithium-associated hyperparathyroidism (Q6). Hypercalcemia can itself produce confusion and contributes to nephrogenic DI. Two lithium effects converging.
+4. **Hypercalcemia — a marker, not a driver** — note the loop-back: her **corrected calcium is 10.9 with an inappropriately elevated PTH**, i.e. lithium-associated hyperparathyroidism (Q6). Read it as a *marker* of that endocrine effect rather than as a contributor to tonight's picture: mild hypercalcemia at this level does not produce encephalopathy — that generally requires >12–13 mg/dL — and her concentrating defect is already fully accounted for by lithium's direct effect on the collecting duct (Q4). Two lithium effects converging, but only one of them is driving the neurologic picture.
 5. **Metabolic/uremic contribution** — eGFR 45 and volume depletion.
 6. **Nonconvulsive status epilepticus** — lithium lowers seizure threshold; if the encephalopathy does not track the falling level, get an EEG.
 7. **Wernicke encephalopathy** — ataxia, nystagmus, confusion is the triad; poor oral intake for eight weeks makes this non-trivial. Thiamine is cheap.
@@ -617,9 +769,9 @@ The **EXTRIP workgroup** recommendations (systematic review plus two-round modif
 
 1. **Chronic lithium neurotoxicity** from combined GLP-1 RA and NSAID exposure on a background of Li-NDI — *most likely*
 2. **Serotonin syndrome** — closest phenotypic mimic; separate by exposure timeline and fever
-3. **Hypercalcemic encephalopathy** from lithium-associated hyperparathyroidism — *concurrent contributor*
-4. **NMS** — argued against by normal tone, temperature, and CK, but must be excluded if any antipsychotic is on board
-5. **Uremic/metabolic encephalopathy** from AKI and volume depletion
+3. **NMS** — argued against by normal tone, temperature, and CK, but must be excluded if any antipsychotic is on board
+4. **Uremic/metabolic encephalopathy** from AKI and volume depletion
+5. **Hypercalcemia** from lithium-associated hyperparathyroidism — *a marker of that endocrine effect, not a driver of the encephalopathy at 10.9 mg/dL*
 6. **Nonconvulsive status epilepticus** — consider EEG if the exam lags the falling level
 7. **Wernicke encephalopathy** — eight weeks of poor intake; treat empirically
 8. **SILENT** — not a differential for today, but the outcome the acute management is trying to prevent
@@ -667,7 +819,7 @@ The **EXTRIP workgroup** recommendations (systematic review plus two-round modif
   3. Declaring a post-dialysis level reassuring without rechecking for rebound.
   4. Discontinuing lithium permanently on the basis of an AKI-era eGFR.
   5. Stopping lithium for subclinical hypothyroidism instead of adding levothyroxine [1].
-  6. Not connecting hypercalcemia back to lithium-associated hyperparathyroidism — and therefore missing a treatable contributor to both the encephalopathy and the polyuria [1].
+  6. Not connecting hypercalcemia back to lithium-associated hyperparathyroidism — and therefore missing a monitorable endocrine effect that needs endocrine follow-up. Note the converse error too: at a corrected calcium of 10.9 it is a marker, not a treatable contributor to tonight's encephalopathy (which needs >12–13 mg/dL) or to her polyuria (already explained by lithium's direct collecting-duct effect, Q4) [1].
   7. Reflexively citing "Ebstein anomaly" as an absolute contraindication in pregnancy without the actual effect sizes or the dose–response relationship [8].
   8. Abrupt discontinuation, with its own relapse risk [2].
 - **For older-adult services:** an ISBD task force Delphi panel recommended lower maintenance targets in older adults with bipolar disorder — roughly **0.4–0.8 mmol/L for ages 60–79** and **0.4–0.7 mmol/L for 80+** — and recommended that laboratories report the older-adult therapeutic range separately [13]. Worth flagging that "0.6–1.2" printed on the lab report is not age-adjusted.

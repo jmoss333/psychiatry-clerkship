@@ -380,7 +380,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **Slug:** `t_eating.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `03_Core_Topics/Eating_Disorders/eating_disorders_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 1,308 words
+- **Length:** 1,336 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -460,7 +460,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 
 **Medical instability — the admission question** — The high-yield student skill is recognizing who needs a *medical* bed. Criteria that commonly trigger medical admission (confirm against your institution's protocol) include **bradycardia (often <40–50 bpm), hypotension, orthostatic vital-sign changes, hypothermia, hypoglycemia, electrolyte derangement (K⁺, phosphate, Mg²⁺), QTc prolongation or arrhythmia, marked or rapid weight loss, syncope, dehydration, and failure of outpatient/PHP care.** Bradycardia is one of the most common reasons for medical admission in AN. Match the *level of care* to acuity: medical floor for instability, psychiatric/behavioral eating-disorder unit or residential/PHP for weight and behavioral work once medically stable.
 
-**Refeeding syndrome — the complication that kills** — When nutrition restarts, the shift from catabolic to anabolic metabolism drives phosphate, potassium, and magnesium *into* cells; **hypophosphatemia is the hallmark**, and the danger is cardiac failure, arrhythmia, respiratory failure, and delirium. Risk is highest in the **most malnourished** and after the longest starvation. The safe posture is **"start low, go slow"**: begin conservative caloric refeeding, **check phosphate/potassium/magnesium at least daily early**, **supplement phosphate and give thiamine before or with carbohydrate**, and advance calories per protocol as electrolytes stay stable. Defer exact caloric targets and repletion doses to your institution's refeeding order set — the student job is to *anticipate and monitor*, not to prescribe.
+**Refeeding syndrome — the complication that kills** — When nutrition restarts, the shift from catabolic to anabolic metabolism drives phosphate, potassium, and magnesium *into* cells; **hypophosphatemia is the hallmark**, and the danger is cardiac failure, arrhythmia, respiratory failure, and delirium. Risk is highest in the **most malnourished** and after the longest starvation. The safe posture is close monitoring, not prolonged underfeeding — current guidance (SAHM 2022; MEED, which replaced MARSIPAN in 2022) supports higher-calorie refeeding with electrolyte surveillance, reserving the most conservative starts for the most severely malnourished: begin refeeding per protocol, **check phosphate/potassium/magnesium at least daily early**, **supplement phosphate and give thiamine before or with carbohydrate**, and advance calories per protocol as electrolytes stay stable. Defer exact caloric targets and repletion doses to your institution's refeeding order set — the student job is to *anticipate and monitor*, not to prescribe.
 
 **Acute inpatient management** — Medical stabilization first, then structured nutritional rehabilitation with a **multidisciplinary team** (medicine, nutrition/dietetics, nursing, psychiatry, and often social work). Use **supervised meals and a post-meal observation period**, monitor for covert purging and **water-loading** (which falsely raises weight — a "too-fast" weight jump is a flag), and weigh on a consistent schedule/gown. Psychotherapy is the backbone: **Family-Based Treatment (Maudsley/FBT)** for adolescents with AN, and **CBT-E** for BN and BED. On medications: **no drug is first-line for AN** — weight restoration is; **olanzapine** may modestly help weight and obsessionality in AN; **fluoxetine (target 60 mg/day)** is the classic pharmacotherapy for BN; **lisdexamfetamine** is approved for moderate–severe BED. **Avoid bupropion in patients who purge or are underweight (seizure risk)**, and be cautious with QT-prolonging agents given the baseline cardiac risk.
 
@@ -757,7 +757,7 @@ directly and then turn answers into a real risk formulation.
 - **Slug:** `suicide.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `04_Acute_and_Safety/Suicide_Risk_and_Safety_Planning/suicide_risk_safety_planning_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 973 words
+- **Length:** 994 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -814,7 +814,7 @@ directly and then turn answers into a real risk formulation.
 
 **Ask directly — it does not plant the idea.** Asking about suicide does not increase suicidal thinking; avoiding the question only forfeits information. Move stepwise from passive death wish → active ideation → plan → intent → access to means → any preparatory acts, and document what the patient actually said, not a global "denies SI." Structure the screen with the **Columbia Suicide Severity Rating Scale (C-SSRS)**, remembering it is a screening and severity tool, not a device that predicts who will die.
 
-**Separate risk factors from warning signs.** *Static* risk factors set the baseline and cannot be changed: a prior attempt is the single strongest long-term predictor, alongside older age, male sex, access to firearms, chronic or painful illness, and family history of suicide. *Dynamic, modifiable* factors are the treatment targets: active depression, hopelessness, agitation and insomnia, substance use, command hallucinations, and acute psychosocial loss. *Warning signs* are the near-term behavioral shifts (a sudden calm after agitation, giving things away, saying goodbye) that change the picture tonight. Protective factors (strong supports, treatment engagement, responsibility for children) are real and worth documenting, but they never override acute high-risk findings.
+**Separate risk factors from warning signs.** *Static* risk factors set the baseline and cannot be changed: a prior attempt is the single strongest long-term predictor, alongside older age, male sex, chronic or painful illness, and family history of suicide. Access to firearms raises baseline risk sharply — but unlike the others it is modifiable, which is exactly why means restriction is the intervention. *Dynamic, modifiable* factors are the treatment targets: active depression, hopelessness, agitation and insomnia, substance use, command hallucinations, and acute psychosocial loss. *Warning signs* are the near-term behavioral shifts (a sudden calm after agitation, giving things away, saying goodbye) that change the picture tonight. Protective factors (strong supports, treatment engagement, responsibility for children) are real and worth documenting, but they never override acute high-risk findings.
 
 **Mind the high-risk windows.** Risk is not flat across the admission. The peri-discharge and immediate post-discharge period is the highest-risk window of the entire episode — the transition, not the acute inpatient stay, is when many deaths occur. Treat discharge planning as a safety intervention, not paperwork.
 
@@ -894,7 +894,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **Slug:** `violence.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `04_Acute_and_Safety/Violence_Risk/violence_risk_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 939 words
+- **Length:** 957 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -947,7 +947,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 
 **How it presents on the unit.** Serious violence rarely erupts without a prodrome. Watch for the escalation curve: rising motor activity (pacing, restlessness), a louder and faster voice, clenched jaw or fists, prolonged staring, refusal to sit, and intrusion into others' physical space. Verbal threats and striking objects sit just below assault on that curve. The single most important distinction is between *static* risk — history you cannot change — and *dynamic* risk — the modifiable state driving this patient right now. Static factors (a past act of violence above all, younger age, male sex, substance use, prior weapon access) tell you the baseline; dynamic factors (acute psychosis, intoxication or withdrawal, agitation, untreated pain, a provocative environment) tell you what is treatable tonight and are where the clinical work lives.
 
-**Recognize and screen.** Past violence is the strongest single predictor of future violence — take a specific history of it rather than a global impression. Among psychotic symptoms, the highest-risk pattern is persecutory delusions paired with command hallucinations the patient feels compelled to obey ("threat/control-override"). For short-term, unit-level prediction, structure the bedside read with the **Brøset Violence Checklist (BVC)**: confusion, irritability, boisterousness, verbal threats, physical threats, and attacking objects — each present/absent, summed to gauge the risk of violence over the next 24 hours. More comprehensive structured instruments exist (e.g., HCR-20) but belong to formal forensic assessment, not the daily student read.
+**Recognize and screen.** Past violence is the strongest single predictor of future violence — take a specific history of it rather than a global impression. Among psychotic symptoms, the highest-risk pattern is persecutory delusions paired with command hallucinations the patient feels compelled to obey. ("Threat/control-override" is a related but distinct construct — persecutory beliefs plus the sense that outside forces override one's self-control.) For short-term, unit-level prediction, structure the bedside read with the **Brøset Violence Checklist (BVC)**: confusion, irritability, boisterousness, verbal threats, physical threats, and attacking objects — each present/absent, summed to gauge the risk of violence over the next 24 hours. More comprehensive structured instruments exist (e.g., HCR-20) but belong to formal forensic assessment, not the daily student read.
 
 **Keep yourself and the milieu safe — the room setup is the intervention.** If you are at all concerned, do not interview alone. Position yourself nearer the door than the patient so neither of you is trapped and your exit is never blocked. Know where the duress alarm is before you sit down. Remove obvious ligatures and throwable objects from reach. Keep a calm, low, non-confrontational posture, give the patient space, and avoid cornering, sudden movements, or a challenging stance.
 
@@ -1066,7 +1066,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **Slug:** `agitation.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `04_Acute_and_Safety/Agitation_and_Restraint/agitation_restraint_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 1,069 words
+- **Length:** 1,093 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -1173,7 +1173,7 @@ Treat the suspected cause. Prefer the oral, collaborative route over an intramus
 
 ## Restraint and seclusion
 
-Restraint and seclusion are safety interventions, never treatments. They do not fix the underlying problem; they buy time. They require a time-limited physician order, close and continuous monitoring, and discontinuation the moment the patient is safe — not the end of a shift. A post-event debrief with the team (and, where appropriate, the patient) is part of the standard, not an extra. These practices are governed by CMS and Joint Commission standards, and they carry real physical risk (injury, aspiration) and psychological risk (re-traumatization). Apply trauma-informed care throughout, and stay alert to the documented inequities in who gets restrained and how often: Black patients face roughly **1.85× the adjusted odds of physical restraint** on inpatient units (and ~2.84× in the ED awaiting admission; *Psychiatric Services* 2022–2023) — that disparity is a quality-of-care issue, not a footnote.
+Restraint and seclusion are safety interventions, never treatments. They do not fix the underlying problem; they buy time. They require a time-limited physician order, close and continuous monitoring, and discontinuation the moment the patient is safe — not the end of a shift. A post-event debrief with the team (and, where appropriate, the patient) is part of the standard, not an extra. These practices are governed by CMS and Joint Commission standards, and they carry real physical risk (injury, aspiration) and psychological risk (re-traumatization). Apply trauma-informed care throughout, and stay alert to the documented inequities in who gets restrained and how often: Black patients face roughly **1.85× the adjusted odds of a restraint event** on inpatient psychiatric units (Singal et al., *Psychiatric Services* 2024), and higher adjusted odds of physical and chemical restraint during emergency psychiatric evaluation in the ED as well (aOR ~1.35; Smith et al., *Psychiatric Services* 2022) — that disparity is a quality-of-care issue, not a footnote.
 
 ## What the student does
 

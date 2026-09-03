@@ -7076,6 +7076,192 @@
           }
         ]
       }
+    },
+    {
+      "id": "bot-2026-benzodiazepines-catatonia",
+      "type": "systematic-review",
+      "citation": {
+        "title": "The Effect of Benzodiazepines on Catatonia: A Systematic Review and Meta-Analysis",
+        "authors": [
+          {
+            "family": "Bot",
+            "given": "L"
+          },
+          {
+            "family": "Schotsman",
+            "given": "B"
+          },
+          {
+            "family": "Oostra",
+            "given": "E"
+          },
+          {
+            "family": "Hoogendoorn",
+            "given": "AW"
+          },
+          {
+            "family": "van Exel",
+            "given": "E"
+          }
+        ],
+        "organization": "",
+        "year": 2026,
+        "journal": "Acta Psychiatr Scand",
+        "volume": "154",
+        "pages": "99-115",
+        "doi": "10.1111/acps.70102",
+        "pmid": "42009596",
+        "url": "https://doi.org/10.1111/acps.70102"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 42009596): title, authors, journal, volume, pages, DOI and PMC id all match",
+        "verifiedAt": "2026-09-02",
+        "note": "Added for curriculum-review finding RSAF-F010: cl_reference.md stated benzodiazepine response in catatonia as '~90%', which this meta-analysis (53 studies) contradicts at 77% response / 55% remission. Annotation is AI-drafted from the abstract and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "systematic review / meta-analysis",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-02",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "catatonia",
+          "benzodiazepines",
+          "lorazepam"
+        ],
+        "clerkshipRelevance": "The calibration number for the lorazepam challenge: response 77% and full remission 55% across 53 studies — effective, but far from the near-universal response the older teaching implies, which is why a partial or absent response should start the ECT conversation rather than further dose escalation. The meta-regression found no significant dose-response relationship.",
+        "noteHistory": [
+          {
+            "date": "2026-09-02",
+            "note": "Added for curriculum-review finding RSAF-F010: cl_reference.md stated benzodiazepine response in catatonia as '~90%', which this meta-analysis (53 studies) contradicts at 77% response / 55% remission. Annotation is AI-drafted from the abstract and awaits faculty signature.",
+            "reason": "curriculum-review remediation WP-5a (finding RSAF-F010)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "fountoulakis-2025-esketamine",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Esketamine Treatment for Depression in Adults: A PRISMA Systematic Review and Meta-Analysis",
+        "authors": [
+          {
+            "family": "Fountoulakis",
+            "given": "KN"
+          },
+          {
+            "family": "Saitis",
+            "given": "A"
+          },
+          {
+            "family": "Schatzberg",
+            "given": "AF"
+          }
+        ],
+        "organization": "",
+        "year": 2025,
+        "journal": "Am J Psychiatry",
+        "volume": "182",
+        "pages": "259-275",
+        "doi": "10.1176/appi.ajp.20240515",
+        "pmid": "39876682",
+        "url": "https://doi.org/10.1176/appi.ajp.20240515"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 39876682): title, all three authors, journal, volume, pages and DOI match",
+        "verifiedAt": "2026-09-02",
+        "note": "Added for curriculum-review finding RV11-F002: the resident TRD case stated that this review supports esketamine efficacy 'in the acute setting, suicidality', which is close to the opposite of what the paper reports. Annotation is AI-drafted from the abstract and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "systematic review / meta-analysis",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-02",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "esketamine",
+          "treatment-resistant depression",
+          "suicidality"
+        ],
+        "clerkshipRelevance": "The deflationary read on esketamine: a weak but significant effect on depressive symptoms (ES 0.15-0.23 at weeks 2-4, comparable to atypical-antipsychotic augmentation) and no significant effect on suicidality at any time point. Load-bearing for the MDSI indication, which rests on depressive-symptom improvement rather than on a demonstrated anti-suicidal effect - esketamine does not reduce the need for monitoring, means restriction, or safety planning.",
+        "noteHistory": [
+          {
+            "date": "2026-09-02",
+            "note": "Added for curriculum-review finding RV11-F002: the resident TRD case stated that this review supports esketamine efficacy 'in the acute setting, suicidality', which is close to the opposite of what the paper reports. Annotation is AI-drafted from the abstract and awaits faculty signature.",
+            "reason": "curriculum-review remediation WP-5b (finding RV11-F002)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "boggs-2020-lethal-means-assessment",
+      "type": "primary-study",
+      "citation": {
+        "title": "A Quasi-Experimental Analysis of Lethal Means Assessment and Risk for Subsequent Suicide Attempts and Deaths",
+        "authors": [
+          {
+            "family": "Boggs",
+            "given": "JM"
+          },
+          {
+            "family": "Beck",
+            "given": "A"
+          },
+          {
+            "family": "Ritzwoller",
+            "given": "DP"
+          },
+          {
+            "family": "Lindrooth",
+            "given": "RC"
+          }
+        ],
+        "organization": "",
+        "year": 2020,
+        "journal": "J Gen Intern Med",
+        "volume": "35",
+        "pages": "1709-1714",
+        "doi": "10.1007/s11606-020-05641-4",
+        "pmid": "32040838",
+        "url": "https://doi.org/10.1007/s11606-020-05641-4"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 32040838): title, authors, journal, volume, pages, DOI and PMC id all match",
+        "verifiedAt": "2026-09-02",
+        "note": "Added for curriculum-review finding MS3V07-F001: three surfaces credited 'structured lethal-means counseling (CALM)' with cutting attempts/deaths 3.3%->0.83%. The exposure in this study is documented lethal-means ASSESSMENT, not CALM delivery, and the design is quasi-experimental (instrumental variable), not randomised. Annotation is AI-drafted from the abstract and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "quasi-experimental cohort (instrumental variable)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-02",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "suicide",
+          "lethal-means",
+          "discharge"
+        ],
+        "clerkshipRelevance": "The number behind means-restriction teaching, with its design attached: in a Kaiser Colorado cohort, documented lethal-means assessment was followed by fewer suicide attempts and deaths at 180 days (0.83% vs 3.3%). The exposure is assessment documented in the note, not delivery of CALM counselling, and the authors note that unmeasured co-occurring prevention practices may contribute - so teach it as a strong association, not a randomised effect.",
+        "noteHistory": [
+          {
+            "date": "2026-09-02",
+            "note": "Added for curriculum-review finding MS3V07-F001: three surfaces credited 'structured lethal-means counseling (CALM)' with cutting attempts/deaths 3.3%->0.83%. The exposure in this study is documented lethal-means ASSESSMENT, not CALM delivery, and the design is quasi-experimental (instrumental variable), not randomised. Annotation is AI-drafted from the abstract and awaits faculty signature.",
+            "reason": "curriculum-review remediation WP-5c (finding MS3V07-F001)"
+          }
+        ]
+      }
     }
   ]
 }

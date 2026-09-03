@@ -198,6 +198,26 @@ deduplicated; automation does not comment on, reopen, or update that issue. Guid
 findings can open a separate attestation-routed proposal PR, but faculty remain the
 authority for the edit, review stamp, and issue closure.
 
+## Failure escalation
+
+Every workflow above reports its completion to `automation-failure-escalation.yml`
+(`workflow_run`), which folds the event into one rolling issue,
+`automation: scheduled job failures`, under the marker
+`<!-- automation:failure-escalation -->`. The body lists each failing workflow, its
+consecutive-failure count, the run link, and the first error line; a success flips that row
+to recovered and resets the count.
+
+It shares no code path with `maintenance_issue.py` on purpose — the escalation has to keep
+reporting when that path is the thing that broke. State round-trips through a JSON block in
+the issue body, so the escalation depends on nothing but GitHub itself, and a malformed body
+degrades to an empty state rather than wedging the job.
+
+The same rule applies here as everywhere else: **automation records recovery but never
+closes the row.** A person closes it once the underlying job is genuinely healthy. This is
+enforced, not merely documented — `validate_scheduled_workflows.py` rejects an issue-closing
+command in any scoped workflow, and `tests/maintenance/test_escalation_issue.py` asserts that
+no input produces a close decision.
+
 ## Rotation configuration and manual boundary
 
 `rotation_blocks.json` accepts only an opaque ID, ISO start/end dates, and

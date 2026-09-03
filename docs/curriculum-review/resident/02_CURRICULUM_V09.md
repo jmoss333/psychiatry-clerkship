@@ -6,6 +6,255 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 
 ---
 
+## Practice Questions — Question Bank
+
+- **Slug:** `question-bank-practice.html` · **Type:** tool · **Sidebar:** listed
+- **Source:** `13_Faculty_Resources/_automation/site_build/question-bank-practice.html`
+- **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`moderate`
+
+#### Tool — clinical content
+
+_These tools are single-file HTML that render from inline JS data, so the clinical text below is recovered from the tool's own string literals. Ordering follows the file, not the runtime flow._
+
+**Static shell text:**
+
+- Practice Questions — MS3 Question Bank Reviewed by Joshua Moss, MD on 2026-07-05
+- Skip to content Practice Questions
+- Loading question bank…
+
+**Authored clinical strings (228):**
+
+- s toolExtraFromParams passthrough (spa_index.html) — no shell change needed to reach this tool
+- s next step. */ var BLOCK_REQUEST = (function(){ try{ var sp=new URLSearchParams(location.search); if(sp.get(
+- ) return null; var n=parseInt(sp.get(
+- ,10); if(!(n>=1&&n<=50)) n=5; var cat=sp.get(
+- ; return {n:n, cat:/^[a-z]+$/.test(cat)?cat:
+- }; }catch(_){ return null; } })(); var CAT_LABELS = { mood:
+- }; var SUBTYPE_LABELS = {
+- }; /* ---- utilities ---------------------------------------------------------------- */ function esc(s){ return String(s||
+- ); } function shuffle(arr){ var a=arr.slice(),i=a.length,j,t; while(i--){j=Math.floor(Math.random()*(i+1));t=a[i];a[i]=a[j];a[j]=t;} return a; } function readReviewContext(){ var sp = new URLSearchParams(location.search); var reviewItem = sp.get(
+- ; var reviewKey = sp.get(
+- ; var reviewToken = sp.get(
+- ).length !== 1 || sp.getAll(
+- ).length !== 1) return null; if(!/^qb_[a-z]+_[0-9]{3}$/.test(reviewItem)) return null; if(reviewKey !==
+- + reviewItem) return null; if(!/^[0-9a-f]{32}$/.test(reviewToken)) return null; return Object.freeze({reviewItem:reviewItem, reviewKey:reviewKey, reviewToken:reviewToken}); } function postReviewItemStatus(status){ if(!REVIEW_CONTEXT || [
+- ].indexOf(status) < 0) return; window.parent.postMessage({ type:
+- , reviewKey:REVIEW_CONTEXT.reviewKey, reviewToken:REVIEW_CONTEXT.reviewToken, reviewItem:REVIEW_CONTEXT.reviewItem, status:status, surface:
+- }, location.origin); } /* ---- localStorage helpers ----------------------------------------------------- */ function lsGet(k){ try{return JSON.parse(localStorage.getItem(k)||
+- );}catch(_){return null;} } function lsSet(k,v){ try{localStorage.setItem(k,JSON.stringify(v));}catch(_){} } /* ---- cw_qb_v1 response store -------------------------------------------------- */ function qbLoad(){ return lsGet(
+- )||{}; } function qbSave(data){ lsSet(
+- ,data); } function qbRecord(item, key, tier2Key, confidence, correct, twoTierResult){ var data = qbLoad(); var prev = data[item.id]; var re = (prev && prev.ts && (new Date(prev.ts)).toDateString() === (new Date()).toDateString()) ? 1 : 0; var rec = { id: item.id, key: key, tier2Key: tier2Key||null, confidence: confidence, correct: correct, pages: item.pages||[], ts: Date.now() }; if(confidence===
+- && !correct) rec.certWrong = true; data[item.id] = rec; qbSave(data); calibLog({s:
+- ,id:item.id,pages:item.pages||[],p:confidence,a:correct?1:0,t2:twoTierResult||null,re:re,ts:Date.now()}); return rec; } /* ---- cw_srs_v1 SRS seeding + grading ----------------------------------------- */ function srsLoad(){ var s = lsGet(
+- ); if(!s||s.v!==1){ s={v:1,cards:{},day:{lastDay:
+- ,newToday:0}, stats:{streak:0,lastStudy:
+- ,totalReviews:0,correct:0,seen:0}, settings:{newPerDay:12}}; } return s; } function srsSave(s){ lsSet(
+- ,s); } function srsGrade(item, confidence, correct, twoTierResult){ /* Map confidence×correct to SM-2 grade, respecting two-tier shaky cap */ if(!correct) return
+- ; /* cap: right answer, wrong reason */ if(confidence===
+- ; /* guess + correct = Hard (lucky guess ≠ mastery) */ return
+- ; } var DAY = 86400000; /* ==== Canonical SM-2 grader (build-injected — do not edit inside consumer files) ==== Source of truth: 13_Faculty_Resources/_automation/site_build/sm2_apply_grade.js. Consumers carry a SM2_APPLY_GRADE marker comment that common.py
+- s cw_srs_v1 writes stay aggregate/current-state only and are unaffected by that logging. */ /* Deterministic ±15% interval fuzz (opts.fuzzKey): de-synchronizes cohort-seeded cards so due-load avalanches spread out. No fuzzKey (legacy callers) = no fuzz. Also a no-op below ivl 3 d (too short to meaningfully fuzz). Always clamped to [1, 365] regardless of the input interval
+- t drift between the two consumers; an expired or malformed per-tool entry is pruned from the store on load, not just hidden, so a stale slot never lingers past its own read. Consumers: question-bank-practice.html (checkpointSession/ tryResumeSession — writer + authoritative resume) and the shell
+- s progress on Today) and by the session receipt inside a tool (to mark the step that just finished and offer the next one). Injected via /*__BLOCK_STORE__*\/ so the shell and every tool share one implementation. Shape: {v:1, minutes, createdAt, steps:[{kind:
+- , ref, title, min, n?, cat?, done?, doneAt?}]}. A page step is never marked here — its done state is derived from cw_progress_v1 at render time, so ticking the page anywhere counts. A block older than CW_BLOCK_TTL_MS is pruned on load: a plan built for one morning
+- s own primary (spec.actions) beside "Back to Today"; 3. marks the tool
+- s openPage message — a plain href would be caught by the in-iframe interceptor and lose its query, so the delegated listener below posts the full route instead; outside an iframe it falls back to a real navigation. */ function cwReceiptEsc(s){ return String(s===undefined||s===null?
+- ); } function cwReceiptLocalDay(nowMs){ var d=new Date(nowMs), m=d.getMonth()+1, day=d.getDate(); return d.getFullYear()+
+- )+day; } /* Writes the legacy {done:true,at} entry the front door reads. Returns true only when this call changed the store, so "Marked done on Today" is said once, not on every re-render. */ function cwReceiptMarkDone(ref, nowMs){ if(!ref) return false; try{ var p=JSON.parse(localStorage.getItem(
+- ) p={}; if(p[ref]&&p[ref].done===true) return false; p[ref]={done:true,at:cwReceiptLocalDay(nowMs)}; localStorage.setItem(
+- , JSON.stringify(p)); return true; }catch(_){ return false; } } function cwReceiptStepRoute(step){ var s=step||{}; if(s.kind===
+- +encodeURIComponent(String(s.n||1)); if(s.kind===
+- )); } function cwReceiptNextStep(block, doneMap){ var b=block||{}, list=b.steps||[], d=doneMap||{}, i, s, done=0; var next=null; for(i=0;i<list.length;i++){ s=list[i]||{}; var isDone=(s.kind===
+- )?(d[s.ref]===true):(s.done===true); if(isDone) done++; else if(!next) next=s; } return {next:next, done:done, total:list.length}; } function cwReceiptDoneMap(){ var out={}; try{ var p=JSON.parse(localStorage.getItem(
+- ){ for(var k in p){ if(Object.prototype.hasOwnProperty.call(p,k)&&p[k]&&p[k].done===true) out[k]=true; } } }catch(_){ } return out; } var CW_RECEIPT_CSS=
+- ; function cwReceiptEnsureStyle(){ try{ if(typeof document===
+- )) return; var st=document.createElement(
+- ; st.textContent=CW_RECEIPT_CSS; document.head.appendChild(st); }catch(_){ } } var cwReceiptWired=false; function cwReceiptNavigate(ref, search){ var framed=false; try{ framed=(typeof window!==
+- )&&window.self!==window.top; }catch(_){ framed=true; } if(framed){ try{ window.parent.postMessage({type:
+- ); return; }catch(_){ } } try{ location.href=
+- +encodeURIComponent(ref)))); }catch(_){ } } function cwReceiptWire(){ if(cwReceiptWired||typeof document===
+- ) return; cwReceiptWired=true; document.addEventListener(
+- , function(ev){ var t=ev.target&&ev.target.closest?ev.target.closest(
+- ):null; if(!t) return; ev.preventDefault(); if(t.hasAttribute(
+- ); return; } cwReceiptNavigate(t.getAttribute(
+- ); }, true); } function cwReceipt(spec){ var s=spec||{}, nowMs=(typeof s.nowMs===
+- )?s.nowMs:Date.now(), i; cwReceiptEnsureStyle(); cwReceiptWire(); var marked=cwReceiptMarkDone(s.ref, nowMs); var block=null, progress=null; if(typeof blockLoad===
+- ){ if(s.blockKind&&typeof blockMarkStep===
+- ) blockMarkStep(s.blockKind, nowMs); block=blockLoad(nowMs); if(block) progress=cwReceiptNextStep(block, cwReceiptDoneMap()); } var h=
+- ; var stats=s.stats||[]; if(stats.length){ h+=
+- ; for(i=0;i<stats.length;i++){ var st=stats[i]||{}, tone=st.tone===
+- ; } var reread=s.reread||[]; if(reread.length){ h+=
+- ; for(i=0;i<reread.length;i++){ var r=reread[i]||{}; h+=
+- cw-receipt__tag'+(r.warn?' is-warn':'')+'
+- ; var next=progress&&progress.next; if(next){ var route=cwReceiptStepRoute(next); h+=
+- cw-receipt__btn is-primary
+- ; }else{ var acts=s.actions||[]; for(i=0;i<acts.length;i++){ var a=acts[i]||{}; h+=
+- cw-receipt__btn'+(a.primary?' is-primary':'')+'
+- ; if(!next&&typeof blockClear===
+- ; return {html:h, marked:marked, next:next||null}; } function srsUpdate(item, confidence, correct, twoTierResult){ var s = srsLoad(); var cardId =
+- +item.id; var card = s.cards[cardId]||{ease:2.5,ivl:0,reps:0,lapses:0,due:Date.now(),last:0}; var grade = srsGrade(item, confidence, correct, twoTierResult); s.cards[cardId] = applyGrade(card, grade, {fuzzKey:cardId}); /* update aggregate stats */ s.stats.totalReviews = (s.stats.totalReviews||0)+1; if(correct) s.stats.correct=(s.stats.correct||0)+1; s.stats.seen=(s.stats.seen||0)+1; srsSave(s); return grade; } /* ---- queue building ----------------------------------------------------------- */ function buildQueue(items, catFilter, diffFilter, sizeLimit){ var q = items.filter(function(it){ if(catFilter!==
+- && it.category!==catFilter) return false; if(diffFilter!==
+- && String(it.difficulty)!==diffFilter) return false; return true; }); q = shuffle(q); if(sizeLimit!==
+- ) q = q.slice(0, parseInt(sizeLimit,10)||20); return q; } /* Items eligible to serve to learners. Two gates: — Retired items (near-duplicate/redundant per question_bank.schema.json) are NEVER queued. — Un-attested items serve ONLY when the learner opts in via the setup-screen toggle (persisted as cw_qb_drafts_v1). The default pool is faculty-attested items only, and every surface that shows an included draft labels it — see renderMeta() and the .draft-notice callout in renderQuestion(). Policy history, because this has flipped before: the 2026-07-15 decision log recorded "serve drafts, marked" after a04a848 gated to attested-only by ACCIDENT — the pool fell 192->143 with no UI trace, and #284 restored serving. The 2026-08-20 Taplinger response plan (PLAN_Taplinger_Feedback_and_Therapy_Library_2026-08-20.md §A2 / WP-37, urgency per FEEDBACK_IMPACT_Taplinger_Verbatim_2026-08-20.md §3) reverses that decision deliberately now that an external course page links to the site: attested-only BY DEFAULT, drafts opt-in and labelled. Unlike a04a848, this flip is visible — the setup screen states the exclusion, shows the excluded count, and carries the toggle. Fail-safe direction: only an explicit status===
+- reaches the default pool, so a new or misspelled status is withheld rather than served as reviewed (mirrors the label logic, which marks anything not attested). `status` is still the source of truth; nothing here mutates it, and attestation stays server-side. */ function includeDrafts(){ return lsGet(
+- )===true; } function setIncludeDrafts(on){ lsSet(
+- , !!on); } function activeItems(){ var inc = includeDrafts(); return (BANK && BANK.items ? BANK.items : []).filter(function(it){ if(it.retired) return false; if(!inc && it.status!==
+- ) return false; return true; }); } /* Focus-mode presets, built from the learner
+- s cw_qb_drafts_v1 opt-in is set (see the policy comment above). */ function missedItems(){ var records = qbLoad(); return activeItems().filter(function(it){ var rec = records[it.id]; return !!rec && rec.correct === false; }); } function certWrongItems(){ var records = qbLoad(); return activeItems().filter(function(it){ var rec = records[it.id]; return !!rec && rec.certWrong === true; }); } /* Due-first serving. This tool has WRITTEN QB# cards to cw_srs_v1 since SRS seeding landed, but nothing ever read the schedule — Daily Review serves TOPIC# cards only (the false "resurfaces in Daily Review" copy was corrected in #344). This makes the schedule real: cards that have come due return at the FRONT of the next practice session here, most-overdue first. Routed through activeItems(), so a since-retired item can never resurface no matter what its card says. */ function dueQbItems(){ var s = srsLoad(); if(!s || !s.cards) return []; var now = Date.now(), due = {}; Object.keys(s.cards).forEach(function(id){ if(id.indexOf(
+- ) !== 0) return; var c = s.cards[id]; if(c && typeof c.due ===
+- && c.due <= now) due[id.slice(3)] = c.due; }); return activeItems() .filter(function(it){ return Object.prototype.hasOwnProperty.call(due, it.id); }) .sort(function(a, b){ return due[a.id] - due[b.id]; }); } /* ---- rendering helpers -------------------------------------------------------- */ function diffDots(n){ var h=
+- ; for(var i=1;i<=3;i++) h+=
+- diff-dot'+(i<=n?' on':'')+'
+- ; } function renderSetup(){ var items = activeItems(); var cats = {}; items.forEach(function(it){ cats[it.category]=1; }); var catOpts =
+- ; Object.keys(CAT_LABELS).forEach(function(k){ if(cats[k]) catOpts+=
+- ; }); var total = items.length; /* bankDraftCount is toggle-independent (all non-retired, non-attested items in the bank); draftCount is how many of those are in the SERVED pool right now. The note renders whenever the bank has drafts, in whichever wording matches the toggle — excluded-by-default (off) or labelled-in-pool (on). */ var draftsOn = includeDrafts(); var bankDraftCount = (BANK && BANK.items ? BANK.items : []).filter(function(it){ return !it.retired && it.status!==
+- ; }).length; var draftCount = draftsOn ? bankDraftCount : 0; var missedCount = missedItems().length; var certWrongCount = certWrongItems().length; var dueCount = dueQbItems().length; return
+- ; } function renderMeta(item){ var h =
+- ; h += diffDots(item.difficulty); if(item.type===
+- ; /* The glyph is decorative — the wording carries the meaning, so the label never depends on colour or on the icon being announced. */ if(item.status!==
+- ; return h; } function renderConfidence(disabled){ var ds = disabled ?
+- ; } function renderOptions(item, state){ /* state:
+- — locked after answer. Letters come from DISPLAY position, not the authored key: 46 of 47 draft items are keyed A, so rendering opt.key after the shuffle both scrambled the letter sequence and let "A." follow the correct answer around the screen. data-key still carries the authored key for answer logic. A locked re-render reuses the session
+- Select the best rationale — then see your full feedback.
+- <button class="opt" data-tier2key="
+- ✓ Right answer — shaky reasoning
+- · Confidently wrong — flagged for review
+- Right answer, wrong reason — your SRS interval is capped at Hard , so this item comes due again soon and will serve at the front of a future session here. The correct rationale:
+- <a class="fb-link" href="
+- target="_blank" rel="noopener"
+- ⚠ Draft — not yet faculty-reviewed.
+- This question and its explanation have not been checked by faculty. Practise with it,
+- but verify anything you would act on against a primary source.
+- s own. */ var certWrongList = responses.filter(function(r){return r.confidence===
+- &&!r.correct;}); var certWrong = certWrongList.length; var guessRight = responses.filter(function(r){return r.confidence===
+- &&r.correct;}).length; var wrong = total-correct; var headline = correct+
+- )); var sub = certWrong ?
+- ); var reread = []; responses.forEach(function(r){ if(r.correct && r.confidence!==
+- ) return; if(reread.length>=5) return; var chosen = (r.item.options||[]).filter(function(o){ return o && o.key===r.key; })[0]; var trap = chosen && chosen.trap ? chosen.trap : null; var trapName = trap && trap.name ? trap.name : null; var page = (r.item.pages&&r.item.pages[0]) || null; reread.push({ tag: r.correct ?
+- ), warn: !r.correct && r.confidence===
+- , title: String(r.item.stem||
+- ), ref: page, refTitle: page ? pageTitle(page) : null }); }); var stats = [ {label:
+- , value:String(certWrong), tone:certWrong?
+- , value:String(guessRight)}, {label:
+- , value:String(wrong), tone:wrong?
+- } ]; var receipt = cwReceipt({ /* Only a session the block itself opened (?block=1) may mark the block
+- Calibration gap: You were certain
+- Miscalibration on the wards is more dangerous than ignorance —
+- replay your confidently-wrong items from this summary.
+- s own link label when it points at that page, else a readable form of the file name (the tool has no nav registry of its own). */ function pageTitle(file){ var f=String(file||
+- ); return f.replace(/^pg_/,
+- ).replace(/\b\w/g,function(c){return c.toUpperCase();}); } /* ---- DOM helpers -------------------------------------------------------------- */ var root = document.getElementById(
+- ); var progLabel = document.getElementById(
+- ); var qprog = document.getElementById(
+- ); var qprogFill = document.getElementById(
+- ); function setRoot(html){ root.innerHTML=html; } function updateProgress(){ if(!SESSION) return; var idx=SESSION.idx, total=SESSION.queue.length; if(total===0) return; var pct=Math.round((idx/total)*100); progLabel.textContent =
+- +total; qprog.hidden=false; qprogFill.style.width=pct+
+- ; } /* ---- app state transitions ---------------------------------------------------- */ function showSetup(){ SESSION=null; progLabel.textContent=
+- ; qprog.hidden=true; setRoot(renderSetup()); bindSetup(); } function bindSetup(){ var catSel=document.getElementById(
+- ); var diffSel=document.getElementById(
+- ); var sizeSel=document.getElementById(
+- ); var countEl=document.getElementById(
+- ); var startBtn=document.getElementById(
+- ); var redoMissesBtn=document.getElementById(
+- ); var certWrongBtn=document.getElementById(
+- ); var dueBtn=document.getElementById(
+- ); function updateCount(){ var cat=catSel?catSel.value:
+- , diff=diffSel?diffSel.value:
+- ; var n = activeItems().filter(function(it){ if(cat!==
+- &&it.category!==cat) return false; if(diff!==
+- &&String(it.difficulty)!==diff) return false; return true; }).length; var size=sizeSel?sizeSel.value:
+- )?n:Math.min(n,parseInt(size,10)||20); if(countEl) countEl.textContent=(showing===n?n:showing+
+- ; if(startBtn) startBtn.disabled=(n===0); } if(catSel) catSel.addEventListener(
+- ,updateCount); if(diffSel) diffSel.addEventListener(
+- ,updateCount); if(sizeSel) sizeSel.addEventListener(
+- ,updateCount); updateCount(); if(startBtn) startBtn.addEventListener(
+- ,function(){ var cat=catSel?catSel.value:
+- ; var diff=diffSel?diffSel.value:
+- ; var size=sizeSel?sizeSel.value:
+- ; startSession(cat,diff,size); }); if(redoMissesBtn) redoMissesBtn.addEventListener(
+- ,function(){ startSessionWithQueue(missedItems()); }); if(certWrongBtn) certWrongBtn.addEventListener(
+- ,function(){ startSessionWithQueue(certWrongItems()); }); /* Deliberately NOT startSessionWithQueue: due cards keep most-overdue-first order rather than being shuffled — the schedule is the point of this focus mode. */ if(dueBtn) dueBtn.addEventListener(
+- ,function(){ beginSession(dueQbItems()); }); /* Draft opt-in (WP-37). Persist, then re-render the whole setup so every count (pool size, match count, focus-mode buttons) reflects the new pool; refocus the toggle so keyboard users are not dropped at the top of the re-rendered screen. */ var draftToggle=document.getElementById(
+- ); if(draftToggle) draftToggle.addEventListener(
+- ,function(){ setIncludeDrafts(draftToggle.checked); showSetup(); var t=document.getElementById(
+- ); if(t) t.focus(); }); } function startSession(catFilter, diffFilter, sizeLimit){ /* Due cards matching the same filters serve FIRST (most-overdue first, unshuffled — priority order is the point); the shuffled fresh selection fills the remainder of the size limit. A due card never appears twice in one queue. */ var due = dueQbItems().filter(function(it){ if(catFilter!==
+- && String(it.difficulty)!==diffFilter) return false; return true; }); var cap = (sizeLimit===
+- ) ? Infinity : (parseInt(sizeLimit,10)||20); due = due.slice(0, cap===Infinity ? due.length : cap); var dueIds = {}; due.forEach(function(it){ dueIds[it.id]=1; }); var rest = buildQueue(activeItems().filter(function(it){ return !dueIds[it.id]; }), catFilter, diffFilter,
+- ); if(cap!==Infinity) rest = rest.slice(0, Math.max(0, cap-due.length)); beginSession(due.concat(rest)); } /* Focus-mode entry point: starts the exact queue passed in (shuffled), bypassing the category/difficulty/size filters entirely. */ function startSessionWithQueue(queue){ beginSession(shuffle(queue)); } function beginSession(queue){ if(!queue.length){ setRoot(
+- ); return; } SESSION = { queue: queue, idx: 0, responses: [], confidence: null, tier1Key: null, displayOrder: [], tier2DisplayOrder: [], state:
+- /* conf | tier2 | feedback */ }; showQuestion(); } function showReviewItem(item){ SESSION = { queue:[item], idx:0, responses:[], confidence:null, tier1Key:null, displayOrder:[], tier2DisplayOrder:[], state:
+- , reviewOnly:true }; showQuestion(); postReviewItemStatus(
+- ); } /* ---- session capsule (cw_sess_v1) — question-boundary checkpoint + resume -------- Written ONLY from advance(), and only when there is a next question to show — never mid-question. showQuestion() resets confidence/tier1Key/state/displayOrder/ tier2DisplayOrder on every entry (the option shuffles aren
+- s queueIds filtered through activeItems() — an id removed or retired by a deploy between checkpoint and resume is silently dropped rather than crashing the restore (queueIds order is preserved). idx is RE-DERIVED by counting how many of the front (pre-checkpoint) queueIds survive that same filter, rather than trusted verbatim: trusting the stored idx directly would silently skip a still-unanswered question whenever a deploy retires/removes an item positioned BEFORE the checkpointed idx (the raw idx overshoots once the queue is filtered shorter). This exploits the invariant that responses.length === idx at every checkpoint — advance() checkpoints immediately after commitResponse() pushes a response, and this app has no skip-without-answering path, so counting surviving front ids gives the correct new position. Reconstructed responses are built from that identical surviving-front-id set, so the resumed summary population can never disagree with the resumed queue position. Absent/expired capsule (sessLoad owns load-validate-expire) or an empty resulting queue falls through to a normal setup start. Returns true iff a session was actually resumed. */ function tryResumeSession(){ var cap = sessLoad(
+- , Date.now()); if(!cap || !cap.queueIds || !cap.queueIds.length) return false; var idMap = {}; activeItems().forEach(function(it){ idMap[it.id]=it; }); var queue = cap.queueIds.map(function(id){ return idMap[id]; }).filter(Boolean); if(!queue.length) return false; var capIdx = (typeof cap.idx===
+- && cap.idx>=0) ? cap.idx : 0; var survivingFrontIds = cap.queueIds.slice(0, capIdx).filter(function(id){ return !!idMap[id]; }); var idx = survivingFrontIds.length; var respById = {}; (cap.responses||[]).forEach(function(r){ respById[r.id]=r; }); var responses = survivingFrontIds.map(function(id){ var r = respById[id]; if(!r) return null; return { item: idMap[id], key: null, tier2Key: null, confidence: r.confidence, correct: r.correct, twoTierResult: null, ts: cap.at }; }).filter(Boolean); SESSION = { queue: queue, idx: idx, responses: responses, confidence: null, tier1Key: null, displayOrder: [], tier2DisplayOrder: [], state:
+- }; showQuestion(); return true; } function showQuestion(){ if(!SESSION || SESSION.idx >= SESSION.queue.length){ showSummary(); return; } SESSION.confidence = null; SESSION.tier1Key = null; SESSION.state =
+- ; SESSION.displayOrder = []; SESSION.tier2DisplayOrder = []; updateProgress(); var item = SESSION.queue[SESSION.idx]; setRoot(renderQuestion(item)); bindQuestion(item); } function bindQuestion(item){ /* confidence buttons */ var confBtns = root.querySelectorAll(
+- ); var confHint = document.getElementById(
+- ); confBtns.forEach(function(btn){ btn.addEventListener(
+- ,function(){ if(SESSION.state!==
+- ) return; confBtns.forEach(function(b){ b.classList.remove(
+- ); }); btn.classList.add(
+- ); SESSION.confidence = btn.getAttribute(
+- ); if(confHint) confHint.classList.remove(
+- ); }); }); /* tier1 option buttons */ var optBtns = root.querySelectorAll(
+- ); optBtns.forEach(function(btn){ btn.addEventListener(
+- ) return; if(!SESSION.confidence){ if(confHint) confHint.classList.add(
+- ); /* briefly shake the confidence section */ var cs=root.querySelector(
+- ); if(cs){ cs.style.outline=
+- ; setTimeout(function(){cs.style.outline=
+- ;},600); } return; } var key = btn.getAttribute(
+- ); onTier1Answer(item, key); }); }); } function onTier1Answer(item, key){ SESSION.tier1Key = key; var isCorrect = item.options.some(function(o){ return o.key===key && o.c; }); /* lock tier1 options and highlight */ var optBtns = root.querySelectorAll(
+- ); optBtns.forEach(function(btn){ btn.disabled = true; btn.classList.add(
+- ); var k = btn.getAttribute(
+- ); if(k===key && isCorrect) btn.classList.add(
+- ); else if(k===key && !isCorrect) btn.classList.add(
+- ); else if(item.options.some(function(o){return o.key===k&&o.c;})) btn.classList.add(
+- ); }); /* lock confidence buttons */ root.querySelectorAll(
+- ).forEach(function(b){ b.disabled=true; }); if(item.type===
+- && isCorrect){ /* show tier2 before feedback */ SESSION.state =
+- ; var qcard = root.querySelector(
+- ); if(qcard){ var t2html = renderTier2(item); qcard.insertAdjacentHTML(
+- , t2html); bindTier2(item); } } else { /* for wrong tier1 on two-tier, still show tier2 (spec: "tier 2 still shown and answered — the feedback teaches against both selections") */ if(item.type===
+- && !isCorrect){ SESSION.state =
+- ; var qcard2 = root.querySelector(
+- ); if(qcard2){ var t2html2 = renderTier2(item); qcard2.insertAdjacentHTML(
+- , t2html2); bindTier2(item); } } else { /* sba / relational: show feedback directly */ SESSION.state =
+- ; var twoTierResult = null; commitResponse(item, key, null, SESSION.confidence, isCorrect, twoTierResult); showFeedback(item, key, null, SESSION.confidence, isCorrect, null); } } } function bindTier2(item){ var t2Btns = root.querySelectorAll(
+- ); t2Btns.forEach(function(btn){ btn.addEventListener(
+- ) return; var tier2Key = btn.getAttribute(
+- ); onTier2Answer(item, tier2Key); }); }); } function onTier2Answer(item, tier2Key){ SESSION.state =
+- ; var tier1Key = SESSION.tier1Key; var tier1Correct = item.options.some(function(o){ return o.key===tier1Key && o.c; }); var tier2Correct = item.tier2.options.some(function(o){ return o.key===tier2Key && o.c; }); /* lock tier2 options + highlight */ var t2Btns = root.querySelectorAll(
+- ); t2Btns.forEach(function(btn){ btn.disabled=true; btn.classList.add(
+- ); var k=btn.getAttribute(
+- ); if(k===tier2Key && tier2Correct) btn.classList.add(
+- ); else if(k===tier2Key && !tier2Correct) btn.classList.add(
+- ); else if(item.tier2.options.some(function(o){return o.key===k&&o.c;})) btn.classList.add(
+- ); }); /* scoring: both right = correct; right answer/wrong reason = shaky; wrong tier1 = wrong */ var correct, twoTierResult; if(!tier1Correct){ correct=false; twoTierResult=
+- ; } else if(tier2Correct){ correct=true; twoTierResult=
+- ; } else { correct=true; twoTierResult=
+- ; /* right answer, wrong reason — cap at Hard */ } commitResponse(item, tier1Key, tier2Key, SESSION.confidence, correct, twoTierResult); showFeedback(item, tier1Key, tier2Key, SESSION.confidence, correct, twoTierResult); } function commitResponse(item, key, tier2Key, confidence, correct, twoTierResult){ if(SESSION && SESSION.reviewOnly){ SESSION.responses.push({ item:item, key:key, tier2Key:tier2Key, confidence:confidence, correct:correct, twoTierResult:twoTierResult, ts:Date.now() }); return; } var rec = qbRecord(item, key, tier2Key, confidence, correct, twoTierResult); srsUpdate(item, confidence, correct, twoTierResult); SESSION.responses.push({ item: item, key: key, tier2Key: tier2Key, confidence: confidence, correct: correct, twoTierResult: twoTierResult, ts: rec.ts }); } function showFeedback(item, key, tier2Key, confidence, correct, twoTierResult){ var fbHtml = getFeedbackHtml(item, key, tier2Key, confidence, correct, twoTierResult); var qcard = root.querySelector(
+- ); if(qcard){ /* remove any tier2 section first if it already exists */ var existing = qcard.querySelector(
+- ); if(existing) existing.parentNode.removeChild(existing); qcard.insertAdjacentHTML(
+- , fbHtml); var _live=document.getElementById(
+- ); if(_live){ _live.textContent = (twoTierResult===
+- ); } /* scroll feedback into view */ var fb = document.getElementById(
+- ); if(fb) setTimeout(function(){ fb.scrollIntoView({behavior:
+- }); },80); } if(SESSION && SESSION.reviewOnly) return; /* bind spa nav links */ root.querySelectorAll(
+- ).forEach(function(a){ a.addEventListener(
+- ,function(ev){ ev.preventDefault(); var href=a.getAttribute(
+- ; try{ window.parent.postMessage({type:
+- ); } catch(_){ window.location.href=href; } }); }); /* next button */ var nextBtn = document.getElementById(
+- ); if(nextBtn) nextBtn.addEventListener(
+- , advance); } function advance(){ if(!SESSION) return; SESSION.idx++; /* Checkpoint at this question boundary only when there is a next question to resume into — completion is handled by showSummary()
+- s own button (data-cw-receipt-home); the receipt snippet routes it through the shell
+- This question is not present on the current deployment
+- Could not load question bank.
+- question_bank.json was not found alongside this tool.
+- Make sure the build ran successfully and question_bank.json is at the site root.
+
+---
+
 ## One Patient, Six Weeks
 
 - **Slug:** `one-patient-six-weeks.html` · **Type:** tool · **Sidebar:** listed
@@ -268,7 +517,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **Slug:** `rapid_review.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `09_Exam_Prep/Shelf_High_Yield/rapid_review_buzzwords.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 968 words
+- **Length:** 981 words
 
 #### Page text (as shipped)
 
@@ -308,7 +557,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 
 ## Substance / Withdrawal
 - Confusion + ophthalmoplegia + ataxia in alcohol use → **Wernicke** → **thiamine before glucose**. *(→ SUD)*
-- Alcohol withdrawal peak 48–96 h, autonomic instability + confusion → **delirium tremens** → benzodiazepines (CIWA-driven). *(→ Withdrawal card)*
+- Alcohol withdrawal peak 48–96 h, autonomic instability + confusion → **delirium tremens** → benzodiazepines — scheduled/front-loaded, titrated to light sedation (CIWA symptom-triggered dosing is for withdrawal *without* delirium). *(→ Withdrawal card)*
 - Opioid withdrawal → track with **COWS**; start buprenorphine only when objective withdrawal present (COWS ≈ 8–12). *(→ SUD)*
 - AUD maintenance → **naltrexone or acamprosate** first-line; disulfiram adherence-dependent.
 - Opioid overdose → **naloxone**; MOUD (buprenorphine/methadone/naltrexone) reduces mortality.
@@ -775,155 +1024,3 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 New cases are added weekly. A matching MS3-level version of each case lives on the UNE MS3 site.
 
 *Joshua Moss, MD | Psychiatrist*
-
-
----
-
-## Catatonia (Aug 31)
-
-- **Slug:** `cotw_20260831_catatonia_res.md` · **Type:** md · **Sidebar:** listed
-- **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-08-31_catatonia-recognition-workup-treatment_Resident.md`
-- **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 2,182 words
-
-<!-- topic_meta overlay -->
-#### Structured metadata (`topic_meta.json` → this page)
-
-> est. read 10 min · safetyLevel=`moderate` · cotwLevel=`res` (2026-08-31)
-
-**TL;DR (shown above the page text):**
-
-> A mute, motionless patient is an emergency until proven otherwise - screen with the BFCRS, test-and-treat with the lorazepam challenge, hold the antipsychotics, and know the malignant-catatonia triggers that mean early ECT.
-
-**Key points (bulleted card):**
-
-- ~20-30 minute small-group discussion - no pre-reading required.
-- De-identified synthetic case; each discussion question is paired with a teaching point.
-- Resident level. Facilitator notes are kept separate from the learner-facing stem.
-
-**Clinical-workflow narration (per-stage coaching text):**
-
-- **ask** — Work the stem cold: take your own history, commit to a differential, and name your next step before reading a single teaching point. The guided questions are written to be answered, not skimmed.
-- **mse** — Say out loud what each exam finding in the vignette rules in and rules out — the discrimination between look-alike syndromes is what the case is drilling.
-- **safety** — Safety content in every case is oriented to recognition, escalation, and safety planning. Escalate to your supervising resident or attending rather than managing acuity alone.
-- **say** — Before moving on, rehearse one sentence you would actually say to this patient or family, in plain language and out loud.
-- **collateral** — Ask yourself what collateral would change your differential here, and who you would have to call to get it.
-- **rounds** — If you are running the session, the facilitator notes flag the errors this case most often surfaces and the evidence-quality distinctions worth naming out loud.
-- **exam** — Teaching takeaway: A mute, motionless patient is an emergency until proven otherwise - screen with the BFCRS, test-and-treat with the lorazepam challenge, hold the antipsychotics, and know the malignant-catatonia triggers that mean early ECT.
-- **actions** — All Case of the Week cases
-
-**Cross-references and tagging:**
-
-- **Workflow stages:** `diagnosis`, `safety`, `treatment`, `team`, `exam`
-- **Shelf blueprint tags:** `neurocog`, `safety`, `pharm`
-- **EPA crosswalk:** `EPA1`, `EPA2`, `EPA3`, `EPA10`
-- **Faculty review:** {"status": "pending", "reviewer": "Joshua Moss, MD", "lastReviewed": "2026-08-31"}
-
-#### Page text (as shipped)
-
-# Case of the Week — August 31, 2026 (Resident Version)
-
-## Catatonia: Recognition, Workup, and Treatment
-
-**Learner level:** Psychiatry residents (PGY-2–4; well suited to the C-L service)
-**Format:** Facilitator-led discussion, ~20–30 minutes. Assumes DSM-5-TR fluency.
-**Note:** This is a fully synthetic, de-identified teaching case. It describes no real patient; any resemblance to a real person is coincidental.
-
----
-
-## Learner-facing case stem
-
-You are the consultation-liaison resident. Medicine consults you for a 46-year-old man admitted two days ago with "altered mental status and failure to thrive." He has a history of bipolar I disorder, off all medications for about a year. Per his sister, he had a flu-like illness roughly three weeks ago, then over two weeks became progressively withdrawn, near-mute, and stopped eating reliably; for the last five days he has barely taken anything by mouth. In the emergency department three days ago he was "agitated and resistive" and received **haloperidol 5 mg IM twice**. The primary team reports he has since seemed "stiffer and more shut down."
-
-On exam he is awake, eyes open, with fixed staring and almost no spontaneous movement. He does not speak beyond occasional repetition of the same short phrase (**verbigeration**). He holds his head several inches off the pillow for minutes at a time (**psychological pillow**, a form of posturing). Passive movement reveals **gegenhalten** (oppositional paratonia — resistance proportional to the force applied) and intermittent **waxy flexibility**; he mirrors some of your movements (**echopraxia**). He resists mouth opening and eye examination (**negativism**). There is mild diffuse rigidity without cogwheeling and no tremor or clonus.
-
-Vitals: T 37.6 °C, HR 104, BP 142/88 (nurse notes readings from 108/70 to 150/92 today), RR 16, SpO₂ 98%. Labs: Na 148, BUN/Cr 32/1.3, CK 850 U/L, WBC 11.2; TSH and glucose normal; urine toxicology negative. BFCRS screening is positive at 8 of 14 screening items.
-
----
-
-## Guided discussion questions
-
-**Q1. Make the syndromic diagnosis precisely. How do DSM-5-TR, ICD-11, and the BFCRS each frame catatonia, and why does the framing matter?**
-
-*Teaching point:* He easily meets DSM-5-TR criteria (≥3 of 12 signs — here mutism/verbigeration, posturing, waxy flexibility, negativism, echopraxia, staring on the BFCRS). DSM-5 moved catatonia out from under schizophrenia to a **specifier** applicable across mood, psychotic, and medical conditions, reflecting that mood disorders are the most common psychiatric context [5]. ICD-11 now recognizes catatonia as an **independent diagnostic entity** (since 2022) [3]. The **BFCRS** remains the workhorse instrument: 23-item severity scale, 14-item screen (positive at ≥2), standardized exam, inter-rater reliability ~0.93 [4]. Framing matters clinically: prevalence is roughly **5–18% on psychiatric inpatient units and ~3.3% on medical units** [3], and unrecognized catatonia is what kills — via VTE, aspiration, dehydration, and progression to malignant catatonia.
-
-**Q2. What in this stem demands a workup for secondary (medical) catatonia, and what exactly do you send?**
-
-*Teaching point:* Red flags: first catatonic episode at 46, subacute course after a **viral prodrome**, dysautonomia out of proportion to psychiatric history, and admission to a medical service. The BAP guideline's assessment framework: careful history and physical/neurological exam, then **neuroimaging (MRI preferred), EEG, and neuronal autoantibody testing in serum and CSF** — anti-NMDA-receptor encephalitis is the paradigmatic mimic/cause and can present catatonic [1,2]. Add here: CMP with Ca/Mg/phosphate, LFTs, B12, HIV and syphilis serology, serial CK, and an LP with cell count, protein, oligoclonal bands, and autoimmune panel. EEG also screens for **nonconvulsive status epilepticus**, which belongs on this differential. Delirium and catatonia are *not* mutually exclusive — they frequently co-occur in the medically ill, and both should be coded and tracked [3,6].
-
-**Q3. Haloperidol was given, and he worsened. Disentangle NMS, antipsychotic-worsened catatonia, and malignant catatonia — conceptually and practically.**
-
-*Teaching point:* Many authors treat **NMS as a drug-induced (malignant) variant of catatonia** — the phenotypes overlap almost completely (rigidity, mutism, autonomic instability, elevated CK) [2,6]. Practical synthesis for the bedside: (a) his catatonic signs **predated** haloperidol, so this is primary catatonia **worsened by a dopamine antagonist**, a well-described phenomenon and the reason antipsychotics — especially high-potency D2 blockers — are relatively contraindicated in active catatonia [2]; (b) whatever the label, T 37.6 with labile BP, HR 104, rigidity, and CK 850 means he is **evolving toward malignant catatonia**, which is life-threatening and can be fatal untreated [6]; (c) management converges: **stop dopamine blockers, start lorazepam, escalate monitoring, and mobilize ECT early** [1,2,6]. The BAP guideline gives specific regard to malignant catatonia, NMS, and antipsychotic-induced catatonia as special situations [1].
-
-**Q4. Design the benzodiazepine trial: challenge, titration, endpoints, and what response rates you should quote.**
-
-*Teaching point:* **Lorazepam challenge** (typically 1–2 mg IV in a monitored medical setting; IV is preferred for reliability of effect and because PO absorption is uncertain with poor intake), re-examine with the BFCRS within ~15–60 minutes; video or documented serial exams make response objective. If positive (often dramatic), convert to **scheduled dosing with structured uptitration** — effective regimens frequently exceed conventional anxiolytic dosing, and the BAP guideline explicitly notes lorazepam is "sometimes used in very high doses"; catatonic patients often tolerate these with surprisingly little sedation [1,2]. Titrate to BFCRS resolution, not to sedation. Quote honestly: benzodiazepines are first-line, but **up to ~27% of catatonia fails to respond to benzodiazepines alone** [8] — a pre-committed escalation plan is part of the initial order set. Mechanistically, GABA-A hypofunction is the leading model, consistent with benzodiazepine response and with premotor/motor-network dysfunction on imaging [3,5]. The α1-selective GABA-A agonist **zolpidem** has case-level evidence as an alternative challenge or augmentation agent when lorazepam response is equivocal [8].
-
-**Q5. When does ECT enter, and how do you operationalize it on a medical service?**
-
-*Teaching point:* **ECT is first-line together with benzodiazepines**, and is the treatment of choice for **malignant catatonia, benzodiazepine-refractory catatonia, and when a rapid response is needed** (e.g., no oral intake, dysautonomia) [1,2,6]. Operationally: early ECT consultation (do not wait for a completed benzodiazepine failure if malignant features progress), anesthesia review, capacity assessment — catatonic patients usually lack capacity, so involve surrogate consent per jurisdiction, and know your local emergency-treatment pathway. Discuss with learners: continuing lorazepam during an ECT course is common practice (with attention to seizure threshold and timing of doses) — an excellent point for residents to argue from first principles and local protocol.
-
-**Q6. The patient cannot get ECT quickly and has only partially responded to lorazepam. What are your evidence-informed adjuncts and their cautions?**
-
-*Teaching point:* The adjunct evidence base is largely observational — case series and systematic reviews of cases — which the guideline authors themselves flag as the field's main limitation [1,2]. Best-supported alternatives: **NMDA-receptor antagonists (amantadine, memantine)**, with anti-epileptic drugs and certain atypical antipsychotics also described [3,7]. If psychosis demands antipsychotic treatment, prefer agents with lower D2 antagonism — **clozapine and aripiprazole are effective in some populations** [3] — introduced cautiously after catatonia is improving, with benzodiazepine cover and serial BFCRS/CK monitoring. Never re-challenge with high-potency agents in someone whose catatonia worsened on them.
-
-**Q7. Write the safety-and-systems plan: complications, monitoring, disposition, and prognosis.**
-
-*Teaching point:* Catatonia's morbidity is mostly **medical**: VTE (immobility — prophylaxis from day one), aspiration pneumonia (swallow evaluation before PO; NG feeding if intake fails), dehydration, AKI and electrolyte derangement (already present: Na 148, BUN/Cr 32/1.3), rhabdomyolysis (serial CK), pressure injuries, and contractures. Orders: continuous or q4h vitals with autonomic-instability parameters, strict I/O, daily BFCRS by a consistent examiner, DVT prophylaxis, PT/OT. Escalation triggers to ICU: temperature rise, worsening autonomic lability, CK trajectory, or declining arousal. Prognosis framing for the team and family: with early recognition and appropriate treatment (benzodiazepines/ECT), most catatonia responds well; delayed recognition drives the high morbidity and mortality [3]. As his mood episode declares itself during recovery, complete structured suicide-risk assessment and safety planning before stepping down observation — keep this at the level of recognition, structured assessment, and escalation.
-
----
-
-## Ranked differential diagnosis (with discriminators)
-
-1. **Catatonia in the context of a bipolar I mood episode, worsened by antipsychotic exposure** — prior bipolar I, subacute psychomotor decline, classic signs predating haloperidol, deterioration after D2 blockade [2,5].
-2. **Catatonia due to another medical condition — autoimmune (anti-NMDA-receptor) encephalitis first among them** — viral-like prodrome, first presentation this severe at 46, dysautonomia; requires MRI, EEG, serum + CSF autoantibodies to exclude [1,2].
-3. **Evolving malignant catatonia** — low-grade fever, labile BP, tachycardia, rigidity, CK 850; this is a trajectory, not a separate box, and it changes tempo of care [6].
-4. **Neuroleptic malignant syndrome** — haloperidol exposure with rigidity and CK elevation; argued against by clear pre-exposure catatonic syndrome and only modest fever/CK; management overlaps with #3 regardless [2,6].
-5. **Catatonia–delirium comorbidity / hypoactive delirium** — medically ill, dehydrated, fluctuating vitals; screen attention (e.g., months backward), CAM-ICU-style assessment; the two co-occur and both matter [3,6].
-6. **Nonconvulsive status epilepticus** — staring, mutism, minimal movement; EEG is the only way to know.
-7. **Serotonin syndrome** — no serotonergic exposure, no clonus/hyperreflexia; include to teach the toxidrome grid (drug history + neuromuscular exam distinguish SS, NMS, and malignant catatonia).
-8. **Structural/metabolic akinetic mutism** (frontal or mesodiencephalic lesions, severe hypernatremia contribution) — imaging plus correction of Na 148 and reassessment.
-
----
-
-## Workup & management summary
-
-**Tier 1 (today):** stop all dopamine antagonists; BFCRS-scored standardized exam and daily re-scoring; CBC, CMP + Ca/Mg/Phos, LFTs, serial CK, TSH, B12, HIV/RPR, blood cultures if febrile; ECG; IV fluids for hypernatremia/prerenal azotemia; VTE prophylaxis; NPO pending swallow evaluation with NG plan; q4h vitals with autonomic parameters.
-
-**Tier 2 (this admission, expedited):** MRI brain, EEG (rule out NCSE; encephalitis patterns), LP with CSF cell count/protein/oligoclonal bands and neuronal autoantibody panel in serum and CSF [1,2].
-
-**Treatment ladder:** lorazepam challenge 1–2 mg IV → scheduled lorazepam with structured uptitration titrated to BFCRS response [1,2] → **early ECT** for malignant features, benzodiazepine failure (up to ~27% [8]), or need for rapid response [1,2,6] → adjuncts where ECT/benzodiazepines are unavailable or insufficient: amantadine/memantine; cautious clozapine or aripiprazole if psychosis requires treatment [3,7]; zolpidem as challenge/augmentation alternative [8].
-
-**Do not:** start or resume high-potency antipsychotics during active catatonia; attribute the syndrome to "noncompliance with bipolar meds" before the secondary workup is done; forget that the mortality lives in the supportive-care column.
-
----
----
-
-## Facilitator notes — keep separate; not for learner distribution
-
-**Flow (20–30 min):** 3–4 min stem → Q1 briefly (they should nail it) → spend the session's core on Q3, Q4, and Q5 (the NMS/malignant-catatonia disentangling and the treatment ladder are the highest-yield resident content) → Q7 as rapid-fire order-writing → close with evidence-quality caveat.
-
-**Points to press residents on:** Have them defend *why* antipsychotics are held (D2 blockade worsening catatonia/precipitating malignant conversion) rather than reciting the rule. Ask what specifically they would document to make a lorazepam response objective (serial BFCRS, timed video with consent, nursing observations). Ask who consents for ECT when the patient lacks capacity in your state, and what the emergency pathway is. Push on the catatonia–delirium overlap: what does a CAM-positive, BFCRS-positive patient get treated with first, and why (treat catatonia with lorazepam while treating delirium's cause; avoid reflexive antipsychotics).
-
-**Evidence-quality caveat to state explicitly:** the BAP guideline recommendations rest mainly on small observational studies, case series, and case reports — clinical trials are uncommon [1,2]; the zolpidem literature is case-level with likely reporting bias [8]. Model calibrated language for trainees.
-
-**Anticipated wrong turns:** treating this as pure NMS and stopping at "supportive care + dantrolene" (redirect: benzodiazepines/ECT treat the underlying catatonic process); waiting for the full autoimmune panel before any treatment (lorazepam trial and workup proceed in parallel); dosing lorazepam 0.5 mg BID and calling it a failed trial.
-
-**Optional extension (if >30 min):** assign one resident to argue for early ECT and another for maximizing pharmacotherapy first, then debrief using the malignant-features trajectory as the deciding variable.
-
-**Safety framing:** all suicide-risk content stays at recognition, structured assessment, observation, and escalation — no method-level detail in discussion or documentation examples.
-
----
-
-## References
-
-Based on articles retrieved from PubMed (National Library of Medicine). Citation fields below (journal, year, volume/pages, DOI) were verified against PubMed records on 2026-08-31.
-
-1. Rogers JP, Oldham MA, Fricchione G, et al. Evidence-based consensus guidelines for the management of catatonia: Recommendations from the British Association for Psychopharmacology. *J Psychopharmacol*. 2023;37(4):327-369. [DOI: 10.1177/02698811231158232](https://doi.org/10.1177/02698811231158232)
-2. Rogers JP, Zandi MS, David AS. The diagnosis and treatment of catatonia. *Clin Med (Lond)*. 2023;23(3):242-245. [DOI: 10.7861/clinmed.2023-0113](https://doi.org/10.7861/clinmed.2023-0113)
-3. Hirjak D, Rogers JP, Wolf RC, et al. Catatonia. *Nat Rev Dis Primers*. 2024;10(1):49. [DOI: 10.1038/s41572-024-00534-w](https://doi.org/10.1038/s41572-024-00534-w)
-4. Bush G, Fink M, Petrides G, Dowling F, Francis A. Catatonia. I. Rating scale and standardized examination. *Acta Psychiatr Scand*. 1996;93(2):129-136. [DOI: 10.1111/j.1600-0447.1996.tb09814.x](https://doi.org/10.1111/j.1600-0447.1996.tb09814.x)
-5. Walther S, Stegmayer K, Wilson JE, Heckers S. Structure and neural mechanisms of catatonia. *Lancet Psychiatry*. 2019;6(7):610-619. [DOI: 10.1016/S2215-0366(18)30474-7](https://doi.org/10.1016/S2215-0366(18)30474-7)
-6. Connell J, Oldham M, Pandharipande P, et al. Malignant Catatonia: A Review for the Intensivist. *J Intensive Care Med*. 2022;38(2):137-150. [DOI: 10.1177/08850666221114303](https://doi.org/10.1177/08850666221114303)
-7. Beach SR, Gomez-Bernal F, Huffman JC, Fricchione GL. Alternative treatment strategies for catatonia: A systematic review. *Gen Hosp Psychiatry*. 2017;48:1-19. [DOI: 10.1016/j.genhosppsych.2017.06.011](https://doi.org/10.1016/j.genhosppsych.2017.06.011)
-8. Gunther M, Tran N, Jiang S. Zolpidem for the Management of Catatonia: A Systematic Review. *J Acad Consult Liaison Psychiatry*. 2024;66(1):49-56. [DOI: 10.1016/j.jaclp.2024.10.004](https://doi.org/10.1016/j.jaclp.2024.10.004)

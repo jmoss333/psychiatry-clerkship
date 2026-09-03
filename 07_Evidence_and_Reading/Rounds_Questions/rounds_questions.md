@@ -98,7 +98,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Answer:** Involuntary orofacial and extremity movements after months-to-years of dopamine receptor-blocking agent exposure. First-line treatment: VMAT2 inhibitors (valbenazine, deutetrabenazine).
 
-- **Evidence:** Annualized incidence ~3.9% with SGAs vs. ~5.5% with FGAs. Valbenazine 80 mg showed AIMS improvement of −2.9 vs. +0.3 placebo.
+- **Evidence:** Annualized incidence ~3.9% with SGAs vs. ~5.5% with FGAs. In KINECT-3, valbenazine 80 mg improved AIMS by −3.2 vs. −0.1 with placebo.
 
 - **Key paper:** Correll & Citrome, J Clin Psychiatry 2021.
 
@@ -402,7 +402,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Answer:** Prazosin (alpha-1 adrenergic antagonist) is suggested for trauma-related nightmares.
 
-- **Evidence:** Evidence rating B per VA/DoD guidelines; titrate from 1 mg at bedtime.
+- **Evidence:** The 2023 VA/DoD guideline found insufficient evidence for or against prazosin for PTSD nightmares (the PACT trial was negative), but it remains a reasonable and widely used option; titrate from 1 mg at bedtime.
 
 - **Key paper:** Sartor et al., Am Fam Physician 2023.
 
@@ -432,7 +432,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Answer:** Adding ERP is superior to adding risperidone or stress management for SSRI partial responders. Low-dose antipsychotic augmentation (particularly aripiprazole or risperidone) has evidence, especially in patients with comorbid tics.
 
-- **Evidence:** Foa et al., JAMA Psychiatry 2022 showed ERP augmentation was superior to risperidone augmentation.
+- **Evidence:** Simpson et al., JAMA Psychiatry 2013 showed ERP augmentation was superior to risperidone augmentation.
 
 - **Key paper:** Foa et al., JAMA Psychiatry 2022.
 
@@ -884,7 +884,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Key paper:** Lord et al., Lancet 2018.
 
-- **Pearl:** A child with intellectual disability may have social difficulties due to cognitive limitations, but will not show the **restricted/repetitive behaviors** characteristic of ASD — this is the key differentiator.
+- **Pearl:** Repetitive behaviors and stereotypies also occur in intellectual disability without ASD — the key differentiator is social communication that falls below what the child's general developmental level would predict.
 
 ## SLEEP DISORDERS (Questions 88–90)
 

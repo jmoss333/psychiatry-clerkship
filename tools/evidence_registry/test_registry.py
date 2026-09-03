@@ -190,10 +190,30 @@ POSTDISCHARGE_CORRECTION_IDS = {
     "chung-2017-postdischarge-suicide",
     "chung-2019-first-week-month",
 }
+# Added by curriculum-review remediation WP-5a (finding RSAF-F010): cl_reference.md put
+# benzodiazepine response in catatonia at "~90%" with nothing behind it. The meta-analysis
+# it now cites reports 77% response / 55% remission across 53 studies, and asserting what a
+# paper found requires a stored span, so the source enters the registry with one.
+CURRICULUM_REVIEW_WP5A_IDS = {
+    "bot-2026-benzodiazepines-catatonia",
+}
+# Added by curriculum-review remediation WP-5b (finding RV11-F002): the resident TRD case said a 2025
+# review supports esketamine efficacy "in the acute setting, suicidality", where that review reports the
+# effect on suicidality was not significant at any time point — a claim close to the opposite of its source.
+CURRICULUM_REVIEW_WP5B_IDS = {
+    "fountoulakis-2025-esketamine",
+}
+# Added by curriculum-review remediation WP-5c (finding MS3V07-F001): three surfaces credited
+# "structured lethal-means counseling (CALM)" with cutting attempts/deaths 3.3%->0.83%, where the
+# study's exposure is documented lethal-means ASSESSMENT and the design is quasi-experimental.
+CURRICULUM_REVIEW_WP5C_IDS = {
+    "boggs-2020-lethal-means-assessment",
+}
 
 ALL_SOURCE_IDS = (
     EXISTING_IDS | TIER1_IDS | SURVEILLANCE_IDS | SAFETY_GATE_IDS | THERAPY_WP_T2_IDS
-    | POSTDISCHARGE_CORRECTION_IDS
+    | POSTDISCHARGE_CORRECTION_IDS | CURRICULUM_REVIEW_WP5A_IDS | CURRICULUM_REVIEW_WP5B_IDS
+    | CURRICULUM_REVIEW_WP5C_IDS
 )
 REFERENCE_FILES = (
     "topic_meta.json",

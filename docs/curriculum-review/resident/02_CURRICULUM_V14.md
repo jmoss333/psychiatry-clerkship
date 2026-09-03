@@ -1052,7 +1052,7 @@ therapy, milieu, family, and discharge back to the formulation.
 - **Slug:** `ect_neuromodulation.md` · **Type:** md · **Sidebar:** hidden (deep link only)
 - **Source:** `05_Psychopharmacology/ECT_Neuromodulation/ect_neuromodulation_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 595 words
+- **Length:** 660 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -1067,7 +1067,7 @@ therapy, milieu, family, and discharge back to the formulation.
 
 - Choose ECT when a rapid, definitive response is needed: psychotic or catatonic depression, active suicidality, refusal to eat/drink, pregnancy, or prior ECT response.
 - Hold benzodiazepines and anticonvulsants pre-ECT (they blunt the seizure), and plan continuation treatment — relapse is the rule without it.
-- rTMS is outpatient with no anesthesia or memory effects; ketamine/esketamine act within hours and reduce suicidal ideation (esketamine requires REMS monitoring).
+- rTMS is outpatient with no anesthesia or memory effects; ketamine/esketamine act within hours on depressive symptoms — not on suicidality itself, so they never replace monitoring, means restriction, or safety planning (esketamine requires REMS monitoring).
 
 **Can't-miss / red-flag line:**
 
@@ -1125,7 +1125,7 @@ therapy, milieu, family, and discharge back to the formulation.
 
 ## Rapid-acting and light-based options
 
-- **Esketamine (intranasal) and IV ketamine** — glutamatergic (NMDA) agents with **rapid antidepressant and anti-suicidal effects** in treatment-resistant depression (Zarate 2006 established the IV signal). Esketamine is delivered under a **REMS** with in-office monitoring; watch dissociation, sedation, and blood-pressure spikes.
+- **Esketamine (intranasal) and IV ketamine** — glutamatergic (NMDA) agents with **rapid antidepressant effects** in treatment-resistant depression, including in patients presenting with acute suicidal ideation — but note the limit: the pivotal trials showed rapid improvement in *depressive symptoms*, not a demonstrated effect on suicidality itself, and the label states that effectiveness in preventing suicide or reducing suicidal ideation has not been demonstrated (Zarate 2006 established the IV signal). Esketamine is delivered under a **REMS** with in-office monitoring; watch dissociation, sedation, and blood-pressure spikes.
 - **Bright light therapy** — first-line for **seasonal** depression, and — per a 2024 *JAMA Psychiatry* meta-analysis — an **effective *adjunctive* treatment for *nonseasonal* depression** as well (roughly doubling remission odds). Cheap and well-tolerated; screen for bipolar (can precipitate switch) and eye disease.
 
 **What the student does** —
@@ -1140,7 +1140,7 @@ therapy, milieu, family, and discharge back to the formulation.
 - No absolute contraindications to ECT; raised ICP and unstable cardiac disease are the key relative ones.
 - Hold benzodiazepines/anticonvulsants before ECT (they blunt the seizure).
 - rTMS: outpatient, no anesthesia, small seizure risk, for treatment-resistant depression and OCD.
-- Ketamine/esketamine act within hours and reduce suicidal ideation; esketamine needs REMS monitoring.
+- Ketamine/esketamine act within hours on *depressive symptoms* — they do not substitute for monitoring, means restriction, or safety planning, and effectiveness in reducing suicidal ideation itself is not established; esketamine needs REMS monitoring.
 - Bright light therapy now has evidence as an adjunct in *nonseasonal* depression, not just SAD.
 
 **Pair with** — the [Mood topic](?page=t_mood.md), [Catatonia](?page=catatonia.md), the [Psychopharmacology primer](?page=psychopharm_primer.md), and the [Landmark Trials audio library](?page=landmark_trials.md).

@@ -6,6 +6,135 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 
 ---
 
+## Adjustment Disorders
+
+- **Slug:** `t_adjustment.md` · **Type:** md · **Sidebar:** listed
+- **Source:** `03_Core_Topics/Adjustment/adjustment_disorders_inpatient_teaching.md`
+- **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
+- **Length:** 910 words
+
+<!-- topic_meta overlay -->
+#### Structured metadata (`topic_meta.json` → this page)
+
+> est. read 4 min
+
+**TL;DR (shown above the page text):**
+
+> Distress or impairment beginning within 3 months of a stressor and resolving within 6 months of its end — the diagnosis for someone struggling more than expected who doesn't meet criteria for another disorder, and it still carries real suicide risk.
+
+**Key points (bulleted card):**
+
+- If full criteria for MDD, an anxiety disorder, or PTSD are met — it is not adjustment disorder.
+- PTSD/acute stress disorder require a traumatic event; adjustment disorder follows any stressor.
+- First-line treatment is time-limited psychotherapy (supportive, problem-solving); medication is adjunctive.
+
+**Can't-miss / red-flag line:**
+
+> Don't be lulled by the 'subthreshold' label — assess suicide risk directly, as impulsive self-harm can occur.
+
+**Rule-out list (differential the page forces):**
+
+- Major depressive disorder
+- Anxiety disorder
+- Acute stress disorder / PTSD
+- Normal reaction / prolonged grief
+- Substance-induced / medical
+
+**First move (the action the page tells the learner to take):**
+
+> Anchor the timeline to the stressor, confirm criteria for other disorders aren't met, quantify suicide risk, and start brief supportive therapy.
+
+**Clinical-workflow narration (per-stage coaching text):**
+
+- **ask** — Anchor symptoms to the stressor, onset within three months, impairment, and whether full criteria for MDD, PTSD, anxiety, or substance-induced disorder are met.
+- **mse** — Look for affect congruence, hopelessness, agitation, sleep change, substance use, and whether symptoms exceed expected coping.
+- **safety** — Ask directly about suicide and impulsive self-harm even when symptoms seem subthreshold.
+- **say** — This diagnosis does not mean the distress is minor; it means the symptoms are stress-linked and we still take safety seriously.
+- **collateral** — Ask what changed after the stressor, supports, coping, substance use, and whether risk has escalated.
+- **rounds** — Present stressor timeline, excluded full syndromes, functional impairment, safety assessment, and brief therapy/support plan.
+- **exam** — Adjustment disorder requires stressor-linked distress that does not meet criteria for another disorder and resolves after the stressor ends.
+- **actions** — Open C-SSRS
+
+**Embedded check-for-understanding**
+
+1. *Stem:* Two months after a divorce, a patient has low mood and impaired work function but does not meet criteria for major depression. Best diagnosis and first-line treatment?
+   - Adjustment disorder — time-limited psychotherapy **← keyed correct**
+   - Major depressive disorder — start an SSRI as monotherapy
+   - PTSD — begin trauma-focused therapy
+   - No diagnosis — reassure and discharge without follow-up
+   - *Rationale:* Symptoms tied to a stressor, within 3 months, not meeting full criteria for another disorder, indicate an adjustment disorder; supportive/problem-solving psychotherapy is first-line, with suicide-risk assessment.
+
+**Cross-references and tagging:**
+
+- **Related tools:** `cssrs.html`, `communication-practice.html`
+- **Communication cases:** `suicide_direct_question_001`
+- **Evidence sources:** `felitti-1998-ace`
+- **Workflow stages:** `diagnosis`, `safety`, `communication`, `exam`
+- **Workflow modes:** `ward`, `safety`, `5min`, `shelf`
+- **Shelf blueprint tags:** `otherdx`
+- **EPA crosswalk:** `EPA1`, `EPA2`
+
+#### Page text (as shipped)
+
+# Adjustment Disorders
+
+
+**In one line** — An adjustment disorder is **clinically significant distress or impairment that begins within 3 months of an identifiable stressor and resolves within 6 months after the stressor (or its consequences) ends** — it is the diagnosis for someone struggling *more than expected* with a real-life event who does *not* meet criteria for another disorder, and it still carries meaningful, sometimes acute, suicide risk.
+
+**How it presents on the unit** — Common on consult-liaison and after acute life events: a new serious diagnosis, a loss, a relationship or job crisis, legal trouble, or hospitalization itself. Presentations are subthreshold — low mood, anxiety, or behavioral disturbance tied clearly to the stressor. The task is to distinguish a normal reaction, an adjustment disorder, and a full syndromic disorder — and to take the suicide risk seriously despite the "mild" label.
+
+**Differential & can't-miss mimics** — Adjustment disorder is a **diagnosis of specification, not exclusion-by-default** — you must actively rule out the alternatives:
+
+- **Major depressive disorder / an anxiety disorder** — if full criteria are met, diagnose *that*, not adjustment disorder.
+- **Acute stress disorder / PTSD** — require a *traumatic* (criterion-A) event and a specific symptom cluster; adjustment disorder follows *any* stressor and lacks that cluster.
+- **Normal/expected reaction** — distress proportionate to the stressor without significant impairment is not a disorder; **prolonged grief disorder** is the diagnosis for pervasive, persistent grief beyond expected norms.
+- **Bereavement** — uncomplicated grief is normal; screen for a superimposed major depressive episode.
+- **Substance-induced or medical** — new medications, substances, or illness can drive the symptoms.
+
+**Subtypes** — Specify the predominant feature: with depressed mood; with anxiety; mixed anxiety and depressed mood; with disturbance of conduct; mixed disturbance of emotions and conduct; unspecified. Course may be acute or persistent (chronic, if the stressor or its consequences endure).
+
+**Initial workup** — Anchor the timeline to the stressor (onset within 3 months). Confirm the symptoms don't meet criteria for another disorder and aren't a normal reaction. Screen for depression, anxiety, PTSD, and substance use. **Assess suicide risk explicitly** — impulsive self-harm can occur even with "subthreshold" symptoms, especially around acute stressors.
+
+**Acute inpatient management** — Treatment is **primarily psychotherapeutic and time-limited**: supportive therapy, problem-solving, building coping and social support, and addressing the stressor directly where possible. Medication is *not* first-line but may briefly target prominent symptoms (e.g., short-term sleep or anxiety support). Mobilize the patient's own resources and practical supports. If the picture crosses into a full disorder over time, re-diagnose and treat accordingly.
+
+**What the student does** —
+- Tie the symptoms to a specific stressor and to the 3-month/6-month timeline.
+- Confirm the patient does *not* meet criteria for MDD, an anxiety disorder, or PTSD before choosing this label.
+- Screen and *quantify* suicide risk — don't be lulled by "mild."
+- Recommend supportive/problem-solving therapy first; keep any medication short and symptom-targeted.
+- Re-evaluate over time; escalate the diagnosis if the syndrome evolves.
+
+**Disposition & discharge essentials** — Arrange brief outpatient psychotherapy and practical support around the stressor. Provide a safety plan. Ensure follow-up that can catch a transition to a full mood or anxiety disorder, or to prolonged grief, and reconcile any short-term medication with a stop date.
+
+**High-yield pearls**
+- Onset within 3 months of a stressor; resolves within 6 months once the stressor (or its consequences) ends.
+- If full criteria for MDD, an anxiety disorder, or PTSD are met — it's *not* adjustment disorder.
+- PTSD/acute stress disorder require a *traumatic* event; adjustment disorder follows any stressor.
+- Suicide risk is real even at "subthreshold" severity — assess it directly.
+- First-line treatment is psychotherapy (supportive, problem-solving), time-limited; medication is adjunctive.
+- Prolonged grief disorder is the diagnosis for persistent, impairing grief beyond expected norms.
+
+> <div class="crisis-block-hook" hidden></div>
+>
+> ### If someone is in crisis
+>
+> On the unit, a patient in immediate danger is an escalation to your supervising resident or attending and the charge nurse — not a phone call. These lines are what you put IN a patient's safety plan, what families use after discharge, and what you can use yourself.
+>
+> - **988 Suicide & Crisis Lifeline** — Call or text 988. Chat at chat.988lifeline.org. 24/7, free, confidential. Spanish available by call, text, and chat; a dedicated line serves Deaf/Hard-of-Hearing callers. Calls placed in Maine route to Maine crisis specialists.
+> - **Crisis Text Line** — Text HOME to 741741. Text HOLA to 741741 for Spanish. 24/7, free. Text-only. Often the most acceptable option for adolescents and young adults who will not make a phone call.
+> - **Maine Crisis Line** — 1-888-568-1112. Text and chat available via the Maine Crisis Line website. 24/7. Staffed by clinically trained crisis workers and the gateway to Maine's mobile crisis teams — the number that actually dispatches a face-to-face response.
+> - **Veterans Crisis Line** — Dial 988 then press 1. Text 838255. 24/7. No VA enrollment required. Ask about service history — it changes which line is the right referral.
+> - **Emergency services** — 911. 24/7. For imminent danger to life.
+>
+> *Contacts verified 2026-07-27 against official sources. Maintained in `crisis_resources.json`; do not edit these numbers inline.*
+
+**Pair with** — the [Mood topic](?page=t_mood.md), the [Anxiety/Trauma/OCD topic](?page=t_anxiety.md), the [Suicide Risk & Safety pocket guide](?page=pg_suicide.md), and the <a href="tools/cssrs.html" target="_blank" rel="noopener">Columbia C-SSRS official form &amp; training page</a>.
+
+*Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
+
+
+---
+
 ## Culture, Disparities & Formulation
 
 - **Slug:** `cultural_psychiatry.md` · **Type:** md · **Sidebar:** listed
@@ -367,7 +496,7 @@ directly and then turn answers into a real risk formulation.
 - **Slug:** `suicide.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `04_Acute_and_Safety/Suicide_Risk_and_Safety_Planning/suicide_risk_safety_planning_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 973 words
+- **Length:** 994 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -424,7 +553,7 @@ directly and then turn answers into a real risk formulation.
 
 **Ask directly — it does not plant the idea.** Asking about suicide does not increase suicidal thinking; avoiding the question only forfeits information. Move stepwise from passive death wish → active ideation → plan → intent → access to means → any preparatory acts, and document what the patient actually said, not a global "denies SI." Structure the screen with the **Columbia Suicide Severity Rating Scale (C-SSRS)**, remembering it is a screening and severity tool, not a device that predicts who will die.
 
-**Separate risk factors from warning signs.** *Static* risk factors set the baseline and cannot be changed: a prior attempt is the single strongest long-term predictor, alongside older age, male sex, access to firearms, chronic or painful illness, and family history of suicide. *Dynamic, modifiable* factors are the treatment targets: active depression, hopelessness, agitation and insomnia, substance use, command hallucinations, and acute psychosocial loss. *Warning signs* are the near-term behavioral shifts (a sudden calm after agitation, giving things away, saying goodbye) that change the picture tonight. Protective factors (strong supports, treatment engagement, responsibility for children) are real and worth documenting, but they never override acute high-risk findings.
+**Separate risk factors from warning signs.** *Static* risk factors set the baseline and cannot be changed: a prior attempt is the single strongest long-term predictor, alongside older age, male sex, chronic or painful illness, and family history of suicide. Access to firearms raises baseline risk sharply — but unlike the others it is modifiable, which is exactly why means restriction is the intervention. *Dynamic, modifiable* factors are the treatment targets: active depression, hopelessness, agitation and insomnia, substance use, command hallucinations, and acute psychosocial loss. *Warning signs* are the near-term behavioral shifts (a sudden calm after agitation, giving things away, saying goodbye) that change the picture tonight. Protective factors (strong supports, treatment engagement, responsibility for children) are real and worth documenting, but they never override acute high-risk findings.
 
 **Mind the high-risk windows.** Risk is not flat across the admission. The peri-discharge and immediate post-discharge period is the highest-risk window of the entire episode — the transition, not the acute inpatient stay, is when many deaths occur. Treat discharge planning as a safety intervention, not paperwork.
 
@@ -504,7 +633,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **Slug:** `violence.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `04_Acute_and_Safety/Violence_Risk/violence_risk_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 939 words
+- **Length:** 957 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -557,7 +686,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 
 **How it presents on the unit.** Serious violence rarely erupts without a prodrome. Watch for the escalation curve: rising motor activity (pacing, restlessness), a louder and faster voice, clenched jaw or fists, prolonged staring, refusal to sit, and intrusion into others' physical space. Verbal threats and striking objects sit just below assault on that curve. The single most important distinction is between *static* risk — history you cannot change — and *dynamic* risk — the modifiable state driving this patient right now. Static factors (a past act of violence above all, younger age, male sex, substance use, prior weapon access) tell you the baseline; dynamic factors (acute psychosis, intoxication or withdrawal, agitation, untreated pain, a provocative environment) tell you what is treatable tonight and are where the clinical work lives.
 
-**Recognize and screen.** Past violence is the strongest single predictor of future violence — take a specific history of it rather than a global impression. Among psychotic symptoms, the highest-risk pattern is persecutory delusions paired with command hallucinations the patient feels compelled to obey ("threat/control-override"). For short-term, unit-level prediction, structure the bedside read with the **Brøset Violence Checklist (BVC)**: confusion, irritability, boisterousness, verbal threats, physical threats, and attacking objects — each present/absent, summed to gauge the risk of violence over the next 24 hours. More comprehensive structured instruments exist (e.g., HCR-20) but belong to formal forensic assessment, not the daily student read.
+**Recognize and screen.** Past violence is the strongest single predictor of future violence — take a specific history of it rather than a global impression. Among psychotic symptoms, the highest-risk pattern is persecutory delusions paired with command hallucinations the patient feels compelled to obey. ("Threat/control-override" is a related but distinct construct — persecutory beliefs plus the sense that outside forces override one's self-control.) For short-term, unit-level prediction, structure the bedside read with the **Brøset Violence Checklist (BVC)**: confusion, irritability, boisterousness, verbal threats, physical threats, and attacking objects — each present/absent, summed to gauge the risk of violence over the next 24 hours. More comprehensive structured instruments exist (e.g., HCR-20) but belong to formal forensic assessment, not the daily student read.
 
 **Keep yourself and the milieu safe — the room setup is the intervention.** If you are at all concerned, do not interview alone. Position yourself nearer the door than the patient so neither of you is trapped and your exit is never blocked. Know where the duress alarm is before you sit down. Remove obvious ligatures and throwable objects from reach. Keep a calm, low, non-confrontational posture, give the patient space, and avoid cornering, sudden movements, or a challenging stance.
 
@@ -676,7 +805,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **Slug:** `agitation.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `04_Acute_and_Safety/Agitation_and_Restraint/agitation_restraint_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 1,069 words
+- **Length:** 1,093 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -783,7 +912,7 @@ Treat the suspected cause. Prefer the oral, collaborative route over an intramus
 
 ## Restraint and seclusion
 
-Restraint and seclusion are safety interventions, never treatments. They do not fix the underlying problem; they buy time. They require a time-limited physician order, close and continuous monitoring, and discontinuation the moment the patient is safe — not the end of a shift. A post-event debrief with the team (and, where appropriate, the patient) is part of the standard, not an extra. These practices are governed by CMS and Joint Commission standards, and they carry real physical risk (injury, aspiration) and psychological risk (re-traumatization). Apply trauma-informed care throughout, and stay alert to the documented inequities in who gets restrained and how often: Black patients face roughly **1.85× the adjusted odds of physical restraint** on inpatient units (and ~2.84× in the ED awaiting admission; *Psychiatric Services* 2022–2023) — that disparity is a quality-of-care issue, not a footnote.
+Restraint and seclusion are safety interventions, never treatments. They do not fix the underlying problem; they buy time. They require a time-limited physician order, close and continuous monitoring, and discontinuation the moment the patient is safe — not the end of a shift. A post-event debrief with the team (and, where appropriate, the patient) is part of the standard, not an extra. These practices are governed by CMS and Joint Commission standards, and they carry real physical risk (injury, aspiration) and psychological risk (re-traumatization). Apply trauma-informed care throughout, and stay alert to the documented inequities in who gets restrained and how often: Black patients face roughly **1.85× the adjusted odds of a restraint event** on inpatient psychiatric units (Singal et al., *Psychiatric Services* 2024), and higher adjusted odds of physical and chemical restraint during emergency psychiatric evaluation in the ED as well (aOR ~1.35; Smith et al., *Psychiatric Services* 2022) — that disparity is a quality-of-care issue, not a footnote.
 
 ## What the student does
 
@@ -1324,289 +1453,3 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - • Communicate a choice: clear and consistent ("No, I don’t want it"). • Understand: accurately paraphrased the procedure, its purpose, and the main risk of refusing. • Appreciate: acknowledged the condition is serious and that refusing could shorten her life. • Reason: explained the choice in terms of long-standing values about quality vs. length of life; internally consistent. Impression: demonstrates capacity to refuse this specific procedure despite the high stakes — a value-based refusal, not impaired cognition.
 - Educational teaching tool for clinical trainees. Generates draft documentation from your inputs using fictional composite scenarios only — no protected health information. Not a clinical or legal decision-support device; capacity determinations and any surrogate/guardianship pathway must follow supervision and institutional/legal policy.
 - Decisional Capacity — Bedside Module · Psychiatry Clerkship Library · Joshua Moss, MD | Psychiatrist · Framework: Appelbaum & Grisso (1988)
-
----
-
-## Consult Questions: Capacity, Delirium, Catatonia, Withdrawal
-
-- **Slug:** `exp_consult.md` · **Type:** md · **Sidebar:** listed
-- **Source:** `14_Tracks/MS3/Student_Ready_Pack/04_expansion_modules/consult_capacity_delirium_catatonia_withdrawal.md`
-- **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 935 words
-
-<!-- topic_meta overlay -->
-#### Structured metadata (`topic_meta.json` → this page)
-
-> flagged **high-yield** · est. read 5 min · safetyLevel=`high`
-
-**TL;DR (shown above the page text):**
-
-> Frame every consult with the decision that is blocked — then assess capacity (4 Appelbaum abilities), delirium (acute inattention), catatonia (motor signs), and withdrawal (last use plus prior seizure history) before anchoring on any primary psychiatric diagnosis.
-
-**Key points (bulleted card):**
-
-- Capacity is decision-specific and time-specific — having a psychiatric diagnosis, disagreeing with the team, or exercising poor judgment in general does not mean lacking capacity for this specific decision.
-- Delirium is medical until proven otherwise — acute fluctuating inattention demands workup for infection, hypoxia, metabolic disturbance, medications, and withdrawal before any psychiatric label is applied.
-- Catatonia can mimic depression, psychosis, behavior, or refusal — look for mutism, immobility, posturing, waxy flexibility, and poor oral intake, and escalate rather than assuming oppositional behavior.
-
-**Can't-miss / red-flag line:**
-
-> Accepting 'please evaluate' as the consult question blocks both the consultation and the clinical decision — always name the specific decision at stake and what changed today.
-
-**Rule-out list (differential the page forces):**
-
-- Delirium (rule out reversible medical cause first)
-- Catatonia (can mimic psychosis, refusal, or depression)
-- Alcohol/benzodiazepine withdrawal (potentially life-threatening)
-- Capacity impairment (always decision-specific and time-specific)
-
-**First move (the action the page tells the learner to take):**
-
-> Name the exact decision at stake, do a brief attention screen and focused MSE, review vitals, labs, and medications for delirium triggers, and escalate immediately for fever, rigidity, autonomic instability, or withdrawal red flags.
-
-**Clinical-workflow narration (per-stage coaching text):**
-
-- **ask** — For consult-style questions, define the question first: capacity, delirium, catatonia, withdrawal, or medication safety.
-- **mse** — Match the MSE to the question: attention for delirium, motor signs for catatonia, four abilities for capacity, autonomic signs for withdrawal.
-- **safety** — Escalate unstable vitals, delirium, malignant catatonia/NMS concern, severe withdrawal, or refusal with high medical stakes.
-- **say** — I want to answer the specific consult question and also name what would make this unsafe today.
-- **collateral** — Ask team/family for baseline, medical course, treatment refusal context, substance timeline, and prior episodes.
-- **rounds** — State the consult question, key data, decision-specific capacity or syndrome assessment, and next supervised step.
-- **exam** — Capacity is decision-specific; delirium and withdrawal are medical safety workflows, not purely psychiatric labels.
-- **actions** — Open capacity tool; Open withdrawal tool
-
-**Embedded check-for-understanding**
-
-1. *Stem:* The medical team asks psychiatry to 'evaluate' a 68-year-old patient refusing a central line for sepsis. She was lucid yesterday. Today she is intermittently confused, cannot say the months in reverse, and believes her IV is poison. How should the capacity assessment be framed?
-   - Assess the four Appelbaum abilities for this specific decision — the fluctuating inattention suggests delirium may be impairing capacity reversibly **← keyed correct**
-   - Diagnose paranoid schizophrenia given the poisoning belief and document permanent lack of capacity
-   - Accept the refusal as a valid patient preference — she has the right to decline
-   - Order a neuropsychological battery before any capacity determination can be made
-   - *Rationale:* Capacity is decision-specific: the question is whether she can communicate a stable choice, understand the information, appreciate it applies to her, and reason about options — not whether she has a diagnosis or agrees with the team. The fluctuating inattention suggests delirium as the driver, making the impairment potentially reversible and requiring immediate evaluation.
-
-**Cross-references and tagging:**
-
-- **Related tools:** `capacity.html`, `bfcrs.html`, `withdrawal.html`, `decision-aids.html`
-- **Evidence sources:** `appelbaum-grisso-1988-capacity`
-- **Workflow stages:** `safety`, `diagnosis`, `team`
-- **Workflow modes:** `ward`, `safety`, `5min`, `shelf`
-- **Shelf blueprint tags:** `neurocog`, `ethics`
-- **EPA crosswalk:** `EPA2`, `EPA8`, `EPA11`
-- **Faculty review:** {"status": "reviewed", "reviewer": "Joshua Moss, MD", "lastReviewed": "2026-08-15"}
-
-#### Page text (as shipped)
-
-# Acute And Consult Psychiatry Expansion Module
-
-Generated: 2026-06-27
-
-Audience: MS3 students on adult inpatient psychiatry.
-
-Scope: consult psychiatry, capacity, delirium, catatonia, withdrawal, and urgent
-escalation. This is an educational guide. Follow local protocols and supervising
-clinician direction for diagnosis and treatment.
-
-## Consult Psychiatry: The Student Frame
-
-A good psychiatry consult starts with the question.
-
-Ask:
-
-1. Who is asking?
-2. What decision is blocked?
-3. What changed today?
-4. What medical/substance/medication causes must be considered?
-5. What would be different after psychiatry gives an answer?
-
-Poor consult question:
-
-> "Please evaluate."
-
-Better consult question:
-
-> "Please assess decision-making capacity to refuse IV antibiotics in a patient
-> with fluctuating attention and paranoid concerns about poisoning."
-
-## Capacity Basics
-
-Capacity is decision-specific and time-specific. A patient can have capacity for
-one decision and not another.
-
-Assess four abilities:
-
-1. Communicate a stable choice.
-2. Understand relevant information.
-3. Appreciate how the information applies personally.
-4. Reason about options and consequences.
-
-Capacity is not the same as:
-
-- Agreeing with the team.
-- Having a psychiatric diagnosis.
-- Having good judgment in general.
-- Being calm or likeable.
-- Competence, which is a legal determination.
-
-Student task:
-
-- State the exact decision.
-- Summarize the patient's words.
-- Identify which ability is intact or impaired.
-- Ask whether delirium, intoxication, psychosis, mania, depression, pain, or fear is impairing the decision.
-
-## Delirium: Think Medical Until Proven Otherwise
-
-Core pattern:
-
-- Acute change.
-- Fluctuating course.
-- Inattention.
-- Altered level of awareness or disorganized thinking.
-
-High-yield triggers:
-
-- Infection.
-- Hypoxia.
-- Metabolic disturbance.
-- Medication effect or anticholinergic burden.
-- Withdrawal.
-- Pain.
-- Sleep deprivation.
-- Urinary retention or constipation.
-- Recent surgery or ICU stay.
-
-Student escalation triggers:
-
-- New confusion or fluctuating consciousness.
-- Visual hallucinations with disorientation.
-- New agitation in an older or medically ill patient.
-- Inattention that was not present before.
-- Fever, autonomic instability, rigidity, or abnormal vitals.
-
-Student role:
-
-- Do a brief attention screen.
-- Review vitals, labs, medications, recent PRNs, sleep, infection signs.
-- Tell the resident/attending promptly.
-
-Guideline anchor: NICE CG103 covers delirium prevention, diagnosis, and
-management in hospital and long-term care. APA announced an updated delirium
-practice guideline in 2025.
-
-## Catatonia: Do Not Miss Immobility Or Excitement
-
-Catatonia can look like withdrawal, psychosis, depression, delirium, medication
-effect, or behavior. It may be hypokinetic or excited.
-
-Look for:
-
-- Mutism.
-- Stupor or immobility.
-- Posturing.
-- Waxy flexibility.
-- Negativism.
-- Echolalia or echopraxia.
-- Stereotypy or mannerisms.
-- Grimacing.
-- Agitation not explained by environment.
-- Poor oral intake.
-
-Red flags:
-
-- Fever, rigidity, autonomic instability.
-- Dehydration, malnutrition, immobility complications.
-- Recent antipsychotic exposure with worsening rigidity or fever.
-
-Student role:
-
-- Describe observed motor/behavioral signs without arguing intent.
-- Ask about intake, mobility, autonomic signs, and medication exposure.
-- Escalate promptly.
-- Do not assume "refusal" or "oppositional" behavior.
-
-Guideline anchor: the British Association for Psychopharmacology published an
-evidence-based consensus guideline for catatonia in 2023.
-
-## Withdrawal: The First Questions
-
-Alcohol/benzodiazepine withdrawal can be medically dangerous.
-
-Ask:
-
-- What substance?
-- How much and how often?
-- Last use?
-- Prior withdrawal?
-- Prior seizure or delirium tremens?
-- Current tremor, sweating, anxiety, nausea, hallucinations, insomnia?
-- Vital sign changes?
-
-Alcohol withdrawal red flags:
-
-- Prior withdrawal seizure or delirium tremens.
-- Heavy daily use with recent abrupt stop.
-- Autonomic instability.
-- Confusion or hallucinosis.
-- Severe tremor or agitation.
-- Wernicke risk: malnutrition, confusion, ataxia, ophthalmoplegia, or heavy alcohol use. Verify thiamine is given before or with glucose/carbohydrate when possible; do not delay emergency glucose for true hypoglycemia.
-
-Opioid withdrawal is usually not life-threatening by itself but is very
-distressing and changes risk, engagement, and discharge planning.
-
-Ask:
-
-- Last opioid use.
-- Route.
-- Overdose history.
-- Medication treatment history.
-- Current symptoms: rhinorrhea, lacrimation, yawning, GI upset, myalgias, piloerection.
-
-Student role:
-
-- Identify risk and escalate.
-- Do not invent a withdrawal protocol.
-- Know whether your unit uses CIWA-Ar, COWS, or other local tools.
-- Name thiamine-before/with-glucose as a red-flag safety check, because carbohydrate loading can worsen thiamine depletion and precipitate Wernicke encephalopathy.
-
-Guideline anchor: ASAM alcohol withdrawal management guideline and pocket guide.
-
-## Consult Note Skeleton
-
-Use this structure:
-
-1. Consult question.
-2. Relevant timeline.
-3. Safety and medical acuity.
-4. MSE and cognitive screen.
-5. Differential diagnosis.
-6. Capacity/risk/diagnostic reasoning.
-7. Recommendations, with what needs supervision or medical-team action.
-
-## One-Minute Student Presentation For A Consult
-
-> "The consult question is [specific decision/problem]. The key change is
-> [timeline]. On exam, I am most concerned about [attention/catatonia/withdrawal/
-> psychosis/risk]. The differential includes [top three]. The immediate safety or
-> medical issue is [X]. I think we need [next step] and I want help with [specific
-> uncertainty]."
-
-## Quick Differential By Presentation
-
-| Presentation | Must Consider |
-|---|---|
-| New psychosis | substance/medication, delirium, mania, trauma, primary psychotic disorder |
-| Agitation | delirium, intoxication/withdrawal, mania, psychosis, pain, fear, akathisia |
-| Mutism/withdrawal | catatonia, severe depression, psychosis, delirium, trauma response, neurologic illness |
-| Refusal of care | capacity, fear/mistrust, psychosis, delirium, values, communication failure |
-| Hallucinations | delirium, substance, psychosis, mood disorder, trauma, sensory impairment |
-
-## Faculty Review Checklist
-
-- Confirm local legal language for capacity and involuntary care.
-- Confirm local withdrawal protocols.
-- Confirm local delirium and catatonia workflows.
-- Add hospital-specific paging/escalation instructions.
-
-Plain-English note: this module teaches students what to notice, how to ask the
-right question, and when to escalate. It deliberately avoids pretending students
-should independently manage high-risk consults.

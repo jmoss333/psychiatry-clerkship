@@ -6,6 +6,312 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 
 ---
 
+## Practice Questions — Question Bank
+
+- **Slug:** `question-bank-practice.html` · **Type:** tool · **Sidebar:** listed
+- **Source:** `13_Faculty_Resources/_automation/site_build/question-bank-practice.html`
+- **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`moderate`
+
+#### Tool — clinical content
+
+_These tools are single-file HTML that render from inline JS data, so the clinical text below is recovered from the tool's own string literals. Ordering follows the file, not the runtime flow._
+
+**Static shell text:**
+
+- Practice Questions — MS3 Question Bank Reviewed by Joshua Moss, MD on 2026-07-05
+- Skip to content Practice Questions
+- Loading question bank…
+
+**Authored clinical strings (228):**
+
+- s toolExtraFromParams passthrough (spa_index.html) — no shell change needed to reach this tool
+- s next step. */ var BLOCK_REQUEST = (function(){ try{ var sp=new URLSearchParams(location.search); if(sp.get(
+- ) return null; var n=parseInt(sp.get(
+- ,10); if(!(n>=1&&n<=50)) n=5; var cat=sp.get(
+- ; return {n:n, cat:/^[a-z]+$/.test(cat)?cat:
+- }; }catch(_){ return null; } })(); var CAT_LABELS = { mood:
+- }; var SUBTYPE_LABELS = {
+- }; /* ---- utilities ---------------------------------------------------------------- */ function esc(s){ return String(s||
+- ); } function shuffle(arr){ var a=arr.slice(),i=a.length,j,t; while(i--){j=Math.floor(Math.random()*(i+1));t=a[i];a[i]=a[j];a[j]=t;} return a; } function readReviewContext(){ var sp = new URLSearchParams(location.search); var reviewItem = sp.get(
+- ; var reviewKey = sp.get(
+- ; var reviewToken = sp.get(
+- ).length !== 1 || sp.getAll(
+- ).length !== 1) return null; if(!/^qb_[a-z]+_[0-9]{3}$/.test(reviewItem)) return null; if(reviewKey !==
+- + reviewItem) return null; if(!/^[0-9a-f]{32}$/.test(reviewToken)) return null; return Object.freeze({reviewItem:reviewItem, reviewKey:reviewKey, reviewToken:reviewToken}); } function postReviewItemStatus(status){ if(!REVIEW_CONTEXT || [
+- ].indexOf(status) < 0) return; window.parent.postMessage({ type:
+- , reviewKey:REVIEW_CONTEXT.reviewKey, reviewToken:REVIEW_CONTEXT.reviewToken, reviewItem:REVIEW_CONTEXT.reviewItem, status:status, surface:
+- }, location.origin); } /* ---- localStorage helpers ----------------------------------------------------- */ function lsGet(k){ try{return JSON.parse(localStorage.getItem(k)||
+- );}catch(_){return null;} } function lsSet(k,v){ try{localStorage.setItem(k,JSON.stringify(v));}catch(_){} } /* ---- cw_qb_v1 response store -------------------------------------------------- */ function qbLoad(){ return lsGet(
+- )||{}; } function qbSave(data){ lsSet(
+- ,data); } function qbRecord(item, key, tier2Key, confidence, correct, twoTierResult){ var data = qbLoad(); var prev = data[item.id]; var re = (prev && prev.ts && (new Date(prev.ts)).toDateString() === (new Date()).toDateString()) ? 1 : 0; var rec = { id: item.id, key: key, tier2Key: tier2Key||null, confidence: confidence, correct: correct, pages: item.pages||[], ts: Date.now() }; if(confidence===
+- && !correct) rec.certWrong = true; data[item.id] = rec; qbSave(data); calibLog({s:
+- ,id:item.id,pages:item.pages||[],p:confidence,a:correct?1:0,t2:twoTierResult||null,re:re,ts:Date.now()}); return rec; } /* ---- cw_srs_v1 SRS seeding + grading ----------------------------------------- */ function srsLoad(){ var s = lsGet(
+- ); if(!s||s.v!==1){ s={v:1,cards:{},day:{lastDay:
+- ,newToday:0}, stats:{streak:0,lastStudy:
+- ,totalReviews:0,correct:0,seen:0}, settings:{newPerDay:12}}; } return s; } function srsSave(s){ lsSet(
+- ,s); } function srsGrade(item, confidence, correct, twoTierResult){ /* Map confidence×correct to SM-2 grade, respecting two-tier shaky cap */ if(!correct) return
+- ; /* cap: right answer, wrong reason */ if(confidence===
+- ; /* guess + correct = Hard (lucky guess ≠ mastery) */ return
+- ; } var DAY = 86400000; /* ==== Canonical SM-2 grader (build-injected — do not edit inside consumer files) ==== Source of truth: 13_Faculty_Resources/_automation/site_build/sm2_apply_grade.js. Consumers carry a SM2_APPLY_GRADE marker comment that common.py
+- s cw_srs_v1 writes stay aggregate/current-state only and are unaffected by that logging. */ /* Deterministic ±15% interval fuzz (opts.fuzzKey): de-synchronizes cohort-seeded cards so due-load avalanches spread out. No fuzzKey (legacy callers) = no fuzz. Also a no-op below ivl 3 d (too short to meaningfully fuzz). Always clamped to [1, 365] regardless of the input interval
+- t drift between the two consumers; an expired or malformed per-tool entry is pruned from the store on load, not just hidden, so a stale slot never lingers past its own read. Consumers: question-bank-practice.html (checkpointSession/ tryResumeSession — writer + authoritative resume) and the shell
+- s progress on Today) and by the session receipt inside a tool (to mark the step that just finished and offer the next one). Injected via /*__BLOCK_STORE__*\/ so the shell and every tool share one implementation. Shape: {v:1, minutes, createdAt, steps:[{kind:
+- , ref, title, min, n?, cat?, done?, doneAt?}]}. A page step is never marked here — its done state is derived from cw_progress_v1 at render time, so ticking the page anywhere counts. A block older than CW_BLOCK_TTL_MS is pruned on load: a plan built for one morning
+- s own primary (spec.actions) beside "Back to Today"; 3. marks the tool
+- s openPage message — a plain href would be caught by the in-iframe interceptor and lose its query, so the delegated listener below posts the full route instead; outside an iframe it falls back to a real navigation. */ function cwReceiptEsc(s){ return String(s===undefined||s===null?
+- ); } function cwReceiptLocalDay(nowMs){ var d=new Date(nowMs), m=d.getMonth()+1, day=d.getDate(); return d.getFullYear()+
+- )+day; } /* Writes the legacy {done:true,at} entry the front door reads. Returns true only when this call changed the store, so "Marked done on Today" is said once, not on every re-render. */ function cwReceiptMarkDone(ref, nowMs){ if(!ref) return false; try{ var p=JSON.parse(localStorage.getItem(
+- ) p={}; if(p[ref]&&p[ref].done===true) return false; p[ref]={done:true,at:cwReceiptLocalDay(nowMs)}; localStorage.setItem(
+- , JSON.stringify(p)); return true; }catch(_){ return false; } } function cwReceiptStepRoute(step){ var s=step||{}; if(s.kind===
+- +encodeURIComponent(String(s.n||1)); if(s.kind===
+- )); } function cwReceiptNextStep(block, doneMap){ var b=block||{}, list=b.steps||[], d=doneMap||{}, i, s, done=0; var next=null; for(i=0;i<list.length;i++){ s=list[i]||{}; var isDone=(s.kind===
+- )?(d[s.ref]===true):(s.done===true); if(isDone) done++; else if(!next) next=s; } return {next:next, done:done, total:list.length}; } function cwReceiptDoneMap(){ var out={}; try{ var p=JSON.parse(localStorage.getItem(
+- ){ for(var k in p){ if(Object.prototype.hasOwnProperty.call(p,k)&&p[k]&&p[k].done===true) out[k]=true; } } }catch(_){ } return out; } var CW_RECEIPT_CSS=
+- ; function cwReceiptEnsureStyle(){ try{ if(typeof document===
+- )) return; var st=document.createElement(
+- ; st.textContent=CW_RECEIPT_CSS; document.head.appendChild(st); }catch(_){ } } var cwReceiptWired=false; function cwReceiptNavigate(ref, search){ var framed=false; try{ framed=(typeof window!==
+- )&&window.self!==window.top; }catch(_){ framed=true; } if(framed){ try{ window.parent.postMessage({type:
+- ); return; }catch(_){ } } try{ location.href=
+- +encodeURIComponent(ref)))); }catch(_){ } } function cwReceiptWire(){ if(cwReceiptWired||typeof document===
+- ) return; cwReceiptWired=true; document.addEventListener(
+- , function(ev){ var t=ev.target&&ev.target.closest?ev.target.closest(
+- ):null; if(!t) return; ev.preventDefault(); if(t.hasAttribute(
+- ); return; } cwReceiptNavigate(t.getAttribute(
+- ); }, true); } function cwReceipt(spec){ var s=spec||{}, nowMs=(typeof s.nowMs===
+- )?s.nowMs:Date.now(), i; cwReceiptEnsureStyle(); cwReceiptWire(); var marked=cwReceiptMarkDone(s.ref, nowMs); var block=null, progress=null; if(typeof blockLoad===
+- ){ if(s.blockKind&&typeof blockMarkStep===
+- ) blockMarkStep(s.blockKind, nowMs); block=blockLoad(nowMs); if(block) progress=cwReceiptNextStep(block, cwReceiptDoneMap()); } var h=
+- ; var stats=s.stats||[]; if(stats.length){ h+=
+- ; for(i=0;i<stats.length;i++){ var st=stats[i]||{}, tone=st.tone===
+- ; } var reread=s.reread||[]; if(reread.length){ h+=
+- ; for(i=0;i<reread.length;i++){ var r=reread[i]||{}; h+=
+- cw-receipt__tag'+(r.warn?' is-warn':'')+'
+- ; var next=progress&&progress.next; if(next){ var route=cwReceiptStepRoute(next); h+=
+- cw-receipt__btn is-primary
+- ; }else{ var acts=s.actions||[]; for(i=0;i<acts.length;i++){ var a=acts[i]||{}; h+=
+- cw-receipt__btn'+(a.primary?' is-primary':'')+'
+- ; if(!next&&typeof blockClear===
+- ; return {html:h, marked:marked, next:next||null}; } function srsUpdate(item, confidence, correct, twoTierResult){ var s = srsLoad(); var cardId =
+- +item.id; var card = s.cards[cardId]||{ease:2.5,ivl:0,reps:0,lapses:0,due:Date.now(),last:0}; var grade = srsGrade(item, confidence, correct, twoTierResult); s.cards[cardId] = applyGrade(card, grade, {fuzzKey:cardId}); /* update aggregate stats */ s.stats.totalReviews = (s.stats.totalReviews||0)+1; if(correct) s.stats.correct=(s.stats.correct||0)+1; s.stats.seen=(s.stats.seen||0)+1; srsSave(s); return grade; } /* ---- queue building ----------------------------------------------------------- */ function buildQueue(items, catFilter, diffFilter, sizeLimit){ var q = items.filter(function(it){ if(catFilter!==
+- && it.category!==catFilter) return false; if(diffFilter!==
+- && String(it.difficulty)!==diffFilter) return false; return true; }); q = shuffle(q); if(sizeLimit!==
+- ) q = q.slice(0, parseInt(sizeLimit,10)||20); return q; } /* Items eligible to serve to learners. Two gates: — Retired items (near-duplicate/redundant per question_bank.schema.json) are NEVER queued. — Un-attested items serve ONLY when the learner opts in via the setup-screen toggle (persisted as cw_qb_drafts_v1). The default pool is faculty-attested items only, and every surface that shows an included draft labels it — see renderMeta() and the .draft-notice callout in renderQuestion(). Policy history, because this has flipped before: the 2026-07-15 decision log recorded "serve drafts, marked" after a04a848 gated to attested-only by ACCIDENT — the pool fell 192->143 with no UI trace, and #284 restored serving. The 2026-08-20 Taplinger response plan (PLAN_Taplinger_Feedback_and_Therapy_Library_2026-08-20.md §A2 / WP-37, urgency per FEEDBACK_IMPACT_Taplinger_Verbatim_2026-08-20.md §3) reverses that decision deliberately now that an external course page links to the site: attested-only BY DEFAULT, drafts opt-in and labelled. Unlike a04a848, this flip is visible — the setup screen states the exclusion, shows the excluded count, and carries the toggle. Fail-safe direction: only an explicit status===
+- reaches the default pool, so a new or misspelled status is withheld rather than served as reviewed (mirrors the label logic, which marks anything not attested). `status` is still the source of truth; nothing here mutates it, and attestation stays server-side. */ function includeDrafts(){ return lsGet(
+- )===true; } function setIncludeDrafts(on){ lsSet(
+- , !!on); } function activeItems(){ var inc = includeDrafts(); return (BANK && BANK.items ? BANK.items : []).filter(function(it){ if(it.retired) return false; if(!inc && it.status!==
+- ) return false; return true; }); } /* Focus-mode presets, built from the learner
+- s cw_qb_drafts_v1 opt-in is set (see the policy comment above). */ function missedItems(){ var records = qbLoad(); return activeItems().filter(function(it){ var rec = records[it.id]; return !!rec && rec.correct === false; }); } function certWrongItems(){ var records = qbLoad(); return activeItems().filter(function(it){ var rec = records[it.id]; return !!rec && rec.certWrong === true; }); } /* Due-first serving. This tool has WRITTEN QB# cards to cw_srs_v1 since SRS seeding landed, but nothing ever read the schedule — Daily Review serves TOPIC# cards only (the false "resurfaces in Daily Review" copy was corrected in #344). This makes the schedule real: cards that have come due return at the FRONT of the next practice session here, most-overdue first. Routed through activeItems(), so a since-retired item can never resurface no matter what its card says. */ function dueQbItems(){ var s = srsLoad(); if(!s || !s.cards) return []; var now = Date.now(), due = {}; Object.keys(s.cards).forEach(function(id){ if(id.indexOf(
+- ) !== 0) return; var c = s.cards[id]; if(c && typeof c.due ===
+- && c.due <= now) due[id.slice(3)] = c.due; }); return activeItems() .filter(function(it){ return Object.prototype.hasOwnProperty.call(due, it.id); }) .sort(function(a, b){ return due[a.id] - due[b.id]; }); } /* ---- rendering helpers -------------------------------------------------------- */ function diffDots(n){ var h=
+- ; for(var i=1;i<=3;i++) h+=
+- diff-dot'+(i<=n?' on':'')+'
+- ; } function renderSetup(){ var items = activeItems(); var cats = {}; items.forEach(function(it){ cats[it.category]=1; }); var catOpts =
+- ; Object.keys(CAT_LABELS).forEach(function(k){ if(cats[k]) catOpts+=
+- ; }); var total = items.length; /* bankDraftCount is toggle-independent (all non-retired, non-attested items in the bank); draftCount is how many of those are in the SERVED pool right now. The note renders whenever the bank has drafts, in whichever wording matches the toggle — excluded-by-default (off) or labelled-in-pool (on). */ var draftsOn = includeDrafts(); var bankDraftCount = (BANK && BANK.items ? BANK.items : []).filter(function(it){ return !it.retired && it.status!==
+- ; }).length; var draftCount = draftsOn ? bankDraftCount : 0; var missedCount = missedItems().length; var certWrongCount = certWrongItems().length; var dueCount = dueQbItems().length; return
+- ; } function renderMeta(item){ var h =
+- ; h += diffDots(item.difficulty); if(item.type===
+- ; /* The glyph is decorative — the wording carries the meaning, so the label never depends on colour or on the icon being announced. */ if(item.status!==
+- ; return h; } function renderConfidence(disabled){ var ds = disabled ?
+- ; } function renderOptions(item, state){ /* state:
+- — locked after answer. Letters come from DISPLAY position, not the authored key: 46 of 47 draft items are keyed A, so rendering opt.key after the shuffle both scrambled the letter sequence and let "A." follow the correct answer around the screen. data-key still carries the authored key for answer logic. A locked re-render reuses the session
+- Select the best rationale — then see your full feedback.
+- <button class="opt" data-tier2key="
+- ✓ Right answer — shaky reasoning
+- · Confidently wrong — flagged for review
+- Right answer, wrong reason — your SRS interval is capped at Hard , so this item comes due again soon and will serve at the front of a future session here. The correct rationale:
+- <a class="fb-link" href="
+- target="_blank" rel="noopener"
+- ⚠ Draft — not yet faculty-reviewed.
+- This question and its explanation have not been checked by faculty. Practise with it,
+- but verify anything you would act on against a primary source.
+- s own. */ var certWrongList = responses.filter(function(r){return r.confidence===
+- &&!r.correct;}); var certWrong = certWrongList.length; var guessRight = responses.filter(function(r){return r.confidence===
+- &&r.correct;}).length; var wrong = total-correct; var headline = correct+
+- )); var sub = certWrong ?
+- ); var reread = []; responses.forEach(function(r){ if(r.correct && r.confidence!==
+- ) return; if(reread.length>=5) return; var chosen = (r.item.options||[]).filter(function(o){ return o && o.key===r.key; })[0]; var trap = chosen && chosen.trap ? chosen.trap : null; var trapName = trap && trap.name ? trap.name : null; var page = (r.item.pages&&r.item.pages[0]) || null; reread.push({ tag: r.correct ?
+- ), warn: !r.correct && r.confidence===
+- , title: String(r.item.stem||
+- ), ref: page, refTitle: page ? pageTitle(page) : null }); }); var stats = [ {label:
+- , value:String(certWrong), tone:certWrong?
+- , value:String(guessRight)}, {label:
+- , value:String(wrong), tone:wrong?
+- } ]; var receipt = cwReceipt({ /* Only a session the block itself opened (?block=1) may mark the block
+- Calibration gap: You were certain
+- Miscalibration on the wards is more dangerous than ignorance —
+- replay your confidently-wrong items from this summary.
+- s own link label when it points at that page, else a readable form of the file name (the tool has no nav registry of its own). */ function pageTitle(file){ var f=String(file||
+- ); return f.replace(/^pg_/,
+- ).replace(/\b\w/g,function(c){return c.toUpperCase();}); } /* ---- DOM helpers -------------------------------------------------------------- */ var root = document.getElementById(
+- ); var progLabel = document.getElementById(
+- ); var qprog = document.getElementById(
+- ); var qprogFill = document.getElementById(
+- ); function setRoot(html){ root.innerHTML=html; } function updateProgress(){ if(!SESSION) return; var idx=SESSION.idx, total=SESSION.queue.length; if(total===0) return; var pct=Math.round((idx/total)*100); progLabel.textContent =
+- +total; qprog.hidden=false; qprogFill.style.width=pct+
+- ; } /* ---- app state transitions ---------------------------------------------------- */ function showSetup(){ SESSION=null; progLabel.textContent=
+- ; qprog.hidden=true; setRoot(renderSetup()); bindSetup(); } function bindSetup(){ var catSel=document.getElementById(
+- ); var diffSel=document.getElementById(
+- ); var sizeSel=document.getElementById(
+- ); var countEl=document.getElementById(
+- ); var startBtn=document.getElementById(
+- ); var redoMissesBtn=document.getElementById(
+- ); var certWrongBtn=document.getElementById(
+- ); var dueBtn=document.getElementById(
+- ); function updateCount(){ var cat=catSel?catSel.value:
+- , diff=diffSel?diffSel.value:
+- ; var n = activeItems().filter(function(it){ if(cat!==
+- &&it.category!==cat) return false; if(diff!==
+- &&String(it.difficulty)!==diff) return false; return true; }).length; var size=sizeSel?sizeSel.value:
+- )?n:Math.min(n,parseInt(size,10)||20); if(countEl) countEl.textContent=(showing===n?n:showing+
+- ; if(startBtn) startBtn.disabled=(n===0); } if(catSel) catSel.addEventListener(
+- ,updateCount); if(diffSel) diffSel.addEventListener(
+- ,updateCount); if(sizeSel) sizeSel.addEventListener(
+- ,updateCount); updateCount(); if(startBtn) startBtn.addEventListener(
+- ,function(){ var cat=catSel?catSel.value:
+- ; var diff=diffSel?diffSel.value:
+- ; var size=sizeSel?sizeSel.value:
+- ; startSession(cat,diff,size); }); if(redoMissesBtn) redoMissesBtn.addEventListener(
+- ,function(){ startSessionWithQueue(missedItems()); }); if(certWrongBtn) certWrongBtn.addEventListener(
+- ,function(){ startSessionWithQueue(certWrongItems()); }); /* Deliberately NOT startSessionWithQueue: due cards keep most-overdue-first order rather than being shuffled — the schedule is the point of this focus mode. */ if(dueBtn) dueBtn.addEventListener(
+- ,function(){ beginSession(dueQbItems()); }); /* Draft opt-in (WP-37). Persist, then re-render the whole setup so every count (pool size, match count, focus-mode buttons) reflects the new pool; refocus the toggle so keyboard users are not dropped at the top of the re-rendered screen. */ var draftToggle=document.getElementById(
+- ); if(draftToggle) draftToggle.addEventListener(
+- ,function(){ setIncludeDrafts(draftToggle.checked); showSetup(); var t=document.getElementById(
+- ); if(t) t.focus(); }); } function startSession(catFilter, diffFilter, sizeLimit){ /* Due cards matching the same filters serve FIRST (most-overdue first, unshuffled — priority order is the point); the shuffled fresh selection fills the remainder of the size limit. A due card never appears twice in one queue. */ var due = dueQbItems().filter(function(it){ if(catFilter!==
+- && String(it.difficulty)!==diffFilter) return false; return true; }); var cap = (sizeLimit===
+- ) ? Infinity : (parseInt(sizeLimit,10)||20); due = due.slice(0, cap===Infinity ? due.length : cap); var dueIds = {}; due.forEach(function(it){ dueIds[it.id]=1; }); var rest = buildQueue(activeItems().filter(function(it){ return !dueIds[it.id]; }), catFilter, diffFilter,
+- ); if(cap!==Infinity) rest = rest.slice(0, Math.max(0, cap-due.length)); beginSession(due.concat(rest)); } /* Focus-mode entry point: starts the exact queue passed in (shuffled), bypassing the category/difficulty/size filters entirely. */ function startSessionWithQueue(queue){ beginSession(shuffle(queue)); } function beginSession(queue){ if(!queue.length){ setRoot(
+- ); return; } SESSION = { queue: queue, idx: 0, responses: [], confidence: null, tier1Key: null, displayOrder: [], tier2DisplayOrder: [], state:
+- /* conf | tier2 | feedback */ }; showQuestion(); } function showReviewItem(item){ SESSION = { queue:[item], idx:0, responses:[], confidence:null, tier1Key:null, displayOrder:[], tier2DisplayOrder:[], state:
+- , reviewOnly:true }; showQuestion(); postReviewItemStatus(
+- ); } /* ---- session capsule (cw_sess_v1) — question-boundary checkpoint + resume -------- Written ONLY from advance(), and only when there is a next question to show — never mid-question. showQuestion() resets confidence/tier1Key/state/displayOrder/ tier2DisplayOrder on every entry (the option shuffles aren
+- s queueIds filtered through activeItems() — an id removed or retired by a deploy between checkpoint and resume is silently dropped rather than crashing the restore (queueIds order is preserved). idx is RE-DERIVED by counting how many of the front (pre-checkpoint) queueIds survive that same filter, rather than trusted verbatim: trusting the stored idx directly would silently skip a still-unanswered question whenever a deploy retires/removes an item positioned BEFORE the checkpointed idx (the raw idx overshoots once the queue is filtered shorter). This exploits the invariant that responses.length === idx at every checkpoint — advance() checkpoints immediately after commitResponse() pushes a response, and this app has no skip-without-answering path, so counting surviving front ids gives the correct new position. Reconstructed responses are built from that identical surviving-front-id set, so the resumed summary population can never disagree with the resumed queue position. Absent/expired capsule (sessLoad owns load-validate-expire) or an empty resulting queue falls through to a normal setup start. Returns true iff a session was actually resumed. */ function tryResumeSession(){ var cap = sessLoad(
+- , Date.now()); if(!cap || !cap.queueIds || !cap.queueIds.length) return false; var idMap = {}; activeItems().forEach(function(it){ idMap[it.id]=it; }); var queue = cap.queueIds.map(function(id){ return idMap[id]; }).filter(Boolean); if(!queue.length) return false; var capIdx = (typeof cap.idx===
+- && cap.idx>=0) ? cap.idx : 0; var survivingFrontIds = cap.queueIds.slice(0, capIdx).filter(function(id){ return !!idMap[id]; }); var idx = survivingFrontIds.length; var respById = {}; (cap.responses||[]).forEach(function(r){ respById[r.id]=r; }); var responses = survivingFrontIds.map(function(id){ var r = respById[id]; if(!r) return null; return { item: idMap[id], key: null, tier2Key: null, confidence: r.confidence, correct: r.correct, twoTierResult: null, ts: cap.at }; }).filter(Boolean); SESSION = { queue: queue, idx: idx, responses: responses, confidence: null, tier1Key: null, displayOrder: [], tier2DisplayOrder: [], state:
+- }; showQuestion(); return true; } function showQuestion(){ if(!SESSION || SESSION.idx >= SESSION.queue.length){ showSummary(); return; } SESSION.confidence = null; SESSION.tier1Key = null; SESSION.state =
+- ; SESSION.displayOrder = []; SESSION.tier2DisplayOrder = []; updateProgress(); var item = SESSION.queue[SESSION.idx]; setRoot(renderQuestion(item)); bindQuestion(item); } function bindQuestion(item){ /* confidence buttons */ var confBtns = root.querySelectorAll(
+- ); var confHint = document.getElementById(
+- ); confBtns.forEach(function(btn){ btn.addEventListener(
+- ,function(){ if(SESSION.state!==
+- ) return; confBtns.forEach(function(b){ b.classList.remove(
+- ); }); btn.classList.add(
+- ); SESSION.confidence = btn.getAttribute(
+- ); if(confHint) confHint.classList.remove(
+- ); }); }); /* tier1 option buttons */ var optBtns = root.querySelectorAll(
+- ); optBtns.forEach(function(btn){ btn.addEventListener(
+- ) return; if(!SESSION.confidence){ if(confHint) confHint.classList.add(
+- ); /* briefly shake the confidence section */ var cs=root.querySelector(
+- ); if(cs){ cs.style.outline=
+- ; setTimeout(function(){cs.style.outline=
+- ;},600); } return; } var key = btn.getAttribute(
+- ); onTier1Answer(item, key); }); }); } function onTier1Answer(item, key){ SESSION.tier1Key = key; var isCorrect = item.options.some(function(o){ return o.key===key && o.c; }); /* lock tier1 options and highlight */ var optBtns = root.querySelectorAll(
+- ); optBtns.forEach(function(btn){ btn.disabled = true; btn.classList.add(
+- ); var k = btn.getAttribute(
+- ); if(k===key && isCorrect) btn.classList.add(
+- ); else if(k===key && !isCorrect) btn.classList.add(
+- ); else if(item.options.some(function(o){return o.key===k&&o.c;})) btn.classList.add(
+- ); }); /* lock confidence buttons */ root.querySelectorAll(
+- ).forEach(function(b){ b.disabled=true; }); if(item.type===
+- && isCorrect){ /* show tier2 before feedback */ SESSION.state =
+- ; var qcard = root.querySelector(
+- ); if(qcard){ var t2html = renderTier2(item); qcard.insertAdjacentHTML(
+- , t2html); bindTier2(item); } } else { /* for wrong tier1 on two-tier, still show tier2 (spec: "tier 2 still shown and answered — the feedback teaches against both selections") */ if(item.type===
+- && !isCorrect){ SESSION.state =
+- ; var qcard2 = root.querySelector(
+- ); if(qcard2){ var t2html2 = renderTier2(item); qcard2.insertAdjacentHTML(
+- , t2html2); bindTier2(item); } } else { /* sba / relational: show feedback directly */ SESSION.state =
+- ; var twoTierResult = null; commitResponse(item, key, null, SESSION.confidence, isCorrect, twoTierResult); showFeedback(item, key, null, SESSION.confidence, isCorrect, null); } } } function bindTier2(item){ var t2Btns = root.querySelectorAll(
+- ); t2Btns.forEach(function(btn){ btn.addEventListener(
+- ) return; var tier2Key = btn.getAttribute(
+- ); onTier2Answer(item, tier2Key); }); }); } function onTier2Answer(item, tier2Key){ SESSION.state =
+- ; var tier1Key = SESSION.tier1Key; var tier1Correct = item.options.some(function(o){ return o.key===tier1Key && o.c; }); var tier2Correct = item.tier2.options.some(function(o){ return o.key===tier2Key && o.c; }); /* lock tier2 options + highlight */ var t2Btns = root.querySelectorAll(
+- ); t2Btns.forEach(function(btn){ btn.disabled=true; btn.classList.add(
+- ); var k=btn.getAttribute(
+- ); if(k===tier2Key && tier2Correct) btn.classList.add(
+- ); else if(k===tier2Key && !tier2Correct) btn.classList.add(
+- ); else if(item.tier2.options.some(function(o){return o.key===k&&o.c;})) btn.classList.add(
+- ); }); /* scoring: both right = correct; right answer/wrong reason = shaky; wrong tier1 = wrong */ var correct, twoTierResult; if(!tier1Correct){ correct=false; twoTierResult=
+- ; } else if(tier2Correct){ correct=true; twoTierResult=
+- ; } else { correct=true; twoTierResult=
+- ; /* right answer, wrong reason — cap at Hard */ } commitResponse(item, tier1Key, tier2Key, SESSION.confidence, correct, twoTierResult); showFeedback(item, tier1Key, tier2Key, SESSION.confidence, correct, twoTierResult); } function commitResponse(item, key, tier2Key, confidence, correct, twoTierResult){ if(SESSION && SESSION.reviewOnly){ SESSION.responses.push({ item:item, key:key, tier2Key:tier2Key, confidence:confidence, correct:correct, twoTierResult:twoTierResult, ts:Date.now() }); return; } var rec = qbRecord(item, key, tier2Key, confidence, correct, twoTierResult); srsUpdate(item, confidence, correct, twoTierResult); SESSION.responses.push({ item: item, key: key, tier2Key: tier2Key, confidence: confidence, correct: correct, twoTierResult: twoTierResult, ts: rec.ts }); } function showFeedback(item, key, tier2Key, confidence, correct, twoTierResult){ var fbHtml = getFeedbackHtml(item, key, tier2Key, confidence, correct, twoTierResult); var qcard = root.querySelector(
+- ); if(qcard){ /* remove any tier2 section first if it already exists */ var existing = qcard.querySelector(
+- ); if(existing) existing.parentNode.removeChild(existing); qcard.insertAdjacentHTML(
+- , fbHtml); var _live=document.getElementById(
+- ); if(_live){ _live.textContent = (twoTierResult===
+- ); } /* scroll feedback into view */ var fb = document.getElementById(
+- ); if(fb) setTimeout(function(){ fb.scrollIntoView({behavior:
+- }); },80); } if(SESSION && SESSION.reviewOnly) return; /* bind spa nav links */ root.querySelectorAll(
+- ).forEach(function(a){ a.addEventListener(
+- ,function(ev){ ev.preventDefault(); var href=a.getAttribute(
+- ; try{ window.parent.postMessage({type:
+- ); } catch(_){ window.location.href=href; } }); }); /* next button */ var nextBtn = document.getElementById(
+- ); if(nextBtn) nextBtn.addEventListener(
+- , advance); } function advance(){ if(!SESSION) return; SESSION.idx++; /* Checkpoint at this question boundary only when there is a next question to resume into — completion is handled by showSummary()
+- s own button (data-cw-receipt-home); the receipt snippet routes it through the shell
+- This question is not present on the current deployment
+- Could not load question bank.
+- question_bank.json was not found alongside this tool.
+- Make sure the build ran successfully and question_bank.json is at the site root.
+
+---
+
+## One Patient, Six Weeks
+
+- **Slug:** `one-patient-six-weeks.html` · **Type:** tool · **Sidebar:** listed
+- **Source:** `08_Cases_and_Simulation/one-patient-six-weeks.html`
+- **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
+- **Category:** longitudinal-simulation · **Risk level:** `moderate` · **Disclaimer:** `fictional-simulation-supervision`
+- **Related pages:** `pg_interview.md`, `ddx.md`, `medical_workup.md`, `psychopharm_primer.md`, `med_monitoring.md`, `collateral_workflow.md`, `family_playbook.md`, `exp_family.md`, `pg_suicide.md`, `agitation.md`, `doc_oral.md`, `shelf.md`, `evidence_inpatient.md`
+- **Storage keys:** `cw_longitudinal_v1`
+
+#### Tool — clinical content
+
+_These tools are single-file HTML that render from inline JS data, so the clinical text below is recovered from the tool's own string literals. Ordering follows the file, not the runtime flow._
+
+**Static shell text:**
+
+- One Patient, Six Weeks Reviewed by Joshua Moss, MD on 2026-08-11
+- Skip to content Longitudinal case arc
+- One Patient, Six Weeks
+- Follow one fictional inpatient across changing information, relationships, safety questions, treatment conversations, and the final handoff.
+- Boundary: fictional composite only. Do not enter patient information. This is a learning simulation, not a clinical decision tool or substitute for supervision and local policy.
+- Loading the longitudinal case...
+- If someone is in crisis
+- On the unit, a patient in immediate danger is an escalation to your supervising resident or attending and the charge nurse — not a phone call. These lines are what you put IN a patient's safety plan, what families use after discharge, and what you can use yourself.
+- 988 Suicide & Crisis Lifeline — Call or text 988. Chat at chat.988lifeline.org. 24/7, free, confidential. Spanish available by call, text, and chat; a dedicated line serves Deaf/Hard-of-Hearing callers. Calls placed in Maine route to Maine crisis specialists.
+- Crisis Text Line — Text HOME to 741741. Text HOLA to 741741 for Spanish. 24/7, free. Text-only. Often the most acceptable option for adolescents and young adults who will not make a phone call.
+- Maine Crisis Line — 1-888-568-1112. Text and chat available via the Maine Crisis Line website. 24/7. Staffed by clinically trained crisis workers and the gateway to Maine's mobile crisis teams — the number that actually dispatches a face-to-face response.
+- Veterans Crisis Line — Dial 988 then press 1. Text 838255. 24/7. No VA enrollment required. Ask about service history — it changes which line is the right referral.
+- Emergency services — 911. 24/7. For imminent danger to life.
+- Contacts verified 2026-07-27 against official sources. Maintained in crisis_resources.json ; do not edit these numbers inline.
+
+**Authored clinical strings (22):**
+
+- ]/g,function(c){return {'&':'&',' ':'>','"':'"'}[c];});} function requestedWeek(){try{var n=parseInt(new URLSearchParams(location.search).get('week')||'1',10);return Math.max(0,Math.min(5,n-1));}catch(_){return 0;}} function loadProgress(){try{var p=JSON.parse(localStorage.getItem('cw_longitudinal_v1')||'{}');return p&&p.version===1?p:{version:1,current:0,completed:{}};}catch(_){return {version:1,current:0,completed:{}};}} function saveProgress(){try{localStorage.setItem('cw_longitudinal_v1',JSON.stringify(state.progress));}catch(_){} } function week(){return state.caseData.weeks[state.current];} function record(id){return state.progress.completed[id]||{checks:{}};} function complete(w){var r=record(w.id);return (w.checklist||[]).length>0&&(w.checklist||[]).every(function(_,i){return !!r.checks['c'+i];});} function completedCount(){return state.caseData.weeks.filter(complete).length;} function setWeek(i){state.current=Math.max(0,Math.min(state.caseData.weeks.length-1,i));state.progress.current=state.current;saveProgress();try{history.replaceState(null,'','?week='+(state.current+1));}catch(_){}render();} function weekList(){return '<div class=
+- >'+state.caseData.weeks.map(function(w,i){var on=i===state.current,done=complete(w);return '<button type=
+- ;} function sidebar(){var done=completedCount(),total=state.caseData.weeks.length,pct=Math.round(done*100/total);return
+- Longitudinal case progress
+- ;} function patientCard(){var p=state.caseData.patient;return
+- ;} function checklist(w){ var r=record(w.id); return
+- +w.checklist.map(function(item,i){ var key=
+- +i; var on=!!r.checks[key]; var inputId=
+- checkitem'+(on?' done':'')+'
+- ; } function links(w){return
+- +w.links.map(function(link){var param=link.kind===
+- ;} function weekCard(w){var done=complete(w);var r=record(w.id);return
+- status'+(done?' done':'')+'
+- +links(w);} function render(){if(!state.caseData){app.innerHTML=
+- ;return;}var w=week();app.innerHTML=
+- ,function(ev){var weekButton=ev.target.closest&&ev.target.closest(
+- )){state.progress={version:1,current:0,completed:{}};setWeek(0);}}}); app.addEventListener(
+- ,function(ev){var input=ev.target.closest&&ev.target.closest(
+- );if(!input)return;var w=week(),r=record(w.id);r.checks=r.checks||{};r.checks[input.getAttribute(
+- )]=!!input.checked;r.at=new Date().toISOString().slice(0,10);state.progress.completed[w.id]=r;saveProgress();render();}); fetch(
+- ).then(function(r){if(!r.ok)throw new Error(
+- );return r.json();}).then(function(data){state.caseData=data;state.current=Math.max(0,Math.min(data.weeks.length-1,state.progress.current||state.current));render();}).catch(function(){app.innerHTML=
+
+---
+
 ## Daily Review (Spaced Repetition)
 
 - **Slug:** `review.html` · **Type:** tool · **Sidebar:** hidden (deep link only)
@@ -399,7 +705,7 @@ students do not treat test prep and clinical reasoning as separate tasks.
 - **Slug:** `rapid_review.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `09_Exam_Prep/Shelf_High_Yield/rapid_review_buzzwords.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 968 words
+- **Length:** 981 words
 
 #### Page text (as shipped)
 
@@ -439,7 +745,7 @@ students do not treat test prep and clinical reasoning as separate tasks.
 
 ## Substance / Withdrawal
 - Confusion + ophthalmoplegia + ataxia in alcohol use → **Wernicke** → **thiamine before glucose**. *(→ SUD)*
-- Alcohol withdrawal peak 48–96 h, autonomic instability + confusion → **delirium tremens** → benzodiazepines (CIWA-driven). *(→ Withdrawal card)*
+- Alcohol withdrawal peak 48–96 h, autonomic instability + confusion → **delirium tremens** → benzodiazepines — scheduled/front-loaded, titrated to light sedation (CIWA symptom-triggered dosing is for withdrawal *without* delirium). *(→ Withdrawal card)*
 - Opioid withdrawal → track with **COWS**; start buprenorphine only when objective withdrawal present (COWS ≈ 8–12). *(→ SUD)*
 - AUD maintenance → **naltrexone or acamprosate** first-line; disulfiram adherence-dependent.
 - Opioid overdose → **naloxone**; MOUD (buprenorphine/methadone/naltrexone) reduces mortality.
@@ -1045,568 +1351,3 @@ For each case:
 Plain-English note: these cases let students practice reasoning without using
 real patient details. They are deliberately common enough to teach patterns but
 synthetic enough for safe reuse.
-
-
----
-
-## Landmark Trials — Listen & Test
-
-- **Slug:** `landmark_trials.md` · **Type:** md · **Sidebar:** listed
-- **Source:** `07_Evidence_and_Reading/Landmark_Trials/landmark_trials_page.md`
-- **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 881 words
-
-<!-- topic_meta overlay -->
-#### Structured metadata (`topic_meta.json` → this page)
-
-> est. read 6 min
-
-**TL;DR (shown above the page text):**
-
-> Fifty landmark papers as 90–120 second audio overviews with board-style self-test in Shelf Mode and Daily Review — listen to the four Foundations papers first (Engel, Rosenhan, Robins-Guze, Insel), then follow your patients to the theme that fits.
-
-**Key points (bulleted card):**
-
-- Each audio is 90–120 seconds — short enough for the walk between the unit and the staff room, not a dedicated study block.
-- The Acute & Safety cluster (6 papers) covers Appelbaum capacity, Bush-Francis catatonia, lithium-suicide (Cipriani 2013), safety planning (Stanley 2012), and the limits of risk-factor prediction (Franklin 2017) — the most rotation-relevant papers.
-- The same trials feed the board-style questions in Shelf Mode and Daily Review, which extend beyond the individual trial into the broader clinical question — pair the audio with those for shelf preparation.
-
-**Clinical-workflow narration (per-stage coaching text):**
-
-- **ask** — Choose the paper that answers the clinical problem in front of you: capacity, catatonia, lithium-suicide, safety planning, or diagnostic validity.
-- **mse** — Separate what the study measured from what you observed at bedside; do not let a trial result replace the individual assessment.
-- **safety** — Use safety papers to support supervision and documentation, not to independently clear or detain a patient.
-- **say** — Translate one landmark finding into a plain-language explanation only when it helps shared decision-making.
-- **collateral** — Use paper themes to guide collateral questions about timeline, prior response, safety environment, and treatment adherence.
-- **rounds** — Offer a 20-second evidence pearl when it changes the differential, risk formulation, or next step.
-- **exam** — Pair each audio with board-style self-test in Shelf Mode or Daily Review, then answer one question bank item on the same concept.
-- **actions** — Open question bank practice
-
-**Cross-references and tagging:**
-
-- **Related tools:** `review.html`, `question-bank-practice.html`, `oral.html`
-- **Evidence sources:** `appelbaum-grisso-1988-capacity`, `border-2019-candidate-gene`, `brown-1972-expressed-emotion`, `bush-1996-catatonia-rating-scale`, `caspi-2003-5htt-stress`, `engel-1977-biopsychosocial-model`, `felitti-1998-ace`, `franklin-2017-suicide-risk-meta-analysis`, `lieberman-2005-catie`, `linehan-1991-dbt`, `march-2004-tads`, `pharoah-2010-family-intervention`, `rosenhan-1973-sane-places`, `rush-2006-stard`, `stanley-brown-2012-safety-planning`, `volkow-2016-addiction-brain-disease`, `wampold-1997-bona-fide-psychotherapies`
-- **Workflow stages:** `exam`, `diagnosis`, `safety`, `treatment`
-- **Workflow modes:** `ward`, `5min`, `shelf`
-- **Shelf blueprint tags:** `pharm`
-- **EPA crosswalk:** `EPA7`
-
-#### Page text (as shipped)
-
-# Landmark Psychiatry — Listen & Test
-
-> 50 landmark papers as ~2-minute audio overviews (NotebookLM), grouped by theme. Where a DOI is verified, open the paper. Shelf Mode and Daily Review draw board-style questions from these papers plus additional high-yield topics. Suggested, not required. Educational; verify against primary sources.
-
-## Foundations  (4)
-**Engel 1977 - Biopsychosocial**  ·  _1:47_
-<audio controls preload="none" src="audio/40_LM_41_Engel_1977_Biopsychosocial_1_47.m4a"></audio>
-<a href="https://doi.org/10.1126/science.847460" target="_blank" rel="noopener">Paper (DOI)</a>
-
-**Insel 2010 - RDoC**  ·  _1:44_
-<audio controls preload="none" src="audio/49_LM_50_Insel_2010_RDoC_1_44.m4a"></audio>
-<a href="https://doi.org/10.1176/appi.ajp.2010.09091379" target="_blank" rel="noopener">Paper (DOI)</a>
-
-**Robins-Guze 1970 - Diagnostic Validity**  ·  _1:54_
-<audio controls preload="none" src="audio/44_LM_42_Robins_Guze_1970_Diagnostic_Validity_1_54.m4a"></audio>
-<a href="https://doi.org/10.1176/ajp.126.7.983" target="_blank" rel="noopener">Paper (DOI)</a>
-
-**Rosenhan 1973 - Pseudopatients**  ·  _1:50_
-<audio controls preload="none" src="audio/26_LM_26_Rosenhan_1973_Pseudopatients_1_50.m4a"></audio>
-<a href="https://doi.org/10.1126/science.179.4070.250" target="_blank" rel="noopener">Paper (DOI)</a>
-
-
-## Mood  (5)
-**Cipriani 2018 - Antidepressant NMA**  ·  _1:52_
-<audio controls preload="none" src="audio/05_LM_05_Cipriani_2018_Antidepressant_NMA_1_52.m4a"></audio>
-<a href="https://doi.org/10.1016/S0140-6736(17)32802-7" target="_blank" rel="noopener">Paper (DOI)</a>
-
-**Geddes 2010 - BALANCE**  ·  _1:36_
-<audio controls preload="none" src="audio/06_LM_06_Geddes_2010_BALANCE_1_36.m4a"></audio>
-<a href="https://doi.org/10.1016/S0140-6736(09)61828-6" target="_blank" rel="noopener">Paper (DOI)</a>
-
-**Miklowitz 2003 - FFT Bipolar**  ·  _1:53_
-<audio controls preload="none" src="audio/15_LM_15_Miklowitz_2003_FFT_Bipolar_1_53.m4a"></audio>
-<a href="https://doi.org/10.1001/archpsyc.60.9.904" target="_blank" rel="noopener">Paper (DOI)</a>
-
-**Rush 2006 - STAR*D**  ·  _1:44_
-<audio controls preload="none" src="audio/02_LM_02_Rush_2006_STAR_D_1_44.m4a"></audio>
-<a href="https://doi.org/10.1176/appi.ajp.163.11.1905" target="_blank" rel="noopener">Paper (DOI)</a>
-
-**Sachs 2007 - STEP-BD**  ·  _1:34_
-<audio controls preload="none" src="audio/03_LM_03_Sachs_2007_STEP_BD_1_34.m4a"></audio>
-<a href="https://doi.org/10.1056/NEJMoa064135" target="_blank" rel="noopener">Paper (DOI)</a>
-
-
-## Psychosis  (3)
-**Kane 1988 - Clozapine**  ·  _1:50_
-<audio controls preload="none" src="audio/04_LM_04_Kane_1988_Clozapine_1_50.m4a"></audio>
-<a href="https://doi.org/10.1001/archpsyc.1988.01800330013001" target="_blank" rel="noopener">Paper (DOI)</a>
-
-**Leucht 2013 - Antipsychotic NMA**  ·  _2:00_
-<audio controls preload="none" src="audio/07_LM_08_Leucht_2013_Antipsychotic_NMA_2_00.m4a"></audio>
-<a href="https://doi.org/10.1016/S0140-6736(13)60733-3" target="_blank" rel="noopener">Paper (DOI)</a>
-
-**Lieberman 2005 - CATIE Trial**  ·  _1:38_
-<audio controls preload="none" src="audio/01_LM_01_Lieberman_2005_CATIE_Trial_1_38.m4a"></audio>
-<a href="https://doi.org/10.1056/NEJMoa051688" target="_blank" rel="noopener">Paper (DOI)</a>
-
-
-## Acute & Safety  (6)
-**Appelbaum 1988 - Capacity**  ·  _1:49_
-<audio controls preload="none" src="audio/27_LM_27_Appelbaum_1988_Capacity_1_49.m4a"></audio>
-<a href="https://doi.org/10.1056/nejm198812223192504" target="_blank" rel="noopener">Paper (DOI)</a>
-
-**Bush-Francis 1996 - Catatonia**  ·  _1:35_
-<audio controls preload="none" src="audio/28_LM_28_Bush_Francis_1996_Catatonia_1_35.m4a"></audio>
-<a href="https://doi.org/10.1111/j.1600-0447.1996.tb09814.x" target="_blank" rel="noopener">Paper (DOI)</a>
-
-**Cipriani 2013 - Lithium-Suicide**  ·  _1:50_
-<audio controls preload="none" src="audio/08_LM_07_Cipriani_2013_Lithium_Suicide_1_50.m4a"></audio>
-<a href="https://doi.org/10.1136/bmj.f3646" target="_blank" rel="noopener">Paper (DOI)</a>
-
-**Franklin 2017 - Risk Factors**  ·  _1:38_
-<audio controls preload="none" src="audio/35_LM_35_Franklin_2017_Risk_Factors_1_38.m4a"></audio>
-<a href="https://doi.org/10.1037/bul0000084" target="_blank" rel="noopener">Paper (DOI)</a>
-
-**Mann 2005 - Suicide Prevention**  ·  _1:38_
-<audio controls preload="none" src="audio/31_LM_33_Mann_2005_Suicide_Prevention_1_38.m4a"></audio>
-<a href="https://doi.org/10.1001/jama.294.16.2064" target="_blank" rel="noopener">Paper (DOI)</a>
-
-**Stanley 2012 - Safety Planning**  ·  _1:50_
-<audio controls preload="none" src="audio/34_LM_34_Stanley_2012_Safety_Planning_1_50.m4a"></audio>
-<a href="https://doi.org/10.1016/j.cbpra.2011.01.001" target="_blank" rel="noopener">Paper (DOI)</a>
-
-
-## Psychopharmacology  (2)
-**Kellner 2006 - Continuation ECT**  ·  _1:48_
-<audio controls preload="none" src="audio/09_LM_09_Kellner_2006_Continuation_ECT_1_48.m4a"></audio>
-<a href="https://doi.org/10.1001/archpsyc.63.12.1337" target="_blank" rel="noopener">Paper (DOI)</a>
-
-**Moncrieff 2022 - Antidepressant Withdrawal**  ·  _1:37_
-<audio controls preload="none" src="audio/10_LM_10_Moncrieff_2022_Antidepressant_Withdrawal_1_37.m4a"></audio>
-
-
-## Personality  (5)
-**Bateman 1999 - MBT**  ·  _2:02_
-<audio controls preload="none" src="audio/21_LM_22_Bateman_1999_MBT_2_02.m4a"></audio>
-<a href="https://doi.org/10.1176/ajp.156.10.1563" target="_blank" rel="noopener">Paper (DOI)</a>
-
-**Gunderson 2018 - BPD Review**  ·  _1:46_
-<audio controls preload="none" src="audio/33_LM_32_Gunderson_2018_BPD_Review_1_46.m4a"></audio>
-<a href="https://doi.org/10.1038/nrdp.2018.29" target="_blank" rel="noopener">Paper (DOI)</a>
-
-**Kernberg 1984 - Personality Org**  ·  _1:56_
-<audio controls preload="none" src="audio/39_LM_39_Kernberg_1984_Personality_Org_1_56.m4a"></audio>
-
-**Linehan 1991 - DBT**  ·  _1:54_
-<audio controls preload="none" src="audio/24_LM_21_Linehan_1991_DBT_1_54.m4a"></audio>
-<a href="https://doi.org/10.1001/archpsyc.1991.01810360024003" target="_blank" rel="noopener">Paper (DOI)</a>
-
-**Zanarini 2005 - BPD Remission**  ·  _1:48_
-<audio controls preload="none" src="audio/32_LM_31_Zanarini_2005_BPD_Remission_1_48.m4a"></audio>
-<a href="https://doi.org/10.1521/pedi.2005.19.5.505" target="_blank" rel="noopener">Paper (DOI)</a>
-
-
-## Family & Systems  (9)
-**Brown 1962 - Expressed Emotion**  ·  _2:02_
-<audio controls preload="none" src="audio/11_LM_11_Brown_1962_Expressed_Emotion_2_02.m4a"></audio>
-<a href="https://doi.org/10.1136/jech.16.2.55" target="_blank" rel="noopener">Paper (DOI)</a>
-
-**Diamond 2010 - ABFT**  ·  _1:53_
-<audio controls preload="none" src="audio/19_LM_16_Diamond_2010_ABFT_1_53.m4a"></audio>
-<a href="https://doi.org/10.1016/j.jaac.2009.11.002" target="_blank" rel="noopener">Paper (DOI)</a>
-
-**Falloon 1982 - Family Management**  ·  _1:57_
-<audio controls preload="none" src="audio/14_LM_13_Falloon_1982_Family_Management_1_57.m4a"></audio>
-<a href="https://doi.org/10.1056/nejm198206173062401" target="_blank" rel="noopener">Paper (DOI)</a>
-
-**Leff 1982 - Family Intervention**  ·  _1:35_
-<audio controls preload="none" src="audio/12_LM_12_Leff_1982_Family_Intervention_1_35.m4a"></audio>
-<a href="https://doi.org/10.1192/bjp.141.2.121" target="_blank" rel="noopener">Paper (DOI)</a>
-
-**Leff 2000 - Couple Therapy Depression**  ·  _1:45_
-<audio controls preload="none" src="audio/16_LM_19_Leff_2000_Couple_Therapy_Depression_1_45.m4a"></audio>
-<a href="https://doi.org/10.1192/bjp.177.2.95" target="_blank" rel="noopener">Paper (DOI)</a>
-
-**McFarlane 1995 - Multifamily**  ·  _1:52_
-<audio controls preload="none" src="audio/13_LM_14_McFarlane_1995_Multifamily_1_52.m4a"></audio>
-<a href="https://doi.org/10.1001/archpsyc.1995.03950200069016" target="_blank" rel="noopener">Paper (DOI)</a>
-
-**Minuchin 1978 - Psychosomatic Families**  ·  _1:50_
-<audio controls preload="none" src="audio/18_LM_18_Minuchin_1978_Psychosomatic_Families_1_50.m4a"></audio>
-<a href="https://doi.org/10.4159/harvard.9780674418233" target="_blank" rel="noopener">Paper (DOI)</a>
-
-**Pharoah 2010 - Cochrane Family**  ·  _1:35_
-<audio controls preload="none" src="audio/20_LM_20_Pharoah_2010_Cochrane_Family_1_35.m4a"></audio>
-<a href="https://doi.org/10.1002/14651858.cd000088.pub3" target="_blank" rel="noopener">Paper (DOI)</a>
-
-**Pinsof 1995 - Systemic Meta**  ·  _2:00_
-<audio controls preload="none" src="audio/17_LM_17_Pinsof_1995_Systemic_Meta_2_00.m4a"></audio>
-<a href="https://doi.org/10.1111/j.1752-0606.1995.tb00179.x" target="_blank" rel="noopener">Paper (DOI)</a>
-
-
-## Substance Use  (2)
-**Project MATCH 1997**  ·  _1:53_
-<audio controls preload="none" src="audio/42_LM_45_Project_MATCH_1997_1_53.m4a"></audio>
-<a href="https://pubmed.ncbi.nlm.nih.gov/8979210/" target="_blank" rel="noopener">Paper (PubMed)</a>
-
-**Volkow 2016 - Addiction**  ·  _1:53_
-<audio controls preload="none" src="audio/47_LM_46_Volkow_2016_Addiction_1_53.m4a"></audio>
-<a href="https://doi.org/10.1056/nejmra1511480" target="_blank" rel="noopener">Paper (DOI)</a>
-
-
-## Child  (3)
-**Bridge 2007 - Pediatric SSRI**  ·  _1:41_
-<audio controls preload="none" src="audio/45_LM_48_Bridge_2007_Pediatric_SSRI_1_41.m4a"></audio>
-<a href="https://doi.org/10.1001/jama.297.15.1683" target="_blank" rel="noopener">Paper (DOI)</a>
-
-**MTA 1999 - ADHD**  ·  _1:45_
-<audio controls preload="none" src="audio/46_LM_47_MTA_1999_ADHD_1_45.m4a"></audio>
-<a href="https://doi.org/10.1001/archpsyc.56.12.1073" target="_blank" rel="noopener">Paper (DOI)</a>
-
-**TADS 2004 - Adolescent Depression**  ·  _1:44_
-<audio controls preload="none" src="audio/30_LM_30_TADS_2004_Adolescent_Depression_1_44.m4a"></audio>
-<a href="https://doi.org/10.1001/jama.292.7.807" target="_blank" rel="noopener">Paper (DOI)</a>
-
-
-## Neuroscience  (3)
-**Border 2019 - Non-Replication**  ·  _1:36_
-<audio controls preload="none" src="audio/37_LM_37_Border_2019_Non_Replication_1_36.m4a"></audio>
-<a href="https://doi.org/10.1176/appi.ajp.2018.18070881" target="_blank" rel="noopener">Paper (DOI)</a>
-
-**Caspi 2003 - 5-HTTLPR**  ·  _1:47_
-<audio controls preload="none" src="audio/51_LM_36_Caspi_2003_5_HTTLPR_1_47.m4a"></audio>
-<a href="https://doi.org/10.1126/science.1083968" target="_blank" rel="noopener">Paper (DOI)</a>
-
-**Sekar 2016 - C4 Schizophrenia**  ·  _1:50_
-<audio controls preload="none" src="audio/36_LM_38_Sekar_2016_C4_Schizophrenia_1_50.m4a"></audio>
-<a href="https://doi.org/10.1038/nature16549" target="_blank" rel="noopener">Paper (DOI)</a>
-
-
-## Trauma  (1)
-**Felitti 1998 - ACE Study**  ·  _1:52_
-<audio controls preload="none" src="audio/41_LM_44_Felitti_1998_ACE_Study_1_52.m4a"></audio>
-<a href="https://doi.org/10.1016/s0749-3797(98)00017-8" target="_blank" rel="noopener">Paper (DOI)</a>
-
-
-## Systems  (1)
-**Stein-Test 1980 - ACT**  ·  _1:54_
-<audio controls preload="none" src="audio/43_LM_43_Stein_Test_1980_ACT_1_54.m4a"></audio>
-<a href="https://doi.org/10.1001/archpsyc.1980.01780170034003" target="_blank" rel="noopener">Paper (DOI)</a>
-
-
-## Skills  (4)
-**Gutheil-Gabbard 1993 - Boundaries**  ·  _1:46_
-<audio controls preload="none" src="audio/38_LM_40_Gabbard_1995_Boundaries_1_46.m4a"></audio>
-<a href="https://doi.org/10.1176/ajp.150.2.188" target="_blank" rel="noopener">Paper (DOI)</a>
-
-**Norcross 2011 - Alliance**  ·  _1:44_
-<audio controls preload="none" src="audio/25_LM_25_Norcross_2011_Alliance_1_44.m4a"></audio>
-<a href="https://doi.org/10.1037/a0022180" target="_blank" rel="noopener">Paper (DOI)</a>
-
-**Shedler 2010 - Psychodynamic**  ·  _1:43_
-<audio controls preload="none" src="audio/23_LM_24_Shedler_2010_Psychodynamic_1_43.m4a"></audio>
-<a href="https://doi.org/10.1037/a0018378" target="_blank" rel="noopener">Paper (DOI)</a>
-
-**Wampold 2001 - Common Factors**  ·  _1:42_
-<audio controls preload="none" src="audio/22_LM_23_Wampold_2001_Common_Factors_1_42.m4a"></audio>
-
-
-## Anxiety  (1)
-**Foa 2005 - Prolonged Exposure**  ·  _1:42_
-<audio controls preload="none" src="audio/29_LM_29_Foa_2005_Prolonged_Exposure_1_42.m4a"></audio>
-<a href="https://doi.org/10.1037/0022-006X.73.5.953" target="_blank" rel="noopener">Paper (DOI)</a>
-
-
-## Geriatric  (1)
-**Inouye 1999 - Delirium**  ·  _1:59_
-<audio controls preload="none" src="audio/48_LM_49_Inouye_1999_Delirium_1_59.m4a"></audio>
-<a href="https://doi.org/10.1056/NEJM199903043400901" target="_blank" rel="noopener">Paper (DOI)</a>
-
-
-*Joshua Moss, MD | Psychiatrist · Audio overviews via NotebookLM; reviewed and attested by Joshua Moss, MD (2026-07-09); no PHI.*
-
-
----
-
-## Anki Flashcard Decks
-
-- **Slug:** `anki.md` · **Type:** md · **Sidebar:** listed
-- **Source:** `09_Exam_Prep/anki_export/anki.md`
-- **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
-- **Length:** 310 words
-
-<!-- topic_meta overlay -->
-#### Structured metadata (`topic_meta.json` → this page)
-
-> est. read 2 min
-
-**TL;DR (shown above the page text):**
-
-> Download the clerkship's attested question bank and high-yield concepts as Anki spaced-repetition decks; suspend all cards, then unsuspend by topic as the rotation covers each block.
-
-**Key points (bulleted card):**
-
-- Two decks, both built only from attested content: the Question Bank (vignette cards) and Concepts (topic one-liners + high-yield pearls, with author-bolded facts as cloze deletions).
-- Import the combined .apkg for one file with both subdecks; every card is tagged by topic, source page, high-yield, and attestation status for the suspend/unsuspend workflow.
-- Decks regenerate automatically on each site rebuild, so they stay in sync with the library.
-
-**Cross-references and tagging:**
-
-- **Related tools:** `question-bank-practice.html`, `shelf-mode.html`, `review.html`
-- **Workflow stages:** `exam`
-- **Workflow modes:** `shelf`, `5min`
-
-#### Page text (as shipped)
-
-# Anki Flashcard Decks
-
-
-**In one line** — Download the clerkship library as [Anki](https://apps.ankiweb.net/) spaced-repetition decks and review the high-yield material the same way you review everything else on your phone.
-
-**What you get** — Two decks, both built straight from this site's attested material:
-
-- **Question Bank** — every attested board-style item as a vignette card (best answer, the trap in each distractor, the teaching point, and a link back to the source page). Two-tier items include a second card for the mechanism.
-- **Concepts** — the "in one line" summary for each topic plus every high-yield pearl. Where a pearl has a **bolded** fact, that fact is the cloze deletion.
-
-## Download
-
-<p>
-<a href="anki/psychiatry_clerkship_library_ALL.apkg" download><strong>⬇ Complete deck (recommended)</strong></a> — one file, two subdecks (Question Bank + Concepts).
-</p>
-<p>
-<a href="anki/psychiatry_clerkship_library.apkg" download>⬇ Question Bank only</a> ·
-<a href="anki/psychiatry_clerkship_concepts.apkg" download>⬇ Concepts only</a> ·
-<a href="anki/psychiatry_clerkship_library.csv" download>⬇ Question Bank as CSV</a>
-</p>
-
-## How to use it
-
-1. Install Anki (desktop is free; **AnkiMobile** on iOS / **AnkiDroid** on Android is free on Android).
-2. Open the downloaded `.apkg` — it imports as **Psychiatry Clerkship Library (Moss)** with the two subdecks.
-3. **Suspend everything, then unsuspend by topic** as the rotation covers each block. Every card is tagged `Psychiatry::<topic>`, `Source::<page>`, `HighYield`, and `Status::attested`, so you can browse to exactly the block you want.
-4. Cap new cards around 20–30/day and review daily — the schedule does the rest.
-
-**Pair with** — the [Practice Questions tool](?tool=question-bank-practice.html) for timed, exam-style practice of the same items, and the [COMAT & Shelf Review](?page=shelf.md) guide for the blueprint.
-
-**Attested content only** — a topic page contributes cards only once it carries a review sign-off, so the decks grow as more of the library is attested. Decks refresh automatically when the site rebuilds.
-
-*Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
-
-
----
-
-# SECTION: Case of the Week
-
----
-
-## Index — All Cases
-
-- **Slug:** `cotw_index.md` · **Type:** md · **Sidebar:** listed
-- **Source:** `08_Cases_and_Simulation/case-of-the-week/index_ms3.md`
-- **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
-- **Length:** 417 words
-
-<!-- topic_meta overlay -->
-#### Structured metadata (`topic_meta.json` → this page)
-
-> est. read 2 min · safetyLevel=`moderate`
-
-**TL;DR (shown above the page text):**
-
-> The rotating weekly teaching case - one de-identified synthetic vignette a week, with guided discussion questions, a ranked differential, and a workup-and-management ladder.
-
-**Key points (bulleted card):**
-
-- A new case is added each week; the current one sits at the top of the Case of the Week sidebar.
-- ~20-30 minute small-group discussion - no pre-reading required.
-- Every case ships in matched MS3 and resident versions.
-
-**Clinical-workflow narration (per-stage coaching text):**
-
-- **ask** — Pick the week you want from the sidebar and work its stem cold - your own history, your own differential, your own next step - before reading any teaching point.
-- **mse** — Each case asks you to say what its exam findings rule in and rule out; that discrimination between look-alike syndromes is the recurring skill across the series.
-- **safety** — Safety content across every case is oriented to recognition, escalation, and safety planning, never to method detail. Escalate to your supervising resident or attending rather than managing acuity alone.
-- **say** — Every case includes at least one moment to rehearse out loud what you would actually say to the patient or family.
-- **collateral** — A recurring question in the series: what collateral would change this differential, and who would you have to call to get it?
-- **rounds** — Cases are built for a ~20-30 minute small-group discussion; the facilitator notes in each one are written for whoever is running the session.
-- **exam** — Matched MS3 and resident versions of every case: MS3 at Step 2 CK level, resident level assuming DSM-5-TR fluency and going deeper on mechanism, guidelines, and evidence quality.
-- **actions** — Medication monitoring reference
-
-**Cross-references and tagging:**
-
-- **Workflow stages:** `diagnosis`, `safety`, `treatment`, `team`, `exam`
-- **Faculty review:** {"status": "reviewed", "reviewer": "Joshua Moss, MD", "lastReviewed": "2026-08-11"}
-
-#### Page text (as shipped)
-
-# Case of the Week — MS3
-
-
-**What this is.** A rotating weekly psychiatry teaching case, written at the MS3 / USMLE Step 2 CK level. Each case is a short, de-identified synthetic vignette with guided discussion questions (each paired with a teaching point), a ranked differential, a workup-and-management ladder, and anchoring citations. They're built for a ~20–30 minute small-group discussion — no pre-reading required — but also read well as solo review.
-
-**How to use it.** Pick the current week from the sidebar under **Case of the Week**. Work the stem first, commit to an answer for each discussion question before reading its teaching point, then check your differential and management against the model. Safety content is oriented to recognition, escalation, and safety planning.
-
-**This term's line-up (most recent first):**
-
-- **Catatonia — Recognition, Workup & Treatment** (Aug 31) — the patient who stops moving: spotting the signs at the bedside, the BFCRS screen, the lorazepam challenge, and recognizing when it becomes an emergency.
-- **Borderline Personality Disorder — Presentation & Management** (Aug 27) — reading the pattern, not the moment: BPD vs. bipolar, chronic vs. acute-on-chronic risk, psychotherapy as the definitive treatment, and naming the diagnosis without flinching.
-- **Panic Disorder — Recognition, Differential & First-Line Treatment** (Aug 10) — panic attack vs. panic disorder, the must-not-miss mimics, why repeating a negative workup backfires, and SSRI + CBT.
-- **Lithium — Monitoring, Toxicity & Interactions** (Aug 3) — why the level rises when the dose doesn't, level-vs-exam dissociation, and the dialysis criteria.
-- **Opioid Use Disorder — Intoxication, Withdrawal & MOUD** (Jul 27) — the two toxidromes, naloxone, COWS, and starting medication treatment in the building.
-- **Alcohol Withdrawal & Delirium Tremens** (Jul 26) — the withdrawal timeline, predicting severe withdrawal, and first-line management.
-- **Suicide Risk Assessment & Safety Planning** (Jul 23) — structured assessment, the limits of risk scores, and collaborative safety planning.
-- **MDD — Treatment Selection & Augmentation** (Jul 20) — switch vs. augment vs. optimize when an antidepressant isn't working.
-- **Bipolar Mania — Recognition & Acute Management** (Jul 20) — spotting a manic episode and choosing first-line acute treatment.
-- **Acute Agitation & Delirium in the ED** (Jul 13) — treat the driver, de-escalate before PRN, PRN before restraint.
-- **Serotonin Syndrome vs. NMS** (Jul 9) — telling the two hyperthermic toxidromes apart and managing each.
-
-New cases are added weekly. A matching resident-level version of each case lives on the MMC resident site.
-
-*Joshua Moss, MD | Psychiatrist*
-
-
----
-
-## Catatonia (Aug 31)
-
-- **Slug:** `cotw_20260831_catatonia_ms3.md` · **Type:** md · **Sidebar:** listed
-- **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-08-31_catatonia-recognition-workup-treatment_MS3.md`
-- **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 1,637 words
-
-<!-- topic_meta overlay -->
-#### Structured metadata (`topic_meta.json` → this page)
-
-> est. read 10 min · safetyLevel=`moderate` · cotwLevel=`ms3` (2026-08-31)
-
-**TL;DR (shown above the page text):**
-
-> A mute, motionless patient is an emergency until proven otherwise - screen with the BFCRS, test-and-treat with the lorazepam challenge, hold the antipsychotics, and know the malignant-catatonia triggers that mean early ECT.
-
-**Key points (bulleted card):**
-
-- ~20-30 minute small-group discussion - no pre-reading required.
-- De-identified synthetic case; each discussion question is paired with a teaching point.
-- MS3 / Step 2 CK level. Facilitator notes are kept separate from the learner-facing stem.
-
-**Clinical-workflow narration (per-stage coaching text):**
-
-- **ask** — Work the stem cold: take your own history, commit to a differential, and name your next step before reading a single teaching point. The guided questions are written to be answered, not skimmed.
-- **mse** — Say out loud what each exam finding in the vignette rules in and rules out — the discrimination between look-alike syndromes is what the case is drilling.
-- **safety** — Safety content in every case is oriented to recognition, escalation, and safety planning. Escalate to your supervising resident or attending rather than managing acuity alone.
-- **say** — Before moving on, rehearse one sentence you would actually say to this patient or family, in plain language and out loud.
-- **collateral** — Ask yourself what collateral would change your differential here, and who you would have to call to get it.
-- **rounds** — Use the ranked differential and the workup-and-management ladder as the spine of your presentation; lead with the finding that changes management.
-- **exam** — Shelf-level takeaway: A mute, motionless patient is an emergency until proven otherwise - screen with the BFCRS, test-and-treat with the lorazepam challenge, hold the antipsychotics, and know the malignant-catatonia triggers that mean early ECT.
-- **actions** — All Case of the Week cases
-
-**Cross-references and tagging:**
-
-- **Workflow stages:** `diagnosis`, `safety`, `treatment`, `team`, `exam`
-- **Shelf blueprint tags:** `neurocog`, `safety`, `pharm`
-- **EPA crosswalk:** `EPA1`, `EPA2`, `EPA3`, `EPA10`
-- **Faculty review:** {"status": "pending", "reviewer": "Joshua Moss, MD", "lastReviewed": "2026-08-31"}
-
-#### Page text (as shipped)
-
-# Case of the Week — August 31, 2026 (MS3 Version)
-
-## Catatonia: Recognition, Workup, and Treatment
-
-**Learner level:** MS3, psychiatry clerkship (USMLE Step 2 CK framing)
-**Format:** Facilitator-led discussion, ~20–30 minutes. No pre-reading required.
-**Note:** This is a fully synthetic, de-identified teaching case. It describes no real patient; any resemblance to a real person is coincidental.
-
----
-
-## Learner-facing case stem
-
-A 22-year-old college student with a history of major depressive disorder is brought to the emergency department by her roommates, who report that "she stopped talking two days ago." Over the past two weeks she has withdrawn from classes, eaten very little, and spent hours sitting motionless in the same position. She has no known medical problems and currently takes no medications; she stopped a previously prescribed antidepressant several months ago. Her roommates are not aware of any substance use.
-
-On examination she is awake with eyes open but does not answer questions or follow commands (**mutism** — absence or near-absence of speech). She turns away when approached and resists gentle attempts to redirect her (**negativism** — apparently motiveless resistance to instructions or examination). When the examiner lifts her arm, it remains suspended in the air for more than a minute (**posturing/catalepsy** — maintaining a position against gravity), and when the examiner repositions the limb it yields with slight, even resistance, "like bending a warm candle" (**waxy flexibility**). She intermittently repeats the examiner's last words (**echolalia**).
-
-Vital signs: T 37.0 °C, HR 88, BP 118/74, RR 14, SpO₂ 99% on room air. Mucous membranes are dry. There is no fever, no diffuse rigidity, no tremor, and no clonus. Basic bedside glucose is normal.
-
----
-
-## Guided discussion questions
-
-**Q1. What syndrome best explains this presentation, and which specific signs support it?**
-
-*Teaching point:* This is **catatonia**, a neuropsychiatric syndrome of disturbed motor, speech, and volitional behavior that occurs in mood disorders, psychotic disorders, and many medical illnesses [1]. DSM-5-TR requires **≥3 of 12 characteristic signs**: stupor, catalepsy, waxy flexibility, mutism, negativism, posturing, mannerisms, stereotypies, agitation, grimacing, echolalia, echopraxia. This patient shows at least five (mutism, negativism, catalepsy/posturing, waxy flexibility, echolalia). Catatonia is not rare — in the original validation study of a standardized rating scale, about 7% of consecutive psychiatric admissions met criteria [3] — and it is frequently missed when no one examines for it.
-
-**Q2. What bedside tool standardizes recognition, and what is the actual bedside exam?**
-
-*Teaching point:* The **Bush-Francis Catatonia Rating Scale (BFCRS)** — a 23-item severity scale with a 14-item screening instrument (screen positive at ≥2 signs) and a standardized examination, with excellent inter-rater reliability [3]. Key exam moves: observe spontaneous behavior; attempt conversation; passively move a limb to test for waxy flexibility and catalepsy; test for echopraxia (does the patient copy your movements?); give a simple command and note negativism; check grasp reflex; review nursing notes for oral intake, verbigeration (repetitive phrases), and posturing overnight.
-
-**Q3. Build a ranked differential. What features here argue for and against each item?**
-
-*Teaching point:* See the ranked differential below. The two "cannot-miss" branch points for a student: (a) **is there a medical cause** (catatonia is a syndrome, not a diagnosis), and (b) **is this neuroleptic malignant syndrome (NMS)** — which this patient cannot have without dopamine-blocking drug exposure. Recent antipsychotic exposure, fever, rigidity, and marked autonomic instability should always be actively sought and documented.
-
-**Q4. What initial workup do you order, and why?**
-
-*Teaching point:* Workup targets the cause and the complications: CBC, CMP (dehydration, renal function), glucose, **creatine kinase (CK)** (rhabdomyolysis from immobility or rigidity; a screen for NMS/malignant features), TSH, urine drug screen, pregnancy test, and an ECG (baseline before medications). Brain imaging and EEG are indicated when the presentation suggests a neurological or medical cause (new focal signs, seizure suspicion, delirium-like fluctuation) — and testing for **neuronal autoantibodies** (e.g., anti-NMDA-receptor encephalitis) in serum and cerebrospinal fluid when suspicion of autoimmune encephalitis exists [2]. Always review the medication list for recent antipsychotic starts or abrupt benzodiazepine discontinuation.
-
-**Q5. What is the lorazepam challenge, and what does a positive result mean?**
-
-*Teaching point:* A test dose of **lorazepam** (commonly 1–2 mg IV, IM, or PO), with re-examination over the following minutes to a few hours. Marked improvement — the patient begins speaking or moving — both **supports the diagnosis** and **predicts treatment response**. Benzodiazepines (lorazepam is the agent of choice) and/or **electroconvulsive therapy (ECT)** are first-line treatment for catatonia regardless of the underlying cause [1,2]. A negative challenge does not exclude catatonia.
-
-**Q6. The patient improves partially after lorazepam. Outline ongoing management and the complications you must prevent.**
-
-*Teaching point:* Continue **scheduled lorazepam** with dose escalation as tolerated — effective doses are often much higher than typical anxiolytic dosing, and guidelines note lorazepam is "sometimes used in very high doses" in this context [2]; sedation is monitored but tolerance to sedation is common in catatonia. Proceed to **ECT** if response is inadequate. Treat the underlying illness (here, a major depressive episode) once catatonia is lysing — and **avoid starting antipsychotics, especially high-potency dopamine blockers, while the patient is catatonic**, as they can worsen catatonia or precipitate NMS. Supportive care is life-saving: hydration and nutrition (swallow assessment; nasogastric feeding if needed), venous thromboembolism (VTE) prophylaxis, aspiration precautions, skin/pressure-injury care, and early mobilization.
-
-**Q7. What findings would convert this into an emergency, and what is your escalation plan?**
-
-*Teaching point:* **Malignant catatonia** — catatonia plus fever, autonomic instability (labile blood pressure, tachycardia), rigidity, or rising CK — is life-threatening and can be fatal without prompt treatment [1]. Recognition and escalation are the student's job: notify the senior resident and attending immediately, involve medicine/ICU for autonomic monitoring and stabilization, stop any dopamine-blocking agents, and pursue urgent ECT consultation. Separately, as this patient's catatonia lyses, remember that she has a severe depressive episode: complete a structured suicide risk assessment, ensure appropriate observation, and build a safety plan with her before any transition of care. Escalate to your supervisor immediately if she voices thoughts of self-harm.
-
----
-
-## Ranked differential diagnosis (most to least likely)
-
-1. **Catatonia associated with major depressive disorder** — known depression, subacute withdrawal, then classic catatonic signs; most common context for catatonia is a mood disorder [1].
-2. **Catatonia due to another medical condition** — including autoimmune (anti-NMDA-receptor) encephalitis; argues for: young woman, subacute course; argues against: no prodrome, seizures, dysautonomia, or focal signs yet. This must be actively excluded, not assumed away [2].
-3. **Hypoactive delirium** — can look similar (withdrawn, minimally responsive) and can co-occur with catatonia; look for fluctuating attention and an underlying medical driver.
-4. **Neuroleptic malignant syndrome** — effectively excluded without recent dopamine-blocking drug exposure; would feature rigidity, fever, autonomic instability, elevated CK.
-5. **Severe drug-induced parkinsonism / extrapyramidal side effects** — no offending medication here; would show rigidity and bradykinesia rather than negativism, waxy flexibility, and echophenomena.
-
----
-
-## Workup & management summary
-
-**Immediate:** full vital signs and repeat monitoring; bedside glucose; BFCRS screen and standardized exam [3]; collateral history (medications — especially antipsychotics and recently stopped benzodiazepines — substances, medical symptoms, timeline).
-
-**Laboratory:** CBC, CMP, glucose, CK, TSH, urine drug screen, pregnancy test, ECG. Escalate to brain imaging, EEG, and serum/CSF neuronal autoantibody testing when a medical or autoimmune cause is suspected [2].
-
-**Diagnostic-therapeutic:** lorazepam challenge (1–2 mg), re-examine; if positive, scheduled lorazepam with structured uptitration and daily BFCRS scoring [1,2].
-
-**Definitive:** ECT for benzodiazepine-refractory catatonia, malignant catatonia, or need for rapid response [1,2]. Treat the underlying psychiatric illness as catatonia resolves; hold antipsychotics while catatonic.
-
-**Supportive (prevents most of the mortality):** hydration, nutrition with swallow evaluation, VTE prophylaxis, aspiration and pressure-injury precautions, early mobilization, monitoring for malignant conversion (temperature, autonomic signs, CK).
-
----
----
-
-## Facilitator notes — keep separate; not for learner distribution
-
-**Flow (20–30 min):** 5 min stem read-aloud + spontaneous impressions → 15–20 min through Q1–Q7 (Q1, Q3, Q5, Q6 are the core; Q2, Q4, Q7 can compress) → 5 min wrap-up with the three take-homes below.
-
-**Three take-homes to land:** (1) Catatonia is common, missed, and *examinable* — screen with the BFCRS when any patient is mute, withdrawn, or "not participating." (2) Lorazepam challenge is both a test and the start of treatment; lorazepam and/or ECT are first-line regardless of cause. (3) Fever + rigidity + autonomic instability = malignant catatonia = emergency; and never start high-potency antipsychotics in an actively catatonic patient.
-
-**Common learner errors to anticipate:** calling this "just severe depression" or "conversion disorder/malingering" (respond: the exam findings — waxy flexibility, echolalia — are objective and reproducible); jumping to antipsychotics because "she's psychotic until proven otherwise" (use this to teach the NMS-risk teaching point in Q6); ordering a head CT reflexively while skipping the CK and medication history.
-
-**Bedside extension if time allows:** have learners pair up and physically practice the BFCRS exam sequence (observation → speech → passive movement → echopraxia test → command/negativism) on each other.
-
-**Step 2 CK pearls:** the answer to "next best step" in a catatonic patient is almost always *lorazepam challenge*; the answer in benzodiazepine-refractory or malignant catatonia is *ECT*; anti-NMDA-receptor encephalitis is the classic "young woman with psychiatric symptoms + autonomic instability/seizures" distractor and is screened with serum/CSF autoantibodies.
-
-**Safety framing:** keep all suicide-risk discussion at the level of recognition, structured assessment, observation level, and escalation to supervisors — method-level details are out of scope for this session.
-
----
-
-## References
-
-Based on articles retrieved from PubMed (National Library of Medicine). Citation fields below (journal, year, volume/pages, DOI) were verified against PubMed records on 2026-08-31.
-
-1. Heckers S, Walther S. Catatonia. *N Engl J Med*. 2023;389(19):1797-1802. [DOI: 10.1056/NEJMra2116304](https://doi.org/10.1056/NEJMra2116304)
-2. Rogers JP, Zandi MS, David AS. The diagnosis and treatment of catatonia. *Clin Med (Lond)*. 2023;23(3):242-245. [DOI: 10.7861/clinmed.2023-0113](https://doi.org/10.7861/clinmed.2023-0113)
-3. Bush G, Fink M, Petrides G, Dowling F, Francis A. Catatonia. I. Rating scale and standardized examination. *Acta Psychiatr Scand*. 1996;93(2):129-136. [DOI: 10.1111/j.1600-0447.1996.tb09814.x](https://doi.org/10.1111/j.1600-0447.1996.tb09814.x)

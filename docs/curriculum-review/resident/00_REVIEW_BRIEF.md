@@ -1,7 +1,7 @@
 # RESIDENT curriculum — complete content transcript for clinical review
 
 **Site:** `mmc-psychiatry-residents-sanford` · **Audience:** Residents — MMC/Sanford psychiatry residents
-**Generated:** 2026-09-02 from build `2f21c32` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
+**Generated:** 2026-09-02 from build `bda0a99` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
 
 ## Who this is for
 
@@ -17,14 +17,14 @@ This transcript is assembled from the **built site**, not the source tree, so it
 | Narrative pages (markdown) | 86 |
 | Interactive tools | 25 |
 | Deep-link-only (hidden) surfaces | 26 |
-| Words of narrative curriculum | 117,677 |
+| Words of narrative curriculum | 118,470 |
 | Practice question-bank items | 192 |
 | Audio-companion quiz decks / questions | 79 / 437 |
 | Communication cases | 12 |
 | Diagnostic reasoning cases | 5 |
 | Family systems scenarios | 8 |
-| Registered evidence sources | 104 |
-| Annotated claims with verbatim source spans | 46 |
+| Registered evidence sources | 107 |
+| Annotated claims with verbatim source spans | 49 |
 
 ## Document set
 
