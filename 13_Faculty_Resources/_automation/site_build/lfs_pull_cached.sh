@@ -119,7 +119,9 @@ if [ -n "${GIT_LFS_FETCH_INCLUDE:-}" ]; then
   log "honouring GIT_LFS_FETCH_INCLUDE=$GIT_LFS_FETCH_INCLUDE"
 fi
 start=$(date +%s)
-if out=$(git lfs pull "${PULL_ARGS[@]}" 2>&1); then
+# bash 3.2 (macOS) errors on an empty array under `set -u`; the +alternate form
+# expands to nothing when PULL_ARGS is empty and to the quoted elements when not.
+if out=$(git lfs pull ${PULL_ARGS[@]+"${PULL_ARGS[@]}"} 2>&1); then
   rc=0
 else
   rc=$?
