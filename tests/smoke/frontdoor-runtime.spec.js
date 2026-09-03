@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { routeFetchWithRetry } from './net-resilience.js';
+import { audienceOf, isResidentProject } from './audience.js';
 import { webcrypto } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 
@@ -126,7 +127,7 @@ function selectEditionKeys(audience) {
 
 async function installEditionRuntimeProbe(page, testInfo, options = {}) {
   await installSyntheticLearnerCatalog(page);
-  selectEditionKeys(testInfo.project.name === 'nav-res' ? 'resident' : 'ms3');
+  selectEditionKeys(audienceOf(testInfo.project.name));
   await page.addInitScript(({ editionKey, localKey, logKey, throwHistory, listenerFault, startupFault }) => {
     const originalSetItem = Storage.prototype.setItem;
     const originalGetItem = Storage.prototype.getItem;
@@ -766,7 +767,7 @@ function prereleaseEditionPayload() {
 }
 
 async function createSyntheticEdition(testInfo, editionNumber, audienceOverride = '', localIds = null) {
-  const audience = audienceOverride || (testInfo.project.name === 'nav-res' ? 'resident' : 'ms3');
+  const audience = audienceOverride || (audienceOf(testInfo.project.name));
   selectEditionKeys(audience);
   const canonical = structuredClone(EDITION_SYNTHETIC.audiences[audience]);
   const config = structuredClone(EDITION_VALID[audience].config);
@@ -994,7 +995,7 @@ function switchDialogHarness(active, candidate, options = {}) {
 }
 
 function expectedPlan(testInfo) {
-  const resident = testInfo.project.name === 'nav-res';
+  const resident = isResidentProject(testInfo.project.name);
   return {
     id: resident ? 'resident-four-week' : 'ms3-six-week',
     count: resident ? 4 : 6,
@@ -1019,7 +1020,7 @@ async function seedCompleteSetup(page, extra = {}) {
 }
 
 test('runtime capability gate clears incoming hashes and rejects missing, throwing, or mountless boundaries without writes', async ({}, testInfo) => {
-  const audience = testInfo.project.name === 'nav-res' ? 'resident' : 'ms3';
+  const audience = audienceOf(testInfo.project.name);
   const synthetic = await createSyntheticEdition(testInfo, 1, audience);
   const siteContext = synthetic.siteContext;
 
@@ -1415,7 +1416,7 @@ test('an absent plan stays read-only before another browser context supplies a m
 
 test('malformed and wrong-audience links show a non-modal alert without changing any stored byte', async ({ page }, testInfo) => {
   await installEditionRuntimeProbe(page, testInfo);
-  const otherAudience = testInfo.project.name === 'nav-res' ? 'ms3' : 'resident';
+  const otherAudience = audienceOf(testInfo.project.name) === 'resident' ? 'ms3' : 'resident';
   const wrongAudience = await createSyntheticEdition(testInfo, 1, otherAudience);
   await page.goto('/');
   await seedEditionLearner(page);
@@ -1916,7 +1917,7 @@ test('ordinary later Markdown and tool opens retain their existing navigation be
 });
 
 test('completion updates desktop, mobile, and the audience-correct rail immediately without replacing the governed tool', async ({ page }, testInfo) => {
-  const resident = testInfo.project.name === 'nav-res';
+  const resident = isResidentProject(testInfo.project.name);
   await page.setViewportSize(DESKTOP);
   await seedCompleteSetup(page);
   await page.goto('/?tool=question-bank-practice.html&case=completion');
@@ -2437,7 +2438,7 @@ test('fd-main and Reader rail styles survive Today, Reader, Progress, placement,
   await expect(page.locator('.fd-article')).toBeVisible();
   await expect(main).toHaveClass(/\bfd-main\b/);
   const rail = page.locator('.fd-railnav');
-  if (testInfo.project.name === 'nav-res') {
+  if (isResidentProject(testInfo.project.name)) {
     await expect(rail).toHaveCount(0);
   } else {
     await expect(rail).toBeVisible();
