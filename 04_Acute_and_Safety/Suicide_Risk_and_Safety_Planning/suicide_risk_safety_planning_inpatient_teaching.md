@@ -12,7 +12,7 @@
 
 **Mind the high-risk windows.** Risk is not flat across the admission. The peri-discharge and immediate post-discharge period is the highest-risk window of the entire episode — the transition, not the acute inpatient stay, is when many deaths occur. Treat discharge planning as a safety intervention, not paperwork.
 
-**Management.** The most evidence-based single intervention is **means restriction** — counsel the patient and family to remove or secure firearms and lethal medication before discharge; reducing access to a lethal method reduces deaths. On the unit, determine the level of care (e.g., 1:1 observation, environmental safety) with your supervisor. Build a collaborative **safety plan** (Stanley–Brown format): the patient's personal warning signs → internal coping strategies → people and settings that provide distraction → people to ask for help → professionals and crisis resources → and making the environment safer through means restriction. A safety plan is a working tool the patient co-authors — it is **not** a "no-suicide contract," which has no evidence of protecting anyone and can create false reassurance. Treat the underlying disorder in parallel; where indicated, remember lithium and clozapine carry specific anti-suicidal evidence.
+**Management.** The most evidence-based single intervention is **means restriction** — counsel the patient and family to remove or secure firearms and lethal medication before discharge; reducing access to a lethal method reduces deaths. On the unit, determine the level of care (e.g., 1:1 observation, environmental safety) with your supervisor. Build a collaborative **safety plan** (Stanley–Brown format): the patient's personal warning signs → internal coping strategies → people and settings that provide distraction → people to ask for help → professionals and crisis resources → and making the environment safer through means restriction. A safety plan is a working tool the patient co-authors — it is **not** a "no-suicide contract," which has no evidence of protecting anyone and can create false reassurance. The form itself, and the authors' training in the intervention, come from Stanley and Brown directly at [suicidesafetyplan.com](https://suicidesafetyplan.com/) — this library teaches the six steps and never reproduces or programs the form, because the authors require written permission to alter it or place it in an EMR. Treat the underlying disorder in parallel; where indicated, remember lithium and clozapine carry specific anti-suicidal evidence.
 
 <!-- crisis-block -->
 
@@ -29,6 +29,6 @@
 - Use a collaborative safety plan, not a no-suicide contract; contracts are not protective.
 - The post-discharge period is the highest-risk window — treat the transition as the intervention.
 
-**Pair with** the interactive C-SSRS screener, the Suicide Risk & Safety pocket card, the Mood page, and the Decisional Capacity module.
+**Pair with** the C-SSRS reference page (which links Columbia's official forms and free training — the screener itself is not reproduced here), the Suicide Risk & Safety pocket card, the Mood page, and the Decisional Capacity module.
 
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*

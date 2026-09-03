@@ -50,6 +50,17 @@
   .flag a{color:var(--danger);font-weight:700}
   .interp{font-size:.88rem;color:var(--text-mid);margin-top:12px;background:var(--bg-alt);border:1px solid var(--border);border-radius:9px;padding:11px 14px}
   .disc{font-size:.8rem;color:var(--text-light);border-top:1px solid var(--border);margin-top:24px;padding-top:12px}
+  /* Route block — where the learner gets the real form. Governed in instrument_rights.json
+     (officialSource) and pinned by instrument-rights-gate.mjs. These two are the instruments
+     this library still reproduces, provisionally (WP-02c), so the route does double duty: it
+     serves the learner today and it is already in place if the standing ever changes. */
+  .route{background:var(--accent-light,#edf4f2);border:1px solid var(--accent,#2a6b5e);border-radius:9px;padding:14px 16px;margin-top:16px}
+  .route h4{font-family:var(--font-head);font-size:.98rem;color:var(--accent-dark,#1e5248);margin:0 0 7px;font-weight:600}
+  .route p{margin:0 0 9px;font-size:.86rem;color:var(--text-mid)}
+  .route p:last-child{margin-bottom:0}
+  .route .go{display:inline-block;background:var(--accent-dark,#1e5248);color:#fff;text-decoration:none;font-weight:600;font-size:.86rem;padding:8px 14px;border-radius:6px;margin:2px 0 8px}
+  .route .go:hover,.route .go:focus{background:var(--accent,#2a6b5e)}
+  .route .cost{font-size:.77rem;color:var(--text-light)}
 </style>
 </head>
 <body>
@@ -123,7 +134,12 @@ function App(){
     tab==="phq"
       ? e(Scale,{name:"PHQ-9",items:PHQ,band:phqBand,interp:"PHQ-9 bands: 0–4 minimal · 5–9 mild · 10–14 moderate · 15–19 moderately severe · 20–27 severe. ≥10 has good sensitivity/specificity for major depression. Always review item 9 (self-harm) regardless of total."})
       : e(Scale,{name:"GAD-7",items:GAD,band:gadBand,interp:"GAD-7 bands: 0–4 minimal · 5–9 mild · 10–14 moderate · 15–21 severe. ≥10 is the usual threshold for further evaluation of generalized anxiety; it also screens reasonably for panic, social anxiety, and PTSD."}),
-    e("div",{className:"disc"},"Educational tool for clinical trainees. PHQ-9 and GAD-7 are freely available public instruments (Spitzer, Kroenke, Williams). Scoring is a screen, not a diagnosis — confirm clinically and follow your team's protocols. No PHI is stored. Joshua Moss, MD | Psychiatrist")
+    e("div",{className:"route"},
+      e("h4",null,"Get the official forms"),
+      e("p",null,"The tally here is for learning the instruments. Pfizer publishes the whole PHQ family and the GAD-7 — the printable forms, the scoring instructions and translations in roughly 80 languages — which is what you hand a patient and document from."),
+      e("a",{className:"go",href:"https://www.phqscreeners.com/",target:"_blank",rel:"noopener noreferrer"},"PHQ-9 & GAD-7 at phqscreeners.com →"),
+      e("p",{className:"cost"},"Free, no registration; leaves this site for phqscreeners.com. Use your clinic’s current version where one is in the EHR — that is the copy your documentation refers to.")),
+    e("div",{className:"disc"},"Educational tool for clinical trainees. PHQ-9 and GAD-7 are published by Pfizer (Spitzer, Kroenke, Williams) and are the two instruments this library still reproduces; the official forms are linked above. Scoring is a screen, not a diagnosis — confirm clinically and follow your team's protocols. No PHI is stored. Joshua Moss, MD | Psychiatrist")
   );
 }
 ReactDOM.createRoot(document.getElementById("root")).render(e(App));
