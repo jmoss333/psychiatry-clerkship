@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { routeFetchWithRetry } from './net-resilience.js';
 
 const TOOL = '/tools/communication-practice.html';
 const SAFETY = 'Safety boundary: fictional practice only. Do not enter patient information. There are no free-text patient fields; this tool stores only anonymous practice choices in this browser. It is not clinical advice, legal advice, or a substitute for supervision, local policy, or validated instruments.';
@@ -393,7 +394,7 @@ test('spoken reps request no media and accept no text', async ({ page }) => {
 test('all faculty review statuses are labeled truthfully within the orient budget', async ({ page }) => {
   const reviewer = 'Faculty <Review> & Longitudinal Quality Council';
   await page.route('**/communication_cases.json', async (route) => {
-    const response = await route.fetch();
+    const response = await routeFetchWithRetry(route);
     const data = await response.json();
     data.cases[0].facultyReview = { status: 'reviewed', reviewer, lastReviewed: '2026-08-01' };
     data.cases[1].facultyReview = { status: 'pending', reviewer: '', lastReviewed: '' };
@@ -419,7 +420,7 @@ test('all faculty review statuses are labeled truthfully within the orient budge
 test('reviewer attribution remains escaped inside deeper coaching', async ({ page }) => {
   const reviewer = 'Faculty <Review> & Longitudinal Quality Council';
   await page.route('**/communication_cases.json', async (route) => {
-    const response = await route.fetch();
+    const response = await routeFetchWithRetry(route);
     const data = await response.json();
     data.cases[0].facultyReview = { status: 'reviewed', reviewer, lastReviewed: '2026-08-01' };
     await route.fulfill({ response, json: data });
@@ -948,7 +949,7 @@ test('mobile case browser is modal and returns focus', async ({ page }) => {
 
 test('no cases recovery never leaves a stale rep', async ({ page }) => {
   await page.route('**/communication_cases.json', async (route) => {
-    const response = await route.fetch();
+    const response = await routeFetchWithRetry(route);
     const data = await response.json();
     data.cases = data.cases.filter((item) => item.id === 'psychosis_validation_001');
     await route.fulfill({ response, json: data });
@@ -967,7 +968,7 @@ test('no-match filters interrupt speaking and recover at orient', async ({ page 
   await page.clock.install({ time: new Date('2026-08-01T12:00:00Z') });
   const errors = collectRuntimeErrors(page);
   await page.route('**/communication_cases.json', async (route) => {
-    const response = await route.fetch();
+    const response = await routeFetchWithRetry(route);
     const data = await response.json();
     data.cases = data.cases.filter((item) => item.id === 'psychosis_validation_001');
     await route.fulfill({ response, json: data });
