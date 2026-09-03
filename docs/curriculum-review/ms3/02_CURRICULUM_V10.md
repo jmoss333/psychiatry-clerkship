@@ -430,7 +430,7 @@ New cases are added weekly. A matching resident-level version of each case lives
 - **Slug:** `cotw_20260831_catatonia_ms3.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-08-31_catatonia-recognition-workup-treatment_MS3.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 1,637 words
+- **Length:** 1,648 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -515,7 +515,7 @@ Vital signs: T 37.0 °C, HR 88, BP 118/74, RR 14, SpO₂ 99% on room air. Mucous
 
 **Q7. What findings would convert this into an emergency, and what is your escalation plan?**
 
-*Teaching point:* **Malignant catatonia** — catatonia plus fever, autonomic instability (labile blood pressure, tachycardia), rigidity, or rising CK — is life-threatening and can be fatal without prompt treatment [1]. Recognition and escalation are the student's job: notify the senior resident and attending immediately, involve medicine/ICU for autonomic monitoring and stabilization, stop any dopamine-blocking agents, and pursue urgent ECT consultation. Separately, as this patient's catatonia lyses, remember that she has a severe depressive episode: complete a structured suicide risk assessment, ensure appropriate observation, and build a safety plan with her before any transition of care. Escalate to your supervisor immediately if she voices thoughts of self-harm.
+*Teaching point:* **Malignant catatonia** — catatonia plus fever, autonomic instability (labile blood pressure, tachycardia), rigidity, or rising CK — is life-threatening and can be fatal without prompt treatment [1]. Recognition and escalation are the student's job: notify the senior resident and attending immediately, involve medicine/ICU for autonomic monitoring and stabilization, stop any dopamine-blocking agents, and pursue urgent ECT consultation. Separately, as this patient's catatonia lyses, remember that she has a severe depressive episode: complete a structured suicide risk assessment with your resident or attending, recommend an observation level to the team, and participate in building a safety plan with her before any transition of care. Escalate to your supervisor immediately if she voices thoughts of self-harm.
 
 ---
 

@@ -73,15 +73,15 @@
 
 ### `pott-2022`
 
-- span type `abstract` · retrieved 2026-08-21 · PMID 34146994 · DOI —
+- span type `abstract` · retrieved 2026-09-03 · PMID 34146994 · DOI —
 
 **Verbatim source span.**
 
-> There were no significant differences between behavioural activation and controls with regard to depression (SMD 0.19, 95% CI -0.10 to 0.49, p = 0.20) or substance use, across 5 trials including 195 patients, with GRADE ratings of Low throughout. Behavioural activation does not emerge as a differentially efficacious treatment, although it does appear to be an acceptable treatment option.
+> We included five trials in the meta-analysis (N = 195). The analysis found no significant differences between BA and controls with regard to depression (Post-treatment: k = 5; N = 195; SMD: 0.19, CI -0.10 to 0.49; p = 0.20; GRADE = Low; Follow-up: k = 5; N = 195; SMD: -0.10, CI -0.51 to -0.30; p = 0.62; GRADE = Low) or substance use (post-treatment: k = 4; N = 151; SMD: 0.14, CI -0.33 to -0.6; p = 0.57, GRADE = Low; Follow-up: k = 4; N = 151; SMD: 0.17, CI -0.34 to 0.69; p = 0.51, GRADE = Low) and there was little evidence of publication bias. BA does not emerge as a differentially efficacious treatment for comorbid depression and substance use disorders, although it does appear to be an acceptable treatment option.
 
 **Claim `ba-acceptable-not-superior`** (direction: `negative`, used by T4)
 
-> Behavioural activation showed no significant difference from controls for depression (SMD 0.19, p = 0.20) or substance use across 5 trials and 195 patients at GRADE Low, and does not emerge as differentially efficacious although it is an acceptable option.
+> In co-occurring depression and substance use disorders, behavioural activation showed no significant difference from controls for depression (SMD 0.19, p = 0.20) or substance use across 5 trials and 195 patients at GRADE Low, and does not emerge as differentially efficacious although it is an acceptable option.
 
 - claim terms: `no significant differences`, `does not emerge`, `acceptable treatment option`
 
@@ -109,7 +109,7 @@
 
 **Claim `ba-effect-and-equivalence`** (direction: `mixed`, used by T2)
 
-> Across 105 trials (13,933 patients), behavioural activation outperformed control conditions with an SMD of 0.67 and remained significant at 12 months after randomization, with no significant difference between BA and other therapies (SMD 0.04); self-guided BA was also effective (SMD 0.36).
+> Across 105 trials (13,933 patients), behavioural activation for adult outpatients outperformed control conditions with an SMD of 0.67 (61 comparisons) and remained significant at 12 months after randomization, with no significant difference between BA and other therapies (SMD 0.04); self-guided BA was also effective (SMD 0.36).
 
 - claim terms: `standardized mean difference`, `no significant difference between BA and other therapies`, `Self-guided BA was also effective`
 
@@ -339,15 +339,15 @@
 
 ### `brodsky-2025`
 
-- span type `abstract` · retrieved 2026-08-23 · PMID 41190740 · DOI 10.1176/appi.ajp.20240298
+- span type `abstract` · retrieved 2026-09-03 · PMID 41190740 · DOI 10.1176/appi.ajp.20240298
 
 **Verbatim source span.**
 
-> Significantly fewer SREs occurred in the DBT arm compared with the SSRI/M arm during the 6-month treatment phase. Significantly fewer suicide attempts occurred in the DBT arm compared with the SSRI/M arm. DBT participants had significantly lower NSSI counts than SSRI/M participants. Severity of depression and suicidal ideation decreased comparably in both treatment groups. After 6 months of treatment, the rate of major depressive disorder was significantly lower in the SSRI/M arm compared with the DBT arm. At 12-month follow-up (6 months after completion of the treatment phase), outcomes were comparable between the two groups.
+> Significantly fewer SREs occurred in the DBT arm compared with the SSRI/M arm during the 6-month treatment phase. Significantly fewer suicide attempts occurred in the DBT arm compared with the SSRI/M arm. DBT participants had significantly lower NSSI counts than SSRI/M participants. Severity of depression and suicidal ideation decreased comparably in both treatment groups. After 6 months of treatment, the rate of major depressive disorder was significantly lower in the SSRI/M arm compared with the DBT arm. At 12-month follow-up (6 months after completion of the treatment phase), outcomes were comparable between the two groups. Six months of DBT showed greater efficacy than 6 months of SSRI/M in reducing SRE and NSSI behaviors in patients with borderline personality disorder.
 
 **Claim `dbt-vs-ssri-suicide-events`** (direction: `mixed`, used by RR)
 
-> Over a 6-month treatment phase, DBT produced significantly fewer suicide-related events, fewer suicide attempts and lower non-suicidal self-injury counts than SSRI plus clinical management, while severity of depression and suicidal ideation decreased comparably in both groups and outcomes were comparable between the two groups at 12-month follow-up.
+> In borderline personality disorder, over a 6-month treatment phase DBT produced significantly fewer suicide-related events, fewer suicide attempts and lower non-suicidal self-injury counts than SSRI plus clinical management, while severity of depression and suicidal ideation decreased comparably in both groups and outcomes were comparable between the two groups at 12-month follow-up.
 
 - claim terms: `Significantly fewer SREs occurred in the DBT arm`, `decreased comparably in both treatment groups`, `outcomes were comparable between the two groups`
 

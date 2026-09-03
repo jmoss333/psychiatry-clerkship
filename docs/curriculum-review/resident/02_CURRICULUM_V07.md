@@ -11,7 +11,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **Slug:** `therapy_on_the_unit.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `02_Clinical_Skills/Psychotherapy/therapy_on_the_unit_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 4,164 words
+- **Length:** 4,218 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -151,7 +151,7 @@ About one in five psychiatric admissions involves borderline personality disorde
 Family intervention in schizophrenia reduces relapse and readmission with an NNT around 7 — statin territory — yet family involvement rates on real units are dismal, and the main barrier is clinician avoidance rationalized as confidentiality [27 ✓, 28 ✓]. Two teaching points fix most of it:
 
 - **Listening is not disclosing.** You can always *receive* information from a family — observations, history, concerns — without the patient's permission. Consent governs what you share, not what you hear.
-- **The inpatient meeting plants a seed; it doesn't harvest.** Relapse-prevention effects of family work show up at 12 months, not 6. The 30-minute inpatient meeting (agenda → family's account → jargon-free education → warning signs and plan → questions and resources) is the *entry point* to that dose, and the emotional climate it addresses is a measured, modifiable relapse predictor — high expressed emotion multiplies relapse risk several-fold, and warmth is protective [29 ✓, 30 ✓].
+- **The inpatient meeting plants a seed; it doesn't harvest.** Relapse-prevention effects of family work show up at 12 months, not 6. The 30-minute inpatient meeting (agenda → family's account → jargon-free education → warning signs and plan → questions and resources) is the *entry point* to that dose, and the emotional climate it addresses is a measured, modifiable relapse predictor — high expressed emotion is a robust relapse predictor — in schizophrenia it carried roughly a five-fold increase in the *odds* of early (≤12-month) relapse, and about two-fold for later relapse (Ma et al., *Psychol Med* 2021) — and warmth is protective (OR ~0.35). Read those as odds, not risk: relapse is common enough that the increase in absolute risk is considerably smaller than "five-fold" suggests [29 ✓, 30 ✓].
 
 > **Resident extension.** Run the full structure: pre-meeting consent-scope check → opening with role clarification → EE-informed listening (hear criticism and over-involvement without labeling them) → psychoeducation with numbers ("family involvement cuts relapse roughly in half") → explicit discharge triad (appointments · warning signs · who-to-call). De-escalation of a blaming room is the skill to deliberately practice; the family-engagement literature for BPD (integrating GPM principles) is the go-deeper read [31 ✓].
 
@@ -442,7 +442,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
  "content": {
   "frame": {
    "title": "The bedside frame — five minutes, not fifty",
-   "lead": "You won't finish a course of therapy here. Read the mechanism driving today's crisis, match one brief technique, and hand the thread to outpatient care. No single school wins — fit beats brand (pooled SMD ~0.24, NNT ~7; CBT ≈ BA ≈ PST).",
+   "lead": "You won't finish a course of therapy here. Read the mechanism driving today's crisis, match one brief technique, and hand the thread to outpatient care. No single school wins — fit beats brand (CBT ≈ BA ≈ PST); pooled effects of brief inpatient psychotherapy are modest, so pick the technique that fits the mechanism and the moment.",
    "scaffold": [
     "3 assessments: safety, sleep, function",
     "3 interventions: one skill, one activity, one connection",

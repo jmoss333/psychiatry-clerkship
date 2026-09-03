@@ -10,7 +10,7 @@
 
 **Initial workup** — Focused and pragmatic: full vitals with a neurologic exam, fingerstick glucose, basic metabolic panel and magnesium, liver function tests, CBC, a urine drug screen and blood/breath alcohol, and a pregnancy test where relevant. Add ECG when QTc-affecting agents or methadone are in play. Image the head if there is trauma, a focal deficit, or unexplained or out-of-proportion altered mental status.
 
-**Acute inpatient management** — For **alcohol withdrawal**, score serially with the **CIWA-Ar** and treat symptom-driven with **benzodiazepines**, escalating vigilance for **seizures and delirium tremens** in high-risk patients. Give **thiamine before glucose** — administering carbohydrate to a thiamine-depleted patient can precipitate Wernicke encephalopathy. For **opioid withdrawal**, track severity with the **COWS**, and begin **buprenorphine induction only once objective withdrawal is present (roughly COWS greater than or equal to 8 to 12)** to avoid precipitated withdrawal from displacing residual full agonist too early. For ongoing **alcohol use disorder**, offer **naltrexone or acamprosate**. Frame the whole encounter through the **Volkow brain-disease model** of addiction — naming addiction as a chronic, treatable brain condition rather than a moral failing directly combats stigma — and use **motivational interviewing** to meet ambivalence with curiosity rather than confrontation.
+**Acute inpatient management** — For **alcohol withdrawal**, score serially with the **CIWA-Ar** and treat symptom-driven with **benzodiazepines**, escalating vigilance for **seizures and delirium tremens** in high-risk patients. Give **thiamine before or with glucose** — administering carbohydrate to a thiamine-depleted patient can precipitate Wernicke encephalopathy. The sequencing matters for maintenance and repletion fluids; it is **not** a reason to withhold emergency dextrose in documented hypoglycemia, where delay causes real neuronal injury — give the sugar immediately and the thiamine as soon as it is in hand. For **opioid withdrawal**, track severity with the **COWS**, and begin **buprenorphine induction only once objective withdrawal is present (roughly COWS greater than or equal to 8 to 12)** to avoid precipitated withdrawal from displacing residual full agonist too early. For ongoing **alcohol use disorder**, offer **naltrexone or acamprosate**. Frame the whole encounter through the **Volkow brain-disease model** of addiction — naming addiction as a chronic, treatable brain condition rather than a moral failing directly combats stigma — and use **motivational interviewing** to meet ambivalence with curiosity rather than confrontation.
 
 **Alcohol use disorder pharmacotherapy anchor** — Naltrexone and acamprosate are first-line maintenance medications for alcohol use disorder when not contraindicated. Naltrexone reduces heavy drinking but cannot be used with opioids and requires liver-risk review; in compensated cirrhosis it may be considered with monitoring, while acute hepatitis or advanced decompensation pushes you away from it. Acamprosate supports abstinence, is renally cleared, and is the cleaner first-line choice when the question asks you to avoid hepatic metabolism; adjust or avoid it in renal impairment. Disulfiram is adherence-dependent and avoided in liver disease; benzodiazepines treat withdrawal, not maintenance.
 
@@ -23,7 +23,7 @@
 **What the student does**
 - Perform and document serial **CIWA-Ar** or **COWS** scores at the bedside and flag trends to the team.
 - Lay hands on the patient: vitals, hydration status, pupils, gait, asterixis — and report concerning changes early.
-- Verify **thiamine was given before any glucose-containing fluids**.
+- Verify **thiamine was given before or with any glucose-containing fluids** — and that nobody delayed emergency dextrose to go looking for it.
 - Take a non-judgmental substance history (substances, routes, last use, prior withdrawal/seizures) using open questions.
 - Practice one motivational-interviewing reflection and bring it to rounds.
 
@@ -32,7 +32,7 @@
 **High-yield pearls**
 - Alcohol and benzodiazepine withdrawal can be lethal; opioid and stimulant withdrawal are miserable but rarely fatal — match your urgency accordingly.
 - In hepatic impairment, reach for a **LOT drug** (Lorazepam, Oxazepam, Temazepam) — glucuronidation is preserved in cirrhosis; the oxidative CYP450 pathway (chlordiazepoxide, diazepam) is not.
-- Thiamine before glucose, every time.
+- Thiamine before (or with) glucose in withdrawal and refeeding — but never delay dextrose for documented hypoglycemia; give the sugar immediately and the thiamine as soon as it is in hand.
 - Do not start buprenorphine until objective withdrawal is on board (COWS roughly greater than or equal to 8 to 12) or you may precipitate withdrawal.
 - A patient who uses substances with new confusion gets a real differential — Wernicke, trauma, infection, hepatic encephalopathy — not a reflex withdrawal label.
 - Naloxone plus MOUD linkage at discharge is a concrete, evidence-based way to save a life.

@@ -49,7 +49,7 @@ The MS3 [Consult module](?page=exp_consult.md) teaches *what to notice and when 
 ## Decisional capacity — quick epidemiology
 - **Any physician can assess capacity** — it is not a psychiatry-only determination. *Capacity* is clinical and decision-specific; *competence* is legal.
 - Four abilities (Appelbaum & Grisso): **communicate a choice · understand · appreciate · reason.**
-- Common contributors to incapacity: **cognitive disorders ~54%, substance use ~37%, psychosis ~25%** — many reversible (delirium, psychosis, depression). Treat the reversible cause and **reassess.**
+- Common contributors to incapacity, in rough order of frequency: cognitive disorders (dementia, delirium), then substance intoxication/withdrawal, then psychosis and severe depression — categories that overlap in the same patient, and many of them reversible. Treat the reversible cause and **reassess.**
 
 ## Psychopharmacology in organ dysfunction
 - **Liver disease:** prefer benzodiazepines cleared by conjugation — **"LOT": Lorazepam, Oxazepam, Temazepam** (no oxidative metabolism). **Duloxetine is contraindicated in chronic liver disease.**
