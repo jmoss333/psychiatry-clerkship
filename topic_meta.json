@@ -1413,7 +1413,7 @@
     "tldr": "Sort delirium vs dementia vs depression, rule out the reversible causes, and name the subtype — because subtype decides what you prescribe and what you must not.",
     "points": [
       "Onset, course, and attention separate delirium (acute, fluctuating, inattentive) from dementia.",
-      "Screen every new diagnosis for reversible causes (B12/folate, TSH, CMP, ± RPR/HIV, NPH).",
+      "Screen every new diagnosis for reversible causes — labs (B12/folate, TSH, CMP, ± RPR/HIV) plus structural imaging, which is the only way NPH or a chronic subdural turns up.",
       "Antipsychotics carry a black-box mortality warning in dementia — and are dangerous in Lewy body disease."
     ],
     "cant": "New, fluctuating confusion with inattention is delirium, not 'worse dementia' — work it up before relabeling.",
@@ -1932,7 +1932,7 @@
     "clinicalWorkflow": {
       "ask": "Ask the patient what they call the problem, what they think caused it, what they fear most, what help they expect, and what would make care feel respectful.",
       "mse": "Separate culturally shaped expression from psychopathology; describe affect, beliefs, language, and behavior without assuming your own norm is neutral.",
-      "safety": "Use trained interpreters for safety questions, assess discrimination/trauma and structural barriers, and avoid family interpreters for confidential or high-risk topics.",
+      "safety": "Use trained interpreters for every clinical conversation, not only the safety questions; assess discrimination/trauma and structural barriers; never put a family member in the interpreter role.",
       "say": "I do not want to assume my framework fits yours. Can you tell me how you understand what is happening?",
       "collateral": "Ask about baseline, family meaning, community supports, immigration/language barriers, religious or cultural practices, and what the patient permits sharing.",
       "rounds": "Present the cultural formulation as clinical reasoning: explanatory model, identity/context, supports, barriers, bias risks, and treatment implications.",
@@ -1965,7 +1965,7 @@
     "hy": true,
     "tldr": "ECT is the most effective treatment for severe, psychotic, or catatonic depression — no absolute contraindications; anterograde memory effects resolve over weeks, though some retrograde gaps around the treatment period can persist — and rTMS, ketamine/esketamine, VNS, and bright light therapy each have a distinct niche.",
     "points": [
-      "Choose ECT when a rapid, definitive response is needed: psychotic or catatonic depression, active suicidality, refusal to eat/drink, pregnancy, or prior ECT response.",
+      "Choose ECT when a rapid, definitive response is needed: psychotic or catatonic depression, active suicidality, refusal to eat/drink, or prior ECT response — pregnancy is not a fifth trigger, it is what makes ECT preferred over drugs once one of those is present.",
       "Hold benzodiazepines and anticonvulsants pre-ECT (they blunt the seizure), and plan continuation treatment — relapse is the rule without it.",
       "rTMS is outpatient with no anesthesia or memory effects; ketamine/esketamine act within hours on depressive symptoms — not on suicidality itself, so they never replace monitoring, means restriction, or safety planning (esketamine requires REMS monitoring)."
     ],
@@ -2531,7 +2531,7 @@
     "points": [
       "Postpartum psychosis typically appears in the first 1–4 weeks, recurs in 30–50% of subsequent deliveries, and is bipolar-spectrum until proven otherwise — screen for prior mania.",
       "The EPDS screens for depression, not psychosis — ask directly about delusions and perceptual disturbance, and screen for manic symptoms separately.",
-      "Stopping maintenance medication in bipolar disorder nearly triples postpartum relapse risk (~66% off medication vs ~23% on prophylaxis) — 'stop everything' is itself a high-risk clinical decision."
+      "Stopping maintenance medication in bipolar disorder nearly triples postpartum relapse risk (~66% off medication vs ~23% on prophylaxis) — but 'don't stop everything' is not 'continue everything': valproate is the agent to be off before conception, with lamotrigine or lithium the maintenance options."
     ],
     "cant": "A calm, lucid interval does not rule out postpartum psychosis — the waxing/waning course is the illness, not a sign the crisis has passed.",
     "ruleOut": [
@@ -4222,7 +4222,7 @@
     "read": 3,
     "tldr": "Week 5 — Acute & Emergency Psychiatry deepens the Week 1 recognition set: manage agitation safely through the verbal de-escalation ladder, distinguish delirium/catatonia/withdrawal from psychiatric symptoms, assess violence risk with structured tools, and document supervised escalation reasoning.",
     "points": [
-      "The skills of the week are the agitation ladder and Violence-Risk/Brøset tool, delirium prevention and cause search, and supervised CIWA-Ar/COWS trend interpretation — all are bedside tools available in the hub sidebar.",
+      "The skills of the week are the agitation ladder and Violence Risk (FRST) tool, delirium prevention and cause search, and supervised CIWA-Ar/COWS trend interpretation — all are bedside tools available in the hub sidebar.",
       "What is different from Week 1: Week 1 teaches spot it and call now; Week 5 asks you to explain the likely driver, try least-restrictive communication when safe, use structured tools with supervision, and document what would change the plan.",
       "Pocket references to keep on hand: restraint checklist, benzo taper protocol, and clozapine ANC monitoring schedule.",
       "Case of the week: substance plus psychosis plus risk composite — designed to integrate the acute safety calls covered throughout the rotation."

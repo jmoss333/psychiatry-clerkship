@@ -423,7 +423,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Conduct disorder before age 15 is required for antisocial personality disorder; always rule out mania and substances.
 - Sort delirium vs dementia vs depression, rule out the reversible causes, and name the subtype — because subtype decides what you prescribe and what you must not.
 - Onset, course, and attention separate delirium (acute, fluctuating, inattentive) from dementia.
-- Screen every new diagnosis for reversible causes (B12/folate, TSH, CMP, ± RPR/HIV, NPH).
+- Screen every new diagnosis for reversible causes — labs (B12/folate, TSH, CMP, ± RPR/HIV) plus structural imaging, which is the only way NPH or a chronic subdural turns up.
 - Antipsychotics carry a black-box mortality warning in dementia — and are dangerous in Lewy body disease.
 - New, fluctuating confusion with inattention is delirium, not 'worse dementia' — work it up before relabeling.
 - Depression (pseudodementia)

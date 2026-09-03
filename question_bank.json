@@ -841,7 +841,7 @@
       "options": [
         {
           "key": "A",
-          "t": "Approach calmly, introduce yourself, acknowledge that he looks upset, and offer him a choice — 'Would it help to step somewhere quieter, or is there something I can get you?'",
+          "t": "Let a nearby staff member know you are engaging, then approach calmly — without blocking his exit or yours — introduce yourself, acknowledge that he looks upset, and offer him a choice — 'Would it help to step somewhere quieter where staff can still see us, or is there something I can get you?'",
           "c": true
         },
         {
@@ -870,7 +870,7 @@
         }
       ],
       "why": "Agitation = antipsychotic, Restraint first, and Commands over choices are the three forms of the same error: defaulting to force or medication before de-escalation. The Project BETA framework begins with calm presence, acknowledgment of distress, and genuine choices — not commands or preemptive escalation.",
-      "pearl": "Verbal de-escalation — calm presence, acknowledgment, and genuine choices — is the default first response to agitation, not a courtesy step before medication.",
+      "pearl": "Verbal de-escalation — calm presence, acknowledgment, and genuine choices — is the default first response to agitation, not a courtesy step before medication; tell a staff member before you engage, and stay near your exit without blocking the patient's.",
       "evidence": "agitation.md 'Verbal de-escalation, first' — This is the default response, not a courtesy step. The Project BETA de-escalation framework (Richmond et al. 2012) centers respect, simple boundaries, listening, and offering choices rather than issuing commands."
     },
     {
@@ -1186,7 +1186,7 @@
           }
         }
       ],
-      "why": "Outpatient sufficient, Medical workup before treatment, and Lucid interval = reassurance all miss the emergency framing. The source states: 'POSTPARTUM PSYCHOSIS IS A PSYCHIATRIC EMERGENCY: rapid onset, waxing/waning presentation, and real risk to both mother and infant — admit and treat urgently.' The safety assessment must explicitly include the infant.",
+      "why": "Outpatient sufficient and Lucid interval = reassurance miss the emergency framing. Medical workup before treatment is wrong only in its sequencing: delirium, eclampsia, thyroid disease, infection, and autoimmune encephalitis are excluded concurrently with emergency psychiatric admission — the organic workup proceeds in parallel and must never delay hospitalization or treatment. The source states: 'POSTPARTUM PSYCHOSIS IS A PSYCHIATRIC EMERGENCY: rapid onset, waxing/waning presentation, and real risk to both mother and infant — admit and treat urgently.' The safety assessment must explicitly include the infant.",
       "pearl": "Postpartum psychosis = immediate hospitalization, restrict unsupervised infant access, start lithium or antipsychotic urgently.",
       "evidence": "t_perinatal.md — POSTPARTUM PSYCHOSIS IS A PSYCHIATRIC EMERGENCY: rapid onset, waxing/waning presentation, and real risk to both mother and infant — admit and treat urgently. The safety assessment must explicitly include the infant: assess risk to the baby, the parent's current access to the baby, and available supervision."
     },
@@ -1750,7 +1750,7 @@
           "t": "Brain MRI with gadolinium — structural imaging is the single most important diagnostic step for a new dementia presentation.",
           "trap": {
             "name": "Imaging before labs",
-            "note": "MRI is important in atypical, rapid, focal, or early-onset presentations — but the first workup step is the reversible-cause laboratory screen, which is faster, cheaper, and catches treatable conditions."
+            "note": "Structural imaging does belong in the initial workup of a new cognitive diagnosis — it is the only way NPH or a chronic subdural is found — but the stem asks for the first-line *laboratory* screen, and gadolinium is not what makes imaging useful here. MRI is preferred and expedited for atypical, rapid, focal, or early-onset presentations."
           }
         },
         {
@@ -1762,9 +1762,9 @@
           }
         }
       ],
-      "why": "Jump to autoimmune and Imaging before labs both skip the foundational step. The reversible-cause panel — B12/folate, TSH, CMP, and when indicated RPR/HIV — must precede neurodegenerative labeling because these conditions are treatable and clinically indistinguishable at presentation. APOE genotyping is not a diagnostic standard. MRI is appropriate, especially for atypical or rapid presentations, but not before basic labs.",
-      "pearl": "Order the reversible-cause panel (B12/folate, TSH, CMP, ± RPR/HIV) on every new cognitive presentation before assigning a neurodegenerative diagnosis.",
-      "evidence": "t_neurocog.md 'Initial workup' — Labs to catch reversible causes: CBC, CMP, TSH, B12/folate, and — when indicated — HIV and RPR/treponemal testing. Medication reconciliation to strip anticholinergic and sedative burden."
+      "why": "Jump to autoimmune and Genetic confirmation both skip the foundational step. The reversible-cause panel — B12/folate, TSH, CMP, and when indicated RPR/HIV — must precede neurodegenerative labeling because these conditions are treatable and clinically indistinguishable at presentation. APOE genotyping is not a diagnostic standard. Structural imaging is part of the same initial workup rather than a later step, but it is not the laboratory screen this stem asks for, and it does not require gadolinium.",
+      "pearl": "Every new cognitive diagnosis gets both halves of the reversible screen: the panel (B12/folate, TSH, CMP, ± RPR/HIV) and structural imaging — labs cannot exclude NPH or a chronic subdural.",
+      "evidence": "t_neurocog.md 'Initial workup' — Labs to catch reversible causes: CBC, CMP, TSH, B12/folate, and — when indicated — HIV and RPR/treponemal testing. Neuroimaging (CT or MRI) as part of the initial workup of any new cognitive diagnosis — it is the only way the NPH and chronic subdural hematoma on the reversible list above get found — with MRI preferred, and expedited for atypical, rapid, focal, or early-onset presentations."
     },
     {
       "id": "qb_cog_010",
@@ -4523,7 +4523,7 @@
         },
         {
           "key": "B",
-          "t": "ECT is not a last resort — it is first-line for severe, psychotic, catatonic, or life-threatening mood states and in pregnancy.",
+          "t": "ECT is not a last resort — it is first-line for severe, psychotic, catatonic, or life-threatening mood states, and this patient meets several of those criteria at once.",
           "c": true
         },
         {
@@ -4543,9 +4543,9 @@
           }
         }
       ],
-      "why": "This patient's presentation meets multiple ECT indications simultaneously. Pharmacotherapy first at any severity, Newer = better, and Hopeless by default all delay a definitive, evidence-based treatment. The mood page states explicitly: 'ECT is not a last resort — it is first-line for psychotic, catatonic, or life-threatening mood states and in pregnancy.' Active suicidality, refusal of food/fluids, psychotic features, and treatment resistance are all named ECT indications.",
+      "why": "This patient's presentation meets multiple ECT indications simultaneously. Pharmacotherapy first at any severity, Newer = better, and Hopeless by default all delay a definitive, evidence-based treatment. The mood page states explicitly: 'ECT is not a last resort — it is first-line for psychotic, catatonic, or life-threatening mood states.' Active suicidality, refusal of food/fluids, psychotic features, and treatment resistance are all named ECT indications.",
       "pearl": "ECT is not a last resort — it is first-line for psychotic, catatonic, or life-threatening depression; do not defer it when these criteria are met.",
-      "evidence": "t_mood.md — ECT is not a last resort — it is first-line for psychotic, catatonic, or life-threatening mood states and in pregnancy."
+      "evidence": "t_mood.md — ECT is not a last resort — it is first-line for psychotic, catatonic, or life-threatening mood states, and in pregnancy it is a preferred option when illness of that severity demands rapid, definitive treatment. Pregnancy alone is not the indication; the severity is."
     },
     {
       "id": "qb_mood_009",
@@ -4877,7 +4877,7 @@
         },
         {
           "key": "D",
-          "t": "Antidepressant monotherapy has precipitated a manic switch in a patient likely misdiagnosed as unipolar — the diagnosis should be reconsidered as bipolar disorder and the antidepressant should not be continued as monotherapy.",
+          "t": "Antidepressant monotherapy has precipitated a manic switch in a patient likely misdiagnosed as unipolar — the diagnosis should be reconsidered as bipolar disorder, the antidepressant should be discontinued, and antimanic treatment started.",
           "c": true
         }
       ],
@@ -4987,11 +4987,11 @@
           }
         }
       ],
-      "why": "Absolute contraindication invented, Pharmacotherapy always first, and Newer = better all distort the evidence. ECT has no absolute contraindications; pregnancy is an ECT indication. This patient has four concurrent indications: active suicidality, refusal of oral intake, pregnancy where medications are less desirable, and prior good ECT response.",
+      "why": "Absolute contraindication invented, Pharmacotherapy always first, and Newer = better all distort the evidence. ECT has no absolute contraindications, and pregnancy is where it becomes preferred once the illness is severe enough to need rapid, definitive treatment — it is not an indication on its own. This patient has four concurrent reasons: active suicidality, refusal of oral intake, pregnancy where medications are less desirable, and prior good ECT response.",
       "pearl": "ECT in pregnancy: no absolute contraindication, explicitly indicated when medications are undesirable — especially when there is active suicidality, refusal to eat, or prior ECT response.",
-      "evidence": "t_mood.md — Reserve ECT for severe, psychotic, catatonic, or treatment-resistant depression, for life-threatening states (refusal of food/fluids, acute high suicide risk), and as a preferred option in pregnancy.",
+      "evidence": "t_mood.md — Reserve ECT for severe, psychotic, catatonic, or treatment-resistant depression, for life-threatening states (refusal of food/fluids, acute high suicide risk), and — when illness of that severity occurs in pregnancy — as a preferred option, since the therapeutic seizure works without the systemic fetal drug exposure pharmacotherapy requires.",
       "tier2": {
-        "q": "Why is ECT specifically listed as a preferred option in pregnancy, compared to pharmacotherapy?",
+        "q": "Why is ECT preferred over pharmacotherapy once a pregnant patient's illness is severe enough to need it?",
         "options": [
           {
             "key": "A",
@@ -7713,7 +7713,7 @@
           }
         }
       ],
-      "why": "Normal weight rules out AN, Binge = BED, and Normal weight = malingering all miss the defining features. The page: 'Bulimia nervosa — weight is often normal or high — a normal weight does not rule it out. Look for Russell's sign (knuckle calluses), parotid enlargement, and dental enamel erosion.' All three examination findings distinguish BN from BED: the presence of compensatory behaviors (purging) is the key.",
+      "why": "Normal weight rules out AN, Binge = BED, and Purging without binges = purging disorder all miss the defining features — her recurrent, objectively large binge episodes with compensatory purging make this bulimia nervosa rather than purging disorder, which requires purging in the absence of binges. The page: 'Bulimia nervosa — weight is often normal or high — a normal weight does not rule it out. Look for Russell's sign (knuckle calluses), parotid enlargement, and dental enamel erosion.' All three examination findings distinguish BN from BED: the presence of compensatory behaviors (purging) is the key.",
       "pearl": "Normal weight DOES NOT rule out bulimia nervosa — look for binge-purge cycle + Russell's sign (knuckle calluses) + parotid swelling + dental erosion.",
       "evidence": "t_eating.md — Bulimia nervosa — weight is often normal or high — a normal weight does not rule it out. Look for Russell's sign (knuckle calluses), parotid enlargement, and dental enamel erosion."
     },

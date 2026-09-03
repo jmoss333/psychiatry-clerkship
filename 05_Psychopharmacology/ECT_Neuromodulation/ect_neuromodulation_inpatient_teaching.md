@@ -24,7 +24,7 @@
 - **Bright light therapy** — first-line for **seasonal** depression, and — per a 2024 *JAMA Psychiatry* meta-analysis — an **effective *adjunctive* treatment for *nonseasonal* depression** as well (roughly doubling remission odds). Cheap and well-tolerated; screen for bipolar (can precipitate switch) and eye disease.
 
 **What the student does** —
-- Recognize when depression needs ECT: psychotic, catatonic, suicidal, not eating/drinking, pregnant, or prior ECT response.
+- Recognize when depression needs ECT: psychotic, catatonic, suicidal, not eating/drinking, or a prior ECT response — and know that pregnancy does not add an indication, it changes the calculus once one of those is already present.
 - Know ECT has no absolute contraindications and that memory effects are usually transient.
 - Plan continuation treatment after a successful ECT course — relapse is the rule without it.
 - Distinguish rTMS (outpatient, no anesthesia, TRD) from ECT (inpatient-grade, most potent).
