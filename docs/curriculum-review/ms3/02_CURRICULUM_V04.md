@@ -129,7 +129,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **Slug:** `t_perinatal.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `03_Core_Topics/Perinatal/perinatal_psychiatry_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 1,145 words
+- **Length:** 1,254 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -144,7 +144,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 
 - Postpartum psychosis typically appears in the first 1–4 weeks, recurs in 30–50% of subsequent deliveries, and is bipolar-spectrum until proven otherwise — screen for prior mania.
 - The EPDS screens for depression, not psychosis — ask directly about delusions and perceptual disturbance, and screen for manic symptoms separately.
-- Stopping maintenance medication in bipolar disorder nearly triples postpartum relapse risk (~66% off medication vs ~23% on prophylaxis) — 'stop everything' is itself a high-risk clinical decision.
+- Stopping maintenance medication in bipolar disorder nearly triples postpartum relapse risk (~66% off medication vs ~23% on prophylaxis) — but 'don't stop everything' is not 'continue everything': valproate is the agent to be off before conception, with lamotrigine or lithium the maintenance options.
 
 **Can't-miss / red-flag line:**
 
@@ -205,7 +205,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 
 **Initial workup** — Focused and decision-relevant: full MSE with explicit suicide assessment, EPDS (Edinburgh Postnatal Depression Scale) screening, and active screening for psychotic and manic symptoms, since the EPDS does not detect psychosis. Order TSH (plus CBC, CMP, and infection workup as the picture dictates) to catch medical mimics. The safety assessment must explicitly include the infant: assess risk to the baby, the parent's current access to the baby, and available supervision. Obtain collateral — partner or family history reframes the differential, especially regarding prior mania or prior postpartum episodes.
 
-**Acute inpatient management** — Anchor each decision to the evidence. Postpartum psychosis requires admission and urgent treatment; consider lithium, antipsychotics, and ECT. For perinatal depression and anxiety, **sertraline and escitalopram** are the usual first-line SSRIs; for postpartum depression specifically, zuranolone is an oral option. Every medication choice in pregnancy and lactation is an individualized risk-benefit discussion, not a reflexive "stop everything" — note specific cautions around lithium and valproate, and weigh that untreated maternal illness itself carries real risk to mother and infant. In bipolar disorder, **stopping maintenance medication nearly triples postpartum relapse** (pooled ~35% overall; ~66% off medication vs ~23% on prophylaxis), so "stop everything" is itself a high-risk decision. Protect sleep aggressively: sleep loss both worsens mood and can precipitate or worsen psychosis, so build the milieu and orders around restoring it. Involve the partner and family throughout — for collateral, for the safety plan, and for the supervised support the patient will need after discharge.
+**Acute inpatient management** — Anchor each decision to the evidence. Postpartum psychosis requires admission and urgent treatment; consider lithium, antipsychotics, and ECT. For perinatal depression and anxiety, **sertraline and escitalopram** are the usual first-line SSRIs; for postpartum depression specifically, zuranolone is an oral option. Every medication choice in pregnancy and lactation is an individualized risk-benefit discussion, not a reflexive "stop everything." The mood stabilizers are not interchangeable here: **valproate is the one to avoid** in pregnancy and in anyone who could become pregnant — the highest teratogenic and neurodevelopmental risk of the group, so plan contraception and a pre-conception switch rather than a mid-pregnancy one; **lithium**'s absolute malformation risk is small and it is often continued for severe bipolar disorder with level monitoring; and **lamotrigine** is the comparatively safer maintenance option, though its levels fall as pregnancy advances, so a patient kept on it needs level tracking rather than a set-and-forget dose. Weigh all of that against the real risk untreated maternal illness itself carries to mother and infant. In bipolar disorder, **stopping maintenance medication nearly triples postpartum relapse** (pooled ~35% overall; ~66% off medication vs ~23% on prophylaxis), so "stop everything" is itself a high-risk decision. Protect sleep aggressively: sleep loss both worsens mood and can precipitate or worsen psychosis, so build the milieu and orders around restoring it. Involve the partner and family throughout — for collateral, for the safety plan, and for the supervised support the patient will need after discharge.
 
 **What the student does** —
 - Administer and document the EPDS, and explicitly screen for psychotic and manic symptoms beyond it.
@@ -235,7 +235,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - A clear hour does not rule out psychosis; the waxing/waning course is the illness.
 - The EPDS screens depression, not psychosis — ask about delusions and perceptual disturbance directly.
 - Postpartum OCD intrusive thoughts are ego-dystonic and not command hallucinations — distinguish them to avoid both over- and under-reaction.
-- Stopping all medication is itself a risk decision; untreated perinatal illness endangers mother and infant too.
+- Stopping all medication is itself a risk decision; untreated perinatal illness endangers mother and infant too — but that argument does not extend to valproate, which is the agent to be off before conception rather than continued through it.
 
 **Pair with** — the <a href="tools/cssrs.html" target="_blank" rel="noopener">Columbia C-SSRS official form &amp; training page</a> for structured risk assessment that extends to the infant, and the [suicide-risk & safety pocket card](?page=pg_suicide.md).
 
@@ -509,7 +509,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **Slug:** `t_neurocog.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `03_Core_Topics/Neurocognitive/neurocognitive_disorders_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 880 words
+- **Length:** 933 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -523,7 +523,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 **Key points (bulleted card):**
 
 - Onset, course, and attention separate delirium (acute, fluctuating, inattentive) from dementia.
-- Screen every new diagnosis for reversible causes (B12/folate, TSH, CMP, ± RPR/HIV, NPH).
+- Screen every new diagnosis for reversible causes — labs (B12/folate, TSH, CMP, ± RPR/HIV) plus structural imaging, which is the only way NPH or a chronic subdural turns up.
 - Antipsychotics carry a black-box mortality warning in dementia — and are dangerous in Lewy body disease.
 
 **Can't-miss / red-flag line:**
@@ -596,13 +596,13 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
   - *Frontotemporal* — younger onset with early personality/behavior change or progressive aphasia; memory relatively spared early.
   - *Creutzfeldt-Jakob* — rapidly progressive dementia with myoclonus.
 
-**Initial workup** — Establish the cognitive baseline and trajectory from family and records. Cognitive screen — the **MoCA is more sensitive than the MMSE** for mild impairment and executive/visuospatial domains. Labs to catch reversible causes: CBC, CMP, TSH, B12/folate, and — when indicated — HIV and RPR/treponemal testing. Neuroimaging (CT or MRI) for atypical, rapid, focal, or early-onset presentations. Medication reconciliation to strip anticholinergic and sedative burden. Formally assess **decisional capacity** and safety (driving, wandering, finances, firearms).
+**Initial workup** — Establish the cognitive baseline and trajectory from family and records. Cognitive screen — the **MoCA is more sensitive than the MMSE** for mild impairment and executive/visuospatial domains. Labs to catch reversible causes: CBC, CMP, TSH, B12/folate, and — when indicated — HIV and RPR/treponemal testing. Neuroimaging (CT or MRI) as part of the initial workup of any new cognitive diagnosis — it is the only way the NPH and chronic subdural hematoma on the reversible list above get found — with MRI preferred, and expedited for atypical, rapid, focal, or early-onset presentations. Medication reconciliation to strip anticholinergic and sedative burden. Formally assess **decisional capacity** and safety (driving, wandering, finances, firearms).
 
 **Acute inpatient management** — For **behavioral and psychological symptoms of dementia (BPSD)**, nonpharmacologic measures are first-line: identify the trigger (pain, constipation, infection, fear, overstimulation), reorient, keep routines, involve family. Reserve medication for danger or severe distress. **Antipsychotics carry an FDA black-box warning for increased mortality in elderly patients with dementia-related psychosis** — use the lowest dose for the shortest time, document informed consent, and reassess. **In Lewy body dementia, avoid antipsychotics** (especially typicals) because of life-threatening neuroleptic sensitivity — if one is unavoidable, quetiapine or pimavanserin are lower-risk choices. Cognitive symptoms: **cholinesterase inhibitors** (donepezil, rivastigmine, galantamine) for mild–moderate Alzheimer/Lewy body disease; add **memantine** (NMDA antagonist) for moderate–severe disease. Newer **anti-amyloid antibodies (lecanemab, donanemab)** modestly slow *early* Alzheimer decline but require amyloid confirmation and ARIA (edema/hemorrhage) MRI monitoring — specialist-initiated, not started on a psych unit.
 
 **What the student does** —
 - Sort delirium vs dementia vs depression explicitly — lead with onset, course, and attention.
-- Order the reversible-cause panel (B12/folate, TSH, CMP, ± RPR/HIV) on every new cognitive diagnosis.
+- Order the reversible-cause panel (B12/folate, TSH, CMP, ± RPR/HIV) **and confirm structural imaging is done** on every new cognitive diagnosis — the panel alone cannot exclude NPH or a chronic subdural.
 - Name the subtype and flag Lewy body features *before* anyone reaches for an antipsychotic.
 - For agitation, hunt the trigger (pain, constipation, infection) before a PRN.
 - Assess capacity and safety, and start discharge/caregiver planning early.

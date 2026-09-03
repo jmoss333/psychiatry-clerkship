@@ -12,7 +12,7 @@
 |---|---|---|---|
 | **Psychiatric interview & therapeutic alliance** | MSE module (Language & Interview tab); Interviewing folder; Week 1 | EPA 1 | Observed interview; feedback |
 | **Mental status examination** | MSE module (builder + exemplar); pocket card | EPA 1 | Documented MSE on rounds |
-| **Risk assessment & safety (suicide, violence)** | Suicide/safety tools; Violence-Risk + Brøset tool; Week 5 | EPA 10, EPA 13 | Supervised safety plan; OSCE station |
+| **Risk assessment & safety (suicide, violence)** | Suicide/safety tools; Violence Risk (FRST) tool; Week 5 | EPA 10, EPA 13 | Supervised safety plan; OSCE station |
 | **Diagnosis & differential of major disorders** | Differential-Diagnosis scaffolds; 7 Core-Topic one-pagers; Weeks 2–5 | EPA 2 | Oral case presentation; rounds |
 | **Psychopharmacology basics** | Student psychopharm primer; protocol library; withdrawal card | EPA 4 | Medication reasoning on rounds |
 | **Medical/neurologic contributors** | DDx scaffolds (medical-mimic-first); Delirium, Catatonia, Geriatric | EPA 2, EPA 3 | Workup reasoning; OSCE |

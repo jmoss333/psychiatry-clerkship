@@ -1,5 +1,5 @@
 {
-  "_note": "Machine-readable instrument dispositions — the executable form of the reproduction rule (CLAUDE.md; Option A, 2026-08-23). Seeded from the decision table in docs/superpowers/plans/2026-08-20-instrument-reproduction-audit.md. Enforced hard at build time by check-static-site.mjs §11 via instrument-rights-gate.mjs. Discipline: a status here is a governance decision — change it only with the decisionRef that recorded the change, never by agent inference. Signatures detect the reproduction that shipped, never plain bedside language ('thoughts of killing yourself' is legitimate clinical phrasing in mse.html and the SP pack and must never become a signature); scan scope is learner-rendered HTML only (matcher vocabulary in *.pack.json is not reproduction); waivers and provisional standings are file-scoped. This file is a build input and must never itself be shipped to either site.",
+  "_note": "Machine-readable instrument dispositions — the executable form of the reproduction rule (CLAUDE.md; Option A, 2026-08-23). Seeded from the decision table in docs/superpowers/plans/2026-08-20-instrument-reproduction-audit.md. Enforced hard at build time by check-static-site.mjs §11 via instrument-rights-gate.mjs. Discipline: a status here is a governance decision — change it only with the decisionRef that recorded the change, never by agent inference. Signatures detect the reproduction that shipped, never plain bedside language ('thoughts of killing yourself' is legitimate clinical phrasing in mse.html and the SP pack and must never become a signature); scan scope is learner-rendered HTML only (matcher vocabulary in *.pack.json is not reproduction); waivers and provisional standings are file-scoped. This file is a build input and must never itself be shipped to either site. officialSource (added 2026-09-03) records where the learner gets the real instrument, so that a withdrawal leaves a route and not a dead end; the schema requires one on every retired/restricted entry, and pages pinned requireOfficialSourceLink must ship it. This library LINKS and never mirrors — hosting a whole form is broader redistribution than the excerpts that were withdrawn, so formUrl is constrained to an absolute https custodian URL and a repo-relative path is a rights change, not an edit. A recorded route is a wayfinding fact, never a permission finding: routes are refreshed freely, statuses only with a decisionRef.",
   "schemaVersion": 1,
   "instruments": [
     {
@@ -15,12 +15,24 @@
         "work out the details of how to kill yourself",
         "prepared to do anything to end your life"
       ],
+      "officialSource": {
+        "custodian": "The Columbia Lighthouse Project, Columbia University",
+        "access": "free-download",
+        "formUrl": "https://cssrs.columbia.edu/the-columbia-scale-c-ssrs/cssrs-for-communities-and-healthcare/",
+        "formLabel": "Columbia Protocol forms for healthcare settings — assemble and download the screener, the full lifetime/recent scale, and SAFE-T with C-SSRS",
+        "trainingUrl": "https://cssrs.columbia.edu/training/training-options/",
+        "redistribution": "link-only",
+        "verified": "2026-09-03",
+        "verifiedVia": "search index, 2026-09-03; live fetch blocked by sandbox egress policy — re-run bin/check_instrument_links.py from an unrestricted network",
+        "note": "Free for community, healthcare and nonprofit/federally-funded research use, and the training is free too — so the route costs the learner nothing. The custodian distributes; we link."
+      },
       "pages": [
         {
           "file": "cssrs.html",
           "requiredTitle": "Columbia C-SSRS — Official Form & Training",
           "requiredDisclaimerType": "instrument-not-reproduced",
-          "requireNotReproducedStatement": true
+          "requireNotReproducedStatement": true,
+          "requireOfficialSourceLink": true
         }
       ]
     },
@@ -37,12 +49,24 @@
         "Bizarre posture, or any posture held > 15 minutes",
         "Fixed gaze, reduced visual scanning and blinking"
       ],
+      "officialSource": {
+        "custodian": "University of Rochester Medical Center (Wortzel, Oldham & Francis)",
+        "access": "free-download",
+        "formUrl": "https://www.urmc.rochester.edu/psychiatry/divisions/collaborative-care-and-wellness/bush-francis-catatonia-rating-scale/bfcrs",
+        "formLabel": "the BFCRS itself, its Training Manual & Coding Guide, and per-item scoring videos",
+        "trainingUrl": "https://www.urmc.rochester.edu/psychiatry/divisions/collaborative-care-and-wellness/bush-francis-catatonia-rating-scale",
+        "redistribution": "link-only",
+        "verified": "2026-09-03",
+        "verifiedVia": "search index, 2026-09-03; live fetch blocked by sandbox egress policy — re-run bin/check_instrument_links.py from an unrestricted network",
+        "note": "The same URMC terms that forced the removal (prior written consent to distribute) are exactly why the route is a link: URMC hands the learner the form, standardized-patient videos and the coding guide directly, which is more than the 23 anchors ever gave them."
+      },
       "pages": [
         {
           "file": "bfcrs.html",
           "requiredTitle": "Bush-Francis Catatonia Scale (BFCRS) — Official Form & Training",
           "requiredDisclaimerType": "instrument-not-reproduced",
-          "requireNotReproducedStatement": true
+          "requireNotReproducedStatement": true,
+          "requireOfficialSourceLink": true
         }
       ]
     },
@@ -66,9 +90,20 @@
         "beads of sweat on brow or face",
         "frequent shifting or extraneous movements of legs/arms"
       ],
+      "officialSource": {
+        "custodian": "National Institute on Drug Abuse (NIDA), U.S. National Institutes of Health",
+        "access": "free-download",
+        "formUrl": "https://nida.nih.gov/sites/default/files/ClinicalOpiateWithdrawalScale.pdf",
+        "formLabel": "the full 11-item COWS as a one-page PDF, with the scoring bands",
+        "redistribution": "link-only",
+        "verified": "2026-09-03",
+        "verifiedVia": "search index, 2026-09-03; live fetch blocked by sandbox egress policy — re-run bin/check_instrument_links.py from an unrestricted network",
+        "note": "COWS is the instrument this library still reproduces, under the recorded interim waiver — so the route matters for a different reason: it is what makes 'score from the real form, not from this page' an instruction a learner can actually follow. NIDA publishes it as a federal agency; we still only link. Recording this route neither widens nor narrows the waiver."
+      },
       "pages": [
         {
-          "file": "withdrawal.html"
+          "file": "withdrawal.html",
+          "requireOfficialSourceLink": true
         }
       ]
     },
@@ -84,11 +119,22 @@
         "harshness/ability to frighten",
         "disoriented to place/person"
       ],
+      "officialSource": {
+        "custodian": "The learner's own institution (withdrawal protocol); reference copy posted by the California Society of Addiction Medicine",
+        "access": "institution-protocol",
+        "formUrl": "https://www.csam-asam.org/ciwa-ar",
+        "formLabel": "the 10-item CIWA-Ar with its scoring criteria, as posted by CSAM — a reference copy, while the form you score from is your unit's",
+        "redistribution": "link-only",
+        "verified": "2026-09-03",
+        "verifiedVia": "search index, 2026-09-03; live fetch blocked by sandbox egress policy — re-run bin/check_instrument_links.py from an unrestricted network",
+        "note": "The one instrument here with no rights-holder distribution point: the 1989 article is closed-access and the originating Addiction Research Foundation publishes no current form, which is why the rights could not be established and the descriptors came down (2026-08-28). CSAM is a professional society posting a copy, not a licensor — so the page must send the learner to the unit's protocol form first and offer this second. Linking to someone else's posting is not reproduction by this library, but it is also not permission: this route must not be read back as a rights finding."
+      },
       "pages": [
         {
           "file": "withdrawal.html",
           "requiredTitle": "Withdrawal: COWS Tool · CIWA-Ar Official Form & Training",
-          "requireNotReproducedStatement": true
+          "requireNotReproducedStatement": true,
+          "requireOfficialSourceLink": true
         }
       ]
     },
@@ -103,9 +149,20 @@
         "thoughts that you would be better off dead",
         "not being able to stop or control worrying"
       ],
+      "officialSource": {
+        "custodian": "Pfizer Inc. (Spitzer, Kroenke & Williams)",
+        "access": "free-download",
+        "formUrl": "https://www.phqscreeners.com/",
+        "formLabel": "the PHQ-9, GAD-7 and the rest of the PHQ family, with translations in ~80 languages",
+        "redistribution": "link-only",
+        "verified": "2026-09-03",
+        "verifiedVia": "search index, 2026-09-03; live fetch blocked by sandbox egress policy — re-run bin/check_instrument_links.py from an unrestricted network",
+        "note": "EVIDENCE FOR WP-02c, NOT A RESOLUTION OF IT. Secondary sources consistently report that Pfizer released the PHQ family and GAD-7 with no copyright restriction on 2010-07-21 and that the current form footer reads 'No permission required to reproduce, translate, display or distribute'. That is what WP-02c asks about, but it is second-hand — the same shape of evidence that failed for CIWA-Ar, where every 'may be reproduced freely' notice turned out to be a reproducer's addition. Status stays 'provisional' until the author reads the footer on the current form at this URL. redistribution is recorded 'link-only' because that is this library's policy, not because the grant is doubted."
+      },
       "pages": [
         {
-          "file": "screeners.html"
+          "file": "screeners.html",
+          "requireOfficialSourceLink": true
         }
       ]
     },
@@ -114,6 +171,17 @@
       "instrument": "Stanley-Brown Safety Plan",
       "status": "restricted",
       "decisionRef": "docs/superpowers/plans/2026-08-20-instrument-reproduction-audit.md — Option A resolution (2026-08-23): never programmed — the instrument's own terms name 'programming the form' as reproduction; WP-06R-b builds a rehearsal tool that reproduces nothing. No content ever shipped, so no signatures exist; adding its text here as signatures would itself reproduce it",
+      "officialSource": {
+        "custodian": "Barbara Stanley, PhD & Gregory K. Brown, PhD",
+        "access": "free-download",
+        "formUrl": "https://suicidesafetyplan.com/",
+        "formLabel": "the Stanley-Brown Safety Plan form, plus the authors' training in the intervention",
+        "trainingUrl": "https://suicidesafetyplan.com/",
+        "redistribution": "link-only",
+        "verified": "2026-09-03",
+        "verifiedVia": "search index, 2026-09-03; live fetch blocked by sandbox egress policy — re-run bin/check_instrument_links.py from an unrestricted network",
+        "note": "The only entry with no page pin, because nothing was ever removed — the form was never programmed. The route is recorded now so WP-06R-b's rehearsal tool inherits it rather than inventing one: a rehearsal tool that teaches the six steps must send the learner to the authors for the form itself. Individual use of the form is permitted; the authors require written permission to alter it or to place it in an electronic medical record, which is the same term that makes programming it reproduction."
+      },
       "signatures": [],
       "pages": []
     }

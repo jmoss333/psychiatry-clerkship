@@ -691,7 +691,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **Slug:** `week5.md` · **Type:** md · **Sidebar:** hidden (deep link only)
 - **Source:** `01_Six_Week_Curriculum/Week_5_Acute_Emergency/README.md`
 - **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
-- **Length:** 178 words
+- **Length:** 180 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -704,7 +704,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 
 **Key points (bulleted card):**
 
-- The skills of the week are the agitation ladder and Violence-Risk/Brøset tool, delirium prevention and cause search, and supervised CIWA-Ar/COWS trend interpretation — all are bedside tools available in the hub sidebar.
+- The skills of the week are the agitation ladder and Violence Risk (FRST) tool, delirium prevention and cause search, and supervised CIWA-Ar/COWS trend interpretation — all are bedside tools available in the hub sidebar.
 - What is different from Week 1: Week 1 teaches spot it and call now; Week 5 asks you to explain the likely driver, try least-restrictive communication when safe, use structured tools with supervision, and document what would change the plan.
 - Pocket references to keep on hand: restraint checklist, benzo taper protocol, and clozapine ANC monitoring schedule.
 - Case of the week: substance plus psychosis plus risk composite — designed to integrate the acute safety calls covered throughout the rotation.
@@ -737,7 +737,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 
 **Suggested reading:** Franklin 2017 (limits of suicide prediction) · Volkow 2016 (addiction).
 
-**Skills of the week:** the **agitation ladder** + **Violence-Risk/Brøset** tool (the Acute & Safety pages); **Delirium** prevention and medical-cause search; **CIWA-Ar/COWS** trend interpretation with the Withdrawal card; supervised documentation of what triggered escalation, what was tried first, and what would change the plan.
+**Skills of the week:** the **agitation ladder** + **Violence Risk (FRST)** tool (the Acute & Safety pages); **Delirium** prevention and medical-cause search; **CIWA-Ar/COWS** trend interpretation with the Withdrawal card; supervised documentation of what triggered escalation, what was tried first, and what would change the plan.
 
 **What is different from Week 1:** Week 1 teaches "spot it and call now." Week 5 asks you to explain the driver, try least-restrictive communication when safe, use the structured tool with supervision, document the risk reasoning, and debrief after restraint, seclusion, medication, transfer, or a near miss.
 

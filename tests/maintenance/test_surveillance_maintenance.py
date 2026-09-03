@@ -1038,6 +1038,102 @@ class SurveillanceMaintenanceTests(unittest.TestCase):
         )
         self.assertEqual(commands[-1], ["git", "switch", "main"])
 
+    def _publish_state(self, branch="automation/surveillance-inbox"):
+        state_path = self.temp_dir / "state.json"
+        state_path.write_text(
+            json.dumps(
+                {
+                    "base": "main",
+                    "branch": branch,
+                    "expectedRemoteSha": None,
+                    "openPrNumber": None,
+                }
+            ),
+            encoding="utf-8",
+        )
+        return state_path
+
+    @staticmethod
+    def _publish_responses(create, pr_list=None):
+        responses = {
+            ("git", "status", "--porcelain=v1", "--untracked-files=all"): completed(
+                [], stdout=" M 13_Faculty_Resources/_automation/surveillance/STATUS.md\n"
+            ),
+            ("git", "diff", "--cached", "--quiet"): completed([], returncode=1),
+            (
+                "gh", "pr", "create",
+                "--base", "main",
+                "--head", "automation/surveillance-inbox",
+                "--title", "surveillance: refresh maintenance inbox",
+                "--body", "Automated, content-free surveillance reports for faculty review.",
+            ): create,
+        }
+        if pr_list is not None:
+            responses[
+                (
+                    "gh", "pr", "list",
+                    "--head", "automation/surveillance-inbox",
+                    "--base", "main",
+                    "--state", "open",
+                    "--json", "number",
+                    "--limit", "2",
+                )
+            ] = pr_list
+        return responses
+
+    # hydrate reads openPrNumber; publish spends it up to 9.5 minutes later (that is the
+    # citations run's own gap between its two steps). Anything that opens the PR inside that
+    # window made `gh pr create` exit 1 and failed the job AFTER the reports were pushed —
+    # the shape of both weekly jobs' failures on 2026-08-31.
+    def test_publish_adopts_a_pr_opened_between_hydrate_and_create(self):
+        report_branch = load_report_branch()
+        runner = FakeRunner(
+            self._publish_responses(
+                create=completed([], returncode=1, stderr="a pull request already exists\n"),
+                pr_list=completed([], stdout='[{"number": 431}]\n'),
+            )
+        )
+        result = report_branch.publish(
+            repo_root=self.temp_dir,
+            state_path=self._publish_state(),
+            runner=runner,
+        )
+        self.assertEqual(result, {"changed": True, "pullRequest": 431})
+        self.assertEqual(
+            [call[0] for call in runner.calls][-1], ["git", "switch", "main"]
+        )
+
+    def test_publish_still_fails_when_no_pr_exists_to_adopt(self):
+        report_branch = load_report_branch()
+        runner = FakeRunner(
+            self._publish_responses(
+                create=completed(
+                    [],
+                    returncode=1,
+                    stderr="GitHub Actions is not permitted to create pull requests\n",
+                ),
+                pr_list=completed([], stdout="[]\n"),
+            )
+        )
+        with self.assertRaises(subprocess.CalledProcessError) as caught:
+            report_branch.publish(
+                repo_root=self.temp_dir,
+                state_path=self._publish_state(),
+                runner=runner,
+            )
+        # The whole point: gh's reason must reach the log. `capture_output=True` hid it
+        # behind a bare "returned non-zero exit status 1" for two weeks of red runs.
+        self.assertIn("not permitted to create pull requests", str(caught.exception))
+
+    def test_a_failed_command_reports_its_stderr(self):
+        report_branch = load_report_branch()
+        runner = FakeRunner(
+            {("git", "push"): completed([], returncode=1, stderr="stale info\n")}
+        )
+        with self.assertRaises(subprocess.CalledProcessError) as caught:
+            report_branch._run(runner, ["git", "push"], self.temp_dir)
+        self.assertIn("stale info", str(caught.exception))
+
     def test_surveillance_workflows_share_truthful_pinned_publication_contract(self):
         workflows = {
             "surveillance-link-monitor.yml": "0 6 * * 1",

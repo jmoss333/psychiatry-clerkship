@@ -12,7 +12,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 // because it went red: you (or a concurrent PR) changed a shared ceiling — bump the pins below
 // IN THE SAME DIFF as the change, after confirming the other agent's PRs in flight.
 
-const EXPECTED_MARKER_COUNT = 27; // +3 (2026-09-02): block store, session receipt, and the Today block planner.
+const EXPECTED_MARKER_COUNT = 29; // +1 (2026-09-03): shared cw_srs_v1 store adapter (srs_store.js).
 
 test('SNIPPET_MARKERS entry count matches the pinned constant', () => {
   const src = fs.readFileSync(
@@ -27,9 +27,13 @@ test('SNIPPET_MARKERS entry count matches the pinned constant', () => {
 test('qa-baseline.json matches the pinned ceilings exactly', () => {
   const actual = JSON.parse(fs.readFileSync(
     path.join(ROOT, '13_Faculty_Resources/_automation/site_build/qa-baseline.json'), 'utf8'));
+  // computed-key +1 each (2026-09-03): communication-practice.html and diagnostic-reasoning.html
+  // now read localStorage[SRS_KEY] through the shared srs_store.js snippet rather than a
+  // literal, the same indirection already accepted for family, question-bank, review and
+  // shelf-mode. (res counts the resident-only tools too, hence its higher ceiling.)
   const expected = {
-    ms3: { metadata: 1, 'computed-key': 6, 'legacy-metadata': 1 },
-    res: { metadata: 1, 'computed-key': 9, 'legacy-metadata': 1 },
+    ms3: { metadata: 1, 'computed-key': 7, 'legacy-metadata': 1 },
+    res: { metadata: 1, 'computed-key': 10, 'legacy-metadata': 1 },
   };
   assert.deepEqual(actual, expected,
     'qa-baseline.json changed — a computed-key or soft-class ceiling moved; update this pin deliberately');

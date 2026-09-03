@@ -6,6 +6,322 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 
 ---
 
+## The Therapy Reading Room
+
+- **Slug:** `therapy_reading_room.md` · **Type:** md · **Sidebar:** listed
+- **Source:** `07_Evidence_and_Reading/Therapy_Reading_Room/therapy_reading_room.md`
+- **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`low`
+- **Length:** 2,839 words
+
+<!-- topic_meta overlay -->
+#### Structured metadata (`topic_meta.json` → this page)
+
+> est. read 8 min
+
+**TL;DR (shown above the page text):**
+
+> A curated, verified therapy reading list: a handful of papers per domain with one line each on why it's worth your time — six ★ picks for the six weeks, open-access links checked, and the evidence-limits section as the lens for everything above it.
+
+**Key points (bulleted card):**
+
+- Read one ★ paper per rotation week: alliance (Flückiger), behavioral activation (Cuijpers 2026), safety planning (Stanley 2018), GPM for BPD (Links & Ross), family intervention (Pharoah), and the post-discharge risk rethink (Modini & Large).
+- Open means the full text is free right now (links are checked so the open ones really open); Library means use the institutional proxy.
+- The honest nulls stay in on purpose — a thin evidence base under a confident clinical habit is itself a teaching point, and each annotation carries the paper's own numbers.
+
+**Can't-miss / red-flag line:**
+
+> Don't quote an annotation as the paper's finding without opening the paper — annotations are one-line orientations drafted from abstracts, and the anchors' own hedges (Pharoah's 'may decrease relapse') are part of the finding.
+
+**Cross-references and tagging:**
+
+- **Related tools:** `question-bank-practice.html`, `review.html`
+- **Evidence sources:** `fluckiger-2018`, `cuijpers-2026`, `stanley-brown-2018`, `links-ross-2025`, `pharoah-2010-family-intervention`, `modini-large-2026`
+- **Workflow stages:** `treatment`, `exam`
+- **Workflow modes:** `ward`, `shelf`
+- **EPA crosswalk:** `EPA7`
+- **Call-to-action buttons:** Open Therapy on the Unit
+- **Faculty review:** {"status": "reviewed", "reviewer": "Joshua Moss, MD", "lastReviewed": "2026-08-23"}
+
+#### Page text (as shipped)
+
+# The Therapy Reading Room
+
+> Companion to [Therapy on the Unit](?page=therapy_on_the_unit.md) — that page teaches the bedside moves; this one is the evidence behind them.
+
+
+**How to use this page.** This is a curated reading list, not a bibliography — a handful of papers per topic, each with one line on why it's worth your time. **Open** means the full text is free right now; **Library** means use the institutional proxy link. Start with your patient: whatever you admitted today, there's a section for it. If you read only one paper per week of the rotation, take the six marked ★.
+
+*A note on honesty: psychotherapy research has real limitations — dropout, measurement fragmentation, and the stubborn finding that different therapies often perform about the same. The last section is about exactly that, and it's not an afterthought; it's the lens for everything above it.*
+
+---
+
+## The working relationship (alliance)
+
+- ★ **The alliance in adult psychotherapy: a meta-analytic synthesis** — Flückiger et al., *Psychotherapy* 2018. PMID 29792475 · Open
+  The foundational number: across 295 studies and 30,000+ patients, alliance quality predicts outcome — r = .278 (≈ d = .58), consistent across therapy approaches, assessor perspectives, and even internet delivery. Read this before any modality.
+- **Alliance quality in severe mental illness** — Tetzlaff et al., *Clin Psychol Rev* 2025. PMID 41110399 · Open
+  48 studies on what tracks alliance quality in SMI. The sharpest finding is a mismatch: symptom severity influenced clinician-rated alliance but not patient-rated — how sick a patient looks changes what the clinician thinks of the relationship, not what the patient thinks. Observational associations, not trial effects.
+- **Alliance and suicidal experiences** — Huggett et al., *Clin Psychol Psychother* 2022. PMID 35168297 · Open
+  A robust alliance formed early in therapy predicted later reductions in suicidal ideation and attempts — and suicidal experiences themselves did not preclude forming one. The practice point: attend to patients' concerns about discussing suicidality.
+
+*Go deeper:* what "alliance" even measures — Saxler et al. 2024, a systematic review of 48 different alliance instruments whose own conclusion is that "the broad variety of conceptualizations and measures of TA makes coherent research on TA difficult"; the exhibit for why alliance numbers vary (PMID 38993343 · Open) · client and therapist voices on building alliance around suicidal experiences — weaving risk assessment *into* the conversation, rather than bolting it on, helped both alliance and safety; Huggett et al. 2024 (PMID 39098267 · Open) · unresolved alliance ruptures preceding dropout — five depressed **adolescents** (qualitative; pediatric sample, flagged), Difronzo et al. 2025 (PMID 40471224 · Open).
+
+## What an inpatient unit can deliver
+
+- **Indirect psychological intervention in acute inpatient settings** — Man et al., *Clin Psychol Psychother* 2023. PMID 35997039 · Open
+  "Indirect" = psychology delivered through the team and milieu — case formulation sessions, supervision, reflective practice — which is what an acute unit can actually staff. Ten small studies; promise, not proof.
+- **Inpatient psychotherapy for major depression: meta-analysis** — Schefft et al., *Acta Psychiatr Scand* 2019. PMID 30520019 · Library
+  Pooled benefit over control is small and durable — g = 0.24, NNT 7.4, holding at 12 months (g = 0.21) — and comparisons against waitlist or non-standardized control tended to run larger than against structured routine care. The authors' own phrase: "a small but sustained effect." Carry the number, not the slogan.
+- **Psychotherapy in the inpatient setting: moderators** — Cohen-Chazani et al., *Psychiatry* 2022. PMID 35442174 · Library
+  Across 37 samples (4,443 inpatients), psychotherapy's specific contribution was d = 0.43 (CI 0.06–0.81); therapy orientation had no significant effect, and diagnosis moderated outcome. A real effect — not a brand effect.
+
+*Worth saying out loud: this literature is thin — that's a finding, not an omission. What a real ward team can deliver is an under-studied question.*
+
+## Behavioral activation
+
+- ★ **BA for depression: comprehensive systematic review and meta-analysis** — Cuijpers et al., *Clin Psychol Rev* 2026. PMID 42492146 · Open
+  105 trials, 13,933 patients: BA vs control SMD 0.67, effects holding at 12 months, no difference vs other therapies (SMD 0.04) — and still effective self-guided (0.36) and in institutional settings (0.36). Same first author as the 2007 anchor below, twenty years on. Simple, teachable, still standing.
+- **Behavioral activation treatments of depression: meta-analysis** — Cuijpers et al., *Clin Psychol Rev* 2007. PMID 17184887 · Library
+  Where the modern claim started: activity scheduling alone vs control d = 0.87, and vs cognitive therapy d = 0.02. Activation is a treatment, not a warm-up for cognitive work.
+- **Cognitive restructuring vs BA vs CBT: network meta-analysis** — Ciharova et al., *J Consult Clin Psychol* 2021. PMID 34264703 · Open
+  The dismantling question: restructuring, activation, and the full CBT package were statistically indistinguishable head-to-head, and all beat care-as-usual (SMDs 0.44–0.57). Treatments are packages, and the parts test out about equally.
+- **Group BA: acceptability and efficacy** — Simmonds-Buckley et al., *Behav Ther* 2019. PMID 31422844 · Library
+  The evidence under the unit's actual delivery format: group BA beat controls (SMD 0.72), matched other active therapies, and dropout (14%) was no worse.
+- **BA for co-occurring depression and substance use** — Pott et al., *J Subst Abuse Treat* 2022. PMID 34146994 · Library
+  The honest null: across five trials (195 patients total), BA was not differentially effective for co-occurring depression and substance use (SMD 0.19, p = 0.20; GRADE Low throughout) — though attendance ran 72% and the authors call it "an acceptable treatment option." Kept for the lesson: this is how thin the evidence under a confident clinical habit can be.
+
+## Safety planning and lethal means
+
+- ★ **Safety Planning Intervention with follow-up vs usual care** — Stanley & Brown et al., *JAMA Psychiatry* 2018. PMID 29998307 · Open (PMC)
+  The foundational cohort (1,640 ED patients): safety planning plus follow-up contact was associated with 45% fewer suicidal behaviors (OR 0.56) and double the odds of attending outpatient care. A cohort comparison, not an RCT — but the tool you'll use most is built on it.
+- **Means restriction: overview of systematic reviews** — Steeg et al., *BMJ Ment Health* 2025. PMID 41365522 · Open
+  The umbrella view (20 reviews, 179 primary studies), and the concrete wins behind the counseling: physical barriers at jumping sites show strong effects, platform screen doors cut site-specific deaths without displacement, paracetamol pack limits reduced self-poisoning admissions, and bans on highly hazardous pesticides reduced suicide rates. Review quality varies — the authors say so — but this is where means restriction earns its place.
+
+*Go deeper:* the sobering trial-level review — stricter firearm regulation was associated with "a small reduction, if any" in suicide deaths, no high-quality RCTs exist, and the ecological designs preclude individual-level causal inference; counsel about means honestly, on population-level evidence; Shank et al. 2026 (PMID 40185617 · Library) · how rural communities — ours — actually hear this counseling: most respondents would discuss firearm access with a provider, but only 4–11% had ever been asked; Penzenik et al. 2026 (PMID 41588871 · Library).
+
+## CBT for psychosis
+
+- **Who benefits from CBT in psychosis: IPD meta-analysis** — Varese et al., *Health Technol Assess* 2025. PMID 41217072 · Open
+  The most sophisticated current answer, and it's a corrected instinct: this IPD meta-analysis (27 trials, n = 2,870) tested every modifier a clinician might select on — age, gender, ethnicity, illness duration, phase, severity, dose, format — and found **no reliable evidence that any of them changes CBTp's efficacy**. Its conclusion: offer CBTp equally, irrespective of demographic or clinical characteristics.
+- **CBT for negative symptoms: SR and meta-analysis** — Hong et al., *PLoS One* 2025. PMID 40392926 · Open
+  CBT improved negative symptoms versus treatment-as-usual (MD −1.65 PANSS points) with gains in overall function (SMD 0.38) and social skills (SMD 0.87). Real — and modest: a 1.65-point PANSS shift is statistically robust and clinically small, which is exactly why the hardest target in psychosis needs honest numbers.
+- **A cautious or cautionary tale?** — Tarrier & Wykes, *Behav Res Ther* 2004. PMID 15500811 · Library
+  Effect sizes shrink as trial rigor rises — the significant negative correlation between methodological quality and effect. The single most transferable methods lesson on this page.
+
+## BPD: DBT and the generalist stance
+
+- ★ **Good Psychiatric Management: foundations** — Links & Ross, *Am J Psychother* 2025. PMID 38952224 · Library
+  The reframe that changes behavior: GPM was built so any competent generalist can treat BPD — "refer out" is not a plan. Reviews the foundations and the original Canadian trial, and is candid about what's unproven (noninferiority against specialist therapies is listed as future work).
+- **DBT vs schema therapy: the BOOTS trial** — Wibbelink et al., *JAMA Psychiatry* 2026. PMID 42018336 · Library
+  The newest head-to-head (n = 204, nine sites, 3-year horizon): no significant difference between DBT and schema therapy (d = 0.15), large improvements in both — and two-year dropout near half in each arm. How the field adjudicates between credible treatments.
+- **DBT vs SSRI for suicidal behavior in BPD** — Brodsky et al., *Am J Psychiatry* 2025. PMID 41190740 · Library
+  The meds-versus-therapy question tested where it matters: six months of DBT produced fewer suicide-related events and less self-injury than SSRI plus clinical management, while depression improved comparably in both arms and outcomes converged by 12 months.
+- **Stand-alone DBT skills training: SR and meta-analysis** — Arqueros et al., *Personal Disord* 2026. PMID 42275028 · Library
+  What the affordable, skills-only version buys: large within-arm improvements (BPD severity d = −1.32) with 71% retention — but these are mostly pre-post benchmarks, not controlled comparisons. A discharge-planning fact with an evidence-grade caveat.
+- **Family engagement in BPD** — Appel et al., *Psychodyn Psychiatry* 2026. PMID 41849148 · Library
+  The family is usually in the room and rarely addressed: commonsense guidance for generalists drawn from TFP and GPM. Practical road map, not trial data.
+
+## Family intervention and expressed emotion
+
+- ★ **Family intervention for schizophrenia** — Pharoah et al., *Cochrane* 2010. PMID 21154340 · Open (PMC)
+  The canonical review (53 RCTs): family intervention "may decrease the frequency of relapse" (RR 0.55, NNT 7) and "may also reduce hospital admission" (RR 0.78, CI 0.6–1.0, NNT 8), with better medication adherence too. The authors' own hedge — effects "may be overestimated due to the poor methodological quality" — is part of the finding: the same rigor lesson Tarrier & Wykes teach, arriving in the domain's foundational citation.
+- **Expressed emotion and relapse: meta-analysis** — Ma et al., *Psychol Med* 2021. PMID 33568244 · Library
+  The empirical floor under family work: high expressed emotion predicts early relapse (OR 4.87 within 12 months), criticism predicts relapse (OR 2.22), and warmth protects (OR 0.35). A measured, modifiable relapse predictor.
+- **Family intervention in first-episode psychosis to 24 months** — Camacho-Gomez & Castellví, *Schizophr Bull* 2020. PMID 31050757 · Open (PMC)
+  Intervene early with families and relapse falls hard: RR 0.42 out to 24 months in first-episode psychosis, with shorter admissions and better functioning. Durable, not just immediate.
+
+## Motivational interviewing
+
+- **MI for substance use reduction** — Schwenker et al., *Cochrane* 2023. PMID 38084817 · Open (PMC)
+  The definitive review (93 trials, 22,776 participants), valuable for its restraint: small effects versus no intervention that fade over follow-up, little-to-no difference versus treatment as usual or other active treatments, and mostly low-certainty evidence. Hold the stance *and* the calibration.
+- **MI in dual diagnosis: systematic review** — Bastos Maia et al., *J Dual Diagn* 2025. PMID 39798118 · Library
+  The MI paper that matches our census: most outcomes improved without reaching significance; the clear signals were fewer relapses and fewer alcohol-binge days. An add-on with a narrow, real benefit.
+
+## Trauma-informed care
+
+- **Trauma-informed approaches to suicide prevention** — Ferguson et al., *Crisis* 2026. PMID 41267566 · Open
+  Maps the field (27 papers — **most focused on children and young people; extrapolate to adult units with care**): the case for risk assessment and safety procedures that don't retraumatize. Framework and gaps, not outcome data.
+- **TIC implementation: review of reviews** — Goldstein et al., *Perm J* 2024. PMID 38444328 · Open
+  What actually happens when systems implement TIC: mechanisms and outcomes mapped to SAMHSA's ten implementation domains. The implementation manual behind the aspiration.
+- **Umbrella review of trauma-informed approaches** — Mahon, *Community Ment Health J* 2024. PMID 39046622 · Library
+  The honest status report: across 14 systematic reviews (half rated low quality; **many youth/school settings**), effectiveness evidence remains mixed — enthusiasm currently outruns outcome data. Commitment plus candor.
+
+## Psychodynamic therapy and mentalization
+
+- **Short-term psychodynamic psychotherapy for depression: IPD meta-analysis** — Wienicke et al., *Clin Psychol Rev* 2023. PMID 36958077 · Open
+  Retires the reflex that "psychodynamic" means "unevidenced": individual-participant data from 11 of 13 eligible trials (n = 771) show STPP beats control conditions for depression (d = −0.62 at post-treatment), with larger effects in longer index episodes.
+- **Who benefits from adding STPP to antidepressants?** — Driessen et al., *Psychol Med* 2023. PMID 36404677 · Open
+  The combined-treatment question in its most ward-relevant form: adding STPP to antidepressants helped most in severe and chronic (>2-year) depression — the patients we actually admit.
+- **MBT for self-harm: SR and meta-analysis** — Hajek Gross et al., *Suicide Life Threat Behav* 2024. PMID 38279664 · Open
+  Kept for the comparator lesson: MBT's pre-post effects on self-harm look large (g = −0.82), but against active controls it "did not prove to be more efficacious," and the authors conclude that "prioritizing the application of MBT(-A) for the treatment of self-harm is not supported" (**includes MBT-A adolescent arms**). Read past the pre-post effect size to the comparator — always.
+
+## Therapy in the medically ill (consult-liaison)
+
+*Under construction with our CL colleagues — the demoralization/meaning-centered core is being co-curated. Starting points:*
+
+- **The demoralization construct** — de Figueiredo, *J Clin Psychiatry* 2026. PMID 41920002 · Library
+  Construct orientation — a commentary distinguishing demoralization from depression. Full text pending faculty review.
+- **Meaning-centered psychotherapy** — StatPearls 2026. PMID 42207918 · Open
+  A free reference orientation to meaning-centered work (the Frankl → Breitbart lineage) before the trial literature. Tertiary study guide — orient with it, don't cite it as evidence.
+- **STPP for functional somatic disorders** — Abbass et al., *Psychother Psychosom* 2020. PMID 32428905 · Library
+  Functional presentations are consult bread-and-butter, and a specific brief therapy helps: across 17 RCTs, STPP beat minimal treatment, TAU, and waitlist on somatic symptoms at every time frame (small-to-large effects). Carries a published erratum (a correction — the paper stands).
+
+## After discharge
+
+- ★ **Post-discharge suicide: time for a rethink** — Modini & Large, *Australas Psychiatry* 2026. PMID 41664893 · Library
+  An argument piece, not a data paper: the field keeps studying categorical predictors and ignoring what the admission itself was like for the patient. Read it after the Chung meta-analyses — those give you the magnitude, this asks why we still cannot explain it.
+- **Inpatient brief CBT and post-discharge ED use** — Diefenbach et al., *Gen Hosp Psychiatry* 2025. PMID 39837259 · Library
+  Adding brief CBT during the stay cut post-discharge ED visits by about three quarters (OR 0.25) — but "only among participants without SUD." On a dual-diagnosis unit, that qualifier *is* the teaching point; the authors themselves call for work to make it hold in SUD.
+- **Caring contacts after psychiatric hospitalization** — Steinberg et al., *Suicide Life Threat Behav* 2024. PMID 38934489 · Open
+  One of the cheapest interventions in psychiatry, refined with patient input: brief caring-contact messages on days 2 and 7 post-discharge, with pilot-scale (n = 27) reductions in depressive symptoms and better connectedness. Cheap, kind — and still early-stage evidence.
+
+## Evidence limits, honestly
+
+- **Allegiance and treatment quality as moderators** — Schünemann et al., *Clin Psychol Eur* 2025. PMID 40177337 · Open
+  The allegiance hypothesis, tested — and not confirmed: in trials comparing humanistic therapy to other approaches, researcher allegiance and treatment quality were "not as relevant for outcomes… as expected." That is a richer evidence-limits lesson than the slogan: a bias everyone "knows" matters failed to show up when someone checked (scope: humanistic-vs-other comparisons).
+- **Dropout in psychotherapy for personality disorders** — De Salve et al., *Clin Psychol Psychother* 2025. PMID 40325843 · Open
+  The outcome nobody advertises: dropout runs 10–58% in personality-disorder psychotherapy, predicted by younger age, comorbid substance use, and emotion dysregulation — while strong alliances and phone coaching protect. A therapy the patient leaves is not a therapy that worked.
+
+*The closing-paper slot for this section is deliberately held pending a full-text faculty read (Westra 2023, on what near-equivalent therapies imply for how you train). Until that read, the section closes on the dropout paper above.*
+
+---
+
+*What this page deliberately does not do: host PDFs, reproduce abstracts, or substitute for supervision. Every paper here was verified for identity and retraction status before listing; link types are checked so the open ones really open. Annotations are drafted from the papers' abstracts with AI assistance and carry faculty signature as of 2026-08-23.*
+
+
+---
+
+## MS3 Book Library
+
+- **Slug:** `book_library.md` · **Type:** md · **Sidebar:** listed
+- **Source:** `07_Evidence_and_Reading/Book_Summaries/ms3_book_library.md`
+- **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
+- **Length:** 1,200 words
+
+<!-- topic_meta overlay -->
+#### Structured metadata (`topic_meta.json` → this page)
+
+> est. read 6 min
+
+**TL;DR (shown above the page text):**
+
+> Curated from 345 titles for the inpatient rotation — use the library to go deeper on a patient's diagnosis or recommend a book to a family; domains span borderline, addiction, trauma, mood, psychosis, ADHD, and child development.
+
+**Key points (bulleted card):**
+
+- Books in the library double as bibliotherapy recommendations — pick by the patient and family in front of you, not by diagnostic category alone.
+- Highest-yield family resources: CRAFT approach (Beyond Addiction) for substance use, LEAP method (I Am Not Sick I Don't Need Help!) for psychosis anosognosia, and Stop Walking on Eggshells for borderline-pattern family dynamics.
+- For trauma: The Body Keeps the Score is the standard patient/family resource; for mood narratives: An Unquiet Mind (bipolar) and Reasons to Stay Alive (depression) are widely received and readable.
+
+**Clinical-workflow narration (per-stage coaching text):**
+
+- **ask** — Pick one patient or family question first; then choose a book that fits their stage, literacy, culture, and immediate clinical need.
+- **mse** — Use narratives to understand meaning, shame, identity, ambivalence, and family burden rather than only diagnostic facts.
+- **safety** — Do not present a book as treatment, crisis care, or a substitute for the team; avoid recommendations that could increase shame or conflict.
+- **say** — Offer resources with permission: 'Some families find this useful; would it be okay if I shared it as one optional support?'
+- **collateral** — Ask whether the family prefers practical guides, lived-experience narratives, or brief handouts before recommending anything.
+- **rounds** — Mention a book recommendation only when it supports psychoeducation, engagement, or discharge planning.
+- **exam** — Link books to clinical themes: LEAP and anosognosia, CRAFT and substance use, family burden, trauma narratives, and stigma.
+- **actions** — Practice medication ambivalence; Open family systems
+
+**Cross-references and tagging:**
+
+- **Related tools:** `family-systems.html`, `communication-practice.html`, `reflection.html`
+- **Communication cases:** `family_meeting_opening_001`, `medication_ambivalence_001`, `collateral_questions_001`
+- **Workflow stages:** `family`, `communication`, `treatment`
+- **Workflow modes:** `ward`, `family`, `5min`
+- **EPA crosswalk:** `EPA7`
+
+#### Page text (as shipped)
+
+# MS3 Book Library — Curated for the Inpatient Rotation
+
+> Curated from Dr. Moss's psychoeducation **book database** (345 titles) for third-year use. Everything here is suggested reading — pick what fits the patient in front of you. Many double as books you can recommend to patients and families.
+
+## Borderline & emotional intensity
+- **[Stop Walking on Eggshells](https://www.amazon.com/dp/1684036895)** — Paul Mason & Randi Kreger. Essential family guide for living with someone with borderline personality disorder—combines validation with limit-setting strategies.
+- **[I Hate You](https://www.amazon.com/dp/0593418492)** — Jerold Kreisman & Hal Straus.
+- **[The Buddha and the Borderline](https://www.amazon.com/dp/157224710X)** — Kiera Van Gelder. Personal recovery story integrating DBT and Buddhist practice.
+- **[Borderline Personality Disorder Demystified](https://www.amazon.com/dp/0738220248)** — Robert Friedel. Comprehensive medical guide to understanding and treating BPD.
+
+## Family, codependency & boundaries
+- **[Codependent No More](https://www.amazon.com/dp/0894864025)** — Melody Beattie. Classic guide to understanding and overcoming codependent patterns—learn to care for others without losing yourself.
+- **[Adult Children of Emotionally Immature Parents](https://www.amazon.com/dp/1626251703)** — Lindsay Gibson. Understanding and healing from emotionally immature parents—recognizing patterns and building healthier relationships.
+- **[Set Boundaries Find Peace](https://www.amazon.com/dp/0593192095)** — Nedra Glover Tawwab. Practical guide to setting healthy boundaries in relationships, work, and family—learn to say no without guilt and protect your peace.
+
+## Communication & difficult conversations
+- **[Crucial Conversations](https://www.amazon.com/dp/1260474186)** — Kerry Patterson et al. Tools for high-stakes discussions with emotional safety and mutual purpose.
+- **[Nonviolent Communication](https://www.amazon.com/dp/189200528X)** — Marshall Rosenberg. Four-step process for compassionate communication and conflict resolution—focuses on needs rather than blame.
+
+## Attachment & relationships
+- **[Hold Me Tight](https://www.amazon.com/dp/031611300X)** — Sue Johnson. Emotionally Focused Therapy guide to secure attachment—seven conversations for transforming relationships.
+- **[Attached](https://www.amazon.com/dp/1585429139)** — Amir Levine & Rachel Heller. Science-based guide to adult attachment styles—explains relationship patterns and offers strategies for building secure connections.
+- **[Wired for Love](https://www.amazon.com/dp/1608820580)** — Stan Tatkin.
+
+## Trauma & PTSD
+- **[The Body Keeps the Score](https://www.amazon.com/dp/0143127748)** — Bessel van der Kolk. Groundbreaking exploration of trauma's impact on the body and brain—integrating neuroscience with body-based healing approaches.
+- **[The Pain We Carry: Healing from Complex PTSD for People of Color](https://www.amazon.com/dp/1684039312)** — Natalie Y. Gutiérrez. Addresses complex PTSD specifically for people of color, validating the impact of racial trauma, discrimination, and intergenerational trauma. Offers culturally-responsive tools for healing using evidence-based approaches.
+- **[8 Keys to Safe Trauma Recovery](https://www.amazon.com/dp/0393706052)** — Babette Rothschild.
+- **[What Happened to You?](https://www.amazon.com/dp/1250223180)** — Bruce Perry & Oprah Winfrey. Bruce Perry and Oprah Winfrey explore trauma through neuroscience—asking 'What happened to you?' not 'What's wrong with you?'.
+
+## Addiction (incl. Gabor Maté)
+- **[In the Realm of Hungry Ghosts](https://www.amazon.com/dp/155643880X)** — Gabor Maté. A compassionate exploration of addiction as rooted in trauma and attachment wounds—helps families understand why people struggle and how healing happens.
+- **[When the Body Says No](https://www.amazon.com/dp/0470923350)** — Gabor Maté.
+- **[Beyond Addiction](https://www.amazon.com/dp/1476709475)** — Jeffrey Foote et al. The CRAFT approach for families—evidence-based strategies to help a loved one with addiction find motivation for change without confrontation or ultimatums.
+- **[This Naked Mind](https://www.amazon.com/dp/0525537236)** — Annie Grace. A psychological approach to changing your relationship with alcohol—rewires subconscious beliefs so you no longer want to drink.
+- **[Addict in the Family](https://www.amazon.com/dp/1616499559)** — Beverly Conyers. Helps families understand addiction's impact on the whole family system—practical guidance for supporting recovery while protecting yourself.
+
+## Mood, bipolar & depression
+- **[An Unquiet Mind](https://www.amazon.com/dp/0679763309)** — Kay Redfield Jamison. Kay Redfield Jamison's memoir of living with bipolar disorder—powerful testimony from a leading psychologist.
+- **[Loving Someone with Bipolar Disorder](https://www.amazon.com/dp/1608822192)** — Julie Fast & John Preston. Family guide to understanding and supporting someone with bipolar disorder—covers symptoms, treatment, and daily living.
+- **[Feeling Good](https://www.amazon.com/dp/0380810336)** — David Burns. The original CBT self-help classic—proven techniques for overcoming depression and anxiety through changing thought patterns.
+- **[Reasons to Stay Alive](https://www.amazon.com/dp/0143128728)** — Matt Haig. A memoir of surviving depression and finding reasons to live—honest, hopeful, and practical insights from someone who's been there.
+- **[Noonday Demon](https://www.amazon.com/dp/1501123882)** — Andrew Solomon.
+
+## Psychosis & serious mental illness
+- **[I Am Not Sick I Don't Need Help!](https://www.amazon.com/dp/0985206705)** — Xavier Amador. The LEAP method for families when a loved one doesn't recognize they're ill—Listen, Empathize, Agree, Partner to help them accept treatment.
+- **[The Complete Family Guide to Schizophrenia](https://www.amazon.com/dp/1593852738)** — Kim Mueser & Susan Gingerich. Updated comprehensive family guide to schizophrenia from leading researchers—practical strategies for recovery.
+- **[The Center Cannot Hold](https://www.amazon.com/dp/1401309445)** — Elyn Saks. Memoir by law professor living with schizophrenia—powerful testimony that recovery and achievement are possible.
+
+## ADHD (Russell Barkley)
+- **[Taking Charge of Adult ADHD](https://www.amazon.com/dp/1462546854)** — Russell Barkley. Evidence-based guide from leading ADHD researcher—comprehensive strategies for managing adult ADHD.
+- **[Driven to Distraction](https://www.amazon.com/dp/0307743152)** — Edward Hallowell & John Ratey. The classic guide to understanding ADHD across the lifespan—helps you recognize symptoms, understand the diagnosis, and develop practical coping strategies.
+- **[Scattered Minds](https://www.amazon.com/dp/0593714377)** — Gabor Maté. Gabor Maté's trauma-informed understanding of ADHD—links attention challenges to stress and development.
+
+## Child development & the brain (Dan Siegel)
+- **[Whole-Brain Child](https://www.amazon.com/dp/0553386697)** — Daniel Siegel & Tina Payne Bryson.
+- **[Brainstorm](https://www.amazon.com/dp/158542935X)** — Daniel Siegel.
+- **[Mindsight](https://www.amazon.com/dp/0553386395)** — Daniel Siegel.
+- **[Power of Showing Up](https://www.amazon.com/dp/1524797715)** — Daniel Siegel & Tina Payne Bryson.
+
+## Meaning, time & acceptance (Frankl, Burkeman)
+- **[Four Thousand Weeks](https://www.amazon.com/dp/1250849357)** — Oliver Burkeman. A philosophical take on time management that reduces anxiety by accepting life's limits—embrace finitude to find meaning and peace.
+- **[Man's Search for Meaning](https://www.amazon.com/dp/0807014273)** — Viktor Frankl.
+- **[Happiness Trap](https://www.amazon.com/dp/1645471160)** — Russ Harris.
+- **[When Things Fall Apart](https://www.amazon.com/dp/1611803438)** — Pema Chödrön. Buddhist wisdom for staying present when life falls apart—learn to embrace uncertainty and find peace in the midst of difficulty.
+- **[Full Catastrophe Living](https://www.amazon.com/dp/0345536932)** — Jon Kabat-Zinn. The foundational guide to mindfulness-based stress reduction (MBSR), teaching meditation and awareness practices for managing pain, stress, and illness.
+
+## Thinking, growth & connection (Grant, Brown)
+- **[Think Again](https://www.amazon.com/dp/1984878107)** — Adam Grant.
+- **[Give and Take](https://www.amazon.com/dp/0143124986)** — Adam Grant.
+- **[Atlas of the Heart](https://www.amazon.com/dp/0399592555)** — Brené Brown. Brené Brown's guide to understanding 87 emotions and experiences—building emotional vocabulary for deeper connection.
+- **[Daring Greatly: How the Courage to Be Vulnerable Transforms the Way We Live](https://www.amazon.com/dp/1592408419)** — Brené Brown. Brené Brown's groundbreaking book on vulnerability and courage. Vulnerability—showing up and being seen with no guarantee of outcome—is the only path to love, belonging, creativity, and joy. Explores how courage to be vulnerable transforms relationships, parenting, and leadership. Practical guide to daring greatly despite fear of failure.
+
+## Grief & loss
+- **[It's OK That You're Not OK](https://www.amazon.com/dp/1622039076)** — Megan Devine. A revolutionary approach to grief that says it's okay to not be okay—honors your pain without rushing you to 'move on' or find silver linings.
+- **[Bearing the Unbearable](https://www.amazon.com/dp/1614292965)** — Joanne Cacciatore. A compassionate guide for traumatic grief—mindfulness-based practices for bearing unbearable loss with self-compassion and presence.
+- **[No Time to Say Goodbye](https://www.amazon.com/dp/0385485514)** — Carla Fine.
+- **[Option B](https://www.amazon.com/dp/1524732680)** — Sheryl Sandberg & Adam Grant.
+
+## Serious illness & mortality
+- **[Being Mortal](https://www.amazon.com/dp/1250076226)** — Atul Gawande. Rethinking medicine's approach to mortality—how to focus on quality of life at end of life.
+- **[A Beginner's Guide to the End](https://www.amazon.com/dp/1501157167)** — BJ Miller & Shoshana Berger. A practical, warm guide to preparing for end of life—covers medical decisions, paperwork, relationships, and finding peace in the process.
+
+*Joshua Moss, MD | Psychiatrist · Curated from the library book database. Educational; suggested reading, not required.*
+
+
+---
+
 ## Podcast Library (Psychiatry & Psychotherapy)
 
 - **Slug:** `podcast_library.md` · **Type:** md · **Sidebar:** listed
@@ -781,7 +1097,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Conduct disorder before age 15 is required for antisocial personality disorder; always rule out mania and substances.
 - Sort delirium vs dementia vs depression, rule out the reversible causes, and name the subtype — because subtype decides what you prescribe and what you must not.
 - Onset, course, and attention separate delirium (acute, fluctuating, inattentive) from dementia.
-- Screen every new diagnosis for reversible causes (B12/folate, TSH, CMP, ± RPR/HIV, NPH).
+- Screen every new diagnosis for reversible causes — labs (B12/folate, TSH, CMP, ± RPR/HIV) plus structural imaging, which is the only way NPH or a chronic subdural turns up.
 - Antipsychotics carry a black-box mortality warning in dementia — and are dangerous in Lewy body disease.
 - New, fluctuating confusion with inattention is delirium, not 'worse dementia' — work it up before relabeling.
 - Depression (pseudodementia)

@@ -152,7 +152,7 @@
       "handoff": "On rounds, describe the patient's words, context, observed behavior, protective factors, uncertainty, and supervision plan.",
       "links": [
         {"label": "Suicide Risk and Safety", "kind": "page", "target": "pg_suicide.md"},
-        {"label": "C-SSRS Screener", "kind": "tool", "target": "cssrs.html"},
+        {"label": "C-SSRS — Official Form & Training", "kind": "tool", "target": "cssrs.html"},
         {"label": "Agitation and Restraint", "kind": "page", "target": "agitation.md"},
         {"label": "Decision Aids", "kind": "tool", "target": "decision-aids.html"}
       ]

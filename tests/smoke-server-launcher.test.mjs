@@ -48,28 +48,103 @@ function isPidAlive(pid) {
   }
 }
 
-function processGroupHasMembers(pgid) {
-  const rows = spawnSync('ps', ['-axo', 'pid=,pgid='], { encoding: 'utf8' }).stdout.split(/\r?\n/);
-  return rows.some((row) => {
-    const match = row.match(/^\s*(\d+)\s+(\d+)\s*$/);
-    return match && Number(match[2]) === pgid;
+// One `ps` snapshot of a process group. Zombies are listed on purpose: a
+// process that has exited but has not yet been reaped is still a member of its
+// process group as far as kill(2) is concerned, so teardown has to see it.
+function processGroupMembers(pgid) {
+  const result = spawnSync('ps', ['-axo', 'pid=,pgid=,state=,command='], { encoding: 'utf8' });
+  if (result.error || result.status !== 0 || typeof result.stdout !== 'string') {
+    // Never degrade to "the group looks empty" — that is precisely the answer
+    // that would let a real survivor through. An unreadable `ps` is a failure.
+    const detail = result.error ? result.error.message : `exit ${result.status}`;
+    throw new Error(`ps failed while inspecting process group ${pgid}: ${detail}`);
+  }
+  return result.stdout.split(/\r?\n/).flatMap((row) => {
+    const match = row.match(/^\s*(\d+)\s+(\d+)\s+(\S+)\s+(.*)$/);
+    if (!match || Number(match[2]) !== pgid) return [];
+    return [{ pid: Number(match[1]), state: match[3], command: match[4] }];
   });
+}
+
+function processGroupHasMembers(pgid) {
+  return processGroupMembers(pgid).length > 0;
+}
+
+// Members that are still running. A leading `Z` is a zombie: already exited, no
+// signal can reach it, and nothing about it is left to clean up.
+function liveProcessGroupMembers(pgid) {
+  return processGroupMembers(pgid).filter(({ state }) => !state.startsWith('Z'));
+}
+
+function describeProcesses(members) {
+  return members.map(({ pid, state, command }) => `${pid} [${state}] ${command}`).join(', ');
+}
+
+// kill(2) on a process group answers three ways, and the third is why this
+// helper exists:
+//   0     - at least one member was signalled
+//   ESRCH - no such process group; nothing was there
+//   EPERM - the group exists but NOT ONE member could be signalled
+// Darwin keeps unreaped zombies on the group's member list while refusing to
+// signal them, so a group that has just been fully terminated reports EPERM —
+// not ESRCH — until the reaper catches up. That is a *completed* teardown.
+// Tolerating EPERM outright would also swallow a genuine "it would not die"
+// failure, so it is never assumed: every EPERM is resolved against `ps`. No live
+// member means the group really is finished; a live survivor is re-thrown with
+// the offending processes named.
+function signalProcessGroup(pgid, signal) {
+  try {
+    process.kill(-pgid, signal);
+  } catch (error) {
+    if (error.code === 'ESRCH') return;
+    if (error.code === 'EPERM') {
+      const survivors = liveProcessGroupMembers(pgid);
+      if (survivors.length === 0) return;
+      error.message = `${error.message} (process group ${pgid} still runs `
+        + `${describeProcesses(survivors)})`;
+    }
+    throw error;
+  }
+}
+
+// One syscall in the common case. `ps` is consulted only to disambiguate the
+// EPERM answer above, which happens at most once per group per teardown.
+function processGroupIsRunning(pgid) {
+  try {
+    process.kill(-pgid, 0);
+    return true;
+  } catch (error) {
+    if (error.code === 'ESRCH') return false;
+    if (error.code === 'EPERM') return liveProcessGroupMembers(pgid).length > 0;
+    throw error;
+  }
+}
+
+async function waitForProcessGroupToStop(pgid, timeoutMs) {
+  const deadline = Date.now() + timeoutMs;
+  while (processGroupIsRunning(pgid)) {
+    if (Date.now() >= deadline) return false;
+    await sleep(25);
+  }
+  return true;
 }
 
 async function terminateProcessGroup(pgid) {
   if (!Number.isInteger(pgid) || pgid <= 0) return;
-  try {
-    process.kill(-pgid, 'SIGTERM');
-  } catch (error) {
-    if (error.code === 'ESRCH') return;
-    throw error;
+  signalProcessGroup(pgid, 'SIGTERM');
+  // Escalate only against something that is actually still running, rather than
+  // firing SIGKILL at a fixed deadline and hoping.
+  if (!(await waitForProcessGroupToStop(pgid, 150))) {
+    signalProcessGroup(pgid, 'SIGKILL');
+    await waitForProcessGroupToStop(pgid, 5_000);
   }
-  await sleep(150);
-  try {
-    process.kill(-pgid, 'SIGKILL');
-  } catch (error) {
-    if (error.code !== 'ESRCH') throw error;
-  }
+  // Teardown is finished only when nothing from the group is still running.
+  // Reaping is the kernel's business and deliberately not waited on.
+  const survivors = processGroupIsRunning(pgid) ? liveProcessGroupMembers(pgid) : [];
+  assert.equal(
+    survivors.length, 0,
+    `process group ${pgid} survived teardown: ${describeProcesses(survivors)}`,
+  );
 }
 
 function createTestContext(t) {
@@ -376,6 +451,66 @@ async function assertFailureCleanedUp(stateDir, ports) {
   assert.equal(fs.existsSync(path.join(stateDir, 'server-pids.tsv')), false);
   await waitForPortsClosed(ports);
 }
+
+// Builds a process group with exactly the membership a teardown races. The
+// holder never wait()s on its children, so a child that has exited stays an
+// unreaped zombie for as long as the holder lives.
+function spawnZombieGroup(t, { withLiveMember = false } = {}) {
+  const script = [
+    'import os, subprocess, sys, time',
+    // The child leads a brand-new process group, so its PID doubles as the
+    // group id once it becomes a zombie. setpgid rather than a new session: a
+    // process may only join a group inside its own session, and the live member
+    // below has to be able to join this one.
+    "z = subprocess.Popen([sys.executable, '-c',",
+    "                      'import os; os.setpgid(0, 0); raise SystemExit(0)'])",
+    'time.sleep(0.3)',
+    'group = z.pid',
+    'live = 0',
+    ...(withLiveMember ? [
+      "running = subprocess.Popen(['/bin/sleep', '60'], preexec_fn=lambda: os.setpgid(0, group))",
+      'time.sleep(0.3)',
+      'live = running.pid',
+    ] : []),
+    'print(group, live, flush=True)',
+    'time.sleep(60)',
+  ].join('\n');
+  const holder = spawn('python3', ['-c', script], { stdio: ['ignore', 'pipe', 'inherit'] });
+  t.after(() => { holder.kill('SIGKILL'); });
+  return new Promise((resolve, reject) => {
+    holder.once('error', reject);
+    holder.stdout.setEncoding('utf8');
+    holder.stdout.once('data', (chunk) => {
+      const [pgid, livePid] = chunk.trim().split(/\s+/).map(Number);
+      resolve({ pgid, livePid: livePid || null });
+    });
+  });
+}
+
+test('teardown accepts a process group that holds only unreaped zombies', async (t) => {
+  const { pgid } = await spawnZombieGroup(t);
+  await waitFor(() => processGroupHasMembers(pgid), 'zombie group was never created');
+  // The group is non-empty yet nothing in it is running. Darwin answers EPERM
+  // instead of ESRCH for exactly this state, which is the flake: it is reached
+  // whenever the reaper has not caught up with children the teardown just
+  // killed, and the old helper rethrew it straight out of the after() hook.
+  assert.deepEqual(liveProcessGroupMembers(pgid), [], 'fixture must leave nothing running');
+  await terminateProcessGroup(pgid);
+});
+
+test('teardown still kills a live member of a group that also holds a zombie', async (t) => {
+  const { pgid, livePid } = await spawnZombieGroup(t, { withLiveMember: true });
+  const before = await waitFor(
+    () => { const live = liveProcessGroupMembers(pgid); return live.length === 1 ? live : null; },
+    'live member never joined the zombie group',
+  );
+  assert.deepEqual(before.map(({ pid }) => pid), [livePid]);
+  assert.equal(processGroupHasMembers(pgid), true, 'the zombie is still a group member');
+  // Tolerating the zombie must not be mistaken for "this group is finished":
+  // the running member has to be signalled and gone before teardown returns.
+  await terminateProcessGroup(pgid);
+  assert.deepEqual(liveProcessGroupMembers(pgid), [], 'teardown left a live process behind');
+});
 
 test('--print-config reports the default CI mappings without starting servers', async (t) => {
   const context = createTestContext(t);

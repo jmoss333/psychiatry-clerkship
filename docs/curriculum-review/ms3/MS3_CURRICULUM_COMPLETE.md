@@ -3,7 +3,7 @@
 # MS3 curriculum — complete content transcript for clinical review
 
 **Site:** `une-ms3-psychiatry` · **Audience:** MS3 — UNE medical students
-**Generated:** 2026-09-03 from build `081e4f8` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
+**Generated:** 2026-09-03 from build `6f43291` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
 
 ## Who this is for
 
@@ -19,7 +19,7 @@ This transcript is assembled from the **built site**, not the source tree, so it
 | Narrative pages (markdown) | 80 |
 | Interactive tools | 23 |
 | Deep-link-only (hidden) surfaces | 10 |
-| Words of narrative curriculum | 99,869 |
+| Words of narrative curriculum | 100,777 |
 | Practice question-bank items | 192 |
 | Audio-companion quiz decks / questions | 79 / 437 |
 | Communication cases | 12 |
@@ -83,7 +83,7 @@ High-yield places to concentrate: the `topic_meta` **can't-miss**, **rule-out** 
 
 # MS3 · Navigation map
 
-Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-03 @ `081e4f8`.
+Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-03 @ `6f43291`.
 
 ## Orientation  *(pinned)*
 
@@ -97,7 +97,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 6 | Week 2 — Mood/Psychosis/Pharm | `week2.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_2_Mood_Psychosis_Pharm/README.md` | 106 |
 | 7 | Week 3 — Psychotherapy/Personality | `week3.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_3_Psychotherapy_Personality/README.md` | 119 |
 | 8 | Week 4 — Family/Systems/EE | `week4.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_4_Family_Systems_EE/README.md` | 99 |
-| 9 | Week 5 — Acute/Emergency | `week5.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_5_Acute_Emergency/README.md` | 178 |
+| 9 | Week 5 — Acute/Emergency | `week5.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_5_Acute_Emergency/README.md` | 180 |
 | 10 | Week 6 — Integration/Exam | `week6.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_6_Integration_Exam/README.md` | 79 |
 
 ## Start the Encounter
@@ -119,16 +119,16 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 3 | Formulation & DDx | `pg_formulation.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/MS3/Student_Ready_Pack/02_pocket_guides/formulation_differential_pocket_guide.md` | 643 |
 | 4 | Case Formulation | `case_formulation.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Case_Formulation/case_formulation_inpatient_teaching.md` | 634 |
 | 5 | Medical Workup & Mimics | `medical_workup.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Medical_Workup/medical_workup_inpatient_teaching.md` | 574 |
-| 6 | Mood | `t_mood.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/Mood/mood_disorders_inpatient_teaching.md` | 1232 |
+| 6 | Mood | `t_mood.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/Mood/mood_disorders_inpatient_teaching.md` | 1295 |
 | 7 | Psychosis | `t_psychosis.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/Psychosis/psychotic_disorders_inpatient_teaching.md` | 1467 |
 | 8 | Anxiety/Trauma/OCD | `t_anxiety.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/Anxiety/anxiety_trauma_ocd_inpatient_teaching.md` | 1430 |
 | 9 | Personality | `t_personality.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Personality/personality_disorders_inpatient_teaching.md` | 1322 |
 | 10 | Substance Use | `t_sud.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md` | 1345 |
 | 11 | Geriatric | `t_geri.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Geriatric/geriatric_psychiatry_inpatient_teaching.md` | 893 |
-| 12 | Perinatal | `t_perinatal.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/Perinatal/perinatal_psychiatry_inpatient_teaching.md` | 1145 |
+| 12 | Perinatal | `t_perinatal.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/Perinatal/perinatal_psychiatry_inpatient_teaching.md` | 1254 |
 | 13 | Neurodevelopmental Disorders | `t_neurodev.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Neurodevelopmental/neurodevelopmental_disorders_inpatient_teaching.md` | 1143 |
 | 14 | Eating Disorders | `t_eating.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/Eating_Disorders/eating_disorders_inpatient_teaching.md` | 1336 |
-| 15 | Neurocognitive (Dementia) | `t_neurocog.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/Neurocognitive/neurocognitive_disorders_inpatient_teaching.md` | 880 |
+| 15 | Neurocognitive (Dementia) | `t_neurocog.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/Neurocognitive/neurocognitive_disorders_inpatient_teaching.md` | 933 |
 | 16 | Somatic Symptom & Related | `t_somatic.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Somatic/somatic_symptom_disorders_inpatient_teaching.md` | 757 |
 | 17 | Sleep-Wake Disorders | `t_sleep.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Sleep/sleep_wake_disorders_inpatient_teaching.md` | 675 |
 | 18 | Dissociative Disorders | `t_dissociative.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Dissociative/dissociative_disorders_inpatient_teaching.md` | 893 |
@@ -144,7 +144,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 1 | Suicide Risk & Safety | `pg_suicide.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `14_Tracks/MS3/Student_Ready_Pack/02_pocket_guides/suicide_risk_and_safety_pocket_card.md` | 868 |
 | 2 | Suicide Risk & Safety Planning | `suicide.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `04_Acute_and_Safety/Suicide_Risk_and_Safety_Planning/suicide_risk_safety_planning_inpatient_teaching.md` | 994 |
 | 3 | Columbia C-SSRS — Official Form & Training | `cssrs.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `04_Acute_and_Safety/Suicide_Risk_and_Safety_Planning/columbia-cssrs-screener.html` |  |
-| 4 | Violence Risk | `violence.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `04_Acute_and_Safety/Violence_Risk/violence_risk_inpatient_teaching.md` | 957 |
+| 4 | Violence Risk | `violence.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `04_Acute_and_Safety/Violence_Risk/violence_risk_inpatient_teaching.md` | 1091 |
 | 5 | Violence Risk (FRST) | `violence.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `04_Acute_and_Safety/Violence_Risk/violence-risk-one-pager.html` |  |
 | 6 | Agitation & Restraint | `agitation.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `04_Acute_and_Safety/Agitation_and_Restraint/agitation_restraint_inpatient_teaching.md` | 1208 |
 | 7 | Catatonia | `catatonia.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `04_Acute_and_Safety/Catatonia/catatonia_inpatient_teaching.md` | 639 |
@@ -163,7 +163,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 1 | Psychopharmacology Primer | `psychopharm_primer.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md` | 1287 |
 | 2 | Medication Monitoring & Labs | `med_monitoring.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md` | 583 |
 | 3 | Protocol Library | `protocol_library.md` | md | listed | status=`reviewed` · riskKind=`local-policy` · riskLevel=`high` | `05_Psychopharmacology/Protocol_Library/protocol_library_inpatient.md` | 327 |
-| 4 | ECT & Neuromodulation | `ect_neuromodulation.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `05_Psychopharmacology/ECT_Neuromodulation/ect_neuromodulation_inpatient_teaching.md` | 660 |
+| 4 | ECT & Neuromodulation | `ect_neuromodulation.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `05_Psychopharmacology/ECT_Neuromodulation/ect_neuromodulation_inpatient_teaching.md` | 681 |
 | 5 | Treatment Basics | `exp_tx.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/MS3/Student_Ready_Pack/04_expansion_modules/treatment_basics_digest.md` | 648 |
 | 6 | Algorithms & Decision Aids | `decision-aids.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `04_Acute_and_Safety/Decision_Aids/decision-aids.html` |  |
 | 7 | Interaction Cards — One Action | `interaction-cards.html` | tool | listed | status=`reviewed` · riskKind=`formulary` · riskLevel=`high` | `05_Psychopharmacology/Monitoring_and_Labs/interaction-cards.html` |  |
@@ -186,7 +186,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | # | Title | Slug | Type | Sidebar | Governance | Source path | Words |
 |---|---|---|---|---|---|---|---|
 | 1 | Family Systems Practice | `family-systems.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `06_Family_and_Relational/family-systems-practice.html` |  |
-| 2 | I Need Collateral: 10-Minute Workflow | `collateral_workflow.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `06_Family_and_Relational/collateral_micro_workflow.md` | 1047 |
+| 2 | I Need Collateral: 10-Minute Workflow | `collateral_workflow.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `06_Family_and_Relational/collateral_micro_workflow.md` | 1074 |
 | 3 | Family & Discharge | `exp_family.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/MS3/Student_Ready_Pack/04_expansion_modules/family_discharge_student_module.md` | 1254 |
 | 4 | Family Meeting Playbook (90-min) | `family_playbook.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `06_Family_and_Relational/family_meeting_playbook_90min.md` | 990 |
 | 5 | Family Therapy Modalities | `family_modalities.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `06_Family_and_Relational/family_therapy_modalities_inpatient.md` | 685 |
@@ -208,7 +208,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 3 | Daily Review (Spaced Repetition) | `review.html` | tool | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`moderate` | `07_Evidence_and_Reading/Landmark_Trials/review.html` |  |
 | 4 | Shelf Mode — Exam Simulation | `shelf-mode.html` | tool | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`moderate` | `07_Evidence_and_Reading/Landmark_Trials/shelf-mode.html` |  |
 | 5 | COMAT & Shelf Review | `shelf.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `14_Tracks/MS3/Student_Ready_Pack/07_shelf_guide/shelf_review_guide.md` | 742 |
-| 6 | Rapid Review — Buzzwords | `rapid_review.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `09_Exam_Prep/Shelf_High_Yield/rapid_review_buzzwords.md` | 989 |
+| 6 | Rapid Review — Buzzwords | `rapid_review.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `09_Exam_Prep/Shelf_High_Yield/rapid_review_buzzwords.md` | 996 |
 | 7 | OSCE Stations | `osce.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `14_Tracks/MS3/Student_Ready_Pack/06_osce_cases/osce_station_set.md` | 1546 |
 | 8 | Practice Cases | `cases.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/MS3/Student_Ready_Pack/08_synthetic_cases/synthetic_practice_cases.md` | 849 |
 | 9 | Landmark Trials — Listen & Test | `landmark_trials.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `07_Evidence_and_Reading/Landmark_Trials/landmark_trials_page.md` | 881 |
@@ -223,12 +223,12 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 3 | Borderline Personality Disorder (Aug 27) | `cotw_20260827_bpd_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-27_borderline-personality-disorder_MS3.md` | 1919 |
 | 4 | Panic Disorder (Aug 10) | `cotw_20260810_panic_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-10_anxiety-panic-disorder_MS3.md` | 3752 |
 | 5 | Lithium — Monitoring & Toxicity (Aug 3) | `cotw_20260803_lithium_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-03_lithium-monitoring-toxicity-interactions_MS3.md` | 3464 |
-| 6 | Opioid Use Disorder (Jul 27) | `cotw_20260727_oud_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-27_opioid-use-disorder_MS3.md` | 2624 |
-| 7 | Alcohol Withdrawal & DT (Jul 26) | `cotw_20260726_etohwd_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-26_alcohol-withdrawal-delirium-tremens_MS3.md` | 2520 |
-| 8 | Suicide Risk & Safety Planning (Jul 23) | `cotw_20260723_suiciderisk_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`high` | `08_Cases_and_Simulation/case-of-the-week/2026-07-23_suicide-risk-assessment-safety-planning_MS3.md` | 2287 |
-| 9 | MDD — Treatment Selection (Jul 20) | `cotw_20260720_mdd_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-20_mdd-treatment-selection-augmentation_MS3.md` | 1290 |
+| 6 | Opioid Use Disorder (Jul 27) | `cotw_20260727_oud_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-27_opioid-use-disorder_MS3.md` | 2753 |
+| 7 | Alcohol Withdrawal & DT (Jul 26) | `cotw_20260726_etohwd_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-26_alcohol-withdrawal-delirium-tremens_MS3.md` | 2601 |
+| 8 | Suicide Risk & Safety Planning (Jul 23) | `cotw_20260723_suiciderisk_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`high` | `08_Cases_and_Simulation/case-of-the-week/2026-07-23_suicide-risk-assessment-safety-planning_MS3.md` | 2403 |
+| 9 | MDD — Treatment Selection (Jul 20) | `cotw_20260720_mdd_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-20_mdd-treatment-selection-augmentation_MS3.md` | 1434 |
 | 10 | Bipolar Mania (Jul 20) | `cotw_20260720_bipolar_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-20_bipolar-mania_MS3.md` | 1664 |
-| 11 | Acute Agitation & Delirium (Jul 13) | `cotw_20260713_agitation_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-13_acute-agitation-delirium_MS3.md` | 1713 |
+| 11 | Acute Agitation & Delirium (Jul 13) | `cotw_20260713_agitation_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-13_acute-agitation-delirium_MS3.md` | 1735 |
 | 12 | Serotonin Syndrome vs NMS (Jul 9) | `cotw_20260709_ssnms_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-09_serotonin-syndrome-vs-nms_MS3.md` | 1504 |
 
 ## Evidence and Reference
@@ -944,7 +944,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **Slug:** `week5.md` · **Type:** md · **Sidebar:** hidden (deep link only)
 - **Source:** `01_Six_Week_Curriculum/Week_5_Acute_Emergency/README.md`
 - **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
-- **Length:** 178 words
+- **Length:** 180 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -957,7 +957,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 
 **Key points (bulleted card):**
 
-- The skills of the week are the agitation ladder and Violence-Risk/Brøset tool, delirium prevention and cause search, and supervised CIWA-Ar/COWS trend interpretation — all are bedside tools available in the hub sidebar.
+- The skills of the week are the agitation ladder and Violence Risk (FRST) tool, delirium prevention and cause search, and supervised CIWA-Ar/COWS trend interpretation — all are bedside tools available in the hub sidebar.
 - What is different from Week 1: Week 1 teaches spot it and call now; Week 5 asks you to explain the likely driver, try least-restrictive communication when safe, use structured tools with supervision, and document what would change the plan.
 - Pocket references to keep on hand: restraint checklist, benzo taper protocol, and clozapine ANC monitoring schedule.
 - Case of the week: substance plus psychosis plus risk composite — designed to integrate the acute safety calls covered throughout the rotation.
@@ -990,7 +990,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 
 **Suggested reading:** Franklin 2017 (limits of suicide prediction) · Volkow 2016 (addiction).
 
-**Skills of the week:** the **agitation ladder** + **Violence-Risk/Brøset** tool (the Acute & Safety pages); **Delirium** prevention and medical-cause search; **CIWA-Ar/COWS** trend interpretation with the Withdrawal card; supervised documentation of what triggered escalation, what was tried first, and what would change the plan.
+**Skills of the week:** the **agitation ladder** + **Violence Risk (FRST)** tool (the Acute & Safety pages); **Delirium** prevention and medical-cause search; **CIWA-Ar/COWS** trend interpretation with the Withdrawal card; supervised documentation of what triggered escalation, what was tried first, and what would change the plan.
 
 **What is different from Week 1:** Week 1 teaches "spot it and call now." Week 5 asks you to explain the driver, try least-restrictive communication when safe, use the structured tool with supervision, document the risk reasoning, and debrief after restraint, seclusion, medication, transfer, or a near miss.
 
@@ -4734,13 +4734,19 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Boundary: fictional composites only. No patient information, no free text, no diagnosis or treatment advice. Use with supervision and local policy.
 - Loading reasoning cases...
 
-**Authored clinical strings (37):**
+**Authored clinical strings (43):**
 
+- s authored quality. */ /* ---- cw_srs_v1 store adapter (shared) ------------------------------------ Every tool that schedules a card writes the SAME store under the SAME shape. This file is the one definition of that shape; `applyGrade` (the SM-2 step itself) is a separate snippet, sm2_apply_grade.js, and stays that way. Why this is shared rather than copied into each tool: `srsFresh` fixes the store
+- s daily allowance or dropping a stats field the dashboard reads. The failure is invisible and arrives only for learners who happen to open the wrong tool first. Card id namespaces live in the consumers, not here: deck# and TOPIC# (Daily Review), QB# (question bank), FAM# (family retrieval, fam_retrieval.js), COMM# and REASON# (the two tools below). spa_index.html
+- s authored quality rather than asked for. `best` is a clean recall (Good, not Easy — Easy would stretch the interval on a four-way recognition task the learner may well have guessed); `partial` is a hesitant one; anything worse is a lapse. Unknown qualities fail to a lapse so a new quality added to the data can never quietly lengthen an interval. */ function srsGradeForQuality(quality){ if(quality===
+- ) return 3; if(quality===
+- ) return 2; return 1; } /* ==== Canonical SM-2 grader (build-injected — do not edit inside consumer files) ==== Source of truth: 13_Faculty_Resources/_automation/site_build/sm2_apply_grade.js. Consumers carry a SM2_APPLY_GRADE marker comment that common.py
+- s cw_srs_v1 writes stay aggregate/current-state only and are unaffected by that logging. */ /* Deterministic ±15% interval fuzz (opts.fuzzKey): de-synchronizes cohort-seeded cards so due-load avalanches spread out. No fuzzKey (legacy callers) = no fuzz. Also a no-op below ivl 3 d (too short to meaningfully fuzz). Always clamped to [1, 365] regardless of the input interval
 - ]/g,function(c){return {'&':'&',' ':'>','
 - }[c];});} function requestedCaseId(){try{return new URLSearchParams(location.search).get(
 - ;}} function loadAttempts(){try{return JSON.parse(localStorage.getItem(
 - )||{};}catch(_){return {};}} function saveAttempt(caseId,stepId,choice){try{var rec=state.attempts[caseId]||{steps:{}};rec.steps=rec.steps||{};rec.steps[stepId]={choiceId:choice.id,quality:choice.quality,at:new Date().toISOString().slice(0,10)};rec.updatedAt=new Date().toISOString().slice(0,10);state.attempts[caseId]=rec;localStorage.setItem(
-- ,JSON.stringify(state.attempts));}catch(_){}} function caseComplete(c){var rec=state.attempts[c.id];var n=(c.steps||[]).length;if(!rec||!rec.steps||!n)return false;return (c.steps||[]).every(function(st){return rec.steps[st.id];});} function bestCount(c){var rec=state.attempts[c.id];if(!rec||!rec.steps)return 0;return Object.keys(rec.steps).filter(function(k){return rec.steps[k].quality===
+- ,JSON.stringify(state.attempts));}catch(_){} try{srsGradeCard(reasonCardId(caseId,stepId),srsGradeForQuality(choice&&choice.quality));}catch(_){}} function caseComplete(c){var rec=state.attempts[c.id];var n=(c.steps||[]).length;if(!rec||!rec.steps||!n)return false;return (c.steps||[]).every(function(st){return rec.steps[st.id];});} function bestCount(c){var rec=state.attempts[c.id];if(!rec||!rec.steps)return 0;return Object.keys(rec.steps).filter(function(k){return rec.steps[k].quality===
 - ;}).length;} function progressHtml(){var total=state.cases.length||1;var done=state.cases.filter(caseComplete).length;var pct=Math.round(done*100/total);return
 - ;} function setCurrentById(id){for(var i=0;i<state.cases.length;i++){if(state.cases[i].id===id){state.current=i;state.step=0;state.choice=null;return true;}}return false;} function currentCase(){return state.cases[state.current]||state.cases[0];} function currentStep(){var c=currentCase();return c&&c.steps?c.steps[state.step]:null;} function navHtml(){return
 - +state.cases.map(function(c,i){var done=caseComplete(c), best=bestCount(c), total=(c.steps||[]).length;return
@@ -5176,7 +5182,7 @@ Cross the four P's with the biopsychosocial axis and you have a 3×4 grid; you d
 - **Slug:** `t_mood.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `03_Core_Topics/Mood/mood_disorders_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 1,232 words
+- **Length:** 1,295 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -5258,7 +5264,7 @@ Cross the four P's with the biopsychosocial axis and you have a 3×4 grid; you d
 
 **Initial workup** — Keep it focused and decision-relevant: a full MSE with explicit suicide assessment, collateral history (the single highest-yield diagnostic move for distinguishing bipolar from unipolar), medication reconciliation, TSH, CBC, CMP, and urine drug screen. Add a pregnancy test in patients who can become pregnant before starting teratogenic agents, and a head CT/MRI when the picture is atypical, late-onset, or has focal findings.
 
-**Acute inpatient management** — Treatment is medications plus milieu plus safety, layered deliberately. Before starting an antidepressant for depression, screen for bipolarity (e.g., Mood Disorder Questionnaire plus collateral) so you do not destabilize an unrecognized bipolar patient. For unipolar depression, practice measurement-based, sequential treatment in the spirit of STAR*D: pick an agent, dose it adequately, track response with a scale, and switch or augment by protocol rather than by impression. For suicidality and for bipolar illness, lithium deserves specific emphasis — it carries a distinct anti-suicidal effect (Cipriani 2013) and is a first-line maintenance mood stabilizer with the strongest long-term evidence (BALANCE trial). Reserve ECT for severe, psychotic, catatonic, or treatment-resistant depression, for life-threatening states (refusal of food/fluids, acute high suicide risk), and as a preferred option in pregnancy. The milieu is therapeutic, not incidental: protect sleep and circadian rhythm actively, since sleep loss both worsens depression and precipitates mania (Harvey; IPSRT/Frank). For acute mania, reduce stimulation, restore sleep, and start or optimize a mood stabilizer or antipsychotic. Throughout, maintain a safe environment — contraband removal, appropriate observation level, and a collaboratively developed safety plan.
+**Acute inpatient management** — Treatment is medications plus milieu plus safety, layered deliberately. Before starting an antidepressant for depression, screen for bipolarity (e.g., Mood Disorder Questionnaire plus collateral) so you do not destabilize an unrecognized bipolar patient. For unipolar depression, practice measurement-based, sequential treatment in the spirit of STAR*D: pick an agent, dose it adequately, track response with a scale, and switch or augment by protocol rather than by impression. For suicidality and for bipolar illness, lithium deserves specific emphasis — it carries a distinct anti-suicidal effect (Cipriani 2013) and is a first-line maintenance mood stabilizer with the strongest long-term evidence (BALANCE trial). Reserve ECT for severe, psychotic, catatonic, or treatment-resistant depression, for life-threatening states (refusal of food/fluids, acute high suicide risk), and — when illness of that severity occurs in pregnancy — as a preferred option, since the therapeutic seizure works without the systemic fetal drug exposure pharmacotherapy requires. Pregnancy is not itself an ECT indication: for uncomplicated moderate depression in pregnancy, first-line remains psychotherapy and/or an SSRI. The milieu is therapeutic, not incidental: protect sleep and circadian rhythm actively, since sleep loss both worsens depression and precipitates mania (Harvey; IPSRT/Frank). For acute mania, reduce stimulation, restore sleep, and start or optimize a mood stabilizer or antipsychotic. Throughout, maintain a safe environment — contraband removal, appropriate observation level, and a collaboratively developed safety plan.
 
 **What the student does** —
 - Perform and document a focused MSE every day, with an explicit, serial suicide assessment.
@@ -5278,7 +5284,7 @@ without arguing, shaming, or making promises about discharge.
 - New "depression" or "mania" in an older or medically complex patient is delirium until proven otherwise.
 - Lithium is the mood stabilizer with anti-suicidal and best maintenance evidence — use it, and monitor it.
 - Sleep is treatment: protect it to pull patients out of depression and to prevent mania.
-- ECT is not a last resort — it is first-line for psychotic, catatonic, or life-threatening mood states and in pregnancy.
+- ECT is not a last resort — it is first-line for psychotic, catatonic, or life-threatening mood states, and in pregnancy it is a preferred option when illness of that severity demands rapid, definitive treatment. Pregnancy alone is not the indication; the severity is.
 - Lithium runs a **narrow therapeutic window (~0.6–1.2 mEq/L)**: check baseline and periodic renal and thyroid function (and an ECG in older/cardiac patients), and remember NSAIDs, ACE-inhibitors/ARBs, thiazides, and dehydration push levels toward toxicity.
 - For acute mania, first-line is lithium, valproate, or a second-generation antipsychotic — but **avoid valproate in anyone who could become pregnant** (teratogenic, including neural-tube defects); confirm before it is ordered.
 
@@ -5947,7 +5953,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **Slug:** `t_perinatal.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `03_Core_Topics/Perinatal/perinatal_psychiatry_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 1,145 words
+- **Length:** 1,254 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -5962,7 +5968,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 
 - Postpartum psychosis typically appears in the first 1–4 weeks, recurs in 30–50% of subsequent deliveries, and is bipolar-spectrum until proven otherwise — screen for prior mania.
 - The EPDS screens for depression, not psychosis — ask directly about delusions and perceptual disturbance, and screen for manic symptoms separately.
-- Stopping maintenance medication in bipolar disorder nearly triples postpartum relapse risk (~66% off medication vs ~23% on prophylaxis) — 'stop everything' is itself a high-risk clinical decision.
+- Stopping maintenance medication in bipolar disorder nearly triples postpartum relapse risk (~66% off medication vs ~23% on prophylaxis) — but 'don't stop everything' is not 'continue everything': valproate is the agent to be off before conception, with lamotrigine or lithium the maintenance options.
 
 **Can't-miss / red-flag line:**
 
@@ -6023,7 +6029,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 
 **Initial workup** — Focused and decision-relevant: full MSE with explicit suicide assessment, EPDS (Edinburgh Postnatal Depression Scale) screening, and active screening for psychotic and manic symptoms, since the EPDS does not detect psychosis. Order TSH (plus CBC, CMP, and infection workup as the picture dictates) to catch medical mimics. The safety assessment must explicitly include the infant: assess risk to the baby, the parent's current access to the baby, and available supervision. Obtain collateral — partner or family history reframes the differential, especially regarding prior mania or prior postpartum episodes.
 
-**Acute inpatient management** — Anchor each decision to the evidence. Postpartum psychosis requires admission and urgent treatment; consider lithium, antipsychotics, and ECT. For perinatal depression and anxiety, **sertraline and escitalopram** are the usual first-line SSRIs; for postpartum depression specifically, zuranolone is an oral option. Every medication choice in pregnancy and lactation is an individualized risk-benefit discussion, not a reflexive "stop everything" — note specific cautions around lithium and valproate, and weigh that untreated maternal illness itself carries real risk to mother and infant. In bipolar disorder, **stopping maintenance medication nearly triples postpartum relapse** (pooled ~35% overall; ~66% off medication vs ~23% on prophylaxis), so "stop everything" is itself a high-risk decision. Protect sleep aggressively: sleep loss both worsens mood and can precipitate or worsen psychosis, so build the milieu and orders around restoring it. Involve the partner and family throughout — for collateral, for the safety plan, and for the supervised support the patient will need after discharge.
+**Acute inpatient management** — Anchor each decision to the evidence. Postpartum psychosis requires admission and urgent treatment; consider lithium, antipsychotics, and ECT. For perinatal depression and anxiety, **sertraline and escitalopram** are the usual first-line SSRIs; for postpartum depression specifically, zuranolone is an oral option. Every medication choice in pregnancy and lactation is an individualized risk-benefit discussion, not a reflexive "stop everything." The mood stabilizers are not interchangeable here: **valproate is the one to avoid** in pregnancy and in anyone who could become pregnant — the highest teratogenic and neurodevelopmental risk of the group, so plan contraception and a pre-conception switch rather than a mid-pregnancy one; **lithium**'s absolute malformation risk is small and it is often continued for severe bipolar disorder with level monitoring; and **lamotrigine** is the comparatively safer maintenance option, though its levels fall as pregnancy advances, so a patient kept on it needs level tracking rather than a set-and-forget dose. Weigh all of that against the real risk untreated maternal illness itself carries to mother and infant. In bipolar disorder, **stopping maintenance medication nearly triples postpartum relapse** (pooled ~35% overall; ~66% off medication vs ~23% on prophylaxis), so "stop everything" is itself a high-risk decision. Protect sleep aggressively: sleep loss both worsens mood and can precipitate or worsen psychosis, so build the milieu and orders around restoring it. Involve the partner and family throughout — for collateral, for the safety plan, and for the supervised support the patient will need after discharge.
 
 **What the student does** —
 - Administer and document the EPDS, and explicitly screen for psychotic and manic symptoms beyond it.
@@ -6053,7 +6059,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - A clear hour does not rule out psychosis; the waxing/waning course is the illness.
 - The EPDS screens depression, not psychosis — ask about delusions and perceptual disturbance directly.
 - Postpartum OCD intrusive thoughts are ego-dystonic and not command hallucinations — distinguish them to avoid both over- and under-reaction.
-- Stopping all medication is itself a risk decision; untreated perinatal illness endangers mother and infant too.
+- Stopping all medication is itself a risk decision; untreated perinatal illness endangers mother and infant too — but that argument does not extend to valproate, which is the agent to be off before conception rather than continued through it.
 
 **Pair with** — the <a href="tools/cssrs.html" target="_blank" rel="noopener">Columbia C-SSRS official form &amp; training page</a> for structured risk assessment that extends to the infant, and the [suicide-risk & safety pocket card](?page=pg_suicide.md).
 
@@ -6327,7 +6333,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **Slug:** `t_neurocog.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `03_Core_Topics/Neurocognitive/neurocognitive_disorders_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 880 words
+- **Length:** 933 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -6341,7 +6347,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 **Key points (bulleted card):**
 
 - Onset, course, and attention separate delirium (acute, fluctuating, inattentive) from dementia.
-- Screen every new diagnosis for reversible causes (B12/folate, TSH, CMP, ± RPR/HIV, NPH).
+- Screen every new diagnosis for reversible causes — labs (B12/folate, TSH, CMP, ± RPR/HIV) plus structural imaging, which is the only way NPH or a chronic subdural turns up.
 - Antipsychotics carry a black-box mortality warning in dementia — and are dangerous in Lewy body disease.
 
 **Can't-miss / red-flag line:**
@@ -6414,13 +6420,13 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
   - *Frontotemporal* — younger onset with early personality/behavior change or progressive aphasia; memory relatively spared early.
   - *Creutzfeldt-Jakob* — rapidly progressive dementia with myoclonus.
 
-**Initial workup** — Establish the cognitive baseline and trajectory from family and records. Cognitive screen — the **MoCA is more sensitive than the MMSE** for mild impairment and executive/visuospatial domains. Labs to catch reversible causes: CBC, CMP, TSH, B12/folate, and — when indicated — HIV and RPR/treponemal testing. Neuroimaging (CT or MRI) for atypical, rapid, focal, or early-onset presentations. Medication reconciliation to strip anticholinergic and sedative burden. Formally assess **decisional capacity** and safety (driving, wandering, finances, firearms).
+**Initial workup** — Establish the cognitive baseline and trajectory from family and records. Cognitive screen — the **MoCA is more sensitive than the MMSE** for mild impairment and executive/visuospatial domains. Labs to catch reversible causes: CBC, CMP, TSH, B12/folate, and — when indicated — HIV and RPR/treponemal testing. Neuroimaging (CT or MRI) as part of the initial workup of any new cognitive diagnosis — it is the only way the NPH and chronic subdural hematoma on the reversible list above get found — with MRI preferred, and expedited for atypical, rapid, focal, or early-onset presentations. Medication reconciliation to strip anticholinergic and sedative burden. Formally assess **decisional capacity** and safety (driving, wandering, finances, firearms).
 
 **Acute inpatient management** — For **behavioral and psychological symptoms of dementia (BPSD)**, nonpharmacologic measures are first-line: identify the trigger (pain, constipation, infection, fear, overstimulation), reorient, keep routines, involve family. Reserve medication for danger or severe distress. **Antipsychotics carry an FDA black-box warning for increased mortality in elderly patients with dementia-related psychosis** — use the lowest dose for the shortest time, document informed consent, and reassess. **In Lewy body dementia, avoid antipsychotics** (especially typicals) because of life-threatening neuroleptic sensitivity — if one is unavoidable, quetiapine or pimavanserin are lower-risk choices. Cognitive symptoms: **cholinesterase inhibitors** (donepezil, rivastigmine, galantamine) for mild–moderate Alzheimer/Lewy body disease; add **memantine** (NMDA antagonist) for moderate–severe disease. Newer **anti-amyloid antibodies (lecanemab, donanemab)** modestly slow *early* Alzheimer decline but require amyloid confirmation and ARIA (edema/hemorrhage) MRI monitoring — specialist-initiated, not started on a psych unit.
 
 **What the student does** —
 - Sort delirium vs dementia vs depression explicitly — lead with onset, course, and attention.
-- Order the reversible-cause panel (B12/folate, TSH, CMP, ± RPR/HIV) on every new cognitive diagnosis.
+- Order the reversible-cause panel (B12/folate, TSH, CMP, ± RPR/HIV) **and confirm structural imaging is done** on every new cognitive diagnosis — the panel alone cannot exclude NPH or a chronic subdural.
 - Name the subtype and flag Lewy body features *before* anyone reaches for an antipsychotic.
 - For agitation, hunt the trigger (pain, constipation, infection) before a PRN.
 - Assess capacity and safety, and start discharge/caregiver planning early.
@@ -7213,7 +7219,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 
 - **ask** — Ask the patient what they call the problem, what they think caused it, what they fear most, what help they expect, and what would make care feel respectful.
 - **mse** — Separate culturally shaped expression from psychopathology; describe affect, beliefs, language, and behavior without assuming your own norm is neutral.
-- **safety** — Use trained interpreters for safety questions, assess discrimination/trauma and structural barriers, and avoid family interpreters for confidential or high-risk topics.
+- **safety** — Use trained interpreters for every clinical conversation, not only the safety questions; assess discrimination/trauma and structural barriers; never put a family member in the interpreter role.
 - **say** — I do not want to assume my framework fits yours. Can you tell me how you understand what is happening?
 - **collateral** — Ask about baseline, family meaning, community supports, immigration/language barriers, religious or cultural practices, and what the patient permits sharing.
 - **rounds** — Present the cultural formulation as clinical reasoning: explanatory model, identity/context, supports, barriers, bias risks, and treatment implications.
@@ -7670,7 +7676,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **Slug:** `violence.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `04_Acute_and_Safety/Violence_Risk/violence_risk_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 957 words
+- **Length:** 1,091 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -7723,7 +7729,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 
 **How it presents on the unit.** Serious violence rarely erupts without a prodrome. Watch for the escalation curve: rising motor activity (pacing, restlessness), a louder and faster voice, clenched jaw or fists, prolonged staring, refusal to sit, and intrusion into others' physical space. Verbal threats and striking objects sit just below assault on that curve. The single most important distinction is between *static* risk — history you cannot change — and *dynamic* risk — the modifiable state driving this patient right now. Static factors (a past act of violence above all, younger age, male sex, substance use, prior weapon access) tell you the baseline; dynamic factors (acute psychosis, intoxication or withdrawal, agitation, untreated pain, a provocative environment) tell you what is treatable tonight and are where the clinical work lives.
 
-**Recognize and screen.** Past violence is the strongest single predictor of future violence — take a specific history of it rather than a global impression. Among psychotic symptoms, the highest-risk pattern is persecutory delusions paired with command hallucinations the patient feels compelled to obey. ("Threat/control-override" is a related but distinct construct — persecutory beliefs plus the sense that outside forces override one's self-control.) For short-term, unit-level prediction, structure the bedside read with the **Brøset Violence Checklist (BVC)**: confusion, irritability, boisterousness, verbal threats, physical threats, and attacking objects — each present/absent, summed to gauge the risk of violence over the next 24 hours. More comprehensive structured instruments exist (e.g., HCR-20) but belong to formal forensic assessment, not the daily student read.
+**Recognize and screen.** Past violence is the strongest single predictor of future violence — take a specific history of it rather than a global impression. Among psychotic symptoms, the highest-risk pattern is persecutory delusions paired with command hallucinations the patient feels compelled to obey. ("Threat/control-override" is a related but distinct construct — persecutory beliefs plus the sense that outside forces override one's self-control.) Two instruments will reach you and they do different jobs. The one you will actually meet here is the **Fordham Risk Screening Tool (FRST)** — completed in the Emergency Department at intake at Maine Medical Center, returning a positive/negative result rather than a score, and used to flag who arrives on the unit needing heightened observation. It is a screen, not a verdict: let a positive result raise your index of suspicion and your monitoring, and treat a negative one as no reassurance at all — the tool page carries the local validation data and the authors' own caution against using it standalone. The short-term, unit-level structured read in the literature is the **Brøset Violence Checklist (BVC)** — confusion, irritability, boisterousness, verbal threats, physical threats, and attacking objects, each present/absent and summed to gauge risk over the next 24 hours — with the DASA used the same way. Note that the library's Violence Risk tool is the FRST one-pager: its warning-signs checklist is deliberately unscored and is a teaching prompt, not a BVC tally. More comprehensive structured instruments exist (e.g., HCR-20) but belong to formal forensic assessment, not the daily student read.
 
 **Keep yourself and the milieu safe — the room setup is the intervention.** If you are at all concerned, do not interview alone. Position yourself nearer the door than the patient so neither of you is trapped and your exit is never blocked. Know where the duress alarm is before you sit down. Remove obvious ligatures and throwable objects from reach. Keep a calm, low, non-confrontational posture, give the patient space, and avoid cornering, sudden movements, or a challenging stance.
 
@@ -7756,7 +7762,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 >
 > *Contacts verified 2026-07-27 against official sources. Maintained in `crisis_resources.json`; do not edit these numbers inline.*
 
-**Pair with** the Agitation & Restraint guidance, the interactive Violence Risk / Brøset tool, the Psychosis page, and the Decisional Capacity module.
+**Pair with** the Agitation & Restraint guidance, the interactive Violence Risk (FRST) tool, the Psychosis page, and the Decisional Capacity module.
 
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
 
@@ -9208,7 +9214,7 @@ Know *which* protocol applies and *why*; open the EHR order set for the specific
 - **Slug:** `ect_neuromodulation.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `05_Psychopharmacology/ECT_Neuromodulation/ect_neuromodulation_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 660 words
+- **Length:** 681 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -9221,7 +9227,7 @@ Know *which* protocol applies and *why*; open the EHR order set for the specific
 
 **Key points (bulleted card):**
 
-- Choose ECT when a rapid, definitive response is needed: psychotic or catatonic depression, active suicidality, refusal to eat/drink, pregnancy, or prior ECT response.
+- Choose ECT when a rapid, definitive response is needed: psychotic or catatonic depression, active suicidality, refusal to eat/drink, or prior ECT response — pregnancy is not a fifth trigger, it is what makes ECT preferred over drugs once one of those is present.
 - Hold benzodiazepines and anticonvulsants pre-ECT (they blunt the seizure), and plan continuation treatment — relapse is the rule without it.
 - rTMS is outpatient with no anesthesia or memory effects; ketamine/esketamine act within hours on depressive symptoms — not on suicidality itself, so they never replace monitoring, means restriction, or safety planning (esketamine requires REMS monitoring).
 
@@ -9285,7 +9291,7 @@ Know *which* protocol applies and *why*; open the EHR order set for the specific
 - **Bright light therapy** — first-line for **seasonal** depression, and — per a 2024 *JAMA Psychiatry* meta-analysis — an **effective *adjunctive* treatment for *nonseasonal* depression** as well (roughly doubling remission odds). Cheap and well-tolerated; screen for bipolar (can precipitate switch) and eye disease.
 
 **What the student does** —
-- Recognize when depression needs ECT: psychotic, catatonic, suicidal, not eating/drinking, pregnant, or prior ECT response.
+- Recognize when depression needs ECT: psychotic, catatonic, suicidal, not eating/drinking, or a prior ECT response — and know that pregnancy does not add an indication, it changes the calculus once one of those is already present.
 - Know ECT has no absolute contraindications and that memory effects are usually transient.
 - Plan continuation treatment after a successful ECT course — relapse is the rule without it.
 - Distinguish rTMS (outpatient, no anesthesia, TRD) from ECT (inpatient-grade, most potent).
@@ -9896,8 +9902,14 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Emergency services — 911. 24/7. For imminent danger to life.
 - Contacts verified 2026-07-27 against official sources. Maintained in crisis_resources.json ; do not edit these numbers inline.
 
-**Authored clinical strings (73):**
+**Authored clinical strings (80):**
 
+- s authored quality (srsGradeForQuality) rather than asked for: this tool already knows how the rep went, and a second self-rating would be a question the learner has just answered. */ /* ---- cw_srs_v1 store adapter (shared) ------------------------------------ Every tool that schedules a card writes the SAME store under the SAME shape. This file is the one definition of that shape; `applyGrade` (the SM-2 step itself) is a separate snippet, sm2_apply_grade.js, and stays that way. Why this is shared rather than copied into each tool: `srsFresh` fixes the store
+- s daily allowance or dropping a stats field the dashboard reads. The failure is invisible and arrives only for learners who happen to open the wrong tool first. Card id namespaces live in the consumers, not here: deck# and TOPIC# (Daily Review), QB# (question bank), FAM# (family retrieval, fam_retrieval.js), COMM# and REASON# (the two tools below). spa_index.html
+- s authored quality rather than asked for. `best` is a clean recall (Good, not Easy — Easy would stretch the interval on a four-way recognition task the learner may well have guessed); `partial` is a hesitant one; anything worse is a lapse. Unknown qualities fail to a lapse so a new quality added to the data can never quietly lengthen an interval. */ function srsGradeForQuality(quality){ if(quality===
+- ) return 3; if(quality===
+- ) return 2; return 1; } /* ==== Canonical SM-2 grader (build-injected — do not edit inside consumer files) ==== Source of truth: 13_Faculty_Resources/_automation/site_build/sm2_apply_grade.js. Consumers carry a SM2_APPLY_GRADE marker comment that common.py
+- s cw_srs_v1 writes stay aggregate/current-state only and are unaffected by that logging. */ /* Deterministic ±15% interval fuzz (opts.fuzzKey): de-synchronizes cohort-seeded cards so due-load avalanches spread out. No fuzzKey (legacy callers) = no fuzz. Also a no-op below ivl 3 d (too short to meaningfully fuzz). Always clamped to [1, 365] regardless of the input interval
 - ]/g,function(c){return {'&':'&',' ':'>','
 - }[c];});} function requestedCaseId(){try{return new URLSearchParams(location.search).get(
 - ;}} function requestedFilter(){try{var f=(new URLSearchParams(location.search).get(
@@ -9908,7 +9920,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - ||!record.choiceId||QUALITY[record.quality]!==true)return clean;if(typeof record.at!==
 - ||!/^\d{4}-\d{2}-\d{2}$/.test(record.at))return clean;clean[caseId]={choiceId:record.choiceId,quality:record.quality,at:record.at};return clean;},Object.create(null));} function loadAttempts(){try{return normalizeAttempts(JSON.parse(localStorage.getItem(
 - ));}catch(_){return {};}} function saveAttempt(caseId,choice){try{var attempts=normalizeAttempts(state.attempts);attempts[caseId]={choiceId:choice.id,quality:choice.quality,at:new Date().toISOString().slice(0,10)};state.attempts=attempts;localStorage.setItem(
-- ,JSON.stringify(state.attempts));}catch(_){} } function tagsFor(c){return CASE_FILTERS[c&&c.id]||[];} function caseMatches(c,f){return !f||f===
+- ,JSON.stringify(state.attempts));}catch(_){} try{srsGradeCard(commCardId(caseId),srsGradeForQuality(choice&&choice.quality));}catch(_){} } function tagsFor(c){return CASE_FILTERS[c&&c.id]||[];} function caseMatches(c,f){return !f||f===
 - ||tagsFor(c).indexOf(f)>=0;} function filteredCases(){return state.cases.filter(function(c){return caseMatches(c,state.filter);});} function currentCase(){return state.cases[state.current]||state.cases[0];} function setCurrentById(id){for(var i=0;i<state.cases.length;i++){if(state.cases[i].id===id){state.current=i;return true;}}return false;} function qualityLabel(q){return q===
 - ;} function doneLabel(q){return q===
 - ;} function defaultRapidDrill(c){return {stance:c.learnerGoal||
@@ -9958,7 +9970,8 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - ;state.filter=FILTERS.some(function(item){return item[0]===filterId;})?filterId:
 - ;if(state.phase===PHASE.SPEAKING)resetRepState();state.nudgeOpen=false;state.coachingOpen=false;var matches=filteredCases(),phaseChanged=previousPhase!==state.phase;if(matches.length&&matches.indexOf(currentCase())===-1){phaseChanged=previousPhase!==PHASE.ORIENT;selectCase(matches[0].id,{focusPhase:phaseChanged&&!keepPickerOpen,focusFilter:!phaseChanged&&!keepPickerOpen?state.filter:
 - ,focusShowAll:!matches.length&&!keepPickerOpen,reopenPicker:keepPickerOpen});}} function surpriseCase(){var list=filteredCases();if(!list.length)return;var pick=list[Math.floor(Math.random()*list.length)];if(list.length>1&&pick.id===currentCase().id)pick=list[(list.indexOf(pick)+1)%list.length];selectCase(pick.id,{focusPhase:true});} function resetHistory(){if(!Object.keys(state.attempts||{}).length)return;if(!window.confirm(
-- );}catch(_){}state.attempts=Object.create(null);clearTimer();resetRepState();render({focusPhase:true});} app.addEventListener(
+- );}catch(_){}try{var s=srsLoadStore(),touched=false;Object.keys(s.cards||{}).forEach(function(id){if(id.indexOf(
+- )===0){delete s.cards[id];touched=true;}});if(touched)srsSaveStore(s);}catch(_){}state.attempts=Object.create(null);clearTimer();resetRepState();render({focusPhase:true});} app.addEventListener(
 - ,function(ev){var target=ev.target.closest&&ev.target.closest(
 - )){var related=relatedCase(currentCase());if(related)selectCase(related.id,{focusPhase:true});return;}if(target.hasAttribute(
 - )){var picker=target.closest(
@@ -9971,6 +9984,15 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - ;} function loadCases(){app.innerHTML=
 - ).then(function(response){if(!response.ok)throw new Error(
 - );return response.json();}).then(function(data){if(!data||!Array.isArray(data.cases)||!data.cases.length)throw new Error(
+
+
+<!-- ==================== 02_CURRICULUM_V07.md ==================== -->
+
+# MS3 · Curriculum content — volume 7
+
+Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
+
+# SECTION (cont.): Communicate with Patients
 
 ---
 
@@ -10043,14 +10065,6 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
 
-
-<!-- ==================== 02_CURRICULUM_V07.md ==================== -->
-
-# MS3 · Curriculum content — volume 7
-
-Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
-
-# SECTION (cont.): Communicate with Patients
 
 ---
 
@@ -10617,67 +10631,80 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Emergency services — 911. 24/7. For imminent danger to life.
 - Contacts verified 2026-07-27 against official sources. Maintained in crisis_resources.json ; do not edit these numbers inline.
 
-**Authored clinical strings (59):**
+**Authored clinical strings (72):**
 
-- s store under a FAM# id namespace (QB#/TOPIC# already exist). applyGrade is build-injected from site_build/sm2_apply_grade.js; tests/family-srs-parity.test.mjs guards the marker wiring and tests/sm2-behavior.test.mjs pins the behaviour. */ var SRS_KEY=
-- ; var DAY = 86400000; function srsFresh(){return {v:1,cards:{},day:{lastDay:
-- ,totalReviews:0,correct:0,seen:0},settings:{newPerDay:12}};} function srsLoadStore(){try{var s=JSON.parse(localStorage.getItem(SRS_KEY)||
-- );if(s&&s.v===1){s.cards=s.cards||{};s.stats=s.stats||srsFresh().stats;return s;}}catch(_){}return srsFresh();} function srsSaveStore(s){try{localStorage.setItem(SRS_KEY,JSON.stringify(s));}catch(_){}} function famCardId(scenarioId,promptId){return
-- +promptId;} /* ==== Canonical SM-2 grader (build-injected — do not edit inside consumer files) ==== Source of truth: 13_Faculty_Resources/_automation/site_build/sm2_apply_grade.js. Consumers carry a SM2_APPLY_GRADE marker comment that common.py
-- s cw_srs_v1 writes stay aggregate/current-state only and are unaffected by that logging. */ /* Deterministic ±15% interval fuzz (opts.fuzzKey): de-synchronizes cohort-seeded cards so due-load avalanches spread out. No fuzzKey (legacy callers) = no fuzz. Also a no-op below ivl 3 d (too short to meaningfully fuzz). Always clamped to [1, 365] regardless of the input interval
-- Family Therapy Modalities
-- Documentation & Oral Presentation
-- Practice Collateral Questions
-- Practice Psychosis Validation
-- Practice Guardedness And Privacy
-- ]/g,function(c){return {'&':'&',' ':'>','
-- }[c];});} function requestedScenario(){try{return new URLSearchParams(location.search).get(
-- ;}} function loadProgress(){try{return JSON.parse(localStorage.getItem(
-- )||{};}catch(_){return {};}} function saveProgress(){try{localStorage.setItem(
-- ,JSON.stringify(state.progress));}catch(_){}} function current(){return state.items[state.current]||state.items[0];} function setCurrent(id){for(var i=0;i<state.items.length;i++){if(state.items[i].id===id){state.current=i;return true;}}return false;} function tagsFor(it){return SCENARIO_FILTERS[it&&it.id]||[];} function matchesFilter(it,filter){return !filter||filter===
-- ||tagsFor(it).indexOf(filter)>=0;} function filteredItems(){return state.items.filter(function(it){return matchesFilter(it,state.filter);});} function filterCount(filter){return state.items.filter(function(it){return matchesFilter(it,filter);}).length;} function ensureCurrentVisible(){var it=current(), list=filteredItems();if(!list.length)return;if(!it||list.indexOf(it)<0)setCurrent(list[0].id);} function checksDone(item){var rec=state.progress[item.id]||{}, checks=rec.checks||{}, total=(item.checks||[]).length;if(!total)return 0;return (item.checks||[]).filter(function(c){return checks[c.id];}).length;} function overall(){var total=0,done=0;state.items.forEach(function(it){total+=(it.checks||[]).length;done+=checksDone(it);});return {done:done,total:total,pct:total?Math.round(done*100/total):0};} function filtersHtml(){return
-- Filter family systems scenarios
-- +FILTERS.map(function(f){var on=state.filter===f[0], n=filterCount(f[0]);return
-- ;} function sideHtml(){var p=overall(), list=filteredItems();return
-- +list.map(function(it){var i=state.items.indexOf(it);return
-- scenario'+(i===state.current?' on':'')+'
-- ;} function reviewBadge(it){var rv=it.facultyReview||{};if(rv.status===
-- ;} function introHtml(it){return
-- ;} function sectionHtml(key,arr){if(!arr||!arr.length)return
-- ;} function bodyHtml(it){var s=it.sections||{};return
-- ].map(function(k){return sectionHtml(k,s[k]);}).join(
-- ;} function checklistHtml(it){var rec=state.progress[it.id]||{}, checks=rec.checks||{};return
-- +(it.checks||[]).map(function(c){var on=!!checks[c.id];return
-- ;} function pageHref(f){return f&&f.endsWith(
-- +encodeURIComponent(f);} function pageLabel(f){return PAGE_LABELS[f]||String(f||
-- ).replace(/\b\w/g,function(m){return m.toUpperCase();});} function linksHtml(it){var out=[];(it.linkedPages||[]).forEach(function(f){out.push(
-- ;} var DEFAULT_RETRIEVAL=[ {id:
-- } ]; function revealContent(it,rp){ if(rp.revealText)return rp.revealText; if(rp.revealFrom===
-- )return it.opening||null; var sec=(it.sections||{})[rp.revealFrom]; return (sec&&sec.length)?sec:null; } function retrievalFor(it){ if(Array.isArray(it.retrieval)&&it.retrieval.length)return it.retrieval; return DEFAULT_RETRIEVAL.filter(function(rp){return revealContent(it,rp)!=null;}); } function revealBodyHtml(content){ if(content==null)return
-- ; } function scheduledLabel(card){ var days=Math.max(0,Math.round((card.due-Date.now())/DAY)); return days<=0?
-- ); } function modeToggleHtml(){ return
-- modebtn'+(state.mode==='reference'?' on':'')+'
-- modebtn'+(state.mode==='practice'?' on':'')+'
-- ; } function practiceHtml(it){ var prompts=retrievalFor(it), d=srsDueForScenario(it.id,prompts); var chip=d.due>0?(d.due+
-- ); var prep=(it.sections&&it.sections.prepare)?it.sections.prepare:[]; var cards=prompts.map(function(rp,i){ var shown=!!state.revealed[rp.id], graded=state.graded[rp.id]; var body=
-- How close was your answer to the model?
-- ratebtn r-'+g.toLowerCase()+'
-- ; } function render(){if(!state.items.length){app.innerHTML=
-- ;return;}ensureCurrentVisible();var it=current();if(state.shownId!==it.id){state.revealed={};state.graded={};state.shownId=it.id;}var mid=state.mode===
-- ,function(ev){ var mb=ev.target.closest&&ev.target.closest(
-- ); if(mb){state.mode=mb.getAttribute(
-- ]=state.mode;saveProgress();state.revealed={};state.graded={};render();return;} var rv=ev.target.closest&&ev.target.closest(
-- ); if(rv){state.revealed[rv.getAttribute(
-- )]=true;render();return;} var rt=ev.target.closest&&ev.target.closest(
-- ); if(rt){state.graded[rt.getAttribute(
-- ));render();return;} var flt=ev.target.closest&&ev.target.closest(
-- ;render();return;}var sc=ev.target.closest&&ev.target.closest(
-- ));render();return;}var ck=ev.target.closest&&ev.target.closest(
-- );if(ck){var it=current(), id=ck.getAttribute(
-- ), rec=state.progress[it.id]||{checks:{}};rec.checks=rec.checks||{};rec.checks[id]=!rec.checks[id];rec.updatedAt=new Date().toISOString().slice(0,10);state.progress[it.id]=rec;saveProgress();render();return;}var act=ev.target.closest&&ev.target.closest(
-- ){delete state.progress[current().id];saveProgress();render();}}); fetch(
-- ).then(function(r){if(!r.ok)throw new Error(
-- );return r.json();}).then(function(d){state.items=(d&&d.scenarios)||[];if(state.requested)setCurrent(state.requested);render();}).catch(function(){app.innerHTML=
+- s store under a FAM# id namespace (QB#/TOPIC# already exist). The store shape and the scheduling write are build-injected from site_build/srs_store.js, applyGrade from site_build/sm2_apply_grade.js; tests/family-srs-parity.test.mjs guards the marker wiring and tests/sm2-behavior.test.mjs pins the behaviour. */ /* ---- cw_srs_v1 store adapter (shared) ------------------------------------ Every tool that schedules a card writes the SAME store under the SAME shape. This file is the one definition of that shape; `applyGrade` (the SM-2 step itself) is a separate snippet, sm2_apply_grade.js, and stays that way. Why this is shared rather than copied into each tool: `srsFresh` fixes the store
+- s daily allowance or dropping a stats field the dashboard reads. The failure is invisible and arrives only for learners who happen to open the wrong tool first. Card id namespaces live in the consumers, not here: deck# and TOPIC# (Daily Review), QB# (question bank), FAM# (family retrieval, fam_retrieval.js), COMM# and REASON# (the two tools below). spa_index.html
+- s authored quality rather than asked for. `best` is a clean recall (Good, not Easy — Easy would stretch the interval on a four-way recognition task the learner may well have guessed); `partial` is a hesitant one; anything worse is a lapse. Unknown qualities fail to a lapse so a new quality added to the data can never quietly lengthen an interval. */ function srsGradeForQuality(quality){ if(quality===
+- ) return 3; if(quality===
+- ) return 2; return 1; } /* Family retrieval prompts — the one definition of what a FAM# card ASKS and what it reveals. Injected via the shared-snippet marker into BOTH consumers: family-systems-practice.html, which authors these cards and grades them beside their scenario, and review.html, which serves the due ones in the daily queue. It has to be shared rather than copied because the card id embeds the prompt id (famCardId) — two drifting copies of this list would file one schedule under a prompt the learner never saw, which is exactly the silent id-collision failure the repo
+- s own authored text — its opening line or one of its authored sections. This file introduces no clinical wording of its own, so nothing here needs faculty attestation that family_systems_scenarios.json has not already had. Pure: no DOM, no storage, no clock, no escaping (each consumer escapes for its own renderer). ES5 only, matching the other injected snippets. */ var FAM_DEFAULT_RETRIEVAL=[ {id:
+- } ]; /* The card id both tools schedule under. Scenario id and prompt id are joined with the same separator the QB#/TOPIC# namespaces use, so srsBucket keeps reading FAM# as the family bucket. */ function famCardId(scenarioId,promptId){return
+- +promptId;} /* What a prompt reveals: an explicit revealText when the scenario authors one, else the scenario
+- s inject_shared_snippets() expands at build time (same mechanism as crisis blocks). Grades are the strings
+- . Semantics: ease floor 1.3, Easy ease ceiling 4.0, interval cap 365 d, lapse halves the interval (min 1 d) and re-dues the card immediately. Requires `var DAY = 86400000` in scope. Behaviour is pinned by tests/sm2-behavior.test.mjs; consumer wiring is pinned by tests/family-srs-parity.test.mjs. applyGrade(card, grade, opts) — opts is optional; opts.fuzzKey (string, usually the card id) enables deterministic ±15% interval fuzz (see sm2Fuzz below) so cohort-seeded cards de-synchronize instead of avalanching due on the same day. Omitting opts (or fuzzKey) is byte-identical to the pre-fuzz grader — every existing caller keeps its exact legacy schedule until it opts in. cw_srs_v1 STATS CONTRACT — who may write stats.seen / stats.correct: - question-bank-practice.html srsUpdate(): YES (ground-truth correctness). - review.html grade(): YES (ground-truth correctness). - family-systems-practice.html srsGradeFamily(): NO — cards only. A self-rating has no ground truth, and review.html renders Retention as correct/seen. - Practice sims write cw_practice_events_v1 instead — never cw_srs_v1.stats. Per-event history (chosen grade vs. suggested grade, requeue flag) is a separate concern logged to cw_calib_v1 via calibLog() (build-injected from calib_log.js, the CALIB_LOG marker) — this file
+- s own bounds. */ function sm2Fuzz(ivl, key, reps){ if(ivl < 3 || !key) return ivl; var h = 2166136261, s = key +
+- + reps; for(var i=0;i >> 0; } var f = ((h % 2001) / 1000) - 1; /* [-1, 1] */ return Math.min(365, Math.max(1, Math.round(ivl + ivl * 0.15 * f))); } function applyGrade(card, grade, opts){ /* SM-2 variant: ease floor 1.3, interval cap 365 d */ var c = Object.assign({}, card); var fuzzKey = opts && opts.fuzzKey; c.reps = (c.reps||0) + 1; if(c.ivl===0){ /* first encounter */ if(grade===
+- ){ c.lapses=(c.lapses||0)+1; c.ivl=1; c.due=Date.now(); } else if(grade===
+- ){ c.ivl=1; c.due=Date.now()+DAY; } else if(grade===
+- ){ c.ivl=1; c.due=Date.now()+DAY; } else { c.ivl=sm2Fuzz(4, fuzzKey, c.reps); c.due=Date.now()+c.ivl*DAY; } /* Easy */ } else { if(grade===
+- ){ /* Again is never fuzzed — lapses re-due immediately regardless of fuzzKey. */ c.lapses=(c.lapses||0)+1; c.ease=Math.max(1.3, (c.ease||2.5)-0.2); c.ivl=Math.max(1, Math.round(c.ivl*0.5)); c.due=Date.now(); } else if(grade===
+- ){ c.ease=Math.max(1.3, (c.ease||2.5)-0.15); c.ivl=Math.max(1, Math.round(c.ivl*1.2)); c.ivl=sm2Fuzz(c.ivl, fuzzKey, c.reps); c.due=Date.now()+Math.min(365,c.ivl)*DAY; } else if(grade===
+- ){ c.ivl=Math.max(1, Math.round(c.ivl*(c.ease||2.5))); c.ivl=Math.min(365,c.ivl); c.ivl=sm2Fuzz(c.ivl, fuzzKey, c.reps); c.due=Date.now()+c.ivl*DAY; } else { /* Easy */ c.ease=Math.min(4, (c.ease||2.5)+0.15); c.ivl=Math.max(1, Math.round(c.ivl*(c.ease)*1.3)); c.ivl=Math.min(365,c.ivl); c.ivl=sm2Fuzz(c.ivl, fuzzKey, c.reps); c.due=Date.now()+c.ivl*DAY; } } c.last=Date.now(); return c; } function srsGradeFamily(scenarioId,promptId,grade){ return srsGradeCard(famCardId(scenarioId,promptId),grade); } function srsDueForScenario(scenarioId,prompts){ var s=srsLoadStore(), now=Date.now(), out={due:0,started:0,total:(prompts||[]).length}; (prompts||[]).forEach(function(rp){var c=s.cards[famCardId(scenarioId,rp.id)];if(c){out.started++;if(c.due<=now)out.due++;}}); return out; } var LABELS={ prepare:
+- }; var CASE_LABELS={ collateral_questions_001:
+- , family_meeting_opening_001:
+- , family_conflict_discharge_001:
+- , psychosis_validation_001:
+- , guardedness_privacy_001:
+- ] ]; var SCENARIO_FILTERS={ collateral_baseline_safety_001:[
+- ], family_meeting_opening_001:[
+- ], discharge_barrier_map_001:[
+- ], high_expressed_emotion_001:[
+- ], psychosis_family_psychoeducation_001:[
+- ], family_involvement_boundaries_001:[
+- ], caregiver_baseline_adaptations_001:[
+- ], culture_interpreter_family_001:[
+- ] }; function esc(s){return String(s==null?
+- :s).replace(/[&<>"]/g,function(c){return {
+- ':'"'}[c];});} function requestedScenario(){try{return new URLSearchParams(location.search).get('scenario')||'';}catch(_){return '';}} function loadProgress(){try{return JSON.parse(localStorage.getItem('cw_family_v1')||'{}')||{};}catch(_){return {};}} function saveProgress(){try{localStorage.setItem('cw_family_v1',JSON.stringify(state.progress));}catch(_){}} function current(){return state.items[state.current]||state.items[0];} function setCurrent(id){for(var i=0;i =0;} function filteredItems(){return state.items.filter(function(it){return matchesFilter(it,state.filter);});} function filterCount(filter){return state.items.filter(function(it){return matchesFilter(it,filter);}).length;} function ensureCurrentVisible(){var it=current(), list=filteredItems();if(!list.length)return;if(!it||list.indexOf(it)<0)setCurrent(list[0].id);} function checksDone(item){var rec=state.progress[item.id]||{}, checks=rec.checks||{}, total=(item.checks||[]).length;if(!total)return 0;return (item.checks||[]).filter(function(c){return checks[c.id];}).length;} function overall(){var total=0,done=0;state.items.forEach(function(it){total+=(it.checks||[]).length;done+=checksDone(it);});return {done:done,total:total,pct:total?Math.round(done*100/total):0};} function filtersHtml(){return '<div class=
+- >'+FILTERS.map(function(f){var on=state.filter===f[0], n=filterCount(f[0]);return '<button type=
+- >'+esc(f[1])+' '+n+' ';}).join('')+' ';} function sideHtml(){var p=overall(), list=filteredItems();return '<aside class=
+- > '+p.done+' of '+p.total+' practice checks Structured local progress only <div class=
+- > '+filtersHtml()+'<div class=
+- >'+list.map(function(it){var i=state.items.indexOf(it);return '<button type=
+- > '+esc(it.title)+' '+esc(it.setting)+' ';}).join('')+' ';} function reviewBadge(it){var rv=it.facultyReview||{};if(rv.status==='reviewed')return '<span class=
+- >Reviewed'+(rv.reviewer?' · '+esc(rv.reviewer):'')+(rv.lastReviewed?' · '+esc(rv.lastReviewed):'')+' ';return '<span class=
+- >'+esc((rv.status||'draft').replace(/-/g,' '))+' · faculty review needed ';} function introHtml(it){return '<section class=
+- > '+esc(it.title)+' <div class=
+- >'+esc(it.setting)+' <span class=
+- >'+esc(it.time||'5 min')+' '+reviewBadge(it)+' <div class=
+- > Practice goal: '+esc(it.learnerGoal)+' <p class=
+- '+linksHtml(it)+' ';} function sectionHtml(key,arr){if(!arr||!arr.length)return '';var cls=key==='say'?' say':key==='avoid'?' avoid':key==='handoff'?' handoff':'';return '<section class=
+- > '+esc(LABELS[key]||key)+' '+arr.map(function(x){return ' '+esc(x)+' ';}).join('')+' ';} function bodyHtml(it){var s=it.sections||{};return '<div class=
+- >'+['prepare','ask','say','avoid','handoff','safety'].map(function(k){return sectionHtml(k,s[k]);}).join('')+' ';} function checklistHtml(it){var rec=state.progress[it.id]||{}, checks=rec.checks||{};return '<section class=
+- > Before you call it done <div class=
+- >'+(it.checks||[]).map(function(c){var on=!!checks[c.id];return '<button type=
+- >'+esc(c.label)+' ';}).join('')+' <div class=
+- >Reset this scenario <div class=
+- >Stored locally: scenario id, checklist id, checked state, date, mode preference, and practice-rating schedules (ids + timing only). No free text or patient identifiers. ';} function pageHref(f){return f&&f.endsWith('.html')?'../index.html?tool='+encodeURIComponent(f):'../index.html?page='+encodeURIComponent(f);} function pageLabel(f){return PAGE_LABELS[f]||String(f||'').replace(/\.md$|\.html$/g,'').replace(/^t_/,'').replace(/^pg_/,'').replace(/_/g,' ').replace(/\b\w/g,function(m){return m.toUpperCase();});} function linksHtml(it){var out=[];(it.linkedPages||[]).forEach(function(f){out.push('<a href=
+- >'+esc(pageLabel(f))+' ');});(it.communicationCases||[]).forEach(function(id){out.push('<a href=
+- >'+esc(CASE_LABELS[id]||'Communication Practice')+' ');});return out.length?'<div class=
+- >'+out.join('')+' ':'';} /* The prompt list, its reveal resolution and famCardId are build-injected above from site_build/fam_retrieval.js — shared with review.html, which serves these same cards when they come due. Never re-declare them here: the card id embeds the prompt id. */ function revealBodyHtml(content){ if(content==null)return ''; if(typeof content==='string')return ' '+esc(content)+' '; return ' '+content.map(function(x){return ' '+esc(x)+' ';}).join('')+' '; } function scheduledLabel(card){ var days=Math.max(0,Math.round((card.due-Date.now())/DAY)); return days<=0?'Scheduled — back soon':'Scheduled — back in about '+days+' day'+(days===1?'':'s'); } function modeToggleHtml(){ return '<div class=
+- >Reference ' +'<button type=
+- >Practice ' +' '; } function practiceHtml(it){ var prompts=famRetrievalFor(it), d=srsDueForScenario(it.id,prompts); var chip=d.due>0?(d.due+' due for review'):(d.started+' of '+d.total+' started'); var prep=(it.sections&&it.sections.prepare)?it.sections.prepare:[]; var cards=prompts.map(function(rp,i){ var shown=!!state.revealed[rp.id], graded=state.graded[rp.id]; var body='<div class=
+- >Retrieval '+(i+1)+' of '+prompts.length+' ' +'<p class=
+- >'+esc(rp.prompt)+' ' +'<p class=
+- >Say or jot your answer first. Nothing you say is recorded. '; if(!shown){ body+='<button type=
+- >Reveal one way to do it '; } else { body+='<div class=
+- >One way to do it '+revealBodyHtml(famRevealContent(it,rp))+' '; if(graded){ body+='<div class=
+- >'+esc(scheduledLabel(graded))+' '; } else { body+='<div class=
+- >' +['Again','Hard','Good','Easy'].map(function(g){return '<button type=
+- >'+g+' ';}).join('') +' '; } } return body+' '; }).join(''); return '<section class=
+- > Practice: generate, then compare <span class=
+- >'+esc(chip)+' ' +(prep.length?'<div class=
+- > Before you start: '+prep.map(function(x){return ' '+esc(x)+' ';}).join('')+' ':'') +cards+' '; } function render(){if(!state.items.length){app.innerHTML='<div class=
+- >No family systems scenarios are available. ';return;}ensureCurrentVisible();var it=current();if(state.shownId!==it.id){state.revealed={};state.graded={};state.shownId=it.id;}var mid=state.mode==='practice'?practiceHtml(it):bodyHtml(it);app.innerHTML=sideHtml()+'<div class=
+- >'+modeToggleHtml()+introHtml(it)+mid+checklistHtml(it)+' ';} app.addEventListener('click',function(ev){ var mb=ev.target.closest&&ev.target.closest('[data-mode]'); if(mb){state.mode=mb.getAttribute('data-mode')==='practice'?'practice':'reference';state.progress['$mode']=state.mode;saveProgress();state.revealed={};state.graded={};render();return;} var rv=ev.target.closest&&ev.target.closest('[data-reveal]'); if(rv){state.revealed[rv.getAttribute('data-reveal')]=true;render();return;} var rt=ev.target.closest&&ev.target.closest('[data-rate]'); if(rt){state.graded[rt.getAttribute('data-prompt')]=srsGradeFamily(current().id,rt.getAttribute('data-prompt'),rt.getAttribute('data-rate'));render();return;} var flt=ev.target.closest&&ev.target.closest('[data-filter]');if(flt){state.filter=flt.getAttribute('data-filter')||'all';render();return;}var sc=ev.target.closest&&ev.target.closest('.scenario');if(sc){setCurrent(sc.getAttribute('data-id'));render();return;}var ck=ev.target.closest&&ev.target.closest('.check');if(ck){var it=current(), id=ck.getAttribute('data-check'), rec=state.progress[it.id]||{checks:{}};rec.checks=rec.checks||{};rec.checks[id]=!rec.checks[id];rec.updatedAt=new Date().toISOString().slice(0,10);state.progress[it.id]=rec;saveProgress();render();return;}var act=ev.target.closest&&ev.target.closest('[data-act]');if(act&&act.getAttribute('data-act')==='reset'){delete state.progress[current().id];saveProgress();render();}}); fetch('../family_systems_scenarios.json').then(function(r){if(!r.ok)throw new Error('missing scenarios');return r.json();}).then(function(d){state.items=(d&&d.scenarios)||[];if(state.requested)setCurrent(state.requested);render();}).catch(function(){app.innerHTML='<div class=
 
 ---
 
@@ -10686,7 +10713,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **Slug:** `collateral_workflow.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `06_Family_and_Relational/collateral_micro_workflow.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 1,047 words
+- **Length:** 1,074 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -10773,7 +10800,7 @@ Clarify:
 - Whether there are safety exceptions or mandatory reporting issues.
 - Whether a professional interpreter is needed.
 
-Do not use family as an interpreter for confidential or high-risk topics.
+Do not use family or friends as interpreters — book a qualified professional interpreter for the conversation. A family member may bridge only in an emergency while an interpreter is being arranged, or at the patient's specific, documented request.
 
 ## 2. Open The Call
 
@@ -11258,6 +11285,14 @@ Letting information-sharing eat the whole meeting; correcting expressed emotion 
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
 
 
+<!-- ==================== 02_CURRICULUM_V08.md ==================== -->
+
+# MS3 · Curriculum content — volume 8
+
+Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
+
+# SECTION (cont.): Work with Family and Systems
+
 ---
 
 ## Family Therapy Modalities
@@ -11361,15 +11396,6 @@ Multipartiality over neutrality ("not a courtroom; multiple truths") · the **tr
 ---
 
 # SECTION: Present and Work with the Team
-
-
-<!-- ==================== 02_CURRICULUM_V08.md ==================== -->
-
-# MS3 · Curriculum content — volume 8
-
-Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
-
-# SECTION (cont.): Present and Work with the Team
 
 ---
 
@@ -13117,7 +13143,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Daily Review — Spaced Repetition Reviewed by Joshua Moss, MD on 2026-07-05
 - Skip to content
 
-**Authored clinical strings (83):**
+**Authored clinical strings (99):**
 
 - t lean on position memory. Letters are display-position-derived (String.fromCharCode(65+pos)), so relabeling is automatic. */ /* FNV-1a seed + xorshift32 steps — NOT a bare LCG: an LCG
 - s inject_shared_snippets() expands at build time (same mechanism as crisis blocks). Grades are the strings
@@ -13180,15 +13206,31 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - ; }else{ var acts=s.actions||[]; for(i=0;i<acts.length;i++){ var a=acts[i]||{}; h+=
 - cw-receipt__btn'+(a.primary?' is-primary':'')+'
 - ; if(!next&&typeof blockClear===
-- ; return {html:h, marked:marked, next:next||null}; } /* effectiveNewPerDay: the single helper BOTH the metrics() display and start()
-- s 2nd grade sets calibLog
-- t out-rank short- interval cards that are badly late. Shuffle only within bands of 5 to keep light variety without undoing the ordering. */ function ratio(c){var st=s.cards[c.id]; return (now-st.due)/((st.ivl||1)*DAY);} due.sort(function(a,b){ return ratio(b)-ratio(a); }); for(var i=0;i<due.length;i+=5){ var band=due.slice(i,i+5); shuffle(band); for(var j=0;j<band.length;j++) due[i+j]=band[j]; } shuffle(neu); var newRemain=Math.max(0,effectiveNewPerDay(s)-(s.day.newToday||0)); var q=due.concat(neu.slice(0,newRemain)); if(ahead){ fut.sort(function(a,b){return a[1]-b[1];}); q=q.concat(fut.map(function(x){return x[0];})); } if(!q.length){ setSess({empty:true}); return; } /* A timed block asks for a bounded slice (?block=1&limit=N) — most-overdue first, as above. */ var limit=blockLimit.current; blockLimit.current=null; var fromBlock=(typeof limit===
-- &&limit>=1); if(fromBlock&&limit Again or Hard only; the buttons disable to match, and this guard also covers the keyboard shortcuts (keys 3/4). */ if(g>1 && s.chosen!==correctIdx(s.card)) return; var st=loadS(); st=rollDay(st); var card=s.card; var existed=!!st.cards[card.id]; var was=st.cards[card.id]||{ease:2.5,ivl:0,reps:0,lapses:0,due:Date.now(),last:0}; st.cards[card.id]=applyGrade(was,GRADE_NAMES[g],{fuzzKey:card.id}); if(!existed){ st.day.newToday=(st.day.newToday||0)+1; } bumpStreak(st); st.stats.totalReviews=(st.stats.totalReviews||0)+1; var ci=correctIdx(card); var gotIt=(s.chosen===ci); st.stats.seen=(st.stats.seen||0)+1; if(gotIt)st.stats.correct=(st.stats.correct||0)+1; saveS(st); setStore(Object.assign({},st)); var rq=gradedThisSession[card.id]?1:0; gradedThisSession[card.id]=1; calibLog({s:
-- ,id:card.id,p:GRADE_NAMES[g]||g,sug:sug,a:gotIt?1:0,rq:rq,ts:Date.now()}); // advance queue var q=s.queue.slice(); var pos=s.pos; if(g===0){ q.push(card); } // requeue lapses to end of this session var nextPos=pos+1; var reviewed=s.reviewed+1, correct=s.correct+(gotIt?1:0); var misses=(s.misses||[]).slice(); if(!gotIt&&!misses.some(function(m){return m.id===card.id;})) misses.push({id:card.id,deckTitle:card.deckTitle,q:card.q}); if(nextPos>=q.length){ setSess({finished:true,reviewed:reviewed,correct:correct,misses:misses,fromBlock:!!s.fromBlock}); return; } setSess({queue:q,pos:nextPos,card:q[nextPos],chosen:-1,revealed:false,reviewed:reviewed,correct:correct,total:s.total,misses:misses,fromBlock:!!s.fromBlock}); } function endSession(){ setSess(null); setTick(function(x){return x+1;}); } function setNewPerDay(v){ var s=loadS(); s.settings.newPerDay=v; s.settings.userSet=true; persist(s); } function resetAll(){ if(!window.confirm("Reset all spaced-repetition progress? This clears your review schedule and streak. This also clears your calibration history. Reading progress elsewhere is unaffected."))return; try{localStorage.removeItem(KEY);}catch(_){ } calibClear(); setStore(freshStore()); setSess(null); setTick(function(x){return x+1;}); } var head=e("div",{className:"topline"}, e("div",{className:"logo"},"ψ"), e("div",null,e("div",{className:"ttl"},"Daily Review"),e("div",{className:"by"},"Spaced repetition · Joshua Moss, MD")), e("button",{className:"thmbtn",onClick:function(){toggleTheme(setTheme);},title:"Toggle dark mode","aria-label":"Toggle dark mode"}, theme==="dark"?"☀":"☾")); if(err) return e("div",{className:"wrap"},head,e("div",{className:"err"},"Could not load the question bank (quizzes.json). Open this tool from the hub so it can find its data, then try again.")); if(!cards) return e("div",{className:"wrap"},head,e("div",{className:"panel muted"},"Loading the question bank…")); /* ---- active session ---- */ if(sess && sess.queue){ var c=sess.card, ci=correctIdx(c), pctp=Math.round(100*sess.pos/Math.max(1,sess.total)); var gotIt=(sess.chosen===ci); var sug=gotIt?
-- ; // single source of truth: feeds the
-- className below AND grade()
+- ; return {html:h, marked:marked, next:next||null}; } /* Family retrieval prompts — the one definition of what a FAM# card ASKS and what it reveals. Injected via the shared-snippet marker into BOTH consumers: family-systems-practice.html, which authors these cards and grades them beside their scenario, and review.html, which serves the due ones in the daily queue. It has to be shared rather than copied because the card id embeds the prompt id (famCardId) — two drifting copies of this list would file one schedule under a prompt the learner never saw, which is exactly the silent id-collision failure the repo
+- s own authored text — its opening line or one of its authored sections. This file introduces no clinical wording of its own, so nothing here needs faculty attestation that family_systems_scenarios.json has not already had. Pure: no DOM, no storage, no clock, no escaping (each consumer escapes for its own renderer). ES5 only, matching the other injected snippets. */ var FAM_DEFAULT_RETRIEVAL=[ {id:
+- } ]; /* The card id both tools schedule under. Scenario id and prompt id are joined with the same separator the QB#/TOPIC# namespaces use, so srsBucket keeps reading FAM# as the family bucket. */ function famCardId(scenarioId,promptId){return
+- +promptId;} /* What a prompt reveals: an explicit revealText when the scenario authors one, else the scenario
+- s re-read links so one page never gets two spellings. */ function prettyRef(k){ return String(k||"").replace(/^t_/,"").replace(/^pg_/,"").replace(/\.md$/,"").replace(/_/g," ").replace(/\b\w/g,function(c){return c.toUpperCase();}); } /* Family retrieval cards for the daily queue — the third card source, after the landmark decks and the per-topic quizzes. One card per authored prompt per scenario, under the SAME ids family-systems-practice.html writes (famCardId, injected above), so a prompt graded in either place moves one schedule rather than two. The reveal text is the scenario
+- s context on screen (a family prompt beside its scenario, a reasoning step beside its patient brief), not sprung cold as a new card here. So this page reviews what the tools taught; it never introduces. The flag is per-card and not per-kind: the family cards are `recall` and the communication and reasoning cards are `choice`, but all three are seeded by their own tool. Decks and topic quizzes carry no flag and remain the only sources feeding the daily new-card allowance. */ function queueable(card, cardState){ return !card || !card.seededOnly || !!cardState; } /* Map a tool
+- s option shape. Both tools grade an option by `quality` rather than a boolean, so `best` becomes the correct answer and the option
+- s twenty-second spoken rep before the choices appear; this is recognition practice on a line the learner has already tried to say. */ function commChoiceCards(data){ var list=(data&&data.cases)||[], out=[], i; if(Object.prototype.toString.call(list)!==
+- ) return out; for(i=0;i<list.length;i++){ var c=list[i]; if(!c||!c.id||!c.prompt) continue; var opts=choiceOptions(c.choices); if(!opts) continue; out.push({ id:"COMM#"+c.id, deck:"COMM", deckTitle:"Communication · "+(c.title||c.id), kind:"choice", seededOnly:true, q:c.prompt, o:opts, stem:c.setting||null }); } return out; } /* Reasoning cards — one per STEP, under the same ids diagnostic-reasoning.html writes. A case
+- s stem because it is NOT optional context: a step asks things like "which one-liner best captures the syndrome", which is unanswerable without the case. In the tool the brief is on screen throughout; a step without it here would be a different, harder, and unfair question. A step whose case has no brief is dropped rather than served bare. */ function reasonChoiceCards(data){ var list=(data&&data.cases)||[], out=[], i, j; if(Object.prototype.toString.call(list)!==
+- ) return out; for(i=0;i<list.length;i++){ var c=list[i]; if(!c||!c.id||!c.patientBrief) continue; var steps=(Object.prototype.toString.call(c.steps)===
+- )?c.steps:[]; for(j=0;j<steps.length;j++){ var st=steps[j]; if(!st||!st.id||!st.prompt) continue; var opts=choiceOptions(st.choices); if(!opts) continue; out.push({ id:"REASON#"+c.id+"#"+st.id, deck:"REASON", deckTitle:"Reasoning · "+(c.title||c.id)+" · "+(st.title||st.id), kind:"choice", seededOnly:true, q:st.prompt, o:opts, stem:c.patientBrief }); } } return out; } /* A reveal is either the scenario
+- s queue-build call — patching only one leaves the other unthrottled. An explicit learner choice (setNewPerDay, which sets settings.userSet) always wins over the rotation-phase cap; phasePolicy() itself never throws, but the try/catch keeps this helper safe even if that contract ever changes. */ function effectiveNewPerDay(s){ var set=(s.settings&&s.settings.newPerDay)||12; if(s.settings&&s.settings.userSet) return set; /* explicit choice always wins */ var cap=12; try{ cap=phasePolicy().newPerDayCap; }catch(_){ } return Math.min(set, cap); } var gradedThisSession={}; // session-local: has card.id already been graded once this session? (a requeued Again-card
+- s rq flag). Reset in start(). function maturity(st){if(!st||!st.reps)return "new";if(st.ivl>=21)return "mature";if(st.lapses&&st.ivl 0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;} /* ---------- theme ---------- */ function toggleTheme(setTheme){var nx=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",nx);try{localStorage.setItem("cw_theme",nx);}catch(_){ } setTheme(nx); if(framed){try{window.parent.postMessage({type:"theme",mode:nx},"*");}catch(_){ }}} function App(){ var ld=useState(null),cards=ld[0],setCards=ld[1]; var er=useState(false),err=er[0],setErr=er[1]; var sv=useState(loadS()),store=sv[0],setStore=sv[1]; var ses=useState(null),sess=ses[0],setSess=ses[1]; // {queue,pos,chosen,revealed,reviewed,correct,fresh} var th=useState((document.documentElement.getAttribute("data-theme")==="dark")?"dark":"light"),theme=th[0],setTheme=th[1]; var tick=useState(0),setTick=tick[1]; var sessRef=useRef(null); sessRef.current=sess; var blockAutoStart=useRef(null), blockLimit=useRef(null); useEffect(function(){ if(cards&&blockAutoStart.current&&!sess){ blockLimit.current=blockAutoStart.current; blockAutoStart.current=null; start(false); } },[cards]); useEffect(function(){ Promise.all([ fetch("quizzes.json?v=5e005edffa93").then(function(r){return r.ok?r.json():{decks:[]};}).catch(function(){return {decks:[]};}), fetch("../topic_meta.json").then(function(r){return r.ok?r.json():{};}).catch(function(){return {};}), fetch("../family_systems_scenarios.json").then(function(r){return r.ok?r.json():{scenarios:[]};}).catch(function(){return {scenarios:[]};}), fetch("../communication_cases.json").then(function(r){return r.ok?r.json():{cases:[]};}).catch(function(){return {cases:[]};}), /* the res build overwrites this file with reasoning_cases_resident.json, so one path serves the right audience without the page knowing which site it is on */ fetch("../reasoning_cases.json").then(function(r){return r.ok?r.json():{cases:[]};}).catch(function(){return {cases:[]};}) ]).then(function(res){ /* One builder per source, concatenated into the single queue. A source that fails to load contributes nothing and the rest still runs; another source later is a builder plus a fetch. Order matters only for which cards a same-due-time tie serves first — the queue is sorted by due date below. */ var j=res[0]||{}, tm=res[1]||{}, fam=res[2]||{}, comm=res[3]||{}, reason=res[4]||{}, out=[]; (j.decks||[]).forEach(function(d){ (d.questions||[]).forEach(function(q,i){ if(!q||!q.q||!q.o)return; out.push({id:d.id+"#"+i,deck:d.id,deckTitle:d.title||d.id,kind:"choice",q:q.q,o:q.o,audio:d.audio||null,audioDur:d.audioDur||null}); }); }); Object.keys(tm).forEach(function(k){ if(k.charAt(0)==="_")return; var m=tm[k]; if(m&&m.quiz&&m.quiz.q&&m.quiz.o&&m.quiz.o.length){ out.push({id:"TOPIC#"+k,deck:"TOPIC",deckTitle:"Topic · "+prettyRef(k),kind:"choice",q:m.quiz.q,o:m.quiz.o.map(function(o){return {t:o.t,c:!!o.c,fb:(o.c?(m.quiz.why||""):"")};})}); } }); out=out.concat(famRecallCards(fam)); out=out.concat(commChoiceCards(comm)); out=out.concat(reasonChoiceCards(reason)); if(!out.length){ setErr(true); return; } setCards(out); /* ?block=1&limit=N — a timed block step from Today starts straight into a bounded session. */ try{ var bp=new URLSearchParams(location.search); if(bp.get("block")==="1"){ var lim=parseInt(bp.get("limit")||"",10); blockAutoStart.current=(lim>=1&&lim<=50)?lim:5; } }catch(_){ } }).catch(function(){setErr(true);}); },[]); useEffect(function(){ function onMsg(ev){var d=ev.data||{};if(d.type==="theme"&&(d.mode==="dark"||d.mode==="light")){document.documentElement.setAttribute("data-theme",d.mode);setTheme(d.mode);}} window.addEventListener("message",onMsg); return function(){window.removeEventListener("message",onMsg);}; },[]); useEffect(function(){ function onKey(ev){ var s=sessRef.current; if(!s||!s.card)return; var k=ev.key; if(!s.revealed){ if(s.card.kind===
+- ){ if(k==="Enter")revealCard(); } else { var n=parseInt(k,10); if(s.card.o&&n>=1&&n<=s.card.o.length){choose(optOrder(s.card)[n-1]);} } } else { if(k==="1")grade(0); else if(k==="2")grade(1); else if(k==="3")grade(2); else if(k==="4")grade(3); } } window.addEventListener("keydown",onKey); return function(){window.removeEventListener("keydown",onKey);}; },[]); function persist(s){saveS(s);setStore(Object.assign({},s));} /* dashboard metrics */ function metrics(){ var now=Date.now(),due=0,neu=0,learn=0,young=0,mature=0,seen=0; if(cards){ var s=rollDay(loadS()); cards.forEach(function(c){var st=s.cards[c.id]; if(!queueable(c,st))return; if(!st){neu++;return;} seen++; var m=maturity(st); if(m==="mature")mature++; else if(m==="young")young++; else learn++; if(st.due<=now)due++; }); } var newRemain=cards?Math.max(0,effectiveNewPerDay(store)-(rollDay(loadS()).day.newToday||0)):0; return {due:due,neu:neu,newRemain:Math.min(newRemain,neu),learn:learn,young:young,mature:mature,seen:seen}; } function start(ahead){ var s=rollDay(loadS()); var now=Date.now(); var due=[],neu=[],fut=[]; cards.forEach(function(c){var st=s.cards[c.id]; if(!queueable(c,st))return; if(!st)neu.push(c); else if(st.due<=now)due.push(c); else fut.push([c,st.due]);}); /* Overdue-first: sort by how overdue each card is (ratio, not raw days) so long-interval cards that are only slightly late don
+- Reset all spaced-repetition progress? This clears your review schedule and streak. This also clears your calibration history. Reading progress elsewhere is unaffected.
+- Spaced repetition · Joshua Moss, MD
+- Could not load the question bank (quizzes.json). Open this tool from the hub so it can find its data, then try again.
+- Loading the question bank…
+- s calibLog event via closure. A recall card suggests nothing — there is no outcome to suggest from. */ var sug=isRecall?
+- ); var fbOpt=(!isRecall&&c.o[sess.chosen])||{}; var corrOpt=(!isRecall&&c.o[ci])||{}; var isNew=!loadS().cards[c.id]; return e("div",{className:"wrap"},head, e("div",{className:"sess"}, e("div",{className:"sbar"},e("i",{style:{width:pctp+"%"}})), e("div",{className:"sinner"}, e("div",{className:"smeta"}, e("span",{className:"deckchip"+(isNew?" snew":"")}, isNew?"New":"Review"), e("span",{className:"deckchip",style:{background:"var(--bg-alt)",color:"var(--text-light)"}}, c.deckTitle.length>42?c.deckTitle.slice(0,40)+"…":c.deckTitle), e("span",{className:"scount"}, (sess.pos+1)+" / "+sess.total)), /* Context the card cannot be answered without (a reasoning case
 - 🎧 Listen — paper overview
+- One way to do it is shown. Rate how close your answer was.
 - Missed items can only be graded Again or Hard
+- Answer out loud or on scratch first, then reveal. Nothing is recorded.
 - Pick the best answer (or press 1–
 - One card came back for another look.
 - cards came back for another look.
@@ -13495,7 +13537,7 @@ students do not treat test prep and clinical reasoning as separate tasks.
 - **Slug:** `rapid_review.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `09_Exam_Prep/Shelf_High_Yield/rapid_review_buzzwords.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 989 words
+- **Length:** 996 words
 
 #### Page text (as shipped)
 
@@ -13508,7 +13550,7 @@ students do not treat test prep and clinical reasoning as separate tasks.
 - Depression ≥2 weeks, ≥5 SIGECAPS incl. mood or anhedonia → **major depressive episode** → SSRI + therapy. *(→ Mood)*
 - Manic ≥1 week (or any duration if hospitalized), elevated/irritable + DIGFAST → **bipolar I** → mood stabilizer/SGA; **antidepressant monotherapy contraindicated**. *(→ Mood)*
 - Antidepressant "works" but patient becomes activated/grandiose → uncovered **bipolar** → screen for bipolarity before any antidepressant.
-- Severe, psychotic, catatonic, food-refusing, or pregnant + high suicide risk → **ECT**. *(→ ECT)*
+- Severe, psychotic, catatonic, food-refusing, or high suicide risk → **ECT** (and preferred over drugs when that patient is pregnant). *(→ ECT)*
 - Grief-specific yearning/preoccupation >12 months, impairing → **prolonged grief disorder (DSM-5-TR)** — not normal bereavement.
 
 ## Psychosis
@@ -13901,6 +13943,14 @@ and present clearly.
 **Examiner note.** The critical-fail list encodes the non-negotiable safety behaviors for each station — a student can be fluent and still fail if they miss one. Use the Shared Debrief Questions above to close every station, and always name the safety behavior that was missed.
 
 
+<!-- ==================== 02_CURRICULUM_V10.md ==================== -->
+
+# MS3 · Curriculum content — volume 10
+
+Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
+
+# SECTION (cont.): Practice and Exam Prep
+
 ---
 
 ## Practice Cases
@@ -14142,14 +14192,6 @@ Plain-English note: these cases let students practice reasoning without using
 real patient details. They are deliberately common enough to teach patterns but
 synthetic enough for safe reuse.
 
-
-<!-- ==================== 02_CURRICULUM_V10.md ==================== -->
-
-# MS3 · Curriculum content — volume 10
-
-Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
-
-# SECTION (cont.): Practice and Exam Prep
 
 ---
 
@@ -15131,6 +15173,14 @@ Based on articles retrieved from PubMed.
 *Joshua Moss, MD | Psychiatrist*
 
 
+<!-- ==================== 02_CURRICULUM_V11.md ==================== -->
+
+# MS3 · Curriculum content — volume 11
+
+Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
+
+# SECTION (cont.): Case of the Week
+
 ---
 
 ## Lithium — Monitoring & Toxicity (Aug 3)
@@ -15397,14 +15447,6 @@ And on the clinician side: **whoever adds the thiazide should check a lithium le
 *Joshua Moss, MD | Psychiatrist*
 
 
-<!-- ==================== 02_CURRICULUM_V11.md ==================== -->
-
-# MS3 · Curriculum content — volume 11
-
-Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
-
-# SECTION (cont.): Case of the Week
-
 ---
 
 ## Opioid Use Disorder (Jul 27)
@@ -15412,7 +15454,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **Slug:** `cotw_20260727_oud_ms3.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-27_opioid-use-disorder_MS3.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 2,624 words
+- **Length:** 2,753 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -15508,7 +15550,7 @@ So the framing to give the team is not "he's fine, he woke up." It is: *he is in
 
 1. **Opioid withdrawal** (most likely) — timeline, exam, and naloxone exposure all fit.
 2. **Co-ingestion / polysubstance overdose** — stimulants, benzodiazepines, alcohol, or an adulterant. Note that **xylazine**, a veterinary sedative increasingly found in the fentanyl supply, is *not* opioid-receptor mediated, so naloxone will not reverse its sedation; suspect it when sedation outlasts naloxone or when there are unusual skin wounds [1,3].
-3. **Anoxic brain injury** — he was found unresponsive for an unknown period. Persistent confusion, focal deficits, or failure to return to baseline demands imaging and a broader workup, not reassurance.
+3. **Consequences of the down-time itself** — he was found unresponsive for an unknown period. **Anoxic brain injury:** persistent confusion, focal deficits, or failure to return to baseline demands imaging and a broader workup, not reassurance. **Rhabdomyolysis:** send a CK with potassium and creatinine and look for pigmented urine — prolonged immobility on a hard surface is the classic mechanism. **Positional compartment syndrome or pressure necrosis:** examine the dependent limb for a tense, disproportionately painful compartment — pain out of proportion with a palpable pulse is still compartment syndrome.
 4. **Infection related to injection drug use** — cellulitis/abscess, **endocarditis**, osteomyelitis/epidural abscess, HIV, hepatitis C. Fever, a new murmur, or back pain changes the entire disposition. Examine the skin and heart deliberately [3].
 5. **Sedative-hypnotic or alcohol withdrawal** — co-dependence is common, and *this* withdrawal syndrome **is** dangerous. Screening for it is not optional.
 
@@ -15530,7 +15572,7 @@ Withdrawal alone does not equal OUD, and OUD is what you are actually treating. 
 | Medication | Mechanism | Key practical points |
 |---|---|---|
 | **Methadone** | Full mu-opioid **agonist** | In the US, for OUD it is dispensed through licensed opioid treatment programs (with a hospital exception for inpatients treated for another condition). Highest retention. Watch QTc and drug interactions. |
-| **Buprenorphine** (± naloxone) | **Partial** mu agonist, high receptor affinity | Office-based prescribing; ceiling effect on respiratory depression makes it comparatively safe. **Must be started in withdrawal** or it precipitates withdrawal. |
+| **Buprenorphine** (± naloxone) | **Partial** mu agonist, high receptor affinity | Office-based prescribing; ceiling effect on respiratory depression makes it comparatively safe. **Started only once the patient is in objective withdrawal** — given earlier, its high receptor affinity displaces the full agonist and precipitates withdrawal. With illicitly manufactured fentanyl that rule is necessary but no longer sufficient: fentanyl accumulates in tissue, so precipitated withdrawal still occurs in a minority of inductions done at an adequate withdrawal score, which is why low-dose and high-dose induction strategies exist and why induction here is planned with addiction medicine rather than run off a threshold [3]. |
 | **Naltrexone** (extended-release injectable) | Opioid **antagonist** | Requires a **full opioid-free interval** (~7–10 days) before induction — the practical reason most acutely presenting patients cannot start it today. No effect on withdrawal. |
 
 The two **agonist** therapies are the ones with the strongest mortality evidence. In a large systematic review and meta-analysis, all-cause mortality during opioid agonist treatment was roughly **half** the rate observed off treatment, with reductions in overdose, suicide, and cardiovascular death; risk was highest in the **first four weeks of methadone** and in the **four weeks after any treatment stops** [5]. A separate meta-analysis found buprenorphine and methadone broadly comparable on mortality, with methadone showing better **retention** in treatment [6].
@@ -15635,7 +15677,7 @@ The translation for the wards: *a referral is not a treatment.* Every ED or inpa
 - **Slug:** `cotw_20260726_etohwd_ms3.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-26_alcohol-withdrawal-delirium-tremens_MS3.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 2,520 words
+- **Length:** 2,601 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -15756,7 +15798,7 @@ The critical caveat for the wards: **CIWA-Ar requires a patient who can communic
 2. **Thiamine before or with glucose.** Give **parenteral (IV or IM) thiamine** to any patient with heavy alcohol use, and give **high-dose parenteral thiamine, continued over several days** — substantially more than the thiamine in a routine "banana bag" — whenever Wernicke encephalopathy is suspected; under-dosing is the commonest reason a treated Wernicke still progresses to Korsakoff. Give thiamine **before or together with** IV dextrose, because a glucose load in a thiamine-deficient patient can precipitate Wernicke [6] — but **never delay dextrose in symptomatic hypoglycemia** to hunt for thiamine; give the glucose and give the thiamine with it. Practice guidelines are consistent that parenteral thiamine belongs in high-risk patients, though they vary widely on dose and duration, and evidence for universal prophylactic dosing is thin [6].
 3. **Correct electrolytes** — replete **magnesium** and **potassium** (both low here); check glucose and sodium.
 4. **Set the level of care and monitoring** — frequent vitals and mental-status checks, especially across the 48–96 h DT window and around his operation. Escalate to a step-down/ICU setting for severe or refractory withdrawal.
-5. **Treat the underlying disorder.** Detoxification is *not* treatment of alcohol use disorder (AUD). Before discharge, offer **AUD pharmacotherapy** — **oral naltrexone 50 mg/d** and **acamprosate** are first-line with the strongest evidence (number needed to treat ~11–18 to prevent one person returning to any drinking), alongside psychosocial treatment [9].
+5. **Treat the underlying disorder.** Detoxification is *not* treatment of alcohol use disorder (AUD). Before discharge, offer **AUD pharmacotherapy** — **oral naltrexone 50 mg/d** and **acamprosate** are first-line with the strongest evidence (number needed to treat ~11–18 to prevent one person returning to any drinking), alongside psychosocial treatment [9]. Match the agent to the organ and to the plan: naltrexone is hepatically metabolized and is avoided in acute hepatitis or decompensated liver disease, and is contraindicated in anyone on or likely to need opioids — note his operative fixation in two days; acamprosate is renally cleared and is dose-reduced or avoided in significant renal impairment. In *this* patient, whose transaminase ratio and platelet count already pointed to liver disease, check the LFTs, plan around the peri-operative analgesia, and consider acamprosate.
 
 **Q7. Overnight, at hour 62, he pulls out his IV, is picking at the bedsheets, does not know where he is, and cannot sustain attention. HR 138, BP 178/102, T 38.6 °C. What is happening and what do you do?**
 
@@ -15840,7 +15882,7 @@ The critical caveat for the wards: **CIWA-Ar requires a patient who can communic
 - **Slug:** `cotw_20260723_suiciderisk_ms3.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-23_suicide-risk-assessment-safety-planning_MS3.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 2,287 words
+- **Length:** 2,403 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -15917,7 +15959,7 @@ You are the student's first clinician contact in the ED.
 *Teaching point:* The **Safety Planning Intervention (SPI)** is a brief, collaborative, written plan built *with* the patient. Its standard components: recognizing personal **warning signs**; internal **coping strategies**; people and social settings that provide distraction; people to ask for help; professionals/agencies to contact in crisis; and **making the environment safer by reducing access to lethal means**. In a large ED cohort study, SPI plus structured telephone follow-up was associated with roughly **45% fewer suicidal behaviors** over 6 months and about **double the odds** of attending outpatient care compared with usual care [4]. A meta-analysis of safety-planning-type interventions found reduced suicidal *behavior* (number-needed-to-treat ≈ 16), though not a clear effect on ideation alone — reinforcing that the safety plan is one active ingredient, not a stand-alone cure [5].
 
 **Q6. How does the team decide *level of care* — who needs hospitalization versus who can be discharged with a plan — and what is your part in that decision as a student?**
-*Teaching point:* Disposition is a **clinical judgment integrating acuity and modifiable risk**, not a checklist score. Favor **higher level of care / psychiatric admission** when there is active ideation with intent or a plan, recent preparatory behavior, inability to engage in safety planning, poor impulse control (including significant intoxication), or absent supports. Favor **discharge with a robust safety plan and rapid follow-up** when ideation is passive/low-intent, the patient can collaborate on and commit to a plan, means access can be reduced, and reliable supports and timely outpatient follow-up exist. Importantly, **risk-stratification labels are weak predictors of who will actually act** — so the plan and follow-up matter as much as the "risk level" you assign (see facilitator notes) [6]. **Your part as a student** is to gather the data, build the formulation, and *recommend* a level of care with your reasoning — the admission or discharge decision, and the orders that follow from it, belong to your supervising resident or attending. Present early rather than after you have decided.
+*Teaching point:* Disposition is a **clinical judgment integrating acuity and modifiable risk**, not a checklist score. Favor **higher level of care / psychiatric admission** when there is active ideation with intent or a plan, recent preparatory behavior, inability to engage in safety planning, poor impulse control (including significant intoxication), or absent supports. Favor **discharge with a robust safety plan and rapid follow-up** when ideation is passive and of low intent, the patient can **engage collaboratively** in building the plan (their ability to work on it with you is the signal — a promise to stay safe is not, which is exactly why the no-harm contract was abandoned), means access **has actually been reduced** (a named person has secured or removed the means by an agreed time, and you have documented who and when), and reliable supports plus a confirmed, timely outpatient appointment are in place. Importantly, **risk-stratification labels are weak predictors of who will actually act** — so the plan and follow-up matter as much as the "risk level" you assign (see facilitator notes) [6]. **Your part as a student** is to gather the data, build the formulation, and *recommend* a level of care with your reasoning — the admission or discharge decision, and the orders that follow from it, belong to your supervising resident or attending. Present early rather than after you have decided.
 
 **Q7 (Safety/systems). What concrete steps round out the ED encounter beyond the interview?**
 *Teaching point:* (1) **Means-reduction counseling** — collaboratively work with the patient and, when appropriate, family to reduce access to lethal means at home. Ask explicitly about **firearms** (the method behind about half of US suicide deaths, and the one with by far the highest case fatality), and also about medications — stockpiled prescriptions, over-the-counter analgesics — and alcohol. Counsel on **temporary storage outside the home, or locked storage with the key held by someone else**, and settle before disposition who will do it and by when. Naming what to secure is standard lethal-means-safety counselling and is not "method detail"; leaving it general is how it stops happening. (2) **Involve supports/collateral** with appropriate consent — corroboration and a person who can help enact the plan. (3) **Warm handoff and follow-up** — timely outpatient linkage; brief follow-up contact ("caring contacts") after discharge is associated with better engagement [4]. (4) **Document** the assessment, the reasoning, and the plan. (5) Treat the **underlying disorder** (here, likely depression ± alcohol use).
@@ -15947,7 +15989,7 @@ Suicidal ideation is a **symptom**, not a diagnosis — always identify and trea
 4. **Means-reduction counseling** and mobilize supports.
 5. **Present your level-of-care reasoning to your supervising resident or attending**, who makes the disposition decision (admit vs. discharge with plan + rapid follow-up).
 6. **Arrange follow-up / caring contacts** and communicate a warm handoff.
-7. **Treat the underlying disorder** (start/optimize depression treatment; address alcohol use).
+7. **Treat the underlying disorder** (start/optimize depression treatment; address alcohol use). If an antidepressant is started, note that this patient is under 25: counsel them, and with consent a support person, that emergent agitation, akathisia, insomnia, or worsening suicidal thoughts in the first weeks must be reported the same day, and arrange close contact across that window — the interval before the drug works is also the interval of greatest concern.
 
 ---
 
@@ -15998,7 +16040,7 @@ Suicidal ideation is a **symptom**, not a diagnosis — always identify and trea
 - **Slug:** `cotw_20260720_mdd_ms3.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-20_mdd-treatment-selection-augmentation_MS3.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 1,290 words
+- **Length:** 1,434 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -16063,10 +16105,10 @@ She returns at **6 weeks** on an adequately dosed selective serotonin reuptake i
 *Teaching point:* Always screen for a **history of mania/hypomania** before prescribing an antidepressant. Giving an antidepressant to someone with bipolar disorder can precipitate a manic switch. Also screen for active suicidality, psychotic features, substance use, and secondary causes (e.g., hypothyroidism — hence the TSH). "Unipolar" MDD is a diagnosis of exclusion of the bipolar spectrum.
 
 **Q2. What is the expected first-line pharmacologic treatment, and how do you counsel her about the timeline?**
-*Teaching point:* First-line options are **SSRIs** (e.g., sertraline, escitalopram) — chosen for tolerability and safety in overdose. SNRIs, bupropion, and mirtazapine are reasonable alternatives. A landmark network meta-analysis of 21 antidepressants found *all* were more effective than placebo, with escitalopram and sertraline among those combining good efficacy and acceptability [1]. Counsel that **antidepressants take 4–6 weeks at an adequate dose** to show full effect, and that a partial response by 2–4 weeks predicts later response.
+*Teaching point:* First-line options are **SSRIs** (e.g., sertraline, escitalopram) — chosen for tolerability and safety in overdose. SNRIs, bupropion, and mirtazapine are reasonable alternatives. A landmark network meta-analysis of 21 antidepressants found *all* were more effective than placebo, with escitalopram and sertraline among those combining good efficacy and acceptability [1]. Counsel that **antidepressants usually need 4–8 weeks at an adequate dose** for full effect — some improvement is often visible by 2–4 weeks, and the absence of *any* improvement by 4 weeks predicts a low chance of later response — but do not call a trial adequate, or declare it failed, before **6–8 weeks at an adequate dose**. Remember too that the PHQ-9 moves in ~5-point steps to be clinically meaningful: a 16 to 13 change is minimal response, not a partial response.
 
 **Q3. At 6 weeks she is only partially better (PHQ-9 16 → 13). What defines an "adequate trial," and what are her next options?**
-*Teaching point:* An adequate trial = **adequate dose for adequate duration (≥6–8 weeks)**. Because she had a *partial* response, reasonable next steps include (a) **optimizing the dose** of the current SSRI, (b) **switching** to a different antidepressant, or (c) **augmenting**. Distinguish the three: optimize = push the same drug up; switch = replace it; augment = add a second agent to the first. Partial responders often do well with dose optimization before more complex strategies.
+*Teaching point:* An adequate trial = **adequate dose for adequate duration (≥6–8 weeks)**. Because she had a *partial* response, reasonable next steps include (a) **optimizing the dose** of the current SSRI, (b) **switching** to a different antidepressant, or (c) **augmenting**. Distinguish the three: optimize = push the same drug up; switch = replace it, and in almost all cases by **cross-tapering** rather than stopping abruptly — abrupt cessation of an SSRI or SNRI (paroxetine and venlafaxine are the worst offenders) causes a discontinuation syndrome of dizziness, electric-shock sensations, flu-like symptoms and irritability that is routinely mistaken for relapse, and any switch to or from an MAOI needs a formal washout to avoid serotonin syndrome; augment = add a second agent to the first. Partial responders often do well with dose optimization before more complex strategies.
 
 **Q4. Define "treatment-resistant depression" and name evidence-based augmentation options an MS3 should recognize.**
 *Teaching point:* **Treatment-resistant depression (TRD)** is commonly defined as failure to respond to ≥2 adequate antidepressant trials. High-yield augmentation agents: **atypical antipsychotics** (aripiprazole, quetiapine XR — the best-studied), **lithium**, and **thyroid hormone (T3)**. In the VA VAST-D randomized trial, augmenting with **aripiprazole** produced higher response rates than switching to bupropion, though the effect size was modest and aripiprazole carried more side effects (akathisia, somnolence, weight gain) [2]. Know that augmentation adds efficacy but also adds adverse-effect burden.
@@ -16097,8 +16139,8 @@ She returns at **6 weeks** on an adequately dosed selective serotonin reuptake i
 **Workup:** History (including mania screen, suicide risk, substance use), PHQ-9 for severity/tracking, and targeted labs to exclude medical mimics (TSH, CBC; add others if indicated). No routine imaging.
 
 **Management ladder:**
-1. **Start** an SSRI at an adequate dose; set expectations (4–6 weeks). Offer psychotherapy.
-2. **Reassess at 4–6 weeks** with a repeat PHQ-9.
+1. **Start** an SSRI at an adequate dose; set expectations (4–8 weeks for full effect). Offer psychotherapy.
+2. **Reassess at 4–6 weeks** with a repeat PHQ-9 — to check the dose and adherence, *not* to declare the trial failed; that judgement waits for 6–8 weeks at an adequate dose.
    - No response → **switch** (to another SSRI, SNRI, or bupropion).
    - Partial response → **optimize dose** or **augment**.
 3. **After ≥2 failed adequate trials (TRD)** → augment with an atypical antipsychotic (e.g., aripiprazole), lithium, or T3; consider psychiatry referral, and consider **ECT** for severe, psychotic, or treatment-refractory depression.
@@ -16127,6 +16169,14 @@ She returns at **6 weeks** on an adequately dosed selective serotonin reuptake i
 
 *Joshua Moss, MD | Psychiatrist*
 
+
+<!-- ==================== 02_CURRICULUM_V12.md ==================== -->
+
+# MS3 · Curriculum content — volume 12
+
+Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
+
+# SECTION (cont.): Case of the Week
 
 ---
 
@@ -16274,7 +16324,7 @@ Based on articles retrieved from PubMed.
 - **Slug:** `cotw_20260713_agitation_ms3.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-13_acute-agitation-delirium_MS3.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 1,713 words
+- **Length:** 1,735 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -16363,7 +16413,7 @@ The single highest-yield teaching point: **agitation is a symptom, not a diagnos
 
 3. **Initial workup — hunt for the precipitant.** Reasonable first pass: fingerstick glucose, CBC, BMP/electrolytes, **urinalysis + urine culture** (the precipitant to confirm here), consider blood cultures if febrile/septic-appearing, LFTs, and a **medication review** (new anticholinergics, opioids, sedative-hypnotics). Add ECG (baseline QTc before antipsychotics), consider CXR, and **neuroimaging (non-contrast head CT)** if there is head trauma, focal deficit, anticoagulation, or no other explanation. Mnemonic for reversible precipitants: **"I WATCH DEATH"** or the simpler **DELIRIUM(S)** — Drugs, Electrolytes, Lack of drugs (withdrawal), Infection, Reduced sensory input, Intracranial, Urinary/fecal retention, Myocardial/pulmonary, (Sleep). *The most likely culprit in this vignette: **UTI**, compounded by an **anticholinergic** started for BPH.*
 
-4. **First-line pharmacologic approach when de-escalation fails:** a **low-dose high-potency antipsychotic** (e.g., low-dose haloperidol) is the usual agent for agitation from delirium, targeting distressing psychosis/agitation that threatens safety — always at the **lowest effective dose**, with an **ECG/QTc** consideration and a plan to taper [3]. **Generally avoid benzodiazepines** in delirium: they can **worsen confusion and paradoxically increase agitation** in older adults, and prolong delirium — **the key exception is delirium from alcohol/benzodiazepine withdrawal**, where benzodiazepines are the treatment. Antipsychotics *manage the symptom* but do **not** treat or shorten the delirium itself; the precipitant work is what fixes the brain. Teaching caveat for the honest MS3: the evidence base for antipsychotics in delirium is weak — the landmark **MIND-USA** randomized trial found haloperidol and ziprasidone did **not** shorten delirium duration in critically ill patients versus placebo [5]. So: use the smallest dose needed for safety, not to "treat delirium."
+4. **First-line pharmacologic approach when de-escalation fails:** a **low-dose high-potency antipsychotic** (e.g., low-dose haloperidol) is the usual agent for agitation from delirium, targeting distressing psychosis/agitation that threatens safety — always at the **lowest effective dose**, with an **ECG/QTc** consideration, a plan to taper, and a quick check for parkinsonism or suspected Lewy body dementia first, where antipsychotic sensitivity can be severe and haloperidol should be avoided [3]. **Generally avoid benzodiazepines** in delirium: they can **worsen confusion and paradoxically increase agitation** in older adults, and prolong delirium — **the key exception is delirium from alcohol/benzodiazepine withdrawal**, where benzodiazepines are the treatment. Antipsychotics *manage the symptom* but do **not** treat or shorten the delirium itself; the precipitant work is what fixes the brain. Teaching caveat for the honest MS3: the evidence base for antipsychotics in delirium is weak — the landmark **MIND-USA** randomized trial found haloperidol and ziprasidone did **not** shorten delirium duration in critically ill patients versus placebo [5]. So: use the smallest dose needed for safety, not to "treat delirium."
 
 5. **Three non-pharmacologic interventions (prevent *and* treat):** reorientation (visible clock/calendar, family at bedside, frequent reorientation); restoring sensory aids (glasses, hearing aids) and normalizing the environment (lights on by day, quiet and dark at night to protect sleep, minimize tethers/lines/catheters); and early mobilization + hydration/nutrition + pain control + bowel/bladder care. These are first-line because **multicomponent non-pharmacologic strategies are the only interventions shown to reduce delirium incidence — by roughly 40%** — whereas no drug reliably treats the syndrome [1,3].
 
@@ -16405,14 +16455,6 @@ Dangerousness in this case is **risk of harm to self and staff from agitation**,
 ---
 *Joshua Moss, MD | Psychiatrist*
 
-
-<!-- ==================== 02_CURRICULUM_V12.md ==================== -->
-
-# MS3 · Curriculum content — volume 12
-
-Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
-
-# SECTION (cont.): Case of the Week
 
 ---
 
@@ -17507,6 +17549,14 @@ Would you like to explore any of these domains in greater depth — for example,
 *Evidence summary for teaching; verify against current guidelines and primary sources before clinical use. Reviewed and attested by Joshua Moss, MD (2026-07-09). Joshua Moss, MD | Psychiatrist*
 
 
+<!-- ==================== 02_CURRICULUM_V13.md ==================== -->
+
+# MS3 · Curriculum content — volume 13
+
+Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
+
+# SECTION (cont.): Evidence and Reference
+
 ---
 
 ## The Therapy Reading Room
@@ -17822,14 +17872,6 @@ Would you like to explore any of these domains in greater depth — for example,
 
 *Joshua Moss, MD | Psychiatrist · Curated from the library book database. Educational; suggested reading, not required.*
 
-
-<!-- ==================== 02_CURRICULUM_V13.md ==================== -->
-
-# MS3 · Curriculum content — volume 13
-
-Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
-
-# SECTION (cont.): Evidence and Reference
 
 ---
 
@@ -18608,7 +18650,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Conduct disorder before age 15 is required for antisocial personality disorder; always rule out mania and substances.
 - Sort delirium vs dementia vs depression, rule out the reversible causes, and name the subtype — because subtype decides what you prescribe and what you must not.
 - Onset, course, and attention separate delirium (acute, fluctuating, inattentive) from dementia.
-- Screen every new diagnosis for reversible causes (B12/folate, TSH, CMP, ± RPR/HIV, NPH).
+- Screen every new diagnosis for reversible causes — labs (B12/folate, TSH, CMP, ± RPR/HIV) plus structural imaging, which is the only way NPH or a chronic subdural turns up.
 - Antipsychotics carry a black-box mortality warning in dementia — and are dangerous in Lewy body disease.
 - New, fluctuating confusion with inattention is delirium, not 'worse dementia' — work it up before relabeling.
 - Depression (pseudodementia)
@@ -19650,16 +19692,16 @@ _1394 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_mood_008` · status=`attested` · type=`sba` · difficulty=`1` · competency=`['pharm', 'management']` · **high-yield**
 - Linked pages: `t_mood.md`
-- Evidence: `t_mood.md — ECT is not a last resort — it is first-line for psychotic, catatonic, or life-threatening mood states and in pregnancy.`
+- Evidence: `t_mood.md — ECT is not a last resort — it is first-line for psychotic, catatonic, or life-threatening mood states, and in pregnancy it is a preferred option when illness of that severity demands rapid, definitive treatment. Pregnancy alone is not the indication; the severity is.`
 
 **Stem.** A 67-year-old woman with treatment-resistant MDD is hospitalized. She has failed two adequate antidepressant trials, has active suicidal ideation, refuses all oral intake, and expresses the nihilistic delusion that her intestines have rotted. The team debates a third antidepressant versus ECT. Which framing is most accurate?
 
 - A third antidepressant combined with an antipsychotic should be tried first — pharmacotherapy is the standard of care before proceeding to procedural interventions.
-- ECT is not a last resort — it is first-line for severe, psychotic, catatonic, or life-threatening mood states and in pregnancy. **← keyed correct**
+- ECT is not a last resort — it is first-line for severe, psychotic, catatonic, or life-threatening mood states, and this patient meets several of those criteria at once. **← keyed correct**
 - rTMS is preferred because it avoids anesthesia and has equivalent efficacy to ECT for psychotic depression.
 - Palliative consultation is appropriate — treatment resistance and refusal of oral intake indicate a terminal trajectory.
 
-**Rationale.** This patient's presentation meets multiple ECT indications simultaneously. Pharmacotherapy first at any severity, Newer = better, and Hopeless by default all delay a definitive, evidence-based treatment. The mood page states explicitly: 'ECT is not a last resort — it is first-line for psychotic, catatonic, or life-threatening mood states and in pregnancy.' Active suicidality, refusal of food/fluids, psychotic features, and treatment resistance are all named ECT indications.
+**Rationale.** This patient's presentation meets multiple ECT indications simultaneously. Pharmacotherapy first at any severity, Newer = better, and Hopeless by default all delay a definitive, evidence-based treatment. The mood page states explicitly: 'ECT is not a last resort — it is first-line for psychotic, catatonic, or life-threatening mood states.' Active suicidality, refusal of food/fluids, psychotic features, and treatment resistance are all named ECT indications.
 
 **Pearl.** ECT is not a last resort — it is first-line for psychotic, catatonic, or life-threatening depression; do not defer it when these criteria are met.
 
@@ -19761,7 +19803,7 @@ _1394 further strings omitted — this surface embeds the build's front-door cat
 - The patient is experiencing sertraline discontinuation syndrome — the mania-like symptoms are medication side effects that will resolve spontaneously.
 - He has developed a superimposed stimulant use disorder — the pattern is classic methamphetamine intoxication.
 - This represents sertraline's therapeutic effect — the energy and motivation improvement of depression recovery can resemble hypomania.
-- Antidepressant monotherapy has precipitated a manic switch in a patient likely misdiagnosed as unipolar — the diagnosis should be reconsidered as bipolar disorder and the antidepressant should not be continued as monotherapy. **← keyed correct**
+- Antidepressant monotherapy has precipitated a manic switch in a patient likely misdiagnosed as unipolar — the diagnosis should be reconsidered as bipolar disorder, the antidepressant should be discontinued, and antimanic treatment started. **← keyed correct**
 
 **Rationale.** Side effect attribution, Substance first, and Recovery looks like hypomania all avoid the correct diagnosis. The mood page explicitly states: 'a bipolar depression misread as unipolar can be pushed into mania or rapid cycling by an antidepressant.' This is the clinical manifestation of that process — treatment-emergent mania revealing unrecognized bipolar disorder.
 
@@ -19788,7 +19830,7 @@ _1394 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_mood_016` · status=`attested` · type=`two-tier` · difficulty=`3` · competency=`['pharm', 'management']`
 - Linked pages: `t_mood.md`, `ect_neuromodulation.md`
-- Evidence: `t_mood.md — Reserve ECT for severe, psychotic, catatonic, or treatment-resistant depression, for life-threatening states (refusal of food/fluids, acute high suicide risk), and as a preferred option in pregnancy.`
+- Evidence: `t_mood.md — Reserve ECT for severe, psychotic, catatonic, or treatment-resistant depression, for life-threatening states (refusal of food/fluids, acute high suicide risk), and — when illness of that severity occurs in pregnancy — as a preferred option, since the therapeutic seizure works without the systemic fetal drug exposure pharmacotherapy requires.`
 
 **Stem.** A 24-year-old woman in her 14th week of pregnancy presents with severe MDD: active suicidal ideation with a plan, refusal to eat, psychomotor retardation, and a prior excellent response to ECT 4 years ago. The team debates continuing the current antidepressant versus offering ECT. Which statement best reflects the clinical standard?
 
@@ -19797,11 +19839,11 @@ _1394 further strings omitted — this surface embeds the build's front-door cat
 - ECT is a preferred treatment option in this presentation — pregnancy is an explicit ECT indication when medications are undesirable, and this patient also has active suicidality, refusal of oral intake, and a prior good ECT response. **← keyed correct**
 - Ketamine infusion should be chosen over ECT — it avoids anesthesia and is equally effective for suicidal ideation in pregnancy.
 
-**Rationale.** Absolute contraindication invented, Pharmacotherapy always first, and Newer = better all distort the evidence. ECT has no absolute contraindications; pregnancy is an ECT indication. This patient has four concurrent indications: active suicidality, refusal of oral intake, pregnancy where medications are less desirable, and prior good ECT response.
+**Rationale.** Absolute contraindication invented, Pharmacotherapy always first, and Newer = better all distort the evidence. ECT has no absolute contraindications, and pregnancy is where it becomes preferred once the illness is severe enough to need rapid, definitive treatment — it is not an indication on its own. This patient has four concurrent reasons: active suicidality, refusal of oral intake, pregnancy where medications are less desirable, and prior good ECT response.
 
 **Pearl.** ECT in pregnancy: no absolute contraindication, explicitly indicated when medications are undesirable — especially when there is active suicidality, refusal to eat, or prior ECT response.
 
-**Tier-2 / stretch.** {"q": "Why is ECT specifically listed as a preferred option in pregnancy, compared to pharmacotherapy?", "options": [{"key": "A", "t": "ECT carries no teratogenic risk because the electrical current does not cross the placenta."}, {"key": "B", "t": "ECT avoids systemic fetal drug exposure — the induced seizure under anesthesia has a well-established safety record in pregnancy with obstetric monitoring, whereas fetal pharmacological exposure carries teratogenic and developmental risks that vary by agent.", "c": true}, {"key": "C", "t": "ECT is FDA-approved for use in pregnancy, whereas all antidepressants are FDA category D or X."}, {"key": "D", "t": "ECT is faster than pharmacotherapy — rapid treatment is the only advantage, not the avoidance of drug exposure."}], "why": "The clinical advantage of ECT in pregnancy is that the therapeutic mechanism (induced seizure) does not require systemic pharmacological exposure that crosses the placenta. Many psychotropics have established or potential teratogenic risks, particularly during organogenesis, and all agents have some potential for fetal or neonatal effects. ECT with appropriate obstetric monitoring avoids this entirely. The long safety record of ECT in pregnancy is one reason it appears on the indications list alongside the more familiar severity-based indications."}
+**Tier-2 / stretch.** {"q": "Why is ECT preferred over pharmacotherapy once a pregnant patient's illness is severe enough to need it?", "options": [{"key": "A", "t": "ECT carries no teratogenic risk because the electrical current does not cross the placenta."}, {"key": "B", "t": "ECT avoids systemic fetal drug exposure — the induced seizure under anesthesia has a well-established safety record in pregnancy with obstetric monitoring, whereas fetal pharmacological exposure carries teratogenic and developmental risks that vary by agent.", "c": true}, {"key": "C", "t": "ECT is FDA-approved for use in pregnancy, whereas all antidepressants are FDA category D or X."}, {"key": "D", "t": "ECT is faster than pharmacotherapy — rapid treatment is the only advantage, not the avoidance of drug exposure."}], "why": "The clinical advantage of ECT in pregnancy is that the therapeutic mechanism (induced seizure) does not require systemic pharmacological exposure that crosses the placenta. Many psychotropics have established or potential teratogenic risks, particularly during organogenesis, and all agents have some potential for fetal or neonatal effects. ECT with appropriate obstetric monitoring avoids this entirely. The long safety record of ECT in pregnancy is one reason it appears on the indications list alongside the more familiar severity-based indications."}
 
 ## Category: neurocog  (16 items)
 
@@ -19947,7 +19989,7 @@ _1394 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_cog_009` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['next-step']`
 - Linked pages: `t_neurocog.md`
-- Evidence: `t_neurocog.md 'Initial workup' — Labs to catch reversible causes: CBC, CMP, TSH, B12/folate, and — when indicated — HIV and RPR/treponemal testing. Medication reconciliation to strip anticholinergic and sedative burden.`
+- Evidence: `t_neurocog.md 'Initial workup' — Labs to catch reversible causes: CBC, CMP, TSH, B12/folate, and — when indicated — HIV and RPR/treponemal testing. Neuroimaging (CT or MRI) as part of the initial workup of any new cognitive diagnosis — it is the only way the NPH and chronic subdural hematoma on the reversible list above get found — with MRI preferred, and expedited for atypical, rapid, focal, or early-onset presentations.`
 
 **Stem.** A 68-year-old woman is admitted after 4 months of progressive cognitive decline and withdrawal. Neuropsychological testing suggests a moderate amnestic syndrome. She has no known prior psychiatric or neurological history. Which is the most appropriate first-line laboratory workup before assigning a neurodegenerative diagnosis?
 
@@ -19956,9 +19998,9 @@ _1394 further strings omitted — this surface embeds the build's front-door cat
 - Brain MRI with gadolinium — structural imaging is the single most important diagnostic step for a new dementia presentation.
 - APOE genotyping — an APOE ε4 allele would confirm Alzheimer disease and guide management.
 
-**Rationale.** Jump to autoimmune and Imaging before labs both skip the foundational step. The reversible-cause panel — B12/folate, TSH, CMP, and when indicated RPR/HIV — must precede neurodegenerative labeling because these conditions are treatable and clinically indistinguishable at presentation. APOE genotyping is not a diagnostic standard. MRI is appropriate, especially for atypical or rapid presentations, but not before basic labs.
+**Rationale.** Jump to autoimmune and Genetic confirmation both skip the foundational step. The reversible-cause panel — B12/folate, TSH, CMP, and when indicated RPR/HIV — must precede neurodegenerative labeling because these conditions are treatable and clinically indistinguishable at presentation. APOE genotyping is not a diagnostic standard. Structural imaging is part of the same initial workup rather than a later step, but it is not the laboratory screen this stem asks for, and it does not require gadolinium.
 
-**Pearl.** Order the reversible-cause panel (B12/folate, TSH, CMP, ± RPR/HIV) on every new cognitive presentation before assigning a neurodegenerative diagnosis.
+**Pearl.** Every new cognitive diagnosis gets both halves of the reversible screen: the panel (B12/folate, TSH, CMP, ± RPR/HIV) and structural imaging — labs cannot exclude NPH or a chronic subdural.
 
 ### qb_cog_010
 
@@ -20115,7 +20157,7 @@ _1394 further strings omitted — this surface embeds the build's front-door cat
 - Prioritize medical workup to rule out thyroid dysfunction and eclampsia before any psychiatric treatment — pharmacotherapy is premature until medical causes are excluded.
 - The lucid interval between episodes provides reassurance — waxing-and-waning symptoms are inconsistent with psychosis; this is most likely a severe postpartum adjustment reaction.
 
-**Rationale.** Outpatient sufficient, Medical workup before treatment, and Lucid interval = reassurance all miss the emergency framing. The source states: 'POSTPARTUM PSYCHOSIS IS A PSYCHIATRIC EMERGENCY: rapid onset, waxing/waning presentation, and real risk to both mother and infant — admit and treat urgently.' The safety assessment must explicitly include the infant.
+**Rationale.** Outpatient sufficient and Lucid interval = reassurance miss the emergency framing. Medical workup before treatment is wrong only in its sequencing: delirium, eclampsia, thyroid disease, infection, and autoimmune encephalitis are excluded concurrently with emergency psychiatric admission — the organic workup proceeds in parallel and must never delay hospitalization or treatment. The source states: 'POSTPARTUM PSYCHOSIS IS A PSYCHIATRIC EMERGENCY: rapid onset, waxing/waning presentation, and real risk to both mother and infant — admit and treat urgently.' The safety assessment must explicitly include the infant.
 
 **Pearl.** Postpartum psychosis = immediate hospitalization, restrict unsupervised infant access, start lithium or antipsychotic urgently.
 
@@ -20151,7 +20193,7 @@ _1394 further strings omitted — this surface embeds the build's front-door cat
 - Bulimia nervosa — normal weight does not rule out bulimia; the binge-purge cycle, weight/shape self-evaluation, and Russell's sign (knuckle calluses) are the diagnostic markers. **← keyed correct**
 - Purging disorder — recurrent purging in the absence of objectively large binge episodes, with weight/shape concern, is classified as purging disorder.
 
-**Rationale.** Normal weight rules out AN, Binge = BED, and Normal weight = malingering all miss the defining features. The page: 'Bulimia nervosa — weight is often normal or high — a normal weight does not rule it out. Look for Russell's sign (knuckle calluses), parotid enlargement, and dental enamel erosion.' All three examination findings distinguish BN from BED: the presence of compensatory behaviors (purging) is the key.
+**Rationale.** Normal weight rules out AN, Binge = BED, and Purging without binges = purging disorder all miss the defining features — her recurrent, objectively large binge episodes with compensatory purging make this bulimia nervosa rather than purging disorder, which requires purging in the absence of binges. The page: 'Bulimia nervosa — weight is often normal or high — a normal weight does not rule it out. Look for Russell's sign (knuckle calluses), parotid enlargement, and dental enamel erosion.' All three examination findings distinguish BN from BED: the presence of compensatory behaviors (purging) is the key.
 
 **Pearl.** Normal weight DOES NOT rule out bulimia nervosa — look for binge-purge cycle + Russell's sign (knuckle calluses) + parotid swelling + dental erosion.
 
@@ -21502,14 +21544,14 @@ _1394 further strings omitted — this surface embeds the build's front-door cat
 
 **Stem.** A patient is pacing the hallway, speaking loudly, and waving his hands. He has not threatened anyone and is not in immediate danger of harming himself or others. You are the student. Which response is best?
 
-- Approach calmly, introduce yourself, acknowledge that he looks upset, and offer him a choice — 'Would it help to step somewhere quieter, or is there something I can get you?' **← keyed correct**
+- Let a nearby staff member know you are engaging, then approach calmly — without blocking his exit or yours — introduce yourself, acknowledge that he looks upset, and offer him a choice — 'Would it help to step somewhere quieter where staff can still see us, or is there something I can get you?' **← keyed correct**
 - Return to the nursing station and request a PRN intramuscular medication order before approaching
 - Call for additional staff and prepare for restraint in case the patient escalates
 - Instruct him firmly to return to his room or staff will have to intervene
 
 **Rationale.** Agitation = antipsychotic, Restraint first, and Commands over choices are the three forms of the same error: defaulting to force or medication before de-escalation. The Project BETA framework begins with calm presence, acknowledgment of distress, and genuine choices — not commands or preemptive escalation.
 
-**Pearl.** Verbal de-escalation — calm presence, acknowledgment, and genuine choices — is the default first response to agitation, not a courtesy step before medication.
+**Pearl.** Verbal de-escalation — calm presence, acknowledgment, and genuine choices — is the default first response to agitation, not a courtesy step before medication; tell a staff member before you engage, and stay near your exit without blocking the patient's.
 
 ### qb_saf_003
 
@@ -22846,7 +22888,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
   - Support is not the same as supervision. I want to be specific about what is realistic.
 - **avoid**
   - Do not promise discharge, medication changes, or a family meeting outcome.
-  - Do not use family as interpreters for confidential or high-risk material.
+  - Do not use family as interpreters — book a professional one for the conversation; family bridges only in an emergency while an interpreter is arranged.
   - Do not document family conclusions without the examples behind them.
 - **handoff**
   - Baseline: what changed and when.
@@ -23138,7 +23180,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
   - Adaptations that staff can use today, plus unresolved safety or discharge barriers.
 - **safety**
   - Escalate acute delirium, catatonia, inability to eat or drink, falls, elopement, abuse, exploitation, or caregiver burnout.
-  - Use trained interpreters for language access and high-risk questions.
+  - Use trained interpreters for the whole conversation, not only the high-risk questions.
   - Document caregiver source, permission/legal frame, and what changed the plan.
 
 **Completion checks:**
@@ -23164,7 +23206,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
 **Scripted content by stage**
 
 - **prepare**
-  - Use a trained interpreter for clinical discussion; do not use relatives for confidential or high-risk questions.
+  - Use a trained interpreter for any clinical discussion; relatives bridge only in an emergency while one is arranged.
   - Ask the patient privately who they want involved and what cultural, spiritual, or family context matters.
   - Clarify whether the goal is collateral, psychoeducation, discharge planning, conflict repair, or safety planning.
 - **ask**
@@ -23187,7 +23229,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
   - Cultural/system factors that change alliance, safety, diagnosis, or discharge planning.
 - **safety**
   - Use supervisor guidance for confidentiality exceptions, mandated reporting, threats, coercion, trafficking, or abuse concerns.
-  - Use professional interpreters for safety planning and means-safety conversations.
+  - Use professional interpreters throughout — safety planning and means-safety conversations included.
   - Document interpreter use, consent boundaries, and the clinical reason for family contact.
 
 **Completion checks:**
@@ -25068,7 +25110,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
    - A clear manic episode with psychosis during continued full-dose treatment
      - *feedback:* Mania with psychosis requires a different diagnostic and safety assessment.
 
-4. **Which clinical approach best avoids overinterpreting the Moncrieff withdrawal discussion?**
+4. **Which clinical approach best avoids overinterpreting the antidepressant-withdrawal literature?**
    - Discuss benefits, adverse effects, withdrawal risk, and patient goals before changing treatment. **← keyed correct**
      - *feedback:* Balanced shared decision-making is the practical takeaway for students and clinicians.
    - Tell patients antidepressants never help and should not be prescribed.
@@ -25171,7 +25213,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
    - The risk of harm is greater than the benefit, resulting in an NNT higher than the NNH. This interpretation would likely lead to a recommendation against using these medications, which is not the current clinical consensus.
    - The NNT is 143 for remission, making the medication clinicaly ineffective for most youth. This incorrectly attributes the higher number (NNH) to the clinical benefit (NNT).
    - The benefits far outweigh the risks, with an NNT of 10 and an NNH of 143. **← keyed correct**
-     - *feedback:* For every 10 patients treated, one achieves clinical response, whereas it takes 143 patients to see one additional case of suicidal ideation.
+     - *feedback:* For every 10 patients treated, one ADDITIONAL patient responds beyond what placebo would achieve — response was roughly 60% on drug vs 50% on placebo, not 1 in 10 — whereas it takes 143 patients to see one additional case of suicidal ideation or behavior.
 
 5. **A 16-year-old is prescribed fluoxetine for depression. Based on clinical pearls, what is the most critical monitoring period for treatment-emergent suicidality?**
    - Only after the medication has reached a steady state, typically after 3 months.
@@ -25896,18 +25938,18 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
 
 4. **Based on the clinical pearls from the BALANCE trial, what is the recommended approach for a patient experiencing an incomplete response to lithium monotherapy?**
    - Discontinue all mood stabilizers and monitor for symptoms.
-     - *feedback:* This contradicts the goal of maintenance therapy and the study's findings on the risks of lithium withdrawal.
+     - *feedback:* This contradicts the goal of maintenance therapy, and abrupt withdrawal carries its own relapse risk — a finding from the lithium-discontinuation literature rather than from BALANCE.
    - Switch immediately to valproate monotherapy for better maintenance. The trial demonstrated that valproate monotherapy is inferior to lithium-containing regimens.
    - Abruptly stop lithium and start a second-generation antipsychotic. Abrupt discontinuation of lithium is strongly discouraged due to the high risk of rapid relapse.
    - Utilize combination therapy by adding valproate to the lithium regimen. **← keyed correct**
      - *feedback:* The study suggests that the combination of lithium and valproate is appropriate and effective for patients who do not fully respond to one agent.
 
-5. **What is a critical implementation point regarding the discontinuation of lithium, according to the trial's findings on relapse timing?**
+5. **What is a critical implementation point regarding the discontinuation of lithium — a point that comes from the separate lithium-discontinuation literature (Baldessarini, Tondo & Faedda, *J Clin Psychiatry* 1996), not from BALANCE itself?**
    - Gradual discontinuation is essential because abrupt withdrawal precipitates relapse in a median of 4 months versus 20 months. **← keyed correct**
-     - *feedback:* The study clearly showed that the time to relapse is significantly shortened if lithium is stopped suddenly.
+     - *feedback:* Baldessarini et al. (1996) pooled 161 patients and found median time to recurrence of 20.0 months after gradual (15-30 day) versus 4.0 months after rapid (1-14 day) discontinuation. BALANCE did not study discontinuation speed.
    - Lithium can be stopped abruptly as long as the patient has been stable for at least 2 years. Regardless of previous stability, the rate of withdrawal significantly impacts the risk and timing of relapse.
    - A cross-titration to valproate over 3 days is considered 'gradual' enough. Three days is generally considered too rapid for lithium discontinuation and does not align with the emphasis on avoiding abrupt withdrawal.
-   - The method of discontinuation has no impact on the median time to relapse. The data showed a dramatic difference (4 months vs. 20 months) based on how the medication was stopped.
+   - The method of discontinuation has no impact on the median time to relapse. The lithium-discontinuation literature showed a dramatic difference (4 months vs. 20 months) based on how the medication was stopped.
 
 ## AR-25 — The Bush-Francis Catatonia Rating Scale and Lorazepam Protocol  (6 questions)
 
@@ -26134,10 +26176,10 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
 4. **In the context of clinical trials for psychiatric medications, what is the regulatory status of the C-SSRS?**
    - It has been replaced by the Scale for Suicide Ideation (SSI) in most regulatory settings.
      - *feedback:* The C-SSRS outperformed the SSI in predictive validity in the Posner study and remains the standard.
-   - It is an optional tool that may be used if the primary investigator has a background in psychiatry. It is not optional; its use is mandated for safety monitoring in these specific types of clinical research.
+   - It is an optional tool that may be used if the primary investigator has a background in psychiatry. Prospective suicidality monitoring is expected in these trials regardless of investigator background, and the instrument choice is not a matter of preference.
    - It is only required for trials involving pediatric populations. The requirement applies to psychiatric medication trials across various age groups due to the universal need for standardized risk monitoring.
-   - It is required by the FDA for all clinical trials involving psychiatric medications. **← keyed correct**
-     - *feedback:* The C-SSRS has become the regulatory standard for monitoring suicidal ideation and behavior in drug trials.
+   - Its use is recommended by FDA guidance for prospective suicidality monitoring in psychiatric drug trials, where it has become the de facto regulatory standard. **← keyed correct**
+     - *feedback:* FDA's 2012 guidance says prospective suicidal-ideation-and-behavior assessment SHOULD be performed in such trials and accepts any C-CASA-mapped instrument; the C-SSRS became the de facto standard rather than a legal requirement.
 
 5. **A 2025 meta-analysis referenced in the material confirmed the C-SSRS predictive validity by finding a pooled Odds Ratio (OR) of 3.14 for which of the following?**
    - Passive ideation predicting immediate inpatient discharge success.
@@ -27187,13 +27229,13 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
    - A single infusion provides a permanent cure for treatment-resistant depression. **← keyed correct**
      - *feedback:* The effects of a single infusion are rapid but transient, typically lasting only up to 7 days, necessitating maintenance strategies.
 
-6. **The Zarate 2006 study served as the foundation for the 2019 FDA approval of which medication for TRD and acute suicidal behavior?**
+6. **The Zarate 2006 study served as the foundation for the 2019 FDA approval of which medication for TRD (an indication extended in 2020 to depressive symptoms in MDD with acute suicidal ideation or behavior)?**
    - Oral Memantine
      - *feedback:* Memantine is an NMDA antagonist used for Alzheimer's, but it was not the drug approved for TRD based on this research.
    - Intramuscular Ketamine While ketamine is used off-label, it was the intranasal S-enantiomer that received specific FDA approval for these indications.
    - Intravenous R-ketamine The FDA-approved product is the intranasal formulation of the S-enantiomer, not the R-enantiomer.
    - Intranasal Esketamine **← keyed correct**
-     - *feedback:* Spravato (intranasal esketamine) was approved in 2019 following the research trajectory initiated by this proof-of-concept study.
+     - *feedback:* Spravato (intranasal esketamine) was approved in March 2019 for treatment-resistant depression, following the research trajectory this proof-of-concept study began; the acute-suicidality indication was added in 2020, and the label states that effectiveness in preventing suicide or reducing suicidal ideation has not been demonstrated.
 
 
 <!-- ==================== A4_EVIDENCE_BASE.md ==================== -->
@@ -27231,17 +27273,17 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
 
 ### `fluckiger-2018`
 
-- span type `abstract` · retrieved 2026-08-21 · PMID 29792475 · DOI —
+- span type `abstract` · retrieved 2026-09-03 · PMID 29792475 · DOI —
 
 **Verbatim source span.**
 
-> The overall alliance-outcome correlation was r = .278 (95% CI .256-.299; d = .579) across 295 studies and more than 30,000 patients, and the association was consistent across rater perspective, alliance measure, treatment approach, patient characteristics, and country.
+> We define and illustrate the alliance (also conceptualized as therapeutic alliance, helping alliance, or working alliance) and then present a meta-analysis of 295 independent studies that covered more than 30,000 patients (published between 1978 and 2017) for face-to-face and Internet-based psychotherapy. The overall alliance-outcome association for face-to-face psychotherapy was r = .278 (95% confidence intervals [.256, .299], p < .0001; equivalent of d = .579). The correlation for Internet-based psychotherapy was approximately the same (viz., r = .275, k = 23). This relation remains consistent across assessor perspectives, alliance and outcome measures, treatment approaches, patient characteristics, and countries.
 
 **Claim `alliance-effect-size`** (direction: `positive`, used by T1)
 
-> The alliance-outcome correlation is r = .278 (d = .579) across 295 studies and more than 30,000 patients, and it holds across rater, measure, treatment approach and country.
+> The alliance-outcome correlation for face-to-face psychotherapy is r = .278 (d = .579) across 295 studies and more than 30,000 patients, and it holds across rater, measure, treatment approach and country.
 
-- claim terms: `alliance-outcome correlation`, `consistent across rater perspective`
+- claim terms: `alliance-outcome association for face-to-face psychotherapy`, `consistent across assessor perspectives`
 
 ### `varese-2025`
 
@@ -27259,11 +27301,11 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
 
 ### `hajek-gross-2024`
 
-- span type `conclusion` · retrieved 2026-08-21 · PMID 38279664 · DOI —
+- span type `conclusion` · retrieved 2026-09-03 · PMID 38279664 · DOI —
 
 **Verbatim source span.**
 
-> Pre-post effects were large for self-harm (g = -0.82), but against active controls MBT(-A) did not prove to be more efficacious, with the exception of borderline personality disorder symptoms in adults (g = -0.56). Prioritizing the application of MBT(-A) for the treatment of self-harm is not supported.
+> Overall, both MBT and MBT-A demonstrated promising effects in reducing self-harm (g = -0.82, 95% CI -1.15 to -0.50), borderline personality disorder (g = -1.08, 95% CI -1.38 to -0.77), and depression (g = -1.1, 95% CI -1.52 to -0.68) symptoms. However, when compared to control interventions (TAU, SCM), MBT(-A) did not prove to be more efficacious, with the exception of MBT showing superior effects on BPD symptoms in adults (g = -0.56, 95% CI -0.88 to -0.24). Although the pre-post evaluations seem promising, this analysis, including RCTs, showed no superiority of MBT(-A) to control conditions, so that prioritizing the application of MBT (-A) for the treatment of self-harm is not supported.
 
 **Claim `mbt-not-superior-active-control`** (direction: `negative`, used by T7)
 
@@ -27287,11 +27329,11 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
 
 ### `shank-2026`
 
-- span type `abstract` · retrieved 2026-08-21 · PMID 40185617 · DOI 10.1136/ip-2024-045611
+- span type `abstract` · retrieved 2026-09-03 · PMID 40185617 · DOI 10.1136/ip-2024-045611
 
 **Verbatim source span.**
 
-> Stricter regulations were associated with a small reduction, if any, in total and/or firearm-specific suicide deaths. Evidence for non-firearm means was limited, mixed and/or inconclusive. No high-quality randomised controlled trials were identified, and the ecological level of analysis precluded individual-level causal inference.
+> Most studies evaluated the impact of population-level firearm interventions on suicide deaths and found that stricter regulations were associated with a small reduction, if any, in total and/or firearm-specific suicide deaths. The ecological level of analysis precluded individual-level causal inference. Findings within interventions targeting methods other than firearms were limited, mixed and/or inconclusive. Notably, no high-quality randomised controlled trials (RCTs) were identified that met our eligibility criteria.
 
 **Claim `means-legislation-ceiling`** (direction: `negative`, used by T3, safety-planning-practice-tool)
 
@@ -27497,11 +27539,11 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
 
 ### `hong-2025`
 
-- span type `abstract` · retrieved 2026-08-23 · PMID 40392926 · DOI 10.1371/journal.pone.0324685
+- span type `abstract` · retrieved 2026-09-03 · PMID 40392926 · DOI 10.1371/journal.pone.0324685
 
 **Verbatim source span.**
 
-> CBT significantly improved negative symptoms in patients with schizophrenia compared to treatment as usual (TAU) (MD = -1.65, 95% CI = -2.10 to -1.21, p < 0.001, I2 = 41%). CBT significantly improved overall function in patients with schizophrenia (SMD = 0.38, 95% CI = 0.13 to 0.63, p < 0.05, I2 = 0%). Additionally, CBT significantly enhanced social skills (SMD = 0.87, 95% CI = 0.58 to 1.16, p < 0.001, I2 = 0%) and social functioning (SMD = 0.19, 95% CI = 0.03 to 0.36, p < 0.05, I2 = 24%) in these patients.
+> The results of the meta-analysis indicated that cognitive-behavioral therapy (CBT) significantly improved negative symptoms in patients with schizophrenia compared to treatment as usual (TAU) (MD = -1.65, 95% CI = -2.10 to -1.21, p < 0.001, I2 = 41%). CBT significantly improved overall function in patients with schizophrenia (SMD = 0.38, 95% CI = 0.13 to 0.63, p < 0.05, I2 = 0%). Additionally, CBT significantly enhanced social skills (SMD = 0.87, 95% CI = 0.58 to 1.16, p < 0.001, I2 = 0%) and social functioning (SMD = 0.19, 95% CI = 0.03 to 0.36, p < 0.05, I2 = 24%) in these patients.
 
 **Claim `cbtp-negative-symptoms-magnitude`** (direction: `positive`, used by RR)
 
