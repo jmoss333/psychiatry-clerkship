@@ -3,7 +3,7 @@
 # RESIDENT curriculum — complete content transcript for clinical review
 
 **Site:** `mmc-psychiatry-residents-sanford` · **Audience:** Residents — MMC/Sanford psychiatry residents
-**Generated:** 2026-09-02 from build `fc66f4f` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
+**Generated:** 2026-09-02 from build `bda0a99` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
 
 ## Who this is for
 
@@ -19,7 +19,7 @@ This transcript is assembled from the **built site**, not the source tree, so it
 | Narrative pages (markdown) | 86 |
 | Interactive tools | 25 |
 | Deep-link-only (hidden) surfaces | 26 |
-| Words of narrative curriculum | 118,394 |
+| Words of narrative curriculum | 118,470 |
 | Practice question-bank items | 192 |
 | Audio-companion quiz decks / questions | 79 / 437 |
 | Communication cases | 12 |
@@ -86,7 +86,7 @@ High-yield places to concentrate: the `topic_meta` **can't-miss**, **rule-out** 
 
 # RESIDENT · Navigation map
 
-Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-02 @ `fc66f4f`.
+Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-02 @ `bda0a99`.
 
 ## Orientation  *(pinned)*
 
@@ -124,7 +124,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 11 | Geriatric | `t_geri.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Geriatric/geriatric_psychiatry_inpatient_teaching.md` | 893 |
 | 12 | Perinatal | `t_perinatal.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/Perinatal/perinatal_psychiatry_inpatient_teaching.md` | 1145 |
 | 13 | Neurodevelopmental Disorders | `t_neurodev.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Neurodevelopmental/neurodevelopmental_disorders_inpatient_teaching.md` | 1143 |
-| 14 | Eating Disorders | `t_eating.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/Eating_Disorders/eating_disorders_inpatient_teaching.md` | 1308 |
+| 14 | Eating Disorders | `t_eating.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/Eating_Disorders/eating_disorders_inpatient_teaching.md` | 1336 |
 
 ## Assess Safety and Acuity  *(pinned)*
 
@@ -187,7 +187,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 |---|---|---|---|---|---|---|---|
 | 1 | Documentation & Oral Presentation | `doc_oral.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/MS3/Student_Ready_Pack/05_documentation_oral_presentation/student_documentation_and_oral_presentations.md` | 817 |
 | 2 | Treatment Team Rounding Prep | `oral.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Oral_Presentations/oral-presentation-module.html` |  |
-| 3 | High-Yield Rounds Questions | `rounds_questions.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md` | 8702 |
+| 3 | High-Yield Rounds Questions | `rounds_questions.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md` | 8724 |
 
 ## Practice and Exam Prep
 
@@ -214,7 +214,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 6 | Opioid Use Disorder (Jul 27) | `cotw_20260727_oud_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-27_opioid-use-disorder_Resident.md` | 3399 |
 | 7 | Alcohol Withdrawal & DT (Jul 26) | `cotw_20260726_etohwd_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-26_alcohol-withdrawal-delirium-tremens_Resident.md` | 3185 |
 | 8 | Suicide Risk & Safety Planning (Jul 23) | `cotw_20260723_suiciderisk_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`high` | `08_Cases_and_Simulation/case-of-the-week/2026-07-23_suicide-risk-assessment-safety-planning_Resident.md` | 2496 |
-| 9 | MDD — Treatment Selection (Jul 20) | `cotw_20260720_mdd_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-20_mdd-treatment-selection-augmentation_Resident.md` | 1870 |
+| 9 | MDD — Treatment Selection (Jul 20) | `cotw_20260720_mdd_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-20_mdd-treatment-selection-augmentation_Resident.md` | 1896 |
 | 10 | Bipolar Mania (Jul 20) | `cotw_20260720_bipolar_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-20_bipolar-mania_Resident.md` | 1682 |
 | 11 | Acute Agitation & Delirium (Jul 13) | `cotw_20260713_agitation_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-13_acute-agitation-delirium_Resident.md` | 2204 |
 | 12 | Serotonin Syndrome vs NMS (Jul 9) | `cotw_20260709_ssnms_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-09_serotonin-syndrome-vs-nms_Resident.md` | 2005 |
@@ -870,7 +870,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Note both what the patient reports and what you observe (e.g., appearing to respond to internal stimuli).
 - Alertness, orientation, attention, memory, fund of knowledge. Use a tool (MoCA/MMSE) when indicated.
 - impaired short-term memory
-- "Oriented x4" = person, place, time, situation. Screen formally (MoCA) when delirium or dementia is on the differential.
+- "Oriented x4" = person, place, time, situation. If delirium is possible, test attention and use a delirium screen (e.g., 4AT or CAM) now; reserve the MoCA for suspected dementia/MCI once delirium is excluded — a MoCA done during delirium is not interpretable.
 - Awareness of illness and need for treatment.
 - Insight predicts adherence. In psychosis, anosognosia (not denial) may be the barrier — see Amador’s LEAP.
 - Capacity to make reasoned, safe decisions; recent real-world decisions are the best evidence.
@@ -5716,7 +5716,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **Slug:** `t_eating.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `03_Core_Topics/Eating_Disorders/eating_disorders_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 1,308 words
+- **Length:** 1,336 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -5796,7 +5796,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 
 **Medical instability — the admission question** — The high-yield student skill is recognizing who needs a *medical* bed. Criteria that commonly trigger medical admission (confirm against your institution's protocol) include **bradycardia (often <40–50 bpm), hypotension, orthostatic vital-sign changes, hypothermia, hypoglycemia, electrolyte derangement (K⁺, phosphate, Mg²⁺), QTc prolongation or arrhythmia, marked or rapid weight loss, syncope, dehydration, and failure of outpatient/PHP care.** Bradycardia is one of the most common reasons for medical admission in AN. Match the *level of care* to acuity: medical floor for instability, psychiatric/behavioral eating-disorder unit or residential/PHP for weight and behavioral work once medically stable.
 
-**Refeeding syndrome — the complication that kills** — When nutrition restarts, the shift from catabolic to anabolic metabolism drives phosphate, potassium, and magnesium *into* cells; **hypophosphatemia is the hallmark**, and the danger is cardiac failure, arrhythmia, respiratory failure, and delirium. Risk is highest in the **most malnourished** and after the longest starvation. The safe posture is **"start low, go slow"**: begin conservative caloric refeeding, **check phosphate/potassium/magnesium at least daily early**, **supplement phosphate and give thiamine before or with carbohydrate**, and advance calories per protocol as electrolytes stay stable. Defer exact caloric targets and repletion doses to your institution's refeeding order set — the student job is to *anticipate and monitor*, not to prescribe.
+**Refeeding syndrome — the complication that kills** — When nutrition restarts, the shift from catabolic to anabolic metabolism drives phosphate, potassium, and magnesium *into* cells; **hypophosphatemia is the hallmark**, and the danger is cardiac failure, arrhythmia, respiratory failure, and delirium. Risk is highest in the **most malnourished** and after the longest starvation. The safe posture is close monitoring, not prolonged underfeeding — current guidance (SAHM 2022; MEED, which replaced MARSIPAN in 2022) supports higher-calorie refeeding with electrolyte surveillance, reserving the most conservative starts for the most severely malnourished: begin refeeding per protocol, **check phosphate/potassium/magnesium at least daily early**, **supplement phosphate and give thiamine before or with carbohydrate**, and advance calories per protocol as electrolytes stay stable. Defer exact caloric targets and repletion doses to your institution's refeeding order set — the student job is to *anticipate and monitor*, not to prescribe.
 
 **Acute inpatient management** — Medical stabilization first, then structured nutritional rehabilitation with a **multidisciplinary team** (medicine, nutrition/dietetics, nursing, psychiatry, and often social work). Use **supervised meals and a post-meal observation period**, monitor for covert purging and **water-loading** (which falsely raises weight — a "too-fast" weight jump is a flag), and weigh on a consistent schedule/gown. Psychotherapy is the backbone: **Family-Based Treatment (Maudsley/FBT)** for adolescents with AN, and **CBT-E** for BN and BED. On medications: **no drug is first-line for AN** — weight restoration is; **olanzapine** may modestly help weight and obsessionality in AN; **fluoxetine (target 60 mg/day)** is the classic pharmacotherapy for BN; **lisdexamfetamine** is approved for moderate–severe BED. **Avoid bupropion in patients who purge or are underweight (seizure risk)**, and be cautious with QT-prolonging agents given the baseline cardiac risk.
 
@@ -11378,7 +11378,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **Slug:** `rounds_questions.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 8,702 words
+- **Length:** 8,724 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -11819,7 +11819,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Answer:** Prazosin (alpha-1 adrenergic antagonist) is suggested for trauma-related nightmares.
 
-- **Evidence:** Evidence rating B per VA/DoD guidelines; titrate from 1 mg at bedtime.
+- **Evidence:** The 2023 VA/DoD guideline found insufficient evidence for or against prazosin for PTSD nightmares (the PACT trial was negative), but it remains a reasonable and widely used option; titrate from 1 mg at bedtime.
 
 - **Key paper:** Sartor et al., Am Fam Physician 2023.
 
@@ -12417,6 +12417,15 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 # SECTION: Practice and Exam Prep
 
+
+<!-- ==================== 02_CURRICULUM_V09.md ==================== -->
+
+# RESIDENT · Curriculum content — volume 9
+
+Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
+
+# SECTION (cont.): Practice and Exam Prep
+
 ---
 
 ## Practice Questions — Question Bank
@@ -12665,15 +12674,6 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Could not load question bank.
 - question_bank.json was not found alongside this tool.
 - Make sure the build ran successfully and question_bank.json is at the site root.
-
-
-<!-- ==================== 02_CURRICULUM_V09.md ==================== -->
-
-# RESIDENT · Curriculum content — volume 9
-
-Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
-
-# SECTION (cont.): Practice and Exam Prep
 
 ---
 
@@ -13448,6 +13448,14 @@ New cases are added weekly. A matching MS3-level version of each case lives on t
 *Joshua Moss, MD | Psychiatrist*
 
 
+<!-- ==================== 02_CURRICULUM_V10.md ==================== -->
+
+# RESIDENT · Curriculum content — volume 10
+
+Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
+
+# SECTION (cont.): Case of the Week
+
 ---
 
 ## Catatonia (Aug 31)
@@ -13599,14 +13607,6 @@ Based on articles retrieved from PubMed (National Library of Medicine). Citation
 7. Beach SR, Gomez-Bernal F, Huffman JC, Fricchione GL. Alternative treatment strategies for catatonia: A systematic review. *Gen Hosp Psychiatry*. 2017;48:1-19. [DOI: 10.1016/j.genhosppsych.2017.06.011](https://doi.org/10.1016/j.genhosppsych.2017.06.011)
 8. Gunther M, Tran N, Jiang S. Zolpidem for the Management of Catatonia: A Systematic Review. *J Acad Consult Liaison Psychiatry*. 2024;66(1):49-56. [DOI: 10.1016/j.jaclp.2024.10.004](https://doi.org/10.1016/j.jaclp.2024.10.004)
 
-
-<!-- ==================== 02_CURRICULUM_V10.md ==================== -->
-
-# RESIDENT · Curriculum content — volume 10
-
-Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
-
-# SECTION (cont.): Case of the Week
 
 ---
 
@@ -14936,7 +14936,7 @@ Mental status: alert, cooperative, tearful, with constricted affect and mood-con
 - **Slug:** `cotw_20260720_mdd_res.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-20_mdd-treatment-selection-augmentation_Resident.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 1,870 words
+- **Length:** 1,896 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -15013,7 +15013,7 @@ Given her obesity and weight concern, a **low-metabolic-risk partial agonist** (
 *Teaching point:* The **PRIME Care** RCT found that pharmacogenomic testing modestly influenced prescribing and produced a **small, time-limited improvement in remission** — the effect was statistically detectable but clinically modest and attenuated over follow-up [9]. The **CPIC guideline** provides actionable dosing guidance where a genotype is *already known* (e.g., **CYP2C19** and **CYP2D6** metabolizer status for SSRIs — poor metabolizers may need dose reduction; ultrarapid metabolizers may underexpose) but does not endorse routine pre-emptive testing to *select* the drug class [10]. Bottom line for the patient: testing can refine dosing and flag metabolism outliers, but it is not a validated "which drug will work" oracle; shared decision-making about efficacy vs. tolerability trade-offs remains primary.
 
 **Q5. When and how do you deploy esketamine/ketamine, and where does it sit in sequencing?**
-*Teaching point:* Intranasal **esketamine** is FDA-approved as adjunct for TRD and for MDD with acute suicidal ideation/behavior. A 2025 systematic review/meta-analysis found **modest efficacy against depressive symptoms** (effect sizes ~0.15-0.23 at weeks 2-4, comparable to atypical-antipsychotic augmentation) and **no significant effect on suicidality at any time point**, with dissociation, sedation, and transient blood-pressure elevation as the main tolerability issues and REMS-mandated monitoring [8]. State the limit explicitly: the MDSI indication rests on rapid improvement in *depressive symptoms*, not on a demonstrated effect on suicidality — the pivotal ASPIRE trials did not separate from placebo on the suicidality-severity endpoint (CGI-SS-r), and the label states that effectiveness in preventing suicide or reducing suicidal ideation has not been demonstrated. Esketamine does not reduce the need for monitoring, means restriction, or safety planning. Discuss sequencing: esketamine is typically reserved after ≥2 oral failures, requires in-clinic administration/observation, and does not replace safety planning. Contrast with racemic IV ketamine (off-label, rapid but access/durability limits).
+*Teaching point:* Intranasal **esketamine** is FDA-approved for TRD — since January 2025 as **monotherapy** as well as adjunctively with an oral antidepressant — and, **in conjunction with an oral antidepressant**, for depressive symptoms in adults with MDD with acute suicidal ideation or behavior. A 2025 systematic review/meta-analysis found **modest efficacy against depressive symptoms** (effect sizes ~0.15-0.23 at weeks 2-4, comparable to atypical-antipsychotic augmentation) and **no significant effect on suicidality at any time point**, with dissociation, sedation, and transient blood-pressure elevation as the main tolerability issues and REMS-mandated monitoring [8]. State the limit explicitly: the MDSI indication rests on rapid improvement in *depressive symptoms*, not on a demonstrated effect on suicidality — the pivotal ASPIRE trials did not separate from placebo on the suicidality-severity endpoint (CGI-SS-r), and the label states that effectiveness in preventing suicide or reducing suicidal ideation has not been demonstrated. Esketamine does not reduce the need for monitoring, means restriction, or safety planning. Discuss sequencing: esketamine is typically reserved after ≥2 oral failures, requires in-clinic administration/observation, and does not replace safety planning. Contrast with racemic IV ketamine (off-label, rapid but access/durability limits).
 
 **Q6. Integrate psychotherapy and relapse prevention into the plan.**
 *Teaching point:* For a recurrent (3rd-episode) patient, **relapse prevention is a primary goal**, not an afterthought. The **sequential model** — adding structured psychotherapy (CBT, well-being therapy, MBCT) after pharmacologic response to target residual symptoms — reduces relapse/recurrence in meta-analysis [4]. Residual insomnia and anhedonia are high-yield relapse predictors worth targeting directly. Plan for **maintenance pharmacotherapy** given ≥3 episodes (many guidelines favor indefinite maintenance after ≥3 recurrences).
@@ -24826,7 +24826,7 @@ _1398 further strings omitted — this surface embeds the build's front-door cat
 - The seizure occurred before admission; since he is now calmer, observation without immediate pharmacologic intervention is appropriate.
 - The seizure risk has passed — withdrawal seizures occur in the first 24–48 hours; further seizures are not expected after a first event.
 - Start a fixed-schedule antipsychotic — antipsychotics lower seizure threshold and provide targeted coverage for alcohol withdrawal psychosis.
-- Prior withdrawal seizure is a strong predictor of future seizures; this patient requires aggressive CIWA-Ar-guided benzodiazepine titration with close monitoring for progression to delirium tremens. **← keyed correct**
+- Prior withdrawal seizure is a strong predictor of future seizures; give a benzodiazepine promptly and use front-loaded or fixed-schedule dosing with symptom-triggered supplementation — not score-gated dosing alone — with close monitoring for progression to delirium tremens. **← keyed correct**
 
 **Rationale.** Underestimate the emergency in two forms, and Agitation = antipsychotic. Prior withdrawal seizure is explicitly the most robust predictor of future seizure risk. Antipsychotics lower seizure threshold and are contraindicated for seizure prevention in alcohol withdrawal. CIWA-Ar-guided benzodiazepines are the treatment, and DT vigilance is the priority.
 
@@ -25707,7 +25707,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
 - **(c)** Recommend esketamine because it is the newest option and works the fastest.  *(rated: **missed**)*
   - *feedback:* Speed of onset is relevant to a rapid-acting-agent discussion, but "newest" is not a reason on its own, and this skips the actual safety and access reasoning the case is asking for.
 - **(d)** Defer the augmentation decision entirely to the outpatient team after discharge.  *(rated: **harmful**)*
-  - *feedback:* A patient admitted after an overdose with confirmed treatment resistance is exactly who should not leave the hospital without a next step already started or clearly planned — deferring the whole decision abandons the acute opportunity to act.
+  - *feedback:* A patient admitted after an overdose, with a confirmed adequate-trial failure and ongoing suicidal ideation, is exactly who should not leave the hospital without a next step already started or clearly planned — deferring the whole decision abandons the acute opportunity to act.
 
 **Step 3 — Integrating ECT Into The Plan** (`integrate_ect`)
 
@@ -27880,7 +27880,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
    - A formal dietary consultation and exercise stress test While lifestyle intervention is encouraged, baseline labs and vitals are the specific standardized monitoring requirements.
    - Electroencephalogram (EEG) to screen for seizure risk An EEG is not part of the standard metabolic monitoring protocol established by the ADA/APA consensus.
 
-5. **Based on the ADA/APA monitoring protocol, when should fasting glucose and lipids be reassessed after the baseline labs have been completed?**
+5. **Based on the ADA/APA monitoring protocol, when should fasting glucose be reassessed after the baseline labs have been completed?**
    - At 4 weeks and then every 3 months
      - *feedback:* Weight is checked at 4 and 8 weeks, but fasting labs are deferred until the 12-week mark unless otherwise clinically indicated.
    - At 12 weeks and then annually **← keyed correct**

@@ -1099,7 +1099,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Note both what the patient reports and what you observe (e.g., appearing to respond to internal stimuli).
 - Alertness, orientation, attention, memory, fund of knowledge. Use a tool (MoCA/MMSE) when indicated.
 - impaired short-term memory
-- "Oriented x4" = person, place, time, situation. Screen formally (MoCA) when delirium or dementia is on the differential.
+- "Oriented x4" = person, place, time, situation. If delirium is possible, test attention and use a delirium screen (e.g., 4AT or CAM) now; reserve the MoCA for suspected dementia/MCI once delirium is excluded — a MoCA done during delirium is not interpretable.
 - Awareness of illness and need for treatment.
 - Insight predicts adherence. In psychosis, anosognosia (not denial) may be the barrier — see Amador’s LEAP.
 - Capacity to make reasoned, safe decisions; recent real-world decisions are the best evidence.
