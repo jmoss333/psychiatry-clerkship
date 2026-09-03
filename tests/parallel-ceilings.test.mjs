@@ -27,9 +27,13 @@ test('SNIPPET_MARKERS entry count matches the pinned constant', () => {
 test('qa-baseline.json matches the pinned ceilings exactly', () => {
   const actual = JSON.parse(fs.readFileSync(
     path.join(ROOT, '13_Faculty_Resources/_automation/site_build/qa-baseline.json'), 'utf8'));
+  // computed-key +1 each (2026-09-03): communication-practice.html and diagnostic-reasoning.html
+  // now read localStorage[SRS_KEY] through the shared srs_store.js snippet rather than a
+  // literal, the same indirection already accepted for family, question-bank, review and
+  // shelf-mode. (res counts the resident-only tools too, hence its higher ceiling.)
   const expected = {
-    ms3: { metadata: 1, 'computed-key': 6, 'legacy-metadata': 1 },
-    res: { metadata: 1, 'computed-key': 9, 'legacy-metadata': 1 },
+    ms3: { metadata: 1, 'computed-key': 7, 'legacy-metadata': 1 },
+    res: { metadata: 1, 'computed-key': 10, 'legacy-metadata': 1 },
   };
   assert.deepEqual(actual, expected,
     'qa-baseline.json changed — a computed-key or soft-class ceiling moved; update this pin deliberately');
