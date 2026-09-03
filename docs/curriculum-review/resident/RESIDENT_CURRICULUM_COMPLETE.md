@@ -3,7 +3,7 @@
 # RESIDENT curriculum — complete content transcript for clinical review
 
 **Site:** `mmc-psychiatry-residents-sanford` · **Audience:** Residents — MMC/Sanford psychiatry residents
-**Generated:** 2026-09-03 from build `068b91f` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
+**Generated:** 2026-09-03 from build `081e4f8` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
 
 ## Who this is for
 
@@ -19,7 +19,7 @@ This transcript is assembled from the **built site**, not the source tree, so it
 | Narrative pages (markdown) | 86 |
 | Interactive tools | 25 |
 | Deep-link-only (hidden) surfaces | 26 |
-| Words of narrative curriculum | 119,403 |
+| Words of narrative curriculum | 119,892 |
 | Practice question-bank items | 192 |
 | Audio-companion quiz decks / questions | 79 / 437 |
 | Communication cases | 12 |
@@ -86,7 +86,7 @@ High-yield places to concentrate: the `topic_meta` **can't-miss**, **rule-out** 
 
 # RESIDENT · Navigation map
 
-Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-03 @ `068b91f`.
+Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-03 @ `081e4f8`.
 
 ## Orientation  *(pinned)*
 
@@ -209,15 +209,15 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 1 | Index — All Cases | `cotw_index.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `08_Cases_and_Simulation/case-of-the-week/index_resident.md` | 422 |
 | 2 | Catatonia (Aug 31) | `cotw_20260831_catatonia_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-31_catatonia-recognition-workup-treatment_Resident.md` | 2182 |
 | 3 | Borderline Personality Disorder (Aug 27) | `cotw_20260827_bpd_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-27_borderline-personality-disorder_Resident.md` | 2692 |
-| 4 | Panic Disorder (Aug 10) | `cotw_20260810_panic_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-10_anxiety-panic-disorder_Resident.md` | 4552 |
-| 5 | Lithium — Monitoring & Toxicity (Aug 3) | `cotw_20260803_lithium_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-03_lithium-monitoring-toxicity-interactions_Resident.md` | 3915 |
-| 6 | Opioid Use Disorder (Jul 27) | `cotw_20260727_oud_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-27_opioid-use-disorder_Resident.md` | 3399 |
-| 7 | Alcohol Withdrawal & DT (Jul 26) | `cotw_20260726_etohwd_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-26_alcohol-withdrawal-delirium-tremens_Resident.md` | 3211 |
-| 8 | Suicide Risk & Safety Planning (Jul 23) | `cotw_20260723_suiciderisk_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`high` | `08_Cases_and_Simulation/case-of-the-week/2026-07-23_suicide-risk-assessment-safety-planning_Resident.md` | 2496 |
+| 4 | Panic Disorder (Aug 10) | `cotw_20260810_panic_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-10_anxiety-panic-disorder_Resident.md` | 4579 |
+| 5 | Lithium — Monitoring & Toxicity (Aug 3) | `cotw_20260803_lithium_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-03_lithium-monitoring-toxicity-interactions_Resident.md` | 4027 |
+| 6 | Opioid Use Disorder (Jul 27) | `cotw_20260727_oud_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-27_opioid-use-disorder_Resident.md` | 3458 |
+| 7 | Alcohol Withdrawal & DT (Jul 26) | `cotw_20260726_etohwd_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-26_alcohol-withdrawal-delirium-tremens_Resident.md` | 3351 |
+| 8 | Suicide Risk & Safety Planning (Jul 23) | `cotw_20260723_suiciderisk_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`high` | `08_Cases_and_Simulation/case-of-the-week/2026-07-23_suicide-risk-assessment-safety-planning_Resident.md` | 2550 |
 | 9 | MDD — Treatment Selection (Jul 20) | `cotw_20260720_mdd_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-20_mdd-treatment-selection-augmentation_Resident.md` | 1896 |
 | 10 | Bipolar Mania (Jul 20) | `cotw_20260720_bipolar_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-20_bipolar-mania_Resident.md` | 1682 |
-| 11 | Acute Agitation & Delirium (Jul 13) | `cotw_20260713_agitation_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-13_acute-agitation-delirium_Resident.md` | 2336 |
-| 12 | Serotonin Syndrome vs NMS (Jul 9) | `cotw_20260709_ssnms_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-09_serotonin-syndrome-vs-nms_Resident.md` | 2005 |
+| 11 | Acute Agitation & Delirium (Jul 13) | `cotw_20260713_agitation_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-13_acute-agitation-delirium_Resident.md` | 2367 |
+| 12 | Serotonin Syndrome vs NMS (Jul 9) | `cotw_20260709_ssnms_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-09_serotonin-syndrome-vs-nms_Resident.md` | 2071 |
 
 ## Evidence and Reference
 
@@ -13775,7 +13775,7 @@ Based on articles retrieved from PubMed. Citation fields (journal, year, volume/
 - **Slug:** `cotw_20260810_panic_res.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-08-10_anxiety-panic-disorder_Resident.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 4,552 words
+- **Length:** 4,579 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -13964,7 +13964,7 @@ Map that onto this patient: fourteen months of illness, prominent avoidance cons
 4. **Then** convert alprazolam to a longer-half-life agent on a fixed schedule and taper slowly, with the patient sharing control of pace.
 5. **Screen and treat comorbidity** — MDD, PTSD/prolonged grief, alcohol use.
 6. **Assess suicide risk directly and repeatedly; safety-plan and escalate if ideation emerges** [8,9].
-7. **Do not add a beta-blocker** [7].
+7. **Do not add a beta-blocker for the panic disorder** [7] — it has no anti-panic efficacy; whether the hypertensive paroxysms themselves warrant episodic antihypertensive cover is a decision shared with the hypertension specialist.
 8. **Plan for maintenance** — adequate duration before any discontinuation attempt, booster CBT sessions, relapse-prevention plan, given the attenuation of CBT effects for panic disorder beyond 12 months [5].
 9. **Close the loop with cardiology** in writing — the referral question deserves an actual answer.
 
@@ -14038,7 +14038,7 @@ Based on articles retrieved from PubMed.
 - **Slug:** `cotw_20260803_lithium_res.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-08-03_lithium-monitoring-toxicity-interactions_Resident.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 3,915 words
+- **Length:** 4,027 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -14209,7 +14209,7 @@ The **EXTRIP workgroup** recommendations (systematic review plus two-round modif
 
 **Practical monitoring changes in pregnancy:**
 - Renal clearance rises through pregnancy → levels tend to **fall**; more frequent level checks are required.
-- Plan explicitly for **delivery**, when clearance abruptly normalizes and the risk direction reverses toward toxicity; hydration status during labor matters.
+- Plan explicitly for **delivery**, when clearance abruptly normalizes and the risk direction reverses toward toxicity. Decide in advance with obstetrics whether to continue lithium with close level monitoring and assured hydration or to reduce/withhold around labour — practice genuinely varies by centre, so the resident-level task is to have made the decision, not to have applied one rule. Check a level at delivery and in the early postpartum, and return to the **pre-pregnancy** dose rather than the higher pregnancy dose once GFR falls; this is the commonest route to postpartum toxicity. Counsel on transient neonatal effects (hypotonia, poor feeding), and address **breastfeeding** explicitly: lithium is not an absolute contraindication in a healthy term infant, but it requires a shared decision, infant monitoring, and a plan for infant hydration and levels during illness.
 - Fetal echocardiography and coordination with maternal–fetal medicine.
 - Use the **lowest effective dose**, given the dose–response signal [8].
 
@@ -14317,7 +14317,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **Slug:** `cotw_20260727_oud_res.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-27_opioid-use-disorder_Resident.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 3,399 words
+- **Length:** 3,458 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -14392,7 +14392,7 @@ What has changed is the **pharmacokinetics of the drug being displaced**. Illici
 
 The magnitude matters for calibration. In a cohort of hospitalized patients using fentanyl who underwent standard buprenorphine initiation, precipitated withdrawal occurred in a **minority** of patients — meaningful and non-trivial, but far from universal [3]. Two implications: standard initiation is not obsolete and should not be abandoned reflexively, *and* the risk is high enough to warrant an explicit consent conversation and a considered choice of strategy.
 
-*Also worth naming:* telling a patient in precipitated withdrawal that this is "the medicine working" is both inaccurate and, predictably, treatment-ending. The iatrogenic harm here is not only physiologic — it is a durable negative association with the single most effective treatment she could receive.
+*Also worth naming:* telling a patient in precipitated withdrawal that this is "the medicine working" is both inaccurate and, predictably, treatment-ending — and the team also needs to know what to do instead, because the correct move is counterintuitive: precipitated withdrawal is generally treated by *continuing and rapidly escalating* buprenorphine to carry the patient through to full buprenorphine occupancy, not by stopping it, together with aggressive symptomatic treatment (antiemetic, alpha-2 agonist, non-opioid analgesia) and full-agonist analgesia where pain requires it. The iatrogenic harm here is not only physiologic — it is a durable negative association with the single most effective treatment she could receive.
 
 **Q2. She now refuses buprenorphine. Lay out the realistic options and their trade-offs.**
 
@@ -14563,7 +14563,7 @@ For **mortality**, the agonist evidence is the strongest thing we have: all-caus
 - **Slug:** `cotw_20260726_etohwd_res.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-26_alcohol-withdrawal-delirium-tremens_Resident.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 3,211 words
+- **Length:** 3,351 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -14678,10 +14678,10 @@ The teaching move: **the workup runs in parallel with treatment, not before it.*
 
 **Pharmacology.**
 - **Rapid titration to a defined endpoint** — light sedation (calm, rousable), not a CIWA-Ar number. Once delirium supervenes, CIWA-Ar is dead as an instrument; switch to a sedation scale (e.g., RASS) and objective autonomic parameters.
-- **Add phenobarbital** per institutional protocol, with an explicit preference for a **loading/replacement strategy rather than open-ended stacking**, given the ventilation and aspiration signal in the adjunct literature [3,9,10]. Airway monitoring is mandatory.
+- **Add phenobarbital** per institutional protocol, with an explicit preference for a **loading/replacement strategy rather than open-ended stacking**, given the ventilation and aspiration signal in the adjunct literature [3,9,10]. The pharmacokinetics are why that distinction is real: phenobarbital's half-life is roughly 80–120 hours, so a load provides its own taper over several days, cannot be titrated back once given, and adds to any benzodiazepine still on board — decide the total load up front and stop the parallel benzodiazepine rather than running both. Airway monitoring is mandatory.
 - **Dexmedetomidine** may be added for autonomic control but **never as a benzodiazepine/barbiturate substitute** — no anti-seizure effect [1,11].
 - **Antipsychotics** only for refractory perceptual disturbance/agitation *after* adequate GABAergic therapy; they lower the seizure threshold and prolong QTc.
-- **Thiamine parenterally, before or with dextrose** [12] — high-dose and continued for several days if Wernicke is suspected, and never at the cost of delaying dextrose in symptomatic hypoglycemia. Replete **magnesium** and potassium.
+- **Thiamine parenterally, before or with dextrose** [12] — and note this is a *treatment* indication, not prophylaxis: suspected Wernicke encephalopathy calls for high-dose parenteral thiamine several times daily for the first days, then a tapered parenteral course, per your institutional protocol. The reflexive once-daily order most of us write is a prophylactic dose and does not treat WE; guideline regimens for the treatment indication vary substantially, which is itself the subject of [12], so read the protocol rather than reaching for the familiar number. Never delay dextrose in symptomatic hypoglycemia to do any of this. Replete **magnesium** and potassium — magnesium is an obligate cofactor for thiamine-dependent enzymes, so thiamine will underperform until his Mg of 1.4 is corrected.
 - **Liver caveat:** with probable cirrhosis, prefer **lorazepam/oxazepam** (glucuronidation, no oxidative metabolism, no active metabolites) and recognize that sedatives can precipitate or worsen **hepatic encephalopathy** — a real reason to avoid open-ended benzodiazepine escalation — but not, on hepatic grounds, an argument *for* phenobarbital: phenobarbital is partly hepatically metabolised, its already long half-life (~80–120 h) is further prolonged in cirrhosis, there is no reversal agent, and it can precipitate hepatic encephalopathy just as benzodiazepines can. If phenobarbital is used here it is because the withdrawal is benzodiazepine-resistant, and it must be used expecting a longer and less reversible effect than in a patient with normal hepatic function [7].
 
 **Workup in parallel:** non-contrast head CT, cultures/CXR/lactate, glucose, repeat electrolytes and Mg, medication reconciliation.
@@ -14774,7 +14774,7 @@ The teaching move: **the workup runs in parallel with treatment, not before it.*
 - **Slug:** `cotw_20260723_suiciderisk_res.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-23_suicide-risk-assessment-safety-planning_Resident.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 2,496 words
+- **Length:** 2,550 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -14846,7 +14846,7 @@ Mental status: alert, cooperative, tearful, with constricted affect and mood-con
 *Teaching point:* SPI (Stanley & Brown) is a collaboratively constructed, prioritized hierarchy: warning signs → internal coping → social contacts/settings for distraction → people to ask for help → professionals/crisis resources → **means restriction**. In the VA ED cohort (n=1,640), **SPI + structured telephone follow-up** was associated with **~45% fewer suicidal behaviors** over 6 months (OR 0.56; 95% CI 0.33–0.95) and **>2× the odds** of outpatient engagement [6]. A meta-analysis of safety-planning-type interventions found a pooled **RR 0.570** for suicidal behavior (NNT ≈ 16) but **no significant effect on ideation** [7]; a systematic review of 26 studies supports feasibility, acceptability, and improvements across suicidality, hopelessness, and treatment engagement [8]. Boundaries to teach: SPI reduces *behavior*, works best **bundled with follow-up**, and is an adjunct to — not a replacement for — treating the underlying disorder and reducing means access.
 
 **Q5. Means restriction is often the highest-leverage intervention. How do you operationalize lethal-means counseling here without slipping into method detail?**
-*Teaching point:* **Means restriction is among the best-supported population- and individual-level suicide-prevention strategies** [9]. Operationally (framed generally, never specifically): collaboratively engage the patient — and, with consent, a trusted other — to **reduce or remove access to lethal means at home** during the high-risk period; leverage the family as partners in enacting the plan; and integrate this step into the written safety plan. The clinical craft is doing this **collaboratively and non-coercively** so the patient remains engaged. Note the acute confound here: heavy alcohol use both **elevates acute risk** (disinhibition, worsened mood/insomnia) and complicates capacity/engagement — address it as a modifiable acute factor.
+*Teaching point:* **Means restriction is among the best-supported population- and individual-level suicide-prevention strategies** [9]. Operationally — general about *methods*, specific about *this patient's means*: ask directly what lethal means are accessible at home, then collaboratively engage the patient and, with consent, a trusted other in **removing or securing them** during the high-risk period. In the US that means firearms first (temporary off-site storage with a trusted person, locking devices, ammunition stored separately) and then medication supply (quantity dispensed, lock box). Naming the specific means is what makes the counselling effective; naming methods is neither required nor what this is. leverage the family as partners in enacting the plan; and integrate this step into the written safety plan. The clinical craft is doing this **collaboratively and non-coercively** so the patient remains engaged. Note the acute confound here: heavy alcohol use both **elevates acute risk** (disinhibition, worsened mood/insomnia) and complicates capacity/engagement — address it as a modifiable acute factor.
 
 **Q6. Disposition and legal-ethical dimension: the patient wants to leave. Reason through voluntary vs. involuntary care.**
 *Teaching point:* Integrate acuity, modifiable-risk trajectory, capacity, and the feasibility of a safe outpatient plan. Given active ideation with fluctuating intent, a previously undisclosed prior attempt, severe depression with hopelessness, acute intoxication risk, ready means access, and thin supports, **acute risk is substantially above baseline and outpatient management is difficult to secure right now** — favoring admission. Teach the legal framework generically: **involuntary hold criteria vary by jurisdiction** but generally require a mental disorder plus imminent danger to self/others (or grave disability); pursue the **least restrictive option** that maintains safety, always attempt to **build voluntary engagement first**, and document capacity, the risk formulation, and the reasoning. "No-suicide contracts" have **no evidence base** and should not substitute for a safety plan or disposition decision.
@@ -15236,7 +15236,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **Slug:** `cotw_20260713_agitation_res.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-13_acute-agitation-delirium_Resident.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 2,336 words
+- **Length:** 2,367 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -15349,7 +15349,7 @@ Exam (obtained in fragments): **inattentive** (cannot complete "days of the week
 
 ### One-screen management summary
 - **Stabilize/safety:** space, sitter, de-escalation; glucose/SpO₂/vitals; thiamine before or with glucose if any withdrawal/malnutrition concern (never delaying dextrose for documented hypoglycemia).
-- **Etiology-driven pharmacology:** *delirium-agitation* → low-dose high-potency antipsychotic, ECG/QTc-aware; *withdrawal* → benzodiazepine/phenobarbital + thiamine; *anticholinergic* → supportive, remove agent, benzodiazepine ± physostigmine in select cases; **avoid reflexive haloperidol+lorazepam combos and IM olanzapine+benzodiazepine co-administration.**
+- **Etiology-driven pharmacology:** *delirium-agitation* → low-dose high-potency antipsychotic, ECG/QTc-aware; *withdrawal* → benzodiazepine/phenobarbital + thiamine; *anticholinergic toxidrome as the primary driver* → supportive, remove agent, benzodiazepine ± physostigmine in select cases — **this is the frank toxidrome only; where anticholinergic burden is one contributor to multifactorial delirium, as here, stop the offending drug but still avoid benzodiazepines**; **avoid reflexive haloperidol+lorazepam combos and IM olanzapine+benzodiazepine co-administration.**
 - **Diagnostics:** CBC, CMP, UA/culture, ± cultures/lactate, ECG, med rec, withdrawal assessment; CT/LP/EEG per pretest reasoning.
 - **Treat the cause + delirium precautions;** antipsychotic is symptomatic only (MIND-USA) [5].
 - **Disposition:** admit; explicit de-escalation-of-treatment criteria; no antipsychotic at discharge by default; PCP cognitive follow-up.
@@ -15387,7 +15387,7 @@ Dangerousness here is **agitation-related risk to self and staff**; keep teachin
 - **Slug:** `cotw_20260709_ssnms_res.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-09_serotonin-syndrome-vs-nms_Resident.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 2,005 words
+- **Length:** 2,071 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -15519,7 +15519,7 @@ NMS is widely conceptualized as a **drug-induced form of malignant (lethal) cata
 - **Reconciliation plan:** stop all dopamine antagonists, hold serotonergic and lithium agents, obtain levels, and document the event prominently to govern rechallenge.
 
 **Q7 — Recovery and rechallenge.**
-NMS typically resolves over **days to ~2 weeks** with agent withdrawal and supportive care — slower than SS, which usually clears in 24–72 h [1][4][5]. For antipsychotic **rechallenge**: wait **at least 2 weeks** after full resolution (longer if the offending agent was a depot), correct dehydration, electrolyte derangement, and iron deficiency first, then choose a **lower-potency or atypical oral agent** — **never a long-acting injectable, which cannot be withdrawn if NMS recurs** — at a low starting dose, titrate slowly, and monitor temperature, CK, and autonomic signs; recurrence can occur at any point after resolution, so shared decision-making and close follow-up are essential [5]. Where feasible, address the psychiatric indication with the lowest-risk effective option and consider ECT if antipsychotics are high-risk.
+NMS typically resolves over **days to ~2 weeks** with agent withdrawal and supportive care — usually slower than serotonin toxicity, which clears within 24–72 h **for short-half-life agents. With fluoxetine (norfluoxetine half-life of days to weeks) or an MAOI, both onset and resolution can be substantially delayed, and a 5-week washout is required before starting an MAOI** [1][4][5]. For antipsychotic **rechallenge**: wait **at least 2 weeks** after full resolution (longer if the offending agent was a depot), correct dehydration, electrolyte derangement, and iron deficiency first, then choose a **lower-potency or atypical oral agent** — **never a long-acting injectable, which cannot be withdrawn if NMS recurs** — at a low starting dose, titrate slowly, and monitor temperature, CK, and autonomic signs; recurrence can occur at any point after resolution, so shared decision-making and close follow-up are essential [5]. Where feasible, address the psychiatric indication with the lowest-risk effective option and consider ECT if antipsychotics are high-risk.
 
 ### Ranked differential diagnosis (resident depth)
 1. **Neuroleptic malignant syndrome** — best fit (D2 antagonist up-titration + metoclopramide, subacute onset, lead-pipe rigidity, hyporeflexia, CK ~10k, leukocytosis, low iron).
@@ -15531,7 +15531,7 @@ NMS typically resolves over **days to ~2 weeks** with agent withdrawal and suppo
 ### Workup & management summary
 - **Workup:** CK, CMP (renal/hepatic), CBC, serum iron, coags/DIC panel, lithium level, blood/urine cultures and CNS infection work-up as indicated, ECG, continuous temperature and hemodynamic monitoring; consider EEG if catatonia/NCSE is in question.
 - **Immediate management:** **stop all dopamine antagonists** (including metoclopramide); ICU-level supportive care — IV fluids, active cooling, correct electrolytes, protect renal function against rhabdomyolysis, and start **VTE prophylaxis** (pharmacologic unless contraindicated; mechanical when it is) given prolonged immobility and rigidity; attend to aspiration risk and skin/pressure care for the same reason.
-- **Pharmacotherapy:** benzodiazepine (lorazepam) early (agitation + possible catatonia); **dantrolene** and **bromocriptine/amantadine** for moderate–severe NMS; **ECT** for refractory NMS/malignant catatonia.
+- **Pharmacotherapy:** benzodiazepine (lorazepam) early (agitation + possible catatonia); **dantrolene** and **bromocriptine/amantadine** for moderate–severe NMS; **ECT** for refractory NMS/malignant catatonia — when referring, flag the rhabdomyolysis, current CK and potassium explicitly, because **succinylcholine must be avoided** in this setting (hyperkalaemic cardiac arrest risk) and a non-depolarising relaxant such as rocuronium is used instead.
 - **If the phenotype had been SS:** stop serotonergic agents, benzodiazepines, **cyproheptadine**, ICU with sedation/paralysis if severe.
 
 ### Safety note

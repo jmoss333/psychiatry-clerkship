@@ -11,7 +11,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **Slug:** `cotw_20260713_agitation_res.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-13_acute-agitation-delirium_Resident.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 2,336 words
+- **Length:** 2,367 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -124,7 +124,7 @@ Exam (obtained in fragments): **inattentive** (cannot complete "days of the week
 
 ### One-screen management summary
 - **Stabilize/safety:** space, sitter, de-escalation; glucose/SpO₂/vitals; thiamine before or with glucose if any withdrawal/malnutrition concern (never delaying dextrose for documented hypoglycemia).
-- **Etiology-driven pharmacology:** *delirium-agitation* → low-dose high-potency antipsychotic, ECG/QTc-aware; *withdrawal* → benzodiazepine/phenobarbital + thiamine; *anticholinergic* → supportive, remove agent, benzodiazepine ± physostigmine in select cases; **avoid reflexive haloperidol+lorazepam combos and IM olanzapine+benzodiazepine co-administration.**
+- **Etiology-driven pharmacology:** *delirium-agitation* → low-dose high-potency antipsychotic, ECG/QTc-aware; *withdrawal* → benzodiazepine/phenobarbital + thiamine; *anticholinergic toxidrome as the primary driver* → supportive, remove agent, benzodiazepine ± physostigmine in select cases — **this is the frank toxidrome only; where anticholinergic burden is one contributor to multifactorial delirium, as here, stop the offending drug but still avoid benzodiazepines**; **avoid reflexive haloperidol+lorazepam combos and IM olanzapine+benzodiazepine co-administration.**
 - **Diagnostics:** CBC, CMP, UA/culture, ± cultures/lactate, ECG, med rec, withdrawal assessment; CT/LP/EEG per pretest reasoning.
 - **Treat the cause + delirium precautions;** antipsychotic is symptomatic only (MIND-USA) [5].
 - **Disposition:** admit; explicit de-escalation-of-treatment criteria; no antipsychotic at discharge by default; PCP cognitive follow-up.
@@ -162,7 +162,7 @@ Dangerousness here is **agitation-related risk to self and staff**; keep teachin
 - **Slug:** `cotw_20260709_ssnms_res.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-09_serotonin-syndrome-vs-nms_Resident.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 2,005 words
+- **Length:** 2,071 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -294,7 +294,7 @@ NMS is widely conceptualized as a **drug-induced form of malignant (lethal) cata
 - **Reconciliation plan:** stop all dopamine antagonists, hold serotonergic and lithium agents, obtain levels, and document the event prominently to govern rechallenge.
 
 **Q7 — Recovery and rechallenge.**
-NMS typically resolves over **days to ~2 weeks** with agent withdrawal and supportive care — slower than SS, which usually clears in 24–72 h [1][4][5]. For antipsychotic **rechallenge**: wait **at least 2 weeks** after full resolution (longer if the offending agent was a depot), correct dehydration, electrolyte derangement, and iron deficiency first, then choose a **lower-potency or atypical oral agent** — **never a long-acting injectable, which cannot be withdrawn if NMS recurs** — at a low starting dose, titrate slowly, and monitor temperature, CK, and autonomic signs; recurrence can occur at any point after resolution, so shared decision-making and close follow-up are essential [5]. Where feasible, address the psychiatric indication with the lowest-risk effective option and consider ECT if antipsychotics are high-risk.
+NMS typically resolves over **days to ~2 weeks** with agent withdrawal and supportive care — usually slower than serotonin toxicity, which clears within 24–72 h **for short-half-life agents. With fluoxetine (norfluoxetine half-life of days to weeks) or an MAOI, both onset and resolution can be substantially delayed, and a 5-week washout is required before starting an MAOI** [1][4][5]. For antipsychotic **rechallenge**: wait **at least 2 weeks** after full resolution (longer if the offending agent was a depot), correct dehydration, electrolyte derangement, and iron deficiency first, then choose a **lower-potency or atypical oral agent** — **never a long-acting injectable, which cannot be withdrawn if NMS recurs** — at a low starting dose, titrate slowly, and monitor temperature, CK, and autonomic signs; recurrence can occur at any point after resolution, so shared decision-making and close follow-up are essential [5]. Where feasible, address the psychiatric indication with the lowest-risk effective option and consider ECT if antipsychotics are high-risk.
 
 ### Ranked differential diagnosis (resident depth)
 1. **Neuroleptic malignant syndrome** — best fit (D2 antagonist up-titration + metoclopramide, subacute onset, lead-pipe rigidity, hyporeflexia, CK ~10k, leukocytosis, low iron).
@@ -306,7 +306,7 @@ NMS typically resolves over **days to ~2 weeks** with agent withdrawal and suppo
 ### Workup & management summary
 - **Workup:** CK, CMP (renal/hepatic), CBC, serum iron, coags/DIC panel, lithium level, blood/urine cultures and CNS infection work-up as indicated, ECG, continuous temperature and hemodynamic monitoring; consider EEG if catatonia/NCSE is in question.
 - **Immediate management:** **stop all dopamine antagonists** (including metoclopramide); ICU-level supportive care — IV fluids, active cooling, correct electrolytes, protect renal function against rhabdomyolysis, and start **VTE prophylaxis** (pharmacologic unless contraindicated; mechanical when it is) given prolonged immobility and rigidity; attend to aspiration risk and skin/pressure care for the same reason.
-- **Pharmacotherapy:** benzodiazepine (lorazepam) early (agitation + possible catatonia); **dantrolene** and **bromocriptine/amantadine** for moderate–severe NMS; **ECT** for refractory NMS/malignant catatonia.
+- **Pharmacotherapy:** benzodiazepine (lorazepam) early (agitation + possible catatonia); **dantrolene** and **bromocriptine/amantadine** for moderate–severe NMS; **ECT** for refractory NMS/malignant catatonia — when referring, flag the rhabdomyolysis, current CK and potassium explicitly, because **succinylcholine must be avoided** in this setting (hyperkalaemic cardiac arrest risk) and a non-depolarising relaxant such as rocuronium is used instead.
 - **If the phenotype had been SS:** stop serotonergic agents, benzodiazepines, **cyproheptadine**, ICU with sedation/paralysis if severe.
 
 ### Safety note

@@ -74,7 +74,7 @@ Exam (obtained in fragments): **inattentive** (cannot complete "days of the week
 
 ### One-screen management summary
 - **Stabilize/safety:** space, sitter, de-escalation; glucose/SpO₂/vitals; thiamine before or with glucose if any withdrawal/malnutrition concern (never delaying dextrose for documented hypoglycemia).
-- **Etiology-driven pharmacology:** *delirium-agitation* → low-dose high-potency antipsychotic, ECG/QTc-aware; *withdrawal* → benzodiazepine/phenobarbital + thiamine; *anticholinergic* → supportive, remove agent, benzodiazepine ± physostigmine in select cases; **avoid reflexive haloperidol+lorazepam combos and IM olanzapine+benzodiazepine co-administration.**
+- **Etiology-driven pharmacology:** *delirium-agitation* → low-dose high-potency antipsychotic, ECG/QTc-aware; *withdrawal* → benzodiazepine/phenobarbital + thiamine; *anticholinergic toxidrome as the primary driver* → supportive, remove agent, benzodiazepine ± physostigmine in select cases — **this is the frank toxidrome only; where anticholinergic burden is one contributor to multifactorial delirium, as here, stop the offending drug but still avoid benzodiazepines**; **avoid reflexive haloperidol+lorazepam combos and IM olanzapine+benzodiazepine co-administration.**
 - **Diagnostics:** CBC, CMP, UA/culture, ± cultures/lactate, ECG, med rec, withdrawal assessment; CT/LP/EEG per pretest reasoning.
 - **Treat the cause + delirium precautions;** antipsychotic is symptomatic only (MIND-USA) [5].
 - **Disposition:** admit; explicit de-escalation-of-treatment criteria; no antipsychotic at discharge by default; PCP cognitive follow-up.

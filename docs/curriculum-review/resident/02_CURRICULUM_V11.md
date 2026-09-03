@@ -11,7 +11,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **Slug:** `cotw_20260727_oud_res.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-27_opioid-use-disorder_Resident.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 3,399 words
+- **Length:** 3,458 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -86,7 +86,7 @@ What has changed is the **pharmacokinetics of the drug being displaced**. Illici
 
 The magnitude matters for calibration. In a cohort of hospitalized patients using fentanyl who underwent standard buprenorphine initiation, precipitated withdrawal occurred in a **minority** of patients — meaningful and non-trivial, but far from universal [3]. Two implications: standard initiation is not obsolete and should not be abandoned reflexively, *and* the risk is high enough to warrant an explicit consent conversation and a considered choice of strategy.
 
-*Also worth naming:* telling a patient in precipitated withdrawal that this is "the medicine working" is both inaccurate and, predictably, treatment-ending. The iatrogenic harm here is not only physiologic — it is a durable negative association with the single most effective treatment she could receive.
+*Also worth naming:* telling a patient in precipitated withdrawal that this is "the medicine working" is both inaccurate and, predictably, treatment-ending — and the team also needs to know what to do instead, because the correct move is counterintuitive: precipitated withdrawal is generally treated by *continuing and rapidly escalating* buprenorphine to carry the patient through to full buprenorphine occupancy, not by stopping it, together with aggressive symptomatic treatment (antiemetic, alpha-2 agonist, non-opioid analgesia) and full-agonist analgesia where pain requires it. The iatrogenic harm here is not only physiologic — it is a durable negative association with the single most effective treatment she could receive.
 
 **Q2. She now refuses buprenorphine. Lay out the realistic options and their trade-offs.**
 
@@ -257,7 +257,7 @@ For **mortality**, the agonist evidence is the strongest thing we have: all-caus
 - **Slug:** `cotw_20260726_etohwd_res.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-26_alcohol-withdrawal-delirium-tremens_Resident.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 3,211 words
+- **Length:** 3,351 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -372,10 +372,10 @@ The teaching move: **the workup runs in parallel with treatment, not before it.*
 
 **Pharmacology.**
 - **Rapid titration to a defined endpoint** — light sedation (calm, rousable), not a CIWA-Ar number. Once delirium supervenes, CIWA-Ar is dead as an instrument; switch to a sedation scale (e.g., RASS) and objective autonomic parameters.
-- **Add phenobarbital** per institutional protocol, with an explicit preference for a **loading/replacement strategy rather than open-ended stacking**, given the ventilation and aspiration signal in the adjunct literature [3,9,10]. Airway monitoring is mandatory.
+- **Add phenobarbital** per institutional protocol, with an explicit preference for a **loading/replacement strategy rather than open-ended stacking**, given the ventilation and aspiration signal in the adjunct literature [3,9,10]. The pharmacokinetics are why that distinction is real: phenobarbital's half-life is roughly 80–120 hours, so a load provides its own taper over several days, cannot be titrated back once given, and adds to any benzodiazepine still on board — decide the total load up front and stop the parallel benzodiazepine rather than running both. Airway monitoring is mandatory.
 - **Dexmedetomidine** may be added for autonomic control but **never as a benzodiazepine/barbiturate substitute** — no anti-seizure effect [1,11].
 - **Antipsychotics** only for refractory perceptual disturbance/agitation *after* adequate GABAergic therapy; they lower the seizure threshold and prolong QTc.
-- **Thiamine parenterally, before or with dextrose** [12] — high-dose and continued for several days if Wernicke is suspected, and never at the cost of delaying dextrose in symptomatic hypoglycemia. Replete **magnesium** and potassium.
+- **Thiamine parenterally, before or with dextrose** [12] — and note this is a *treatment* indication, not prophylaxis: suspected Wernicke encephalopathy calls for high-dose parenteral thiamine several times daily for the first days, then a tapered parenteral course, per your institutional protocol. The reflexive once-daily order most of us write is a prophylactic dose and does not treat WE; guideline regimens for the treatment indication vary substantially, which is itself the subject of [12], so read the protocol rather than reaching for the familiar number. Never delay dextrose in symptomatic hypoglycemia to do any of this. Replete **magnesium** and potassium — magnesium is an obligate cofactor for thiamine-dependent enzymes, so thiamine will underperform until his Mg of 1.4 is corrected.
 - **Liver caveat:** with probable cirrhosis, prefer **lorazepam/oxazepam** (glucuronidation, no oxidative metabolism, no active metabolites) and recognize that sedatives can precipitate or worsen **hepatic encephalopathy** — a real reason to avoid open-ended benzodiazepine escalation — but not, on hepatic grounds, an argument *for* phenobarbital: phenobarbital is partly hepatically metabolised, its already long half-life (~80–120 h) is further prolonged in cirrhosis, there is no reversal agent, and it can precipitate hepatic encephalopathy just as benzodiazepines can. If phenobarbital is used here it is because the withdrawal is benzodiazepine-resistant, and it must be used expecting a longer and less reversible effect than in a patient with normal hepatic function [7].
 
 **Workup in parallel:** non-contrast head CT, cultures/CXR/lactate, glucose, repeat electrolytes and Mg, medication reconciliation.
@@ -468,7 +468,7 @@ The teaching move: **the workup runs in parallel with treatment, not before it.*
 - **Slug:** `cotw_20260723_suiciderisk_res.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-23_suicide-risk-assessment-safety-planning_Resident.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 2,496 words
+- **Length:** 2,550 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -540,7 +540,7 @@ Mental status: alert, cooperative, tearful, with constricted affect and mood-con
 *Teaching point:* SPI (Stanley & Brown) is a collaboratively constructed, prioritized hierarchy: warning signs → internal coping → social contacts/settings for distraction → people to ask for help → professionals/crisis resources → **means restriction**. In the VA ED cohort (n=1,640), **SPI + structured telephone follow-up** was associated with **~45% fewer suicidal behaviors** over 6 months (OR 0.56; 95% CI 0.33–0.95) and **>2× the odds** of outpatient engagement [6]. A meta-analysis of safety-planning-type interventions found a pooled **RR 0.570** for suicidal behavior (NNT ≈ 16) but **no significant effect on ideation** [7]; a systematic review of 26 studies supports feasibility, acceptability, and improvements across suicidality, hopelessness, and treatment engagement [8]. Boundaries to teach: SPI reduces *behavior*, works best **bundled with follow-up**, and is an adjunct to — not a replacement for — treating the underlying disorder and reducing means access.
 
 **Q5. Means restriction is often the highest-leverage intervention. How do you operationalize lethal-means counseling here without slipping into method detail?**
-*Teaching point:* **Means restriction is among the best-supported population- and individual-level suicide-prevention strategies** [9]. Operationally (framed generally, never specifically): collaboratively engage the patient — and, with consent, a trusted other — to **reduce or remove access to lethal means at home** during the high-risk period; leverage the family as partners in enacting the plan; and integrate this step into the written safety plan. The clinical craft is doing this **collaboratively and non-coercively** so the patient remains engaged. Note the acute confound here: heavy alcohol use both **elevates acute risk** (disinhibition, worsened mood/insomnia) and complicates capacity/engagement — address it as a modifiable acute factor.
+*Teaching point:* **Means restriction is among the best-supported population- and individual-level suicide-prevention strategies** [9]. Operationally — general about *methods*, specific about *this patient's means*: ask directly what lethal means are accessible at home, then collaboratively engage the patient and, with consent, a trusted other in **removing or securing them** during the high-risk period. In the US that means firearms first (temporary off-site storage with a trusted person, locking devices, ammunition stored separately) and then medication supply (quantity dispensed, lock box). Naming the specific means is what makes the counselling effective; naming methods is neither required nor what this is. leverage the family as partners in enacting the plan; and integrate this step into the written safety plan. The clinical craft is doing this **collaboratively and non-coercively** so the patient remains engaged. Note the acute confound here: heavy alcohol use both **elevates acute risk** (disinhibition, worsened mood/insomnia) and complicates capacity/engagement — address it as a modifiable acute factor.
 
 **Q6. Disposition and legal-ethical dimension: the patient wants to leave. Reason through voluntary vs. involuntary care.**
 *Teaching point:* Integrate acuity, modifiable-risk trajectory, capacity, and the feasibility of a safe outpatient plan. Given active ideation with fluctuating intent, a previously undisclosed prior attempt, severe depression with hopelessness, acute intoxication risk, ready means access, and thin supports, **acute risk is substantially above baseline and outpatient management is difficult to secure right now** — favoring admission. Teach the legal framework generically: **involuntary hold criteria vary by jurisdiction** but generally require a mental disorder plus imminent danger to self/others (or grave disability); pursue the **least restrictive option** that maintains safety, always attempt to **build voluntary engagement first**, and document capacity, the risk formulation, and the reasoning. "No-suicide contracts" have **no evidence base** and should not substitute for a safety plan or disposition decision.
