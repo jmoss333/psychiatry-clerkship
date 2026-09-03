@@ -2,8 +2,10 @@
 
 **Date:** 2026-09-03 · **Status:** plan, not yet implemented · **Surface:** the pinned practice panel on every topic page, both sites.
 **Decisions taken:** D-1 (2026-09-03) — panel stays collapsed, fix its contents; no CSS change, no visual-baseline regeneration. See §7.
-**Shipped:** WP-A, WP-B, WP-C and WP-D (2026-09-03). Corrections found while implementing are
-marked **[corrected 2026-09-03]** below. Remaining: WP-E, WP-F.
+**Shipped:** WP-A, WP-B, WP-C, WP-D and WP-E (2026-09-03) — the whole code half of this plan.
+Corrections found while implementing are marked **[corrected 2026-09-03]** below.
+Remaining: **WP-F** (content authoring), which is a different kind of work and belongs in its
+own PR.
 
 **Goal:** Make the panel that is pinned to all 74 topic pages say something true and specific about *that page* — correct tool names, governance-correct instrument handling, audience-neutral copy, one obvious next action instead of a nine-link dump.
 
@@ -249,13 +251,45 @@ work on a page that is safety work → a spoken drill not yet done → the page'
 
 **Acceptance:** every page shows exactly one primary action; no sentence appears twice in one panel; `.practice-summary` markup and the collapsed-state rendering are byte-identical to today. **Test:** pure-function test over all 74 metas — one primary, reason ≠ any grid value, deterministic for a fixed `nowMs`; plus an assertion that the summary block is unchanged.
 
-### WP-E · Density and grouping
+### WP-E · Density and grouping — **shipped 2026-09-03**
 
-- [ ] Group the secondary row into **Assess · Rehearse · Reference · Review**, mapped from `tool_registry.category` + the rights flag. Suppress an empty group.
-- [ ] Cap visible secondary actions (proposed: 4) behind a "More for this page" disclosure; drills keep their existing dedicated block.
-- [ ] **Reuse the existing `.practice-*` classes and the `practice-drills` grouping idiom rather than adding new ones.** Per D-1 this workstream introduces no new CSS: grouping is achieved by emitting the existing `practice-actions` block once per group with a `practice-drill-head`-style heading, which is already styled.
+- [x] ~~Group the secondary row into **Assess · Rehearse · Reference · Review**, mapped from `tool_registry.category`~~ — **[corrected 2026-09-03] that mapping does not exist.**
+  `tool_registry.category` is a **content-domain** taxonomy (`acute-safety`,
+  `psychopharmacology`, `family-systems`, `clinical-reasoning`, `longitudinal-simulation`,
+  `clinical-skills`), not a **use-mode** one. Its `clinical-skills` bucket holds both
+  `screeners.html` (assessment) and `communication-practice.html` (rehearsal) — a single
+  category spanning two of the four intended groups. And **10 of 22 shipped tools have no
+  registry entry at all** (`mse`, `interview-circle`, `sp-interview`, `oral`, `reflection`,
+  `shelf-mode`, `review`, `question-bank-practice`, plus `feedback` and `rotation-curator`),
+  so two-thirds of the "Review" group is uncategorisable. Adding entries is not an agent's
+  call: `tool_registry.schema.json` makes `riskLevel` and `disclaimerType` **required**, and
+  both are governance judgements. See "Open" in §7.
+  **What shipped instead** is the grouping the data supports honestly, each block suppressed
+  when empty:
+  - **Spoken drills** — existing block, unchanged.
+  - **Assess at the bedside** — `tool_registry.riskLevel === 'high'` and not a rights
+    reference. Renders on **24** pages.
+  - the remaining tools, unlabelled — naming them would need the use-mode taxonomy that does
+    not exist.
+  - **Official forms** — the rights references, which WP-B already separated, now with a heading.
+- [x] ~~Cap visible secondary actions behind a "More for this page" disclosure~~ — the budget is
+  **5 actions**: the promoted primary, plus the Assess row, plus as many remaining tools as fit.
+  Drills and references sit outside it by design (the plan already said drills keep their own
+  block) — they are separately labelled, not competing calls to action. The disclosure engages
+  on **21 of 74** pages and drops nothing: `week1.md`, the audit's worst page at 17 actions,
+  now reads drills → Assess (3) → 1 tool → "More for this page (4)" → Official forms.
+- [x] ~~**Reuse the existing `.practice-*` classes.**~~ No CSS. The overflow is a **nested
+  `<details>`**: the panel's own summary rules use a child combinator
+  (`.practice-panel>summary`), so the inner `<summary>` keeps the browser's default disclosure
+  marker, and `.practice-section-title` gives it the panel's heading treatment. `practice-more`
+  is an intentionally unstyled hook for the test, like `is-reference`.
 
-**Acceptance:** no page renders more than 5 visible actions before disclosure; the worst page (`week1.md`, 17) is legible; `clinical-warm.css` and the panel's CSS block in `spa_index.html` are unmodified, so no visual baseline needs regenerating. **Test:** assert the visible-action cap across all metas; assert the stylesheet diff is empty.
+**Acceptance — met.** 0 of 74 pages render more than 5 actions before the disclosure (verified
+against the *built* resident shell as well as source); `week1.md` is legible; `clinical-warm.css`
+and the panel's CSS block are unmodified. **Tests:** the cap across all metas, that the
+disclosure hides rather than drops, that the Assess row admits only high-risk non-rights tools,
+that references keep their own block last, and that neither `practice-more` nor `is-reference`
+has acquired a CSS rule.
 
 ### WP-F · Content fills *(authoring, gated by `topic-meta-author` skill)*
 
@@ -329,9 +363,20 @@ Phases 1–2 are worth doing on their own even if 3–5 are deferred: they remov
 
 ### Open
 
-1. **Mode chips: remove or make real?** They are decorative today and imply a filter that does not exist. *Recommend removing* (WP-D) — the same relevance is better served by one ranked primary action than by five filters a learner must operate. Making them real is ~1 extra day: chips become buttons, `practiceModeCfg` gains genuine per-mode tool priorities, and mode persists in a `cw_*` key. **Note D-1 raises the cost of keeping them**: a real filter inside a collapsed panel is two interactions deep.
-2. **Quiz-less pages (31 of 74):** author quizzes, or suppress the empty section?
-3. **Withdrawal wording.** The registry title leads with COWS, which is correct. Confirm the panel should print the registry title verbatim rather than any shortened form.
+1. **10 shipped tools have no `tool_registry.json` entry** — `mse`, `interview-circle`,
+   `sp-interview`, `oral`, `reflection`, `shelf-mode`, `review`, `question-bank-practice`,
+   `feedback`, `rotation-curator`. Registering them would let the panel group by use-mode
+   (WP-E's unlabelled row), let §4b validate them, and remove the last place the panel has to
+   shrug. **Each entry requires a `riskLevel` and a `disclaimerType`**, which are governance
+   assertions and yours to make, not an agent's. This is the single highest-leverage open item.
+2. **Is a *use-mode* taxonomy worth adding** (assess / rehearse / reference / review) alongside
+   the existing content-domain `category`? It is what the panel wants and what the front door's
+   Library columns would likely want too. A second enum on `tool_registry` entries, or a
+   derived mapping in `curriculum.json`.
+3. **Quiz-less pages (31 of 74):** author quizzes, or suppress the empty section?
+4. **Withdrawal wording.** The registry title leads with COWS, which is correct. Confirm the panel should print the registry title verbatim rather than any shortened form.
+
+*(Resolved: the mode chips are removed, not made real — WP-D.)*
 
 ---
 

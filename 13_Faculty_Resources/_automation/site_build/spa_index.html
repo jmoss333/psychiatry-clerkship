@@ -1066,7 +1066,10 @@
      `hasPrimary` stops the empty-state fallback firing on a page whose only action was
      promoted. */
   function buildPracticeTools(m,file,seen,hasPrimary){
-    var out=[], drills=[], refs=[], rt=[];
+    /* `assess` is the one grouping the data actually supports: tool_registry.riskLevel==='high'
+       on a tool that is not a rights reference. See the WP-E note below on why the plan's
+       four-way Assess/Rehearse/Reference/Review split is not derivable today. */
+    var out=[], assess=[], drills=[], refs=[], rt=[];
     seen=seen||{};
     function addTool(k){ if(k&&rt.indexOf(k)<0)rt.push(k); }
     practiceRegistryTools(file).forEach(addTool);
@@ -1075,7 +1078,7 @@
       var k=rt[i];
       if(k==='communication-practice.html'&&m&&Array.isArray(m.communicationCases)&&m.communicationCases.length)continue;
       if(practiceIsRights(k)){ addPracticeReference(refs,seen,practiceToolLabel(k),'?tool='+encodeURIComponent(k)); continue; }
-      addPracticeAction(out,seen,practiceToolLabel(k),'?tool='+encodeURIComponent(k),practiceIsSafe(k)?'is-safety':'');
+      addPracticeAction(practiceIsSafe(k)?assess:out,seen,practiceToolLabel(k),'?tool='+encodeURIComponent(k),practiceIsSafe(k)?'is-safety':'');
     }
     if(m&&Array.isArray(m.communicationCases)){
       var caseIds=m.communicationCases;
@@ -1086,7 +1089,7 @@
       for(var ci=0;ci<cx.length;ci++){
         var ca=cx[ci], ch=ca&&ca.href?ctaHref(ca.href):'', tk=actionToolKey(ch);
         if(practiceIsRights(tk)){ addPracticeReference(refs,seen,practiceToolLabel(tk),ch); continue; }
-        var bucket=isCommunicationCaseHref(ch)?drills:out;
+        var bucket=isCommunicationCaseHref(ch)?drills:(practiceIsSafe(tk)?assess:out);
         addPracticeAction(bucket,seen,practiceActionLabel(tk,ca&&ca.label)||'Open tool',ch,isCommunicationCaseHref(ch)?'is-drill':(practiceIsSafe(tk)?'is-safety':''));
       }
     }
@@ -1095,19 +1098,44 @@
       for(var a=0;a<cw.actions.length;a++){
         var ac=cw.actions[a]||{}, ah=ctaHref(ac.href||''), ak=actionToolKey(ah);
         if(practiceIsRights(ak)){ addPracticeReference(refs,seen,practiceToolLabel(ak),ah); continue; }
-        var ab=isCommunicationCaseHref(ah)?drills:out;
+        var ab=isCommunicationCaseHref(ah)?drills:(practiceIsSafe(ak)?assess:out);
         addPracticeAction(ab,seen,practiceActionLabel(ak,ac.label),ah,isCommunicationCaseHref(ah)?'is-drill':(practiceIsSafe(ak)?'is-safety':''));
       }
     }
-    if(!out.length&&!drills.length&&!refs.length&&!hasPrimary){
+    if(!out.length&&!assess.length&&!drills.length&&!refs.length&&!hasPrimary){
       addPracticeAction(out,seen,'Practice Questions','?tool=question-bank-practice.html','is-review');
       addPracticeAction(out,seen,'Daily Review','?tool=review.html','is-review');
     }
+    /* WP-E. The plan called for grouping into Assess / Rehearse / Reference / Review from
+       tool_registry.category. That is not derivable: `category` is a CONTENT-DOMAIN taxonomy
+       (acute-safety, psychopharmacology, family-systems), not a use-mode one, and its
+       `clinical-skills` bucket holds both screeners.html (assessment) and
+       communication-practice.html (rehearsal) -- one category spanning two intended groups.
+       On top of that, 10 of 22 shipped tools have no registry entry at all, and adding one
+       requires riskLevel and disclaimerType, which the schema makes mandatory and which are
+       governance judgements, not an agent's. So the grouping here is only what the data
+       supports honestly: high-risk bedside tools, spoken drills, and official forms each get a
+       labelled block, and the remainder is capped behind a disclosure. Naming the rest would
+       need a use-mode taxonomy that does not exist yet.
+
+       Visible budget is 5 ACTIONS: the promoted primary plus the assess row plus as many
+       remaining tools as fit. Drills and references sit outside it by design -- they are
+       separately labelled blocks, not competing calls to action. */
+    var VISIBLE_ACTIONS=5;
+    var budget=VISIBLE_ACTIONS-(hasPrimary?1:0)-assess.length;
+    if(budget<0)budget=0;
+    var shown=out.slice(0,budget), more=out.slice(budget);
     var html='';
     if(drills.length)html+='<div class="practice-drills"><div class="practice-drill-head">Spoken drills</div><p class="practice-drill-note">Say your first line out loud, then compare it with concrete feedback.</p><div class="practice-actions practice-drill-actions">'+drills.join('')+'</div></div>';
-    if(out.length)html+='<div class="practice-actions">'+out.join('')+'</div>';
+    if(assess.length)html+='<div class="practice-section-title">Assess at the bedside</div><div class="practice-actions">'+assess.join('')+'</div>';
+    if(shown.length)html+='<div class="practice-actions">'+shown.join('')+'</div>';
+    /* A nested <details>. The panel's own summary rules use a child combinator
+       (.practice-panel>summary), so this one keeps the browser's default disclosure marker,
+       and .practice-section-title gives it the panel's heading treatment -- a real disclosure
+       with no new CSS, per D-1. `practice-more` is an unstyled hook for the test. */
+    if(more.length)html+='<details class="practice-more"><summary class="practice-section-title">More for this page ('+more.length+')</summary><div class="practice-actions">'+more.join('')+'</div></details>';
     /* References last: they are what to read before acting, not what to act with. */
-    if(refs.length)html+='<div class="practice-actions">'+refs.join('')+'</div><p class="practice-muted">Official form and training \u2014 the instrument itself is not reproduced here.</p>';
+    if(refs.length)html+='<div class="practice-section-title">Official forms</div><div class="practice-actions">'+refs.join('')+'</div><p class="practice-muted">Official form and training \u2014 the instrument itself is not reproduced here.</p>';
     return html;
   }
   function buildTpl(m,file){

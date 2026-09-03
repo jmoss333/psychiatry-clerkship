@@ -408,6 +408,75 @@ test('the reason is the promoted can\'t-miss, never a copy of a grid row', () =>
   }
 });
 
+// ---- WP-E · density and grouping --------------------------------------------------------------
+
+const countActions = (html, cls) => [...html.matchAll(/<a class="practice-action([^"]*)"/g)]
+  .filter((m) => (cls ? m[1].includes(cls) : true)).length;
+
+test('no page shows more than five actions before the disclosure', () => {
+  // Drills and references sit outside the budget by design — they are separately labelled
+  // blocks, not competing calls to action (the plan says drills keep their own block).
+  let capped = 0;
+  for (const [ref, m] of topicEntries) {
+    if (!F.hasPracticeTpl(m)) continue;
+    const html = F.buildTpl(m, ref);
+    const moreAt = html.indexOf('<details class="practice-more">');
+    const visible = moreAt === -1 ? html : html.slice(0, moreAt);
+    // is-review is the quiz-less / empty-state fallback pair rendered by Test-yourself —
+    // panel chrome, not a registry-derived tool link, and outside the Tools budget.
+    const actions = countActions(visible) - countActions(visible, 'is-drill')
+      - countActions(visible, 'is-reference') - countActions(visible, 'is-review');
+    assert.ok(actions <= 5, `${ref} shows ${actions} actions before the disclosure`);
+    if (moreAt !== -1) capped += 1;
+  }
+  assert.ok(capped >= 15, `expected the cap to actually engage on the dense pages, hit ${capped}`);
+});
+
+test('the disclosure hides the overflow rather than dropping it', () => {
+  // week1.md was the worst page in the audit; nothing it linked may disappear.
+  const before = new Set([...F.buildTpl(TOPIC_META['week1.md'], 'week1.md')
+    .matchAll(/href="(\?tool=[^"]+)"/g)].map((m) => m[1]));
+  assert.ok(before.size >= 8, `week1.md should still link everything it did, saw ${before.size}`);
+  const html = F.buildTpl(TOPIC_META['week1.md'], 'week1.md');
+  assert.match(html, /<details class="practice-more"><summary[^>]*>More for this page \(\d+\)</,
+    'the densest page must get a disclosure');
+});
+
+test('high-risk bedside tools get their own labelled row, and rights refs never join it', () => {
+  let pagesWithAssess = 0;
+  for (const [ref, m] of topicEntries) {
+    if (!F.hasPracticeTpl(m)) continue;
+    const html = F.buildTpl(m, ref);
+    const at = html.indexOf('>Assess at the bedside<');
+    if (at === -1) continue;
+    pagesWithAssess += 1;
+    const row = html.slice(at, html.indexOf('</div>', html.indexOf('<div class="practice-actions">', at)));
+    for (const x of row.matchAll(/href="\?tool=([^"&]+)"/g)) {
+      const slug = decodeURIComponent(x[1]);
+      assert.equal(F.practiceIsSafe(slug), true, `${ref}: ${slug} is in Assess but is not high risk`);
+      assert.ok(!RIGHTS_REFS.includes(slug), `${ref}: ${slug} is a rights reference, not an action`);
+    }
+  }
+  assert.ok(pagesWithAssess >= 10, `expected an Assess row on many pages, saw ${pagesWithAssess}`);
+});
+
+test('references keep their own labelled block, below everything else', () => {
+  const html = F.buildTpl(TOPIC_META['catatonia.md'], 'catatonia.md');
+  const forms = html.indexOf('>Official forms<');
+  assert.ok(forms !== -1, 'a page with a rights reference must label it');
+  assert.ok(forms > html.indexOf('<div class="practice-actions">'), 'references come last');
+  assert.match(html.slice(forms), /the instrument itself is not reproduced here/);
+});
+
+test('the disclosure adds no CSS (D-1)', () => {
+  for (const hook of ['practice-more', 'is-reference']) {
+    assert.ok(!new RegExp(`\\.${hook}\\s*\\{`).test(source),
+      `${hook} is an intentionally unstyled hook — styling it needs a visual-baseline refresh`);
+  }
+  // The nested summary borrows an existing heading class rather than a new rule.
+  assert.match(source, /<summary class="practice-section-title">More for this page/);
+});
+
 // ---- D-1 · the collapsed summary is untouched ---------------------------------------------------
 
 test('the collapsed summary markup is unchanged (D-1: panel stays a collapsed accessory)', () => {
