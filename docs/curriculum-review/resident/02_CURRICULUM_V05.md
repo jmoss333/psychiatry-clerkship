@@ -910,11 +910,14 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Bush-Francis Catatonia Scale (BFCRS) — Official Form & Training Reviewed by Joshua Moss, MD on 2026-06-30
 - Skip to content Catatonia
 - Bush-Francis Catatonia Rating Scale
-- This page no longer reproduces the BFCRS. Use your unit’s current approved form to screen and score.
+- This page no longer reproduces the BFCRS. Use your unit’s current approved form to screen and score — and if you need the scale itself, URMC publishes it, its coding guide and its training videos free, below.
+- Get the official scale and training
+- URMC publishes the BFCRS with more than this page ever carried: the scale itself , the Training Manual & Coding Guide that explains every item, and standardized-patient videos — a normal exam plus the hypokinetic, parakinetic and hyperkinetic subtypes — with a short clip for scoring each individual item.
+- Open the BFCRS & coding guide → Training modules & videos → Free, no registration. Both links leave this site for urmc.rochester.edu. The library points you to URMC rather than hosting a copy — that is the same term (prior written consent to distribute) that took the items off this page, so watching their exam videos is both the compliant route and the better one for learning the exam.
 - Why the items were removed. The BFCRS is published by the University of Rochester Medical Center under site-wide Web Terms of Use stating that the contents “may not be distributed, modified, reproduced, or used, in whole or in part without the prior written consent of the University of Rochester Medical Center,” with use granted only for “personal non-commercial use.” No instrument-specific licence is published alongside the scale. Reproducing all 23 items and their anchors on a public teaching site is outside that grant, so they have been withdrawn pending written permission.
 - Primary source. Bush G, Fink M, Petrides G, Dowling F, Francis A. Catatonia. I. Rating scale and standardized examination. Acta Psychiatr Scand. 1996;93(2):129–36. PMID 8686483 .
-- Official version and training. The scale, its training materials and the standardized examination are published at the URMC BFCRS site . Score from your institution’s current approved form at the bedside, not from any teaching page.
-- Administration teaching for this scale — how the examination is conducted and what the score does and does not license — is authored separately and is not yet published here.
+- Official version and training. The scale, its training materials and the standardized examination are published at the URMC BFCRS site — linked above. Score from your institution’s current approved form at the bedside, not from any teaching page.
+- Administration teaching for this scale — how the examination is conducted and what the score does and does not license — is authored separately and is not yet published here. Until it is, URMC’s own coding guide and exam videos are the better teacher anyway: they show the manoeuvres, which an anchor ladder never did.
 - Joshua Moss, MD | Psychiatrist
 
 ---
@@ -1136,7 +1139,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Withdrawal: COWS Tool · CIWA-Ar Official Form & Training Reviewed by Joshua Moss, MD on 2026-06-30
 - Skip to content
 
-**Authored clinical strings (68):**
+**Authored clinical strings (73):**
 
 - Measured after the patient has been sitting or lying for one minute
 - Over the past ½ hour, not accounted for by room temperature or patient activity
@@ -1199,8 +1202,13 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Every located “may be reproduced freely” notice for the CIWA-Ar is a reproducer’s addition, in differing wordings; the 1989 article’s own permission text is unverified and behind a paywall. Rights that cannot be established are not rights, so the abbreviated descriptors this page used to show were withdrawn (2026-08-28) rather than left published on the strength of a second-hand notice.
 - Sullivan JT, Sykora K, Schneiderman J, Naranjo CA, Sellers EM. Assessment of alcohol withdrawal: the revised Clinical Institute Withdrawal Assessment for Alcohol scale (CIWA-Ar).
 - Obtain the complete, current CIWA-Ar from your institution’s withdrawal protocol and score from that form at the bedside, not from any teaching page. Administration teaching for this scale — how the assessment is conducted and what the score does and does not license — is authored separately and is not yet published here.
+- Your unit’s withdrawal protocol is the form you score from — it is the one your orders key off, and it is in the EHR. If you want to read the instrument outside a shift, the California Society of Addiction Medicine posts the 10-item scale with its scoring criteria.
+- Free, no registration; leaves this site for csam-asam.org. Note what this link is and is not: CSAM is a professional society posting a copy, not the rights-holder. The CIWA-Ar is the one scale here with no custodian still distributing it — the 1989 paper is paywalled and the originating Addiction Research Foundation publishes no current form, which is exactly why its rights could not be established and the descriptors came down. Score from your unit’s form.
 - symptom-triggered dosing (treat when CIWA ≥ ~8–10) usually beats fixed schedules in appropriate patients. CIWA assumes the patient can communicate — it is unreliable in delirium, intubation, or language barriers; use a protocol like RASS/PAWSS there.
 - buprenorphine induction generally requires objective withdrawal (often COWS ≥ ~8–12) to avoid precipitated withdrawal — follow your protocol. COWS guides supportive and agonist treatment; it does not by itself set doses.
+- The tally above is for learning the scale. NIDA publishes the COWS as a one-page PDF — all 11 items and the score bands — which is what you print, carry, and document from.
+- Download the COWS (PDF, NIDA)
+- Free, no registration; leaves this site for nida.nih.gov. Score at the bedside from that form or your unit’s, not from this page.
 - CIWA-Ar: Sullivan JT, Sykora K, Schneiderman J, Naranjo CA, Sellers EM. Assessment of alcohol withdrawal: the revised Clinical Institute Withdrawal Assessment for Alcohol scale (CIWA-Ar).
 - ). COWS: Wesson DR, Ling W. The Clinical Opiate Withdrawal Scale (COWS).
 - ). The CIWA-Ar is NOT reproduced here — its rights could not be established and its descriptors were withdrawn (2026-08-28). COWS items carry their published anchors and legal score values under a recorded interim waiver. Obtain the complete, current form from your institution and score at the bedside from that form, not from this page.
@@ -1581,7 +1589,7 @@ should independently manage high-risk consults.
 - **Slug:** `cl_reference.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `14_Tracks/Resident/cl_reference.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 994 words
+- **Length:** 1,114 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -1683,7 +1691,7 @@ The MS3 [Consult module](?page=exp_consult.md) teaches *what to notice and when 
 - **Act at QTc ≥500 ms, or an increase ≥60 ms** from baseline.
 - Replete **K⁺ >4.0 mEq/L** and **Mg²⁺ >2.0 mg/dL**; reconcile every QT-prolonging drug and interaction.
 - **If torsades actually fires:** call the code, give **IV magnesium sulfate 2 g** over 1–2 min *regardless of the serum magnesium level*, stop every offending drug, correct K⁺ and Ca²⁺, treat pause/bradycardia dependence with overdrive pacing or isoproterenol, and defibrillate if it degenerates to sustained VT/VF.
-- Higher-risk psychotropics: **IV haloperidol, ziprasidone, thioridazine (avoid), pimozide**; **citalopram capped at 20 mg** if age >60, hepatic impairment, or CYP2C19 poor metabolizer.
+- Higher-risk psychotropics: **IV haloperidol, droperidol, ziprasidone, thioridazine (avoid), pimozide** — and the one a psychiatry consult resident meets most often, **methadone**, whose effect is dose-dependent and is usually why the QTc is already long before anyone adds an antipsychotic, so get a **baseline ECG** before you layer one on top; **citalopram capped at 20 mg** if age >60, hepatic impairment, or CYP2C19 poor metabolizer.
 - Source: AHA scientific statement on drug-induced arrhythmias (Tisdale et al., *Circulation* 2020).
 
 ## Delirium — the numbers you'll be asked
@@ -1698,7 +1706,7 @@ The MS3 [Consult module](?page=exp_consult.md) teaches *what to notice and when 
 - Common contributors to incapacity, in rough order of frequency: cognitive disorders (dementia, delirium), then substance intoxication/withdrawal, then psychosis and severe depression — categories that overlap in the same patient, and many of them reversible. Treat the reversible cause and **reassess.**
 
 ## Psychopharmacology in organ dysfunction
-- **Liver disease:** prefer benzodiazepines cleared by conjugation — **"LOT": Lorazepam, Oxazepam, Temazepam** (no oxidative metabolism). **Duloxetine is contraindicated in chronic liver disease.**
+- **Liver disease:** prefer benzodiazepines cleared by conjugation — **"LOT": Lorazepam, Oxazepam, Temazepam** (no oxidative metabolism) — but even these accumulate in advanced disease and can tip a patient into hepatic encephalopathy, so they are the safer choice, not a free one. **Duloxetine is contraindicated in chronic liver disease.** **Valproate is contraindicated in significant hepatic impairment**, and is the one you will most often be asked to continue: valproate-induced **hyperammonaemic encephalopathy** presents as worsening delirium and can occur with normal LFTs, so send an **ammonia level**, not just a hepatic panel. Carbamazepine is a poor choice here for the same reason.
 - **Renal impairment:** dose-reduce **lithium, gabapentin/pregabalin, risperidone/paliperidone, amisulpride**; paliperidone is heavily renally cleared.
 
 ## The escalation line
@@ -1716,7 +1724,7 @@ Serotonin syndrome, NMS, lithium toxicity, and a prolonging QTc are all **"tell 
 - **Slug:** `systems_medlegal.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `14_Tracks/Resident/systems_medlegal.md`
 - **Governance:** status=`reviewed` · riskKind=`legal` · riskLevel=`high`
-- **Length:** 1,461 words
+- **Length:** 1,520 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -1780,7 +1788,7 @@ Serotonin syndrome, NMS, lithium toxicity, and a prolonging QTc are all **"tell 
 
 **Duty to protect, mandatory reporting, and confidentiality** — When a patient makes a credible threat against an identifiable person, the Tarasoff lineage may create a duty to protect (which can include warning, notifying police, hospitalizing, or otherwise intervening) — but the precise trigger and permitted actions are state-specific, so confirm Maine's standard and loop in your attending and risk management before acting. You are also a mandated reporter for suspected abuse or neglect of children, elders, and dependent/vulnerable adults; the reporting thresholds, agencies, and timeframes vary by state and must be verified locally. None of this dissolves the default of confidentiality — disclosures should be the narrowest needed to meet the legal duty or protect safety.
 
-**Disposition and systems-based practice** — Discharge planning starts at admission. Match the patient to the least restrictive level of care that is safe: inpatient → partial hospitalization (PHP) / intensive outpatient (IOP) → residential → assertive community treatment (ACT) or community case management → supportive housing or group home → routine outpatient. Reconcile medications, schedule a concrete first appointment (not just a phone number — scheduling itself raises follow-up rates), and do a warm handoff to the receiving team; aim for follow-up within 7 days given the elevated post-discharge suicide risk. Expect utilization-review and payer pressure on length of stay, and know the hard dispositions that consume inpatient days: homelessness, the need for guardianship, patients leaving against medical advice (AMA), and psychiatric boarding while awaiting placement. Working these systemic barriers — not just the symptoms — is core to the role.
+**Disposition and systems-based practice** — Discharge planning starts at admission. Match the patient to the least restrictive level of care that is safe — and note you are choosing along two axes, not one. **Treatment intensity** descends inpatient → residential → partial hospitalization (PHP) → intensive outpatient (IOP) → routine outpatient; residential is a 24-hour supervised setting and is therefore *more* restrictive than PHP or IOP, which the patient goes home from at night, so it is not a step down from them. **Wraparound supports** attach to any of those rather than sitting between them: assertive community treatment (ACT) or community case management, supportive housing or a group home, peer support. Reconcile medications, schedule a concrete first appointment (not just a phone number — scheduling itself raises follow-up rates), and do a warm handoff to the receiving team; aim for follow-up within 7 days given the elevated post-discharge suicide risk. Expect utilization-review and payer pressure on length of stay, and know the hard dispositions that consume inpatient days: homelessness, the need for guardianship, patients leaving against medical advice (AMA), and psychiatric boarding while awaiting placement. Working these systemic barriers — not just the symptoms — is core to the role.
 
 **What the resident does**
 - Writes the admission H&P and problem-oriented daily notes; documents explicit risk reasoning, not just scores.

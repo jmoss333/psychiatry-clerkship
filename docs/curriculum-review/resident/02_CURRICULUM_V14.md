@@ -739,7 +739,7 @@ skills rather than vague exposure.
 - **Slug:** `ethics_legal.md` · **Type:** md · **Sidebar:** hidden (deep link only)
 - **Source:** `03_Core_Topics/Ethics_Legal/ethics_law_confidentiality_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`legal` · riskLevel=`high`
-- **Length:** 1,084 words
+- **Length:** 1,186 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -777,7 +777,7 @@ skills rather than vague exposure.
 - **mse** — Document observations relevant to capacity, risk, coercion, intoxication, psychosis, mania, delirium, and ability to communicate a stable choice.
 - **safety** — Escalate identifiable threats, abuse concerns, imminent self-harm, grave disability, or urgent refusal of high-stakes medical care to the supervising team immediately.
 - **say** — I want to protect your privacy, and I also need to explain the few safety situations where clinicians must involve others.
-- **collateral** — Share the minimum necessary information; ask family or systems partners only what changes risk, capacity, disposition, or mandatory reporting duties.
+- **collateral** — Share the minimum necessary information; ask family or systems partners only what changes risk, capacity, disposition, or mandatory reporting duties — and treat substance-use-treatment information as a separate consent gate (42 CFR Part 2) before you repeat it to family or an outside provider.
 - **rounds** — Name the legal frame, the patient-specific facts, the local-policy dependency, and the supervising/faculty decision still needed.
 - **exam** — Capacity is clinical and decision-specific; competence is legal. Involuntary hospitalization does not automatically authorize involuntary medication.
 - **actions** — Open capacity tool; Open violence risk tool; Practice interpreter/culture family contact
@@ -808,7 +808,7 @@ skills rather than vague exposure.
 
 **In one line** — Psychiatry runs on confidentiality, but the exam and the ward turn on knowing its **limits** — when you *must* break it to protect a third party, when you *must* report abuse, and when you can treat or hold a patient *against their will* — always choosing the **least restrictive** option that keeps people safe.
 
-**Confidentiality and its limits** — Protect patient information by default. The recognized exceptions where disclosure is permitted or required include: a **serious, credible threat to an identifiable person** (duty to protect), **mandatory reporting of abuse**, **imminent danger to self**, certain communicable-disease reporting, and specific legal/court mandates. Disclose the **minimum necessary**. Note that HIPAA permits sharing for treatment, payment, and operations.
+**Confidentiality and its limits** — Protect patient information by default. The recognized exceptions where disclosure is permitted or required include: a **serious, credible threat to an identifiable person** (duty to protect), **mandatory reporting of abuse**, **imminent danger to self**, certain communicable-disease reporting, and specific legal/court mandates. Disclose the **minimum necessary**. Note that HIPAA permits sharing for treatment, payment, and operations — but do not take that as the whole rule on an inpatient unit, because two carve-outs sit on top of it. Records originating from a **federally assisted substance use disorder treatment program** fall under **42 CFR Part 2**, which carries its own consent requirements; recent rulemaking has been aligning Part 2 more closely with HIPAA, so confirm the current rule and whether your program is a Part 2 program rather than assuming either way. **Psychotherapy notes** are separately protected. The practical default: assume SUD-treatment information needs its own consent before you repeat it to an outside provider or a family member.
 
 **Duty to protect / warn (Tarasoff)** — When a patient makes a **serious threat of violence against a reasonably identifiable victim**, the clinician has a duty to take reasonable protective steps — which may include **warning the potential victim, notifying police, hospitalizing the patient, or intensifying treatment**. Specifics vary by state (some mandate warning, some permit it), but the tested principle is: *a specific threat to a specific person overrides confidentiality.*
 

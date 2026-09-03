@@ -3,7 +3,7 @@
 # RESIDENT curriculum — complete content transcript for clinical review
 
 **Site:** `mmc-psychiatry-residents-sanford` · **Audience:** Residents — MMC/Sanford psychiatry residents
-**Generated:** 2026-09-03 from build `6f43291` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
+**Generated:** 2026-09-03 from build `f0c5300` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
 
 ## Who this is for
 
@@ -19,7 +19,7 @@ This transcript is assembled from the **built site**, not the source tree, so it
 | Narrative pages (markdown) | 86 |
 | Interactive tools | 25 |
 | Deep-link-only (hidden) surfaces | 26 |
-| Words of narrative curriculum | 120,346 |
+| Words of narrative curriculum | 120,736 |
 | Practice question-bank items | 192 |
 | Audio-companion quiz decks / questions | 79 / 437 |
 | Communication cases | 12 |
@@ -86,7 +86,7 @@ High-yield places to concentrate: the `topic_meta` **can't-miss**, **rule-out** 
 
 # RESIDENT · Navigation map
 
-Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-03 @ `6f43291`.
+Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-03 @ `f0c5300`.
 
 ## Orientation  *(pinned)*
 
@@ -131,7 +131,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | # | Title | Slug | Type | Sidebar | Governance | Source path | Words |
 |---|---|---|---|---|---|---|---|
 | 1 | Suicide Risk & Safety | `pg_suicide.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `14_Tracks/MS3/Student_Ready_Pack/02_pocket_guides/suicide_risk_and_safety_pocket_card.md` | 868 |
-| 2 | Suicide Risk & Safety Planning | `suicide.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `04_Acute_and_Safety/Suicide_Risk_and_Safety_Planning/suicide_risk_safety_planning_inpatient_teaching.md` | 994 |
+| 2 | Suicide Risk & Safety Planning | `suicide.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `04_Acute_and_Safety/Suicide_Risk_and_Safety_Planning/suicide_risk_safety_planning_inpatient_teaching.md` | 1057 |
 | 3 | Columbia C-SSRS — Official Form & Training | `cssrs.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `04_Acute_and_Safety/Suicide_Risk_and_Safety_Planning/columbia-cssrs-screener.html` |  |
 | 4 | Violence Risk | `violence.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `04_Acute_and_Safety/Violence_Risk/violence_risk_inpatient_teaching.md` | 1091 |
 | 5 | Violence Risk (FRST) | `violence.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `04_Acute_and_Safety/Violence_Risk/violence-risk-one-pager.html` |  |
@@ -144,8 +144,8 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 12 | Withdrawal: COWS Tool · CIWA-Ar Official Form & Training | `withdrawal.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/SUD_Withdrawal/withdrawal-ciwa-cows-card.html` |  |
 | 13 | Decisional Capacity | `capacity.html` | tool | listed | status=`reviewed` · riskKind=`legal` · riskLevel=`high` | `04_Acute_and_Safety/Decisional_Capacity/decisional-capacity-module.html` |  |
 | 14 | Consult Questions: Capacity, Delirium, Catatonia, Withdrawal | `exp_consult.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/MS3/Student_Ready_Pack/04_expansion_modules/consult_capacity_delirium_catatonia_withdrawal.md` | 935 |
-| 15 | C-L: Emergencies, Tox & Capacity (Numbers) | `cl_reference.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/Resident/cl_reference.md` | 994 |
-| 16 | Inpatient Systems & Med-Legal | `systems_medlegal.md` | md | listed | status=`reviewed` · riskKind=`legal` · riskLevel=`high` | `14_Tracks/Resident/systems_medlegal.md` | 1461 |
+| 15 | C-L: Emergencies, Tox & Capacity (Numbers) | `cl_reference.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/Resident/cl_reference.md` | 1114 |
+| 16 | Inpatient Systems & Med-Legal | `systems_medlegal.md` | md | listed | status=`reviewed` · riskKind=`legal` · riskLevel=`high` | `14_Tracks/Resident/systems_medlegal.md` | 1520 |
 
 ## Make a Plan
 
@@ -153,7 +153,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 |---|---|---|---|---|---|---|---|
 | 1 | Psychopharmacology Primer | `psychopharm_primer.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md` | 1287 |
 | 2 | Advanced Psychopharmacology | `adv_psychopharm.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `14_Tracks/Resident/adv_psychopharmacology.md` | 1072 |
-| 3 | Medication Monitoring & Labs | `med_monitoring.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md` | 583 |
+| 3 | Medication Monitoring & Labs | `med_monitoring.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md` | 629 |
 | 4 | Protocol Library | `protocol_library.md` | md | listed | status=`reviewed` · riskKind=`local-policy` · riskLevel=`high` | `05_Psychopharmacology/Protocol_Library/protocol_library_inpatient.md` | 327 |
 | 5 | Algorithms & Decision Aids | `decision-aids.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `04_Acute_and_Safety/Decision_Aids/decision-aids.html` |  |
 | 6 | Interaction Cards — One Action | `interaction-cards.html` | tool | listed | status=`reviewed` · riskKind=`formulary` · riskLevel=`high` | `05_Psychopharmacology/Monitoring_and_Labs/interaction-cards.html` |  |
@@ -236,7 +236,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 11 | Week 5 — Acute/Emergency | `week5.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_5_Acute_Emergency/README.md` | 180 |
 | 12 | Week 6 — Integration/Exam | `week6.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_6_Integration_Exam/README.md` | 79 |
 | 13 | Culture, Disparities & Formulation | `cultural_psychiatry.md` | md | hidden | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Cultural_Psychiatry/cultural_psychiatry_inpatient_teaching.md` | 622 |
-| 14 | Ethics & the Law | `ethics_legal.md` | md | hidden | status=`reviewed` · riskKind=`legal` · riskLevel=`high` | `03_Core_Topics/Ethics_Legal/ethics_law_confidentiality_inpatient_teaching.md` | 1084 |
+| 14 | Ethics & the Law | `ethics_legal.md` | md | hidden | status=`reviewed` · riskKind=`legal` · riskLevel=`high` | `03_Core_Topics/Ethics_Legal/ethics_law_confidentiality_inpatient_teaching.md` | 1186 |
 | 15 | Treatment Basics | `exp_tx.md` | md | hidden | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/MS3/Student_Ready_Pack/04_expansion_modules/treatment_basics_digest.md` | 648 |
 | 16 | ECT & Neuromodulation | `ect_neuromodulation.md` | md | hidden | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `05_Psychopharmacology/ECT_Neuromodulation/ect_neuromodulation_inpatient_teaching.md` | 681 |
 | 17 | Osteopathic (OMM) Resources | `omm_resources.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `03_Core_Topics/OMM_Resources/omm_in_psychiatry_resources.md` | 456 |
@@ -4081,7 +4081,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Emergency services — 911. 24/7. For imminent danger to life.
 - Contacts verified 2026-07-27 against official sources. Maintained in crisis_resources.json ; do not edit these numbers inline.
 
-**Authored clinical strings (24):**
+**Authored clinical strings (27):**
 
 - Little interest or pleasure in doing things
 - Feeling down, depressed, or hopeless
@@ -4106,7 +4106,10 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Two of the screeners named in the clerkship objectives. Tap the response for each item to score live. These support — they don't replace — a clinical interview, and a positive screen warrants a focused assessment.
 - PHQ-9 bands: 0–4 minimal · 5–9 mild · 10–14 moderate · 15–19 moderately severe · 20–27 severe. ≥10 has good sensitivity/specificity for major depression. Always review item 9 (self-harm) regardless of total.
 - GAD-7 bands: 0–4 minimal · 5–9 mild · 10–14 moderate · 15–21 severe. ≥10 is the usual threshold for further evaluation of generalized anxiety; it also screens reasonably for panic, social anxiety, and PTSD.
-- Educational tool for clinical trainees. PHQ-9 and GAD-7 are freely available public instruments (Spitzer, Kroenke, Williams). Scoring is a screen, not a diagnosis — confirm clinically and follow your team's protocols. No PHI is stored. Joshua Moss, MD | Psychiatrist
+- The tally here is for learning the instruments. Pfizer publishes the whole PHQ family and the GAD-7 — the printable forms, the scoring instructions and translations in roughly 80 languages — which is what you hand a patient and document from.
+- PHQ-9 & GAD-7 at phqscreeners.com →
+- Free, no registration; leaves this site for phqscreeners.com. Use your clinic’s current version where one is in the EHR — that is the copy your documentation refers to.
+- Educational tool for clinical trainees. PHQ-9 and GAD-7 are published by Pfizer (Spitzer, Kroenke, Williams) and are the two instruments this library still reproduces; the official forms are linked above. Scoring is a screen, not a diagnosis — confirm clinically and follow your team's protocols. No PHI is stored. Joshua Moss, MD | Psychiatrist
 
 ---
 
@@ -6099,7 +6102,7 @@ directly and then turn answers into a real risk formulation.
 - **Slug:** `suicide.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `04_Acute_and_Safety/Suicide_Risk_and_Safety_Planning/suicide_risk_safety_planning_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 994 words
+- **Length:** 1,057 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -6160,7 +6163,7 @@ directly and then turn answers into a real risk formulation.
 
 **Mind the high-risk windows.** Risk is not flat across the admission. The peri-discharge and immediate post-discharge period is the highest-risk window of the entire episode — the transition, not the acute inpatient stay, is when many deaths occur. Treat discharge planning as a safety intervention, not paperwork.
 
-**Management.** The most evidence-based single intervention is **means restriction** — counsel the patient and family to remove or secure firearms and lethal medication before discharge; reducing access to a lethal method reduces deaths. On the unit, determine the level of care (e.g., 1:1 observation, environmental safety) with your supervisor. Build a collaborative **safety plan** (Stanley–Brown format): the patient's personal warning signs → internal coping strategies → people and settings that provide distraction → people to ask for help → professionals and crisis resources → and making the environment safer through means restriction. A safety plan is a working tool the patient co-authors — it is **not** a "no-suicide contract," which has no evidence of protecting anyone and can create false reassurance. Treat the underlying disorder in parallel; where indicated, remember lithium and clozapine carry specific anti-suicidal evidence.
+**Management.** The most evidence-based single intervention is **means restriction** — counsel the patient and family to remove or secure firearms and lethal medication before discharge; reducing access to a lethal method reduces deaths. On the unit, determine the level of care (e.g., 1:1 observation, environmental safety) with your supervisor. Build a collaborative **safety plan** (Stanley–Brown format): the patient's personal warning signs → internal coping strategies → people and settings that provide distraction → people to ask for help → professionals and crisis resources → and making the environment safer through means restriction. A safety plan is a working tool the patient co-authors — it is **not** a "no-suicide contract," which has no evidence of protecting anyone and can create false reassurance. The form itself, and the authors' training in the intervention, come from Stanley and Brown directly at [suicidesafetyplan.com](https://suicidesafetyplan.com/) — this library teaches the six steps and never reproduces or programs the form, because the authors require written permission to alter it or place it in an EMR. Treat the underlying disorder in parallel; where indicated, remember lithium and clozapine carry specific anti-suicidal evidence.
 
 > <div class="crisis-block-hook" hidden></div>
 >
@@ -6189,7 +6192,7 @@ directly and then turn answers into a real risk formulation.
 - Use a collaborative safety plan, not a no-suicide contract; contracts are not protective.
 - The post-discharge period is the highest-risk window — treat the transition as the intervention.
 
-**Pair with** the interactive C-SSRS screener, the Suicide Risk & Safety pocket card, the Mood page, and the Decisional Capacity module.
+**Pair with** the C-SSRS reference page (which links Columbia's official forms and free training — the screener itself is not reproduced here), the Suicide Risk & Safety pocket card, the Mood page, and the Decisional Capacity module.
 
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
 
@@ -6214,10 +6217,13 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Columbia C-SSRS — Official Form & Training Reviewed by Joshua Moss, MD on 2026-06-30
 - Skip to content Acute & Safety · Suicide Risk
 - Columbia C-SSRS
-- This page no longer reproduces the C-SSRS screener. Use your institution’s current approved form to screen and document.
+- This page no longer reproduces the C-SSRS screener. Use your institution’s current approved form to screen and document — and if you need the instrument itself, Columbia gives it to you directly, below.
+- Get the official form
+- The Columbia Lighthouse Project distributes the Columbia Protocol itself. Choose your setting and it assembles a download: the Screener , the Full Lifetime/Recent scale, and SAFE-T with C-SSRS , with triage categories.
+- Download the Columbia Protocol forms → Free training (~20 min) → Free for healthcare, community and nonprofit or federally funded research use, and no mental-health training is required to administer it. Both links leave this site for cssrs.columbia.edu — the library points you to the custodian rather than hosting a copy of the scale.
 - Why the screener was removed. The Columbia Suicide Severity Rating Scale is copyrighted and is licensed and distributed through the Columbia Lighthouse Project. Under this library’s reproduction rule (Option A, 2026-08-23), copyrighted instruments are not reproduced here: the six screener questions and their branching logic have been withdrawn (WP-06R-a). Reproducing the screener — or programming its form — on a public teaching site is outside what this library ships.
 - Primary source. Posner K, Brown GK, Stanley B, et al. The Columbia–Suicide Severity Rating Scale: initial validity and internal consistency findings from three multisite studies with adolescents and adults. Am J Psychiatry. 2011;168(12):1266–77. PMID 22193671 .
-- Official version and free training. The instrument, its translations, and free training are published by The Columbia Lighthouse Project at cssrs.columbia.edu . Screen and document from your institution’s current approved form and triage protocol at the bedside, not from any teaching page.
+- Official version and free training. The instrument, its translations in more than 100 languages, and free training are published by The Columbia Lighthouse Project at cssrs.columbia.edu — linked above. At the bedside, screen and document from your institution’s current approved form and triage protocol, not from any teaching page and not from a copy you downloaded yourself.
 - Administration teaching for this instrument — how the interview is conducted, why ideation and behavior are scored separately, and what a screen does and does not license — is authored separately and is not yet published here. Any positive screen warrants discussion with your supervising clinician now, per protocol.
 - Joshua Moss, MD | Psychiatrist
 - If someone is in crisis
@@ -7468,11 +7474,14 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Bush-Francis Catatonia Scale (BFCRS) — Official Form & Training Reviewed by Joshua Moss, MD on 2026-06-30
 - Skip to content Catatonia
 - Bush-Francis Catatonia Rating Scale
-- This page no longer reproduces the BFCRS. Use your unit’s current approved form to screen and score.
+- This page no longer reproduces the BFCRS. Use your unit’s current approved form to screen and score — and if you need the scale itself, URMC publishes it, its coding guide and its training videos free, below.
+- Get the official scale and training
+- URMC publishes the BFCRS with more than this page ever carried: the scale itself , the Training Manual & Coding Guide that explains every item, and standardized-patient videos — a normal exam plus the hypokinetic, parakinetic and hyperkinetic subtypes — with a short clip for scoring each individual item.
+- Open the BFCRS & coding guide → Training modules & videos → Free, no registration. Both links leave this site for urmc.rochester.edu. The library points you to URMC rather than hosting a copy — that is the same term (prior written consent to distribute) that took the items off this page, so watching their exam videos is both the compliant route and the better one for learning the exam.
 - Why the items were removed. The BFCRS is published by the University of Rochester Medical Center under site-wide Web Terms of Use stating that the contents “may not be distributed, modified, reproduced, or used, in whole or in part without the prior written consent of the University of Rochester Medical Center,” with use granted only for “personal non-commercial use.” No instrument-specific licence is published alongside the scale. Reproducing all 23 items and their anchors on a public teaching site is outside that grant, so they have been withdrawn pending written permission.
 - Primary source. Bush G, Fink M, Petrides G, Dowling F, Francis A. Catatonia. I. Rating scale and standardized examination. Acta Psychiatr Scand. 1996;93(2):129–36. PMID 8686483 .
-- Official version and training. The scale, its training materials and the standardized examination are published at the URMC BFCRS site . Score from your institution’s current approved form at the bedside, not from any teaching page.
-- Administration teaching for this scale — how the examination is conducted and what the score does and does not license — is authored separately and is not yet published here.
+- Official version and training. The scale, its training materials and the standardized examination are published at the URMC BFCRS site — linked above. Score from your institution’s current approved form at the bedside, not from any teaching page.
+- Administration teaching for this scale — how the examination is conducted and what the score does and does not license — is authored separately and is not yet published here. Until it is, URMC’s own coding guide and exam videos are the better teacher anyway: they show the manoeuvres, which an anchor ladder never did.
 - Joshua Moss, MD | Psychiatrist
 
 ---
@@ -7694,7 +7703,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Withdrawal: COWS Tool · CIWA-Ar Official Form & Training Reviewed by Joshua Moss, MD on 2026-06-30
 - Skip to content
 
-**Authored clinical strings (68):**
+**Authored clinical strings (73):**
 
 - Measured after the patient has been sitting or lying for one minute
 - Over the past ½ hour, not accounted for by room temperature or patient activity
@@ -7757,8 +7766,13 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Every located “may be reproduced freely” notice for the CIWA-Ar is a reproducer’s addition, in differing wordings; the 1989 article’s own permission text is unverified and behind a paywall. Rights that cannot be established are not rights, so the abbreviated descriptors this page used to show were withdrawn (2026-08-28) rather than left published on the strength of a second-hand notice.
 - Sullivan JT, Sykora K, Schneiderman J, Naranjo CA, Sellers EM. Assessment of alcohol withdrawal: the revised Clinical Institute Withdrawal Assessment for Alcohol scale (CIWA-Ar).
 - Obtain the complete, current CIWA-Ar from your institution’s withdrawal protocol and score from that form at the bedside, not from any teaching page. Administration teaching for this scale — how the assessment is conducted and what the score does and does not license — is authored separately and is not yet published here.
+- Your unit’s withdrawal protocol is the form you score from — it is the one your orders key off, and it is in the EHR. If you want to read the instrument outside a shift, the California Society of Addiction Medicine posts the 10-item scale with its scoring criteria.
+- Free, no registration; leaves this site for csam-asam.org. Note what this link is and is not: CSAM is a professional society posting a copy, not the rights-holder. The CIWA-Ar is the one scale here with no custodian still distributing it — the 1989 paper is paywalled and the originating Addiction Research Foundation publishes no current form, which is exactly why its rights could not be established and the descriptors came down. Score from your unit’s form.
 - symptom-triggered dosing (treat when CIWA ≥ ~8–10) usually beats fixed schedules in appropriate patients. CIWA assumes the patient can communicate — it is unreliable in delirium, intubation, or language barriers; use a protocol like RASS/PAWSS there.
 - buprenorphine induction generally requires objective withdrawal (often COWS ≥ ~8–12) to avoid precipitated withdrawal — follow your protocol. COWS guides supportive and agonist treatment; it does not by itself set doses.
+- The tally above is for learning the scale. NIDA publishes the COWS as a one-page PDF — all 11 items and the score bands — which is what you print, carry, and document from.
+- Download the COWS (PDF, NIDA)
+- Free, no registration; leaves this site for nida.nih.gov. Score at the bedside from that form or your unit’s, not from this page.
 - CIWA-Ar: Sullivan JT, Sykora K, Schneiderman J, Naranjo CA, Sellers EM. Assessment of alcohol withdrawal: the revised Clinical Institute Withdrawal Assessment for Alcohol scale (CIWA-Ar).
 - ). COWS: Wesson DR, Ling W. The Clinical Opiate Withdrawal Scale (COWS).
 - ). The CIWA-Ar is NOT reproduced here — its rights could not be established and its descriptors were withdrawn (2026-08-28). COWS items carry their published anchors and legal score values under a recorded interim waiver. Obtain the complete, current form from your institution and score at the bedside from that form, not from this page.
@@ -8139,7 +8153,7 @@ should independently manage high-risk consults.
 - **Slug:** `cl_reference.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `14_Tracks/Resident/cl_reference.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 994 words
+- **Length:** 1,114 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -8241,7 +8255,7 @@ The MS3 [Consult module](?page=exp_consult.md) teaches *what to notice and when 
 - **Act at QTc ≥500 ms, or an increase ≥60 ms** from baseline.
 - Replete **K⁺ >4.0 mEq/L** and **Mg²⁺ >2.0 mg/dL**; reconcile every QT-prolonging drug and interaction.
 - **If torsades actually fires:** call the code, give **IV magnesium sulfate 2 g** over 1–2 min *regardless of the serum magnesium level*, stop every offending drug, correct K⁺ and Ca²⁺, treat pause/bradycardia dependence with overdrive pacing or isoproterenol, and defibrillate if it degenerates to sustained VT/VF.
-- Higher-risk psychotropics: **IV haloperidol, ziprasidone, thioridazine (avoid), pimozide**; **citalopram capped at 20 mg** if age >60, hepatic impairment, or CYP2C19 poor metabolizer.
+- Higher-risk psychotropics: **IV haloperidol, droperidol, ziprasidone, thioridazine (avoid), pimozide** — and the one a psychiatry consult resident meets most often, **methadone**, whose effect is dose-dependent and is usually why the QTc is already long before anyone adds an antipsychotic, so get a **baseline ECG** before you layer one on top; **citalopram capped at 20 mg** if age >60, hepatic impairment, or CYP2C19 poor metabolizer.
 - Source: AHA scientific statement on drug-induced arrhythmias (Tisdale et al., *Circulation* 2020).
 
 ## Delirium — the numbers you'll be asked
@@ -8256,7 +8270,7 @@ The MS3 [Consult module](?page=exp_consult.md) teaches *what to notice and when 
 - Common contributors to incapacity, in rough order of frequency: cognitive disorders (dementia, delirium), then substance intoxication/withdrawal, then psychosis and severe depression — categories that overlap in the same patient, and many of them reversible. Treat the reversible cause and **reassess.**
 
 ## Psychopharmacology in organ dysfunction
-- **Liver disease:** prefer benzodiazepines cleared by conjugation — **"LOT": Lorazepam, Oxazepam, Temazepam** (no oxidative metabolism). **Duloxetine is contraindicated in chronic liver disease.**
+- **Liver disease:** prefer benzodiazepines cleared by conjugation — **"LOT": Lorazepam, Oxazepam, Temazepam** (no oxidative metabolism) — but even these accumulate in advanced disease and can tip a patient into hepatic encephalopathy, so they are the safer choice, not a free one. **Duloxetine is contraindicated in chronic liver disease.** **Valproate is contraindicated in significant hepatic impairment**, and is the one you will most often be asked to continue: valproate-induced **hyperammonaemic encephalopathy** presents as worsening delirium and can occur with normal LFTs, so send an **ammonia level**, not just a hepatic panel. Carbamazepine is a poor choice here for the same reason.
 - **Renal impairment:** dose-reduce **lithium, gabapentin/pregabalin, risperidone/paliperidone, amisulpride**; paliperidone is heavily renally cleared.
 
 ## The escalation line
@@ -8274,7 +8288,7 @@ Serotonin syndrome, NMS, lithium toxicity, and a prolonging QTc are all **"tell 
 - **Slug:** `systems_medlegal.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `14_Tracks/Resident/systems_medlegal.md`
 - **Governance:** status=`reviewed` · riskKind=`legal` · riskLevel=`high`
-- **Length:** 1,461 words
+- **Length:** 1,520 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -8338,7 +8352,7 @@ Serotonin syndrome, NMS, lithium toxicity, and a prolonging QTc are all **"tell 
 
 **Duty to protect, mandatory reporting, and confidentiality** — When a patient makes a credible threat against an identifiable person, the Tarasoff lineage may create a duty to protect (which can include warning, notifying police, hospitalizing, or otherwise intervening) — but the precise trigger and permitted actions are state-specific, so confirm Maine's standard and loop in your attending and risk management before acting. You are also a mandated reporter for suspected abuse or neglect of children, elders, and dependent/vulnerable adults; the reporting thresholds, agencies, and timeframes vary by state and must be verified locally. None of this dissolves the default of confidentiality — disclosures should be the narrowest needed to meet the legal duty or protect safety.
 
-**Disposition and systems-based practice** — Discharge planning starts at admission. Match the patient to the least restrictive level of care that is safe: inpatient → partial hospitalization (PHP) / intensive outpatient (IOP) → residential → assertive community treatment (ACT) or community case management → supportive housing or group home → routine outpatient. Reconcile medications, schedule a concrete first appointment (not just a phone number — scheduling itself raises follow-up rates), and do a warm handoff to the receiving team; aim for follow-up within 7 days given the elevated post-discharge suicide risk. Expect utilization-review and payer pressure on length of stay, and know the hard dispositions that consume inpatient days: homelessness, the need for guardianship, patients leaving against medical advice (AMA), and psychiatric boarding while awaiting placement. Working these systemic barriers — not just the symptoms — is core to the role.
+**Disposition and systems-based practice** — Discharge planning starts at admission. Match the patient to the least restrictive level of care that is safe — and note you are choosing along two axes, not one. **Treatment intensity** descends inpatient → residential → partial hospitalization (PHP) → intensive outpatient (IOP) → routine outpatient; residential is a 24-hour supervised setting and is therefore *more* restrictive than PHP or IOP, which the patient goes home from at night, so it is not a step down from them. **Wraparound supports** attach to any of those rather than sitting between them: assertive community treatment (ACT) or community case management, supportive housing or a group home, peer support. Reconcile medications, schedule a concrete first appointment (not just a phone number — scheduling itself raises follow-up rates), and do a warm handoff to the receiving team; aim for follow-up within 7 days given the elevated post-discharge suicide risk. Expect utilization-review and payer pressure on length of stay, and know the hard dispositions that consume inpatient days: homelessness, the need for guardianship, patients leaving against medical advice (AMA), and psychiatric boarding while awaiting placement. Working these systemic barriers — not just the symptoms — is core to the role.
 
 **What the resident does**
 - Writes the admission H&P and problem-oriented daily notes; documents explicit risk reasoning, not just scores.
@@ -8613,7 +8627,7 @@ Twenty trials and analyses that shaped modern prescribing, ranked by impact. Pap
 - **Slug:** `med_monitoring.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 583 words
+- **Length:** 629 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -8657,11 +8671,11 @@ Twenty trials and analyses that shaped modern prescribing, ranked by impact. Pap
 | Agent | Baseline | Ongoing | Watch for |
 |---|---|---|---|
 | **Lithium** | BMP (renal), TSH, calcium, β-hCG, EKG if cardiac risk | Level ~5 days after start/change (12-h trough; target ≈ 0.6–1.0, up to ~1.2 acute mania); renal + TSH periodically | Narrow therapeutic index; tremor/ataxia/confusion = toxicity; NSAIDs, thiazides, ACE-inhibitors raise levels; teratogen (Ebstein anomaly) |
-| **Valproate** | LFTs, CBC (platelets), β-hCG | Level; LFTs and CBC periodically | Hepatotoxicity, thrombocytopenia, hyperammonemia, pancreatitis; teratogen (neural-tube) — avoid in childbearing potential |
+| **Valproate** | LFTs, CBC (platelets), β-hCG | Level; LFTs and CBC periodically; **send an ammonia level if the patient gets confused** — hyperammonaemic encephalopathy occurs with normal LFTs | Hepatotoxicity, thrombocytopenia, hyperammonemia presenting as worsening delirium, pancreatitis; contraindicated in significant hepatic impairment; teratogen (neural-tube) — avoid in childbearing potential |
 | **Clozapine** | ANC (per prescribing information — the FDA eliminated the REMS in 2025) | ANC weekly ×6 months → every 2 weeks ×6 months → monthly (per the prescribing information; not REMS-enforced); metabolic panel; EKG | Severe neutropenia; **myocarditis (early — check troponin/CRP if symptomatic)**; constipation → ileus; dose-related seizures |
 | **Antipsychotics (metabolic)** | Weight/BMI, waist, fasting glucose/A1c, lipids, blood pressure | Glucose/lipids at ~12 weeks then annually; weight each visit; AIMS for tardive dyskinesia | Metabolic syndrome; EPS/akathisia; tardive dyskinesia; prolactin elevation if symptomatic |
 | **Carbamazepine** | CBC, LFTs, sodium, level; HLA-B*1502 in at-risk ancestry | Level, CBC, LFTs, sodium | Agranulocytosis/aplastic anemia; SIADH (hyponatremia); Stevens-Johnson (HLA-B*1502); auto-induction of its own metabolism |
-| **QT-prolonging agents** (e.g., ziprasidone, IV haloperidol, high-dose citalopram) | Baseline EKG (QTc); potassium, magnesium | Repeat QTc with dose changes; correct electrolytes | Torsades risk; respect citalopram dose ceilings |
+| **QT-prolonging agents** (e.g., ziprasidone, IV haloperidol, droperidol, high-dose citalopram — and **methadone**, often already on board) | Baseline EKG (QTc); potassium, magnesium | Repeat QTc with dose changes; correct electrolytes | Torsades risk; respect citalopram dose ceilings; check what the patient is already taking before adding a second QT-prolonging agent |
 | **Stimulants** | Blood pressure, heart rate, cardiac history screen; growth in children | BP/HR at visits; growth monitoring in children | Cardiovascular effects; appetite/growth suppression; misuse |
 | **SSRIs/SNRIs** | (Clinical) — no routine labs required | Clinical monitoring | Hyponatremia (elderly), bleeding risk, activation and suicidality monitoring under age 25, discontinuation syndrome |
 
@@ -18730,7 +18744,7 @@ skills rather than vague exposure.
 - **Slug:** `ethics_legal.md` · **Type:** md · **Sidebar:** hidden (deep link only)
 - **Source:** `03_Core_Topics/Ethics_Legal/ethics_law_confidentiality_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`legal` · riskLevel=`high`
-- **Length:** 1,084 words
+- **Length:** 1,186 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -18768,7 +18782,7 @@ skills rather than vague exposure.
 - **mse** — Document observations relevant to capacity, risk, coercion, intoxication, psychosis, mania, delirium, and ability to communicate a stable choice.
 - **safety** — Escalate identifiable threats, abuse concerns, imminent self-harm, grave disability, or urgent refusal of high-stakes medical care to the supervising team immediately.
 - **say** — I want to protect your privacy, and I also need to explain the few safety situations where clinicians must involve others.
-- **collateral** — Share the minimum necessary information; ask family or systems partners only what changes risk, capacity, disposition, or mandatory reporting duties.
+- **collateral** — Share the minimum necessary information; ask family or systems partners only what changes risk, capacity, disposition, or mandatory reporting duties — and treat substance-use-treatment information as a separate consent gate (42 CFR Part 2) before you repeat it to family or an outside provider.
 - **rounds** — Name the legal frame, the patient-specific facts, the local-policy dependency, and the supervising/faculty decision still needed.
 - **exam** — Capacity is clinical and decision-specific; competence is legal. Involuntary hospitalization does not automatically authorize involuntary medication.
 - **actions** — Open capacity tool; Open violence risk tool; Practice interpreter/culture family contact
@@ -18799,7 +18813,7 @@ skills rather than vague exposure.
 
 **In one line** — Psychiatry runs on confidentiality, but the exam and the ward turn on knowing its **limits** — when you *must* break it to protect a third party, when you *must* report abuse, and when you can treat or hold a patient *against their will* — always choosing the **least restrictive** option that keeps people safe.
 
-**Confidentiality and its limits** — Protect patient information by default. The recognized exceptions where disclosure is permitted or required include: a **serious, credible threat to an identifiable person** (duty to protect), **mandatory reporting of abuse**, **imminent danger to self**, certain communicable-disease reporting, and specific legal/court mandates. Disclose the **minimum necessary**. Note that HIPAA permits sharing for treatment, payment, and operations.
+**Confidentiality and its limits** — Protect patient information by default. The recognized exceptions where disclosure is permitted or required include: a **serious, credible threat to an identifiable person** (duty to protect), **mandatory reporting of abuse**, **imminent danger to self**, certain communicable-disease reporting, and specific legal/court mandates. Disclose the **minimum necessary**. Note that HIPAA permits sharing for treatment, payment, and operations — but do not take that as the whole rule on an inpatient unit, because two carve-outs sit on top of it. Records originating from a **federally assisted substance use disorder treatment program** fall under **42 CFR Part 2**, which carries its own consent requirements; recent rulemaking has been aligning Part 2 more closely with HIPAA, so confirm the current rule and whether your program is a Part 2 program rather than assuming either way. **Psychotherapy notes** are separately protected. The practical default: assume SUD-treatment information needs its own consent before you repeat it to an outside provider or a family member.
 
 **Duty to protect / warn (Tarasoff)** — When a patient makes a **serious threat of violence against a reasonably identifiable victim**, the clinician has a duty to take reasonable protective steps — which may include **warning the potential victim, notifying police, hospitalizing the patient, or intensifying treatment**. Specifics vary by state (some mandate warning, some permit it), but the tested principle is: *a specific threat to a specific person overrides confidentiality.*
 
@@ -22265,7 +22279,7 @@ _1398 further strings omitted — this surface embeds the build's front-door cat
 
 **Rationale.** Minor always requires parental consent, Emancipation by age, and HIPAA overrides minor confidentiality all misstate the legal framework. The page states: 'In many states, care for STIs, contraception, substance use, and some mental-health services' are exceptions to the general parental consent requirement. The correct answer acknowledges the exception while noting state variation.
 
-**Pearl.** In many states, minors can consent to substance use treatment without parental involvement — this is a recognized statutory exception; state law governs the specifics.
+**Pearl.** In many states, minors can consent to substance use treatment without parental involvement — a recognized statutory exception, with state law governing the specifics. Consent to treat is not consent to disclose: the records are separately governed by 42 CFR Part 2.
 
 ### qb_eth_009
 

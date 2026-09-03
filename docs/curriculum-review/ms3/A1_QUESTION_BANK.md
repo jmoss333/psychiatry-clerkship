@@ -692,7 +692,7 @@
 
 **Rationale.** Minor always requires parental consent, Emancipation by age, and HIPAA overrides minor confidentiality all misstate the legal framework. The page states: 'In many states, care for STIs, contraception, substance use, and some mental-health services' are exceptions to the general parental consent requirement. The correct answer acknowledges the exception while noting state variation.
 
-**Pearl.** In many states, minors can consent to substance use treatment without parental involvement — this is a recognized statutory exception; state law governs the specifics.
+**Pearl.** In many states, minors can consent to substance use treatment without parental involvement — a recognized statutory exception, with state law governing the specifics. Consent to treat is not consent to disclose: the records are separately governed by 42 CFR Part 2.
 
 ### qb_eth_009
 
