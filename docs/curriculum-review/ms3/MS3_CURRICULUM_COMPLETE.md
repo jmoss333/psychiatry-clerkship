@@ -3,7 +3,7 @@
 # MS3 curriculum — complete content transcript for clinical review
 
 **Site:** `une-ms3-psychiatry` · **Audience:** MS3 — UNE medical students
-**Generated:** 2026-09-03 from build `6f43291` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
+**Generated:** 2026-09-03 from build `5892783` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
 
 ## Who this is for
 
@@ -19,7 +19,7 @@ This transcript is assembled from the **built site**, not the source tree, so it
 | Narrative pages (markdown) | 80 |
 | Interactive tools | 23 |
 | Deep-link-only (hidden) surfaces | 10 |
-| Words of narrative curriculum | 100,777 |
+| Words of narrative curriculum | 100,840 |
 | Practice question-bank items | 192 |
 | Audio-companion quiz decks / questions | 79 / 437 |
 | Communication cases | 12 |
@@ -83,7 +83,7 @@ High-yield places to concentrate: the `topic_meta` **can't-miss**, **rule-out** 
 
 # MS3 · Navigation map
 
-Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-03 @ `6f43291`.
+Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-03 @ `5892783`.
 
 ## Orientation  *(pinned)*
 
@@ -142,7 +142,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | # | Title | Slug | Type | Sidebar | Governance | Source path | Words |
 |---|---|---|---|---|---|---|---|
 | 1 | Suicide Risk & Safety | `pg_suicide.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `14_Tracks/MS3/Student_Ready_Pack/02_pocket_guides/suicide_risk_and_safety_pocket_card.md` | 868 |
-| 2 | Suicide Risk & Safety Planning | `suicide.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `04_Acute_and_Safety/Suicide_Risk_and_Safety_Planning/suicide_risk_safety_planning_inpatient_teaching.md` | 994 |
+| 2 | Suicide Risk & Safety Planning | `suicide.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `04_Acute_and_Safety/Suicide_Risk_and_Safety_Planning/suicide_risk_safety_planning_inpatient_teaching.md` | 1057 |
 | 3 | Columbia C-SSRS — Official Form & Training | `cssrs.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `04_Acute_and_Safety/Suicide_Risk_and_Safety_Planning/columbia-cssrs-screener.html` |  |
 | 4 | Violence Risk | `violence.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `04_Acute_and_Safety/Violence_Risk/violence_risk_inpatient_teaching.md` | 1091 |
 | 5 | Violence Risk (FRST) | `violence.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `04_Acute_and_Safety/Violence_Risk/violence-risk-one-pager.html` |  |
@@ -4563,7 +4563,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Emergency services — 911. 24/7. For imminent danger to life.
 - Contacts verified 2026-07-27 against official sources. Maintained in crisis_resources.json ; do not edit these numbers inline.
 
-**Authored clinical strings (24):**
+**Authored clinical strings (27):**
 
 - Little interest or pleasure in doing things
 - Feeling down, depressed, or hopeless
@@ -4588,7 +4588,10 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Two of the screeners named in the clerkship objectives. Tap the response for each item to score live. These support — they don't replace — a clinical interview, and a positive screen warrants a focused assessment.
 - PHQ-9 bands: 0–4 minimal · 5–9 mild · 10–14 moderate · 15–19 moderately severe · 20–27 severe. ≥10 has good sensitivity/specificity for major depression. Always review item 9 (self-harm) regardless of total.
 - GAD-7 bands: 0–4 minimal · 5–9 mild · 10–14 moderate · 15–21 severe. ≥10 is the usual threshold for further evaluation of generalized anxiety; it also screens reasonably for panic, social anxiety, and PTSD.
-- Educational tool for clinical trainees. PHQ-9 and GAD-7 are freely available public instruments (Spitzer, Kroenke, Williams). Scoring is a screen, not a diagnosis — confirm clinically and follow your team's protocols. No PHI is stored. Joshua Moss, MD | Psychiatrist
+- The tally here is for learning the instruments. Pfizer publishes the whole PHQ family and the GAD-7 — the printable forms, the scoring instructions and translations in roughly 80 languages — which is what you hand a patient and document from.
+- PHQ-9 & GAD-7 at phqscreeners.com →
+- Free, no registration; leaves this site for phqscreeners.com. Use your clinic’s current version where one is in the EHR — that is the copy your documentation refers to.
+- Educational tool for clinical trainees. PHQ-9 and GAD-7 are published by Pfizer (Spitzer, Kroenke, Williams) and are the two instruments this library still reproduces; the official forms are linked above. Scoring is a screen, not a diagnosis — confirm clinically and follow your team's protocols. No PHI is stored. Joshua Moss, MD | Psychiatrist
 
 ---
 
@@ -7539,7 +7542,7 @@ directly and then turn answers into a real risk formulation.
 - **Slug:** `suicide.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `04_Acute_and_Safety/Suicide_Risk_and_Safety_Planning/suicide_risk_safety_planning_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 994 words
+- **Length:** 1,057 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -7600,7 +7603,7 @@ directly and then turn answers into a real risk formulation.
 
 **Mind the high-risk windows.** Risk is not flat across the admission. The peri-discharge and immediate post-discharge period is the highest-risk window of the entire episode — the transition, not the acute inpatient stay, is when many deaths occur. Treat discharge planning as a safety intervention, not paperwork.
 
-**Management.** The most evidence-based single intervention is **means restriction** — counsel the patient and family to remove or secure firearms and lethal medication before discharge; reducing access to a lethal method reduces deaths. On the unit, determine the level of care (e.g., 1:1 observation, environmental safety) with your supervisor. Build a collaborative **safety plan** (Stanley–Brown format): the patient's personal warning signs → internal coping strategies → people and settings that provide distraction → people to ask for help → professionals and crisis resources → and making the environment safer through means restriction. A safety plan is a working tool the patient co-authors — it is **not** a "no-suicide contract," which has no evidence of protecting anyone and can create false reassurance. Treat the underlying disorder in parallel; where indicated, remember lithium and clozapine carry specific anti-suicidal evidence.
+**Management.** The most evidence-based single intervention is **means restriction** — counsel the patient and family to remove or secure firearms and lethal medication before discharge; reducing access to a lethal method reduces deaths. On the unit, determine the level of care (e.g., 1:1 observation, environmental safety) with your supervisor. Build a collaborative **safety plan** (Stanley–Brown format): the patient's personal warning signs → internal coping strategies → people and settings that provide distraction → people to ask for help → professionals and crisis resources → and making the environment safer through means restriction. A safety plan is a working tool the patient co-authors — it is **not** a "no-suicide contract," which has no evidence of protecting anyone and can create false reassurance. The form itself, and the authors' training in the intervention, come from Stanley and Brown directly at [suicidesafetyplan.com](https://suicidesafetyplan.com/) — this library teaches the six steps and never reproduces or programs the form, because the authors require written permission to alter it or place it in an EMR. Treat the underlying disorder in parallel; where indicated, remember lithium and clozapine carry specific anti-suicidal evidence.
 
 > <div class="crisis-block-hook" hidden></div>
 >
@@ -7629,7 +7632,7 @@ directly and then turn answers into a real risk formulation.
 - Use a collaborative safety plan, not a no-suicide contract; contracts are not protective.
 - The post-discharge period is the highest-risk window — treat the transition as the intervention.
 
-**Pair with** the interactive C-SSRS screener, the Suicide Risk & Safety pocket card, the Mood page, and the Decisional Capacity module.
+**Pair with** the C-SSRS reference page (which links Columbia's official forms and free training — the screener itself is not reproduced here), the Suicide Risk & Safety pocket card, the Mood page, and the Decisional Capacity module.
 
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
 
@@ -7654,10 +7657,13 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Columbia C-SSRS — Official Form & Training Reviewed by Joshua Moss, MD on 2026-06-30
 - Skip to content Acute & Safety · Suicide Risk
 - Columbia C-SSRS
-- This page no longer reproduces the C-SSRS screener. Use your institution’s current approved form to screen and document.
+- This page no longer reproduces the C-SSRS screener. Use your institution’s current approved form to screen and document — and if you need the instrument itself, Columbia gives it to you directly, below.
+- Get the official form
+- The Columbia Lighthouse Project distributes the Columbia Protocol itself. Choose your setting and it assembles a download: the Screener , the Full Lifetime/Recent scale, and SAFE-T with C-SSRS , with triage categories.
+- Download the Columbia Protocol forms → Free training (~20 min) → Free for healthcare, community and nonprofit or federally funded research use, and no mental-health training is required to administer it. Both links leave this site for cssrs.columbia.edu — the library points you to the custodian rather than hosting a copy of the scale.
 - Why the screener was removed. The Columbia Suicide Severity Rating Scale is copyrighted and is licensed and distributed through the Columbia Lighthouse Project. Under this library’s reproduction rule (Option A, 2026-08-23), copyrighted instruments are not reproduced here: the six screener questions and their branching logic have been withdrawn (WP-06R-a). Reproducing the screener — or programming its form — on a public teaching site is outside what this library ships.
 - Primary source. Posner K, Brown GK, Stanley B, et al. The Columbia–Suicide Severity Rating Scale: initial validity and internal consistency findings from three multisite studies with adolescents and adults. Am J Psychiatry. 2011;168(12):1266–77. PMID 22193671 .
-- Official version and free training. The instrument, its translations, and free training are published by The Columbia Lighthouse Project at cssrs.columbia.edu . Screen and document from your institution’s current approved form and triage protocol at the bedside, not from any teaching page.
+- Official version and free training. The instrument, its translations in more than 100 languages, and free training are published by The Columbia Lighthouse Project at cssrs.columbia.edu — linked above. At the bedside, screen and document from your institution’s current approved form and triage protocol, not from any teaching page and not from a copy you downloaded yourself.
 - Administration teaching for this instrument — how the interview is conducted, why ideation and behavior are scored separately, and what a screen does and does not license — is authored separately and is not yet published here. Any positive screen warrants discussion with your supervising clinician now, per protocol.
 - Joshua Moss, MD | Psychiatrist
 - If someone is in crisis
@@ -8120,11 +8126,14 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Bush-Francis Catatonia Scale (BFCRS) — Official Form & Training Reviewed by Joshua Moss, MD on 2026-06-30
 - Skip to content Catatonia
 - Bush-Francis Catatonia Rating Scale
-- This page no longer reproduces the BFCRS. Use your unit’s current approved form to screen and score.
+- This page no longer reproduces the BFCRS. Use your unit’s current approved form to screen and score — and if you need the scale itself, URMC publishes it, its coding guide and its training videos free, below.
+- Get the official scale and training
+- URMC publishes the BFCRS with more than this page ever carried: the scale itself , the Training Manual & Coding Guide that explains every item, and standardized-patient videos — a normal exam plus the hypokinetic, parakinetic and hyperkinetic subtypes — with a short clip for scoring each individual item.
+- Open the BFCRS & coding guide → Training modules & videos → Free, no registration. Both links leave this site for urmc.rochester.edu. The library points you to URMC rather than hosting a copy — that is the same term (prior written consent to distribute) that took the items off this page, so watching their exam videos is both the compliant route and the better one for learning the exam.
 - Why the items were removed. The BFCRS is published by the University of Rochester Medical Center under site-wide Web Terms of Use stating that the contents “may not be distributed, modified, reproduced, or used, in whole or in part without the prior written consent of the University of Rochester Medical Center,” with use granted only for “personal non-commercial use.” No instrument-specific licence is published alongside the scale. Reproducing all 23 items and their anchors on a public teaching site is outside that grant, so they have been withdrawn pending written permission.
 - Primary source. Bush G, Fink M, Petrides G, Dowling F, Francis A. Catatonia. I. Rating scale and standardized examination. Acta Psychiatr Scand. 1996;93(2):129–36. PMID 8686483 .
-- Official version and training. The scale, its training materials and the standardized examination are published at the URMC BFCRS site . Score from your institution’s current approved form at the bedside, not from any teaching page.
-- Administration teaching for this scale — how the examination is conducted and what the score does and does not license — is authored separately and is not yet published here.
+- Official version and training. The scale, its training materials and the standardized examination are published at the URMC BFCRS site — linked above. Score from your institution’s current approved form at the bedside, not from any teaching page.
+- Administration teaching for this scale — how the examination is conducted and what the score does and does not license — is authored separately and is not yet published here. Until it is, URMC’s own coding guide and exam videos are the better teacher anyway: they show the manoeuvres, which an anchor ladder never did.
 - Joshua Moss, MD | Psychiatrist
 
 ---
@@ -8346,7 +8355,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Withdrawal: COWS Tool · CIWA-Ar Official Form & Training Reviewed by Joshua Moss, MD on 2026-06-30
 - Skip to content
 
-**Authored clinical strings (68):**
+**Authored clinical strings (73):**
 
 - Measured after the patient has been sitting or lying for one minute
 - Over the past ½ hour, not accounted for by room temperature or patient activity
@@ -8409,8 +8418,13 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Every located “may be reproduced freely” notice for the CIWA-Ar is a reproducer’s addition, in differing wordings; the 1989 article’s own permission text is unverified and behind a paywall. Rights that cannot be established are not rights, so the abbreviated descriptors this page used to show were withdrawn (2026-08-28) rather than left published on the strength of a second-hand notice.
 - Sullivan JT, Sykora K, Schneiderman J, Naranjo CA, Sellers EM. Assessment of alcohol withdrawal: the revised Clinical Institute Withdrawal Assessment for Alcohol scale (CIWA-Ar).
 - Obtain the complete, current CIWA-Ar from your institution’s withdrawal protocol and score from that form at the bedside, not from any teaching page. Administration teaching for this scale — how the assessment is conducted and what the score does and does not license — is authored separately and is not yet published here.
+- Your unit’s withdrawal protocol is the form you score from — it is the one your orders key off, and it is in the EHR. If you want to read the instrument outside a shift, the California Society of Addiction Medicine posts the 10-item scale with its scoring criteria.
+- Free, no registration; leaves this site for csam-asam.org. Note what this link is and is not: CSAM is a professional society posting a copy, not the rights-holder. The CIWA-Ar is the one scale here with no custodian still distributing it — the 1989 paper is paywalled and the originating Addiction Research Foundation publishes no current form, which is exactly why its rights could not be established and the descriptors came down. Score from your unit’s form.
 - symptom-triggered dosing (treat when CIWA ≥ ~8–10) usually beats fixed schedules in appropriate patients. CIWA assumes the patient can communicate — it is unreliable in delirium, intubation, or language barriers; use a protocol like RASS/PAWSS there.
 - buprenorphine induction generally requires objective withdrawal (often COWS ≥ ~8–12) to avoid precipitated withdrawal — follow your protocol. COWS guides supportive and agonist treatment; it does not by itself set doses.
+- The tally above is for learning the scale. NIDA publishes the COWS as a one-page PDF — all 11 items and the score bands — which is what you print, carry, and document from.
+- Download the COWS (PDF, NIDA)
+- Free, no registration; leaves this site for nida.nih.gov. Score at the bedside from that form or your unit’s, not from this page.
 - CIWA-Ar: Sullivan JT, Sykora K, Schneiderman J, Naranjo CA, Sellers EM. Assessment of alcohol withdrawal: the revised Clinical Institute Withdrawal Assessment for Alcohol scale (CIWA-Ar).
 - ). COWS: Wesson DR, Ling W. The Clinical Opiate Withdrawal Scale (COWS).
 - ). The CIWA-Ar is NOT reproduced here — its rights could not be established and its descriptors were withdrawn (2026-08-28). COWS items carry their published anchors and legal score values under a recorded interim waiver. Obtain the complete, current form from your institution and score at the bedside from that form, not from this page.
