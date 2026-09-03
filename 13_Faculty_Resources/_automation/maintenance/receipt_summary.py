@@ -53,6 +53,22 @@ HEALTHY_ROW_STATE = "success"
 # Cap the named rows so one bad morning cannot produce a 200-column log line.
 MAX_ROWS = 4
 
+# States that mean "not fresh YET" rather than "wrong". The heartbeat does not
+# block the gate on these, so they are named last and are the first thing the
+# MAX_ROWS cap drops.
+#
+# Why the ranking exists: on 2026-09-03 the line read
+#   unhealthy=ci.yml:pending_first_run,maintenance-governance-digest.yml:pending_first_run,
+#             maintenance-production-canary.yml:failed,surveillance-citations.yml:failed,+1 more
+# Rows are alphabetical, so two NON-blocking rows took half the cap and pushed a
+# genuinely blocking row into "+1 more", where nobody could see it. The reader
+# was left to guess which of the named rows actually stopped the gate.
+#
+# Note this list is deliberately the SMALL one. Anything not named here -- an
+# unrecognised or newly added state included -- ranks as blocking and is shown
+# first, so the module keeps failing toward telling you more, not less.
+DEFERRED_ROW_STATES = frozenset({"pending_first_run"})
+
 # The gate value both callers treat as healthy.
 READY_GATE = "ready"
 
@@ -96,11 +112,19 @@ def summarize(receipt, label):
     # Tabular receipts (workflow_heartbeat) carry one row per watched workflow.
     rows = receipt.get("workflows")
     if isinstance(rows, list):
-        unhealthy = [
-            f"{_safe(row.get('workflowFile'))}:{_safe(row.get('state'))}"
-            for row in rows
-            if isinstance(row, dict) and row.get("state") != HEALTHY_ROW_STATE
-        ]
+        blocking = []
+        deferred = []
+        for row in rows:
+            if not isinstance(row, dict) or row.get("state") == HEALTHY_ROW_STATE:
+                continue
+            state = row.get("state")
+            entry = f"{_safe(row.get('workflowFile'))}:{_safe(state)}"
+            if isinstance(state, str) and state in DEFERRED_ROW_STATES:
+                deferred.append(entry)
+            else:
+                blocking.append(entry)
+        # Blocking rows first, each group otherwise keeping the receipt's order.
+        unhealthy = blocking + deferred
         if unhealthy:
             shown = ",".join(unhealthy[:MAX_ROWS])
             if len(unhealthy) > MAX_ROWS:
