@@ -1,0 +1,140 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Canonical clinical claims registry",
+  "description": "One authoritative statement per high-stakes clinical fact, plus the pages that must agree with it. Inverts the maintenance model: instead of every page needing to stay right on its own, a small set of attested statements is enforced across the library. Vocabulary deliberately mirrors reviewed.schema.json so faculty attestation means the same thing in both files.",
+  "type": "object",
+  "required": ["schemaVersion", "owner", "claims"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "owner": {"type": "string", "minLength": 1, "maxLength": 80},
+    "note": {"type": "string"},
+    "claims": {
+      "type": "object",
+      "propertyNames": {"pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"},
+      "additionalProperties": {"$ref": "#/definitions/claim"}
+    }
+  },
+  "definitions": {
+    "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "isoDate": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"},
+    "guard": {
+      "type": "object",
+      "required": ["pattern", "why"],
+      "additionalProperties": false,
+      "properties": {
+        "pattern": {"type": "string", "minLength": 1, "maxLength": 400},
+        "why": {"type": "string", "minLength": 1, "maxLength": 240},
+        "caughtOn": {"$ref": "#/definitions/isoDate"}
+      }
+    },
+    "evidenceRef": {
+      "type": "object",
+      "required": ["sourceId", "tier"],
+      "additionalProperties": false,
+      "properties": {
+        "sourceId": {"type": "string", "minLength": 1, "maxLength": 120},
+        "sourceSpan": {"type": "string", "minLength": 1, "maxLength": 600},
+        "tier": {"enum": ["guideline", "trial", "meta-analysis", "review", "regulatory", "local-policy"]},
+        "locator": {"type": "string", "maxLength": 120}
+      }
+    },
+    "appliesToEntry": {
+      "type": "object",
+      "required": ["path"],
+      "additionalProperties": false,
+      "properties": {
+        "path": {"type": "string", "minLength": 1, "maxLength": 300},
+        "contentHashAtReview": {"$ref": "#/definitions/sha256"},
+        "note": {"type": "string", "maxLength": 240}
+      }
+    },
+    "claim": {
+      "type": "object",
+      "required": ["topic", "whyCanonical", "status", "risk", "at", "by", "appliesTo", "guards"],
+      "additionalProperties": false,
+      "properties": {
+        "topic": {"type": "string", "minLength": 1, "maxLength": 120},
+        "statement": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 600,
+          "description": "The single authoritative learner-facing assertion. Only faculty may write this; it is required once status is 'reviewed'."
+        },
+        "whyCanonical": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300,
+          "description": "Why this fact earns a registry slot: what goes wrong across pages when it drifts."
+        },
+        "status": {"enum": ["pending", "reviewed"]},
+        "risk": {
+          "type": "object",
+          "required": ["kind", "level"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": {"enum": ["general", "clinical", "legal", "formulary", "local-policy"]},
+            "level": {"enum": ["low", "moderate", "high"]}
+          }
+        },
+        "reason": {"type": "string", "minLength": 1, "maxLength": 240},
+        "at": {"$ref": "#/definitions/isoDate"},
+        "by": {"type": "string", "minLength": 1, "maxLength": 80},
+        "evidence": {"type": "array", "items": {"$ref": "#/definitions/evidenceRef"}},
+        "evidenceThrough": {"$ref": "#/definitions/isoDate"},
+        "appliesTo": {
+          "type": "array",
+          "items": {"$ref": "#/definitions/appliesToEntry"},
+          "description": "Pages that must agree with the statement. A page whose contentHash no longer matches contentHashAtReview is flagged for re-check — semantic drift becomes a change-detection problem, which is tractable."
+        },
+        "guards": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "forbidden": {"type": "array", "items": {"$ref": "#/definitions/guard"}},
+            "required": {"type": "array", "items": {"$ref": "#/definitions/guard"}}
+          },
+          "description": "Mechanical checks. 'forbidden' is where a corrected error becomes permanent: once a wrong phrasing is caught, it can never come back silently."
+        },
+        "supersedesCorrection": {
+          "type": "string",
+          "maxLength": 120,
+          "description": "id of the how_we_know_teaching.json correction this claim locks down, if any."
+        }
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"status": {"const": "pending"}}, "required": ["status"]},
+          "then": {
+            "required": ["reason"],
+            "properties": {"by": {"const": "Pending faculty review"}}
+          }
+        },
+        {
+          "if": {"properties": {"status": {"const": "reviewed"}}, "required": ["status"]},
+          "then": {
+            "required": ["statement", "evidence"],
+            "properties": {
+              "by": {"not": {"const": "Pending faculty review"}},
+              "evidence": {"minItems": 1}
+            }
+          }
+        },
+        {
+          "not": {
+            "properties": {
+              "risk": {
+                "properties": {
+                  "kind": {"const": "general"},
+                  "level": {"const": "high"}
+                },
+                "required": ["kind", "level"]
+              }
+            },
+            "required": ["risk"]
+          }
+        }
+      ]
+    }
+  }
+}
