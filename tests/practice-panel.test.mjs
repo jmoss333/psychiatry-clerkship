@@ -95,9 +95,10 @@ const F = new Function('esc', 'ctaHref', 'ctaAttrs', 'FD_INDEX', 'FD_TOOL_REGIST
      buildTpl: buildTpl, buildPracticeTools: buildPracticeTools, buildWorkflow: buildWorkflow,
      practiceToolLabel: practiceToolLabel, practiceIsRights: practiceIsRights,
      practiceActionLabel: practiceActionLabel, hasPracticeTpl: hasPracticeTpl,
-     PRACTICE_MODE_LABELS: PRACTICE_MODE_LABELS, WF_FIELDS: WF_FIELDS,
-     WF_STAGE_LABELS: WF_STAGE_LABELS, practiceCaseLabel: practiceCaseLabel,
-     practiceIsSafe: practiceIsSafe, practiceRegistryTools: practiceRegistryTools };`,
+     WF_FIELDS: WF_FIELDS, WF_STAGE_LABELS: WF_STAGE_LABELS,
+     practiceCaseLabel: practiceCaseLabel, practiceIsSafe: practiceIsSafe,
+     practiceRegistryTools: practiceRegistryTools, practicePrimary: practicePrimary,
+     practiceReason: practiceReason, practiceLinkedTools: practiceLinkedTools };`,
 )(esc, ctaHref, ctaAttrs, FD_INDEX, TOOL_REGISTRY, {});
 
 const topicEntries = Object.entries(TOPIC_META).filter(([, m]) => m && typeof m === 'object');
@@ -158,7 +159,7 @@ test("buildWorkflow's actions row also refuses the author's rights-reference lab
 test('a non-rights tool still keeps the author-written cta label', () => {
   const html = F.buildPracticeTools(
     { cta: [{ label: 'Open the Agitation Ladder trainer', href: 'tools/rp-agitation.html' }] },
-    'agitation.md', 'ward',
+    'agitation.md',
   );
   assert.ok(html.includes('Open the Agitation Ladder trainer'));
 });
@@ -255,7 +256,7 @@ test('declared links lead and an authored-only link follows, neither dropped', (
   // The two sources disagree in opposite directions, so the rule is reconcile, not union-and-
   // shrug: med_monitoring.md is declared for interaction-cards and one-patient-six-weeks, and
   // an author adding screeners.html must not displace either.
-  const html = F.buildPracticeTools({ relatedTools: ['screeners.html'] }, 'med_monitoring.md', 'ward');
+  const html = F.buildPracticeTools({ relatedTools: ['screeners.html'] }, 'med_monitoring.md');
   const order = [...html.matchAll(/href="\?tool=([^"&]+)"/g)].map((x) => decodeURIComponent(x[1]));
   for (const declared of ['interaction-cards.html', 'one-patient-six-weeks.html']) {
     assert.ok(order.includes(declared), `${declared} is registry-declared and must appear`);
@@ -280,7 +281,6 @@ const AUDIENCE_TOKEN_RE = /MS3|clerkship|student|shelf|resident|UNE|MMC|Sanford/
 
 test('every label constant the panel owns is audience-neutral', () => {
   const owned = [
-    ...Object.values(F.PRACTICE_MODE_LABELS),
     ...Object.values(F.WF_STAGE_LABELS),
     ...F.WF_FIELDS.map(([, label]) => label),
   ];
@@ -295,7 +295,6 @@ test('panel chrome carries no audience token when content is neutral', () => {
   const html = F.buildTpl({
     tldr: 'One line.', points: ['A point.'], read: 4, hy: true, safetyLevel: 'high',
     evidenceIds: ['e1'], facultyReview: { status: 'reviewed', lastReviewed: '2026-01-01' },
-    workflowModes: ['ward', 'shelf', 'family', 'safety', '5min'],
     workflowStages: ['encounter', 'diagnosis', 'safety', 'treatment', 'communication', 'family', 'team', 'exam'],
     clinicalWorkflow: {
       ask: 'Ask.', mse: 'Observe.', safety: 'Escalate.', say: 'Say.', collateral: 'Call.',
@@ -309,6 +308,104 @@ test('panel chrome carries no audience token when content is neutral', () => {
   }, 'synthetic.md');
   const found = html.match(AUDIENCE_TOKEN_RE);
   assert.equal(found, null, `panel chrome names an audience: ${found && found[0]}`);
+});
+
+// ---- WP-D · one reason, one primary action ----------------------------------------------------
+
+const NEVER = () => false;  // no drill done yet — deterministic stand-in for cw_srs_v1
+
+test('the fake mode UI is gone from the shell', () => {
+  for (const dead of ['practiceModeCfg', 'practiceModeText', 'sortPracticeTools',
+    'sortPracticeCases', '__casePriority', 'PRACTICE_MODE_LABELS']) {
+    assert.ok(!new RegExp(`(function|var)\\s+${dead}\\b`).test(source),
+      `${dead} implied a mode filter that never existed — it must not come back`);
+  }
+  assert.doesNotMatch(source, /tpl-chip mode/,
+    'the mode chips rendered like a segmented control with no handler behind them');
+});
+
+test('every page shows at most one primary action, and it is one the page already linked', () => {
+  let withPrimary = 0;
+  for (const [ref, m] of topicEntries) {
+    if (!F.hasPracticeTpl(m)) continue;
+    const primary = F.practicePrimary(m, ref, 'encode', NEVER);
+    if (!primary) continue;
+    withPrimary += 1;
+    const html = F.buildTpl(m, ref);
+    assert.equal(html.split('>Do this next<').length - 1, 1, `${ref} must render exactly one primary`);
+    const caseId = (primary.href.match(/[?&]case=([^&#]+)/) || [])[1];
+    if (caseId) {
+      // A drill's link IS its case id; the page need not list communication-practice.html.
+      assert.ok((m.communicationCases || []).includes(decodeURIComponent(caseId)),
+        `${ref}: promoted a drill the page does not list`);
+    } else {
+      const slug = decodeURIComponent((primary.href.match(/[?&]tool=([^&#]+)/) || [])[1]);
+      assert.ok(new Set(F.practiceLinkedTools(m, ref)).has(slug),
+        `${ref}: promoting ${slug} must not introduce a link the page did not have`);
+    }
+  }
+  assert.ok(withPrimary >= 60, `most pages should get a primary action, got ${withPrimary}`);
+});
+
+test('a rights reference is never the primary action', () => {
+  for (const [ref, m] of topicEntries) {
+    if (!F.hasPracticeTpl(m)) continue;
+    const primary = F.practicePrimary(m, ref, 'encode', NEVER);
+    if (!primary) continue;
+    const slug = decodeURIComponent((primary.href.match(/[?&]tool=([^&#]+)/) || [])[1] || '');
+    assert.ok(!RIGHTS_REFS.includes(slug), `${ref} promoted ${slug}, which is a reference not an action`);
+  }
+});
+
+test('the primary is deterministic for a fixed phase, and the phase tilts it to retrieval', () => {
+  const m = { safetyLevel: 'high', relatedTools: ['violence.html', 'review.html'], tldr: 'x' };
+  const steady = F.practicePrimary(m, 'synthetic.md', 'encode', NEVER);
+  assert.equal(steady.href, '?tool=violence.html', 'away from the exam, safety work leads');
+  for (const phase of ['taper', 'consolidate']) {
+    assert.equal(F.practicePrimary(m, 'synthetic.md', phase, NEVER).href, '?tool=review.html',
+      `in ${phase} the page's own retrieval tool leads`);
+  }
+  // Same inputs, same answer — no clock, no storage inside the ranking itself.
+  assert.deepEqual(F.practicePrimary(m, 'synthetic.md', 'encode', NEVER), steady);
+});
+
+test('a drill already done is not offered as the primary', () => {
+  const m = { communicationCases: ['suicide_direct_question_001', 'psychosis_validation_001'] };
+  const fresh = F.practicePrimary(m, 'synthetic.md', 'encode', NEVER);
+  assert.match(fresh.href, /case=suicide_direct_question_001/);
+  const doneFirst = (id) => id === 'suicide_direct_question_001';
+  assert.match(F.practicePrimary(m, 'synthetic.md', 'encode', doneFirst).href,
+    /case=psychosis_validation_001/, 'the next unfinished drill should take over');
+});
+
+test('no sentence appears twice in one panel', () => {
+  // The old "Why today" line printed clinicalWorkflow.rounds, which the grid renders verbatim.
+  for (const [ref, m] of topicEntries) {
+    if (!F.hasPracticeTpl(m)) continue;
+    const html = F.buildTpl(m, ref);
+    const cw = m.clinicalWorkflow || {};
+    for (const field of ['rounds', 'ask', 'exam', 'safety', 'say', 'collateral', 'mse']) {
+      const v = cw[field];
+      if (!v || String(v).length < 25) continue;
+      assert.equal(html.split(esc(v)).length - 1, 1,
+        `${ref}: clinicalWorkflow.${field} is rendered more than once`);
+    }
+    if (m.cant) {
+      assert.equal(html.split(esc(m.cant)).length - 1, 1, `${ref}: the can't-miss is rendered twice`);
+    }
+  }
+});
+
+test('the reason is the promoted can\'t-miss, never a copy of a grid row', () => {
+  for (const [ref, m] of topicEntries) {
+    const reason = F.practiceReason(m);
+    if (!reason) continue;
+    assert.equal(reason, m.cant, `${ref}: the reason must be the can't-miss`);
+    const cw = m.clinicalWorkflow || {};
+    for (const field of ['rounds', 'ask', 'exam']) {
+      assert.notEqual(reason, cw[field], `${ref}: the reason must not repeat clinicalWorkflow.${field}`);
+    }
+  }
 });
 
 // ---- D-1 · the collapsed summary is untouched ---------------------------------------------------

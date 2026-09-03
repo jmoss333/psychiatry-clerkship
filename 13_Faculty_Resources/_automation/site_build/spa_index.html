@@ -997,31 +997,80 @@
     seen[key]=1;
     out.push('<a class="practice-action is-reference" href="'+esc(href)+'"'+ctaAttrs(href)+'>'+esc(label||'Open')+'</a>');
   }
-  var PRACTICE_MODE_LABELS={ward:'Ward',shelf:'Exam',family:'Family',safety:'Safety','5min':'5 min'};
-  function practiceModeCfg(mode){ return {label:PRACTICE_MODE_LABELS[mode]||'Ward',tools:[],stages:[]}; }
-  function practiceModeText(m,mode){
-    var cw=(m&&m.clinicalWorkflow)||{}, cfg=practiceModeCfg(mode), val='';
-    if(mode==='safety')val=cw.safety||m.cant||cw.ask||'Use this page to clarify risk, escalation, and supervision before acting.';
-    else if(mode==='family')val=cw.collateral||cw.say||'Use this page to prepare collateral, family communication, boundaries, and discharge reality.';
-    else if(mode==='shelf')val=cw.exam||cw.rounds||'Use this page to convert the clinical topic into exam-ready distinctions and active recall.';
-    else if(mode==='5min')val=cw.say||cw.ask||m.tldr||'Use this page for one concrete question, phrase, or review item before the next task.';
-    else val=cw.rounds||cw.ask||'Use this page to prepare for the next encounter, rounds update, or treatment decision.';
-    return cfg.label+' mode: '+val;
+  /* WP-D. The panel had a mode system that did not exist: `mode` was hardcoded 'ward',
+     practiceModeCfg returned empty priorities so sortPracticeTools was a no-op sort,
+     window.__casePriority was assigned nowhere so sortPracticeCases was too, and the
+     .tpl-chip.mode chips rendered like a segmented control with no handler behind them.
+     All of it is gone. What replaces it is one ranked action, which is what a learner with
+     four minutes before rounds actually needs. */
+
+  /* The old "Why today" line printed clinicalWorkflow.rounds, which buildWorkflow re-renders
+     verbatim as the grid's Rounds row -- the same sentence twice on 67 pages. Every other
+     topic_meta text field is rendered somewhere in this panel too, so no field can be copied
+     up here without repeating itself. The can't-miss is the exception worth promoting: it is
+     the highest-value sentence on a safety page and it is self-contained, so it moves to the
+     top and its callout below is suppressed. Pages without one get no line at all, which is
+     better than the generic sentence 7 pages used to print. */
+  function practiceReason(m){ return (m&&m.cant)?String(m.cant):''; }
+
+  /* Impure edges, kept thin and guarded so practicePrimary itself stays a pure function of
+     its arguments and the tests can drive it without a clock or a browser. Neither adds a
+     storage key: phasePolicy reads cw_shelf_date, drills read cw_srs_v1's COMM# cards. */
+  function practicePhaseName(){
+    try{ if(typeof phasePolicy==='function'){ var ph=phasePolicy(); return (ph&&ph.phase)||'unset'; } }catch(_){ }
+    return 'unset';
   }
-  function sortPracticeTools(keys,mode){
-    var cfg=practiceModeCfg(mode), pri=(cfg&&cfg.tools)||[];
-    return (keys||[]).slice().sort(function(a,b){ var ai=pri.indexOf(a),bi=pri.indexOf(b); if(ai<0)ai=99;if(bi<0)bi=99; return ai-bi; });
+  function practiceDrillDone(id){
+    try{ var st=srsState(), c=st&&st.cards&&st.cards['COMM#'+id]; return !!(c&&c.reps>0); }catch(_){ return false; }
   }
-  function sortPracticeCases(ids,mode){
-    var pri=(window.__casePriority&&window.__casePriority[mode])?window.__casePriority[mode]:[];
-    return (ids||[]).slice().sort(function(a,b){ var ai=pri.indexOf(a),bi=pri.indexOf(b); if(ai<0)ai=99;if(bi<0)bi=99; return ai-bi; });
+
+  /* Every tool this page links, in the reconciled order WP-A established. The primary action
+     is chosen from THIS list and never outside it, so promoting one cannot introduce a link
+     the page did not already have. */
+  function practiceLinkedTools(m,file){
+    var rt=[], seen={};
+    function add(k){ if(k&&!seen[k]){ seen[k]=1; rt.push(k); } }
+    practiceRegistryTools(file).forEach(add);
+    if(m&&Array.isArray(m.relatedTools))m.relatedTools.forEach(add);
+    var cta=(m&&m.cta)?(Array.isArray(m.cta)?m.cta:[m.cta]):[];
+    var cw=(m&&m.clinicalWorkflow)||{}, acts=Array.isArray(cw.actions)?cw.actions:[];
+    var all=cta.concat(acts);
+    for(var i=0;i<all.length;i++){ var e=all[i]; add(actionToolKey(ctaHref((e&&e.href)||''))); }
+    return rt;
   }
-  function buildPracticeTools(m,file,mode){
-    var out=[], drills=[], refs=[], seen={}, rt=[];
+
+  /* One action, ranked. Pure: `phase` and `drillDone` are passed in.
+     1 retrieval, but only when the exam is close AND the page already offers it
+     2 safety work, on a page that IS safety work
+     3 a spoken drill they have not done yet
+     4 the page's own first live tool (declared links lead, per WP-A)
+     A rights reference is never eligible -- it is a reference, not an action. */
+  function practicePrimary(m,file,phase,drillDone){
+    var linked=practiceLinkedTools(m,file), i, k;
+    function act(key,cls){ return {label:practiceToolLabel(key),href:'?tool='+encodeURIComponent(key),cls:cls||''}; }
+    if(phase==='taper'||phase==='consolidate'){
+      for(i=0;i<linked.length;i++){ k=linked[i]; if(k==='review.html'||k==='question-bank-practice.html')return act(k,'is-review'); }
+    }
+    if(m&&m.safetyLevel==='high'){
+      for(i=0;i<linked.length;i++){ k=linked[i]; if(!practiceIsRights(k)&&practiceIsSafe(k))return act(k,'is-safety'); }
+    }
+    var cases=(m&&Array.isArray(m.communicationCases))?m.communicationCases:[];
+    for(i=0;i<cases.length;i++){
+      if(!drillDone(cases[i]))return {label:practiceCaseLabel(cases[i]),
+        href:'?tool=communication-practice.html&case='+encodeURIComponent(cases[i]),cls:'is-drill'};
+    }
+    for(i=0;i<linked.length;i++){ k=linked[i]; if(!practiceIsRights(k))return act(k,practiceIsSafe(k)?'is-safety':''); }
+    return null;
+  }
+  /* `seen` is passed in so the promoted primary action is not repeated down here, and
+     `hasPrimary` stops the empty-state fallback firing on a page whose only action was
+     promoted. */
+  function buildPracticeTools(m,file,seen,hasPrimary){
+    var out=[], drills=[], refs=[], rt=[];
+    seen=seen||{};
     function addTool(k){ if(k&&rt.indexOf(k)<0)rt.push(k); }
     practiceRegistryTools(file).forEach(addTool);
     if(m&&Array.isArray(m.relatedTools))m.relatedTools.forEach(addTool);
-    rt=sortPracticeTools(rt,mode);
     for(var i=0;i<rt.length;i++){
       var k=rt[i];
       if(k==='communication-practice.html'&&m&&Array.isArray(m.communicationCases)&&m.communicationCases.length)continue;
@@ -1029,7 +1078,7 @@
       addPracticeAction(out,seen,practiceToolLabel(k),'?tool='+encodeURIComponent(k),practiceIsSafe(k)?'is-safety':'');
     }
     if(m&&Array.isArray(m.communicationCases)){
-      var caseIds=sortPracticeCases(m.communicationCases,mode);
+      var caseIds=m.communicationCases;
       for(var c=0;c<caseIds.length;c++){ var id=caseIds[c]; addPracticeAction(drills,seen,practiceCaseLabel(id),'?tool=communication-practice.html&case='+encodeURIComponent(id),'is-drill'); }
     }
     if(m&&m.cta){
@@ -1050,7 +1099,7 @@
         addPracticeAction(ab,seen,practiceActionLabel(ak,ac.label),ah,isCommunicationCaseHref(ah)?'is-drill':(practiceIsSafe(ak)?'is-safety':''));
       }
     }
-    if(!out.length&&!drills.length&&!refs.length){
+    if(!out.length&&!drills.length&&!refs.length&&!hasPrimary){
       addPracticeAction(out,seen,'Practice Questions','?tool=question-bank-practice.html','is-review');
       addPracticeAction(out,seen,'Daily Review','?tool=review.html','is-review');
     }
@@ -1063,24 +1112,31 @@
   }
   function buildTpl(m,file){
     if(!hasPracticeTpl(m))return '';
-    var mode='ward', cfg=practiceModeCfg(mode);
+    /* D-1: the summary is byte-identical to what it has always rendered -- the visual
+       baselines screenshot a collapsed panel, and everything WP-D changes is inside the body. */
     var h='<details class="topic-tpl practice-panel">';
-    h+='<summary class="practice-summary"><span class="practice-tab">'+esc(cfg.label||'On unit')+'</span><span class="practice-title">On the Unit Practice and Tools</span><span class="practice-sub">Quick take · bedside use · self-test · drills/tools</span><span class="practice-hint"><span class="practice-hint-open">Click to open</span><span class="practice-hint-close">Click to close</span></span><span class="practice-chev" aria-hidden="true">›</span></summary>';
+    h+='<summary class="practice-summary"><span class="practice-tab">Ward</span><span class="practice-title">On the Unit Practice and Tools</span><span class="practice-sub">Quick take · bedside use · self-test · drills/tools</span><span class="practice-hint"><span class="practice-hint-open">Click to open</span><span class="practice-hint-close">Click to close</span></span><span class="practice-chev" aria-hidden="true">›</span></summary>';
     h+='<div class="practice-body">';
-    h+='<div class="tpl-meta">'; if(m.read) h+='<span class="tpl-chip read">'+m.read+' min read</span>'; if(m.hy) h+='<span class="tpl-chip hy">★ High-yield</span>'; if(m.safetyLevel==='high') h+='<span class="tpl-chip safety">High-risk workflow</span>'; if(m.evidenceIds&&m.evidenceIds.length) h+='<span class="tpl-chip evidence">'+m.evidenceIds.length+' source'+(m.evidenceIds.length===1?'':'s')+'</span>'; if(m.facultyReview&&m.facultyReview.status) h+='<span class="tpl-chip review">'+esc(m.facultyReview.status)+(m.facultyReview.lastReviewed?(' · '+esc(m.facultyReview.lastReviewed)):'')+'</span>'; if(Array.isArray(m.workflowModes)){ for(var mi=0;mi<m.workflowModes.length;mi++){ var mm=m.workflowModes[mi]; h+='<span class="tpl-chip mode'+(mm===mode?' on':'')+'">'+esc(PRACTICE_MODE_LABELS[mm]||mm)+'</span>'; } } h+='</div>';
-    h+='<div class="practice-mode-note"><span class="k">Why today</span><span class="v">'+esc(practiceModeText(m,mode))+'</span></div>';
+    h+='<div class="tpl-meta">'; if(m.read) h+='<span class="tpl-chip read">'+m.read+' min read</span>'; if(m.hy) h+='<span class="tpl-chip hy">★ High-yield</span>'; if(m.safetyLevel==='high') h+='<span class="tpl-chip safety">High-risk workflow</span>'; if(m.evidenceIds&&m.evidenceIds.length) h+='<span class="tpl-chip evidence">'+m.evidenceIds.length+' source'+(m.evidenceIds.length===1?'':'s')+'</span>'; if(m.facultyReview&&m.facultyReview.status) h+='<span class="tpl-chip review">'+esc(m.facultyReview.status)+(m.facultyReview.lastReviewed?(' · '+esc(m.facultyReview.lastReviewed)):'')+'</span>'; h+='</div>';
+    var reason=practiceReason(m);
+    if(reason) h+='<div class="practice-mode-note"><span class="k">Can\u2019t miss</span><span class="v">'+esc(reason)+'</span></div>';
+    var primary=practicePrimary(m,file,practicePhaseName(),practiceDrillDone), pseen={}, prow=[];
+    if(primary){
+      addPracticeAction(prow,pseen,primary.label,primary.href,primary.cls);
+      h+='<div class="practice-section-title">Do this next</div><div class="practice-actions">'+prow.join('')+'</div>';
+    }
     h+='<div class="practice-sections">';
     h+='<section class="practice-section"><div class="practice-section-title">In 30 seconds</div>';
     if(m.tldr){ h+='<div class="in30"><div class="lbl">In 30 seconds</div><div class="one">'+esc(m.tldr)+'</div>'; if(m.points&&m.points.length){ h+='<ul>'; for(var i=0;i<m.points.length;i++){ h+='<li>'+esc(m.points[i])+'</li>'; } h+='</ul>'; } h+='</div>'; } else h+='<p class="practice-muted">Use this page as the quick reference before or after the encounter.</p>';
     h+='</section><section class="practice-section"><div class="practice-section-title">On the unit</div>';
     var wf=buildWorkflow(m), hasUnit=false; if(wf){ h+=wf; hasUnit=true; }
-    if(m.cant){ h+='<div class="cantmiss"><span class="ico">⚠</span><span class="tx"><b>Can’t miss. </b>'+esc(m.cant)+'</span></div>'; hasUnit=true; }
+    if(m.cant&&m.cant!==reason){ h+='<div class="cantmiss"><span class="ico">⚠</span><span class="tx"><b>Can’t miss. </b>'+esc(m.cant)+'</span></div>'; hasUnit=true; }
     if(m.ruleOut&&m.ruleOut.length){ h+='<div class="minitree"><div class="lbl">Rule out first → first move</div><div class="ro">'; for(var j=0;j<m.ruleOut.length;j++){ h+='<span class="c">'+esc(m.ruleOut[j])+'</span>'; } h+='</div>'; if(m.firstMove){ h+='<div class="fm"><b>First move · </b>'+esc(m.firstMove)+'</div>'; } h+='<a href="?tool=decision-aids.html">See the visual decision aids →</a></div>'; hasUnit=true; }
     if(!hasUnit)h+='<p class="practice-muted">No bedside workflow scaffold yet.</p>';
     h+='</section><section class="practice-section"><div class="practice-section-title">Test yourself</div>';
     if(m.quiz){ var q=m.quiz; h+='<div class="tyourself"><div class="lbl">Test yourself</div><div class="q">'+esc(q.q)+'</div>'; for(var k=0;k<q.o.length;k++){ h+='<button type="button" class="tyo" data-c="'+(q.o[k].c?'1':'0')+'">'+esc(q.o[k].t)+'</button>'; } h+='<div class="tyfb">'+(q.why?('<b>Why: </b>'+esc(q.why)):'')+'</div></div>'; }
     else { h+='<p class="practice-muted">No page-specific question yet. Use the question bank or daily review.</p><div class="practice-actions"><a class="practice-action is-review" href="?tool=question-bank-practice.html">Practice Questions →</a><a class="practice-action is-review" href="?tool=review.html">Daily Review →</a></div>'; }
-    h+='</section><section class="practice-section"><div class="practice-section-title">Tools</div>'+buildPracticeTools(m,file,mode)+'</section>';
+    h+='</section><section class="practice-section"><div class="practice-section-title">Tools</div>'+buildPracticeTools(m,file,pseen,!!primary)+'</section>';
     h+='</div></div></details>'; return h;
   }
   /* ---- end practice panel ---- */

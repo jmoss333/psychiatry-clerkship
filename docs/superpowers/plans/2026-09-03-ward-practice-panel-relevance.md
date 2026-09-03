@@ -2,8 +2,8 @@
 
 **Date:** 2026-09-03 · **Status:** plan, not yet implemented · **Surface:** the pinned practice panel on every topic page, both sites.
 **Decisions taken:** D-1 (2026-09-03) — panel stays collapsed, fix its contents; no CSS change, no visual-baseline regeneration. See §7.
-**Shipped:** WP-B, WP-C and WP-A (2026-09-03). Corrections found while implementing are marked
-**[corrected 2026-09-03]** below.
+**Shipped:** WP-A, WP-B, WP-C and WP-D (2026-09-03). Corrections found while implementing are
+marked **[corrected 2026-09-03]** below. Remaining: WP-E, WP-F.
 
 **Goal:** Make the panel that is pinned to all 74 topic pages say something true and specific about *that page* — correct tool names, governance-correct instrument handling, audience-neutral copy, one obvious next action instead of a nine-link dump.
 
@@ -214,12 +214,38 @@ Ordered so each lands independently and green.
 - [ ] Panel titles/kickers reviewed against `AUDIENCE_TOKEN_RE`.
 - [ ] Extend the existing neutrality assertion to the panel: render `buildTpl` over all of `topic_meta.json` in a test and assert `AUDIENCE_TOKEN_RE` matches nothing. **This test is the durable fix** — F3 recurred because the panel sits outside the six modules that already have it.
 
-### WP-D · One reason, one primary action
+### WP-D · One reason, one primary action — **shipped 2026-09-03**
 
-- [ ] **Kill the fake mode UI.** Remove `practiceModeCfg`, `sortPracticeTools`, `sortPracticeCases`, `window.__casePriority`, and the non-interactive `.tpl-chip.mode` chips (F4). *(Alternative, if chips should stay: make them real filters — costed in §6.)*
-- [ ] Replace `practiceModeText` with a **page-specific reason** that is not a duplicate of the grid: prefer `cant` → `ruleOut[0]` → `clinicalWorkflow.ask`, and **never** `clinicalWorkflow.rounds` while the grid renders it (F5). Drop the "Ward mode: " prefix.
-- [ ] Add a single **"Do this next"** primary action chosen by the §3 ranking, rendered as the first row **inside the panel body**, with the rest demoted to a secondary row. Per D-1 the panel stays collapsed, so this changes ordering and emphasis within the existing `.practice-body`, not the summary and not anything above the fold.
-- [ ] Make the primary action phase-aware via the existing `phasePolicy()` — in `taper`/`consolidate` prefer retrieval (`review.html`, page quiz); otherwise prefer the page's safety or rehearsal tool. `phasePolicy` already reads `cw_shelf_date`; **no new storage key.**
+- [x] ~~**Kill the fake mode UI.**~~ `practiceModeCfg`, `practiceModeText`, `sortPracticeTools`,
+  `sortPracticeCases`, `PRACTICE_MODE_LABELS`, the `__casePriority` read and the
+  `.tpl-chip.mode` chips are all gone, and `mode` is no longer threaded through any signature.
+  Decision taken: **removed, not made real** (§7 open decision 1) — the same relevance is better
+  served by one ranked action than by five filters two interactions deep inside a collapsed panel.
+  The now-unused `.tpl-chip.mode` CSS rule stays, because deleting it would be a CSS change and
+  D-1 forbids one; it is dead weight, not a defect.
+- [x] ~~Replace `practiceModeText` with a **page-specific reason**~~ — but **[corrected
+  2026-09-03] not by the fallback chain this plan specified.** `cant → ruleOut[0] →
+  clinicalWorkflow.ask` would have relocated F5 rather than fixed it: *every* topic_meta text
+  field is already rendered somewhere in this panel — `ask`/`exam`/`safety`/`say`/`collateral`
+  in the grid, `tldr`/`points` in "In 30 seconds", `ruleOut`/`firstMove` in the mini-tree,
+  `cant` in its callout — so any field copied into a reason line repeats itself. What shipped
+  instead: the reason **is** the can't-miss, **promoted** to the top, and its callout below is
+  **suppressed**, so it appears exactly once. Pages with no `cant` get no line at all, which
+  also removes the generic sentence 7 pages used to print (F6).
+- [x] ~~Add a single **"Do this next"** primary action~~ — rendered from `practicePrimary()`
+  under a `.practice-section-title`, using only existing classes (no CSS, per D-1). The chosen
+  action is **excluded from the sections below** by passing its `seen` entry into
+  `buildPracticeTools`, so promoting it does not duplicate it.
+- [x] ~~Phase-aware via `phasePolicy()`~~ — and the primary is drawn **only from the page's own
+  linked set**, so promotion can never introduce a link the page did not already have (asserted).
+  `practicePrimary(m, file, phase, drillDone)` is a **pure function**: the two impure edges
+  (`phasePolicy()` for the phase, `cw_srs_v1`'s `COMM#` cards for whether a drill is done) are
+  thin guarded helpers called by `buildTpl` and passed in, so the ranking is testable without a
+  clock or a browser. **No new storage key** — `COMM#` cards are the shell's own `srsState()`.
+
+**Shipped ranking:** retrieval when the exam is close *and* the page already offers it → safety
+work on a page that is safety work → a spoken drill not yet done → the page's first live tool
+(declared links lead, per WP-A). A rights reference is never eligible.
 
 **Acceptance:** every page shows exactly one primary action; no sentence appears twice in one panel; `.practice-summary` markup and the collapsed-state rendering are byte-identical to today. **Test:** pure-function test over all 74 metas — one primary, reason ≠ any grid value, deterministic for a fixed `nowMs`; plus an assertion that the summary block is unchanged.
 
