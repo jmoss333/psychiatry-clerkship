@@ -959,16 +959,16 @@
 
 - id=`qb_mood_008` · status=`attested` · type=`sba` · difficulty=`1` · competency=`['pharm', 'management']` · **high-yield**
 - Linked pages: `t_mood.md`
-- Evidence: `t_mood.md — ECT is not a last resort — it is first-line for psychotic, catatonic, or life-threatening mood states and in pregnancy.`
+- Evidence: `t_mood.md — ECT is not a last resort — it is first-line for psychotic, catatonic, or life-threatening mood states, and in pregnancy it is a preferred option when illness of that severity demands rapid, definitive treatment. Pregnancy alone is not the indication; the severity is.`
 
 **Stem.** A 67-year-old woman with treatment-resistant MDD is hospitalized. She has failed two adequate antidepressant trials, has active suicidal ideation, refuses all oral intake, and expresses the nihilistic delusion that her intestines have rotted. The team debates a third antidepressant versus ECT. Which framing is most accurate?
 
 - A third antidepressant combined with an antipsychotic should be tried first — pharmacotherapy is the standard of care before proceeding to procedural interventions.
-- ECT is not a last resort — it is first-line for severe, psychotic, catatonic, or life-threatening mood states and in pregnancy. **← keyed correct**
+- ECT is not a last resort — it is first-line for severe, psychotic, catatonic, or life-threatening mood states, and this patient meets several of those criteria at once. **← keyed correct**
 - rTMS is preferred because it avoids anesthesia and has equivalent efficacy to ECT for psychotic depression.
 - Palliative consultation is appropriate — treatment resistance and refusal of oral intake indicate a terminal trajectory.
 
-**Rationale.** This patient's presentation meets multiple ECT indications simultaneously. Pharmacotherapy first at any severity, Newer = better, and Hopeless by default all delay a definitive, evidence-based treatment. The mood page states explicitly: 'ECT is not a last resort — it is first-line for psychotic, catatonic, or life-threatening mood states and in pregnancy.' Active suicidality, refusal of food/fluids, psychotic features, and treatment resistance are all named ECT indications.
+**Rationale.** This patient's presentation meets multiple ECT indications simultaneously. Pharmacotherapy first at any severity, Newer = better, and Hopeless by default all delay a definitive, evidence-based treatment. The mood page states explicitly: 'ECT is not a last resort — it is first-line for psychotic, catatonic, or life-threatening mood states.' Active suicidality, refusal of food/fluids, psychotic features, and treatment resistance are all named ECT indications.
 
 **Pearl.** ECT is not a last resort — it is first-line for psychotic, catatonic, or life-threatening depression; do not defer it when these criteria are met.
 
@@ -1070,7 +1070,7 @@
 - The patient is experiencing sertraline discontinuation syndrome — the mania-like symptoms are medication side effects that will resolve spontaneously.
 - He has developed a superimposed stimulant use disorder — the pattern is classic methamphetamine intoxication.
 - This represents sertraline's therapeutic effect — the energy and motivation improvement of depression recovery can resemble hypomania.
-- Antidepressant monotherapy has precipitated a manic switch in a patient likely misdiagnosed as unipolar — the diagnosis should be reconsidered as bipolar disorder and the antidepressant should not be continued as monotherapy. **← keyed correct**
+- Antidepressant monotherapy has precipitated a manic switch in a patient likely misdiagnosed as unipolar — the diagnosis should be reconsidered as bipolar disorder, the antidepressant should be discontinued, and antimanic treatment started. **← keyed correct**
 
 **Rationale.** Side effect attribution, Substance first, and Recovery looks like hypomania all avoid the correct diagnosis. The mood page explicitly states: 'a bipolar depression misread as unipolar can be pushed into mania or rapid cycling by an antidepressant.' This is the clinical manifestation of that process — treatment-emergent mania revealing unrecognized bipolar disorder.
 
@@ -1097,7 +1097,7 @@
 
 - id=`qb_mood_016` · status=`attested` · type=`two-tier` · difficulty=`3` · competency=`['pharm', 'management']`
 - Linked pages: `t_mood.md`, `ect_neuromodulation.md`
-- Evidence: `t_mood.md — Reserve ECT for severe, psychotic, catatonic, or treatment-resistant depression, for life-threatening states (refusal of food/fluids, acute high suicide risk), and as a preferred option in pregnancy.`
+- Evidence: `t_mood.md — Reserve ECT for severe, psychotic, catatonic, or treatment-resistant depression, for life-threatening states (refusal of food/fluids, acute high suicide risk), and — when illness of that severity occurs in pregnancy — as a preferred option, since the therapeutic seizure works without the systemic fetal drug exposure pharmacotherapy requires.`
 
 **Stem.** A 24-year-old woman in her 14th week of pregnancy presents with severe MDD: active suicidal ideation with a plan, refusal to eat, psychomotor retardation, and a prior excellent response to ECT 4 years ago. The team debates continuing the current antidepressant versus offering ECT. Which statement best reflects the clinical standard?
 
@@ -1106,11 +1106,11 @@
 - ECT is a preferred treatment option in this presentation — pregnancy is an explicit ECT indication when medications are undesirable, and this patient also has active suicidality, refusal of oral intake, and a prior good ECT response. **← keyed correct**
 - Ketamine infusion should be chosen over ECT — it avoids anesthesia and is equally effective for suicidal ideation in pregnancy.
 
-**Rationale.** Absolute contraindication invented, Pharmacotherapy always first, and Newer = better all distort the evidence. ECT has no absolute contraindications; pregnancy is an ECT indication. This patient has four concurrent indications: active suicidality, refusal of oral intake, pregnancy where medications are less desirable, and prior good ECT response.
+**Rationale.** Absolute contraindication invented, Pharmacotherapy always first, and Newer = better all distort the evidence. ECT has no absolute contraindications, and pregnancy is where it becomes preferred once the illness is severe enough to need rapid, definitive treatment — it is not an indication on its own. This patient has four concurrent reasons: active suicidality, refusal of oral intake, pregnancy where medications are less desirable, and prior good ECT response.
 
 **Pearl.** ECT in pregnancy: no absolute contraindication, explicitly indicated when medications are undesirable — especially when there is active suicidality, refusal to eat, or prior ECT response.
 
-**Tier-2 / stretch.** {"q": "Why is ECT specifically listed as a preferred option in pregnancy, compared to pharmacotherapy?", "options": [{"key": "A", "t": "ECT carries no teratogenic risk because the electrical current does not cross the placenta."}, {"key": "B", "t": "ECT avoids systemic fetal drug exposure — the induced seizure under anesthesia has a well-established safety record in pregnancy with obstetric monitoring, whereas fetal pharmacological exposure carries teratogenic and developmental risks that vary by agent.", "c": true}, {"key": "C", "t": "ECT is FDA-approved for use in pregnancy, whereas all antidepressants are FDA category D or X."}, {"key": "D", "t": "ECT is faster than pharmacotherapy — rapid treatment is the only advantage, not the avoidance of drug exposure."}], "why": "The clinical advantage of ECT in pregnancy is that the therapeutic mechanism (induced seizure) does not require systemic pharmacological exposure that crosses the placenta. Many psychotropics have established or potential teratogenic risks, particularly during organogenesis, and all agents have some potential for fetal or neonatal effects. ECT with appropriate obstetric monitoring avoids this entirely. The long safety record of ECT in pregnancy is one reason it appears on the indications list alongside the more familiar severity-based indications."}
+**Tier-2 / stretch.** {"q": "Why is ECT preferred over pharmacotherapy once a pregnant patient's illness is severe enough to need it?", "options": [{"key": "A", "t": "ECT carries no teratogenic risk because the electrical current does not cross the placenta."}, {"key": "B", "t": "ECT avoids systemic fetal drug exposure — the induced seizure under anesthesia has a well-established safety record in pregnancy with obstetric monitoring, whereas fetal pharmacological exposure carries teratogenic and developmental risks that vary by agent.", "c": true}, {"key": "C", "t": "ECT is FDA-approved for use in pregnancy, whereas all antidepressants are FDA category D or X."}, {"key": "D", "t": "ECT is faster than pharmacotherapy — rapid treatment is the only advantage, not the avoidance of drug exposure."}], "why": "The clinical advantage of ECT in pregnancy is that the therapeutic mechanism (induced seizure) does not require systemic pharmacological exposure that crosses the placenta. Many psychotropics have established or potential teratogenic risks, particularly during organogenesis, and all agents have some potential for fetal or neonatal effects. ECT with appropriate obstetric monitoring avoids this entirely. The long safety record of ECT in pregnancy is one reason it appears on the indications list alongside the more familiar severity-based indications."}
 
 ## Category: neurocog  (16 items)
 
@@ -1256,7 +1256,7 @@
 
 - id=`qb_cog_009` · status=`attested` · type=`sba` · difficulty=`2` · competency=`['next-step']`
 - Linked pages: `t_neurocog.md`
-- Evidence: `t_neurocog.md 'Initial workup' — Labs to catch reversible causes: CBC, CMP, TSH, B12/folate, and — when indicated — HIV and RPR/treponemal testing. Medication reconciliation to strip anticholinergic and sedative burden.`
+- Evidence: `t_neurocog.md 'Initial workup' — Labs to catch reversible causes: CBC, CMP, TSH, B12/folate, and — when indicated — HIV and RPR/treponemal testing. Neuroimaging (CT or MRI) as part of the initial workup of any new cognitive diagnosis — it is the only way the NPH and chronic subdural hematoma on the reversible list above get found — with MRI preferred, and expedited for atypical, rapid, focal, or early-onset presentations.`
 
 **Stem.** A 68-year-old woman is admitted after 4 months of progressive cognitive decline and withdrawal. Neuropsychological testing suggests a moderate amnestic syndrome. She has no known prior psychiatric or neurological history. Which is the most appropriate first-line laboratory workup before assigning a neurodegenerative diagnosis?
 
@@ -1265,9 +1265,9 @@
 - Brain MRI with gadolinium — structural imaging is the single most important diagnostic step for a new dementia presentation.
 - APOE genotyping — an APOE ε4 allele would confirm Alzheimer disease and guide management.
 
-**Rationale.** Jump to autoimmune and Imaging before labs both skip the foundational step. The reversible-cause panel — B12/folate, TSH, CMP, and when indicated RPR/HIV — must precede neurodegenerative labeling because these conditions are treatable and clinically indistinguishable at presentation. APOE genotyping is not a diagnostic standard. MRI is appropriate, especially for atypical or rapid presentations, but not before basic labs.
+**Rationale.** Jump to autoimmune and Genetic confirmation both skip the foundational step. The reversible-cause panel — B12/folate, TSH, CMP, and when indicated RPR/HIV — must precede neurodegenerative labeling because these conditions are treatable and clinically indistinguishable at presentation. APOE genotyping is not a diagnostic standard. Structural imaging is part of the same initial workup rather than a later step, but it is not the laboratory screen this stem asks for, and it does not require gadolinium.
 
-**Pearl.** Order the reversible-cause panel (B12/folate, TSH, CMP, ± RPR/HIV) on every new cognitive presentation before assigning a neurodegenerative diagnosis.
+**Pearl.** Every new cognitive diagnosis gets both halves of the reversible screen: the panel (B12/folate, TSH, CMP, ± RPR/HIV) and structural imaging — labs cannot exclude NPH or a chronic subdural.
 
 ### qb_cog_010
 
@@ -1424,7 +1424,7 @@
 - Prioritize medical workup to rule out thyroid dysfunction and eclampsia before any psychiatric treatment — pharmacotherapy is premature until medical causes are excluded.
 - The lucid interval between episodes provides reassurance — waxing-and-waning symptoms are inconsistent with psychosis; this is most likely a severe postpartum adjustment reaction.
 
-**Rationale.** Outpatient sufficient, Medical workup before treatment, and Lucid interval = reassurance all miss the emergency framing. The source states: 'POSTPARTUM PSYCHOSIS IS A PSYCHIATRIC EMERGENCY: rapid onset, waxing/waning presentation, and real risk to both mother and infant — admit and treat urgently.' The safety assessment must explicitly include the infant.
+**Rationale.** Outpatient sufficient and Lucid interval = reassurance miss the emergency framing. Medical workup before treatment is wrong only in its sequencing: delirium, eclampsia, thyroid disease, infection, and autoimmune encephalitis are excluded concurrently with emergency psychiatric admission — the organic workup proceeds in parallel and must never delay hospitalization or treatment. The source states: 'POSTPARTUM PSYCHOSIS IS A PSYCHIATRIC EMERGENCY: rapid onset, waxing/waning presentation, and real risk to both mother and infant — admit and treat urgently.' The safety assessment must explicitly include the infant.
 
 **Pearl.** Postpartum psychosis = immediate hospitalization, restrict unsupervised infant access, start lithium or antipsychotic urgently.
 
@@ -1460,7 +1460,7 @@
 - Bulimia nervosa — normal weight does not rule out bulimia; the binge-purge cycle, weight/shape self-evaluation, and Russell's sign (knuckle calluses) are the diagnostic markers. **← keyed correct**
 - Purging disorder — recurrent purging in the absence of objectively large binge episodes, with weight/shape concern, is classified as purging disorder.
 
-**Rationale.** Normal weight rules out AN, Binge = BED, and Normal weight = malingering all miss the defining features. The page: 'Bulimia nervosa — weight is often normal or high — a normal weight does not rule it out. Look for Russell's sign (knuckle calluses), parotid enlargement, and dental enamel erosion.' All three examination findings distinguish BN from BED: the presence of compensatory behaviors (purging) is the key.
+**Rationale.** Normal weight rules out AN, Binge = BED, and Purging without binges = purging disorder all miss the defining features — her recurrent, objectively large binge episodes with compensatory purging make this bulimia nervosa rather than purging disorder, which requires purging in the absence of binges. The page: 'Bulimia nervosa — weight is often normal or high — a normal weight does not rule it out. Look for Russell's sign (knuckle calluses), parotid enlargement, and dental enamel erosion.' All three examination findings distinguish BN from BED: the presence of compensatory behaviors (purging) is the key.
 
 **Pearl.** Normal weight DOES NOT rule out bulimia nervosa — look for binge-purge cycle + Russell's sign (knuckle calluses) + parotid swelling + dental erosion.
 
@@ -2811,14 +2811,14 @@
 
 **Stem.** A patient is pacing the hallway, speaking loudly, and waving his hands. He has not threatened anyone and is not in immediate danger of harming himself or others. You are the student. Which response is best?
 
-- Approach calmly, introduce yourself, acknowledge that he looks upset, and offer him a choice — 'Would it help to step somewhere quieter, or is there something I can get you?' **← keyed correct**
+- Let a nearby staff member know you are engaging, then approach calmly — without blocking his exit or yours — introduce yourself, acknowledge that he looks upset, and offer him a choice — 'Would it help to step somewhere quieter where staff can still see us, or is there something I can get you?' **← keyed correct**
 - Return to the nursing station and request a PRN intramuscular medication order before approaching
 - Call for additional staff and prepare for restraint in case the patient escalates
 - Instruct him firmly to return to his room or staff will have to intervene
 
 **Rationale.** Agitation = antipsychotic, Restraint first, and Commands over choices are the three forms of the same error: defaulting to force or medication before de-escalation. The Project BETA framework begins with calm presence, acknowledgment of distress, and genuine choices — not commands or preemptive escalation.
 
-**Pearl.** Verbal de-escalation — calm presence, acknowledgment, and genuine choices — is the default first response to agitation, not a courtesy step before medication.
+**Pearl.** Verbal de-escalation — calm presence, acknowledgment, and genuine choices — is the default first response to agitation, not a courtesy step before medication; tell a staff member before you engage, and stay near your exit without blocking the patient's.
 
 ### qb_saf_003
 

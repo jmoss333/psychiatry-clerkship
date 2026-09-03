@@ -327,7 +327,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Daily Review — Spaced Repetition Reviewed by Joshua Moss, MD on 2026-07-05
 - Skip to content
 
-**Authored clinical strings (83):**
+**Authored clinical strings (99):**
 
 - t lean on position memory. Letters are display-position-derived (String.fromCharCode(65+pos)), so relabeling is automatic. */ /* FNV-1a seed + xorshift32 steps — NOT a bare LCG: an LCG
 - s inject_shared_snippets() expands at build time (same mechanism as crisis blocks). Grades are the strings
@@ -390,15 +390,31 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - ; }else{ var acts=s.actions||[]; for(i=0;i<acts.length;i++){ var a=acts[i]||{}; h+=
 - cw-receipt__btn'+(a.primary?' is-primary':'')+'
 - ; if(!next&&typeof blockClear===
-- ; return {html:h, marked:marked, next:next||null}; } /* effectiveNewPerDay: the single helper BOTH the metrics() display and start()
-- s 2nd grade sets calibLog
-- t out-rank short- interval cards that are badly late. Shuffle only within bands of 5 to keep light variety without undoing the ordering. */ function ratio(c){var st=s.cards[c.id]; return (now-st.due)/((st.ivl||1)*DAY);} due.sort(function(a,b){ return ratio(b)-ratio(a); }); for(var i=0;i<due.length;i+=5){ var band=due.slice(i,i+5); shuffle(band); for(var j=0;j<band.length;j++) due[i+j]=band[j]; } shuffle(neu); var newRemain=Math.max(0,effectiveNewPerDay(s)-(s.day.newToday||0)); var q=due.concat(neu.slice(0,newRemain)); if(ahead){ fut.sort(function(a,b){return a[1]-b[1];}); q=q.concat(fut.map(function(x){return x[0];})); } if(!q.length){ setSess({empty:true}); return; } /* A timed block asks for a bounded slice (?block=1&limit=N) — most-overdue first, as above. */ var limit=blockLimit.current; blockLimit.current=null; var fromBlock=(typeof limit===
-- &&limit>=1); if(fromBlock&&limit Again or Hard only; the buttons disable to match, and this guard also covers the keyboard shortcuts (keys 3/4). */ if(g>1 && s.chosen!==correctIdx(s.card)) return; var st=loadS(); st=rollDay(st); var card=s.card; var existed=!!st.cards[card.id]; var was=st.cards[card.id]||{ease:2.5,ivl:0,reps:0,lapses:0,due:Date.now(),last:0}; st.cards[card.id]=applyGrade(was,GRADE_NAMES[g],{fuzzKey:card.id}); if(!existed){ st.day.newToday=(st.day.newToday||0)+1; } bumpStreak(st); st.stats.totalReviews=(st.stats.totalReviews||0)+1; var ci=correctIdx(card); var gotIt=(s.chosen===ci); st.stats.seen=(st.stats.seen||0)+1; if(gotIt)st.stats.correct=(st.stats.correct||0)+1; saveS(st); setStore(Object.assign({},st)); var rq=gradedThisSession[card.id]?1:0; gradedThisSession[card.id]=1; calibLog({s:
-- ,id:card.id,p:GRADE_NAMES[g]||g,sug:sug,a:gotIt?1:0,rq:rq,ts:Date.now()}); // advance queue var q=s.queue.slice(); var pos=s.pos; if(g===0){ q.push(card); } // requeue lapses to end of this session var nextPos=pos+1; var reviewed=s.reviewed+1, correct=s.correct+(gotIt?1:0); var misses=(s.misses||[]).slice(); if(!gotIt&&!misses.some(function(m){return m.id===card.id;})) misses.push({id:card.id,deckTitle:card.deckTitle,q:card.q}); if(nextPos>=q.length){ setSess({finished:true,reviewed:reviewed,correct:correct,misses:misses,fromBlock:!!s.fromBlock}); return; } setSess({queue:q,pos:nextPos,card:q[nextPos],chosen:-1,revealed:false,reviewed:reviewed,correct:correct,total:s.total,misses:misses,fromBlock:!!s.fromBlock}); } function endSession(){ setSess(null); setTick(function(x){return x+1;}); } function setNewPerDay(v){ var s=loadS(); s.settings.newPerDay=v; s.settings.userSet=true; persist(s); } function resetAll(){ if(!window.confirm("Reset all spaced-repetition progress? This clears your review schedule and streak. This also clears your calibration history. Reading progress elsewhere is unaffected."))return; try{localStorage.removeItem(KEY);}catch(_){ } calibClear(); setStore(freshStore()); setSess(null); setTick(function(x){return x+1;}); } var head=e("div",{className:"topline"}, e("div",{className:"logo"},"ψ"), e("div",null,e("div",{className:"ttl"},"Daily Review"),e("div",{className:"by"},"Spaced repetition · Joshua Moss, MD")), e("button",{className:"thmbtn",onClick:function(){toggleTheme(setTheme);},title:"Toggle dark mode","aria-label":"Toggle dark mode"}, theme==="dark"?"☀":"☾")); if(err) return e("div",{className:"wrap"},head,e("div",{className:"err"},"Could not load the question bank (quizzes.json). Open this tool from the hub so it can find its data, then try again.")); if(!cards) return e("div",{className:"wrap"},head,e("div",{className:"panel muted"},"Loading the question bank…")); /* ---- active session ---- */ if(sess && sess.queue){ var c=sess.card, ci=correctIdx(c), pctp=Math.round(100*sess.pos/Math.max(1,sess.total)); var gotIt=(sess.chosen===ci); var sug=gotIt?
-- ; // single source of truth: feeds the
-- className below AND grade()
+- ; return {html:h, marked:marked, next:next||null}; } /* Family retrieval prompts — the one definition of what a FAM# card ASKS and what it reveals. Injected via the shared-snippet marker into BOTH consumers: family-systems-practice.html, which authors these cards and grades them beside their scenario, and review.html, which serves the due ones in the daily queue. It has to be shared rather than copied because the card id embeds the prompt id (famCardId) — two drifting copies of this list would file one schedule under a prompt the learner never saw, which is exactly the silent id-collision failure the repo
+- s own authored text — its opening line or one of its authored sections. This file introduces no clinical wording of its own, so nothing here needs faculty attestation that family_systems_scenarios.json has not already had. Pure: no DOM, no storage, no clock, no escaping (each consumer escapes for its own renderer). ES5 only, matching the other injected snippets. */ var FAM_DEFAULT_RETRIEVAL=[ {id:
+- } ]; /* The card id both tools schedule under. Scenario id and prompt id are joined with the same separator the QB#/TOPIC# namespaces use, so srsBucket keeps reading FAM# as the family bucket. */ function famCardId(scenarioId,promptId){return
+- +promptId;} /* What a prompt reveals: an explicit revealText when the scenario authors one, else the scenario
+- s re-read links so one page never gets two spellings. */ function prettyRef(k){ return String(k||"").replace(/^t_/,"").replace(/^pg_/,"").replace(/\.md$/,"").replace(/_/g," ").replace(/\b\w/g,function(c){return c.toUpperCase();}); } /* Family retrieval cards for the daily queue — the third card source, after the landmark decks and the per-topic quizzes. One card per authored prompt per scenario, under the SAME ids family-systems-practice.html writes (famCardId, injected above), so a prompt graded in either place moves one schedule rather than two. The reveal text is the scenario
+- s context on screen (a family prompt beside its scenario, a reasoning step beside its patient brief), not sprung cold as a new card here. So this page reviews what the tools taught; it never introduces. The flag is per-card and not per-kind: the family cards are `recall` and the communication and reasoning cards are `choice`, but all three are seeded by their own tool. Decks and topic quizzes carry no flag and remain the only sources feeding the daily new-card allowance. */ function queueable(card, cardState){ return !card || !card.seededOnly || !!cardState; } /* Map a tool
+- s option shape. Both tools grade an option by `quality` rather than a boolean, so `best` becomes the correct answer and the option
+- s twenty-second spoken rep before the choices appear; this is recognition practice on a line the learner has already tried to say. */ function commChoiceCards(data){ var list=(data&&data.cases)||[], out=[], i; if(Object.prototype.toString.call(list)!==
+- ) return out; for(i=0;i<list.length;i++){ var c=list[i]; if(!c||!c.id||!c.prompt) continue; var opts=choiceOptions(c.choices); if(!opts) continue; out.push({ id:"COMM#"+c.id, deck:"COMM", deckTitle:"Communication · "+(c.title||c.id), kind:"choice", seededOnly:true, q:c.prompt, o:opts, stem:c.setting||null }); } return out; } /* Reasoning cards — one per STEP, under the same ids diagnostic-reasoning.html writes. A case
+- s stem because it is NOT optional context: a step asks things like "which one-liner best captures the syndrome", which is unanswerable without the case. In the tool the brief is on screen throughout; a step without it here would be a different, harder, and unfair question. A step whose case has no brief is dropped rather than served bare. */ function reasonChoiceCards(data){ var list=(data&&data.cases)||[], out=[], i, j; if(Object.prototype.toString.call(list)!==
+- ) return out; for(i=0;i<list.length;i++){ var c=list[i]; if(!c||!c.id||!c.patientBrief) continue; var steps=(Object.prototype.toString.call(c.steps)===
+- )?c.steps:[]; for(j=0;j<steps.length;j++){ var st=steps[j]; if(!st||!st.id||!st.prompt) continue; var opts=choiceOptions(st.choices); if(!opts) continue; out.push({ id:"REASON#"+c.id+"#"+st.id, deck:"REASON", deckTitle:"Reasoning · "+(c.title||c.id)+" · "+(st.title||st.id), kind:"choice", seededOnly:true, q:st.prompt, o:opts, stem:c.patientBrief }); } } return out; } /* A reveal is either the scenario
+- s queue-build call — patching only one leaves the other unthrottled. An explicit learner choice (setNewPerDay, which sets settings.userSet) always wins over the rotation-phase cap; phasePolicy() itself never throws, but the try/catch keeps this helper safe even if that contract ever changes. */ function effectiveNewPerDay(s){ var set=(s.settings&&s.settings.newPerDay)||12; if(s.settings&&s.settings.userSet) return set; /* explicit choice always wins */ var cap=12; try{ cap=phasePolicy().newPerDayCap; }catch(_){ } return Math.min(set, cap); } var gradedThisSession={}; // session-local: has card.id already been graded once this session? (a requeued Again-card
+- s rq flag). Reset in start(). function maturity(st){if(!st||!st.reps)return "new";if(st.ivl>=21)return "mature";if(st.lapses&&st.ivl 0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;} /* ---------- theme ---------- */ function toggleTheme(setTheme){var nx=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",nx);try{localStorage.setItem("cw_theme",nx);}catch(_){ } setTheme(nx); if(framed){try{window.parent.postMessage({type:"theme",mode:nx},"*");}catch(_){ }}} function App(){ var ld=useState(null),cards=ld[0],setCards=ld[1]; var er=useState(false),err=er[0],setErr=er[1]; var sv=useState(loadS()),store=sv[0],setStore=sv[1]; var ses=useState(null),sess=ses[0],setSess=ses[1]; // {queue,pos,chosen,revealed,reviewed,correct,fresh} var th=useState((document.documentElement.getAttribute("data-theme")==="dark")?"dark":"light"),theme=th[0],setTheme=th[1]; var tick=useState(0),setTick=tick[1]; var sessRef=useRef(null); sessRef.current=sess; var blockAutoStart=useRef(null), blockLimit=useRef(null); useEffect(function(){ if(cards&&blockAutoStart.current&&!sess){ blockLimit.current=blockAutoStart.current; blockAutoStart.current=null; start(false); } },[cards]); useEffect(function(){ Promise.all([ fetch("quizzes.json?v=5e005edffa93").then(function(r){return r.ok?r.json():{decks:[]};}).catch(function(){return {decks:[]};}), fetch("../topic_meta.json").then(function(r){return r.ok?r.json():{};}).catch(function(){return {};}), fetch("../family_systems_scenarios.json").then(function(r){return r.ok?r.json():{scenarios:[]};}).catch(function(){return {scenarios:[]};}), fetch("../communication_cases.json").then(function(r){return r.ok?r.json():{cases:[]};}).catch(function(){return {cases:[]};}), /* the res build overwrites this file with reasoning_cases_resident.json, so one path serves the right audience without the page knowing which site it is on */ fetch("../reasoning_cases.json").then(function(r){return r.ok?r.json():{cases:[]};}).catch(function(){return {cases:[]};}) ]).then(function(res){ /* One builder per source, concatenated into the single queue. A source that fails to load contributes nothing and the rest still runs; another source later is a builder plus a fetch. Order matters only for which cards a same-due-time tie serves first — the queue is sorted by due date below. */ var j=res[0]||{}, tm=res[1]||{}, fam=res[2]||{}, comm=res[3]||{}, reason=res[4]||{}, out=[]; (j.decks||[]).forEach(function(d){ (d.questions||[]).forEach(function(q,i){ if(!q||!q.q||!q.o)return; out.push({id:d.id+"#"+i,deck:d.id,deckTitle:d.title||d.id,kind:"choice",q:q.q,o:q.o,audio:d.audio||null,audioDur:d.audioDur||null}); }); }); Object.keys(tm).forEach(function(k){ if(k.charAt(0)==="_")return; var m=tm[k]; if(m&&m.quiz&&m.quiz.q&&m.quiz.o&&m.quiz.o.length){ out.push({id:"TOPIC#"+k,deck:"TOPIC",deckTitle:"Topic · "+prettyRef(k),kind:"choice",q:m.quiz.q,o:m.quiz.o.map(function(o){return {t:o.t,c:!!o.c,fb:(o.c?(m.quiz.why||""):"")};})}); } }); out=out.concat(famRecallCards(fam)); out=out.concat(commChoiceCards(comm)); out=out.concat(reasonChoiceCards(reason)); if(!out.length){ setErr(true); return; } setCards(out); /* ?block=1&limit=N — a timed block step from Today starts straight into a bounded session. */ try{ var bp=new URLSearchParams(location.search); if(bp.get("block")==="1"){ var lim=parseInt(bp.get("limit")||"",10); blockAutoStart.current=(lim>=1&&lim<=50)?lim:5; } }catch(_){ } }).catch(function(){setErr(true);}); },[]); useEffect(function(){ function onMsg(ev){var d=ev.data||{};if(d.type==="theme"&&(d.mode==="dark"||d.mode==="light")){document.documentElement.setAttribute("data-theme",d.mode);setTheme(d.mode);}} window.addEventListener("message",onMsg); return function(){window.removeEventListener("message",onMsg);}; },[]); useEffect(function(){ function onKey(ev){ var s=sessRef.current; if(!s||!s.card)return; var k=ev.key; if(!s.revealed){ if(s.card.kind===
+- ){ if(k==="Enter")revealCard(); } else { var n=parseInt(k,10); if(s.card.o&&n>=1&&n<=s.card.o.length){choose(optOrder(s.card)[n-1]);} } } else { if(k==="1")grade(0); else if(k==="2")grade(1); else if(k==="3")grade(2); else if(k==="4")grade(3); } } window.addEventListener("keydown",onKey); return function(){window.removeEventListener("keydown",onKey);}; },[]); function persist(s){saveS(s);setStore(Object.assign({},s));} /* dashboard metrics */ function metrics(){ var now=Date.now(),due=0,neu=0,learn=0,young=0,mature=0,seen=0; if(cards){ var s=rollDay(loadS()); cards.forEach(function(c){var st=s.cards[c.id]; if(!queueable(c,st))return; if(!st){neu++;return;} seen++; var m=maturity(st); if(m==="mature")mature++; else if(m==="young")young++; else learn++; if(st.due<=now)due++; }); } var newRemain=cards?Math.max(0,effectiveNewPerDay(store)-(rollDay(loadS()).day.newToday||0)):0; return {due:due,neu:neu,newRemain:Math.min(newRemain,neu),learn:learn,young:young,mature:mature,seen:seen}; } function start(ahead){ var s=rollDay(loadS()); var now=Date.now(); var due=[],neu=[],fut=[]; cards.forEach(function(c){var st=s.cards[c.id]; if(!queueable(c,st))return; if(!st)neu.push(c); else if(st.due<=now)due.push(c); else fut.push([c,st.due]);}); /* Overdue-first: sort by how overdue each card is (ratio, not raw days) so long-interval cards that are only slightly late don
+- Reset all spaced-repetition progress? This clears your review schedule and streak. This also clears your calibration history. Reading progress elsewhere is unaffected.
+- Spaced repetition · Joshua Moss, MD
+- Could not load the question bank (quizzes.json). Open this tool from the hub so it can find its data, then try again.
+- Loading the question bank…
+- s calibLog event via closure. A recall card suggests nothing — there is no outcome to suggest from. */ var sug=isRecall?
+- ); var fbOpt=(!isRecall&&c.o[sess.chosen])||{}; var corrOpt=(!isRecall&&c.o[ci])||{}; var isNew=!loadS().cards[c.id]; return e("div",{className:"wrap"},head, e("div",{className:"sess"}, e("div",{className:"sbar"},e("i",{style:{width:pctp+"%"}})), e("div",{className:"sinner"}, e("div",{className:"smeta"}, e("span",{className:"deckchip"+(isNew?" snew":"")}, isNew?"New":"Review"), e("span",{className:"deckchip",style:{background:"var(--bg-alt)",color:"var(--text-light)"}}, c.deckTitle.length>42?c.deckTitle.slice(0,40)+"…":c.deckTitle), e("span",{className:"scount"}, (sess.pos+1)+" / "+sess.total)), /* Context the card cannot be answered without (a reasoning case
 - 🎧 Listen — paper overview
+- One way to do it is shown. Rate how close your answer was.
 - Missed items can only be graded Again or Hard
+- Answer out loud or on scratch first, then reveal. Nothing is recorded.
 - Pick the best answer (or press 1–
 - One card came back for another look.
 - cards came back for another look.
@@ -705,7 +721,7 @@ students do not treat test prep and clinical reasoning as separate tasks.
 - **Slug:** `rapid_review.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `09_Exam_Prep/Shelf_High_Yield/rapid_review_buzzwords.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 989 words
+- **Length:** 996 words
 
 #### Page text (as shipped)
 
@@ -718,7 +734,7 @@ students do not treat test prep and clinical reasoning as separate tasks.
 - Depression ≥2 weeks, ≥5 SIGECAPS incl. mood or anhedonia → **major depressive episode** → SSRI + therapy. *(→ Mood)*
 - Manic ≥1 week (or any duration if hospitalized), elevated/irritable + DIGFAST → **bipolar I** → mood stabilizer/SGA; **antidepressant monotherapy contraindicated**. *(→ Mood)*
 - Antidepressant "works" but patient becomes activated/grandiose → uncovered **bipolar** → screen for bipolarity before any antidepressant.
-- Severe, psychotic, catatonic, food-refusing, or pregnant + high suicide risk → **ECT**. *(→ ECT)*
+- Severe, psychotic, catatonic, food-refusing, or high suicide risk → **ECT** (and preferred over drugs when that patient is pregnant). *(→ ECT)*
 - Grief-specific yearning/preoccupation >12 months, impairing → **prolonged grief disorder (DSM-5-TR)** — not normal bereavement.
 
 ## Psychosis
@@ -1109,245 +1125,3 @@ and present clearly.
 ---
 
 **Examiner note.** The critical-fail list encodes the non-negotiable safety behaviors for each station — a student can be fluent and still fail if they miss one. Use the Shared Debrief Questions above to close every station, and always name the safety behavior that was missed.
-
-
----
-
-## Practice Cases
-
-- **Slug:** `cases.md` · **Type:** md · **Sidebar:** listed
-- **Source:** `14_Tracks/MS3/Student_Ready_Pack/08_synthetic_cases/synthetic_practice_cases.md`
-- **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 849 words
-
-<!-- topic_meta overlay -->
-#### Structured metadata (`topic_meta.json` → this page)
-
-> est. read 6 min
-
-**TL;DR (shown above the page text):**
-
-> Eight synthetic composite cases spanning first-episode mania, suicide risk, withdrawal, delirium, catatonia, family dynamics, and discharge planning — each includes student tasks, hidden clinical detail that rewards direct questioning, and a case discussion template.
-
-**Key points (bulleted card):**
-
-- Each case contains hidden clinical detail that is only revealed when the student asks directly — the reward for thorough, non-assumption-based history-taking.
-- Student tasks mirror the OSCE: build the differential, name the safety questions, draft an MSE, prepare a family meeting agenda, and identify the discharge barrier.
-- The case discussion template asks: what would change the differential? what collateral is missing? what is the discharge barrier? what must be done before tomorrow? — use it after every case.
-
-**Clinical-workflow narration (per-stage coaching text):**
-
-- **ask** — For each case, ask what hidden detail would change diagnosis, risk, disposition, or family/system plan.
-- **mse** — Document the MSE finding that most changes the differential and the one finding that could be misleading.
-- **safety** — Name the safety question before the diagnosis question when the case includes suicide, violence, withdrawal, delirium, catatonia, or discharge risk.
-- **say** — What is he like at baseline, what changed, when did it change, and what specific safety concerns have you noticed?
-- **collateral** — Use collateral to define baseline, timeline, safety, adherence, supports, and discharge barriers.
-- **rounds** — After the case, present problem representation, differential, risk formulation, collateral gap, and next action.
-- **exam** — Synthetic cases are practice for illness scripts: syndrome, mimic, first-line treatment, safety/legal issue, and disposition.
-- **actions** — Open reasoning workbench; Practice collateral questions; Open family systems practice
-
-**Cross-references and tagging:**
-
-- **Related tools:** `diagnostic-reasoning.html`, `communication-practice.html`, `family-systems.html`, `oral.html`, `decision-aids.html`
-- **Communication cases:** `suicide_direct_question_001`, `collateral_questions_001`, `family_conflict_discharge_001`
-- **Workflow stages:** `diagnosis`, `safety`, `family`, `team`, `exam`
-- **Workflow modes:** `ward`, `safety`, `family`, `shelf`
-
-#### Page text (as shipped)
-
-# Synthetic Practice Cases
-
-Generated: 2026-06-27
-
-All cases are fictional composites for teaching. No real patient details are used.
-
-## Case 1 - First-Episode Mania With Family Conflict
-
-**Presentation**
-
-22-year-old college student brought by family for 6 days of little sleep,
-increased spending, pressured speech, grand plans, irritability, and paranoid
-concerns about roommates. Urine toxicology is positive for cannabis only.
-
-**Student tasks**
-
-- Build differential.
-- Identify safety questions.
-- Draft MSE.
-- Prepare family meeting agenda.
-- Name discharge barriers.
-
-**Teaching points**
-
-- Mania vs substance-induced symptoms.
-- Sleep as both symptom and treatment target.
-- Family fear can become control; family support still matters.
-- Discharge readiness requires more than reduced agitation.
-
-## Case 2 - Depression, Alcohol Escalation, And Suicide Risk
-
-**Presentation**
-
-46-year-old admitted after telling a coworker, "I cannot do this anymore."
-Reports 2 months of low mood, insomnia, guilt, and increased nightly alcohol
-use. No prior psychiatric care. Initially denies a plan but later describes
-stockpiled medication at home.
-
-**Student tasks**
-
-- Separate chronic and acute suicide risk.
-- Ask withdrawal screening questions.
-- Draft means-restriction plan for team review.
-- Write one-paragraph formulation.
-
-**Teaching points**
-
-- "Denies SI" is not enough.
-- Alcohol can increase acute risk and complicate treatment.
-- If withdrawal risk or malnutrition is present, verify thiamine is given before or with glucose/carbohydrate when possible; true hypoglycemia still gets treated immediately.
-- Means restriction must be concrete.
-- Collateral can change risk formulation.
-
-## Case 3 - Delirium Mistaken For Psychosis
-
-**Presentation**
-
-73-year-old on medical floor becomes paranoid overnight, sees insects, pulls at
-IV line, and is calm by morning. Family says the patient was independent last
-week. New medications include diphenhydramine for sleep.
-
-**Student tasks**
-
-- Identify delirium features.
-- Perform brief attention screen.
-- Build medical differential.
-- Present consult question.
-
-**Teaching points**
-
-- Fluctuation and inattention are key.
-- Visual hallucinations in an older hospitalized patient should trigger delirium concern.
-- Medication review is part of psychiatric assessment.
-
-## Case 4 - Possible Catatonia In Severe Depression
-
-**Presentation**
-
-38-year-old with severe depression is lying still, minimally speaking, eating
-little, and holding odd postures. Staff describe "refusal." No fever. Recently
-started antipsychotic for suspected psychotic depression.
-
-**Student tasks**
-
-- Describe motor findings objectively.
-- Name catatonia in differential.
-- Identify escalation triggers.
-- Avoid stigmatizing documentation.
-
-**Teaching points**
-
-- Catatonia can be missed when behavior is framed as refusal.
-- Poor intake and immobility are safety issues.
-- Catatonia and delirium can overlap; ask for help early.
-
-## Case 5 - Capacity To Refuse Treatment
-
-**Presentation**
-
-58-year-old with bipolar disorder and pneumonia refuses antibiotics, saying
-"the hospital is experimenting on me." The patient can repeat the diagnosis but
-cannot explain what might happen without treatment and becomes distracted
-during questioning.
-
-**Student tasks**
-
-- State the exact decision.
-- Assess choice, understanding, appreciation, reasoning.
-- Screen attention.
-- Present capacity summary.
-
-**Teaching points**
-
-- Capacity is decision-specific.
-- Psychosis does not automatically remove capacity.
-- Inattention raises delirium concern.
-
-## Case 6 - Withdrawal Risk On Admission
-
-**Presentation**
-
-51-year-old admitted for suicidal ideation after divorce. Reports drinking "a
-few" drinks nightly, then clarifies it is 10-12 drinks daily. Last drink was 18
-hours ago. Prior withdrawal seizure 5 years ago.
-
-**Student tasks**
-
-- Ask alcohol withdrawal questions.
-- Identify red flags.
-- Escalate to team.
-- Include withdrawal risk in formulation.
-
-**Teaching points**
-
-- Quantify "a few."
-- Prior complicated withdrawal changes acuity.
-- Thiamine before/with glucose is a safety check in alcohol withdrawal risk because carbohydrate loading can precipitate Wernicke encephalopathy in thiamine-depleted patients.
-- Psychiatric units still manage medical risk.
-
-## Case 7 - Discharge Barrier Hidden In Family System
-
-**Presentation**
-
-31-year-old admitted for psychosis is improved on medication. Patient wants to
-return home. Parent says privately, "I cannot do this again," but tells patient
-"of course you can come home."
-
-**Student tasks**
-
-- Identify mismatch between stated and actual support.
-- Prepare family meeting agenda.
-- Draft discharge barrier map.
-- Name patient autonomy issue.
-
-**Teaching points**
-
-- Family agreement is not the same as viable discharge support.
-- Discharge planning requires honest capacity of the support system.
-- The patient should not be triangulated between team and family.
-
-## Case 8 - Oral Presentation Integration
-
-**Presentation**
-
-40-year-old with insomnia, paranoia, weight loss, stimulant use, and recent
-corticosteroid prescription. Family history of bipolar disorder. Medical workup
-is incomplete.
-
-**Student tasks**
-
-- Give 6-minute admission presentation.
-- Include differential.
-- Name next diagnostic steps.
-- Name immediate safety concerns.
-
-**Teaching points**
-
-- Psychosis has many causes.
-- Timeline and medication exposure matter.
-- Do not close on a primary psychiatric diagnosis too early.
-
-## Case Discussion Template
-
-For each case:
-
-1. One-line summary.
-2. Top three differential diagnoses.
-3. What could be medically dangerous?
-4. What safety questions are mandatory?
-5. What collateral would help?
-6. What would change discharge readiness?
-7. What should the note say in one sentence?
-
-Plain-English note: these cases let students practice reasoning without using
-real patient details. They are deliberately common enough to teach patterns but
-synthetic enough for safe reuse.

@@ -69,3 +69,15 @@ test('the stub carries attribution and the official route', () => {
   assert.match(html, /cssrs\.columbia\.edu/, 'official Columbia Protocol site');
   assert.match(html, /no longer reproduces/i, 'the retirement must be stated on the page');
 });
+
+test('the route is a followable link to Columbia’s own forms, not just a citation', () => {
+  // INV-IR2. A retirement that names the custodian but hands the learner no way to reach the
+  // instrument is a dead end; instrument-rights-gate.mjs pins the same URL at build time from
+  // instrument_rights.json (officialSource.formUrl), so the two must stay in step.
+  const rights = JSON.parse(readFileSync(path.join(__dirname, '..', 'instrument_rights.json'), 'utf8'));
+  const src = rights.instruments.find((i) => i.id === 'cssrs').officialSource;
+  assert.ok(html.includes(`href="${src.formUrl}"`),
+    `the stub must link the recorded official form: ${src.formUrl}`);
+  assert.ok(html.includes(`href="${src.trainingUrl}"`),
+    'Columbia’s free training is the half the withdrawn screener took with it — link it');
+});

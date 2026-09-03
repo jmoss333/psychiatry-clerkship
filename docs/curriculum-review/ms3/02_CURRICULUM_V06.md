@@ -712,7 +712,7 @@ Know *which* protocol applies and *why*; open the EHR order set for the specific
 - **Slug:** `ect_neuromodulation.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `05_Psychopharmacology/ECT_Neuromodulation/ect_neuromodulation_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 660 words
+- **Length:** 681 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -725,7 +725,7 @@ Know *which* protocol applies and *why*; open the EHR order set for the specific
 
 **Key points (bulleted card):**
 
-- Choose ECT when a rapid, definitive response is needed: psychotic or catatonic depression, active suicidality, refusal to eat/drink, pregnancy, or prior ECT response.
+- Choose ECT when a rapid, definitive response is needed: psychotic or catatonic depression, active suicidality, refusal to eat/drink, or prior ECT response — pregnancy is not a fifth trigger, it is what makes ECT preferred over drugs once one of those is present.
 - Hold benzodiazepines and anticonvulsants pre-ECT (they blunt the seizure), and plan continuation treatment — relapse is the rule without it.
 - rTMS is outpatient with no anesthesia or memory effects; ketamine/esketamine act within hours on depressive symptoms — not on suicidality itself, so they never replace monitoring, means restriction, or safety planning (esketamine requires REMS monitoring).
 
@@ -789,7 +789,7 @@ Know *which* protocol applies and *why*; open the EHR order set for the specific
 - **Bright light therapy** — first-line for **seasonal** depression, and — per a 2024 *JAMA Psychiatry* meta-analysis — an **effective *adjunctive* treatment for *nonseasonal* depression** as well (roughly doubling remission odds). Cheap and well-tolerated; screen for bipolar (can precipitate switch) and eye disease.
 
 **What the student does** —
-- Recognize when depression needs ECT: psychotic, catatonic, suicidal, not eating/drinking, pregnant, or prior ECT response.
+- Recognize when depression needs ECT: psychotic, catatonic, suicidal, not eating/drinking, or a prior ECT response — and know that pregnancy does not add an indication, it changes the calculus once one of those is already present.
 - Know ECT has no absolute contraindications and that memory effects are usually transient.
 - Plan continuation treatment after a successful ECT course — relapse is the rule without it.
 - Distinguish rTMS (outpatient, no anesthesia, TRD) from ECT (inpatient-grade, most potent).
@@ -1400,8 +1400,14 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Emergency services — 911. 24/7. For imminent danger to life.
 - Contacts verified 2026-07-27 against official sources. Maintained in crisis_resources.json ; do not edit these numbers inline.
 
-**Authored clinical strings (73):**
+**Authored clinical strings (80):**
 
+- s authored quality (srsGradeForQuality) rather than asked for: this tool already knows how the rep went, and a second self-rating would be a question the learner has just answered. */ /* ---- cw_srs_v1 store adapter (shared) ------------------------------------ Every tool that schedules a card writes the SAME store under the SAME shape. This file is the one definition of that shape; `applyGrade` (the SM-2 step itself) is a separate snippet, sm2_apply_grade.js, and stays that way. Why this is shared rather than copied into each tool: `srsFresh` fixes the store
+- s daily allowance or dropping a stats field the dashboard reads. The failure is invisible and arrives only for learners who happen to open the wrong tool first. Card id namespaces live in the consumers, not here: deck# and TOPIC# (Daily Review), QB# (question bank), FAM# (family retrieval, fam_retrieval.js), COMM# and REASON# (the two tools below). spa_index.html
+- s authored quality rather than asked for. `best` is a clean recall (Good, not Easy — Easy would stretch the interval on a four-way recognition task the learner may well have guessed); `partial` is a hesitant one; anything worse is a lapse. Unknown qualities fail to a lapse so a new quality added to the data can never quietly lengthen an interval. */ function srsGradeForQuality(quality){ if(quality===
+- ) return 3; if(quality===
+- ) return 2; return 1; } /* ==== Canonical SM-2 grader (build-injected — do not edit inside consumer files) ==== Source of truth: 13_Faculty_Resources/_automation/site_build/sm2_apply_grade.js. Consumers carry a SM2_APPLY_GRADE marker comment that common.py
+- s cw_srs_v1 writes stay aggregate/current-state only and are unaffected by that logging. */ /* Deterministic ±15% interval fuzz (opts.fuzzKey): de-synchronizes cohort-seeded cards so due-load avalanches spread out. No fuzzKey (legacy callers) = no fuzz. Also a no-op below ivl 3 d (too short to meaningfully fuzz). Always clamped to [1, 365] regardless of the input interval
 - ]/g,function(c){return {'&':'&',' ':'>','
 - }[c];});} function requestedCaseId(){try{return new URLSearchParams(location.search).get(
 - ;}} function requestedFilter(){try{var f=(new URLSearchParams(location.search).get(
@@ -1412,7 +1418,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - ||!record.choiceId||QUALITY[record.quality]!==true)return clean;if(typeof record.at!==
 - ||!/^\d{4}-\d{2}-\d{2}$/.test(record.at))return clean;clean[caseId]={choiceId:record.choiceId,quality:record.quality,at:record.at};return clean;},Object.create(null));} function loadAttempts(){try{return normalizeAttempts(JSON.parse(localStorage.getItem(
 - ));}catch(_){return {};}} function saveAttempt(caseId,choice){try{var attempts=normalizeAttempts(state.attempts);attempts[caseId]={choiceId:choice.id,quality:choice.quality,at:new Date().toISOString().slice(0,10)};state.attempts=attempts;localStorage.setItem(
-- ,JSON.stringify(state.attempts));}catch(_){} } function tagsFor(c){return CASE_FILTERS[c&&c.id]||[];} function caseMatches(c,f){return !f||f===
+- ,JSON.stringify(state.attempts));}catch(_){} try{srsGradeCard(commCardId(caseId),srsGradeForQuality(choice&&choice.quality));}catch(_){} } function tagsFor(c){return CASE_FILTERS[c&&c.id]||[];} function caseMatches(c,f){return !f||f===
 - ||tagsFor(c).indexOf(f)>=0;} function filteredCases(){return state.cases.filter(function(c){return caseMatches(c,state.filter);});} function currentCase(){return state.cases[state.current]||state.cases[0];} function setCurrentById(id){for(var i=0;i<state.cases.length;i++){if(state.cases[i].id===id){state.current=i;return true;}}return false;} function qualityLabel(q){return q===
 - ;} function doneLabel(q){return q===
 - ;} function defaultRapidDrill(c){return {stance:c.learnerGoal||
@@ -1462,7 +1468,8 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - ;state.filter=FILTERS.some(function(item){return item[0]===filterId;})?filterId:
 - ;if(state.phase===PHASE.SPEAKING)resetRepState();state.nudgeOpen=false;state.coachingOpen=false;var matches=filteredCases(),phaseChanged=previousPhase!==state.phase;if(matches.length&&matches.indexOf(currentCase())===-1){phaseChanged=previousPhase!==PHASE.ORIENT;selectCase(matches[0].id,{focusPhase:phaseChanged&&!keepPickerOpen,focusFilter:!phaseChanged&&!keepPickerOpen?state.filter:
 - ,focusShowAll:!matches.length&&!keepPickerOpen,reopenPicker:keepPickerOpen});}} function surpriseCase(){var list=filteredCases();if(!list.length)return;var pick=list[Math.floor(Math.random()*list.length)];if(list.length>1&&pick.id===currentCase().id)pick=list[(list.indexOf(pick)+1)%list.length];selectCase(pick.id,{focusPhase:true});} function resetHistory(){if(!Object.keys(state.attempts||{}).length)return;if(!window.confirm(
-- );}catch(_){}state.attempts=Object.create(null);clearTimer();resetRepState();render({focusPhase:true});} app.addEventListener(
+- );}catch(_){}try{var s=srsLoadStore(),touched=false;Object.keys(s.cards||{}).forEach(function(id){if(id.indexOf(
+- )===0){delete s.cards[id];touched=true;}});if(touched)srsSaveStore(s);}catch(_){}state.attempts=Object.create(null);clearTimer();resetRepState();render({focusPhase:true});} app.addEventListener(
 - ,function(ev){var target=ev.target.closest&&ev.target.closest(
 - )){var related=relatedCase(currentCase());if(related)selectCase(related.id,{focusPhase:true});return;}if(target.hasAttribute(
 - )){var picker=target.closest(
@@ -1475,74 +1482,3 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - ;} function loadCases(){app.innerHTML=
 - ).then(function(response){if(!response.ok)throw new Error(
 - );return response.json();}).then(function(data){if(!data||!Array.isArray(data.cases)||!data.cases.length)throw new Error(
-
----
-
-## Psychotherapies at a Glance
-
-- **Slug:** `psychotherapy.md` · **Type:** md · **Sidebar:** listed
-- **Source:** `02_Clinical_Skills/Psychotherapy/psychotherapy_inpatient_teaching.md`
-- **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 613 words
-
-<!-- topic_meta overlay -->
-#### Structured metadata (`topic_meta.json` → this page)
-
-> flagged **high-yield** · est. read 4 min
-
-**TL;DR (shown above the page text):**
-
-> You won't run a course of therapy on a 5-day admission, but you're expected to match the modality to the problem, recognize the patient it fits, and use the supportive stance in every encounter.
-
-**Key points (bulleted card):**
-
-- BPD/recurrent self-harm → DBT; OCD/phobia → CBT with exposure and response prevention; grief- or transition-linked depression → IPT.
-- Supportive psychotherapy is the default inpatient stance; psychodynamic/insight work is the wrong tool for an acutely psychotic, manic, or cognitively impaired patient.
-- Psychotherapy and medication are usually additive, not either/or.
-
-**Can't-miss / red-flag line:**
-
-> Don't attempt uncovering/insight work with an acutely ill patient — it can destabilize; validate and support instead.
-
-**Cross-references and tagging:**
-
-- **Evidence sources:** `wampold-1997-bona-fide-psychotherapies`
-- **Workflow stages:** `treatment`, `communication`, `exam`
-- **Workflow modes:** `ward`, `5min`, `shelf`
-- **EPA crosswalk:** `EPA2`
-- **Faculty review:** {"status": "reviewed", "lastReviewed": "2026-07-09", "reviewer": "Joshua Moss, MD"}
-
-#### Page text (as shipped)
-
-# Psychotherapies at a Glance
-
-
-**In one line.** You will not run a course of psychotherapy on a five-day admission, but you are expected to know what each modality is *for*, recognize which patient it fits, and use its stance in every conversation — the "match the therapy to the problem" reasoning is high-yield on the COMAT/shelf and on rounds.
-
-**Why this matters on the unit.** Exam questions rarely ask you to *do* therapy; they ask you to *match* it — a patient with chronic emptiness and self-harm points to DBT, a grief-precipitated depression to IPT, a specific phobia to exposure. On the wards, the modality you actually practice is supportive: every interview either builds or erodes the alliance. Knowing the map lets you set the right expectation, make the right outpatient referral, and speak the language of the treatment team.
-
-**The map — what each is, who it fits.**
-- **Supportive psychotherapy** — bolsters existing defenses and coping through empathy, praise, and reality-testing rather than uncovering. It is the *default inpatient stance* and the right primary modality for patients who are acutely ill, cognitively impaired, or in crisis. If you learn one, learn this.
-- **Cognitive behavioral therapy (CBT)** — targets the link between thoughts, feelings, and behaviors; structured, present-focused, homework-driven. First-line (often with medication) for depression and most anxiety disorders. **Exposure and response prevention (ERP)**, a CBT variant, is the specific evidence-based treatment for OCD and phobias.
-- **Dialectical behavior therapy (DBT)** — a CBT derivative adding mindfulness and distress-tolerance skills, built for emotion dysregulation. The evidence-based treatment for **borderline personality disorder** and recurrent self-harm/suicidality.
-- **Psychodynamic psychotherapy** — explores how unconscious conflict and early relationships shape current patterns, using the therapeutic relationship (transference) as data. Fits insight-oriented patients with longstanding interpersonal or characterological difficulties; not a crisis tool.
-- **Interpersonal therapy (IPT)** — time-limited, links symptoms to one of four interpersonal problem areas (grief, role transition, role dispute, interpersonal deficits). Strong evidence in depression, including peripartum depression.
-- **Motivational interviewing (MI)** — a directive-but-collaborative style for resolving ambivalence, foundational in substance use and any behavior-change conversation. (See the MI page.)
-- **Family and group modalities** — family psychoeducation and behavioral family therapy reduce expressed emotion and relapse in schizophrenia and mood disorders; group therapy leverages universality and peer feedback. (See the family pages.)
-
-**What the student does.**
-- Adopt the *supportive* stance in every encounter — validate, don't interpret; you are building the alliance whether or not you intend to.
-- For each patient, name the modality you would refer to at discharge and why — that single sentence is what rounds and the exam reward.
-- Learn the three highest-yield matches cold: **BPD/self-harm → DBT**, **OCD/phobia → CBT with ERP**, **grief- or transition-linked depression → IPT**.
-- Do not attempt uncovering/insight work with an acutely psychotic, manic, or cognitively impaired patient — it is the wrong tool and can destabilize.
-
-**High-yield pearls.**
-- Supportive therapy *builds up* defenses; psychodynamic therapy *examines* them — acuity decides which you use.
-- DBT is the answer for borderline personality disorder and chronic suicidality; CBT with ERP is the answer for OCD.
-- IPT maps depression onto grief, role transition, role dispute, or interpersonal deficits — think of it when a loss or life change precipitated the episode.
-- "Which therapy?" questions are really "which problem?" questions — identify the target, and the modality follows.
-- Psychotherapy and medication are usually additive, not either/or; the combination beats either alone for most depression and anxiety.
-
-**Pair with** Motivational Interviewing, Brief Psychotherapy on the Unit, the Personality page, and the family modalities page.
-
-*Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*

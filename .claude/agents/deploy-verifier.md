@@ -41,8 +41,15 @@ lines.
 
    ```bash
    python3 13_Faculty_Resources/_automation/maintenance/production_canary.py \
-     --config <scratch>/canary-<site>.json --source-sha "$(git rev-parse HEAD)" --out <scratch>/twin-<site>.json
+     --config <scratch>/canary-<site>.json --out <scratch>/twin-<site>.json [--source-sha <deployed commit>]
    ```
+
+   `--source-sha` is written into the receipt verbatim and never compared with anything the
+   site serves, so it must be the commit that was actually deployed, not the checkout you happen
+   to be running from. Pass it only when you have it from an independent source: the Netlify
+   deploy comment on the PR (its "Latest commit" row) or the deploy log for that site. Otherwise
+   omit the flag and print `commit unknown` in the report header; a receipt that names the wrong
+   commit is worse than one that names none.
 
    The canary aborts on its first failure and its one-line reason does not always name the URL,
    so a single two-site config would hide the second site behind a failure on the first. It
@@ -88,7 +95,7 @@ lines.
 One table per site, then a one-line verdict per site:
 
 ```
-ms3 · https://… · commit <sha or "unknown">
+ms3 · https://… · commit <deployed sha from the Netlify deploy record, else "unknown">
 | check | result | detail |
 | canary | PASS | 100 media probes, nav 83 items |
 | full audio | PASS | audio_oe/OE-01…m4a · 4.1 MB · audio/mp4 |

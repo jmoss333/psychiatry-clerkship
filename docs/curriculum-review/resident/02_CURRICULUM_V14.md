@@ -499,7 +499,7 @@ skills rather than vague exposure.
 - **Slug:** `week5.md` · **Type:** md · **Sidebar:** hidden (deep link only)
 - **Source:** `01_Six_Week_Curriculum/Week_5_Acute_Emergency/README.md`
 - **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
-- **Length:** 178 words
+- **Length:** 180 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -512,7 +512,7 @@ skills rather than vague exposure.
 
 **Key points (bulleted card):**
 
-- The skills of the week are the agitation ladder and Violence-Risk/Brøset tool, delirium prevention and cause search, and supervised CIWA-Ar/COWS trend interpretation — all are bedside tools available in the hub sidebar.
+- The skills of the week are the agitation ladder and Violence Risk (FRST) tool, delirium prevention and cause search, and supervised CIWA-Ar/COWS trend interpretation — all are bedside tools available in the hub sidebar.
 - What is different from Week 1: Week 1 teaches spot it and call now; Week 5 asks you to explain the likely driver, try least-restrictive communication when safe, use structured tools with supervision, and document what would change the plan.
 - Pocket references to keep on hand: restraint checklist, benzo taper protocol, and clozapine ANC monitoring schedule.
 - Case of the week: substance plus psychosis plus risk composite — designed to integrate the acute safety calls covered throughout the rotation.
@@ -545,7 +545,7 @@ skills rather than vague exposure.
 
 **Suggested reading:** Franklin 2017 (limits of suicide prediction) · Volkow 2016 (addiction).
 
-**Skills of the week:** the **agitation ladder** + **Violence-Risk/Brøset** tool (the Acute & Safety pages); **Delirium** prevention and medical-cause search; **CIWA-Ar/COWS** trend interpretation with the Withdrawal card; supervised documentation of what triggered escalation, what was tried first, and what would change the plan.
+**Skills of the week:** the **agitation ladder** + **Violence Risk (FRST)** tool (the Acute & Safety pages); **Delirium** prevention and medical-cause search; **CIWA-Ar/COWS** trend interpretation with the Withdrawal card; supervised documentation of what triggered escalation, what was tried first, and what would change the plan.
 
 **What is different from Week 1:** Week 1 teaches "spot it and call now." Week 5 asks you to explain the driver, try least-restrictive communication when safe, use the structured tool with supervision, document the risk reasoning, and debrief after restraint, seclusion, medication, transfer, or a near miss.
 
@@ -667,7 +667,7 @@ skills rather than vague exposure.
 
 - **ask** — Ask the patient what they call the problem, what they think caused it, what they fear most, what help they expect, and what would make care feel respectful.
 - **mse** — Separate culturally shaped expression from psychopathology; describe affect, beliefs, language, and behavior without assuming your own norm is neutral.
-- **safety** — Use trained interpreters for safety questions, assess discrimination/trauma and structural barriers, and avoid family interpreters for confidential or high-risk topics.
+- **safety** — Use trained interpreters for every clinical conversation, not only the safety questions; assess discrimination/trauma and structural barriers; never put a family member in the interpreter role.
 - **say** — I do not want to assume my framework fits yours. Can you tell me how you understand what is happening?
 - **collateral** — Ask about baseline, family meaning, community supports, immigration/language barriers, religious or cultural practices, and what the patient permits sharing.
 - **rounds** — Present the cultural formulation as clinical reasoning: explanatory model, identity/context, supports, barriers, bias risks, and treatment implications.
@@ -1052,7 +1052,7 @@ therapy, milieu, family, and discharge back to the formulation.
 - **Slug:** `ect_neuromodulation.md` · **Type:** md · **Sidebar:** hidden (deep link only)
 - **Source:** `05_Psychopharmacology/ECT_Neuromodulation/ect_neuromodulation_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 660 words
+- **Length:** 681 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -1065,7 +1065,7 @@ therapy, milieu, family, and discharge back to the formulation.
 
 **Key points (bulleted card):**
 
-- Choose ECT when a rapid, definitive response is needed: psychotic or catatonic depression, active suicidality, refusal to eat/drink, pregnancy, or prior ECT response.
+- Choose ECT when a rapid, definitive response is needed: psychotic or catatonic depression, active suicidality, refusal to eat/drink, or prior ECT response — pregnancy is not a fifth trigger, it is what makes ECT preferred over drugs once one of those is present.
 - Hold benzodiazepines and anticonvulsants pre-ECT (they blunt the seizure), and plan continuation treatment — relapse is the rule without it.
 - rTMS is outpatient with no anesthesia or memory effects; ketamine/esketamine act within hours on depressive symptoms — not on suicidality itself, so they never replace monitoring, means restriction, or safety planning (esketamine requires REMS monitoring).
 
@@ -1129,7 +1129,7 @@ therapy, milieu, family, and discharge back to the formulation.
 - **Bright light therapy** — first-line for **seasonal** depression, and — per a 2024 *JAMA Psychiatry* meta-analysis — an **effective *adjunctive* treatment for *nonseasonal* depression** as well (roughly doubling remission odds). Cheap and well-tolerated; screen for bipolar (can precipitate switch) and eye disease.
 
 **What the student does** —
-- Recognize when depression needs ECT: psychotic, catatonic, suicidal, not eating/drinking, pregnant, or prior ECT response.
+- Recognize when depression needs ECT: psychotic, catatonic, suicidal, not eating/drinking, or a prior ECT response — and know that pregnancy does not add an indication, it changes the calculus once one of those is already present.
 - Know ECT has no absolute contraindications and that memory effects are usually transient.
 - Plan continuation treatment after a successful ECT course — relapse is the rule without it.
 - Distinguish rTMS (outpatient, no anesthesia, TRD) from ECT (inpatient-grade, most potent).
@@ -1229,7 +1229,7 @@ Sources: [AACOM OMM Explained](https://www.aacom.org/become-a-doctor/about-osteo
 - **Slug:** `t_neurocog.md` · **Type:** md · **Sidebar:** hidden (deep link only)
 - **Source:** `03_Core_Topics/Neurocognitive/neurocognitive_disorders_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 880 words
+- **Length:** 933 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -1243,7 +1243,7 @@ Sources: [AACOM OMM Explained](https://www.aacom.org/become-a-doctor/about-osteo
 **Key points (bulleted card):**
 
 - Onset, course, and attention separate delirium (acute, fluctuating, inattentive) from dementia.
-- Screen every new diagnosis for reversible causes (B12/folate, TSH, CMP, ± RPR/HIV, NPH).
+- Screen every new diagnosis for reversible causes — labs (B12/folate, TSH, CMP, ± RPR/HIV) plus structural imaging, which is the only way NPH or a chronic subdural turns up.
 - Antipsychotics carry a black-box mortality warning in dementia — and are dangerous in Lewy body disease.
 
 **Can't-miss / red-flag line:**
@@ -1316,13 +1316,13 @@ Sources: [AACOM OMM Explained](https://www.aacom.org/become-a-doctor/about-osteo
   - *Frontotemporal* — younger onset with early personality/behavior change or progressive aphasia; memory relatively spared early.
   - *Creutzfeldt-Jakob* — rapidly progressive dementia with myoclonus.
 
-**Initial workup** — Establish the cognitive baseline and trajectory from family and records. Cognitive screen — the **MoCA is more sensitive than the MMSE** for mild impairment and executive/visuospatial domains. Labs to catch reversible causes: CBC, CMP, TSH, B12/folate, and — when indicated — HIV and RPR/treponemal testing. Neuroimaging (CT or MRI) for atypical, rapid, focal, or early-onset presentations. Medication reconciliation to strip anticholinergic and sedative burden. Formally assess **decisional capacity** and safety (driving, wandering, finances, firearms).
+**Initial workup** — Establish the cognitive baseline and trajectory from family and records. Cognitive screen — the **MoCA is more sensitive than the MMSE** for mild impairment and executive/visuospatial domains. Labs to catch reversible causes: CBC, CMP, TSH, B12/folate, and — when indicated — HIV and RPR/treponemal testing. Neuroimaging (CT or MRI) as part of the initial workup of any new cognitive diagnosis — it is the only way the NPH and chronic subdural hematoma on the reversible list above get found — with MRI preferred, and expedited for atypical, rapid, focal, or early-onset presentations. Medication reconciliation to strip anticholinergic and sedative burden. Formally assess **decisional capacity** and safety (driving, wandering, finances, firearms).
 
 **Acute inpatient management** — For **behavioral and psychological symptoms of dementia (BPSD)**, nonpharmacologic measures are first-line: identify the trigger (pain, constipation, infection, fear, overstimulation), reorient, keep routines, involve family. Reserve medication for danger or severe distress. **Antipsychotics carry an FDA black-box warning for increased mortality in elderly patients with dementia-related psychosis** — use the lowest dose for the shortest time, document informed consent, and reassess. **In Lewy body dementia, avoid antipsychotics** (especially typicals) because of life-threatening neuroleptic sensitivity — if one is unavoidable, quetiapine or pimavanserin are lower-risk choices. Cognitive symptoms: **cholinesterase inhibitors** (donepezil, rivastigmine, galantamine) for mild–moderate Alzheimer/Lewy body disease; add **memantine** (NMDA antagonist) for moderate–severe disease. Newer **anti-amyloid antibodies (lecanemab, donanemab)** modestly slow *early* Alzheimer decline but require amyloid confirmation and ARIA (edema/hemorrhage) MRI monitoring — specialist-initiated, not started on a psych unit.
 
 **What the student does** —
 - Sort delirium vs dementia vs depression explicitly — lead with onset, course, and attention.
-- Order the reversible-cause panel (B12/folate, TSH, CMP, ± RPR/HIV) on every new cognitive diagnosis.
+- Order the reversible-cause panel (B12/folate, TSH, CMP, ± RPR/HIV) **and confirm structural imaging is done** on every new cognitive diagnosis — the panel alone cannot exclude NPH or a chronic subdural.
 - Name the subtype and flag Lewy body features *before* anyone reaches for an antipsychotic.
 - For agitation, hunt the trigger (pain, constipation, infection) before a PRN.
 - Assess capacity and safety, and start discharge/caregiver planning early.

@@ -6,6 +6,248 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 
 ---
 
+## Practice Cases
+
+- **Slug:** `cases.md` · **Type:** md · **Sidebar:** listed
+- **Source:** `14_Tracks/MS3/Student_Ready_Pack/08_synthetic_cases/synthetic_practice_cases.md`
+- **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
+- **Length:** 849 words
+
+<!-- topic_meta overlay -->
+#### Structured metadata (`topic_meta.json` → this page)
+
+> est. read 6 min
+
+**TL;DR (shown above the page text):**
+
+> Eight synthetic composite cases spanning first-episode mania, suicide risk, withdrawal, delirium, catatonia, family dynamics, and discharge planning — each includes student tasks, hidden clinical detail that rewards direct questioning, and a case discussion template.
+
+**Key points (bulleted card):**
+
+- Each case contains hidden clinical detail that is only revealed when the student asks directly — the reward for thorough, non-assumption-based history-taking.
+- Student tasks mirror the OSCE: build the differential, name the safety questions, draft an MSE, prepare a family meeting agenda, and identify the discharge barrier.
+- The case discussion template asks: what would change the differential? what collateral is missing? what is the discharge barrier? what must be done before tomorrow? — use it after every case.
+
+**Clinical-workflow narration (per-stage coaching text):**
+
+- **ask** — For each case, ask what hidden detail would change diagnosis, risk, disposition, or family/system plan.
+- **mse** — Document the MSE finding that most changes the differential and the one finding that could be misleading.
+- **safety** — Name the safety question before the diagnosis question when the case includes suicide, violence, withdrawal, delirium, catatonia, or discharge risk.
+- **say** — What is he like at baseline, what changed, when did it change, and what specific safety concerns have you noticed?
+- **collateral** — Use collateral to define baseline, timeline, safety, adherence, supports, and discharge barriers.
+- **rounds** — After the case, present problem representation, differential, risk formulation, collateral gap, and next action.
+- **exam** — Synthetic cases are practice for illness scripts: syndrome, mimic, first-line treatment, safety/legal issue, and disposition.
+- **actions** — Open reasoning workbench; Practice collateral questions; Open family systems practice
+
+**Cross-references and tagging:**
+
+- **Related tools:** `diagnostic-reasoning.html`, `communication-practice.html`, `family-systems.html`, `oral.html`, `decision-aids.html`
+- **Communication cases:** `suicide_direct_question_001`, `collateral_questions_001`, `family_conflict_discharge_001`
+- **Workflow stages:** `diagnosis`, `safety`, `family`, `team`, `exam`
+- **Workflow modes:** `ward`, `safety`, `family`, `shelf`
+
+#### Page text (as shipped)
+
+# Synthetic Practice Cases
+
+Generated: 2026-06-27
+
+All cases are fictional composites for teaching. No real patient details are used.
+
+## Case 1 - First-Episode Mania With Family Conflict
+
+**Presentation**
+
+22-year-old college student brought by family for 6 days of little sleep,
+increased spending, pressured speech, grand plans, irritability, and paranoid
+concerns about roommates. Urine toxicology is positive for cannabis only.
+
+**Student tasks**
+
+- Build differential.
+- Identify safety questions.
+- Draft MSE.
+- Prepare family meeting agenda.
+- Name discharge barriers.
+
+**Teaching points**
+
+- Mania vs substance-induced symptoms.
+- Sleep as both symptom and treatment target.
+- Family fear can become control; family support still matters.
+- Discharge readiness requires more than reduced agitation.
+
+## Case 2 - Depression, Alcohol Escalation, And Suicide Risk
+
+**Presentation**
+
+46-year-old admitted after telling a coworker, "I cannot do this anymore."
+Reports 2 months of low mood, insomnia, guilt, and increased nightly alcohol
+use. No prior psychiatric care. Initially denies a plan but later describes
+stockpiled medication at home.
+
+**Student tasks**
+
+- Separate chronic and acute suicide risk.
+- Ask withdrawal screening questions.
+- Draft means-restriction plan for team review.
+- Write one-paragraph formulation.
+
+**Teaching points**
+
+- "Denies SI" is not enough.
+- Alcohol can increase acute risk and complicate treatment.
+- If withdrawal risk or malnutrition is present, verify thiamine is given before or with glucose/carbohydrate when possible; true hypoglycemia still gets treated immediately.
+- Means restriction must be concrete.
+- Collateral can change risk formulation.
+
+## Case 3 - Delirium Mistaken For Psychosis
+
+**Presentation**
+
+73-year-old on medical floor becomes paranoid overnight, sees insects, pulls at
+IV line, and is calm by morning. Family says the patient was independent last
+week. New medications include diphenhydramine for sleep.
+
+**Student tasks**
+
+- Identify delirium features.
+- Perform brief attention screen.
+- Build medical differential.
+- Present consult question.
+
+**Teaching points**
+
+- Fluctuation and inattention are key.
+- Visual hallucinations in an older hospitalized patient should trigger delirium concern.
+- Medication review is part of psychiatric assessment.
+
+## Case 4 - Possible Catatonia In Severe Depression
+
+**Presentation**
+
+38-year-old with severe depression is lying still, minimally speaking, eating
+little, and holding odd postures. Staff describe "refusal." No fever. Recently
+started antipsychotic for suspected psychotic depression.
+
+**Student tasks**
+
+- Describe motor findings objectively.
+- Name catatonia in differential.
+- Identify escalation triggers.
+- Avoid stigmatizing documentation.
+
+**Teaching points**
+
+- Catatonia can be missed when behavior is framed as refusal.
+- Poor intake and immobility are safety issues.
+- Catatonia and delirium can overlap; ask for help early.
+
+## Case 5 - Capacity To Refuse Treatment
+
+**Presentation**
+
+58-year-old with bipolar disorder and pneumonia refuses antibiotics, saying
+"the hospital is experimenting on me." The patient can repeat the diagnosis but
+cannot explain what might happen without treatment and becomes distracted
+during questioning.
+
+**Student tasks**
+
+- State the exact decision.
+- Assess choice, understanding, appreciation, reasoning.
+- Screen attention.
+- Present capacity summary.
+
+**Teaching points**
+
+- Capacity is decision-specific.
+- Psychosis does not automatically remove capacity.
+- Inattention raises delirium concern.
+
+## Case 6 - Withdrawal Risk On Admission
+
+**Presentation**
+
+51-year-old admitted for suicidal ideation after divorce. Reports drinking "a
+few" drinks nightly, then clarifies it is 10-12 drinks daily. Last drink was 18
+hours ago. Prior withdrawal seizure 5 years ago.
+
+**Student tasks**
+
+- Ask alcohol withdrawal questions.
+- Identify red flags.
+- Escalate to team.
+- Include withdrawal risk in formulation.
+
+**Teaching points**
+
+- Quantify "a few."
+- Prior complicated withdrawal changes acuity.
+- Thiamine before/with glucose is a safety check in alcohol withdrawal risk because carbohydrate loading can precipitate Wernicke encephalopathy in thiamine-depleted patients.
+- Psychiatric units still manage medical risk.
+
+## Case 7 - Discharge Barrier Hidden In Family System
+
+**Presentation**
+
+31-year-old admitted for psychosis is improved on medication. Patient wants to
+return home. Parent says privately, "I cannot do this again," but tells patient
+"of course you can come home."
+
+**Student tasks**
+
+- Identify mismatch between stated and actual support.
+- Prepare family meeting agenda.
+- Draft discharge barrier map.
+- Name patient autonomy issue.
+
+**Teaching points**
+
+- Family agreement is not the same as viable discharge support.
+- Discharge planning requires honest capacity of the support system.
+- The patient should not be triangulated between team and family.
+
+## Case 8 - Oral Presentation Integration
+
+**Presentation**
+
+40-year-old with insomnia, paranoia, weight loss, stimulant use, and recent
+corticosteroid prescription. Family history of bipolar disorder. Medical workup
+is incomplete.
+
+**Student tasks**
+
+- Give 6-minute admission presentation.
+- Include differential.
+- Name next diagnostic steps.
+- Name immediate safety concerns.
+
+**Teaching points**
+
+- Psychosis has many causes.
+- Timeline and medication exposure matter.
+- Do not close on a primary psychiatric diagnosis too early.
+
+## Case Discussion Template
+
+For each case:
+
+1. One-line summary.
+2. Top three differential diagnoses.
+3. What could be medically dangerous?
+4. What safety questions are mandatory?
+5. What collateral would help?
+6. What would change discharge readiness?
+7. What should the note say in one sentence?
+
+Plain-English note: these cases let students practice reasoning without using
+real patient details. They are deliberately common enough to teach patterns but
+synthetic enough for safe reuse.
+
+
+---
+
 ## Landmark Trials — Listen & Test
 
 - **Slug:** `landmark_trials.md` · **Type:** md · **Sidebar:** listed
@@ -980,271 +1222,5 @@ Based on articles retrieved from PubMed.
 ---
 
 *Educational teaching case. Fictional composite; no protected health information. Pending faculty attestation.*
-
-*Joshua Moss, MD | Psychiatrist*
-
-
----
-
-## Lithium — Monitoring & Toxicity (Aug 3)
-
-- **Slug:** `cotw_20260803_lithium_ms3.md` · **Type:** md · **Sidebar:** listed
-- **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-08-03_lithium-monitoring-toxicity-interactions_MS3.md`
-- **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 3,464 words
-
-<!-- topic_meta overlay -->
-#### Structured metadata (`topic_meta.json` → this page)
-
-> est. read 10 min · safetyLevel=`moderate` · cotwLevel=`ms3` (2026-08-03)
-
-**TL;DR (shown above the page text):**
-
-> A stable patient, an unchanged dose, and a level that tripled - lithium clearance is what changes, and in chronic toxicity the serum number understates how sick the patient is.
-
-**Key points (bulleted card):**
-
-- ~20-30 minute small-group discussion - no pre-reading required.
-- De-identified synthetic case; each discussion question is paired with a teaching point.
-- MS3 / Step 2 CK level. Facilitator notes are kept separate from the learner-facing stem.
-
-**Clinical-workflow narration (per-stage coaching text):**
-
-- **ask** — Work the stem cold: take your own history, commit to a differential, and name your next step before reading a single teaching point. The guided questions are written to be answered, not skimmed.
-- **mse** — Say out loud what each exam finding in the vignette rules in and rules out — the discrimination between look-alike syndromes is what the case is drilling.
-- **safety** — Safety content in every case is oriented to recognition, escalation, and safety planning. Escalate to your supervising resident or attending rather than managing acuity alone.
-- **say** — Before moving on, rehearse one sentence you would actually say to this patient or family, in plain language and out loud.
-- **collateral** — Ask yourself what collateral would change your differential here, and who you would have to call to get it.
-- **rounds** — Use the ranked differential and the workup-and-management ladder as the spine of your presentation; lead with the finding that changes management.
-- **exam** — Shelf-level takeaway: A stable patient, an unchanged dose, and a level that tripled - lithium clearance is what changes, and in chronic toxicity the serum number understates how sick the patient is.
-- **actions** — All Case of the Week cases
-
-**Cross-references and tagging:**
-
-- **Workflow stages:** `diagnosis`, `treatment`, `team`, `exam`
-- **Shelf blueprint tags:** `pharm`, `mood`
-- **EPA crosswalk:** `EPA3`, `EPA4`, `EPA10`
-- **Faculty review:** {"status": "pending", "reviewer": "Joshua Moss, MD", "lastReviewed": "2026-08-03"}
-
-#### Page text (as shipped)
-
-# Case of the Week — MS3 Edition
-## Lithium: Monitoring, Toxicity, and Drug Interactions
-
-**Date:** 2026-08-03
-**Learner level:** MS3 (inpatient/consult psychiatry clerkship) — USMLE Step 2 CK framing
-**Format:** ~20–30 min small-group discussion. No required pre-reading.
-**Citations:** Based on articles retrieved from PubMed. Full reference list at the end. All patient details are **synthetic and de-identified**.
-
----
-
-### The Case (learner-facing stem)
-
-A 58-year-old woman with bipolar I disorder is brought to the emergency department by her husband, who says she has been "off" since the weekend.
-
-She has taken lithium for nineteen years and has not had a mood episode in over a decade. Her dose has not changed. Her husband, who fills her pillbox, is certain she has been taking it exactly as prescribed.
-
-Two things changed recently. Three weeks ago her primary care physician diagnosed hypertension and started **hydrochlorothiazide and lisinopril**. Then, over a hot holiday weekend, she developed a **gastrointestinal illness** — three days of vomiting and loose stools — and "couldn't keep anything down."
-
-Yesterday her husband noticed her hands shaking so badly she spilled her coffee. Today she was unsteady walking to the bathroom, her speech was slurred, and she did not know what month it was.
-
-**Vitals:** T 37.4 °C, HR 108, BP 104/62 (supine) → 84/54 (standing), RR 16, SpO₂ 98% on room air.
-**General exam:** Dry mucous membranes, poor skin turgor. No rash, no rigidity, no neck stiffness.
-**Neurologic exam:** Drowsy but arousable to voice. Oriented to person and place, not to date. **Coarse, irregular tremor** of both hands, worse with action. Occasional **myoclonic jerks**. **Hyperreflexia** with sustained ankle clonus. **Ataxic gait**, wide-based. Dysarthric speech. Horizontal nystagmus on lateral gaze. No focal weakness.
-**Labs:** Na 132, K 3.1, Cl 96, HCO₃ 26, BUN 38, **Cr 1.7 (baseline 0.9)**, Ca 9.6, glucose 98. CBC normal, no leukocytosis. Urinalysis bland; **urine specific gravity 1.004** despite clinical dehydration. TSH 3.1 (checked eight months ago).
-**ECG:** Sinus tachycardia, diffuse T-wave flattening, QTc 430 ms.
-**Serum lithium level: 2.6 mEq/L.** (Her levels have run 0.7–0.8 for years.)
-
-You are the medical student on the psychiatry consult service. The ED resident's page reads: *"Bipolar lady, altered, lithium level high — can you take her?"*
-
----
-
-### Guided Discussion Questions
-
-**Q1. Her dose never changed and she never missed a pill. So why is her lithium level 2.6?**
-
-*Teaching point:* This is the single most important concept in the case. **Lithium is a cation that the kidney handles like sodium.**
-
-Lithium is not metabolized by the liver and is not protein-bound. It is cleared almost entirely by the kidney, and roughly **two-thirds to four-fifths of filtered lithium is reabsorbed in the proximal tubule — in parallel with sodium** [1,2]. That single fact generates every interaction on the list.
-
-So anything that (a) shrinks effective circulating volume, (b) drops glomerular filtration rate, or (c) tells the proximal tubule to reabsorb more sodium will also raise the lithium level — **with no change in dose**.
-
-This patient took three hits at once:
-
-| Insult | Mechanism |
-|---|---|
-| **Thiazide diuretic** (hydrochlorothiazide) | Volume depletion plus compensatory **proximal** sodium (and lithium) reabsorption |
-| **ACE inhibitor** (lisinopril) | Blunts angiotensin II–mediated efferent arteriolar tone → falling GFR when volume-depleted |
-| **Vomiting and diarrhea in the heat** | Direct volume and sodium loss |
-
-Her **hyponatremia (Na 132) is not incidental** — a sodium-avid kidney is a lithium-avid kidney. Her **creatinine of 1.7 from a baseline of 0.9** confirms she is prerenal. Her lithium level rose because her clearance fell.
-
-**The classic interaction triad to memorize: NSAIDs, ACE inhibitors/ARBs, and thiazide diuretics.** (Loop diuretics are less consistently implicated than thiazides.) All three are drugs that a non-psychiatric prescriber may add without thinking about the mood stabilizer [1,2].
-
-**Modern addition, worth knowing:** a 2025 case series described **lithium toxicity after starting semaglutide** — a GLP-1 receptor agonist — in patients on stable lithium regimens. The proposed mechanisms are the ones you would predict: reduced oral intake, nausea/vomiting/diarrhea, dehydration, and delayed gastric emptying [3]. Given how widely these drugs are now prescribed, expect to see this.
-
-**Q2. Her level is 2.6. A patient in the next bay took an intentional overdose and has a level of 3.4 but is only vomiting and looks well. Why is your patient sicker?**
-
-*Teaching point:* **Serum lithium level correlates poorly with clinical severity**, and understanding why separates students who memorize a number from students who understand the drug.
-
-Toxicity is classified three ways [2]:
-
-| Type | Setting | Typical picture |
-|---|---|---|
-| **Acute** | Overdose in someone *not* previously on lithium | GI symptoms dominate early (nausea, vomiting, diarrhea); neurologic findings develop later as lithium distributes into tissue |
-| **Chronic** | Gradual accumulation in a maintenance patient — *this case* | **Neurologic findings dominate**, often at modest serum levels; GI symptoms may be minor or absent |
-| **Acute-on-chronic** | Extra ingestion by a maintenance patient | Mixed; the most treacherous |
-
-The reason is **distribution**. Lithium moves slowly across the blood–brain barrier, so serum and brain concentrations equilibrate over hours to days. In **acute** poisoning, the serum level is high but the brain has not caught up yet — the patient looks better than the number. In **chronic** toxicity, the tissue burden has been building for days, so the brain concentration is high even when the serum number is only moderately elevated — the patient looks worse than the number [2].
-
-**Clinical rule: treat the patient, not the level.** A maintenance patient with ataxia and confusion at 1.6 is a genuine emergency; an acute ingestion at 3.0 who is alert needs close observation and serial levels.
-
-**Q3. Before you accept "lithium toxicity," what else is on your differential? Give a ranked top five.**
-
-*Teaching point:* Confusion plus tremor plus a psychotropic medication is a classic Step 2 CK discriminating exercise. The findings that separate these syndromes are the **muscle tone**, the **temperature**, and the **reflexes**.
-
-1. **Lithium toxicity (chronic)** — *most likely.* Coarse tremor, ataxia, dysarthria, nystagmus, myoclonus, hyperreflexia, confusion. Afebrile, no rigidity. The exposure history and renal picture fit perfectly.
-2. **Neuroleptic malignant syndrome (NMS)** — would show **hyperthermia, "lead-pipe" rigidity, and markedly elevated CK**, with autonomic instability. She has none of these, but ask what else she takes: antipsychotics are commonly co-prescribed in bipolar disorder, and NMS is the diagnosis you cannot afford to miss.
-3. **Serotonin syndrome** — clonus (especially inducible/ocular), hyperreflexia, agitation, diaphoresis, hyperthermia, and typically **rapid onset after a serotonergic change**. Note the overlap: clonus and hyperreflexia appear in *both* this and lithium toxicity. The tie-breakers are the medication timeline and the presence of fever and GI hyperactivity.
-4. **Metabolic / infectious delirium** — dehydration and electrolyte disturbance alone can do this; so can occult sepsis, hepatic or uremic encephalopathy, or hypoglycemia. She *is* hyponatremic and in acute kidney injury, so some of her presentation may be non-lithium.
-5. **Primary neurologic event** — stroke, nonconvulsive status epilepticus, Wernicke encephalopathy. Consider imaging and EEG if the picture does not improve as the level falls, or if there are focal findings.
-
-Also worth naming: **thyrotoxicosis or myxedema** (lithium affects the thyroid, and her TSH is eight months old) and **hypercalcemia** (lithium can cause hyperparathyroidism — her calcium is normal here, but you should know to look).
-
-**Q4. What is her urine specific gravity of 1.004 telling you?**
-
-*Teaching point:* She is clinically dry — and her kidney is still making **dilute** urine. That is inappropriate, and it points to **nephrogenic diabetes insipidus (NDI)**, one of lithium's signature renal effects.
-
-Lithium enters the principal cells of the **collecting duct** through the epithelial sodium channel and interferes with the cell's response to antidiuretic hormone (ADH). The result is **nephrogenic** DI — the hormone is present, but the kidney cannot answer it. Clinically: polyuria and polydipsia, which patients often normalize as "I've always been a big water drinker." Somewhere on the order of **a fifth to more than half** of long-term lithium patients show some degree of urinary concentrating defect, depending on the population and how it is measured [1,4].
-
-Why this matters *today*: NDI makes her **less able to defend her volume status** during a GI illness. The polyuria she has lived with for years is part of why three days of vomiting tipped her into toxicity. It is a risk factor hiding in plain sight.
-
-Distinguish from **lithium nephropathy** — the slower, separate problem of progressive chronic kidney disease with long-term use. Most lithium-associated renal effects are relatively mild, but a small measurable proportion of patients develop progressive impairment [1,4].
-
-**Q5. What do you do in the next two hours?**
-
-*Teaching point:* The management is mostly about **restoring clearance** and **stopping the bleeding** on the interaction side. There is no antidote.
-
-1. **Hold the lithium.** Obvious, frequently forgotten in the handoff.
-2. **Stop the contributing drugs** — hydrochlorothiazide and lisinopril come off now. Add "no NSAIDs" to the chart.
-3. **Volume resuscitate with isotonic saline.** Restoring intravascular volume restores renal perfusion, restores GFR, and is the intervention that actually lowers the level. Correct her potassium.
-4. **Serial lithium levels every 2–4 hours**, plus serial creatinine and electrolytes. One level is a snapshot; you need the trajectory.
-5. **Serial neurologic exams** — the exam, not the number, drives escalation.
-6. **Telemetry**; check the ECG for conduction changes.
-7. **Call nephrology and toxicology (or your poison center) early**, before you think you need them.
-8. **Correct sodium at a safe rate** — she is hyponatremic and dehydrated, and over-rapid correction carries its own risk.
-
-**What NOT to do:** **Activated charcoal does not bind lithium.** A 2026 international consensus statement from the Clinical Toxicology Recommendations Collaborative explicitly concludes there is **no role for activated charcoal in lithium poisoning** (alongside iron, lead, lithium's fellow ions, and alcohols) [5]. If a student reflexively answers "charcoal" for any ingestion, this is the moment to fix it. (Whole-bowel irrigation is sometimes considered for large **sustained-release** ingestions — a different question, and a toxicology decision.)
-
-**Q6. When does she need dialysis?**
-
-*Teaching point:* **Lithium is dialyzable** — small, water-soluble, not protein-bound, small volume of distribution. It is one of the few poisonings where hemodialysis is genuinely disease-modifying, and it remains among the most frequently dialyzed poisons in practice [6].
-
-The **EXTRIP workgroup** (Extracorporeal Treatments in Poisoning) published systematic consensus recommendations for lithium. In brief [7]:
-
-- Extracorporeal treatment is **recommended in severe lithium poisoning**.
-- **Recommended** if kidney function is impaired and the lithium level is **> 4.0 mEq/L**, *or* — **irrespective of the level** — if there is **decreased level of consciousness, seizures, or life-threatening dysrhythmias**.
-- **Suggested** if the level is **> 5.0 mEq/L**, if there is significant confusion, or if the expected time to bring the level below 1.0 mEq/L exceeds **36 hours**.
-- **Continue until clinical improvement is apparent or the level is < 1.0 mEq/L**; continue a minimum of 6 hours if the level cannot be readily measured.
-- **Hemodialysis is preferred**; continuous renal replacement therapy is an acceptable alternative.
-
-Note the structure of those criteria: **impaired kidney function and clinical severity can override the number in both directions.** Our patient has AKI, a level of 2.6, and depressed consciousness — that last item alone puts her in the "recommended" category regardless of the level.
-
-**One more thing to expect:** after dialysis, lithium **redistributes out of tissue back into serum**, so the level can *rebound*. Recheck the level several hours after the session ends. A single post-dialysis level is not reassurance.
-
-**Q7. She recovers. Should she ever take lithium again — and what should have been in place to prevent this?**
-
-*Teaching point:* The reflex to "just stop the lithium" is usually the wrong lesson. Lithium remains the reference-standard maintenance treatment for bipolar disorder, and in a systematic review and meta-analysis of pharmacologic and somatic treatments, **lithium was associated with roughly half the odds of death by suicide** compared with placebo or no lithium in bipolar disorder [8]. That is a rare and serious benefit. The goal is **safer lithium**, not reflexively no lithium.
-
-**Standard monitoring** (specific intervals vary by guideline; follow your institution's):
-
-- **Baseline before starting:** renal function, electrolytes, thyroid function, calcium, pregnancy test where applicable, and an ECG in patients with cardiac risk factors.
-- **Levels:** drawn as a **12-hour post-dose trough**, checked about **5–7 days after any dose change** and after adding any interacting drug, then at routine intervals (commonly every 3–6 months once stable).
-- **Renal and thyroid function (and calcium)** at least every 6–12 months.
-- **In older adults**, an international expert Delphi panel recommended **lower target ranges** — roughly 0.4–0.8 mmol/L for ages 60–79, and 0.4–0.7 mmol/L for ages 80 and over — and suggested laboratories report the therapeutic range for older adults separately [9]. Our 58-year-old is at the edge of that conversation.
-
-**And here is the uncomfortable data point:** real-world monitoring is frequently *not* done. In a Swedish cohort of 4,428 adults starting lithium, only about **16%** had both lithium and creatinine tested annually across their entire time on the drug, and 21% started lithium without a baseline creatinine at all [10]. A Dutch ambulatory cohort found a nearly identical figure — about **16%** monitored in compliance with guidelines for lithium level, creatinine, *and* TSH [11]. This is one of the clearest gaps between what guidelines say and what happens.
-
-**What would actually have prevented this case:** "**sick-day rules**." Every patient on lithium should be able to say some version of:
-
-> *"If I have vomiting, diarrhea, a fever, or I'm sweating a lot and not drinking — I hold my lithium and I call. If any doctor starts me on a new blood pressure medicine or a water pill, or tells me to take ibuprofen or naproxen regularly, I tell them I'm on lithium and I get a level checked."*
-
-And on the clinician side: **whoever adds the thiazide should check a lithium level in about a week.** That one habit prevents most of these admissions.
-
----
-
-### Ranked Differential (summary)
-
-1. **Chronic lithium toxicity** precipitated by drug–drug interaction plus volume depletion — *most likely*
-2. **Neuroleptic malignant syndrome** — the must-not-miss; look for fever, rigidity, elevated CK
-3. **Serotonin syndrome** — overlapping clonus/hyperreflexia; distinguish by timeline and fever
-4. **Metabolic or infectious delirium** — hyponatremia, AKI, dehydration, occult infection
-5. **Primary neurologic event** — stroke, nonconvulsive status, Wernicke encephalopathy
-6. **Thyroid or parathyroid dysfunction** — both are lithium-associated and both are checkable
-
----
-
-### Workup & Management
-
-**Immediate:**
-1. **Hold lithium**; stop hydrochlorothiazide and lisinopril; flag NSAIDs as contraindicated.
-2. **Isotonic saline resuscitation**; correct potassium; correct sodium at a safe rate.
-3. **Serial lithium levels q2–4h**; serial creatinine, electrolytes, calcium.
-4. **Serial neurologic exams**; telemetry; ECG.
-5. **Early nephrology and toxicology/poison center consultation** [6,7].
-6. **No activated charcoal** — it does not bind lithium [5].
-
-**Escalation:**
-7. **Hemodialysis** per EXTRIP criteria — severe poisoning; impaired kidney function with level > 4.0; or depressed consciousness, seizures, or life-threatening dysrhythmias at any level [7].
-8. **Recheck the level 6–12 hours after dialysis** to catch rebound.
-
-**Diagnostic completeness:**
-9. **TSH, free T4, calcium, PTH** — lithium affects thyroid and parathyroid [1].
-10. **CK** if there is any rigidity or fever (NMS).
-11. **Neuroimaging ± EEG** if the exam does not track with the falling level.
-12. **Medication reconciliation across all prescribers** — this is where the case was made.
-
-**Before discharge:**
-13. **Decide, deliberately, whether to resume lithium**, at what dose, and with what monitoring schedule [1,9].
-14. **Written sick-day rules** for the patient and the family member who fills the pillbox.
-15. **Communicate with the primary care physician** — the interaction was created across a specialty boundary, and that is where it has to be closed.
-16. **Book the follow-up level and renal panel before she leaves.**
-
----
-
-### Facilitator Notes (not for the learner handout)
-
-- **Time:** ~25 min. Spend the most time on **Q1** (why the level rose without a dose change) and **Q2** (level–severity dissociation). Q6 (dialysis criteria) is the piece most likely to appear verbatim on an exam.
-- **Best teaching move:** write "Li ≈ Na" on the board and ask the group to *derive* the interaction list from first principles rather than recall it. Almost every group gets thiazides and dehydration; nudge them toward ACE inhibitors and NSAIDs. Then ask what a GLP-1 agonist would do — most will reason it out, which is far more durable than memorizing [3].
-- **Common MS3 errors to correct:**
-  1. Assuming a high level means the patient took extra lithium. In chronic toxicity the dose is usually unchanged; the *clearance* changed.
-  2. Treating the serum level as a severity score.
-  3. Reaching for activated charcoal on reflex — it does not bind lithium [5].
-  4. Confusing lithium-induced **nephrogenic** DI with central DI, or with lithium nephropathy (a separate, slower problem).
-  5. Missing NMS because "the lithium level explains it." Always check tone, temperature, and CK.
-  6. Forgetting to recheck the level after dialysis and missing the rebound.
-  7. Concluding "she should never take lithium again" — losing sight of its unique mortality and suicide-prevention data [8].
-- **If the group moves fast**, push on: *what changes if she is 30 and planning a pregnancy?* (First-trimester lithium exposure is associated with an increased risk of cardiac malformations, and the association is **dose-dependent**; the magnitude was smaller than historically postulated. This is a shared-decision conversation weighing teratogenic risk against relapse risk — not an automatic discontinuation [12].) Or: *what if the level were 1.4 but she were still ataxic and confused?* (Still toxic. Still an emergency. Treat the patient.)
-- **Safety note:** if a learner raises intentional overdose, keep the discussion oriented to **recognition, escalation, and safety planning** — screening for suicidality, involving the supervising resident or attending immediately, and safe storage/supply counseling as a general principle. Do not discuss substances, amounts, or routes. It is worth naming for the group that lithium's antisuicide signal [8] is one reason the drug is not simply abandoned in patients at risk — but that risk assessment and safety planning are clinical tasks for the supervising physician, not a checklist item.
-- **Tone note:** this patient did everything right. Her husband filled the pillbox correctly, she took every dose, and she still ended up in the ED. Make sure the group lands on *system failure* — a prescribing handoff without a lithium level — rather than patient blame.
-
----
-
-### References
-
-1. Gitlin M. Lithium side effects and toxicity: prevalence and management strategies. *Int J Bipolar Disord.* 2016. [DOI](https://doi.org/10.1186/s40345-016-0068-y) (PMID 27900734)
-2. Prasad S, Sharma V, Sosal W, et al. Lithium: a review of its adverse effects, toxicity and discontinuation. *Dis Mon.* 2026. [DOI](https://doi.org/10.1016/j.disamonth.2026.102064) (PMID 41620355)
-3. Al-Soleiti M, Leung JG, Mubaydeen T, et al. Lithium toxicity and altered clearance following initiation of semaglutide in patients with bipolar disorder: a case series and literature review. *J Clin Psychopharmacol.* 2025. [DOI](https://doi.org/10.1097/JCP.0000000000002090) (PMID 40999647)
-4. Schoot TS, Molmans THJ, Grootens KP, Kerckhoffs APM. Systematic review and practical guideline for the prevention and management of the renal side effects of lithium therapy. *Eur Neuropsychopharmacol.* 2019. [DOI](https://doi.org/10.1016/j.euroneuro.2019.11.006) (PMID 31837914)
-5. Hoegberg LCG, Gosselin S, Buckley NA, et al. Recommendations from the Clinical Toxicology Recommendations Collaborative on the administration of activated charcoal in acute oral overdose. *Clin Toxicol (Phila).* 2026. [DOI](https://doi.org/10.1080/15563650.2025.2609807) (PMID 41906697)
-6. King JD, Kern MH, Jaar BG. Extracorporeal removal of poisons and toxins. *Clin J Am Soc Nephrol.* 2019. [DOI](https://doi.org/10.2215/CJN.02560319) (PMID 31439539)
-7. Decker BS, Goldfarb DS, Dargan PI, et al. Extracorporeal treatment for lithium poisoning: systematic review and recommendations from the EXTRIP workgroup. *Clin J Am Soc Nephrol.* 2015. [DOI](https://doi.org/10.2215/CJN.10021014) (PMID 25583292)
-8. Wilkinson ST, Trujillo Diaz D, Rupp ZW, et al. Pharmacological and somatic treatment effects on suicide in adults: a systematic review and meta-analysis. *Depress Anxiety.* 2021. [DOI](https://doi.org/10.1002/da.23222) (PMID 34762330)
-9. Shulman KI, Almeida OP, Herrmann N, et al. Delphi survey of maintenance lithium treatment in older adults with bipolar disorder: an ISBD task force report. *Bipolar Disord.* 2018. [DOI](https://doi.org/10.1111/bdi.12714) (PMID 30375703)
-10. Bosi A, Ceriani L, Elinder CG, et al. Quality of laboratory biomarker monitoring during treatment with lithium in patients with bipolar disorder. *Bipolar Disord.* 2023. [DOI](https://doi.org/10.1111/bdi.13302) (PMID 36651925)
-11. Nederlof M, Egberts TCG, van Londen L, et al. Compliance with the guidelines for laboratory monitoring of patients treated with lithium: a retrospective follow-up study among ambulatory patients in the Netherlands. *Bipolar Disord.* 2019. [DOI](https://doi.org/10.1111/bdi.12730) (PMID 30472760)
-12. Patorno E, Huybrechts KF, Bateman BT, et al. Lithium use in pregnancy and the risk of cardiac malformations. *N Engl J Med.* 2017. [DOI](https://doi.org/10.1056/NEJMoa1612222) (PMID 28591541)
-
-*Citations retrieved from PubMed. This teaching case uses a synthetic, de-identified scenario for educational purposes only. Monitoring intervals and target ranges vary between guidelines; follow your institution's protocol.*
 
 *Joshua Moss, MD | Psychiatrist*

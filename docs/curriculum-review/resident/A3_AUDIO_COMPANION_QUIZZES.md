@@ -1743,7 +1743,7 @@
    - A clear manic episode with psychosis during continued full-dose treatment
      - *feedback:* Mania with psychosis requires a different diagnostic and safety assessment.
 
-4. **Which clinical approach best avoids overinterpreting the Moncrieff withdrawal discussion?**
+4. **Which clinical approach best avoids overinterpreting the antidepressant-withdrawal literature?**
    - Discuss benefits, adverse effects, withdrawal risk, and patient goals before changing treatment. **← keyed correct**
      - *feedback:* Balanced shared decision-making is the practical takeaway for students and clinicians.
    - Tell patients antidepressants never help and should not be prescribed.
@@ -1846,7 +1846,7 @@
    - The risk of harm is greater than the benefit, resulting in an NNT higher than the NNH. This interpretation would likely lead to a recommendation against using these medications, which is not the current clinical consensus.
    - The NNT is 143 for remission, making the medication clinicaly ineffective for most youth. This incorrectly attributes the higher number (NNH) to the clinical benefit (NNT).
    - The benefits far outweigh the risks, with an NNT of 10 and an NNH of 143. **← keyed correct**
-     - *feedback:* For every 10 patients treated, one achieves clinical response, whereas it takes 143 patients to see one additional case of suicidal ideation.
+     - *feedback:* For every 10 patients treated, one ADDITIONAL patient responds beyond what placebo would achieve — response was roughly 60% on drug vs 50% on placebo, not 1 in 10 — whereas it takes 143 patients to see one additional case of suicidal ideation or behavior.
 
 5. **A 16-year-old is prescribed fluoxetine for depression. Based on clinical pearls, what is the most critical monitoring period for treatment-emergent suicidality?**
    - Only after the medication has reached a steady state, typically after 3 months.
@@ -2571,18 +2571,18 @@
 
 4. **Based on the clinical pearls from the BALANCE trial, what is the recommended approach for a patient experiencing an incomplete response to lithium monotherapy?**
    - Discontinue all mood stabilizers and monitor for symptoms.
-     - *feedback:* This contradicts the goal of maintenance therapy and the study's findings on the risks of lithium withdrawal.
+     - *feedback:* This contradicts the goal of maintenance therapy, and abrupt withdrawal carries its own relapse risk — a finding from the lithium-discontinuation literature rather than from BALANCE.
    - Switch immediately to valproate monotherapy for better maintenance. The trial demonstrated that valproate monotherapy is inferior to lithium-containing regimens.
    - Abruptly stop lithium and start a second-generation antipsychotic. Abrupt discontinuation of lithium is strongly discouraged due to the high risk of rapid relapse.
    - Utilize combination therapy by adding valproate to the lithium regimen. **← keyed correct**
      - *feedback:* The study suggests that the combination of lithium and valproate is appropriate and effective for patients who do not fully respond to one agent.
 
-5. **What is a critical implementation point regarding the discontinuation of lithium, according to the trial's findings on relapse timing?**
+5. **What is a critical implementation point regarding the discontinuation of lithium — a point that comes from the separate lithium-discontinuation literature (Baldessarini, Tondo & Faedda, *J Clin Psychiatry* 1996), not from BALANCE itself?**
    - Gradual discontinuation is essential because abrupt withdrawal precipitates relapse in a median of 4 months versus 20 months. **← keyed correct**
-     - *feedback:* The study clearly showed that the time to relapse is significantly shortened if lithium is stopped suddenly.
+     - *feedback:* Baldessarini et al. (1996) pooled 161 patients and found median time to recurrence of 20.0 months after gradual (15-30 day) versus 4.0 months after rapid (1-14 day) discontinuation. BALANCE did not study discontinuation speed.
    - Lithium can be stopped abruptly as long as the patient has been stable for at least 2 years. Regardless of previous stability, the rate of withdrawal significantly impacts the risk and timing of relapse.
    - A cross-titration to valproate over 3 days is considered 'gradual' enough. Three days is generally considered too rapid for lithium discontinuation and does not align with the emphasis on avoiding abrupt withdrawal.
-   - The method of discontinuation has no impact on the median time to relapse. The data showed a dramatic difference (4 months vs. 20 months) based on how the medication was stopped.
+   - The method of discontinuation has no impact on the median time to relapse. The lithium-discontinuation literature showed a dramatic difference (4 months vs. 20 months) based on how the medication was stopped.
 
 ## AR-25 — The Bush-Francis Catatonia Rating Scale and Lorazepam Protocol  (6 questions)
 
@@ -2809,10 +2809,10 @@
 4. **In the context of clinical trials for psychiatric medications, what is the regulatory status of the C-SSRS?**
    - It has been replaced by the Scale for Suicide Ideation (SSI) in most regulatory settings.
      - *feedback:* The C-SSRS outperformed the SSI in predictive validity in the Posner study and remains the standard.
-   - It is an optional tool that may be used if the primary investigator has a background in psychiatry. It is not optional; its use is mandated for safety monitoring in these specific types of clinical research.
+   - It is an optional tool that may be used if the primary investigator has a background in psychiatry. Prospective suicidality monitoring is expected in these trials regardless of investigator background, and the instrument choice is not a matter of preference.
    - It is only required for trials involving pediatric populations. The requirement applies to psychiatric medication trials across various age groups due to the universal need for standardized risk monitoring.
-   - It is required by the FDA for all clinical trials involving psychiatric medications. **← keyed correct**
-     - *feedback:* The C-SSRS has become the regulatory standard for monitoring suicidal ideation and behavior in drug trials.
+   - Its use is recommended by FDA guidance for prospective suicidality monitoring in psychiatric drug trials, where it has become the de facto regulatory standard. **← keyed correct**
+     - *feedback:* FDA's 2012 guidance says prospective suicidal-ideation-and-behavior assessment SHOULD be performed in such trials and accepts any C-CASA-mapped instrument; the C-SSRS became the de facto standard rather than a legal requirement.
 
 5. **A 2025 meta-analysis referenced in the material confirmed the C-SSRS predictive validity by finding a pooled Odds Ratio (OR) of 3.14 for which of the following?**
    - Passive ideation predicting immediate inpatient discharge success.
@@ -3862,10 +3862,10 @@
    - A single infusion provides a permanent cure for treatment-resistant depression. **← keyed correct**
      - *feedback:* The effects of a single infusion are rapid but transient, typically lasting only up to 7 days, necessitating maintenance strategies.
 
-6. **The Zarate 2006 study served as the foundation for the 2019 FDA approval of which medication for TRD and acute suicidal behavior?**
+6. **The Zarate 2006 study served as the foundation for the 2019 FDA approval of which medication for TRD (an indication extended in 2020 to depressive symptoms in MDD with acute suicidal ideation or behavior)?**
    - Oral Memantine
      - *feedback:* Memantine is an NMDA antagonist used for Alzheimer's, but it was not the drug approved for TRD based on this research.
    - Intramuscular Ketamine While ketamine is used off-label, it was the intranasal S-enantiomer that received specific FDA approval for these indications.
    - Intravenous R-ketamine The FDA-approved product is the intranasal formulation of the S-enantiomer, not the R-enantiomer.
    - Intranasal Esketamine **← keyed correct**
-     - *feedback:* Spravato (intranasal esketamine) was approved in 2019 following the research trajectory initiated by this proof-of-concept study.
+     - *feedback:* Spravato (intranasal esketamine) was approved in March 2019 for treatment-resistant depression, following the research trajectory this proof-of-concept study began; the acute-suicidality indication was added in 2020, and the label states that effectiveness in preventing suicide or reducing suicidal ideation has not been demonstrated.
