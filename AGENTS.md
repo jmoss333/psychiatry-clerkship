@@ -44,12 +44,27 @@ python3 13_Faculty_Resources/_automation/validate_attestation_consistency.py
 # is a separate Playwright suite (own deps + CI job; not runnable from repo root).
 node --test tests/*.test.mjs        # guarded in CI (build-test-validate)
 
+# THE one-command local gate. Runs everything CI runs plus checks CI does not have
+# (span audit, qbank coherence). ~90s+ — background it to a log and poll. This is what the
+# pre-push hook runs, so a red verify.sh blocks every push from the Mac.
+bash bin/verify.sh            # --quick for the fast subset
+
 # Playwright smoke suite (nav crawl · LFS integrity · visual regression)
 cd tests/smoke && npm ci && npx playwright test
 ```
 - CI (`.github/workflows/ci.yml`) runs on every PR: path-lint → media/topic_meta/longitudinal
   validators → build+QA gate (ms3 & res) → smoke tests. It mirrors Netlify, so breakage turns a PR
   red instead of only failing at deploy.
+- `bin/verify.sh` is a **superset** of `ci.yml`, not a mirror: `bin/check-verify-coverage.py`
+  enforces that every CI step has a local equivalent (or a recorded `ALLOWED` exemption), but
+  verify.sh may run more. `bin/verify_spans.py` and `bin/check_qbank_coherence.py` run there and
+  not in CI — and both **exit 0 even when they flag rows**, so they surface findings at push time
+  without blocking. Read their output; a PASS line is not "nothing found".
+- **A local gate failing while CI is green usually means bash 3.2**, not your change: the Mac's
+  `/bin/bash` is 3.2.57 and CI's is >= 4.4. Under `set -u`, bash < 4.4 treats `"${ARR[@]}"` on an
+  empty array as unbound and aborts with an empty message (PR #469). Write
+  `${ARR[@]+"${ARR[@]}"}`. Prove whose fault it is by running the failing gate on clean `main`
+  before reaching for `--no-verify` (which is never the answer).
 - **Visual baselines must be generated on Ubuntu/Chromium** (the CI runner), not a macOS laptop —
   regenerate via the "Refresh visual baselines" workflow_dispatch, not locally.
 
@@ -74,6 +89,21 @@ cd tests/smoke && npm ci && npx playwright test
   the matching **pre-commit** gate for hand edits. The tool hooks (PreToolUse/PostToolUse) also
   fire for a subagent's tool calls; SessionStart and Stop are session-level. A subagent's tool
   allowlist is still its primary enforcement. `tests/hooks.test.mjs` drives every hook.
+- `bin/` — the audit tools that find the defect classes **no schema or gate can see**, because
+  each item is individually valid and the corpus is jointly wrong. `sweep_unlicensed_claims.py`
+  (specific assertion, no attribution in range — report-only; calibrate before quoting a count),
+  `verify_spans.py` (every sentence of a stored `sourceSpan` must appear verbatim in the paper —
+  the validators check claim-vs-span, this checks span-vs-paper), `check_qbank_coherence.py`
+  (two question-bank items that teach different steps for the same scenario),
+  `check_instrument_links.py` (dev-only; the recorded instrument routes still resolve —
+  deliberately not in CI, external links are flaky and the build egress blocks those hosts).
+- `docs/curriculum-review/findings/` — the review→remediation loop. `export_curriculum_review.py`
+  produces the transcripts, a review pass writes `findings.json` (id · verbatim `quote` ·
+  ready-to-paste `replacement` · `verification`), and remediation lands as small per-work-package
+  PRs. **`rejected.json` is a do-not-apply list** — each entry records why the page was right.
+  Findings point at transcripts; you fix **sources** (never hand-edit `docs/curriculum-review/`).
+  Completion check for a claimed fix: grep its verbatim `quote` in the regenerated transcript —
+  it must be gone. Still present = you edited the wrong audience's source.
 - `docs/superpowers/{plans,specs}/` — dated design docs and implementation plans.
 - `13_Faculty_Resources/_automation/export_curriculum_review.py` → `docs/curriculum-review/`
   — assembles a complete human-readable transcript of everything each site ships (one set per
@@ -137,4 +167,9 @@ cd tests/smoke && npm ci && npx playwright test
   waiver pending the Taylor & Francis letter — that waiver is the one thing still blocking Wave 4,
   and an agent must not narrow or lift it. An instrument is exempt only once its status is recorded
   in the audit's decision table — Option A settles scope, not individual cases.
+  **A withdrawal must leave a route (INV-IR2, 2026-09-03).** Retiring an instrument may not leave
+  a dead end: every removed or link-only instrument ships the custodian's official `formUrl` from
+  `instrument_rights.json`, and `site_build/instrument-rights-gate.mjs` fails the build when a
+  pinned page drops it or points at a copy hosted here. `bin/check_instrument_links.py` re-checks
+  the far end by hand; it is not a gate.
   Audit and current disposition: `docs/superpowers/plans/2026-08-20-instrument-reproduction-audit.md`.
