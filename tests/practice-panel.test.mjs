@@ -101,6 +101,12 @@ const F = new Function('esc', 'ctaHref', 'ctaAttrs', 'FD_INDEX', 'FD_TOOL_REGIST
      practiceReason: practiceReason, practiceLinkedTools: practiceLinkedTools };`,
 )(esc, ctaHref, ctaAttrs, FD_INDEX, TOOL_REGISTRY, {});
 
+const actionKey = (h) => {
+  const s = String(h || '');
+  const m = s.match(/[?&]tool=([^&#]+)/) || s.match(/^tools\/([^/?#]+\.html)$/);
+  return m ? decodeURIComponent(m[1]) : '';
+};
+
 const topicEntries = Object.entries(TOPIC_META).filter(([, m]) => m && typeof m === 'object');
 const renderAll = () => topicEntries
   .filter(([, m]) => F.hasPracticeTpl(m))
@@ -119,11 +125,16 @@ test('a rights reference never renders as an action anywhere in the panel', () =
   let seen = 0;
   for (const [ref, html] of renderAll()) {
     for (const rights of RIGHTS_REFS) {
-      const re = new RegExp(`<a class="([^"]*)" href="\\?tool=${rights.replace('.', '\\.')}"[^>]*>([^<]*)</a>`, 'g');
+      // NOTE: match ANY anchor, not just class-carrying ones. buildWorkflow emits
+      // `<a href=...>` with no class attribute, so the earlier `<a class="..." href=`
+      // form silently skipped it — that false negative is what let 9 pages ship a
+      // retired instrument as a workflow action (Codex P1 on #480).
+      const re = new RegExp(`<a ([^>]*)href="\\?tool=${rights.replace('.', '\\.')}"[^>]*>([^<]*)</a>`, 'g');
       let m;
       while ((m = re.exec(html)) !== null) {
         seen += 1;
-        const [, cls, text] = m;
+        const [, attrs, text] = m;
+        const cls = (attrs.match(/class="([^"]*)"/) || [, ''])[1];
         assert.match(cls, /\bis-reference\b/, `${ref}: ${rights} must carry is-reference, got "${cls}"`);
         assert.doesNotMatch(cls, /\bis-safety\b/, `${ref}: ${rights} must not get the safety treatment`);
         assert.doesNotMatch(text, /→/, `${ref}: ${rights} must not render an action arrow`);
@@ -148,12 +159,30 @@ test('no retired instrument label or "open the screener" imperative survives any
   }
 });
 
-test("buildWorkflow's actions row also refuses the author's rights-reference label", () => {
+test("buildWorkflow drops a rights reference from its actions row entirely", () => {
+  // Relabelling was not enough: a retired instrument under a corrected title is still being
+  // offered as a workflow action. buildPracticeTools routes the same target to the
+  // "Official forms" block, so suppressing it here loses nothing (asserted on real data below).
   const html = F.buildWorkflow({
     clinicalWorkflow: { ask: 'x', actions: [{ label: 'Open the C-SSRS screener', href: '?tool=cssrs.html' }] },
   });
   assert.ok(!html.includes('Open the C-SSRS screener'));
-  assert.ok(html.includes(esc(manifestTitle('cssrs.html'))));
+  assert.ok(!html.includes('?tool=cssrs.html'), 'a rights reference must not appear as a workflow action');
+  assert.ok(!html.includes('<div class="workflow-actions">'),
+    'an actions row emptied by suppression must not render as an empty container');
+});
+
+test('a non-rights workflow action still renders, alongside a suppressed one', () => {
+  const html = F.buildWorkflow({
+    clinicalWorkflow: {
+      ask: 'x',
+      actions: [{ label: 'Open C-SSRS', href: '?tool=cssrs.html' },
+                { label: 'Open the ladder', href: '?tool=rp-agitation.html' }],
+    },
+  });
+  assert.ok(!html.includes('?tool=cssrs.html'));
+  assert.match(html, /<div class="workflow-actions">/);
+  assert.ok(html.includes('Open the ladder'));
 });
 
 test('a non-rights tool still keeps the author-written cta label', () => {
@@ -162,6 +191,77 @@ test('a non-rights tool still keeps the author-written cta label', () => {
     'agitation.md',
   );
   assert.ok(html.includes('Open the Agitation Ladder trainer'));
+});
+
+// ---- Codex review of #480 · the workflow card is the third renderer -----------------------------
+//
+// Both findings below were real and both were invisible to the tests above: buildWorkflow emits
+// class-less anchors and was never passed the promoted-action seen set. They are pinned against
+// the WHOLE of topic_meta, not a synthetic fixture, because the count is the point.
+
+test('P1 · no rights reference is emitted inside a workflow-actions row, on any page', () => {
+  let rows = 0;
+  for (const [ref, m] of topicEntries) {
+    if (!F.hasPracticeTpl(m)) continue;
+    const wa = F.buildTpl(m, ref).match(/<div class="workflow-actions">([\s\S]*?)<\/div>/);
+    if (!wa) continue;
+    rows += 1;
+    for (const rights of RIGHTS_REFS) {
+      assert.ok(!wa[1].includes(`?tool=${rights}`),
+        `${ref}: ${rights} is presented as a workflow action`);
+    }
+  }
+  assert.ok(rows >= 20, `expected many pages to render a workflow actions row, saw ${rows}`);
+});
+
+test('P1 · suppressing it in the workflow card never loses the Official-forms link', () => {
+  // The governance fix must not become a governance regression: every page that declares a
+  // rights reference anywhere must still route the learner to the official form.
+  let checked = 0;
+  for (const [ref, m] of topicEntries) {
+    if (!F.hasPracticeTpl(m)) continue;
+    const declared = new Set();
+    const ctas = Array.isArray(m.cta) ? m.cta : (m.cta ? [m.cta] : []);
+    for (const a of [...ctas, ...((m.clinicalWorkflow || {}).actions || [])]) {
+      const key = (typeof a === 'object' && a) ? actionKey(a.href || '') : '';
+      if (RIGHTS_REFS.includes(key)) declared.add(key);
+    }
+    if (!declared.size) continue;
+    const html = F.buildTpl(m, ref);
+    const forms = html.indexOf('>Official forms<');
+    assert.notEqual(forms, -1, `${ref} declares a rights reference but shows no Official forms block`);
+    for (const key of declared) {
+      checked += 1;
+      assert.ok(html.slice(forms).includes(`?tool=${key}`),
+        `${ref}: ${key} vanished instead of moving to Official forms`);
+    }
+  }
+  assert.ok(checked >= 9, `expected at least the 9 audited pages, saw ${checked}`);
+});
+
+test('P2 · the promoted primary is never repeated in the workflow actions row', () => {
+  // Dedupe is by DESTINATION, not by tool: `?tool=x.html` and `?tool=x.html&case=y` are two
+  // different places to land, and the author's case-specific action carries its own label.
+  // Collapsing them by tool would suppress the more specific one, which is the worse outcome.
+  for (const [ref, m] of topicEntries) {
+    if (!F.hasPracticeTpl(m)) continue;
+    const html = F.buildTpl(m, ref);
+    const pm = html.match(/Do this next<\/div><div class="practice-actions">([\s\S]*?)<\/div>/);
+    const wa = html.match(/<div class="workflow-actions">([\s\S]*?)<\/div>/);
+    if (!pm || !wa) continue;
+    const href = (pm[1].match(/href="([^"]+)"/) || [])[1];
+    if (!href) continue;
+    assert.ok(!wa[1].includes(`href="${href}"`),
+      `${ref}: the promoted action ${href} is repeated in the workflow card`);
+  }
+});
+
+test('a workflow actions row is never rendered empty by suppression', () => {
+  for (const [ref, m] of topicEntries) {
+    if (!F.hasPracticeTpl(m)) continue;
+    const wa = F.buildTpl(m, ref).match(/<div class="workflow-actions">([\s\S]*?)<\/div>/);
+    if (wa) assert.ok(!/^\s*$/.test(wa[1]), `${ref} renders an empty workflow-actions container`);
+  }
 });
 
 // ---- WP-A (label half) · titles come from the registry -----------------------------------------

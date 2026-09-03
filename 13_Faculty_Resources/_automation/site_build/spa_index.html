@@ -710,14 +710,14 @@
   function ctaAttrs(h){ return /^\?(page|tool)=/.test(h)?'':' target="_blank" rel="noopener"'; }
   var WF_STAGE_LABELS={encounter:'Encounter',diagnosis:'Diagnosis',safety:'Safety',treatment:'Treatment',communication:'Communication',family:'Family',team:'Team',exam:'Exam'};
   var WF_FIELDS=[['ask','What to ask'],['mse','MSE focus'],['safety','Safety'],['say','What to say'],['collateral','Family/collateral'],['rounds','Rounds'],['exam','Exam focus']];
-  function buildWorkflow(m){
+  function buildWorkflow(m,seen){
     var cw=m&&m.clinicalWorkflow, stages=(m&&Array.isArray(m.workflowStages))?m.workflowStages:[], has=false, h='';
     if(cw){ for(var i=0;i<WF_FIELDS.length;i++){ if(cw[WF_FIELDS[i][0]])has=true; } if(Array.isArray(cw.actions)&&cw.actions.length)has=true; }
     if(!has&&!stages.length)return '';
     h+='<div class="workflow-card"><div class="workflow-head"><div class="workflow-title">On the unit</div>';
     if(stages.length){ h+='<div class="workflow-stage" aria-label="Clinical workflow stages">'; for(var s=0;s<stages.length;s++){ h+='<span>'+esc(WF_STAGE_LABELS[stages[s]]||stages[s])+'</span>'; } h+='</div>'; }
     h+='</div>';
-    if(cw){ h+='<div class="workflow-grid">'; for(var j=0;j<WF_FIELDS.length;j++){ var key=WF_FIELDS[j][0], val=cw[key]; if(val){ h+='<div class="workflow-step"><div class="k">'+esc(WF_FIELDS[j][1])+'</div><div class="v">'+esc(val)+'</div></div>'; } } h+='</div>'; if(Array.isArray(cw.actions)&&cw.actions.length){ h+='<div class="workflow-actions">'; for(var a=0;a<cw.actions.length;a++){ var act=cw.actions[a]||{}, href=ctaHref(act.href||''); if(href){ h+='<a href="'+esc(href)+'"'+ctaAttrs(href)+'>'+esc(practiceActionLabel(actionToolKey(href),act.label))+'</a>'; } } h+='</div>'; } }
+    if(cw){ h+='<div class="workflow-grid">'; for(var j=0;j<WF_FIELDS.length;j++){ var key=WF_FIELDS[j][0], val=cw[key]; if(val){ h+='<div class="workflow-step"><div class="k">'+esc(WF_FIELDS[j][1])+'</div><div class="v">'+esc(val)+'</div></div>'; } } h+='</div>'; if(Array.isArray(cw.actions)&&cw.actions.length){ var wrow=[]; for(var a=0;a<cw.actions.length;a++){ var act=cw.actions[a]||{}, href=ctaHref(act.href||''); if(!href)continue; var wkey=actionToolKey(href); /* A retired or restricted instrument is never a workflow action. buildPracticeTools routes the same target to the "Official forms" block, so nothing is lost by dropping it here. */ if(practiceIsRights(wkey))continue; /* The promoted "Do this next" action is not repeated inside the workflow card. */ if(seen&&seen[href.replace(/#.*$/,'')])continue; wrow.push('<a href="'+esc(href)+'"'+ctaAttrs(href)+'>'+esc(practiceActionLabel(wkey,act.label))+'</a>'); } if(wrow.length)h+='<div class="workflow-actions">'+wrow.join('')+'</div>'; } }
     h+='</div>'; return h;
   }
   function toolExtraFromParams(sp){ var out=''; try{ sp.forEach(function(v,k){ if(k!=='tool'&&k!=='page') out+='&'+encodeURIComponent(k)+'='+encodeURIComponent(v); }); }catch(_){} return out; }
@@ -1157,7 +1157,7 @@
     h+='<section class="practice-section"><div class="practice-section-title">In 30 seconds</div>';
     if(m.tldr){ h+='<div class="in30"><div class="lbl">In 30 seconds</div><div class="one">'+esc(m.tldr)+'</div>'; if(m.points&&m.points.length){ h+='<ul>'; for(var i=0;i<m.points.length;i++){ h+='<li>'+esc(m.points[i])+'</li>'; } h+='</ul>'; } h+='</div>'; } else h+='<p class="practice-muted">Use this page as the quick reference before or after the encounter.</p>';
     h+='</section><section class="practice-section"><div class="practice-section-title">On the unit</div>';
-    var wf=buildWorkflow(m), hasUnit=false; if(wf){ h+=wf; hasUnit=true; }
+    var wf=buildWorkflow(m,pseen), hasUnit=false; if(wf){ h+=wf; hasUnit=true; }
     if(m.cant&&m.cant!==reason){ h+='<div class="cantmiss"><span class="ico">⚠</span><span class="tx"><b>Can’t miss. </b>'+esc(m.cant)+'</span></div>'; hasUnit=true; }
     if(m.ruleOut&&m.ruleOut.length){ h+='<div class="minitree"><div class="lbl">Rule out first → first move</div><div class="ro">'; for(var j=0;j<m.ruleOut.length;j++){ h+='<span class="c">'+esc(m.ruleOut[j])+'</span>'; } h+='</div>'; if(m.firstMove){ h+='<div class="fm"><b>First move · </b>'+esc(m.firstMove)+'</div>'; } h+='<a href="?tool=decision-aids.html">See the visual decision aids →</a></div>'; hasUnit=true; }
     if(!hasUnit)h+='<p class="practice-muted">No bedside workflow scaffold yet.</p>';

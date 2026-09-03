@@ -7,6 +7,26 @@ Corrections found while implementing are marked **[corrected 2026-09-03]** below
 Remaining: **WP-F** (content authoring), which is a different kind of work and belongs in its
 own PR.
 
+**Post-review correction (2026-09-03, Codex on #480).** Two defects survived the WP-B/WP-D work
+because `buildWorkflow` — the *third* tool renderer, the one §5 already flags as easy to forget —
+emits `<a href=...>` with **no `class` attribute**, and was never handed the promoted-action seen set.
+
+| | Defect | Scope | Fix |
+|---|---|---|---|
+| **P1** | A retired/restricted instrument still rendered as a **workflow action**; WP-B only corrected its *label* there. | **9 pages** (`catatonia`, `t_adjustment`, `ect_neuromodulation`, `pg_suicide`, `suicide`, `t_perinatal`, `week2`, `week3`, `cl_reference`) | `buildWorkflow` drops it; `buildPracticeTools` already routes the same target to **Official forms**, so no link is lost. |
+| **P2** | The promoted "Do this next" action repeated inside the workflow card. | **14 pages** (Codex named one) | `pseen` is now passed to `buildWorkflow` too. |
+
+P1 is a **governance** defect, not a cosmetic one: it is the exact presentation the instrument rule
+forbids, on the pages most likely to be used during risk work. **Why the tests missed it:** the WP-B
+contract asserted over `` `<a class="..." href=...` `` — a shape `buildWorkflow` never produces, so
+the assertion was vacuous for that renderer. The test now matches *any* anchor to the target, and
+fails on the pre-fix source (verified by reverting).
+
+P2 is deduplicated by **destination, not by tool**. `?tool=x.html` and `?tool=x.html&case=y` are two
+different places to land, and the author's case-specific action carries its own label; collapsing
+them by tool slug would suppress the more specific one. `pg_formulation.md` is the one page where
+both survive, deliberately.
+
 **Goal:** Make the panel that is pinned to all 74 topic pages say something true and specific about *that page* — correct tool names, governance-correct instrument handling, audience-neutral copy, one obvious next action instead of a nine-link dump.
 
 **Non-goal:** New pages, new tools, new content types, or any change to instrument scope. Every improvement below is a rewiring or a copy fix against data the repo already has and already validates.
