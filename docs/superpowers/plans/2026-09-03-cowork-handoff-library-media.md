@@ -68,7 +68,7 @@ These cost the prior session real time. Check which apply to yours before planni
 
 | Constraint | How it shows up | What to do |
 |---|---|---|
-| **Egress blocked except web search** | `WebFetch` and `curl` return `EGRESS_BLOCKED` / `CONNECT tunnel failed, 403` on every domain — Apple Podcasts, Spotify, publishers, Wikipedia, OpenLibrary | **Test this first.** If your environment *can* fetch, the highest-value unblocked task is the link check (§5.2). If it cannot, say so rather than pretending the slate is verified. |
+| **Egress is allowlisted, not blanket-blocked** | Most hosts fail closed (`curl` exits with no status; `WebFetch` returns `EGRESS_BLOCKED` / `CONNECT tunnel failed, 403`) — Apple Podcasts/iTunes, Amazon, Wikipedia and OpenLibrary all did. But `api.github.com` answers **200**, and `www.googleapis.com/books/v1` is reachable at the network layer, failing only on the shared proxy project's exhausted daily quota (**429** on three consecutive attempts). | **Probe before believing any of this** — the allowlist can differ per environment. Two consequences: (a) the GitHub REST API is a working fallback when the GitHub MCP server drops mid-session, which it did; (b) Google Books is the natural ISBN source for §5.4 and *is* allowlisted, so that task unblocks with an API key or a fresh quota day. The §5.2 link check still needs the publisher and podcast hosts, and those are genuinely closed. |
 | **`git-lfs` absent** | All ~106 media files show as modified; `build_and_check.sh` fails at `lfs-media: ERROR — 105 pointer stub(s)` | Trap 1 in `.claude/skills/clerkship-deploy`. **Never stage or checkout-restore them.** A local build failing *only* at that gate is a sandbox artifact, not a defect — the assembler ran fine. |
 | **Workflow/subagent path broken** | Schema-bearing agents die on `StructuredOutput retry cap (5) exceeded`; subagent tool calls rejected with `permission handler returned updatedInput ... required parameter missing` | The prior session lost 10 of 12 agents this way and redid everything in the main loop. **Try one small delegated call before planning a fan-out.** If it fails, work solo; it is not worth debugging. |
 | **Netlify MCP is wrong-account** | 404s both clerkship sites | Trap 3 in the same skill. You cannot re-run a Netlify deploy from an agent session. |
@@ -126,7 +126,9 @@ byte-reproducible; the six smoke baselines regenerate via the workflow_dispatch,
   no entry is edition-identifiable or library-findable.
 - Add an RSS/Apple canonical beside each YouTube link on the podcast page.
 
-Both need lookup access, so they inherit §5.2's blocker.
+The RSS/Apple canonicals inherit §5.2's blocker outright. The ISBNs do **not**, quite: Google Books is
+allowlisted (§4), so a `books.googleapis.com` key turns the 51-entry backfill into a scripted, verifiable
+pass without waiting on general egress — the cheapest real unblock in this queue.
 
 ---
 
