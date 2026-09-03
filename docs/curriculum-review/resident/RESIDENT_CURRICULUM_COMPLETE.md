@@ -3,7 +3,7 @@
 # RESIDENT curriculum — complete content transcript for clinical review
 
 **Site:** `mmc-psychiatry-residents-sanford` · **Audience:** Residents — MMC/Sanford psychiatry residents
-**Generated:** 2026-09-02 from build `bda0a99` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
+**Generated:** 2026-09-03 from build `d2e6e0a` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
 
 ## Who this is for
 
@@ -19,7 +19,7 @@ This transcript is assembled from the **built site**, not the source tree, so it
 | Narrative pages (markdown) | 86 |
 | Interactive tools | 25 |
 | Deep-link-only (hidden) surfaces | 26 |
-| Words of narrative curriculum | 118,470 |
+| Words of narrative curriculum | 118,987 |
 | Practice question-bank items | 192 |
 | Audio-companion quiz decks / questions | 79 / 437 |
 | Communication cases | 12 |
@@ -86,7 +86,7 @@ High-yield places to concentrate: the `topic_meta` **can't-miss**, **rule-out** 
 
 # RESIDENT · Navigation map
 
-Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-02 @ `bda0a99`.
+Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-03 @ `d2e6e0a`.
 
 ## Orientation  *(pinned)*
 
@@ -135,7 +135,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 3 | Columbia C-SSRS — Official Form & Training | `cssrs.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `04_Acute_and_Safety/Suicide_Risk_and_Safety_Planning/columbia-cssrs-screener.html` |  |
 | 4 | Violence Risk | `violence.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `04_Acute_and_Safety/Violence_Risk/violence_risk_inpatient_teaching.md` | 957 |
 | 5 | Violence Risk (FRST) | `violence.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `04_Acute_and_Safety/Violence_Risk/violence-risk-one-pager.html` |  |
-| 6 | Agitation & Restraint | `agitation.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `04_Acute_and_Safety/Agitation_and_Restraint/agitation_restraint_inpatient_teaching.md` | 1093 |
+| 6 | Agitation & Restraint | `agitation.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `04_Acute_and_Safety/Agitation_and_Restraint/agitation_restraint_inpatient_teaching.md` | 1208 |
 | 7 | Agitation Ladder — PRN Trainer | `rp-agitation.html` | tool | listed | status=`pending` · riskKind=`local-policy` · riskLevel=`high` | `_prototypes/agitation-trainer/rp-agitation.html` |  |
 | 8 | Catatonia | `catatonia.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `04_Acute_and_Safety/Catatonia/catatonia_inpatient_teaching.md` | 639 |
 | 9 | Bush-Francis Catatonia Scale (BFCRS) — Official Form & Training | `bfcrs.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `04_Acute_and_Safety/Catatonia/bfcrs.html` |  |
@@ -145,7 +145,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 13 | Decisional Capacity | `capacity.html` | tool | listed | status=`reviewed` · riskKind=`legal` · riskLevel=`high` | `04_Acute_and_Safety/Decisional_Capacity/decisional-capacity-module.html` |  |
 | 14 | Consult Questions: Capacity, Delirium, Catatonia, Withdrawal | `exp_consult.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/MS3/Student_Ready_Pack/04_expansion_modules/consult_capacity_delirium_catatonia_withdrawal.md` | 935 |
 | 15 | C-L: Emergencies, Tox & Capacity (Numbers) | `cl_reference.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/Resident/cl_reference.md` | 978 |
-| 16 | Inpatient Systems & Med-Legal | `systems_medlegal.md` | md | listed | status=`reviewed` · riskKind=`legal` · riskLevel=`high` | `14_Tracks/Resident/systems_medlegal.md` | 1350 |
+| 16 | Inpatient Systems & Med-Legal | `systems_medlegal.md` | md | listed | status=`reviewed` · riskKind=`legal` · riskLevel=`high` | `14_Tracks/Resident/systems_medlegal.md` | 1389 |
 
 ## Make a Plan
 
@@ -216,14 +216,14 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 8 | Suicide Risk & Safety Planning (Jul 23) | `cotw_20260723_suiciderisk_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`high` | `08_Cases_and_Simulation/case-of-the-week/2026-07-23_suicide-risk-assessment-safety-planning_Resident.md` | 2496 |
 | 9 | MDD — Treatment Selection (Jul 20) | `cotw_20260720_mdd_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-20_mdd-treatment-selection-augmentation_Resident.md` | 1896 |
 | 10 | Bipolar Mania (Jul 20) | `cotw_20260720_bipolar_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-20_bipolar-mania_Resident.md` | 1682 |
-| 11 | Acute Agitation & Delirium (Jul 13) | `cotw_20260713_agitation_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-13_acute-agitation-delirium_Resident.md` | 2204 |
+| 11 | Acute Agitation & Delirium (Jul 13) | `cotw_20260713_agitation_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-13_acute-agitation-delirium_Resident.md` | 2328 |
 | 12 | Serotonin Syndrome vs NMS (Jul 9) | `cotw_20260709_ssnms_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-09_serotonin-syndrome-vs-nms_Resident.md` | 2005 |
 
 ## Evidence and Reference
 
 | # | Title | Slug | Type | Sidebar | Governance | Source path | Words |
 |---|---|---|---|---|---|---|---|
-| 1 | Evidence-Based Inpatient Psychiatry | `evidence_inpatient.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `07_Evidence_and_Reading/Inpatient_Evidence/evidence_inpatient.md` | 5855 |
+| 1 | Evidence-Based Inpatient Psychiatry | `evidence_inpatient.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `07_Evidence_and_Reading/Inpatient_Evidence/evidence_inpatient.md` | 6094 |
 | 2 | The Therapy Reading Room | `therapy_reading_room.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`low` | `07_Evidence_and_Reading/Therapy_Reading_Room/therapy_reading_room.md` | 2839 |
 | 3 | The Psychiatry Canon (200) | `canon_200.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/Resident/canon_200.md` | 8755 |
 | 4 | Book Library | `book_library.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `07_Evidence_and_Reading/Book_Summaries/ms3_book_library.md` | 1200 |
@@ -6402,7 +6402,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **Slug:** `agitation.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `04_Acute_and_Safety/Agitation_and_Restraint/agitation_restraint_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 1,093 words
+- **Length:** 1,208 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -6509,7 +6509,7 @@ Treat the suspected cause. Prefer the oral, collaborative route over an intramus
 
 ## Restraint and seclusion
 
-Restraint and seclusion are safety interventions, never treatments. They do not fix the underlying problem; they buy time. They require a time-limited physician order, close and continuous monitoring, and discontinuation the moment the patient is safe — not the end of a shift. A post-event debrief with the team (and, where appropriate, the patient) is part of the standard, not an extra. These practices are governed by CMS and Joint Commission standards, and they carry real physical risk (injury, aspiration) and psychological risk (re-traumatization). Apply trauma-informed care throughout, and stay alert to the documented inequities in who gets restrained and how often: Black patients face roughly **1.85× the adjusted odds of a restraint event** on inpatient psychiatric units (Singal et al., *Psychiatric Services* 2024), and higher adjusted odds of physical and chemical restraint during emergency psychiatric evaluation in the ED as well (aOR ~1.35; Smith et al., *Psychiatric Services* 2022) — that disparity is a quality-of-care issue, not a footnote.
+Restraint and seclusion are safety interventions, never treatments. They do not fix the underlying problem; they buy time. They require a time-limited physician order, close and continuous monitoring, and discontinuation the moment the patient is safe — not the end of a shift. A post-event debrief with the team (and, where appropriate, the patient) is part of the standard, not an extra. These practices are governed by CMS and Joint Commission standards, and the standards are specific rather than aspirational: for restraint or seclusion used for **violent or self-destructive behaviour**, the CMS Conditions of Participation (42 CFR §482.13(e)) require a **face-to-face** (in-person) evaluation by a physician/LIP or trained RN **within 1 hour** of initiation, cap a single order at **4 hours for adults 18 and over** (shorter for minors) with renewal only after re-evaluation, and **prohibit PRN and standing restraint orders** outright. The cap is a ceiling, not an allowance. Non-violent restraint used for medical purposes — the soft wrist restraint protecting a line — runs on a different rule set with no 1-hour face-to-face requirement, so do not carry the behavioural numbers onto a medical floor. They also carry real physical risk (injury, aspiration) and psychological risk (re-traumatization). Apply trauma-informed care throughout, and stay alert to the documented inequities in who gets restrained and how often: Black patients face roughly **1.85× the adjusted odds of a restraint event** on inpatient psychiatric units (Singal et al., *Psychiatric Services* 2024), and higher adjusted odds of physical and chemical restraint during emergency psychiatric evaluation in the ED as well (aOR ~1.35; Smith et al., *Psychiatric Services* 2022) — that disparity is a quality-of-care issue, not a footnote.
 
 ## What the student does
 
@@ -8268,7 +8268,7 @@ Serotonin syndrome, NMS, lithium toxicity, and a prolonging QTc are all **"tell 
 - **Slug:** `systems_medlegal.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `14_Tracks/Resident/systems_medlegal.md`
 - **Governance:** status=`reviewed` · riskKind=`legal` · riskLevel=`high`
-- **Length:** 1,350 words
+- **Length:** 1,389 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -8338,7 +8338,7 @@ Serotonin syndrome, NMS, lithium toxicity, and a prolonging QTc are all **"tell 
 - Writes the admission H&P and problem-oriented daily notes; documents explicit risk reasoning, not just scores.
 - Completes and charts four-abilities capacity assessments tied to the specific decision at hand.
 - Initiates and correctly documents emergency involuntary holds (the "blue paper" + clinician certificate), then tracks the certification/commitment timeline with social work — verifying current Maine/MMC procedure each time.
-- Writes time-limited restraint/seclusion orders and ensures the required monitoring, face-to-face evaluation, and debrief are documented.
+- Writes time-limited restraint/seclusion orders to the regulatory floor and ensures the required monitoring, face-to-face evaluation, and debrief are documented — for violent or self-destructive behaviour that means the **1-hour** in-person evaluation, a **4-hour** maximum order for adults 18 and over renewable only after re-evaluation, and **never a PRN or standing order** (42 CFR §482.13(e)).
 - Recognizes when medication over objection requires a separate legal process and routes it correctly rather than treating under the hold alone.
 - Identifies duty-to-protect and mandatory-reporting situations early and escalates to the attending and risk management.
 - Drives disposition: reconciles meds, secures a dated follow-up appointment, does the warm handoff, and problem-solves boarding, housing, guardianship, and AMA scenarios.
@@ -15236,7 +15236,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **Slug:** `cotw_20260713_agitation_res.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-13_acute-agitation-delirium_Resident.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 2,204 words
+- **Length:** 2,328 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -15335,7 +15335,7 @@ Exam (obtained in fragments): **inattentive** (cannot complete "days of the week
 
 6. **Precipitant workup with pretest reasoning.** Anchor on reversible, high-lethality causes first. Core panel: glucose (done), CBC, CMP (Na⁺/Ca²⁺/glucose/renal/hepatic), **UA + culture**, ± blood cultures/lactate if septic-appearing, TSH, B12 if indicated, ECG, medication reconciliation (**anticholinergic burden** — oxybutynin; opioids; sedatives), and a **withdrawal assessment** given the alcohol ambiguity (consider thiamine before glucose loading, ethanol level, prior withdrawal history). **Can't-miss before accepting "UTI delirium":** hypoglycemia/hypoxia (excluded early), **CNS catastrophe** (stroke, ICH, meningoencephalitis), **nonconvulsive status epilepticus**, **Wernicke encephalopathy**, and toxic/metabolic (hyponatremia, hypercalcemia, hepatic/uremic encephalopathy, anticholinergic toxidrome). **Escalate to head CT** for focal signs, trauma, anticoagulation, or delirium without an identified precipitant; **LP** if meningitis/encephalitis is plausible (fever + altered mentation without another source); **EEG** if seizure/NCSE suspected or if unexplained fluctuating encephalopathy persists. "UTI-precipitated delirium" is a reasonable *leading* hypothesis but should not foreclose the search — pyuria is common and incidental in older adults.
 
-7. **Restraint-minimization & monitoring plan.** Targets: a **calm, arousable, redirectable patient** (e.g., RASS around 0 to −1), *not* iatrogenic obtundation that masks the fluctuating exam. Least-restrictive escalation: environment/1:1 sitter → verbal de-escalation → single lowest-effective enteral/IM agent → physical restraints only as time-limited last resort with frequent reassessment and documentation. Monitoring: **baseline and follow-up ECG/QTc**, telemetry if stacking QT agents or high antipsychotic exposure, electrolyte repletion (K⁺/Mg²⁺), continuous pulse oximetry after parenteral sedation, fall precautions. **Delirium precautions:** reorientation, sensory aids, day/night light-sleep cycling, early mobilization, remove tethers/Foley when possible, treat pain/constipation/retention, family presence. **Handoff to admitting team:** explicit problem framing ("hyperactive delirium, ?UTI vs. early withdrawal — reassess"), the medication rationale and *de-escalation criteria* (stop/taper antipsychotic once agitation resolves and precipitant treated; do not continue at discharge), thiamine and withdrawal-monitoring plan, and PCP follow-up for post-delirium cognitive screening [1,2,3].
+7. **Restraint-minimization & monitoring plan.** Targets: a **calm, arousable, redirectable patient** (e.g., RASS around 0 to −1), *not* iatrogenic obtundation that masks the fluctuating exam. Least-restrictive escalation: environment/1:1 sitter → verbal de-escalation → single lowest-effective enteral/IM agent → physical restraints only as time-limited last resort with frequent reassessment and documentation. For restraint or seclusion used for violent or self-destructive behaviour, know the regulatory floor you are signing to (CMS Conditions of Participation, 42 CFR §482.13(e); the Joint Commission standards align): a **face-to-face** (in-person) evaluation by a physician/LIP or trained RN **within 1 hour** of initiation, an order duration capped at **4 hours** for adults 18 and over and renewable only after re-evaluation, **no PRN or standing restraint orders**, and monitoring documented at defined intervals until release. The cap is a ceiling, not an allowance — release is required the moment the behaviour no longer meets criteria, whatever time is left on the order. Non-violent restraint used for medical purposes runs on a different rule set; do not carry these numbers onto a medical floor. Monitoring: **baseline and follow-up ECG/QTc**, telemetry if stacking QT agents or high antipsychotic exposure, electrolyte repletion (K⁺/Mg²⁺), continuous pulse oximetry after parenteral sedation, fall precautions. **Delirium precautions:** reorientation, sensory aids, day/night light-sleep cycling, early mobilization, remove tethers/Foley when possible, treat pain/constipation/retention, family presence. **Handoff to admitting team:** explicit problem framing ("hyperactive delirium, ?UTI vs. early withdrawal — reassess"), the medication rationale and *de-escalation criteria* (stop/taper antipsychotic once agitation resolves and precipitant treated; do not continue at discharge), thiamine and withdrawal-monitoring plan, and PCP follow-up for post-delirium cognitive screening [1,2,3].
 
 ### Ranked differential (resident depth)
 1. **Hyperactive/mixed delirium, multifactorial** — UTI + **anticholinergic (oxybutynin)** + baseline cognitive vulnerability; best overall fit.
@@ -15568,7 +15568,7 @@ If any component were an **intentional ingestion**, medical stabilization comes 
 - **Slug:** `evidence_inpatient.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `07_Evidence_and_Reading/Inpatient_Evidence/evidence_inpatient.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 5,855 words
+- **Length:** 6,094 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -15668,7 +15668,7 @@ A major paradigm shift is underway: **prediction versus prevention**. Hawton et 
 
 ### Strongest Evidence
 
-For **imminent (24-hour) risk**, the **Brøset Violence Checklist (BVC)** and **Dynamic Appraisal of Situational Aggression (DASA)** have the best evidence. A meta-analysis of 31 studies (282,238 assessments) found pooled effect sizes of Hedges' g = 1.35 (95% CI 1.15–1.56) for the BVC and g = 1.04 (95% CI 0.69–1.39) for the DASA. Both are rated as having acceptable utility and feasibility.
+For **imminent (24-hour) risk**, the **Brøset Violence Checklist (BVC)** and **Dynamic Appraisal of Situational Aggression (DASA)** have the best evidence. A meta-analysis of 31 studies (282,238 assessments; Dickens et al., 2020) found pooled effect sizes of Hedges' g = 1.35 (95% CI 1.15–1.56) for the BVC and g = 1.04 (95% CI 0.69–1.39) for the DASA. Both are rated as having acceptable utility and feasibility.
 
 For **medium/long-term risk**, the **HCR-20v3** is the most globally used structured professional judgment tool, with pooled AUC of 0.69 (95% CI 0.65–0.72) for violent recidivism in forensic populations. An international study found HCR-20v3 performance deteriorated after 6 months, suggesting **reassessment every 6 months** is needed to maintain predictive validity.
 
@@ -15692,13 +15692,13 @@ A narrative review found that 67% of HCR-20 studies focused on predictive validi
 
 **Verbal de-escalation is first-line treatment** per APA and AAEP Project BETA guidelines, effective for a majority of patients within 5 minutes. A cluster randomized study across all Slovenian psychiatric hospitals found de-escalation training reduced aggressive events by **73%** (IRR 0.268) and physical restraints by **70%** (IRR 0.304). However, Cochrane reviews found **no RCTs** of de-escalation techniques for psychosis-induced aggression.
 
-When pharmacotherapy is needed, a landmark **individual participant data network meta-analysis** (Lancet Psychiatry, 2026; 2,705 participants, 13 RCTs) provides the most comprehensive comparison:
+When pharmacotherapy is needed, a landmark **individual participant data network meta-analysis** (Siafis et al., *Lancet Psychiatry* 2026; 2,705 participants, 13 RCTs) provides the most comprehensive comparison. Read the table below with the authors' own caveat in view: they rated confidence in these estimates **very low** (CINeMA), chiefly for imprecision and heterogeneity, and concluded only that combinations "might be among the most effective options." The intervals are wide — the top estimate spans a 17-fold range.
 
 | Agent/Class | Effectiveness vs. Haloperidol (Moderate Agitation) | Key Considerations |
 | --- | --- | --- |
 | Antipsychotic + BZD combinations | OR 12.93 (3.00–50.91) | Most effective; monitor for hypotension |
-| Benzodiazepines (midazolam, lorazepam) | OR 5.52 (1.37–21.02) | Fastest onset (midazolam 8.5 min); respiratory depression risk,  |
-| Other antipsychotics (droperidol, olanzapine, haloperidol+promethazine) | OR 4.54 (1.35–14.45) | Olanzapine well-tolerated; droperidol comparable,  |
+| Benzodiazepines (midazolam, lorazepam) | OR 5.52 (1.37–21.02) | Fastest onset (midazolam 8.5 min); respiratory depression risk |
+| Other antipsychotics (droperidol, olanzapine, haloperidol+promethazine) | OR 4.54 (1.35–14.45) | Olanzapine well-tolerated; droperidol comparable |
 | Haloperidol monotherapy | Reference | Least effective; EPS risk |
 
 ### Landmark Studies
@@ -15753,7 +15753,7 @@ The **Six Core Strategies (6CS)** for S/R reduction have the strongest implement
 
 The **Confusion Assessment Method (CAM)** remains the gold standard for delirium detection, with sensitivity 94–100%, specificity 90–95%, and interrater reliability κ = 0.92. A 2023 meta-analysis confirmed the CAM has the highest specificity (0.98) among bedside tools. Only 12–35% of delirium cases are recognized through routine clinical documentation.
 
-**Multicomponent non-pharmacological prevention** is the cornerstone of management. A meta-analysis of 14 HELP-based studies showed a **53% reduction in incident delirium** (OR 0.47, 95% CI 0.38–0.58). The SCCM PADIS guidelines conditionally recommend these interventions.
+**Multicomponent non-pharmacological prevention** is the cornerstone of management. A meta-analysis of 14 HELP-based studies (Hshieh et al., 2018) showed a **53% reduction in incident delirium** (OR 0.47, 95% CI 0.37–0.59). The SCCM PADIS guidelines conditionally recommend these interventions.
 
 **Antipsychotics do not improve delirium outcomes.** The MIND-USA trial (n=566) found no difference in days alive without delirium or coma with haloperidol or ziprasidone vs. placebo. The AID-ICU trial (n=1,000) similarly found no significant difference in the primary outcome. Long-term MIND-USA follow-up showed no benefit at 3 or 12 months. The PADIS guidelines recommend **against** routine antipsychotic use for delirium.
 
@@ -15779,7 +15779,7 @@ The **Confusion Assessment Method (CAM)** remains the gold standard for delirium
 
 Catatonia prevalence in acute psychiatric inpatient settings is **9–20%**, with mood disorders (not schizophrenia) being the most common underlying condition. The **Bush-Francis Catatonia Rating Scale (BFCRS)** is the most widely used and recommended instrument, with a screening cutoff of ≥2 items. Notably, the BFCRS identifies substantially more cases than DSM-5 criteria alone (18.3% vs. 6.6% prevalence in one study).
 
-**Lorazepam** is effective in up to 90% of acute catatonia cases. A 2026 meta-analysis found an overall remission rate of 55% and response rate of 77%, with a mean BFCRS reduction of 11.88 points (Cohen's d = −3.15). The lorazepam challenge test (2 mg IV) is both diagnostic and therapeutic.
+**Lorazepam** is effective in up to 90% of acute catatonia cases. A 2026 meta-analysis (Bot et al., 53 studies, predominantly case series) found an overall remission rate of 55% and response rate of 77%, with a mean BFCRS reduction of 11.88 points (Cohen's d = −3.15). The lorazepam challenge test (2 mg IV) is both diagnostic and therapeutic.
 
 **ECT** is the definitive treatment, with response rates of **80–100%**, including up to 60% of benzodiazepine non-responders. The FDA reclassified ECT devices in 2018 as indicated for catatonia. Effects can be expected after 4–6 sessions; bitemporal placement is generally preferred.
 
@@ -15863,7 +15863,7 @@ Figure 2 Relative Risk of Compulsory Admission per Subgroup of Intervention
 
 ### Strongest Evidence
 
-**Family psychoeducation (FPE)** has the most robust evidence base, supported by over 100 RCTs. A Lancet Psychiatry network meta-analysis (2022) comparing 11 family intervention models found FPE was the most efficacious for relapse prevention in schizophrenia at 12 months: OR 0.18 (95% CI 0.12–0.27), with only 10% relapsing vs. 37% with treatment as usual. Even the simplest form of family psychoeducation was ranked among the most efficacious, suggesting that informing families about illness, symptoms, and treatment options has a protective role.
+**Family psychoeducation (FPE)** has the most robust evidence base, supported by over 100 RCTs. A *Lancet Psychiatry* network meta-analysis (Rodolico et al., 2022; 90 RCTs, 10,340 participants) comparing 11 family intervention models found FPE was the most efficacious for relapse prevention in schizophrenia at 12 months: OR 0.18 (95% CI 0.12–0.27), with only 10% relapsing vs. 37% with treatment as usual. Even the simplest form of family psychoeducation was ranked among the most efficacious, suggesting that informing families about illness, symptoms, and treatment options has a protective role.
 
 An RCT of 83 hospitalized patients with major depression found that at 15 months, treatment response rates were **49% (multi-family group therapy), 24% (single-family therapy), and 9% (TAU)**.
 
@@ -15975,21 +15975,23 @@ The **DIAMOND initiative** highlights the implementation gap: despite increased 
 
 ## Summary: Evidence Hierarchy Across Domains
 
-| Domain | Strongest Intervention | Effect Size | Evidence Quality |
+| Domain | Strongest Intervention | Effect Size | Evidence Base (§ = section above) |
 | --- | --- | --- | --- |
-| Inpatient suicide prevention | Environmental safety (MHEOCC) | 67% reduction in inpatient suicide | Before-after, system-wide |
-| Post-discharge suicide prevention | Brief CBT for suicidal inpatients | 60% reduction in attempts (NNT=7) | RCT (n=200) |
-| Violence risk (imminent) | BVC/DASA screening | Hedges' g = 1.04–1.35 | Meta-analysis of 31 studies |
-| Agitation pharmacotherapy | Antipsychotic + BZD combination | OR 12.93 vs. haloperidol alone | IPD network meta-analysis |
-| Delirium prevention | Multicomponent non-pharmacological | 53% reduction in incident delirium | Meta-analysis of 14 studies |
-| Catatonia treatment | Lorazepam → ECT | 77–90% response (BZD); 80–100% (ECT),  | Case series/open studies |
-| Capacity assessment | MacCAT-T | ICC 0.92–0.98,  | Validation studies |
-| Reducing compulsory admissions | Advance statements | Significant RR reduction | Meta-analysis |
-| Family intervention | Family psychoeducation | OR 0.18 for relapse at 12 months | Network meta-analysis |
-| Discharge planning | Individualized planning | RR 0.89 for readmission | Cochrane review (33 RCTs) |
-| Readmission reduction | Critical Time Intervention | OR 0.11 for rehospitalization | RCT (n=150) |
-| Collaborative care | CoCM (IMPACT model) | OR 3.45 for treatment response | RCT (n=1,801) |
-| Post-discharge follow-up | SPI + telephone follow-up | ~50% fewer suicidal behaviors | Propensity-scored cohort |
+| Inpatient suicide prevention | Environmental safety (MHEOCC) | 67% reduction in inpatient suicide | Before–after, system-wide — Watts 2012; sustained Watts 2017 (§1) |
+| Post-discharge suicide prevention | Brief CBT for suicidal inpatients | 60% reduction in attempts (NNT=7) | RCT, n=200 — Diefenbach 2024 (§1) |
+| Violence risk (imminent) | BVC/DASA screening | Hedges' g = 1.04–1.35 | Meta-analysis, 31 studies — Dickens 2020 (§2) |
+| Agitation pharmacotherapy | Antipsychotic + BZD combination | OR 12.93 vs. haloperidol alone (95% CrI 3.00–50.91) | IPD network meta-analysis, 13 RCTs — Siafis 2026; authors' confidence **very low** (§3) |
+| Delirium prevention | Multicomponent non-pharmacological (HELP) | 53% reduction in incident delirium | Meta-analysis, 14 studies — Hshieh 2018 (§6) |
+| Catatonia treatment | Lorazepam → ECT | 77% response / 55% remission (BZD); 80–100% (ECT) | Case series and open studies — Bot 2026 (§7) |
+| Capacity assessment | MacCAT-T | ICC 0.92–0.98 | Validation studies; no pooled estimate (§8) |
+| Reducing compulsory admissions | Advance statements | Significant RR reduction | Meta-analysis — de Jong 2016 (§9) |
+| Family intervention | Family psychoeducation | OR 0.18 for relapse at 12 months | Network meta-analysis, 90 RCTs — Rodolico 2022 (§10) |
+| Discharge planning | Individualized planning | RR 0.89 for readmission | Cochrane review 2022, 33 RCTs (§11) |
+| Readmission reduction | Critical Time Intervention | OR 0.11 for rehospitalization | RCT, n=150 — Herman et al. (§12) |
+| Collaborative care | CoCM (IMPACT model) | OR 3.45 for treatment response | RCT, n=1,801 — IMPACT trial (§13) |
+| Post-discharge follow-up | SPI + telephone follow-up | ~50% fewer suicidal behaviors | Propensity-scored cohort — Stanley 2018 (§13) |
+
+This table is an index, not a substitute for the sections it points to. Each § marks where the full estimate, its interval, and its caveats appear above, and every study named here has a DOI in the Sources list at the end of this page. "Strongest" means the strongest *available* evidence for that domain — for agitation pharmacotherapy that is still evidence the original authors rated very low in confidence.
 
 ---
 
@@ -16024,6 +16026,8 @@ Would you like to explore any of these domains in greater depth — for example,
 - Diefenbach GJ, Lord KA, Stubbing J, et al. JAMA Psychiatry. 2024;81(12):1177-1186. doi:10.1001/jamapsychiatry.2024.2349.
 
 - Doupnik SK, Rudd B, Schmutte T, et al. JAMA Psychiatry. 2020;77(10):1021-1030. doi:10.1001/jamapsychiatry.2020.1586.
+
+- Hshieh TT, Yang T, Gartaganis SL, Yue J, Inouye SK. The American Journal of Geriatric Psychiatry. 2018;26(10):1015-1033. doi:10.1016/j.jagp.2018.06.007.
 
 - Hawton K, Lascelles K, Pitman A, Gilbert S, Silverman M. The Lancet. Psychiatry. 2022;9(11):922-928. doi:10.1016/S2215-0366(22)00232-2.
 

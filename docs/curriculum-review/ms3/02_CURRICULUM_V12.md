@@ -199,7 +199,7 @@ If a reading takes longer than 20 minutes, assign a specific question — for ex
 - **Slug:** `evidence_inpatient.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `07_Evidence_and_Reading/Inpatient_Evidence/evidence_inpatient.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 5,855 words
+- **Length:** 6,094 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -299,7 +299,7 @@ A major paradigm shift is underway: **prediction versus prevention**. Hawton et 
 
 ### Strongest Evidence
 
-For **imminent (24-hour) risk**, the **Brøset Violence Checklist (BVC)** and **Dynamic Appraisal of Situational Aggression (DASA)** have the best evidence. A meta-analysis of 31 studies (282,238 assessments) found pooled effect sizes of Hedges' g = 1.35 (95% CI 1.15–1.56) for the BVC and g = 1.04 (95% CI 0.69–1.39) for the DASA. Both are rated as having acceptable utility and feasibility.
+For **imminent (24-hour) risk**, the **Brøset Violence Checklist (BVC)** and **Dynamic Appraisal of Situational Aggression (DASA)** have the best evidence. A meta-analysis of 31 studies (282,238 assessments; Dickens et al., 2020) found pooled effect sizes of Hedges' g = 1.35 (95% CI 1.15–1.56) for the BVC and g = 1.04 (95% CI 0.69–1.39) for the DASA. Both are rated as having acceptable utility and feasibility.
 
 For **medium/long-term risk**, the **HCR-20v3** is the most globally used structured professional judgment tool, with pooled AUC of 0.69 (95% CI 0.65–0.72) for violent recidivism in forensic populations. An international study found HCR-20v3 performance deteriorated after 6 months, suggesting **reassessment every 6 months** is needed to maintain predictive validity.
 
@@ -323,13 +323,13 @@ A narrative review found that 67% of HCR-20 studies focused on predictive validi
 
 **Verbal de-escalation is first-line treatment** per APA and AAEP Project BETA guidelines, effective for a majority of patients within 5 minutes. A cluster randomized study across all Slovenian psychiatric hospitals found de-escalation training reduced aggressive events by **73%** (IRR 0.268) and physical restraints by **70%** (IRR 0.304). However, Cochrane reviews found **no RCTs** of de-escalation techniques for psychosis-induced aggression.
 
-When pharmacotherapy is needed, a landmark **individual participant data network meta-analysis** (Lancet Psychiatry, 2026; 2,705 participants, 13 RCTs) provides the most comprehensive comparison:
+When pharmacotherapy is needed, a landmark **individual participant data network meta-analysis** (Siafis et al., *Lancet Psychiatry* 2026; 2,705 participants, 13 RCTs) provides the most comprehensive comparison. Read the table below with the authors' own caveat in view: they rated confidence in these estimates **very low** (CINeMA), chiefly for imprecision and heterogeneity, and concluded only that combinations "might be among the most effective options." The intervals are wide — the top estimate spans a 17-fold range.
 
 | Agent/Class | Effectiveness vs. Haloperidol (Moderate Agitation) | Key Considerations |
 | --- | --- | --- |
 | Antipsychotic + BZD combinations | OR 12.93 (3.00–50.91) | Most effective; monitor for hypotension |
-| Benzodiazepines (midazolam, lorazepam) | OR 5.52 (1.37–21.02) | Fastest onset (midazolam 8.5 min); respiratory depression risk,  |
-| Other antipsychotics (droperidol, olanzapine, haloperidol+promethazine) | OR 4.54 (1.35–14.45) | Olanzapine well-tolerated; droperidol comparable,  |
+| Benzodiazepines (midazolam, lorazepam) | OR 5.52 (1.37–21.02) | Fastest onset (midazolam 8.5 min); respiratory depression risk |
+| Other antipsychotics (droperidol, olanzapine, haloperidol+promethazine) | OR 4.54 (1.35–14.45) | Olanzapine well-tolerated; droperidol comparable |
 | Haloperidol monotherapy | Reference | Least effective; EPS risk |
 
 ### Landmark Studies
@@ -384,7 +384,7 @@ The **Six Core Strategies (6CS)** for S/R reduction have the strongest implement
 
 The **Confusion Assessment Method (CAM)** remains the gold standard for delirium detection, with sensitivity 94–100%, specificity 90–95%, and interrater reliability κ = 0.92. A 2023 meta-analysis confirmed the CAM has the highest specificity (0.98) among bedside tools. Only 12–35% of delirium cases are recognized through routine clinical documentation.
 
-**Multicomponent non-pharmacological prevention** is the cornerstone of management. A meta-analysis of 14 HELP-based studies showed a **53% reduction in incident delirium** (OR 0.47, 95% CI 0.38–0.58). The SCCM PADIS guidelines conditionally recommend these interventions.
+**Multicomponent non-pharmacological prevention** is the cornerstone of management. A meta-analysis of 14 HELP-based studies (Hshieh et al., 2018) showed a **53% reduction in incident delirium** (OR 0.47, 95% CI 0.37–0.59). The SCCM PADIS guidelines conditionally recommend these interventions.
 
 **Antipsychotics do not improve delirium outcomes.** The MIND-USA trial (n=566) found no difference in days alive without delirium or coma with haloperidol or ziprasidone vs. placebo. The AID-ICU trial (n=1,000) similarly found no significant difference in the primary outcome. Long-term MIND-USA follow-up showed no benefit at 3 or 12 months. The PADIS guidelines recommend **against** routine antipsychotic use for delirium.
 
@@ -410,7 +410,7 @@ The **Confusion Assessment Method (CAM)** remains the gold standard for delirium
 
 Catatonia prevalence in acute psychiatric inpatient settings is **9–20%**, with mood disorders (not schizophrenia) being the most common underlying condition. The **Bush-Francis Catatonia Rating Scale (BFCRS)** is the most widely used and recommended instrument, with a screening cutoff of ≥2 items. Notably, the BFCRS identifies substantially more cases than DSM-5 criteria alone (18.3% vs. 6.6% prevalence in one study).
 
-**Lorazepam** is effective in up to 90% of acute catatonia cases. A 2026 meta-analysis found an overall remission rate of 55% and response rate of 77%, with a mean BFCRS reduction of 11.88 points (Cohen's d = −3.15). The lorazepam challenge test (2 mg IV) is both diagnostic and therapeutic.
+**Lorazepam** is effective in up to 90% of acute catatonia cases. A 2026 meta-analysis (Bot et al., 53 studies, predominantly case series) found an overall remission rate of 55% and response rate of 77%, with a mean BFCRS reduction of 11.88 points (Cohen's d = −3.15). The lorazepam challenge test (2 mg IV) is both diagnostic and therapeutic.
 
 **ECT** is the definitive treatment, with response rates of **80–100%**, including up to 60% of benzodiazepine non-responders. The FDA reclassified ECT devices in 2018 as indicated for catatonia. Effects can be expected after 4–6 sessions; bitemporal placement is generally preferred.
 
@@ -494,7 +494,7 @@ Figure 2 Relative Risk of Compulsory Admission per Subgroup of Intervention
 
 ### Strongest Evidence
 
-**Family psychoeducation (FPE)** has the most robust evidence base, supported by over 100 RCTs. A Lancet Psychiatry network meta-analysis (2022) comparing 11 family intervention models found FPE was the most efficacious for relapse prevention in schizophrenia at 12 months: OR 0.18 (95% CI 0.12–0.27), with only 10% relapsing vs. 37% with treatment as usual. Even the simplest form of family psychoeducation was ranked among the most efficacious, suggesting that informing families about illness, symptoms, and treatment options has a protective role.
+**Family psychoeducation (FPE)** has the most robust evidence base, supported by over 100 RCTs. A *Lancet Psychiatry* network meta-analysis (Rodolico et al., 2022; 90 RCTs, 10,340 participants) comparing 11 family intervention models found FPE was the most efficacious for relapse prevention in schizophrenia at 12 months: OR 0.18 (95% CI 0.12–0.27), with only 10% relapsing vs. 37% with treatment as usual. Even the simplest form of family psychoeducation was ranked among the most efficacious, suggesting that informing families about illness, symptoms, and treatment options has a protective role.
 
 An RCT of 83 hospitalized patients with major depression found that at 15 months, treatment response rates were **49% (multi-family group therapy), 24% (single-family therapy), and 9% (TAU)**.
 
@@ -606,21 +606,23 @@ The **DIAMOND initiative** highlights the implementation gap: despite increased 
 
 ## Summary: Evidence Hierarchy Across Domains
 
-| Domain | Strongest Intervention | Effect Size | Evidence Quality |
+| Domain | Strongest Intervention | Effect Size | Evidence Base (§ = section above) |
 | --- | --- | --- | --- |
-| Inpatient suicide prevention | Environmental safety (MHEOCC) | 67% reduction in inpatient suicide | Before-after, system-wide |
-| Post-discharge suicide prevention | Brief CBT for suicidal inpatients | 60% reduction in attempts (NNT=7) | RCT (n=200) |
-| Violence risk (imminent) | BVC/DASA screening | Hedges' g = 1.04–1.35 | Meta-analysis of 31 studies |
-| Agitation pharmacotherapy | Antipsychotic + BZD combination | OR 12.93 vs. haloperidol alone | IPD network meta-analysis |
-| Delirium prevention | Multicomponent non-pharmacological | 53% reduction in incident delirium | Meta-analysis of 14 studies |
-| Catatonia treatment | Lorazepam → ECT | 77–90% response (BZD); 80–100% (ECT),  | Case series/open studies |
-| Capacity assessment | MacCAT-T | ICC 0.92–0.98,  | Validation studies |
-| Reducing compulsory admissions | Advance statements | Significant RR reduction | Meta-analysis |
-| Family intervention | Family psychoeducation | OR 0.18 for relapse at 12 months | Network meta-analysis |
-| Discharge planning | Individualized planning | RR 0.89 for readmission | Cochrane review (33 RCTs) |
-| Readmission reduction | Critical Time Intervention | OR 0.11 for rehospitalization | RCT (n=150) |
-| Collaborative care | CoCM (IMPACT model) | OR 3.45 for treatment response | RCT (n=1,801) |
-| Post-discharge follow-up | SPI + telephone follow-up | ~50% fewer suicidal behaviors | Propensity-scored cohort |
+| Inpatient suicide prevention | Environmental safety (MHEOCC) | 67% reduction in inpatient suicide | Before–after, system-wide — Watts 2012; sustained Watts 2017 (§1) |
+| Post-discharge suicide prevention | Brief CBT for suicidal inpatients | 60% reduction in attempts (NNT=7) | RCT, n=200 — Diefenbach 2024 (§1) |
+| Violence risk (imminent) | BVC/DASA screening | Hedges' g = 1.04–1.35 | Meta-analysis, 31 studies — Dickens 2020 (§2) |
+| Agitation pharmacotherapy | Antipsychotic + BZD combination | OR 12.93 vs. haloperidol alone (95% CrI 3.00–50.91) | IPD network meta-analysis, 13 RCTs — Siafis 2026; authors' confidence **very low** (§3) |
+| Delirium prevention | Multicomponent non-pharmacological (HELP) | 53% reduction in incident delirium | Meta-analysis, 14 studies — Hshieh 2018 (§6) |
+| Catatonia treatment | Lorazepam → ECT | 77% response / 55% remission (BZD); 80–100% (ECT) | Case series and open studies — Bot 2026 (§7) |
+| Capacity assessment | MacCAT-T | ICC 0.92–0.98 | Validation studies; no pooled estimate (§8) |
+| Reducing compulsory admissions | Advance statements | Significant RR reduction | Meta-analysis — de Jong 2016 (§9) |
+| Family intervention | Family psychoeducation | OR 0.18 for relapse at 12 months | Network meta-analysis, 90 RCTs — Rodolico 2022 (§10) |
+| Discharge planning | Individualized planning | RR 0.89 for readmission | Cochrane review 2022, 33 RCTs (§11) |
+| Readmission reduction | Critical Time Intervention | OR 0.11 for rehospitalization | RCT, n=150 — Herman et al. (§12) |
+| Collaborative care | CoCM (IMPACT model) | OR 3.45 for treatment response | RCT, n=1,801 — IMPACT trial (§13) |
+| Post-discharge follow-up | SPI + telephone follow-up | ~50% fewer suicidal behaviors | Propensity-scored cohort — Stanley 2018 (§13) |
+
+This table is an index, not a substitute for the sections it points to. Each § marks where the full estimate, its interval, and its caveats appear above, and every study named here has a DOI in the Sources list at the end of this page. "Strongest" means the strongest *available* evidence for that domain — for agitation pharmacotherapy that is still evidence the original authors rated very low in confidence.
 
 ---
 
@@ -655,6 +657,8 @@ Would you like to explore any of these domains in greater depth — for example,
 - Diefenbach GJ, Lord KA, Stubbing J, et al. JAMA Psychiatry. 2024;81(12):1177-1186. doi:10.1001/jamapsychiatry.2024.2349.
 
 - Doupnik SK, Rudd B, Schmutte T, et al. JAMA Psychiatry. 2020;77(10):1021-1030. doi:10.1001/jamapsychiatry.2020.1586.
+
+- Hshieh TT, Yang T, Gartaganis SL, Yue J, Inouye SK. The American Journal of Geriatric Psychiatry. 2018;26(10):1015-1033. doi:10.1016/j.jagp.2018.06.007.
 
 - Hawton K, Lascelles K, Pitman A, Gilbert S, Silverman M. The Lancet. Psychiatry. 2022;9(11):922-928. doi:10.1016/S2215-0366(22)00232-2.
 

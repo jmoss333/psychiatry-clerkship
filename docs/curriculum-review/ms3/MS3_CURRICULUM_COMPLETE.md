@@ -3,7 +3,7 @@
 # MS3 curriculum — complete content transcript for clinical review
 
 **Site:** `une-ms3-psychiatry` · **Audience:** MS3 — UNE medical students
-**Generated:** 2026-09-02 from build `bda0a99` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
+**Generated:** 2026-09-03 from build `d2e6e0a` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
 
 ## Who this is for
 
@@ -19,7 +19,7 @@ This transcript is assembled from the **built site**, not the source tree, so it
 | Narrative pages (markdown) | 80 |
 | Interactive tools | 23 |
 | Deep-link-only (hidden) surfaces | 10 |
-| Words of narrative curriculum | 99,040 |
+| Words of narrative curriculum | 99,478 |
 | Practice question-bank items | 192 |
 | Audio-companion quiz decks / questions | 79 / 437 |
 | Communication cases | 12 |
@@ -83,7 +83,7 @@ High-yield places to concentrate: the `topic_meta` **can't-miss**, **rule-out** 
 
 # MS3 · Navigation map
 
-Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-02 @ `bda0a99`.
+Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-03 @ `d2e6e0a`.
 
 ## Orientation  *(pinned)*
 
@@ -146,7 +146,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 3 | Columbia C-SSRS — Official Form & Training | `cssrs.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `04_Acute_and_Safety/Suicide_Risk_and_Safety_Planning/columbia-cssrs-screener.html` |  |
 | 4 | Violence Risk | `violence.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `04_Acute_and_Safety/Violence_Risk/violence_risk_inpatient_teaching.md` | 957 |
 | 5 | Violence Risk (FRST) | `violence.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `04_Acute_and_Safety/Violence_Risk/violence-risk-one-pager.html` |  |
-| 6 | Agitation & Restraint | `agitation.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `04_Acute_and_Safety/Agitation_and_Restraint/agitation_restraint_inpatient_teaching.md` | 1093 |
+| 6 | Agitation & Restraint | `agitation.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `04_Acute_and_Safety/Agitation_and_Restraint/agitation_restraint_inpatient_teaching.md` | 1208 |
 | 7 | Catatonia | `catatonia.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `04_Acute_and_Safety/Catatonia/catatonia_inpatient_teaching.md` | 639 |
 | 8 | Bush-Francis Catatonia Scale (BFCRS) — Official Form & Training | `bfcrs.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `04_Acute_and_Safety/Catatonia/bfcrs.html` |  |
 | 9 | Hyperthermia & Toxidromes | `toxidromes.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `04_Acute_and_Safety/Toxidromes/hyperthermia_toxidromes_inpatient_teaching.md` | 566 |
@@ -219,13 +219,13 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | # | Title | Slug | Type | Sidebar | Governance | Source path | Words |
 |---|---|---|---|---|---|---|---|
 | 1 | Index — All Cases | `cotw_index.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `08_Cases_and_Simulation/case-of-the-week/index_ms3.md` | 417 |
-| 2 | Catatonia (Aug 31) | `cotw_20260831_catatonia_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-31_catatonia-recognition-workup-treatment_MS3.md` | 1637 |
+| 2 | Catatonia (Aug 31) | `cotw_20260831_catatonia_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-31_catatonia-recognition-workup-treatment_MS3.md` | 1648 |
 | 3 | Borderline Personality Disorder (Aug 27) | `cotw_20260827_bpd_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-27_borderline-personality-disorder_MS3.md` | 1919 |
 | 4 | Panic Disorder (Aug 10) | `cotw_20260810_panic_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-10_anxiety-panic-disorder_MS3.md` | 3752 |
 | 5 | Lithium — Monitoring & Toxicity (Aug 3) | `cotw_20260803_lithium_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-03_lithium-monitoring-toxicity-interactions_MS3.md` | 3464 |
 | 6 | Opioid Use Disorder (Jul 27) | `cotw_20260727_oud_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-27_opioid-use-disorder_MS3.md` | 2624 |
 | 7 | Alcohol Withdrawal & DT (Jul 26) | `cotw_20260726_etohwd_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-26_alcohol-withdrawal-delirium-tremens_MS3.md` | 2423 |
-| 8 | Suicide Risk & Safety Planning (Jul 23) | `cotw_20260723_suiciderisk_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`high` | `08_Cases_and_Simulation/case-of-the-week/2026-07-23_suicide-risk-assessment-safety-planning_MS3.md` | 2214 |
+| 8 | Suicide Risk & Safety Planning (Jul 23) | `cotw_20260723_suiciderisk_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`high` | `08_Cases_and_Simulation/case-of-the-week/2026-07-23_suicide-risk-assessment-safety-planning_MS3.md` | 2287 |
 | 9 | MDD — Treatment Selection (Jul 20) | `cotw_20260720_mdd_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-20_mdd-treatment-selection-augmentation_MS3.md` | 1290 |
 | 10 | Bipolar Mania (Jul 20) | `cotw_20260720_bipolar_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-20_bipolar-mania_MS3.md` | 1664 |
 | 11 | Acute Agitation & Delirium (Jul 13) | `cotw_20260713_agitation_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-13_acute-agitation-delirium_MS3.md` | 1713 |
@@ -236,7 +236,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | # | Title | Slug | Type | Sidebar | Governance | Source path | Words |
 |---|---|---|---|---|---|---|---|
 | 1 | Weekly Reading Map | `reading_map.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `14_Tracks/MS3/Student_Ready_Pack/03_weekly_map/week_by_week_reading_map.md` | 588 |
-| 2 | Evidence-Based Inpatient Psychiatry | `evidence_inpatient.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `07_Evidence_and_Reading/Inpatient_Evidence/evidence_inpatient.md` | 5855 |
+| 2 | Evidence-Based Inpatient Psychiatry | `evidence_inpatient.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `07_Evidence_and_Reading/Inpatient_Evidence/evidence_inpatient.md` | 6094 |
 | 3 | The Therapy Reading Room | `therapy_reading_room.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`low` | `07_Evidence_and_Reading/Therapy_Reading_Room/therapy_reading_room.md` | 2839 |
 | 4 | MS3 Book Library | `book_library.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `07_Evidence_and_Reading/Book_Summaries/ms3_book_library.md` | 1200 |
 | 5 | Podcast Library (Psychiatry & Psychotherapy) | `podcast_library.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `12_Media/psychiatry_psychotherapy_podcast_library.md` | 2617 |
@@ -7842,7 +7842,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **Slug:** `agitation.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `04_Acute_and_Safety/Agitation_and_Restraint/agitation_restraint_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 1,093 words
+- **Length:** 1,208 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -7949,7 +7949,7 @@ Treat the suspected cause. Prefer the oral, collaborative route over an intramus
 
 ## Restraint and seclusion
 
-Restraint and seclusion are safety interventions, never treatments. They do not fix the underlying problem; they buy time. They require a time-limited physician order, close and continuous monitoring, and discontinuation the moment the patient is safe — not the end of a shift. A post-event debrief with the team (and, where appropriate, the patient) is part of the standard, not an extra. These practices are governed by CMS and Joint Commission standards, and they carry real physical risk (injury, aspiration) and psychological risk (re-traumatization). Apply trauma-informed care throughout, and stay alert to the documented inequities in who gets restrained and how often: Black patients face roughly **1.85× the adjusted odds of a restraint event** on inpatient psychiatric units (Singal et al., *Psychiatric Services* 2024), and higher adjusted odds of physical and chemical restraint during emergency psychiatric evaluation in the ED as well (aOR ~1.35; Smith et al., *Psychiatric Services* 2022) — that disparity is a quality-of-care issue, not a footnote.
+Restraint and seclusion are safety interventions, never treatments. They do not fix the underlying problem; they buy time. They require a time-limited physician order, close and continuous monitoring, and discontinuation the moment the patient is safe — not the end of a shift. A post-event debrief with the team (and, where appropriate, the patient) is part of the standard, not an extra. These practices are governed by CMS and Joint Commission standards, and the standards are specific rather than aspirational: for restraint or seclusion used for **violent or self-destructive behaviour**, the CMS Conditions of Participation (42 CFR §482.13(e)) require a **face-to-face** (in-person) evaluation by a physician/LIP or trained RN **within 1 hour** of initiation, cap a single order at **4 hours for adults 18 and over** (shorter for minors) with renewal only after re-evaluation, and **prohibit PRN and standing restraint orders** outright. The cap is a ceiling, not an allowance. Non-violent restraint used for medical purposes — the soft wrist restraint protecting a line — runs on a different rule set with no 1-hour face-to-face requirement, so do not carry the behavioural numbers onto a medical floor. They also carry real physical risk (injury, aspiration) and psychological risk (re-traumatization). Apply trauma-informed care throughout, and stay alert to the documented inequities in who gets restrained and how often: Black patients face roughly **1.85× the adjusted odds of a restraint event** on inpatient psychiatric units (Singal et al., *Psychiatric Services* 2024), and higher adjusted odds of physical and chemical restraint during emergency psychiatric evaluation in the ED as well (aOR ~1.35; Smith et al., *Psychiatric Services* 2022) — that disparity is a quality-of-care issue, not a footnote.
 
 ## What the student does
 
@@ -14577,7 +14577,7 @@ New cases are added weekly. A matching resident-level version of each case lives
 - **Slug:** `cotw_20260831_catatonia_ms3.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-08-31_catatonia-recognition-workup-treatment_MS3.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 1,637 words
+- **Length:** 1,648 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -14662,7 +14662,7 @@ Vital signs: T 37.0 °C, HR 88, BP 118/74, RR 14, SpO₂ 99% on room air. Mucous
 
 **Q7. What findings would convert this into an emergency, and what is your escalation plan?**
 
-*Teaching point:* **Malignant catatonia** — catatonia plus fever, autonomic instability (labile blood pressure, tachycardia), rigidity, or rising CK — is life-threatening and can be fatal without prompt treatment [1]. Recognition and escalation are the student's job: notify the senior resident and attending immediately, involve medicine/ICU for autonomic monitoring and stabilization, stop any dopamine-blocking agents, and pursue urgent ECT consultation. Separately, as this patient's catatonia lyses, remember that she has a severe depressive episode: complete a structured suicide risk assessment, ensure appropriate observation, and build a safety plan with her before any transition of care. Escalate to your supervisor immediately if she voices thoughts of self-harm.
+*Teaching point:* **Malignant catatonia** — catatonia plus fever, autonomic instability (labile blood pressure, tachycardia), rigidity, or rising CK — is life-threatening and can be fatal without prompt treatment [1]. Recognition and escalation are the student's job: notify the senior resident and attending immediately, involve medicine/ICU for autonomic monitoring and stabilization, stop any dopamine-blocking agents, and pursue urgent ECT consultation. Separately, as this patient's catatonia lyses, remember that she has a severe depressive episode: complete a structured suicide risk assessment with your resident or attending, recommend an observation level to the team, and participate in building a safety plan with her before any transition of care. Escalate to your supervisor immediately if she voices thoughts of self-harm.
 
 ---
 
@@ -15840,7 +15840,7 @@ The critical caveat for the wards: **CIWA-Ar requires a patient who can communic
 - **Slug:** `cotw_20260723_suiciderisk_ms3.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-23_suicide-risk-assessment-safety-planning_MS3.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 2,214 words
+- **Length:** 2,287 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -15916,8 +15916,8 @@ You are the student's first clinician contact in the ED.
 **Q5. What is a *safety plan*, and why is it preferred over a "no-harm contract"?**
 *Teaching point:* The **Safety Planning Intervention (SPI)** is a brief, collaborative, written plan built *with* the patient. Its standard components: recognizing personal **warning signs**; internal **coping strategies**; people and social settings that provide distraction; people to ask for help; professionals/agencies to contact in crisis; and **making the environment safer by reducing access to lethal means**. In a large ED cohort study, SPI plus structured telephone follow-up was associated with roughly **45% fewer suicidal behaviors** over 6 months and about **double the odds** of attending outpatient care compared with usual care [4]. A meta-analysis of safety-planning-type interventions found reduced suicidal *behavior* (number-needed-to-treat ≈ 16), though not a clear effect on ideation alone — reinforcing that the safety plan is one active ingredient, not a stand-alone cure [5].
 
-**Q6. How do you decide *level of care* — who needs hospitalization versus who can be discharged with a plan?**
-*Teaching point:* Disposition is a **clinical judgment integrating acuity and modifiable risk**, not a checklist score. Favor **higher level of care / psychiatric admission** when there is active ideation with intent or a plan, recent preparatory behavior, inability to engage in safety planning, poor impulse control (including significant intoxication), or absent supports. Favor **discharge with a robust safety plan and rapid follow-up** when ideation is passive/low-intent, the patient can collaborate on and commit to a plan, means access can be reduced, and reliable supports and timely outpatient follow-up exist. Importantly, **risk-stratification labels are weak predictors of who will actually act** — so the plan and follow-up matter as much as the "risk level" you assign (see facilitator notes) [6].
+**Q6. How does the team decide *level of care* — who needs hospitalization versus who can be discharged with a plan — and what is your part in that decision as a student?**
+*Teaching point:* Disposition is a **clinical judgment integrating acuity and modifiable risk**, not a checklist score. Favor **higher level of care / psychiatric admission** when there is active ideation with intent or a plan, recent preparatory behavior, inability to engage in safety planning, poor impulse control (including significant intoxication), or absent supports. Favor **discharge with a robust safety plan and rapid follow-up** when ideation is passive/low-intent, the patient can collaborate on and commit to a plan, means access can be reduced, and reliable supports and timely outpatient follow-up exist. Importantly, **risk-stratification labels are weak predictors of who will actually act** — so the plan and follow-up matter as much as the "risk level" you assign (see facilitator notes) [6]. **Your part as a student** is to gather the data, build the formulation, and *recommend* a level of care with your reasoning — the admission or discharge decision, and the orders that follow from it, belong to your supervising resident or attending. Present early rather than after you have decided.
 
 **Q7 (Safety/systems). What concrete steps round out the ED encounter beyond the interview?**
 *Teaching point:* (1) **Means-reduction counseling** — collaboratively work with the patient and, when appropriate, family to reduce access to lethal means at home. Ask explicitly about **firearms** (the method behind about half of US suicide deaths, and the one with by far the highest case fatality), and also about medications — stockpiled prescriptions, over-the-counter analgesics — and alcohol. Counsel on **temporary storage outside the home, or locked storage with the key held by someone else**, and settle before disposition who will do it and by when. Naming what to secure is standard lethal-means-safety counselling and is not "method detail"; leaving it general is how it stops happening. (2) **Involve supports/collateral** with appropriate consent — corroboration and a person who can help enact the plan. (3) **Warm handoff and follow-up** — timely outpatient linkage; brief follow-up contact ("caring contacts") after discharge is associated with better engagement [4]. (4) **Document** the assessment, the reasoning, and the plan. (5) Treat the **underlying disorder** (here, likely depression ± alcohol use).
@@ -15945,7 +15945,7 @@ Suicidal ideation is a **symptom**, not a diagnosis — always identify and trea
 2. **Complete the structured risk assessment**; weigh static + modifiable factors and protective factors.
 3. **Collaboratively build a Safety Plan** (SPI) with the patient [4,5].
 4. **Means-reduction counseling** and mobilize supports.
-5. **Decide level of care** — admit vs. discharge with plan + rapid follow-up.
+5. **Present your level-of-care reasoning to your supervising resident or attending**, who makes the disposition decision (admit vs. discharge with plan + rapid follow-up).
 6. **Arrange follow-up / caring contacts** and communicate a warm handoff.
 7. **Treat the underlying disorder** (start/optimize depression treatment; address alcohol use).
 
@@ -16795,7 +16795,7 @@ If a reading takes longer than 20 minutes, assign a specific question — for ex
 - **Slug:** `evidence_inpatient.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `07_Evidence_and_Reading/Inpatient_Evidence/evidence_inpatient.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 5,855 words
+- **Length:** 6,094 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -16895,7 +16895,7 @@ A major paradigm shift is underway: **prediction versus prevention**. Hawton et 
 
 ### Strongest Evidence
 
-For **imminent (24-hour) risk**, the **Brøset Violence Checklist (BVC)** and **Dynamic Appraisal of Situational Aggression (DASA)** have the best evidence. A meta-analysis of 31 studies (282,238 assessments) found pooled effect sizes of Hedges' g = 1.35 (95% CI 1.15–1.56) for the BVC and g = 1.04 (95% CI 0.69–1.39) for the DASA. Both are rated as having acceptable utility and feasibility.
+For **imminent (24-hour) risk**, the **Brøset Violence Checklist (BVC)** and **Dynamic Appraisal of Situational Aggression (DASA)** have the best evidence. A meta-analysis of 31 studies (282,238 assessments; Dickens et al., 2020) found pooled effect sizes of Hedges' g = 1.35 (95% CI 1.15–1.56) for the BVC and g = 1.04 (95% CI 0.69–1.39) for the DASA. Both are rated as having acceptable utility and feasibility.
 
 For **medium/long-term risk**, the **HCR-20v3** is the most globally used structured professional judgment tool, with pooled AUC of 0.69 (95% CI 0.65–0.72) for violent recidivism in forensic populations. An international study found HCR-20v3 performance deteriorated after 6 months, suggesting **reassessment every 6 months** is needed to maintain predictive validity.
 
@@ -16919,13 +16919,13 @@ A narrative review found that 67% of HCR-20 studies focused on predictive validi
 
 **Verbal de-escalation is first-line treatment** per APA and AAEP Project BETA guidelines, effective for a majority of patients within 5 minutes. A cluster randomized study across all Slovenian psychiatric hospitals found de-escalation training reduced aggressive events by **73%** (IRR 0.268) and physical restraints by **70%** (IRR 0.304). However, Cochrane reviews found **no RCTs** of de-escalation techniques for psychosis-induced aggression.
 
-When pharmacotherapy is needed, a landmark **individual participant data network meta-analysis** (Lancet Psychiatry, 2026; 2,705 participants, 13 RCTs) provides the most comprehensive comparison:
+When pharmacotherapy is needed, a landmark **individual participant data network meta-analysis** (Siafis et al., *Lancet Psychiatry* 2026; 2,705 participants, 13 RCTs) provides the most comprehensive comparison. Read the table below with the authors' own caveat in view: they rated confidence in these estimates **very low** (CINeMA), chiefly for imprecision and heterogeneity, and concluded only that combinations "might be among the most effective options." The intervals are wide — the top estimate spans a 17-fold range.
 
 | Agent/Class | Effectiveness vs. Haloperidol (Moderate Agitation) | Key Considerations |
 | --- | --- | --- |
 | Antipsychotic + BZD combinations | OR 12.93 (3.00–50.91) | Most effective; monitor for hypotension |
-| Benzodiazepines (midazolam, lorazepam) | OR 5.52 (1.37–21.02) | Fastest onset (midazolam 8.5 min); respiratory depression risk,  |
-| Other antipsychotics (droperidol, olanzapine, haloperidol+promethazine) | OR 4.54 (1.35–14.45) | Olanzapine well-tolerated; droperidol comparable,  |
+| Benzodiazepines (midazolam, lorazepam) | OR 5.52 (1.37–21.02) | Fastest onset (midazolam 8.5 min); respiratory depression risk |
+| Other antipsychotics (droperidol, olanzapine, haloperidol+promethazine) | OR 4.54 (1.35–14.45) | Olanzapine well-tolerated; droperidol comparable |
 | Haloperidol monotherapy | Reference | Least effective; EPS risk |
 
 ### Landmark Studies
@@ -16980,7 +16980,7 @@ The **Six Core Strategies (6CS)** for S/R reduction have the strongest implement
 
 The **Confusion Assessment Method (CAM)** remains the gold standard for delirium detection, with sensitivity 94–100%, specificity 90–95%, and interrater reliability κ = 0.92. A 2023 meta-analysis confirmed the CAM has the highest specificity (0.98) among bedside tools. Only 12–35% of delirium cases are recognized through routine clinical documentation.
 
-**Multicomponent non-pharmacological prevention** is the cornerstone of management. A meta-analysis of 14 HELP-based studies showed a **53% reduction in incident delirium** (OR 0.47, 95% CI 0.38–0.58). The SCCM PADIS guidelines conditionally recommend these interventions.
+**Multicomponent non-pharmacological prevention** is the cornerstone of management. A meta-analysis of 14 HELP-based studies (Hshieh et al., 2018) showed a **53% reduction in incident delirium** (OR 0.47, 95% CI 0.37–0.59). The SCCM PADIS guidelines conditionally recommend these interventions.
 
 **Antipsychotics do not improve delirium outcomes.** The MIND-USA trial (n=566) found no difference in days alive without delirium or coma with haloperidol or ziprasidone vs. placebo. The AID-ICU trial (n=1,000) similarly found no significant difference in the primary outcome. Long-term MIND-USA follow-up showed no benefit at 3 or 12 months. The PADIS guidelines recommend **against** routine antipsychotic use for delirium.
 
@@ -17006,7 +17006,7 @@ The **Confusion Assessment Method (CAM)** remains the gold standard for delirium
 
 Catatonia prevalence in acute psychiatric inpatient settings is **9–20%**, with mood disorders (not schizophrenia) being the most common underlying condition. The **Bush-Francis Catatonia Rating Scale (BFCRS)** is the most widely used and recommended instrument, with a screening cutoff of ≥2 items. Notably, the BFCRS identifies substantially more cases than DSM-5 criteria alone (18.3% vs. 6.6% prevalence in one study).
 
-**Lorazepam** is effective in up to 90% of acute catatonia cases. A 2026 meta-analysis found an overall remission rate of 55% and response rate of 77%, with a mean BFCRS reduction of 11.88 points (Cohen's d = −3.15). The lorazepam challenge test (2 mg IV) is both diagnostic and therapeutic.
+**Lorazepam** is effective in up to 90% of acute catatonia cases. A 2026 meta-analysis (Bot et al., 53 studies, predominantly case series) found an overall remission rate of 55% and response rate of 77%, with a mean BFCRS reduction of 11.88 points (Cohen's d = −3.15). The lorazepam challenge test (2 mg IV) is both diagnostic and therapeutic.
 
 **ECT** is the definitive treatment, with response rates of **80–100%**, including up to 60% of benzodiazepine non-responders. The FDA reclassified ECT devices in 2018 as indicated for catatonia. Effects can be expected after 4–6 sessions; bitemporal placement is generally preferred.
 
@@ -17090,7 +17090,7 @@ Figure 2 Relative Risk of Compulsory Admission per Subgroup of Intervention
 
 ### Strongest Evidence
 
-**Family psychoeducation (FPE)** has the most robust evidence base, supported by over 100 RCTs. A Lancet Psychiatry network meta-analysis (2022) comparing 11 family intervention models found FPE was the most efficacious for relapse prevention in schizophrenia at 12 months: OR 0.18 (95% CI 0.12–0.27), with only 10% relapsing vs. 37% with treatment as usual. Even the simplest form of family psychoeducation was ranked among the most efficacious, suggesting that informing families about illness, symptoms, and treatment options has a protective role.
+**Family psychoeducation (FPE)** has the most robust evidence base, supported by over 100 RCTs. A *Lancet Psychiatry* network meta-analysis (Rodolico et al., 2022; 90 RCTs, 10,340 participants) comparing 11 family intervention models found FPE was the most efficacious for relapse prevention in schizophrenia at 12 months: OR 0.18 (95% CI 0.12–0.27), with only 10% relapsing vs. 37% with treatment as usual. Even the simplest form of family psychoeducation was ranked among the most efficacious, suggesting that informing families about illness, symptoms, and treatment options has a protective role.
 
 An RCT of 83 hospitalized patients with major depression found that at 15 months, treatment response rates were **49% (multi-family group therapy), 24% (single-family therapy), and 9% (TAU)**.
 
@@ -17202,21 +17202,23 @@ The **DIAMOND initiative** highlights the implementation gap: despite increased 
 
 ## Summary: Evidence Hierarchy Across Domains
 
-| Domain | Strongest Intervention | Effect Size | Evidence Quality |
+| Domain | Strongest Intervention | Effect Size | Evidence Base (§ = section above) |
 | --- | --- | --- | --- |
-| Inpatient suicide prevention | Environmental safety (MHEOCC) | 67% reduction in inpatient suicide | Before-after, system-wide |
-| Post-discharge suicide prevention | Brief CBT for suicidal inpatients | 60% reduction in attempts (NNT=7) | RCT (n=200) |
-| Violence risk (imminent) | BVC/DASA screening | Hedges' g = 1.04–1.35 | Meta-analysis of 31 studies |
-| Agitation pharmacotherapy | Antipsychotic + BZD combination | OR 12.93 vs. haloperidol alone | IPD network meta-analysis |
-| Delirium prevention | Multicomponent non-pharmacological | 53% reduction in incident delirium | Meta-analysis of 14 studies |
-| Catatonia treatment | Lorazepam → ECT | 77–90% response (BZD); 80–100% (ECT),  | Case series/open studies |
-| Capacity assessment | MacCAT-T | ICC 0.92–0.98,  | Validation studies |
-| Reducing compulsory admissions | Advance statements | Significant RR reduction | Meta-analysis |
-| Family intervention | Family psychoeducation | OR 0.18 for relapse at 12 months | Network meta-analysis |
-| Discharge planning | Individualized planning | RR 0.89 for readmission | Cochrane review (33 RCTs) |
-| Readmission reduction | Critical Time Intervention | OR 0.11 for rehospitalization | RCT (n=150) |
-| Collaborative care | CoCM (IMPACT model) | OR 3.45 for treatment response | RCT (n=1,801) |
-| Post-discharge follow-up | SPI + telephone follow-up | ~50% fewer suicidal behaviors | Propensity-scored cohort |
+| Inpatient suicide prevention | Environmental safety (MHEOCC) | 67% reduction in inpatient suicide | Before–after, system-wide — Watts 2012; sustained Watts 2017 (§1) |
+| Post-discharge suicide prevention | Brief CBT for suicidal inpatients | 60% reduction in attempts (NNT=7) | RCT, n=200 — Diefenbach 2024 (§1) |
+| Violence risk (imminent) | BVC/DASA screening | Hedges' g = 1.04–1.35 | Meta-analysis, 31 studies — Dickens 2020 (§2) |
+| Agitation pharmacotherapy | Antipsychotic + BZD combination | OR 12.93 vs. haloperidol alone (95% CrI 3.00–50.91) | IPD network meta-analysis, 13 RCTs — Siafis 2026; authors' confidence **very low** (§3) |
+| Delirium prevention | Multicomponent non-pharmacological (HELP) | 53% reduction in incident delirium | Meta-analysis, 14 studies — Hshieh 2018 (§6) |
+| Catatonia treatment | Lorazepam → ECT | 77% response / 55% remission (BZD); 80–100% (ECT) | Case series and open studies — Bot 2026 (§7) |
+| Capacity assessment | MacCAT-T | ICC 0.92–0.98 | Validation studies; no pooled estimate (§8) |
+| Reducing compulsory admissions | Advance statements | Significant RR reduction | Meta-analysis — de Jong 2016 (§9) |
+| Family intervention | Family psychoeducation | OR 0.18 for relapse at 12 months | Network meta-analysis, 90 RCTs — Rodolico 2022 (§10) |
+| Discharge planning | Individualized planning | RR 0.89 for readmission | Cochrane review 2022, 33 RCTs (§11) |
+| Readmission reduction | Critical Time Intervention | OR 0.11 for rehospitalization | RCT, n=150 — Herman et al. (§12) |
+| Collaborative care | CoCM (IMPACT model) | OR 3.45 for treatment response | RCT, n=1,801 — IMPACT trial (§13) |
+| Post-discharge follow-up | SPI + telephone follow-up | ~50% fewer suicidal behaviors | Propensity-scored cohort — Stanley 2018 (§13) |
+
+This table is an index, not a substitute for the sections it points to. Each § marks where the full estimate, its interval, and its caveats appear above, and every study named here has a DOI in the Sources list at the end of this page. "Strongest" means the strongest *available* evidence for that domain — for agitation pharmacotherapy that is still evidence the original authors rated very low in confidence.
 
 ---
 
@@ -17251,6 +17253,8 @@ Would you like to explore any of these domains in greater depth — for example,
 - Diefenbach GJ, Lord KA, Stubbing J, et al. JAMA Psychiatry. 2024;81(12):1177-1186. doi:10.1001/jamapsychiatry.2024.2349.
 
 - Doupnik SK, Rudd B, Schmutte T, et al. JAMA Psychiatry. 2020;77(10):1021-1030. doi:10.1001/jamapsychiatry.2020.1586.
+
+- Hshieh TT, Yang T, Gartaganis SL, Yue J, Inouye SK. The American Journal of Geriatric Psychiatry. 2018;26(10):1015-1033. doi:10.1016/j.jagp.2018.06.007.
 
 - Hawton K, Lascelles K, Pitman A, Gilbert S, Silverman M. The Lancet. Psychiatry. 2022;9(11):922-928. doi:10.1016/S2215-0366(22)00232-2.
 

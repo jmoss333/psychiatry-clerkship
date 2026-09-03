@@ -19,7 +19,7 @@
 - Writes the admission H&P and problem-oriented daily notes; documents explicit risk reasoning, not just scores.
 - Completes and charts four-abilities capacity assessments tied to the specific decision at hand.
 - Initiates and correctly documents emergency involuntary holds (the "blue paper" + clinician certificate), then tracks the certification/commitment timeline with social work — verifying current Maine/MMC procedure each time.
-- Writes time-limited restraint/seclusion orders and ensures the required monitoring, face-to-face evaluation, and debrief are documented.
+- Writes time-limited restraint/seclusion orders to the regulatory floor and ensures the required monitoring, face-to-face evaluation, and debrief are documented — for violent or self-destructive behaviour that means the **1-hour** in-person evaluation, a **4-hour** maximum order for adults 18 and over renewable only after re-evaluation, and **never a PRN or standing order** (42 CFR §482.13(e)).
 - Recognizes when medication over objection requires a separate legal process and routes it correctly rather than treating under the hold alone.
 - Identifies duty-to-protect and mandatory-reporting situations early and escalates to the attending and risk management.
 - Drives disposition: reconciles meds, secures a dated follow-up appointment, does the warm handoff, and problem-solves boarding, housing, guardianship, and AMA scenarios.
