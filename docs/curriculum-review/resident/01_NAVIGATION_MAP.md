@@ -1,6 +1,6 @@
 # RESIDENT · Navigation map
 
-Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-03 @ `cf3fde1`.
+Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-03 @ `1a26852`.
 
 ## Orientation  *(pinned)*
 
@@ -130,7 +130,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 8 | Suicide Risk & Safety Planning (Jul 23) | `cotw_20260723_suiciderisk_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`high` | `08_Cases_and_Simulation/case-of-the-week/2026-07-23_suicide-risk-assessment-safety-planning_Resident.md` | 2550 |
 | 9 | MDD — Treatment Selection (Jul 20) | `cotw_20260720_mdd_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-20_mdd-treatment-selection-augmentation_Resident.md` | 1896 |
 | 10 | Bipolar Mania (Jul 20) | `cotw_20260720_bipolar_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-20_bipolar-mania_Resident.md` | 1682 |
-| 11 | Acute Agitation & Delirium (Jul 13) | `cotw_20260713_agitation_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-13_acute-agitation-delirium_Resident.md` | 2367 |
+| 11 | Acute Agitation & Delirium (Jul 13) | `cotw_20260713_agitation_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-13_acute-agitation-delirium_Resident.md` | 2405 |
 | 12 | Serotonin Syndrome vs NMS (Jul 9) | `cotw_20260709_ssnms_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-09_serotonin-syndrome-vs-nms_Resident.md` | 2071 |
 
 ## Evidence and Reference

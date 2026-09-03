@@ -11,7 +11,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **Slug:** `cotw_20260727_oud_ms3.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-27_opioid-use-disorder_MS3.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 2,624 words
+- **Length:** 2,753 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -107,7 +107,7 @@ So the framing to give the team is not "he's fine, he woke up." It is: *he is in
 
 1. **Opioid withdrawal** (most likely) — timeline, exam, and naloxone exposure all fit.
 2. **Co-ingestion / polysubstance overdose** — stimulants, benzodiazepines, alcohol, or an adulterant. Note that **xylazine**, a veterinary sedative increasingly found in the fentanyl supply, is *not* opioid-receptor mediated, so naloxone will not reverse its sedation; suspect it when sedation outlasts naloxone or when there are unusual skin wounds [1,3].
-3. **Anoxic brain injury** — he was found unresponsive for an unknown period. Persistent confusion, focal deficits, or failure to return to baseline demands imaging and a broader workup, not reassurance.
+3. **Consequences of the down-time itself** — he was found unresponsive for an unknown period. **Anoxic brain injury:** persistent confusion, focal deficits, or failure to return to baseline demands imaging and a broader workup, not reassurance. **Rhabdomyolysis:** send a CK with potassium and creatinine and look for pigmented urine — prolonged immobility on a hard surface is the classic mechanism. **Positional compartment syndrome or pressure necrosis:** examine the dependent limb for a tense, disproportionately painful compartment — pain out of proportion with a palpable pulse is still compartment syndrome.
 4. **Infection related to injection drug use** — cellulitis/abscess, **endocarditis**, osteomyelitis/epidural abscess, HIV, hepatitis C. Fever, a new murmur, or back pain changes the entire disposition. Examine the skin and heart deliberately [3].
 5. **Sedative-hypnotic or alcohol withdrawal** — co-dependence is common, and *this* withdrawal syndrome **is** dangerous. Screening for it is not optional.
 
@@ -129,7 +129,7 @@ Withdrawal alone does not equal OUD, and OUD is what you are actually treating. 
 | Medication | Mechanism | Key practical points |
 |---|---|---|
 | **Methadone** | Full mu-opioid **agonist** | In the US, for OUD it is dispensed through licensed opioid treatment programs (with a hospital exception for inpatients treated for another condition). Highest retention. Watch QTc and drug interactions. |
-| **Buprenorphine** (± naloxone) | **Partial** mu agonist, high receptor affinity | Office-based prescribing; ceiling effect on respiratory depression makes it comparatively safe. **Must be started in withdrawal** or it precipitates withdrawal. |
+| **Buprenorphine** (± naloxone) | **Partial** mu agonist, high receptor affinity | Office-based prescribing; ceiling effect on respiratory depression makes it comparatively safe. **Started only once the patient is in objective withdrawal** — given earlier, its high receptor affinity displaces the full agonist and precipitates withdrawal. With illicitly manufactured fentanyl that rule is necessary but no longer sufficient: fentanyl accumulates in tissue, so precipitated withdrawal still occurs in a minority of inductions done at an adequate withdrawal score, which is why low-dose and high-dose induction strategies exist and why induction here is planned with addiction medicine rather than run off a threshold [3]. |
 | **Naltrexone** (extended-release injectable) | Opioid **antagonist** | Requires a **full opioid-free interval** (~7–10 days) before induction — the practical reason most acutely presenting patients cannot start it today. No effect on withdrawal. |
 
 The two **agonist** therapies are the ones with the strongest mortality evidence. In a large systematic review and meta-analysis, all-cause mortality during opioid agonist treatment was roughly **half** the rate observed off treatment, with reductions in overdose, suicide, and cardiovascular death; risk was highest in the **first four weeks of methadone** and in the **four weeks after any treatment stops** [5]. A separate meta-analysis found buprenorphine and methadone broadly comparable on mortality, with methadone showing better **retention** in treatment [6].
@@ -234,7 +234,7 @@ The translation for the wards: *a referral is not a treatment.* Every ED or inpa
 - **Slug:** `cotw_20260726_etohwd_ms3.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-26_alcohol-withdrawal-delirium-tremens_MS3.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 2,520 words
+- **Length:** 2,601 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -355,7 +355,7 @@ The critical caveat for the wards: **CIWA-Ar requires a patient who can communic
 2. **Thiamine before or with glucose.** Give **parenteral (IV or IM) thiamine** to any patient with heavy alcohol use, and give **high-dose parenteral thiamine, continued over several days** — substantially more than the thiamine in a routine "banana bag" — whenever Wernicke encephalopathy is suspected; under-dosing is the commonest reason a treated Wernicke still progresses to Korsakoff. Give thiamine **before or together with** IV dextrose, because a glucose load in a thiamine-deficient patient can precipitate Wernicke [6] — but **never delay dextrose in symptomatic hypoglycemia** to hunt for thiamine; give the glucose and give the thiamine with it. Practice guidelines are consistent that parenteral thiamine belongs in high-risk patients, though they vary widely on dose and duration, and evidence for universal prophylactic dosing is thin [6].
 3. **Correct electrolytes** — replete **magnesium** and **potassium** (both low here); check glucose and sodium.
 4. **Set the level of care and monitoring** — frequent vitals and mental-status checks, especially across the 48–96 h DT window and around his operation. Escalate to a step-down/ICU setting for severe or refractory withdrawal.
-5. **Treat the underlying disorder.** Detoxification is *not* treatment of alcohol use disorder (AUD). Before discharge, offer **AUD pharmacotherapy** — **oral naltrexone 50 mg/d** and **acamprosate** are first-line with the strongest evidence (number needed to treat ~11–18 to prevent one person returning to any drinking), alongside psychosocial treatment [9].
+5. **Treat the underlying disorder.** Detoxification is *not* treatment of alcohol use disorder (AUD). Before discharge, offer **AUD pharmacotherapy** — **oral naltrexone 50 mg/d** and **acamprosate** are first-line with the strongest evidence (number needed to treat ~11–18 to prevent one person returning to any drinking), alongside psychosocial treatment [9]. Match the agent to the organ and to the plan: naltrexone is hepatically metabolized and is avoided in acute hepatitis or decompensated liver disease, and is contraindicated in anyone on or likely to need opioids — note his operative fixation in two days; acamprosate is renally cleared and is dose-reduced or avoided in significant renal impairment. In *this* patient, whose transaminase ratio and platelet count already pointed to liver disease, check the LFTs, plan around the peri-operative analgesia, and consider acamprosate.
 
 **Q7. Overnight, at hour 62, he pulls out his IV, is picking at the bedsheets, does not know where he is, and cannot sustain attention. HR 138, BP 178/102, T 38.6 °C. What is happening and what do you do?**
 
@@ -439,7 +439,7 @@ The critical caveat for the wards: **CIWA-Ar requires a patient who can communic
 - **Slug:** `cotw_20260723_suiciderisk_ms3.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-23_suicide-risk-assessment-safety-planning_MS3.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 2,287 words
+- **Length:** 2,403 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -516,7 +516,7 @@ You are the student's first clinician contact in the ED.
 *Teaching point:* The **Safety Planning Intervention (SPI)** is a brief, collaborative, written plan built *with* the patient. Its standard components: recognizing personal **warning signs**; internal **coping strategies**; people and social settings that provide distraction; people to ask for help; professionals/agencies to contact in crisis; and **making the environment safer by reducing access to lethal means**. In a large ED cohort study, SPI plus structured telephone follow-up was associated with roughly **45% fewer suicidal behaviors** over 6 months and about **double the odds** of attending outpatient care compared with usual care [4]. A meta-analysis of safety-planning-type interventions found reduced suicidal *behavior* (number-needed-to-treat ≈ 16), though not a clear effect on ideation alone — reinforcing that the safety plan is one active ingredient, not a stand-alone cure [5].
 
 **Q6. How does the team decide *level of care* — who needs hospitalization versus who can be discharged with a plan — and what is your part in that decision as a student?**
-*Teaching point:* Disposition is a **clinical judgment integrating acuity and modifiable risk**, not a checklist score. Favor **higher level of care / psychiatric admission** when there is active ideation with intent or a plan, recent preparatory behavior, inability to engage in safety planning, poor impulse control (including significant intoxication), or absent supports. Favor **discharge with a robust safety plan and rapid follow-up** when ideation is passive/low-intent, the patient can collaborate on and commit to a plan, means access can be reduced, and reliable supports and timely outpatient follow-up exist. Importantly, **risk-stratification labels are weak predictors of who will actually act** — so the plan and follow-up matter as much as the "risk level" you assign (see facilitator notes) [6]. **Your part as a student** is to gather the data, build the formulation, and *recommend* a level of care with your reasoning — the admission or discharge decision, and the orders that follow from it, belong to your supervising resident or attending. Present early rather than after you have decided.
+*Teaching point:* Disposition is a **clinical judgment integrating acuity and modifiable risk**, not a checklist score. Favor **higher level of care / psychiatric admission** when there is active ideation with intent or a plan, recent preparatory behavior, inability to engage in safety planning, poor impulse control (including significant intoxication), or absent supports. Favor **discharge with a robust safety plan and rapid follow-up** when ideation is passive and of low intent, the patient can **engage collaboratively** in building the plan (their ability to work on it with you is the signal — a promise to stay safe is not, which is exactly why the no-harm contract was abandoned), means access **has actually been reduced** (a named person has secured or removed the means by an agreed time, and you have documented who and when), and reliable supports plus a confirmed, timely outpatient appointment are in place. Importantly, **risk-stratification labels are weak predictors of who will actually act** — so the plan and follow-up matter as much as the "risk level" you assign (see facilitator notes) [6]. **Your part as a student** is to gather the data, build the formulation, and *recommend* a level of care with your reasoning — the admission or discharge decision, and the orders that follow from it, belong to your supervising resident or attending. Present early rather than after you have decided.
 
 **Q7 (Safety/systems). What concrete steps round out the ED encounter beyond the interview?**
 *Teaching point:* (1) **Means-reduction counseling** — collaboratively work with the patient and, when appropriate, family to reduce access to lethal means at home. Ask explicitly about **firearms** (the method behind about half of US suicide deaths, and the one with by far the highest case fatality), and also about medications — stockpiled prescriptions, over-the-counter analgesics — and alcohol. Counsel on **temporary storage outside the home, or locked storage with the key held by someone else**, and settle before disposition who will do it and by when. Naming what to secure is standard lethal-means-safety counselling and is not "method detail"; leaving it general is how it stops happening. (2) **Involve supports/collateral** with appropriate consent — corroboration and a person who can help enact the plan. (3) **Warm handoff and follow-up** — timely outpatient linkage; brief follow-up contact ("caring contacts") after discharge is associated with better engagement [4]. (4) **Document** the assessment, the reasoning, and the plan. (5) Treat the **underlying disorder** (here, likely depression ± alcohol use).
@@ -546,7 +546,7 @@ Suicidal ideation is a **symptom**, not a diagnosis — always identify and trea
 4. **Means-reduction counseling** and mobilize supports.
 5. **Present your level-of-care reasoning to your supervising resident or attending**, who makes the disposition decision (admit vs. discharge with plan + rapid follow-up).
 6. **Arrange follow-up / caring contacts** and communicate a warm handoff.
-7. **Treat the underlying disorder** (start/optimize depression treatment; address alcohol use).
+7. **Treat the underlying disorder** (start/optimize depression treatment; address alcohol use). If an antidepressant is started, note that this patient is under 25: counsel them, and with consent a support person, that emergent agitation, akathisia, insomnia, or worsening suicidal thoughts in the first weeks must be reported the same day, and arrange close contact across that window — the interval before the drug works is also the interval of greatest concern.
 
 ---
 
@@ -597,7 +597,7 @@ Suicidal ideation is a **symptom**, not a diagnosis — always identify and trea
 - **Slug:** `cotw_20260720_mdd_ms3.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-20_mdd-treatment-selection-augmentation_MS3.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 1,290 words
+- **Length:** 1,434 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -662,10 +662,10 @@ She returns at **6 weeks** on an adequately dosed selective serotonin reuptake i
 *Teaching point:* Always screen for a **history of mania/hypomania** before prescribing an antidepressant. Giving an antidepressant to someone with bipolar disorder can precipitate a manic switch. Also screen for active suicidality, psychotic features, substance use, and secondary causes (e.g., hypothyroidism — hence the TSH). "Unipolar" MDD is a diagnosis of exclusion of the bipolar spectrum.
 
 **Q2. What is the expected first-line pharmacologic treatment, and how do you counsel her about the timeline?**
-*Teaching point:* First-line options are **SSRIs** (e.g., sertraline, escitalopram) — chosen for tolerability and safety in overdose. SNRIs, bupropion, and mirtazapine are reasonable alternatives. A landmark network meta-analysis of 21 antidepressants found *all* were more effective than placebo, with escitalopram and sertraline among those combining good efficacy and acceptability [1]. Counsel that **antidepressants take 4–6 weeks at an adequate dose** to show full effect, and that a partial response by 2–4 weeks predicts later response.
+*Teaching point:* First-line options are **SSRIs** (e.g., sertraline, escitalopram) — chosen for tolerability and safety in overdose. SNRIs, bupropion, and mirtazapine are reasonable alternatives. A landmark network meta-analysis of 21 antidepressants found *all* were more effective than placebo, with escitalopram and sertraline among those combining good efficacy and acceptability [1]. Counsel that **antidepressants usually need 4–8 weeks at an adequate dose** for full effect — some improvement is often visible by 2–4 weeks, and the absence of *any* improvement by 4 weeks predicts a low chance of later response — but do not call a trial adequate, or declare it failed, before **6–8 weeks at an adequate dose**. Remember too that the PHQ-9 moves in ~5-point steps to be clinically meaningful: a 16 to 13 change is minimal response, not a partial response.
 
 **Q3. At 6 weeks she is only partially better (PHQ-9 16 → 13). What defines an "adequate trial," and what are her next options?**
-*Teaching point:* An adequate trial = **adequate dose for adequate duration (≥6–8 weeks)**. Because she had a *partial* response, reasonable next steps include (a) **optimizing the dose** of the current SSRI, (b) **switching** to a different antidepressant, or (c) **augmenting**. Distinguish the three: optimize = push the same drug up; switch = replace it; augment = add a second agent to the first. Partial responders often do well with dose optimization before more complex strategies.
+*Teaching point:* An adequate trial = **adequate dose for adequate duration (≥6–8 weeks)**. Because she had a *partial* response, reasonable next steps include (a) **optimizing the dose** of the current SSRI, (b) **switching** to a different antidepressant, or (c) **augmenting**. Distinguish the three: optimize = push the same drug up; switch = replace it, and in almost all cases by **cross-tapering** rather than stopping abruptly — abrupt cessation of an SSRI or SNRI (paroxetine and venlafaxine are the worst offenders) causes a discontinuation syndrome of dizziness, electric-shock sensations, flu-like symptoms and irritability that is routinely mistaken for relapse, and any switch to or from an MAOI needs a formal washout to avoid serotonin syndrome; augment = add a second agent to the first. Partial responders often do well with dose optimization before more complex strategies.
 
 **Q4. Define "treatment-resistant depression" and name evidence-based augmentation options an MS3 should recognize.**
 *Teaching point:* **Treatment-resistant depression (TRD)** is commonly defined as failure to respond to ≥2 adequate antidepressant trials. High-yield augmentation agents: **atypical antipsychotics** (aripiprazole, quetiapine XR — the best-studied), **lithium**, and **thyroid hormone (T3)**. In the VA VAST-D randomized trial, augmenting with **aripiprazole** produced higher response rates than switching to bupropion, though the effect size was modest and aripiprazole carried more side effects (akathisia, somnolence, weight gain) [2]. Know that augmentation adds efficacy but also adds adverse-effect burden.
@@ -696,8 +696,8 @@ She returns at **6 weeks** on an adequately dosed selective serotonin reuptake i
 **Workup:** History (including mania screen, suicide risk, substance use), PHQ-9 for severity/tracking, and targeted labs to exclude medical mimics (TSH, CBC; add others if indicated). No routine imaging.
 
 **Management ladder:**
-1. **Start** an SSRI at an adequate dose; set expectations (4–6 weeks). Offer psychotherapy.
-2. **Reassess at 4–6 weeks** with a repeat PHQ-9.
+1. **Start** an SSRI at an adequate dose; set expectations (4–8 weeks for full effect). Offer psychotherapy.
+2. **Reassess at 4–6 weeks** with a repeat PHQ-9 — to check the dose and adherence, *not* to declare the trial failed; that judgement waits for 6–8 weeks at an adequate dose.
    - No response → **switch** (to another SSRI, SNRI, or bupropion).
    - Partial response → **optimize dose** or **augment**.
 3. **After ≥2 failed adequate trials (TRD)** → augment with an atypical antipsychotic (e.g., aripiprazole), lithium, or T3; consider psychiatry referral, and consider **ECT** for severe, psychotic, or treatment-refractory depression.
@@ -873,7 +873,7 @@ Based on articles retrieved from PubMed.
 - **Slug:** `cotw_20260713_agitation_ms3.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-13_acute-agitation-delirium_MS3.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 1,713 words
+- **Length:** 1,735 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -962,7 +962,7 @@ The single highest-yield teaching point: **agitation is a symptom, not a diagnos
 
 3. **Initial workup — hunt for the precipitant.** Reasonable first pass: fingerstick glucose, CBC, BMP/electrolytes, **urinalysis + urine culture** (the precipitant to confirm here), consider blood cultures if febrile/septic-appearing, LFTs, and a **medication review** (new anticholinergics, opioids, sedative-hypnotics). Add ECG (baseline QTc before antipsychotics), consider CXR, and **neuroimaging (non-contrast head CT)** if there is head trauma, focal deficit, anticoagulation, or no other explanation. Mnemonic for reversible precipitants: **"I WATCH DEATH"** or the simpler **DELIRIUM(S)** — Drugs, Electrolytes, Lack of drugs (withdrawal), Infection, Reduced sensory input, Intracranial, Urinary/fecal retention, Myocardial/pulmonary, (Sleep). *The most likely culprit in this vignette: **UTI**, compounded by an **anticholinergic** started for BPH.*
 
-4. **First-line pharmacologic approach when de-escalation fails:** a **low-dose high-potency antipsychotic** (e.g., low-dose haloperidol) is the usual agent for agitation from delirium, targeting distressing psychosis/agitation that threatens safety — always at the **lowest effective dose**, with an **ECG/QTc** consideration and a plan to taper [3]. **Generally avoid benzodiazepines** in delirium: they can **worsen confusion and paradoxically increase agitation** in older adults, and prolong delirium — **the key exception is delirium from alcohol/benzodiazepine withdrawal**, where benzodiazepines are the treatment. Antipsychotics *manage the symptom* but do **not** treat or shorten the delirium itself; the precipitant work is what fixes the brain. Teaching caveat for the honest MS3: the evidence base for antipsychotics in delirium is weak — the landmark **MIND-USA** randomized trial found haloperidol and ziprasidone did **not** shorten delirium duration in critically ill patients versus placebo [5]. So: use the smallest dose needed for safety, not to "treat delirium."
+4. **First-line pharmacologic approach when de-escalation fails:** a **low-dose high-potency antipsychotic** (e.g., low-dose haloperidol) is the usual agent for agitation from delirium, targeting distressing psychosis/agitation that threatens safety — always at the **lowest effective dose**, with an **ECG/QTc** consideration, a plan to taper, and a quick check for parkinsonism or suspected Lewy body dementia first, where antipsychotic sensitivity can be severe and haloperidol should be avoided [3]. **Generally avoid benzodiazepines** in delirium: they can **worsen confusion and paradoxically increase agitation** in older adults, and prolong delirium — **the key exception is delirium from alcohol/benzodiazepine withdrawal**, where benzodiazepines are the treatment. Antipsychotics *manage the symptom* but do **not** treat or shorten the delirium itself; the precipitant work is what fixes the brain. Teaching caveat for the honest MS3: the evidence base for antipsychotics in delirium is weak — the landmark **MIND-USA** randomized trial found haloperidol and ziprasidone did **not** shorten delirium duration in critically ill patients versus placebo [5]. So: use the smallest dose needed for safety, not to "treat delirium."
 
 5. **Three non-pharmacologic interventions (prevent *and* treat):** reorientation (visible clock/calendar, family at bedside, frequent reorientation); restoring sensory aids (glasses, hearing aids) and normalizing the environment (lights on by day, quiet and dark at night to protect sleep, minimize tethers/lines/catheters); and early mobilization + hydration/nutrition + pain control + bowel/bladder care. These are first-line because **multicomponent non-pharmacologic strategies are the only interventions shown to reduce delirium incidence — by roughly 40%** — whereas no drug reliably treats the syndrome [1,3].
 

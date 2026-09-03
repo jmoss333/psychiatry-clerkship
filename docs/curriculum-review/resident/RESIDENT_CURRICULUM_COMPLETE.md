@@ -3,7 +3,7 @@
 # RESIDENT curriculum — complete content transcript for clinical review
 
 **Site:** `mmc-psychiatry-residents-sanford` · **Audience:** Residents — MMC/Sanford psychiatry residents
-**Generated:** 2026-09-03 from build `cf3fde1` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
+**Generated:** 2026-09-03 from build `1a26852` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
 
 ## Who this is for
 
@@ -19,7 +19,7 @@ This transcript is assembled from the **built site**, not the source tree, so it
 | Narrative pages (markdown) | 86 |
 | Interactive tools | 25 |
 | Deep-link-only (hidden) surfaces | 26 |
-| Words of narrative curriculum | 119,892 |
+| Words of narrative curriculum | 119,930 |
 | Practice question-bank items | 192 |
 | Audio-companion quiz decks / questions | 79 / 437 |
 | Communication cases | 12 |
@@ -86,7 +86,7 @@ High-yield places to concentrate: the `topic_meta` **can't-miss**, **rule-out** 
 
 # RESIDENT · Navigation map
 
-Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-03 @ `cf3fde1`.
+Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-03 @ `1a26852`.
 
 ## Orientation  *(pinned)*
 
@@ -216,7 +216,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 8 | Suicide Risk & Safety Planning (Jul 23) | `cotw_20260723_suiciderisk_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`high` | `08_Cases_and_Simulation/case-of-the-week/2026-07-23_suicide-risk-assessment-safety-planning_Resident.md` | 2550 |
 | 9 | MDD — Treatment Selection (Jul 20) | `cotw_20260720_mdd_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-20_mdd-treatment-selection-augmentation_Resident.md` | 1896 |
 | 10 | Bipolar Mania (Jul 20) | `cotw_20260720_bipolar_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-20_bipolar-mania_Resident.md` | 1682 |
-| 11 | Acute Agitation & Delirium (Jul 13) | `cotw_20260713_agitation_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-13_acute-agitation-delirium_Resident.md` | 2367 |
+| 11 | Acute Agitation & Delirium (Jul 13) | `cotw_20260713_agitation_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-13_acute-agitation-delirium_Resident.md` | 2405 |
 | 12 | Serotonin Syndrome vs NMS (Jul 9) | `cotw_20260709_ssnms_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-09_serotonin-syndrome-vs-nms_Resident.md` | 2071 |
 
 ## Evidence and Reference
@@ -15236,7 +15236,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **Slug:** `cotw_20260713_agitation_res.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-13_acute-agitation-delirium_Resident.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 2,367 words
+- **Length:** 2,405 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -15316,7 +15316,7 @@ Exam (obtained in fragments): **inattentive** (cannot complete "days of the week
 
 1. **DSM-5-TR framing & subtyping.** Delirium requires: (A) a disturbance in **attention and awareness**; (B) **acute onset** and **fluctuating** course; (C) an **additional cognitive disturbance** (memory, orientation, language, perception); (D) not better explained by another neurocognitive disorder and not in the context of severely reduced arousal such as coma; and (E) evidence of a **causal medical/substance etiology**. Against a primary psychotic/mood episode: the *acuity, fluctuation, and attentional collapse with clouded consciousness* are the discriminators — primary psychosis and mania preserve level of consciousness and gross attention. Subtype here: **hyperactive/mixed** (he oscillates between combative and drowsy); the easily-missed **hypoactive** subtype is more common in older adults and carries worse prognosis. Highest-weight bedside sign: **inattention** (e.g., months-of-year backward, digit span, "days of week backward"). Validated tools: **CAM** and its derivatives — **CAM-ICU**, **3D-CAM**, brief-CAM/Delirium Triage Screen for the ED, the **4AT**, and ultrabrief screens — all built around demonstrating acute-onset inattention [1,3].
 
-2. **Critique of haloperidol 5 + lorazepam 2 IM.** Two separate problems. (i) **Dose:** 5 mg haloperidol IM is aggressive for a 74-year-old — geriatric dosing favors substantially lower (e.g., ~0.25–1 mg) titrated, given age-related pharmacodynamic sensitivity, EPS/akathisia risk (akathisia can *look like* worsening agitation), and QTc. (ii) **The benzodiazepine is the higher-stakes error:** in delirium *not* due to withdrawal, benzodiazepines **deepen and prolong** the confusional state (pro-delirogenic via GABA-A potentiation, worsening the attentional/arousal disturbance) and can **disinhibit/paradoxically worsen agitation** in older adults — the umbrella-review signal is that midazolam and benzodiazepines carry disproportionate sedation/respiratory risk in the elderly [4]. **BUT** the "not sure about alcohol" history flips this: if this is **alcohol or sedative-hypnotic withdrawal**, benzodiazepines are *first-line and lifesaving*, and antipsychotics alone are inadequate (they lower seizure threshold and don't treat the GABA deficit). The resident move: **do not give the fixed combination reflexively** — first stratify withdrawal risk (history, prior DTs/seizures, autonomic hyperarousal, tremor), check a withdrawal-oriented exam, and let etiology drive the agent. Tremor + tachycardia + hypertension + fever here are genuinely ambiguous between sepsis/UTI and early withdrawal — that ambiguity is the point.
+2. **Critique of haloperidol 5 + lorazepam 2 IM.** Two separate problems. (i) **Dose:** 5 mg haloperidol IM is aggressive for a 74-year-old — geriatric dosing favors substantially lower (e.g., ~0.25–1 mg) titrated, given age-related pharmacodynamic sensitivity, EPS/akathisia risk (akathisia can *look like* worsening agitation), and QTc. Screen for parkinsonism or suspected Lewy body dementia before any high-potency D2 blocker in this age group — his "mild memory problems" make it live — because neuroleptic sensitivity there can be severe and haloperidol should be avoided. (ii) **The benzodiazepine is the higher-stakes error:** in delirium *not* due to withdrawal, benzodiazepines **deepen and prolong** the confusional state (pro-delirogenic via GABA-A potentiation, worsening the attentional/arousal disturbance) and can **disinhibit/paradoxically worsen agitation** in older adults — the umbrella-review signal is that midazolam and benzodiazepines carry disproportionate sedation/respiratory risk in the elderly [4]. **BUT** the "not sure about alcohol" history flips this: if this is **alcohol or sedative-hypnotic withdrawal**, benzodiazepines are *first-line and lifesaving*, and antipsychotics alone are inadequate (they lower seizure threshold and don't treat the GABA deficit). The resident move: **do not give the fixed combination reflexively** — first stratify withdrawal risk (history, prior DTs/seizures, autonomic hyperarousal, tremor), check a withdrawal-oriented exam, and let etiology drive the agent. Tremor + tachycardia + hypertension + fever here are genuinely ambiguous between sepsis/UTI and early withdrawal — that ambiguity is the point.
 
 3. **Mechanistic differential for the agitation.**
    - **(a) Antipsychotic-responsive agitation** (delirium-associated psychosis, primary psychotic agitation): driven by dopaminergic dysregulation; **D2 antagonism** reduces the target symptom. High-potency agents (haloperidol) give minimal anticholinergic/hypotensive load but more EPS/QTc; SGAs add 5-HT2A antagonism with more sedation/metabolic effect.
