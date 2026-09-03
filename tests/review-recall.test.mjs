@@ -20,7 +20,7 @@ function slice(src, from, to) {
 // The builders sit at module scope in review.html precisely so they can be evaluated here.
 const builders = slice(review, 'function prettyRef(', '/* A reveal is either');
 // eslint-disable-next-line no-new-func
-const F = new Function(`${snippet}\n${builders}\nreturn { prettyRef, famRecallCards, queueable };`)();
+const F = new Function(`${snippet}\n${builders}\nreturn { prettyRef, famRecallCards, queueable, choiceOptions, commChoiceCards, reasonChoiceCards };`)();
 
 test('every authored scenario contributes one card per prompt it can answer', () => {
   const cards = F.famRecallCards(scenarios);
@@ -48,12 +48,23 @@ test('malformed or absent scenario data yields no cards rather than throwing', (
   }
 });
 
-test('choice cards always queue; a recall card queues only once it has a schedule', () => {
-  const recall = { id: 'FAM#a#opening', kind: 'recall' };
+test('unflagged cards always queue; a seededOnly card queues only once it has a schedule', () => {
+  const recall = { id: 'FAM#a#opening', kind: 'recall', seededOnly: true };
   const choice = { id: 'TOPIC#t_mood.md', kind: 'choice' };
-  assert.equal(F.queueable(choice, undefined), true, 'an unseen choice card is a normal new card');
+  assert.equal(F.queueable(choice, undefined), true, 'an unseen deck/topic card is a normal new card');
   assert.equal(F.queueable(recall, undefined), false, 'an unpractised family prompt is not sprung cold');
   assert.equal(F.queueable(recall, { due: 0, reps: 1 }), true, 'once practised, it comes due here too');
+});
+
+// The gate keys on the flag, not on the card shape: the communication and reasoning cards are
+// `choice` cards that are nonetheless seeded by their own tool. A gate written as
+// kind!=='recall' would have let both into the new-card stream.
+test('the gate keys on seededOnly, not on the card kind', () => {
+  const seededChoice = { id: 'COMM#x', kind: 'choice', seededOnly: true };
+  assert.equal(F.queueable(seededChoice, undefined), false, 'a seeded choice card is still gated');
+  assert.equal(F.queueable(seededChoice, { due: 0, reps: 1 }), true);
+  assert.doesNotMatch(review, /card\.kind!=='recall'/,
+    'the old kind-based gate must be gone, not merely unused');
 });
 
 test('prettyRef gives one readable spelling for a page ref', () => {
@@ -77,7 +88,8 @@ test('the prompt list is injected, never re-declared, in either consumer', () =>
 test('Daily Review loads the scenarios and appends them as a third source', () => {
   assert.match(review, /fetch\("\.\.\/family_systems_scenarios\.json"\)/);
   assert.match(review, /out=out\.concat\(famRecallCards\(fam\)\)/);
-  assert.equal((review.match(/kind:"choice"/g) || []).length, 2, 'both existing sources are marked');
+  assert.equal((review.match(/kind:"choice"/g) || []).length, 4,
+    'the deck, topic, communication and reasoning sources are all marked as choice cards');
 });
 
 test('the seeded gate is applied everywhere the queue is counted or built', () => {

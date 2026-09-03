@@ -29,14 +29,24 @@ function fdBlockBudget(minutes){
   return 10;
 }
 
-/* Only the `daily` bucket (deck# and TOPIC# cards) is Daily Review's to serve — QB# cards are
-   served first by the question bank's own session and FAM# cards by Family Systems Practice,
-   so counting them here would promise cards review.html cannot show and let the receipt mark
-   the step done after unrelated ones. Due question-bank cards still reach the block: the
-   question step's session puts them first (startSession, question-bank-practice.html). */
+/* The buckets review.html actually builds a queue from. Keep this list in step with the card
+   sources in 07_Evidence_and_Reading/Landmark_Trials/review.html: promising a card the review
+   session cannot show lets the receipt mark the step done after unrelated ones, and omitting a
+   bucket it does serve hides a review step from a learner who has work waiting.
+
+   `qb` is deliberately absent: due question-bank cards are served first by the question bank's
+   own session (startSession, question-bank-practice.html), so the block reaches them through
+   its question step instead. `other` is absent because nothing writes it — an id landing there
+   is an unrouted namespace, which is a bug in srsBucket, not a card to promise. */
+var FD_BLOCK_REVIEW_BUCKETS=['daily','fam','comm','reason'];
+
 function fdBlockDueTotal(breakdown){
-  var b=breakdown||{}, row=b.daily||{};
-  return (typeof row.due==='number'&&row.due>0)?row.due:0;
+  var b=breakdown||{}, total=0;
+  for(var i=0;i<FD_BLOCK_REVIEW_BUCKETS.length;i++){
+    var row=b[FD_BLOCK_REVIEW_BUCKETS[i]]||{};
+    if(typeof row.due==='number'&&row.due>0) total+=row.due;
+  }
+  return total;
 }
 
 function fdBlockPlan(index, state, minutes, inputs){

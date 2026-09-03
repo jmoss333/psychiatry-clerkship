@@ -134,24 +134,15 @@ var state={items:[],current:0,filter:'all',progress:loadProgress(),requested:req
 state.mode=(state.progress&&state.progress['$mode']==='practice')?'practice':'reference';
 /* ---- cw_srs_v1 spaced-repetition adapter (family retrieval cards) --------------
    Family cards share the question bank's store under a FAM# id namespace
-   (QB#/TOPIC# already exist). applyGrade is build-injected from
+   (QB#/TOPIC# already exist). The store shape and the scheduling write are
+   build-injected from site_build/srs_store.js, applyGrade from
    site_build/sm2_apply_grade.js; tests/family-srs-parity.test.mjs guards the
    marker wiring and tests/sm2-behavior.test.mjs pins the behaviour. */
-var SRS_KEY='cw_srs_v1';
-var DAY = 86400000;
-function srsFresh(){return {v:1,cards:{},day:{lastDay:'',newToday:0},stats:{streak:0,lastStudy:'',totalReviews:0,correct:0,seen:0},settings:{newPerDay:12}};}
-function srsLoadStore(){try{var s=JSON.parse(localStorage.getItem(SRS_KEY)||'null');if(s&&s.v===1){s.cards=s.cards||{};s.stats=s.stats||srsFresh().stats;return s;}}catch(_){}return srsFresh();}
-function srsSaveStore(s){try{localStorage.setItem(SRS_KEY,JSON.stringify(s));}catch(_){}}
+/*__SRS_STORE__*/
 /*__FAM_RETRIEVAL__*/
 /*__SM2_APPLY_GRADE__*/
 function srsGradeFamily(scenarioId,promptId,grade){
-  var s=srsLoadStore(), id=famCardId(scenarioId,promptId);
-  var card=s.cards[id]||{ease:2.5,ivl:0,reps:0,lapses:0,due:Date.now(),last:0};
-  s.cards[id]=applyGrade(card,grade,{fuzzKey:id});
-  /* cards only — never stats: review.html renders Retention as correct/seen,
-     and a self-rating has no ground-truth "correct" to contribute */
-  srsSaveStore(s);
-  return s.cards[id];
+  return srsGradeCard(famCardId(scenarioId,promptId),grade);
 }
 function srsDueForScenario(scenarioId,prompts){
   var s=srsLoadStore(), now=Date.now(), out={due:0,started:0,total:(prompts||[]).length};

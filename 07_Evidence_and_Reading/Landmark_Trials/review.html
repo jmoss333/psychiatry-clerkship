@@ -61,6 +61,7 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:"Source Sans 3"
 .deckchip{background:var(--accent-light);color:var(--accent-dark);border-radius:999px;padding:3px 11px;font-size:.74rem;font-weight:600;letter-spacing:.02em}
 .snew{background:var(--info-light);color:var(--info)}
 .scount{margin-left:auto;color:var(--text-light);font-size:.8rem}
+.stemtext{font-size:.9rem;line-height:1.5;color:var(--text-light);margin:2px 0 10px;padding-left:10px;border-left:3px solid var(--border)}
 .qtext{font-family:"Source Serif 4",Georgia,serif;font-size:1.12rem;line-height:1.4;margin:2px 0 15px}
 .oeaudio{margin:0 0 14px;border:1px solid var(--border2);border-radius:9px;padding:8px 11px;background:var(--bg-alt)}
 .oeaudio summary{cursor:pointer;font-size:.85rem;color:var(--accent-dark);font-weight:600;list-style:none}
@@ -169,7 +170,7 @@ function famRecallCards(data){
       var reveal=famRevealContent(it,rp); if(reveal==null) continue;
       out.push({
         id:famCardId(it.id,rp.id), deck:"FAM", deckTitle:"Family · "+(it.title||it.id),
-        kind:"recall", q:rp.prompt, reveal:reveal,
+        kind:"recall", seededOnly:true, q:rp.prompt, reveal:reveal,
         page:(it.linkedPages&&it.linkedPages[0])||null
       });
     }
@@ -177,13 +178,84 @@ function famRecallCards(data){
   return out;
 }
 
-/* Which cards this tool may put in front of a learner. Every choice card qualifies. A recall
-   card qualifies only once it already has a schedule — i.e. the learner has practised it beside
-   its scenario in the family tool. That is deliberate on both ends: the home due badge counts
-   DUE family cards, which by definition already have a schedule, so serving exactly those
-   closes the badge-vs-queue gap; and a family prompt nobody has met is authored to be answered
-   with its scenario open, not sprung cold as a new card here. */
-function queueable(card, cardState){ return !card || card.kind!=='recall' || !!cardState; }
+/* Which cards this tool may put in front of a learner. A card marked `seededOnly` qualifies
+   only once it already has a schedule — i.e. the learner has met it in the tool that authored
+   it. That is deliberate on both ends: the due row counts DUE cards, which by definition
+   already have a schedule, so serving exactly those closes the counted-but-never-served gap;
+   and every seededOnly card is written to be answered with its own tool's context on screen (a
+   family prompt beside its scenario, a reasoning step beside its patient brief), not sprung
+   cold as a new card here. So this page reviews what the tools taught; it never introduces.
+
+   The flag is per-card and not per-kind: the family cards are `recall` and the communication
+   and reasoning cards are `choice`, but all three are seeded by their own tool. Decks and topic
+   quizzes carry no flag and remain the only sources feeding the daily new-card allowance. */
+function queueable(card, cardState){ return !card || !card.seededOnly || !!cardState; }
+
+/* Map a tool's authored choices onto the queue's option shape. Both tools grade an option by
+   `quality` rather than a boolean, so `best` becomes the correct answer and the option's own
+   feedback becomes its explanation.
+
+   Rejecting anything but exactly one `best` is the point of the guard, not a formality:
+   correctIdx() takes the FIRST option flagged correct, so a case authored with two bests would
+   score a learner who picked the second one wrong, and one authored with none would mark every
+   answer wrong. Returning null drops that case from the queue instead — the tools themselves
+   still teach it, and the schema validators still see it. */
+function choiceOptions(choices){
+  var arr=(Object.prototype.toString.call(choices)==='[object Array]')?choices:[], out=[], best=0, i;
+  for(i=0;i<arr.length;i++){
+    var ch=arr[i];
+    if(!ch||typeof ch.text!=='string'||!ch.text) return null;
+    var isBest=(ch.quality==='best'); if(isBest) best++;
+    out.push({t:ch.text, c:isBest, fb:typeof ch.feedback==='string'?ch.feedback:""});
+  }
+  return (out.length>1&&best===1)?out:null;
+}
+
+/* Communication cards — one per case, under the SAME ids communication-practice.html writes.
+   The case prompt is self-contained (it quotes the patient), so it needs no stem. What the
+   review cannot reproduce is that tool's twenty-second spoken rep before the choices appear;
+   this is recognition practice on a line the learner has already tried to say. */
+function commChoiceCards(data){
+  var list=(data&&data.cases)||[], out=[], i;
+  if(Object.prototype.toString.call(list)!=='[object Array]') return out;
+  for(i=0;i<list.length;i++){
+    var c=list[i]; if(!c||!c.id||!c.prompt) continue;
+    var opts=choiceOptions(c.choices); if(!opts) continue;
+    out.push({
+      id:"COMM#"+c.id, deck:"COMM", deckTitle:"Communication · "+(c.title||c.id),
+      kind:"choice", seededOnly:true, q:c.prompt, o:opts, stem:c.setting||null
+    });
+  }
+  return out;
+}
+
+/* Reasoning cards — one per STEP, under the same ids diagnostic-reasoning.html writes. A case's
+   steps test different moves and a learner can be solid on one and lost on the next, so they
+   schedule separately.
+
+   The patient brief rides along as the card's stem because it is NOT optional context: a step
+   asks things like "which one-liner best captures the syndrome", which is unanswerable without
+   the case. In the tool the brief is on screen throughout; a step without it here would be a
+   different, harder, and unfair question. A step whose case has no brief is dropped rather than
+   served bare. */
+function reasonChoiceCards(data){
+  var list=(data&&data.cases)||[], out=[], i, j;
+  if(Object.prototype.toString.call(list)!=='[object Array]') return out;
+  for(i=0;i<list.length;i++){
+    var c=list[i]; if(!c||!c.id||!c.patientBrief) continue;
+    var steps=(Object.prototype.toString.call(c.steps)==='[object Array]')?c.steps:[];
+    for(j=0;j<steps.length;j++){
+      var st=steps[j]; if(!st||!st.id||!st.prompt) continue;
+      var opts=choiceOptions(st.choices); if(!opts) continue;
+      out.push({
+        id:"REASON#"+c.id+"#"+st.id, deck:"REASON",
+        deckTitle:"Reasoning · "+(c.title||c.id)+" · "+(st.title||st.id),
+        kind:"choice", seededOnly:true, q:st.prompt, o:opts, stem:c.patientBrief
+      });
+    }
+  }
+  return out;
+}
 
 /* A reveal is either the scenario's opening line (a string) or one of its authored sections
    (a list). Rendered as text, never as markup. */
@@ -225,15 +297,22 @@ function App(){
     Promise.all([
       fetch("quizzes.json").then(function(r){return r.ok?r.json():{decks:[]};}).catch(function(){return {decks:[]};}),
       fetch("../topic_meta.json").then(function(r){return r.ok?r.json():{};}).catch(function(){return {};}),
-      fetch("../family_systems_scenarios.json").then(function(r){return r.ok?r.json():{scenarios:[]};}).catch(function(){return {scenarios:[]};})
+      fetch("../family_systems_scenarios.json").then(function(r){return r.ok?r.json():{scenarios:[]};}).catch(function(){return {scenarios:[]};}),
+      fetch("../communication_cases.json").then(function(r){return r.ok?r.json():{cases:[]};}).catch(function(){return {cases:[]};}),
+      /* the res build overwrites this file with reasoning_cases_resident.json, so one path
+         serves the right audience without the page knowing which site it is on */
+      fetch("../reasoning_cases.json").then(function(r){return r.ok?r.json():{cases:[]};}).catch(function(){return {cases:[]};})
     ]).then(function(res){
       /* One builder per source, concatenated into the single queue. A source that fails to load
-         contributes nothing and the rest still runs; a fourth source later (spoken-communication
-         or reasoning cards, once those tools schedule any) is a builder plus a fetch. */
-      var j=res[0]||{}, tm=res[1]||{}, fam=res[2]||{}, out=[];
+         contributes nothing and the rest still runs; another source later is a builder plus a
+         fetch. Order matters only for which cards a same-due-time tie serves first — the queue
+         is sorted by due date below. */
+      var j=res[0]||{}, tm=res[1]||{}, fam=res[2]||{}, comm=res[3]||{}, reason=res[4]||{}, out=[];
       (j.decks||[]).forEach(function(d){ (d.questions||[]).forEach(function(q,i){ if(!q||!q.q||!q.o)return; out.push({id:d.id+"#"+i,deck:d.id,deckTitle:d.title||d.id,kind:"choice",q:q.q,o:q.o,audio:d.audio||null,audioDur:d.audioDur||null}); }); });
       Object.keys(tm).forEach(function(k){ if(k.charAt(0)==="_")return; var m=tm[k]; if(m&&m.quiz&&m.quiz.q&&m.quiz.o&&m.quiz.o.length){ out.push({id:"TOPIC#"+k,deck:"TOPIC",deckTitle:"Topic · "+prettyRef(k),kind:"choice",q:m.quiz.q,o:m.quiz.o.map(function(o){return {t:o.t,c:!!o.c,fb:(o.c?(m.quiz.why||""):"")};})}); } });
       out=out.concat(famRecallCards(fam));
+      out=out.concat(commChoiceCards(comm));
+      out=out.concat(reasonChoiceCards(reason));
       if(!out.length){ setErr(true); return; }
       setCards(out);
       /* ?block=1&limit=N — a timed block step from Today starts straight into a bounded session. */
@@ -339,6 +418,10 @@ function App(){
             e("span",{className:"deckchip"+(isNew?" snew":"")}, isNew?"New":"Review"),
             e("span",{className:"deckchip",style:{background:"var(--bg-alt)",color:"var(--text-light)"}}, c.deckTitle.length>42?c.deckTitle.slice(0,40)+"…":c.deckTitle),
             e("span",{className:"scount"}, (sess.pos+1)+" / "+sess.total)),
+          /* Context the card cannot be answered without (a reasoning case's patient brief).
+             Rendered above the question and visually subordinate to it, so the eye still
+             lands on what is being asked. Text only — never markup. */
+          c.stem? e("p",{className:"stemtext"}, c.stem) : null,
           e("div",{className:"qtext"}, c.q),
           c.audio? e("details",{className:"oeaudio"}, e("summary",null,"🎧 Listen — paper overview"+(c.audioDur?(" · "+c.audioDur):"")), e("audio",{controls:true,preload:"none",src:"../audio_oe/"+c.audio,"aria-label":"Paper overview audio"})) : null,
           isRecall

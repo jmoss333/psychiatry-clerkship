@@ -551,6 +551,7 @@ SNIPPET_MARKERS = {
     "/*__SESS_CAPSULE__*/": "sess_capsule.js",
     "/*__BLOCK_STORE__*/": "block_store.js",
     "/*__SESSION_RECEIPT__*/": "session_receipt.js",
+    "/*__SRS_STORE__*/": "srs_store.js",
     "/*__FAM_RETRIEVAL__*/": "fam_retrieval.js",
     "/*__FD_STATE__*/": "frontdoor/fd_state.js",
     "/*__FD_DATA__*/": "frontdoor/fd_data.js",
