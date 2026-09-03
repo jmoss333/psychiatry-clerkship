@@ -6,6 +6,267 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 
 ---
 
+## Documentation & Oral Presentation
+
+- **Slug:** `doc_oral.md` · **Type:** md · **Sidebar:** listed
+- **Source:** `14_Tracks/MS3/Student_Ready_Pack/05_documentation_oral_presentation/student_documentation_and_oral_presentations.md`
+- **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
+- **Length:** 817 words
+
+<!-- topic_meta overlay -->
+#### Structured metadata (`topic_meta.json` → this page)
+
+> est. read 5 min
+
+**TL;DR (shown above the page text):**
+
+> Write notes and give presentations that reveal reasoning — every note should let the next clinician know what you are treating, what else it could be, what the risk is today, what changed, and what has to happen before discharge.
+
+**Key points (bulleted card):**
+
+- Daily rounds presentations run 60–90 seconds: hospital day, overnight events, one subjective point and one MSE change, a risk update, and a plan question — lead with what changed, not the full history.
+- Organize the note plan by problem: safety → medications/medical/substance/sleep → psychotherapy/milieu → family/collateral → disposition — so the structure mirrors the clinical priorities.
+- The handoff template names the main overnight risks, a trigger-plan pair (if X happens, do Y), and what escalates and what helps with this patient — generic handoffs create coverage gaps.
+- Practice two micro-updates out loud: a 30-second collateral update and a 60-second rounds update.
+
+**Can't-miss / red-flag line:**
+
+> Copying forward yesterday's risk language without updating the reasoning — 'denies SI/HI, low acute risk' on hospital day 7 without noting today's context — erases the clinical event and creates a documentation gap.
+
+**Clinical-workflow narration (per-stage coaching text):**
+
+- **ask** — Before rounds, ask what changed overnight, what data are missing, what risk changed, and what decision the team needs today.
+- **mse** — Report MSE findings that support the assessment, especially changes from yesterday and safety-relevant observations.
+- **safety** — Always include current suicide/violence/vulnerability risk, observation level, restrictions, and discharge barriers when relevant.
+- **say** — My assessment is... because... and the next decision is...
+- **collateral** — Include collateral only when it changes diagnosis, risk, treatment, or discharge planning.
+- **rounds** — Use problem representation, focused interval events, MSE delta, assessment, and prioritized plan.
+- **exam** — Oral presentations reveal clinical reasoning: what changed, why it matters, and what you will do next.
+- **actions** — Open rounding prep; Use 30-second collateral update; Practice micro-updates
+
+**Embedded check-for-understanding**
+
+1. *Stem:* During a 90-second rounds update, a student presents 5 minutes of history and ends with 'so the plan is to continue current medications.' The attending asks what the student should have led with instead. What is correct?
+   - A full review of the patient's psychiatric history to give the team context
+   - The complete medication list with doses and adherence
+   - A review of the patient's insurance and discharge plan
+   - Hospital day, what changed overnight, one MSE point, a risk update, and the clinical question for the team **← keyed correct**
+   - *Rationale:* A daily rounds presentation is a structured 60–90 second clinical update — it begins with the hospital day and what changed overnight, not a retelling of the history. The attending already knows the background; they need to know what shifted and what decision is needed today. A plan question names the uncertainty and invites attending input.
+
+**Cross-references and tagging:**
+
+- **Related tools:** `oral.html`, `communication-practice.html`
+- **Communication cases:** `rounds_naming_uncertainty_001`
+- **Workflow stages:** `team`, `diagnosis`, `safety`, `exam`, `family`
+- **Workflow modes:** `ward`, `5min`, `shelf`, `family`
+- **Shelf blueprint tags:** `relational`
+- **EPA crosswalk:** `EPA5`, `EPA6`
+- **Call-to-action buttons:** Open the Formulation & DDx Pocket Guide; Use 30-second collateral update; Practice micro-updates
+
+#### Page text (as shipped)
+
+# Student Documentation And Oral Presentation Guide
+
+Generated: 2026-06-27
+
+Audience: MS3 students.
+
+## Core Principle
+
+Good psychiatric documentation shows reasoning. It does not merely list symptoms.
+
+Every note should help the next clinician answer:
+
+1. What are we treating?
+2. What else could this be?
+3. What is the risk today?
+4. What changed since yesterday?
+5. What has to happen before discharge?
+
+## Student Progress Note Template
+
+### One-Liner
+
+`[Age]-year-old [person] admitted for [reason], hospital day [X], with current
+priority of [risk/diagnosis/treatment/disposition].`
+
+### Interval Events
+
+- Sleep.
+- PRNs.
+- Safety events.
+- Medication changes/adverse effects.
+- Nursing/milieu observations.
+- Family/collateral/discharge updates.
+
+### Subjective
+
+Use patient language. Include:
+
+- Mood/anxiety/psychosis/mania/trauma/substance symptoms as relevant.
+- SI/HI/self-harm update.
+- Medication effects/adverse effects.
+- Goals or concerns for the day.
+
+### MSE
+
+Focus on changes and clinically relevant findings.
+
+### Formulation Update
+
+Use a short paragraph:
+
+> "Today, the leading formulation remains [syndrome/problem], with [medical/
+> substance/sleep] contributors, [psychological/interpersonal] contributors,
+> and [discharge/system] barriers. The main change today is [X], which affects
+> risk/plan by [Y]."
+
+### Risk
+
+Separate:
+
+- Chronic risk.
+- Acute risk.
+- Protective factors.
+- Modifiable targets.
+- Means restriction/safety planning when relevant.
+
+Avoid:
+
+- "Denies SI/HI, no risk."
+- Copy-forward risk language that ignores today's context.
+
+### Plan
+
+Organize by problem:
+
+1. Safety.
+2. Medications/medical/substance/sleep.
+3. Psychotherapy/milieu/groups.
+4. Family/collateral.
+5. Disposition/follow-up.
+
+## Admission Presentation Template
+
+Use 4-6 minutes.
+
+1. One-liner.
+2. Chief concern and timeline.
+3. Safety reason for admission.
+4. Psychiatric symptoms by syndrome.
+5. Substance/medical/medication contributors.
+6. Psychiatric history.
+7. Family/social/discharge context.
+8. MSE.
+9. Differential diagnosis.
+10. Formulation and plan.
+
+## Daily Rounds Presentation Template
+
+Use 60-90 seconds.
+
+1. "Hospital day X for Y."
+2. Overnight: sleep, PRNs, safety, vitals/labs if relevant.
+3. Patient today: one subjective point and one MSE point.
+4. Risk update.
+5. Plan question: medication, safety, family, discharge, or diagnosis.
+
+Example:
+
+> "Hospital day 4 for mania with psychosis. Slept 5 hours, no IMs, accepted
+> lithium and olanzapine, mild tremor this morning. He reports thoughts are
+> slower but still believes neighbors are monitoring him. MSE shows less
+> pressured speech, still grandiose. Acute violence risk is lower than admission
+> because sleep and agitation improved, but discharge risk remains high because
+> he refuses family collateral. My question is whether today is the right time to
+> revisit collateral with a limited call."
+
+## Two Micro-Updates To Practice Out Loud
+
+Use these when the team already knows the admission story and needs the update,
+not the whole chart.
+
+### 30-Second Collateral Update
+
+Structure:
+
+1. Source and permission/policy frame.
+2. Baseline.
+3. Timeline.
+4. Risk or discharge data.
+5. What changes in the plan.
+
+Template:
+
+> "I spoke with [source/role] [with permission / under the team's safety
+> rationale]. Baseline is [X]. The key timeline point is [Y]. Risk/discharge
+> information is [Z]. This changes our plan because [next decision]."
+
+### 60-Second Rounds Update
+
+Structure:
+
+1. Hospital day and active problem.
+2. Overnight events: sleep, PRNs, safety, vitals/labs if relevant.
+3. One patient-reported point and one MSE change.
+4. Risk update.
+5. Plan question.
+
+Template:
+
+> "Hospital day [X] for [problem]. Overnight [sleep/PRNs/safety]. Today the
+> patient reports [one point], and MSE shows [one change]. Risk is [better/worse/
+> unchanged] because [reason]. My plan question is [decision needed]."
+
+Practice both in the [Treatment Team Rounding Prep](?tool=oral.html) tool.
+
+## Oral Case Presentation Rubric
+
+| Skill | Strong Performance |
+|---|---|
+| Concision | Leads with the clinical problem, not every fact |
+| Organization | Timeline is clear |
+| MSE | Uses observable language |
+| Differential | Includes medical/substance contributors |
+| Risk | Separates chronic and acute risk |
+| Formulation | Integrates biological, psychological, family/social, and systems factors |
+| Plan | Matches the formulation |
+| Uncertainty | Names what is not yet known |
+
+## Common Student Pitfalls
+
+- Over-presenting distant history.
+- Treating "denies SI" as a full risk assessment.
+- Forgetting sleep and substances.
+- Forgetting collateral.
+- Treating family as logistics rather than clinical context.
+- Listing diagnoses without a differential.
+- Copying assessment language from prior notes without updating reasoning.
+- Presenting medication changes without adverse-effect monitoring.
+
+## Handoff Template
+
+Use when handing off a psychiatric patient:
+
+> "This is [patient], admitted for [reason]. Tonight, the main risks are [safety/
+> withdrawal/agitation/medical]. If [trigger], do [plan]. Avoid [known
+> escalating intervention]. The patient responds best to [approach]. Family/
+> collateral issue to know: [X]."
+
+## Faculty Feedback Prompts
+
+- "What was the clinical question in that presentation?"
+- "What did you leave out, and why?"
+- "What would make you change the risk level?"
+- "Where did the formulation change the plan?"
+- "What would the overnight covering clinician need to know?"
+
+Plain-English note: this guide helps students stop writing and presenting as if
+psychiatry is a checklist. It gives them a structure that reveals their thinking.
+
+
+---
+
 ## Treatment Team Rounding Prep
 
 - **Slug:** `oral.html` · **Type:** tool · **Sidebar:** listed
@@ -118,7 +379,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **Slug:** `rounds_questions.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 8,700 words
+- **Length:** 8,724 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -255,7 +516,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Answer:** Involuntary orofacial and extremity movements after months-to-years of dopamine receptor-blocking agent exposure. First-line treatment: VMAT2 inhibitors (valbenazine, deutetrabenazine).
 
-- **Evidence:** Annualized incidence ~3.9% with SGAs vs. ~5.5% with FGAs. Valbenazine 80 mg showed AIMS improvement of −2.9 vs. +0.3 placebo.
+- **Evidence:** Annualized incidence ~3.9% with SGAs vs. ~5.5% with FGAs. In KINECT-3, valbenazine 80 mg improved AIMS by −3.2 vs. −0.1 with placebo.
 
 - **Key paper:** Correll & Citrome, J Clin Psychiatry 2021.
 
@@ -559,7 +820,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Answer:** Prazosin (alpha-1 adrenergic antagonist) is suggested for trauma-related nightmares.
 
-- **Evidence:** Evidence rating B per VA/DoD guidelines; titrate from 1 mg at bedtime.
+- **Evidence:** The 2023 VA/DoD guideline found insufficient evidence for or against prazosin for PTSD nightmares (the PACT trial was negative), but it remains a reasonable and widely used option; titrate from 1 mg at bedtime.
 
 - **Key paper:** Sartor et al., Am Fam Physician 2023.
 
@@ -589,7 +850,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Answer:** Adding ERP is superior to adding risperidone or stress management for SSRI partial responders. Low-dose antipsychotic augmentation (particularly aripiprazole or risperidone) has evidence, especially in patients with comorbid tics.
 
-- **Evidence:** Foa et al., JAMA Psychiatry 2022 showed ERP augmentation was superior to risperidone augmentation.
+- **Evidence:** Simpson et al., JAMA Psychiatry 2013 showed ERP augmentation was superior to risperidone augmentation.
 
 - **Key paper:** Foa et al., JAMA Psychiatry 2022.
 
@@ -1041,7 +1302,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Key paper:** Lord et al., Lancet 2018.
 
-- **Pearl:** A child with intellectual disability may have social difficulties due to cognitive limitations, but will not show the **restricted/repetitive behaviors** characteristic of ASD — this is the key differentiator.
+- **Pearl:** Repetitive behaviors and stereotypies also occur in intellectual disability without ASD — the key differentiator is social communication that falls below what the child's general developmental level would predict.
 
 ## SLEEP DISORDERS (Questions 88–90)
 
@@ -1156,309 +1417,3 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 ---
 
 # SECTION: Practice and Exam Prep
-
----
-
-## Practice Questions — Question Bank
-
-- **Slug:** `question-bank-practice.html` · **Type:** tool · **Sidebar:** listed
-- **Source:** `13_Faculty_Resources/_automation/site_build/question-bank-practice.html`
-- **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`moderate`
-
-#### Tool — clinical content
-
-_These tools are single-file HTML that render from inline JS data, so the clinical text below is recovered from the tool's own string literals. Ordering follows the file, not the runtime flow._
-
-**Static shell text:**
-
-- Practice Questions — MS3 Question Bank Reviewed by Joshua Moss, MD on 2026-07-05
-- Skip to content Practice Questions
-- Loading question bank…
-
-**Authored clinical strings (228):**
-
-- s toolExtraFromParams passthrough (spa_index.html) — no shell change needed to reach this tool
-- s next step. */ var BLOCK_REQUEST = (function(){ try{ var sp=new URLSearchParams(location.search); if(sp.get(
-- ) return null; var n=parseInt(sp.get(
-- ,10); if(!(n>=1&&n<=50)) n=5; var cat=sp.get(
-- ; return {n:n, cat:/^[a-z]+$/.test(cat)?cat:
-- }; }catch(_){ return null; } })(); var CAT_LABELS = { mood:
-- }; var SUBTYPE_LABELS = {
-- }; /* ---- utilities ---------------------------------------------------------------- */ function esc(s){ return String(s||
-- ); } function shuffle(arr){ var a=arr.slice(),i=a.length,j,t; while(i--){j=Math.floor(Math.random()*(i+1));t=a[i];a[i]=a[j];a[j]=t;} return a; } function readReviewContext(){ var sp = new URLSearchParams(location.search); var reviewItem = sp.get(
-- ; var reviewKey = sp.get(
-- ; var reviewToken = sp.get(
-- ).length !== 1 || sp.getAll(
-- ).length !== 1) return null; if(!/^qb_[a-z]+_[0-9]{3}$/.test(reviewItem)) return null; if(reviewKey !==
-- + reviewItem) return null; if(!/^[0-9a-f]{32}$/.test(reviewToken)) return null; return Object.freeze({reviewItem:reviewItem, reviewKey:reviewKey, reviewToken:reviewToken}); } function postReviewItemStatus(status){ if(!REVIEW_CONTEXT || [
-- ].indexOf(status) < 0) return; window.parent.postMessage({ type:
-- , reviewKey:REVIEW_CONTEXT.reviewKey, reviewToken:REVIEW_CONTEXT.reviewToken, reviewItem:REVIEW_CONTEXT.reviewItem, status:status, surface:
-- }, location.origin); } /* ---- localStorage helpers ----------------------------------------------------- */ function lsGet(k){ try{return JSON.parse(localStorage.getItem(k)||
-- );}catch(_){return null;} } function lsSet(k,v){ try{localStorage.setItem(k,JSON.stringify(v));}catch(_){} } /* ---- cw_qb_v1 response store -------------------------------------------------- */ function qbLoad(){ return lsGet(
-- )||{}; } function qbSave(data){ lsSet(
-- ,data); } function qbRecord(item, key, tier2Key, confidence, correct, twoTierResult){ var data = qbLoad(); var prev = data[item.id]; var re = (prev && prev.ts && (new Date(prev.ts)).toDateString() === (new Date()).toDateString()) ? 1 : 0; var rec = { id: item.id, key: key, tier2Key: tier2Key||null, confidence: confidence, correct: correct, pages: item.pages||[], ts: Date.now() }; if(confidence===
-- && !correct) rec.certWrong = true; data[item.id] = rec; qbSave(data); calibLog({s:
-- ,id:item.id,pages:item.pages||[],p:confidence,a:correct?1:0,t2:twoTierResult||null,re:re,ts:Date.now()}); return rec; } /* ---- cw_srs_v1 SRS seeding + grading ----------------------------------------- */ function srsLoad(){ var s = lsGet(
-- ); if(!s||s.v!==1){ s={v:1,cards:{},day:{lastDay:
-- ,newToday:0}, stats:{streak:0,lastStudy:
-- ,totalReviews:0,correct:0,seen:0}, settings:{newPerDay:12}}; } return s; } function srsSave(s){ lsSet(
-- ,s); } function srsGrade(item, confidence, correct, twoTierResult){ /* Map confidence×correct to SM-2 grade, respecting two-tier shaky cap */ if(!correct) return
-- ; /* cap: right answer, wrong reason */ if(confidence===
-- ; /* guess + correct = Hard (lucky guess ≠ mastery) */ return
-- ; } var DAY = 86400000; /* ==== Canonical SM-2 grader (build-injected — do not edit inside consumer files) ==== Source of truth: 13_Faculty_Resources/_automation/site_build/sm2_apply_grade.js. Consumers carry a SM2_APPLY_GRADE marker comment that common.py
-- s cw_srs_v1 writes stay aggregate/current-state only and are unaffected by that logging. */ /* Deterministic ±15% interval fuzz (opts.fuzzKey): de-synchronizes cohort-seeded cards so due-load avalanches spread out. No fuzzKey (legacy callers) = no fuzz. Also a no-op below ivl 3 d (too short to meaningfully fuzz). Always clamped to [1, 365] regardless of the input interval
-- t drift between the two consumers; an expired or malformed per-tool entry is pruned from the store on load, not just hidden, so a stale slot never lingers past its own read. Consumers: question-bank-practice.html (checkpointSession/ tryResumeSession — writer + authoritative resume) and the shell
-- s progress on Today) and by the session receipt inside a tool (to mark the step that just finished and offer the next one). Injected via /*__BLOCK_STORE__*\/ so the shell and every tool share one implementation. Shape: {v:1, minutes, createdAt, steps:[{kind:
-- , ref, title, min, n?, cat?, done?, doneAt?}]}. A page step is never marked here — its done state is derived from cw_progress_v1 at render time, so ticking the page anywhere counts. A block older than CW_BLOCK_TTL_MS is pruned on load: a plan built for one morning
-- s own primary (spec.actions) beside "Back to Today"; 3. marks the tool
-- s openPage message — a plain href would be caught by the in-iframe interceptor and lose its query, so the delegated listener below posts the full route instead; outside an iframe it falls back to a real navigation. */ function cwReceiptEsc(s){ return String(s===undefined||s===null?
-- ); } function cwReceiptLocalDay(nowMs){ var d=new Date(nowMs), m=d.getMonth()+1, day=d.getDate(); return d.getFullYear()+
-- )+day; } /* Writes the legacy {done:true,at} entry the front door reads. Returns true only when this call changed the store, so "Marked done on Today" is said once, not on every re-render. */ function cwReceiptMarkDone(ref, nowMs){ if(!ref) return false; try{ var p=JSON.parse(localStorage.getItem(
-- ) p={}; if(p[ref]&&p[ref].done===true) return false; p[ref]={done:true,at:cwReceiptLocalDay(nowMs)}; localStorage.setItem(
-- , JSON.stringify(p)); return true; }catch(_){ return false; } } function cwReceiptStepRoute(step){ var s=step||{}; if(s.kind===
-- +encodeURIComponent(String(s.n||1)); if(s.kind===
-- )); } function cwReceiptNextStep(block, doneMap){ var b=block||{}, list=b.steps||[], d=doneMap||{}, i, s, done=0; var next=null; for(i=0;i<list.length;i++){ s=list[i]||{}; var isDone=(s.kind===
-- )?(d[s.ref]===true):(s.done===true); if(isDone) done++; else if(!next) next=s; } return {next:next, done:done, total:list.length}; } function cwReceiptDoneMap(){ var out={}; try{ var p=JSON.parse(localStorage.getItem(
-- ){ for(var k in p){ if(Object.prototype.hasOwnProperty.call(p,k)&&p[k]&&p[k].done===true) out[k]=true; } } }catch(_){ } return out; } var CW_RECEIPT_CSS=
-- ; function cwReceiptEnsureStyle(){ try{ if(typeof document===
-- )) return; var st=document.createElement(
-- ; st.textContent=CW_RECEIPT_CSS; document.head.appendChild(st); }catch(_){ } } var cwReceiptWired=false; function cwReceiptNavigate(ref, search){ var framed=false; try{ framed=(typeof window!==
-- )&&window.self!==window.top; }catch(_){ framed=true; } if(framed){ try{ window.parent.postMessage({type:
-- ); return; }catch(_){ } } try{ location.href=
-- +encodeURIComponent(ref)))); }catch(_){ } } function cwReceiptWire(){ if(cwReceiptWired||typeof document===
-- ) return; cwReceiptWired=true; document.addEventListener(
-- , function(ev){ var t=ev.target&&ev.target.closest?ev.target.closest(
-- ):null; if(!t) return; ev.preventDefault(); if(t.hasAttribute(
-- ); return; } cwReceiptNavigate(t.getAttribute(
-- ); }, true); } function cwReceipt(spec){ var s=spec||{}, nowMs=(typeof s.nowMs===
-- )?s.nowMs:Date.now(), i; cwReceiptEnsureStyle(); cwReceiptWire(); var marked=cwReceiptMarkDone(s.ref, nowMs); var block=null, progress=null; if(typeof blockLoad===
-- ){ if(s.blockKind&&typeof blockMarkStep===
-- ) blockMarkStep(s.blockKind, nowMs); block=blockLoad(nowMs); if(block) progress=cwReceiptNextStep(block, cwReceiptDoneMap()); } var h=
-- ; var stats=s.stats||[]; if(stats.length){ h+=
-- ; for(i=0;i<stats.length;i++){ var st=stats[i]||{}, tone=st.tone===
-- ; } var reread=s.reread||[]; if(reread.length){ h+=
-- ; for(i=0;i<reread.length;i++){ var r=reread[i]||{}; h+=
-- cw-receipt__tag'+(r.warn?' is-warn':'')+'
-- ; var next=progress&&progress.next; if(next){ var route=cwReceiptStepRoute(next); h+=
-- cw-receipt__btn is-primary
-- ; }else{ var acts=s.actions||[]; for(i=0;i<acts.length;i++){ var a=acts[i]||{}; h+=
-- cw-receipt__btn'+(a.primary?' is-primary':'')+'
-- ; if(!next&&typeof blockClear===
-- ; return {html:h, marked:marked, next:next||null}; } function srsUpdate(item, confidence, correct, twoTierResult){ var s = srsLoad(); var cardId =
-- +item.id; var card = s.cards[cardId]||{ease:2.5,ivl:0,reps:0,lapses:0,due:Date.now(),last:0}; var grade = srsGrade(item, confidence, correct, twoTierResult); s.cards[cardId] = applyGrade(card, grade, {fuzzKey:cardId}); /* update aggregate stats */ s.stats.totalReviews = (s.stats.totalReviews||0)+1; if(correct) s.stats.correct=(s.stats.correct||0)+1; s.stats.seen=(s.stats.seen||0)+1; srsSave(s); return grade; } /* ---- queue building ----------------------------------------------------------- */ function buildQueue(items, catFilter, diffFilter, sizeLimit){ var q = items.filter(function(it){ if(catFilter!==
-- && it.category!==catFilter) return false; if(diffFilter!==
-- && String(it.difficulty)!==diffFilter) return false; return true; }); q = shuffle(q); if(sizeLimit!==
-- ) q = q.slice(0, parseInt(sizeLimit,10)||20); return q; } /* Items eligible to serve to learners. Two gates: — Retired items (near-duplicate/redundant per question_bank.schema.json) are NEVER queued. — Un-attested items serve ONLY when the learner opts in via the setup-screen toggle (persisted as cw_qb_drafts_v1). The default pool is faculty-attested items only, and every surface that shows an included draft labels it — see renderMeta() and the .draft-notice callout in renderQuestion(). Policy history, because this has flipped before: the 2026-07-15 decision log recorded "serve drafts, marked" after a04a848 gated to attested-only by ACCIDENT — the pool fell 192->143 with no UI trace, and #284 restored serving. The 2026-08-20 Taplinger response plan (PLAN_Taplinger_Feedback_and_Therapy_Library_2026-08-20.md §A2 / WP-37, urgency per FEEDBACK_IMPACT_Taplinger_Verbatim_2026-08-20.md §3) reverses that decision deliberately now that an external course page links to the site: attested-only BY DEFAULT, drafts opt-in and labelled. Unlike a04a848, this flip is visible — the setup screen states the exclusion, shows the excluded count, and carries the toggle. Fail-safe direction: only an explicit status===
-- reaches the default pool, so a new or misspelled status is withheld rather than served as reviewed (mirrors the label logic, which marks anything not attested). `status` is still the source of truth; nothing here mutates it, and attestation stays server-side. */ function includeDrafts(){ return lsGet(
-- )===true; } function setIncludeDrafts(on){ lsSet(
-- , !!on); } function activeItems(){ var inc = includeDrafts(); return (BANK && BANK.items ? BANK.items : []).filter(function(it){ if(it.retired) return false; if(!inc && it.status!==
-- ) return false; return true; }); } /* Focus-mode presets, built from the learner
-- s cw_qb_drafts_v1 opt-in is set (see the policy comment above). */ function missedItems(){ var records = qbLoad(); return activeItems().filter(function(it){ var rec = records[it.id]; return !!rec && rec.correct === false; }); } function certWrongItems(){ var records = qbLoad(); return activeItems().filter(function(it){ var rec = records[it.id]; return !!rec && rec.certWrong === true; }); } /* Due-first serving. This tool has WRITTEN QB# cards to cw_srs_v1 since SRS seeding landed, but nothing ever read the schedule — Daily Review serves TOPIC# cards only (the false "resurfaces in Daily Review" copy was corrected in #344). This makes the schedule real: cards that have come due return at the FRONT of the next practice session here, most-overdue first. Routed through activeItems(), so a since-retired item can never resurface no matter what its card says. */ function dueQbItems(){ var s = srsLoad(); if(!s || !s.cards) return []; var now = Date.now(), due = {}; Object.keys(s.cards).forEach(function(id){ if(id.indexOf(
-- ) !== 0) return; var c = s.cards[id]; if(c && typeof c.due ===
-- && c.due <= now) due[id.slice(3)] = c.due; }); return activeItems() .filter(function(it){ return Object.prototype.hasOwnProperty.call(due, it.id); }) .sort(function(a, b){ return due[a.id] - due[b.id]; }); } /* ---- rendering helpers -------------------------------------------------------- */ function diffDots(n){ var h=
-- ; for(var i=1;i<=3;i++) h+=
-- diff-dot'+(i<=n?' on':'')+'
-- ; } function renderSetup(){ var items = activeItems(); var cats = {}; items.forEach(function(it){ cats[it.category]=1; }); var catOpts =
-- ; Object.keys(CAT_LABELS).forEach(function(k){ if(cats[k]) catOpts+=
-- ; }); var total = items.length; /* bankDraftCount is toggle-independent (all non-retired, non-attested items in the bank); draftCount is how many of those are in the SERVED pool right now. The note renders whenever the bank has drafts, in whichever wording matches the toggle — excluded-by-default (off) or labelled-in-pool (on). */ var draftsOn = includeDrafts(); var bankDraftCount = (BANK && BANK.items ? BANK.items : []).filter(function(it){ return !it.retired && it.status!==
-- ; }).length; var draftCount = draftsOn ? bankDraftCount : 0; var missedCount = missedItems().length; var certWrongCount = certWrongItems().length; var dueCount = dueQbItems().length; return
-- ; } function renderMeta(item){ var h =
-- ; h += diffDots(item.difficulty); if(item.type===
-- ; /* The glyph is decorative — the wording carries the meaning, so the label never depends on colour or on the icon being announced. */ if(item.status!==
-- ; return h; } function renderConfidence(disabled){ var ds = disabled ?
-- ; } function renderOptions(item, state){ /* state:
-- — locked after answer. Letters come from DISPLAY position, not the authored key: 46 of 47 draft items are keyed A, so rendering opt.key after the shuffle both scrambled the letter sequence and let "A." follow the correct answer around the screen. data-key still carries the authored key for answer logic. A locked re-render reuses the session
-- Select the best rationale — then see your full feedback.
-- <button class="opt" data-tier2key="
-- ✓ Right answer — shaky reasoning
-- · Confidently wrong — flagged for review
-- Right answer, wrong reason — your SRS interval is capped at Hard , so this item comes due again soon and will serve at the front of a future session here. The correct rationale:
-- <a class="fb-link" href="
-- target="_blank" rel="noopener"
-- ⚠ Draft — not yet faculty-reviewed.
-- This question and its explanation have not been checked by faculty. Practise with it,
-- but verify anything you would act on against a primary source.
-- s own. */ var certWrongList = responses.filter(function(r){return r.confidence===
-- &&!r.correct;}); var certWrong = certWrongList.length; var guessRight = responses.filter(function(r){return r.confidence===
-- &&r.correct;}).length; var wrong = total-correct; var headline = correct+
-- )); var sub = certWrong ?
-- ); var reread = []; responses.forEach(function(r){ if(r.correct && r.confidence!==
-- ) return; if(reread.length>=5) return; var chosen = (r.item.options||[]).filter(function(o){ return o && o.key===r.key; })[0]; var trap = chosen && chosen.trap ? chosen.trap : null; var trapName = trap && trap.name ? trap.name : null; var page = (r.item.pages&&r.item.pages[0]) || null; reread.push({ tag: r.correct ?
-- ), warn: !r.correct && r.confidence===
-- , title: String(r.item.stem||
-- ), ref: page, refTitle: page ? pageTitle(page) : null }); }); var stats = [ {label:
-- , value:String(certWrong), tone:certWrong?
-- , value:String(guessRight)}, {label:
-- , value:String(wrong), tone:wrong?
-- } ]; var receipt = cwReceipt({ /* Only a session the block itself opened (?block=1) may mark the block
-- Calibration gap: You were certain
-- Miscalibration on the wards is more dangerous than ignorance —
-- replay your confidently-wrong items from this summary.
-- s own link label when it points at that page, else a readable form of the file name (the tool has no nav registry of its own). */ function pageTitle(file){ var f=String(file||
-- ); return f.replace(/^pg_/,
-- ).replace(/\b\w/g,function(c){return c.toUpperCase();}); } /* ---- DOM helpers -------------------------------------------------------------- */ var root = document.getElementById(
-- ); var progLabel = document.getElementById(
-- ); var qprog = document.getElementById(
-- ); var qprogFill = document.getElementById(
-- ); function setRoot(html){ root.innerHTML=html; } function updateProgress(){ if(!SESSION) return; var idx=SESSION.idx, total=SESSION.queue.length; if(total===0) return; var pct=Math.round((idx/total)*100); progLabel.textContent =
-- +total; qprog.hidden=false; qprogFill.style.width=pct+
-- ; } /* ---- app state transitions ---------------------------------------------------- */ function showSetup(){ SESSION=null; progLabel.textContent=
-- ; qprog.hidden=true; setRoot(renderSetup()); bindSetup(); } function bindSetup(){ var catSel=document.getElementById(
-- ); var diffSel=document.getElementById(
-- ); var sizeSel=document.getElementById(
-- ); var countEl=document.getElementById(
-- ); var startBtn=document.getElementById(
-- ); var redoMissesBtn=document.getElementById(
-- ); var certWrongBtn=document.getElementById(
-- ); var dueBtn=document.getElementById(
-- ); function updateCount(){ var cat=catSel?catSel.value:
-- , diff=diffSel?diffSel.value:
-- ; var n = activeItems().filter(function(it){ if(cat!==
-- &&it.category!==cat) return false; if(diff!==
-- &&String(it.difficulty)!==diff) return false; return true; }).length; var size=sizeSel?sizeSel.value:
-- )?n:Math.min(n,parseInt(size,10)||20); if(countEl) countEl.textContent=(showing===n?n:showing+
-- ; if(startBtn) startBtn.disabled=(n===0); } if(catSel) catSel.addEventListener(
-- ,updateCount); if(diffSel) diffSel.addEventListener(
-- ,updateCount); if(sizeSel) sizeSel.addEventListener(
-- ,updateCount); updateCount(); if(startBtn) startBtn.addEventListener(
-- ,function(){ var cat=catSel?catSel.value:
-- ; var diff=diffSel?diffSel.value:
-- ; var size=sizeSel?sizeSel.value:
-- ; startSession(cat,diff,size); }); if(redoMissesBtn) redoMissesBtn.addEventListener(
-- ,function(){ startSessionWithQueue(missedItems()); }); if(certWrongBtn) certWrongBtn.addEventListener(
-- ,function(){ startSessionWithQueue(certWrongItems()); }); /* Deliberately NOT startSessionWithQueue: due cards keep most-overdue-first order rather than being shuffled — the schedule is the point of this focus mode. */ if(dueBtn) dueBtn.addEventListener(
-- ,function(){ beginSession(dueQbItems()); }); /* Draft opt-in (WP-37). Persist, then re-render the whole setup so every count (pool size, match count, focus-mode buttons) reflects the new pool; refocus the toggle so keyboard users are not dropped at the top of the re-rendered screen. */ var draftToggle=document.getElementById(
-- ); if(draftToggle) draftToggle.addEventListener(
-- ,function(){ setIncludeDrafts(draftToggle.checked); showSetup(); var t=document.getElementById(
-- ); if(t) t.focus(); }); } function startSession(catFilter, diffFilter, sizeLimit){ /* Due cards matching the same filters serve FIRST (most-overdue first, unshuffled — priority order is the point); the shuffled fresh selection fills the remainder of the size limit. A due card never appears twice in one queue. */ var due = dueQbItems().filter(function(it){ if(catFilter!==
-- && String(it.difficulty)!==diffFilter) return false; return true; }); var cap = (sizeLimit===
-- ) ? Infinity : (parseInt(sizeLimit,10)||20); due = due.slice(0, cap===Infinity ? due.length : cap); var dueIds = {}; due.forEach(function(it){ dueIds[it.id]=1; }); var rest = buildQueue(activeItems().filter(function(it){ return !dueIds[it.id]; }), catFilter, diffFilter,
-- ); if(cap!==Infinity) rest = rest.slice(0, Math.max(0, cap-due.length)); beginSession(due.concat(rest)); } /* Focus-mode entry point: starts the exact queue passed in (shuffled), bypassing the category/difficulty/size filters entirely. */ function startSessionWithQueue(queue){ beginSession(shuffle(queue)); } function beginSession(queue){ if(!queue.length){ setRoot(
-- ); return; } SESSION = { queue: queue, idx: 0, responses: [], confidence: null, tier1Key: null, displayOrder: [], tier2DisplayOrder: [], state:
-- /* conf | tier2 | feedback */ }; showQuestion(); } function showReviewItem(item){ SESSION = { queue:[item], idx:0, responses:[], confidence:null, tier1Key:null, displayOrder:[], tier2DisplayOrder:[], state:
-- , reviewOnly:true }; showQuestion(); postReviewItemStatus(
-- ); } /* ---- session capsule (cw_sess_v1) — question-boundary checkpoint + resume -------- Written ONLY from advance(), and only when there is a next question to show — never mid-question. showQuestion() resets confidence/tier1Key/state/displayOrder/ tier2DisplayOrder on every entry (the option shuffles aren
-- s queueIds filtered through activeItems() — an id removed or retired by a deploy between checkpoint and resume is silently dropped rather than crashing the restore (queueIds order is preserved). idx is RE-DERIVED by counting how many of the front (pre-checkpoint) queueIds survive that same filter, rather than trusted verbatim: trusting the stored idx directly would silently skip a still-unanswered question whenever a deploy retires/removes an item positioned BEFORE the checkpointed idx (the raw idx overshoots once the queue is filtered shorter). This exploits the invariant that responses.length === idx at every checkpoint — advance() checkpoints immediately after commitResponse() pushes a response, and this app has no skip-without-answering path, so counting surviving front ids gives the correct new position. Reconstructed responses are built from that identical surviving-front-id set, so the resumed summary population can never disagree with the resumed queue position. Absent/expired capsule (sessLoad owns load-validate-expire) or an empty resulting queue falls through to a normal setup start. Returns true iff a session was actually resumed. */ function tryResumeSession(){ var cap = sessLoad(
-- , Date.now()); if(!cap || !cap.queueIds || !cap.queueIds.length) return false; var idMap = {}; activeItems().forEach(function(it){ idMap[it.id]=it; }); var queue = cap.queueIds.map(function(id){ return idMap[id]; }).filter(Boolean); if(!queue.length) return false; var capIdx = (typeof cap.idx===
-- && cap.idx>=0) ? cap.idx : 0; var survivingFrontIds = cap.queueIds.slice(0, capIdx).filter(function(id){ return !!idMap[id]; }); var idx = survivingFrontIds.length; var respById = {}; (cap.responses||[]).forEach(function(r){ respById[r.id]=r; }); var responses = survivingFrontIds.map(function(id){ var r = respById[id]; if(!r) return null; return { item: idMap[id], key: null, tier2Key: null, confidence: r.confidence, correct: r.correct, twoTierResult: null, ts: cap.at }; }).filter(Boolean); SESSION = { queue: queue, idx: idx, responses: responses, confidence: null, tier1Key: null, displayOrder: [], tier2DisplayOrder: [], state:
-- }; showQuestion(); return true; } function showQuestion(){ if(!SESSION || SESSION.idx >= SESSION.queue.length){ showSummary(); return; } SESSION.confidence = null; SESSION.tier1Key = null; SESSION.state =
-- ; SESSION.displayOrder = []; SESSION.tier2DisplayOrder = []; updateProgress(); var item = SESSION.queue[SESSION.idx]; setRoot(renderQuestion(item)); bindQuestion(item); } function bindQuestion(item){ /* confidence buttons */ var confBtns = root.querySelectorAll(
-- ); var confHint = document.getElementById(
-- ); confBtns.forEach(function(btn){ btn.addEventListener(
-- ,function(){ if(SESSION.state!==
-- ) return; confBtns.forEach(function(b){ b.classList.remove(
-- ); }); btn.classList.add(
-- ); SESSION.confidence = btn.getAttribute(
-- ); if(confHint) confHint.classList.remove(
-- ); }); }); /* tier1 option buttons */ var optBtns = root.querySelectorAll(
-- ); optBtns.forEach(function(btn){ btn.addEventListener(
-- ) return; if(!SESSION.confidence){ if(confHint) confHint.classList.add(
-- ); /* briefly shake the confidence section */ var cs=root.querySelector(
-- ); if(cs){ cs.style.outline=
-- ; setTimeout(function(){cs.style.outline=
-- ;},600); } return; } var key = btn.getAttribute(
-- ); onTier1Answer(item, key); }); }); } function onTier1Answer(item, key){ SESSION.tier1Key = key; var isCorrect = item.options.some(function(o){ return o.key===key && o.c; }); /* lock tier1 options and highlight */ var optBtns = root.querySelectorAll(
-- ); optBtns.forEach(function(btn){ btn.disabled = true; btn.classList.add(
-- ); var k = btn.getAttribute(
-- ); if(k===key && isCorrect) btn.classList.add(
-- ); else if(k===key && !isCorrect) btn.classList.add(
-- ); else if(item.options.some(function(o){return o.key===k&&o.c;})) btn.classList.add(
-- ); }); /* lock confidence buttons */ root.querySelectorAll(
-- ).forEach(function(b){ b.disabled=true; }); if(item.type===
-- && isCorrect){ /* show tier2 before feedback */ SESSION.state =
-- ; var qcard = root.querySelector(
-- ); if(qcard){ var t2html = renderTier2(item); qcard.insertAdjacentHTML(
-- , t2html); bindTier2(item); } } else { /* for wrong tier1 on two-tier, still show tier2 (spec: "tier 2 still shown and answered — the feedback teaches against both selections") */ if(item.type===
-- && !isCorrect){ SESSION.state =
-- ; var qcard2 = root.querySelector(
-- ); if(qcard2){ var t2html2 = renderTier2(item); qcard2.insertAdjacentHTML(
-- , t2html2); bindTier2(item); } } else { /* sba / relational: show feedback directly */ SESSION.state =
-- ; var twoTierResult = null; commitResponse(item, key, null, SESSION.confidence, isCorrect, twoTierResult); showFeedback(item, key, null, SESSION.confidence, isCorrect, null); } } } function bindTier2(item){ var t2Btns = root.querySelectorAll(
-- ); t2Btns.forEach(function(btn){ btn.addEventListener(
-- ) return; var tier2Key = btn.getAttribute(
-- ); onTier2Answer(item, tier2Key); }); }); } function onTier2Answer(item, tier2Key){ SESSION.state =
-- ; var tier1Key = SESSION.tier1Key; var tier1Correct = item.options.some(function(o){ return o.key===tier1Key && o.c; }); var tier2Correct = item.tier2.options.some(function(o){ return o.key===tier2Key && o.c; }); /* lock tier2 options + highlight */ var t2Btns = root.querySelectorAll(
-- ); t2Btns.forEach(function(btn){ btn.disabled=true; btn.classList.add(
-- ); var k=btn.getAttribute(
-- ); if(k===tier2Key && tier2Correct) btn.classList.add(
-- ); else if(k===tier2Key && !tier2Correct) btn.classList.add(
-- ); else if(item.tier2.options.some(function(o){return o.key===k&&o.c;})) btn.classList.add(
-- ); }); /* scoring: both right = correct; right answer/wrong reason = shaky; wrong tier1 = wrong */ var correct, twoTierResult; if(!tier1Correct){ correct=false; twoTierResult=
-- ; } else if(tier2Correct){ correct=true; twoTierResult=
-- ; } else { correct=true; twoTierResult=
-- ; /* right answer, wrong reason — cap at Hard */ } commitResponse(item, tier1Key, tier2Key, SESSION.confidence, correct, twoTierResult); showFeedback(item, tier1Key, tier2Key, SESSION.confidence, correct, twoTierResult); } function commitResponse(item, key, tier2Key, confidence, correct, twoTierResult){ if(SESSION && SESSION.reviewOnly){ SESSION.responses.push({ item:item, key:key, tier2Key:tier2Key, confidence:confidence, correct:correct, twoTierResult:twoTierResult, ts:Date.now() }); return; } var rec = qbRecord(item, key, tier2Key, confidence, correct, twoTierResult); srsUpdate(item, confidence, correct, twoTierResult); SESSION.responses.push({ item: item, key: key, tier2Key: tier2Key, confidence: confidence, correct: correct, twoTierResult: twoTierResult, ts: rec.ts }); } function showFeedback(item, key, tier2Key, confidence, correct, twoTierResult){ var fbHtml = getFeedbackHtml(item, key, tier2Key, confidence, correct, twoTierResult); var qcard = root.querySelector(
-- ); if(qcard){ /* remove any tier2 section first if it already exists */ var existing = qcard.querySelector(
-- ); if(existing) existing.parentNode.removeChild(existing); qcard.insertAdjacentHTML(
-- , fbHtml); var _live=document.getElementById(
-- ); if(_live){ _live.textContent = (twoTierResult===
-- ); } /* scroll feedback into view */ var fb = document.getElementById(
-- ); if(fb) setTimeout(function(){ fb.scrollIntoView({behavior:
-- }); },80); } if(SESSION && SESSION.reviewOnly) return; /* bind spa nav links */ root.querySelectorAll(
-- ).forEach(function(a){ a.addEventListener(
-- ,function(ev){ ev.preventDefault(); var href=a.getAttribute(
-- ; try{ window.parent.postMessage({type:
-- ); } catch(_){ window.location.href=href; } }); }); /* next button */ var nextBtn = document.getElementById(
-- ); if(nextBtn) nextBtn.addEventListener(
-- , advance); } function advance(){ if(!SESSION) return; SESSION.idx++; /* Checkpoint at this question boundary only when there is a next question to resume into — completion is handled by showSummary()
-- s own button (data-cw-receipt-home); the receipt snippet routes it through the shell
-- This question is not present on the current deployment
-- Could not load question bank.
-- question_bank.json was not found alongside this tool.
-- Make sure the build ran successfully and question_bank.json is at the site root.
-
----
-
-## One Patient, Six Weeks
-
-- **Slug:** `one-patient-six-weeks.html` · **Type:** tool · **Sidebar:** listed
-- **Source:** `08_Cases_and_Simulation/one-patient-six-weeks.html`
-- **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Category:** longitudinal-simulation · **Risk level:** `moderate` · **Disclaimer:** `fictional-simulation-supervision`
-- **Related pages:** `pg_interview.md`, `ddx.md`, `medical_workup.md`, `psychopharm_primer.md`, `med_monitoring.md`, `collateral_workflow.md`, `family_playbook.md`, `exp_family.md`, `pg_suicide.md`, `agitation.md`, `doc_oral.md`, `shelf.md`, `evidence_inpatient.md`
-- **Storage keys:** `cw_longitudinal_v1`
-
-#### Tool — clinical content
-
-_These tools are single-file HTML that render from inline JS data, so the clinical text below is recovered from the tool's own string literals. Ordering follows the file, not the runtime flow._
-
-**Static shell text:**
-
-- One Patient, Six Weeks Reviewed by Joshua Moss, MD on 2026-08-11
-- Skip to content Longitudinal case arc
-- One Patient, Six Weeks
-- Follow one fictional inpatient across changing information, relationships, safety questions, treatment conversations, and the final handoff.
-- Boundary: fictional composite only. Do not enter patient information. This is a learning simulation, not a clinical decision tool or substitute for supervision and local policy.
-- Loading the longitudinal case...
-- If someone is in crisis
-- On the unit, a patient in immediate danger is an escalation to your supervising resident or attending and the charge nurse — not a phone call. These lines are what you put IN a patient's safety plan, what families use after discharge, and what you can use yourself.
-- 988 Suicide & Crisis Lifeline — Call or text 988. Chat at chat.988lifeline.org. 24/7, free, confidential. Spanish available by call, text, and chat; a dedicated line serves Deaf/Hard-of-Hearing callers. Calls placed in Maine route to Maine crisis specialists.
-- Crisis Text Line — Text HOME to 741741. Text HOLA to 741741 for Spanish. 24/7, free. Text-only. Often the most acceptable option for adolescents and young adults who will not make a phone call.
-- Maine Crisis Line — 1-888-568-1112. Text and chat available via the Maine Crisis Line website. 24/7. Staffed by clinically trained crisis workers and the gateway to Maine's mobile crisis teams — the number that actually dispatches a face-to-face response.
-- Veterans Crisis Line — Dial 988 then press 1. Text 838255. 24/7. No VA enrollment required. Ask about service history — it changes which line is the right referral.
-- Emergency services — 911. 24/7. For imminent danger to life.
-- Contacts verified 2026-07-27 against official sources. Maintained in crisis_resources.json ; do not edit these numbers inline.
-
-**Authored clinical strings (22):**
-
-- ]/g,function(c){return {'&':'&',' ':'>','"':'"'}[c];});} function requestedWeek(){try{var n=parseInt(new URLSearchParams(location.search).get('week')||'1',10);return Math.max(0,Math.min(5,n-1));}catch(_){return 0;}} function loadProgress(){try{var p=JSON.parse(localStorage.getItem('cw_longitudinal_v1')||'{}');return p&&p.version===1?p:{version:1,current:0,completed:{}};}catch(_){return {version:1,current:0,completed:{}};}} function saveProgress(){try{localStorage.setItem('cw_longitudinal_v1',JSON.stringify(state.progress));}catch(_){} } function week(){return state.caseData.weeks[state.current];} function record(id){return state.progress.completed[id]||{checks:{}};} function complete(w){var r=record(w.id);return (w.checklist||[]).length>0&&(w.checklist||[]).every(function(_,i){return !!r.checks['c'+i];});} function completedCount(){return state.caseData.weeks.filter(complete).length;} function setWeek(i){state.current=Math.max(0,Math.min(state.caseData.weeks.length-1,i));state.progress.current=state.current;saveProgress();try{history.replaceState(null,'','?week='+(state.current+1));}catch(_){}render();} function weekList(){return '<div class=
-- >'+state.caseData.weeks.map(function(w,i){var on=i===state.current,done=complete(w);return '<button type=
-- ;} function sidebar(){var done=completedCount(),total=state.caseData.weeks.length,pct=Math.round(done*100/total);return
-- Longitudinal case progress
-- ;} function patientCard(){var p=state.caseData.patient;return
-- ;} function checklist(w){ var r=record(w.id); return
-- +w.checklist.map(function(item,i){ var key=
-- +i; var on=!!r.checks[key]; var inputId=
-- checkitem'+(on?' done':'')+'
-- ; } function links(w){return
-- +w.links.map(function(link){var param=link.kind===
-- ;} function weekCard(w){var done=complete(w);var r=record(w.id);return
-- status'+(done?' done':'')+'
-- +links(w);} function render(){if(!state.caseData){app.innerHTML=
-- ;return;}var w=week();app.innerHTML=
-- ,function(ev){var weekButton=ev.target.closest&&ev.target.closest(
-- )){state.progress={version:1,current:0,completed:{}};setWeek(0);}}}); app.addEventListener(
-- ,function(ev){var input=ev.target.closest&&ev.target.closest(
-- );if(!input)return;var w=week(),r=record(w.id);r.checks=r.checks||{};r.checks[input.getAttribute(
-- )]=!!input.checked;r.at=new Date().toISOString().slice(0,10);state.progress.completed[w.id]=r;saveProgress();render();}); fetch(
-- ).then(function(r){if(!r.ok)throw new Error(
-- );return r.json();}).then(function(data){state.caseData=data;state.current=Math.max(0,Math.min(data.weeks.length-1,state.progress.current||state.current));render();}).catch(function(){app.innerHTML=

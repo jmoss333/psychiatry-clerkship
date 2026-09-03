@@ -6,6 +6,434 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 
 ---
 
+## Opioid Use Disorder (Jul 27)
+
+- **Slug:** `cotw_20260727_oud_ms3.md` · **Type:** md · **Sidebar:** listed
+- **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-27_opioid-use-disorder_MS3.md`
+- **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
+- **Length:** 2,624 words
+
+<!-- topic_meta overlay -->
+#### Structured metadata (`topic_meta.json` → this page)
+
+> est. read 9 min · safetyLevel=`moderate` · cotwLevel=`ms3` (2026-07-27)
+
+**TL;DR (shown above the page text):**
+
+> One encounter, two failures: a COWS-threshold buprenorphine start precipitated withdrawal in a fentanyl-exposed patient, and the recovery is methadone or low-dose initiation - with acute pain treated alongside the MOUD, never instead of it.
+
+**Key points (bulleted card):**
+
+- ~20-30 minute small-group discussion - no pre-reading required.
+- De-identified synthetic case; each discussion question is paired with a teaching point.
+- MS3 / Step 2 CK level. Facilitator notes are kept separate from the learner-facing stem.
+
+**Clinical-workflow narration (per-stage coaching text):**
+
+- **ask** — Work the stem cold: take your own history, commit to a differential, and name your next step before reading a single teaching point. The guided questions are written to be answered, not skimmed.
+- **mse** — Say out loud what each exam finding in the vignette rules in and rules out — the discrimination between look-alike syndromes is what the case is drilling.
+- **safety** — Safety content in every case is oriented to recognition, escalation, and safety planning. Escalate to your supervising resident or attending rather than managing acuity alone.
+- **say** — Before moving on, rehearse one sentence you would actually say to this patient or family, in plain language and out loud.
+- **collateral** — Ask yourself what collateral would change your differential here, and who you would have to call to get it.
+- **rounds** — Use the ranked differential and the workup-and-management ladder as the spine of your presentation; lead with the finding that changes management.
+- **exam** — Shelf-level takeaway: One encounter, two failures: a COWS-threshold buprenorphine start precipitated withdrawal in a fentanyl-exposed patient, and the recovery is methadone or low-dose initiation - with acute pain treated alongside the MOUD, never instead of it.
+- **actions** — All Case of the Week cases
+
+**Cross-references and tagging:**
+
+- **Workflow stages:** `diagnosis`, `safety`, `treatment`, `team`, `exam`
+- **Shelf blueprint tags:** `substance`, `pharm`
+- **EPA crosswalk:** `EPA1`, `EPA2`, `EPA10`
+- **Faculty review:** {"status": "pending", "reviewer": "Joshua Moss, MD", "lastReviewed": "2026-07-27"}
+
+#### Page text (as shipped)
+
+# Case of the Week — MS3 Edition
+## Opioid Use Disorder: Intoxication, Withdrawal, and Medication Treatment
+
+**Date:** 2026-07-27
+**Learner level:** MS3 (inpatient/consult psychiatry clerkship) — USMLE Step 2 CK framing
+**Format:** ~20–30 min small-group discussion. No required pre-reading.
+**Citations:** Based on articles retrieved from PubMed. Full reference list at the end. All patient details are **synthetic and de-identified**.
+
+---
+
+### The Case (learner-facing stem)
+
+A 27-year-old man is brought to the emergency department by EMS. A friend found him unresponsive and slumped over; the friend administered a nasal spray "from a kit the needle exchange gave me" and called 911. EMS reports he woke up within a few minutes, was briefly combative, and has been alert since.
+
+He is now awake, sitting on the edge of the stretcher, sweating, yawning repeatedly, and asking to leave. He tells you he "used to be on pills after a shoulder surgery" and now uses fentanyl he buys on the street, most days, most recently "maybe four hours ago." He has been to this ED twice in the past year for similar events. He has no primary care doctor.
+
+**Vitals on arrival (EMS):** RR 6, SpO₂ 84% on room air, HR 58, pinpoint pupils.
+**Vitals now (90 min later):** T 37.1 °C, HR 108, BP 148/92, RR 20, SpO₂ 98% on room air.
+**Exam now:** Alert and oriented ×3, anxious, diaphoretic, dilated pupils, rhinorrhea, piloerection, frequent yawning, mild diffuse muscle aches, hyperactive bowel sounds. No focal neurologic deficits. Old and recent antecubital track marks; no surrounding erythema, fluctuance, or induration.
+**Labs:** CBC and chemistries unremarkable. Acetaminophen and salicylate levels undetectable. Urine drug screen positive for fentanyl; negative for benzodiazepines and stimulants.
+
+You are the medical student on the psychiatry consult service, called because "the patient wants to leave AMA."
+
+---
+
+### Guided Discussion Questions
+
+**Q1. Walk through the two clinical pictures in this single encounter. What did the paramedics see, and what are you seeing now — and why did it change?**
+
+*Teaching point:* This case contains **two opposite toxidromes** ninety minutes apart, and the pivot between them is the naloxone.
+
+| | **Opioid intoxication / overdose** (EMS) | **Opioid withdrawal** (now) |
+|---|---|---|
+| Pupils | **Miosis** (pinpoint) | **Mydriasis** (dilated) |
+| Respiration | **Respiratory depression** — the lethal feature | Normal or increased |
+| Mental status | Sedation → unresponsive | Awake, anxious, uncomfortable |
+| Autonomic | Bradycardia, hypotension | Tachycardia, hypertension, diaphoresis |
+| GI | Constipation | Nausea, vomiting, cramping, diarrhea |
+| Other | — | Yawning, rhinorrhea, lacrimation, piloerection, myalgias |
+
+The **classic overdose triad** is *depressed consciousness + miosis + respiratory depression*. Of those, only one kills: **respiratory depression**. That is why the entire acute intervention is airway, ventilation, and **naloxone**, an opioid receptor antagonist [1].
+
+What the friend administered was **take-home naloxone** — an evidence-based harm-reduction intervention that lay bystanders can and do use effectively [1]. Naloxone displaces the opioid from the receptor, which reverses the respiratory depression *and*, in a physiologically dependent person, abruptly precipitates **withdrawal** — exactly the syndrome now in front of you.
+
+**Q2. Naloxone saved his life 90 minutes ago. Why is he not out of the woods yet?**
+
+*Teaching point:* Two high-yield points that show up constantly on wards and on exams:
+
+1. **Naloxone's duration of action is shorter than that of many opioids** — including fentanyl and, especially, methadone. As naloxone wears off, the opioid still on board can re-sedate the patient. This is **re-narcotization**, and it is why overdose patients need a period of **observation**, and sometimes repeat dosing or an infusion, rather than immediate discharge [1].
+2. **Withdrawal is miserable but not, by itself, life-threatening** — the opposite of alcohol or benzodiazepine withdrawal, where autonomic instability and seizures can kill. Opioid withdrawal's danger is **indirect**: untreated withdrawal drives patients to leave against medical advice and to use again immediately, at a moment when their overdose risk is high [1,2].
+
+So the framing to give the team is not "he's fine, he woke up." It is: *he is in a high-risk window, and treating his withdrawal is the intervention that keeps him in the building.*
+
+**Q3. Before you settle on "opioid withdrawal," what else belongs on your differential? Give a ranked top five.**
+
+*Teaching point:* Withdrawal is the leading diagnosis, but this population carries a heavy burden of comorbid and easily missed pathology — and diagnostic anchoring here is a well-documented source of harm.
+
+1. **Opioid withdrawal** (most likely) — timeline, exam, and naloxone exposure all fit.
+2. **Co-ingestion / polysubstance overdose** — stimulants, benzodiazepines, alcohol, or an adulterant. Note that **xylazine**, a veterinary sedative increasingly found in the fentanyl supply, is *not* opioid-receptor mediated, so naloxone will not reverse its sedation; suspect it when sedation outlasts naloxone or when there are unusual skin wounds [1,3].
+3. **Anoxic brain injury** — he was found unresponsive for an unknown period. Persistent confusion, focal deficits, or failure to return to baseline demands imaging and a broader workup, not reassurance.
+4. **Infection related to injection drug use** — cellulitis/abscess, **endocarditis**, osteomyelitis/epidural abscess, HIV, hepatitis C. Fever, a new murmur, or back pain changes the entire disposition. Examine the skin and heart deliberately [3].
+5. **Sedative-hypnotic or alcohol withdrawal** — co-dependence is common, and *this* withdrawal syndrome **is** dangerous. Screening for it is not optional.
+
+Also on the list: acute pain from an untreated injury, and a primary psychiatric presentation (this population has high rates of depression, PTSD, and suicidality — and withdrawal amplifies all of it).
+
+**Q4. How do you measure opioid withdrawal objectively, and what is the diagnosis you should be documenting?**
+
+*Teaching point:* Two separate things — a **severity scale** and a **diagnosis** — and learners routinely conflate them.
+
+- **COWS** (Clinical Opiate Withdrawal Scale) is an 11-item clinician-rated scale scoring the signs you already found: resting pulse, sweating, restlessness, pupil size, bone/joint aches, rhinorrhea/lacrimation, GI upset, tremor, yawning, anxiety/irritability, gooseflesh. It quantifies **severity** and, critically, is used to decide **when it is safe to start buprenorphine** [3,4]. Note the parallel with CIWA-Ar in alcohol withdrawal — a severity scale, not a diagnostic test.
+- **Opioid use disorder (OUD)** is the DSM-5-TR **diagnosis**: a problematic pattern of opioid use causing clinically significant impairment, with ≥2 of 11 criteria in a 12-month period (severity: mild 2–3, moderate 4–5, severe ≥6). Two criteria — **tolerance** and **withdrawal** — do *not* count when opioids are taken as prescribed under medical supervision.
+
+Withdrawal alone does not equal OUD, and OUD is what you are actually treating. Document the diagnosis explicitly; it is the entry point to treatment and to insurance coverage for it.
+
+**Q5. He has a treatable chronic disease and he is in front of you. What are the three FDA-approved medications, and which one do you start today?**
+
+*Teaching point:* **Medications for opioid use disorder (MOUD)** are the treatment. Counseling alone is not adequate treatment for moderate-to-severe OUD.
+
+| Medication | Mechanism | Key practical points |
+|---|---|---|
+| **Methadone** | Full mu-opioid **agonist** | In the US, for OUD it is dispensed through licensed opioid treatment programs (with a hospital exception for inpatients treated for another condition). Highest retention. Watch QTc and drug interactions. |
+| **Buprenorphine** (± naloxone) | **Partial** mu agonist, high receptor affinity | Office-based prescribing; ceiling effect on respiratory depression makes it comparatively safe. **Must be started in withdrawal** or it precipitates withdrawal. |
+| **Naltrexone** (extended-release injectable) | Opioid **antagonist** | Requires a **full opioid-free interval** (~7–10 days) before induction — the practical reason most acutely presenting patients cannot start it today. No effect on withdrawal. |
+
+The two **agonist** therapies are the ones with the strongest mortality evidence. In a large systematic review and meta-analysis, all-cause mortality during opioid agonist treatment was roughly **half** the rate observed off treatment, with reductions in overdose, suicide, and cardiovascular death; risk was highest in the **first four weeks of methadone** and in the **four weeks after any treatment stops** [5]. A separate meta-analysis found buprenorphine and methadone broadly comparable on mortality, with methadone showing better **retention** in treatment [6].
+
+*In this case:* he is in objective withdrawal now, in an ED, without an established OTP relationship. **Buprenorphine** is the practical answer — start it here, and link him to ongoing care [1,3,4].
+
+**Q6. Why does starting buprenorphine in the ED matter more than "referring him to rehab"?**
+
+*Teaching point:* This is the single highest-yield fact in the case. In a randomized clinical trial of ED patients with opioid dependence, **ED-initiated buprenorphine** with referral to primary care produced engagement in addiction treatment at 30 days in **78%** of patients, versus **37%** with referral alone and **45%** with brief intervention plus facilitated referral; illicit opioid use fell more as well [7].
+
+The translation for the wards: *a referral is not a treatment.* Every ED or inpatient contact with a patient with OUD is a treatment opportunity, and the medication started in the building is worth far more than the phone number handed out at discharge [1,3].
+
+**Q7. He still wants to leave. What do you do to make this discharge as safe as possible?**
+
+*Teaching point:* Frame this as **overdose prevention**, and do it whether or not he stays.
+
+- **Treat the withdrawal first.** Comfort is the intervention that most often converts "I'm leaving" into "I'll stay." Offer buprenorphine; offer adjunctive symptomatic medications per your protocol (antiemetic, antidiarrheal, alpha-2 agonist, NSAID).
+- **Take-home naloxone, plus training for him and the people around him.** His friend already demonstrated why this works [1].
+- **Name the tolerance trap explicitly.** Any period of reduced use — a hospital stay, a detox admission, incarceration — lowers tolerance while the supply stays unpredictably potent. **Post-abstinence relapse is the highest-risk moment for a fatal overdose**, and it is the reason "detox alone" is an inadequate and potentially harmful plan [1,5].
+- **Harm reduction, without judgment:** don't use alone; use less after any break; test doses; fentanyl test strips; syringe services; know that naloxone will not reverse xylazine.
+- **Screen for suicidality and for co-occurring sedative/alcohol dependence.** If he endorses thoughts of ending his life, that is a reason to escalate to a full risk assessment and involve your supervising resident or attending immediately — not a reason to expedite discharge.
+- **Give a concrete follow-up:** a named clinic, a date, a phone number, and a bridge prescription if your system allows.
+- **If he leaves anyway:** document capacity, what was offered, and what he left with. AMA is not a reason to withhold naloxone or a buprenorphine prescription.
+
+---
+
+### Ranked Differential (summary)
+
+1. **Opioid withdrawal**, precipitated by naloxone, in a patient with opioid use disorder — *most likely*
+2. **Co-ingestion / adulterant effect** (benzodiazepines, stimulants, alcohol, xylazine)
+3. **Anoxic or traumatic brain injury** from the unwitnessed down-time
+4. **Injection-related infection** — soft tissue, endocarditis, osteomyelitis/epidural abscess
+5. **Concurrent alcohol or sedative-hypnotic withdrawal** — the dangerous one
+6. **Untreated pain and co-occurring psychiatric illness** driving use
+
+---
+
+### Workup & Management
+
+**Immediate (overdose phase):**
+1. **Airway, breathing, oxygenation** — ventilation before pharmacology.
+2. **Naloxone**, titrated to adequate respiration rather than full arousal; repeat dosing or infusion if sedation recurs.
+3. **Observe** for re-narcotization; duration depends on the agent involved [1].
+4. Check glucose; consider co-ingestants; ECG if a QT-prolonging agent is suspected.
+
+**Withdrawal phase:**
+5. **Quantify with COWS**; treat symptomatically per protocol [3,4].
+6. **Offer MOUD** — buprenorphine is usually the practical inpatient/ED choice; methadone where the setting permits [1,3,4].
+7. **Screen for alcohol/sedative withdrawal** and manage it in parallel — that syndrome can kill.
+
+**Whole-patient workup:**
+8. Skin and cardiac exam; cultures and echocardiogram if febrile or a new murmur.
+9. **HIV and hepatitis C testing**; hepatitis A/B vaccination status; pregnancy testing where applicable.
+10. Screen for depression, PTSD, and suicidality.
+
+**Before discharge:**
+11. **Naloxone kit + training** for the patient and their contacts [1].
+12. **Overdose-prevention counseling**, with explicit attention to reduced tolerance after any break in use [1,5].
+13. **Warm handoff** to ongoing MOUD — named clinic, date, bridge supply.
+14. Person-first documentation: "person with opioid use disorder," not "addict"; "expected/unexpected result," not "dirty/clean urine."
+
+---
+
+### Facilitator Notes (not for the learner handout)
+
+- **Time:** ~25 min. Spend the most time on **Q1** (the two toxidromes) and **Q5–Q6** (MOUD and why you start it in the building). Q7 is where the safety framing lands.
+- **The single best teaching move:** put the EMS vitals and the current vitals side by side on the board and ask what changed. Nearly every student can reason their way from "naloxone" to "precipitated withdrawal" — and once they own that, buprenorphine's induction requirement (Q5) becomes obvious rather than memorized.
+- **Common MS3 errors to correct:**
+  1. Treating naloxone reversal as the end of the encounter — missing re-narcotization and missing the treatment opportunity.
+  2. Assuming opioid withdrawal is dangerous the way alcohol withdrawal is; the danger here is behavioral and downstream, not autonomic.
+  3. Conflating COWS (severity) with the DSM-5-TR diagnosis of OUD.
+  4. Believing buprenorphine can be started at any time — not recognizing that it must be started *in* withdrawal.
+  5. Recommending "detox" as definitive treatment, without recognizing that reduced tolerance afterward raises overdose risk.
+  6. Offering a referral instead of a medication (contrast with the trial data in Q6).
+  7. Anchoring on withdrawal and skipping the skin and cardiac exam in an injection drug user.
+- **If the group moves fast**, push on: *what changes if he is 32 weeks pregnant?* (Answer: agonist therapy — buprenorphine or methadone — is the standard of care; medically supervised withdrawal is not recommended because of relapse and obstetric risk; expect and plan for neonatal opioid withdrawal syndrome rather than avoiding treatment [8].) Or: *what if he had also been drinking heavily?* (Now you have a withdrawal syndrome that can kill.)
+- **Tone note:** this population is among the most stigmatized in medicine, and stigma measurably changes care. Model person-first language, non-judgmental quantified history-taking, and treating the patient's discomfort as a legitimate clinical problem. If a learner uses "drug seeking," pause and unpack it.
+- **Safety note:** keep any discussion of overdose oriented to **recognition, escalation, and prevention** — naloxone access, not using alone, tolerance loss. Avoid specifics about substances, amounts, or routes.
+
+---
+
+### References
+
+1. Harris MTH, Weinstein ZM, Walley AY. Medications for opioid use disorder, opioid withdrawal, and opioid overdose: a review. *JAMA.* 2026. [DOI](https://doi.org/10.1001/jama.2025.26348) (PMID 41671014)
+2. Bell J, Strang J. Medication treatment of opioid use disorder. *Biol Psychiatry.* 2019. [DOI](https://doi.org/10.1016/j.biopsych.2019.06.020) (PMID 31420089)
+3. Englander H, Thakrar AP, Bagley SM, et al. Caring for hospitalized adults with opioid use disorder in the era of fentanyl: a review. *JAMA Intern Med.* 2024. [DOI](https://doi.org/10.1001/jamainternmed.2023.7282) (PMID 38683591)
+4. Yakovenko I, Mukaneza Y, Germé K, et al. Management of opioid use disorder: 2024 update to the national clinical practice guideline. *CMAJ.* 2024. [DOI](https://doi.org/10.1503/cmaj.241173) (PMID 39532476)
+5. Santo T, Clark B, Hickman M, et al. Association of opioid agonist treatment with all-cause mortality and specific causes of death among people with opioid dependence: a systematic review and meta-analysis. *JAMA Psychiatry.* 2021. [DOI](https://doi.org/10.1001/jamapsychiatry.2021.0976) (PMID 34076676)
+6. Degenhardt L, Clark B, Macpherson G, et al. Buprenorphine versus methadone for the treatment of opioid dependence: a systematic review and meta-analysis of randomised and observational studies. *Lancet Psychiatry.* 2023. [DOI](https://doi.org/10.1016/S2215-0366(23)00095-0) (PMID 37167985)
+7. D'Onofrio G, O'Connor PG, Pantalon MV, et al. Emergency department–initiated buprenorphine/naloxone treatment for opioid dependence: a randomized clinical trial. *JAMA.* 2015. [DOI](https://doi.org/10.1001/jama.2015.3474) (PMID 25919527)
+8. Sanjanwala AR, Lim G, Krans EE. Opioids and opioid use disorder in pregnancy. *Obstet Gynecol Clin North Am.* 2023. [DOI](https://doi.org/10.1016/j.ogc.2022.10.015) (PMID 36822706)
+
+*Citations retrieved from PubMed. This teaching case uses a synthetic, de-identified scenario for educational purposes only. Dosing is intentionally omitted; follow your institution's protocol and applicable regulations.*
+
+*Joshua Moss, MD | Psychiatrist*
+
+
+---
+
+## Alcohol Withdrawal & DT (Jul 26)
+
+- **Slug:** `cotw_20260726_etohwd_ms3.md` · **Type:** md · **Sidebar:** listed
+- **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-26_alcohol-withdrawal-delirium-tremens_MS3.md`
+- **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
+- **Length:** 2,423 words
+
+<!-- topic_meta overlay -->
+#### Structured metadata (`topic_meta.json` → this page)
+
+> est. read 9 min · safetyLevel=`moderate` · cotwLevel=`ms3` (2026-07-26)
+
+**TL;DR (shown above the page text):**
+
+> Time since last drink organizes everything: DT arrives late (48-96 h), PAWSS predicts and CIWA-Ar measures, and thiamine goes before glucose.
+
+**Key points (bulleted card):**
+
+- ~20-30 minute small-group discussion - no pre-reading required.
+- De-identified synthetic case; each discussion question is paired with a teaching point.
+- MS3 / Step 2 CK level. Facilitator notes are kept separate from the learner-facing stem.
+
+**Clinical-workflow narration (per-stage coaching text):**
+
+- **ask** — Work the stem cold: take your own history, commit to a differential, and name your next step before reading a single teaching point. The guided questions are written to be answered, not skimmed.
+- **mse** — Say out loud what each exam finding in the vignette rules in and rules out — the discrimination between look-alike syndromes is what the case is drilling.
+- **safety** — Safety content in every case is oriented to recognition, escalation, and safety planning. Escalate to your supervising resident or attending rather than managing acuity alone.
+- **say** — Before moving on, rehearse one sentence you would actually say to this patient or family, in plain language and out loud.
+- **collateral** — Ask yourself what collateral would change your differential here, and who you would have to call to get it.
+- **rounds** — Use the ranked differential and the workup-and-management ladder as the spine of your presentation; lead with the finding that changes management.
+- **exam** — Shelf-level takeaway: Time since last drink organizes everything: DT arrives late (48-96 h), PAWSS predicts and CIWA-Ar measures, and thiamine goes before glucose.
+- **actions** — All Case of the Week cases
+
+**Cross-references and tagging:**
+
+- **Workflow stages:** `diagnosis`, `safety`, `treatment`, `team`, `exam`
+- **Shelf blueprint tags:** `substance`, `neurocog`
+- **EPA crosswalk:** `EPA1`, `EPA2`, `EPA10`
+- **Faculty review:** {"status": "pending", "reviewer": "Joshua Moss, MD", "lastReviewed": "2026-07-26"}
+
+#### Page text (as shipped)
+
+# Case of the Week — MS3 Edition
+## Alcohol Withdrawal & Delirium Tremens: Recognition, Risk Stratification, and First-Line Management
+
+**Date:** 2026-07-26
+**Learner level:** MS3 (inpatient/consult psychiatry clerkship) — USMLE Step 2 CK framing
+**Format:** ~20–30 min small-group discussion. No required pre-reading.
+**Citations:** Based on articles retrieved from PubMed. Full reference list at the end. All patient details are **synthetic and de-identified**.
+
+---
+
+### The Case (learner-facing stem)
+
+A 54-year-old man is admitted to the medicine service after a mechanical fall at home resulted in a distal radius fracture. He is scheduled for operative fixation in two days. On admission he reports drinking "a few beers most nights"; his partner, reached by phone with his consent, says he has been drinking closer to a pint of vodka daily for several years, most recently with his last drink **yesterday morning**.
+
+His history includes one prior hospitalization "for the shakes" three years ago, and he mentions an episode where he "blacked out and woke up in the ER." He takes no regular medications.
+
+**Admission vitals:** T 37.4 °C, HR 104, BP 152/94, RR 18, SpO₂ 97% on room air.
+**Exam:** Alert, oriented ×3, anxious and diaphoretic, with a fine bilateral hand tremor. No focal neurologic deficits. No nystagmus, no gait ataxia (limited by the fracture). Cardiopulmonary and abdominal exams unremarkable.
+**Labs:** Na 134, K 3.2, Mg 1.4 mg/dL, glucose 96, AST 88, ALT 41, platelets 128,000. Blood alcohol level undetectable.
+
+You are the medical student following him overnight, roughly **26 hours** after his last drink.
+
+---
+
+### Guided Discussion Questions
+
+**Q1. Why does alcohol withdrawal happen at all? Give the one-sentence mechanism you could write on a Step 2 CK stem.**
+
+*Teaching point:* Alcohol is a **CNS depressant** that potentiates **GABA-A** (inhibitory) signaling and inhibits **NMDA** glutamate (excitatory) signaling. With chronic heavy use, the brain compensates by **downregulating GABA-A receptors and upregulating NMDA receptors**. Remove the alcohol and that compensation is suddenly unopposed → a state of **CNS hyperexcitability** and **autonomic hyperactivity** (tachycardia, hypertension, tremor, diaphoresis, agitation, seizures) [1,2]. This mechanism explains everything downstream: why **benzodiazepines** (GABA-A agonists) work, why **beta-blockers alone are inadequate** (they mask autonomic signs without treating the underlying hyperexcitability or preventing seizures), and why some severely dependent patients are relatively **benzodiazepine-resistant** — their GABA-A receptors are downregulated [1,3].
+
+**Q2. Sketch the timeline. What should you be watching for, and when?**
+
+*Teaching point:* Anchor everything to **time since last drink** — this is the single most useful number in the chart.
+
+| Phase | Typical onset after last drink | Features |
+|---|---|---|
+| Minor withdrawal | 6–12 h | Tremor, anxiety, insomnia, nausea, diaphoresis, mild autonomic arousal |
+| Withdrawal seizures | 12–48 h | Generalized tonic-clonic, usually 1–2, usually brief; often the *first* sign |
+| Alcoholic hallucinosis | 12–24 h | Hallucinations (often visual/tactile) with an **intact sensorium** — the patient knows where they are |
+| **Delirium tremens (DT)** | **~48–96 h** | **Delirium** (fluctuating attention/consciousness) **+ severe autonomic instability**; hyperthermia, marked tachycardia/hypertension |
+
+Two distinctions worth over-learning: (1) **hallucinosis ≠ DT** — hallucinosis has a clear sensorium; DT is by definition a delirium; (2) **DT is late**, so a patient who looks fine at hour 12 is not yet out of the woods. DT occurs in roughly **3–5%** of patients with withdrawal and, untreated or unrecognized, carries substantial mortality; with modern supportive care mortality falls to the low single digits [1,4].
+
+*In this case:* he is at hour ~26 — squarely in the **seizure** window, and heading toward the **DT** window on hospital day 2–3, which is also his **operative day**. Flag that.
+
+**Q3. Which features here predict that he will get *complicated* (moderate-to-severe) withdrawal — not just the shakes?**
+
+*Teaching point:* The best predictor of severe withdrawal is **what happened last time**. The high-yield risk factors: prior withdrawal seizures, **prior delirium tremens**, prior withdrawal episodes generally ("kindling" — each episode makes the next worse), high daily intake, a shorter interval since the last drink at presentation, and a **detectable blood alcohol level while appearing sober** (evidence of marked tolerance). Comorbid acute illness, trauma, or surgery adds risk [1,2].
+
+The **PAWSS** (Prediction of Alcohol Withdrawal Severity Scale) packages exactly these into a 10-item screen used *on admission*, before symptoms appear; a threshold score of **≥4** identifies patients at risk for complicated withdrawal [5]. This is the conceptual complement to CIWA-Ar: **PAWSS predicts, CIWA-Ar measures.**
+
+*In this case:* prior "shakes" hospitalization, a likely prior withdrawal seizure ("blacked out, woke up in the ER"), heavy daily intake, and an impending surgery. This is a **high-risk** patient — he should be on a withdrawal protocol *prophylactically*, not watched and treated reactively.
+
+**Q4. Before you anchor on withdrawal — what else could explain tachycardia, tremor, and confusion in this man? What's your top differential?**
+
+*Teaching point:* Withdrawal is a **diagnosis of exclusion in a patient who is confused**. Anchoring here is a classic and dangerous error, because the same population is at high risk for the mimics.
+
+1. **Alcohol withdrawal / DT** — fits the timeline and risk profile.
+2. **Wernicke encephalopathy** — thiamine deficiency; classic triad of **confusion + ophthalmoplegia/nystagmus + ataxia**, but the full triad appears in a minority, so treat on suspicion (see Q6) [6].
+3. **Occult head injury (subdural hematoma)** — he *fell*; alcohol use, coagulopathy, and thrombocytopenia (platelets 128k here) all raise the risk. A withdrawal picture that doesn't fit the timeline, or any focal finding, buys a **head CT**.
+4. **Infection / sepsis** — hyperthermia and tachycardia in DT look identical to sepsis. Culture and examine.
+5. **Metabolic causes** — hypoglycemia, **hyponatremia**, and hypomagnesemia (he has Mg 1.4 and K 3.2); also hepatic encephalopathy in advanced liver disease.
+6. **Other withdrawal or intoxication states** — benzodiazepines, opioids, stimulants; co-use is common.
+
+**Q5. What is CIWA-Ar, and how does symptom-triggered dosing differ from fixed-schedule dosing?**
+
+*Teaching point:* **CIWA-Ar** (Clinical Institute Withdrawal Assessment for Alcohol, Revised) is a 10-item bedside severity scale; a score **>8–10** generally indicates a need for pharmacotherapy [7].
+
+- **Symptom-triggered:** dose benzodiazepines *when* the CIWA-Ar crosses a threshold. Advantage: less total medication and shorter treatment duration in appropriate patients.
+- **Fixed-schedule (with PRN):** scheduled doses regardless of score. Preferred when symptom-triggered protocols are unreliable or unsafe.
+
+The critical caveat for the wards: **CIWA-Ar requires a patient who can communicate and whose symptoms are actually from withdrawal.** It is not valid — and symptom-triggered dosing is inappropriate — in the intubated, delirious, aphasic, or acutely medically ill patient, where any tachycardia gets scored as "withdrawal." In those patients, use a fixed schedule or a front-loaded approach [1,2]. Non-symptom-triggered and benzodiazepine-sparing protocols are areas of active study [1].
+
+**Q6. Write his first 24-hour orders. What are the non-negotiables?**
+
+*Teaching point:* Five buckets — the mnemonic is essentially **"benzos, banana bag done right, labs, level of care, linkage."**
+
+1. **Benzodiazepines — first line.** They are the only class shown to reduce withdrawal **seizures and delirium** [2,3]. Agent choice matters:
+   - **Long-acting (chlordiazepoxide, diazepam)** — self-tapering, smoother course; preferred in most patients.
+   - **Short/intermediate-acting without oxidative metabolism (lorazepam, oxazepam)** — preferred in **significant liver disease** and in **older adults**, because they avoid hepatic oxidation and accumulation; note the risk of precipitating or worsening hepatic encephalopathy with sedatives in advanced liver disease [8].
+   - *In this case:* AST 88 with AST:ALT ≈ 2:1 and platelets 128k suggest liver disease — **lorazepam** is the safer choice.
+2. **Thiamine BEFORE glucose.** Give **parenteral thiamine** to any patient with heavy alcohol use and suspected or possible Wernicke encephalopathy, and always **before** IV dextrose — a glucose load in a thiamine-deficient patient can precipitate Wernicke [6]. Practice guidelines are consistent that parenteral thiamine belongs in high-risk patients, though they vary widely on dose and duration, and evidence for universal prophylactic dosing is thin [6].
+3. **Correct electrolytes** — replete **magnesium** and **potassium** (both low here); check glucose and sodium.
+4. **Set the level of care and monitoring** — frequent vitals and mental-status checks, especially across the 48–96 h DT window and around his operation. Escalate to a step-down/ICU setting for severe or refractory withdrawal.
+5. **Treat the underlying disorder.** Detoxification is *not* treatment of alcohol use disorder (AUD). Before discharge, offer **AUD pharmacotherapy** — **oral naltrexone 50 mg/d** and **acamprosate** are first-line with the strongest evidence (number needed to treat ~11–18 to prevent one person returning to any drinking), alongside psychosocial treatment [9].
+
+**Q7. Overnight, at hour 62, he pulls out his IV, is picking at the bedsheets, does not know where he is, and cannot sustain attention. HR 138, BP 178/102, T 38.6 °C. What is happening and what do you do?**
+
+*Teaching point:* This is **delirium tremens** — a **medical emergency**, not an agitation problem.
+
+- **Escalate the level of care** (step-down/ICU) and call for help early.
+- **Rapidly titrate benzodiazepines to light sedation** — the endpoint is a calm, rousable patient; dosing requirements in DT can be far higher than intuition suggests.
+- **Rule out mimics simultaneously** — recheck glucose, electrolytes; consider **head CT** (he fell) and an infectious workup. Hyperthermia in DT should never be assumed non-infectious without looking.
+- **Supportive care** — fluids, electrolytes, thiamine, a low-stimulation environment, and non-pharmacologic delirium measures.
+- **Antipsychotics are adjuncts only** — they do not treat the GABA deficit, they **lower the seizure threshold**, and they must never replace benzodiazepines.
+- If withdrawal is escalating despite rapidly increasing benzodiazepine doses, that is **benzodiazepine-resistant withdrawal**, and **phenobarbital** or other adjuncts enter the conversation — an appropriate moment to say "this is where I call the addiction/consult-psychiatry and critical care teams" (developed further in the resident version) [10,11].
+
+---
+
+### Ranked Differential (confusion + autonomic hyperactivity in a patient who drinks)
+
+1. **Alcohol withdrawal syndrome, progressing to delirium tremens** — fits timeline (48–96 h) and risk profile.
+2. **Wernicke encephalopathy** — always co-considered; treat empirically with parenteral thiamine rather than waiting for the full triad [6].
+3. **Traumatic intracranial hemorrhage (e.g., subdural hematoma)** — he fell; low threshold for head CT.
+4. **Infection / sepsis** — clinically indistinguishable from DT at the bedside; work it up in parallel.
+5. **Metabolic derangement** — hypoglycemia, hyponatremia, hypomagnesemia, hepatic encephalopathy.
+6. **Other substance intoxication or withdrawal** — benzodiazepines, opioids, stimulants; co-use is the rule, not the exception.
+
+---
+
+### Workup & Management (high-yield summary)
+
+**On admission:** Quantified drinking history + collateral; **time of last drink**; prior withdrawal seizures or DT; **PAWSS** risk screen [5]. Labs: CBC, CMP, **magnesium**, glucose, blood alcohol level; consider urine drug screen, and CT head if any trauma or focal findings.
+
+**Management ladder:**
+1. **Risk-stratify on admission** (PAWSS) → decide prophylaxis vs. monitoring, and the right level of care [5].
+2. **Benzodiazepines** — symptom-triggered (CIWA-Ar) *only* if the patient can be validly assessed; otherwise fixed-schedule or front-loaded [1,2,7].
+3. **Parenteral thiamine before glucose**; replete **magnesium** and potassium [6].
+4. **Monitor across the full 48–96 h DT window**, and around any procedure or surgery.
+5. **Escalate** for delirium, refractory autonomic instability, or rapidly rising benzodiazepine requirements — consider phenobarbital and ICU care [10,11].
+6. **Rule out mimics** whenever the picture doesn't fit — head CT, infection, metabolic.
+7. **Start AUD treatment before discharge** — naltrexone or acamprosate plus psychosocial linkage [9].
+
+---
+
+### Facilitator Notes (not for the learner handout)
+
+- **Time:** ~25 min. Spend the most time on **Q2 (timeline)** and **Q6 (orders)** — these are the transferable, immediately usable skills. Q3 is the highest-yield conceptual pivot (predict vs. measure).
+- **The single best teaching move:** ask the group to write the **time of last drink** on the whiteboard and hang the entire discussion on it. Students who internalize the timeline stop being surprised by day-3 DT.
+- **Common MS3 errors to correct:**
+  1. Treating CIWA-Ar as a diagnostic test rather than a severity scale — and applying it to patients who cannot be validly scored.
+  2. Assuming a patient who looks well at 12 hours is "past" withdrawal.
+  3. Giving glucose before thiamine.
+  4. Reaching for an antipsychotic (or a beta-blocker) as monotherapy for agitation in withdrawal.
+  5. Conflating **hallucinosis** (clear sensorium) with **DT** (delirium).
+  6. Anchoring on withdrawal in a patient who fell — missing the subdural.
+  7. Discharging after "successful detox" with no AUD treatment offered.
+- **If the group moves fast**, push on: why is this patient's *surgery date* a problem? (It lands in the DT window, under anesthesia, with a CIWA-Ar you cannot score post-operatively.) That question reliably generates a good discussion about proactive protocols.
+- **Tone note:** this population is heavily stigmatized. Model non-judgmental, quantified history-taking ("How many drinks on a typical day? When was your last one?") and person-first language throughout.
+
+---
+
+### References
+
+1. Kast KA, Sidelnik SA, Nejad SH, Suzuki J. Management of alcohol withdrawal syndromes in general hospital settings. *BMJ.* 2025. [DOI](https://doi.org/10.1136/bmj-2024-080461) (PMID 39778965)
+2. Day E, Daly C. Clinical management of the alcohol withdrawal syndrome. *Addiction.* 2021. [DOI](https://doi.org/10.1111/add.15647) (PMID 34288186)
+3. Umar Z, Haseeb Ul Rasool M, Muhammad S, et al. Phenobarbital and alcohol withdrawal syndrome: a systematic review and meta-analysis. *Cureus.* 2023. [DOI](https://doi.org/10.7759/cureus.33695) (PMID 36788902)
+4. Meloy P, Rutz D, Bhambri A. Alcohol withdrawal. *J Educ Teach Emerg Med.* 2025. [DOI](https://doi.org/10.21980/J87S8Q) (PMID 39926251)
+5. Maldonado JR, Sher Y, Ashouri JF, et al. The "Prediction of Alcohol Withdrawal Severity Scale" (PAWSS): systematic literature review and pilot study of a new scale for the prediction of complicated alcohol withdrawal syndrome. *Alcohol.* 2014. [DOI](https://doi.org/10.1016/j.alcohol.2014.01.004) (PMID 24657098)
+6. Pruckner N, Baumgartner J, Hinterbuchinger B, et al. Thiamine substitution in alcohol use disorder: a narrative review of medical guidelines. *Eur Addict Res.* 2019. [DOI](https://doi.org/10.1159/000499039) (PMID 30897571)
+7. Chand PK, Panda U, Mahadevan J, Murthy P. Management of alcohol withdrawal syndrome in patients with alcoholic liver disease. *J Clin Exp Hepatol.* 2022. [DOI](https://doi.org/10.1016/j.jceh.2022.03.003) (PMID 36340306)
+8. Ganatra RB, Breu AC, Ronan MV. Clinical guideline highlights for the hospitalist: 2020 American Society of Addiction Medicine clinical practice guideline on alcohol withdrawal management. *J Hosp Med.* 2022. [DOI](https://doi.org/10.12788/jhm.3729) (PMID 34910619)
+9. McPheeters M, O'Connor EA, Riley S, et al. Pharmacotherapy for alcohol use disorder: a systematic review and meta-analysis. *JAMA.* 2023. [DOI](https://doi.org/10.1001/jama.2023.19761) (PMID 37934220)
+10. Nishimura Y, Choi H, Colgan B, Kistler H, Mercado F. Current evidence and clinical utility of phenobarbital for alcohol withdrawal syndrome. *Eur J Intern Med.* 2023. [DOI](https://doi.org/10.1016/j.ejim.2023.03.006) (PMID 36935249)
+11. Kessel KM, Olson LM, Kruse DA, et al. Phenobarbital versus benzodiazepines for the treatment of severe alcohol withdrawal. *Ann Pharmacother.* 2024. [DOI](https://doi.org/10.1177/10600280231221241) (PMID 38247044)
+
+*Citations retrieved from PubMed. This teaching case uses a synthetic, de-identified scenario for educational purposes only. Dosing is intentionally omitted; follow your institution's protocol.*
+
+*Joshua Moss, MD | Psychiatrist*
+
+
+---
+
 ## Suicide Risk & Safety Planning (Jul 23)
 
 - **Slug:** `cotw_20260723_suiciderisk_ms3.md` · **Type:** md · **Sidebar:** listed
@@ -306,7 +734,7 @@ She returns at **6 weeks** on an adequately dosed selective serotonin reuptake i
 - **Slug:** `cotw_20260720_bipolar_ms3.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-20_bipolar-mania_MS3.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 1,550 words
+- **Length:** 1,664 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -366,7 +794,7 @@ Collateral from his mother (by phone) confirms a maternal aunt with bipolar diso
 ## Guided Discussion Questions
 
 **Q1. What is the most likely diagnosis, and what specific features support it?**
-*Teaching point:* This is a classic **manic episode**, and given the prior depressive episode the working diagnosis is **bipolar I disorder**. Use the mnemonic **DIG FAST** for manic symptoms: **D**istractibility, **I**mpulsivity/**I**ndiscretion (spending, risky behavior), **G**randiosity, **F**light of ideas, **A**ctivity increase/**A**gitation, **S**leep decreased (*no* perceived need for sleep), **T**alkativeness/pressured speech. DSM criteria for mania require **≥1 week** of persistently elevated/irritable mood **plus increased activity/energy** and ≥3 symptoms (≥4 if mood is only irritable), causing marked impairment, hospitalization, or psychotic features. A single manic episode is sufficient to diagnose bipolar I — a prior depressive episode is *supportive* but not required.
+*Teaching point:* This is a classic **manic episode**, and given the prior depressive episode the working diagnosis is **bipolar I disorder**. Use the mnemonic **DIG FAST** for manic symptoms: **D**istractibility, **I**mpulsivity/**I**ndiscretion (spending, risky behavior), **G**randiosity, **F**light of ideas, **A**ctivity increase/**A**gitation, **S**leep decreased (*no* perceived need for sleep), **T**alkativeness/pressured speech. DSM criteria for mania require a distinct period of abnormally and persistently elevated, expansive, or irritable mood **plus abnormally increased goal-directed activity or energy**, lasting **≥1 week and present most of the day, nearly every day — or any duration if hospitalization is necessary** — with ≥3 associated symptoms (≥4 if mood is only irritable), and causing marked impairment, necessitating hospitalization, or with psychotic features. Note that hospitalization does double duty in the criteria: it satisfies the duration requirement at *any* duration, and it also counts as a severity outcome — so a patient admitted on day four of clear mania meets criteria even if you cannot pin the episode to a full week. A single manic episode is sufficient to diagnose bipolar I — a prior depressive episode is *supportive* but not required.
 
 **Q2. Why does the "increased energy/activity" criterion matter, and how does mania differ from hypomania?**
 *Teaching point:* DSM-5 added **increased goal-directed activity or energy** as a *required* Criterion A feature (alongside mood) — mood elevation alone is not enough. **Hypomania** = same symptom cluster but **≥4 days**, **no marked impairment, no psychosis, and no hospitalization**; hypomania + a major depressive episode = **bipolar II**. This patient's psychosis (grandiose delusion about the transit system), marked impairment, and need for hospitalization place him firmly in **mania**, not hypomania.
@@ -384,7 +812,7 @@ Collateral from his mother (by phone) confirms a maternal aunt with bipolar diso
 *Teaching point:* Bipolar I is a **recurrent, lifelong illness**; acute stabilization is only the first step, and effective acute agents are generally **continued into maintenance** to prevent relapse [1]. A real-world cohort found that patients treated with **guideline-concordant first-line regimens had significantly lower 30-day rehospitalization and longer time to readmission** than those on no or non-recommended treatment [4]. This is a concrete, learner-friendly way to make "guidelines matter" tangible.
 
 **Q7. What safety counseling and monitoring are essential if you start lithium?**
-*Teaching point:* Lithium has a **narrow therapeutic index**. Teach baseline and ongoing **renal function and TSH**, the concept of **serum level monitoring**, and signs of toxicity (coarse tremor, GI upset, ataxia, confusion). Emphasize that **dehydration, NSAIDs, and thiazide/ACE-inhibitor diuretics raise lithium levels**. Lithium also carries **teratogenic risk** — hence the pregnancy test and contraception counseling. (Valproate is also highly teratogenic and generally avoided in patients who may become pregnant.)
+*Teaching point:* Lithium has a **narrow therapeutic index**. Teach baseline and ongoing **renal function and TSH**, the concept of **serum level monitoring**, and signs of toxicity (coarse tremor, GI upset, ataxia, confusion). Emphasize that **dehydration, NSAIDs, thiazide diuretics, and ACE inhibitors or ARBs raise lithium levels** — the last two are not diuretics; they raise the level by reducing GFR, while thiazides drive compensatory proximal reabsorption of sodium and, with it, lithium. Lithium also carries **teratogenic risk** — hence the pregnancy test and contraception counseling. (Valproate is also highly teratogenic and generally avoided in patients who may become pregnant.)
 
 ---
 
@@ -761,190 +1189,3 @@ If the presentation involved an **intentional overdose**, management is the same
 ---
 
 # SECTION: Evidence and Reference
-
----
-
-## Weekly Reading Map
-
-- **Slug:** `reading_map.md` · **Type:** md · **Sidebar:** listed
-- **Source:** `14_Tracks/MS3/Student_Ready_Pack/03_weekly_map/week_by_week_reading_map.md`
-- **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
-- **Length:** 588 words
-
-<!-- topic_meta overlay -->
-#### Structured metadata (`topic_meta.json` → this page)
-
-> est. read 4 min
-
-**TL;DR (shown above the page text):**
-
-> Six weeks of suggested readings paired with one clinical skill and one observable task each week — a coverage map, not a reading list; nothing here should take longer than 20 minutes.
-
-**Key points (bulleted card):**
-
-- Each week has a small suggested core plus optional deeper resources — the weekly skill anchor is the clinical behavior you are building toward, not the reading itself.
-- Week 4 is the most reading-intensive, covering the Family Meeting Playbook, family therapy modalities, and the family/discharge module — reflecting this rotation's signature focus on family work.
-- Week 6 reading is deliberately light because the skill of the week is a full OSCE-style case presentation integrating everything from the prior five weeks.
-
-**Clinical-workflow narration (per-stage coaching text):**
-
-- **ask** — For the current week, identify the skill anchor, one patient-linked reading, and one observable task you can actually do on the unit.
-- **mse** — Use the weekly focus to decide what part of the MSE deserves extra attention this week.
-- **safety** — When a weekly task touches risk, capacity, withdrawal, delirium, catatonia, or family safety, do it with supervision rather than as a solo checklist.
-- **say** — This week I am practicing one clinical behavior, not trying to read everything.
-- **collateral** — Use the family/systems weeks to practice permission, baseline questions, and discharge feasibility with supervision.
-- **rounds** — Bring one weekly reading into rounds as a clinical question, not a literature summary.
-- **exam** — The reading map is a spaced sequence; pair each week with review cards or one question-bank session.
-- **actions** — Open Week 1; Open daily review
-
-**Cross-references and tagging:**
-
-- **Related tools:** `review.html`, `communication-practice.html`, `family-systems.html`
-- **Communication cases:** `guardedness_privacy_001`, `family_meeting_opening_001`, `collateral_questions_001`
-- **Workflow stages:** `encounter`, `communication`, `family`, `exam`
-- **Workflow modes:** `ward`, `family`, `5min`, `shelf`
-- **EPA crosswalk:** `EPA7`
-
-#### Page text (as shipped)
-
-# Week-by-Week Reading & Skills Map
-
-Design principle: suggested reading should be short enough to protect clinical learning. Most source material stays optional or faculty-facing. The weeks below match the six-week curriculum in the sidebar. Links open the matching page on this site.
-
-## Week 1 — Foundations & Orientation
-
-**Suggested**
-
-- [Orientation packet](?page=orientation.md).
-- [Interview / MSE pocket guide](?page=pg_interview.md).
-- [Suicide-risk & safety pocket card](?page=pg_suicide.md).
-- Week 1 safety recognition links: [Agitation & restraint](?page=agitation.md), [Delirium](?page=delirium.md), and the [Withdrawal (CIWA-Ar/COWS) teaching tool](?tool=withdrawal.html).
-- [One landmark summary — Engel biopsychosocial model](?page=landmark_trials.md).
-
-**Optional**
-
-- [Biopsychosocial formulation worksheet](?page=pg_formulation.md).
-- [Differential diagnosis scaffolds](?page=ddx.md).
-
-**Skill**
-
-Conduct a focused interview, present MSE findings, write an admission note, and name what safety finding would make you interrupt the usual workflow to get the resident or attending now.
-
-**Assignment**
-
-One de-identified MSE plus a one-paragraph formulation and one sentence that separates "routine follow-up" from "call now" safety escalation.
-
-## Week 2 — Mood, Psychosis & Pharmacology
-
-**Suggested**
-
-- [Mood disorders](?page=t_mood.md) and [Psychosis](?page=t_psychosis.md) teaching pages.
-- [Psychopharmacology primer](?page=psychopharm_primer.md).
-- [One psychopharm landmark — CATIE, STAR*D, STEP-BD, lithium/suicide, or clozapine](?page=landmark_trials.md).
-
-**Optional**
-
-- [Differential diagnosis scaffolds](?page=ddx.md).
-- Bush-Francis Catatonia Rating Scale (the BFCRS tool in the sidebar).
-
-**Skill**
-
-Explain why one medication fits the patient; recognize and score catatonia with the BFCRS.
-
-**Assignment**
-
-A treatment-rationale paragraph for a mood or psychosis patient.
-
-## Week 3 — Psychotherapy, Personality & the Relationship
-
-**Suggested**
-
-- [Supportive psychotherapy basics](?page=exp_tx.md).
-- [Personality disorders](?page=t_personality.md) teaching page.
-- [One psychotherapy landmark — Wampold common factors or Linehan DBT](?page=landmark_trials.md).
-
-**Optional**
-
-- [Motivational interviewing](?page=motivational_interviewing.md).
-- [Suicide-risk & safety pocket card](?page=pg_suicide.md).
-
-**Skill**
-
-Build a therapeutic alliance; complete a Stanley–Brown safety plan.
-
-**Assignment**
-
-A safety plan plus a brief therapy rationale.
-
-## Week 4 — Family, Systems & Expressed Emotion
-
-**Suggested**
-
-- [Family Meeting Playbook (90-min)](?page=family_playbook.md).
-- [Family therapy modalities](?page=family_modalities.md).
-- [Family & discharge module](?page=exp_family.md).
-
-**Optional**
-
-- [One family/EE landmark — Brown expressed emotion or Pharoah Cochrane family](?page=landmark_trials.md).
-- [Family-therapy inpatient evidence](?page=evidence_inpatient.md).
-
-**Skill**
-
-Prepare and co-facilitate a 90-minute family meeting; spot expressed emotion.
-
-**Assignment**
-
-A family-meeting agenda using synthetic or de-identified facts.
-
-## Week 5 — Acute & Emergency Psychiatry
-
-**Suggested**
-
-- [Consult module — capacity / delirium / catatonia / withdrawal](?page=exp_consult.md).
-- [Agitation & restraint](?page=agitation.md) with the Algorithms & Decision Aids tool.
-- [Violence risk](?tool=violence.html), [C-SSRS](?tool=cssrs.html), and [Withdrawal: CIWA-Ar/COWS](?tool=withdrawal.html) tools for supervised structured practice.
-
-**Optional**
-
-- Revisit the [Suicide-risk & safety pocket card](?page=pg_suicide.md) and [Delirium](?page=delirium.md) teaching page with a real patient presentation in mind.
-- [Stanley–Brown safety-planning summary](?page=landmark_trials.md).
-
-**Skill**
-
-Move beyond Week 1 recognition: formulate the likely driver, use least-restrictive de-escalation when safe, trend structured tools with supervision, and document why the plan did or did not escalate.
-
-**Assignment**
-
-A risk formulation plus a consult question.
-
-## Week 6 — Integration, Disposition & Exam Readiness
-
-**Suggested**
-
-- [OSCE station set](?page=osce.md).
-- [COMAT & shelf review guide](?page=shelf.md).
-- [Documentation & presenting guide](?page=doc_oral.md).
-
-**Optional**
-
-- [High-Yield Rounds Questions](?page=rounds_questions.md); the Daily Review and Shelf Mode tools.
-- [A Landmark Trials summary or audio of your choice](?page=landmark_trials.md).
-
-**Skill**
-
-Present a full case with formulation, risk reasoning, and a disposition plan.
-
-**Assignment**
-
-A final synthetic or de-identified case presentation and reflection.
-
-## Faculty Note
-
-If a reading takes longer than 20 minutes, assign a specific question — for example:
-
-- "Read for how this changes your risk formulation."
-- "Read for one medication adverse effect that matters inpatient."
-- "Read for one family-system variable to ask about on rounds."
-
-*Each week has a small suggested core, optional deeper resources, and one observable clinical skill — so the curriculum never becomes a document dump.*

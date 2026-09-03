@@ -1172,14 +1172,19 @@ class ScheduledWorkflowTests(unittest.TestCase):
         self.assertIn("validate_scheduled_workflows.py", build_runs)
         self.assertIn("node --test tests/*.test.mjs", build_runs)
 
-    def test_production_canary_runs_both_public_nav_projects(self):
+    def test_production_canary_runs_both_public_canary_projects(self):
         runs = "\n".join(
             step.get("run", "")
             for step in steps("maintenance-production-canary.yml")
         )
-        self.assertIn("--project=nav-ms3", runs)
-        self.assertIn("--project=nav-res", runs)
+        self.assertIn("--project=canary-ms3", runs)
+        self.assertIn("--project=canary-res", runs)
         self.assertIn("production_canary.py", runs)
+        # The nav-* projects carry the client-runtime fault-injection suites. Against live
+        # Netlify they yield transport noise and no production signal (the 2026-08-21..09-02
+        # daily-red regression), so the canary must never fall back to them.
+        self.assertNotIn("--project=nav-ms3", runs)
+        self.assertNotIn("--project=nav-res", runs)
         env_values = json_values(load_workflow("maintenance-production-canary.yml"))
         self.assertIn("https://une-ms3-psychiatry.netlify.app", env_values)
         self.assertIn(

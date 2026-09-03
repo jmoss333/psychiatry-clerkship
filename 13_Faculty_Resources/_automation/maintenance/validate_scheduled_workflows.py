@@ -55,7 +55,11 @@ SURVEILLANCE_FILES = {
     "surveillance-guideline.yml",
     "surveillance-resource-intake.yml",
 }
-SCOPED_FILES = set(EXPECTED_CRONS) | {"surveillance-resource-intake.yml"}
+ESCALATION_FILE = "automation-failure-escalation.yml"
+SCOPED_FILES = set(EXPECTED_CRONS) | {
+    "surveillance-resource-intake.yml",
+    ESCALATION_FILE,
+}
 EXPECTED_PERMISSIONS = {
     "ci.yml": {"contents": "read"},
     "maintenance-sp-health-monitor.yml": {"contents": "read"},
@@ -70,6 +74,11 @@ EXPECTED_PERMISSIONS = {
         "issues": "write",
     },
     "maintenance-rotation-readiness.yml": {
+        "contents": "read",
+        "issues": "write",
+    },
+    ESCALATION_FILE: {
+        "actions": "read",
         "contents": "read",
         "issues": "write",
     },
@@ -102,6 +111,10 @@ EXPECTED_CONCURRENCY = {
         "group": "maintenance-rotation",
         "cancel-in-progress": False,
     },
+    ESCALATION_FILE: {
+        "group": "automation-escalation",
+        "cancel-in-progress": False,
+    },
     **{
         name: {
             "group": "surveillance-inbox",
@@ -122,6 +135,7 @@ EXPECTED_JOB_IDS = {
     "surveillance-guideline.yml": {"guideline-delta"},
     "surveillance-link-monitor.yml": {"link-audit"},
     "surveillance-resource-intake.yml": {"resource-intake"},
+    ESCALATION_FILE: {"escalate"},
 }
 EXPECTED_STEP_INVENTORIES = {
     "ci.yml": {
@@ -307,11 +321,24 @@ EXPECTED_STEP_INVENTORIES = {
             ("name", "Publish rolling surveillance inbox"),
         ),
     },
+    ESCALATION_FILE: {
+        "escalate": (
+            ("uses", "actions/checkout"),
+            ("uses", "actions/setup-python"),
+            ("name", "Read the rolling escalation issue"),
+            ("name", "Capture the first error line from the failed run"),
+            ("name", "Render the escalation decision"),
+            ("name", "Upsert the rolling escalation issue"),
+        ),
+    },
 }
 # SHA-256 of each GitHub-compatible workflow projection serialized canonically.
 # Native true/false values stay typed, `on` stays a string, and action inputs
 # use runner-coerced string semantics. Pin comments are validated separately.
 EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
+    ESCALATION_FILE: (
+        "97cce854ae22f6fcbf24a87d220582ea4f125d8136d4c8d306deb9492bcdf5be"
+    ),
     "ci.yml": "281a4dd9d78f94e9d33b55f93b5976183652b20606a2302a5f17bf3e6297f6f2",
     "maintenance-governance-digest.yml": (
         "d819d2eafa59d6d62fcdf5f4d82b5eaf374f2b58d728d7c7f748fa7160bf6c10"
@@ -323,7 +350,7 @@ EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
         "acd1fe78364baf65ac9842ffb62a5abacaa8c70110a254106166130985fc9689"
     ),
     "maintenance-production-canary.yml": (
-        "702912e1672d439ee6951003eb0a832015f4b616035d6a004513f2f3fa9eab27"
+        "a7be8923488ec6d1d824fcdfc2fc59feefe258ac937bb9cf42ee1127485e94e7"
     ),
     "maintenance-rotation-readiness.yml": (
         "655504ee205ce4f27ddc63dc2a819dc1d1eb7987f56bbacbbfc452d1cc48476a"
@@ -566,7 +593,8 @@ npx playwright test --project=lfs""",
             (
                 "Crawl both public learner sites",
                 "cd tests/smoke\n"
-                "npx playwright test --project=nav-ms3 --project=nav-res",
+                "npx playwright test --project=canary-ms3 "
+                "--project=canary-res --workers=2 --retries=2",
                 None,
                 "required production navigation gate",
             ),
@@ -1180,12 +1208,23 @@ def _validate_production_canary(workflow, errors):
     run = _runs(steps)
     values = _values(workflow)
     for required in (
-        "--project=nav-ms3",
-        "--project=nav-res",
+        "--project=canary-ms3",
+        "--project=canary-res",
         "production_canary.py",
     ):
         if required not in run:
             _error(errors, name, f"production canary step is missing: {required}")
+    # The canary must not reuse the nav-* projects. Those carry the client-runtime
+    # fault-injection suites, which against live Netlify produce transport noise and no
+    # production signal — the 2026-08-21..09-02 daily-red regression. Composition of the
+    # canary-* projects is pinned separately by tests/canary-scope.test.mjs.
+    for forbidden in ("--project=nav-ms3", "--project=nav-res"):
+        if forbidden in run:
+            _error(
+                errors,
+                name,
+                f"production canary must not run the build-only project {forbidden}",
+            )
     for url in (MS3_URL, RES_URL):
         if url not in values:
             _error(errors, name, f"production URL is missing: {url}")

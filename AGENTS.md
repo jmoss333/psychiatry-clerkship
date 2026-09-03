@@ -65,6 +65,15 @@ cd tests/smoke && npm ci && npx playwright test
   each validates against its paired `*.schema.json`.
 - `sp-proxy/` — serverless LLM patient for The Interview Room. **API key stays server-side; the browser
   holds only a passcode.** Run `sp-proxy/REDTEAM_CHECKLIST.md` after every deploy and every model/pack change.
+- `.claude/agents/` — project subagents (`evidence-verifier`, `deploy-verifier`). The frontmatter
+  tool allowlist is the enforcement; `tests/agent-definitions.test.mjs` pins each agent's scope.
+- `.claude/settings.json` + `.claude/hooks/` — session hooks that enforce the rules below at edit
+  time: crisis contacts, dose literals, localStorage namespaces, machine paths (deny); PHI and
+  instrument item text (ask); LFS phantoms on `git add` (deny); registry validators, workflow
+  digest, and AGENTS.md sync after an edit; a quick gate at stop. `bin/install-hooks.sh` installs
+  the matching **pre-commit** gate for hand edits. The tool hooks (PreToolUse/PostToolUse) also
+  fire for a subagent's tool calls; SessionStart and Stop are session-level. A subagent's tool
+  allowlist is still its primary enforcement. `tests/hooks.test.mjs` drives every hook.
 - `docs/superpowers/{plans,specs}/` — dated design docs and implementation plans.
 - `13_Faculty_Resources/_automation/export_curriculum_review.py` → `docs/curriculum-review/`
   — assembles a complete human-readable transcript of everything each site ships (one set per

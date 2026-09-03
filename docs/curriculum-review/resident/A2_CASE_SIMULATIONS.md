@@ -676,7 +676,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
 - **(c)** Recommend esketamine because it is the newest option and works the fastest.  *(rated: **missed**)*
   - *feedback:* Speed of onset is relevant to a rapid-acting-agent discussion, but "newest" is not a reason on its own, and this skips the actual safety and access reasoning the case is asking for.
 - **(d)** Defer the augmentation decision entirely to the outpatient team after discharge.  *(rated: **harmful**)*
-  - *feedback:* A patient admitted after an overdose with confirmed treatment resistance is exactly who should not leave the hospital without a next step already started or clearly planned — deferring the whole decision abandons the acute opportunity to act.
+  - *feedback:* A patient admitted after an overdose, with a confirmed adequate-trial failure and ongoing suicidal ideation, is exactly who should not leave the hospital without a next step already started or clearly planned — deferring the whole decision abandons the acute opportunity to act.
 
 **Step 3 — Integrating ECT Into The Plan** (`integrate_ect`)
 

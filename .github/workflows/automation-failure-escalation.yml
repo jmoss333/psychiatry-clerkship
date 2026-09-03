@@ -1,0 +1,112 @@
+name: Automation — Failure Escalation
+
+# A deadman for the deadman. Every scheduled maintenance and surveillance
+# workflow reports its completion here, so a silently red steward surfaces as
+# one rolling issue instead of going unnoticed for weeks.
+#
+# `workflow_run` matches on a workflow's `name:`, never its filename — the
+# watched list below is pinned against the workflow directory by
+# tests/maintenance/test_escalation_issue.py so a rename cannot silently
+# unwatch a job.
+
+on:
+  workflow_run:
+    workflows:
+      - "Maintenance — Evidence and Operations Review"
+      - "Maintenance — Faculty Governance Digest"
+      - "Maintenance — Interview Room Health Monitor"
+      - "Maintenance — Production Learner Canary"
+      - "Maintenance — Rotation Readiness"
+      - "Maintenance — Workflow Heartbeat"
+      - "Surveillance — Citation Validity"
+      - "Surveillance — Guideline Monitor"
+      - "Surveillance — Link Monitor"
+      - "Surveillance — Resource Intake"
+    types:
+      - completed
+
+permissions:
+  actions: read
+  contents: read
+  issues: write
+
+concurrency:
+  group: automation-escalation
+  cancel-in-progress: false
+
+jobs:
+  escalate:
+    runs-on: ubuntu-latest
+    if: >-
+      github.event.workflow_run.conclusion == 'failure' ||
+      github.event.workflow_run.conclusion == 'success'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          lfs: false
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: "3.11"
+
+      - name: Read the rolling escalation issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          gh issue list --state open --limit 200 --json number,body \
+            > "$RUNNER_TEMP/open-issues.json" || echo '[]' > "$RUNNER_TEMP/open-issues.json"
+
+      - name: Capture the first error line from the failed run
+        if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FAILED_RUN_ID: ${{ github.event.workflow_run.id }}
+        run: |
+          set -uo pipefail
+          # Best effort: logs expire, and a missing excerpt must not stop the
+          # escalation itself.
+          gh run view "$FAILED_RUN_ID" --log-failed 2>/dev/null \
+            | grep -aiE "error|Traceback|failed" \
+            | head -n 5 > "$RUNNER_TEMP/failure.log" || true
+          touch "$RUNNER_TEMP/failure.log"
+
+      - name: Render the escalation decision
+        id: render
+        env:
+          RUN_WORKFLOW: ${{ github.event.workflow_run.name }}
+          RUN_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          RUN_URL: ${{ github.event.workflow_run.html_url }}
+          RUN_AT: ${{ github.event.workflow_run.updated_at }}
+        run: |
+          set -euo pipefail
+          touch "$RUNNER_TEMP/failure.log"
+          python3 13_Faculty_Resources/_automation/maintenance/escalation_issue.py \
+            --issues "$RUNNER_TEMP/open-issues.json" \
+            --workflow "$RUN_WORKFLOW" \
+            --conclusion "$RUN_CONCLUSION" \
+            --run-url "$RUN_URL" \
+            --at "$RUN_AT" \
+            --log "$RUNNER_TEMP/failure.log" \
+            --body-out "$RUNNER_TEMP/escalation-body.md" \
+            --output "$GITHUB_OUTPUT"
+
+      - name: Upsert the rolling escalation issue
+        if: ${{ steps.render.outputs.decision != 'none' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DECISION: ${{ steps.render.outputs.decision }}
+          ISSUE_NUMBER: ${{ steps.render.outputs.issue_number }}
+        run: |
+          set -euo pipefail
+          # Automation records recovery but never resolves the row; a person
+          # closes it once the underlying job is genuinely healthy.
+          if [ "$DECISION" = "create" ]; then
+            gh issue create \
+              --title "automation: scheduled job failures" \
+              --body-file "$RUNNER_TEMP/escalation-body.md"
+          else
+            gh issue edit "$ISSUE_NUMBER" \
+              --body-file "$RUNNER_TEMP/escalation-body.md"
+          fi

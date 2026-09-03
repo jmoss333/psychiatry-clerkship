@@ -1643,7 +1643,7 @@
    - A formal dietary consultation and exercise stress test While lifestyle intervention is encouraged, baseline labs and vitals are the specific standardized monitoring requirements.
    - Electroencephalogram (EEG) to screen for seizure risk An EEG is not part of the standard metabolic monitoring protocol established by the ADA/APA consensus.
 
-5. **Based on the ADA/APA monitoring protocol, when should fasting glucose and lipids be reassessed after the baseline labs have been completed?**
+5. **Based on the ADA/APA monitoring protocol, when should fasting glucose be reassessed after the baseline labs have been completed?**
    - At 4 weeks and then every 3 months
      - *feedback:* Weight is checked at 4 and 8 weeks, but fasting labs are deferred until the 12-week mark unless otherwise clinically indicated.
    - At 12 weeks and then annually **← keyed correct**
