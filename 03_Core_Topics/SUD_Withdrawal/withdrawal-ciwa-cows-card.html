@@ -51,6 +51,17 @@
   .sources{font-size:.8rem;color:var(--text-mid);margin-top:var(--sp4);line-height:1.5}
   .sources a{color:inherit}
   .disclaimer{background:var(--bg-alt);border:1px dashed var(--border);border-radius:var(--radius-md);padding:var(--sp3);font-size:.82rem;color:var(--text-mid);margin-top:var(--sp4)}
+  /* Route block — where the learner gets the real form. Governed in instrument_rights.json
+     (officialSource) and pinned by instrument-rights-gate.mjs: on the CIWA-Ar tab it replaces
+     what was withdrawn, on the COWS tab it is what makes "score from the real form, not from
+     this page" an instruction anyone can actually follow. */
+  .route{background:var(--accent-light);border:1px solid var(--accent);border-radius:var(--radius-md);padding:var(--sp3);margin-top:var(--sp3)}
+  .route h4{font-family:var(--font-head);font-size:1rem;color:var(--accent-dark);margin:0 0 var(--sp2);font-weight:600}
+  .route p{margin:0 0 var(--sp2);font-size:.88rem;color:var(--text-mid)}
+  .route p:last-child{margin-bottom:0}
+  .route .go{display:inline-block;background:var(--accent-dark);color:#fff;text-decoration:none;font-weight:600;font-size:.88rem;padding:9px 15px;border-radius:var(--radius-sm);margin:2px 8px 8px 0}
+  .route .go:hover,.route .go:focus{background:var(--accent)}
+  .route .cost{font-size:.78rem;color:var(--text-light)}
   /* Enhancement 1 — live gauge + contribution bars */
   .scaleWrap{display:grid;grid-template-columns:1fr 320px;gap:var(--sp4);align-items:start}
   .scaleItems{min-width:0}
@@ -190,6 +201,18 @@ function Scale(props){
     )
   );
 }
+/* Route block. One component, two very different jobs, so the copy is passed in rather than
+   templated: on the CIWA-Ar tab it replaces a withdrawn reproduction, on the COWS tab it backs
+   up the instruction to score from the published form. The hrefs are the ones recorded in
+   instrument_rights.json (officialSource.formUrl) and instrument-rights-gate.mjs hard-fails the
+   build if either stops shipping -- keep the two in step. */
+function Route(props){
+  return e('div',{className:'route'},
+    e('h4',null,props.title),
+    e('p',null,props.blurb),
+    e('a',{className:'go',href:props.href,target:'_blank',rel:'noopener noreferrer'},props.cta+' →'),
+    e('p',{className:'cost'},props.cost));
+}
 function App(){
   /* Opens on COWS: after the CIWA-Ar retirement (2026-08-28) that is the page's only scoring
      surface, and this page is reached from Quick Tools and search AS A TOOL. Landing a learner
@@ -217,13 +240,25 @@ function App(){
           e('i',null,'Br J Addict'),' 1989;84(11):1353–7 (',
           e('a',{href:'https://pubmed.ncbi.nlm.nih.gov/2597811/',target:'_blank',rel:'noopener noreferrer'},'PMID 2597811'),').'),
         e('p',null,e('b',null,'Official version. '),'Obtain the complete, current CIWA-Ar from your institution’s withdrawal protocol and score from that form at the bedside, not from any teaching page. Administration teaching for this scale — how the assessment is conducted and what the score does and does not license — is authored separately and is not yet published here.'),
+        e(Route,{
+          title:'Get the form',
+          blurb:'Your unit’s withdrawal protocol is the form you score from — it is the one your orders key off, and it is in the EHR. If you want to read the instrument outside a shift, the California Society of Addiction Medicine posts the 10-item scale with its scoring criteria.',
+          href:'https://www.csam-asam.org/ciwa-ar',
+          cta:'CIWA-Ar at CSAM',
+          cost:'Free, no registration; leaves this site for csam-asam.org. Note what this link is and is not: CSAM is a professional society posting a copy, not the rights-holder. The CIWA-Ar is the one scale here with no custodian still distributing it — the 1989 paper is paywalled and the originating Addiction Research Foundation publishes no current form, which is exactly why its rights could not be established and the descriptors came down. Score from your unit’s form.'}),
         e('div',{className:'pearl'}, e('b',null,'Use it well: '),'symptom-triggered dosing (treat when CIWA ≥ ~8–10) usually beats fixed schedules in appropriate patients. CIWA assumes the patient can communicate — it is unreliable in delirium, intubation, or language barriers; use a protocol like RASS/PAWSS there.')
       )
     :
       e('div',{className:'card'},
         e('h3',{style:{marginTop:0}},'COWS — 11 items (max 48)'),
         e(Scale,{items:COWS,gauge:COWS_GAUGE}),
-        e('div',{className:'pearl'}, e('b',null,'Use it well: '),'buprenorphine induction generally requires objective withdrawal (often COWS ≥ ~8–12) to avoid precipitated withdrawal — follow your protocol. COWS guides supportive and agonist treatment; it does not by itself set doses.')
+        e('div',{className:'pearl'}, e('b',null,'Use it well: '),'buprenorphine induction generally requires objective withdrawal (often COWS ≥ ~8–12) to avoid precipitated withdrawal — follow your protocol. COWS guides supportive and agonist treatment; it does not by itself set doses.'),
+        e(Route,{
+          title:'Get the official form',
+          blurb:'The tally above is for learning the scale. NIDA publishes the COWS as a one-page PDF — all 11 items and the score bands — which is what you print, carry, and document from.',
+          href:'https://nida.nih.gov/sites/default/files/ClinicalOpiateWithdrawalScale.pdf',
+          cta:'Download the COWS (PDF, NIDA)',
+          cost:'Free, no registration; leaves this site for nida.nih.gov. Score at the bedside from that form or your unit’s, not from this page.'})
       ),
     // WP-02b. This page reproduces COWS anchors verbatim (added by WP-02, PR #375) and
     // abbreviated CIWA-Ar descriptors, and until now carried no instrument attribution at all.

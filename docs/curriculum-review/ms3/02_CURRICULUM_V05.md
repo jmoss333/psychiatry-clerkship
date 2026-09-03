@@ -176,7 +176,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 
 - **ask** — Ask the patient what they call the problem, what they think caused it, what they fear most, what help they expect, and what would make care feel respectful.
 - **mse** — Separate culturally shaped expression from psychopathology; describe affect, beliefs, language, and behavior without assuming your own norm is neutral.
-- **safety** — Use trained interpreters for safety questions, assess discrimination/trauma and structural barriers, and avoid family interpreters for confidential or high-risk topics.
+- **safety** — Use trained interpreters for every clinical conversation, not only the safety questions; assess discrimination/trauma and structural barriers; never put a family member in the interpreter role.
 - **say** — I do not want to assume my framework fits yours. Can you tell me how you understand what is happening?
 - **collateral** — Ask about baseline, family meaning, community supports, immigration/language barriers, religious or cultural practices, and what the patient permits sharing.
 - **rounds** — Present the cultural formulation as clinical reasoning: explanatory model, identity/context, supports, barriers, bias risks, and treatment implications.
@@ -633,7 +633,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **Slug:** `violence.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `04_Acute_and_Safety/Violence_Risk/violence_risk_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 957 words
+- **Length:** 1,091 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -686,7 +686,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 
 **How it presents on the unit.** Serious violence rarely erupts without a prodrome. Watch for the escalation curve: rising motor activity (pacing, restlessness), a louder and faster voice, clenched jaw or fists, prolonged staring, refusal to sit, and intrusion into others' physical space. Verbal threats and striking objects sit just below assault on that curve. The single most important distinction is between *static* risk — history you cannot change — and *dynamic* risk — the modifiable state driving this patient right now. Static factors (a past act of violence above all, younger age, male sex, substance use, prior weapon access) tell you the baseline; dynamic factors (acute psychosis, intoxication or withdrawal, agitation, untreated pain, a provocative environment) tell you what is treatable tonight and are where the clinical work lives.
 
-**Recognize and screen.** Past violence is the strongest single predictor of future violence — take a specific history of it rather than a global impression. Among psychotic symptoms, the highest-risk pattern is persecutory delusions paired with command hallucinations the patient feels compelled to obey. ("Threat/control-override" is a related but distinct construct — persecutory beliefs plus the sense that outside forces override one's self-control.) For short-term, unit-level prediction, structure the bedside read with the **Brøset Violence Checklist (BVC)**: confusion, irritability, boisterousness, verbal threats, physical threats, and attacking objects — each present/absent, summed to gauge the risk of violence over the next 24 hours. More comprehensive structured instruments exist (e.g., HCR-20) but belong to formal forensic assessment, not the daily student read.
+**Recognize and screen.** Past violence is the strongest single predictor of future violence — take a specific history of it rather than a global impression. Among psychotic symptoms, the highest-risk pattern is persecutory delusions paired with command hallucinations the patient feels compelled to obey. ("Threat/control-override" is a related but distinct construct — persecutory beliefs plus the sense that outside forces override one's self-control.) Two instruments will reach you and they do different jobs. The one you will actually meet here is the **Fordham Risk Screening Tool (FRST)** — completed in the Emergency Department at intake at Maine Medical Center, returning a positive/negative result rather than a score, and used to flag who arrives on the unit needing heightened observation. It is a screen, not a verdict: let a positive result raise your index of suspicion and your monitoring, and treat a negative one as no reassurance at all — the tool page carries the local validation data and the authors' own caution against using it standalone. The short-term, unit-level structured read in the literature is the **Brøset Violence Checklist (BVC)** — confusion, irritability, boisterousness, verbal threats, physical threats, and attacking objects, each present/absent and summed to gauge risk over the next 24 hours — with the DASA used the same way. Note that the library's Violence Risk tool is the FRST one-pager: its warning-signs checklist is deliberately unscored and is a teaching prompt, not a BVC tally. More comprehensive structured instruments exist (e.g., HCR-20) but belong to formal forensic assessment, not the daily student read.
 
 **Keep yourself and the milieu safe — the room setup is the intervention.** If you are at all concerned, do not interview alone. Position yourself nearer the door than the patient so neither of you is trapped and your exit is never blocked. Know where the duress alarm is before you sit down. Remove obvious ligatures and throwable objects from reach. Keep a calm, low, non-confrontational posture, give the patient space, and avoid cornering, sudden movements, or a challenging stance.
 
@@ -719,7 +719,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 >
 > *Contacts verified 2026-07-27 against official sources. Maintained in `crisis_resources.json`; do not edit these numbers inline.*
 
-**Pair with** the Agitation & Restraint guidance, the interactive Violence Risk / Brøset tool, the Psychosis page, and the Decisional Capacity module.
+**Pair with** the Agitation & Restraint guidance, the interactive Violence Risk (FRST) tool, the Psychosis page, and the Decisional Capacity module.
 
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
 

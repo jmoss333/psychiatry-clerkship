@@ -714,8 +714,14 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Emergency services — 911. 24/7. For imminent danger to life.
 - Contacts verified 2026-07-27 against official sources. Maintained in crisis_resources.json ; do not edit these numbers inline.
 
-**Authored clinical strings (73):**
+**Authored clinical strings (80):**
 
+- s authored quality (srsGradeForQuality) rather than asked for: this tool already knows how the rep went, and a second self-rating would be a question the learner has just answered. */ /* ---- cw_srs_v1 store adapter (shared) ------------------------------------ Every tool that schedules a card writes the SAME store under the SAME shape. This file is the one definition of that shape; `applyGrade` (the SM-2 step itself) is a separate snippet, sm2_apply_grade.js, and stays that way. Why this is shared rather than copied into each tool: `srsFresh` fixes the store
+- s daily allowance or dropping a stats field the dashboard reads. The failure is invisible and arrives only for learners who happen to open the wrong tool first. Card id namespaces live in the consumers, not here: deck# and TOPIC# (Daily Review), QB# (question bank), FAM# (family retrieval, fam_retrieval.js), COMM# and REASON# (the two tools below). spa_index.html
+- s authored quality rather than asked for. `best` is a clean recall (Good, not Easy — Easy would stretch the interval on a four-way recognition task the learner may well have guessed); `partial` is a hesitant one; anything worse is a lapse. Unknown qualities fail to a lapse so a new quality added to the data can never quietly lengthen an interval. */ function srsGradeForQuality(quality){ if(quality===
+- ) return 3; if(quality===
+- ) return 2; return 1; } /* ==== Canonical SM-2 grader (build-injected — do not edit inside consumer files) ==== Source of truth: 13_Faculty_Resources/_automation/site_build/sm2_apply_grade.js. Consumers carry a SM2_APPLY_GRADE marker comment that common.py
+- s cw_srs_v1 writes stay aggregate/current-state only and are unaffected by that logging. */ /* Deterministic ±15% interval fuzz (opts.fuzzKey): de-synchronizes cohort-seeded cards so due-load avalanches spread out. No fuzzKey (legacy callers) = no fuzz. Also a no-op below ivl 3 d (too short to meaningfully fuzz). Always clamped to [1, 365] regardless of the input interval
 - ]/g,function(c){return {'&':'&',' ':'>','
 - }[c];});} function requestedCaseId(){try{return new URLSearchParams(location.search).get(
 - ;}} function requestedFilter(){try{var f=(new URLSearchParams(location.search).get(
@@ -726,7 +732,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - ||!record.choiceId||QUALITY[record.quality]!==true)return clean;if(typeof record.at!==
 - ||!/^\d{4}-\d{2}-\d{2}$/.test(record.at))return clean;clean[caseId]={choiceId:record.choiceId,quality:record.quality,at:record.at};return clean;},Object.create(null));} function loadAttempts(){try{return normalizeAttempts(JSON.parse(localStorage.getItem(
 - ));}catch(_){return {};}} function saveAttempt(caseId,choice){try{var attempts=normalizeAttempts(state.attempts);attempts[caseId]={choiceId:choice.id,quality:choice.quality,at:new Date().toISOString().slice(0,10)};state.attempts=attempts;localStorage.setItem(
-- ,JSON.stringify(state.attempts));}catch(_){} } function tagsFor(c){return CASE_FILTERS[c&&c.id]||[];} function caseMatches(c,f){return !f||f===
+- ,JSON.stringify(state.attempts));}catch(_){} try{srsGradeCard(commCardId(caseId),srsGradeForQuality(choice&&choice.quality));}catch(_){} } function tagsFor(c){return CASE_FILTERS[c&&c.id]||[];} function caseMatches(c,f){return !f||f===
 - ||tagsFor(c).indexOf(f)>=0;} function filteredCases(){return state.cases.filter(function(c){return caseMatches(c,state.filter);});} function currentCase(){return state.cases[state.current]||state.cases[0];} function setCurrentById(id){for(var i=0;i<state.cases.length;i++){if(state.cases[i].id===id){state.current=i;return true;}}return false;} function qualityLabel(q){return q===
 - ;} function doneLabel(q){return q===
 - ;} function defaultRapidDrill(c){return {stance:c.learnerGoal||
@@ -776,7 +782,8 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - ;state.filter=FILTERS.some(function(item){return item[0]===filterId;})?filterId:
 - ;if(state.phase===PHASE.SPEAKING)resetRepState();state.nudgeOpen=false;state.coachingOpen=false;var matches=filteredCases(),phaseChanged=previousPhase!==state.phase;if(matches.length&&matches.indexOf(currentCase())===-1){phaseChanged=previousPhase!==PHASE.ORIENT;selectCase(matches[0].id,{focusPhase:phaseChanged&&!keepPickerOpen,focusFilter:!phaseChanged&&!keepPickerOpen?state.filter:
 - ,focusShowAll:!matches.length&&!keepPickerOpen,reopenPicker:keepPickerOpen});}} function surpriseCase(){var list=filteredCases();if(!list.length)return;var pick=list[Math.floor(Math.random()*list.length)];if(list.length>1&&pick.id===currentCase().id)pick=list[(list.indexOf(pick)+1)%list.length];selectCase(pick.id,{focusPhase:true});} function resetHistory(){if(!Object.keys(state.attempts||{}).length)return;if(!window.confirm(
-- );}catch(_){}state.attempts=Object.create(null);clearTimer();resetRepState();render({focusPhase:true});} app.addEventListener(
+- );}catch(_){}try{var s=srsLoadStore(),touched=false;Object.keys(s.cards||{}).forEach(function(id){if(id.indexOf(
+- )===0){delete s.cards[id];touched=true;}});if(touched)srsSaveStore(s);}catch(_){}state.attempts=Object.create(null);clearTimer();resetRepState();render({focusPhase:true});} app.addEventListener(
 - ,function(ev){var target=ev.target.closest&&ev.target.closest(
 - )){var related=relatedCase(currentCase());if(related)selectCase(related.id,{focusPhase:true});return;}if(target.hasAttribute(
 - )){var picker=target.closest(

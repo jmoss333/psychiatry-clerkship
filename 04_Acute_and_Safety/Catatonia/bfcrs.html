@@ -25,6 +25,17 @@
   .sub{color:var(--text-light);font-size:.9rem;max-width:64ch;margin:0 0 6px}
   .disc{font-size:.78rem;color:var(--text-light);border-top:1px solid var(--border);margin-top:24px;padding-top:12px}
   a{color:var(--accent-dark)}
+  /* Route block. The learner who opens a retired instrument wants the form, so it sits ABOVE
+     the rights explanation, not in the footnotes. Route data is governed in
+     instrument_rights.json (officialSource) and pinned by instrument-rights-gate.mjs. */
+  .route{background:var(--accent-light);border:1px solid var(--accent);border-radius:10px;padding:16px 18px;margin:18px 0 4px}
+  .route h2{font-family:var(--font-head);font-size:1.02rem;color:var(--accent-dark);margin:0 0 8px;font-weight:600}
+  .route p{margin:0 0 10px;font-size:.88rem;color:var(--text-mid)}
+  .route p:last-child{margin-bottom:0}
+  .route .go{display:inline-block;background:var(--accent-dark);color:#fff;text-decoration:none;font-weight:600;font-size:.88rem;padding:9px 15px;border-radius:6px;margin:2px 8px 8px 0}
+  .route .go:hover,.route .go:focus{background:var(--accent)}
+  .route .go.alt{background:transparent;color:var(--accent-dark);border:1px solid var(--accent)}
+  .route .cost{font-size:.78rem;color:var(--text-light)}
 </style>
 </head>
 <body>
@@ -32,7 +43,24 @@
   <div class="eyebrow">Catatonia</div>
   <h1>Bush-Francis Catatonia Rating Scale</h1>
   <p class="sub">This page no longer reproduces the BFCRS. Use your unit&rsquo;s current approved
-  form to screen and score.</p>
+  form to screen and score &mdash; and if you need the scale itself, URMC publishes it, its
+  coding guide and its training videos free, below.</p>
+
+  <div class="route">
+    <h2>Get the official scale and training</h2>
+    <p>URMC publishes the BFCRS with more than this page ever carried: the <b>scale itself</b>,
+    the <b>Training Manual &amp; Coding Guide</b> that explains every item, and
+    <b>standardized-patient videos</b> &mdash; a normal exam plus the hypokinetic, parakinetic
+    and hyperkinetic subtypes &mdash; with a short clip for scoring each individual item.</p>
+    <a class="go" href="https://www.urmc.rochester.edu/psychiatry/divisions/collaborative-care-and-wellness/bush-francis-catatonia-rating-scale/bfcrs"
+      target="_blank" rel="noopener noreferrer">Open the BFCRS &amp; coding guide &rarr;</a>
+    <a class="go alt" href="https://www.urmc.rochester.edu/psychiatry/divisions/collaborative-care-and-wellness/bush-francis-catatonia-rating-scale"
+      target="_blank" rel="noopener noreferrer">Training modules &amp; videos &rarr;</a>
+    <p class="cost">Free, no registration. Both links leave this site for urmc.rochester.edu.
+    The library points you to URMC rather than hosting a copy &mdash; that is the same term
+    (prior written consent to distribute) that took the items off this page, so watching their
+    exam videos is both the compliant route and the better one for learning the exam.</p>
+  </div>
 
   <div class="disc" style="margin-top:18px">
     <p style="margin:0 0 10px"><b>Why the items were removed.</b> The BFCRS is published by the
@@ -52,12 +80,14 @@
     <p style="margin:0 0 10px"><b>Official version and training.</b> The scale, its training
     materials and the standardized examination are published at
     <a href="https://www.urmc.rochester.edu/psychiatry/divisions/collaborative-care-and-wellness/bush-francis-catatonia-rating-scale"
-    target="_blank" rel="noopener noreferrer">the URMC BFCRS site</a>. Score from your
-    institution&rsquo;s current approved form at the bedside, not from any teaching page.</p>
+    target="_blank" rel="noopener noreferrer">the URMC BFCRS site</a> &mdash; linked above.
+    Score from your institution&rsquo;s current approved form at the bedside, not from any
+    teaching page.</p>
 
     <p style="margin:0">Administration teaching for this scale &mdash; how the examination is
     conducted and what the score does and does not license &mdash; is authored separately and is
-    not yet published here.</p>
+    not yet published here. Until it is, URMC&rsquo;s own coding guide and exam videos are the
+    better teacher anyway: they show the manoeuvres, which an anchor ladder never did.</p>
     <br>Joshua Moss, MD | Psychiatrist
   </div>
 </div>
