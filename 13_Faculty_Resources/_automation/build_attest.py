@@ -13,6 +13,13 @@ reviewed.json in the EXACT schema the site + QA gate consume:
 
 Re-run this generator whenever topic_meta.json changes to refresh the snapshot.
 Usage:  python3 13_Faculty_Resources/_automation/build_attest.py
+
+DEPRECATED SURFACE. The emitted page carries a SIDE-DOOR-DEPRECATED banner that disables
+its own save/export controls: its exports omit the risk classification the ledger has
+required since PR #351, so they would not survive validation. The faculty console is the
+live attestation path. The banner is emitted HERE, not hand-added to the output — a hand
+edit is silently reverted the next time anyone regenerates, which is how the page came to
+show a superseded can't-miss line for agitation.md after that finding was fixed.
 """
 import json, os, datetime
 
@@ -90,6 +97,7 @@ TEMPLATE = r"""<!doctype html>
   .att input{width:18px;height:18px} .meta{color:var(--muted);font-size:12px}
   .disc{color:var(--muted);font-size:12px;max-width:820px;margin:8px auto 40px;padding:0 16px}
 </style></head><body>
+<!-- SIDE-DOOR-DEPRECATED --><div style="border:3px solid #8b2f24;background:#fff2e8;color:#3d1812;padding:12px 16px;font:600 15px/1.5 system-ui,sans-serif;margin:0 0 12px">DEPRECATED — this page predates the governance ledger and its exports write records WITHOUT the required risk classification (schema-invalid since PR #351, and they would not survive validation). Use the faculty console instead; this page is read-only reference now. All save/export controls are disabled.</div><script>addEventListener("DOMContentLoaded",function(){document.querySelectorAll("button,input[type=submit]").forEach(function(b){var t=(b.textContent||b.value||"").toLowerCase();if(/save|export|download|rebuild|copy/.test(t)){b.disabled=true;b.title="Disabled: this page writes schema-invalid ledger records. Use the faculty console.";}});});</script>
 <header>
   <h1>Attest — Topic Metadata</h1>
   <div class="row">
