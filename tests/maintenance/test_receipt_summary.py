@@ -69,6 +69,56 @@ class SummarizeTabularReceiptTests(unittest.TestCase):
         )
         self.assertEqual(line, "heartbeat: gate=ready unhealthy=none")
 
+    def test_blocking_rows_are_named_before_the_merely_not_yet_fresh_ones(self):
+        # The 2026-09-03 line, verbatim in shape: rows came out alphabetical, so two
+        # NON-blocking pending_first_run rows took half the four-row cap and pushed a
+        # genuinely blocking row into "+1 more". The reader could not tell which named
+        # row had actually stopped the gate.
+        line = summarize(
+            self._receipt(
+                [
+                    {"workflowFile": "ci.yml", "state": "pending_first_run"},
+                    {
+                        "workflowFile": "maintenance-governance-digest.yml",
+                        "state": "pending_first_run",
+                    },
+                    {"workflowFile": "maintenance-production-canary.yml", "state": "failed"},
+                    {"workflowFile": "surveillance-citations.yml", "state": "failed"},
+                    {"workflowFile": "surveillance-links.yml", "state": "stale"},
+                ]
+            ),
+            "heartbeat",
+        )
+        # Every blocking row survives the cap...
+        for expected in (
+            "maintenance-production-canary.yml:failed",
+            "surveillance-citations.yml:failed",
+            "surveillance-links.yml:stale",
+        ):
+            self.assertIn(expected, line)
+        # ...and a non-blocking row is what gets dropped into the overflow instead.
+        self.assertNotIn("maintenance-governance-digest.yml", line)
+        self.assertIn("+1 more", line)
+        # Blocking rows lead the list.
+        self.assertLess(
+            line.index("maintenance-production-canary.yml:failed"),
+            line.index("ci.yml:pending_first_run"),
+        )
+
+    def test_an_unrecognized_state_ranks_as_blocking_not_deferred(self):
+        # Failing toward showing more: a state nobody taught this module about is
+        # named FIRST, so a new failure mode cannot be crowded out by known-benign rows.
+        line = summarize(
+            self._receipt(
+                [
+                    {"workflowFile": "a.yml", "state": "pending_first_run"},
+                    {"workflowFile": "b.yml", "state": "brand_new_state"},
+                ]
+            ),
+            "heartbeat",
+        )
+        self.assertLess(line.index("b.yml:brand_new_state"), line.index("a.yml:pending_first_run"))
+
     def test_an_unrecognized_row_state_is_reported_not_dropped(self):
         # Listing the healthy value (rather than the unhealthy ones) means a new
         # failure state surfaces automatically instead of being silently omitted.
