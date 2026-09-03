@@ -238,7 +238,7 @@ and present clearly.
 - Asks about prior withdrawal, **seizure, and DTs** (revealed only if asked) — 2
 - Checks current symptoms and vital signs — 2
 - Recognizes elevated withdrawal/seizure risk — 2
-- Escalates to a protocol (symptom-triggered benzodiazepine per team) and names **thiamine before glucose** — 1
+- Escalates to a protocol (symptom-triggered benzodiazepine per team) and names **thiamine before or with glucose** — 1
 - Does **not** propose unsupervised management — 1
 
 **Critical-fail:** proposes unsupervised/self-directed management or discharge · never asks the withdrawal-seizure history (misses it) · fails to escalate a high-risk withdrawal.

@@ -2,7 +2,192 @@
 
 Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
 
-# SECTION (cont.): Evidence and Reference
+# SECTION (cont.): Case of the Week
+
+---
+
+## Serotonin Syndrome vs NMS (Jul 9)
+
+- **Slug:** `cotw_20260709_ssnms_ms3.md` · **Type:** md · **Sidebar:** listed
+- **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-09_serotonin-syndrome-vs-nms_MS3.md`
+- **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
+- **Length:** 1,504 words
+
+<!-- topic_meta overlay -->
+#### Structured metadata (`topic_meta.json` → this page)
+
+> est. read 7 min · safetyLevel=`moderate` · cotwLevel=`ms3` (2026-07-09)
+
+**TL;DR (shown above the page text):**
+
+> Telling the two hyperthermic toxidromes apart - onset, reflexes, and rigidity - and managing each correctly.
+
+**Key points (bulleted card):**
+
+- ~20-30 minute small-group discussion - no pre-reading required.
+- De-identified synthetic case; each discussion question is paired with a teaching point.
+- MS3 / Step 2 CK level. Facilitator notes are kept separate from the learner-facing stem.
+
+**Clinical-workflow narration (per-stage coaching text):**
+
+- **ask** — Work the stem cold: take your own history, commit to a differential, and name your next step before reading a single teaching point. The guided questions are written to be answered, not skimmed.
+- **mse** — Say out loud what each exam finding in the vignette rules in and rules out — the discrimination between look-alike syndromes is what the case is drilling.
+- **safety** — Safety content in every case is oriented to recognition, escalation, and safety planning. Escalate to your supervising resident or attending rather than managing acuity alone.
+- **say** — Before moving on, rehearse one sentence you would actually say to this patient or family, in plain language and out loud.
+- **collateral** — Ask yourself what collateral would change your differential here, and who you would have to call to get it.
+- **rounds** — Use the ranked differential and the workup-and-management ladder as the spine of your presentation; lead with the finding that changes management.
+- **exam** — Shelf-level takeaway: Telling the two hyperthermic toxidromes apart - onset, reflexes, and rigidity - and managing each correctly.
+- **actions** — All Case of the Week cases
+
+**Cross-references and tagging:**
+
+- **Workflow stages:** `diagnosis`, `treatment`, `team`, `exam`
+- **Shelf blueprint tags:** `neurocog`, `pharm`
+- **EPA crosswalk:** `EPA2`, `EPA3`, `EPA10`
+- **Faculty review:** {"status": "pending", "reviewer": "Joshua Moss, MD", "lastReviewed": "2026-07-09"}
+
+#### Page text (as shipped)
+
+# Case of the Week — Serotonin Syndrome vs. Neuroleptic Malignant Syndrome
+### MS3 / Medical Student Version
+
+**Date:** 2026-07-09
+**Level:** MS3 (USMLE Step 2 CK framing)
+**Format:** ~20–30 minute small-group discussion. No required pre-reading.
+**Citations:** Based on articles retrieved from PubMed (see References). All citations verified against PubMed this run.
+
+> **Note on the patient:** The stem below is **synthetic and de-identified**. It does not describe a real patient.
+
+---
+
+## PART 1 — LEARNER-FACING CASE
+
+### Clinical stem
+
+A 24-year-old college student is brought to the emergency department by a roommate for confusion, shakiness, and sweating that came on over the course of an afternoon.
+
+Two weeks ago the patient was started on **fluoxetine** (a *selective serotonin reuptake inhibitor*, or **SSRI** — an antidepressant that raises serotonin levels) for depression. Three days ago a walk-in clinic added **tramadol** (an opioid painkiller that *also* increases serotonin) for a wrist injury. This morning the patient took an extra dose of tramadol for pain.
+
+On arrival the patient is anxious, restless, and repeatedly tries to climb off the stretcher.
+
+**Vitals:** T 38.5 °C (101.3 °F) · HR 124 · BP 158/94 · RR 22 · SpO₂ 98% on room air
+
+**Exam:**
+- **Neuro/mental status:** Agitated, hypervigilant, oriented to self only.
+- **Pupils:** Dilated (mydriasis) bilaterally.
+- **Neuromuscular:** Tremor in both hands. **Brisk reflexes (hyperreflexia)** and **clonus** at both ankles — *more pronounced in the legs than the arms.*
+- **Skin:** Flushed, diaphoretic (sweaty).
+- **Abdomen:** Hyperactive bowel sounds.
+
+There is no rigidity of the "lead-pipe" type, no recent antipsychotic exposure, and no illicit-drug history reported by the roommate.
+
+### Discussion questions
+
+*Work through these as a group. Teaching points are in the separate Facilitator Guide (Part 2) — try to reason them out first.*
+
+1. **What is the most likely diagnosis, and which three feature-clusters define it?** What in the medication history is the trigger?
+2. **The single most useful bedside exam finding here points strongly toward one diagnosis.** What is it, and why does it help?
+3. **How would you formally support the diagnosis?** Name the validated bedside criteria and what they require.
+4. **How does this condition differ from neuroleptic malignant syndrome (NMS)?** Build a quick contrast (drug class, onset speed, muscle findings, reflexes, pupils, recovery time).
+5. **What is your initial workup?** What labs and studies would you send, and what dangerous complication are you screening for?
+6. **Outline first-line management,** from the single most important first step through supportive care and the specific antidote.
+7. **What one counseling/prevention point** would you give this patient (and the prescriber) at discharge to prevent recurrence?
+
+---
+---
+
+## PART 2 — FACILITATOR GUIDE
+*(Keep separate from the learner handout.)*
+
+### One-line answer
+This is **serotonin syndrome (SS)** precipitated by a drug–drug interaction (fluoxetine + tramadol, two serotonergic agents), with a recent tramadol dose increase as the immediate trigger. The teaching goal is recognition, use of the Hunter criteria, first-line management (including cyproheptadine), and clean separation from NMS.
+
+### Teaching points by question
+
+**Q1 — Diagnosis and the classic triad.**
+Serotonin syndrome results from **excess serotonergic activity**, most often from combining two serotonergic drugs or increasing the dose of one [1][2]. The classic clinical **triad**:
+1. **Neuromuscular excitation** — tremor, hyperreflexia, clonus, myoclonus.
+2. **Autonomic hyperactivity** — hyperthermia, tachycardia, hypertension, diaphoresis, mydriasis, hyperactive bowel sounds/diarrhea.
+3. **Altered mental status** — agitation, anxiety, restlessness.
+Here the trigger is fluoxetine (SSRI) + tramadol (serotonergic opioid). *Teaching pearl:* tramadol, meperidine, dextromethorphan, linezolid, methylene blue, MAOIs, SNRIs, triptans, and MDMA are the high-yield "hidden" serotonergic agents students miss.
+
+**Q2 — The discriminating finding: clonus/hyperreflexia, legs > arms.**
+Lower-extremity–predominant **clonus and hyperreflexia** are the most specific findings for SS and are the feature that most reliably separates it from NMS, in which the muscle picture is **"lead-pipe" rigidity with normal-to-decreased reflexes** [1][3][4]. Also supportive of SS: **mydriasis** and **hyperactive bowel sounds** (both reflect autonomic/serotonergic overdrive).
+
+**Q3 — Hunter Serotonin Toxicity Criteria.**
+The **Hunter criteria** are the validated bedside decision rule (sensitivity ~84%, specificity ~97%, better than the older Sternbach criteria) [5]. In a patient who has taken a serotonergic agent, SS is diagnosed if **any one** of the following is present:
+- Spontaneous clonus
+- Inducible clonus **plus** agitation or diaphoresis
+- Ocular clonus **plus** agitation or diaphoresis
+- Tremor **plus** hyperreflexia
+- Hypertonia **plus** temperature > 38 °C **plus** ocular clonus or inducible clonus
+
+This patient meets the criteria multiple ways (spontaneous ankle clonus; tremor + hyperreflexia).
+
+**Q4 — SS vs. NMS contrast (high-yield table).**
+
+| Feature | Serotonin syndrome | Neuroleptic malignant syndrome |
+|---|---|---|
+| Trigger drug | Serotonergic agents (SSRI/SNRI/MAOI, tramadol, linezolid…) | Dopamine (D2) antagonists — antipsychotics; or abrupt withdrawal of dopaminergic (Parkinson) meds |
+| Onset | **Fast** — usually < 24 h (often within hours) | **Slow** — days, up to 1–2 weeks |
+| Muscle tone | Clonus, myoclonus, tremor; hyperreflexia (**legs > arms**) | Generalized **"lead-pipe" rigidity** |
+| Reflexes | **Increased** | Normal / **decreased** |
+| Pupils | **Mydriasis** | Normal |
+| Bowel sounds | **Hyperactive** | Normal / decreased |
+| Mental status | Agitation, hypervigilance | Stupor, mutism, akinesis |
+| Resolution | **Rapid** (usually 24–72 h once drug stopped) | **Slow** (days–weeks) |
+| Antidote | **Cyproheptadine** | **Dantrolene** ± bromocriptine |
+
+Keep **anticholinergic toxicity** (dry, flushed skin; absent bowel sounds; normal reflexes) and **malignant hyperthermia** (anesthesia setting — succinylcholine/volatile agents) on the differential as classic Step 2 distractors [1][6].
+
+**Q5 — Initial workup.**
+SS is a **clinical diagnosis** — labs are for severity and to exclude mimics: CBC, CMP (renal function, electrolytes), **creatine kinase (CK)** to screen for **rhabdomyolysis**, coagulation studies, and consideration of a head CT/LP if the diagnosis is unclear or to rule out CNS infection. Also send an ECG (QT), and in a young patient with altered status a broad tox screen and acetaminophen/salicylate levels are reasonable. **The feared complications are hyperthermia-driven rhabdomyolysis, renal failure, and DIC.**
+
+**Q6 — First-line management.**
+1. **Stop all serotonergic agents** — the single most important step.
+2. **Supportive care:** IV fluids, continuous monitoring, external cooling for hyperthermia.
+3. **Benzodiazepines** (e.g., lorazepam) for agitation, tremor, and myoclonus — they also blunt autonomic instability.
+4. **Cyproheptadine** — a 5-HT2A antagonist — is the **specific antidote** for moderate–severe cases [1][2].
+5. **Severe SS** (temp > 41 °C, severe hyperthermia/rigidity): ICU, sedation, and **intubation with neuromuscular paralysis** to stop muscular heat generation [2].
+- *Pearl:* **antipyretics don't work** — the hyperthermia is from muscle activity, not a raised hypothalamic set point.
+
+**Q7 — Prevention/counseling.**
+Educate the patient and flag the chart: **avoid combining serotonergic drugs**, and be explicit that everyday agents (tramadol, dextromethorphan cough syrup, triptans for migraine, linezolid, St. John's Wort) count. Because **fluoxetine has a long half-life**, a washout period is needed before starting an interacting drug such as an MAOI. Reconcile medications at every transition of care.
+
+### Ranked differential diagnosis (top 5 for MS3)
+1. **Serotonin syndrome** — best fit: serotonergic drugs, rapid onset, clonus/hyperreflexia legs>arms, mydriasis, hyperactive bowel sounds.
+2. **Neuroleptic malignant syndrome** — mimics SS but needs a dopamine antagonist and shows rigidity + slow onset; not supported here (no antipsychotic).
+3. **Anticholinergic toxicity** — hyperthermia + agitation, but **dry** skin, **absent** bowel sounds, normal reflexes ("hot, dry, red, blind, mad").
+4. **Sympathomimetic toxicity / stimulant intoxication** (cocaine, amphetamines) — agitation, hyperthermia, mydriasis, but no clonus/hyperreflexia pattern; guided by history/tox screen.
+5. **CNS infection (meningitis/encephalitis)** or **heat stroke / thyroid storm** — always exclude infection and consider endocrine/environmental causes when the drug history is unclear.
+
+### Workup & management summary
+- **Diagnose clinically** (Hunter criteria); labs (CK, CMP, CBC, coags) for severity + complications; exclude mimics.
+- **Treat:** stop serotonergic agents → supportive care + cooling → benzodiazepines → **cyproheptadine** → ICU/paralysis if severe.
+- **Disposition:** most mild–moderate cases improve within 24–72 h; admit for monitoring, longer if hyperthermic or with rhabdomyolysis.
+
+### Safety note
+If the presentation involved an **intentional overdose**, management is the same, **plus** a psychiatric safety evaluation once medically stabilized — recognition and appropriate escalation to psychiatry, not method inquiry, is the teaching point.
+
+---
+
+## References
+*Based on articles retrieved from PubMed. DOI links included per source terms.*
+
+1. Boyer EW, Shannon M. **The serotonin syndrome.** *N Engl J Med.* 2005;352(11):1112–20. [DOI](https://doi.org/10.1056/NEJMra041867) · PMID 15784664
+2. Mikkelsen N, Damkier P, Pedersen SA. **Serotonin syndrome — a focused review.** *Basic Clin Pharmacol Toxicol.* 2023;133(2):124–29. [DOI](https://doi.org/10.1111/bcpt.13912) · PMID 37309284
+3. Perry PJ, Wilborn CA. **Serotonin syndrome vs neuroleptic malignant syndrome: a contrast of causes, diagnoses, and management.** *Ann Clin Psychiatry.* 2012;24(2):155–62. [PubMed](https://pubmed.ncbi.nlm.nih.gov/22563571/) · PMID 22563571
+4. Ware MR, Feller DB, Hall KL. **Neuroleptic malignant syndrome: diagnosis and management.** *Prim Care Companion CNS Disord.* 2018;20(1):17r02185. [DOI](https://doi.org/10.4088/PCC.17r02185) · PMID 29325237
+5. Dunkley EJC, Isbister GK, Sibbritt D, Dawson AH, Whyte IM. **The Hunter Serotonin Toxicity Criteria: simple and accurate diagnostic decision rules for serotonin toxicity.** *QJM.* 2003;96(9):635–42. [DOI](https://doi.org/10.1093/qjmed/hcg109) · PMID 12925718
+6. Maitland S, Baker M. **Serotonin syndrome.** *Drug Ther Bull.* 2022;60(6):88–91. [DOI](https://doi.org/10.1136/dtb.2021.000032) · PMID 35551099
+
+---
+*Joshua Moss, MD | Psychiatrist*
+
+
+---
+
+# SECTION: Evidence and Reference
 
 ---
 
@@ -199,7 +384,7 @@ If a reading takes longer than 20 minutes, assign a specific question — for ex
 - **Slug:** `evidence_inpatient.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `07_Evidence_and_Reading/Inpatient_Evidence/evidence_inpatient.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 5,855 words
+- **Length:** 6,161 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -269,7 +454,7 @@ The **SAD PERSONS scale should not be used**: multiple studies demonstrate it pe
 
 ### Landmark Studies
 
-The **Diefenbach et al. (2024) RCT** in JAMA Psychiatry (n=200) is the largest inpatient suicide prevention trial: up to 4 sessions of Brief Cognitive Behavioral Therapy produced a **60% reduction in post-discharge suicide attempts** (OR 0.40, 95% CI 0.20–0.80; NNT = 7) and a 71% reduction in readmissions among patients without substance use disorders.
+The **Diefenbach et al. (2024) RCT** in JAMA Psychiatry (n=200) is the largest inpatient suicide prevention trial: up to 4 sessions of Brief Cognitive Behavioral Therapy produced a **60% reduction in the odds of a post-discharge suicide attempt** (OR 0.40, 95% CI 0.20–0.80; NNT = 7 — at this event rate the reduction in risk is nearer 50%) and a 71% reduction in readmissions among patients without substance use disorders.
 
 The Doupnik et al. (2020) meta-analysis of 14 studies found brief inpatient/acute-care suicide prevention interventions reduced subsequent attempts (pooled OR 0.69) and increased linkage to follow-up (OR 2.74). The following figure summarizes these outcomes:
 
@@ -299,7 +484,7 @@ A major paradigm shift is underway: **prediction versus prevention**. Hawton et 
 
 ### Strongest Evidence
 
-For **imminent (24-hour) risk**, the **Brøset Violence Checklist (BVC)** and **Dynamic Appraisal of Situational Aggression (DASA)** have the best evidence. A meta-analysis of 31 studies (282,238 assessments) found pooled effect sizes of Hedges' g = 1.35 (95% CI 1.15–1.56) for the BVC and g = 1.04 (95% CI 0.69–1.39) for the DASA. Both are rated as having acceptable utility and feasibility.
+For **imminent (24-hour) risk**, the **Brøset Violence Checklist (BVC)** and **Dynamic Appraisal of Situational Aggression (DASA)** have the best evidence. A meta-analysis of 31 studies (282,238 assessments; Dickens et al., 2020) found pooled effect sizes of Hedges' g = 1.35 (95% CI 1.15–1.56) for the BVC and g = 1.04 (95% CI 0.69–1.39) for the DASA. Both are rated as having acceptable utility and feasibility.
 
 For **medium/long-term risk**, the **HCR-20v3** is the most globally used structured professional judgment tool, with pooled AUC of 0.69 (95% CI 0.65–0.72) for violent recidivism in forensic populations. An international study found HCR-20v3 performance deteriorated after 6 months, suggesting **reassessment every 6 months** is needed to maintain predictive validity.
 
@@ -323,13 +508,13 @@ A narrative review found that 67% of HCR-20 studies focused on predictive validi
 
 **Verbal de-escalation is first-line treatment** per APA and AAEP Project BETA guidelines, effective for a majority of patients within 5 minutes. A cluster randomized study across all Slovenian psychiatric hospitals found de-escalation training reduced aggressive events by **73%** (IRR 0.268) and physical restraints by **70%** (IRR 0.304). However, Cochrane reviews found **no RCTs** of de-escalation techniques for psychosis-induced aggression.
 
-When pharmacotherapy is needed, a landmark **individual participant data network meta-analysis** (Lancet Psychiatry, 2026; 2,705 participants, 13 RCTs) provides the most comprehensive comparison:
+When pharmacotherapy is needed, a landmark **individual participant data network meta-analysis** (Siafis et al., *Lancet Psychiatry* 2026; 2,705 participants, 13 RCTs) provides the most comprehensive comparison. Read the table below with the authors' own caveat in view: they rated confidence in these estimates **very low** (CINeMA), chiefly for imprecision and heterogeneity, and concluded only that combinations "might be among the most effective options." The intervals are wide — the top estimate spans a 17-fold range.
 
 | Agent/Class | Effectiveness vs. Haloperidol (Moderate Agitation) | Key Considerations |
 | --- | --- | --- |
 | Antipsychotic + BZD combinations | OR 12.93 (3.00–50.91) | Most effective; monitor for hypotension |
-| Benzodiazepines (midazolam, lorazepam) | OR 5.52 (1.37–21.02) | Fastest onset (midazolam 8.5 min); respiratory depression risk,  |
-| Other antipsychotics (droperidol, olanzapine, haloperidol+promethazine) | OR 4.54 (1.35–14.45) | Olanzapine well-tolerated; droperidol comparable,  |
+| Benzodiazepines (midazolam, lorazepam) | OR 5.52 (1.37–21.02) | Fastest onset (midazolam 8.5 min); respiratory depression risk |
+| Other antipsychotics (droperidol, olanzapine, haloperidol+promethazine) | OR 4.54 (1.35–14.45) | Olanzapine well-tolerated; droperidol comparable |
 | Haloperidol monotherapy | Reference | Least effective; EPS risk |
 
 ### Landmark Studies
@@ -384,7 +569,7 @@ The **Six Core Strategies (6CS)** for S/R reduction have the strongest implement
 
 The **Confusion Assessment Method (CAM)** remains the gold standard for delirium detection, with sensitivity 94–100%, specificity 90–95%, and interrater reliability κ = 0.92. A 2023 meta-analysis confirmed the CAM has the highest specificity (0.98) among bedside tools. Only 12–35% of delirium cases are recognized through routine clinical documentation.
 
-**Multicomponent non-pharmacological prevention** is the cornerstone of management. A meta-analysis of 14 HELP-based studies showed a **53% reduction in incident delirium** (OR 0.47, 95% CI 0.38–0.58). The SCCM PADIS guidelines conditionally recommend these interventions.
+**Multicomponent non-pharmacological prevention** is the cornerstone of management. A meta-analysis of 14 HELP-based studies (Hshieh et al., 2018) showed a **53% reduction in incident delirium** (OR 0.47, 95% CI 0.37–0.59). The SCCM PADIS guidelines conditionally recommend these interventions.
 
 **Antipsychotics do not improve delirium outcomes.** The MIND-USA trial (n=566) found no difference in days alive without delirium or coma with haloperidol or ziprasidone vs. placebo. The AID-ICU trial (n=1,000) similarly found no significant difference in the primary outcome. Long-term MIND-USA follow-up showed no benefit at 3 or 12 months. The PADIS guidelines recommend **against** routine antipsychotic use for delirium.
 
@@ -410,7 +595,7 @@ The **Confusion Assessment Method (CAM)** remains the gold standard for delirium
 
 Catatonia prevalence in acute psychiatric inpatient settings is **9–20%**, with mood disorders (not schizophrenia) being the most common underlying condition. The **Bush-Francis Catatonia Rating Scale (BFCRS)** is the most widely used and recommended instrument, with a screening cutoff of ≥2 items. Notably, the BFCRS identifies substantially more cases than DSM-5 criteria alone (18.3% vs. 6.6% prevalence in one study).
 
-**Lorazepam** is effective in up to 90% of acute catatonia cases. A 2026 meta-analysis found an overall remission rate of 55% and response rate of 77%, with a mean BFCRS reduction of 11.88 points (Cohen's d = −3.15). The lorazepam challenge test (2 mg IV) is both diagnostic and therapeutic.
+**Lorazepam** is effective in up to 90% of acute catatonia cases. A 2026 meta-analysis (Bot et al., 53 studies, predominantly case series) found an overall remission rate of 55% and response rate of 77%, with a mean BFCRS reduction of 11.88 points (Cohen's d = −3.15). The lorazepam challenge test (2 mg IV) is both diagnostic and therapeutic.
 
 **ECT** is the definitive treatment, with response rates of **80–100%**, including up to 60% of benzodiazepine non-responders. The FDA reclassified ECT devices in 2018 as indicated for catatonia. Effects can be expected after 4–6 sessions; bitemporal placement is generally preferred.
 
@@ -494,7 +679,7 @@ Figure 2 Relative Risk of Compulsory Admission per Subgroup of Intervention
 
 ### Strongest Evidence
 
-**Family psychoeducation (FPE)** has the most robust evidence base, supported by over 100 RCTs. A Lancet Psychiatry network meta-analysis (2022) comparing 11 family intervention models found FPE was the most efficacious for relapse prevention in schizophrenia at 12 months: OR 0.18 (95% CI 0.12–0.27), with only 10% relapsing vs. 37% with treatment as usual. Even the simplest form of family psychoeducation was ranked among the most efficacious, suggesting that informing families about illness, symptoms, and treatment options has a protective role.
+**Family psychoeducation (FPE)** has the most robust evidence base, supported by over 100 RCTs. A *Lancet Psychiatry* network meta-analysis (Rodolico et al., 2022; 90 RCTs, 10,340 participants) comparing 11 family intervention models found FPE was the most efficacious for relapse prevention in schizophrenia at 12 months: OR 0.18 (95% CI 0.12–0.27), with only 10% relapsing vs. 37% with treatment as usual. Even the simplest form of family psychoeducation was ranked among the most efficacious, suggesting that informing families about illness, symptoms, and treatment options has a protective role.
 
 An RCT of 83 hospitalized patients with major depression found that at 15 months, treatment response rates were **49% (multi-family group therapy), 24% (single-family therapy), and 9% (TAU)**.
 
@@ -550,7 +735,7 @@ The post-discharge period carries the **highest risk for suicide**: pooled rates
 
 Thirty-day psychiatric readmission rates range from 7–17% across studies. The strongest and most consistent predictor is **previous psychiatric hospitalizations**. Other predictors include homelessness, schizophrenia/bipolar/personality disorder diagnoses, medical comorbidity, and co-occurring substance use disorders.
 
-Unmet social needs stack **dose-dependently**: 30-day readmission climbs from ~11.5% for patients with no documented social risk to ~63.5% for those with five domains of need (adjusted OR up to ~12.55; Bensken et al., *JGIM* 2021). This reframes the social history as a readmission-risk instrument, not a formality — and ties directly to §11's finding that pre-discharge 7-day follow-up is associated with lower suicide risk (HR ~0.82).
+Unmet social needs stack **dose-dependently**: 30-day readmission climbs from ~11.5% for patients with no documented social risk to ~63.5% for those with five domains of need (adjusted OR up to ~12.55; Bensken et al., *JGIM* 2021). This reframes the social history as a readmission-risk instrument, not a formality — and ties directly to §11's finding that follow-up within 7 days of discharge is associated with reduced suicide risk.
 
 **Critical Time Intervention (CTI)** has the strongest RCT evidence for readmission reduction. The landmark Herman et al. trial (n=150, formerly homeless with SMI) found CTI significantly reduced rehospitalization (OR 0.11, 95% CI 0.01–0.96) and homelessness (OR 0.22). Brief CTI reduced 30-day readmission from 47% to 28% (P < .001).
 
@@ -584,7 +769,7 @@ The **IMPACT trial** (n=1,801) is the landmark CoCM study: 45% of intervention p
 
 ### Measurement-Based Care
 
-MBC can improve remission rates by up to 75% compared to usual care. The Joint Commission requires MBC in all accredited behavioral health programs since 2018. However, **less than 20% of practitioners** engage in MBC, and the VA/DoD 2022 guideline rated the overall evidence as weak.
+In a randomised trial of 120 **outpatients** with moderate-to-severe major depression, remission at 24 weeks was 73.8% with measurement-based care vs. 28.8% with standard treatment (Guo et al., *Am J Psychiatry* 2015) — a large effect, but from a single-centre outpatient trial restricted to paroxetine or mirtazapine, so treat it as proof of concept rather than an inpatient estimate. The Joint Commission requires MBC in all accredited behavioral health programs since 2018. However, **less than 20% of practitioners** engage in MBC, and the VA/DoD 2022 guideline rated the overall evidence as weak.
 
 ### Current Controversies
 
@@ -606,21 +791,23 @@ The **DIAMOND initiative** highlights the implementation gap: despite increased 
 
 ## Summary: Evidence Hierarchy Across Domains
 
-| Domain | Strongest Intervention | Effect Size | Evidence Quality |
+| Domain | Strongest Intervention | Effect Size | Evidence Base (§ = section above) |
 | --- | --- | --- | --- |
-| Inpatient suicide prevention | Environmental safety (MHEOCC) | 67% reduction in inpatient suicide | Before-after, system-wide |
-| Post-discharge suicide prevention | Brief CBT for suicidal inpatients | 60% reduction in attempts (NNT=7) | RCT (n=200) |
-| Violence risk (imminent) | BVC/DASA screening | Hedges' g = 1.04–1.35 | Meta-analysis of 31 studies |
-| Agitation pharmacotherapy | Antipsychotic + BZD combination | OR 12.93 vs. haloperidol alone | IPD network meta-analysis |
-| Delirium prevention | Multicomponent non-pharmacological | 53% reduction in incident delirium | Meta-analysis of 14 studies |
-| Catatonia treatment | Lorazepam → ECT | 77–90% response (BZD); 80–100% (ECT),  | Case series/open studies |
-| Capacity assessment | MacCAT-T | ICC 0.92–0.98,  | Validation studies |
-| Reducing compulsory admissions | Advance statements | Significant RR reduction | Meta-analysis |
-| Family intervention | Family psychoeducation | OR 0.18 for relapse at 12 months | Network meta-analysis |
-| Discharge planning | Individualized planning | RR 0.89 for readmission | Cochrane review (33 RCTs) |
-| Readmission reduction | Critical Time Intervention | OR 0.11 for rehospitalization | RCT (n=150) |
-| Collaborative care | CoCM (IMPACT model) | OR 3.45 for treatment response | RCT (n=1,801) |
-| Post-discharge follow-up | SPI + telephone follow-up | ~50% fewer suicidal behaviors | Propensity-scored cohort |
+| Inpatient suicide prevention | Environmental safety (MHEOCC) | 67% reduction in inpatient suicide | Before–after, system-wide — Watts 2012; sustained Watts 2017 (§1) |
+| Post-discharge suicide prevention | Brief CBT for suicidal inpatients | 60% reduction in the *odds* of an attempt (NNT=7) | RCT, n=200 — Diefenbach 2024 (§1) |
+| Violence risk (imminent) | BVC/DASA screening | Hedges' g = 1.04–1.35 | Meta-analysis, 31 studies — Dickens 2020 (§2) |
+| Agitation pharmacotherapy | Antipsychotic + BZD combination | OR 12.93 vs. haloperidol alone (95% CrI 3.00–50.91) | IPD network meta-analysis, 13 RCTs — Siafis 2026; authors' confidence **very low** (§3) |
+| Delirium prevention | Multicomponent non-pharmacological (HELP) | 53% reduction in incident delirium | Meta-analysis, 14 studies — Hshieh 2018 (§6) |
+| Catatonia treatment | Lorazepam → ECT | 77% response / 55% remission (BZD); 80–100% (ECT) | Case series and open studies — Bot 2026 (§7) |
+| Capacity assessment | MacCAT-T | ICC 0.92–0.98 | Validation studies; no pooled estimate (§8) |
+| Reducing compulsory admissions | Advance statements | Significant RR reduction | Meta-analysis — de Jong 2016 (§9) |
+| Family intervention | Family psychoeducation | OR 0.18 for relapse at 12 months | Network meta-analysis, 90 RCTs — Rodolico 2022 (§10) |
+| Discharge planning | Individualized planning | RR 0.89 for readmission | Cochrane review 2022, 33 RCTs (§11) |
+| Readmission reduction | Critical Time Intervention | OR 0.11 for rehospitalization | RCT, n=150 — Herman et al. (§12) |
+| Collaborative care | CoCM (IMPACT model) | OR 3.45 for treatment response | RCT, n=1,801 — IMPACT trial (§13) |
+| Post-discharge follow-up | SPI + telephone follow-up | ~50% fewer suicidal behaviors | Propensity-scored cohort — Stanley 2018 (§13) |
+
+This table is an index, not a substitute for the sections it points to. Each § marks where the full estimate, its interval, and its caveats appear above, and every study named here has a DOI in the Sources list at the end of this page. "Strongest" means the strongest *available* evidence for that domain — for agitation pharmacotherapy that is still evidence the original authors rated very low in confidence.
 
 ---
 
@@ -655,6 +842,8 @@ Would you like to explore any of these domains in greater depth — for example,
 - Diefenbach GJ, Lord KA, Stubbing J, et al. JAMA Psychiatry. 2024;81(12):1177-1186. doi:10.1001/jamapsychiatry.2024.2349.
 
 - Doupnik SK, Rudd B, Schmutte T, et al. JAMA Psychiatry. 2020;77(10):1021-1030. doi:10.1001/jamapsychiatry.2020.1586.
+
+- Hshieh TT, Yang T, Gartaganis SL, Yue J, Inouye SK. The American Journal of Geriatric Psychiatry. 2018;26(10):1015-1033. doi:10.1016/j.jagp.2018.06.007.
 
 - Hawton K, Lascelles K, Pitman A, Gilbert S, Silverman M. The Lancet. Psychiatry. 2022;9(11):922-928. doi:10.1016/S2215-0366(22)00232-2.
 

@@ -310,7 +310,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Answer:** PHQ-9 Item 9 for universal screening; Columbia-Suicide Severity Rating Scale (C-SSRS) for structured assessment. No tool reliably predicts completed suicide.
 
-- **Evidence:** C-SSRS positive response to any suicidal thinking in the past month has a positive LR >10 in the general population.
+- **Evidence:** Screening instruments identify ideation but have limited predictive value for suicidal behaviour. The USPSTF (2023) found the evidence **insufficient** to assess the balance of benefits and harms of screening asymptomatic adults for suicide risk in primary care (I statement) — which is a verdict on population screening, not a licence to skip risk assessment in a patient who has disclosed.
 
 - **Key paper:** USPSTF, JAMA 2023 — screening for depression and suicide risk.
 
@@ -478,7 +478,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Key paper:** Haber, NEJM 2025.
 
-- **Pearl:** Always give **thiamine before glucose** in suspected alcohol use disorder — glucose metabolism consumes thiamine and can precipitate Wernicke's encephalopathy.
+- **Pearl:** Give **thiamine before or with glucose** in suspected alcohol use disorder — glucose metabolism consumes thiamine and can precipitate Wernicke's encephalopathy. The one thing this rule never licenses is withholding emergency dextrose from a hypoglycemic patient while thiamine is located.
 
 **48. What is delirium tremens and when does it occur?**
 

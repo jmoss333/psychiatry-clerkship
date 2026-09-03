@@ -290,6 +290,48 @@ PubMed connector is allowlisted under both of its server prefixes. **Item 1 (C1)
 toggle remains a human action, but it no longer blocks anything in Wave 1; it gates C4, C6 and
 C10. The one Wave 1 remainder is the `evidence-verifier` eval.
 
+### Wave 1 postscript — C1 would have escalated a false alarm on day one (2026-09-03)
+
+Shipping C1 exposed something the brainstorm did not know: **two of the ten watched stewards were
+red for reasons that had nothing to do with what they watch**, so the first thing the new
+escalation would have done is open a rolling issue about a monitor, not about the library.
+
+`maintenance-production-canary.yml` was green for its 12 scheduled runs to 2026-08-16 and then red
+on **11 of its next 13** (all of 8/29→9/2). Every failure was a transport error against Netlify's
+edge — `ECONNRESET`, `net::ERR_ABORTED; maybe frame was detached?`, `Request context disposed` —
+and **not once a content assertion**: the last run before the fix was `329 passed · 9 flaky ·
+1 failed`. The cause was not the sites. On 2026-08-20, PR #377 added `frontdoor-runtime.spec.js`
+(52 tests, ~98 page loads) and `rotation-edition-v2.spec.js` to the `nav-ms3`/`nav-res` projects —
+correct for CI, which runs them against a local build. But the canary consumed *the same two
+projects*, so it silently inherited 337 tests' worth of client-runtime fault injection and pointed
+it at production over the public internet. First red run: 8/21.
+
+`maintenance-heartbeat.yml` is a **symptom, not a second fault**: `workflow_heartbeat.py` returns
+2 whenever `receipt["gate"] != "ready"`, so it goes red *because* the canary is red. Expect it to
+recover on its own once the canary does — and note the wart, that its exit code cannot distinguish
+"I could not run" from "I ran and found problems".
+
+**Fixed 2026-09-03** (this branch): new `canary-ms3`/`canary-res` Playwright projects running only
+the production-truth specs (`nav-crawl`, `governance-warnings`, `qbank-retired`) — **25 tests in 3
+files, down from 337** — at `--workers=2 --retries=2` because the constraint is the network, not
+flaky assertions. `ci.yml` keeps running the full `nav-*` projects against the local build, so no
+coverage is dropped, only relocated to where it is meaningful.
+
+Three lessons worth generalising beyond this one job:
+
+1. **A production monitor must not share a project/suite list with a build-time gate.** Widening
+   the suite is invisible from the monitor's side, which is exactly how a feature PR silently
+   broke the only automated watch over the live learner sites for two weeks. `tests/canary-scope.test.mjs`
+   now pins the canary's composition, budgets each canary spec's browser round-trips (in: 4–8;
+   out: 35–220), and asserts CI still carries the excluded suites.
+2. **C1 needs an alarm-quality pass before it can be trusted.** An escalation that fires daily on a
+   miscalibrated monitor trains its reader to ignore it — the precise failure mode C1 exists to
+   prevent. Worth adding to C1: distinguish a *newly* red workflow from a chronically red one, and
+   surface consecutive-failure count in the issue title, not just the body.
+3. **"Red for N days" is not evidence of breakage, and neither is green.** The canary's own history
+   was the diagnostic: a clean 12-green run followed by a step change at a datable commit. A
+   steward's *run history* deserves to be as readable as its latest conclusion.
+
 ---
 
 ## 3. Guardrails that apply to every item

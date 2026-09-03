@@ -306,7 +306,7 @@ skills rather than vague exposure.
 - **Slug:** `core_readings.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `14_Tracks/MS3/Student_Ready_Pack/core_reading_list.md`
 - **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
-- **Length:** 397 words
+- **Length:** 399 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -354,7 +354,7 @@ The boiled-down starting set for the inpatient rotation. Read these fourteen and
 - **[Mood disorders](?page=t_mood.md)** — depression and bipolar; screen for a past manic or hypomanic episode before starting any antidepressant.
 - **[Psychotic disorders](?page=t_psychosis.md)** — first-episode psychosis is a workup, not a diagnosis; rule out secondary causes before anchoring on schizophrenia.
 - **[Anxiety, trauma & OCD](?page=t_anxiety.md)** — SSRIs/SNRIs plus exposure-based therapy are first-line; standing benzodiazepines are a trap on the unit.
-- **[Substance use & withdrawal](?page=t_sud.md)** — CIWA/COWS-guided care, medication for addiction, and thiamine before glucose.
+- **[Substance use & withdrawal](?page=t_sud.md)** — CIWA/COWS-guided care, medication for addiction, and thiamine before or with glucose.
 - **[Personality disorders](?page=t_personality.md)** — a consistent, validating frame with team-wide limits; medications target comorbid symptoms, not the disorder.
 - **[Neurodevelopmental disorders](?page=t_neurodev.md)** — ADHD, autism, and intellectual disability; adapt communication and avoid diagnostic overshadowing.
 - **[Delirium & catatonia](?page=delirium.md)** — acute fluctuating inattention is delirium until proven otherwise; recognize catatonia and do a lorazepam challenge *(see also [Catatonia](?page=catatonia.md))*.

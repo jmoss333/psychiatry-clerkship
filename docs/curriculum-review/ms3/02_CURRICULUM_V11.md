@@ -234,7 +234,7 @@ The translation for the wards: *a referral is not a treatment.* Every ED or inpa
 - **Slug:** `cotw_20260726_etohwd_ms3.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-26_alcohol-withdrawal-delirium-tremens_MS3.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 2,423 words
+- **Length:** 2,520 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -243,7 +243,7 @@ The translation for the wards: *a referral is not a treatment.* Every ED or inpa
 
 **TL;DR (shown above the page text):**
 
-> Time since last drink organizes everything: DT arrives late (48-96 h), PAWSS predicts and CIWA-Ar measures, and thiamine goes before glucose.
+> Time since last drink organizes everything: DT arrives late (48-96 h), PAWSS predicts and CIWA-Ar measures, and thiamine goes before or with glucose.
 
 **Key points (bulleted card):**
 
@@ -259,7 +259,7 @@ The translation for the wards: *a referral is not a treatment.* Every ED or inpa
 - **say** — Before moving on, rehearse one sentence you would actually say to this patient or family, in plain language and out loud.
 - **collateral** — Ask yourself what collateral would change your differential here, and who you would have to call to get it.
 - **rounds** — Use the ranked differential and the workup-and-management ladder as the spine of your presentation; lead with the finding that changes management.
-- **exam** — Shelf-level takeaway: Time since last drink organizes everything: DT arrives late (48-96 h), PAWSS predicts and CIWA-Ar measures, and thiamine goes before glucose.
+- **exam** — Shelf-level takeaway: Time since last drink organizes everything: DT arrives late (48-96 h), PAWSS predicts and CIWA-Ar measures, and thiamine goes before or with glucose.
 - **actions** — All Case of the Week cases
 
 **Cross-references and tagging:**
@@ -352,7 +352,7 @@ The critical caveat for the wards: **CIWA-Ar requires a patient who can communic
    - **Long-acting (chlordiazepoxide, diazepam)** — self-tapering, smoother course; preferred in most patients.
    - **Short/intermediate-acting without oxidative metabolism (lorazepam, oxazepam)** — preferred in **significant liver disease** and in **older adults**, because they avoid hepatic oxidation and accumulation; note the risk of precipitating or worsening hepatic encephalopathy with sedatives in advanced liver disease [8].
    - *In this case:* AST 88 with AST:ALT ≈ 2:1 and platelets 128k suggest liver disease — **lorazepam** is the safer choice.
-2. **Thiamine BEFORE glucose.** Give **parenteral thiamine** to any patient with heavy alcohol use and suspected or possible Wernicke encephalopathy, and always **before** IV dextrose — a glucose load in a thiamine-deficient patient can precipitate Wernicke [6]. Practice guidelines are consistent that parenteral thiamine belongs in high-risk patients, though they vary widely on dose and duration, and evidence for universal prophylactic dosing is thin [6].
+2. **Thiamine before or with glucose.** Give **parenteral (IV or IM) thiamine** to any patient with heavy alcohol use, and give **high-dose parenteral thiamine, continued over several days** — substantially more than the thiamine in a routine "banana bag" — whenever Wernicke encephalopathy is suspected; under-dosing is the commonest reason a treated Wernicke still progresses to Korsakoff. Give thiamine **before or together with** IV dextrose, because a glucose load in a thiamine-deficient patient can precipitate Wernicke [6] — but **never delay dextrose in symptomatic hypoglycemia** to hunt for thiamine; give the glucose and give the thiamine with it. Practice guidelines are consistent that parenteral thiamine belongs in high-risk patients, though they vary widely on dose and duration, and evidence for universal prophylactic dosing is thin [6].
 3. **Correct electrolytes** — replete **magnesium** and **potassium** (both low here); check glucose and sodium.
 4. **Set the level of care and monitoring** — frequent vitals and mental-status checks, especially across the 48–96 h DT window and around his operation. Escalate to a step-down/ICU setting for severe or refractory withdrawal.
 5. **Treat the underlying disorder.** Detoxification is *not* treatment of alcohol use disorder (AUD). Before discharge, offer **AUD pharmacotherapy** — **oral naltrexone 50 mg/d** and **acamprosate** are first-line with the strongest evidence (number needed to treat ~11–18 to prevent one person returning to any drinking), alongside psychosocial treatment [9].
@@ -388,7 +388,7 @@ The critical caveat for the wards: **CIWA-Ar requires a patient who can communic
 **Management ladder:**
 1. **Risk-stratify on admission** (PAWSS) → decide prophylaxis vs. monitoring, and the right level of care [5].
 2. **Benzodiazepines** — symptom-triggered (CIWA-Ar) *only* if the patient can be validly assessed; otherwise fixed-schedule or front-loaded [1,2,7].
-3. **Parenteral thiamine before glucose**; replete **magnesium** and potassium [6].
+3. **Parenteral thiamine before or with glucose** (high-dose and continued for several days if Wernicke is suspected); replete **magnesium** and potassium [6].
 4. **Monitor across the full 48–96 h DT window**, and around any procedure or surgery.
 5. **Escalate** for delirium, refractory autonomic instability, or rapidly rising benzodiazepine requirements — consider phenobarbital and ICU care [10,11].
 6. **Rule out mimics** whenever the picture doesn't fit — head CT, infection, metabolic.
@@ -403,7 +403,7 @@ The critical caveat for the wards: **CIWA-Ar requires a patient who can communic
 - **Common MS3 errors to correct:**
   1. Treating CIWA-Ar as a diagnostic test rather than a severity scale — and applying it to patients who cannot be validly scored.
   2. Assuming a patient who looks well at 12 hours is "past" withdrawal.
-  3. Giving glucose before thiamine.
+  3. Omitting thiamine, or under-dosing it, when carbohydrate is given — and the mirror-image error of delaying emergency dextrose in a hypoglycemic patient in order to give thiamine first.
   4. Reaching for an antipsychotic (or a beta-blocker) as monotherapy for agitation in withdrawal.
   5. Conflating **hallucinosis** (clear sensorium) with **DT** (delirium).
   6. Anchoring on withdrawal in a patient who fell — missing the subdural.
@@ -439,7 +439,7 @@ The critical caveat for the wards: **CIWA-Ar requires a patient who can communic
 - **Slug:** `cotw_20260723_suiciderisk_ms3.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-23_suicide-risk-assessment-safety-planning_MS3.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 2,214 words
+- **Length:** 2,287 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -515,8 +515,8 @@ You are the student's first clinician contact in the ED.
 **Q5. What is a *safety plan*, and why is it preferred over a "no-harm contract"?**
 *Teaching point:* The **Safety Planning Intervention (SPI)** is a brief, collaborative, written plan built *with* the patient. Its standard components: recognizing personal **warning signs**; internal **coping strategies**; people and social settings that provide distraction; people to ask for help; professionals/agencies to contact in crisis; and **making the environment safer by reducing access to lethal means**. In a large ED cohort study, SPI plus structured telephone follow-up was associated with roughly **45% fewer suicidal behaviors** over 6 months and about **double the odds** of attending outpatient care compared with usual care [4]. A meta-analysis of safety-planning-type interventions found reduced suicidal *behavior* (number-needed-to-treat ≈ 16), though not a clear effect on ideation alone — reinforcing that the safety plan is one active ingredient, not a stand-alone cure [5].
 
-**Q6. How do you decide *level of care* — who needs hospitalization versus who can be discharged with a plan?**
-*Teaching point:* Disposition is a **clinical judgment integrating acuity and modifiable risk**, not a checklist score. Favor **higher level of care / psychiatric admission** when there is active ideation with intent or a plan, recent preparatory behavior, inability to engage in safety planning, poor impulse control (including significant intoxication), or absent supports. Favor **discharge with a robust safety plan and rapid follow-up** when ideation is passive/low-intent, the patient can collaborate on and commit to a plan, means access can be reduced, and reliable supports and timely outpatient follow-up exist. Importantly, **risk-stratification labels are weak predictors of who will actually act** — so the plan and follow-up matter as much as the "risk level" you assign (see facilitator notes) [6].
+**Q6. How does the team decide *level of care* — who needs hospitalization versus who can be discharged with a plan — and what is your part in that decision as a student?**
+*Teaching point:* Disposition is a **clinical judgment integrating acuity and modifiable risk**, not a checklist score. Favor **higher level of care / psychiatric admission** when there is active ideation with intent or a plan, recent preparatory behavior, inability to engage in safety planning, poor impulse control (including significant intoxication), or absent supports. Favor **discharge with a robust safety plan and rapid follow-up** when ideation is passive/low-intent, the patient can collaborate on and commit to a plan, means access can be reduced, and reliable supports and timely outpatient follow-up exist. Importantly, **risk-stratification labels are weak predictors of who will actually act** — so the plan and follow-up matter as much as the "risk level" you assign (see facilitator notes) [6]. **Your part as a student** is to gather the data, build the formulation, and *recommend* a level of care with your reasoning — the admission or discharge decision, and the orders that follow from it, belong to your supervising resident or attending. Present early rather than after you have decided.
 
 **Q7 (Safety/systems). What concrete steps round out the ED encounter beyond the interview?**
 *Teaching point:* (1) **Means-reduction counseling** — collaboratively work with the patient and, when appropriate, family to reduce access to lethal means at home. Ask explicitly about **firearms** (the method behind about half of US suicide deaths, and the one with by far the highest case fatality), and also about medications — stockpiled prescriptions, over-the-counter analgesics — and alcohol. Counsel on **temporary storage outside the home, or locked storage with the key held by someone else**, and settle before disposition who will do it and by when. Naming what to secure is standard lethal-means-safety counselling and is not "method detail"; leaving it general is how it stops happening. (2) **Involve supports/collateral** with appropriate consent — corroboration and a person who can help enact the plan. (3) **Warm handoff and follow-up** — timely outpatient linkage; brief follow-up contact ("caring contacts") after discharge is associated with better engagement [4]. (4) **Document** the assessment, the reasoning, and the plan. (5) Treat the **underlying disorder** (here, likely depression ± alcohol use).
@@ -544,7 +544,7 @@ Suicidal ideation is a **symptom**, not a diagnosis — always identify and trea
 2. **Complete the structured risk assessment**; weigh static + modifiable factors and protective factors.
 3. **Collaboratively build a Safety Plan** (SPI) with the patient [4,5].
 4. **Means-reduction counseling** and mobilize supports.
-5. **Decide level of care** — admit vs. discharge with plan + rapid follow-up.
+5. **Present your level-of-care reasoning to your supervising resident or attending**, who makes the disposition decision (admit vs. discharge with plan + rapid follow-up).
 6. **Arrange follow-up / caring contacts** and communicate a warm handoff.
 7. **Treat the underlying disorder** (start/optimize depression treatment; address alcohol use).
 
@@ -1003,189 +1003,3 @@ Dangerousness in this case is **risk of harm to self and staff from agitation**,
 
 ---
 *Joshua Moss, MD | Psychiatrist*
-
-
----
-
-## Serotonin Syndrome vs NMS (Jul 9)
-
-- **Slug:** `cotw_20260709_ssnms_ms3.md` · **Type:** md · **Sidebar:** listed
-- **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-09_serotonin-syndrome-vs-nms_MS3.md`
-- **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 1,504 words
-
-<!-- topic_meta overlay -->
-#### Structured metadata (`topic_meta.json` → this page)
-
-> est. read 7 min · safetyLevel=`moderate` · cotwLevel=`ms3` (2026-07-09)
-
-**TL;DR (shown above the page text):**
-
-> Telling the two hyperthermic toxidromes apart - onset, reflexes, and rigidity - and managing each correctly.
-
-**Key points (bulleted card):**
-
-- ~20-30 minute small-group discussion - no pre-reading required.
-- De-identified synthetic case; each discussion question is paired with a teaching point.
-- MS3 / Step 2 CK level. Facilitator notes are kept separate from the learner-facing stem.
-
-**Clinical-workflow narration (per-stage coaching text):**
-
-- **ask** — Work the stem cold: take your own history, commit to a differential, and name your next step before reading a single teaching point. The guided questions are written to be answered, not skimmed.
-- **mse** — Say out loud what each exam finding in the vignette rules in and rules out — the discrimination between look-alike syndromes is what the case is drilling.
-- **safety** — Safety content in every case is oriented to recognition, escalation, and safety planning. Escalate to your supervising resident or attending rather than managing acuity alone.
-- **say** — Before moving on, rehearse one sentence you would actually say to this patient or family, in plain language and out loud.
-- **collateral** — Ask yourself what collateral would change your differential here, and who you would have to call to get it.
-- **rounds** — Use the ranked differential and the workup-and-management ladder as the spine of your presentation; lead with the finding that changes management.
-- **exam** — Shelf-level takeaway: Telling the two hyperthermic toxidromes apart - onset, reflexes, and rigidity - and managing each correctly.
-- **actions** — All Case of the Week cases
-
-**Cross-references and tagging:**
-
-- **Workflow stages:** `diagnosis`, `treatment`, `team`, `exam`
-- **Shelf blueprint tags:** `neurocog`, `pharm`
-- **EPA crosswalk:** `EPA2`, `EPA3`, `EPA10`
-- **Faculty review:** {"status": "pending", "reviewer": "Joshua Moss, MD", "lastReviewed": "2026-07-09"}
-
-#### Page text (as shipped)
-
-# Case of the Week — Serotonin Syndrome vs. Neuroleptic Malignant Syndrome
-### MS3 / Medical Student Version
-
-**Date:** 2026-07-09
-**Level:** MS3 (USMLE Step 2 CK framing)
-**Format:** ~20–30 minute small-group discussion. No required pre-reading.
-**Citations:** Based on articles retrieved from PubMed (see References). All citations verified against PubMed this run.
-
-> **Note on the patient:** The stem below is **synthetic and de-identified**. It does not describe a real patient.
-
----
-
-## PART 1 — LEARNER-FACING CASE
-
-### Clinical stem
-
-A 24-year-old college student is brought to the emergency department by a roommate for confusion, shakiness, and sweating that came on over the course of an afternoon.
-
-Two weeks ago the patient was started on **fluoxetine** (a *selective serotonin reuptake inhibitor*, or **SSRI** — an antidepressant that raises serotonin levels) for depression. Three days ago a walk-in clinic added **tramadol** (an opioid painkiller that *also* increases serotonin) for a wrist injury. This morning the patient took an extra dose of tramadol for pain.
-
-On arrival the patient is anxious, restless, and repeatedly tries to climb off the stretcher.
-
-**Vitals:** T 38.5 °C (101.3 °F) · HR 124 · BP 158/94 · RR 22 · SpO₂ 98% on room air
-
-**Exam:**
-- **Neuro/mental status:** Agitated, hypervigilant, oriented to self only.
-- **Pupils:** Dilated (mydriasis) bilaterally.
-- **Neuromuscular:** Tremor in both hands. **Brisk reflexes (hyperreflexia)** and **clonus** at both ankles — *more pronounced in the legs than the arms.*
-- **Skin:** Flushed, diaphoretic (sweaty).
-- **Abdomen:** Hyperactive bowel sounds.
-
-There is no rigidity of the "lead-pipe" type, no recent antipsychotic exposure, and no illicit-drug history reported by the roommate.
-
-### Discussion questions
-
-*Work through these as a group. Teaching points are in the separate Facilitator Guide (Part 2) — try to reason them out first.*
-
-1. **What is the most likely diagnosis, and which three feature-clusters define it?** What in the medication history is the trigger?
-2. **The single most useful bedside exam finding here points strongly toward one diagnosis.** What is it, and why does it help?
-3. **How would you formally support the diagnosis?** Name the validated bedside criteria and what they require.
-4. **How does this condition differ from neuroleptic malignant syndrome (NMS)?** Build a quick contrast (drug class, onset speed, muscle findings, reflexes, pupils, recovery time).
-5. **What is your initial workup?** What labs and studies would you send, and what dangerous complication are you screening for?
-6. **Outline first-line management,** from the single most important first step through supportive care and the specific antidote.
-7. **What one counseling/prevention point** would you give this patient (and the prescriber) at discharge to prevent recurrence?
-
----
----
-
-## PART 2 — FACILITATOR GUIDE
-*(Keep separate from the learner handout.)*
-
-### One-line answer
-This is **serotonin syndrome (SS)** precipitated by a drug–drug interaction (fluoxetine + tramadol, two serotonergic agents), with a recent tramadol dose increase as the immediate trigger. The teaching goal is recognition, use of the Hunter criteria, first-line management (including cyproheptadine), and clean separation from NMS.
-
-### Teaching points by question
-
-**Q1 — Diagnosis and the classic triad.**
-Serotonin syndrome results from **excess serotonergic activity**, most often from combining two serotonergic drugs or increasing the dose of one [1][2]. The classic clinical **triad**:
-1. **Neuromuscular excitation** — tremor, hyperreflexia, clonus, myoclonus.
-2. **Autonomic hyperactivity** — hyperthermia, tachycardia, hypertension, diaphoresis, mydriasis, hyperactive bowel sounds/diarrhea.
-3. **Altered mental status** — agitation, anxiety, restlessness.
-Here the trigger is fluoxetine (SSRI) + tramadol (serotonergic opioid). *Teaching pearl:* tramadol, meperidine, dextromethorphan, linezolid, methylene blue, MAOIs, SNRIs, triptans, and MDMA are the high-yield "hidden" serotonergic agents students miss.
-
-**Q2 — The discriminating finding: clonus/hyperreflexia, legs > arms.**
-Lower-extremity–predominant **clonus and hyperreflexia** are the most specific findings for SS and are the feature that most reliably separates it from NMS, in which the muscle picture is **"lead-pipe" rigidity with normal-to-decreased reflexes** [1][3][4]. Also supportive of SS: **mydriasis** and **hyperactive bowel sounds** (both reflect autonomic/serotonergic overdrive).
-
-**Q3 — Hunter Serotonin Toxicity Criteria.**
-The **Hunter criteria** are the validated bedside decision rule (sensitivity ~84%, specificity ~97%, better than the older Sternbach criteria) [5]. In a patient who has taken a serotonergic agent, SS is diagnosed if **any one** of the following is present:
-- Spontaneous clonus
-- Inducible clonus **plus** agitation or diaphoresis
-- Ocular clonus **plus** agitation or diaphoresis
-- Tremor **plus** hyperreflexia
-- Hypertonia **plus** temperature > 38 °C **plus** ocular clonus or inducible clonus
-
-This patient meets the criteria multiple ways (spontaneous ankle clonus; tremor + hyperreflexia).
-
-**Q4 — SS vs. NMS contrast (high-yield table).**
-
-| Feature | Serotonin syndrome | Neuroleptic malignant syndrome |
-|---|---|---|
-| Trigger drug | Serotonergic agents (SSRI/SNRI/MAOI, tramadol, linezolid…) | Dopamine (D2) antagonists — antipsychotics; or abrupt withdrawal of dopaminergic (Parkinson) meds |
-| Onset | **Fast** — usually < 24 h (often within hours) | **Slow** — days, up to 1–2 weeks |
-| Muscle tone | Clonus, myoclonus, tremor; hyperreflexia (**legs > arms**) | Generalized **"lead-pipe" rigidity** |
-| Reflexes | **Increased** | Normal / **decreased** |
-| Pupils | **Mydriasis** | Normal |
-| Bowel sounds | **Hyperactive** | Normal / decreased |
-| Mental status | Agitation, hypervigilance | Stupor, mutism, akinesis |
-| Resolution | **Rapid** (usually 24–72 h once drug stopped) | **Slow** (days–weeks) |
-| Antidote | **Cyproheptadine** | **Dantrolene** ± bromocriptine |
-
-Keep **anticholinergic toxicity** (dry, flushed skin; absent bowel sounds; normal reflexes) and **malignant hyperthermia** (anesthesia setting — succinylcholine/volatile agents) on the differential as classic Step 2 distractors [1][6].
-
-**Q5 — Initial workup.**
-SS is a **clinical diagnosis** — labs are for severity and to exclude mimics: CBC, CMP (renal function, electrolytes), **creatine kinase (CK)** to screen for **rhabdomyolysis**, coagulation studies, and consideration of a head CT/LP if the diagnosis is unclear or to rule out CNS infection. Also send an ECG (QT), and in a young patient with altered status a broad tox screen and acetaminophen/salicylate levels are reasonable. **The feared complications are hyperthermia-driven rhabdomyolysis, renal failure, and DIC.**
-
-**Q6 — First-line management.**
-1. **Stop all serotonergic agents** — the single most important step.
-2. **Supportive care:** IV fluids, continuous monitoring, external cooling for hyperthermia.
-3. **Benzodiazepines** (e.g., lorazepam) for agitation, tremor, and myoclonus — they also blunt autonomic instability.
-4. **Cyproheptadine** — a 5-HT2A antagonist — is the **specific antidote** for moderate–severe cases [1][2].
-5. **Severe SS** (temp > 41 °C, severe hyperthermia/rigidity): ICU, sedation, and **intubation with neuromuscular paralysis** to stop muscular heat generation [2].
-- *Pearl:* **antipyretics don't work** — the hyperthermia is from muscle activity, not a raised hypothalamic set point.
-
-**Q7 — Prevention/counseling.**
-Educate the patient and flag the chart: **avoid combining serotonergic drugs**, and be explicit that everyday agents (tramadol, dextromethorphan cough syrup, triptans for migraine, linezolid, St. John's Wort) count. Because **fluoxetine has a long half-life**, a washout period is needed before starting an interacting drug such as an MAOI. Reconcile medications at every transition of care.
-
-### Ranked differential diagnosis (top 5 for MS3)
-1. **Serotonin syndrome** — best fit: serotonergic drugs, rapid onset, clonus/hyperreflexia legs>arms, mydriasis, hyperactive bowel sounds.
-2. **Neuroleptic malignant syndrome** — mimics SS but needs a dopamine antagonist and shows rigidity + slow onset; not supported here (no antipsychotic).
-3. **Anticholinergic toxicity** — hyperthermia + agitation, but **dry** skin, **absent** bowel sounds, normal reflexes ("hot, dry, red, blind, mad").
-4. **Sympathomimetic toxicity / stimulant intoxication** (cocaine, amphetamines) — agitation, hyperthermia, mydriasis, but no clonus/hyperreflexia pattern; guided by history/tox screen.
-5. **CNS infection (meningitis/encephalitis)** or **heat stroke / thyroid storm** — always exclude infection and consider endocrine/environmental causes when the drug history is unclear.
-
-### Workup & management summary
-- **Diagnose clinically** (Hunter criteria); labs (CK, CMP, CBC, coags) for severity + complications; exclude mimics.
-- **Treat:** stop serotonergic agents → supportive care + cooling → benzodiazepines → **cyproheptadine** → ICU/paralysis if severe.
-- **Disposition:** most mild–moderate cases improve within 24–72 h; admit for monitoring, longer if hyperthermic or with rhabdomyolysis.
-
-### Safety note
-If the presentation involved an **intentional overdose**, management is the same, **plus** a psychiatric safety evaluation once medically stabilized — recognition and appropriate escalation to psychiatry, not method inquiry, is the teaching point.
-
----
-
-## References
-*Based on articles retrieved from PubMed. DOI links included per source terms.*
-
-1. Boyer EW, Shannon M. **The serotonin syndrome.** *N Engl J Med.* 2005;352(11):1112–20. [DOI](https://doi.org/10.1056/NEJMra041867) · PMID 15784664
-2. Mikkelsen N, Damkier P, Pedersen SA. **Serotonin syndrome — a focused review.** *Basic Clin Pharmacol Toxicol.* 2023;133(2):124–29. [DOI](https://doi.org/10.1111/bcpt.13912) · PMID 37309284
-3. Perry PJ, Wilborn CA. **Serotonin syndrome vs neuroleptic malignant syndrome: a contrast of causes, diagnoses, and management.** *Ann Clin Psychiatry.* 2012;24(2):155–62. [PubMed](https://pubmed.ncbi.nlm.nih.gov/22563571/) · PMID 22563571
-4. Ware MR, Feller DB, Hall KL. **Neuroleptic malignant syndrome: diagnosis and management.** *Prim Care Companion CNS Disord.* 2018;20(1):17r02185. [DOI](https://doi.org/10.4088/PCC.17r02185) · PMID 29325237
-5. Dunkley EJC, Isbister GK, Sibbritt D, Dawson AH, Whyte IM. **The Hunter Serotonin Toxicity Criteria: simple and accurate diagnostic decision rules for serotonin toxicity.** *QJM.* 2003;96(9):635–42. [DOI](https://doi.org/10.1093/qjmed/hcg109) · PMID 12925718
-6. Maitland S, Baker M. **Serotonin syndrome.** *Drug Ther Bull.* 2022;60(6):88–91. [DOI](https://doi.org/10.1136/dtb.2021.000032) · PMID 35551099
-
----
-*Joshua Moss, MD | Psychiatrist*
-
-
----
-
-# SECTION: Evidence and Reference

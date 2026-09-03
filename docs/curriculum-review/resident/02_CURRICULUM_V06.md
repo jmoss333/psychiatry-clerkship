@@ -317,7 +317,7 @@ Twenty trials and analyses that shaped modern prescribing, ranked by impact. Pap
 - **Slug:** `protocol_library.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `05_Psychopharmacology/Protocol_Library/protocol_library_inpatient.md`
 - **Governance:** status=`reviewed` · riskKind=`local-policy` · riskLevel=`high`
-- **Length:** 325 words
+- **Length:** 327 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -330,7 +330,7 @@ Twenty trials and analyses that shaped modern prescribing, ranked by impact. Pap
 
 **Key points (bulleted card):**
 
-- Withdrawal protocols use symptom-triggered scoring (CIWA-Ar for alcohol/benzo, COWS for opioids); always give thiamine before glucose in any withdrawal or nutritional risk.
+- Withdrawal protocols use symptom-triggered scoring (CIWA-Ar for alcohol/benzo, COWS for opioids); give thiamine before or with glucose in any withdrawal or nutritional risk, never delaying dextrose for hypoglycemia.
 - Clozapine initiation requires mandatory ANC monitoring per the hematologic schedule — know the workflow before the patient starts, not after the first dose.
 - Delirium prevention bundles non-pharmacologic measures first; the restraint and agitation pathway is least-restrictive, time-limited, and always followed by a debrief.
 
@@ -361,7 +361,7 @@ Twenty trials and analyses that shaped modern prescribing, ranked by impact. Pap
 **What this is.** A teaching index of the structured order sets used on the unit. These are *institutional protocols* — this page orients you to what each is for and when it's used. **Always pull exact medications, doses, and monitoring from the live EHR order set, not from memory or from this page.**
 
 ## Withdrawal
-- **Alcohol withdrawal (CIWA-Ar–driven).** Symptom-triggered benzodiazepine dosing scored on the CIWA-Ar, with escalation for seizure/delirium-tremens risk; thiamine before glucose. Practice the scoring with the **Withdrawal (CIWA-Ar/COWS) card**.
+- **Alcohol withdrawal (CIWA-Ar–driven).** Symptom-triggered benzodiazepine dosing scored on the CIWA-Ar, with escalation for seizure/delirium-tremens risk; thiamine before or with glucose. Practice the scoring with the **Withdrawal (CIWA-Ar/COWS) card**.
 - **Opioid withdrawal (COWS-driven).** COWS scoring guides supportive care and buprenorphine induction once objective withdrawal is present. Same card.
 - **Benzodiazepine taper.** A structured, gradual taper to prevent withdrawal seizures/destabilization (the unit's BHU2 benzodiazepine-taper order-set spec).
 
@@ -457,7 +457,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - NMS vs serotonin syndrome
 - Two hyperthermic emergencies that look alike at the door. The reflexes split them: rigidity + hyporeflexia (NMS) vs clonus + hyperreflexia (serotonin).
 - Alcohol withdrawal timeline
-- Time since the last drink predicts the syndrome. Treat with symptom-triggered benzodiazepines (CIWA-Ar) and give thiamine before glucose.
+- Time since the last drink predicts the syndrome. Treat with symptom-triggered benzodiazepines (CIWA-Ar) and give thiamine before or with glucose — never delaying emergency dextrose for true hypoglycemia.
 - Symptom-triggered dosing keyed to the total score — less total benzodiazepine than fixed schedules.
 - Minimal–mild — supportive care, PRN only.
 - Moderate — symptom-triggered benzodiazepine; reassess hourly.
@@ -983,7 +983,7 @@ Substance use, medication adherence, lifestyle/metabolic change, follow-up engag
 - **Slug:** `brief_psychotherapy.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `02_Clinical_Skills/Brief_Psychotherapy/brief_psychotherapy_inpatient.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 1,054 words
+- **Length:** 1,062 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -1041,7 +1041,7 @@ Substance use, medication adherence, lifestyle/metabolic change, follow-up engag
 
 **In one line** — You will not complete a course of therapy on an inpatient unit, but almost every encounter is a *micro-intervention*. The skill is to read the mechanism driving this patient's crisis right now and match one brief technique to it — then hand the work off to outpatient care.
 
-**Why brief therapy is worth doing inpatient** — Across trials, inpatient psychotherapy adds a small-to-moderate benefit over treatment-as-usual, and **no single modality is clearly superior** (pooled SMD ~0.24, NNT ~7; comparable effects for CBT, BA, and problem-solving, g≈0.42). The practical takeaway is liberating: *stop agonizing over which "school" to use and match the technique to the mechanism in front of you.* Diagnosis and the driver of the crisis matter more than the brand of therapy.
+**Why brief therapy is worth doing inpatient** — Across trials, inpatient psychotherapy adds a small-to-moderate benefit over treatment-as-usual, and **no single modality is clearly superior** (small-to-moderate pooled effects with no clear winner across modalities — the specific meta-analyses are traced on the Evidence-Based Inpatient Psychiatry page). The practical takeaway is liberating: *stop agonizing over which "school" to use and match the technique to the mechanism in front of you.* Diagnosis and the driver of the crisis matter more than the brand of therapy.
 
 ## Match the skill to the mechanism
 
