@@ -89,21 +89,25 @@
       }
     },
     "antipsychotics-in-suspected-catatonia": {
-      "topic": "Antipsychotics in suspected catatonia \u2014 precipitating malignant catatonia / NMS",
-      "whyCanonical": "Asserted in at least four hand-authored loci, including three separate topic_meta 'cant' fields and the skill exemplar that seeds future topics. RSAF findings F001/F002/F004 (PR #483) proved these copies drift: a correction landed in two and missed the rest.",
+      "topic": "Antipsychotics before catatonia is excluded \u2014 precipitating malignant catatonia / NMS",
+      "whyCanonical": "Asserted in five hand-authored loci: topic_meta 'cant' for agitation.md and catatonia.md, the skill exemplar that seeds future topics, and the sga / d2_typical / combo hazards in both agitation packs. RSAF F001/F002/F004 (PR #483) proved these copies drift.",
       "status": "pending",
       "risk": {
         "kind": "clinical",
         "level": "high"
       },
-      "reason": "Slot seeded with a verified appliesTo list; canonical statement not yet written or attested.",
+      "reason": "Slot seeded with a verified appliesTo list; canonical statement not yet written or attested. See openQuestion before attesting.",
       "at": "2026-09-03",
       "by": "Pending faculty review",
       "appliesTo": [
         {
           "path": "topic_meta.json",
           "contentHashAtReview": "aaad0126430ae1ef65ceb6a0fc5537e17e4598db653f403e1974895b2934d546",
-          "note": "Asserted three times in three phrasings: agitation.md, catatonia.md, toxidromes.md 'cant' fields."
+          "note": "Two 'cant' fields assert this. A third, toxidromes.md, is a management claim and is excluded on purpose -- see this claim's reason.",
+          "locus": [
+            "agitation.md 'cant'",
+            "catatonia.md 'cant'"
+          ]
         },
         {
           "path": ".claude/skills/topic-meta-author/references/voice-and-exemplars.md",
@@ -113,18 +117,29 @@
         {
           "path": "_prototypes/agitation-trainer/agitation.pack.json",
           "contentHashAtReview": "c5a48d5496dadacb32a0406f2f7d65977a9b2fa73d807206ae1773c2d32089bc",
-          "note": "MS3 twin of the agitation trainer; carries the antipsychotic hazard for the catatonia scenario."
+          "note": "MS3 twin of the agitation trainer; carries the antipsychotic hazard for the catatonia scenario.",
+          "locus": [
+            "sga hazardIf.catatonia",
+            "d2_typical hazardIf.catatonia",
+            "combo hazardIf.catatonia"
+          ]
         },
         {
           "path": "_prototypes/agitation-trainer/rp-agitation.pack.json",
           "contentHashAtReview": "6f08caf5d4df0248be10156394609559c85ef020fe1adf2a787485e43d72b54e",
-          "note": "Resident twin. #483 found the two twins had drifted apart on exactly this hazard."
+          "note": "Resident twin. #483 found the two twins had drifted apart on exactly this hazard.",
+          "locus": [
+            "sga hazardIf.catatonia",
+            "d2_typical hazardIf.catatonia",
+            "combo hazardIf.catatonia"
+          ]
         }
       ],
       "guards": {
         "forbidden": [],
         "required": []
-      }
+      },
+      "openQuestion": "SCOPING: topic_meta toxidromes.md carries a related but distinct claim \u2014 what to do for a patient ALREADY in NMS / malignant catatonia (antipsychotics are the cause, not the treatment; stop the offending agent, cool and support, escalate) rather than what to exclude BEFORE giving one. It is deliberately excluded from appliesTo here and likely belongs with nms-recognition-and-management. Also: the packs say 'precipitate or worsen' and 'hold until catatonia is excluded or treated', where agitation.md says 'can tip it into'. Decide whether those are one claim before writing one statement to govern all five loci."
     },
     "benzodiazepine-withdrawal-lethality": {
       "topic": "Benzodiazepine withdrawal can be fatal",
