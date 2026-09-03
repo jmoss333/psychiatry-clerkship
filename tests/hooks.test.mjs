@@ -103,6 +103,17 @@ test('pre_edit_guard denies a crisis contact on a learner surface', () => {
   assert.match(reason(r), /crisis-block/);
 });
 
+test('pre_edit_guard enforces every registered contact, the emergency-services number included', () => {
+  const emergency = crisis.resources.find((r) => /emergency/i.test(r.name));
+  const digits = emergency.contact.match(/\d{3,}/)[0];
+  const r = runHook('pre_edit_guard.py', editCall('04_Acute_and_Safety/Agitation_and_Restraint/agitation_restraint_inpatient_teaching.md', `If the patient is unsafe, call ${digits}.`));
+  assert.equal(decision(r), 'deny');
+  assert.match(reason(r), /crisis-contact/);
+  // Short codes match contiguously: an ICD code or a year that merely contains the digits is not a hit.
+  const d = digits.split('');
+  assert.equal(decision(runHook('pre_edit_guard.py', editCall('03_Core_Topics/Mood/mood_disorders_inpatient_teaching.md', `Code F${d[0]}${d[1]}.${d[2]} and the year 1${digits}.`))), 'allow');
+});
+
 test('pre_edit_guard allows the same number inside crisis_resources.json and in docs', () => {
   assert.equal(decision(runHook('pre_edit_guard.py', editCall('crisis_resources.json', `"contact": "Call or text ${lifelineDigits}"`))), 'allow');
   assert.equal(decision(runHook('pre_edit_guard.py', editCall('docs/superpowers/specs/x.md', `Deny ${lifelineDigits} in content.`))), 'allow');
@@ -134,6 +145,23 @@ test('pre_edit_guard asks when an instrument name meets item-shaped text', () =>
   assert.equal(decision(r), 'ask');
   assert.match(reason(r), /instrument-reproduction/);
   assert.equal(decision(runHook('pre_edit_guard.py', editCall('02_Clinical_Skills/Screeners/x.md', 'Teach how to give the PHQ-9 and what a negative result fails to rule out.'))), 'allow');
+});
+
+test('pre_edit_guard locates an HTML Edit on disk and skips the PHI pass inside <script>', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'clerkship-script-'));
+  fs.mkdirSync(path.join(dir, 'tools'));
+  const file = path.join(dir, 'tools', 'x.html');
+  fs.writeFileSync(file, '<p>Synthetic case.</p>\n<script>\nconst timeout = 12345678;\n</script>\n');
+  const edit = (oldString, newString) => ({ hook_event_name: 'PreToolUse', tool_name: 'Edit', cwd: dir, tool_input: { file_path: file, old_string: oldString, new_string: newString } });
+  assert.equal(decision(runHook('pre_edit_guard.py', edit('const timeout = 12345678;', 'const timeout = 87654321;'), { cwd: dir })), 'allow');
+  const multi = { hook_event_name: 'PreToolUse', tool_name: 'MultiEdit', cwd: dir, tool_input: { file_path: file, edits: [{ old_string: 'const timeout = 12345678;', new_string: 'const cacheMs = 86400000;' }] } };
+  assert.equal(decision(runHook('pre_edit_guard.py', multi, { cwd: dir })), 'allow');
+  const prose = runHook('pre_edit_guard.py', edit('<p>Synthetic case.</p>', '<p>Chart MRN 12345678</p>'), { cwd: dir });
+  assert.equal(decision(prose), 'ask');
+  assert.match(reason(prose), /phi-heuristic/);
+  // An old_string that is not on disk cannot be placed, so the prose pass still runs.
+  assert.equal(decision(runHook('pre_edit_guard.py', edit('not in the file', 'MRN 12345678'), { cwd: dir })), 'ask');
+  fs.rmSync(dir, { recursive: true, force: true });
 });
 
 test('pre_edit_guard denies machine paths in tracked python', () => {
@@ -185,9 +213,23 @@ test('lfs_guard denies bulk git staging when git-lfs is absent and media phantom
   assert.equal(decision(runHook('lfs_guard.py', call('git add -A && git commit -m x'), { env, cwd: dir })), 'deny');
   assert.equal(decision(runHook('lfs_guard.py', call('git add brief.m4a'), { env, cwd: dir })), 'deny');
   assert.equal(decision(runHook('lfs_guard.py', call('git checkout -- .'), { env, cwd: dir })), 'deny');
+  // Long options and whole-tree pathspecs are bulk operations too.
+  assert.equal(decision(runHook('lfs_guard.py', call('git add --update'), { env, cwd: dir })), 'deny');
+  assert.equal(decision(runHook('lfs_guard.py', call('git add :/'), { env, cwd: dir })), 'deny');
+  assert.equal(decision(runHook('lfs_guard.py', call('git add --all && git commit -m x'), { env, cwd: dir })), 'deny');
+  assert.equal(decision(runHook('lfs_guard.py', call('git stash'), { env, cwd: dir })), 'deny');
+  assert.equal(decision(runHook('lfs_guard.py', call('git commit --all -m x'), { env, cwd: dir })), 'deny');
   assert.equal(decision(runHook('lfs_guard.py', call('git add README.md'), { env, cwd: dir })), 'allow');
+  assert.equal(decision(runHook('lfs_guard.py', call('git stash list'), { env, cwd: dir })), 'allow');
+  assert.equal(decision(runHook('lfs_guard.py', call('git commit -m x'), { env, cwd: dir })), 'allow', 'nothing staged yet');
   assert.equal(decision(runHook('lfs_guard.py', call('git status'), { env, cwd: dir })), 'allow');
   assert.equal(decision(runHook('lfs_guard.py', call('ls -la'), { env, cwd: dir })), 'allow');
+  // Once a phantom is staged, a plain commit is denied whatever flags it carries.
+  git('add', 'brief.m4a');
+  const staged = runHook('lfs_guard.py', call('git commit -m x'), { env, cwd: dir });
+  assert.equal(decision(staged), 'deny');
+  assert.match(reason(staged), /staged/);
+  assert.equal(decision(runHook('lfs_guard.py', call('git commit'), { env, cwd: dir })), 'deny');
   fs.rmSync(dir, { recursive: true, force: true });
 });
 

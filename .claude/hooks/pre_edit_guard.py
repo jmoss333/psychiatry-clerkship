@@ -8,7 +8,9 @@ clerkship_guards.py over the text that is about to land. Emits a permissionDecis
           tool or pack, localStorage key outside cw_*/rp_*, machine path in a .py
   ask   - PHI heuristic hit, instrument item/anchor text (governance calls)
 
-Anything else, or any internal error, allows: a broken hook must never wedge a session.
+An Edit's new_string is a bare fragment, so for .html targets the hook locates old_string in
+the file on disk and skips the prose PHI pass when the edited range sits inside a <script>
+block. Anything else, or any internal error, allows: a broken hook must never wedge a session.
 """
 
 from __future__ import annotations
@@ -33,6 +35,14 @@ def pending_text(tool_input: dict) -> str:
     return str(tool_input.get("new_string") or "")
 
 
+def old_strings(tool_input: dict) -> list[str]:
+    if "content" in tool_input:
+        return []  # Write replaces the whole file; the full text is scanned as-is
+    if "edits" in tool_input:
+        return [str(e.get("old_string") or "") for e in tool_input.get("edits") or []]
+    return [str(tool_input.get("old_string") or "")]
+
+
 def main() -> int:
     try:
         event = json.load(sys.stdin)
@@ -48,7 +58,11 @@ def main() -> int:
     if not text:
         return 0
 
-    findings = G.run_text_checks(text, rel, root)
+    try:
+        in_script = G.edit_inside_script(root, rel, old_strings(tool_input))
+    except Exception:
+        in_script = False
+    findings = G.run_text_checks(text, rel, root, skip_phi=in_script)
     if not findings:
         return 0
 
