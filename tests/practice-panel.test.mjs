@@ -77,14 +77,28 @@ const ctaHref = (h) => {
 };
 const ctaAttrs = (h) => (/^\?(page|tool)=/.test(h) ? '' : ' target="_blank" rel="noopener"');
 
-const F = new Function('esc', 'ctaHref', 'ctaAttrs', 'FD_INDEX', 'window',
-  `${workflowCode}\n${panelCode}\nreturn {
+// The build injects case titles into a `var PRACTICE_CASE_TITLES={};` needle (build_deploy.py).
+// Doing the same replacement here pins that needle: if it is renamed or removed, this throws
+// rather than silently testing a panel whose drills have all lost their names.
+const CASE_TITLES = Object.fromEntries(
+  (readJSON('communication_cases.json').cases || [])
+    .filter((c) => c && c.id && c.title).map((c) => [c.id, c.title]),
+);
+const CASE_NEEDLE = 'var PRACTICE_CASE_TITLES={};';
+assert.equal(panelCode.split(CASE_NEEDLE).length - 1, 1,
+  'the practice panel must carry exactly one PRACTICE_CASE_TITLES injection needle');
+const injectedPanelCode = panelCode.replace(
+  CASE_NEEDLE, `var PRACTICE_CASE_TITLES=${JSON.stringify(CASE_TITLES)};`);
+
+const F = new Function('esc', 'ctaHref', 'ctaAttrs', 'FD_INDEX', 'FD_TOOL_REGISTRY', 'window',
+  `${workflowCode}\n${injectedPanelCode}\nreturn {
      buildTpl: buildTpl, buildPracticeTools: buildPracticeTools, buildWorkflow: buildWorkflow,
      practiceToolLabel: practiceToolLabel, practiceIsRights: practiceIsRights,
      practiceActionLabel: practiceActionLabel, hasPracticeTpl: hasPracticeTpl,
      PRACTICE_MODE_LABELS: PRACTICE_MODE_LABELS, WF_FIELDS: WF_FIELDS,
-     WF_STAGE_LABELS: WF_STAGE_LABELS, PRACTICE_LABEL_NEUTRAL: PRACTICE_LABEL_NEUTRAL };`,
-)(esc, ctaHref, ctaAttrs, FD_INDEX, {});
+     WF_STAGE_LABELS: WF_STAGE_LABELS, practiceCaseLabel: practiceCaseLabel,
+     practiceIsSafe: practiceIsSafe, practiceRegistryTools: practiceRegistryTools };`,
+)(esc, ctaHref, ctaAttrs, FD_INDEX, TOOL_REGISTRY, {});
 
 const topicEntries = Object.entries(TOPIC_META).filter(([, m]) => m && typeof m === 'object');
 const renderAll = () => topicEntries
@@ -177,8 +191,86 @@ test('every tool the panel can link resolves in FD_INDEX', () => {
 
 test('the default label for every tool the panel can link equals the registry title', () => {
   for (const slug of emittedToolSlugs()) {
-    const expected = F.PRACTICE_LABEL_NEUTRAL[slug] || manifestTitle(slug);
-    assert.equal(F.practiceToolLabel(slug), expected, `${slug} label drifted from the registry`);
+    assert.equal(F.practiceToolLabel(slug), manifestTitle(slug),
+      `${slug} label drifted from the registry`);
+  }
+});
+
+// ---- WP-A · one source of truth for links, labels and risk ------------------------------------
+
+test('drill labels come from communication_cases.json, with no generic fallback', () => {
+  // The hand map this replaced had fallen two cases behind, so pg_interview, t_psychosis and
+  // doc_oral each rendered an unnamed "What Do You Say Next?" tile beside named ones.
+  const referenced = new Set();
+  for (const [, m] of topicEntries) for (const id of (m.communicationCases || [])) referenced.add(id);
+  assert.ok(referenced.size >= 10, `expected many cases to be referenced, saw ${referenced.size}`);
+  for (const id of referenced) {
+    assert.ok(CASE_TITLES[id], `${id} is referenced by a topic but absent from communication_cases.json`);
+    assert.equal(F.practiceCaseLabel(id), CASE_TITLES[id], `${id} drill label drifted from the registry`);
+  }
+});
+
+test('the registry back-links the old hand map never surfaced now reach the panel', () => {
+  // tool_registry.relatedPages is the curated catalog view and it under-linked: 15 declared
+  // links reached no panel at all. Assert the reverse index is what the panel reads.
+  for (const t of TOOL_REGISTRY.tools) {
+    for (const page of (t.relatedPages || [])) {
+      assert.ok(F.practiceRegistryTools(page).includes(t.file),
+        `${t.file} is declared for ${page} but the panel does not derive it`);
+    }
+  }
+  // one-patient-six-weeks.html was declared on 11 pages and surfaced on 1 — spot-check the worst.
+  assert.ok(F.practiceRegistryTools('med_monitoring.md').includes('interaction-cards.html'));
+  assert.ok(F.practiceRegistryTools('pg_interview.md').includes('one-patient-six-weeks.html'));
+});
+
+test('a page links exactly the union of both registries, and nothing else', () => {
+  // Scoped to registry-derived anchors. Two kinds of link in the panel are chrome, not data:
+  // the hardcoded "See the visual decision aids" link inside the rule-out mini-tree, and the
+  // is-review pair the quiz-less and empty-state fallbacks emit.
+  const toolKey = (href) => {
+    const s2 = String(href || '');
+    const q = s2.match(/[?&]tool=([^&#]+)/);
+    if (q) return decodeURIComponent(q[1]);
+    const rel = s2.match(/^tools\/([^/?#]+\.html)$/);
+    return rel ? rel[1] : '';
+  };
+  for (const [ref, m] of topicEntries) {
+    if (!F.hasPracticeTpl(m)) continue;
+    const expected = new Set([...F.practiceRegistryTools(ref), ...(m.relatedTools || [])]);
+    const ctas = m.cta ? (Array.isArray(m.cta) ? m.cta : [m.cta]) : [];
+    for (const c of [...ctas, ...((m.clinicalWorkflow && m.clinicalWorkflow.actions) || [])]) {
+      const k = toolKey(c && c.href); if (k) expected.add(k);
+    }
+    const html = F.buildTpl(m, ref);
+    for (const x of html.matchAll(/<a class="practice-action([^"]*)" href="\?tool=([^"&]+)"/g)) {
+      if (x[1].includes('is-review')) continue;
+      const slug = decodeURIComponent(x[2]);
+      assert.ok(expected.has(slug), `${ref} renders ${slug}, which neither registry links`);
+    }
+  }
+});
+
+test('declared links lead and an authored-only link follows, neither dropped', () => {
+  // The two sources disagree in opposite directions, so the rule is reconcile, not union-and-
+  // shrug: med_monitoring.md is declared for interaction-cards and one-patient-six-weeks, and
+  // an author adding screeners.html must not displace either.
+  const html = F.buildPracticeTools({ relatedTools: ['screeners.html'] }, 'med_monitoring.md', 'ward');
+  const order = [...html.matchAll(/href="\?tool=([^"&]+)"/g)].map((x) => decodeURIComponent(x[1]));
+  for (const declared of ['interaction-cards.html', 'one-patient-six-weeks.html']) {
+    assert.ok(order.includes(declared), `${declared} is registry-declared and must appear`);
+    assert.ok(order.indexOf(declared) < order.indexOf('screeners.html'),
+      `${declared} is declared and must lead the authored-only link`);
+  }
+  assert.ok(order.includes('screeners.html'), 'the authored link must not be dropped');
+});
+
+test('the safety class comes from tool_registry.riskLevel', () => {
+  const highRisk = TOOL_REGISTRY.tools.filter((t) => t.riskLevel === 'high').map((t) => t.file);
+  assert.ok(highRisk.length >= 4, 'expected several high-risk tools in the registry');
+  for (const slug of highRisk) assert.equal(F.practiceIsSafe(slug), true, `${slug} should read as high risk`);
+  for (const t of TOOL_REGISTRY.tools) {
+    if (t.riskLevel !== 'high') assert.equal(F.practiceIsSafe(t.file), false, `${t.file} should not`);
   }
 });
 
@@ -191,7 +283,6 @@ test('every label constant the panel owns is audience-neutral', () => {
     ...Object.values(F.PRACTICE_MODE_LABELS),
     ...Object.values(F.WF_STAGE_LABELS),
     ...F.WF_FIELDS.map(([, label]) => label),
-    ...Object.values(F.PRACTICE_LABEL_NEUTRAL),
   ];
   for (const label of owned) {
     assert.doesNotMatch(label, AUDIENCE_TOKEN_RE, `panel label ${JSON.stringify(label)} names an audience`);

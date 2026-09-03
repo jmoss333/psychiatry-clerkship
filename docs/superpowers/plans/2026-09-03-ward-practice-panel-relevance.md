@@ -2,8 +2,8 @@
 
 **Date:** 2026-09-03 · **Status:** plan, not yet implemented · **Surface:** the pinned practice panel on every topic page, both sites.
 **Decisions taken:** D-1 (2026-09-03) — panel stays collapsed, fix its contents; no CSS change, no visual-baseline regeneration. See §7.
-**Shipped:** WP-B and WP-C (2026-09-03). WP-A is partly absorbed — see §4. Three corrections to this
-document, found while implementing, are marked **[corrected 2026-09-03]** below.
+**Shipped:** WP-B, WP-C and WP-A (2026-09-03). Corrections found while implementing are marked
+**[corrected 2026-09-03]** below.
 
 **Goal:** Make the panel that is pinned to all 74 topic pages say something true and specific about *that page* — correct tool names, governance-correct instrument handling, audience-neutral copy, one obvious next action instead of a nine-link dump.
 
@@ -166,26 +166,36 @@ Ranking rule, deterministic and testable:
 
 Ordered so each lands independently and green.
 
-### WP-A · Single source of truth *(no visual change; pure correctness)* — **partly shipped**
+### WP-A · Single source of truth *(no visual change; pure correctness)* — **shipped 2026-09-03**
 
-The label half landed with WP-B, which could not render "the registry title" without it. What
-remains is the link half: the two page→tool maps and the reconciliation.
-
-- [x] ~~Delete `PRACTICE_LABELS`~~ — removed 2026-09-03; `practiceToolLabel` now reads `FD_INDEX`.
-- [ ] Delete `PRACTICE_PAGE_TOOLS`, `PRACTICE_CASE_LABELS`, and the dead `PAGE_TOOLS` branch (`spa_index.html:961`).
-- [x] ~~`practiceToolLabel(k)` reads `FD_INDEX`~~ — shipped, with one documented exception:
-  **`shelf-mode.html`'s own canonical title is `"Shelf Mode — Exam Simulation"`, which carries the
-  banned token.** The resident nav already renames that slug ("Board-Style Question Bank"); the
-  panel is shared copy, so it uses the same neutral wording via a one-row `PRACTICE_LABEL_NEUTRAL`
-  map. **WP-A must reconcile the manifest title itself** — a neutral canonical title would delete
-  that map. This is the one place where "use the registry title" and "audience-neutral copy"
-  genuinely conflict.
+- [x] ~~Delete `PRACTICE_LABELS`, `PRACTICE_PAGE_TOOLS`, `PRACTICE_CASE_LABELS`, `PRACTICE_SAFE`, and the dead `PAGE_TOOLS` branch.~~ All five gone. The shell now carries **no hand-maintained tool map at all**; every label, link and risk flag is derived from `FD_INDEX` / `FD_TOOL_REGISTRY`.
+- [x] ~~`practiceToolLabel(k)` reads `FD_INDEX`~~ — and the "one documented exception" turned out
+  not to exist. **[corrected 2026-09-03]** This plan claimed `shelf-mode.html`'s canonical title
+  forces a conflict between "use the registry title" and "audience-neutral copy", and shipped a
+  one-row `PRACTICE_LABEL_NEUTRAL` override for it. That was wrong: **the resident build already
+  rewrites the manifest title per site** — the built `FD_SITE_MANIFEST` says
+  `"Shelf Mode — Exam Simulation"` on ms3 and `"Board-Style Question Bank"` on res. Reading
+  `FD_INDEX` therefore gives each site its own name with no override and no forked copy, so the
+  map is deleted and no manifest change is needed. The conflict was an artifact of not checking
+  the built artifact.
+- [x] ~~`practiceCaseLabel`~~ — reads titles injected from `communication_cases.json` at build time
+  (`build_deploy.py`, verified needle, the same mechanism as `RETIRED_QB_IDS`). The two drills that
+  rendered unnamed now read "Respond When the Patient Questions Why You're Asking" and "Name
+  Uncertainty on Rounds".
+- [x] ~~`practiceIsSafe`~~ — reads `tool_registry.riskLevel === 'high'`. Reproduces the old hand
+  list exactly, so no page's safety styling changed.
 - [ ] `practiceCaseLabel(id)` reads the `title` already fetched with `communication_cases.json`.
-- [ ] Replace `PRACTICE_SAFE` with `FD_INDEX[ref].risk === 'high'` (`tool_registry.riskLevel`).
-- [ ] **Reconcile the page→tool set in both directions.** The two sources disagree in opposite ways: `tool_registry.relatedPages` under-links (15 declared links never surfaced, F2) while `topic_meta.relatedTools` over-links (`cssrs.html` on 14 pages against a declared 2, F1). A naive union keeps both faults. Rule:
+- [x] ~~**Reconcile the page→tool set in both directions.**~~ The two sources disagree in opposite ways: `tool_registry.relatedPages` under-links (15 declared links never surfaced, F2) while `topic_meta.relatedTools` over-links (`cssrs.html` on 14 pages against a declared 2, F1). A naive union keeps both faults. Rule:
   - registry back-links are **added** (they are the curated catalog view), and
   - a `relatedTools` entry for a ref the registry does **not** declare for that page is **demoted** below the declared ones rather than dropped — dropping silently removes an author's deliberate cross-link.
   - Report the delta once at build time (`build_deploy.py`, print-only) so the divergence is visible and can be curated down in WP-F instead of hiding inside the renderer.
+
+  **Result:** the build now prints `page->tool reconciliation: 15 registry link(s) the pages did
+  not list, 195 authored link(s) the registry does not declare`. The 15 matches this plan's
+  prediction exactly. **The 195 did not** — the registry declares far less than the pages
+  actually link, so `tool_registry.relatedPages` is not the curated superset this plan assumed;
+  it is a thin subset. That is a curation question for WP-F, and the number is now visible on
+  every build instead of hiding inside the renderer.
 
 **Acceptance:** every label the panel prints equals the title the nav prints for the same slug; the 15 missing registry links appear; the 2 unnamed drills are named; no page's action list changes membership except by those 15 additions. **Test:** `tests/practice-panel.test.mjs` — for every ref reachable from any panel, `practiceToolLabel(ref) === manifestTitle(ref)`; assert no literal tool title string remains in `spa_index.html`; pin the per-page action-set diff against a fixture so a future `relatedTools` edit shows up as an intentional change.
 
@@ -266,11 +276,15 @@ Phases 1–2 are worth doing on their own even if 3–5 are deferred: they remov
 - **Instrument scope is a governance decision, not an agent decision.** WP-B changes *labels and presentation only*. It does not add, remove, or reinterpret any instrument's status, and it must not narrow or lift the recorded COWS interim waiver.
 - **A red node test silently aborts the build.** `build_and_check.sh` is `set -euo pipefail` and runs `node --test tests/*.test.mjs` *before* `build_deploy.py`. Run the node suite first when a panel edit "doesn't show up".
 - **Touching a shell literal tool map trips two separate contracts.** `check-static-site.mjs`'s
-  `TOOL_MAP_VARS` (§7b) extracts each named map and hard-fails if one is missing — deliberately, so
-  the safety net cannot be quietly deleted — and `tests/fd-shell-boot.test.mjs` pins that
-  declaration line *verbatim*. Removing `PRACTICE_LABELS` failed the publish gate first and the node
-  suite second. Update the map, the QA gate and the pin in one change. (Found the hard way,
-  2026-09-03; the QA gate caught it before any push.)
+  `TOOL_MAP_VARS` (§7b) extracted each named map and hard-failed if one was missing — deliberately,
+  so the safety net could not be quietly deleted — and `tests/fd-shell-boot.test.mjs` pinned that
+  declaration line *verbatim*. Removing `PRACTICE_LABELS` failed the publish gate first and the
+  node suite second. **Now resolved:** with the last map deleted, §7b's map scan is gone and its
+  coverage moved to §4b, which resolves topic_meta's `cta`, `relatedTools` and
+  `clinicalWorkflow.actions` targets against the shipped tree — wider than the map scan, and
+  against the fields the panel actually reads. §7b's `?page=`/`?tool=` scan of `content/*.md` was
+  nested *inside* the map branch and had to be lifted out, or deleting the maps would have
+  silently disabled it too.
 - **New CI step ⇒ three contracts.** If a step is added to `ci.yml`: `bin/check-verify-coverage.py`, the `validate_scheduled_workflows.py` step-inventory + sha256 digest (recompute via its own `_load`/`_contract_digest`), and `test_validate_registry_schemas.py`'s `PAIRS`. Adding tests to the existing `tests/*.test.mjs` glob avoids all three.
 - **`cp CLAUDE.md AGENTS.md`** if this work changes either.
 

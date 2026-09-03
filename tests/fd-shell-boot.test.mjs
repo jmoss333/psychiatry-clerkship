@@ -376,16 +376,24 @@ test('Learning Path has no active consumer while its historical review receipt i
     'the historical reviewed-ledger receipt must not be deleted');
 });
 
-test('static QA follows the two literal tool maps that remain in the live shell', () => {
-  const declaration = staticQa.match(/const TOOL_MAP_VARS = \[[^\n]+\];/);
-  assert.ok(declaration, 'static QA must declare the live shell tool-map inventory');
-  // PRACTICE_LABELS retired when the practice panel began reading tool titles from FD_INDEX
-  // (site_manifest via fd_data.js). PRACTICE_LABEL_NEUTRAL took its place as the panel's only
-  // literal tool map — it carries the single slug whose canonical title names an audience.
-  assert.equal(declaration[0],
-    "const TOOL_MAP_VARS = ['PRACTICE_LABEL_NEUTRAL', 'PRACTICE_PAGE_TOOLS'];");
-  assert.ok(!/var PRACTICE_LABELS=/.test(source),
-    'PRACTICE_LABELS is retired — reinstating it reintroduces the drift it caused');
+test('the live shell carries no hand-maintained tool map, and static QA covers what replaced them', () => {
+  // Every one of these was a second copy of a registry, and each drifted: PRACTICE_LABELS
+  // outlived two instrument retirements, PRACTICE_CASE_LABELS fell two cases behind
+  // communication_cases.json, PRACTICE_PAGE_TOOLS duplicated relatedTools, PRACTICE_SAFE
+  // duplicated tool_registry.riskLevel. The panel reads FD_INDEX and FD_TOOL_REGISTRY instead.
+  for (const retired of ['PRACTICE_LABELS', 'PRACTICE_LABEL_NEUTRAL', 'PRACTICE_PAGE_TOOLS',
+    'PRACTICE_CASE_LABELS', 'PRACTICE_SAFE']) {
+    assert.ok(!new RegExp(`var ${retired}\\s*=`).test(source),
+      `${retired} is retired — reinstating it reintroduces the drift it caused`);
+  }
+  // The shell-map scan is gone with the maps; 4b is what covers those links now, and it must
+  // reach all three fields the panel renders links from.
+  assert.doesNotMatch(staticQa, /const TOOL_MAP_VARS =/,
+    'the shell tool-map scan should be gone along with the maps it scanned');
+  for (const field of ['cta', 'clinicalWorkflow.actions', 'relatedTools']) {
+    assert.ok(staticQa.includes(field),
+      `static QA section 4b must resolve topic_meta ${field} targets against the shipped tree`);
+  }
   assert.doesNotMatch(staticQa, /idBlockCheck\('(?:CASE_TITLES|FAMILY_SCENARIO_TITLES)'/,
     'retired shell title maps must not remain mandatory QA inputs');
 });

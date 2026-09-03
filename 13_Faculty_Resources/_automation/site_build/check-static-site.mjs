@@ -312,23 +312,36 @@ if (existsSync(tmPath) && parsed[tmPath]) {
   }
 }
 
-/* ---------- 4b. topic_meta.json cta hrefs must resolve to a shipped tool/page ---------- */
+/* ---------- 4b. topic_meta.json tool/page targets must resolve to a shipped file ----------
+ * Covers all three places the practice panel turns topic_meta into a link: `cta`,
+ * `relatedTools`, and `clinicalWorkflow.actions`. relatedTools and actions were added when the
+ * shell's literal tool maps were deleted (see 7b) — the panel now derives its links from those
+ * fields via FD_INDEX, so an unshipped slug there is exactly the dead end the old map scan
+ * existed to catch. Note relatedTools is deliberately NOT validated against tool_registry.json,
+ * which is partial by design; the question here is only "does the build ship this file". */
 if (existsSync(tmPath) && parsed[tmPath]) {
+  const resolves = (href) => {
+    const routeMatch = href.match(/^\.?\/?\?(page|tool)=([^&#]+)(?:[&#].*)?$/);
+    if (routeMatch) {
+      const target = decodeURIComponent(routeMatch[2]);
+      return existsSync(p(routeMatch[1] === 'tool' ? 'tools' : 'content', target));
+    }
+    return existsSync(p(href.replace(/^\.?\//, '')));
+  };
   for (const [key, m] of Object.entries(parsed[tmPath])) {
-    if (navMd.size && !navMd.has(key)) continue; // topic_meta.json is shared across sites; only validate ctas for pages this build actually ships
-    if (!m || typeof m !== 'object' || !m.cta) continue;
-    const ctas = Array.isArray(m.cta) ? m.cta : [m.cta];
-    for (const c of ctas) {
-      if (!c || !c.href) continue;
-      const routeMatch = c.href.match(/^\.?\/?\?(page|tool)=([^&#]+)(?:[&#].*)?$/);
-      if (routeMatch) {
-        const target = decodeURIComponent(routeMatch[2]);
-        const dir = routeMatch[1] === 'tool' ? 'tools' : 'content';
-        if (!existsSync(p(dir, target))) H(`topic_meta cta for ${key} → missing target: ${c.href}`);
-        continue;
+    if (navMd.size && !navMd.has(key)) continue; // topic_meta.json is shared across sites; only validate pages this build actually ships
+    if (!m || typeof m !== 'object') continue;
+    const ctas = m.cta ? (Array.isArray(m.cta) ? m.cta : [m.cta]) : [];
+    const actions = (m.clinicalWorkflow && Array.isArray(m.clinicalWorkflow.actions)) ? m.clinicalWorkflow.actions : [];
+    for (const [field, entries] of [['cta', ctas], ['clinicalWorkflow.actions', actions]]) {
+      for (const c of entries) {
+        if (!c || !c.href) continue;
+        if (!resolves(c.href)) H(`topic_meta ${field} for ${key} → missing target: ${c.href}`);
       }
-      const rel = c.href.replace(/^\.?\//, '');
-      if (!existsSync(p(rel))) H(`topic_meta cta for ${key} → missing target: ${c.href}`);
+    }
+    for (const slug of (Array.isArray(m.relatedTools) ? m.relatedTools : [])) {
+      if (typeof slug !== 'string' || !slug) continue;
+      if (!existsSync(p('tools', slug))) H(`topic_meta relatedTools for ${key} → missing tool: ${slug}`);
     }
   }
 }
@@ -622,117 +635,46 @@ if (!existsSync(srcMapPath)) {
 }
 
 /* ---------- 7b. shell-reference integrity scan (HARD) ----------
- * index.html (the SPA shell) retains two hand-maintained literal maps that point at shipped
- * tool files. Earlier tasks in this branch (sp-interview.html, one-patient-six-weeks.html)
- * added entries to these maps by hand — nothing upstream verifies the entries still resolve
- * once shipped. This section closes that gap: a tool filename or `?page=`/`?tool=` reference
- * the build ships but doesn't back with a real file is a dead end a student can click into.
+ * A `?page=`/`?tool=` reference the build ships but doesn't back with a real file is a dead
+ * end a student can click into. This section catches those in shipped content/*.md.
  *
- * Extraction approach (fragile by construction — flagged here on purpose): the shell
- * literals are ordinary JS object literals baked into index.html, not JSON, so a real
- * parser isn't available without adding a dependency this dependency-free gate deliberately
- * avoids. `extractVarBlock` isolates each `var NAME={...};` block with a quote-aware brace
- * counter; a regex then pulls `'*.html'` string literals out of that block. This breaks if
- * the build ever reformats these vars — e.g. switches `var` to `const`/`let` or a label
- * string picks up an unescaped matching quote. The `shell literal map "X" not found` HARD failure
- * below is the tripwire for that regression class: it means the scan went blind, not that
- * the shell is fine — treat it as a bug in this section, not a pass. Also note: the
- * The `'*.html'` regex reads raw characters, not tokens — a quoted `'*.html'`-looking
- * string or a `word:'...'`-looking fragment sitting inside a "//" or block-comment inside
- * one of these var blocks would be picked up as a phantom reference. No such comment
- * exists in these blocks today (verified) — flagged here as a known blind spot, not a bug.
+ * It used to also scan the SPA shell's hand-maintained literal tool maps (PRACTICE_LABELS,
+ * PRACTICE_PAGE_TOOLS, PRACTICE_LABEL_NEUTRAL) by isolating each `var NAME={...};` with a
+ * quote-aware brace counter and regexing `'*.html'` literals out of it — fragile by
+ * construction, and flagged as such. Those maps are gone: the practice panel now derives every
+ * tool link and title from FD_INDEX (site_manifest + tool_registry via fd_data.js), so a link
+ * to an unshipped tool is no longer expressible there. What replaced the scan is section 4b,
+ * which resolves topic_meta's cta, relatedTools and clinicalWorkflow.actions targets against
+ * the shipped tree — strictly wider coverage than the map scan had, and against the registry
+ * the panel actually reads.
  *
  * Escape hatch: a specific reference that's a genuine, reviewed exception (not a bug) can
- * be listed here instead of fixed, with a comment explaining why. Empty as of this task —
- * the (a)/(b)/(c) checks below found zero pre-existing violations against the current
- * build, so nothing needed it.
- *
- * Tri-state presence gate (added after CI caught this scan hard-failing the SP-interview
- * contract suite's synthetic fixture sites, whose stub index.html deliberately carries
- * none of these maps — it's testing the checker's *other* rules, not the real shell):
- *   - both maps present   → scan runs normally (the live shell always carries both).
- *   - zero maps present   → this isn't a shell that's supposed to have these maps at all
- *     (a test fixture, a non-SPA site) — section 7b is skipped entirely (a, b, and c) with
- *     an I() note, not a HARD failure.
- *   - one map present → real drift or regex rot on an actual shell (which always ships both)
- *     — kept as a HARD failure for the missing map. Do NOT
- *     special-case known fixtures by path/name; the all-or-nothing marker count is the
- *     only signal used, so a real shell that loses a map still fails loudly.
+ * be listed here instead of fixed, with a comment explaining why. Empty today.
  */
 const SHELL_REF_ALLOWLIST = new Set([
   // 'tool-name.html',   // example shape — reason it's allowlisted instead of fixed
 ]);
 {
-  const extractVarBlock = (src, varName) => {
-    const marker = `var ${varName}=`;
-    const start = src.indexOf(marker);
-    if (start === -1) return null;
-    let i = src.indexOf('{', start);
-    if (i === -1) return null;
-    let depth = 0, inStr = null;
-    for (; i < src.length; i++) {
-      const c = src[i];
-      if (inStr) { if (c === '\\') { i++; continue; } if (c === inStr) inStr = null; continue; }
-      if (c === "'" || c === '"') { inStr = c; continue; }
-      if (c === '{') depth++;
-      else if (c === '}') { depth--; if (depth === 0) return src.slice(start, i + 1); }
-    }
-    return null; // ran off the end without closing — extraction failed
-  };
-  const htmlNamesIn = (block) => new Set([...block.matchAll(/(['"])([^'"]+\.html)\1/g)].map(m => m[2]));
-  // PRACTICE_LABELS was retired when the practice panel started taking tool titles from
-  // FD_INDEX (site_manifest via fd_data.js) instead of a second hand map — a map whose stale
-  // entries had outlived two instrument retirements. PRACTICE_LABEL_NEUTRAL replaces it here:
-  // it is the only literal tool map the panel still owns, and the same rule applies to it.
-  const TOOL_MAP_VARS = ['PRACTICE_LABEL_NEUTRAL', 'PRACTICE_PAGE_TOOLS'];
-
-  const shellHtml = existsSync(shellPath) ? readFileSync(shellPath, 'utf8') : null;
-  if (shellHtml === null) {
-    H('index.html missing from built site (shell-reference scan cannot run)');
-  } else {
-    const presentMapVars = TOOL_MAP_VARS.filter(v => shellHtml.includes(`var ${v}=`));
-    if (presentMapVars.length === 0) {
-      I('no shell literal maps in index.html — 7b scan skipped (fixture or non-SPA site)');
-    } else {
-      // (a) tool filenames referenced across the six shell maps must exist in tools/.
-      const toolRefs = new Map(); // toolName -> Set(varName it was found in)
-      for (const varName of TOOL_MAP_VARS) {
-        const block = extractVarBlock(shellHtml, varName);
-        if (block === null) { H(`shell literal map "${varName}" not found in index.html (extraction failed — see comment above)`); continue; }
-        for (const name of htmlNamesIn(block)) {
-          if (!toolRefs.has(name)) toolRefs.set(name, new Set());
-          toolRefs.get(name).add(varName);
-        }
-      }
-      for (const [name, vars] of [...toolRefs].sort((a, b) => a[0].localeCompare(b[0]))) {
-        if (SHELL_REF_ALLOWLIST.has(name)) continue;
-        if (!existsSync(p('tools', name)))
-          H(`shell references missing tool "${name}" (in ${[...vars].sort().join(', ')}) — index.html`);
-      }
-
-      // (b) `?page=`/`?tool=` references in shipped content/*.md must resolve to a shipped
-      // content slug / tool file. Target is read up to the next &, quote, close-paren, or
-      // whitespace, so both markdown `(...)` links and raw `href="..."` attributes match. A
-      // trailing `#fragment` (e.g. `?page=shelf.md#section`) is stripped after decoding —
-      // without it, a future in-page anchor link would false-positive as a missing file.
-      // decodeURIComponent throws on a malformed `%` escape; caught below and reported as
-      // a finding, not an uncaught crash of the whole gate.
-      const contentSetC = new Set(contentFiles);
-      const toolSetC = new Set(toolFiles);
-      const ROUTE_REF = /\?(page|tool)=([^&"')\s]+)/g;
-      for (const f of contentFiles) {
-        const text = readFileSync(p('content', f), 'utf8');
-        for (const m of text.matchAll(ROUTE_REF)) {
-          const kind = m[1];
-          let target;
-          try { target = decodeURIComponent(m[2]); }
-          catch (e) { H(`content/${f} → ?${kind}= reference has an undecodable target "${m[2]}" (${e.message})`); continue; }
-          target = target.replace(/#.*$/, '');
-          if (SHELL_REF_ALLOWLIST.has(target)) continue;
-          const ok = kind === 'page' ? contentSetC.has(target) : toolSetC.has(target);
-          if (!ok) H(`content/${f} → ?${kind}= references missing ${kind === 'page' ? 'content page' : 'tool'}: ${target}`);
-        }
-      }
+  // `?page=`/`?tool=` references in shipped content/*.md must resolve to a shipped content
+  // slug / tool file. Target is read up to the next &, quote, close-paren, or whitespace, so
+  // both markdown `(...)` links and raw `href="..."` attributes match. A trailing `#fragment`
+  // (e.g. `?page=shelf.md#section`) is stripped after decoding — without it, a future in-page
+  // anchor link would false-positive as a missing file. decodeURIComponent throws on a
+  // malformed `%` escape; caught below and reported as a finding, not an uncaught crash.
+  const contentSetC = new Set(contentFiles);
+  const toolSetC = new Set(toolFiles);
+  const ROUTE_REF = /\?(page|tool)=([^&"')\s]+)/g;
+  for (const f of contentFiles) {
+    const text = readFileSync(p('content', f), 'utf8');
+    for (const m of text.matchAll(ROUTE_REF)) {
+      const kind = m[1];
+      let target;
+      try { target = decodeURIComponent(m[2]); }
+      catch (e) { H(`content/${f} → ?${kind}= reference has an undecodable target "${m[2]}" (${e.message})`); continue; }
+      target = target.replace(/#.*$/, '');
+      if (SHELL_REF_ALLOWLIST.has(target)) continue;
+      const ok = kind === 'page' ? contentSetC.has(target) : toolSetC.has(target);
+      if (!ok) H(`content/${f} → ?${kind}= references missing ${kind === 'page' ? 'content page' : 'tool'}: ${target}`);
     }
   }
 }
