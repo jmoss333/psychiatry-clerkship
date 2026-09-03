@@ -5,10 +5,17 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.error import HTTPError
 from urllib.request import HTTPRedirectHandler, Request, build_opener
+
+# Dual-mode: this module runs both as a package (tests) and as a script (workflows).
+try:  # package
+    from .receipt_summary import report
+except ImportError:  # script - siblings are on sys.path
+    from receipt_summary import report
 
 
 PUBLIC_STATUS_URL = (
@@ -250,6 +257,10 @@ def main(argv=None, *, opener=None, now=_utc_now):
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args(argv)
     receipt = probe_status(args.url, opener=opener, now=now)
+    # Say which of the FAILURE_CODES fired before exiting. Without this the
+    # Actions log carries only "exit code 2" and the cause lives solely in the
+    # receipt artifact. See receipt_summary for why that mattered.
+    report(receipt, "sp-health", stream=sys.stderr)
     try:
         args.out.parent.mkdir(parents=True, exist_ok=True)
         args.out.write_text(
@@ -257,6 +268,7 @@ def main(argv=None, *, opener=None, now=_utc_now):
             encoding="utf-8",
         )
     except OSError:
+        print("sp-health: receipt write failed", file=sys.stderr)
         return 2
     return 0 if receipt["gate"] == "ready" else 2
 
