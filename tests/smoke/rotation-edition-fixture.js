@@ -1,6 +1,8 @@
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 
+import { routeFetchWithRetry } from './net-resilience.js';
+
 export const ROTATION_CURATOR_PATH = '/tools/rotation-curator.html';
 export const ROTATION_EDITION_ASSIGNMENT = 'var FD_ROTATION_EDITION_CATALOG=';
 export const ROTATION_EDITION_ORDER = [
@@ -232,7 +234,7 @@ export async function installRotationEditionRoute(page, options = {}) {
       await route.continue();
       return;
     }
-    const response = await route.fetch();
+    const response = await routeFetchWithRetry(route);
     const html = await response.text();
     const audience = readAudience(html);
     const original = replaceRotationEditionCatalog(html, {

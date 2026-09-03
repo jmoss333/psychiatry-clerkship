@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { routeFetchWithRetry } from './net-resilience.js';
 import { webcrypto } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 
@@ -77,7 +78,7 @@ async function installSyntheticLearnerCatalog(page) {
     if (route.request().resourceType() !== 'document') return route.continue();
     const pathname = new URL(route.request().url()).pathname;
     if (pathname !== '/' && pathname !== '/index.html') return route.continue();
-    const response = await route.fetch();
+    const response = await routeFetchWithRetry(route);
     let html = await response.text();
     const audienceMatch = html.match(/var FD_AUDIENCE=(["'][^"']+["']);/);
     const catalogMatch = html.match(/var FD_ROTATION_EDITION_CATALOG=(\{.*?\});\s*\n/s);
@@ -1511,7 +1512,7 @@ test('a missing governance mount falls back to core without committing or attemp
   const before = await localStorageSnapshot(page);
   await resetEditionWriteLog(page);
   await page.route(/\/\?case=edition-missing-mount$/, async (route) => {
-    const response = await route.fetch();
+    const response = await routeFetchWithRetry(route);
     const body = (await response.text()).replace('<div id="governanceMount"></div>', '');
     await route.fulfill({ response, body });
   });
@@ -1579,7 +1580,7 @@ test('a missing fdApp returns quietly with no writes, edition render, or uncaugh
   const before = await localStorageSnapshot(page);
   await resetEditionWriteLog(page);
   await page.route(/\/\?case=edition-missing-root$/, async (route) => {
-    const response = await route.fetch();
+    const response = await routeFetchWithRetry(route);
     const body = (await response.text()).replace(
       '<div id="fdApp" class="fd-shell" aria-busy="true" inert>',
       '<div class="fd-shell" aria-busy="true" inert>',

@@ -225,3 +225,35 @@ test('the media gate names the bandwidth quota as the first thing to check', () 
   assert.match(gate, /BANDWIDTH QUOTA/);
   assert.match(gate, /Incident pattern 2/);
 });
+
+// Portability pin. macOS ships bash 3.2, where expanding an EMPTY array under `set -u` aborts
+// with "unbound variable"; bash 4.4+ on the Linux CI runner tolerates it silently. PULL_ARGS is
+// empty whenever GIT_LFS_FETCH_INCLUDE is unset — the ordinary case — so a bare "${PULL_ARGS[@]}"
+// takes down `node --test`, BOTH local site builds (build_and_check.sh runs the node suite first
+// under `set -e`), and therefore every pre-push on a Mac, while CI stays green and reports nothing.
+// The behavioural tests above catch this on macOS only; this pin is what catches it on Linux.
+test('optional-argument arrays survive bash 3.2, where an empty array under set -u aborts', () => {
+  const script = readFileSync(join(SITE_BUILD, 'lfs_pull_cached.sh'), 'utf8');
+  assert.match(script, /^set -[a-z]*u/m, 'the script must still run under set -u for this to matter');
+  assert.doesNotMatch(
+    script,
+    /git lfs pull "\$\{PULL_ARGS\[@\]\}"/,
+    'bare "${PULL_ARGS[@]}" aborts on bash 3.2 whenever GIT_LFS_FETCH_INCLUDE is unset',
+  );
+  assert.match(
+    script,
+    /\$\{PULL_ARGS\[@\]\+"\$\{PULL_ARGS\[@\]\}"\}/,
+    'expand as ${PULL_ARGS[@]+"${PULL_ARGS[@]}"} so an empty array contributes no argument',
+  );
+});
+
+// PATTERNS is still expanded bare, which is correct ONLY while the empty-guard above it exits
+// first. Pin the invariant rather than the idiom, so deleting the guard fails here loudly.
+test('the bare PATTERNS expansion stays guarded by an explicit empty check that exits', () => {
+  const script = readFileSync(join(SITE_BUILD, 'lfs_pull_cached.sh'), 'utf8');
+  assert.match(
+    script,
+    /\[ "\$\{#PATTERNS\[@\]\}" -eq 0 \][\s\S]{0,240}?exit 0/,
+    'bare "${PATTERNS[@]}" is only bash-3.2-safe while the empty-array guard still exits',
+  );
+});

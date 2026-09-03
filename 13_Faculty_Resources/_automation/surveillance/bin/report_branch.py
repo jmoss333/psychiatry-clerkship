@@ -25,14 +25,38 @@ def _subprocess_runner(command, **kwargs):
     return subprocess.run(command, **kwargs)
 
 
+class CommandFailed(subprocess.CalledProcessError):
+    """A failed git/gh command that prints why it failed.
+
+    Every command here runs with `capture_output=True`, so the plain
+    CalledProcessError says only "returned non-zero exit status 1" — the
+    diagnosis is sitting in .stderr and never reaches the log. Both weekly
+    surveillance jobs failed at `gh pr create` from 2026-08-31 with exactly
+    that empty traceback. Subclasses CalledProcessError so existing handlers
+    and `assertRaises` keep working.
+    """
+
+    def __str__(self):
+        detail = (self.stderr or self.output or "").strip()
+        if not detail:
+            return super().__str__()
+        body = "\n".join(f"  {line}" for line in detail.splitlines())
+        return f"{super().__str__()}\n{body}"
+
+
 def _run(runner, command, repo_root, *, check=True):
-    return runner(
-        list(command),
-        cwd=str(repo_root),
-        check=check,
-        capture_output=True,
-        text=True,
-    )
+    try:
+        return runner(
+            list(command),
+            cwd=str(repo_root),
+            check=check,
+            capture_output=True,
+            text=True,
+        )
+    except subprocess.CalledProcessError as exc:
+        raise CommandFailed(
+            exc.returncode, exc.cmd, output=exc.output, stderr=exc.stderr
+        ) from None
 
 
 def _validate_branch(value, label):
@@ -85,6 +109,39 @@ def _open_pr_number(runner, repo_root, branch, base):
     if not isinstance(items, list) or len(items) > 1:
         raise ValueError("expected at most one open surveillance inbox pull request")
     return items[0].get("number") if items else None
+
+
+def _create_or_adopt_pr(runner, repo_root, branch, base):
+    """Open the inbox PR, adopting one that already exists.
+
+    `openPrNumber` is read during hydrate and consumed by publish minutes later,
+    so it is a snapshot, not a fact. Anything that opens the PR inside that
+    window — the sibling weekly job under the same `surveillance-inbox`
+    concurrency group, a person, a re-run of this step — makes `gh pr create`
+    exit 1, and the job went red having already pushed the reports it exists to
+    publish. Re-ask GitHub before believing the snapshot.
+
+    A create that fails for any other reason still fails the job, now carrying
+    gh's own stderr (see CommandFailed).
+    """
+    try:
+        created = _run(
+            runner,
+            [
+                "gh", "pr", "create",
+                "--base", base,
+                "--head", branch,
+                "--title", PR_TITLE,
+                "--body", PR_BODY,
+            ],
+            repo_root,
+        )
+    except subprocess.CalledProcessError:
+        adopted = _open_pr_number(runner, repo_root, branch, base)
+        if adopted is None:
+            raise
+        return adopted
+    return created.stdout.strip() or None
 
 
 def hydrate(
@@ -231,18 +288,7 @@ def publish(*, repo_root, state_path, runner=_subprocess_runner):
 
         pr_number = state["openPrNumber"]
         if pr_number is None:
-            created = _run(
-                runner,
-                [
-                    "gh", "pr", "create",
-                    "--base", base,
-                    "--head", branch,
-                    "--title", PR_TITLE,
-                    "--body", PR_BODY,
-                ],
-                repo_root,
-            )
-            pr_number = created.stdout.strip() or None
+            pr_number = _create_or_adopt_pr(runner, repo_root, branch, base)
         return {"changed": True, "pullRequest": pr_number}
     finally:
         if switched:
