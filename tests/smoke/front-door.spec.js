@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { requestGetWithRetry, routeFetchWithRetry } from './net-resilience.js';
+import { isResidentProject } from './audience.js';
 
 const FROZEN_NOW = new Date('2026-08-17T12:00:00-04:00');
 const PHONE = { width: 390, height: 844 };
@@ -7,7 +8,7 @@ const FAILURE_COPY = 'This safety protocol is unavailable right now—do not rel
 const runtimeErrors = new WeakMap();
 
 function audience(testInfo) {
-  const resident = testInfo.project.name === 'nav-res';
+  const resident = isResidentProject(testInfo.project.name);
   return {
     role: resident ? 'pgy1' : 'student',
     libraryCount: resident ? 92 : 83,  // +therapy_on_the_unit.md, +therapy_reading_room.md (WP-T3)
