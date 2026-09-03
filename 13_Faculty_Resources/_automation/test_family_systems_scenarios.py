@@ -9,6 +9,11 @@ ROOT = Path(__file__).resolve().parents[2]
 DATA_PATH = ROOT / "family_systems_scenarios.json"
 SCHEMA_PATH = ROOT / "family_systems_scenarios.schema.json"
 REGISTRY_PATH = ROOT / "tool_registry.json"
+SNIPPET_PATH = ROOT / "13_Faculty_Resources" / "_automation" / "site_build" / "fam_retrieval.js"
+CONSUMERS = (
+    "06_Family_and_Relational/family-systems-practice.html",
+    "07_Evidence_and_Reading/Landmark_Trials/review.html",
+)
 
 ID_RE = re.compile(r"^[a-z0-9_]+$")
 REVEAL_FIELDS = {"opening", "prepare", "ask", "say", "avoid", "handoff", "safety"}
@@ -90,16 +95,29 @@ def main():
         f"storageKeys must be ['cw_family_v1','cw_srs_v1'], got {tool['storageKeys']!r}"
     )
 
-    # the default retrieval sources must match the tool's actual DEFAULT_RETRIEVAL JS,
-    # since the per-scenario required-field checks above are derived from them
-    html = (ROOT / "06_Family_and_Relational" / "family-systems-practice.html").read_text(encoding="utf-8")
-    block = re.search(r"var DEFAULT_RETRIEVAL=\[(.*?)\];", html, re.DOTALL)
-    assert block, "family-systems-practice.html must define DEFAULT_RETRIEVAL"
+    # The default retrieval sources must match the shared snippet's FAM_DEFAULT_RETRIEVAL, since
+    # the per-scenario required-field checks above are derived from them. The list moved out of
+    # family-systems-practice.html once review.html began serving the same FAM# cards in the daily
+    # queue: famCardId embeds the prompt id, so a second copy could file one schedule under a
+    # prompt the learner never saw. One definition, both consumers.
+    js = SNIPPET_PATH.read_text(encoding="utf-8")
+    block = re.search(r"var FAM_DEFAULT_RETRIEVAL=\[(.*?)\];", js, re.DOTALL)
+    assert block, "fam_retrieval.js must define FAM_DEFAULT_RETRIEVAL"
     js_sources = tuple(re.findall(r"revealFrom:'([a-z_]+)'", block.group(1)))
     assert js_sources == DEFAULT_SOURCES, (
-        f"tool DEFAULT_RETRIEVAL revealFrom {js_sources!r} != contract {DEFAULT_SOURCES!r} — "
+        f"shared FAM_DEFAULT_RETRIEVAL revealFrom {js_sources!r} != contract {DEFAULT_SOURCES!r} — "
         "update the required-field checks in this test to match"
     )
+
+    # every consumer takes the prompts by injection and keeps no copy of its own
+    for rel in CONSUMERS:
+        src = (ROOT / rel).read_text(encoding="utf-8")
+        assert src.count("/*__FAM_RETRIEVAL__*/") == 1, (
+            f"{rel} must inject the shared retrieval prompts exactly once"
+        )
+        assert "var DEFAULT_RETRIEVAL=" not in src and "var FAM_DEFAULT_RETRIEVAL=" not in src, (
+            f"{rel} must not re-declare the prompt list — the card id embeds the prompt id"
+        )
 
     print("test_family_systems_scenarios: OK — scenarios, retrieval contract, schema, and registry")
 

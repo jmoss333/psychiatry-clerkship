@@ -17,7 +17,7 @@ const F = new Function(`
   ${read('frontdoor/fd_today.js')}
   ${read('frontdoor/fd_due.js')}
   ${blockSrc}
-  return { fdBlockPlan, fdBlockCard, fdBlockRouteForStep, fdBlockStatus, fdBlockBudget, fdBuildIndex, fdItemsForWeek };
+  return { fdBlockPlan, fdBlockCard, fdBlockRouteForStep, fdBlockStatus, fdBlockBudget, fdBuildIndex, fdItemsForWeek, fdBlockDueTotal, FD_BLOCK_REVIEW_BUCKETS };
 `)();
 
 const AUDIENCE_TOKEN_RE = /MS3|clerkship|student|shelf|resident|UNE|MMC|Sanford/i;
@@ -57,12 +57,27 @@ test('a ten-minute block is reviews, then the next unread page that fits, then q
   assert.ok(plan.total <= 10, `total ${plan.total} must fit the window`);
 });
 
-test('only Daily Review\'s own bucket makes a review step — question and family dues belong to their tools', () => {
-  const plan = F.fdBlockPlan(IDX, state(), 10, { due: { daily: { due: 0 }, qb: { due: 6 }, fam: { due: 2 }, other: { due: 1 } }, weakest: null });
-  assert.deepEqual(plan.steps.map((s) => s.kind), ['page', 'qb'],
-    'review.html cannot serve QB#/FAM# cards, so they must not be promised as a review step');
-  const mixed = F.fdBlockPlan(IDX, state(), 10, { due: { daily: { due: 3 }, qb: { due: 6 }, fam: { due: 2 }, other: { due: 0 } }, weakest: null });
-  assert.equal(mixed.steps[0].n, 3, 'the review step counts daily dues only');
+// The review step must count exactly what review.html can build a queue from: promising more
+// lets the receipt mark the step done after unrelated cards, and promising less hides a review
+// step from a learner who has work waiting. QB# cards are the one due kind left out — the
+// question bank's own session serves those first, so the block reaches them through its
+// question step instead.
+test('the review step counts every bucket review.html serves, and only those', () => {
+  const onlyQb = F.fdBlockPlan(IDX, state(), 10, { due: { daily: { due: 0 }, qb: { due: 6 }, other: { due: 1 } }, weakest: null });
+  assert.deepEqual(onlyQb.steps.map((s) => s.kind), ['page', 'qb'],
+    'review.html cannot serve QB# cards, so they must not be promised as a review step');
+
+  assert.deepEqual(F.FD_BLOCK_REVIEW_BUCKETS, ['daily', 'fam', 'comm', 'reason'],
+    'keep this list in step with the card sources in review.html');
+
+  for (const bucket of F.FD_BLOCK_REVIEW_BUCKETS) {
+    const plan = F.fdBlockPlan(IDX, state(), 10, { due: { [bucket]: { due: 3 }, qb: { due: 6 } }, weakest: null });
+    assert.equal(plan.steps[0].kind, 'review', `${bucket} dues must make a review step`);
+    assert.equal(plan.steps[0].n, 3, `${bucket} dues must be counted`);
+  }
+
+  const mixed = F.fdBlockPlan(IDX, state(), 10, { due: { daily: { due: 1 }, fam: { due: 1 }, comm: { due: 1 }, reason: { due: 1 }, qb: { due: 6 }, other: { due: 9 } }, weakest: null });
+  assert.equal(mixed.steps[0].n, 4, 'the served buckets sum; qb and other stay out');
 });
 
 test('no dues means no review step; no weak area means unfiltered questions', () => {

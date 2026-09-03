@@ -117,8 +117,12 @@ test("review.html computes 'sug' exactly once and shares it between the classNam
     sugDeclarations.length, 1,
     `expected exactly one 'var sug=' declaration, found ${sugDeclarations.length}`,
   );
-  assert.match(reviewSrc, /var\s+sug\s*=\s*gotIt\s*\?\s*'Good'\s*:\s*'Again'/,
-    "the single 'sug' declaration must be gotIt?'Good':'Again'");
+  // The choice-card branch is unchanged. A recall card (a family retrieval prompt served in the
+  // daily queue) suggests nothing, because it has no objective outcome to suggest from — the
+  // learner's own grade IS the outcome. Still exactly one declaration, still shared.
+  assert.match(reviewSrc,
+    /var\s+sug\s*=\s*isRecall\s*\?\s*''\s*:\s*\(\s*gotIt\s*\?\s*'Good'\s*:\s*'Again'\s*\)/,
+    "the single 'sug' declaration must keep gotIt?'Good':'Again' for choice cards");
 
   // (2) The grade-button className region (captured independently of the calibLog
   // call site below) must reference 'sug', not a re-derived gotIt/!gotIt ternary —
