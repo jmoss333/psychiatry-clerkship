@@ -119,10 +119,9 @@ if [ -n "${GIT_LFS_FETCH_INCLUDE:-}" ]; then
   log "honouring GIT_LFS_FETCH_INCLUDE=$GIT_LFS_FETCH_INCLUDE"
 fi
 start=$(date +%s)
-# `${arr[@]+"${arr[@]}"}` — NOT a redundant flourish. macOS ships bash 3.2, where expanding an
-# EMPTY array under `set -u` aborts with "unbound variable"; bash 4.4+ (the CI runner) tolerates it.
-# PULL_ARGS is empty whenever GIT_LFS_FETCH_INCLUDE is unset, i.e. the normal case. The `+` form
-# tests set-ness without tripping `set -u`, and the inner quotes keep a spaced argument as one word.
+# ${PULL_ARGS[@]+...}: bash < 4.4 (macOS ships 3.2) treats "${empty[@]}" as unset under `set -u`,
+# which aborts this substitution with rc=1 and an EMPTY $out — the script would then report
+# `git lfs pull failed (exit 1)` with no cause, exactly the diagnosis this step exists to give.
 if out=$(git lfs pull ${PULL_ARGS[@]+"${PULL_ARGS[@]}"} 2>&1); then
   rc=0
 else

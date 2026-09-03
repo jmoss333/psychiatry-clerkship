@@ -12,14 +12,14 @@
    "stem": "This claim on med_monitoring.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Yatham et al. · 2018 · Bipolar Disorders",
-     "c": true,
-     "sourceId": "canmat-isbd-bipolar-2018",
+     "t": "American Academy of Child and Adolescent Psychiatry · 2026",
+     "sourceId": "aacap-parameters",
      "key": "A"
     },
     {
-     "t": "Chung et al. · 2019 · BMJ Open",
-     "sourceId": "chung-2019-first-week-month",
+     "t": "Yatham et al. · 2018 · Bipolar Disorders",
+     "c": true,
+     "sourceId": "canmat-isbd-bipolar-2018",
      "key": "B"
     },
     {
@@ -52,24 +52,24 @@
    "stem": "This claim on med_monitoring.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Appelbaum et al. · 1988 · The New England Journal of Medicine",
-     "sourceId": "appelbaum-grisso-1988-capacity",
-     "key": "A"
-    },
-    {
      "t": "Yatham et al. · 2018 · Bipolar Disorders",
      "sourceId": "canmat-isbd-bipolar-2018",
-     "key": "B"
+     "key": "A"
     },
     {
      "t": "U.S. Food and Drug Administration · 2025",
      "c": true,
      "sourceId": "clozapine-rems",
-     "key": "C"
+     "key": "B"
     },
     {
      "t": "U.S. Food and Drug Administration · 2026",
      "sourceId": "fda-drug-safety",
+     "key": "C"
+    },
+    {
+     "t": "Links et al. · 2025 · Am J Psychother",
+     "sourceId": "links-ross-2025",
      "key": "D"
     }
    ],
@@ -108,8 +108,8 @@
      "key": "C"
     },
     {
-     "t": "Goldstein et al. · 2024 · Perm J",
-     "sourceId": "goldstein-2024",
+     "t": "American Association for Emergency Psychiatry Project BETA · 2012",
+     "sourceId": "project-beta-psychopharm-agitation-2012",
      "key": "D"
     }
    ],
@@ -138,18 +138,18 @@
      "key": "A"
     },
     {
-     "t": "U.S. Food and Drug Administration · 2026",
-     "sourceId": "fda-prozac-label-maoi-switching",
+     "t": "American Psychiatric Association Publishing · 2022",
+     "sourceId": "dsm-5-tr",
      "key": "B"
     },
     {
-     "t": "Tarrier et al. · 2004 · Behav Res Ther",
-     "sourceId": "tarrier-wykes-2004",
+     "t": "U.S. Food and Drug Administration · 2026",
+     "sourceId": "fda-prozac-label-maoi-switching",
      "key": "C"
     },
     {
-     "t": "VanderKruik et al. · 2017 · BMC Psychiatry",
-     "sourceId": "vanderkruik-2017-postpartum-psychosis-prevalence",
+     "t": "Rush et al. · 2006 · American Journal of Psychiatry",
+     "sourceId": "rush-2006-stard",
      "key": "D"
     }
    ],
@@ -183,13 +183,13 @@
      "key": "B"
     },
     {
-     "t": "Stanley et al. · 2012 · Cognitive and Behavioral Practice",
-     "sourceId": "stanley-brown-2012-safety-planning",
+     "t": "Schneider et al. · 2005 · JAMA",
+     "sourceId": "schneider-2005-antipsychotic-dementia-mortality",
      "key": "C"
     },
     {
-     "t": "Wampold et al. · 1997 · Psychological Bulletin",
-     "sourceId": "wampold-1997-bona-fide-psychotherapies",
+     "t": "Wibbelink et al. · 2026 · JAMA Psychiatry",
+     "sourceId": "wibbelink-2026",
      "key": "D"
     }
    ],
@@ -212,24 +212,24 @@
    "stem": "This claim on t_mood.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "American Academy of Child and Adolescent Psychiatry · 2026",
-     "sourceId": "aacap-parameters",
-     "key": "A"
-    },
-    {
      "t": "Yatham et al. · 2018 · Bipolar Disorders",
      "c": true,
      "sourceId": "canmat-isbd-bipolar-2018",
-     "key": "B"
+     "key": "A"
     },
     {
      "t": "Cipriani et al. · 2013 · BMJ",
      "sourceId": "cipriani-2013-lithium-suicide",
+     "key": "B"
+    },
+    {
+     "t": "Cuijpers et al. · 2026 · Clin Psychol Rev",
+     "sourceId": "cuijpers-2026",
      "key": "C"
     },
     {
-     "t": "Schefft et al. · 2019 · Acta Psychiatr Scand",
-     "sourceId": "schefft-2019",
+     "t": "Penzenik et al. · 2026 · J Rural Health",
+     "sourceId": "penzenik-2026",
      "key": "D"
     }
    ],
@@ -263,13 +263,13 @@
      "key": "B"
     },
     {
-     "t": "Diefenbach et al. · 2025 · Gen Hosp Psychiatry",
-     "sourceId": "diefenbach-2025",
+     "t": "March et al. · 2004 · JAMA",
+     "sourceId": "march-2004-tads",
      "key": "C"
     },
     {
-     "t": "Pharoah et al. · 2010 · Cochrane Database of Systematic Reviews",
-     "sourceId": "pharoah-2010-family-intervention",
+     "t": "Volkow et al. · 2016 · New England Journal of Medicine",
+     "sourceId": "volkow-2016-addiction-brain-disease",
      "key": "D"
     }
    ],
@@ -452,24 +452,24 @@
    "stem": "This claim on t_perinatal.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "American Academy of Child and Adolescent Psychiatry · 2026",
-     "sourceId": "aacap-parameters",
+     "t": "Stanley et al. · 2018 · JAMA Psychiatry",
+     "sourceId": "stanley-brown-2018",
      "key": "A"
+    },
+    {
+     "t": "U.S. Department of Veterans Affairs / Department of Defense · 2024",
+     "sourceId": "va-dod-suicide-cpg-2024",
+     "key": "B"
     },
     {
      "t": "VanderKruik et al. · 2017 · BMC Psychiatry",
      "c": true,
      "sourceId": "vanderkruik-2017-postpartum-psychosis-prevalence",
-     "key": "B"
+     "key": "C"
     },
     {
      "t": "Wesseloo et al. · 2016 · The American Journal of Psychiatry",
      "sourceId": "wesseloo-2016-postpartum-relapse",
-     "key": "C"
-    },
-    {
-     "t": "Xia et al. · 2011 · Cochrane Database Syst Rev",
-     "sourceId": "xia-2011",
      "key": "D"
     }
    ],
@@ -492,13 +492,13 @@
    "stem": "This claim on t_perinatal.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Cipriani et al. · 2013 · BMJ",
-     "sourceId": "cipriani-2013-lithium-suicide",
+     "t": "Boggs et al. · 2020 · J Gen Intern Med",
+     "sourceId": "boggs-2020-lethal-means-assessment",
      "key": "A"
     },
     {
-     "t": "Penzenik et al. · 2026 · J Rural Health",
-     "sourceId": "penzenik-2026",
+     "t": "Strawn et al. · 2007 · The American Journal of Psychiatry",
+     "sourceId": "strawn-2007-neuroleptic-malignant-syndrome",
      "key": "B"
     },
     {
@@ -703,8 +703,8 @@
      "key": "B"
     },
     {
-     "t": "March et al. · 2004 · JAMA",
-     "sourceId": "march-2004-tads",
+     "t": "Huggett et al. · 2024 · Clin Psychol Rev",
+     "sourceId": "huggett-2024",
      "key": "C"
     },
     {
@@ -743,13 +743,13 @@
      "key": "B"
     },
     {
-     "t": "Chung et al. · 2017 · JAMA Psychiatry",
-     "sourceId": "chung-2017-postdischarge-suicide",
+     "t": "Strawn et al. · 2007 · The American Journal of Psychiatry",
+     "sourceId": "strawn-2007-neuroleptic-malignant-syndrome",
      "key": "C"
     },
     {
-     "t": "Strawn et al. · 2007 · The American Journal of Psychiatry",
-     "sourceId": "strawn-2007-neuroleptic-malignant-syndrome",
+     "t": "VanderKruik et al. · 2017 · BMC Psychiatry",
+     "sourceId": "vanderkruik-2017-postpartum-psychosis-prevalence",
      "key": "D"
     }
    ],
@@ -782,14 +782,14 @@
      "key": "B"
     },
     {
-     "t": "Strawn et al. · 2007 · The American Journal of Psychiatry",
-     "c": true,
-     "sourceId": "strawn-2007-neuroleptic-malignant-syndrome",
+     "t": "Cipriani et al. · 2013 · BMJ",
+     "sourceId": "cipriani-2013-lithium-suicide",
      "key": "C"
     },
     {
-     "t": "Wesseloo et al. · 2016 · The American Journal of Psychiatry",
-     "sourceId": "wesseloo-2016-postpartum-relapse",
+     "t": "Strawn et al. · 2007 · The American Journal of Psychiatry",
+     "c": true,
+     "sourceId": "strawn-2007-neuroleptic-malignant-syndrome",
      "key": "D"
     }
    ],

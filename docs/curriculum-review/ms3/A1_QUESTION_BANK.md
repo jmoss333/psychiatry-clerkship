@@ -51,7 +51,7 @@
 - Immediate switch to clozapine — clozapine's low D2 affinity eliminates akathisia risk and is the definitive treatment when any antipsychotic causes akathisia.
 - Standing diazepam — benzodiazepines are the first-line pharmacological agent for dopamine-blocker-induced restlessness.
 
-**Rationale.** Anticholinergic first-line, Clozapine immediately, and Benzodiazepine first-line all misorient the management hierarchy. Propranolol (B) has the strongest evidence for akathisia: it is effective in multiple small RCTs reviewed in the Cochrane systematic analysis (Lima et al. 2004). The management sequence is: (1) reduce antipsychotic dose or switch if possible — the mechanism fix; (2) propranolol when dose reduction isn't immediately available; (3) benztropine if parkinsonism co-exists; (4) benzodiazepine adjunct if symptoms remain severe. Avoid escalating the antipsychotic — the cardinal error.
+**Rationale.** Anticholinergic first-line, Clozapine immediately, and Benzodiazepine first-line all misorient the management hierarchy. Propranolol (B) remains the standard first-line pharmacotherapy for akathisia when dose reduction or switching is not immediately available, and among the options offered it is the best-supported choice — but characterize the evidence honestly: the 2004 Cochrane review (Lima et al., CD001946) found only three small placebo-controlled RCTs (total n=51, ≤72 hours), could draw no firm conclusions, and judged the data insufficient to recommend beta-blockers for akathisia. The recommendation rests on early small trials and accumulated clinical practice rather than on positive systematic-review evidence. The management sequence is: (1) reduce antipsychotic dose or switch if possible — the mechanism fix; (2) propranolol when dose reduction isn't immediately available; (3) benztropine if parkinsonism co-exists; (4) benzodiazepine adjunct if symptoms remain severe. Avoid escalating the antipsychotic — the cardinal error.
 
 **Pearl.** Akathisia pharmacotherapy: propranolol 20–40 mg BID is first-line (strongest evidence); add benztropine if parkinsonism co-exists; benzodiazepine is third-line adjunct.
 
@@ -363,7 +363,7 @@
 - The decreased sleep, grandiosity, and pressured speech are likely stimulant side effects from his ADHD medications — reduce the dose and reassess before considering a mood diagnosis.
 - ADHD is chronic and cross-situational from childhood; episodic presentations with mood elevation, decreased need for sleep, and grandiosity are mood or substance flags, not ADHD exacerbations — this clinical picture warrants a first manic episode evaluation, not a stimulant adjustment. **← keyed correct**
 
-**Rationale.** ADHD intensification for episodic change and ADHD excludes bipolar both apply the wrong clinical framework. Option C also describes the correct reasoning but D is more complete in naming the key discriminators. The page explicitly states: 'ADHD is chronic, pervasive, and cross-situational from childhood; mania is episodic with mood elevation, decreased need for sleep, and grandiosity — episodic ADHD-like symptoms are a mood or substance flag.'
+**Rationale.** ADHD intensification for episodic change and ADHD excludes bipolar both apply the wrong clinical framework. Option C is also incorrect: the stem never establishes stimulant treatment, and several days of decreased need for sleep, grandiosity, and pressured speech constitute a manic syndrome rather than a stimulant side effect — the correct move is a first manic episode evaluation now (holding any stimulant), not a dose reduction with a deferred mood assessment. The page explicitly states: 'ADHD is chronic, pervasive, and cross-situational from childhood; mania is episodic with mood elevation, decreased need for sleep, and grandiosity — episodic ADHD-like symptoms are a mood or substance flag.'
 
 **Pearl.** ADHD is chronic and cross-situational from childhood; a new episodic presentation with decreased sleep, grandiosity, and pressured speech is a first manic episode flag — not an ADHD exacerbation.
 
@@ -1352,7 +1352,7 @@
 - Stop all antipsychotics immediately, transfer to a medical unit for hemodynamic monitoring and supportive care, and obtain urgent psychiatric and neurology consultation — ECT should be considered for malignant or refractory catatonia. **← keyed correct**
 - Treat empirically for sepsis — fever, hypotension, and elevated CK indicate bacterial infection requiring antibiotics.
 
-**Rationale.** Underestimate the emergency and Agitation = antipsychotic are the two clinical catastrophes. This is NMS/malignant catatonia: fever, autonomic instability, lead-pipe rigidity, elevated CK after antipsychotic escalation. The correct sequence is stop all antipsychotics, transfer to a medical unit, and emergently consider ECT for malignant or refractory catatonia — not more benzodiazepines on the psychiatric unit and certainly not more antipsychotic.
+**Rationale.** Underestimate the emergency and Agitation = antipsychotic are the two clinical catastrophes. This is NMS/malignant catatonia: fever, autonomic instability, lead-pipe rigidity, elevated CK after antipsychotic escalation. The correct sequence is stop all antipsychotics, transfer to a medical unit for hemodynamic monitoring, continue lorazepam — benzodiazepines remain first-line pharmacotherapy for malignant catatonia while ECT is arranged — and pursue ECT emergently if the patient does not rapidly improve; the error in option A is observation on the psychiatric unit, not the lorazepam, and certainly not more antipsychotic.
 
 **Pearl.** Malignant catatonia overlaps with NMS: fever + rigidity + elevated CK + autonomic instability after antipsychotic exposure — stop antipsychotics, transfer to medical, and consider ECT urgently.
 
@@ -1778,7 +1778,7 @@
 - BPD mood lability is transient and identity-driven; sustained anhedonia and neurovegetative symptoms over days are fully explained by BPD dysregulation and do not warrant evaluation for superimposed major depression.
 - The student is using diagnostic overshadowing — attributing the depressive symptoms to the BPD diagnosis and under-investigating a potentially treatable mood episode; a BPD diagnosis does not protect a patient from also having major depression. **← keyed correct**
 
-**Rationale.** Age-based BPD exclusion and Sequence error miss the core error. Option C has the correct clinical description but key D is the answer that specifically names the error and its mechanism. The page calls this 'the cardinal error: diagnostic overshadowing — letting a personality label cause you to under-treat a real, acute, treatable illness.'
+**Rationale.** Age-based BPD exclusion and Sequence error miss the core error. Option C is the error itself in clinical clothing — its accurate opening (BPD mood lability is transient and reactive) is used to license the false conclusion that sustained anhedonia and neurovegetative symptoms need no evaluation for superimposed major depression; key D names that error and its mechanism. The page calls this 'the cardinal error: diagnostic overshadowing — letting a personality label cause you to under-treat a real, acute, treatable illness.'
 
 **Pearl.** Diagnostic overshadowing in BPD: never let a personality diagnosis suppress investigation of a treatable comorbid mood, psychotic, or substance disorder.
 
@@ -2516,7 +2516,7 @@
 
 - id=`qb_rel_001` · status=`attested` · type=`relational` · difficulty=`2` · competency=`['psychosocial', 'safety']` · **high-yield**
 - Linked pages: `exp_family.md`
-- Evidence: `exp_family.md 'Why It Matters' — structured lethal-means counseling (CALM) cut attempts/deaths from 3.3% to 0.83% at 180 days; suicide risk peaks in the first week post-discharge (Chung et al., JAMA Psychiatry 2017).`
+- Evidence: `exp_family.md 'Why It Matters' — documented lethal-means assessment was associated with fewer suicide attempts and deaths at 180 days (0.83% vs 3.3%; Boggs et al. 2020, quasi-experimental); suicide risk peaks in the first week post-discharge (Chung et al., JAMA Psychiatry 2017).`
 
 **Stem.** A family meeting is held the day before planned discharge for a 52-year-old man admitted after a suicide attempt by overdose. When the agenda reaches safety and warning signs, his wife says: 'We'll keep a close eye on him. And you don't need to worry about the guns — he would never use them, and they're put away.' The attending invites your input. Which response is best?
 
@@ -3298,7 +3298,7 @@
 - The seizure occurred before admission; since he is now calmer, observation without immediate pharmacologic intervention is appropriate.
 - The seizure risk has passed — withdrawal seizures occur in the first 24–48 hours; further seizures are not expected after a first event.
 - Start a fixed-schedule antipsychotic — antipsychotics lower seizure threshold and provide targeted coverage for alcohol withdrawal psychosis.
-- Prior withdrawal seizure is a strong predictor of future seizures; this patient requires aggressive CIWA-Ar-guided benzodiazepine titration with close monitoring for progression to delirium tremens. **← keyed correct**
+- Prior withdrawal seizure is a strong predictor of future seizures; give a benzodiazepine promptly and use front-loaded or fixed-schedule dosing with symptom-triggered supplementation — not score-gated dosing alone — with close monitoring for progression to delirium tremens. **← keyed correct**
 
 **Rationale.** Underestimate the emergency in two forms, and Agitation = antipsychotic. Prior withdrawal seizure is explicitly the most robust predictor of future seizure risk. Antipsychotics lower seizure threshold and are contraindicated for seizure prevention in alcohol withdrawal. CIWA-Ar-guided benzodiazepines are the treatment, and DT vigilance is the priority.
 

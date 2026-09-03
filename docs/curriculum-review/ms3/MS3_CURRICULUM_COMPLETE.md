@@ -3,7 +3,7 @@
 # MS3 curriculum — complete content transcript for clinical review
 
 **Site:** `une-ms3-psychiatry` · **Audience:** MS3 — UNE medical students
-**Generated:** 2026-09-02 from build `08ea900` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
+**Generated:** 2026-09-02 from build `bda0a99` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
 
 ## Who this is for
 
@@ -19,14 +19,14 @@ This transcript is assembled from the **built site**, not the source tree, so it
 | Narrative pages (markdown) | 80 |
 | Interactive tools | 23 |
 | Deep-link-only (hidden) surfaces | 10 |
-| Words of narrative curriculum | 98,921 |
+| Words of narrative curriculum | 99,040 |
 | Practice question-bank items | 192 |
 | Audio-companion quiz decks / questions | 79 / 437 |
 | Communication cases | 12 |
 | Diagnostic reasoning cases | 4 |
 | Family systems scenarios | 8 |
-| Registered evidence sources | 106 |
-| Annotated claims with verbatim source spans | 48 |
+| Registered evidence sources | 107 |
+| Annotated claims with verbatim source spans | 49 |
 
 ## Document set
 
@@ -83,7 +83,7 @@ High-yield places to concentrate: the `topic_meta` **can't-miss**, **rule-out** 
 
 # MS3 · Navigation map
 
-Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-02 @ `08ea900`.
+Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-02 @ `bda0a99`.
 
 ## Orientation  *(pinned)*
 
@@ -127,7 +127,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 11 | Geriatric | `t_geri.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Geriatric/geriatric_psychiatry_inpatient_teaching.md` | 893 |
 | 12 | Perinatal | `t_perinatal.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/Perinatal/perinatal_psychiatry_inpatient_teaching.md` | 1145 |
 | 13 | Neurodevelopmental Disorders | `t_neurodev.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Neurodevelopmental/neurodevelopmental_disorders_inpatient_teaching.md` | 1143 |
-| 14 | Eating Disorders | `t_eating.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/Eating_Disorders/eating_disorders_inpatient_teaching.md` | 1308 |
+| 14 | Eating Disorders | `t_eating.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/Eating_Disorders/eating_disorders_inpatient_teaching.md` | 1336 |
 | 15 | Neurocognitive (Dementia) | `t_neurocog.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/Neurocognitive/neurocognitive_disorders_inpatient_teaching.md` | 880 |
 | 16 | Somatic Symptom & Related | `t_somatic.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Somatic/somatic_symptom_disorders_inpatient_teaching.md` | 757 |
 | 17 | Sleep-Wake Disorders | `t_sleep.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Sleep/sleep_wake_disorders_inpatient_teaching.md` | 675 |
@@ -167,7 +167,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 5 | Treatment Basics | `exp_tx.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/MS3/Student_Ready_Pack/04_expansion_modules/treatment_basics_digest.md` | 648 |
 | 6 | Algorithms & Decision Aids | `decision-aids.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `04_Acute_and_Safety/Decision_Aids/decision-aids.html` |  |
 | 7 | Interaction Cards — One Action | `interaction-cards.html` | tool | listed | status=`reviewed` · riskKind=`formulary` · riskLevel=`high` | `05_Psychopharmacology/Monitoring_and_Labs/interaction-cards.html` |  |
-| 8 | Nutrition & Metabolic Health | `nutrition_metabolic.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Nutrition/nutrition_metabolic_inpatient_teaching.md` | 693 |
+| 8 | Nutrition & Metabolic Health | `nutrition_metabolic.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Nutrition/nutrition_metabolic_inpatient_teaching.md` | 704 |
 | 9 | Osteopathic (OMM) Resources | `omm_resources.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `03_Core_Topics/OMM_Resources/omm_in_psychiatry_resources.md` | 456 |
 
 ## Communicate with Patients
@@ -187,7 +187,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 |---|---|---|---|---|---|---|---|
 | 1 | Family Systems Practice | `family-systems.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `06_Family_and_Relational/family-systems-practice.html` |  |
 | 2 | I Need Collateral: 10-Minute Workflow | `collateral_workflow.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `06_Family_and_Relational/collateral_micro_workflow.md` | 1047 |
-| 3 | Family & Discharge | `exp_family.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/MS3/Student_Ready_Pack/04_expansion_modules/family_discharge_student_module.md` | 1213 |
+| 3 | Family & Discharge | `exp_family.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/MS3/Student_Ready_Pack/04_expansion_modules/family_discharge_student_module.md` | 1254 |
 | 4 | Family Meeting Playbook (90-min) | `family_playbook.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `06_Family_and_Relational/family_meeting_playbook_90min.md` | 990 |
 | 5 | Family Therapy Modalities | `family_modalities.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `06_Family_and_Relational/family_therapy_modalities_inpatient.md` | 685 |
 
@@ -197,7 +197,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 |---|---|---|---|---|---|---|---|
 | 1 | Documentation & Oral Presentation | `doc_oral.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/MS3/Student_Ready_Pack/05_documentation_oral_presentation/student_documentation_and_oral_presentations.md` | 817 |
 | 2 | Treatment Team Rounding Prep | `oral.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Oral_Presentations/oral-presentation-module.html` |  |
-| 3 | High-Yield Rounds Questions | `rounds_questions.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md` | 8700 |
+| 3 | High-Yield Rounds Questions | `rounds_questions.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md` | 8724 |
 
 ## Practice and Exam Prep
 
@@ -208,7 +208,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 3 | Daily Review (Spaced Repetition) | `review.html` | tool | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`moderate` | `07_Evidence_and_Reading/Landmark_Trials/review.html` |  |
 | 4 | Shelf Mode — Exam Simulation | `shelf-mode.html` | tool | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`moderate` | `07_Evidence_and_Reading/Landmark_Trials/shelf-mode.html` |  |
 | 5 | COMAT & Shelf Review | `shelf.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `14_Tracks/MS3/Student_Ready_Pack/07_shelf_guide/shelf_review_guide.md` | 742 |
-| 6 | Rapid Review — Buzzwords | `rapid_review.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `09_Exam_Prep/Shelf_High_Yield/rapid_review_buzzwords.md` | 968 |
+| 6 | Rapid Review — Buzzwords | `rapid_review.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `09_Exam_Prep/Shelf_High_Yield/rapid_review_buzzwords.md` | 981 |
 | 7 | OSCE Stations | `osce.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `14_Tracks/MS3/Student_Ready_Pack/06_osce_cases/osce_station_set.md` | 1544 |
 | 8 | Practice Cases | `cases.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/MS3/Student_Ready_Pack/08_synthetic_cases/synthetic_practice_cases.md` | 849 |
 | 9 | Landmark Trials — Listen & Test | `landmark_trials.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `07_Evidence_and_Reading/Landmark_Trials/landmark_trials_page.md` | 881 |
@@ -238,7 +238,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 1 | Weekly Reading Map | `reading_map.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `14_Tracks/MS3/Student_Ready_Pack/03_weekly_map/week_by_week_reading_map.md` | 588 |
 | 2 | Evidence-Based Inpatient Psychiatry | `evidence_inpatient.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `07_Evidence_and_Reading/Inpatient_Evidence/evidence_inpatient.md` | 5855 |
 | 3 | The Therapy Reading Room | `therapy_reading_room.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`low` | `07_Evidence_and_Reading/Therapy_Reading_Room/therapy_reading_room.md` | 2839 |
-| 4 | MS3 Book Library | `book_library.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `07_Evidence_and_Reading/Book_Summaries/ms3_book_library.md` | 1198 |
+| 4 | MS3 Book Library | `book_library.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `07_Evidence_and_Reading/Book_Summaries/ms3_book_library.md` | 1200 |
 | 5 | Podcast Library (Psychiatry & Psychotherapy) | `podcast_library.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `12_Media/psychiatry_psychotherapy_podcast_library.md` | 2617 |
 
 ## Feedback
@@ -1352,7 +1352,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Note both what the patient reports and what you observe (e.g., appearing to respond to internal stimuli).
 - Alertness, orientation, attention, memory, fund of knowledge. Use a tool (MoCA/MMSE) when indicated.
 - impaired short-term memory
-- "Oriented x4" = person, place, time, situation. Screen formally (MoCA) when delirium or dementia is on the differential.
+- "Oriented x4" = person, place, time, situation. If delirium is possible, test attention and use a delirium screen (e.g., 4AT or CAM) now; reserve the MoCA for suspected dementia/MCI once delirium is excluded — a MoCA done during delirium is not interpretable.
 - Awareness of illness and need for treatment.
 - Insight predicts adherence. In psychosis, anosognosia (not denial) may be the barrier — see Amador’s LEAP.
 - Capacity to make reasoned, safe decisions; recent real-world decisions are the best evidence.
@@ -6198,7 +6198,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **Slug:** `t_eating.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `03_Core_Topics/Eating_Disorders/eating_disorders_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 1,308 words
+- **Length:** 1,336 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -6278,7 +6278,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 
 **Medical instability — the admission question** — The high-yield student skill is recognizing who needs a *medical* bed. Criteria that commonly trigger medical admission (confirm against your institution's protocol) include **bradycardia (often <40–50 bpm), hypotension, orthostatic vital-sign changes, hypothermia, hypoglycemia, electrolyte derangement (K⁺, phosphate, Mg²⁺), QTc prolongation or arrhythmia, marked or rapid weight loss, syncope, dehydration, and failure of outpatient/PHP care.** Bradycardia is one of the most common reasons for medical admission in AN. Match the *level of care* to acuity: medical floor for instability, psychiatric/behavioral eating-disorder unit or residential/PHP for weight and behavioral work once medically stable.
 
-**Refeeding syndrome — the complication that kills** — When nutrition restarts, the shift from catabolic to anabolic metabolism drives phosphate, potassium, and magnesium *into* cells; **hypophosphatemia is the hallmark**, and the danger is cardiac failure, arrhythmia, respiratory failure, and delirium. Risk is highest in the **most malnourished** and after the longest starvation. The safe posture is **"start low, go slow"**: begin conservative caloric refeeding, **check phosphate/potassium/magnesium at least daily early**, **supplement phosphate and give thiamine before or with carbohydrate**, and advance calories per protocol as electrolytes stay stable. Defer exact caloric targets and repletion doses to your institution's refeeding order set — the student job is to *anticipate and monitor*, not to prescribe.
+**Refeeding syndrome — the complication that kills** — When nutrition restarts, the shift from catabolic to anabolic metabolism drives phosphate, potassium, and magnesium *into* cells; **hypophosphatemia is the hallmark**, and the danger is cardiac failure, arrhythmia, respiratory failure, and delirium. Risk is highest in the **most malnourished** and after the longest starvation. The safe posture is close monitoring, not prolonged underfeeding — current guidance (SAHM 2022; MEED, which replaced MARSIPAN in 2022) supports higher-calorie refeeding with electrolyte surveillance, reserving the most conservative starts for the most severely malnourished: begin refeeding per protocol, **check phosphate/potassium/magnesium at least daily early**, **supplement phosphate and give thiamine before or with carbohydrate**, and advance calories per protocol as electrolytes stay stable. Defer exact caloric targets and repletion doses to your institution's refeeding order set — the student job is to *anticipate and monitor*, not to prescribe.
 
 **Acute inpatient management** — Medical stabilization first, then structured nutritional rehabilitation with a **multidisciplinary team** (medicine, nutrition/dietetics, nursing, psychiatry, and often social work). Use **supervised meals and a post-meal observation period**, monitor for covert purging and **water-loading** (which falsely raises weight — a "too-fast" weight jump is a flag), and weigh on a consistent schedule/gown. Psychotherapy is the backbone: **Family-Based Treatment (Maudsley/FBT)** for adolescents with AN, and **CBT-E** for BN and BED. On medications: **no drug is first-line for AN** — weight restoration is; **olanzapine** may modestly help weight and obsessionality in AN; **fluoxetine (target 60 mg/day)** is the classic pharmacotherapy for BN; **lisdexamfetamine** is approved for moderate–severe BED. **Avoid bupropion in patients who purge or are underweight (seizure risk)**, and be cautious with QT-prolonging agents given the baseline cardiac risk.
 
@@ -7033,6 +7033,14 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
 
 
+<!-- ==================== 02_CURRICULUM_V05.md ==================== -->
+
+# MS3 · Curriculum content — volume 5
+
+Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
+
+# SECTION (cont.): Understand the Problem
+
 ---
 
 ## Adjustment Disorders
@@ -7161,14 +7169,6 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
 
-
-<!-- ==================== 02_CURRICULUM_V05.md ==================== -->
-
-# MS3 · Curriculum content — volume 5
-
-Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
-
-# SECTION (cont.): Understand the Problem
 
 ---
 
@@ -8491,6 +8491,15 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Educational teaching tool for clinical trainees. Generates draft documentation from your inputs using fictional composite scenarios only — no protected health information. Not a clinical or legal decision-support device; capacity determinations and any surrogate/guardianship pathway must follow supervision and institutional/legal policy.
 - Decisional Capacity — Bedside Module · Psychiatry Clerkship Library · Joshua Moss, MD | Psychiatrist · Framework: Appelbaum & Grisso (1988)
 
+
+<!-- ==================== 02_CURRICULUM_V06.md ==================== -->
+
+# MS3 · Curriculum content — volume 6
+
+Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
+
+# SECTION (cont.): Assess Safety and Acuity
+
 ---
 
 ## Consult Questions: Capacity, Delirium, Catatonia, Withdrawal
@@ -8777,14 +8786,6 @@ Plain-English note: this module teaches students what to notice, how to ask the
 right question, and when to escalate. It deliberately avoids pretending students
 should independently manage high-risk consults.
 
-
-<!-- ==================== 02_CURRICULUM_V06.md ==================== -->
-
-# MS3 · Curriculum content — volume 6
-
-Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
-
-# SECTION (cont.): Assess Safety and Acuity
 
 ---
 
@@ -9665,7 +9666,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **Slug:** `nutrition_metabolic.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `03_Core_Topics/Nutrition/nutrition_metabolic_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 693 words
+- **Length:** 704 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -9744,7 +9745,7 @@ For anyone starting an antipsychotic, the **ADA/APA 2004 consensus** establishes
 | **Weight / BMI** (and waist circumference) | Baseline → **4 wk → 8 wk → 12 wk → then quarterly** | Antipsychotic weight gain begins within weeks; monthly checks in the first 3 months catch the window where switching or intervening is most effective |
 | **Blood pressure** | Baseline → 12 wk → annually | Metabolic syndrome criterion |
 | **Fasting glucose or HbA1c** | Baseline → 12 wk → annually | Antipsychotic-associated diabetes |
-| **Fasting lipid panel** | Baseline → 12 wk → annually | Dyslipidemia, esp. triglycerides |
+| **Fasting lipid panel** | Baseline → 12 wk → every 5 y per the 2004 consensus (most services now recheck annually) | Dyslipidemia, esp. triglycerides |
 | Personal/family cardiometabolic history | Baseline | Risk stratification |
 
 The weight/BMI front-loading is intentional: early antipsychotic weight gain is the highest-yield signal and the best opportunity to switch agents or add metformin before the trajectory becomes entrenched. Monitor more frequently for any parameter that is elevated at baseline or worsens during titration.
@@ -10043,6 +10044,14 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
 
 
+<!-- ==================== 02_CURRICULUM_V07.md ==================== -->
+
+# MS3 · Curriculum content — volume 7
+
+Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
+
+# SECTION (cont.): Communicate with Patients
+
 ---
 
 ## Motivational Interviewing
@@ -10156,14 +10165,6 @@ Substance use, medication adherence, lifestyle/metabolic change, follow-up engag
 
 *Joshua Moss, MD | Psychiatrist · Educational scaffold; not a substitute for supervised practice. Fictional composites; no PHI.*
 
-
-<!-- ==================== 02_CURRICULUM_V07.md ==================== -->
-
-# MS3 · Curriculum content — volume 7
-
-Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
-
-# SECTION (cont.): Communicate with Patients
 
 ---
 
@@ -10890,7 +10891,7 @@ Using a fictional, synthetic, or fully de-identified case:
 - **Slug:** `exp_family.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `14_Tracks/MS3/Student_Ready_Pack/04_expansion_modules/family_discharge_student_module.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 1,213 words
+- **Length:** 1,254 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -10903,8 +10904,8 @@ Using a fictional, synthetic, or fully de-identified case:
 
 **Key points (bulleted card):**
 
-- Suicide risk in the first week post-discharge is roughly 100× the population rate — a pre-scheduled 7-day follow-up appointment (not 'they will call to arrange one') is itself an evidence-based intervention.
-- Structured lethal-means counseling cut attempts and deaths from 3.3% to 0.83% at 180 days — 'who can confirm items are secured before discharge?' is a clinical act, not a formality.
+- Suicide risk in the first week post-discharge is roughly 200× the general-population rate (~2,950 per 100,000 person-years; Chung 2019) — a pre-scheduled 7-day follow-up appointment (not 'they will call to arrange one') is itself an evidence-based intervention.
+- Documented lethal-means assessment was followed by fewer attempts and deaths at 180 days (0.83% vs 3.3%; Boggs 2020, quasi-experimental — an association, not a randomized effect) — 'who can confirm items are secured before discharge?' is a clinical act, not a formality.
 - Family involvement during admission nearly triples the odds of 7-day follow-up, and family psychoeducation lowers 12-month relapse from ~37% to ~10% — bringing family in is treatment, not logistics.
 
 **Can't-miss / red-flag line:**
@@ -10937,7 +10938,7 @@ Using a fictional, synthetic, or fully de-identified case:
 
 - **Related tools:** `communication-practice.html`, `family-systems.html`
 - **Communication cases:** `collateral_questions_001`, `family_meeting_opening_001`, `family_conflict_discharge_001`
-- **Evidence sources:** `pharoah-2010-family-intervention`, `ma-2021`, `camacho-gomez-2020`, `brown-1972-expressed-emotion`
+- **Evidence sources:** `pharoah-2010-family-intervention`, `ma-2021`, `camacho-gomez-2020`, `brown-1972-expressed-emotion`, `boggs-2020-lethal-means-assessment`, `chung-2019-first-week-month`
 - **Workflow stages:** `family`, `safety`, `team`, `communication`
 - **Workflow modes:** `ward`, `family`, `safety`
 - **Shelf blueprint tags:** `relational`
@@ -10964,9 +10965,9 @@ not done.
 
 ## Why It Matters — The Numbers
 
-- **The window is highest right after discharge.** Suicide risk in the first week post-discharge is on the order of ~2,950 per 100,000 person-years — with days 0–3 the highest — roughly 100× the population rate (Chung et al., *JAMA Psychiatry* 2017). The realism of the plan matters *most* in exactly the days after the patient leaves.
+- **The window is highest right after discharge.** Suicide risk in the first week post-discharge is on the order of ~2,950 per 100,000 person-years — with days 0–3 the highest — roughly 200× the general-population rate (Chung et al., *BMJ Open* 2019; the overall post-discharge rate of 484 per 100,000 person-years is from Chung et al., *JAMA Psychiatry* 2017). The realism of the plan matters *most* in exactly the days after the patient leaves.
 - **Follow-up is often the weak link.** About 12–15% of psychiatric patients are readmitted within 30 days (20–25% for schizophrenia), and only ~50% receive a mental-health visit within 7 days. A *scheduled* appointment (not "they'll call to arrange one") is itself the intervention — pre-discharge 7-day follow-up is associated with substantially lower suicide risk.
-- **Means safety is a lethality intervention, not a formality.** Firearms are involved in ~50% of US suicides and are lethal in 85–90% of attempts; structured lethal-means counseling (CALM) cut attempts/deaths from 3.3% to 0.83% at 180 days. This is why the "who can confirm items are secured?" phrase below is a clinical act.
+- **Means safety is a lethality intervention, not a formality.** Firearms are involved in ~50% of US suicides and are lethal in 85–90% of attempts; structured lethal-means counseling matters: in a large quasi-experimental cohort (Boggs et al. 2020), patients with documented lethal-means assessment had fewer suicide attempts and deaths at 180 days (0.83% vs 3.3%) — an association, not a randomized effect. This is why the "who can confirm items are secured?" phrase below is a clinical act.
 - **Bringing the family in changes outcomes.** Family psychoeducation lowers relapse from ~37% to ~10% (OR 0.18), and family involvement during admission nearly triples the odds of 7-day follow-up (Haselden 2019).
 
 *Numbers are evidence-anchored and reviewed and attested by Joshua Moss, MD (2026-07-09); use them to explain the "why," not to quote at families.*
@@ -11361,6 +11362,15 @@ Multipartiality over neutrality ("not a courtroom; multiple truths") · the **tr
 
 # SECTION: Present and Work with the Team
 
+
+<!-- ==================== 02_CURRICULUM_V08.md ==================== -->
+
+# MS3 · Curriculum content — volume 8
+
+Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
+
+# SECTION (cont.): Present and Work with the Team
+
 ---
 
 ## Documentation & Oral Presentation
@@ -11622,14 +11632,6 @@ Plain-English note: this guide helps students stop writing and presenting as if
 psychiatry is a checklist. It gives them a structure that reveals their thinking.
 
 
-<!-- ==================== 02_CURRICULUM_V08.md ==================== -->
-
-# MS3 · Curriculum content — volume 8
-
-Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
-
-# SECTION (cont.): Present and Work with the Team
-
 ---
 
 ## Treatment Team Rounding Prep
@@ -11744,7 +11746,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **Slug:** `rounds_questions.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 8,700 words
+- **Length:** 8,724 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -11881,7 +11883,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Answer:** Involuntary orofacial and extremity movements after months-to-years of dopamine receptor-blocking agent exposure. First-line treatment: VMAT2 inhibitors (valbenazine, deutetrabenazine).
 
-- **Evidence:** Annualized incidence ~3.9% with SGAs vs. ~5.5% with FGAs. Valbenazine 80 mg showed AIMS improvement of −2.9 vs. +0.3 placebo.
+- **Evidence:** Annualized incidence ~3.9% with SGAs vs. ~5.5% with FGAs. In KINECT-3, valbenazine 80 mg improved AIMS by −3.2 vs. −0.1 with placebo.
 
 - **Key paper:** Correll & Citrome, J Clin Psychiatry 2021.
 
@@ -12185,7 +12187,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Answer:** Prazosin (alpha-1 adrenergic antagonist) is suggested for trauma-related nightmares.
 
-- **Evidence:** Evidence rating B per VA/DoD guidelines; titrate from 1 mg at bedtime.
+- **Evidence:** The 2023 VA/DoD guideline found insufficient evidence for or against prazosin for PTSD nightmares (the PACT trial was negative), but it remains a reasonable and widely used option; titrate from 1 mg at bedtime.
 
 - **Key paper:** Sartor et al., Am Fam Physician 2023.
 
@@ -12215,7 +12217,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Answer:** Adding ERP is superior to adding risperidone or stress management for SSRI partial responders. Low-dose antipsychotic augmentation (particularly aripiprazole or risperidone) has evidence, especially in patients with comorbid tics.
 
-- **Evidence:** Foa et al., JAMA Psychiatry 2022 showed ERP augmentation was superior to risperidone augmentation.
+- **Evidence:** Simpson et al., JAMA Psychiatry 2013 showed ERP augmentation was superior to risperidone augmentation.
 
 - **Key paper:** Foa et al., JAMA Psychiatry 2022.
 
@@ -12667,7 +12669,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Key paper:** Lord et al., Lancet 2018.
 
-- **Pearl:** A child with intellectual disability may have social difficulties due to cognitive limitations, but will not show the **restricted/repetitive behaviors** characteristic of ASD — this is the key differentiator.
+- **Pearl:** Repetitive behaviors and stereotypies also occur in intellectual disability without ASD — the key differentiator is social communication that falls below what the child's general developmental level would predict.
 
 ## SLEEP DISORDERS (Questions 88–90)
 
@@ -12782,6 +12784,15 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 ---
 
 # SECTION: Practice and Exam Prep
+
+
+<!-- ==================== 02_CURRICULUM_V09.md ==================== -->
+
+# MS3 · Curriculum content — volume 9
+
+Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
+
+# SECTION (cont.): Practice and Exam Prep
 
 ---
 
@@ -13088,15 +13099,6 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - )]=!!input.checked;r.at=new Date().toISOString().slice(0,10);state.progress.completed[w.id]=r;saveProgress();render();}); fetch(
 - ).then(function(r){if(!r.ok)throw new Error(
 - );return r.json();}).then(function(data){state.caseData=data;state.current=Math.max(0,Math.min(data.weeks.length-1,state.progress.current||state.current));render();}).catch(function(){app.innerHTML=
-
-
-<!-- ==================== 02_CURRICULUM_V09.md ==================== -->
-
-# MS3 · Curriculum content — volume 9
-
-Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
-
-# SECTION (cont.): Practice and Exam Prep
 
 ---
 
@@ -13493,7 +13495,7 @@ students do not treat test prep and clinical reasoning as separate tasks.
 - **Slug:** `rapid_review.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `09_Exam_Prep/Shelf_High_Yield/rapid_review_buzzwords.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 968 words
+- **Length:** 981 words
 
 #### Page text (as shipped)
 
@@ -13533,7 +13535,7 @@ students do not treat test prep and clinical reasoning as separate tasks.
 
 ## Substance / Withdrawal
 - Confusion + ophthalmoplegia + ataxia in alcohol use → **Wernicke** → **thiamine before glucose**. *(→ SUD)*
-- Alcohol withdrawal peak 48–96 h, autonomic instability + confusion → **delirium tremens** → benzodiazepines (CIWA-driven). *(→ Withdrawal card)*
+- Alcohol withdrawal peak 48–96 h, autonomic instability + confusion → **delirium tremens** → benzodiazepines — scheduled/front-loaded, titrated to light sedation (CIWA symptom-triggered dosing is for withdrawal *without* delirium). *(→ Withdrawal card)*
 - Opioid withdrawal → track with **COWS**; start buprenorphine only when objective withdrawal present (COWS ≈ 8–12). *(→ SUD)*
 - AUD maintenance → **naltrexone or acamprosate** first-line; disulfiram adherence-dependent.
 - Opioid overdose → **naloxone**; MOUD (buprenorphine/methadone/naltrexone) reduces mortality.
@@ -14141,6 +14143,14 @@ real patient details. They are deliberately common enough to teach patterns but
 synthetic enough for safe reuse.
 
 
+<!-- ==================== 02_CURRICULUM_V10.md ==================== -->
+
+# MS3 · Curriculum content — volume 10
+
+Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
+
+# SECTION (cont.): Practice and Exam Prep
+
 ---
 
 ## Landmark Trials — Listen & Test
@@ -14705,14 +14715,6 @@ Based on articles retrieved from PubMed (National Library of Medicine). Citation
 2. Rogers JP, Zandi MS, David AS. The diagnosis and treatment of catatonia. *Clin Med (Lond)*. 2023;23(3):242-245. [DOI: 10.7861/clinmed.2023-0113](https://doi.org/10.7861/clinmed.2023-0113)
 3. Bush G, Fink M, Petrides G, Dowling F, Francis A. Catatonia. I. Rating scale and standardized examination. *Acta Psychiatr Scand*. 1996;93(2):129-136. [DOI: 10.1111/j.1600-0447.1996.tb09814.x](https://doi.org/10.1111/j.1600-0447.1996.tb09814.x)
 
-
-<!-- ==================== 02_CURRICULUM_V10.md ==================== -->
-
-# MS3 · Curriculum content — volume 10
-
-Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
-
-# SECTION (cont.): Case of the Week
 
 ---
 
@@ -15395,6 +15397,14 @@ And on the clinician side: **whoever adds the thiazide should check a lithium le
 *Joshua Moss, MD | Psychiatrist*
 
 
+<!-- ==================== 02_CURRICULUM_V11.md ==================== -->
+
+# MS3 · Curriculum content — volume 11
+
+Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
+
+# SECTION (cont.): Case of the Week
+
 ---
 
 ## Opioid Use Disorder (Jul 27)
@@ -15822,14 +15832,6 @@ The critical caveat for the wards: **CIWA-Ar requires a patient who can communic
 
 *Joshua Moss, MD | Psychiatrist*
 
-
-<!-- ==================== 02_CURRICULUM_V11.md ==================== -->
-
-# MS3 · Curriculum content — volume 11
-
-Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
-
-# SECTION (cont.): Case of the Week
 
 ---
 
@@ -16589,6 +16591,15 @@ If the presentation involved an **intentional overdose**, management is the same
 
 # SECTION: Evidence and Reference
 
+
+<!-- ==================== 02_CURRICULUM_V12.md ==================== -->
+
+# MS3 · Curriculum content — volume 12
+
+Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
+
+# SECTION (cont.): Evidence and Reference
+
 ---
 
 ## Weekly Reading Map
@@ -16776,14 +16787,6 @@ If a reading takes longer than 20 minutes, assign a specific question — for ex
 
 *Each week has a small suggested core, optional deeper resources, and one observable clinical skill — so the curriculum never becomes a document dump.*
 
-
-<!-- ==================== 02_CURRICULUM_V12.md ==================== -->
-
-# MS3 · Curriculum content — volume 12
-
-Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
-
-# SECTION (cont.): Evidence and Reference
 
 ---
 
@@ -17693,7 +17696,7 @@ Would you like to explore any of these domains in greater depth — for example,
 - **Slug:** `book_library.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `07_Evidence_and_Reading/Book_Summaries/ms3_book_library.md`
 - **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
-- **Length:** 1,198 words
+- **Length:** 1,200 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -17777,7 +17780,7 @@ Would you like to explore any of these domains in greater depth — for example,
 
 ## Psychosis & serious mental illness
 - **[I Am Not Sick I Don't Need Help!](https://www.amazon.com/dp/0985206705)** — Xavier Amador. The LEAP method for families when a loved one doesn't recognize they're ill—Listen, Empathize, Agree, Partner to help them accept treatment.
-- **[Surviving Schizophrenia for Families](https://www.amazon.com/dp/1593852738)** — Kim Mueser & Susan Gingerich. Updated comprehensive family guide to schizophrenia from leading researchers—practical strategies for recovery.
+- **[The Complete Family Guide to Schizophrenia](https://www.amazon.com/dp/1593852738)** — Kim Mueser & Susan Gingerich. Updated comprehensive family guide to schizophrenia from leading researchers—practical strategies for recovery.
 - **[The Center Cannot Hold](https://www.amazon.com/dp/1401309445)** — Elyn Saks. Memoir by law professor living with schizophrenia—powerful testimony that recovery and achievement are possible.
 
 ## ADHD (Russell Barkley)
@@ -17816,6 +17819,14 @@ Would you like to explore any of these domains in greater depth — for example,
 
 *Joshua Moss, MD | Psychiatrist · Curated from the library book database. Educational; suggested reading, not required.*
 
+
+<!-- ==================== 02_CURRICULUM_V13.md ==================== -->
+
+# MS3 · Curriculum content — volume 13
+
+Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
+
+# SECTION (cont.): Evidence and Reference
 
 ---
 
@@ -18172,15 +18183,6 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Your feedback shapes what gets built and fixed next.
 - Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.
 
-
-<!-- ==================== 02_CURRICULUM_V13.md ==================== -->
-
-# MS3 · Curriculum content — volume 13
-
-Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
-
-# SECTION (cont.): Feedback
-
 ---
 
 ## Faculty: Curate a rotation edition
@@ -18276,7 +18278,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Opening this step or resizing the browser does not count. Each action below validates a fresh envelope and projects it through the same student projector.
 - Desktop preview not yet reviewed · Mobile preview not yet reviewed
 
-**Authored clinical strings (1795, first 400 shown):**
+**Authored clinical strings (1794, first 400 shown):**
 
 - Front door structure ONLY — week ordering, library columns, safety-kit membership, per-site roles, search synonyms. Facts about an item (minutes, summary, key points, attestation) live in topic_meta.json and join at render time; never duplicate them here. Validated by 13_Faculty_Resources/_automation/validate_curriculum.py.
 - a feedback form, not library content — reachable from the header
@@ -18679,7 +18681,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Malingering (external incentive)
 - Focused workup once, then one consistent clinician with scheduled visits, validation, CBT, and treatment of comorbidities.
 
-_1395 further strings omitted — this surface embeds the build's front-door catalog (item summaries, key points, search synonyms), which is transcribed in full elsewhere in this document set._
+_1394 further strings omitted — this surface embeds the build's front-door catalog (item summaries, key points, search synonyms), which is transcribed in full elsewhere in this document set._
 
 
 <!-- ==================== A1_QUESTION_BANK.md ==================== -->
@@ -18737,7 +18739,7 @@ _1395 further strings omitted — this surface embeds the build's front-door cat
 - Immediate switch to clozapine — clozapine's low D2 affinity eliminates akathisia risk and is the definitive treatment when any antipsychotic causes akathisia.
 - Standing diazepam — benzodiazepines are the first-line pharmacological agent for dopamine-blocker-induced restlessness.
 
-**Rationale.** Anticholinergic first-line, Clozapine immediately, and Benzodiazepine first-line all misorient the management hierarchy. Propranolol (B) has the strongest evidence for akathisia: it is effective in multiple small RCTs reviewed in the Cochrane systematic analysis (Lima et al. 2004). The management sequence is: (1) reduce antipsychotic dose or switch if possible — the mechanism fix; (2) propranolol when dose reduction isn't immediately available; (3) benztropine if parkinsonism co-exists; (4) benzodiazepine adjunct if symptoms remain severe. Avoid escalating the antipsychotic — the cardinal error.
+**Rationale.** Anticholinergic first-line, Clozapine immediately, and Benzodiazepine first-line all misorient the management hierarchy. Propranolol (B) remains the standard first-line pharmacotherapy for akathisia when dose reduction or switching is not immediately available, and among the options offered it is the best-supported choice — but characterize the evidence honestly: the 2004 Cochrane review (Lima et al., CD001946) found only three small placebo-controlled RCTs (total n=51, ≤72 hours), could draw no firm conclusions, and judged the data insufficient to recommend beta-blockers for akathisia. The recommendation rests on early small trials and accumulated clinical practice rather than on positive systematic-review evidence. The management sequence is: (1) reduce antipsychotic dose or switch if possible — the mechanism fix; (2) propranolol when dose reduction isn't immediately available; (3) benztropine if parkinsonism co-exists; (4) benzodiazepine adjunct if symptoms remain severe. Avoid escalating the antipsychotic — the cardinal error.
 
 **Pearl.** Akathisia pharmacotherapy: propranolol 20–40 mg BID is first-line (strongest evidence); add benztropine if parkinsonism co-exists; benzodiazepine is third-line adjunct.
 
@@ -19049,7 +19051,7 @@ _1395 further strings omitted — this surface embeds the build's front-door cat
 - The decreased sleep, grandiosity, and pressured speech are likely stimulant side effects from his ADHD medications — reduce the dose and reassess before considering a mood diagnosis.
 - ADHD is chronic and cross-situational from childhood; episodic presentations with mood elevation, decreased need for sleep, and grandiosity are mood or substance flags, not ADHD exacerbations — this clinical picture warrants a first manic episode evaluation, not a stimulant adjustment. **← keyed correct**
 
-**Rationale.** ADHD intensification for episodic change and ADHD excludes bipolar both apply the wrong clinical framework. Option C also describes the correct reasoning but D is more complete in naming the key discriminators. The page explicitly states: 'ADHD is chronic, pervasive, and cross-situational from childhood; mania is episodic with mood elevation, decreased need for sleep, and grandiosity — episodic ADHD-like symptoms are a mood or substance flag.'
+**Rationale.** ADHD intensification for episodic change and ADHD excludes bipolar both apply the wrong clinical framework. Option C is also incorrect: the stem never establishes stimulant treatment, and several days of decreased need for sleep, grandiosity, and pressured speech constitute a manic syndrome rather than a stimulant side effect — the correct move is a first manic episode evaluation now (holding any stimulant), not a dose reduction with a deferred mood assessment. The page explicitly states: 'ADHD is chronic, pervasive, and cross-situational from childhood; mania is episodic with mood elevation, decreased need for sleep, and grandiosity — episodic ADHD-like symptoms are a mood or substance flag.'
 
 **Pearl.** ADHD is chronic and cross-situational from childhood; a new episodic presentation with decreased sleep, grandiosity, and pressured speech is a first manic episode flag — not an ADHD exacerbation.
 
@@ -20038,7 +20040,7 @@ _1395 further strings omitted — this surface embeds the build's front-door cat
 - Stop all antipsychotics immediately, transfer to a medical unit for hemodynamic monitoring and supportive care, and obtain urgent psychiatric and neurology consultation — ECT should be considered for malignant or refractory catatonia. **← keyed correct**
 - Treat empirically for sepsis — fever, hypotension, and elevated CK indicate bacterial infection requiring antibiotics.
 
-**Rationale.** Underestimate the emergency and Agitation = antipsychotic are the two clinical catastrophes. This is NMS/malignant catatonia: fever, autonomic instability, lead-pipe rigidity, elevated CK after antipsychotic escalation. The correct sequence is stop all antipsychotics, transfer to a medical unit, and emergently consider ECT for malignant or refractory catatonia — not more benzodiazepines on the psychiatric unit and certainly not more antipsychotic.
+**Rationale.** Underestimate the emergency and Agitation = antipsychotic are the two clinical catastrophes. This is NMS/malignant catatonia: fever, autonomic instability, lead-pipe rigidity, elevated CK after antipsychotic escalation. The correct sequence is stop all antipsychotics, transfer to a medical unit for hemodynamic monitoring, continue lorazepam — benzodiazepines remain first-line pharmacotherapy for malignant catatonia while ECT is arranged — and pursue ECT emergently if the patient does not rapidly improve; the error in option A is observation on the psychiatric unit, not the lorazepam, and certainly not more antipsychotic.
 
 **Pearl.** Malignant catatonia overlaps with NMS: fever + rigidity + elevated CK + autonomic instability after antipsychotic exposure — stop antipsychotics, transfer to medical, and consider ECT urgently.
 
@@ -20464,7 +20466,7 @@ _1395 further strings omitted — this surface embeds the build's front-door cat
 - BPD mood lability is transient and identity-driven; sustained anhedonia and neurovegetative symptoms over days are fully explained by BPD dysregulation and do not warrant evaluation for superimposed major depression.
 - The student is using diagnostic overshadowing — attributing the depressive symptoms to the BPD diagnosis and under-investigating a potentially treatable mood episode; a BPD diagnosis does not protect a patient from also having major depression. **← keyed correct**
 
-**Rationale.** Age-based BPD exclusion and Sequence error miss the core error. Option C has the correct clinical description but key D is the answer that specifically names the error and its mechanism. The page calls this 'the cardinal error: diagnostic overshadowing — letting a personality label cause you to under-treat a real, acute, treatable illness.'
+**Rationale.** Age-based BPD exclusion and Sequence error miss the core error. Option C is the error itself in clinical clothing — its accurate opening (BPD mood lability is transient and reactive) is used to license the false conclusion that sustained anhedonia and neurovegetative symptoms need no evaluation for superimposed major depression; key D names that error and its mechanism. The page calls this 'the cardinal error: diagnostic overshadowing — letting a personality label cause you to under-treat a real, acute, treatable illness.'
 
 **Pearl.** Diagnostic overshadowing in BPD: never let a personality diagnosis suppress investigation of a treatable comorbid mood, psychotic, or substance disorder.
 
@@ -21202,7 +21204,7 @@ _1395 further strings omitted — this surface embeds the build's front-door cat
 
 - id=`qb_rel_001` · status=`attested` · type=`relational` · difficulty=`2` · competency=`['psychosocial', 'safety']` · **high-yield**
 - Linked pages: `exp_family.md`
-- Evidence: `exp_family.md 'Why It Matters' — structured lethal-means counseling (CALM) cut attempts/deaths from 3.3% to 0.83% at 180 days; suicide risk peaks in the first week post-discharge (Chung et al., JAMA Psychiatry 2017).`
+- Evidence: `exp_family.md 'Why It Matters' — documented lethal-means assessment was associated with fewer suicide attempts and deaths at 180 days (0.83% vs 3.3%; Boggs et al. 2020, quasi-experimental); suicide risk peaks in the first week post-discharge (Chung et al., JAMA Psychiatry 2017).`
 
 **Stem.** A family meeting is held the day before planned discharge for a 52-year-old man admitted after a suicide attempt by overdose. When the agenda reaches safety and warning signs, his wife says: 'We'll keep a close eye on him. And you don't need to worry about the guns — he would never use them, and they're put away.' The attending invites your input. Which response is best?
 
@@ -21984,7 +21986,7 @@ _1395 further strings omitted — this surface embeds the build's front-door cat
 - The seizure occurred before admission; since he is now calmer, observation without immediate pharmacologic intervention is appropriate.
 - The seizure risk has passed — withdrawal seizures occur in the first 24–48 hours; further seizures are not expected after a first event.
 - Start a fixed-schedule antipsychotic — antipsychotics lower seizure threshold and provide targeted coverage for alcohol withdrawal psychosis.
-- Prior withdrawal seizure is a strong predictor of future seizures; this patient requires aggressive CIWA-Ar-guided benzodiazepine titration with close monitoring for progression to delirium tremens. **← keyed correct**
+- Prior withdrawal seizure is a strong predictor of future seizures; give a benzodiazepine promptly and use front-loaded or fixed-schedule dosing with symptom-triggered supplementation — not score-gated dosing alone — with close monitoring for progression to delirium tremens. **← keyed correct**
 
 **Rationale.** Underestimate the emergency in two forms, and Agitation = antipsychotic. Prior withdrawal seizure is explicitly the most robust predictor of future seizure risk. Antipsychotics lower seizure threshold and are contraindicated for seizure prevention in alcohol withdrawal. CIWA-Ar-guided benzodiazepines are the treatment, and DT vigilance is the priority.
 
@@ -24963,7 +24965,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
    - A formal dietary consultation and exercise stress test While lifestyle intervention is encouraged, baseline labs and vitals are the specific standardized monitoring requirements.
    - Electroencephalogram (EEG) to screen for seizure risk An EEG is not part of the standard metabolic monitoring protocol established by the ADA/APA consensus.
 
-5. **Based on the ADA/APA monitoring protocol, when should fasting glucose and lipids be reassessed after the baseline labs have been completed?**
+5. **Based on the ADA/APA monitoring protocol, when should fasting glucose be reassessed after the baseline labs have been completed?**
    - At 4 weeks and then every 3 months
      - *feedback:* Weight is checked at 4 and 8 weeks, but fasting labs are deferred until the 12-week mark unless otherwise clinically indicated.
    - At 12 weeks and then annually **← keyed correct**
@@ -27195,7 +27197,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
 
 # MS3 · Appendix A4 — Evidence base
 
-106 registered sources and 48 annotated claims. Each annotation stores the verbatim span from the paper that licenses the claim the library makes — the highest-value target for clinical review, because a claim that drifts from its span is a factual error with a citation attached.
+107 registered sources and 49 annotated claims. Each annotation stores the verbatim span from the paper that licenses the claim the library makes — the highest-value target for clinical review, because a claim that drifts from its span is a factual error with a citation attached.
 
 **Annotation policy.** {
  "rule": "Every claim the library makes about a source must be licensed by a stored verbatim span from that source.",
@@ -27430,7 +27432,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
 
 **Claim `inpatient-psychotherapy-specific-contribution`** (direction: `mixed`, used by RR)
 
-> Across 37 samples (4,443 patients), the specific contribution of psychotherapy during psychiatric hospitalization was d = 0.43 (95% CI 0.06 to 0.81); no significant effects were found for psychotherapy orientation, while diagnosis moderated the contribution.
+> Across 37 samples (4,443 patients), the meta-analysis of the 15 samples with a control group put the specific contribution of psychotherapy during psychiatric hospitalization at d = 0.43 (95% CI 0.06 to 0.81); no significant effects were found for psychotherapy orientation, while diagnosis moderated the contribution.
 
 - claim terms: `No significant effects were uncovered for psychotherapy orientation`, `Diagnosis was found to moderate`
 
@@ -27896,6 +27898,20 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
 
 - claim terms: `effect size concerning suicidality`, `not significant at any time point`, `depression`
 
+### `boggs-2020-lethal-means-assessment`
+
+- span type `abstract` · retrieved 2026-09-02 · PMID 32040838 · DOI 10.1007/s11606-020-05641-4
+
+**Verbatim source span.**
+
+> We found 33% of patients with suicide ideation reported on the PHQ-9 received lethal means assessment in the 30 days following identification. Lethal means assessment reduced the risk of a suicide attempt or death within 180 days from 3.3 to 0.83% (p = .034, 95% CI = .069-.9).
+
+**Claim `lethal-means-assessment-180-day-risk`** (direction: `positive`, used by exp_family)
+
+> Lethal means assessment reduced the risk of a suicide attempt or death within 180 days from 3.3 to 0.83%.
+
+- claim terms: `lethal means assessment`, `within 180 days`
+
 ## Full source registry
 
 | id | type | access | citation |
@@ -28006,6 +28022,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
 | `chung-2019-first-week-month` | systematic-review | metadata | {'authors': [{'family': 'Chung', 'given': 'D'}, {'family': 'Hadzi-Pavlovic', 'given': 'D'}, {'family': 'Wang', 'given': 'M'}, {'family': 'Swaraj', 'given': 'S'}, {'family': 'Olfson', 'given': 'M'}, {'family': 'Large', 'given': 'M'}], 'doi': '10.1136/bmjopen-2018-023883', 'journal': 'BMJ Open', 'organization': '', 'pages': 'e023883', 'pmid': '30904843', 'title': 'Meta-analysis of suicide rates in the first week and the first month after psychiatric hospitalisation', 'url': 'https://doi.org/10.1136/bmjopen-2018-023883', 'volume': '9', 'year': 2019} |
 | `bot-2026-benzodiazepines-catatonia` | systematic-review | abstract | {'authors': [{'family': 'Bot', 'given': 'L'}, {'family': 'Schotsman', 'given': 'B'}, {'family': 'Oostra', 'given': 'E'}, {'family': 'Hoogendoorn', 'given': 'AW'}, {'family': 'van Exel', 'given': 'E'}], 'doi': '10.1111/acps.70102', 'journal': 'Acta Psychiatr Scand', 'organization': '', 'pages': '99-115', 'pmid': '42009596', 'title': 'The Effect of Benzodiazepines on Catatonia: A Systematic Review and Meta-Analysis', 'url': 'https://doi.org/10.1111/acps.70102', 'volume': '154', 'year': 2026} |
 | `fountoulakis-2025-esketamine` | systematic-review | abstract | {'authors': [{'family': 'Fountoulakis', 'given': 'KN'}, {'family': 'Saitis', 'given': 'A'}, {'family': 'Schatzberg', 'given': 'AF'}], 'doi': '10.1176/appi.ajp.20240515', 'journal': 'Am J Psychiatry', 'organization': '', 'pages': '259-275', 'pmid': '39876682', 'title': 'Esketamine Treatment for Depression in Adults: A PRISMA Systematic Review and Meta-Analysis', 'url': 'https://doi.org/10.1176/appi.ajp.20240515', 'volume': '182', 'year': 2025} |
+| `boggs-2020-lethal-means-assessment` | primary-study | abstract | {'authors': [{'family': 'Boggs', 'given': 'JM'}, {'family': 'Beck', 'given': 'A'}, {'family': 'Ritzwoller', 'given': 'DP'}, {'family': 'Lindrooth', 'given': 'RC'}], 'doi': '10.1007/s11606-020-05641-4', 'journal': 'J Gen Intern Med', 'organization': '', 'pages': '1709-1714', 'pmid': '32040838', 'title': 'A Quasi-Experimental Analysis of Lethal Means Assessment and Risk for Subsequent Suicide Attempts and Deaths', 'url': 'https://doi.org/10.1007/s11606-020-05641-4', 'volume': '35', 'year': 2020} |
 
 
 <!-- ==================== A5_COVERAGE_MATRICES.md ==================== -->

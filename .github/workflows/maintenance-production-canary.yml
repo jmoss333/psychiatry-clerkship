@@ -30,10 +30,16 @@ jobs:
           npm ci
           npx playwright install chromium --with-deps
 
+      # canary-* is a narrower set than the nav-* projects CI runs against a local build:
+      # production serving truth only, no client-runtime fault injection. See
+      # tests/smoke/playwright.config.js (CANARY_SHARED_SPECS) for the rationale.
+      # --workers=2 and --retries=2 are for the network, not for flaky assertions: these
+      # requests cross the public internet to Netlify's edge, where a burst of parallel
+      # crawlers earns connection resets that say nothing about the site.
       - name: Crawl both public learner sites
         run: |
           cd tests/smoke
-          npx playwright test --project=nav-ms3 --project=nav-res
+          npx playwright test --project=canary-ms3 --project=canary-res --workers=2 --retries=2
         env:
           MS3_BASE_URL: https://une-ms3-psychiatry.netlify.app
           RES_BASE_URL: https://mmc-psychiatry-residents-sanford.netlify.app

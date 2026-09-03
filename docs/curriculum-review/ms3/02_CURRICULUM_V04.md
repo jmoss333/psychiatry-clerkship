@@ -380,7 +380,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **Slug:** `t_eating.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `03_Core_Topics/Eating_Disorders/eating_disorders_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 1,308 words
+- **Length:** 1,336 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -460,7 +460,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 
 **Medical instability — the admission question** — The high-yield student skill is recognizing who needs a *medical* bed. Criteria that commonly trigger medical admission (confirm against your institution's protocol) include **bradycardia (often <40–50 bpm), hypotension, orthostatic vital-sign changes, hypothermia, hypoglycemia, electrolyte derangement (K⁺, phosphate, Mg²⁺), QTc prolongation or arrhythmia, marked or rapid weight loss, syncope, dehydration, and failure of outpatient/PHP care.** Bradycardia is one of the most common reasons for medical admission in AN. Match the *level of care* to acuity: medical floor for instability, psychiatric/behavioral eating-disorder unit or residential/PHP for weight and behavioral work once medically stable.
 
-**Refeeding syndrome — the complication that kills** — When nutrition restarts, the shift from catabolic to anabolic metabolism drives phosphate, potassium, and magnesium *into* cells; **hypophosphatemia is the hallmark**, and the danger is cardiac failure, arrhythmia, respiratory failure, and delirium. Risk is highest in the **most malnourished** and after the longest starvation. The safe posture is **"start low, go slow"**: begin conservative caloric refeeding, **check phosphate/potassium/magnesium at least daily early**, **supplement phosphate and give thiamine before or with carbohydrate**, and advance calories per protocol as electrolytes stay stable. Defer exact caloric targets and repletion doses to your institution's refeeding order set — the student job is to *anticipate and monitor*, not to prescribe.
+**Refeeding syndrome — the complication that kills** — When nutrition restarts, the shift from catabolic to anabolic metabolism drives phosphate, potassium, and magnesium *into* cells; **hypophosphatemia is the hallmark**, and the danger is cardiac failure, arrhythmia, respiratory failure, and delirium. Risk is highest in the **most malnourished** and after the longest starvation. The safe posture is close monitoring, not prolonged underfeeding — current guidance (SAHM 2022; MEED, which replaced MARSIPAN in 2022) supports higher-calorie refeeding with electrolyte surveillance, reserving the most conservative starts for the most severely malnourished: begin refeeding per protocol, **check phosphate/potassium/magnesium at least daily early**, **supplement phosphate and give thiamine before or with carbohydrate**, and advance calories per protocol as electrolytes stay stable. Defer exact caloric targets and repletion doses to your institution's refeeding order set — the student job is to *anticipate and monitor*, not to prescribe.
 
 **Acute inpatient management** — Medical stabilization first, then structured nutritional rehabilitation with a **multidisciplinary team** (medicine, nutrition/dietetics, nursing, psychiatry, and often social work). Use **supervised meals and a post-meal observation period**, monitor for covert purging and **water-loading** (which falsely raises weight — a "too-fast" weight jump is a flag), and weigh on a consistent schedule/gown. Psychotherapy is the backbone: **Family-Based Treatment (Maudsley/FBT)** for adolescents with AN, and **CBT-E** for BN and BED. On medications: **no drug is first-line for AN** — weight restoration is; **olanzapine** may modestly help weight and obsessionality in AN; **fluoxetine (target 60 mg/day)** is the classic pharmacotherapy for BN; **lisdexamfetamine** is approved for moderate–severe BED. **Avoid bupropion in patients who purge or are underweight (seizure risk)**, and be cautious with QT-prolonging agents given the baseline cardiac risk.
 
@@ -1211,134 +1211,5 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - Psychosocial/family interventions are first-line; medication treats the comorbidity, not the "behavior."
 
 **Pair with** — the [Mood topic](?page=t_mood.md), [Neurodevelopmental Disorders](?page=t_neurodev.md), [Substance Use](?page=t_sud.md), the [Agitation & Restraint guide](?page=agitation.md), and the <a href="tools/violence.html" target="_blank" rel="noopener">Violence Risk (FRST) tool</a>.
-
-*Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
-
-
----
-
-## Adjustment Disorders
-
-- **Slug:** `t_adjustment.md` · **Type:** md · **Sidebar:** listed
-- **Source:** `03_Core_Topics/Adjustment/adjustment_disorders_inpatient_teaching.md`
-- **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 910 words
-
-<!-- topic_meta overlay -->
-#### Structured metadata (`topic_meta.json` → this page)
-
-> est. read 4 min
-
-**TL;DR (shown above the page text):**
-
-> Distress or impairment beginning within 3 months of a stressor and resolving within 6 months of its end — the diagnosis for someone struggling more than expected who doesn't meet criteria for another disorder, and it still carries real suicide risk.
-
-**Key points (bulleted card):**
-
-- If full criteria for MDD, an anxiety disorder, or PTSD are met — it is not adjustment disorder.
-- PTSD/acute stress disorder require a traumatic event; adjustment disorder follows any stressor.
-- First-line treatment is time-limited psychotherapy (supportive, problem-solving); medication is adjunctive.
-
-**Can't-miss / red-flag line:**
-
-> Don't be lulled by the 'subthreshold' label — assess suicide risk directly, as impulsive self-harm can occur.
-
-**Rule-out list (differential the page forces):**
-
-- Major depressive disorder
-- Anxiety disorder
-- Acute stress disorder / PTSD
-- Normal reaction / prolonged grief
-- Substance-induced / medical
-
-**First move (the action the page tells the learner to take):**
-
-> Anchor the timeline to the stressor, confirm criteria for other disorders aren't met, quantify suicide risk, and start brief supportive therapy.
-
-**Clinical-workflow narration (per-stage coaching text):**
-
-- **ask** — Anchor symptoms to the stressor, onset within three months, impairment, and whether full criteria for MDD, PTSD, anxiety, or substance-induced disorder are met.
-- **mse** — Look for affect congruence, hopelessness, agitation, sleep change, substance use, and whether symptoms exceed expected coping.
-- **safety** — Ask directly about suicide and impulsive self-harm even when symptoms seem subthreshold.
-- **say** — This diagnosis does not mean the distress is minor; it means the symptoms are stress-linked and we still take safety seriously.
-- **collateral** — Ask what changed after the stressor, supports, coping, substance use, and whether risk has escalated.
-- **rounds** — Present stressor timeline, excluded full syndromes, functional impairment, safety assessment, and brief therapy/support plan.
-- **exam** — Adjustment disorder requires stressor-linked distress that does not meet criteria for another disorder and resolves after the stressor ends.
-- **actions** — Open C-SSRS
-
-**Embedded check-for-understanding**
-
-1. *Stem:* Two months after a divorce, a patient has low mood and impaired work function but does not meet criteria for major depression. Best diagnosis and first-line treatment?
-   - Adjustment disorder — time-limited psychotherapy **← keyed correct**
-   - Major depressive disorder — start an SSRI as monotherapy
-   - PTSD — begin trauma-focused therapy
-   - No diagnosis — reassure and discharge without follow-up
-   - *Rationale:* Symptoms tied to a stressor, within 3 months, not meeting full criteria for another disorder, indicate an adjustment disorder; supportive/problem-solving psychotherapy is first-line, with suicide-risk assessment.
-
-**Cross-references and tagging:**
-
-- **Related tools:** `cssrs.html`, `communication-practice.html`
-- **Communication cases:** `suicide_direct_question_001`
-- **Evidence sources:** `felitti-1998-ace`
-- **Workflow stages:** `diagnosis`, `safety`, `communication`, `exam`
-- **Workflow modes:** `ward`, `safety`, `5min`, `shelf`
-- **Shelf blueprint tags:** `otherdx`
-- **EPA crosswalk:** `EPA1`, `EPA2`
-
-#### Page text (as shipped)
-
-# Adjustment Disorders
-
-
-**In one line** — An adjustment disorder is **clinically significant distress or impairment that begins within 3 months of an identifiable stressor and resolves within 6 months after the stressor (or its consequences) ends** — it is the diagnosis for someone struggling *more than expected* with a real-life event who does *not* meet criteria for another disorder, and it still carries meaningful, sometimes acute, suicide risk.
-
-**How it presents on the unit** — Common on consult-liaison and after acute life events: a new serious diagnosis, a loss, a relationship or job crisis, legal trouble, or hospitalization itself. Presentations are subthreshold — low mood, anxiety, or behavioral disturbance tied clearly to the stressor. The task is to distinguish a normal reaction, an adjustment disorder, and a full syndromic disorder — and to take the suicide risk seriously despite the "mild" label.
-
-**Differential & can't-miss mimics** — Adjustment disorder is a **diagnosis of specification, not exclusion-by-default** — you must actively rule out the alternatives:
-
-- **Major depressive disorder / an anxiety disorder** — if full criteria are met, diagnose *that*, not adjustment disorder.
-- **Acute stress disorder / PTSD** — require a *traumatic* (criterion-A) event and a specific symptom cluster; adjustment disorder follows *any* stressor and lacks that cluster.
-- **Normal/expected reaction** — distress proportionate to the stressor without significant impairment is not a disorder; **prolonged grief disorder** is the diagnosis for pervasive, persistent grief beyond expected norms.
-- **Bereavement** — uncomplicated grief is normal; screen for a superimposed major depressive episode.
-- **Substance-induced or medical** — new medications, substances, or illness can drive the symptoms.
-
-**Subtypes** — Specify the predominant feature: with depressed mood; with anxiety; mixed anxiety and depressed mood; with disturbance of conduct; mixed disturbance of emotions and conduct; unspecified. Course may be acute or persistent (chronic, if the stressor or its consequences endure).
-
-**Initial workup** — Anchor the timeline to the stressor (onset within 3 months). Confirm the symptoms don't meet criteria for another disorder and aren't a normal reaction. Screen for depression, anxiety, PTSD, and substance use. **Assess suicide risk explicitly** — impulsive self-harm can occur even with "subthreshold" symptoms, especially around acute stressors.
-
-**Acute inpatient management** — Treatment is **primarily psychotherapeutic and time-limited**: supportive therapy, problem-solving, building coping and social support, and addressing the stressor directly where possible. Medication is *not* first-line but may briefly target prominent symptoms (e.g., short-term sleep or anxiety support). Mobilize the patient's own resources and practical supports. If the picture crosses into a full disorder over time, re-diagnose and treat accordingly.
-
-**What the student does** —
-- Tie the symptoms to a specific stressor and to the 3-month/6-month timeline.
-- Confirm the patient does *not* meet criteria for MDD, an anxiety disorder, or PTSD before choosing this label.
-- Screen and *quantify* suicide risk — don't be lulled by "mild."
-- Recommend supportive/problem-solving therapy first; keep any medication short and symptom-targeted.
-- Re-evaluate over time; escalate the diagnosis if the syndrome evolves.
-
-**Disposition & discharge essentials** — Arrange brief outpatient psychotherapy and practical support around the stressor. Provide a safety plan. Ensure follow-up that can catch a transition to a full mood or anxiety disorder, or to prolonged grief, and reconcile any short-term medication with a stop date.
-
-**High-yield pearls**
-- Onset within 3 months of a stressor; resolves within 6 months once the stressor (or its consequences) ends.
-- If full criteria for MDD, an anxiety disorder, or PTSD are met — it's *not* adjustment disorder.
-- PTSD/acute stress disorder require a *traumatic* event; adjustment disorder follows any stressor.
-- Suicide risk is real even at "subthreshold" severity — assess it directly.
-- First-line treatment is psychotherapy (supportive, problem-solving), time-limited; medication is adjunctive.
-- Prolonged grief disorder is the diagnosis for persistent, impairing grief beyond expected norms.
-
-> <div class="crisis-block-hook" hidden></div>
->
-> ### If someone is in crisis
->
-> On the unit, a patient in immediate danger is an escalation to your supervising resident or attending and the charge nurse — not a phone call. These lines are what you put IN a patient's safety plan, what families use after discharge, and what you can use yourself.
->
-> - **988 Suicide & Crisis Lifeline** — Call or text 988. Chat at chat.988lifeline.org. 24/7, free, confidential. Spanish available by call, text, and chat; a dedicated line serves Deaf/Hard-of-Hearing callers. Calls placed in Maine route to Maine crisis specialists.
-> - **Crisis Text Line** — Text HOME to 741741. Text HOLA to 741741 for Spanish. 24/7, free. Text-only. Often the most acceptable option for adolescents and young adults who will not make a phone call.
-> - **Maine Crisis Line** — 1-888-568-1112. Text and chat available via the Maine Crisis Line website. 24/7. Staffed by clinically trained crisis workers and the gateway to Maine's mobile crisis teams — the number that actually dispatches a face-to-face response.
-> - **Veterans Crisis Line** — Dial 988 then press 1. Text 838255. 24/7. No VA enrollment required. Ask about service history — it changes which line is the right referral.
-> - **Emergency services** — 911. 24/7. For imminent danger to life.
->
-> *Contacts verified 2026-07-27 against official sources. Maintained in `crisis_resources.json`; do not edit these numbers inline.*
-
-**Pair with** — the [Mood topic](?page=t_mood.md), the [Anxiety/Trauma/OCD topic](?page=t_anxiety.md), the [Suicide Risk & Safety pocket guide](?page=pg_suicide.md), and the <a href="tools/cssrs.html" target="_blank" rel="noopener">Columbia C-SSRS official form &amp; training page</a>.
 
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
