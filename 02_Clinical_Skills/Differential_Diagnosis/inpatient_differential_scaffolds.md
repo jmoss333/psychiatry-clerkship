@@ -44,7 +44,7 @@
 - **First move:** rule out the cardiopulmonary/withdrawal mimics; favor SSRIs + skills over standing benzodiazepines (dependence, falls, SUD).
 
 ## 8. Substance intoxication / withdrawal
-- **Can't-miss mimics:** co-occurring head injury, infection, hepatic encephalopathy, Wernicke's (give **thiamine before glucose**), polysubstance masking.
+- **Can't-miss mimics:** co-occurring head injury, infection, hepatic encephalopathy, Wernicke's (give **thiamine before or with glucose**; never delay dextrose for true hypoglycemia), polysubstance masking.
 - **Psychiatric DDx:** primary mood/psychotic disorder co-occurring with use; substance-induced disorders.
 - **First move:** CIWA-Ar / COWS, withdrawal protocol per institution, naloxone education at discharge. → the Withdrawal (CIWA-Ar/COWS) card.
 

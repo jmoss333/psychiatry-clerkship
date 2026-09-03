@@ -713,11 +713,11 @@
   "t_sud.md": {
     "read": 4,
     "hy": true,
-    "tldr": "Time the withdrawal syndrome and treat it proactively — alcohol withdrawal is benzodiazepines (CIWA-guided) plus thiamine before glucose.",
+    "tldr": "Time the withdrawal syndrome and treat it proactively — alcohol withdrawal is benzodiazepines (CIWA-guided) plus thiamine before or with glucose.",
     "points": [
       "Use CIWA-Ar (alcohol) and COWS (opioid) to drive symptom-triggered dosing.",
       "Offer medication for addiction: buprenorphine/methadone for opioids; naltrexone/acamprosate for alcohol.",
-      "Give thiamine before glucose to prevent Wernicke encephalopathy."
+      "Give thiamine before or with glucose to prevent Wernicke encephalopathy — and never delay dextrose in documented hypoglycemia."
     ],
     "cant": "Delirium tremens (48–72h) is a medical emergency with real mortality — escalate early, don't wait.",
     "ruleOut": [
@@ -744,7 +744,7 @@
           "c": true
         }
       ],
-      "why": "Alcohol withdrawal is treated with symptom-triggered benzodiazepines and thiamine before glucose."
+      "why": "Alcohol withdrawal is treated with symptom-triggered benzodiazepines plus thiamine, given before or with any glucose-containing fluids. Dextrose is not the priority here — nothing in the stem suggests hypoglycemia — and carbohydrate given to a thiamine-depleted patient without thiamine can precipitate Wernicke encephalopathy."
     },
     "cta": [
       {
@@ -2916,7 +2916,7 @@
     "points": [
       "For new psychosis, delirium is the can't-miss before schizophrenia — confirm attention, get a tox screen and basic labs, and do not assume a primary psychotic disorder on first episode without a workup.",
       "In mania or severe agitation, akathisia — drug-induced restlessness from antipsychotics — is frequently missed because it looks like anxiety or behavioral escalation.",
-      "In withdrawal, give thiamine before glucose — a glucose load in a thiamine-deficient patient can precipitate Wernicke's encephalopathy."
+      "In withdrawal, give thiamine before or with glucose — a glucose load in a thiamine-deficient patient can precipitate Wernicke's encephalopathy — but never delay dextrose for documented hypoglycemia."
     ],
     "cant": "Anchoring on a psychiatric diagnosis before ruling out the medical mimics — especially delirium, intoxication/withdrawal, and thyroid or metabolic causes — is the most common reasoning error on the inpatient unit.",
     "quiz": {
@@ -3757,7 +3757,7 @@
     "read": 3,
     "tldr": "A teaching index of the unit's order sets — always pull exact medications, doses, and monitoring from the live EHR order set; this page tells you which protocol applies and why, not what to prescribe.",
     "points": [
-      "Withdrawal protocols use symptom-triggered scoring (CIWA-Ar for alcohol/benzo, COWS for opioids); always give thiamine before glucose in any withdrawal or nutritional risk.",
+      "Withdrawal protocols use symptom-triggered scoring (CIWA-Ar for alcohol/benzo, COWS for opioids); give thiamine before or with glucose in any withdrawal or nutritional risk, never delaying dextrose for hypoglycemia.",
       "Clozapine initiation requires mandatory ANC monitoring per the hematologic schedule — know the workflow before the patient starts, not after the first dose.",
       "Delirium prevention bundles non-pharmacologic measures first; the restraint and agitation pathway is least-restrictive, time-limited, and always followed by a debrief."
     ],

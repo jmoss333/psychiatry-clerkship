@@ -1,6 +1,6 @@
 # RESIDENT · Navigation map
 
-Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-02 @ `bda0a99`.
+Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-03 @ `081e4f8`.
 
 ## Orientation  *(pinned)*
 
@@ -8,7 +8,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 |---|---|---|---|---|---|---|---|
 | 1 | Welcome — Resident Rotation | `welcome.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `14_Tracks/Resident/resident_welcome.md` | 385 |
 | 2 | 4-Week Rotation Plan | `rotation.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `14_Tracks/Resident/resident_curriculum.md` | 298 |
-| 3 | Core Reading List | `core_readings.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `14_Tracks/MS3/Student_Ready_Pack/core_reading_list.md` | 397 |
+| 3 | Core Reading List | `core_readings.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `14_Tracks/MS3/Student_Ready_Pack/core_reading_list.md` | 399 |
 | 4 | Supervision, EPAs & Teaching | `supervision_teaching.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `14_Tracks/Resident/supervision_teaching.md` | 999 |
 
 ## Start the Encounter
@@ -25,7 +25,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 
 | # | Title | Slug | Type | Sidebar | Governance | Source path | Words |
 |---|---|---|---|---|---|---|---|
-| 1 | Differential Dx Scaffolds | `ddx.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Differential_Diagnosis/inpatient_differential_scaffolds.md` | 632 |
+| 1 | Differential Dx Scaffolds | `ddx.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Differential_Diagnosis/inpatient_differential_scaffolds.md` | 640 |
 | 2 | Diagnostic Reasoning Workbench | `diagnostic-reasoning.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Clinical_Reasoning/diagnostic-reasoning.html` |  |
 | 3 | Formulation & DDx | `pg_formulation.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/MS3/Student_Ready_Pack/02_pocket_guides/formulation_differential_pocket_guide.md` | 643 |
 | 4 | Case Formulation | `case_formulation.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Case_Formulation/case_formulation_inpatient_teaching.md` | 634 |
@@ -34,7 +34,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 7 | Psychosis | `t_psychosis.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/Psychosis/psychotic_disorders_inpatient_teaching.md` | 1467 |
 | 8 | Anxiety/Trauma/OCD | `t_anxiety.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/Anxiety/anxiety_trauma_ocd_inpatient_teaching.md` | 1430 |
 | 9 | Personality | `t_personality.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Personality/personality_disorders_inpatient_teaching.md` | 1322 |
-| 10 | Substance Use | `t_sud.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md` | 1262 |
+| 10 | Substance Use | `t_sud.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md` | 1345 |
 | 11 | Geriatric | `t_geri.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Geriatric/geriatric_psychiatry_inpatient_teaching.md` | 893 |
 | 12 | Perinatal | `t_perinatal.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/Perinatal/perinatal_psychiatry_inpatient_teaching.md` | 1145 |
 | 13 | Neurodevelopmental Disorders | `t_neurodev.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Neurodevelopmental/neurodevelopmental_disorders_inpatient_teaching.md` | 1143 |
@@ -49,7 +49,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 3 | Columbia C-SSRS — Official Form & Training | `cssrs.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `04_Acute_and_Safety/Suicide_Risk_and_Safety_Planning/columbia-cssrs-screener.html` |  |
 | 4 | Violence Risk | `violence.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `04_Acute_and_Safety/Violence_Risk/violence_risk_inpatient_teaching.md` | 957 |
 | 5 | Violence Risk (FRST) | `violence.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `04_Acute_and_Safety/Violence_Risk/violence-risk-one-pager.html` |  |
-| 6 | Agitation & Restraint | `agitation.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `04_Acute_and_Safety/Agitation_and_Restraint/agitation_restraint_inpatient_teaching.md` | 1093 |
+| 6 | Agitation & Restraint | `agitation.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `04_Acute_and_Safety/Agitation_and_Restraint/agitation_restraint_inpatient_teaching.md` | 1208 |
 | 7 | Agitation Ladder — PRN Trainer | `rp-agitation.html` | tool | listed | status=`pending` · riskKind=`local-policy` · riskLevel=`high` | `_prototypes/agitation-trainer/rp-agitation.html` |  |
 | 8 | Catatonia | `catatonia.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `04_Acute_and_Safety/Catatonia/catatonia_inpatient_teaching.md` | 639 |
 | 9 | Bush-Francis Catatonia Scale (BFCRS) — Official Form & Training | `bfcrs.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `04_Acute_and_Safety/Catatonia/bfcrs.html` |  |
@@ -58,8 +58,8 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 12 | Withdrawal: COWS Tool · CIWA-Ar Official Form & Training | `withdrawal.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/SUD_Withdrawal/withdrawal-ciwa-cows-card.html` |  |
 | 13 | Decisional Capacity | `capacity.html` | tool | listed | status=`reviewed` · riskKind=`legal` · riskLevel=`high` | `04_Acute_and_Safety/Decisional_Capacity/decisional-capacity-module.html` |  |
 | 14 | Consult Questions: Capacity, Delirium, Catatonia, Withdrawal | `exp_consult.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/MS3/Student_Ready_Pack/04_expansion_modules/consult_capacity_delirium_catatonia_withdrawal.md` | 935 |
-| 15 | C-L: Emergencies, Tox & Capacity (Numbers) | `cl_reference.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/Resident/cl_reference.md` | 978 |
-| 16 | Inpatient Systems & Med-Legal | `systems_medlegal.md` | md | listed | status=`reviewed` · riskKind=`legal` · riskLevel=`high` | `14_Tracks/Resident/systems_medlegal.md` | 1350 |
+| 15 | C-L: Emergencies, Tox & Capacity (Numbers) | `cl_reference.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/Resident/cl_reference.md` | 994 |
+| 16 | Inpatient Systems & Med-Legal | `systems_medlegal.md` | md | listed | status=`reviewed` · riskKind=`legal` · riskLevel=`high` | `14_Tracks/Resident/systems_medlegal.md` | 1461 |
 
 ## Make a Plan
 
@@ -68,7 +68,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 1 | Psychopharmacology Primer | `psychopharm_primer.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md` | 1287 |
 | 2 | Advanced Psychopharmacology | `adv_psychopharm.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `14_Tracks/Resident/adv_psychopharmacology.md` | 1072 |
 | 3 | Medication Monitoring & Labs | `med_monitoring.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md` | 583 |
-| 4 | Protocol Library | `protocol_library.md` | md | listed | status=`reviewed` · riskKind=`local-policy` · riskLevel=`high` | `05_Psychopharmacology/Protocol_Library/protocol_library_inpatient.md` | 325 |
+| 4 | Protocol Library | `protocol_library.md` | md | listed | status=`reviewed` · riskKind=`local-policy` · riskLevel=`high` | `05_Psychopharmacology/Protocol_Library/protocol_library_inpatient.md` | 327 |
 | 5 | Algorithms & Decision Aids | `decision-aids.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `04_Acute_and_Safety/Decision_Aids/decision-aids.html` |  |
 | 6 | Interaction Cards — One Action | `interaction-cards.html` | tool | listed | status=`reviewed` · riskKind=`formulary` · riskLevel=`high` | `05_Psychopharmacology/Monitoring_and_Labs/interaction-cards.html` |  |
 | 7 | Nutrition & Metabolic Health | `nutrition_metabolic.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Nutrition/nutrition_metabolic_inpatient_teaching.md` | 704 |
@@ -80,8 +80,8 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 1 | What Do You Say Next? | `communication-practice.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Communication_Practice/communication-practice.html` |  |
 | 2 | Psychotherapies at a Glance | `psychotherapy.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Psychotherapy/psychotherapy_inpatient_teaching.md` | 613 |
 | 3 | Motivational Interviewing | `motivational_interviewing.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `06_Family_and_Relational/motivational_interviewing_inpatient_teaching.md` | 533 |
-| 4 | Brief Psychotherapy on the Unit | `brief_psychotherapy.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Brief_Psychotherapy/brief_psychotherapy_inpatient.md` | 1054 |
-| 5 | Therapy on the Unit | `therapy_on_the_unit.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `02_Clinical_Skills/Psychotherapy/therapy_on_the_unit_inpatient_teaching.md` | 4164 |
+| 4 | Brief Psychotherapy on the Unit | `brief_psychotherapy.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Brief_Psychotherapy/brief_psychotherapy_inpatient.md` | 1062 |
+| 5 | Therapy on the Unit | `therapy_on_the_unit.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `02_Clinical_Skills/Psychotherapy/therapy_on_the_unit_inpatient_teaching.md` | 4218 |
 | 6 | Five Good Minutes — Brief Psych Coach | `rp-brief-psych.html` | tool | listed | status=`pending` · riskKind=`local-policy` · riskLevel=`high` | `_prototypes/brief-psych/rp-brief-psych.html` |  |
 | 7 | Reflection & Identity | `reflection.html` | tool | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `02_Clinical_Skills/Reflection_PIF/reflection-and-pif-set.html` |  |
 
@@ -101,7 +101,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 |---|---|---|---|---|---|---|---|
 | 1 | Documentation & Oral Presentation | `doc_oral.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/MS3/Student_Ready_Pack/05_documentation_oral_presentation/student_documentation_and_oral_presentations.md` | 817 |
 | 2 | Treatment Team Rounding Prep | `oral.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Oral_Presentations/oral-presentation-module.html` |  |
-| 3 | High-Yield Rounds Questions | `rounds_questions.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md` | 8724 |
+| 3 | High-Yield Rounds Questions | `rounds_questions.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md` | 8784 |
 
 ## Practice and Exam Prep
 
@@ -112,7 +112,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 3 | Daily Review (Spaced Repetition) | `review.html` | tool | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`moderate` | `07_Evidence_and_Reading/Landmark_Trials/review.html` |  |
 | 4 | Board-Style Question Bank | `shelf-mode.html` | tool | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`moderate` | `07_Evidence_and_Reading/Landmark_Trials/shelf-mode.html` |  |
 | 5 | Canon Quiz — 200-Paper Spine | `rp-canon-quiz.html` | tool | listed | status=`reviewed` · riskKind=`general` · riskLevel=`moderate` | `_prototypes/canon-quiz/rp-canon-quiz.html` |  |
-| 6 | Rapid Review — Buzzwords | `rapid_review.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `09_Exam_Prep/Shelf_High_Yield/rapid_review_buzzwords.md` | 981 |
+| 6 | Rapid Review — Buzzwords | `rapid_review.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `09_Exam_Prep/Shelf_High_Yield/rapid_review_buzzwords.md` | 989 |
 | 7 | Landmark Trials — Listen & Test | `landmark_trials.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `07_Evidence_and_Reading/Landmark_Trials/landmark_trials_page.md` | 881 |
 | 8 | Anki Flashcard Decks | `anki.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `09_Exam_Prep/anki_export/anki.md` | 310 |
 
@@ -123,21 +123,21 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 1 | Index — All Cases | `cotw_index.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `08_Cases_and_Simulation/case-of-the-week/index_resident.md` | 422 |
 | 2 | Catatonia (Aug 31) | `cotw_20260831_catatonia_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-31_catatonia-recognition-workup-treatment_Resident.md` | 2182 |
 | 3 | Borderline Personality Disorder (Aug 27) | `cotw_20260827_bpd_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-27_borderline-personality-disorder_Resident.md` | 2692 |
-| 4 | Panic Disorder (Aug 10) | `cotw_20260810_panic_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-10_anxiety-panic-disorder_Resident.md` | 4552 |
-| 5 | Lithium — Monitoring & Toxicity (Aug 3) | `cotw_20260803_lithium_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-03_lithium-monitoring-toxicity-interactions_Resident.md` | 3915 |
-| 6 | Opioid Use Disorder (Jul 27) | `cotw_20260727_oud_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-27_opioid-use-disorder_Resident.md` | 3399 |
-| 7 | Alcohol Withdrawal & DT (Jul 26) | `cotw_20260726_etohwd_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-26_alcohol-withdrawal-delirium-tremens_Resident.md` | 3185 |
-| 8 | Suicide Risk & Safety Planning (Jul 23) | `cotw_20260723_suiciderisk_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`high` | `08_Cases_and_Simulation/case-of-the-week/2026-07-23_suicide-risk-assessment-safety-planning_Resident.md` | 2496 |
+| 4 | Panic Disorder (Aug 10) | `cotw_20260810_panic_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-10_anxiety-panic-disorder_Resident.md` | 4579 |
+| 5 | Lithium — Monitoring & Toxicity (Aug 3) | `cotw_20260803_lithium_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-08-03_lithium-monitoring-toxicity-interactions_Resident.md` | 4027 |
+| 6 | Opioid Use Disorder (Jul 27) | `cotw_20260727_oud_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-27_opioid-use-disorder_Resident.md` | 3458 |
+| 7 | Alcohol Withdrawal & DT (Jul 26) | `cotw_20260726_etohwd_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-26_alcohol-withdrawal-delirium-tremens_Resident.md` | 3351 |
+| 8 | Suicide Risk & Safety Planning (Jul 23) | `cotw_20260723_suiciderisk_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`high` | `08_Cases_and_Simulation/case-of-the-week/2026-07-23_suicide-risk-assessment-safety-planning_Resident.md` | 2550 |
 | 9 | MDD — Treatment Selection (Jul 20) | `cotw_20260720_mdd_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-20_mdd-treatment-selection-augmentation_Resident.md` | 1896 |
 | 10 | Bipolar Mania (Jul 20) | `cotw_20260720_bipolar_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-20_bipolar-mania_Resident.md` | 1682 |
-| 11 | Acute Agitation & Delirium (Jul 13) | `cotw_20260713_agitation_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-13_acute-agitation-delirium_Resident.md` | 2204 |
-| 12 | Serotonin Syndrome vs NMS (Jul 9) | `cotw_20260709_ssnms_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-09_serotonin-syndrome-vs-nms_Resident.md` | 2005 |
+| 11 | Acute Agitation & Delirium (Jul 13) | `cotw_20260713_agitation_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-13_acute-agitation-delirium_Resident.md` | 2367 |
+| 12 | Serotonin Syndrome vs NMS (Jul 9) | `cotw_20260709_ssnms_res.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-09_serotonin-syndrome-vs-nms_Resident.md` | 2071 |
 
 ## Evidence and Reference
 
 | # | Title | Slug | Type | Sidebar | Governance | Source path | Words |
 |---|---|---|---|---|---|---|---|
-| 1 | Evidence-Based Inpatient Psychiatry | `evidence_inpatient.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `07_Evidence_and_Reading/Inpatient_Evidence/evidence_inpatient.md` | 5855 |
+| 1 | Evidence-Based Inpatient Psychiatry | `evidence_inpatient.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `07_Evidence_and_Reading/Inpatient_Evidence/evidence_inpatient.md` | 6161 |
 | 2 | The Therapy Reading Room | `therapy_reading_room.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`low` | `07_Evidence_and_Reading/Therapy_Reading_Room/therapy_reading_room.md` | 2839 |
 | 3 | The Psychiatry Canon (200) | `canon_200.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/Resident/canon_200.md` | 8755 |
 | 4 | Book Library | `book_library.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `07_Evidence_and_Reading/Book_Summaries/ms3_book_library.md` | 1200 |
@@ -163,7 +163,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 24 | Adjustment Disorders | `t_adjustment.md` | md | hidden | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Adjustment/adjustment_disorders_inpatient_teaching.md` | 910 |
 | 25 | Weekly Reading Map | `reading_map.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `14_Tracks/MS3/Student_Ready_Pack/03_weekly_map/week_by_week_reading_map.md` | 588 |
 | 26 | COMAT & Shelf Review | `shelf.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `14_Tracks/MS3/Student_Ready_Pack/07_shelf_guide/shelf_review_guide.md` | 742 |
-| 27 | OSCE Stations | `osce.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `14_Tracks/MS3/Student_Ready_Pack/06_osce_cases/osce_station_set.md` | 1544 |
+| 27 | OSCE Stations | `osce.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `14_Tracks/MS3/Student_Ready_Pack/06_osce_cases/osce_station_set.md` | 1546 |
 | 28 | Practice Cases | `cases.md` | md | hidden | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/MS3/Student_Ready_Pack/08_synthetic_cases/synthetic_practice_cases.md` | 849 |
 
 ## Feedback

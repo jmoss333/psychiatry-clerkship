@@ -11,7 +11,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **Slug:** `cotw_20260713_agitation_res.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-13_acute-agitation-delirium_Resident.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 2,204 words
+- **Length:** 2,367 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -110,7 +110,7 @@ Exam (obtained in fragments): **inattentive** (cannot complete "days of the week
 
 6. **Precipitant workup with pretest reasoning.** Anchor on reversible, high-lethality causes first. Core panel: glucose (done), CBC, CMP (Na⁺/Ca²⁺/glucose/renal/hepatic), **UA + culture**, ± blood cultures/lactate if septic-appearing, TSH, B12 if indicated, ECG, medication reconciliation (**anticholinergic burden** — oxybutynin; opioids; sedatives), and a **withdrawal assessment** given the alcohol ambiguity (consider thiamine before glucose loading, ethanol level, prior withdrawal history). **Can't-miss before accepting "UTI delirium":** hypoglycemia/hypoxia (excluded early), **CNS catastrophe** (stroke, ICH, meningoencephalitis), **nonconvulsive status epilepticus**, **Wernicke encephalopathy**, and toxic/metabolic (hyponatremia, hypercalcemia, hepatic/uremic encephalopathy, anticholinergic toxidrome). **Escalate to head CT** for focal signs, trauma, anticoagulation, or delirium without an identified precipitant; **LP** if meningitis/encephalitis is plausible (fever + altered mentation without another source); **EEG** if seizure/NCSE suspected or if unexplained fluctuating encephalopathy persists. "UTI-precipitated delirium" is a reasonable *leading* hypothesis but should not foreclose the search — pyuria is common and incidental in older adults.
 
-7. **Restraint-minimization & monitoring plan.** Targets: a **calm, arousable, redirectable patient** (e.g., RASS around 0 to −1), *not* iatrogenic obtundation that masks the fluctuating exam. Least-restrictive escalation: environment/1:1 sitter → verbal de-escalation → single lowest-effective enteral/IM agent → physical restraints only as time-limited last resort with frequent reassessment and documentation. Monitoring: **baseline and follow-up ECG/QTc**, telemetry if stacking QT agents or high antipsychotic exposure, electrolyte repletion (K⁺/Mg²⁺), continuous pulse oximetry after parenteral sedation, fall precautions. **Delirium precautions:** reorientation, sensory aids, day/night light-sleep cycling, early mobilization, remove tethers/Foley when possible, treat pain/constipation/retention, family presence. **Handoff to admitting team:** explicit problem framing ("hyperactive delirium, ?UTI vs. early withdrawal — reassess"), the medication rationale and *de-escalation criteria* (stop/taper antipsychotic once agitation resolves and precipitant treated; do not continue at discharge), thiamine and withdrawal-monitoring plan, and PCP follow-up for post-delirium cognitive screening [1,2,3].
+7. **Restraint-minimization & monitoring plan.** Targets: a **calm, arousable, redirectable patient** (e.g., RASS around 0 to −1), *not* iatrogenic obtundation that masks the fluctuating exam. Least-restrictive escalation: environment/1:1 sitter → verbal de-escalation → single lowest-effective enteral/IM agent → physical restraints only as time-limited last resort with frequent reassessment and documentation. For restraint or seclusion used for violent or self-destructive behaviour, know the regulatory floor you are signing to (CMS Conditions of Participation, 42 CFR §482.13(e); the Joint Commission standards align): a **face-to-face** (in-person) evaluation by a physician/LIP or trained RN **within 1 hour** of initiation, an order duration capped at **4 hours** for adults 18 and over and renewable only after re-evaluation, **no PRN or standing restraint orders**, and monitoring documented at defined intervals until release. The cap is a ceiling, not an allowance — release is required the moment the behaviour no longer meets criteria, whatever time is left on the order. Non-violent restraint used for medical purposes runs on a different rule set; do not carry these numbers onto a medical floor. Monitoring: **baseline and follow-up ECG/QTc**, telemetry if stacking QT agents or high antipsychotic exposure, electrolyte repletion (K⁺/Mg²⁺), continuous pulse oximetry after parenteral sedation, fall precautions. **Delirium precautions:** reorientation, sensory aids, day/night light-sleep cycling, early mobilization, remove tethers/Foley when possible, treat pain/constipation/retention, family presence. **Handoff to admitting team:** explicit problem framing ("hyperactive delirium, ?UTI vs. early withdrawal — reassess"), the medication rationale and *de-escalation criteria* (stop/taper antipsychotic once agitation resolves and precipitant treated; do not continue at discharge), thiamine and withdrawal-monitoring plan, and PCP follow-up for post-delirium cognitive screening [1,2,3].
 
 ### Ranked differential (resident depth)
 1. **Hyperactive/mixed delirium, multifactorial** — UTI + **anticholinergic (oxybutynin)** + baseline cognitive vulnerability; best overall fit.
@@ -123,8 +123,8 @@ Exam (obtained in fragments): **inattentive** (cannot complete "days of the week
 8. **Primary psychiatric illness (late-onset psychosis/mania)** — diagnosis of exclusion; late-onset psychosis mandates a secondary-cause search rather than presumption of a primary disorder [8].
 
 ### One-screen management summary
-- **Stabilize/safety:** space, sitter, de-escalation; glucose/SpO₂/vitals; thiamine before glucose if any withdrawal/malnutrition concern.
-- **Etiology-driven pharmacology:** *delirium-agitation* → low-dose high-potency antipsychotic, ECG/QTc-aware; *withdrawal* → benzodiazepine/phenobarbital + thiamine; *anticholinergic* → supportive, remove agent, benzodiazepine ± physostigmine in select cases; **avoid reflexive haloperidol+lorazepam combos and IM olanzapine+benzodiazepine co-administration.**
+- **Stabilize/safety:** space, sitter, de-escalation; glucose/SpO₂/vitals; thiamine before or with glucose if any withdrawal/malnutrition concern (never delaying dextrose for documented hypoglycemia).
+- **Etiology-driven pharmacology:** *delirium-agitation* → low-dose high-potency antipsychotic, ECG/QTc-aware; *withdrawal* → benzodiazepine/phenobarbital + thiamine; *anticholinergic toxidrome as the primary driver* → supportive, remove agent, benzodiazepine ± physostigmine in select cases — **this is the frank toxidrome only; where anticholinergic burden is one contributor to multifactorial delirium, as here, stop the offending drug but still avoid benzodiazepines**; **avoid reflexive haloperidol+lorazepam combos and IM olanzapine+benzodiazepine co-administration.**
 - **Diagnostics:** CBC, CMP, UA/culture, ± cultures/lactate, ECG, med rec, withdrawal assessment; CT/LP/EEG per pretest reasoning.
 - **Treat the cause + delirium precautions;** antipsychotic is symptomatic only (MIND-USA) [5].
 - **Disposition:** admit; explicit de-escalation-of-treatment criteria; no antipsychotic at discharge by default; PCP cognitive follow-up.
@@ -162,7 +162,7 @@ Dangerousness here is **agitation-related risk to self and staff**; keep teachin
 - **Slug:** `cotw_20260709_ssnms_res.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-09_serotonin-syndrome-vs-nms_Resident.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 2,005 words
+- **Length:** 2,071 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -294,7 +294,7 @@ NMS is widely conceptualized as a **drug-induced form of malignant (lethal) cata
 - **Reconciliation plan:** stop all dopamine antagonists, hold serotonergic and lithium agents, obtain levels, and document the event prominently to govern rechallenge.
 
 **Q7 — Recovery and rechallenge.**
-NMS typically resolves over **days to ~2 weeks** with agent withdrawal and supportive care — slower than SS, which usually clears in 24–72 h [1][4][5]. For antipsychotic **rechallenge**: wait **at least 2 weeks** after full resolution (longer if the offending agent was a depot), correct dehydration, electrolyte derangement, and iron deficiency first, then choose a **lower-potency or atypical oral agent** — **never a long-acting injectable, which cannot be withdrawn if NMS recurs** — at a low starting dose, titrate slowly, and monitor temperature, CK, and autonomic signs; recurrence can occur at any point after resolution, so shared decision-making and close follow-up are essential [5]. Where feasible, address the psychiatric indication with the lowest-risk effective option and consider ECT if antipsychotics are high-risk.
+NMS typically resolves over **days to ~2 weeks** with agent withdrawal and supportive care — usually slower than serotonin toxicity, which clears within 24–72 h **for short-half-life agents. With fluoxetine (norfluoxetine half-life of days to weeks) or an MAOI, both onset and resolution can be substantially delayed, and a 5-week washout is required before starting an MAOI** [1][4][5]. For antipsychotic **rechallenge**: wait **at least 2 weeks** after full resolution (longer if the offending agent was a depot), correct dehydration, electrolyte derangement, and iron deficiency first, then choose a **lower-potency or atypical oral agent** — **never a long-acting injectable, which cannot be withdrawn if NMS recurs** — at a low starting dose, titrate slowly, and monitor temperature, CK, and autonomic signs; recurrence can occur at any point after resolution, so shared decision-making and close follow-up are essential [5]. Where feasible, address the psychiatric indication with the lowest-risk effective option and consider ECT if antipsychotics are high-risk.
 
 ### Ranked differential diagnosis (resident depth)
 1. **Neuroleptic malignant syndrome** — best fit (D2 antagonist up-titration + metoclopramide, subacute onset, lead-pipe rigidity, hyporeflexia, CK ~10k, leukocytosis, low iron).
@@ -306,7 +306,7 @@ NMS typically resolves over **days to ~2 weeks** with agent withdrawal and suppo
 ### Workup & management summary
 - **Workup:** CK, CMP (renal/hepatic), CBC, serum iron, coags/DIC panel, lithium level, blood/urine cultures and CNS infection work-up as indicated, ECG, continuous temperature and hemodynamic monitoring; consider EEG if catatonia/NCSE is in question.
 - **Immediate management:** **stop all dopamine antagonists** (including metoclopramide); ICU-level supportive care — IV fluids, active cooling, correct electrolytes, protect renal function against rhabdomyolysis, and start **VTE prophylaxis** (pharmacologic unless contraindicated; mechanical when it is) given prolonged immobility and rigidity; attend to aspiration risk and skin/pressure care for the same reason.
-- **Pharmacotherapy:** benzodiazepine (lorazepam) early (agitation + possible catatonia); **dantrolene** and **bromocriptine/amantadine** for moderate–severe NMS; **ECT** for refractory NMS/malignant catatonia.
+- **Pharmacotherapy:** benzodiazepine (lorazepam) early (agitation + possible catatonia); **dantrolene** and **bromocriptine/amantadine** for moderate–severe NMS; **ECT** for refractory NMS/malignant catatonia — when referring, flag the rhabdomyolysis, current CK and potassium explicitly, because **succinylcholine must be avoided** in this setting (hyperkalaemic cardiac arrest risk) and a non-depolarising relaxant such as rocuronium is used instead.
 - **If the phenotype had been SS:** stop serotonergic agents, benzodiazepines, **cyproheptadine**, ICU with sedation/paralysis if severe.
 
 ### Safety note
@@ -343,7 +343,7 @@ If any component were an **intentional ingestion**, medical stabilization comes 
 - **Slug:** `evidence_inpatient.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `07_Evidence_and_Reading/Inpatient_Evidence/evidence_inpatient.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 5,855 words
+- **Length:** 6,161 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -413,7 +413,7 @@ The **SAD PERSONS scale should not be used**: multiple studies demonstrate it pe
 
 ### Landmark Studies
 
-The **Diefenbach et al. (2024) RCT** in JAMA Psychiatry (n=200) is the largest inpatient suicide prevention trial: up to 4 sessions of Brief Cognitive Behavioral Therapy produced a **60% reduction in post-discharge suicide attempts** (OR 0.40, 95% CI 0.20–0.80; NNT = 7) and a 71% reduction in readmissions among patients without substance use disorders.
+The **Diefenbach et al. (2024) RCT** in JAMA Psychiatry (n=200) is the largest inpatient suicide prevention trial: up to 4 sessions of Brief Cognitive Behavioral Therapy produced a **60% reduction in the odds of a post-discharge suicide attempt** (OR 0.40, 95% CI 0.20–0.80; NNT = 7 — at this event rate the reduction in risk is nearer 50%) and a 71% reduction in readmissions among patients without substance use disorders.
 
 The Doupnik et al. (2020) meta-analysis of 14 studies found brief inpatient/acute-care suicide prevention interventions reduced subsequent attempts (pooled OR 0.69) and increased linkage to follow-up (OR 2.74). The following figure summarizes these outcomes:
 
@@ -443,7 +443,7 @@ A major paradigm shift is underway: **prediction versus prevention**. Hawton et 
 
 ### Strongest Evidence
 
-For **imminent (24-hour) risk**, the **Brøset Violence Checklist (BVC)** and **Dynamic Appraisal of Situational Aggression (DASA)** have the best evidence. A meta-analysis of 31 studies (282,238 assessments) found pooled effect sizes of Hedges' g = 1.35 (95% CI 1.15–1.56) for the BVC and g = 1.04 (95% CI 0.69–1.39) for the DASA. Both are rated as having acceptable utility and feasibility.
+For **imminent (24-hour) risk**, the **Brøset Violence Checklist (BVC)** and **Dynamic Appraisal of Situational Aggression (DASA)** have the best evidence. A meta-analysis of 31 studies (282,238 assessments; Dickens et al., 2020) found pooled effect sizes of Hedges' g = 1.35 (95% CI 1.15–1.56) for the BVC and g = 1.04 (95% CI 0.69–1.39) for the DASA. Both are rated as having acceptable utility and feasibility.
 
 For **medium/long-term risk**, the **HCR-20v3** is the most globally used structured professional judgment tool, with pooled AUC of 0.69 (95% CI 0.65–0.72) for violent recidivism in forensic populations. An international study found HCR-20v3 performance deteriorated after 6 months, suggesting **reassessment every 6 months** is needed to maintain predictive validity.
 
@@ -467,13 +467,13 @@ A narrative review found that 67% of HCR-20 studies focused on predictive validi
 
 **Verbal de-escalation is first-line treatment** per APA and AAEP Project BETA guidelines, effective for a majority of patients within 5 minutes. A cluster randomized study across all Slovenian psychiatric hospitals found de-escalation training reduced aggressive events by **73%** (IRR 0.268) and physical restraints by **70%** (IRR 0.304). However, Cochrane reviews found **no RCTs** of de-escalation techniques for psychosis-induced aggression.
 
-When pharmacotherapy is needed, a landmark **individual participant data network meta-analysis** (Lancet Psychiatry, 2026; 2,705 participants, 13 RCTs) provides the most comprehensive comparison:
+When pharmacotherapy is needed, a landmark **individual participant data network meta-analysis** (Siafis et al., *Lancet Psychiatry* 2026; 2,705 participants, 13 RCTs) provides the most comprehensive comparison. Read the table below with the authors' own caveat in view: they rated confidence in these estimates **very low** (CINeMA), chiefly for imprecision and heterogeneity, and concluded only that combinations "might be among the most effective options." The intervals are wide — the top estimate spans a 17-fold range.
 
 | Agent/Class | Effectiveness vs. Haloperidol (Moderate Agitation) | Key Considerations |
 | --- | --- | --- |
 | Antipsychotic + BZD combinations | OR 12.93 (3.00–50.91) | Most effective; monitor for hypotension |
-| Benzodiazepines (midazolam, lorazepam) | OR 5.52 (1.37–21.02) | Fastest onset (midazolam 8.5 min); respiratory depression risk,  |
-| Other antipsychotics (droperidol, olanzapine, haloperidol+promethazine) | OR 4.54 (1.35–14.45) | Olanzapine well-tolerated; droperidol comparable,  |
+| Benzodiazepines (midazolam, lorazepam) | OR 5.52 (1.37–21.02) | Fastest onset (midazolam 8.5 min); respiratory depression risk |
+| Other antipsychotics (droperidol, olanzapine, haloperidol+promethazine) | OR 4.54 (1.35–14.45) | Olanzapine well-tolerated; droperidol comparable |
 | Haloperidol monotherapy | Reference | Least effective; EPS risk |
 
 ### Landmark Studies
@@ -528,7 +528,7 @@ The **Six Core Strategies (6CS)** for S/R reduction have the strongest implement
 
 The **Confusion Assessment Method (CAM)** remains the gold standard for delirium detection, with sensitivity 94–100%, specificity 90–95%, and interrater reliability κ = 0.92. A 2023 meta-analysis confirmed the CAM has the highest specificity (0.98) among bedside tools. Only 12–35% of delirium cases are recognized through routine clinical documentation.
 
-**Multicomponent non-pharmacological prevention** is the cornerstone of management. A meta-analysis of 14 HELP-based studies showed a **53% reduction in incident delirium** (OR 0.47, 95% CI 0.38–0.58). The SCCM PADIS guidelines conditionally recommend these interventions.
+**Multicomponent non-pharmacological prevention** is the cornerstone of management. A meta-analysis of 14 HELP-based studies (Hshieh et al., 2018) showed a **53% reduction in incident delirium** (OR 0.47, 95% CI 0.37–0.59). The SCCM PADIS guidelines conditionally recommend these interventions.
 
 **Antipsychotics do not improve delirium outcomes.** The MIND-USA trial (n=566) found no difference in days alive without delirium or coma with haloperidol or ziprasidone vs. placebo. The AID-ICU trial (n=1,000) similarly found no significant difference in the primary outcome. Long-term MIND-USA follow-up showed no benefit at 3 or 12 months. The PADIS guidelines recommend **against** routine antipsychotic use for delirium.
 
@@ -554,7 +554,7 @@ The **Confusion Assessment Method (CAM)** remains the gold standard for delirium
 
 Catatonia prevalence in acute psychiatric inpatient settings is **9–20%**, with mood disorders (not schizophrenia) being the most common underlying condition. The **Bush-Francis Catatonia Rating Scale (BFCRS)** is the most widely used and recommended instrument, with a screening cutoff of ≥2 items. Notably, the BFCRS identifies substantially more cases than DSM-5 criteria alone (18.3% vs. 6.6% prevalence in one study).
 
-**Lorazepam** is effective in up to 90% of acute catatonia cases. A 2026 meta-analysis found an overall remission rate of 55% and response rate of 77%, with a mean BFCRS reduction of 11.88 points (Cohen's d = −3.15). The lorazepam challenge test (2 mg IV) is both diagnostic and therapeutic.
+**Lorazepam** is effective in up to 90% of acute catatonia cases. A 2026 meta-analysis (Bot et al., 53 studies, predominantly case series) found an overall remission rate of 55% and response rate of 77%, with a mean BFCRS reduction of 11.88 points (Cohen's d = −3.15). The lorazepam challenge test (2 mg IV) is both diagnostic and therapeutic.
 
 **ECT** is the definitive treatment, with response rates of **80–100%**, including up to 60% of benzodiazepine non-responders. The FDA reclassified ECT devices in 2018 as indicated for catatonia. Effects can be expected after 4–6 sessions; bitemporal placement is generally preferred.
 
@@ -638,7 +638,7 @@ Figure 2 Relative Risk of Compulsory Admission per Subgroup of Intervention
 
 ### Strongest Evidence
 
-**Family psychoeducation (FPE)** has the most robust evidence base, supported by over 100 RCTs. A Lancet Psychiatry network meta-analysis (2022) comparing 11 family intervention models found FPE was the most efficacious for relapse prevention in schizophrenia at 12 months: OR 0.18 (95% CI 0.12–0.27), with only 10% relapsing vs. 37% with treatment as usual. Even the simplest form of family psychoeducation was ranked among the most efficacious, suggesting that informing families about illness, symptoms, and treatment options has a protective role.
+**Family psychoeducation (FPE)** has the most robust evidence base, supported by over 100 RCTs. A *Lancet Psychiatry* network meta-analysis (Rodolico et al., 2022; 90 RCTs, 10,340 participants) comparing 11 family intervention models found FPE was the most efficacious for relapse prevention in schizophrenia at 12 months: OR 0.18 (95% CI 0.12–0.27), with only 10% relapsing vs. 37% with treatment as usual. Even the simplest form of family psychoeducation was ranked among the most efficacious, suggesting that informing families about illness, symptoms, and treatment options has a protective role.
 
 An RCT of 83 hospitalized patients with major depression found that at 15 months, treatment response rates were **49% (multi-family group therapy), 24% (single-family therapy), and 9% (TAU)**.
 
@@ -694,7 +694,7 @@ The post-discharge period carries the **highest risk for suicide**: pooled rates
 
 Thirty-day psychiatric readmission rates range from 7–17% across studies. The strongest and most consistent predictor is **previous psychiatric hospitalizations**. Other predictors include homelessness, schizophrenia/bipolar/personality disorder diagnoses, medical comorbidity, and co-occurring substance use disorders.
 
-Unmet social needs stack **dose-dependently**: 30-day readmission climbs from ~11.5% for patients with no documented social risk to ~63.5% for those with five domains of need (adjusted OR up to ~12.55; Bensken et al., *JGIM* 2021). This reframes the social history as a readmission-risk instrument, not a formality — and ties directly to §11's finding that pre-discharge 7-day follow-up is associated with lower suicide risk (HR ~0.82).
+Unmet social needs stack **dose-dependently**: 30-day readmission climbs from ~11.5% for patients with no documented social risk to ~63.5% for those with five domains of need (adjusted OR up to ~12.55; Bensken et al., *JGIM* 2021). This reframes the social history as a readmission-risk instrument, not a formality — and ties directly to §11's finding that follow-up within 7 days of discharge is associated with reduced suicide risk.
 
 **Critical Time Intervention (CTI)** has the strongest RCT evidence for readmission reduction. The landmark Herman et al. trial (n=150, formerly homeless with SMI) found CTI significantly reduced rehospitalization (OR 0.11, 95% CI 0.01–0.96) and homelessness (OR 0.22). Brief CTI reduced 30-day readmission from 47% to 28% (P < .001).
 
@@ -728,7 +728,7 @@ The **IMPACT trial** (n=1,801) is the landmark CoCM study: 45% of intervention p
 
 ### Measurement-Based Care
 
-MBC can improve remission rates by up to 75% compared to usual care. The Joint Commission requires MBC in all accredited behavioral health programs since 2018. However, **less than 20% of practitioners** engage in MBC, and the VA/DoD 2022 guideline rated the overall evidence as weak.
+In a randomised trial of 120 **outpatients** with moderate-to-severe major depression, remission at 24 weeks was 73.8% with measurement-based care vs. 28.8% with standard treatment (Guo et al., *Am J Psychiatry* 2015) — a large effect, but from a single-centre outpatient trial restricted to paroxetine or mirtazapine, so treat it as proof of concept rather than an inpatient estimate. The Joint Commission requires MBC in all accredited behavioral health programs since 2018. However, **less than 20% of practitioners** engage in MBC, and the VA/DoD 2022 guideline rated the overall evidence as weak.
 
 ### Current Controversies
 
@@ -750,21 +750,23 @@ The **DIAMOND initiative** highlights the implementation gap: despite increased 
 
 ## Summary: Evidence Hierarchy Across Domains
 
-| Domain | Strongest Intervention | Effect Size | Evidence Quality |
+| Domain | Strongest Intervention | Effect Size | Evidence Base (§ = section above) |
 | --- | --- | --- | --- |
-| Inpatient suicide prevention | Environmental safety (MHEOCC) | 67% reduction in inpatient suicide | Before-after, system-wide |
-| Post-discharge suicide prevention | Brief CBT for suicidal inpatients | 60% reduction in attempts (NNT=7) | RCT (n=200) |
-| Violence risk (imminent) | BVC/DASA screening | Hedges' g = 1.04–1.35 | Meta-analysis of 31 studies |
-| Agitation pharmacotherapy | Antipsychotic + BZD combination | OR 12.93 vs. haloperidol alone | IPD network meta-analysis |
-| Delirium prevention | Multicomponent non-pharmacological | 53% reduction in incident delirium | Meta-analysis of 14 studies |
-| Catatonia treatment | Lorazepam → ECT | 77–90% response (BZD); 80–100% (ECT),  | Case series/open studies |
-| Capacity assessment | MacCAT-T | ICC 0.92–0.98,  | Validation studies |
-| Reducing compulsory admissions | Advance statements | Significant RR reduction | Meta-analysis |
-| Family intervention | Family psychoeducation | OR 0.18 for relapse at 12 months | Network meta-analysis |
-| Discharge planning | Individualized planning | RR 0.89 for readmission | Cochrane review (33 RCTs) |
-| Readmission reduction | Critical Time Intervention | OR 0.11 for rehospitalization | RCT (n=150) |
-| Collaborative care | CoCM (IMPACT model) | OR 3.45 for treatment response | RCT (n=1,801) |
-| Post-discharge follow-up | SPI + telephone follow-up | ~50% fewer suicidal behaviors | Propensity-scored cohort |
+| Inpatient suicide prevention | Environmental safety (MHEOCC) | 67% reduction in inpatient suicide | Before–after, system-wide — Watts 2012; sustained Watts 2017 (§1) |
+| Post-discharge suicide prevention | Brief CBT for suicidal inpatients | 60% reduction in the *odds* of an attempt (NNT=7) | RCT, n=200 — Diefenbach 2024 (§1) |
+| Violence risk (imminent) | BVC/DASA screening | Hedges' g = 1.04–1.35 | Meta-analysis, 31 studies — Dickens 2020 (§2) |
+| Agitation pharmacotherapy | Antipsychotic + BZD combination | OR 12.93 vs. haloperidol alone (95% CrI 3.00–50.91) | IPD network meta-analysis, 13 RCTs — Siafis 2026; authors' confidence **very low** (§3) |
+| Delirium prevention | Multicomponent non-pharmacological (HELP) | 53% reduction in incident delirium | Meta-analysis, 14 studies — Hshieh 2018 (§6) |
+| Catatonia treatment | Lorazepam → ECT | 77% response / 55% remission (BZD); 80–100% (ECT) | Case series and open studies — Bot 2026 (§7) |
+| Capacity assessment | MacCAT-T | ICC 0.92–0.98 | Validation studies; no pooled estimate (§8) |
+| Reducing compulsory admissions | Advance statements | Significant RR reduction | Meta-analysis — de Jong 2016 (§9) |
+| Family intervention | Family psychoeducation | OR 0.18 for relapse at 12 months | Network meta-analysis, 90 RCTs — Rodolico 2022 (§10) |
+| Discharge planning | Individualized planning | RR 0.89 for readmission | Cochrane review 2022, 33 RCTs (§11) |
+| Readmission reduction | Critical Time Intervention | OR 0.11 for rehospitalization | RCT, n=150 — Herman et al. (§12) |
+| Collaborative care | CoCM (IMPACT model) | OR 3.45 for treatment response | RCT, n=1,801 — IMPACT trial (§13) |
+| Post-discharge follow-up | SPI + telephone follow-up | ~50% fewer suicidal behaviors | Propensity-scored cohort — Stanley 2018 (§13) |
+
+This table is an index, not a substitute for the sections it points to. Each § marks where the full estimate, its interval, and its caveats appear above, and every study named here has a DOI in the Sources list at the end of this page. "Strongest" means the strongest *available* evidence for that domain — for agitation pharmacotherapy that is still evidence the original authors rated very low in confidence.
 
 ---
 
@@ -799,6 +801,8 @@ Would you like to explore any of these domains in greater depth — for example,
 - Diefenbach GJ, Lord KA, Stubbing J, et al. JAMA Psychiatry. 2024;81(12):1177-1186. doi:10.1001/jamapsychiatry.2024.2349.
 
 - Doupnik SK, Rudd B, Schmutte T, et al. JAMA Psychiatry. 2020;77(10):1021-1030. doi:10.1001/jamapsychiatry.2020.1586.
+
+- Hshieh TT, Yang T, Gartaganis SL, Yue J, Inouye SK. The American Journal of Geriatric Psychiatry. 2018;26(10):1015-1033. doi:10.1016/j.jagp.2018.06.007.
 
 - Hawton K, Lascelles K, Pitman A, Gilbert S, Silverman M. The Lancet. Psychiatry. 2022;9(11):922-928. doi:10.1016/S2215-0366(22)00232-2.
 

@@ -138,7 +138,7 @@ Map that onto this patient: fourteen months of illness, prominent avoidance cons
 4. **Then** convert alprazolam to a longer-half-life agent on a fixed schedule and taper slowly, with the patient sharing control of pace.
 5. **Screen and treat comorbidity** — MDD, PTSD/prolonged grief, alcohol use.
 6. **Assess suicide risk directly and repeatedly; safety-plan and escalate if ideation emerges** [8,9].
-7. **Do not add a beta-blocker** [7].
+7. **Do not add a beta-blocker for the panic disorder** [7] — it has no anti-panic efficacy; whether the hypertensive paroxysms themselves warrant episodic antihypertensive cover is a decision shared with the hypertension specialist.
 8. **Plan for maintenance** — adequate duration before any discontinuation attempt, booster CBT sessions, relapse-prevention plan, given the attenuation of CBT effects for panic disorder beyond 12 months [5].
 9. **Close the loop with cardiology** in writing — the referral question deserves an actual answer.
 
