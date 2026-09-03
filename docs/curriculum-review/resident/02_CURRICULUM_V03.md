@@ -201,13 +201,19 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Boundary: fictional composites only. No patient information, no free text, no diagnosis or treatment advice. Use with supervision and local policy.
 - Loading reasoning cases...
 
-**Authored clinical strings (37):**
+**Authored clinical strings (43):**
 
+- s authored quality. */ /* ---- cw_srs_v1 store adapter (shared) ------------------------------------ Every tool that schedules a card writes the SAME store under the SAME shape. This file is the one definition of that shape; `applyGrade` (the SM-2 step itself) is a separate snippet, sm2_apply_grade.js, and stays that way. Why this is shared rather than copied into each tool: `srsFresh` fixes the store
+- s daily allowance or dropping a stats field the dashboard reads. The failure is invisible and arrives only for learners who happen to open the wrong tool first. Card id namespaces live in the consumers, not here: deck# and TOPIC# (Daily Review), QB# (question bank), FAM# (family retrieval, fam_retrieval.js), COMM# and REASON# (the two tools below). spa_index.html
+- s authored quality rather than asked for. `best` is a clean recall (Good, not Easy — Easy would stretch the interval on a four-way recognition task the learner may well have guessed); `partial` is a hesitant one; anything worse is a lapse. Unknown qualities fail to a lapse so a new quality added to the data can never quietly lengthen an interval. */ function srsGradeForQuality(quality){ if(quality===
+- ) return 3; if(quality===
+- ) return 2; return 1; } /* ==== Canonical SM-2 grader (build-injected — do not edit inside consumer files) ==== Source of truth: 13_Faculty_Resources/_automation/site_build/sm2_apply_grade.js. Consumers carry a SM2_APPLY_GRADE marker comment that common.py
+- s cw_srs_v1 writes stay aggregate/current-state only and are unaffected by that logging. */ /* Deterministic ±15% interval fuzz (opts.fuzzKey): de-synchronizes cohort-seeded cards so due-load avalanches spread out. No fuzzKey (legacy callers) = no fuzz. Also a no-op below ivl 3 d (too short to meaningfully fuzz). Always clamped to [1, 365] regardless of the input interval
 - ]/g,function(c){return {'&':'&',' ':'>','
 - }[c];});} function requestedCaseId(){try{return new URLSearchParams(location.search).get(
 - ;}} function loadAttempts(){try{return JSON.parse(localStorage.getItem(
 - )||{};}catch(_){return {};}} function saveAttempt(caseId,stepId,choice){try{var rec=state.attempts[caseId]||{steps:{}};rec.steps=rec.steps||{};rec.steps[stepId]={choiceId:choice.id,quality:choice.quality,at:new Date().toISOString().slice(0,10)};rec.updatedAt=new Date().toISOString().slice(0,10);state.attempts[caseId]=rec;localStorage.setItem(
-- ,JSON.stringify(state.attempts));}catch(_){}} function caseComplete(c){var rec=state.attempts[c.id];var n=(c.steps||[]).length;if(!rec||!rec.steps||!n)return false;return (c.steps||[]).every(function(st){return rec.steps[st.id];});} function bestCount(c){var rec=state.attempts[c.id];if(!rec||!rec.steps)return 0;return Object.keys(rec.steps).filter(function(k){return rec.steps[k].quality===
+- ,JSON.stringify(state.attempts));}catch(_){} try{srsGradeCard(reasonCardId(caseId,stepId),srsGradeForQuality(choice&&choice.quality));}catch(_){}} function caseComplete(c){var rec=state.attempts[c.id];var n=(c.steps||[]).length;if(!rec||!rec.steps||!n)return false;return (c.steps||[]).every(function(st){return rec.steps[st.id];});} function bestCount(c){var rec=state.attempts[c.id];if(!rec||!rec.steps)return 0;return Object.keys(rec.steps).filter(function(k){return rec.steps[k].quality===
 - ;}).length;} function progressHtml(){var total=state.cases.length||1;var done=state.cases.filter(caseComplete).length;var pct=Math.round(done*100/total);return
 - ;} function setCurrentById(id){for(var i=0;i<state.cases.length;i++){if(state.cases[i].id===id){state.current=i;state.step=0;state.choice=null;return true;}}return false;} function currentCase(){return state.cases[state.current]||state.cases[0];} function currentStep(){var c=currentCase();return c&&c.steps?c.steps[state.step]:null;} function navHtml(){return
 - +state.cases.map(function(c,i){var done=caseComplete(c), best=bestCount(c), total=(c.steps||[]).length;return
@@ -643,7 +649,7 @@ Cross the four P's with the biopsychosocial axis and you have a 3×4 grid; you d
 - **Slug:** `t_mood.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `03_Core_Topics/Mood/mood_disorders_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 1,232 words
+- **Length:** 1,295 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -725,7 +731,7 @@ Cross the four P's with the biopsychosocial axis and you have a 3×4 grid; you d
 
 **Initial workup** — Keep it focused and decision-relevant: a full MSE with explicit suicide assessment, collateral history (the single highest-yield diagnostic move for distinguishing bipolar from unipolar), medication reconciliation, TSH, CBC, CMP, and urine drug screen. Add a pregnancy test in patients who can become pregnant before starting teratogenic agents, and a head CT/MRI when the picture is atypical, late-onset, or has focal findings.
 
-**Acute inpatient management** — Treatment is medications plus milieu plus safety, layered deliberately. Before starting an antidepressant for depression, screen for bipolarity (e.g., Mood Disorder Questionnaire plus collateral) so you do not destabilize an unrecognized bipolar patient. For unipolar depression, practice measurement-based, sequential treatment in the spirit of STAR*D: pick an agent, dose it adequately, track response with a scale, and switch or augment by protocol rather than by impression. For suicidality and for bipolar illness, lithium deserves specific emphasis — it carries a distinct anti-suicidal effect (Cipriani 2013) and is a first-line maintenance mood stabilizer with the strongest long-term evidence (BALANCE trial). Reserve ECT for severe, psychotic, catatonic, or treatment-resistant depression, for life-threatening states (refusal of food/fluids, acute high suicide risk), and as a preferred option in pregnancy. The milieu is therapeutic, not incidental: protect sleep and circadian rhythm actively, since sleep loss both worsens depression and precipitates mania (Harvey; IPSRT/Frank). For acute mania, reduce stimulation, restore sleep, and start or optimize a mood stabilizer or antipsychotic. Throughout, maintain a safe environment — contraband removal, appropriate observation level, and a collaboratively developed safety plan.
+**Acute inpatient management** — Treatment is medications plus milieu plus safety, layered deliberately. Before starting an antidepressant for depression, screen for bipolarity (e.g., Mood Disorder Questionnaire plus collateral) so you do not destabilize an unrecognized bipolar patient. For unipolar depression, practice measurement-based, sequential treatment in the spirit of STAR*D: pick an agent, dose it adequately, track response with a scale, and switch or augment by protocol rather than by impression. For suicidality and for bipolar illness, lithium deserves specific emphasis — it carries a distinct anti-suicidal effect (Cipriani 2013) and is a first-line maintenance mood stabilizer with the strongest long-term evidence (BALANCE trial). Reserve ECT for severe, psychotic, catatonic, or treatment-resistant depression, for life-threatening states (refusal of food/fluids, acute high suicide risk), and — when illness of that severity occurs in pregnancy — as a preferred option, since the therapeutic seizure works without the systemic fetal drug exposure pharmacotherapy requires. Pregnancy is not itself an ECT indication: for uncomplicated moderate depression in pregnancy, first-line remains psychotherapy and/or an SSRI. The milieu is therapeutic, not incidental: protect sleep and circadian rhythm actively, since sleep loss both worsens depression and precipitates mania (Harvey; IPSRT/Frank). For acute mania, reduce stimulation, restore sleep, and start or optimize a mood stabilizer or antipsychotic. Throughout, maintain a safe environment — contraband removal, appropriate observation level, and a collaboratively developed safety plan.
 
 **What the student does** —
 - Perform and document a focused MSE every day, with an explicit, serial suicide assessment.
@@ -745,7 +751,7 @@ without arguing, shaming, or making promises about discharge.
 - New "depression" or "mania" in an older or medically complex patient is delirium until proven otherwise.
 - Lithium is the mood stabilizer with anti-suicidal and best maintenance evidence — use it, and monitor it.
 - Sleep is treatment: protect it to pull patients out of depression and to prevent mania.
-- ECT is not a last resort — it is first-line for psychotic, catatonic, or life-threatening mood states and in pregnancy.
+- ECT is not a last resort — it is first-line for psychotic, catatonic, or life-threatening mood states, and in pregnancy it is a preferred option when illness of that severity demands rapid, definitive treatment. Pregnancy alone is not the indication; the severity is.
 - Lithium runs a **narrow therapeutic window (~0.6–1.2 mEq/L)**: check baseline and periodic renal and thyroid function (and an ECG in older/cardiac patients), and remember NSAIDs, ACE-inhibitors/ARBs, thiazides, and dehydration push levels toward toxicity.
 - For acute mania, first-line is lithium, valproate, or a second-generation antipsychotic — but **avoid valproate in anyone who could become pregnant** (teratogenic, including neural-tube defects); confirm before it is ordered.
 

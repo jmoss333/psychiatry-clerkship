@@ -14,7 +14,7 @@ references it. Internal RSS/RSSM naming is retained here; a public mirror would 
 - `00_START_HERE/` — orientation, syllabus, "A Day on the Unit"; `_audit-census-codex/` holds the exhaustive census + parallel reports.
 
 ## Built so far (live content)
-- **Interactive teaching tools** (6, single-file HTML, Clinical Warm): MSE builder (`02_Clinical_Skills/Mental_Status_Exam/`, now with a Language & Interview tab) · Decisional Capacity (`04_Acute_and_Safety/Decisional_Capacity/`) · Oral Presentation + timer (`02_Clinical_Skills/Oral_Presentations/`) · Violence Risk + Brøset (`04_Acute_and_Safety/Violence_Risk/`) · Withdrawal scales CIWA-Ar/COWS (`03_Core_Topics/SUD_Withdrawal/`) · Reflection + PIF set (`02_Clinical_Skills/Reflection_PIF/`).
+- **Interactive teaching tools** (6, single-file HTML, Clinical Warm): MSE builder (`02_Clinical_Skills/Mental_Status_Exam/`, now with a Language & Interview tab) · Decisional Capacity (`04_Acute_and_Safety/Decisional_Capacity/`) · Oral Presentation + timer (`02_Clinical_Skills/Oral_Presentations/`) · Violence Risk / FRST (`04_Acute_and_Safety/Violence_Risk/`) · Withdrawal scales CIWA-Ar/COWS (`03_Core_Topics/SUD_Withdrawal/`) · Reflection + PIF set (`02_Clinical_Skills/Reflection_PIF/`).
 - **MS3 Student Pack** (15 markdown files: orientation, pocket guides, OSCE set, shelf guide, synthetic cases, weekly reading map, expansion modules) → `14_Tracks/MS3/Student_Ready_Pack/`.
 - **Exhaustive census + duplicate log** (11,700 files / 2,785 dup groups) → `00_START_HERE/_audit-census-codex/`.
 
