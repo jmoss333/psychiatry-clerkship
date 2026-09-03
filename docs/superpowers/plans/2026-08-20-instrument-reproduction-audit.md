@@ -118,3 +118,76 @@ warn-only.
 > `instrument_rights.json` only with the decision record that authorized the change. The dormant
 > `validated-instrument-line` dose-waiver context for `bfcrs.html` was retired in the same
 > change (it waived nothing since #400 but would still have validated a smuggled dose line).
+
+## A withdrawal must leave a route (INV-IR2, 2026-09-03)
+
+Three retirements had removed the only copy of an instrument the learner had, and left pages
+that could say what they no longer showed but not where to get the real thing. `cssrs.html` and
+`bfcrs.html` named their custodians in a footnote; the CIWA-Ar tab pointed at "your institution's
+protocol" and nothing else. That is the **ODC-4 shape** — an attested page directing a student to
+something they cannot reach — arrived at from the opposite direction.
+
+**The route is a link, never a mirror.** Hosting a PDF of C-SSRS, BFCRS or the Stanley-Brown form
+would be *broader* redistribution than the excerpts that came down, and would breach the very
+URMC term ("may not be distributed … in whole or in part") that forced the BFCRS removal. So
+every route points at the rights-holder's own download. This is not a limitation of the fix: for
+BFCRS the learner now gets the scale, the Training Manual & Coding Guide and standardized-patient
+exam videos — considerably more than the 23 anchor ladders ever gave them.
+
+| Instrument | Route recorded | Access |
+|---|---|---|
+| **C-SSRS** | Columbia Protocol forms for healthcare settings + free training (~20 min) | free |
+| **BFCRS** | URMC's scale, coding guide and per-item scoring videos | free, no registration |
+| **CIWA-Ar** | the unit's protocol form **first**; CSAM's posted copy as a reference | see caveat below |
+| **COWS** | NIDA's one-page PDF — what makes "score from the real form" followable | free |
+| **PHQ-9 / GAD-7** | phqscreeners.com — forms, scoring, ~80 translations | free |
+| **Stanley-Brown** | suicidesafetyplan.com — the authors' own form and training | free for individual use |
+
+**CIWA-Ar is the honest exception.** It is the one instrument here with no custodian still
+distributing a form — the 1989 paper is paywalled and the originating Addiction Research
+Foundation publishes none, which is the same fact that made its rights unestablishable on
+2026-08-28. CSAM is a professional society posting a copy, not a licensor. Linking to someone
+else's posting is not reproduction by this library, and it is **not permission either**: the
+route must never be read back as a rights finding, and `tests/ciwa-retirement.test.mjs` pins
+that the page keeps saying so.
+
+Mechanics: `officialSource` on every registry entry (schema-required for every `retired` and
+`restricted` one — a withdrawal cannot be recorded without a route), pinned per page by
+`requireOfficialSourceLink`, enforced in `instrument-rights-gate.mjs` (check A: the page ships
+the recorded `formUrl`; check B: a `link-only` route must be an absolute custodian URL, so a
+mirrored copy cannot be recorded as official — check B runs on every build, governed or not,
+because mirroring is a rights problem everywhere). `bin/check_instrument_links.py` re-checks the
+far end; it is **dev-only and report-only** because external link checks are flaky and both
+Netlify and the agent sandbox block these hosts, so a CI gate there would fail for reasons
+unrelated to the links.
+
+**Routes are wayfinding, not dispositions.** Refresh a rotted URL freely; `status` still moves
+only with a decision record. `tests/instrument-rights-gate.test.mjs` pins all six statuses so a
+future link fix cannot ride a status change in with it.
+
+Two things this change deliberately did **not** do, both author calls:
+
+1. **WP-02c is not resolved.** Secondary sources consistently report that Pfizer released the PHQ
+   family and GAD-7 with no copyright restriction on 2010-07-21, and that the current footer reads
+   *"No permission required to reproduce, translate, display or distribute."* That is exactly what
+   WP-02c asks — but it is second-hand, which is the **same shape of evidence that failed for
+   CIWA-Ar**, where every "may be reproduced freely" notice turned out to be a reproducer's
+   addition. It is recorded in the registry as evidence, under a heading saying so. Closing WP-02c
+   needs the author to read the footer on the current form at `phqscreeners.com`; the link is now
+   on the page, which makes that a two-minute task.
+2. **Five faculty attestations are now stale** — `cssrs.html`, `bfcrs.html`, `withdrawal.html`,
+   `screeners.html`, `suicide.md`, all attested 2026-06-30/07-09. Following the precedent of #400
+   and #413, which also edited retired surfaces without touching `reviewed.json`, the ledger is
+   left alone: re-attestation goes through the faculty console.
+
+Adjacent stale pointers fixed in the same pass, all of them the removals' own wake: the
+safety-planning page advertised "the interactive C-SSRS screener" that has not existed since
+#411, the legacy root `index.html` still described "the 6-question Columbia screener with
+branching and risk triage", and `longitudinal_case.json` still labelled the stub "C-SSRS
+Screener".
+
+**Still open, and not touched here:** `violence.html` tells the learner to "use the official
+version for the exact items" of the FRST and gives no route — the same dead end, but not a
+*removal*, since that page ships an in-house checklist and never reproduced the FRST. The FRST
+has no public distribution point found; a route would have to be the MMC EHR workflow plus the
+developers. That is ODC-4's remaining half and stays with ODC-4.

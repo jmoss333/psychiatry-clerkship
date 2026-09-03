@@ -97,6 +97,30 @@ test('attribution for both instruments survives', () => {
   assert.match(html, /12924748/, 'Wesson & Ling 2003 (COWS) PMID must remain');
 });
 
+test('both tabs route the learner to a real form (INV-IR2)', () => {
+  // The retired tab needs a route because the descriptors are gone; the COWS tab needs one
+  // because "score at the bedside from the real form, not from this page" is otherwise an
+  // instruction with nowhere to go. instrument-rights-gate.mjs pins both URLs at build time.
+  // The build-time gate can only check the URL is present (this page builds its anchors in
+  // React, so the URL ships inside a script string). Assert the anchor form here, where the
+  // page's own markup is in view: a URL the learner cannot click is not a route.
+  for (const id of ['ciwa-ar', 'cows']) {
+    const src = rights.instruments.find((i) => i.id === id).officialSource;
+    assert.ok(html.includes(`href:'${src.formUrl}'`),
+      `${id}: the page must pass ${src.formUrl} to a Route as an anchor href, not merely mention it`);
+  }
+  assert.match(html, /function Route\(props\)[\s\S]*?e\('a',\{className:'go',href:props\.href/,
+    'Route must render its href as a real anchor');
+});
+
+test('the CIWA-Ar route does not quietly become a rights finding', () => {
+  // A link to someone else's posting is not reproduction by this library — and it is not
+  // permission either. The page must keep saying the rights could not be established.
+  assert.match(html, /not the rights-holder|professional society posting a copy/i,
+    'the CIWA-Ar route must say whose copy it is');
+  assert.equal(rights.instruments.find((i) => i.id === 'ciwa-ar').status, 'retired');
+});
+
 test('the page opens on the COWS scorer, not on the retired-instrument notice', () => {
   // The page is reached from Quick Tools and search AS A TOOL. Landing a learner who tapped a
   // scorer on a "not reproduced here" notice is the failure the retired-instrument presentation
