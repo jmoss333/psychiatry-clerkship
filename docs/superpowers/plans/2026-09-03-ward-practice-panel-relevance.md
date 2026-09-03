@@ -2,6 +2,8 @@
 
 **Date:** 2026-09-03 · **Status:** plan, not yet implemented · **Surface:** the pinned practice panel on every topic page, both sites.
 **Decisions taken:** D-1 (2026-09-03) — panel stays collapsed, fix its contents; no CSS change, no visual-baseline regeneration. See §7.
+**Shipped:** WP-B and WP-C (2026-09-03). WP-A is partly absorbed — see §4. Three corrections to this
+document, found while implementing, are marked **[corrected 2026-09-03]** below.
 
 **Goal:** Make the panel that is pinned to all 74 topic pages say something true and specific about *that page* — correct tool names, governance-correct instrument handling, audience-neutral copy, one obvious next action instead of a nine-link dump.
 
@@ -60,6 +62,21 @@ The practice panel does the opposite. It renders `cssrs.html` and `bfcrs.html` a
 
 A learner clicking "C-SSRS Suicide Screen" on a risk page expects a screener and gets a not-reproduced notice — the label promises the exact thing the governance decision removed. The width of the spread is itself a finding: it is the reverse of F2's under-linking, and it means WP-A's registry join has to *reconcile* the two directions, not merely union them (§4, WP-A).
 
+**[corrected 2026-09-03] The blast radius is 43, not 28, and there are three renderers, not one.**
+Counting only tool lists missed the **15 author-written CTA and `clinicalWorkflow.actions` labels**
+that name a retired instrument in the imperative — `"Open the C-SSRS screener"` (×3),
+`"Open the Columbia C-SSRS screener"` (×2), `"Open C-SSRS"` (×5), `"Open the BFCRS scale"`,
+`"Open BFCRS"` (×4) — spread over `catatonia`, `t_adjustment`, `t_dissociative`,
+`ect_neuromodulation`, `pg_suicide`, `suicide`, `t_perinatal`, `week2`, `week3`, `cl_reference`.
+Those are worse than the label map: a map entry merely names the tool wrongly, an imperative CTA
+*instructs* the learner to open a screener that no longer exists. They also reach the page through
+a **third renderer** — `buildWorkflow`'s own actions row (`spa_index.html:713`), which is not
+`buildPracticeTools` — so WP-B had to cover all three emitters and let the registry title win over
+the author's label for a rights reference. A fourth instance, `t_sud.md`'s
+`"Open CIWA-Ar / COWS"`, points at a **live** tool (`withdrawal.html` is not a rights reference),
+so no shell rule can override it; it was fixed in `topic_meta.json` instead, to the label the same
+page already uses for the same target, `"Open withdrawal tool"`.
+
 This is a labelling defect, not a scope question. It requires **no** change to instrument scope and must not narrow or lift the COWS interim waiver.
 
 ### F2 — Label and link sources have drifted from the registries
@@ -82,6 +99,17 @@ The practice panel is not covered, and emits the banned token twice on both site
 - `PRACTICE_LABELS` ships "Shelf Mode Exam Sim".
 
 `WF_STAGE_LABELS` (`:711`) already says `exam:'Exam'` correctly — so the fix is a known-good word, already used two lines above.
+
+**[corrected 2026-09-03] The test this plan specified cannot be written as specified.**
+WP-C originally said to render `buildTpl` over all of `topic_meta.json` and assert
+`AUDIENCE_TOKEN_RE` matches nothing. That test can never pass, and not because of a real defect:
+the regex has **no word boundaries**, so `UNE` fires on "autoimm**une**" (`t_psychosis`,
+`t_somatic`) and "**une**xplained" (`pg_suicide`), and `student` occurs legitimately in quiz stems
+("A **student** presents…", 6 pages). Applied to rendered clinical prose it is a test satisfiable
+only by rewriting medicine. The shipped test therefore asserts against **the strings the panel
+owns** — `WF_FIELDS`, `WF_STAGE_LABELS`, `PRACTICE_MODE_LABELS`, `PRACTICE_LABEL_NEUTRAL` — plus one
+render over a synthetic token-free meta that exercises every branch, so anything the regex finds is
+the panel's own copy. Authored prose is F6/WP-F's problem, not a chrome regression.
 
 ### F4 — The relevance machinery is dead code
 
@@ -138,10 +166,20 @@ Ranking rule, deterministic and testable:
 
 Ordered so each lands independently and green.
 
-### WP-A · Single source of truth *(no visual change; pure correctness)*
+### WP-A · Single source of truth *(no visual change; pure correctness)* — **partly shipped**
 
-- [ ] Delete `PRACTICE_LABELS`, `PRACTICE_PAGE_TOOLS`, `PRACTICE_CASE_LABELS`, and the dead `PAGE_TOOLS` branch (`spa_index.html:914-917`, `:961`).
-- [ ] `practiceToolLabel(k)` reads `FD_INDEX` (`title` from `site_manifest`), falling back to the slug only for a ref the manifest does not list.
+The label half landed with WP-B, which could not render "the registry title" without it. What
+remains is the link half: the two page→tool maps and the reconciliation.
+
+- [x] ~~Delete `PRACTICE_LABELS`~~ — removed 2026-09-03; `practiceToolLabel` now reads `FD_INDEX`.
+- [ ] Delete `PRACTICE_PAGE_TOOLS`, `PRACTICE_CASE_LABELS`, and the dead `PAGE_TOOLS` branch (`spa_index.html:961`).
+- [x] ~~`practiceToolLabel(k)` reads `FD_INDEX`~~ — shipped, with one documented exception:
+  **`shelf-mode.html`'s own canonical title is `"Shelf Mode — Exam Simulation"`, which carries the
+  banned token.** The resident nav already renames that slug ("Board-Style Question Bank"); the
+  panel is shared copy, so it uses the same neutral wording via a one-row `PRACTICE_LABEL_NEUTRAL`
+  map. **WP-A must reconcile the manifest title itself** — a neutral canonical title would delete
+  that map. This is the one place where "use the registry title" and "audience-neutral copy"
+  genuinely conflict.
 - [ ] `practiceCaseLabel(id)` reads the `title` already fetched with `communication_cases.json`.
 - [ ] Replace `PRACTICE_SAFE` with `FD_INDEX[ref].risk === 'high'` (`tool_registry.riskLevel`).
 - [ ] **Reconcile the page→tool set in both directions.** The two sources disagree in opposite ways: `tool_registry.relatedPages` under-links (15 declared links never surfaced, F2) while `topic_meta.relatedTools` over-links (`cssrs.html` on 14 pages against a declared 2, F1). A naive union keeps both faults. Rule:
@@ -151,7 +189,7 @@ Ordered so each lands independently and green.
 
 **Acceptance:** every label the panel prints equals the title the nav prints for the same slug; the 15 missing registry links appear; the 2 unnamed drills are named; no page's action list changes membership except by those 15 additions. **Test:** `tests/practice-panel.test.mjs` — for every ref reachable from any panel, `practiceToolLabel(ref) === manifestTitle(ref)`; assert no literal tool title string remains in `spa_index.html`; pin the per-page action-set diff against a fixture so a future `relatedTools` edit shows up as an intentional change.
 
-### WP-B · Governance-correct instrument handling *(highest priority)*
+### WP-B · Governance-correct instrument handling *(highest priority)* — **shipped 2026-09-03**
 
 - [ ] A ref with `FD_INDEX[ref].rights === true` renders as a **reference line**, not an action: registry title, no `→`, no `is-safety` class, kicker "Official form & training — not reproduced here".
 - [ ] Rights references sort below live tools and never occupy the primary slot (WP-D).
@@ -159,7 +197,7 @@ Ordered so each lands independently and green.
 
 **Acceptance:** `cssrs.html` and `bfcrs.html` never render with a tool arrow or safety chip anywhere in the panel; the string "C-SSRS Suicide Screen" and "CIWA-Ar / COWS" exist nowhere in the built sites. **Test:** extend `tests/practice-panel.test.mjs` to drive `buildPracticeTools` over a fixture containing every `curriculum.rightsReferences` entry and assert the presentation contract, mirroring the wording of `fd_data.js:19-33`. Also add a `check-static-site.mjs` assertion so drift fails the publish gate, not just CI.
 
-### WP-C · Audience-neutral copy
+### WP-C · Audience-neutral copy — **shipped 2026-09-03**
 
 - [ ] `WF_FIELDS` `['exam','Shelf/COMAT']` → `['exam','Exam focus']` (matches `WF_STAGE_LABELS.exam` two lines above).
 - [ ] `PRACTICE_MODE_LABELS.shelf` `'Shelf'` → `'Exam'`.
@@ -189,6 +227,16 @@ Ordered so each lands independently and green.
 - [ ] Panel ingredients for the 5 near-empty pages — at minimum `tldr` + `relatedTools` + one `clinicalWorkflow` field.
 - [ ] `ruleOut` + `firstMove` for high-safety pages currently missing it (the mini-tree is the panel's highest-value block, present on only 25 of 74).
 - [ ] Decide the policy for the 31 quiz-less pages: author a quiz, or suppress the section rather than printing "No page-specific question yet."
+- [ ] **33 audience tokens in authored `topic_meta` prose that ships to both sites** — e.g.
+  `supervision_teaching.md` tldr ("the first-line supervisor for the MS3"), `cl_reference.md`
+  ("The numbers residents carry"), `cotw_index.md` ("matched MS3 and resident versions"),
+  `ddx.md` ("Shelf questions often hide medical mimics"), `welcome.md` ("shelf review", "Use shelf
+  mode"). Some are legitimately audience-referential content and some are leftovers; telling them
+  apart is an author call, which is why WP-C's test deliberately stops at chrome.
+- [ ] **Dead retired-instrument labels still in `topic_meta`.** The 15 `"Open C-SSRS"` /
+  `"Open BFCRS"` CTA labels are now overridden at render time by WP-B, so nothing ships them to a
+  learner — but they remain in the source data, where the next reader will believe them. Clean them
+  so source and rendered output say the same thing.
 
 > Every edit here goes through the `topic-meta-author` skill — `validate_topic_meta.py` enforces controlled vocabularies and cross-file referential integrity that are silent to get wrong.
 
@@ -217,6 +265,12 @@ Phases 1–2 are worth doing on their own even if 3–5 are deferred: they remov
 - **No crisis number in the panel.** Crisis contacts live only in `crisis_resources.json` and arrive by the `<!-- crisis-block -->` marker at build time. If WP-E adds a safety surface, add the marker; do not inline a number.
 - **Instrument scope is a governance decision, not an agent decision.** WP-B changes *labels and presentation only*. It does not add, remove, or reinterpret any instrument's status, and it must not narrow or lift the recorded COWS interim waiver.
 - **A red node test silently aborts the build.** `build_and_check.sh` is `set -euo pipefail` and runs `node --test tests/*.test.mjs` *before* `build_deploy.py`. Run the node suite first when a panel edit "doesn't show up".
+- **Touching a shell literal tool map trips two separate contracts.** `check-static-site.mjs`'s
+  `TOOL_MAP_VARS` (§7b) extracts each named map and hard-fails if one is missing — deliberately, so
+  the safety net cannot be quietly deleted — and `tests/fd-shell-boot.test.mjs` pins that
+  declaration line *verbatim*. Removing `PRACTICE_LABELS` failed the publish gate first and the node
+  suite second. Update the map, the QA gate and the pin in one change. (Found the hard way,
+  2026-09-03; the QA gate caught it before any push.)
 - **New CI step ⇒ three contracts.** If a step is added to `ci.yml`: `bin/check-verify-coverage.py`, the `validate_scheduled_workflows.py` step-inventory + sha256 digest (recompute via its own `_load`/`_contract_digest`), and `test_validate_registry_schemas.py`'s `PAIRS`. Adding tests to the existing `tests/*.test.mjs` glob avoids all three.
 - **`cp CLAUDE.md AGENTS.md`** if this work changes either.
 

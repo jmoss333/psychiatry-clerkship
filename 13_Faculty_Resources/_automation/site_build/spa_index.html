@@ -709,7 +709,7 @@
   function ctaHref(h){ h=h||''; var mt=h.match(/^tools\/([^\/?#]+\.html)$/); return mt?('?tool='+mt[1]):h; }
   function ctaAttrs(h){ return /^\?(page|tool)=/.test(h)?'':' target="_blank" rel="noopener"'; }
   var WF_STAGE_LABELS={encounter:'Encounter',diagnosis:'Diagnosis',safety:'Safety',treatment:'Treatment',communication:'Communication',family:'Family',team:'Team',exam:'Exam'};
-  var WF_FIELDS=[['ask','What to ask'],['mse','MSE focus'],['safety','Safety'],['say','What to say'],['collateral','Family/collateral'],['rounds','Rounds'],['exam','Shelf/COMAT']];
+  var WF_FIELDS=[['ask','What to ask'],['mse','MSE focus'],['safety','Safety'],['say','What to say'],['collateral','Family/collateral'],['rounds','Rounds'],['exam','Exam focus']];
   function buildWorkflow(m){
     var cw=m&&m.clinicalWorkflow, stages=(m&&Array.isArray(m.workflowStages))?m.workflowStages:[], has=false, h='';
     if(cw){ for(var i=0;i<WF_FIELDS.length;i++){ if(cw[WF_FIELDS[i][0]])has=true; } if(Array.isArray(cw.actions)&&cw.actions.length)has=true; }
@@ -717,7 +717,7 @@
     h+='<div class="workflow-card"><div class="workflow-head"><div class="workflow-title">On the unit</div>';
     if(stages.length){ h+='<div class="workflow-stage" aria-label="Clinical workflow stages">'; for(var s=0;s<stages.length;s++){ h+='<span>'+esc(WF_STAGE_LABELS[stages[s]]||stages[s])+'</span>'; } h+='</div>'; }
     h+='</div>';
-    if(cw){ h+='<div class="workflow-grid">'; for(var j=0;j<WF_FIELDS.length;j++){ var key=WF_FIELDS[j][0], val=cw[key]; if(val){ h+='<div class="workflow-step"><div class="k">'+esc(WF_FIELDS[j][1])+'</div><div class="v">'+esc(val)+'</div></div>'; } } h+='</div>'; if(Array.isArray(cw.actions)&&cw.actions.length){ h+='<div class="workflow-actions">'; for(var a=0;a<cw.actions.length;a++){ var act=cw.actions[a]||{}, href=ctaHref(act.href||''); if(href){ h+='<a href="'+esc(href)+'"'+ctaAttrs(href)+'>'+esc(act.label||'Open')+'</a>'; } } h+='</div>'; } }
+    if(cw){ h+='<div class="workflow-grid">'; for(var j=0;j<WF_FIELDS.length;j++){ var key=WF_FIELDS[j][0], val=cw[key]; if(val){ h+='<div class="workflow-step"><div class="k">'+esc(WF_FIELDS[j][1])+'</div><div class="v">'+esc(val)+'</div></div>'; } } h+='</div>'; if(Array.isArray(cw.actions)&&cw.actions.length){ h+='<div class="workflow-actions">'; for(var a=0;a<cw.actions.length;a++){ var act=cw.actions[a]||{}, href=ctaHref(act.href||''); if(href){ h+='<a href="'+esc(href)+'"'+ctaAttrs(href)+'>'+esc(practiceActionLabel(actionToolKey(href),act.label))+'</a>'; } } h+='</div>'; } }
     h+='</div>'; return h;
   }
   function toolExtraFromParams(sp){ var out=''; try{ sp.forEach(function(v,k){ if(k!=='tool'&&k!=='page') out+='&'+encodeURIComponent(k)+'='+encodeURIComponent(v); }); }catch(_){} return out; }
@@ -911,11 +911,46 @@
     if(!target.searchParams.has('page')&&!target.searchParams.has('tool'))return;
     ev.preventDefault(); ev.stopPropagation(); showFacultyPreviewLockNotice();
   }
-  var PRACTICE_LABELS={'mse.html':'Mental Status Exam','interview-circle.html':'Interview Circle','communication-practice.html':'What Do You Say Next?','diagnostic-reasoning.html':'Diagnostic Reasoning Workbench','family-systems.html':'Family Systems Practice','cssrs.html':'C-SSRS Suicide Screen','withdrawal.html':'CIWA-Ar / COWS','bfcrs.html':'Bush-Francis Catatonia','violence.html':'Violence Risk (FRST)','capacity.html':'Decisional Capacity','screeners.html':'PHQ-9 / GAD-7','oral.html':'Rounding Prep + Timer','decision-aids.html':'Algorithms & Decision Aids','shelf-mode.html':'Shelf Mode Exam Sim','review.html':'Daily Review','reflection.html':'Reflection & Identity','question-bank-practice.html':'Practice Questions','sp-interview.html':'The Interview Room — AI Patient','one-patient-six-weeks.html':'One Patient, Six Weeks'};
+  /* ---- practice panel ---- */
+  /* Tool titles come from FD_INDEX (site_manifest via fd_data.js), never from a second hand map:
+     the retired hand map still said "C-SSRS Suicide Screen" and "CIWA-Ar / COWS" long after
+     instrument_rights.json retired both instruments, so the panel promised a screener the
+     governance decision had already removed. No cache -- FD_INDEX is reassigned on a rotation
+     edition swap, and a memoised title would outlive the swap. */
+  function practiceItem(ref){
+    var cols=(typeof FD_INDEX!=='undefined'&&FD_INDEX&&FD_INDEX.columns)||[];
+    for(var c=0;c<cols.length;c++){ var items=cols[c].items||[]; for(var i=0;i<items.length;i++){ var it=items[i]; if(it&&it.ref===ref)return it; } }
+    return null;
+  }
+  /* The one slug whose canonical title carries an audience token: site_manifest calls it
+     "Shelf Mode -- Exam Simulation" and the resident nav already renames it. Panel copy is
+     shared by both sites, so it uses the neutral wording rather than forking per audience.
+     WP-A owns reconciling the manifest title itself. */
+  var PRACTICE_LABEL_NEUTRAL={'shelf-mode.html':'Board-Style Question Bank'};
   var PRACTICE_SAFE={'cssrs.html':1,'violence.html':1,'withdrawal.html':1,'bfcrs.html':1,'capacity.html':1,'decision-aids.html':1};
   var PRACTICE_PAGE_TOOLS={ 't_sud.md':['withdrawal.html','cssrs.html'], 'pg_interview.md':['sp-interview.html','mse.html'], 'pg_suicide.md':['cssrs.html','violence.html','decision-aids.html','sp-interview.html'], 'catatonia.md':['bfcrs.html'], 'agitation.md':['violence.html','decision-aids.html'], 'exp_consult.md':['capacity.html','decision-aids.html'], 'cl_reference.md':['decision-aids.html'], 't_mood.md':['screeners.html'], 't_anxiety.md':['screeners.html'], 't_psychosis.md':['decision-aids.html','sp-interview.html'], 't_perinatal.md':['cssrs.html'], 't_personality.md':['cssrs.html','reflection.html'], 'brief_psychotherapy.md':['mse.html','decision-aids.html'], 'doc_oral.md':['oral.html'], 'landmark_trials.md':['shelf-mode.html','review.html'], 'evidence_inpatient.md':['review.html'], 'shelf.md':['question-bank-practice.html','shelf-mode.html'], 'reading_map.md':['review.html'], 'collateral_workflow.md':['one-patient-six-weeks.html','family-systems.html'] };
   var PRACTICE_CASE_LABELS={suicide_direct_question_001:'Ask About Suicide Directly',psychosis_validation_001:'Validate Psychosis Without Colluding',guardedness_privacy_001:'Respond to Guardedness',rupture_limit_setting_001:'Repair After a Limit',bpd_rupture_repair_001:'Repair a BPD Rupture',medication_ambivalence_001:'Medication Ambivalence',mania_limit_sleep_001:'Offer a Sleep-Restoring Plan in Mania',family_meeting_opening_001:'Open a Family Meeting',collateral_questions_001:'Ask Better Collateral Questions',family_conflict_discharge_001:'De-escalate Family Conflict Around Discharge'};
-  function practiceToolLabel(k){ return PRACTICE_LABELS[k]||String(k||'').replace(/\.html$/,'').replace(/[-_]+/g,' '); }
+  function practiceToolLabel(k){
+    if(PRACTICE_LABEL_NEUTRAL[k])return PRACTICE_LABEL_NEUTRAL[k];
+    var it=practiceItem(k);
+    return (it&&it.title)||String(k||'').replace(/\.html$/,'').replace(/[-_]+/g,' ');
+  }
+  /* A rights reference is a page that exists to say an instrument is NOT reproduced --
+     instrument_rights.json -> curriculum.rightsReferences -> fd_data.js's `rights` flag,
+     kept in step by validate_curriculum.py, whose own words are "a rights reference replaces
+     a tool". fd_data.js drops the tool chip and kicker for these everywhere else in the shell;
+     this panel is the surface that used to ignore that and offer them as instruments. */
+  function practiceIsRights(k){ var it=practiceItem(k); return !!(it&&it.rights===true); }
+  /* One place decides what a rights reference is called, because THREE renderers link tools:
+     this panel's tool list, its cta/workflow-action list, and buildWorkflow's own actions row.
+     All three printed the author's label, and 15 of those labels are imperatives -- "Open the
+     C-SSRS screener", "Open the BFCRS scale" -- telling a learner to open a screener that
+     instrument_rights.json retired. For a rights reference the registry title wins over the
+     author's label; for every other tool the author's label still wins, as before. */
+  function practiceActionLabel(k,authorLabel){
+    if(practiceIsRights(k))return practiceToolLabel(k);
+    return authorLabel||practiceToolLabel(k)||'Open';
+  }
   function practiceIsSafe(k){ return !!PRACTICE_SAFE[k]; }
   function practiceCaseLabel(id){ return PRACTICE_CASE_LABELS[id]||'What Do You Say Next?'; }
   function hasPracticeTpl(m){
@@ -936,7 +971,18 @@
     out.push('<a class="practice-action'+(cls?(' '+cls):'')+'" href="'+esc(href)+'"'+ctaAttrs(href)+'>'+body+'</a>');
   }
   function isCommunicationCaseHref(h){ h=String(h||''); return /[?&]tool=communication-practice\.html/.test(h)&&/[?&]case=/.test(h); }
-  var PRACTICE_MODE_LABELS={ward:'Ward',shelf:'Shelf',family:'Family',safety:'Safety','5min':'5 min'};
+  /* Deliberately NOT an action: no arrow, and never the is-safety treatment that marks a tool
+     you act with at the bedside. `is-reference` carries no styles of its own -- it is a hook for
+     the test and for WP-E's grouping; the visible difference is the missing arrow plus the
+     registry title, which already says "Official Form & Training". */
+  function addPracticeReference(out,seen,label,href){
+    if(!href)return;
+    var key=href.replace(/#.*$/,'');
+    if(seen[key])return;
+    seen[key]=1;
+    out.push('<a class="practice-action is-reference" href="'+esc(href)+'"'+ctaAttrs(href)+'>'+esc(label||'Open')+'</a>');
+  }
+  var PRACTICE_MODE_LABELS={ward:'Ward',shelf:'Exam',family:'Family',safety:'Safety','5min':'5 min'};
   function practiceModeCfg(mode){ return {label:PRACTICE_MODE_LABELS[mode]||'Ward',tools:[],stages:[]}; }
   function practiceModeText(m,mode){
     var cw=(m&&m.clinicalWorkflow)||{}, cfg=practiceModeCfg(mode), val='';
@@ -956,31 +1002,48 @@
     return (ids||[]).slice().sort(function(a,b){ var ai=pri.indexOf(a),bi=pri.indexOf(b); if(ai<0)ai=99;if(bi<0)bi=99; return ai-bi; });
   }
   function buildPracticeTools(m,file,mode){
-    var out=[], drills=[], seen={}, rt=[];
+    var out=[], drills=[], refs=[], seen={}, rt=[];
     function addTool(k){ if(k&&rt.indexOf(k)<0)rt.push(k); }
     ((typeof PAGE_TOOLS!=='undefined'&&PAGE_TOOLS[file])||PRACTICE_PAGE_TOOLS[file]||[]).forEach(addTool);
     if(m&&Array.isArray(m.relatedTools))m.relatedTools.forEach(addTool);
     rt=sortPracticeTools(rt,mode);
-    for(var i=0;i<rt.length;i++){ var k=rt[i]; if(k==='communication-practice.html'&&m&&Array.isArray(m.communicationCases)&&m.communicationCases.length)continue; addPracticeAction(out,seen,practiceToolLabel(k),'?tool='+encodeURIComponent(k),practiceIsSafe(k)?'is-safety':''); }
+    for(var i=0;i<rt.length;i++){
+      var k=rt[i];
+      if(k==='communication-practice.html'&&m&&Array.isArray(m.communicationCases)&&m.communicationCases.length)continue;
+      if(practiceIsRights(k)){ addPracticeReference(refs,seen,practiceToolLabel(k),'?tool='+encodeURIComponent(k)); continue; }
+      addPracticeAction(out,seen,practiceToolLabel(k),'?tool='+encodeURIComponent(k),practiceIsSafe(k)?'is-safety':'');
+    }
     if(m&&Array.isArray(m.communicationCases)){
       var caseIds=sortPracticeCases(m.communicationCases,mode);
       for(var c=0;c<caseIds.length;c++){ var id=caseIds[c]; addPracticeAction(drills,seen,practiceCaseLabel(id),'?tool=communication-practice.html&case='+encodeURIComponent(id),'is-drill'); }
     }
     if(m&&m.cta){
       var cx=Array.isArray(m.cta)?m.cta:[m.cta];
-      for(var ci=0;ci<cx.length;ci++){ var ca=cx[ci], ch=ca&&ca.href?ctaHref(ca.href):''; var tk=actionToolKey(ch), bucket=isCommunicationCaseHref(ch)?drills:out; addPracticeAction(bucket,seen,ca&&(ca.label||practiceToolLabel(tk)||'Open tool'),ch,isCommunicationCaseHref(ch)?'is-drill':(practiceIsSafe(tk)?'is-safety':'')); }
+      for(var ci=0;ci<cx.length;ci++){
+        var ca=cx[ci], ch=ca&&ca.href?ctaHref(ca.href):'', tk=actionToolKey(ch);
+        if(practiceIsRights(tk)){ addPracticeReference(refs,seen,practiceToolLabel(tk),ch); continue; }
+        var bucket=isCommunicationCaseHref(ch)?drills:out;
+        addPracticeAction(bucket,seen,practiceActionLabel(tk,ca&&ca.label)||'Open tool',ch,isCommunicationCaseHref(ch)?'is-drill':(practiceIsSafe(tk)?'is-safety':''));
+      }
     }
     var cw=m&&m.clinicalWorkflow;
     if(cw&&Array.isArray(cw.actions)){
-      for(var a=0;a<cw.actions.length;a++){ var ac=cw.actions[a]||{}, ah=ctaHref(ac.href||''), ak=actionToolKey(ah), ab=isCommunicationCaseHref(ah)?drills:out; addPracticeAction(ab,seen,ac.label||practiceToolLabel(ak)||'Open',ah,isCommunicationCaseHref(ah)?'is-drill':(practiceIsSafe(ak)?'is-safety':'')); }
+      for(var a=0;a<cw.actions.length;a++){
+        var ac=cw.actions[a]||{}, ah=ctaHref(ac.href||''), ak=actionToolKey(ah);
+        if(practiceIsRights(ak)){ addPracticeReference(refs,seen,practiceToolLabel(ak),ah); continue; }
+        var ab=isCommunicationCaseHref(ah)?drills:out;
+        addPracticeAction(ab,seen,practiceActionLabel(ak,ac.label),ah,isCommunicationCaseHref(ah)?'is-drill':(practiceIsSafe(ak)?'is-safety':''));
+      }
     }
-    if(!out.length&&!drills.length){
+    if(!out.length&&!drills.length&&!refs.length){
       addPracticeAction(out,seen,'Practice Questions','?tool=question-bank-practice.html','is-review');
       addPracticeAction(out,seen,'Daily Review','?tool=review.html','is-review');
     }
     var html='';
     if(drills.length)html+='<div class="practice-drills"><div class="practice-drill-head">Spoken drills</div><p class="practice-drill-note">Say your first line out loud, then compare it with concrete feedback.</p><div class="practice-actions practice-drill-actions">'+drills.join('')+'</div></div>';
     if(out.length)html+='<div class="practice-actions">'+out.join('')+'</div>';
+    /* References last: they are what to read before acting, not what to act with. */
+    if(refs.length)html+='<div class="practice-actions">'+refs.join('')+'</div><p class="practice-muted">Official form and training \u2014 the instrument itself is not reproduced here.</p>';
     return html;
   }
   function buildTpl(m,file){
@@ -1005,6 +1068,7 @@
     h+='</section><section class="practice-section"><div class="practice-section-title">Tools</div>'+buildPracticeTools(m,file,mode)+'</section>';
     h+='</div></div></details>'; return h;
   }
+  /* ---- end practice panel ---- */
   function pageTitle(it){ return it ? (it.t+' \u2014 MS3 Psychiatry Clerkship') : 'Inpatient Psychiatry \u2014 MS3 Clerkship'; }
   function setLearnerTitle(item){ if(!facultyPreviewRequest)document.title=pageTitle(item); }
   function fdSpecialItemForState(state){

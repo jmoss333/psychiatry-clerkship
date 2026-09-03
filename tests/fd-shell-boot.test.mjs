@@ -379,8 +379,13 @@ test('Learning Path has no active consumer while its historical review receipt i
 test('static QA follows the two literal tool maps that remain in the live shell', () => {
   const declaration = staticQa.match(/const TOOL_MAP_VARS = \[[^\n]+\];/);
   assert.ok(declaration, 'static QA must declare the live shell tool-map inventory');
+  // PRACTICE_LABELS retired when the practice panel began reading tool titles from FD_INDEX
+  // (site_manifest via fd_data.js). PRACTICE_LABEL_NEUTRAL took its place as the panel's only
+  // literal tool map — it carries the single slug whose canonical title names an audience.
   assert.equal(declaration[0],
-    "const TOOL_MAP_VARS = ['PRACTICE_LABELS', 'PRACTICE_PAGE_TOOLS'];");
+    "const TOOL_MAP_VARS = ['PRACTICE_LABEL_NEUTRAL', 'PRACTICE_PAGE_TOOLS'];");
+  assert.ok(!/var PRACTICE_LABELS=/.test(source),
+    'PRACTICE_LABELS is retired — reinstating it reintroduces the drift it caused');
   assert.doesNotMatch(staticQa, /idBlockCheck\('(?:CASE_TITLES|FAMILY_SCENARIO_TITLES)'/,
     'retired shell title maps must not remain mandatory QA inputs');
 });

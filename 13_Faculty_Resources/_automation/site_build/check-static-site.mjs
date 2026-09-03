@@ -33,7 +33,7 @@
  *   - rotation-curator.html loads a remote script/image, exposes a browser network
  *     transport path, or ships more than the one locally vendored QR implementation
  *   - the vendored QR implementation signature appears in any other shipped HTML
- *   - a live shell (index.html) literal tool map (PRACTICE_LABELS/
+ *   - a live shell (index.html) literal tool map (PRACTICE_LABEL_NEUTRAL/
  *     PRACTICE_PAGE_TOOLS) referencing a tool file the build doesn't ship
  *   - a `?page=`/`?tool=` reference in shipped content/*.md that doesn't resolve
  *   - a soft-finding class (see qa-baseline.json) whose count exceeds its baseline
@@ -680,7 +680,11 @@ const SHELL_REF_ALLOWLIST = new Set([
     return null; // ran off the end without closing — extraction failed
   };
   const htmlNamesIn = (block) => new Set([...block.matchAll(/(['"])([^'"]+\.html)\1/g)].map(m => m[2]));
-  const TOOL_MAP_VARS = ['PRACTICE_LABELS', 'PRACTICE_PAGE_TOOLS'];
+  // PRACTICE_LABELS was retired when the practice panel started taking tool titles from
+  // FD_INDEX (site_manifest via fd_data.js) instead of a second hand map — a map whose stale
+  // entries had outlived two instrument retirements. PRACTICE_LABEL_NEUTRAL replaces it here:
+  // it is the only literal tool map the panel still owns, and the same rule applies to it.
+  const TOOL_MAP_VARS = ['PRACTICE_LABEL_NEUTRAL', 'PRACTICE_PAGE_TOOLS'];
 
   const shellHtml = existsSync(shellPath) ? readFileSync(shellPath, 'utf8') : null;
   if (shellHtml === null) {
