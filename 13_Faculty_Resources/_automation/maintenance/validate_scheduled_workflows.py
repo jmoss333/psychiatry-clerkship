@@ -350,7 +350,7 @@ EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
         "acd1fe78364baf65ac9842ffb62a5abacaa8c70110a254106166130985fc9689"
     ),
     "maintenance-production-canary.yml": (
-        "702912e1672d439ee6951003eb0a832015f4b616035d6a004513f2f3fa9eab27"
+        "a7be8923488ec6d1d824fcdfc2fc59feefe258ac937bb9cf42ee1127485e94e7"
     ),
     "maintenance-rotation-readiness.yml": (
         "655504ee205ce4f27ddc63dc2a819dc1d1eb7987f56bbacbbfc452d1cc48476a"
@@ -593,7 +593,8 @@ npx playwright test --project=lfs""",
             (
                 "Crawl both public learner sites",
                 "cd tests/smoke\n"
-                "npx playwright test --project=nav-ms3 --project=nav-res",
+                "npx playwright test --project=canary-ms3 "
+                "--project=canary-res --workers=2 --retries=2",
                 None,
                 "required production navigation gate",
             ),
@@ -1207,12 +1208,23 @@ def _validate_production_canary(workflow, errors):
     run = _runs(steps)
     values = _values(workflow)
     for required in (
-        "--project=nav-ms3",
-        "--project=nav-res",
+        "--project=canary-ms3",
+        "--project=canary-res",
         "production_canary.py",
     ):
         if required not in run:
             _error(errors, name, f"production canary step is missing: {required}")
+    # The canary must not reuse the nav-* projects. Those carry the client-runtime
+    # fault-injection suites, which against live Netlify produce transport noise and no
+    # production signal — the 2026-08-21..09-02 daily-red regression. Composition of the
+    # canary-* projects is pinned separately by tests/canary-scope.test.mjs.
+    for forbidden in ("--project=nav-ms3", "--project=nav-res"):
+        if forbidden in run:
+            _error(
+                errors,
+                name,
+                f"production canary must not run the build-only project {forbidden}",
+            )
     for url in (MS3_URL, RES_URL):
         if url not in values:
             _error(errors, name, f"production URL is missing: {url}")
