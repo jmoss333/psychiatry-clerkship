@@ -147,16 +147,79 @@ test('no canary spec identifies its audience by an exact project name', () => {
   }
 });
 
-test('audience.js resolves every project name in the config', async () => {
+// The five projects whose names encode no audience. Each runs a single audience-agnostic spec,
+// and none of those specs may import audience.js — that is what makes audienceOf() safe to throw
+// on an unrecognised name instead of quietly answering 'ms3'. Defaulting is the exact shape of
+// the bug audience.js exists to fix: a name nobody taught the helper about becoming the MS3
+// answer in silence. If one of these suites ever genuinely needs an audience, give the project
+// an audience-bearing name — do not soften the helper.
+const AUDIENCE_AGNOSTIC = ['lfs', 'visual', 'interview-room', 'faculty-console', 'offline'];
+
+test('audience.js resolves every audience-bearing project name in the config', async () => {
   const { audienceOf } = await import(path.join(smokeDir, 'audience.js'));
   const names = [...config.matchAll(/name: '([^']+)'/g)].map(m => m[1]);
   assert.ok(names.includes('canary-res') && names.includes('nav-res'), 'expected the -res projects');
-  for (const name of names) {
+  for (const name of names.filter(n => !AUDIENCE_AGNOSTIC.includes(n))) {
     const expected = name.endsWith('-res') ? 'resident' : 'ms3';
     assert.equal(
       audienceOf(name),
       expected,
       `project ${name} must resolve to the ${expected} audience`,
+    );
+  }
+});
+
+test('audienceOf throws on a name encoding no audience, rather than defaulting to ms3', async () => {
+  const { audienceOf } = await import(path.join(smokeDir, 'audience.js'));
+  for (const name of ['staging', 'preview-1', 'nav', '']) {
+    assert.throws(
+      () => audienceOf(name),
+      /encodes no audience/,
+      `audienceOf(${JSON.stringify(name)}) must throw; silently answering 'ms3' is how `
+        + 'canary-res asserted the MS3 inventory against the resident site',
+    );
+  }
+});
+
+test('every project name in the config is either audience-bearing or a known agnostic one', () => {
+  // Catches the third case: a NEW project added with a name like 'staging' or 'preview-mmc'.
+  // Either it belongs to an audience and must say so in its name, or it is agnostic and must be
+  // listed above — which forces whoever adds it to check that its spec does not import
+  // audience.js. Without this, a new agnostic project would only surface as a throw at run time.
+  const names = [...config.matchAll(/name: '([^']+)'/g)].map(m => m[1]);
+  const unclassified = names.filter(
+    n => !AUDIENCE_AGNOSTIC.includes(n) && !/-(res|ms3)$/.test(n),
+  );
+  assert.deepEqual(
+    unclassified,
+    [],
+    `project(s) ${unclassified.join(', ')} encode no audience and are not listed in `
+      + 'AUDIENCE_AGNOSTIC. Give the project an audience suffix, or add it to that list after '
+      + 'confirming its spec does not import audience.js.',
+  );
+});
+
+test('no audience-agnostic spec imports audience.js', () => {
+  // The invariant that lets audienceOf() throw. These projects run under names that encode no
+  // audience, so a spec of theirs calling the helper would fail at run time, inside a scheduled
+  // job, rather than here.
+  const specForProject = new Map();
+  for (const name of AUDIENCE_AGNOSTIC) {
+    const block = config.slice(config.indexOf(`name: '${name}'`));
+    const match = block.match(/testMatch:\s*'([^']+)'/);
+    if (match) specForProject.set(name, match[1]);
+  }
+  assert.equal(
+    specForProject.size,
+    AUDIENCE_AGNOSTIC.length,
+    'could not read a testMatch for every audience-agnostic project; the config shape changed',
+  );
+  for (const [name, spec] of specForProject) {
+    const source = fs.readFileSync(path.join(smokeDir, spec), 'utf8');
+    assert.ok(
+      !/from '\.\/audience\.js'/.test(source),
+      `${spec} runs under the audience-agnostic project '${name}' but imports audience.js. `
+        + 'audienceOf() will throw there. Give the project an audience-bearing name instead.',
     );
   }
 });
