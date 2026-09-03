@@ -1,0 +1,241 @@
+# On-the-Unit Practice and Tools Panel — Relevance Plan
+
+**Date:** 2026-09-03 · **Status:** plan, not yet implemented · **Surface:** the pinned practice panel on every topic page, both sites.
+
+**Goal:** Make the panel that is pinned to all 74 topic pages say something true and specific about *that page* — correct tool names, governance-correct instrument handling, audience-neutral copy, one obvious next action instead of a nine-link dump.
+
+**Non-goal:** New pages, new tools, new content types, or any change to instrument scope. Every improvement below is a rewiring or a copy fix against data the repo already has and already validates.
+
+---
+
+## 1. What the panel is today
+
+`buildTpl(m, file)` — `13_Faculty_Resources/_automation/site_build/spa_index.html:986` — renders a collapsed `<details class="topic-tpl practice-panel">` prepended above the parsed markdown (`spa_index.html:1983`, and a second injection path at `:1124`). It appears whenever `hasPracticeTpl(m)` is true (`:921`), which is every topic with any of tldr / points / clinicalWorkflow / workflowStages / cant / ruleOut / quiz / cta / relatedTools / communicationCases.
+
+Its body is five fixed blocks: chip row → "Why today" line → **In 30 seconds** → **On the unit** → **Test yourself** → **Tools**.
+
+It draws from six sources, three of which are hand-maintained maps private to the SPA:
+
+| Source | Where | Maintained |
+|---|---|---|
+| `topic_meta.json` | fetched | validated (`validate_topic_meta.py`) |
+| `PRACTICE_LABELS` (19 rows) | `spa_index.html:914` | **by hand** |
+| `PRACTICE_SAFE` (6 rows) | `spa_index.html:915` | **by hand** |
+| `PRACTICE_PAGE_TOOLS` (19 rows) | `spa_index.html:916` | **by hand** |
+| `PRACTICE_CASE_LABELS` (10 rows) | `spa_index.html:917` | **by hand** |
+| `PAGE_TOOLS` | `spa_index.html:961` | **never defined — dead branch** |
+
+Meanwhile the front door already builds one joined index — `fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest)` in `frontdoor/fd_data.js:53` — that carries, per ref: canonical `title` from `site_manifest.json`, `risk` from `tool_registry.json`, a `rights` governance flag derived from `instrument_rights.json`, plus `kind`, `href`, `minutes`, `summary`, `attested`, `governance`. It is in scope in the shell as `FD_INDEX` (`spa_index.html:1976`).
+
+**The practice panel is the last surface in the app still running on the pre-registry hand maps.**
+
+---
+
+## 2. Findings
+
+### F1 — Governance: rights-reference pages are rendered as instrument tools *(severity: highest)*
+
+`instrument_rights.json` is the authority (INV-IR1, #412). It records `cssrs: retired`, `bfcrs: restricted`, `ciwa-ar: retired`, `cows: flagged-interim`. Pages whose `requiredDisclaimerType` is `instrument-not-reproduced` are mirrored into `curriculum.rightsReferences` (`['bfcrs.html','cssrs.html']`), and `validate_curriculum.py:174-219` fails the build if the two disagree — its comment states the rule plainly: *"a rights reference replaces a tool."*
+
+`fd_data.js:19-33` honours that: the `rights` flag is *"a PRESENTATION flag"* and a rights page gets **"no Quick Tools, no tool chip, no 'Interactive tool' kicker, no Interactive-tools column."**
+
+The practice panel does the opposite. It renders `cssrs.html` and `bfcrs.html` as action buttons in the `is-safety` class, under labels written before the retirements:
+
+| Slug | Canonical title (`site_manifest.json` / `tool_registry.json`, and what the resident nav already shows) | What the panel shows |
+|---|---|---|
+| `cssrs.html` | Columbia C-SSRS — Official Form & Training | **"C-SSRS Suicide Screen →"** |
+| `bfcrs.html` | Bush-Francis Catatonia Scale (BFCRS) — Official Form & Training | **"Bush-Francis Catatonia →"** |
+| `withdrawal.html` | Withdrawal: COWS Tool · CIWA-Ar Official Form & Training | **"CIWA-Ar / COWS →"** (leads with the retired instrument) |
+| `oral.html` | Treatment Team Rounding Prep | "Rounding Prep + Timer →" |
+| `interaction-cards.html` | Interaction Cards — One Action | *absent from the map* → renders **"interaction cards →"** |
+
+**Blast radius — 28 page-instances**, far wider than the registry intends, because `topic_meta.relatedTools` scattered these slugs well beyond the registry's `relatedPages`:
+
+| Slug | Panel offers it on | `tool_registry.relatedPages` declares |
+|---|---|---|
+| `cssrs.html` | **14** pages — `ethics_legal`, `orientation`, `osce`, `pg_suicide`, `protocol_library`, `suicide`, `systems_medlegal`, `t_adjustment`, `t_dissociative`, `t_perinatal`, `t_personality`, `t_sud`, `week1`, `week3` | 2 (`pg_suicide`, `suicide`) |
+| `bfcrs.html` | **6** — `catatonia`, `cl_reference`, `ect_neuromodulation`, `exp_consult`, `t_neurodev`, `week2` | 1 (`catatonia`) |
+| `withdrawal.html` | **8** — `adv_psychopharm`, `cl_reference`, `exp_consult`, `orientation`, `protocol_library`, `t_sud`, `week1`, `week5` | 1 (`t_sud`) |
+
+A learner clicking "C-SSRS Suicide Screen" on a risk page expects a screener and gets a not-reproduced notice — the label promises the exact thing the governance decision removed. The width of the spread is itself a finding: it is the reverse of F2's under-linking, and it means WP-A's registry join has to *reconcile* the two directions, not merely union them (§4, WP-A).
+
+This is a labelling defect, not a scope question. It requires **no** change to instrument scope and must not narrow or lift the COWS interim waiver.
+
+### F2 — Label and link sources have drifted from the registries
+
+Measured against `tool_registry.json` + `site_manifest.json` + `communication_cases.json`:
+
+- **4 wrong titles + 1 missing entry** in `PRACTICE_LABELS` (table above).
+- **15 page→tool links declared in `tool_registry.relatedPages` never appear in the panel** — `one-patient-six-weeks.html` is declared on 11 pages and surfaced on 1; `interaction-cards.html` is declared on 3 (`med_monitoring`, `psychopharm_primer`, `cotw_index`) and surfaced on 0.
+- **`PRACTICE_CASE_LABELS` is 2 cases behind `communication_cases.json`.** `interview_motive_suspicion_001` ("Respond When the Patient Questions Why You're Asking") and `rounds_naming_uncertainty_001` ("Name Uncertainty on Rounds") have titles in the registry and fall through to the generic `'What Do You Say Next?'`. On `pg_interview.md`, `t_psychosis.md` and `doc_oral.md` an unnamed drill tile sits beside named ones.
+- **`PRACTICE_PAGE_TOOLS` is now purely additive noise.** It is unioned with `topic_meta.relatedTools`, and on all 19 rows `relatedTools` is a superset or near-superset. It contributes nothing the meta doesn't, and is a second place to forget.
+
+### F3 — The panel is the app's largest un-audited audience-neutrality surface
+
+`tests/fd-path.test.mjs:27` codifies the contract: `AUDIENCE_TOKEN_RE = /MS3|clerkship|student|shelf|resident|UNE|MMC|Sanford/i`, and `phase_policy.js:6` states the copy rule — *"labels ship to both sites — audience-neutral, 'Exam', never 'Shelf'."* Six front-door modules assert against it.
+
+The practice panel is not covered, and emits the banned token twice on both sites:
+
+- `WF_FIELDS` (`spa_index.html:712`) labels the workflow row **"Shelf/COMAT"** — rendered on **67 of 74** pages.
+- `PRACTICE_MODE_LABELS` (`:939`) renders a **"Shelf"** chip — on **50 of 74** pages (`workflowModes` counts: ward 70, 5min 61, shelf 50, safety 40, family 39).
+- `PRACTICE_LABELS` ships "Shelf Mode Exam Sim".
+
+`WF_STAGE_LABELS` (`:711`) already says `exam:'Exam'` correctly — so the fix is a known-good word, already used two lines above.
+
+### F4 — The relevance machinery is dead code
+
+- `buildTpl` hardcodes `var mode='ward'` (`:988`). Nothing sets it.
+- `practiceModeCfg` (`:940`) returns `{label, tools:[], stages:[]}` — `tools` is always empty, so `sortPracticeTools` (`:950`) assigns every key priority 99 and is a stable no-op.
+- `sortPracticeCases` (`:954`) reads `window.__casePriority`, which is **assigned nowhere in the repo**. Also a no-op.
+- The `.tpl-chip.mode` chips render with an `.on` class on `ward` and look like a segmented control. They are not clickable and there is no handler.
+
+Net: **there is no ordering logic in the panel at all.** Tools appear in map-insertion order, and the UI implies a mode filter that does not exist.
+
+### F5 — Redundancy and density
+
+- **The "Why today" line is a verbatim duplicate.** `practiceModeText` (`:941`) returns `cw.rounds` in ward mode; `buildWorkflow` (`:713`) renders the same `cw.rounds` string as the "Rounds" row of the grid a few hundred pixels below. 67 of 74 pages print the identical sentence twice inside one panel.
+- **It is prefixed "Ward mode: "** — naming a mode system that does not exist (F4).
+- **Density.** Median 9 actions per panel (tools + cases + cta + workflow actions); **42 of 74 pages carry ≥8**; worst are `week1.md` (17), `t_psychosis.md` (14), `t_mood.md` (13). Every action is the same visual weight apart from drills. Nothing tells the learner which one to press with four minutes before rounds.
+
+### F6 — Content gaps behind the frame
+
+- **7 pages** fall back to the generic ward sentence (no `clinicalWorkflow.rounds` or `.ask`): `anki.md`, `case_formulation.md`, `med_monitoring.md`, `medical_workup.md`, `psychotherapy.md`, `therapy_reading_room.md`, `toxidromes.md`.
+- **5 pages** have ≤1 of the five panel ingredients and render a near-empty panel: `toxidromes.md`, `med_monitoring.md`, `psychotherapy.md`, `case_formulation.md`, `medical_workup.md`.
+- **31 of 74** have no `quiz` → the Test-yourself section prints "No page-specific question yet."
+- `ruleOut` exists on only 25 of 74, so the "Rule out first → first move" mini-tree — the most clinically useful block in the panel — is absent from two-thirds of pages.
+
+---
+
+## 3. The relevance model
+
+Replace *"one panel, everything, ordered by nothing"* with **one reason, one primary action, ranked support.**
+
+Every signal below already exists and is already validated. No new registry, no new build step.
+
+| Layer | Signal | Source |
+|---|---|---|
+| **Page** | what this topic makes you do | `topic_meta.clinicalWorkflow`, `ruleOut`, `cant`, `safetyLevel` |
+| **Catalog** | what a tool *is* and *is for* | `tool_registry.{title,category,riskLevel,relatedPages}`, `site_manifest` titles |
+| **Governance** | may this be offered as a tool at all | `instrument_rights.json` → `curriculum.rightsReferences` → `FD_INDEX[ref].rights` |
+| **Learner** | where they are in the rotation | `phase_policy.js` (`phasePolicy`, `shelfDaysUntil`), `cw_srs_v1` due count, `cw_comm_v1` completed drills, `cw_last` |
+| **Audience** | which site is serving | shared shell; copy must be neutral either way |
+
+Ranking rule, deterministic and testable:
+
+```
+1. Governance   rights references are never actions      → Reference row, no arrow, no is-safety
+2. Safety       safetyLevel==='high' or riskLevel==='high' on a page whose ruleOut/cant is set
+3. Rehearsal    an unfinished communicationCase for this page
+4. Page-declared topic_meta.relatedTools order (author intent, already curated)
+5. Registry     tool_registry.relatedPages back-links not already shown
+6. Review       question bank / daily review, only when the phase says so
+```
+
+---
+
+## 4. Workstreams
+
+Ordered so each lands independently and green.
+
+### WP-A · Single source of truth *(no visual change; pure correctness)*
+
+- [ ] Delete `PRACTICE_LABELS`, `PRACTICE_PAGE_TOOLS`, `PRACTICE_CASE_LABELS`, and the dead `PAGE_TOOLS` branch (`spa_index.html:914-917`, `:961`).
+- [ ] `practiceToolLabel(k)` reads `FD_INDEX` (`title` from `site_manifest`), falling back to the slug only for a ref the manifest does not list.
+- [ ] `practiceCaseLabel(id)` reads the `title` already fetched with `communication_cases.json`.
+- [ ] Replace `PRACTICE_SAFE` with `FD_INDEX[ref].risk === 'high'` (`tool_registry.riskLevel`).
+- [ ] **Reconcile the page→tool set in both directions.** The two sources disagree in opposite ways: `tool_registry.relatedPages` under-links (15 declared links never surfaced, F2) while `topic_meta.relatedTools` over-links (`cssrs.html` on 14 pages against a declared 2, F1). A naive union keeps both faults. Rule:
+  - registry back-links are **added** (they are the curated catalog view), and
+  - a `relatedTools` entry for a ref the registry does **not** declare for that page is **demoted** below the declared ones rather than dropped — dropping silently removes an author's deliberate cross-link.
+  - Report the delta once at build time (`build_deploy.py`, print-only) so the divergence is visible and can be curated down in WP-F instead of hiding inside the renderer.
+
+**Acceptance:** every label the panel prints equals the title the nav prints for the same slug; the 15 missing registry links appear; the 2 unnamed drills are named; no page's action list changes membership except by those 15 additions. **Test:** `tests/practice-panel.test.mjs` — for every ref reachable from any panel, `practiceToolLabel(ref) === manifestTitle(ref)`; assert no literal tool title string remains in `spa_index.html`; pin the per-page action-set diff against a fixture so a future `relatedTools` edit shows up as an intentional change.
+
+### WP-B · Governance-correct instrument handling *(highest priority)*
+
+- [ ] A ref with `FD_INDEX[ref].rights === true` renders as a **reference line**, not an action: registry title, no `→`, no `is-safety` class, kicker "Official form & training — not reproduced here".
+- [ ] Rights references sort below live tools and never occupy the primary slot (WP-D).
+- [ ] `withdrawal.html` keeps its registry title (COWS first). **Do not** restate, narrow, or lift the recorded COWS interim waiver; the tool stays a tool.
+
+**Acceptance:** `cssrs.html` and `bfcrs.html` never render with a tool arrow or safety chip anywhere in the panel; the string "C-SSRS Suicide Screen" and "CIWA-Ar / COWS" exist nowhere in the built sites. **Test:** extend `tests/practice-panel.test.mjs` to drive `buildPracticeTools` over a fixture containing every `curriculum.rightsReferences` entry and assert the presentation contract, mirroring the wording of `fd_data.js:19-33`. Also add a `check-static-site.mjs` assertion so drift fails the publish gate, not just CI.
+
+### WP-C · Audience-neutral copy
+
+- [ ] `WF_FIELDS` `['exam','Shelf/COMAT']` → `['exam','Exam focus']` (matches `WF_STAGE_LABELS.exam` two lines above).
+- [ ] `PRACTICE_MODE_LABELS.shelf` `'Shelf'` → `'Exam'`.
+- [ ] Panel titles/kickers reviewed against `AUDIENCE_TOKEN_RE`.
+- [ ] Extend the existing neutrality assertion to the panel: render `buildTpl` over all of `topic_meta.json` in a test and assert `AUDIENCE_TOKEN_RE` matches nothing. **This test is the durable fix** — F3 recurred because the panel sits outside the six modules that already have it.
+
+### WP-D · One reason, one primary action
+
+- [ ] **Kill the fake mode UI.** Remove `practiceModeCfg`, `sortPracticeTools`, `sortPracticeCases`, `window.__casePriority`, and the non-interactive `.tpl-chip.mode` chips (F4). *(Alternative, if chips should stay: make them real filters — costed in §6.)*
+- [ ] Replace `practiceModeText` with a **page-specific reason** that is not a duplicate of the grid: prefer `cant` → `ruleOut[0]` → `clinicalWorkflow.ask`, and **never** `clinicalWorkflow.rounds` while the grid renders it (F5). Drop the "Ward mode: " prefix.
+- [ ] Add a single **"Do this next"** primary action chosen by the §3 ranking, rendered at the top of the panel body with the rest demoted to a secondary row.
+- [ ] Make the primary action phase-aware via the existing `phasePolicy()` — in `taper`/`consolidate` prefer retrieval (`review.html`, page quiz); otherwise prefer the page's safety or rehearsal tool. `phasePolicy` already reads `cw_shelf_date`; **no new storage key.**
+
+**Acceptance:** every page shows exactly one primary action; no sentence appears twice in one panel. **Test:** pure-function test over all 74 metas — one primary, reason ≠ any grid value, deterministic for a fixed `nowMs`.
+
+### WP-E · Density and grouping
+
+- [ ] Group the secondary row into **Assess · Rehearse · Reference · Review**, mapped from `tool_registry.category` + the rights flag. Suppress an empty group.
+- [ ] Cap visible secondary actions (proposed: 4) behind a "More for this page" disclosure; drills keep their existing dedicated block.
+- [ ] Consider `open` by default when `safetyLevel === 'high'` — a risk page's panel is the point of the page. *(Author decision, §7.)*
+
+**Acceptance:** no page renders more than 5 visible actions before disclosure; the worst page (`week1.md`, 17) is legible. **Test:** assert the visible-action cap across all metas.
+
+### WP-F · Content fills *(authoring, gated by `topic-meta-author` skill)*
+
+- [ ] `clinicalWorkflow.rounds`/`.ask` for the 7 generic pages.
+- [ ] Panel ingredients for the 5 near-empty pages — at minimum `tldr` + `relatedTools` + one `clinicalWorkflow` field.
+- [ ] `ruleOut` + `firstMove` for high-safety pages currently missing it (the mini-tree is the panel's highest-value block, present on only 25 of 74).
+- [ ] Decide the policy for the 31 quiz-less pages: author a quiz, or suppress the section rather than printing "No page-specific question yet."
+
+> Every edit here goes through the `topic-meta-author` skill — `validate_topic_meta.py` enforces controlled vocabularies and cross-file referential integrity that are silent to get wrong.
+
+---
+
+## 5. Sequencing
+
+| Phase | Workstreams | Ships | Risk |
+|---|---|---|---|
+| 1 | **WP-B + WP-C** | governance-correct, neutral copy | low — string + branch changes, no layout |
+| 2 | **WP-A** | registry-sourced labels and links | low — behaviour-preserving, big deletion |
+| 3 | **WP-D** | the actual relevance change | medium — visible redesign of the panel head |
+| 4 | **WP-E** | density | medium — layout + CSS |
+| 5 | **WP-F** | content | low, but the slowest; unblocked by 1–4 |
+
+Phases 1–2 are worth doing on their own even if 3–5 are deferred: they remove a live governance mislabel and a drift class, and they delete 2.5 KB of hand-maintained duplication across four maps.
+
+---
+
+## 6. Constraints this plan must not trip
+
+- **ES5 only** in `spa_index.html` and every `frontdoor/*.js` snippet — `var`/`function`, no `const`/`let`/arrows/template literals. These are textually injected, not modules.
+- **Audience-neutral copy** — `/MS3|clerkship|student|shelf|resident|UNE|MMC|Sanford/i` in no emitted string. Slugs (`shelf.md`, `shelf-mode.html`) are identifiers, not copy.
+- **localStorage `cw_*` / `rp_*` only.** WP-D deliberately adds **no** new key — it reuses `cw_shelf_date` via `phasePolicy()`.
+- **Escape everything** reaching `innerHTML`; the panel already uses `esc`.
+- **No crisis number in the panel.** Crisis contacts live only in `crisis_resources.json` and arrive by the `<!-- crisis-block -->` marker at build time. If WP-E adds a safety surface, add the marker; do not inline a number.
+- **Instrument scope is a governance decision, not an agent decision.** WP-B changes *labels and presentation only*. It does not add, remove, or reinterpret any instrument's status, and it must not narrow or lift the recorded COWS interim waiver.
+- **A red node test silently aborts the build.** `build_and_check.sh` is `set -euo pipefail` and runs `node --test tests/*.test.mjs` *before* `build_deploy.py`. Run the node suite first when a panel edit "doesn't show up".
+- **New CI step ⇒ three contracts.** If a step is added to `ci.yml`: `bin/check-verify-coverage.py`, the `validate_scheduled_workflows.py` step-inventory + sha256 digest (recompute via its own `_load`/`_contract_digest`), and `test_validate_registry_schemas.py`'s `PAIRS`. Adding tests to the existing `tests/*.test.mjs` glob avoids all three.
+- **`cp CLAUDE.md AGENTS.md`** if this work changes either.
+
+---
+
+## 7. Decisions for the author
+
+1. **Mode chips: remove or make real?** They are decorative today and imply a filter that does not exist. *Recommend removing* (WP-D) — the same relevance is better served by one ranked primary action than by five filters a learner must operate. Making them real is ~1 extra day: chips become buttons, `practiceModeCfg` gains genuine per-mode tool priorities, and mode persists in a `cw_*` key.
+2. **Default-open on high-safety pages?** Currently every panel is collapsed behind "Click to open" — including on suicide, violence, agitation, catatonia and withdrawal pages, where the panel *is* the point.
+3. **Quiz-less pages (31 of 74):** author quizzes, or suppress the empty section?
+4. **Withdrawal wording.** The registry title leads with COWS, which is correct. Confirm the panel should print the registry title verbatim rather than any shortened form.
+
+---
+
+## 8. Definition of done
+
+- No panel label disagrees with the nav label for the same slug (0 of 22 tools).
+- `cssrs.html` / `bfcrs.html` render as references, never as actions, on every page that offers them.
+- `AUDIENCE_TOKEN_RE` matches nothing in `buildTpl` output across all 74 metas.
+- Exactly one primary action per page; no duplicated sentence within a panel.
+- ≤5 visible actions before disclosure (from a median of 9, max 17).
+- 0 pages on the generic ward sentence; 0 pages with a near-empty panel.
+- `bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh ms3` and `res` both green; `node --test tests/*.test.mjs` green; smoke suite green.
