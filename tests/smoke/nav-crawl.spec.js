@@ -16,6 +16,7 @@
  */
 
 import { test, expect } from '@playwright/test';
+import { requestGetWithRetry } from './net-resilience.js';
 import { readFileSync } from 'node:fs';
 
 // Case of the Week adds exactly one nav page per audience per registry week
@@ -47,7 +48,7 @@ const PANEL_SAMPLE = ['t_mood.md', 'suicide.md', 't_psychosis.md'];
 // ── helpers ──────────────────────────────────────────────────────────────────
 
 async function loadNav(request, baseURL) {
-  const resp = await request.get(new URL('/nav.json', baseURL).href);
+  const resp = await requestGetWithRetry(request, new URL('/nav.json', baseURL).href);
   if (!resp.ok()) throw new Error(`GET nav.json → ${resp.status()}`);
   const sections = await resp.json();
   const items = [];
@@ -58,7 +59,7 @@ async function loadNav(request, baseURL) {
 }
 
 async function loadProjectedLibraryRefs(request, baseURL) {
-  const resp = await request.get(new URL('/', baseURL).href);
+  const resp = await requestGetWithRetry(request, new URL('/', baseURL).href);
   if (!resp.ok()) throw new Error(`GET index → ${resp.status()}`);
   const html = await resp.text();
   const prefix = 'var FD_CURRICULUM=';
@@ -103,7 +104,7 @@ test('nav items: exact inventory + HTTP 200 + non-empty content', async ({ reque
       ? new URL(`/tools/${it.f}`, baseURL).href
       : new URL(`/content/${it.f}`, baseURL).href;
 
-    const resp = await request.get(fileURL, { failOnStatusCode: false });
+    const resp = await requestGetWithRetry(request, fileURL, { failOnStatusCode: false });
     const status = resp.status();
     const body = await resp.body();
     const isStub = body.toString('latin1', 0, 23).startsWith(LFS_HEADER);
