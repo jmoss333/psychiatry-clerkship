@@ -5,11 +5,20 @@
 The library asserts the same clinical fact on many pages. When one copy is
 corrected, the others keep the old version.
 
-This is documented in our own record. `how_we_know_teaching.json` carries the
-Modini mis-attribution: a viewpoint paper cited for a statistic it never
-reported, **"at four places in the library. The worst of the four was a quiz
-answer, which is the version students actually memorise."** PR #483 is the same
-shape — catatonia corrections that missed copies.
+This is documented in our own record, twice.
+
+`how_we_know_teaching.json` carries the Modini mis-attribution: a viewpoint paper
+cited for a statistic it never reported, **"at four places in the library. The
+worst of the four was a quiz answer, which is the version students actually
+memorise."**
+
+PR #483 is the same shape in the agitation material. The RSAF F001/F002
+corrections landed in `topic_meta.json` and `rp-agitation.pack.json`, and missed
+the MS3 twin pack, the preview snapshot, and — worst — the skill exemplar at
+`.claude/skills/topic-meta-author/references/voice-and-exemplars.md`, which as
+that PR puts it **"is hand-authored, so no regeneration would ever reach it, and
+it is what an agent is told to imitate when writing the next one."** A stale
+claim there does not just sit wrong; it seeds every topic written afterwards.
 
 At 997 HTML pages this is structural, not carelessness. No amount of care makes
 997 independently-maintained copies of a fact stay equal.
@@ -84,11 +93,24 @@ claims the page has not changed since a human said it agreed.
 no `appliesTo` and no `guards` is inert by design, so the registry ships green and
 begins enforcing only as slots are filled.
 
-## Why these 30
+## Why these 31
 
 Chosen for being high-consequence **and** asserted in more than one place — the
 intersection is what matters, since a fact stated once cannot drift. Spread:
-22 high / 8 moderate risk; 27 clinical, 2 legal, 1 formulary.
+23 high / 8 moderate risk; 28 clinical, 2 legal, 1 formulary.
+
+Thirty were seeded from clinical judgement about what a clerkship library
+repeats. The thirty-first, `antipsychotics-in-suspected-catatonia`, was found by
+looking: `topic_meta.json` asserts it three times in three phrasings
+(`agitation.md`, `catatonia.md`, `toxidromes.md`), the skill exemplar carries a
+fourth, and both agitation packs carry a fifth and sixth. It is the only slot
+that ships with a populated `appliesTo`, because the copies were verified rather
+than assumed.
+
+**Start here, not with a slot chosen by intuition.** `catatonia-lorazepam-challenge`
+looks like the obvious first fill and is not: a search of the library found it
+asserted substantively on exactly one page. A fact stated once cannot drift,
+which by this registry's own selection rule makes it a poor first demonstration.
 
 Numeric and threshold claims are over-represented on purpose. They are quizzed,
 memorised, and re-typed rather than referenced, which is exactly the population
