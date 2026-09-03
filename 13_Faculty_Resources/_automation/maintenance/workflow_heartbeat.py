@@ -8,12 +8,19 @@ import json
 import os
 import re
 import subprocess
+import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import quote, urlsplit
 from urllib.request import HTTPRedirectHandler, Request, build_opener
 
 import yaml
+
+# Dual-mode: this module runs both as a package (tests) and as a script (workflows).
+try:  # package
+    from .receipt_summary import report
+except ImportError:  # script - siblings are on sys.path
+    from receipt_summary import report
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -591,6 +598,10 @@ def main(argv=None, *, opener=None, now=_utc_now):
         activation_records=activations,
         run_provenance=provenance,
     )
+    # Name the workflows that blocked the gate before exiting. The heartbeat is
+    # red *because* something it watches is red, and without this the log gives
+    # no hint which one — see receipt_summary.
+    report(receipt, "heartbeat", stream=sys.stderr)
     try:
         args.out.parent.mkdir(parents=True, exist_ok=True)
         args.out.write_text(
@@ -598,6 +609,7 @@ def main(argv=None, *, opener=None, now=_utc_now):
             encoding="utf-8",
         )
     except OSError:
+        print("heartbeat: receipt write failed", file=sys.stderr)
         return 2
     return 0 if receipt["gate"] == "ready" else 2
 

@@ -36,7 +36,7 @@ What has changed is the **pharmacokinetics of the drug being displaced**. Illici
 
 The magnitude matters for calibration. In a cohort of hospitalized patients using fentanyl who underwent standard buprenorphine initiation, precipitated withdrawal occurred in a **minority** of patients — meaningful and non-trivial, but far from universal [3]. Two implications: standard initiation is not obsolete and should not be abandoned reflexively, *and* the risk is high enough to warrant an explicit consent conversation and a considered choice of strategy.
 
-*Also worth naming:* telling a patient in precipitated withdrawal that this is "the medicine working" is both inaccurate and, predictably, treatment-ending. The iatrogenic harm here is not only physiologic — it is a durable negative association with the single most effective treatment she could receive.
+*Also worth naming:* telling a patient in precipitated withdrawal that this is "the medicine working" is both inaccurate and, predictably, treatment-ending — and the team also needs to know what to do instead, because the correct move is counterintuitive: precipitated withdrawal is generally treated by *continuing and rapidly escalating* buprenorphine to carry the patient through to full buprenorphine occupancy, not by stopping it, together with aggressive symptomatic treatment (antiemetic, alpha-2 agonist, non-opioid analgesia) and full-agonist analgesia where pain requires it. The iatrogenic harm here is not only physiologic — it is a durable negative association with the single most effective treatment she could receive.
 
 **Q2. She now refuses buprenorphine. Lay out the realistic options and their trade-offs.**
 

@@ -5,7 +5,7 @@
 var FD_CAPTURE_PURPOSE='Questions you captured on the unit. Open the matching page, schedule one for review, or copy the list to raise in supervision. Stays on this device — no patient details.';
 
 function fdDueCount(breakdown){
-  var b=breakdown||{}, names=['daily','qb','fam','other'], total=0;
+  var b=breakdown||{}, names=['daily','qb','fam','comm','reason','other'], total=0;
   for(var i=0;i<names.length;i++){
     var row=b[names[i]]||{};
     if(typeof row.due==='number'&&row.due>0) total+=row.due;
@@ -19,6 +19,8 @@ function fdDueRow(breakdown){
   if(b.daily&&b.daily.due) parts.push(b.daily.due+' daily');
   if(b.qb&&b.qb.due) parts.push(b.qb.due+' practice');
   if(b.fam&&b.fam.due) parts.push(b.fam.due+' family');
+  if(b.comm&&b.comm.due) parts.push(b.comm.due+' communication');
+  if(b.reason&&b.reason.due) parts.push(b.reason.due+' reasoning');
   if(b.other&&b.other.due) parts.push(b.other.due+' other');
   return '<button type="button" class="fd-due" data-fd-open="review.html">'+
     '<span class="fd-due__label">'+total+' review'+(total===1?'':'s')+' due</span>'+

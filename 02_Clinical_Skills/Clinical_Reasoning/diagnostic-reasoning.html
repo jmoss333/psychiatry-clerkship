@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- [CLERKSHIP-META v1] tool="Diagnostic Reasoning Workbench" version="1.0" built="2026-07-07" category="clinical-reasoning" audience="trainee,ms3,resident" settings="inpatient,self-study" time="8-12min" summary="Fictional composite diagnostic reasoning cases. Stores anonymous structured practice state under cw_reason_v1; no PHI or free-text patient fields." -->
+<!-- [CLERKSHIP-META v1] tool="Diagnostic Reasoning Workbench" version="1.0" built="2026-07-07" category="clinical-reasoning" audience="trainee,ms3,resident" settings="inpatient,self-study" time="8-12min" summary="Fictional composite diagnostic reasoning cases. Stores anonymous structured practice state under cw_reason_v1 and per-step review scheduling under cw_srs_v1 (REASON# ids); no PHI or free-text patient fields." -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex,nofollow">
@@ -117,10 +117,22 @@ var LINK_LABELS={
   'brief_psychotherapy.md':'Brief Psychotherapy','exp_consult.md':'Consult Questions','ddx.md':'Differential Dx',
   'delirium.md':'Delirium','catatonia.md':'Catatonia','bfcrs.html':'BFCRS'
 };
+/* ---- cw_srs_v1 scheduling (REASON# cards) -------------------------------
+   Each STEP is its own card: the steps of one case test different moves
+   (problem representation, then the rule-outs, then the plan), and a learner
+   can be solid on one and lost on the next. Scheduling the case as a unit
+   would average those together and re-serve the step already mastered.
+   Store shape from site_build/srs_store.js, SM-2 step from
+   site_build/sm2_apply_grade.js, grade derived from the option's authored
+   quality. */
+/*__SRS_STORE__*/
+/*__SM2_APPLY_GRADE__*/
+function reasonCardId(caseId,stepId){return 'REASON#'+caseId+'#'+stepId;}
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
 function requestedCaseId(){try{return new URLSearchParams(location.search).get('case')||'';}catch(_){return '';}}
 function loadAttempts(){try{return JSON.parse(localStorage.getItem('cw_reason_v1')||'{}')||{};}catch(_){return {};}}
-function saveAttempt(caseId,stepId,choice){try{var rec=state.attempts[caseId]||{steps:{}};rec.steps=rec.steps||{};rec.steps[stepId]={choiceId:choice.id,quality:choice.quality,at:new Date().toISOString().slice(0,10)};rec.updatedAt=new Date().toISOString().slice(0,10);state.attempts[caseId]=rec;localStorage.setItem('cw_reason_v1',JSON.stringify(state.attempts));}catch(_){}}
+function saveAttempt(caseId,stepId,choice){try{var rec=state.attempts[caseId]||{steps:{}};rec.steps=rec.steps||{};rec.steps[stepId]={choiceId:choice.id,quality:choice.quality,at:new Date().toISOString().slice(0,10)};rec.updatedAt=new Date().toISOString().slice(0,10);state.attempts[caseId]=rec;localStorage.setItem('cw_reason_v1',JSON.stringify(state.attempts));}catch(_){}
+  try{srsGradeCard(reasonCardId(caseId,stepId),srsGradeForQuality(choice&&choice.quality));}catch(_){}}
 function caseComplete(c){var rec=state.attempts[c.id];var n=(c.steps||[]).length;if(!rec||!rec.steps||!n)return false;return (c.steps||[]).every(function(st){return rec.steps[st.id];});}
 function bestCount(c){var rec=state.attempts[c.id];if(!rec||!rec.steps)return 0;return Object.keys(rec.steps).filter(function(k){return rec.steps[k].quality==='best';}).length;}
 function progressHtml(){var total=state.cases.length||1;var done=state.cases.filter(caseComplete).length;var pct=Math.round(done*100/total);return '<div class="sidehead"><div class="n">'+done+' of '+total+' cases completed</div><div class="d">Structured choices saved locally only</div><div class="bar" aria-hidden="true"><span style="width:'+pct+'%"></span></div></div>';}

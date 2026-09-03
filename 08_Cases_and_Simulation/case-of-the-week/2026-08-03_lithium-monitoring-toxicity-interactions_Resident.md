@@ -132,7 +132,7 @@ The **EXTRIP workgroup** recommendations (systematic review plus two-round modif
 
 **Practical monitoring changes in pregnancy:**
 - Renal clearance rises through pregnancy → levels tend to **fall**; more frequent level checks are required.
-- Plan explicitly for **delivery**, when clearance abruptly normalizes and the risk direction reverses toward toxicity; hydration status during labor matters.
+- Plan explicitly for **delivery**, when clearance abruptly normalizes and the risk direction reverses toward toxicity. Decide in advance with obstetrics whether to continue lithium with close level monitoring and assured hydration or to reduce/withhold around labour — practice genuinely varies by centre, so the resident-level task is to have made the decision, not to have applied one rule. Check a level at delivery and in the early postpartum, and return to the **pre-pregnancy** dose rather than the higher pregnancy dose once GFR falls; this is the commonest route to postpartum toxicity. Counsel on transient neonatal effects (hypotonia, poor feeding), and address **breastfeeding** explicitly: lithium is not an absolute contraindication in a healthy term infant, but it requires a shared decision, infant monitoring, and a plan for infant hydration and levels during illness.
 - Fetal echocardiography and coordination with maternal–fetal medicine.
 - Use the **lowest effective dose**, given the dose–response signal [8].
 

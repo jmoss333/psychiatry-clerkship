@@ -102,6 +102,8 @@ test('dueBreakdown buckets by prefix; dueCount reports Daily-Review-servable onl
     'QB#qb_moo_001': { due: past },
     'QB#qb_moo_002': { due: future },
     'FAM#collateral_baseline_safety_001#opening': { due: past },
+    'COMM#suicide_direct_question_001': { due: past },
+    'REASON#mania_psychosis_substance_001#problem_representation': { due: twoDaysAgo },
     'REAS#case#step': { due: past },
   } }));
   const srs = makeSrs(ls, QUIZ_META, docStub);
@@ -110,6 +112,11 @@ test('dueBreakdown buckets by prefix; dueCount reports Daily-Review-servable onl
   assert.equal(b.daily.overdue, 1);
   assert.equal(b.qb.due, 1);
   assert.equal(b.fam.due, 1);
+  assert.equal(b.comm.due, 1);
+  assert.equal(b.reason.due, 1);
+  assert.equal(b.reason.overdue, 1);
+  // 'REAS#' is a near-miss on the REASON# prefix and must NOT be swallowed by it: an id that
+  // lands in `other` is an unrouted namespace, which this bucket exists to make visible.
   assert.equal(b.other.due, 1);
   assert.deepEqual(srs.dueCount(), { due: 2, overdue: 1 });
 });
