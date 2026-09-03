@@ -24,6 +24,7 @@ PAIRS = (
     ("curriculum.json", "curriculum.schema.json"),
     ("evidence_annotations.json", "evidence_annotations.schema.json"),
     ("instrument_rights.json", "instrument_rights.schema.json"),
+    ("decisions.json", "decisions.schema.json"),
 )
 
 

@@ -1,6 +1,9 @@
 /**
  * instrument-rights-gate.mjs — the executable form of the instrument-reproduction rule.
  *
+ * DECISION: instrument-route-required
+ * DECISION: instrument-scope-option-a
+ *
  * INV-IR1: a build may publish a page naming a listed instrument only in the state its
  * recorded disposition allows. Dispositions live in instrument_rights.json (root registry,
  * schema-paired); every entry cites the decision record that established it, and status

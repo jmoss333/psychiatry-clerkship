@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "decisions.json — standing faculty decisions, machine-readable",
+  "type": "object",
+  "required": ["schemaVersion", "decisions"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "_note": { "type": "string" },
+    "decisions": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/decision" }
+    }
+  },
+  "$defs": {
+    "decision": {
+      "type": "object",
+      "required": ["id", "title", "status", "decided", "decidedBy", "rationaleRef", "governs"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]*$",
+          "description": "The token a `DECISION: <id>` marker in source names. Stable forever — renaming one silently unpins every marker."
+        },
+        "title": { "type": "string", "minLength": 10 },
+        "status": {
+          "enum": ["active", "active-interim", "superseded", "retired"],
+          "description": "active-interim marks a decision standing on a waiver or a pending external answer; it governs code exactly like active, but says out loud that it is not settled."
+        },
+        "decided": { "type": "string", "format": "date", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+        "decidedBy": { "type": "string", "minLength": 3 },
+        "rationaleRef": {
+          "type": "string",
+          "minLength": 3,
+          "description": "Where the reasoning lives — a doc path, a commit, a README section. The registry records WHAT was decided and its status; it never replaces the prose that says why."
+        },
+        "note": { "type": "string" },
+        "supersedes": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" }
+        },
+        "supersededBy": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+        "governs": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "description": "Repo-relative paths whose code enforces this decision. Each must carry a `DECISION: <id>` marker; bin/check_decision_drift.py checks both directions."
+        }
+      }
+    }
+  }
+}

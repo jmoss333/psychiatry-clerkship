@@ -32,6 +32,7 @@ MAX_BODY = 16_000
 # input reach a GitHub issue body. The sentinel test in
 # tests/maintenance/test_maintenance_issue.py pins that boundary. Importing the
 # tuple keeps one definition without reopening it.
+# DECISION: passcode-fixed  (decisions.json; the checklist text this renders is that decision)
 # Dual-mode: this module runs both as a package (tests) and as a script (workflows).
 try:  # package
     from .rotation_readiness import MANUAL_CHECKLIST
