@@ -5,9 +5,11 @@
 **Status:** **Proposal for faculty review. Nothing shipped.** No content page, `site_manifest.json`
 entry, or nav item was touched. This document is the evidence and the slate; the decision about
 what ships is Dr. Moss's.
-**Scope:** the two media pages the library ships —
-`12_Media/psychiatry_psychotherapy_podcast_library.md` and
-`07_Evidence_and_Reading/Book_Summaries/ms3_book_library.md`.
+**Scope:** the library's three content surfaces —
+`12_Media/psychiatry_psychotherapy_podcast_library.md`,
+`07_Evidence_and_Reading/Book_Summaries/ms3_book_library.md`, and the 50 `audio_oe`
+landmark briefs published by `landmark_trials.md`. (The first two only, until review on
+PR #478 caught the omission — see §2.1.)
 
 ---
 
@@ -17,9 +19,11 @@ Two halves of this scan have very different evidential strength. Do not treat th
 
 ### 0.1 The repo half is measured, and reproducible
 
-Every number in §1 and §2 comes from parsing the two shipped pages, not from recollection. The
-coverage cross-check in §2.1 is a title-level keyword scan over both files; regenerate it with the
-script in §8.
+Every number in §1 and §2 comes from parsing shipped files, not from recollection. The coverage
+cross-check in §2.1 is a title-level keyword scan over **three** surfaces — the podcast page, the
+book page, and the 50 `audio_oe` landmark briefs that `landmark_trials.md` publishes. Regenerate
+it with the committed script named in §8. **It scanned only the first two until review on PR #478
+caught the omission**, which changed the headline finding — see the correction note in §2.1.
 
 **Its one real limitation:** the podcast page lists episode *titles only* — no descriptions, no
 tags — so the scan measures **findability**, not coverage. A topic reads as "absent" when no
@@ -62,11 +66,16 @@ next agent that tries to fan this out.
 |---|---|---|---|---|
 | **Podcasts** — `12_Media/psychiatry_psychotherapy_podcast_library.md` | **245 episodes, 1 show** (Puder, *Psychiatry & Psychotherapy*) | 13 | YouTube video links; **7 unresolved** "▶ search channel" fallbacks | ReConnect podcast DB — **481 records across ~51 shows** |
 | **Books** — `07_Evidence_and_Reading/Book_Summaries/ms3_book_library.md` | **51 titles** | 14 | **51 of 51 Amazon `/dp/`; zero non-Amazon**; no ISBNs | psychoeducation book DB — **345 titles** |
-| **Audiobooks** | **0** — nothing in the repo is identified as audio | — | — | — |
+| **Audiobooks** | **0** — nothing is identified as an *audiobook* | — | — | — |
 
-Two facts are worth sitting with.
+The audiobook zero is narrower than it looks and worth stating precisely: the library ships
+**50 landmark audio briefs** (`12_Media/audio_oe/`, ~1:40 each), so it is not without audio.
+What it has none of is an **audiobook layer** — a book on the shelf flagged as also existing in
+narrated form, which is the commute-shaped gap G6 is about.
 
-**One show is the library's entire audio voice.** 245 episodes, one host, one theoretical centre of
+Three facts are worth sitting with.
+
+**One show is the library's entire *podcast* voice.** 245 episodes, one host, one theoretical centre of
 gravity (psychodynamic/psychotherapy-weighted). The show is good; that is not the issue. A single
 editorial source for an entire modality is a governance exposure independent of quality — if it
 stops publishing, changes stance, or paywalls, the library's audio surface degrades with no
@@ -81,51 +90,64 @@ against it — see §5.
 
 ## 2. The gap map
 
-### 2.1 Coverage cross-check — clerkship topic vs. both pages
+### 2.1 Coverage cross-check — clerkship topic vs. every shipped surface
 
-Counts are keyword hits in each page (title-level; see §0.1).
+> **Corrected 2026-09-03 after review on PR #478.** The first version of this table scanned
+> only the podcast and book pages and therefore reported the acute inpatient spine as having
+> "no audio". **That was wrong, and wrong in a way that could have sent faculty hunting for
+> audio the library already ships.** `12_Media/audio_oe/` carries **50 NotebookLM landmark
+> briefs** — including delirium, catatonia, ECT, lithium, clozapine and suicide — and
+> `landmark_trials.md` is registered in `site_manifest.json` and publishes them. The scan now
+> covers all three content surfaces. Reproduce it with
+> `python3 13_Faculty_Resources/_automation/library_coverage_scan.py`.
 
-| Clerkship topic | Podcast | Books | Status |
-|---|---:|---:|---|
-| Agitation / restraint | 0 | 0 | **ABSENT FROM BOTH** |
-| Medical workup / mimics | 0 | 0 | **ABSENT FROM BOTH** |
-| Consult-liaison | 0 | 0 | **ABSENT FROM BOTH** |
-| Documentation / oral presentation | 0 | 0 | **ABSENT FROM BOTH** |
-| Case formulation | 0 | 0 | **ABSENT FROM BOTH** |
-| Discharge / disposition | 0 | 0 | **ABSENT FROM BOTH** |
-| Delirium | 1 | 0 | no book |
-| Catatonia | 2 | 0 | no book |
-| Toxidromes / withdrawal | 1 | 0 | no book |
-| Decisional capacity | 1 | 0 | no book |
-| ECT / neuromodulation | 1 | 0 | no book |
-| Clozapine | 2 | 0 | no book |
-| Lithium | 3 | 0 | no book |
-| Metabolic / med monitoring | 2 | 0 | no book |
-| Suicide / self-harm | 6 | 0 | no book |
-| Differential diagnosis | 1 | 0 | no book |
-| Motivational interviewing | 1 | 0 | no book |
-| Shelf / COMAT exam | 1 | 0 | no book |
-| Geriatric / dementia | 3 | 0 | no book |
-| Perinatal | 3 | 0 | no book |
-| Eating disorders | 3 | 0 | no book |
-| Sleep | 4 | 0 | no book |
-| Ethics / med-legal | 1 | 0 | no book |
-| Violence risk | 6 | 1 | covered |
-| Involuntary commitment | 4 | 2 | covered |
+Counts are keyword hits per surface (title-level; see §0.1).
 
-**6 topics absent from both pages. 17 topics with zero book coverage.**
+| Clerkship topic | Podcast | Book | Audio | Empty surfaces |
+|---|---:|---:|---:|---|
+| Agitation / restraint | 0 | 0 | 0 | **ALL THREE** |
+| Medical workup / mimics | 0 | 0 | 0 | **ALL THREE** |
+| Consult-liaison | 0 | 0 | 0 | **ALL THREE** |
+| Documentation / oral presentation | 0 | 0 | 0 | **ALL THREE** |
+| Case formulation | 0 | 0 | 0 | **ALL THREE** |
+| Discharge / disposition | 0 | 0 | 0 | **ALL THREE** |
+| Delirium | 1 | 0 | **5** | book |
+| Catatonia | 2 | 0 | **1** | book |
+| ECT / neuromodulation | 1 | 0 | **4** | book |
+| Clozapine | 2 | 0 | **2** | book |
+| Lithium | 3 | 0 | **7** | book |
+| Metabolic / med monitoring | 2 | 0 | **4** | book |
+| Suicide / self-harm | 6 | 0 | **6** | book |
+| Geriatric / dementia | 3 | 0 | **5** | book |
+| Toxidromes / withdrawal | 1 | 0 | 0 | book, audio |
+| Decisional capacity | 1 | 0 | 0 | book, audio |
+| Differential diagnosis | 1 | 0 | 0 | book, audio |
+| Motivational interviewing | 1 | 0 | 0 | book, audio |
+| Shelf / COMAT exam | 1 | 0 | 0 | book, audio |
+| Perinatal | 3 | 0 | 0 | book, audio |
+| Eating disorders | 3 | 0 | 0 | book, audio |
+| Sleep | 4 | 0 | 0 | book, audio |
+| Ethics / med-legal | 1 | 0 | 0 | book, audio |
+| Violence risk | 6 | 1 | 0 | audio |
+| Involuntary commitment | 4 | 2 | 0 | audio |
 
-The acute inpatient spine — the thing a six-week adult inpatient rotation actually *is* — scores
-0-3 across the board. Delirium is one mention. Catatonia is two. The rotation's own
-`04_Acute_and_Safety/` tree ships pages on agitation, catatonia, delirium, toxidromes, capacity and
-violence; the media library backs almost none of it.
+**6 topics have nothing on any surface. 23 have no book. 6 have no audio of any kind** — the
+same six.
+
+Read together, that reframes the whole scan. The acute inpatient spine is **not** an audio
+desert: delirium, catatonia, lithium, clozapine, ECT, metabolic monitoring and suicide all
+have shipped landmark briefs. What the spine lacks is **books**, and — more importantly — any
+**connection** between the audio that exists and the topic pages that need it. A student on
+`delirium.md` is not told that a 1:47 brief on the HELP trial is two clicks away. That is a
+join problem, not a content problem, and it is exactly what the pairings plan addresses.
 
 ### 2.2 The gaps, named and tiered
 
 | # | Gap | Severity | Who is unserved |
 |---|---|---|---|
-| **G1** | **Acute inpatient spine has no audio and no books** — delirium, catatonia, agitation, withdrawal, capacity, ECT, clozapine/lithium monitoring, medical workup, C-L | **critical** | every learner, all six weeks |
-| **G2** | **No trainee clinical bookshelf exists at all** — nothing on the interview, MSE, formulation, prescribing, emergency or C-L psychiatry | **critical** | MS3, Sub-I, PGY1/2 |
+| **G1** | **Six topics have nothing on any surface** — agitation/restraint, medical workup, consult-liaison, documentation/oral presentation, case formulation, discharge/disposition. All six are core to an inpatient rotation | **critical** | every learner, all six weeks |
+| **G1b** | **The audio that exists is not joined to the topics it serves** — 50 landmark briefs ship, covering delirium, catatonia, ECT, lithium, clozapine and suicide, but no topic page points at them | **critical** | every learner; and it needs no new content |
+| **G2** | **No trainee clinical bookshelf exists at all** — 23 of 25 scanned topics have no book; nothing on the interview, MSE, formulation, prescribing, emergency or C-L psychiatry | **critical** | MS3, Sub-I, PGY1/2 |
 | **G3** | **Single-show dependence** — 245 eps, one host, one stance; no editorial counterweight | **high** | governance, not just coverage |
 | **G4** | **No exam-prep resource** despite `09_Exam_Prep/` shipping Shelf_High_Yield, shelf_comat_bank, OSCE_Stations, anki_export | **high** | MS3 sitting the shelf/COMAT |
 | **G5** | **No psychotherapy training texts** despite Therapy_Reading_Room, Brief_Psychotherapy, `therapy_on_the_unit.md`, `motivational_interviewing.md` all shipping | **high** | anyone asked to do therapy on the unit |
