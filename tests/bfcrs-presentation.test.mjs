@@ -38,6 +38,16 @@ test('the rights framing survives (keep-guards)', () => {
   assert.match(html, /urmc\.rochester\.edu/);
 });
 
+test('the route is a followable link to URMC’s own scale and training', () => {
+  // INV-IR2. The URMC terms that forced the removal are exactly why the route is a link:
+  // they hand the learner the scale, the coding guide and the exam videos directly.
+  // instrument-rights-gate.mjs pins the same URL at build time — keep the two in step.
+  const src = rights.instruments.find((i) => i.id === 'bfcrs').officialSource;
+  assert.ok(html.includes(`href="${src.formUrl}"`),
+    `the reference page must link the recorded official form: ${src.formUrl}`);
+  assert.ok(html.includes(`href="${src.trainingUrl}"`), 'link the training modules too');
+});
+
 test('the page title equals the rights-registry requiredTitle', () => {
   const entry = rights.instruments.find((i) => i.id === 'bfcrs');
   const pin = entry.pages.find((p) => p.file === 'bfcrs.html');

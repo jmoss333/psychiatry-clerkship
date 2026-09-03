@@ -31,7 +31,7 @@ Clarify:
 - Whether there are safety exceptions or mandatory reporting issues.
 - Whether a professional interpreter is needed.
 
-Do not use family as an interpreter for confidential or high-risk topics.
+Do not use family or friends as interpreters — book a qualified professional interpreter for the conversation. A family member may bridge only in an emergency while an interpreter is being arranged, or at the patient's specific, documented request.
 
 ## 2. Open The Call
 

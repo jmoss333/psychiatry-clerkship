@@ -2,7 +2,111 @@
 
 Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
 
-# SECTION (cont.): Present and Work with the Team
+# SECTION (cont.): Work with Family and Systems
+
+---
+
+## Family Therapy Modalities
+
+- **Slug:** `family_modalities.md` · **Type:** md · **Sidebar:** listed
+- **Source:** `06_Family_and_Relational/family_therapy_modalities_inpatient.md`
+- **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
+- **Length:** 685 words
+
+<!-- topic_meta overlay -->
+#### Structured metadata (`topic_meta.json` → this page)
+
+> est. read 4 min
+
+**TL;DR (shown above the page text):**
+
+> Match the family intervention to the family in front of you — family psychoeducation is the default highest-evidence approach (OR 0.18, NNT 7 for relapse prevention), but dose matters: ≤2 sessions is ineffective, and the main barrier to delivery is clinician avoidance, not patient refusal.
+
+**Key points (bulleted card):**
+
+- Family psychoeducation (OR 0.18 vs. treatment as usual) is the single strongest psychosocial intervention for schizophrenia relapse prevention, supported by 90 RCTs across more than 10,000 patients.
+- CRAFT is the go-to modality when a family member is struggling with a patient's substance use — it changes the family's own behavior to reduce blame and invite treatment engagement, without confrontation.
+- Expressed emotion (high criticism, hostility, emotional over-involvement) roughly quintuples relapse odds; family warmth is protective — lowering expressed emotion is a modifiable clinical target.
+
+**Can't-miss / red-flag line:**
+
+> ≤2 family sessions is ineffective for relapse prevention — NICE recommends ≥10 sessions over ≥3 months; a single discharge meeting starts the work but is not a course of care.
+
+**Clinical-workflow narration (per-stage coaching text):**
+
+- **ask** — Before inviting family work, ask what the patient wants help explaining, what the family is worried about, and whether family involvement is safe and welcome.
+- **mse** — Notice interactional data: criticism, warmth, emotional over-involvement, guardedness, shame, and the patient's response to family presence.
+- **safety** — Family involvement must respect consent, confidentiality, violence risk, coercion, and local policy; do not use relatives as substitutes for clinical supervision or crisis response.
+- **say** — Name the family intervention in ordinary language: 'This is a structured meeting to lower stress, agree on warning signs, and make the discharge plan realistic.'
+- **collateral** — Gather timeline, baseline functioning, relapse signatures, adherence barriers, access to lethal means, caregiver capacity, and what has made conflict better or worse.
+- **rounds** — Report one family-system finding that changes the plan: expressed emotion, discharge feasibility, safety environment, or who needs the next call.
+- **exam** — Know that family psychoeducation has the strongest relapse-prevention evidence in schizophrenia and requires more than one brief meeting.
+- **actions** — Practice opening a family meeting; Use the family systems tool
+
+**Embedded check-for-understanding**
+
+1. *Stem:* A patient with schizophrenia is preparing for discharge. Family members are willing to participate in family work. Which intervention has the strongest evidence for preventing 12-month relapse?
+   - Family psychoeducation — OR 0.18 for 12-month relapse across 90 RCTs, with ≥10 sessions over ≥3 months required for the effect to hold **← keyed correct**
+   - Emotionally Focused Therapy — attachment-based approach targeting the pursue-withdraw cycle in couples
+   - A single family meeting covering diagnosis and the safety plan before discharge
+   - Solution-focused brief therapy — one high-yield session amplifying existing family strengths
+   - *Rationale:* Family psychoeducation has the strongest evidence for schizophrenia relapse prevention (OR 0.18 vs. treatment as usual; 90 RCTs, >10,000 patients). EFT is evidence-based for couples but is not the default for schizophrenia; a single meeting is below the therapeutic dose (≤2 sessions is ineffective); solution-focused therapy is useful when only one meeting is possible but does not have the relapse-prevention evidence base.
+
+**Cross-references and tagging:**
+
+- **Related tools:** `family-systems.html`, `communication-practice.html`
+- **Communication cases:** `family_meeting_opening_001`, `collateral_questions_001`, `family_conflict_discharge_001`
+- **Evidence sources:** `brown-1972-expressed-emotion`
+- **Workflow stages:** `family`, `communication`
+- **Workflow modes:** `ward`, `family`
+- **Shelf blueprint tags:** `relational`
+- **EPA crosswalk:** `EPA9`
+- **Call-to-action buttons:** Open the Family Meeting Playbook; Practice expressed-emotion reset
+
+#### Page text (as shipped)
+
+# Family Therapy Modalities Commonly Used Inpatient
+
+> **Source:** adapted from Dr. Moss's Family Therapy Inpatient Didactic ("The Toolbox" slide). Educational; fictional composites only, no PHI.
+
+**The frame:** most inpatient family work is **brief, psychoeducational, and systemic** — you rarely complete therapy on the unit. The goal is to *start the work and secure the handoff.* Knowing the toolbox lets you **match the modality to the family** in front of you.
+
+## The toolbox — match the tool to the family
+
+| Modality | Core moves | Best inpatient use |
+|---|---|---|
+| **Family psychoeducation / multifamily groups** *(McFarlane)* | Structured illness education + coping & communication skills | The default, highest-evidence approach — start illness education and a shared warning-signs plan |
+| **Behavioral family therapy** *(Falloon)* | Communication + problem-solving skills training; lowers expressed emotion | Coach one concrete communication or problem-solving skill before discharge |
+| **Structural** *(Minuchin)* | Realign roles, subsystems, and boundaries; use enactment | Re-clarify roles when a parent/partner is over- or under-functioning |
+| **Bowenian / intergenerational** | Differentiation, triangles, over-/under-functioning; genogram-driven | A quick genogram to see the pattern across generations and triangles |
+| **Emotionally Focused Therapy (EFT)** *(Johnson)* | Attachment-based; de-escalate the negative cycle, rebuild the bond (couples) | Name and soften the pursue–withdraw cycle in a distressed couple |
+| **CRAFT** (Community Reinforcement & Family Training) | The family changes its **own** behavior to invite treatment — no blame | Substance use: give the family concrete, blame-free moves that pull toward care |
+| **CBT-informed / reduce accommodation** *(SPACE; ERP)* | Coach the family to stop accommodating anxiety/OCD; support graded exposure | Anxiety/OCD: identify and dial back family accommodation |
+| **DBT-informed family skills** | Validation + limits; reduce invalidation; manage high-intensity dyads | Borderline-pattern crises: pair validation with consistent limits |
+| **Solution-focused / single-session** | Amplify existing strengths in one high-yield consultation | When you get only one meeting — make it count on strengths and next steps |
+| **Open Dialogue / network meetings** | Rapid, transparent network meetings during acute crisis | First-episode/crisis: convene the network early and transparently |
+
+*Also commonly cited for bipolar maintenance: **Family-Focused Therapy (Miklowitz)** — psychoeducation + communication + problem-solving, mood-stabilizing alongside medication.*
+
+## Why it's worth the friction — the evidence in numbers
+- **OR 0.18** — family psychoeducation led 11 models for 12-month relapse prevention (Rodolico et al., *Lancet Psychiatry* 2022; 90 RCTs, >10,000 patients). **Dose matters:** ≤2 sessions is ineffective; NICE recommends ≥10 sessions over ≥3 months.
+- **NNT 7** — treat seven families to prevent one relapse (Pharoah, *Cochrane* 2010; 53 RCTs).
+- **OR 0.56 (95% CI 0.43–0.74)** — in bipolar disorder, adjunctive manualized psychotherapies reduced recurrence vs. control; **family/group-format psychoeducation was the standout for recurrence (OR 0.12, 0.02–0.94)**, and **family/conjoint therapy improved treatment retention (OR 0.46, 0.26–0.82)** and helped stabilize depressive symptoms (SMD −0.46, not significant) (Miklowitz et al., *JAMA Psychiatry* 2021; 39 RCTs) — the evidence anchor for Family-Focused Therapy above.
+- **≈ 3×** — family involvement during admission nearly triples the odds of 7-day follow-up (Haselden 2019).
+- **Reaches a minority of families** — structured family work is delivered in only ~0–53% of cases (historically <10%), and the main barrier is **clinician avoidance, not patient refusal** (Dixon 1999; Eassom 2014).
+- **Expressed emotion:** high-EE roughly **quintuples relapse odds (OR ~4.87)**, while family *warmth* is protective (OR ~0.35) (Ma et al. 2021, 33 cohorts); Butzlaff & Hooley (*Arch Gen Psychiatry* 1998) established the EE–relapse link. Family climate is *modifiable* — meetings help lower it.
+
+## The stance that makes any modality work
+Multipartiality over neutrality ("not a courtroom; multiple truths") · the **translator** role (structure ↔ control; anger ↔ fear) · a **de-shaming** lens (behavior as regulation, not character) · coach **influence, not control**. With an acutely psychotic patient, keep it brief, concrete, low-stimulation — interpretation waits.
+
+**Pair with** the **[Family Meeting Playbook (90-min)](?page=family_playbook.md)** and the expressed-emotion teaching in the Family & Relational material, and Week 4 of the curriculum.
+
+*Joshua Moss, MD | Psychiatrist · Adapted from the Family Therapy Inpatient Didactic. Educational; fictional composites only, no PHI.*
+
+
+---
+
+# SECTION: Present and Work with the Team
 
 ---
 

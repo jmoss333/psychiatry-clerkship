@@ -31,17 +31,17 @@
 
 ### `fluckiger-2018`
 
-- span type `abstract` · retrieved 2026-08-21 · PMID 29792475 · DOI —
+- span type `abstract` · retrieved 2026-09-03 · PMID 29792475 · DOI —
 
 **Verbatim source span.**
 
-> The overall alliance-outcome correlation was r = .278 (95% CI .256-.299; d = .579) across 295 studies and more than 30,000 patients, and the association was consistent across rater perspective, alliance measure, treatment approach, patient characteristics, and country.
+> We define and illustrate the alliance (also conceptualized as therapeutic alliance, helping alliance, or working alliance) and then present a meta-analysis of 295 independent studies that covered more than 30,000 patients (published between 1978 and 2017) for face-to-face and Internet-based psychotherapy. The overall alliance-outcome association for face-to-face psychotherapy was r = .278 (95% confidence intervals [.256, .299], p < .0001; equivalent of d = .579). The correlation for Internet-based psychotherapy was approximately the same (viz., r = .275, k = 23). This relation remains consistent across assessor perspectives, alliance and outcome measures, treatment approaches, patient characteristics, and countries.
 
 **Claim `alliance-effect-size`** (direction: `positive`, used by T1)
 
-> The alliance-outcome correlation is r = .278 (d = .579) across 295 studies and more than 30,000 patients, and it holds across rater, measure, treatment approach and country.
+> The alliance-outcome correlation for face-to-face psychotherapy is r = .278 (d = .579) across 295 studies and more than 30,000 patients, and it holds across rater, measure, treatment approach and country.
 
-- claim terms: `alliance-outcome correlation`, `consistent across rater perspective`
+- claim terms: `alliance-outcome association for face-to-face psychotherapy`, `consistent across assessor perspectives`
 
 ### `varese-2025`
 
@@ -59,11 +59,11 @@
 
 ### `hajek-gross-2024`
 
-- span type `conclusion` · retrieved 2026-08-21 · PMID 38279664 · DOI —
+- span type `conclusion` · retrieved 2026-09-03 · PMID 38279664 · DOI —
 
 **Verbatim source span.**
 
-> Pre-post effects were large for self-harm (g = -0.82), but against active controls MBT(-A) did not prove to be more efficacious, with the exception of borderline personality disorder symptoms in adults (g = -0.56). Prioritizing the application of MBT(-A) for the treatment of self-harm is not supported.
+> Overall, both MBT and MBT-A demonstrated promising effects in reducing self-harm (g = -0.82, 95% CI -1.15 to -0.50), borderline personality disorder (g = -1.08, 95% CI -1.38 to -0.77), and depression (g = -1.1, 95% CI -1.52 to -0.68) symptoms. However, when compared to control interventions (TAU, SCM), MBT(-A) did not prove to be more efficacious, with the exception of MBT showing superior effects on BPD symptoms in adults (g = -0.56, 95% CI -0.88 to -0.24). Although the pre-post evaluations seem promising, this analysis, including RCTs, showed no superiority of MBT(-A) to control conditions, so that prioritizing the application of MBT (-A) for the treatment of self-harm is not supported.
 
 **Claim `mbt-not-superior-active-control`** (direction: `negative`, used by T7)
 
@@ -87,11 +87,11 @@
 
 ### `shank-2026`
 
-- span type `abstract` · retrieved 2026-08-21 · PMID 40185617 · DOI 10.1136/ip-2024-045611
+- span type `abstract` · retrieved 2026-09-03 · PMID 40185617 · DOI 10.1136/ip-2024-045611
 
 **Verbatim source span.**
 
-> Stricter regulations were associated with a small reduction, if any, in total and/or firearm-specific suicide deaths. Evidence for non-firearm means was limited, mixed and/or inconclusive. No high-quality randomised controlled trials were identified, and the ecological level of analysis precluded individual-level causal inference.
+> Most studies evaluated the impact of population-level firearm interventions on suicide deaths and found that stricter regulations were associated with a small reduction, if any, in total and/or firearm-specific suicide deaths. The ecological level of analysis precluded individual-level causal inference. Findings within interventions targeting methods other than firearms were limited, mixed and/or inconclusive. Notably, no high-quality randomised controlled trials (RCTs) were identified that met our eligibility criteria.
 
 **Claim `means-legislation-ceiling`** (direction: `negative`, used by T3, safety-planning-practice-tool)
 
@@ -297,11 +297,11 @@
 
 ### `hong-2025`
 
-- span type `abstract` · retrieved 2026-08-23 · PMID 40392926 · DOI 10.1371/journal.pone.0324685
+- span type `abstract` · retrieved 2026-09-03 · PMID 40392926 · DOI 10.1371/journal.pone.0324685
 
 **Verbatim source span.**
 
-> CBT significantly improved negative symptoms in patients with schizophrenia compared to treatment as usual (TAU) (MD = -1.65, 95% CI = -2.10 to -1.21, p < 0.001, I2 = 41%). CBT significantly improved overall function in patients with schizophrenia (SMD = 0.38, 95% CI = 0.13 to 0.63, p < 0.05, I2 = 0%). Additionally, CBT significantly enhanced social skills (SMD = 0.87, 95% CI = 0.58 to 1.16, p < 0.001, I2 = 0%) and social functioning (SMD = 0.19, 95% CI = 0.03 to 0.36, p < 0.05, I2 = 24%) in these patients.
+> The results of the meta-analysis indicated that cognitive-behavioral therapy (CBT) significantly improved negative symptoms in patients with schizophrenia compared to treatment as usual (TAU) (MD = -1.65, 95% CI = -2.10 to -1.21, p < 0.001, I2 = 41%). CBT significantly improved overall function in patients with schizophrenia (SMD = 0.38, 95% CI = 0.13 to 0.63, p < 0.05, I2 = 0%). Additionally, CBT significantly enhanced social skills (SMD = 0.87, 95% CI = 0.58 to 1.16, p < 0.001, I2 = 0%) and social functioning (SMD = 0.19, 95% CI = 0.03 to 0.36, p < 0.05, I2 = 24%) in these patients.
 
 **Claim `cbtp-negative-symptoms-magnitude`** (direction: `positive`, used by RR)
 

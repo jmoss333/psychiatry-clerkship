@@ -129,7 +129,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **Slug:** `t_perinatal.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `03_Core_Topics/Perinatal/perinatal_psychiatry_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 1,145 words
+- **Length:** 1,254 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -144,7 +144,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 
 - Postpartum psychosis typically appears in the first 1–4 weeks, recurs in 30–50% of subsequent deliveries, and is bipolar-spectrum until proven otherwise — screen for prior mania.
 - The EPDS screens for depression, not psychosis — ask directly about delusions and perceptual disturbance, and screen for manic symptoms separately.
-- Stopping maintenance medication in bipolar disorder nearly triples postpartum relapse risk (~66% off medication vs ~23% on prophylaxis) — 'stop everything' is itself a high-risk clinical decision.
+- Stopping maintenance medication in bipolar disorder nearly triples postpartum relapse risk (~66% off medication vs ~23% on prophylaxis) — but 'don't stop everything' is not 'continue everything': valproate is the agent to be off before conception, with lamotrigine or lithium the maintenance options.
 
 **Can't-miss / red-flag line:**
 
@@ -205,7 +205,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 
 **Initial workup** — Focused and decision-relevant: full MSE with explicit suicide assessment, EPDS (Edinburgh Postnatal Depression Scale) screening, and active screening for psychotic and manic symptoms, since the EPDS does not detect psychosis. Order TSH (plus CBC, CMP, and infection workup as the picture dictates) to catch medical mimics. The safety assessment must explicitly include the infant: assess risk to the baby, the parent's current access to the baby, and available supervision. Obtain collateral — partner or family history reframes the differential, especially regarding prior mania or prior postpartum episodes.
 
-**Acute inpatient management** — Anchor each decision to the evidence. Postpartum psychosis requires admission and urgent treatment; consider lithium, antipsychotics, and ECT. For perinatal depression and anxiety, **sertraline and escitalopram** are the usual first-line SSRIs; for postpartum depression specifically, zuranolone is an oral option. Every medication choice in pregnancy and lactation is an individualized risk-benefit discussion, not a reflexive "stop everything" — note specific cautions around lithium and valproate, and weigh that untreated maternal illness itself carries real risk to mother and infant. In bipolar disorder, **stopping maintenance medication nearly triples postpartum relapse** (pooled ~35% overall; ~66% off medication vs ~23% on prophylaxis), so "stop everything" is itself a high-risk decision. Protect sleep aggressively: sleep loss both worsens mood and can precipitate or worsen psychosis, so build the milieu and orders around restoring it. Involve the partner and family throughout — for collateral, for the safety plan, and for the supervised support the patient will need after discharge.
+**Acute inpatient management** — Anchor each decision to the evidence. Postpartum psychosis requires admission and urgent treatment; consider lithium, antipsychotics, and ECT. For perinatal depression and anxiety, **sertraline and escitalopram** are the usual first-line SSRIs; for postpartum depression specifically, zuranolone is an oral option. Every medication choice in pregnancy and lactation is an individualized risk-benefit discussion, not a reflexive "stop everything." The mood stabilizers are not interchangeable here: **valproate is the one to avoid** in pregnancy and in anyone who could become pregnant — the highest teratogenic and neurodevelopmental risk of the group, so plan contraception and a pre-conception switch rather than a mid-pregnancy one; **lithium**'s absolute malformation risk is small and it is often continued for severe bipolar disorder with level monitoring; and **lamotrigine** is the comparatively safer maintenance option, though its levels fall as pregnancy advances, so a patient kept on it needs level tracking rather than a set-and-forget dose. Weigh all of that against the real risk untreated maternal illness itself carries to mother and infant. In bipolar disorder, **stopping maintenance medication nearly triples postpartum relapse** (pooled ~35% overall; ~66% off medication vs ~23% on prophylaxis), so "stop everything" is itself a high-risk decision. Protect sleep aggressively: sleep loss both worsens mood and can precipitate or worsen psychosis, so build the milieu and orders around restoring it. Involve the partner and family throughout — for collateral, for the safety plan, and for the supervised support the patient will need after discharge.
 
 **What the student does** —
 - Administer and document the EPDS, and explicitly screen for psychotic and manic symptoms beyond it.
@@ -235,7 +235,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - A clear hour does not rule out psychosis; the waxing/waning course is the illness.
 - The EPDS screens depression, not psychosis — ask about delusions and perceptual disturbance directly.
 - Postpartum OCD intrusive thoughts are ego-dystonic and not command hallucinations — distinguish them to avoid both over- and under-reaction.
-- Stopping all medication is itself a risk decision; untreated perinatal illness endangers mother and infant too.
+- Stopping all medication is itself a risk decision; untreated perinatal illness endangers mother and infant too — but that argument does not extend to valproate, which is the agent to be off before conception rather than continued through it.
 
 **Pair with** — the <a href="tools/cssrs.html" target="_blank" rel="noopener">Columbia C-SSRS official form &amp; training page</a> for structured risk assessment that extends to the infant, and the [suicide-risk & safety pocket card](?page=pg_suicide.md).
 
@@ -894,7 +894,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **Slug:** `violence.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `04_Acute_and_Safety/Violence_Risk/violence_risk_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 957 words
+- **Length:** 1,091 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -947,7 +947,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 
 **How it presents on the unit.** Serious violence rarely erupts without a prodrome. Watch for the escalation curve: rising motor activity (pacing, restlessness), a louder and faster voice, clenched jaw or fists, prolonged staring, refusal to sit, and intrusion into others' physical space. Verbal threats and striking objects sit just below assault on that curve. The single most important distinction is between *static* risk — history you cannot change — and *dynamic* risk — the modifiable state driving this patient right now. Static factors (a past act of violence above all, younger age, male sex, substance use, prior weapon access) tell you the baseline; dynamic factors (acute psychosis, intoxication or withdrawal, agitation, untreated pain, a provocative environment) tell you what is treatable tonight and are where the clinical work lives.
 
-**Recognize and screen.** Past violence is the strongest single predictor of future violence — take a specific history of it rather than a global impression. Among psychotic symptoms, the highest-risk pattern is persecutory delusions paired with command hallucinations the patient feels compelled to obey. ("Threat/control-override" is a related but distinct construct — persecutory beliefs plus the sense that outside forces override one's self-control.) For short-term, unit-level prediction, structure the bedside read with the **Brøset Violence Checklist (BVC)**: confusion, irritability, boisterousness, verbal threats, physical threats, and attacking objects — each present/absent, summed to gauge the risk of violence over the next 24 hours. More comprehensive structured instruments exist (e.g., HCR-20) but belong to formal forensic assessment, not the daily student read.
+**Recognize and screen.** Past violence is the strongest single predictor of future violence — take a specific history of it rather than a global impression. Among psychotic symptoms, the highest-risk pattern is persecutory delusions paired with command hallucinations the patient feels compelled to obey. ("Threat/control-override" is a related but distinct construct — persecutory beliefs plus the sense that outside forces override one's self-control.) Two instruments will reach you and they do different jobs. The one you will actually meet here is the **Fordham Risk Screening Tool (FRST)** — completed in the Emergency Department at intake at Maine Medical Center, returning a positive/negative result rather than a score, and used to flag who arrives on the unit needing heightened observation. It is a screen, not a verdict: let a positive result raise your index of suspicion and your monitoring, and treat a negative one as no reassurance at all — the tool page carries the local validation data and the authors' own caution against using it standalone. The short-term, unit-level structured read in the literature is the **Brøset Violence Checklist (BVC)** — confusion, irritability, boisterousness, verbal threats, physical threats, and attacking objects, each present/absent and summed to gauge risk over the next 24 hours — with the DASA used the same way. Note that the library's Violence Risk tool is the FRST one-pager: its warning-signs checklist is deliberately unscored and is a teaching prompt, not a BVC tally. More comprehensive structured instruments exist (e.g., HCR-20) but belong to formal forensic assessment, not the daily student read.
 
 **Keep yourself and the milieu safe — the room setup is the intervention.** If you are at all concerned, do not interview alone. Position yourself nearer the door than the patient so neither of you is trapped and your exit is never blocked. Know where the duress alarm is before you sit down. Remove obvious ligatures and throwable objects from reach. Keep a calm, low, non-confrontational posture, give the patient space, and avoid cornering, sudden movements, or a challenging stance.
 
@@ -980,7 +980,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 >
 > *Contacts verified 2026-07-27 against official sources. Maintained in `crisis_resources.json`; do not edit these numbers inline.*
 
-**Pair with** the Agitation & Restraint guidance, the interactive Violence Risk / Brøset tool, the Psychosis page, and the Decisional Capacity module.
+**Pair with** the Agitation & Restraint guidance, the interactive Violence Risk (FRST) tool, the Psychosis page, and the Decisional Capacity module.
 
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
 

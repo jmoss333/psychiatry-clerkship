@@ -652,7 +652,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
   - Support is not the same as supervision. I want to be specific about what is realistic.
 - **avoid**
   - Do not promise discharge, medication changes, or a family meeting outcome.
-  - Do not use family as interpreters for confidential or high-risk material.
+  - Do not use family as interpreters — book a professional one for the conversation; family bridges only in an emergency while an interpreter is arranged.
   - Do not document family conclusions without the examples behind them.
 - **handoff**
   - Baseline: what changed and when.
@@ -944,7 +944,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
   - Adaptations that staff can use today, plus unresolved safety or discharge barriers.
 - **safety**
   - Escalate acute delirium, catatonia, inability to eat or drink, falls, elopement, abuse, exploitation, or caregiver burnout.
-  - Use trained interpreters for language access and high-risk questions.
+  - Use trained interpreters for the whole conversation, not only the high-risk questions.
   - Document caregiver source, permission/legal frame, and what changed the plan.
 
 **Completion checks:**
@@ -970,7 +970,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
 **Scripted content by stage**
 
 - **prepare**
-  - Use a trained interpreter for clinical discussion; do not use relatives for confidential or high-risk questions.
+  - Use a trained interpreter for any clinical discussion; relatives bridge only in an emergency while one is arranged.
   - Ask the patient privately who they want involved and what cultural, spiritual, or family context matters.
   - Clarify whether the goal is collateral, psychoeducation, discharge planning, conflict repair, or safety planning.
 - **ask**
@@ -993,7 +993,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
   - Cultural/system factors that change alliance, safety, diagnosis, or discharge planning.
 - **safety**
   - Use supervisor guidance for confidentiality exceptions, mandated reporting, threats, coercion, trafficking, or abuse concerns.
-  - Use professional interpreters for safety planning and means-safety conversations.
+  - Use professional interpreters throughout — safety planning and means-safety conversations included.
   - Document interpreter use, consent boundaries, and the clinical reason for family contact.
 
 **Completion checks:**

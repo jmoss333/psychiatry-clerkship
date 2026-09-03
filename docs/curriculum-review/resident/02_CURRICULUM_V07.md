@@ -788,67 +788,80 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Emergency services — 911. 24/7. For imminent danger to life.
 - Contacts verified 2026-07-27 against official sources. Maintained in crisis_resources.json ; do not edit these numbers inline.
 
-**Authored clinical strings (59):**
+**Authored clinical strings (72):**
 
-- s store under a FAM# id namespace (QB#/TOPIC# already exist). applyGrade is build-injected from site_build/sm2_apply_grade.js; tests/family-srs-parity.test.mjs guards the marker wiring and tests/sm2-behavior.test.mjs pins the behaviour. */ var SRS_KEY=
-- ; var DAY = 86400000; function srsFresh(){return {v:1,cards:{},day:{lastDay:
-- ,totalReviews:0,correct:0,seen:0},settings:{newPerDay:12}};} function srsLoadStore(){try{var s=JSON.parse(localStorage.getItem(SRS_KEY)||
-- );if(s&&s.v===1){s.cards=s.cards||{};s.stats=s.stats||srsFresh().stats;return s;}}catch(_){}return srsFresh();} function srsSaveStore(s){try{localStorage.setItem(SRS_KEY,JSON.stringify(s));}catch(_){}} function famCardId(scenarioId,promptId){return
-- +promptId;} /* ==== Canonical SM-2 grader (build-injected — do not edit inside consumer files) ==== Source of truth: 13_Faculty_Resources/_automation/site_build/sm2_apply_grade.js. Consumers carry a SM2_APPLY_GRADE marker comment that common.py
-- s cw_srs_v1 writes stay aggregate/current-state only and are unaffected by that logging. */ /* Deterministic ±15% interval fuzz (opts.fuzzKey): de-synchronizes cohort-seeded cards so due-load avalanches spread out. No fuzzKey (legacy callers) = no fuzz. Also a no-op below ivl 3 d (too short to meaningfully fuzz). Always clamped to [1, 365] regardless of the input interval
-- Family Therapy Modalities
-- Documentation & Oral Presentation
-- Practice Collateral Questions
-- Practice Psychosis Validation
-- Practice Guardedness And Privacy
-- ]/g,function(c){return {'&':'&',' ':'>','
-- }[c];});} function requestedScenario(){try{return new URLSearchParams(location.search).get(
-- ;}} function loadProgress(){try{return JSON.parse(localStorage.getItem(
-- )||{};}catch(_){return {};}} function saveProgress(){try{localStorage.setItem(
-- ,JSON.stringify(state.progress));}catch(_){}} function current(){return state.items[state.current]||state.items[0];} function setCurrent(id){for(var i=0;i<state.items.length;i++){if(state.items[i].id===id){state.current=i;return true;}}return false;} function tagsFor(it){return SCENARIO_FILTERS[it&&it.id]||[];} function matchesFilter(it,filter){return !filter||filter===
-- ||tagsFor(it).indexOf(filter)>=0;} function filteredItems(){return state.items.filter(function(it){return matchesFilter(it,state.filter);});} function filterCount(filter){return state.items.filter(function(it){return matchesFilter(it,filter);}).length;} function ensureCurrentVisible(){var it=current(), list=filteredItems();if(!list.length)return;if(!it||list.indexOf(it)<0)setCurrent(list[0].id);} function checksDone(item){var rec=state.progress[item.id]||{}, checks=rec.checks||{}, total=(item.checks||[]).length;if(!total)return 0;return (item.checks||[]).filter(function(c){return checks[c.id];}).length;} function overall(){var total=0,done=0;state.items.forEach(function(it){total+=(it.checks||[]).length;done+=checksDone(it);});return {done:done,total:total,pct:total?Math.round(done*100/total):0};} function filtersHtml(){return
-- Filter family systems scenarios
-- +FILTERS.map(function(f){var on=state.filter===f[0], n=filterCount(f[0]);return
-- ;} function sideHtml(){var p=overall(), list=filteredItems();return
-- +list.map(function(it){var i=state.items.indexOf(it);return
-- scenario'+(i===state.current?' on':'')+'
-- ;} function reviewBadge(it){var rv=it.facultyReview||{};if(rv.status===
-- ;} function introHtml(it){return
-- ;} function sectionHtml(key,arr){if(!arr||!arr.length)return
-- ;} function bodyHtml(it){var s=it.sections||{};return
-- ].map(function(k){return sectionHtml(k,s[k]);}).join(
-- ;} function checklistHtml(it){var rec=state.progress[it.id]||{}, checks=rec.checks||{};return
-- +(it.checks||[]).map(function(c){var on=!!checks[c.id];return
-- ;} function pageHref(f){return f&&f.endsWith(
-- +encodeURIComponent(f);} function pageLabel(f){return PAGE_LABELS[f]||String(f||
-- ).replace(/\b\w/g,function(m){return m.toUpperCase();});} function linksHtml(it){var out=[];(it.linkedPages||[]).forEach(function(f){out.push(
-- ;} var DEFAULT_RETRIEVAL=[ {id:
-- } ]; function revealContent(it,rp){ if(rp.revealText)return rp.revealText; if(rp.revealFrom===
-- )return it.opening||null; var sec=(it.sections||{})[rp.revealFrom]; return (sec&&sec.length)?sec:null; } function retrievalFor(it){ if(Array.isArray(it.retrieval)&&it.retrieval.length)return it.retrieval; return DEFAULT_RETRIEVAL.filter(function(rp){return revealContent(it,rp)!=null;}); } function revealBodyHtml(content){ if(content==null)return
-- ; } function scheduledLabel(card){ var days=Math.max(0,Math.round((card.due-Date.now())/DAY)); return days<=0?
-- ); } function modeToggleHtml(){ return
-- modebtn'+(state.mode==='reference'?' on':'')+'
-- modebtn'+(state.mode==='practice'?' on':'')+'
-- ; } function practiceHtml(it){ var prompts=retrievalFor(it), d=srsDueForScenario(it.id,prompts); var chip=d.due>0?(d.due+
-- ); var prep=(it.sections&&it.sections.prepare)?it.sections.prepare:[]; var cards=prompts.map(function(rp,i){ var shown=!!state.revealed[rp.id], graded=state.graded[rp.id]; var body=
-- How close was your answer to the model?
-- ratebtn r-'+g.toLowerCase()+'
-- ; } function render(){if(!state.items.length){app.innerHTML=
-- ;return;}ensureCurrentVisible();var it=current();if(state.shownId!==it.id){state.revealed={};state.graded={};state.shownId=it.id;}var mid=state.mode===
-- ,function(ev){ var mb=ev.target.closest&&ev.target.closest(
-- ); if(mb){state.mode=mb.getAttribute(
-- ]=state.mode;saveProgress();state.revealed={};state.graded={};render();return;} var rv=ev.target.closest&&ev.target.closest(
-- ); if(rv){state.revealed[rv.getAttribute(
-- )]=true;render();return;} var rt=ev.target.closest&&ev.target.closest(
-- ); if(rt){state.graded[rt.getAttribute(
-- ));render();return;} var flt=ev.target.closest&&ev.target.closest(
-- ;render();return;}var sc=ev.target.closest&&ev.target.closest(
-- ));render();return;}var ck=ev.target.closest&&ev.target.closest(
-- );if(ck){var it=current(), id=ck.getAttribute(
-- ), rec=state.progress[it.id]||{checks:{}};rec.checks=rec.checks||{};rec.checks[id]=!rec.checks[id];rec.updatedAt=new Date().toISOString().slice(0,10);state.progress[it.id]=rec;saveProgress();render();return;}var act=ev.target.closest&&ev.target.closest(
-- ){delete state.progress[current().id];saveProgress();render();}}); fetch(
-- ).then(function(r){if(!r.ok)throw new Error(
-- );return r.json();}).then(function(d){state.items=(d&&d.scenarios)||[];if(state.requested)setCurrent(state.requested);render();}).catch(function(){app.innerHTML=
+- s store under a FAM# id namespace (QB#/TOPIC# already exist). The store shape and the scheduling write are build-injected from site_build/srs_store.js, applyGrade from site_build/sm2_apply_grade.js; tests/family-srs-parity.test.mjs guards the marker wiring and tests/sm2-behavior.test.mjs pins the behaviour. */ /* ---- cw_srs_v1 store adapter (shared) ------------------------------------ Every tool that schedules a card writes the SAME store under the SAME shape. This file is the one definition of that shape; `applyGrade` (the SM-2 step itself) is a separate snippet, sm2_apply_grade.js, and stays that way. Why this is shared rather than copied into each tool: `srsFresh` fixes the store
+- s daily allowance or dropping a stats field the dashboard reads. The failure is invisible and arrives only for learners who happen to open the wrong tool first. Card id namespaces live in the consumers, not here: deck# and TOPIC# (Daily Review), QB# (question bank), FAM# (family retrieval, fam_retrieval.js), COMM# and REASON# (the two tools below). spa_index.html
+- s authored quality rather than asked for. `best` is a clean recall (Good, not Easy — Easy would stretch the interval on a four-way recognition task the learner may well have guessed); `partial` is a hesitant one; anything worse is a lapse. Unknown qualities fail to a lapse so a new quality added to the data can never quietly lengthen an interval. */ function srsGradeForQuality(quality){ if(quality===
+- ) return 3; if(quality===
+- ) return 2; return 1; } /* Family retrieval prompts — the one definition of what a FAM# card ASKS and what it reveals. Injected via the shared-snippet marker into BOTH consumers: family-systems-practice.html, which authors these cards and grades them beside their scenario, and review.html, which serves the due ones in the daily queue. It has to be shared rather than copied because the card id embeds the prompt id (famCardId) — two drifting copies of this list would file one schedule under a prompt the learner never saw, which is exactly the silent id-collision failure the repo
+- s own authored text — its opening line or one of its authored sections. This file introduces no clinical wording of its own, so nothing here needs faculty attestation that family_systems_scenarios.json has not already had. Pure: no DOM, no storage, no clock, no escaping (each consumer escapes for its own renderer). ES5 only, matching the other injected snippets. */ var FAM_DEFAULT_RETRIEVAL=[ {id:
+- } ]; /* The card id both tools schedule under. Scenario id and prompt id are joined with the same separator the QB#/TOPIC# namespaces use, so srsBucket keeps reading FAM# as the family bucket. */ function famCardId(scenarioId,promptId){return
+- +promptId;} /* What a prompt reveals: an explicit revealText when the scenario authors one, else the scenario
+- s inject_shared_snippets() expands at build time (same mechanism as crisis blocks). Grades are the strings
+- . Semantics: ease floor 1.3, Easy ease ceiling 4.0, interval cap 365 d, lapse halves the interval (min 1 d) and re-dues the card immediately. Requires `var DAY = 86400000` in scope. Behaviour is pinned by tests/sm2-behavior.test.mjs; consumer wiring is pinned by tests/family-srs-parity.test.mjs. applyGrade(card, grade, opts) — opts is optional; opts.fuzzKey (string, usually the card id) enables deterministic ±15% interval fuzz (see sm2Fuzz below) so cohort-seeded cards de-synchronize instead of avalanching due on the same day. Omitting opts (or fuzzKey) is byte-identical to the pre-fuzz grader — every existing caller keeps its exact legacy schedule until it opts in. cw_srs_v1 STATS CONTRACT — who may write stats.seen / stats.correct: - question-bank-practice.html srsUpdate(): YES (ground-truth correctness). - review.html grade(): YES (ground-truth correctness). - family-systems-practice.html srsGradeFamily(): NO — cards only. A self-rating has no ground truth, and review.html renders Retention as correct/seen. - Practice sims write cw_practice_events_v1 instead — never cw_srs_v1.stats. Per-event history (chosen grade vs. suggested grade, requeue flag) is a separate concern logged to cw_calib_v1 via calibLog() (build-injected from calib_log.js, the CALIB_LOG marker) — this file
+- s own bounds. */ function sm2Fuzz(ivl, key, reps){ if(ivl < 3 || !key) return ivl; var h = 2166136261, s = key +
+- + reps; for(var i=0;i >> 0; } var f = ((h % 2001) / 1000) - 1; /* [-1, 1] */ return Math.min(365, Math.max(1, Math.round(ivl + ivl * 0.15 * f))); } function applyGrade(card, grade, opts){ /* SM-2 variant: ease floor 1.3, interval cap 365 d */ var c = Object.assign({}, card); var fuzzKey = opts && opts.fuzzKey; c.reps = (c.reps||0) + 1; if(c.ivl===0){ /* first encounter */ if(grade===
+- ){ c.lapses=(c.lapses||0)+1; c.ivl=1; c.due=Date.now(); } else if(grade===
+- ){ c.ivl=1; c.due=Date.now()+DAY; } else if(grade===
+- ){ c.ivl=1; c.due=Date.now()+DAY; } else { c.ivl=sm2Fuzz(4, fuzzKey, c.reps); c.due=Date.now()+c.ivl*DAY; } /* Easy */ } else { if(grade===
+- ){ /* Again is never fuzzed — lapses re-due immediately regardless of fuzzKey. */ c.lapses=(c.lapses||0)+1; c.ease=Math.max(1.3, (c.ease||2.5)-0.2); c.ivl=Math.max(1, Math.round(c.ivl*0.5)); c.due=Date.now(); } else if(grade===
+- ){ c.ease=Math.max(1.3, (c.ease||2.5)-0.15); c.ivl=Math.max(1, Math.round(c.ivl*1.2)); c.ivl=sm2Fuzz(c.ivl, fuzzKey, c.reps); c.due=Date.now()+Math.min(365,c.ivl)*DAY; } else if(grade===
+- ){ c.ivl=Math.max(1, Math.round(c.ivl*(c.ease||2.5))); c.ivl=Math.min(365,c.ivl); c.ivl=sm2Fuzz(c.ivl, fuzzKey, c.reps); c.due=Date.now()+c.ivl*DAY; } else { /* Easy */ c.ease=Math.min(4, (c.ease||2.5)+0.15); c.ivl=Math.max(1, Math.round(c.ivl*(c.ease)*1.3)); c.ivl=Math.min(365,c.ivl); c.ivl=sm2Fuzz(c.ivl, fuzzKey, c.reps); c.due=Date.now()+c.ivl*DAY; } } c.last=Date.now(); return c; } function srsGradeFamily(scenarioId,promptId,grade){ return srsGradeCard(famCardId(scenarioId,promptId),grade); } function srsDueForScenario(scenarioId,prompts){ var s=srsLoadStore(), now=Date.now(), out={due:0,started:0,total:(prompts||[]).length}; (prompts||[]).forEach(function(rp){var c=s.cards[famCardId(scenarioId,rp.id)];if(c){out.started++;if(c.due<=now)out.due++;}}); return out; } var LABELS={ prepare:
+- }; var CASE_LABELS={ collateral_questions_001:
+- , family_meeting_opening_001:
+- , family_conflict_discharge_001:
+- , psychosis_validation_001:
+- , guardedness_privacy_001:
+- ] ]; var SCENARIO_FILTERS={ collateral_baseline_safety_001:[
+- ], family_meeting_opening_001:[
+- ], discharge_barrier_map_001:[
+- ], high_expressed_emotion_001:[
+- ], psychosis_family_psychoeducation_001:[
+- ], family_involvement_boundaries_001:[
+- ], caregiver_baseline_adaptations_001:[
+- ], culture_interpreter_family_001:[
+- ] }; function esc(s){return String(s==null?
+- :s).replace(/[&<>"]/g,function(c){return {
+- ':'"'}[c];});} function requestedScenario(){try{return new URLSearchParams(location.search).get('scenario')||'';}catch(_){return '';}} function loadProgress(){try{return JSON.parse(localStorage.getItem('cw_family_v1')||'{}')||{};}catch(_){return {};}} function saveProgress(){try{localStorage.setItem('cw_family_v1',JSON.stringify(state.progress));}catch(_){}} function current(){return state.items[state.current]||state.items[0];} function setCurrent(id){for(var i=0;i =0;} function filteredItems(){return state.items.filter(function(it){return matchesFilter(it,state.filter);});} function filterCount(filter){return state.items.filter(function(it){return matchesFilter(it,filter);}).length;} function ensureCurrentVisible(){var it=current(), list=filteredItems();if(!list.length)return;if(!it||list.indexOf(it)<0)setCurrent(list[0].id);} function checksDone(item){var rec=state.progress[item.id]||{}, checks=rec.checks||{}, total=(item.checks||[]).length;if(!total)return 0;return (item.checks||[]).filter(function(c){return checks[c.id];}).length;} function overall(){var total=0,done=0;state.items.forEach(function(it){total+=(it.checks||[]).length;done+=checksDone(it);});return {done:done,total:total,pct:total?Math.round(done*100/total):0};} function filtersHtml(){return '<div class=
+- >'+FILTERS.map(function(f){var on=state.filter===f[0], n=filterCount(f[0]);return '<button type=
+- >'+esc(f[1])+' '+n+' ';}).join('')+' ';} function sideHtml(){var p=overall(), list=filteredItems();return '<aside class=
+- > '+p.done+' of '+p.total+' practice checks Structured local progress only <div class=
+- > '+filtersHtml()+'<div class=
+- >'+list.map(function(it){var i=state.items.indexOf(it);return '<button type=
+- > '+esc(it.title)+' '+esc(it.setting)+' ';}).join('')+' ';} function reviewBadge(it){var rv=it.facultyReview||{};if(rv.status==='reviewed')return '<span class=
+- >Reviewed'+(rv.reviewer?' · '+esc(rv.reviewer):'')+(rv.lastReviewed?' · '+esc(rv.lastReviewed):'')+' ';return '<span class=
+- >'+esc((rv.status||'draft').replace(/-/g,' '))+' · faculty review needed ';} function introHtml(it){return '<section class=
+- > '+esc(it.title)+' <div class=
+- >'+esc(it.setting)+' <span class=
+- >'+esc(it.time||'5 min')+' '+reviewBadge(it)+' <div class=
+- > Practice goal: '+esc(it.learnerGoal)+' <p class=
+- '+linksHtml(it)+' ';} function sectionHtml(key,arr){if(!arr||!arr.length)return '';var cls=key==='say'?' say':key==='avoid'?' avoid':key==='handoff'?' handoff':'';return '<section class=
+- > '+esc(LABELS[key]||key)+' '+arr.map(function(x){return ' '+esc(x)+' ';}).join('')+' ';} function bodyHtml(it){var s=it.sections||{};return '<div class=
+- >'+['prepare','ask','say','avoid','handoff','safety'].map(function(k){return sectionHtml(k,s[k]);}).join('')+' ';} function checklistHtml(it){var rec=state.progress[it.id]||{}, checks=rec.checks||{};return '<section class=
+- > Before you call it done <div class=
+- >'+(it.checks||[]).map(function(c){var on=!!checks[c.id];return '<button type=
+- >'+esc(c.label)+' ';}).join('')+' <div class=
+- >Reset this scenario <div class=
+- >Stored locally: scenario id, checklist id, checked state, date, mode preference, and practice-rating schedules (ids + timing only). No free text or patient identifiers. ';} function pageHref(f){return f&&f.endsWith('.html')?'../index.html?tool='+encodeURIComponent(f):'../index.html?page='+encodeURIComponent(f);} function pageLabel(f){return PAGE_LABELS[f]||String(f||'').replace(/\.md$|\.html$/g,'').replace(/^t_/,'').replace(/^pg_/,'').replace(/_/g,' ').replace(/\b\w/g,function(m){return m.toUpperCase();});} function linksHtml(it){var out=[];(it.linkedPages||[]).forEach(function(f){out.push('<a href=
+- >'+esc(pageLabel(f))+' ');});(it.communicationCases||[]).forEach(function(id){out.push('<a href=
+- >'+esc(CASE_LABELS[id]||'Communication Practice')+' ');});return out.length?'<div class=
+- >'+out.join('')+' ':'';} /* The prompt list, its reveal resolution and famCardId are build-injected above from site_build/fam_retrieval.js — shared with review.html, which serves these same cards when they come due. Never re-declare them here: the card id embeds the prompt id. */ function revealBodyHtml(content){ if(content==null)return ''; if(typeof content==='string')return ' '+esc(content)+' '; return ' '+content.map(function(x){return ' '+esc(x)+' ';}).join('')+' '; } function scheduledLabel(card){ var days=Math.max(0,Math.round((card.due-Date.now())/DAY)); return days<=0?'Scheduled — back soon':'Scheduled — back in about '+days+' day'+(days===1?'':'s'); } function modeToggleHtml(){ return '<div class=
+- >Reference ' +'<button type=
+- >Practice ' +' '; } function practiceHtml(it){ var prompts=famRetrievalFor(it), d=srsDueForScenario(it.id,prompts); var chip=d.due>0?(d.due+' due for review'):(d.started+' of '+d.total+' started'); var prep=(it.sections&&it.sections.prepare)?it.sections.prepare:[]; var cards=prompts.map(function(rp,i){ var shown=!!state.revealed[rp.id], graded=state.graded[rp.id]; var body='<div class=
+- >Retrieval '+(i+1)+' of '+prompts.length+' ' +'<p class=
+- >'+esc(rp.prompt)+' ' +'<p class=
+- >Say or jot your answer first. Nothing you say is recorded. '; if(!shown){ body+='<button type=
+- >Reveal one way to do it '; } else { body+='<div class=
+- >One way to do it '+revealBodyHtml(famRevealContent(it,rp))+' '; if(graded){ body+='<div class=
+- >'+esc(scheduledLabel(graded))+' '; } else { body+='<div class=
+- >' +['Again','Hard','Good','Easy'].map(function(g){return '<button type=
+- >'+g+' ';}).join('') +' '; } } return body+' '; }).join(''); return '<section class=
+- > Practice: generate, then compare <span class=
+- >'+esc(chip)+' ' +(prep.length?'<div class=
+- > Before you start: '+prep.map(function(x){return ' '+esc(x)+' ';}).join('')+' ':'') +cards+' '; } function render(){if(!state.items.length){app.innerHTML='<div class=
+- >No family systems scenarios are available. ';return;}ensureCurrentVisible();var it=current();if(state.shownId!==it.id){state.revealed={};state.graded={};state.shownId=it.id;}var mid=state.mode==='practice'?practiceHtml(it):bodyHtml(it);app.innerHTML=sideHtml()+'<div class=
+- >'+modeToggleHtml()+introHtml(it)+mid+checklistHtml(it)+' ';} app.addEventListener('click',function(ev){ var mb=ev.target.closest&&ev.target.closest('[data-mode]'); if(mb){state.mode=mb.getAttribute('data-mode')==='practice'?'practice':'reference';state.progress['$mode']=state.mode;saveProgress();state.revealed={};state.graded={};render();return;} var rv=ev.target.closest&&ev.target.closest('[data-reveal]'); if(rv){state.revealed[rv.getAttribute('data-reveal')]=true;render();return;} var rt=ev.target.closest&&ev.target.closest('[data-rate]'); if(rt){state.graded[rt.getAttribute('data-prompt')]=srsGradeFamily(current().id,rt.getAttribute('data-prompt'),rt.getAttribute('data-rate'));render();return;} var flt=ev.target.closest&&ev.target.closest('[data-filter]');if(flt){state.filter=flt.getAttribute('data-filter')||'all';render();return;}var sc=ev.target.closest&&ev.target.closest('.scenario');if(sc){setCurrent(sc.getAttribute('data-id'));render();return;}var ck=ev.target.closest&&ev.target.closest('.check');if(ck){var it=current(), id=ck.getAttribute('data-check'), rec=state.progress[it.id]||{checks:{}};rec.checks=rec.checks||{};rec.checks[id]=!rec.checks[id];rec.updatedAt=new Date().toISOString().slice(0,10);state.progress[it.id]=rec;saveProgress();render();return;}var act=ev.target.closest&&ev.target.closest('[data-act]');if(act&&act.getAttribute('data-act')==='reset'){delete state.progress[current().id];saveProgress();render();}}); fetch('../family_systems_scenarios.json').then(function(r){if(!r.ok)throw new Error('missing scenarios');return r.json();}).then(function(d){state.items=(d&&d.scenarios)||[];if(state.requested)setCurrent(state.requested);render();}).catch(function(){app.innerHTML='<div class=
 
 ---
 
@@ -857,7 +870,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **Slug:** `collateral_workflow.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `06_Family_and_Relational/collateral_micro_workflow.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 1,047 words
+- **Length:** 1,074 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -944,7 +957,7 @@ Clarify:
 - Whether there are safety exceptions or mandatory reporting issues.
 - Whether a professional interpreter is needed.
 
-Do not use family as an interpreter for confidential or high-risk topics.
+Do not use family or friends as interpreters — book a qualified professional interpreter for the conversation. A family member may bridge only in an emergency while an interpreter is being arranged, or at the patient's specific, documented request.
 
 ## 2. Open The Call
 
@@ -1427,108 +1440,3 @@ Letting information-sharing eat the whole meeting; correcting expressed emotion 
 **Pair with** the [Family Therapy Modalities](?page=family_modalities.md) overview and the expressed-emotion teaching, the [Family & Discharge](?page=exp_family.md) module, and Week 4 of the curriculum.
 
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
-
-
----
-
-## Family Therapy Modalities
-
-- **Slug:** `family_modalities.md` · **Type:** md · **Sidebar:** listed
-- **Source:** `06_Family_and_Relational/family_therapy_modalities_inpatient.md`
-- **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 685 words
-
-<!-- topic_meta overlay -->
-#### Structured metadata (`topic_meta.json` → this page)
-
-> est. read 4 min
-
-**TL;DR (shown above the page text):**
-
-> Match the family intervention to the family in front of you — family psychoeducation is the default highest-evidence approach (OR 0.18, NNT 7 for relapse prevention), but dose matters: ≤2 sessions is ineffective, and the main barrier to delivery is clinician avoidance, not patient refusal.
-
-**Key points (bulleted card):**
-
-- Family psychoeducation (OR 0.18 vs. treatment as usual) is the single strongest psychosocial intervention for schizophrenia relapse prevention, supported by 90 RCTs across more than 10,000 patients.
-- CRAFT is the go-to modality when a family member is struggling with a patient's substance use — it changes the family's own behavior to reduce blame and invite treatment engagement, without confrontation.
-- Expressed emotion (high criticism, hostility, emotional over-involvement) roughly quintuples relapse odds; family warmth is protective — lowering expressed emotion is a modifiable clinical target.
-
-**Can't-miss / red-flag line:**
-
-> ≤2 family sessions is ineffective for relapse prevention — NICE recommends ≥10 sessions over ≥3 months; a single discharge meeting starts the work but is not a course of care.
-
-**Clinical-workflow narration (per-stage coaching text):**
-
-- **ask** — Before inviting family work, ask what the patient wants help explaining, what the family is worried about, and whether family involvement is safe and welcome.
-- **mse** — Notice interactional data: criticism, warmth, emotional over-involvement, guardedness, shame, and the patient's response to family presence.
-- **safety** — Family involvement must respect consent, confidentiality, violence risk, coercion, and local policy; do not use relatives as substitutes for clinical supervision or crisis response.
-- **say** — Name the family intervention in ordinary language: 'This is a structured meeting to lower stress, agree on warning signs, and make the discharge plan realistic.'
-- **collateral** — Gather timeline, baseline functioning, relapse signatures, adherence barriers, access to lethal means, caregiver capacity, and what has made conflict better or worse.
-- **rounds** — Report one family-system finding that changes the plan: expressed emotion, discharge feasibility, safety environment, or who needs the next call.
-- **exam** — Know that family psychoeducation has the strongest relapse-prevention evidence in schizophrenia and requires more than one brief meeting.
-- **actions** — Practice opening a family meeting; Use the family systems tool
-
-**Embedded check-for-understanding**
-
-1. *Stem:* A patient with schizophrenia is preparing for discharge. Family members are willing to participate in family work. Which intervention has the strongest evidence for preventing 12-month relapse?
-   - Family psychoeducation — OR 0.18 for 12-month relapse across 90 RCTs, with ≥10 sessions over ≥3 months required for the effect to hold **← keyed correct**
-   - Emotionally Focused Therapy — attachment-based approach targeting the pursue-withdraw cycle in couples
-   - A single family meeting covering diagnosis and the safety plan before discharge
-   - Solution-focused brief therapy — one high-yield session amplifying existing family strengths
-   - *Rationale:* Family psychoeducation has the strongest evidence for schizophrenia relapse prevention (OR 0.18 vs. treatment as usual; 90 RCTs, >10,000 patients). EFT is evidence-based for couples but is not the default for schizophrenia; a single meeting is below the therapeutic dose (≤2 sessions is ineffective); solution-focused therapy is useful when only one meeting is possible but does not have the relapse-prevention evidence base.
-
-**Cross-references and tagging:**
-
-- **Related tools:** `family-systems.html`, `communication-practice.html`
-- **Communication cases:** `family_meeting_opening_001`, `collateral_questions_001`, `family_conflict_discharge_001`
-- **Evidence sources:** `brown-1972-expressed-emotion`
-- **Workflow stages:** `family`, `communication`
-- **Workflow modes:** `ward`, `family`
-- **Shelf blueprint tags:** `relational`
-- **EPA crosswalk:** `EPA9`
-- **Call-to-action buttons:** Open the Family Meeting Playbook; Practice expressed-emotion reset
-
-#### Page text (as shipped)
-
-# Family Therapy Modalities Commonly Used Inpatient
-
-> **Source:** adapted from Dr. Moss's Family Therapy Inpatient Didactic ("The Toolbox" slide). Educational; fictional composites only, no PHI.
-
-**The frame:** most inpatient family work is **brief, psychoeducational, and systemic** — you rarely complete therapy on the unit. The goal is to *start the work and secure the handoff.* Knowing the toolbox lets you **match the modality to the family** in front of you.
-
-## The toolbox — match the tool to the family
-
-| Modality | Core moves | Best inpatient use |
-|---|---|---|
-| **Family psychoeducation / multifamily groups** *(McFarlane)* | Structured illness education + coping & communication skills | The default, highest-evidence approach — start illness education and a shared warning-signs plan |
-| **Behavioral family therapy** *(Falloon)* | Communication + problem-solving skills training; lowers expressed emotion | Coach one concrete communication or problem-solving skill before discharge |
-| **Structural** *(Minuchin)* | Realign roles, subsystems, and boundaries; use enactment | Re-clarify roles when a parent/partner is over- or under-functioning |
-| **Bowenian / intergenerational** | Differentiation, triangles, over-/under-functioning; genogram-driven | A quick genogram to see the pattern across generations and triangles |
-| **Emotionally Focused Therapy (EFT)** *(Johnson)* | Attachment-based; de-escalate the negative cycle, rebuild the bond (couples) | Name and soften the pursue–withdraw cycle in a distressed couple |
-| **CRAFT** (Community Reinforcement & Family Training) | The family changes its **own** behavior to invite treatment — no blame | Substance use: give the family concrete, blame-free moves that pull toward care |
-| **CBT-informed / reduce accommodation** *(SPACE; ERP)* | Coach the family to stop accommodating anxiety/OCD; support graded exposure | Anxiety/OCD: identify and dial back family accommodation |
-| **DBT-informed family skills** | Validation + limits; reduce invalidation; manage high-intensity dyads | Borderline-pattern crises: pair validation with consistent limits |
-| **Solution-focused / single-session** | Amplify existing strengths in one high-yield consultation | When you get only one meeting — make it count on strengths and next steps |
-| **Open Dialogue / network meetings** | Rapid, transparent network meetings during acute crisis | First-episode/crisis: convene the network early and transparently |
-
-*Also commonly cited for bipolar maintenance: **Family-Focused Therapy (Miklowitz)** — psychoeducation + communication + problem-solving, mood-stabilizing alongside medication.*
-
-## Why it's worth the friction — the evidence in numbers
-- **OR 0.18** — family psychoeducation led 11 models for 12-month relapse prevention (Rodolico et al., *Lancet Psychiatry* 2022; 90 RCTs, >10,000 patients). **Dose matters:** ≤2 sessions is ineffective; NICE recommends ≥10 sessions over ≥3 months.
-- **NNT 7** — treat seven families to prevent one relapse (Pharoah, *Cochrane* 2010; 53 RCTs).
-- **OR 0.56 (95% CI 0.43–0.74)** — in bipolar disorder, adjunctive manualized psychotherapies reduced recurrence vs. control; **family/group-format psychoeducation was the standout for recurrence (OR 0.12, 0.02–0.94)**, and **family/conjoint therapy improved treatment retention (OR 0.46, 0.26–0.82)** and helped stabilize depressive symptoms (SMD −0.46, not significant) (Miklowitz et al., *JAMA Psychiatry* 2021; 39 RCTs) — the evidence anchor for Family-Focused Therapy above.
-- **≈ 3×** — family involvement during admission nearly triples the odds of 7-day follow-up (Haselden 2019).
-- **Reaches a minority of families** — structured family work is delivered in only ~0–53% of cases (historically <10%), and the main barrier is **clinician avoidance, not patient refusal** (Dixon 1999; Eassom 2014).
-- **Expressed emotion:** high-EE roughly **quintuples relapse odds (OR ~4.87)**, while family *warmth* is protective (OR ~0.35) (Ma et al. 2021, 33 cohorts); Butzlaff & Hooley (*Arch Gen Psychiatry* 1998) established the EE–relapse link. Family climate is *modifiable* — meetings help lower it.
-
-## The stance that makes any modality work
-Multipartiality over neutrality ("not a courtroom; multiple truths") · the **translator** role (structure ↔ control; anger ↔ fear) · a **de-shaming** lens (behavior as regulation, not character) · coach **influence, not control**. With an acutely psychotic patient, keep it brief, concrete, low-stimulation — interpretation waits.
-
-**Pair with** the **[Family Meeting Playbook (90-min)](?page=family_playbook.md)** and the expressed-emotion teaching in the Family & Relational material, and Week 4 of the curriculum.
-
-*Joshua Moss, MD | Psychiatrist · Adapted from the Family Therapy Inpatient Didactic. Educational; fictional composites only, no PHI.*
-
-
----
-
-# SECTION: Present and Work with the Team
