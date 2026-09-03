@@ -44,8 +44,59 @@
                 "requiredTitle": { "type": "string", "minLength": 3 },
                 "requiredDisclaimerType": { "type": "string", "minLength": 3 },
                 "requireNotReproducedStatement": { "type": "boolean" },
-                "requireNoScript": { "type": "boolean" }
+                "requireNoScript": { "type": "boolean" },
+                "requireOfficialSourceLink": {
+                  "type": "boolean",
+                  "description": "The page must ship the officialSource.formUrl recorded for this instrument. Withdrawing a reproduction leaves a learner needing the real form; a page that says 'not reproduced here' and names no route is a dead end. Requires officialSource on the entry."
+                }
               }
+            }
+          },
+          "officialSource": {
+            "type": "object",
+            "description": "Where the learner gets the real instrument. This library LINKS to the rights-holder's own download and never mirrors a copy: hosting the whole form is broader redistribution than the excerpts that were withdrawn, so a repo-relative path here is a rights change, not an edit (gate check B).",
+            "required": ["custodian", "access", "formUrl", "formLabel", "redistribution", "verified"],
+            "additionalProperties": false,
+            "properties": {
+              "custodian": {
+                "type": "string",
+                "minLength": 3,
+                "description": "Who publishes the authoritative copy — the party whose terms govern reproduction."
+              },
+              "access": {
+                "enum": ["free-download", "registration-required", "request-required", "institution-protocol"],
+                "description": "What the learner actually meets at the link. Say so on the page: sending someone to a paywall or a request form without warning is its own dead end."
+              },
+              "formUrl": {
+                "type": "string",
+                "pattern": "^https://",
+                "description": "Deep link to the custodian's own form or download page — not a search result. A third-party posting is allowed only where no rights-holder distribution point exists, and then access must be 'institution-protocol' and the note must say whose copy it is."
+              },
+              "formLabel": {
+                "type": "string",
+                "minLength": 8,
+                "description": "What the learner gets, in their words — 'the 11-item form as a PDF', not 'click here'."
+              },
+              "trainingUrl": {
+                "type": "string",
+                "pattern": "^https://",
+                "description": "The custodian's own training, where it publishes one. Administration teaching is the half a withdrawn reproduction takes with it."
+              },
+              "redistribution": {
+                "enum": ["link-only", "permitted"],
+                "description": "link-only is the default and the safe one: point at the custodian, never host. 'permitted' requires the permission to be established in the decision record — public-domain release or an explicit grant — and is still no reason to mirror."
+              },
+              "verified": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                "description": "When this route was last confirmed to resolve. bin/check_instrument_links.py re-checks and reports; a link that rots turns a rights stub back into a dead end."
+              },
+              "verifiedVia": {
+                "type": "string",
+                "minLength": 8,
+                "description": "How it was confirmed, honestly — a live fetch and a search-index sighting are not the same evidence."
+              },
+              "note": { "type": "string", "minLength": 8 }
             }
           },
           "interimWaiver": {
@@ -68,6 +119,25 @@
           {
             "if": { "properties": { "status": { "const": "flagged-interim" } } },
             "then": { "required": ["interimWaiver"] }
+          },
+          {
+            "_comment": "A withdrawal must leave a route. Retiring or restricting an instrument removes the only copy a learner had; without officialSource the page can only say what it no longer shows, which is where the 2026-08-20 audit's removals left three surfaces.",
+            "if": { "properties": { "status": { "enum": ["retired", "restricted"] } } },
+            "then": { "required": ["officialSource"] }
+          },
+          {
+            "_comment": "A page pin cannot demand a link the entry never recorded.",
+            "if": {
+              "properties": {
+                "pages": {
+                  "contains": {
+                    "required": ["requireOfficialSourceLink"],
+                    "properties": { "requireOfficialSourceLink": { "const": true } }
+                  }
+                }
+              }
+            },
+            "then": { "required": ["officialSource"] }
           }
         ]
       }

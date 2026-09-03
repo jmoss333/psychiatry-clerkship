@@ -83,8 +83,14 @@ CRISIS_EXEMPT = (
     TOOLING_PREFIX + "sync_crisis_from_reconnect.py",
     TOOLING_PREFIX + "validate_crisis_resources.py",
 )
-# Emergency numbers that are generic public knowledge, not library-specific contacts.
-CRISIS_GENERIC = {"911"}
+# Every contact registered in crisis_resources.json is enforced, the emergency-services number
+# included: the rule is single-source injection, not "only the obscure numbers". Short codes
+# (three or four digits) match either contiguously or with ONE separator repeated between every
+# digit ("9-1-1", "9 1 1"), so an ICD code such as F91.1, a year such as 1911, or a mixed run
+# such as "F9 1.1" cannot trip the guard; longer numbers may carry any separators.
+CRISIS_SHORT_CODE_MAX = 4
+CRISIS_SHORT_SEPARATORS = r"[ .\-]"
+SCRIPT_TAG_RE = re.compile(r"</?script\b", re.I)
 
 REGISTRY_SCHEMAS = TOOLING_PREFIX + "validate_registry_schemas.py"
 REGISTRY_VALIDATORS = {
@@ -175,9 +181,20 @@ def crisis_patterns(root: Path) -> list[tuple[str, re.Pattern]]:
         for field in ("contact", "alsoAvailable"):
             for token in re.findall(r"\d[\d\-\s().]*\d", str(resource.get(field, ""))):
                 digits = re.sub(r"\D", "", token)
-                if len(digits) < 3 or digits in CRISIS_GENERIC:
+                if len(digits) < 3:
                     continue
-                pattern = r"(?<!\d)" + r"[\s.\-()]*".join(re.escape(d) for d in digits) + r"(?!\d)"
+                if len(digits) <= CRISIS_SHORT_CODE_MAX:
+                    contiguous = re.escape(digits) + r"(?!\d)"
+                    spaced = (
+                        r"(?<!\d" + CRISIS_SHORT_SEPARATORS + r")"
+                        + re.escape(digits[0])
+                        + r"(?P<sep>" + CRISIS_SHORT_SEPARATORS + r")"
+                        + r"(?P=sep)".join(re.escape(d) for d in digits[1:])
+                        + r"(?!(?P=sep)?\d)"
+                    )
+                    pattern = r"(?<!\d)(?:" + contiguous + r"|" + spaced + r")"
+                else:
+                    pattern = r"(?<!\d)" + r"[\s.\-()]*".join(re.escape(d) for d in digits) + r"(?!\d)"
                 out.append((str(resource.get("name", "crisis resource")), re.compile(pattern)))
     return out
 
@@ -308,7 +325,9 @@ def mentions_finding(text: str, rel: str) -> bool:
 
 # --------------------------------------------------------------------------- all
 
-def run_text_checks(text: str, rel: str, root: Path) -> list[tuple[str, str, str]]:
+def run_text_checks(text: str, rel: str, root: Path, *, skip_phi: bool = False) -> list[tuple[str, str, str]]:
+    """skip_phi: the caller has established the text lands inside script code (an Edit whose
+    old_string sits within a <script> block), where the prose PHI heuristic does not apply."""
     if is_outside_repo(rel):
         return []
     findings = []
@@ -316,9 +335,40 @@ def run_text_checks(text: str, rel: str, root: Path) -> list[tuple[str, str, str
     findings += check_dose(text, rel)
     findings += check_storage_keys(text, rel)
     findings += check_machine_paths(text, rel)
-    findings += check_phi(text, rel)
+    if not skip_phi:
+        findings += check_phi(text, rel)
     findings += check_instrument(text, rel)
     return findings
+
+
+def edit_inside_script(root: Path, rel: str, edits: list[tuple[str, str]]) -> bool:
+    """True when every (old_string, new_string) of an Edit/MultiEdit on an .html file replaces
+    a range that lies wholly inside one <script>…</script> block on disk and the replacement
+    cannot leave it. An Edit's new_string arrives as a bare fragment, so the only way to know
+    it is script code is to find where it lands. Unknown -> False (scan)."""
+    if not rel.endswith(".html") or not edits:
+        return False
+    try:
+        html = (root / rel).read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return False
+    lowered = html.lower()
+    for old, new in edits:
+        if not old:
+            return False
+        # A range that contains a script tag straddles the boundary; a replacement that
+        # contains one could open or close a block. Either way the prose pass must run.
+        if SCRIPT_TAG_RE.search(old) or SCRIPT_TAG_RE.search(new):
+            return False
+        idx = html.find(old)
+        if idx < 0:
+            return False
+        while idx >= 0:  # every occurrence, in case the edit replaces all of them
+            before = lowered[:idx]
+            if before.count("<script") <= before.count("</script"):
+                return False
+            idx = html.find(old, idx + len(old))
+    return True
 
 
 def is_lfs_pointer(blob: bytes) -> bool:
