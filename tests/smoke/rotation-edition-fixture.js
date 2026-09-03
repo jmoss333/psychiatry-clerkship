@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 
 import { routeFetchWithRetry } from './net-resilience.js';
+import { audienceOf } from './audience.js';
 
 export const ROTATION_CURATOR_PATH = '/tools/rotation-curator.html';
 export const ROTATION_EDITION_ASSIGNMENT = 'var FD_ROTATION_EDITION_CATALOG=';
@@ -284,7 +285,7 @@ export async function installRotationEditionRoute(page, options = {}) {
 }
 
 export function rotationEditionAudience(projectName) {
-  return projectName === 'nav-res' ? 'resident' : 'ms3';
+  return audienceOf(projectName);
 }
 
 export function rotationEditionStorageKeys(audience) {

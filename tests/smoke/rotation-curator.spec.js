@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { test, expect } from '@playwright/test';
 import { requestGetWithRetry, routeFetchWithRetry } from './net-resilience.js';
+import { audienceOf } from './audience.js';
 import { replaceRotationEditionCatalog } from './rotation-edition-fixture.js';
 
 const TOOL = '/tools/rotation-curator.html';
@@ -170,7 +171,7 @@ test('checked-in default-off Step 5 renders governed disclosures and cannot crea
 });
 
 test('enabled synthetic Step 5 requires real receipts and affirmations, then creates one exact local share', async ({ page }, testInfo) => {
-  const audience = testInfo.project.name === 'nav-res' ? 'resident' : 'ms3';
+  const audience = audienceOf(testInfo.project.name);
   await page.goto(TOOL); await selectReviewedContext(page);
   await page.getByRole('button', { name: /Step 3 Schedule/ }).click();
   const placedItems = page.locator('[data-curator-path-remove]');
@@ -334,7 +335,7 @@ test('Step 5 real imported edition reports exact core and catalog drift', async 
 });
 
 test('v2 synthetic catalog unlocks reviewed structured Steps 1 through 4', async ({ page }, testInfo) => {
-  const audience = testInfo.project.name === 'nav-res' ? 'resident' : 'ms3';
+  const audience = audienceOf(testInfo.project.name);
   await page.goto(TOOL);
 
   await expect(page.getByRole('heading', { name: 'Faculty rotation edition builder' })).toBeVisible();

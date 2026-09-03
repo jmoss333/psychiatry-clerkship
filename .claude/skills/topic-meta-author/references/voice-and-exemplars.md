@@ -19,7 +19,7 @@ paraphrase of the others. Lead with the verb or the diagnostic anchor.
 **`cant` — the can't-miss trap, usually "Don't…"** Names the specific reflex to suppress or the
 acute pivot to make.
 - delirium: "Don't sedate your way past it — benzodiazepines worsen delirium except in alcohol or benzodiazepine withdrawal."
-- agitation: "Don't reach for an antipsychotic before excluding hypoglycemia, hypoxia, delirium, withdrawal, pain, and akathisia."
+- agitation: "Don't reach for an antipsychotic before excluding hypoglycemia, hypoxia, delirium, withdrawal, pain, akathisia, and catatonia — excited catatonia looks like agitation, and a D2 blocker can tip it into malignant catatonia/NMS."
 
 **`clinicalWorkflow.say` — one patient-facing sentence, first person, plain and warm.** Quotable at
 the bedside.

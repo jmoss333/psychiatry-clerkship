@@ -144,6 +144,7 @@
     ],
     "pharmApproach": [
       { "id": "sga", "label": "Second-generation antipsychotic", "tokenId": "agitation.po_options",
+        "hazardIf": { "parkinson_dlb": "Not a safe default in Parkinson disease / Lewy body dementia — risperidone and olanzapine can trigger severe, sometimes fatal neuroleptic sensitivity. If an antipsychotic is unavoidable the choice is narrow (quetiapine, clozapine, or pimavanserin) and belongs to your attending.", "catatonia": "Second-generation agents can also precipitate or worsen catatonia and NMS — hold antipsychotics until catatonia is excluded or treated." },
         "cautionIf": { "qtc_risk": "Some SGAs prolong QTc (e.g., ziprasidone highest) — check baseline QTc/interacting drugs.", "older_dementia": "All antipsychotics carry FDA black-box mortality warning in dementia-related psychosis." } },
       { "id": "d2_typical", "label": "Typical antipsychotic (D2 blocker)", "tokenId": "agitation.im_options",
         "hazardIf": { "parkinson_dlb": "D2 blockade worsens parkinsonism — contraindicated in Parkinson disease / Lewy body dementia.", "catatonia": "May precipitate/worsen catatonia and NMS — hold antipsychotics." },
@@ -152,7 +153,7 @@
         "hazardIf": { "delirium": "Benzodiazepines worsen non-withdrawal delirium — avoid unless alcohol/sedative withdrawal or end-of-life." },
         "cautionIf": { "older_dementia": "Falls, cognitive worsening, and delirium risk in older adults (Beers); midazolam has the highest adverse-event rate.", "respiratory": "Respiratory depression risk; caution with pulmonary disease/hepatic impairment." } },
       { "id": "combo", "label": "Antipsychotic + benzodiazepine combination", "tokenId": "agitation.im_options",
-        "hazardIf": { "delirium": "Benzodiazepine component worsens non-withdrawal delirium." },
+        "hazardIf": { "delirium": "Benzodiazepine component worsens non-withdrawal delirium.", "catatonia": "The antipsychotic component can precipitate or worsen catatonia and NMS — give the benzodiazepine alone and hold the antipsychotic.", "parkinson_dlb": "The antipsychotic component carries the same D2 hazard in Parkinson disease/Lewy body dementia as a typical agent — do not use this combination here." },
         "cautionIf": { "im_olanzapine_benzo": "Do not combine IM olanzapine with a parenteral benzodiazepine (FDA label — respiratory/CV risk).", "note": "Combination is often most effective for moderate/severe agitation (Siafis 2026) but stacks sedation/respiratory risk — monitor closely." } },
       { "id": "treat_cause", "label": "Treat the underlying cause first", "tokenId": null },
       { "id": "im_if_danger", "label": "IM medication only if imminently dangerous & PO refused", "tokenId": "agitation.restraint_policy" }
