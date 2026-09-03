@@ -343,7 +343,7 @@ If any component were an **intentional ingestion**, medical stabilization comes 
 - **Slug:** `evidence_inpatient.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `07_Evidence_and_Reading/Inpatient_Evidence/evidence_inpatient.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 6,094 words
+- **Length:** 6,161 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -413,7 +413,7 @@ The **SAD PERSONS scale should not be used**: multiple studies demonstrate it pe
 
 ### Landmark Studies
 
-The **Diefenbach et al. (2024) RCT** in JAMA Psychiatry (n=200) is the largest inpatient suicide prevention trial: up to 4 sessions of Brief Cognitive Behavioral Therapy produced a **60% reduction in post-discharge suicide attempts** (OR 0.40, 95% CI 0.20–0.80; NNT = 7) and a 71% reduction in readmissions among patients without substance use disorders.
+The **Diefenbach et al. (2024) RCT** in JAMA Psychiatry (n=200) is the largest inpatient suicide prevention trial: up to 4 sessions of Brief Cognitive Behavioral Therapy produced a **60% reduction in the odds of a post-discharge suicide attempt** (OR 0.40, 95% CI 0.20–0.80; NNT = 7 — at this event rate the reduction in risk is nearer 50%) and a 71% reduction in readmissions among patients without substance use disorders.
 
 The Doupnik et al. (2020) meta-analysis of 14 studies found brief inpatient/acute-care suicide prevention interventions reduced subsequent attempts (pooled OR 0.69) and increased linkage to follow-up (OR 2.74). The following figure summarizes these outcomes:
 
@@ -694,7 +694,7 @@ The post-discharge period carries the **highest risk for suicide**: pooled rates
 
 Thirty-day psychiatric readmission rates range from 7–17% across studies. The strongest and most consistent predictor is **previous psychiatric hospitalizations**. Other predictors include homelessness, schizophrenia/bipolar/personality disorder diagnoses, medical comorbidity, and co-occurring substance use disorders.
 
-Unmet social needs stack **dose-dependently**: 30-day readmission climbs from ~11.5% for patients with no documented social risk to ~63.5% for those with five domains of need (adjusted OR up to ~12.55; Bensken et al., *JGIM* 2021). This reframes the social history as a readmission-risk instrument, not a formality — and ties directly to §11's finding that pre-discharge 7-day follow-up is associated with lower suicide risk (HR ~0.82).
+Unmet social needs stack **dose-dependently**: 30-day readmission climbs from ~11.5% for patients with no documented social risk to ~63.5% for those with five domains of need (adjusted OR up to ~12.55; Bensken et al., *JGIM* 2021). This reframes the social history as a readmission-risk instrument, not a formality — and ties directly to §11's finding that follow-up within 7 days of discharge is associated with reduced suicide risk.
 
 **Critical Time Intervention (CTI)** has the strongest RCT evidence for readmission reduction. The landmark Herman et al. trial (n=150, formerly homeless with SMI) found CTI significantly reduced rehospitalization (OR 0.11, 95% CI 0.01–0.96) and homelessness (OR 0.22). Brief CTI reduced 30-day readmission from 47% to 28% (P < .001).
 
@@ -728,7 +728,7 @@ The **IMPACT trial** (n=1,801) is the landmark CoCM study: 45% of intervention p
 
 ### Measurement-Based Care
 
-MBC can improve remission rates by up to 75% compared to usual care. The Joint Commission requires MBC in all accredited behavioral health programs since 2018. However, **less than 20% of practitioners** engage in MBC, and the VA/DoD 2022 guideline rated the overall evidence as weak.
+In a randomised trial of 120 **outpatients** with moderate-to-severe major depression, remission at 24 weeks was 73.8% with measurement-based care vs. 28.8% with standard treatment (Guo et al., *Am J Psychiatry* 2015) — a large effect, but from a single-centre outpatient trial restricted to paroxetine or mirtazapine, so treat it as proof of concept rather than an inpatient estimate. The Joint Commission requires MBC in all accredited behavioral health programs since 2018. However, **less than 20% of practitioners** engage in MBC, and the VA/DoD 2022 guideline rated the overall evidence as weak.
 
 ### Current Controversies
 
@@ -753,7 +753,7 @@ The **DIAMOND initiative** highlights the implementation gap: despite increased 
 | Domain | Strongest Intervention | Effect Size | Evidence Base (§ = section above) |
 | --- | --- | --- | --- |
 | Inpatient suicide prevention | Environmental safety (MHEOCC) | 67% reduction in inpatient suicide | Before–after, system-wide — Watts 2012; sustained Watts 2017 (§1) |
-| Post-discharge suicide prevention | Brief CBT for suicidal inpatients | 60% reduction in attempts (NNT=7) | RCT, n=200 — Diefenbach 2024 (§1) |
+| Post-discharge suicide prevention | Brief CBT for suicidal inpatients | 60% reduction in the *odds* of an attempt (NNT=7) | RCT, n=200 — Diefenbach 2024 (§1) |
 | Violence risk (imminent) | BVC/DASA screening | Hedges' g = 1.04–1.35 | Meta-analysis, 31 studies — Dickens 2020 (§2) |
 | Agitation pharmacotherapy | Antipsychotic + BZD combination | OR 12.93 vs. haloperidol alone (95% CrI 3.00–50.91) | IPD network meta-analysis, 13 RCTs — Siafis 2026; authors' confidence **very low** (§3) |
 | Delirium prevention | Multicomponent non-pharmacological (HELP) | 53% reduction in incident delirium | Meta-analysis, 14 studies — Hshieh 2018 (§6) |

@@ -379,7 +379,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **Slug:** `rounds_questions.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 8,744 words
+- **Length:** 8,784 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -728,7 +728,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Answer:** PHQ-9 Item 9 for universal screening; Columbia-Suicide Severity Rating Scale (C-SSRS) for structured assessment. No tool reliably predicts completed suicide.
 
-- **Evidence:** C-SSRS positive response to any suicidal thinking in the past month has a positive LR >10 in the general population.
+- **Evidence:** Screening instruments identify ideation but have limited predictive value for suicidal behaviour. The USPSTF (2023) found the evidence **insufficient** to assess the balance of benefits and harms of screening asymptomatic adults for suicide risk in primary care (I statement) — which is a verdict on population screening, not a licence to skip risk assessment in a patient who has disclosed.
 
 - **Key paper:** USPSTF, JAMA 2023 — screening for depression and suicide risk.
 

@@ -1,6 +1,6 @@
 # MS3 · Navigation map
 
-Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-03 @ `59ff497`.
+Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-03 @ `068b91f`.
 
 ## Orientation  *(pinned)*
 
@@ -94,8 +94,8 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 1 | What Do You Say Next? | `communication-practice.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Communication_Practice/communication-practice.html` |  |
 | 2 | Psychotherapies at a Glance | `psychotherapy.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Psychotherapy/psychotherapy_inpatient_teaching.md` | 613 |
 | 3 | Motivational Interviewing | `motivational_interviewing.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `06_Family_and_Relational/motivational_interviewing_inpatient_teaching.md` | 533 |
-| 4 | Brief Psychotherapy on the Unit | `brief_psychotherapy.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Brief_Psychotherapy/brief_psychotherapy_inpatient.md` | 1054 |
-| 5 | Therapy on the Unit | `therapy_on_the_unit.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `02_Clinical_Skills/Psychotherapy/therapy_on_the_unit_inpatient_teaching.md` | 4164 |
+| 4 | Brief Psychotherapy on the Unit | `brief_psychotherapy.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Brief_Psychotherapy/brief_psychotherapy_inpatient.md` | 1062 |
+| 5 | Therapy on the Unit | `therapy_on_the_unit.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `02_Clinical_Skills/Psychotherapy/therapy_on_the_unit_inpatient_teaching.md` | 4218 |
 | 6 | Reflection & Identity | `reflection.html` | tool | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `02_Clinical_Skills/Reflection_PIF/reflection-and-pif-set.html` |  |
 
 ## Work with Family and Systems
@@ -114,7 +114,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 |---|---|---|---|---|---|---|---|
 | 1 | Documentation & Oral Presentation | `doc_oral.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/MS3/Student_Ready_Pack/05_documentation_oral_presentation/student_documentation_and_oral_presentations.md` | 817 |
 | 2 | Treatment Team Rounding Prep | `oral.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Oral_Presentations/oral-presentation-module.html` |  |
-| 3 | High-Yield Rounds Questions | `rounds_questions.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md` | 8744 |
+| 3 | High-Yield Rounds Questions | `rounds_questions.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md` | 8784 |
 
 ## Practice and Exam Prep
 
@@ -153,7 +153,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | # | Title | Slug | Type | Sidebar | Governance | Source path | Words |
 |---|---|---|---|---|---|---|---|
 | 1 | Weekly Reading Map | `reading_map.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `14_Tracks/MS3/Student_Ready_Pack/03_weekly_map/week_by_week_reading_map.md` | 588 |
-| 2 | Evidence-Based Inpatient Psychiatry | `evidence_inpatient.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `07_Evidence_and_Reading/Inpatient_Evidence/evidence_inpatient.md` | 6094 |
+| 2 | Evidence-Based Inpatient Psychiatry | `evidence_inpatient.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `07_Evidence_and_Reading/Inpatient_Evidence/evidence_inpatient.md` | 6161 |
 | 3 | The Therapy Reading Room | `therapy_reading_room.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`low` | `07_Evidence_and_Reading/Therapy_Reading_Room/therapy_reading_room.md` | 2839 |
 | 4 | MS3 Book Library | `book_library.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `07_Evidence_and_Reading/Book_Summaries/ms3_book_library.md` | 1200 |
 | 5 | Podcast Library (Psychiatry & Psychotherapy) | `podcast_library.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `12_Media/psychiatry_psychotherapy_podcast_library.md` | 2617 |

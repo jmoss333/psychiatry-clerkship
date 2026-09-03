@@ -3,7 +3,7 @@
 # RESIDENT curriculum — complete content transcript for clinical review
 
 **Site:** `mmc-psychiatry-residents-sanford` · **Audience:** Residents — MMC/Sanford psychiatry residents
-**Generated:** 2026-09-03 from build `59ff497` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
+**Generated:** 2026-09-03 from build `068b91f` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
 
 ## Who this is for
 
@@ -19,7 +19,7 @@ This transcript is assembled from the **built site**, not the source tree, so it
 | Narrative pages (markdown) | 86 |
 | Interactive tools | 25 |
 | Deep-link-only (hidden) surfaces | 26 |
-| Words of narrative curriculum | 119,146 |
+| Words of narrative curriculum | 119,403 |
 | Practice question-bank items | 192 |
 | Audio-companion quiz decks / questions | 79 / 437 |
 | Communication cases | 12 |
@@ -86,7 +86,7 @@ High-yield places to concentrate: the `topic_meta` **can't-miss**, **rule-out** 
 
 # RESIDENT · Navigation map
 
-Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-03 @ `59ff497`.
+Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-03 @ `068b91f`.
 
 ## Orientation  *(pinned)*
 
@@ -144,8 +144,8 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 12 | Withdrawal: COWS Tool · CIWA-Ar Official Form & Training | `withdrawal.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/SUD_Withdrawal/withdrawal-ciwa-cows-card.html` |  |
 | 13 | Decisional Capacity | `capacity.html` | tool | listed | status=`reviewed` · riskKind=`legal` · riskLevel=`high` | `04_Acute_and_Safety/Decisional_Capacity/decisional-capacity-module.html` |  |
 | 14 | Consult Questions: Capacity, Delirium, Catatonia, Withdrawal | `exp_consult.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/MS3/Student_Ready_Pack/04_expansion_modules/consult_capacity_delirium_catatonia_withdrawal.md` | 935 |
-| 15 | C-L: Emergencies, Tox & Capacity (Numbers) | `cl_reference.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/Resident/cl_reference.md` | 978 |
-| 16 | Inpatient Systems & Med-Legal | `systems_medlegal.md` | md | listed | status=`reviewed` · riskKind=`legal` · riskLevel=`high` | `14_Tracks/Resident/systems_medlegal.md` | 1389 |
+| 15 | C-L: Emergencies, Tox & Capacity (Numbers) | `cl_reference.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/Resident/cl_reference.md` | 994 |
+| 16 | Inpatient Systems & Med-Legal | `systems_medlegal.md` | md | listed | status=`reviewed` · riskKind=`legal` · riskLevel=`high` | `14_Tracks/Resident/systems_medlegal.md` | 1461 |
 
 ## Make a Plan
 
@@ -166,8 +166,8 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 1 | What Do You Say Next? | `communication-practice.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Communication_Practice/communication-practice.html` |  |
 | 2 | Psychotherapies at a Glance | `psychotherapy.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Psychotherapy/psychotherapy_inpatient_teaching.md` | 613 |
 | 3 | Motivational Interviewing | `motivational_interviewing.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `06_Family_and_Relational/motivational_interviewing_inpatient_teaching.md` | 533 |
-| 4 | Brief Psychotherapy on the Unit | `brief_psychotherapy.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Brief_Psychotherapy/brief_psychotherapy_inpatient.md` | 1054 |
-| 5 | Therapy on the Unit | `therapy_on_the_unit.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `02_Clinical_Skills/Psychotherapy/therapy_on_the_unit_inpatient_teaching.md` | 4164 |
+| 4 | Brief Psychotherapy on the Unit | `brief_psychotherapy.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Brief_Psychotherapy/brief_psychotherapy_inpatient.md` | 1062 |
+| 5 | Therapy on the Unit | `therapy_on_the_unit.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `02_Clinical_Skills/Psychotherapy/therapy_on_the_unit_inpatient_teaching.md` | 4218 |
 | 6 | Five Good Minutes — Brief Psych Coach | `rp-brief-psych.html` | tool | listed | status=`pending` · riskKind=`local-policy` · riskLevel=`high` | `_prototypes/brief-psych/rp-brief-psych.html` |  |
 | 7 | Reflection & Identity | `reflection.html` | tool | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `02_Clinical_Skills/Reflection_PIF/reflection-and-pif-set.html` |  |
 
@@ -187,7 +187,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 |---|---|---|---|---|---|---|---|
 | 1 | Documentation & Oral Presentation | `doc_oral.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/MS3/Student_Ready_Pack/05_documentation_oral_presentation/student_documentation_and_oral_presentations.md` | 817 |
 | 2 | Treatment Team Rounding Prep | `oral.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Oral_Presentations/oral-presentation-module.html` |  |
-| 3 | High-Yield Rounds Questions | `rounds_questions.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md` | 8744 |
+| 3 | High-Yield Rounds Questions | `rounds_questions.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md` | 8784 |
 
 ## Practice and Exam Prep
 
@@ -223,7 +223,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 
 | # | Title | Slug | Type | Sidebar | Governance | Source path | Words |
 |---|---|---|---|---|---|---|---|
-| 1 | Evidence-Based Inpatient Psychiatry | `evidence_inpatient.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `07_Evidence_and_Reading/Inpatient_Evidence/evidence_inpatient.md` | 6094 |
+| 1 | Evidence-Based Inpatient Psychiatry | `evidence_inpatient.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `07_Evidence_and_Reading/Inpatient_Evidence/evidence_inpatient.md` | 6161 |
 | 2 | The Therapy Reading Room | `therapy_reading_room.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`low` | `07_Evidence_and_Reading/Therapy_Reading_Room/therapy_reading_room.md` | 2839 |
 | 3 | The Psychiatry Canon (200) | `canon_200.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/Resident/canon_200.md` | 8755 |
 | 4 | Book Library | `book_library.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `07_Evidence_and_Reading/Book_Summaries/ms3_book_library.md` | 1200 |
@@ -8133,7 +8133,7 @@ should independently manage high-risk consults.
 - **Slug:** `cl_reference.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `14_Tracks/Resident/cl_reference.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 978 words
+- **Length:** 994 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -8247,7 +8247,7 @@ The MS3 [Consult module](?page=exp_consult.md) teaches *what to notice and when 
 ## Decisional capacity — quick epidemiology
 - **Any physician can assess capacity** — it is not a psychiatry-only determination. *Capacity* is clinical and decision-specific; *competence* is legal.
 - Four abilities (Appelbaum & Grisso): **communicate a choice · understand · appreciate · reason.**
-- Common contributors to incapacity: **cognitive disorders ~54%, substance use ~37%, psychosis ~25%** — many reversible (delirium, psychosis, depression). Treat the reversible cause and **reassess.**
+- Common contributors to incapacity, in rough order of frequency: cognitive disorders (dementia, delirium), then substance intoxication/withdrawal, then psychosis and severe depression — categories that overlap in the same patient, and many of them reversible. Treat the reversible cause and **reassess.**
 
 ## Psychopharmacology in organ dysfunction
 - **Liver disease:** prefer benzodiazepines cleared by conjugation — **"LOT": Lorazepam, Oxazepam, Temazepam** (no oxidative metabolism). **Duloxetine is contraindicated in chronic liver disease.**
@@ -8268,7 +8268,7 @@ Serotonin syndrome, NMS, lithium toxicity, and a prolonging QTc are all **"tell 
 - **Slug:** `systems_medlegal.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `14_Tracks/Resident/systems_medlegal.md`
 - **Governance:** status=`reviewed` · riskKind=`legal` · riskLevel=`high`
-- **Length:** 1,389 words
+- **Length:** 1,461 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -8326,7 +8326,7 @@ Serotonin syndrome, NMS, lithium toxicity, and a prolonging QTc are all **"tell 
 
 **Documentation as a clinical and legal instrument** — Your admission H&P anchors the stay: presenting problem and timeline, psychiatric and substance history, medical comorbidity and reconciled medications, collateral, MSE, a formulation, and an initial risk and disposition plan. Daily progress notes are problem-oriented — interval events, exam changes, response to treatment, and an updated plan — not a copy-forward. Document risk explicitly: not just a screening score but your suicide and violence assessment and the reasoning behind your level-of-observation and intervention decisions (most patients who die by suicide are rated low risk at last contact, so the formulation, not the number, is what protects the patient and you). Capacity assessments are documented by the four abilities (understand, appreciate, reason, express a choice) tied to the specific decision. Restraint and seclusion require a time-limited order, the required face-to-face evaluation and monitoring, and a debrief, all charted per policy. Billing/E&M follows either total time or medical decision-making complexity — and the deeper point is that good documentation is simultaneously communication to the next treater and your medical-legal protection. If it isn't written, for these purposes it didn't happen.
 
-**Voluntary vs. involuntary admission** — Most patients should be admitted voluntarily under the least-restrictive-alternative principle whenever they can engage. When someone meets criteria for emergency involuntary hospitalization, Maine commonly uses what clinicians call the "blue paper" — an application for emergency involuntary admission, paired with a supporting clinician certificate/examination. That emergency hold is the entry point, not the endpoint: there is a subsequent certification and judicial commitment pathway with defined patient rights (notice, hearing, counsel, periodic review). **The specific certifiers, timelines, forms, and hearing windows must be verified against current Maine statute (Title 34-B) and MMC policy — do not rely on remembered numbers, and ask the on-call attending and social work how the current process runs.** Throughout, the operating rule is least restrictive: hold only as long and as tightly as safety requires, and move to voluntary status as soon as the patient can participate. One evidence-based lever for the *next* admission is the **psychiatric advance directive (PAD)**: in a multicenter RCT, peer-worker–facilitated PADs cut compulsory admissions from **39.9% to 27.0%** over 12 months (risk difference −0.13) — worth raising with patients who have a history of involuntary holds.
+**Voluntary vs. involuntary admission** — Most patients should be admitted voluntarily under the least-restrictive-alternative principle whenever they can engage. When someone meets criteria for emergency involuntary hospitalization, Maine commonly uses what clinicians call the "blue paper" — an application for emergency involuntary admission, paired with a supporting clinician certificate/examination. That emergency hold is the entry point, not the endpoint: there is a subsequent certification and judicial commitment pathway with defined patient rights (notice, hearing, counsel, periodic review). **The specific certifiers, timelines, forms, and hearing windows must be verified against current Maine statute (Title 34-B) and MMC policy — do not rely on remembered numbers, and ask the on-call attending and social work how the current process runs.** Throughout, the operating rule is least restrictive: hold only as long and as tightly as safety requires, and move to voluntary status as soon as the patient can participate. One evidence-based lever for the *next* admission is the **psychiatric advance directive (PAD)**: in a French multicentre RCT of adults with schizophrenia, bipolar I, or schizoaffective disorder who had had a compulsory admission in the prior 12 months (Tinland et al., *JAMA Psychiatry* 2022), peer-worker–facilitated PADs cut compulsory admission over 12 months from **39.9% to 27.0%** (risk difference −0.13, 95% CI −0.22 to −0.04) — worth raising with patients who have a history of involuntary holds, with the caveat that the peer-worker facilitation, not the document alone, was the intervention.
 
 **Capacity, competency, and medication over objection** — Capacity is a clinical, decision-specific determination you make at the bedside; competency is a legal status a court adjudicates. A patient can lack capacity for one decision and retain it for another, and a psychiatric diagnosis alone never settles it. Informed consent requires disclosing the nature, risks, benefits, and alternatives of treatment and confirming the patient can use that information. Critically, an involuntary hold is not the same as authorization to medicate over objection: forcing non-emergency medication on a refusing patient generally requires a separate legal or administrative process distinct from the commitment itself. The federal anchors are *Washington v. Harper* (1990) — a dangerous, mentally ill prisoner may be medicated over objection through an **administrative** review with a medical-interest finding — and *Sell v. United States* (2003) — medicating a defendant *solely* to restore trial competency requires a **judicial** finding on the four-part Sell test (important governmental interest, substantial likelihood of restoring competency without unfairly prejudicing the defense, less-intrusive means unlikely to work, and medical appropriateness); civil-inpatient standards (the *Rogers*/*Rivers* judicial models) vary by state. Verify the local Maine/MMC pathway for involuntary medication before treating over objection — and document the emergency rationale clearly when you medicate acutely to prevent imminent harm.
 
@@ -8349,7 +8349,7 @@ Serotonin syndrome, NMS, lithium toxicity, and a prolonging QTc are all **"tell 
 - Document the *reasoning* behind risk and observation level — a number without a formulation protects no one, since most who die by suicide screen low-risk.
 - Least restrictive alternative is the through-line: in level of care, in voluntary-vs-involuntary status, and in restraint/seclusion.
 - Schedule the actual follow-up appointment before discharge and target ≤7 days — the post-discharge window is the highest-risk period for suicide.
-- Peer-facilitated psychiatric advance directives cut compulsory admission 39.9%→27.0% in an RCT — a concrete least-restrictive tool to offer patients with prior involuntary holds.
+- Peer-worker–facilitated psychiatric advance directives cut compulsory admission from 39.9% to 27.0% over 12 months in a French multicentre RCT (Tinland et al., *JAMA Psychiatry* 2022) — a concrete least-restrictive tool to offer patients with prior involuntary holds, remembering that the peer-worker facilitation, not the document alone, was the intervention.
 - Statute specifics (timelines, certifiers, form names) vary by state and change — never quote a remembered number; confirm current Title 34-B and hospital policy.
 
 **Pair with** — [Decisional Capacity (tool)](?page=exp_consult.md), [Family & Discharge](?page=exp_family.md), [Evidence-Based Inpatient Psychiatry](?page=evidence_inpatient.md)
@@ -9349,7 +9349,7 @@ Substance use, medication adherence, lifestyle/metabolic change, follow-up engag
 - **Slug:** `brief_psychotherapy.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `02_Clinical_Skills/Brief_Psychotherapy/brief_psychotherapy_inpatient.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 1,054 words
+- **Length:** 1,062 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -9407,7 +9407,7 @@ Substance use, medication adherence, lifestyle/metabolic change, follow-up engag
 
 **In one line** — You will not complete a course of therapy on an inpatient unit, but almost every encounter is a *micro-intervention*. The skill is to read the mechanism driving this patient's crisis right now and match one brief technique to it — then hand the work off to outpatient care.
 
-**Why brief therapy is worth doing inpatient** — Across trials, inpatient psychotherapy adds a small-to-moderate benefit over treatment-as-usual, and **no single modality is clearly superior** (pooled SMD ~0.24, NNT ~7; comparable effects for CBT, BA, and problem-solving, g≈0.42). The practical takeaway is liberating: *stop agonizing over which "school" to use and match the technique to the mechanism in front of you.* Diagnosis and the driver of the crisis matter more than the brand of therapy.
+**Why brief therapy is worth doing inpatient** — Across trials, inpatient psychotherapy adds a small-to-moderate benefit over treatment-as-usual, and **no single modality is clearly superior** (small-to-moderate pooled effects with no clear winner across modalities — the specific meta-analyses are traced on the Evidence-Based Inpatient Psychiatry page). The practical takeaway is liberating: *stop agonizing over which "school" to use and match the technique to the mechanism in front of you.* Diagnosis and the driver of the crisis matter more than the brand of therapy.
 
 ## Match the skill to the mechanism
 
@@ -9472,7 +9472,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **Slug:** `therapy_on_the_unit.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `02_Clinical_Skills/Psychotherapy/therapy_on_the_unit_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 4,164 words
+- **Length:** 4,218 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -9612,7 +9612,7 @@ About one in five psychiatric admissions involves borderline personality disorde
 Family intervention in schizophrenia reduces relapse and readmission with an NNT around 7 — statin territory — yet family involvement rates on real units are dismal, and the main barrier is clinician avoidance rationalized as confidentiality [27 ✓, 28 ✓]. Two teaching points fix most of it:
 
 - **Listening is not disclosing.** You can always *receive* information from a family — observations, history, concerns — without the patient's permission. Consent governs what you share, not what you hear.
-- **The inpatient meeting plants a seed; it doesn't harvest.** Relapse-prevention effects of family work show up at 12 months, not 6. The 30-minute inpatient meeting (agenda → family's account → jargon-free education → warning signs and plan → questions and resources) is the *entry point* to that dose, and the emotional climate it addresses is a measured, modifiable relapse predictor — high expressed emotion multiplies relapse risk several-fold, and warmth is protective [29 ✓, 30 ✓].
+- **The inpatient meeting plants a seed; it doesn't harvest.** Relapse-prevention effects of family work show up at 12 months, not 6. The 30-minute inpatient meeting (agenda → family's account → jargon-free education → warning signs and plan → questions and resources) is the *entry point* to that dose, and the emotional climate it addresses is a measured, modifiable relapse predictor — high expressed emotion is a robust relapse predictor — in schizophrenia it carried roughly a five-fold increase in the *odds* of early (≤12-month) relapse, and about two-fold for later relapse (Ma et al., *Psychol Med* 2021) — and warmth is protective (OR ~0.35). Read those as odds, not risk: relapse is common enough that the increase in absolute risk is considerably smaller than "five-fold" suggests [29 ✓, 30 ✓].
 
 > **Resident extension.** Run the full structure: pre-meeting consent-scope check → opening with role clarification → EE-informed listening (hear criticism and over-involvement without labeling them) → psychoeducation with numbers ("family involvement cuts relapse roughly in half") → explicit discharge triad (appointments · warning signs · who-to-call). De-escalation of a blaming room is the skill to deliberately practice; the family-engagement literature for BPD (integrating GPM principles) is the go-deeper read [31 ✓].
 
@@ -9903,7 +9903,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
  "content": {
   "frame": {
    "title": "The bedside frame — five minutes, not fifty",
-   "lead": "You won't finish a course of therapy here. Read the mechanism driving today's crisis, match one brief technique, and hand the thread to outpatient care. No single school wins — fit beats brand (pooled SMD ~0.24, NNT ~7; CBT ≈ BA ≈ PST).",
+   "lead": "You won't finish a course of therapy here. Read the mechanism driving today's crisis, match one brief technique, and hand the thread to outpatient care. No single school wins — fit beats brand (CBT ≈ BA ≈ PST); pooled effects of brief inpatient psychotherapy are modest, so pick the technique that fits the mechanism and the moment.",
    "scaffold": [
     "3 assessments: safety, sleep, function",
     "3 interventions: one skill, one activity, one connection",
@@ -11378,7 +11378,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **Slug:** `rounds_questions.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 8,744 words
+- **Length:** 8,784 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -11727,7 +11727,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Answer:** PHQ-9 Item 9 for universal screening; Columbia-Suicide Severity Rating Scale (C-SSRS) for structured assessment. No tool reliably predicts completed suicide.
 
-- **Evidence:** C-SSRS positive response to any suicidal thinking in the past month has a positive LR >10 in the general population.
+- **Evidence:** Screening instruments identify ideation but have limited predictive value for suicidal behaviour. The USPSTF (2023) found the evidence **insufficient** to assess the balance of benefits and harms of screening asymptomatic adults for suicide risk in primary care (I statement) — which is a verdict on population screening, not a licence to skip risk assessment in a patient who has disclosed.
 
 - **Key paper:** USPSTF, JAMA 2023 — screening for depression and suicide risk.
 
@@ -15568,7 +15568,7 @@ If any component were an **intentional ingestion**, medical stabilization comes 
 - **Slug:** `evidence_inpatient.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `07_Evidence_and_Reading/Inpatient_Evidence/evidence_inpatient.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 6,094 words
+- **Length:** 6,161 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -15638,7 +15638,7 @@ The **SAD PERSONS scale should not be used**: multiple studies demonstrate it pe
 
 ### Landmark Studies
 
-The **Diefenbach et al. (2024) RCT** in JAMA Psychiatry (n=200) is the largest inpatient suicide prevention trial: up to 4 sessions of Brief Cognitive Behavioral Therapy produced a **60% reduction in post-discharge suicide attempts** (OR 0.40, 95% CI 0.20–0.80; NNT = 7) and a 71% reduction in readmissions among patients without substance use disorders.
+The **Diefenbach et al. (2024) RCT** in JAMA Psychiatry (n=200) is the largest inpatient suicide prevention trial: up to 4 sessions of Brief Cognitive Behavioral Therapy produced a **60% reduction in the odds of a post-discharge suicide attempt** (OR 0.40, 95% CI 0.20–0.80; NNT = 7 — at this event rate the reduction in risk is nearer 50%) and a 71% reduction in readmissions among patients without substance use disorders.
 
 The Doupnik et al. (2020) meta-analysis of 14 studies found brief inpatient/acute-care suicide prevention interventions reduced subsequent attempts (pooled OR 0.69) and increased linkage to follow-up (OR 2.74). The following figure summarizes these outcomes:
 
@@ -15919,7 +15919,7 @@ The post-discharge period carries the **highest risk for suicide**: pooled rates
 
 Thirty-day psychiatric readmission rates range from 7–17% across studies. The strongest and most consistent predictor is **previous psychiatric hospitalizations**. Other predictors include homelessness, schizophrenia/bipolar/personality disorder diagnoses, medical comorbidity, and co-occurring substance use disorders.
 
-Unmet social needs stack **dose-dependently**: 30-day readmission climbs from ~11.5% for patients with no documented social risk to ~63.5% for those with five domains of need (adjusted OR up to ~12.55; Bensken et al., *JGIM* 2021). This reframes the social history as a readmission-risk instrument, not a formality — and ties directly to §11's finding that pre-discharge 7-day follow-up is associated with lower suicide risk (HR ~0.82).
+Unmet social needs stack **dose-dependently**: 30-day readmission climbs from ~11.5% for patients with no documented social risk to ~63.5% for those with five domains of need (adjusted OR up to ~12.55; Bensken et al., *JGIM* 2021). This reframes the social history as a readmission-risk instrument, not a formality — and ties directly to §11's finding that follow-up within 7 days of discharge is associated with reduced suicide risk.
 
 **Critical Time Intervention (CTI)** has the strongest RCT evidence for readmission reduction. The landmark Herman et al. trial (n=150, formerly homeless with SMI) found CTI significantly reduced rehospitalization (OR 0.11, 95% CI 0.01–0.96) and homelessness (OR 0.22). Brief CTI reduced 30-day readmission from 47% to 28% (P < .001).
 
@@ -15953,7 +15953,7 @@ The **IMPACT trial** (n=1,801) is the landmark CoCM study: 45% of intervention p
 
 ### Measurement-Based Care
 
-MBC can improve remission rates by up to 75% compared to usual care. The Joint Commission requires MBC in all accredited behavioral health programs since 2018. However, **less than 20% of practitioners** engage in MBC, and the VA/DoD 2022 guideline rated the overall evidence as weak.
+In a randomised trial of 120 **outpatients** with moderate-to-severe major depression, remission at 24 weeks was 73.8% with measurement-based care vs. 28.8% with standard treatment (Guo et al., *Am J Psychiatry* 2015) — a large effect, but from a single-centre outpatient trial restricted to paroxetine or mirtazapine, so treat it as proof of concept rather than an inpatient estimate. The Joint Commission requires MBC in all accredited behavioral health programs since 2018. However, **less than 20% of practitioners** engage in MBC, and the VA/DoD 2022 guideline rated the overall evidence as weak.
 
 ### Current Controversies
 
@@ -15978,7 +15978,7 @@ The **DIAMOND initiative** highlights the implementation gap: despite increased 
 | Domain | Strongest Intervention | Effect Size | Evidence Base (§ = section above) |
 | --- | --- | --- | --- |
 | Inpatient suicide prevention | Environmental safety (MHEOCC) | 67% reduction in inpatient suicide | Before–after, system-wide — Watts 2012; sustained Watts 2017 (§1) |
-| Post-discharge suicide prevention | Brief CBT for suicidal inpatients | 60% reduction in attempts (NNT=7) | RCT, n=200 — Diefenbach 2024 (§1) |
+| Post-discharge suicide prevention | Brief CBT for suicidal inpatients | 60% reduction in the *odds* of an attempt (NNT=7) | RCT, n=200 — Diefenbach 2024 (§1) |
 | Violence risk (imminent) | BVC/DASA screening | Hedges' g = 1.04–1.35 | Meta-analysis, 31 studies — Dickens 2020 (§2) |
 | Agitation pharmacotherapy | Antipsychotic + BZD combination | OR 12.93 vs. haloperidol alone (95% CrI 3.00–50.91) | IPD network meta-analysis, 13 RCTs — Siafis 2026; authors' confidence **very low** (§3) |
 | Delirium prevention | Multicomponent non-pharmacological (HELP) | 53% reduction in incident delirium | Meta-analysis, 14 studies — Hshieh 2018 (§6) |
@@ -30189,15 +30189,15 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
 
 ### `pott-2022`
 
-- span type `abstract` · retrieved 2026-08-21 · PMID 34146994 · DOI —
+- span type `abstract` · retrieved 2026-09-03 · PMID 34146994 · DOI —
 
 **Verbatim source span.**
 
-> There were no significant differences between behavioural activation and controls with regard to depression (SMD 0.19, 95% CI -0.10 to 0.49, p = 0.20) or substance use, across 5 trials including 195 patients, with GRADE ratings of Low throughout. Behavioural activation does not emerge as a differentially efficacious treatment, although it does appear to be an acceptable treatment option.
+> We included five trials in the meta-analysis (N = 195). The analysis found no significant differences between BA and controls with regard to depression (Post-treatment: k = 5; N = 195; SMD: 0.19, CI -0.10 to 0.49; p = 0.20; GRADE = Low; Follow-up: k = 5; N = 195; SMD: -0.10, CI -0.51 to -0.30; p = 0.62; GRADE = Low) or substance use (post-treatment: k = 4; N = 151; SMD: 0.14, CI -0.33 to -0.6; p = 0.57, GRADE = Low; Follow-up: k = 4; N = 151; SMD: 0.17, CI -0.34 to 0.69; p = 0.51, GRADE = Low) and there was little evidence of publication bias. BA does not emerge as a differentially efficacious treatment for comorbid depression and substance use disorders, although it does appear to be an acceptable treatment option.
 
 **Claim `ba-acceptable-not-superior`** (direction: `negative`, used by T4)
 
-> Behavioural activation showed no significant difference from controls for depression (SMD 0.19, p = 0.20) or substance use across 5 trials and 195 patients at GRADE Low, and does not emerge as differentially efficacious although it is an acceptable option.
+> In co-occurring depression and substance use disorders, behavioural activation showed no significant difference from controls for depression (SMD 0.19, p = 0.20) or substance use across 5 trials and 195 patients at GRADE Low, and does not emerge as differentially efficacious although it is an acceptable option.
 
 - claim terms: `no significant differences`, `does not emerge`, `acceptable treatment option`
 
@@ -30225,7 +30225,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
 
 **Claim `ba-effect-and-equivalence`** (direction: `mixed`, used by T2)
 
-> Across 105 trials (13,933 patients), behavioural activation outperformed control conditions with an SMD of 0.67 and remained significant at 12 months after randomization, with no significant difference between BA and other therapies (SMD 0.04); self-guided BA was also effective (SMD 0.36).
+> Across 105 trials (13,933 patients), behavioural activation for adult outpatients outperformed control conditions with an SMD of 0.67 (61 comparisons) and remained significant at 12 months after randomization, with no significant difference between BA and other therapies (SMD 0.04); self-guided BA was also effective (SMD 0.36).
 
 - claim terms: `standardized mean difference`, `no significant difference between BA and other therapies`, `Self-guided BA was also effective`
 
@@ -30455,15 +30455,15 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
 
 ### `brodsky-2025`
 
-- span type `abstract` · retrieved 2026-08-23 · PMID 41190740 · DOI 10.1176/appi.ajp.20240298
+- span type `abstract` · retrieved 2026-09-03 · PMID 41190740 · DOI 10.1176/appi.ajp.20240298
 
 **Verbatim source span.**
 
-> Significantly fewer SREs occurred in the DBT arm compared with the SSRI/M arm during the 6-month treatment phase. Significantly fewer suicide attempts occurred in the DBT arm compared with the SSRI/M arm. DBT participants had significantly lower NSSI counts than SSRI/M participants. Severity of depression and suicidal ideation decreased comparably in both treatment groups. After 6 months of treatment, the rate of major depressive disorder was significantly lower in the SSRI/M arm compared with the DBT arm. At 12-month follow-up (6 months after completion of the treatment phase), outcomes were comparable between the two groups.
+> Significantly fewer SREs occurred in the DBT arm compared with the SSRI/M arm during the 6-month treatment phase. Significantly fewer suicide attempts occurred in the DBT arm compared with the SSRI/M arm. DBT participants had significantly lower NSSI counts than SSRI/M participants. Severity of depression and suicidal ideation decreased comparably in both treatment groups. After 6 months of treatment, the rate of major depressive disorder was significantly lower in the SSRI/M arm compared with the DBT arm. At 12-month follow-up (6 months after completion of the treatment phase), outcomes were comparable between the two groups. Six months of DBT showed greater efficacy than 6 months of SSRI/M in reducing SRE and NSSI behaviors in patients with borderline personality disorder.
 
 **Claim `dbt-vs-ssri-suicide-events`** (direction: `mixed`, used by RR)
 
-> Over a 6-month treatment phase, DBT produced significantly fewer suicide-related events, fewer suicide attempts and lower non-suicidal self-injury counts than SSRI plus clinical management, while severity of depression and suicidal ideation decreased comparably in both groups and outcomes were comparable between the two groups at 12-month follow-up.
+> In borderline personality disorder, over a 6-month treatment phase DBT produced significantly fewer suicide-related events, fewer suicide attempts and lower non-suicidal self-injury counts than SSRI plus clinical management, while severity of depression and suicidal ideation decreased comparably in both groups and outcomes were comparable between the two groups at 12-month follow-up.
 
 - claim terms: `Significantly fewer SREs occurred in the DBT arm`, `decreased comparably in both treatment groups`, `outcomes were comparable between the two groups`
 
