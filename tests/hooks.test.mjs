@@ -109,9 +109,13 @@ test('pre_edit_guard enforces every registered contact, the emergency-services n
   const r = runHook('pre_edit_guard.py', editCall('04_Acute_and_Safety/Agitation_and_Restraint/agitation_restraint_inpatient_teaching.md', `If the patient is unsafe, call ${digits}.`));
   assert.equal(decision(r), 'deny');
   assert.match(reason(r), /crisis-contact/);
-  // Short codes match contiguously: an ICD code or a year that merely contains the digits is not a hit.
+  // Spelling the code with one repeated separator is still the number.
   const d = digits.split('');
-  assert.equal(decision(runHook('pre_edit_guard.py', editCall('03_Core_Topics/Mood/mood_disorders_inpatient_teaching.md', `Code F${d[0]}${d[1]}.${d[2]} and the year 1${digits}.`))), 'allow');
+  assert.equal(decision(runHook('pre_edit_guard.py', editCall('04_Acute_and_Safety/Agitation_and_Restraint/agitation_restraint_inpatient_teaching.md', `Dial ${d.join('-')} first.`))), 'deny');
+  assert.equal(decision(runHook('pre_edit_guard.py', editCall('04_Acute_and_Safety/Agitation_and_Restraint/agitation_restraint_inpatient_teaching.md', `Dial ${d.join(' ')} first.`))), 'deny');
+  // An ICD code, a year, or a mixed run that merely contains the digits is not a hit.
+  assert.equal(decision(runHook('pre_edit_guard.py', editCall('03_Core_Topics/Mood/mood_disorders_inpatient_teaching.md', `Code F${d[0]}${d[1]}.${d[2]}, code F${d[0]} ${d[1]}.${d[2]}, the year 1${digits}, and ${digits}0.`))), 'allow');
+  assert.equal(decision(runHook('pre_edit_guard.py', editCall('03_Core_Topics/Mood/mood_disorders_inpatient_teaching.md', `Item ${d.join('-')}-2 on the list.`))), 'allow');
 });
 
 test('pre_edit_guard allows the same number inside crisis_resources.json and in docs', () => {
@@ -161,6 +165,12 @@ test('pre_edit_guard locates an HTML Edit on disk and skips the PHI pass inside 
   assert.match(reason(prose), /phi-heuristic/);
   // An old_string that is not on disk cannot be placed, so the prose pass still runs.
   assert.equal(decision(runHook('pre_edit_guard.py', edit('not in the file', 'MRN 12345678'), { cwd: dir })), 'ask');
+  // A range that starts in script but runs through </script> into prose is not script.
+  const straddle = runHook('pre_edit_guard.py', edit('const timeout = 12345678;\n</script>\n', 'const timeout = 1;\n</script>\n<p>Chart MRN 12345678</p>\n'), { cwd: dir });
+  assert.equal(decision(straddle), 'ask');
+  assert.match(reason(straddle), /phi-heuristic/);
+  // A replacement that closes the block itself can land prose after it.
+  assert.equal(decision(runHook('pre_edit_guard.py', edit('const timeout = 12345678;', 'const t = 1;</script><p>Chart MRN 12345678</p><script>'), { cwd: dir })), 'ask');
   fs.rmSync(dir, { recursive: true, force: true });
 });
 
@@ -220,6 +230,18 @@ test('lfs_guard denies bulk git staging when git-lfs is absent and media phantom
   assert.equal(decision(runHook('lfs_guard.py', call('git stash'), { env, cwd: dir })), 'deny');
   assert.equal(decision(runHook('lfs_guard.py', call('git commit --all -m x'), { env, cwd: dir })), 'deny');
   assert.equal(decision(runHook('lfs_guard.py', call('git add README.md'), { env, cwd: dir })), 'allow');
+  assert.equal(decision(runHook('lfs_guard.py', call('git add --ignore-removal README.md'), { env, cwd: dir })), 'allow', '--ignore-removal is --no-all, not a sweep');
+  assert.equal(decision(runHook('lfs_guard.py', call('git add --no-ignore-removal'), { env, cwd: dir })), 'deny', '--no-ignore-removal is --all');
+  // --pathspec-from-file is judged by what the file lists, not by the option.
+  fs.writeFileSync(path.join(dir, 'paths.txt'), 'README.md\n');
+  assert.equal(decision(runHook('lfs_guard.py', call('git add --pathspec-from-file=paths.txt'), { env, cwd: dir })), 'allow');
+  assert.equal(decision(runHook('lfs_guard.py', call('git add --pathspec-from-file paths.txt'), { env, cwd: dir })), 'allow');
+  fs.writeFileSync(path.join(dir, 'paths.txt'), 'README.md\nbrief.m4a\n');
+  assert.equal(decision(runHook('lfs_guard.py', call('git add --pathspec-from-file=paths.txt'), { env, cwd: dir })), 'deny');
+  fs.writeFileSync(path.join(dir, 'paths.txt'), '.\n');
+  assert.equal(decision(runHook('lfs_guard.py', call('git add --pathspec-from-file=paths.txt'), { env, cwd: dir })), 'deny');
+  assert.equal(decision(runHook('lfs_guard.py', call('git add --pathspec-from-file=-'), { env, cwd: dir })), 'deny', 'stdin cannot be inspected');
+  assert.equal(decision(runHook('lfs_guard.py', call('git add --pathspec-from-file=missing.txt'), { env, cwd: dir })), 'deny', 'unreadable cannot be inspected');
   assert.equal(decision(runHook('lfs_guard.py', call('git stash list'), { env, cwd: dir })), 'allow');
   assert.equal(decision(runHook('lfs_guard.py', call('git commit -m x'), { env, cwd: dir })), 'allow', 'nothing staged yet');
   assert.equal(decision(runHook('lfs_guard.py', call('git status'), { env, cwd: dir })), 'allow');

@@ -9,8 +9,9 @@ clerkship_guards.py over the text that is about to land. Emits a permissionDecis
   ask   - PHI heuristic hit, instrument item/anchor text (governance calls)
 
 An Edit's new_string is a bare fragment, so for .html targets the hook locates old_string in
-the file on disk and skips the prose PHI pass when the edited range sits inside a <script>
-block. Anything else, or any internal error, allows: a broken hook must never wedge a session.
+the file on disk and skips the prose PHI pass only when the whole replaced range sits inside a
+<script> block and the replacement contains no script tag of its own. Anything else, or any
+internal error, allows: a broken hook must never wedge a session.
 """
 
 from __future__ import annotations
@@ -35,12 +36,13 @@ def pending_text(tool_input: dict) -> str:
     return str(tool_input.get("new_string") or "")
 
 
-def old_strings(tool_input: dict) -> list[str]:
+def edit_pairs(tool_input: dict) -> list[tuple[str, str]]:
     if "content" in tool_input:
         return []  # Write replaces the whole file; the full text is scanned as-is
     if "edits" in tool_input:
-        return [str(e.get("old_string") or "") for e in tool_input.get("edits") or []]
-    return [str(tool_input.get("old_string") or "")]
+        return [(str(e.get("old_string") or ""), str(e.get("new_string") or ""))
+                for e in tool_input.get("edits") or []]
+    return [(str(tool_input.get("old_string") or ""), str(tool_input.get("new_string") or ""))]
 
 
 def main() -> int:
@@ -59,7 +61,7 @@ def main() -> int:
         return 0
 
     try:
-        in_script = G.edit_inside_script(root, rel, old_strings(tool_input))
+        in_script = G.edit_inside_script(root, rel, edit_pairs(tool_input))
     except Exception:
         in_script = False
     findings = G.run_text_checks(text, rel, root, skip_phi=in_script)

@@ -7,7 +7,9 @@ is always wrong there (see .claude/skills/clerkship-deploy/SKILL.md, trap 1). Th
 denies a git command that would touch them when git-lfs is not installed:
 
   * add / checkout / restore / stash / rm / mv that names a media file or sweeps the whole
-    tree (-A, -u, --all, --update, --renormalize, ".", ":/", "*", a bare `git stash`);
+    tree (-A, -u, --all, --update, --renormalize, ".", ":/", "*", a bare `git stash`), or
+    reads its pathspecs from a file that does either (--pathspec-from-file is inspected,
+    not assumed; stdin or an unreadable file counts as bulk);
   * ANY `git commit` while media files are already staged, whatever flags it carries —
     the pre-commit gate is opt-in, so this hook is the last line before history.
 
@@ -32,7 +34,7 @@ GIT_WRITE_RE = re.compile(r"\bgit\b[^|;&]*\b(add|checkout|restore|stash|rm|mv)\b
 GIT_COMMIT_RE = re.compile(r"\bgit\b[^|;&]*\bcommit\b")
 BULK_RE = re.compile(
     r"(\s-[a-zA-Z]*[Aau][a-zA-Z]*\b"                 # -A, -a, -u and combined short flags
-    r"|\s--(?:all|update|renormalize|no-ignore-removal|ignore-removal|pathspec-from-file)\b"
+    r"|\s--(?:all|update|renormalize|no-ignore-removal)\b"  # --no-ignore-removal is --all
     r"|\s\.(\s|$)|\s--\s+\.(\s|$)"                    # a bare "." pathspec
     r"|\s:/|\s:\(top\)"                               # whole-tree pathspec magic
     r"|\s\*(\s|$)|\s'\*'(\s|$)|\s\"\*\"(\s|$)"        # a glob for everything
@@ -40,6 +42,8 @@ BULK_RE = re.compile(
     r")"
 )
 MEDIA_RE = re.compile(r"\.(m4a|mp3|wav|mp4)\b", re.I)
+PATHSPEC_FILE_RE = re.compile(r"--pathspec-from-file(?:=|\s+)(?P<q>[\'\"]?)(?P<path>[^\'\"\s]+)(?P=q)")
+WHOLE_TREE_PATHSPECS = {".", ":/", ":(top)", "*", ":/*", "./*"}
 
 
 def lfs_available() -> bool:
@@ -73,6 +77,28 @@ def staged_media(cwd: Path) -> list[str]:
     return _git_lines(["diff", "--cached", "--name-only", "--"] + MEDIA_PATHSPECS, cwd)
 
 
+def pathspec_file_is_bulk(command: str, cwd: Path) -> bool:
+    """--pathspec-from-file stages whatever the file lists, so inspect the list rather than
+    the option: media or a whole-tree pathspec inside it is bulk; stdin ("-") or a file that
+    cannot be read is treated as bulk because it cannot be inspected."""
+    m = PATHSPEC_FILE_RE.search(command)
+    if not m:
+        return False
+    spec = m.group("path")
+    if spec == "-":
+        return True
+    try:
+        raw = (cwd / spec).read_bytes()
+    except OSError:
+        return True
+    text = raw.decode("utf-8", errors="replace")
+    entries = [e.strip() for e in re.split(r"[\x00\r\n]+", text) if e.strip()]
+    for entry in entries:
+        if entry in WHOLE_TREE_PATHSPECS or MEDIA_RE.search(entry) or entry.endswith("*"):
+            return True
+    return False
+
+
 def deny(reason: str) -> None:
     print(json.dumps({
         "hookSpecificOutput": {
@@ -93,11 +119,13 @@ def main() -> int:
     is_write = bool(GIT_WRITE_RE.search(command))
     if not (is_commit or is_write):
         return 0
-    if is_write and not is_commit and not (MEDIA_RE.search(command) or BULK_RE.search(command)):
+    cwd = Path(os.environ.get("CLAUDE_PROJECT_DIR") or event.get("cwd") or os.getcwd())
+    if is_write and not is_commit and not (
+        MEDIA_RE.search(command) or BULK_RE.search(command) or pathspec_file_is_bulk(command, cwd)
+    ):
         return 0
     if lfs_available():
         return 0
-    cwd = Path(os.environ.get("CLAUDE_PROJECT_DIR") or event.get("cwd") or os.getcwd())
 
     if is_commit:
         staged = staged_media(cwd)
@@ -111,7 +139,7 @@ def main() -> int:
                 "installed (clerkship-deploy skill, trap 1)." % (len(staged), sample)
             )
             return 0
-        if not (MEDIA_RE.search(command) or BULK_RE.search(command)):
+        if not (MEDIA_RE.search(command) or BULK_RE.search(command) or pathspec_file_is_bulk(command, cwd)):
             return 0
 
     phantoms = phantom_media(cwd)
