@@ -6,9 +6,17 @@
 #   Functions:         auto-detected from faculty-console/netlify/functions
 # Then set the two required environment variables (see README.md): GITHUB_TOKEN, FACULTY_ATTEST_PASSWORD.
 
+# `ignore = "/bin/false"` = ALWAYS BUILD, NEVER "CANCEL". With a base directory set, Netlify
+# would otherwise cancel every build whose commit did not touch faculty-console/ — and it
+# records a cancel as a FAILED deploy (state "error", "Canceled build due to no content
+# change"), which is what a "Deploy failed" notification fires on. This site has no such
+# notification yet; the rule is here so that one can be added and trusted, and so the deploy
+# list's "Unsuccessful" filter shows only real failures. Cost: a ~10-15 s no-build deploy per
+# event. Full reasoning in sp-proxy/netlify.toml and GIT_AND_DEPLOY_PLAN.md §7.
 [build]
   publish = "."
   functions = "netlify/functions"
+  ignore = "/bin/false"
 
 [build.environment]
   NODE_VERSION = "24"

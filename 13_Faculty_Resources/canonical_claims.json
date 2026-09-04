@@ -1,0 +1,597 @@
+{
+  "schemaVersion": 1,
+  "owner": "Joshua Moss, MD",
+  "note": "One authoritative statement per high-stakes clinical fact, and the pages that must agree with it. Seeded 2026-09-03 with 31 slots chosen for being high-consequence AND asserted in more than one place. Every slot is 'pending': the canonical statement is a faculty assertion and was deliberately left unwritten. Filling one means writing the statement, listing appliesTo pages, and setting status to 'reviewed'. Validated by bin/validate_canonical_claims.py against canonical_claims.schema.json.",
+  "claims": {
+    "alcohol-withdrawal-lethality": {
+      "topic": "Alcohol withdrawal can be fatal",
+      "whyCanonical": "Pages that teach withdrawal as uncomfortable-but-benign sit beside pages that teach it as an emergency. Students carry whichever they read last.",
+      "status": "pending",
+      "risk": {
+        "kind": "clinical",
+        "level": "high"
+      },
+      "reason": "Registry slot seeded 2026-09-03; canonical statement not yet written or attested.",
+      "at": "2026-09-03",
+      "by": "Pending faculty review",
+      "appliesTo": [],
+      "guards": {
+        "forbidden": [],
+        "required": []
+      }
+    },
+    "alcohol-withdrawal-thiamine-sequence": {
+      "topic": "Thiamine relative to glucose in suspected deficiency",
+      "whyCanonical": "Already a known drift point in this library (the thiamine work packet). The ordering claim is repeated in withdrawal, delirium, and nutrition material.",
+      "status": "pending",
+      "risk": {
+        "kind": "clinical",
+        "level": "high"
+      },
+      "reason": "Registry slot seeded 2026-09-03; canonical statement not yet written or attested.",
+      "at": "2026-09-03",
+      "by": "Pending faculty review",
+      "appliesTo": [],
+      "guards": {
+        "forbidden": [],
+        "required": []
+      }
+    },
+    "antidepressant-bipolar-switch-risk": {
+      "topic": "Antidepressant switch risk in bipolar disorder",
+      "whyCanonical": "Stated with different degrees of hedging in mood, pharmacology, and case material.",
+      "status": "pending",
+      "risk": {
+        "kind": "clinical",
+        "level": "moderate"
+      },
+      "reason": "Registry slot seeded 2026-09-03; canonical statement not yet written or attested.",
+      "at": "2026-09-03",
+      "by": "Pending faculty review",
+      "appliesTo": [],
+      "guards": {
+        "forbidden": [],
+        "required": []
+      }
+    },
+    "antidepressant-discontinuation-vs-relapse": {
+      "topic": "Discontinuation symptoms versus relapse",
+      "whyCanonical": "A distinction students routinely get wrong, taught inconsistently across mood and pharmacology material.",
+      "status": "pending",
+      "risk": {
+        "kind": "clinical",
+        "level": "moderate"
+      },
+      "reason": "Registry slot seeded 2026-09-03; canonical statement not yet written or attested.",
+      "at": "2026-09-03",
+      "by": "Pending faculty review",
+      "appliesTo": [],
+      "guards": {
+        "forbidden": [],
+        "required": []
+      }
+    },
+    "antipsychotic-dementia-boxed-warning": {
+      "topic": "Antipsychotics in dementia \u2014 boxed warning",
+      "whyCanonical": "Regulatory claim repeated in geriatric, agitation, and pharmacology content.",
+      "status": "pending",
+      "risk": {
+        "kind": "clinical",
+        "level": "high"
+      },
+      "reason": "Registry slot seeded 2026-09-03; canonical statement not yet written or attested.",
+      "at": "2026-09-03",
+      "by": "Pending faculty review",
+      "appliesTo": [],
+      "guards": {
+        "forbidden": [],
+        "required": []
+      }
+    },
+    "antipsychotics-in-suspected-catatonia": {
+      "topic": "Antipsychotics before catatonia is excluded \u2014 precipitating malignant catatonia / NMS",
+      "whyCanonical": "Five hand-authored loci: topic_meta 'cant' for agitation.md and catatonia.md, the skill exemplar that seeds future topics, and the sga/d2_typical/combo hazards in both packs. toxidromes.md is excluded \u2014 a management claim, not this prevention one. RSAF F001/F002/F004 proved these copies drift.",
+      "status": "reviewed",
+      "risk": {
+        "kind": "clinical",
+        "level": "high"
+      },
+      "at": "2026-09-03",
+      "by": "Joshua Moss, MD",
+      "appliesTo": [
+        {
+          "path": "topic_meta.json",
+          "contentHashAtReview": "aaad0126430ae1ef65ceb6a0fc5537e17e4598db653f403e1974895b2934d546",
+          "note": "Two 'cant' fields assert this. A third, toxidromes.md, is a management claim and is excluded on purpose -- see this claim's reason.",
+          "locus": [
+            "agitation.md 'cant'",
+            "catatonia.md 'cant'"
+          ],
+          "scope": [
+            "/agitation.md/cant",
+            "/catatonia.md/cant"
+          ]
+        },
+        {
+          "path": ".claude/skills/topic-meta-author/references/voice-and-exemplars.md",
+          "contentHashAtReview": "a8082cbf04cf91c9ef9fab337ed4e3430db6b1d48e5a2aa80311583f2d6cb91a",
+          "note": "The exemplar agents are told to imitate when writing the next topic. Hand-authored, so no regeneration reaches it -- a stale claim here seeds all future content (PR #483)."
+        },
+        {
+          "path": "_prototypes/agitation-trainer/agitation.pack.json",
+          "contentHashAtReview": "c5a48d5496dadacb32a0406f2f7d65977a9b2fa73d807206ae1773c2d32089bc",
+          "note": "MS3 twin of the agitation trainer; carries the antipsychotic hazard for the catatonia scenario.",
+          "locus": [
+            "sga hazardIf.catatonia",
+            "d2_typical hazardIf.catatonia",
+            "combo hazardIf.catatonia"
+          ],
+          "scope": [
+            "/choiceBanks/pharmApproach/0/hazardIf/catatonia",
+            "/choiceBanks/pharmApproach/1/hazardIf/catatonia",
+            "/choiceBanks/pharmApproach/3/hazardIf/catatonia"
+          ]
+        },
+        {
+          "path": "_prototypes/agitation-trainer/rp-agitation.pack.json",
+          "contentHashAtReview": "6f08caf5d4df0248be10156394609559c85ef020fe1adf2a787485e43d72b54e",
+          "note": "Resident twin. #483 found the two twins had drifted apart on exactly this hazard.",
+          "locus": [
+            "sga hazardIf.catatonia",
+            "d2_typical hazardIf.catatonia",
+            "combo hazardIf.catatonia"
+          ],
+          "scope": [
+            "/choiceBanks/pharmApproach/0/hazardIf/catatonia",
+            "/choiceBanks/pharmApproach/1/hazardIf/catatonia",
+            "/choiceBanks/pharmApproach/3/hazardIf/catatonia"
+          ]
+        }
+      ],
+      "guards": {
+        "forbidden": [],
+        "required": [
+          {
+            "pattern": "catatoni",
+            "why": "Catatonia must remain named in each locus. RSAF-F001 existed because it was absent; a rewrite that drops it would silently undo the correction.",
+            "caughtOn": "2026-09-01"
+          }
+        ]
+      },
+      "statement": "Antipsychotics \u2014 second-generation agents included \u2014 can precipitate or worsen catatonia and NMS. Exclude catatonia before giving one, and where it is suspected, hold the antipsychotic until catatonia is excluded or treated. Excited catatonia can look like agitation, which is how the mistake usually happens.",
+      "evidence": [
+        {
+          "sourceId": "bap-catatonia-2023",
+          "tier": "guideline"
+        }
+      ],
+      "evidenceThrough": "2026-09-03"
+    },
+    "benzodiazepine-withdrawal-lethality": {
+      "topic": "Benzodiazepine withdrawal can be fatal",
+      "whyCanonical": "Frequently collapsed into a generic 'substance withdrawal' statement that inherits the opioid framing.",
+      "status": "pending",
+      "risk": {
+        "kind": "clinical",
+        "level": "high"
+      },
+      "reason": "Registry slot seeded 2026-09-03; canonical statement not yet written or attested.",
+      "at": "2026-09-03",
+      "by": "Pending faculty review",
+      "appliesTo": [],
+      "guards": {
+        "forbidden": [],
+        "required": []
+      }
+    },
+    "buprenorphine-precipitated-withdrawal": {
+      "topic": "Avoiding precipitated withdrawal at buprenorphine induction",
+      "whyCanonical": "Induction guidance is reproduced in SUD, emergency, and consult material with different waiting rules.",
+      "status": "pending",
+      "risk": {
+        "kind": "clinical",
+        "level": "high"
+      },
+      "reason": "Registry slot seeded 2026-09-03; canonical statement not yet written or attested.",
+      "at": "2026-09-03",
+      "by": "Pending faculty review",
+      "appliesTo": [],
+      "guards": {
+        "forbidden": [],
+        "required": []
+      }
+    },
+    "capacity-versus-competence": {
+      "topic": "Capacity versus competence",
+      "whyCanonical": "Routinely conflated; the library teaches the distinction in ethics, consults, and OSCE prep with varying precision.",
+      "status": "pending",
+      "risk": {
+        "kind": "legal",
+        "level": "moderate"
+      },
+      "reason": "Registry slot seeded 2026-09-03; canonical statement not yet written or attested.",
+      "at": "2026-09-03",
+      "by": "Pending faculty review",
+      "appliesTo": [],
+      "guards": {
+        "forbidden": [],
+        "required": []
+      }
+    },
+    "catatonia-ect-role": {
+      "topic": "Role of ECT in catatonia",
+      "whyCanonical": "Taught in catatonia, mood, and neuromodulation material; urgency framing varies between them.",
+      "status": "pending",
+      "risk": {
+        "kind": "clinical",
+        "level": "high"
+      },
+      "reason": "Registry slot seeded 2026-09-03; canonical statement not yet written or attested.",
+      "at": "2026-09-03",
+      "by": "Pending faculty review",
+      "appliesTo": [],
+      "guards": {
+        "forbidden": [],
+        "required": []
+      }
+    },
+    "catatonia-lorazepam-challenge": {
+      "topic": "The lorazepam challenge in catatonia",
+      "whyCanonical": "The exact fact whose correction failed to reach every copy in PR #483 \u2014 the motivating case for this registry.",
+      "status": "pending",
+      "risk": {
+        "kind": "clinical",
+        "level": "high"
+      },
+      "reason": "Registry slot seeded 2026-09-03; canonical statement not yet written or attested.",
+      "at": "2026-09-03",
+      "by": "Pending faculty review",
+      "appliesTo": [],
+      "guards": {
+        "forbidden": [],
+        "required": []
+      },
+      "supersedesCorrection": ""
+    },
+    "clozapine-anc-monitoring": {
+      "topic": "Clozapine ANC monitoring requirements",
+      "whyCanonical": "A regulatory-numeric claim that has changed over time; older phrasings persist in copies made before the change.",
+      "status": "pending",
+      "risk": {
+        "kind": "formulary",
+        "level": "high"
+      },
+      "reason": "Registry slot seeded 2026-09-03; canonical statement not yet written or attested.",
+      "at": "2026-09-03",
+      "by": "Pending faculty review",
+      "appliesTo": [],
+      "guards": {
+        "forbidden": [],
+        "required": []
+      }
+    },
+    "clozapine-myocarditis-window": {
+      "topic": "Clozapine myocarditis risk window",
+      "whyCanonical": "Timing claims are stated slightly differently in pharmacology versus monitoring material.",
+      "status": "pending",
+      "risk": {
+        "kind": "clinical",
+        "level": "high"
+      },
+      "reason": "Registry slot seeded 2026-09-03; canonical statement not yet written or attested.",
+      "at": "2026-09-03",
+      "by": "Pending faculty review",
+      "appliesTo": [],
+      "guards": {
+        "forbidden": [],
+        "required": []
+      }
+    },
+    "delirium-first-pass-workup": {
+      "topic": "First-pass workup for delirium",
+      "whyCanonical": "A checklist that has been re-typed rather than referenced, so items differ page to page.",
+      "status": "pending",
+      "risk": {
+        "kind": "clinical",
+        "level": "high"
+      },
+      "reason": "Registry slot seeded 2026-09-03; canonical statement not yet written or attested.",
+      "at": "2026-09-03",
+      "by": "Pending faculty review",
+      "appliesTo": [],
+      "guards": {
+        "forbidden": [],
+        "required": []
+      }
+    },
+    "lamotrigine-titration-rash": {
+      "topic": "Lamotrigine titration and serious rash",
+      "whyCanonical": "Titration guidance is reproduced in several places; a wrong schedule here is directly harmful.",
+      "status": "pending",
+      "risk": {
+        "kind": "clinical",
+        "level": "high"
+      },
+      "reason": "Registry slot seeded 2026-09-03; canonical statement not yet written or attested.",
+      "at": "2026-09-03",
+      "by": "Pending faculty review",
+      "appliesTo": [],
+      "guards": {
+        "forbidden": [],
+        "required": []
+      }
+    },
+    "lithium-therapeutic-range": {
+      "topic": "Lithium therapeutic and toxic ranges",
+      "whyCanonical": "Numeric, memorised, and quizzed \u2014 the highest-consequence number-drift risk in the library.",
+      "status": "pending",
+      "risk": {
+        "kind": "clinical",
+        "level": "high"
+      },
+      "reason": "Registry slot seeded 2026-09-03; canonical statement not yet written or attested.",
+      "at": "2026-09-03",
+      "by": "Pending faculty review",
+      "appliesTo": [],
+      "guards": {
+        "forbidden": [],
+        "required": []
+      }
+    },
+    "lithium-toxicity-precipitants": {
+      "topic": "Precipitants of lithium toxicity",
+      "whyCanonical": "An interaction list re-typed across pharmacology, medical-comorbidity, and geriatric pages.",
+      "status": "pending",
+      "risk": {
+        "kind": "clinical",
+        "level": "high"
+      },
+      "reason": "Registry slot seeded 2026-09-03; canonical statement not yet written or attested.",
+      "at": "2026-09-03",
+      "by": "Pending faculty review",
+      "appliesTo": [],
+      "guards": {
+        "forbidden": [],
+        "required": []
+      }
+    },
+    "maine-involuntary-hospitalization-criteria": {
+      "topic": "Maine involuntary hospitalisation criteria and process",
+      "whyCanonical": "Jurisdiction-specific and the single most locally-wrong-able claim in the library; generic US framing is not correct here.",
+      "status": "pending",
+      "risk": {
+        "kind": "legal",
+        "level": "high"
+      },
+      "reason": "Registry slot seeded 2026-09-03; canonical statement not yet written or attested.",
+      "at": "2026-09-03",
+      "by": "Pending faculty review",
+      "appliesTo": [],
+      "guards": {
+        "forbidden": [],
+        "required": []
+      }
+    },
+    "maoi-tyramine-and-washout": {
+      "topic": "MAOI dietary restriction and washout intervals",
+      "whyCanonical": "Interval numbers are quizzed and appear in at least three unlinked locations.",
+      "status": "pending",
+      "risk": {
+        "kind": "clinical",
+        "level": "high"
+      },
+      "reason": "Registry slot seeded 2026-09-03; canonical statement not yet written or attested.",
+      "at": "2026-09-03",
+      "by": "Pending faculty review",
+      "appliesTo": [],
+      "guards": {
+        "forbidden": [],
+        "required": []
+      }
+    },
+    "metabolic-monitoring-schedule": {
+      "topic": "Metabolic monitoring schedule on antipsychotics",
+      "whyCanonical": "A schedule table copied into several pages, each aging separately.",
+      "status": "pending",
+      "risk": {
+        "kind": "clinical",
+        "level": "moderate"
+      },
+      "reason": "Registry slot seeded 2026-09-03; canonical statement not yet written or attested.",
+      "at": "2026-09-03",
+      "by": "Pending faculty review",
+      "appliesTo": [],
+      "guards": {
+        "forbidden": [],
+        "required": []
+      }
+    },
+    "naltrexone-opioid-free-interval": {
+      "topic": "Opioid-free interval before naltrexone",
+      "whyCanonical": "A numeric interval that is quizzed and appears in more than one place.",
+      "status": "pending",
+      "risk": {
+        "kind": "clinical",
+        "level": "high"
+      },
+      "reason": "Registry slot seeded 2026-09-03; canonical statement not yet written or attested.",
+      "at": "2026-09-03",
+      "by": "Pending faculty review",
+      "appliesTo": [],
+      "guards": {
+        "forbidden": [],
+        "required": []
+      }
+    },
+    "nms-recognition-and-management": {
+      "topic": "Recognising and managing NMS",
+      "whyCanonical": "Appears in antipsychotic, emergency, and OSCE material with different thresholds for action.",
+      "status": "pending",
+      "risk": {
+        "kind": "clinical",
+        "level": "high"
+      },
+      "reason": "Registry slot seeded 2026-09-03; canonical statement not yet written or attested.",
+      "at": "2026-09-03",
+      "by": "Pending faculty review",
+      "appliesTo": [],
+      "guards": {
+        "forbidden": [],
+        "required": []
+      }
+    },
+    "opioid-withdrawal-lethality-contrast": {
+      "topic": "How opioid withdrawal differs in lethality",
+      "whyCanonical": "The contrast is what makes the alcohol and benzodiazepine claims meaningful; when stated loosely it corrupts both.",
+      "status": "pending",
+      "risk": {
+        "kind": "clinical",
+        "level": "moderate"
+      },
+      "reason": "Registry slot seeded 2026-09-03; canonical statement not yet written or attested.",
+      "at": "2026-09-03",
+      "by": "Pending faculty review",
+      "appliesTo": [],
+      "guards": {
+        "forbidden": [],
+        "required": []
+      }
+    },
+    "perinatal-antidepressant-counseling": {
+      "topic": "Perinatal antidepressant risk counselling",
+      "whyCanonical": "Risk framing differs between perinatal material and general pharmacology, which changes the counselling conclusion.",
+      "status": "pending",
+      "risk": {
+        "kind": "clinical",
+        "level": "high"
+      },
+      "reason": "Registry slot seeded 2026-09-03; canonical statement not yet written or attested.",
+      "at": "2026-09-03",
+      "by": "Pending faculty review",
+      "appliesTo": [],
+      "guards": {
+        "forbidden": [],
+        "required": []
+      }
+    },
+    "qtc-monitoring-thresholds": {
+      "topic": "QTc thresholds and which agents prompt monitoring",
+      "whyCanonical": "Numeric thresholds and agent lists diverge between cardiac-safety and drug-specific pages.",
+      "status": "pending",
+      "risk": {
+        "kind": "clinical",
+        "level": "moderate"
+      },
+      "reason": "Registry slot seeded 2026-09-03; canonical statement not yet written or attested.",
+      "at": "2026-09-03",
+      "by": "Pending faculty review",
+      "appliesTo": [],
+      "guards": {
+        "forbidden": [],
+        "required": []
+      }
+    },
+    "refeeding-syndrome-risk": {
+      "topic": "Refeeding syndrome risk and monitoring",
+      "whyCanonical": "Lives in eating-disorder and consult material; thresholds drift between the two.",
+      "status": "pending",
+      "risk": {
+        "kind": "clinical",
+        "level": "high"
+      },
+      "reason": "Registry slot seeded 2026-09-03; canonical statement not yet written or attested.",
+      "at": "2026-09-03",
+      "by": "Pending faculty review",
+      "appliesTo": [],
+      "guards": {
+        "forbidden": [],
+        "required": []
+      }
+    },
+    "serotonin-syndrome-vs-nms": {
+      "topic": "Distinguishing serotonin syndrome from NMS",
+      "whyCanonical": "A comparison table replicated across pharmacology, emergency, and exam-prep pages; table copies drift independently.",
+      "status": "pending",
+      "risk": {
+        "kind": "clinical",
+        "level": "high"
+      },
+      "reason": "Registry slot seeded 2026-09-03; canonical statement not yet written or attested.",
+      "at": "2026-09-03",
+      "by": "Pending faculty review",
+      "appliesTo": [],
+      "guards": {
+        "forbidden": [],
+        "required": []
+      }
+    },
+    "structured-risk-tools-limits": {
+      "topic": "What structured risk tools can and cannot do",
+      "whyCanonical": "Overstated in exam-prep material relative to safety material, which teaches their predictive limits.",
+      "status": "pending",
+      "risk": {
+        "kind": "clinical",
+        "level": "moderate"
+      },
+      "reason": "Registry slot seeded 2026-09-03; canonical statement not yet written or attested.",
+      "at": "2026-09-03",
+      "by": "Pending faculty review",
+      "appliesTo": [],
+      "guards": {
+        "forbidden": [],
+        "required": []
+      }
+    },
+    "suicide-risk-means-restriction": {
+      "topic": "Means restriction in suicide risk management",
+      "whyCanonical": "Stated in safety, interviewing, and the Interview Room debrief content; the strongest actionable claim in the library.",
+      "status": "pending",
+      "risk": {
+        "kind": "clinical",
+        "level": "high"
+      },
+      "reason": "Registry slot seeded 2026-09-03; canonical statement not yet written or attested.",
+      "at": "2026-09-03",
+      "by": "Pending faculty review",
+      "appliesTo": [],
+      "guards": {
+        "forbidden": [],
+        "required": []
+      }
+    },
+    "tardive-dyskinesia-and-vmat2": {
+      "topic": "Tardive dyskinesia recognition and VMAT2 options",
+      "whyCanonical": "Treatment options have changed; older copies still teach the pre-VMAT2 framing.",
+      "status": "pending",
+      "risk": {
+        "kind": "clinical",
+        "level": "moderate"
+      },
+      "reason": "Registry slot seeded 2026-09-03; canonical statement not yet written or attested.",
+      "at": "2026-09-03",
+      "by": "Pending faculty review",
+      "appliesTo": [],
+      "guards": {
+        "forbidden": [],
+        "required": []
+      }
+    },
+    "valproate-pregnancy-teratogenicity": {
+      "topic": "Valproate in pregnancy and people who can become pregnant",
+      "whyCanonical": "Counselling language varies between pharmacology and perinatal material; the weaker version reads as optional.",
+      "status": "pending",
+      "risk": {
+        "kind": "clinical",
+        "level": "high"
+      },
+      "reason": "Registry slot seeded 2026-09-03; canonical statement not yet written or attested.",
+      "at": "2026-09-03",
+      "by": "Pending faculty review",
+      "appliesTo": [],
+      "guards": {
+        "forbidden": [],
+        "required": []
+      }
+    }
+  }
+}

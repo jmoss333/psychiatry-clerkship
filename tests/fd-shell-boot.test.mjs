@@ -376,11 +376,24 @@ test('Learning Path has no active consumer while its historical review receipt i
     'the historical reviewed-ledger receipt must not be deleted');
 });
 
-test('static QA follows the two literal tool maps that remain in the live shell', () => {
-  const declaration = staticQa.match(/const TOOL_MAP_VARS = \[[^\n]+\];/);
-  assert.ok(declaration, 'static QA must declare the live shell tool-map inventory');
-  assert.equal(declaration[0],
-    "const TOOL_MAP_VARS = ['PRACTICE_LABELS', 'PRACTICE_PAGE_TOOLS'];");
+test('the live shell carries no hand-maintained tool map, and static QA covers what replaced them', () => {
+  // Every one of these was a second copy of a registry, and each drifted: PRACTICE_LABELS
+  // outlived two instrument retirements, PRACTICE_CASE_LABELS fell two cases behind
+  // communication_cases.json, PRACTICE_PAGE_TOOLS duplicated relatedTools, PRACTICE_SAFE
+  // duplicated tool_registry.riskLevel. The panel reads FD_INDEX and FD_TOOL_REGISTRY instead.
+  for (const retired of ['PRACTICE_LABELS', 'PRACTICE_LABEL_NEUTRAL', 'PRACTICE_PAGE_TOOLS',
+    'PRACTICE_CASE_LABELS', 'PRACTICE_SAFE']) {
+    assert.ok(!new RegExp(`var ${retired}\\s*=`).test(source),
+      `${retired} is retired — reinstating it reintroduces the drift it caused`);
+  }
+  // The shell-map scan is gone with the maps; 4b is what covers those links now, and it must
+  // reach all three fields the panel renders links from.
+  assert.doesNotMatch(staticQa, /const TOOL_MAP_VARS =/,
+    'the shell tool-map scan should be gone along with the maps it scanned');
+  for (const field of ['cta', 'clinicalWorkflow.actions', 'relatedTools']) {
+    assert.ok(staticQa.includes(field),
+      `static QA section 4b must resolve topic_meta ${field} targets against the shipped tree`);
+  }
   assert.doesNotMatch(staticQa, /idBlockCheck\('(?:CASE_TITLES|FAMILY_SCENARIO_TITLES)'/,
     'retired shell title maps must not remain mandatory QA inputs');
 });
