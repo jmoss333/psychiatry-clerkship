@@ -3,7 +3,7 @@
 # RESIDENT curriculum — complete content transcript for clinical review
 
 **Site:** `mmc-psychiatry-residents-sanford` · **Audience:** Residents — MMC/Sanford psychiatry residents
-**Generated:** 2026-09-03 from build `5892783` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
+**Generated:** 2026-09-04 from build `783c3dc` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
 
 ## Who this is for
 
@@ -19,7 +19,7 @@ This transcript is assembled from the **built site**, not the source tree, so it
 | Narrative pages (markdown) | 86 |
 | Interactive tools | 25 |
 | Deep-link-only (hidden) surfaces | 26 |
-| Words of narrative curriculum | 120,409 |
+| Words of narrative curriculum | 120,736 |
 | Practice question-bank items | 192 |
 | Audio-companion quiz decks / questions | 79 / 437 |
 | Communication cases | 12 |
@@ -86,7 +86,7 @@ High-yield places to concentrate: the `topic_meta` **can't-miss**, **rule-out** 
 
 # RESIDENT · Navigation map
 
-Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-03 @ `5892783`.
+Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-04 @ `783c3dc`.
 
 ## Orientation  *(pinned)*
 
@@ -144,8 +144,8 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 12 | Withdrawal: COWS Tool · CIWA-Ar Official Form & Training | `withdrawal.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/SUD_Withdrawal/withdrawal-ciwa-cows-card.html` |  |
 | 13 | Decisional Capacity | `capacity.html` | tool | listed | status=`reviewed` · riskKind=`legal` · riskLevel=`high` | `04_Acute_and_Safety/Decisional_Capacity/decisional-capacity-module.html` |  |
 | 14 | Consult Questions: Capacity, Delirium, Catatonia, Withdrawal | `exp_consult.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/MS3/Student_Ready_Pack/04_expansion_modules/consult_capacity_delirium_catatonia_withdrawal.md` | 935 |
-| 15 | C-L: Emergencies, Tox & Capacity (Numbers) | `cl_reference.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/Resident/cl_reference.md` | 994 |
-| 16 | Inpatient Systems & Med-Legal | `systems_medlegal.md` | md | listed | status=`reviewed` · riskKind=`legal` · riskLevel=`high` | `14_Tracks/Resident/systems_medlegal.md` | 1461 |
+| 15 | C-L: Emergencies, Tox & Capacity (Numbers) | `cl_reference.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/Resident/cl_reference.md` | 1114 |
+| 16 | Inpatient Systems & Med-Legal | `systems_medlegal.md` | md | listed | status=`reviewed` · riskKind=`legal` · riskLevel=`high` | `14_Tracks/Resident/systems_medlegal.md` | 1520 |
 
 ## Make a Plan
 
@@ -153,7 +153,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 |---|---|---|---|---|---|---|---|
 | 1 | Psychopharmacology Primer | `psychopharm_primer.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md` | 1287 |
 | 2 | Advanced Psychopharmacology | `adv_psychopharm.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `14_Tracks/Resident/adv_psychopharmacology.md` | 1072 |
-| 3 | Medication Monitoring & Labs | `med_monitoring.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md` | 583 |
+| 3 | Medication Monitoring & Labs | `med_monitoring.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md` | 629 |
 | 4 | Protocol Library | `protocol_library.md` | md | listed | status=`reviewed` · riskKind=`local-policy` · riskLevel=`high` | `05_Psychopharmacology/Protocol_Library/protocol_library_inpatient.md` | 327 |
 | 5 | Algorithms & Decision Aids | `decision-aids.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `04_Acute_and_Safety/Decision_Aids/decision-aids.html` |  |
 | 6 | Interaction Cards — One Action | `interaction-cards.html` | tool | listed | status=`reviewed` · riskKind=`formulary` · riskLevel=`high` | `05_Psychopharmacology/Monitoring_and_Labs/interaction-cards.html` |  |
@@ -236,7 +236,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 11 | Week 5 — Acute/Emergency | `week5.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_5_Acute_Emergency/README.md` | 180 |
 | 12 | Week 6 — Integration/Exam | `week6.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_6_Integration_Exam/README.md` | 79 |
 | 13 | Culture, Disparities & Formulation | `cultural_psychiatry.md` | md | hidden | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Cultural_Psychiatry/cultural_psychiatry_inpatient_teaching.md` | 622 |
-| 14 | Ethics & the Law | `ethics_legal.md` | md | hidden | status=`reviewed` · riskKind=`legal` · riskLevel=`high` | `03_Core_Topics/Ethics_Legal/ethics_law_confidentiality_inpatient_teaching.md` | 1084 |
+| 14 | Ethics & the Law | `ethics_legal.md` | md | hidden | status=`reviewed` · riskKind=`legal` · riskLevel=`high` | `03_Core_Topics/Ethics_Legal/ethics_law_confidentiality_inpatient_teaching.md` | 1186 |
 | 15 | Treatment Basics | `exp_tx.md` | md | hidden | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/MS3/Student_Ready_Pack/04_expansion_modules/treatment_basics_digest.md` | 648 |
 | 16 | ECT & Neuromodulation | `ect_neuromodulation.md` | md | hidden | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `05_Psychopharmacology/ECT_Neuromodulation/ect_neuromodulation_inpatient_teaching.md` | 681 |
 | 17 | Osteopathic (OMM) Resources | `omm_resources.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `03_Core_Topics/OMM_Resources/omm_in_psychiatry_resources.md` | 456 |
@@ -5279,7 +5279,7 @@ The goal is validation plus a steady frame, not either/or.
 - **Workflow modes:** `ward`, `safety`, `5min`, `shelf`, `family`
 - **Shelf blueprint tags:** `substance`
 - **EPA crosswalk:** `EPA1`, `EPA2`, `EPA10`
-- **Call-to-action buttons:** Open CIWA-Ar / COWS; Clarify discharge supports; Open discharge collateral workflow
+- **Call-to-action buttons:** Open withdrawal tool; Clarify discharge supports; Open discharge collateral workflow
 - **Faculty review:** {"status": "reviewed", "reviewer": "Joshua Moss, MD", "lastReviewed": "2026-07-01"}
 
 #### Page text (as shipped)
@@ -8155,7 +8155,7 @@ should independently manage high-risk consults.
 - **Slug:** `cl_reference.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `14_Tracks/Resident/cl_reference.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 994 words
+- **Length:** 1,114 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -8257,7 +8257,7 @@ The MS3 [Consult module](?page=exp_consult.md) teaches *what to notice and when 
 - **Act at QTc ≥500 ms, or an increase ≥60 ms** from baseline.
 - Replete **K⁺ >4.0 mEq/L** and **Mg²⁺ >2.0 mg/dL**; reconcile every QT-prolonging drug and interaction.
 - **If torsades actually fires:** call the code, give **IV magnesium sulfate 2 g** over 1–2 min *regardless of the serum magnesium level*, stop every offending drug, correct K⁺ and Ca²⁺, treat pause/bradycardia dependence with overdrive pacing or isoproterenol, and defibrillate if it degenerates to sustained VT/VF.
-- Higher-risk psychotropics: **IV haloperidol, ziprasidone, thioridazine (avoid), pimozide**; **citalopram capped at 20 mg** if age >60, hepatic impairment, or CYP2C19 poor metabolizer.
+- Higher-risk psychotropics: **IV haloperidol, droperidol, ziprasidone, thioridazine (avoid), pimozide** — and the one a psychiatry consult resident meets most often, **methadone**, whose effect is dose-dependent and is usually why the QTc is already long before anyone adds an antipsychotic, so get a **baseline ECG** before you layer one on top; **citalopram capped at 20 mg** if age >60, hepatic impairment, or CYP2C19 poor metabolizer.
 - Source: AHA scientific statement on drug-induced arrhythmias (Tisdale et al., *Circulation* 2020).
 
 ## Delirium — the numbers you'll be asked
@@ -8272,7 +8272,7 @@ The MS3 [Consult module](?page=exp_consult.md) teaches *what to notice and when 
 - Common contributors to incapacity, in rough order of frequency: cognitive disorders (dementia, delirium), then substance intoxication/withdrawal, then psychosis and severe depression — categories that overlap in the same patient, and many of them reversible. Treat the reversible cause and **reassess.**
 
 ## Psychopharmacology in organ dysfunction
-- **Liver disease:** prefer benzodiazepines cleared by conjugation — **"LOT": Lorazepam, Oxazepam, Temazepam** (no oxidative metabolism). **Duloxetine is contraindicated in chronic liver disease.**
+- **Liver disease:** prefer benzodiazepines cleared by conjugation — **"LOT": Lorazepam, Oxazepam, Temazepam** (no oxidative metabolism) — but even these accumulate in advanced disease and can tip a patient into hepatic encephalopathy, so they are the safer choice, not a free one. **Duloxetine is contraindicated in chronic liver disease.** **Valproate is contraindicated in significant hepatic impairment**, and is the one you will most often be asked to continue: valproate-induced **hyperammonaemic encephalopathy** presents as worsening delirium and can occur with normal LFTs, so send an **ammonia level**, not just a hepatic panel. Carbamazepine is a poor choice here for the same reason.
 - **Renal impairment:** dose-reduce **lithium, gabapentin/pregabalin, risperidone/paliperidone, amisulpride**; paliperidone is heavily renally cleared.
 
 ## The escalation line
@@ -8290,7 +8290,7 @@ Serotonin syndrome, NMS, lithium toxicity, and a prolonging QTc are all **"tell 
 - **Slug:** `systems_medlegal.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `14_Tracks/Resident/systems_medlegal.md`
 - **Governance:** status=`reviewed` · riskKind=`legal` · riskLevel=`high`
-- **Length:** 1,461 words
+- **Length:** 1,520 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -8354,7 +8354,7 @@ Serotonin syndrome, NMS, lithium toxicity, and a prolonging QTc are all **"tell 
 
 **Duty to protect, mandatory reporting, and confidentiality** — When a patient makes a credible threat against an identifiable person, the Tarasoff lineage may create a duty to protect (which can include warning, notifying police, hospitalizing, or otherwise intervening) — but the precise trigger and permitted actions are state-specific, so confirm Maine's standard and loop in your attending and risk management before acting. You are also a mandated reporter for suspected abuse or neglect of children, elders, and dependent/vulnerable adults; the reporting thresholds, agencies, and timeframes vary by state and must be verified locally. None of this dissolves the default of confidentiality — disclosures should be the narrowest needed to meet the legal duty or protect safety.
 
-**Disposition and systems-based practice** — Discharge planning starts at admission. Match the patient to the least restrictive level of care that is safe: inpatient → partial hospitalization (PHP) / intensive outpatient (IOP) → residential → assertive community treatment (ACT) or community case management → supportive housing or group home → routine outpatient. Reconcile medications, schedule a concrete first appointment (not just a phone number — scheduling itself raises follow-up rates), and do a warm handoff to the receiving team; aim for follow-up within 7 days given the elevated post-discharge suicide risk. Expect utilization-review and payer pressure on length of stay, and know the hard dispositions that consume inpatient days: homelessness, the need for guardianship, patients leaving against medical advice (AMA), and psychiatric boarding while awaiting placement. Working these systemic barriers — not just the symptoms — is core to the role.
+**Disposition and systems-based practice** — Discharge planning starts at admission. Match the patient to the least restrictive level of care that is safe — and note you are choosing along two axes, not one. **Treatment intensity** descends inpatient → residential → partial hospitalization (PHP) → intensive outpatient (IOP) → routine outpatient; residential is a 24-hour supervised setting and is therefore *more* restrictive than PHP or IOP, which the patient goes home from at night, so it is not a step down from them. **Wraparound supports** attach to any of those rather than sitting between them: assertive community treatment (ACT) or community case management, supportive housing or a group home, peer support. Reconcile medications, schedule a concrete first appointment (not just a phone number — scheduling itself raises follow-up rates), and do a warm handoff to the receiving team; aim for follow-up within 7 days given the elevated post-discharge suicide risk. Expect utilization-review and payer pressure on length of stay, and know the hard dispositions that consume inpatient days: homelessness, the need for guardianship, patients leaving against medical advice (AMA), and psychiatric boarding while awaiting placement. Working these systemic barriers — not just the symptoms — is core to the role.
 
 **What the resident does**
 - Writes the admission H&P and problem-oriented daily notes; documents explicit risk reasoning, not just scores.
@@ -8629,7 +8629,7 @@ Twenty trials and analyses that shaped modern prescribing, ranked by impact. Pap
 - **Slug:** `med_monitoring.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 583 words
+- **Length:** 629 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -8673,11 +8673,11 @@ Twenty trials and analyses that shaped modern prescribing, ranked by impact. Pap
 | Agent | Baseline | Ongoing | Watch for |
 |---|---|---|---|
 | **Lithium** | BMP (renal), TSH, calcium, β-hCG, EKG if cardiac risk | Level ~5 days after start/change (12-h trough; target ≈ 0.6–1.0, up to ~1.2 acute mania); renal + TSH periodically | Narrow therapeutic index; tremor/ataxia/confusion = toxicity; NSAIDs, thiazides, ACE-inhibitors raise levels; teratogen (Ebstein anomaly) |
-| **Valproate** | LFTs, CBC (platelets), β-hCG | Level; LFTs and CBC periodically | Hepatotoxicity, thrombocytopenia, hyperammonemia, pancreatitis; teratogen (neural-tube) — avoid in childbearing potential |
+| **Valproate** | LFTs, CBC (platelets), β-hCG | Level; LFTs and CBC periodically; **send an ammonia level if the patient gets confused** — hyperammonaemic encephalopathy occurs with normal LFTs | Hepatotoxicity, thrombocytopenia, hyperammonemia presenting as worsening delirium, pancreatitis; contraindicated in significant hepatic impairment; teratogen (neural-tube) — avoid in childbearing potential |
 | **Clozapine** | ANC (per prescribing information — the FDA eliminated the REMS in 2025) | ANC weekly ×6 months → every 2 weeks ×6 months → monthly (per the prescribing information; not REMS-enforced); metabolic panel; EKG | Severe neutropenia; **myocarditis (early — check troponin/CRP if symptomatic)**; constipation → ileus; dose-related seizures |
 | **Antipsychotics (metabolic)** | Weight/BMI, waist, fasting glucose/A1c, lipids, blood pressure | Glucose/lipids at ~12 weeks then annually; weight each visit; AIMS for tardive dyskinesia | Metabolic syndrome; EPS/akathisia; tardive dyskinesia; prolactin elevation if symptomatic |
 | **Carbamazepine** | CBC, LFTs, sodium, level; HLA-B*1502 in at-risk ancestry | Level, CBC, LFTs, sodium | Agranulocytosis/aplastic anemia; SIADH (hyponatremia); Stevens-Johnson (HLA-B*1502); auto-induction of its own metabolism |
-| **QT-prolonging agents** (e.g., ziprasidone, IV haloperidol, high-dose citalopram) | Baseline EKG (QTc); potassium, magnesium | Repeat QTc with dose changes; correct electrolytes | Torsades risk; respect citalopram dose ceilings |
+| **QT-prolonging agents** (e.g., ziprasidone, IV haloperidol, droperidol, high-dose citalopram — and **methadone**, often already on board) | Baseline EKG (QTc); potassium, magnesium | Repeat QTc with dose changes; correct electrolytes | Torsades risk; respect citalopram dose ceilings; check what the patient is already taking before adding a second QT-prolonging agent |
 | **Stimulants** | Blood pressure, heart rate, cardiac history screen; growth in children | BP/HR at visits; growth monitoring in children | Cardiovascular effects; appetite/growth suppression; misuse |
 | **SSRIs/SNRIs** | (Clinical) — no routine labs required | Clinical monitoring | Hyponatremia (elderly), bleeding risk, activation and suicidality monitoring under age 25, discontinuation syndrome |
 
@@ -18746,7 +18746,7 @@ skills rather than vague exposure.
 - **Slug:** `ethics_legal.md` · **Type:** md · **Sidebar:** hidden (deep link only)
 - **Source:** `03_Core_Topics/Ethics_Legal/ethics_law_confidentiality_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`legal` · riskLevel=`high`
-- **Length:** 1,084 words
+- **Length:** 1,186 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -18784,7 +18784,7 @@ skills rather than vague exposure.
 - **mse** — Document observations relevant to capacity, risk, coercion, intoxication, psychosis, mania, delirium, and ability to communicate a stable choice.
 - **safety** — Escalate identifiable threats, abuse concerns, imminent self-harm, grave disability, or urgent refusal of high-stakes medical care to the supervising team immediately.
 - **say** — I want to protect your privacy, and I also need to explain the few safety situations where clinicians must involve others.
-- **collateral** — Share the minimum necessary information; ask family or systems partners only what changes risk, capacity, disposition, or mandatory reporting duties.
+- **collateral** — Share the minimum necessary information; ask family or systems partners only what changes risk, capacity, disposition, or mandatory reporting duties — and treat substance-use-treatment information as a separate consent gate (42 CFR Part 2) before you repeat it to family or an outside provider.
 - **rounds** — Name the legal frame, the patient-specific facts, the local-policy dependency, and the supervising/faculty decision still needed.
 - **exam** — Capacity is clinical and decision-specific; competence is legal. Involuntary hospitalization does not automatically authorize involuntary medication.
 - **actions** — Open capacity tool; Open violence risk tool; Practice interpreter/culture family contact
@@ -18815,7 +18815,7 @@ skills rather than vague exposure.
 
 **In one line** — Psychiatry runs on confidentiality, but the exam and the ward turn on knowing its **limits** — when you *must* break it to protect a third party, when you *must* report abuse, and when you can treat or hold a patient *against their will* — always choosing the **least restrictive** option that keeps people safe.
 
-**Confidentiality and its limits** — Protect patient information by default. The recognized exceptions where disclosure is permitted or required include: a **serious, credible threat to an identifiable person** (duty to protect), **mandatory reporting of abuse**, **imminent danger to self**, certain communicable-disease reporting, and specific legal/court mandates. Disclose the **minimum necessary**. Note that HIPAA permits sharing for treatment, payment, and operations.
+**Confidentiality and its limits** — Protect patient information by default. The recognized exceptions where disclosure is permitted or required include: a **serious, credible threat to an identifiable person** (duty to protect), **mandatory reporting of abuse**, **imminent danger to self**, certain communicable-disease reporting, and specific legal/court mandates. Disclose the **minimum necessary**. Note that HIPAA permits sharing for treatment, payment, and operations — but do not take that as the whole rule on an inpatient unit, because two carve-outs sit on top of it. Records originating from a **federally assisted substance use disorder treatment program** fall under **42 CFR Part 2**, which carries its own consent requirements; recent rulemaking has been aligning Part 2 more closely with HIPAA, so confirm the current rule and whether your program is a Part 2 program rather than assuming either way. **Psychotherapy notes** are separately protected. The practical default: assume SUD-treatment information needs its own consent before you repeat it to an outside provider or a family member.
 
 **Duty to protect / warn (Tarasoff)** — When a patient makes a **serious threat of violence against a reasonably identifiable victim**, the clinician has a duty to take reasonable protective steps — which may include **warning the potential victim, notifying police, hospitalizing the patient, or intensifying treatment**. Specifics vary by state (some mandate warning, some permit it), but the tested principle is: *a specific threat to a specific person overrides confidentiality.*
 
@@ -22281,7 +22281,7 @@ _1398 further strings omitted — this surface embeds the build's front-door cat
 
 **Rationale.** Minor always requires parental consent, Emancipation by age, and HIPAA overrides minor confidentiality all misstate the legal framework. The page states: 'In many states, care for STIs, contraception, substance use, and some mental-health services' are exceptions to the general parental consent requirement. The correct answer acknowledges the exception while noting state variation.
 
-**Pearl.** In many states, minors can consent to substance use treatment without parental involvement — this is a recognized statutory exception; state law governs the specifics.
+**Pearl.** In many states, minors can consent to substance use treatment without parental involvement — a recognized statutory exception, with state law governing the specifics. Consent to treat is not consent to disclose: the records are separately governed by 42 CFR Part 2.
 
 ### qb_eth_009
 
