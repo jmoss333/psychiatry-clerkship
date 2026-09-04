@@ -55,7 +55,10 @@ ATTRIBUTION = re.compile(
     # author-year in every form the library actually uses:
     #   Smith 2024 | Smith et al. (2024) | Smith et al., 2024 | Smith and Jones (2024)
     #   Washington v. Harper (1990)
-    r"|\b[A-Z][a-z]{2,}(?:\s+(?:et\s+al\.?|and\s+[A-Z][a-z]+|v\.\s+[A-Z][a-z]+))?[,.]?\s*\(?(?:19|20)\d{2}\b"
+    #   Siafis et al., *Lancet Psychiatry* 2026  -- the house form for a journal
+    #   citation in running prose. 247 occurrences across the library were invisible
+    #   to this detector because the italicised journal splits author from year.
+    r"|\b[A-Z][a-z]{2,}(?:\s+(?:et\s+al\.?|and\s+[A-Z][a-z]+|v\.\s+[A-Z][a-z]+))?[,.]?(?:\s*[*_][^*_\n]{2,60}[*_])?\s*\(?(?:19|20)\d{2}\b"
     # a named trial is traceable attribution: CATIE, STAR*D, MIND-USA, TREC trials
     r"|\b[A-Z][A-Z0-9*\u2011-]{2,}(?:\s+[A-Z][A-Z0-9*-]+)?\s+(?:trial|study|RCT)s?\b",
     re.I,
@@ -98,6 +101,11 @@ NOT_A_CLAIM = re.compile(
     re.I,
 )
 WINDOW = 3  # lines either side that may carry the attribution
+
+# Rows of a markdown table (the separator row included). `visible_text` strips
+# tags, so an HTML <table> has no pipes left by the time we see it; this is a
+# markdown-only rule, which is where the repo authors its data tables.
+TABLE_ROW = re.compile(r"^\|.*\|$")
 
 
 def shipped_pages():
@@ -147,6 +155,43 @@ def visible_text(path):
 BIBLIOGRAPHY = re.compile(r"^#{2,4}\s*(?:Sources|References|Bibliography|Citations)\b", re.I)
 
 
+def table_intro_span(lines, i):
+    """The prose that introduces the table `lines[i]` belongs to, if any.
+
+    A table row inherits the attribution of the sentence that introduces its
+    table. In evidence_inpatient.md, "a landmark individual participant data
+    network meta-analysis (Siafis et al., Lancet Psychiatry 2026 ...) provides
+    the most comprehensive comparison:" is followed by a five-row table. WINDOW
+    is a fixed +/-3 lines, so it reaches the first row and loses the fourth --
+    the row's distance from its own source is an artefact of table length, not
+    a fact about sourcing. Walk up past the contiguous table block instead.
+
+    Upward only, and only from a table row. A caption *below* a table does not
+    license the rows above it in this repo's house style, and reaching downward
+    would let the next table's introduction clear this table's rows.
+
+    The cost, stated plainly: a table whose rows come from different sources is
+    cleared by whichever source its introduction happens to name. That is
+    accepted. The alternative is what this function replaces -- flagging every
+    row of every correctly introduced table -- and a detector that cries wolf on
+    correct pages is one people learn to scroll past.
+    """
+    if not TABLE_ROW.match(lines[i]):
+        return None
+    first = i
+    while first > 0 and TABLE_ROW.match(lines[first - 1]):
+        first -= 1
+    k = first - 1
+    while k >= 0 and not lines[k]:
+        k -= 1
+    if k < 0 or TABLE_ROW.match(lines[k]):
+        return None
+    end = k + 1
+    while k >= 0 and lines[k] and not TABLE_ROW.match(lines[k]):
+        k -= 1
+    return k + 1, end
+
+
 def sweep_page(path):
     lines = visible_text(path)
     hits = []
@@ -161,7 +206,11 @@ def sweep_page(path):
         if not kinds:
             continue
         lo, hi = max(0, i - WINDOW), min(len(lines), i + WINDOW + 1)
-        if any(ATTRIBUTION.search(l) for l in lines[lo:hi]):
+        context = lines[lo:hi]
+        intro = table_intro_span(lines, i)
+        if intro is not None:
+            context = context + lines[intro[0]:intro[1]]
+        if any(ATTRIBUTION.search(l) for l in context):
             continue
         hits.append({"line": i + 1, "kinds": kinds, "text": line.strip()[:300]})
     # A page can carry a full bibliography and still leave every individual number

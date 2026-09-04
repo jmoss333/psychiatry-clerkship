@@ -298,7 +298,7 @@ should independently manage high-risk consults.
 - **Slug:** `ethics_legal.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `03_Core_Topics/Ethics_Legal/ethics_law_confidentiality_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`legal` · riskLevel=`high`
-- **Length:** 1,084 words
+- **Length:** 1,186 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -336,7 +336,7 @@ should independently manage high-risk consults.
 - **mse** — Document observations relevant to capacity, risk, coercion, intoxication, psychosis, mania, delirium, and ability to communicate a stable choice.
 - **safety** — Escalate identifiable threats, abuse concerns, imminent self-harm, grave disability, or urgent refusal of high-stakes medical care to the supervising team immediately.
 - **say** — I want to protect your privacy, and I also need to explain the few safety situations where clinicians must involve others.
-- **collateral** — Share the minimum necessary information; ask family or systems partners only what changes risk, capacity, disposition, or mandatory reporting duties.
+- **collateral** — Share the minimum necessary information; ask family or systems partners only what changes risk, capacity, disposition, or mandatory reporting duties — and treat substance-use-treatment information as a separate consent gate (42 CFR Part 2) before you repeat it to family or an outside provider.
 - **rounds** — Name the legal frame, the patient-specific facts, the local-policy dependency, and the supervising/faculty decision still needed.
 - **exam** — Capacity is clinical and decision-specific; competence is legal. Involuntary hospitalization does not automatically authorize involuntary medication.
 - **actions** — Open capacity tool; Open violence risk tool; Practice interpreter/culture family contact
@@ -367,7 +367,7 @@ should independently manage high-risk consults.
 
 **In one line** — Psychiatry runs on confidentiality, but the exam and the ward turn on knowing its **limits** — when you *must* break it to protect a third party, when you *must* report abuse, and when you can treat or hold a patient *against their will* — always choosing the **least restrictive** option that keeps people safe.
 
-**Confidentiality and its limits** — Protect patient information by default. The recognized exceptions where disclosure is permitted or required include: a **serious, credible threat to an identifiable person** (duty to protect), **mandatory reporting of abuse**, **imminent danger to self**, certain communicable-disease reporting, and specific legal/court mandates. Disclose the **minimum necessary**. Note that HIPAA permits sharing for treatment, payment, and operations.
+**Confidentiality and its limits** — Protect patient information by default. The recognized exceptions where disclosure is permitted or required include: a **serious, credible threat to an identifiable person** (duty to protect), **mandatory reporting of abuse**, **imminent danger to self**, certain communicable-disease reporting, and specific legal/court mandates. Disclose the **minimum necessary**. Note that HIPAA permits sharing for treatment, payment, and operations — but do not take that as the whole rule on an inpatient unit, because two carve-outs sit on top of it. Records originating from a **federally assisted substance use disorder treatment program** fall under **42 CFR Part 2**, which carries its own consent requirements; recent rulemaking has been aligning Part 2 more closely with HIPAA, so confirm the current rule and whether your program is a Part 2 program rather than assuming either way. **Psychotherapy notes** are separately protected. The practical default: assume SUD-treatment information needs its own consent before you repeat it to an outside provider or a family member.
 
 **Duty to protect / warn (Tarasoff)** — When a patient makes a **serious threat of violence against a reasonably identifiable victim**, the clinician has a duty to take reasonable protective steps — which may include **warning the potential victim, notifying police, hospitalizing the patient, or intensifying treatment**. Specifics vary by state (some mandate warning, some permit it), but the tested principle is: *a specific threat to a specific person overrides confidentiality.*
 
@@ -565,7 +565,7 @@ Twenty trials and analyses that shaped modern prescribing, ranked by impact. Pap
 - **Slug:** `med_monitoring.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`high`
-- **Length:** 583 words
+- **Length:** 629 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -609,11 +609,11 @@ Twenty trials and analyses that shaped modern prescribing, ranked by impact. Pap
 | Agent | Baseline | Ongoing | Watch for |
 |---|---|---|---|
 | **Lithium** | BMP (renal), TSH, calcium, β-hCG, EKG if cardiac risk | Level ~5 days after start/change (12-h trough; target ≈ 0.6–1.0, up to ~1.2 acute mania); renal + TSH periodically | Narrow therapeutic index; tremor/ataxia/confusion = toxicity; NSAIDs, thiazides, ACE-inhibitors raise levels; teratogen (Ebstein anomaly) |
-| **Valproate** | LFTs, CBC (platelets), β-hCG | Level; LFTs and CBC periodically | Hepatotoxicity, thrombocytopenia, hyperammonemia, pancreatitis; teratogen (neural-tube) — avoid in childbearing potential |
+| **Valproate** | LFTs, CBC (platelets), β-hCG | Level; LFTs and CBC periodically; **send an ammonia level if the patient gets confused** — hyperammonaemic encephalopathy occurs with normal LFTs | Hepatotoxicity, thrombocytopenia, hyperammonemia presenting as worsening delirium, pancreatitis; contraindicated in significant hepatic impairment; teratogen (neural-tube) — avoid in childbearing potential |
 | **Clozapine** | ANC (per prescribing information — the FDA eliminated the REMS in 2025) | ANC weekly ×6 months → every 2 weeks ×6 months → monthly (per the prescribing information; not REMS-enforced); metabolic panel; EKG | Severe neutropenia; **myocarditis (early — check troponin/CRP if symptomatic)**; constipation → ileus; dose-related seizures |
 | **Antipsychotics (metabolic)** | Weight/BMI, waist, fasting glucose/A1c, lipids, blood pressure | Glucose/lipids at ~12 weeks then annually; weight each visit; AIMS for tardive dyskinesia | Metabolic syndrome; EPS/akathisia; tardive dyskinesia; prolactin elevation if symptomatic |
 | **Carbamazepine** | CBC, LFTs, sodium, level; HLA-B*1502 in at-risk ancestry | Level, CBC, LFTs, sodium | Agranulocytosis/aplastic anemia; SIADH (hyponatremia); Stevens-Johnson (HLA-B*1502); auto-induction of its own metabolism |
-| **QT-prolonging agents** (e.g., ziprasidone, IV haloperidol, high-dose citalopram) | Baseline EKG (QTc); potassium, magnesium | Repeat QTc with dose changes; correct electrolytes | Torsades risk; respect citalopram dose ceilings |
+| **QT-prolonging agents** (e.g., ziprasidone, IV haloperidol, droperidol, high-dose citalopram — and **methadone**, often already on board) | Baseline EKG (QTc); potassium, magnesium | Repeat QTc with dose changes; correct electrolytes | Torsades risk; respect citalopram dose ceilings; check what the patient is already taking before adding a second QT-prolonging agent |
 | **Stimulants** | Blood pressure, heart rate, cardiac history screen; growth in children | BP/HR at visits; growth monitoring in children | Cardiovascular effects; appetite/growth suppression; misuse |
 | **SSRIs/SNRIs** | (Clinical) — no routine labs required | Clinical monitoring | Hyponatremia (elderly), bleeding risk, activation and suicidality monitoring under age 25, discontinuation syndrome |
 

@@ -64,7 +64,11 @@ EXPECTED_PERMISSIONS = {
     "ci.yml": {"contents": "read"},
     "maintenance-sp-health-monitor.yml": {"contents": "read"},
     "maintenance-production-canary.yml": {"contents": "read"},
-    "maintenance-heartbeat.yml": {"actions": "read", "contents": "read"},
+    "maintenance-heartbeat.yml": {
+        "actions": "read",
+        "contents": "read",
+        "pull-requests": "read",
+    },
     "maintenance-governance-digest.yml": {
         "contents": "read",
         "issues": "write",
@@ -149,6 +153,7 @@ EXPECTED_STEP_INVENTORIES = {
             ("name", "Lint — no hard-coded machine paths in tracked Python"),
             ("name", "Unit — media guard"),
             ("name", "Unit — shared build logic (common.py)"),
+            ("name", "Unit — pairing block renderer"),
             ("name", "Unit — evidence registry"),
             ("name", "Validate — evidence registry and generated views"),
             ("name", "Unit — citation surveillance"),
@@ -222,6 +227,9 @@ EXPECTED_STEP_INVENTORIES = {
             ("uses", "actions/setup-python"),
             ("name", "Install workflow parser"),
             ("name", "Evaluate scheduled workflow freshness"),
+            ("name", "Detect stranded auto-merge pull requests"),
+            ("name", "Detect branch ruleset drift"),
+            ("uses", "actions/upload-artifact"),
             ("uses", "actions/upload-artifact"),
         ),
     },
@@ -340,12 +348,12 @@ EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
     ESCALATION_FILE: (
         "97cce854ae22f6fcbf24a87d220582ea4f125d8136d4c8d306deb9492bcdf5be"
     ),
-    "ci.yml": "15ba2bfa009f02722f3038e1e8ede5d47d8524aaa031a6e241acae1e7c85fcfb",
+    "ci.yml": "d72b57a13342843314d887477f58d3c1fcda197d7d63ecef4f2f2600ff104e31",
     "maintenance-governance-digest.yml": (
         "d819d2eafa59d6d62fcdf5f4d82b5eaf374f2b58d728d7c7f748fa7160bf6c10"
     ),
     "maintenance-heartbeat.yml": (
-        "349273a885cb7d2aae2fab884ac4e3ef104452f9a1db7ecc26e813f7b6dcd806"
+        "2657e218acd9d67f48e4ee39a6069c918056efaeebb3f15506693d4011163837"
     ),
     "maintenance-monthly-review.yml": (
         "acd1fe78364baf65ac9842ffb62a5abacaa8c70110a254106166130985fc9689"
@@ -626,6 +634,19 @@ npx playwright test --project=lfs""",
                 'workflow-heartbeat.json"',
                 None,
                 "required heartbeat gate",
+            ),
+            (
+                "Detect stranded auto-merge pull requests",
+                "python3 13_Faculty_Resources/_automation/maintenance/"
+                'stranded_prs.py --out "$RUNNER_TEMP/stranded-prs.json"',
+                "always()",
+                "required stranded pull request gate",
+            ),
+            (
+                "Detect branch ruleset drift",
+                "python3 bin/check_ruleset_drift.py",
+                "always()",
+                "required ruleset drift gate",
             ),
         ),
     },

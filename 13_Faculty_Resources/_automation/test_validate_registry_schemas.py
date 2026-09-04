@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Behavior tests for the nine-registry Draft-07 schema gate."""
+"""Behavior tests for the eleven-registry Draft-07 schema gate."""
 
 import json
 import shutil
@@ -25,6 +25,15 @@ PAIRS = (
     ("evidence_annotations.json", "evidence_annotations.schema.json"),
     ("instrument_rights.json", "instrument_rights.schema.json"),
     ("decisions.json", "decisions.schema.json"),
+    ("pairings.json", "pairings.schema.json"),
+)
+
+# pairings_integrity_diagnostics resolves page/tool/audio_oe references against these two
+# shipped files. A synthetic registry copy must carry them, or the gate would have nothing
+# to resolve against and would silently stop checking the thing it exists to check.
+PAIRINGS_RESOLUTION_SOURCES = (
+    Path("13_Faculty_Resources/_automation/site_build/site_manifest.json"),
+    Path("12_Media/audio_oe/MANIFEST.csv"),
 )
 
 
@@ -83,15 +92,75 @@ class RegistrySchemaGateTests(unittest.TestCase):
         for document, schema in PAIRS:
             shutil.copy2(ROOT / document, destination / document)
             shutil.copy2(ROOT / schema, destination / schema)
+        for source in PAIRINGS_RESOLUTION_SOURCES:
+            (destination / source.parent).mkdir(parents=True, exist_ok=True)
+            shutil.copy2(ROOT / source, destination / source)
         return temporary
 
-    def test_all_eight_current_document_schema_pairs_pass(self) -> None:
+    def test_all_current_document_schema_pairs_pass(self) -> None:
         result = run_validator(ROOT)
 
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         for document, schema in PAIRS:
             self.assertIn(f"{document}: OK", result.stdout)
             self.assertIn(schema, result.stdout)
+
+    def _mutated_pairings(self, root: Path, mutate) -> str:
+        document = json.loads((root / "pairings.json").read_text(encoding="utf-8"))
+        mutate(document)
+        (root / "pairings.json").write_text(
+            json.dumps(document, indent=2) + "\n", encoding="utf-8"
+        )
+        result = run_validator(root)
+        self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertNotIn("Traceback", result.stderr)
+        return result.stdout
+
+    def test_pairings_dangling_page_reference_fails(self) -> None:
+        def mutate(document):
+            document["pairings"][0]["items"][0]["ref"] = "no_such_page.md"
+
+        with self.make_registry_copy() as temporary:
+            stdout = self._mutated_pairings(Path(temporary), mutate)
+        self.assertIn("page 'no_such_page.md' is not in site_manifest.json", stdout)
+
+    def test_pairings_dangling_tool_reference_fails(self) -> None:
+        def mutate(document):
+            for item in document["pairings"][0]["items"]:
+                if item["kind"] == "tool":
+                    item["ref"] = "no-such-tool.html"
+
+        with self.make_registry_copy() as temporary:
+            stdout = self._mutated_pairings(Path(temporary), mutate)
+        self.assertIn("tool 'no-such-tool.html' is not in site_manifest.json", stdout)
+
+    def test_pairings_dangling_audio_brief_fails(self) -> None:
+        def mutate(document):
+            for item in document["pairings"][0]["items"]:
+                if item["kind"] == "audio_oe":
+                    item["ref"] = "999"
+
+        with self.make_registry_copy() as temporary:
+            stdout = self._mutated_pairings(Path(temporary), mutate)
+        self.assertIn("audio_oe brief '999' is not in MANIFEST.csv", stdout)
+
+    def test_pairings_uncovered_week_fails(self) -> None:
+        def mutate(document):
+            document["pairings"] = [
+                p for p in document["pairings"] if 5 not in p["weeks"]
+            ]
+
+        with self.make_registry_copy() as temporary:
+            stdout = self._mutated_pairings(Path(temporary), mutate)
+        self.assertIn("no pairing covers week 5", stdout)
+
+    def test_pairings_duplicate_id_fails(self) -> None:
+        def mutate(document):
+            document["pairings"][1]["id"] = document["pairings"][0]["id"]
+
+        with self.make_registry_copy() as temporary:
+            stdout = self._mutated_pairings(Path(temporary), mutate)
+        self.assertIn("duplicates /pairings/0", stdout)
 
     def test_synthetic_invalid_mutation_of_each_document_fails(self) -> None:
         for document, _ in PAIRS:

@@ -31,10 +31,35 @@ const CONTRACTS = {
   'deploy-verifier': {
     // "readOnly" pins the absence of editing tools. Bash is allowed (curl, the canary), so
     // the read-only guarantee beyond that is the agent's instruction, not the allowlist.
+    //
+    // The two Netlify readers are the egress-blocked fallback: when the environment denies
+    // CONNECT to *.netlify.app (as Claude Code on the web does), the HTTP runbook cannot run at
+    // all, and without them the agent returns a wall of UNVERIFIED. They are read-only
+    // operations on Netlify's deploy record. Like the PubMed connector above, the server
+    // surfaces under two prefixes depending on host, and both must be allowlisted or the
+    // fallback silently disappears on one of them.
+    //
+    // These readers must NOT grow into the updater services (netlify-*-updater), which can
+    // change a site: this agent never deploys, never clears a cache, never edits.
     readOnly: true,
-    mustHave: ['Bash', 'Read'],
-    mustNotHave: [],
-    bodyMustMention: ['production_canary.py', 'git-lfs', 'crisis-block-hook', 'Never'],
+    mustHave: [
+      'Bash', 'Read',
+      'mcp__Netlify__netlify-project-services-reader',
+      'mcp__Netlify__netlify-deploy-services-reader',
+      'mcp__claude_ai_Netlify__netlify-project-services-reader',
+      'mcp__claude_ai_Netlify__netlify-deploy-services-reader',
+    ],
+    mustNotHave: [
+      'mcp__Netlify__netlify-deploy-services-updater',
+      'mcp__Netlify__netlify-project-services-updater',
+      'mcp__claude_ai_Netlify__netlify-deploy-services-updater',
+      'mcp__claude_ai_Netlify__netlify-project-services-updater',
+    ],
+    bodyMustMention: [
+      'production_canary.py', 'git-lfs', 'crisis-block-hook', 'Never',
+      // the fallback must keep saying what it does NOT prove
+      'DEPLOY VERIFIED · CONTENT UNVERIFIED', 'commit_ref',
+    ],
   },
 };
 

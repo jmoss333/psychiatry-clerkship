@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""Validate the nine root registries against their Draft-07 JSON Schemas."""
+"""Validate the eleven root registries against their Draft-07 JSON Schemas."""
 
 import argparse
+import csv
 import json
 import sys
 from pathlib import Path
@@ -30,6 +31,7 @@ PAIRS = (
     ("evidence_annotations.json", "evidence_annotations.schema.json"),
     ("instrument_rights.json", "instrument_rights.schema.json"),
     ("decisions.json", "decisions.schema.json"),
+    ("pairings.json", "pairings.schema.json"),
 )
 
 
@@ -82,6 +84,94 @@ def qbank_prefix_diagnostics(document):
                     ", ".join(sorted(QBANK_GRANDFATHERED_IDS)),
                 )
             )
+    return diagnostics
+
+
+PAIRINGS_SITE_MANIFEST = Path("13_Faculty_Resources/_automation/site_build/site_manifest.json")
+PAIRINGS_AUDIO_MANIFEST = Path("12_Media/audio_oe/MANIFEST.csv")
+PAIRINGS_WEEKS = range(1, 7)
+PAIRINGS_AUDIENCES = ("ms3", "res")
+
+
+def pairings_integrity_diagnostics(document, root: Path):
+    """Semantic gate: every pairing reference resolves, and every week/audience is covered.
+
+    JSON Schema can check the SHAPE of a reference but not whether the page, tool or audio
+    brief it names still exists. A dangling reference must fail the build, not the learner —
+    a pairing is injected into all six week pages on both sites, so one renamed slug would
+    ship a dead link six times over. Cross-item uniqueness of ``id`` is also beyond a
+    per-item schema and is checked here.
+    """
+    diagnostics = []
+    pairings = document.get("pairings", []) if isinstance(document, dict) else []
+
+    pages, tools = set(), set()
+    manifest, manifest_error = load_json(root / PAIRINGS_SITE_MANIFEST)
+    if manifest_error:
+        diagnostics.append("pairings.json: cannot resolve references — %s" % manifest_error)
+    else:
+        pages = {e[1] for e in manifest.get("md", []) if len(e) >= 2}
+        tools = {e[1] for e in manifest.get("tools", []) if len(e) >= 2}
+
+    briefs = set()
+    audio_path = root / PAIRINGS_AUDIO_MANIFEST
+    try:
+        with audio_path.open(encoding="utf-8") as handle:
+            for row in csv.DictReader(handle):
+                number = (row.get("number") or "").strip()
+                if number:
+                    briefs.add(number.lstrip("0") or "0")
+    except OSError as error:
+        diagnostics.append("pairings.json: cannot read %s: %s" % (PAIRINGS_AUDIO_MANIFEST, error))
+
+    seen_ids = {}
+    covered = set()
+    for index, pairing in enumerate(pairings):
+        if not isinstance(pairing, dict):
+            continue  # shape problems are the schema's job
+        pairing_id = pairing.get("id")
+        if isinstance(pairing_id, str):
+            if pairing_id in seen_ids:
+                diagnostics.append(
+                    "pairings.json: INVALID at /pairings/%d/id: %r duplicates /pairings/%d"
+                    % (index, pairing_id, seen_ids[pairing_id])
+                )
+            else:
+                seen_ids[pairing_id] = index
+        for week in pairing.get("weeks", []) or []:
+            for audience in pairing.get("audiences", []) or []:
+                covered.add((week, audience))
+        for item_index, item in enumerate(pairing.get("items", []) or []):
+            if not isinstance(item, dict):
+                continue
+            kind, ref = item.get("kind"), item.get("ref")
+            pointer = "/pairings/%d/items/%d/ref" % (index, item_index)
+            if kind == "page" and pages and ref not in pages:
+                diagnostics.append(
+                    "pairings.json: INVALID at %s: page %r is not in %s"
+                    % (pointer, ref, PAIRINGS_SITE_MANIFEST.name)
+                )
+            elif kind == "tool" and tools and ref not in tools:
+                diagnostics.append(
+                    "pairings.json: INVALID at %s: tool %r is not in %s"
+                    % (pointer, ref, PAIRINGS_SITE_MANIFEST.name)
+                )
+            elif kind == "audio_oe" and briefs:
+                key = str(ref).strip().lstrip("0") or "0"
+                if key not in briefs:
+                    diagnostics.append(
+                        "pairings.json: INVALID at %s: audio_oe brief %r is not in %s"
+                        % (pointer, ref, PAIRINGS_AUDIO_MANIFEST.name)
+                    )
+
+    for week in PAIRINGS_WEEKS:
+        for audience in PAIRINGS_AUDIENCES:
+            if (week, audience) not in covered:
+                diagnostics.append(
+                    "pairings.json: INVALID at /pairings: no pairing covers week %d for "
+                    "audience %r — week%d.md would render an empty block"
+                    % (week, audience, week)
+                )
     return diagnostics
 
 
@@ -182,7 +272,7 @@ def schema_reference_error(schema):
 
 
 def validate_root(root: Path) -> tuple[list[str], bool]:
-    """Return deterministic diagnostics for the nine fixed registry/schema pairs."""
+    """Return deterministic diagnostics for the eleven fixed registry/schema pairs."""
     diagnostics = []
     has_errors = False
     for document_name, schema_name in PAIRS:
@@ -227,11 +317,12 @@ def validate_root(root: Path) -> tuple[list[str], bool]:
             diagnostics.append(f"{schema_name}: INVALID SCHEMA at /: unresolvable local $ref")
             has_errors = True
             continue
-        semantic = (
-            qbank_prefix_diagnostics(document)
-            if document_name == "question_bank.json"
-            else []
-        )
+        if document_name == "question_bank.json":
+            semantic = qbank_prefix_diagnostics(document)
+        elif document_name == "pairings.json":
+            semantic = pairings_integrity_diagnostics(document, root)
+        else:
+            semantic = []
         if errors or semantic:
             has_errors = True
             diagnostics.extend(
@@ -250,7 +341,7 @@ def main() -> int:
         "--root",
         type=Path,
         default=Path(__file__).resolve().parents[2],
-        help="repository root containing the nine fixed registry/schema pairs",
+        help="repository root containing the eleven fixed registry/schema pairs",
     )
     args = parser.parse_args()
 
