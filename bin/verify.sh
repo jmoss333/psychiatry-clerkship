@@ -131,6 +131,14 @@ step "production rotation edition locked"   python3 bin/check-rotation-edition-l
 step "node --test tests/*.test.mjs"         bash -c 'node --test tests/*.test.mjs'
 step "contrast-check"                       node tests/contrast-check.mjs
 
+# --- faculty console: shared modules + the pending-visibility invariant ---
+# The invariant fails when any reviewed.json item at status "pending" is outside the
+# console's content universe (site_manifest.json + cotw_registry.json) and not on the
+# documented NOT_REVIEWABLE_IN_CONSOLE allowlist. That is the check that would have
+# caught the July 2026 Case-of-the-Week blind spot on the day it opened.
+step "node --test faculty-console/*.test.mjs" bash -c 'node --test faculty-console/*.test.mjs'
+step "pending items are visible in console"  node faculty-console/check_pending_visible.mjs
+
 # --- SP: the duplicated state machine and its parity gate ---
 # parity.test.mjs imports sp-proxy/netlify/functions/sp.mjs (@netlify/blobs) and
 # sp-deploy-manifest.test.mjs imports @netlify/zip-it-and-ship-it — a devDependency.

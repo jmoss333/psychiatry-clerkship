@@ -256,6 +256,44 @@
 
   .reviewer-note { margin: 0 0 0.25rem; color: var(--muted); font-size: 0.82rem; }
 
+  .bookmarklet-disclosure { flex: 1 0 100%; margin-block-start: 0.35rem; }
+
+  .bookmarklet-disclosure summary {
+    cursor: pointer;
+    color: var(--primary);
+    font-size: 0.82rem;
+    font-weight: 800;
+  }
+
+  .bookmarklet-body {
+    display: grid;
+    gap: 0.45rem;
+    margin-block-start: 0.5rem;
+  }
+
+  .bookmarklet-body .hint { margin: 0; }
+
+  .bookmarklet-link {
+    justify-self: start;
+    border: 1px solid var(--primary);
+    border-radius: 0.35rem;
+    background: var(--primary-soft);
+    padding: 0.35rem 0.7rem;
+    color: var(--primary);
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  #bookmarklet-source {
+    width: 100%;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    padding: 0.4rem 0.5rem;
+    color: var(--muted);
+    font-size: 0.72rem;
+    resize: vertical;
+  }
+
   .reviewer-heading {
     margin: 0 0 0.2rem;
     color: var(--muted);
@@ -284,6 +322,33 @@
   }
 
   .queue-heading h2 { font-size: 1rem; }
+
+  /* The selector and its Copy link button share one grid cell, so .queue-primary keeps
+     its four-column template while the deep-link action sits where it belongs. */
+  .queue-selector-cell {
+    display: flex;
+    align-items: end;
+    gap: 0.5rem;
+    min-width: 0;
+  }
+
+  .queue-selector-cell .queue-selector { flex: 1 1 auto; min-width: 0; }
+
+  .queue-selector-cell button { flex: 0 0 auto; white-space: nowrap; }
+
+  .queue-summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.4rem 1rem;
+    border-block-start: 1px solid var(--line);
+    padding: 0.55rem 1rem;
+  }
+
+  .queue-summary p { margin: 0; color: var(--muted); font-size: 0.82rem; }
+
+  .queue-summary .deep-link-notice { color: var(--warning); font-weight: 700; }
 
   .queue-navigation { flex-wrap: nowrap; }
 
@@ -389,6 +454,23 @@
   }
 
   .empty-queue { margin: 0; color: var(--muted); padding: 0 1rem 1rem; }
+
+  /* Case-of-the-Week pair badge. Names the twin and offers one hop to it — it is
+     navigation, never a second attestation. */
+  .twin-context {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    border: 1px solid var(--line);
+    border-inline-start: 3px solid var(--primary);
+    background: var(--primary-soft);
+    margin-block-end: 0.7rem;
+    padding: 0.5rem 0.7rem;
+  }
+
+  .twin-context p { margin: 0; font-size: 0.82rem; }
 
   .item-header {
     display: flex;
@@ -937,6 +1019,8 @@
     .wrap { padding-inline: 0.7rem; }
     .console-header { align-items: stretch; flex-direction: column; }
     .header-actions button { width: 100%; }
+    .queue-selector-cell { flex-direction: column; align-items: stretch; }
+    .queue-selector-cell button { width: 100%; }
     .queue-navigation { width: 100%; }
     .queue-navigation button { flex: 1 1 8rem; }
     .review-sheet { padding-inline: 0.75rem; }

@@ -16,6 +16,7 @@ const MAX_BANK_BYTES = 4 * 1024 * 1024;
 const REVIEWED_SHA = 'a'.repeat(40);
 const MANIFEST_SHA = 'b'.repeat(40);
 const QBANK_SHA = 'c'.repeat(40);
+const REGISTRY_SHA = '7'.repeat(40);
 const FIRST_WRITE_SHA = 'd'.repeat(40);
 const SECOND_WRITE_SHA = 'e'.repeat(40);
 const UNRELATED_RACE_SHA = 'f'.repeat(40);
@@ -43,6 +44,7 @@ const UNRELATED_REVIEWED_SHA = '6'.repeat(64);
 
 const REVIEWED_PATH = '13_Faculty_Resources/reviewed.json';
 const MANIFEST_PATH = '13_Faculty_Resources/_automation/site_build/site_manifest.json';
+const REGISTRY_PATH = '08_Cases_and_Simulation/case-of-the-week/cotw_registry.json';
 const QBANK_PATH = 'question_bank.json';
 
 const confirmed = {
@@ -140,6 +142,14 @@ function defaultFiles(bank = makeBank([
         tools: [['04_Assessment/mse.html', 'mse-tool', 'Mental Status Examination']],
       },
       sha: MANIFEST_SHA,
+    },
+    // Empty by default so every pre-existing assertion sees the exact manifest-only
+    // universe it was written against; the Case-of-the-Week tests below supply their
+    // own weeks. The file itself must always be readable — buildState fails closed on a
+    // missing registry rather than silently shipping a short queue.
+    [REGISTRY_PATH]: {
+      json: { weeks: [] },
+      sha: REGISTRY_SHA,
     },
     [QBANK_PATH]: {
       json: bank,
@@ -481,6 +491,148 @@ async function expectError(response, {
   assert.equal(Object.hasOwn(payload.error, 'stack'), false);
   return payload;
 }
+
+/* Case-of-the-Week visibility (2026-09). cotw_registry.json became a second source of
+   truth for what ships in July 2026; until this change the handler read only
+   site_manifest.json, so the 22 built Case-of-the-Week pages never reached the console
+   even though reviewed.json called every one of them pending. */
+
+const COTW_WEEK = {
+  date: '2026-08-31',
+  topic: 'catatonia',
+  label: 'Catatonia (Aug 31)',
+  ms3_src: '2026-08-31_catatonia_MS3.md',
+  res_src: '2026-08-31_catatonia_Resident.md',
+};
+
+function cotwFiles(weeks = [COTW_WEEK]) {
+  const files = defaultFiles();
+  files[REGISTRY_PATH].json = { weeks };
+  files[REVIEWED_PATH].json['cotw_20260831_catatonia_ms3.md'] = {
+    status: 'pending',
+    at: '2026-08-31',
+    by: 'Pending faculty review',
+    risk: { kind: 'clinical', level: 'moderate' },
+    reason: 'New content awaiting faculty review.',
+    note: 'Internal note that must never reach the browser.',
+  };
+  files[REVIEWED_PATH].json['cotw_20260831_catatonia_res.md'] = {
+    status: 'reviewed',
+    at: '2026-09-01',
+    by: 'Synthetic Reviewer',
+    risk: { kind: 'clinical', level: 'moderate' },
+  };
+  return files;
+}
+
+test('GET surfaces both Case-of-the-Week twins with the site that serves each', async () => {
+  const mock = createGithubMock({ files: cotwFiles() });
+  const response = await handlerWith(mock)(apiRequest('GET'));
+  assert.equal(response.status, 200);
+  const payload = await response.json();
+
+  // Manifest items first, unchanged, then the registry-derived twins.
+  assert.deepEqual(payload.items.map(item => item.slug), [
+    't_mood.md',
+    'mse-tool',
+    'cotw_20260831_catatonia_ms3.md',
+    'cotw_20260831_catatonia_res.md',
+  ]);
+  const ms3 = payload.items.find(item => item.slug === 'cotw_20260831_catatonia_ms3.md');
+  const res = payload.items.find(item => item.slug === 'cotw_20260831_catatonia_res.md');
+  assert.deepEqual(ms3, {
+    slug: 'cotw_20260831_catatonia_ms3.md',
+    title: 'Catatonia (Aug 31) — MS3',
+    kind: 'page',
+    site: 'ms3',
+    status: 'unreviewed',
+    at: '2026-08-31',
+    by: 'Pending faculty review',
+    risk: { kind: 'clinical', level: 'moderate' },
+    reason: 'New content awaiting faculty review.',
+  });
+  assert.equal(res.title, 'Catatonia (Aug 31) — Resident');
+  assert.equal(res.site, 'res');
+  assert.equal(res.status, 'reviewed');
+  // Internal ledger fields still never cross the boundary.
+  assert.equal(Object.hasOwn(ms3, 'note'), false);
+
+  // Every manifest item keeps the MS3 site, and the counts include the new pages.
+  assert.equal(payload.items.filter(item => item.site === 'ms3').length, 3);
+  assert.equal(payload.counts.pagesTotal, 4);
+  assert.equal(payload.counts.pagesReviewed, 2);
+  // The registry revision is reported alongside the manifest revision.
+  assert.equal(payload.registryRevision, REGISTRY_SHA);
+  // manifestPages stays the manifest's own list: it gates question page anchors, which
+  // Case-of-the-Week pages are not part of.
+  assert.deepEqual(payload.manifestPages, ['t_mood.md']);
+});
+
+test('the resident base is defaulted in code and overridable by RESIDENT_SITE_URL', async () => {
+  const mock = createGithubMock({ files: cotwFiles() });
+  const payload = await (await handlerWith(mock)(apiRequest('GET'))).json();
+  assert.equal(payload.student, 'https://students.example');
+  assert.equal(payload.resident, 'https://mmc-psychiatry-residents-sanford.netlify.app');
+
+  const overridden = createGithubMock({ files: cotwFiles() });
+  const custom = await (await handlerWith(overridden, {
+    RESIDENT_SITE_URL: 'https://residents.example/',
+  })(apiRequest('GET'))).json();
+  assert.equal(custom.resident, 'https://residents.example');
+
+  const broken = createGithubMock({ files: cotwFiles() });
+  await expectError(
+    await handlerWith(broken, { RESIDENT_SITE_URL: 'javascript:alert(1)' })(apiRequest('GET')),
+    { status: 500, code: 'server_configuration' },
+  );
+});
+
+test('a Case-of-the-Week page attests through the ordinary single-slug write path', async () => {
+  const mock = createGithubMock({ files: cotwFiles() });
+  const response = await handlerWith(mock)(apiRequest('POST', {
+    body: { target: 'content', changes: { 'cotw_20260831_catatonia_ms3.md': true } },
+  }));
+  assert.equal(response.status, 200);
+  const payload = await response.json();
+  assert.equal(payload.updated, 1);
+
+  const saved = mock.files[REVIEWED_PATH].json;
+  assert.equal(saved['cotw_20260831_catatonia_ms3.md'].status, 'reviewed');
+  assert.equal(saved['cotw_20260831_catatonia_ms3.md'].by, 'Synthetic Reviewer');
+  // The risk classification and the internal note are preserved; the pending reason goes.
+  assert.deepEqual(saved['cotw_20260831_catatonia_ms3.md'].risk, { kind: 'clinical', level: 'moderate' });
+  assert.equal(saved['cotw_20260831_catatonia_ms3.md'].note, 'Internal note that must never reach the browser.');
+  assert.equal(Object.hasOwn(saved['cotw_20260831_catatonia_ms3.md'], 'reason'), false);
+  // Its twin is untouched: one press attests exactly one slug, unchanged rule.
+  assert.equal(saved['cotw_20260831_catatonia_res.md'].status, 'reviewed');
+  assert.equal(saved['cotw_20260831_catatonia_res.md'].by, 'Synthetic Reviewer');
+  assert.equal(saved['cotw_20260831_catatonia_res.md'].at, '2026-09-01');
+});
+
+test('a malformed or missing registry fails closed rather than shipping a short queue', async () => {
+  for (const weeks of [
+    [{ ...COTW_WEEK, date: undefined }],
+    [{ ...COTW_WEEK, topic: '' }],
+    [{ ...COTW_WEEK, label: '  ' }],
+    [COTW_WEEK, { ...COTW_WEEK, label: 'Duplicate week' }],
+    'not-a-list',
+  ]) {
+    const files = defaultFiles();
+    files[REGISTRY_PATH].json = { weeks };
+    const mock = createGithubMock({ files });
+    await expectError(await handlerWith(mock)(apiRequest('GET')), {
+      status: 502,
+      code: 'repository_file_invalid',
+    });
+  }
+
+  const missing = defaultFiles();
+  delete missing[REGISTRY_PATH];
+  const mock = createGithubMock({ files: missing });
+  const response = await handlerWith(mock)(apiRequest('GET'));
+  assert.equal(response.ok, false);
+  assert.notEqual(response.status, 200);
+});
 
 test('exports the Netlify v2 route and per-IP/domain rate limit', () => {
   assert.deepEqual(config, {

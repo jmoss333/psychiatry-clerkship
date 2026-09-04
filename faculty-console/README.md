@@ -6,8 +6,12 @@ A standalone, shared-key faculty workbench for reviewing learner-facing pages, t
 faculty-console/
   index.html                     password gate and unified workspace styles
   app.mjs                        shared queue, preview/editor, sign-off, and conflict workflow
-  review-model.mjs               queue, preview-route, protocol, and eligibility rules
+  review-model.mjs               queue, preview-route, deep-link, twin, and eligibility rules
+  content-universe.mjs           the exact set of pages and tools the two sites publish
   qbank-rules.mjs                shared question-bank structural checks
+  check_pending_visible.mjs      CI invariant: no pending item is unreachable here
+  content-universe.test.mjs      universe, slug parity with the builds, the invariant
+  console-navigation.test.mjs    deep links, twins, bookmarklet, site routing
   netlify.toml                   config for this site (publish + functions)
   netlify/functions/attest.mjs   authenticated state reads and commit-on-save API
   netlify/functions/qbank-actions.mjs
@@ -18,7 +22,11 @@ faculty-console/
 ## How it works
 
 1. Open the faculty site (its own Netlify URL) and enter the faculty key. The reviewer attribution shown in the console is configured server-side (the site's `ATTESTER_NAME` environment variable, defaulting to Joshua Moss, MD) and cannot be edited in the browser.
-2. The console calls `GET /api/attest`. The key is sent only in the `x-faculty-key` header; it is never accepted from the URL or JSON body. The function reads `reviewed.json`, `site_manifest.json`, and `question_bank.json`, then returns the page/tool review state, active questions with their exact saved revisions, the normalized Git object ID for the loaded manifest, and current structural checks.
+2. The console calls `GET /api/attest`. The key is sent only in the `x-faculty-key` header; it is never accepted from the URL or JSON body. The function reads `reviewed.json`, `site_manifest.json`, `cotw_registry.json`, and `question_bank.json`, then returns the page/tool review state, active questions with their exact saved revisions, the normalized Git object IDs for the loaded manifest and registry, and current structural checks.
+
+   **The content universe is `site_manifest.json` *plus* `cotw_registry.json`.** Both site builds append Case-of-the-Week pages from that registry without touching the manifest — `build_deploy.py` adds the MS3 page for each week and `resident_section.py` the resident twin — so a console that read only the manifest could not see them. Between July and September 2026 that is exactly what happened: 22 built pages sat at `status: "pending"` in `reviewed.json` with no surface that could show them. `content-universe.mjs` now derives the same set the builds do, using a slug formula that is byte-identical to their `_cotw_slug()`, and every content item the API returns carries a `site` of `ms3` or `res` so its preview is requested from the deployment that actually serves it. `check_pending_visible.mjs` runs in CI and in `bin/verify.sh` and fails if any pending ledger entry falls outside that universe.
+
+   Two `_prototypes/` role-play tools (`rp-agitation.html`, `rp-brief-psych.html`) are deliberately outside it: they ship on no learner site, and their ledger reason says they await *completion*, not review. They are named in the `NOT_REVIEWABLE_IN_CONSOLE` constant in `content-universe.mjs`, so the exclusion is visible in code — and the same check fails if either one ever *does* enter the universe while still on that list.
 3. Pages, tools, and questions appear in one filterable queue. Selecting an item opens its learner-facing surface beside one common **Review → Resolve → Confirm** rail.
 4. The embedded learner site reports a typed readiness result for the exact selected item. Preview requests carry a short-lived random review token, never the faculty key, reviewer label, confirmations, edits, or commit data.
 5. A question edit is saved as a **draft** first. The browser sends the exact loaded question and manifest revisions. Before each write attempt, the server captures one branch-head revision, rereads and validates both files at that exact snapshot, applies only editable fields, reruns the structural checks, and advances the branch only if its head is still unchanged. The browser then reloads the committed question; the success message and commit receipt appear only after that reload confirms the exact new revision.
@@ -31,7 +39,13 @@ faculty-console/
 
 ### 1. Choose one item
 
-Use the shared queue's search, item type, review status, category, gate, and difficulty filters. **Previous** and **Next** move deliberately through the filtered queue. A successful page/tool attestation moves to the next pending content item when one exists; otherwise it stays on the completed item. Recording a question review receipt moves to the next unreviewed draft later in the filtered queue without wrapping.
+Use the shared queue's search, item type, review status, category, gate, and difficulty filters. A fresh load opens on **Needs review · All types**, and a one-line summary above the filters states how much is outstanding by kind (`N pages · N tools · N questions need review`) regardless of the active filters. **Previous** and **Next** move deliberately through the filtered queue. A successful page/tool attestation moves to the next pending content item when one exists; otherwise it stays on the completed item. Recording a question review receipt moves to the next unreviewed draft later in the filtered queue without wrapping.
+
+**Deep links.** The address bar always holds a shareable link to the selected item (`?item=page:<slug>`, `?item=tool:<slug>`, or `?item=question:<id>`), and **Copy link** beside the item selector copies it. Opening such a link selects that item once the console is unlocked — the request is held in memory across the key prompt, never in storage. A link naming an item that is not in the current queue is ignored: the console selects the default item and says *That item is not in the current queue.* **A console link never carries the faculty key, a review token, or the reviewer's name**; the link is rebuilt from the item key alone, so no other parameter can ride along.
+
+**Review from the learner site.** The unlocked header holds a *Review from the learner site* disclosure with an **Attest this page** bookmarklet. Drag it to the bookmarks bar once; then, on any learner page or tool, click it to open that exact item here. A learner view whose address names no page or tool opens this console's queue instead — it never guesses a slug. The bookmarklet is generated from the origin of the console that rendered it, so a Netlify preview deploy hands out one that points at that preview. Browsers that block `javascript:` bookmarklets under a page's Content-Security-Policy will refuse it; use **Copy link** or the queue in that case.
+
+**Case-of-the-Week pairs.** Each weekly case ships as an MS3 page and a resident twin built from one registry week. When one is selected, the rail names the other (`Twin: <title> · Needs review | Reviewed`) with **Go to twin**, and attesting one half advances the selection to the twin when it still needs review. That is navigation only. **One press still attests exactly one slug** — attesting both halves in a single action would be a governance change, and the console does not make it.
 
 The compact **Review sitting** strip keeps the automation visible: it shows saved-draft receipt and batch counts, any reset notice, the most recent automatic batch choice with **Undo batch selection**, and a collapsible ledger of every confirmed repository action in the current sitting. The ledger is scrollable for a long sitting, links the confirmed commit and rolling pull request when available, and flags a pull-request housekeeping failure without calling the confirmed write a failure. This is browser-session context, not a durable approval record; it clears when the console is locked or the tab closes.
 
@@ -94,12 +108,13 @@ Question receipts and batch choices are temporary safeguards for the current sit
 
 ## Local browser verification
 
-The browser test uses a synthetic in-memory repository and intercepts `/api/attest`; it does not need or expose production secrets. It does require a current built learner site on port 4200 and the console on port 4202.
+The browser test uses a synthetic in-memory repository and intercepts `/api/attest`; it does not need or expose production secrets. It does require current built learner sites on ports 4200 (MS3) and 4201 (resident) and the console on port 4202. The resident server is not optional: the Case-of-the-Week tests assert that the resident half of a pair previews against the resident origin.
 
 ```bash
-# Terminal 1, from the repository root: build and serve the learner site
-bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh ms3
-python3 -m http.server 4200 --directory _build/ms3
+# Terminal 1, from the repository root: build and serve both learner sites
+bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res   # builds ms3 too
+python3 -m http.server 4200 --directory _build/ms3 &
+python3 -m http.server 4201 --directory _build/res
 
 # Terminal 2, from the repository root: serve the console
 python3 -m http.server 4202 --directory faculty-console
@@ -141,7 +156,8 @@ If the console uses a different origin, update the learner site's exact `frame-a
 | `GITHUB_REPO` | `jmoss333/psychiatry-clerkship` *(optional; this is the default)* |
 | `GIT_BRANCH` | `attest/pending` *(optional; default)* — the branch attestations commit to |
 | `GIT_BASE_BRANCH` | `main` *(optional; default)* — where the rolling pull request lands |
-| `STUDENT_SITE_URL` | learner site to embed *(optional; defaults to `https://une-ms3-psychiatry.netlify.app`)* |
+| `STUDENT_SITE_URL` | MS3 learner site to embed *(optional; defaults to `https://une-ms3-psychiatry.netlify.app`)* |
+| `RESIDENT_SITE_URL` | resident learner site, used to preview the resident half of a Case-of-the-Week pair *(optional; defaults to `https://mmc-psychiatry-residents-sanford.netlify.app`)* |
 | `ALLOWED_ORIGIN` | the exact faculty site origin, e.g. `https://clerkship-faculty-attest.netlify.app` *(optional; tightens API CORS)* |
 | `ATTESTER_NAME` | reviewer attribution recorded in `by:` fields and commit messages *(optional; defaults to `Joshua Moss, MD`)* |
 
@@ -179,7 +195,8 @@ the pull request. That only works if the target branch is unprotected.
 - **Token scope is the blast radius.** A fine-grained PAT limited to this one repo with Contents-only access means a leaked token can, at worst, edit files in this repo — not touch your other repos or account.
 - **The key is a shared secret**, checked server-side in constant time before a POST body is read. It is appropriate only for a small trusted faculty group.
 - **Attribution is server-derived, not self-asserted.** The reviewer label comes from the `ATTESTER_NAME` environment variable; any `attester` field in a request body is ignored, so a browser cannot freely edit the recorded identity. This still does not prove *which person* used the shared key — if verified per-person attribution is required, replace the shared key with institutional SSO or OAuth (or per-person keys mapped to names) before treating the label as an identity record.
-- **Framing is exact-origin only.** The built learner site sets `frame-ancestors 'self' https://clerkship-faculty-attest.netlify.app` and intentionally omits `X-Frame-Options`, because `SAMEORIGIN` would block that named cross-origin console. There is no wildcard. A different console origin requires an explicit learner-policy change and learner redeploy; `ALLOWED_ORIGIN` and `STUDENT_SITE_URL` do not expand the framing allowlist. The faculty console itself remains non-embeddable with `frame-ancestors 'none'` and `X-Frame-Options: DENY`.
+- **A console URL is never a credential.** The only query parameter the console writes or reads is `?item=<key>`, and the link is rebuilt from the selected item key alone rather than edited in place, so the faculty key, the short-lived review token, and the reviewer label cannot be carried in it. An `?item=` value is only ever compared against loaded item keys — it is never written into the page, so an unknown or hostile value produces one fixed notice and the default selection.
+- **Framing is exact-origin only.** Both built learner sites set `frame-ancestors 'self' https://clerkship-faculty-attest.netlify.app` (the resident build inherits the header from the MS3 build it is copied from) and intentionally omits `X-Frame-Options`, because `SAMEORIGIN` would block that named cross-origin console. There is no wildcard. A different console origin requires an explicit learner-policy change and learner redeploy; `ALLOWED_ORIGIN` and `STUDENT_SITE_URL` do not expand the framing allowlist. The faculty console itself remains non-embeddable with `frame-ancestors 'none'` and `X-Frame-Options: DENY`.
 - **Question-bank concurrency is branch-atomic.** Every question-bank write attempt captures one branch-head Git object ID, reads both the bank and manifest from that exact snapshot, compares the manifest's normalized 40- or 64-hex object ID with the loaded value, and checks exact per-item revisions. It builds the new commit from that parent and advances the branch with a non-forced reference update. If any commit changes the branch in between, the proposed question-bank commit does not reach the branch; the server either safely retries from the new snapshot once or returns a conflict. Missing or changed manifest state also becomes a safe conflict, while other upstream failures retain their generic error handling.
 - **Audit trail:** every successful mutation is a Git commit. Page/tool writes and individual question actions submit one selected item; a batch submits only its visibly checked, receipt-bearing questions, and the server revalidates each one. Attestation messages retain the server's compatible count-and-reviewer format, while a question draft-save message names its item. The Git diff records the exact changed entries. Git history is durable, but the server-derived reviewer label retains the shared-key identity limitation above.
 
