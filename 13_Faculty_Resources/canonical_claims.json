@@ -90,15 +90,14 @@
     },
     "antipsychotics-in-suspected-catatonia": {
       "topic": "Antipsychotics before catatonia is excluded \u2014 precipitating malignant catatonia / NMS",
-      "whyCanonical": "Asserted in five hand-authored loci: topic_meta 'cant' for agitation.md and catatonia.md, the skill exemplar that seeds future topics, and the sga / d2_typical / combo hazards in both agitation packs. RSAF F001/F002/F004 (PR #483) proved these copies drift.",
-      "status": "pending",
+      "whyCanonical": "Five hand-authored loci: topic_meta 'cant' for agitation.md and catatonia.md, the skill exemplar that seeds future topics, and the sga/d2_typical/combo hazards in both packs. toxidromes.md is excluded \u2014 a management claim, not this prevention one. RSAF F001/F002/F004 proved these copies drift.",
+      "status": "reviewed",
       "risk": {
         "kind": "clinical",
         "level": "high"
       },
-      "reason": "DRAFT statement consolidated from the five existing loci, not newly authored. Faculty scoping decisions recorded; awaiting attestation of the wording.",
       "at": "2026-09-03",
-      "by": "Pending faculty review",
+      "by": "Joshua Moss, MD",
       "appliesTo": [
         {
           "path": "topic_meta.json",
@@ -159,8 +158,14 @@
           }
         ]
       },
-      "openQuestion": "RESOLVED 2026-09-03 by Joshua Moss, MD: (1) toxidromes.md is a management claim and is excluded from this slot \u2014 it belongs with nms-recognition-and-management; (2) 'precipitate or worsen' and 'can tip it into' are the same claim, so one statement governs all five loci. REMAINING: the statement wording itself is a draft and has not been attested. Set status to reviewed and by to the attesting faculty name to close this slot.",
-      "statement": "Antipsychotics \u2014 second-generation agents included \u2014 can precipitate or worsen catatonia and NMS. Exclude catatonia before giving one, and where it is suspected, hold the antipsychotic until catatonia is excluded or treated. Excited catatonia can look like agitation, which is how the mistake usually happens."
+      "statement": "Antipsychotics \u2014 second-generation agents included \u2014 can precipitate or worsen catatonia and NMS. Exclude catatonia before giving one, and where it is suspected, hold the antipsychotic until catatonia is excluded or treated. Excited catatonia can look like agitation, which is how the mistake usually happens.",
+      "evidence": [
+        {
+          "sourceId": "bap-catatonia-2023",
+          "tier": "guideline"
+        }
+      ],
+      "evidenceThrough": "2026-09-03"
     },
     "benzodiazepine-withdrawal-lethality": {
       "topic": "Benzodiazepine withdrawal can be fatal",
