@@ -23,18 +23,17 @@ import {
 
 const ROOT = new URL('../', import.meta.url);
 const readJson = path => JSON.parse(readFileSync(new URL(path, ROOT), 'utf8'));
-const MANIFEST = readJson('13_Faculty_Resources/_automation/site_build/site_manifest.json');
-const REGISTRY = readJson('08_Cases_and_Simulation/case-of-the-week/cotw_registry.json');
+const SHIPPED = readJson('13_Faculty_Resources/_automation/site_build/shipped_pages.json');
 
 const MS3_BASE = 'https://une-ms3-psychiatry.netlify.app/';
 const RES_BASE = 'https://mmc-psychiatry-residents-sanford.netlify.app/';
 const CONSOLE = 'https://clerkship-faculty-attest.netlify.app/';
 const TOKEN = '0123456789abcdef0123456789abcdef';
 
-// The real 113-item universe, shaped exactly as the API returns it.
+// The real 123-item universe, shaped exactly as the API returns it.
 function realItems() {
   return normalizeReviewItems({
-    items: deriveContentUniverse({ manifest: MANIFEST, registry: REGISTRY })
+    items: deriveContentUniverse({ shipped: SHIPPED })
       .map(item => ({ ...item, status: 'unreviewed' })),
     qbank: [],
   });
@@ -76,7 +75,7 @@ test('normalizeReviewItems carries site and refuses an unrecognised one', () => 
       'tool:mse.html@ms3',
     ],
   );
-  // Absent means the MS3 site — where every manifest page and tool has always lived.
+  // Absent means the MS3 site — where every shared page and tool has always lived.
   assert.equal(itemsFrom([{ slug: 'x.md', title: 'X', kind: 'page', status: 'unreviewed' }])[0].site, 'ms3');
   for (const site of ['resident', 'RES', 'ms4', ' ms3 x', 0, {}, []]) {
     assert.throws(
@@ -167,9 +166,13 @@ test('parseDeepLink returns null for anything that is not a loaded key', () => {
   assert.equal(parseDeepLink('?item=page:t_mood.md', []), null);
 });
 
-test('parseDeepLink addresses every one of the 113 real items and nothing else', () => {
+test('parseDeepLink addresses every one of the 123 real items and nothing else', () => {
   const items = realItems();
-  assert.equal(items.length, 113);
+  // 123 = 69 shared pages + 22 shared tools + 1 MS3-only tool + 22 Case-of-the-Week
+  // twins + 6 resident-only pages + 3 resident-only tools. It was 113 before ADR-002,
+  // which is the count of what the manifest and the case registry could see between
+  // them; the extra 10 are what the resident build ships and nothing enumerated.
+  assert.equal(items.length, 123);
   for (const item of items) {
     assert.equal(parseDeepLink(`?item=${encodeURIComponent(item.key)}`, items)?.key, item.key);
   }

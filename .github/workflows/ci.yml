@@ -186,6 +186,15 @@ jobs:
       - name: Validate — WCAG AA contrast tokens
         run: node tests/contrast-check.mjs
 
+      # "What ships" is derived into one tracked file (ADR-002). This fails when a
+      # producer changed and shipped_pages.json did not — the one new failure mode that
+      # ADR trades for, and the message prints the --write command. The complementary
+      # half, --check-build, runs inside build_and_check.sh against the real build output.
+      - name: Validate — shipped_pages.json is derived from current producers
+        run: |
+          python3 13_Faculty_Resources/_automation/site_build/test_shipped_pages.py
+          python3 13_Faculty_Resources/_automation/site_build/shipped_pages.py --check
+
       # The pending-visibility invariant is the gate this repository did not have in July
       # 2026: reviewed.json said 22 Case-of-the-Week pages were pending, both site builds
       # shipped them, and the faculty console could not show one of them. Nothing was red

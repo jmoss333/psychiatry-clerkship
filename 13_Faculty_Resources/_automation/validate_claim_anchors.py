@@ -55,7 +55,7 @@ REPO_ROOT = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else HERE.parent.pa
 TOPIC_META = REPO_ROOT / "topic_meta.json"
 REGISTRY = REPO_ROOT / "evidence_registry.json"
 MANIFEST = REPO_ROOT / "13_Faculty_Resources/_automation/site_build/site_manifest.json"
-RESIDENT_SECTION = REPO_ROOT / "13_Faculty_Resources/_automation/site_build/resident_section.py"
+SITE_EXTRAS = REPO_ROOT / "13_Faculty_Resources/_automation/site_build/site_extras.py"
 
 # `[^id]` where id is a registry stable id: lowercase alphanumerics and hyphens.
 # Deliberately narrow so ordinary markdown (footnotes, escaped brackets, regex in
@@ -82,9 +82,12 @@ def shipped_name_to_source():
     """Map shipped page name (topic_meta key) -> source markdown path.
 
     Two producers ship markdown: site_manifest.json for the shared hub, and
-    RES_EXTRA in resident_section.py for resident-only pages. resident_section
-    CANNOT be imported — importing it rmtree's and rebuilds the output dir — so
-    its literal pairs are read statically with ast.
+    RESIDENT_EXTRA_PAGES in site_build/site_extras.py for resident-only pages.
+    Those pairs lived inside resident_section.py until 2026-09 and were read
+    statically because resident_section CANNOT be imported — importing it
+    rmtree's and rebuilds the output dir. They now live in site_extras.py
+    (ADR-002); the static read is kept so this validator still takes no import
+    dependency at all inside the Netlify build.
     """
     mapping = {}
     manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
@@ -92,19 +95,22 @@ def shipped_name_to_source():
         if isinstance(row, list) and len(row) > 1:
             mapping[row[1]] = row[0]
 
-    if RESIDENT_SECTION.exists():
-        tree = ast.parse(RESIDENT_SECTION.read_text(encoding="utf-8"))
+    if SITE_EXTRAS.exists():
+        tree = ast.parse(SITE_EXTRAS.read_text(encoding="utf-8"))
         for node in ast.walk(tree):
             if not isinstance(node, ast.Assign):
                 continue
             if not any(
-                isinstance(t, ast.Name) and t.id == "RES_EXTRA" for t in node.targets
+                isinstance(t, ast.Name)
+                and t.id in ("RESIDENT_COTW_INDEX", "RESIDENT_TRACK_PAGES")
+                for t in node.targets
             ):
                 continue
             for sub in ast.walk(node.value):
-                if not isinstance(sub, ast.Tuple) or len(sub.elts) != 2:
+                # (source, built slug, display title) — the site_manifest.json shape.
+                if not isinstance(sub, ast.Tuple) or len(sub.elts) != 3:
                     continue
-                src, shipped = sub.elts
+                src, shipped = sub.elts[0], sub.elts[1]
                 if (
                     isinstance(src, ast.Constant)
                     and isinstance(src.value, str)

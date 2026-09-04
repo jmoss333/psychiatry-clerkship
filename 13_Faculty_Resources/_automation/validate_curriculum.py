@@ -21,10 +21,12 @@ build. The guard therefore reasons about the union of three enumerable sets:
      copies outside the manifest: orientation-video.html (ms3), rp-agitation.html / rp-brief-psych.html /
      rp-canon-quiz.html (resident). Read from that module rather than restated
      here, so the two can never disagree.
-  3. The literal RES_EXTRA entries in site_build/resident_section.py — the
-     resident-only markdown pages (rotation.md, adv_psychopharm.md,
-     systems_medlegal.md, supervision_teaching.md, canon_200.md,
-     cl_reference.md). Also read from source, not restated.
+  3. RESIDENT_EXTRA_PAGES in site_build/site_extras.py — the resident-only
+     markdown pages (rotation.md, adv_psychopharm.md, systems_medlegal.md,
+     supervision_teaching.md, canon_200.md, cl_reference.md). Also read from
+     source, not restated. (These lived as literals inside resident_section.py
+     until 2026-09; they were hoisted so shipped_pages.py could enumerate them
+     without executing a build — see ADR-002.)
 
 WHAT IT DOES NOT COVER — this is a DECISION, not an oversight; do not "fix" it.
 The case-of-the-week pages are outside the guard on purpose. resident_section.py
@@ -53,7 +55,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.abspath(os.path.join(HERE, "..", ".."))
 
 GOVERNANCE_PY = os.path.join(HERE, "validate_tool_governance.py")
-RESIDENT_PY = os.path.join(HERE, "site_build", "resident_section.py")
+SITE_EXTRAS_PY = os.path.join(HERE, "site_build", "site_extras.py")
 
 
 def _top_level_assign(path, name):
@@ -75,13 +77,21 @@ def _top_level_assign(path, name):
 
 
 def _slugs_from_pairs(node):
-    """Collect the second element of every literal 2-tuple of strings under `node`."""
+    """Collect the built slug from every literal (source, slug[, title]) tuple.
+
+    site_manifest.json and site_extras.py both put the built filename second, so
+    element 1 is the slug in either the 2- or the 3-element shape.
+    """
     out = set()
     for sub in ast.walk(node):
-        if not isinstance(sub, ast.Tuple) or len(sub.elts) != 2:
+        if not isinstance(sub, ast.Tuple) or len(sub.elts) not in (2, 3):
             continue
-        if all(isinstance(e, ast.Constant) and isinstance(e.value, str) for e in sub.elts):
-            out.add(sub.elts[1].value)
+        source, slug = sub.elts[0], sub.elts[1]
+        if all(
+            isinstance(element, ast.Constant) and isinstance(element.value, str)
+            for element in (source, slug)
+        ):
+            out.add(slug.value)
     return out
 
 
@@ -105,13 +115,15 @@ def site_extra_shipped_slugs():
         for site in ("ms3", "resident")
     }
 
-    res_extra = _top_level_assign(RESIDENT_PY, "RES_EXTRA")
+    res_extra = _top_level_assign(SITE_EXTRAS_PY, "RESIDENT_TRACK_PAGES")
     if res_extra is None:
         raise SystemExit(
-            "validate_curriculum: RES_EXTRA not found in %s — the resident-only page source "
-            "moved; fix this derivation rather than hardcoding a second list." % RESIDENT_PY)
-    # Literal tuples only. The registry-driven case-of-the-week entries in the same
-    # list are comprehensions with no constant slug, and are out of scope per the docstring.
+            "validate_curriculum: RESIDENT_TRACK_PAGES not found in %s — the resident-only "
+            "page source moved; fix this derivation rather than hardcoding a second list."
+            % SITE_EXTRAS_PY)
+    # Literal tuples only. The registry-driven case-of-the-week pages are out of scope
+    # per the docstring, and cotw_index.md is a shared manifest page the resident build
+    # overwrites (RESIDENT_COTW_INDEX), not a resident-only slug — hence TRACK_PAGES.
     extras["resident"].update(_slugs_from_pairs(res_extra))
 
     return {site: frozenset(slugs) for site, slugs in extras.items()}

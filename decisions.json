@@ -95,6 +95,21 @@
       "governs": [
         "13_Faculty_Resources/_automation/site_build/pairings_block.py"
       ]
+    },
+    {
+      "id": "shipped-pages-single-source",
+      "title": "One derived listing is the only source for “what ships”",
+      "status": "active",
+      "decided": "2026-09-04",
+      "decidedBy": "Joshua Moss, MD",
+      "rationaleRef": "13_Faculty_Resources/_automation/site_build/ADR-002-shipped-pages-single-source.md",
+      "note": "site_build/shipped_pages.json is generated from every producer and verified against the real build output on every build. New code reads it; it does not read site_manifest.json or cotw_registry.json. tests/shipped-pages-readers.test.mjs freezes the remaining direct readers, and that list may only shrink.",
+      "governs": [
+        "tests/shipped-pages-readers.test.mjs",
+        "13_Faculty_Resources/_automation/site_build/shipped_pages.py",
+        "13_Faculty_Resources/_automation/site_build/cotw_slug.py",
+        "13_Faculty_Resources/_automation/site_build/site_extras.py"
+      ]
     }
   ]
 }

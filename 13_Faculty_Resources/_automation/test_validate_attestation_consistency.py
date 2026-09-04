@@ -269,6 +269,46 @@ def remove_rate(pack, model):
     rates[:] = [rate for rate in rates if rate.get("model") != model]
 
 
+def write_shipped_pages(root):
+    """Mirror the fixture's site_manifest.json into a shipped_pages.json beside it.
+
+    validate() asks "what ships?" of shipped_pages.json now, not of the manifest
+    (ADR-002). A synthetic root that carries only a manifest would answer "nothing
+    ships", and every missing-ledger-entry assertion here would pass vacuously. This
+    keeps a fixture root self-consistent: the shared manifest entries, on both sites,
+    exactly as site_build/shipped_pages.py derives them.
+    """
+    root = Path(root)
+    manifest_path = (
+        root
+        / "13_Faculty_Resources"
+        / "_automation"
+        / "site_build"
+        / "site_manifest.json"
+    )
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    pages = [
+        {
+            "slug": slug,
+            "kind": kind,
+            "sites": ["ms3", "res"],
+            "title": title,
+            "source": source,
+            "producer": "site_manifest",
+        }
+        for kind, key in (("page", "md"), ("tool", "tools"))
+        for source, slug, title in manifest.get(key, [])
+    ]
+    manifest_path.with_name("shipped_pages.json").write_text(
+        json.dumps(
+            {"version": 1, "generated_from": {}, "pages": sorted(pages, key=lambda p: p["slug"])},
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
 def write_fixture(
     root,
     *,
@@ -330,6 +370,7 @@ def write_fixture(
         encoding="utf-8",
     )
     pack_path.write_text(json.dumps(pack), encoding="utf-8")
+    write_shipped_pages(root)
 
 
 def write_pending_topic_meta_fixture(root, *, faculty_status):
@@ -387,6 +428,7 @@ def write_pending_topic_meta_fixture(root, *, faculty_status):
         ),
         encoding="utf-8",
     )
+    write_shipped_pages(root)
 
 
 class AttestationConsistencyTests(unittest.TestCase):

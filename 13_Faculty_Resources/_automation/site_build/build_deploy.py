@@ -78,13 +78,11 @@ for src,dst in tool_assets:
 _abort_missing(_missing_req)
 
 # ---- orientation video (MS3 "start here") ----
-ORIENT_VIDEO=[
- ("_prototypes/orientation-video/orientation-video.html","orientation-video.html"),
- ("_prototypes/orientation-video/Inpatient_Psych_Orientation.mp4","Inpatient_Psych_Orientation.mp4"),
- ("_prototypes/orientation-video/Inpatient_Psych_Orientation.vtt","Inpatient_Psych_Orientation.vtt"),
- ("_prototypes/orientation-video/poster.jpg","poster.jpg"),
-]
-for src,dst in ORIENT_VIDEO:
+# The list lives in site_extras.py, not here: orientation-video.html is a shipped,
+# attestable tool that is NOT in site_manifest.json, so shipped_pages.py has to be able
+# to enumerate it without executing this script. Same list, one importable home.
+from site_extras import MS3_ORIENT_VIDEO as ORIENT_VIDEO
+for src,dst,_title in ORIENT_VIDEO:
     p=os.path.join(LIB,src)
     if os.path.exists(p):
         out_p=OUT+"/tools/"+dst
@@ -298,8 +296,10 @@ md=[tuple(x) for x in _manifest["md"]]
 # prepends one entry there + drops two source files — no edits to this script or the manifest.
 _COTW_DIR="08_Cases_and_Simulation/case-of-the-week"
 _cotw_weeks=json.load(open(os.path.join(LIB,_COTW_DIR,"cotw_registry.json"),encoding="utf-8")).get("weeks",[])
-def _cotw_slug(w,level):  # level: "ms3" | "res"
-    return "cotw_%s_%s_%s.md"%(w["date"].replace("-",""),w["topic"],level)
+# The slug formula is shared (site_build/cotw_slug.py) rather than restated here:
+# five files carried their own copy until 2026-09, and the console's copy going stale
+# is what hid 22 pending pages from faculty attestation for two months. See ADR-002.
+from cotw_slug import cotw_slug as _cotw_slug
 md+=[(os.path.join(_COTW_DIR,w["ms3_src"]),_cotw_slug(w,"ms3"),w["label"]) for w in _cotw_weeks]
 # Per-case topic_meta is DERIVED from the same registry at build time (cotw_meta.py) rather
 # than hand-added every week — that is what keeps `metadata missing (topic_meta)` from
