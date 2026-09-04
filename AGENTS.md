@@ -85,8 +85,10 @@ cd tests/smoke && npm ci && npx playwright test
   **`deploy-verifier` cannot reach `*.netlify.app` from a sandboxed web session** — the egress
   proxy answers `403` to the `CONNECT`, so its whole HTTP runbook is unrunnable there. It falls
   back to Netlify's deploy record (read-only, keyed by the `siteId` already in
-  `maintenance_config.json`) and reports `DEPLOY VERIFIED · CONTENT UNVERIFIED`: a `ready` deploy
-  proves the build's Git-LFS gate passed, and proves nothing about served content. Run it from a
+  `maintenance_config.json`) and reports `DEPLOY VERIFIED · CONTENT UNVERIFIED`: a `ready`
+  **production** deploy proves the build's Git-LFS gate passed, and proves nothing about served
+  content. The inference does not carry to a preview — `check_lfs_media.py`'s `is_soft_context()`
+  is true on `deploy-preview`, so a preview reaches `ready` with pointer stubs in it. Run it from a
   machine with real egress when you need the content half.
 - `.claude/settings.json` + `.claude/hooks/` — session hooks that enforce the rules below at edit
   time: crisis contacts, dose literals, localStorage namespaces, machine paths (deny); PHI and
