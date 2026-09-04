@@ -2104,7 +2104,8 @@
           "05_Psychopharmacology/**"
         ],
         "verified": true,
-        "notes": "Highest patient-safety yield. Pair with drug-label checks for teaching meds. Live HEAD/GET recheck returned 200 on 2026-07-08; July 6 404 treated as transient/stale."
+        "notes": "Highest patient-safety yield. Pair with drug-label checks for teaching meds. Live HEAD/GET recheck returned 200 on 2026-07-08; July 6 404 treated as transient/stale. Official FDA pages return 404 (not 403) to datacenter HTTP clients: confirmed 2026-09-03 — the CI runner recorded 404 at 18:29Z while a laptop got 200 the same minute with the identical User-Agent. Verify with bin/verify_findings_offrunner.py before treating a 4xx here as a dead page.",
+        "link_check": "browser_required"
       }
     },
     {
@@ -2161,7 +2162,8 @@
           "03_Core_Topics/Psychosis/**"
         ],
         "verified": true,
-        "notes": "FDA removed the clozapine REMS effective 2025-06-13. Prescribers/pharmacies/patients no longer participate in the REMS or report ANC results to REMS before dispensing; ANC monitoring remains recommended per prescribing information."
+        "notes": "FDA removed the clozapine REMS effective 2025-06-13. Prescribers/pharmacies/patients no longer participate in the REMS or report ANC results to REMS before dispensing; ANC monitoring remains recommended per prescribing information. Official FDA pages return 404 (not 403) to datacenter HTTP clients: confirmed 2026-09-03 — the CI runner recorded 404 at 18:29Z while a laptop got 200 the same minute with the identical User-Agent. Verify with bin/verify_findings_offrunner.py before treating a 4xx here as a dead page.",
+        "link_check": "browser_required"
       }
     },
     {
