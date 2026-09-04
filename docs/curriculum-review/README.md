@@ -1,6 +1,6 @@
 # Curriculum content transcripts — for clinical review
 
-Generated 2026-09-04 from build `a7d4e65` by
+Generated 2026-09-04 from build `56e9423` by
 `13_Faculty_Resources/_automation/export_curriculum_review.py`.
 
 Two complete, human-readable transcripts of everything the two sites ship — one per audience.
