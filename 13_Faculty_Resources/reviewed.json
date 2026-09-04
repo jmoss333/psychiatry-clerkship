@@ -98,14 +98,13 @@
     "by": "Joshua Moss, MD"
   },
   "cotw_20260726_etohwd_res.md": {
-    "status": "pending",
+    "status": "reviewed",
     "risk": {
       "kind": "clinical",
       "level": "moderate"
     },
-    "reason": "New content awaiting faculty review.",
-    "at": "2026-07-26",
-    "by": "Pending faculty review"
+    "at": "2026-09-04",
+    "by": "Joshua Moss, MD"
   },
   "cotw_20260723_suiciderisk_ms3.md": {
     "status": "pending",
