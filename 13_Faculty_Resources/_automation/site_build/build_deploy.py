@@ -238,6 +238,16 @@ for _tool_html in [os.path.join(OUT,"tools",_f) for _f in os.listdir(os.path.joi
 sys.path.insert(0,HERE)
 import crisis_block as _crisis
 _crisis_data=_crisis.load(LIB)
+
+# ---- WEEK-PAGE PAIRING BLOCK -------------------------------------------------------
+# Joins a topic page, a DEPLOYED /audio_oe/ landmark brief and a practice tool into one
+# collapsible block per week page. The briefs already ship to both sites (see the hard
+# deploy input above) but until 2026-09-04 no content page linked any of them; this is
+# that join. Registry-driven: adding or re-choosing a pairing is an edit to
+# pairings.json, never to this script. Same marker-consumption contract as the crisis
+# block, so resident_section.py's second pass is a no-op on pages injected here.
+import pairings_block as _pairings
+_pair_data=_pairings.resolve(_pairings.load(LIB), LIB)
 # Required surfaces = where a learner is plausibly DOING risk work (assessing, rehearsing, or
 # planning disposition around self-harm/violence), not merely reading about it. Reference and
 # reading pages are deliberately excluded so the block stays meaningful rather than wallpaper.
@@ -299,6 +309,8 @@ _cm_add,_cm_skip,_,_cm_untagged=_cotw_meta.inject(OUT,_cotw_weeks,"ms3")
 print("cotw topic_meta: %d derived, %d hand-written kept"%(_cm_add,_cm_skip))
 if _cm_untagged: print("  NOTE no 'blueprint' in cotw_registry.json (case absent from the crosswalk): "+", ".join(_cm_untagged))
 missing=[]
+_PAIRINGS_REQUIRED_MD={"week%d.md"%_n for _n in range(1,7)}
+_pair_md_done=set()
 _crisis_md_done=set()
 for src,dst,_ in md:
     p=os.path.join(LIB,src)
@@ -306,9 +318,11 @@ for src,dst,_ in md:
         shutil.copy2(p, OUT+"/content/"+dst)
         _t=open(p,encoding="utf-8").read()
         _t,_did=_crisis.inject_markdown(_t,_crisis_data)
-        if _did:
+        _t,_pdid=_pairings.inject_markdown(_t,_pair_data,dst,"ms3")
+        if _did or _pdid:
             open(OUT+"/content/"+dst,"w",encoding="utf-8").write(_t)
-            _crisis_md_done.add(dst)
+        if _did: _crisis_md_done.add(dst)
+        if _pdid: _pair_md_done.add(dst)
     else: missing.append(src)
 
 # Fail the build if a required safety surface lost its crisis block (marker deleted, page
@@ -319,6 +333,15 @@ if _crisis_gap:
     for _g in _crisis_gap: print("   -",_g,"(expected the crisis-block marker in its source)")
     raise SystemExit(1)
 print("crisis block injected:",len(_crisis_md_done),"content page(s) +",len(_crisis_tools_done),"tool(s)")
+
+# Same hard-fail shape as the crisis gate: a week page whose marker was deleted during an
+# unrelated edit stops rendering its pairing silently otherwise.
+_pair_gap=sorted(_PAIRINGS_REQUIRED_MD-_pair_md_done)
+if _pair_gap:
+    print("BUILD ABORTED — pairing block missing from week page(s):")
+    for _g in _pair_gap: print("   -",_g,"(expected the pairing-block marker in its source)")
+    raise SystemExit(1)
+print("pairing block injected:",len(_pair_md_done),"week page(s)")
 
 # ---- QA-gate source map: every source path this build knows about, written NEXT TO the
 # build dir (<OUT>.source-map.json), never inside it — nothing ships. check-static-site.mjs

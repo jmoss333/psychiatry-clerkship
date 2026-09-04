@@ -9,6 +9,8 @@
 
 **Suggested reading:** Engel 1977 (biopsychosocial) · Rosenhan 1973 (labeling) · Appelbaum & Grisso 1988 (capacity). *(See the Landmark reading list + the Download Checklist.)*
 
+<!-- pairing-block -->
+
 **Skill of the week:** the Mental Status Exam → use the interactive **MSE module** (the Mental Status Exam tool) and write your first admission note (the Documentation guide). Pair this with the **call-now safety check**: if a finding could change safety today, tell the resident or attending now rather than waiting for rounds.
 
 **Required Week 1 safety recognition set:**
