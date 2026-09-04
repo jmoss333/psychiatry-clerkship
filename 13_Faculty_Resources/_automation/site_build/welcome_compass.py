@@ -41,6 +41,9 @@ def prepare_cards(ms3_weeks, shipped_document):
     for page in pages:
         if not isinstance(page, dict) or not isinstance(page.get("slug"), str):
             raise CompassContractError("shipped_pages.json contains a malformed page")
+        sites = page.get("sites")
+        if not isinstance(sites, list) or not all(isinstance(site, str) for site in sites):
+            raise CompassContractError("shipped_pages.json contains malformed sites")
         if page["slug"] in by_slug:
             raise CompassContractError(
                 "shipped_pages.json contains duplicate slug %s" % page["slug"]
@@ -74,7 +77,7 @@ def prepare_cards(ms3_weeks, shipped_document):
         if (
             page is None
             or page.get("kind") != "page"
-            or "ms3" not in (page.get("sites") or [])
+            or "ms3" not in page["sites"]
             or not landing_ref.endswith(".md")
         ):
             raise CompassContractError(

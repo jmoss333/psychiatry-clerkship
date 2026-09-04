@@ -28,6 +28,37 @@ SAFETY = (
     "If you are worried about immediate safety, tell the resident or attending now. "
     "Do not wait for rounds. Do not carry it alone."
 )
+EXPECTED_FRAGMENT = (
+    '<div data-ms3-compass-root>'
+    '<aside data-ms3-compass-safety role="note">'
+    '<p>If you are worried about immediate safety, tell the resident or attending now. '
+    'Do not wait for rounds. Do not carry it alone.</p>'
+    '<a href="?page=orientation.md">Open the Orientation Packet</a></aside>'
+    '<p data-ms3-compass-scope>This map supports orientation, supervised practice, and reflection. '
+    'It is not a checklist, clinical protocol, or measure of readiness. Using or viewing this map '
+    'does not establish competence, entrustment, or permission to act independently.</p>'
+    '<section class="ms3-compass" data-ms3-compass aria-labelledby="ms3-compass-title">'
+    '<h2 id="ms3-compass-title">Six-Week Compass</h2>'
+    '<ol class="ms3-compass__weeks" data-ms3-compass-weeks>'
+    '<li data-ms3-compass-week="1"><span>Week 1</span><h3>Foundations &amp; the MSE</h3>'
+    '<a data-ms3-compass-link href="?page=week1.md">Open Week 1</a></li>'
+    '<li data-ms3-compass-week="2"><span>Week 2</span><h3>Mood, Psychosis &amp; Pharm</h3>'
+    '<a data-ms3-compass-link href="?page=week2.md">Open Week 2</a></li>'
+    '<li data-ms3-compass-week="3"><span>Week 3</span><h3>Psychotherapy &amp; Personality</h3>'
+    '<a data-ms3-compass-link href="?page=week3.md">Open Week 3</a></li>'
+    '<li data-ms3-compass-week="4"><span>Week 4</span><h3>Family Systems &amp; EE</h3>'
+    '<a data-ms3-compass-link href="?page=week4.md">Open Week 4</a></li>'
+    '<li data-ms3-compass-week="5"><span>Week 5</span><h3>Acute &amp; Emergency</h3>'
+    '<a data-ms3-compass-link href="?page=week5.md">Open Week 5</a></li>'
+    '<li data-ms3-compass-week="6"><span>Week 6</span><h3>Integration &amp; Exam</h3>'
+    '<a data-ms3-compass-link href="?page=week6.md">Open Week 6</a></li>'
+    '</ol></section>'
+    '<p data-ms3-compass-prompt>Choose the week or task you are preparing to discuss with your '
+    'supervising team.</p>'
+    '<a data-ms3-compass-orientation href="?tool=orientation-video.html">Optional: watch the '
+    'captioned orientation overview (transcript available)</a>'
+    '</div>'
+)
 
 
 class WelcomeCompassTests(unittest.TestCase):
@@ -55,7 +86,7 @@ class WelcomeCompassTests(unittest.TestCase):
 
     def test_rejects_missing_reordered_and_boolean_week_numbers(self):
         for invalid in (
-            [{**week, "n": None} if week["n"] == 2 else week for week in WEEKS],
+            [{key: value for key, value in week.items() if key != "n"} if week["n"] == 2 else week for week in WEEKS],
             [{**week, "n": 3} if week["n"] == 2 else week for week in WEEKS],
             [{**week, "n": True} if week["n"] == 1 else week for week in WEEKS],
         ):
@@ -76,6 +107,11 @@ class WelcomeCompassTests(unittest.TestCase):
     def test_rejects_html_tool_resident_only_and_unknown_targets(self):
         for ref in ("tool.html", "resident.md", "unknown.md"):
             self.assert_contract_error([{**WEEKS[0], "landingRef": ref}, *WEEKS[1:]], "landingRef")
+
+    def test_rejects_malformed_shipped_page_sites_with_a_contract_error(self):
+        malformed = {"pages": [{**SHIPPED["pages"][0], "sites": 7}, *SHIPPED["pages"][1:]]}
+        with self.assertRaisesRegex(welcome_compass.CompassContractError, "sites"):
+            welcome_compass.prepare_cards(WEEKS, malformed)
 
     def test_extracts_one_marked_safety_rule_with_normalized_whitespace(self):
         source = "before\r\n%s\r\n%s\r\n%s\r\nafter" % (
@@ -117,17 +153,7 @@ class WelcomeCompassTests(unittest.TestCase):
 
     def test_renders_the_exact_semantic_compass_shape(self):
         fragment = welcome_compass.render_compass(self.cards(), SAFETY)
-        self.assertEqual(fragment.count("data-ms3-compass-root"), 1)
-        self.assertEqual(fragment.count("data-ms3-compass-safety"), 1)
-        self.assertEqual(fragment.count("data-ms3-compass-scope"), 1)
-        self.assertEqual(fragment.count("aria-labelledby=\"ms3-compass-title\""), 1)
-        self.assertEqual(fragment.count("<ol class=\"ms3-compass__weeks\""), 1)
-        self.assertEqual(fragment.count("data-ms3-compass-week=\""), 6)
-        self.assertEqual(fragment.count("data-ms3-compass-link"), 6)
-        for n in range(1, 7):
-            self.assertIn('href="?page=week%d.md"' % n, fragment)
-        self.assertEqual(fragment.count("data-ms3-compass-prompt"), 1)
-        self.assertEqual(fragment.count("data-ms3-compass-orientation"), 1)
+        self.assertEqual(fragment, EXPECTED_FRAGMENT)
 
     def test_renderer_excludes_interactive_and_media_markup(self):
         fragment = welcome_compass.render_compass(self.cards(), SAFETY)
