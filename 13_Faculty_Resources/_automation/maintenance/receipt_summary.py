@@ -67,7 +67,7 @@ MAX_ROWS = 4
 # Note this list is deliberately the SMALL one. Anything not named here -- an
 # unrecognised or newly added state included -- ranks as blocking and is shown
 # first, so the module keeps failing toward telling you more, not less.
-DEFERRED_ROW_STATES = frozenset({"pending_first_run"})
+DEFERRED_ROW_STATES = frozenset({"pending_first_run", "armed_waiting"})
 
 # The gate value both callers treat as healthy.
 READY_GATE = "ready"
@@ -90,6 +90,17 @@ def _safe(value):
     return value
 
 
+def _safe_row_id(value):
+    """Render a row's identity. Workflow rows key on a filename; pull-request
+    rows key on an integer number. An int cannot carry injected text, so it is
+    rendered directly -- but only in the shape a PR number actually takes."""
+    if isinstance(value, bool):
+        return "?"
+    if isinstance(value, int):
+        return f"#{value}" if 0 < value < 1_000_000 else "?"
+    return _safe(value)
+
+
 def summarize(receipt, label):
     """Render one stderr line describing why a steward is about to exit.
 
@@ -110,7 +121,14 @@ def summarize(receipt, label):
         parts.append(f"state={_safe(receipt.get('state'))}")
 
     # Tabular receipts (workflow_heartbeat) carry one row per watched workflow.
+    # Tabular receipts name themselves by their row key: workflow_heartbeat
+    # carries "workflows", stranded_prs carries "pullRequests". Both list by
+    # exception, so the scan below is identical once the key is known.
     rows = receipt.get("workflows")
+    row_key = "workflowFile"
+    if not isinstance(rows, list):
+        rows = receipt.get("pullRequests")
+        row_key = "pullRequest"
     if isinstance(rows, list):
         blocking = []
         deferred = []
@@ -118,7 +136,7 @@ def summarize(receipt, label):
             if not isinstance(row, dict) or row.get("state") == HEALTHY_ROW_STATE:
                 continue
             state = row.get("state")
-            entry = f"{_safe(row.get('workflowFile'))}:{_safe(state)}"
+            entry = f"{_safe_row_id(row.get(row_key))}:{_safe(state)}"
             if isinstance(state, str) and state in DEFERRED_ROW_STATES:
                 deferred.append(entry)
             else:

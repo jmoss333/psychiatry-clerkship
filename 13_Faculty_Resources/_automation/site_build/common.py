@@ -238,23 +238,59 @@ TOOL_KEYWORDS = _merge_keywords(_TOOLKW_MS3, _TOOLKW_RES)
 # ---------------------------------------------------------------------------
 
 
-def build_search_index(nav, out_dir, tool_keywords=None, label=""):
+def build_search_index(nav, out_dir, tool_keywords=None, label="", reachable_refs=None):
     """Pre-tokenized inverted index + bidirectional synonyms → search-index.json.
 
-    Weights: title 4, section 2, markdown headings 2, body 1. Hidden nav items
-    are excluded from the index (they stay reachable by direct link).
+    Weights: title 4, section 2, markdown headings 2, body 1.
+
+    Each doc also carries `L`, its raw token count, and the index carries `avgLen`.
+    Scorers divide tf by the BM25 pivot `(1 - b) + b*(L/avgLen)` with b = 0.5.
+
+    Without any normalisation the model was raw tf, so a long catalogue page that
+    mentions every topic once out-scored the page that teaches one: on the resident
+    build `psychotherapy` returned podcast_library.md with psychotherapy.md outside
+    the top five, and `cbt` and `psychodynamic` both returned rounds_questions.md.
+
+    b = 0.5 and a PIVOT rather than sqrt(L/avgLen), both deliberately. A tool page's
+    indexed body is its TOOL_KEYWORDS string — a couple of dozen tokens against a
+    corpus mean near 1,400 — so its L is small for a reason that has nothing to do
+    with how specific the page is. Under sqrt that inflated every tool by ~10x and
+    measurably broke clinical queries: `delirium` returned exp_consult.md instead of
+    delirium.md, and `ptsd` returned t_dissociative.md instead of t_anxiety.md. The
+    pivot's floor of (1-b) caps any short page's boost at 2x while still demoting a
+    5x-mean catalogue page to ~0.3x, which fixes the catalogue problem without
+    inventing a new one. Keeping magnitudes near their old range also matters because
+    the exact-title bonus the scorers add is a flat +25: scaling every score down by a
+    constant would quietly turn search into title-only matching.
+
+    `hidden` means "not in the sidebar", which is NOT the same as "not reachable".
+    Once the sidebar was replaced by the Library tab, a page could be placed in the
+    Library (or required on the Path) and still carry the old hidden flag — and this
+    function dropped it from the index, so the Library showed a page search could not
+    find. On the resident build that silently hid 19 pages, including t_sleep.md,
+    cultural_psychiatry.md, ect_neuromodulation.md and ethics_legal.md; MS3 lost 2.
+
+    `reachable_refs` is the set of refs a learner can reach by browsing this site —
+    Library-placed plus Path items, i.e. frontdoor_catalog.reachable_refs(payload).
+    A hidden item in that set is indexed; a hidden item outside it (week1..week6.md,
+    rotation-curator.html — the pages curriculum.json's libraryExclude removes from
+    the Library on purpose) still is not. Callers that pass nothing keep the old
+    hidden-is-excluded behaviour, which is what the unit tests exercise directly.
     """
     keywords = TOOL_KEYWORDS if tool_keywords is None else tool_keywords
-    postings, docs = {}, []
+    reachable = set(reachable_refs or ())
+    postings, docs, lengths = {}, [], []
 
     def addtok(docid, text, wt):
-        for t in tok(text):
+        terms = tok(text)
+        for t in terms:
             d = postings.setdefault(t, {})
             d[docid] = d.get(docid, 0) + wt
+        return len(terms)
 
     for sec in nav:
         for it in sec["items"]:
-            if it.get("hidden"):
+            if it.get("hidden") and it["f"] not in reachable:
                 continue
             f, k, title, section = it["f"], it["k"], it["t"], sec["section"]
             heads = body = ""
@@ -285,17 +321,24 @@ def build_search_index(nav, out_dir, tool_keywords=None, label=""):
             if governance is not None:
                 doc["governance"] = governance
             docs.append(doc)
-            addtok(docid, title, 4)
-            addtok(docid, section, 2)
-            addtok(docid, heads, 2)
-            addtok(docid, body, 1)
+            # Raw token count, NOT the weighted sum: document length is a property of
+            # the page, and weighting it would make a long title count as four pages.
+            doc["L"] = (addtok(docid, title, 4) + addtok(docid, section, 2)
+                        + addtok(docid, heads, 2) + addtok(docid, body, 1))
+            lengths.append(doc["L"])
 
     post, df = {}, {}
     for t, dd in postings.items():
         post[t] = [[docid, tf] for docid, tf in sorted(dd.items())]
         df[t] = len(dd)
     syn = build_synonyms()
-    idx = {"version": 1, "n": len(docs), "synonyms": syn, "docs": docs, "postings": post, "df": df}
+    # Mean document length, so a scorer can apply the pivot above — see the
+    # length-normalisation note in the docstring. Stored rather than derived so both
+    # scorers (the SPA and check_search_quality.py) read the same number, and floored
+    # at 1 so an all-empty fixture index cannot produce a zero divisor.
+    avg_len = max(1.0, sum(lengths) / len(lengths)) if lengths else 1.0
+    idx = {"version": 1, "n": len(docs), "avgLen": avg_len,
+           "synonyms": syn, "docs": docs, "postings": post, "df": df}
     with open(os.path.join(out_dir, "search-index.json"), "w", encoding="utf-8") as fh:
         fh.write(json.dumps(idx, ensure_ascii=False))
     print(

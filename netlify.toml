@@ -7,12 +7,23 @@
 #   2. GIT_LFS_ENABLED must live in the UI: netlify.toml is read AFTER the repo is cloned,
 #      too late to affect the LFS checkout.
 #
-# The ONE thing that legitimately belongs here (shared by both sites, and safe post-clone)
-# is the build-ignore hook: it cancels a rebuild + redeploy when a push changes only
-# _automation/*.md planning docs. It saves build minutes and avoids a redundant production
-# redeploy. It saves Git-LFS bandwidth only once a site is on the cached-pull path
-# (lfs_pull_cached.sh in the build command; GIT_LFS_ENABLED removed from the site's env) —
-# on the legacy path Netlify fetches LFS during clone, before this hook runs.
-# See GIT_AND_DEPLOY_PLAN.md §6a and §7.
+# The only setting here says: ALWAYS BUILD, NEVER "CANCEL".
+#
+# Until 2026-09-03 this file carried a build-ignore hook (netlify-ignore.sh) that cancelled
+# the build when a push changed only _automation/*.md or _automation/surveillance/**. It was
+# retired because Netlify records an ignore-command cancel as a FAILED deploy: the deploy
+# record gets state "error" and the message "Failed during stage 'checking build content for
+# changes': Canceled build due to no content change", the dashboard files it under
+# "Unsuccessful", and the site's "Deploy failed" email notification fires on it. That email
+# is the only alarm for a broken production deploy (added after the 2026-08-31 GitHub-LFS
+# budget outage left a broken Interview Room in front of students with nobody told), and it
+# is worthless if a routine no-op cancel rings it. See GIT_AND_DEPLOY_PLAN.md §7.
+#
+# What the hook saved is not worth the false alarms: a doc-only push now costs one ~40 s
+# build per site, publishes byte-identical output, and does not move the service-worker
+# VERSION (a content hash that already excludes commit-stamped files — common.py), so no
+# learner re-downloads anything. Git-LFS bandwidth is unaffected on either fetch path: the
+# legacy clone-time fetch ran BEFORE the hook, and the cached-pull path reads from Netlify's
+# build cache. Exit code 1 from the ignore command means "content changed, build".
 [build]
-  ignore = "bash 13_Faculty_Resources/_automation/site_build/netlify-ignore.sh"
+  ignore = "/bin/false"

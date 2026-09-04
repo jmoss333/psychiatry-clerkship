@@ -1,5 +1,12 @@
+# psychiatry-workforce-tour (base directory: 13_Faculty_Resources/Outreach/alex-tour).
+# `ignore = "/bin/false"` = ALWAYS BUILD, NEVER "CANCEL": with a base directory set, Netlify
+# would otherwise cancel every build whose commit did not touch this directory, and it
+# records a cancel as a FAILED deploy (state "error"), which is what a "Deploy failed"
+# notification fires on. Cost: a ~10 s no-build deploy per event. See sp-proxy/netlify.toml
+# and GIT_AND_DEPLOY_PLAN.md §7.
 [build]
   publish = "."
+  ignore = "/bin/false"
 
 [[headers]]
   for = "/*"

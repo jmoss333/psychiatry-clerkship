@@ -27,9 +27,15 @@ Build command and publish dir live **per-site in the Netlify UI**, not in
 3. **Do NOT use the Cowork Netlify MCP** (server `493cbbb2…`) for these sites — it is
    authenticated to a different account and 404s them (found 2026-07-03). Dashboard via
    claude-in-chrome is the working path for env vars and deploys.
-4. **Planning-doc pushes don't deploy.** Pushes touching only `_automation/*.md` are
-   cancelled by the build-ignore hook (`netlify-ignore.sh`) — a "skipped" deploy after
-   such a push is correct behavior, not a failure.
+4. **Nothing in this repo may cancel a Netlify build.** Netlify records an ignore-command
+   cancel as a *failed* deploy (`state: error`, "Canceled build due to no content change")
+   and the sites' "Deploy failed" email fires on it, so the old build-ignore hook
+   (`netlify-ignore.sh`) was retired on 2026-09-03 and every `netlify.toml` sets
+   `ignore = "/bin/false"` (always build). Doc-only pushes now build (~40 s, byte-identical
+   output, no service-worker cache churn). A "Canceled" entry in a deploy list means
+   someone re-introduced an ignore rule; "Failed" means a real failure — read the log.
+   Netlify's own "Skipped" (superseded commit) entries are also recorded as errors and
+   cannot be prevented from the repo. See `GIT_AND_DEPLOY_PLAN.md` §7.
 5. **"Every production deploy fails, nothing changed" = GitHub LFS bandwidth quota.**
    Signature: both sites red at `lfs-media: ERROR — 105 Git LFS pointer stub(s)` (or
    `lfs-cache: ERROR … over its data quota`), deploy previews green, CI green, and a GitHub

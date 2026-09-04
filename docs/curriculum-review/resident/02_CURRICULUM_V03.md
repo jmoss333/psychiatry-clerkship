@@ -1228,7 +1228,7 @@ The goal is validation plus a steady frame, not either/or.
 - **Workflow modes:** `ward`, `safety`, `5min`, `shelf`, `family`
 - **Shelf blueprint tags:** `substance`
 - **EPA crosswalk:** `EPA1`, `EPA2`, `EPA10`
-- **Call-to-action buttons:** Open CIWA-Ar / COWS; Clarify discharge supports; Open discharge collateral workflow
+- **Call-to-action buttons:** Open withdrawal tool; Clarify discharge supports; Open discharge collateral workflow
 - **Faculty review:** {"status": "reviewed", "reviewer": "Joshua Moss, MD", "lastReviewed": "2026-07-01"}
 
 #### Page text (as shipped)
