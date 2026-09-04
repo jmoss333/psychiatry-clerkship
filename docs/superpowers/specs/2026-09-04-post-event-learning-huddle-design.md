@@ -1,6 +1,6 @@
 # Post-Event Learning Huddle — V1 design (resident-only, 2 minutes)
 
-**Status:** APPROVED by Joshua Moss, MD on 2026-09-04 ("Yes" — design as written, and Path Week 3 placement once attested). Audit measured read-only on `main @ 87e6c82`; PR #522 merged as `7eb4ace` the same afternoon, which removed constraint C1. Implemented on branch `claude/post-event-huddle` in an isolated worktree. Path Week 3 placement is deferred to the attestation PR (§7).
+**Status:** APPROVED by Joshua Moss, MD on 2026-09-04 ("Yes" — design as written, and Path Week 3 placement once attested). Audit measured read-only on `main @ 87e6c82`; PR #522 merged as `7eb4ace` the same afternoon, which removed constraint C1. Implemented on branch `claude/post-event-huddle` in an isolated worktree. Attested by Joshua Moss, MD from deploy-preview-524 on 2026-09-04 ("i approve the preview"); attestation and the Path Week 3 item were folded into PR #524.
 **Author of record for clinical content:** Joshua Moss, MD (to attest). **Drafted by:** Claude (Cowork).
 **Proposed spec path if approved:** `docs/superpowers/specs/2026-09-04-post-event-learning-huddle-design.md`
 

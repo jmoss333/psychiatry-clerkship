@@ -141,6 +141,7 @@
             { "ref": "exp_consult.md", "kind": "read" },
             { "ref": "collateral_workflow.md", "kind": "read" },
             { "ref": "family-systems.html", "kind": "tool" },
+            { "ref": "rp-post-event-huddle.html", "kind": "tool" },
             { "ref": "exp_family.md", "kind": "read" },
             { "ref": "doc_oral.md", "kind": "read" }
           ]
