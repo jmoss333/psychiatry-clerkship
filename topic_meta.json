@@ -748,7 +748,7 @@
     },
     "cta": [
       {
-        "label": "Open CIWA-Ar / COWS",
+        "label": "Open withdrawal tool",
         "href": "?tool=withdrawal.html"
       },
       {
