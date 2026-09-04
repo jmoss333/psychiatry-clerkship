@@ -92,12 +92,14 @@ an exact force-with-lease. Actionable guideline findings may separately open a
 fingerprint-scoped proposal PR that changes only `config/needs_reattest.json` and
 `PENDING_UPDATES.md`; it does not edit teaching content or `reviewed.json`.
 
-## Netlify note (done)
+## Netlify note (revised 2026-09-03)
 
-Two sites share this repo and `netlify.toml` has a build-ignore hook. Committing dated
-JSON/CSV must not trigger production rebuilds — so `netlify-ignore.sh` now also skips a
-build when every changed file is under `_automation/surveillance/**` (added alongside the
-existing `_automation/*.md` rule). No further action needed.
+Committing dated JSON/CSV under `_automation/surveillance/**` **does** trigger a rebuild of
+the learner sites now. The build-ignore hook that used to cancel those builds was retired
+because Netlify records a cancel as a *failed* deploy and the sites' "Deploy failed" alarm
+fired on every one (`GIT_AND_DEPLOY_PLAN.md` §7). The rebuild is ~40 s per site, publishes
+byte-identical output, and does not move the service-worker cache version, so there is
+nothing to avoid. No action needed here.
 
 ## Status page & external triggers
 

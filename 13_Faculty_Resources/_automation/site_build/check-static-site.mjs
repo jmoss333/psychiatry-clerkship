@@ -799,7 +799,7 @@ const SHELL_REF_ALLOWLIST = new Set([
 // HARD on the real Netlify production deploy (LFS is fetched there — a stub is a
 // genuine broken deploy, e.g. the MS3 site's stale-cache incident found 2026-07-06).
 // SOFT under GitHub Actions (ci.yml checks out with `lfs: false` on purpose — bandwidth
-// cost, see netlify-ignore.sh) and SOFT on Netlify deploy-preview builds (this repo's
+// cost, see NETLIFY_LFS_RUNBOOK.md) and SOFT on Netlify deploy-preview builds (this repo's
 // PR previews don't fetch real LFS bytes either — confirmed 2026-07-06 investigating
 // PR #122). Hard-failing either would permanently red every future PR.
 const lfsIsExpectedStub = process.env.GITHUB_ACTIONS === 'true' || process.env.CONTEXT === 'deploy-preview';

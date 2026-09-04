@@ -3,7 +3,7 @@
 **Owner:** Joshua Moss, MD · **Created:** 2026-07-01 · **Updated:** 2026-07-29
 **Goal:** put the library under version control and move both sites to *deploy-on-push* so concurrent editing (multiple chats/sessions) can never again silently clobber the live sites.
 
-> **Status (2026-07-07): build-on-push is LIVE and verified on both sites.** §1 cleanup ✅ · §2 pushed to `jmoss333/psychiatry-clerkship` (private) ✅ · §6 media migrated to Git LFS (100 `.m4a` + 7 `.mp4`) ✅ · resident source/deploy drift reconciled ✅ · Netlify LFS env vars set on both sites ✅ · both sites git-linked and production deploys ready ✅ · media verified live as real files, not pointer stubs ✅ · build-ignore hook added to skip doc-only rebuilds (§7) ✅. **The manual `netlify deploy --dir` flow can be retired.** Ongoing watch-item: Git-LFS bandwidth (see §6).
+> **Status (2026-07-07): build-on-push is LIVE and verified on both sites.** §1 cleanup ✅ · §2 pushed to `jmoss333/psychiatry-clerkship` (private) ✅ · §6 media migrated to Git LFS (100 `.m4a` + 7 `.mp4`) ✅ · resident source/deploy drift reconciled ✅ · Netlify LFS env vars set on both sites ✅ · both sites git-linked and production deploys ready ✅ · media verified live as real files, not pointer stubs ✅ · build-ignore hook added to skip doc-only rebuilds (§7) ✅ — *retired 2026-09-03, see §7*. **The manual `netlify deploy --dir` flow can be retired.** Ongoing watch-item: Git-LFS bandwidth (see §6).
 
 ---
 
@@ -65,10 +65,10 @@ Today both sites deploy manually via `netlify deploy --dir=…` from whatever se
 - Resident `mmc-psychiatry-residents-sanford` — `af64d5d4-e0b5-4f03-9857-be40e3b48329`
 
 **Both sites**
-- ⚠️ **Media must reach the build as real bytes, not pointer stubs.** Target state (§6a, 2026-09-02): **no** LFS env vars on the site — `site_build/lfs_pull_cached.sh` runs inside the build command and pulls media from Netlify's persistent cache, spending GitHub LFS bandwidth only on objects the cache lacks. Legacy state (2026-07 → 2026-09): `GIT_LFS_ENABLED=true` plus `GIT_LFS_FETCH_INCLUDE=*.m4a,*.mp4` in each site's build environment, which makes Netlify fetch all ~433 MB at clone time on every production build and exhausted the monthly quota on 2026-08-30. Whichever state a site is in, the setting lives in the **Netlify UI env vars, NOT `netlify.toml`** — `netlify.toml` is read *after* the repo is cloned, too late to affect a clone-time fetch. This is why the committed `netlify.toml` only carries the shared build-ignore hook. Switch-over steps: `site_build/NETLIFY_LFS_RUNBOOK.md`.
+- ⚠️ **Media must reach the build as real bytes, not pointer stubs.** Target state (§6a, 2026-09-02): **no** LFS env vars on the site — `site_build/lfs_pull_cached.sh` runs inside the build command and pulls media from Netlify's persistent cache, spending GitHub LFS bandwidth only on objects the cache lacks. Legacy state (2026-07 → 2026-09): `GIT_LFS_ENABLED=true` plus `GIT_LFS_FETCH_INCLUDE=*.m4a,*.mp4` in each site's build environment, which makes Netlify fetch all ~433 MB at clone time on every production build and exhausted the monthly quota on 2026-08-30. Whichever state a site is in, the setting lives in the **Netlify UI env vars, NOT `netlify.toml`** — `netlify.toml` is read *after* the repo is cloned, too late to affect a clone-time fetch. This is why the committed `netlify.toml` carries no build settings at all (only the always-build rule, §7). Switch-over steps: `site_build/NETLIFY_LFS_RUNBOOK.md`.
 - Build image includes Python 3 by default; if needed set env `PYTHON_VERSION=3.11`. Netlify installs `requirements.txt` (jsonschema, needed by the build-gate validators) automatically during dependency install.
 - Confirm each site's **publish dir** and **build command** in its own settings (one repo can back multiple sites with different commands).
-- Keep build command / publish dir in each site's **UI settings** (two sites need different commands from one repo). Any legacy LFS env var still present is UI-only too, and §6a is retiring it. The repo `netlify.toml` is deliberately minimal — it carries **only** the shared build-ignore hook (§7), no build command or env, so it does not override either site's UI build settings.
+- Keep build command / publish dir in each site's **UI settings** (two sites need different commands from one repo). Any legacy LFS env var still present is UI-only too, and §6a is retiring it. The repo `netlify.toml` is deliberately minimal — it carries **only** `ignore = "/bin/false"` (always build; §7 explains why nothing in this repo may cancel a build), no build command or env, so it does not override either site's UI build settings.
 
 After this, the workflow is: **edit source → commit → push → both sites rebuild and deploy automatically.** No more `netlify deploy` by hand, no more two-session clobbering.
 
@@ -112,7 +112,7 @@ git push
 ### 6a. LFS bandwidth — cached pull (IMPLEMENTED 2026-09-02) and the remaining escape hatches
 **Decision recorded 2026-07-02, revised 2026-09-02 after the 2026-08-30 outage.** The assumption that "Netlify likely caches LFS objects across builds" was wrong for the clone-time fetch; it does not.
 
-**0. Implemented — fetch inside the build, from Netlify's persistent cache.** `site_build/lfs_pull_cached.sh` (run by `build_and_check.sh` before the site build) points `lfs.storage` at `$NETLIFY_CACHE_DIR/git-lfs` — a directory Netlify persists between builds of a site, all contexts — and runs `git lfs pull`, which downloads only objects the store lacks. Steady-state bandwidth ≈ 0 MB/build; one full fetch after a "Clear cache and deploy"; the log prints `~N MB downloaded from GitHub this build` as a running meter. It is a no-op locally and in GitHub Actions. **Activation is a UI step, per site: delete `GIT_LFS_ENABLED` and `GIT_LFS_FETCH_INCLUDE`, then clear-cache deploy once** — until then the clone still pays first and the script just says so. A side effect worth having: once a site is on this path the §7 build-ignore hook finally *does* save LFS bandwidth, because the fetch now runs after it.
+**0. Implemented — fetch inside the build, from Netlify's persistent cache.** `site_build/lfs_pull_cached.sh` (run by `build_and_check.sh` before the site build) points `lfs.storage` at `$NETLIFY_CACHE_DIR/git-lfs` — a directory Netlify persists between builds of a site, all contexts — and runs `git lfs pull`, which downloads only objects the store lacks. Steady-state bandwidth ≈ 0 MB/build; one full fetch after a "Clear cache and deploy"; the log prints `~N MB downloaded from GitHub this build` as a running meter. It is a no-op locally and in GitHub Actions. **Activation is a UI step, per site: delete `GIT_LFS_ENABLED` and `GIT_LFS_FETCH_INCLUDE`, then clear-cache deploy once** — until then the clone still pays first and the script just says so. (The §7 build-ignore hook would have saved LFS bandwidth on this path too, but it was retired on 2026-09-03 for the reason given there; a doc-only build on the cached path costs ~0 MB from GitHub anyway.)
 
 If bandwidth still creeps (media churn, frequent cache clears), in order of preference:
 1. **Zero-effort stopgap:** buy the **$5/mo GitHub 50 GB LFS data pack** (also the only way to deploy *before* the monthly reset once the quota is spent). No re-architecture.
@@ -126,24 +126,14 @@ If bandwidth still creeps (media churn, frequent cache clears), in order of pref
 
 **Sequencing:** linking the repos (§3) is harmless, but **don't treat build-on-push as your deploy mechanism until the first CI build is verified to include audio.** Until then, keep the manual `netlify deploy --dir` flow (§5), which includes audio from disk. If a first CI build ships audio-less, roll back with one manual deploy.
 
-## 7. Build-ignore hook — skip redundant doc-only rebuilds (2026-07-02)
-Both sites build-on-push, so a commit that changes only planning docs would still trigger two full rebuilds + redeploys. `netlify.toml` registers a shared build-ignore hook to skip those:
+## 7. Build-ignore hook — RETIRED 2026-09-03 (was: skip redundant doc-only rebuilds, 2026-07-02)
+From 2026-07-02 to 2026-09-03 `netlify.toml` registered `site_build/netlify-ignore.sh` as a build-ignore hook: it cancelled the build when every changed file was a Markdown doc under `_automation/` or anything under `_automation/surveillance/`, saving a ~40 s build per site per doc-only push. It is gone, and **nothing in this repo may cancel a Netlify build again.** Every `netlify.toml` in the repo (root, `sp-proxy/`, `faculty-console/`, `Outreach/alex-tour/`) now sets `ignore = "/bin/false"` — exit code 1 = "content changed, build" — which also overrides Netlify's *default* rule for the three sites with a base directory (cancel when the commit did not touch that directory).
 
-> ⚠️ **What it does and doesn't save.** It saves **build minutes** and avoids a **redundant production redeploy**. Git-LFS bandwidth it saves **only on the §6a cached-pull path**, where the fetch runs inside the build command, after this hook. On the legacy path (`GIT_LFS_ENABLED=true`) Netlify fetches LFS objects during the repo *clone*, which runs **before** the ignore hook (netlify.toml is read post-clone), so a skipped build has already paid the transfer.
+**Why.** Netlify records an ignore cancel — from the default base-directory rule or from a custom hook, identically — as a **failed deploy**: the API record has `state: "error"` and `error_message: "Failed during stage 'checking build content for changes': Canceled build due to no content change"`; the dashboard shows "Canceled" but files it under the "Unsuccessful" filter (`?status=error`). The "Deploy failed" email notification (added 2026-09-02 to `sp-interview-proxy`, `une-ms3-psychiatry`, `mmc-psychiatry-residents-sanford` after the 2026-08-31 LFS-budget outage went unnoticed) fires on that state, with a body that names only the site and quotes that message — no branch, no context. On 2026-09-02 `sp-interview-proxy` alone recorded ~75 such cancels in a day (58 deploy previews + 16 production merges), zero real failures. An alarm that rings 75 times a day for nothing is no alarm. Netlify's own GitHub commit-status integration, by contrast, reports the same cancel as `success` ("Deploy Preview canceled.") — the classification is inconsistent on Netlify's side, so the only reliable fix is to never produce the state.
 
-- **Script:** `13_Faculty_Resources/_automation/site_build/netlify-ignore.sh`
-- **Rule:** SKIP the build only when **every** changed file is either a Markdown doc under
-  `13_Faculty_Resources/_automation/` or any file under
-  `13_Faculty_Resources/_automation/surveillance/`. The surveillance tree contains operational
-  code, configuration, and generated audit state that the learner-site builders do not read. Any
-  other change — content, tools, build scripts, audio, or non-surveillance config — builds normally.
-  The hook fails safe toward BUILD on an empty cache, unreadable diff, or no changes.
-- **Exit convention:** `0` = Netlify cancels the build; non-zero = build proceeds.
-- **Gotcha baked in:** do not use `grep -q` on a `git diff` pipe — its early exit SIGPIPEs `git diff` and, under `pipefail`, flips the pipeline exit code. The script captures output and tests emptiness instead.
+**What it costs.** One extra build per site per doc-only push (~40 s on the student sites, ~10–30 s on the small sites), publishing byte-identical output. The service-worker `VERSION` is a content hash that already excludes commit-stamped files (`common.py`, "Service worker emission"), so an identical rebuild does not move it and no learner re-downloads anything. Git-LFS bandwidth is unaffected on either fetch path: the legacy clone-time fetch always ran *before* the hook, and the §6a cached pull reads from Netlify's cache (~0 MB from GitHub). Netlify's own "Skipped" deploys (a newer commit on the same branch superseded a queued build; `skipped: true`, message "Skipped") are also `state: "error"` and cannot be prevented from the repo; whether the email fires on those is unverified as of 2026-09-03.
 
-To broaden what's skippable, widen the ignore pattern in the script (e.g. add other non-deployed doc paths). To verify after any change: `CACHED_COMMIT_REF=<old> COMMIT_REF=<new> bash …/netlify-ignore.sh; echo $?`.
-
-**Post-first-push check:** confirm the minimal `netlify.toml` didn't disturb either site's UI build command / publish dir (it shouldn't — it sets only `ignore`). If a deploy ever uses the wrong publish dir, delete `netlify.toml` and move the ignore command into each site's UI ("Ignore builds").
+**Reading a deploy list after this change.** Any "Canceled" entry means someone re-introduced an ignore rule (or removed `ignore = "/bin/false"` from a base-directory site's toml) and the alarm is untrustworthy again. "Failed" means a real failure — read the log.
 
 ## 8. Scheduled operations and hosted evidence (2026-07-29)
 
@@ -202,4 +192,4 @@ between the MS3 and resident learner populations.
 ---
 *Prepared 2026-07-01; deployment migration completed 2026-07-02; scheduled-operations handoff linked
 2026-07-29. Baseline commit `a7793cc`. Manual deploys can remain retired; follow the maintenance
-runbook and watch Git-LFS bandwidth per §6/§7.*
+runbook and watch Git-LFS bandwidth per §6.*
