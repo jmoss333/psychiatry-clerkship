@@ -349,8 +349,13 @@ class FrontdoorCatalogTest(unittest.TestCase):
             for ref in addition["refs"]
         ]
 
-        self.assertEqual(sum(len(column["refs"]) for column in ms3["curriculum"]["libraryColumns"]), 81)
-        self.assertEqual(sum(len(column["refs"]) for column in resident["curriculum"]["libraryColumns"]), 90)
+        # Pinned counts over the REAL curriculum.json: a silent change to
+        # libraryColumns or siteLibrary has to be acknowledged here. They read 81/90
+        # until 2026-09-04 while the real file had 83/92 — the pin had drifted by two
+        # on each site and nothing said so, because this whole suite ran in neither
+        # ci.yml nor bin/verify.sh. Both now run it; that is the other half of this fix.
+        self.assertEqual(sum(len(column["refs"]) for column in ms3["curriculum"]["libraryColumns"]), 83)
+        self.assertEqual(sum(len(column["refs"]) for column in resident["curriculum"]["libraryColumns"]), 92)
         self.assertEqual(resident_additions, RESIDENT_EXTRAS)
         self.assertTrue(set(RESIDENT_EXTRAS).issubset(resident_placed))
         self.assertTrue(set(RESIDENT_EXTRAS).isdisjoint(resident_excluded))
