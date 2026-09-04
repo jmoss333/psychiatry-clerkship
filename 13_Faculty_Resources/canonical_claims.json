@@ -319,20 +319,85 @@
       }
     },
     "delirium-first-pass-workup": {
-      "topic": "First-pass workup for delirium",
-      "whyCanonical": "A checklist that has been re-typed rather than referenced, so items differ page to page.",
+      "topic": "First-pass workup for delirium: find and treat the cause, deprescribe deliriogenic medication",
+      "whyCanonical": "Eleven loci in four files teach the cause-first move in different words. Scoped 2026-09-04 to the management half only; the recognition half ('delirium until proven otherwise', 9 owners) and the benzodiazepine hazard (11 owners) are separate claims needing their own slots.",
       "status": "pending",
       "risk": {
         "kind": "clinical",
         "level": "high"
       },
-      "reason": "Registry slot seeded 2026-09-03; canonical statement not yet written or attested.",
+      "reason": "Scope and guard set 2026-09-04 from bin/claim_exposure.py (#507); the canonical statement is drafted but not yet attested, so the slot enforces wording consistency and not yet content.",
       "at": "2026-09-03",
       "by": "Pending faculty review",
-      "appliesTo": [],
+      "appliesTo": [
+        {
+          "path": "topic_meta.json",
+          "contentHashAtReview": "44c565a41ac538387cecf9d8274efae8f088e5a6e5baca3cbd6a3202790f96c4",
+          "note": "delirium.md states the cause-first move five times in five fields. ddx.md quiz.why is a judgement call -- mostly recognition, but it carries the workup clause. delirium.md tldr and ddx quiz.answer are out: recognition, not workup.",
+          "locus": [
+            "delirium.md firstMove",
+            "delirium.md workflow.safety",
+            "delirium.md points[2]",
+            "delirium.md quiz.answer",
+            "delirium.md quiz.why",
+            "ddx.md quiz.why"
+          ],
+          "scope": [
+            "/delirium.md/firstMove",
+            "/delirium.md/clinicalWorkflow/safety",
+            "/delirium.md/points/2",
+            "/delirium.md/quiz/o/0/t",
+            "/delirium.md/quiz/why",
+            "/ddx.md/quiz/why"
+          ]
+        },
+        {
+          "path": "question_bank.json",
+          "contentHashAtReview": "1aee5ccd6b05a68a7d3337e17e1d1ebe3fd7dc316d01fa35196215cc9380a6ba",
+          "note": "Two keyed answers and one 'why'. qb_cog_008 and qb_cog_004 mention causes but assert hypoactive-delirium outcomes and the benzodiazepine hazard, and are left for those slots.",
+          "locus": [
+            "qb_cog_001 answer",
+            "qb_cog_003 answer",
+            "qb_cog_003 why"
+          ],
+          "scope": [
+            "/items/2/options/2/t",
+            "/items/24/options/1/t",
+            "/items/24/why"
+          ]
+        },
+        {
+          "path": "_prototypes/agitation-trainer/agitation.pack.json",
+          "contentHashAtReview": "c5a48d5496dadacb32a0406f2f7d65977a9b2fa73d807206ae1773c2d32089bc",
+          "note": "Scenario 1's first teaching point. Identical string to the resident twin -- the same twin-drift shape #483 caught on the catatonia hazard, on a different claim.",
+          "locus": [
+            "scenario 1 teachingPoint 0"
+          ],
+          "scope": [
+            "/content/scenarios/1/teachingPoints/0/text"
+          ]
+        },
+        {
+          "path": "_prototypes/agitation-trainer/rp-agitation.pack.json",
+          "contentHashAtReview": "6f08caf5d4df0248be10156394609559c85ef020fe1adf2a787485e43d72b54e",
+          "note": "Resident twin, word-for-word identical to the MS3 pack today. Nothing in the repo keeps them that way, which is why both are cited rather than one.",
+          "locus": [
+            "scenario 1 teachingPoint 0"
+          ],
+          "scope": [
+            "/content/scenarios/1/teachingPoints/0/text"
+          ]
+        }
+      ],
       "guards": {
         "forbidden": [],
-        "required": []
+        "required": [
+          {
+            "pattern": "deliriogenic|caus",
+            "why": "The droppable half is the cause-finding, not the disease name. A firstMove rewritten to reorient-and-sedate still says delirium and has lost the claim, so deliri cannot fail as a guard. This one breaks on that rewrite.",
+            "caughtOn": "2026-09-04"
+          }
+        ]
       }
     },
     "lamotrigine-titration-rash": {
