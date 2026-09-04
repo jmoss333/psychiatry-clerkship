@@ -185,6 +185,7 @@ EXPECTED_STEP_INVENTORIES = {
             ("uses", "actions/setup-node"),
             ("name", "Unit — root node regression tests (tests/*.test.mjs)"),
             ("name", "Validate — WCAG AA contrast tokens"),
+            ("name", "Unit — faculty console modules and pending-visibility invariant"),
             ("name", "Install — managed SP proxy dependencies"),
             ("name", "Test — SP Interview and managed proxy"),
             ("name", "Red-team tier 1 — gate integrity (deterministic probes)"),
@@ -347,7 +348,7 @@ EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
     ESCALATION_FILE: (
         "97cce854ae22f6fcbf24a87d220582ea4f125d8136d4c8d306deb9492bcdf5be"
     ),
-    "ci.yml": "b94689f3abdfd83df732300f3206048f3ab11554f4b4ba777cb1855d9d6d2fab",
+    "ci.yml": "d72b57a13342843314d887477f58d3c1fcda197d7d63ecef4f2f2600ff104e31",
     "maintenance-governance-digest.yml": (
         "d819d2eafa59d6d62fcdf5f4d82b5eaf374f2b58d728d7c7f748fa7160bf6c10"
     ),

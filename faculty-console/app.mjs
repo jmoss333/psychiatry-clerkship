@@ -9,6 +9,8 @@ import {
   TYPES,
 } from './qbank-rules.mjs';
 import {
+  buildBookmarklet,
+  buildDeepLink,
   buildExternalReviewUrl,
   buildPreviewRequest,
   createReviewToken,
@@ -20,7 +22,9 @@ import {
   matchesPreviewStatus,
   normalizeReviewItems,
   normalizeStudentBase,
+  parseDeepLink,
   reviewedRevisionMatches,
+  twinOf,
 } from './review-model.mjs';
 
 const API = '/api/attest';
@@ -197,6 +201,7 @@ export function startFacultyConsole({
     batchEnrollmentFeedback: null,
     reviewResetNotice: '',
     reviewResetAnnouncement: '',
+    deepLinkNotice: '',
     sessionActions: [],
     externalReviewOpenedKey: null,
     contentMessage: '',
@@ -220,6 +225,36 @@ export function startFacultyConsole({
     loadGeneration: 0,
   };
   let renderedIssueRecords = [];
+
+  /* ?item=<key> deep links (2026-09). The requested key is read ONCE, at startup, and
+     held in this closure — never in sessionStorage, never re-read from the address bar
+     after load. That is what lets a link survive the key prompt: the console can be
+     locked when the link arrives, and the request is still waiting when the queue
+     finally loads. It is consumed on first use, so a later reload never re-hijacks the
+     reviewer's selection. The value itself is only ever compared against loaded item
+     keys (parseDeepLink) — it is never written into the DOM. */
+  let pendingDeepLinkSearch = typeof window.location?.search === 'string'
+    ? window.location.search : '';
+
+  function requestedDeepLinkKey(search) {
+    try {
+      return new URLSearchParams(typeof search === 'string' ? search : '').get('item') || '';
+    } catch {
+      return '';
+    }
+  }
+
+  /* Keeps the address bar a shareable link to whatever is selected. buildDeepLink
+     rebuilds the query from nothing but the item key, so the faculty key, the review
+     token and the reviewer label are structurally incapable of reaching the URL. */
+  function syncDeepLink() {
+    try {
+      const href = buildDeepLink(window.location.href, currentReviewItem());
+      if (href !== window.location.href) window.history?.replaceState?.(null, '', href);
+    } catch {
+      // No History API, or an exotic document URL: the console works, links do not.
+    }
+  }
 
   function el(tag, attributes = {}, children = []) {
     const node = document.createElement(tag);
@@ -322,6 +357,13 @@ export function startFacultyConsole({
       ids.add(question.id);
     }
     return true;
+  }
+
+  // The learner deployment that serves the selected item. Case-of-the-Week ships an
+  // MS3 page and a resident twin from one registry week, and each half exists only on
+  // its own site. Falls back to the MS3 base when the server sends no resident base.
+  function residentBase() {
+    return text(state.server?.resident) || state.server?.student;
   }
 
   function safeStudentUrl(query) {
@@ -532,6 +574,7 @@ export function startFacultyConsole({
     cancelPreviewTimer();
     const request = buildPreviewRequest({
       studentBase: state.server.student,
+      residentBase: residentBase(),
       item,
       reviewToken: tokenFactory(),
     });
@@ -584,6 +627,7 @@ export function startFacultyConsole({
     state.preview = null;
     state.previewAttempt = 0;
     state.reopenConfirmation = null;
+    syncDeepLink();
   }
 
   function setSelectedReviewKey(key, {
@@ -594,7 +638,10 @@ export function startFacultyConsole({
     const item = findReviewItem(key);
     if (!item) return false;
     if (!preserveCompletedHold) state.completedHoldKey = null;
-    if (!force && state.selectedKey === key) return true;
+    if (!force && state.selectedKey === key) {
+      syncDeepLink();
+      return true;
+    }
     cancelPreviewTimer();
     clearReviewAcknowledgements({
       clearApprovals: true,
@@ -622,6 +669,7 @@ export function startFacultyConsole({
       state.localAssessment = null;
     }
     beginPreviewLoad(item);
+    syncDeepLink();
     return true;
   }
 
@@ -673,7 +721,27 @@ export function startFacultyConsole({
     return removed;
   }
 
+  /* Applies a pending ?item= request exactly once, against the queue as loaded. An
+     unknown key is not an error the reviewer can act on and must not be echoed back to
+     the page, so it produces one neutral notice and the ordinary default selection. */
+  function applyPendingDeepLink() {
+    if (!pendingDeepLinkSearch) return false;
+    const search = pendingDeepLinkSearch;
+    pendingDeepLinkSearch = '';
+    if (!requestedDeepLinkKey(search)) return false;
+    const requested = parseDeepLink(search, state.reviewItems);
+    if (requested && setSelectedReviewKey(requested.key, { force: true })) {
+      state.deepLinkNotice = '';
+      announce(`Opened ${requested.title} from a shared link.`);
+      return true;
+    }
+    state.deepLinkNotice = 'That item is not in the current queue.';
+    announce(state.deepLinkNotice);
+    return false;
+  }
+
   function chooseSelection() {
+    if (applyPendingDeepLink()) return;
     const visible = visibleReviewItems();
     const held = state.completedHoldKey && findReviewItem(state.completedHoldKey);
     if (held) {
@@ -696,6 +764,18 @@ export function startFacultyConsole({
   // review-model.mjs mirrors record.status verbatim; completion() there treats anything
   // other than 'reviewed' as needing review, but the literal value itself is
   // 'unreviewed', never 'pending').
+  /* Twin-first advance (2026-09). A Case-of-the-Week week produces an MS3 page and a
+     resident page from one source pair, and a reviewer reads the same case twice. After
+     attesting one half, the other half is the next thing they want — not the next
+     alphabetical page. This ONLY moves the selection; the attestation itself still
+     writes exactly the one slug that was pressed. Restricted to the visible queue so
+     the advance can never jump outside the filters the reviewer set. */
+  function advanceToTwin(fromKey) {
+    const twin = twinOf(findReviewItem(fromKey), state.reviewItems);
+    if (!twin || twin.completion === 'complete') return null;
+    return visibleReviewItems().some(item => item.key === twin.key) ? twin.key : null;
+  }
+
   function advanceToNextPendingContent(fromKey) {
     const visible = visibleReviewItems();
     const start = visible.findIndex(item => item.key === fromKey);
@@ -812,9 +892,14 @@ export function startFacultyConsole({
         throw new Error(responseMessage(payload, 'The server returned an incomplete state.'));
       }
       let studentBase;
+      let residentSite;
       let reviewItems;
       try {
         studentBase = normalizeStudentBase(payload.student);
+        // Optional: a payload from an older function deployment carries no resident
+        // base, and every item in it is an MS3 item, so falling back is exact.
+        residentSite = text(payload.resident)
+          ? normalizeStudentBase(payload.resident) : studentBase;
         reviewItems = normalizeReviewItems(payload);
       } catch {
         throw new Error('The server returned an incomplete state.');
@@ -871,7 +956,7 @@ export function startFacultyConsole({
           state.reviewResetAnnouncement = state.reviewResetNotice;
         }
       }
-      state.server = { ...payload, student: studentBase.href };
+      state.server = { ...payload, student: studentBase.href, resident: residentSite.href };
       state.reviewItems = reviewItems;
       // Attribution is server-derived (ATTESTER_NAME); the console only displays it.
       state.reviewerLabel = text(payload.attester) || DEFAULT_REVIEWER;
@@ -889,7 +974,8 @@ export function startFacultyConsole({
       // guard to hold open, but kept symmetric so the invariant still holds if that
       // ever changes.
       const advanceKey = contentHoldKey && !state.navigationGuard
-        ? advanceToNextPendingContent(contentHoldKey) : null;
+        ? (advanceToTwin(contentHoldKey) || advanceToNextPendingContent(contentHoldKey))
+        : null;
       const holdKey = advanceKey ? null : (completedHoldKey || contentHoldKey || state.completedHoldKey);
       const heldItem = holdKey ? findReviewItem(holdKey) : null;
       state.completedHoldKey = heldItem?.completion === 'complete' ? heldItem.key : null;
@@ -935,6 +1021,9 @@ export function startFacultyConsole({
 
   function performNavigation(target) {
     if (!target || typeof target !== 'object') return;
+    // The deep-link notice is a landing message about the link the reviewer arrived on.
+    // Once they navigate deliberately it has said what it had to say.
+    state.deepLinkNotice = '';
     if (target.kind === 'lock') {
       clearKey();
       clearSessionSitting();
@@ -946,6 +1035,20 @@ export function startFacultyConsole({
       state.reauthAction = null;
       state.reopenConfirmation = null;
       renderLogin();
+      return;
+    }
+    /* Selecting the item that is ALREADY selected changes nothing, and must not be
+       treated as a re-render: renderShell() rebuilds the workspace including the preview
+       iframe, and a preview frame that loads a second time is — correctly —
+       reported as "the embedded preview changed or reloaded", a frame failure. Before
+       ?item= deep links this path was effectively unreachable, because a reload always
+       landed on the default selection. It is reachable now, so it is a no-op: release
+       the completed-item hold exactly as setSelectedReviewKey did before returning
+       early, refresh the queue strip (which owns no iframe), and return focus. */
+    if (target.kind === 'review' && target.key === state.selectedKey
+        && findReviewItem(target.key)) {
+      state.completedHoldKey = null;
+      refreshQueueStrip(target.focusId || 'review-item-selector');
       return;
     }
     if (target.kind === 'review' && setSelectedReviewKey(target.key)) {
@@ -1165,6 +1268,7 @@ export function startFacultyConsole({
     if (!item || !['page', 'tool'].includes(item.type)) return;
     const url = buildExternalReviewUrl({
       studentBase: state.server.student,
+      residentBase: residentBase(),
       item,
     });
     openExternal(url, '_blank', 'noopener,noreferrer');
@@ -1886,6 +1990,30 @@ export function startFacultyConsole({
     ]);
   }
 
+  /* Case-of-the-Week twin (2026-09). Names the partner page and offers one hop to it.
+     Deliberately NOT an "attest both" control: one press attests one slug, and pairing
+     the two into a single affirmation would be a governance change nobody has made. */
+  function renderTwinContext(item) {
+    const twin = twinOf(item, state.reviewItems);
+    if (!twin) return null;
+    return el('div', { id: 'attestation-twin', class: 'twin-context' }, [
+      el('p', {}, [
+        el('strong', {}, ['Twin: ']),
+        `${twin.title} · ${twin.completion === 'complete' ? 'Reviewed' : 'Needs review'}`,
+      ]),
+      el('button', {
+        id: 'go-to-twin',
+        class: 'quiet',
+        type: 'button',
+        disabled: state.pending,
+        onClick: () => requestNavigation(
+          { kind: 'review', key: twin.key, focusId: 'go-to-twin' },
+          'go-to-twin',
+        ),
+      }, ['Go to twin']),
+    ]);
+  }
+
   function renderAttestationRail(item) {
     if (!item) {
       return el('aside', { id: 'attestation-rail', class: 'signoff-rail' }, [
@@ -1926,6 +2054,7 @@ export function startFacultyConsole({
         el('p', { class: 'eyebrow' }, ['Single-item sign-off']),
         el('h2', { id: 'attestation-rail-title' }, ['Review → Resolve → Confirm']),
       ]),
+      renderTwinContext(item),
       renderRiskContext(item),
       renderPendingReason(item),
       renderActionFeedback(item),
@@ -2001,6 +2130,54 @@ export function startFacultyConsole({
     ]);
   }
 
+  /* "Attest this page" bookmarklet (2026-09). Rendered only in the unlocked console,
+     from THIS console's own origin, so a Netlify preview deploy hands out a bookmarklet
+     that points at that preview rather than production. The link is for dragging to a
+     bookmarks bar, not for clicking here — clicking it in place would only reopen the
+     console — so the click is swallowed and the disclosure says what to do with it. */
+  function renderBookmarkletDisclosure() {
+    let bookmarklet;
+    try {
+      bookmarklet = buildBookmarklet(window.location.origin);
+    } catch {
+      return null;
+    }
+    const source = el('textarea', {
+      id: 'bookmarklet-source',
+      class: 'data-text',
+      rows: '3',
+      readOnly: true,
+      'aria-label': 'Bookmarklet address to copy',
+    });
+    source.value = bookmarklet;
+    return el('details', {
+      id: 'bookmarklet-disclosure',
+      class: 'bookmarklet-disclosure',
+    }, [
+      el('summary', {}, ['Review from the learner site']),
+      el('div', { class: 'bookmarklet-body' }, [
+        el('p', { class: 'hint' }, [
+          'Drag this link to your bookmarks bar once. Then, on any learner page, click it '
+          + 'to open that exact page or tool here for review. A learner view with no '
+          + 'page or tool in its address opens this console\u2019s queue instead \u2014 '
+          + 'it never guesses which item you meant.',
+        ]),
+        el('a', {
+          id: 'attest-this-page-bookmarklet',
+          class: 'bookmarklet-link',
+          href: bookmarklet,
+          draggable: 'true',
+          onClick: event => {
+            event.preventDefault();
+            announce('Drag this link to your bookmarks bar, then click it from a learner page.');
+          },
+        }, ['Attest this page']),
+        el('p', { class: 'hint' }, ['On a phone or tablet, copy the address instead:']),
+        source,
+      ]),
+    ]);
+  }
+
   function renderShell(focusTarget = null) {
     if (!state.server) return;
     renderedIssueRecords = [];
@@ -2062,6 +2239,7 @@ export function startFacultyConsole({
         el('p', { class: 'reviewer-note' }, [
           'Attribution is configured server-side (ATTESTER_NAME) and cannot be edited in the browser.',
         ]),
+        renderBookmarkletDisclosure(),
       ]),
       renderSharedQueueStrip(visibleReviewItems()),
       renderItemHeader(item),
@@ -2190,6 +2368,26 @@ export function startFacultyConsole({
     focusRequested(focusTarget);
   }
 
+  /* Copies the current ?item= link. The link carries an item key and nothing else
+     (buildDeepLink strips the query), so there is no secret to leak into a clipboard. */
+  async function copyDeepLink() {
+    const item = currentReviewItem();
+    if (!item) return;
+    let link;
+    try {
+      link = buildDeepLink(window.location.href, item);
+    } catch {
+      announce('This item has no shareable link.');
+      return;
+    }
+    try {
+      await window.navigator.clipboard.writeText(link);
+      announce(`Copied a link to ${item.title}.`);
+    } catch {
+      announce('The clipboard is unavailable. The address bar already holds this link.');
+    }
+  }
+
   function renderSharedQueueStrip(items, { questionFiltersOpen = false } = {}) {
     const questions = list(state.server?.qbank);
     const categories = [...new Set(questions.map(question => text(question.category)).filter(Boolean))]
@@ -2205,6 +2403,12 @@ export function startFacultyConsole({
       ? items[0]?.key || null
       : index >= 0 && index < items.length - 1 ? items[index + 1].key : null;
     const counts = deriveReviewCounts(items);
+    // Whole-queue outstanding work, independent of the active filters: what still needs
+    // a faculty judgement, by kind. The per-filter tally stays in #review-queue-counts.
+    const outstanding = deriveReviewCounts(
+      filterReviewItems(state.reviewItems, { status: 'needs-review' }),
+    );
+    const plural = (value, noun) => `${value} ${noun}${value === 1 ? '' : 's'}`;
     const search = el('input', {
       id: 'review-search',
       type: 'search',
@@ -2258,7 +2462,25 @@ export function startFacultyConsole({
           }, [held && state.selectedKey === held.key ? 'Next item' : 'Next']),
         ]),
         labeledControl('Search pages, tools, and questions', 'review-search', search, 'queue-search'),
-        labeledControl('Review item', 'review-item-selector', selector, 'queue-selector'),
+        el('div', { class: 'queue-selector-cell' }, [
+          labeledControl('Review item', 'review-item-selector', selector, 'queue-selector'),
+          el('button', {
+            id: 'copy-item-link',
+            class: 'quiet',
+            type: 'button',
+            disabled: !state.selectedKey || state.pending,
+            onClick: () => void copyDeepLink(),
+          }, ['Copy link']),
+        ]),
+      ]),
+      el('div', { class: 'queue-summary' }, [
+        el('p', { id: 'review-pending-summary' }, [
+          `${plural(outstanding.page, 'page')} · ${plural(outstanding.tool, 'tool')} · `
+          + `${plural(outstanding.question, 'question')} need review`,
+        ]),
+        state.deepLinkNotice
+          ? el('p', { id: 'deep-link-notice', class: 'deep-link-notice' }, [state.deepLinkNotice])
+          : null,
       ]),
       renderSessionStatus(),
       el('div', { class: 'queue-filters' }, [

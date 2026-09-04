@@ -69,13 +69,26 @@ build gate's 105-real-file check is the authoritative local media evidence.
 
 ## Visual baselines
 
-The visual project captures resident Front Door Today and Reader first viewports at 1280×800 and
-390×844. State and time are frozen, and snapshots use semantic names:
+The visual project captures the resident Front Door plus **one page per structural
+archetype**, at 1280×800 and 390×844. State and time are frozen, and snapshots use semantic
+names:
 
-- `front-door-today-desktop.png`
-- `front-door-reader-desktop.png`
-- `front-door-today-mobile.png`
-- `front-door-reader-mobile.png`
+| Snapshot (× `-desktop` / `-mobile`) | Route | Archetype it protects |
+|---|---|---|
+| `front-door-today` | `/` | Front Door, Today tab |
+| `front-door-reader` | `?page=t_mood.md` | flat prose page **with a crisis block** — the `makeCollapsible()` bail-out path (23 pages) |
+| `reader-sections` | `?page=osce.md` | `makeCollapsible()` sections, chevrons and the Expand/Collapse toolbar, plus tables (36 pages) |
+| `reader-disclosure` | `?page=week5.md` | a build-injected `<details>` block with inline `<audio>`, captured **open** (6 pages) |
+
+**Why archetypes and not one page.** Before 2026-09-04 the set was four images over two
+routes, and `t_mood.md` stood in for all 86 built resident content pages. It has zero `<h2>`s,
+no tables and no media, and its crisis block switches `makeCollapsible()` off — so the collapse
+machinery that 36 pages render through had never been baselined at all. PR #506 changed six
+week pages and the smoke job went green, which is how the gap surfaced.
+
+**Adding a route costs two images.** Add one only for a structural archetype that no existing
+row covers, and give its `settle()` an assertion that the machinery actually ran — otherwise a
+regression is silently re-baselined as the new normal on the next refresh.
 
 Baselines are Ubuntu/Chromium artifacts. Do not generate or commit replacements from macOS.
 Refresh them only after publishing an authorized branch:

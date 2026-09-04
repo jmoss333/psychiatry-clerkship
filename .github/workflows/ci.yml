@@ -186,6 +186,16 @@ jobs:
       - name: Validate — WCAG AA contrast tokens
         run: node tests/contrast-check.mjs
 
+      # The pending-visibility invariant is the gate this repository did not have in July
+      # 2026: reviewed.json said 22 Case-of-the-Week pages were pending, both site builds
+      # shipped them, and the faculty console could not show one of them. Nothing was red
+      # for two months. check_pending_visible.mjs fails if any pending ledger entry falls
+      # outside the console's content universe without an explicit, documented exclusion.
+      - name: Unit — faculty console modules and pending-visibility invariant
+        run: |
+          node --test faculty-console/*.test.mjs
+          node faculty-console/check_pending_visible.mjs
+
       - name: Install — managed SP proxy dependencies
         run: npm --prefix sp-proxy ci
 

@@ -25,6 +25,14 @@ TOPIC_META_PATH = "topic_meta.json"
 MANIFEST_PATH = os.path.join(
     "13_Faculty_Resources", "_automation", "site_build", "site_manifest.json"
 )
+# The SECOND source of truth for what ships. build_deploy.py and resident_section.py both
+# append Case-of-the-Week pages from this registry without touching site_manifest.json, so
+# a validator that reads only the manifest cannot tell that a built page has no ledger
+# entry — the same blind spot that hid 22 pending pages from the faculty console from
+# July to September 2026. Mirrors faculty-console/content-universe.mjs.
+COTW_REGISTRY_PATH = os.path.join(
+    "08_Cases_and_Simulation", "case-of-the-week", "cotw_registry.json"
+)
 
 REVIEWED_STATUSES = {"reviewed", "attested"}
 PROFILE_STATUSES = {"draft-pending-attestation", "reviewed"}
@@ -759,6 +767,29 @@ def _validate_pack(slug, pack_path, ledger_status, meta_status):
     return errors
 
 
+def cotw_built_slugs(root):
+    """Every Case-of-the-Week page the two site builds actually publish.
+
+    Byte-identical to _cotw_slug() in build_deploy.py / resident_section.py.
+
+    An absent registry means no weekly cases, matching how both build scripts read it
+    (``json.load(...).get("weeks", [])``). The synthetic roots this validator's own test
+    suite builds carry a manifest and a ledger but no registry, and a repository that has
+    not yet started publishing weekly cases would not have one either.
+    """
+    registry_path = os.path.join(root, COTW_REGISTRY_PATH)
+    if not os.path.exists(registry_path):
+        return set()
+    registry = load(registry_path)
+    weeks = registry.get("weeks", []) if isinstance(registry, dict) else []
+    return {
+        "cotw_%s_%s_%s.md" % (w["date"].replace("-", ""), w["topic"], level)
+        for w in weeks
+        if isinstance(w, dict) and w.get("date") and w.get("topic")
+        for level in ("ms3", "res")
+    }
+
+
 def validate(root):
     """Return every attestation inconsistency found below ``root``."""
     root = os.path.abspath(os.fspath(root))
@@ -772,7 +803,7 @@ def validate(root):
     manifest_tool_entries = manifest.get("tools", [])
     manifest_md = {slug for _src, slug, _title in manifest_md_entries}
     manifest_tools = {slug for _src, slug, _title in manifest_tool_entries}
-    manifest_items = manifest_md | manifest_tools
+    manifest_items = manifest_md | manifest_tools | cotw_built_slugs(root)
 
     errors = []
     for slug in sorted(manifest_items):
@@ -880,7 +911,7 @@ def main():
     manifest_md = {slug for _src, slug, _title in manifest.get("md", [])}
     manifest_items = manifest_md | {
         slug for _src, slug, _title in manifest.get("tools", [])
-    }
+    } | cotw_built_slugs(ROOT)
     faculty_count = sum(
         1
         for slug in manifest_md

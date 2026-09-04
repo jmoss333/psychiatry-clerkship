@@ -88,6 +88,12 @@ A=13_Faculty_Resources/_automation
 step "validate_registry_schemas"            python3 $A/validate_registry_schemas.py
 step "test_validate_registry_schemas"       python3 $A/test_validate_registry_schemas.py
 step "validate_topic_meta"                  python3 $A/validate_topic_meta.py
+# ci.yml runs this validator's own unit suite inside the "Test — SP Interview and managed
+# proxy" step, which check-verify-coverage.py exempts wholesale — so until 2026-09 it ran
+# in CI and nowhere else. A change to validate_attestation_consistency.py that broke its
+# synthetic-root fixtures therefore passed a green local gate and failed in CI twenty
+# minutes later. One line closes that.
+step "test_validate_attestation_consistency" python3 $A/test_validate_attestation_consistency.py
 step "validate_attestation_consistency"     python3 $A/validate_attestation_consistency.py
 step "canonical clinical claims"            python3 bin/validate_canonical_claims.py
 step "unit — scheduled maintenance"         bash -c "python3 -m unittest discover -s tests/maintenance -p 'test_*.py'"
@@ -134,6 +140,14 @@ step "production rotation edition locked"   python3 bin/check-rotation-edition-l
 # suite with its own deps and is not runnable from repo root.
 step "node --test tests/*.test.mjs"         bash -c 'node --test tests/*.test.mjs'
 step "contrast-check"                       node tests/contrast-check.mjs
+
+# --- faculty console: shared modules + the pending-visibility invariant ---
+# The invariant fails when any reviewed.json item at status "pending" is outside the
+# console's content universe (site_manifest.json + cotw_registry.json) and not on the
+# documented NOT_REVIEWABLE_IN_CONSOLE allowlist. That is the check that would have
+# caught the July 2026 Case-of-the-Week blind spot on the day it opened.
+step "node --test faculty-console/*.test.mjs" bash -c 'node --test faculty-console/*.test.mjs'
+step "pending items are visible in console"  node faculty-console/check_pending_visible.mjs
 
 # --- SP: the duplicated state machine and its parity gate ---
 # parity.test.mjs imports sp-proxy/netlify/functions/sp.mjs (@netlify/blobs) and

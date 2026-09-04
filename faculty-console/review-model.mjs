@@ -1,4 +1,15 @@
+import { cotwTwinSlug } from './content-universe.mjs';
+
 const TYPE_ORDER = { page: 0, tool: 1, question: 2 };
+// Which learner deployment an item actually ships on. Case-of-the-Week pages exist as
+// MS3/resident twins built from one registry week (content-universe.mjs), so a preview
+// has to be requested from the site that serves the selected half.
+const SITES = new Set(['ms3', 'res']);
+const DEEP_LINK_PARAM = 'item';
+// A deep link addresses exactly one item key and nothing else. Bounded on purpose: the
+// value is matched against the loaded queue and never reflected into the DOM, and this
+// keeps an oversized query string from being walked at all.
+const DEEP_LINK_MAX_LENGTH = 256;
 const TOKEN_PATTERN = /^[0-9a-f]{32}$/;
 const REVISION_PATTERN = /^[0-9a-f]{64}$/;
 const PREVIEW_FAILURES = new Set([
@@ -46,8 +57,16 @@ export function normalizeReviewItems(server = {}) {
     const identity = clean(record?.slug);
     if (!Object.hasOwn(TYPE_ORDER, type) || !identity) throw new TypeError('Invalid content review item.');
     const risk = validRisk(record?.risk);
+    // `site` is authoritative when the server sends it (it always does since the
+    // content-universe change) and defaults to the MS3 site otherwise, which is where
+    // every manifest page and tool has always lived. An unrecognised value is refused
+    // rather than guessed: routing a preview at the wrong deployment would show the
+    // reviewer a different page than the one they are about to attest.
+    const rawSite = record?.site;
+    const site = rawSite === undefined || rawSite === null ? 'ms3' : clean(rawSite);
+    if (!SITES.has(site)) throw new TypeError('Invalid content review item site.');
     items.push({
-      key: `${type}:${identity}`, type, identity,
+      key: `${type}:${identity}`, type, identity, site,
       title: clean(record.title) || identity,
       savedStatus: clean(record.status), completion: completion(type, record.status),
       revision: '', gate: '',
@@ -60,7 +79,7 @@ export function normalizeReviewItems(server = {}) {
     const identity = clean(record?.id);
     if (!identity) throw new TypeError('Invalid question review item.');
     items.push({
-      key: `question:${identity}`, type: 'question', identity,
+      key: `question:${identity}`, type: 'question', identity, site: 'ms3',
       title: identity, savedStatus: clean(record.status),
       completion: completion('question', record.status),
       revision: clean(record.revision), gate: clean(record.assessment?.gate),
@@ -127,7 +146,14 @@ export function normalizeStudentBase(studentBase) {
   return Object.freeze({ href: url.href, origin: url.origin });
 }
 
-export function buildPreviewRequest({ studentBase, item, reviewToken }) {
+// `residentBase` is optional and falls back to `studentBase`, so a payload from an
+// older function deployment (no resident base) keeps today's exact behaviour rather
+// than failing to preview at all.
+function baseForItem({ studentBase, residentBase, item }) {
+  return item?.site === 'res' && residentBase ? residentBase : studentBase;
+}
+
+export function buildPreviewRequest({ studentBase, residentBase, item, reviewToken }) {
   const identity = clean(item?.identity);
   if (!item || !Object.hasOwn(TYPE_ORDER, item.type) || !identity
       || item.identity !== identity
@@ -136,7 +162,7 @@ export function buildPreviewRequest({ studentBase, item, reviewToken }) {
       || !TOKEN_PATTERN.test(reviewToken)) {
     throw new TypeError('Invalid preview request.');
   }
-  const base = normalizeStudentBase(studentBase);
+  const base = normalizeStudentBase(baseForItem({ studentBase, residentBase, item }));
   const url = new URL(base.href);
   if (item.type === 'page') url.searchParams.set('page', item.identity);
   if (item.type === 'tool') url.searchParams.set('tool', item.identity);
@@ -152,17 +178,87 @@ export function buildPreviewRequest({ studentBase, item, reviewToken }) {
   });
 }
 
-export function buildExternalReviewUrl({ studentBase, item }) {
+export function buildExternalReviewUrl({ studentBase, residentBase, item }) {
   const identity = clean(item?.identity);
   if (!item || !['page', 'tool'].includes(item.type)
       || !identity || item.identity !== identity
       || item.key !== `${item.type}:${identity}`) {
     throw new TypeError('External review is available only for a valid page or tool.');
   }
-  const base = normalizeStudentBase(studentBase);
+  const base = normalizeStudentBase(baseForItem({ studentBase, residentBase, item }));
   const url = new URL(base.href);
   url.searchParams.set(item.type, item.identity);
   return url.href;
+}
+
+/* ?item=<key> deep links (2026-09). The value is compared against the loaded queue and
+   nothing else: an unknown, malformed, oversized or hostile string yields null, and the
+   caller shows one neutral notice rather than echoing anything back to the page. The
+   key must reconstruct exactly from the item it names — the same `${type}:${identity}`
+   equality buildPreviewRequest already enforces — so a crafted key can never select an
+   item other than the one it literally spells. */
+export function parseDeepLink(search, items) {
+  let requested;
+  try {
+    const query = typeof search === 'string' ? search : '';
+    if (query.length > DEEP_LINK_MAX_LENGTH) return null;
+    // Exactly one `item`. A repeated parameter is ambiguous, and the learner-side
+    // review route already refuses duplicates rather than picking a winner.
+    const values = new URLSearchParams(query).getAll(DEEP_LINK_PARAM);
+    if (values.length !== 1) return null;
+    [requested] = values;
+  } catch {
+    return null;
+  }
+  if (typeof requested !== 'string' || !requested || requested !== requested.trim()) return null;
+  if (requested.length > DEEP_LINK_MAX_LENGTH) return null;
+  return list(items).find(item => (
+    item?.key === requested && item.key === `${item.type}:${item.identity}`
+  )) || null;
+}
+
+/* The shareable address of one item. Deliberately built from the origin and path alone,
+   discarding every other query parameter: the console must never place the faculty key,
+   a review token, or the reviewer's name in a URL (README security note), and rebuilding
+   the query from scratch makes that structural rather than a rule to remember. */
+export function buildDeepLink(consoleHref, item) {
+  const url = new URL(consoleHref);
+  if (!['http:', 'https:'].includes(url.protocol)) throw new TypeError('Unsafe console URL.');
+  url.search = '';
+  url.hash = '';
+  if (item?.key && item.key === `${item.type}:${item.identity}`) {
+    url.searchParams.set(DEEP_LINK_PARAM, item.key);
+  }
+  return url.href;
+}
+
+/* Case-of-the-Week pages are built in MS3/resident pairs from one registry week, and a
+   reviewer reads the same case twice. twinOf finds the partner so the console can offer
+   it directly. It reports the twin ONLY — it never attests it: the standing rule that a
+   page attestation writes exactly the selected slug is unchanged, and a one-press
+   "attest both" would be a governance decision nobody has made. */
+export function twinOf(item, items) {
+  if (!item || item.type !== 'page') return null;
+  const twinSlug = cotwTwinSlug(item.identity);
+  if (!twinSlug) return null;
+  return list(items).find(other => other?.type === 'page' && other.identity === twinSlug) || null;
+}
+
+/* "Attest this page" bookmarklet. Self-contained, no external fetch, no state: it reads
+   the learner tab's own ?page=/?tool= parameter — exactly how buildExternalReviewUrl
+   addresses a learner surface — and opens this console on that item. With neither
+   parameter present it opens the console root rather than guessing a slug. The origin is
+   baked in from the console that rendered it, so a preview deploy hands out a
+   bookmarklet pointing at that preview instead of production. */
+export function buildBookmarklet(consoleOrigin) {
+  const origin = new URL(consoleOrigin).origin;
+  if (!['http:', 'https:'].includes(new URL(origin).protocol)) {
+    throw new TypeError('Unsafe console origin.');
+  }
+  const source = `(function(){var p=new URLSearchParams(location.search),`
+    + `s=p.get('page'),t=p.get('tool'),k=s?'page:'+s:(t?'tool:'+t:'');`
+    + `window.open(${JSON.stringify(origin)}+(k?'/?item='+encodeURIComponent(k):'/'),'_blank','noopener');})()`;
+  return `javascript:${encodeURIComponent(source)}`;
 }
 
 export function matchesPreviewStatus(event, request, expectedSource) {
