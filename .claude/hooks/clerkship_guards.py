@@ -109,6 +109,16 @@ REGISTRY_VALIDATORS = {
     TOOLING_PREFIX + "site_build/site_manifest.json": [TOOLING_PREFIX + "validate_attestation_consistency.py"],
 }
 
+# The producers "what ships" is derived from (ADR-002). Editing one of these without
+# regenerating site_build/shipped_pages.json leaves the tracked listing stale, which is
+# the one new failure mode that ADR introduces; post_edit_validate.py runs
+# shipped_pages.py --check after any edit to one of them.
+SHIPPED_PAGES_PRODUCERS = frozenset({
+    TOOLING_PREFIX + "site_build/site_manifest.json",
+    TOOLING_PREFIX + "site_build/site_extras.py",
+    "08_Cases_and_Simulation/case-of-the-week/cotw_registry.json",
+})
+
 # A sentence that asserts what a paper found. Pairs with evidence_annotations.json's rule
 # that every such claim needs the paper's own words as a stored sourceSpan.
 FINDING_RE = re.compile(

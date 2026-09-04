@@ -14,6 +14,11 @@
 # - check_lfs_media.py gives a targeted Git-LFS media preflight before the broader QA.
 # - check-static-site.mjs handles static integrity and broader safety rules.
 # - check_search_quality.py catches high-value abbreviation/search regressions.
+# - shipped_pages.py --check-build compares the tracked shipped_pages.json against what
+#   this build ACTUALLY published. That comparison is the structural guarantee behind
+#   ADR-002: the one listing every new consumer reads cannot drift from reality without
+#   the build going red, in either direction (a tracked slug the build did not produce,
+#   or a published slug nothing tracks and therefore nobody can attest).
 #
 # HARD findings (broken nav/search targets,
 # dose literals in rp-*/-trainer tools, invalid JSON, missing <title>/viewport,
@@ -40,6 +45,9 @@ python3 "$LIB/13_Faculty_Resources/_automation/validate_registry_schemas.py"
 python3 "$LIB/13_Faculty_Resources/_automation/validate_reconnect_snapshot_provenance.py"
 python3 "$LIB/13_Faculty_Resources/_automation/validate_crisis_resources.py"
 python3 "$LIB/13_Faculty_Resources/_automation/validate_tool_governance.py"
+# The tracked "what ships" listing must be regenerated from its producers before the
+# per-site parity check below can mean anything.
+python3 "$HERE/shipped_pages.py" --check
 
 # Node contract suites — the light half of an intentional heavy/light split.
 # Dependency-free (no npm install) and fast (~2 s combined), so they run inside
@@ -68,6 +76,8 @@ case "$SITE" in
     node "$HERE/check-static-site.mjs" "$MS3_OUT"
     echo "── Search quality: $MS3_OUT"
     python3 "$HERE/check_search_quality.py" "$MS3_OUT" ms3
+    echo "── Shipped-pages parity: $MS3_OUT"
+    python3 "$HERE/shipped_pages.py" --check-build "$MS3_OUT" --site ms3
     echo "── Anki decks → $MS3_OUT/anki (fail-soft)"
     bash "$HERE/build_anki.sh" "$MS3_OUT" || true
     ;;
@@ -83,6 +93,8 @@ case "$SITE" in
     node "$HERE/check-static-site.mjs" "$RES_OUT"
     echo "── Search quality: $RES_OUT"
     python3 "$HERE/check_search_quality.py" "$RES_OUT" resident
+    echo "── Shipped-pages parity: $RES_OUT"
+    python3 "$HERE/shipped_pages.py" --check-build "$RES_OUT" --site res
     echo "── Anki decks → $RES_OUT/anki (fail-soft)"
     bash "$HERE/build_anki.sh" "$RES_OUT" || true
     ;;

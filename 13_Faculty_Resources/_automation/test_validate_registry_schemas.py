@@ -26,6 +26,10 @@ PAIRS = (
     ("instrument_rights.json", "instrument_rights.schema.json"),
     ("decisions.json", "decisions.schema.json"),
     ("pairings.json", "pairings.schema.json"),
+    (
+        "13_Faculty_Resources/_automation/site_build/shipped_pages.json",
+        "13_Faculty_Resources/_automation/site_build/shipped_pages.schema.json",
+    ),
 )
 
 # pairings_integrity_diagnostics resolves page/tool/audio_oe references against these two
@@ -90,8 +94,11 @@ class RegistrySchemaGateTests(unittest.TestCase):
         temporary = tempfile.TemporaryDirectory()
         destination = Path(temporary.name)
         for document, schema in PAIRS:
-            shutil.copy2(ROOT / document, destination / document)
-            shutil.copy2(ROOT / schema, destination / schema)
+            # Not every pair sits at the root any more (shipped_pages.json lives beside
+            # the build), so make the parent directory before copying.
+            for relative in (document, schema):
+                (destination / relative).parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(ROOT / relative, destination / relative)
         for source in PAIRINGS_RESOLUTION_SOURCES:
             (destination / source.parent).mkdir(parents=True, exist_ok=True)
             shutil.copy2(ROOT / source, destination / source)

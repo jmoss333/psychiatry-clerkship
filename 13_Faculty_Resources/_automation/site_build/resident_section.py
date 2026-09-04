@@ -57,17 +57,16 @@ for _rvf in RESIDENT_VIDEO_MEDIA:
 # overwritten here with the resident index; per-week resident pages are appended below.
 _COTW_DIR="08_Cases_and_Simulation/case-of-the-week"
 _cotw_weeks=json.load(open(os.path.join(LIB,_COTW_DIR,"cotw_registry.json"),encoding="utf-8")).get("weeks",[])
-def _cotw_slug(w,level): return "cotw_%s_%s_%s.md"%(w["date"].replace("-",""),w["topic"],level)
+# The slug formula and the resident-only source lists are shared (site_build/cotw_slug.py,
+# site_build/site_extras.py) rather than restated here. Nothing outside this script could
+# enumerate the resident-only pages while they were literals inside it — and this script
+# cannot be imported to ask (it deletes and rebuilds a directory at import time). See ADR-002.
+from cotw_slug import cotw_slug as _cotw_slug
+from site_extras import RESIDENT_COTW_INDEX, RESIDENT_TRACK_PAGES
 RES_EXTRA=[
- ("08_Cases_and_Simulation/case-of-the-week/index_resident.md","cotw_index.md"),
+ (src,dst) for src,dst,_t in RESIDENT_COTW_INDEX
 ]+[(os.path.join(_COTW_DIR,w["res_src"]),_cotw_slug(w,"res")) for w in _cotw_weeks]+[
- ("14_Tracks/Resident/resident_welcome.md","welcome.md"),
- ("14_Tracks/Resident/resident_curriculum.md","rotation.md"),
- ("14_Tracks/Resident/adv_psychopharmacology.md","adv_psychopharm.md"),
- ("14_Tracks/Resident/systems_medlegal.md","systems_medlegal.md"),
- ("14_Tracks/Resident/supervision_teaching.md","supervision_teaching.md"),
- ("14_Tracks/Resident/canon_200.md","canon_200.md"),
- ("14_Tracks/Resident/cl_reference.md","cl_reference.md"),
+ (src,dst) for src,dst,_t in RESIDENT_TRACK_PAGES
 ]
 # Fail closed (2026-08-01 audit): the copytree base means a missing resident-only
 # source would silently ship the inherited MS3 file under the resident nav title.
@@ -145,13 +144,11 @@ common.apply_contrast_fix(glob.glob(OUT+"/content/*.md"))
 # ---- resident-only prototype tools (reconciled into source build 2026-07-02) ----
 # Previously hand-copied straight into the deploy dir (source/deploy drift); now built from
 # git-tracked _prototypes/ so build-on-push keeps them live. Copied raw to match live (no polish pass).
-PROTO_TOOLS=[
- ("_prototypes/agitation-trainer/rp-agitation.html","rp-agitation.html"),
- ("_prototypes/brief-psych/rp-brief-psych.html","rp-brief-psych.html"),
- ("_prototypes/canon-quiz/rp-canon-quiz.html","rp-canon-quiz.html"),
-]
+# Same reasoning as RES_EXTRA above: these three DO ship (_build/res/tools/), so
+# shipped_pages.py has to be able to enumerate them without running this script.
+from site_extras import RESIDENT_PROTO_TOOLS as PROTO_TOOLS
 os.makedirs(OUT+"/tools",exist_ok=True)
-for src,dst in PROTO_TOOLS:
+for src,dst,_title in PROTO_TOOLS:
     p=os.path.join(LIB,src)
     if os.path.exists(p): shutil.copyfile(p,OUT+"/tools/"+dst)
     else: print("  WARN: prototype tool missing from source:",src)
@@ -181,7 +178,7 @@ if os.path.isdir(_vendor_src):
 # consumed by check-static-site.mjs's orphaned-source check.
 _ms3map=MS3.rstrip("/\\")+".source-map.json"
 _srcs=set(json.load(open(_ms3map,encoding="utf-8"))["sources"]) if os.path.exists(_ms3map) else set()
-_srcs|={s for s,_ in RES_EXTRA}|{s for s,_ in PROTO_TOOLS}
+_srcs|={s for s,_ in RES_EXTRA}|{s for s,_,_ in PROTO_TOOLS}
 _srcs.add("reasoning_cases_resident.json")   # required — build aborts below if missing
 open(OUT.rstrip("/\\")+".source-map.json","w",encoding="utf-8").write(json.dumps({"sources":sorted(_srcs)}))
 

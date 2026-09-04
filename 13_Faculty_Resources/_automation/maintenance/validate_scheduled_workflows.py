@@ -185,6 +185,7 @@ EXPECTED_STEP_INVENTORIES = {
             ("uses", "actions/setup-node"),
             ("name", "Unit — root node regression tests (tests/*.test.mjs)"),
             ("name", "Validate — WCAG AA contrast tokens"),
+            ("name", "Validate — shipped_pages.json is derived from current producers"),
             ("name", "Unit — faculty console modules and pending-visibility invariant"),
             ("name", "Install — managed SP proxy dependencies"),
             ("name", "Test — SP Interview and managed proxy"),
@@ -348,7 +349,7 @@ EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
     ESCALATION_FILE: (
         "97cce854ae22f6fcbf24a87d220582ea4f125d8136d4c8d306deb9492bcdf5be"
     ),
-    "ci.yml": "d72b57a13342843314d887477f58d3c1fcda197d7d63ecef4f2f2600ff104e31",
+    "ci.yml": "313a973be1715874d25e0935c97d63aaa06ae588d79d5d4b92670b90ba258241",
     "maintenance-governance-digest.yml": (
         "d819d2eafa59d6d62fcdf5f4d82b5eaf374f2b58d728d7c7f748fa7160bf6c10"
     ),

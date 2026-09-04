@@ -7,6 +7,8 @@ asks the agent to remember:
   * CLAUDE.md edited            -> AGENTS.md is re-copied (Codex parity; CI fails on drift)
   * AGENTS.md edited directly   -> blocked with the reason: CLAUDE.md is canonical
   * a root registry edited      -> its validator runs now; failures come back as a block
+  * a "what ships" producer      -> shipped_pages.py --check runs; a stale tracked file
+                                   comes back as a block naming the --write command
   * a workflow .yml edited      -> validate_scheduled_workflows.py runs; on a digest mismatch
                                    the NEW digest is printed, computed with the validator's own
                                    _load/_contract_digest, plus the three-contract checklist
@@ -122,6 +124,24 @@ def main() -> int:
             blocks.append("%s failed after editing %s (exit %d):\n%s" % (validator, rel, code, tail(out)))
         else:
             notes.append("%s: OK" % validator.rsplit("/", 1)[-1])
+
+    # --- "what ships" producers (ADR-002) -----------------------------------------------
+    # site_manifest.json, cotw_registry.json and site_extras.py feed one derived, tracked
+    # file. Editing a producer without regenerating it is the single new failure mode that
+    # ADR trades for the old silent-invisibility one, so catch it at the edit rather than
+    # at the push. The check is a fast pure derivation — no build, no network.
+    if rel in G.SHIPPED_PAGES_PRODUCERS:
+        script = root / G.TOOLING_PREFIX / "site_build" / "shipped_pages.py"
+        if script.exists():
+            code, out = run([sys.executable, str(script), "--check"], root, timeout=60)
+            if code != 0:
+                blocks.append(
+                    "shipped_pages.json is stale after editing %s (exit %d):\n%s\n"
+                    "Regenerate it:  python3 %ssite_build/shipped_pages.py --write"
+                    % (rel, code, tail(out, 20), G.TOOLING_PREFIX)
+                )
+            else:
+                notes.append("shipped_pages.py --check: OK")
 
     # --- workflows ----------------------------------------------------------------------
     if rel.startswith(".github/workflows/") and rel.endswith((".yml", ".yaml")):

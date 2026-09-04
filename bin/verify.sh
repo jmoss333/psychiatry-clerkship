@@ -141,9 +141,15 @@ step "production rotation edition locked"   python3 bin/check-rotation-edition-l
 step "node --test tests/*.test.mjs"         bash -c 'node --test tests/*.test.mjs'
 step "contrast-check"                       node tests/contrast-check.mjs
 
+# --- "what ships" is one derived file, and it must be current (ADR-002) ---
+# Fails when a producer (site_manifest.json, cotw_registry.json, site_extras.py) changed
+# and shipped_pages.json was not regenerated. The message prints the --write command.
+step "unit — shipped_pages derivation"      python3 $A/site_build/test_shipped_pages.py
+step "shipped_pages is current"             python3 $A/site_build/shipped_pages.py --check
+
 # --- faculty console: shared modules + the pending-visibility invariant ---
 # The invariant fails when any reviewed.json item at status "pending" is outside the
-# console's content universe (site_manifest.json + cotw_registry.json) and not on the
+# console's content universe (now derived from shipped_pages.json) and not on the
 # documented NOT_REVIEWABLE_IN_CONSOLE allowlist. That is the check that would have
 # caught the July 2026 Case-of-the-Week blind spot on the day it opened.
 step "node --test faculty-console/*.test.mjs" bash -c 'node --test faculty-console/*.test.mjs'

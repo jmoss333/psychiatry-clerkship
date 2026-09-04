@@ -279,6 +279,49 @@ test('post_edit_validate runs the registry validator for an edited registry', ()
   assert.notEqual(r.decision, 'block', `crisis validator should pass on the committed data: ${r.reason}`);
 });
 
+/* ADR-002: editing a "what ships" producer without regenerating shipped_pages.json is the
+   one new failure mode that design trades for the old silent-invisibility one, so the hook
+   catches it at the edit. Both directions are asserted — clean passes, stale blocks. */
+test('post_edit_validate checks shipped_pages.json after a producer edit', () => {
+  const producers = [
+    '13_Faculty_Resources/_automation/site_build/site_manifest.json',
+    '13_Faculty_Resources/_automation/site_build/site_extras.py',
+    '08_Cases_and_Simulation/case-of-the-week/cotw_registry.json',
+  ];
+  for (const producer of producers) {
+    const call = { hook_event_name: 'PostToolUse', tool_name: 'Edit', cwd: repo, tool_input: { file_path: path.join(repo, producer), old_string: 'a', new_string: 'b' }, tool_response: {} };
+    const r = runHook('post_edit_validate.py', call);
+    assert.ok(r, `expected hook output for ${producer}`);
+    const text = r.hookSpecificOutput?.additionalContext ?? r.reason ?? '';
+    assert.match(text, /shipped_pages\.py --check/, producer);
+    assert.notEqual(r.decision, 'block', `shipped_pages should be current on HEAD: ${r.reason}`);
+  }
+});
+
+test('post_edit_validate blocks when a producer edit leaves shipped_pages.json stale', () => {
+  const registry = path.join(repo, '08_Cases_and_Simulation/case-of-the-week/cotw_registry.json');
+  const original = fs.readFileSync(registry, 'utf8');
+  const document = JSON.parse(original);
+  document.weeks = [...document.weeks, {
+    date: '2099-01-01',
+    topic: 'synthetic',
+    label: 'Synthetic week (test fixture)',
+    ms3_src: '2099-01-01_synthetic_MS3.md',
+    res_src: '2099-01-01_synthetic_Resident.md',
+  }];
+  fs.writeFileSync(registry, JSON.stringify(document, null, 2) + '\n');
+  try {
+    const call = { hook_event_name: 'PostToolUse', tool_name: 'Edit', cwd: repo, tool_input: { file_path: registry, old_string: 'a', new_string: 'b' }, tool_response: {} };
+    const r = runHook('post_edit_validate.py', call);
+    assert.equal(r.decision, 'block');
+    assert.match(r.reason, /shipped_pages\.json is stale/);
+    assert.match(r.reason, /shipped_pages\.py --write/);
+    assert.match(r.reason, /cotw_20990101_synthetic_ms3\.md/);
+  } finally {
+    fs.writeFileSync(registry, original);
+  }
+});
+
 test('post_edit_validate reminds about evidence spans when new text asserts a finding', () => {
   const call = { hook_event_name: 'PostToolUse', tool_name: 'Edit', cwd: repo, tool_input: { file_path: path.join(repo, '03_Core_Topics/Mood/mood_disorders_inpatient_teaching.md'), old_string: 'a', new_string: 'The trial showed a 40% reduction in relapse.' }, tool_response: {} };
   const r = runHook('post_edit_validate.py', call);

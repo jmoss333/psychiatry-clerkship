@@ -16,7 +16,7 @@ const MAX_BANK_BYTES = 4 * 1024 * 1024;
 const REVIEWED_SHA = 'a'.repeat(40);
 const MANIFEST_SHA = 'b'.repeat(40);
 const QBANK_SHA = 'c'.repeat(40);
-const REGISTRY_SHA = '7'.repeat(40);
+const SHIPPED_SHA = '7'.repeat(40);
 const FIRST_WRITE_SHA = 'd'.repeat(40);
 const SECOND_WRITE_SHA = 'e'.repeat(40);
 const UNRELATED_RACE_SHA = 'f'.repeat(40);
@@ -44,7 +44,7 @@ const UNRELATED_REVIEWED_SHA = '6'.repeat(64);
 
 const REVIEWED_PATH = '13_Faculty_Resources/reviewed.json';
 const MANIFEST_PATH = '13_Faculty_Resources/_automation/site_build/site_manifest.json';
-const REGISTRY_PATH = '08_Cases_and_Simulation/case-of-the-week/cotw_registry.json';
+const SHIPPED_PAGES_PATH = '13_Faculty_Resources/_automation/site_build/shipped_pages.json';
 const QBANK_PATH = 'question_bank.json';
 
 const confirmed = {
@@ -143,13 +143,35 @@ function defaultFiles(bank = makeBank([
       },
       sha: MANIFEST_SHA,
     },
-    // Empty by default so every pre-existing assertion sees the exact manifest-only
-    // universe it was written against; the Case-of-the-Week tests below supply their
-    // own weeks. The file itself must always be readable — buildState fails closed on a
-    // missing registry rather than silently shipping a short queue.
-    [REGISTRY_PATH]: {
-      json: { weeks: [] },
-      sha: REGISTRY_SHA,
+    // The review queue comes from here now (ADR-002), not from the manifest. It mirrors
+    // the manifest above so every pre-existing assertion sees the universe it was written
+    // against; the Case-of-the-Week tests below add their own entries. The file must
+    // always be readable — buildState fails closed on a missing listing rather than
+    // silently shipping a short queue.
+    [SHIPPED_PAGES_PATH]: {
+      json: {
+        version: 1,
+        generated_from: {},
+        pages: [
+          {
+            slug: 't_mood.md',
+            kind: 'page',
+            sites: ['ms3', 'res'],
+            title: 'Mood Disorders',
+            source: '01_Core/t_mood.md',
+            producer: 'site_manifest',
+          },
+          {
+            slug: 'mse-tool',
+            kind: 'tool',
+            sites: ['ms3', 'res'],
+            title: 'Mental Status Examination',
+            source: '04_Assessment/mse.html',
+            producer: 'site_manifest',
+          },
+        ],
+      },
+      sha: SHIPPED_SHA,
     },
     [QBANK_PATH]: {
       json: bank,
@@ -505,9 +527,25 @@ const COTW_WEEK = {
   res_src: '2026-08-31_catatonia_Resident.md',
 };
 
+// The two rows shipped_pages.py derives from one registry week.
+function cotwPages(week = COTW_WEEK) {
+  const stamp = week.date.replace(/-/g, '');
+  return [['ms3', 'MS3', 'ms3_src'], ['res', 'Resident', 'res_src']].map(([level, label, key]) => ({
+    slug: `cotw_${stamp}_${week.topic}_${level}.md`,
+    kind: 'page',
+    sites: [level],
+    title: `${week.label} — ${label}`,
+    source: `08_Cases_and_Simulation/case-of-the-week/${week[key]}`,
+    producer: 'cotw_registry',
+  }));
+}
+
 function cotwFiles(weeks = [COTW_WEEK]) {
   const files = defaultFiles();
-  files[REGISTRY_PATH].json = { weeks };
+  files[SHIPPED_PAGES_PATH].json.pages = [
+    ...files[SHIPPED_PAGES_PATH].json.pages,
+    ...weeks.flatMap(week => cotwPages(week)),
+  ];
   files[REVIEWED_PATH].json['cotw_20260831_catatonia_ms3.md'] = {
     status: 'pending',
     at: '2026-08-31',
@@ -561,8 +599,8 @@ test('GET surfaces both Case-of-the-Week twins with the site that serves each', 
   assert.equal(payload.items.filter(item => item.site === 'ms3').length, 3);
   assert.equal(payload.counts.pagesTotal, 4);
   assert.equal(payload.counts.pagesReviewed, 2);
-  // The registry revision is reported alongside the manifest revision.
-  assert.equal(payload.registryRevision, REGISTRY_SHA);
+  // The revision of the listing the queue was built from, alongside the manifest's own.
+  assert.equal(payload.shippedPagesRevision, SHIPPED_SHA);
   // manifestPages stays the manifest's own list: it gates question page anchors, which
   // Case-of-the-Week pages are not part of.
   assert.deepEqual(payload.manifestPages, ['t_mood.md']);
@@ -609,16 +647,22 @@ test('a Case-of-the-Week page attests through the ordinary single-slug write pat
   assert.equal(saved['cotw_20260831_catatonia_res.md'].at, '2026-09-01');
 });
 
-test('a malformed or missing registry fails closed rather than shipping a short queue', async () => {
-  for (const weeks of [
-    [{ ...COTW_WEEK, date: undefined }],
-    [{ ...COTW_WEEK, topic: '' }],
-    [{ ...COTW_WEEK, label: '  ' }],
-    [COTW_WEEK, { ...COTW_WEEK, label: 'Duplicate week' }],
-    'not-a-list',
+test('a malformed or missing shipped_pages.json fails closed, never a short queue', async () => {
+  const rows = () => defaultFiles()[SHIPPED_PAGES_PATH].json.pages;
+  for (const mutate of [
+    document => { document.version = 2; },
+    document => { delete document.pages; },
+    document => { document.pages = 'not-a-list'; },
+    document => { document.pages = []; },
+    document => { document.pages = [{ ...rows()[0], slug: '  ' }]; },
+    document => { document.pages = [{ ...rows()[0], title: '' }]; },
+    document => { document.pages = [{ ...rows()[0], kind: 'media' }]; },
+    document => { document.pages = [{ ...rows()[0], sites: [] }]; },
+    document => { document.pages = [{ ...rows()[0], sites: ['att'] }]; },
+    document => { document.pages = [rows()[0], { ...rows()[0], title: 'Duplicate' }]; },
   ]) {
     const files = defaultFiles();
-    files[REGISTRY_PATH].json = { weeks };
+    mutate(files[SHIPPED_PAGES_PATH].json);
     const mock = createGithubMock({ files });
     await expectError(await handlerWith(mock)(apiRequest('GET')), {
       status: 502,
@@ -627,7 +671,7 @@ test('a malformed or missing registry fails closed rather than shipping a short 
   }
 
   const missing = defaultFiles();
-  delete missing[REGISTRY_PATH];
+  delete missing[SHIPPED_PAGES_PATH];
   const mock = createGithubMock({ files: missing });
   const response = await handlerWith(mock)(apiRequest('GET'));
   assert.equal(response.ok, false);
