@@ -59,6 +59,12 @@ const CONTRACTS = {
       'production_canary.py', 'git-lfs', 'crisis-block-hook', 'Never',
       // the fallback must keep saying what it does NOT prove
       'DEPLOY VERIFIED · CONTENT UNVERIFIED', 'commit_ref',
+      // Codex P1/P2 on #519, both real and both shipped. The fallback must keep resolving the
+      // deploy for the REQUESTED target (currentDeploy is production, never a PR preview), and
+      // must keep the Git-LFS inference scoped to production: check_lfs_media.py's
+      // is_soft_context() downgrades pointer stubs to a WARN and returns 0 when
+      // CONTEXT=deploy-preview, so a preview reaches `ready` with no real media in it.
+      'is_soft_context()', 'The gate is soft on previews',
     ],
   },
 };

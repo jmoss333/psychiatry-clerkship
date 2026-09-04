@@ -50,10 +50,13 @@ lines.
    site serves, so it must be the commit that was actually deployed, not the checkout you happen
    to be running from. Pass it only when you have it from an independent source. The best one is
    the deploy record's own `commit_ref` — fetch it with the two Netlify readers described under
-   "When egress is blocked", which are available on the normal path too and beat reading a
-   "Latest commit" row out of a PR comment. Failing that, the deploy log for that site. Otherwise
-   omit the flag and print `commit unknown` in the report header; a receipt that names the wrong
-   commit is worse than one that names none.
+   "When egress is blocked", which are available on the normal path too. Resolve the deploy for
+   the target you are verifying, exactly as that section says: for a **preview** the site's
+   `currentDeploy` is the *production* deploy, so using it would stamp a preview receipt with a
+   production commit — the "receipt that names the wrong commit" this paragraph warns against.
+   Failing that, the deploy log for that site. Otherwise omit the flag and print
+   `commit unknown` in the report header; a receipt that names the wrong commit is worse than one
+   that names none.
 
    The canary aborts on its first failure and its one-line reason does not always name the URL,
    so a single two-site config would hide the second site behind a failure on the first. It
@@ -103,16 +106,26 @@ serves.
 `maintenance_config.json` already carries each site's Netlify `siteId` — the same field step 1
 preserves untouched — so no lookup and no hard-coded id is needed. Read it from there.
 
-Per site:
+Per site, resolve the deploy for **the target you were asked about**. The two cases differ, and
+getting this wrong is worse than not answering:
 
-1. `netlify-project-services-reader` → `{"operation": "get-project", "params": {"siteId": "<siteId>"}}`,
-   and take `_enrichedFields.currentDeploy.currentDeploy.id`.
-2. `netlify-deploy-services-reader` →
-   `{"operation": "get-deploy-for-site", "params": {"siteId": "<siteId>", "deployId": "<id>"}}`.
+- **Production target.** `netlify-project-services-reader` →
+  `{"operation": "get-project", "params": {"siteId": "<siteId>"}}`, and take
+  `_enrichedFields.currentDeploy.currentDeploy.id`. That slot holds the site's single *current
+  production* deploy.
+- **Deploy-preview target.** `currentDeploy` is **not** the preview — it is still production, and
+  many previews coexist outside that slot, so using it would check the wrong deployment. Take the
+  preview's deploy id from the Netlify bot's comment on that PR instead: its "Latest deploy log"
+  URL ends in `/deploys/<deployId>`. No available read operation lists a site's deploys by
+  context, so if you cannot obtain that id, the `deploy record` row is `UNVERIFIED` with the
+  reason — never substitute the production deploy for it.
+
+Then `netlify-deploy-services-reader` →
+`{"operation": "get-deploy-for-site", "params": {"siteId": "<siteId>", "deployId": "<id>"}}`.
 
 Report one `deploy record` row per site, asserting all of:
 
-- `context` is `production` (or the deploy-preview context you were asked about)
+- `context` matches the target you were asked about — `production`, or `deploy-preview`
 - `state` is `ready` **and** `published_at` is set
 - `error_message` is null
 - `commit_ref` equals the commit you expected to be deployed. A `ready` deploy of the **wrong**
@@ -122,10 +135,18 @@ Report one `deploy record` row per site, asserting all of:
 ## What this proves, and what it does not
 
 `build_and_check.sh` is each site's Netlify build command, it is `set -euo pipefail`, and the
-Git-LFS media preflight runs inside it. So `state: ready` means that gate passed on Netlify's own
-builder: the media resolved to real objects rather than pointer stubs. That is the most valuable
-thing this channel tells you, and it is precisely the metered-bandwidth failure mode — in which
-production deploys **fail** rather than silently serving stubs.
+Git-LFS media preflight runs inside it. **On a production deploy only**, `state: ready` therefore
+means that gate passed on Netlify's own builder: the media resolved to real objects rather than
+pointer stubs. That is the most valuable thing this channel tells you, and it is precisely the
+metered-bandwidth failure mode — in which production deploys **fail** rather than silently
+serving stubs.
+
+**The gate is soft on previews, so the inference does not carry there.**
+`site_build/check_lfs_media.py`'s `is_soft_context()` is true when `CONTEXT=deploy-preview` (or
+under GitHub Actions), and the check then prints `WARN` and returns 0 instead of failing —
+`NETLIFY_LFS_RUNBOOK.md` notes previews routinely keep shipping stubs. A preview can be `ready`
+with no real media in it. So on a `deploy-preview` target, media integrity stays `UNVERIFIED` and
+you say why; claiming otherwise would be the exact false assurance this fallback exists to avoid.
 
 It proves nothing about what a browser receives. The full-audio fetch, crisis blocks, audience
 scoping, the Interview Room and the search index are each a property of the served response, not
@@ -161,7 +182,7 @@ ms3 · https://… · commit 3e6534d (from the Netlify deploy record)
 | check | result | detail |
 | deploy record | PASS | production · ready · published 01:56:32Z · commit_ref matches · no error |
 | canary | UNVERIFIED | egress denied (CONNECT 403) |
-| full audio | UNVERIFIED | egress denied — but the build's LFS gate passed, see deploy record |
+| full audio | UNVERIFIED | egress denied — production build's LFS gate passed, see deploy record |
 | crisis block | UNVERIFIED | egress denied |
 | interview room | UNVERIFIED | egress denied |
 | audience scoping | UNVERIFIED | egress denied |
