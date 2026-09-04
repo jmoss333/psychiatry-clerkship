@@ -1,6 +1,6 @@
 # Surveillance status
 
-_Generated 2026-09-01T06:08:52+00:00._ See `REVIEW_RULES.md` for severity + SLAs.
+_Generated 2026-09-03T18:38:59+00:00._ See `REVIEW_RULES.md` for severity + SLAs.
 _Issue truth: **live**._
 
 ## Summary
@@ -9,7 +9,7 @@ _Issue truth: **live**._
 - **Pages needing re-review:** 29
 - **Stale sources:** 1
 
-- **Citation checks:** 636 DOI/PMID IDs tracked  •  latest check 2026-08-31  •  0 stale
+- **Citation checks:** 646 DOI/PMID IDs tracked  •  latest check 2026-09-03  •  0 stale
 
 - **Citation P1s:** 733 total  •  233 touch live teaching pages  •  500 archive/import-only
 
@@ -94,15 +94,15 @@ _Issue truth: **live**._
 
 | Source | Last checked | Age (days) | Status |
 |---|---|---|---|
-| `aacap-parameters` | 2026-09-01 | 0 | ok |
-| `apa-practice-guidelines` | 2026-09-01 | 0 | ok |
-| `clozapine-rems` | 2026-09-01 | 0 | ok |
-| `dsm-5-tr` | 2026-09-01 | 0 | ok |
-| `fda-drug-safety` | 2026-09-01 | 0 | ok |
-| `link-monitor` | 2026-08-31 | 0 | ok |
-| `link:www.samhsa.gov` | 2026-07-13 | 49 | ⚠ stale |
-| `samhsa-guidelines` | 2026-09-01 | 0 | ok |
-| `spravato-rems` | 2026-09-01 | 0 | ok |
-| `uspstf-mental-health` | 2026-09-01 | 0 | ok |
+| `aacap-parameters` | 2026-09-03 | 0 | ok |
+| `apa-practice-guidelines` | 2026-09-03 | 0 | ok |
+| `clozapine-rems` | 2026-09-03 | 0 | ok |
+| `dsm-5-tr` | 2026-09-01 | 2 | ok |
+| `fda-drug-safety` | 2026-09-03 | 0 | ok |
+| `link-monitor` | 2026-08-31 | 3 | ok |
+| `link:www.samhsa.gov` | 2026-07-13 | 52 | ⚠ stale |
+| `samhsa-guidelines` | 2026-09-03 | 0 | ok |
+| `spravato-rems` | 2026-09-03 | 0 | ok |
+| `uspstf-mental-health` | 2026-09-03 | 0 | ok |
 
 DOI/PMID freshness is summarized above so this table stays focused on authoritative source-registry targets.
