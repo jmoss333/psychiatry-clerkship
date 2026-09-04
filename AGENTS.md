@@ -71,9 +71,14 @@ cd tests/smoke && npm ci && npx playwright test
 ## Where things live
 - `13_Faculty_Resources/_automation/site_build/` — the build pipeline: `build_deploy.py` (assembler),
   `build_and_check.sh` (build + gate), `check-static-site.mjs` (static QA), `site_manifest.json` (source→slug map).
-- `site_manifest.json` is the **registry of shipped pages** (tools + content md). A new page must be
-  registered here **and** in nav inside `build_deploy.py`, or the QA gate's orphaned-source check
-  hard-fails the build.
+- `site_manifest.json` is the registry of **hand-registered** shipped pages (tools + content md). A
+  new page must be registered here **and** in nav inside `build_deploy.py`, or the QA gate's
+  orphaned-source check hard-fails the build. **It is not the only source of what ships**: Case-of-
+  the-Week pages are appended at build time from
+  `08_Cases_and_Simulation/case-of-the-week/cotw_registry.json` (`_cotw_slug()` in `build_deploy.py`
+  and `resident_section.py`). Anything that needs "the set of shipped pages" must use
+  `faculty-console/content-universe.mjs` (JS) or `validate_attestation_consistency.py`'s
+  `cotw_built_slugs()` (Python) — never the manifest alone. See the gotcha below.
 - `NN_Category/` (00–14, 99) — curriculum **content source**, not build output. `14_Tracks/<audience>/`
   are link-only overlays; content never forks (see README).
 - Root data + schemas: `question_bank.json`, `topic_meta.json`, `communication_cases.json`, etc. —
@@ -146,6 +151,22 @@ cd tests/smoke && npm ci && npx playwright test
   rejects a positively-voiced claim licensed by a null/negative span; the fix is to rewrite the
   claim to match the paper, never to trim the span. Note the gate verifies the *stored* claim, not
   page prose — keep the two saying the same thing yourself.
+- **Every page that ships must be attestable — "what ships" has two sources, and the second one
+  was invisible to faculty for two months.** From 2026-07-09 to 2026-09-04 the faculty console
+  (`clerkship-faculty-attest.netlify.app`) built its review queue from `site_manifest.json` alone,
+  while COTW pages shipped from `cotw_registry.json`; 22 pending case pages never appeared under
+  "Needs review" and nobody noticed because the console showed *something* (questions). Fixed in
+  #517. The guard is `faculty-console/check_pending_visible.mjs` (CI + `bin/verify.sh`): it fails
+  if any `status:"pending"` key in `13_Faculty_Resources/reviewed.json` is outside the console's
+  content universe and not listed in `NOT_REVIEWABLE_IN_CONSOLE`. Rules that follow from it:
+  (1) if you add a content type that reaches the learner build by any route other than
+  `site_manifest.json`, extend `deriveContentUniverse()` in `faculty-console/content-universe.mjs`
+  **and** `cotw_built_slugs()` in `validate_attestation_consistency.py` in the same PR — the
+  invariant will fail the build until you do; (2) never "fix" a red `check_pending_visible` by
+  adding a slug to `NOT_REVIEWABLE_IN_CONSOLE` — that list is only for items that are not
+  deployed on any learner site (today: the two `_prototypes/` tools), and each entry needs a reason
+  in the code comment; (3) when a faculty-facing surface shows a partial list, treat "partial" as a
+  bug signal, not a filter — compare its count against `reviewed.json` before assuming it is right.
 - **Adding a step to `ci.yml` trips three separate contracts.** `bin/check-verify-coverage.py`
   (mirror it in `bin/verify.sh` or justify an `ALLOWED` exemption);
   `_automation/maintenance/validate_scheduled_workflows.py`, which pins the workflow by **exact step
