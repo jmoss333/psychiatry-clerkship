@@ -115,3 +115,53 @@ which by this registry's own selection rule makes it a poor first demonstration.
 Numeric and threshold claims are over-represented on purpose. They are quizzed,
 memorised, and re-typed rather than referenced, which is exactly the population
 that drifts and the population where drift is most harmful.
+
+## Which slot to fill next: `bin/claim_exposure.py`
+
+The registry enforces claims someone has already identified. It is blind in the
+other direction — a claim asserted in nine places that nobody has slotted is the
+RSAF-F001 shape exactly, and the registry cannot see it because the registry only
+knows what it was told.
+
+`bin/claim_exposure.py` runs that inverse query. It harvests the hand-authored
+clinical assertions from `topic_meta.json`, `question_bank.json` and the three
+packs, groups them by the rare concept co-occurrence they share, and sorts by how
+many **owners** (topic pages, bank items, trainer scenarios) carry each one.
+
+```
+python3 bin/claim_exposure.py                 # ranked, PARTIAL first
+python3 bin/claim_exposure.py --detail        # with the text of each locus
+python3 bin/claim_exposure.py --known-answer  # validate against RSAF-F001
+```
+
+Three buckets:
+
+| bucket | meaning | trust |
+|---|---|---|
+| `PARTIAL` | some copies sit inside a `scope` pointer and some do not — the registry knows this claim and is missing copies | high; checkable against a defined claim |
+| `ORPHAN` | no copy is governed | a browsing order, not a defect list |
+| `COVERED` | every copy is governed | — |
+
+**Read PARTIAL first.** It is the case where the gate is green and the drift is
+live, and it is precise because the claim is already defined. ORPHAN ranks
+co-occurrences, and a co-occurrence that is strong, clinical and repeated can
+still be a topic rather than a claim: "delirium + withdrawal" names an area of
+the library, not one sentence that could drift.
+
+It is **not a gate** and is not wired into `verify.sh`. A heuristic must not
+block a push, and every group needs a human read before it becomes a slot.
+
+### Why it is validated against a known answer
+
+The first two versions of the grouping were wrong in ways that looked right.
+Clustering on rare single tokens — the `check_qbank_coherence.py` signature —
+reported 132 confident clusters while being unable to find the one case with a
+known answer, because at library scale "catatonia" and "antipsychotic" are common
+words and got filtered out as ordinary vocabulary. Switching to co-occurrence and
+then clustering transitively chained seven of the eight known loci together with
+sixty unrelated ones.
+
+`--known-answer` requires the eight loci that RSAF-F001 and PR #483 found
+drifting — the ones faculty then attested as one claim — to land in one group.
+Run it first after changing any threshold in that file: a heuristic that cannot
+find the defect it was built for should not be believed about anything else.
