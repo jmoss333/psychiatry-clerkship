@@ -1591,7 +1591,7 @@ should independently manage high-risk consults.
 - **Slug:** `cl_reference.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `14_Tracks/Resident/cl_reference.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 994 words
+- **Length:** 1,114 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -1693,7 +1693,7 @@ The MS3 [Consult module](?page=exp_consult.md) teaches *what to notice and when 
 - **Act at QTc ≥500 ms, or an increase ≥60 ms** from baseline.
 - Replete **K⁺ >4.0 mEq/L** and **Mg²⁺ >2.0 mg/dL**; reconcile every QT-prolonging drug and interaction.
 - **If torsades actually fires:** call the code, give **IV magnesium sulfate 2 g** over 1–2 min *regardless of the serum magnesium level*, stop every offending drug, correct K⁺ and Ca²⁺, treat pause/bradycardia dependence with overdrive pacing or isoproterenol, and defibrillate if it degenerates to sustained VT/VF.
-- Higher-risk psychotropics: **IV haloperidol, ziprasidone, thioridazine (avoid), pimozide**; **citalopram capped at 20 mg** if age >60, hepatic impairment, or CYP2C19 poor metabolizer.
+- Higher-risk psychotropics: **IV haloperidol, droperidol, ziprasidone, thioridazine (avoid), pimozide** — and the one a psychiatry consult resident meets most often, **methadone**, whose effect is dose-dependent and is usually why the QTc is already long before anyone adds an antipsychotic, so get a **baseline ECG** before you layer one on top; **citalopram capped at 20 mg** if age >60, hepatic impairment, or CYP2C19 poor metabolizer.
 - Source: AHA scientific statement on drug-induced arrhythmias (Tisdale et al., *Circulation* 2020).
 
 ## Delirium — the numbers you'll be asked
@@ -1708,7 +1708,7 @@ The MS3 [Consult module](?page=exp_consult.md) teaches *what to notice and when 
 - Common contributors to incapacity, in rough order of frequency: cognitive disorders (dementia, delirium), then substance intoxication/withdrawal, then psychosis and severe depression — categories that overlap in the same patient, and many of them reversible. Treat the reversible cause and **reassess.**
 
 ## Psychopharmacology in organ dysfunction
-- **Liver disease:** prefer benzodiazepines cleared by conjugation — **"LOT": Lorazepam, Oxazepam, Temazepam** (no oxidative metabolism). **Duloxetine is contraindicated in chronic liver disease.**
+- **Liver disease:** prefer benzodiazepines cleared by conjugation — **"LOT": Lorazepam, Oxazepam, Temazepam** (no oxidative metabolism) — but even these accumulate in advanced disease and can tip a patient into hepatic encephalopathy, so they are the safer choice, not a free one. **Duloxetine is contraindicated in chronic liver disease.** **Valproate is contraindicated in significant hepatic impairment**, and is the one you will most often be asked to continue: valproate-induced **hyperammonaemic encephalopathy** presents as worsening delirium and can occur with normal LFTs, so send an **ammonia level**, not just a hepatic panel. Carbamazepine is a poor choice here for the same reason.
 - **Renal impairment:** dose-reduce **lithium, gabapentin/pregabalin, risperidone/paliperidone, amisulpride**; paliperidone is heavily renally cleared.
 
 ## The escalation line
@@ -1726,7 +1726,7 @@ Serotonin syndrome, NMS, lithium toxicity, and a prolonging QTc are all **"tell 
 - **Slug:** `systems_medlegal.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `14_Tracks/Resident/systems_medlegal.md`
 - **Governance:** status=`reviewed` · riskKind=`legal` · riskLevel=`high`
-- **Length:** 1,461 words
+- **Length:** 1,520 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -1790,7 +1790,7 @@ Serotonin syndrome, NMS, lithium toxicity, and a prolonging QTc are all **"tell 
 
 **Duty to protect, mandatory reporting, and confidentiality** — When a patient makes a credible threat against an identifiable person, the Tarasoff lineage may create a duty to protect (which can include warning, notifying police, hospitalizing, or otherwise intervening) — but the precise trigger and permitted actions are state-specific, so confirm Maine's standard and loop in your attending and risk management before acting. You are also a mandated reporter for suspected abuse or neglect of children, elders, and dependent/vulnerable adults; the reporting thresholds, agencies, and timeframes vary by state and must be verified locally. None of this dissolves the default of confidentiality — disclosures should be the narrowest needed to meet the legal duty or protect safety.
 
-**Disposition and systems-based practice** — Discharge planning starts at admission. Match the patient to the least restrictive level of care that is safe: inpatient → partial hospitalization (PHP) / intensive outpatient (IOP) → residential → assertive community treatment (ACT) or community case management → supportive housing or group home → routine outpatient. Reconcile medications, schedule a concrete first appointment (not just a phone number — scheduling itself raises follow-up rates), and do a warm handoff to the receiving team; aim for follow-up within 7 days given the elevated post-discharge suicide risk. Expect utilization-review and payer pressure on length of stay, and know the hard dispositions that consume inpatient days: homelessness, the need for guardianship, patients leaving against medical advice (AMA), and psychiatric boarding while awaiting placement. Working these systemic barriers — not just the symptoms — is core to the role.
+**Disposition and systems-based practice** — Discharge planning starts at admission. Match the patient to the least restrictive level of care that is safe — and note you are choosing along two axes, not one. **Treatment intensity** descends inpatient → residential → partial hospitalization (PHP) → intensive outpatient (IOP) → routine outpatient; residential is a 24-hour supervised setting and is therefore *more* restrictive than PHP or IOP, which the patient goes home from at night, so it is not a step down from them. **Wraparound supports** attach to any of those rather than sitting between them: assertive community treatment (ACT) or community case management, supportive housing or a group home, peer support. Reconcile medications, schedule a concrete first appointment (not just a phone number — scheduling itself raises follow-up rates), and do a warm handoff to the receiving team; aim for follow-up within 7 days given the elevated post-discharge suicide risk. Expect utilization-review and payer pressure on length of stay, and know the hard dispositions that consume inpatient days: homelessness, the need for guardianship, patients leaving against medical advice (AMA), and psychiatric boarding while awaiting placement. Working these systemic barriers — not just the symptoms — is core to the role.
 
 **What the resident does**
 - Writes the admission H&P and problem-oriented daily notes; documents explicit risk reasoning, not just scores.

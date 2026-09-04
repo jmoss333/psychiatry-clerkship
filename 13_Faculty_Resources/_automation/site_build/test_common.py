@@ -265,6 +265,41 @@ class TestSearchIndex(_SiteFixture):
         self.assertIn("lorazepam", idx["postings"])
         self.assertIn("widget", idx["postings"])
 
+    def test_indexes_a_hidden_item_that_is_reachable(self):
+        """A Library-placed page must be searchable even when nav hides it.
+
+        The regression this pins: `hidden` meant "not in the sidebar", the sidebar
+        was replaced by the Library tab, and this function kept reading hidden as
+        "do not index" — so 19 resident pages the Library displayed were absent
+        from search entirely.
+        """
+        for name in ("a.md", "hidden.md", "excluded.md"):
+            open(os.path.join(self.dir, "content", name), "w", encoding="utf-8").write(
+                "# Sleep\nSleep-wake disorders.\n"
+            )
+        nav = [
+            {
+                "section": "Sec",
+                "items": [
+                    {"t": "A", "f": "a.md", "k": "md"},
+                    {"t": "H", "f": "hidden.md", "k": "md", "hidden": True},
+                    {"t": "X", "f": "excluded.md", "k": "md", "hidden": True},
+                ],
+            }
+        ]
+        idx = common.build_search_index(nav, self.dir, reachable_refs={"a.md", "hidden.md"})
+        self.assertEqual([d["f"] for d in idx["docs"]], ["a.md", "hidden.md"])
+
+    def test_hidden_and_unreachable_stays_out(self):
+        """week1..week6.md and rotation-curator.html are hidden AND deliberately
+        outside the Library (curriculum.json libraryExclude). Widening the rule to
+        'index everything hidden' would ship those; the reachable set is the line."""
+        open(os.path.join(self.dir, "content", "week1.md"), "w", encoding="utf-8").write("wk\n")
+        nav = [{"section": "S", "items": [
+            {"t": "W", "f": "week1.md", "k": "md", "hidden": True}]}]
+        idx = common.build_search_index(nav, self.dir, reachable_refs={"a.md"})
+        self.assertEqual(idx["docs"], [])
+
     def test_title_outweighs_body(self):
         open(os.path.join(self.dir, "content", "a.md"), "w", encoding="utf-8").write("delirium\n")
         nav = [{"section": "S", "items": [{"t": "Delirium", "f": "a.md", "k": "md"}]}]

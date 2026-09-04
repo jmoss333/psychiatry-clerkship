@@ -89,12 +89,17 @@ step "validate_registry_schemas"            python3 $A/validate_registry_schemas
 step "test_validate_registry_schemas"       python3 $A/test_validate_registry_schemas.py
 step "validate_topic_meta"                  python3 $A/validate_topic_meta.py
 step "validate_attestation_consistency"     python3 $A/validate_attestation_consistency.py
+step "canonical clinical claims"            python3 bin/validate_canonical_claims.py
 step "unit — scheduled maintenance"         bash -c "python3 -m unittest discover -s tests/maintenance -p 'test_*.py'"
 step "validate_scheduled_workflows"         python3 $A/maintenance/validate_scheduled_workflows.py
 step "unit — media guard"                   python3 $A/site_build/test_media_guard.py
 step "unit — shared build logic"            python3 $A/site_build/test_common.py
 step "unit — pairing block renderer"        python3 $A/site_build/test_pairings_block.py
+step "unit — front door catalog"            python3 $A/site_build/test_frontdoor_catalog.py
+step "unit — path coverage"                 python3 bin/check_path_coverage.py --self-test
+step "path coverage (report-only)"          python3 bin/check_path_coverage.py
 step "unit — evidence registry"             python3 tools/evidence_registry/test_registry.py
+step "unit — claim sweep"                   bash -c "python3 -m unittest discover -s tests/evidence -t . -p 'test_*.py'"
 step "validate_evidence_registry"           python3 tools/evidence_registry/validate.py --check-generated
 step "unit — citation surveillance"         python3 $A/surveillance/bin/run_citation_check.py --self-test
 step "unit — resource intake"               python3 $A/surveillance/bin/run_resource_intake.py --self-test

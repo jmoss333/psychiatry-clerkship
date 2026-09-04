@@ -402,7 +402,17 @@ class ScheduledWorkflowTests(unittest.TestCase):
                 "          fetch-depth: \"0\"\n",
             ),
             (
+                # Two artifacts are uploaded now, so anchor on the first
+                # upload's unique name line to keep this mutation singular.
+                "          name: maintenance-workflow-heartbeat-"
+                "${{ github.run_id }}\n"
+                "          path: ${{ runner.temp }}/workflow-heartbeat.json\n"
+                "          if-no-files-found: warn\n"
                 "          retention-days: 90\n",
+                "          name: maintenance-workflow-heartbeat-"
+                "${{ github.run_id }}\n"
+                "          path: ${{ runner.temp }}/workflow-heartbeat.json\n"
+                "          if-no-files-found: warn\n"
                 "          retention-days: \"90\"\n",
             ),
         )
@@ -463,6 +473,7 @@ class ScheduledWorkflowTests(unittest.TestCase):
             "maintenance-heartbeat.yml": {
                 "actions": "read",
                 "contents": "read",
+                "pull-requests": "read",
             },
             "maintenance-governance-digest.yml": {
                 "contents": "read",
