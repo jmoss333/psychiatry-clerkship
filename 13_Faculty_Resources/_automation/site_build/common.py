@@ -238,13 +238,27 @@ TOOL_KEYWORDS = _merge_keywords(_TOOLKW_MS3, _TOOLKW_RES)
 # ---------------------------------------------------------------------------
 
 
-def build_search_index(nav, out_dir, tool_keywords=None, label=""):
+def build_search_index(nav, out_dir, tool_keywords=None, label="", reachable_refs=None):
     """Pre-tokenized inverted index + bidirectional synonyms → search-index.json.
 
-    Weights: title 4, section 2, markdown headings 2, body 1. Hidden nav items
-    are excluded from the index (they stay reachable by direct link).
+    Weights: title 4, section 2, markdown headings 2, body 1.
+
+    `hidden` means "not in the sidebar", which is NOT the same as "not reachable".
+    Once the sidebar was replaced by the Library tab, a page could be placed in the
+    Library (or required on the Path) and still carry the old hidden flag — and this
+    function dropped it from the index, so the Library showed a page search could not
+    find. On the resident build that silently hid 19 pages, including t_sleep.md,
+    cultural_psychiatry.md, ect_neuromodulation.md and ethics_legal.md; MS3 lost 2.
+
+    `reachable_refs` is the set of refs a learner can reach by browsing this site —
+    Library-placed plus Path items, i.e. frontdoor_catalog.reachable_refs(payload).
+    A hidden item in that set is indexed; a hidden item outside it (week1..week6.md,
+    rotation-curator.html — the pages curriculum.json's libraryExclude removes from
+    the Library on purpose) still is not. Callers that pass nothing keep the old
+    hidden-is-excluded behaviour, which is what the unit tests exercise directly.
     """
     keywords = TOOL_KEYWORDS if tool_keywords is None else tool_keywords
+    reachable = set(reachable_refs or ())
     postings, docs = {}, []
 
     def addtok(docid, text, wt):
@@ -254,7 +268,7 @@ def build_search_index(nav, out_dir, tool_keywords=None, label=""):
 
     for sec in nav:
         for it in sec["items"]:
-            if it.get("hidden"):
+            if it.get("hidden") and it["f"] not in reachable:
                 continue
             f, k, title, section = it["f"], it["k"], it["t"], sec["section"]
             heads = body = ""

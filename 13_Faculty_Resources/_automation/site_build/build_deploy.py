@@ -514,7 +514,8 @@ print("polish pass: banners stripped, contrast darkened, <main>+favicon on tools
 from media_guard import strip_missing_media
 strip_missing_media(OUT)
 
-common.build_search_index(nav, OUT, label="ms3")
+common.build_search_index(nav, OUT, label="ms3",
+                          reachable_refs=frontdoor_catalog.reachable_refs(_fd_payload))
 
 # Final shell postcondition after every MS3 index transform and before page/static QA.
 _crisis.assert_no_html_marker_file(OUT+"/index.html", "final Front Door shell index")
