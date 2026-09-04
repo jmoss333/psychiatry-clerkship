@@ -11,7 +11,9 @@ name: Refresh visual baselines
 # How to run:
 #   GitHub → Actions tab → "Refresh visual baselines" → Run workflow → pick branch
 #
-# The job builds the sites, forces Playwright to rewrite all four snapshots, and
+# The job builds the sites, forces Playwright to rewrite EVERY snapshot the visual
+# project produces (not a fixed count — the archetype set in visual-regression.spec.js
+# decides how many), and
 # commits the updated PNGs back to the same branch. CI is skipped on that commit.
 
 on:
