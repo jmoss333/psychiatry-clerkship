@@ -82,6 +82,12 @@ cd tests/smoke && npm ci && npx playwright test
   holds only a passcode.** Run `sp-proxy/REDTEAM_CHECKLIST.md` after every deploy and every model/pack change.
 - `.claude/agents/` — project subagents (`evidence-verifier`, `deploy-verifier`). The frontmatter
   tool allowlist is the enforcement; `tests/agent-definitions.test.mjs` pins each agent's scope.
+  **`deploy-verifier` cannot reach `*.netlify.app` from a sandboxed web session** — the egress
+  proxy answers `403` to the `CONNECT`, so its whole HTTP runbook is unrunnable there. It falls
+  back to Netlify's deploy record (read-only, keyed by the `siteId` already in
+  `maintenance_config.json`) and reports `DEPLOY VERIFIED · CONTENT UNVERIFIED`: a `ready` deploy
+  proves the build's Git-LFS gate passed, and proves nothing about served content. Run it from a
+  machine with real egress when you need the content half.
 - `.claude/settings.json` + `.claude/hooks/` — session hooks that enforce the rules below at edit
   time: crisis contacts, dose literals, localStorage namespaces, machine paths (deny); PHI and
   instrument item text (ask); LFS phantoms on `git add` (deny); registry validators, workflow
