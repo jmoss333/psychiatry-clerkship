@@ -1,6 +1,7 @@
 // Faculty attestation — authenticated commit-on-save (Netlify Functions v2, ESM).
 // Secrets remain server-side. The browser supplies only x-faculty-key.
 
+import { deriveContentUniverse } from '../../content-universe.mjs';
 import { assessBank } from '../../qbank-rules.mjs';
 import {
   QbankActionError,
@@ -17,12 +18,24 @@ const DEFAULT_REPO = 'jmoss333/psychiatry-clerkship';
 const DEFAULT_BRANCH = 'attest/pending';
 const DEFAULT_BASE_BRANCH = 'main';
 const DEFAULT_STUDENT_SITE = 'https://une-ms3-psychiatry.netlify.app';
+// The resident deployment. Case-of-the-Week ships MS3/resident twins, and the resident
+// half only exists here — previewing it against the MS3 site would report not_found for
+// a page that is live. Defaulted in code so no Netlify environment change is required;
+// RESIDENT_SITE_URL overrides it. The resident build inherits the MS3 build's _headers
+// via resident_section.py's copytree, so it already carries the same exact-origin
+// `frame-ancestors 'self' https://clerkship-faculty-attest.netlify.app` the console needs.
+const DEFAULT_RESIDENT_SITE = 'https://mmc-psychiatry-residents-sanford.netlify.app';
 const DEFAULT_ATTESTER = 'Joshua Moss, MD';
 const DEFAULT_ATTESTER_EMAIL = 'faculty@clerkship.local';
 
 const DEFAULT_BASE_LAG_ALARM = 3;
 const REVIEWED_PATH = '13_Faculty_Resources/reviewed.json';
 const MANIFEST_PATH = '13_Faculty_Resources/_automation/site_build/site_manifest.json';
+// The SECOND source of truth for what ships. Both site builds append Case-of-the-Week
+// pages from this file without touching the manifest, so a console that reads only the
+// manifest cannot see them — which is exactly how 22 pending pages stayed invisible
+// from July to September 2026. Read it here for the same reason the builds do.
+const REGISTRY_PATH = '08_Cases_and_Simulation/case-of-the-week/cotw_registry.json';
 const QBANK_PATH = 'question_bank.json';
 
 // Both files are stored 2-space indented, so every write must re-emit them that way.
@@ -199,6 +212,7 @@ function requireServerSettings(env, fetchImpl, originPolicy) {
   const branch = readEnv(env, 'GIT_BRANCH').trim() || DEFAULT_BRANCH;
   const baseBranch = readEnv(env, 'GIT_BASE_BRANCH').trim() || DEFAULT_BASE_BRANCH;
   const studentValue = readEnv(env, 'STUDENT_SITE_URL').trim() || DEFAULT_STUDENT_SITE;
+  const residentValue = readEnv(env, 'RESIDENT_SITE_URL').trim() || DEFAULT_RESIDENT_SITE;
   const attesterEmail = readEnv(env, 'ATTESTER_EMAIL').trim() || DEFAULT_ATTESTER_EMAIL;
   const attester = attesterLabel(readEnv(env, 'ATTESTER_NAME'));
 
@@ -213,10 +227,14 @@ function requireServerSettings(env, fetchImpl, originPolicy) {
   }
 
   let student;
+  let resident;
   try {
     const parsed = new URL(studentValue);
     if (!['http:', 'https:'].includes(parsed.protocol)) throw new Error('unsupported protocol');
     student = studentValue.replace(/\/+$/, '');
+    const parsedResident = new URL(residentValue);
+    if (!['http:', 'https:'].includes(parsedResident.protocol)) throw new Error('unsupported protocol');
+    resident = residentValue.replace(/\/+$/, '');
   } catch {
     throw new HttpError('server_configuration', 500, 'The faculty service is not configured.');
   }
@@ -234,7 +252,7 @@ function requireServerSettings(env, fetchImpl, originPolicy) {
     ? configuredLag : DEFAULT_BASE_LAG_ALARM;
 
   return {
-    token, key, repo, branch, baseBranch, isolated, student, attesterEmail, attester,
+    token, key, repo, branch, baseBranch, isolated, student, resident, attesterEmail, attester,
     lagAlarmThreshold,
   };
 }
@@ -847,16 +865,30 @@ function contentApiStatus(entry) {
   return entry.status === 'pending' ? 'unreviewed' : entry.status;
 }
 
-function buildContentItems(reviewed, manifest) {
+// The console's content universe is manifest pages + manifest tools + the
+// Case-of-the-Week twins the registry generates — the exact set the two site builds
+// publish (see faculty-console/content-universe.mjs). deriveContentUniverse throws
+// TypeError on a malformed manifest or registry; that becomes the same
+// repository_file_invalid 502 requireManifest already returns, because a content
+// universe that is silently short is precisely the failure this change exists to end.
+function buildContentItems(reviewed, manifest, registry) {
   if (!isRecord(reviewed)) invalidRepositoryFile();
-  const { markdown, tools } = requireManifest(manifest);
-  const items = [];
-  for (const [, slug, title] of markdown) {
+  requireManifest(manifest);
+  let universe;
+  try {
+    universe = deriveContentUniverse({ manifest, registry });
+  } catch {
+    invalidRepositoryFile();
+  }
+  return universe.map(({ slug, title, kind, site }) => {
     const entry = isRecord(reviewed[slug]) ? reviewed[slug] : {};
-    items.push({
+    return {
       slug,
       title,
-      kind: 'page',
+      kind,
+      // Which learner deployment serves this item, so the console previews the resident
+      // half of a Case-of-the-Week pair against the resident site.
+      site,
       status: contentApiStatus(entry),
       at: typeof entry.at === 'string' ? entry.at : '',
       by: typeof entry.by === 'string' ? entry.by : '',
@@ -864,34 +896,23 @@ function buildContentItems(reviewed, manifest) {
       // "Pending reason" only: note/contentHash/claimsHash/evidenceHash/evidenceThrough
       // are internal ledger fields and must never reach the browser.
       reason: entry.status === 'pending' && typeof entry.reason === 'string' ? entry.reason : '',
-    });
-  }
-  for (const [, slug, title] of tools) {
-    const entry = isRecord(reviewed[slug]) ? reviewed[slug] : {};
-    items.push({
-      slug,
-      title,
-      kind: 'tool',
-      status: contentApiStatus(entry),
-      at: typeof entry.at === 'string' ? entry.at : '',
-      by: typeof entry.by === 'string' ? entry.by : '',
-      risk: validRisk(entry.risk),
-      reason: entry.status === 'pending' && typeof entry.reason === 'string' ? entry.reason : '',
-    });
-  }
-  return items;
+    };
+  });
 }
 
-async function buildState(repository, { student, attester }) {
+async function buildState(repository, { student, resident, attester }) {
   const reviewedFile = await repository.read(REVIEWED_PATH);
   const manifestFile = await repository.read(MANIFEST_PATH);
+  const registryFile = await repository.read(REGISTRY_PATH);
   const qbankFile = await repository.read(QBANK_PATH, { maxBytes: MAX_BANK_BYTES });
-  const items = buildContentItems(reviewedFile.json, manifestFile.json);
+  const items = buildContentItems(reviewedFile.json, manifestFile.json, registryFile.json);
   const qbankPayload = buildQbankPayload(qbankFile, manifestFile.json);
   return {
     student,
+    resident,
     attester,
     manifestRevision: manifestFile.sha,
+    registryRevision: registryFile.sha,
     items,
     ...qbankPayload,
     counts: {

@@ -10,6 +10,14 @@ import {
 } from '../../faculty-console/netlify/functions/qbank-actions.mjs';
 
 const MS3_URL = process.env.MS3_BASE_URL || 'http://localhost:4200';
+// The resident deployment. Case-of-the-Week ships an MS3 page and a resident twin from
+// one registry week, and the resident half exists only here — previewing it against the
+// MS3 site would report not_found for a page that is live.
+const RES_URL = process.env.RES_BASE_URL || 'http://localhost:4201';
+// Real slugs from cotw_registry.json, so the previews below load the pages the two
+// builds actually publish rather than a fixture that only resembles them.
+const COTW_MS3_SLUG = 'cotw_20260831_catatonia_ms3.md';
+const COTW_RES_SLUG = 'cotw_20260831_catatonia_res.md';
 const FACULTY_KEY = 'synthetic-faculty-key';
 // Attribution is server-derived (ATTESTER_NAME); the mock GET payload carries it
 // and the mock POST handler stamps it, mirroring attest.mjs.
@@ -284,6 +292,7 @@ function initialContentState() {
       slug: 't_mood.md',
       title: 'Synthetic mood disorders page',
       kind: 'page',
+      site: 'ms3',
       status: 'pending',
       at: '',
       by: '',
@@ -292,11 +301,51 @@ function initialContentState() {
       slug: 'mse.html',
       title: 'Synthetic mental status exam tool',
       kind: 'tool',
+      site: 'ms3',
       status: 'pending',
       at: '',
       by: '',
     },
   ];
+}
+
+/* The registry-derived half of the content universe: an MS3 page and its resident twin
+   from one Case-of-the-Week week. Titles carry the audience exactly as
+   content-universe.mjs builds them, which is what sorts the pair adjacently. */
+function cotwContentState() {
+  return [
+    ...initialContentState(),
+    {
+      slug: COTW_MS3_SLUG,
+      title: 'Catatonia (Aug 31) — MS3',
+      kind: 'page',
+      site: 'ms3',
+      status: 'pending',
+      at: '',
+      by: '',
+    },
+    {
+      slug: COTW_RES_SLUG,
+      title: 'Catatonia (Aug 31) — Resident',
+      kind: 'page',
+      site: 'res',
+      status: 'pending',
+      at: '',
+      by: '',
+    },
+  ];
+}
+
+// Every console URL after any action must carry the item key and nothing else. The
+// faculty key, the review token, and the reviewer label never belong in an address bar.
+async function expectNoSecretsInUrl(page) {
+  const href = await page.evaluate(() => location.href);
+  const url = new URL(href);
+  expect([...url.searchParams.keys()].filter(key => key !== 'item')).toEqual([]);
+  for (const secret of [FACULTY_KEY, REVIEW_TOKEN, SERVER_ATTESTER, 'faculty-key', 'reviewToken']) {
+    expect(href).not.toContain(secret);
+  }
+  return url;
 }
 
 function apiContentStatus(status) {
@@ -320,6 +369,7 @@ function buildGetPayload(bank, contentState = initialContentState()) {
   }));
   return {
     student: `${MS3_URL}/`,
+    resident: `${RES_URL}/`,
     attester: SERVER_ATTESTER,
     items,
     qbankRevision: itemRevision(bank).slice(0, 40),
@@ -548,7 +598,9 @@ async function installRepositoryApi(page, initialBank, {
   };
 }
 
-async function unlock(page) {
+// `path` lets a test arrive by deep link (?item=<key>) at a LOCKED console, which is the
+// case that matters: the request has to survive the key prompt.
+async function unlock(page, { path = '/' } = {}) {
   await page.addInitScript(() => {
     window.__facultyConsolePreviewMessages = [];
     window.addEventListener('message', event => {
@@ -557,7 +609,7 @@ async function unlock(page) {
       }
     });
   });
-  await page.goto('/');
+  await page.goto(path);
   await expect(page).toHaveTitle('Faculty attestation workspace');
   await expect(page.getByRole('heading', {
     name: 'Faculty attestation workspace',
@@ -2116,5 +2168,224 @@ test.describe.serial('faculty unified attestation workspace', () => {
     await expect(page.locator('#batch-select-qb_moo_901')).toHaveCount(0);
     await expect(page.locator('#batch-select-qb_moo_902')).toHaveCount(0);
     await expect(page.locator('#batch-select-qb_moo_906')).toHaveCount(0);
+  });
+});
+
+/* Case-of-the-Week visibility, deep links, the bookmarklet, and twin navigation
+   (2026-09). The first test here is the regression guard for the original bug: before
+   the content-universe change the console's queue was the manifest and nothing else, so
+   a pending page that only cotw_registry.json knows about could not appear at all. */
+test.describe.serial('faculty console: registry pages, deep links, and twins', () => {
+  test('lists both Case-of-the-Week twins and previews each against its own site', async ({ page }) => {
+    await installRepositoryApi(page, workflowBank(), { contentState: cotwContentState() });
+    await unlock(page);
+
+    // Default filters are Needs review / All types, and all four content items are
+    // pending — the two manifest items plus both registry-derived twins.
+    await expect(page.locator('#review-status-filter')).toHaveValue('needs-review');
+    await expect(page.locator('#review-type-filter')).toHaveValue('all');
+    const options = page.locator('#review-item-selector option');
+    await expect(options.filter({ hasText: 'Catatonia (Aug 31) — MS3' })).toHaveCount(1);
+    await expect(options.filter({ hasText: 'Catatonia (Aug 31) — Resident' })).toHaveCount(1);
+    // The pair sorts adjacently under the existing title order — no custom sort needed.
+    const pageTitles = await page.locator('#review-item-selector option').evaluateAll(
+      nodes => nodes.map(node => node.textContent).filter(text => text.startsWith('Page · ')),
+    );
+    const catatonia = pageTitles.filter(title => title.includes('Catatonia (Aug 31)'));
+    expect(catatonia).toHaveLength(2);
+    expect(pageTitles.indexOf(catatonia[1]) - pageTitles.indexOf(catatonia[0])).toBe(1);
+
+    // The whole-queue summary counts the registry pages as work outstanding.
+    await expect(page.locator('#review-pending-summary')).toHaveText(/^3 pages · 1 tool · \d+ questions need review$/);
+
+    // The MS3 half previews against the MS3 site.
+    await page.locator('#review-item-selector').selectOption(`page:${COTW_MS3_SLUG}`);
+    await expect(page.locator('#preview-status-label')).toHaveText('Ready');
+    const ms3Preview = new URL(await page.locator('#learner-preview-frame').getAttribute('src'));
+    expect(ms3Preview.origin).toBe(new URL(MS3_URL).origin);
+    expect(ms3Preview.searchParams.get('page')).toBe(COTW_MS3_SLUG);
+
+    // The resident half previews against the RESIDENT site — the whole point of `site`.
+    await page.locator('#review-item-selector').selectOption(`page:${COTW_RES_SLUG}`);
+    await expect(page.locator('#preview-status-label')).toHaveText('Ready');
+    const resPreview = new URL(await page.locator('#learner-preview-frame').getAttribute('src'));
+    expect(resPreview.origin).toBe(new URL(RES_URL).origin);
+    expect(resPreview.origin).not.toBe(new URL(MS3_URL).origin);
+    expect(resPreview.searchParams.get('page')).toBe(COTW_RES_SLUG);
+    expect([...resPreview.searchParams.keys()]).toEqual(['page', 'reviewKey', 'reviewToken']);
+    expect(resPreview.searchParams.get('reviewKey')).toBe(`page:${COTW_RES_SLUG}`);
+
+    // The separate-tab fallback picks the resident origin too.
+    await expect(page.getByRole('button', { name: 'Open learner surface (new tab)' })).toBeEnabled();
+    await expectNoSecretsInUrl(page);
+  });
+
+  test('a deep link survives the key prompt and selects that exact item', async ({ page }) => {
+    const api = await installRepositoryApi(page, workflowBank(), { contentState: cotwContentState() });
+    // Arrive locked, on a link naming the resident twin.
+    await unlock(page, { path: `/?item=page%3A${COTW_RES_SLUG}` });
+
+    await expect(page.locator('#selected-item-title')).toHaveText('Catatonia (Aug 31) — Resident');
+    await expect(page.locator('#selected-item-identity')).toHaveText(COTW_RES_SLUG);
+    await expect(page.locator('#deep-link-notice')).toHaveCount(0);
+    await expect(page.locator('#preview-status-label')).toHaveText('Ready');
+    const preview = new URL(await page.locator('#learner-preview-frame').getAttribute('src'));
+    expect(preview.origin).toBe(new URL(RES_URL).origin);
+    expect(preview.searchParams.get('page')).toBe(COTW_RES_SLUG);
+    expect((await expectNoSecretsInUrl(page)).searchParams.get('item')).toBe(`page:${COTW_RES_SLUG}`);
+
+    // Selecting another item rewrites the link in place — no navigation, no reload.
+    await page.locator('#review-item-selector').selectOption('tool:mse.html');
+    await expect(page.locator('#selected-item-title')).toHaveText('Synthetic mental status exam tool');
+    expect((await expectNoSecretsInUrl(page)).searchParams.get('item')).toBe('tool:mse.html');
+    // The rewrite is history.replaceState, not a fresh load: the API was called once.
+    expect(api.calls.filter(call => call.method === 'GET').length).toBe(1);
+
+    // Copy link hands back the same address the bar already shows.
+    await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
+    await page.locator('#copy-item-link').click();
+    await expect(page.locator('#app-status')).toContainText('Copied a link to');
+    expect(await page.evaluate(() => navigator.clipboard.readText()))
+      .toBe(await page.evaluate(() => location.href));
+  });
+
+  test('an unknown deep link falls back to the default selection with one neutral notice', async ({ page }) => {
+    await installRepositoryApi(page, workflowBank(), { contentState: cotwContentState() });
+    await unlock(page, { path: '/?item=page%3Anot_in_this_queue.md' });
+
+    await expect(page.locator('#deep-link-notice')).toHaveText('That item is not in the current queue.');
+    // The default selection stands: the first item in the Needs review queue.
+    await expect(page.locator('#selected-item-title')).toHaveText('Catatonia (Aug 31) — MS3');
+    await expectNoSecretsInUrl(page);
+
+    // A hostile value is compared against item keys and never reaches the page.
+    await page.goto(`/?item=${encodeURIComponent('<img src=x onerror=alert(1)>')}`);
+    await expect(page.getByRole('heading', { name: 'Choose one curriculum item' })).toBeVisible();
+    await expect(page.locator('#deep-link-notice')).toHaveText('That item is not in the current queue.');
+    expect(await page.locator('#console-background').innerHTML()).not.toContain('onerror');
+    await expectNoSecretsInUrl(page);
+  });
+
+  test('the bookmarklet renders only when unlocked and points at this console', async ({ page }) => {
+    await installRepositoryApi(page, workflowBank(), { contentState: cotwContentState() });
+    await page.goto('/');
+    // Locked: the disclosure does not exist.
+    await expect(page.locator('#bookmarklet-disclosure')).toHaveCount(0);
+
+    await page.getByLabel('Faculty key').fill(FACULTY_KEY);
+    await page.getByRole('button', { name: 'Unlock workspace' }).click();
+    await expect(page.getByRole('heading', { name: 'Choose one curriculum item' })).toBeVisible();
+
+    await page.locator('#bookmarklet-disclosure summary').click();
+    const href = await page.locator('#attest-this-page-bookmarklet').getAttribute('href');
+    expect(href.startsWith('javascript:')).toBe(true);
+    const consoleOrigin = await page.evaluate(() => location.origin);
+    expect(href).toContain(encodeURIComponent(consoleOrigin));
+    expect(href.length).toBeLessThan(600);
+    // The copyable form is the identical address.
+    expect(await page.locator('#bookmarklet-source').inputValue()).toBe(href);
+
+    // Evaluate it the way a browser would, against a learner page's own query string.
+    const opened = await page.evaluate(([bookmarklet, search]) => {
+      const source = decodeURIComponent(bookmarklet.slice('javascript:'.length));
+      const calls = [];
+      const win = { open: (...args) => calls.push(args) };
+      // eslint-disable-next-line no-new-func
+      new Function('window', 'location', 'URLSearchParams', source)(win, { search }, URLSearchParams);
+      return calls;
+    }, [href, `?page=${COTW_RES_SLUG}`]);
+    expect(opened).toEqual([[
+      `${consoleOrigin}/?item=page%3A${COTW_RES_SLUG}`, '_blank', 'noopener',
+    ]]);
+  });
+
+  test('attesting one twin advances to the other and writes only the pressed slug', async ({ page }) => {
+    const api = await installRepositoryApi(page, workflowBank(), { contentState: cotwContentState() });
+    await unlock(page, { path: `/?item=page%3A${COTW_MS3_SLUG}` });
+    await expect(page.locator('#selected-item-title')).toHaveText('Catatonia (Aug 31) — MS3');
+
+    // The rail names the twin and offers one hop to it — never a second attestation.
+    await expect(page.locator('#attestation-twin')).toContainText('Catatonia (Aug 31) — Resident');
+    await expect(page.locator('#attestation-twin')).toContainText('Needs review');
+    await page.locator('#go-to-twin').click();
+    await expect(page.locator('#selected-item-title')).toHaveText('Catatonia (Aug 31) — Resident');
+    await expect(page.locator('#attestation-twin')).toContainText('Catatonia (Aug 31) — MS3');
+    await page.locator('#go-to-twin').click();
+    await expect(page.locator('#selected-item-title')).toHaveText('Catatonia (Aug 31) — MS3');
+
+    await expect(page.locator('#preview-status-label')).toHaveText('Ready');
+    await page.locator('#review-complete-item').check();
+    await page.locator('#review-content-accuracy').check();
+    await page.locator('#review-content-interactions').check();
+    const start = api.calls.length;
+    await page.locator('#attest-current-item').click();
+
+    // Twin-first advance: the resident half, not the next alphabetical page.
+    await expect(page.locator('#selected-item-title')).toHaveText('Catatonia (Aug 31) — Resident');
+    await expect(page.locator('#session-action-ledger')).toContainText(`Attested ${COTW_MS3_SLUG}.`);
+    expect(api.calls[start].body).toEqual({
+      target: 'content',
+      changes: { [COTW_MS3_SLUG]: true },
+      reasons: {},
+    });
+    // Exactly one slug changed. The twin is still pending and still needs a judgement.
+    const content = api.currentContent();
+    expect(content.find(item => item.slug === COTW_MS3_SLUG).status).toBe('reviewed');
+    expect(content.find(item => item.slug === COTW_RES_SLUG).status).toBe('pending');
+    await expect(page.locator('#selected-item-status')).toHaveText('Not reviewed');
+    // The resident preview follows the advance to the resident origin.
+    await expect(page.locator('#preview-status-label')).toHaveText('Ready');
+    expect(new URL(await page.locator('#learner-preview-frame').getAttribute('src')).origin)
+      .toBe(new URL(RES_URL).origin);
+    expect((await expectNoSecretsInUrl(page)).searchParams.get('item')).toBe(`page:${COTW_RES_SLUG}`);
+  });
+
+  test('a page with no twin keeps the previous next-pending advance', async ({ page }) => {
+    const api = await installRepositoryApi(page, workflowBank(), { contentState: cotwContentState() });
+    await unlock(page, { path: '/?item=page%3At_mood.md' });
+    await expect(page.locator('#selected-item-title')).toHaveText('Synthetic mood disorders page');
+    // No Case-of-the-Week pair, so no pair badge and no twin hop.
+    await expect(page.locator('#attestation-twin')).toHaveCount(0);
+    await expect(page.locator('#go-to-twin')).toHaveCount(0);
+
+    await expect(page.locator('#preview-status-label')).toHaveText('Ready');
+    await page.locator('#review-complete-item').check();
+    await page.locator('#review-content-accuracy').check();
+    await page.locator('#review-content-interactions').check();
+    const start = api.calls.length;
+    await page.locator('#attest-current-item').click();
+
+    // advanceToNextPendingContent, unchanged: the attested item has left the Needs
+    // review queue, so the scan resumes at the top of the filtered list and lands on the
+    // first content item still pending. Twin-first advance did not participate.
+    await expect(page.locator('#selected-item-title')).toHaveText('Catatonia (Aug 31) — MS3');
+    expect(api.calls[start].body.changes).toEqual({ 't_mood.md': true });
+    await expectNoSecretsInUrl(page);
+  });
+
+  test('a twin that is already reviewed does not capture the advance', async ({ page }) => {
+    const reviewedTwin = cotwContentState().map(item => (
+      item.slug === COTW_RES_SLUG
+        ? { ...item, status: 'reviewed', at: '2026-09-01', by: SERVER_ATTESTER }
+        : item
+    ));
+    const api = await installRepositoryApi(page, workflowBank(), { contentState: reviewedTwin });
+    await unlock(page, { path: `/?item=page%3A${COTW_MS3_SLUG}` });
+
+    // The pair badge still names the twin — and says it is done.
+    await expect(page.locator('#attestation-twin')).toContainText('Catatonia (Aug 31) — Resident');
+    await expect(page.locator('#attestation-twin')).toContainText('Reviewed');
+
+    await expect(page.locator('#preview-status-label')).toHaveText('Ready');
+    await page.locator('#review-complete-item').check();
+    await page.locator('#review-content-accuracy').check();
+    await page.locator('#review-content-interactions').check();
+    const start = api.calls.length;
+    await page.locator('#attest-current-item').click();
+
+    // Not the twin: it needs no further review. The ordinary next-pending advance runs.
+    await expect(page.locator('#selected-item-title')).toHaveText('Synthetic mood disorders page');
+    expect(api.calls[start].body.changes).toEqual({ [COTW_MS3_SLUG]: true });
+    await expectNoSecretsInUrl(page);
   });
 });
