@@ -95,6 +95,7 @@ step "validate_scheduled_workflows"         python3 $A/maintenance/validate_sche
 step "unit — media guard"                   python3 $A/site_build/test_media_guard.py
 step "unit — shared build logic"            python3 $A/site_build/test_common.py
 step "unit — evidence registry"             python3 tools/evidence_registry/test_registry.py
+step "unit — claim sweep"                   bash -c "python3 -m unittest discover -s tests/evidence -t . -p 'test_*.py'"
 step "validate_evidence_registry"           python3 tools/evidence_registry/validate.py --check-generated
 step "unit — citation surveillance"         python3 $A/surveillance/bin/run_citation_check.py --self-test
 step "unit — resource intake"               python3 $A/surveillance/bin/run_resource_intake.py --self-test
