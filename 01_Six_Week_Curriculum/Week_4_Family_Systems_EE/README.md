@@ -9,6 +9,8 @@
 
 **Suggested reading:** Brown 1962 (EE) · Pharoah 2010 (Cochrane family intervention). **Journal Club #2 (EE)** and **#6 (Family Intervention).**
 
+<!-- pairing-block -->
+
 **Skill of the week:** the **[Family Meeting Playbook (90-min)](?page=family_playbook.md)**; observe then co-facilitate a meeting; use an EE-spotting checklist.
 
 **Media:** the canonical Family-Therapy didactic deck + "The Family is the Milieu."

@@ -87,12 +87,31 @@ common.copy_required_sources(RES_EXTRA, LIB, OUT+"/content", label="resident con
 # block gets the same treatment its MS3 counterpart did.
 _crisis_res_data=_crisis.load(LIB)
 _crisis_res_done=set()
+
+# ---- WEEK-PAGE PAIRING BLOCK on the resident side -----------------------------------
+# The resident site is shutil.copytree(MS3, OUT), so the six week pages arrive with the
+# MS3 pairing ALREADY RENDERED and their marker consumed — this sweep is a deliberate
+# no-op on them. It exists for the same reason the crisis sweep does: any resident-only
+# page written fresh by RES_EXTRA (or by some future path) that opts into the marker
+# would otherwise ship an invisible HTML comment. P1 ships ONE pairing set for both
+# audiences, so a resident page cannot yet diverge; when it should, the divergence needs
+# an unconsumed resident-specific marker, not a skip on the MS3 side. Runs BEFORE the
+# strip/contrast passes so a resident-rendered block gets the same treatment its MS3
+# counterpart did.
+import pairings_block as _pairings
+_pair_res_data=_pairings.resolve(_pairings.load(LIB), LIB)
+_pair_res_done=set()
+
 for _md_path in sorted(glob.glob(OUT+"/content/*.md")):
     _t=open(_md_path,encoding="utf-8").read()
     _t,_did=_crisis.inject_markdown(_t,_crisis_res_data)
-    if _did:
+    _t,_pdid=_pairings.inject_markdown(_t,_pair_res_data,os.path.basename(_md_path),"res")
+    if _did or _pdid:
         open(_md_path,"w",encoding="utf-8").write(_t)
-        _crisis_res_done.add(os.path.basename(_md_path))
+    if _did: _crisis_res_done.add(os.path.basename(_md_path))
+    if _pdid: _pair_res_done.add(os.path.basename(_md_path))
+if _pair_res_done:
+    print("pairing block injected (resident-only pages):",len(_pair_res_done))
 
 # Resident-only safety surfaces that must carry the block, same contract build_deploy.py
 # enforces for MS3: a marker deleted, a page renamed, or a source dropped from RES_EXTRA

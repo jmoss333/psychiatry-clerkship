@@ -61,6 +61,9 @@ jobs:
       - name: Unit — shared build logic (common.py)
         run: python3 13_Faculty_Resources/_automation/site_build/test_common.py
 
+      - name: Unit — pairing block renderer
+        run: python3 13_Faculty_Resources/_automation/site_build/test_pairings_block.py
+
       - name: Unit — evidence registry
         run: python3 tools/evidence_registry/test_registry.py
 

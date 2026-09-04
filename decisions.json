@@ -18,7 +18,9 @@
       "status": "active",
       "decided": "2026-08-31",
       "decidedBy": "Joshua Moss, MD",
-      "supersedes": ["passcode-rotation-per-block"],
+      "supersedes": [
+        "passcode-rotation-per-block"
+      ],
       "rationaleRef": "sp-proxy/README.md — Passcode policy; commit ec75abc",
       "note": "Rotation WAS the revocation path. Rollback in docs/RED_TEAM_RUNBOOK.md is now the only containment. Never re-add 'rotate the learner passcode' to a checklist.",
       "governs": [
@@ -34,7 +36,9 @@
       "decidedBy": "Joshua Moss, MD",
       "rationaleRef": "docs/superpowers/plans/2026-08-20-instrument-reproduction-audit.md",
       "note": "Settles scope, not individual cases. An instrument is exempt only once its status is recorded in instrument_rights.json. If a work package asks for verbatim item or anchor text, stop and ask.",
-      "governs": ["instrument_rights.json"]
+      "governs": [
+        "instrument_rights.json"
+      ]
     },
     {
       "id": "instrument-route-required",
@@ -43,7 +47,9 @@
       "decided": "2026-09-03",
       "decidedBy": "Joshua Moss, MD",
       "rationaleRef": "commit df6b879",
-      "governs": ["13_Faculty_Resources/_automation/site_build/instrument-rights-gate.mjs"]
+      "governs": [
+        "13_Faculty_Resources/_automation/site_build/instrument-rights-gate.mjs"
+      ]
     },
     {
       "id": "crisis-single-source",
@@ -53,7 +59,9 @@
       "decidedBy": "Joshua Moss, MD",
       "rationaleRef": "docs/superpowers/plans/2026-08-24-faculty-decisions.md",
       "note": "Scope rule for adding a surface: the learner must plausibly be DOING risk work there — assessing, rehearsing, or planning disposition — not merely reading a page that mentions suicide.",
-      "governs": ["13_Faculty_Resources/_automation/site_build/build_deploy.py"]
+      "governs": [
+        "13_Faculty_Resources/_automation/site_build/build_deploy.py"
+      ]
     },
     {
       "id": "storage-namespaces",
@@ -63,7 +71,9 @@
       "decidedBy": "Joshua Moss, MD",
       "rationaleRef": "CLAUDE.md — Conventions & gotchas",
       "note": "Item-id collisions silently corrupt attestation (cw_qbank_attest_v1) and SRS state.",
-      "governs": ["13_Faculty_Resources/_automation/site_build/check-static-site.mjs"]
+      "governs": [
+        "13_Faculty_Resources/_automation/site_build/check-static-site.mjs"
+      ]
     },
     {
       "id": "cows-interim-waiver",
@@ -74,6 +84,17 @@
       "rationaleRef": "docs/superpowers/plans/2026-08-20-instrument-reproduction-audit.md — WP-02d",
       "note": "This waiver is the one thing still blocking Wave 4. An agent must not narrow or lift it.",
       "governs": []
+    },
+    {
+      "id": "pairings-block-collapsible",
+      "title": "The week-page pairing block ships collapsed, not expanded",
+      "status": "active",
+      "decided": "2026-09-04",
+      "decidedBy": "Joshua Moss, MD",
+      "rationaleRef": "docs/superpowers/plans/2026-09-03-pairings-registry-implementation-plan.md",
+      "governs": [
+        "13_Faculty_Resources/_automation/site_build/pairings_block.py"
+      ]
     }
   ]
 }

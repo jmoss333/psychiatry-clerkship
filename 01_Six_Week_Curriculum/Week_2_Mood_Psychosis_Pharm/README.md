@@ -9,6 +9,8 @@
 
 **Suggested reading:** CATIE (Lieberman 2005) · STAR*D (Rush 2006) · Bush 1996 (catatonia). **Journal Club #1 (CATIE)** and **#5 (Catatonia)**.
 
+<!-- pairing-block -->
+
 **Skill of the week:** the **Top-10 inpatient psychopharm** primer (the Psychopharmacology section); run a Bush-Francis screen on any mute/immobile patient.
 
 **Topic pages:** Mood and Psychosis inpatient one-pagers (the Core Topics pages).
