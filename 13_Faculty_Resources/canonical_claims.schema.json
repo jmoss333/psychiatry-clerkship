@@ -125,6 +125,16 @@
             "maxLength": 160
           },
           "description": "Which part(s) of the file assert the claim, when the file holds many. topic_meta.json carries one 'cant' per topic, so file-level granularity alone cannot say which topic a claim governs. The hash still covers the whole file; this records intent."
+        },
+        "scope": {
+          "type": "array",
+          "maxItems": 12,
+          "items": {
+            "type": "string",
+            "pattern": "^/.*",
+            "maxLength": 200
+          },
+          "description": "JSON pointers to the exact values that assert the claim, for .json files. Guards run against these values instead of the whole file. Without this a 'required' guard on a file like topic_meta.json is trivially satisfied by any other topic mentioning the word, and protects nothing."
         }
       }
     },

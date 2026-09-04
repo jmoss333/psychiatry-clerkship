@@ -13,6 +13,8 @@ a machine can check one kind of drift and not the other:
 
   guards    -- regex checks. Mechanical and exact. A corrected error becomes a
                permanent 'forbidden' pattern, so it cannot come back silently.
+  scope     -- JSON pointers narrowing guards to the exact values that assert
+               the claim, so a guard on a many-claim file protects something.
   appliesTo -- content hashes. A page whose hash no longer matches the one
                recorded at attestation is flagged for re-check. Semantic drift
                is not machine-checkable; turning it into change detection is.
@@ -66,6 +68,45 @@ def compile_guard(claim_id, kind, guard, failures):
         return None
 
 
+def resolve_scope(path, pointers, claim_id, failures):
+    """Return the text guards should run against, narrowed to the cited loci.
+
+    Without this, a 'required' guard on a file like topic_meta.json -- which holds
+    one 'cant' per topic -- is satisfied by any other topic mentioning the word, so
+    it looks protective and protects nothing.
+    """
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (ValueError, OSError) as exc:
+        failures.append("{}: {} has scope pointers but is not readable JSON ({})".format(
+            claim_id, path.name, exc))
+        return None
+
+    chunks = []  # [(pointer, text)]
+    for pointer in pointers:
+        node = data
+        ok = True
+        for raw in pointer.lstrip("/").split("/"):
+            key = raw.replace("~1", "/").replace("~0", "~")
+            if isinstance(node, list):
+                if not key.isdigit() or int(key) >= len(node):
+                    ok = False
+                    break
+                node = node[int(key)]
+            elif isinstance(node, dict) and key in node:
+                node = node[key]
+            else:
+                ok = False
+                break
+        if not ok:
+            # A pointer that no longer resolves means the locus moved or was deleted.
+            # That is a failure, not a silent pass -- the claim now governs nothing there.
+            failures.append("{}: scope pointer {} does not resolve in {}".format(
+                claim_id, pointer, path.name))
+            continue
+        chunks.append((pointer, node if isinstance(node, str) else json.dumps(node)))
+    return chunks
+
 def check_claim(claim_id, claim, failures, notices):
     guards = claim.get("guards", {})
     forbidden = [(g, compile_guard(claim_id, "forbidden", g, failures)) for g in guards.get("forbidden", [])]
@@ -87,17 +128,32 @@ def check_claim(claim_id, claim, failures, notices):
 
         text = target.read_text(encoding="utf-8", errors="replace")
 
-        for guard, pattern in forbidden:
-            if pattern is not None and pattern.search(text):
-                failures.append(
-                    "{}: forbidden pattern present in {} -- {}".format(claim_id, rel, guard["why"])
-                )
+        # Guards run per cited locus, never against the loci joined together.
+        # Joining them re-creates the bug scope exists to fix: one locus keeping
+        # the word satisfies a 'required' guard for every other locus in the file.
+        # required  -> must hold for EVERY locus
+        # forbidden -> fails if ANY locus matches
+        if entry.get("scope"):
+            loci = resolve_scope(target, entry["scope"], claim_id, failures)
+            if loci is None:
+                continue
+        else:
+            loci = [(None, text)]
 
-        for guard, pattern in required:
-            if pattern is not None and not pattern.search(text):
-                failures.append(
-                    "{}: required pattern missing from {} -- {}".format(claim_id, rel, guard["why"])
-                )
+        for where, chunk in loci:
+            at = "{} {}".format(rel, where) if where else rel
+            for guard, pattern in forbidden:
+                if pattern is not None and pattern.search(chunk):
+                    failures.append(
+                        "{}: forbidden pattern present in {} -- {}".format(
+                            claim_id, at, guard["why"])
+                    )
+            for guard, pattern in required:
+                if pattern is not None and not pattern.search(chunk):
+                    failures.append(
+                        "{}: required pattern missing from {} -- {}".format(
+                            claim_id, at, guard["why"])
+                    )
 
         recorded = entry.get("contentHashAtReview")
         if recorded:

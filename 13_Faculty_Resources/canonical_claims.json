@@ -96,7 +96,7 @@
         "kind": "clinical",
         "level": "high"
       },
-      "reason": "Slot seeded with a verified appliesTo list; canonical statement not yet written or attested. See openQuestion before attesting.",
+      "reason": "DRAFT statement consolidated from the five existing loci, not newly authored. Faculty scoping decisions recorded; awaiting attestation of the wording.",
       "at": "2026-09-03",
       "by": "Pending faculty review",
       "appliesTo": [
@@ -107,6 +107,10 @@
           "locus": [
             "agitation.md 'cant'",
             "catatonia.md 'cant'"
+          ],
+          "scope": [
+            "/agitation.md/cant",
+            "/catatonia.md/cant"
           ]
         },
         {
@@ -122,6 +126,11 @@
             "sga hazardIf.catatonia",
             "d2_typical hazardIf.catatonia",
             "combo hazardIf.catatonia"
+          ],
+          "scope": [
+            "/choiceBanks/pharmApproach/0/hazardIf/catatonia",
+            "/choiceBanks/pharmApproach/1/hazardIf/catatonia",
+            "/choiceBanks/pharmApproach/3/hazardIf/catatonia"
           ]
         },
         {
@@ -132,14 +141,26 @@
             "sga hazardIf.catatonia",
             "d2_typical hazardIf.catatonia",
             "combo hazardIf.catatonia"
+          ],
+          "scope": [
+            "/choiceBanks/pharmApproach/0/hazardIf/catatonia",
+            "/choiceBanks/pharmApproach/1/hazardIf/catatonia",
+            "/choiceBanks/pharmApproach/3/hazardIf/catatonia"
           ]
         }
       ],
       "guards": {
         "forbidden": [],
-        "required": []
+        "required": [
+          {
+            "pattern": "catatoni",
+            "why": "Catatonia must remain named in each locus. RSAF-F001 existed because it was absent; a rewrite that drops it would silently undo the correction.",
+            "caughtOn": "2026-09-01"
+          }
+        ]
       },
-      "openQuestion": "SCOPING: topic_meta toxidromes.md carries a related but distinct claim \u2014 what to do for a patient ALREADY in NMS / malignant catatonia (antipsychotics are the cause, not the treatment; stop the offending agent, cool and support, escalate) rather than what to exclude BEFORE giving one. It is deliberately excluded from appliesTo here and likely belongs with nms-recognition-and-management. Also: the packs say 'precipitate or worsen' and 'hold until catatonia is excluded or treated', where agitation.md says 'can tip it into'. Decide whether those are one claim before writing one statement to govern all five loci."
+      "openQuestion": "RESOLVED 2026-09-03 by Joshua Moss, MD: (1) toxidromes.md is a management claim and is excluded from this slot \u2014 it belongs with nms-recognition-and-management; (2) 'precipitate or worsen' and 'can tip it into' are the same claim, so one statement governs all five loci. REMAINING: the statement wording itself is a draft and has not been attested. Set status to reviewed and by to the attesting faculty name to close this slot.",
+      "statement": "Antipsychotics \u2014 second-generation agents included \u2014 can precipitate or worsen catatonia and NMS. Exclude catatonia before giving one, and where it is suspected, hold the antipsychotic until catatonia is excluded or treated. Excited catatonia can look like agitation, which is how the mistake usually happens."
     },
     "benzodiazepine-withdrawal-lethality": {
       "topic": "Benzodiazepine withdrawal can be fatal",
