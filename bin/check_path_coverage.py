@@ -49,7 +49,15 @@ SITES = ("ms3", "resident")
 # Recorded 2026-09-04 against curriculum.json at 1f293cb, so a later run can say whether
 # the gap is closing or widening rather than only what it is today. Update deliberately,
 # in the PR that moves the number, with the reason in the commit message.
-BASELINE = {"ms3": (40, 83), "resident": (31, 92)}
+#
+# These are UNIQUE REFS, not items. validate_curriculum.py reports "ms3 6 weeks/40 items"
+# because it sums each week's list, and the MS3 path repeats a handful of refs across
+# weeks — question-bank-practice.html appears in all six. A learner opening the same page
+# in week 5 that they opened in week 1 has not covered more of the Library, so coverage
+# has to be measured on the deduplicated set: 32, not 40. Seeding this from the validator's
+# 40 is exactly the mistake that shipped in the first version of this file, and it printed
+# a permanent phantom "-10 pt" drift. Resident happens to repeat nothing, so 31 == 31.
+BASELINE = {"ms3": (32, 83), "resident": (31, 92)}
 
 
 def library_refs(curriculum: dict, site: str) -> list[str]:
