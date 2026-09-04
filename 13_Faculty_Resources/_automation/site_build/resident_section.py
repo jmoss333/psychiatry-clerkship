@@ -351,7 +351,8 @@ from media_guard import strip_missing_media
 strip_missing_media(OUT)
 
 # ---- resident search index: same engine, same synonyms, same tool keywords as MS3 ----
-common.build_search_index(nav, OUT, label="resident")
+common.build_search_index(nav, OUT, label="resident",
+                          reachable_refs=frontdoor_catalog.reachable_refs(_fd_payload))
 
 # Resident starts from the expanded MS3 artifact, then rebrands and replaces its Front Door
 # payload. Prove none of those later transforms reacquired an unexpanded shell marker.
