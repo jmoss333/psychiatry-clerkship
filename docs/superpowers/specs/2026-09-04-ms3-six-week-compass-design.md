@@ -1,9 +1,9 @@
 # MS3 Six-Week Compass and visual-learning roadmap — design
 
 **Date:** 2026-09-04
-**Status:** Concept A approved in conversation; written-spec review required before planning
+**Status:** Approved by the user on 2026-09-04; implementation planning authorized
 **Release status:** Not faculty re-attested, implemented, merged, or deployed
-**Baseline:** `origin/main` at `87e6c82751e30dd3d1d2ddab08cce25b651ec61b`
+**Baseline:** `origin/main` at `7eb4ace0301e163139208e8dc9f05b3aab5f79ea`
 
 ---
 
@@ -162,9 +162,12 @@ Implementation removes:
   from rights and route governance; and
 - the old `Start here` sentence where it duplicates or conflicts with the new hierarchy.
 
-The page retains its title/subtitle, concise rotation purpose, supervised-team framing, support
-and feedback description, Orientation Packet link, and no-PHI footer. Any editing of those
-retained paragraphs remains faculty-controlled.
+The first retained paragraph changes only `leave ready for the shelf and your sub-internship` to
+`prepare for the shelf and a future sub-internship`. This narrow correction removes an implied
+readiness claim while preserving the paragraph's intent. The page otherwise retains its
+title/subtitle, concise rotation purpose, supervised-team framing, support and feedback
+description, Orientation Packet link, and no-PHI footer. Any other editing of those retained
+paragraphs remains faculty-controlled.
 
 `topic_meta.json["welcome.md"]` changes only enough to describe the new first-visit route and
 remove the stale `Today / Progress` wording. The exact replacement is:
@@ -236,8 +239,15 @@ Compass contract when:
 
 - there are not exactly six contiguous week numbers 1–6;
 - `landingRef` is absent, duplicated, or not a non-empty string;
-- a `landingRef` does not resolve to a manifest-registered MS3 destination; or
+- a `landingRef` does not resolve to a `kind: "page"` entry in the derived
+  `site_build/shipped_pages.json` whose `sites` include `ms3`; or
 - a resolved destination is not Markdown.
+
+ADR-002 landed after the first design draft and established `shipped_pages.json` as the one
+derived answer to "what ships." New Compass validation therefore uses
+`shipped_pages.load_shipped_pages()` rather than introducing another direct read of
+`site_manifest.json` or another producer. The existing build remains the producer of the shared
+Welcome and week pages; this work package adds no new shipped-page producer.
 
 After navigation is constructed, `build_deploy.py` performs the audience-specific check: every
 MS3 `landingRef` must appear exactly once in the finalized `nav` projection with `k: "md"`. The
