@@ -94,6 +94,7 @@ step "unit — scheduled maintenance"         bash -c "python3 -m unittest disco
 step "validate_scheduled_workflows"         python3 $A/maintenance/validate_scheduled_workflows.py
 step "unit — media guard"                   python3 $A/site_build/test_media_guard.py
 step "unit — shared build logic"            python3 $A/site_build/test_common.py
+step "unit — pairing block renderer"        python3 $A/site_build/test_pairings_block.py
 step "unit — front door catalog"            python3 $A/site_build/test_frontdoor_catalog.py
 step "unit — path coverage"                 python3 bin/check_path_coverage.py --self-test
 step "path coverage (report-only)"          python3 bin/check_path_coverage.py

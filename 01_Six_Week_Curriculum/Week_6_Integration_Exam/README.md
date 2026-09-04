@@ -9,6 +9,8 @@
 
 **Suggested reading:** Felitti 1998 (ACE) · Deegan 1996 (recovery).
 
+<!-- pairing-block -->
+
 **Skills of the week:** the Risk-Stratified Discharge Pathway + Maine aftercare disposition case; **shelf high-yield review + self-check** and the **OSCE station set** (the exam-prep pages / the student pack).
 
 

@@ -1,0 +1,78 @@
+{
+  "_note": "Topic-keyed pairings joining assets this library already ships — a topic page, a deployed audio_oe brief, and a practice tool — injected into the six week pages at build time. P1 is INTERNAL-ONLY: no external links, therefore no verification debt. Item kinds page/tool/audio_oe are all validated against site_manifest.json and 12_Media/audio_oe/MANIFEST.csv by validate_registry_schemas.py, so a renamed page or renumbered brief fails the build rather than the learner. Which pairing represents a week is a CURRICULAR judgement and belongs to Dr. Moss; it is recorded here so it is editable rather than implicit. See docs/superpowers/plans/2026-09-03-pairings-registry-implementation-plan.md.",
+  "renderMode": "collapsible",
+  "pairings": [
+    {
+      "id": "pair_biopsychosocial",
+      "topic": "The biopsychosocial frame",
+      "weeks": [1],
+      "audiences": ["ms3", "res"],
+      "blurb": "Why the interview is the instrument, and what it is an instrument for.",
+      "items": [
+        { "role": "read",     "kind": "page",     "ref": "pg_interview.md" },
+        { "role": "listen",   "kind": "audio_oe", "ref": "34" },
+        { "role": "practice", "kind": "tool",     "ref": "mse.html" }
+      ]
+    },
+    {
+      "id": "pair_antipsychotic_selection",
+      "topic": "Choosing an antipsychotic",
+      "weeks": [2],
+      "audiences": ["ms3", "res"],
+      "blurb": "Efficacy differences are small; the side-effect profile is what you are actually choosing.",
+      "items": [
+        { "role": "read",     "kind": "page",     "ref": "t_psychosis.md" },
+        { "role": "listen",   "kind": "audio_oe", "ref": "28" },
+        { "role": "practice", "kind": "tool",     "ref": "decision-aids.html" }
+      ]
+    },
+    {
+      "id": "pair_therapeutic_alliance",
+      "topic": "What makes therapy work",
+      "weeks": [3],
+      "audiences": ["ms3", "res"],
+      "blurb": "The alliance predicts outcome across modalities — including the ten minutes you have on rounds.",
+      "items": [
+        { "role": "read",     "kind": "page",     "ref": "psychotherapy.md" },
+        { "role": "listen",   "kind": "audio_oe", "ref": "48" },
+        { "role": "practice", "kind": "tool",     "ref": "communication-practice.html" }
+      ]
+    },
+    {
+      "id": "pair_family_relapse",
+      "topic": "Family work changes relapse rates",
+      "weeks": [4],
+      "audiences": ["ms3", "res"],
+      "blurb": "Expressed emotion is modifiable, and modifying it is a treatment.",
+      "items": [
+        { "role": "read",     "kind": "page",     "ref": "exp_family.md" },
+        { "role": "listen",   "kind": "audio_oe", "ref": "10" },
+        { "role": "practice", "kind": "tool",     "ref": "family-systems.html" }
+      ]
+    },
+    {
+      "id": "pair_delirium",
+      "topic": "Delirium",
+      "weeks": [5],
+      "audiences": ["ms3", "res"],
+      "blurb": "The medical emergency that looks psychiatric — and the one you prevent rather than treat.",
+      "items": [
+        { "role": "read",     "kind": "page",     "ref": "delirium.md" },
+        { "role": "listen",   "kind": "audio_oe", "ref": "38" },
+        { "role": "practice", "kind": "tool",     "ref": "capacity.html" }
+      ]
+    },
+    {
+      "id": "pair_formulation",
+      "topic": "Formulation, not just diagnosis",
+      "weeks": [6],
+      "audiences": ["ms3", "res"],
+      "blurb": "A diagnosis names the problem; a formulation explains why this person, why now.",
+      "items": [
+        { "role": "read",     "kind": "page",     "ref": "case_formulation.md" },
+        { "role": "listen",   "kind": "audio_oe", "ref": "24" },
+        { "role": "practice", "kind": "tool",     "ref": "shelf-mode.html" }
+      ]
+    }
+  ]
+}
