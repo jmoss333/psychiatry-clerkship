@@ -771,8 +771,16 @@ def cotw_built_slugs(root):
     """Every Case-of-the-Week page the two site builds actually publish.
 
     Byte-identical to _cotw_slug() in build_deploy.py / resident_section.py.
+
+    An absent registry means no weekly cases, matching how both build scripts read it
+    (``json.load(...).get("weeks", [])``). The synthetic roots this validator's own test
+    suite builds carry a manifest and a ledger but no registry, and a repository that has
+    not yet started publishing weekly cases would not have one either.
     """
-    registry = load(os.path.join(root, COTW_REGISTRY_PATH))
+    registry_path = os.path.join(root, COTW_REGISTRY_PATH)
+    if not os.path.exists(registry_path):
+        return set()
+    registry = load(registry_path)
     weeks = registry.get("weeks", []) if isinstance(registry, dict) else []
     return {
         "cotw_%s_%s_%s.md" % (w["date"].replace("-", ""), w["topic"], level)
