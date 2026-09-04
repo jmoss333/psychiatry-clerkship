@@ -3,7 +3,7 @@
 # MS3 curriculum — complete content transcript for clinical review
 
 **Site:** `une-ms3-psychiatry` · **Audience:** MS3 — UNE medical students
-**Generated:** 2026-09-03 from build `cae930e` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
+**Generated:** 2026-09-04 from build `a7d4e65` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
 
 ## Who this is for
 
@@ -83,7 +83,7 @@ High-yield places to concentrate: the `topic_meta` **can't-miss**, **rule-out** 
 
 # MS3 · Navigation map
 
-Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-03 @ `cae930e`.
+Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-04 @ `a7d4e65`.
 
 ## Orientation  *(pinned)*
 
@@ -5761,7 +5761,7 @@ The goal is validation plus a steady frame, not either/or.
 - **Workflow modes:** `ward`, `safety`, `5min`, `shelf`, `family`
 - **Shelf blueprint tags:** `substance`
 - **EPA crosswalk:** `EPA1`, `EPA2`, `EPA10`
-- **Call-to-action buttons:** Open CIWA-Ar / COWS; Clarify discharge supports; Open discharge collateral workflow
+- **Call-to-action buttons:** Open withdrawal tool; Clarify discharge supports; Open discharge collateral workflow
 - **Faculty review:** {"status": "reviewed", "reviewer": "Joshua Moss, MD", "lastReviewed": "2026-07-01"}
 
 #### Page text (as shipped)
