@@ -30,6 +30,11 @@ from pathlib import Path
 
 STOP = set("a an and are as at be by for from has in is it of on or that the to was with you your".split())
 
+# Pivot strength for length normalisation. MUST equal LEN_NORM_B in spa_index.html:
+# this scorer is a mirror of the learner's, and a divergence makes every case below
+# assert against a ranking nobody sees. tests/search-scorer-parity.test.mjs pins them.
+LEN_NORM_B = 0.5
+
 REQUIRED_SYNONYMS = {
     "ss": {"serotonin", "syndrome"},
     "td": {"tardive", "dyskinesia"},
@@ -56,6 +61,21 @@ CASES = [
     {"query": "sleep", "anyTop": {"t_sleep.md"}, "limit": 3},
     {"query": "culture", "anyTop": {"cultural_psychiatry.md"}, "limit": 3},
     {"query": "ect", "anyTop": {"ect_neuromodulation.md"}, "limit": 3},
+    # Length normalisation (WP-6b). Before the pivot, raw tf let long catalogue pages
+    # outrank the page that teaches the thing: `cbt` and `psychodynamic` both returned
+    # rounds_questions.md, `supportive therapy` returned therapy_on_the_unit.md over
+    # the overview, `anxiety` and `agitation` returned a Case-of-the-Week transcript.
+    {"query": "psychotherapy", "anyTop": {"psychotherapy.md"}, "limit": 3},
+    {"query": "cbt", "anyTop": {"psychotherapy.md"}, "limit": 3,
+     "notFirst": {"rounds_questions.md", "canon_200.md"}},
+    {"query": "psychodynamic", "anyTop": {"psychotherapy.md"}, "limit": 3,
+     "notFirst": {"rounds_questions.md", "canon_200.md"}},
+    {"query": "supportive therapy", "anyTop": {"psychotherapy.md", "therapy_on_the_unit.md"},
+     "limit": 3},
+    {"query": "anxiety", "anyTop": {"t_anxiety.md"}, "limit": 3},
+    # limit 1 = must be the FIRST result, which is the strongest form this harness has.
+    {"query": "agitation", "anyTop": {"agitation.md"}, "limit": 1},
+    {"query": "motivational interviewing", "anyTop": {"motivational_interviewing.md"}, "limit": 1},
 ]
 
 
@@ -89,11 +109,24 @@ def run_search(index: dict, query: str) -> list[dict]:
     postings = index.get("postings", {})
     synonyms = index.get("synonyms", {})
     vocab = sorted(postings.keys())
+    docs = index.get("docs", [])
     score: dict[int, float] = {}
     cover: dict[int, int] = {}
 
     def idf(term: str) -> float:
         return math.log(1 + index.get("n", 1) / (index.get("df", {}).get(term) or 1))
+
+    avg_len = index.get("avgLen") or 0
+
+    def len_norm(doc_id: int) -> float:
+        """Mirror of the SPA's lenNorm — see spa_index.html. Must stay identical in
+        behaviour, including LEN_NORM_B and the pre-avgLen fallback of 1, or this gate
+        stops measuring what a learner actually experiences."""
+        doc = docs[doc_id] if doc_id < len(docs) else None
+        length = (doc or {}).get("L") or 0
+        if avg_len <= 0 or length <= 0:
+            return 1.0
+        return (1 - LEN_NORM_B) + LEN_NORM_B * (length / avg_len)
 
     for term in tok(query):
         terms: dict[str, float] = {}
@@ -112,14 +145,14 @@ def run_search(index: dict, query: str) -> list[dict]:
         for search_term, weight in terms.items():
             for doc_id, tf in postings.get(search_term, []):
                 doc_id = int(doc_id)
-                score[doc_id] = score.get(doc_id, 0.0) + (float(tf) * idf(search_term) * weight)
+                score[doc_id] = score.get(doc_id, 0.0) + (
+                    (float(tf) / len_norm(doc_id)) * idf(search_term) * weight)
                 hit[doc_id] = True
         for doc_id in hit:
             cover[doc_id] = cover.get(doc_id, 0) + 1
 
     ql = query.lower()
     results = []
-    docs = index.get("docs", [])
     for doc_id, raw_score in score.items():
         doc = docs[doc_id]
         final_score = raw_score * (1 + 0.6 * ((cover.get(doc_id) or 1) - 1))

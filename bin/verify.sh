@@ -95,6 +95,8 @@ step "validate_scheduled_workflows"         python3 $A/maintenance/validate_sche
 step "unit — media guard"                   python3 $A/site_build/test_media_guard.py
 step "unit — shared build logic"            python3 $A/site_build/test_common.py
 step "unit — front door catalog"            python3 $A/site_build/test_frontdoor_catalog.py
+step "unit — path coverage"                 python3 bin/check_path_coverage.py --self-test
+step "path coverage (report-only)"          python3 bin/check_path_coverage.py
 step "unit — evidence registry"             python3 tools/evidence_registry/test_registry.py
 step "validate_evidence_registry"           python3 tools/evidence_registry/validate.py --check-generated
 step "unit — citation surveillance"         python3 $A/surveillance/bin/run_citation_check.py --self-test
