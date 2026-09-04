@@ -167,6 +167,39 @@ def _finding(source_id, source_name, url, change_type, code, redirect_to, affect
     }
 
 
+def _capped_severity(source, code):
+    """Return (severity, cap_reason|None) for a source that failed its check.
+
+    Two results are ambiguous enough that a P0 would overstate them:
+
+      1. NO RESPONSE (code is None) -- often bot-blocking of a datacenter IP.
+      2. Any 4xx from a source marked `link_check: browser_required`. The rule
+         used to be "a definitive HTTP 4xx/5xx keeps the registry severity",
+         which assumes a bot-block announces itself as 401/403. fda.gov does
+         not: it serves its block as a 404, indistinguishable from a deleted
+         page. Confirmed 2026-09-03 -- the runner recorded 404 for both FDA
+         sources at 18:29Z while a laptop got 200 for each the same minute,
+         using this module's identical User-Agent, so the network path is the
+         only variable.
+
+    Capping is NOT suppression. The finding still fires and still opens an
+    issue; `_browser_required_soft_failure` deliberately does not swallow a
+    404, because a genuinely dead official page must not disappear. What
+    changes is the confidence attached to it, and that a human is told how to
+    settle it. Only a P0 is capped -- a P1/P2 is already a "read this" signal.
+    """
+    sev = source.get("severity_default", "P1")
+    reason = None
+    if code is None:
+        reason = "No HTTP response — could be bot-blocking"
+    elif source.get("link_check") == "browser_required" and 400 <= code < 500:
+        reason = ("HTTP %s from a source marked browser_required — some official "
+                  "sites serve a bot-block as a definitive 4xx" % code)
+    if reason and sev == "P0":
+        return "P1", reason
+    return sev, None
+
+
 def _browser_required_soft_failure(source, code):
     """Official sites may block stdlib/curl while resolving in a real browser.
 
@@ -204,15 +237,13 @@ def check_registry_sources(checked=None):
                   "source feeds guideline surveillance — fixing it restores monitoring."
                   % (s.get("id"), detail))
         f = _finding(s.get("id"), s.get("name", s.get("id")), url, ct, code, redir, [], action)
-        # Seed severity from the registry (acute paths still auto-escalate in sync).
-        # But a NO-RESPONSE result (code is None) is ambiguous — often bot-blocking of
-        # a datacenter IP, not a real dead page — so cap it at P1 to avoid a false P0
-        # page. A definitive HTTP 4xx/5xx keeps the registry severity.
-        sev = s.get("severity_default", "P1")
-        if code is None and sev == "P0":
-            sev = "P1"
-            f["recommended_action"] += (" (No HTTP response — could be bot-blocking; "
-                                        "capped to P1. Verify manually before acting.)")
+        # Seed severity from the registry (acute paths still auto-escalate in sync),
+        # capping the two ambiguous results -- see _capped_severity.
+        sev, cap_reason = _capped_severity(s, code)
+        if cap_reason:
+            f["recommended_action"] += (
+                " (%s; capped to P1. Verify from a non-runner network before acting: "
+                "`python3 bin/verify_findings_offrunner.py`.)" % cap_reason)
         f["severity"] = sev
         findings.append(f)
     return findings
@@ -300,6 +331,23 @@ def self_test():
     assert _browser_required_soft_failure({"link_check": "browser_required"}, None)
     assert not _browser_required_soft_failure({"link_check": "browser_required"}, 404)
     assert not _browser_required_soft_failure({}, 403)
+    # A browser_required source's 404 still FIRES (above) but no longer claims P0.
+    BR = {"severity_default": "P0", "link_check": "browser_required"}
+    assert _capped_severity(BR, 404)[0] == "P1"
+    assert "browser_required" in _capped_severity(BR, 404)[1]
+    assert _capped_severity(BR, None)[0] == "P1"
+    # 5xx is a server fault, not a bot-block shape: not capped.
+    assert _capped_severity(BR, 503) == ("P0", None)
+    # An unmarked source keeps its registry severity on a definitive 404.
+    assert _capped_severity({"severity_default": "P0"}, 404) == ("P0", None)
+    # Only a P0 is capped; a P1 is already a "read this" signal.
+    assert _capped_severity({"severity_default": "P1", "link_check": "browser_required"}, 404) \
+        == ("P1", None)
+    # The two FDA sources are marked, so the P0 that has mis-fired weekly is now capped.
+    _reg_by_id = {x["id"]: x for x in L.load_registry()["sources"]}
+    assert _reg_by_id["fda-drug-safety"].get("link_check") == "browser_required"
+    assert _reg_by_id["clozapine-rems"].get("link_check") == "browser_required"
+    assert _capped_severity(_reg_by_id["fda-drug-safety"], 404)[0] == "P1"
     sample_frontiers = "[article](https://www.frontiersin.org/articles/10.3389/fmed.2024.1358529/full)"
     assert DOI_RE.search(sample_frontiers).group(0).rstrip(".,);]").endswith("/full")
     assert _skip_citation_path("00_START_HERE/notebooklm_upload_2026-07-01/a.md")

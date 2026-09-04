@@ -89,6 +89,7 @@ step "validate_registry_schemas"            python3 $A/validate_registry_schemas
 step "test_validate_registry_schemas"       python3 $A/test_validate_registry_schemas.py
 step "validate_topic_meta"                  python3 $A/validate_topic_meta.py
 step "validate_attestation_consistency"     python3 $A/validate_attestation_consistency.py
+step "canonical clinical claims"            python3 bin/validate_canonical_claims.py
 step "unit — scheduled maintenance"         bash -c "python3 -m unittest discover -s tests/maintenance -p 'test_*.py'"
 step "validate_scheduled_workflows"         python3 $A/maintenance/validate_scheduled_workflows.py
 step "unit — media guard"                   python3 $A/site_build/test_media_guard.py
