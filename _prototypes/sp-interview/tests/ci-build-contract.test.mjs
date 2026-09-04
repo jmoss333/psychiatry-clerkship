@@ -111,7 +111,7 @@ test('both builders emit governance inventories matching their final tools', () 
       timeout: 60_000,
     });
     assert.equal(residentBuilt.status, 0, residentBuilt.stdout + residentBuilt.stderr);
-    assertInventory(resident, 25); // +rotation-curator.html (#377); standalone timeline is the governed Path tab
+    assertInventory(resident, 26); // +rotation-curator.html (#377); +rp-post-event-huddle.html (2026-09-04)
     const residentIndex = fs.readFileSync(path.join(resident, 'index.html'), 'utf8');
     for (const expected of [
       '<span class="fd-brand__name">MMC Psychiatry</span>',

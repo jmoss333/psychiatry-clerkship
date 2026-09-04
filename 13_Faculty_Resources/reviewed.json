@@ -1162,5 +1162,15 @@
     "at": "2026-08-23",
     "by": "Joshua Moss, MD",
     "note": "AI-drafted annotations, faculty-reviewed. Attested 2026-08-23 against 20ea0a29ce; every identifier resolved and retraction-checked in the 2026-08-21 canonical pass."
+  },
+  "rp-post-event-huddle.html": {
+    "status": "pending",
+    "risk": {
+      "kind": "general",
+      "level": "moderate"
+    },
+    "reason": "New resident tool: one synthetic post-event learning huddle. The event text, the twelve option debriefs and the boundary wording await faculty attestation. Makes no clinical recommendation; names no agent, dose or instrument.",
+    "at": "2026-09-04",
+    "by": "Pending faculty review"
   }
 }
