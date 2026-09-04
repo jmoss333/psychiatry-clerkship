@@ -200,6 +200,25 @@ def build_frontdoor_payload(site, curriculum, catalog, revision, rotation_projec
     }
 
 
+def reachable_refs(payload):
+    """Every ref a learner can reach by browsing this site: Library-placed plus Path.
+
+    This is exactly `payload["manifest"]`'s row set — built above as
+    `placed + path_refs`, with every entry already proven to resolve against the
+    FINAL site navigation. It is the correct input to common.build_search_index's
+    `reachable_refs`: a page the Library shows must be a page search can find, and
+    the manifest is the one place that set is already resolved per site (columns
+    plus siteLibrary additions, minus siteLibrary exclusions).
+    """
+    manifest = payload.get("manifest") or {}
+    refs = set()
+    for group in ("tools", "md"):
+        for row in manifest.get(group, []):
+            if isinstance(row, list) and len(row) > 1 and isinstance(row[1], str):
+                refs.add(row[1])
+    return refs
+
+
 def inject_frontdoor_payload(path, payload, topic_meta, tool_registry):
     """Replace each unique source data needle or fail before a site can ship."""
     values = {

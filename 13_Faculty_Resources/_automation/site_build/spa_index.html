@@ -1472,6 +1472,23 @@
     .catch(function(){ SI=null; VOCAB=[]; });
 
   function idf(t){ return Math.log(1 + SI.n/((SI.df[t]||1))); }
+  /* Length normalisation: the BM25 pivot (1-b) + b*(L/avgLen), b = 0.5. Without it
+     the model is raw term frequency, so a long catalogue page that mentions every
+     topic once outranks the page that teaches one ("psychotherapy" returned the
+     podcast library; "cbt" and "psychodynamic" returned the rounds-questions page).
+     A plain sqrt(L/avgLen) overcorrects: a tool page's indexed body is its keyword
+     string, a couple of dozen tokens, so sqrt inflated every tool ~10x and sent
+     "delirium" to exp_consult.md and "ptsd" to t_dissociative.md. The pivot's floor
+     of (1-b) caps a short page's boost at 2x while still demoting a 5x-mean
+     catalogue page to ~0.3x. Indexes built before avgLen existed fall back to 1, so
+     an older cached search-index.json still scores exactly as it used to. */
+  var LEN_NORM_B=0.5;
+  function lenNorm(id){
+    var d=SI.docs[id]; if(!d) return 1;
+    var avg=SI.avgLen||0, L=d.L||0;
+    if(avg<=0 || L<=0) return 1;
+    return (1-LEN_NORM_B) + LEN_NORM_B*(L/avg);
+  }
   function runSearch(q){
     if(!SI) return [];
     var qt=tok(q); if(!qt.length) return [];
@@ -1486,7 +1503,7 @@
       var hit={};
       Object.keys(toks).forEach(function(t){
         var w=toks[t], inv=idf(t), post=SI.postings[t];
-        for(var j=0;j<post.length;j++){ var id=post[j][0], tf=post[j][1]; score[id]=(score[id]||0)+tf*inv*w; hit[id]=1; }
+        for(var j=0;j<post.length;j++){ var id=post[j][0], tf=post[j][1]; score[id]=(score[id]||0)+(tf/lenNorm(id))*inv*w; hit[id]=1; }
       });
       Object.keys(hit).forEach(function(id){ cover[id]=(cover[id]||0)+1; });
     });

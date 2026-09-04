@@ -8,6 +8,7 @@ on:
 permissions:
   actions: read
   contents: read
+  pull-requests: read
 
 jobs:
   heartbeat:
@@ -33,11 +34,41 @@ jobs:
           python3 13_Faculty_Resources/_automation/maintenance/workflow_heartbeat.py
           --out "$RUNNER_TEMP/workflow-heartbeat.json"
 
+      # Runs even when the freshness step failed: the two stewards watch
+      # unrelated things, and a stale workflow must not hide a stranded PR.
+      - name: Detect stranded auto-merge pull requests
+        if: always()
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >-
+          python3 13_Faculty_Resources/_automation/maintenance/stranded_prs.py
+          --out "$RUNNER_TEMP/stranded-prs.json"
+
+      # The matched pair: stranded_prs catches "a PR silently will not land",
+      # this catches "a governance change silently did not land". Neither was
+      # visible to any gate before 2026-09-04, and that incident was both.
+      - name: Detect branch ruleset drift
+        if: always()
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 bin/check_ruleset_drift.py
+
       - name: Upload workflow heartbeat
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: maintenance-workflow-heartbeat-${{ github.run_id }}
           path: ${{ runner.temp }}/workflow-heartbeat.json
+          if-no-files-found: warn
+          retention-days: 90
+
+      - name: Upload stranded pull request receipt
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: maintenance-stranded-prs-${{ github.run_id }}
+          path: ${{ runner.temp }}/stranded-prs.json
           if-no-files-found: warn
           retention-days: 90

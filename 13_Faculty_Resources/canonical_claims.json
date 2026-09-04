@@ -90,7 +90,7 @@
     },
     "antipsychotics-in-suspected-catatonia": {
       "topic": "Antipsychotics before catatonia is excluded \u2014 precipitating malignant catatonia / NMS",
-      "whyCanonical": "Five hand-authored loci: topic_meta 'cant' for agitation.md and catatonia.md, the skill exemplar that seeds future topics, and the sga/d2_typical/combo hazards in both packs. toxidromes.md is excluded \u2014 a management claim, not this prevention one. RSAF F001/F002/F004 proved these copies drift.",
+      "whyCanonical": "Nineteen scoped loci in four files, plus the skill exemplar that seeds future topics. RSAF F001/F002/F004 proved these copies drift; the first attestation reached eight of them and #507 found eleven more, including the question bank keyed answer.",
       "status": "reviewed",
       "risk": {
         "kind": "clinical",
@@ -101,15 +101,25 @@
       "appliesTo": [
         {
           "path": "topic_meta.json",
-          "contentHashAtReview": "b483c1a80d118ad2bf48a63f0bdeb8bb8ec76f47b43d5d5320241d496ba6e7f9",
-          "note": "Two 'cant' fields assert this. A third, toxidromes.md, is a management claim and is excluded on purpose -- see this claim's reason.",
+          "contentHashAtReview": "44c565a41ac538387cecf9d8274efae8f088e5a6e5baca3cbd6a3202790f96c4",
+          "note": "Two 'cant' fields were the original attestation; five more added 2026-09-04 from #507. toxidromes.md 'cant' stays excluded: it governs a patient already in NMS or malignant catatonia -- the management claim, not this prevention one.",
           "locus": [
             "agitation.md 'cant'",
-            "catatonia.md 'cant'"
+            "catatonia.md 'cant'",
+            "catatonia.md tldr",
+            "catatonia.md workflow.exam",
+            "catatonia.md workflow.safety",
+            "catatonia.md quiz.why",
+            "cl_reference.md points[1]"
           ],
           "scope": [
             "/agitation.md/cant",
-            "/catatonia.md/cant"
+            "/catatonia.md/cant",
+            "/catatonia.md/tldr",
+            "/catatonia.md/clinicalWorkflow/exam",
+            "/catatonia.md/clinicalWorkflow/safety",
+            "/catatonia.md/quiz/why",
+            "/cl_reference.md/points/1"
           ]
         },
         {
@@ -120,31 +130,52 @@
         {
           "path": "_prototypes/agitation-trainer/agitation.pack.json",
           "contentHashAtReview": "c5a48d5496dadacb32a0406f2f7d65977a9b2fa73d807206ae1773c2d32089bc",
-          "note": "MS3 twin of the agitation trainer; carries the antipsychotic hazard for the catatonia scenario.",
+          "note": "MS3 twin; carries the antipsychotic hazard for the catatonia scenario. Scenario 5's first teaching point states the same claim in prose, added 2026-09-04 -- hazard strings and teaching point can drift apart inside one file.",
           "locus": [
             "sga hazardIf.catatonia",
             "d2_typical hazardIf.catatonia",
-            "combo hazardIf.catatonia"
+            "combo hazardIf.catatonia",
+            "scenario 5 teachingPoint 0"
           ],
           "scope": [
             "/choiceBanks/pharmApproach/0/hazardIf/catatonia",
             "/choiceBanks/pharmApproach/1/hazardIf/catatonia",
-            "/choiceBanks/pharmApproach/3/hazardIf/catatonia"
+            "/choiceBanks/pharmApproach/3/hazardIf/catatonia",
+            "/content/scenarios/5/teachingPoints/0/text"
           ]
         },
         {
           "path": "_prototypes/agitation-trainer/rp-agitation.pack.json",
           "contentHashAtReview": "6f08caf5d4df0248be10156394609559c85ef020fe1adf2a787485e43d72b54e",
-          "note": "Resident twin. #483 found the two twins had drifted apart on exactly this hazard.",
+          "note": "Resident twin. #483 found the two twins had drifted apart on exactly this hazard. Scenario 5 teachingPoint 0 added 2026-09-04; it is word-for-word identical to the MS3 twin's, which is the pair #483 already caught drifting once.",
           "locus": [
             "sga hazardIf.catatonia",
             "d2_typical hazardIf.catatonia",
-            "combo hazardIf.catatonia"
+            "combo hazardIf.catatonia",
+            "scenario 5 teachingPoint 0"
           ],
           "scope": [
             "/choiceBanks/pharmApproach/0/hazardIf/catatonia",
             "/choiceBanks/pharmApproach/1/hazardIf/catatonia",
-            "/choiceBanks/pharmApproach/3/hazardIf/catatonia"
+            "/choiceBanks/pharmApproach/3/hazardIf/catatonia",
+            "/content/scenarios/5/teachingPoints/0/text"
+          ]
+        },
+        {
+          "path": "question_bank.json",
+          "contentHashAtReview": "1aee5ccd6b05a68a7d3337e17e1d1ebe3fd7dc316d01fa35196215cc9380a6ba",
+          "note": "Added 2026-09-04. Four assertions across two items; qb_cog_002's keyed answer is one, and the Modini case's worst copy was a quiz answer. Item 34's other options and all of item 35 are adjacent claims, left for their own slots.",
+          "locus": [
+            "qb_cog_002 pearl",
+            "qb_cog_002 keyed answer",
+            "qb_cog_002 trap[1]",
+            "qb_cog_013 trap[2]"
+          ],
+          "scope": [
+            "/items/10/pearl",
+            "/items/10/options/0/t",
+            "/items/10/options/1/trap/note",
+            "/items/34/options/2/trap/note"
           ]
         }
       ],
@@ -301,7 +332,7 @@
       "appliesTo": [
         {
           "path": "topic_meta.json",
-          "contentHashAtReview": "b483c1a80d118ad2bf48a63f0bdeb8bb8ec76f47b43d5d5320241d496ba6e7f9",
+          "contentHashAtReview": "44c565a41ac538387cecf9d8274efae8f088e5a6e5baca3cbd6a3202790f96c4",
           "note": "delirium.md states the cause-first move five times in five fields. ddx.md quiz.why is a judgement call -- mostly recognition, but it carries the workup clause. delirium.md tldr and ddx quiz.answer are out: recognition, not workup.",
           "locus": [
             "delirium.md firstMove",
@@ -322,7 +353,7 @@
         },
         {
           "path": "question_bank.json",
-          "contentHashAtReview": "667fed8ad6a837a9b2ea8a30f7cdb745282d5066f607a445cb2809e327256093",
+          "contentHashAtReview": "1aee5ccd6b05a68a7d3337e17e1d1ebe3fd7dc316d01fa35196215cc9380a6ba",
           "note": "Two keyed answers and one 'why'. qb_cog_008 and qb_cog_004 mention causes but assert hypoactive-delirium outcomes and the benzodiazepine hazard, and are left for those slots.",
           "locus": [
             "qb_cog_001 answer",
