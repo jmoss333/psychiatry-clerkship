@@ -101,7 +101,7 @@
       "appliesTo": [
         {
           "path": "topic_meta.json",
-          "contentHashAtReview": "aaad0126430ae1ef65ceb6a0fc5537e17e4598db653f403e1974895b2934d546",
+          "contentHashAtReview": "44c565a41ac538387cecf9d8274efae8f088e5a6e5baca3cbd6a3202790f96c4",
           "note": "Two 'cant' fields were the original attestation; five more added 2026-09-04 from #507. toxidromes.md 'cant' stays excluded: it governs a patient already in NMS or malignant catatonia -- the management claim, not this prevention one.",
           "locus": [
             "agitation.md 'cant'",
@@ -163,7 +163,7 @@
         },
         {
           "path": "question_bank.json",
-          "contentHashAtReview": "667fed8ad6a837a9b2ea8a30f7cdb745282d5066f607a445cb2809e327256093",
+          "contentHashAtReview": "1aee5ccd6b05a68a7d3337e17e1d1ebe3fd7dc316d01fa35196215cc9380a6ba",
           "note": "Added 2026-09-04. Four assertions across two items; qb_cog_002's keyed answer is one, and the Modini case's worst copy was a quiz answer. Item 34's other options and all of item 35 are adjacent claims, left for their own slots.",
           "locus": [
             "qb_cog_002 pearl",
