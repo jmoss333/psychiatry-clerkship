@@ -431,11 +431,19 @@ _qb_items=json.load(open(LIB+"/question_bank.json",encoding="utf-8")).get("items
 _retired_ids=sorted(i["id"] for i in _qb_items if i.get("retired"))
 _draft_ids=sorted(i["id"] for i in _qb_items
                   if not i.get("retired") and i.get("status")!="attested")
+# Communication-case titles for the practice panel's spoken drills. The shell used to carry a
+# hand-written id->title map that had already fallen two cases behind communication_cases.json,
+# so three pages rendered an unnamed "What Do You Say Next?" tile beside named ones. Injecting
+# the registry's own titles is the same verified-needle mechanism as the QB ids above, and the
+# resident build inherits it (it rebrands this MS3-built index.html).
+_cc=json.load(open(LIB+"/communication_cases.json",encoding="utf-8"))
+_case_titles={c["id"]:c["title"] for c in _cc.get("cases",[]) if c.get("id") and c.get("title")}
 _spa_out=OUT+"/index.html"
 _spa_t=open(_spa_out,encoding="utf-8").read()
 for _needle,_ids,_label in ((
         "var RETIRED_QB_IDS=[];",_retired_ids,"RETIRED_QB_IDS"),(
-        "var DRAFT_QB_IDS=[];",_draft_ids,"DRAFT_QB_IDS")):
+        "var DRAFT_QB_IDS=[];",_draft_ids,"DRAFT_QB_IDS"),(
+        "var PRACTICE_CASE_TITLES={};",_case_titles,"PRACTICE_CASE_TITLES")):
     if _spa_t.count(_needle)!=1:
         print("BUILD ABORTED — %s needle missing or duplicated in spa_index.html"%_label)
         raise SystemExit(1)
@@ -443,6 +451,28 @@ for _needle,_ids,_label in ((
 open(_spa_out,"w",encoding="utf-8").write(_spa_t)
 print("retired-qb injection:",len(_retired_ids),"id(s)")
 print("draft-qb injection:",len(_draft_ids),"id(s)")
+print("practice-case-title injection:",len(_case_titles),"case(s)")
+
+# ---- page->tool link divergence (report only; never fails the build) ----
+# The practice panel reconciles two sources that disagree in OPPOSITE directions:
+# tool_registry.relatedPages is the curated catalog view and under-links, while
+# topic_meta.relatedTools over-links. The panel shows the union with the declared links
+# leading, so neither is lost -- but the divergence is a curation signal, and it is invisible
+# unless something prints it. Report it here so a growing gap is noticed rather than absorbed.
+_tm_all=json.load(open(OUT+"/topic_meta.json",encoding="utf-8"))
+_reg_pages={}
+for _t in json.load(open(LIB+"/tool_registry.json",encoding="utf-8")).get("tools",[]):
+    for _pg in _t.get("relatedPages",[]):
+        _reg_pages.setdefault(_pg,set()).add(_t["file"])
+_undeclared=_added=0
+for _pg,_meta in sorted(_tm_all.items()):
+    if not isinstance(_meta,dict): continue
+    _declared=_reg_pages.get(_pg,set())
+    _authored=set(_meta.get("relatedTools") or [])
+    _added+=len(_declared-_authored)
+    _undeclared+=len(_authored-_declared)
+print("page->tool reconciliation: %d registry link(s) the pages did not list, "
+      "%d authored link(s) the registry does not declare"%(_added,_undeclared))
 print("tools:",len(tools)," md copied:",len(md)-len(missing)," missing:",missing)
 
 # ---------- POLISH + A11Y + DARK-MODE PASS (shared with the resident build) ----------

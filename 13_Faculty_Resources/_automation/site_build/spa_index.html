@@ -709,15 +709,15 @@
   function ctaHref(h){ h=h||''; var mt=h.match(/^tools\/([^\/?#]+\.html)$/); return mt?('?tool='+mt[1]):h; }
   function ctaAttrs(h){ return /^\?(page|tool)=/.test(h)?'':' target="_blank" rel="noopener"'; }
   var WF_STAGE_LABELS={encounter:'Encounter',diagnosis:'Diagnosis',safety:'Safety',treatment:'Treatment',communication:'Communication',family:'Family',team:'Team',exam:'Exam'};
-  var WF_FIELDS=[['ask','What to ask'],['mse','MSE focus'],['safety','Safety'],['say','What to say'],['collateral','Family/collateral'],['rounds','Rounds'],['exam','Shelf/COMAT']];
-  function buildWorkflow(m){
+  var WF_FIELDS=[['ask','What to ask'],['mse','MSE focus'],['safety','Safety'],['say','What to say'],['collateral','Family/collateral'],['rounds','Rounds'],['exam','Exam focus']];
+  function buildWorkflow(m,seen){
     var cw=m&&m.clinicalWorkflow, stages=(m&&Array.isArray(m.workflowStages))?m.workflowStages:[], has=false, h='';
     if(cw){ for(var i=0;i<WF_FIELDS.length;i++){ if(cw[WF_FIELDS[i][0]])has=true; } if(Array.isArray(cw.actions)&&cw.actions.length)has=true; }
     if(!has&&!stages.length)return '';
     h+='<div class="workflow-card"><div class="workflow-head"><div class="workflow-title">On the unit</div>';
     if(stages.length){ h+='<div class="workflow-stage" aria-label="Clinical workflow stages">'; for(var s=0;s<stages.length;s++){ h+='<span>'+esc(WF_STAGE_LABELS[stages[s]]||stages[s])+'</span>'; } h+='</div>'; }
     h+='</div>';
-    if(cw){ h+='<div class="workflow-grid">'; for(var j=0;j<WF_FIELDS.length;j++){ var key=WF_FIELDS[j][0], val=cw[key]; if(val){ h+='<div class="workflow-step"><div class="k">'+esc(WF_FIELDS[j][1])+'</div><div class="v">'+esc(val)+'</div></div>'; } } h+='</div>'; if(Array.isArray(cw.actions)&&cw.actions.length){ h+='<div class="workflow-actions">'; for(var a=0;a<cw.actions.length;a++){ var act=cw.actions[a]||{}, href=ctaHref(act.href||''); if(href){ h+='<a href="'+esc(href)+'"'+ctaAttrs(href)+'>'+esc(act.label||'Open')+'</a>'; } } h+='</div>'; } }
+    if(cw){ h+='<div class="workflow-grid">'; for(var j=0;j<WF_FIELDS.length;j++){ var key=WF_FIELDS[j][0], val=cw[key]; if(val){ h+='<div class="workflow-step"><div class="k">'+esc(WF_FIELDS[j][1])+'</div><div class="v">'+esc(val)+'</div></div>'; } } h+='</div>'; if(Array.isArray(cw.actions)&&cw.actions.length){ var wrow=[]; for(var a=0;a<cw.actions.length;a++){ var act=cw.actions[a]||{}, href=ctaHref(act.href||''); if(!href)continue; var wkey=actionToolKey(href); /* A retired or restricted instrument is never a workflow action. buildPracticeTools routes the same target to the "Official forms" block, so nothing is lost by dropping it here. */ if(practiceIsRights(wkey))continue; /* The promoted "Do this next" action is not repeated inside the workflow card. */ if(seen&&seen[href.replace(/#.*$/,'')])continue; wrow.push('<a href="'+esc(href)+'"'+ctaAttrs(href)+'>'+esc(practiceActionLabel(wkey,act.label))+'</a>'); } if(wrow.length)h+='<div class="workflow-actions">'+wrow.join('')+'</div>'; } }
     h+='</div>'; return h;
   }
   function toolExtraFromParams(sp){ var out=''; try{ sp.forEach(function(v,k){ if(k!=='tool'&&k!=='page') out+='&'+encodeURIComponent(k)+'='+encodeURIComponent(v); }); }catch(_){} return out; }
@@ -911,13 +911,63 @@
     if(!target.searchParams.has('page')&&!target.searchParams.has('tool'))return;
     ev.preventDefault(); ev.stopPropagation(); showFacultyPreviewLockNotice();
   }
-  var PRACTICE_LABELS={'mse.html':'Mental Status Exam','interview-circle.html':'Interview Circle','communication-practice.html':'What Do You Say Next?','diagnostic-reasoning.html':'Diagnostic Reasoning Workbench','family-systems.html':'Family Systems Practice','cssrs.html':'C-SSRS Suicide Screen','withdrawal.html':'CIWA-Ar / COWS','bfcrs.html':'Bush-Francis Catatonia','violence.html':'Violence Risk (FRST)','capacity.html':'Decisional Capacity','screeners.html':'PHQ-9 / GAD-7','oral.html':'Rounding Prep + Timer','decision-aids.html':'Algorithms & Decision Aids','shelf-mode.html':'Shelf Mode Exam Sim','review.html':'Daily Review','reflection.html':'Reflection & Identity','question-bank-practice.html':'Practice Questions','sp-interview.html':'The Interview Room — AI Patient','one-patient-six-weeks.html':'One Patient, Six Weeks'};
-  var PRACTICE_SAFE={'cssrs.html':1,'violence.html':1,'withdrawal.html':1,'bfcrs.html':1,'capacity.html':1,'decision-aids.html':1};
-  var PRACTICE_PAGE_TOOLS={ 't_sud.md':['withdrawal.html','cssrs.html'], 'pg_interview.md':['sp-interview.html','mse.html'], 'pg_suicide.md':['cssrs.html','violence.html','decision-aids.html','sp-interview.html'], 'catatonia.md':['bfcrs.html'], 'agitation.md':['violence.html','decision-aids.html'], 'exp_consult.md':['capacity.html','decision-aids.html'], 'cl_reference.md':['decision-aids.html'], 't_mood.md':['screeners.html'], 't_anxiety.md':['screeners.html'], 't_psychosis.md':['decision-aids.html','sp-interview.html'], 't_perinatal.md':['cssrs.html'], 't_personality.md':['cssrs.html','reflection.html'], 'brief_psychotherapy.md':['mse.html','decision-aids.html'], 'doc_oral.md':['oral.html'], 'landmark_trials.md':['shelf-mode.html','review.html'], 'evidence_inpatient.md':['review.html'], 'shelf.md':['question-bank-practice.html','shelf-mode.html'], 'reading_map.md':['review.html'], 'collateral_workflow.md':['one-patient-six-weeks.html','family-systems.html'] };
-  var PRACTICE_CASE_LABELS={suicide_direct_question_001:'Ask About Suicide Directly',psychosis_validation_001:'Validate Psychosis Without Colluding',guardedness_privacy_001:'Respond to Guardedness',rupture_limit_setting_001:'Repair After a Limit',bpd_rupture_repair_001:'Repair a BPD Rupture',medication_ambivalence_001:'Medication Ambivalence',mania_limit_sleep_001:'Offer a Sleep-Restoring Plan in Mania',family_meeting_opening_001:'Open a Family Meeting',collateral_questions_001:'Ask Better Collateral Questions',family_conflict_discharge_001:'De-escalate Family Conflict Around Discharge'};
-  function practiceToolLabel(k){ return PRACTICE_LABELS[k]||String(k||'').replace(/\.html$/,'').replace(/[-_]+/g,' '); }
-  function practiceIsSafe(k){ return !!PRACTICE_SAFE[k]; }
-  function practiceCaseLabel(id){ return PRACTICE_CASE_LABELS[id]||'What Do You Say Next?'; }
+  /* ---- practice panel ---- */
+  /* Tool titles come from FD_INDEX (site_manifest via fd_data.js), never from a second hand map:
+     the retired hand map still said "C-SSRS Suicide Screen" and "CIWA-Ar / COWS" long after
+     instrument_rights.json retired both instruments, so the panel promised a screener the
+     governance decision had already removed. No cache -- FD_INDEX is reassigned on a rotation
+     edition swap, and a memoised title would outlive the swap. */
+  function practiceItem(ref){
+    var cols=(typeof FD_INDEX!=='undefined'&&FD_INDEX&&FD_INDEX.columns)||[];
+    for(var c=0;c<cols.length;c++){ var items=cols[c].items||[]; for(var i=0;i<items.length;i++){ var it=items[i]; if(it&&it.ref===ref)return it; } }
+    return null;
+  }
+  /* Page->tool links come from BOTH registries, reconciled rather than unioned. The registry's
+     relatedPages is the curated catalog view and it UNDER-linked: 15 declared links reached no
+     panel at all (one-patient-six-weeks on 11 pages, interaction-cards on 3). topic_meta's
+     relatedTools OVER-linked in the other direction (cssrs on 14 pages against a declared 2).
+     So declared links lead and an author's extra link follows, and neither is dropped --
+     dropping one would silently delete a deliberate cross-link. */
+  function practiceRegistryTools(file){
+    var out=[], list=(typeof FD_TOOL_REGISTRY!=='undefined'&&FD_TOOL_REGISTRY&&FD_TOOL_REGISTRY.tools)||[];
+    for(var i=0;i<list.length;i++){
+      var t=list[i], pages=(t&&t.relatedPages)||[];
+      for(var j=0;j<pages.length;j++){ if(pages[j]===file){ out.push(t.file); break; } }
+    }
+    return out;
+  }
+  /* Case titles are injected from communication_cases.json at build time (build_deploy.py,
+     verified needle). The hand map they replace had already fallen two cases behind, so
+     three pages rendered an unnamed drill tile beside named ones. */
+  var PRACTICE_CASE_TITLES={};
+  /* One source, and it is already audience-correct: the resident build rewrites the manifest
+     title per site (shelf-mode.html is "Shelf Mode -- Exam Simulation" on one and "Board-Style
+     Question Bank" on the other), so reading FD_INDEX gives each site its own name for a tool
+     without the panel forking any copy of its own. */
+  function practiceToolLabel(k){
+    var it=practiceItem(k);
+    return (it&&it.title)||String(k||'').replace(/\.html$/,'').replace(/[-_]+/g,' ');
+  }
+  /* A rights reference is a page that exists to say an instrument is NOT reproduced --
+     instrument_rights.json -> curriculum.rightsReferences -> fd_data.js's `rights` flag,
+     kept in step by validate_curriculum.py, whose own words are "a rights reference replaces
+     a tool". fd_data.js drops the tool chip and kicker for these everywhere else in the shell;
+     this panel is the surface that used to ignore that and offer them as instruments. */
+  function practiceIsRights(k){ var it=practiceItem(k); return !!(it&&it.rights===true); }
+  /* One place decides what a rights reference is called, because THREE renderers link tools:
+     this panel's tool list, its cta/workflow-action list, and buildWorkflow's own actions row.
+     All three printed the author's label, and 15 of those labels are imperatives -- "Open the
+     C-SSRS screener", "Open the BFCRS scale" -- telling a learner to open a screener that
+     instrument_rights.json retired. For a rights reference the registry title wins over the
+     author's label; for every other tool the author's label still wins, as before. */
+  function practiceActionLabel(k,authorLabel){
+    if(practiceIsRights(k))return practiceToolLabel(k);
+    return authorLabel||practiceToolLabel(k)||'Open';
+  }
+  /* tool_registry.riskLevel, not a hand list: the two agreed today, and this way they cannot
+     drift apart tomorrow. Rights references never reach this -- they are not actions. */
+  function practiceIsSafe(k){ var it=practiceItem(k); return !!(it&&it.risk==='high'); }
+  function practiceCaseLabel(id){ return PRACTICE_CASE_TITLES[id]||'What Do You Say Next?'; }
   function hasPracticeTpl(m){
     return !!(m&&(m.tldr||(Array.isArray(m.points)&&m.points.length)||m.clinicalWorkflow||(Array.isArray(m.workflowStages)&&m.workflowStages.length)||m.cant||(Array.isArray(m.ruleOut)&&m.ruleOut.length)||m.quiz||m.cta||(Array.isArray(m.relatedTools)&&m.relatedTools.length)||(Array.isArray(m.communicationCases)&&m.communicationCases.length)));
   }
@@ -936,75 +986,188 @@
     out.push('<a class="practice-action'+(cls?(' '+cls):'')+'" href="'+esc(href)+'"'+ctaAttrs(href)+'>'+body+'</a>');
   }
   function isCommunicationCaseHref(h){ h=String(h||''); return /[?&]tool=communication-practice\.html/.test(h)&&/[?&]case=/.test(h); }
-  var PRACTICE_MODE_LABELS={ward:'Ward',shelf:'Shelf',family:'Family',safety:'Safety','5min':'5 min'};
-  function practiceModeCfg(mode){ return {label:PRACTICE_MODE_LABELS[mode]||'Ward',tools:[],stages:[]}; }
-  function practiceModeText(m,mode){
-    var cw=(m&&m.clinicalWorkflow)||{}, cfg=practiceModeCfg(mode), val='';
-    if(mode==='safety')val=cw.safety||m.cant||cw.ask||'Use this page to clarify risk, escalation, and supervision before acting.';
-    else if(mode==='family')val=cw.collateral||cw.say||'Use this page to prepare collateral, family communication, boundaries, and discharge reality.';
-    else if(mode==='shelf')val=cw.exam||cw.rounds||'Use this page to convert the clinical topic into exam-ready distinctions and active recall.';
-    else if(mode==='5min')val=cw.say||cw.ask||m.tldr||'Use this page for one concrete question, phrase, or review item before the next task.';
-    else val=cw.rounds||cw.ask||'Use this page to prepare for the next encounter, rounds update, or treatment decision.';
-    return cfg.label+' mode: '+val;
+  /* Deliberately NOT an action: no arrow, and never the is-safety treatment that marks a tool
+     you act with at the bedside. `is-reference` carries no styles of its own -- it is a hook for
+     the test and for WP-E's grouping; the visible difference is the missing arrow plus the
+     registry title, which already says "Official Form & Training". */
+  function addPracticeReference(out,seen,label,href){
+    if(!href)return;
+    var key=href.replace(/#.*$/,'');
+    if(seen[key])return;
+    seen[key]=1;
+    out.push('<a class="practice-action is-reference" href="'+esc(href)+'"'+ctaAttrs(href)+'>'+esc(label||'Open')+'</a>');
   }
-  function sortPracticeTools(keys,mode){
-    var cfg=practiceModeCfg(mode), pri=(cfg&&cfg.tools)||[];
-    return (keys||[]).slice().sort(function(a,b){ var ai=pri.indexOf(a),bi=pri.indexOf(b); if(ai<0)ai=99;if(bi<0)bi=99; return ai-bi; });
+  /* WP-D. The panel had a mode system that did not exist: `mode` was hardcoded 'ward',
+     practiceModeCfg returned empty priorities so sortPracticeTools was a no-op sort,
+     window.__casePriority was assigned nowhere so sortPracticeCases was too, and the
+     .tpl-chip.mode chips rendered like a segmented control with no handler behind them.
+     All of it is gone. What replaces it is one ranked action, which is what a learner with
+     four minutes before rounds actually needs. */
+
+  /* The old "Why today" line printed clinicalWorkflow.rounds, which buildWorkflow re-renders
+     verbatim as the grid's Rounds row -- the same sentence twice on 67 pages. Every other
+     topic_meta text field is rendered somewhere in this panel too, so no field can be copied
+     up here without repeating itself. The can't-miss is the exception worth promoting: it is
+     the highest-value sentence on a safety page and it is self-contained, so it moves to the
+     top and its callout below is suppressed. Pages without one get no line at all, which is
+     better than the generic sentence 7 pages used to print. */
+  function practiceReason(m){ return (m&&m.cant)?String(m.cant):''; }
+
+  /* Impure edges, kept thin and guarded so practicePrimary itself stays a pure function of
+     its arguments and the tests can drive it without a clock or a browser. Neither adds a
+     storage key: phasePolicy reads cw_shelf_date, drills read cw_srs_v1's COMM# cards. */
+  function practicePhaseName(){
+    try{ if(typeof phasePolicy==='function'){ var ph=phasePolicy(); return (ph&&ph.phase)||'unset'; } }catch(_){ }
+    return 'unset';
   }
-  function sortPracticeCases(ids,mode){
-    var pri=(window.__casePriority&&window.__casePriority[mode])?window.__casePriority[mode]:[];
-    return (ids||[]).slice().sort(function(a,b){ var ai=pri.indexOf(a),bi=pri.indexOf(b); if(ai<0)ai=99;if(bi<0)bi=99; return ai-bi; });
+  function practiceDrillDone(id){
+    try{ var st=srsState(), c=st&&st.cards&&st.cards['COMM#'+id]; return !!(c&&c.reps>0); }catch(_){ return false; }
   }
-  function buildPracticeTools(m,file,mode){
-    var out=[], drills=[], seen={}, rt=[];
+
+  /* Every tool this page links, in the reconciled order WP-A established. The primary action
+     is chosen from THIS list and never outside it, so promoting one cannot introduce a link
+     the page did not already have. */
+  function practiceLinkedTools(m,file){
+    var rt=[], seen={};
+    function add(k){ if(k&&!seen[k]){ seen[k]=1; rt.push(k); } }
+    practiceRegistryTools(file).forEach(add);
+    if(m&&Array.isArray(m.relatedTools))m.relatedTools.forEach(add);
+    var cta=(m&&m.cta)?(Array.isArray(m.cta)?m.cta:[m.cta]):[];
+    var cw=(m&&m.clinicalWorkflow)||{}, acts=Array.isArray(cw.actions)?cw.actions:[];
+    var all=cta.concat(acts);
+    for(var i=0;i<all.length;i++){ var e=all[i]; add(actionToolKey(ctaHref((e&&e.href)||''))); }
+    return rt;
+  }
+
+  /* One action, ranked. Pure: `phase` and `drillDone` are passed in.
+     1 retrieval, but only when the exam is close AND the page already offers it
+     2 safety work, on a page that IS safety work
+     3 a spoken drill they have not done yet
+     4 the page's own first live tool (declared links lead, per WP-A)
+     A rights reference is never eligible -- it is a reference, not an action. */
+  function practicePrimary(m,file,phase,drillDone){
+    var linked=practiceLinkedTools(m,file), i, k;
+    function act(key,cls){ return {label:practiceToolLabel(key),href:'?tool='+encodeURIComponent(key),cls:cls||''}; }
+    if(phase==='taper'||phase==='consolidate'){
+      for(i=0;i<linked.length;i++){ k=linked[i]; if(k==='review.html'||k==='question-bank-practice.html')return act(k,'is-review'); }
+    }
+    if(m&&m.safetyLevel==='high'){
+      for(i=0;i<linked.length;i++){ k=linked[i]; if(!practiceIsRights(k)&&practiceIsSafe(k))return act(k,'is-safety'); }
+    }
+    var cases=(m&&Array.isArray(m.communicationCases))?m.communicationCases:[];
+    for(i=0;i<cases.length;i++){
+      if(!drillDone(cases[i]))return {label:practiceCaseLabel(cases[i]),
+        href:'?tool=communication-practice.html&case='+encodeURIComponent(cases[i]),cls:'is-drill'};
+    }
+    for(i=0;i<linked.length;i++){ k=linked[i]; if(!practiceIsRights(k))return act(k,practiceIsSafe(k)?'is-safety':''); }
+    return null;
+  }
+  /* `seen` is passed in so the promoted primary action is not repeated down here, and
+     `hasPrimary` stops the empty-state fallback firing on a page whose only action was
+     promoted. */
+  function buildPracticeTools(m,file,seen,hasPrimary){
+    /* `assess` is the one grouping the data actually supports: tool_registry.riskLevel==='high'
+       on a tool that is not a rights reference. See the WP-E note below on why the plan's
+       four-way Assess/Rehearse/Reference/Review split is not derivable today. */
+    var out=[], assess=[], drills=[], refs=[], rt=[];
+    seen=seen||{};
     function addTool(k){ if(k&&rt.indexOf(k)<0)rt.push(k); }
-    ((typeof PAGE_TOOLS!=='undefined'&&PAGE_TOOLS[file])||PRACTICE_PAGE_TOOLS[file]||[]).forEach(addTool);
+    practiceRegistryTools(file).forEach(addTool);
     if(m&&Array.isArray(m.relatedTools))m.relatedTools.forEach(addTool);
-    rt=sortPracticeTools(rt,mode);
-    for(var i=0;i<rt.length;i++){ var k=rt[i]; if(k==='communication-practice.html'&&m&&Array.isArray(m.communicationCases)&&m.communicationCases.length)continue; addPracticeAction(out,seen,practiceToolLabel(k),'?tool='+encodeURIComponent(k),practiceIsSafe(k)?'is-safety':''); }
+    for(var i=0;i<rt.length;i++){
+      var k=rt[i];
+      if(k==='communication-practice.html'&&m&&Array.isArray(m.communicationCases)&&m.communicationCases.length)continue;
+      if(practiceIsRights(k)){ addPracticeReference(refs,seen,practiceToolLabel(k),'?tool='+encodeURIComponent(k)); continue; }
+      addPracticeAction(practiceIsSafe(k)?assess:out,seen,practiceToolLabel(k),'?tool='+encodeURIComponent(k),practiceIsSafe(k)?'is-safety':'');
+    }
     if(m&&Array.isArray(m.communicationCases)){
-      var caseIds=sortPracticeCases(m.communicationCases,mode);
+      var caseIds=m.communicationCases;
       for(var c=0;c<caseIds.length;c++){ var id=caseIds[c]; addPracticeAction(drills,seen,practiceCaseLabel(id),'?tool=communication-practice.html&case='+encodeURIComponent(id),'is-drill'); }
     }
     if(m&&m.cta){
       var cx=Array.isArray(m.cta)?m.cta:[m.cta];
-      for(var ci=0;ci<cx.length;ci++){ var ca=cx[ci], ch=ca&&ca.href?ctaHref(ca.href):''; var tk=actionToolKey(ch), bucket=isCommunicationCaseHref(ch)?drills:out; addPracticeAction(bucket,seen,ca&&(ca.label||practiceToolLabel(tk)||'Open tool'),ch,isCommunicationCaseHref(ch)?'is-drill':(practiceIsSafe(tk)?'is-safety':'')); }
+      for(var ci=0;ci<cx.length;ci++){
+        var ca=cx[ci], ch=ca&&ca.href?ctaHref(ca.href):'', tk=actionToolKey(ch);
+        if(practiceIsRights(tk)){ addPracticeReference(refs,seen,practiceToolLabel(tk),ch); continue; }
+        var bucket=isCommunicationCaseHref(ch)?drills:(practiceIsSafe(tk)?assess:out);
+        addPracticeAction(bucket,seen,practiceActionLabel(tk,ca&&ca.label)||'Open tool',ch,isCommunicationCaseHref(ch)?'is-drill':(practiceIsSafe(tk)?'is-safety':''));
+      }
     }
     var cw=m&&m.clinicalWorkflow;
     if(cw&&Array.isArray(cw.actions)){
-      for(var a=0;a<cw.actions.length;a++){ var ac=cw.actions[a]||{}, ah=ctaHref(ac.href||''), ak=actionToolKey(ah), ab=isCommunicationCaseHref(ah)?drills:out; addPracticeAction(ab,seen,ac.label||practiceToolLabel(ak)||'Open',ah,isCommunicationCaseHref(ah)?'is-drill':(practiceIsSafe(ak)?'is-safety':'')); }
+      for(var a=0;a<cw.actions.length;a++){
+        var ac=cw.actions[a]||{}, ah=ctaHref(ac.href||''), ak=actionToolKey(ah);
+        if(practiceIsRights(ak)){ addPracticeReference(refs,seen,practiceToolLabel(ak),ah); continue; }
+        var ab=isCommunicationCaseHref(ah)?drills:(practiceIsSafe(ak)?assess:out);
+        addPracticeAction(ab,seen,practiceActionLabel(ak,ac.label),ah,isCommunicationCaseHref(ah)?'is-drill':(practiceIsSafe(ak)?'is-safety':''));
+      }
     }
-    if(!out.length&&!drills.length){
+    if(!out.length&&!assess.length&&!drills.length&&!refs.length&&!hasPrimary){
       addPracticeAction(out,seen,'Practice Questions','?tool=question-bank-practice.html','is-review');
       addPracticeAction(out,seen,'Daily Review','?tool=review.html','is-review');
     }
+    /* WP-E. The plan called for grouping into Assess / Rehearse / Reference / Review from
+       tool_registry.category. That is not derivable: `category` is a CONTENT-DOMAIN taxonomy
+       (acute-safety, psychopharmacology, family-systems), not a use-mode one, and its
+       `clinical-skills` bucket holds both screeners.html (assessment) and
+       communication-practice.html (rehearsal) -- one category spanning two intended groups.
+       On top of that, 10 of 22 shipped tools have no registry entry at all, and adding one
+       requires riskLevel and disclaimerType, which the schema makes mandatory and which are
+       governance judgements, not an agent's. So the grouping here is only what the data
+       supports honestly: high-risk bedside tools, spoken drills, and official forms each get a
+       labelled block, and the remainder is capped behind a disclosure. Naming the rest would
+       need a use-mode taxonomy that does not exist yet.
+
+       Visible budget is 5 ACTIONS: the promoted primary plus the assess row plus as many
+       remaining tools as fit. Drills and references sit outside it by design -- they are
+       separately labelled blocks, not competing calls to action. */
+    var VISIBLE_ACTIONS=5;
+    var budget=VISIBLE_ACTIONS-(hasPrimary?1:0)-assess.length;
+    if(budget<0)budget=0;
+    var shown=out.slice(0,budget), more=out.slice(budget);
     var html='';
     if(drills.length)html+='<div class="practice-drills"><div class="practice-drill-head">Spoken drills</div><p class="practice-drill-note">Say your first line out loud, then compare it with concrete feedback.</p><div class="practice-actions practice-drill-actions">'+drills.join('')+'</div></div>';
-    if(out.length)html+='<div class="practice-actions">'+out.join('')+'</div>';
+    if(assess.length)html+='<div class="practice-section-title">Assess at the bedside</div><div class="practice-actions">'+assess.join('')+'</div>';
+    if(shown.length)html+='<div class="practice-actions">'+shown.join('')+'</div>';
+    /* A nested <details>. The panel's own summary rules use a child combinator
+       (.practice-panel>summary), so this one keeps the browser's default disclosure marker,
+       and .practice-section-title gives it the panel's heading treatment -- a real disclosure
+       with no new CSS, per D-1. `practice-more` is an unstyled hook for the test. */
+    if(more.length)html+='<details class="practice-more"><summary class="practice-section-title">More for this page ('+more.length+')</summary><div class="practice-actions">'+more.join('')+'</div></details>';
+    /* References last: they are what to read before acting, not what to act with. */
+    if(refs.length)html+='<div class="practice-section-title">Official forms</div><div class="practice-actions">'+refs.join('')+'</div><p class="practice-muted">Official form and training \u2014 the instrument itself is not reproduced here.</p>';
     return html;
   }
   function buildTpl(m,file){
     if(!hasPracticeTpl(m))return '';
-    var mode='ward', cfg=practiceModeCfg(mode);
+    /* D-1: the summary is byte-identical to what it has always rendered -- the visual
+       baselines screenshot a collapsed panel, and everything WP-D changes is inside the body. */
     var h='<details class="topic-tpl practice-panel">';
-    h+='<summary class="practice-summary"><span class="practice-tab">'+esc(cfg.label||'On unit')+'</span><span class="practice-title">On the Unit Practice and Tools</span><span class="practice-sub">Quick take · bedside use · self-test · drills/tools</span><span class="practice-hint"><span class="practice-hint-open">Click to open</span><span class="practice-hint-close">Click to close</span></span><span class="practice-chev" aria-hidden="true">›</span></summary>';
+    h+='<summary class="practice-summary"><span class="practice-tab">Ward</span><span class="practice-title">On the Unit Practice and Tools</span><span class="practice-sub">Quick take · bedside use · self-test · drills/tools</span><span class="practice-hint"><span class="practice-hint-open">Click to open</span><span class="practice-hint-close">Click to close</span></span><span class="practice-chev" aria-hidden="true">›</span></summary>';
     h+='<div class="practice-body">';
-    h+='<div class="tpl-meta">'; if(m.read) h+='<span class="tpl-chip read">'+m.read+' min read</span>'; if(m.hy) h+='<span class="tpl-chip hy">★ High-yield</span>'; if(m.safetyLevel==='high') h+='<span class="tpl-chip safety">High-risk workflow</span>'; if(m.evidenceIds&&m.evidenceIds.length) h+='<span class="tpl-chip evidence">'+m.evidenceIds.length+' source'+(m.evidenceIds.length===1?'':'s')+'</span>'; if(m.facultyReview&&m.facultyReview.status) h+='<span class="tpl-chip review">'+esc(m.facultyReview.status)+(m.facultyReview.lastReviewed?(' · '+esc(m.facultyReview.lastReviewed)):'')+'</span>'; if(Array.isArray(m.workflowModes)){ for(var mi=0;mi<m.workflowModes.length;mi++){ var mm=m.workflowModes[mi]; h+='<span class="tpl-chip mode'+(mm===mode?' on':'')+'">'+esc(PRACTICE_MODE_LABELS[mm]||mm)+'</span>'; } } h+='</div>';
-    h+='<div class="practice-mode-note"><span class="k">Why today</span><span class="v">'+esc(practiceModeText(m,mode))+'</span></div>';
+    h+='<div class="tpl-meta">'; if(m.read) h+='<span class="tpl-chip read">'+m.read+' min read</span>'; if(m.hy) h+='<span class="tpl-chip hy">★ High-yield</span>'; if(m.safetyLevel==='high') h+='<span class="tpl-chip safety">High-risk workflow</span>'; if(m.evidenceIds&&m.evidenceIds.length) h+='<span class="tpl-chip evidence">'+m.evidenceIds.length+' source'+(m.evidenceIds.length===1?'':'s')+'</span>'; if(m.facultyReview&&m.facultyReview.status) h+='<span class="tpl-chip review">'+esc(m.facultyReview.status)+(m.facultyReview.lastReviewed?(' · '+esc(m.facultyReview.lastReviewed)):'')+'</span>'; h+='</div>';
+    var reason=practiceReason(m);
+    if(reason) h+='<div class="practice-mode-note"><span class="k">Can\u2019t miss</span><span class="v">'+esc(reason)+'</span></div>';
+    var primary=practicePrimary(m,file,practicePhaseName(),practiceDrillDone), pseen={}, prow=[];
+    if(primary){
+      addPracticeAction(prow,pseen,primary.label,primary.href,primary.cls);
+      h+='<div class="practice-section-title">Do this next</div><div class="practice-actions">'+prow.join('')+'</div>';
+    }
     h+='<div class="practice-sections">';
     h+='<section class="practice-section"><div class="practice-section-title">In 30 seconds</div>';
     if(m.tldr){ h+='<div class="in30"><div class="lbl">In 30 seconds</div><div class="one">'+esc(m.tldr)+'</div>'; if(m.points&&m.points.length){ h+='<ul>'; for(var i=0;i<m.points.length;i++){ h+='<li>'+esc(m.points[i])+'</li>'; } h+='</ul>'; } h+='</div>'; } else h+='<p class="practice-muted">Use this page as the quick reference before or after the encounter.</p>';
     h+='</section><section class="practice-section"><div class="practice-section-title">On the unit</div>';
-    var wf=buildWorkflow(m), hasUnit=false; if(wf){ h+=wf; hasUnit=true; }
-    if(m.cant){ h+='<div class="cantmiss"><span class="ico">⚠</span><span class="tx"><b>Can’t miss. </b>'+esc(m.cant)+'</span></div>'; hasUnit=true; }
+    var wf=buildWorkflow(m,pseen), hasUnit=false; if(wf){ h+=wf; hasUnit=true; }
+    if(m.cant&&m.cant!==reason){ h+='<div class="cantmiss"><span class="ico">⚠</span><span class="tx"><b>Can’t miss. </b>'+esc(m.cant)+'</span></div>'; hasUnit=true; }
     if(m.ruleOut&&m.ruleOut.length){ h+='<div class="minitree"><div class="lbl">Rule out first → first move</div><div class="ro">'; for(var j=0;j<m.ruleOut.length;j++){ h+='<span class="c">'+esc(m.ruleOut[j])+'</span>'; } h+='</div>'; if(m.firstMove){ h+='<div class="fm"><b>First move · </b>'+esc(m.firstMove)+'</div>'; } h+='<a href="?tool=decision-aids.html">See the visual decision aids →</a></div>'; hasUnit=true; }
     if(!hasUnit)h+='<p class="practice-muted">No bedside workflow scaffold yet.</p>';
     h+='</section><section class="practice-section"><div class="practice-section-title">Test yourself</div>';
     if(m.quiz){ var q=m.quiz; h+='<div class="tyourself"><div class="lbl">Test yourself</div><div class="q">'+esc(q.q)+'</div>'; for(var k=0;k<q.o.length;k++){ h+='<button type="button" class="tyo" data-c="'+(q.o[k].c?'1':'0')+'">'+esc(q.o[k].t)+'</button>'; } h+='<div class="tyfb">'+(q.why?('<b>Why: </b>'+esc(q.why)):'')+'</div></div>'; }
     else { h+='<p class="practice-muted">No page-specific question yet. Use the question bank or daily review.</p><div class="practice-actions"><a class="practice-action is-review" href="?tool=question-bank-practice.html">Practice Questions →</a><a class="practice-action is-review" href="?tool=review.html">Daily Review →</a></div>'; }
-    h+='</section><section class="practice-section"><div class="practice-section-title">Tools</div>'+buildPracticeTools(m,file,mode)+'</section>';
+    h+='</section><section class="practice-section"><div class="practice-section-title">Tools</div>'+buildPracticeTools(m,file,pseen,!!primary)+'</section>';
     h+='</div></div></details>'; return h;
   }
+  /* ---- end practice panel ---- */
   function pageTitle(it){ return it ? (it.t+' \u2014 MS3 Psychiatry Clerkship') : 'Inpatient Psychiatry \u2014 MS3 Clerkship'; }
   function setLearnerTitle(item){ if(!facultyPreviewRequest)document.title=pageTitle(item); }
   function fdSpecialItemForState(state){

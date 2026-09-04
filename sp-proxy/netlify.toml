@@ -1,9 +1,22 @@
 # SP Interview proxy — its own tiny Netlify site (same repo, base directory: sp-proxy).
 # Kept SEPARATE from faculty-console so the student passcode and the GitHub-writing
 # token never share an environment (smaller blast radius per key).
+#
+# `ignore = "/bin/false"` = ALWAYS BUILD, NEVER "CANCEL". Because this site has a base
+# directory, Netlify's default is to cancel any build whose commit did not touch sp-proxy/.
+# It records that cancel as a FAILED deploy (state "error", "Failed during stage 'checking
+# build content for changes': Canceled build due to no content change"), and the site's
+# "Deploy failed" email — the only alarm for a broken production deploy, added after the
+# 2026-08-31 LFS-budget outage — fires on every one of them: every push to an unrelated PR
+# and every unrelated merge to main (~75/day observed on 2026-09-02). Exit code 1 from the
+# ignore command means "content changed, build". The cost is one ~30 s `npm ci` build per
+# event and a byte-identical redeploy of the functions. See ../netlify.toml and
+# GIT_AND_DEPLOY_PLAN.md §7. Netlify reads THIS file (base-directory config wins), so the
+# rule has to live here, not in the root netlify.toml.
 [build]
   publish = "."
   command = "npm ci --omit=dev"
+  ignore = "/bin/false"
 
 [build.environment]
   NODE_VERSION = "20"
