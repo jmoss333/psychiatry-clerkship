@@ -2,6 +2,8 @@
 
 from pathlib import Path
 import copy
+import io
+import os
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -74,10 +76,6 @@ BUILT_ORIENTATION_PATHS = [
     "tools/Inpatient_Psych_Orientation.vtt",
     "tools/poster.jpg",
 ]
-RETIRED_INTRO_PATHS = [
-    "_prototypes/video-library/intro-trailer.mp4",
-    "_prototypes/video-library/intro-trailer-poster.jpg",
-]
 RESIDENT_ONBOARDING_PATHS = [
     "media/resident-onboarding.mp4",
     "media/resident-onboarding-poster.jpg",
@@ -122,6 +120,13 @@ def write_complete_resident_output(root):
     for relative_path in RESIDENT_ONBOARDING_PATHS:
         Path(root, relative_path).write_bytes(b"resident onboarding asset")
     Path(root, "sw.js").write_text("resident service worker", encoding="utf-8")
+
+
+# require_real_files only hard-fails a Git-LFS pointer stub outside the soft contexts
+# check_lfs_media.is_soft_context() names, and this suite runs inside one of them (CI
+# checks out lfs:false; Netlify deploy previews set CONTEXT=deploy-preview). Tests that
+# assert stub rejection pin the hard context so they test the rule, not the runner.
+HARD_LFS_CONTEXT = {"GITHUB_ACTIONS": "", "CONTEXT": "production"}
 
 
 def write_output_file(root, relative_path, payload):
@@ -326,13 +331,48 @@ class WelcomeCompassTests(unittest.TestCase):
                 "pointer.html",
             ]
             try:
-                with self.assertRaises(welcome_compass.CompassContractError) as raised:
+                with patch.dict(os.environ, HARD_LFS_CONTEXT), \
+                        self.assertRaises(welcome_compass.CompassContractError) as raised:
                     welcome_compass.require_real_files(root, relative_paths)
             finally:
                 unreadable.chmod(0o644)
 
             for relative_path in relative_paths:
                 self.assertIn(relative_path, str(raised.exception))
+
+    def test_lfs_pointer_stubs_warn_instead_of_failing_in_soft_contexts(self):
+        with tempfile.TemporaryDirectory() as root:
+            Path(root, "stub.mp4").write_bytes(welcome_compass.LFS_HEADER + b" oid sha256:abc")
+            Path(root, "real.mp4").write_bytes(b"\x00\x00\x00\x18ftypmp42")
+            with patch.dict(os.environ, {"GITHUB_ACTIONS": "true", "CONTEXT": ""}), \
+                    patch("sys.stdout", new_callable=io.StringIO) as out:
+                self.assertIsNone(welcome_compass.require_real_files(root, ["stub.mp4", "real.mp4"]))
+            self.assertIn("stub.mp4", out.getvalue())
+            with patch.dict(os.environ, {"GITHUB_ACTIONS": "", "CONTEXT": "deploy-preview"}), \
+                    patch("sys.stdout", new_callable=io.StringIO):
+                self.assertIsNone(welcome_compass.require_real_files(root, ["stub.mp4"]))
+            with patch.dict(os.environ, {"GITHUB_ACTIONS": "", "CONTEXT": "production"}):
+                with self.assertRaisesRegex(welcome_compass.CompassContractError, "stub.mp4"):
+                    welcome_compass.require_real_files(root, ["stub.mp4", "real.mp4"])
+            with patch.dict(os.environ, {"GITHUB_ACTIONS": "true"}):
+                with self.assertRaisesRegex(welcome_compass.CompassContractError, "missing.mp4"):
+                    welcome_compass.require_real_files(root, ["missing.mp4"])
+
+    def test_lfs_policy_is_imported_from_the_site_wide_gate(self):
+        source = Path(welcome_compass.__file__).read_text(encoding="utf-8")
+        self.assertIn("from check_lfs_media import", source)
+        self.assertNotIn('b"version https://git-lfs"', source)
+
+    def test_structure_parser_balances_void_elements(self):
+        fragment = '<div data-fd-compass-root><p>a<br>b<img src="x"><hr/></p></div>'
+        alone = welcome_compass._CompassStructureParser()
+        embedded = welcome_compass._CompassStructureParser()
+        alone.feed(fragment)
+        alone.close()
+        embedded.feed("<p>before</p>" + fragment + "<p>after</p><h2>x</h2>")
+        embedded.close()
+        self.assertEqual(alone.compasses, embedded.compasses)
+        self.assertEqual(alone.depth, 0)
 
     def test_accepts_one_exact_rendered_compass_and_complete_orientation_package(self):
         with tempfile.TemporaryDirectory() as root:
@@ -342,10 +382,6 @@ class WelcomeCompassTests(unittest.TestCase):
                     root, self.cards(), SAFETY, BUILT_ORIENTATION_PATHS
                 )
             )
-
-    def test_retained_intro_provenance_files_remain_real_source_files(self):
-        repo_root = Path(__file__).resolve().parents[3]
-        self.assertIsNone(welcome_compass.require_real_files(repo_root, RETIRED_INTRO_PATHS))
 
     def test_rejects_a_compass_that_markdown_renders_only_as_comment_or_code(self):
         for wrapper in (
@@ -419,7 +455,8 @@ class WelcomeCompassTests(unittest.TestCase):
                     path.write_bytes(path.read_bytes() + payload)
                 else:
                     path.write_bytes(payload)
-                with self.assertRaisesRegex(welcome_compass.CompassContractError, expected):
+                with patch.dict(os.environ, HARD_LFS_CONTEXT), \
+                        self.assertRaisesRegex(welcome_compass.CompassContractError, expected):
                     welcome_compass.assert_resident_output(root)
 
     def test_resident_output_rejects_compass_material_in_every_completed_text_output_class(self):
@@ -456,22 +493,15 @@ class WelcomeCompassTests(unittest.TestCase):
             with self.assertRaisesRegex(welcome_compass.CompassContractError, "second.css"):
                 welcome_compass.assert_resident_output(root)
 
-    def test_resident_output_skips_known_binaries_but_rejects_unknown_non_utf8_output(self):
-        for relative_path in (
-            "media/image.png",
-            "media/audio.mp3",
-            "media/video.mp4",
-            "anki/deck.apkg",
-            "assets/font.woff2",
-        ):
-            with self.subTest(known_binary=relative_path), tempfile.TemporaryDirectory() as root:
+    def test_resident_output_accepts_binary_output_of_any_suffix_but_scans_it_for_needles(self):
+        for relative_path in ("media/image.png", "assets/blob.unknown", "audio/.DS_Store"):
+            with self.subTest(binary=relative_path), tempfile.TemporaryDirectory() as root:
                 write_complete_resident_output(root)
-                write_output_file(root, relative_path, b"\xff\xfe\x00\x80")
+                write_output_file(root, relative_path, b"\x00\x00\x00\x01Bud1\xff\xfe\x00\x80")
                 self.assertIsNone(welcome_compass.assert_resident_output(root))
-
         with tempfile.TemporaryDirectory() as root:
             write_complete_resident_output(root)
-            write_output_file(root, "assets/blob.unknown", b"\xff\xfe\x00\x80")
+            write_output_file(root, "assets/blob.unknown", b"\xff\xfe" + welcome_compass.COMPASS_ROOT_OPENER.encode("utf-8"))
             with self.assertRaisesRegex(welcome_compass.CompassContractError, "blob.unknown"):
                 welcome_compass.assert_resident_output(root)
 
@@ -485,7 +515,8 @@ class WelcomeCompassTests(unittest.TestCase):
             with self.subTest(lfs=relative_path), tempfile.TemporaryDirectory() as root:
                 write_complete_resident_output(root)
                 Path(root, relative_path).write_bytes(welcome_compass.LFS_HEADER + b" oid")
-                with self.assertRaisesRegex(welcome_compass.CompassContractError, relative_path):
+                with patch.dict(os.environ, HARD_LFS_CONTEXT), \
+                        self.assertRaisesRegex(welcome_compass.CompassContractError, relative_path):
                     welcome_compass.assert_resident_output(root)
 
     def test_resident_output_requires_one_real_video_with_exact_onboarding_src_and_poster(self):
@@ -559,7 +590,7 @@ class WelcomeCompassTests(unittest.TestCase):
                 with self.assertRaisesRegex(
                     welcome_compass.CompassContractError, "/unreadable/output"
                 ):
-                    welcome_compass._inspect_completed_output(root)
+                    welcome_compass._scan_completed_output(root, {})
 
     def test_rejects_missing_built_orientation_file(self):
         with tempfile.TemporaryDirectory() as root:

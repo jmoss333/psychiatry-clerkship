@@ -9,11 +9,12 @@ import os
 import stat
 import subprocess
 
+from check_lfs_media import LFS_HEADER, MEDIA_EXTS, is_soft_context
+
 
 COMPASS_MARKER = "<!-- ms3-six-week-compass -->"
 SAFETY_START = "<!-- single-safety-rule:start -->"
 SAFETY_END = "<!-- single-safety-rule:end -->"
-LFS_HEADER = b"version https://git-lfs"
 RETIRED_INTRO_FILENAMES = ("intro-trailer.mp4", "intro-trailer-poster.jpg")
 MS3_OPTIONAL_ORIENTATION_PATHS = (
     "tools/orientation-video.html",
@@ -25,38 +26,6 @@ RESIDENT_ONBOARDING_PATHS = (
     "media/resident-onboarding.mp4",
     "media/resident-onboarding-poster.jpg",
 )
-KNOWN_BINARY_SUFFIXES = {
-    ".aac",
-    ".apkg",
-    ".avif",
-    ".br",
-    ".eot",
-    ".flac",
-    ".gif",
-    ".gz",
-    ".ico",
-    ".jpeg",
-    ".jpg",
-    ".m4a",
-    ".m4v",
-    ".mov",
-    ".mp3",
-    ".mp4",
-    ".oga",
-    ".ogg",
-    ".opus",
-    ".otf",
-    ".pdf",
-    ".png",
-    ".ttf",
-    ".wasm",
-    ".wav",
-    ".webm",
-    ".webp",
-    ".woff",
-    ".woff2",
-    ".zip",
-}
 
 COMPASS_ROOT_OPENER = '<div data-fd-compass-root>'
 SAFETY_ORIENTATION_LINK = "Open the Orientation Packet"
@@ -88,6 +57,11 @@ class _ResidentWelcomeVideoParser(HTMLParser):
             self.videos.append(attrs)
 
 
+VOID_ELEMENTS = frozenset({
+    "area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr",
+})
+
+
 class _CompassStructureParser(HTMLParser):
     """Record real element/text events; comments and escaped code cannot supply a root."""
 
@@ -97,14 +71,18 @@ class _CompassStructureParser(HTMLParser):
         self.depth = 0
 
     def handle_starttag(self, tag, attrs):
-        if any(name == "data-fd-compass-root" for name, _ in attrs):
+        is_root = any(name == "data-fd-compass-root" for name, _ in attrs)
+        if is_root:
             self.compasses.append([])
             self.depth = 0
-        if self.compasses and (self.depth or any(name == "data-fd-compass-root" for name, _ in attrs)):
+        if self.compasses and (self.depth or is_root):
             self.compasses[-1].append(("start", tag, attrs))
-            self.depth += 1
+            if tag not in VOID_ELEMENTS:
+                self.depth += 1
 
     def handle_endtag(self, tag):
+        if tag in VOID_ELEMENTS:
+            return
         if self.depth:
             self.compasses[-1].append(("end", tag))
             self.depth -= 1
@@ -316,7 +294,15 @@ def assert_nav_projection(nav, cards) -> None:
 
 
 def require_real_files(root, relative_paths) -> None:
-    invalid = []
+    """Every path must be a real, non-empty, readable regular file.
+
+    A Git-LFS pointer stub is an error in production and a printed warning in the soft
+    contexts check_lfs_media.is_soft_context() names (GitHub Actions' lfs:false checkout,
+    Netlify deploy previews): those contexts ship stubs on purpose and the site-wide LFS
+    gate is already soft there. Missing, empty, directory, symlink and unreadable paths
+    always fail.
+    """
+    invalid, stubs = [], []
     for relative_path in relative_paths:
         path = os.path.join(root, relative_path)
         try:
@@ -331,9 +317,14 @@ def require_real_files(root, relative_paths) -> None:
                 continue
             with open(path, "rb") as handle:
                 if handle.read(len(LFS_HEADER)) == LFS_HEADER:
-                    invalid.append(relative_path)
+                    stubs.append(relative_path)
         except OSError:
             invalid.append(relative_path)
+    if stubs and is_soft_context():
+        print("WARN (soft LFS context): Git-LFS pointer stub(s) among required Compass files: "
+              + ", ".join(stubs))
+    else:
+        invalid.extend(stubs)
     if invalid:
         raise CompassContractError("MS3 Compass required files are invalid: " + ", ".join(invalid))
 
@@ -371,32 +362,35 @@ def _iter_completed_output_files(out_dir):
             yield path, os.path.relpath(path, out_dir)
 
 
-def _inspect_completed_output(out_dir):
+def _retired_needles():
+    return {name.encode("utf-8"): "retired intro reference " + name for name in RETIRED_INTRO_FILENAMES}
+
+
+def _scan_completed_output(out_dir, forbidden):
+    """Walk every built file once as bytes; return the relative paths seen.
+
+    `forbidden` maps a byte needle to the label reported when a file contains it. No
+    decoding: the served tree holds audio, fonts, archives and suffix-less files, and an
+    isolation scan must not fail on a file merely for being binary. Media files
+    (check_lfs_media.MEDIA_EXTS) are still walked for names but not searched — they cannot
+    carry a markup or filename reference.
+    """
     files = set()
-    text_outputs = {}
     for path, relative_path in _iter_completed_output_files(out_dir):
         files.add(relative_path)
-        filename = os.path.basename(path)
-        if filename in RETIRED_INTRO_FILENAMES:
+        if os.path.basename(path) in RETIRED_INTRO_FILENAMES:
             raise CompassContractError("built output contains retired intro file: " + relative_path)
-        if os.path.splitext(filename)[1].lower() in KNOWN_BINARY_SUFFIXES:
+        if os.path.splitext(path)[1].lower() in MEDIA_EXTS:
             continue
         try:
-            with open(path, encoding="utf-8") as handle:
-                text = handle.read()
-        except (OSError, UnicodeError) as error:
-            raise CompassContractError("built output text is unreadable: %s" % path) from error
-        text_outputs[relative_path] = text
-        for retired_name in RETIRED_INTRO_FILENAMES:
-            if retired_name in text:
-                raise CompassContractError(
-                    "built output contains retired intro reference %s: %s" % (retired_name, relative_path)
-                )
-    return files, text_outputs
-
-
-def _assert_no_retired_intro(out_dir) -> None:
-    _inspect_completed_output(out_dir)
+            with open(path, "rb") as handle:
+                data = handle.read()
+        except OSError as error:
+            raise CompassContractError("built output file is unreadable: %s" % path) from error
+        for needle, label in forbidden.items():
+            if needle in data:
+                raise CompassContractError("built output contains %s: %s" % (label, relative_path))
+    return files
 
 
 def _assert_resident_welcome_video(welcome) -> None:
@@ -447,7 +441,7 @@ def load_ms3_preflight_sources(curriculum_path, orientation_packet_path):
 
 def assert_ms3_output(out_dir, cards, safety_text, built_orientation_paths) -> None:
     require_real_files(out_dir, built_orientation_paths)
-    _assert_no_retired_intro(out_dir)
+    _scan_completed_output(out_dir, _retired_needles())
     try:
         with open(os.path.join(out_dir, "content", "welcome.md"), encoding="utf-8") as handle:
             welcome = handle.read()
@@ -485,20 +479,18 @@ def assert_ms3_output(out_dir, cards, safety_text, built_orientation_paths) -> N
 
 def assert_resident_output(out_dir) -> None:
     require_real_files(out_dir, RESIDENT_ONBOARDING_PATHS)
-    files, text_outputs = _inspect_completed_output(out_dir)
-    welcome = text_outputs.get("content/welcome.md")
-    if welcome is None:
-        raise CompassContractError("resident built Welcome is unreadable: content/welcome.md")
-    forbidden_copy = (COMPASS_ROOT_OPENER, SCOPE_COPY, PROMPT_COPY, COMPASS_HEADING, OPTIONAL_VIDEO_COPY)
-    for relative_path, text in text_outputs.items():
-        for forbidden in forbidden_copy:
-            if forbidden in text:
-                raise CompassContractError(
-                    "resident built output contains MS3 Compass copy: %s (%s)" % (forbidden, relative_path)
-                )
+    forbidden = dict(_retired_needles())
+    for copy in (COMPASS_ROOT_OPENER, SCOPE_COPY, PROMPT_COPY, COMPASS_HEADING, OPTIONAL_VIDEO_COPY):
+        forbidden[copy.encode("utf-8")] = "MS3 Compass copy: " + copy
+    files = _scan_completed_output(out_dir, forbidden)
     for relative_path in MS3_OPTIONAL_ORIENTATION_PATHS:
         if relative_path in files:
             raise CompassContractError(
                 "resident built output contains MS3 optional orientation package: " + relative_path
             )
+    try:
+        with open(os.path.join(out_dir, "content", "welcome.md"), encoding="utf-8") as handle:
+            welcome = handle.read()
+    except (OSError, UnicodeError) as error:
+        raise CompassContractError("resident built Welcome is unreadable: content/welcome.md") from error
     _assert_resident_welcome_video(welcome)
