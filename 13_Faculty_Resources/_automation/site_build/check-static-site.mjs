@@ -1085,6 +1085,19 @@ const RATCHET_EXEMPT_CLASSES = new Set(['lfs-stub-soft']);
  * Python relabel sweep hardcodes -- a future HTML surface outside that glob
  * would otherwise keep an inherited/mislabelled CW_SITE with this QA gate
  * none the wiser.
+ *
+ * Final whole-branch review finding #1: the emitter ships behind CLERKSHIP_
+ * ANALYTICS (common.py's analytics_enabled_for()), default off. A build made
+ * with the flag off is legitimate and must PASS this gate with nothing
+ * asserted about the emitter's presence -- it ships neither analytics.js nor
+ * any CW_SITE literal, by design. Detected from the build itself (this gate
+ * has no reliable view of the env var the build ran with): a single walk
+ * collects every CW_SITE literal in the site once, and that walk plus
+ * analytics.js's presence sort the build into disabled (info note, emitter-
+ * presence assertions skipped), enabled (every assertion below runs exactly
+ * as before), or inconsistent (exactly one of the two present -- always a
+ * hard failure, flag or no flag, because that state cannot be a clean build
+ * in either direction).
  */
 {
   const siteBase = basename(resolve(SITE));
@@ -1093,16 +1106,6 @@ const RATCHET_EXEMPT_CLASSES = new Set(['lfs-stub-soft']);
     I('usage analytics: unrecognized site dir — §12 skipped (fixture or scratch build)');
   } else {
     const ANALYTICS_TAG = '<script src="/analytics.js" defer></script>';
-    if (!existsSync(p('analytics.js'))) {
-      H('usage analytics: analytics.js missing from built site root');
-    }
-
-    // The complete set of files apply_full_page_pass() (common.py) ever hands
-    // a <head> to inject the emitter tag into: tools/*.html + index.html. The
-    // SPA shell serves every content/*.md page via client-side routing and
-    // carries no per-page CW_PAGE by design (see common.py's analytics_head()).
-    const analyticsPages = listHtml(p('tools')).map((f) => join('tools', f));
-    if (existsSync(p('index.html'))) analyticsPages.push('index.html');
 
     let allowlist = null;
     try {
@@ -1112,48 +1115,83 @@ const RATCHET_EXEMPT_CLASSES = new Set(['lfs-stub-soft']);
     }
     const allowedKeys = new Set((allowlist && allowlist.keys && allowlist.keys[analyticsSite]) || []);
 
-    let pagesWithCwPage = 0;
-    for (const rel of analyticsPages) {
-      const fp = p(rel);
-      if (!existsSync(fp)) continue;
-      const html = readFileSync(fp, 'utf8');
-      if (!html.includes(ANALYTICS_TAG)) {
-        H(`usage analytics: emitter tag missing from a page that should carry it: ${rel}`);
-      }
-      const m = /window\.CW_PAGE='([^']+)'/.exec(html);
-      if (m) {
-        pagesWithCwPage += 1;
-        const key = `page:${m[1]}`;
-        if (allowlist && !allowedKeys.has(key)) {
-          H(`usage analytics: injected CW_PAGE not on the "${analyticsSite}" allowlist: ${rel} -> ${key}`);
-        }
-      }
-    }
-    if (analyticsPages.length && pagesWithCwPage === 0) {
-      H(`usage analytics: no built ${analyticsSite} page carries CW_PAGE`);
-    }
-
-    // Fail-closed CW_SITE check (finding #2), site-agnostic and glob-agnostic:
-    // walk every shipped .html file and flag any CW_SITE literal that
-    // disagrees with this build's own site key.
-    const mislabelled = [];
-    const scanForMislabel = (dir) => {
+    // Walk every shipped .html file once, collecting every CW_SITE literal
+    // found — glob-agnostic on purpose (a future HTML surface outside
+    // tools/*.html + index.html must still be seen). This single walk answers
+    // two questions: is the emitter present AT ALL in this build (below), and
+    // for the enabled case, is any CW_SITE mislabelled (finding #2, further
+    // down).
+    const cwSiteHits = [];
+    const scanForCwSite = (dir) => {
       if (!existsSync(dir)) return;
       for (const name of readdirSync(dir)) {
         const fp = join(dir, name);
-        if (statSync(fp).isDirectory()) { scanForMislabel(fp); continue; }
+        if (statSync(fp).isDirectory()) { scanForCwSite(fp); continue; }
         if (!name.endsWith('.html')) continue;
         const html = readFileSync(fp, 'utf8');
         for (const m of html.matchAll(/window\.CW_SITE='([^']+)'/g)) {
-          if (m[1] !== analyticsSite) {
-            mislabelled.push(`${relative(SITE, fp)} (CW_SITE='${m[1]}')`);
-          }
+          cwSiteHits.push({ rel: relative(SITE, fp), value: m[1] });
         }
       }
     };
-    scanForMislabel(SITE);
-    if (mislabelled.length) {
-      H(`usage analytics: CW_SITE mislabelled for a "${analyticsSite}" build: ${mislabelled.join(', ')}`);
+    scanForCwSite(SITE);
+    const hasAnalyticsFile = existsSync(p('analytics.js'));
+    const anyCwSite = cwSiteHits.length > 0;
+
+    // CLERKSHIP_ANALYTICS defaults off (common.py's analytics_enabled_for()):
+    // a legitimately-disabled build ships this site with NEITHER analytics.js
+    // NOR any CW_SITE literal. Detect that state from the build itself (not
+    // the env var, which this post-build gate may not even see) and skip the
+    // emitter-presence assertions below cleanly rather than hard-failing a
+    // build that correctly shipped nothing. A build with exactly ONE of the
+    // two present is inconsistent regardless of the flag, and stays a hard
+    // failure — that is a real defect, not a legitimate disabled state.
+    if (hasAnalyticsFile && !anyCwSite) {
+      H('usage analytics: analytics.js present at site root but no page references CW_SITE — inconsistent build');
+    } else if (!hasAnalyticsFile && anyCwSite) {
+      H(`usage analytics: page(s) reference CW_SITE but analytics.js is missing from the built site root: ${cwSiteHits.map((h) => h.rel).join(', ')}`);
+    } else if (!hasAnalyticsFile && !anyCwSite) {
+      I(`usage analytics: emitter disabled for this "${analyticsSite}" build (CLERKSHIP_ANALYTICS) — §12 emitter-presence assertions skipped`);
+    } else {
+      // Enabled: full teeth, unchanged from before the build flag existed.
+
+      // The complete set of files apply_full_page_pass() (common.py) ever hands
+      // a <head> to inject the emitter tag into: tools/*.html + index.html. The
+      // SPA shell serves every content/*.md page via client-side routing and
+      // carries no per-page CW_PAGE by design (see common.py's analytics_head()).
+      const analyticsPages = listHtml(p('tools')).map((f) => join('tools', f));
+      if (existsSync(p('index.html'))) analyticsPages.push('index.html');
+
+      let pagesWithCwPage = 0;
+      for (const rel of analyticsPages) {
+        const fp = p(rel);
+        if (!existsSync(fp)) continue;
+        const html = readFileSync(fp, 'utf8');
+        if (!html.includes(ANALYTICS_TAG)) {
+          H(`usage analytics: emitter tag missing from a page that should carry it: ${rel}`);
+        }
+        const m = /window\.CW_PAGE='([^']+)'/.exec(html);
+        if (m) {
+          pagesWithCwPage += 1;
+          const key = `page:${m[1]}`;
+          if (allowlist && !allowedKeys.has(key)) {
+            H(`usage analytics: injected CW_PAGE not on the "${analyticsSite}" allowlist: ${rel} -> ${key}`);
+          }
+        }
+      }
+      if (analyticsPages.length && pagesWithCwPage === 0) {
+        H(`usage analytics: no built ${analyticsSite} page carries CW_PAGE`);
+      }
+
+      // Fail-closed CW_SITE check (finding #2), site-agnostic and glob-agnostic:
+      // flag any CW_SITE literal (from the single walk above) that disagrees
+      // with this build's own site key.
+      const mislabelled = cwSiteHits
+        .filter((h) => h.value !== analyticsSite)
+        .map((h) => `${h.rel} (CW_SITE='${h.value}')`);
+      if (mislabelled.length) {
+        H(`usage analytics: CW_SITE mislabelled for a "${analyticsSite}" build: ${mislabelled.join(', ')}`);
+      }
     }
 
     // DECISION: analytics-allowlist  (decisions.json; bin/check_decision_drift.py)

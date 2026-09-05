@@ -16,6 +16,12 @@ ROOT=os.path.dirname(LIB)                                 # parent dir that hold
 MS3=os.environ.get("MS3_DIR", os.path.join(ROOT,"clerkship-hub-deploy"))
 OUT=os.environ.get("OUT_DIR", os.path.join(ROOT,"mmc-resident-deploy"))
 
+# Usage analytics -- this site's OWN CLERKSHIP_ANALYTICS decision (default off;
+# see common.analytics_enabled_for()). Computed once, up front, because it can
+# legitimately disagree with whatever the MS3 build (copied below) decided --
+# see the reconciliation block near the CW_SITE relabel further down.
+_ANALYTICS_RES = common.analytics_enabled_for("res")
+
 if os.path.exists(OUT): shutil.rmtree(OUT)
 shutil.copytree(MS3, OUT)   # start as a full copy of the polished/dark/motion MS3 build
 _copied_governance=os.path.join(OUT,"tool-governance.json")
@@ -162,7 +168,7 @@ for src,dst,_title in PROTO_TOOLS:
 # inherited from the MS3 copytree are untouched and only the newly-written rp-* tools
 # actually change. This replaces the hand-rolled skip-link-only subset that shipped
 # these three tools without the motion CSS and the in-iframe link interceptor.
-common.apply_full_page_pass(OUT)
+common.apply_full_page_pass(OUT, inject_analytics=_ANALYTICS_RES)
 # vendor React (shared across all three rp-* tools; files are byte-for-byte identical)
 _vendor_src=os.path.join(LIB,"_prototypes/agitation-trainer/vendor")
 _vendor_dst=OUT+"/tools/vendor"
@@ -391,6 +397,63 @@ common.assert_page_contract(OUT, label="resident")
 apply_tool_status(Path(OUT) / "tools", _surface_governance)
 write_site_document(Path(OUT) / "governance.json", _surface_governance)
 print("surface governance: emitted", len(_surface_governance["items"]), "items (resident)")
+
+# ---------- USAGE ANALYTICS: reconcile against resident's OWN flag ----------
+# The resident build begins as a copytree of the finished MS3 build (top of
+# this file) and therefore inherits WHATEVER the ms3 build decided under
+# CLERKSHIP_ANALYTICS -- which can legitimately disagree with res's own
+# enablement (_ANALYTICS_RES, computed at the top of this file): rollout step
+# 3 turns res on alone, step 4 is the reverse gap while both are mid-rollout.
+# Reconcile explicitly instead of trusting inheritance. Must run before the
+# CW_SITE relabel sweep just below, and after every pass above that rewrites
+# tools/*.html or index.html (apply_full_page_pass, apply_tool_status), for
+# the same reason that sweep runs last: no later step can reintroduce a
+# mismatch under this one.
+_analytics_js_out = os.path.join(OUT, "analytics.js")
+if _ANALYTICS_RES:
+    # apply_full_page_pass(OUT, inject_analytics=_ANALYTICS_RES) above already
+    # added the <script> tags to any page that lacked them (both pages
+    # inherited from an ms3 build that had analytics OFF, and freshly-written
+    # rp-* tools) -- but it never places the emitter FILE itself; that is
+    # build_deploy.py's job for ms3, and the copytree only carries the file
+    # over when ms3's OWN build enabled it too. Ensure it here so
+    # CLERKSHIP_ANALYTICS=res (ms3 not enabled) still ships a working emitter.
+    if not os.path.exists(_analytics_js_out):
+        shutil.copy2(common.ANALYTICS_JS_PATH, _analytics_js_out)
+else:
+    # The copytree may HAVE inherited the tag + emitter from an ms3 build that
+    # enabled analytics while res's own flag does not (CLERKSHIP_ANALYTICS=ms3).
+    # Strip both. Walk every shipped .html rather than trusting a hardcoded
+    # glob -- the fail-closed postcondition pattern a few lines down (and the
+    # one already used for the CW_SITE relabel) exists precisely because a
+    # hardcoded glob missed a surface before.
+    if os.path.exists(_analytics_js_out):
+        os.remove(_analytics_js_out)
+    _analytics_stripped = 0
+    _analytics_leaked = []
+    for _dirpath, _dirnames, _filenames in os.walk(OUT):
+        for _fname in _filenames:
+            if not _fname.endswith(".html"):
+                continue
+            _fp = os.path.join(_dirpath, _fname)
+            _at = open(_fp, encoding="utf-8").read()
+            _at2 = common.strip_analytics_tag(_at)
+            if _at2 != _at:
+                open(_fp, "w", encoding="utf-8").write(_at2)
+                _analytics_stripped += 1
+                _at = _at2
+            if "CW_SITE" in _at or "analytics.js" in _at:
+                _analytics_leaked.append(os.path.relpath(_fp, OUT))
+    print(
+        "usage analytics: disabled for resident (CLERKSHIP_ANALYTICS=%s) -- stripped "
+        "inherited emitter from %d page(s)" % (common.analytics_mode(), _analytics_stripped)
+    )
+    if _analytics_leaked:
+        raise SystemExit(
+            "usage analytics: disabled for resident but still referenced after the "
+            "strip sweep (fix common.strip_analytics_tag or the offending surface): %s"
+            % ", ".join(sorted(_analytics_leaked))
+        )
 
 # ---------- USAGE ANALYTICS: relabel CW_SITE for the resident build ----------
 # The resident build starts as a copytree of the finished MS3 build (top of this

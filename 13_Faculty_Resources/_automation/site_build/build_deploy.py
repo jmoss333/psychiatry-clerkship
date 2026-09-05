@@ -401,9 +401,18 @@ _missing_req=[]
 _copy_required(SPA, OUT+"/index.html", _missing_req)
 _copy_required(MARKED, OUT+"/marked.min.js", _missing_req)  # vendored (ward-wifi: no CDN dependency)
 _copy_required(CLINICAL_CSS, OUT+"/clinical-warm.css", _missing_req)  # shared dark-mode tokens (linked into tools below)
-_copy_required(ANALYTICS_JS, OUT+"/analytics.js", _missing_req)       # usage analytics emitter (tag injected per page)
+# Usage analytics emitter -- gated behind CLERKSHIP_ANALYTICS (default off; see
+# common.analytics_enabled_for() and docs/superpowers/specs/2026-09-04-usage-
+# analytics-design.md "Rollout"). Copied only when this build's own flag
+# enables ms3, so a disabled build ships neither the file nor a <script> tag
+# pointing at it (that tag is injected below by apply_full_page_pass, gated
+# by the same _ANALYTICS_MS3 decision).
+_ANALYTICS_MS3 = common.analytics_enabled_for("ms3")
+if _ANALYTICS_MS3:
+    _copy_required(ANALYTICS_JS, OUT+"/analytics.js", _missing_req)   # usage analytics emitter (tag injected per page)
 _copy_required(FRONTDOOR_CSS, OUT+"/frontdoor.css", _missing_req)
 _abort_missing(_missing_req)
+print("usage analytics:", "enabled (ms3)" if _ANALYTICS_MS3 else "disabled for ms3 (CLERKSHIP_ANALYTICS=%s)" % common.analytics_mode())
 
 # Front Door modules stay dormant in this task, but their data is made site-specific now.
 # Build after nav finalization so titles/kinds come from this site's actual browse catalog.
@@ -514,7 +523,7 @@ common.apply_contrast_fix(
     _glob.glob(OUT+"/content/*.md")+_glob.glob(OUT+"/tools/*.html")+[OUT+"/index.html"]
 )
 _QV=common.quiz_cache_bust(OUT+"/tools/quizzes.json")   # content-hash cache-bust (reproducible)
-common.apply_full_page_pass(OUT, cache_bust=_QV)
+common.apply_full_page_pass(OUT, cache_bust=_QV, inject_analytics=_ANALYTICS_MS3)
 for _frontdoor_destination in (OUT+"/index.html", OUT+"/tools/rotation-curator.html"):
     frontdoor_catalog.assert_catalog_resolver_injected(_frontdoor_destination, _rotation_projection["revision"])
 
@@ -548,6 +557,28 @@ _crisis.assert_no_html_marker_file(OUT+"/index.html", "final Front Door shell in
 # Postcondition gate (architecture review rec 1.3): prove every shipped page actually
 # received the chrome/dark transforms rather than silently missing them.
 common.assert_page_contract(OUT, label="ms3")
+
+# Usage analytics fail-closed postcondition. This build is always a fresh
+# rmtree+rebuild (no copytree inheritance like resident_section.py has), so
+# this should hold trivially -- but it is the cheap, direct check that a
+# disabled build actually shipped nothing, rather than trusting the gate
+# above never to have an unnoticed second injection path.
+if not _ANALYTICS_MS3:
+    _analytics_leaked = []
+    if os.path.exists(OUT + "/analytics.js"):
+        _analytics_leaked.append("analytics.js")
+    for _dirpath, _dirnames, _filenames in os.walk(OUT):
+        for _fname in _filenames:
+            if not _fname.endswith(".html"):
+                continue
+            _fp = os.path.join(_dirpath, _fname)
+            if "CW_SITE" in open(_fp, encoding="utf-8").read():
+                _analytics_leaked.append(os.path.relpath(_fp, OUT))
+    if _analytics_leaked:
+        raise SystemExit(
+            "usage analytics: disabled for ms3 (CLERKSHIP_ANALYTICS=%s) but "
+            "still present: %s" % (common.analytics_mode(), ", ".join(sorted(_analytics_leaked)))
+        )
 
 # ---------- SURFACE GOVERNANCE: direct-tool status + public artifact ----------
 # After every tool-HTML-mutating pass (polish, crisis block, media guard) so the
