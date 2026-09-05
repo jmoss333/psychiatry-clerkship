@@ -19,6 +19,10 @@
  * phasePolicy() clock. `window` is passed as {} for exactly that reason. What this module
  * reproduces is the markup the build injects into the page, which is what the snapshots compare.
  *
+ * WHAT IT COVERS: the MS3 source-registry render of the 74 topic_meta.json entries — NOT
+ * either shipped site's own payload. See the SCOPE note on SNAPSHOT_DIR below; the gap is
+ * pinned as data in tests/panel-snapshots.test.mjs rather than left to a reader's memory.
+ *
  * NOTE ON ORDERING: the snapshots depend only on source, never on _build/, so a stale snapshot is
  * always fixable by `node bin/render_panels.mjs --write` — which does not run through
  * build_and_check.sh. That matters because build_and_check.sh is `set -euo pipefail` and runs the
@@ -134,4 +138,21 @@ export const unformatPanel = (text) => String(text).replace(/\n$/, '').split('>\
  *  which topic_meta key it came from; refs are `*.md`, so files read `delirium.md.html`. */
 export const snapshotName = (ref) => `${String(ref).replace(/[/\\]/g, '__')}.html`;
 
-export const SNAPSHOT_DIR = new URL('__panels__/', new URL('tests/', ROOT));
+/* The snapshots are the MS3 SOURCE-REGISTRY render, and the path says so.
+ *
+ * SCOPE, stated plainly because a gate that overstates its reach is worse than none
+ * (Codex P2 on #539). Neither shipped site renders from these registries:
+ *   - the resident build injects its OWN FD_TOPIC_META and FD_SITE_MANIFEST, patched from
+ *     OUT's copy with resident overlays and rebuilt from resident nav (resident_section.py:301,
+ *     :358), so e.g. shelf-mode.html is titled "Board-Style Question Bank" there and
+ *     "Shelf Mode — Exam Simulation" here;
+ *   - both builds APPEND Case-of-the-Week topic_meta derived at build time
+ *     (build_deploy.py:308, resident_section.py:318), which topic_meta.json never contains.
+ * So this covers 74 of the 97 shipped pages. tests/panel-snapshots.test.mjs pins that gap
+ * against shipped_pages.json as data, so it cannot be forgotten or quietly over-trusted, and
+ * so a NEW uncovered producer fails rather than passing silently.
+ *
+ * Widening to both audiences means reading each build's own topic_meta.json — correct, but it
+ * makes the gate build-dependent, and ci.yml runs the node suite on a fresh clone BEFORE the
+ * build. That is a separate change; see the PR discussion. */
+export const SNAPSHOT_DIR = new URL('__panels__/ms3/', new URL('tests/', ROOT));

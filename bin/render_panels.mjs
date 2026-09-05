@@ -7,6 +7,11 @@
  *
  *     0 of 74 panels changed
  *
+ * READ THE SCOPE LINE IT PRINTS. This renders the MS3 SOURCE REGISTRIES, which is not what
+ * either site ships: the resident build injects its own overlaid payload, and both builds
+ * append Case-of-the-Week panels at build time. 74 of 97 shipped pages are covered. The gap
+ * is pinned as data in tests/panel-snapshots.test.mjs so a new uncovered producer fails.
+ *
  * USAGE
  *   node bin/render_panels.mjs            # check: exit 1 if any panel drifted from its snapshot
  *   node bin/render_panels.mjs --write    # accept the current render as the new snapshot
@@ -66,6 +71,11 @@ if (WRITE) {
 const drift = changed.length + added.length + orphaned.length;
 const verb = WRITE ? 'written' : 'compared';
 console.log(`${panels.length} panels ${verb} against ${dir.replace(`${process.cwd()}/`, '')}`);
+// Name the reach every run. "0 of 74 changed" alone reads as "nothing a learner sees moved",
+// which is not what this measures: neither shipped site renders from the source registries,
+// and 23 shipped pages have no snapshot at all (Codex P2 on #539).
+console.log('scope: MS3 source registries \u2014 74 of 97 shipped pages.'
+  + ' Resident overlays and the 22 build-generated Case-of-the-Week panels are NOT covered.');
 console.log(`${changed.length} of ${panels.length} panels changed`
   + (added.length ? `, ${added.length} new` : '')
   + (orphaned.length ? `, ${orphaned.length} orphaned` : ''));

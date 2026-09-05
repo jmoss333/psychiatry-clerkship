@@ -26,6 +26,7 @@ import test from 'node:test';
 
 import {
   renderAll, formatPanel, unformatPanel, snapshotName, SNAPSHOT_DIR, topicEntries,
+  TOPIC_META, manifestTitle, F,
 } from './_panel_render.mjs';
 
 const DIR = fileURLToPath(SNAPSHOT_DIR);
@@ -88,4 +89,65 @@ test('the snapshot format only inserts line breaks — no render change can hide
     assert.equal(unformatPanel(formatPanel(html)), html,
       `${ref}: formatting a panel and reversing it does not return the original`);
   }
+});
+
+// ---- coverage boundary (Codex P2 on #539) ------------------------------------------------------
+//
+// The gate above proves the 74 snapshotted panels did not move. It does NOT prove "nothing a
+// learner sees changed", and the difference is the whole reason these two tests exist.
+//
+// Neither shipped site renders from the source registries this harness reads. The resident build
+// injects its own FD_TOPIC_META/FD_SITE_MANIFEST (resident_section.py:301, :358) and both builds
+// append Case-of-the-Week topic_meta derived at build time (build_deploy.py:308,
+// resident_section.py:318). Rather than leave that in a comment for someone to not read, the gap
+// is asserted against shipped_pages.json — the derived universe ADR-002 requires code to ask,
+// instead of the producers. A new page-producing route lands in `unexplained` and fails here.
+
+const SHIPPED = JSON.parse(
+  readFileSync(new URL('../13_Faculty_Resources/_automation/site_build/shipped_pages.json', import.meta.url), 'utf8'),
+);
+
+test('the coverage gap has exactly its known dimensions', () => {
+  const snapped = new Set(panels.map(([ref]) => ref));
+  const shippedPages = SHIPPED.pages.filter((p) => p.kind === 'page');
+  const uncovered = shippedPages.filter((p) => !snapped.has(p.slug));
+
+  // NOTE ON WHAT DOES *NOT* WORK HERE, because the first version of this test did it and was
+  // vacuous. Partitioning `uncovered` into known buckets and asserting the remainder is empty
+  // proves nothing: `snapped` is built from every rendering topic_meta entry, so a page cannot
+  // be both uncovered AND renderable-from-source. That remainder is empty by construction —
+  // an assertion that can never fail, which is the defect the vacuity guard above exists for.
+  //
+  // What actually bites is pinning the gap's DIMENSIONS. Each number below moves for a real
+  // reason — a new Case-of-the-Week, a page gaining or losing its panel, a new page-producing
+  // route — and moving it fails here, forcing a deliberate decision instead of silent drift.
+  const byProducer = {};
+  for (const p of uncovered) byProducer[p.producer] = (byProducer[p.producer] || 0) + 1;
+
+  assert.deepEqual(byProducer, { cotw_registry: 22, site_manifest: 1 },
+    'the set of shipped pages with no snapshot changed.\n'
+    + '  cotw_registry: Case-of-the-Week panels, derived at build time, unrenderable from source.\n'
+    + '  site_manifest: rapid_review.md ships to both sites with no topic_meta entry, so no panel.\n'
+    + 'If a new route now puts panels on a learner site, snapshot them or record why not.');
+
+  assert.equal(shippedPages.length - uncovered.length, panels.length,
+    'snapshot coverage no longer equals shipped pages minus the known gap');
+
+  // The non-COTW page is uncovered because it renders NO panel. If it ever gains one it needs
+  // a snapshot, and the pinned counts above need revisiting rather than bumping.
+  for (const p of uncovered.filter((x) => x.producer !== 'cotw_registry')) {
+    assert.ok(!(TOPIC_META[p.slug] && F.hasPracticeTpl(TOPIC_META[p.slug])),
+      `${p.slug} now renders a panel but has no snapshot`);
+  }
+});
+
+test('the snapshots record the MS3 payload, which is not what the resident site ships', () => {
+  // Pins the audience caveat as data. resident_section.py:272 titles shelf-mode.html
+  // "Board-Style Question Bank"; the source manifest this harness reads calls it
+  // "Shelf Mode — Exam Simulation". Seeing the MS3 string here is CORRECT for these snapshots
+  // and is exactly why they must not be read as covering the resident site.
+  const withShelf = panels.filter(([, html]) => html.includes('?tool=shelf-mode.html'));
+  assert.ok(withShelf.length > 0, 'no panel links shelf-mode.html; this caveat needs rechecking');
+  assert.equal(manifestTitle('shelf-mode.html'), 'Shelf Mode — Exam Simulation',
+    'the source manifest title changed; re-check what the resident build renders');
 });
