@@ -1164,13 +1164,13 @@
     "note": "AI-drafted annotations, faculty-reviewed. Attested 2026-08-23 against 20ea0a29ce; every identifier resolved and retraction-checked in the 2026-08-21 canonical pass."
   },
   "rp-post-event-huddle.html": {
-    "status": "reviewed",
+    "status": "pending",
     "risk": {
       "kind": "general",
       "level": "moderate"
     },
-    "at": "2026-09-04",
-    "by": "Joshua Moss, MD",
-    "note": "Attested from deploy-preview-524 after a keyboard-only, axe-clean walk-through; event text, twelve option debriefs and boundary wording approved as written."
+    "reason": "Event 2 (a discharge whose follow-up never reached the patient) added to the attested V1 tool; its event text, twelve debriefs and boundary wording await faculty attestation. Event 1 attested 2026-09-04.",
+    "at": "2026-09-05",
+    "by": "Pending faculty review"
   }
 }

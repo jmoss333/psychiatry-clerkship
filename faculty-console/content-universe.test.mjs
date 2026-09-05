@@ -319,15 +319,17 @@ test('the pending-visibility invariant fails when a producer stops being read', 
     .filter(([, entry]) => entry && typeof entry === 'object' && entry.status === 'pending')
     .map(([slug]) => slug);
 
-  assert.equal(pending.length, 24);
+  // 24 in the July reconstruction. 25 while rp-post-event-huddle.html is pending again for its
+  // Event 2 attestation (2026-09-05); the attestation commit returns both pins to 24.
+  assert.equal(pending.length, 25);
   const invisibleBefore = pending.filter(slug => !manifestOnly.has(slug) && !allowlist.has(slug));
-  assert.equal(invisibleBefore.length, 24);
+  assert.equal(invisibleBefore.length, 25);
   assert.equal(invisibleBefore.filter(isCotwSlug).length, 22);
   // The two that are NOT Case-of-the-Week pages are the resident-only role-play tools —
   // the ones #517's allowlist called undeployed while the resident site served them.
   assert.deepEqual(
     invisibleBefore.filter(slug => !isCotwSlug(slug)).sort(),
-    ['rp-agitation.html', 'rp-brief-psych.html'],
+    ['rp-agitation.html', 'rp-brief-psych.html', 'rp-post-event-huddle.html'],
   );
 
   // Reading the one derived listing, nothing pending is unreachable and nothing is excluded.
