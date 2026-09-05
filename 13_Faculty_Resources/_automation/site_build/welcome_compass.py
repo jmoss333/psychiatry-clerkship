@@ -2,6 +2,8 @@
 
 from dataclasses import dataclass
 from html import escape
+import os
+import stat
 
 
 COMPASS_MARKER = "<!-- ms3-six-week-compass -->"
@@ -185,4 +187,43 @@ def assert_nav_projection(nav, cards) -> None:
         if row.get("t") != expected_title:
             raise CompassContractError(
                 "MS3 final nav row %s must have title %s" % (card.landing_ref, expected_title)
+            )
+
+
+def require_real_files(root, relative_paths) -> None:
+    invalid = []
+    for relative_path in relative_paths:
+        path = os.path.join(root, relative_path)
+        try:
+            metadata = os.stat(path)
+            if (
+                not stat.S_ISREG(metadata.st_mode)
+                or metadata.st_size == 0
+                or metadata.st_mode & 0o444 == 0
+            ):
+                invalid.append(relative_path)
+                continue
+            with open(path, "rb") as handle:
+                if handle.read(len(LFS_HEADER)) == LFS_HEADER:
+                    invalid.append(relative_path)
+        except OSError:
+            invalid.append(relative_path)
+    if invalid:
+        raise CompassContractError("MS3 Compass required files are invalid: " + ", ".join(invalid))
+
+
+def assert_ms3_output(out_dir, cards, safety_text, built_orientation_paths) -> None:
+    require_real_files(out_dir, built_orientation_paths)
+    try:
+        with open(os.path.join(out_dir, "content", "welcome.md"), encoding="utf-8") as handle:
+            welcome = handle.read()
+    except OSError as error:
+        raise CompassContractError("MS3 Compass built Welcome is unreadable: %s" % error) from error
+    expected = render_compass(cards, safety_text)
+    if expected not in welcome:
+        raise CompassContractError("MS3 Compass built Welcome is missing the exact rendered fragment")
+    for marker in (COMPASS_MARKER, SAFETY_START, SAFETY_END):
+        if marker in welcome:
+            raise CompassContractError(
+                "MS3 Compass built Welcome contains a raw Compass marker: %s" % marker
             )

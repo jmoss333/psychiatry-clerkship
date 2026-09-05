@@ -1,6 +1,7 @@
 """Contract tests for the MS3 Six-Week Compass's pure renderer."""
 
 from pathlib import Path
+import tempfile
 import unittest
 
 import welcome_compass
@@ -198,6 +199,84 @@ class WelcomeCompassTests(unittest.TestCase):
         for rows in invalid_rows:
             with self.assertRaisesRegex(welcome_compass.CompassContractError, "week1.md"):
                 welcome_compass.assert_nav_projection([{"section": "Compass", "items": rows}], self.cards())
+
+    def test_requires_each_nonempty_regular_readable_non_lfs_source_file(self):
+        with tempfile.TemporaryDirectory() as root:
+            relative_paths = ["orientation.html", "orientation.mp4", "orientation.vtt", "poster.jpg"]
+            for relative_path in relative_paths:
+                Path(root, relative_path).write_bytes(b"real package asset")
+
+            self.assertIsNone(welcome_compass.require_real_files(root, relative_paths))
+
+    def test_reports_every_invalid_orientation_source_file(self):
+        with tempfile.TemporaryDirectory() as root:
+            empty = Path(root, "empty.mp4")
+            empty.touch()
+            directory = Path(root, "directory.vtt")
+            directory.mkdir()
+            unreadable = Path(root, "unreadable.jpg")
+            unreadable.write_bytes(b"poster")
+            unreadable.chmod(0o000)
+            pointer = Path(root, "pointer.html")
+            pointer.write_bytes(welcome_compass.LFS_HEADER + b" oid sha256:abc")
+            relative_paths = [
+                "missing.html",
+                "empty.mp4",
+                "directory.vtt",
+                "unreadable.jpg",
+                "pointer.html",
+            ]
+            try:
+                with self.assertRaises(welcome_compass.CompassContractError) as raised:
+                    welcome_compass.require_real_files(root, relative_paths)
+            finally:
+                unreadable.chmod(0o644)
+
+            for relative_path in relative_paths:
+                self.assertIn(relative_path, str(raised.exception))
+
+    def test_asserts_complete_rendered_ms3_welcome_and_orientation_package(self):
+        with tempfile.TemporaryDirectory() as root:
+            out_dir = Path(root)
+            content = out_dir / "content"
+            tools = out_dir / "tools"
+            content.mkdir()
+            tools.mkdir()
+            (content / "welcome.md").write_text(
+                "Before\n" + EXPECTED_FRAGMENT + "\nAfter\n", encoding="utf-8"
+            )
+            built_orientation_paths = [
+                "tools/orientation-video.html",
+                "tools/Inpatient_Psych_Orientation.mp4",
+                "tools/Inpatient_Psych_Orientation.vtt",
+                "tools/poster.jpg",
+            ]
+            for relative_path in built_orientation_paths:
+                Path(root, relative_path).write_bytes(b"completed build asset")
+
+            self.assertIsNone(
+                welcome_compass.assert_ms3_output(
+                    out_dir, self.cards(), SAFETY, built_orientation_paths
+                )
+            )
+
+            (content / "welcome.md").write_text(
+                "Before\n" + welcome_compass.COMPASS_MARKER + "\nAfter\n", encoding="utf-8"
+            )
+            (tools / "poster.jpg").unlink()
+            with self.assertRaisesRegex(welcome_compass.CompassContractError, "poster.jpg"):
+                welcome_compass.assert_ms3_output(
+                    out_dir, self.cards(), SAFETY, built_orientation_paths
+                )
+            (tools / "poster.jpg").write_bytes(b"restored build asset")
+            (content / "welcome.md").write_text(
+                "Before\n" + EXPECTED_FRAGMENT + "\n" + welcome_compass.COMPASS_MARKER,
+                encoding="utf-8",
+            )
+            with self.assertRaisesRegex(welcome_compass.CompassContractError, "Compass marker"):
+                welcome_compass.assert_ms3_output(
+                    out_dir, self.cards(), SAFETY, built_orientation_paths
+                )
 
     def test_renderer_module_uses_only_derived_shipped_document_governance_input(self):
         source = (Path(__file__).with_name("welcome_compass.py").read_text(encoding="utf-8")
