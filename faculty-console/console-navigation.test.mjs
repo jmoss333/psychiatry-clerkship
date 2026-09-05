@@ -30,7 +30,7 @@ const RES_BASE = 'https://mmc-psychiatry-residents-sanford.netlify.app/';
 const CONSOLE = 'https://clerkship-faculty-attest.netlify.app/';
 const TOKEN = '0123456789abcdef0123456789abcdef';
 
-// The real 123-item universe, shaped exactly as the API returns it.
+// The real 124-item universe, shaped exactly as the API returns it.
 function realItems() {
   return normalizeReviewItems({
     items: deriveContentUniverse({ shipped: SHIPPED })
@@ -166,13 +166,14 @@ test('parseDeepLink returns null for anything that is not a loaded key', () => {
   assert.equal(parseDeepLink('?item=page:t_mood.md', []), null);
 });
 
-test('parseDeepLink addresses every one of the 123 real items and nothing else', () => {
+test('parseDeepLink addresses every one of the 124 real items and nothing else', () => {
   const items = realItems();
-  // 123 = 69 shared pages + 22 shared tools + 1 MS3-only tool + 22 Case-of-the-Week
-  // twins + 6 resident-only pages + 3 resident-only tools. It was 113 before ADR-002,
+  // 124 = 69 shared pages + 22 shared tools + 1 MS3-only tool + 22 Case-of-the-Week
+  // twins + 6 resident-only pages + 4 resident-only tools (123 until rp-post-event-huddle.html
+  // shipped on 2026-09-04). It was 113 before ADR-002,
   // which is the count of what the manifest and the case registry could see between
   // them; the extra 10 are what the resident build ships and nothing enumerated.
-  assert.equal(items.length, 123);
+  assert.equal(items.length, 124);
   for (const item of items) {
     assert.equal(parseDeepLink(`?item=${encodeURIComponent(item.key)}`, items)?.key, item.key);
   }

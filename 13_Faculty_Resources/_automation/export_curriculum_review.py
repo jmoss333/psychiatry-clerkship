@@ -127,6 +127,7 @@ def _slug_source_map(aud_key: str = "ms3") -> dict[str, str]:
             ("14_Tracks/Resident/cl_reference.md", "cl_reference.md"),
             ("08_Cases_and_Simulation/case-of-the-week/index_resident.md", "cotw_index.md"),
             ("_prototypes/agitation-trainer/rp-agitation.html", "rp-agitation.html"),
+            ("_prototypes/post-event-huddle/rp-post-event-huddle.html", "rp-post-event-huddle.html"),
             ("_prototypes/brief-psych/rp-brief-psych.html", "rp-brief-psych.html"),
             ("_prototypes/canon-quiz/rp-canon-quiz.html", "rp-canon-quiz.html"),
         ]:

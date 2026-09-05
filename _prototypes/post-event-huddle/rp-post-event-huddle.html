@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- [CLERKSHIP-META v1] tool="Post-Event Learning Huddle" version="0.1.0" built="2026-09-04" category="systems-practice" audience="resident" settings="inpatient" time="2min" reviewCadenceDays="365" evidenceThrough="n/a" status="reviewed" summary="A two-minute, resident-only learning huddle after one fictional agitation event at a shift change. Three structured choices — a patient question, a team signal, a system condition — and a deterministic debrief showing how the three lenses fit. Not a report, not an evaluation, not a policy statement. No free text, no storage, no requests, no doses, no instruments. Fictional composite; no PHI." -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>Post-Event Learning Huddle — 2 minutes</title>
+<meta name="description" content="A two-minute learning huddle after one fictional inpatient agitation event: choose one patient question, one team signal and one system condition, then read how the three lenses fit together.">
+<style>
+:root{
+  --bg:#f6f3ee; --bg-alt:#faf6f0; --surface:#ffffff; --surface2:#faf6f0; --hover:#f0e9e0;
+  --border:#ddd3c6; --border2:#e7ded2;
+  --primary:#c25a3c; --primary-dark:#a84830; --primary-light:#f3ebe5;
+  --accent:#2a6b5e; --accent-dark:#1e5248; --accent-light:#edf4f2;
+  --text:#2f2924; --text-mid:#51473d; --text-light:#665a4f;
+  --info:#41618a; --info-light:#eaf0f6;
+  --warning:#7a6234; --warning-light:#f5efe2;
+  --focus:#155eef; --shadow-sm:0 1px 3px rgba(0,0,0,.08);
+  --radius:12px;
+}
+[data-theme="dark"]{
+  --bg:#1b1815; --bg-alt:#221e1a; --surface:#26221e; --surface2:#2c2722; --hover:#332d27;
+  --border:#3f3730; --border2:#3a332c;
+  --primary:#e08a6e; --primary-dark:#f0a891; --primary-light:#3a2a24;
+  --accent:#7fc0b0; --accent-dark:#a6d8cb; --accent-light:#213631;
+  --text:#efe8df; --text-mid:#d6ccbf; --text-light:#b8ac9d;
+  --info:#9fbce0; --info-light:#22303f;
+  --warning:#e0c58a; --warning-light:#3a3324;
+  --focus:#8ab4ff; --shadow-sm:0 1px 3px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Source Sans 3",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:17px;line-height:1.55}
+.wrap{max-width:720px;margin:0 auto;padding:22px 18px 64px}
+h1,h2,h3{font-family:"Source Serif 4","Iowan Old Style",Georgia,serif;line-height:1.2;margin:0 0 10px}
+h1{font-size:1.7rem;color:var(--primary-dark,#a84830)}
+h2{font-size:1.2rem;margin-top:26px}
+h3{font-size:1.02rem;margin:0 0 6px}
+p{margin:0 0 10px}
+.kicker{text-transform:uppercase;letter-spacing:.12em;font-size:.72rem;font-weight:700;color:var(--accent-dark);margin-bottom:6px}
+.lead{color:var(--text-mid);font-size:.97rem;margin:0 0 14px}
+.meta{font-size:.82rem;color:var(--text-light);margin:0 0 16px}
+.boundary{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0 0 20px}
+@media (max-width:600px){.boundary{grid-template-columns:1fr}}
+.bcol{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow-sm)}
+.bcol.done{border-left:5px solid var(--info)}
+.bcol.here{border-left:5px solid var(--accent)}
+.bcol h2{margin:0 0 8px;font-size:1rem}
+.bcol ul{margin:0;padding-left:18px;font-size:.92rem;color:var(--text-mid)}
+.bcol li{margin:0 0 4px}
+.bcol .firm{font-weight:700;color:var(--text)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow-sm);margin:0 0 16px}
+.timeline{margin:0;padding-left:0;list-style:none;counter-reset:step}
+.timeline li{position:relative;padding-left:34px;margin:0 0 9px;counter-increment:step}
+.timeline li::before{content:counter(step);position:absolute;left:0;top:2px;width:24px;height:24px;border-radius:999px;background:var(--accent);color:#fff;font-size:.78rem;font-weight:700;display:grid;place-items:center}
+.timeline b{color:var(--text)}
+.voice{border-left:4px solid var(--primary);background:var(--primary-light);padding:10px 14px;border-radius:0 var(--radius) var(--radius) 0;font-family:"Source Serif 4",Georgia,serif;font-size:1.05rem;margin:14px 0 0}
+.voice .who{display:block;font-family:"Source Sans 3",system-ui,sans-serif;font-size:.78rem;color:var(--text-light);margin-top:4px}
+fieldset{border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);padding:12px 16px 8px;margin:0 0 14px;min-width:0}
+legend{font-weight:700;padding:0 6px;font-size:1rem}
+legend .n{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:999px;background:var(--primary-dark,#a84830);color:#fff;font-size:.75rem;margin-right:6px}
+.opt{display:flex;gap:10px;align-items:flex-start;padding:8px 6px;border-radius:8px;cursor:pointer}
+.opt:hover{background:var(--hover)}
+.opt input{margin-top:5px;flex:none;width:18px;height:18px;accent-color:var(--primary-dark,#a84830)}
+.opt input:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.opt span{font-size:.95rem}
+.actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:6px 0 18px}
+.btn{border:none;border-radius:11px;padding:12px 20px;font-size:1rem;font-weight:600;cursor:pointer;font-family:inherit;background:var(--primary-dark,#a84830);color:#fff}
+.btn:hover{background:var(--primary)}
+.btn:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.btn:disabled{background:var(--border);color:var(--text-light);cursor:default}
+.btn.secondary{background:var(--surface);color:var(--text);border:1px solid var(--border)}
+/* dark tokens lighten --primary-dark, so the filled button needs dark text there (AA 4.5:1) */
+[data-theme="dark"] .btn{color:#1b1815}
+[data-theme="dark"] .btn.secondary{color:var(--text)}
+[data-theme="dark"] legend .n{color:#1b1815}
+[data-theme="dark"] .timeline li::before{color:#1b1815}
+.progress{font-size:.88rem;color:var(--text-light)}
+#debrief{scroll-margin-top:16px}
+#debrief:focus{outline:none}
+.lens{border-left:5px solid var(--accent);padding-left:12px;margin:0 0 16px}
+.lens .tag{font-size:.74rem;text-transform:uppercase;letter-spacing:.1em;color:var(--accent-dark);font-weight:700}
+.lens .picked{font-weight:700;margin:2px 0 6px}
+.synth{background:var(--accent-light);border:1px solid var(--border2);border-radius:var(--radius);padding:14px 16px;margin:8px 0 16px}
+.synth p{margin:0 0 8px}
+.notdone{background:var(--warning-light);border:1px solid var(--border2);border-radius:var(--radius);padding:12px 16px;font-size:.92rem;color:var(--text-mid)}
+.notdone b{color:var(--text)}
+.pair{font-size:.9rem;color:var(--text-mid);margin-top:18px}
+.pair a{color:var(--accent-dark)}
+.sig{color:var(--text-light);font-size:.78rem;text-align:center;margin-top:28px;line-height:1.5}
+.sr-only{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+</style>
+</head>
+<body>
+<main class="wrap" id="root">
+  <p class="kicker">Resident · systems practice · about 2 minutes</p>
+  <h1>Post-Event Learning Huddle</h1>
+  <p class="lead">One fictional event. Three choices. A short debrief on how a patient question, a team signal and a system condition fit together. Nothing you choose here is saved, sent, or shown to anyone.</p>
+  <p class="meta">Fictional composite for teaching · no real patient, staff member, unit or date · your institution's own processes for safety and reporting are separate from this page and come first.</p>
+
+  <section id="boundary" class="boundary" aria-labelledby="boundary-h">
+    <h2 id="boundary-h" class="sr-only">Where this huddle sits</h2>
+    <div class="bcol done">
+      <h2>Already handled before this huddle (not here)</h2>
+      <ul id="already-handled"></ul>
+    </div>
+    <div class="bcol here">
+      <h2>This huddle (later; learning only)</h2>
+      <ul id="this-huddle"></ul>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="event-h">
+    <p class="kicker">The event</p>
+    <h2 id="event-h" style="margin-top:0"></h2>
+    <p id="event-setting" class="lead"></p>
+    <ol class="timeline" id="event-timeline"></ol>
+    <blockquote class="voice" id="event-voice"><span data-slot="patient-voice"></span><span class="who">What he said to the night mental-health worker</span></blockquote>
+  </section>
+
+  <form id="picks" onsubmit="return false" aria-describedby="picks-help">
+    <p class="kicker">Your three choices</p>
+    <p id="picks-help" class="lead">Pick one in each group. Every option is defensible; the debrief explains what each one surfaces and what it leaves to the other two lenses.</p>
+    <div id="lenses"></div>
+    <div class="actions">
+      <button type="button" class="btn" id="show" disabled>Show the debrief</button>
+      <span class="progress" id="progress" aria-live="polite">0 of 3 chosen</span>
+    </div>
+  </form>
+
+  <section id="debrief" aria-live="polite" tabindex="-1" hidden></section>
+
+  <p class="pair"><b>Pair with:</b>
+    <a href="../index.html?page=agitation.md">Agitation &amp; Restraint</a> ·
+    <a href="../index.html?page=systems_medlegal.md">Inpatient Systems &amp; Med-Legal</a> ·
+    <a href="../index.html?page=doc_oral.md">Documentation &amp; Oral Presentation</a> ·
+    <a href="../index.html?tool=communication-practice.html&amp;case=rupture_limit_setting_001">Repair after limit-setting</a>
+  </p>
+  <p class="sig">Joshua Moss, MD · Psychiatrist · Educational; fictional composite only, no PHI. Reviewed and attested by Joshua Moss, MD (2026-09-04).</p>
+</main>
+
+<script type="application/json" id="huddle-event">
+{
+  "event": {
+    "title": "Evening escalation at shift change — hospital day 2",
+    "setting": "Adult inpatient unit, voluntary admission. A 41-year-old man with schizoaffective disorder, admitted two days ago for worsening paranoia and several nights without sleep.",
+    "timeline": [
+      "<b>Day shift.</b> He told his primary nurse that noise and \"being crowded\" set him off, and that dim light and his own headphones help. It went into the progress-note narrative.",
+      "<b>About 19:00 — handoff.</b> A float nurse who had not met him took over. The handoff tool carried orders, observation level and PRN availability. The \"what helps\" line was not in it.",
+      "<b>About 19:30.</b> Bed management moved a new admission into his room. He learned of it when the stretcher reached the door.",
+      "<b>About 19:45.</b> He shouted, kicked the door frame and stood in the doorway. Staff cleared the hallway; the float nurse and a mental-health worker talked with him. The resident's page read: \"pt agitated come now\".",
+      "<b>About 20:00.</b> He accepted the already-ordered oral PRN and walked to the quiet room himself. No restraint or seclusion. No injuries. Vitals checked.",
+      "<b>Later.</b> No reassessment time was agreed; the resident assumed nursing had checked in with him, nursing assumed the resident had. Nobody on the evening team had met him before that shift."
+    ],
+    "patientVoice": "Nobody asked me what happened. They just decided I was dangerous.",
+    "alreadyHandled": [
+      "He was reassessed and is safe.",
+      "No injuries.",
+      "Orders and monitoring per unit practice.",
+      "Any notification or report your institution requires is a separate step through its own process."
+    ],
+    "thisHuddle": [
+      "Two minutes, three choices, no free text, nothing saved.",
+      "Not an evaluation of anyone. Not a policy statement.",
+      "After the left column, never instead of it."
+    ],
+    "boundaryStatement": "This page is not a report, does not know whether one was made, and cannot make one."
+  },
+  "lenses": [
+    {
+      "id": "patient",
+      "name": "Patient",
+      "prompt": "One question you would ask him first, next time you sit down",
+      "options": [
+        {"id": "a1", "label": "\"What did you notice first — before things got loud?\"",
+         "debrief": "Starts with his sequence, not ours. Early cues — the stretcher at the door, an unfamiliar face, the noise — are often known to the patient and invisible in the chart. It tells you which moment mattered to him. It leaves his preferences and his view of staff for later.",
+         "bridge": "His account of what came first is the only thing that can tell you which of the team signals actually mattered to him."},
+        {"id": "a2", "label": "\"What would have helped in that moment — and what made it worse?\"",
+         "debrief": "Asks for his de-escalation preferences in his own words, right after an event in which the team did not have them. It turns the day-shift note into something he owns. It does not by itself repair trust, and it does not explain why the information did not travel.",
+         "bridge": "Whatever he says would have helped is the content the team's information path needs to carry next time."},
+        {"id": "a3", "label": "\"How are you feeling about the staff and this unit now?\"",
+         "debrief": "Puts repair first. \"They just decided I was dangerous\" is an alliance rupture as much as an event; if it is not named, the next shift inherits it. It may surface fear, shame or anger. It gathers less about causes than the other questions.",
+         "bridge": "Repairing the alliance is what makes his answers to the other two lenses trustworthy rather than guarded."},
+        {"id": "a4", "label": "\"What do you want the team to know or do differently next time — and is it all right if we write it where the next shift can see it?\"",
+         "debrief": "Makes him the author of the plan and asks consent for where it lives. His preferences become clinical information, not a courtesy. The risk is moving to solutions before he has said what happened; some patients need the first or third question before this one.",
+         "bridge": "A plan in his words, placed where the next shift reads, is the shortest route from this event to the system condition you named."}
+      ]
+    },
+    {
+      "id": "team",
+      "name": "Team",
+      "prompt": "One team-communication or workflow signal that stood out",
+      "options": [
+        {"id": "b1", "label": "The \"what helps him\" line lived in a note narrative, not in the handoff.",
+         "debrief": "Information existed and did not travel. The right thing was documented; the handoff tool had no place to receive it. That is the usual shape of a handoff gap: nobody withheld anything, and the receiving nurse could not have known. It leaves the room move unexplained.",
+         "bridge": "This signal is about where information lived, not about who read it — it is a design fact, not a verdict on anyone on shift."},
+        {"id": "b2", "label": "The room change happened without the patient or his nurse knowing in advance.",
+         "debrief": "A decision made off-unit reached the bedside as an event. For a patient whose stated trigger is being crowded, an unannounced roommate is close to the worst case. It is about coordination between bed flow and the clinical team, upstream of the escalation and mostly outside the evening team's reach.",
+         "bridge": "This signal points upstream of the evening team — a decision arrived at the bedside without a clinical check-in."},
+        {"id": "b3", "label": "Nobody on the evening team had met him, and the page said only \"pt agitated come now\".",
+         "debrief": "The team was working from the fewest possible facts: an unfamiliar patient, a one-line page, no shared picture of what usually helps. Float coverage without a patient-level orientation turns every event into a first meeting. The page wording is a symptom — there was nothing else to say.",
+         "bridge": "This signal is about a team that had nothing in common yet — the fix is in what the shift starts with, not in anyone's judgement."},
+        {"id": "b4", "label": "After the PRN, no reassessment time was agreed and each discipline assumed the other had spoken to him.",
+         "debrief": "The event was \"over\" for the team before it was over for him. A closed loop needs a named time and a named person; without them, \"somebody will check\" reliably becomes nobody. This signal produced the sentence he said later, and it is the cheapest to change on the next shift.",
+         "bridge": "This signal is what left his sentence unheard — the loop closed for the team before it closed for him."}
+      ]
+    },
+    {
+      "id": "system",
+      "name": "System",
+      "prompt": "One system condition worth raising — and with whom",
+      "options": [
+        {"id": "c1", "label": "The handoff tool has no structured field for patient-stated de-escalation preferences.",
+         "debrief": "A field is a small change with a large reach: it makes a bedside observation a standing part of every handoff, for every patient. Worth raising with the nurse manager or the unit's quality group as a question, not a demand. It does not touch bed flow or reassessment.",
+         "bridge": "This condition is the durable home for what he says helps — a field outlives the shift and the rotation."},
+        {"id": "c2", "label": "Room moves are decided off-unit without a clinical check-in.",
+         "debrief": "Bed pressure is real and the move may have been unavoidable; the condition worth discussing is whether there is a moment — a call, a flag, a question — before a move reaches a patient with a known trigger. Whoever owns bed flow on your unit is the person to ask how that moment could exist.",
+         "bridge": "This condition sits above the unit — raising it means asking how a decision could pause for a clinical question."},
+        {"id": "c3", "label": "Evening coverage relies on float staff without a unit-specific orientation to current patients.",
+         "debrief": "A reality, not a complaint. The discussable part is what a float nurse receives at the start of a shift: a two-line \"who is this person and what helps\" for the patients most likely to need it. Raise it with nursing leadership — and model it at the physician handoff too.",
+         "bridge": "This condition is about what a shift begins with — it is the one a resident can also model at their own handoff."},
+        {"id": "c4", "label": "A post-event check-in with the patient is not a standard step, so whether it happens depends on who is on.",
+         "debrief": "An absent step is invisible until someone notices it was skipped. Making \"someone talks with the patient afterwards, and says so\" a named expectation is how \"nobody asked me\" stops being predictable. Worth proposing at a team meeting; it is the condition most directly tied to his experience.",
+         "bridge": "This condition is the one his own words are asking for — a check-in that is expected, not incidental."}
+      ]
+    }
+  ],
+  "synthesis": {
+    "intro": "Three lenses, one evening — each true on its own, and incomplete on its own.",
+    "close": "His answer tells you which signal mattered most; the signal tells you which condition to raise first; the condition is what changes the next patient's answer. One of each is the huddle — none of the other options was wrong."
+  },
+  "notDone": "It did not file a report, decide what your institution requires, evaluate anyone on that shift, or replace the debrief your unit may require after restraint or seclusion. It gave you one question, one signal and one condition to carry into tomorrow."
+}
+</script>
+
+<script id="huddle-logic">
+/* Pure, deterministic. No DOM, no storage, no requests. Exposed on the global for the
+   renderer below and for tests/post-event-huddle.test.mjs, which runs this block under
+   node:vm with an empty sandbox and checks all 64 pick combinations. */
+(function (root) {
+  'use strict';
+  var LENS_ORDER = ['patient', 'team', 'system'];
+  function findOption(lens, id) {
+    for (var i = 0; i < lens.options.length; i++) if (lens.options[i].id === id) return lens.options[i];
+    throw new Error('unknown option "' + id + '" for lens "' + lens.id + '"');
+  }
+  function buildDebrief(data, picks) {
+    var byId = {};
+    data.lenses.forEach(function (l) { byId[l.id] = l; });
+    var sections = LENS_ORDER.map(function (lid) {
+      var lens = byId[lid];
+      if (!lens) throw new Error('missing lens "' + lid + '"');
+      if (!picks || typeof picks[lid] !== 'string') throw new Error('no pick for lens "' + lid + '"');
+      var opt = findOption(lens, picks[lid]);
+      return { lens: lid, name: lens.name, optionId: opt.id, label: opt.label, debrief: opt.debrief, bridge: opt.bridge };
+    });
+    var synthesis = [data.synthesis.intro]
+      .concat(sections.map(function (s) { return s.bridge; }))
+      .concat([data.synthesis.close]);
+    return { patientVoice: data.event.patientVoice, sections: sections, synthesis: synthesis, notDone: data.notDone };
+  }
+  root.HUDDLE = { LENS_ORDER: LENS_ORDER, buildDebrief: buildDebrief };
+})(typeof window !== 'undefined' ? window : this);
+</script>
+
+<script id="huddle-render">
+(function () {
+  'use strict';
+  var data = JSON.parse(document.getElementById('huddle-event').textContent);
+  var picks = {};
+  function el(tag, attrs, children) {
+    var n = document.createElement(tag);
+    if (attrs) Object.keys(attrs).forEach(function (k) {
+      if (k === 'text') n.textContent = attrs[k];
+      else if (k === 'html') n.innerHTML = attrs[k];
+      else n.setAttribute(k, attrs[k]);
+    });
+    (children || []).forEach(function (c) { n.appendChild(typeof c === 'string' ? document.createTextNode(c) : c); });
+    return n;
+  }
+  function fill(id, items) {
+    var ul = document.getElementById(id);
+    items.forEach(function (t) { ul.appendChild(el('li', { text: t })); });
+  }
+  // ---- boundary panel
+  fill('already-handled', data.event.alreadyHandled);
+  document.getElementById('already-handled').appendChild(el('li', { class: 'firm', text: data.event.boundaryStatement }));
+  fill('this-huddle', data.event.thisHuddle);
+  // ---- event
+  document.getElementById('event-h').textContent = data.event.title;
+  document.getElementById('event-setting').textContent = data.event.setting;
+  var tl = document.getElementById('event-timeline');
+  data.event.timeline.forEach(function (step) { tl.appendChild(el('li', { html: step })); });
+  document.querySelector('#event-voice [data-slot="patient-voice"]').textContent = '“' + data.event.patientVoice + '”';
+  // ---- lenses
+  var lensesHost = document.getElementById('lenses');
+  var showBtn = document.getElementById('show');
+  var progress = document.getElementById('progress');
+  function update() {
+    var n = Object.keys(picks).length;
+    progress.textContent = n + ' of 3 chosen';
+    showBtn.disabled = n < 3;
+  }
+  data.lenses.forEach(function (lens, idx) {
+    var fs = el('fieldset');
+    var lg = el('legend');
+    lg.appendChild(el('span', { class: 'n', 'aria-hidden': 'true', text: String(idx + 1) }));
+    lg.appendChild(document.createTextNode(lens.prompt));
+    fs.appendChild(lg);
+    lens.options.forEach(function (opt) {
+      var inputId = 'opt-' + opt.id;
+      var input = el('input', { type: 'radio', name: 'lens-' + lens.id, id: inputId, value: opt.id });
+      input.addEventListener('change', function () { picks[lens.id] = opt.id; update(); });
+      var label = el('label', { class: 'opt', for: inputId }, [input, el('span', { text: opt.label })]);
+      fs.appendChild(label);
+    });
+    lensesHost.appendChild(fs);
+  });
+  update();
+  // ---- debrief
+  var debrief = document.getElementById('debrief');
+  function render() {
+    var out = window.HUDDLE.buildDebrief(data, picks);
+    debrief.innerHTML = '';
+    debrief.appendChild(el('p', { class: 'kicker', text: 'The debrief' }));
+    debrief.appendChild(el('h2', { text: 'One question, one signal, one condition', style: 'margin-top:0' }));
+    var voice = el('blockquote', { class: 'voice' });
+    voice.appendChild(el('span', { 'data-slot': 'patient-voice', text: '“' + out.patientVoice + '”' }));
+    voice.appendChild(el('span', { class: 'who', text: 'Keep his sentence in the room while you read.' }));
+    debrief.appendChild(voice);
+    out.sections.forEach(function (s) {
+      var d = el('div', { class: 'lens', 'data-lens': s.lens });
+      d.appendChild(el('div', { class: 'tag', text: s.name }));
+      d.appendChild(el('p', { class: 'picked', text: s.label }));
+      d.appendChild(el('p', { text: s.debrief }));
+      debrief.appendChild(d);
+    });
+    var syn = el('div', { class: 'synth' });
+    syn.appendChild(el('h3', { text: 'How the three fit together' }));
+    out.synthesis.forEach(function (line) { syn.appendChild(el('p', { text: line })); });
+    debrief.appendChild(syn);
+    var nd = el('div', { class: 'notdone' });
+    nd.appendChild(el('b', { text: 'What this huddle did not do. ' }));
+    nd.appendChild(document.createTextNode(out.notDone));
+    debrief.appendChild(nd);
+    var again = el('div', { class: 'actions' });
+    var againBtn = el('button', { type: 'button', class: 'btn secondary', text: 'Try a different combination' });
+    againBtn.addEventListener('click', function () {
+      debrief.hidden = true;
+      var first = document.querySelector('#lenses input[type="radio"]');
+      if (first) first.focus();
+    });
+    again.appendChild(againBtn);
+    again.appendChild(el('span', { class: 'progress', text: 'Nothing is saved; reloading the page clears everything.' }));
+    debrief.appendChild(again);
+    debrief.hidden = false;
+    debrief.focus();
+    debrief.scrollIntoView({ block: 'start' });
+  }
+  showBtn.addEventListener('click', render);
+})();
+</script>
+</body>
+</html>

@@ -34,6 +34,7 @@ RESIDENT_EXTRAS = [
     "rp-agitation.html",
     "rp-brief-psych.html",
     "rp-canon-quiz.html",
+    "rp-post-event-huddle.html",
     "systems_medlegal.md",
     "cl_reference.md",
     "rotation.md",
@@ -150,7 +151,7 @@ class FrontdoorCatalogTest(unittest.TestCase):
         self.assertEqual(resident["coreRevision"], REVISION)
 
         self.assertEqual(sum(len(column["refs"]) for column in ms3["curriculum"]["libraryColumns"]), 81)
-        self.assertEqual(sum(len(column["refs"]) for column in resident["curriculum"]["libraryColumns"]), 90)
+        self.assertEqual(sum(len(column["refs"]) for column in resident["curriculum"]["libraryColumns"]), 91)
         self.assertEqual(ms3["roles"], self.curriculum["roles"]["ms3"])
         self.assertEqual(resident["roles"], self.curriculum["roles"]["resident"])
         self.assertNotEqual(ms3["roles"], resident["roles"])
@@ -387,7 +388,8 @@ class FrontdoorCatalogTest(unittest.TestCase):
         # on each site and nothing said so, because this whole suite ran in neither
         # ci.yml nor bin/verify.sh. Both now run it; that is the other half of this fix.
         self.assertEqual(sum(len(column["refs"]) for column in ms3["curriculum"]["libraryColumns"]), 83)
-        self.assertEqual(sum(len(column["refs"]) for column in resident["curriculum"]["libraryColumns"]), 92)
+        # 93 as of 2026-09-04: +rp-post-event-huddle.html in the resident "Interactive tools" column.
+        self.assertEqual(sum(len(column["refs"]) for column in resident["curriculum"]["libraryColumns"]), 93)
         self.assertEqual(resident_additions, RESIDENT_EXTRAS)
         self.assertTrue(set(RESIDENT_EXTRAS).issubset(resident_placed))
         self.assertTrue(set(RESIDENT_EXTRAS).isdisjoint(resident_excluded))

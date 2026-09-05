@@ -1163,5 +1163,15 @@
     "at": "2026-08-23",
     "by": "Joshua Moss, MD",
     "note": "AI-drafted annotations, faculty-reviewed. Attested 2026-08-23 against 20ea0a29ce; every identifier resolved and retraction-checked in the 2026-08-21 canonical pass."
+  },
+  "rp-post-event-huddle.html": {
+    "status": "reviewed",
+    "risk": {
+      "kind": "general",
+      "level": "moderate"
+    },
+    "at": "2026-09-04",
+    "by": "Joshua Moss, MD",
+    "note": "Attested from deploy-preview-524 after a keyboard-only, axe-clean walk-through; event text, twelve option debriefs and boundary wording approved as written."
   }
 }

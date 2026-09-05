@@ -147,6 +147,7 @@
             { "ref": "exp_consult.md", "kind": "read" },
             { "ref": "collateral_workflow.md", "kind": "read" },
             { "ref": "family-systems.html", "kind": "tool" },
+            { "ref": "rp-post-event-huddle.html", "kind": "tool" },
             { "ref": "exp_family.md", "kind": "read" },
             { "ref": "doc_oral.md", "kind": "read" }
           ]
@@ -244,6 +245,7 @@
     { "ref": "rp-agitation.html", "reason": "resident-only tool; library columns ship to both sites, so placing it would dead-link on MS3" },
     { "ref": "rp-brief-psych.html", "reason": "resident-only tool; library columns ship to both sites, so placing it would dead-link on MS3" },
     { "ref": "rp-canon-quiz.html", "reason": "resident-only tool; library columns ship to both sites, so placing it would dead-link on MS3" },
+    { "ref": "rp-post-event-huddle.html", "reason": "resident-only tool; library columns ship to both sites, so placing it would dead-link on MS3" },
     { "ref": "rotation.md", "reason": "resident-only page; library columns ship to both sites, so placing it would dead-link on MS3" },
     { "ref": "adv_psychopharm.md", "reason": "resident-only page; library columns ship to both sites, so placing it would dead-link on MS3" },
     { "ref": "systems_medlegal.md", "reason": "resident-only page; library columns ship to both sites, so placing it would dead-link on MS3" },
@@ -258,7 +260,7 @@
     },
     "resident": {
       "additions": [
-        { "column": "Interactive tools", "refs": ["rp-agitation.html", "rp-brief-psych.html", "rp-canon-quiz.html"] },
+        { "column": "Interactive tools", "refs": ["rp-agitation.html", "rp-brief-psych.html", "rp-canon-quiz.html", "rp-post-event-huddle.html"] },
         { "column": "Acute & safety", "refs": ["systems_medlegal.md", "cl_reference.md"] },
         { "column": "Clinical skills", "refs": ["rotation.md", "supervision_teaching.md"] },
         { "column": "Evidence & exam", "refs": ["adv_psychopharm.md", "canon_200.md"] }

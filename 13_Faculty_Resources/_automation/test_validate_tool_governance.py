@@ -87,6 +87,7 @@ def write_synthetic_repository(root: Path) -> None:
                     "rp-agitation.html",
                     "rp-brief-psych.html",
                     "rp-canon-quiz.html",
+                    "rp-post-event-huddle.html",
                 )
             }
         ),
@@ -98,6 +99,7 @@ def write_synthetic_repository(root: Path) -> None:
         "_prototypes/agitation-trainer/rp-agitation.html": b'<!-- [RC-META] tool="synthetic-a" audience="trainee" -->\n',
         "_prototypes/brief-psych/rp-brief-psych.html": b'<!-- [RC-META] tool="synthetic-b" audience="trainee" -->\n',
         "_prototypes/canon-quiz/rp-canon-quiz.html": b'<!-- [RC-META] tool="synthetic-c" audience="trainee" -->\n',
+        "_prototypes/post-event-huddle/rp-post-event-huddle.html": b'<!-- [CLERKSHIP-META v1] tool="synthetic-d" audience="resident" -->\n',
     }
     for relative, value in sources.items():
         path = root / relative
@@ -540,7 +542,7 @@ class RepositoryProducerTests(unittest.TestCase):
             diagnostics, documents = governance.validate_repository(ROOT)
 
         self.assertEqual(len(documents["ms3"]["items"]), 23)
-        self.assertEqual(len(documents["resident"]["items"]), 25)
+        self.assertEqual(len(documents["resident"]["items"]), 26)
         self.assertEqual(len(diagnostics), 1)
         self.assertTrue(diagnostics[0].startswith("legacy metadata warning: "))
 
@@ -635,7 +637,7 @@ class RepositoryProducerTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn("tool governance OK", result.stdout)
         self.assertIn("ms3: 23 item(s)", result.stdout)
-        self.assertIn("resident: 25 item(s)", result.stdout)
+        self.assertIn("resident: 26 item(s)", result.stdout)
 
     def test_rotation_curator_is_an_attested_faculty_local_policy_tool(self) -> None:
         # Reviewed by Joshua Moss, MD in the faculty console on 2026-08-23; the attestation

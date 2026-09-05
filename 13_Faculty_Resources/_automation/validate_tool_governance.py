@@ -45,9 +45,10 @@ SITE_EXTRAS = {
         ("_prototypes/agitation-trainer/rp-agitation.html", "rp-agitation.html"),
         ("_prototypes/brief-psych/rp-brief-psych.html", "rp-brief-psych.html"),
         ("_prototypes/canon-quiz/rp-canon-quiz.html", "rp-canon-quiz.html"),
+        ("_prototypes/post-event-huddle/rp-post-event-huddle.html", "rp-post-event-huddle.html"),
     ),
 }
-EXPECTED_TOOL_COUNTS = {"ms3": 23, "resident": 25}
+EXPECTED_TOOL_COUNTS = {"ms3": 23, "resident": 26}
 ALLOWED_AUDIENCES = frozenset({"trainee", "ms3", "resident", "faculty"})
 
 
