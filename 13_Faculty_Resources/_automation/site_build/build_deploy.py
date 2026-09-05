@@ -421,6 +421,10 @@ _week_items=[
 ]
 # The manifest, both navs and the Compass must agree on a week page's title; the curriculum
 # is the source and the manifest is checked against it here (2026-09-05 review, finding 8).
+# Deliberately compared against site_manifest.json, the PRODUCER a maintainer edits to fix a
+# drift, rather than shipped_pages.json, the derived listing -- and it reuses the `md` rows
+# this script already loaded rather than opening the manifest again, because
+# tests/shipped-pages-readers.test.mjs freezes the set of direct manifest readers.
 _manifest_titles={row[1]:row[2] for row in md}
 _week_title_drift=[
     (card.landing_ref,_manifest_titles.get(card.landing_ref),welcome_compass.week_nav_title(card))
@@ -447,7 +451,7 @@ nav=[
 ]
 _navorder=["Orientation","Start the Encounter","Understand the Problem","Assess Safety and Acuity","Make a Plan","Communicate with Patients","Work with Family and Systems","Present and Work with the Team","Practice and Exam Prep","Case of the Week","Evidence and Reference","Feedback"]
 nav=sorted(nav,key=lambda s:_navorder.index(s["section"]) if s["section"] in _navorder else 999)
-welcome_compass.assert_nav_projection(nav,_compass_cards)
+welcome_compass.assert_nav_projection(nav,_compass_cards,label="MS3")
 
 # ---------- SURFACE GOVERNANCE: nav annotation ----------
 # Canonical review/risk state (13_Faculty_Resources/reviewed.json) flattened into

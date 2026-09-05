@@ -286,29 +286,35 @@ def inject_compass(welcome_markdown: str, fragment: str) -> tuple[str, bool]:
     return rendered, True
 
 
-def assert_nav_projection(nav, cards) -> None:
+def assert_nav_projection(nav, cards, label="MS3") -> None:
+    """Both learner sites run this gate, so `label` names the build in every message."""
     if not isinstance(nav, list):
-        raise CompassContractError("MS3 final nav must be a list")
+        raise CompassContractError("%s final nav must be a list" % label)
     rows = []
     for section in nav:
         if not isinstance(section, dict) or not isinstance(section.get("items"), list):
-            raise CompassContractError("MS3 final nav contains a malformed section")
+            raise CompassContractError("%s final nav contains a malformed section" % label)
         rows.extend(section["items"])
     for card in cards:
         matching = [row for row in rows if isinstance(row, dict) and row.get("f") == card.landing_ref]
         if len(matching) != 1:
             raise CompassContractError(
-                "MS3 final nav must contain exactly one row for %s" % card.landing_ref
+                "%s final nav must contain exactly one row for %s" % (label, card.landing_ref)
             )
         row = matching[0]
         expected_title = week_nav_title(card)
         if row.get("k") != "md":
-            raise CompassContractError("MS3 final nav row %s must be Markdown" % card.landing_ref)
+            raise CompassContractError(
+                "%s final nav row %s must be Markdown" % (label, card.landing_ref)
+            )
         if row.get("hidden") is not True:
-            raise CompassContractError("MS3 final nav row %s must be hidden" % card.landing_ref)
+            raise CompassContractError(
+                "%s final nav row %s must be hidden" % (label, card.landing_ref)
+            )
         if row.get("t") != expected_title:
             raise CompassContractError(
-                "MS3 final nav row %s must have title %s" % (card.landing_ref, expected_title)
+                "%s final nav row %s must have title %s"
+                % (label, card.landing_ref, expected_title)
             )
 
 
@@ -509,7 +515,7 @@ def assert_ms3_output(out_dir, cards, safety_text, built_orientation_paths) -> N
 
 def assert_resident_output(out_dir) -> None:
     require_real_files(out_dir, RESIDENT_ONBOARDING_PATHS)
-    forbidden = dict(_retired_needles())
+    forbidden = _retired_needles()
     for copy in (COMPASS_ROOT_OPENER, SCOPE_COPY, PROMPT_COPY, COMPASS_HEADING, OPTIONAL_VIDEO_COPY):
         forbidden[copy.encode("utf-8")] = "MS3 Compass copy: " + copy
     files = _scan_completed_output(out_dir, forbidden)

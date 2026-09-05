@@ -234,12 +234,20 @@ shutil.copy2(_resident_reasoning, OUT+"/reasoning_cases.json")
 # 2026-07-26; site_manifest.json is the source of truth for what ships.
 # The six inherited week pages take their titles from curriculum.json through the same
 # formula the MS3 nav and the Compass use, so the two sites never label one page two ways.
-from shipped_pages import load_shipped_pages as _load_shipped_pages
+from shipped_pages import ShippedPagesError as _ShippedPagesError, load_shipped_pages as _load_shipped_pages
 try:
     _week_cards=welcome_compass.prepare_cards(
         json.load(open(LIB+"/curriculum.json",encoding="utf-8"))["learningPaths"]["ms3"]["weeks"],
         _load_shipped_pages(LIB))
-except welcome_compass.CompassContractError as _week_error:
+except (
+    OSError,
+    UnicodeError,
+    json.JSONDecodeError,
+    KeyError,
+    TypeError,
+    welcome_compass.CompassContractError,
+    _ShippedPagesError,
+) as _week_error:
     print("BUILD ABORTED — week nav titles:",_week_error)
     raise SystemExit(1)
 _HIDDEN_WEEKS=[{"t":welcome_compass.week_nav_title(_c),"f":_c.landing_ref,"k":"md","hidden":True} for _c in _week_cards]
@@ -283,7 +291,7 @@ nav=[
 ]
 _navorder=["Orientation","Start the Encounter","Understand the Problem","Assess Safety and Acuity","Make a Plan","Communicate with Patients","Work with Family and Systems","Present and Work with the Team","Practice and Exam Prep","Case of the Week","Evidence and Reference","Feedback"]
 nav=sorted(nav,key=lambda s:_navorder.index(s["section"]) if s["section"] in _navorder else 999)
-welcome_compass.assert_nav_projection(nav,_week_cards)
+welcome_compass.assert_nav_projection(nav,_week_cards,label="resident")
 
 # ---------- SURFACE GOVERNANCE: nav annotation (resident) ----------
 # Built from the SAME canonical ledger as MS3, but scoped to THIS site's own nav

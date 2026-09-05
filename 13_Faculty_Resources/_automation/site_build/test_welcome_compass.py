@@ -294,6 +294,17 @@ class WelcomeCompassTests(unittest.TestCase):
         ]}]
         self.assertIsNone(welcome_compass.assert_nav_projection(nav, self.cards()))
 
+    def test_nav_projection_names_the_build_it_ran_on(self):
+        rows = [
+            {"f": card.landing_ref, "k": "md", "hidden": True,
+             "t": "Week %d — %s" % (card.n, card.title)}
+            for card in self.cards()
+        ][1:]
+        with self.assertRaisesRegex(welcome_compass.CompassContractError, "resident final nav"):
+            welcome_compass.assert_nav_projection(
+                [{"section": "Compass", "items": rows}], self.cards(), label="resident"
+            )
+
     def test_nav_projection_rejects_missing_duplicate_wrong_kind_visible_or_wrong_title(self):
         good = [
             {"f": card.landing_ref, "k": "md", "hidden": True,
