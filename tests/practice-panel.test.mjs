@@ -508,6 +508,51 @@ test('the reason is the promoted can\'t-miss, never a copy of a grid row', () =>
   }
 });
 
+// ---- WP-F · the quiz-less empty state ------------------------------------------------------------
+
+test('a quiz-less page offers retrieval without apologising for the missing quiz', () => {
+  let quizless = 0;
+  for (const [ref, m] of topicEntries) {
+    if (!F.hasPracticeTpl(m) || m.quiz) continue;
+    quizless += 1;
+    const html = F.buildTpl(m, ref);
+    assert.ok(!html.includes('No page-specific question yet'),
+      `${ref}: the panel still apologises for having no quiz`);
+    // The two retrieval actions MUST survive. review.html is hidden:true in nav on BOTH sites
+    // and appears nowhere else in the shell except practicePrimary's phase-gated branch and
+    // buildPracticeTools' empty state (which fires on only 3 pages), so dropping them here
+    // would make Daily Review unreachable on 28 of these pages.
+    assert.match(html, /href="\?tool=question-bank-practice\.html"/, `${ref}: lost Practice Questions`);
+    assert.match(html, /href="\?tool=review\.html"/, `${ref}: lost Daily Review`);
+  }
+  // A non-vacuity guard, NOT a corpus pin. It asserts only that the loop ran, so a broken
+  // hasPracticeTpl or an always-truthy m.quiz cannot make this test pass by iterating nothing.
+  // It deliberately does not pin HOW MANY quiz-less pages exist: authoring quizzes is the fix
+  // for that debt, and a threshold would fail the build for making the improvement — with 31
+  // today, a `>= 25` pin broke as soon as seven pages gained a quiz (Codex P2 on #534). The
+  // synthetic case below keeps the contract alive even if every page eventually carries one.
+  assert.ok(quizless >= 1, 'no quiz-less page was exercised; the empty state went untested');
+});
+
+test('the quiz-less empty state holds even when no real page is quiz-less', () => {
+  // Pins the same contract against a fixture rather than against content debt, so it survives
+  // the corpus reaching zero quiz-less pages — the state this test exists to protect is a
+  // property of the renderer, not a property of how much quiz authoring is outstanding.
+  const html = F.buildTpl({ tldr: 'A page with no quiz.' }, 'synthetic-quizless.md');
+  assert.ok(!html.includes('No page-specific question yet'), 'the panel apologises for having no quiz');
+  assert.match(html, /href="\?tool=question-bank-practice\.html"/, 'lost Practice Questions');
+  assert.match(html, /href="\?tool=review\.html"/, 'lost Daily Review');
+});
+
+test('every quiz-less page still routes to Daily Review somewhere in its panel', () => {
+  // Guards the reachability argument above as data, not as a comment: if a later change removes
+  // the fallback pair, this fails even if the apology assertion still passes.
+  for (const [ref, m] of topicEntries) {
+    if (!F.hasPracticeTpl(m) || m.quiz) continue;
+    assert.match(F.buildTpl(m, ref), /\?tool=review\.html/, `${ref}: no route to Daily Review`);
+  }
+});
+
 // ---- WP-E · density and grouping --------------------------------------------------------------
 
 const countActions = (html, cls) => [...html.matchAll(/<a class="practice-action([^"]*)"/g)]
