@@ -30,6 +30,7 @@ assert.deepEqual(previewConfig, {
   providerMode: 'mock',
   endpoint: '',
   autoOpenSettings: false,
+  retryPrototype: true,
 });
 
 console.log('PASS — generated preview matches canonical HTML and pack');

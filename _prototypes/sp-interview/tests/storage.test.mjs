@@ -85,7 +85,7 @@ for (const file of files) {
   } else {
     assert.match(
       html,
-      /window\.__SP_PREVIEW__=\{"generated":true,"providerMode":"mock","endpoint":"","autoOpenSettings":false\}/,
+      /window\.__SP_PREVIEW__=\{"generated":true,"providerMode":"mock","endpoint":"","autoOpenSettings":false,"retryPrototype":true\}/,
       `${label} generated preview must default to offline mock mode`,
     );
     assert.match(html, /window\.__SP_PACK__\s*=/, `${label} draft pack must remain embedded`);

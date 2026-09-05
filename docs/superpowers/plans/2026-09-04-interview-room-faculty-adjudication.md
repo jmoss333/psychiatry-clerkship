@@ -198,3 +198,40 @@ the proxy/client suites, validators, and static QA. Generated preview and facult
 worksheet artifacts were refreshed from their canonical generators.
 No clinical attestation, publication, deployment, or individual benchmark-label
 adjudication is implied by this change.
+
+## Offline retry prototype — requested 2026-09-04
+
+The project author selected **“Prototype”** after the recommendation to prototype
+**Retry this moment**. The generated local `sp-interview.preview.html` enables
+the prototype; the canonical learner page has no retry control by default.
+No manifest, navigation, provider, pack, clinical attestation, or deployment
+configuration changes are part of this prototype.
+
+After an entirely offline encounter, choose a completed exchange from the
+debrief and select **Retry this moment**. The prototype rebuilds only the earlier
+learner turns in a fresh offline session, preserving the original difficulty and
+checking that the earlier patient replies reproduce exactly. It starts before
+the chosen question: later questions, coverage, and disclosures do not carry
+backward. Live/mixed conversations are ineligible.
+
+Rewrite the chosen line and optionally practice two follow-ups. The view compares
+the original and retry exchanges with their original numbering. It offers no
+score, preferred-answer verdict, mastery, or readiness claim; a changed simulated
+reply does not establish a better question. The retry is text-only, has no
+provider calls, and introduces no storage or export. Returning to the original
+debrief discards the retry and restores keyboard focus; original ratings,
+self-assessment, and transcript remain unchanged.
+
+Verification covers prefix isolation, repeatability across all three personas,
+invalid/mixed input, the three-exchange limit, and original-state preservation.
+Independent review additionally exercised 940 replayed replies across benchmark
+scenarios and both difficulty modes without changing any original encounter.
+Its screen-reader announcement finding was corrected: every accepted retry reply
+is announced with the practice exchange number, and the browser check verifies
+that announcement. Browser scenarios cover 320/390-pixel phones, a 1440-pixel
+desktop, light/dark themes, return/re-entry, unchanged storage, and absence of the
+prototype control on the canonical page. The original 205 benchmark frames and
+evaluation captures remain unchanged.
+The final `bash bin/verify.sh` run passed, including both sequential learner-site
+builds. Preview, storage, proxy/client, and generated-artifact checks passed;
+no publication or deployment was performed.

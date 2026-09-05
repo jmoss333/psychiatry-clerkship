@@ -203,6 +203,18 @@
   .evidence-review .quoted-turn{white-space:pre-wrap}
   .evidence-review a{display:inline-block;min-height:44px;padding:10px 0;color:var(--accent-dark)}
   .crit .evidence-review{background:var(--surface);color:var(--text);padding:0 14px;border-radius:var(--radius-sm)}
+  .retry-launcher label,.retry-compose label{display:block;font-weight:600;margin:12px 0 6px}
+  .retry-launcher select,.retry-compose textarea{display:block;width:100%;max-width:100%;font:inherit;color:var(--text);background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;margin-bottom:12px}
+  .retry-compose textarea{min-height:104px;resize:vertical}
+  .retry-workspace{margin-top:var(--sp3)}
+  .retry-workspace p{line-height:1.55;font-size:.9rem}
+  .retry-context{border-left:3px solid var(--accent);padding:4px 14px;margin:20px 0}
+  .retry-columns{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:var(--sp3)}
+  .retry-columns>section{min-width:0}
+  .retry-turn{padding:12px 0;border-top:1px solid var(--border);overflow-wrap:anywhere}
+  .retry-turn p,.retry-context p{white-space:pre-wrap}
+  .retry-status{padding:12px;background:var(--bg-alt);border-radius:var(--radius-sm)}
+  .retry-workspace .retry-return{margin:12px 0}
   .teach p{margin:0 0 10px;font-size:.88rem;line-height:1.55;color:var(--text-mid)}
   .teach p .pin{color:var(--primary-dark);font-family:var(--font-head)}
   .aftercare{margin:16px 0 0;padding:12px 14px;background:var(--info-light);border-radius:var(--radius-md);font-size:.82rem;color:var(--info);line-height:1.55}
@@ -326,6 +338,33 @@ MockProvider.prototype.respond=function(s,text){
   return Promise.resolve({reply:reply,state:st});
 };
 MockProvider.prototype.evaluate=function(){return Promise.resolve(null);};
+
+/* Preview-only, text-only retry. Rebuild the prefix in a fresh offline session. */
+function canRetryEncounter(encounter){
+  if(!encounter||!(encounter.provider instanceof MockProvider)||!encounter.session||!encounter.session.turns.length)return false;
+  var patients=(encounter.msgs||[]).filter(function(m){return m.who==='pt';});
+  return patients.length===encounter.session.turns.length+1&&patients.every(function(m){return m.offline===true;});
+}
+function createRetryMoment(encounter,index){
+  if(!canRetryEncounter(encounter))return Promise.reject(new Error('This prototype requires an entirely offline encounter.'));
+  var original=encounter.session;
+  if(!Number.isInteger(index)||index<0||index>=original.turns.length)return Promise.reject(new Error('Choose an exchange from the original conversation.'));
+  var provider=new MockProvider(),session=provider.start(original.caseDef,{difficulty:original.opts.difficulty});
+  var rebuilding=Promise.resolve();
+  original.turns.slice(0,index).forEach(function(turn){
+    rebuilding=rebuilding.then(function(){return provider.respond(session,turn.me);}).then(function(result){
+      if(result.reply!==turn.pt)throw new Error('This conversation cannot be reconstructed exactly for an offline retry.');
+    });
+  });
+  return rebuilding.then(function(){return {provider:provider,session:session,prefixLength:index,
+    original:original.turns.slice(index,index+3).map(function(t){return {me:t.me,pt:t.pt};})};});
+}
+function retryMomentRespond(retry,text){
+  if(retry.session.turns.length-retry.prefixLength>=3)return Promise.reject(new Error('The three-exchange practice cycle has ended.'));
+  if(typeof text!=='string'||!text.trim()||text.trim().length>1200)return Promise.reject(new Error('Write a line of 1–1200 characters.'));
+  if(looksLikePhi(text))return Promise.reject(new Error('Use fictional details only. Remove possible patient identifiers before trying again.'));
+  return retry.provider.respond(retry.session,text.trim());
+}
 
 function ProxyProvider(endpoint,passcode,bounds){this.endpoint=endpoint;this.passcode=passcode;this.mock=new MockProvider();this.rapportMin=bounds&&bounds.rapportMin;this.rapportMax=bounds&&bounds.rapportMax;}
 ProxyProvider.prototype.name='Live (proxy)';
@@ -563,6 +602,60 @@ function EvidenceReview(props){
       e('p',{className:'quoted-turn'},e('b',null,'Patient: '),t.patient));})):null,
     e('a',{href:'#exchange-review',onClick:function(event){var review=document.getElementById('exchange-review');if(review){event.preventDefault();review.open=true;review.querySelector('summary').focus();review.scrollIntoView({block:'start'});}}},'Review the full exchange'));
 }
+function RetryMoment(props){
+  var r=useState(null),retry=r[0],setRetry=r[1];
+  var d=useState(props.encounter.session.turns[props.index].me),draft=d[0],setDraft=d[1];
+  var b=useState(true),busy=b[0],setBusy=b[1];
+  var er=useState(''),error=er[0],setError=er[1];
+  var active=useRef(true),inputRef=useRef(null),endedRef=useRef(null);
+  var turns=retry?retry.session.turns.slice(retry.prefixLength):[],ended=turns.length>=3;
+  useEffect(function(){
+    active.current=true;
+    createRetryMoment(props.encounter,props.index).then(function(result){if(active.current){setRetry(result);setBusy(false);}})
+      .catch(function(err){if(active.current){setError(err.message);setBusy(false);}});
+    return function(){active.current=false;};
+  },[props.encounter,props.index]);
+  useEffect(function(){if(!busy){var target=ended?endedRef.current:inputRef.current;if(target)target.focus();}},[busy,ended]);
+  function submit(event){
+    event.preventDefault();if(busy||!retry||ended)return;
+    setBusy(true);setError('');
+    retryMomentRespond(retry,draft).then(function(result){if(active.current){
+      announce('Practice exchange '+(retry.session.turns.length-retry.prefixLength)+'. '+retry.session.caseDef.persona.displayName+' replied: '+result.reply);
+      setRetry(Object.assign({},retry));setDraft('');setBusy(false);
+    }})
+      .catch(function(err){if(active.current){setError(err.message);setBusy(false);}});
+  }
+  function showTurns(items){return items.map(function(t,i){return e('div',{className:'retry-turn',key:i},
+    e('b',null,'Exchange '+(props.index+i+1)),
+    e('p',{className:'learner-line'},e('b',null,'Learner: '),t.me),
+    e('p',null,e('b',null,'Patient: '),t.pt));});}
+  var prior=props.encounter.session.turns.slice(0,props.index);
+  var prompt=prior.length?prior[prior.length-1].pt:props.encounter.session.caseDef.persona.opening;
+  return e('div',{className:'card retry-workspace'},
+    e('p',{className:'microlabel'},'Offline prototype · fictional practice'),
+    e('h2',null,'Retry this moment'),
+    e('p',null,'Rewrite one line, then try up to two follow-ups. Your original interview stays unchanged. This retry disappears when you return to the debrief.'),
+    e('p',null,'These are offline simulated replies. A different reply is not proof of a better question.'),
+    e('button',{className:'btn ghost retry-return',onClick:props.onClose},'Return to original debrief'),
+    e('div',{className:'retry-context'},e('b',null,'Before exchange '+(props.index+1)),e('p',null,e('b',null,'Patient: '),prompt),
+      prior.length?e('details',{className:'exchange-review'},e('summary',null,'Earlier context ('+prior.length+' exchanges)'),
+        prior.map(function(t,i){return e('div',{className:'retry-turn',key:i},e('b',null,'Exchange '+(i+1)),e('p',null,e('b',null,'Learner: '),t.me),e('p',null,e('b',null,'Patient: '),t.pt));})):null),
+    e('div',{className:'retry-columns'},
+      e('section',{className:'retry-original','aria-labelledby':'retry-original-title'},e('h3',{id:'retry-original-title'},'Original'),
+        showTurns(props.encounter.session.turns.slice(props.index,props.index+3))),
+      e('section',{className:'retry-attempt','aria-labelledby':'retry-attempt-title'},e('h3',{id:'retry-attempt-title'},'Your retry'),
+        busy&&!retry?e('p',{role:'status'},'Rebuilding the earlier conversation…'):null,
+        showTurns(turns),
+        e('p',{className:'retry-status'},turns.length+' of 3 practice exchanges used'),
+        error?e('p',{className:'phi',role:'alert'},error):null,
+        retry&&!ended?e('form',{className:'retry-compose',onSubmit:submit},
+          e('label',{htmlFor:'retry-line'},turns.length?'Your next line':'Rewrite your line'),
+          e('textarea',{id:'retry-line',ref:inputRef,value:draft,maxLength:1200,disabled:busy,onChange:function(event){setDraft(event.target.value);}}),
+          e('button',{className:'btn primary',type:'submit',disabled:busy||!draft.trim()},turns.length?'Continue practice':'Try this line')):null,
+        ended?e('div',null,e('h3',{ref:endedRef,tabIndex:-1},'Practice cycle ended'),
+          e('p',null,'Compare the wording and replies. What changed, what remains unclear, and what would you discuss with your supervisor?'),
+          e('button',{className:'btn primary retry-return',onClick:props.onClose},'Return to original debrief')):null)));
+}
 function Ribbon(props){
   return e('div',{className:'ribbon',role:'note'},
     e('span',{className:'mark','aria-hidden':true},'✳'),
@@ -581,6 +674,9 @@ function SpeakBars(props){ // animated speaking indicator
 function App(){
   var st=useState({screen:'loading',pack:null,err:null}); var S=st[0],setS=st[1];
   var enc=useState(null); var E=enc[0],setE=enc[1];
+  var rp=useState(null),retryIndex=rp[0],setRetryIndex=rp[1];
+  var rs=useState(0),retrySelection=rs[0],setRetrySelection=rs[1];
+  var retryLaunchRef=useRef(null);
   var inp=useState(''); var input=inp[0],setInput=inp[1];
   var sa=useState({a:'',b:'',c:''}); var SA=sa[0],setSA=sa[1];
   var mode=useState(previewConfig.providerMode); var provMode=mode[0],setProvMode=mode[1];
@@ -828,7 +924,7 @@ function App(){
   function begin(caseDef,difficulty){
     if(voiceMode==='managed'&&!managedEligible(caseDef)){setShowVoiceConsent(false);announce('Managed voice is not approved for this case. Choose Voice off or Device voice to begin.');return;}
     if(voiceMode==='managed'&&!managedConsentValid()){setShowVoiceConsent(true);announce('Review managed voice consent before entering the room.');return;}
-    cancelEvaluation();setShowSettings(false);setShowVoiceConsent(false);
+    cancelEvaluation();setShowSettings(false);setShowVoiceConsent(false);setRetryIndex(null);setRetrySelection(0);
     var p=makeProvider();if(!p)return;
     var encounterId;
     try{encounterId=window.SPInterviewVoice.createEncounterId();}catch(error){announce('This browser cannot create a private room identifier.');return;}
@@ -1132,6 +1228,8 @@ function App(){
 
   /* ---------- debrief ---------- */
   if(S.screen==='debrief'){
+    if(previewConfig.retryPrototype===true&&retryIndex!==null&&canRetryEncounter(E))return e('div',null,header,
+      e(RetryMoment,{key:E.encounterId+':'+retryIndex,encounter:E,index:retryIndex,onClose:function(){setRetryIndex(null);setTimeout(function(){if(retryLaunchRef.current)retryLaunchRef.current.focus();},0);}}));
     var sess2=E.session, cov=computeCoverage(sess2), rub=computeRubric(sess2,cov), nar=buildNarrative(sess2,cov,rub);
     var who2=E.caseDef.persona.displayName;
     var critItem=cov.filter(function(c){return c.critical;})[0]||cov.filter(function(c){return c.id==='c_si';})[0];
@@ -1155,6 +1253,15 @@ function App(){
     var wcls={observed:'obs',partial:'part',missed:'miss'};
     return e('div',null,header,
       e('p',{className:'formative'},e('b',null,'Formative only.'),' Practice feedback from a simulation — not a grade, stored only in this browser. Bring the transcript to your supervisor; the conversation about it is the point.'),
+      previewConfig.retryPrototype===true?e('div',{className:'card retry-launcher'},
+        e('p',{className:'microlabel'},'Offline prototype'),e('h2',null,'Practice one moment again'),
+        canRetryEncounter(E)?e('div',null,
+          e('p',null,'Choose a moment to rewrite and try up to three exchanges. Keep your original interview for comparison.'),
+          e('label',{htmlFor:'retry-selection'},'Choose an exchange to retry'),
+          e('select',{id:'retry-selection',value:retrySelection,onChange:function(event){setRetrySelection(Number(event.target.value));}},
+            sess2.turns.map(function(t,i){return e('option',{value:i,key:i},'Exchange '+(i+1)+' — '+t.me.slice(0,70)+(t.me.length>70?'…':''));})),
+          e('button',{id:'retry-launch',ref:retryLaunchRef,className:'btn primary',onClick:function(){setRetryIndex(retrySelection);}},'Retry this moment')):
+          e('p',null,'Finish an entirely offline encounter with at least one patient reply to use this prototype.')):null,
       e('div',{className:'card feedback-guide'},
         e('h2',null,'Question and response: review together'),
         e('p',null,'The map recognizes language in your turns. A match does not establish that a question was directed to the patient or that an answer was obtained.'),
@@ -1241,7 +1348,7 @@ function App(){
   }
   return null;
 }
-try{window.__SP_TEST__={MockProvider:MockProvider,ProxyProvider:ProxyProvider,computeCoverage:computeCoverage,computeRubric:computeRubric,buildNarrative:buildNarrative,coverageDisplay:coverageDisplay,criticalFeedback:criticalFeedback,languageEvidence:languageEvidence,coverageEvidence:coverageEvidence,rubricEvidence:rubricEvidence,looksLikePhi:looksLikePhi,paceFor:paceFor,getCoach:getCoach,isCaseReviewed:isCaseReviewed,eligibleCases:eligibleCases,isManagedVoiceEligible:isManagedVoiceEligible};}catch(x){}
+try{window.__SP_TEST__={MockProvider:MockProvider,ProxyProvider:ProxyProvider,canRetryEncounter:canRetryEncounter,createRetryMoment:createRetryMoment,retryMomentRespond:retryMomentRespond,computeCoverage:computeCoverage,computeRubric:computeRubric,buildNarrative:buildNarrative,coverageDisplay:coverageDisplay,criticalFeedback:criticalFeedback,languageEvidence:languageEvidence,coverageEvidence:coverageEvidence,rubricEvidence:rubricEvidence,looksLikePhi:looksLikePhi,paceFor:paceFor,getCoach:getCoach,isCaseReviewed:isCaseReviewed,eligibleCases:eligibleCases,isManagedVoiceEligible:isManagedVoiceEligible};}catch(x){}
 ReactDOM.createRoot(document.getElementById('root')).render(e(App));
 })();
 </script>

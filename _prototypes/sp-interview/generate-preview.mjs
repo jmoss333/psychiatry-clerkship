@@ -12,6 +12,7 @@ const previewConfig = {
   providerMode: 'mock',
   endpoint: '',
   autoOpenSettings: false,
+  retryPrototype: true,
 };
 
 function buildPreview() {
