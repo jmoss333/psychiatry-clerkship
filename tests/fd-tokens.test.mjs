@@ -48,13 +48,6 @@ function codeMask(css) {
 function selectorCompassRanges(mask, start, end) {
   const prelude = mask.slice(start, end);
   const ranges = [];
-  const namedContainer = prelude.match(/^\s*@container\s+(ms3-compass)(?=\s*\()/);
-  if (namedContainer) {
-    const tokenOffset = namedContainer.index + namedContainer[0].lastIndexOf(namedContainer[1]);
-    return [[start + tokenOffset, start + tokenOffset + namedContainer[1].length]];
-  }
-  if (/^\s*@/.test(prelude)) return ranges;
-
   const approvedSelectors = [
     /\[data-ms3-compass-(?:root|safety|scope|prompt|link|orientation)\]/g,
     /\.ms3-compass__weeks(?![A-Za-z0-9_-])/g,
@@ -68,32 +61,57 @@ function selectorCompassRanges(mask, start, end) {
   return ranges;
 }
 
+function namedContainerRange(mask, start, end) {
+  const prelude = mask.slice(start, end);
+  const match = prelude.match(/^\s*@container\s+(ms3-compass)\s+\([\s\S]*\)\s*$/);
+  if (!match) return [];
+  const tokenOffset = match.index + match[0].indexOf(match[1]);
+  return [[start + tokenOffset, start + tokenOffset + match[1].length]];
+}
+
+function containerDeclarationRange(mask, start, end) {
+  const declaration = mask.slice(start, end);
+  const match = declaration.match(/^\s*container\s*:\s*(ms3-compass)\s*\/\s*inline-size\s*$/);
+  if (!match) return [];
+  const tokenOffset = match.index + match[0].indexOf(match[1]);
+  return [[start + tokenOffset, start + tokenOffset + match[1].length]];
+}
+
 function approvedCompassRanges(css) {
   assert.doesNotMatch(css, /\\/, 'CSS escapes are forbidden in audience-sensitive CSS');
   const mask = codeMask(css);
   const ranges = [];
-  let segmentStart = 0;
+  const blocks = [{ kind: 'rule-list', segmentStart: 0 }];
+  const groupingAtRule = /^\s*@(media|supports|layer|container|scope|document|starting-style)\b/i;
   for (let index = 0; index < mask.length; index += 1) {
-    if (mask[index] === '{') {
-      ranges.push(...selectorCompassRanges(mask, segmentStart, index));
-      segmentStart = index + 1;
-    } else if (mask[index] === '}' || mask[index] === ';') {
-      segmentStart = index + 1;
-    }
-  }
-
-  let depth = 0;
-  const depthAt = [];
-  for (let index = 0; index < mask.length; index += 1) {
-    if (mask[index] === '{') depth += 1;
-    depthAt[index] = depth;
-    if (mask[index] === '}') depth -= 1;
-  }
-  const containerDeclaration = /(?:^|[;{])\s*container\s*:\s*(ms3-compass)(?=\s*\/\s*inline-size\s*(?:;|}))/g;
-  for (const match of mask.matchAll(containerDeclaration)) {
-    const tokenOffset = match.index + match[0].lastIndexOf(match[1]);
-    if (depthAt[tokenOffset] > 0) {
-      ranges.push([tokenOffset, tokenOffset + match[1].length]);
+    const block = blocks.at(-1);
+    if (mask[index] === ';') {
+      if (block.kind === 'style') {
+        ranges.push(...containerDeclarationRange(mask, block.segmentStart, index));
+      }
+      block.segmentStart = index + 1;
+    } else if (mask[index] === '{') {
+      let childKind = 'value';
+      if (block.kind === 'rule-list') {
+        const prelude = mask.slice(block.segmentStart, index);
+        if (/^\s*@/.test(prelude)) {
+          if (groupingAtRule.test(prelude)) {
+            childKind = 'rule-list';
+            ranges.push(...namedContainerRange(mask, block.segmentStart, index));
+          }
+        } else {
+          childKind = 'style';
+          ranges.push(...selectorCompassRanges(mask, block.segmentStart, index));
+        }
+      }
+      blocks.push({ kind: childKind, segmentStart: index + 1 });
+    } else if (mask[index] === '}' && blocks.length > 1) {
+      if (block.kind === 'style') {
+        ranges.push(...containerDeclarationRange(mask, block.segmentStart, index));
+      }
+      blocks.pop();
+      const parent = blocks.at(-1);
+      if (parent.kind === 'rule-list') parent.segmentStart = index + 1;
     }
   }
   return ranges;
@@ -198,6 +216,10 @@ test('the audience-token guard rejects audience copy, unrelated selectors, comme
     '[data-ms3-compass-score]{}',
     'a{--audience:.ms3-compass}',
     'a{--audience:[data-ms3-compass-root]}',
+    'a{--audience:.ms3-compass{}}',
+    'a{--audience:{[data-ms3-compass-root]{}}}',
+    'a{--x:{container:ms3-compass / inline-size}}',
+    'a{--x:{}container:ms3-compass / inline-size}',
     '.\\4d S3-unapproved{}',
     'a::before{content:"\\4d S3"}',
   ];
