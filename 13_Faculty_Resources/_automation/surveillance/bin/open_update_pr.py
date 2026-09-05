@@ -115,7 +115,13 @@ def open_pr(f, slugs, ai_block=None):
         return None, "checkout-failed"
     nd = load_needs()
     nd["slugs"] = sorted(set(nd.get("slugs", [])) | set(slugs))
-    json.dump(nd, open(NEEDS, "w", encoding="utf-8"), indent=2, ensure_ascii=False)
+    # Trailing newline matters: the committed file ends "}\n", and json.dump does not
+    # write one. Without it every surveillance PR carries a spurious "\ No newline at end
+    # of file" diff — and for a finding that maps to no topic (slugs empty) that strip was
+    # the ENTIRE diff, producing "flag re-attestation" commits that flagged nothing.
+    with open(NEEDS, "w", encoding="utf-8") as fh:
+        json.dump(nd, fh, indent=2, ensure_ascii=False)
+        fh.write("\n")
     with open(PENDING, "a", encoding="utf-8") as fh:
         fh.write("\n- %s · **[%s]** %s → %s (fp `%s`)\n"
                  % (L.today(), f["source_id"], f["summary"], ", ".join(slugs) or "(no topic_meta)", fp8(f)))
