@@ -103,20 +103,98 @@ function lexCss(css) {
   return { mask: mask.join(''), structural };
 }
 
-function selectorCompassRanges(mask, start, end) {
-  const prelude = mask.slice(start, end);
+function selectorCompassRanges(css, start, end) {
+  // Parse a conservative selector subset, not substrings of a masked prelude. In particular,
+  // strings are attribute values, comments do not create descendant whitespace, and non-ASCII
+  // code units (including both halves of a surrogate pair) continue a CSS identifier.
+  // Unsupported syntax grants NO exceptions, including container properties in that rule.
+  // Functional pseudos, namespaces, nesting and nonterminal pseudo-elements are deliberately
+  // unsupported: extending this grammar requires explicit positive and negative fixtures.
+  const prelude = css.slice(start, end);
   const ranges = [];
-  const approvedSelectors = [
-    /\[data-ms3-compass-(?:root|safety|scope|prompt|link|orientation)\]/g,
-    /\.ms3-compass__weeks(?![A-Za-z0-9_-])/g,
-    /\.ms3-compass(?![A-Za-z0-9_-])/g,
-  ];
-  for (const pattern of approvedSelectors) {
-    for (const match of prelude.matchAll(pattern)) {
-      ranges.push([start + match.index, start + match.index + match[0].length]);
+  const identSource = '(?:--|-?[A-Za-z_\\u0080-\\uFFFF])[A-Za-z0-9_\\u0080-\\uFFFF-]*';
+  const identifier = new RegExp(`^${identSource}`);
+  const space = '[ \\t\\r\\n\\f]';
+  const attribute = new RegExp(
+    `^\\[${space}*${identSource}${space}*` +
+    `(?:[~|^$*]?=${space}*(?:${identSource}|"[^"\\r\\n\\f]*"|'[^'\\r\\n\\f]*')` +
+    `(?:${space}+[iIsS])?${space}*)?\\]`,
+  );
+  const classes = new Set(['ms3-compass', 'ms3-compass__weeks']);
+  const pseudoClasses = new Set([
+    'root', 'hover', 'active', 'focus', 'focus-visible', 'focus-within',
+    'first-child', 'last-child', 'only-child', 'first-of-type', 'last-of-type',
+    'only-of-type', 'empty', 'disabled', 'enabled', 'checked', 'link', 'visited', 'target',
+  ]);
+  const pseudoElements = new Set(['before', 'after', 'marker', 'backdrop', 'first-line', 'first-letter']);
+  let cursor = 0;
+
+  function take(pattern) {
+    const match = prelude.slice(cursor).match(pattern);
+    if (!match) return null;
+    cursor += match[0].length;
+    return match[0];
+  }
+
+  function comments() {
+    // lexCss has already proved every comment closes. Keep its original code-unit offsets.
+    while (prelude.startsWith('/*', cursor)) cursor = prelude.indexOf('*/', cursor + 2) + 2;
+  }
+
+  function trivia() {
+    let whitespace = false;
+    for (;;) {
+      comments();
+      if (!take(/^[ \t\r\n\f]+/)) return whitespace;
+      whitespace = true;
     }
   }
-  return ranges;
+
+  trivia();
+  for (;;) {
+    // A compound has at most one type/universal selector, and it must be first.
+    let hasSimple = Boolean(take(/^\*/) || take(identifier));
+    let hasPseudoElement = false;
+    for (;;) {
+      comments();
+      const tokenStart = cursor;
+      const char = prelude[cursor];
+      if (char === '.' || char === '#') {
+        cursor += 1;
+        const name = take(identifier);
+        if (!name) return null;
+        if (char === '.' && classes.has(name)) ranges.push([start + tokenStart, start + cursor]);
+      } else if (char === '[') {
+        const token = take(attribute);
+        if (!token) return null;
+        if (/^\[data-ms3-compass-(?:root|safety|scope|prompt|link|orientation)\]$/.test(token)) {
+          ranges.push([start + tokenStart, start + cursor]);
+        }
+      } else if (char === ':') {
+        cursor += 1;
+        hasPseudoElement = prelude[cursor] === ':';
+        if (hasPseudoElement) cursor += 1;
+        const name = take(identifier);
+        if (!(hasPseudoElement ? pseudoElements : pseudoClasses).has(name)) return null;
+      } else {
+        break;
+      }
+      hasSimple = true;
+      if (hasPseudoElement) break;
+    }
+    if (!hasSimple) return null; // empty branch or a leading/doubled combinator
+    const separated = trivia();
+    if (cursor === prelude.length) return ranges;
+    if (prelude[cursor] === ',') {
+      cursor += 1;
+      trivia();
+      continue; // the next iteration must consume a nonempty compound
+    }
+    if (hasPseudoElement) return null;
+    if (take(/^[>+~]/)) trivia();
+    else if (!separated) return null;
+    // Descendant/explicit combinators must also be followed by a nonempty compound.
+  }
 }
 
 function namedContainerRange(mask, start, end) {
@@ -158,8 +236,11 @@ function approvedCompassRanges(css) {
             ranges.push(...namedContainerRange(mask, block.segmentStart, index));
           }
         } else {
-          childKind = 'style';
-          ranges.push(...selectorCompassRanges(mask, block.segmentStart, index));
+          const selectors = selectorCompassRanges(css, block.segmentStart, index);
+          if (selectors !== null) {
+            childKind = 'style';
+            ranges.push(...selectors);
+          }
         }
       }
       blocks.push({ kind: childKind, segmentStart: index + 1 });
@@ -265,6 +346,56 @@ test('the audience-token guard permits only the exact approved Compass CSS ident
     `${'😀'.repeat(16)}.ms3-compass{}`,
     '.ms3-compass{container:ms3-compass / inline-size}',
     '@container ms3-compass (min-width:22rem){.ms3-compass__weeks{display:grid}}',
+  ];
+  for (const css of approved) assert.doesNotThrow(() => assertNoUnapprovedAudienceTokens(css), css);
+});
+
+// Each regression is its own test so a RED run independently proves all four bypasses.
+for (const css of ['.ms3-compassé{}', '.ms3-compass😀{}', '.ms3-compass,{}', '[foo=.ms3-compass]{}']) {
+  test(`the audience-token guard rejects the selector regression ${css}`, () => {
+    assert.throws(() => assertNoUnapprovedAudienceTokens(css));
+  });
+}
+
+test('Compass exceptions require complete selector tokens and valid complete selector lists', () => {
+  const rejected = [
+    ...['é', '😀', '\u0080', '\u00a0', '\u0301', '\u200d', '中', '\ufffd', '_', '-', '9'].flatMap((suffix) => [
+      `.ms3-compass${suffix}{}`, `.ms3-compass__weeks${suffix}{}`,
+      `[data-ms3-compass-root${suffix}]{}`,
+    ]),
+    ',.ms3-compass{}', '.fixture,,.ms3-compass{}', '.ms3-compass, ,a{}',
+    '.ms3-compass,/* gap */{}', '.ms3-compass,.fixture,{}',
+    '[foo=.ms3-compass]{}', '[foo=[data-ms3-compass-root]]{}',
+    '[foo=".ms3-compass"]{}', "[foo='[data-ms3-compass-root]']{}",
+    '.ms3-compass[foo=]{}', '.ms3-compass[foo=123]{}', '.ms3-compass[foo==bar]{}',
+    '.ms3-compass[foo="bar" wrong]{}', '.ms3-compass[foo bar]{}',
+    '> .ms3-compass{}', '.ms3-compass >{}', '.ms3-compass + ~ a{}',
+    '.ms3-compass >> a{}', '.ms3-compass .{}', '.ms3-compass #{}',
+    '.ms3-compass *a{}', '.ms3-compass*{}', '.ms3-compass!{}',
+    '.ms3-compass:​​{}', '.ms3-compass:{}', '.ms3-compass::{}',
+    '.ms3-compass:unknown{}', '.ms3-compass:hover(){}', '.ms3-compass:nth-child(){}',
+    ':is(.ms3-compass,){}', ':not(.ms3-compass >){}', ':lang(.ms3-compass){}',
+    '.ms3-compass(foo){}', '.ms3-compass::before.x{}', '.ms3-compass::before > a{}',
+    '.ms3-compass"hidden"{}', '.ms3-compass/**/a{}', '.ms3-compass/**/-tail{}',
+    '[data-ms3-compass-root]/**/a{}', '.ms3-compass/* student */{}',
+    '.ms3-compass, a[foo="x"]?{}', '.fixture,{container:ms3-compass / inline-size}',
+    '.ms3-compass([)]{}', '.ms3-compass[(]){}',
+  ];
+  for (const css of rejected) assert.throws(() => assertNoUnapprovedAudienceTokens(css), css);
+});
+
+test('Compass selector validation preserves supported compounds, branches, and UTF-16 offsets', () => {
+  const approved = [
+    '/* heading */ .ms3-compass > h2{}',
+    '.ms3-compass__weeks > li > span{}',
+    '[data-ms3-compass-safety] p,\n[data-ms3-compass-scope],[data-ms3-compass-prompt]{}',
+    '.ms3-compass, .fixture{}', '.fixture, .ms3-compass{}',
+    'section.ms3-compass[data-mode="wide"] > a:hover{}',
+    '.ms3-compass[data-mode=wide i]{}', '.ms3-compass[title="a,b > c"]{}',
+    '.ms3-compass[data-mode~="wide"]{}', '#panel.ms3-compass + p ~ a{}',
+    '.ms3-compass:focus-visible{}', '.ms3-compass::before{content:""}',
+    '.ms3-compass/**/.fixture{}', '.ms3-compass /* gap */ a{}',
+    `${'😀'.repeat(16)}.ms3-compass > é[data-ms3-compass-link]{}`,
   ];
   for (const css of approved) assert.doesNotThrow(() => assertNoUnapprovedAudienceTokens(css), css);
 });
