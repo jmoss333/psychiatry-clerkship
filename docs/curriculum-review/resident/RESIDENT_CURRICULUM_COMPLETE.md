@@ -3,7 +3,7 @@
 # RESIDENT curriculum — complete content transcript for clinical review
 
 **Site:** `mmc-psychiatry-residents-sanford` · **Audience:** Residents — MMC/Sanford psychiatry residents
-**Generated:** 2026-09-05 from build `3e6ca0e` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
+**Generated:** 2026-09-05 from build `f94f987` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
 
 ## Who this is for
 
@@ -19,7 +19,7 @@ This transcript is assembled from the **built site**, not the source tree, so it
 | Narrative pages (markdown) | 86 |
 | Interactive tools | 26 |
 | Deep-link-only (hidden) surfaces | 26 |
-| Words of narrative curriculum | 121,255 |
+| Words of narrative curriculum | 121,312 |
 | Practice question-bank items | 192 |
 | Audio-companion quiz decks / questions | 79 / 437 |
 | Communication cases | 12 |
@@ -86,7 +86,7 @@ High-yield places to concentrate: the `topic_meta` **can't-miss**, **rule-out** 
 
 # RESIDENT · Navigation map
 
-Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-05 @ `3e6ca0e`.
+Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-05 @ `f94f987`.
 
 ## Orientation  *(pinned)*
 
@@ -144,7 +144,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 12 | Withdrawal: COWS Tool · CIWA-Ar Official Form & Training | `withdrawal.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/SUD_Withdrawal/withdrawal-ciwa-cows-card.html` |  |
 | 13 | Decisional Capacity | `capacity.html` | tool | listed | status=`reviewed` · riskKind=`legal` · riskLevel=`high` | `04_Acute_and_Safety/Decisional_Capacity/decisional-capacity-module.html` |  |
 | 14 | Consult Questions: Capacity, Delirium, Catatonia, Withdrawal | `exp_consult.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/MS3/Student_Ready_Pack/04_expansion_modules/consult_capacity_delirium_catatonia_withdrawal.md` | 935 |
-| 15 | C-L: Emergencies, Tox & Capacity (Numbers) | `cl_reference.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/Resident/cl_reference.md` | 1114 |
+| 15 | C-L: Emergencies, Tox & Capacity (Numbers) | `cl_reference.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/Resident/cl_reference.md` | 1171 |
 | 16 | Inpatient Systems & Med-Legal | `systems_medlegal.md` | md | listed | status=`reviewed` · riskKind=`legal` · riskLevel=`high` | `14_Tracks/Resident/systems_medlegal.md` | 1520 |
 
 ## Make a Plan
@@ -8185,7 +8185,7 @@ should independently manage high-risk consults.
 - **Slug:** `cl_reference.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `14_Tracks/Resident/cl_reference.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 1,114 words
+- **Length:** 1,171 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -8279,6 +8279,7 @@ The MS3 [Consult module](?page=exp_consult.md) teaches *what to notice and when 
 ## Lithium toxicity
 - Therapeutic 0.6–1.2 mEq/L; **toxicity generally ≥1.5**, severe ≥2.5. In *chronic* toxicity (especially older adults) symptoms may be severe even when the level looks only mildly elevated — **treat the patient, not the number.**
 - Precipitants: dehydration, AKI, low sodium, NSAIDs, thiazides, ACE-inhibitors/ARBs.
+- **Before dialysis is even the question:** hold lithium, stop the contributors (NSAID, thiazide, ACEi/ARB), send a level with renal function and electrolytes, and start **IV isotonic saline** to restore volume and renal lithium clearance. Repeat the level every 2–4 h until it is falling; nephrogenic diabetes insipidus can drive hypernatremia, so follow sodium as you hydrate.
 - **Hemodialysis** if level **>4.0** mEq/L (any patient), or **>2.5** with severe neuro/renal signs or life-threatening features.
 - **Activated charcoal does not bind lithium** — consider whole-bowel irrigation for sustained-release ingestions.
 - Recheck levels after dialysis — **rebound** from tissue redistribution is expected.
@@ -25602,8 +25603,8 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
   - *feedback:* Best choice. It validates fear, avoids a false guarantee, and turns conflict into a concrete safety-planning task.
 - **(c)** The decision is ultimately up to the doctors, so let's move on.  *(rated: **missed**)*
   - *feedback:* This shuts down collateral and increases adversarial tension. The family may hold key safety and feasibility information.
-- **(d)** Can you tell us exactly what you think he is hiding from us?  *(rated: **partial**)*
-  - *feedback:* Specific concerns matter, but this phrasing can shame the patient and intensify triangulation. Invite concerns while preserving the patient's dignity.
+- **(d)** Can you tell us exactly what you think he is hiding from us?  *(rated: **missed**)*
+  - *feedback:* Specific concerns matter, but as worded this presumes the patient is deceptive and cross-examines him through his family — in the room, right after he has gone quiet. There is no timing that rescues it. Ask the family what they are worried about instead, and keep the patient a participant rather than the subject of the inquiry.
 
 ### interview_motive_suspicion_001 — Respond When the Patient Questions Why You're Asking
 

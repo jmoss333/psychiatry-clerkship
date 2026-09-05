@@ -3,7 +3,7 @@
 # MS3 curriculum — complete content transcript for clinical review
 
 **Site:** `une-ms3-psychiatry` · **Audience:** MS3 — UNE medical students
-**Generated:** 2026-09-05 from build `3e6ca0e` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
+**Generated:** 2026-09-05 from build `f94f987` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
 
 ## Who this is for
 
@@ -19,7 +19,7 @@ This transcript is assembled from the **built site**, not the source tree, so it
 | Narrative pages (markdown) | 80 |
 | Interactive tools | 23 |
 | Deep-link-only (hidden) surfaces | 10 |
-| Words of narrative curriculum | 101,507 |
+| Words of narrative curriculum | 101,520 |
 | Practice question-bank items | 192 |
 | Audio-companion quiz decks / questions | 79 / 437 |
 | Communication cases | 12 |
@@ -83,7 +83,7 @@ High-yield places to concentrate: the `topic_meta` **can't-miss**, **rule-out** 
 
 # MS3 · Navigation map
 
-Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-05 @ `3e6ca0e`.
+Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-05 @ `f94f987`.
 
 ## Orientation  *(pinned)*
 
@@ -226,7 +226,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 6 | Opioid Use Disorder (Jul 27) | `cotw_20260727_oud_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-27_opioid-use-disorder_MS3.md` | 2753 |
 | 7 | Alcohol Withdrawal & DT (Jul 26) | `cotw_20260726_etohwd_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-26_alcohol-withdrawal-delirium-tremens_MS3.md` | 2601 |
 | 8 | Suicide Risk & Safety Planning (Jul 23) | `cotw_20260723_suiciderisk_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`high` | `08_Cases_and_Simulation/case-of-the-week/2026-07-23_suicide-risk-assessment-safety-planning_MS3.md` | 2403 |
-| 9 | MDD — Treatment Selection (Jul 20) | `cotw_20260720_mdd_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-20_mdd-treatment-selection-augmentation_MS3.md` | 1434 |
+| 9 | MDD — Treatment Selection (Jul 20) | `cotw_20260720_mdd_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-20_mdd-treatment-selection-augmentation_MS3.md` | 1447 |
 | 10 | Bipolar Mania (Jul 20) | `cotw_20260720_bipolar_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-20_bipolar-mania_MS3.md` | 1664 |
 | 11 | Acute Agitation & Delirium (Jul 13) | `cotw_20260713_agitation_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-13_acute-agitation-delirium_MS3.md` | 1735 |
 | 12 | Serotonin Syndrome vs NMS (Jul 9) | `cotw_20260709_ssnms_ms3.md` | md | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `08_Cases_and_Simulation/case-of-the-week/2026-07-09_serotonin-syndrome-vs-nms_MS3.md` | 1504 |
@@ -16149,7 +16149,7 @@ Suicidal ideation is a **symptom**, not a diagnosis — always identify and trea
 - **Slug:** `cotw_20260720_mdd_ms3.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `08_Cases_and_Simulation/case-of-the-week/2026-07-20_mdd-treatment-selection-augmentation_MS3.md`
 - **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 1,434 words
+- **Length:** 1,447 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -16229,7 +16229,7 @@ She returns at **6 weeks** on an adequately dosed selective serotonin reuptake i
 *Teaching point:* Combined pharmacotherapy + psychotherapy (e.g., CBT) is more than either alone for many patients, especially for preventing relapse. A meta-analysis of the **sequential model** (adding psychotherapy after medication response) found it reduces the risk of relapse/recurrence [4]. Psychotherapy is first-line for mild depression and a strong adjunct across severities.
 
 **Q7 (Safety). She mentions passive thoughts that "it wouldn't matter if I woke up." What do you do?**
-*Teaching point:* Passive death wishes require **direct, non-judgmental assessment** of suicidal ideation, intent, plan, and access to means, plus collaborative **safety planning** and appropriate level-of-care escalation. Recognition and escalation — not method detail — are the objectives. Document the assessment and the plan. When in doubt about safety, arrange same-day evaluation.
+*Teaching point:* Passive death wishes require **direct, non-judgmental assessment** of suicidal ideation, intent, plan, and access to means, plus collaborative **safety planning** and appropriate level-of-care escalation. Recognition and escalation — not method detail — are the objectives. Document the assessment and the plan. When in doubt about safety, arrange same-day evaluation, and bring your supervising resident or attending in before any disposition is settled.
 
 ---
 
@@ -22661,8 +22661,8 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
   - *feedback:* Best choice. It validates fear, avoids a false guarantee, and turns conflict into a concrete safety-planning task.
 - **(c)** The decision is ultimately up to the doctors, so let's move on.  *(rated: **missed**)*
   - *feedback:* This shuts down collateral and increases adversarial tension. The family may hold key safety and feasibility information.
-- **(d)** Can you tell us exactly what you think he is hiding from us?  *(rated: **partial**)*
-  - *feedback:* Specific concerns matter, but this phrasing can shame the patient and intensify triangulation. Invite concerns while preserving the patient's dignity.
+- **(d)** Can you tell us exactly what you think he is hiding from us?  *(rated: **missed**)*
+  - *feedback:* Specific concerns matter, but as worded this presumes the patient is deceptive and cross-examines him through his family — in the room, right after he has gone quiet. There is no timing that rescues it. Ask the family what they are worried about instead, and keep the patient a participant rather than the subject of the inquiry.
 
 ### interview_motive_suspicion_001 — Respond When the Patient Questions Why You're Asking
 
