@@ -203,14 +203,32 @@ function readJson(relativePath) {
   return JSON.parse(readFileSync(path.join(ROOT, relativePath), 'utf8'));
 }
 
-function manifestInputs(manifest) {
-  const md = Array.isArray(manifest.md) ? manifest.md : fail('manifest md must be an array');
-  const tools = Array.isArray(manifest.tools) ? manifest.tools : fail('manifest tools must be an array');
-  const slugs = (rows, label) => rows.map((row, index) => {
-    if (!Array.isArray(row) || row.length < 2) fail(`${label}[${index}] must be a manifest tuple`);
-    return safeSlug(row[1], `${label}[${index}] slug`);
+/* "What ships" comes from shipped_pages.json, the one derived listing ADR-002 introduced,
+   and no longer from site_manifest.json. The manifest is one of five producers: it does not
+   carry the 22 Case-of-the-Week pages, the six resident-only pages, the resident-only
+   prototype tools or the MS3 orientation video, every one of which a learner site publishes
+   and faculty must therefore be able to attest. Reading the manifest here under-counted
+   reviewed coverage by exactly those items, and made the needsReattest guard in
+   buildGovernanceDigest reject two resident-only pages (cl_reference.md,
+   systems_medlegal.md) that legitimately ship — the same short-universe failure #517 was.
+
+   `kind` is the shipped listing's own page/tool split, so `manifestPages` stays what it has
+   always been (the content pages topic_meta and the question bank anchor against) and
+   `manifestItems` stays everything faculty attest. */
+function shippedInputs(document) {
+  const pages = object(document, 'shipped_pages').pages;
+  if (!Array.isArray(pages) || pages.length === 0) {
+    fail('shipped_pages.pages must be a non-empty array');
+  }
+  const manifestItems = [];
+  const manifestPages = [];
+  pages.forEach((entry, index) => {
+    object(entry, `shipped_pages.pages[${index}]`);
+    const slug = safeSlug(entry.slug, `shipped_pages.pages[${index}] slug`);
+    manifestItems.push(slug);
+    if (entry.kind === 'page') manifestPages.push(slug);
   });
-  return { manifestPages: slugs(md, 'manifest md'), manifestItems: [...slugs(md, 'manifest md'), ...slugs(tools, 'manifest tools')] };
+  return { manifestPages, manifestItems };
 }
 
 export function parseAttestationValidatorResult(result) {
@@ -273,8 +291,8 @@ export function main(argv = process.argv.slice(2), dependencies = {}) {
   const logError = dependencies.logError ?? console.error;
   try {
     const args = parseArgs(argv);
-    const manifest = read('13_Faculty_Resources/_automation/site_build/site_manifest.json');
-    const { manifestPages, manifestItems } = manifestInputs(manifest);
+    const shipped = read('13_Faculty_Resources/_automation/site_build/shipped_pages.json');
+    const { manifestPages, manifestItems } = shippedInputs(shipped);
     const bankWrapper = read('question_bank.json');
     const digest = buildGovernanceDigest({
       bank: bankWrapper.items,

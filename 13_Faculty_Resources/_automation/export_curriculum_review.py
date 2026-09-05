@@ -5,7 +5,8 @@ everything a built site ships, one document set per audience, for external clini
 Reads the BUILT sites (_build/ms3, _build/res) rather than the NN_Category/ source tree, so
 what a reviewer reads is exactly what a learner sees: nav order, audience-scoped page set,
 resident overrides, build-injected crisis blocks and all. Source paths are back-mapped from
-site_manifest.json + the resident/COTW registries so every finding is actionable in git.
+site_build/shipped_pages.json -- the one derived listing of what ships (ADR-002) -- plus the
+resident overrides in site_extras.py, so every finding is actionable in git.
 
 Usage
 -----
@@ -37,6 +38,13 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 LIB = HERE.parent.parent                      # repo root
 SITE_BUILD = HERE / "site_build"
+
+# "What ships" comes from the one derived listing (ADR-002), not from site_manifest.json
+# plus a private copy of the resident and Case-of-the-Week producers.
+if str(SITE_BUILD) not in sys.path:
+    sys.path.insert(0, str(SITE_BUILD))
+import site_extras  # noqa: E402  (path set above)
+from shipped_pages import load_shipped_pages  # noqa: E402  (path set above)
 
 AUDIENCES = {
     "ms3": {
@@ -102,44 +110,39 @@ def _words(text: str) -> int:
 
 
 def _slug_source_map(aud_key: str = "ms3") -> dict[str, str]:
-    """Built filename → repo-relative source path, for one audience's build.
+    """Built filename -> repo-relative source path, for one audience's build.
+
+    Both halves come from site_build/shipped_pages.json: the set of shipped slugs and
+    each slug's source path. Until 2026-09 this function re-assembled that set here --
+    site_manifest.json, a hand-typed copy of resident_section.py's overrides, and a
+    private copy of the Case-of-the-Week slug format string -- which is the reader
+    pattern ADR-002 exists to end.
 
     Slugs are looked up bare, so shared slugs (welcome.md, cotw_index.md) must map to
     the file the *requested* audience actually builds from. The old audience-blind
     setdefault let the MS3 manifest win those collisions, so two resident surfaces
-    carried MS3 Source lines (found by the 2026-09-01 review).
+    carried MS3 Source lines (found by the 2026-09-01 review). shipped_pages.json holds
+    ONE source per slug -- a resident override reuses a slug the manifest already ships,
+    so it is not a separate shipped page and cannot carry its own source there -- and the
+    overrides are therefore re-applied below from site_extras.py, the very lists
+    resident_section.py copies from.
     """
-    manifest = _load(SITE_BUILD / "site_manifest.json")
-    out: dict[str, str] = {}
-    for src, dst, _title in manifest["tools"]:
-        out[dst] = src
-    for src, dst, _title in manifest["md"]:
-        out[dst] = src
+    out: dict[str, str] = {
+        page["slug"]: page["source"] for page in load_shipped_pages(LIB)["pages"]
+    }
     if aud_key == "resident":
-        # resident-only overrides WIN here (mirrors RES_EXTRA / PROTO_TOOLS in resident_section.py)
-        for src, dst in [
-            ("14_Tracks/Resident/resident_welcome.md", "welcome.md"),
-            ("14_Tracks/Resident/resident_curriculum.md", "rotation.md"),
-            ("14_Tracks/Resident/adv_psychopharmacology.md", "adv_psychopharm.md"),
-            ("14_Tracks/Resident/systems_medlegal.md", "systems_medlegal.md"),
-            ("14_Tracks/Resident/supervision_teaching.md", "supervision_teaching.md"),
-            ("14_Tracks/Resident/canon_200.md", "canon_200.md"),
-            ("14_Tracks/Resident/cl_reference.md", "cl_reference.md"),
-            ("08_Cases_and_Simulation/case-of-the-week/index_resident.md", "cotw_index.md"),
-            ("_prototypes/agitation-trainer/rp-agitation.html", "rp-agitation.html"),
-            ("_prototypes/post-event-huddle/rp-post-event-huddle.html", "rp-post-event-huddle.html"),
-            ("_prototypes/brief-psych/rp-brief-psych.html", "rp-brief-psych.html"),
-            ("_prototypes/canon-quiz/rp-canon-quiz.html", "rp-canon-quiz.html"),
-        ]:
+        # resident-only overrides WIN here (site_extras.py holds the lists
+        # resident_section.py builds RES_EXTRA and PROTO_TOOLS from)
+        for src, dst, _title in (
+            site_extras.RESIDENT_EXTRA_PAGES + site_extras.RESIDENT_PROTO_TOOLS
+        ):
             out[dst] = src
-    # Case of the Week is registry-driven
-    cotw_dir = "08_Cases_and_Simulation/case-of-the-week"
-    reg = _load(LIB / cotw_dir / "cotw_registry.json", {"weeks": []})
-    for w in reg.get("weeks", []):
-        stamp = w["date"].replace("-", "")
-        out["cotw_%s_%s_ms3.md" % (stamp, w["topic"])] = f"{cotw_dir}/{w['ms3_src']}"
-        out["cotw_%s_%s_res.md" % (stamp, w["topic"])] = f"{cotw_dir}/{w['res_src']}"
-    out.setdefault("orientation-video.html", "_prototypes/video-library/ (build-generated shell)")
+    # STALE, and preserved on purpose. orientation-video.html ships from
+    # _prototypes/orientation-video/ (site_extras.MS3_EXTRA_TOOLS), which is what
+    # shipped_pages.json records; this placeholder predates that and names the wrong
+    # directory. ADR-002 Phase 2 proves each migration by byte-identical output, so
+    # correcting a Source line is a separate change, not a side effect of this one.
+    out["orientation-video.html"] = "_prototypes/video-library/ (build-generated shell)"
     return out
 
 

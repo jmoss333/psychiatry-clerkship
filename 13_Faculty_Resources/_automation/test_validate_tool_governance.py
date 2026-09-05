@@ -64,15 +64,66 @@ def synthetic_ledger_for_site_entries(root: Path) -> dict:
     return {slug: entry for slug in slugs}
 
 
+SYNTHETIC_SHIPPED_TOOLS = [
+    # one shared tool, plus the per-site extras -- the shape shipped_pages.py
+    # derives from site_manifest.json, MS3_EXTRA_TOOLS and RESIDENT_PROTO_TOOLS.
+    ("synthetic/base.html", "base.html", ["ms3", "res"], "site_manifest"),
+    (
+        "_prototypes/orientation-video/orientation-video.html",
+        "orientation-video.html",
+        ["ms3"],
+        "ms3_extra_tool",
+    ),
+    (
+        "_prototypes/agitation-trainer/rp-agitation.html",
+        "rp-agitation.html",
+        ["res"],
+        "resident_tool",
+    ),
+    (
+        "_prototypes/brief-psych/rp-brief-psych.html",
+        "rp-brief-psych.html",
+        ["res"],
+        "resident_tool",
+    ),
+    (
+        "_prototypes/canon-quiz/rp-canon-quiz.html",
+        "rp-canon-quiz.html",
+        ["res"],
+        "resident_tool",
+    ),
+    (
+        "_prototypes/post-event-huddle/rp-post-event-huddle.html",
+        "rp-post-event-huddle.html",
+        ["res"],
+        "resident_tool",
+    ),
+]
+
+
 def write_synthetic_repository(root: Path) -> None:
-    manifest = {
-        "tools": [
-            ["synthetic/base.html", "base.html", "Synthetic title excluded from output"],
-        ]
+    # ADR-002 Phase 2: _tool_entries() reads the one derived listing, so the
+    # fixture writes that rather than a private site_manifest.json + extras pair.
+    shipped = {
+        "version": 1,
+        "pages": sorted(
+            (
+                {
+                    "slug": built_slug,
+                    "kind": "tool",
+                    "sites": sites,
+                    "title": "Synthetic title excluded from output",
+                    "source": source_relative,
+                    "producer": producer,
+                }
+                for source_relative, built_slug, sites, producer in SYNTHETIC_SHIPPED_TOOLS
+            ),
+            key=lambda page: page["slug"],
+        ),
     }
-    manifest_path = root / "13_Faculty_Resources/_automation/site_build/site_manifest.json"
-    manifest_path.parent.mkdir(parents=True, exist_ok=True)
-    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    shipped_path = root / "13_Faculty_Resources/_automation/site_build/shipped_pages.json"
+    shipped_path.parent.mkdir(parents=True, exist_ok=True)
+    shipped_path.write_text(json.dumps(shipped), encoding="utf-8")
     reviewed = root / "13_Faculty_Resources/reviewed.json"
     reviewed.parent.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(SCHEMA_SOURCE, reviewed.with_name("reviewed.schema.json"))
@@ -497,7 +548,26 @@ class NormalizationTests(unittest.TestCase):
 
 
 class RepositoryProducerTests(unittest.TestCase):
-    def test_builds_minimal_sorted_documents_from_manifest_and_existing_extras(self) -> None:
+    def test_site_extras_literal_still_matches_the_derived_listing(self) -> None:
+        """SITE_EXTRAS no longer answers "what ships" -- _tool_entries() reads
+        shipped_pages.json (ADR-002 Phase 2). The literal survives only because
+        validate_curriculum.py AST-parses this module for it and exits hard when
+        it is gone; that reader is its own Phase-2 batch. A leftover copy of a
+        registry is the exact hazard ADR-002 is about, so hold it against the
+        listing until it can be deleted.
+        """
+        site_names = {shipped: site for site, shipped in governance.SHIPPED_SITE_KEYS.items()}
+        document = governance.load_shipped_pages(ROOT)
+        single_site: dict[str, set] = {site: set() for site in governance.SHIPPED_SITE_KEYS}
+        for page in document["pages"]:
+            if page["kind"] != "tool" or len(page["sites"]) != 1:
+                continue
+            single_site[site_names[page["sites"][0]]].add((page["source"], page["slug"]))
+        for site in ("ms3", "resident"):
+            with self.subTest(site=site):
+                self.assertEqual(set(governance.SITE_EXTRAS[site]), single_site[site])
+
+    def test_builds_minimal_sorted_documents_from_the_derived_listing(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             write_synthetic_repository(root)
