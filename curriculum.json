@@ -8,6 +8,7 @@
           "n": 1,
           "title": "Foundations & the MSE",
           "theme": "Orientation · interviewing · MSE",
+          "landingRef": "week1.md",
           "focusCategories": ["safety"],
           "items": [
         { "ref": "welcome.md", "kind": "read" },
@@ -25,6 +26,7 @@
           "n": 2,
           "title": "Mood, Psychosis & Pharm",
           "theme": "Dx frameworks · the top-10 drugs",
+          "landingRef": "week2.md",
           "focusCategories": ["mood", "psychosis", "pharm", "neurocog"],
           "items": [
         { "ref": "t_mood.md", "kind": "read" },
@@ -38,6 +40,7 @@
           "n": 3,
           "title": "Psychotherapy & Personality",
           "theme": "Alliance · brief therapy · PDs",
+          "landingRef": "week3.md",
           "focusCategories": ["personality", "anxiety", "relational"],
           "items": [
         { "ref": "t_personality.md", "kind": "read" },
@@ -51,6 +54,7 @@
           "n": 4,
           "title": "Family Systems & EE",
           "theme": "Family meetings · collateral",
+          "landingRef": "week4.md",
           "focusCategories": ["relational"],
           "items": [
         { "ref": "exp_family.md", "kind": "read" },
@@ -65,6 +69,7 @@
           "n": 5,
           "title": "Acute & Emergency",
           "theme": "Safety · agitation · withdrawal",
+          "landingRef": "week5.md",
           "focusCategories": ["safety", "neurocog", "substance"],
           "items": [
         { "ref": "suicide.md", "kind": "read" },
@@ -81,6 +86,7 @@
           "n": 6,
           "title": "Integration & Exam",
           "theme": "Exam · OSCE · putting it together",
+          "landingRef": "week6.md",
           "focusCategories": ["otherdx", "ethics"],
           "items": [
         { "ref": "shelf.md", "kind": "read" },

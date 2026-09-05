@@ -154,7 +154,17 @@ def build_frontdoor_payload(site, curriculum, catalog, revision, rotation_projec
                 raise ValueError("placed ref '%s' has no final catalog entry" % ref)
 
     path_refs = []
+    landing_refs = []
     for week in weeks:
+        if "landingRef" in week:
+            landing_ref = week["landingRef"]
+            if (not isinstance(landing_ref, str) or landing_ref not in catalog_entries
+                    or catalog_entries[landing_ref][1] != "md"
+                    or not landing_ref.endswith(".md")):
+                raise ValueError("landingRef %r has no final %s Markdown catalog entry" %
+                                 (landing_ref, site))
+            if landing_ref not in landing_refs:
+                landing_refs.append(landing_ref)
         for item in week.get("items", []):
             ref, kind = item.get("ref"), item.get("kind")
             if ref not in catalog_entries:
@@ -183,6 +193,7 @@ def build_frontdoor_payload(site, curriculum, catalog, revision, rotation_projec
 
     manifest = {"tools": [], "md": []}
     manifest_refs = placed + [ref for ref in path_refs if ref not in placed]
+    manifest_refs += [ref for ref in landing_refs if ref not in manifest_refs]
     for ref in manifest_refs:
         title, kind, governance = catalog_entries[ref]
         manifest["tools" if kind == "tool" else "md"].append(["", ref, title, governance])
@@ -201,14 +212,11 @@ def build_frontdoor_payload(site, curriculum, catalog, revision, rotation_projec
 
 
 def reachable_refs(payload):
-    """Every ref a learner can reach by browsing this site: Library-placed plus Path.
+    """Refs for browsing/search; unplaced week landings have reader metadata only.
 
-    This is exactly `payload["manifest"]`'s row set — built above as
-    `placed + path_refs`, with every entry already proven to resolve against the
-    FINAL site navigation. It is the correct input to common.build_search_index's
-    `reachable_refs`: a page the Library shows must be a page search can find, and
-    the manifest is the one place that set is already resolved per site (columns
-    plus siteLibrary additions, minus siteLibrary exclusions).
+    All manifest entries resolve against final site navigation. Landing destinations
+    gain reader identity without becoming Library/search recommendations unless the
+    curriculum also places them in a Library column or a week's assigned items.
     """
     manifest = payload.get("manifest") or {}
     refs = set()
@@ -216,7 +224,12 @@ def reachable_refs(payload):
         for row in manifest.get(group, []):
             if isinstance(row, list) and len(row) > 1 and isinstance(row[1], str):
                 refs.add(row[1])
-    return refs
+    curriculum = payload.get("curriculum") or {}
+    weeks = curriculum.get("weeks") or []
+    landings = {week.get("landingRef") for week in weeks}
+    placed = {ref for column in curriculum.get("libraryColumns", []) for ref in column["refs"]}
+    placed.update(item["ref"] for week in weeks for item in week.get("items", []))
+    return refs - (landings - placed)
 
 
 def inject_frontdoor_payload(path, payload, topic_meta, tool_registry):

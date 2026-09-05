@@ -269,7 +269,7 @@ function fdSearchResults(index, query, synonyms, state){
   /* Refs are sorted first so the sort below is deterministic across engines: equal scores keep
      alphabetical order, matching fd_data.js's fdLibraryOnlyReads precedent. */
   var refs=[];
-  for(var ref in idx.byRef){ refs.push(ref); }
+  for(var ref in idx.byRef){ if(!idx.byRef[ref].readerOnly) refs.push(ref); }
   refs.sort(function(a,b){ return a<b?-1:(a>b?1:0); });
 
   var itemResults=[];

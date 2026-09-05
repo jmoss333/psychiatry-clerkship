@@ -7,6 +7,7 @@ from datetime import date
 import common
 import crisis_block as _crisis
 import frontdoor_catalog
+import welcome_compass
 from pathlib import Path
 
 # Session-portable paths (fixed 2026-07-01): derive from this script's own location.
@@ -29,9 +30,11 @@ if os.path.exists(_copied_governance): os.remove(_copied_governance)
 _copied_surface_governance=os.path.join(OUT,"governance.json")
 if os.path.exists(_copied_surface_governance): os.remove(_copied_surface_governance)
 
-# ---- orientation video is MS3-scoped (its own narration says "clerkship") — strip the 4 files
+# ---- orientation video is MS3-scoped (its own narration says "clerkship") — strip the files
 # that rode along via the MS3 copytree above; resident gets its own prototypes only (below).
-for _f in ["orientation-video.html","Inpatient_Psych_Orientation.mp4","Inpatient_Psych_Orientation.vtt","poster.jpg"]:
+# The package is declared once in site_extras.py, so this strip cannot drift from the copy.
+from site_extras import MS3_ORIENT_VIDEO
+for _src,_f,_t in MS3_ORIENT_VIDEO:
     _p=os.path.join(OUT,"tools",_f)
     if os.path.exists(_p): os.remove(_p)
 
@@ -43,13 +46,11 @@ for _f in glob.glob(OUT+"/content/cotw_*_ms3.md"): os.remove(_f)
 # ---- resident onboarding trailer ("Yours to Run.", ~87s, silent/kinetic-text) — resident-only,
 # so it's copied here rather than added to build_deploy.py's VIDEO_MEDIA (which would also ship it,
 # unused, on the MS3 site). Embed lives in resident_welcome.md -> welcome.md.
-RESIDENT_VIDEO_MEDIA=["resident-onboarding.mp4","resident-onboarding-poster.jpg"]
-_rvidsrc=os.path.join(LIB,"_prototypes","video-library")
+from site_extras import RESIDENT_ONBOARDING_MEDIA
 os.makedirs(OUT+"/media",exist_ok=True)
-for _rvf in RESIDENT_VIDEO_MEDIA:
-    _rp=os.path.join(_rvidsrc,_rvf)
-    if os.path.exists(_rp): shutil.copy2(_rp, OUT+"/media/"+_rvf)
-    else: print("  WARN: resident onboarding video asset missing from source:",_rvf)
+# Fail closed (2026-09-05 review): assert_resident_output hard-requires these two files at
+# the end of the build, so a silent WARN here only delayed the same failure by a full build.
+common.copy_required_sources(RESIDENT_ONBOARDING_MEDIA, LIB, OUT+"/media", label="resident onboarding media")
 
 # ---- resident-only pages (welcome overrides the MS3 welcome.md) ----
 # ---- Case of the Week: resident per-week pages are registry-driven (single source of truth:
@@ -231,14 +232,28 @@ shutil.copy2(_resident_reasoning, OUT+"/reasoning_cases.json")
 # NOTE: the former TOOLS list and HIDDEN_TOOLS set lived here. Both were dead code —
 # declared but never read (the nav below hardcodes "hidden":True inline). Removed
 # 2026-07-26; site_manifest.json is the source of truth for what ships.
+# The six inherited week pages take their titles from curriculum.json through the same
+# formula the MS3 nav and the Compass use, so the two sites never label one page two ways.
+from shipped_pages import ShippedPagesError as _ShippedPagesError, load_shipped_pages as _load_shipped_pages
+try:
+    _week_cards=welcome_compass.prepare_cards(
+        json.load(open(LIB+"/curriculum.json",encoding="utf-8"))["learningPaths"]["ms3"]["weeks"],
+        _load_shipped_pages(LIB))
+except (
+    OSError,
+    UnicodeError,
+    json.JSONDecodeError,
+    KeyError,
+    TypeError,
+    welcome_compass.CompassContractError,
+    _ShippedPagesError,
+) as _week_error:
+    print("BUILD ABORTED — week nav titles:",_week_error)
+    raise SystemExit(1)
+_HIDDEN_WEEKS=[{"t":welcome_compass.week_nav_title(_c),"f":_c.landing_ref,"k":"md","hidden":True} for _c in _week_cards]
 _HIDDEN_INHERITED=[
   {"t":"Orientation Packet","f":"orientation.md","k":"md","hidden":True},
-  {"t":"Week 1 — Foundations","f":"week1.md","k":"md","hidden":True},
-  {"t":"Week 2 — Mood/Psychosis/Pharm","f":"week2.md","k":"md","hidden":True},
-  {"t":"Week 3 — Psychotherapy/Personality","f":"week3.md","k":"md","hidden":True},
-  {"t":"Week 4 — Family/Systems/EE","f":"week4.md","k":"md","hidden":True},
-  {"t":"Week 5 — Acute/Emergency","f":"week5.md","k":"md","hidden":True},
-  {"t":"Week 6 — Integration/Exam","f":"week6.md","k":"md","hidden":True},
+  *_HIDDEN_WEEKS,
   {"t":"Culture, Disparities & Formulation","f":"cultural_psychiatry.md","k":"md","hidden":True},
   {"t":"Ethics & the Law","f":"ethics_legal.md","k":"md","hidden":True},
   {"t":"Treatment Basics","f":"exp_tx.md","k":"md","hidden":True},
@@ -276,6 +291,7 @@ nav=[
 ]
 _navorder=["Orientation","Start the Encounter","Understand the Problem","Assess Safety and Acuity","Make a Plan","Communicate with Patients","Work with Family and Systems","Present and Work with the Team","Practice and Exam Prep","Case of the Week","Evidence and Reference","Feedback"]
 nav=sorted(nav,key=lambda s:_navorder.index(s["section"]) if s["section"] in _navorder else 999)
+welcome_compass.assert_nav_projection(nav,_week_cards,label="resident")
 
 # ---------- SURFACE GOVERNANCE: nav annotation (resident) ----------
 # Built from the SAME canonical ledger as MS3, but scoped to THIS site's own nav
@@ -304,6 +320,11 @@ open(OUT + "/nav.json", "w", encoding="utf-8").write(
 _tmp=OUT+"/topic_meta.json"
 if os.path.exists(_tmp):
     _tm=json.load(open(_tmp,encoding="utf-8"))
+    try:
+        _tm = welcome_compass.project_resident_welcome(_tm, welcome_compass.load_resident_welcome_overlay(LIB))
+    except welcome_compass.CompassContractError as _overlay_error:
+        print("BUILD ABORTED — resident Welcome overlay:", _overlay_error)
+        raise SystemExit(1)
     def _addcta(key,cta):
         e=_tm.get(key,{})
         cur=e.get("cta")
@@ -415,3 +436,8 @@ print("tool governance: emitted", len(_governance["items"]), "items")
 # paths/tools), so this call MUST run last to overwrite the inherited ms3
 # sw.js with a resident-specific manifest (rp-* tools, resident content tree).
 common.emit_service_worker(OUT)
+try:
+    welcome_compass.assert_resident_output(OUT)
+except welcome_compass.CompassContractError as _compass_error:
+    print("BUILD ABORTED — resident Compass isolation:", _compass_error)
+    raise SystemExit(1)

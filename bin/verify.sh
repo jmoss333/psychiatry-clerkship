@@ -87,6 +87,8 @@ step "gate coverage vs ci.yml"              python3 bin/check-verify-coverage.py
 A=13_Faculty_Resources/_automation
 step "validate_registry_schemas"            python3 $A/validate_registry_schemas.py
 step "test_validate_registry_schemas"       python3 $A/test_validate_registry_schemas.py
+step "unit — curriculum contract"            python3 $A/test_validate_curriculum.py
+step "unit — MS3 welcome compass"            python3 $A/site_build/test_welcome_compass.py
 step "validate_topic_meta"                  python3 $A/validate_topic_meta.py
 # ci.yml runs this validator's own unit suite inside the "Test — SP Interview and managed
 # proxy" step, which check-verify-coverage.py exempts wholesale — so until 2026-09 it ran

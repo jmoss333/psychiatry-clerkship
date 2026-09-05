@@ -67,10 +67,11 @@ const DARK = palette('[data-theme="dark"]');
 const SURFACES = ['fd-bg', 'fd-surface', 'fd-surface-warm', 'fd-selected', 'fd-chip', 'fd-callout'];
 const PAIRS = [
   ...['fd-text', 'fd-text-mid', 'fd-text-dim'].flatMap((t) => SURFACES.map((b) => [t, b, 4.5])),
+  ['fd-text', 'fd-danger-wash', 4.5],
   ['fd-terracotta', 'fd-bg', 4.5], ['fd-terracotta', 'fd-surface', 4.5], ['fd-terracotta', 'fd-surface-warm', 4.5],
-  ['fd-terracotta-dark', 'fd-selected', 4.5], ['fd-terracotta-dark', 'fd-surface', 4.5],
+  ['fd-terracotta-dark', 'fd-selected', 4.5], ['fd-terracotta-dark', 'fd-surface', 4.5], ['fd-terracotta-dark', 'fd-surface-warm', 4.5],
   ['fd-teal-deep', 'fd-surface', 4.5], ['fd-teal-deep', 'fd-surface-warm', 4.5],
-  ['fd-teal-deep', 'fd-teal-wash', 4.5], ['fd-teal-deep', 'fd-bg', 4.5],
+  ['fd-teal-deep', 'fd-teal-wash', 4.5], ['fd-teal-deep', 'fd-danger-wash', 4.5], ['fd-teal-deep', 'fd-bg', 4.5],
   ['fd-danger', 'fd-surface', 4.5], ['fd-danger', 'fd-danger-wash', 4.5], ['fd-danger', 'fd-surface-warm', 4.5],
   ['fd-olive', 'fd-surface', 4.5], ['fd-olive', 'fd-bg', 4.5], ['fd-olive', 'fd-surface-warm', 4.5],
   ['fd-olive-deep', 'fd-olive-wash', 4.5],
