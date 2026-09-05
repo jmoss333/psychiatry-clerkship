@@ -319,8 +319,8 @@ test('the current universe exposes the former manifest-only reader\'s blind spot
     .filter(([, entry]) => entry && typeof entry === 'object' && entry.status === 'pending')
     .map(([slug]) => slug);
 
-  // Task 3 made Welcome pending, but it is already visible to even the former reader.
-  assert.equal(REVIEWED['welcome.md']?.status, 'pending');
+  // Welcome ships from the shared manifest, so it is visible even to the former reader
+  // whatever its review status is today.
   assert.ok(manifestOnly.has('welcome.md'));
 
   const universe = contentUniverseSlugs({ shipped: SHIPPED });
