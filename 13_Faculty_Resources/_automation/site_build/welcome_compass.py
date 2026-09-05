@@ -149,6 +149,11 @@ class CompassCard:
     landing_ref: str
 
 
+def week_nav_title(card) -> str:
+    """The one wording every surface uses for a week page: nav rows, manifest, Compass."""
+    return "Week %d — %s" % (card.n, card.title)
+
+
 def prepare_cards(ms3_weeks, shipped_document):
     if not isinstance(ms3_weeks, list) or len(ms3_weeks) != 6:
         raise CompassContractError("MS3 Compass requires exactly six weeks")
@@ -296,7 +301,7 @@ def assert_nav_projection(nav, cards) -> None:
                 "MS3 final nav must contain exactly one row for %s" % card.landing_ref
             )
         row = matching[0]
-        expected_title = "Week %d — %s" % (card.n, card.title)
+        expected_title = week_nav_title(card)
         if row.get("k") != "md":
             raise CompassContractError("MS3 final nav row %s must be Markdown" % card.landing_ref)
         if row.get("hidden") is not True:

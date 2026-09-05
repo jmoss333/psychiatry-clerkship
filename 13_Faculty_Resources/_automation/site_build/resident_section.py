@@ -232,14 +232,20 @@ shutil.copy2(_resident_reasoning, OUT+"/reasoning_cases.json")
 # NOTE: the former TOOLS list and HIDDEN_TOOLS set lived here. Both were dead code —
 # declared but never read (the nav below hardcodes "hidden":True inline). Removed
 # 2026-07-26; site_manifest.json is the source of truth for what ships.
+# The six inherited week pages take their titles from curriculum.json through the same
+# formula the MS3 nav and the Compass use, so the two sites never label one page two ways.
+from shipped_pages import load_shipped_pages as _load_shipped_pages
+try:
+    _week_cards=welcome_compass.prepare_cards(
+        json.load(open(LIB+"/curriculum.json",encoding="utf-8"))["learningPaths"]["ms3"]["weeks"],
+        _load_shipped_pages(LIB))
+except welcome_compass.CompassContractError as _week_error:
+    print("BUILD ABORTED — week nav titles:",_week_error)
+    raise SystemExit(1)
+_HIDDEN_WEEKS=[{"t":welcome_compass.week_nav_title(_c),"f":_c.landing_ref,"k":"md","hidden":True} for _c in _week_cards]
 _HIDDEN_INHERITED=[
   {"t":"Orientation Packet","f":"orientation.md","k":"md","hidden":True},
-  {"t":"Week 1 — Foundations","f":"week1.md","k":"md","hidden":True},
-  {"t":"Week 2 — Mood/Psychosis/Pharm","f":"week2.md","k":"md","hidden":True},
-  {"t":"Week 3 — Psychotherapy/Personality","f":"week3.md","k":"md","hidden":True},
-  {"t":"Week 4 — Family/Systems/EE","f":"week4.md","k":"md","hidden":True},
-  {"t":"Week 5 — Acute/Emergency","f":"week5.md","k":"md","hidden":True},
-  {"t":"Week 6 — Integration/Exam","f":"week6.md","k":"md","hidden":True},
+  *_HIDDEN_WEEKS,
   {"t":"Culture, Disparities & Formulation","f":"cultural_psychiatry.md","k":"md","hidden":True},
   {"t":"Ethics & the Law","f":"ethics_legal.md","k":"md","hidden":True},
   {"t":"Treatment Basics","f":"exp_tx.md","k":"md","hidden":True},
@@ -277,6 +283,7 @@ nav=[
 ]
 _navorder=["Orientation","Start the Encounter","Understand the Problem","Assess Safety and Acuity","Make a Plan","Communicate with Patients","Work with Family and Systems","Present and Work with the Team","Practice and Exam Prep","Case of the Week","Evidence and Reference","Feedback"]
 nav=sorted(nav,key=lambda s:_navorder.index(s["section"]) if s["section"] in _navorder else 999)
+welcome_compass.assert_nav_projection(nav,_week_cards)
 
 # ---------- SURFACE GOVERNANCE: nav annotation (resident) ----------
 # Built from the SAME canonical ledger as MS3, but scoped to THIS site's own nav

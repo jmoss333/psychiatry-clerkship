@@ -282,6 +282,10 @@ class WelcomeCompassTests(unittest.TestCase):
         ):
             self.assertNotIn(forbidden, fragment)
 
+    def test_week_nav_title_is_the_one_formula(self):
+        card = welcome_compass.CompassCard(2, "Mood, Psychosis & Pharm", "week2.md")
+        self.assertEqual(welcome_compass.week_nav_title(card), "Week 2 — Mood, Psychosis & Pharm")
+
     def test_nav_projection_accepts_each_hidden_markdown_week_once(self):
         nav = [{"section": "Compass", "items": [
             {"f": card.landing_ref, "k": "md", "hidden": True,

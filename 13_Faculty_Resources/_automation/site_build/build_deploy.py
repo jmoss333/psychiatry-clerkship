@@ -416,9 +416,21 @@ def _md(t,f,hidden=False):
 def _tool(f,t=None,hidden=None):
     return dict({"t":t or _tool_titles.get(f,f),"f":f,"k":"tool"},**({"hidden":True} if (hidden if hidden is not None else f in HIDDEN_TOOLS) else {}))
 _week_items=[
-    _md("Week %d — %s" % (card.n,card.title),card.landing_ref,True)
+    _md(welcome_compass.week_nav_title(card),card.landing_ref,True)
     for card in _compass_cards
 ]
+# The manifest, both navs and the Compass must agree on a week page's title; the curriculum
+# is the source and the manifest is checked against it here (2026-09-05 review, finding 8).
+_manifest_titles={row[1]:row[2] for row in md}
+_week_title_drift=[
+    (card.landing_ref,_manifest_titles.get(card.landing_ref),welcome_compass.week_nav_title(card))
+    for card in _compass_cards
+    if _manifest_titles.get(card.landing_ref)!=welcome_compass.week_nav_title(card)
+]
+if _week_title_drift:
+    print("BUILD ABORTED — week page titles drift between site_manifest.json and curriculum.json:")
+    for _slug,_have,_want in _week_title_drift: print("   -",_slug,"manifest",repr(_have),"curriculum",repr(_want))
+    raise SystemExit(1)
 nav=[
  {"section":"Orientation","pinned":True,"items":[_md("Welcome to the Rotation","welcome.md"),_md("Orientation Packet","orientation.md"),_md("Core Reading List","core_readings.md"),_tool("orientation-video.html","Orientation Video",True)]+_week_items},
  {"section":"Start the Encounter","items":[_md("Interview & MSE","pg_interview.md"),_tool("mse.html","Mental Status Exam"),_tool("interview-circle.html","The Interview Circle"),_tool("sp-interview.html","The Interview Room — AI Standardized Patient"),_tool("screeners.html","Screeners: PHQ-9 & GAD-7")]},
