@@ -39,10 +39,68 @@ function rule(css, selector) {
 
 const AUDIENCE_TOKEN = /MS3|clerkship|student|shelf|resident|UNE|MMC|Sanford/i;
 
-const NON_CODE = /\/\*[\s\S]*?\*\/|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'/g;
+function lexCss(css) {
+  assert.doesNotMatch(css, /\\/, 'CSS escapes are forbidden in audience-sensitive CSS');
+  const mask = css.split('');
+  const structural = new Set();
+  const delimiters = [];
+  let quote = null;
+  let inComment = false;
 
-function codeMask(css) {
-  return css.replace(NON_CODE, (value) => ' '.repeat(value.length));
+  for (let index = 0; index < css.length; index += 1) {
+    const char = css[index];
+    const next = css[index + 1];
+    if (inComment) {
+      mask[index] = ' ';
+      if (char === '*' && next === '/') {
+        mask[index + 1] = ' ';
+        index += 1;
+        inComment = false;
+      }
+      continue;
+    }
+    if (quote) {
+      mask[index] = ' ';
+      assert.ok(char !== '\n' && char !== '\r', 'CSS strings cannot contain raw newlines');
+      if (char === quote) quote = null;
+      continue;
+    }
+    if (char === '/' && next === '*') {
+      mask[index] = ' ';
+      mask[index + 1] = ' ';
+      index += 1;
+      inComment = true;
+      continue;
+    }
+    assert.ok(!(char === '*' && next === '/'), 'CSS comment closes without an opener');
+    if (char === '"' || char === "'") {
+      mask[index] = ' ';
+      quote = char;
+      continue;
+    }
+    if (char === '(' || char === '[') {
+      delimiters.push(char);
+      continue;
+    }
+    if (char === '{' && delimiters.length > 0) {
+      delimiters.push(char);
+      continue;
+    }
+    if (char === ')' || char === ']' || (char === '}' && delimiters.length > 0)) {
+      const expected = char === ')' ? '(' : char === ']' ? '[' : '{';
+      assert.equal(delimiters.at(-1), expected, `${char} closes without its matching opener`);
+      delimiters.pop();
+      continue;
+    }
+    if (delimiters.length === 0 && (char === '{' || char === '}' || char === ';')) {
+      structural.add(index);
+    }
+  }
+
+  assert.equal(quote, null, 'CSS string is unfinished');
+  assert.equal(inComment, false, 'CSS comment is unfinished');
+  assert.deepEqual(delimiters, [], 'CSS delimiter is unfinished');
+  return { mask: mask.join(''), structural };
 }
 
 function selectorCompassRanges(mask, start, end) {
@@ -78,12 +136,12 @@ function containerDeclarationRange(mask, start, end) {
 }
 
 function approvedCompassRanges(css) {
-  assert.doesNotMatch(css, /\\/, 'CSS escapes are forbidden in audience-sensitive CSS');
-  const mask = codeMask(css);
+  const { mask, structural } = lexCss(css);
   const ranges = [];
   const blocks = [{ kind: 'rule-list', segmentStart: 0 }];
   const groupingAtRule = /^\s*@(media|supports|layer|container|scope|document|starting-style)\b/i;
   for (let index = 0; index < mask.length; index += 1) {
+    if (!structural.has(index)) continue;
     const block = blocks.at(-1);
     if (mask[index] === ';') {
       if (block.kind === 'style') {
@@ -105,7 +163,8 @@ function approvedCompassRanges(css) {
         }
       }
       blocks.push({ kind: childKind, segmentStart: index + 1 });
-    } else if (mask[index] === '}' && blocks.length > 1) {
+    } else if (mask[index] === '}') {
+      assert.ok(blocks.length > 1, 'CSS block closes without an opener');
       if (block.kind === 'style') {
         ranges.push(...containerDeclarationRange(mask, block.segmentStart, index));
       }
@@ -114,13 +173,14 @@ function approvedCompassRanges(css) {
       if (parent.kind === 'rule-list') parent.segmentStart = index + 1;
     }
   }
+  assert.equal(blocks.length, 1, 'CSS block is unfinished');
   return ranges;
 }
 
 function assertNoUnapprovedAudienceTokens(css) {
   // Only the exact identifiers in selector preludes or a named-container construct are exempt.
   // The original comments and strings remain visible to the copy ban.
-  const checked = [...css];
+  const checked = css.split('');
   for (const [start, end] of approvedCompassRanges(css)) {
     checked.fill('x', start, end);
   }
@@ -202,6 +262,7 @@ test('the audience-token guard permits only the exact approved Compass CSS ident
     '[data-ms3-compass-prompt]{}',
     '[data-ms3-compass-link]{}',
     '[data-ms3-compass-orientation]{}',
+    `${'😀'.repeat(16)}.ms3-compass{}`,
     '.ms3-compass{container:ms3-compass / inline-size}',
     '@container ms3-compass (min-width:22rem){.ms3-compass__weeks{display:grid}}',
   ];
@@ -220,6 +281,15 @@ test('the audience-token guard rejects audience copy, unrelated selectors, comme
     'a{--audience:{[data-ms3-compass-root]{}}}',
     'a{--x:{container:ms3-compass / inline-size}}',
     'a{--x:{}container:ms3-compass / inline-size}',
+    'a{--x:";container:ms3-compass / inline-size}',
+    "a{--x:';container:ms3-compass / inline-size}",
+    'a{--x:/*;container:ms3-compass / inline-size}',
+    'a{--x:(;container:ms3-compass / inline-size}',
+    'a{--x:[;container:ms3-compass / inline-size}',
+    '.ms3-compass{',
+    '.ms3-compass{}}',
+    '.ms3-compass){}',
+    '.ms3-compass]{}',
     '.\\4d S3-unapproved{}',
     'a::before{content:"\\4d S3"}',
   ];
