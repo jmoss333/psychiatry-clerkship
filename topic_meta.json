@@ -2965,7 +2965,7 @@
       "say": "I want to keep a broad differential at first so we do not miss a medical or substance-related cause.",
       "collateral": "Ask family or outpatient clinicians what is new, what is baseline, and what changed right before admission.",
       "rounds": "Present symptoms, syndrome, leading diagnosis, dangerous alternatives, and what data would change your mind.",
-      "exam": "Shelf questions often hide medical mimics, substance causes, and medication adverse effects inside psychiatric vignettes.",
+      "exam": "Exam questions often hide medical mimics, substance causes, and medication adverse effects inside psychiatric vignettes.",
       "actions": [
         {
           "label": "Open decision aids",
@@ -3733,7 +3733,7 @@
       "say": "Translate the evidence into one plain-language sentence a patient or family could understand, without overstating certainty.",
       "collateral": "Ask collateral questions that affect the evidence-based plan: prior response, adherence barriers, safety environment, firearms/ligatures, family capacity, and follow-up realism.",
       "rounds": "Bring one trial, guideline, or source-backed number only if it changes the plan; otherwise keep the presentation clinically focused.",
-      "exam": "Link each landmark finding to a shelf-style distinction: delirium treatment, suicide prevention, capacity, family psychoeducation, or risk prediction limits.",
+      "exam": "Link each landmark finding to a board-style distinction: delirium treatment, suicide prevention, capacity, family psychoeducation, or risk prediction limits.",
       "actions": [
         {
           "label": "Open decision aids",
@@ -3790,7 +3790,7 @@
       "say": "I am going to check the current order set and the team plan rather than relying on memory for protocol details.",
       "collateral": "Ask nursing, pharmacy, social work, and outpatient clinicians for protocol-relevant history: prior withdrawal severity, clozapine monitoring, safety planning, and discharge barriers.",
       "rounds": "State the protocol, why it applies, the live order set or policy source, and what exception or monitoring issue needs senior review.",
-      "exam": "Know the conceptual indications and safety logic; local protocol details are not shelf facts and should not be guessed.",
+      "exam": "Know the conceptual indications and safety logic; local protocol details are not exam facts and should not be guessed.",
       "actions": [
         {
           "label": "Open withdrawal tool",
@@ -3839,13 +3839,13 @@
       "suicide_direct_question_001"
     ],
     "clinicalWorkflow": {
-      "ask": "Before you open a patient page, ask what you need right now: orientation, bedside action, communication rehearsal, rounds prep, or shelf review.",
+      "ask": "Before you open a patient page, ask what you need right now: orientation, bedside action, communication rehearsal, rounds prep, or exam review.",
       "mse": "Use the MSE tool when you need language for what you actually observed rather than a generic descriptor.",
       "safety": "If the question is immediate suicide, violence, withdrawal, delirium, catatonia, or capacity, escalate to supervision before studying around it.",
       "say": "I am using the hub to prepare my questions and presentation, but I will bring safety or treatment decisions to the supervising team.",
       "collateral": "Keep patient identifiers out of notes, tools, search, AI, or exports; use fictional or fully de-identified practice only.",
       "rounds": "Pick one page, one tool, and one question to bring to the team rather than trying to read the whole library.",
-      "exam": "Use shelf mode and daily review for retrieval practice; use patient pages to organize the facts.",
+      "exam": "Use the board-style question bank and daily review for retrieval practice; use patient pages to organize the facts.",
       "actions": [
         {
           "label": "Open orientation",
@@ -3924,7 +3924,7 @@
     "points": [
       "Start with the acute and safety pages before the diagnostic classes — suicide risk, agitation, and consult essentials are the can't-miss calls you will face from Week 1.",
       "Two pocket cards belong on your person every day: the Interview & MSE guide and the Formulation & DDx guide — they replace the improvised checklist on rounds.",
-      "The differential-diagnosis scaffolds and rounds questions pair with the landmark trials audio set for the deepest shelf and COMAT preparation in the hub."
+      "The differential-diagnosis scaffolds and rounds questions pair with the landmark trials audio set for the deepest exam preparation in the hub."
     ],
     "cta": {
       "label": "Open the Weekly Reading Map",
@@ -4279,9 +4279,9 @@
   },
   "week6.md": {
     "read": 3,
-    "tldr": "Week 6 — Integration, Disposition & Exam Readiness: build a discharge/disposition plan, present a full case with formulation and risk reasoning, and complete the shelf high-yield review and OSCE station set.",
+    "tldr": "Week 6 — Integration, Disposition & Exam Readiness: build a discharge/disposition plan, present a full case with formulation and risk reasoning, and complete the high-yield exam review and OSCE station set.",
     "points": [
-      "Skills of the week: the Risk-Stratified Discharge Pathway, the shelf high-yield review with self-check, and the full OSCE station set for stations you have not yet completed.",
+      "Skills of the week: the Risk-Stratified Discharge Pathway, the high-yield exam review with self-check, and the full OSCE station set for stations you have not yet completed.",
       "Suggested readings: Felitti 1998 (ACE study) and Deegan 1996 (recovery) — the two papers that frame trauma and the patient's own goals in the discharge plan.",
       "Reflection: end-of-rotation professional-identity reflection — what changed in how you think about psychiatric illness, the therapeutic relationship, and your role on the team."
     ],
@@ -4321,7 +4321,7 @@
       "say": "We cannot promise zero risk, but we can name the specific safety steps that must be in place before discharge.",
       "collateral": "Confirm the discharge plan with supports: medications, follow-up, means safety, supervision, transportation, warning signs, and what to do if risk escalates.",
       "rounds": "Present a full case with formulation, risk reasoning, family/system plan, and the one uncertainty you would track after discharge.",
-      "exam": "Use the patient in front of you as the shelf organizer: syndrome, mimic, treatment, safety/legal issue, and disposition.",
+      "exam": "Use the patient in front of you as the exam organizer: syndrome, mimic, treatment, safety/legal issue, and disposition.",
       "actions": [
         {
           "label": "Open rounding prep",
@@ -4682,11 +4682,11 @@
   },
   "landmark_trials.md": {
     "read": 6,
-    "tldr": "Fifty landmark papers as 90–120 second audio overviews with board-style self-test in Shelf Mode and Daily Review — listen to the four Foundations papers first (Engel, Rosenhan, Robins-Guze, Insel), then follow your patients to the theme that fits.",
+    "tldr": "Fifty landmark papers as 90–120 second audio overviews with board-style self-test in the question bank and Daily Review — listen to the four Foundations papers first (Engel, Rosenhan, Robins-Guze, Insel), then follow your patients to the theme that fits.",
     "points": [
       "Each audio is 90–120 seconds — short enough for the walk between the unit and the staff room, not a dedicated study block.",
       "The Acute & Safety cluster (6 papers) covers Appelbaum capacity, Bush-Francis catatonia, lithium-suicide (Cipriani 2013), safety planning (Stanley 2012), and the limits of risk-factor prediction (Franklin 2017) — the most rotation-relevant papers.",
-      "The same trials feed the board-style questions in Shelf Mode and Daily Review, which extend beyond the individual trial into the broader clinical question — pair the audio with those for shelf preparation."
+      "The same trials feed the board-style questions in the question bank and Daily Review, which extend beyond the individual trial into the broader clinical question — pair the audio with those for exam preparation."
     ],
     "cta": {
       "label": "Open the High-Yield Rounds Questions",
@@ -4715,7 +4715,7 @@
       "say": "Translate one landmark finding into a plain-language explanation only when it helps shared decision-making.",
       "collateral": "Use paper themes to guide collateral questions about timeline, prior response, safety environment, and treatment adherence.",
       "rounds": "Offer a 20-second evidence pearl when it changes the differential, risk formulation, or next step.",
-      "exam": "Pair each audio with board-style self-test in Shelf Mode or Daily Review, then answer one question bank item on the same concept.",
+      "exam": "Pair each audio with board-style self-test in the question bank or Daily Review, then answer one question bank item on the same concept.",
       "actions": [
         {
           "label": "Open question bank practice",
@@ -4754,7 +4754,7 @@
     "tldr": "Nearly 100 Q&A pairs formatted for oral rehearsal before rounds — each with a model answer, supporting evidence, key paper, and clinical pearl; rehearse out loud, not by reading silently.",
     "points": [
       "The format mirrors what attendings actually ask: a direct clinical question, a concise evidence-based answer, the key paper, and one pearl that adds depth or names a trap.",
-      "Covers all shelf/COMAT domains: psychotic disorders (Q1–15), mood, substance use, acute safety, personality, neurocognitive, and psychopharmacology.",
+      "Covers all exam domains: psychotic disorders (Q1–15), mood, substance use, acute safety, personality, neurocognitive, and psychopharmacology.",
       "Rehearse out loud before rounds — saying the answer in 20–30 seconds approximates the actual clinical demand and reveals gaps that silent reading conceals."
     ],
     "cta": {
@@ -5574,7 +5574,7 @@
   },
   "anki.md": {
     "read": 2,
-    "tldr": "Download the clerkship's attested question bank and high-yield concepts as Anki spaced-repetition decks; suspend all cards, then unsuspend by topic as the rotation covers each block.",
+    "tldr": "Download the library's attested question bank and high-yield concepts as Anki spaced-repetition decks; suspend all cards, then unsuspend by topic as the rotation covers each block.",
     "points": [
       "Two decks, both built only from attested content: the Question Bank (vignette cards) and Concepts (topic one-liners + high-yield pearls, with author-bolded facts as cloze deletions).",
       "Import the combined .apkg for one file with both subdecks; every card is tagged by topic, source page, high-yield, and attestation status for the suspend/unsuspend workflow.",
