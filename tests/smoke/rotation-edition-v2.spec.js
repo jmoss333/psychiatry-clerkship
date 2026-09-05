@@ -717,7 +717,7 @@ async function exerciseLearnerSurfaces(page, artifact, audience) {
   await activateTab('Path');
   await expect(page.locator('.fd-path')).toBeVisible();
   await expect(page.locator('.fd-path__h1')).toHaveText(
-    audience === 'ms3' ? 'Your 6-week path' : 'Your 4-week path',
+    audience === 'ms3' ? 'Suggested learning plan' : 'Your 4-week path',
   );
   await keyboardActivate(page.locator(`.fd-timeline__row[data-fd-view-week="${placement.week}"]`));
   const placementRow = page.locator(`.fd-detail [data-fd-open="${placement.ref}"]`);

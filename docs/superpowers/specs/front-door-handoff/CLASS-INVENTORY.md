@@ -3,11 +3,11 @@
 The complete contract between `frontdoor.css` and the markup that tasks 3–9 emit.
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(257 distinct `fd-*` selector names, 20 `is-*` state classes). Every class below has a rule in that file unless
+(259 distinct `fd-*` selector names, 20 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **Why this file exists.** The implementation plan names 39 contract classes. The stylesheet styles
-257. The remaining 218 are `__element` and `--modifier` names introduced while porting the
+259. The remaining 220 are `__element` and `--modifier` names introduced while porting the
 prototype's inline styles into a stylesheet — a renderer briefed only on the 39 would emit markup
 that misses most of the CSS, and the failure is silent: the page renders, tests pass, the surface
 just looks wrong. Read the surface you are building before writing its markup.
@@ -244,7 +244,16 @@ Omitting it collapses the rail underneath.
 ```
 .fd-path
   .fd-path__h1
+  .fd-path__intro
   .fd-path__cols
+    .fd-detail
+      .fd-detail__head
+        .fd-eyebrow / .fd-detail__here
+      .fd-detail__h2
+      .fd-detail__practice
+      .fd-detail__list
+        .fd-row.is-compact ×N
+      .fd-btn.fd-btn--accent           ("Set as my week")
     .fd-timeline
       .fd-timeline__row   <button> ×6
         .fd-timeline__gutter
@@ -253,13 +262,6 @@ Omitting it collapses the rail underneath.
         .fd-timeline__body
           .fd-timeline__n / .fd-timeline__title
         .fd-timeline__count
-    .fd-detail
-      .fd-detail__head
-        .fd-eyebrow / .fd-detail__here
-      .fd-detail__h2
-      .fd-detail__list
-        .fd-row.is-compact ×N
-      .fd-btn.fd-btn--accent           ("Set as my week")
 ```
 
 | Class | Notes |

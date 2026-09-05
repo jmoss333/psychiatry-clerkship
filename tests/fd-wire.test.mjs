@@ -8,12 +8,13 @@ const phase = read('phase_policy.js');
 const state = read('frontdoor/fd_state.js');
 const data = read('frontdoor/fd_data.js');
 const today = read('frontdoor/fd_today.js');
+const block = read('frontdoor/fd_block.js');
 const reader = read('frontdoor/fd_reader.js');
 const shell = read('frontdoor/fd_shell.js');
 const wire = read('frontdoor/fd_wire.js');
 
 // eslint-disable-next-line no-new-func
-const make = new Function('localStorage', `${phase}\n${state}\n${data}\n${today}\n${reader}\n${shell}\n${wire}\nreturn {
+const make = new Function('localStorage', `${phase}\n${state}\n${data}\n${today}\n${block}\n${reader}\n${shell}\n${wire}\nreturn {
   fdResolveState: fdResolveState,
   fdDispatch: fdDispatch,
   fdIsTypingTarget: fdIsTypingTarget,
@@ -283,6 +284,141 @@ test('autoAdvance defaults true, advances to next unread, and returns to fromTab
   assert.equal(disabled.patch.openId, undefined);
 });
 
+const PAGE_QUESTION_BLOCK = { minutes: 5, steps: [
+  { kind: 'page', ref: 'a.md', title: 'Welcome', min: 3 },
+  { kind: 'qb', ref: 'question-bank-practice.html', n: 2, min: 2, title: '2 practice questions', cat: 'mood' },
+] };
+
+test('completing a block reading opens its bounded questions instead of the next weekly reading', () => {
+  const next = F.fdDispatch({ 'data-fd-toggle': 'a.md' }, {
+    weekItems: [{ ref: 'a.md' }, { ref: 'b.md' }], nowMs: 1,
+    search: '?page=a.md&block=1', block: PAGE_QUESTION_BLOCK,
+  }, { ...roleContext, openId: 'a.md', done: {}, fromTab: 'today', autoAdvance: false });
+  assert.equal(next.patch.openId, 'question-bank-practice.html');
+  assert.equal(next.route, '?tool=question-bank-practice.html&block=1&n=2&cat=mood');
+  assert.equal(next.effect.openRef, 'question-bank-practice.html');
+  assert.equal(next.effect.done, true);
+  assert.equal(next.patch.done['a.md'], true);
+});
+
+test('reopening a completed block page continues without undoing the reading', () => {
+  const next = F.fdDispatch({ 'data-fd-toggle': 'a.md' }, {
+    search: '?page=a.md&block=1', block: PAGE_QUESTION_BLOCK,
+    progressRaw: { 'a.md': { done: true, at: '2026-09-04' } }, nowMs: 1,
+  }, { ...roleContext, openId: 'a.md', done: { 'a.md': true }, fromTab: 'today' });
+  assert.equal(next.patch.openId, 'question-bank-practice.html');
+  assert.equal(next.patch.done['a.md'], true);
+  assert.equal(next.effect.done, true);
+});
+
+test('the last block page records completion and returns to Today with block parameters cleared', () => {
+  const next = F.fdDispatch({ 'data-fd-toggle': 'a.md' }, {
+    block: { minutes: 5, steps: [PAGE_QUESTION_BLOCK.steps[0]] },
+    search: '?page=a.md&block=1&case=keep', nowMs: 1,
+    weekItems: [{ ref: 'a.md' }, { ref: 'b.md' }],
+  }, { ...roleContext, openId: 'a.md', done: {}, fromTab: 'library' });
+  assert.equal(next.patch.openId, null);
+  assert.equal(next.patch.tab, 'today');
+  assert.equal(next.route, '/?case=keep');
+  assert.equal(next.patch.done['a.md'], true);
+});
+
+test('leaving a block clears only its parameters for Back, tabs, search results, and resources', () => {
+  const search = '?page=a.md&block=1&n=2&limit=3&cat=mood&case=keep&scenario=s2';
+  const initial = { ...roleContext, tab: 'today', fromTab: 'today', openId: 'a.md', done: {} };
+  for (const attrs of [
+    { 'data-fd-back': '' }, { 'data-fd-home': '' }, { 'data-fd-tab': 'library' },
+    { 'data-fd-open': 'question-bank-practice.html' },
+    { 'data-fd-open': 'a.md' },
+  ]) {
+    const out = F.fdDispatch(attrs, { search }, initial);
+    const params = new URLSearchParams(out.route.replace(/^\//, ''));
+    for (const key of ['block', 'n', 'limit', 'cat']) assert.equal(params.has(key), false, key);
+    assert.equal(params.get('case'), 'keep');
+    assert.equal(params.get('scenario'), 's2');
+  }
+  const back = F.fdDispatch({ 'data-fd-back': '' }, { search }, initial);
+  const normal = F.fdDispatch({ 'data-fd-open': 'question-bank-practice.html' }, {
+    search: back.route.replace(/^\//, ''),
+  }, { ...initial, ...back.patch });
+  assert.equal(new URLSearchParams(normal.route).has('block'), false,
+    'ordinary practice opened after Back must not enroll in the saved block');
+});
+
+test('explicit block Start and Continue retain the planned route while ordinary category links retain theirs', () => {
+  for (const [ref, search] of [
+    ['a.md', '?page=a.md&block=1'],
+    ['question-bank-practice.html', '?tool=question-bank-practice.html&block=1&n=2&cat=mood'],
+    ['review.html', '?tool=review.html&block=1&limit=3'],
+  ]) {
+    const out = F.fdDispatch({ 'data-fd-open': ref }, { search, blockNavigation: true }, roleContext);
+    assert.equal(out.route, search);
+  }
+  const ordinary = F.fdDispatch({ 'data-fd-open': 'question-bank-practice.html' }, {
+    search: '?cat=mood&n=4',
+  }, roleContext);
+  assert.equal(ordinary.route, '?tool=question-bank-practice.html&cat=mood&n=4');
+});
+
+test('an unrelated reader and a sheet toggle do not enter the saved block', () => {
+  for (const inSheet of [false, true]) {
+    const ref = inSheet ? 'a.md' : 'b.md';
+    const next = F.fdDispatch({ 'data-fd-toggle': ref }, {
+      block: PAGE_QUESTION_BLOCK, inSheet,
+      weekItems: [{ ref: 'a.md' }, { ref: 'b.md' }, { ref: 'c.md' }], nowMs: 1,
+    }, { ...roleContext, openId: ref, done: {}, fromTab: 'today', autoAdvance: false });
+    assert.equal(next.route, null);
+    assert.equal(next.patch.openId, undefined);
+  }
+});
+
+test('practice toggles write only the active or viewed week and preserve other week records', () => {
+  const ref = 'question-bank-practice.html';
+  const index = { byRef: {}, weeks: [1, 2, 3].map((n) => ({ n, items: [{ ref, kind: 'tool' }] })) };
+  const raw = { [ref]: { done: true, at: '2026-09-01', practiceWeeks: { 1: { done: true, at: '2026-09-01' } } } };
+  const scenarios = [
+    { week: 2, tab: 'today', expected: 2 },
+    { week: 2, tab: 'path', viewWeek: 3, expected: 3 },
+    { week: 2, tab: 'library', openId: ref, fromTab: 'path', viewWeek: 3, expected: 3 },
+  ];
+  for (const scenario of scenarios) {
+    const next = F.fdDispatch({ 'data-fd-toggle': ref }, { index, progressRaw: raw, nowMs: 1 }, {
+      ...roleContext, ...scenario, done: { [ref]: true }, autoAdvance: false,
+    });
+    assert.equal(next.effect.done, true, 'a completion in Week 1 must not be toggled off in another week');
+    assert.equal(next.effect.raw[ref].practiceWeeks[scenario.expected].done, true);
+    assert.deepEqual(next.effect.raw[ref].practiceWeeks[1], raw[ref].practiceWeeks[1]);
+    assert.equal(next.patch.progressRaw, next.effect.raw);
+    assert.equal(next.patch.done[ref], true);
+  }
+});
+
+test('completion renders observe the new canonical progress before displaying the next surface', () => {
+  for (const wasDone of [false, true]) {
+    const initialRaw = wasDone ? { 'a.md': { done: true, at: '2026-09-04' } } : {};
+    const storage = memStorage({ cw_progress_v1: JSON.stringify(initialRaw) });
+    const LocalF = make(storage);
+    let renders = 0;
+    const observe = () => {
+      renders += 1;
+      const raw = JSON.parse(storage.dump().cw_progress_v1);
+      assert.equal(raw['a.md']?.done === true, !wasDone,
+        'live rendering reads canonical storage for receipt updates and must see this toggle too');
+    };
+    const h = fakeHarness({
+      ...roleContext, tab: 'today', openId: 'a.md', fromTab: 'today',
+      done: wasDone ? { 'a.md': true } : {}, autoAdvance: !wasDone,
+    }, {
+      F: LocalF,
+      index: { byRef: {}, weeks: [{ n: 2, items: [{ ref: 'a.md' }, { ref: 'b.md' }] }] },
+      render: observe, renderTransient: observe,
+      openResource: () => Promise.resolve(true),
+    });
+    h.rootHandlers.click({ target: actionTarget({ 'data-fd-toggle': 'a.md' }), preventDefault() {} });
+    assert.equal(renders, 1);
+  }
+});
+
 test('global shortcuts are suppressed for input, textarea, select, and contenteditable targets', () => {
   for (const tagName of ['INPUT', 'TEXTAREA', 'SELECT']) {
     assert.equal(F.fdIsTypingTarget({ tagName, isContentEditable: false }), true, tagName);
@@ -446,6 +582,7 @@ function fakeHarness(initial, options = {}) {
     facultyPreviewLock: options.facultyPreviewLock,
     externalModalOpen: options.externalModalOpen,
     releaseStartupGate: options.releaseStartupGate,
+    loadBlock: options.loadBlock,
   });
   if (options.commitStartup !== false) controller.commitStartup();
   return { root, rootHandlers, fakeWindow, windowHandlers, controller };
@@ -578,10 +715,11 @@ test('delegated tool expansion persists as a layout-only transient without routi
   assert.equal(transientRenders.length, 2);
 });
 
-test('live search input rerenders and Enter previews the first result as a sheet', () => {
+test('live search input rerenders and Enter opens the first ordinary result directly', () => {
   const renders = [];
   const h = fakeHarness({ ...roleContext, searchOpen: true, query: '' }, {
     F,
+    openResource: () => Promise.resolve(true),
     render: (state) => renders.push({ ...state }),
     searchResults: (_index, query) => query === 'sleep'
       ? [{ kind: 'item', item: { ref: 'sleep.md' } }]
@@ -595,7 +733,8 @@ test('live search input rerenders and Enter previews the first result as a sheet
   assert.equal(h.controller.getState().query, 'sleep');
   let prevented = 0;
   h.windowHandlers.keydown({ key: 'Enter', target: input, preventDefault: () => { prevented += 1; } });
-  assert.equal(h.controller.getState().sheet, 'item:sleep.md');
+  assert.equal(h.controller.getState().openId, 'sleep.md');
+  assert.equal(h.controller.getState().sheet, null);
   assert.equal(h.controller.getState().searchOpen, false);
   assert.equal(prevented, 1);
   assert.ok(renders.length >= 2);
@@ -713,6 +852,66 @@ test('runtime autoAdvance opens the next unread resource after recording progres
   });
   assert.equal(h.controller.getState().openId, 'b.md');
   assert.deepEqual(opened, ['b.md']);
+});
+
+test('a refreshed block page loads its saved steps and writes reading progress before opening questions', () => {
+  const storage = memStorage();
+  const LocalF = make(storage);
+  const opened = [];
+  const routes = [];
+  let loads = 0;
+  const h = fakeHarness({
+    ...roleContext, tab: 'today', openId: 'a.md', fromTab: 'today', done: {}, autoAdvance: true,
+  }, {
+    F: LocalF,
+    index: { byRef: {}, weeks: [{ n: 2, items: [{ ref: 'a.md' }, { ref: 'b.md' }] }] },
+    location: { href: 'https://example.test/?page=a.md&block=1', search: '?page=a.md&block=1', pathname: '/' },
+    loadBlock: () => { loads += 1; return PAGE_QUESTION_BLOCK; },
+    route: (route) => routes.push(route),
+    openResource: (ref) => {
+      assert.equal(JSON.parse(storage.dump().cw_progress_v1)['a.md'].done, true);
+      opened.push(ref);
+      return Promise.resolve(true);
+    },
+  });
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-toggle': 'a.md' }), preventDefault() {} });
+  assert.equal(loads, 1);
+  assert.deepEqual(opened, ['question-bank-practice.html']);
+  assert.deepEqual(routes, ['?tool=question-bank-practice.html&block=1&n=2&cat=mood']);
+});
+
+test('unflagged routes and expired blocks keep ordinary reader behavior', () => {
+  for (const search of ['?page=a.md', '?page=a.md&block=1']) {
+    const LocalF = make(memStorage());
+    let loads = 0;
+    const h = fakeHarness({
+      ...roleContext, tab: 'today', openId: 'a.md', fromTab: 'today', done: {}, autoAdvance: true,
+    }, {
+      F: LocalF,
+      index: { byRef: {}, weeks: [{ n: 2, items: [{ ref: 'a.md' }, { ref: 'b.md' }] }] },
+      location: { href: 'https://example.test/' + search, search, pathname: '/' },
+      loadBlock: () => { loads += 1; return null; },
+      openResource: () => Promise.resolve(true),
+    });
+    h.rootHandlers.click({ target: actionTarget({ 'data-fd-toggle': 'a.md' }), preventDefault() {} });
+    assert.equal(loads, search.includes('block=1') ? 1 : 0);
+    assert.equal(h.controller.getState().openId, 'b.md');
+  }
+});
+
+test('reader arrow navigation follows the viewed Path week', () => {
+  const h = fakeHarness({
+    ...roleContext, week: 1, viewWeek: 2, tab: 'path', fromTab: 'path', openId: 'd.md',
+  }, {
+    F: make(memStorage()),
+    index: { byRef: {}, weeks: [
+      { n: 1, items: [{ ref: 'a.md' }, { ref: 'b.md' }] },
+      { n: 2, items: [{ ref: 'd.md' }, { ref: 'e.md' }] },
+    ] },
+    openResource: () => Promise.resolve(true),
+  });
+  h.windowHandlers.keydown({ key: 'ArrowRight', target: { tagName: 'BUTTON' }, preventDefault() {} });
+  assert.equal(h.controller.getState().openId, 'e.md');
 });
 
 test('runtime keyboard wiring covers arrows, digits, slash, command-K, and Escape', () => {
@@ -835,7 +1034,9 @@ test('nested overlay replacement focuses each new dialog and restores the stable
   });
   h.rootHandlers.click({ target: opener, preventDefault() {} });
   const replacedSearchInput = currentDialog.control;
-  h.windowHandlers.keydown({ key: 'Enter', target: replacedSearchInput, preventDefault() {} });
+  h.rootHandlers.click({ target: actionTarget({
+    'data-fd-open': 'preview.md', 'data-fd-sheet': '',
+  }), preventDefault() {} });
   assert.deepEqual(focused, ['search', 'sheet:item:preview.md']);
   h.rootHandlers.click({ target: actionTarget({ 'data-fd-close-sheet': '' }), preventDefault() {} });
   assert.equal(opener.focused, 1);

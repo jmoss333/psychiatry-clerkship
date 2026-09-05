@@ -122,7 +122,7 @@ test('step routes carry the block flag and the bounded size the tools read', () 
   assert.equal(F.fdBlockRouteForStep({ kind: 'review', n: 3 }), '?tool=review.html&block=1&limit=3');
   assert.equal(F.fdBlockRouteForStep({ kind: 'qb', n: 4, cat: 'mood' }), '?tool=question-bank-practice.html&block=1&n=4&cat=mood');
   assert.equal(F.fdBlockRouteForStep({ kind: 'qb', n: 4, cat: null }), '?tool=question-bank-practice.html&block=1&n=4');
-  assert.equal(F.fdBlockRouteForStep({ kind: 'page', ref: 't_mood.md' }), '?page=t_mood.md');
+  assert.equal(F.fdBlockRouteForStep({ kind: 'page', ref: 't_mood.md' }), '?page=t_mood.md&block=1');
 });
 
 test('block status derives page completion from the progress map, other steps from the store', () => {

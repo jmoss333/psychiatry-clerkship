@@ -14,7 +14,7 @@ function audience(testInfo) {
     libraryCount: resident ? 93 : 83,  // +therapy_on_the_unit.md, +therapy_reading_room.md (WP-T3); res +rp-post-event-huddle.html (2026-09-04)
     residentRef: resident ? 'rp-agitation.html' : null,
     weekCount: resident ? 4 : 6,
-    pathHeading: resident ? 'Your 4-week path' : 'Your 6-week path',
+    pathHeading: resident ? 'Your 4-week path' : 'Suggested learning plan',
     pathId: resident ? 'resident-four-week' : 'ms3-six-week',
   };
 }
@@ -208,7 +208,7 @@ test('legacy completion objects survive Reader previous/next and browser history
   await expectHealthy(page);
 });
 
-test('command-K and slash search open a preview sheet and restore focus', async ({ page }, testInfo) => {
+test('command-K and slash search restore focus on dismissal and open results directly', async ({ page }, testInfo) => {
   await seedApp(page, testInfo);
   await page.goto('/');
   const opener = page.locator('[data-fd-search]');
@@ -228,12 +228,13 @@ test('command-K and slash search open a preview sheet and restore focus', async 
   await input.fill('mood');
   await expect(page.locator('.fd-result')).not.toHaveCount(0);
   const firstRef = await page.locator('.fd-result').first().getAttribute('data-fd-open');
+  expect(firstRef).toBeTruthy();
   await input.press('Enter');
-  await expect(page.locator('.fd-sheet[role="dialog"]')).toBeVisible();
+  await expect(page.locator('.fd-reader .fd-article__body')).toBeVisible();
   await expect(page.locator('.fd-search')).toHaveCount(0);
-  await expect(page.locator('.fd-sheet [data-fd-open]')).toHaveAttribute('data-fd-open', firstRef);
-  await page.locator('.fd-sheet__close').click();
   await expect(page.locator('.fd-sheet')).toHaveCount(0);
+  await expect(page.locator('.fd-src')).toHaveText(firstRef);
+  expect(new URL(page.url()).searchParams.get(firstRef.endsWith('.html') ? 'tool' : 'page')).toBe(firstRef);
   await expectHealthy(page);
 });
 
@@ -461,10 +462,15 @@ test('wide interview table remains accessible and contained in the live Reader',
   await expect(tableSection).toBeVisible();
   const tableHeader = tableSection.locator('.sec-h button');
   await expect(tableHeader).toHaveCount(1);
+  const viewport = tableSection.locator('.table-scroll-viewport');
+  await expect(tableSection).toHaveClass(/open/);
+  await expect(viewport.locator('table')).toBeVisible();
+  await tableHeader.click();
+  await expect(tableSection).not.toHaveClass(/open/);
+  await expect(viewport).toBeHidden();
   await tableHeader.click();
   await expect(tableSection).toHaveClass(/open/);
 
-  const viewport = tableSection.locator('.table-scroll-viewport');
   const shell = tableSection.locator('.table-scroll');
   await expect(shell).toHaveClass(/is-scrollable/);
   await expect(viewport).toHaveAttribute('role', 'region');

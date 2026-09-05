@@ -138,19 +138,7 @@ function fdReaderKeyPoints(points){
   return out;
 }
 
-/* data-fd-open="<ref>" plus the bare data-fd-sheet modifier -- the branch contract fd_search.js
-   (header note, "Sheet-vs-navigate signalling") states and fd_sheet.js's attribute table repeats:
-   data-fd-open alone NAVIGATES to the page; the same attribute with a bare data-fd-sheet beside it
-   means "open that ref as a preview side sheet instead". This button must carry the modifier,
-   because its own sub-copy one line below promises the page stays put, and because the prototype
-   opens Try-it-now as a sheet unconditionally while a list row's data-fd-open navigates.
-
-   An earlier version of this file left the modifier off and justified it by saying the wiring
-   layer could infer the sheet presentation from the click having come from .fd-trynow. That
-   rationale is deleted, not merely superseded: a second, undocumented mechanism for one decision
-   is exactly how this button came to promise one thing and encode another. The attribute is now
-   the only signal, and tests/fd-reader.test.mjs pins it.
-
+/* Related tools open directly so a learner reaches the working controls in one action.
    toolTitle falls back to the raw ref for a toolRef that resolves to nothing in the index -- the
    same missing-entry degradation fd_data.js already uses for titles, rather than throwing on a
    dangling reference. */
@@ -163,12 +151,10 @@ function fdReaderTryNow(item, index){
      title cannot overflow the button -- the same structural, non-colour inline style fd_shell.js
      uses for the analogous .fd-role grouping span (fd_shell.js:84). No class in frontdoor.css
      covers this bare grouping, same as that precedent. */
-  return '<button type="button" class="fd-trynow" data-fd-open="'+fdEsc(item.toolRef)+'" '+
-    'data-fd-sheet>'+
+  return '<button type="button" class="fd-trynow" data-fd-open="'+fdEsc(item.toolRef)+'">'+
     '<span class="fd-trynow__icon">▶</span>'+
     '<span style="flex:1;min-width:0">'+
-      '<span class="fd-trynow__title">Try it now · '+fdEsc(toolTitle)+'</span>'+
-      '<span class="fd-trynow__sub">Opens as a side sheet — this page stays put.</span>'+
+      '<span class="fd-trynow__title">Open tool · '+fdEsc(toolTitle)+'</span>'+
     '</span>'+
   '</button>';
 }
@@ -333,18 +319,23 @@ function fdReader(index, state, bodyHtml){
      shared control literal across all tools instead of silently treating those routes as reads. */
   var isTool=item.kind==='tool'||fdIsTool(item.ref||st.ref);
 
-  var hasWeek=(typeof st.week==='number')&&!isNaN(st.week);
-  var weekItems=hasWeek?fdItemsForWeek(idx, st.week):[];
+  var readerWeek=fdProgressWeek(st,idx);
+  var hasWeek=(typeof readerWeek==='number')&&!isNaN(readerWeek);
+  var weekItems=hasWeek?fdItemsForWeek(idx, readerWeek):[];
+  var doneMap=fdProgressForWeek(idx,st,readerWeek);
   var inWeek=false;
   for(var w=0;w<weekItems.length;w++){
     if(weekItems[w].ref===item.ref){ inWeek=true; break; }
   }
 
-  var neighbours=fdReaderNeighbours(idx, item.ref, st.week);
-  var nextAfter=inWeek?fdReaderNextUnread(weekItems, item.ref, st.done):null;
-  var isDone=!!(st.done||{})[item.ref];
+  var neighbours=fdReaderNeighbours(idx, item.ref, readerWeek);
+  var nextAfter=inWeek?fdReaderNextUnread(weekItems, item.ref, doneMap):null;
+  var isDone=!!doneMap[item.ref];
   var backLabel=fdReaderBackLabel(st.fromTab);
   var doneLabel=fdReaderDoneLabel(isDone, nextAfter, backLabel);
+  var blockHandoff=typeof fdBlockPageHandoff==='function'
+    ?fdBlockPageHandoff(st.block, item.ref, doneMap):null;
+  if(blockHandoff) doneLabel=fdBlockHandoffLabel(blockHandoff);
 
   /* A rights reference keeps every TOOL MECHANIC below (it is still an .html artifact in the tool
      frame, with the same toolbar and expand control) but must not be LABELLED one: "Interactive
@@ -353,7 +344,7 @@ function fdReader(index, state, bodyHtml){
      the copy branches. */
   var isRights=(item.rights===true);
   var kindLabel=isRights?'Reference':(isTool?'Interactive tool':'Reading');
-  var eyebrowText=inWeek?('Week '+fdEsc(st.week)+' · '+kindLabel):kindLabel;
+  var eyebrowText=inWeek?('Week '+fdEsc(readerWeek)+' · '+kindLabel):kindLabel;
   var metaText=isRights?'instrument not reproduced here'
     :(isTool?'self-paced':((typeof item.minutes==='number')?(item.minutes+' min'):''));
 
@@ -392,7 +383,7 @@ function fdReader(index, state, bodyHtml){
   } else out+=back;
   out+='<div class="fd-reader__cols">';
   out+=article;
-  if(inWeek) out+=fdReaderRailNav(weekItems, st, st.week);
+  if(inWeek) out+=fdReaderRailNav(weekItems, {ref:st.ref,done:doneMap}, readerWeek);
   out+='</div>';
   out+='<div class="fd-actionbar__spacer"></div>';
   out+='</article>';

@@ -153,15 +153,25 @@ function fdExtraSearch(search){
   return q?'&'+q:'';
 }
 
+function fdSearchOutsideBlock(search){
+  var params=new URLSearchParams(String(search||'').replace(/^\?/,''));
+  if(params.has('block')){
+    params.delete('block'); params.delete('n'); params.delete('limit'); params.delete('cat');
+  }
+  return params.toString();
+}
+
 function fdRouteForTab(tab, search){
-  var params=fdParamsWithoutRoute(search), extra=params.toString();
+  var params=fdParamsWithoutRoute(fdSearchOutsideBlock(search)), extra=params.toString();
   if(tab==='today') return extra?('/?'+extra):'/';
   return '?tab='+encodeURIComponent(tab)+(extra?'&'+extra:'');
 }
 
-function fdRouteForRef(ref, search){
+function fdRouteForRef(ref, search, blockNavigation){
   var key=/\.html$/.test(String(ref||''))?'tool':'page';
-  return '?'+key+'='+encodeURIComponent(ref)+fdExtraSearch(search);
+  return '?'+key+'='+encodeURIComponent(ref)+fdExtraSearch(
+    blockNavigation===true?search:fdSearchOutsideBlock(search)
+  );
 }
 
 function fdNumberAttr(attrs,name){
@@ -272,7 +282,7 @@ function fdDispatch(attrs, context, state){
     tab=fdValidTab(s.tab)?s.tab:'today';
     return {
       patch:{openId:ref,fromTab:tab,searchOpen:false,sheet:null},
-      route:fdRouteForRef(ref,c.search),effect:{type:'open-resource',ref:ref}
+      route:fdRouteForRef(ref,c.search,c.blockNavigation),effect:{type:'open-resource',ref:ref}
     };
   }
 
@@ -286,13 +296,31 @@ function fdDispatch(attrs, context, state){
 
   if(fdOwn(a,'data-fd-toggle')){
     ref=String(a['data-fd-toggle']||'');
-    done=fdClone(s.done);
-    var mark=done[ref]!==true;
+    var progressWeek=fdProgressWeek(s,c.index);
+    var progressRaw=c.progressRaw||s.progressRaw||{};
+    done=c.index?fdProgressDoneMap(progressRaw,c.index,progressWeek):fdClone(s.done);
+    var blockHandoff=s.openId===ref&&!c.inSheet&&typeof fdBlockPageHandoff==='function'
+      ?fdBlockPageHandoff(c.block,ref,done):null;
+    var mark=!!blockHandoff||done[ref]!==true;
     if(mark) done[ref]=true;
     else delete done[ref];
-    raw=fdProgressToggle(c.progressRaw||s.progressRaw||{},ref,mark,c.nowMs);
+    raw=fdProgressToggle(progressRaw,ref,mark,c.nowMs,c.index,progressWeek);
+    if(c.index) done=fdProgressDoneMap(raw,c.index,progressWeek);
     patch={done:done,justDone:mark?ref:null};
+    if(c.index) patch.progressRaw=raw;
     var effect={type:'toggle-progress',ref:ref,done:mark,raw:raw};
+    if(blockHandoff){
+      next=blockHandoff.next;
+      if(next){
+        patch.openId=next.ref;
+        patch.navDir=1;
+        effect.openRef=next.ref;
+        return {patch:patch,route:fdBlockRouteForStep(next),effect:effect};
+      }
+      patch.openId=null;
+      patch.tab='today';
+      return {patch:patch,route:fdRouteForTab('today',fdSearchOutsideBlock(c.search)),effect:effect};
+    }
     if(mark&&s.openId===ref&&s.autoAdvance!==false){
       next=fdReaderNextUnread(c.weekItems||[],ref,done);
       if(next){
@@ -712,7 +740,7 @@ function fdWire(root, initialState, opts){
   function transitionDetail(before, patch, effect, changedBase){
     var changed=[], surfaces={base:false,overlay:false,completion:false,chrome:false,layout:false};
     var overlayKeys={searchOpen:true,query:true,sheet:true,sheetFrom:true,stepsDone:true,nudge:true};
-    var actionKeys={done:true,justDone:true};
+    var actionKeys={done:true,justDone:true,progressRaw:true};
     for(var key in patch){
       if(fdOwn(patch,key)&&before[key]!==state[key]){
         changed.push(key);
@@ -742,7 +770,6 @@ function fdWire(root, initialState, opts){
     if(effect.type==='set-rotation'){
       try{ localStorage.setItem('cw_rotation_start',effect.start); }catch(_){}
     } else if(effect.type==='toggle-progress'){
-      try{ localStorage.setItem('cw_progress_v1',JSON.stringify(effect.raw)); }catch(_){}
       if(effect.done&&typeof seedSRS==='function') try{seedSRS(effect.ref);}catch(_){}
       if(effect.openRef){
         var progressOpener=o.openResource||fdOpenResource;
@@ -819,6 +846,12 @@ function fdWire(root, initialState, opts){
       navGeneration++;
       generation=navGeneration;
     }
+    /* Live renderers reload canonical progress to include receipts written by a tool iframe.
+       Persist this toggle before rendering for the same reason; resource opening and the
+       remaining effects still follow render, when their fresh host exists. */
+    if(result.effect&&result.effect.type==='toggle-progress'){
+      try{ localStorage.setItem('cw_progress_v1',JSON.stringify(result.effect.raw)); }catch(_){}
+    }
     fdSave(state);
     if(!fromHistory){
       var pushed=routeTo(result.route,result.history==='replace');
@@ -836,10 +869,13 @@ function fdWire(root, initialState, opts){
     var c={
       nowMs:Date.now(),theme:currentTheme(),
       search:(win&&win.location&&win.location.search)||'',
-      progressRaw:progressRaw(),weekItems:fdItemsForWeek(index,state.week),index:index
+      progressRaw:progressRaw(),weekItems:fdItemsForWeek(index,fdProgressWeek(state,index)),index:index
     };
     var add=extra||{};
     for(var k in add){ if(fdOwn(add,k)) c[k]=add[k]; }
+    if(!previewActive()&&o.loadBlock&&new URLSearchParams(c.search||'').get('block')==='1'){
+      try{ c.block=o.loadBlock(c.nowMs); }catch(ignoreBlock){ c.block=null; }
+    }
     return c;
   }
   function clickHandler(event){
@@ -897,7 +933,6 @@ function fdWire(root, initialState, opts){
         if(first.kind==='protocol') attrs['data-fd-safety']=first.item.ref;
         else{
           attrs['data-fd-open']=first.item.ref;
-          attrs['data-fd-sheet']='';
         }
         if(event.preventDefault) event.preventDefault();
         apply(fdDispatch(attrs,context(),state),event.target,false);
@@ -915,7 +950,7 @@ function fdWire(root, initialState, opts){
     else if(action.type==='search') attrs['data-fd-search']='';
     else if(action.type==='tab') attrs['data-fd-tab']=action.tab;
     else if(action.type==='nav'){
-      var neighbours=fdReaderNeighbours(index,state.openId,state.week);
+      var neighbours=fdReaderNeighbours(index,state.openId,fdProgressWeek(state,index));
       var item=action.dir<0?neighbours.prev:neighbours.next;
       if(!item) return;
       attrs['data-fd-open']=item.ref;

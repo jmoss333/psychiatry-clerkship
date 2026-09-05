@@ -101,6 +101,19 @@ const BASE_STATE = { week: 1, role: 'there', done: {}, streak: 0, ringPct: 50,
 const s = (over) => Object.assign({}, BASE_STATE, over);
 const fourState = (over) => Object.assign({}, BASE_STATE, over);
 
+test('Today counts repeated practice for the current week even when another Path week was viewed', () => {
+  const cur = { ...FIX_CUR, weeks: FIX_CUR.weeks.map((w) => ({ ...w,
+    items: [{ ref: 't.html', kind: 'tool' }],
+  })) };
+  const idx = F.fdBuildIndex(cur, FIX_META, FIX_TOOLS, FIX_MAN);
+  const html = F.fdToday(idx, s({ week: 2, viewWeek: 1, done: { 't.html': true },
+    progressRaw: { 't.html': { done: true, practiceWeeks: { 1: { done: true, at: '2026-08-03' } } } },
+  }));
+  assert.match(html, /fd-continue__count">0 of 1/);
+  assert.match(html, /data-fd-toggle="t.html"[^>]*aria-pressed="false"/);
+  assert.match(html, /class="fd-continue" data-fd-open="t.html"/);
+});
+
 test('the greeting varies by time of day, derived from state.nowMs', () => {
   const morning = new Date(2026, 7, 10, 9, 0, 0).getTime();
   const afternoon = new Date(2026, 7, 10, 14, 0, 0).getTime();
