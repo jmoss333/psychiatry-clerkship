@@ -214,6 +214,7 @@ _TOOLKW_RES = {
     "rp-agitation.html": "agitation ladder prn trainer restraint de-escalation seclusion intramuscular haloperidol lorazepam olanzapine decision escalation",
     "rp-brief-psych.html": "five good minutes brief psychotherapy coach supportive bedside therapeutic conversation skills",
     "rp-canon-quiz.html": "canon quiz 200 paper spine landmark trials evidence self test board review recall",
+    "rp-post-event-huddle.html": "post-event learning huddle debrief after an event agitation shift change handoff room move reassessment patient voice team communication system condition quality improvement systems practice",
 }
 
 

@@ -130,4 +130,11 @@ RESIDENT_PROTO_TOOLS = [
         "rp-canon-quiz.html",
         "Canon Quiz — 200-Paper Spine",
     ),
+    # Post-Event Learning Huddle (2026-09-04): single-file, no pack.json, no storage,
+    # no requests. Design: docs/superpowers/specs/2026-09-04-post-event-learning-huddle-design.md
+    (
+        "_prototypes/post-event-huddle/rp-post-event-huddle.html",
+        "rp-post-event-huddle.html",
+        "Post-Event Learning Huddle (2 min)",
+    ),
 ]

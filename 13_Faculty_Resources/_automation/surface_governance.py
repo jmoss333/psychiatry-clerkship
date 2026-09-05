@@ -549,6 +549,7 @@ COTW_REGISTRY_RELATIVE = Path("08_Cases_and_Simulation/case-of-the-week/cotw_reg
 _ADDITIONAL_TOOL_SOURCES = {
     "orientation-video.html": "_prototypes/orientation-video/orientation-video.html",
     "rp-agitation.html": "_prototypes/agitation-trainer/rp-agitation.html",
+    "rp-post-event-huddle.html": "_prototypes/post-event-huddle/rp-post-event-huddle.html",
     "rp-brief-psych.html": "_prototypes/brief-psych/rp-brief-psych.html",
     "rp-canon-quiz.html": "_prototypes/canon-quiz/rp-canon-quiz.html",
 }

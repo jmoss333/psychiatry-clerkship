@@ -70,13 +70,14 @@ test('the real repository universe is exactly what shipped_pages.json ships', ()
   const cotw = items.filter(item => isCotwSlug(item.slug));
 
   // 69 shared pages + 22 shared tools + 1 MS3-only tool (orientation-video.html)
-  // + 22 Case-of-the-Week twins + 6 resident-only pages + 3 resident-only tools.
+  // + 22 Case-of-the-Week twins + 6 resident-only pages + 4 resident-only tools
+  // (rp-post-event-huddle.html joined the three role-play tools on 2026-09-04).
   assert.equal(MANIFEST.md.length, 69);
   assert.equal(MANIFEST.tools.length, 22);
   assert.equal(REGISTRY.weeks.length, 11);
-  assert.equal(items.length, 123);
+  assert.equal(items.length, 124);
   assert.equal(pages.length, 69 + 22 + 6);
-  assert.equal(tools.length, 22 + 1 + 3);
+  assert.equal(tools.length, 22 + 1 + 4);
   assert.equal(cotw.length, 22);
 
   const byProducer = {};
@@ -88,7 +89,7 @@ test('the real repository universe is exactly what shipped_pages.json ships', ()
     ms3_extra_tool: 1,
     cotw_registry: 22,
     resident_extra: 6,
-    resident_tool: 3,
+    resident_tool: 4,
   });
 
   // Every Case-of-the-Week page is a page (never a tool) and names its own site.
@@ -105,7 +106,7 @@ test('the real repository universe is exactly what shipped_pages.json ships', ()
     entry => entry.sites.length === 1 && entry.sites[0] === 'res',
   );
   assert.equal(residentOnly.length, items.filter(item => item.site === 'res').length);
-  assert.equal(residentOnly.length, 11 + 6 + 3);
+  assert.equal(residentOnly.length, 11 + 6 + 4);
 });
 
 /* THE JS-SIDE PARITY CHECK. shipped_pages.json is generated Python-side; this
