@@ -370,6 +370,30 @@ SKIP_LINK_CSS = (
 )
 FAVICON_LINK = '<link rel="icon" href="/favicon.svg">'
 CLINICAL_CSS_LINK = '<link rel="stylesheet" href="/clinical-warm.css">'
+# Usage analytics. CW_SITE tells the emitter which site it is on; CW_PAGE (when
+# known at build time) tells it which page. The emitter sends only allowlisted
+# keys and never an identifier. See
+# docs/superpowers/specs/2026-09-04-usage-analytics-design.md
+ANALYTICS_TAG = '<script src="/analytics.js" defer></script>'
+
+
+def analytics_head(site, page=None):
+    """The tags every built page carries, in <head> order.
+
+    `page` must be a build-time-known literal identical to this page's own
+    slug in shipped_pages.json (e.g. a tool's own output filename) -- never
+    derived from a URL, query string, or anything read in the browser. Pass
+    None for a file with no single fixed page identity: the SPA shell
+    (index.html) serves dozens of content pages by client-side routing, so no
+    one CW_PAGE literal could describe it truthfully, and a wrong one would be
+    silently dropped by the collector's allowlist anyway (worse than none,
+    since it looks instrumented but never counts).
+    """
+    tag = "<script>window.CW_SITE='%s'" % site
+    if page:
+        tag += ";window.CW_PAGE='%s'" % page
+    tag += "</script>" + ANALYTICS_TAG
+    return tag
 
 # Pre-paint theme init: runs before first paint so dark mode never flashes.
 THEME_INIT = (
@@ -543,8 +567,12 @@ def apply_page_chrome(path, is_index=False):
     return t != o
 
 
-def apply_dark_mode(path, is_index=False, cache_bust=None):
-    """Theme init, dark tokens via clinical-warm.css, motion CSS, iframe nav shim."""
+def apply_dark_mode(path, is_index=False, cache_bust=None, page_slug=None):
+    """Theme init, dark tokens via clinical-warm.css, motion CSS, iframe nav shim.
+
+    `page_slug` is this file's own build-time-known slug (its basename, passed
+    by `apply_full_page_pass` below) -- used only for the usage-analytics tag.
+    """
     t = open(path, encoding="utf-8").read()
     o = t
 
@@ -559,6 +587,13 @@ def apply_dark_mode(path, is_index=False, cache_bust=None):
     # Dark tokens come from the linked stylesheet — one file, not N inline copies.
     if '[data-theme="dark"]' not in t and "clinical-warm.css" not in t and "</head>" in t:
         t = t.replace("</head>", CLINICAL_CSS_LINK + "\n</head>", 1)
+
+    # Usage analytics. Injected here so every polished page carries it from one
+    # source; the emitter itself sends only allowlisted keys. The default site
+    # is ms3 because resident_section.py derives the resident build from the
+    # MS3 one and rewrites CW_SITE in its own pass (see resident_section.py).
+    if "analytics.js" not in t and "</head>" in t:
+        t = t.replace("</head>", analytics_head("ms3", page_slug) + "\n</head>", 1)
 
     if "cc-rise" not in t and "</style>" in t:
         t = t.replace("</style>", MOTION_CSS + "\n</style>", 1)
@@ -650,9 +685,14 @@ def apply_full_page_pass(out_dir, cache_bust=None):
         pages.append(index)
     for p in pages:
         is_index = os.path.abspath(p) == os.path.abspath(index)
+        # Every non-shell page in this loop is its own standalone HTML document
+        # named after its shipped_pages.json slug (a tool's own output
+        # filename) -- so the basename IS the build-time-known page identity
+        # analytics_head() needs. The SPA shell has no single one (see there).
+        page_slug = None if is_index else os.path.basename(p)
         inject_shared_snippets(p)
         apply_page_chrome(p, is_index=is_index)
-        apply_dark_mode(p, is_index=is_index, cache_bust=cache_bust)
+        apply_dark_mode(p, is_index=is_index, cache_bust=cache_bust, page_slug=page_slug)
     return len(pages)
 
 

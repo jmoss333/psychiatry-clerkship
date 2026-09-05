@@ -392,6 +392,34 @@ apply_tool_status(Path(OUT) / "tools", _surface_governance)
 write_site_document(Path(OUT) / "governance.json", _surface_governance)
 print("surface governance: emitted", len(_surface_governance["items"]), "items (resident)")
 
+# ---------- USAGE ANALYTICS: relabel CW_SITE for the resident build ----------
+# The resident build starts as a copytree of the finished MS3 build (top of this
+# file), so every inherited page arrives labelled window.CW_SITE='ms3'. The
+# rp-* prototype tools copied in above are NOT inherited -- they are written
+# fresh from _prototypes/ and then run through common.apply_full_page_pass()
+# (which hardcodes site "ms3", since it is shared with the MS3 build and has no
+# way to know which audience is calling it) -- so they too land labelled 'ms3'.
+# Without this relabel every resident event would be recorded as MS3 traffic:
+# a silent, total mislabelling of one whole audience. Run last, after every
+# other pass that rewrites tools/*.html or index.html (apply_full_page_pass,
+# the Front Door payload injection, media_guard, apply_tool_status above), so
+# no later step can reintroduce a stale 'ms3' label under this one.
+#
+# CW_PAGE is untouched here: its value is a page's own output filename, which
+# is the same string on both sites for a shared tool (e.g. bfcrs.html), and
+# resident-only tools already received their own correct filename-derived
+# CW_PAGE from apply_full_page_pass -- only the site label needs rewriting.
+_analytics_relabelled = 0
+for _analytics_path in sorted(glob.glob(OUT + "/tools/*.html")) + [OUT + "/index.html"]:
+    if not os.path.exists(_analytics_path):
+        continue
+    _at = open(_analytics_path, encoding="utf-8").read()
+    _at2 = _at.replace("window.CW_SITE='ms3'", "window.CW_SITE='res'")
+    if _at2 != _at:
+        open(_analytics_path, "w", encoding="utf-8").write(_at2)
+        _analytics_relabelled += 1
+print("usage analytics: relabelled CW_SITE ms3->res on", _analytics_relabelled, "page(s)")
+
 print("RESIDENT build: out",OUT)
 print(" sections:",[s["section"] for s in nav])
 
