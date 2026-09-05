@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { readFileSync, statSync } from "node:fs";
 import test from "node:test";
-import { basename, dirname, join } from "node:path";
+import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -41,7 +41,6 @@ const optionalOrientationIdentities = new Set(
   canonicalOrientationEntries.flatMap(([sourcePath, builtName]) => [
     sourcePath,
     `tools/${builtName}`,
-    basename(sourcePath),
   ]),
 );
 
@@ -276,7 +275,7 @@ test("retired intro remains source provenance but is absent from generated media
   }
 });
 
-test("media manifest records exactly one unserved retired intro and no orientation package", () => {
+test("media manifest records exactly one unserved retired intro", () => {
   assert.doesNotThrow(() => validateMediaManifest(mediaManifest));
   const retired = mediaManifest.video.filter((entry) => entry.kind === "retired-intro-trailer");
   assert.deepEqual(retired, [
@@ -295,13 +294,15 @@ test("media manifest records exactly one unserved retired intro and no orientati
   ]);
 });
 
-test("every canonical MS3 orientation identity rejects a served-false manifest mutation", () => {
+test("orientation package rows are allowed unless marked served", () => {
   for (const identity of optionalOrientationIdentities) {
-    const mutated = [...mediaManifest.video, { file: identity, served: false }];
+    const described = [...mediaManifest.video, { file: identity, served: false, captions: true }];
+    assert.doesNotThrow(() => validateMediaManifest({ ...mediaManifest, video: described }));
+    const served = [...mediaManifest.video, { file: identity, served: true }];
     assert.throws(
-      () => validateMediaManifest({ ...mediaManifest, video: mutated }),
-      /orientation package/,
-      `orientation manifest identity must be rejected: ${identity}`,
+      () => validateMediaManifest({ ...mediaManifest, video: served }),
+      /served/,
+      `served orientation row must be rejected: ${identity}`,
     );
   }
 });

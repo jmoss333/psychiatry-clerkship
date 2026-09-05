@@ -411,19 +411,32 @@ def _assert_resident_welcome_video(welcome) -> None:
 
 
 def validate_media_manifest(manifest) -> None:
-    if not isinstance(manifest, dict) or not isinstance(manifest.get("video"), list):
-        raise CompassContractError("media manifest must contain a video list")
-    orientation_identities = set()
+    """The WP-13 accessibility manifest may describe the orientation package (caption and
+    transcript status are exactly what it exists to record) but may not mark it served:
+    production_canary.py probes every served entry and accepts media only under /audio/,
+    /audio_oe/ or /media/, while this package ships under /tools/. Widening the canary's
+    scope is a separate decision; until then a served:true row would fail every canary run.
+    """
+    if not isinstance(manifest, dict):
+        raise CompassContractError("media manifest must be an object")
+    identities = set()
     for source_path, built_name, _title in MS3_ORIENT_VIDEO:
-        orientation_identities.update(
-            (source_path, os.path.join("tools", built_name), os.path.basename(source_path))
-        )
-    for entry in manifest["video"]:
-        if not isinstance(entry, dict):
-            raise CompassContractError("media manifest video entries must be objects")
-        for value in entry.values():
-            if isinstance(value, str) and value in orientation_identities:
-                raise CompassContractError("media manifest contains MS3 orientation package: " + value)
+        identities.update((source_path, os.path.join("tools", built_name)))
+    for group in ("audio", "video"):
+        entries = manifest.get(group)
+        if not isinstance(entries, list):
+            raise CompassContractError("media manifest must contain a %s list" % group)
+        for entry in entries:
+            if not isinstance(entry, dict):
+                raise CompassContractError("media manifest %s entries must be objects" % group)
+            if entry.get("served") is not True:
+                continue
+            for value in entry.values():
+                if isinstance(value, str) and value in identities:
+                    raise CompassContractError(
+                        "media manifest marks the MS3 orientation package as served, "
+                        "outside the canary's media scope: " + value
+                    )
 
 
 def load_ms3_preflight_sources(curriculum_path, orientation_packet_path):

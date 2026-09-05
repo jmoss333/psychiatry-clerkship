@@ -379,6 +379,27 @@ class WelcomeCompassTests(unittest.TestCase):
              "_prototypes/video-library/resident-onboarding-poster.jpg"],
         )
 
+    def orientation_entries(self, served):
+        from site_extras import MS3_ORIENT_VIDEO
+        return [{"file": src, "served": served} for src, _built, _title in MS3_ORIENT_VIDEO] + [
+            {"file": "tools/" + built, "served": served} for _src, built, _title in MS3_ORIENT_VIDEO]
+
+    def test_media_manifest_may_describe_the_orientation_package_but_not_mark_it_served(self):
+        base = {"audio": [], "video": [{"file": "media/day-in-the-life.mp4", "poster": "poster.jpg", "served": True}]}
+        self.assertIsNone(welcome_compass.validate_media_manifest(base))
+        for group in ("audio", "video"):
+            manifest = {**base, group: base[group] + self.orientation_entries(False)}
+            self.assertIsNone(welcome_compass.validate_media_manifest(manifest))
+            for entry in self.orientation_entries(True):
+                with self.subTest(group=group, entry=entry["file"]):
+                    manifest = {**base, group: base[group] + [entry]}
+                    with self.assertRaisesRegex(welcome_compass.CompassContractError, "served"):
+                        welcome_compass.validate_media_manifest(manifest)
+        for broken in ({"video": []}, {"audio": [], "video": [7]}, []):
+            with self.subTest(broken=broken):
+                with self.assertRaises(welcome_compass.CompassContractError):
+                    welcome_compass.validate_media_manifest(broken)
+
     def test_structure_parser_balances_void_elements(self):
         fragment = '<div data-fd-compass-root><p>a<br>b<img src="x"><hr/></p></div>'
         alone = welcome_compass._CompassStructureParser()
