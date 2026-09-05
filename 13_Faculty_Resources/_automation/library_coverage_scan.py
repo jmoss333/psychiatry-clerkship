@@ -34,11 +34,18 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
+SITE_BUILD = Path(__file__).resolve().parent / "site_build"
+
+# Whether a surface SHIPS is asked of the one derived listing (ADR-002), not of
+# site_manifest.json -- which is one producer of four and would answer "no" for a page
+# that reaches a learner by any other route.
+if str(SITE_BUILD) not in sys.path:
+    sys.path.insert(0, str(SITE_BUILD))
+from shipped_pages import load_shipped_pages  # noqa: E402  (path set above)
 
 PODCAST = "12_Media/psychiatry_psychotherapy_podcast_library.md"
 BOOKS = "07_Evidence_and_Reading/Book_Summaries/ms3_book_library.md"
 AUDIO_OE = "12_Media/audio_oe/MANIFEST.csv"
-MANIFEST = "13_Faculty_Resources/_automation/site_build/site_manifest.json"
 
 # Clerkship topic -> regex alternatives. Word-boundaried on purpose: an early version counted
 # "ect" inside "affect"/"connect"/"select" and reported 10 ECT hits on a page with one.
@@ -104,8 +111,8 @@ def main():
     book = read_text(BOOKS)
     audio, brief_count = read_audio_titles()
 
-    registered = {row[1] for row in json.loads((ROOT / MANIFEST).read_text(encoding="utf-8"))["md"]}
-    landmark_shipped = "landmark_trials.md" in registered
+    shipped = {page["slug"] for page in load_shipped_pages(ROOT)["pages"]}
+    landmark_shipped = "landmark_trials.md" in shipped
 
     rows = []
     for topic, patterns in TOPICS.items():
