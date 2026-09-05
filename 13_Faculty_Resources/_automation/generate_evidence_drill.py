@@ -44,7 +44,9 @@ from pathlib import Path
 
 HERE = Path(os.path.abspath(__file__)).parent
 sys.path.insert(0, str(HERE))
+sys.path.insert(0, str(HERE / "site_build"))
 import validate_claim_anchors as anchors  # noqa: E402  (path set above)
+from shipped_pages import load_shipped_pages  # noqa: E402  (path set above)
 
 OUT_REL = "13_Faculty_Resources/_automation/generated/evidence_drill.json"
 # Hand-maintained by drill_review_serve.py. Generated content is disposable;
@@ -151,16 +153,17 @@ def load_decisions(repo_root):
 
 def build(repo_root):
     repo_root = Path(repo_root).resolve()
-    anchors.REPO_ROOT = repo_root
-    anchors.TOPIC_META = repo_root / "topic_meta.json"
-    anchors.REGISTRY = repo_root / "evidence_registry.json"
-    anchors.MANIFEST = repo_root / "13_Faculty_Resources/_automation/site_build/site_manifest.json"
-    anchors.RESIDENT_SECTION = repo_root / "13_Faculty_Resources/_automation/site_build/resident_section.py"
 
     registry = json.loads((repo_root / "evidence_registry.json").read_text(encoding="utf-8"))
     by_id = {s["id"]: s for s in registry.get("sources", [])}
     topics = json.loads((repo_root / "topic_meta.json").read_text(encoding="utf-8"))
-    sources = anchors.shipped_name_to_source()
+    # Shipped page -> its source markdown, from the one derived listing (ADR-002). This
+    # used to re-root validate_claim_anchors and borrow its private re-derivation, which
+    # meant this generator's idea of what ships was a copy of a copy. validate_claim_anchors
+    # is still imported, for ANCHOR_RE -- the anchor SYNTAX, which is its own subject.
+    sources = {
+        page["slug"]: page["source"] for page in load_shipped_pages(repo_root)["pages"]
+    }
     decisions = load_decisions(repo_root)
 
     items = []

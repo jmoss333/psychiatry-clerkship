@@ -66,9 +66,6 @@ const ALLOWED_DIRECT_READERS = Object.freeze([
   //     for itself; several still carry a private copy of the Case-of-the-Week patch.
   //     Deleting a line here is the only edit this list accepts. ---
   '13_Faculty_Resources/_automation/validate_registry_schemas.py',
-  '13_Faculty_Resources/_automation/export_curriculum_review.py',
-  '13_Faculty_Resources/_automation/library_coverage_scan.py',
-  '13_Faculty_Resources/_automation/generate_evidence_drill.py',
   '13_Faculty_Resources/_automation/maintenance/governance_digest.mjs',
   '13_Faculty_Resources/_automation/site_build/pairings_block.py',
   '13_Faculty_Resources/_automation/anki/pcl_anki/release.py',
