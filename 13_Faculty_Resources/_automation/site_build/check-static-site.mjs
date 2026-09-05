@@ -1155,6 +1155,38 @@ const RATCHET_EXEMPT_CLASSES = new Set(['lfs-stub-soft']);
     if (mislabelled.length) {
       H(`usage analytics: CW_SITE mislabelled for a "${analyticsSite}" build: ${mislabelled.join(', ')}`);
     }
+
+    // DECISION: analytics-allowlist  (decisions.json; bin/check_decision_drift.py)
+    // Every cwAnalytics.record() argument in shipped HTML must be a string literal
+    // on this build's allowlist. A computed or unlisted key is how free text --
+    // and therefore PHI -- would reach the counter store, which the design forbids
+    // structurally rather than by policy. No tool calls record() yet (this plan
+    // ships only the emitter and the registry), so this rule currently guards
+    // future per-tool instrumentation rather than anything shipped today.
+    const recordedKeys = [];
+    const scanForAnalyticsRecords = (dir) => {
+      if (!existsSync(dir)) return;
+      for (const name of readdirSync(dir)) {
+        const fp = join(dir, name);
+        if (statSync(fp).isDirectory()) { scanForAnalyticsRecords(fp); continue; }
+        if (!name.endsWith('.html')) continue;
+        const html = readFileSync(fp, 'utf8');
+        const rel = relative(SITE, fp);
+        for (const m of html.matchAll(/cwAnalytics\.record\(\s*(['"])([^'"]+)\1\s*\)/g)) {
+          recordedKeys.push({ rel, key: m[2] });
+        }
+        const computedRecords = [...html.matchAll(/cwAnalytics\.record\(\s*[^'")]/g)];
+        if (computedRecords.length) {
+          H(`usage analytics: computed cwAnalytics.record() argument in ${rel} (${computedRecords.length}) — record() takes a string literal only`);
+        }
+      }
+    };
+    scanForAnalyticsRecords(SITE);
+    for (const { rel, key } of recordedKeys) {
+      if (allowlist && !allowedKeys.has(key)) {
+        H(`usage analytics: unlisted analytics key in ${rel}: "${key}" (add it to analytics_events.json and regenerate)`);
+      }
+    }
   }
 }
 
