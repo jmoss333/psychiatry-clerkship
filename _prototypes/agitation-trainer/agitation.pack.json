@@ -25,6 +25,7 @@
     { "id": "martel2021", "ref": "Martel ML, et al. Randomized double-blind trial of IM droperidol, ziprasidone, and lorazepam for acute agitation. Acad Emerg Med. 2021.", "doi": "", "url": "" },
     { "id": "heckers2023", "ref": "Heckers S, Walther S. Catatonia. N Engl J Med. 2023.", "doi": "", "url": "" },
     { "id": "beers2023", "ref": "American Geriatrics Society 2023 Updated AGS Beers Criteria. J Am Geriatr Soc. 2023.", "doi": "", "url": "" },
+    { "id": "nikooie2019", "ref": "Nikooie R, et al. Antipsychotics for Treating Delirium in Hospitalized Adults: A Systematic Review. Ann Intern Med. 2019;171(7):485-495.", "doi": "10.7326/M19-1860", "url": "https://doi.org/10.7326/M19-1860" },
     { "id": "cole2025", "ref": "Cole JB, et al. Oral medications for treating agitation in a safety-net emergency department. JAMA Netw Open. 2025.", "doi": "", "url": "" }
   ],
   "localPolicies": [
@@ -120,7 +121,7 @@
         },
         "teachingPoints": [
           { "text": "New, fluctuating inattention in a hospitalized patient is delirium until proven otherwise — find and treat the cause and remove deliriogenic meds first.", "citationIds": ["beers2023"] },
-          { "text": "Benzodiazepines worsen non-withdrawal delirium; if an agent is needed for dangerous agitation, a second-generation antipsychotic is generally preferred over haloperidol for faster onset and fewer EPS. No medication is FDA-approved for delirium.", "citationIds": ["beers2023", "zaman2017"] }
+          { "text": "Benzodiazepines worsen non-withdrawal delirium. Haloperidol and second-generation agents are both used; the case for an SGA is a lower EPS burden, not faster onset — and because no antipsychotic shortens delirium or lowers mortality, reserve one for agitation that endangers the patient or staff after non-pharmacologic measures fail, at the lowest dose for the shortest time. No medication is FDA-approved for delirium.", "citationIds": ["beers2023", "zaman2017", "nikooie2019"] }
         ],
         "citationIds": ["beers2023", "zaman2017"]
       },
@@ -174,7 +175,7 @@
         "ageBand": "70s",
         "stem": "A patient with Parkinson disease and visual hallucinations becomes frightened and agitated in the evening, trying to leave. Rigidity and bradykinesia at baseline.",
         "vitals": { "hr": 88, "bp": "128/76", "spo2": 97, "temp": 36.8 },
-        "history": "Parkinson disease on dopaminergic therapy; recent evening confusion/hallucinations.",
+        "history": "Parkinson disease on dopaminergic therapy; long-standing, non-fluctuating visual hallucinations attributed to PD psychosis. No new medication change, infection, or metabolic derangement; attention intact on exam.",
         "currentMeds": ["dopaminergic therapy"],
         "priorResponse": "None yet.",
         "trueEtiology": "primary_psych",
