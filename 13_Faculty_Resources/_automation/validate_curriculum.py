@@ -13,39 +13,38 @@ every ref it names is a page the build actually ships:
   - every shipped slug is placed in a library column or explicitly excluded
 
 WHAT "SHIPPED" COVERS — read this before trusting the totality guard.
-site_manifest.json is the registry of *shared* pages, but it is not the whole
-build. The guard therefore reasons about the union of three enumerable sets:
+The shipped set is READ, not re-derived: site_build/shipped_pages.json is the one
+generated listing of what the two builds publish. shipped_pages.py assembles it
+from every producer and build_and_check.sh verifies it against the real build
+output on every build, so this guard cannot see a narrower universe than the one
+that actually ships (ADR-002, beside that file).
 
-  1. site_manifest.json — 21 tools + 67 markdown pages, shipped to both sites.
-  2. SITE_EXTRAS in validate_tool_governance.py — the per-site tools the build
-     copies outside the manifest: orientation-video.html (ms3), rp-agitation.html / rp-brief-psych.html /
-     rp-canon-quiz.html (resident). Read from that module rather than restated
-     here, so the two can never disagree.
-  3. RESIDENT_EXTRA_PAGES in site_build/site_extras.py — the resident-only
-     markdown pages (rotation.md, adv_psychopharm.md, systems_medlegal.md,
-     supervision_teaching.md, canon_200.md, cl_reference.md). Also read from
-     source, not restated. (These lived as literals inside resident_section.py
-     until 2026-09; they were hoisted so shipped_pages.py could enumerate them
-     without executing a build — see ADR-002.)
+Until 2026-09 this validator rebuilt the set here from three of the producers —
+the shared registry, the per-site extra-tools table in validate_tool_governance.py,
+and the resident track pages in site_build/site_extras.py, the last two by AST
+parse. Every list was correct; the exposure was that a fourth route would appear
+and this guard would go on guarding the three it knew. That is the shape of the
+failure ADR-002 exists to end.
 
 WHAT IT DOES NOT COVER — this is a DECISION, not an oversight; do not "fix" it.
-The case-of-the-week pages are outside the guard on purpose. resident_section.py
-builds cotw_<date>_<topic>_{ms3,res}.md by comprehension over cotw_registry.json,
-so their slugs change every time a case is published. Folding them in would mean
-publishing a teaching case — a purely editorial act — also required an edit to
-curriculum.json, and would fail the build until someone made it. That tradeoff
-was weighed and declined. Also outside: non-page build outputs (media,
-.pack.json sidecars, index.html).
+The case-of-the-week pages are outside the guard on purpose: the listing marks
+them with the producer "cotw_registry" and this validator drops exactly those.
+resident_section.py builds cotw_<date>_<topic>_{ms3,res}.md by comprehension over
+the weekly registry, so their slugs change every time a case is published.
+Folding them in would mean publishing a teaching case — a purely editorial act —
+also required an edit to curriculum.json, and would fail the build until someone
+made it. That tradeoff was weighed and declined. Also outside: non-page build
+outputs (media, .pack.json sidecars, index.html).
 
-A new *durable* page in none of the three sets above is likewise invisible here.
-Registering it in site_manifest.json is what brings it under the rule, and is
-the intended route.
+A new *durable* page reaches this guard as soon as it reaches shipped_pages.json.
+Registering it in site_manifest.json is the intended route; a page arriving by any
+other route must be wired into shipped_pages.py, which the build gate enforces.
 
 Exits non-zero and prints every violation.
-Usage:  python3 validate_curriculum.py [curriculum.json] [site_manifest.json]
+Usage:  python3 validate_curriculum.py [curriculum.json] [repo root holding
+        13_Faculty_Resources/_automation/site_build/shipped_pages.json]
         [topic_meta.json] [evidence_registry.json]
 """
-import ast
 import json
 import os
 import re
@@ -54,83 +53,34 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.abspath(os.path.join(HERE, "..", ".."))
 
-GOVERNANCE_PY = os.path.join(HERE, "validate_tool_governance.py")
-SITE_EXTRAS_PY = os.path.join(HERE, "site_build", "site_extras.py")
+sys.path.insert(0, os.path.join(HERE, "site_build"))
+from shipped_pages import ShippedPagesError, load_shipped_pages  # noqa: E402
+
+# The weekly-case producer, excluded from every set below by the decision recorded
+# in this module's docstring. Named once so the exclusion is greppable.
+COTW_PRODUCER = "cotw_registry"
 
 
-def _top_level_assign(path, name):
-    """Return the AST node assigned to a module-level `name`, or None.
+def shipped_sets(root):
+    """What ships, split the three ways this validator asks about it.
 
-    Parsed, never imported: validate_tool_governance.py pulls in jsonschema and
-    the surface-governance ledger, and this validator runs inside the Netlify
-    build (build_and_check.sh) where taking that dependency would be a new way
-    for the deploy to fail.
+    Returns ``(tool_slugs, md_slugs, site_shipped)``. ``site_shipped`` is keyed by
+    this validator's audience names ("ms3", "resident"); the listing uses the build's
+    site names ("ms3", "res").
+
+    Fails loudly rather than silently narrowing: an unreadable or malformed listing
+    raises, because a short shipped set makes the totality guard false-green, which
+    is the exact failure mode ADR-002 was written about.
     """
-    with open(path, encoding="utf-8") as fh:
-        tree = ast.parse(fh.read(), filename=path)
-    for node in tree.body:
-        if isinstance(node, ast.Assign):
-            for target in node.targets:
-                if isinstance(target, ast.Name) and target.id == name:
-                    return node.value
-    return None
-
-
-def _slugs_from_pairs(node):
-    """Collect the built slug from every literal (source, slug[, title]) tuple.
-
-    site_manifest.json and site_extras.py both put the built filename second, so
-    element 1 is the slug in either the 2- or the 3-element shape.
-    """
-    out = set()
-    for sub in ast.walk(node):
-        if not isinstance(sub, ast.Tuple) or len(sub.elts) not in (2, 3):
-            continue
-        source, slug = sub.elts[0], sub.elts[1]
-        if all(
-            isinstance(element, ast.Constant) and isinstance(element.value, str)
-            for element in (source, slug)
-        ):
-            out.add(slug.value)
-    return out
-
-
-def site_extra_shipped_slugs():
-    """Return the build extras, separated by the one site that ships each slug.
-
-    Fails loudly rather than silently narrowing: a rename in either source file
-    must break this validator, not quietly shrink the set it guards.
-    """
-    site_extras = _top_level_assign(GOVERNANCE_PY, "SITE_EXTRAS")
-    if site_extras is None:
-        raise SystemExit(
-            "validate_curriculum: SITE_EXTRAS not found in %s — the extra-tool source moved; "
-            "fix this derivation rather than hardcoding a second list." % GOVERNANCE_PY)
-    declared_extras = ast.literal_eval(site_extras)
-    extras = {
-        site: {
-            slug for _source, slug in declared_extras.get(site, ())
-            if slug.endswith(".html") or slug.endswith(".md")
-        }
-        for site in ("ms3", "resident")
+    document = load_shipped_pages(root)
+    pages = [page for page in document["pages"] if page["producer"] != COTW_PRODUCER]
+    tool_slugs = {page["slug"] for page in pages if page["kind"] == "tool"}
+    md_slugs = {page["slug"] for page in pages if page["kind"] == "page"}
+    site_shipped = {
+        "ms3": {page["slug"] for page in pages if "ms3" in page["sites"]},
+        "resident": {page["slug"] for page in pages if "res" in page["sites"]},
     }
-
-    res_extra = _top_level_assign(SITE_EXTRAS_PY, "RESIDENT_TRACK_PAGES")
-    if res_extra is None:
-        raise SystemExit(
-            "validate_curriculum: RESIDENT_TRACK_PAGES not found in %s — the resident-only "
-            "page source moved; fix this derivation rather than hardcoding a second list."
-            % SITE_EXTRAS_PY)
-    # Literal tuples only. The registry-driven case-of-the-week pages are out of scope
-    # per the docstring, and cotw_index.md is a shared manifest page the resident build
-    # overwrites (RESIDENT_COTW_INDEX), not a resident-only slug — hence TRACK_PAGES.
-    extras["resident"].update(_slugs_from_pairs(res_extra))
-
-    return {site: frozenset(slugs) for site, slugs in extras.items()}
-
-
-SITE_EXTRA_SHIPPED = site_extra_shipped_slugs()
-EXTRA_SHIPPED = frozenset().union(*SITE_EXTRA_SHIPPED.values())
+    return tool_slugs, md_slugs, site_shipped
 
 
 # roles[].name / roles[].desc are DISPLAYED copy (unlike id, an identifier) and curriculum.json
@@ -156,8 +106,7 @@ FOCUS_CATEGORIES = frozenset({
 
 def main(argv):
     cur_path = argv[0] if len(argv) > 0 else os.path.join(REPO, "curriculum.json")
-    man_path = argv[1] if len(argv) > 1 else os.path.join(
-        REPO, "13_Faculty_Resources", "_automation", "site_build", "site_manifest.json")
+    shipped_root = argv[1] if len(argv) > 1 else REPO
     topic_path = argv[2] if len(argv) > 2 else os.path.join(REPO, "topic_meta.json")
     evidence_path = argv[3] if len(argv) > 3 else os.path.join(REPO, "evidence_registry.json")
 
@@ -166,21 +115,14 @@ def main(argv):
         return 0
 
     cur = json.load(open(cur_path, encoding="utf-8"))
-    man = json.load(open(man_path, encoding="utf-8"))
     topic_meta = json.load(open(topic_path, encoding="utf-8"))
     evidence_registry = json.load(open(evidence_path, encoding="utf-8"))
 
-    shared_tool_slugs = {e[1] for e in man.get("tools", [])}
-    shared_md_slugs = {e[1] for e in man.get("md", [])}
-    shared_shipped = shared_tool_slugs | shared_md_slugs
-    site_shipped = {
-        site: shared_shipped | SITE_EXTRA_SHIPPED[site]
-        for site in ("ms3", "resident")
-    }
-    tool_slugs = set(shared_tool_slugs)
-    md_slugs = set(shared_md_slugs)
-    tool_slugs |= {s for s in EXTRA_SHIPPED if s.endswith(".html")}
-    md_slugs |= {s for s in EXTRA_SHIPPED if s.endswith(".md")}
+    try:
+        tool_slugs, md_slugs, site_shipped = shipped_sets(shipped_root)
+    except ShippedPagesError as error:
+        print("curriculum.json INVALID — %s" % error)
+        return 1
     shipped = tool_slugs | md_slugs
 
     # ---- rights references: curriculum.json must agree with the publication contract ----
