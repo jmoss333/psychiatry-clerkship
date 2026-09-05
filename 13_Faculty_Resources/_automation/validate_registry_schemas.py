@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the twelve tracked registries against their Draft-07 JSON Schemas."""
+"""Validate the thirteen tracked registries against their Draft-07 JSON Schemas."""
 
 import argparse
 import csv
@@ -38,6 +38,13 @@ PAIRS = (
     (
         "13_Faculty_Resources/_automation/site_build/shipped_pages.json",
         "13_Faculty_Resources/_automation/site_build/shipped_pages.schema.json",
+    ),
+    # Same precedent as shipped_pages.json above: lives beside site_build/, not the repo
+    # root. Hand-edited tool-step lists only (page keys derive from shipped_pages.json at
+    # generation time) — registered here so the same gate catches a hand-edit mistake.
+    (
+        "13_Faculty_Resources/_automation/site_build/analytics_events.json",
+        "13_Faculty_Resources/_automation/site_build/analytics_events.schema.json",
     ),
 )
 
@@ -279,7 +286,7 @@ def schema_reference_error(schema):
 
 
 def validate_root(root: Path) -> tuple[list[str], bool]:
-    """Return deterministic diagnostics for the twelve fixed registry/schema pairs."""
+    """Return deterministic diagnostics for the thirteen fixed registry/schema pairs."""
     diagnostics = []
     has_errors = False
     for document_name, schema_name in PAIRS:
@@ -348,7 +355,7 @@ def main() -> int:
         "--root",
         type=Path,
         default=Path(__file__).resolve().parents[2],
-        help="repository root containing the twelve fixed registry/schema pairs",
+        help="repository root containing the thirteen fixed registry/schema pairs",
     )
     args = parser.parse_args()
 
