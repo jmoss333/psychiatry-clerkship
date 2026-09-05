@@ -1057,3 +1057,106 @@ Expected: both sites print `['Week 2 — Mood, Psychosis & Pharm']`.
 - [ ] **Step 3: Confirm the tree is clean**
 
 `git status --short` must be empty (no `_build/`, no media, no stray files). Do not commit anything in this task unless the gate required a fix; if it did, commit that fix alone with a message that names the gate step.
+
+---
+
+### Task 9: Deferred follow-ups from the final whole-branch review
+
+Findings addressed: final-review Minor-6 (`role="list"` on markerless lists, repo-wide), T7 deferred (curriculum-review transcripts carry old week titles; `Accreditation_Crosswalk.md` prose), T6 deferred (overlay loader error message), T3 deferred (no test for the missing/non-UTF-8 built Welcome branch).
+
+**Files:**
+- Modify: `SB/welcome_compass.py` (render_compass `<ol>`, `load_resident_welcome_overlay` messages)
+- Modify: `SB/test_welcome_compass.py`, `tests/welcome-compass-contract.test.mjs` (expected fragment; new tests)
+- Modify: every emitter of the four other markerless lists: grep `fd-localchecklist`, `fd-localresources` (likely `SB/crisis_block.py` or `SB/spa_index.html`) and `SB/frontdoor/fd_curator.js:806` (`<ul>` after "First-day coverage") and `:829` (`<ul data-curator-provenance-list>`), plus any test that pins that markup
+- Modify: `13_Faculty_Resources/Accreditation_Crosswalk.md:28`
+- Regenerate: `docs/curriculum-review/**` via `13_Faculty_Resources/_automation/export_curriculum_review.py` after building both sites (never hand-edit; `findings/` is human-authored and must not change)
+
+**Interfaces:** none new. The Compass fragment gains exactly one attribute: `<ol class="fd-compass__weeks" data-fd-compass-weeks role="list">`.
+
+- [ ] **Step 1: Failing tests first**
+
+In `SB/test_welcome_compass.py`: change `EXPECTED_FRAGMENT`'s `<ol class="fd-compass__weeks" data-fd-compass-weeks>` to `<ol class="fd-compass__weeks" data-fd-compass-weeks role="list">`. Add:
+
+```python
+    def test_resident_output_rejects_a_missing_or_undecodable_built_welcome(self):
+        with tempfile.TemporaryDirectory() as root:
+            write_complete_resident_output(root)
+            Path(root, "content", "welcome.md").unlink()
+            with self.assertRaisesRegex(welcome_compass.CompassContractError, "welcome.md"):
+                welcome_compass.assert_resident_output(root)
+        with tempfile.TemporaryDirectory() as root:
+            write_complete_resident_output(root)
+            Path(root, "content", "welcome.md").write_bytes(b"\xff\xfe<video src=\"media/resident-onboarding.mp4\">")
+            with self.assertRaisesRegex(welcome_compass.CompassContractError, "welcome.md"):
+                welcome_compass.assert_resident_output(root)
+
+    def test_resident_overlay_errors_name_the_failure_kind(self):
+        with tempfile.TemporaryDirectory() as root:
+            with self.assertRaisesRegex(welcome_compass.CompassContractError, "missing"):
+                welcome_compass.load_resident_welcome_overlay(root)
+            target = Path(root, welcome_compass.RESIDENT_WELCOME_OVERLAY)
+            target.parent.mkdir(parents=True)
+            target.write_text("not json", encoding="utf-8")
+            with self.assertRaisesRegex(welcome_compass.CompassContractError, "not valid JSON"):
+                welcome_compass.load_resident_welcome_overlay(root)
+```
+
+In `tests/welcome-compass-contract.test.mjs`, make the same one-attribute change to `EXPECTED_COMPASS_FRAGMENT`. Run `python3 SB/test_welcome_compass.py` and `node --test tests/welcome-compass-contract.test.mjs`: the fragment tests and the two new tests must FAIL.
+
+- [ ] **Step 2: Implement**
+
+`render_compass`: emit `<ol class="fd-compass__weeks" data-fd-compass-weeks role="list">` (WebKit drops list semantics from a `list-style:none` list; the explicit role restores "list, 6 items" for VoiceOver).
+
+`load_resident_welcome_overlay`: replace the single `except (OSError, UnicodeError, json.JSONDecodeError)` with three:
+
+```python
+    except FileNotFoundError as error:
+        raise CompassContractError("resident Welcome overlay is missing: " + RESIDENT_WELCOME_OVERLAY) from error
+    except json.JSONDecodeError as error:
+        raise CompassContractError("resident Welcome overlay is not valid JSON: " + RESIDENT_WELCOME_OVERLAY) from error
+    except (OSError, UnicodeError) as error:
+        raise CompassContractError("resident Welcome overlay is unreadable: " + RESIDENT_WELCOME_OVERLAY) from error
+```
+
+The other four markerless lists: add `role="list"` to each emitted `<ul>` (`fd-localchecklist`, `fd-localresources`, curator coverage, curator provenance). Grep every test that pins those strings (`tests/*.test.mjs`, `SB/test_*.py`, `tests/smoke/*.spec.js`) and update the pinned expectation to the new markup; do not weaken any assertion.
+
+`13_Faculty_Resources/Accreditation_Crosswalk.md` line 28: rename the six week labels to the curriculum titles — `Week 1 Foundations & the MSE`, `Week 2 Mood, Psychosis & Pharm`, `Week 3 Psychotherapy & Personality`, `Week 4 Family Systems & EE`, `Week 5 Acute & Emergency`, `Week 6 Integration & Exam` — keeping each parenthetical competency note exactly as it is.
+
+- [ ] **Step 3: Gates, then commit the source changes**
+
+Run: `python3 SB/test_welcome_compass.py`, `node --test tests/*.test.mjs faculty-console/*.test.mjs` (`# fail 0`), `node --check tests/smoke/front-door.spec.js`. Commit:
+
+```bash
+git commit -m "fix(a11y): role=list on markerless lists; overlay errors name their cause; crosswalk week titles
+
+WebKit drops list semantics from a list-style:none list, so the Compass weeks and the four
+other markerless lists now declare role=list. The resident Welcome overlay loader distinguishes
+missing, unreadable and not-JSON, the built-Welcome branch of the resident scan is tested, and
+the accreditation crosswalk uses the curriculum's week titles.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
+```
+
+- [ ] **Step 4: Rebuild both sites and regenerate the review transcripts**
+
+```bash
+bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh ms3
+bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res
+python3 13_Faculty_Resources/_automation/export_curriculum_review.py
+git status --short docs/curriculum-review | head -40
+```
+
+Expected: both builds `✓ PASS`; `git status` shows changes ONLY under `docs/curriculum-review/` transcript files, none under `docs/curriculum-review/findings/`. Confirm with grep that the MS3 Welcome transcript now contains `Six-Week Compass` and that no transcript still contains `Mood/Psychosis/Pharm`. Commit the regenerated transcripts alone:
+
+```bash
+git add docs/curriculum-review
+git commit -m "docs(curriculum-review): regenerate transcripts after the Compass and week-title changes
+
+Report-only artefact rebuilt from the two fresh builds; never hand-edited.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
+```
+
+- [ ] **Step 5: Full gate**
+
+`bash bin/verify.sh` → `ALL CHECKS PASSED`; `git status --short` empty.
