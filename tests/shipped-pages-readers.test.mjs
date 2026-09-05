@@ -67,9 +67,7 @@ const ALLOWED_DIRECT_READERS = Object.freeze([
   //     Deleting a line here is the only edit this list accepts. ---
   '13_Faculty_Resources/_automation/validate_curriculum.py',
   '13_Faculty_Resources/_automation/validate_claim_anchors.py',
-  '13_Faculty_Resources/_automation/validate_tool_governance.py',
   '13_Faculty_Resources/_automation/validate_registry_schemas.py',
-  '13_Faculty_Resources/_automation/surface_governance.py',
   '13_Faculty_Resources/_automation/export_curriculum_review.py',
   '13_Faculty_Resources/_automation/library_coverage_scan.py',
   '13_Faculty_Resources/_automation/generate_evidence_drill.py',
