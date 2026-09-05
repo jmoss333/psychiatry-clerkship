@@ -319,7 +319,10 @@ test('the pending-visibility invariant fails when a producer stops being read', 
     .filter(([, entry]) => entry && typeof entry === 'object' && entry.status === 'pending')
     .map(([slug]) => slug);
 
-  assert.equal(pending.length, 24);
+  // 25 pending rows, but only 24 of them are invisible under the old manifest-only
+  // derivation: sp-interview.html went pending in WP-5m and, being a manifest tool,
+  // was always reachable — it is the healthy contrast to the 24 below.
+  assert.equal(pending.length, 25);
   const invisibleBefore = pending.filter(slug => !manifestOnly.has(slug) && !allowlist.has(slug));
   assert.equal(invisibleBefore.length, 24);
   assert.equal(invisibleBefore.filter(isCotwSlug).length, 22);

@@ -218,13 +218,15 @@
     "by": "Pending faculty review"
   },
   "sp-interview.html": {
-    "status": "reviewed",
+    "status": "pending",
     "risk": {
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-08-11",
-    "by": "Joshua Moss, MD"
+    "reason": "Interview Room case content changed: the post-disclosure chain now also asks about past attempts and preparatory acts, and the critical-miss feedback no longer calls a passive death wish 'active'. Awaiting faculty re-attestation.",
+    "at": "2026-09-05",
+    "by": "Pending faculty review",
+    "note": "WP-5m (MS3V02-F002, MS3V02-F003). Supersedes reviewed 2026-08-11 by Joshua Moss, MD. Adds the si_behavior intent, its gated reveal, and a fifth element to c_si_followup; rewrites Dana's criticalMiss partial/missed cards and two debrief teaching points. The Dana case's own facultyReview block in sp-interview.pack.json still reads reviewed 2026-07-13 and was deliberately left untouched — re-attest the two together."
   },
   "welcome.md": {
     "status": "reviewed",

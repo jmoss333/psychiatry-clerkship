@@ -1135,7 +1135,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **Workflow modes:** `ward`, `safety`, `5min`, `family`
 - **Shelf blueprint tags:** `safety`
 - **EPA crosswalk:** `EPA2`, `EPA4`, `EPA10`
-- **Call-to-action buttons:** Open the Decision Aids; Practice de-escalation language; Ask collateral about triggers; Open trigger collateral workflow; Open the Agitation Ladder trainer
+- **Call-to-action buttons:** Open the Decision Aids; Practice de-escalation language; Ask collateral about triggers; Open trigger collateral workflow; Open the Agitation Ladder trainer; Run a 2-minute Post-Event Learning Huddle
 - **Faculty review:** {"status": "reviewed", "reviewer": "Joshua Moss, MD", "lastReviewed": "2026-07-03"}
 
 #### Page text (as shipped)

@@ -1520,4 +1520,101 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 ---
 
+## Post-Event Learning Huddle (2 min)
+
+- **Slug:** `rp-post-event-huddle.html` · **Type:** tool · **Sidebar:** listed
+- **Source:** `_prototypes/post-event-huddle/rp-post-event-huddle.html`
+- **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`moderate`
+
+#### Tool — clinical content
+
+_These tools are single-file HTML that render from inline JS data, so the clinical text below is recovered from the tool's own string literals. Ordering follows the file, not the runtime flow._
+
+**Static shell text:**
+
+- Post-Event Learning Huddle — 2 minutes Reviewed by Joshua Moss, MD on 2026-09-04
+- Skip to content Resident · systems practice · about 2 minutes
+- Post-Event Learning Huddle
+- One fictional event. Three choices. A short debrief on how a patient question, a team signal and a system condition fit together. Nothing you choose here is saved, sent, or shown to anyone.
+- Fictional composite for teaching · no real patient, staff member, unit or date · your institution's own processes for safety and reporting are separate from this page and come first.
+- Where this huddle sits
+- Already handled before this huddle (not here)
+- This huddle (later; learning only)
+- The event
+- What he said to the night mental-health worker
+- Your three choices
+- Pick one in each group. Every option is defensible; the debrief explains what each one surfaces and what it leaves to the other two lenses.
+- Show the debrief 0 of 3 chosen
+- Pair with: Agitation & Restraint · Inpatient Systems & Med-Legal · Documentation & Oral Presentation · Repair after limit-setting
+- Joshua Moss, MD · Psychiatrist · Educational; fictional composite only, no PHI. Reviewed and attested by Joshua Moss, MD (2026-09-04).
+
+**Authored clinical strings (64):**
+
+- Evening escalation at shift change — hospital day 2
+- Adult inpatient unit, voluntary admission. A 41-year-old man with schizoaffective disorder, admitted two days ago for worsening paranoia and several nights without sleep.
+- Day shift. He told his primary nurse that noise and "being crowded" set him off, and that dim light and his own headphones help. It went into the progress-note narrative.
+- About 19:00 — handoff. A float nurse who had not met him took over. The handoff tool carried orders, observation level and PRN availability. The "what helps" line was not in it.
+- About 19:30. Bed management moved a new admission into his room. He learned of it when the stretcher reached the door.
+- About 19:45. He shouted, kicked the door frame and stood in the doorway. Staff cleared the hallway; the float nurse and a mental-health worker talked with him. The resident's page read: "pt agitated come now".
+- About 20:00. He accepted the already-ordered oral PRN and walked to the quiet room himself. No restraint or seclusion. No injuries. Vitals checked.
+- Later. No reassessment time was agreed; the resident assumed nursing had checked in with him, nursing assumed the resident had. Nobody on the evening team had met him before that shift.
+- Nobody asked me what happened. They just decided I was dangerous.
+- He was reassessed and is safe.
+- Orders and monitoring per unit practice.
+- Any notification or report your institution requires is a separate step through its own process.
+- Two minutes, three choices, no free text, nothing saved.
+- Not an evaluation of anyone. Not a policy statement.
+- After the left column, never instead of it.
+- This page is not a report, does not know whether one was made, and cannot make one.
+- One question you would ask him first, next time you sit down
+- "What did you notice first — before things got loud?"
+- Starts with his sequence, not ours. Early cues — the stretcher at the door, an unfamiliar face, the noise — are often known to the patient and invisible in the chart. It tells you which moment mattered to him. It leaves his preferences and his view of staff for later.
+- His account of what came first is the only thing that can tell you which of the team signals actually mattered to him.
+- "What would have helped in that moment — and what made it worse?"
+- Asks for his de-escalation preferences in his own words, right after an event in which the team did not have them. It turns the day-shift note into something he owns. It does not by itself repair trust, and it does not explain why the information did not travel.
+- Whatever he says would have helped is the content the team's information path needs to carry next time.
+- "How are you feeling about the staff and this unit now?"
+- Puts repair first. "They just decided I was dangerous" is an alliance rupture as much as an event; if it is not named, the next shift inherits it. It may surface fear, shame or anger. It gathers less about causes than the other questions.
+- Repairing the alliance is what makes his answers to the other two lenses trustworthy rather than guarded.
+- "What do you want the team to know or do differently next time — and is it all right if we write it where the next shift can see it?"
+- Makes him the author of the plan and asks consent for where it lives. His preferences become clinical information, not a courtesy. The risk is moving to solutions before he has said what happened; some patients need the first or third question before this one.
+- A plan in his words, placed where the next shift reads, is the shortest route from this event to the system condition you named.
+- One team-communication or workflow signal that stood out
+- The "what helps him" line lived in a note narrative, not in the handoff.
+- Information existed and did not travel. The right thing was documented; the handoff tool had no place to receive it. That is the usual shape of a handoff gap: nobody withheld anything, and the receiving nurse could not have known. It leaves the room move unexplained.
+- This signal is about where information lived, not about who read it — it is a design fact, not a verdict on anyone on shift.
+- The room change happened without the patient or his nurse knowing in advance.
+- A decision made off-unit reached the bedside as an event. For a patient whose stated trigger is being crowded, an unannounced roommate is close to the worst case. It is about coordination between bed flow and the clinical team, upstream of the escalation and mostly outside the evening team's reach.
+- This signal points upstream of the evening team — a decision arrived at the bedside without a clinical check-in.
+- Nobody on the evening team had met him, and the page said only "pt agitated come now".
+- The team was working from the fewest possible facts: an unfamiliar patient, a one-line page, no shared picture of what usually helps. Float coverage without a patient-level orientation turns every event into a first meeting. The page wording is a symptom — there was nothing else to say.
+- This signal is about a team that had nothing in common yet — the fix is in what the shift starts with, not in anyone's judgement.
+- After the PRN, no reassessment time was agreed and each discipline assumed the other had spoken to him.
+- The event was "over" for the team before it was over for him. A closed loop needs a named time and a named person; without them, "somebody will check" reliably becomes nobody. This signal produced the sentence he said later, and it is the cheapest to change on the next shift.
+- This signal is what left his sentence unheard — the loop closed for the team before it closed for him.
+- One system condition worth raising — and with whom
+- The handoff tool has no structured field for patient-stated de-escalation preferences.
+- A field is a small change with a large reach: it makes a bedside observation a standing part of every handoff, for every patient. Worth raising with the nurse manager or the unit's quality group as a question, not a demand. It does not touch bed flow or reassessment.
+- This condition is the durable home for what he says helps — a field outlives the shift and the rotation.
+- Room moves are decided off-unit without a clinical check-in.
+- Bed pressure is real and the move may have been unavoidable; the condition worth discussing is whether there is a moment — a call, a flag, a question — before a move reaches a patient with a known trigger. Whoever owns bed flow on your unit is the person to ask how that moment could exist.
+- This condition sits above the unit — raising it means asking how a decision could pause for a clinical question.
+- Evening coverage relies on float staff without a unit-specific orientation to current patients.
+- A reality, not a complaint. The discussable part is what a float nurse receives at the start of a shift: a two-line "who is this person and what helps" for the patients most likely to need it. Raise it with nursing leadership — and model it at the physician handoff too.
+- This condition is about what a shift begins with — it is the one a resident can also model at their own handoff.
+- A post-event check-in with the patient is not a standard step, so whether it happens depends on who is on.
+- An absent step is invisible until someone notices it was skipped. Making "someone talks with the patient afterwards, and says so" a named expectation is how "nobody asked me" stops being predictable. Worth proposing at a team meeting; it is the condition most directly tied to his experience.
+- This condition is the one his own words are asking for — a check-in that is expected, not incidental.
+- Three lenses, one evening — each true on its own, and incomplete on its own.
+- His answer tells you which signal mattered most; the signal tells you which condition to raise first; the condition is what changes the next patient's answer. One of each is the huddle — none of the other options was wrong.
+- It did not file a report, decide what your institution requires, evaluate anyone on that shift, or replace the debrief your unit may require after restraint or seclusion. It gave you one question, one signal and one condition to carry into tomorrow.
+- One question, one signal, one condition
+- Keep his sentence in the room while you read.
+- How the three fit together
+- What this huddle did not do.
+- Try a different combination
+- Nothing is saved; reloading the page clears everything.
+
+---
+
 # SECTION: Practice and Exam Prep

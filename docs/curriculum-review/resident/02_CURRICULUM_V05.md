@@ -1773,6 +1773,7 @@ Serotonin syndrome, NMS, lithium toxicity, and a prolonging QTc are all **"tell 
 - **Communication cases:** `suicide_direct_question_001`, `collateral_questions_001`, `family_conflict_discharge_001`
 - **Workflow stages:** `safety`, `family`, `team`
 - **Workflow modes:** `ward`, `safety`, `family`
+- **Call-to-action buttons:** Open Family & Discharge; Run a 2-minute Post-Event Learning Huddle
 
 #### Page text (as shipped)
 
