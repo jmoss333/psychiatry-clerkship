@@ -5,11 +5,12 @@ import { isoWeek, increment } from './_shared/counters.mjs';
 // Runtime read + JSON.parse, resolved relative to this module's own URL.
 // NOT `import allowlistJson from '../../allowlist.json' with { type: 'json' }` —
 // import attributes are Node 22 syntax. Local dev runs Node 22, so that line
-// would pass every local test, but metrics/netlify.toml pins NODE_VERSION 20
-// for production, where the same syntax can fail to parse and the function
-// never boots. fs.readFileSync + JSON.parse works identically on any Node
-// version (readFileSync has accepted `file:` URL objects since Node 7.6) and
-// survives esbuild's function bundler, which special-cases exactly this
+// would pass every local test, but the deploy target for this function is
+// Node 20 (a later task adds metrics/netlify.toml pinning NODE_VERSION 20),
+// where the same syntax can fail to parse and the function never boots.
+// fs.readFileSync + JSON.parse works identically on any Node version
+// (readFileSync has accepted `file:` URL objects since Node 7.6) and survives
+// esbuild's function bundler, which special-cases exactly this
 // `new URL(..., import.meta.url)` pattern to carry the referenced file along
 // with the bundle instead of trying to inline a require() of JSON.
 const allowlistPath = new URL('../../allowlist.json', import.meta.url);
@@ -97,15 +98,33 @@ export function createEv({ store, allowlist, now = () => new Date(), origins = L
 // import at all — at module-load time. A bare top-level
 // `import { getStore } from '@netlify/blobs'` would make this whole module,
 // including the testable `createEv` factory, fail to load in this test file
-// (and in any dev environment) before the dependency exists. Deferring both
-// the import and the `getStore` call into this closure means `createEv` can
-// be imported and exercised on its own; only an actual invocation of the
-// deployed function (Task 4's concern) ever touches `@netlify/blobs`.
-let productionEv;
+// (and in any dev environment) before the dependency exists. Deferring the
+// import into the function body below means `createEv` can be imported and
+// exercised on its own; only an actual invocation of the deployed function
+// (Task 4's concern) ever touches `@netlify/blobs`.
+//
+// The store is fetched fresh on EVERY invocation and is never cached
+// alongside the handler. `@netlify/blobs` reads `NETLIFY_BLOBS_CONTEXT` (the
+// deploy-scoped credentials) each time `getStore()` runs; a container that
+// memoized the returned client across invocations could keep using
+// credentials from a stale deploy context after a new one takes over. Every
+// store error in this handler is caught and swallowed by design — the
+// learner's page must never break on a metrics failure — which means a
+// stale client would silently stop incrementing counters with zero signal
+// anywhere. `createProductionEv` is its own export (rather than inlined
+// below) precisely so a test can inject a fake `getStore` and prove it is
+// invoked once per request, never once per container lifetime.
+export function createProductionEv({ allowlist, getStore, now, origins }) {
+  return async function ev(request) {
+    return createEv({ store: getStore('usage-counters'), allowlist, now, origins })(request);
+  };
+}
+
 export default async function ev(request) {
-  if (!productionEv) {
-    const { getStore } = await import('@netlify/blobs');
-    productionEv = createEv({ store: getStore('usage-counters'), allowlist: allowlistJson });
-  }
-  return productionEv(request);
+  // Node caches a dynamic import's module resolution after the first call,
+  // so this costs nothing on repeat invocations — but nothing here caches
+  // the STORE itself. Only the allowlist (immutable, parsed once at module
+  // load above) is memoized; getStore() runs fresh every time.
+  const { getStore } = await import('@netlify/blobs');
+  return createProductionEv({ allowlist: allowlistJson, getStore })(request);
 }
