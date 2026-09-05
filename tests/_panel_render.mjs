@@ -169,13 +169,23 @@ function assertSite(site) {
 
 /* Every input whose edit invalidates a rendered panel, for staleBuildReason(). A path that does
    not exist throws there — a typo would make the freshness check vacuously "fresh" and retire
-   the contract silently. */
+   the contract silently.
+
+   site_manifest.json is declared even though shipped_pages.json already covers it TRANSITIVELY:
+   shipped_pages.py hashes the manifest into the generated_from block it writes, so any manifest
+   byte-change makes the tracked shipped_pages.json differ from a regeneration and `--check`
+   fails in build_and_check.sh, ci.yml, bin/verify.sh and the post-edit hook. That chain is a
+   correctness gate, not a freshness one: it only moves shipped_pages.json's MTIME once someone
+   regenerates, while the manifest reaches these panels directly as FD_SITE_MANIFEST ->
+   fdBuildIndex. Between the edit and the regeneration the guard would call a build fresh that
+   its own inputs have outrun, so the dependency is declared rather than inferred. */
 export const PANEL_BUILD_INPUTS = [
   '13_Faculty_Resources/_automation/site_build/spa_index.html',
   '13_Faculty_Resources/_automation/site_build/frontdoor/fd_data.js',
   '13_Faculty_Resources/_automation/site_build/build_deploy.py',
   '13_Faculty_Resources/_automation/site_build/resident_section.py',
   '13_Faculty_Resources/_automation/site_build/shipped_pages.json',
+  '13_Faculty_Resources/_automation/site_build/site_manifest.json',
   'topic_meta.json',
   'curriculum.json',
   'tool_registry.json',
@@ -193,8 +203,11 @@ export const shippedPanelRefs = (site) => new Set(
 );
 
 /* Each payload is one `var FD_X={…};` line the build injected. Extracted by name rather than as
-   one span so a missing or duplicated injection names itself, and so an unrelated neighbour
-   (FD_ROLES sits between two of them) is never dragged in. */
+   one span so a missing or duplicated injection names itself, and so the extraction depends on
+   neither the injection ORDER nor what sits beside these four. Today build_deploy.py writes them
+   on four consecutive lines with an unrelated FD_ROLES on the line immediately after
+   (_build/ms3/index.html:1963-1967); a first-to-last span would start swallowing a neighbour the
+   day that layout changes, and would do it silently. */
 const PAYLOAD_VARS = ['FD_CURRICULUM', 'FD_TOPIC_META', 'FD_TOOL_REGISTRY', 'FD_SITE_MANIFEST'];
 
 function payloadSource(html, site) {
@@ -203,24 +216,39 @@ function payloadSource(html, site) {
     const at = html.indexOf(needle);
     assert.ok(at !== -1, `${site}: built index.html injects no ${name}`);
     assert.equal(html.indexOf(needle, at + 1), -1, `${site}: ${name} is injected more than once`);
+    /* No newline anywhere after the declaration means it runs to EOF, so there is no line to
+       slice. This cannot detect a payload that became MULTI-line — that one still finds a
+       newline, and its truncated slice fails to parse in vm.runInContext instead. */
     const end = html.indexOf('\n', at);
-    assert.ok(end !== -1, `${site}: ${name} is not newline-terminated; it is no longer one line`);
+    assert.ok(end !== -1,
+      `${site}: ${name} reaches EOF with no newline; there is no line to slice`);
     return html.slice(at, end);
   }).join('\n');
 }
 
-/** Render every panel the `site` build publishes, as [ref, html], sorted by ref.
- *  Sorted so the set is order-stable regardless of key order in the injected payload. */
-export function renderFromBuild(site) {
-  const html = readFileSync(builtIndexPath(site), 'utf8');
-
+function evalPayload(html, site) {
   const ctx = {};
   vm.createContext(ctx);
   vm.runInContext(read('13_Faculty_Resources/_automation/site_build/frontdoor/fd_data.js'), ctx);
   vm.runInContext(payloadSource(html, site), ctx);
   for (const name of PAYLOAD_VARS) {
-    assert.ok(ctx[name] && typeof ctx[name] === 'object', `${site}: ${name} did not evaluate to an object`);
+    assert.ok(ctx[name] && typeof ctx[name] === 'object',
+      `${site}: ${name} did not evaluate to an object`);
   }
+  return ctx;
+}
+
+/** The four FD_* payloads the `site` build injected, evaluated — everything that build COULD
+ *  render, before renderFromBuild() drops what the site does not publish. Exported because the
+ *  filtered output alone cannot distinguish a page the filter excluded from one the build never
+ *  carried, and that distinction is the contract tests/panel-build-render.test.mjs pins. */
+export const builtPayload = (site) => evalPayload(readFileSync(builtIndexPath(site), 'utf8'), site);
+
+/** Render every panel the `site` build publishes, as [ref, html], sorted by ref.
+ *  Sorted so the set is order-stable regardless of key order in the injected payload. */
+export function renderFromBuild(site) {
+  const html = readFileSync(builtIndexPath(site), 'utf8');
+  const ctx = evalPayload(html, site);
   const index = ctx.fdBuildIndex(ctx.FD_CURRICULUM, ctx.FD_TOPIC_META, ctx.FD_TOOL_REGISTRY, ctx.FD_SITE_MANIFEST);
 
   // The build already replaced the PRACTICE_CASE_TITLES needle, so unlike the source path
