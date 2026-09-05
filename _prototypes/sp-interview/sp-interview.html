@@ -183,7 +183,8 @@
   .rub .word.obs{color:var(--success)} .rub .word.part{color:var(--warning)} .rub .word.miss{color:var(--text-mid)}
   .rub ul{margin:0;padding-left:18px;font-size:.78rem;color:var(--text-mid);line-height:1.5}
   .covlist{list-style:none;margin:0;padding:0}
-  .covlist li{display:flex;gap:8px;font-size:.85rem;line-height:1.5;padding:4px 0}
+  .covlist>li{display:flex;gap:8px;font-size:.85rem;line-height:1.5;padding:4px 0}
+  .covrow{flex:1;min-width:0}
   .covlist .mk{width:1.1em;flex:none}
   .covlist .word{color:var(--text-light);font-size:.76rem;margin-left:6px}
   .covlist .dim{color:var(--text-light)}
@@ -193,6 +194,15 @@
   .exchange-review ol{padding-left:24px;margin:8px 0}
   .exchange-review li{padding:10px 0;border-top:1px solid var(--border);overflow-wrap:anywhere}
   .exchange-review p{white-space:pre-wrap}
+  .evidence-review{margin:8px 0 12px;border-top:1px solid var(--border);color:var(--text);font-size:.84rem;overflow-wrap:anywhere}
+  .evidence-review summary{cursor:pointer;min-height:44px;padding:11px 0;color:var(--accent-dark);font-weight:600}
+  .evidence-review summary:focus-visible{outline:2px solid var(--accent-dark);outline-offset:3px}
+  .evidence-review p{margin:8px 0;line-height:1.55;font-size:.84rem}
+  .evidence-review ol{list-style:none;padding:0;margin:12px 0}
+  .evidence-review li{display:block;border-top:1px solid var(--border);padding:8px 0}
+  .evidence-review .quoted-turn{white-space:pre-wrap}
+  .evidence-review a{display:inline-block;min-height:44px;padding:10px 0;color:var(--accent-dark)}
+  .crit .evidence-review{background:var(--surface);color:var(--text);padding:0 14px;border-radius:var(--radius-sm)}
   .teach p{margin:0 0 10px;font-size:.88rem;line-height:1.55;color:var(--text-mid)}
   .teach p .pin{color:var(--primary-dark);font-family:var(--font-head)}
   .aftercare{margin:16px 0 0;padding:12px 14px;background:var(--info-light);border-radius:var(--radius-md);font-size:.82rem;color:var(--info);line-height:1.55}
@@ -349,6 +359,10 @@ ProxyProvider.prototype._applyState=function(s,j,text,signal){
   intents.forEach(function(i){nextCovered[i]=true;});
   unlocked.forEach(function(u){nextUnlocked[u]=true;});
   s.turns=nextTurns;s.covered=nextCovered;s.rapport=rapport;s.unlocked=nextUnlocked;
+  // Match the existing offline/server reflection counter after an accepted turn.
+  s.reflections=nextTurns.reduce(function(count,turn){
+    return count+s.caseDef.rapportRules.raises.filter(function(rule){return rule.intent==='reflection'&&(turn.intents||[]).indexOf(rule.intent)>=0;}).length;
+  },0);
   return {reply:j.reply,ticket:j.ticket};
 };
 ProxyProvider.prototype.open=function(s,context){
@@ -403,28 +417,28 @@ function computeRubric(s,cov){
   return r;
 }
 function buildNarrative(s,cov,rub){
-  var strengths=[],growth=[];
-  // Live sessions retain per-turn intents but do not maintain the scoring counter.
-  // Derive this display observation only; leave s.reflections and computeRubric untouched.
+  var strengths=[],strengthIntents=[],growth=[];
+  function strength(text,intents){strengths.push(text);strengthIntents.push(intents);}
+  // Use the recorded turns for display evidence in both modes.
   var recognizedReflections=s.turns.filter(function(t){return (t.intents||[]).indexOf('reflection')>=0;}).length;
   var who=s.caseDef.persona.displayName;
   function hasIntent(id){return s.caseDef.intents.some(function(it){return it.id===id;});}
-  if(recognizedReflections>=2)strengths.push('The simulator recognized more than one reflection or validation. Review '+who+'’s replies to see how the conversation developed.');
+  if(recognizedReflections>=2)strength('The simulator recognized more than one reflection or validation. Review '+who+'’s replies to see how the conversation developed.',['reflection']);
   /* Coaching text must work for every persona (Dana/Marcus/Ray) — displayName + they/them,
      never a hardcoded she/her: Marcus and Ray got wrong-pronoun debriefs. */
-  if(s.covered['si_direct'])strengths.push('Screening language recognized. Review the patient’s response to see what was shared.');
-  if(s.covered['work_stressor'])strengths.push('The simulator recognized language about the work stressor. Review what the patient shared about it.');
-  if(s.covered['greeting_agenda'])strengths.push('The simulator recognized opening language. Review how you introduced the conversation and how '+who+' responded.');
-  if(s.covered['summary_close'])strengths.push('Summary language recognized. Review whether your summary reflects the patient’s own words.');
-  if(!s.covered['si_direct']&&s.covered['si_euphemism'])growth.push({t:'The simulator recognized a euphemism but not a plain suicide screen. Review your words and the patient’s reply separately. For practice, try the patient’s own words plus the plain question: “When you say you’re a burden — have you had thoughts of killing yourself?”',link:'pg_suicide.md'});
-  if(!s.covered['si_direct']&&!s.covered['si_euphemism'])growth.push({t:'The simulator did not recognize suicide-screening language in your words. Review the exchange before deciding what was asked or answered. For practice: “Have you had thoughts of killing yourself?”',link:'pg_suicide.md'});
-  if(s.unlocked['si_active']&&!(s.covered['si_plan']&&s.covered['si_means']&&s.covered['si_intent_protective']))growth.push({t:'The simulator did not recognize language for every follow-up topic. Review the questions and replies for plan, means and access, intent, and what keeps the patient going; recognition alone does not establish an answer.',link:'pg_suicide.md'});
-  if(recognizedReflections<2)growth.push({t:'The simulator recognized fewer than two reflections. For practice, try one reflection for every two or three questions, and attend to the patient’s reply.',link:'pg_interview.md'});
-  if(hasIntent('work_stressor')&&!s.covered['work_stressor'])growth.push({t:'The simulator did not recognize language about the work stressor. Review the exchange; for practice, try “What changed around the time this started?”',link:'pg_interview.md'});
-  if(!s.covered['summary_close'])growth.push({t:'The simulator did not recognize summary language. Review your closing; for practice, play back what you heard and name the hard part calmly.',link:'pg_interview.md'});
-  if(hasIntent('psychosis_screen')&&!s.covered['psychosis_screen'])growth.push({t:'The simulator did not recognize psychosis-screening language. Review the exchange and practice asking plainly.',link:'t_mood.md'});
-  while(strengths.length<2)strengths.push('Use this practice encounter to review your words alongside the patient’s replies with your supervisor.');
-  return {strengths:strengths.slice(0,2),growth:growth.slice(0,2)};
+  if(s.covered['si_direct'])strength('Screening language recognized. Review the patient’s response to see what was shared.',['si_direct']);
+  if(s.covered['work_stressor'])strength('The simulator recognized language about the work stressor. Review what the patient shared about it.',['work_stressor']);
+  if(s.covered['greeting_agenda'])strength('The simulator recognized opening language. Review how you introduced the conversation and how '+who+' responded.',['greeting_agenda']);
+  if(s.covered['summary_close'])strength('Summary language recognized. Review whether your summary reflects the patient’s own words.',['summary_close']);
+  if(!s.covered['si_direct']&&s.covered['si_euphemism'])growth.push({t:'The simulator recognized a euphemism but not a plain suicide screen. Review your words and the patient’s reply separately. For practice, try the patient’s own words plus the plain question: “When you say you’re a burden — have you had thoughts of killing yourself?”',link:'pg_suicide.md',intents:['si_direct','si_euphemism']});
+  if(!s.covered['si_direct']&&!s.covered['si_euphemism'])growth.push({t:'The simulator did not recognize suicide-screening language in your words. Review the exchange before deciding what was asked or answered. For practice: “Have you had thoughts of killing yourself?”',link:'pg_suicide.md',intents:['si_direct','si_euphemism']});
+  if(s.unlocked['si_active']&&!(s.covered['si_plan']&&s.covered['si_means']&&s.covered['si_intent_protective']))growth.push({t:'The simulator did not recognize language for every follow-up topic. Review the questions and replies for plan, means and access, intent, and what keeps the patient going; recognition alone does not establish an answer.',link:'pg_suicide.md',intents:['si_plan','si_means','si_intent_protective']});
+  if(recognizedReflections<2)growth.push({t:'The simulator recognized fewer than two reflections. For practice, try one reflection for every two or three questions, and attend to the patient’s reply.',link:'pg_interview.md',intents:['reflection']});
+  if(hasIntent('work_stressor')&&!s.covered['work_stressor'])growth.push({t:'The simulator did not recognize language about the work stressor. Review the exchange; for practice, try “What changed around the time this started?”',link:'pg_interview.md',intents:['work_stressor']});
+  if(!s.covered['summary_close'])growth.push({t:'The simulator did not recognize summary language. Review your closing; for practice, play back what you heard and name the hard part calmly.',link:'pg_interview.md',intents:['summary_close']});
+  if(hasIntent('psychosis_screen')&&!s.covered['psychosis_screen'])growth.push({t:'The simulator did not recognize psychosis-screening language. Review the exchange and practice asking plainly.',link:'t_mood.md',intents:['psychosis_screen']});
+  while(strengths.length<2)strength('Use this practice encounter to review your words alongside the patient’s replies with your supervisor.',[]);
+  return {strengths:strengths.slice(0,2),strengthIntents:strengthIntents.slice(0,2),growth:growth.slice(0,2)};
 }
 
 function isCaseReviewed(caseDef){
@@ -487,6 +501,47 @@ function criticalFeedback(c){
   var display=coverageDisplay(c);
   return {heading:display.label+' — '+display.word.toLowerCase(),body:'This is a language-recognition signal from the simulator. It does not establish whether a question was directed to the patient or whether the patient answered. Review the actual exchange with your supervisor; practice wording is below.'};
 }
+// Link observations to recorded matches, never to a fresh interpretation of the reply.
+function languageEvidence(s,ids){
+  var recognized=[],turns=[];
+  s.turns.forEach(function(t,i){
+    var hits=ids.filter(function(id){return (t.intents||[]).indexOf(id)>=0;});
+    if(!hits.length)return;
+    hits.forEach(function(id){if(recognized.indexOf(id)<0)recognized.push(id);});
+    turns.push({number:i+1,learner:t.me,patient:t.pt,intents:hits});
+  });
+  return {turns:turns,recognized:recognized,unrecognized:ids.filter(function(id){return recognized.indexOf(id)<0;}),
+    note:ids.length?'These exchanges contain wording recognized for this observation. Recognition does not establish that a question was directed to the patient or that the patient answered.':'This is a general practice suggestion, without a specific supporting exchange.'};
+}
+function coverageEvidence(s,id){
+  var item=s.caseDef.checklist.filter(function(c){return c.id===id;})[0];
+  if(!item)return languageEvidence(s,[]);
+  var evidence=languageEvidence(s,item.intents.concat(item.partialIfOnly||[]));
+  evidence.unrecognized=item.intents.filter(function(intent){return evidence.recognized.indexOf(intent)<0;});
+  evidence.unavailable=!!(item.dependsOnGate&&!s.unlocked[item.dependsOnGate]);
+  if(evidence.unavailable)evidence.note='This topic is not available under the current simulator rules. Any recognized wording below does not establish a disclosure or an answer.';
+  return evidence;
+}
+function rubricEvidence(s,domain){
+  var ids=[],note='';
+  if(domain==='alliance'){
+    ids=s.caseDef.intents.map(function(it){return it.id;});
+    note='This automated indicator combines recognized reflection turns ('+s.reflections+') with the simulator’s final rapport value ('+s.rapport+'). Observed requires at least two reflections and rapport of at least two; Partly there requires at least one reflection or rapport of at least one. This is not a measure of the patient’s actual trust. All exchanges are shown because rapport depends on the course of the conversation.';
+  }else if(domain==='data'){
+    ids=s.caseDef.intents.filter(function(it){return it.category==='data'&&it.coverage==='core';}).map(function(it){return it.id;});
+    note='This automated indicator counts recognized data topics: '+ids.filter(function(id){return s.covered[id];}).length+' of '+ids.length+'. Its existing thresholds are 80% for Observed and 50% for Partly there. Recognized wording does not establish an answer.';
+  }else if(domain==='technique'){
+    ids=['si_direct','si_euphemism','open_invite'].concat(s.caseDef.intents.filter(function(it){return it.category==='flag'&&it.id!=='ooc_attempt';}).map(function(it){return it.id;}));
+    note='The existing Observed rule requires direct screening language, an open invitation, and no communication flags. Partly there requires direct or indirect screening language. These are wording rules, not a judgment of the patient’s response.';
+  }else if(domain==='organization'){
+    ids=['greeting_agenda','summary_close'];
+    note='The existing rule recognizes both opening and summary language for Observed, or either for Partly there. Review whether the actual exchange supports the observation.';
+  }
+  var evidence=languageEvidence(s,ids);
+  evidence.note=note;evidence.unrecognized=[];
+  if(domain==='alliance')evidence.turns=s.turns.map(function(t,i){return {number:i+1,learner:t.me,patient:t.pt,intents:[]};});
+  return evidence;
+}
 var STATUS_WORD={observed:'Language recognized',partial:'Some language recognized',missed:'Language not recognized',na:'Not applicable under current rules'};
 var RESPONSE_REVIEW='Review the learner’s attempt separately from the patient’s response: did the reply address the question, decline to answer, change the subject, request a pause, or remain unclear? These are observations for human review, not automatic labels.';
 var UNCLEAR_REVIEW='Use “Unclear from this exchange” when the evidence is insufficient. A refusal or pause does not automatically mean learner failure or establish that the patient is safe.';
@@ -494,6 +549,20 @@ var STATUS_CLS={observed:'obs',partial:'part',missed:'miss',na:'na'};
 var STATUS_MK={observed:'●',partial:'◐',missed:'○',na:'○'};
 
 /* ================================== UI ================================== */
+function EvidenceReview(props){
+  var evidence=props.evidence;
+  var note=evidence?evidence.note:'This model-generated suggestion does not include linked transcript evidence. Review the full exchange before relying on it.';
+  return e('details',{className:'evidence-review'},
+    e('summary',{'aria-label':'Show me why: '+props.label},'Show me why'),
+    e('p',null,note),
+    evidence&&evidence.unrecognized.length?e('p',null,evidence.unrecognized.length+' expected wording '+(evidence.unrecognized.length===1?'category has':'categories have')+' no recorded match. This does not establish that the topic was not asked about.'):null,
+    evidence&&!evidence.turns.length?e('p',null,'There is insufficient linked evidence for a specific exchange. Review the full conversation, including unfamiliar wording.'):null,
+    evidence&&evidence.turns.length?e('ol',null,evidence.turns.map(function(t){return e('li',{key:t.number},
+      e('b',null,'Exchange '+t.number),
+      e('p',{className:'quoted-turn'},e('b',null,'Learner: '),t.learner),
+      e('p',{className:'quoted-turn'},e('b',null,'Patient: '),t.patient));})):null,
+    e('a',{href:'#exchange-review',onClick:function(event){var review=document.getElementById('exchange-review');if(review){event.preventDefault();review.open=true;review.querySelector('summary').focus();review.scrollIntoView({block:'start'});}}},'Review the full exchange'));
+}
 function Ribbon(props){
   return e('div',{className:'ribbon',role:'note'},
     e('span',{className:'mark','aria-hidden':true},'✳'),
@@ -1091,7 +1160,7 @@ function App(){
         e('p',null,'The map recognizes language in your turns. A match does not establish that a question was directed to the patient or that an answer was obtained.'),
         e('p',null,RESPONSE_REVIEW),
         e('p',null,UNCLEAR_REVIEW),
-        e('details',{className:'exchange-review'},
+        e('details',{className:'exchange-review',id:'exchange-review'},
           e('summary',null,'Review learner and patient exchanges ('+sess2.turns.length+')'),
           e('p',null,e('b',null,'Patient opening: '),E.caseDef.persona.opening),
           e('ol',null,sess2.turns.map(function(t,i){return e('li',{key:i},
@@ -1101,6 +1170,7 @@ function App(){
         e('p',{className:'kick'},'A safety topic to review'),
         e('h2',null,critNotice.heading),
         e('p',{className:'body'},critNotice.body),
+        e(EvidenceReview,{label:coverageDisplay(critItem).label,evidence:coverageEvidence(sess2,critItem.id)}),
         rehearseLine?e('div',{className:'rehearse'},
           e('p',{className:'lbl'},'For the re-run — the patient’s words first, then the plain question'),
           e('p',{className:'line'},rehearseLine)):null,
@@ -1116,18 +1186,23 @@ function App(){
             return e('div',{className:'sacell',key:i},e('p',{className:'q'},p[0]),e('p',{className:'a'},'“'+(p[1]||'—')+'”'));})),
         e('p',{className:'saecho'},(E.feedback&&E.feedback.selfAssessmentNote)
           ?E.feedback.selfAssessmentNote
-          :'Hold your read next to the transcript — especially what '+who2+' protected, tested, or asked you to forget. Where your one-liner and the patient’s own words differ, that gap is the next interview.')),
+          :'Hold your read next to the transcript — especially what '+who2+' protected, tested, or asked you to forget. Where your one-liner and the patient’s own words differ, that gap is the next interview.'),
+        E.feedback&&E.feedback.selfAssessmentNote?e(EvidenceReview,{label:'Feedback on your self-assessment'}):null),
       e('div',{className:'two'},
         e('div',{className:'card'},
           e('h2',null,'What worked'),
-          E.feedback?e('p',{className:'microlabel'},'Model-generated suggestions · check against the exchange'):null,
+          E.feedback&&E.feedback.strengths&&E.feedback.strengths.length?e('p',{className:'microlabel'},'Model-generated suggestions · check against the exchange'):null,
           ((E.feedback&&E.feedback.strengths&&E.feedback.strengths.length)?E.feedback.strengths:nar.strengths).slice(0,2).map(function(s,i){
-            return e('p',{className:'sitem',key:i},typeof s==='string'?s:s.t);})),
+            var modelStrength=!!(E.feedback&&E.feedback.strengths&&E.feedback.strengths.length);
+            return e('div',{key:i},e('p',{className:'sitem'},typeof s==='string'?s:s.t),
+              e(EvidenceReview,{label:'What worked '+(i+1),evidence:modelStrength?null:languageEvidence(sess2,nar.strengthIntents[i]||[])}));})),
         e('div',{className:'card'},
           e('h2',null,'Work on next'),
-          E.feedback?e('p',{className:'microlabel'},'Model-generated suggestions · check against the exchange'):null,
+          E.feedback&&E.feedback.growth&&E.feedback.growth.length?e('p',{className:'microlabel'},'Model-generated suggestions · check against the exchange'):null,
           ((E.feedback&&E.feedback.growth&&E.feedback.growth.length)?E.feedback.growth:nar.growth).slice(0,2).map(function(g,i){
-            return e('div',{className:'gitem',key:i},e('p',null,g.t||String(g)),g.link?e('p',{className:'ref'},'→ '+g.link):null);}))),
+            var modelGrowth=!!(E.feedback&&E.feedback.growth&&E.feedback.growth.length);
+            return e('div',{className:'gitem',key:i},e('p',null,g.t||String(g)),g.link?e('p',{className:'ref'},'→ '+g.link):null,
+              e(EvidenceReview,{label:'Work on next '+(i+1),evidence:modelGrowth?null:languageEvidence(sess2,g.intents||[])}));}))),
       e('div',{className:'card'},
         e('h2',null,'How the interview held together'),
         e('p',{style:{margin:'0 0 14px',fontSize:'.78rem',color:'var(--text-light)'}},'Existing automated practice indicators. Review them alongside the actual exchange; they do not establish what the patient answered or learner readiness.'),
@@ -1138,17 +1213,20 @@ function App(){
             return e('div',{className:'rub',key:k},
               e('p',{className:'dom'},labels[k]),
               e('p',{className:'word '+wcls[rub[k]]},e('span',{'aria-hidden':true},STATUS_MK[rub[k]==='missed'?'na':rub[k]]+' '),words[rub[k]]),
+              e(EvidenceReview,{label:labels[k]+' indicator',evidence:rubricEvidence(sess2,k)}),
               fb&&fb.note?e('p',{style:{margin:0,fontSize:'.8rem',color:'var(--text-mid)',lineHeight:1.5}},fb.note)
-                :e('ul',null,dom.anchors.map(function(a,i){return e('li',{key:i},a);})));}))),
+                :e('ul',null,dom.anchors.map(function(a,i){return e('li',{key:i},a);})),
+              fb&&fb.note?e(EvidenceReview,{label:labels[k]+' model suggestion'}):null);}))),
       e('div',{className:'card'},
         e('h2',null,'Language recognized by the simulator'),
         e('p',{style:{margin:'0 0 10px',fontSize:'.78rem',color:'var(--text-light)'}},'These labels describe recognized wording. Review each question and reply to see what was attempted, answered, or remains unclear.'),
         e('ul',{className:'covlist'},cov.map(function(c){
           return e('li',{key:c.id,className:c.status==='missed'||c.status==='na'?'dim':''},
             e('span',{className:'mk '+STATUS_CLS[c.status],'aria-hidden':true},STATUS_MK[c.status]),
-            e('span',null,coverageDisplay(c).label,
+            e('div',{className:'covrow'},coverageDisplay(c).label,
               e('span',{className:'word'},coverageDisplay(c).word),
-              (c.critical&&criticalMiss)?e('span',{className:'word'},'· ↑ review above'):null));})),
+              (c.critical&&criticalMiss)?e('span',{className:'word'},'· ↑ review above'):null,
+              e(EvidenceReview,{label:coverageDisplay(c).label,evidence:coverageEvidence(sess2,c.id)})));})),
         (E.difficulty==='supported'&&(sess2.stepOuts||0)>0)?e('p',{className:'steppednote'},
           'You stepped out '+sess2.stepOuts+(sess2.stepOuts===1?' time':' times')+' — that’s the tool working, not a mark against you. Notice what was unresolved each time you reached for the door.'):null),
       e('div',{className:'card teach'},
@@ -1163,7 +1241,7 @@ function App(){
   }
   return null;
 }
-try{window.__SP_TEST__={MockProvider:MockProvider,ProxyProvider:ProxyProvider,computeCoverage:computeCoverage,computeRubric:computeRubric,buildNarrative:buildNarrative,coverageDisplay:coverageDisplay,criticalFeedback:criticalFeedback,looksLikePhi:looksLikePhi,paceFor:paceFor,getCoach:getCoach,isCaseReviewed:isCaseReviewed,eligibleCases:eligibleCases,isManagedVoiceEligible:isManagedVoiceEligible};}catch(x){}
+try{window.__SP_TEST__={MockProvider:MockProvider,ProxyProvider:ProxyProvider,computeCoverage:computeCoverage,computeRubric:computeRubric,buildNarrative:buildNarrative,coverageDisplay:coverageDisplay,criticalFeedback:criticalFeedback,languageEvidence:languageEvidence,coverageEvidence:coverageEvidence,rubricEvidence:rubricEvidence,looksLikePhi:looksLikePhi,paceFor:paceFor,getCoach:getCoach,isCaseReviewed:isCaseReviewed,eligibleCases:eligibleCases,isManagedVoiceEligible:isManagedVoiceEligible};}catch(x){}
 ReactDOM.createRoot(document.getElementById('root')).render(e(App));
 })();
 </script>

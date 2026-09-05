@@ -149,3 +149,52 @@ reason to rewrite the source fixture to make the display look better.
 small disagreement map by conversation and observation type. Report the number
 of comparisons actually completed and retain disagreements explicitly. Do not
 simulate reviewers or turn their agreement into a learner score.
+
+## Follow-up: reflection rating and linked evidence — approved 2026-09-04
+
+The project author subsequently selected **“1 and 2”** in chat, approving the
+proposed live-mode reflection-rating repair and **Show me why** feedback controls.
+This is a separate, narrow extension of F5: the live client's stale reflection
+counter now follows the existing offline/server reflection rules. Rating
+thresholds, vocabulary, case content, patient replies, and disclosure rules are
+unchanged. The earlier note about the live reflection-counter limitation records
+the state before this follow-up repair.
+
+The debrief's built-in observations, topic rows, critical-topic notice, and
+practice indicators now offer collapsed evidence panels. They preserve the
+original exchange numbers and exact learner/patient text. Recognized wording is
+not interpreted as a genuine question, an answer, completed assessment, patient
+trust, or learner readiness. Rapport evidence includes the full conversation
+because the running value can also change on later turns. Missing matches remain
+uncertain and link to the full transcript, which opens and receives keyboard
+focus. No transcript is newly stored or transmitted.
+
+Model-written suggestions currently supply no linked transcript references.
+Their controls explicitly state that limitation and offer the full exchange;
+the client does not invent supporting quotes or assign the built-in observation's
+evidence to a different model-generated claim. Model prompts and response
+contracts are unchanged. When only part of the model feedback is available, the
+built-in fallback retains its own source label and evidence.
+
+Verification includes real client/server reflection-count and rating comparisons
+after every benchmark turn, exact-quote and refusal cases, absent/partial/unavailable
+evidence, and narrative/rating evidence selection. The 205 offline benchmark
+frames retain their original states, patient replies, ratings, and parity;
+evaluation payload captures are unchanged. New narrative fields only link the
+existing observations to their source wording categories.
+
+The browser check uses the real offline engine and the real live client with
+local transport fixtures and server state derivation. Fixtures deliberately
+include a refusal and unlinked evaluator suggestions; they are not evidence of
+a hosted model's behavior. Independent code review found no consequential issues.
+Six browser scenarios passed at 320, 390, and 1440 pixels across light and dark
+themes, including absent/partial matches, a learner statement, live fallback,
+unlinked model suggestions, and mixed model/built-in feedback. Exact quotes,
+keyboard expansion, transcript focus, no horizontal overflow, and no console
+errors or external requests were checked. Browser plugin not available;
+validation used the repository's existing Playwright installation.
+The final `bash bin/verify.sh` run passed, including both sequential site builds,
+the proxy/client suites, validators, and static QA. Generated preview and faculty
+worksheet artifacts were refreshed from their canonical generators.
+No clinical attestation, publication, deployment, or individual benchmark-label
+adjudication is implied by this change.

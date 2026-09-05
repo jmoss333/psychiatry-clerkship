@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { loadBenchmark } from '../benchmarks/interview-room/run.mjs';
+import { _internals } from '../netlify/functions/sp.mjs';
 
 const runtime = await loadBenchmark();
 async function encounter(name, turns, warm = true) {
@@ -70,7 +71,7 @@ test('critical command feedback names the right topic and preserves unavailable 
   assert.equal(runtime.hooks.coverageDisplay(row).word, 'Follow-up not available under current rules');
 });
 
-test('live fallback counts recognized reflection turns without changing the scoring counter', () => {
+test('live reflection rating agrees with the recognized turns and narrative', () => {
   const provider = new runtime.hooks.ProxyProvider('https://synthetic.example.test/api/sp', 'synthetic-test-key', {
     rapportMin: runtime.pack.engine.rapportMin, rapportMax: runtime.pack.engine.rapportMax,
   });
@@ -79,11 +80,95 @@ test('live fallback counts recognized reflection turns without changing the scor
     provider._applyState(state, { reply: 'That captures what I meant.', ticket: null,
       state: { intents: ['reflection'], flags: [], rapport: 2, unlocked: [] } }, text);
   }
-  assert.equal(state.reflections, 0, 'The existing live scoring counter stays untouched');
+  assert.equal(state.reflections, 2, 'Each accepted reflection turn counts once');
   const before = JSON.stringify(state);
   const cov = runtime.hooks.computeCoverage(state);
+  assert.equal(runtime.hooks.computeRubric(state, cov).alliance, 'observed');
   const narrative = runtime.hooks.buildNarrative(state, cov, runtime.hooks.computeRubric(state, cov));
   assert.ok(narrative.strengths.some(line => line.includes('more than one reflection')));
   assert.ok(narrative.growth.every(item => !item.t.includes('fewer than two reflections')));
   assert.equal(JSON.stringify(state), before);
+});
+
+test('live ratings agree with offline and server reflection counts after every benchmark turn', async () => {
+  for (const scenario of runtime.corpus.scenarios) {
+    for (const name of scenario.cases) {
+      const cd = runtime.pack.cases.find(c => c.persona.displayName === name);
+      const live = new runtime.hooks.ProxyProvider('', '', { rapportMin: -3, rapportMax: 4 });
+      const offline = new runtime.hooks.MockProvider();
+      const ls = live.start(cd, { difficulty: 'supported' });
+      const os = offline.start(cd, { difficulty: 'supported' });
+      const history = [];
+      for (const text of [...runtime.corpus.setups[scenario.setup], ...scenario.turns]) {
+        history.push(text);
+        const result = await offline.respond(os, text);
+        const server = _internals.deriveState(cd, history);
+        live._applyState(ls, { reply: result.reply, ticket: null, state: {
+          intents: server.lastIntents, flags: server.lastFlags, rapport: server.rapport,
+          unlocked: Object.keys(server.unlocked),
+        } }, text);
+        assert.equal(ls.reflections, server.reflections, `${scenario.id}/${name}: live/server reflections`);
+        assert.equal(ls.reflections, os.reflections, `${scenario.id}/${name}: live/offline reflections`);
+        assert.equal(JSON.stringify(runtime.hooks.computeRubric(ls)), JSON.stringify(runtime.hooks.computeRubric(os)), `${scenario.id}/${name}: ratings`);
+      }
+    }
+  }
+});
+
+test('evidence pairs exact matching learner words with the actual patient reply, including refusal', async () => {
+  assert.equal(typeof runtime.hooks.coverageEvidence, 'function', 'Evidence lookup is missing');
+  const s = await encounter('Dana', ['Have you had thoughts of killing yourself?']);
+  s.turns[s.turns.length - 1].pt = 'I do not want to answer that.';
+  const before = JSON.stringify(s);
+  const evidence = runtime.hooks.coverageEvidence(s, 'c_si');
+  assert.equal(evidence.turns.length, 1);
+  assert.equal(evidence.turns[0].number, 4);
+  assert.equal(evidence.turns[0].learner, 'Have you had thoughts of killing yourself?');
+  assert.equal(evidence.turns[0].patient, 'I do not want to answer that.');
+  assert.deepEqual(Array.from(evidence.recognized), ['si_direct']);
+  assert.equal(JSON.stringify(s), before, 'Evidence lookup cannot change encounter state');
+});
+
+test('missing and partial evidence never cite unrelated turns as proof', async () => {
+  assert.equal(typeof runtime.hooks.coverageEvidence, 'function', 'Evidence lookup is missing');
+  const missing = await encounter('Dana', ['Have you been considering deliberately bringing your own life to an end?']);
+  const absent = runtime.hooks.coverageEvidence(missing, 'c_si');
+  assert.equal(absent.turns.length, 0);
+  assert.deepEqual(Array.from(absent.unrecognized), ['si_direct']);
+  const indirect = await encounter('Dana', ['Have you thought about hurting yourself?']);
+  const partial = runtime.hooks.coverageEvidence(indirect, 'c_si');
+  assert.equal(partial.turns.length, 1);
+  assert.deepEqual(Array.from(partial.recognized), ['si_euphemism']);
+  assert.deepEqual(Array.from(partial.unrecognized), ['si_direct']);
+  const unavailable = runtime.hooks.coverageEvidence(missing, 'c_si_followup');
+  assert.equal(unavailable.unavailable, true);
+});
+
+test('narrative references follow the selected observations, not the first transcript turns', async () => {
+  const s = await encounter('Dana', ['Have you had thoughts of killing yourself?']);
+  const cov = runtime.hooks.computeCoverage(s);
+  const nar = runtime.hooks.buildNarrative(s, cov, runtime.hooks.computeRubric(s));
+  assert.ok(Array.isArray(nar.strengthIntents), 'Narrative evidence references are missing');
+  const i = nar.strengths.findIndex(line => line.includes('Screening language recognized'));
+  assert.deepEqual(Array.from(nar.strengthIntents[i]), ['si_direct']);
+  const closing = nar.growth.find(item => item.t.includes('summary'));
+  if (closing) assert.deepEqual(Array.from(closing.intents), ['summary_close']);
+});
+
+test('rating evidence includes both reflection turns and the later turn that lowers rapport', async () => {
+  assert.equal(typeof runtime.hooks.rubricEvidence, 'function', 'Rating evidence is missing');
+  const s = await encounter('Dana', ['It sounds like this is exhausting.', 'That sounds hard.', 'You should just snap out of it.'], false);
+  const before = JSON.stringify(s);
+  const evidence = runtime.hooks.rubricEvidence(s, 'alliance');
+  assert.deepEqual(Array.from(evidence.turns, t => t.number), [1, 2, 3]);
+  assert.match(evidence.note, /reflection turns \(2\)/);
+  assert.match(evidence.note, /rapport value \(0\)/);
+  assert.equal(JSON.stringify(s), before);
+});
+
+test('data and organization explanations select their own evidence instead of safety turns', async () => {
+  assert.equal(typeof runtime.hooks.rubricEvidence, 'function', 'Rating evidence is missing');
+  const s = await encounter('Dana', ['How has your sleep been?', 'Have you had thoughts of killing yourself?', 'To summarize what I heard.'], false);
+  assert.deepEqual(Array.from(runtime.hooks.rubricEvidence(s, 'data').turns, t => t.number), [1]);
+  assert.deepEqual(Array.from(runtime.hooks.rubricEvidence(s, 'organization').turns, t => t.number), [3]);
 });
