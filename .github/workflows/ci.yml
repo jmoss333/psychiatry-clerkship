@@ -332,6 +332,14 @@ jobs:
           cd tests/smoke
           npx playwright test --project=offline
 
+      # Needs no server: prototypes are driven over file:// and the spec blocks the network
+      # itself, so this behaves identically here and in a sandbox. It covers the gap nav-crawl
+      # leaves — several prototypes are served by neither site, so nothing else opens them.
+      - name: "Check 5: prototype contract — file:// with the network blocked"
+        run: |
+          cd tests/smoke
+          npx playwright test --project=prototypes
+
       - name: Upload smoke test artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: always()

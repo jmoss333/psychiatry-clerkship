@@ -22,95 +22,20 @@
 //    stems. Asserting the regex over rendered real content would be a test that can only be
 //    satisfied by rewriting clinical text, which is not what the rule is for.
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
 import test from 'node:test';
-import vm from 'node:vm';
 
-const ROOT = new URL('../', import.meta.url);
-const read = (p) => readFileSync(new URL(p, ROOT), 'utf8');
-const readJSON = (p) => JSON.parse(read(p));
-
-const SPA = '13_Faculty_Resources/_automation/site_build/spa_index.html';
-const source = read(SPA);
-
-function slice(src, startMarker, endMarker, { keepEnd = true } = {}) {
-  const a = src.indexOf(startMarker);
-  const b = src.indexOf(endMarker, a);
-  assert.ok(a !== -1 && b !== -1, `could not locate ${startMarker} .. ${endMarker}`);
-  return src.slice(a, keepEnd ? b + endMarker.length : b);
-}
-
-const panelCode = slice(source, '/* ---- practice panel ---- */', '/* ---- end practice panel ---- */');
-// buildWorkflow lives outside the panel block but is the third renderer that links tools.
-// keepEnd:false — the end marker is the NEXT declaration, not part of the slice.
-const workflowCode = slice(source, '  var WF_STAGE_LABELS=', '  function toolExtraFromParams', { keepEnd: false });
+// The render path itself lives in tests/_panel_render.mjs so that these assertions and the
+// snapshots in tests/__panels__/ run over the SAME rendered HTML. Two parallel renderers
+// could disagree, and a snapshot that disagrees with the assertions is worse than none.
+import {
+  F, renderAll, topicEntries, esc, actionKey, manifestTitle, source,
+  TOPIC_META, TOOL_REGISTRY, FD_INDEX, RIGHTS_REFS, CASE_TITLES, read,
+} from './_panel_render.mjs';
 
 test('the practice-panel marker pair appears exactly once in spa_index.html', () => {
   assert.equal(source.split('/* ---- practice panel ---- */').length - 1, 1);
   assert.equal(source.split('/* ---- end practice panel ---- */').length - 1, 1);
 });
-
-// ---- the real registries, joined exactly as the shell joins them ------------------------------
-const fdCtx = {};
-vm.createContext(fdCtx);
-vm.runInContext(read('13_Faculty_Resources/_automation/site_build/frontdoor/fd_data.js'), fdCtx);
-
-const CURRICULUM = readJSON('curriculum.json');
-const TOPIC_META = readJSON('topic_meta.json');
-const TOOL_REGISTRY = readJSON('tool_registry.json');
-const SITE_MANIFEST = readJSON('13_Faculty_Resources/_automation/site_build/site_manifest.json');
-const FD_INDEX = fdCtx.fdBuildIndex(CURRICULUM, TOPIC_META, TOOL_REGISTRY, SITE_MANIFEST);
-
-const RIGHTS_REFS = CURRICULUM.rightsReferences || [];
-const manifestTitle = (slug) => {
-  for (const group of [SITE_MANIFEST.tools || [], SITE_MANIFEST.md || []]) {
-    for (const entry of group) if (entry[1] === slug) return entry[2];
-  }
-  return null;
-};
-
-const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-const ctaHref = (h) => {
-  h = h || '';
-  const m = h.match(/^tools\/([^/?#]+\.html)$/);
-  return m ? `?tool=${m[1]}` : h;
-};
-const ctaAttrs = (h) => (/^\?(page|tool)=/.test(h) ? '' : ' target="_blank" rel="noopener"');
-
-// The build injects case titles into a `var PRACTICE_CASE_TITLES={};` needle (build_deploy.py).
-// Doing the same replacement here pins that needle: if it is renamed or removed, this throws
-// rather than silently testing a panel whose drills have all lost their names.
-const CASE_TITLES = Object.fromEntries(
-  (readJSON('communication_cases.json').cases || [])
-    .filter((c) => c && c.id && c.title).map((c) => [c.id, c.title]),
-);
-const CASE_NEEDLE = 'var PRACTICE_CASE_TITLES={};';
-assert.equal(panelCode.split(CASE_NEEDLE).length - 1, 1,
-  'the practice panel must carry exactly one PRACTICE_CASE_TITLES injection needle');
-const injectedPanelCode = panelCode.replace(
-  CASE_NEEDLE, `var PRACTICE_CASE_TITLES=${JSON.stringify(CASE_TITLES)};`);
-
-const F = new Function('esc', 'ctaHref', 'ctaAttrs', 'FD_INDEX', 'FD_TOOL_REGISTRY', 'window',
-  `${workflowCode}\n${injectedPanelCode}\nreturn {
-     buildTpl: buildTpl, buildPracticeTools: buildPracticeTools, buildWorkflow: buildWorkflow,
-     practiceToolLabel: practiceToolLabel, practiceIsRights: practiceIsRights,
-     practiceActionLabel: practiceActionLabel, hasPracticeTpl: hasPracticeTpl,
-     WF_FIELDS: WF_FIELDS, WF_STAGE_LABELS: WF_STAGE_LABELS,
-     practiceCaseLabel: practiceCaseLabel, practiceIsSafe: practiceIsSafe,
-     practiceRegistryTools: practiceRegistryTools, practicePrimary: practicePrimary,
-     practiceReason: practiceReason, practiceLinkedTools: practiceLinkedTools };`,
-)(esc, ctaHref, ctaAttrs, FD_INDEX, TOOL_REGISTRY, {});
-
-const actionKey = (h) => {
-  const s = String(h || '');
-  const m = s.match(/[?&]tool=([^&#]+)/) || s.match(/^tools\/([^/?#]+\.html)$/);
-  return m ? decodeURIComponent(m[1]) : '';
-};
-
-const topicEntries = Object.entries(TOPIC_META).filter(([, m]) => m && typeof m === 'object');
-const renderAll = () => topicEntries
-  .filter(([, m]) => F.hasPracticeTpl(m))
-  .map(([ref, m]) => [ref, F.buildTpl(m, ref)]);
 
 // ---- WP-B · governance -------------------------------------------------------------------------
 
