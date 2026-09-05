@@ -533,7 +533,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **collateral** — Ask what changed after the stressor, supports, coping, substance use, and whether risk has escalated.
 - **rounds** — Present stressor timeline, excluded full syndromes, functional impairment, safety assessment, and brief therapy/support plan.
 - **exam** — Adjustment disorder requires stressor-linked distress that does not meet criteria for another disorder and resolves after the stressor ends.
-- **actions** — Open C-SSRS
+- **actions** — Columbia C-SSRS — Official Form & Training
 
 **Embedded check-for-understanding**
 

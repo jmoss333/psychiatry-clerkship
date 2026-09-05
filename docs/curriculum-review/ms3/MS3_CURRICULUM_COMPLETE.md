@@ -3,7 +3,7 @@
 # MS3 curriculum — complete content transcript for clinical review
 
 **Site:** `une-ms3-psychiatry` · **Audience:** MS3 — UNE medical students
-**Generated:** 2026-09-05 from build `bf8445e` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
+**Generated:** 2026-09-05 from build `07dbaf1` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
 
 ## Who this is for
 
@@ -83,7 +83,7 @@ High-yield places to concentrate: the `topic_meta` **can't-miss**, **rule-out** 
 
 # MS3 · Navigation map
 
-Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-05 @ `bf8445e`.
+Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-05 @ `07dbaf1`.
 
 ## Orientation  *(pinned)*
 
@@ -783,7 +783,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **collateral** — Ask family/staff about baseline, time course, sleep, substances, adherence, prior episodes, and what changed right before admission.
 - **rounds** — Present syndrome, differential, safety concern, medication logic by side-effect profile, and the one mimic you still need to rule out.
 - **exam** — Mood/psychosis questions often hinge on bipolar screening, substance/medical mimics, catatonia, and medication adverse effects.
-- **actions** — Open reasoning workbench; Open BFCRS; Practice psychosis validation
+- **actions** — Open reasoning workbench; Bush-Francis Catatonia Scale (BFCRS) — Official Form & Training; Practice psychosis validation
 
 **Cross-references and tagging:**
 
@@ -860,7 +860,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **collateral** — Ask supports about baseline risk, effective limits, outpatient continuity, crisis plans, and what tends to rupture trust.
 - **rounds** — Name the relational pattern, the current safety state, one repair move, and the discharge-continuity need.
 - **exam** — Psychotherapy/personality questions test validation plus limits, not reassurance or jargon used at the patient.
-- **actions** — Open C-SSRS; Practice rupture repair; Open reflection tool
+- **actions** — Columbia C-SSRS — Official Form & Training; Practice rupture repair; Open reflection tool
 
 **Cross-references and tagging:**
 
@@ -6092,7 +6092,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **collateral** — Ask partner/family about sleep, behavior change, psychosis, infant safety, medication adherence, and who can provide supervision.
 - **rounds** — Present postpartum timing, PMAD vs bipolar/postpartum psychosis, maternal-infant safety, medication risk/benefit, and support plan.
 - **exam** — Postpartum psychosis is an emergency, often bipolar-spectrum, and requires urgent supervised treatment.
-- **actions** — Open C-SSRS; Practice direct suicide questions
+- **actions** — Columbia C-SSRS — Official Form & Training; Practice direct suicide questions
 
 **Embedded check-for-understanding**
 
@@ -7194,7 +7194,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **collateral** — Ask what changed after the stressor, supports, coping, substance use, and whether risk has escalated.
 - **rounds** — Present stressor timeline, excluded full syndromes, functional impairment, safety assessment, and brief therapy/support plan.
 - **exam** — Adjustment disorder requires stressor-linked distress that does not meet criteria for another disorder and resolves after the stressor ends.
-- **actions** — Open C-SSRS
+- **actions** — Columbia C-SSRS — Official Form & Training
 
 **Embedded check-for-understanding**
 
@@ -7423,7 +7423,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **collateral** — With permission or safety exception, ask about means, recent behavior, prior attempts, supervision, and discharge environment.
 - **rounds** — Present risk state, risk status, drivers, means access, protective factors, and what supervision or discharge barriers remain.
 - **exam** — Do not treat scales as disposition tools; risk assessment is a formulation plus supervised plan.
-- **actions** — Open C-SSRS; Practice direct suicide questions; Map family safety roles; Open safety collateral workflow
+- **actions** — Columbia C-SSRS — Official Form & Training; Practice direct suicide questions; Map family safety roles; Open safety collateral workflow
 
 **Embedded check-for-understanding**
 
@@ -7445,7 +7445,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **Workflow modes:** `ward`, `safety`, `family`, `5min`, `shelf`
 - **Shelf blueprint tags:** `safety`
 - **EPA crosswalk:** `EPA1`, `EPA2`, `EPA10`
-- **Call-to-action buttons:** Open the Columbia C-SSRS screener; Open safety collateral workflow
+- **Call-to-action buttons:** Columbia C-SSRS — Official Form & Training; Open safety collateral workflow
 - **Faculty review:** {"status": "reviewed", "reviewer": "Joshua Moss, MD", "lastReviewed": "2026-07-03"}
 
 #### Page text (as shipped)
@@ -7667,7 +7667,7 @@ directly and then turn answers into a real risk formulation.
 - **collateral** — With permission or safety exception, ask about means, recent behavior, prior attempts, supervision, and the discharge environment.
 - **rounds** — Present risk state, risk status, drivers, means access, protective factors, collateral, and the supervised plan.
 - **exam** — Direct questions do not implant suicidality; safety plans replace no-suicide contracts, and risk tools do not decide disposition.
-- **actions** — Open C-SSRS; Practice direct suicide questions; Map family safety roles
+- **actions** — Columbia C-SSRS — Official Form & Training; Practice direct suicide questions; Map family safety roles
 
 **Family overlay:** `suicide_safety_family_means_restriction`
 
@@ -7680,7 +7680,7 @@ directly and then turn answers into a real risk formulation.
 - **Workflow modes:** `ward`, `safety`, `family`, `5min`, `shelf`
 - **Shelf blueprint tags:** `safety`
 - **EPA crosswalk:** `EPA1`, `EPA2`, `EPA10`
-- **Call-to-action buttons:** Open C-SSRS; Practice direct suicide questions; Open suicide pocket card
+- **Call-to-action buttons:** Columbia C-SSRS — Official Form & Training; Practice direct suicide questions; Open suicide pocket card
 - **Faculty review:** {"status": "reviewed", "lastReviewed": "2026-07-09", "reviewer": "Joshua Moss, MD"}
 
 #### Page text (as shipped)
@@ -8142,7 +8142,7 @@ Pair this with the Violence Risk tool, the delirium guidance, and the catatonia 
 - **collateral** — Ask family/staff what changed, whether the patient eats/drinks, baseline movement/speech, and prior response to lorazepam or ECT.
 - **rounds** — Present BFCRS signs, medical/NMS rule-out, lorazepam challenge plan, supportive care, and ECT escalation threshold.
 - **exam** — Lorazepam challenge is diagnostic and therapeutic; antipsychotics can worsen malignant catatonia/NMS.
-- **actions** — Open BFCRS; Practice catatonia reasoning
+- **actions** — Bush-Francis Catatonia Scale (BFCRS) — Official Form & Training; Practice catatonia reasoning
 
 **Embedded check-for-understanding**
 
@@ -9353,7 +9353,7 @@ Know *which* protocol applies and *why*; open the EHR order set for the specific
 - **collateral** — Ask family about prior response, baseline memory, functional decline, fears about ECT, and who can support continuation treatment.
 - **rounds** — Present indication, urgency, capacity/consent status, medical workup needs, medication adjustments, and continuation plan after response.
 - **exam** — ECT is most effective for severe, psychotic, catatonic, or life-threatening depression; there are no absolute contraindications, but relative risks require planning.
-- **actions** — Open BFCRS; Open mood topic
+- **actions** — Bush-Francis Catatonia Scale (BFCRS) — Official Form & Training; Open mood topic
 
 **Embedded check-for-understanding**
 
@@ -18432,7 +18432,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Opening this step or resizing the browser does not count. Each action below validates a fresh envelope and projects it through the same student projector.
 - Desktop preview not yet reviewed · Mobile preview not yet reviewed
 
-**Authored clinical strings (1794, first 400 shown):**
+**Authored clinical strings (1793, first 400 shown):**
 
 - Front door structure ONLY — week ordering, library columns, safety-kit membership, per-site roles, search synonyms. Facts about an item (minutes, summary, key points, attestation) live in topic_meta.json and join at render time; never duplicate them here. Validated by 13_Faculty_Resources/_automation/validate_curriculum.py.
 - a feedback form, not library content — reachable from the header
@@ -18528,6 +18528,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Start scheduled haloperidol
 - Physical restraint for safety
 - Catatonia responds to benzodiazepines; antipsychotics risk precipitating malignant catatonia.
+- Bush-Francis Catatonia Scale (BFCRS) — Official Form \u0026 Training
 - Ask about onset, mood/psychosis, antipsychotic exposure, fever/autonomic signs, seizures, medical illness, and prior catatonia.
 - Describe motor signs objectively: mutism, stupor, posturing, waxy flexibility, negativism, echophenomena, rigidity, and staring.
 - Hold antipsychotics until malignant catatonia/NMS is addressed; monitor hydration, nutrition, DVT, autonomic instability, and airway risk.
@@ -18707,6 +18708,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - PTSD — begin trauma-focused therapy
 - No diagnosis — reassure and discharge without follow-up
 - Symptoms tied to a stressor, within 3 months, not meeting full criteria for another disorder, indicate an adjustment disorder; supportive/problem-solving psychotherapy is first-line, with suicide-risk assessment.
+- Columbia C-SSRS — Official Form \u0026 Training
 - Anchor symptoms to the stressor, onset within three months, impairment, and whether full criteria for MDD, PTSD, anxiety, or substance-induced disorder are met.
 - Look for affect congruence, hopelessness, agitation, sleep change, substance use, and whether symptoms exceed expected coping.
 - Ask directly about suicide and impulsive self-harm even when symptoms seem subthreshold.
@@ -18832,10 +18834,8 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Factitious = internal (sick role); malingering = external incentive and is not a disorder.
 - Factitious disorder imposed on another is child/vulnerable-adult abuse — a reporting duty; and real disease can coexist, so don't anchor either way.
 - Depression / anxiety / PTSD
-- Malingering (external incentive)
-- Focused workup once, then one consistent clinician with scheduled visits, validation, CBT, and treatment of comorbidities.
 
-_1394 further strings omitted — this surface embeds the build's front-door catalog (item summaries, key points, search synonyms), which is transcribed in full elsewhere in this document set._
+_1393 further strings omitted — this surface embeds the build's front-door catalog (item summaries, key points, search synonyms), which is transcribed in full elsewhere in this document set._
 
 
 <!-- ==================== A1_QUESTION_BANK.md ==================== -->

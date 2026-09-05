@@ -833,7 +833,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **collateral** — Ask family/staff what changed, whether the patient eats/drinks, baseline movement/speech, and prior response to lorazepam or ECT.
 - **rounds** — Present BFCRS signs, medical/NMS rule-out, lorazepam challenge plan, supportive care, and ECT escalation threshold.
 - **exam** — Lorazepam challenge is diagnostic and therapeutic; antipsychotics can worsen malignant catatonia/NMS.
-- **actions** — Open BFCRS; Practice catatonia reasoning
+- **actions** — Bush-Francis Catatonia Scale (BFCRS) — Official Form & Training; Practice catatonia reasoning
 
 **Embedded check-for-understanding**
 
@@ -1634,7 +1634,7 @@ should independently manage high-risk consults.
 - **collateral** — Clarify medication timing, dose changes, substances, infection/medical triggers, baseline cognition, and prior reactions.
 - **rounds** — Present consult problems as syndrome, evidence, immediate risk, next test or treatment, and escalation plan.
 - **exam** — Differentiate serotonin syndrome, NMS, malignant catatonia, lithium toxicity, delirium, and withdrawal by tempo and exam findings.
-- **actions** — Open BFCRS; Open withdrawal tools; Open decision aids
+- **actions** — Bush-Francis Catatonia Scale (BFCRS) — Official Form & Training; Open withdrawal tools; Open decision aids
 
 **Embedded check-for-understanding**
 
