@@ -34,7 +34,7 @@
 | `tests/_panel_render.mjs` | **Modify.** Rename `renderAll` → `renderFromSource`; add `renderFromBuild(site)`, `snapshotDir(site)`, `shippedPanelRefs(site)`, `builtIndexPath(site)`, `PANEL_BUILD_INPUTS`; rewrite the scope header. |
 | `tests/practice-panel.test.mjs` | **Modify.** One import line: `renderAll` → `renderFromSource`. |
 | `tests/panel-build-render.test.mjs` | **Create.** Build-dependent regression pins for the two Codex defects (resident overlay, COTW), guarded by `staleBuildReason`. |
-| `tests/panel-snapshots.test.mjs` | **Rewrite.** Committed-corpus contracts only: round-trip, vacuity, orphan, coverage set-equality. No rendering. |
+| `tests/panel-snapshots.test.mjs` | **Rewrite** (Task 4). Committed-corpus contracts only: round-trip, vacuity, orphan, coverage set-equality. No rendering. Task 2 first makes two mechanical renames in it so the node suite stays green — see the C1 ruling in the ledger. |
 | `bin/render_panels.mjs` | **Rewrite.** `--site`, `--check`, `--write`; per-audience coverage output; no caveat line. |
 | `13_Faculty_Resources/_automation/site_build/build_and_check.sh` | **Modify.** One gate invocation per site branch. |
 | `tests/__panels__/ms3/` | **Regenerate.** 74 → 79 files. |
@@ -380,9 +380,13 @@ export const snapshotDir = (site) => new URL(`__panels__/${assertSite(site)}/`, 
  * it (CLAUDE.md, T17); that is why the comparison is not there.
 ```
 
-- [ ] **Step 4: Update the one consumer of the old name**
+- [ ] **Step 4: De-reference the two removed exports**
 
-In `tests/practice-panel.test.mjs`, change
+`renderAll` and `SNAPSHOT_DIR` are gone. Two files still name them, and both must be updated in
+THIS commit: `build_and_check.sh` runs `node --test tests/*.test.mjs` (line 59) *before*
+`build_deploy.py` (line 72), so a red node suite blocks the build that Task 4 needs.
+
+(a) In `tests/practice-panel.test.mjs`, change
 
 ```javascript
   F, renderAll, topicEntries, esc, actionKey, manifestTitle, source,
@@ -396,8 +400,29 @@ to
 
 Then replace every `renderAll(` call in that file with `renderFromSource(`.
 
-Run: `grep -n "renderAll" tests/practice-panel.test.mjs`
-Expected: no output.
+(b) In `tests/panel-snapshots.test.mjs`, make the same two mechanical renames — nothing else.
+Task 4 rewrites this file wholesale; these two lines only keep the suite loading until then.
+Change the import
+
+```javascript
+  renderAll, formatPanel, unformatPanel, snapshotName, SNAPSHOT_DIR, topicEntries,
+```
+
+to
+
+```javascript
+  renderFromSource, formatPanel, unformatPanel, snapshotName, snapshotDir, topicEntries,
+```
+
+then change `const panels = renderAll();` to `const panels = renderFromSource();` and
+`const DIR = fileURLToPath(SNAPSHOT_DIR);` to `const DIR = fileURLToPath(snapshotDir('ms3'));`.
+
+Its assertions render from source and compare against the existing 74-file ms3 corpus, so they
+keep passing untouched.
+
+Run: `grep -rn "renderAll\|SNAPSHOT_DIR" tests/ bin/ --include=*.mjs | grep -v "^bin/render_panels.mjs"`
+Expected: no output. (`bin/render_panels.mjs` is excluded — Task 3 replaces it wholesale; it is
+not in the node suite and is not invoked by the build until Task 5.)
 
 - [ ] **Step 5: Run the tests**
 
@@ -405,6 +430,11 @@ Run: `node --test tests/panel-build-render.test.mjs tests/practice-panel.test.mj
 Expected: `panel-build-render` PASS (or all three skip with a rebuild message if `_build/` is
 stale — in that case run `bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res`
 first, which builds both trees, then re-run). `practice-panel` PASS, same count as before.
+
+Then confirm the whole suite still loads, which is what Step 4(b) protects:
+
+Run: `node --test tests/*.test.mjs 2>&1 | tail -8`
+Expected: `fail 0`. A `renderAll is not exported` error here means Step 4(b) was skipped.
 
 - [ ] **Step 6: Prove the freshness guard is not vacuous**
 
@@ -602,71 +632,22 @@ Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
 
 ---
 
-### Task 4: Regenerate the snapshot corpus
+### Task 4: Regenerate the corpus and re-point its contracts at it
 
-**Files:**
-- Modify: `tests/__panels__/ms3/` (74 → 79 files)
-- Create: `tests/__panels__/res/` (85 files)
-
-**Interfaces:**
-- Consumes: the CLI from Task 3.
-- Produces: the committed corpus Task 5's contracts read.
-
-- [ ] **Step 1: Build both trees**
-
-Run: `bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res 2>&1 | tail -20`
-Expected: `build_and_check: res OK`. (The `res` branch builds MS3 first, so both trees land.)
-
-- [ ] **Step 2: Write both audiences**
-
-Run: `node bin/render_panels.mjs --write`
-Expected output ends with a coverage line and a non-zero change count (the corpus is moving from
-a source render to a build render, so this is the intended diff).
-
-- [ ] **Step 3: Verify the corpus has the expected shape**
-
-Run: `ls tests/__panels__/ms3 | wc -l; ls tests/__panels__/res | wc -l`
-Expected: `79` then `85`.
-
-Run: `ls tests/__panels__/ms3 | grep -c '^cotw_2'; ls tests/__panels__/res | grep -c '^cotw_2'`
-Expected: `11` then `11`.
-
-Run: `ls tests/__panels__/ms3 | grep -cE '^(rotation|adv_psychopharm|cl_reference|systems_medlegal|supervision_teaching|canon_200)\.md\.html$'`
-Expected: `0` — the six resident-only pages are gone from the MS3 corpus (spec D-3).
-
-Run: `grep -l 'Board-Style Question Bank' tests/__panels__/res/*.html | wc -l; grep -l 'Board-Style Question Bank' tests/__panels__/ms3/*.html | wc -l`
-Expected: a non-zero count then `0`.
-
-- [ ] **Step 4: Confirm a re-run is clean**
-
-Run: `node bin/render_panels.mjs`
-Expected: `0 of 164 panels changed`.
-
-- [ ] **Step 5: Commit**
-
-```bash
-git add tests/__panels__
-git commit -m "test(panel): snapshot both audiences from the build
-
-ms3 74 -> 79 (six resident-only pages out, eleven Case-of-the-Week in);
-res 85, new. 96 of 97 shipped pages now have a panel snapshot.
-
-Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
-```
-
----
-
-### Task 5: Rewrite the node-suite contracts to read only committed files
-
-Every assertion here must run on a fresh clone with no `_build/`, so none of them renders.
-They assert properties of the committed corpus instead.
+Two halves of one change, and the order between them is forced. `build_and_check.sh` runs
+`node --test tests/*.test.mjs` (line 59) *before* `build_deploy.py` (line 72), so the contracts
+must stop rendering before the build can run — and the new contracts cannot be verified until the
+build has produced the corpus. Hence: rewrite, build, write, verify, one commit.
 
 **Files:**
 - Rewrite: `tests/panel-snapshots.test.mjs`
+- Modify: `tests/__panels__/ms3/` (74 -> 79 files)
+- Create: `tests/__panels__/res/` (85 files)
 
 **Interfaces:**
-- Consumes: `snapshotDir`, `shippedPanelRefs`, `snapshotName`, `formatPanel`, `unformatPanel`, `TOPIC_META`, `AUDIENCES` (Task 2); the corpus from Task 4.
-- Produces: nothing consumed later.
+- Consumes: `snapshotDir`, `shippedPanelRefs`, `snapshotName`, `formatPanel`, `unformatPanel`,
+  `TOPIC_META`, `AUDIENCES` (Task 2); the CLI from Task 3.
+- Produces: the committed corpus the Task 5 gate compares against.
 
 - [ ] **Step 1: Replace the file**
 
@@ -771,7 +752,8 @@ test('the audiences are stored apart, and their difference is real', () => {
   // 68 refs ship to both sites and only a handful render differently. Storing them per audience
   // costs duplication and buys the ability to say WHICH site a file describes — the ambiguity
   // that let a resident-only change report zero drift (Codex P2 on #539).
-  const shared = filesOf('ms3').filter((f) => new Set(filesOf('res')).has(f));
+  const resFiles = new Set(filesOf('res'));
+  const shared = filesOf('ms3').filter((f) => resFiles.has(f));
   assert.ok(shared.length > 50, `expected many pages to ship to both sites, saw ${shared.length}`);
   const differing = shared.filter((f) => readFileSync(path.join(dirOf('ms3'), f), 'utf8')
     !== readFileSync(path.join(dirOf('res'), f), 'utf8'));
@@ -781,42 +763,75 @@ test('the audiences are stored apart, and their difference is real', () => {
 });
 ```
 
-- [ ] **Step 2: Run it**
+- [ ] **Step 2: Build both trees**
+
+Run: `bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res 2>&1 | tail -20`
+Expected: `build_and_check: res OK`. (The `res` branch builds MS3 first, so both trees land.)
+
+- [ ] **Step 3: Write both audiences**
+
+Run: `node bin/render_panels.mjs --write`
+Expected output ends with a coverage line and a non-zero change count (the corpus is moving from
+a source render to a build render, so this is the intended diff).
+
+- [ ] **Step 4: Verify the corpus has the expected shape**
+
+Run: `ls tests/__panels__/ms3 | wc -l; ls tests/__panels__/res | wc -l`
+Expected: `79` then `85`.
+
+Run: `ls tests/__panels__/ms3 | grep -c '^cotw_2'; ls tests/__panels__/res | grep -c '^cotw_2'`
+Expected: `11` then `11`.
+
+Run: `ls tests/__panels__/ms3 | grep -cE '^(rotation|adv_psychopharm|cl_reference|systems_medlegal|supervision_teaching|canon_200)\.md\.html$'`
+Expected: `0` — the six resident-only pages are gone from the MS3 corpus (spec D-3).
+
+Run: `grep -l 'Board-Style Question Bank' tests/__panels__/res/*.html | wc -l; grep -l 'Board-Style Question Bank' tests/__panels__/ms3/*.html | wc -l`
+Expected: a non-zero count then `0`.
+
+- [ ] **Step 5: Confirm a re-run is clean**
+
+Run: `node bin/render_panels.mjs`
+Expected: `0 of 164 panels changed`.
+
+- [ ] **Step 6: Run it**
 
 Run: `node --test tests/panel-snapshots.test.mjs`
 Expected: PASS, 6 tests.
 
-- [ ] **Step 3: Prove it runs without a build**
+- [ ] **Step 7: Prove it runs without a build**
 
 Run: `mv _build _build.away && node --test tests/panel-snapshots.test.mjs; echo "exit=$?"; mv _build.away _build`
 Expected: PASS, `exit=0` — no test skipped, none errored on a missing `_build/`.
 
-- [ ] **Step 4: Prove the coverage test is not vacuous**
+- [ ] **Step 8: Prove the coverage test is not vacuous**
 
 Run: `mv tests/__panels__/res/suicide.md.html /tmp/ && node --test tests/panel-snapshots.test.mjs; echo "exit=$?"; mv /tmp/suicide.md.html tests/__panels__/res/`
 Expected: FAIL naming `suicide.md` in the `missing` list, `exit=1`. Then the corpus is restored.
 
-- [ ] **Step 5: Run the whole node suite**
+- [ ] **Step 9: Run the whole node suite**
 
 Run: `node --test tests/*.test.mjs 2>&1 | tail -15`
 Expected: `pass` count up, `fail 0`.
 
-- [ ] **Step 6: Commit**
+
+- [ ] **Step 10: Commit**
 
 ```bash
-git add tests/panel-snapshots.test.mjs
-git commit -m "test(panel): pin the stored corpus, not a fresh render
+git add tests/panel-snapshots.test.mjs tests/__panels__
+git commit -m "test(panel): snapshot both audiences, pin the stored corpus
 
-These contracts now read only committed files, so they run on a fresh
-clone; the byte-comparison moves to the post-build gate. Coverage becomes
-a named set difference instead of two counts that invite being bumped.
+ms3 74 -> 79 (six resident-only pages out, eleven Case-of-the-Week in);
+res 85, new. 96 of 97 shipped pages now have a panel snapshot.
+
+The contracts now read only committed files, so they run on a fresh clone;
+the byte-comparison moves to the post-build gate. Coverage becomes a named
+set difference instead of two counts that invite being bumped.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
 ```
 
 ---
-
-### Task 6: Wire the gate into the build
+### Task 5: Wire the gate into the build
 
 **Files:**
 - Modify: `13_Faculty_Resources/_automation/site_build/build_and_check.sh` (after line 80 and after line 97)
@@ -890,7 +905,7 @@ Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
 
 ---
 
-### Task 7: Falsify the gate, then run the full battery
+### Task 6: Falsify the gate, then run the full battery
 
 A gate nobody has seen fail is a claim, not a gate. Both Codex defects get a live demonstration.
 
@@ -991,12 +1006,12 @@ only uncovered page and why.
 ## Self-Review
 
 **Spec coverage.** D1 → Task 2. D2 → Task 2 (`renderFromSource` kept, `renderFromBuild` added).
-D3 → Task 6. D4 → Task 2 (`shippedPanelRefs` filter) + Task 4 (per-audience dirs). D5 → Task 1.
-D6 → Task 5. Coverage table → Task 4 Step 3 and Task 5's set-equality test. R1 (hard fail) →
-Task 6, unsoftened. R2 → Task 4's expected non-zero diff. R3 → Task 2's payload assertions.
+D3 → Task 5. D4 → Task 2 (`shippedPanelRefs` filter) + Task 4 (per-audience dirs). D5 → Task 1.
+D6 → Task 4. Coverage table → Task 4 Step 4 and Task 4's set-equality test. R1 (hard fail) →
+Task 5, unsoftened. R2 → Task 4's expected non-zero diff. R3 → Task 2's payload assertions.
 R4 → Task 2's `payloadSource` duplicate/missing assertions. All six verification items in the
-spec appear: (1) Task 4 Step 4, (2) Task 7 Step 1, (3) Task 7 Step 2, (4) Task 5 Step 3,
-(5) Task 7 Step 4, (6) Task 6 Step 5.
+spec appear: (1) Task 4 Step 5, (2) Task 6 Step 1, (3) Task 6 Step 2, (4) Task 4 Step 7,
+(5) Task 6 Step 4, (6) Task 5 Step 5.
 
 **Placeholders.** None. Every code step carries the code; every run step carries the command and
 its expected output.
@@ -1006,5 +1021,5 @@ its expected output.
 `PANEL_BUILD_INPUTS: string[]`, `AUDIENCES: readonly string[]` — used with those shapes in
 Tasks 3, 5 and the Task 2 test. `snapshotName(ref) -> string` and `formatPanel`/`unformatPanel`
 keep their #539 signatures. The old `SNAPSHOT_DIR` constant and `renderAll` are both removed and
-have no remaining referents (Task 2 Step 4 greps for one; Task 3 replaces the other's only other
-consumer wholesale).
+have no remaining referents: Task 2 Step 4 updates both files that name them and greps to prove
+it, and Task 3 replaces `bin/render_panels.mjs` — the only other consumer — wholesale.
