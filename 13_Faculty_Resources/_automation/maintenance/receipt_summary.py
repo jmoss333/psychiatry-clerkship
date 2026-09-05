@@ -101,11 +101,26 @@ def _safe_row_id(value):
     return _safe(value)
 
 
-def summarize(receipt, label):
+def summarize(receipt, label, *, failed=None):
     """Render one stderr line describing why a steward is about to exit.
 
     `label` names the steward (repo-controlled, e.g. "sp-health"). The line is
     intentionally greppable and stable: `<label>: gate=<gate> ...`.
+
+    `failed` overrides the verdict for a steward whose exit code is not simply
+    `gate != "ready"`. The heartbeat is the case: a blocked gate there can mean
+    either "a watched schedule stopped firing" (its own failure) or "a watched
+    run fired on time and failed" (the escalation's, not its). Only the first
+    exits non-zero, so only the first may lead with FAILED_MARKER, which is what
+    makes the lead an honest summary of the exit code.
+
+    Note the marker governs the LEAD only. A row's own state may still read
+    `…:failed`, truthfully, on a line whose lead is clean — and that is safe:
+    the escalation greps a run's log only when that run's conclusion is
+    `failure` (see automation-failure-escalation.yml, "Capture the first error
+    line"), so a green steward's log is never scanned at all.
+
+    Defaults to the gate, which is right for every flat receipt.
     """
     safe_label = _safe(label)
     if not isinstance(receipt, dict):
@@ -113,7 +128,8 @@ def summarize(receipt, label):
         return f"{safe_label} {FAILED_MARKER}: receipt is unreadable"
 
     gate = _safe(receipt.get("gate"))
-    lead = safe_label if gate == READY_GATE else f"{safe_label} {FAILED_MARKER}"
+    is_failure = (gate != READY_GATE) if failed is None else bool(failed)
+    lead = f"{safe_label} {FAILED_MARKER}" if is_failure else safe_label
     parts = [f"{lead}: gate={gate}"]
 
     # Flat receipts (sp_health_monitor) carry the cause in `state`.
@@ -154,10 +170,10 @@ def summarize(receipt, label):
     return " ".join(parts)
 
 
-def report(receipt, label, *, stream):
+def report(receipt, label, *, stream, failed=None):
     """Write `summarize(...)` to `stream`. Never raises: a summary must not be
     able to turn a steward's real exit code into a traceback."""
     try:
-        print(summarize(receipt, label), file=stream)
+        print(summarize(receipt, label, failed=failed), file=stream)
     except Exception:  # pragma: no cover - defensive
         pass
