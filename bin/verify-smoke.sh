@@ -5,8 +5,13 @@
 # servers. playwright.config.js has NO webServer block, so CLAUDE.md's documented
 # `npx playwright test` fails every spec with ECONNREFUSED until the servers exist.
 #
-#   bash bin/verify-smoke.sh                 # nav-crawl + aria-live + lfs-integrity
+#   bash bin/verify-smoke.sh                 # nav-crawl + aria-live + lfs-integrity + prototypes
 #   SPECS="nav-crawl.spec.js" bash bin/verify-smoke.sh
+#
+# prototypes.spec.js is the one spec here that needs NO server and no build: it drives
+# _prototypes/**/*.html over file:// with the network blocked. Run it on its own from anywhere —
+#   (cd tests/smoke && npx playwright test --project=prototypes)
+# — which is also why CI runs it as its own step rather than folding it into the nav projects.
 #
 # VISUAL SPECS ARE DELIBERATELY EXCLUDED. Baselines are generated on Ubuntu/Chromium by the
 # "Refresh visual baselines" workflow_dispatch and will false-diff on macOS. Never regenerate
@@ -19,7 +24,7 @@
 set -uo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.." || exit 2
 REPO="$PWD"
-SPECS="${SPECS:-nav-crawl.spec.js aria-live.spec.js lfs-integrity.spec.js}"
+SPECS="${SPECS:-nav-crawl.spec.js aria-live.spec.js lfs-integrity.spec.js prototypes.spec.js}"
 
 for d in _build/ms3 _build/res; do
   [ -d "$d" ] || { echo "missing $d — run bin/verify.sh (or build_and_check.sh) first"; exit 2; }
