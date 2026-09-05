@@ -425,7 +425,7 @@ def validate_media_manifest(manifest) -> None:
     for group in ("audio", "video"):
         entries = manifest.get(group)
         if not isinstance(entries, list):
-            raise CompassContractError("media manifest must contain a %s list" % group)
+            raise CompassContractError("media manifest must contain a list under %r" % group)
         for entry in entries:
             if not isinstance(entry, dict):
                 raise CompassContractError("media manifest %s entries must be objects" % group)

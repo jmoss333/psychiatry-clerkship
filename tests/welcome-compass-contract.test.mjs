@@ -301,7 +301,9 @@ test("orientation package rows are allowed unless marked served", () => {
     const served = [...mediaManifest.video, { file: identity, served: true }];
     assert.throws(
       () => validateMediaManifest({ ...mediaManifest, video: served }),
-      /served/,
+      // execFileSync's own Error.message echoes the whole argv, JSON manifest included, so
+      // it always contains "served"; only the captured Python stderr proves which rule fired.
+      (err) => /served/.test(String(err.stderr ?? "")),
       `served orientation row must be rejected: ${identity}`,
     );
   }
