@@ -27,7 +27,11 @@ if HERE not in sys.path:
 import validate_curriculum  # noqa: E402  (path set above)
 
 MANIFEST = {
-    "tools": [["src/a.html", "mse.html", "Mental Status Exam"]],
+    "tools": [
+        ["src/a.html", "mse.html", "Mental Status Exam"],
+        ["src/bfcrs.html", "bfcrs.html", "BFCRS reference"],
+        ["src/cssrs.html", "cssrs.html", "C-SSRS reference"],
+    ],
     "md": [
         ["src/b.md", "welcome.md", "Welcome to the Rotation"],
         ["src/pg_suicide.md", "pg_suicide.md", "Suicide Safety"],
@@ -37,8 +41,8 @@ MANIFEST = {
         ["src/delirium.md", "delirium.md", "Delirium"],
     ],
 }
-MANIFEST_SLUGS = {"mse.html", "welcome.md", "pg_suicide.md", "agitation.md",
-                  "exp_consult.md", "t_sud.md", "delirium.md"}
+MANIFEST_SLUGS = {"mse.html", "bfcrs.html", "cssrs.html", "welcome.md", "pg_suicide.md",
+                  "agitation.md", "exp_consult.md", "t_sud.md", "delirium.md"}
 SAFETY_REFS = (
     "pg_suicide.md",
     "agitation.md",
@@ -56,6 +60,10 @@ EXTRA_EXCLUDES = [
 FIXTURE_SAFETY_EXCLUDES = [
     {"ref": ref, "reason": "outside this fixture — supplied only for safety-kit validation"}
     for ref in SAFETY_REFS
+]
+FIXTURE_RIGHTS_EXCLUDES = [
+    {"ref": ref, "reason": "outside this fixture — supplied only for rights-reference validation"}
+    for ref in ("bfcrs.html", "cssrs.html")
 ]
 
 
@@ -76,11 +84,32 @@ def _evidence_registry():
     return {"sources": [{"id": "evidence-ok"}]}
 
 
-def _write(tmp, curriculum, topic_meta=None, evidence_registry=None):
+def _shipped_pages():
+    return {
+        "version": 1,
+        "_note": "synthetic complete shipped-page document",
+        "generated_from": {},
+        "pages": [
+            {
+                "slug": "week%d.md" % n,
+                "kind": "page",
+                "sites": ["ms3"],
+                "title": "Week %d" % n,
+                "source": "synthetic/week%d.md" % n,
+                "producer": "synthetic",
+            }
+            for n in range(1, 7)
+        ],
+    }
+
+
+def _write(tmp, curriculum, topic_meta=None, evidence_registry=None, shipped_pages=None):
     cpath = os.path.join(tmp, "curriculum.json")
     mpath = os.path.join(tmp, "site_manifest.json")
     tpath = os.path.join(tmp, "topic_meta.json")
     epath = os.path.join(tmp, "evidence_registry.json")
+    shipped_path = os.path.join(
+        tmp, "13_Faculty_Resources", "_automation", "site_build", "shipped_pages.json")
     with open(cpath, "w", encoding="utf-8") as fh:
         json.dump(curriculum, fh)
     with open(mpath, "w", encoding="utf-8") as fh:
@@ -89,6 +118,9 @@ def _write(tmp, curriculum, topic_meta=None, evidence_registry=None):
         json.dump(_topic_meta() if topic_meta is None else topic_meta, fh)
     with open(epath, "w", encoding="utf-8") as fh:
         json.dump(_evidence_registry() if evidence_registry is None else evidence_registry, fh)
+    os.makedirs(os.path.dirname(shipped_path))
+    with open(shipped_path, "w", encoding="utf-8") as fh:
+        json.dump(_shipped_pages() if shipped_pages is None else shipped_pages, fh)
     return cpath, mpath
 
 
@@ -96,24 +128,31 @@ def _run(cpath, mpath, tpath=None, epath=None):
     tpath = tpath or os.path.join(os.path.dirname(cpath), "topic_meta.json")
     epath = epath or os.path.join(os.path.dirname(cpath), "evidence_registry.json")
     return subprocess.run(
-        [sys.executable, VALIDATOR, cpath, mpath, tpath, epath],
+        [sys.executable, VALIDATOR, cpath, mpath, tpath, epath, os.path.dirname(cpath)],
         capture_output=True, text=True,
     )
 
 
-def _weeks(count, first_items=None):
-    return [
-        {"n": n, "title": "T%d" % n, "theme": "Th%d" % n,
-         "focusCategories": ["safety"],
-         "items": list(first_items or []) if n == 1 else []}
-        for n in range(1, count + 1)
-    ]
+def _weeks(count, first_items=None, landing_refs=False):
+    weeks = []
+    for n in range(1, count + 1):
+        week = {
+            "n": n,
+            "title": "T%d" % n,
+            "theme": "Th%d" % n,
+            "focusCategories": ["safety"],
+            "items": list(first_items or []) if n == 1 else [],
+        }
+        if landing_refs:
+            week["landingRef"] = "week%d.md" % n
+        weeks.append(week)
+    return weeks
 
 
 def _curriculum(items):
     return {
         "learningPaths": {
-            "ms3": {"id": "ms3-six-week", "weeks": _weeks(6, items)},
+            "ms3": {"id": "ms3-six-week", "weeks": _weeks(6, items, landing_refs=True)},
             "resident": {"id": "resident-four-week", "weeks": _weeks(4)},
         },
         # Default coverage keeps the fixture VALID under the totality check. Tests that
@@ -123,9 +162,12 @@ def _curriculum(items):
             {"name": "Tools", "accent": "tool", "refs": ["mse.html"]},
             {"name": "Topics", "accent": "topic", "refs": ["welcome.md"]},
         ],
-        "libraryExclude": list(EXTRA_EXCLUDES) + list(FIXTURE_SAFETY_EXCLUDES),
+        "libraryExclude": (
+            list(EXTRA_EXCLUDES) + list(FIXTURE_SAFETY_EXCLUDES) + list(FIXTURE_RIGHTS_EXCLUDES)
+        ),
+        "rightsReferences": ["bfcrs.html", "cssrs.html"],
         "safetyKit": [
-            {"ref": ref, "sub": "Protocol " + str(index + 1)}
+            {"ref": ref, "sub": "Protocol " + str(index + 1), "triggers": ["safety"]}
             for index, ref in enumerate(SAFETY_REFS)
         ],
         "roles": {"ms3": [], "resident": []},
@@ -138,6 +180,70 @@ def _curriculum(items):
 
 
 class ValidateCurriculumTest(unittest.TestCase):
+    def test_accepts_six_shipped_ms3_landing_refs_without_resident_landing_refs(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            c, m = _write(tmp, _curriculum([]))
+            result = _run(c, m)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_rejects_ms3_week_missing_landing_ref(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            curriculum = _curriculum([])
+            del curriculum["learningPaths"]["ms3"]["weeks"][0]["landingRef"]
+            c, m = _write(tmp, curriculum)
+            result = _run(c, m)
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn("landingRef", result.stdout)
+
+    def test_rejects_empty_or_non_string_ms3_landing_ref(self):
+        for value in ("", 1):
+            with self.subTest(value=value), tempfile.TemporaryDirectory() as tmp:
+                curriculum = _curriculum([])
+                curriculum["learningPaths"]["ms3"]["weeks"][0]["landingRef"] = value
+                c, m = _write(tmp, curriculum)
+                result = _run(c, m)
+            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+            self.assertIn("landingRef", result.stdout)
+
+    def test_rejects_duplicate_ms3_landing_ref(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            curriculum = _curriculum([])
+            curriculum["learningPaths"]["ms3"]["weeks"][1]["landingRef"] = "week1.md"
+            c, m = _write(tmp, curriculum)
+            result = _run(c, m)
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn("landingRef", result.stdout)
+
+    def test_rejects_unshipped_ms3_landing_ref(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            curriculum = _curriculum([])
+            curriculum["learningPaths"]["ms3"]["weeks"][0]["landingRef"] = "ghost.md"
+            c, m = _write(tmp, curriculum)
+            result = _run(c, m)
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn("ghost.md", result.stdout)
+
+    def test_rejects_tool_html_ms3_landing_ref(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            curriculum = _curriculum([])
+            curriculum["learningPaths"]["ms3"]["weeks"][0]["landingRef"] = "week1.html"
+            shipped_pages = _shipped_pages()
+            shipped_pages["pages"][0].update({"slug": "week1.html", "kind": "tool"})
+            c, m = _write(tmp, curriculum, shipped_pages=shipped_pages)
+            result = _run(c, m)
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn("week1.html", result.stdout)
+
+    def test_rejects_resident_only_ms3_landing_ref(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            curriculum = _curriculum([])
+            shipped_pages = _shipped_pages()
+            shipped_pages["pages"][0]["sites"] = ["res"]
+            c, m = _write(tmp, curriculum, shipped_pages=shipped_pages)
+            result = _run(c, m)
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn("week1.md", result.stdout)
+
     def test_accepts_refs_that_resolve_to_shipped_slugs(self):
         with tempfile.TemporaryDirectory() as tmp:
             c, m = _write(tmp, _curriculum([
@@ -306,7 +412,9 @@ class LibraryTotalityTest(unittest.TestCase):
     def _cur(self, columns, exclude):
         c = _curriculum([])
         c["libraryColumns"] = columns
-        c["libraryExclude"] = list(exclude) + EXTRA_EXCLUDES + FIXTURE_SAFETY_EXCLUDES
+        c["libraryExclude"] = (
+            list(exclude) + EXTRA_EXCLUDES + FIXTURE_SAFETY_EXCLUDES + FIXTURE_RIGHTS_EXCLUDES
+        )
         return c
 
     def test_accepts_full_coverage(self):
@@ -502,7 +610,9 @@ class ShippedSetTest(unittest.TestCase):
                 {"name": "Topics", "accent": "topic", "refs": ["welcome.md"]},
             ]
             cur["libraryExclude"] = [e for e in EXTRA_EXCLUDES
-                                     if e["ref"] != "orientation-video.html"]
+                                     if e["ref"] != "orientation-video.html"] + (
+                                         FIXTURE_SAFETY_EXCLUDES + FIXTURE_RIGHTS_EXCLUDES
+                                     )
             c, m = _write(tmp, cur)
             r = _run(c, m)
             self.assertEqual(r.returncode, 1)

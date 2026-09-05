@@ -16,7 +16,16 @@
             { "$ref": "#/definitions/learningPath" },
             { "properties": {
               "id": { "const": "ms3-six-week" },
-              "weeks": { "minItems": 6, "maxItems": 6 }
+              "weeks": {
+                "minItems": 6,
+                "maxItems": 6,
+                "items": {
+                  "allOf": [
+                    { "$ref": "#/definitions/week" },
+                    { "required": ["landingRef"] }
+                  ]
+                }
+              }
             }}
           ]
         },
@@ -128,6 +137,7 @@
         "n": { "type": "integer", "minimum": 1, "maximum": 6 },
         "title": { "type": "string", "minLength": 1 },
         "theme": { "type": "string", "minLength": 1 },
+        "landingRef": { "type": "string", "minLength": 1 },
         "focusCategories": {
           "type": "array",
           "minItems": 1,

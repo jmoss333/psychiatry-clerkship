@@ -43,7 +43,7 @@ the intended route.
 
 Exits non-zero and prints every violation.
 Usage:  python3 validate_curriculum.py [curriculum.json] [site_manifest.json]
-        [topic_meta.json] [evidence_registry.json]
+        [topic_meta.json] [evidence_registry.json] [shipped-pages root]
 """
 import ast
 import json
@@ -53,6 +53,12 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.abspath(os.path.join(HERE, "..", ".."))
+SITE_BUILD = os.path.join(HERE, "site_build")
+if SITE_BUILD not in sys.path:
+    sys.path.insert(0, SITE_BUILD)
+
+from shipped_pages import ShippedPagesError, load_shipped_pages  # noqa: E402
+from welcome_compass import CompassContractError, prepare_cards  # noqa: E402
 
 GOVERNANCE_PY = os.path.join(HERE, "validate_tool_governance.py")
 SITE_EXTRAS_PY = os.path.join(HERE, "site_build", "site_extras.py")
@@ -160,6 +166,7 @@ def main(argv):
         REPO, "13_Faculty_Resources", "_automation", "site_build", "site_manifest.json")
     topic_path = argv[2] if len(argv) > 2 else os.path.join(REPO, "topic_meta.json")
     evidence_path = argv[3] if len(argv) > 3 else os.path.join(REPO, "evidence_registry.json")
+    shipped_root = argv[4] if len(argv) > 4 else REPO
 
     if not os.path.exists(cur_path):
         print("curriculum.json not found at %s — nothing to validate (skipping)." % cur_path)
@@ -169,6 +176,12 @@ def main(argv):
     man = json.load(open(man_path, encoding="utf-8"))
     topic_meta = json.load(open(topic_path, encoding="utf-8"))
     evidence_registry = json.load(open(evidence_path, encoding="utf-8"))
+    try:
+        shipped_document = load_shipped_pages(shipped_root)
+    except ShippedPagesError as error:
+        print("curriculum INVALID")
+        print(" - shipped_pages.json: %s" % error)
+        return 1
 
     shared_tool_slugs = {e[1] for e in man.get("tools", [])}
     shared_md_slugs = {e[1] for e in man.get("md", [])}
@@ -292,6 +305,11 @@ def main(argv):
                 if kind != expected_kind:
                     bad(week_label, "ref '%s' has kind '%s' but the build ships it as '%s'" %
                         (ref, kind, expected_kind))
+        if site == "ms3":
+            try:
+                prepare_cards(weeks, shipped_document)
+            except CompassContractError as error:
+                bad(label, str(error))
         path_totals[site] = sum(len(w.get("items", [])) for w in weeks if isinstance(w, dict))
 
     # ---- library totality: every shipped slug is placed or explicitly excluded ----
