@@ -14,26 +14,23 @@ import assert from 'node:assert/strict';
 // fresh and asserting the default export is a callable handler is the one
 // check that would fail loudly here instead of silently there.
 //
-// `@netlify/blobs`'s real `getStore()` validates its environment SYNCHRONOUSLY
-// and throws `MissingBlobsEnvironmentError` when it finds no site/token
-// context — and ev.mjs's default export calls `getStore()` unconditionally,
-// before it ever inspects the request's origin. So invoking the default
-// export at all (even for a request this handler will go on to reject)
-// requires *some* context to be present. The fake context below is a
-// synthetic, made-up siteID/token pair this test constructs itself — not a
-// real credential, not read from any file or env var. It satisfies
-// `getStore()`'s synchronous config check so the call can proceed to
-// construct a (never-used) Store object; it does not, and cannot, cause a
-// real network call, because the disallowed-origin check inside `createEv`
-// short-circuits with 403 before this handler ever calls a store method
-// (`store.get` / `store.setJSON` only run from `increment()`, which is only
-// reached after the origin and allowlist checks both pass). Confirmed
-// empirically: this test performs no network I/O and needs no real Netlify
-// site, deploy, or credentials — only the `@netlify/blobs` *package* being
-// resolvable, which this task's own `npm install` step guarantees.
-globalThis.netlifyBlobsContext = Buffer.from(
-  JSON.stringify({ siteID: 'boot-test-fake-site', token: 'boot-test-fake-token' }),
-).toString('base64');
+// `ev.mjs`'s default export no longer calls `getStore()` unconditionally.
+// Since commit b49c7b8 (Task 4's fix round), `createEv` only acquires the
+// store AFTER the method, origin, body, and allowlist checks all pass — see
+// ev.mjs's own comment at the `resolvedStore = getStore ? ...` line. A
+// disallowed-origin request (this test's own request, `origin:
+// 'https://evil.invalid'`) is rejected by the origin check with 403 before
+// `getStore()` is ever invoked, so `@netlify/blobs`'s real `getStore()` never
+// runs its synchronous environment validation and never has the chance to
+// throw `MissingBlobsEnvironmentError` for this request. No synthetic
+// `netlifyBlobsContext` scaffolding is needed to satisfy that check, because
+// the check is never reached. What IS still required: the `@netlify/blobs`
+// *package* being resolvable, since the default export's
+// `await import('@netlify/blobs')` runs unconditionally on every invocation
+// (module resolution only — it does not call anything in the package until
+// `getStore` is actually invoked). This task's own `npm install` step
+// guarantees that. Confirmed empirically: this test performs no network I/O
+// and needs no real Netlify site, deploy, or credentials.
 
 test('ev.mjs module loads and its default export is an invocable handler', async () => {
   const mod = await import('../netlify/functions/ev.mjs');
