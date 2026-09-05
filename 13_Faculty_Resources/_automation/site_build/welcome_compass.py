@@ -115,7 +115,15 @@ def load_resident_welcome_overlay(lib_root):
     try:
         with open(path, encoding="utf-8") as handle:
             overlay = json.load(handle)
-    except (OSError, UnicodeError, json.JSONDecodeError) as error:
+    except FileNotFoundError as error:
+        raise CompassContractError(
+            "resident Welcome overlay is missing: " + RESIDENT_WELCOME_OVERLAY
+        ) from error
+    except json.JSONDecodeError as error:
+        raise CompassContractError(
+            "resident Welcome overlay is not valid JSON: " + RESIDENT_WELCOME_OVERLAY
+        ) from error
+    except (OSError, UnicodeError) as error:
         raise CompassContractError(
             "resident Welcome overlay is unreadable: " + RESIDENT_WELCOME_OVERLAY
         ) from error
@@ -258,7 +266,7 @@ def render_compass(cards, safety_text: str) -> str:
         '<p data-fd-compass-scope>%s</p>'
         '<section class="fd-compass" data-fd-compass aria-labelledby="fd-compass-title">'
         '<h2 class="fd-compass__title" id="fd-compass-title">%s</h2>'
-        '<ol class="fd-compass__weeks" data-fd-compass-weeks>%s</ol></section>'
+        '<ol class="fd-compass__weeks" data-fd-compass-weeks role="list">%s</ol></section>'
         '<p data-fd-compass-prompt>%s</p>'
         '<a data-fd-compass-orientation href="?tool=orientation-video.html">%s</a>'
         '</div>'

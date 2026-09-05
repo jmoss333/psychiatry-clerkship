@@ -44,7 +44,7 @@ EXPECTED_FRAGMENT = (
     'does not establish competence, entrustment, or permission to act independently.</p>'
     '<section class="fd-compass" data-fd-compass aria-labelledby="fd-compass-title">'
     '<h2 class="fd-compass__title" id="fd-compass-title">Six-Week Compass</h2>'
-    '<ol class="fd-compass__weeks" data-fd-compass-weeks>'
+    '<ol class="fd-compass__weeks" data-fd-compass-weeks role="list">'
     '<li class="fd-compass__week" data-fd-compass-week="1">'
     '<h3 class="fd-compass__heading"><span class="fd-compass__kicker">Week 1</span> Foundations &amp; the MSE</h3>'
     '<a class="fd-compass__link" data-fd-compass-link href="?page=week1.md">Open Week 1</a></li>'
@@ -169,6 +169,16 @@ class WelcomeCompassTests(unittest.TestCase):
                 with self.subTest(broken=broken):
                     with self.assertRaisesRegex(welcome_compass.CompassContractError, "overlay"):
                         welcome_compass.load_resident_welcome_overlay(root)
+
+    def test_resident_overlay_errors_name_the_failure_kind(self):
+        with tempfile.TemporaryDirectory() as root:
+            with self.assertRaisesRegex(welcome_compass.CompassContractError, "missing"):
+                welcome_compass.load_resident_welcome_overlay(root)
+            target = Path(root, welcome_compass.RESIDENT_WELCOME_OVERLAY)
+            target.parent.mkdir(parents=True)
+            target.write_text("not json", encoding="utf-8")
+            with self.assertRaisesRegex(welcome_compass.CompassContractError, "not valid JSON"):
+                welcome_compass.load_resident_welcome_overlay(root)
 
     def cards(self):
         return welcome_compass.prepare_cards(WEEKS, SHIPPED)
@@ -485,6 +495,18 @@ class WelcomeCompassTests(unittest.TestCase):
                 encoding="utf-8",
             )
             self.assertIsNone(welcome_compass.assert_resident_output(root))
+
+    def test_resident_output_rejects_a_missing_or_undecodable_built_welcome(self):
+        with tempfile.TemporaryDirectory() as root:
+            write_complete_resident_output(root)
+            Path(root, "content", "welcome.md").unlink()
+            with self.assertRaisesRegex(welcome_compass.CompassContractError, "welcome.md"):
+                welcome_compass.assert_resident_output(root)
+        with tempfile.TemporaryDirectory() as root:
+            write_complete_resident_output(root)
+            Path(root, "content", "welcome.md").write_bytes(b"\xff\xfe<video src=\"media/resident-onboarding.mp4\">")
+            with self.assertRaisesRegex(welcome_compass.CompassContractError, "welcome.md"):
+                welcome_compass.assert_resident_output(root)
 
     def test_resident_output_rejects_compass_heading_in_metadata_or_governance(self):
         for relative_path in ("topic_meta.json", "governance.json", "index.html"):

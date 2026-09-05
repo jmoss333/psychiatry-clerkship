@@ -71,7 +71,7 @@ const EXPECTED_COMPASS_FRAGMENT =
   'does not establish competence, entrustment, or permission to act independently.</p>' +
   '<section class="fd-compass" data-fd-compass aria-labelledby="fd-compass-title">' +
   '<h2 class="fd-compass__title" id="fd-compass-title">Six-Week Compass</h2>' +
-  '<ol class="fd-compass__weeks" data-fd-compass-weeks>' +
+  '<ol class="fd-compass__weeks" data-fd-compass-weeks role="list">' +
   '<li class="fd-compass__week" data-fd-compass-week="1">' +
   '<h3 class="fd-compass__heading"><span class="fd-compass__kicker">Week 1</span> Foundations &amp; the MSE</h3>' +
   '<a class="fd-compass__link" data-fd-compass-link href="?page=week1.md">Open Week 1</a></li>' +
