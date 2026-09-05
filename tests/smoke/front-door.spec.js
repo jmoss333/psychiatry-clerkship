@@ -290,6 +290,53 @@ test('malformed built protocol fails closed with every canonical crisis resource
   await expectHealthy(page);
 });
 
+test('Compass native Tab sequence keeps every link above the mobile action bar', async ({ page }, testInfo) => {
+  test.skip(audience(testInfo).role !== 'student', 'The Compass belongs to the student Welcome');
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await seedApp(page, testInfo);
+  await page.goto('/?page=welcome.md');
+  const links = page.locator('[data-ms3-compass-root] a');
+  await expect(links).toHaveCount(8);
+  await links.first().focus();
+  // Let the browser scroll on native Tab. No scrollIntoView, click or focus on later links.
+  for (let index = 0; index < 8; index += 1) {
+    if (index) await page.keyboard.press('Tab');
+    await expect(links.nth(index)).toBeFocused();
+    const focus = await links.nth(index).evaluate(link => {
+      const box = link.getBoundingClientRect();
+      const bar = document.querySelector('.fd-actionbar').getBoundingClientRect();
+      const corners = [[box.left + 2, box.top + 2], [box.right - 2, box.bottom - 2]];
+      return {
+        top: box.top, bottom: box.bottom, barTop: bar.top, viewport: innerHeight,
+        unobscured: corners.every(([x, y]) => link.contains(document.elementFromPoint(x, y))),
+      };
+    });
+    expect(focus.top, `link ${index} top`).toBeGreaterThanOrEqual(0);
+    expect(focus.bottom, `link ${index} bottom: ${JSON.stringify(focus)}`).toBeLessThanOrEqual(focus.barTop);
+    expect(focus.bottom).toBeLessThanOrEqual(focus.viewport);
+    expect(focus.unobscured, `link ${index} hit testing`).toBe(true);
+  }
+});
+
+for (const [number, title] of [
+  [1, 'Foundations & the MSE'], [2, 'Mood, Psychosis & Pharm'],
+  [3, 'Psychotherapy & Personality'], [4, 'Family Systems & EE'],
+  [5, 'Acute & Emergency'], [6, 'Integration & Exam'],
+]) {
+  test(`Compass Week ${number} opens its titled reader without adopting another path`, async ({ page }, testInfo) => {
+    test.skip(audience(testInfo).role !== 'student', 'The Compass belongs to the student Welcome');
+    await seedApp(page, testInfo);
+    await page.goto('/?page=welcome.md');
+    const start = await page.evaluate(() => localStorage.getItem('cw_rotation_start'));
+    await page.locator(`[data-ms3-compass-link][href="?page=week${number}.md"]`).click();
+    await expect(page.locator('.fd-article__h1')).toHaveText(`Week ${number} — ${title}`);
+    await expect(page).toHaveURL(new RegExp(`page=week${number}\\.md`));
+    expect(await page.evaluate(() => localStorage.getItem('cw_rotation_start'))).toBe(start);
+    await expectHealthy(page);
+  });
+}
+
 test('Welcome preserves audience scope and gives the MS3 Compass responsive keyboard and touch behavior', async ({ page, browser }, testInfo) => {
   const site = audience(testInfo);
   await seedApp(page, testInfo);
@@ -299,6 +346,12 @@ test('Welcome preserves audience scope and gives the MS3 Compass responsive keyb
   const compassRoot = page.locator('[data-ms3-compass-root]');
   if (site.role === 'pgy1') {
     await expect(compassRoot).toHaveCount(0);
+    // Metadata and governance sit outside the Markdown body; inspect the complete reader.
+    const reader = page.locator('.fd-reader');
+    await expect(reader).not.toContainText(/Compass|Orientation Packet|captioned orientation overview/i);
+    await expect(reader.locator('.fd-article__lead')).toContainText('four-week');
+    await expect(reader.locator('.governance-notice.pending-compact')).toContainText('Pending faculty review');
+    await expect(reader.locator('.governance-notice.reviewed-receipt')).toHaveCount(0);
     const onboarding = page.locator(
       'video[src="media/resident-onboarding.mp4"][poster="media/resident-onboarding-poster.jpg"]',
     );

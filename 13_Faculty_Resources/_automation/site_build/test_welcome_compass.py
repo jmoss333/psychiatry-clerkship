@@ -1,6 +1,7 @@
 """Contract tests for the MS3 Six-Week Compass's pure renderer."""
 
 from pathlib import Path
+import copy
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -128,6 +129,37 @@ def write_output_file(root, relative_path, payload):
 
 
 class WelcomeCompassTests(unittest.TestCase):
+    def test_resident_projection_preserves_pending_authority_and_other_metadata(self):
+        meta = {"welcome.md": {"tldr": "Six-Week Compass", "points": ["Orientation Packet"],
+                               "read": 3, "relatedTools": ["review.html"]},
+                "other.md": {"tldr": "Keep this"}}
+        governance = {"items": {"welcome.md": {
+            "status": "pending", "riskKind": "general", "riskLevel": "low",
+            "reviewer": "Pending faculty review", "reviewedAt": "2026-09-04",
+            "reason": "Six-Week Compass and onboarding hierarchy awaiting faculty review.",
+            "warning": "Six-Week Compass and onboarding hierarchy awaiting faculty review.",
+        }, "other.md": {"status": "pending", "reason": "Keep this"}}}
+        original = copy.deepcopy((meta, governance))
+        projected_meta, projected_governance = welcome_compass.project_resident_welcome(meta, governance)
+        self.assertNotIn("Compass", str((projected_meta, projected_governance)))
+        self.assertNotIn("Orientation Packet", str(projected_meta))
+        self.assertIn("four-week", projected_meta["welcome.md"]["tldr"])
+        self.assertEqual(projected_meta["welcome.md"]["read"], 3)
+        self.assertEqual(projected_meta["welcome.md"]["relatedTools"], ["review.html"])
+        for key in ("status", "riskKind", "riskLevel", "reviewer", "reviewedAt"):
+            self.assertEqual(projected_governance["items"]["welcome.md"][key],
+                             governance["items"]["welcome.md"][key])
+        self.assertEqual(projected_governance["items"]["welcome.md"]["reason"],
+                         "Welcome awaiting faculty review.")
+        self.assertEqual(projected_governance["items"]["other.md"], governance["items"]["other.md"])
+        self.assertEqual((meta, governance), original)
+
+    def test_resident_projection_never_replaces_an_unrelated_faculty_pending_reason(self):
+        governance = {"items": {"welcome.md": {"status": "pending", "reason": "Verify supervision wording.",
+                                               "warning": "Verify supervision wording."}}}
+        _, projected = welcome_compass.project_resident_welcome({"welcome.md": {}}, governance)
+        self.assertEqual(projected, governance)
+
     def cards(self):
         return welcome_compass.prepare_cards(WEEKS, SHIPPED)
 
@@ -313,6 +345,18 @@ class WelcomeCompassTests(unittest.TestCase):
         repo_root = Path(__file__).resolve().parents[3]
         self.assertIsNone(welcome_compass.require_real_files(repo_root, RETIRED_INTRO_PATHS))
 
+    def test_rejects_a_compass_that_markdown_renders_only_as_comment_or_code(self):
+        for wrapper in (
+            "<!--\n%s\n-->", "```html\n%s\n```", "~~~html\n%s\n~~~",
+            "`%s`", "``%s``", "    %s", "   \t%s",
+        ):
+            with self.subTest(wrapper=wrapper), tempfile.TemporaryDirectory() as root:
+                write_complete_ms3_output(root, wrapper % EXPECTED_FRAGMENT)
+                with self.assertRaisesRegex(welcome_compass.CompassContractError, "rendered"):
+                    welcome_compass.assert_ms3_output(
+                        root, self.cards(), SAFETY, BUILT_ORIENTATION_PATHS
+                    )
+
     def test_rejects_retired_intro_file_or_text_reference_in_completed_ms3_output(self):
         for relative_path, payload in (
             ("media/intro-trailer.mp4", b"stale media"),
@@ -348,6 +392,14 @@ class WelcomeCompassTests(unittest.TestCase):
                 encoding="utf-8",
             )
             self.assertIsNone(welcome_compass.assert_resident_output(root))
+
+    def test_resident_output_rejects_compass_heading_in_metadata_or_governance(self):
+        for relative_path in ("topic_meta.json", "governance.json", "index.html"):
+            with self.subTest(path=relative_path), tempfile.TemporaryDirectory() as root:
+                write_complete_resident_output(root)
+                write_output_file(root, relative_path, b'Six-Week Compass and onboarding hierarchy awaiting faculty review.')
+                with self.assertRaisesRegex(welcome_compass.CompassContractError, "Compass"):
+                    welcome_compass.assert_resident_output(root)
 
     def test_resident_output_requires_an_exact_real_canonical_frontdoor_stylesheet(self):
         canonical = CANONICAL_FRONTDOOR_CSS.read_bytes()
@@ -482,6 +534,8 @@ class WelcomeCompassTests(unittest.TestCase):
 
     def test_resident_output_requires_one_real_video_with_exact_onboarding_src_and_poster(self):
         invalid_welcomes = (
+            '`<video src="media/resident-onboarding.mp4" poster="media/resident-onboarding-poster.jpg"></video>`',
+            '``<video src="media/resident-onboarding.mp4" poster="media/resident-onboarding-poster.jpg"></video>``',
             '<video poster="media/resident-onboarding-poster.jpg"></video>',
             '<video src="media/resident-onboarding.mp4"></video>',
             '<!-- media/resident-onboarding.mp4 media/resident-onboarding-poster.jpg -->',

@@ -222,13 +222,30 @@ function groupingCompassRanges(css, start, end) {
   return [[tokenStart, tokenStart + match[1].length]];
 }
 
-function containerDeclarationRange(mask, start, end) {
-  const declaration = mask.slice(start, end);
-  const match = declaration.match(/^\s*container\s*:\s*(ms3-compass)\s*\/\s*inline-size\s*$/);
+function containerDeclarationRange(css, start, end) {
+  // Strings cannot turn into whitespace here: the browser would discard that declaration.
+  const declaration = css.slice(start, end);
+  const match = declaration.match(/^[ \t\r\n\f]*container[ \t\r\n\f]*:[ \t\r\n\f]*(ms3-compass)[ \t\r\n\f]*\/[ \t\r\n\f]*inline-size[ \t\r\n\f]*$/);
   if (!match) return [];
   const tokenOffset = match.index + match[0].indexOf(match[1]);
   return [[start + tokenOffset, start + tokenOffset + match[1].length]];
 }
+
+test('container declarations reject hidden strings and non-CSS whitespace', () => {
+  for (const value of [
+    '"hidden" ms3-compass / inline-size', "'hidden' ms3-compass / inline-size",
+    'ms3-compass "hidden" / inline-size', 'ms3-compass / "hidden" inline-size',
+    'ms3-compass / inline-size "hidden"',
+    '\u00a0ms3-compass / inline-size', 'ms3-compass\u00a0/ inline-size',
+    'ms3-compass /\u2028inline-size', 'ms3-compass / inline-size\u2029',
+  ]) {
+    assert.throws(() => assertNoUnapprovedAudienceTokens(`.ms3-compass{container:${value}}`), value);
+  }
+  for (const declaration of [
+    'container:ms3-compass / inline-size',
+    '\tcontainer\n:\rms3-compass\f/\tinline-size\n',
+  ]) assert.doesNotThrow(() => assertNoUnapprovedAudienceTokens(`.ms3-compass{${declaration}}`));
+});
 
 function approvedCompassRanges(css) {
   const { mask, structural } = lexCss(css);
@@ -239,7 +256,7 @@ function approvedCompassRanges(css) {
     const block = blocks.at(-1);
     if (mask[index] === ';') {
       if (block.kind === 'style') {
-        ranges.push(...containerDeclarationRange(mask, block.segmentStart, index));
+        ranges.push(...containerDeclarationRange(css, block.segmentStart, index));
       }
       block.segmentStart = index + 1;
     } else if (mask[index] === '{') {
@@ -264,7 +281,7 @@ function approvedCompassRanges(css) {
     } else if (mask[index] === '}') {
       assert.ok(blocks.length > 1, 'CSS block closes without an opener');
       if (block.kind === 'style') {
-        ranges.push(...containerDeclarationRange(mask, block.segmentStart, index));
+        ranges.push(...containerDeclarationRange(css, block.segmentStart, index));
       }
       blocks.pop();
       const parent = blocks.at(-1);

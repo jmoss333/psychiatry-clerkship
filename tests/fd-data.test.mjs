@@ -89,6 +89,24 @@ test('an item joins minutes, summary, points and attestation from topic_meta', (
   assert.equal(i.toolRef, 't.html');
 });
 
+test('landing destinations resolve titles without becoming week items, Library rows or daily picks', () => {
+  const cur = structuredClone(FIX_CUR);
+  cur.weeks[0].landingRef = 'week1.md';
+  const man = structuredClone(FIX_MAN);
+  man.md.push(['', 'week1.md', 'Week 1 — Foundations & the MSE']);
+  const index = F.fdBuildIndex(cur, FIX_META, FIX_TOOLS, man);
+  assert.equal(index.byRef['week1.md']?.title, 'Week 1 — Foundations & the MSE');
+  assert.equal(index.known['week1.md'], true);
+  assert.equal(index.byRef['week1.md'].readerOnly, true);
+  assert.deepEqual(index.weeks[0].items.map(item => item.ref), ['a.md']);
+  assert.deepEqual(index.columns[0].items.map(item => item.ref), ['a.md', 'b.md']);
+  assert.deepEqual(F.fdLibraryOnlyReads(index).map(item => item.ref), ['b.md']);
+  cur.libraryColumns[0].refs.push('week1.md');
+  const placed = F.fdBuildIndex(cur, FIX_META, FIX_TOOLS, man);
+  assert.notEqual(placed.byRef['week1.md'].readerOnly, true);
+  assert.deepEqual(F.fdLibraryOnlyReads(placed).map(item => item.ref), ['b.md', 'week1.md']);
+});
+
 test('a page with no topic_meta entry still yields a usable item', () => {
   const cur = JSON.parse(JSON.stringify(FIX_CUR));
   cur.libraryColumns[0].refs.push('orphan.md');

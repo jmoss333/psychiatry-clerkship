@@ -1,12 +1,13 @@
 """Pure contract and semantic renderer for the MS3 Six-Week Compass."""
 
 from dataclasses import dataclass
+from copy import deepcopy
 from html import escape
 from html.parser import HTMLParser
 import json
 import os
-import re
 import stat
+import subprocess
 
 
 COMPASS_MARKER = "<!-- ms3-six-week-compass -->"
@@ -84,6 +85,68 @@ class _ResidentWelcomeVideoParser(HTMLParser):
     def handle_starttag(self, tag, attrs):
         if tag.lower() == "video":
             self.videos.append(attrs)
+
+
+class _CompassStructureParser(HTMLParser):
+    """Record real element/text events; comments and escaped code cannot supply a root."""
+
+    def __init__(self):
+        super().__init__()
+        self.compasses = []
+        self.depth = 0
+
+    def handle_starttag(self, tag, attrs):
+        if any(name == "data-ms3-compass-root" for name, _ in attrs):
+            self.compasses.append([])
+            self.depth = 0
+        if self.compasses and (self.depth or any(name == "data-ms3-compass-root" for name, _ in attrs)):
+            self.compasses[-1].append(("start", tag, attrs))
+            self.depth += 1
+
+    def handle_endtag(self, tag):
+        if self.depth:
+            self.compasses[-1].append(("end", tag))
+            self.depth -= 1
+
+    def handle_data(self, data):
+        if self.depth:
+            self.compasses[-1].append(("text", data))
+
+
+def _render_markdown(markdown):
+    """Use the same bundled Marked parser as the learner reader, never a regex approximation."""
+    parser_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "marked.min.js")
+    try:
+        result = subprocess.run(
+            ["node", "-e", "const fs=require('fs');const marked=require(process.argv[1]);"
+             "process.stdout.write(marked.parse(fs.readFileSync(0,'utf8')));", parser_path],
+            input=markdown, text=True, capture_output=True, check=True,
+        )
+    except (OSError, subprocess.CalledProcessError) as error:
+        raise CompassContractError("built Welcome Markdown could not be rendered") from error
+    return result.stdout
+
+
+def project_resident_welcome(topic_meta, governance):
+    """Scope the shared Welcome route in generated resident data; retain the faculty ledger.
+
+    Only the known Compass pending explanation is made audience-neutral. Review status,
+    risk, reviewer and date are never changed, nor is any other pending reason rewritten.
+    """
+    meta, document = deepcopy(topic_meta), deepcopy(governance)
+    meta["welcome.md"].update({
+        "tldr": "Start with the four-week Rotation Plan, then use the core references and Resident Depth pages to prepare for patient care and supervision.",
+        "points": [
+            "Start with the 4-Week Rotation Plan.",
+            "Use Resident Depth for advanced psychopharmacology, systems and med-legal work, supervision, and teaching.",
+            "Bring an agenda to supervision and expect frequent, specific, behavior-based feedback.",
+        ],
+    })
+    entry = document["items"]["welcome.md"]
+    if (entry.get("status") == "pending" and entry.get("reason") ==
+            "Six-Week Compass and onboarding hierarchy awaiting faculty review."):
+        entry["reason"] = entry["warning"] = "Welcome awaiting faculty review."
+    return meta, document
 
 
 @dataclass(frozen=True)
@@ -336,7 +399,7 @@ def _assert_no_retired_intro(out_dir) -> None:
 
 def _assert_resident_welcome_video(welcome) -> None:
     parser = _ResidentWelcomeVideoParser()
-    parser.feed(_without_markdown_code_blocks(welcome))
+    parser.feed(_render_markdown(welcome))
     parser.close()
     if len(parser.videos) != 1:
         raise CompassContractError(
@@ -380,39 +443,6 @@ def _assert_exact_resident_frontdoor_css(out_dir) -> None:
         raise CompassContractError(
             "resident built frontdoor.css must be a byte-for-byte copy of the canonical stylesheet"
         )
-
-
-def _without_markdown_code_blocks(markdown):
-    active_lines = []
-    fence = None
-    for line in markdown.splitlines(keepends=True):
-        if fence is not None:
-            closer = re.match(
-                r"^ {0,3}(" + re.escape(fence[0]) + r"+)[ \t]*(?:\r?\n)?$", line
-            )
-            if closer and len(closer.group(1)) >= fence[1]:
-                fence = None
-            continue
-        opener = re.match(r"^ {0,3}(`{3,}|~{3,})", line)
-        if opener:
-            fence = (opener.group(1)[0], len(opener.group(1)))
-            continue
-        if _has_indented_code_block(line):
-            continue
-        active_lines.append(line)
-    return "".join(active_lines)
-
-
-def _has_indented_code_block(line):
-    columns = 0
-    for char in line:
-        if char == " ":
-            columns += 1
-        elif char == "\t":
-            columns += 4 - (columns % 4)
-        else:
-            break
-    return columns >= 4
 
 
 def validate_media_manifest(manifest) -> None:
@@ -473,6 +503,13 @@ def assert_ms3_output(out_dir, cards, safety_text, built_orientation_paths) -> N
             raise CompassContractError(
                 "MS3 Compass built Welcome contains a raw safety marker: %s" % marker
             )
+    rendered, expected_structure = _CompassStructureParser(), _CompassStructureParser()
+    rendered.feed(_render_markdown(welcome))
+    expected_structure.feed(expected)
+    rendered.close()
+    expected_structure.close()
+    if rendered.compasses != expected_structure.compasses:
+        raise CompassContractError("MS3 Compass built Welcome must contain the exact rendered Compass structure")
 
 
 def assert_resident_output(out_dir) -> None:
@@ -483,7 +520,7 @@ def assert_resident_output(out_dir) -> None:
     if welcome is None:
         raise CompassContractError("resident built Welcome is unreadable: content/welcome.md")
     for relative_path, text in text_outputs.items():
-        forbidden_copy = (SCOPE_COPY, PROMPT_COPY)
+        forbidden_copy = (SCOPE_COPY, PROMPT_COPY, COMPASS_HEADING, OPTIONAL_VIDEO_COPY)
         if relative_path != "frontdoor.css":
             forbidden_copy = ("data-ms3-compass-root",) + forbidden_copy
         for forbidden in forbidden_copy:

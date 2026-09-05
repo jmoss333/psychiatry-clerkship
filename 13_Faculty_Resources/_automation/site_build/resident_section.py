@@ -305,6 +305,7 @@ open(OUT + "/nav.json", "w", encoding="utf-8").write(
 _tmp=OUT+"/topic_meta.json"
 if os.path.exists(_tmp):
     _tm=json.load(open(_tmp,encoding="utf-8"))
+    _tm, _surface_governance = welcome_compass.project_resident_welcome(_tm, _surface_governance)
     def _addcta(key,cta):
         e=_tm.get(key,{})
         cur=e.get("cta")
