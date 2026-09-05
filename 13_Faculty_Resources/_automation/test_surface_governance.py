@@ -101,6 +101,49 @@ DEFAULT_RESIDENT_NAV_SOURCE = (
 DEFAULT_COTW_REGISTRY: dict = {"weeks": []}
 
 
+def shipped_pages_document(
+    tool_entries: list | None = None, cotw_registry: dict | None = None
+) -> dict:
+    """A synthetic site_build/shipped_pages.json in the shape shipped_pages.py
+    writes it.
+
+    ADR-002 Phase 2: build_risk_proposal() reads that one derived listing now
+    instead of opening site_manifest.json and cotw_registry.json for itself, so
+    the fixtures below describe what ships the same way the real repository
+    does. Takes the same (source, slug, title) tool rows and the same weekly-
+    case registry those two producer files used to be written with, so a test
+    still only declares the piece it is exercising.
+    """
+    pages = []
+    for source_relative, built_slug, title in tool_entries or []:
+        pages.append(
+            {
+                "slug": built_slug,
+                "kind": "tool",
+                "sites": ["ms3", "res"],
+                "title": title,
+                "source": source_relative,
+                "producer": "site_manifest",
+            }
+        )
+    registry = cotw_registry if cotw_registry is not None else DEFAULT_COTW_REGISTRY
+    for week in registry.get("weeks", []):
+        stem = "cotw_" + week["date"].replace("-", "") + "_" + week["topic"]
+        for level in ("ms3", "res"):
+            built_slug = stem + "_" + level + ".md"
+            pages.append(
+                {
+                    "slug": built_slug,
+                    "kind": "page",
+                    "sites": [level],
+                    "title": "%s — %s" % (week.get("label", ""), level),
+                    "source": "08_Cases_and_Simulation/case-of-the-week/" + built_slug,
+                    "producer": "cotw_registry",
+                }
+            )
+    return {"version": 1, "pages": sorted(pages, key=lambda page: page["slug"])}
+
+
 def write_proposal_root(
     root: Path,
     ledger: dict,
@@ -114,9 +157,9 @@ def write_proposal_root(
     """Write a full synthetic repository root for build_risk_proposal()/
     the --write-proposal CLI: reviewed.json (legacy shape, no schema
     needed since this path never validates against it), topic_meta.json,
-    site_manifest.json, stand-in nav-building sources, and a Case of the
-    Week registry. Every parameter defaults to a minimal-but-valid stand-in
-    so a test only has to override the one piece it is exercising.
+    the derived shipped_pages.json listing, and stand-in nav-building
+    sources. Every parameter defaults to a minimal-but-valid stand-in so a
+    test only has to override the one piece it is exercising.
     """
     faculty = root / "13_Faculty_Resources"
     faculty.mkdir(parents=True, exist_ok=True)
@@ -126,19 +169,12 @@ def write_proposal_root(
     )
     site_build = faculty / "_automation" / "site_build"
     site_build.mkdir(parents=True, exist_ok=True)
-    manifest = {
-        "tools": tool_manifest_entries if tool_manifest_entries is not None else [],
-        "md": [],
-    }
-    (site_build / "site_manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
-    (site_build / "build_deploy.py").write_text(ms3_nav_source, encoding="utf-8")
-    (site_build / "resident_section.py").write_text(resident_nav_source, encoding="utf-8")
-    cotw_dir = root / "08_Cases_and_Simulation" / "case-of-the-week"
-    cotw_dir.mkdir(parents=True, exist_ok=True)
-    (cotw_dir / "cotw_registry.json").write_text(
-        json.dumps(cotw_registry if cotw_registry is not None else DEFAULT_COTW_REGISTRY),
+    (site_build / "shipped_pages.json").write_text(
+        json.dumps(shipped_pages_document(tool_manifest_entries, cotw_registry)),
         encoding="utf-8",
     )
+    (site_build / "build_deploy.py").write_text(ms3_nav_source, encoding="utf-8")
+    (site_build / "resident_section.py").write_text(resident_nav_source, encoding="utf-8")
 
 
 class LedgerValidationTests(unittest.TestCase):
