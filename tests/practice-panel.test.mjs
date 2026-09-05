@@ -28,7 +28,7 @@ import test from 'node:test';
 // snapshots in tests/__panels__/ run over the SAME rendered HTML. Two parallel renderers
 // could disagree, and a snapshot that disagrees with the assertions is worse than none.
 import {
-  F, renderAll, topicEntries, esc, actionKey, manifestTitle, source,
+  F, renderFromSource, topicEntries, esc, actionKey, manifestTitle, source,
   TOPIC_META, TOOL_REGISTRY, FD_INDEX, RIGHTS_REFS, CASE_TITLES, read,
 } from './_panel_render.mjs';
 
@@ -48,7 +48,7 @@ test('curriculum.rightsReferences is non-empty and every entry resolves in FD_IN
 
 test('a rights reference never renders as an action anywhere in the panel', () => {
   let seen = 0;
-  for (const [ref, html] of renderAll()) {
+  for (const [ref, html] of renderFromSource()) {
     for (const rights of RIGHTS_REFS) {
       // NOTE: match ANY anchor, not just class-carrying ones. buildWorkflow emits
       // `<a href=...>` with no class attribute, so the earlier `<a class="..." href=`
@@ -77,7 +77,7 @@ test('no retired instrument label or "open the screener" imperative survives any
     'Open the C-SSRS screener', 'Open the Columbia C-SSRS screener', 'Open the BFCRS scale',
     '>Open C-SSRS<', '>Open BFCRS<',
   ];
-  for (const [ref, html] of renderAll()) {
+  for (const [ref, html] of renderFromSource()) {
     for (const phrase of BANNED) {
       assert.ok(!html.includes(phrase), `${ref} still emits ${JSON.stringify(phrase)}`);
     }
@@ -197,7 +197,7 @@ test('a workflow actions row is never rendered empty by suppression', () => {
 // out of scope here.
 const emittedToolSlugs = () => {
   const slugs = new Set();
-  for (const [, html] of renderAll()) {
+  for (const [, html] of renderFromSource()) {
     const re = /href="\?tool=([^"&]+)"/g;
     let m;
     while ((m = re.exec(html)) !== null) slugs.add(decodeURIComponent(m[1]));
@@ -550,7 +550,7 @@ test('the disclosure adds no CSS (D-1)', () => {
 // ---- D-1 · the collapsed summary is untouched ---------------------------------------------------
 
 test('the collapsed summary markup is unchanged (D-1: panel stays a collapsed accessory)', () => {
-  const [, html] = renderAll()[0];
+  const [, html] = renderFromSource()[0];
   assert.ok(html.startsWith('<details class="topic-tpl practice-panel">'),
     'the panel must still open closed — no `open` attribute');
   assert.ok(html.includes(
