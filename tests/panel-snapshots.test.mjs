@@ -78,16 +78,81 @@ test('the stored snapshots are real panels, not an empty render agreeing with an
   }
 });
 
+/* THE STORAGE FORMAT MUST NOT BE ABLE TO HIDE A RENDER CHANGE. formatPanel breaks between
+ * adjacent tags so the diff is readable; the post-build gate applies it to the fresh render and
+ * compares against a stored snapshot that had it applied too. So any step formatPanel took
+ * BEYOND inserting newlines would be applied to both sides and cancel out — real drift would
+ * pass the gate silently. The property to pin is therefore exact: formatPanel inserts a newline
+ * between every adjacent `><` pair, adds the trailing newline, and does nothing else.
+ *
+ * Three facts pin that, and none of them recomputes the transform — a check that re-ran the same
+ * substitution would agree with any implementation, including a wrong one:
+ *   1. INSERTION-ONLY — deleting every newline from the output returns the input byte for byte.
+ *   2. PLACEMENT      — the only newline not sitting between a `>` and a `<` is the final one.
+ *   3. COMPLETENESS   — there is exactly one newline per `><` pair, plus that final one.
+ * (1) forbids rewriting or dropping any byte; (2) and (3) fix where the newlines go and how many
+ * there are. Nothing is left free.
+ */
+const assertInsertionOnly = (raw, label) => {
+  const out = formatPanel(raw);
+  assert.equal(out.split('\n').join(''), raw,
+    `${label}: formatPanel changed bytes other than the newlines it adds. Such a step would be `
+    + 'applied to the fresh render and the stored snapshot alike, so it would hide real drift');
+  assert.equal(out.slice(-1), '\n',
+    `${label}: formatPanel did not end the snapshot with a newline`);
+  const breaks = [];
+  for (let i = out.indexOf('\n'); i !== -1; i = out.indexOf('\n', i + 1)) breaks.push(i);
+  const misplaced = breaks.slice(0, -1).filter((i) => out[i - 1] !== '>' || out[i + 1] !== '<');
+  assert.deepEqual(misplaced, [],
+    `${label}: newline inserted somewhere other than between an adjacent > and <`);
+  // `><` cannot overlap itself, so split() counts it exactly: n pairs -> n + 1 pieces, and the
+  // expected newline count is n + 1 too (one per pair, plus the trailing one).
+  assert.equal(breaks.length, raw.split('><').length,
+    `${label}: wrong number of line breaks for the >< pairs in the input`);
+};
+
+/* WHY LITERALS AND NOT ONLY THE CORPUS: the corpus proves the property only for the bytes it
+ * happens to contain, and today not one of the 164 stored panels holds so much as a run of two
+ * spaces. A formatPanel that also collapsed whitespace would therefore satisfy every corpus-only
+ * check — including the round-trip this test used to be — and then collapse the fresh render and
+ * the stored snapshot alike. Each probe below exercises one class of thing a normalisation step
+ * would touch, so gaining that step reddens this test whatever the corpus currently looks like.
+ * They are literals, so this needs no build. */
+const PROBES = [
+  ['empty input', ''],
+  ['no adjacent-tag boundary', '<p>x</p>'],
+  ['several boundaries', '<a>1</a><b>2</b><i>3</i>'],
+  ['runs of spaces', '<p>a  b     c</p>'],
+  ['tabs and mixed blanks', '<p>\ta \t b</p>'],
+  ['blanks inside a tag', '<p  class="x"  data-y="z" >t</p>'],
+  ['a space between two tags', '<p>a</p> <p>b</p>'],
+  ['entities', '<p>a &amp; b &lt;c&gt; &#39;d&#39;</p>'],
+  ['upper-case tags', '<P>x</P><BR>'],
+  ['non-ASCII', '<p>é — ✓ 中</p>'],
+  ['bare angle brackets', '>><<><'],
+  ['leading and trailing blanks', '  <p> x </p>  '],
+];
+
 test('the snapshot format only inserts line breaks — no render change can hide in it', () => {
-  // formatPanel breaks between adjacent tags so the diff is readable. If it also normalised or
-  // dropped anything, a real change could be formatted away and the gate would pass through it.
-  // Pinned on the whole stored corpus, because the property has to hold for the content that
-  // exists — and reading the corpus keeps this build-independent.
+  for (const [label, raw] of PROBES) assertInsertionOnly(raw, `probe: ${label}`);
+});
+
+test('every stored snapshot is that formatting applied to a one-line panel, nothing more', () => {
+  // What this adds to the probes: the property has to hold for the content that actually exists,
+  // and the stored bytes have to BE the format the gate compares against. unformatPanel must
+  // recover a panel with no newline left in it — the other half of "every newline in a snapshot
+  // sits at a `>\n<` boundary, or is the trailing one" — and re-formatting that recovered panel
+  // must reproduce the file byte for byte. Reading the corpus keeps this build-independent.
   for (const site of AUDIENCES) {
     for (const file of filesOf(site)) {
       const stored = readFileSync(path.join(dirOf(site), file), 'utf8');
-      assert.equal(formatPanel(unformatPanel(stored)), stored,
-        `${site}/${file}: unformatting a snapshot and reformatting it does not return the original`);
+      const raw = unformatPanel(stored);
+      assert.ok(!raw.includes('\n'),
+        `${site}/${file}: a newline survives unformatting, so it is not at a >< boundary — `
+        + 'unformatPanel cannot restore this file and the gate would compare the wrong bytes');
+      assertInsertionOnly(raw, `${site}/${file}`);
+      assert.equal(formatPanel(raw), stored,
+        `${site}/${file}: the stored bytes are not what formatPanel produces — ${REGEN}`);
     }
   }
 });
