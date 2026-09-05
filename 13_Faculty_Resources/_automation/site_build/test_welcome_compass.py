@@ -60,6 +60,22 @@ EXPECTED_FRAGMENT = (
     'captioned orientation overview (transcript available)</a>'
     '</div>'
 )
+BUILT_ORIENTATION_PATHS = [
+    "tools/orientation-video.html",
+    "tools/Inpatient_Psych_Orientation.mp4",
+    "tools/Inpatient_Psych_Orientation.vtt",
+    "tools/poster.jpg",
+]
+
+
+def write_complete_ms3_output(root, welcome):
+    content = Path(root, "content")
+    tools = Path(root, "tools")
+    content.mkdir()
+    tools.mkdir()
+    (content / "welcome.md").write_text(welcome, encoding="utf-8")
+    for relative_path in BUILT_ORIENTATION_PATHS:
+        Path(root, relative_path).write_bytes(b"completed build asset")
 
 
 class WelcomeCompassTests(unittest.TestCase):
@@ -235,47 +251,85 @@ class WelcomeCompassTests(unittest.TestCase):
             for relative_path in relative_paths:
                 self.assertIn(relative_path, str(raised.exception))
 
-    def test_asserts_complete_rendered_ms3_welcome_and_orientation_package(self):
+    def test_accepts_one_exact_rendered_compass_and_complete_orientation_package(self):
         with tempfile.TemporaryDirectory() as root:
-            out_dir = Path(root)
-            content = out_dir / "content"
-            tools = out_dir / "tools"
-            content.mkdir()
-            tools.mkdir()
-            (content / "welcome.md").write_text(
-                "Before\n" + EXPECTED_FRAGMENT + "\nAfter\n", encoding="utf-8"
-            )
-            built_orientation_paths = [
-                "tools/orientation-video.html",
-                "tools/Inpatient_Psych_Orientation.mp4",
-                "tools/Inpatient_Psych_Orientation.vtt",
-                "tools/poster.jpg",
-            ]
-            for relative_path in built_orientation_paths:
-                Path(root, relative_path).write_bytes(b"completed build asset")
-
+            write_complete_ms3_output(root, "Before\n" + EXPECTED_FRAGMENT + "\nAfter\n")
             self.assertIsNone(
                 welcome_compass.assert_ms3_output(
-                    out_dir, self.cards(), SAFETY, built_orientation_paths
+                    root, self.cards(), SAFETY, BUILT_ORIENTATION_PATHS
                 )
             )
 
-            (content / "welcome.md").write_text(
-                "Before\n" + welcome_compass.COMPASS_MARKER + "\nAfter\n", encoding="utf-8"
-            )
-            (tools / "poster.jpg").unlink()
+    def test_rejects_missing_built_orientation_file(self):
+        with tempfile.TemporaryDirectory() as root:
+            write_complete_ms3_output(root, EXPECTED_FRAGMENT)
+            Path(root, "tools", "poster.jpg").unlink()
             with self.assertRaisesRegex(welcome_compass.CompassContractError, "poster.jpg"):
                 welcome_compass.assert_ms3_output(
-                    out_dir, self.cards(), SAFETY, built_orientation_paths
+                    root, self.cards(), SAFETY, BUILT_ORIENTATION_PATHS
                 )
-            (tools / "poster.jpg").write_bytes(b"restored build asset")
-            (content / "welcome.md").write_text(
-                "Before\n" + EXPECTED_FRAGMENT + "\n" + welcome_compass.COMPASS_MARKER,
-                encoding="utf-8",
-            )
-            with self.assertRaisesRegex(welcome_compass.CompassContractError, "Compass marker"):
+
+    def test_rejects_two_identical_rendered_compass_fragments(self):
+        with tempfile.TemporaryDirectory() as root:
+            write_complete_ms3_output(root, EXPECTED_FRAGMENT + EXPECTED_FRAGMENT)
+            with self.assertRaisesRegex(welcome_compass.CompassContractError, "exactly once"):
                 welcome_compass.assert_ms3_output(
-                    out_dir, self.cards(), SAFETY, built_orientation_paths
+                    root, self.cards(), SAFETY, BUILT_ORIENTATION_PATHS
+                )
+
+    def test_rejects_a_stale_compass_root_beside_the_expected_fragment(self):
+        with tempfile.TemporaryDirectory() as root:
+            stale = '<div data-ms3-compass-root>stale output</div>'
+            write_complete_ms3_output(root, EXPECTED_FRAGMENT + stale)
+            with self.assertRaisesRegex(welcome_compass.CompassContractError, "exactly one Compass root"):
+                welcome_compass.assert_ms3_output(
+                    root, self.cards(), SAFETY, BUILT_ORIENTATION_PATHS
+                )
+
+    def test_rejects_a_raw_compass_marker_in_built_welcome(self):
+        with tempfile.TemporaryDirectory() as root:
+            write_complete_ms3_output(root, EXPECTED_FRAGMENT + welcome_compass.COMPASS_MARKER)
+            with self.assertRaisesRegex(welcome_compass.CompassContractError, "raw Compass marker"):
+                welcome_compass.assert_ms3_output(
+                    root, self.cards(), SAFETY, BUILT_ORIENTATION_PATHS
+                )
+
+    def test_rejects_a_raw_safety_start_marker_in_built_welcome(self):
+        with tempfile.TemporaryDirectory() as root:
+            write_complete_ms3_output(root, EXPECTED_FRAGMENT + welcome_compass.SAFETY_START)
+            with self.assertRaisesRegex(welcome_compass.CompassContractError, "raw safety marker"):
+                welcome_compass.assert_ms3_output(
+                    root, self.cards(), SAFETY, BUILT_ORIENTATION_PATHS
+                )
+
+    def test_rejects_a_raw_safety_end_marker_in_built_welcome(self):
+        with tempfile.TemporaryDirectory() as root:
+            write_complete_ms3_output(root, EXPECTED_FRAGMENT + welcome_compass.SAFETY_END)
+            with self.assertRaisesRegex(welcome_compass.CompassContractError, "raw safety marker"):
+                welcome_compass.assert_ms3_output(
+                    root, self.cards(), SAFETY, BUILT_ORIENTATION_PATHS
+                )
+
+    def test_missing_curriculum_uses_the_targeted_compass_preflight_path(self):
+        with tempfile.TemporaryDirectory() as root:
+            packet = Path(root, "orientation.md")
+            packet.write_text("packet", encoding="utf-8")
+            with self.assertRaisesRegex(
+                welcome_compass.CompassPreflightError, "BUILD ABORTED — MS3 Compass:"
+            ):
+                welcome_compass.load_ms3_preflight_sources(
+                    Path(root, "curriculum.json"), packet
+                )
+
+    def test_missing_orientation_packet_uses_the_targeted_compass_preflight_path(self):
+        with tempfile.TemporaryDirectory() as root:
+            curriculum = Path(root, "curriculum.json")
+            curriculum.write_text('{"learningPaths": {}}', encoding="utf-8")
+            with self.assertRaisesRegex(
+                welcome_compass.CompassPreflightError, "BUILD ABORTED — MS3 Compass:"
+            ):
+                welcome_compass.load_ms3_preflight_sources(
+                    curriculum, Path(root, "orientation.md")
                 )
 
     def test_renderer_module_uses_only_derived_shipped_document_governance_input(self):

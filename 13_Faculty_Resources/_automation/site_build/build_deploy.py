@@ -60,8 +60,6 @@ _bootstrap_missing=[
         MARKED,
         CLINICAL_CSS,
         FRONTDOOR_CSS,
-        CURRICULUM,
-        ORIENTATION_PACKET,
     ]
     if not os.path.exists(p)
 ]
@@ -74,17 +72,20 @@ _orientation_built_paths=[
     os.path.join("tools",dst) for _src,dst,_title in ORIENT_VIDEO
 ]
 try:
-    _curriculum=json.load(open(CURRICULUM,encoding="utf-8"))
+    _curriculum,_orientation_packet=welcome_compass.load_ms3_preflight_sources(
+        CURRICULUM,ORIENTATION_PACKET
+    )
     _shipped_document=shipped_pages.load_shipped_pages(LIB)
     _compass_cards=welcome_compass.prepare_cards(
         _curriculum["learningPaths"]["ms3"]["weeks"],
         _shipped_document,
     )
-    _safety_text=welcome_compass.extract_safety_rule(
-        open(ORIENTATION_PACKET,encoding="utf-8").read()
-    )
+    _safety_text=welcome_compass.extract_safety_rule(_orientation_packet)
     _compass_fragment=welcome_compass.render_compass(_compass_cards,_safety_text)
     welcome_compass.require_real_files(LIB,_orientation_source_paths)
+except welcome_compass.CompassPreflightError as error:
+    print(error)
+    raise SystemExit(1)
 except (
     OSError,
     UnicodeError,

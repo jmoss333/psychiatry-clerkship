@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 from html import escape
+import json
 import os
 import stat
 
@@ -23,6 +24,10 @@ OPTIONAL_VIDEO_COPY = "Optional: watch the captioned orientation overview (trans
 
 
 class CompassContractError(ValueError):
+    pass
+
+
+class CompassPreflightError(CompassContractError):
     pass
 
 
@@ -212,6 +217,17 @@ def require_real_files(root, relative_paths) -> None:
         raise CompassContractError("MS3 Compass required files are invalid: " + ", ".join(invalid))
 
 
+def load_ms3_preflight_sources(curriculum_path, orientation_packet_path):
+    try:
+        with open(curriculum_path, encoding="utf-8") as handle:
+            curriculum = json.load(handle)
+        with open(orientation_packet_path, encoding="utf-8") as handle:
+            orientation_packet = handle.read()
+    except (OSError, UnicodeError, json.JSONDecodeError) as error:
+        raise CompassPreflightError("BUILD ABORTED — MS3 Compass: %s" % error) from error
+    return curriculum, orientation_packet
+
+
 def assert_ms3_output(out_dir, cards, safety_text, built_orientation_paths) -> None:
     require_real_files(out_dir, built_orientation_paths)
     try:
@@ -220,10 +236,23 @@ def assert_ms3_output(out_dir, cards, safety_text, built_orientation_paths) -> N
     except OSError as error:
         raise CompassContractError("MS3 Compass built Welcome is unreadable: %s" % error) from error
     expected = render_compass(cards, safety_text)
-    if expected not in welcome:
-        raise CompassContractError("MS3 Compass built Welcome is missing the exact rendered fragment")
-    for marker in (COMPASS_MARKER, SAFETY_START, SAFETY_END):
+    expected_count = welcome.count(expected)
+    if expected_count != 1:
+        raise CompassContractError(
+            "MS3 Compass built Welcome must contain the exact rendered fragment exactly once; found %d"
+            % expected_count
+        )
+    root_count = welcome.count("data-ms3-compass-root")
+    if root_count != 1:
+        raise CompassContractError(
+            "MS3 Compass built Welcome must contain exactly one Compass root; found %d" % root_count
+        )
+    if COMPASS_MARKER in welcome:
+        raise CompassContractError(
+            "MS3 Compass built Welcome contains a raw Compass marker: %s" % COMPASS_MARKER
+        )
+    for marker in (SAFETY_START, SAFETY_END):
         if marker in welcome:
             raise CompassContractError(
-                "MS3 Compass built Welcome contains a raw Compass marker: %s" % marker
+                "MS3 Compass built Welcome contains a raw safety marker: %s" % marker
             )
