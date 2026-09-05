@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { readFileSync, statSync } from "node:fs";
 import test from "node:test";
-import { dirname, join } from "node:path";
+import { basename, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -27,12 +27,25 @@ const retiredIntroPaths = [
   "_prototypes/video-library/intro-trailer.mp4",
   "_prototypes/video-library/intro-trailer-poster.jpg",
 ];
-const optionalOrientationPaths = new Set([
-  "tools/orientation-video.html",
-  "tools/Inpatient_Psych_Orientation.mp4",
-  "tools/Inpatient_Psych_Orientation.vtt",
-  "tools/poster.jpg",
-]);
+const siteBuildPath = join(repoRoot, "13_Faculty_Resources/_automation/site_build");
+const canonicalOrientationEntries = JSON.parse(
+  execFileSync(
+    "python3",
+    [
+      "-c",
+      "import json, sys; sys.path.insert(0, sys.argv[1]); from site_extras import MS3_ORIENT_VIDEO; print(json.dumps(MS3_ORIENT_VIDEO))",
+      siteBuildPath,
+    ],
+    { encoding: "utf8" },
+  ),
+);
+const optionalOrientationIdentities = new Set(
+  canonicalOrientationEntries.flatMap(([sourcePath, builtName]) => [
+    sourcePath,
+    `tools/${builtName}`,
+    basename(sourcePath),
+  ]),
+);
 
 const COMPASS_MARKER = "<!-- ms3-six-week-compass -->";
 const SAFETY_START = "<!-- single-safety-rule:start -->";
@@ -166,6 +179,20 @@ function occurrenceCount(haystack, needle) {
 
 function normalizeWhitespace(value) {
   return value.trim().replace(/\s+/g, " ");
+}
+
+function validateMediaManifest(manifest) {
+  const script = `
+import json
+import sys
+sys.path.insert(0, sys.argv[1])
+import welcome_compass
+welcome_compass.validate_media_manifest(json.loads(sys.argv[2]))
+`;
+  execFileSync("python3", ["-c", script, siteBuildPath, JSON.stringify(manifest)], {
+    encoding: "utf8",
+    stdio: "pipe",
+  });
 }
 
 function escapeHtml(value) {
@@ -314,6 +341,7 @@ test("retired intro remains source provenance but is absent from generated media
 });
 
 test("media manifest records exactly one unserved retired intro and no orientation package", () => {
+  assert.doesNotThrow(() => validateMediaManifest(mediaManifest));
   const retired = mediaManifest.video.filter((entry) => entry.kind === "retired-intro-trailer");
   assert.deepEqual(retired, [
     {
@@ -329,15 +357,17 @@ test("media manifest records exactly one unserved retired intro and no orientati
       note: "The source MP4 and _prototypes/video-library/intro-trailer-poster.jpg both remain on disk for provenance; neither is copied into or referenced by either generated learner site.",
     },
   ]);
-  assert.equal(
-    mediaManifest.video.filter(
-      (entry) => Object.values(entry).some(
-        (value) => typeof value === "string" && optionalOrientationPaths.has(value),
-      ),
-    ).length,
-    0,
-    "the optional orientation package is not a media-manifest record regardless of served state",
-  );
+});
+
+test("every canonical MS3 orientation identity rejects a served-false manifest mutation", () => {
+  for (const identity of optionalOrientationIdentities) {
+    const mutated = [...mediaManifest.video, { file: identity, served: false }];
+    assert.throws(
+      () => validateMediaManifest({ ...mediaManifest, video: mutated }),
+      /orientation package/,
+      `orientation manifest identity must be rejected: ${identity}`,
+    );
+  }
 });
 
 test("Welcome matches the approved retained-content shape exactly", () => {

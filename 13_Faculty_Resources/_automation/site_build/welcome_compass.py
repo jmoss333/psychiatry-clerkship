@@ -5,6 +5,7 @@ from html import escape
 from html.parser import HTMLParser
 import json
 import os
+import re
 import stat
 
 
@@ -52,7 +53,7 @@ class _ResidentWelcomeVideoParser(HTMLParser):
 
     def handle_starttag(self, tag, attrs):
         if tag.lower() == "video":
-            self.videos.append(dict(attrs))
+            self.videos.append(attrs)
 
 
 @dataclass(frozen=True)
@@ -249,7 +250,11 @@ def _iter_completed_output_files(out_dir):
         raise CompassContractError("built output root is unreadable: %s" % out_dir) from error
     if stat.S_ISLNK(root_metadata.st_mode) or not stat.S_ISDIR(root_metadata.st_mode):
         raise CompassContractError("built output root must be a real directory: %s" % out_dir)
-    for directory, dirnames, filenames in os.walk(out_dir, followlinks=False):
+    def onerror(error):
+        path = error.filename or str(error)
+        raise CompassContractError("built output traversal is unreadable: " + path) from error
+
+    for directory, dirnames, filenames in os.walk(out_dir, followlinks=False, onerror=onerror):
         for dirname in dirnames:
             path = os.path.join(directory, dirname)
             try:
@@ -301,18 +306,55 @@ def _assert_no_retired_intro(out_dir) -> None:
 
 def _assert_resident_welcome_video(welcome) -> None:
     parser = _ResidentWelcomeVideoParser()
-    parser.feed(welcome)
+    parser.feed(_without_markdown_code_blocks(welcome))
     parser.close()
-    valid_videos = [
-        attrs
-        for attrs in parser.videos
-        if attrs.get("src") == RESIDENT_ONBOARDING_PATHS[0]
-        and attrs.get("poster") == RESIDENT_ONBOARDING_PATHS[1]
-    ]
-    if len(parser.videos) != 1 or len(valid_videos) != 1:
+    if len(parser.videos) != 1:
         raise CompassContractError(
             "resident built Welcome must contain exactly one video with the resident onboarding src and poster"
         )
+    attrs = parser.videos[0]
+    src_values = [value for name, value in attrs if name == "src"]
+    poster_values = [value for name, value in attrs if name == "poster"]
+    if src_values != [RESIDENT_ONBOARDING_PATHS[0]] or poster_values != [RESIDENT_ONBOARDING_PATHS[1]]:
+        raise CompassContractError(
+            "resident built Welcome must contain exactly one video with the resident onboarding src and poster"
+        )
+
+
+def _without_markdown_code_blocks(markdown):
+    active_lines = []
+    fence = None
+    for line in markdown.splitlines(keepends=True):
+        opener = re.match(r"^ {0,3}([`~]{3,})", line)
+        if fence is not None:
+            if opener and opener.group(1)[0] == fence[0] and len(opener.group(1)) >= fence[1]:
+                fence = None
+            continue
+        if opener:
+            fence = (opener.group(1)[0], len(opener.group(1)))
+            continue
+        if line.startswith(("    ", "\t")):
+            continue
+        active_lines.append(line)
+    return "".join(active_lines)
+
+
+def validate_media_manifest(manifest) -> None:
+    if not isinstance(manifest, dict) or not isinstance(manifest.get("video"), list):
+        raise CompassContractError("media manifest must contain a video list")
+    from site_extras import MS3_ORIENT_VIDEO
+
+    orientation_identities = set()
+    for source_path, built_name, _title in MS3_ORIENT_VIDEO:
+        orientation_identities.update(
+            (source_path, os.path.join("tools", built_name), os.path.basename(source_path))
+        )
+    for entry in manifest["video"]:
+        if not isinstance(entry, dict):
+            raise CompassContractError("media manifest video entries must be objects")
+        for value in entry.values():
+            if isinstance(value, str) and value in orientation_identities:
+                raise CompassContractError("media manifest contains MS3 orientation package: " + value)
 
 
 def load_ms3_preflight_sources(curriculum_path, orientation_packet_path):

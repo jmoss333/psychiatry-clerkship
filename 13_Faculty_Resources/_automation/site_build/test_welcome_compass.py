@@ -3,6 +3,7 @@
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 
 import welcome_compass
 
@@ -102,7 +103,8 @@ def write_complete_resident_output(root):
     media.mkdir()
     (content / "welcome.md").write_text(
         '<video src="media/resident-onboarding.mp4" '
-        'poster="media/resident-onboarding-poster.jpg"></video>',
+        'controls playsinline poster="media/resident-onboarding-poster.jpg" '
+        'aria-label="Resident onboarding trailer"></video>',
         encoding="utf-8",
     )
     for relative_path in RESIDENT_ONBOARDING_PATHS:
@@ -331,6 +333,11 @@ class WelcomeCompassTests(unittest.TestCase):
     def test_resident_output_accepts_only_resident_welcome_and_real_onboarding_assets(self):
         with tempfile.TemporaryDirectory() as root:
             write_complete_resident_output(root)
+            welcome_path = Path(root, "content", "welcome.md")
+            welcome_path.write_text(
+                welcome_path.read_text(encoding="utf-8") + "\nThis prose can discuss a video without adding one.\n",
+                encoding="utf-8",
+            )
             self.assertIsNone(welcome_compass.assert_resident_output(root))
 
     def test_resident_output_rejects_ms3_compass_optional_package_retired_intro_and_lfs_media(self):
@@ -384,6 +391,12 @@ class WelcomeCompassTests(unittest.TestCase):
             '<video poster="media/resident-onboarding-poster.jpg"></video>',
             '<video src="media/resident-onboarding.mp4"></video>',
             '<!-- media/resident-onboarding.mp4 media/resident-onboarding-poster.jpg -->',
+            '```html\n<video src="media/resident-onboarding.mp4" poster="media/resident-onboarding-poster.jpg"></video>\n```',
+            '    <video src="media/resident-onboarding.mp4" poster="media/resident-onboarding-poster.jpg"></video>',
+            '<video src="wrong.mp4" src="media/resident-onboarding.mp4" poster="media/resident-onboarding-poster.jpg"></video>',
+            '<video src="media/resident-onboarding.mp4" src="wrong.mp4" poster="media/resident-onboarding-poster.jpg"></video>',
+            '<video src="media/resident-onboarding.mp4" poster="wrong.jpg" poster="media/resident-onboarding-poster.jpg"></video>',
+            '<video src="media/resident-onboarding.mp4" poster="media/resident-onboarding-poster.jpg" poster="wrong.jpg"></video>',
         )
         for welcome in invalid_welcomes:
             with self.subTest(welcome=welcome), tempfile.TemporaryDirectory() as root:
@@ -427,6 +440,20 @@ class WelcomeCompassTests(unittest.TestCase):
                 link.symlink_to(target, target_is_directory=target_kind == "directory")
                 with self.assertRaisesRegex(welcome_compass.CompassContractError, "symlink"):
                     welcome_compass.assert_resident_output(root)
+
+    def test_completed_tree_walk_errors_fail_closed_with_the_unreadable_path(self):
+        with tempfile.TemporaryDirectory() as root:
+            def unreadable_walk(*_args, **kwargs):
+                onerror = kwargs.get("onerror")
+                if onerror is not None:
+                    onerror(PermissionError(13, "Permission denied", "/unreadable/output"))
+                return iter(())
+
+            with patch.object(welcome_compass.os, "walk", unreadable_walk):
+                with self.assertRaisesRegex(
+                    welcome_compass.CompassContractError, "/unreadable/output"
+                ):
+                    welcome_compass._inspect_completed_output(root)
 
     def test_rejects_missing_built_orientation_file(self):
         with tempfile.TemporaryDirectory() as root:

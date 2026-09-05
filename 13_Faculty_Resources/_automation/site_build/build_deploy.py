@@ -83,6 +83,8 @@ try:
     _safety_text=welcome_compass.extract_safety_rule(_orientation_packet)
     _compass_fragment=welcome_compass.render_compass(_compass_cards,_safety_text)
     welcome_compass.require_real_files(LIB,_orientation_source_paths)
+    with open(os.path.join(LIB,"media_manifest.json"),encoding="utf-8") as _media_manifest_handle:
+        welcome_compass.validate_media_manifest(json.load(_media_manifest_handle))
 except welcome_compass.CompassPreflightError as error:
     print(error)
     raise SystemExit(1)
