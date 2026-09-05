@@ -770,7 +770,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Opening this step or resizing the browser does not count. Each action below validates a fresh envelope and projects it through the same student projector.
 - Desktop preview not yet reviewed · Mobile preview not yet reviewed
 
-**Authored clinical strings (1794, first 400 shown):**
+**Authored clinical strings (1793, first 400 shown):**
 
 - Front door structure ONLY — week ordering, library columns, safety-kit membership, per-site roles, search synonyms. Facts about an item (minutes, summary, key points, attestation) live in topic_meta.json and join at render time; never duplicate them here. Validated by 13_Faculty_Resources/_automation/validate_curriculum.py.
 - a feedback form, not library content — reachable from the header
@@ -866,6 +866,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Start scheduled haloperidol
 - Physical restraint for safety
 - Catatonia responds to benzodiazepines; antipsychotics risk precipitating malignant catatonia.
+- Bush-Francis Catatonia Scale (BFCRS) — Official Form \u0026 Training
 - Ask about onset, mood/psychosis, antipsychotic exposure, fever/autonomic signs, seizures, medical illness, and prior catatonia.
 - Describe motor signs objectively: mutism, stupor, posturing, waxy flexibility, negativism, echophenomena, rigidity, and staring.
 - Hold antipsychotics until malignant catatonia/NMS is addressed; monitor hydration, nutrition, DVT, autonomic instability, and airway risk.
@@ -1045,6 +1046,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - PTSD — begin trauma-focused therapy
 - No diagnosis — reassure and discharge without follow-up
 - Symptoms tied to a stressor, within 3 months, not meeting full criteria for another disorder, indicate an adjustment disorder; supportive/problem-solving psychotherapy is first-line, with suicide-risk assessment.
+- Columbia C-SSRS — Official Form \u0026 Training
 - Anchor symptoms to the stressor, onset within three months, impairment, and whether full criteria for MDD, PTSD, anxiety, or substance-induced disorder are met.
 - Look for affect congruence, hopelessness, agitation, sleep change, substance use, and whether symptoms exceed expected coping.
 - Ask directly about suicide and impulsive self-harm even when symptoms seem subthreshold.
@@ -1170,7 +1172,5 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Factitious = internal (sick role); malingering = external incentive and is not a disorder.
 - Factitious disorder imposed on another is child/vulnerable-adult abuse — a reporting duty; and real disease can coexist, so don't anchor either way.
 - Depression / anxiety / PTSD
-- Malingering (external incentive)
-- Focused workup once, then one consistent clinician with scheduled visits, validation, CBT, and treatment of comorbidities.
 
-_1394 further strings omitted — this surface embeds the build's front-door catalog (item summaries, key points, search synonyms), which is transcribed in full elsewhere in this document set._
+_1393 further strings omitted — this surface embeds the build's front-door catalog (item summaries, key points, search synonyms), which is transcribed in full elsewhere in this document set._

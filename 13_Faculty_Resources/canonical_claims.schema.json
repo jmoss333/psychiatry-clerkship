@@ -135,6 +135,10 @@
             "maxLength": 200
           },
           "description": "JSON pointers to the exact values that assert the claim, for .json files. Guards run against these values instead of the whole file. Without this a 'required' guard on a file like topic_meta.json is trivially satisfied by any other topic mentioning the word, and protects nothing."
+        },
+        "scopeHashAtReview": {
+          "type": "string",
+          "description": "sha256 over the resolved `scope` loci only, recorded at attestation. Preferred over contentHashAtReview when present: it flags a change to the governed text rather than to any byte of a many-claim file, so an unrelated edit to topic_meta.json no longer flags every claim that cites it."
         }
       }
     },

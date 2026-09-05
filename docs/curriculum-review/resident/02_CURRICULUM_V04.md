@@ -170,7 +170,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **collateral** — Ask partner/family about sleep, behavior change, psychosis, infant safety, medication adherence, and who can provide supervision.
 - **rounds** — Present postpartum timing, PMAD vs bipolar/postpartum psychosis, maternal-infant safety, medication risk/benefit, and support plan.
 - **exam** — Postpartum psychosis is an emergency, often bipolar-spectrum, and requires urgent supervised treatment.
-- **actions** — Open C-SSRS; Practice direct suicide questions
+- **actions** — Columbia C-SSRS — Official Form & Training; Practice direct suicide questions
 
 **Embedded check-for-understanding**
 
@@ -543,7 +543,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **collateral** — With permission or safety exception, ask about means, recent behavior, prior attempts, supervision, and discharge environment.
 - **rounds** — Present risk state, risk status, drivers, means access, protective factors, and what supervision or discharge barriers remain.
 - **exam** — Do not treat scales as disposition tools; risk assessment is a formulation plus supervised plan.
-- **actions** — Open C-SSRS; Practice direct suicide questions; Map family safety roles; Open safety collateral workflow
+- **actions** — Columbia C-SSRS — Official Form & Training; Practice direct suicide questions; Map family safety roles; Open safety collateral workflow
 
 **Embedded check-for-understanding**
 
@@ -565,7 +565,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **Workflow modes:** `ward`, `safety`, `family`, `5min`, `shelf`
 - **Shelf blueprint tags:** `safety`
 - **EPA crosswalk:** `EPA1`, `EPA2`, `EPA10`
-- **Call-to-action buttons:** Open the Columbia C-SSRS screener; Open safety collateral workflow
+- **Call-to-action buttons:** Columbia C-SSRS — Official Form & Training; Open safety collateral workflow
 - **Faculty review:** {"status": "reviewed", "reviewer": "Joshua Moss, MD", "lastReviewed": "2026-07-03"}
 
 #### Page text (as shipped)
@@ -787,7 +787,7 @@ directly and then turn answers into a real risk formulation.
 - **collateral** — With permission or safety exception, ask about means, recent behavior, prior attempts, supervision, and the discharge environment.
 - **rounds** — Present risk state, risk status, drivers, means access, protective factors, collateral, and the supervised plan.
 - **exam** — Direct questions do not implant suicidality; safety plans replace no-suicide contracts, and risk tools do not decide disposition.
-- **actions** — Open C-SSRS; Practice direct suicide questions; Map family safety roles
+- **actions** — Columbia C-SSRS — Official Form & Training; Practice direct suicide questions; Map family safety roles
 
 **Family overlay:** `suicide_safety_family_means_restriction`
 
@@ -800,7 +800,7 @@ directly and then turn answers into a real risk formulation.
 - **Workflow modes:** `ward`, `safety`, `family`, `5min`, `shelf`
 - **Shelf blueprint tags:** `safety`
 - **EPA crosswalk:** `EPA1`, `EPA2`, `EPA10`
-- **Call-to-action buttons:** Open C-SSRS; Practice direct suicide questions; Open suicide pocket card
+- **Call-to-action buttons:** Columbia C-SSRS — Official Form & Training; Practice direct suicide questions; Open suicide pocket card
 - **Faculty review:** {"status": "reviewed", "lastReviewed": "2026-07-09", "reviewer": "Joshua Moss, MD"}
 
 #### Page text (as shipped)
@@ -1135,7 +1135,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **Workflow modes:** `ward`, `safety`, `5min`, `family`
 - **Shelf blueprint tags:** `safety`
 - **EPA crosswalk:** `EPA2`, `EPA4`, `EPA10`
-- **Call-to-action buttons:** Open the Decision Aids; Practice de-escalation language; Ask collateral about triggers; Open trigger collateral workflow; Open the Agitation Ladder trainer
+- **Call-to-action buttons:** Open the Decision Aids; Practice de-escalation language; Ask collateral about triggers; Open trigger collateral workflow; Open the Agitation Ladder trainer; Run a 2-minute Post-Event Learning Huddle
 - **Faculty review:** {"status": "reviewed", "reviewer": "Joshua Moss, MD", "lastReviewed": "2026-07-03"}
 
 #### Page text (as shipped)

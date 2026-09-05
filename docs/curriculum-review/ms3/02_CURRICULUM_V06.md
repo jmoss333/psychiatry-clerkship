@@ -742,7 +742,7 @@ Know *which* protocol applies and *why*; open the EHR order set for the specific
 - **collateral** — Ask family about prior response, baseline memory, functional decline, fears about ECT, and who can support continuation treatment.
 - **rounds** — Present indication, urgency, capacity/consent status, medical workup needs, medication adjustments, and continuation plan after response.
 - **exam** — ECT is most effective for severe, psychotic, catatonic, or life-threatening depression; there are no absolute contraindications, but relative risks require planning.
-- **actions** — Open BFCRS; Open mood topic
+- **actions** — Bush-Francis Catatonia Scale (BFCRS) — Official Form & Training; Open mood topic
 
 **Embedded check-for-understanding**
 

@@ -417,7 +417,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **Slug:** `week1.md` · **Type:** md · **Sidebar:** hidden (deep link only)
 - **Source:** `01_Six_Week_Curriculum/Week_1_Foundations/README.md`
 - **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
-- **Length:** 345 words
+- **Length:** 433 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -463,6 +463,17 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 
 **Suggested reading:** Engel 1977 (biopsychosocial) · Rosenhan 1973 (labeling) · Appelbaum & Grisso 1988 (capacity). *(See the Landmark reading list + the Download Checklist.)*
 
+<details class="pairing-block">
+<summary><strong>This week's pairing</strong> — The biopsychosocial frame</summary>
+<p class="pairing-blurb"><em>Why the interview is the instrument, and what it is an instrument for.</em></p>
+<ul class="pairing-items">
+  <li><strong>Read</strong> — <a href="?page=pg_interview.md">Interview &amp; MSE Pocket Guide</a></li>
+  <li><strong>Listen (1:29)</strong> — Engel's Biopsychosocial Model for Modern Psychiatry <span class="pairing-src">— landmark brief: The Engel Biopsychosocial Model: Foundations of Modern Psychiatry</span><br><audio controls preload="none" src="audio_oe/OE-34_The_Engel_Biopsychosocial_Model_Foundations_of_Modern_Psychiatry__Engel_s_Biopsychosocial_Model_for_Modern_Psychiatry.m4a" aria-label="Landmark brief: The Engel Biopsychosocial Model: Foundations of Modern Psychiatry"></audio></li>
+  <li><strong>Practice</strong> — <a href="tools/mse.html" target="_blank" rel="noopener">Mental Status Exam</a></li>
+</ul>
+<p class="pairing-note"><small>Suggested, not required. Every item already ships in this library.</small></p>
+</details>
+
 **Skill of the week:** the Mental Status Exam → use the interactive **MSE module** (the Mental Status Exam tool) and write your first admission note (the Documentation guide). Pair this with the **call-now safety check**: if a finding could change safety today, tell the resident or attending now rather than waiting for rounds.
 
 **Required Week 1 safety recognition set:**
@@ -493,7 +504,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **Slug:** `week2.md` · **Type:** md · **Sidebar:** hidden (deep link only)
 - **Source:** `01_Six_Week_Curriculum/Week_2_Mood_Psychosis_Pharm/README.md`
 - **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
-- **Length:** 106 words
+- **Length:** 191 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -519,7 +530,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **collateral** — Ask family/staff about baseline, time course, sleep, substances, adherence, prior episodes, and what changed right before admission.
 - **rounds** — Present syndrome, differential, safety concern, medication logic by side-effect profile, and the one mimic you still need to rule out.
 - **exam** — Mood/psychosis questions often hinge on bipolar screening, substance/medical mimics, catatonia, and medication adverse effects.
-- **actions** — Open reasoning workbench; Open BFCRS; Practice psychosis validation
+- **actions** — Open reasoning workbench; Bush-Francis Catatonia Scale (BFCRS) — Official Form & Training; Practice psychosis validation
 
 **Cross-references and tagging:**
 
@@ -537,6 +548,17 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 **Objectives:** build a differential for depression/mania/psychosis; understand measurement-based care; learn antipsychotic-selection logic; screen for catatonia.
 
 **Suggested reading:** CATIE (Lieberman 2005) · STAR*D (Rush 2006) · Bush 1996 (catatonia). **Journal Club #1 (CATIE)** and **#5 (Catatonia)**.
+
+<details class="pairing-block">
+<summary><strong>This week's pairing</strong> — Choosing an antipsychotic</summary>
+<p class="pairing-blurb"><em>Efficacy differences are small; the side-effect profile is what you are actually choosing.</em></p>
+<ul class="pairing-items">
+  <li><strong>Read</strong> — <a href="?page=t_psychosis.md">Psychotic Disorders</a></li>
+  <li><strong>Listen (1:57)</strong> — Side Effects Drive Antipsychotic Selection <span class="pairing-src">— landmark brief: The CATIE Trial: Rethinking Antipsychotic Efficacy and Selection</span><br><audio controls preload="none" src="audio_oe/OE-28_The_CATIE_Trial_Rethinking_Antipsychotic_Efficacy_and_Selection__Side_Effects_Drive_Antipsychotic_Selection.m4a" aria-label="Landmark brief: The CATIE Trial: Rethinking Antipsychotic Efficacy and Selection"></audio></li>
+  <li><strong>Practice</strong> — <a href="tools/decision-aids.html" target="_blank" rel="noopener">Algorithms &amp; Decision Aids</a></li>
+</ul>
+<p class="pairing-note"><small>Suggested, not required. Every item already ships in this library.</small></p>
+</details>
 
 **Skill of the week:** the **Top-10 inpatient psychopharm** primer (the Psychopharmacology section); run a Bush-Francis screen on any mute/immobile patient.
 
@@ -559,7 +581,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **Slug:** `week3.md` · **Type:** md · **Sidebar:** hidden (deep link only)
 - **Source:** `01_Six_Week_Curriculum/Week_3_Psychotherapy_Personality/README.md`
 - **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
-- **Length:** 119 words
+- **Length:** 210 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -585,7 +607,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **collateral** — Ask supports about baseline risk, effective limits, outpatient continuity, crisis plans, and what tends to rupture trust.
 - **rounds** — Name the relational pattern, the current safety state, one repair move, and the discharge-continuity need.
 - **exam** — Psychotherapy/personality questions test validation plus limits, not reassurance or jargon used at the patient.
-- **actions** — Open C-SSRS; Practice rupture repair; Open reflection tool
+- **actions** — Columbia C-SSRS — Official Form & Training; Practice rupture repair; Open reflection tool
 
 **Cross-references and tagging:**
 
@@ -603,6 +625,17 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 **Objectives:** understand common factors; the logic of DBT for BPD; basic CBT/MI/exposure literacy; build a case formulation.
 
 **Suggested reading:** Wampold 1997 (common factors) · Linehan 1991 (DBT). **Journal Club #3 (Safety Planning).**
+
+<details class="pairing-block">
+<summary><strong>This week's pairing</strong> — What makes therapy work</summary>
+<p class="pairing-blurb"><em>The alliance predicts outcome across modalities — including the ten minutes you have on rounds.</em></p>
+<ul class="pairing-items">
+  <li><strong>Read</strong> — <a href="?page=psychotherapy.md">Psychotherapies at a Glance</a></li>
+  <li><strong>Listen (1:48)</strong> — Therapeutic Alliance Predicts Treatment Outcomes <span class="pairing-src">— landmark brief: The Therapeutic Alliance and Psychotherapy Outcomes Study Summary</span><br><audio controls preload="none" src="audio_oe/OE-48_The_Therapeutic_Alliance_and_Psychotherapy_Outcomes_Study_Summary__Therapeutic_Alliance_Predicts_Treatment_Outcomes.m4a" aria-label="Landmark brief: The Therapeutic Alliance and Psychotherapy Outcomes Study Summary"></audio></li>
+  <li><strong>Practice</strong> — <a href="tools/communication-practice.html" target="_blank" rel="noopener">What Do You Say Next?</a></li>
+</ul>
+<p class="pairing-note"><small>Suggested, not required. Every item already ships in this library.</small></p>
+</details>
 
 **Skill of the week:** complete a **safety plan** with a patient (supervised) using the suicide-risk & safety tools; draft a BPS + relational **formulation** (the Case Formulation guide).
 
@@ -625,7 +658,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **Slug:** `week4.md` · **Type:** md · **Sidebar:** hidden (deep link only)
 - **Source:** `01_Six_Week_Curriculum/Week_4_Family_Systems_EE/README.md`
 - **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
-- **Length:** 99 words
+- **Length:** 184 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -670,6 +703,17 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 
 **Suggested reading:** Brown 1962 (EE) · Pharoah 2010 (Cochrane family intervention). **Journal Club #2 (EE)** and **#6 (Family Intervention).**
 
+<details class="pairing-block">
+<summary><strong>This week's pairing</strong> — Family work changes relapse rates</summary>
+<p class="pairing-blurb"><em>Expressed emotion is modifiable, and modifying it is a treatment.</em></p>
+<ul class="pairing-items">
+  <li><strong>Read</strong> — <a href="?page=exp_family.md">Family &amp; Discharge</a></li>
+  <li><strong>Listen (1:51)</strong> — Family Focused Therapy Prevents Bipolar Relapse <span class="pairing-src">— landmark brief: Family-Focused Therapy and Relapse Prevention in Bipolar Disorder</span><br><audio controls preload="none" src="audio_oe/OE-10_Family_Focused_Therapy_and_Relapse_Prevention_in_Bipolar_Disorder__Family_Focused_Therapy_Prevents_Bipolar_Relapse.m4a" aria-label="Landmark brief: Family-Focused Therapy and Relapse Prevention in Bipolar Disorder"></audio></li>
+  <li><strong>Practice</strong> — <a href="tools/family-systems.html" target="_blank" rel="noopener">Family Systems Practice</a></li>
+</ul>
+<p class="pairing-note"><small>Suggested, not required. Every item already ships in this library.</small></p>
+</details>
+
 **Skill of the week:** the **[Family Meeting Playbook (90-min)](?page=family_playbook.md)**; observe then co-facilitate a meeting; use an EE-spotting checklist.
 
 **Media:** the canonical Family-Therapy didactic deck + "The Family is the Milieu."
@@ -691,7 +735,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **Slug:** `week5.md` · **Type:** md · **Sidebar:** hidden (deep link only)
 - **Source:** `01_Six_Week_Curriculum/Week_5_Acute_Emergency/README.md`
 - **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
-- **Length:** 180 words
+- **Length:** 263 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -737,6 +781,17 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 
 **Suggested reading:** Franklin 2017 (limits of suicide prediction) · Volkow 2016 (addiction).
 
+<details class="pairing-block">
+<summary><strong>This week's pairing</strong> — Delirium</summary>
+<p class="pairing-blurb"><em>The medical emergency that looks psychiatric — and the one you prevent rather than treat.</em></p>
+<ul class="pairing-items">
+  <li><strong>Read</strong> — <a href="?page=delirium.md">Delirium</a></li>
+  <li><strong>Listen (1:47)</strong> — Stopping delirium with the HELP trial <span class="pairing-src">— landmark brief: The HELP Trial: Multicomponent Strategies for Delirium Prevention</span><br><audio controls preload="none" src="audio_oe/OE-38_The_HELP_Trial_Multicomponent_Strategies_for_Delirium_Prevention__Stopping_delirium_with_the_HELP_trial.m4a" aria-label="Landmark brief: The HELP Trial: Multicomponent Strategies for Delirium Prevention"></audio></li>
+  <li><strong>Practice</strong> — <a href="tools/capacity.html" target="_blank" rel="noopener">Decisional Capacity</a></li>
+</ul>
+<p class="pairing-note"><small>Suggested, not required. Every item already ships in this library.</small></p>
+</details>
+
 **Skills of the week:** the **agitation ladder** + **Violence Risk (FRST)** tool (the Acute & Safety pages); **Delirium** prevention and medical-cause search; **CIWA-Ar/COWS** trend interpretation with the Withdrawal card; supervised documentation of what triggered escalation, what was tried first, and what would change the plan.
 
 **What is different from Week 1:** Week 1 teaches "spot it and call now." Week 5 asks you to explain the driver, try least-restrictive communication when safe, use the structured tool with supervision, document the risk reasoning, and debrief after restraint, seclusion, medication, transfer, or a near miss.
@@ -760,7 +815,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **Slug:** `week6.md` · **Type:** md · **Sidebar:** hidden (deep link only)
 - **Source:** `01_Six_Week_Curriculum/Week_6_Integration_Exam/README.md`
 - **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
-- **Length:** 79 words
+- **Length:** 166 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -804,6 +859,17 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 **Objectives:** build a discharge/disposition plan; integrate a full case; demonstrate shelf/OSCE readiness.
 
 **Suggested reading:** Felitti 1998 (ACE) · Deegan 1996 (recovery).
+
+<details class="pairing-block">
+<summary><strong>This week's pairing</strong> — Formulation, not just diagnosis</summary>
+<p class="pairing-blurb"><em>A diagnosis names the problem; a formulation explains why this person, why now.</em></p>
+<ul class="pairing-items">
+  <li><strong>Read</strong> — <a href="?page=case_formulation.md">Case Formulation</a></li>
+  <li><strong>Listen (1:45)</strong> — Social reality is core psychiatry <span class="pairing-src">— landmark brief: Social Determinants and Clinical Frameworks in Modern Psychiatry</span><br><audio controls preload="none" src="audio_oe/OE-24_Social_Determinants_and_Clinical_Frameworks_in_Modern_Psychiatry__Social_reality_is_core_psychiatry.m4a" aria-label="Landmark brief: Social Determinants and Clinical Frameworks in Modern Psychiatry"></audio></li>
+  <li><strong>Practice</strong> — <a href="tools/shelf-mode.html" target="_blank" rel="noopener">Shelf Mode — Exam Simulation</a></li>
+</ul>
+<p class="pairing-note"><small>Suggested, not required. Every item already ships in this library.</small></p>
+</details>
 
 **Skills of the week:** the Risk-Stratified Discharge Pathway + Maine aftercare disposition case; **shelf high-yield review + self-check** and the **OSCE station set** (the exam-prep pages / the student pack).
 

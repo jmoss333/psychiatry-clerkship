@@ -3,7 +3,7 @@
 # RESIDENT curriculum — complete content transcript for clinical review
 
 **Site:** `mmc-psychiatry-residents-sanford` · **Audience:** Residents — MMC/Sanford psychiatry residents
-**Generated:** 2026-09-04 from build `783c3dc` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
+**Generated:** 2026-09-05 from build `07dbaf1` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
 
 ## Who this is for
 
@@ -17,9 +17,9 @@ This transcript is assembled from the **built site**, not the source tree, so it
 |---|---|
 | Sidebar sections | 12 |
 | Narrative pages (markdown) | 86 |
-| Interactive tools | 25 |
+| Interactive tools | 26 |
 | Deep-link-only (hidden) surfaces | 26 |
-| Words of narrative curriculum | 120,736 |
+| Words of narrative curriculum | 121,312 |
 | Practice question-bank items | 192 |
 | Audio-companion quiz decks / questions | 79 / 437 |
 | Communication cases | 12 |
@@ -86,7 +86,7 @@ High-yield places to concentrate: the `topic_meta` **can't-miss**, **rule-out** 
 
 # RESIDENT · Navigation map
 
-Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-04 @ `783c3dc`.
+Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-05 @ `07dbaf1`.
 
 ## Orientation  *(pinned)*
 
@@ -104,7 +104,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 1 | Interview & MSE | `pg_interview.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/MS3/Student_Ready_Pack/02_pocket_guides/interview_mse_pocket_guide.md` | 1126 |
 | 2 | Mental Status Exam | `mse.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Mental_Status_Exam/mental-status-exam-module.html` |  |
 | 3 | The Interview Circle | `interview-circle.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Interviewing/interview-circle.html` |  |
-| 4 | The Interview Room — AI Standardized Patient | `sp-interview.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `_prototypes/sp-interview/sp-interview.html` |  |
+| 4 | The Interview Room — AI Standardized Patient | `sp-interview.html` | tool | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `_prototypes/sp-interview/sp-interview.html` |  |
 | 5 | Screeners: PHQ-9 & GAD-7 | `screeners.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Screeners/screeners.html` |  |
 
 ## Understand the Problem
@@ -144,7 +144,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 12 | Withdrawal: COWS Tool · CIWA-Ar Official Form & Training | `withdrawal.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`high` | `03_Core_Topics/SUD_Withdrawal/withdrawal-ciwa-cows-card.html` |  |
 | 13 | Decisional Capacity | `capacity.html` | tool | listed | status=`reviewed` · riskKind=`legal` · riskLevel=`high` | `04_Acute_and_Safety/Decisional_Capacity/decisional-capacity-module.html` |  |
 | 14 | Consult Questions: Capacity, Delirium, Catatonia, Withdrawal | `exp_consult.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/MS3/Student_Ready_Pack/04_expansion_modules/consult_capacity_delirium_catatonia_withdrawal.md` | 935 |
-| 15 | C-L: Emergencies, Tox & Capacity (Numbers) | `cl_reference.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/Resident/cl_reference.md` | 1114 |
+| 15 | C-L: Emergencies, Tox & Capacity (Numbers) | `cl_reference.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/Resident/cl_reference.md` | 1171 |
 | 16 | Inpatient Systems & Med-Legal | `systems_medlegal.md` | md | listed | status=`reviewed` · riskKind=`legal` · riskLevel=`high` | `14_Tracks/Resident/systems_medlegal.md` | 1520 |
 
 ## Make a Plan
@@ -188,6 +188,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 1 | Documentation & Oral Presentation | `doc_oral.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/MS3/Student_Ready_Pack/05_documentation_oral_presentation/student_documentation_and_oral_presentations.md` | 817 |
 | 2 | Treatment Team Rounding Prep | `oral.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Oral_Presentations/oral-presentation-module.html` |  |
 | 3 | High-Yield Rounds Questions | `rounds_questions.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md` | 8784 |
+| 4 | Post-Event Learning Huddle (2 min) | `rp-post-event-huddle.html` | tool | listed | status=`reviewed` · riskKind=`general` · riskLevel=`moderate` | `_prototypes/post-event-huddle/rp-post-event-huddle.html` |  |
 
 ## Practice and Exam Prep
 
@@ -229,12 +230,12 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 4 | Book Library | `book_library.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `07_Evidence_and_Reading/Book_Summaries/ms3_book_library.md` | 1200 |
 | 5 | Podcast Library (Psychiatry & Psychotherapy) | `podcast_library.md` | md | listed | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `12_Media/psychiatry_psychotherapy_podcast_library.md` | 2617 |
 | 6 | Orientation Packet | `orientation.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `14_Tracks/MS3/Student_Ready_Pack/01_orientation/MS3_orientation_packet.md` | 1004 |
-| 7 | Week 1 — Foundations | `week1.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_1_Foundations/README.md` | 345 |
-| 8 | Week 2 — Mood/Psychosis/Pharm | `week2.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_2_Mood_Psychosis_Pharm/README.md` | 106 |
-| 9 | Week 3 — Psychotherapy/Personality | `week3.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_3_Psychotherapy_Personality/README.md` | 119 |
-| 10 | Week 4 — Family/Systems/EE | `week4.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_4_Family_Systems_EE/README.md` | 99 |
-| 11 | Week 5 — Acute/Emergency | `week5.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_5_Acute_Emergency/README.md` | 180 |
-| 12 | Week 6 — Integration/Exam | `week6.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_6_Integration_Exam/README.md` | 79 |
+| 7 | Week 1 — Foundations | `week1.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_1_Foundations/README.md` | 433 |
+| 8 | Week 2 — Mood/Psychosis/Pharm | `week2.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_2_Mood_Psychosis_Pharm/README.md` | 191 |
+| 9 | Week 3 — Psychotherapy/Personality | `week3.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_3_Psychotherapy_Personality/README.md` | 210 |
+| 10 | Week 4 — Family/Systems/EE | `week4.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_4_Family_Systems_EE/README.md` | 184 |
+| 11 | Week 5 — Acute/Emergency | `week5.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_5_Acute_Emergency/README.md` | 263 |
+| 12 | Week 6 — Integration/Exam | `week6.md` | md | hidden | status=`reviewed` · riskKind=`general` · riskLevel=`low` | `01_Six_Week_Curriculum/Week_6_Integration_Exam/README.md` | 166 |
 | 13 | Culture, Disparities & Formulation | `cultural_psychiatry.md` | md | hidden | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `03_Core_Topics/Cultural_Psychiatry/cultural_psychiatry_inpatient_teaching.md` | 622 |
 | 14 | Ethics & the Law | `ethics_legal.md` | md | hidden | status=`reviewed` · riskKind=`legal` · riskLevel=`high` | `03_Core_Topics/Ethics_Legal/ethics_law_confidentiality_inpatient_teaching.md` | 1186 |
 | 15 | Treatment Basics | `exp_tx.md` | md | hidden | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/MS3/Student_Ready_Pack/04_expansion_modules/treatment_basics_digest.md` | 648 |
@@ -998,7 +999,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 
 - **Slug:** `sp-interview.html` · **Type:** tool · **Sidebar:** listed
 - **Source:** `_prototypes/sp-interview/sp-interview.html`
-- **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
+- **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
 
 #### Tool — clinical content
 
@@ -1006,7 +1007,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 
 **Static shell text:**
 
-- The Interview Room — AI Standardized Patient Reviewed by Joshua Moss, MD on 2026-08-11
+- The Interview Room — AI Standardized Patient Pending faculty review Clinical · Moderate risk Interview Room case content changed: the post-disclosure chain now also asks about past attempts and preparatory acts, and the critical-miss feedback no longer calls a passive death wish 'active'. Awaiting faculty re-attestation.
 - Skip to content ◐
 - If someone is in crisis
 - On the unit, a patient in immediate danger is an escalation to your supervising resident or attending and the charge nurse — not a phone call. These lines are what you put IN a patient's safety plan, what families use after discharge, and what you can use yourself.
@@ -1031,7 +1032,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - You approached suicide with a euphemism and
 - tested you instead of answering. Next time, try the patient’s own words plus the plain question: “When you say you’re a burden — have you had thoughts of killing yourself?”
 - Suicide never came up. With this presentation it must — directly and plainly. Next time, try asking early, once any rapport exists: “Have you had thoughts of killing yourself?”
-- After the disclosure, the follow-through was incomplete. Next time, walk the chain: plan, means and access, intent, and what keeps them going.
+- After the disclosure, the follow-through was incomplete. Next time, walk the chain: plan, means and access, intent, any past attempts or preparations, and what keeps them going.
 - Long question runs made this feel like an intake form. Next time, try one reflection for every two or three questions — watch what it buys you.
 - You collected symptoms but not the story — something happened two months ago and it never surfaced. Next time, try “What changed around the time this started?”
 - The encounter ended without a summary. Next time, try playing back what you heard and naming the hard part calmly before you leave the room.
@@ -1304,7 +1305,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
  "built": "2026-07-12",
  "evidenceThrough": "2026-06-30",
  "reviewCadenceDays": 180,
- "status": "reviewed",
+ "status": "draft-pending-attestation",
  "_incorporationChecklist": {
   "source": "Original fictional composite authored for this tool. Interview-skills framing per pg_interview.md; SI-inquiry language per house communication cases and C-SSRS module.",
   "claimExtraction": "No dose literals anywhere in this pack (regex \\d+\\s?(mg|mcg|mL) must return nothing). No management content; this is an interviewing tool.",
@@ -1712,6 +1713,24 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
      ]
     },
     {
+     "id": "si_behavior",
+     "label": "Asked about past attempts / preparatory acts (after disclosure)",
+     "category": "safety",
+     "coverage": "core",
+     "patterns": [
+      "\\bever (?:tried|attempted|hurt yourself|harmed yourself|acted on)",
+      "(?:tried|attempted|try) to (?:kill|end|harm|hurt|take)",
+      "\\battempts?\\b(?=\\s*(?:[?.!,;:]|$)|\\s+(?:before|in the past|previously|at all|on your life))|\\battempted suicide\\b|\\bsuicide attempts?\\b",
+      "\\b(?:past|previous|prior|history of)\\b.*(?:attempts?|self.?harm|overdose|tried to)",
+      "\\b(?:hurt|harmed|injured) yourself\\b.*(?:before|in the past|ever|previously)|\\bever (?:cut|overdosed)\\b",
+      "\\btaken? any (?:steps|actions|preparations)\\b|\\bdone anything (?:to prepare|about it)\\b|\\bany (?:steps|preparations)\\b",
+      "\\bwrit(?:ten|ing|e) (?:a )?(?:note|letter|will)\\b|\\bgiv(?:en|ing) (?:things|possessions|anything|stuff) away\\b|\\bput(?:ting)? (?:your )?affairs in order\\b",
+      "\\bstockpil|\\bgather(?:ed|ing)? (?:up )?(?:the |any )?(?:pills?|medic)|\\bhoard(?:ed|ing)? (?:pills?|medic)",
+      "\\brehears(?:e|ed|ing|al)\\b|\\bpractic(?:e|ed|ing)\\b.*(?:it|that|how)|\\bdry run\\b",
+      "\\bsearch(?:ed|ing)? (?:online |the internet |up )?(?:for )?(?:ways|methods|how to)"
+     ]
+    },
+    {
      "id": "psychosis_screen",
      "label": "Screened for psychotic symptoms",
      "category": "data",
@@ -2057,7 +2076,8 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
      "unlocks": [
       "si_plan",
       "si_means",
-      "si_intent_protective"
+      "si_intent_protective",
+      "si_behavior"
      ],
      "ifNeverAsked": "critical_miss",
      "euphemismIntent": "si_euphemism"
@@ -2088,6 +2108,15 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
      "requiresGate": "si_active",
      "reveal": "Ellie. My niece. She's eight and she thinks I hung the moon. Every time the thought gets loud I picture her asking where I went. That's what's kept the bottle closed. That, and I don't actually want to die — I want the tired to stop.",
      "deflectIfLocked": "Keeps me going? Coffee. *weak laugh* Sorry. I don't know how to answer that."
+    },
+    {
+     "id": "si_behavior_detail",
+     "requiresIntents": [
+      "si_behavior"
+     ],
+     "requiresGate": "si_active",
+     "reveal": "No. Never — not now, not when I was younger. Standing in the bathroom is the closest I have come, and I didn't open it. I haven't written anything down or given anything away. *small pause* I keep expecting to feel relieved saying that out loud, and I don't, quite.",
+     "deflectIfLocked": "Tried what? *frowns* I'm not sure what you're asking me."
     }
    ],
    "rapportRules": {
@@ -2168,11 +2197,12 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
     },
     {
      "id": "c_si_followup",
-     "label": "After disclosure: plan, means, intent, protective factors",
+     "label": "After disclosure: plan, means, intent, past attempts or preparations, protective factors",
      "intents": [
       "si_plan",
       "si_means",
-      "si_intent_protective"
+      "si_intent_protective",
+      "si_behavior"
      ],
      "dependsOnGate": "si_active"
     },
@@ -2261,9 +2291,9 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
     ]
    },
    "debriefTeachingPoints": [
-    "Dana only discloses active ideation when asked directly and plainly, with some rapport established. Euphemisms ('hurt yourself') get tested, not answered — this mirrors the house communication case: use the patient's own words, then ask about killing yourself in plain language.",
+    "Dana only discloses the three-a.m. wish not to wake up — and the bottle she has stood and looked at — when asked directly and plainly, with some rapport established. By content that is passive ideation with method contemplation on top: record what she actually said rather than reaching for a one-word label. Euphemisms ('hurt yourself') get tested, not answered — this mirrors the house communication case: use the patient's own words, then ask about killing yourself in plain language.",
     "The job loss is the organizing stressor and the shame engine. Students who never ask about work miss the formulation even if they collect every symptom.",
-    "After any disclosure: plan, means, intent, protective factors — and the close matters. A summary that names the disclosure calmly ('you told me something important today') models not flinching.",
+    "After any disclosure: plan, means and access, intent, past attempts or preparatory acts, protective factors — and the close matters. Prior suicidal behavior is the element students most often drop, and it is the one carrying the most weight; Dana's 'never, and I didn't open it' is information you only get by asking. A summary that names the disclosure calmly ('you told me something important today') models not flinching.",
     "Her plea about Tom and the pills is a values moment, not a promise to extract. Notice it; do not negotiate confidentiality you cannot keep."
    ],
    "hints": {
@@ -2271,7 +2301,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
     "c_mood_core": "You have part of the depressive syndrome. Sleep, appetite, energy, and what she still enjoys are still open.",
     "c_cognitive": "How is her thinking? Concentration — and whether she's been hard on herself.",
     "c_si": "She has hinted at heaviness. Ask about suicide directly, in plain words — 'thoughts of killing yourself' — not a euphemism.",
-    "c_si_followup": "She told you something important. Plan, means, intent, and what keeps her going all still need airtime.",
+    "c_si_followup": "She told you something important. Plan, means, intent, whether she has ever tried or taken any steps before, and what keeps her going all still need airtime.",
     "c_psychosis": "You haven't screened for psychotic symptoms. One or two plain questions is enough.",
     "c_substance": "Alcohol and substances haven't come up. Ask without apology.",
     "c_medical": "Medical contributors and medications are unexplored.",
@@ -2297,8 +2327,8 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
    },
    "hiddenAgendaTone": "You carry shame about something recent you have not told your family, and a fear of being a burden; you are testing whether the interviewer will flinch or judge. Do not state any of this openly.",
    "criticalMiss": {
-    "partial": "Suicide was approached only by euphemism — Dana tested the question and never answered it. She was having active thoughts. Ask plainly: “have you had thoughts of killing yourself?”",
-    "missed": "Suicide was never asked about. Dana was having active thoughts of not waking up and had looked at a means at home — and left the interview without anyone knowing. This is the one question that can’t be skipped."
+    "partial": "Suicide was approached only by euphemism — Dana tested the question and never answered it. She was having thoughts most nights of not waking up, and had been looking at a means at home. Ask plainly: “have you had thoughts of killing yourself?”",
+    "missed": "Suicide was never asked about. Dana was having thoughts most nights of not waking up and had looked at a means at home — and left the interview without anyone knowing. This is the one question that can’t be skipped."
    }
   },
   {
@@ -5515,7 +5545,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **collateral** — Ask partner/family about sleep, behavior change, psychosis, infant safety, medication adherence, and who can provide supervision.
 - **rounds** — Present postpartum timing, PMAD vs bipolar/postpartum psychosis, maternal-infant safety, medication risk/benefit, and support plan.
 - **exam** — Postpartum psychosis is an emergency, often bipolar-spectrum, and requires urgent supervised treatment.
-- **actions** — Open C-SSRS; Practice direct suicide questions
+- **actions** — Columbia C-SSRS — Official Form & Training; Practice direct suicide questions
 
 **Embedded check-for-understanding**
 
@@ -5888,7 +5918,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **collateral** — With permission or safety exception, ask about means, recent behavior, prior attempts, supervision, and discharge environment.
 - **rounds** — Present risk state, risk status, drivers, means access, protective factors, and what supervision or discharge barriers remain.
 - **exam** — Do not treat scales as disposition tools; risk assessment is a formulation plus supervised plan.
-- **actions** — Open C-SSRS; Practice direct suicide questions; Map family safety roles; Open safety collateral workflow
+- **actions** — Columbia C-SSRS — Official Form & Training; Practice direct suicide questions; Map family safety roles; Open safety collateral workflow
 
 **Embedded check-for-understanding**
 
@@ -5910,7 +5940,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **Workflow modes:** `ward`, `safety`, `family`, `5min`, `shelf`
 - **Shelf blueprint tags:** `safety`
 - **EPA crosswalk:** `EPA1`, `EPA2`, `EPA10`
-- **Call-to-action buttons:** Open the Columbia C-SSRS screener; Open safety collateral workflow
+- **Call-to-action buttons:** Columbia C-SSRS — Official Form & Training; Open safety collateral workflow
 - **Faculty review:** {"status": "reviewed", "reviewer": "Joshua Moss, MD", "lastReviewed": "2026-07-03"}
 
 #### Page text (as shipped)
@@ -6132,7 +6162,7 @@ directly and then turn answers into a real risk formulation.
 - **collateral** — With permission or safety exception, ask about means, recent behavior, prior attempts, supervision, and the discharge environment.
 - **rounds** — Present risk state, risk status, drivers, means access, protective factors, collateral, and the supervised plan.
 - **exam** — Direct questions do not implant suicidality; safety plans replace no-suicide contracts, and risk tools do not decide disposition.
-- **actions** — Open C-SSRS; Practice direct suicide questions; Map family safety roles
+- **actions** — Columbia C-SSRS — Official Form & Training; Practice direct suicide questions; Map family safety roles
 
 **Family overlay:** `suicide_safety_family_means_restriction`
 
@@ -6145,7 +6175,7 @@ directly and then turn answers into a real risk formulation.
 - **Workflow modes:** `ward`, `safety`, `family`, `5min`, `shelf`
 - **Shelf blueprint tags:** `safety`
 - **EPA crosswalk:** `EPA1`, `EPA2`, `EPA10`
-- **Call-to-action buttons:** Open C-SSRS; Practice direct suicide questions; Open suicide pocket card
+- **Call-to-action buttons:** Columbia C-SSRS — Official Form & Training; Practice direct suicide questions; Open suicide pocket card
 - **Faculty review:** {"status": "reviewed", "lastReviewed": "2026-07-09", "reviewer": "Joshua Moss, MD"}
 
 #### Page text (as shipped)
@@ -6480,7 +6510,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **Workflow modes:** `ward`, `safety`, `5min`, `family`
 - **Shelf blueprint tags:** `safety`
 - **EPA crosswalk:** `EPA2`, `EPA4`, `EPA10`
-- **Call-to-action buttons:** Open the Decision Aids; Practice de-escalation language; Ask collateral about triggers; Open trigger collateral workflow; Open the Agitation Ladder trainer
+- **Call-to-action buttons:** Open the Decision Aids; Practice de-escalation language; Ask collateral about triggers; Open trigger collateral workflow; Open the Agitation Ladder trainer; Run a 2-minute Post-Event Learning Huddle
 - **Faculty review:** {"status": "reviewed", "reviewer": "Joshua Moss, MD", "lastReviewed": "2026-07-03"}
 
 #### Page text (as shipped)
@@ -7397,7 +7427,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - **collateral** — Ask family/staff what changed, whether the patient eats/drinks, baseline movement/speech, and prior response to lorazepam or ECT.
 - **rounds** — Present BFCRS signs, medical/NMS rule-out, lorazepam challenge plan, supportive care, and ECT escalation threshold.
 - **exam** — Lorazepam challenge is diagnostic and therapeutic; antipsychotics can worsen malignant catatonia/NMS.
-- **actions** — Open BFCRS; Practice catatonia reasoning
+- **actions** — Bush-Francis Catatonia Scale (BFCRS) — Official Form & Training; Practice catatonia reasoning
 
 **Embedded check-for-understanding**
 
@@ -8155,7 +8185,7 @@ should independently manage high-risk consults.
 - **Slug:** `cl_reference.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `14_Tracks/Resident/cl_reference.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 1,114 words
+- **Length:** 1,171 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -8198,7 +8228,7 @@ should independently manage high-risk consults.
 - **collateral** — Clarify medication timing, dose changes, substances, infection/medical triggers, baseline cognition, and prior reactions.
 - **rounds** — Present consult problems as syndrome, evidence, immediate risk, next test or treatment, and escalation plan.
 - **exam** — Differentiate serotonin syndrome, NMS, malignant catatonia, lithium toxicity, delirium, and withdrawal by tempo and exam findings.
-- **actions** — Open BFCRS; Open withdrawal tools; Open decision aids
+- **actions** — Bush-Francis Catatonia Scale (BFCRS) — Official Form & Training; Open withdrawal tools; Open decision aids
 
 **Embedded check-for-understanding**
 
@@ -8249,6 +8279,7 @@ The MS3 [Consult module](?page=exp_consult.md) teaches *what to notice and when 
 ## Lithium toxicity
 - Therapeutic 0.6–1.2 mEq/L; **toxicity generally ≥1.5**, severe ≥2.5. In *chronic* toxicity (especially older adults) symptoms may be severe even when the level looks only mildly elevated — **treat the patient, not the number.**
 - Precipitants: dehydration, AKI, low sodium, NSAIDs, thiazides, ACE-inhibitors/ARBs.
+- **Before dialysis is even the question:** hold lithium, stop the contributors (NSAID, thiazide, ACEi/ARB), send a level with renal function and electrolytes, and start **IV isotonic saline** to restore volume and renal lithium clearance. Repeat the level every 2–4 h until it is falling; nephrogenic diabetes insipidus can drive hypernatremia, so follow sodium as you hydrate.
 - **Hemodialysis** if level **>4.0** mEq/L (any patient), or **>2.5** with severe neuro/renal signs or life-threatening features.
 - **Activated charcoal does not bind lithium** — consider whole-bowel irrigation for sustained-release ingestions.
 - Recheck levels after dialysis — **rebound** from tissue redistribution is expected.
@@ -8337,6 +8368,7 @@ Serotonin syndrome, NMS, lithium toxicity, and a prolonging QTc are all **"tell 
 - **Communication cases:** `suicide_direct_question_001`, `collateral_questions_001`, `family_conflict_discharge_001`
 - **Workflow stages:** `safety`, `family`, `team`
 - **Workflow modes:** `ward`, `safety`, `family`
+- **Call-to-action buttons:** Open Family & Discharge; Run a 2-minute Post-Event Learning Huddle
 
 #### Page text (as shipped)
 
@@ -12453,6 +12485,103 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 ---
 *Educational rounds-prep reference; concise model answers, not a substitute for the primary sources named. Reviewed and attested by Joshua Moss, MD (2026-07-09); verify before clinical use. Joshua Moss, MD | Psychiatrist*
 
+
+---
+
+## Post-Event Learning Huddle (2 min)
+
+- **Slug:** `rp-post-event-huddle.html` · **Type:** tool · **Sidebar:** listed
+- **Source:** `_prototypes/post-event-huddle/rp-post-event-huddle.html`
+- **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`moderate`
+
+#### Tool — clinical content
+
+_These tools are single-file HTML that render from inline JS data, so the clinical text below is recovered from the tool's own string literals. Ordering follows the file, not the runtime flow._
+
+**Static shell text:**
+
+- Post-Event Learning Huddle — 2 minutes Reviewed by Joshua Moss, MD on 2026-09-04
+- Skip to content Resident · systems practice · about 2 minutes
+- Post-Event Learning Huddle
+- One fictional event. Three choices. A short debrief on how a patient question, a team signal and a system condition fit together. Nothing you choose here is saved, sent, or shown to anyone.
+- Fictional composite for teaching · no real patient, staff member, unit or date · your institution's own processes for safety and reporting are separate from this page and come first.
+- Where this huddle sits
+- Already handled before this huddle (not here)
+- This huddle (later; learning only)
+- The event
+- What he said to the night mental-health worker
+- Your three choices
+- Pick one in each group. Every option is defensible; the debrief explains what each one surfaces and what it leaves to the other two lenses.
+- Show the debrief 0 of 3 chosen
+- Pair with: Agitation & Restraint · Inpatient Systems & Med-Legal · Documentation & Oral Presentation · Repair after limit-setting
+- Joshua Moss, MD · Psychiatrist · Educational; fictional composite only, no PHI. Reviewed and attested by Joshua Moss, MD (2026-09-04).
+
+**Authored clinical strings (64):**
+
+- Evening escalation at shift change — hospital day 2
+- Adult inpatient unit, voluntary admission. A 41-year-old man with schizoaffective disorder, admitted two days ago for worsening paranoia and several nights without sleep.
+- Day shift. He told his primary nurse that noise and "being crowded" set him off, and that dim light and his own headphones help. It went into the progress-note narrative.
+- About 19:00 — handoff. A float nurse who had not met him took over. The handoff tool carried orders, observation level and PRN availability. The "what helps" line was not in it.
+- About 19:30. Bed management moved a new admission into his room. He learned of it when the stretcher reached the door.
+- About 19:45. He shouted, kicked the door frame and stood in the doorway. Staff cleared the hallway; the float nurse and a mental-health worker talked with him. The resident's page read: "pt agitated come now".
+- About 20:00. He accepted the already-ordered oral PRN and walked to the quiet room himself. No restraint or seclusion. No injuries. Vitals checked.
+- Later. No reassessment time was agreed; the resident assumed nursing had checked in with him, nursing assumed the resident had. Nobody on the evening team had met him before that shift.
+- Nobody asked me what happened. They just decided I was dangerous.
+- He was reassessed and is safe.
+- Orders and monitoring per unit practice.
+- Any notification or report your institution requires is a separate step through its own process.
+- Two minutes, three choices, no free text, nothing saved.
+- Not an evaluation of anyone. Not a policy statement.
+- After the left column, never instead of it.
+- This page is not a report, does not know whether one was made, and cannot make one.
+- One question you would ask him first, next time you sit down
+- "What did you notice first — before things got loud?"
+- Starts with his sequence, not ours. Early cues — the stretcher at the door, an unfamiliar face, the noise — are often known to the patient and invisible in the chart. It tells you which moment mattered to him. It leaves his preferences and his view of staff for later.
+- His account of what came first is the only thing that can tell you which of the team signals actually mattered to him.
+- "What would have helped in that moment — and what made it worse?"
+- Asks for his de-escalation preferences in his own words, right after an event in which the team did not have them. It turns the day-shift note into something he owns. It does not by itself repair trust, and it does not explain why the information did not travel.
+- Whatever he says would have helped is the content the team's information path needs to carry next time.
+- "How are you feeling about the staff and this unit now?"
+- Puts repair first. "They just decided I was dangerous" is an alliance rupture as much as an event; if it is not named, the next shift inherits it. It may surface fear, shame or anger. It gathers less about causes than the other questions.
+- Repairing the alliance is what makes his answers to the other two lenses trustworthy rather than guarded.
+- "What do you want the team to know or do differently next time — and is it all right if we write it where the next shift can see it?"
+- Makes him the author of the plan and asks consent for where it lives. His preferences become clinical information, not a courtesy. The risk is moving to solutions before he has said what happened; some patients need the first or third question before this one.
+- A plan in his words, placed where the next shift reads, is the shortest route from this event to the system condition you named.
+- One team-communication or workflow signal that stood out
+- The "what helps him" line lived in a note narrative, not in the handoff.
+- Information existed and did not travel. The right thing was documented; the handoff tool had no place to receive it. That is the usual shape of a handoff gap: nobody withheld anything, and the receiving nurse could not have known. It leaves the room move unexplained.
+- This signal is about where information lived, not about who read it — it is a design fact, not a verdict on anyone on shift.
+- The room change happened without the patient or his nurse knowing in advance.
+- A decision made off-unit reached the bedside as an event. For a patient whose stated trigger is being crowded, an unannounced roommate is close to the worst case. It is about coordination between bed flow and the clinical team, upstream of the escalation and mostly outside the evening team's reach.
+- This signal points upstream of the evening team — a decision arrived at the bedside without a clinical check-in.
+- Nobody on the evening team had met him, and the page said only "pt agitated come now".
+- The team was working from the fewest possible facts: an unfamiliar patient, a one-line page, no shared picture of what usually helps. Float coverage without a patient-level orientation turns every event into a first meeting. The page wording is a symptom — there was nothing else to say.
+- This signal is about a team that had nothing in common yet — the fix is in what the shift starts with, not in anyone's judgement.
+- After the PRN, no reassessment time was agreed and each discipline assumed the other had spoken to him.
+- The event was "over" for the team before it was over for him. A closed loop needs a named time and a named person; without them, "somebody will check" reliably becomes nobody. This signal produced the sentence he said later, and it is the cheapest to change on the next shift.
+- This signal is what left his sentence unheard — the loop closed for the team before it closed for him.
+- One system condition worth raising — and with whom
+- The handoff tool has no structured field for patient-stated de-escalation preferences.
+- A field is a small change with a large reach: it makes a bedside observation a standing part of every handoff, for every patient. Worth raising with the nurse manager or the unit's quality group as a question, not a demand. It does not touch bed flow or reassessment.
+- This condition is the durable home for what he says helps — a field outlives the shift and the rotation.
+- Room moves are decided off-unit without a clinical check-in.
+- Bed pressure is real and the move may have been unavoidable; the condition worth discussing is whether there is a moment — a call, a flag, a question — before a move reaches a patient with a known trigger. Whoever owns bed flow on your unit is the person to ask how that moment could exist.
+- This condition sits above the unit — raising it means asking how a decision could pause for a clinical question.
+- Evening coverage relies on float staff without a unit-specific orientation to current patients.
+- A reality, not a complaint. The discussable part is what a float nurse receives at the start of a shift: a two-line "who is this person and what helps" for the patients most likely to need it. Raise it with nursing leadership — and model it at the physician handoff too.
+- This condition is about what a shift begins with — it is the one a resident can also model at their own handoff.
+- A post-event check-in with the patient is not a standard step, so whether it happens depends on who is on.
+- An absent step is invisible until someone notices it was skipped. Making "someone talks with the patient afterwards, and says so" a named expectation is how "nobody asked me" stops being predictable. Worth proposing at a team meeting; it is the condition most directly tied to his experience.
+- This condition is the one his own words are asking for — a check-in that is expected, not incidental.
+- Three lenses, one evening — each true on its own, and incomplete on its own.
+- His answer tells you which signal mattered most; the signal tells you which condition to raise first; the condition is what changes the next patient's answer. One of each is the huddle — none of the other options was wrong.
+- It did not file a report, decide what your institution requires, evaluate anyone on that shift, or replace the debrief your unit may require after restraint or seclusion. It gave you one question, one signal and one condition to carry into tomorrow.
+- One question, one signal, one condition
+- Keep his sentence in the room while you read.
+- How the three fit together
+- What this huddle did not do.
+- Try a different combination
+- Nothing is saved; reloading the page clears everything.
 
 ---
 
@@ -18232,7 +18361,7 @@ skills rather than vague exposure.
 - **Slug:** `week1.md` · **Type:** md · **Sidebar:** hidden (deep link only)
 - **Source:** `01_Six_Week_Curriculum/Week_1_Foundations/README.md`
 - **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
-- **Length:** 345 words
+- **Length:** 433 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -18278,6 +18407,17 @@ skills rather than vague exposure.
 
 **Suggested reading:** Engel 1977 (biopsychosocial) · Rosenhan 1973 (labeling) · Appelbaum & Grisso 1988 (capacity). *(See the Landmark reading list + the Download Checklist.)*
 
+<details class="pairing-block">
+<summary><strong>This week's pairing</strong> — The biopsychosocial frame</summary>
+<p class="pairing-blurb"><em>Why the interview is the instrument, and what it is an instrument for.</em></p>
+<ul class="pairing-items">
+  <li><strong>Read</strong> — <a href="?page=pg_interview.md">Interview &amp; MSE Pocket Guide</a></li>
+  <li><strong>Listen (1:29)</strong> — Engel's Biopsychosocial Model for Modern Psychiatry <span class="pairing-src">— landmark brief: The Engel Biopsychosocial Model: Foundations of Modern Psychiatry</span><br><audio controls preload="none" src="audio_oe/OE-34_The_Engel_Biopsychosocial_Model_Foundations_of_Modern_Psychiatry__Engel_s_Biopsychosocial_Model_for_Modern_Psychiatry.m4a" aria-label="Landmark brief: The Engel Biopsychosocial Model: Foundations of Modern Psychiatry"></audio></li>
+  <li><strong>Practice</strong> — <a href="tools/mse.html" target="_blank" rel="noopener">Mental Status Exam</a></li>
+</ul>
+<p class="pairing-note"><small>Suggested, not required. Every item already ships in this library.</small></p>
+</details>
+
 **Skill of the week:** the Mental Status Exam → use the interactive **MSE module** (the Mental Status Exam tool) and write your first admission note (the Documentation guide). Pair this with the **call-now safety check**: if a finding could change safety today, tell the resident or attending now rather than waiting for rounds.
 
 **Required Week 1 safety recognition set:**
@@ -18308,7 +18448,7 @@ skills rather than vague exposure.
 - **Slug:** `week2.md` · **Type:** md · **Sidebar:** hidden (deep link only)
 - **Source:** `01_Six_Week_Curriculum/Week_2_Mood_Psychosis_Pharm/README.md`
 - **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
-- **Length:** 106 words
+- **Length:** 191 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -18334,7 +18474,7 @@ skills rather than vague exposure.
 - **collateral** — Ask family/staff about baseline, time course, sleep, substances, adherence, prior episodes, and what changed right before admission.
 - **rounds** — Present syndrome, differential, safety concern, medication logic by side-effect profile, and the one mimic you still need to rule out.
 - **exam** — Mood/psychosis questions often hinge on bipolar screening, substance/medical mimics, catatonia, and medication adverse effects.
-- **actions** — Open reasoning workbench; Open BFCRS; Practice psychosis validation
+- **actions** — Open reasoning workbench; Bush-Francis Catatonia Scale (BFCRS) — Official Form & Training; Practice psychosis validation
 
 **Cross-references and tagging:**
 
@@ -18352,6 +18492,17 @@ skills rather than vague exposure.
 **Objectives:** build a differential for depression/mania/psychosis; understand measurement-based care; learn antipsychotic-selection logic; screen for catatonia.
 
 **Suggested reading:** CATIE (Lieberman 2005) · STAR*D (Rush 2006) · Bush 1996 (catatonia). **Journal Club #1 (CATIE)** and **#5 (Catatonia)**.
+
+<details class="pairing-block">
+<summary><strong>This week's pairing</strong> — Choosing an antipsychotic</summary>
+<p class="pairing-blurb"><em>Efficacy differences are small; the side-effect profile is what you are actually choosing.</em></p>
+<ul class="pairing-items">
+  <li><strong>Read</strong> — <a href="?page=t_psychosis.md">Psychotic Disorders</a></li>
+  <li><strong>Listen (1:57)</strong> — Side Effects Drive Antipsychotic Selection <span class="pairing-src">— landmark brief: The CATIE Trial: Rethinking Antipsychotic Efficacy and Selection</span><br><audio controls preload="none" src="audio_oe/OE-28_The_CATIE_Trial_Rethinking_Antipsychotic_Efficacy_and_Selection__Side_Effects_Drive_Antipsychotic_Selection.m4a" aria-label="Landmark brief: The CATIE Trial: Rethinking Antipsychotic Efficacy and Selection"></audio></li>
+  <li><strong>Practice</strong> — <a href="tools/decision-aids.html" target="_blank" rel="noopener">Algorithms &amp; Decision Aids</a></li>
+</ul>
+<p class="pairing-note"><small>Suggested, not required. Every item already ships in this library.</small></p>
+</details>
 
 **Skill of the week:** the **Top-10 inpatient psychopharm** primer (the Psychopharmacology section); run a Bush-Francis screen on any mute/immobile patient.
 
@@ -18374,7 +18525,7 @@ skills rather than vague exposure.
 - **Slug:** `week3.md` · **Type:** md · **Sidebar:** hidden (deep link only)
 - **Source:** `01_Six_Week_Curriculum/Week_3_Psychotherapy_Personality/README.md`
 - **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
-- **Length:** 119 words
+- **Length:** 210 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -18400,7 +18551,7 @@ skills rather than vague exposure.
 - **collateral** — Ask supports about baseline risk, effective limits, outpatient continuity, crisis plans, and what tends to rupture trust.
 - **rounds** — Name the relational pattern, the current safety state, one repair move, and the discharge-continuity need.
 - **exam** — Psychotherapy/personality questions test validation plus limits, not reassurance or jargon used at the patient.
-- **actions** — Open C-SSRS; Practice rupture repair; Open reflection tool
+- **actions** — Columbia C-SSRS — Official Form & Training; Practice rupture repair; Open reflection tool
 
 **Cross-references and tagging:**
 
@@ -18418,6 +18569,17 @@ skills rather than vague exposure.
 **Objectives:** understand common factors; the logic of DBT for BPD; basic CBT/MI/exposure literacy; build a case formulation.
 
 **Suggested reading:** Wampold 1997 (common factors) · Linehan 1991 (DBT). **Journal Club #3 (Safety Planning).**
+
+<details class="pairing-block">
+<summary><strong>This week's pairing</strong> — What makes therapy work</summary>
+<p class="pairing-blurb"><em>The alliance predicts outcome across modalities — including the ten minutes you have on rounds.</em></p>
+<ul class="pairing-items">
+  <li><strong>Read</strong> — <a href="?page=psychotherapy.md">Psychotherapies at a Glance</a></li>
+  <li><strong>Listen (1:48)</strong> — Therapeutic Alliance Predicts Treatment Outcomes <span class="pairing-src">— landmark brief: The Therapeutic Alliance and Psychotherapy Outcomes Study Summary</span><br><audio controls preload="none" src="audio_oe/OE-48_The_Therapeutic_Alliance_and_Psychotherapy_Outcomes_Study_Summary__Therapeutic_Alliance_Predicts_Treatment_Outcomes.m4a" aria-label="Landmark brief: The Therapeutic Alliance and Psychotherapy Outcomes Study Summary"></audio></li>
+  <li><strong>Practice</strong> — <a href="tools/communication-practice.html" target="_blank" rel="noopener">What Do You Say Next?</a></li>
+</ul>
+<p class="pairing-note"><small>Suggested, not required. Every item already ships in this library.</small></p>
+</details>
 
 **Skill of the week:** complete a **safety plan** with a patient (supervised) using the suicide-risk & safety tools; draft a BPS + relational **formulation** (the Case Formulation guide).
 
@@ -18440,7 +18602,7 @@ skills rather than vague exposure.
 - **Slug:** `week4.md` · **Type:** md · **Sidebar:** hidden (deep link only)
 - **Source:** `01_Six_Week_Curriculum/Week_4_Family_Systems_EE/README.md`
 - **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
-- **Length:** 99 words
+- **Length:** 184 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -18485,6 +18647,17 @@ skills rather than vague exposure.
 
 **Suggested reading:** Brown 1962 (EE) · Pharoah 2010 (Cochrane family intervention). **Journal Club #2 (EE)** and **#6 (Family Intervention).**
 
+<details class="pairing-block">
+<summary><strong>This week's pairing</strong> — Family work changes relapse rates</summary>
+<p class="pairing-blurb"><em>Expressed emotion is modifiable, and modifying it is a treatment.</em></p>
+<ul class="pairing-items">
+  <li><strong>Read</strong> — <a href="?page=exp_family.md">Family &amp; Discharge</a></li>
+  <li><strong>Listen (1:51)</strong> — Family Focused Therapy Prevents Bipolar Relapse <span class="pairing-src">— landmark brief: Family-Focused Therapy and Relapse Prevention in Bipolar Disorder</span><br><audio controls preload="none" src="audio_oe/OE-10_Family_Focused_Therapy_and_Relapse_Prevention_in_Bipolar_Disorder__Family_Focused_Therapy_Prevents_Bipolar_Relapse.m4a" aria-label="Landmark brief: Family-Focused Therapy and Relapse Prevention in Bipolar Disorder"></audio></li>
+  <li><strong>Practice</strong> — <a href="tools/family-systems.html" target="_blank" rel="noopener">Family Systems Practice</a></li>
+</ul>
+<p class="pairing-note"><small>Suggested, not required. Every item already ships in this library.</small></p>
+</details>
+
 **Skill of the week:** the **[Family Meeting Playbook (90-min)](?page=family_playbook.md)**; observe then co-facilitate a meeting; use an EE-spotting checklist.
 
 **Media:** the canonical Family-Therapy didactic deck + "The Family is the Milieu."
@@ -18506,7 +18679,7 @@ skills rather than vague exposure.
 - **Slug:** `week5.md` · **Type:** md · **Sidebar:** hidden (deep link only)
 - **Source:** `01_Six_Week_Curriculum/Week_5_Acute_Emergency/README.md`
 - **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
-- **Length:** 180 words
+- **Length:** 263 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -18552,6 +18725,17 @@ skills rather than vague exposure.
 
 **Suggested reading:** Franklin 2017 (limits of suicide prediction) · Volkow 2016 (addiction).
 
+<details class="pairing-block">
+<summary><strong>This week's pairing</strong> — Delirium</summary>
+<p class="pairing-blurb"><em>The medical emergency that looks psychiatric — and the one you prevent rather than treat.</em></p>
+<ul class="pairing-items">
+  <li><strong>Read</strong> — <a href="?page=delirium.md">Delirium</a></li>
+  <li><strong>Listen (1:47)</strong> — Stopping delirium with the HELP trial <span class="pairing-src">— landmark brief: The HELP Trial: Multicomponent Strategies for Delirium Prevention</span><br><audio controls preload="none" src="audio_oe/OE-38_The_HELP_Trial_Multicomponent_Strategies_for_Delirium_Prevention__Stopping_delirium_with_the_HELP_trial.m4a" aria-label="Landmark brief: The HELP Trial: Multicomponent Strategies for Delirium Prevention"></audio></li>
+  <li><strong>Practice</strong> — <a href="tools/capacity.html" target="_blank" rel="noopener">Decisional Capacity</a></li>
+</ul>
+<p class="pairing-note"><small>Suggested, not required. Every item already ships in this library.</small></p>
+</details>
+
 **Skills of the week:** the **agitation ladder** + **Violence Risk (FRST)** tool (the Acute & Safety pages); **Delirium** prevention and medical-cause search; **CIWA-Ar/COWS** trend interpretation with the Withdrawal card; supervised documentation of what triggered escalation, what was tried first, and what would change the plan.
 
 **What is different from Week 1:** Week 1 teaches "spot it and call now." Week 5 asks you to explain the driver, try least-restrictive communication when safe, use the structured tool with supervision, document the risk reasoning, and debrief after restraint, seclusion, medication, transfer, or a near miss.
@@ -18575,7 +18759,7 @@ skills rather than vague exposure.
 - **Slug:** `week6.md` · **Type:** md · **Sidebar:** hidden (deep link only)
 - **Source:** `01_Six_Week_Curriculum/Week_6_Integration_Exam/README.md`
 - **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
-- **Length:** 79 words
+- **Length:** 166 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -18619,6 +18803,17 @@ skills rather than vague exposure.
 **Objectives:** build a discharge/disposition plan; integrate a full case; demonstrate shelf/OSCE readiness.
 
 **Suggested reading:** Felitti 1998 (ACE) · Deegan 1996 (recovery).
+
+<details class="pairing-block">
+<summary><strong>This week's pairing</strong> — Formulation, not just diagnosis</summary>
+<p class="pairing-blurb"><em>A diagnosis names the problem; a formulation explains why this person, why now.</em></p>
+<ul class="pairing-items">
+  <li><strong>Read</strong> — <a href="?page=case_formulation.md">Case Formulation</a></li>
+  <li><strong>Listen (1:45)</strong> — Social reality is core psychiatry <span class="pairing-src">— landmark brief: Social Determinants and Clinical Frameworks in Modern Psychiatry</span><br><audio controls preload="none" src="audio_oe/OE-24_Social_Determinants_and_Clinical_Frameworks_in_Modern_Psychiatry__Social_reality_is_core_psychiatry.m4a" aria-label="Landmark brief: Social Determinants and Clinical Frameworks in Modern Psychiatry"></audio></li>
+  <li><strong>Practice</strong> — <a href="tools/shelf-mode.html" target="_blank" rel="noopener">Shelf Mode — Exam Simulation</a></li>
+</ul>
+<p class="pairing-note"><small>Suggested, not required. Every item already ships in this library.</small></p>
+</details>
 
 **Skills of the week:** the Risk-Stratified Discharge Pathway + Maine aftercare disposition case; **shelf high-yield review + self-check** and the **OSCE station set** (the exam-prep pages / the student pack).
 
@@ -19089,7 +19284,7 @@ therapy, milieu, family, and discharge back to the formulation.
 - **collateral** — Ask family about prior response, baseline memory, functional decline, fears about ECT, and who can support continuation treatment.
 - **rounds** — Present indication, urgency, capacity/consent status, medical workup needs, medication adjustments, and continuation plan after response.
 - **exam** — ECT is most effective for severe, psychotic, catatonic, or life-threatening depression; there are no absolute contraindications, but relative risks require planning.
-- **actions** — Open BFCRS; Open mood topic
+- **actions** — Bush-Francis Catatonia Scale (BFCRS) — Official Form & Training; Open mood topic
 
 **Embedded check-for-understanding**
 
@@ -19462,6 +19657,14 @@ Sources: [AACOM OMM Explained](https://www.aacom.org/become-a-doctor/about-osteo
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
 
 
+<!-- ==================== 02_CURRICULUM_V15.md ==================== -->
+
+# RESIDENT · Curriculum content — volume 15
+
+Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
+
+# SECTION (cont.): Evidence and Reference
+
 ---
 
 ## Sleep-Wake Disorders
@@ -19573,14 +19776,6 @@ Sources: [AACOM OMM Explained](https://www.aacom.org/become-a-doctor/about-osteo
 
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
 
-
-<!-- ==================== 02_CURRICULUM_V15.md ==================== -->
-
-# RESIDENT · Curriculum content — volume 15
-
-Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (the TL;DR, key points, can't-miss line, rule-outs, first move, embedded quiz and workflow narration the SPA renders around the prose) followed by the page text exactly as shipped. Tools carry their registry metadata and their authored clinical strings.
-
-# SECTION (cont.): Evidence and Reference
 
 ---
 
@@ -19999,7 +20194,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 - **collateral** — Ask what changed after the stressor, supports, coping, substance use, and whether risk has escalated.
 - **rounds** — Present stressor timeline, excluded full syndromes, functional impairment, safety assessment, and brief therapy/support plan.
 - **exam** — Adjustment disorder requires stressor-linked distress that does not meet criteria for another disorder and resolves after the stressor ends.
-- **actions** — Open C-SSRS
+- **actions** — Columbia C-SSRS — Official Form & Training
 
 **Embedded check-for-understanding**
 
@@ -21179,7 +21374,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Opening this step or resizing the browser does not count. Each action below validates a fresh envelope and projects it through the same student projector.
 - Desktop preview not yet reviewed · Mobile preview not yet reviewed
 
-**Authored clinical strings (1798, first 400 shown):**
+**Authored clinical strings (1799, first 400 shown):**
 
 - Front door structure ONLY — week ordering, library columns, safety-kit membership, per-site roles, search synonyms. Facts about an item (minutes, summary, key points, attestation) live in topic_meta.json and join at render time; never duplicate them here. Validated by 13_Faculty_Resources/_automation/validate_curriculum.py.
 - a feedback form, not library content — reachable from the header
@@ -21245,6 +21440,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Ask collateral about triggers
 - Open trigger collateral workflow
 - Open the Agitation Ladder trainer
+- Run a 2-minute Post-Event Learning Huddle
 - Verbal de-escalation while someone checks vitals and a fingerstick glucose
 - Find the driver — hypoglycemia, hypoxia, delirium, withdrawal, akathisia, pain — it changes the treatment
 - Offer PO before any IM — not a benzodiazepine in delirium or an older adult unless alcohol/benzo withdrawal
@@ -21272,6 +21468,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Start scheduled haloperidol
 - Physical restraint for safety
 - Catatonia responds to benzodiazepines; antipsychotics risk precipitating malignant catatonia.
+- Bush-Francis Catatonia Scale (BFCRS) — Official Form \u0026 Training
 - Ask about onset, mood/psychosis, antipsychotic exposure, fever/autonomic signs, seizures, medical illness, and prior catatonia.
 - Describe motor signs objectively: mutism, stupor, posturing, waxy flexibility, negativism, echophenomena, rigidity, and staring.
 - Hold antipsychotics until malignant catatonia/NMS is addressed; monitor hydration, nutrition, DVT, autonomic instability, and airway risk.
@@ -21451,6 +21648,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - PTSD — begin trauma-focused therapy
 - No diagnosis — reassure and discharge without follow-up
 - Symptoms tied to a stressor, within 3 months, not meeting full criteria for another disorder, indicate an adjustment disorder; supportive/problem-solving psychotherapy is first-line, with suicide-risk assessment.
+- Columbia C-SSRS — Official Form \u0026 Training
 - Anchor symptoms to the stressor, onset within three months, impairment, and whether full criteria for MDD, PTSD, anxiety, or substance-induced disorder are met.
 - Look for affect congruence, hopelessness, agitation, sleep change, substance use, and whether symptoms exceed expected coping.
 - Ask directly about suicide and impulsive self-harm even when symptoms seem subthreshold.
@@ -21578,11 +21776,8 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Depression / anxiety / PTSD
 - Malingering (external incentive)
 - Focused workup once, then one consistent clinician with scheduled visits, validation, CBT, and treatment of comorbidities.
-- A patient has leg weakness that gives way on formal testing but shows a positive Hoover sign. Best framing?
-- Tell the patient nothing is wrong
-- Malingering for disability
 
-_1398 further strings omitted — this surface embeds the build's front-door catalog (item summaries, key points, search synonyms), which is transcribed in full elsewhere in this document set._
+_1399 further strings omitted — this surface embeds the build's front-door catalog (item summaries, key points, search synonyms), which is transcribed in full elsewhere in this document set._
 
 
 <!-- ==================== A1_QUESTION_BANK.md ==================== -->
@@ -25408,8 +25603,8 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
   - *feedback:* Best choice. It validates fear, avoids a false guarantee, and turns conflict into a concrete safety-planning task.
 - **(c)** The decision is ultimately up to the doctors, so let's move on.  *(rated: **missed**)*
   - *feedback:* This shuts down collateral and increases adversarial tension. The family may hold key safety and feasibility information.
-- **(d)** Can you tell us exactly what you think he is hiding from us?  *(rated: **partial**)*
-  - *feedback:* Specific concerns matter, but this phrasing can shame the patient and intensify triangulation. Invite concerns while preserving the patient's dignity.
+- **(d)** Can you tell us exactly what you think he is hiding from us?  *(rated: **missed**)*
+  - *feedback:* Specific concerns matter, but this presumes he is lying and cross-examines him through his family, right after he went quiet. Ask the family what worries them, and keep him a participant.
 
 ### interview_motive_suspicion_001 — Respond When the Patient Questions Why You're Asking
 
@@ -25573,7 +25768,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
 
 *Prompt.* Which recommendation best balances psychiatry input with medical ownership?
 
-- **(a)** Recommend a delirium driver review, deliriogenic medication reduction where feasible, infection/metabolic/hypoxia assessment, sleep-wake support, mobilization, sensory aids, and supervised agitation planning.  *(rated: **best**)*
+- **(a)** Recommend a delirium driver review, deliriogenic medication reduction where feasible, infection/metabolic/hypoxia and alcohol or sedative withdrawal assessment, sleep-wake support, mobilization, sensory aids, and supervised agitation planning.  *(rated: **best**)*
   - *feedback:* Best. It is practical, multidisciplinary, and avoids framing delirium as only a psychiatry medication problem.
 - **(b)** Recommend an antipsychotic only if the patient is dangerous, but otherwise defer all workup to the primary team.  *(rated: **partial**)*
   - *feedback:* This respects medical ownership but is too passive. Psychiatry can help structure the reversible-driver review and nonpharmacologic plan.

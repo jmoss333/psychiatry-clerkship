@@ -95,6 +95,7 @@ step "validate_topic_meta"                  python3 $A/validate_topic_meta.py
 # minutes later. One line closes that.
 step "test_validate_attestation_consistency" python3 $A/test_validate_attestation_consistency.py
 step "validate_attestation_consistency"     python3 $A/validate_attestation_consistency.py
+step "unit — canonical claim scoping"      python3 bin/validate_canonical_claims.py --self-test
 step "canonical clinical claims"            python3 bin/validate_canonical_claims.py
 step "unit — scheduled maintenance"         bash -c "python3 -m unittest discover -s tests/maintenance -p 'test_*.py'"
 step "validate_scheduled_workflows"         python3 $A/maintenance/validate_scheduled_workflows.py

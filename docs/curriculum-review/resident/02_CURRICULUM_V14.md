@@ -225,7 +225,7 @@ skills rather than vague exposure.
 - **Slug:** `week1.md` · **Type:** md · **Sidebar:** hidden (deep link only)
 - **Source:** `01_Six_Week_Curriculum/Week_1_Foundations/README.md`
 - **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
-- **Length:** 345 words
+- **Length:** 433 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -271,6 +271,17 @@ skills rather than vague exposure.
 
 **Suggested reading:** Engel 1977 (biopsychosocial) · Rosenhan 1973 (labeling) · Appelbaum & Grisso 1988 (capacity). *(See the Landmark reading list + the Download Checklist.)*
 
+<details class="pairing-block">
+<summary><strong>This week's pairing</strong> — The biopsychosocial frame</summary>
+<p class="pairing-blurb"><em>Why the interview is the instrument, and what it is an instrument for.</em></p>
+<ul class="pairing-items">
+  <li><strong>Read</strong> — <a href="?page=pg_interview.md">Interview &amp; MSE Pocket Guide</a></li>
+  <li><strong>Listen (1:29)</strong> — Engel's Biopsychosocial Model for Modern Psychiatry <span class="pairing-src">— landmark brief: The Engel Biopsychosocial Model: Foundations of Modern Psychiatry</span><br><audio controls preload="none" src="audio_oe/OE-34_The_Engel_Biopsychosocial_Model_Foundations_of_Modern_Psychiatry__Engel_s_Biopsychosocial_Model_for_Modern_Psychiatry.m4a" aria-label="Landmark brief: The Engel Biopsychosocial Model: Foundations of Modern Psychiatry"></audio></li>
+  <li><strong>Practice</strong> — <a href="tools/mse.html" target="_blank" rel="noopener">Mental Status Exam</a></li>
+</ul>
+<p class="pairing-note"><small>Suggested, not required. Every item already ships in this library.</small></p>
+</details>
+
 **Skill of the week:** the Mental Status Exam → use the interactive **MSE module** (the Mental Status Exam tool) and write your first admission note (the Documentation guide). Pair this with the **call-now safety check**: if a finding could change safety today, tell the resident or attending now rather than waiting for rounds.
 
 **Required Week 1 safety recognition set:**
@@ -301,7 +312,7 @@ skills rather than vague exposure.
 - **Slug:** `week2.md` · **Type:** md · **Sidebar:** hidden (deep link only)
 - **Source:** `01_Six_Week_Curriculum/Week_2_Mood_Psychosis_Pharm/README.md`
 - **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
-- **Length:** 106 words
+- **Length:** 191 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -327,7 +338,7 @@ skills rather than vague exposure.
 - **collateral** — Ask family/staff about baseline, time course, sleep, substances, adherence, prior episodes, and what changed right before admission.
 - **rounds** — Present syndrome, differential, safety concern, medication logic by side-effect profile, and the one mimic you still need to rule out.
 - **exam** — Mood/psychosis questions often hinge on bipolar screening, substance/medical mimics, catatonia, and medication adverse effects.
-- **actions** — Open reasoning workbench; Open BFCRS; Practice psychosis validation
+- **actions** — Open reasoning workbench; Bush-Francis Catatonia Scale (BFCRS) — Official Form & Training; Practice psychosis validation
 
 **Cross-references and tagging:**
 
@@ -345,6 +356,17 @@ skills rather than vague exposure.
 **Objectives:** build a differential for depression/mania/psychosis; understand measurement-based care; learn antipsychotic-selection logic; screen for catatonia.
 
 **Suggested reading:** CATIE (Lieberman 2005) · STAR*D (Rush 2006) · Bush 1996 (catatonia). **Journal Club #1 (CATIE)** and **#5 (Catatonia)**.
+
+<details class="pairing-block">
+<summary><strong>This week's pairing</strong> — Choosing an antipsychotic</summary>
+<p class="pairing-blurb"><em>Efficacy differences are small; the side-effect profile is what you are actually choosing.</em></p>
+<ul class="pairing-items">
+  <li><strong>Read</strong> — <a href="?page=t_psychosis.md">Psychotic Disorders</a></li>
+  <li><strong>Listen (1:57)</strong> — Side Effects Drive Antipsychotic Selection <span class="pairing-src">— landmark brief: The CATIE Trial: Rethinking Antipsychotic Efficacy and Selection</span><br><audio controls preload="none" src="audio_oe/OE-28_The_CATIE_Trial_Rethinking_Antipsychotic_Efficacy_and_Selection__Side_Effects_Drive_Antipsychotic_Selection.m4a" aria-label="Landmark brief: The CATIE Trial: Rethinking Antipsychotic Efficacy and Selection"></audio></li>
+  <li><strong>Practice</strong> — <a href="tools/decision-aids.html" target="_blank" rel="noopener">Algorithms &amp; Decision Aids</a></li>
+</ul>
+<p class="pairing-note"><small>Suggested, not required. Every item already ships in this library.</small></p>
+</details>
 
 **Skill of the week:** the **Top-10 inpatient psychopharm** primer (the Psychopharmacology section); run a Bush-Francis screen on any mute/immobile patient.
 
@@ -367,7 +389,7 @@ skills rather than vague exposure.
 - **Slug:** `week3.md` · **Type:** md · **Sidebar:** hidden (deep link only)
 - **Source:** `01_Six_Week_Curriculum/Week_3_Psychotherapy_Personality/README.md`
 - **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
-- **Length:** 119 words
+- **Length:** 210 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -393,7 +415,7 @@ skills rather than vague exposure.
 - **collateral** — Ask supports about baseline risk, effective limits, outpatient continuity, crisis plans, and what tends to rupture trust.
 - **rounds** — Name the relational pattern, the current safety state, one repair move, and the discharge-continuity need.
 - **exam** — Psychotherapy/personality questions test validation plus limits, not reassurance or jargon used at the patient.
-- **actions** — Open C-SSRS; Practice rupture repair; Open reflection tool
+- **actions** — Columbia C-SSRS — Official Form & Training; Practice rupture repair; Open reflection tool
 
 **Cross-references and tagging:**
 
@@ -411,6 +433,17 @@ skills rather than vague exposure.
 **Objectives:** understand common factors; the logic of DBT for BPD; basic CBT/MI/exposure literacy; build a case formulation.
 
 **Suggested reading:** Wampold 1997 (common factors) · Linehan 1991 (DBT). **Journal Club #3 (Safety Planning).**
+
+<details class="pairing-block">
+<summary><strong>This week's pairing</strong> — What makes therapy work</summary>
+<p class="pairing-blurb"><em>The alliance predicts outcome across modalities — including the ten minutes you have on rounds.</em></p>
+<ul class="pairing-items">
+  <li><strong>Read</strong> — <a href="?page=psychotherapy.md">Psychotherapies at a Glance</a></li>
+  <li><strong>Listen (1:48)</strong> — Therapeutic Alliance Predicts Treatment Outcomes <span class="pairing-src">— landmark brief: The Therapeutic Alliance and Psychotherapy Outcomes Study Summary</span><br><audio controls preload="none" src="audio_oe/OE-48_The_Therapeutic_Alliance_and_Psychotherapy_Outcomes_Study_Summary__Therapeutic_Alliance_Predicts_Treatment_Outcomes.m4a" aria-label="Landmark brief: The Therapeutic Alliance and Psychotherapy Outcomes Study Summary"></audio></li>
+  <li><strong>Practice</strong> — <a href="tools/communication-practice.html" target="_blank" rel="noopener">What Do You Say Next?</a></li>
+</ul>
+<p class="pairing-note"><small>Suggested, not required. Every item already ships in this library.</small></p>
+</details>
 
 **Skill of the week:** complete a **safety plan** with a patient (supervised) using the suicide-risk & safety tools; draft a BPS + relational **formulation** (the Case Formulation guide).
 
@@ -433,7 +466,7 @@ skills rather than vague exposure.
 - **Slug:** `week4.md` · **Type:** md · **Sidebar:** hidden (deep link only)
 - **Source:** `01_Six_Week_Curriculum/Week_4_Family_Systems_EE/README.md`
 - **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
-- **Length:** 99 words
+- **Length:** 184 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -478,6 +511,17 @@ skills rather than vague exposure.
 
 **Suggested reading:** Brown 1962 (EE) · Pharoah 2010 (Cochrane family intervention). **Journal Club #2 (EE)** and **#6 (Family Intervention).**
 
+<details class="pairing-block">
+<summary><strong>This week's pairing</strong> — Family work changes relapse rates</summary>
+<p class="pairing-blurb"><em>Expressed emotion is modifiable, and modifying it is a treatment.</em></p>
+<ul class="pairing-items">
+  <li><strong>Read</strong> — <a href="?page=exp_family.md">Family &amp; Discharge</a></li>
+  <li><strong>Listen (1:51)</strong> — Family Focused Therapy Prevents Bipolar Relapse <span class="pairing-src">— landmark brief: Family-Focused Therapy and Relapse Prevention in Bipolar Disorder</span><br><audio controls preload="none" src="audio_oe/OE-10_Family_Focused_Therapy_and_Relapse_Prevention_in_Bipolar_Disorder__Family_Focused_Therapy_Prevents_Bipolar_Relapse.m4a" aria-label="Landmark brief: Family-Focused Therapy and Relapse Prevention in Bipolar Disorder"></audio></li>
+  <li><strong>Practice</strong> — <a href="tools/family-systems.html" target="_blank" rel="noopener">Family Systems Practice</a></li>
+</ul>
+<p class="pairing-note"><small>Suggested, not required. Every item already ships in this library.</small></p>
+</details>
+
 **Skill of the week:** the **[Family Meeting Playbook (90-min)](?page=family_playbook.md)**; observe then co-facilitate a meeting; use an EE-spotting checklist.
 
 **Media:** the canonical Family-Therapy didactic deck + "The Family is the Milieu."
@@ -499,7 +543,7 @@ skills rather than vague exposure.
 - **Slug:** `week5.md` · **Type:** md · **Sidebar:** hidden (deep link only)
 - **Source:** `01_Six_Week_Curriculum/Week_5_Acute_Emergency/README.md`
 - **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
-- **Length:** 180 words
+- **Length:** 263 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -545,6 +589,17 @@ skills rather than vague exposure.
 
 **Suggested reading:** Franklin 2017 (limits of suicide prediction) · Volkow 2016 (addiction).
 
+<details class="pairing-block">
+<summary><strong>This week's pairing</strong> — Delirium</summary>
+<p class="pairing-blurb"><em>The medical emergency that looks psychiatric — and the one you prevent rather than treat.</em></p>
+<ul class="pairing-items">
+  <li><strong>Read</strong> — <a href="?page=delirium.md">Delirium</a></li>
+  <li><strong>Listen (1:47)</strong> — Stopping delirium with the HELP trial <span class="pairing-src">— landmark brief: The HELP Trial: Multicomponent Strategies for Delirium Prevention</span><br><audio controls preload="none" src="audio_oe/OE-38_The_HELP_Trial_Multicomponent_Strategies_for_Delirium_Prevention__Stopping_delirium_with_the_HELP_trial.m4a" aria-label="Landmark brief: The HELP Trial: Multicomponent Strategies for Delirium Prevention"></audio></li>
+  <li><strong>Practice</strong> — <a href="tools/capacity.html" target="_blank" rel="noopener">Decisional Capacity</a></li>
+</ul>
+<p class="pairing-note"><small>Suggested, not required. Every item already ships in this library.</small></p>
+</details>
+
 **Skills of the week:** the **agitation ladder** + **Violence Risk (FRST)** tool (the Acute & Safety pages); **Delirium** prevention and medical-cause search; **CIWA-Ar/COWS** trend interpretation with the Withdrawal card; supervised documentation of what triggered escalation, what was tried first, and what would change the plan.
 
 **What is different from Week 1:** Week 1 teaches "spot it and call now." Week 5 asks you to explain the driver, try least-restrictive communication when safe, use the structured tool with supervision, document the risk reasoning, and debrief after restraint, seclusion, medication, transfer, or a near miss.
@@ -568,7 +623,7 @@ skills rather than vague exposure.
 - **Slug:** `week6.md` · **Type:** md · **Sidebar:** hidden (deep link only)
 - **Source:** `01_Six_Week_Curriculum/Week_6_Integration_Exam/README.md`
 - **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
-- **Length:** 79 words
+- **Length:** 166 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -612,6 +667,17 @@ skills rather than vague exposure.
 **Objectives:** build a discharge/disposition plan; integrate a full case; demonstrate shelf/OSCE readiness.
 
 **Suggested reading:** Felitti 1998 (ACE) · Deegan 1996 (recovery).
+
+<details class="pairing-block">
+<summary><strong>This week's pairing</strong> — Formulation, not just diagnosis</summary>
+<p class="pairing-blurb"><em>A diagnosis names the problem; a formulation explains why this person, why now.</em></p>
+<ul class="pairing-items">
+  <li><strong>Read</strong> — <a href="?page=case_formulation.md">Case Formulation</a></li>
+  <li><strong>Listen (1:45)</strong> — Social reality is core psychiatry <span class="pairing-src">— landmark brief: Social Determinants and Clinical Frameworks in Modern Psychiatry</span><br><audio controls preload="none" src="audio_oe/OE-24_Social_Determinants_and_Clinical_Frameworks_in_Modern_Psychiatry__Social_reality_is_core_psychiatry.m4a" aria-label="Landmark brief: Social Determinants and Clinical Frameworks in Modern Psychiatry"></audio></li>
+  <li><strong>Practice</strong> — <a href="tools/shelf-mode.html" target="_blank" rel="noopener">Shelf Mode — Exam Simulation</a></li>
+</ul>
+<p class="pairing-note"><small>Suggested, not required. Every item already ships in this library.</small></p>
+</details>
 
 **Skills of the week:** the Risk-Stratified Discharge Pathway + Maine aftercare disposition case; **shelf high-yield review + self-check** and the **OSCE station set** (the exam-prep pages / the student pack).
 
@@ -1082,7 +1148,7 @@ therapy, milieu, family, and discharge back to the formulation.
 - **collateral** — Ask family about prior response, baseline memory, functional decline, fears about ECT, and who can support continuation treatment.
 - **rounds** — Present indication, urgency, capacity/consent status, medical workup needs, medication adjustments, and continuation plan after response.
 - **exam** — ECT is most effective for severe, psychotic, catatonic, or life-threatening depression; there are no absolute contraindications, but relative risks require planning.
-- **actions** — Open BFCRS; Open mood topic
+- **actions** — Bush-Francis Catatonia Scale (BFCRS) — Official Form & Training; Open mood topic
 
 **Embedded check-for-understanding**
 
@@ -1451,117 +1517,5 @@ Sources: [AACOM OMM Explained](https://www.aacom.org/become-a-doctor/about-osteo
 - Real disease and a somatic disorder can coexist — don't anchor either way.
 
 **Pair with** — the [Differential Diagnosis scaffolds](?page=ddx.md), [Ethics & the Law](?page=ethics_legal.md), the [Anxiety/Trauma/OCD topic](?page=t_anxiety.md), and the <a href="tools/mse.html" target="_blank" rel="noopener">Mental Status Exam trainer</a>.
-
-*Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
-
-
----
-
-## Sleep-Wake Disorders
-
-- **Slug:** `t_sleep.md` · **Type:** md · **Sidebar:** hidden (deep link only)
-- **Source:** `03_Core_Topics/Sleep/sleep_wake_disorders_inpatient_teaching.md`
-- **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 675 words
-
-<!-- topic_meta overlay -->
-#### Structured metadata (`topic_meta.json` → this page)
-
-> flagged **high-yield** · est. read 5 min
-
-**TL;DR (shown above the page text):**
-
-> Restoring the sleep-wake cycle is high-leverage — choose CBT-I over hypnotics, screen OSA in treatment-resistant depression, and don't sedate inpatients with benzodiazepines or antihistamines.
-
-**Key points (bulleted card):**
-
-- CBT-I is first-line for chronic insomnia and beats hypnotics long-term.
-- Untreated OSA mimics and perpetuates depression — a classic reversible cause of 'treatment resistance.'
-- Cataplexy = narcolepsy type 1 (low orexin); sleep paralysis/hypnagogic hallucinations are not psychosis.
-
-**Can't-miss / red-flag line:**
-
-> In older inpatients, benzodiazepines and diphenhydramine cause falls and delirium — avoid them.
-
-**Rule-out list (differential the page forces):**
-
-- Obstructive sleep apnea
-- Mood / anxiety driver
-- Substances / caffeine / meds
-- Restless legs (check ferritin)
-- REM sleep behavior disorder
-
-**First move (the action the page tells the learner to take):**
-
-> Sleep hygiene + CBT-I; treat the specific disorder (CPAP, iron, modafinil, melatonin/clonazepam) and taper offending agents.
-
-**Clinical-workflow narration (per-stage coaching text):**
-
-- **ask** — Ask sleep schedule, insomnia pattern, decreased need for sleep, nightmares, OSA symptoms, substances, meds, caffeine, and restless legs.
-- **mse** — Look for fatigue vs manic activation, attention impairment, psychomotor changes, irritability, and delirium risk.
-- **safety** — Assess mania, delirium, falls, respiratory risk with sedatives, OSA, substance withdrawal, and suicidality when insomnia is severe.
-- **say** — The goal is to restore the sleep-wake rhythm without using medications that create dependence or worsen confusion.
-- **collateral** — Ask nursing/family about actual sleep, nighttime behavior, snoring/apnea, nightmares, and daytime naps.
-- **rounds** — Present sleep syndrome, psychiatric driver, medical contributors, behavioral plan, and medication risk/benefit.
-- **exam** — CBT-I is first-line for chronic insomnia; decreased need for sleep suggests mania, not simple insomnia.
-- **actions** — Open psychopharm primer
-
-**Embedded check-for-understanding**
-
-1. *Stem:* A patient with 'treatment-resistant' depression snores, is obese, and is sleepy all day. Best next step?
-   - Start a long-acting benzodiazepine
-   - Add a third antidepressant
-   - Start nightly diphenhydramine
-   - Evaluate for obstructive sleep apnea (polysomnography) and treat it **← keyed correct**
-   - *Rationale:* Untreated OSA is a common, reversible driver of apparent treatment resistance; diagnose with polysomnography and treat with CPAP before escalating pharmacotherapy.
-
-**Cross-references and tagging:**
-
-- **Related tools:** `mse.html`, `screeners.html`
-- **Workflow stages:** `diagnosis`, `safety`, `treatment`, `exam`
-- **Workflow modes:** `ward`, `5min`, `shelf`
-- **Shelf blueprint tags:** `otherdx`
-- **EPA crosswalk:** `EPA1`, `EPA2`
-
-#### Page text (as shipped)
-
-# Sleep-Wake Disorders
-
-
-**In one line** — Sleep is both a driver and a mirror of psychiatric illness — restoring the sleep-wake cycle is one of the highest-leverage things you do on the unit, and the exam rewards you for choosing **CBT-I over hypnotics**, screening **OSA in treatment-resistant depression**, and *not* reaching for benzodiazepines or antihistamines in older inpatients.
-
-**How it presents on the unit** — Almost every admitted patient sleeps badly, and poor sleep worsens mood, psychosis, delirium risk, and agitation. You will see primary insomnia, hospital-induced sleep disruption, obstructive sleep apnea masquerading as or worsening depression, and occasionally the specific syndromes (narcolepsy, restless legs, REM sleep behavior disorder). The recurring skill is protecting sleep *without* creating iatrogenic harm.
-
-**Differential & can't-miss mimics** — Distinguish the primary sleep disorders and the psychiatric/medical contributors:
-
-- **Insomnia disorder** — dissatisfaction with quantity/quality despite adequate opportunity, with daytime impairment; screen for the mood, anxiety, substance, and pain drivers underneath it.
-- **Obstructive sleep apnea** — snoring, witnessed apneas, obesity, morning headache, daytime sleepiness; **untreated OSA mimics and perpetuates depression** and is a common cause of "treatment resistance."
-- **Narcolepsy** — chronic daytime sleepiness with sleep-onset REM phenomena; **type 1 has cataplexy** (emotion-triggered loss of tone) and low CSF orexin/hypocretin; also sleep paralysis and hypnagogic hallucinations (don't mislabel these as psychosis).
-- **Restless legs syndrome** — urge to move the legs, worse at rest and at night, relieved by movement; **check ferritin/iron**.
-- **REM sleep behavior disorder** — dream-enactment with loss of normal REM atonia; a **prodrome of synucleinopathies** (Lewy body dementia, Parkinson disease).
-- **Circadian rhythm disorders** — misalignment (shift work, delayed sleep phase) rather than an inability to sleep.
-
-**Initial workup** — Take a structured sleep history (schedule, latency, awakenings, daytime function, snoring/apneas, leg symptoms, substances, caffeine, screens). Use a sleep diary. Screen for the psychiatric and medical contributors and for OSA (e.g., STOP-BANG). Order **polysomnography** for suspected OSA, parasomnias, or narcolepsy (with MSLT); check **ferritin** for restless legs. Review medications and substances that fragment sleep (steroids, activating antidepressants, stimulants, alcohol, nicotine).
-
-**Acute inpatient management** — Lead with **sleep hygiene and environmental measures**: cluster overnight care, reduce light/noise, daytime light and activity, limit daytime napping, and taper offending agents. For chronic insomnia, **cognitive behavioral therapy for insomnia (CBT-I) is first-line** and outperforms medication long-term. If short-term pharmacologic help is needed, prefer lower-risk agents and time-limit them; **avoid chronic benzodiazepines and z-drugs, and avoid diphenhydramine/anticholinergics in older adults** (falls, cognitive impairment, delirium). Treat the specific disorders on their own terms: **CPAP for OSA** (and reassess mood after), iron repletion and dopaminergic/alpha-2-delta agents for restless legs, modafinil/armodafinil (± sodium oxybate) for narcolepsy, **melatonin or clonazepam for REM sleep behavior disorder** plus a safe sleep environment.
-
-**What the student does** —
-- Make restoring the sleep-wake cycle part of every treatment plan (and a pillar of delirium prevention).
-- Choose CBT-I first for insomnia; if a hypnotic is used, keep it short and low-risk.
-- Screen for OSA whenever depression is "treatment-resistant" — and treat it.
-- Don't sedate inpatients (especially older ones) with benzodiazepines or antihistamines by reflex.
-- Recognize cataplexy, sleep paralysis, and hypnagogic hallucinations as narcolepsy — not psychosis.
-
-**Disposition & discharge essentials** — Ensure the sleep plan survives discharge: outpatient CBT-I referral, sleep-study follow-up and CPAP adherence support, iron/ferritin recheck for restless legs, and a clear taper for any hypnotic started inpatient. Reconcile activating or sedating psychotropics with sleep in mind.
-
-**High-yield pearls**
-- CBT-I, not hypnotics, is first-line for chronic insomnia.
-- Untreated OSA is a classic reversible cause of "treatment-resistant" depression — screen and treat with CPAP.
-- Cataplexy = narcolepsy type 1 (low orexin); sleep paralysis and hypnagogic hallucinations are not psychosis.
-- Check ferritin in restless legs syndrome.
-- REM sleep behavior disorder predicts future Lewy body dementia/Parkinson disease.
-- In older inpatients, benzodiazepines and diphenhydramine cause falls and delirium — avoid them.
-
-**Pair with** — the [Mood topic](?page=t_mood.md), [Delirium](?page=delirium.md), [Major & Mild Neurocognitive Disorders](?page=t_neurocog.md), and the [Psychopharmacology primer](?page=psychopharm_primer.md).
 
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
