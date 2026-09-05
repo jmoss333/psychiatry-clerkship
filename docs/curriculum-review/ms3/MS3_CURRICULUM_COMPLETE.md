@@ -3,7 +3,7 @@
 # MS3 curriculum — complete content transcript for clinical review
 
 **Site:** `une-ms3-psychiatry` · **Audience:** MS3 — UNE medical students
-**Generated:** 2026-09-05 from build `d5d80f2` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
+**Generated:** 2026-09-05 from build `bf8445e` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
 
 ## Who this is for
 
@@ -83,7 +83,7 @@ High-yield places to concentrate: the `topic_meta` **can't-miss**, **rule-out** 
 
 # MS3 · Navigation map
 
-Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-05 @ `d5d80f2`.
+Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-05 @ `bf8445e`.
 
 ## Orientation  *(pinned)*
 
@@ -22662,7 +22662,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
 - **(c)** The decision is ultimately up to the doctors, so let's move on.  *(rated: **missed**)*
   - *feedback:* This shuts down collateral and increases adversarial tension. The family may hold key safety and feasibility information.
 - **(d)** Can you tell us exactly what you think he is hiding from us?  *(rated: **missed**)*
-  - *feedback:* Specific concerns matter, but as worded this presumes the patient is deceptive and cross-examines him through his family — in the room, right after he has gone quiet. There is no timing that rescues it. Ask the family what they are worried about instead, and keep the patient a participant rather than the subject of the inquiry.
+  - *feedback:* Specific concerns matter, but this presumes he is lying and cross-examines him through his family, right after he went quiet. Ask the family what worries them, and keep him a participant.
 
 ### interview_motive_suspicion_001 — Respond When the Patient Questions Why You're Asking
 
