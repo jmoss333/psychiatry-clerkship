@@ -16,9 +16,13 @@ checks:
 - **Accepted limitations:** the third-person phrase explicitly accepted under
   D16. These remain visible without being counted as a new regression.
 
-The benchmark does not change the learner application, pack, model, score,
+The benchmark itself does not change the learner application, pack, model, score,
 attestation, or release state. It does not call an external provider. All dialogue
 is synthetic and is unrelated to actual patients or learners.
+
+The follow-up implementation corrects one unsupported claim in the application's
+built-in strengths feedback and adds the local faculty exercise below. See the
+[correction and calibration record](../../../docs/superpowers/plans/2026-09-04-interview-room-feedback-calibration.md).
 
 ## Run
 
@@ -79,7 +83,7 @@ Read the [faculty decision packet](../../../docs/superpowers/plans/2026-09-04-in
 and the [measured report](baseline-2026-09-04.md). The JSON output is available by
 rerunning the command above.
 
-Do not interpret 23 differing proposed checks as 23 independent bugs or a clinical
+Do not interpret the original baseline's 23 differing proposed checks as 23 independent bugs or a clinical
 error rate. The cases were deliberately chosen to challenge known boundaries, and
 several repeat the same issue across personas. Agreement between client and server
 means they implement the same rule, not that the rule is clinically sound.
@@ -97,3 +101,29 @@ Before any subsequent vocabulary or feedback change:
 
 D16 deliberately retains the closed vocabulary. This benchmark does not authorize
 a semantic classifier or override its named reopening conditions.
+
+## Faculty calibration exercise
+
+Open [calibration.html](calibration.html) directly in a browser. It is a standalone,
+offline worksheet with five pairs of synthetic conversations. Read the shared
+context, make observations for conversations A and B, and then reveal the current
+simulator labels. The three response-alternative pairs show actual evaluator-input
+captures; they do not claim to show a live evaluator's interpretation.
+
+The controls retain choices only while the page is open. Reset or reload clears
+them; printing is optional. There is no submission, storage, network call, score,
+faculty approval action, or connection to learner records. The worksheet is a
+developer/faculty artifact and is not registered in learner navigation.
+
+The page is generated from the current benchmark. Do not hand-edit it:
+
+```bash
+node sp-proxy/benchmarks/interview-room/calibration.mjs --write
+node sp-proxy/benchmarks/interview-room/calibration.mjs --check
+node --test sp-proxy/tests/interview-calibration.test.mjs
+```
+
+The generator includes actual source hashes rather than HEAD or wall-clock time,
+so committing an otherwise unchanged artifact does not make it stale. Missing
+evidence, control failures, or parity failures stop generation. The proxy test
+suite checks artifact freshness and safe rendering.

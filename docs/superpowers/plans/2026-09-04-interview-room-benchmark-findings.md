@@ -4,6 +4,11 @@
 **Measured source:** `7eb4ace0301e163139208e8dc9f05b3aab5f79ea` (2026-09-04 main).
 **Scope:** local source execution, not a production-site or live-model assessment.
 
+**Follow-up:** this packet preserves the original baseline. The narrow narrative
+correction and five-pair faculty exercise are now implemented locally; see the
+[feedback and calibration record](2026-09-04-interview-room-feedback-calibration.md)
+for current results and remaining faculty decisions.
+
 ## What this establishes
 
 The simulator's existing vocabulary controls pass while conversation-level

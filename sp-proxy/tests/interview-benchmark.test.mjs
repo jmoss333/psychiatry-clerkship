@@ -78,6 +78,18 @@ test('a deliberately wrong expectation produces a discrepancy, never a silent pa
   assert.deepEqual(result.checks[0].actual, { client: 'observed', server: 'observed' });
 });
 
+test('built-in feedback describes recognition without inventing a question or disclosure', async () => {
+  for (const id of ['cold-screen-narrative', 'reassurance-and-screen', 'learner-assertion', 'plain-screen']) {
+    const scenario = runtime.corpus.scenarios.find(s => s.id === id);
+    for (const name of scenario.cases) {
+      const result = await replay(runtime, scenario, name);
+      const strengths = result.frames.at(-1).narrative.strengths;
+      assert.ok(strengths.some(s => s.includes('The simulator recognized suicide-screening language.')), result.id);
+      assert.ok(strengths.every(s => !s.includes('told you the truth') && !s.includes('You asked about suicide')), result.id);
+    }
+  }
+});
+
 test('patient-response variants traverse the real evaluation handler without a provider call', async () => {
   const report = await runBenchmark(runtime);
   assert.ok(report.responsePairs.length >= 3);

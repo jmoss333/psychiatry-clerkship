@@ -406,7 +406,7 @@ function buildNarrative(s,cov,rub){
   if(s.reflections>=2)strengths.push('You reflected and validated more than once — '+who+'’s guardedness dropped when you did. That is the mechanism, not a nicety.');
   /* Coaching text must work for every persona (Dana/Marcus/Ray) — displayName + they/them,
      never a hardcoded she/her: Marcus and Ray got wrong-pronoun debriefs. */
-  if(s.covered['si_direct'])strengths.push('You asked about suicide in plain language. That is exactly why '+who+' told you the truth.');
+  if(s.covered['si_direct'])strengths.push('The simulator recognized suicide-screening language. Review the patient’s response to see what was shared.');
   if(s.covered['work_stressor'])strengths.push('You found the job loss — the organizing stressor most interviewers miss.');
   if(s.covered['greeting_agenda'])strengths.push('You set a collaborative frame at the start, and '+who+' noticed.');
   if(s.covered['summary_close'])strengths.push('You closed with a summary rather than letting the encounter just stop.');
