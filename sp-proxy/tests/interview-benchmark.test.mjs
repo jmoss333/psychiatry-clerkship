@@ -84,7 +84,7 @@ test('built-in feedback describes recognition without inventing a question or di
     for (const name of scenario.cases) {
       const result = await replay(runtime, scenario, name);
       const strengths = result.frames.at(-1).narrative.strengths;
-      assert.ok(strengths.some(s => s.includes('The simulator recognized suicide-screening language.')), result.id);
+      assert.ok(strengths.some(s => s.includes('Screening language recognized.')), result.id);
       assert.ok(strengths.every(s => !s.includes('told you the truth') && !s.includes('You asked about suicide')), result.id);
     }
   }

@@ -1,28 +1,28 @@
 # Interview Room feedback labels — faculty decision record
 
-**Status: draft for faculty adjudication. No decisions recorded.**
+**Status: F1–F5 approved by the project author in this task on 2026-09-04.**
 
-This record makes the next review concrete: decide what the feedback should mean,
-then test those meanings on fresh phrasing. The recommendations below are proposals
-from the source review; they are not faculty consensus, new scoring rules, or pack
-attestation. The narrower factual strengths correction is already implemented
-locally in `2f03ab4`.
+The user reviewed the five decisions in chat and explicitly replied **“Approve all
+5.”** Approval covers the display meanings and their first implementation. It does
+not establish multi-reviewer consensus, individual benchmark labels, new scoring
+rules, pack attestation, or release approval. The earlier narrow strengths correction
+is preserved in `2f03ab4`; this follow-up applies the approved meanings more broadly.
 
-## Recommended decisions
+## Approved decisions
 
-Mark **accept**, **revise**, or **defer** for each row. Acceptance here concerns the
+All five rows are accepted. Acceptance here concerns the
 display meaning only. Any scoring, gate, vocabulary, model, or release change needs
 its own explicit scope and verification. The engine direction documented in
 [D16](2026-08-31-faculty-decisions-410.md#d16--engine-direction-wp-b-task-9--410-item-g)
 remains the starting point.
 
-| ID | Recommended decision | Why this decision is needed | Faculty response |
+| ID | Approved display decision | Why this decision is needed | Faculty response |
 |---|---|---|---|
-| F1 | Describe a detector match as **“Screening language recognized.”** Reserve “question asked” for an observation supported by the conversational move and target. | Round-one comparison 1: a statement and a question receive the same screening credit and patient reply. Recognition alone does not distinguish them. | Unrecorded |
-| F2 | Keep **learner attempt** and **patient response** as separate observations. For the response, distinguish “addresses the question,” “declines,” “deflects,” “requests a pause,” and “unclear.” | Comparisons 2–4: changing only the patient reply leaves the deterministic map unchanged. A refusal is a response but is not a substantive answer to the screening question. | Unrecorded |
-| F3 | Describe the current follow-up map as **“Follow-up language recognized.”** Show attempted questions and answers only as separate, evidence-supported observations. Any future answer indicator should point to the relevant exchange for each topic. | Comparison 5: bundled questions can receive the same follow-up credit as separate questions while producing fewer patient answers. As in comparison 1, recognizing words does not by itself establish an attempted question. | Unrecorded |
-| F4 | Use **“Unclear from this exchange”** when evidence is insufficient. Do not automatically convert a refusal, pause, or unresolved response into learner failure or overall safety clearance. | The worksheet separates learner behavior, patient response, and clarification. One label should not silently stand for all three. | Unrecorded |
-| F5 | Make the next implementation a **display-only change** based on accepted meanings. Keep the existing grades, disclosure gates, and vocabulary until a separately scoped decision supports changing them. | The current exercise tests interpretation; it does not establish new clinical labels, a semantic classifier, or readiness criteria. | Unrecorded |
+| F1 | Describe a detector match as **“Screening language recognized.”** Reserve “question asked” for an observation supported by the conversational move and target. | Round-one comparison 1: a statement and a question receive the same screening credit and patient reply. Recognition alone does not distinguish them. | Accepted |
+| F2 | Keep **learner attempt** and **patient response** as separate observations. For the response, distinguish “addresses the question,” “declines,” “deflects,” “requests a pause,” and “unclear.” | Comparisons 2–4: changing only the patient reply leaves the deterministic map unchanged. A refusal is a response but is not a substantive answer to the screening question. | Accepted |
+| F3 | Describe the current follow-up map as **“Follow-up language recognized.”** Show attempted questions and answers only as separate, evidence-supported observations. Any future answer indicator should point to the relevant exchange for each topic. | Comparison 5: bundled questions can receive the same follow-up credit as separate questions while producing fewer patient answers. As in comparison 1, recognizing words does not by itself establish an attempted question. | Accepted |
+| F4 | Use **“Unclear from this exchange”** when evidence is insufficient. Do not automatically convert a refusal, pause, or unresolved response into learner failure or overall safety clearance. | The worksheet separates learner behavior, patient response, and clarification. One label should not silently stand for all three. | Accepted |
+| F5 | Make the next implementation a **display-only change** based on accepted meanings. Keep the existing grades, disclosure gates, and vocabulary until a separately scoped decision supports changing them. | The current exercise tests interpretation; it does not establish new clinical labels, a semantic classifier, or readiness criteria. | Accepted |
 
 For F2 and F3, the existing engine does not reliably supply the proposed additional
 observations. Acceptance of the meaning does not authorize an automatic detector
@@ -30,12 +30,12 @@ that guesses them. The first implementation can explain the limitation and prese
 the actual exchange for human review; an automatic response classifier remains a
 separate proposal.
 
-## Review sequence
+## Optional calibration follow-up
 
 1. Open the [round-one worksheet](../../../sp-proxy/benchmarks/interview-room/calibration.html).
    For each conversation, make observations before revealing the simulator labels.
-   Compare interpretations and draft decisions F1–F5.
-2. Freeze the proposed wording for this review session. Independently complete the
+   Compare interpretations against the approved meanings F1–F5.
+2. Keep the approved wording fixed during this review session. Independently complete the
    [round-two reviewer copy](../../../sp-proxy/benchmarks/interview-room/round-two-reviewer.html).
    It contains four additional pairs across Dana, Marcus, and Ray, with no simulator
    labels or facilitator discussion prompts in the file.
@@ -43,10 +43,10 @@ separate proposal.
    [round-two facilitator copy](../../../sp-proxy/benchmarks/interview-room/round-two-facilitator.html).
    It contains the same dialogues and the actual current-engine results. Disagreement
    with the engine is not automatically an error by the reviewer.
-4. Record unresolved examples and revise the proposed meanings if needed. If the
+4. Record unresolved examples and propose revisions if needed. If the
    second round changes the rules, it becomes a development set for those rules;
    reserve another fresh set for any later independent check.
-5. Record the final faculty decisions below. Only accepted, explicitly scoped work
+5. Record any additional faculty decisions separately. Only accepted, explicitly scoped work
    should become an implementation task. No consensus is inferred from silence,
    matching automated outputs, or this document's existence.
 
@@ -56,25 +56,67 @@ selected exercise, not a validated clinical benchmark. Reviewer exposure has not
 been measured, and no faculty observations have been collected. “Fresh” describes
 the phrasing relative to the first set, not proven independence or generalizability.
 
-## Record the decision
+## Approval record
 
 Use synthetic conversation IDs only. The worksheet has no submission or automatic
 save; print it if useful. Do not add real patient or learner records here.
 
-- Faculty reviewer(s): ____________________
-- Review date: ____________________
-- F1 — accept / revise / defer: ____________________
-- F2 — accept / revise / defer: ____________________
-- F3 — accept / revise / defer: ____________________
-- F4 — accept / revise / defer: ____________________
-- F5 — accept / revise / defer: ____________________
-- Approved display wording and scope: ____________________
-- Unresolved conversation IDs and the disputed observation: ____________________
-- Required additional evidence: ____________________
-- Authorized next implementation, if any: ____________________
+- Approver: project author, via the user message in this task.
+- Approval date: 2026-09-04.
+- Approval text: “Approve all 5.”
+- F1, F2, F3, F4, F5: accepted.
+- Approved scope: display wording and human review of actual exchanges; preserve
+  scores, vocabulary, disclosure gates, and patient behavior.
+- Individual conversation observations: not submitted or adjudicated by this approval.
+- Additional evidence: independent faculty observations are still needed before
+  claiming calibration agreement or adopting new automatic judgments.
+- Authorized implementation: apply the wording in step-out notes, debrief, and
+  transcript export; present exchanges for human review without classifying them.
 
 Do not treat an unresolved row as approval. This record does not update
 `reviewed.json`, the patient pack's faculty-review data, or the release ledger.
+
+## Implementation
+
+The display uses neutral topic names and recognized-language labels while retaining
+the raw checklist data. The critical-screen card no longer renders pack sentences
+that infer an unasked question or undisclosed content from a detector miss. Its
+case-specific rehearsal, reference, and reframe remain intact; the pack itself is
+unchanged. Built-in narrative feedback likewise describes recognized wording.
+
+The debrief presents the actual patient opening and learner–patient exchanges in a
+collapsible review section, explains the separate response observations, and uses
+“Unclear from this exchange” as human-review guidance. No response classification
+is computed or saved. Live-model suggestions are identified as model-generated
+commentary to check against the exchange; prompts and provider output are unchanged.
+
+The same meaning appears in the downloaded practice transcript. This local source
+implementation does not constitute a deployment or live-model verification.
+
+Verification on the implementation based on `4b03fcc`:
+
+- All 241 benchmark snapshots (205 original plus 36 second-round turns) retain
+  identical learner text, patient replies, coverage, rubric results, rapport,
+  disclosure state, and client/server parity. Only narrative text differs. The
+  three paired evaluation-handler captures are identical before and after.
+- Five display regression tests pass, including a live-session fallback test using
+  the actual proxy client's state handling. The full local verification gate,
+  proxy/client suites, and sequential MS3/resident builds pass.
+- Browser checks cover recognized, partial, unrecognized, and follow-up wording;
+  Ray's separate critical topic; step-out, debrief, keyboard-opened exchange review,
+  and downloaded transcript. Exact learner and patient text matches the encounter.
+  Tested at 1440, 390, and 320 pixels in light/dark themes with no page errors or
+  horizontal overflow. Source checks used local Playwright because the Browser
+  plugin was unavailable; no live actor or evaluator was called.
+- Independent review identified and rechecked the live fallback counter issue
+  described below; no consequential findings remain.
+
+**Separate existing scoring limitation:** live sessions retain recognized intents
+per turn but do not update the older reflection counter used by the rubric.
+Display feedback now counts the stored reflection intents without mutating that
+counter. Decision F5 preserves the existing rubric behavior. Any correction to
+live reflection ratings needs a separately scoped scoring decision; this change
+does not claim to resolve it.
 
 ## Evidence and reproduction
 

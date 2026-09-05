@@ -131,8 +131,10 @@ suite checks artifact freshness and safe rendering.
 ## Faculty decisions and a fresh second round
 
 Use the [faculty decision record](../../../docs/superpowers/plans/2026-09-04-interview-room-faculty-adjudication.md)
-to accept, revise, or defer five proposed display meanings. It contains no recorded
-faculty decisions and does not change scoring or approval state.
+for the five display meanings approved by the project author in chat on 2026-09-04.
+Their first implementation changes presentation and human-review guidance only.
+Individual benchmark labels, scoring changes, pack attestation, and release remain
+outside that approval.
 
 After drafting the meanings with the first worksheet, use the separate
 [round-two reviewer copy](round-two-reviewer.html). It contains four new pairs

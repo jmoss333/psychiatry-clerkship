@@ -64,7 +64,7 @@ test('transcript text is escaped and cannot introduce active HTML', () => {
 test('blind review omits feedback and discussion rather than merely hiding them', () => {
   const html = renderCalibration(exercise, { blind: true });
   assert.doesNotMatch(html, /class="reveal"|class="coverage"|For discussion · proposed/);
-  assert.ok(!html.includes('The simulator recognized suicide-screening language.'));
+  assert.ok(!html.includes('Screening language recognized.'));
   assert.ok(!html.includes(exercise.pairs[0].discussion));
   assert.ok(html.includes('Have you had thoughts of killing yourself?'));
   assert.equal((html.match(/<select /g) || []).length, 30);
