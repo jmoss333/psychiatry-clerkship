@@ -25,13 +25,13 @@ import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 
 import {
-  renderAll, formatPanel, unformatPanel, snapshotName, SNAPSHOT_DIR, topicEntries,
+  renderFromSource, formatPanel, unformatPanel, snapshotName, snapshotDir, topicEntries,
   TOPIC_META, manifestTitle, F,
 } from './_panel_render.mjs';
 
-const DIR = fileURLToPath(SNAPSHOT_DIR);
+const DIR = fileURLToPath(snapshotDir('ms3'));
 const REGEN = 'run `node bin/render_panels.mjs --write` and commit the diff';
-const panels = renderAll();
+const panels = renderFromSource();
 
 test('the snapshot directory exists and is populated', () => {
   assert.ok(existsSync(DIR), `tests/__panels__/ is missing — ${REGEN}`);

@@ -19,19 +19,28 @@
  * phasePolicy() clock. `window` is passed as {} for exactly that reason. What this module
  * reproduces is the markup the build injects into the page, which is what the snapshots compare.
  *
- * WHAT IT COVERS: the MS3 source-registry render of the 74 topic_meta.json entries — NOT
- * either shipped site's own payload. See the SCOPE note on SNAPSHOT_DIR below; the gap is
- * pinned as data in tests/panel-snapshots.test.mjs rather than left to a reader's memory.
+ * TWO INPUT BINDINGS, ONE EVALUATOR. renderFromSource() reads the source registries and backs
+ * tests/practice-panel.test.mjs's property assertions, which must run on a fresh clone in CI.
+ * renderFromBuild(site) reads _build/<site>/index.html — the shipped renderer over the shipped
+ * data — and backs the per-audience snapshots. The slicing and the `new Function` construction
+ * are shared; only the inputs differ, so there is still no second renderer.
  *
- * NOTE ON ORDERING: the snapshots depend only on source, never on _build/, so a stale snapshot is
- * always fixable by `node bin/render_panels.mjs --write` — which does not run through
- * build_and_check.sh. That matters because build_and_check.sh is `set -euo pipefail` and runs the
- * node suite BEFORE build_deploy.py: a test that could only be repaired by building would wedge
- * the build that repairs it (see the T17 trap noted in CLAUDE.md). This one cannot.
+ * COVERAGE: 96 of the 97 shipped pages, across both audiences. rapid_review.md has no
+ * topic_meta entry and therefore renders no panel; tests/panel-snapshots.test.mjs asserts that
+ * it is the only page missing, by name, rather than counting around it.
+ *
+ * ORDERING: the byte-comparison gate runs from build_and_check.sh AFTER build_deploy.py, so a
+ * failure leaves _build/ current and `node bin/render_panels.mjs --write` repairs it with no
+ * rebuild. A build-dependent test in the PRE-build node suite would wedge the build that fixes
+ * it (CLAUDE.md, T17); that is why the comparison is not there.
  */
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
+
+import { shippedItemsWithSites } from '../faculty-console/content-universe.mjs';
 
 const ROOT = new URL('../', import.meta.url);
 export const read = (p) => readFileSync(new URL(p, ROOT), 'utf8');
@@ -111,9 +120,10 @@ export const actionKey = (h) => {
 
 export const topicEntries = Object.entries(TOPIC_META).filter(([, m]) => m && typeof m === 'object');
 
-/** Every page that renders a panel, as [ref, html]. Sorted by ref so the set is order-stable
- *  regardless of key order in topic_meta.json — snapshots must not churn on a re-serialisation. */
-export const renderAll = () => topicEntries
+/** Every page that renders a panel FROM THE SOURCE REGISTRIES, as [ref, html]. Sorted by ref so
+ *  the set is order-stable regardless of key order in topic_meta.json — snapshots must not churn
+ *  on a re-serialisation. */
+export const renderFromSource = () => topicEntries
   .filter(([, m]) => F.hasPracticeTpl(m))
   .map(([ref, m]) => [ref, F.buildTpl(m, ref)])
   .sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
@@ -138,21 +148,99 @@ export const unformatPanel = (text) => String(text).replace(/\n$/, '').split('>\
  *  which topic_meta key it came from; refs are `*.md`, so files read `delirium.md.html`. */
 export const snapshotName = (ref) => `${String(ref).replace(/[/\\]/g, '__')}.html`;
 
-/* The snapshots are the MS3 SOURCE-REGISTRY render, and the path says so.
- *
- * SCOPE, stated plainly because a gate that overstates its reach is worse than none
- * (Codex P2 on #539). Neither shipped site renders from these registries:
- *   - the resident build injects its OWN FD_TOPIC_META and FD_SITE_MANIFEST, patched from
- *     OUT's copy with resident overlays and rebuilt from resident nav (resident_section.py:301,
- *     :358), so e.g. shelf-mode.html is titled "Board-Style Question Bank" there and
- *     "Shelf Mode — Exam Simulation" here;
- *   - both builds APPEND Case-of-the-Week topic_meta derived at build time
- *     (build_deploy.py:308, resident_section.py:318), which topic_meta.json never contains.
- * So this covers 74 of the 97 shipped pages. tests/panel-snapshots.test.mjs pins that gap
- * against shipped_pages.json as data, so it cannot be forgotten or quietly over-trusted, and
- * so a NEW uncovered producer fails rather than passing silently.
- *
- * Widening to both audiences means reading each build's own topic_meta.json — correct, but it
- * makes the gate build-dependent, and ci.yml runs the node suite on a fresh clone BEFORE the
- * build. That is a separate change; see the PR discussion. */
-export const SNAPSHOT_DIR = new URL('__panels__/ms3/', new URL('tests/', ROOT));
+// ---- the built-artifact render path -----------------------------------------------------------
+//
+// WHY THE BUILD AND NOT THE REGISTRIES: neither shipped site renders from the source registries.
+// resident_section.py patches OUT's topic_meta with resident CTAs (:301) and rebuilds the index
+// from resident nav (:358); both builds append Case-of-the-Week topic_meta derived at build time
+// (build_deploy.py:308, resident_section.py:318). Reading _build/<site>/index.html evaluates the
+// SHIPPED renderer over the SHIPPED data, so both are covered without re-deriving either — which
+// is also what keeps this out of tests/shipped-pages-readers.test.mjs's way.
+
+export const AUDIENCES = Object.freeze(['ms3', 'res']);
+
+const REPO = fileURLToPath(ROOT);
+export const builtIndexPath = (site) => path.join(REPO, '_build', assertSite(site), 'index.html');
+
+function assertSite(site) {
+  assert.ok(AUDIENCES.includes(site), `unknown audience '${site}' (expected ${AUDIENCES.join('|')})`);
+  return site;
+}
+
+/* Every input whose edit invalidates a rendered panel, for staleBuildReason(). A path that does
+   not exist throws there — a typo would make the freshness check vacuously "fresh" and retire
+   the contract silently. */
+export const PANEL_BUILD_INPUTS = [
+  '13_Faculty_Resources/_automation/site_build/spa_index.html',
+  '13_Faculty_Resources/_automation/site_build/frontdoor/fd_data.js',
+  '13_Faculty_Resources/_automation/site_build/build_deploy.py',
+  '13_Faculty_Resources/_automation/site_build/resident_section.py',
+  '13_Faculty_Resources/_automation/site_build/shipped_pages.json',
+  'topic_meta.json',
+  'curriculum.json',
+  'tool_registry.json',
+  'communication_cases.json',
+].map((rel) => path.join(REPO, rel));
+
+const SHIPPED = readJSON('13_Faculty_Resources/_automation/site_build/shipped_pages.json');
+
+/** Every page slug the derived universe scopes to `site`. Asking shipped_pages.json rather
+ *  than a producer is ADR-002's rule; `sites` must stay an array, hence shippedItemsWithSites. */
+export const shippedPanelRefs = (site) => new Set(
+  shippedItemsWithSites({ shipped: SHIPPED })
+    .filter((row) => row.kind === 'page' && row.sites.includes(assertSite(site)))
+    .map((row) => row.slug),
+);
+
+/* Each payload is one `var FD_X={…};` line the build injected. Extracted by name rather than as
+   one span so a missing or duplicated injection names itself, and so an unrelated neighbour
+   (FD_ROLES sits between two of them) is never dragged in. */
+const PAYLOAD_VARS = ['FD_CURRICULUM', 'FD_TOPIC_META', 'FD_TOOL_REGISTRY', 'FD_SITE_MANIFEST'];
+
+function payloadSource(html, site) {
+  return PAYLOAD_VARS.map((name) => {
+    const needle = `var ${name}=`;
+    const at = html.indexOf(needle);
+    assert.ok(at !== -1, `${site}: built index.html injects no ${name}`);
+    assert.equal(html.indexOf(needle, at + 1), -1, `${site}: ${name} is injected more than once`);
+    const end = html.indexOf('\n', at);
+    assert.ok(end !== -1, `${site}: ${name} is not newline-terminated; it is no longer one line`);
+    return html.slice(at, end);
+  }).join('\n');
+}
+
+/** Render every panel the `site` build publishes, as [ref, html], sorted by ref.
+ *  Sorted so the set is order-stable regardless of key order in the injected payload. */
+export function renderFromBuild(site) {
+  const html = readFileSync(builtIndexPath(site), 'utf8');
+
+  const ctx = {};
+  vm.createContext(ctx);
+  vm.runInContext(read('13_Faculty_Resources/_automation/site_build/frontdoor/fd_data.js'), ctx);
+  vm.runInContext(payloadSource(html, site), ctx);
+  for (const name of PAYLOAD_VARS) {
+    assert.ok(ctx[name] && typeof ctx[name] === 'object', `${site}: ${name} did not evaluate to an object`);
+  }
+  const index = ctx.fdBuildIndex(ctx.FD_CURRICULUM, ctx.FD_TOPIC_META, ctx.FD_TOOL_REGISTRY, ctx.FD_SITE_MANIFEST);
+
+  // The build already replaced the PRACTICE_CASE_TITLES needle, so unlike the source path
+  // there is nothing to inject here — this is the renderer exactly as it ships.
+  const builtPanel = slice(html, '/* ---- practice panel ---- */', '/* ---- end practice panel ---- */');
+  const builtWorkflow = slice(html, '  var WF_STAGE_LABELS=', '  function toolExtraFromParams', { keepEnd: false });
+  assert.ok(!builtPanel.includes('var PRACTICE_CASE_TITLES={};'),
+    `${site}: the build left PRACTICE_CASE_TITLES uninjected; drills would render unnamed`);
+
+  const built = new Function('esc', 'ctaHref', 'ctaAttrs', 'FD_INDEX', 'FD_TOOL_REGISTRY', 'window',
+    `${builtWorkflow}\n${builtPanel}\nreturn { buildTpl: buildTpl, hasPracticeTpl: hasPracticeTpl };`,
+  )(esc, ctaHref, ctaAttrs, index, ctx.FD_TOOL_REGISTRY, {});
+
+  const ships = shippedPanelRefs(site);
+  return Object.entries(ctx.FD_TOPIC_META)
+    .filter(([ref, m]) => m && typeof m === 'object' && ships.has(ref) && built.hasPracticeTpl(m))
+    .map(([ref, m]) => [ref, built.buildTpl(m, ref)])
+    .sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
+}
+
+/** tests/__panels__/<site>/ — one directory per audience, because a single directory could
+ *  not say which site a file described. That ambiguity is what produced all three defects. */
+export const snapshotDir = (site) => new URL(`__panels__/${assertSite(site)}/`, new URL('tests/', ROOT));
