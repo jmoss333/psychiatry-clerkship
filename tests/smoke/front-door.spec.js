@@ -296,7 +296,7 @@ test('Compass native Tab sequence keeps every link above the mobile action bar',
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await seedApp(page, testInfo);
   await page.goto('/?page=welcome.md');
-  const links = page.locator('[data-ms3-compass-root] a');
+  const links = page.locator('[data-fd-compass-root] a');
   await expect(links).toHaveCount(8);
   await links.first().focus();
   // Let the browser scroll on native Tab. No scrollIntoView, click or focus on later links.
@@ -329,7 +329,7 @@ for (const [number, title] of [
     await seedApp(page, testInfo);
     await page.goto('/?page=welcome.md');
     const start = await page.evaluate(() => localStorage.getItem('cw_rotation_start'));
-    await page.locator(`[data-ms3-compass-link][href="?page=week${number}.md"]`).click();
+    await page.locator(`[data-fd-compass-link][href="?page=week${number}.md"]`).click();
     await expect(page.locator('.fd-article__h1')).toHaveText(`Week ${number} — ${title}`);
     await expect(page).toHaveURL(new RegExp(`page=week${number}\\.md`));
     expect(await page.evaluate(() => localStorage.getItem('cw_rotation_start'))).toBe(start);
@@ -343,7 +343,7 @@ test('Welcome preserves audience scope and gives the MS3 Compass responsive keyb
   await page.goto('/?page=welcome.md');
   await expect(page.locator('.fd-reader .fd-article__body')).toBeVisible();
 
-  const compassRoot = page.locator('[data-ms3-compass-root]');
+  const compassRoot = page.locator('[data-fd-compass-root]');
   if (site.role === 'pgy1') {
     await expect(compassRoot).toHaveCount(0);
     // Metadata and governance sit outside the Markdown body; inspect the complete reader.
@@ -362,11 +362,11 @@ test('Welcome preserves audience scope and gives the MS3 Compass responsive keyb
 
   await expect(compassRoot).toHaveCount(1);
   expect(await compassRoot.evaluate(root => [...root.children].map(child => {
-    if (child.hasAttribute('data-ms3-compass-safety')) return 'safety';
-    if (child.hasAttribute('data-ms3-compass-scope')) return 'scope';
-    if (child.hasAttribute('data-ms3-compass')) return 'compass';
-    if (child.hasAttribute('data-ms3-compass-prompt')) return 'prompt';
-    if (child.hasAttribute('data-ms3-compass-orientation')) return 'optional-video';
+    if (child.hasAttribute('data-fd-compass-safety')) return 'safety';
+    if (child.hasAttribute('data-fd-compass-scope')) return 'scope';
+    if (child.hasAttribute('data-fd-compass')) return 'compass';
+    if (child.hasAttribute('data-fd-compass-prompt')) return 'prompt';
+    if (child.hasAttribute('data-fd-compass-orientation')) return 'optional-video';
     return 'unexpected';
   }))).toEqual(['safety', 'scope', 'compass', 'prompt', 'optional-video']);
 
@@ -375,28 +375,28 @@ test('Welcome preserves audience scope and gives the MS3 Compass responsive keyb
   const promptCopy = 'Choose the week or task you are preparing to discuss with your supervising team.';
   const optionalCopy = 'Optional: watch the captioned orientation overview (transcript available)';
   await expect(compassRoot.locator('[role="note"]')).toHaveCount(1);
-  await expect(compassRoot.locator('[data-ms3-compass-safety] > p')).toHaveText(safetyCopy);
-  await expect(compassRoot.locator('[data-ms3-compass-safety] > a')).toHaveText('Open the Orientation Packet');
-  await expect(compassRoot.locator('[data-ms3-compass-scope]')).toHaveText(scopeCopy);
-  await expect(compassRoot.locator('[data-ms3-compass-prompt]')).toHaveText(promptCopy);
-  await expect(compassRoot.locator('[data-ms3-compass-orientation]')).toHaveText(optionalCopy);
-  await expect(compassRoot.locator('section[aria-labelledby="ms3-compass-title"]')).toHaveCount(1);
+  await expect(compassRoot.locator('[data-fd-compass-safety] > p')).toHaveText(safetyCopy);
+  await expect(compassRoot.locator('[data-fd-compass-safety] > a')).toHaveText('Open the Orientation Packet');
+  await expect(compassRoot.locator('[data-fd-compass-scope]')).toHaveText(scopeCopy);
+  await expect(compassRoot.locator('[data-fd-compass-prompt]')).toHaveText(promptCopy);
+  await expect(compassRoot.locator('[data-fd-compass-orientation]')).toHaveText(optionalCopy);
+  await expect(compassRoot.locator('section[aria-labelledby="fd-compass-title"]')).toHaveCount(1);
   await expect(compassRoot.locator('ol')).toHaveCount(1);
 
   const expectedWeeks = [
-    { n: '1', title: 'Foundations & the MSE', href: '?page=week1.md', label: 'Open Week 1' },
-    { n: '2', title: 'Mood, Psychosis & Pharm', href: '?page=week2.md', label: 'Open Week 2' },
-    { n: '3', title: 'Psychotherapy & Personality', href: '?page=week3.md', label: 'Open Week 3' },
-    { n: '4', title: 'Family Systems & EE', href: '?page=week4.md', label: 'Open Week 4' },
-    { n: '5', title: 'Acute & Emergency', href: '?page=week5.md', label: 'Open Week 5' },
-    { n: '6', title: 'Integration & Exam', href: '?page=week6.md', label: 'Open Week 6' },
+    { n: '1', heading: 'Week 1 Foundations & the MSE', href: '?page=week1.md', label: 'Open Week 1' },
+    { n: '2', heading: 'Week 2 Mood, Psychosis & Pharm', href: '?page=week2.md', label: 'Open Week 2' },
+    { n: '3', heading: 'Week 3 Psychotherapy & Personality', href: '?page=week3.md', label: 'Open Week 3' },
+    { n: '4', heading: 'Week 4 Family Systems & EE', href: '?page=week4.md', label: 'Open Week 4' },
+    { n: '5', heading: 'Week 5 Acute & Emergency', href: '?page=week5.md', label: 'Open Week 5' },
+    { n: '6', heading: 'Week 6 Integration & Exam', href: '?page=week6.md', label: 'Open Week 6' },
   ];
-  const renderedWeeks = await compassRoot.locator('[data-ms3-compass-weeks] > li').evaluateAll(rows => (
+  const renderedWeeks = await compassRoot.locator('[data-fd-compass-weeks] > li').evaluateAll(rows => (
     rows.map(row => {
-      const link = row.querySelector('[data-ms3-compass-link]');
+      const link = row.querySelector('[data-fd-compass-link]');
       return {
-        n: row.getAttribute('data-ms3-compass-week'),
-        title: row.querySelector('h3')?.textContent.trim(),
+        n: row.getAttribute('data-fd-compass-week'),
+        heading: row.querySelector('h3')?.textContent.replace(/\s+/g, ' ').trim(),
         href: link?.getAttribute('href'),
         label: link?.textContent.trim(),
       };
@@ -409,7 +409,7 @@ test('Welcome preserves audience scope and gives the MS3 Compass responsive keyb
   await expect(pending.locator('.governance-title')).toHaveText('Pending faculty review');
   await expect(page.locator('.fd-article__body > .governance-notice.reviewed-receipt')).toHaveCount(0);
 
-  const weekLinks = compassRoot.locator('[data-ms3-compass-link]');
+  const weekLinks = compassRoot.locator('[data-fd-compass-link]');
   await weekLinks.first().focus();
   await expect(weekLinks.first()).toBeFocused();
   for (let index = 1; index < expectedWeeks.length; index += 1) {
@@ -418,7 +418,7 @@ test('Welcome preserves audience scope and gives the MS3 Compass responsive keyb
     await expect(weekLinks.nth(index)).toHaveAttribute('href', expectedWeeks[index].href);
   }
   await page.keyboard.press('Tab');
-  const optionalLink = compassRoot.locator('[data-ms3-compass-orientation]');
+  const optionalLink = compassRoot.locator('[data-fd-compass-orientation]');
   await expect(optionalLink).toBeFocused();
   await expect(optionalLink).toHaveAttribute('href', '?tool=orientation-video.html');
 
@@ -430,10 +430,10 @@ test('Welcome preserves audience scope and gives the MS3 Compass responsive keyb
   ];
   for (const widthCase of widthCases) {
     await page.setViewportSize({ width: widthCase.viewport, height: 844 });
-    const geometry = await page.locator('.ms3-compass').evaluate(component => {
+    const geometry = await page.locator('.fd-compass').evaluate(component => {
       const rootPixels = parseFloat(getComputedStyle(document.documentElement).fontSize);
       const width = component.getBoundingClientRect().width;
-      const tracks = getComputedStyle(component.querySelector('.ms3-compass__weeks'))
+      const tracks = getComputedStyle(component.querySelector('.fd-compass__weeks'))
         .gridTemplateColumns.split(/\s+/).filter(Boolean).length;
       return {
         width,
@@ -463,7 +463,7 @@ test('Welcome preserves audience scope and gives the MS3 Compass responsive keyb
   await seedApp(page, testInfo, { storage: { cw_theme: 'dark' } });
   await page.goto('/?page=welcome.md');
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
-  const darkWeekOne = page.locator('[data-ms3-compass-link]').first();
+  const darkWeekOne = page.locator('[data-fd-compass-link]').first();
   await darkWeekOne.focus();
   const focusOutline = await darkWeekOne.evaluate(link => {
     const style = getComputedStyle(link);
@@ -473,8 +473,8 @@ test('Welcome preserves audience scope and gives the MS3 Compass responsive keyb
   expect(focusOutline.width).toBeGreaterThan(0);
 
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  const reducedMotion = await page.locator('.ms3-compass').evaluate(component => {
-    const cards = [...component.querySelectorAll('.ms3-compass__weeks > li')];
+  const reducedMotion = await page.locator('.fd-compass').evaluate(component => {
+    const cards = [...component.querySelectorAll('.fd-compass__weeks > li')];
     return [component, ...cards].map(element => {
       const style = getComputedStyle(element);
       return { animationName: style.animationName, transitionDuration: style.transitionDuration };
@@ -494,7 +494,7 @@ test('Welcome preserves audience scope and gives the MS3 Compass responsive keyb
     await seedApp(touchPage, testInfo);
     await touchPage.goto('/?page=welcome.md');
     const touchTargets = await touchPage.locator(
-      '[data-ms3-compass-safety] a, [data-ms3-compass-link], [data-ms3-compass-orientation]',
+      '[data-fd-compass-safety] a, [data-fd-compass-link], [data-fd-compass-orientation]',
     ).evaluateAll(links => links.map(link => {
       const box = link.getBoundingClientRect();
       return { width: box.width, height: box.height };

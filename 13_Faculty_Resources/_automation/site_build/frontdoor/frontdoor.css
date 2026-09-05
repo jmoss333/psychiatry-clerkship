@@ -495,78 +495,6 @@
 
 /* ═══ Reader (reading / tool pane) ═══════════════════════════════════════════ */
 
-[data-ms3-compass-root]{
-  display:grid;
-  gap:18px;
-  margin:0 0 24px;
-}
-[data-ms3-compass-root] a{
-  scroll-margin-block:6rem calc(6rem + env(safe-area-inset-bottom));
-}
-[data-ms3-compass-safety]{
-  margin:0;
-  padding:14px 16px;
-  border:1px solid var(--fd-line-strong);
-  border-left:4px solid var(--fd-danger);
-  border-radius:10px;
-  background:var(--fd-danger-wash);
-  color:var(--fd-text);
-}
-[data-ms3-compass-safety] p,
-[data-ms3-compass-scope],
-[data-ms3-compass-prompt]{margin:0}
-.ms3-compass{container:ms3-compass / inline-size}
-.ms3-compass > h2{margin:0 0 12px}
-.ms3-compass__weeks{
-  display:grid;
-  grid-template-columns:minmax(0,1fr);
-  gap:.75rem;
-  margin:0;
-  padding-left:1.5rem;
-}
-.ms3-compass__weeks > li{
-  min-width:0;
-  margin:0;
-  padding:14px;
-  border:1px solid var(--fd-line);
-  border-top:3px solid var(--fd-terracotta);
-  border-radius:10px;
-  background:var(--fd-surface-warm);
-  box-shadow:var(--fd-shadow-sm);
-}
-.ms3-compass__weeks > li > span{
-  display:block;
-  color:var(--fd-terracotta-dark);
-  font-size:11px;
-  font-weight:700;
-  letter-spacing:.08em;
-  text-transform:uppercase;
-}
-.ms3-compass__weeks h3{
-  margin:4px 0 10px;
-  overflow-wrap:anywhere;
-}
-[data-ms3-compass-safety] a,
-[data-ms3-compass-link],
-[data-ms3-compass-orientation]{
-  display:inline-flex;
-  align-items:center;
-}
-@container ms3-compass (min-width:22rem){
-  .ms3-compass__weeks{grid-template-columns:repeat(2,minmax(0,1fr))}
-}
-@container ms3-compass (min-width:30rem){
-  .ms3-compass__weeks{grid-template-columns:repeat(3,minmax(0,1fr))}
-}
-@media (pointer:coarse){
-  [data-ms3-compass-safety] a,
-  [data-ms3-compass-link],
-  [data-ms3-compass-orientation]{
-    min-inline-size:44px;
-    min-block-size:44px;
-  }
-}
-
 .fd-reader{animation:fdFadeUp .24s cubic-bezier(.2,.8,.2,1)}
 .fd-reader.is-nav-next{animation-name:fdSlideR}
 .fd-reader.is-nav-prev{animation-name:fdSlideL}
@@ -617,6 +545,28 @@
 .fd-article__body a{color:var(--fd-teal-deep);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:2px}
 .fd-article__body code{font-family:'SF Mono',Monaco,Consolas,monospace;font-size:.88em;background:var(--fd-chip);border-radius:4px;padding:1px 4px;color:var(--fd-text)}
 .fd-article__body blockquote{margin:20px 0;padding:4px 0 4px 16px;border-left:3px solid var(--fd-teal);color:var(--fd-text-mid)}
+
+/* ═══ Compass (build-injected into the six-week Welcome by welcome_compass.py) ═══
+   The heading copy lives in welcome_compass.py and may never be quoted here: this stylesheet
+   ships byte-identical to both audiences, and the build's copy-isolation scan rejects that copy
+   in every built text output -- a comment is text output too.
+   Two-class selectors (0,2,x) deliberately outrank the `.fd-article__body h2/h3/ol/li` (0,1,1)
+   reader rules above, which otherwise win the cascade and silently discard this spacing. */
+[data-fd-compass-root]{display:grid;gap:18px;margin:0 0 24px}
+[data-fd-compass-root] a{scroll-margin-block:6rem calc(6rem + env(safe-area-inset-bottom))}
+[data-fd-compass-safety]{margin:0;padding:14px 16px;border:1px solid var(--fd-line-strong);border-left:4px solid var(--fd-danger);border-radius:10px;background:var(--fd-danger-wash);color:var(--fd-text)}
+[data-fd-compass-safety] p,[data-fd-compass-scope],[data-fd-compass-prompt]{margin:0}
+.fd-compass{container:fd-compass / inline-size}
+.fd-compass .fd-compass__title{margin:0 0 12px}
+.fd-compass .fd-compass__weeks{display:grid;grid-template-columns:minmax(0,1fr);gap:.75rem;margin:0;padding:0;list-style:none}
+.fd-compass .fd-compass__week{min-width:0;margin:0;padding:14px;border:1px solid var(--fd-line);border-top:3px solid var(--fd-terracotta);border-radius:10px;background:var(--fd-surface-warm);box-shadow:var(--fd-shadow-sm)}
+.fd-compass .fd-compass__heading{margin:0 0 10px;overflow-wrap:anywhere}
+.fd-compass .fd-compass__kicker{display:block;margin:0 0 4px;color:var(--fd-terracotta-dark);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+[data-fd-compass-safety] a,[data-fd-compass-link],[data-fd-compass-orientation]{display:inline-flex;align-items:center}
+@container fd-compass (min-width:22rem){.fd-compass .fd-compass__weeks{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@container fd-compass (min-width:30rem){.fd-compass .fd-compass__weeks{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (pointer:coarse){[data-fd-compass-safety] a,[data-fd-compass-link],[data-fd-compass-orientation]{min-inline-size:44px;min-block-size:44px}}
+
 .fd-article__source{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--fd-text-dim);padding:10px 0;border-top:1px solid var(--fd-line)}
 .fd-article__actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
 

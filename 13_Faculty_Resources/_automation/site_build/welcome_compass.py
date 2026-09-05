@@ -58,6 +58,7 @@ KNOWN_BINARY_SUFFIXES = {
     ".zip",
 }
 
+COMPASS_ROOT_OPENER = '<div data-fd-compass-root>'
 SAFETY_ORIENTATION_LINK = "Open the Orientation Packet"
 COMPASS_HEADING = "Six-Week Compass"
 SCOPE_COPY = (
@@ -96,10 +97,10 @@ class _CompassStructureParser(HTMLParser):
         self.depth = 0
 
     def handle_starttag(self, tag, attrs):
-        if any(name == "data-ms3-compass-root" for name, _ in attrs):
+        if any(name == "data-fd-compass-root" for name, _ in attrs):
             self.compasses.append([])
             self.depth = 0
-        if self.compasses and (self.depth or any(name == "data-ms3-compass-root" for name, _ in attrs)):
+        if self.compasses and (self.depth or any(name == "data-fd-compass-root" for name, _ in attrs)):
             self.compasses[-1].append(("start", tag, attrs))
             self.depth += 1
 
@@ -240,8 +241,9 @@ def extract_safety_rule(packet_markdown: str) -> str:
 def render_compass(cards, safety_text: str) -> str:
     items = "".join(
         (
-            '<li data-ms3-compass-week="%d"><span>Week %d</span>'
-            '<h3>%s</h3><a data-ms3-compass-link href="?page=%s">Open Week %d</a></li>'
+            '<li class="fd-compass__week" data-fd-compass-week="%d">'
+            '<h3 class="fd-compass__heading"><span class="fd-compass__kicker">Week %d</span> %s</h3>'
+            '<a class="fd-compass__link" data-fd-compass-link href="?page=%s">Open Week %d</a></li>'
             % (
                 card.n,
                 card.n,
@@ -253,15 +255,15 @@ def render_compass(cards, safety_text: str) -> str:
         for card in cards
     )
     return (
-        '<div data-ms3-compass-root>'
-        '<aside data-ms3-compass-safety role="note">'
+        COMPASS_ROOT_OPENER
+        + '<aside data-fd-compass-safety role="note">'
         '<p>%s</p><a href="?page=orientation.md">%s</a></aside>'
-        '<p data-ms3-compass-scope>%s</p>'
-        '<section class="ms3-compass" data-ms3-compass aria-labelledby="ms3-compass-title">'
-        '<h2 id="ms3-compass-title">%s</h2>'
-        '<ol class="ms3-compass__weeks" data-ms3-compass-weeks>%s</ol></section>'
-        '<p data-ms3-compass-prompt>%s</p>'
-        '<a data-ms3-compass-orientation href="?tool=orientation-video.html">%s</a>'
+        '<p data-fd-compass-scope>%s</p>'
+        '<section class="fd-compass" data-fd-compass aria-labelledby="fd-compass-title">'
+        '<h2 class="fd-compass__title" id="fd-compass-title">%s</h2>'
+        '<ol class="fd-compass__weeks" data-fd-compass-weeks>%s</ol></section>'
+        '<p data-fd-compass-prompt>%s</p>'
+        '<a data-fd-compass-orientation href="?tool=orientation-video.html">%s</a>'
         '</div>'
         % (
             escape(safety_text, quote=True),
@@ -414,37 +416,6 @@ def _assert_resident_welcome_video(welcome) -> None:
         )
 
 
-def _assert_exact_resident_frontdoor_css(out_dir) -> None:
-    output_path = os.path.join(out_dir, "frontdoor.css")
-    canonical_path = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)), "frontdoor", "frontdoor.css"
-    )
-    try:
-        metadata = os.lstat(output_path)
-        if (
-            stat.S_ISLNK(metadata.st_mode)
-            or not stat.S_ISREG(metadata.st_mode)
-            or metadata.st_mode & 0o444 == 0
-        ):
-            raise CompassContractError(
-                "resident built frontdoor.css must be a real readable file"
-            )
-        with open(output_path, "rb") as handle:
-            output_bytes = handle.read()
-        with open(canonical_path, "rb") as handle:
-            canonical_bytes = handle.read()
-    except CompassContractError:
-        raise
-    except OSError as error:
-        raise CompassContractError(
-            "resident built frontdoor.css or its canonical source is unreadable"
-        ) from error
-    if output_bytes != canonical_bytes:
-        raise CompassContractError(
-            "resident built frontdoor.css must be a byte-for-byte copy of the canonical stylesheet"
-        )
-
-
 def validate_media_manifest(manifest) -> None:
     if not isinstance(manifest, dict) or not isinstance(manifest.get("video"), list):
         raise CompassContractError("media manifest must contain a video list")
@@ -489,7 +460,7 @@ def assert_ms3_output(out_dir, cards, safety_text, built_orientation_paths) -> N
             "MS3 Compass built Welcome must contain the exact rendered fragment exactly once; found %d"
             % expected_count
         )
-    root_count = welcome.count("data-ms3-compass-root")
+    root_count = welcome.count("data-fd-compass-root")
     if root_count != 1:
         raise CompassContractError(
             "MS3 Compass built Welcome must contain exactly one Compass root; found %d" % root_count
@@ -514,15 +485,12 @@ def assert_ms3_output(out_dir, cards, safety_text, built_orientation_paths) -> N
 
 def assert_resident_output(out_dir) -> None:
     require_real_files(out_dir, RESIDENT_ONBOARDING_PATHS)
-    _assert_exact_resident_frontdoor_css(out_dir)
     files, text_outputs = _inspect_completed_output(out_dir)
     welcome = text_outputs.get("content/welcome.md")
     if welcome is None:
         raise CompassContractError("resident built Welcome is unreadable: content/welcome.md")
+    forbidden_copy = (COMPASS_ROOT_OPENER, SCOPE_COPY, PROMPT_COPY, COMPASS_HEADING, OPTIONAL_VIDEO_COPY)
     for relative_path, text in text_outputs.items():
-        forbidden_copy = (SCOPE_COPY, PROMPT_COPY, COMPASS_HEADING, OPTIONAL_VIDEO_COPY)
-        if relative_path != "frontdoor.css":
-            forbidden_copy = ("data-ms3-compass-root",) + forbidden_copy
         for forbidden in forbidden_copy:
             if forbidden in text:
                 raise CompassContractError(

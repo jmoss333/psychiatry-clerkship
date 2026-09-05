@@ -64,33 +64,39 @@ const SCOPE_COPY =
 // Independent literal allowlist copied from the approved design specification. The renderer
 // under test does not build or supply this expectation.
 const EXPECTED_COMPASS_FRAGMENT =
-  '<div data-ms3-compass-root>' +
-  '<aside data-ms3-compass-safety role="note">' +
+  '<div data-fd-compass-root>' +
+  '<aside data-fd-compass-safety role="note">' +
   '<p>If you are worried about immediate safety, tell the resident or attending now. ' +
   'Do not wait for rounds. Do not carry it alone.</p>' +
   '<a href="?page=orientation.md">Open the Orientation Packet</a></aside>' +
-  '<p data-ms3-compass-scope>This map supports orientation, supervised practice, and reflection. ' +
+  '<p data-fd-compass-scope>This map supports orientation, supervised practice, and reflection. ' +
   'It is not a checklist, clinical protocol, or measure of readiness. Using or viewing this map ' +
   'does not establish competence, entrustment, or permission to act independently.</p>' +
-  '<section class="ms3-compass" data-ms3-compass aria-labelledby="ms3-compass-title">' +
-  '<h2 id="ms3-compass-title">Six-Week Compass</h2>' +
-  '<ol class="ms3-compass__weeks" data-ms3-compass-weeks>' +
-  '<li data-ms3-compass-week="1"><span>Week 1</span><h3>Foundations &amp; the MSE</h3>' +
-  '<a data-ms3-compass-link href="?page=week1.md">Open Week 1</a></li>' +
-  '<li data-ms3-compass-week="2"><span>Week 2</span><h3>Mood, Psychosis &amp; Pharm</h3>' +
-  '<a data-ms3-compass-link href="?page=week2.md">Open Week 2</a></li>' +
-  '<li data-ms3-compass-week="3"><span>Week 3</span><h3>Psychotherapy &amp; Personality</h3>' +
-  '<a data-ms3-compass-link href="?page=week3.md">Open Week 3</a></li>' +
-  '<li data-ms3-compass-week="4"><span>Week 4</span><h3>Family Systems &amp; EE</h3>' +
-  '<a data-ms3-compass-link href="?page=week4.md">Open Week 4</a></li>' +
-  '<li data-ms3-compass-week="5"><span>Week 5</span><h3>Acute &amp; Emergency</h3>' +
-  '<a data-ms3-compass-link href="?page=week5.md">Open Week 5</a></li>' +
-  '<li data-ms3-compass-week="6"><span>Week 6</span><h3>Integration &amp; Exam</h3>' +
-  '<a data-ms3-compass-link href="?page=week6.md">Open Week 6</a></li>' +
+  '<section class="fd-compass" data-fd-compass aria-labelledby="fd-compass-title">' +
+  '<h2 class="fd-compass__title" id="fd-compass-title">Six-Week Compass</h2>' +
+  '<ol class="fd-compass__weeks" data-fd-compass-weeks>' +
+  '<li class="fd-compass__week" data-fd-compass-week="1">' +
+  '<h3 class="fd-compass__heading"><span class="fd-compass__kicker">Week 1</span> Foundations &amp; the MSE</h3>' +
+  '<a class="fd-compass__link" data-fd-compass-link href="?page=week1.md">Open Week 1</a></li>' +
+  '<li class="fd-compass__week" data-fd-compass-week="2">' +
+  '<h3 class="fd-compass__heading"><span class="fd-compass__kicker">Week 2</span> Mood, Psychosis &amp; Pharm</h3>' +
+  '<a class="fd-compass__link" data-fd-compass-link href="?page=week2.md">Open Week 2</a></li>' +
+  '<li class="fd-compass__week" data-fd-compass-week="3">' +
+  '<h3 class="fd-compass__heading"><span class="fd-compass__kicker">Week 3</span> Psychotherapy &amp; Personality</h3>' +
+  '<a class="fd-compass__link" data-fd-compass-link href="?page=week3.md">Open Week 3</a></li>' +
+  '<li class="fd-compass__week" data-fd-compass-week="4">' +
+  '<h3 class="fd-compass__heading"><span class="fd-compass__kicker">Week 4</span> Family Systems &amp; EE</h3>' +
+  '<a class="fd-compass__link" data-fd-compass-link href="?page=week4.md">Open Week 4</a></li>' +
+  '<li class="fd-compass__week" data-fd-compass-week="5">' +
+  '<h3 class="fd-compass__heading"><span class="fd-compass__kicker">Week 5</span> Acute &amp; Emergency</h3>' +
+  '<a class="fd-compass__link" data-fd-compass-link href="?page=week5.md">Open Week 5</a></li>' +
+  '<li class="fd-compass__week" data-fd-compass-week="6">' +
+  '<h3 class="fd-compass__heading"><span class="fd-compass__kicker">Week 6</span> Integration &amp; Exam</h3>' +
+  '<a class="fd-compass__link" data-fd-compass-link href="?page=week6.md">Open Week 6</a></li>' +
   '</ol></section>' +
-  '<p data-ms3-compass-prompt>Choose the week or task you are preparing to discuss with your ' +
+  '<p data-fd-compass-prompt>Choose the week or task you are preparing to discuss with your ' +
   'supervising team.</p>' +
-  '<a data-ms3-compass-orientation href="?tool=orientation-video.html">Optional: watch the ' +
+  '<a data-fd-compass-orientation href="?tool=orientation-video.html">Optional: watch the ' +
   'captioned orientation overview (transcript available)</a>' +
   '</div>';
 

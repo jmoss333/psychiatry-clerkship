@@ -32,33 +32,39 @@ SAFETY = (
     "Do not wait for rounds. Do not carry it alone."
 )
 EXPECTED_FRAGMENT = (
-    '<div data-ms3-compass-root>'
-    '<aside data-ms3-compass-safety role="note">'
+    '<div data-fd-compass-root>'
+    '<aside data-fd-compass-safety role="note">'
     '<p>If you are worried about immediate safety, tell the resident or attending now. '
     'Do not wait for rounds. Do not carry it alone.</p>'
     '<a href="?page=orientation.md">Open the Orientation Packet</a></aside>'
-    '<p data-ms3-compass-scope>This map supports orientation, supervised practice, and reflection. '
+    '<p data-fd-compass-scope>This map supports orientation, supervised practice, and reflection. '
     'It is not a checklist, clinical protocol, or measure of readiness. Using or viewing this map '
     'does not establish competence, entrustment, or permission to act independently.</p>'
-    '<section class="ms3-compass" data-ms3-compass aria-labelledby="ms3-compass-title">'
-    '<h2 id="ms3-compass-title">Six-Week Compass</h2>'
-    '<ol class="ms3-compass__weeks" data-ms3-compass-weeks>'
-    '<li data-ms3-compass-week="1"><span>Week 1</span><h3>Foundations &amp; the MSE</h3>'
-    '<a data-ms3-compass-link href="?page=week1.md">Open Week 1</a></li>'
-    '<li data-ms3-compass-week="2"><span>Week 2</span><h3>Mood, Psychosis &amp; Pharm</h3>'
-    '<a data-ms3-compass-link href="?page=week2.md">Open Week 2</a></li>'
-    '<li data-ms3-compass-week="3"><span>Week 3</span><h3>Psychotherapy &amp; Personality</h3>'
-    '<a data-ms3-compass-link href="?page=week3.md">Open Week 3</a></li>'
-    '<li data-ms3-compass-week="4"><span>Week 4</span><h3>Family Systems &amp; EE</h3>'
-    '<a data-ms3-compass-link href="?page=week4.md">Open Week 4</a></li>'
-    '<li data-ms3-compass-week="5"><span>Week 5</span><h3>Acute &amp; Emergency</h3>'
-    '<a data-ms3-compass-link href="?page=week5.md">Open Week 5</a></li>'
-    '<li data-ms3-compass-week="6"><span>Week 6</span><h3>Integration &amp; Exam</h3>'
-    '<a data-ms3-compass-link href="?page=week6.md">Open Week 6</a></li>'
+    '<section class="fd-compass" data-fd-compass aria-labelledby="fd-compass-title">'
+    '<h2 class="fd-compass__title" id="fd-compass-title">Six-Week Compass</h2>'
+    '<ol class="fd-compass__weeks" data-fd-compass-weeks>'
+    '<li class="fd-compass__week" data-fd-compass-week="1">'
+    '<h3 class="fd-compass__heading"><span class="fd-compass__kicker">Week 1</span> Foundations &amp; the MSE</h3>'
+    '<a class="fd-compass__link" data-fd-compass-link href="?page=week1.md">Open Week 1</a></li>'
+    '<li class="fd-compass__week" data-fd-compass-week="2">'
+    '<h3 class="fd-compass__heading"><span class="fd-compass__kicker">Week 2</span> Mood, Psychosis &amp; Pharm</h3>'
+    '<a class="fd-compass__link" data-fd-compass-link href="?page=week2.md">Open Week 2</a></li>'
+    '<li class="fd-compass__week" data-fd-compass-week="3">'
+    '<h3 class="fd-compass__heading"><span class="fd-compass__kicker">Week 3</span> Psychotherapy &amp; Personality</h3>'
+    '<a class="fd-compass__link" data-fd-compass-link href="?page=week3.md">Open Week 3</a></li>'
+    '<li class="fd-compass__week" data-fd-compass-week="4">'
+    '<h3 class="fd-compass__heading"><span class="fd-compass__kicker">Week 4</span> Family Systems &amp; EE</h3>'
+    '<a class="fd-compass__link" data-fd-compass-link href="?page=week4.md">Open Week 4</a></li>'
+    '<li class="fd-compass__week" data-fd-compass-week="5">'
+    '<h3 class="fd-compass__heading"><span class="fd-compass__kicker">Week 5</span> Acute &amp; Emergency</h3>'
+    '<a class="fd-compass__link" data-fd-compass-link href="?page=week5.md">Open Week 5</a></li>'
+    '<li class="fd-compass__week" data-fd-compass-week="6">'
+    '<h3 class="fd-compass__heading"><span class="fd-compass__kicker">Week 6</span> Integration &amp; Exam</h3>'
+    '<a class="fd-compass__link" data-fd-compass-link href="?page=week6.md">Open Week 6</a></li>'
     '</ol></section>'
-    '<p data-ms3-compass-prompt>Choose the week or task you are preparing to discuss with your '
+    '<p data-fd-compass-prompt>Choose the week or task you are preparing to discuss with your '
     'supervising team.</p>'
-    '<a data-ms3-compass-orientation href="?tool=orientation-video.html">Optional: watch the '
+    '<a data-fd-compass-orientation href="?tool=orientation-video.html">Optional: watch the '
     'captioned orientation overview (transcript available)</a>'
     '</div>'
 )
@@ -76,9 +82,6 @@ RESIDENT_ONBOARDING_PATHS = [
     "media/resident-onboarding.mp4",
     "media/resident-onboarding-poster.jpg",
 ]
-CANONICAL_FRONTDOOR_CSS = Path(welcome_compass.__file__).resolve().with_name(
-    "frontdoor"
-) / "frontdoor.css"
 TEXT_OUTPUT_PATHS = [
     "content/other.md",
     "tools/other.html",
@@ -118,7 +121,6 @@ def write_complete_resident_output(root):
     )
     for relative_path in RESIDENT_ONBOARDING_PATHS:
         Path(root, relative_path).write_bytes(b"resident onboarding asset")
-    Path(root, "frontdoor.css").write_bytes(CANONICAL_FRONTDOOR_CSS.read_bytes())
     Path(root, "sw.js").write_text("resident service worker", encoding="utf-8")
 
 
@@ -401,54 +403,9 @@ class WelcomeCompassTests(unittest.TestCase):
                 with self.assertRaisesRegex(welcome_compass.CompassContractError, "Compass"):
                     welcome_compass.assert_resident_output(root)
 
-    def test_resident_output_requires_an_exact_real_canonical_frontdoor_stylesheet(self):
-        canonical = CANONICAL_FRONTDOOR_CSS.read_bytes()
-
-        def missing(path):
-            path.unlink()
-
-        def altered(path):
-            path.write_bytes(canonical + b"\n/* altered */\n")
-
-        def truncated(path):
-            path.write_bytes(canonical[:-1])
-
-        def crlf_converted(path):
-            path.write_bytes(canonical.replace(b"\n", b"\r\n"))
-
-        for label, mutate in (
-            ("missing", missing),
-            ("altered", altered),
-            ("truncated", truncated),
-            ("CRLF-converted", crlf_converted),
-        ):
-            with self.subTest(label=label), tempfile.TemporaryDirectory() as root:
-                write_complete_resident_output(root)
-                mutate(Path(root, "frontdoor.css"))
-                with self.assertRaisesRegex(welcome_compass.CompassContractError, "frontdoor.css"):
-                    welcome_compass.assert_resident_output(root)
-
-        with tempfile.TemporaryDirectory() as root:
-            write_complete_resident_output(root)
-            stylesheet = Path(root, "frontdoor.css")
-            stylesheet.chmod(0o000)
-            try:
-                with self.assertRaisesRegex(welcome_compass.CompassContractError, "frontdoor.css"):
-                    welcome_compass.assert_resident_output(root)
-            finally:
-                stylesheet.chmod(0o644)
-
-        with tempfile.TemporaryDirectory() as root:
-            write_complete_resident_output(root)
-            stylesheet = Path(root, "frontdoor.css")
-            stylesheet.unlink()
-            stylesheet.symlink_to(CANONICAL_FRONTDOOR_CSS)
-            with self.assertRaisesRegex(welcome_compass.CompassContractError, "frontdoor.css"):
-                welcome_compass.assert_resident_output(root)
-
     def test_resident_output_rejects_ms3_compass_optional_package_retired_intro_and_lfs_media(self):
         mutations = (
-            ("content/welcome.md", b'<div data-ms3-compass-root>Compass</div>', "Compass"),
+            ("content/welcome.md", welcome_compass.COMPASS_ROOT_OPENER.encode("utf-8") + b"Compass</div>", "Compass"),
             ("tools/orientation-video.html", b"optional package", "optional"),
             ("media/intro-trailer.mp4", b"retired", "retired intro"),
             ("media/resident-onboarding.mp4", welcome_compass.LFS_HEADER + b" oid", "resident-onboarding.mp4"),
@@ -467,7 +424,7 @@ class WelcomeCompassTests(unittest.TestCase):
 
     def test_resident_output_rejects_compass_material_in_every_completed_text_output_class(self):
         leaks = (
-            (b'<div data-ms3-compass-root>Compass</div>', "Compass"),
+            (welcome_compass.COMPASS_ROOT_OPENER.encode("utf-8") + b"Compass</div>", "Compass"),
             (welcome_compass.SCOPE_COPY.encode("utf-8"), "Compass"),
             (welcome_compass.PROMPT_COPY.encode("utf-8"), "Compass"),
         )
@@ -479,26 +436,25 @@ class WelcomeCompassTests(unittest.TestCase):
                     with self.assertRaisesRegex(welcome_compass.CompassContractError, expected):
                         welcome_compass.assert_resident_output(root)
 
-    def test_resident_output_rejects_a_compass_root_in_a_second_stylesheet(self):
+    def test_resident_output_accepts_the_canonical_frontdoor_stylesheet(self):
+        # frontdoor.css is copied byte-identical into BOTH sites, so any Compass copy in it --
+        # including a comment banner that quotes the heading -- hard-fails the resident build.
+        canonical = Path(welcome_compass.__file__).resolve().with_name("frontdoor") / "frontdoor.css"
         with tempfile.TemporaryDirectory() as root:
             write_complete_resident_output(root)
-            write_output_file(root, "assets/second.css", b"[data-ms3-compass-root]{}")
+            write_output_file(root, "frontdoor.css", canonical.read_bytes())
+            self.assertIsNone(welcome_compass.assert_resident_output(root))
+
+    def test_resident_output_allows_compass_selectors_but_rejects_the_rendered_root(self):
+        with tempfile.TemporaryDirectory() as root:
+            write_complete_resident_output(root)
+            write_output_file(root, "frontdoor.css", b"[data-fd-compass-root]{display:grid}")
+            self.assertIsNone(welcome_compass.assert_resident_output(root))
+        with tempfile.TemporaryDirectory() as root:
+            write_complete_resident_output(root)
+            write_output_file(root, "assets/second.css", welcome_compass.COMPASS_ROOT_OPENER.encode("utf-8"))
             with self.assertRaisesRegex(welcome_compass.CompassContractError, "second.css"):
                 welcome_compass.assert_resident_output(root)
-
-    def test_resident_output_rejects_scope_and_prompt_copy_even_in_the_exact_stylesheet(self):
-        for forbidden in (welcome_compass.SCOPE_COPY, welcome_compass.PROMPT_COPY):
-            with self.subTest(forbidden=forbidden), tempfile.TemporaryDirectory() as root, tempfile.TemporaryDirectory() as source_root:
-                write_complete_resident_output(root)
-                module_path = Path(source_root, "welcome_compass.py")
-                module_path.touch()
-                canonical_path = Path(source_root, "frontdoor", "frontdoor.css")
-                canonical_path.parent.mkdir()
-                canonical_path.write_bytes(CANONICAL_FRONTDOOR_CSS.read_bytes() + forbidden.encode("utf-8"))
-                Path(root, "frontdoor.css").write_bytes(canonical_path.read_bytes())
-                with patch.object(welcome_compass, "__file__", str(module_path)):
-                    with self.assertRaisesRegex(welcome_compass.CompassContractError, "Compass copy"):
-                        welcome_compass.assert_resident_output(root)
 
     def test_resident_output_skips_known_binaries_but_rejects_unknown_non_utf8_output(self):
         for relative_path in (
@@ -624,7 +580,7 @@ class WelcomeCompassTests(unittest.TestCase):
 
     def test_rejects_a_stale_compass_root_beside_the_expected_fragment(self):
         with tempfile.TemporaryDirectory() as root:
-            stale = '<div data-ms3-compass-root>stale output</div>'
+            stale = '<div data-fd-compass-root>stale output</div>'
             write_complete_ms3_output(root, EXPECTED_FRAGMENT + stale)
             with self.assertRaisesRegex(welcome_compass.CompassContractError, "exactly one Compass root"):
                 welcome_compass.assert_ms3_output(
