@@ -398,6 +398,17 @@
 
   var state = { caseId: CASES[0].id, stepIdx: 0, revealed: false, ratings: load() };
 
+  /* The learner's rehearsal line, held in memory for the length of one step and nothing longer.
+     It is deliberately NOT part of `state`: state.ratings is what save() persists, and keeping
+     the draft out of that object means no future edit can persist it by widening the save call.
+     Captured before any in-step re-render (reveal, grade) so the line survives to be compared
+     against the model; dropped on step or case change, which is what the page promises. */
+  var draft = '';
+  function captureDraft(){
+    var el = document.getElementById('say');
+    if (el) draft = el.value;
+  }
+
   function load(){
     try { return JSON.parse(localStorage.getItem(STORE_KEY) || '{}') || {}; }
     catch(_){ return {}; }
@@ -446,7 +457,11 @@
     html += '<label class="rehearse" for="say">Write the sentence you would actually say.' +
       '<span>Out loud is better. Do not look ahead — producing the line is the exercise; ' +
       'recognising a good one is not.</span></label>';
-    html += '<textarea id="say" placeholder="Type or say your opening line…"></textarea>';
+    // The learner's line must SURVIVE the reveal — comparing it against the model is the whole
+    // exercise, and re-rendering into a fresh empty box destroyed it exactly when it was needed
+    // (Codex review on #533). `draft` is an in-memory variable: it never reaches storage, and it
+    // is dropped on step or case change, which is what the line below promises.
+    html += '<textarea id="say" placeholder="Type or say your opening line…">' + esc(draft) + '</textarea>';
     html += '<p class="ephemeral">Not saved, not sent, not recoverable — this box is cleared ' +
       'when you change step or case.</p>';
 
@@ -483,14 +498,18 @@
   document.addEventListener('click', function(ev){
     var t = ev.target.closest ? ev.target.closest('[data-case],[data-step],[data-grade],#revealbtn,#nextbtn') : null;
     if (!t) return;
-    if (t.dataset.case)  { state.caseId = t.dataset.case; state.revealed = false; render(); return; }
-    if (t.dataset.step)  { state.stepIdx = +t.dataset.step; state.revealed = false; render(); return; }
-    if (t.id === 'revealbtn') { state.revealed = true; renderStep(); return; }
+    // Leaving the step drops the draft; staying on it keeps the line alive across the re-render.
+    // Note dataset values are STRINGS, so step 0 arrives as "0" — truthy, and the first tab works.
+    if (t.dataset.case)  { draft = ''; state.caseId = t.dataset.case; state.revealed = false; render(); return; }
+    if (t.dataset.step)  { draft = ''; state.stepIdx = +t.dataset.step; state.revealed = false; render(); return; }
+    if (t.id === 'revealbtn') { captureDraft(); state.revealed = true; renderStep(); return; }
     if (t.dataset.grade) {
+      captureDraft();
       state.ratings[ratingKey()] = { grade: t.dataset.grade, at: Date.now() };
       save(); renderSteps(); renderStep(); return;
     }
     if (t.id === 'nextbtn') {
+      draft = '';
       state.stepIdx = Math.min(state.stepIdx + 1, STEPS.length - 1);
       state.revealed = false; render();
       document.getElementById('stepcard').scrollIntoView({ behavior:'smooth', block:'start' });

@@ -67,6 +67,26 @@ test('the learner’s rehearsal text is never persisted', { skip: !present }, ()
     'the rehearsal textarea must not reach storage');
 });
 
+test('the learner’s line survives the reveal, without being persisted', { skip: !present }, () => {
+  // Codex review on #533 caught this: renderStep() rewrote the card into a fresh empty textarea,
+  // so the line vanished at the exact moment it was needed to compare against the model — the
+  // whole exercise. The fix must hold BOTH halves: the draft survives an in-step re-render, and
+  // it still never reaches storage (the invariant above).
+  assert.match(html, /var\s+draft\s*=\s*''/, 'the in-memory draft must exist');
+  assert.match(html, /<textarea id="say"[^>]*>'\s*\+\s*esc\(draft\)/,
+    'the textarea must re-render carrying the draft, or the reveal destroys the learner’s line');
+  assert.match(html, /revealbtn'\s*\)\s*\{\s*captureDraft\(\)/,
+    'reveal must capture the draft before re-rendering');
+  assert.match(html, /dataset\.grade\s*\)\s*\{\s*\n?\s*captureDraft\(\)/,
+    'grading also re-renders the step — it must capture the draft too');
+  // Leaving the step drops it, which is what the page promises the learner.
+  for (const leave of [/dataset\.case\s*\)\s*\{\s*draft = ''/, /dataset\.step\s*\)\s*\{\s*draft = ''/]) {
+    assert.match(html, leave, 'changing step or case must clear the draft');
+  }
+  // And the draft must stay out of the persisted object.
+  assert.doesNotMatch(html, /state\.draft/, 'the draft must not live on state — save() persists state.ratings');
+});
+
 test('storage stays in the cw_* namespace', { skip: !present }, () => {
   const keys = [...html.matchAll(/localStorage\s*\.\s*(?:get|set)Item\s*\(\s*([A-Za-z_$][\w$]*|'[^']*'|"[^"]*")/g)]
     .map((m) => m[1]);
