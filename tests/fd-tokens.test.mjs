@@ -197,12 +197,29 @@ function selectorCompassRanges(css, start, end) {
   }
 }
 
-function namedContainerRange(mask, start, end) {
-  const prelude = mask.slice(start, end);
-  const match = prelude.match(/^\s*@container\s+(ms3-compass)\s+\([\s\S]*\)\s*$/);
-  if (!match) return [];
-  const tokenOffset = match.index + match[0].indexOf(match[1]);
-  return [[start + tokenOffset, start + tokenOffset + match[1].length]];
+function groupingCompassRanges(css, start, end) {
+  // One complete-prelude policy controls BOTH rule-list descent and container-name masking.
+  // This is not a full CSS grammar: only the canonical media forms and the two approved named
+  // queries are supported. Any other wrapper remains a value context, granting no exceptions.
+  // Read original bytes: masked strings/comments must never manufacture valid query syntax.
+  const prelude = css.slice(start, end);
+  const leading = prelude.match(/^(?:[ \t\r\n\f]|\/\*[\s\S]*?\*\/)*/)[0].length;
+  const text = prelude.slice(leading);
+  const ws = '[ \\t\\r\\n\\f]';
+  const media = new RegExp(
+    `^@media${ws}+\\(${ws}*(?:pointer${ws}*:${ws}*coarse|` +
+    `(?:min|max)-width${ws}*:${ws}*[0-9]+px|` +
+    `prefers-reduced-motion${ws}*:${ws}*reduce)${ws}*\\)${ws}*$`,
+  );
+  if (media.test(text)) return [];
+  const container = new RegExp(
+    `^@container${ws}+(ms3-compass)${ws}+\\(${ws}*min-width${ws}*:${ws}*` +
+    `(?:22|30)rem${ws}*\\)${ws}*$`,
+  );
+  const match = text.match(container);
+  if (!match) return null;
+  const tokenStart = start + leading + match[0].indexOf(match[1]);
+  return [[tokenStart, tokenStart + match[1].length]];
 }
 
 function containerDeclarationRange(mask, start, end) {
@@ -217,7 +234,6 @@ function approvedCompassRanges(css) {
   const { mask, structural } = lexCss(css);
   const ranges = [];
   const blocks = [{ kind: 'rule-list', segmentStart: 0 }];
-  const groupingAtRule = /^\s*@(media|supports|layer|container|scope|document|starting-style)\b/i;
   for (let index = 0; index < mask.length; index += 1) {
     if (!structural.has(index)) continue;
     const block = blocks.at(-1);
@@ -231,9 +247,10 @@ function approvedCompassRanges(css) {
       if (block.kind === 'rule-list') {
         const prelude = mask.slice(block.segmentStart, index);
         if (/^\s*@/.test(prelude)) {
-          if (groupingAtRule.test(prelude)) {
+          const grouping = groupingCompassRanges(css, block.segmentStart, index);
+          if (grouping !== null) {
             childKind = 'rule-list';
-            ranges.push(...namedContainerRange(mask, block.segmentStart, index));
+            ranges.push(...grouping);
           }
         } else {
           const selectors = selectorCompassRanges(css, block.segmentStart, index);
@@ -425,6 +442,97 @@ test('the audience-token guard rejects audience copy, unrelated selectors, comme
     'a::before{content:"\\4d S3"}',
   ];
   for (const css of rejected) assert.throws(() => assertNoUnapprovedAudienceTokens(css), css);
+});
+
+// Each reviewer regression runs independently: an earlier failure cannot hide another bypass.
+for (const css of [
+  '@supports {.ms3-compass{}}',
+  '@layer (){[data-ms3-compass-root]{}}',
+  '@container ???{.ms3-compass{}}',
+  '@scope (){.ms3-compass{}}',
+  '@document {.ms3-compass{}}',
+  '@starting-style garbage{.ms3-compass{}}',
+  '@supports {.fixture{container:ms3-compass / inline-size}}',
+  '@media (pointer:coarse){@supports {.ms3-compass{}}}',
+  '@container ms3-compass (min-width:22rem) garbage (x){.x{}}',
+  '@container ms3-compass (x)(y){.x{}}',
+  '@container ms3-compass (min-width:22rem)(y){.x{}}',
+]) {
+  test(`the audience-token guard rejects the at-rule regression ${css}`, () => {
+    assert.throws(() => assertNoUnapprovedAudienceTokens(css));
+  });
+}
+
+test('malformed or unsupported grouping preludes grant no exceptions at any nesting depth', () => {
+  const wrappers = [
+    '@supports', '@layer ()', '@container ???', '@scope ()', '@document',
+    '@starting-style garbage', '@media', '@media ()', '@media ???',
+    '@media (pointer:coarse) garbage', '@media (pointer:coarse)(min-width:320px)',
+    '@media (min-width:1 px)', '@media (min-width:-1px)',
+    '@media (min-width:320px) "hidden"', '@media "hidden" (pointer:coarse)',
+    '@media\u00a0(pointer:coarse)', '@media/**/(pointer:coarse)',
+    '@media (pointer:coarse)\u2028', '@media (pointer:coarse)\u2029',
+    '@container ms3-compass (min-width:22rem) garbage (x)',
+    '@container ms3-compass (x)(y)', '@container ms3-compass (min-width:22rem)(y)',
+    '@container ms3-compass ()', '@container ms3-compass (min-width:22rem) trailing',
+    '@container ms3-compass (min-width:22 rem)',
+    '@container ms3-compass "hidden" (min-width:22rem)',
+    '@container ms3-compass (min-width:22rem) "hidden"',
+    '@container ms3-compass/**/(min-width:22rem)',
+    '@container ms3-compass\u00a0(min-width:22rem)',
+    '@container ms3-compass (min-width:22rem)\u2028',
+    '@container ms3-compass (min-width:22rem)\u2029',
+    '@container ms3-compassé (min-width:22rem)',
+    // These can be valid CSS, but are outside the deliberately supported grouping subset.
+    '@supports (display:grid)', '@layer theme', '@scope (.fixture)', '@starting-style',
+    '@container other (min-width:22rem)', '@container ms3-compass (min-width:24rem)',
+    '@media screen', '@media (pointer:coarse) and (min-width:320px)',
+  ];
+  for (const wrapper of wrappers) {
+    for (const body of [
+      '.ms3-compass{}', '[data-ms3-compass-root]{}',
+      '.fixture{container:ms3-compass / inline-size}',
+      '@container ms3-compass (min-width:30rem){.fixture{}}',
+    ]) {
+      const invalid = `${wrapper}{${body}}`;
+      for (const css of [
+        invalid,
+        `@media (pointer:coarse){${invalid}}`,
+        `${wrapper}{@media (min-width:320px){${body}}}`,
+        `@media (pointer:coarse){${wrapper}{@media (min-width:320px){${body}}}}`,
+      ]) assert.throws(() => assertNoUnapprovedAudienceTokens(css), css);
+    }
+  }
+});
+
+test('complete supported grouping preludes preserve selector and declaration exceptions', () => {
+  const wrappers = [
+    '@media (pointer:coarse)', '@media (min-width:1000px)',
+    '@media (max-width:390px)', '@media (prefers-reduced-motion:reduce)',
+    '@container ms3-compass (min-width:22rem)', '@container ms3-compass (min-width:30rem)',
+    '/* heading 😀 */\n@media \t( pointer : coarse )\n',
+    '/* heading 😀 */\n@container\tms3-compass\n( min-width : 22rem )\t',
+  ];
+  for (const wrapper of wrappers) {
+    for (const body of [
+      '.ms3-compass{}', '[data-ms3-compass-root]{}',
+      '.fixture{container:ms3-compass / inline-size}',
+      '@container ms3-compass (min-width:30rem){.ms3-compass__weeks{}}',
+    ]) {
+      const css = `${wrapper}{${body}}`;
+      assert.doesNotThrow(() => assertNoUnapprovedAudienceTokens(css), css);
+    }
+  }
+  assert.doesNotThrow(() => assertNoUnapprovedAudienceTokens(
+    '@supports {}.ms3-compass{}', // A rejected, empty sibling cannot poison the next rule.
+  ));
+  for (const css of [
+    '@media (pointer:coarse){.ms3-compass{content:"MS3"}}',
+    '@container ms3-compass (min-width:22rem){/* resident */.ms3-compass{}}',
+    '@media (pointer:coarse){.ms3-compassé{}}',
+    '@media (pointer:coarse){.fixture,{container:ms3-compass / inline-size}}',
+    '@media (pointer:coarse){.fixture{--x:{container:ms3-compass / inline-size}}}',
+  ]) assert.throws(() => assertNoUnapprovedAudienceTokens(css), css);
 });
 
 test('the desktop breakpoint is 1000px, as the design specifies', () => {
