@@ -11,8 +11,8 @@ effect size with no source named anywhere, and was found only by accident while
 triaging an unrelated P0.
 
 WHAT IT FLAGS
-A line on a page registered in site_manifest.json (i.e. one a learner can actually
-read) that (a) asserts something specific - an effect size, a rate, a comparative,
+A line on a page either learner site publishes - one a learner can actually read -
+that (a) asserts something specific - an effect size, a rate, a comparative,
 a superlative, a recommendation - and (b) has no attribution within a few lines.
 
 Attribution is read generously: a bracket anchor, a DOI, a PMID, an inline
@@ -35,10 +35,14 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-MANIFEST = ROOT / "13_Faculty_Resources" / "_automation" / "site_build" / "site_manifest.json"
+sys.path.insert(
+    0, str(ROOT / "13_Faculty_Resources" / "_automation" / "site_build")
+)
+from shipped_pages import load_shipped_pages  # noqa: E402
 
 # --- what counts as attribution, read generously -----------------------------
 ATTRIBUTION = re.compile(
@@ -108,15 +112,27 @@ WINDOW = 3  # lines either side that may carry the attribution
 TABLE_ROW = re.compile(r"^\|.*\|$")
 
 
-def shipped_pages():
-    m = json.loads(MANIFEST.read_text(encoding="utf-8"))
+def shipped_surfaces():
+    """Every page and tool either learner site publishes, from the one derived listing.
+
+    Until 2026-09 this read the site manifest, which is one of FIVE producers of
+    "what ships": it knows nothing about the Case-of-the-Week registry, the MS3
+    orientation video, or the resident-only pages and tools. The sweep was
+    therefore structurally blind to 33 shipped surfaces - the 22 Case-of-the-Week
+    case pages among them - and a detector that cannot see a page cannot flag
+    anything on it. ADR-002 derives all five producers into shipped_pages.json and
+    verifies that listing against the real build output on every build, so "a page
+    a learner can read" is now a read rather than a partial re-derivation.
+
+    `kind` comes from the listing and is "page" or "tool" (it was "md" or "tools"
+    when this walked the manifest's two lists). It reaches --json output only.
+    """
+    document = load_shipped_pages(ROOT)
     out = []
-    for kind in ("md", "tools"):
-        for entry in m.get(kind, []):
-            if isinstance(entry, list) and entry:
-                p = ROOT / entry[0]
-                if p.exists() and p.suffix in {".md", ".html"}:
-                    out.append((p, entry[2] if len(entry) > 2 else entry[1], kind))
+    for page in document["pages"]:
+        path = ROOT / page["source"]
+        if path.exists() and path.suffix in {".md", ".html"}:
+            out.append((path, page["title"], page["kind"]))
     return out
 
 
@@ -228,7 +244,7 @@ def main(argv=None):
     ap.add_argument("--json", dest="json_out")
     args = ap.parse_args(argv)
 
-    pages = shipped_pages()
+    pages = shipped_surfaces()
     if args.page:
         pages = [p for p in pages if args.page in str(p[0])]
         args.detail = True
