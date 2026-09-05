@@ -24,8 +24,38 @@ RESIDENT_ONBOARDING_PATHS = (
     "media/resident-onboarding.mp4",
     "media/resident-onboarding-poster.jpg",
 )
-OUTPUT_TEXT_FILENAMES = {"_headers", "sw.js"}
-OUTPUT_TEXT_SUFFIXES = {".md", ".html", ".json", ".js", ".css"}
+KNOWN_BINARY_SUFFIXES = {
+    ".aac",
+    ".apkg",
+    ".avif",
+    ".br",
+    ".eot",
+    ".flac",
+    ".gif",
+    ".gz",
+    ".ico",
+    ".jpeg",
+    ".jpg",
+    ".m4a",
+    ".m4v",
+    ".mov",
+    ".mp3",
+    ".mp4",
+    ".oga",
+    ".ogg",
+    ".opus",
+    ".otf",
+    ".pdf",
+    ".png",
+    ".ttf",
+    ".wasm",
+    ".wav",
+    ".webm",
+    ".webp",
+    ".woff",
+    ".woff2",
+    ".zip",
+}
 
 SAFETY_ORIENTATION_LINK = "Open the Orientation Packet"
 COMPASS_HEADING = "Six-Week Compass"
@@ -284,7 +314,7 @@ def _inspect_completed_output(out_dir):
         filename = os.path.basename(path)
         if filename in RETIRED_INTRO_FILENAMES:
             raise CompassContractError("built output contains retired intro file: " + relative_path)
-        if filename not in OUTPUT_TEXT_FILENAMES and os.path.splitext(filename)[1] not in OUTPUT_TEXT_SUFFIXES:
+        if os.path.splitext(filename)[1].lower() in KNOWN_BINARY_SUFFIXES:
             continue
         try:
             with open(path, encoding="utf-8") as handle:

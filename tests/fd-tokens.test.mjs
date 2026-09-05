@@ -39,28 +39,74 @@ function rule(css, selector) {
 
 const AUDIENCE_TOKEN = /MS3|clerkship|student|shelf|resident|UNE|MMC|Sanford/i;
 
-function neutralizeApprovedCompassSyntax(code) {
-  return code
-    .replace(/\[data-ms3-compass-(?:root|safety|scope|prompt|link|orientation)\]/g, '[data-compass]')
-    .replace(/\.ms3-compass__weeks(?![A-Za-z0-9_-])/g, '.compass-weeks')
-    .replace(/\.ms3-compass(?![A-Za-z0-9_-])/g, '.compass')
-    .replace(/(container\s*:\s*)ms3-compass(?=\s*\/\s*inline-size)/g, '$1compass')
-    .replace(/(@container\s+)ms3-compass(?=\s*\()/g, '$1compass');
+const NON_CODE = /\/\*[\s\S]*?\*\/|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'/g;
+
+function codeMask(css) {
+  return css.replace(NON_CODE, (value) => ' '.repeat(value.length));
+}
+
+function selectorCompassRanges(mask, start, end) {
+  const prelude = mask.slice(start, end);
+  const ranges = [];
+  const namedContainer = prelude.match(/^\s*@container\s+(ms3-compass)(?=\s*\()/);
+  if (namedContainer) {
+    const tokenOffset = namedContainer.index + namedContainer[0].lastIndexOf(namedContainer[1]);
+    return [[start + tokenOffset, start + tokenOffset + namedContainer[1].length]];
+  }
+  if (/^\s*@/.test(prelude)) return ranges;
+
+  const approvedSelectors = [
+    /\[data-ms3-compass-(?:root|safety|scope|prompt|link|orientation)\]/g,
+    /\.ms3-compass__weeks(?![A-Za-z0-9_-])/g,
+    /\.ms3-compass(?![A-Za-z0-9_-])/g,
+  ];
+  for (const pattern of approvedSelectors) {
+    for (const match of prelude.matchAll(pattern)) {
+      ranges.push([start + match.index, start + match.index + match[0].length]);
+    }
+  }
+  return ranges;
+}
+
+function approvedCompassRanges(css) {
+  assert.doesNotMatch(css, /\\/, 'CSS escapes are forbidden in audience-sensitive CSS');
+  const mask = codeMask(css);
+  const ranges = [];
+  let segmentStart = 0;
+  for (let index = 0; index < mask.length; index += 1) {
+    if (mask[index] === '{') {
+      ranges.push(...selectorCompassRanges(mask, segmentStart, index));
+      segmentStart = index + 1;
+    } else if (mask[index] === '}' || mask[index] === ';') {
+      segmentStart = index + 1;
+    }
+  }
+
+  let depth = 0;
+  const depthAt = [];
+  for (let index = 0; index < mask.length; index += 1) {
+    if (mask[index] === '{') depth += 1;
+    depthAt[index] = depth;
+    if (mask[index] === '}') depth -= 1;
+  }
+  const containerDeclaration = /(?:^|[;{])\s*container\s*:\s*(ms3-compass)(?=\s*\/\s*inline-size\s*(?:;|}))/g;
+  for (const match of mask.matchAll(containerDeclaration)) {
+    const tokenOffset = match.index + match[0].lastIndexOf(match[1]);
+    if (depthAt[tokenOffset] > 0) {
+      ranges.push([tokenOffset, tokenOffset + match[1].length]);
+    }
+  }
+  return ranges;
 }
 
 function assertNoUnapprovedAudienceTokens(css) {
-  // Exempt identifiers only in CSS code. Strings and comments stay byte-for-byte visible to the
-  // audience-copy ban, so `content:"MS3"` or a resident-only comment cannot hide behind parsing.
-  const nonCode = /\/\*[\s\S]*?\*\/|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'/g;
-  let checked = '';
-  let cursor = 0;
-  for (const match of css.matchAll(nonCode)) {
-    checked += neutralizeApprovedCompassSyntax(css.slice(cursor, match.index));
-    checked += match[0];
-    cursor = match.index + match[0].length;
+  // Only the exact identifiers in selector preludes or a named-container construct are exempt.
+  // The original comments and strings remain visible to the copy ban.
+  const checked = [...css];
+  for (const [start, end] of approvedCompassRanges(css)) {
+    checked.fill('x', start, end);
   }
-  checked += neutralizeApprovedCompassSyntax(css.slice(cursor));
-  assert.doesNotMatch(checked, AUDIENCE_TOKEN);
+  assert.doesNotMatch(checked.join(''), AUDIENCE_TOKEN);
 }
 
 test('rule exposes only declarations, so an empty selector cannot satisfy a non-empty assertion', () => {
@@ -150,6 +196,10 @@ test('the audience-token guard rejects audience copy, unrelated selectors, comme
     '.student-card{}',
     '/* resident-only styling */ .fixture{}',
     '[data-ms3-compass-score]{}',
+    'a{--audience:.ms3-compass}',
+    'a{--audience:[data-ms3-compass-root]}',
+    '.\\4d S3-unapproved{}',
+    'a::before{content:"\\4d S3"}',
   ];
   for (const css of rejected) assert.throws(() => assertNoUnapprovedAudienceTokens(css), css);
 });

@@ -84,6 +84,11 @@ TEXT_OUTPUT_PATHS = [
     "data.json",
     "client.js",
     "style.css",
+    "notes.txt",
+    "art.svg",
+    "module.mjs",
+    "captions.vtt",
+    "extensionless",
     "_headers",
     "sw.js",
 ]
@@ -442,6 +447,25 @@ class WelcomeCompassTests(unittest.TestCase):
                 with patch.object(welcome_compass, "__file__", str(module_path)):
                     with self.assertRaisesRegex(welcome_compass.CompassContractError, "Compass copy"):
                         welcome_compass.assert_resident_output(root)
+
+    def test_resident_output_skips_known_binaries_but_rejects_unknown_non_utf8_output(self):
+        for relative_path in (
+            "media/image.png",
+            "media/audio.mp3",
+            "media/video.mp4",
+            "anki/deck.apkg",
+            "assets/font.woff2",
+        ):
+            with self.subTest(known_binary=relative_path), tempfile.TemporaryDirectory() as root:
+                write_complete_resident_output(root)
+                write_output_file(root, relative_path, b"\xff\xfe\x00\x80")
+                self.assertIsNone(welcome_compass.assert_resident_output(root))
+
+        with tempfile.TemporaryDirectory() as root:
+            write_complete_resident_output(root)
+            write_output_file(root, "assets/blob.unknown", b"\xff\xfe\x00\x80")
+            with self.assertRaisesRegex(welcome_compass.CompassContractError, "blob.unknown"):
+                welcome_compass.assert_resident_output(root)
 
     def test_resident_output_rejects_each_missing_or_lfs_onboarding_asset(self):
         for relative_path in RESIDENT_ONBOARDING_PATHS:

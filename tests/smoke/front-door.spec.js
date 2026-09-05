@@ -441,12 +441,12 @@ test('Welcome preserves audience scope and gives the MS3 Compass responsive keyb
     await seedApp(touchPage, testInfo);
     await touchPage.goto('/?page=welcome.md');
     const touchTargets = await touchPage.locator(
-      '[data-ms3-compass-link], [data-ms3-compass-orientation]',
+      '[data-ms3-compass-safety] a, [data-ms3-compass-link], [data-ms3-compass-orientation]',
     ).evaluateAll(links => links.map(link => {
       const box = link.getBoundingClientRect();
       return { width: box.width, height: box.height };
     }));
-    expect(touchTargets).toHaveLength(7);
+    expect(touchTargets).toHaveLength(8);
     for (const box of touchTargets) {
       expect(box.width).toBeGreaterThanOrEqual(44);
       expect(box.height).toBeGreaterThanOrEqual(44);

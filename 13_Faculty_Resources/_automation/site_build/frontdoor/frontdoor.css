@@ -543,6 +543,7 @@
   margin:4px 0 10px;
   overflow-wrap:anywhere;
 }
+[data-ms3-compass-safety] a,
 [data-ms3-compass-link],
 [data-ms3-compass-orientation]{
   display:inline-flex;
@@ -555,6 +556,7 @@
   .ms3-compass__weeks{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
 @media (pointer:coarse){
+  [data-ms3-compass-safety] a,
   [data-ms3-compass-link],
   [data-ms3-compass-orientation]{
     min-inline-size:44px;
