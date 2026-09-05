@@ -32,6 +32,13 @@ same rule for the same reason.
 import csv
 import json
 import os
+import sys
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+if HERE not in sys.path:  # so an importer from outside site_build/ still resolves it
+    sys.path.insert(0, HERE)
+
+import shipped_pages  # noqa: E402
 
 MARKER = "<!-- pairing-block -->"
 
@@ -50,7 +57,7 @@ ROLE_LABEL = {
 
 AUDIO_DIR = "12_Media/audio_oe"
 MANIFEST = "MANIFEST.csv"
-SITE_MANIFEST = "13_Faculty_Resources/_automation/site_build/site_manifest.json"
+SHIPPED_PAGES = "13_Faculty_Resources/_automation/site_build/shipped_pages.json"
 
 
 def load(lib_root):
@@ -82,22 +89,23 @@ def load_audio_index(lib_root):
 
 
 def load_site_titles(lib_root):
-    """Map md slug and tool filename -> the human title site_manifest.json ships.
+    """Map (kind, built slug) -> the human title the page ships with.
 
-    Reading the label from the manifest rather than prettifying the slug means the
+    Reading the label from the registry rather than prettifying the slug means the
     pairing block and the nav can never disagree about what a page is called.
+
+    The registry is shipped_pages.json — the one derived listing of what the two learner
+    builds publish (ADR-002, beside this file) — not site_manifest.json, which is only
+    one of five producers. Asking the derived listing means a pairing may name a
+    Case-of-the-Week page or a resident-only page without this renderer having to learn
+    a second producer's shape, and it cannot go stale: build_and_check.sh compares
+    shipped_pages.json against what the build actually published on every build.
     """
-    path = os.path.join(lib_root, SITE_MANIFEST)
-    with open(path, encoding="utf-8") as handle:
-        manifest = json.load(handle)
-    titles = {}
-    for entry in manifest.get("md", []):
-        if len(entry) >= 3:
-            titles[("page", entry[1])] = entry[2]
-    for entry in manifest.get("tools", []):
-        if len(entry) >= 3:
-            titles[("tool", entry[1])] = entry[2]
-    return titles
+    try:
+        document = shipped_pages.load_shipped_pages(lib_root)
+    except shipped_pages.ShippedPagesError as error:
+        raise SystemExit("pairings.json: %s" % error)
+    return {(page["kind"], page["slug"]): page["title"] for page in document["pages"]}
 
 
 def resolve(data, lib_root):
@@ -117,7 +125,7 @@ def resolve(data, lib_root):
                 if key not in titles:
                     raise SystemExit(
                         "pairings.json: %s references %s %r, which is not in %s"
-                        % (pairing["id"], item["kind"], item.get("ref"), SITE_MANIFEST)
+                        % (pairing["id"], item["kind"], item.get("ref"), SHIPPED_PAGES)
                     )
                 item["title"] = titles[key]
             if item.get("kind") == "audio_oe":

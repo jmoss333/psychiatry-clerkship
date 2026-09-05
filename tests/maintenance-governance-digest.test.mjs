@@ -325,9 +325,17 @@ test('malformed inputs fail closed', () => {
 
 function cliDependencies({ bank = [READY_ITEM], attestationErrors = [] } = {}) {
   const files = {
-    '13_Faculty_Resources/_automation/site_build/site_manifest.json': {
-      md: [['source.md', 't_mood.md', 'PRIVATE PAGE TITLE']],
-      tools: [],
+    // The CLI reads the derived "what ships" listing (ADR-002), not site_manifest.json.
+    '13_Faculty_Resources/_automation/site_build/shipped_pages.json': {
+      version: 1,
+      pages: [{
+        slug: 't_mood.md',
+        kind: 'page',
+        sites: ['ms3', 'res'],
+        title: 'PRIVATE PAGE TITLE',
+        source: 'source.md',
+        producer: 'site_manifest',
+      }],
     },
     'question_bank.json': { items: bank },
     'topic_meta.json': { 't_mood.md': TOPIC_META['t_mood.md'] },
