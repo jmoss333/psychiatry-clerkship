@@ -30,9 +30,11 @@ if os.path.exists(_copied_governance): os.remove(_copied_governance)
 _copied_surface_governance=os.path.join(OUT,"governance.json")
 if os.path.exists(_copied_surface_governance): os.remove(_copied_surface_governance)
 
-# ---- orientation video is MS3-scoped (its own narration says "clerkship") — strip the 4 files
+# ---- orientation video is MS3-scoped (its own narration says "clerkship") — strip the files
 # that rode along via the MS3 copytree above; resident gets its own prototypes only (below).
-for _f in ["orientation-video.html","Inpatient_Psych_Orientation.mp4","Inpatient_Psych_Orientation.vtt","poster.jpg"]:
+# The package is declared once in site_extras.py, so this strip cannot drift from the copy.
+from site_extras import MS3_ORIENT_VIDEO
+for _src,_f,_t in MS3_ORIENT_VIDEO:
     _p=os.path.join(OUT,"tools",_f)
     if os.path.exists(_p): os.remove(_p)
 
@@ -44,13 +46,11 @@ for _f in glob.glob(OUT+"/content/cotw_*_ms3.md"): os.remove(_f)
 # ---- resident onboarding trailer ("Yours to Run.", ~87s, silent/kinetic-text) — resident-only,
 # so it's copied here rather than added to build_deploy.py's VIDEO_MEDIA (which would also ship it,
 # unused, on the MS3 site). Embed lives in resident_welcome.md -> welcome.md.
-RESIDENT_VIDEO_MEDIA=["resident-onboarding.mp4","resident-onboarding-poster.jpg"]
-_rvidsrc=os.path.join(LIB,"_prototypes","video-library")
+from site_extras import RESIDENT_ONBOARDING_MEDIA
 os.makedirs(OUT+"/media",exist_ok=True)
-for _rvf in RESIDENT_VIDEO_MEDIA:
-    _rp=os.path.join(_rvidsrc,_rvf)
-    if os.path.exists(_rp): shutil.copy2(_rp, OUT+"/media/"+_rvf)
-    else: print("  WARN: resident onboarding video asset missing from source:",_rvf)
+# Fail closed (2026-09-05 review): assert_resident_output hard-requires these two files at
+# the end of the build, so a silent WARN here only delayed the same failure by a full build.
+common.copy_required_sources(RESIDENT_ONBOARDING_MEDIA, LIB, OUT+"/media", label="resident onboarding media")
 
 # ---- resident-only pages (welcome overrides the MS3 welcome.md) ----
 # ---- Case of the Week: resident per-week pages are registry-driven (single source of truth:
@@ -417,4 +417,8 @@ print("tool governance: emitted", len(_governance["items"]), "items")
 # paths/tools), so this call MUST run last to overwrite the inherited ms3
 # sw.js with a resident-specific manifest (rp-* tools, resident content tree).
 common.emit_service_worker(OUT)
-welcome_compass.assert_resident_output(OUT)
+try:
+    welcome_compass.assert_resident_output(OUT)
+except welcome_compass.CompassContractError as _compass_error:
+    print("BUILD ABORTED — resident Compass isolation:", _compass_error)
+    raise SystemExit(1)

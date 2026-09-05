@@ -10,21 +10,21 @@ import stat
 import subprocess
 
 from check_lfs_media import LFS_HEADER, MEDIA_EXTS, is_soft_context
+from site_extras import MS3_ORIENT_VIDEO, RESIDENT_ONBOARDING_MEDIA
 
 
 COMPASS_MARKER = "<!-- ms3-six-week-compass -->"
 SAFETY_START = "<!-- single-safety-rule:start -->"
 SAFETY_END = "<!-- single-safety-rule:end -->"
 RETIRED_INTRO_FILENAMES = ("intro-trailer.mp4", "intro-trailer-poster.jpg")
-MS3_OPTIONAL_ORIENTATION_PATHS = (
-    "tools/orientation-video.html",
-    "tools/Inpatient_Psych_Orientation.mp4",
-    "tools/Inpatient_Psych_Orientation.vtt",
-    "tools/poster.jpg",
+# Both packages are declared once, in site_extras.py, and projected into built paths
+# here: this module's gates and the two build scripts must agree on the same set, and
+# before 2026-09-05 each package was typed out in three separate places.
+MS3_OPTIONAL_ORIENTATION_PATHS = tuple(
+    os.path.join("tools", built) for _src, built, _title in MS3_ORIENT_VIDEO
 )
-RESIDENT_ONBOARDING_PATHS = (
-    "media/resident-onboarding.mp4",
-    "media/resident-onboarding-poster.jpg",
+RESIDENT_ONBOARDING_PATHS = tuple(
+    os.path.join("media", built) for _src, built in RESIDENT_ONBOARDING_MEDIA
 )
 
 COMPASS_ROOT_OPENER = '<div data-fd-compass-root>'
@@ -413,8 +413,6 @@ def _assert_resident_welcome_video(welcome) -> None:
 def validate_media_manifest(manifest) -> None:
     if not isinstance(manifest, dict) or not isinstance(manifest.get("video"), list):
         raise CompassContractError("media manifest must contain a video list")
-    from site_extras import MS3_ORIENT_VIDEO
-
     orientation_identities = set()
     for source_path, built_name, _title in MS3_ORIENT_VIDEO:
         orientation_identities.update(

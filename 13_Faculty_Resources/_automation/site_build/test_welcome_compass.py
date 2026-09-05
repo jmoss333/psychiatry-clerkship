@@ -363,6 +363,22 @@ class WelcomeCompassTests(unittest.TestCase):
         self.assertIn("from check_lfs_media import", source)
         self.assertNotIn('b"version https://git-lfs"', source)
 
+    def test_package_paths_derive_from_site_extras(self):
+        from site_extras import MS3_ORIENT_VIDEO, RESIDENT_ONBOARDING_MEDIA
+        self.assertEqual(
+            welcome_compass.MS3_OPTIONAL_ORIENTATION_PATHS,
+            tuple("tools/" + built for _src, built, _title in MS3_ORIENT_VIDEO),
+        )
+        self.assertEqual(
+            welcome_compass.RESIDENT_ONBOARDING_PATHS,
+            tuple("media/" + built for _src, built in RESIDENT_ONBOARDING_MEDIA),
+        )
+        self.assertEqual(
+            [src for src, _built in RESIDENT_ONBOARDING_MEDIA],
+            ["_prototypes/video-library/resident-onboarding.mp4",
+             "_prototypes/video-library/resident-onboarding-poster.jpg"],
+        )
+
     def test_structure_parser_balances_void_elements(self):
         fragment = '<div data-fd-compass-root><p>a<br>b<img src="x"><hr/></p></div>'
         alone = welcome_compass._CompassStructureParser()

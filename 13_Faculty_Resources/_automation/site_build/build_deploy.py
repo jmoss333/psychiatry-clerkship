@@ -618,9 +618,6 @@ common.assert_page_contract(OUT, label="ms3")
 # document built from THIS site's OWN nav (above), so it only ever expects tool
 # files this same build actually ships.
 apply_tool_status(Path(OUT) / "tools", _surface_governance)
-# apply_tool_status atomically rewrites shipped HTML tools with the process umask.
-# Restore the required public-read mode for the orientation package after that rewrite.
-os.chmod(os.path.join(OUT,"tools","orientation-video.html"),0o644)
 write_site_document(Path(OUT) / "governance.json", _surface_governance)
 print("surface governance: emitted", len(_surface_governance["items"]), "items (ms3)")
 
@@ -643,9 +640,8 @@ print("tool governance: emitted", len(_governance["items"]), "items")
 # Last artifact step: the precache manifest must reflect the completed,
 # published-artifact file tree, not an intermediate one.
 common.emit_service_worker(OUT)
-welcome_compass.assert_ms3_output(
-    OUT,
-    _compass_cards,
-    _safety_text,
-    _orientation_built_paths,
-)
+try:
+    welcome_compass.assert_ms3_output(OUT, _compass_cards, _safety_text, _orientation_built_paths)
+except welcome_compass.CompassContractError as _compass_error:
+    print("BUILD ABORTED — MS3 Compass output:", _compass_error)
+    raise SystemExit(1)

@@ -30,6 +30,7 @@ DECISION: shipped-pages-single-source
 __all__ = [
     "MS3_ORIENT_VIDEO",
     "MS3_EXTRA_TOOLS",
+    "RESIDENT_ONBOARDING_MEDIA",
     "RESIDENT_COTW_INDEX",
     "RESIDENT_TRACK_PAGES",
     "RESIDENT_EXTRA_PAGES",
@@ -62,6 +63,14 @@ MS3_ORIENT_VIDEO = [
 # The subset of the above that is a shipped tool rather than a media asset.
 # resident_section.py strips these from the resident build, so they are MS3-only.
 MS3_EXTRA_TOOLS = [entry for entry in MS3_ORIENT_VIDEO if entry[1].endswith(".html")]
+
+# ---- resident-only onboarding media ("Yours to Run.", ~87s, silent/kinetic-text) ----
+# Copied by resident_section.py into <deploy>/media/; not a page. welcome_compass.py
+# derives the resident output contract from this list, so it is declared once.
+RESIDENT_ONBOARDING_MEDIA = [
+    ("_prototypes/video-library/resident-onboarding.mp4", "resident-onboarding.mp4"),
+    ("_prototypes/video-library/resident-onboarding-poster.jpg", "resident-onboarding-poster.jpg"),
+]
 
 # ---- resident-only markdown ---------------------------------------------------
 # Two of these deliberately reuse a slug the manifest already ships
