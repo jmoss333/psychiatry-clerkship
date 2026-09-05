@@ -420,6 +420,31 @@ for _analytics_path in sorted(glob.glob(OUT + "/tools/*.html")) + [OUT + "/index
         _analytics_relabelled += 1
 print("usage analytics: relabelled CW_SITE ms3->res on", _analytics_relabelled, "page(s)")
 
+# Fail-closed postcondition. The relabel above only ever walks a hardcoded
+# glob (tools/*.html + index.html) -- exactly the surfaces the resident build
+# currently ships as standalone HTML. A future resident HTML surface outside
+# that glob would inherit (or be polished into) window.CW_SITE='ms3' from the
+# MS3 copytree / common.apply_full_page_pass(), the relabel sweep would never
+# see it, and the resident site would report its entire audience as MS3 with
+# every existing gate green -- silently. So instead of trusting the glob was
+# exhaustive, verify the postcondition directly: walk every .html file
+# actually shipped under OUT and confirm none still carries the ms3 label.
+_stale_ms3_labelled = []
+for _dirpath, _dirnames, _filenames in os.walk(OUT):
+    for _fname in _filenames:
+        if not _fname.endswith(".html"):
+            continue
+        _fp = os.path.join(_dirpath, _fname)
+        if "window.CW_SITE='ms3'" in open(_fp, encoding="utf-8").read():
+            _stale_ms3_labelled.append(os.path.relpath(_fp, OUT))
+if _stale_ms3_labelled:
+    raise SystemExit(
+        "usage analytics: resident build still carries window.CW_SITE='ms3' "
+        "on %d file(s) after the relabel sweep -- add the offending "
+        "surface(s) to the relabel glob above: %s"
+        % (len(_stale_ms3_labelled), ", ".join(sorted(_stale_ms3_labelled)))
+    )
+
 print("RESIDENT build: out",OUT)
 print(" sections:",[s["section"] for s in nav])
 

@@ -1057,6 +1057,107 @@ const RATCHET_EXEMPT_CLASSES = new Set(['lfs-stub-soft']);
   }
 }
 
+/* ---------- 12. usage analytics build integration (HARD) ----------
+ * usage-analytics-collection Task 6, gating the gap its own review found
+ * (task-6-report.md finding #1): tests/analytics-build.test.mjs asserts the
+ * emitter tag, the CW_PAGE injection, and the allowlist match, but that file
+ * runs via `node --test tests/*.test.mjs` in ci.yml and bin/verify.sh
+ * BEFORE either site is built -- every assertion there hits its own
+ * `t.skip('no _build/...')` guard on a clean runner and gates nothing. This
+ * section re-asserts the same postconditions HARD, in the one place that
+ * actually runs after the build for both sites: this QA gate, invoked by
+ * build_and_check.sh right after build_deploy.py / resident_section.py.
+ * tests/analytics-build.test.mjs stays as-is -- still useful for a quick
+ * local check after a manual build -- it just must not be the only gate.
+ *
+ * Scoped to a real ms3/res build the same way §9's soft-finding ratchet is:
+ * an unrecognized site dir (a fixture written by an unrelated test, a
+ * mkdtemp scratch dir with no analytics build step) has never had analytics
+ * built into it, so gating it here unconditionally would turn every
+ * non-analytics fixture test in this repo into a false HARD failure. Site
+ * key derived from `basename(resolve(SITE))` -- the same call §9 already
+ * makes, which normalizes a trailing slash on the CLI argument for free
+ * (`resolve()` strips it before `basename()` ever sees it).
+ *
+ * The CW_SITE mislabel check (task-6-report.md finding #2, resident_section.py's
+ * own fail-closed postcondition) is generalized here to both sites and to
+ * every shipped .html file, not just the tools/*.html + index.html glob the
+ * Python relabel sweep hardcodes -- a future HTML surface outside that glob
+ * would otherwise keep an inherited/mislabelled CW_SITE with this QA gate
+ * none the wiser.
+ */
+{
+  const siteBase = basename(resolve(SITE));
+  const analyticsSite = (siteBase === 'ms3' || siteBase === 'res') ? siteBase : null;
+  if (!analyticsSite) {
+    I('usage analytics: unrecognized site dir — §12 skipped (fixture or scratch build)');
+  } else {
+    const ANALYTICS_TAG = '<script src="/analytics.js" defer></script>';
+    if (!existsSync(p('analytics.js'))) {
+      H('usage analytics: analytics.js missing from built site root');
+    }
+
+    // The complete set of files apply_full_page_pass() (common.py) ever hands
+    // a <head> to inject the emitter tag into: tools/*.html + index.html. The
+    // SPA shell serves every content/*.md page via client-side routing and
+    // carries no per-page CW_PAGE by design (see common.py's analytics_head()).
+    const analyticsPages = listHtml(p('tools')).map((f) => join('tools', f));
+    if (existsSync(p('index.html'))) analyticsPages.push('index.html');
+
+    let allowlist = null;
+    try {
+      allowlist = JSON.parse(readFileSync(join(LIBROOT, 'metrics', 'allowlist.json'), 'utf8'));
+    } catch (e) {
+      H(`usage analytics: metrics/allowlist.json missing or unparsable — ${e.message}`);
+    }
+    const allowedKeys = new Set((allowlist && allowlist.keys && allowlist.keys[analyticsSite]) || []);
+
+    let pagesWithCwPage = 0;
+    for (const rel of analyticsPages) {
+      const fp = p(rel);
+      if (!existsSync(fp)) continue;
+      const html = readFileSync(fp, 'utf8');
+      if (!html.includes(ANALYTICS_TAG)) {
+        H(`usage analytics: emitter tag missing from a page that should carry it: ${rel}`);
+      }
+      const m = /window\.CW_PAGE='([^']+)'/.exec(html);
+      if (m) {
+        pagesWithCwPage += 1;
+        const key = `page:${m[1]}`;
+        if (allowlist && !allowedKeys.has(key)) {
+          H(`usage analytics: injected CW_PAGE not on the "${analyticsSite}" allowlist: ${rel} -> ${key}`);
+        }
+      }
+    }
+    if (analyticsPages.length && pagesWithCwPage === 0) {
+      H(`usage analytics: no built ${analyticsSite} page carries CW_PAGE`);
+    }
+
+    // Fail-closed CW_SITE check (finding #2), site-agnostic and glob-agnostic:
+    // walk every shipped .html file and flag any CW_SITE literal that
+    // disagrees with this build's own site key.
+    const mislabelled = [];
+    const scanForMislabel = (dir) => {
+      if (!existsSync(dir)) return;
+      for (const name of readdirSync(dir)) {
+        const fp = join(dir, name);
+        if (statSync(fp).isDirectory()) { scanForMislabel(fp); continue; }
+        if (!name.endsWith('.html')) continue;
+        const html = readFileSync(fp, 'utf8');
+        for (const m of html.matchAll(/window\.CW_SITE='([^']+)'/g)) {
+          if (m[1] !== analyticsSite) {
+            mislabelled.push(`${relative(SITE, fp)} (CW_SITE='${m[1]}')`);
+          }
+        }
+      }
+    };
+    scanForMislabel(SITE);
+    if (mislabelled.length) {
+      H(`usage analytics: CW_SITE mislabelled for a "${analyticsSite}" build: ${mislabelled.join(', ')}`);
+    }
+  }
+}
+
 /* ---------- report ---------- */
 const line = '─'.repeat(64);
 console.log(`\n${line}\nStatic QA — ${SITE}\n${line}`);

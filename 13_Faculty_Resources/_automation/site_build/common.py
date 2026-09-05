@@ -391,6 +391,16 @@ def analytics_head(site, page=None):
     """
     tag = "<script>window.CW_SITE='%s'" % site
     if page:
+        # Structurally safe, not just incidentally safe: every current slug is
+        # already [A-Za-z0-9._-] (a filesystem basename), so this never fires
+        # today -- but %s-into-a-single-quoted-JS-string has no enforcement of
+        # that without this assertion, and a future slug source (or a typo)
+        # could otherwise break out of the string literal.
+        if not re.fullmatch(r"[A-Za-z0-9._-]+", page):
+            raise ValueError(
+                "analytics_head: page slug %r is not build-time-safe for JS "
+                "string interpolation (must match [A-Za-z0-9._-]+)" % (page,)
+            )
         tag += ";window.CW_PAGE='%s'" % page
     tag += "</script>" + ANALYTICS_TAG
     return tag
