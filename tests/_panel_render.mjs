@@ -136,7 +136,9 @@ export const renderFromSource = () => topicEntries
 //
 // This only ever INSERTS a newline between `>` and `<`; it deletes and rewrites nothing, so no
 // change to the render can hide inside the formatting. tests/panel-snapshots.test.mjs pins that
-// round-trip on the real corpus rather than leaving it as an assurance in a comment.
+// insertion-only property rather than leaving it as an assurance here — over the stored corpus,
+// AND over literal probes, because the corpus only exercises the byte classes it happens to
+// contain and a normalisation of anything else would cancel out on both sides of the gate.
 
 /** Break between adjacent tags so a snapshot diffs line by line. */
 export const formatPanel = (html) => `${String(html).replace(/></g, '>\n<')}\n`;
