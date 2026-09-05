@@ -136,6 +136,17 @@ export function deriveContentUniverse({ shipped } = {}) {
   return items;
 }
 
+/* The same validated rows deriveContentUniverse() reads, with `sites` left intact.
+
+   deriveContentUniverse answers "which ONE deployment does the console preview this
+   against?" and collapses sites to a single value for that. A caller asking "does this
+   page ship on res?" needs the array: 69 pages ship to BOTH sites and collapse to 'ms3',
+   so reading `site` would say no. The panel snapshot harness asks exactly that question
+   per audience — see tests/_panel_render.mjs. */
+export function shippedItemsWithSites({ shipped } = {}) {
+  return shippedPages(shipped);
+}
+
 export function contentUniverseSlugs(sources) {
   return new Set(deriveContentUniverse(sources).map(item => item.slug));
 }

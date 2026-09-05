@@ -23,6 +23,7 @@ import {
   cotwTwinSlug,
   deriveContentUniverse,
   isCotwSlug,
+  shippedItemsWithSites,
 } from './content-universe.mjs';
 
 const ROOT = new URL('../', import.meta.url);
@@ -336,4 +337,26 @@ test('the pending-visibility invariant fails when a producer stops being read', 
   // …and no exclusion masks a live item. The list is empty; see content-universe.mjs.
   assert.deepEqual(NOT_REVIEWABLE_IN_CONSOLE.filter(slug => universe.has(slug)), []);
   assert.deepEqual([...NOT_REVIEWABLE_IN_CONSOLE], []);
+});
+
+test('shippedItemsWithSites keeps both sites on a page that ships to both', () => {
+  const shipped = {
+    version: 1,
+    pages: [
+      { slug: 'shared.md', title: 'Shared', kind: 'page', sites: ['ms3', 'res'] },
+      { slug: 'resonly.md', title: 'Res only', kind: 'page', sites: ['res'] },
+    ],
+  };
+  const rows = shippedItemsWithSites({ shipped });
+  assert.deepEqual(rows.map(r => r.sites), [['ms3', 'res'], ['res']]);
+
+  // deriveContentUniverse collapses the shared page to 'ms3', which is why this exists.
+  assert.deepEqual(deriveContentUniverse({ shipped }).map(r => r.site), ['ms3', 'res']);
+});
+
+test('shippedItemsWithSites rejects a malformed listing rather than shortening it', () => {
+  assert.throws(
+    () => shippedItemsWithSites({ shipped: { version: 1, pages: [{ slug: 'a.md', title: 'A', kind: 'page', sites: [] }] } }),
+    /invalid sites/,
+  );
 });
