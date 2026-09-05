@@ -91,7 +91,8 @@ test('nav items: exact inventory + HTTP 200 + non-empty content', async ({ reque
   // Non-CotW baseline: 92 ms3 / 100 res (equal to the 2026-09-01 pins of 103/111 minus the
   // 11 registry weeks then shipping). +2 per audience within that baseline: WP-T3's
   // therapy_on_the_unit.md and therapy_reading_room.md.
-  expect(items).toHaveLength((isResidentProject(testInfo.project.name) ? 100 : 92) + COTW_WEEKS);
+  // res 100 → 101 on 2026-09-04: +rp-post-event-huddle.html (resident-only tool).
+  expect(items).toHaveLength((isResidentProject(testInfo.project.name) ? 101 : 92) + COTW_WEEKS);
   expect(items.filter(item => item.f === 'rotation-curator.html').map(({
     t, f, k, hidden,
   }) => ({ t, f, k, hidden }))).toEqual([{
@@ -157,7 +158,7 @@ test('Front Door Library exactly matches the projected placed refs', async ({ pa
   const rendered = await page.locator('.fd-collink[data-fd-open]').evaluateAll(controls => (
     controls.map(control => control.getAttribute('data-fd-open')).sort()
   ));
-  const expectedCount = isResidentProject(testInfo.project.name) ? 92 : 83;  // +2, WP-T3
+  const expectedCount = isResidentProject(testInfo.project.name) ? 93 : 83;  // +2, WP-T3; res +1 rp-post-event-huddle.html (2026-09-04)
 
   expect(new Set(expected).size).toBe(expectedCount);
   expect(new Set(rendered).size).toBe(expectedCount);

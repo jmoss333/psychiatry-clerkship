@@ -11,7 +11,7 @@ function audience(testInfo) {
   const resident = isResidentProject(testInfo.project.name);
   return {
     role: resident ? 'pgy1' : 'student',
-    libraryCount: resident ? 92 : 83,  // +therapy_on_the_unit.md, +therapy_reading_room.md (WP-T3)
+    libraryCount: resident ? 93 : 83,  // +therapy_on_the_unit.md, +therapy_reading_room.md (WP-T3); res +rp-post-event-huddle.html (2026-09-04)
     residentRef: resident ? 'rp-agitation.html' : null,
     weekCount: resident ? 4 : 6,
     pathHeading: resident ? 'Your 4-week path' : 'Your 6-week path',
