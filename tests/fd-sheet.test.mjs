@@ -135,6 +135,7 @@ function liveShellBoundary(index, topicMeta, templateHtml) {
   const boundary = new Function('fdSheet', 'index', 'topicMeta', 'document', `
     ${failureCopyGlobalSource()}
     var FD_INDEX=index;
+    var facultyPreviewRequest=null, location={search:''};
     ${crisisTemplateInitSource()}
     function fdClone(value){var out={};for(var key in value){out[key]=value[key];}return out;}
     function progLoad(){return {};}
@@ -143,6 +144,7 @@ function liveShellBoundary(index, topicMeta, templateHtml) {
     function capRead(){return {v:1,items:[]};}
     function fdActivityDays(){return [false,false,false,false,false,false,false];}
     function fdProgressDoneMap(){return {};}
+    function fdProgressWeek(state){return state.week;}
     function LS(){return '';}
     function fdFindWeek(index,n){for(var i=0;i<index.weeks.length;i++){if(index.weeks[i].n===n)return index.weeks[i];}return null;}
     function fdRotationWeek(){return null;}

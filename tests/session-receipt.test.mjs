@@ -21,9 +21,10 @@ function memStorage(seed = {}) {
   };
 }
 // eslint-disable-next-line no-new-func
-const withStore = (ls) => new Function('localStorage', `${storeSrc}\n${receiptSrc}\nreturn {cwReceipt, blockLoad, blockSave};`)(ls);
+const withStore = (ls, search = '') => new Function('localStorage', 'location', `${storeSrc}\n${receiptSrc}\nreturn {cwReceipt, blockLoad, blockSave};`)(ls, { search });
 // eslint-disable-next-line no-new-func
 const withoutStore = (ls) => new Function('localStorage', `${receiptSrc}\nreturn {cwReceipt};`)(ls);
+const withWeek = (ls, search) => new Function('localStorage', 'location', `${receiptSrc}\nreturn {cwReceipt};`)(ls, { search });
 
 const NOW = new Date(2026, 8, 2, 14, 30, 0).getTime();
 const AUDIENCE_TOKEN_RE = /MS3|clerkship|student|shelf|resident|UNE|MMC|Sanford/i;
@@ -54,10 +55,10 @@ test('a ref marks the Today item done once, in the legacy {done,at} shape, and s
   const first = F.cwReceipt(base());
   assert.equal(first.marked, true);
   assert.deepEqual(JSON.parse(ls.getItem('cw_progress_v1')), { 'question-bank-practice.html': { done: true, at: '2026-09-02' } });
-  assert.match(first.html, /Marked done on Today:<\/b> Practice Questions\./);
+  assert.match(first.html, /Activity recorded:<\/b> Practice Questions\./);
   const second = F.cwReceipt(base());
   assert.equal(second.marked, false, 'already done: no second write, no second announcement');
-  assert.doesNotMatch(second.html, /Marked done on Today/);
+  assert.doesNotMatch(second.html, /Activity recorded/);
 });
 
 test('no ref means no progress write (Daily Review and exam sets are not week items)', () => {
@@ -75,8 +76,36 @@ test('an existing progress map is preserved, not replaced', () => {
   assert.equal(p['question-bank-practice.html'].done, true);
 });
 
+test('practice receipts complete only their launch week and retain prior reading and practice history', () => {
+  const ls = memStorage();
+  ls.setItem('cw_progress_v1', JSON.stringify({
+    'a.md': { done: true, at: '2026-08-30' },
+    'question-bank-practice.html': { done: true, at: '2026-08-20', note: 'keep', practiceWeeks: { '1': { done: true, at: '2026-08-20' } } },
+  }));
+  const receipt = withWeek(ls, '?practiceWeek=2').cwReceipt(base());
+  const p = JSON.parse(ls.getItem('cw_progress_v1'));
+  const q = p['question-bank-practice.html'];
+  assert.equal(receipt.marked, true);
+  assert.match(receipt.html, /Week 2 practice recorded/);
+  assert.equal(q.practiceWeeks['2'].done, true);
+  assert.equal(q.practiceWeeks['1'].at, '2026-08-20');
+  assert.equal(q.practiceWeeks['3'], undefined);
+  assert.equal(q.at, '2026-08-20');
+  assert.equal(q.note, 'keep');
+  assert.equal(p['a.md'].at, '2026-08-30');
+  assert.equal(withWeek(ls, '?practiceWeek=2').cwReceipt(base()).marked, false);
+});
+
+test('invalid or duplicate practice week parameters do not create weekly completions', () => {
+  for (const search of ['?practiceWeek=0', '?practiceWeek=-1', '?practiceWeek=2.5', '?practiceWeek=2&practiceWeek=3']) {
+    const ls = memStorage();
+    withWeek(ls, search).cwReceipt(base());
+    assert.equal(JSON.parse(ls.getItem('cw_progress_v1'))['question-bank-practice.html'].practiceWeeks, undefined);
+  }
+});
+
 test('with a live block the receipt marks its step and offers the next one instead of the tool action', () => {
-  const ls = memStorage(); const F = withStore(ls);
+  const ls = memStorage(); const F = withStore(ls, '?block=1&n=4');
   F.blockSave({ v: 1, minutes: 10, createdAt: NOW - 60000, steps: [
     { kind: 'qb', ref: 'question-bank-practice.html', n: 4, min: 3, title: '4 practice questions' },
     { kind: 'page', ref: 't_psychosis.md', min: 5, title: 'Psychosis' },
@@ -86,27 +115,27 @@ test('with a live block the receipt marks its step and offers the next one inste
   assert.equal(F.blockLoad(NOW).steps[0].done, true, 'the qb step is marked');
   assert.equal(r.next.kind, 'page');
   assert.match(r.html, /Next in your block: Psychosis<small>~5 min<\/small>/);
-  assert.match(r.html, /data-cw-receipt-ref="t_psychosis\.md" data-cw-receipt-search="\?page=t_psychosis\.md"/);
+  assert.match(r.html, /data-cw-receipt-ref="t_psychosis\.md" data-cw-receipt-search="\?page=t_psychosis\.md&amp;block=1"/);
   assert.match(r.html, /Block · 1 of 3 done/);
   assert.doesNotMatch(r.html, /id="practiceMoreBtn"/, 'one next action, not two');
 });
 
 test('a page step already ticked in progress counts as done for the block', () => {
   const ls = memStorage({ cw_progress_v1: JSON.stringify({ 't_psychosis.md': { done: true, at: '2026-09-02' } }) });
-  const F = withStore(ls);
+  const F = withStore(ls, '?block=1&limit=3');
   F.blockSave({ v: 1, minutes: 10, createdAt: NOW - 60000, steps: [
     { kind: 'review', ref: 'review.html', n: 3, min: 2, title: '3 reviews that are due' },
     { kind: 'page', ref: 't_psychosis.md', min: 5, title: 'Psychosis' },
     { kind: 'qb', ref: 'question-bank-practice.html', n: 4, min: 3, title: '4 practice questions' },
   ] });
-  const r = F.cwReceipt(Object.assign(base(), { ref: null, blockKind: 'review' }));
+  const r = F.cwReceipt(Object.assign(base(), { tool: 'review', ref: null, blockKind: 'review' }));
   assert.equal(r.next.kind, 'qb');
   assert.match(r.html, /Block · 2 of 3 done/);
   assert.match(r.html, /data-cw-receipt-search="\?tool=question-bank-practice\.html&amp;block=1&amp;n=4"/);
 });
 
 test('finishing the last step reports the block complete, clears it, and falls back to the tool action', () => {
-  const ls = memStorage(); const F = withStore(ls);
+  const ls = memStorage(); const F = withStore(ls, '?block=1&n=4');
   F.blockSave({ v: 1, minutes: 5, createdAt: NOW - 60000, steps: [
     { kind: 'qb', ref: 'question-bank-practice.html', n: 4, min: 3, title: '4 practice questions' },
   ] });
@@ -115,6 +144,38 @@ test('finishing the last step reports the block complete, clears it, and falls b
   assert.match(r.html, /Block complete · 1 of 1 done/);
   assert.match(r.html, /id="practiceMoreBtn"/);
   assert.equal(ls.getItem('cw_block_v1'), null, 'a finished block does not linger');
+});
+
+test('unrelated or stale tool receipts cannot credit or take over a saved block', () => {
+  for (const search of [
+    '', '?n=2&cat=mood', '?block=1', '?block=1&n=5&cat=mood',
+    '?block=1&n=2&cat=psychosis', '?block=1&n=2&n=5&cat=mood',
+    '?block=1&block=0&n=2&cat=mood',
+  ]) {
+    const ls = memStorage(); const F = withStore(ls, search);
+    const saved = { v: 1, minutes: 5, createdAt: NOW - 60000, steps: [
+      { kind: 'qb', ref: 'question-bank-practice.html', n: 2, cat: 'mood', min: 2, title: '2 practice questions' },
+    ] };
+    F.blockSave(saved);
+    const r = F.cwReceipt(base());
+    assert.deepEqual(F.blockLoad(NOW), saved, search || 'ordinary tool route');
+    assert.equal(r.next, null);
+    assert.doesNotMatch(r.html, /Next in your block|Block complete|Block ·/);
+    assert.match(r.html, /id="practiceMoreBtn"/);
+    assert.equal(r.marked, true, 'ordinary activity is still recorded');
+  }
+});
+
+test('a block receipt cannot skip an earlier unfinished reading', () => {
+  const ls = memStorage(); const F = withStore(ls, '?block=1&n=2');
+  const saved = { v: 1, minutes: 5, createdAt: NOW - 60000, steps: [
+    { kind: 'page', ref: 'welcome.md', min: 3, title: 'Welcome' },
+    { kind: 'qb', ref: 'question-bank-practice.html', n: 2, min: 2, title: '2 practice questions' },
+  ] };
+  F.blockSave(saved);
+  const r = F.cwReceipt(base());
+  assert.deepEqual(F.blockLoad(NOW), saved);
+  assert.equal(r.next, null);
 });
 
 test('every interpolated string is escaped', () => {

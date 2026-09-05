@@ -8,8 +8,8 @@
      3. marks the tool's Today item done (spec.ref → cw_progress_v1, the same {done,at} entry
         fdProgressToggle writes) so nobody has to go back and tick it. Only tools that ARE a
         week item pass a ref; Daily Review and Shelf Mode pass null.
-   It also advances the timed block (spec.blockKind → blockMarkStep) when the block snippet
-   is present; the receipt never requires it.
+   It also advances the timed block (spec.blockKind → blockMarkStep) when this session was
+   launched with the next saved step's parameters; ordinary practice leaves a saved block alone.
 
    Pure apart from those two writes: returns {html, marked, next}. Copy is audience-neutral
    (no MS3/clerkship/student/shelf/resident tokens) because it ships to both sites. Navigation
@@ -23,15 +23,35 @@ function cwReceiptLocalDay(nowMs){
   var d=new Date(nowMs), m=d.getMonth()+1, day=d.getDate();
   return d.getFullYear()+'-'+(m<10?'0':'')+m+'-'+(day<10?'0':'')+day;
 }
-/* Writes the legacy {done:true,at} entry the front door reads. Returns true only when this
-   call changed the store, so "Marked done on Today" is said once, not on every re-render. */
+/* The shell pins the practice week in the iframe URL when a tool repeats across weeks.
+   Retain global history while recording this session only in that week's practice entry. */
+function cwReceiptPracticeWeek(){
+  try{
+    if(typeof location==='undefined') return null;
+    var values=new URLSearchParams(location.search||'').getAll('practiceWeek');
+    if(values.length!==1||!/^([1-9]|[1-4][0-9]|5[0-2])$/.test(values[0])) return null;
+    return values[0];
+  }catch(_){ return null; }
+}
+/* Returns true only when this call changed completion, avoiding duplicate announcements. */
 function cwReceiptMarkDone(ref, nowMs){
   if(!ref) return false;
   try{
     var p=JSON.parse(localStorage.getItem('cw_progress_v1')||'null');
     if(!p||typeof p!=='object') p={};
-    if(p[ref]&&p[ref].done===true) return false;
-    p[ref]={done:true,at:cwReceiptLocalDay(nowMs)};
+    var entry=p[ref]&&typeof p[ref]==='object'&&!Array.isArray(p[ref])?p[ref]:{};
+    var week=cwReceiptPracticeWeek();
+    if(week){
+      var weeks=entry.practiceWeeks&&typeof entry.practiceWeeks==='object'&&!Array.isArray(entry.practiceWeeks)?entry.practiceWeeks:{};
+      if(weeks[week]&&weeks[week].done===true) return false;
+      weeks[week]={done:true,at:cwReceiptLocalDay(nowMs)};
+      entry.practiceWeeks=weeks;
+      if(typeof entry.done!=='boolean'){entry.done=true;entry.at=cwReceiptLocalDay(nowMs);}
+    }else{
+      if(entry.done===true) return false;
+      entry.done=true;entry.at=cwReceiptLocalDay(nowMs);
+    }
+    p[ref]=entry;
     localStorage.setItem('cw_progress_v1', JSON.stringify(p));
     return true;
   }catch(_){ return false; }
@@ -40,7 +60,7 @@ function cwReceiptStepRoute(step){
   var s=step||{};
   if(s.kind==='review') return '?tool=review.html&block=1&limit='+encodeURIComponent(String(s.n||1));
   if(s.kind==='qb') return '?tool=question-bank-practice.html&block=1&n='+encodeURIComponent(String(s.n||5))+(s.cat?'&cat='+encodeURIComponent(String(s.cat)):'');
-  return '?page='+encodeURIComponent(String(s.ref||''));
+  return '?page='+encodeURIComponent(String(s.ref||''))+'&block=1';
 }
 function cwReceiptNextStep(block, doneMap){
   var b=block||{}, list=b.steps||[], d=doneMap||{}, i, s, done=0;
@@ -52,6 +72,26 @@ function cwReceiptNextStep(block, doneMap){
     else if(!next) next=s;
   }
   return {next:next, done:done, total:list.length};
+}
+/* A saved plan alone does not enroll every later tool session. Require the explicit block
+   route, the next unfinished step, and its promised size/category before crediting a receipt.
+   This also rejects old links whose parameters no longer match the saved plan. */
+function cwReceiptMatchesBlock(spec, block){
+  var s=spec||{}, params;
+  if(!block||!s.blockKind) return false;
+  try{ params=new URLSearchParams(typeof location==='undefined'?'':location.search||''); }
+  catch(_){ return false; }
+  if(params.getAll('block').length!==1||params.get('block')!=='1') return false;
+  var step=cwReceiptNextStep(block,cwReceiptDoneMap()).next;
+  if(!step||step.kind!==s.blockKind) return false;
+  var sizeKey=step.kind==='qb'?'n':(step.kind==='review'?'limit':null);
+  if(!sizeKey||params.getAll(sizeKey).length!==1||params.get(sizeKey)!==String(step.n)) return false;
+  if(step.kind==='qb'){
+    if(step.ref!==s.ref) return false;
+    if(step.cat) return params.getAll('cat').length===1&&params.get('cat')===String(step.cat);
+    return !params.has('cat');
+  }
+  return step.ref==='review.html'&&s.tool==='review';
 }
 function cwReceiptDoneMap(){
   var out={};
@@ -125,9 +165,12 @@ function cwReceipt(spec){
   var marked=cwReceiptMarkDone(s.ref, nowMs);
   var block=null, progress=null;
   if(typeof blockLoad==='function'){
-    if(s.blockKind&&typeof blockMarkStep==='function') blockMarkStep(s.blockKind, nowMs);
-    block=blockLoad(nowMs);
-    if(block) progress=cwReceiptNextStep(block, cwReceiptDoneMap());
+    var savedBlock=blockLoad(nowMs);
+    if(cwReceiptMatchesBlock(s,savedBlock)){
+      if(typeof blockMarkStep==='function') blockMarkStep(s.blockKind, nowMs);
+      block=blockLoad(nowMs);
+      if(block) progress=cwReceiptNextStep(block, cwReceiptDoneMap());
+    }
   }
   var h='<section class="cw-receipt" aria-label="Session receipt">';
   h+='<div class="cw-receipt__eyebrow"><span>Session receipt</span>';
@@ -158,7 +201,8 @@ function cwReceipt(spec){
     }
   }
   if(marked){
-    h+='<div class="cw-receipt__done"><span aria-hidden="true">✓</span><span><b>Marked done on Today:</b> '+cwReceiptEsc(s.refTitle||s.ref)+'.</span></div>';
+    var practiceWeek=cwReceiptPracticeWeek();
+    h+='<div class="cw-receipt__done"><span aria-hidden="true">✓</span><span><b>'+(practiceWeek?'Week '+practiceWeek+' practice recorded:':'Activity recorded:')+'</b> '+cwReceiptEsc(s.refTitle||s.ref)+'.</span></div>';
   }
   h+='<div class="cw-receipt__actions">';
   var next=progress&&progress.next;

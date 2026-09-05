@@ -20,13 +20,15 @@ The hub is meant to be useful in the moment: a structured sequence from foundati
 - **Week 5 — Acute & Emergency:** agitation, delirium, catatonia, withdrawal, risk assessment.
 - **Week 6 — Integration & Exam:** disposition, shelf + OSCE prep.
 
-**Tools you'll actually use at the bedside** (interactive): mental status exam builder · decisional-capacity assessor · Columbia C-SSRS suicide screener · safety planning · violence-risk (FRST) · CIWA-Ar/COWS withdrawal scales · oral-presentation practice timer.
+**Practice activities:** mental status exam builder · decisional-capacity practice · violence-risk (FRST) · COWS tool · treatment-team rounding prep and presentation timer.
+
+**Reference guides and official forms:** C-SSRS and CIWA-Ar pages link to official forms and training; safety-planning material teaches the approach. These reference pages are not interactive copies of the instruments. Follow your team's supervision and local protocols when using any bedside resource.
 
 **Also included:** short teaching one-pagers for the core diagnoses, a differential-diagnosis "can't-miss" guide, a landmark-article reading pathway, practice OSCE stations, and a shelf high-yield review.
 
 **How you'll be supported & evaluated.** Direct supervision with frequent formative feedback, observed interviews and presentations, case discussion, and teaching rounds. Clear expectations and entrustment levels so you always know what "doing well" looks like.
 
-**Start here:** use the menu to move through the rotation by week, topic, or tool — nothing here is required reading; it's all available whenever it's useful to you.
+**Start here:** Today and Path offer a suggested learning plan. The library's readings and practice activities are optional supports; follow any assignments and expectations your supervising team gives you separately. Completion tracks learning activity, not clinical competence or permission to work independently.
 
 Next: [open the Orientation Packet](?page=orientation.md).
 

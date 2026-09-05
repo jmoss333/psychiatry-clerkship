@@ -423,6 +423,7 @@
 
 .fd-path{animation:fdFadeUp .24s cubic-bezier(.2,.8,.2,1)}
 .fd-path__h1{margin:0 0 18px;font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:26px;letter-spacing:.2px;color:var(--fd-text)}
+.fd-path__intro{margin:0 0 20px;color:var(--fd-text-mid);font-size:14px;line-height:1.55;max-width:65ch}
 .fd-path__cols{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start}
 
 .fd-timeline{display:flex;flex-direction:column;flex:1 1 230px;min-width:0}
@@ -452,6 +453,9 @@
 .fd-detail__head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px}
 .fd-detail__here{display:inline-flex;padding:2px 9px;border-radius:999px;background:var(--fd-selected);color:var(--fd-terracotta-dark);font-size:10.5px;font-weight:700}
 .fd-detail__h2{margin:0 0 14px;font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:21px;color:var(--fd-text)}
+.fd-detail__practice{margin:0 0 16px;padding:12px 14px;background:var(--fd-callout);border-left:3px solid var(--fd-teal);border-radius:6px;font-size:14px;line-height:1.55;color:var(--fd-text-mid)}
+.fd-detail__practice p{margin:0 0 8px}
+.fd-detail__practice p:last-child{margin-bottom:0}
 .fd-detail__list{display:flex;flex-direction:column;gap:7px}
 .fd-detail .fd-row.is-compact{border:1px solid var(--fd-line)}
 
@@ -805,6 +809,8 @@
  * `desk` flag uses (window.innerWidth >= 1000).
  */
 @media (min-width:1000px){
+  .fd-path__cols>.fd-timeline{order:0}
+  .fd-path__cols>.fd-detail{order:1}
   .fd-rail{display:flex}
   .fd-railnav{display:block}
   .fd-actionbar,.fd-actionbar__spacer{display:none}
@@ -818,6 +824,14 @@
 
 /* Mobile primary actions keep a 44px minimum hit target. */
 @media (max-width:999px){
+  .fd-path__cols{flex-direction:column;gap:20px}
+  .fd-path__cols>.fd-detail,.fd-path__cols>.fd-timeline{flex:none;width:100%;box-sizing:border-box}
+  .fd-reader--tool .fd-article{padding:12px 10px;border:0;box-shadow:none;background:transparent}
+  .fd-reader--tool .fd-article__head{display:none}
+  /* The embedded tool supplies the visible title. Keep the shell heading accessible without
+     taking another phone screen of space; governance notices remain visible above the frame. */
+  .fd-reader--tool .fd-article__h1{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  .fd-reader--tool .fd-article__lead:empty{display:none}
   .fd-brand,.fd-btn--primary,.fd-safetybtn,.fd-weekpill,.fd-searchbtn,.fd-weekgrid__browse{min-height:44px}
   .fd-searchbtn,.fd-actionbar .fd-btn--ghost{min-width:44px}
   .fd-role,.fd-weektile,.fd-kitrow,.fd-step,.fd-pick,.fd-setupcta{min-height:44px}

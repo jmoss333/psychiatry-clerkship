@@ -25,11 +25,13 @@ function make(governanceBadge) {
     ${read('frontdoor/fd_state.js')}
     ${read('frontdoor/fd_data.js')}
     ${searchSrc}
+    ${read('frontdoor/fd_wire.js')}
     return {
       fdExpandQuery: fdExpandQuery, fdSearchResults: fdSearchResults,
       fdSearchOverlay: fdSearchOverlay, fdSearchResultRow: fdSearchResultRow,
       fdBuildIndex: fdBuildIndex, fdSearchContentWords: fdSearchContentWords,
       fdSearchScore: fdSearchScore, fdSearchTriggerHit: fdSearchTriggerHit,
+      fdDispatch: fdDispatch,
     };
   `)(governanceBadge || function () { return ''; });
 }
@@ -147,7 +149,7 @@ test('renders the panel skeleton with input, esc button, and footer copy', () =>
   assert.match(html, /<div class="fd-searchpanel">/);
   assert.match(html, /<input type="text" class="fd-searchpanel__input" value=""/);
   assert.match(html, /<button type="button" class="fd-searchpanel__esc" data-fd-close-search(?:\s[^>]*)?>esc<\/button>/);
-  assert.match(html, /<div class="fd-searchpanel__foot">↵ opens as a side sheet/);
+  assert.match(html, /<div class="fd-searchpanel__foot">Choose a result to open it/);
 });
 
 test('the results list announces its count politely (Fresh Eyes Audit A6)', () => {
@@ -173,9 +175,15 @@ test('a protocol result carries data-fd-safety, not data-fd-open', () => {
   assert.match(html, /<button type="button" class="fd-result" data-fd-safety="pg_suicide\.md">/);
 });
 
-test('an item result carries data-fd-open plus the data-fd-sheet modifier -- never a bare data-fd-open', () => {
+test('choosing an ordinary search result navigates directly to its tool', () => {
   const html = F.fdSearchOverlay(REAL_INDEX, 'mental status', SYN, {});
-  assert.match(html, /<button type="button" class="fd-result" data-fd-open="mse\.html" data-fd-sheet>/);
+  const button = html.match(/<button[^>]*data-fd-open="mse\.html"[^>]*>/)[0];
+  const attrs = { 'data-fd-open': 'mse.html' };
+  if (/data-fd-sheet/.test(button)) attrs['data-fd-sheet'] = '';
+  const action = F.fdDispatch(attrs, { search: '' }, { tab: 'path', searchOpen: true });
+  assert.equal(action.route, '?tool=mse.html');
+  assert.equal(action.patch.sheet, null);
+  assert.equal(action.patch.fromTab, 'path');
 });
 
 test('search rows pass projected governance to the shared badge helper between title and meta', () => {
