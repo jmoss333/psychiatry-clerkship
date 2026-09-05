@@ -151,7 +151,7 @@ _abort_missing(_missing_orientation)
 # its entry below is a silent no-op and the page embed referencing it just won't play yet.
 # See _prototypes/video-library/README.md for the exact export filenames + placement map.
 VIDEO_MEDIA=[
- "intro-trailer.mp4","intro-trailer-poster.jpg","day-in-the-life.mp4",
+ "day-in-the-life.mp4",
  "week-intro-1.mp4","week-intro-2.mp4","week-intro-3.mp4","week-intro-4.mp4","week-intro-5.mp4","week-intro-6.mp4",
  "tool-spotlight-interview-circle.mp4","tool-spotlight-capacity.mp4","tool-spotlight-violence.mp4",
  "tool-spotlight-withdrawal.mp4","tool-spotlight-bfcrs.mp4","tool-spotlight-decision-aids.mp4",

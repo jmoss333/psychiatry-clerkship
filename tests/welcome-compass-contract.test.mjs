@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { readFileSync, statSync } from "node:fs";
 import test from "node:test";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -18,6 +18,15 @@ const topicMetaPath = join(repoRoot, "topic_meta.json");
 const reviewedPath = join(repoRoot, "13_Faculty_Resources/reviewed.json");
 const crisisResourcesPath = join(repoRoot, "crisis_resources.json");
 const instrumentRightsPath = join(repoRoot, "instrument_rights.json");
+const mediaManifestPath = join(repoRoot, "media_manifest.json");
+const buildDeployPath = join(
+  repoRoot,
+  "13_Faculty_Resources/_automation/site_build/build_deploy.py",
+);
+const retiredIntroPaths = [
+  "_prototypes/video-library/intro-trailer.mp4",
+  "_prototypes/video-library/intro-trailer-poster.jpg",
+];
 
 const COMPASS_MARKER = "<!-- ms3-six-week-compass -->";
 const SAFETY_START = "<!-- single-safety-rule:start -->";
@@ -127,6 +136,8 @@ const topicMeta = JSON.parse(readFileSync(topicMetaPath, "utf8"));
 const reviewed = JSON.parse(readFileSync(reviewedPath, "utf8"));
 const crisisResources = JSON.parse(readFileSync(crisisResourcesPath, "utf8"));
 const instrumentRights = JSON.parse(readFileSync(instrumentRightsPath, "utf8"));
+const mediaManifest = JSON.parse(readFileSync(mediaManifestPath, "utf8"));
+const buildDeploy = readFileSync(buildDeployPath, "utf8");
 const crisisContactSignatures = crisisResources.resources
   .flatMap((resource) => [resource.contact, resource.alsoAvailable])
   .filter((value) => typeof value === "string" && value.trim());
@@ -283,6 +294,41 @@ test("Welcome removes the retired intro hierarchy and readiness claim", () => {
   assert.ok(
     welcome.includes("prepare for the shelf and a future sub-internship"),
     "Welcome must use the approved neutral preparation phrase",
+  );
+});
+
+test("retired intro remains source provenance but is absent from generated media configuration", () => {
+  for (const relativePath of retiredIntroPaths) {
+    assert.ok(statSync(join(repoRoot, relativePath)).size > 0, `${relativePath} must remain non-empty`);
+  }
+  const videoMediaBlock = buildDeploy.match(/VIDEO_MEDIA=\[[\s\S]*?\n\]/)?.[0] ?? "";
+  for (const retiredName of ["intro-trailer.mp4", "intro-trailer-poster.jpg"]) {
+    assert.ok(!videoMediaBlock.includes(retiredName), `VIDEO_MEDIA must not copy ${retiredName}`);
+  }
+});
+
+test("media manifest records exactly one unserved retired intro and no served orientation package", () => {
+  const retired = mediaManifest.video.filter((entry) => entry.kind === "retired-intro-trailer");
+  assert.deepEqual(retired, [
+    {
+      file: "_prototypes/video-library/intro-trailer.mp4",
+      poster: "_prototypes/video-library/intro-trailer-poster.jpg",
+      kind: "retired-intro-trailer",
+      onDisk: true,
+      assetShipped: false,
+      served: false,
+      retired: true,
+      captions: false,
+      textAlt: null,
+      note: "The source MP4 and _prototypes/video-library/intro-trailer-poster.jpg both remain on disk for provenance; neither is copied into or referenced by either generated learner site.",
+    },
+  ]);
+  assert.equal(
+    mediaManifest.video.filter(
+      (entry) => entry.served === true && /Inpatient_Psych_Orientation|orientation-video/i.test(entry.file),
+    ).length,
+    0,
+    "the optional orientation package is not a media-manifest record in this work package",
   );
 });
 

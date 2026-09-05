@@ -11,6 +11,19 @@ COMPASS_MARKER = "<!-- ms3-six-week-compass -->"
 SAFETY_START = "<!-- single-safety-rule:start -->"
 SAFETY_END = "<!-- single-safety-rule:end -->"
 LFS_HEADER = b"version https://git-lfs"
+RETIRED_INTRO_FILENAMES = ("intro-trailer.mp4", "intro-trailer-poster.jpg")
+MS3_OPTIONAL_ORIENTATION_PATHS = (
+    "tools/orientation-video.html",
+    "tools/Inpatient_Psych_Orientation.mp4",
+    "tools/Inpatient_Psych_Orientation.vtt",
+    "tools/poster.jpg",
+)
+RESIDENT_ONBOARDING_PATHS = (
+    "media/resident-onboarding.mp4",
+    "media/resident-onboarding-poster.jpg",
+)
+OUTPUT_TEXT_FILENAMES = {"_headers", "sw.js"}
+OUTPUT_TEXT_SUFFIXES = {".md", ".html", ".json", ".js", ".css"}
 
 SAFETY_ORIENTATION_LINK = "Open the Orientation Packet"
 COMPASS_HEADING = "Six-Week Compass"
@@ -217,6 +230,31 @@ def require_real_files(root, relative_paths) -> None:
         raise CompassContractError("MS3 Compass required files are invalid: " + ", ".join(invalid))
 
 
+def _iter_output_text_files(out_dir):
+    for directory, _, filenames in os.walk(out_dir):
+        for filename in filenames:
+            if filename in OUTPUT_TEXT_FILENAMES or os.path.splitext(filename)[1] in OUTPUT_TEXT_SUFFIXES:
+                yield os.path.join(directory, filename)
+
+
+def _assert_no_retired_intro(out_dir) -> None:
+    for directory, _, filenames in os.walk(out_dir):
+        for filename in filenames:
+            if filename in RETIRED_INTRO_FILENAMES:
+                raise CompassContractError("built output contains retired intro file: " + filename)
+    for path in _iter_output_text_files(out_dir):
+        try:
+            with open(path, encoding="utf-8") as handle:
+                text = handle.read()
+        except (OSError, UnicodeError) as error:
+            raise CompassContractError("built output text is unreadable: %s" % path) from error
+        for retired_name in RETIRED_INTRO_FILENAMES:
+            if retired_name in text:
+                raise CompassContractError(
+                    "built output contains retired intro reference %s: %s" % (retired_name, path)
+                )
+
+
 def load_ms3_preflight_sources(curriculum_path, orientation_packet_path):
     try:
         with open(curriculum_path, encoding="utf-8") as handle:
@@ -230,6 +268,7 @@ def load_ms3_preflight_sources(curriculum_path, orientation_packet_path):
 
 def assert_ms3_output(out_dir, cards, safety_text, built_orientation_paths) -> None:
     require_real_files(out_dir, built_orientation_paths)
+    _assert_no_retired_intro(out_dir)
     try:
         with open(os.path.join(out_dir, "content", "welcome.md"), encoding="utf-8") as handle:
             welcome = handle.read()
@@ -256,3 +295,28 @@ def assert_ms3_output(out_dir, cards, safety_text, built_orientation_paths) -> N
             raise CompassContractError(
                 "MS3 Compass built Welcome contains a raw safety marker: %s" % marker
             )
+
+
+def assert_resident_output(out_dir) -> None:
+    require_real_files(out_dir, RESIDENT_ONBOARDING_PATHS)
+    welcome_path = os.path.join(out_dir, "content", "welcome.md")
+    try:
+        with open(welcome_path, encoding="utf-8") as handle:
+            welcome = handle.read()
+    except (OSError, UnicodeError) as error:
+        raise CompassContractError("resident built Welcome is unreadable: %s" % error) from error
+    for required_reference in RESIDENT_ONBOARDING_PATHS:
+        if required_reference not in welcome:
+            raise CompassContractError(
+                "resident built Welcome must reference " + required_reference
+            )
+    forbidden_welcome_copy = ("data-ms3-compass-root", SCOPE_COPY, PROMPT_COPY)
+    for forbidden in forbidden_welcome_copy:
+        if forbidden in welcome:
+            raise CompassContractError("resident built Welcome contains MS3 Compass copy: " + forbidden)
+    for relative_path in MS3_OPTIONAL_ORIENTATION_PATHS:
+        if os.path.exists(os.path.join(out_dir, relative_path)):
+            raise CompassContractError(
+                "resident built output contains MS3 optional orientation package: " + relative_path
+            )
+    _assert_no_retired_intro(out_dir)

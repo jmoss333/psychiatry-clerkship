@@ -7,6 +7,7 @@ from datetime import date
 import common
 import crisis_block as _crisis
 import frontdoor_catalog
+import welcome_compass
 from pathlib import Path
 
 # Session-portable paths (fixed 2026-07-01): derive from this script's own location.
@@ -413,3 +414,4 @@ print("tool governance: emitted", len(_governance["items"]), "items")
 # paths/tools), so this call MUST run last to overwrite the inherited ms3
 # sw.js with a resident-specific manifest (rp-* tools, resident content tree).
 common.emit_service_worker(OUT)
+welcome_compass.assert_resident_output(OUT)

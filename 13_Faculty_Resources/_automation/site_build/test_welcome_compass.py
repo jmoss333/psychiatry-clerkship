@@ -66,6 +66,14 @@ BUILT_ORIENTATION_PATHS = [
     "tools/Inpatient_Psych_Orientation.vtt",
     "tools/poster.jpg",
 ]
+RETIRED_INTRO_PATHS = [
+    "_prototypes/video-library/intro-trailer.mp4",
+    "_prototypes/video-library/intro-trailer-poster.jpg",
+]
+RESIDENT_ONBOARDING_PATHS = [
+    "media/resident-onboarding.mp4",
+    "media/resident-onboarding-poster.jpg",
+]
 
 
 def write_complete_ms3_output(root, welcome):
@@ -76,6 +84,21 @@ def write_complete_ms3_output(root, welcome):
     (content / "welcome.md").write_text(welcome, encoding="utf-8")
     for relative_path in BUILT_ORIENTATION_PATHS:
         Path(root, relative_path).write_bytes(b"completed build asset")
+
+
+def write_complete_resident_output(root):
+    content = Path(root, "content")
+    media = Path(root, "media")
+    content.mkdir()
+    media.mkdir()
+    (content / "welcome.md").write_text(
+        '<video src="media/resident-onboarding.mp4" '
+        'poster="media/resident-onboarding-poster.jpg"></video>',
+        encoding="utf-8",
+    )
+    for relative_path in RESIDENT_ONBOARDING_PATHS:
+        Path(root, relative_path).write_bytes(b"resident onboarding asset")
+    Path(root, "sw.js").write_text("resident service worker", encoding="utf-8")
 
 
 class WelcomeCompassTests(unittest.TestCase):
@@ -259,6 +282,50 @@ class WelcomeCompassTests(unittest.TestCase):
                     root, self.cards(), SAFETY, BUILT_ORIENTATION_PATHS
                 )
             )
+
+    def test_retained_intro_provenance_files_remain_real_source_files(self):
+        repo_root = Path(__file__).resolve().parents[3]
+        self.assertIsNone(welcome_compass.require_real_files(repo_root, RETIRED_INTRO_PATHS))
+
+    def test_rejects_retired_intro_file_or_text_reference_in_completed_ms3_output(self):
+        for relative_path, payload in (
+            ("media/intro-trailer.mp4", b"stale media"),
+            ("content/stale.css", b".hero { background: url(intro-trailer-poster.jpg); }"),
+            ("sw.js", b'cache.add("intro-trailer.mp4")'),
+        ):
+            with self.subTest(relative_path=relative_path), tempfile.TemporaryDirectory() as root:
+                write_complete_ms3_output(root, EXPECTED_FRAGMENT)
+                path = Path(root, relative_path)
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(payload)
+                with self.assertRaisesRegex(welcome_compass.CompassContractError, "retired intro"):
+                    welcome_compass.assert_ms3_output(
+                        root, self.cards(), SAFETY, BUILT_ORIENTATION_PATHS
+                    )
+
+    def test_resident_output_accepts_only_resident_welcome_and_real_onboarding_assets(self):
+        with tempfile.TemporaryDirectory() as root:
+            write_complete_resident_output(root)
+            self.assertIsNone(welcome_compass.assert_resident_output(root))
+
+    def test_resident_output_rejects_ms3_compass_optional_package_retired_intro_and_lfs_media(self):
+        mutations = (
+            ("content/welcome.md", b'<div data-ms3-compass-root>Compass</div>', "Compass"),
+            ("tools/orientation-video.html", b"optional package", "optional"),
+            ("media/intro-trailer.mp4", b"retired", "retired intro"),
+            ("media/resident-onboarding.mp4", welcome_compass.LFS_HEADER + b" oid", "resident-onboarding.mp4"),
+        )
+        for relative_path, payload, expected in mutations:
+            with self.subTest(relative_path=relative_path), tempfile.TemporaryDirectory() as root:
+                write_complete_resident_output(root)
+                path = Path(root, relative_path)
+                path.parent.mkdir(parents=True, exist_ok=True)
+                if relative_path == "content/welcome.md":
+                    path.write_bytes(path.read_bytes() + payload)
+                else:
+                    path.write_bytes(payload)
+                with self.assertRaisesRegex(welcome_compass.CompassContractError, expected):
+                    welcome_compass.assert_resident_output(root)
 
     def test_rejects_missing_built_orientation_file(self):
         with tempfile.TemporaryDirectory() as root:
