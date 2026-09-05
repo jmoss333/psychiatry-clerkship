@@ -127,3 +127,31 @@ The generator includes actual source hashes rather than HEAD or wall-clock time,
 so committing an otherwise unchanged artifact does not make it stale. Missing
 evidence, control failures, or parity failures stop generation. The proxy test
 suite checks artifact freshness and safe rendering.
+
+## Faculty decisions and a fresh second round
+
+Use the [faculty decision record](../../../docs/superpowers/plans/2026-09-04-interview-room-faculty-adjudication.md)
+to accept, revise, or defer five proposed display meanings. It contains no recorded
+faculty decisions and does not change scoring or approval state.
+
+After drafting the meanings with the first worksheet, use the separate
+[round-two reviewer copy](round-two-reviewer.html). It contains four new pairs
+(eight actual practice-engine conversations) with simulator results and discussion
+prompts omitted from the file. The [facilitator copy](round-two-facilitator.html)
+contains the same exchanges plus current engine labels. Keep it separate until
+independent observations have been made.
+
+```bash
+node sp-proxy/benchmarks/interview-room/round-two.mjs --write
+node sp-proxy/benchmarks/interview-room/round-two.mjs --check
+node sp-proxy/benchmarks/interview-room/round-two.mjs --json
+node --test sp-proxy/tests/interview-round-two.test.mjs
+```
+
+`round-two.json` has no expected grades. The runner verifies the original controls
+and client/server parity, rejects reused evaluated wording from the original
+corpus (ignoring case and punctuation), and records all 36 turns. Shared setup is
+intentionally reused. This novelty check is not evidence of statistical
+independence; no faculty agreement or clinical performance has been measured.
+Keep the source fixed during the review session and reserve new examples if these
+ones are subsequently used to change the rules.

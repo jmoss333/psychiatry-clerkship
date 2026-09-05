@@ -11,7 +11,7 @@ const rows = [
   { id: 'c_si_followup', label: 'Follow-up checklist row' },
 ];
 
-function runSide(report, id) {
+export function runSide(report, id, selectedRows = rows) {
   const run = report.runs.find(r => r.id === id);
   assert.ok(run?.frames.length, `Missing benchmark run: ${id}`);
   const last = run.frames.at(-1);
@@ -19,7 +19,7 @@ function runSide(report, id) {
     sourceId: id,
     context: run.frames.filter(f => f.setup).map(f => ({ learner: f.student, patient: f.patient })),
     turns: run.frames.filter(f => !f.setup).map(f => ({ learner: f.student, patient: f.patient })),
-    coverage: rows.map(row => {
+    coverage: selectedRows.map(row => {
       assert.ok(last.client.coverage[row.id], `${id}: missing ${row.id}`);
       return { ...row, status: last.client.coverage[row.id] };
     }),
@@ -95,14 +95,18 @@ function feedback(side, letter, supplied) {
   return `<div><h4>Conversation ${letter}</h4><dl class="coverage">${side.coverage.map(row => `<div><dt>${esc(row.label)} <code>${esc(row.id)}</code></dt><dd>${esc(row.status)}</dd></div>`).join('')}</dl>${!supplied ? `<p class="speaker">Built-in strengths feedback</p><ul>${side.strengths.map(s => `<li>${esc(s)}</li>`).join('')}</ul>` : ''}<p class="small source">Source: ${esc(side.sourceId)}</p></div>`;
 }
 
-export function renderCalibration(exercise) {
+export function renderCalibration(exercise, { blind = false } = {}) {
+  const title = exercise.round === 2 ? 'A fresh set of conversations.' : 'Listening before labeling.';
+  const description = blind
+    ? 'Simulator labels are not included in this reviewer copy. Record your observations independently, then discuss them before opening the separate facilitator copy.'
+    : 'What did the learner do? What did the patient share? Review each pair, record your observations, then compare them with the simulator’s labels.';
   return `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'none'; img-src 'none'; base-uri 'none'; form-action 'none'">
-<title>Listening before labeling · Interview Room faculty exercise</title>
+<title>${esc(title)} · Interview Room faculty exercise${blind ? ' · Reviewer copy' : ''}</title>
 <style>
 :root{color-scheme:light;--paper:#f7f5f0;--ink:#203a3b;--muted:#526465;--line:#c3ceca;--a:#285957;--b:#794635}
 *{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.6 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{color:var(--a)}
@@ -121,8 +125,8 @@ fieldset{margin:24px 0 0;padding:16px 18px;border:1px solid var(--line);backgrou
 <body>
 <main>
 <div class="masthead"><span>THE INTERVIEW ROOM / FACULTY WORKSHOP</span><span class="status">Pending faculty review</span></div>
-<header><p class="eyebrow">Five comparisons · Synthetic conversations</p><h1>Listening before labeling.</h1><p class="intro">What did the learner do? What did the patient share? Review each pair, record your observations, then compare them with the simulator’s labels.</p></header>
-<div class="instructions"><p><strong>1. Read both exchanges.</strong>Open the shared context when it helps.</p><p><strong>2. Make your own observations.</strong>Judge each conversation before revealing the labels.</p><p><strong>3. Discuss the difference.</strong>Identify what a clearer label would need to say.</p></div>
+<header><p class="eyebrow">${exercise.round === 2 ? `Round two · ${exercise.pairs.length} comparisons · ${blind ? 'Reviewer' : 'Facilitator'} copy` : 'Five comparisons · Synthetic conversations'}</p><h1>${esc(title)}</h1><p class="intro">${description}</p></header>
+<div class="instructions"><p><strong>1. Read both exchanges.</strong>Open the shared context when it helps.</p><p><strong>2. Make your own observations.</strong>${blind ? 'Judge each conversation independently.' : 'Judge each conversation before revealing the labels.'}</p><p><strong>3. Discuss the difference.</strong>${blind ? 'Compare observations before opening the facilitator copy.' : 'Identify what a clearer label would need to say.'}</p></div>
 <p class="notice small">This is a local faculty discussion exercise, with no answer key or score. Choices remain only on this page and clear on reload or reset. It does not record faculty approval, grade learners, or establish readiness. Print only if you choose to keep a copy.</p>
 <form id="worksheet" autocomplete="off">
 <div class="tools"><button type="reset">Clear observations</button><button type="button" id="print">Print current worksheet</button></div>
@@ -132,13 +136,13 @@ ${exercise.pairs.map((pair, i) => `<section class="comparison" aria-labelledby="
 ${pair.suppliedReplies ? '<p class="notice small">Patient replies were supplied for this exercise. They are alternatives sent through the evaluation handler, not live model responses.</p>' : '<p class="small">Patient replies below came from the actual built-in practice engine.</p>'}
 <details class="context"><summary>Shared conversation context</summary><div class="context-body">${dialogue(pair.sides[0].context)}</div></details>
 <div class="columns">${pair.sides.map((side, n) => `<article class="conversation ${n ? 'b' : 'a'}" aria-labelledby="${pair.id}-${n}-title"><h3 id="${pair.id}-${n}-title"><span class="letter">CONVERSATION</span>${n ? 'B' : 'A'}</h3>${dialogue(side.turns)}${observations(pair.id, n ? 'B' : 'A')}</article>`).join('')}</div>
-<details class="reveal"><summary>Compare with simulator feedback</summary>
+${blind ? '' : `<details class="reveal"><summary>Compare with simulator feedback</summary>
 <p class="small">${pair.suppliedReplies ? `These are the complete deterministic checklist labels captured in the input sent to the evaluator. No live evaluator was tested; its interpretation is unknown. The supplied patient response changes. ${pair.coverageChanged ? 'The captured labels differ between these conversations.' : 'The captured labels are identical in these conversations.'}` : 'These are the selected checklist labels and built-in strengths feedback after the final turn. They show what the current code reports; they are not a faculty answer key.'} “Observed,” “partial,” “missed,” and “na” are the simulator’s existing terms; “na” means not applicable under its current rule.</p>
 <div class="columns">${pair.sides.map((side, n) => feedback(side, n ? 'B' : 'A', pair.suppliedReplies)).join('')}</div>
-<div class="discussion"><strong>For discussion · proposed, not adjudicated</strong><p>${esc(pair.discussion)}</p></div></details>
+<div class="discussion"><strong>For discussion · proposed, not adjudicated</strong><p>${esc(pair.discussion)}</p></div></details>`}
 </section>`).join('\n')}
 </form>
-<section class="closing"><h2>A more precise language for feedback</h2><p>For faculty consideration: keep <strong>wording recognized</strong>, <strong>question directed to the patient</strong>, and <strong>response obtained</strong> separate. A refusal or request to pause can be acknowledged without marking the learner’s attempt as a failure. Any future response indicator would need evidence from the exchange and an explicit “uncertain” state.</p><p class="small">These are discussion proposals. This exercise changes no scoring rules, patient pack, faculty attestation, or release decision. It is not linked into the learner sites.</p></section>
+${blind ? '' : '<section class="closing"><h2>A more precise language for feedback</h2><p>For faculty consideration: keep <strong>wording recognized</strong>, <strong>question directed to the patient</strong>, and <strong>response obtained</strong> separate. A refusal or request to pause can be acknowledged without marking the learner’s attempt as a failure. Any future response indicator would need evidence from the exchange and an explicit “uncertain” state.</p><p class="small">These are discussion proposals. This exercise changes no scoring rules, patient pack, faculty attestation, or release decision. It is not linked into the learner sites.</p></section>'}
 <details class="provenance"><summary>Source and reproducibility</summary><p class="small">Generated from the local conversation benchmark, using the actual client and server functions. The retrospective governance clock is ${esc(exercise.governanceAsOf)}; this is not a current deployment check. Source file hashes identify the measured inputs. The generator checks that this page matches those inputs.</p><dl class="hashes">${Object.entries(exercise.sourceHashes).map(([file, hash]) => `<dt>${esc(file)}</dt><dd>${esc(hash)}</dd>`).join('')}</dl></details>
 </main>
 <script>
