@@ -65,7 +65,6 @@ const ALLOWED_DIRECT_READERS = Object.freeze([
   // --- Phase-2 migrations (ADR-002 "Consequences"). Each still re-derives what ships
   //     for itself; several still carry a private copy of the Case-of-the-Week patch.
   //     Deleting a line here is the only edit this list accepts. ---
-  '13_Faculty_Resources/_automation/validate_registry_schemas.py',
   '13_Faculty_Resources/_automation/anki/pcl_anki/release.py',
   'bin/sweep_unlicensed_claims.py',
   'tools/pdf_library_export/export_website_pdf_library.py',
