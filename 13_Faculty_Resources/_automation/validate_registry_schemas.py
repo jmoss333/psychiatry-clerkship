@@ -19,6 +19,16 @@ except ImportError:  # pragma: no cover - exercised only before dependency insta
     SchemaError = Exception
     Unresolvable = Exception
 
+# ADR-002: "what ships" has one derived answer, site_build/shipped_pages.json, and
+# consumers read it instead of re-deriving the shipped set from the producers.
+sys.path.insert(0, str(Path(__file__).resolve().parent / "site_build"))
+
+from shipped_pages import (  # noqa: E402
+    RELATIVE_PATH as SHIPPED_PAGES_RELATIVE,
+    ShippedPagesError,
+    load_shipped_pages,
+)
+
 
 PAIRS = (
     ("topic_meta.json", "topic_meta.schema.json"),
@@ -94,7 +104,13 @@ def qbank_prefix_diagnostics(document):
     return diagnostics
 
 
-PAIRINGS_SITE_MANIFEST = Path("13_Faculty_Resources/_automation/site_build/site_manifest.json")
+# Resolve page/tool references against the derived shipped listing, not against the
+# shared manifest lists alone. Those lists are only one of four routes onto a site, so a
+# pairing naming a Case-of-the-Week page or a resident-only tool used to read as dangling
+# even though the build publishes it. shipped_pages.json is itself one of the PAIRS above:
+# when it is missing or malformed, THAT pair reports it and this gate degrades to a single
+# "cannot resolve references" line rather than crashing the whole validator.
+PAIRINGS_SHIPPED_PAGES = Path(SHIPPED_PAGES_RELATIVE)
 PAIRINGS_AUDIO_MANIFEST = Path("12_Media/audio_oe/MANIFEST.csv")
 PAIRINGS_WEEKS = range(1, 7)
 PAIRINGS_AUDIENCES = ("ms3", "res")
@@ -108,17 +124,22 @@ def pairings_integrity_diagnostics(document, root: Path):
     a pairing is injected into all six week pages on both sites, so one renamed slug would
     ship a dead link six times over. Cross-item uniqueness of ``id`` is also beyond a
     per-item schema and is checked here.
+
+    Page and tool refs resolve against shipped_pages.json, the one derived answer to what
+    ships (ADR-002), so every route onto a site counts — the shared manifest lists, the
+    Case-of-the-Week registry, and the resident-only and MS3-only extras alike.
     """
     diagnostics = []
     pairings = document.get("pairings", []) if isinstance(document, dict) else []
 
     pages, tools = set(), set()
-    manifest, manifest_error = load_json(root / PAIRINGS_SITE_MANIFEST)
-    if manifest_error:
-        diagnostics.append("pairings.json: cannot resolve references — %s" % manifest_error)
+    try:
+        shipped = load_shipped_pages(root)
+    except ShippedPagesError as error:
+        diagnostics.append("pairings.json: cannot resolve references — %s" % error)
     else:
-        pages = {e[1] for e in manifest.get("md", []) if len(e) >= 2}
-        tools = {e[1] for e in manifest.get("tools", []) if len(e) >= 2}
+        pages = {p["slug"] for p in shipped["pages"] if p.get("kind") == "page"}
+        tools = {p["slug"] for p in shipped["pages"] if p.get("kind") == "tool"}
 
     briefs = set()
     audio_path = root / PAIRINGS_AUDIO_MANIFEST
@@ -156,12 +177,12 @@ def pairings_integrity_diagnostics(document, root: Path):
             if kind == "page" and pages and ref not in pages:
                 diagnostics.append(
                     "pairings.json: INVALID at %s: page %r is not in %s"
-                    % (pointer, ref, PAIRINGS_SITE_MANIFEST.name)
+                    % (pointer, ref, PAIRINGS_SHIPPED_PAGES.name)
                 )
             elif kind == "tool" and tools and ref not in tools:
                 diagnostics.append(
                     "pairings.json: INVALID at %s: tool %r is not in %s"
-                    % (pointer, ref, PAIRINGS_SITE_MANIFEST.name)
+                    % (pointer, ref, PAIRINGS_SHIPPED_PAGES.name)
                 )
             elif kind == "audio_oe" and briefs:
                 key = str(ref).strip().lstrip("0") or "0"

@@ -189,6 +189,16 @@ cd tests/smoke && npm ci && npx playwright test
   `node --test tests/*.test.mjs` *before* `build_deploy.py`, so a failing contract test exits early
   and `_build/` keeps serving **stale output** while the script merely looks "failed". If a source
   edit isn't showing up in the built site, run the node suite first.
+  The corollary for **build-output tests**: guard on freshness, not existence. A `_build/` older
+  than the source under test fails such a test honestly — the page really is not built yet — and
+  that red then aborts the only supported fix, so the staleness protects itself. Use
+  `staleBuildReason()` from `tests/_build_freshness.mjs`: it skips with the rebuild command when a
+  declared input outran the build, and still hard-fails when a *current* build did not produce the
+  page (that is a real regression, not a stale tree). Declare every input the assertions depend on
+  — a path that does not exist throws, because a typo would make the check vacuously "fresh" and
+  retire the contract silently. Note such assertions never run on Netlify or in CI: `node --test`
+  runs before **both** `build_and_check.sh` invocations and `_build/` starts absent, so a
+  build-output test is a local-only contract — do not rely on CI to catch what it pins.
 - **THE LIBRARY TEACHES ADMINISTRATION; IT DOES NOT REPRODUCE INSTRUMENTS.** Same standing as the
   dose-literal rule. Teach *how to give* an instrument — the elicitation, the confounds, what the
   score does and does not license, what a negative result fails to rule out — and link to the
