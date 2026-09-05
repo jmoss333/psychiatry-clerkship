@@ -55,10 +55,12 @@ const REPO = path.resolve(import.meta.dirname, '..');
 const BUILD_CMD = '13_Faculty_Resources/_automation/site_build/build_and_check.sh';
 const argv = process.argv.slice(2);
 
-const USAGE = 'usage: node bin/render_panels.mjs [--check|--write] [--site ms3|res]\n'
-  + '  --check   (default) compare the live render against tests/__panels__/; exit 1 on drift\n'
+const USAGE = 'usage: node bin/render_panels.mjs [--check] [--write] [--site ms3|res]\n'
+  + '  --check   accepted and is the default; checking is simply what happens without --write,\n'
+  + '            so passing both --check and --write still writes\n'
   + '  --write   accept the current render as the new snapshot\n'
-  + '  --site    limit to one audience (default: both); --site=ms3 is accepted too';
+  + '  --site    limit to one audience (default: both); --site=ms3 is accepted too\n'
+  + 'Checking compares the live render against tests/__panels__/ and exits 1 on drift.';
 
 if (argv.includes('--help') || argv.includes('-h')) {
   console.log(USAGE);
