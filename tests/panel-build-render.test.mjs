@@ -1,9 +1,11 @@
-/* Build-dependent regression pins for the two defects Codex reported on #539.
+/* Build-dependent regression pins for three defects: the two Codex reported on #539 (resident
+ * overlays invisible; Case-of-the-Week panels unsnapshotted) and one found in-house -- six
+ * `resident_extra` pages the MS3 build renders but the MS3 site never publishes.
  *
  * These are LOCAL-ONLY contracts by construction: node --test runs before build_and_check.sh
  * reaches build_deploy.py, and CI clones fresh, so _build/ is absent there and these skip.
  * The enforcing gate is the byte-comparison inside build_and_check.sh — this file exists so
- * the two specific defects have named, readable pins rather than living only in 164 snapshots.
+ * each of the three defects has a named, readable pin rather than living only in 164 snapshots.
  *
  * Guarded with staleBuildReason(), never existsSync(): a _build/ older than the sources under
  * test fails honestly and that red would abort the build that repairs it (CLAUDE.md, T17).

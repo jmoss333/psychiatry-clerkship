@@ -158,7 +158,9 @@ test('every stored snapshot is that formatting applied to a one-line panel, noth
 });
 
 test('the audiences are stored apart, and their difference is real', () => {
-  // 68 refs ship to both sites and only a handful render differently. Storing them per audience
+  // 68 refs are stored under both audiences and only a handful render differently. 68 is the
+  // shared-SNAPSHOT count, not the shared-PAGE count: 69 pages ship to both sites, and the 69th
+  // (rapid_review.md) renders no panel, so it has no snapshot to share. Storing them per audience
   // costs duplication and buys the ability to say WHICH site a file describes — the ambiguity
   // that let a resident-only change report zero drift (Codex P2 on #539).
   const resFiles = new Set(filesOf('res'));

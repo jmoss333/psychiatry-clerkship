@@ -123,8 +123,10 @@ and it makes the coverage claim exact rather than approximate.
 
 Layout: `tests/__panels__/ms3/` (79 files) and `tests/__panels__/res/` (85 files).
 
-Shared-but-identical panels are stored twice — 68 refs ship to both sites and only 4 render
-differently (`agitation.md`, `brief_psychotherapy.md`, `shelf.md`, `anki.md`). Deduplicating
+Shared-but-identical panels are stored twice — 68 refs are stored under both audiences and only
+4 render differently (`agitation.md`, `brief_psychotherapy.md`, `shelf.md`, `anki.md`). That 68 is
+the shared-SNAPSHOT count, not the 69 pages that ship to both sites (D-2 above): `rapid_review.md`
+is the 69th and renders no panel, so it has no snapshot to share. Deduplicating
 would save 64 files and reintroduce the ambiguity that caused all three defects: a reader could
 not tell which audience a file describes. Storage is cheap; the ambiguity is what was expensive.
 

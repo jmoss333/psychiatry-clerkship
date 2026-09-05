@@ -30,9 +30,11 @@
  * it is the only page missing, by name, rather than counting around it.
  *
  * ORDERING: the byte-comparison gate runs from build_and_check.sh AFTER build_deploy.py, so a
- * failure leaves _build/ current and `node bin/render_panels.mjs --write` repairs it with no
- * rebuild. A build-dependent test in the PRE-build node suite would wedge the build that fixes
- * it (CLAUDE.md, T17); that is why the comparison is not there.
+ * failure leaves _build/ current and `node bin/render_panels.mjs --write --site <that site>`
+ * repairs it with no rebuild -- scoped to the site, because bare --write checks both audiences
+ * and exits 2 on whichever tree an ms3-only build left stale. A build-dependent test in the
+ * PRE-build node suite would wedge the build that fixes it (CLAUDE.md, T17); that is why the
+ * comparison is not there.
  */
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -180,14 +182,30 @@ function assertSite(site) {
    correctness gate, not a freshness one: it only moves shipped_pages.json's MTIME once someone
    regenerates, while the manifest reaches these panels directly as FD_SITE_MANIFEST ->
    fdBuildIndex. Between the edit and the regeneration the guard would call a build fresh that
-   its own inputs have outrun, so the dependency is declared rather than inferred. */
+   its own inputs have outrun, so the dependency is declared rather than inferred.
+
+   The Case-of-the-Week chain is declared WHOLE -- the registry and the two modules that turn
+   it into panels -- because all three reach FD_TOPIC_META and nothing else moves when they
+   change. Both builds derive per-case topic_meta from cotw_registry.json at build time
+   (build_deploy.py:308, resident_section.py:321); cotw_meta.py IS that derivation, and its
+   "Shelf-level takeaway: %s" is the line that carries a week's `tldr` into the rendered panel;
+   cotw_slug.py fixes the key each entry lands under, which is also the snapshot's file name, so
+   a change to the formula rewrites the corpus wholesale. Undeclared, the registry produced a
+   FALSE CLEAN: appending to weeks[0].tldr and re-running the gate WITHOUT a rebuild reported
+   "0 of 164 panels changed" against a build its own inputs had outrun, while the same edit
+   rebuilt moves 2 panels. The two modules were covered while their code sat inside
+   build_deploy.py; extracting them for ADR-002 moved them out of the declared set, so they are
+   named here rather than inherited from their caller. */
 export const PANEL_BUILD_INPUTS = [
   '13_Faculty_Resources/_automation/site_build/spa_index.html',
   '13_Faculty_Resources/_automation/site_build/frontdoor/fd_data.js',
   '13_Faculty_Resources/_automation/site_build/build_deploy.py',
   '13_Faculty_Resources/_automation/site_build/resident_section.py',
+  '13_Faculty_Resources/_automation/site_build/cotw_meta.py',
+  '13_Faculty_Resources/_automation/site_build/cotw_slug.py',
   '13_Faculty_Resources/_automation/site_build/shipped_pages.json',
   '13_Faculty_Resources/_automation/site_build/site_manifest.json',
+  '08_Cases_and_Simulation/case-of-the-week/cotw_registry.json',
   'topic_meta.json',
   'curriculum.json',
   'tool_registry.json',
