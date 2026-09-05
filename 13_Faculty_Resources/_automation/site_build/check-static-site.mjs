@@ -1157,12 +1157,43 @@ const RATCHET_EXEMPT_CLASSES = new Set(['lfs-stub-soft']);
     }
 
     // DECISION: analytics-allowlist  (decisions.json; bin/check_decision_drift.py)
-    // Every cwAnalytics.record() argument in shipped HTML must be a string literal
-    // on this build's allowlist. A computed or unlisted key is how free text --
-    // and therefore PHI -- would reach the counter store, which the design forbids
+    // Every cwAnalytics.record() call in shipped HTML must pass EXACTLY ONE
+    // string-literal argument on this build's allowlist. A computed argument,
+    // an unlisted literal, or ANY additional argument is how free text -- and
+    // therefore PHI -- would reach the counter store, which the design forbids
     // structurally rather than by policy. No tool calls record() yet (this plan
     // ships only the emitter and the registry), so this rule currently guards
     // future per-tool instrumentation rather than anything shipped today.
+    //
+    // A simple "first char after ( isn't a quote" regex is not enough here:
+    // `\s*` in a class-negated lookahead can itself satisfy `[^'")]` by
+    // backtracking to zero width, so a *padded* literal like
+    // `record( 'page:x' )` false-positives as computed. And a regex anchored
+    // on "starts with a quote" can't see a second argument trailing after the
+    // closing quote (`record('page:x', foo)`), because nothing in that shape
+    // requires the argument list to end where the string does. So instead we
+    // find each call's matching closing paren by hand (paren/quote aware, so
+    // a literal may itself contain "()" ) and require the *entire*, trimmed
+    // argument-list text to be exactly one quoted string literal -- nothing
+    // before it, nothing after it, no second argument.
+    const STRING_LITERAL_ONLY = /^(['"])(?:\\.|(?!\1)[^\\])*\1$/;
+    const findMatchingParen = (html, openIdx) => {
+      let depth = 1;
+      let inString = null;
+      for (let i = openIdx; i < html.length; i++) {
+        const ch = html[i];
+        if (inString) {
+          if (ch === '\\') { i += 1; continue; }
+          if (ch === inString) inString = null;
+          continue;
+        }
+        if (ch === '"' || ch === "'" || ch === '`') { inString = ch; continue; }
+        if (ch === '(') depth += 1;
+        else if (ch === ')') { depth -= 1; if (depth === 0) return i; }
+      }
+      return -1;
+    };
+
     const recordedKeys = [];
     const scanForAnalyticsRecords = (dir) => {
       if (!existsSync(dir)) return;
@@ -1172,12 +1203,23 @@ const RATCHET_EXEMPT_CLASSES = new Set(['lfs-stub-soft']);
         if (!name.endsWith('.html')) continue;
         const html = readFileSync(fp, 'utf8');
         const rel = relative(SITE, fp);
-        for (const m of html.matchAll(/cwAnalytics\.record\(\s*(['"])([^'"]+)\1\s*\)/g)) {
-          recordedKeys.push({ rel, key: m[2] });
+        let invalidCalls = 0;
+        const CALL_RE = /cwAnalytics\.record\(/g;
+        let m;
+        while ((m = CALL_RE.exec(html))) {
+          const openIdx = m.index + m[0].length;
+          const closeIdx = findMatchingParen(html, openIdx);
+          if (closeIdx === -1) { invalidCalls += 1; break; } // unterminated call
+          const argsText = html.slice(openIdx, closeIdx).trim();
+          if (STRING_LITERAL_ONLY.test(argsText)) {
+            recordedKeys.push({ rel, key: argsText.slice(1, -1) });
+          } else {
+            invalidCalls += 1;
+          }
+          CALL_RE.lastIndex = closeIdx + 1;
         }
-        const computedRecords = [...html.matchAll(/cwAnalytics\.record\(\s*[^'")]/g)];
-        if (computedRecords.length) {
-          H(`usage analytics: computed cwAnalytics.record() argument in ${rel} (${computedRecords.length}) — record() takes a string literal only`);
+        if (invalidCalls) {
+          H(`usage analytics: invalid cwAnalytics.record() argument in ${rel} (${invalidCalls}) — record() takes exactly one string-literal argument, no computed value and no second argument`);
         }
       }
     };
