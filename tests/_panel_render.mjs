@@ -193,14 +193,42 @@ function assertSite(site) {
    a change to the formula rewrites the corpus wholesale. Undeclared, the registry produced a
    FALSE CLEAN: appending to weeks[0].tldr and re-running the gate WITHOUT a rebuild reported
    "0 of 164 panels changed" against a build its own inputs had outrun, while the same edit
-   rebuilt moves 2 panels. The two modules were covered while their code sat inside
-   build_deploy.py; extracting them for ADR-002 moved them out of the declared set, so they are
-   named here rather than inherited from their caller. */
+   rebuilt moves 2 panels. Those two omissions were FRESH, not inherited: this list was written
+   on 2026-09-05 (33f3a1c), by which date cotw_meta.py had been a standalone module since
+   2026-07-31 (cc2a0bc, #278) and cotw_slug.py since 810c0bf (2026-09-04), so neither was ever
+   covered here by its caller. Only cotw_slug was ever extracted at all -- it was `def
+   _cotw_slug` inside build_deploy.py until 810c0bf -- and that extraction still predates this
+   list. cotw_meta.py was born standalone; its code never sat in build_deploy.py.
+
+   frontdoor_catalog.py is declared for exactly the reason the registry was: it writes ALL FOUR
+   FD_* payloads renderFromBuild evaluates (inject_frontdoor_payload), and per its own docstring
+   the manifest it emits "is rebuilt from `catalog`" rather than copied from site_manifest.json
+   -- that manifest becomes FD_SITE_MANIFEST -> fdBuildIndex -> FD_INDEX, which the panel reads
+   for every tool title it prints. Unlike site_manifest.json it is NOT hashed into
+   shipped_pages.json's generated_from (only cotw_registry.json, site_extras.py and
+   site_manifest.json are), so it had no transitive coverage of any kind -- not even the
+   correctness chain described above. Edit it, skip the rebuild, and the gate reported the same
+   "0 of 164 panels changed" false clean.
+
+   WHAT WAS WALKED AND CLEARED, so the next reader need not re-walk it. On both audiences the
+   built panel and workflow slices are byte-identical to spa_index.html's plus the one
+   PRACTICE_CASE_TITLES injection, which clears every HTML transform the two builds apply to
+   index.html: common.py's page/dark-mode/snippet passes and its CONTRAST_FIX literals (absent
+   from both slices), crisis_block.py (its marker sits ~25k bytes ahead of the panel block),
+   pairings_block.py (markdown only) and media_guard.py (neither index.html carries a <video>).
+   surface_governance.annotate_navigation only ADDS a governance triplet -- never a title, slug
+   or kind -- and the panel never reads `.governance`, so it cannot move a render.
+   validate_tool_governance.py and validate_rotation_edition_catalog.py feed FD_CORE_REVISION
+   and FD_ROTATION_EDITION_CATALOG, neither of which is one of the four payloads. site_extras.py
+   supplies copy pairs only (RES_EXTRA, PROTO_TOOLS, the ms3 orientation video); the resident
+   nav titles for those pages are literals in resident_section.py, and its one route into this
+   render is shipped_pages.json, which is declared. */
 export const PANEL_BUILD_INPUTS = [
   '13_Faculty_Resources/_automation/site_build/spa_index.html',
   '13_Faculty_Resources/_automation/site_build/frontdoor/fd_data.js',
   '13_Faculty_Resources/_automation/site_build/build_deploy.py',
   '13_Faculty_Resources/_automation/site_build/resident_section.py',
+  '13_Faculty_Resources/_automation/site_build/frontdoor_catalog.py',
   '13_Faculty_Resources/_automation/site_build/cotw_meta.py',
   '13_Faculty_Resources/_automation/site_build/cotw_slug.py',
   '13_Faculty_Resources/_automation/site_build/shipped_pages.json',

@@ -196,6 +196,12 @@ if (WRITE) {
   console.log('\nSnapshots updated. Read the diff — it is the learner-visible change.');
   process.exit(0);
 }
+/* Scoped to the run: bare --write checks BOTH audiences and exits 2 when the other site's
+   build is absent or stale, which is the normal state after an ms3-only build. Telling a user
+   whose gate just failed to run the command that cannot work would send them looking for a
+   second fault. The flag is omitted when both audiences were checked, where bare --write is
+   exactly right. */
+const scope = plans.length === 1 ? ` --site ${plans[0].site}` : '';
 console.log('\nThe rendered panels no longer match their snapshots.\n'
-  + 'If the change is intended, run `node bin/render_panels.mjs --write` and commit the diff.');
+  + `If the change is intended, run \`node bin/render_panels.mjs --write${scope}\` and commit the diff.`);
 process.exit(1);
