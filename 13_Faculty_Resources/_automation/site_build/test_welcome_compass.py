@@ -74,6 +74,15 @@ RESIDENT_ONBOARDING_PATHS = [
     "media/resident-onboarding.mp4",
     "media/resident-onboarding-poster.jpg",
 ]
+TEXT_OUTPUT_PATHS = [
+    "content/other.md",
+    "tools/other.html",
+    "data.json",
+    "client.js",
+    "style.css",
+    "_headers",
+    "sw.js",
+]
 
 
 def write_complete_ms3_output(root, welcome):
@@ -99,6 +108,12 @@ def write_complete_resident_output(root):
     for relative_path in RESIDENT_ONBOARDING_PATHS:
         Path(root, relative_path).write_bytes(b"resident onboarding asset")
     Path(root, "sw.js").write_text("resident service worker", encoding="utf-8")
+
+
+def write_output_file(root, relative_path, payload):
+    path = Path(root, relative_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(payload)
 
 
 class WelcomeCompassTests(unittest.TestCase):
@@ -303,6 +318,16 @@ class WelcomeCompassTests(unittest.TestCase):
                         root, self.cards(), SAFETY, BUILT_ORIENTATION_PATHS
                     )
 
+    def test_rejects_retired_intro_references_in_every_completed_text_output_class(self):
+        for relative_path in TEXT_OUTPUT_PATHS:
+            with self.subTest(relative_path=relative_path), tempfile.TemporaryDirectory() as root:
+                write_complete_ms3_output(root, EXPECTED_FRAGMENT)
+                write_output_file(root, relative_path, b"reference: intro-trailer-poster.jpg")
+                with self.assertRaisesRegex(welcome_compass.CompassContractError, "retired intro"):
+                    welcome_compass.assert_ms3_output(
+                        root, self.cards(), SAFETY, BUILT_ORIENTATION_PATHS
+                    )
+
     def test_resident_output_accepts_only_resident_welcome_and_real_onboarding_assets(self):
         with tempfile.TemporaryDirectory() as root:
             write_complete_resident_output(root)
@@ -325,6 +350,82 @@ class WelcomeCompassTests(unittest.TestCase):
                 else:
                     path.write_bytes(payload)
                 with self.assertRaisesRegex(welcome_compass.CompassContractError, expected):
+                    welcome_compass.assert_resident_output(root)
+
+    def test_resident_output_rejects_compass_material_in_every_completed_text_output_class(self):
+        leaks = (
+            (b'<div data-ms3-compass-root>Compass</div>', "Compass"),
+            (welcome_compass.SCOPE_COPY.encode("utf-8"), "Compass"),
+            (welcome_compass.PROMPT_COPY.encode("utf-8"), "Compass"),
+        )
+        for relative_path in TEXT_OUTPUT_PATHS:
+            for payload, expected in leaks:
+                with self.subTest(relative_path=relative_path, payload=payload), tempfile.TemporaryDirectory() as root:
+                    write_complete_resident_output(root)
+                    write_output_file(root, relative_path, payload)
+                    with self.assertRaisesRegex(welcome_compass.CompassContractError, expected):
+                        welcome_compass.assert_resident_output(root)
+
+    def test_resident_output_rejects_each_missing_or_lfs_onboarding_asset(self):
+        for relative_path in RESIDENT_ONBOARDING_PATHS:
+            with self.subTest(missing=relative_path), tempfile.TemporaryDirectory() as root:
+                write_complete_resident_output(root)
+                Path(root, relative_path).unlink()
+                with self.assertRaisesRegex(welcome_compass.CompassContractError, relative_path):
+                    welcome_compass.assert_resident_output(root)
+            with self.subTest(lfs=relative_path), tempfile.TemporaryDirectory() as root:
+                write_complete_resident_output(root)
+                Path(root, relative_path).write_bytes(welcome_compass.LFS_HEADER + b" oid")
+                with self.assertRaisesRegex(welcome_compass.CompassContractError, relative_path):
+                    welcome_compass.assert_resident_output(root)
+
+    def test_resident_output_requires_one_real_video_with_exact_onboarding_src_and_poster(self):
+        invalid_welcomes = (
+            '<video poster="media/resident-onboarding-poster.jpg"></video>',
+            '<video src="media/resident-onboarding.mp4"></video>',
+            '<!-- media/resident-onboarding.mp4 media/resident-onboarding-poster.jpg -->',
+        )
+        for welcome in invalid_welcomes:
+            with self.subTest(welcome=welcome), tempfile.TemporaryDirectory() as root:
+                write_complete_resident_output(root)
+                Path(root, "content", "welcome.md").write_text(welcome, encoding="utf-8")
+                with self.assertRaisesRegex(welcome_compass.CompassContractError, "video"):
+                    welcome_compass.assert_resident_output(root)
+
+    def test_resident_output_rejects_every_optional_package_path_and_retired_file(self):
+        for relative_path in [
+            *welcome_compass.MS3_OPTIONAL_ORIENTATION_PATHS,
+            "media/intro-trailer-poster.jpg",
+        ]:
+            with self.subTest(relative_path=relative_path), tempfile.TemporaryDirectory() as root:
+                write_complete_resident_output(root)
+                write_output_file(root, relative_path, b"unexpected output")
+                with self.assertRaisesRegex(welcome_compass.CompassContractError, "optional|retired intro"):
+                    welcome_compass.assert_resident_output(root)
+
+    def test_output_validation_rejects_symlinked_required_files_and_output_tree_entries(self):
+        with tempfile.TemporaryDirectory() as root, tempfile.TemporaryDirectory() as outside:
+            write_complete_resident_output(root)
+            external = Path(outside, "onboarding.mp4")
+            external.write_bytes(b"external onboarding")
+            Path(root, "media", "resident-onboarding.mp4").unlink()
+            Path(root, "media", "resident-onboarding.mp4").symlink_to(external)
+            with self.assertRaisesRegex(welcome_compass.CompassContractError, "resident-onboarding.mp4"):
+                welcome_compass.assert_resident_output(root)
+
+        for relative_path, target_kind in (("tools/linked.html", "file"), ("linked-directory", "directory")):
+            with self.subTest(relative_path=relative_path), tempfile.TemporaryDirectory() as root, tempfile.TemporaryDirectory() as outside:
+                write_complete_resident_output(root)
+                target = Path(outside, "target")
+                if target_kind == "file":
+                    target.write_text("external", encoding="utf-8")
+                else:
+                    target.mkdir()
+                    (target / "external.md").write_text("external", encoding="utf-8")
+                link = Path(root, relative_path)
+                link.parent.mkdir(parents=True, exist_ok=True)
+                link.symlink_to(target, target_is_directory=target_kind == "directory")
+                with self.assertRaisesRegex(welcome_compass.CompassContractError, "symlink"):
                     welcome_compass.assert_resident_output(root)
 
     def test_rejects_missing_built_orientation_file(self):

@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 from html import escape
+from html.parser import HTMLParser
 import json
 import os
 import stat
@@ -42,6 +43,16 @@ class CompassContractError(ValueError):
 
 class CompassPreflightError(CompassContractError):
     pass
+
+
+class _ResidentWelcomeVideoParser(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.videos = []
+
+    def handle_starttag(self, tag, attrs):
+        if tag.lower() == "video":
+            self.videos.append(dict(attrs))
 
 
 @dataclass(frozen=True)
@@ -213,9 +224,10 @@ def require_real_files(root, relative_paths) -> None:
     for relative_path in relative_paths:
         path = os.path.join(root, relative_path)
         try:
-            metadata = os.stat(path)
+            metadata = os.lstat(path)
             if (
-                not stat.S_ISREG(metadata.st_mode)
+                stat.S_ISLNK(metadata.st_mode)
+                or not stat.S_ISREG(metadata.st_mode)
                 or metadata.st_size == 0
                 or metadata.st_mode & 0o444 == 0
             ):
@@ -230,29 +242,77 @@ def require_real_files(root, relative_paths) -> None:
         raise CompassContractError("MS3 Compass required files are invalid: " + ", ".join(invalid))
 
 
-def _iter_output_text_files(out_dir):
-    for directory, _, filenames in os.walk(out_dir):
+def _iter_completed_output_files(out_dir):
+    try:
+        root_metadata = os.lstat(out_dir)
+    except OSError as error:
+        raise CompassContractError("built output root is unreadable: %s" % out_dir) from error
+    if stat.S_ISLNK(root_metadata.st_mode) or not stat.S_ISDIR(root_metadata.st_mode):
+        raise CompassContractError("built output root must be a real directory: %s" % out_dir)
+    for directory, dirnames, filenames in os.walk(out_dir, followlinks=False):
+        for dirname in dirnames:
+            path = os.path.join(directory, dirname)
+            try:
+                metadata = os.lstat(path)
+            except OSError as error:
+                raise CompassContractError("built output directory is unreadable: %s" % path) from error
+            if stat.S_ISLNK(metadata.st_mode):
+                raise CompassContractError("built output contains a symlinked directory: " + path)
         for filename in filenames:
-            if filename in OUTPUT_TEXT_FILENAMES or os.path.splitext(filename)[1] in OUTPUT_TEXT_SUFFIXES:
-                yield os.path.join(directory, filename)
+            path = os.path.join(directory, filename)
+            try:
+                metadata = os.lstat(path)
+            except OSError as error:
+                raise CompassContractError("built output file is unreadable: %s" % path) from error
+            if stat.S_ISLNK(metadata.st_mode):
+                raise CompassContractError("built output contains a symlinked file: " + path)
+            if not stat.S_ISREG(metadata.st_mode):
+                raise CompassContractError("built output contains a non-regular file: " + path)
+            yield path, os.path.relpath(path, out_dir)
 
 
-def _assert_no_retired_intro(out_dir) -> None:
-    for directory, _, filenames in os.walk(out_dir):
-        for filename in filenames:
-            if filename in RETIRED_INTRO_FILENAMES:
-                raise CompassContractError("built output contains retired intro file: " + filename)
-    for path in _iter_output_text_files(out_dir):
+def _inspect_completed_output(out_dir):
+    files = set()
+    text_outputs = {}
+    for path, relative_path in _iter_completed_output_files(out_dir):
+        files.add(relative_path)
+        filename = os.path.basename(path)
+        if filename in RETIRED_INTRO_FILENAMES:
+            raise CompassContractError("built output contains retired intro file: " + relative_path)
+        if filename not in OUTPUT_TEXT_FILENAMES and os.path.splitext(filename)[1] not in OUTPUT_TEXT_SUFFIXES:
+            continue
         try:
             with open(path, encoding="utf-8") as handle:
                 text = handle.read()
         except (OSError, UnicodeError) as error:
             raise CompassContractError("built output text is unreadable: %s" % path) from error
+        text_outputs[relative_path] = text
         for retired_name in RETIRED_INTRO_FILENAMES:
             if retired_name in text:
                 raise CompassContractError(
-                    "built output contains retired intro reference %s: %s" % (retired_name, path)
+                    "built output contains retired intro reference %s: %s" % (retired_name, relative_path)
                 )
+    return files, text_outputs
+
+
+def _assert_no_retired_intro(out_dir) -> None:
+    _inspect_completed_output(out_dir)
+
+
+def _assert_resident_welcome_video(welcome) -> None:
+    parser = _ResidentWelcomeVideoParser()
+    parser.feed(welcome)
+    parser.close()
+    valid_videos = [
+        attrs
+        for attrs in parser.videos
+        if attrs.get("src") == RESIDENT_ONBOARDING_PATHS[0]
+        and attrs.get("poster") == RESIDENT_ONBOARDING_PATHS[1]
+    ]
+    if len(parser.videos) != 1 or len(valid_videos) != 1:
+        raise CompassContractError(
+            "resident built Welcome must contain exactly one video with the resident onboarding src and poster"
+        )
 
 
 def load_ms3_preflight_sources(curriculum_path, orientation_packet_path):
@@ -299,24 +359,20 @@ def assert_ms3_output(out_dir, cards, safety_text, built_orientation_paths) -> N
 
 def assert_resident_output(out_dir) -> None:
     require_real_files(out_dir, RESIDENT_ONBOARDING_PATHS)
-    welcome_path = os.path.join(out_dir, "content", "welcome.md")
-    try:
-        with open(welcome_path, encoding="utf-8") as handle:
-            welcome = handle.read()
-    except (OSError, UnicodeError) as error:
-        raise CompassContractError("resident built Welcome is unreadable: %s" % error) from error
-    for required_reference in RESIDENT_ONBOARDING_PATHS:
-        if required_reference not in welcome:
-            raise CompassContractError(
-                "resident built Welcome must reference " + required_reference
-            )
+    files, text_outputs = _inspect_completed_output(out_dir)
+    welcome = text_outputs.get("content/welcome.md")
+    if welcome is None:
+        raise CompassContractError("resident built Welcome is unreadable: content/welcome.md")
     forbidden_welcome_copy = ("data-ms3-compass-root", SCOPE_COPY, PROMPT_COPY)
-    for forbidden in forbidden_welcome_copy:
-        if forbidden in welcome:
-            raise CompassContractError("resident built Welcome contains MS3 Compass copy: " + forbidden)
+    for relative_path, text in text_outputs.items():
+        for forbidden in forbidden_welcome_copy:
+            if forbidden in text:
+                raise CompassContractError(
+                    "resident built output contains MS3 Compass copy: %s (%s)" % (forbidden, relative_path)
+                )
     for relative_path in MS3_OPTIONAL_ORIENTATION_PATHS:
-        if os.path.exists(os.path.join(out_dir, relative_path)):
+        if relative_path in files:
             raise CompassContractError(
                 "resident built output contains MS3 optional orientation package: " + relative_path
             )
-    _assert_no_retired_intro(out_dir)
+    _assert_resident_welcome_video(welcome)

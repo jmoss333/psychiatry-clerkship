@@ -27,6 +27,12 @@ const retiredIntroPaths = [
   "_prototypes/video-library/intro-trailer.mp4",
   "_prototypes/video-library/intro-trailer-poster.jpg",
 ];
+const optionalOrientationPaths = new Set([
+  "tools/orientation-video.html",
+  "tools/Inpatient_Psych_Orientation.mp4",
+  "tools/Inpatient_Psych_Orientation.vtt",
+  "tools/poster.jpg",
+]);
 
 const COMPASS_MARKER = "<!-- ms3-six-week-compass -->";
 const SAFETY_START = "<!-- single-safety-rule:start -->";
@@ -307,7 +313,7 @@ test("retired intro remains source provenance but is absent from generated media
   }
 });
 
-test("media manifest records exactly one unserved retired intro and no served orientation package", () => {
+test("media manifest records exactly one unserved retired intro and no orientation package", () => {
   const retired = mediaManifest.video.filter((entry) => entry.kind === "retired-intro-trailer");
   assert.deepEqual(retired, [
     {
@@ -325,10 +331,12 @@ test("media manifest records exactly one unserved retired intro and no served or
   ]);
   assert.equal(
     mediaManifest.video.filter(
-      (entry) => entry.served === true && /Inpatient_Psych_Orientation|orientation-video/i.test(entry.file),
+      (entry) => Object.values(entry).some(
+        (value) => typeof value === "string" && optionalOrientationPaths.has(value),
+      ),
     ).length,
     0,
-    "the optional orientation package is not a media-manifest record in this work package",
+    "the optional orientation package is not a media-manifest record regardless of served state",
   );
 });
 

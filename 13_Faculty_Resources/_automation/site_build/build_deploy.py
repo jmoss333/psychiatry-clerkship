@@ -145,10 +145,10 @@ for src,dst,_title in ORIENT_VIDEO:
         os.chmod(out_path,0o644)   # source MP4 arrives with mode 400 (LFS/download artifact); world-readable required
 _abort_missing(_missing_orientation)
 
-# ---- video library (intro trailer, day-in-the-life, week stingers, tool spotlights) ----
+# ---- video library (active day-in-the-life, week stingers, and tool spotlights) ----
 # Design source: Clerkship_video_handoff package (2026-07-02/03). Each .mp4 is exported by hand
-# from the design tool (Cowork can't click "Export"); until a file lands in _prototypes/video-library/,
-# its entry below is a silent no-op and the page embed referencing it just won't play yet.
+# from the design tool (Cowork can't click "Export"). This list copies active source files that exist;
+# page embedding and missing-media treatment are handled separately by the generated-site media guard.
 # See _prototypes/video-library/README.md for the exact export filenames + placement map.
 VIDEO_MEDIA=[
  "day-in-the-life.mp4",
