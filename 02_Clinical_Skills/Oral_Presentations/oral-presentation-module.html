@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- [CLERKSHIP-META v1] tool="Treatment Team Rounding Prep" version="2.1" built="2026-07-08" category="clinical-skills" audience="trainee,ms3,resident" settings="inpatient" time="5-15min" summary="Optional aid for treatment-team rounds: gather the right data, present crisply, and rehearse 30-second collateral and 60-second rounds updates. Fictional composites only; no PHI." -->
+<!-- [CLERKSHIP-META v1] tool="Treatment Team Rounding Prep" version="2.2" built="2026-09-04" category="clinical-skills" audience="trainee,ms3,resident" settings="inpatient" time="5-15min" summary="Optional aid for treatment-team rounds: gather the right data, present crisply, and rehearse 30-second collateral and 60-second rounds updates. Fictional composites only; no PHI." -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex,nofollow">
@@ -83,6 +83,72 @@
   .sdot.current{background:var(--primary);box-shadow:0 0 0 3px var(--primary-light)}
   @media(prefers-reduced-motion:reduce){.ring,.sdot{transition:none}}
   footer{margin-top:var(--sp4);padding-top:var(--sp3);border-top:1px solid var(--border);font-size:.85rem;color:var(--text-light,#87786a);text-align:center}
+  /* Short updates: the approved quick/guided layout, using the library's shared tokens. */
+  .shell{width:min(1060px,100%)}
+  .oral-header h1{font-size:1.45rem;color:var(--text,#3b332c);margin-bottom:5px}
+  .oral-header .sub{font-size:.85rem}
+  .oral-nav{display:flex;gap:5px;flex-wrap:wrap;margin:18px 0}
+  .oral-nav-button{font:inherit;font-size:.82rem;min-height:44px;padding:8px 13px;color:var(--text-mid,#64574b);background:transparent;border:1px solid transparent;border-radius:8px;cursor:pointer}
+  .oral-nav-button[aria-pressed="true"]{color:var(--accent-dark);border-color:var(--border);background:var(--surface)}
+  button:focus-visible,input:focus-visible{outline:3px solid var(--focus,#2f6fd0);outline-offset:3px}
+  .op-workspace{display:grid;grid-template-columns:210px minmax(0,1fr);background:var(--bg);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+  .op-workspace[hidden]{display:none}
+  .op-workspace button{font-family:var(--font-body)}
+  .op-sidebar{padding:26px 18px;border-right:1px solid var(--border)}
+  .op-eyebrow{font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--text-mid,#64574b);margin:0 0 10px}
+  .op-sidebar h2{font-size:1.45rem;font-weight:500;color:var(--text,#3b332c);margin:0 0 22px;line-height:1.25}
+  .op-intent{display:block;width:100%;padding:15px 12px;text-align:left;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text,#3b332c);cursor:pointer;margin:0 0 10px;min-height:80px}
+  .op-intent[aria-pressed="true"]{border-color:var(--accent-dark);background:var(--accent-light)}
+  .op-intent span{display:block}
+  .op-intent-title{font-size:.88rem;font-weight:600;line-height:1.4}
+  .op-intent-meta{font-size:.74rem;color:var(--text-mid,#64574b);margin-top:6px}
+  .op-side-note{font-size:.75rem;color:var(--text-mid,#64574b);margin-top:22px}
+  .op-main{padding:26px;min-width:0}
+  .op-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:18px}
+  .op-title-row h2{font-size:2rem;font-weight:500;letter-spacing:-.025em;margin:0 0 9px;color:var(--text,#3b332c);line-height:1.15}
+  .op-subtitle{color:var(--text-mid,#64574b);font-size:.83rem;margin:0}
+  .op-clock{font-family:var(--font-head);font-size:1.9rem;line-height:1.15;font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--accent-dark);text-align:right}
+  .op-time-label{display:block;font-family:var(--font-body);font-size:.7rem;margin-top:6px;color:var(--text-mid,#64574b)}
+  .op-controls{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:20px 0}
+  .op-modes{display:inline-flex;gap:3px;padding:4px;background:var(--accent-light);border-radius:9px}
+  .op-mode{background:transparent;color:var(--text-mid,#64574b);border:0;border-radius:6px;padding:8px 13px;min-height:44px;font-size:.82rem;cursor:pointer}
+  .op-mode[aria-pressed="true"]{background:var(--surface);color:var(--accent-dark);box-shadow:var(--shadow-sm)}
+  .op-text{background:transparent;color:var(--accent-dark);border:0;padding:9px 2px;min-height:44px;font-size:.8rem;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+  .op-cues{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0 16px}
+  .op-cue{display:grid;grid-template-columns:32px minmax(0,1fr) auto;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--border)}
+  .op-cue:last-child{border-bottom:0}
+  .op-cue-number{border:0;border-radius:6px;min-height:44px;background:transparent;color:var(--accent-dark);font-size:1.15rem;cursor:pointer}
+  .op-cue-number[aria-pressed="true"]{background:var(--accent-light)}
+  .op-cue h3{font-family:var(--font-body);font-size:.9rem;font-weight:600;margin:0;color:var(--text,#3b332c)}
+  .op-cue p{font-size:.77rem;margin:4px 0 0;color:var(--text-mid,#64574b);line-height:1.45}
+  .op-seconds{font-size:.72rem;color:var(--text-mid,#64574b);white-space:nowrap;font-variant-numeric:tabular-nums}
+  .op-guided{padding:22px;border:1px solid var(--border);border-radius:12px;background:var(--surface)}
+  .op-steps{display:flex;gap:6px;margin-bottom:22px;flex-wrap:wrap}
+  .op-step{width:44px;height:44px;padding:0;border:1px solid var(--border);border-radius:50%;background:transparent;color:var(--text-mid,#64574b);font-size:.83rem;cursor:pointer}
+  .op-step[aria-current="step"]{background:var(--accent-dark);color:var(--on-brand,#fff);border-color:var(--accent-dark)}
+  .op-guided h3{font-size:1.7rem;font-weight:500;line-height:1.25;color:var(--text,#3b332c);margin:0 0 12px}
+  .op-guide-copy{font-size:.95rem;margin:0 0 14px}
+  .op-example{background:var(--warning-light);border-left:3px solid var(--warning);padding:15px;border-radius:0 8px 8px 0;margin:10px 0}
+  .op-example span{font-size:.72rem;color:var(--warning)}
+  .op-example p{font-family:var(--font-head);font-size:1.1rem;line-height:1.5;margin:7px 0 0}
+  .op-practiced{display:flex;align-items:center;gap:10px;font-size:.8rem;min-height:44px;cursor:pointer;margin-top:10px}
+  .op-practiced input{width:18px;height:18px;accent-color:var(--accent-dark)}
+  .op-step-footer{display:flex;justify-content:space-between;gap:10px;margin-top:16px}
+  .op-button{border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text,#3b332c);min-height:44px;padding:10px 14px;font-size:.83rem;font-weight:600;cursor:pointer}
+  .op-button:disabled{opacity:.45;cursor:default}
+  .op-primary{background:var(--accent-dark);border-color:var(--accent-dark);color:var(--on-brand,#fff)}
+  .op-safety{padding:12px 14px;background:var(--accent-light);border-left:2px solid var(--accent-dark);font-size:.76rem;line-height:1.5;margin-top:16px}
+  .op-actions{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .op-actions>span{font-size:.75rem;color:var(--text-mid,#64574b)}
+  .op-storage{font-size:.73rem;color:var(--text-mid,#64574b);margin:18px 0 0}
+  .op-resume{border:1px solid var(--border);border-radius:12px;background:var(--surface);padding:28px;margin:20px 0}
+  .op-resume h3{font-size:1.75rem;font-weight:500;margin-bottom:12px}
+  .op-resume p:not(.op-eyebrow){font-size:.88rem;color:var(--text-mid,#64574b)}
+  .op-resume-info{border-block:1px solid var(--border);padding:15px 0;margin:18px 0;font-size:.88rem}
+  .op-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+  .oral-history{margin-top:18px}
+  @media(max-width:740px){.op-workspace{grid-template-columns:1fr}.op-sidebar{padding:20px;border-right:0;border-bottom:1px solid var(--border)}.op-sidebar h2{margin-bottom:14px}.op-intents{display:grid;grid-template-columns:1fr 1fr;gap:9px}.op-intent{margin:0}.op-side-note{display:none}.op-main{padding:20px}}
+  @media(max-width:420px){.shell{padding:16px 10px}.op-sidebar,.op-main{padding:16px}.op-title-row h2{font-size:1.7rem}.op-title-row{gap:10px}.op-clock{font-size:1.6rem}.op-guided{padding:16px}.op-cues{padding:0 12px}.op-cue{grid-template-columns:28px minmax(0,1fr) auto;gap:7px}.op-controls{gap:5px}.op-intent{padding:12px 10px}.oral-nav-button{padding:7px 9px}.op-button{padding:10px 12px}}
 </style>
 </head>
 <body>
@@ -171,28 +237,180 @@ function rubricScore(rubric){
   return n;
 }
 
+/* Only bounded practice state is retained in this tab. Bump v when cue identities change. */
+function oralSession(raw){
+  var source=raw&&raw.v===1?raw:{};
+  var priorEntry=source.entry||{};
+  var result={v:1,format:source.format==='collateral'?'collateral':'rounds',paused:source.paused===true,entry:{
+    format:['rounds','collateral'].indexOf(priorEntry.format)>=0?priorEntry.format:null,
+    view:['quick','guided'].indexOf(priorEntry.view)>=0?priorEntry.view:null
+  },items:{}};
+  ['rounds','collateral'].forEach(function(key){
+    var item=source.items&&source.items[key]||{}, target=key==='rounds'?60:30;
+    var seconds=typeof item.seconds==='number'&&isFinite(item.seconds)?Math.max(0,Math.min(target,Math.floor(item.seconds))):0;
+    var step=typeof item.step==='number'&&isFinite(item.step)?Math.max(0,Math.min(4,Math.floor(item.step))):0;
+    var done=[];
+    if(Array.isArray(item.done)) item.done.forEach(function(n){if(typeof n==='number'&&n>=0&&n<5&&n%1===0&&done.indexOf(n)<0)done.push(n);});
+    var repAt=typeof item.repAt==='string'&&/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/.test(item.repAt)&&isFinite(Date.parse(item.repAt))?item.repAt:null;
+    result.items[key]={seconds:seconds,step:step,view:item.view==='guided'?'guided':'quick',example:item.example===true,done:done,repAt:repAt};
+  });
+  return result;
+}
+function oralEntry(search){
+  var result={format:null,view:null};
+  try{
+    var sp=new URLSearchParams(search);
+    ['format','view'].forEach(function(key){
+      var allowed=key==='format'?['rounds','collateral']:['quick','guided'];
+      if(sp.getAll(key).length===1&&allowed.indexOf(sp.get(key))>=0)result[key]=sp.get(key);
+    });
+  }catch(ignore){}
+  return result;
+}
+function oralTransition(previous,action){
+  var state=oralSession(previous), a=action||{}, item=state.items[state.format];
+  if(a.type==='format'&&(a.value==='rounds'||a.value==='collateral')){state.format=a.value;state.paused=false;}
+  else if(a.type==='view'&&(a.value==='quick'||a.value==='guided'))item.view=a.value;
+  else if(a.type==='step'&&typeof a.value==='number'&&isFinite(a.value)){item.step=Math.max(0,Math.min(4,Math.floor(a.value)));item.example=false;}
+  else if(a.type==='seconds'&&typeof a.value==='number'&&isFinite(a.value))item.seconds=Math.max(0,Math.min(state.format==='rounds'?60:30,Math.floor(a.value)));
+  else if(a.type==='example')item.example=!item.example;
+  else if(a.type==='pause')state.paused=true;
+  else if(a.type==='resume')state.paused=false;
+  else if(a.type==='reset'){state.items[state.format]=oralSession(null).items[state.format];state.items[state.format].view=item.view;state.paused=false;}
+  else if(a.type==='done'&&typeof a.value==='number'&&a.value>=0&&a.value<5&&a.value%1===0){
+    var ix=item.done.indexOf(a.value);if(ix<0)item.done.push(a.value);else item.done.splice(ix,1);
+  }else if(a.type==='record'){
+    item.repAt=oralSession({v:1,items:{rounds:{repAt:a.value}}}).items.rounds.repAt;
+  }
+  return state;
+}
+function oralRestore(raw,search){
+  var value=oralSession(raw), entry=oralEntry(search);
+  /* Apply a new entry link once; reloading the same link keeps the learner's place. */
+  if(entry.format!==value.entry.format||entry.view!==value.entry.view){
+    if(entry.format)value=oralTransition(value,{type:'format',value:entry.format});
+    if(entry.view)value=oralTransition(value,{type:'view',value:entry.view});
+    if(entry.format||entry.view)value.paused=false;
+  }
+  value.entry=entry;return value;
+}
+
+function ShortUpdates(props){
+  var saved=useState(function(){
+    var raw=null;try{raw=JSON.parse(sessionStorage.getItem('cw_oral_session_v1'));}catch(ignore){}
+    return oralRestore(raw,location.search);
+  }), session=saved[0], setSession=saved[1];
+  var runState=useState(false), running=runState[0], setRunning=runState[1];
+  var storageState=useState(true), storageOK=storageState[0], setStorageOK=storageState[1];
+  var messageState=useState(''), message=messageState[0], setMessage=messageState[1];
+  var latest=useRef(session), callbacks=useRef(props), clock=useRef({id:null,running:false,base:0,start:0});
+  var focusNext=useRef(null), region=useRef(null);
+  callbacks.current=props;
+  function persist(value){try{sessionStorage.setItem('cw_oral_session_v1',JSON.stringify(value));return true;}catch(ignore){return false;}}
+  function move(action){
+    var value=oralTransition(latest.current,action);latest.current=value;setSession(value);setStorageOK(persist(value));return value;
+  }
+  function syncTime(){
+    if(!clock.current.running)return latest.current;
+    return move({type:'seconds',value:clock.current.base+Math.floor((Date.now()-clock.current.start)/1000)});
+  }
+  function halt(record){
+    var value=syncTime(), item=value.items[value.format];
+    clearInterval(clock.current.id);clock.current.id=null;clock.current.running=false;setRunning(false);
+    if(record&&item.seconds>=30){
+      var at=callbacks.current.onRecord(item.repAt,value.format,item.seconds,null);
+      move({type:'record',value:at});
+    }
+  }
+  function tick(){
+    var value=syncTime(), target=value.format==='rounds'?60:30;
+    if(value.items[value.format].seconds>=target){halt(true);setMessage('Practice time finished. Timing is not an assessment of clinical readiness.');}
+  }
+  function toggleTimer(){
+    if(clock.current.running){halt(true);setMessage('Timer paused.');return;}
+    var value=latest.current, item=value.items[value.format], target=value.format==='rounds'?60:30;
+    if(item.seconds>=target){value=move({type:'reset'});item=value.items[value.format];}
+    clock.current={id:null,running:true,base:item.seconds,start:Date.now()};
+    clock.current.id=setInterval(tick,250);setRunning(true);setMessage('Practice timer started.');
+  }
+  function changeFormat(key){halt(true);move({type:'format',value:key});setMessage((key==='rounds'?'60-second rounds update':'30-second collateral update')+' opened.');}
+  function pause(){halt(true);focusNext.current='[data-oral-resume]';move({type:'pause'});setMessage('Practice paused. Your place is held.');}
+  function resume(){focusNext.current='[data-oral-view="'+latest.current.items[latest.current.format].view+'"]';move({type:'resume'});setMessage('Practice resumed. Start the timer when you are ready.');}
+  function pickStep(n){move({type:'step',value:n});setMessage('Cue '+(n+1)+' of 5.');}
+  useEffect(function(){
+    setStorageOK(persist(latest.current));
+    function background(){if(document.hidden&&clock.current.running)pause();}
+    function leaving(){
+      var value=latest.current;
+      if(clock.current.running)value=oralTransition(value,{type:'seconds',value:clock.current.base+Math.floor((Date.now()-clock.current.start)/1000)});
+      value=oralTransition(value,{type:'pause'});latest.current=value;persist(value);
+      clearInterval(clock.current.id);clock.current.id=null;clock.current.running=false;
+    }
+    function returning(event){
+      if(!event.persisted)return;
+      setRunning(false);focusNext.current='[data-oral-resume]';setSession(oralSession(latest.current));
+      setMessage('Practice paused. Start the timer when you are ready.');
+    }
+    document.addEventListener('visibilitychange',background);window.addEventListener('pagehide',leaving);
+    window.addEventListener('pageshow',returning);
+    return function(){leaving();document.removeEventListener('visibilitychange',background);window.removeEventListener('pagehide',leaving);window.removeEventListener('pageshow',returning);};
+  },[]);
+  useEffect(function(){if(!props.active&&clock.current.running)halt(true);},[props.active]);
+  useEffect(function(){
+    if(focusNext.current&&region.current){var node=region.current.querySelector(focusNext.current);focusNext.current=null;if(node)node.focus();}
+  },[session]);
+  var micro=MICRO.filter(function(m){return m.key===session.format;})[0], item=session.items[session.format], step=micro.steps[item.step];
+  var title=session.format==='rounds'?'Your 60-second update':'Your 30-second summary';
+  function button(label,fn,extra){return e('button',Object.assign({type:'button',className:'op-button',onClick:fn},extra||{}),label);}
+  var controls=e('div',{className:'op-controls'},
+    e('div',{className:'op-modes',role:'group','aria-label':'Amount of guidance'},['quick','guided'].map(function(view){return button(view==='quick'?'Quick cue':'Guided',function(){move({type:'view',value:view});},{key:view,className:'op-mode','data-oral-view':view,'aria-pressed':item.view===view});})),
+    button('Pause & leave',pause,{className:'op-text'}));
+  var quick=e('div',{className:'op-cues'},micro.steps.map(function(s,i){return e('div',{className:'op-cue',key:i},
+    button(item.done.indexOf(i)>=0?'✓':String(i+1),function(){move({type:'done',value:i});},{className:'op-cue-number','aria-label':'Mark '+s.t+' practiced','aria-pressed':item.done.indexOf(i)>=0}),
+    e('div',null,e('h3',null,s.t),e('p',null,s.d)),e('span',{className:'op-seconds'},s.sec+' sec'));}));
+  var guided=e('section',{className:'op-guided','aria-label':'Guided practice'},
+    e('div',{className:'op-steps','aria-label':'Practice cues'},micro.steps.map(function(s,i){return button(String(i+1),function(){pickStep(i);},{key:i,className:'op-step','aria-current':i===item.step?'step':null,'aria-label':'Cue '+(i+1)+': '+s.t});})),
+    e('p',{className:'op-eyebrow'},'Cue '+(item.step+1)+' of 5 · about '+step.sec+' seconds'),
+    e('h3',null,step.t),e('p',{className:'op-guide-copy'},step.d),
+    button(item.example?'Close example':'Show an example',function(){move({type:'example'});},{className:'op-text','aria-expanded':item.example,'aria-controls':'oral-example'}),
+    e('div',{id:'oral-example',className:'op-example',hidden:!item.example},e('span',null,'Fictional example'),e('p',null,step.ex)),
+    e('label',{className:'op-practiced'},e('input',{type:'checkbox',checked:item.done.indexOf(item.step)>=0,onChange:function(){move({type:'done',value:item.step});}}),'I practiced this cue'),
+    e('div',{className:'op-step-footer'},
+      button('Previous',function(){pickStep(item.step-1);},{disabled:item.step===0}),
+      button(item.step===4?'See all five cues':'Next cue →',function(){if(item.step===4){focusNext.current='[data-oral-view="quick"]';move({type:'view',value:'quick'});}else pickStep(item.step+1);},{className:'op-button op-primary'})));
+  var held=e('section',{className:'op-resume'},e('p',{className:'op-eyebrow'},'Your place is held'),e('h3',null,'Ready when you are.'),e('p',null,'Return to the same cue and view.'),
+    e('div',{className:'op-resume-info'},item.view==='guided'?'Cue '+(item.step+1)+' of 5 · '+step.t:'Quick cue · All five prompts'),
+    button('Resume practice →',resume,{className:'op-button op-primary','data-oral-resume':true}));
+  return e('section',{className:'op-workspace',ref:region,'aria-label':'Short update practice',hidden:!props.active},
+    e('aside',{className:'op-sidebar','aria-label':'Choose an activity'},e('p',{className:'op-eyebrow'},'Right now'),e('h2',null,'What do you need to do?'),
+      e('div',{className:'op-intents'},['rounds','collateral'].map(function(key){return button(e(React.Fragment,null,e('span',{className:'op-intent-title'},key==='rounds'?'Prepare a rounds update':'Summarize a collateral call'),e('span',{className:'op-intent-meta'},(key==='rounds'?'60':'30')+' seconds · 5 cues')),function(){changeFormat(key);},{key:key,className:'op-intent','aria-pressed':session.format===key});})),
+      e('p',{className:'op-side-note'},'Open the activity you need. Everything else can wait.')),
+    e('div',{className:'op-main'},
+      e('div',{className:'op-title-row'},e('div',null,e('p',{className:'op-eyebrow'},'Treatment team rounding prep'),e('h2',null,title),e('p',{className:'op-subtitle'},micro.sub)),
+        e('div',{className:'op-clock'},e('span',{'data-oral-clock':true},fmt(Math.max(0,micro.target-item.seconds))),e('span',{className:'op-time-label'},item.seconds>=micro.target?'practice finished':'practice timer'))),
+      session.paused?held:e(React.Fragment,null,controls,item.view==='quick'?quick:guided,
+        e('div',{className:'op-safety'},'Keep safety concerns and unresolved questions explicit in your team update.'),
+        e('div',{className:'op-actions'},button(running?'Pause timer':item.seconds>=micro.target?'Practice again':item.seconds?'Continue timer':'Start '+micro.target+'-sec practice',toggleTimer,{className:'op-button op-primary','data-oral-timer':true}),
+          e('span',null,'Practice aloud · no recording')),
+        item.seconds>0?button('Start fresh',function(){halt(false);move({type:'reset'});setMessage('Started a fresh practice. Previous practice history is unchanged.');},{className:'op-text'}):null),
+      e('p',{className:'op-storage',role:storageOK?null:'status'},storageOK?'Your place stays in this browser tab, including after a reload.':'Tab storage is unavailable. Your place is held only while this page stays open.'),
+      e('div',{className:'op-sr',role:'status','aria-live':'polite','aria-atomic':'true'},message)));
+}
+
 function App(){
-  var tab=useState('gather'); var setTab=tab[1]; tab=tab[0];
+  var tab=useState('micro'); var setTab=tab[1]; tab=tab[0];
   var sec=useState(0); var setSec=sec[1]; sec=sec[0];
-  var microKey=useState('collateral'); var setMicroKey=microKey[1]; microKey=microKey[0];
-  var microSec=useState(0); var setMicroSec=microSec[1]; microSec=microSec[0];
-  var microRun=useState(false); var setMicroRun=microRun[1]; microRun=microRun[0];
   var run=useState(false); var setRun=run[1]; run=run[0];
   var done=useState({}); var setDone=done[1]; done=done[0];
-  var microDone=useState({}); var setMicroDone=microDone[1]; microDone=microDone[0];
   var prep=useState({}); var setPrep=prep[1]; prep=prep[0];
   var stepMark=useState({}); var setStepMark=stepMark[1]; stepMark=stepMark[0];
   var reps=useState(loadOralReps); var setReps=reps[1]; reps=reps[0];
   var pending=useState(null); var setPending=pending[1]; pending=pending[0];
   var rubricDraft=useState({}); var setRubricDraft=rubricDraft[1]; rubricDraft=rubricDraft[0];
   var fullRepAt=useState(null); var setFullRepAt=fullRepAt[1]; fullRepAt=fullRepAt[0];
-  var microRepAt=useState(null); var setMicroRepAt=microRepAt[1]; microRepAt=microRepAt[0];
   var ref=useRef(null);
-  var microRef=useRef(null);
   useEffect(function(){ if(run){ ref.current=setInterval(function(){ setSec(function(s){return s+1}); },1000);} return function(){ if(ref.current) clearInterval(ref.current);} },[run]);
-  useEffect(function(){ if(microRun){ microRef.current=setInterval(function(){ setMicroSec(function(s){return s+1}); },1000);} return function(){ if(microRef.current) clearInterval(microRef.current);} },[microRun]);
   function activeStep(){ var acc=0; for(var i=0;i<STEPS.length;i++){ acc+=STEPS[i].sec; if(sec<acc) return i;} return STEPS.length-1; }
-  function activeMicroStep(steps){ var acc=0; for(var i=0;i<steps.length;i++){ acc+=steps[i].sec; if(microSec<acc) return i;} return steps.length-1; }
   function togglePrep(k){ var x=Object.assign({},prep); x[k]=!x[k]; setPrep(x); }
   function toggleDone(n){
     var x=Object.assign({},done); var turningOn=!x[n]; x[n]=turningOn; setDone(x);
@@ -200,7 +418,6 @@ function App(){
     if(turningOn){ m[n]=sec; } else { delete m[n]; }
     setStepMark(m);
   }
-  function toggleMicroDone(k){ var x=Object.assign({},microDone); x[k]=!x[k]; setMicroDone(x); }
   function computeFullPerStep(){
     var out=[]; var prevT=0;
     for(var i=0;i<STEPS.length;i++){
@@ -218,7 +435,7 @@ function App(){
   // update that record's total/perStep in place instead of appending a duplicate. Returns the
   // record's `at`, unchanged on update, so callers can track "this timeline already has a rep."
   function commitRep(existingAt,format,total,perStep){
-    if(existingAt){
+    if(existingAt&&reps.some(function(r){return r.at===existingAt;})){
       var updated=reps.map(function(r){
         if(r.at!==existingAt) return r;
         return Object.assign({},r,{total:total,perStep:perStep});
@@ -237,14 +454,11 @@ function App(){
     var at=commitRep(fullRepAt,'full',sec,computeFullPerStep());
     if(!fullRepAt){ setFullRepAt(at); setPending(at); setRubricDraft({}); }
   }
-  function stopMicroRep(){
-    if(microSec<30) return;
-    var at=commitRep(microRepAt,microKey,microSec,null);
-    if(!microRepAt){ setMicroRepAt(at); setPending(at); setRubricDraft({}); }
-  }
-  function pickMicro(k){
-    if(microRun) stopMicroRep();
-    setMicroRun(false); setMicroSec(0); setMicroDone({}); setMicroKey(k); setMicroRepAt(null);
+  function recordShortRep(existingAt,format,total,perStep){
+    var alreadyRecorded=existingAt&&reps.some(function(r){return r.at===existingAt;});
+    var at=commitRep(existingAt,format,total,perStep);
+    if(!alreadyRecorded){setPending(at);setRubricDraft({});}
+    return at;
   }
   function findPendingRep(){
     if(!pending) return null;
@@ -319,22 +533,17 @@ function App(){
   var over=sec>TARGET; var pct=Math.min(100,(sec/TARGET)*100); var cur=activeStep();
   var deg=Math.min(360,(sec/TARGET)*360); var remain=Math.max(0,TARGET-sec);
   var cue=over?'Over time — wrap up and stop.':('Now: '+STEPS[cur].t+'  ·  target '+fmt(TARGET-sec)+' left');
-  var micro=MICRO.filter(function(m){return m.key===microKey})[0]||MICRO[0];
-  var microCur=activeMicroStep(micro.steps), microOver=microSec>micro.target, microPct=Math.min(100,(microSec/micro.target)*100), microDeg=Math.min(360,(microSec/micro.target)*360), microRemain=Math.max(0,micro.target-microSec);
-  var microCue=microOver?'Over time — stop and trim one sentence.':('Now: '+micro.steps[microCur].t+' · '+fmt(microRemain)+' left');
-
-  var header=e('div',{key:'h'},
-    e('div',{className:'kicker'},'Clinical Skills · optional aid'),
+  function selectTab(next){
+    if(run){stopFullRep();setRun(false);}
+    setTab(next);
+  }
+  var header=e('header',{className:'oral-header',key:'h'},
     e('h1',null,'Treatment Team Rounding Prep'),
-    e('span',{className:'opt'},'Optional — use it if it helps'),
-    e('p',{className:'sub'},'Walk into treatment-team rounds with the right data, then present it crisply. Gather, present, rehearse the 3-minute structure, or practice a focused 30-second collateral update and 60-second rounds update. Nothing here is required — it is a scaffold you can lean on while you build the habit.')
-  );
-  var tabs=e('div',{className:'tabs',key:'t'},
-    e('button',{className:'tab'+(tab==='gather'?' on':''),onClick:function(){setTab('gather')}},'1 · Gather'),
-    e('button',{className:'tab'+(tab==='present'?' on':''),onClick:function(){setTab('present')}},'2 · Present'),
-    e('button',{className:'tab'+(tab==='practice'?' on':''),onClick:function(){setTab('practice')}},'3 · Practice timer'),
-    e('button',{className:'tab'+(tab==='micro'?' on':''),onClick:function(){setTab('micro')}},'4 · Micro updates')
-  );
+    e('p',{className:'sub'},'Optional practice for your next team update.'));
+  var tabs=e('nav',{className:'oral-nav',key:'t','aria-label':'Rounding preparation'},
+    [['micro','Short updates'],['gather','Gather'],['present','Full presentation'],['practice','Full practice']].map(function(pair){
+      return e('button',{type:'button',key:pair[0],className:'oral-nav-button','aria-pressed':tab===pair[0],onClick:function(){selectTab(pair[0]);}},pair[1]);
+    }));
 
   var gather=e('div',{key:'g'},
     e('div',{className:'card'},
@@ -409,48 +618,10 @@ function App(){
     lastFivePanel()
   );
 
-  var microView=e('div',{key:'m'},
-    e('p',{className:'sub'},'Two short formats for the moments students actually get interrupted on rounds: a 30-second collateral update and a 60-second daily rounds update. Say them out loud; do not type patient information here.'),
-    e('div',{className:'modegrid'},
-      MICRO.map(function(m){return e('button',{type:'button',className:'modebtn'+(m.key===micro.key?' on':''),key:m.key,onClick:function(){pickMicro(m.key)}},e('b',null,m.title),e('span',null,m.sub));})
-    ),
-    e('div',{className:'card'},
-      e('h3',{style:{marginTop:0}},micro.title),
-      e('p',{className:'sub',style:{marginTop:0}},micro.sub),
-      e('div',{className:'script'},e('b',null,'Structure: '),e('code',null,micro.script)),
-      e('div',{className:'ringwrap'},
-        e('div',{className:'ring'+(microOver?' over':''),role:'img',
-          'aria-label':micro.title+': '+fmt(microSec)+' elapsed of a '+fmt(micro.target)+' target'+(microOver?', over time':', '+fmt(microRemain)+' remaining'),
-          style:{background:'conic-gradient('+(microOver?'var(--danger)':'var(--accent)')+' '+microDeg+'deg, var(--primary-light) 0deg)'}},
-          e('div',{className:'ringtxt'},
-            e('div',{className:'ringtime'}, microOver?('+'+fmt(microSec-micro.target)):fmt(microRemain)),
-            e('div',{className:'ringlbl'}, microOver?'over time':'left')))
-      ),
-      e('div',{className:'ringtot'}, fmt(microSec)+' / '+fmt(micro.target)+' elapsed'),
-      e('div',{className:'bar'+(microOver?' over':'')}, e('div',{style:{width:microPct+'%'}})),
-      e('div',{className:'cue'+(microOver?' over':'')}, microCue),
-      e('div',{className:'row'},
-        e('button',{className:'btn btn-primary',onClick:function(){ if(microRun) stopMicroRep(); setMicroRun(!microRun); }}, microRun?'Pause':(microSec?'Resume':'Start')),
-        e('button',{className:'btn btn-ghost',onClick:function(){ if(microRun) stopMicroRep(); setMicroRun(false);setMicroSec(0);setMicroDone({});setMicroRepAt(null); }},'Reset'))
-    ),
-    e('div',{className:'card'},
-      e('p',{className:'sub',style:{marginTop:0}},'Tick each section as you say it. The highlighted line is where this update should be right now.'),
-      micro.steps.map(function(s,i){
-        var id=micro.key+'-'+i, st=microDone[id]?'done':(microRun?(i<microCur?'done':(i===microCur?'current':'future')):'future');
-        return e('div',{className:'step'+(i===microCur&&microRun?' active':'')+(microDone[id]?' done':''),key:id,onClick:function(){toggleMicroDone(id)},style:{cursor:'pointer'}},
-          e('span',{style:{display:'flex',alignItems:'center',gap:'9px'}},
-            e('span',{className:'sdot '+st,title:st==='current'?'on now':(st==='done'?'covered':'upcoming')}),
-            e('span',{className:'box'+(microDone[id]?' on':'')}, microDone[id]?'✓':'')),
-          e('div',null, e('h3',null,s.t), e('div',{className:'d'},s.d), e('span',{className:'ex'},s.ex)),
-          e('span',{className:'t'},'~'+s.sec+'s'));
-      })
-    ),
-    rubricPanel(['collateral','rounds'])
-  );
-
   return e('div',{className:'shell'},
     header, tabs,
-    tab==='gather'?gather:(tab==='present'?present:(tab==='practice'?practice:microView)),
+    e(ShortUpdates,{key:'short-updates',active:tab==='micro',onRecord:recordShortRep}),
+    tab==='gather'?gather:(tab==='present'?present:(tab==='practice'?practice:e('div',{className:'oral-history'},rubricPanel(['collateral','rounds']),lastFivePanel()))),
     e('div',{className:'disclaimer'},'Optional educational aid for clinical trainees. Examples are fictional composites — no protected health information. The format is a scaffold; follow your team and institution conventions.'),
     e('footer',null,'Treatment Team Rounding Prep · Psychiatry Clerkship Library · Joshua Moss, MD | Psychiatrist')
   );
