@@ -325,18 +325,33 @@ def _without_markdown_code_blocks(markdown):
     active_lines = []
     fence = None
     for line in markdown.splitlines(keepends=True):
-        opener = re.match(r"^ {0,3}([`~]{3,})", line)
         if fence is not None:
-            if opener and opener.group(1)[0] == fence[0] and len(opener.group(1)) >= fence[1]:
+            closer = re.match(
+                r"^ {0,3}(" + re.escape(fence[0]) + r"+)[ \t]*(?:\r?\n)?$", line
+            )
+            if closer and len(closer.group(1)) >= fence[1]:
                 fence = None
             continue
+        opener = re.match(r"^ {0,3}(`{3,}|~{3,})", line)
         if opener:
             fence = (opener.group(1)[0], len(opener.group(1)))
             continue
-        if line.startswith(("    ", "\t")):
+        if _has_indented_code_block(line):
             continue
         active_lines.append(line)
     return "".join(active_lines)
+
+
+def _has_indented_code_block(line):
+    columns = 0
+    for char in line:
+        if char == " ":
+            columns += 1
+        elif char == "\t":
+            columns += 4 - (columns % 4)
+        else:
+            break
+    return columns >= 4
 
 
 def validate_media_manifest(manifest) -> None:
