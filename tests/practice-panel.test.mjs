@@ -450,7 +450,23 @@ test('a quiz-less page offers retrieval without apologising for the missing quiz
     assert.match(html, /href="\?tool=question-bank-practice\.html"/, `${ref}: lost Practice Questions`);
     assert.match(html, /href="\?tool=review\.html"/, `${ref}: lost Daily Review`);
   }
-  assert.ok(quizless >= 25, `expected many quiz-less pages, saw ${quizless}`);
+  // A non-vacuity guard, NOT a corpus pin. It asserts only that the loop ran, so a broken
+  // hasPracticeTpl or an always-truthy m.quiz cannot make this test pass by iterating nothing.
+  // It deliberately does not pin HOW MANY quiz-less pages exist: authoring quizzes is the fix
+  // for that debt, and a threshold would fail the build for making the improvement — with 31
+  // today, a `>= 25` pin broke as soon as seven pages gained a quiz (Codex P2 on #534). The
+  // synthetic case below keeps the contract alive even if every page eventually carries one.
+  assert.ok(quizless >= 1, 'no quiz-less page was exercised; the empty state went untested');
+});
+
+test('the quiz-less empty state holds even when no real page is quiz-less', () => {
+  // Pins the same contract against a fixture rather than against content debt, so it survives
+  // the corpus reaching zero quiz-less pages — the state this test exists to protect is a
+  // property of the renderer, not a property of how much quiz authoring is outstanding.
+  const html = F.buildTpl({ tldr: 'A page with no quiz.' }, 'synthetic-quizless.md');
+  assert.ok(!html.includes('No page-specific question yet'), 'the panel apologises for having no quiz');
+  assert.match(html, /href="\?tool=question-bank-practice\.html"/, 'lost Practice Questions');
+  assert.match(html, /href="\?tool=review\.html"/, 'lost Daily Review');
 });
 
 test('every quiz-less page still routes to Daily Review somewhere in its panel', () => {

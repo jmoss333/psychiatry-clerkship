@@ -160,9 +160,161 @@ defensible alternative, as with `med_monitoring.md`'s `ruleOut`.
   "resident" correctly: escalation targets ("tell the resident or attending") and descriptions of
   the two-audience structure. Left alone deliberately.
 
+
+---
+
+## D. Exam-name neutralisation — reverted, and why
+
+**Added 2026-09-05 after Codex P2 on #534.** These 14 phrases were applied and then reverted in
+the same PR. They are correct copy edits; they were applied against the wrong precondition.
+
+### The mistake worth recording
+
+I checked `topic_meta.json`'s `facultyReview` block, found it absent on all nine pages, and
+concluded they were unreviewed. **That is not the ledger that governs.** The chain is:
+
+```
+13_Faculty_Resources/reviewed.json   <- the canonical attestation
+  -> build_deploy.py:377             <- flattened into the sanitized projection
+  -> _build/<site>/governance.json   <- what ships
+  -> spa_index.html:761              <- renders: Reviewed by Joshua Moss, MD · <date>
+```
+All nine carry a live receipt, and `protocol_library.md` is **`riskLevel: high`** — so the PR
+body's "every page touched is unreviewed and none is high-safety" was wrong on both halves.
+
+This is the same principle §A and §B are built on. Applying it there and violating it here was
+one unchecked assumption, not two different standards.
+
+**To apply:** make each edit below, then re-attest the page in `reviewed.json` — the `at` date
+is the act of sign-off and stays yours. `anki.md` and `welcome.md`'s `ask` are not exam-name
+edits at all; take or leave them independently.
+
+### `ddx.md` · *reviewed @ 2026-07-01, risk moderate*
+
+`clinicalWorkflow.exam`
+
+```diff
+- Shelf questions often hide medical mimics, substance causes, and medication adverse effects inside psychiatric vignettes.
++ Exam questions often hide medical mimics, substance causes, and medication adverse effects inside psychiatric vignettes.
+```
+
+### `evidence_inpatient.md` · *reviewed @ 2026-07-03, risk moderate*
+
+`clinicalWorkflow.exam`
+
+```diff
+- Link each landmark finding to a shelf-style distinction: delirium treatment, suicide prevention, capacity, family psychoeducation, or risk prediction limits.
++ Link each landmark finding to a board-style distinction: delirium treatment, suicide prevention, capacity, family psychoeducation, or risk prediction limits.
+```
+
+### `protocol_library.md` · *reviewed @ 2026-07-03, risk high*
+
+`clinicalWorkflow.exam`
+
+```diff
+- Know the conceptual indications and safety logic; local protocol details are not shelf facts and should not be guessed.
++ Know the conceptual indications and safety logic; local protocol details are not exam facts and should not be guessed.
+```
+
+### `welcome.md` · *reviewed @ 2026-06-29, risk low*
+
+`clinicalWorkflow.ask`
+
+```diff
+- Before you open a patient page, ask what you need right now: orientation, bedside action, communication rehearsal, rounds prep, or shelf review.
++ Before you open a patient page, ask what you need right now: orientation, bedside action, communication rehearsal, rounds prep, or exam review.
+```
+
+`clinicalWorkflow.exam`
+
+```diff
+- Use shelf mode and daily review for retrieval practice; use patient pages to organize the facts.
++ Use the board-style question bank and daily review for retrieval practice; use patient pages to organize the facts.
+```
+
+### `core_readings.md` · *reviewed @ 2026-06-30, risk low*
+
+`points[2]`
+
+```diff
+- The differential-diagnosis scaffolds and rounds questions pair with the landmark trials audio set for the deepest shelf and COMAT preparation in the hub.
++ The differential-diagnosis scaffolds and rounds questions pair with the landmark trials audio set for the deepest exam preparation in the hub.
+```
+
+### `week6.md` · *reviewed @ 2026-07-03, risk low*
+
+`tldr`
+
+```diff
+- Week 6 — Integration, Disposition & Exam Readiness: build a discharge/disposition plan, present a full case with formulation and risk reasoning, and complete the shelf high-yield review and OSCE station set.
++ Week 6 — Integration, Disposition & Exam Readiness: build a discharge/disposition plan, present a full case with formulation and risk reasoning, and complete the high-yield exam review and OSCE station set.
+```
+
+`points[0]`
+
+```diff
+- Skills of the week: the Risk-Stratified Discharge Pathway, the shelf high-yield review with self-check, and the full OSCE station set for stations you have not yet completed.
++ Skills of the week: the Risk-Stratified Discharge Pathway, the high-yield exam review with self-check, and the full OSCE station set for stations you have not yet completed.
+```
+
+`clinicalWorkflow.exam`
+
+```diff
+- Use the patient in front of you as the shelf organizer: syndrome, mimic, treatment, safety/legal issue, and disposition.
++ Use the patient in front of you as the exam organizer: syndrome, mimic, treatment, safety/legal issue, and disposition.
+```
+
+### `landmark_trials.md` · *reviewed @ 2026-07-03, risk moderate*
+
+`tldr`
+
+```diff
+- Fifty landmark papers as 90–120 second audio overviews with board-style self-test in Shelf Mode and Daily Review — listen to the four Foundations papers first (Engel, Rosenhan, Robins-Guze, Insel), then follow your patients to the theme that fits.
++ Fifty landmark papers as 90–120 second audio overviews with board-style self-test in the question bank and Daily Review — listen to the four Foundations papers first (Engel, Rosenhan, Robins-Guze, Insel), then follow your patients to the theme that fits.
+```
+
+`points[2]`
+
+```diff
+- The same trials feed the board-style questions in Shelf Mode and Daily Review, which extend beyond the individual trial into the broader clinical question — pair the audio with those for shelf preparation.
++ The same trials feed the board-style questions in the question bank and Daily Review, which extend beyond the individual trial into the broader clinical question — pair the audio with those for exam preparation.
+```
+
+`clinicalWorkflow.exam`
+
+```diff
+- Pair each audio with board-style self-test in Shelf Mode or Daily Review, then answer one question bank item on the same concept.
++ Pair each audio with board-style self-test in the question bank or Daily Review, then answer one question bank item on the same concept.
+```
+
+### `rounds_questions.md` · *reviewed @ 2026-08-11, risk moderate*
+
+`points[1]`
+
+```diff
+- Covers all shelf/COMAT domains: psychotic disorders (Q1–15), mood, substance use, acute safety, personality, neurocognitive, and psychopharmacology.
++ Covers all exam domains: psychotic disorders (Q1–15), mood, substance use, acute safety, personality, neurocognitive, and psychopharmacology.
+```
+
+### `anki.md` · *reviewed @ 2026-08-11, risk low*
+
+`tldr`
+
+```diff
+- Download the clerkship's attested question bank and high-yield concepts as Anki spaced-repetition decks; suspend all cards, then unsuspend by topic as the rotation covers each block.
++ Download the library's attested question bank and high-yield concepts as Anki spaced-repetition decks; suspend all cards, then unsuspend by topic as the rotation covers each block.
+```
+
+---
+
 ## Applying this
 
 1. Paste each fragment into its entry, editing freely.
 2. `python3 13_Faculty_Resources/_automation/validate_topic_meta.py` → must print OK.
-3. Set `facultyReview.lastReviewed` to today's date on every page you touched.
-4. `node --test tests/*.test.mjs`, then build both sites.
+3. **Re-attest every page you touched, in the ledger that governs it:**
+   - `topic_meta.json` → `facultyReview.lastReviewed` (§A, §B — pages that carry that block)
+   - `13_Faculty_Resources/reviewed.json` → the entry's `at` and `by` (§D — this is the one
+     that renders the learner-visible *Reviewed by* receipt; see §D for the chain)
+   Both dates are the act of sign-off. Neither is an agent's to write.
+4. `node bin/render_panels.mjs` → read the diff; it is exactly what learners will see change.
+5. `node --test tests/*.test.mjs`, then build both sites.
