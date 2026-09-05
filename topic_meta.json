@@ -301,7 +301,7 @@
       "why": "Catatonia responds to benzodiazepines; antipsychotics risk precipitating malignant catatonia."
     },
     "cta": {
-      "label": "Open the BFCRS scale",
+      "label": "Bush-Francis Catatonia Scale (BFCRS) — Official Form & Training",
       "href": "?tool=bfcrs.html"
     },
     "evidenceIds": [
@@ -342,7 +342,7 @@
       "exam": "Lorazepam challenge is diagnostic and therapeutic; antipsychotics can worsen malignant catatonia/NMS.",
       "actions": [
         {
-          "label": "Open BFCRS",
+          "label": "Bush-Francis Catatonia Scale (BFCRS) — Official Form & Training",
           "href": "?tool=bfcrs.html"
         },
         {
@@ -1190,7 +1190,7 @@
       "why": "Symptoms tied to a stressor, within 3 months, not meeting full criteria for another disorder, indicate an adjustment disorder; supportive/problem-solving psychotherapy is first-line, with suicide-risk assessment."
     },
     "cta": {
-      "label": "Open the C-SSRS screener",
+      "label": "Columbia C-SSRS — Official Form & Training",
       "href": "?tool=cssrs.html"
     },
     "workflowStages": [
@@ -1222,7 +1222,7 @@
       "exam": "Adjustment disorder requires stressor-linked distress that does not meet criteria for another disorder and resolves after the stressor ends.",
       "actions": [
         {
-          "label": "Open C-SSRS",
+          "label": "Columbia C-SSRS — Official Form & Training",
           "href": "?tool=cssrs.html"
         }
       ]
@@ -1275,7 +1275,7 @@
       "why": "Depersonalization/derealization (intact reality testing) is managed with grounding, risk assessment, and comorbidity treatment once organic mimics are excluded; stabilization precedes trauma processing."
     },
     "cta": {
-      "label": "Open the C-SSRS screener",
+      "label": "Columbia C-SSRS — Official Form & Training",
       "href": "?tool=cssrs.html"
     },
     "workflowStages": [
@@ -2026,7 +2026,7 @@
       "exam": "ECT is most effective for severe, psychotic, catatonic, or life-threatening depression; there are no absolute contraindications, but relative risks require planning.",
       "actions": [
         {
-          "label": "Open BFCRS",
+          "label": "Bush-Francis Catatonia Scale (BFCRS) — Official Form & Training",
           "href": "?tool=bfcrs.html"
         },
         {
@@ -2241,7 +2241,7 @@
     },
     "cta": [
       {
-        "label": "Open the Columbia C-SSRS screener",
+        "label": "Columbia C-SSRS — Official Form & Training",
         "href": "?tool=cssrs.html"
       },
       {
@@ -2311,7 +2311,7 @@
       "exam": "Do not treat scales as disposition tools; risk assessment is a formulation plus supervised plan.",
       "actions": [
         {
-          "label": "Open C-SSRS",
+          "label": "Columbia C-SSRS — Official Form & Training",
           "href": "?tool=cssrs.html"
         },
         {
@@ -2349,7 +2349,7 @@
     "cant": "Do not chart only 'denies SI' or treat a C-SSRS score as a discharge decision; escalate acute risk and disposition questions to supervision and local policy.",
     "cta": [
       {
-        "label": "Open C-SSRS",
+        "label": "Columbia C-SSRS — Official Form & Training",
         "href": "?tool=cssrs.html"
       },
       {
@@ -2413,7 +2413,7 @@
       "exam": "Direct questions do not implant suicidality; safety plans replace no-suicide contracts, and risk tools do not decide disposition.",
       "actions": [
         {
-          "label": "Open C-SSRS",
+          "label": "Columbia C-SSRS — Official Form & Training",
           "href": "?tool=cssrs.html"
         },
         {
@@ -2561,7 +2561,7 @@
       "why": "Postpartum psychosis is a psychiatric emergency — waxing/waning course with lucid intervals is a feature of the illness, not reassurance. The bipolar history, acute onset, and perceptual disturbance require urgent admission. Starting an SSRI without ruling out bipolar disorder risks destabilization; waiting risks harm to mother and infant."
     },
     "cta": {
-      "label": "Open the Columbia C-SSRS screener",
+      "label": "Columbia C-SSRS — Official Form & Training",
       "href": "?tool=cssrs.html"
     },
     "workflowStages": [
@@ -2596,7 +2596,7 @@
       "exam": "Postpartum psychosis is an emergency, often bipolar-spectrum, and requires urgent supervised treatment.",
       "actions": [
         {
-          "label": "Open C-SSRS",
+          "label": "Columbia C-SSRS — Official Form & Training",
           "href": "?tool=cssrs.html"
         },
         {
@@ -4094,7 +4094,7 @@
           "href": "?tool=diagnostic-reasoning.html"
         },
         {
-          "label": "Open BFCRS",
+          "label": "Bush-Francis Catatonia Scale (BFCRS) — Official Form & Training",
           "href": "?tool=bfcrs.html"
         },
         {
@@ -4148,7 +4148,7 @@
       "exam": "Psychotherapy/personality questions test validation plus limits, not reassurance or jargon used at the patient.",
       "actions": [
         {
-          "label": "Open C-SSRS",
+          "label": "Columbia C-SSRS — Official Form & Training",
           "href": "?tool=cssrs.html"
         },
         {
@@ -5064,7 +5064,7 @@
       "exam": "Differentiate serotonin syndrome, NMS, malignant catatonia, lithium toxicity, delirium, and withdrawal by tempo and exam findings.",
       "actions": [
         {
-          "label": "Open BFCRS",
+          "label": "Bush-Francis Catatonia Scale (BFCRS) — Official Form & Training",
           "href": "?tool=bfcrs.html"
         },
         {

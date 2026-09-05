@@ -536,23 +536,23 @@ def write_site_document(output_path: Path, document: dict) -> None:
 # help close, not a bug to route around.
 
 TOPIC_META_RELATIVE = Path("topic_meta.json")
-SITE_MANIFEST_RELATIVE = Path("13_Faculty_Resources/_automation/site_build/site_manifest.json")
 BUILD_DEPLOY_RELATIVE = Path("13_Faculty_Resources/_automation/site_build/build_deploy.py")
 RESIDENT_SECTION_RELATIVE = Path("13_Faculty_Resources/_automation/site_build/resident_section.py")
-COTW_REGISTRY_RELATIVE = Path("08_Cases_and_Simulation/case-of-the-week/cotw_registry.json")
 
-# Tool sources shipped outside site_manifest.json's shared "tools" list --
-# mirrors validate_tool_governance.py's SITE_EXTRAS. Duplicated here in
-# miniature rather than imported: that module already imports FROM this one
-# (SurfaceGovernanceError, load_validated_ledger), so importing back would
-# be a circular import. Keep the two lists in sync by hand if either changes.
-_ADDITIONAL_TOOL_SOURCES = {
-    "orientation-video.html": "_prototypes/orientation-video/orientation-video.html",
-    "rp-agitation.html": "_prototypes/agitation-trainer/rp-agitation.html",
-    "rp-post-event-huddle.html": "_prototypes/post-event-huddle/rp-post-event-huddle.html",
-    "rp-brief-psych.html": "_prototypes/brief-psych/rp-brief-psych.html",
-    "rp-canon-quiz.html": "_prototypes/canon-quiz/rp-canon-quiz.html",
-}
+# The one derived answer to "what ships" (ADR-002, beside site_build/
+# shipped_pages.py): every producer enumerated once, and verified against the
+# real build output on every build. Until 2026-09 this module re-derived it for
+# itself -- the shared "tools" list from site_manifest.json plus a hand-synced
+# miniature of validate_tool_governance.py's per-site extra-tool list, plus its
+# own copy of the Case-of-the-Week slug formula.
+#
+# Read as JSON DATA, deliberately not by importing site_build/shipped_pages.py:
+# validate_tool_governance.py and both build scripts import FROM this module, so
+# this module stays free of any import dependency of its own on the site_build
+# package. A listing is data; reading it needs no code from over there.
+SHIPPED_PAGES_RELATIVE = Path(
+    "13_Faculty_Resources/_automation/site_build/shipped_pages.json"
+)
 
 # The conservative fallback the brief specifies for anything without an
 # explicit signal. 2026-08-12 faculty ruling: risk kind "general" at level
@@ -585,24 +585,34 @@ def _load_text(path: Path, label: str) -> str:
         raise SurfaceGovernanceError(f"{label}: unreadable") from error
 
 
-def _tool_source_paths(root: Path) -> dict:
-    """Return every known built tool slug -> tracked source path.
+def _shipped_pages(root: Path) -> list:
+    """The page records the derived listing carries, as plain data.
 
-    Combines site_manifest.json's shared "tools" list with the small
-    per-site extras above -- together, every tool slug that can possibly
-    appear in reviewed.json or a site nav.
+    Everything this worksheet needs to know about what reaches a learner site
+    is in there: the slug, whether it is a page or a tool, which sites publish
+    it, and its tracked source path. Fails closed like every other input here --
+    a silently short universe is the failure ADR-002 exists to end.
     """
-    manifest = _load_json(root / SITE_MANIFEST_RELATIVE, "site_manifest.json")
+    document = _load_json(root / SHIPPED_PAGES_RELATIVE, "shipped_pages.json")
+    pages = document.get("pages") if isinstance(document, dict) else None
+    if not isinstance(pages, list):
+        raise SurfaceGovernanceError("shipped_pages.json: pages must be a list")
+    return [page for page in pages if isinstance(page, dict)]
+
+
+def _tool_source_paths(root: Path) -> dict:
+    """Return every built tool slug -> tracked source path.
+
+    Every tool slug that can possibly appear in reviewed.json or a site nav, on
+    either site, from the one derived listing (ADR-002).
+    """
     sources: dict = {}
-    tools = manifest.get("tools") if isinstance(manifest, dict) else None
-    if isinstance(tools, list):
-        for entry in tools:
-            if isinstance(entry, list) and len(entry) == 3:
-                source_relative, built_slug, _title = entry
-                if isinstance(source_relative, str) and isinstance(built_slug, str):
-                    sources[built_slug] = root / source_relative
-    for slug, source_relative in _ADDITIONAL_TOOL_SOURCES.items():
-        sources.setdefault(slug, root / source_relative)
+    for page in _shipped_pages(root):
+        if page.get("kind") != "tool":
+            continue
+        built_slug, source_relative = page.get("slug"), page.get("source")
+        if isinstance(built_slug, str) and isinstance(source_relative, str):
+            sources.setdefault(built_slug, root / source_relative)
     return sources
 
 
@@ -704,10 +714,9 @@ def _extract_literal_nav_slugs(source_text: str, label: str) -> dict:
     section.py's inline nav, and the "_HIDDEN_INHERITED" list it folds in)
     and _md("title", "<slug>", ...) / _tool("<slug>", ...) calls with
     literal string arguments (build_deploy.py's nav). Items built from a
-    computed slug -- the Case of the Week comprehension's
-    _cotw_slug(w, level) call in both files, and build_deploy.py's
-    week1..week6 comprehension -- are not literal, so they are
-    deliberately invisible here and are supplied separately by
+    computed slug -- the Case of the Week comprehension in both files, and
+    build_deploy.py's week1..week6 comprehension -- are not literal, so
+    they are deliberately invisible here and are supplied separately by
     _cotw_nav_slugs() and _MS3_WEEK_SLUGS below.
     """
     try:
@@ -742,26 +751,31 @@ def _extract_literal_nav_slugs(source_text: str, label: str) -> dict:
     return found
 
 
+# The derived listing names the resident deploy "res"; this worksheet has
+# always called it "resident" in its rows and its per-site maps.
+_SHIPPED_SITE_NAMES = {"ms3": "ms3", "res": "resident"}
+
+
 def _cotw_nav_slugs(root: Path) -> dict:
     """Return {"ms3": {slug: "md"}, "resident": {slug: "md"}} for every
-    Case of the Week page, using the identical formula build_deploy.py's
-    and resident_section.py's own _cotw_slug() helpers use:
-    f"cotw_{date-without-dashes}_{topic}_{level}.md".
+    Case of the Week page, from the derived listing's cotw_registry entries.
+
+    Until 2026-09 this rebuilt the slugs here from cotw_registry.json with a
+    private copy of the f"cotw_{date-without-dashes}_{topic}_{level}.md"
+    formula -- one of five copies, which is what ADR-002 ended. Which weekly
+    case pages exist, and which site each reaches, is now read, not re-derived.
     """
-    registry = _load_json(root / COTW_REGISTRY_RELATIVE, "cotw_registry.json")
-    weeks = registry.get("weeks") if isinstance(registry, dict) else None
-    slugs = {"ms3": {}, "resident": {}}
-    if not isinstance(weeks, list):
-        return slugs
-    for week in weeks:
-        if not isinstance(week, dict):
+    slugs: dict = {"ms3": {}, "resident": {}}
+    for page in _shipped_pages(root):
+        if page.get("producer") != "cotw_registry":
             continue
-        date_value, topic = week.get("date"), week.get("topic")
-        if not isinstance(date_value, str) or not isinstance(topic, str):
+        built_slug, sites = page.get("slug"), page.get("sites")
+        if not isinstance(built_slug, str) or not isinstance(sites, list):
             continue
-        stem = "cotw_%s_%s" % (date_value.replace("-", ""), topic)
-        slugs["ms3"]["%s_ms3.md" % stem] = "md"
-        slugs["resident"]["%s_res.md" % stem] = "md"
+        for site in sites:
+            name = _SHIPPED_SITE_NAMES.get(site)
+            if name is not None:
+                slugs[name][built_slug] = "md"
     return slugs
 
 

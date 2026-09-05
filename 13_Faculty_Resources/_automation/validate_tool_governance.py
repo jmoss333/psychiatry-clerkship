@@ -21,6 +21,14 @@ if str(AUTOMATION_DIRECTORY) not in sys.path:
 
 from surface_governance import SurfaceGovernanceError, load_validated_ledger
 
+# site_build/ is a sibling directory, not a package -- same sys.path convention
+# validate_attestation_consistency.py uses to reach the single source.
+SITE_BUILD_DIRECTORY = AUTOMATION_DIRECTORY / "site_build"
+if str(SITE_BUILD_DIRECTORY) not in sys.path:
+    sys.path.insert(0, str(SITE_BUILD_DIRECTORY))
+
+from shipped_pages import ShippedPagesError, load_shipped_pages  # noqa: E402
+
 
 CONTRACT_DIRECTORY = AUTOMATION_DIRECTORY / "contracts" / "clerkshipos-schema-0.2.0"
 SCHEMA_PATH = CONTRACT_DIRECTORY / "governance-envelope-v1.schema.json"
@@ -35,8 +43,16 @@ EXPECTED_CONTRACT_DESCRIPTOR = {
     "artifactPath": "packages/schema/artifacts/contracts/governance-envelope-v1.schema.json",
     "sha256": EXPECTED_SCHEMA_SHA256,
 }
-SITE_MANIFEST_RELATIVE = Path("13_Faculty_Resources/_automation/site_build/site_manifest.json")
 REVIEWED_RELATIVE = Path("13_Faculty_Resources/reviewed.json")
+
+# NO LONGER PART OF ANY ANSWER TO "WHAT SHIPS" (ADR-002 Phase 2). _tool_entries()
+# below reads site_build/shipped_pages.json instead, so nothing in this module
+# consults this list any more. It survives only because validate_curriculum.py
+# AST-parses THIS FILE for a top-level `SITE_EXTRAS` literal and exits hard when
+# it cannot find one; deleting it here would break the Netlify build until that
+# reader is migrated too (its own Phase-2 batch). When it is, delete this.
+# test_validate_tool_governance.py's RepositoryProducerTests holds it against the
+# listing in the meantime so the leftover cannot drift.
 SITE_EXTRAS = {
     "ms3": (
         ("_prototypes/orientation-video/orientation-video.html", "orientation-video.html"),
@@ -268,16 +284,9 @@ def normalize_tool(
     return envelope
 
 
-def _load_json(path: Path, relative_path: str) -> object:
-    try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
-        raise GovernanceError(f"{relative_path}: unreadable JSON") from error
-
-
 def _safe_source_path(root: Path, relative_path: object) -> tuple[str, Path]:
     if not isinstance(relative_path, str):
-        raise GovernanceError("site_manifest.json: invalid source path")
+        raise GovernanceError("shipped_pages.json: invalid source path")
     path = PurePosixPath(relative_path)
     if (
         not relative_path
@@ -285,7 +294,7 @@ def _safe_source_path(root: Path, relative_path: object) -> tuple[str, Path]:
         or "\\" in relative_path
         or any(part in {"", ".", ".."} for part in path.parts)
     ):
-        raise GovernanceError("site_manifest.json: invalid source path")
+        raise GovernanceError("shipped_pages.json: invalid source path")
     candidate = root.joinpath(*path.parts)
     cursor = root
     for part in path.parts:
@@ -302,24 +311,42 @@ def _safe_source_path(root: Path, relative_path: object) -> tuple[str, Path]:
     return relative_path, resolved
 
 
+# The derived listing calls the resident deploy "res"; this module's CLI, its
+# documents and its expected counts have always called it "resident", so the two
+# names are mapped here rather than renamed anywhere a caller can see.
+SHIPPED_SITE_KEYS = {"ms3": "ms3", "resident": "res"}
+
+
 def _tool_entries(root: Path, site: str) -> list[tuple[str, str]]:
-    if site not in SITE_EXTRAS:
+    """Every (tracked source path, built slug) the named site ships as a tool.
+
+    ADR-002: read from the one derived listing, site_build/shipped_pages.json,
+    which build_and_check.sh verifies against the real build output on every
+    build. Until 2026-09 this module assembled its own answer -- the shared
+    "tools" list from site_manifest.json plus the SITE_EXTRAS literal above,
+    a private universe, correct only for as long as nobody adds a producer its
+    author did not know about. Ordered by slug now rather than by the order the
+    manifest happened to list them in; every caller sorts (items by id, legacy
+    paths by path) before anything is emitted.
+    """
+    shipped_site = SHIPPED_SITE_KEYS.get(site)
+    if shipped_site is None:
         raise GovernanceError("site: unsupported value")
-    manifest = _load_json(root / SITE_MANIFEST_RELATIVE, SITE_MANIFEST_RELATIVE.as_posix())
-    if not isinstance(manifest, dict) or not isinstance(manifest.get("tools"), list):
-        raise GovernanceError("site_manifest.json: invalid tools field")
+    try:
+        document = load_shipped_pages(root)
+    except ShippedPagesError as error:
+        raise GovernanceError(str(error)) from error
     entries = []
-    for item in manifest["tools"]:
-        if not isinstance(item, list) or len(item) != 3:
-            raise GovernanceError("site_manifest.json: invalid tools field")
-        source_path, built_slug, _title = item
-        if not isinstance(built_slug, str) or Path(built_slug).name != built_slug:
-            raise GovernanceError("site_manifest.json: invalid built slug")
-        entries.append((source_path, built_slug))
-    entries.extend(SITE_EXTRAS[site])
+    for page in document["pages"]:
+        if page.get("kind") != "tool" or shipped_site not in page["sites"]:
+            continue
+        built_slug = page["slug"]
+        if Path(built_slug).name != built_slug:
+            raise GovernanceError("shipped_pages.json: invalid built slug")
+        entries.append((page.get("source"), built_slug))
     slugs = [slug for _source, slug in entries]
     if len(set(slugs)) != len(slugs):
-        raise GovernanceError("site_manifest.json: duplicate built slug")
+        raise GovernanceError("shipped_pages.json: duplicate built slug")
     return entries
 
 
