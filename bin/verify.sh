@@ -102,6 +102,14 @@ step "unit — media guard"                   python3 $A/site_build/test_media_g
 step "unit — shared build logic"            python3 $A/site_build/test_common.py
 step "unit — analytics allowlist"           python3 $A/site_build/test_analytics_events.py
 step "analytics allowlist freshness"        python3 $A/site_build/analytics_events.py --check
+# metrics/node_modules is gitignored (matches sp-proxy's own pattern further below);
+# ci.yml's "Install — metrics collector dependencies" step covers a fresh checkout
+# there, so mirror it here rather than let a fresh clone fail this step for a reason
+# that has nothing to do with the code under test.
+if [ ! -d metrics/node_modules/@netlify/blobs ]; then
+  echo "  ....  installing metrics collector deps (required by metrics/tests/*)"
+  npm --prefix metrics ci >/dev/null 2>&1 || true
+fi
 step "unit — metrics collector"             bash -c "cd metrics && node --test tests/*.test.mjs"
 step "unit — pairing block renderer"        python3 $A/site_build/test_pairings_block.py
 step "unit — front door catalog"            python3 $A/site_build/test_frontdoor_catalog.py

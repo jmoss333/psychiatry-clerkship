@@ -195,6 +195,23 @@ jobs:
           python3 13_Faculty_Resources/_automation/site_build/test_shipped_pages.py
           python3 13_Faculty_Resources/_automation/site_build/shipped_pages.py --check
 
+      # The analytics allowlist derives FROM shipped_pages.json (see the step just
+      # above), so its own freshness check belongs right after that one.
+      - name: Validate — analytics allowlist freshness
+        run: python3 13_Faculty_Resources/_automation/site_build/analytics_events.py --check
+
+      - name: Install — metrics collector dependencies
+        run: npm --prefix metrics ci
+
+      # Final whole-branch review finding: metrics/tests/* (21 tests) is the ONLY
+      # enforcement that no raw event is ever stored, that nothing off the build-time
+      # allowlist reaches the counter store, and that the function never logs a
+      # request — privacy invariants this design promises structurally, not by policy.
+      # Until this step existed it ran ONLY behind bin/verify.sh's local pre-push hook,
+      # so a PR from a machine without the hook, or a bot-authored PR, got none of it.
+      - name: Unit — metrics collector
+        run: cd metrics && node --test tests/*.test.mjs
+
       # The pending-visibility invariant is the gate this repository did not have in July
       # 2026: reviewed.json said 22 Case-of-the-Week pages were pending, both site builds
       # shipped them, and the faculty console could not show one of them. Nothing was red
