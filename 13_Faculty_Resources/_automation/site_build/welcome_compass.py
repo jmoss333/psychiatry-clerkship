@@ -321,6 +321,37 @@ def _assert_resident_welcome_video(welcome) -> None:
         )
 
 
+def _assert_exact_resident_frontdoor_css(out_dir) -> None:
+    output_path = os.path.join(out_dir, "frontdoor.css")
+    canonical_path = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)), "frontdoor", "frontdoor.css"
+    )
+    try:
+        metadata = os.lstat(output_path)
+        if (
+            stat.S_ISLNK(metadata.st_mode)
+            or not stat.S_ISREG(metadata.st_mode)
+            or metadata.st_mode & 0o444 == 0
+        ):
+            raise CompassContractError(
+                "resident built frontdoor.css must be a real readable file"
+            )
+        with open(output_path, "rb") as handle:
+            output_bytes = handle.read()
+        with open(canonical_path, "rb") as handle:
+            canonical_bytes = handle.read()
+    except CompassContractError:
+        raise
+    except OSError as error:
+        raise CompassContractError(
+            "resident built frontdoor.css or its canonical source is unreadable"
+        ) from error
+    if output_bytes != canonical_bytes:
+        raise CompassContractError(
+            "resident built frontdoor.css must be a byte-for-byte copy of the canonical stylesheet"
+        )
+
+
 def _without_markdown_code_blocks(markdown):
     active_lines = []
     fence = None
@@ -416,13 +447,16 @@ def assert_ms3_output(out_dir, cards, safety_text, built_orientation_paths) -> N
 
 def assert_resident_output(out_dir) -> None:
     require_real_files(out_dir, RESIDENT_ONBOARDING_PATHS)
+    _assert_exact_resident_frontdoor_css(out_dir)
     files, text_outputs = _inspect_completed_output(out_dir)
     welcome = text_outputs.get("content/welcome.md")
     if welcome is None:
         raise CompassContractError("resident built Welcome is unreadable: content/welcome.md")
-    forbidden_welcome_copy = ("data-ms3-compass-root", SCOPE_COPY, PROMPT_COPY)
     for relative_path, text in text_outputs.items():
-        for forbidden in forbidden_welcome_copy:
+        forbidden_copy = (SCOPE_COPY, PROMPT_COPY)
+        if relative_path != "frontdoor.css":
+            forbidden_copy = ("data-ms3-compass-root",) + forbidden_copy
+        for forbidden in forbidden_copy:
             if forbidden in text:
                 raise CompassContractError(
                     "resident built output contains MS3 Compass copy: %s (%s)" % (forbidden, relative_path)

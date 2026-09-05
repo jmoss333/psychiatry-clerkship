@@ -290,6 +290,173 @@ test('malformed built protocol fails closed with every canonical crisis resource
   await expectHealthy(page);
 });
 
+test('Welcome preserves audience scope and gives the MS3 Compass responsive keyboard and touch behavior', async ({ page, browser }, testInfo) => {
+  const site = audience(testInfo);
+  await seedApp(page, testInfo);
+  await page.goto('/?page=welcome.md');
+  await expect(page.locator('.fd-reader .fd-article__body')).toBeVisible();
+
+  const compassRoot = page.locator('[data-ms3-compass-root]');
+  if (site.role === 'pgy1') {
+    await expect(compassRoot).toHaveCount(0);
+    const onboarding = page.locator(
+      'video[src="media/resident-onboarding.mp4"][poster="media/resident-onboarding-poster.jpg"]',
+    );
+    await expect(onboarding).toHaveCount(1);
+    await expectHealthy(page);
+    return;
+  }
+
+  await expect(compassRoot).toHaveCount(1);
+  expect(await compassRoot.evaluate(root => [...root.children].map(child => {
+    if (child.hasAttribute('data-ms3-compass-safety')) return 'safety';
+    if (child.hasAttribute('data-ms3-compass-scope')) return 'scope';
+    if (child.hasAttribute('data-ms3-compass')) return 'compass';
+    if (child.hasAttribute('data-ms3-compass-prompt')) return 'prompt';
+    if (child.hasAttribute('data-ms3-compass-orientation')) return 'optional-video';
+    return 'unexpected';
+  }))).toEqual(['safety', 'scope', 'compass', 'prompt', 'optional-video']);
+
+  const safetyCopy = 'If you are worried about immediate safety, tell the resident or attending now. Do not wait for rounds. Do not carry it alone.';
+  const scopeCopy = 'This map supports orientation, supervised practice, and reflection. It is not a checklist, clinical protocol, or measure of readiness. Using or viewing this map does not establish competence, entrustment, or permission to act independently.';
+  const promptCopy = 'Choose the week or task you are preparing to discuss with your supervising team.';
+  const optionalCopy = 'Optional: watch the captioned orientation overview (transcript available)';
+  await expect(compassRoot.locator('[role="note"]')).toHaveCount(1);
+  await expect(compassRoot.locator('[data-ms3-compass-safety] > p')).toHaveText(safetyCopy);
+  await expect(compassRoot.locator('[data-ms3-compass-safety] > a')).toHaveText('Open the Orientation Packet');
+  await expect(compassRoot.locator('[data-ms3-compass-scope]')).toHaveText(scopeCopy);
+  await expect(compassRoot.locator('[data-ms3-compass-prompt]')).toHaveText(promptCopy);
+  await expect(compassRoot.locator('[data-ms3-compass-orientation]')).toHaveText(optionalCopy);
+  await expect(compassRoot.locator('section[aria-labelledby="ms3-compass-title"]')).toHaveCount(1);
+  await expect(compassRoot.locator('ol')).toHaveCount(1);
+
+  const expectedWeeks = [
+    { n: '1', title: 'Foundations & the MSE', href: '?page=week1.md', label: 'Open Week 1' },
+    { n: '2', title: 'Mood, Psychosis & Pharm', href: '?page=week2.md', label: 'Open Week 2' },
+    { n: '3', title: 'Psychotherapy & Personality', href: '?page=week3.md', label: 'Open Week 3' },
+    { n: '4', title: 'Family Systems & EE', href: '?page=week4.md', label: 'Open Week 4' },
+    { n: '5', title: 'Acute & Emergency', href: '?page=week5.md', label: 'Open Week 5' },
+    { n: '6', title: 'Integration & Exam', href: '?page=week6.md', label: 'Open Week 6' },
+  ];
+  const renderedWeeks = await compassRoot.locator('[data-ms3-compass-weeks] > li').evaluateAll(rows => (
+    rows.map(row => {
+      const link = row.querySelector('[data-ms3-compass-link]');
+      return {
+        n: row.getAttribute('data-ms3-compass-week'),
+        title: row.querySelector('h3')?.textContent.trim(),
+        href: link?.getAttribute('href'),
+        label: link?.textContent.trim(),
+      };
+    })
+  ));
+  expect(renderedWeeks).toEqual(expectedWeeks);
+
+  const pending = page.locator('.fd-article__body > .governance-notice.pending-compact[role="status"]');
+  await expect(pending).toHaveCount(1);
+  await expect(pending.locator('.governance-title')).toHaveText('Pending faculty review');
+  await expect(page.locator('.fd-article__body > .governance-notice.reviewed-receipt')).toHaveCount(0);
+
+  const weekLinks = compassRoot.locator('[data-ms3-compass-link]');
+  await weekLinks.first().focus();
+  await expect(weekLinks.first()).toBeFocused();
+  for (let index = 1; index < expectedWeeks.length; index += 1) {
+    await page.keyboard.press('Tab');
+    await expect(weekLinks.nth(index)).toBeFocused();
+    await expect(weekLinks.nth(index)).toHaveAttribute('href', expectedWeeks[index].href);
+  }
+  await page.keyboard.press('Tab');
+  const optionalLink = compassRoot.locator('[data-ms3-compass-orientation]');
+  await expect(optionalLink).toBeFocused();
+  await expect(optionalLink).toHaveAttribute('href', '?tool=orientation-video.html');
+
+  const widthCases = [
+    { viewport: 736, bucket: 'three', tracks: 3 },
+    { viewport: 561, bucket: 'two', tracks: 2 },
+    { viewport: 390, bucket: 'one', tracks: 1 },
+    { viewport: 320, bucket: 'one', tracks: 1 },
+  ];
+  for (const widthCase of widthCases) {
+    await page.setViewportSize({ width: widthCase.viewport, height: 844 });
+    const geometry = await page.locator('.ms3-compass').evaluate(component => {
+      const rootPixels = parseFloat(getComputedStyle(document.documentElement).fontSize);
+      const width = component.getBoundingClientRect().width;
+      const tracks = getComputedStyle(component.querySelector('.ms3-compass__weeks'))
+        .gridTemplateColumns.split(/\s+/).filter(Boolean).length;
+      return {
+        width,
+        rootPixels,
+        tracks,
+        documentScrollWidth: document.documentElement.scrollWidth,
+        documentClientWidth: document.documentElement.clientWidth,
+        componentScrollWidth: component.scrollWidth,
+        componentClientWidth: component.clientWidth,
+      };
+    });
+    const minTwo = 22 * geometry.rootPixels;
+    const minThree = 30 * geometry.rootPixels;
+    if (widthCase.bucket === 'three') {
+      expect(geometry.width, `${widthCase.viewport}px viewport measured Compass width`).toBeGreaterThanOrEqual(minThree);
+    } else if (widthCase.bucket === 'two') {
+      expect(geometry.width, `${widthCase.viewport}px viewport measured Compass width`).toBeGreaterThanOrEqual(minTwo);
+      expect(geometry.width, `${widthCase.viewport}px viewport measured Compass width`).toBeLessThan(minThree);
+    } else {
+      expect(geometry.width, `${widthCase.viewport}px viewport measured Compass width`).toBeLessThan(minTwo);
+    }
+    expect(geometry.tracks, `${widthCase.viewport}px viewport measured ${geometry.width}px Compass`).toBe(widthCase.tracks);
+    expect(geometry.documentScrollWidth).toBeLessThanOrEqual(geometry.documentClientWidth);
+    expect(geometry.componentScrollWidth).toBeLessThanOrEqual(geometry.componentClientWidth);
+  }
+
+  await seedApp(page, testInfo, { storage: { cw_theme: 'dark' } });
+  await page.goto('/?page=welcome.md');
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  const darkWeekOne = page.locator('[data-ms3-compass-link]').first();
+  await darkWeekOne.focus();
+  const focusOutline = await darkWeekOne.evaluate(link => {
+    const style = getComputedStyle(link);
+    return { style: style.outlineStyle, width: parseFloat(style.outlineWidth) };
+  });
+  expect(focusOutline.style).not.toBe('none');
+  expect(focusOutline.width).toBeGreaterThan(0);
+
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  const reducedMotion = await page.locator('.ms3-compass').evaluate(component => {
+    const cards = [...component.querySelectorAll('.ms3-compass__weeks > li')];
+    return [component, ...cards].map(element => {
+      const style = getComputedStyle(element);
+      return { animationName: style.animationName, transitionDuration: style.transitionDuration };
+    });
+  });
+  for (const motion of reducedMotion) {
+    expect(motion.animationName).toBe('none');
+    expect(motion.transitionDuration).toBe('0s');
+  }
+
+  const touchContext = await browser.newContext({
+    baseURL: testInfo.project.use.baseURL,
+    hasTouch: true,
+  });
+  try {
+    const touchPage = await touchContext.newPage();
+    await seedApp(touchPage, testInfo);
+    await touchPage.goto('/?page=welcome.md');
+    const touchTargets = await touchPage.locator(
+      '[data-ms3-compass-link], [data-ms3-compass-orientation]',
+    ).evaluateAll(links => links.map(link => {
+      const box = link.getBoundingClientRect();
+      return { width: box.width, height: box.height };
+    }));
+    expect(touchTargets).toHaveLength(7);
+    for (const box of touchTargets) {
+      expect(box.width).toBeGreaterThanOrEqual(44);
+      expect(box.height).toBeGreaterThanOrEqual(44);
+    }
+  } finally {
+    await touchContext.close();
+  }
+  await expectHealthy(page);
+});
+
 test('390x844 reduced-motion Reader keeps fixed 44px actions during scroll without overflow', async ({ page }, testInfo) => {
   await page.setViewportSize(PHONE);
   await page.emulateMedia({ reducedMotion: 'reduce' });

@@ -75,6 +75,9 @@ RESIDENT_ONBOARDING_PATHS = [
     "media/resident-onboarding.mp4",
     "media/resident-onboarding-poster.jpg",
 ]
+CANONICAL_FRONTDOOR_CSS = Path(welcome_compass.__file__).resolve().with_name(
+    "frontdoor"
+) / "frontdoor.css"
 TEXT_OUTPUT_PATHS = [
     "content/other.md",
     "tools/other.html",
@@ -109,6 +112,7 @@ def write_complete_resident_output(root):
     )
     for relative_path in RESIDENT_ONBOARDING_PATHS:
         Path(root, relative_path).write_bytes(b"resident onboarding asset")
+    Path(root, "frontdoor.css").write_bytes(CANONICAL_FRONTDOOR_CSS.read_bytes())
     Path(root, "sw.js").write_text("resident service worker", encoding="utf-8")
 
 
@@ -340,6 +344,51 @@ class WelcomeCompassTests(unittest.TestCase):
             )
             self.assertIsNone(welcome_compass.assert_resident_output(root))
 
+    def test_resident_output_requires_an_exact_real_canonical_frontdoor_stylesheet(self):
+        canonical = CANONICAL_FRONTDOOR_CSS.read_bytes()
+
+        def missing(path):
+            path.unlink()
+
+        def altered(path):
+            path.write_bytes(canonical + b"\n/* altered */\n")
+
+        def truncated(path):
+            path.write_bytes(canonical[:-1])
+
+        def crlf_converted(path):
+            path.write_bytes(canonical.replace(b"\n", b"\r\n"))
+
+        for label, mutate in (
+            ("missing", missing),
+            ("altered", altered),
+            ("truncated", truncated),
+            ("CRLF-converted", crlf_converted),
+        ):
+            with self.subTest(label=label), tempfile.TemporaryDirectory() as root:
+                write_complete_resident_output(root)
+                mutate(Path(root, "frontdoor.css"))
+                with self.assertRaisesRegex(welcome_compass.CompassContractError, "frontdoor.css"):
+                    welcome_compass.assert_resident_output(root)
+
+        with tempfile.TemporaryDirectory() as root:
+            write_complete_resident_output(root)
+            stylesheet = Path(root, "frontdoor.css")
+            stylesheet.chmod(0o000)
+            try:
+                with self.assertRaisesRegex(welcome_compass.CompassContractError, "frontdoor.css"):
+                    welcome_compass.assert_resident_output(root)
+            finally:
+                stylesheet.chmod(0o644)
+
+        with tempfile.TemporaryDirectory() as root:
+            write_complete_resident_output(root)
+            stylesheet = Path(root, "frontdoor.css")
+            stylesheet.unlink()
+            stylesheet.symlink_to(CANONICAL_FRONTDOOR_CSS)
+            with self.assertRaisesRegex(welcome_compass.CompassContractError, "frontdoor.css"):
+                welcome_compass.assert_resident_output(root)
+
     def test_resident_output_rejects_ms3_compass_optional_package_retired_intro_and_lfs_media(self):
         mutations = (
             ("content/welcome.md", b'<div data-ms3-compass-root>Compass</div>', "Compass"),
@@ -371,6 +420,27 @@ class WelcomeCompassTests(unittest.TestCase):
                     write_complete_resident_output(root)
                     write_output_file(root, relative_path, payload)
                     with self.assertRaisesRegex(welcome_compass.CompassContractError, expected):
+                        welcome_compass.assert_resident_output(root)
+
+    def test_resident_output_rejects_a_compass_root_in_a_second_stylesheet(self):
+        with tempfile.TemporaryDirectory() as root:
+            write_complete_resident_output(root)
+            write_output_file(root, "assets/second.css", b"[data-ms3-compass-root]{}")
+            with self.assertRaisesRegex(welcome_compass.CompassContractError, "second.css"):
+                welcome_compass.assert_resident_output(root)
+
+    def test_resident_output_rejects_scope_and_prompt_copy_even_in_the_exact_stylesheet(self):
+        for forbidden in (welcome_compass.SCOPE_COPY, welcome_compass.PROMPT_COPY):
+            with self.subTest(forbidden=forbidden), tempfile.TemporaryDirectory() as root, tempfile.TemporaryDirectory() as source_root:
+                write_complete_resident_output(root)
+                module_path = Path(source_root, "welcome_compass.py")
+                module_path.touch()
+                canonical_path = Path(source_root, "frontdoor", "frontdoor.css")
+                canonical_path.parent.mkdir()
+                canonical_path.write_bytes(CANONICAL_FRONTDOOR_CSS.read_bytes() + forbidden.encode("utf-8"))
+                Path(root, "frontdoor.css").write_bytes(canonical_path.read_bytes())
+                with patch.object(welcome_compass, "__file__", str(module_path)):
+                    with self.assertRaisesRegex(welcome_compass.CompassContractError, "Compass copy"):
                         welcome_compass.assert_resident_output(root)
 
     def test_resident_output_rejects_each_missing_or_lfs_onboarding_asset(self):

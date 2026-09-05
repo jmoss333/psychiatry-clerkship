@@ -37,6 +37,32 @@ function rule(css, selector) {
   return block(css, selector);
 }
 
+const AUDIENCE_TOKEN = /MS3|clerkship|student|shelf|resident|UNE|MMC|Sanford/i;
+
+function neutralizeApprovedCompassSyntax(code) {
+  return code
+    .replace(/\[data-ms3-compass-(?:root|safety|scope|prompt|link|orientation)\]/g, '[data-compass]')
+    .replace(/\.ms3-compass__weeks(?![A-Za-z0-9_-])/g, '.compass-weeks')
+    .replace(/\.ms3-compass(?![A-Za-z0-9_-])/g, '.compass')
+    .replace(/(container\s*:\s*)ms3-compass(?=\s*\/\s*inline-size)/g, '$1compass')
+    .replace(/(@container\s+)ms3-compass(?=\s*\()/g, '$1compass');
+}
+
+function assertNoUnapprovedAudienceTokens(css) {
+  // Exempt identifiers only in CSS code. Strings and comments stay byte-for-byte visible to the
+  // audience-copy ban, so `content:"MS3"` or a resident-only comment cannot hide behind parsing.
+  const nonCode = /\/\*[\s\S]*?\*\/|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'/g;
+  let checked = '';
+  let cursor = 0;
+  for (const match of css.matchAll(nonCode)) {
+    checked += neutralizeApprovedCompassSyntax(css.slice(cursor, match.index));
+    checked += match[0];
+    cursor = match.index + match[0].length;
+  }
+  checked += neutralizeApprovedCompassSyntax(css.slice(cursor));
+  assert.doesNotMatch(checked, AUDIENCE_TOKEN);
+}
+
 test('rule exposes only declarations, so an empty selector cannot satisfy a non-empty assertion', () => {
   const empty = rule('.fixture{}', '.fixture');
   assert.equal(empty, '');
@@ -98,8 +124,34 @@ test('every --fd-* frontdoor.css consumes is actually defined in both themes', (
   }
 });
 
-test('frontdoor.css carries no audience token', () => {
-  assert.doesNotMatch(fd, /MS3|clerkship|student|shelf|resident|UNE|MMC|Sanford/i);
+test('frontdoor.css carries no audience token outside the exact approved Compass identifiers', () => {
+  assertNoUnapprovedAudienceTokens(fd);
+});
+
+test('the audience-token guard permits only the exact approved Compass CSS identifiers', () => {
+  const approved = [
+    '.ms3-compass{}',
+    '.ms3-compass__weeks{}',
+    '[data-ms3-compass-root]{}',
+    '[data-ms3-compass-safety]{}',
+    '[data-ms3-compass-scope]{}',
+    '[data-ms3-compass-prompt]{}',
+    '[data-ms3-compass-link]{}',
+    '[data-ms3-compass-orientation]{}',
+    '.ms3-compass{container:ms3-compass / inline-size}',
+    '@container ms3-compass (min-width:22rem){.ms3-compass__weeks{display:grid}}',
+  ];
+  for (const css of approved) assert.doesNotThrow(() => assertNoUnapprovedAudienceTokens(css), css);
+});
+
+test('the audience-token guard rejects audience copy, unrelated selectors, comments, and unapproved hooks', () => {
+  const rejected = [
+    '.fixture{content:"MS3"}',
+    '.student-card{}',
+    '/* resident-only styling */ .fixture{}',
+    '[data-ms3-compass-score]{}',
+  ];
+  for (const css of rejected) assert.throws(() => assertNoUnapprovedAudienceTokens(css), css);
 });
 
 test('the desktop breakpoint is 1000px, as the design specifies', () => {
