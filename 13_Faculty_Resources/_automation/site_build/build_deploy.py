@@ -17,6 +17,7 @@ SPA=os.path.join(HERE,"spa_index.html")                   # SPA shell (co-locate
 MARKED=os.path.join(HERE,"marked.min.js")                 # vendored marked (co-located)
 MANIFEST=os.path.join(HERE,"site_manifest.json")          # content/tool build manifest
 CLINICAL_CSS=os.path.join(HERE,"clinical-warm.css")       # shared dark-mode tokens
+ANALYTICS_JS=os.path.join(HERE,"analytics.js")            # usage analytics emitter
 FRONTDOOR_CSS=os.path.join(HERE,"frontdoor","frontdoor.css")
 
 def _relpath(p):
@@ -400,8 +401,18 @@ _missing_req=[]
 _copy_required(SPA, OUT+"/index.html", _missing_req)
 _copy_required(MARKED, OUT+"/marked.min.js", _missing_req)  # vendored (ward-wifi: no CDN dependency)
 _copy_required(CLINICAL_CSS, OUT+"/clinical-warm.css", _missing_req)  # shared dark-mode tokens (linked into tools below)
+# Usage analytics emitter -- gated behind CLERKSHIP_ANALYTICS (default off; see
+# common.analytics_enabled_for() and docs/superpowers/specs/2026-09-04-usage-
+# analytics-design.md "Rollout"). Copied only when this build's own flag
+# enables ms3, so a disabled build ships neither the file nor a <script> tag
+# pointing at it (that tag is injected below by apply_full_page_pass, gated
+# by the same _ANALYTICS_MS3 decision).
+_ANALYTICS_MS3 = common.analytics_enabled_for("ms3")
+if _ANALYTICS_MS3:
+    _copy_required(ANALYTICS_JS, OUT+"/analytics.js", _missing_req)   # usage analytics emitter (tag injected per page)
 _copy_required(FRONTDOOR_CSS, OUT+"/frontdoor.css", _missing_req)
 _abort_missing(_missing_req)
+print("usage analytics:", "enabled (ms3)" if _ANALYTICS_MS3 else "disabled for ms3 (CLERKSHIP_ANALYTICS=%s)" % common.analytics_mode())
 
 # Front Door modules stay dormant in this task, but their data is made site-specific now.
 # Build after nav finalization so titles/kinds come from this site's actual browse catalog.
@@ -512,7 +523,7 @@ common.apply_contrast_fix(
     _glob.glob(OUT+"/content/*.md")+_glob.glob(OUT+"/tools/*.html")+[OUT+"/index.html"]
 )
 _QV=common.quiz_cache_bust(OUT+"/tools/quizzes.json")   # content-hash cache-bust (reproducible)
-common.apply_full_page_pass(OUT, cache_bust=_QV)
+common.apply_full_page_pass(OUT, cache_bust=_QV, inject_analytics=_ANALYTICS_MS3)
 for _frontdoor_destination in (OUT+"/index.html", OUT+"/tools/rotation-curator.html"):
     frontdoor_catalog.assert_catalog_resolver_injected(_frontdoor_destination, _rotation_projection["revision"])
 
@@ -528,7 +539,7 @@ print("crisis block injected: shell index")
 open(OUT+"/favicon.svg","w",encoding="utf-8").write('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="#9f3f2a"/><text x="32" y="45" font-family="Georgia,serif" font-size="40" fill="#fff" text-anchor="middle">\u03c8</text></svg>')
 open(OUT+"/robots.txt","w",encoding="utf-8").write("User-agent: *\nDisallow: /\n")
 open(OUT+"/404.html","w",encoding="utf-8").write('<!doctype html><meta charset="utf-8"><title>Not found</title><meta name="robots" content="noindex,nofollow"><style>body{font-family:system-ui,sans-serif;background:#f6f3ee;color:#2f2924;display:grid;place-items:center;min-height:100vh;margin:0;text-align:center}a{color:#174d43}</style><div><h1 style="color:#9f3f2a">Page not found</h1><p><a href="/">Return to the clerkship hub</a></p></div>')
-open(OUT+"/_headers","w",encoding="utf-8").write("/*\n  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: strict-origin-when-cross-origin\n  Permissions-Policy: geolocation=(), camera=(), microphone=(self)\n  Content-Security-Policy: default-src 'self'; img-src 'self' data:; media-src 'self' blob: https://sp-interview-proxy.netlify.app; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://sp-interview-proxy.netlify.app; frame-src 'self'; frame-ancestors 'self' https://clerkship-faculty-attest.netlify.app\n/*.html\n  Cache-Control: public, max-age=0, must-revalidate\n/content/*\n  Cache-Control: public, max-age=0, must-revalidate\n/audio/*\n  Cache-Control: public, max-age=604800\n/audio_oe/*\n  Cache-Control: public, max-age=604800\n/media/*\n  Cache-Control: public, max-age=604800\n/tools/quizzes.json\n  Cache-Control: public, max-age=86400\n/search-index.json\n  Cache-Control: public, max-age=86400\n/evidence_registry.json\n  Cache-Control: public, max-age=0, must-revalidate\n/tool_registry.json\n  Cache-Control: public, max-age=0, must-revalidate\n/tool-governance.json\n  Cache-Control: public, max-age=0, must-revalidate\n/communication_cases.json\n  Cache-Control: public, max-age=0, must-revalidate\n/reasoning_cases.json\n  Cache-Control: public, max-age=0, must-revalidate\n/family_systems_scenarios.json\n  Cache-Control: public, max-age=0, must-revalidate\n/governance.json\n  Cache-Control: public, max-age=0, must-revalidate\n/favicon.svg\n  Cache-Control: public, max-age=604800\n/sw.js\n  Cache-Control: public, max-age=0, must-revalidate\n")
+open(OUT+"/_headers","w",encoding="utf-8").write("/*\n  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: strict-origin-when-cross-origin\n  Permissions-Policy: geolocation=(), camera=(), microphone=(self)\n  Content-Security-Policy: default-src 'self'; img-src 'self' data:; media-src 'self' blob: https://sp-interview-proxy.netlify.app; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://sp-interview-proxy.netlify.app https://clerkship-metrics.netlify.app; frame-src 'self'; frame-ancestors 'self' https://clerkship-faculty-attest.netlify.app\n/*.html\n  Cache-Control: public, max-age=0, must-revalidate\n/content/*\n  Cache-Control: public, max-age=0, must-revalidate\n/audio/*\n  Cache-Control: public, max-age=604800\n/audio_oe/*\n  Cache-Control: public, max-age=604800\n/media/*\n  Cache-Control: public, max-age=604800\n/tools/quizzes.json\n  Cache-Control: public, max-age=86400\n/search-index.json\n  Cache-Control: public, max-age=86400\n/evidence_registry.json\n  Cache-Control: public, max-age=0, must-revalidate\n/tool_registry.json\n  Cache-Control: public, max-age=0, must-revalidate\n/tool-governance.json\n  Cache-Control: public, max-age=0, must-revalidate\n/communication_cases.json\n  Cache-Control: public, max-age=0, must-revalidate\n/reasoning_cases.json\n  Cache-Control: public, max-age=0, must-revalidate\n/family_systems_scenarios.json\n  Cache-Control: public, max-age=0, must-revalidate\n/governance.json\n  Cache-Control: public, max-age=0, must-revalidate\n/favicon.svg\n  Cache-Control: public, max-age=604800\n/sw.js\n  Cache-Control: public, max-age=0, must-revalidate\n")
 print("polish pass: banners stripped, contrast darkened, <main>+favicon on tools, robots/404/_headers written")
 
 
@@ -546,6 +557,28 @@ _crisis.assert_no_html_marker_file(OUT+"/index.html", "final Front Door shell in
 # Postcondition gate (architecture review rec 1.3): prove every shipped page actually
 # received the chrome/dark transforms rather than silently missing them.
 common.assert_page_contract(OUT, label="ms3")
+
+# Usage analytics fail-closed postcondition. This build is always a fresh
+# rmtree+rebuild (no copytree inheritance like resident_section.py has), so
+# this should hold trivially -- but it is the cheap, direct check that a
+# disabled build actually shipped nothing, rather than trusting the gate
+# above never to have an unnoticed second injection path.
+if not _ANALYTICS_MS3:
+    _analytics_leaked = []
+    if os.path.exists(OUT + "/analytics.js"):
+        _analytics_leaked.append("analytics.js")
+    for _dirpath, _dirnames, _filenames in os.walk(OUT):
+        for _fname in _filenames:
+            if not _fname.endswith(".html"):
+                continue
+            _fp = os.path.join(_dirpath, _fname)
+            if "CW_SITE" in open(_fp, encoding="utf-8").read():
+                _analytics_leaked.append(os.path.relpath(_fp, OUT))
+    if _analytics_leaked:
+        raise SystemExit(
+            "usage analytics: disabled for ms3 (CLERKSHIP_ANALYTICS=%s) but "
+            "still present: %s" % (common.analytics_mode(), ", ".join(sorted(_analytics_leaked)))
+        )
 
 # ---------- SURFACE GOVERNANCE: direct-tool status + public artifact ----------
 # After every tool-HTML-mutating pass (polish, crisis block, media guard) so the
