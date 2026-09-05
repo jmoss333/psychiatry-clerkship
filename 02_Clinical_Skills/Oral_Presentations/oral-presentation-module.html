@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- [CLERKSHIP-META v1] tool="Treatment Team Rounding Prep" version="2.2" built="2026-09-04" category="clinical-skills" audience="trainee,ms3,resident" settings="inpatient" time="5-15min" summary="Optional aid for treatment-team rounds: gather the right data, present crisply, and rehearse 30-second collateral and 60-second rounds updates. Fictional composites only; no PHI." -->
+<!-- [CLERKSHIP-META v1] tool="Treatment Team Rounding Prep" version="2.3" built="2026-09-04" category="clinical-skills" audience="trainee,ms3,resident" settings="inpatient" time="5-15min" summary="Optional aid for treatment-team rounds: gather the right data, present crisply, and rehearse 30-second collateral and 60-second rounds updates. Fictional composites only; no PHI." -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex,nofollow">
@@ -9,6 +9,7 @@
 <meta name="description" content="An optional aid for inpatient treatment-team rounds: gather the right data before rounds, then present it in three minutes or rehearse focused 30-second collateral and 60-second rounds updates.">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="mse-rounds-case.js"></script>
 <style>
   :root{
     --bg:#f6f3ee; --bg-alt:#faf6f0; --surface:#ffffff; --border:#ddd3c6;
@@ -147,6 +148,15 @@
   .op-resume-info{border-block:1px solid var(--border);padding:15px 0;margin:18px 0;font-size:.88rem}
   .op-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
   .oral-history{margin-top:18px}
+  .op-case{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin:18px 0}
+  .op-case h3{font-size:1.3rem;margin:10px 0}
+  .op-case-review{font-size:.75rem;color:var(--warning);margin:0}
+  .op-case ul{list-style:none;padding:0;margin:0}
+  .op-case li{border-top:1px solid var(--border);padding:12px 0}
+  .op-case li strong{font-size:.75rem;color:var(--accent-dark)}
+  .op-case li p{font-size:.9rem;margin:5px 0 0;line-height:1.5}
+  .op-case-note{font-size:.78rem;color:var(--text-mid,#64574b);margin:12px 0}
+  .op-case a{display:inline-block}
   @media(max-width:740px){.op-workspace{grid-template-columns:1fr}.op-sidebar{padding:20px;border-right:0;border-bottom:1px solid var(--border)}.op-sidebar h2{margin-bottom:14px}.op-intents{display:grid;grid-template-columns:1fr 1fr;gap:9px}.op-intent{margin:0}.op-side-note{display:none}.op-main{padding:20px}}
   @media(max-width:420px){.shell{padding:16px 10px}.op-sidebar,.op-main{padding:16px}.op-title-row h2{font-size:1.7rem}.op-title-row{gap:10px}.op-clock{font-size:1.6rem}.op-guided{padding:16px}.op-cues{padding:0 12px}.op-cue{grid-template-columns:28px minmax(0,1fr) auto;gap:7px}.op-controls{gap:5px}.op-intent{padding:12px 10px}.oral-nav-button{padding:7px 9px}.op-button{padding:10px 12px}}
 </style>
@@ -296,9 +306,18 @@ function oralRestore(raw,search){
 }
 
 function ShortUpdates(props){
+  var shared=window.MSERounds;
+  var params=new URLSearchParams(location.search);
+  var bridge=shared?shared.read(location.search):{present:params.has('msecase')||params.has('msepicks'),valid:false,ids:[]};
+  var caseKey=bridge.valid?shared.token(bridge.ids):null;
+  var storageKey=caseKey?'cw_oral_case_session_v1':'cw_oral_session_v1';
   var saved=useState(function(){
-    var raw=null;try{raw=JSON.parse(sessionStorage.getItem('cw_oral_session_v1'));}catch(ignore){}
-    return oralRestore(raw,location.search);
+    var raw=null;try{if(!bridge.present||caseKey)raw=JSON.parse(sessionStorage.getItem(storageKey));}catch(ignore){}
+    if(caseKey)raw=raw&&raw.caseKey===caseKey?raw.practice:null;
+    var value=oralRestore(raw,location.search);
+    if(caseKey)value.format='rounds';
+    if(caseKey&&!raw)value.items.rounds.step=2;
+    return value;
   }), session=saved[0], setSession=saved[1];
   var runState=useState(false), running=runState[0], setRunning=runState[1];
   var storageState=useState(true), storageOK=storageState[0], setStorageOK=storageState[1];
@@ -306,7 +325,7 @@ function ShortUpdates(props){
   var latest=useRef(session), callbacks=useRef(props), clock=useRef({id:null,running:false,base:0,start:0});
   var focusNext=useRef(null), region=useRef(null);
   callbacks.current=props;
-  function persist(value){try{sessionStorage.setItem('cw_oral_session_v1',JSON.stringify(value));return true;}catch(ignore){return false;}}
+  function persist(value){if(bridge.present&&!caseKey)return true;try{sessionStorage.setItem(storageKey,JSON.stringify(caseKey?{caseKey:caseKey,practice:value}:value));return true;}catch(ignore){return false;}}
   function move(action){
     var value=oralTransition(latest.current,action);latest.current=value;setSession(value);setStorageOK(persist(value));return value;
   }
@@ -317,7 +336,7 @@ function ShortUpdates(props){
   function halt(record){
     var value=syncTime(), item=value.items[value.format];
     clearInterval(clock.current.id);clock.current.id=null;clock.current.running=false;setRunning(false);
-    if(record&&item.seconds>=30){
+    if(record&&item.seconds>=30&&!caseKey){
       var at=callbacks.current.onRecord(item.repAt,value.format,item.seconds,null);
       move({type:'record',value:at});
     }
@@ -372,8 +391,8 @@ function ShortUpdates(props){
     e('div',{className:'op-steps','aria-label':'Practice cues'},micro.steps.map(function(s,i){return button(String(i+1),function(){pickStep(i);},{key:i,className:'op-step','aria-current':i===item.step?'step':null,'aria-label':'Cue '+(i+1)+': '+s.t});})),
     e('p',{className:'op-eyebrow'},'Cue '+(item.step+1)+' of 5 · about '+step.sec+' seconds'),
     e('h3',null,step.t),e('p',{className:'op-guide-copy'},step.d),
-    button(item.example?'Close example':'Show an example',function(){move({type:'example'});},{className:'op-text','aria-expanded':item.example,'aria-controls':'oral-example'}),
-    e('div',{id:'oral-example',className:'op-example',hidden:!item.example},e('span',null,'Fictional example'),e('p',null,step.ex)),
+    !caseKey?button(item.example?'Close example':'Show an example',function(){move({type:'example'});},{className:'op-text','aria-expanded':item.example,'aria-controls':'oral-example'}):null,
+    !caseKey?e('div',{id:'oral-example',className:'op-example',hidden:!item.example},e('span',null,'Fictional example'),e('p',null,step.ex)):null,
     e('label',{className:'op-practiced'},e('input',{type:'checkbox',checked:item.done.indexOf(item.step)>=0,onChange:function(){move({type:'done',value:item.step});}}),'I practiced this cue'),
     e('div',{className:'op-step-footer'},
       button('Previous',function(){pickStep(item.step-1);},{disabled:item.step===0}),
@@ -381,19 +400,27 @@ function ShortUpdates(props){
   var held=e('section',{className:'op-resume'},e('p',{className:'op-eyebrow'},'Your place is held'),e('h3',null,'Ready when you are.'),e('p',null,'Return to the same cue and view.'),
     e('div',{className:'op-resume-info'},item.view==='guided'?'Cue '+(item.step+1)+' of 5 · '+step.t:'Quick cue · All five prompts'),
     button('Resume practice →',resume,{className:'op-button op-primary','data-oral-resume':true}));
+  var handoff=bridge.valid?e('section',{className:'op-case','aria-label':'Your selected case details'},
+    e('p',{className:'op-case-review'},'Fictional practice case'),e('h3',null,'Your selected case details'),
+    e('ul',null,shared.caseData.rows.filter(function(r){return bridge.ids.indexOf(r.id)>=0;}).map(function(r){return e('li',{key:r.id},e('strong',null,r.source),e('p',null,r.summary));})),
+    e('p',{className:'op-case-note'},'These are excerpts, not a complete assessment. Leave information that is not supplied unknown. This draft rehearsal is not added to practice history.'),
+    e('a',{className:'op-text',href:shared.link('mse.html',bridge.ids,window.self!==window.top),target:window.self!==window.top?'_top':'_self'},'Edit selected details')):
+    bridge.present?e('section',{className:'op-case',role:'status'},e('h3',null,'Case details unavailable'),e('p',null,'The case link could not be read. Open the comparison and select the details again.'),e('a',{href:window.self!==window.top?'../?tool=mse.html':'mse.html',target:window.self!==window.top?'_top':'_self'},'Open the MSE comparison')):null;
   return e('section',{className:'op-workspace',ref:region,'aria-label':'Short update practice',hidden:!props.active},
     e('aside',{className:'op-sidebar','aria-label':'Choose an activity'},e('p',{className:'op-eyebrow'},'Right now'),e('h2',null,'What do you need to do?'),
-      e('div',{className:'op-intents'},['rounds','collateral'].map(function(key){return button(e(React.Fragment,null,e('span',{className:'op-intent-title'},key==='rounds'?'Prepare a rounds update':'Summarize a collateral call'),e('span',{className:'op-intent-meta'},(key==='rounds'?'60':'30')+' seconds · 5 cues')),function(){changeFormat(key);},{key:key,className:'op-intent','aria-pressed':session.format===key});})),
+      e('div',{className:'op-intents'},(bridge.present?(caseKey?['rounds']:[]):['rounds','collateral']).map(function(key){return button(e(React.Fragment,null,e('span',{className:'op-intent-title'},key==='rounds'?'Prepare a rounds update':'Summarize a collateral call'),e('span',{className:'op-intent-meta'},(key==='rounds'?'60':'30')+' seconds · 5 cues')),function(){changeFormat(key);},{key:key,className:'op-intent','aria-pressed':session.format===key});})),
+      bridge.present?e('a',{className:'op-text',href:window.self!==window.top?'../?tool=oral.html':'oral.html',target:window.self!==window.top?'_top':'_self'},'Open other practice'):null,
       e('p',{className:'op-side-note'},'Open the activity you need. Everything else can wait.')),
     e('div',{className:'op-main'},
       e('div',{className:'op-title-row'},e('div',null,e('p',{className:'op-eyebrow'},'Treatment team rounding prep'),e('h2',null,title),e('p',{className:'op-subtitle'},micro.sub)),
-        e('div',{className:'op-clock'},e('span',{'data-oral-clock':true},fmt(Math.max(0,micro.target-item.seconds))),e('span',{className:'op-time-label'},item.seconds>=micro.target?'practice finished':'practice timer'))),
-      session.paused?held:e(React.Fragment,null,controls,item.view==='quick'?quick:guided,
+        bridge.present&&!caseKey?null:e('div',{className:'op-clock'},e('span',{'data-oral-clock':true},fmt(Math.max(0,micro.target-item.seconds))),e('span',{className:'op-time-label'},item.seconds>=micro.target?'practice finished':'practice timer'))),
+      handoff,
+      bridge.present&&!caseKey?null:session.paused?held:e(React.Fragment,null,controls,item.view==='quick'?quick:guided,
         e('div',{className:'op-safety'},'Keep safety concerns and unresolved questions explicit in your team update.'),
         e('div',{className:'op-actions'},button(running?'Pause timer':item.seconds>=micro.target?'Practice again':item.seconds?'Continue timer':'Start '+micro.target+'-sec practice',toggleTimer,{className:'op-button op-primary','data-oral-timer':true}),
           e('span',null,'Practice aloud · no recording')),
         item.seconds>0?button('Start fresh',function(){halt(false);move({type:'reset'});setMessage('Started a fresh practice. Previous practice history is unchanged.');},{className:'op-text'}):null),
-      e('p',{className:'op-storage',role:storageOK?null:'status'},storageOK?'Your place stays in this browser tab, including after a reload.':'Tab storage is unavailable. Your place is held only while this page stays open.'),
+      bridge.present&&!caseKey?null:e('p',{className:'op-storage',role:storageOK?null:'status'},storageOK?'Your place stays in this browser tab, including after a reload.':'Tab storage is unavailable. Your place is held only while this page stays open.'),
       e('div',{className:'op-sr',role:'status','aria-live':'polite','aria-atomic':'true'},message)));
 }
 

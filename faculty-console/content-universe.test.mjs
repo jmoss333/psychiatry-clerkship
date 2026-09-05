@@ -319,7 +319,8 @@ test('the pending-visibility invariant fails when a producer stops being read', 
     .filter(([, entry]) => entry && typeof entry === 'object' && entry.status === 'pending')
     .map(([slug]) => slug);
 
-  assert.equal(pending.length, 24);
+  // Hand-registered pages may also be pending (for example, after a teaching update).
+  // Pin the historically invisible subset, then check visibility of EVERY pending page.
   const invisibleBefore = pending.filter(slug => !manifestOnly.has(slug) && !allowlist.has(slug));
   assert.equal(invisibleBefore.length, 24);
   assert.equal(invisibleBefore.filter(isCotwSlug).length, 22);

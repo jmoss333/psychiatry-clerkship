@@ -263,13 +263,14 @@
     "by": "Joshua Moss, MD"
   },
   "mse.html": {
-    "status": "reviewed",
+    "status": "pending",
     "risk": {
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-06-30",
-    "by": "Joshua Moss, MD"
+    "at": "2026-09-04",
+    "by": "Pending faculty review",
+    "reason": "New fictional yesterday/today comparison and selected-finding handoff to rounds require faculty review. Prior review: 2026-06-30."
   },
   "capacity.html": {
     "status": "reviewed",
@@ -281,13 +282,14 @@
     "by": "Joshua Moss, MD"
   },
   "oral.html": {
-    "status": "reviewed",
+    "status": "pending",
     "risk": {
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-06-30",
-    "by": "Joshua Moss, MD"
+    "at": "2026-09-04",
+    "by": "Pending faculty review",
+    "reason": "New MSE-linked fictional rehearsal displays selected observations and uncertainties; case material requires faculty review. Prior review: 2026-06-30."
   },
   "violence.html": {
     "status": "reviewed",
