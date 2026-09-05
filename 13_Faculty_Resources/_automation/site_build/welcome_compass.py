@@ -106,26 +106,40 @@ def _render_markdown(markdown):
     return result.stdout
 
 
-def project_resident_welcome(topic_meta, governance):
-    """Scope the shared Welcome route in generated resident data; retain the faculty ledger.
+RESIDENT_WELCOME_OVERLAY = os.path.join("14_Tracks", "Resident", "resident_welcome.meta.json")
 
-    Only the known Compass pending explanation is made audience-neutral. Review status,
-    risk, reviewer and date are never changed, nor is any other pending reason rewritten.
+
+def load_resident_welcome_overlay(lib_root):
+    """Read the resident Welcome summary (tldr + points) from its tracked data file."""
+    path = os.path.join(lib_root, RESIDENT_WELCOME_OVERLAY)
+    try:
+        with open(path, encoding="utf-8") as handle:
+            overlay = json.load(handle)
+    except (OSError, UnicodeError, json.JSONDecodeError) as error:
+        raise CompassContractError(
+            "resident Welcome overlay is unreadable: " + RESIDENT_WELCOME_OVERLAY
+        ) from error
+    tldr = overlay.get("tldr") if isinstance(overlay, dict) else None
+    points = overlay.get("points") if isinstance(overlay, dict) else None
+    if not isinstance(tldr, str) or not tldr.strip():
+        raise CompassContractError("resident Welcome overlay needs a non-empty tldr string")
+    if (not isinstance(points, list) or not points
+            or not all(isinstance(point, str) and point.strip() for point in points)):
+        raise CompassContractError("resident Welcome overlay needs a non-empty list of point strings")
+    return {"tldr": tldr, "points": list(points)}
+
+
+def project_resident_welcome(topic_meta, overlay):
+    """Return a copy of topic_meta whose welcome.md summary is the resident overlay's.
+
+    Governance is deliberately not touched: the ledger's pending reason for welcome.md is
+    audience-neutral at its source (reviewed.json), so nothing needs rewriting here.
     """
-    meta, document = deepcopy(topic_meta), deepcopy(governance)
-    meta["welcome.md"].update({
-        "tldr": "Start with the four-week Rotation Plan, then use the core references and Resident Depth pages to prepare for patient care and supervision.",
-        "points": [
-            "Start with the 4-Week Rotation Plan.",
-            "Use Resident Depth for advanced psychopharmacology, systems and med-legal work, supervision, and teaching.",
-            "Bring an agenda to supervision and expect frequent, specific, behavior-based feedback.",
-        ],
-    })
-    entry = document["items"]["welcome.md"]
-    if (entry.get("status") == "pending" and entry.get("reason") ==
-            "Six-Week Compass and onboarding hierarchy awaiting faculty review."):
-        entry["reason"] = entry["warning"] = "Welcome awaiting faculty review."
-    return meta, document
+    meta = deepcopy(topic_meta)
+    if not isinstance(meta.get("welcome.md"), dict):
+        raise CompassContractError("topic_meta.json has no welcome.md entry to project")
+    meta["welcome.md"].update({"tldr": overlay["tldr"], "points": list(overlay["points"])})
+    return meta
 
 
 @dataclass(frozen=True)

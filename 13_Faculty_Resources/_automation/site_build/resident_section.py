@@ -305,7 +305,11 @@ open(OUT + "/nav.json", "w", encoding="utf-8").write(
 _tmp=OUT+"/topic_meta.json"
 if os.path.exists(_tmp):
     _tm=json.load(open(_tmp,encoding="utf-8"))
-    _tm, _surface_governance = welcome_compass.project_resident_welcome(_tm, _surface_governance)
+    try:
+        _tm = welcome_compass.project_resident_welcome(_tm, welcome_compass.load_resident_welcome_overlay(LIB))
+    except welcome_compass.CompassContractError as _overlay_error:
+        print("BUILD ABORTED — resident Welcome overlay:", _overlay_error)
+        raise SystemExit(1)
     def _addcta(key,cta):
         e=_tm.get(key,{})
         cur=e.get("cta")

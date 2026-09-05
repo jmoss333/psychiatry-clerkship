@@ -136,36 +136,39 @@ def write_output_file(root, relative_path, payload):
 
 
 class WelcomeCompassTests(unittest.TestCase):
-    def test_resident_projection_preserves_pending_authority_and_other_metadata(self):
+    def test_resident_projection_applies_the_overlay_and_keeps_other_metadata(self):
         meta = {"welcome.md": {"tldr": "Six-Week Compass", "points": ["Orientation Packet"],
                                "read": 3, "relatedTools": ["review.html"]},
                 "other.md": {"tldr": "Keep this"}}
-        governance = {"items": {"welcome.md": {
-            "status": "pending", "riskKind": "general", "riskLevel": "low",
-            "reviewer": "Pending faculty review", "reviewedAt": "2026-09-04",
-            "reason": "Six-Week Compass and onboarding hierarchy awaiting faculty review.",
-            "warning": "Six-Week Compass and onboarding hierarchy awaiting faculty review.",
-        }, "other.md": {"status": "pending", "reason": "Keep this"}}}
-        original = copy.deepcopy((meta, governance))
-        projected_meta, projected_governance = welcome_compass.project_resident_welcome(meta, governance)
-        self.assertNotIn("Compass", str((projected_meta, projected_governance)))
-        self.assertNotIn("Orientation Packet", str(projected_meta))
-        self.assertIn("four-week", projected_meta["welcome.md"]["tldr"])
-        self.assertEqual(projected_meta["welcome.md"]["read"], 3)
-        self.assertEqual(projected_meta["welcome.md"]["relatedTools"], ["review.html"])
-        for key in ("status", "riskKind", "riskLevel", "reviewer", "reviewedAt"):
-            self.assertEqual(projected_governance["items"]["welcome.md"][key],
-                             governance["items"]["welcome.md"][key])
-        self.assertEqual(projected_governance["items"]["welcome.md"]["reason"],
-                         "Welcome awaiting faculty review.")
-        self.assertEqual(projected_governance["items"]["other.md"], governance["items"]["other.md"])
-        self.assertEqual((meta, governance), original)
+        overlay = {"tldr": "Start with the four-week Rotation Plan.", "points": ["Bring an agenda."]}
+        original = copy.deepcopy(meta)
+        projected = welcome_compass.project_resident_welcome(meta, overlay)
+        self.assertEqual(projected["welcome.md"]["tldr"], overlay["tldr"])
+        self.assertEqual(projected["welcome.md"]["points"], overlay["points"])
+        self.assertEqual(projected["welcome.md"]["read"], 3)
+        self.assertEqual(projected["welcome.md"]["relatedTools"], ["review.html"])
+        self.assertEqual(projected["other.md"], meta["other.md"])
+        self.assertEqual(meta, original)
+        with self.assertRaisesRegex(welcome_compass.CompassContractError, "welcome.md"):
+            welcome_compass.project_resident_welcome({"other.md": {}}, overlay)
 
-    def test_resident_projection_never_replaces_an_unrelated_faculty_pending_reason(self):
-        governance = {"items": {"welcome.md": {"status": "pending", "reason": "Verify supervision wording.",
-                                               "warning": "Verify supervision wording."}}}
-        _, projected = welcome_compass.project_resident_welcome({"welcome.md": {}}, governance)
-        self.assertEqual(projected, governance)
+    def test_resident_overlay_loads_from_the_tracked_data_file_and_fails_closed(self):
+        repo_root = Path(__file__).resolve().parents[3]
+        overlay = welcome_compass.load_resident_welcome_overlay(repo_root)
+        self.assertIn("four-week", overlay["tldr"])
+        self.assertNotIn("Compass", str(overlay))
+        self.assertTrue(all(isinstance(point, str) and point.strip() for point in overlay["points"]))
+        with tempfile.TemporaryDirectory() as root:
+            with self.assertRaisesRegex(welcome_compass.CompassContractError, "overlay"):
+                welcome_compass.load_resident_welcome_overlay(root)
+            target = Path(root, welcome_compass.RESIDENT_WELCOME_OVERLAY)
+            target.parent.mkdir(parents=True)
+            for broken in ('{"tldr": " ", "points": ["x"]}', '{"tldr": "ok", "points": []}',
+                           '{"tldr": "ok", "points": [1]}', 'not json'):
+                target.write_text(broken, encoding="utf-8")
+                with self.subTest(broken=broken):
+                    with self.assertRaisesRegex(welcome_compass.CompassContractError, "overlay"):
+                        welcome_compass.load_resident_welcome_overlay(root)
 
     def cards(self):
         return welcome_compass.prepare_cards(WEEKS, SHIPPED)
