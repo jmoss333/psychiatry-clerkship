@@ -481,7 +481,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
 
 *Prompt.* Which recommendation best balances psychiatry input with medical ownership?
 
-- **(a)** Recommend a delirium driver review, deliriogenic medication reduction where feasible, infection/metabolic/hypoxia assessment, sleep-wake support, mobilization, sensory aids, and supervised agitation planning.  *(rated: **best**)*
+- **(a)** Recommend a delirium driver review, deliriogenic medication reduction where feasible, infection/metabolic/hypoxia and alcohol or sedative withdrawal assessment, sleep-wake support, mobilization, sensory aids, and supervised agitation planning.  *(rated: **best**)*
   - *feedback:* Best. It is practical, multidisciplinary, and avoids framing delirium as only a psychiatry medication problem.
 - **(b)** Recommend an antipsychotic only if the patient is dangerous, but otherwise defer all workup to the primary team.  *(rated: **partial**)*
   - *feedback:* This respects medical ownership but is too passive. Psychiatry can help structure the reversible-driver review and nonpharmacologic plan.

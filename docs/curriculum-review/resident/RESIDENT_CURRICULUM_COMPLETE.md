@@ -3,7 +3,7 @@
 # RESIDENT curriculum — complete content transcript for clinical review
 
 **Site:** `mmc-psychiatry-residents-sanford` · **Audience:** Residents — MMC/Sanford psychiatry residents
-**Generated:** 2026-09-05 from build `f94f987` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
+**Generated:** 2026-09-05 from build `d5d80f2` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
 
 ## Who this is for
 
@@ -86,7 +86,7 @@ High-yield places to concentrate: the `topic_meta` **can't-miss**, **rule-out** 
 
 # RESIDENT · Navigation map
 
-Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-05 @ `f94f987`.
+Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-05 @ `d5d80f2`.
 
 ## Orientation  *(pinned)*
 
@@ -25768,7 +25768,7 @@ The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning W
 
 *Prompt.* Which recommendation best balances psychiatry input with medical ownership?
 
-- **(a)** Recommend a delirium driver review, deliriogenic medication reduction where feasible, infection/metabolic/hypoxia assessment, sleep-wake support, mobilization, sensory aids, and supervised agitation planning.  *(rated: **best**)*
+- **(a)** Recommend a delirium driver review, deliriogenic medication reduction where feasible, infection/metabolic/hypoxia and alcohol or sedative withdrawal assessment, sleep-wake support, mobilization, sensory aids, and supervised agitation planning.  *(rated: **best**)*
   - *feedback:* Best. It is practical, multidisciplinary, and avoids framing delirium as only a psychiatry medication problem.
 - **(b)** Recommend an antipsychotic only if the patient is dangerous, but otherwise defer all workup to the primary team.  *(rated: **partial**)*
   - *feedback:* This respects medical ownership but is too passive. Psychiatry can help structure the reversible-driver review and nonpharmacologic plan.
