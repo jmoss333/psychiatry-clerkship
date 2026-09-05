@@ -313,6 +313,7 @@ if os.path.exists(_tmp):
     _addcta("agitation.md",{"label":"Open the Agitation Ladder trainer","href":"tools/rp-agitation.html"})
     _addcta("agitation.md",{"label":"Run a 2-minute Post-Event Learning Huddle","href":"tools/rp-post-event-huddle.html"})
     _addcta("systems_medlegal.md",{"label":"Run a 2-minute Post-Event Learning Huddle","href":"tools/rp-post-event-huddle.html"})
+    _addcta("exp_family.md",{"label":"Run a 2-minute Post-Event Learning Huddle (discharge)","href":"?tool=rp-post-event-huddle.html&event=discharge"})
     _addcta("brief_psychotherapy.md",{"label":"Open Five Good Minutes","href":"tools/rp-brief-psych.html"})
     open(_tmp,"w",encoding="utf-8").write(json.dumps(_tm,ensure_ascii=False))
 # Per-case cotw topic_meta, derived from cotw_registry.json (see cotw_meta.py). Resident

@@ -5,14 +5,17 @@ import test from 'node:test';
 import vm from 'node:vm';
 import { fileURLToPath } from 'node:url';
 
-// Deterministic acceptance tests for the Post-Event Learning Huddle
-// (design: docs/superpowers/specs/2026-09-04-post-event-learning-huddle-design.md, §10).
+// Deterministic acceptance tests for the Post-Event Learning Huddle.
+// V1 design:  docs/superpowers/specs/2026-09-04-post-event-learning-huddle-design.md (§10)
+// Event 2:    docs/superpowers/specs/2026-09-05-post-event-huddle-event-2-discharge-design.md (§5)
 //
-// The tool's V1 contract is stricter than the shared QA gate: zero storage, zero network
+// The tool's contract is stricter than the shared QA gate: zero storage, zero network
 // transport, zero free text, zero doses/agents/instruments/crisis numbers, no evaluative
 // labels, no blame language, no wording that implies a report was filed or that a
 // universal policy exists, resident-only placement, and a pure deterministic debrief.
-// T1–T16 and T18–T20 run against the SOURCE file; T17 runs against _build/ when present.
+// Since V1.1 the page carries an `events` array selected by ?event=<id>; T14, T16 and T20
+// run per event, and T21/T22 pin the selector and the switcher.
+// T1–T16 and T18–T22 run against the SOURCE file; T17 runs against _build/ when present.
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SLUG = 'rp-post-event-huddle.html';
@@ -42,6 +45,7 @@ function words(s) {
 }
 
 const data = JSON.parse(block('huddle-event'));
+const events = data.events;
 const reviewed = JSON.parse(fs.readFileSync(path.join(repo, '13_Faculty_Resources', 'reviewed.json'), 'utf8'));
 
 test('T1 static shell: lang, one title, viewport, one h1, no skipped heading levels', () => {
@@ -89,20 +93,22 @@ test('T5 no storage of any kind', () => {
   noMatches(html, /localStorage|sessionStorage|indexedDB|document\.cookie|\bcaches\b|BroadcastChannel|openDatabase/g, 'storage API');
 });
 
-test('T6 no free text: radios only, three groups of four, no textarea/select/contenteditable', () => {
+test('T6 no free text: radios only, three groups of four per event, no textarea/select/contenteditable', () => {
   noMatches(html, /<textarea|<select|contenteditable/gi, 'free-text control');
   noMatches(html, /<input\b/gi, 'static <input> (inputs are generated from the JSON data only)');
   const render = block('huddle-render');
   const inputTypes = [...render.matchAll(/type:\s*'([a-z]+)'/g)].map((m) => m[1]);
-  assert.deepEqual([...new Set(inputTypes)], ['radio', 'button'], 'render creates only radio inputs and buttons');
-  assert.equal(data.lenses.length, 3);
-  for (const lens of data.lenses) assert.equal(lens.options.length, 4, `lens ${lens.id} has 4 options`);
+  assert.deepEqual([...new Set(inputTypes)].sort(), ['button', 'radio'], 'render creates only radio inputs and buttons');
+  for (const ev of events) {
+    assert.equal(ev.lenses.length, 3, `${ev.id}: three lenses`);
+    for (const lens of ev.lenses) assert.equal(lens.options.length, 4, `${ev.id}/${lens.id} has 4 options`);
+  }
   assert.match(html, /<form[^>]*onsubmit="return false"/, 'form never submits');
 });
 
 test('T7 no dose literal and no agent name', () => {
   noMatches(html, /\b\d+(?:\.\d+)?\s?(?:mg|mcg|mL|mg\/kg)\b/gi, 'dose literal');
-  noMatches(html, /\b(haloperidol|lorazepam|olanzapine|ziprasidone|droperidol|ketamine|risperidone|diphenhydramine|benzodiazepine|antipsychotic|IM)\b/g, 'agent name');
+  noMatches(html, /\b(haloperidol|lorazepam|olanzapine|ziprasidone|droperidol|ketamine|risperidone|diphenhydramine|benzodiazepine|antipsychotic|lithium|valproate|quetiapine|IM)\b/g, 'agent name');
 });
 
 test('T8 no instrument is named or reproduced', () => {
@@ -145,11 +151,13 @@ test('T11 no blame language', () => {
   noMatches(visibleText(html) + block('huddle-event'), /\b(fault|blame[sd]?|should have|shouldn't have|should not have|careless|error by|mistake by|to blame)\b/gi, 'blame');
 });
 
-test('T12 reporting boundary is explicit and nothing implies a report was made', () => {
+test('T12 reporting boundary is explicit for every event and nothing implies a report was made', () => {
   assert.match(html, /<section id="boundary"/);
   assert.match(html, /<h2>Already handled before this huddle/);
   assert.match(html, /<h2>This huddle \(later; learning only\)/);
-  assert.equal(data.event.boundaryStatement, 'This page is not a report, does not know whether one was made, and cannot make one.');
+  for (const ev of events) {
+    assert.equal(ev.boundaryStatement, 'This page is not a report, does not know whether one was made, and cannot make one.', `${ev.id} boundary sentence`);
+  }
   noMatches(html, /\b(you have (?:now )?(?:reported|filed|completed)|report (?:was|has been|is) (?:filed|made|complete)|counts as (?:a )?report|this fulfil+s)\b/gi, 'report-completion wording');
 });
 
@@ -158,25 +166,30 @@ test('T13 no universal policy claims; institution-relative wording present', () 
   assert.ok(/your institution/i.test(html), 'says "your institution"');
 });
 
-test('T14 event data shape', () => {
-  const e = data.event;
-  for (const k of ['title', 'setting', 'patientVoice', 'boundaryStatement']) assert.ok(typeof e[k] === 'string' && e[k].length, `event.${k}`);
-  assert.ok(Array.isArray(e.timeline) && e.timeline.length >= 4 && e.timeline.length <= 7, 'timeline 4–7 steps');
-  assert.ok(e.alreadyHandled.length >= 3, 'alreadyHandled ≥ 3');
-  assert.ok(e.thisHuddle.length >= 2, 'thisHuddle ≥ 2');
-  assert.deepEqual(data.lenses.map((l) => l.id), ['patient', 'team', 'system']);
-  const ids = new Set();
-  for (const lens of data.lenses) {
-    assert.ok(lens.prompt && lens.name, `lens ${lens.id} prompt/name`);
-    for (const o of lens.options) {
-      assert.ok(!ids.has(o.id), `duplicate option id ${o.id}`); ids.add(o.id);
-      assert.ok(o.label && o.debrief && o.bridge, `${o.id} fields`);
-      assert.ok(o.debrief.length >= 150 && o.debrief.length <= 450, `${o.id} debrief length ${o.debrief.length}`);
-      assert.ok(o.bridge.length >= 60 && o.bridge.length <= 220, `${o.id} bridge length ${o.bridge.length}`);
-      if (lens.id === 'patient') assert.ok(/\?"?$/.test(o.label), `${o.id} is a question`);
+test('T14 event data shape — every event', () => {
+  assert.ok(Array.isArray(events) && events.length >= 2, 'at least two events');
+  assert.equal(new Set(events.map((e) => e.id)).size, events.length, 'event ids unique');
+  for (const e of events) {
+    assert.match(e.id, /^[a-z][a-z0-9-]{1,30}$/, `${e.id} is a url-safe id`);
+    for (const k of ['title', 'setting', 'patientVoice', 'patientVoiceWho', 'boundaryStatement']) assert.ok(typeof e[k] === 'string' && e[k].length, `${e.id}: ${k}`);
+    assert.ok(Array.isArray(e.timeline) && e.timeline.length >= 4 && e.timeline.length <= 7, `${e.id}: timeline 4–7 steps`);
+    assert.ok(e.alreadyHandled.length >= 3, `${e.id}: alreadyHandled ≥ 3`);
+    assert.ok(e.thisHuddle.length >= 2, `${e.id}: thisHuddle ≥ 2`);
+    assert.deepEqual(e.lenses.map((l) => l.id), ['patient', 'team', 'system'], `${e.id}: lens order`);
+    const ids = new Set();
+    for (const lens of e.lenses) {
+      assert.ok(lens.prompt && lens.name, `${e.id}/${lens.id} prompt/name`);
+      for (const o of lens.options) {
+        assert.ok(!ids.has(o.id), `${e.id}: duplicate option id ${o.id}`); ids.add(o.id);
+        assert.ok(o.label && o.debrief && o.bridge, `${e.id}/${o.id} fields`);
+        assert.ok(o.debrief.length >= 150 && o.debrief.length <= 450, `${e.id}/${o.id} debrief length ${o.debrief.length}`);
+        assert.ok(o.bridge.length >= 60 && o.bridge.length <= 220, `${e.id}/${o.id} bridge length ${o.bridge.length}`);
+        if (lens.id === 'patient') assert.ok(/\?"?$/.test(o.label), `${e.id}/${o.id} is a question`);
+      }
     }
+    assert.ok(e.synthesis && e.synthesis.intro && e.synthesis.close, `${e.id}: synthesis intro/close`);
   }
-  assert.ok(data.synthesis.intro && data.synthesis.close && data.notDone, 'synthesis + notDone');
+  assert.ok(typeof data.notDone === 'string' && data.notDone.length, 'shared notDone');
 });
 
 test('T15 the patient stays visible in every debrief', () => {
@@ -186,33 +199,33 @@ test('T15 the patient stays visible in every debrief', () => {
   assert.match(render, /data-slot': 'patient-voice'/, 'debrief re-renders the patient voice');
 });
 
-test('T16 pure deterministic debrief logic across all 64 combinations', () => {
+test('T16 pure deterministic debrief logic across all 64 combinations of every event', () => {
   const sandbox = { window: {} };
   vm.createContext(sandbox);
   vm.runInContext(block('huddle-logic'), sandbox);
   const H = sandbox.window.HUDDLE;
   assert.ok(H && typeof H.buildDebrief === 'function');
-  // Values come back from the vm realm; normalise through JSON so deepEqual compares
-  // structure, not Array prototypes.
   const plain = (v) => JSON.parse(JSON.stringify(v));
   assert.deepEqual(plain(H.LENS_ORDER), ['patient', 'team', 'system']);
-  const [P, T, S] = data.lenses;
-  let combos = 0;
-  for (const p of P.options) for (const t of T.options) for (const s of S.options) {
-    const picks = { patient: p.id, team: t.id, system: s.id };
-    const a = plain(H.buildDebrief(data, picks));
-    const b = plain(H.buildDebrief(data, picks));
-    assert.deepEqual(a, b, 'same picks → identical output');
-    assert.equal(a.patientVoice, data.event.patientVoice);
-    assert.deepEqual(a.sections.map((x) => x.lens), ['patient', 'team', 'system']);
-    assert.deepEqual(a.sections.map((x) => x.debrief), [p.debrief, t.debrief, s.debrief]);
-    assert.deepEqual(a.synthesis, [data.synthesis.intro, p.bridge, t.bridge, s.bridge, data.synthesis.close]);
-    assert.equal(a.notDone, data.notDone);
-    combos++;
+  for (const ev of events) {
+    const [P, T, S] = ev.lenses;
+    let combos = 0;
+    for (const p of P.options) for (const t of T.options) for (const s of S.options) {
+      const picks = { patient: p.id, team: t.id, system: s.id };
+      const a = plain(H.buildDebrief(ev, picks, data.notDone));
+      const b = plain(H.buildDebrief(ev, picks, data.notDone));
+      assert.deepEqual(a, b, 'same picks → identical output');
+      assert.equal(a.patientVoice, ev.patientVoice);
+      assert.deepEqual(a.sections.map((x) => x.lens), ['patient', 'team', 'system']);
+      assert.deepEqual(a.sections.map((x) => x.debrief), [p.debrief, t.debrief, s.debrief]);
+      assert.deepEqual(a.synthesis, [ev.synthesis.intro, p.bridge, t.bridge, s.bridge, ev.synthesis.close]);
+      assert.equal(a.notDone, data.notDone);
+      combos++;
+    }
+    assert.equal(combos, 64, `${ev.id}: 64 combinations`);
+    assert.throws(() => H.buildDebrief(ev, { patient: 'zz', team: 'b1', system: 'c1' }, data.notDone), /unknown option/);
+    assert.throws(() => H.buildDebrief(ev, { patient: 'a1', team: 'b1' }, data.notDone), /no pick/);
   }
-  assert.equal(combos, 64);
-  assert.throws(() => H.buildDebrief(data, { patient: 'zz', team: 'b1', system: 'c1' }), /unknown option/);
-  assert.throws(() => H.buildDebrief(data, { patient: 'a1', team: 'b1' }), /no pick/);
   assert.equal(Object.keys(sandbox).filter((k) => k !== 'window').length, 0, 'logic block leaks no globals');
 });
 
@@ -223,13 +236,10 @@ test('T17 (build) resident-only: ships on res, absent from ms3, built copy adds 
   assert.ok(fs.existsSync(res), 'built on the resident site');
   assert.ok(!fs.existsSync(ms3), 'not built on the MS3 site');
   const built = fs.readFileSync(res, 'utf8');
-  // The page pass injects a same-origin stylesheet link and a theme-init that READS cw_theme.
-  // Nothing else may appear: no other storage call, no transport API, no remote URL.
   const storage = [...built.matchAll(/(localStorage|sessionStorage|indexedDB)\.[a-zA-Z]+\(\s*['"]([^'"]*)['"]/g)].map((m) => `${m[1]}.${m[0].split('.')[1].split('(')[0]}(${m[2]})`);
   assert.deepEqual(storage, ['localStorage.getItem(cw_theme)'], 'only the build-injected theme read');
   noMatches(built, /\b(fetch|XMLHttpRequest|WebSocket|EventSource|sendBeacon|importScripts)\b/g, 'transport API in built copy');
   noMatches(built, /https?:\/\//gi, 'remote URL in built copy');
-  // Same-origin static assets the page pass may add (common.py: CLINICAL_CSS_LINK, favicon).
   const BUILD_LINKS = new Set(['/clinical-warm.css', '/favicon.svg']);
   const links = [...built.matchAll(/<link\b[^>]*href="([^"]*)"/gi)].map((m) => m[1]);
   for (const href of links) assert.ok(BUILD_LINKS.has(href), `unexpected <link> in built copy: ${href}`);
@@ -251,7 +261,7 @@ test('T18 accessibility statics', () => {
   noMatches(html, /color:\s*var\(--primary\)/g, 'bare --primary text colour (AA)');
 });
 
-test('T19 registries: ledger record, library placement, exclusion reason', () => {
+test('T19 registries: ledger record, library placement, exclusion reason, Path Week 3', () => {
   const ledger = reviewed[SLUG];
   assert.ok(['pending', 'reviewed'].includes(ledger.status));
   assert.ok(['general', 'clinical', 'legal', 'formulary', 'local-policy'].includes(ledger.risk.kind));
@@ -260,15 +270,45 @@ test('T19 registries: ledger record, library placement, exclusion reason', () =>
   assert.ok(excl && excl.reason, 'libraryExclude entry with a reason');
   const resCols = JSON.stringify(cur.siteLibrary && cur.siteLibrary.resident);
   assert.ok(resCols.includes(SLUG), 'placed in a resident siteLibrary column');
+  const w3 = cur.learningPaths.resident.weeks[2];
+  assert.ok(w3.items.some((i) => i.ref === SLUG && i.kind === 'tool'), 'on the resident Path, Week 3, as a tool');
 });
 
-test('T20 two-minute budget: event ≤ 220 words, longest path ≤ 600 words', () => {
-  const e = data.event;
-  const eventWords = words(visibleText([e.title, e.setting, ...e.timeline, e.patientVoice].join(' ')));
-  assert.ok(eventWords <= 220, `event block is ${eventWords} words`);
-  const boundaryWords = words([...e.alreadyHandled, e.boundaryStatement, ...e.thisHuddle].join(' '));
-  const longest = data.lenses.reduce((sum, l) => sum + Math.max(...l.options.map((o) => words(o.debrief) + words(o.bridge))), 0);
-  const synth = words(data.synthesis.intro) + words(data.synthesis.close) + words(data.notDone);
-  const total = eventWords + boundaryWords + longest + synth;
-  assert.ok(total <= 600, `longest path is ${total} words`);
+test('T20 two-minute budget per event: event ≤ 220 words, longest path ≤ 600 words', () => {
+  for (const e of events) {
+    const eventWords = words(visibleText([e.title, e.setting, ...e.timeline, e.patientVoice].join(' ')));
+    assert.ok(eventWords <= 220, `${e.id}: event block is ${eventWords} words`);
+    const boundaryWords = words([...e.alreadyHandled, e.boundaryStatement, ...e.thisHuddle].join(' '));
+    const longest = e.lenses.reduce((sum, l) => sum + Math.max(...l.options.map((o) => words(o.debrief) + words(o.bridge))), 0);
+    const synth = words(e.synthesis.intro) + words(e.synthesis.close) + words(data.notDone);
+    const total = eventWords + boundaryWords + longest + synth;
+    assert.ok(total <= 600, `${e.id}: longest path is ${total} words`);
+  }
+});
+
+test('T21 event selection is pure and falls back to the first event', () => {
+  const sandbox = { window: {} };
+  vm.createContext(sandbox);
+  vm.runInContext(block('huddle-logic'), sandbox);
+  const H = sandbox.window.HUDDLE;
+  assert.equal(typeof H.selectEvent, 'function');
+  const plain = (v) => JSON.parse(JSON.stringify(v));
+  assert.equal(H.selectEvent(events, 'discharge').id, 'discharge');
+  assert.equal(H.selectEvent(events, events[0].id).id, events[0].id);
+  for (const bad of [null, undefined, '', 'zzz', 'DISCHARGE', ' discharge', '../x', 0]) {
+    assert.equal(H.selectEvent(events, bad).id, events[0].id, `fallback for ${JSON.stringify(bad)}`);
+  }
+  assert.deepEqual(plain(H.selectEvent(events, 'discharge')), plain(H.selectEvent(events, 'discharge')), 'deterministic');
+  assert.throws(() => H.selectEvent([], 'discharge'), /no events/);
+});
+
+test('T22 the event switcher is links only, and the URL is the only state', () => {
+  assert.match(html, /<nav class="evnav" id="event-switch" aria-label="Choose an event"><\/nav>/, 'static, empty nav container');
+  const render = block('huddle-render');
+  assert.match(render, /el\('a', \{ href: '\?event=' \+ /, 'switcher entries are plain links keyed by event id');
+  assert.match(render, /'aria-current', 'page'/, 'active event is marked aria-current');
+  noMatches(render, /history\.|location\.(hash|assign|replace)|pushState|replaceState/g, 'navigation API');
+  assert.equal((render.match(/\blocation\b/g) || []).length, 1, 'location is read exactly once');
+  assert.match(render, /new URLSearchParams\(location\.search\)\.get\('event'\)/, 'the read is the ?event= query parameter');
+  noMatches(render, /addEventListener\('popstate'|hashchange/g, 'no history listeners');
 });
