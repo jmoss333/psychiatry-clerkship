@@ -142,3 +142,83 @@ test('the production store is acquired fresh on every invocation, never cached a
   assert.equal(JSON.parse(backend.get('ms3/2026-W36/page%3At_mood.md')).n, 2,
     'both invocations must still increment the same backend-persisted counter');
 });
+
+// Regression coverage for the eager-getStore finding: `getStore('usage-counters')`
+// used to be evaluated as an argument to `createEv({...})` on every request,
+// including an OPTIONS preflight or a POST from a disallowed origin — traffic
+// that is rejected without ever needing the store. Each test below injects a
+// counting (or throwing) store-factory and proves the store is acquired only
+// on the path that actually reaches `increment`.
+
+test('an OPTIONS preflight never causes the store to be acquired', async () => {
+  let calls = 0;
+  const getStore = () => { calls += 1; return fakeStore(); };
+  const handler = createProductionEv({
+    allowlist: ALLOWLIST, getStore, origins: ORIGINS,
+    now: () => new Date('2026-09-04T12:00:00Z'),
+  });
+
+  const res = await handler(new Request('https://metrics.invalid/api/ev', {
+    method: 'OPTIONS', headers: { origin: ORIGINS[0] },
+  }));
+
+  assert.equal(res.status, 204);
+  assert.equal(calls, 0, 'an OPTIONS preflight must never construct a store client');
+});
+
+test('a disallowed origin never causes the store to be acquired', async () => {
+  let calls = 0;
+  const getStore = () => { calls += 1; return fakeStore(); };
+  const handler = createProductionEv({
+    allowlist: ALLOWLIST, getStore, origins: ORIGINS,
+    now: () => new Date('2026-09-04T12:00:00Z'),
+  });
+
+  const res = await handler(post({ site: 'ms3', keys: ['page:t_mood.md'] }, 'https://evil.invalid'));
+
+  assert.equal(res.status, 403);
+  assert.equal(calls, 0, 'a rejected origin must never construct a store client');
+});
+
+test('a non-POST method never causes the store to be acquired', async () => {
+  let calls = 0;
+  const getStore = () => { calls += 1; return fakeStore(); };
+  const handler = createProductionEv({
+    allowlist: ALLOWLIST, getStore, origins: ORIGINS,
+    now: () => new Date('2026-09-04T12:00:00Z'),
+  });
+
+  const res = await handler(new Request('https://metrics.invalid/api/ev', {
+    method: 'GET', headers: { origin: ORIGINS[0] },
+  }));
+
+  assert.equal(res.status, 405);
+  assert.equal(calls, 0, 'a rejected method must never construct a store client');
+});
+
+test('a successful POST acquires the store exactly once', async () => {
+  let calls = 0;
+  const getStore = () => { calls += 1; return fakeStore(); };
+  const handler = createProductionEv({
+    allowlist: ALLOWLIST, getStore, origins: ORIGINS,
+    now: () => new Date('2026-09-04T12:00:00Z'),
+  });
+
+  const res = await handler(post({ site: 'ms3', keys: ['page:t_mood.md'] }));
+
+  assert.equal(res.status, 204);
+  assert.equal(calls, 1, 'an otherwise-valid POST must construct the store exactly once');
+});
+
+test('a store factory that throws still yields 204, never a 500', async () => {
+  const getStore = () => { throw new Error('Blobs outage'); };
+  const handler = createProductionEv({
+    allowlist: ALLOWLIST, getStore, origins: ORIGINS,
+    now: () => new Date('2026-09-04T12:00:00Z'),
+  });
+
+  const res = await handler(post({ site: 'ms3', keys: ['page:t_mood.md'] }));
+
+  assert.equal(res.status, 204,
+    'a Blobs outage while acquiring the store must never turn a valid POST into a 500');
+});

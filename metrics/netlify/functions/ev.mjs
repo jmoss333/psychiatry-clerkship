@@ -38,7 +38,7 @@ function noContent(origin) {
   });
 }
 
-export function createEv({ store, allowlist, now = () => new Date(), origins = LEARNER_ORIGINS }) {
+export function createEv({ store, getStore, allowlist, now = () => new Date(), origins = LEARNER_ORIGINS }) {
   const allowed = {
     ms3: new Set(allowlist.keys.ms3),
     res: new Set(allowlist.keys.res),
@@ -79,11 +79,30 @@ export function createEv({ store, allowlist, now = () => new Date(), origins = L
 
     const keys = Array.isArray(payload?.keys) ? payload.keys.slice(0, MAX_KEYS) : [];
     const unique = [...new Set(keys.filter((k) => typeof k === 'string' && allowed[site].has(k)))];
+    if (unique.length === 0) return noContent(origin);
+
+    // The store is acquired here — after every method/origin/body/allowlist
+    // check has passed, on the one path that actually reaches `increment` —
+    // never for an OPTIONS preflight, a non-POST, a disallowed origin, or a
+    // batch with no allowlisted keys. `getStore`, when supplied, is called
+    // fresh for THIS invocation only (see `createProductionEv` below); a
+    // caller that instead passes `store` directly (every pre-existing test)
+    // is unaffected, since `getStore` is simply undefined for them.
+    // Acquiring the store is wrapped exactly like every other store-touching
+    // call in this file: a Blobs outage or misconfiguration here must
+    // produce the same silent 204 as any client error, never a 500.
+    let resolvedStore;
+    try {
+      resolvedStore = getStore ? await getStore() : store;
+    } catch {
+      return noContent(origin);
+    }
+    if (!resolvedStore) return noContent(origin);
 
     const week = isoWeek(now());
     for (const key of unique) {
       try {
-        await increment(store, { site, week, key });
+        await increment(resolvedStore, { site, week, key });
       } catch {
         // A store failure must never surface to the learner's page.
       }
@@ -103,21 +122,38 @@ export function createEv({ store, allowlist, now = () => new Date(), origins = L
 // exercised on its own; only an actual invocation of the deployed function
 // (Task 4's concern) ever touches `@netlify/blobs`.
 //
-// The store is fetched fresh on EVERY invocation and is never cached
-// alongside the handler. `@netlify/blobs` reads `NETLIFY_BLOBS_CONTEXT` (the
-// deploy-scoped credentials) each time `getStore()` runs; a container that
-// memoized the returned client across invocations could keep using
-// credentials from a stale deploy context after a new one takes over. Every
-// store error in this handler is caught and swallowed by design — the
-// learner's page must never break on a metrics failure — which means a
-// stale client would silently stop incrementing counters with zero signal
-// anywhere. `createProductionEv` is its own export (rather than inlined
-// below) precisely so a test can inject a fake `getStore` and prove it is
-// invoked once per request, never once per container lifetime.
+// `getStore('usage-counters')` is NOT called here. Calling it eagerly — as an
+// argument to `createEv({...})` — used to construct the store client on
+// EVERY invocation of the returned handler, including an OPTIONS preflight
+// or a POST from a disallowed origin, before `createEv`'s own method/origin
+// checks ever ran. Under a Blobs outage or misconfiguration, `getStore()`
+// throwing turned what should be a clean 403/204/405 into an unhandled 500,
+// for traffic that never needed the store — and contradicted this file's own
+// resilience posture, where every other store-touching call is wrapped and
+// its error swallowed. Instead, `createEv` is handed the factory itself (via
+// its optional `getStore` parameter) and calls it only after every check has
+// passed, on the one path that reaches `increment`.
+//
+// The store is still fetched fresh on EVERY qualifying invocation and is
+// never cached alongside the handler. `@netlify/blobs` reads
+// `NETLIFY_BLOBS_CONTEXT` (the deploy-scoped credentials) each time
+// `getStore()` runs; a container that memoized the returned client across
+// invocations could keep using credentials from a stale deploy context after
+// a new one takes over. Every store error in this handler is caught and
+// swallowed by design — the learner's page must never break on a metrics
+// failure — which means a stale client would silently stop incrementing
+// counters with zero signal anywhere. `createProductionEv` is its own export
+// (rather than inlined below) precisely so a test can inject a fake
+// `getStore` and prove it is invoked once per qualifying request, never once
+// per container lifetime, and never at all for a request that was always
+// going to be rejected.
 export function createProductionEv({ allowlist, getStore, now, origins }) {
-  return async function ev(request) {
-    return createEv({ store: getStore('usage-counters'), allowlist, now, origins })(request);
-  };
+  return createEv({
+    getStore: () => getStore('usage-counters'),
+    allowlist,
+    now,
+    origins,
+  });
 }
 
 export default async function ev(request) {
