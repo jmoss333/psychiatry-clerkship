@@ -307,8 +307,9 @@ test('cotwTwinSlug pairs the two halves and ignores everything else', () => {
 
 test('the pending-visibility invariant fails when a producer stops being read', () => {
   // The July 2026 state reconstructed exactly: the shared manifest alone, which is what
-  // the console used to derive its universe from. Every one of the 22 built
-  // Case-of-the-Week pages falls outside it while reviewed.json still calls them pending.
+  // the console used to derive its universe from. Welcome is now the 25th pending item,
+  // but it is manifest-visible; the reconstructed 24 invisible items remain the 22 built
+  // Case-of-the-Week pages and two resident-only role-play tools.
   const manifestOnly = new Set([
     ...MANIFEST.md.map(([, slug]) => slug),
     ...MANIFEST.tools.map(([, slug]) => slug),
@@ -318,7 +319,7 @@ test('the pending-visibility invariant fails when a producer stops being read', 
     .filter(([, entry]) => entry && typeof entry === 'object' && entry.status === 'pending')
     .map(([slug]) => slug);
 
-  assert.equal(pending.length, 24);
+  assert.equal(pending.length, 25);
   const invisibleBefore = pending.filter(slug => !manifestOnly.has(slug) && !allowlist.has(slug));
   assert.equal(invisibleBefore.length, 24);
   assert.equal(invisibleBefore.filter(isCotwSlug).length, 22);
