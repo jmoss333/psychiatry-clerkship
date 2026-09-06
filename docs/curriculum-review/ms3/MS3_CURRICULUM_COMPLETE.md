@@ -3,7 +3,7 @@
 # MS3 curriculum — complete content transcript for clinical review
 
 **Site:** `une-ms3-psychiatry` · **Audience:** MS3 — UNE medical students
-**Generated:** 2026-09-06 from build `ec8c5f5` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
+**Generated:** 2026-09-06 from build `83f4a97` · exporter: `13_Faculty_Resources/_automation/export_curriculum_review.py`
 
 ## Who this is for
 
@@ -83,7 +83,7 @@ High-yield places to concentrate: the `topic_meta` **can't-miss**, **rule-out** 
 
 # MS3 · Navigation map
 
-Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-06 @ `ec8c5f5`.
+Every item in the shipped sidebar, in site order. `hidden` items are reachable by deep link but not listed in the sidebar. Generated 2026-09-06 @ `83f4a97`.
 
 ## Orientation  *(pinned)*
 
@@ -107,7 +107,7 @@ Every item in the shipped sidebar, in site order. `hidden` items are reachable b
 | 1 | Interview & MSE | `pg_interview.md` | md | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `14_Tracks/MS3/Student_Ready_Pack/02_pocket_guides/interview_mse_pocket_guide.md` | 1126 |
 | 2 | Mental Status Exam | `mse.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Mental_Status_Exam/mental-status-exam-module.html` |  |
 | 3 | The Interview Circle | `interview-circle.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Interviewing/interview-circle.html` |  |
-| 4 | The Interview Room — AI Standardized Patient | `sp-interview.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `_prototypes/sp-interview/sp-interview.html` |  |
+| 4 | The Interview Room — AI Standardized Patient | `sp-interview.html` | tool | listed | status=`pending` · riskKind=`clinical` · riskLevel=`moderate` | `_prototypes/sp-interview/sp-interview.html` |  |
 | 5 | Screeners: PHQ-9 & GAD-7 | `screeners.html` | tool | listed | status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate` | `02_Clinical_Skills/Screeners/screeners.html` |  |
 
 ## Understand the Problem
@@ -1533,7 +1533,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 
 - **Slug:** `sp-interview.html` · **Type:** tool · **Sidebar:** listed
 - **Source:** `_prototypes/sp-interview/sp-interview.html`
-- **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
+- **Governance:** status=`pending` · riskKind=`clinical` · riskLevel=`moderate`
 
 #### Tool — clinical content
 
@@ -1541,7 +1541,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 
 **Static shell text:**
 
-- The Interview Room — AI Standardized Patient Reviewed by Joshua Moss, MD on 2026-08-11
+- The Interview Room — AI Standardized Patient Pending faculty review Clinical · Moderate risk Interview Room case content changed: the post-disclosure chain now also asks about past attempts and preparatory acts, and the critical-miss feedback no longer calls a passive death wish 'active'. Awaiting faculty re-attestation.
 - Skip to content ◐
 - If someone is in crisis
 - On the unit, a patient in immediate danger is an escalation to your supervising resident or attending and the charge nurse — not a phone call. These lines are what you put IN a patient's safety plan, what families use after discharge, and what you can use yourself.
@@ -1566,7 +1566,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - You approached suicide with a euphemism and
 - tested you instead of answering. Next time, try the patient’s own words plus the plain question: “When you say you’re a burden — have you had thoughts of killing yourself?”
 - Suicide never came up. With this presentation it must — directly and plainly. Next time, try asking early, once any rapport exists: “Have you had thoughts of killing yourself?”
-- After the disclosure, the follow-through was incomplete. Next time, walk the chain: plan, means and access, intent, and what keeps them going.
+- After the disclosure, the follow-through was incomplete. Next time, walk the chain: plan, means and access, intent, any past attempts or preparations, and what keeps them going.
 - Long question runs made this feel like an intake form. Next time, try one reflection for every two or three questions — watch what it buys you.
 - You collected symptoms but not the story — something happened two months ago and it never surfaced. Next time, try “What changed around the time this started?”
 - The encounter ended without a summary. Next time, try playing back what you heard and naming the hard part calmly before you leave the room.
@@ -1839,7 +1839,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
  "built": "2026-07-12",
  "evidenceThrough": "2026-06-30",
  "reviewCadenceDays": 180,
- "status": "reviewed",
+ "status": "draft-pending-attestation",
  "_incorporationChecklist": {
   "source": "Original fictional composite authored for this tool. Interview-skills framing per pg_interview.md; SI-inquiry language per house communication cases and C-SSRS module.",
   "claimExtraction": "No dose literals anywhere in this pack (regex \\d+\\s?(mg|mcg|mL) must return nothing). No management content; this is an interviewing tool.",
@@ -2247,6 +2247,24 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
      ]
     },
     {
+     "id": "si_behavior",
+     "label": "Asked about past attempts / preparatory acts (after disclosure)",
+     "category": "safety",
+     "coverage": "core",
+     "patterns": [
+      "\\bever (?:tried|attempted|hurt yourself|harmed yourself|acted on)",
+      "(?:tried|attempted|try) to (?:kill|end|harm|hurt|take)",
+      "\\battempts?\\b(?=\\s*(?:[?.!,;:]|$)|\\s+(?:before|in the past|previously|at all|on your life))|\\battempted suicide\\b|\\bsuicide attempts?\\b",
+      "\\b(?:past|previous|prior|history of)\\b.*(?:attempts?|self.?harm|overdose|tried to)",
+      "\\b(?:hurt|harmed|injured) yourself\\b.*(?:before|in the past|ever|previously)|\\bever (?:cut|overdosed)\\b",
+      "\\btaken? any (?:steps|actions|preparations)\\b|\\bdone anything (?:to prepare|about it)\\b|\\bany (?:steps|preparations)\\b",
+      "\\bwrit(?:ten|ing|e) (?:a )?(?:note|letter|will)\\b|\\bgiv(?:en|ing) (?:things|possessions|anything|stuff) away\\b|\\bput(?:ting)? (?:your )?affairs in order\\b",
+      "\\bstockpil|\\bgather(?:ed|ing)? (?:up )?(?:the |any )?(?:pills?|medic)|\\bhoard(?:ed|ing)? (?:pills?|medic)",
+      "\\brehears(?:e|ed|ing|al)\\b|\\bpractic(?:e|ed|ing)\\b.*(?:it|that|how)|\\bdry run\\b",
+      "\\bsearch(?:ed|ing)? (?:online |the internet |up )?(?:for )?(?:ways|methods|how to)"
+     ]
+    },
+    {
      "id": "psychosis_screen",
      "label": "Screened for psychotic symptoms",
      "category": "data",
@@ -2592,7 +2610,8 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
      "unlocks": [
       "si_plan",
       "si_means",
-      "si_intent_protective"
+      "si_intent_protective",
+      "si_behavior"
      ],
      "ifNeverAsked": "critical_miss",
      "euphemismIntent": "si_euphemism"
@@ -2623,6 +2642,15 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
      "requiresGate": "si_active",
      "reveal": "Ellie. My niece. She's eight and she thinks I hung the moon. Every time the thought gets loud I picture her asking where I went. That's what's kept the bottle closed. That, and I don't actually want to die — I want the tired to stop.",
      "deflectIfLocked": "Keeps me going? Coffee. *weak laugh* Sorry. I don't know how to answer that."
+    },
+    {
+     "id": "si_behavior_detail",
+     "requiresIntents": [
+      "si_behavior"
+     ],
+     "requiresGate": "si_active",
+     "reveal": "No. Never — not now, not when I was younger. Standing in the bathroom is the closest I have come, and I didn't open it. I haven't written anything down or given anything away. *small pause* I keep expecting to feel relieved saying that out loud, and I don't, quite.",
+     "deflectIfLocked": "Tried what? *frowns* I'm not sure what you're asking me."
     }
    ],
    "rapportRules": {
@@ -2703,11 +2731,12 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
     },
     {
      "id": "c_si_followup",
-     "label": "After disclosure: plan, means, intent, protective factors",
+     "label": "After disclosure: plan, means, intent, past attempts or preparations, protective factors",
      "intents": [
       "si_plan",
       "si_means",
-      "si_intent_protective"
+      "si_intent_protective",
+      "si_behavior"
      ],
      "dependsOnGate": "si_active"
     },
@@ -2796,9 +2825,9 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
     ]
    },
    "debriefTeachingPoints": [
-    "Dana only discloses active ideation when asked directly and plainly, with some rapport established. Euphemisms ('hurt yourself') get tested, not answered — this mirrors the house communication case: use the patient's own words, then ask about killing yourself in plain language.",
+    "Dana only discloses the three-a.m. wish not to wake up — and the bottle she has stood and looked at — when asked directly and plainly, with some rapport established. By content that is passive ideation with method contemplation on top: record what she actually said rather than reaching for a one-word label. Euphemisms ('hurt yourself') get tested, not answered — this mirrors the house communication case: use the patient's own words, then ask about killing yourself in plain language.",
     "The job loss is the organizing stressor and the shame engine. Students who never ask about work miss the formulation even if they collect every symptom.",
-    "After any disclosure: plan, means, intent, protective factors — and the close matters. A summary that names the disclosure calmly ('you told me something important today') models not flinching.",
+    "After any disclosure: plan, means and access, intent, past attempts or preparatory acts, protective factors — and the close matters. Prior suicidal behavior is the element students most often drop, and it is the one carrying the most weight; Dana's 'never, and I didn't open it' is information you only get by asking. A summary that names the disclosure calmly ('you told me something important today') models not flinching.",
     "Her plea about Tom and the pills is a values moment, not a promise to extract. Notice it; do not negotiate confidentiality you cannot keep."
    ],
    "hints": {
@@ -2806,7 +2835,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
     "c_mood_core": "You have part of the depressive syndrome. Sleep, appetite, energy, and what she still enjoys are still open.",
     "c_cognitive": "How is her thinking? Concentration — and whether she's been hard on herself.",
     "c_si": "She has hinted at heaviness. Ask about suicide directly, in plain words — 'thoughts of killing yourself' — not a euphemism.",
-    "c_si_followup": "She told you something important. Plan, means, intent, and what keeps her going all still need airtime.",
+    "c_si_followup": "She told you something important. Plan, means, intent, whether she has ever tried or taken any steps before, and what keeps her going all still need airtime.",
     "c_psychosis": "You haven't screened for psychotic symptoms. One or two plain questions is enough.",
     "c_substance": "Alcohol and substances haven't come up. Ask without apology.",
     "c_medical": "Medical contributors and medications are unexplored.",
@@ -2832,8 +2861,8 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
    },
    "hiddenAgendaTone": "You carry shame about something recent you have not told your family, and a fear of being a burden; you are testing whether the interviewer will flinch or judge. Do not state any of this openly.",
    "criticalMiss": {
-    "partial": "Suicide was approached only by euphemism — Dana tested the question and never answered it. She was having active thoughts. Ask plainly: “have you had thoughts of killing yourself?”",
-    "missed": "Suicide was never asked about. Dana was having active thoughts of not waking up and had looked at a means at home — and left the interview without anyone knowing. This is the one question that can’t be skipped."
+    "partial": "Suicide was approached only by euphemism — Dana tested the question and never answered it. She was having thoughts most nights of not waking up, and had been looking at a means at home. Ask plainly: “have you had thoughts of killing yourself?”",
+    "missed": "Suicide was never asked about. Dana was having thoughts most nights of not waking up and had looked at a means at home — and left the interview without anyone knowing. This is the one question that can’t be skipped."
    }
   },
   {

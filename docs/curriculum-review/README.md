@@ -1,6 +1,6 @@
 # Curriculum content transcripts — for clinical review
 
-Generated 2026-09-06 from build `ec8c5f5` by
+Generated 2026-09-06 from build `83f4a97` by
 `13_Faculty_Resources/_automation/export_curriculum_review.py`.
 
 Two complete, human-readable transcripts of everything the two sites ship — one per audience.
@@ -19,7 +19,7 @@ summarised or truncated.
 | Reasoning cases | 4 | 5 |
 | Family systems scenarios | 8 | 8 |
 | Evidence sources / annotated claims | 107 / 49 | 107 / 49 |
-| Complete transcript | `ms3/MS3_CURRICULUM_COMPLETE.md` (2,412,823 B) | `resident/RESIDENT_CURRICULUM_COMPLETE.md` (2,675,754 B) |
+| Complete transcript | `ms3/MS3_CURRICULUM_COMPLETE.md` (2,415,563 B) | `resident/RESIDENT_CURRICULUM_COMPLETE.md` (2,686,545 B) |
 
 ## How to use
 
