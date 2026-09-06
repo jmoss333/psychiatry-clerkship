@@ -128,6 +128,15 @@ cd tests/smoke && npm ci && npx playwright test
   need a credential — and reachability is a fact about the environment, never a content finding.
   Results cache outside the repo for 6h and invalidate when the proxy changes;
   `CLERKSHIP_SKIP_EGRESS_PROBE=1` turns it off.
+- `docs/SILENT_SHRINK_CHECKLIST.md` — the failure mode every `bin/` tool exists for, as a
+  checklist: **a check reporting success over a set smaller than the one it claims to check.**
+  Twelve entries, each earned by a defect that actually shipped here (#480, #517, #534, #539,
+  #545, #548, the 2026-08-21 annotation pass) and none of them caught by a schema or a type,
+  because each item was individually valid and the corpus was jointly wrong. Run it when you
+  write or review a guard, and use §F to answer it by BREAKING the check rather than by
+  reasoning about it — including the step people skip, reverting the fix to prove the fix is
+  what made the difference. Only §D2 is mechanised (`bin/check_vacuity.py`); the rest is
+  judgment, which is why it is written down.
 - `docs/curriculum-review/findings/` — the review→remediation loop. `export_curriculum_review.py`
   produces the transcripts, a review pass writes `findings.json` (id · verbatim `quote` ·
   ready-to-paste `replacement` · `verification`), and remediation lands as small per-work-package
