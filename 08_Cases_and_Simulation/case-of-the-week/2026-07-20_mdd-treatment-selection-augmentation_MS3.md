@@ -41,7 +41,7 @@ She returns at **6 weeks** on an adequately dosed selective serotonin reuptake i
 *Teaching point:* Combined pharmacotherapy + psychotherapy (e.g., CBT) is more than either alone for many patients, especially for preventing relapse. A meta-analysis of the **sequential model** (adding psychotherapy after medication response) found it reduces the risk of relapse/recurrence [4]. Psychotherapy is first-line for mild depression and a strong adjunct across severities.
 
 **Q7 (Safety). She mentions passive thoughts that "it wouldn't matter if I woke up." What do you do?**
-*Teaching point:* Passive death wishes require **direct, non-judgmental assessment** of suicidal ideation, intent, plan, and access to means, plus collaborative **safety planning** and appropriate level-of-care escalation. Recognition and escalation — not method detail — are the objectives. Document the assessment and the plan. When in doubt about safety, arrange same-day evaluation.
+*Teaching point:* Passive death wishes require **direct, non-judgmental assessment** of suicidal ideation, intent, plan, and access to means, plus collaborative **safety planning** and appropriate level-of-care escalation. Recognition and escalation — not method detail — are the objectives. Document the assessment and the plan. When in doubt about safety, arrange same-day evaluation, and bring your supervising resident or attending in before any disposition is settled.
 
 ---
 

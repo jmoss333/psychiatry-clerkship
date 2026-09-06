@@ -159,7 +159,8 @@
             "/choiceBanks/pharmApproach/1/hazardIf/catatonia",
             "/choiceBanks/pharmApproach/3/hazardIf/catatonia",
             "/content/scenarios/5/teachingPoints/0/text"
-          ]
+          ],
+          "scopeHashAtReview": "2a4e6edb775af70d6bd1d6874cbd3e2a7d60099d9b9d93978d07c53d336fd347"
         },
         {
           "path": "question_bank.json",
@@ -176,7 +177,8 @@
             "/items/10/options/0/t",
             "/items/10/options/1/trap/note",
             "/items/34/options/2/trap/note"
-          ]
+          ],
+          "scopeHashAtReview": "e825dcd78c99e7e01771155806a849405a15c5643b0487744442e601fb1fc9f0"
         }
       ],
       "guards": {
@@ -364,7 +366,8 @@
             "/items/2/options/2/t",
             "/items/24/options/1/t",
             "/items/24/why"
-          ]
+          ],
+          "scopeHashAtReview": "67c761ea8108ad07c9e3a480b553aaa26f33f0ffd93bd12251286e448874c578"
         },
         {
           "path": "_prototypes/agitation-trainer/agitation.pack.json",
@@ -386,7 +389,8 @@
           ],
           "scope": [
             "/content/scenarios/1/teachingPoints/0/text"
-          ]
+          ],
+          "scopeHashAtReview": "e4bd0c111f60cb803b749874fb89e9888d51c980285ff80c43e2bcf7138d767a"
         }
       ],
       "guards": {

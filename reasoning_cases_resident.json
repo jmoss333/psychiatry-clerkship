@@ -168,7 +168,7 @@
           "choices": [
             {
               "id": "a",
-              "text": "Recommend a delirium driver review, deliriogenic medication reduction where feasible, infection/metabolic/hypoxia assessment, sleep-wake support, mobilization, sensory aids, and supervised agitation planning.",
+              "text": "Recommend a delirium driver review, deliriogenic medication reduction where feasible, infection/metabolic/hypoxia and alcohol or sedative withdrawal assessment, sleep-wake support, mobilization, sensory aids, and supervised agitation planning.",
               "quality": "best",
               "feedback": "Best. It is practical, multidisciplinary, and avoids framing delirium as only a psychiatry medication problem."
             },

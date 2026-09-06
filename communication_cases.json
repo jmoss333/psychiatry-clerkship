@@ -584,8 +584,8 @@
         {
           "id": "d",
           "text": "Can you tell us exactly what you think he is hiding from us?",
-          "quality": "partial",
-          "feedback": "Specific concerns matter, but this phrasing can shame the patient and intensify triangulation. Invite concerns while preserving the patient's dignity."
+          "quality": "missed",
+          "feedback": "Specific concerns matter, but this presumes he is lying and cross-examines him through his family, right after he went quiet. Ask the family what worries them, and keep him a participant."
         }
       ],
       "skillTags": [
