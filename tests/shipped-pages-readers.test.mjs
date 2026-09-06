@@ -66,8 +66,6 @@ const ALLOWED_DIRECT_READERS = Object.freeze([
   //     for itself; several still carry a private copy of the Case-of-the-Week patch.
   //     Deleting a line here is the only edit this list accepts. ---
   '13_Faculty_Resources/_automation/anki/pcl_anki/release.py',
-  'bin/sweep_unlicensed_claims.py',
-  'tools/pdf_library_export/export_website_pdf_library.py',
 
   // --- partially migrated by ADR-002. Each asks shipped_pages.json WHAT SHIPS and still
   //     opens site_manifest.json for something only the manifest carries ---
