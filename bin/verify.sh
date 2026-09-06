@@ -131,6 +131,15 @@ step "unit — evidence annotations"          python3 $A/validate_evidence_annot
 step "validate_evidence_annotations"        python3 $A/validate_evidence_annotations.py
 step "span audit (verbatim vs paper)"       python3 bin/verify_spans.py
 step "unit — qbank coherence"              python3 bin/check_qbank_coherence.py --self-test
+# Four tools shipped a --self-test that NO gate invoked — found by bin/check_vacuity.py after
+# Codex pointed out it was inventorying only test FILES, not the --self-test modes its own
+# doctrine calls the paired falsification. Each passes; none needed an exemption. The guards
+# themselves run on a schedule or on demand, but a falsification that never runs is worth
+# nothing wherever its guard runs.
+step "unit — decision drift"                python3 bin/check_decision_drift.py --self-test
+step "unit — ruleset drift"                 python3 bin/check_ruleset_drift.py --self-test
+step "unit — claim exposure"                python3 bin/claim_exposure.py --self-test
+step "unit — offrunner findings"            python3 bin/verify_findings_offrunner.py --self-test
 step "qbank coherence"                     python3 bin/check_qbank_coherence.py
 step "test_generate_evidence_drill"         python3 $A/test_generate_evidence_drill.py
 step "evidence drill is regenerated"        python3 $A/generate_evidence_drill.py --check

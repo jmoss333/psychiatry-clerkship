@@ -77,7 +77,23 @@ GATES = (
 IGNORED_PREFIXES = ("99_Archive/", "docs/", ".superpowers/", "node_modules/", "_build/")
 
 # A falsification artifact: something whose entire job is to fail when a contract is broken.
+# TWO SHAPES, because this repo uses two. A standalone file (test_*.py, *.test.mjs) is one.
+# The other is a tool's own `--self-test` mode, which verify.sh runs as a separate `unit — X`
+# step beside the guard. Inventorying only the first was this checker's own blind spot: four
+# tools carried a --self-test that no gate invoked, and because no FILE was missing, the run
+# printed OK over them (Codex P2 on #548). A falsification is a falsification.
 FALSIFIER = re.compile(r"(?:^|/)test_[^/]*\.py$|\.test\.(?:mjs|js)$")
+SELF_TEST_FLAG = '"--self-test"'
+
+
+def declares_self_test(path: str) -> bool:
+    """True when a tracked .py file offers a --self-test mode of its own."""
+    if not path.endswith(".py") or FALSIFIER.search(path):
+        return False
+    try:
+        return SELF_TEST_FLAG in (REPO / path).read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return False
 
 
 # Commands that never execute a test file, however much their arguments look like one.
@@ -121,7 +137,8 @@ def tracked_files() -> list[str]:
 
 
 def falsifiers(files: list[str]) -> list[str]:
-    found = sorted(f for f in files if FALSIFIER.search(f))
+    """Every artifact whose job is to fail: test files AND tools with a --self-test mode."""
+    found = sorted(f for f in files if FALSIFIER.search(f) or declares_self_test(f))
     if not found:
         raise Undeterminable("no falsification artifacts found at all — the pattern is wrong")
     return found
@@ -179,14 +196,26 @@ def _peel(parts: list[str]) -> list[str]:
     return parts
 
 
-def _tokens(text: str) -> list[list[str]]:
-    """Every plausible command line in a gate file, tokenised, unwrapped and variable-expanded.
+_SEPARATOR = re.compile(r"(&&|\|\||;)")
 
-    Splitting on `;` and `&&` matters as much as the unwrapping: the sp-interview runner is a
-    column of `echo "── name ──"; node thing.test.js` lines, and a resolver reading only the
-    first word of each sees thirteen echoes and no tests."""
+
+def _tokens(text: str) -> list[tuple[list[str], bool]]:
+    """Every plausible command line in a gate file, as (tokens, fail_soft).
+
+    Unwrapping and variable expansion matter because verify.sh names half its steps through
+    `step "<label>" $A/...` and ci.yml through `run:`; splitting on separators matters because
+    the sp-interview runner is a column of `echo "── name ──"; node thing.test.js`.
+
+    FAIL-SOFT IS TRACKED, NOT DISCARDED (Codex P2 on #548). An earlier version split on `||`
+    and threw the operator away, so `python3 test_guard.py || true` read as "this test is on a
+    gate" when its failure can never fail anything — a gate that cannot fail, counted as
+    coverage, by the checker built to find gates that cannot fail. Both sides of a `||` are
+    marked: the left because its failure is swallowed, the right because it runs only when the
+    left fails. This repo really does use the form — build_and_check.sh:84 wraps an entire
+    sub-script in `|| true` — so a wrapper's fail-softness propagates to everything it runs.
+    """
     variables: dict[str, str] = {}
-    lines = []
+    lines: list[tuple[list[str], bool]] = []
     for raw in text.splitlines():
         line = raw.strip()
         if not line or line.startswith("#"):
@@ -196,41 +225,84 @@ def _tokens(text: str) -> list[list[str]]:
             variables[assignment.group(1)] = assignment.group(2).strip('"\'')
             continue
         line = _expand(line, variables)
-        for piece in re.split(r"&&|\|\||;", line):
-            piece = piece.strip()
+        pieces = _SEPARATOR.split(line)
+        for index in range(0, len(pieces), 2):
+            piece = pieces[index].strip()
             if not piece:
                 continue
+            before = pieces[index - 1] if index else None
+            after = pieces[index + 1] if index + 1 < len(pieces) else None
+            fail_soft = before == "||" or after == "||"
             try:
                 parts = _peel(shlex.split(piece, comments=True))
             except ValueError:
-                continue
+                # Splitting cut through a quote — a `||` inside `bash -c "..."` does that.
+                # Dropping the piece would silently shrink what this checker believes runs,
+                # which is the defect it exists to find. Re-read the WHOLE line instead and
+                # treat it as fail-soft, the conservative reading.
+                try:
+                    whole = _peel(shlex.split(line, comments=True))
+                except ValueError:
+                    continue
+                if whole and (whole, True) not in lines:
+                    lines.append((whole, True))
+                break
             if parts:
-                lines.append(parts)
+                lines.append((parts, fail_soft))
     return lines
 
 
-def _resolve_command(parts: list[str], cwd: Path, depth: int = 0) -> tuple[set[str], bool]:
-    """(files this command runs, understood?). `understood` is False only for a command that
-    LOOKS like it runs tests but that the resolver cannot classify — reported, never ignored."""
+def _resolve_command(parts: list[str], cwd: Path, depth: int = 0,
+                     fail_soft: bool = False) -> tuple[set[str], set[str], bool]:
+    """(hard, soft, understood) — files this command runs, split by whether a failure counts.
+
+    `hard` is real coverage: the file runs and its failure fails the gate. `soft` is a file
+    reached only through a fail-soft invocation, which is NOT coverage — it is the appearance
+    of coverage, which is worse. `understood` is False only for a command that LOOKS like it
+    runs tests but that the resolver cannot classify — reported, never ignored.
+    """
+    def split(hits: set[str]) -> tuple[set[str], set[str]]:
+        return (set(), hits) if fail_soft else (hits, set())
+
     if not parts:
-        return set(), True
+        return set(), set(), True
+
+    # Separators can survive INSIDE a token list: `bash -c "python3 x.py --self-test || true"`
+    # is peeled to its payload, and the payload still carries the `||`. Splitting here as well
+    # as in _tokens is what stops a quoted fail-soft invocation from reading as real coverage.
+    if any(tok in ("||", "&&", ";") for tok in parts):
+        hard, soft, understood = set(), set(), True
+        segment: list[str] = []
+        prev = None
+        for tok in parts + [";"]:
+            if tok in ("||", "&&", ";"):
+                if segment:
+                    a, b, ok = _resolve_command(
+                        segment, cwd, depth, fail_soft or prev == "||" or tok == "||")
+                    hard |= a
+                    soft |= b
+                    understood = understood and ok
+                segment, prev = [], tok
+                continue
+            segment.append(tok)
+        return hard, soft, understood
+
     if depth > MAX_INDIRECTION:
         # Give up LOUDLY. Returning "understood, runs nothing" here would let a deeply nested
         # runner silently drop out of the covered set — and the resolver's whole claim is that
         # it knows what runs. Deeper nesting than this means teaching it, not assuming.
-        return set(), False
+        return set(), set(), False
     joined = " ".join(parts)
     hits: set[str] = set()
 
     # node --test <glob> ... / node <file>
     if parts[0] in ("node", "npx"):
-        args = [p for p in parts[1:] if not p.startswith("-")]
-        for arg in args:
+        for arg in (p for p in parts[1:] if not p.startswith("-")):
             if ".test." in arg or arg.endswith((".mjs", ".js")):
                 hits |= _glob(arg, cwd)
-        return hits, True
+        return (*split(hits), True)
 
-    # python3 -m unittest discover -s DIR -p PATTERN  |  python3 <file>
+    # python3 -m unittest discover -s DIR -p PATTERN  |  python3 <file> [--self-test]
     if parts[0].startswith("python"):
         if "unittest" in parts:
             directory = pattern = None
@@ -241,69 +313,82 @@ def _resolve_command(parts: list[str], cwd: Path, depth: int = 0) -> tuple[set[s
                     pattern = value
             if directory:
                 hits |= _glob(f"{directory.rstrip('/')}/{pattern or 'test*.py'}", cwd)
-            return hits, True
+            return (*split(hits), True)
+        selftest = "--self-test" in parts
         for arg in parts[1:]:
-            if arg.endswith(".py"):
-                hits |= _glob(arg, cwd)
-        return hits, True
+            if not arg.endswith(".py"):
+                continue
+            for path in _glob(arg, cwd):
+                # A test file counts however it is invoked. Any OTHER script counts only when
+                # run with --self-test: running a guard is not running its falsification.
+                if FALSIFIER.search(path) or selftest:
+                    hits.add(path)
+        return (*split(hits), True)
 
     # npm --prefix DIR test  ->  that package's own test script
     if parts[0] == "npm" and "test" in parts:
         prefix = parts[parts.index("--prefix") + 1] if "--prefix" in parts else "."
         pkg = cwd / prefix / "package.json"
         if not pkg.exists():
-            return set(), False
+            return set(), set(), False
         script = json.loads(pkg.read_text(encoding="utf-8")).get("scripts", {}).get("test")
         if not script:
-            return set(), False
-        for line in _tokens(script):
-            more, ok = _resolve_command(line, cwd / prefix, depth + 1)
-            hits |= more
+            return set(), set(), False
+        hard, soft = set(), set()
+        for line, inner_soft in _tokens(script):
+            a, b, ok = _resolve_command(line, cwd / prefix, depth + 1, fail_soft or inner_soft)
+            hard |= a
+            soft |= b
             if not ok:
-                return hits, False
-        return hits, True
+                return hard, soft, False
+        return hard, soft, True
 
-    # bash <script> / sh <script>  ->  read it and resolve what IT runs
+    # bash <script> / sh <script>  ->  read it and resolve what IT runs. A wrapper invoked
+    # fail-soft makes everything inside it fail-soft: build_and_check.sh:84 does exactly that.
     if parts[0] in ("bash", "sh") and len(parts) > 1 and parts[1] not in ("-c", "-eu"):
-        script = (cwd / parts[1])
+        script = cwd / parts[1]
         if not script.exists():
-            return set(), True          # not a runner we ship; nothing to resolve
-        for line in _tokens(script.read_text(encoding="utf-8")):
-            more, ok = _resolve_command(line, script.parent, depth + 1)
-            hits |= more
+            return set(), set(), True       # not a runner we ship; nothing to resolve
+        hard, soft = set(), set()
+        for line, inner_soft in _tokens(script.read_text(encoding="utf-8")):
+            a, b, ok = _resolve_command(line, script.parent, depth + 1, fail_soft or inner_soft)
+            hard |= a
+            soft |= b
             if not ok:
-                return hits, False
-        return hits, True
+                return hard, soft, False
+        return hard, soft, True
 
     # Shell furniture. These can NAME a test path — build_and_check.sh announces each phase
     # with `echo "── Node contract tests: tests/*.test.mjs"` — without running anything. They
     # are listed rather than pattern-matched so the unknown-command fallback below stays sharp:
     # a mention is not a run, and a runner this resolver has never seen must still be loud.
     if parts[0] in NON_RUNNERS:
-        return set(), True
+        return set(), set(), True
 
     # Anything that names a falsification artifact but is not a shape we understand.
     if FALSIFIER.search(joined):
-        return set(), False
-    return set(), True
+        return set(), set(), False
+    return set(), set(), True
 
 
-def covered_by_gates() -> tuple[set[str], list[str]]:
-    """(files the gates run, gate commands the resolver could not classify)."""
-    covered: set[str] = set()
+def covered_by_gates() -> tuple[set[str], set[str], list[str]]:
+    """(hard-covered, fail-soft-only, gate commands the resolver could not classify)."""
+    hard: set[str] = set()
+    soft: set[str] = set()
     unresolved: list[str] = []
     for gate in GATES:
         path = REPO / gate
         if not path.exists():
             raise Undeterminable(f"gate file is missing: {gate}")
-        for parts in _tokens(path.read_text(encoding="utf-8")):
-            hits, ok = _resolve_command(parts, REPO)
-            covered |= hits
+        for parts, fail_soft in _tokens(path.read_text(encoding="utf-8")):
+            a, b, ok = _resolve_command(parts, REPO, fail_soft=fail_soft)
+            hard |= a
+            soft |= b
             if not ok:
                 unresolved.append(f"{gate}: {' '.join(parts)[:110]}")
-    if not covered:
+    if not hard:
         raise Undeterminable("the gates resolve to no test files at all — the resolver is broken")
-    return covered, unresolved
+    return hard, soft - hard, unresolved
 
 
 def exempt_reason(path: str) -> str | None:
@@ -313,71 +398,85 @@ def exempt_reason(path: str) -> str | None:
     return None
 
 
-def orphans(files: list[str] | None = None) -> tuple[list[str], list[str], int]:
-    """(orphaned falsifications, unresolved gate commands, how many were checked)."""
+def orphans(files: list[str] | None = None) -> tuple[list[str], list[str], list[str], int]:
+    """(never run, run only fail-soft, unresolved gate commands, how many were checked)."""
     tracked = files if files is not None else tracked_files()
     every = falsifiers(tracked)
-    covered, unresolved = covered_by_gates()
-    missed = [f for f in every if f not in covered and not exempt_reason(f)]
-    return missed, unresolved, len(every)
+    hard, soft, unresolved = covered_by_gates()
+    missed = [f for f in every
+              if f not in hard and f not in soft and not exempt_reason(f)]
+    toothless = [f for f in every if f in soft and not exempt_reason(f)]
+    return missed, toothless, unresolved, len(every)
 
 
 def self_test() -> int:
-    """Prove this checker can fail. A vacuity checker that cannot go red is the joke.
-
-    Each case below breaks one thing and asserts the breakage is REPORTED. The resolver is
-    exercised on the real gates, because a resolver that only works on fixtures would invent
-    orphans on the repo it is meant to guard.
-    """
+    """Prove this checker can fail. A vacuity checker that cannot go red is the joke."""
     cases = []
 
-    covered, unresolved = covered_by_gates()
+    hard, soft, unresolved = covered_by_gates()
     every = falsifiers(tracked_files())
-    cases.append((f"the gates resolve to real test files ({len(covered)})", len(covered) > 0))
+    cases.append((f"the gates resolve to real test files ({len(hard)})", len(hard) > 0))
     cases.append((f"falsification artifacts are found at all ({len(every)})", len(every) > 10))
     cases.append((f"every gate command is understood ({len(unresolved)} unresolved)",
                   not unresolved))
 
-    # The indirections that made the naive version cry wolf. Each is named, so if a suite
-    # stops being reachable through its runner this says WHICH runner, not just "orphaned".
+    # Both shapes of falsification are inventoried. Counting only files was this checker's own
+    # blind spot: a tool's --self-test could go unwired and nothing would say so (Codex, #548).
+    selftesters = [f for f in every if declares_self_test(f)]
+    cases.append((f"tools with a --self-test are inventoried too ({len(selftesters)})",
+                  len(selftesters) >= 5 and "bin/check_vacuity.py" in selftesters))
+    cases.append(("running a guard is not running its falsification",
+                  not _resolve_command(["python3", "bin/check_vacuity.py"], REPO)[0]))
+    cases.append(("running it WITH --self-test is",
+                  "bin/check_vacuity.py" in
+                  _resolve_command(["python3", "bin/check_vacuity.py", "--self-test"], REPO)[0]))
+
+    # The indirections that made the naive version cry wolf.
     for probe, how in (("sp-proxy/tests/", "npm --prefix sp-proxy test"),
                        ("_prototypes/sp-interview/tests/", "tests/run-all.sh"),
                        ("tests/", "node --test tests/*.test.mjs")):
-        reached = [f for f in covered if f.startswith(probe)]
+        reached = [f for f in hard if f.startswith(probe)]
         cases.append((f"{probe}* is reached through {how} ({len(reached)} files)", len(reached) > 0))
 
-    # A file no gate runs must be REPORTED, not absorbed. Falsified with a path that cannot
-    # be covered by construction, so the case cannot pass by accident.
+    # A file no gate runs must be REPORTED, not absorbed.
     ghost = "13_Faculty_Resources/_automation/test_ghost_never_wired.py"
-    missed, _, _ = orphans(files=tracked_files() + [ghost])
+    missed, _, _, _ = orphans(files=tracked_files() + [ghost])
     cases.append(("an unwired falsification is reported", ghost in missed))
 
-    # ...and the exemption list must actually be consulted, or its entries are decoration.
     cases.append(("an exempt path is not reported",
                   exempt_reason("tests/anki/test_render.py") is not None))
     cases.append(("a non-exempt path is not silently excused",
                   exempt_reason("tests/hooks.test.mjs") is None))
 
-    # The resolver's honesty guarantee: a command it cannot classify is a failure, not a pass.
-    _, understood = _resolve_command(["mystery-runner", "tests/thing.test.mjs"], REPO)
+    # FAIL-SOFT. `python3 test_x.py || true` runs the test and swallows its verdict, so it is
+    # not on a gate in any sense that matters. Counting it was counting a gate that cannot
+    # fail — inside the checker for gates that cannot fail (Codex, #548).
+    soft_line = ('step "x"  python3 13_Faculty_Resources/_automation/'
+                 'test_validate_curriculum.py || true')
+    parsed = _tokens(soft_line)
+    cases.append((f"`|| true` is parsed as fail-soft, not discarded ({len(parsed)} segments)",
+                  bool(parsed) and parsed[0][1] is True))
+    h, sft, _ok = _resolve_command(parsed[0][0], REPO, fail_soft=parsed[0][1])
+    cases.append(("a fail-soft test invocation is NOT counted as covered", not h))
+    cases.append(("...and is not lost either — it lands in the fail-soft bucket", bool(sft)))
+    h2, _s2, _ok2 = _resolve_command(parsed[0][0], REPO, fail_soft=False)
+    cases.append(("the same invocation without `|| true` IS covered", bool(h2)))
+
+    _h, _s, understood = _resolve_command(["mystery-runner", "tests/thing.test.mjs"], REPO)
     cases.append(("an unclassifiable command naming a test is reported, not assumed covered",
                   not understood))
-    _, understood = _resolve_command(["node", "--test", "x.test.mjs"], REPO,
-                                     depth=MAX_INDIRECTION + 1)
+    _h, _s, understood = _resolve_command(["node", "--test", "x.test.mjs"], REPO,
+                                          depth=MAX_INDIRECTION + 1)
     cases.append(("indirection deeper than the resolver handles gives up LOUDLY", not understood))
-
-    _, understood = _resolve_command(["echo", "hello"], REPO)
+    _h, _s, understood = _resolve_command(["echo", "hello"], REPO)
     cases.append(("an ordinary command is not mistaken for an unresolved gate", understood))
 
-    # The boundary the whole resolver turns on: NAMING a test is not RUNNING it. Both halves
-    # are pinned, because getting either wrong is silent — a mention counted as a run hides a
-    # real orphan, and a run counted as a mention invents one.
-    ran, _ = _resolve_command(["echo", "── Node contract tests: tests/*.test.mjs"], REPO)
+    # Naming a test is not running it, and getting either half wrong is silent.
+    ran, _s, _ok = _resolve_command(["echo", "── Node contract tests: tests/*.test.mjs"], REPO)
     cases.append(("naming a test in an echo is not counted as running it", not ran))
-    ran, _ = _resolve_command(["node", "--test", "tests/*.test.mjs"], REPO)
+    ran, _s, _ok = _resolve_command(["node", "--test", "tests/*.test.mjs"], REPO)
     cases.append((f"a real node --test glob IS counted ({len(ran)} files)", len(ran) > 10))
 
-    # A missing gate file must raise rather than shrink the covered set into silence.
     real = globals()["GATES"]
     try:
         globals()["GATES"] = real + (Path("bin/no_such_gate.sh"),)
@@ -406,16 +505,18 @@ def main() -> int:
         return self_test()
 
     try:
-        missed, unresolved, total = orphans()
+        missed, toothless, unresolved, total = orphans()
     except Undeterminable as exc:
         print(f"CANNOT CHECK — {exc}")
         print("Refusing to report PASS while checking nothing.")
         return 2
 
     if args.list:
-        covered, _ = covered_by_gates()
-        for path in sorted(covered):
-            print(f"  runs  {path}")
+        hard, soft, _ = covered_by_gates()
+        for path in sorted(hard):
+            print(f"  runs      {path}")
+        for path in sorted(soft):
+            print(f"  FAIL-SOFT {path}")
 
     if unresolved:
         print(f"{len(unresolved)} gate command(s) name a test but could not be resolved:")
@@ -425,14 +526,25 @@ def main() -> int:
               "Teach it the new shape in _resolve_command(); do NOT assume the files are covered.")
         return 2
 
+    if toothless:
+        print(f"\n{len(toothless)} falsification(s) run only where a failure is swallowed:")
+        for path in toothless:
+            print(f"   - {path}")
+        print("\nA `|| true` around a test — or around a wrapper that runs it — means its\n"
+              "verdict can never fail anything. That is the appearance of a gate, which is\n"
+              "worse than none. Run it for real or record why it cannot be.")
+
     if missed:
         print(f"\n{len(missed)} falsification(s) that no gate runs:")
         for path in missed:
-            print(f"   - {path}")
+            kind = "--self-test mode" if declares_self_test(path) else "test file"
+            print(f"   - {path}  ({kind})")
         print("\nEach of these exists to fail when a contract breaks, and cannot: nothing\n"
               "executes it. Wire it into bin/verify.sh (and ci.yml if it belongs there), or\n"
               "record it in EXEMPT with a reason a reader can check. A red one is a reason to\n"
               "FIX it, never to exempt it.")
+
+    if missed or toothless:
         return 1
 
     exempted = sum(1 for f in falsifiers(tracked_files()) if exempt_reason(f))
