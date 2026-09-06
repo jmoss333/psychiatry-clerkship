@@ -137,12 +137,6 @@ def _slug_source_map(aud_key: str = "ms3") -> dict[str, str]:
             site_extras.RESIDENT_EXTRA_PAGES + site_extras.RESIDENT_PROTO_TOOLS
         ):
             out[dst] = src
-    # STALE, and preserved on purpose. orientation-video.html ships from
-    # _prototypes/orientation-video/ (site_extras.MS3_EXTRA_TOOLS), which is what
-    # shipped_pages.json records; this placeholder predates that and names the wrong
-    # directory. ADR-002 Phase 2 proves each migration by byte-identical output, so
-    # correcting a Source line is a separate change, not a side effect of this one.
-    out["orientation-video.html"] = "_prototypes/video-library/ (build-generated shell)"
     return out
 
 

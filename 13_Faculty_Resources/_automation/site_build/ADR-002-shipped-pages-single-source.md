@@ -134,23 +134,20 @@ silent, months-long invisibility failure.
 learner UI. Both learner builds were verified byte-for-byte identical before and
 after (238 files on MS3, 250 on resident).
 
-### Phase 2 — the readers still to migrate
+### Phase 2 — the readers
 
-Each still re-derives what ships for itself, and several still carry a private copy
-of the Case-of-the-Week patch. They are frozen in
-`tests/shipped-pages-readers.test.mjs`; migrating one means deleting its line there.
-Separate PRs, in rough order of payoff:
+**Done — 2026-09-05:** #530 (`validate_curriculum.py`, `validate_claim_anchors.py`),
+#529 (`surface_governance.py`, `validate_tool_governance.py`), #532
+(`export_curriculum_review.py`, `library_coverage_scan.py`,
+`generate_evidence_drill.py`), #538 (`governance_digest.mjs`, `pairings_block.py`),
+#537 (`validate_registry_schemas.py`). Each migration was held to byte-identical
+output on the same inputs, and each deleted its line from
+`tests/shipped-pages-readers.test.mjs`.
 
-1. `validate_curriculum.py` — its totality guard is the closest analogue of the
-   original bug.
-2. `surface_governance.py` — carries `_ADDITIONAL_TOOL_SOURCES`, a hand-synced
-   miniature of `site_extras.py`'s tool list.
-3. `validate_tool_governance.py` — `SITE_EXTRAS`, the list the above mirrors.
-4. `export_curriculum_review.py` — has its own inline COTW slug format string.
-5. `validate_claim_anchors.py`, `library_coverage_scan.py`,
-   `generate_evidence_drill.py`, `pairings_block.py`, `governance_digest.mjs`,
-   `frontdoor/fd_data.js`, `anki/pcl_anki/release.py`,
-   `bin/sweep_unlicensed_claims.py`, `tools/pdf_library_export/`.
+**Deferred:** #535 (B5 — `bin/sweep_unlicensed_claims.py` and
+`tools/pdf_library_export` are a deliberate widening awaiting Josh's sign-off;
+`anki/pcl_anki/release.py` needs re-batching with `pcl_anki/sources.py`).
+`frontdoor/fd_data.js` carries only a prose mention, not a read.
 
 Two readers are **partially** migrated on purpose and will keep a manifest read:
 `attest.mjs` (the question bank's page anchors and its conflict revision) and
