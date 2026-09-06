@@ -139,11 +139,18 @@ answered.
       *Run:* `python3 bin/check_vacuity.py`
 
 - [ ] **D3. Does it run where it MATTERS?**
-      "On a gate" is not "in CI". Build-output checks cannot live in the node suite at all:
-      `node --test` runs before **both** `build_and_check.sh` invocations and `_build/`
-      starts absent in CI, so such a test skips exactly where it counts.
+      "On a gate" is not "in CI", and a check can be genuinely wired and still be absent from
+      the place you were counting on.
+      *The worked case:* a **build-output** assertion in `tests/*.test.mjs` is a supported
+      placement — guard it with `staleBuildReason()` from `tests/_build_freshness.mjs`, as
+      `build-freshness`, `post-event-huddle` and `rotation-edition-build-governance` do, and it
+      fails honestly against a current local build. What it does **not** do is protect CI:
+      `node --test` runs before **both** `build_and_check.sh` invocations and `_build/` starts
+      absent there, so it skips every time. That is a local-only contract by design, not a
+      misplacement — the error is relying on CI to catch what it pins.
       *Ask:* which of `verify.sh`, `ci.yml`, the Netlify build actually executes this, and is
-      that the one that protects the artifact a learner opens?
+      that the one that protects the artifact a learner opens? Then say so out loud, because
+      an unstated "local only" reads to the next person as "covered".
 
 ---
 
