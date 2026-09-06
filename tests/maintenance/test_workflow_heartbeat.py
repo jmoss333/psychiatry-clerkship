@@ -15,7 +15,10 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "13_Faculty_Resources" / "_automation"))
 
 from maintenance import workflow_heartbeat as heartbeat_module  # noqa: E402
-from maintenance.receipt_summary import FAILED_MARKER  # noqa: E402
+from maintenance.receipt_summary import (  # noqa: E402
+    DEFERRED_ROW_STATES,
+    FAILED_MARKER,
+)
 from maintenance.workflow_heartbeat import (  # noqa: E402
     EXPECTATIONS,
     HeartbeatError,
@@ -922,8 +925,19 @@ class PulseVersusDelegatedTests(unittest.TestCase):
             ["surveillance-citations.yml", "surveillance-link-monitor.yml"],
         )
 
+    # Written out rather than read from the module. A test that takes the
+    # classifier's own input to predict the classifier's output proves only that
+    # the module is self-consistent; these four are the states evaluate_runs
+    # emits for "the schedule itself is wrong", named independently.
+    PULSE_STATES = (
+        "unavailable",             # the runs could not be read
+        "provenance_unavailable",  # a run could not be tied to the definition
+        "stale",                   # it fired, but too long ago
+        "missing",                 # it never fired inside its window
+    )
+
     def test_every_pulse_state_still_exits_non_zero(self):
-        for state in sorted(heartbeat_module.PULSE_BLOCKING_STATES):
+        for state in self.PULSE_STATES:
             with self.subTest(state=state):
                 receipt = self._receipt(self._row("ci.yml", state))
                 pulse, _ = heartbeat_module.classify_blockers(receipt)
@@ -942,18 +956,37 @@ class PulseVersusDelegatedTests(unittest.TestCase):
             [name for name, _ in delegated], ["surveillance-citations.yml"]
         )
 
-    def test_the_two_state_sets_are_disjoint_and_cover_the_blocking_states(self):
+    def test_delegation_is_declared_narrowly_and_names_its_watcher(self):
+        # The whole of this module's half of the fleet contract: one state, and
+        # the watcher that actually owns it.
+        self.assertEqual(heartbeat_module.DELEGATED_STATES, frozenset({"failed"}))
         self.assertEqual(
-            heartbeat_module.PULSE_BLOCKING_STATES
-            & heartbeat_module.DELEGATED_BLOCKING_STATES,
-            frozenset(),
+            heartbeat_module.DELEGATED_WATCHER,
+            "automation-failure-escalation.yml",
         )
-        # pending_first_run is deliberately in neither: it never blocked the gate.
-        self.assertNotIn(
-            "pending_first_run",
-            heartbeat_module.PULSE_BLOCKING_STATES
-            | heartbeat_module.DELEGATED_BLOCKING_STATES,
+        # pending_first_run is receipt_summary's to defer, not this module's to
+        # delegate: nothing is wrong yet, so there is nobody to hand it to.
+        self.assertNotIn("pending_first_run", heartbeat_module.DELEGATED_STATES)
+        self.assertIn("pending_first_run", DEFERRED_ROW_STATES)
+
+    def test_a_state_nobody_classified_is_this_steward_s(self):
+        # The hole the fleet contract closes. Classification is subtractive, so
+        # a state added to evaluate_runs later lands in `pulse` and goes red.
+        # Enumerating the owned states instead — which is what this module did
+        # before — dropped an unknown state through both frozensets and exited
+        # 0, turning a brand-new failure mode into silence.
+        receipt = self._receipt(self._row("ci.yml", "quota_exhausted"))
+        pulse, delegated = heartbeat_module.classify_blockers(receipt)
+        self.assertEqual([name for name, _ in pulse], ["ci.yml"])
+        self.assertEqual(delegated, [])
+
+    def test_main_exits_two_on_a_state_nobody_classified(self):
+        code, stderr = self._run_main_with_receipt(
+            self._receipt(self._row("ci.yml", "quota_exhausted"))
         )
+        self.assertEqual(code, 2)
+        self.assertIn(f"heartbeat {FAILED_MARKER}:", stderr)
+        self.assertNotIn("schedule is alive", stderr)
 
     def test_pending_first_run_alone_is_not_a_blocker(self):
         receipt = self._receipt(

@@ -10,7 +10,10 @@ from urllib.error import HTTPError
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "13_Faculty_Resources" / "_automation"))
 
+from maintenance.receipt_summary import classify  # noqa: E402
 from maintenance.sp_health_monitor import (  # noqa: E402
+    DELEGATED_STATES,
+    FAILURE_CODES,
     PUBLIC_STATUS_URL,
     evaluate_status,
     main,
@@ -355,6 +358,59 @@ class SpHealthMonitorTests(unittest.TestCase):
             receipt = json.loads(output.read_text(encoding="utf-8"))
             self.assertEqual(receipt["gate"], "blocked")
             self.assertNotIn("PRIVATE SECRET SENTINEL", json.dumps(receipt))
+
+
+class FleetContractTests(unittest.TestCase):
+    """Adopting receipt_summary.classify must not move a single verdict here.
+
+    This monitor delegates nothing: the escalation issue reports that THIS job
+    went red, and has no independent view of the proxy, so there is no second
+    watcher to hand a state to. `DELEGATED_STATES` is therefore empty and
+    `classify` must agree exactly with the `gate != "ready"` rule it replaced,
+    on every receipt this module can produce. That equivalence is the whole
+    regression guard for the migration, so it is asserted rather than assumed.
+    """
+
+    def _every_receipt(self):
+        yield evaluate_status(success_payload(), now=NOW)
+        # Fresh receipt, but the proxy's own check has not run for 9h (> MAX_AGE).
+        yield evaluate_status(
+            success_payload(checkedAt="2026-07-28T03:00:00.000Z"), now=NOW
+        )
+        # Ran on time, but its next slot came and went.
+        yield evaluate_status(
+            success_payload(nextRun="2026-07-28T11:00:00.000Z"), now=NOW
+        )
+        for code in sorted(FAILURE_CODES):
+            yield evaluate_status(
+                {
+                    "schemaVersion": 1,
+                    "state": "failed",
+                    "failureCode": code,
+                    "checkedAt": "2026-07-28T06:00:00.000Z",
+                },
+                now=NOW,
+            )
+        for state in ("missing", "malformed", "unavailable"):
+            yield evaluate_status(
+                {"schemaVersion": 1, "state": state}, now=NOW
+            )
+        # A success-shaped body with the wrong key set.
+        yield evaluate_status({"schemaVersion": 1, "state": "success"}, now=NOW)
+
+    def test_delegation_is_empty_on_purpose(self):
+        self.assertEqual(DELEGATED_STATES, frozenset())
+
+    def test_classify_agrees_with_the_gate_on_every_receipt(self):
+        seen = set()
+        for receipt in self._every_receipt():
+            own, delegated = classify(receipt, delegated=DELEGATED_STATES)
+            with self.subTest(state=receipt["state"], gate=receipt["gate"]):
+                self.assertEqual(bool(own), receipt["gate"] != "ready")
+                self.assertEqual(delegated, [])
+            seen.add(receipt["gate"])
+        # ...and the sweep actually exercised both verdicts.
+        self.assertEqual(seen, {"ready", "blocked"})
 
 
 if __name__ == "__main__":

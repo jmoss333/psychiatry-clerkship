@@ -62,6 +62,32 @@ days, the repository-supported ceiling. The existing CI smoke artifact remains 1
   qualifying scheduled run exists yet, within that workflow's freshness allowance.
   It is temporary grace, not success. It becomes `missing` and blocks when grace expires.
 
+## Gate versus exit code
+
+**A receipt can read `blocked` on a job that exited green, and that is correct.**
+`gate` records every reason a row is not clean — it is the full record and never
+narrows. The exit code answers something narrower: *is any of this mine?*
+
+Each steward declares one thing, `DELEGATED_STATES` in its own module, naming the
+states another watcher already owns; `receipt_summary.classify` subtracts those,
+plus the healthy and the merely-not-yet-fresh (`DEFERRED_ROW_STATES`), and the
+steward exits non-zero on whatever is left. Anything unrecognised counts as its
+own, so a state added later goes red rather than passing in silence.
+
+- **Workflow heartbeat** delegates `failed` to `automation-failure-escalation.yml`.
+  A watched workflow that fired exactly on schedule and then failed is that
+  escalation's rolling issue, not a heartbeat failure — the heartbeat's subject is
+  whether the schedule still fires at all. When it defers, it says so on stderr and
+  names where the rows are tracked, so a green run is never a silent one.
+- **Interview Room monitor** and **stranded-PR monitor** delegate nothing
+  (`frozenset()`): nothing else watches the proxy or auto-merge, so everything they
+  see is theirs. The empty set is a deliberate declaration, not an omission.
+
+Operator consequence: when triaging a red steward, read its **first stderr line**,
+which names the rows that actually stopped it. Do not infer the exit code from
+`gate` in the artifact — for the heartbeat the two legitimately differ, and its
+receipt records the distinction in an additional `pulse` field.
+
 ## Local operator checks
 
 Run from the repository root. These commands keep generated reports under `/tmp`; the
