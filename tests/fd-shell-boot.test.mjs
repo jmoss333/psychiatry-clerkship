@@ -280,8 +280,10 @@ test('faculty preview ignores the learner tool-width preference', () => {
 
 test('one live controller owns stable delegated navigation', () => {
   assert.equal((source.match(/=fdWire\(/g) || []).length, 1, 'exactly one controller install');
-  assert.match(source, /getState:options\.getState\|\|function\(\)\{ return fdController\.getState\(\); \}/,
-    'resource wrapper must provide Task 4 live-state access');
+  assert.match(source, /getState:readState/,
+    'resource wrapper must rehydrate the current progress and block for each render');
+  assert.match(source, /return facultyPreviewRequest\?state:fdLiveState\(state\)/,
+    'preview retains its audited state while learner readers receive live progress');
   assert.match(source, /renderTransient:fdRenderTransient/);
   assert.match(source, /openProgress:fdOpenProgress/);
   assert.match(source, /fdAuxClick/);

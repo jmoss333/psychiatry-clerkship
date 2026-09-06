@@ -611,13 +611,13 @@
     var kids=[].slice.call(body.children);
     var nH2=kids.filter(function(el){return el.tagName==='H2';}).length;
     if(nH2<4 || body.querySelector('.sec-c')) return;
-    var groups=[],cur=null,lastWrap=null,lastBtn=null;
+    var groups=[],cur=null;
     kids.forEach(function(el){ if(el.tagName==='H2'){cur={h2:el,body:[]};groups.push(cur);} else if(cur){cur.body.push(el);} });
     var first=null;
     groups.forEach(function(g){
-      var wrap=document.createElement('section'); wrap.className='sec-c';
+      var wrap=document.createElement('section'); wrap.className='sec-c open';
       var hh=document.createElement('h2'); hh.className='sec-h';
-      var btn=document.createElement('button'); btn.type='button'; btn.setAttribute('aria-expanded','false');
+      var btn=document.createElement('button'); btn.type='button'; btn.setAttribute('aria-expanded','true');
       btn.innerHTML='<span class="sec-chev" aria-hidden="true">▸</span>';
       var tt=document.createElement('span'); tt.textContent=g.h2.textContent; btn.appendChild(tt);
       hh.appendChild(btn);
@@ -629,14 +629,10 @@
       body.insertBefore(wrap,g.h2); wrap.appendChild(hh); wrap.appendChild(bd); body.removeChild(g.h2);
       btn.onclick=function(){ var o=!wrap.classList.contains('open'); wrap.classList.toggle('open',o); btn.setAttribute('aria-expanded',String(o)); requestAnimationFrame(refreshTableScrollCues); };
       if(!first) first=wrap;
-      lastWrap=wrap; lastBtn=btn;
-      if(bd.querySelector('iframe')){ wrap.classList.add('open'); btn.setAttribute('aria-expanded','true'); }
     });
-    /* The last section stays open. Every page-level trailer -- the "Pair with" cross-link rail
-       and the attribution line -- is authored after the final h2, so it lands in the last
-       section's body; collapsing it hides a page's own outbound links behind a click and makes
-       the reachability rails unreachable. Same force-open precedent as the iframe case above. */
-    if(lastWrap){ lastWrap.classList.add('open'); lastBtn.setAttribute('aria-expanded','true'); }
+    /* Start with the full guide readable: templates, Day 1 instructions, embedded tools and
+       trailing cross-links all belong on first paint. Learners may collapse sections explicitly;
+       opening only the final section made footer placement choose the apparent starting point. */
     if(first){
       var bar=document.createElement('div'); bar.className='sec-toolbar';
       function mk(lbl,op){ var b=document.createElement('button'); b.type='button'; b.className='sec-all'; b.textContent=lbl;
@@ -1933,9 +1929,9 @@
   }
   function fdLiveState(state){
     var out=fdClone(state||{}), raw=progLoad(), s=srsState();
-    out.done=(state&&state.done&&typeof state.done==='object')?fdClone(state.done):fdProgressDoneMap(raw);
     out.progressRaw=raw;
     out.nowMs=Date.now();
+    out.block=!facultyPreviewRequest&&new URLSearchParams(location.search).get('block')==='1'?blockLoad(out.nowMs):null;
     out.rotationStart=LS('cw_rotation_start')||'';
     /* Seven-day activity strip: derived, never stored -- see fdActivityDays. Every store is
        read defensively; a missing or malformed one simply contributes no days. */
@@ -1964,6 +1960,7 @@
         ?out.week
         :((FD_INDEX.weeks[0]||{}).n);
     }
+    out.done=fdProgressDoneMap(raw,FD_INDEX,fdProgressWeek(out,FD_INDEX));
     out.role=fdRoleName(out.role)||out.role;
     out.currentCoreRevision=typeof FD_CORE_REVISION==='string'?FD_CORE_REVISION:'';
     out.localProgress=FD_INDEX.edition&&FD_INDEX.edition.card
@@ -1971,7 +1968,7 @@
       :{checklist:{},resources:{}};
     out.crisisHtml=fdCrisisHtml;
     if(typeof FD_PROTOCOL_FAILURE_COPY==='string')out.protocolFailureCopy=FD_PROTOCOL_FAILURE_COPY;
-    var wk=fdItemsForWeek(FD_INDEX,out.week), progress=fdTodayProgress(wk,out.done);
+    var wk=fdItemsForWeek(FD_INDEX,out.week), progress=fdTodayProgress(wk,fdProgressDoneMap(raw,FD_INDEX,out.week));
     out.ringPct=progress.pct;
     return out;
   }
@@ -2143,6 +2140,14 @@
     return true;
   }
 
+  function fdPracticeLaunchSearch(ref,search,state,index){
+    var params=new URLSearchParams(search||'');
+    params.delete('practiceWeek');
+    var week=fdProgressWeek(state,index);
+    if(fdProgressWeekScoped(index,ref)&&fdStateHasWeek(index.weeks,week)) params.set('practiceWeek',String(week));
+    return params.toString()?'?'+params.toString():'';
+  }
+
   function fdOpenResourceLive(ref,opts){
     var options=opts||{}, item=(FD_INDEX.byRef||{})[ref]||{title:ref,kind:/\.html$/.test(ref)?'tool':'read'};
     /* The audited preview path delegates to show(), which must see the previous currentItem so its
@@ -2152,10 +2157,15 @@
       currentItem=fdLegacyItem(item,ref,item.kind);
       try{localStorage.setItem('cw_last',ref);}catch(_){}
     }
+    var readState=function(){
+      var state=options.getState?options.getState():(fdController?fdController.getState():options.state);
+      return facultyPreviewRequest?state:fdLiveState(state);
+    };
+    var launchSearch=facultyPreviewRequest?options.search:fdPracticeLaunchSearch(ref,options.search===undefined?location.search:options.search,readState(),FD_INDEX);
     return fdOpenResource(ref,{
-      index:FD_INDEX,state:fdController?fdController.getState():options.state,
-      search:options.search,fromHistory:options.fromHistory,host:options.host||contentEl,
-      getState:options.getState||function(){ return fdController.getState(); },
+      index:FD_INDEX,state:readState(),
+      search:launchSearch,fromHistory:options.fromHistory,host:options.host||contentEl,
+      getState:readState,
       isCurrent:options.isCurrent,governanceNotice:renderGovernanceNotice,
       signal:options.signal,
       parseMarkdown:function(markdown){
@@ -2185,7 +2195,10 @@
 
   function fdOpenRef(ref,search){
     if(!fdController||!ref)return;
-    fdController.dispatch({'data-fd-open':ref},{search:search===undefined?location.search:search});
+    fdController.dispatch({'data-fd-open':ref},{
+      search:search===undefined?location.search:search,
+      blockNavigation:search!==undefined&&new URLSearchParams(search).get('block')==='1'
+    });
   }
 
   function fdCaptureAction(el){
@@ -2518,6 +2531,7 @@
       render:fdRender,renderTransient:fdRenderTransient,resourceHost:function(){return contentEl;},
       openResource:fdOpenResourceLive,openProgress:fdOpenProgress,
       externalModalOpen:function(){return !!capSheet;},
+      loadBlock:blockLoad,
       facultyPreview:function(){return !!facultyPreviewRequest;},
       facultyPreviewLock:showFacultyPreviewLockNotice,
       synonyms:FD_CURRICULUM.synonyms||{},

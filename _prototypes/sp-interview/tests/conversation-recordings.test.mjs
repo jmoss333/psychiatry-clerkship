@@ -88,9 +88,9 @@ async function waitFor(check, message = 'expected asynchronous adapter work to s
   assert.ok(check(), message);
 }
 
-test('validates all 75 canonical lines and serves exact recordings through a reusable verified cache', async t => {
+test('validates all 77 canonical lines and serves exact recordings through a reusable verified cache', async t => {
   const f = await loaded(t); const endings = [], errors = [];
-  assert.equal(f.library.entryCount, 75);
+  assert.equal(f.library.entryCount, 77);
   assert.equal(f.library.voice, 'marin');
   assert.equal(f.requests.length, 1, 'loading the library must not download all recordings');
   const handle = f.library.speak({text: '  ' + opening.replace(/ /g, '  ') + ' ', onEnded() { endings.push('done'); }, onError(e) { errors.push(e); }});
@@ -169,7 +169,7 @@ test('rejects remote manifest URLs and manifests for stale or altered source tex
     m => { m.model = 'different'; },
   ]) {
     const f = fixture(); mutate(f.manifest);
-    await assert.rejects(api().loadLibrary(f.env, {pack}), /manifest|pack|recording|source|voice|model|entry|catalog|75/i);
+    await assert.rejects(api().loadLibrary(f.env, {pack}), /manifest|pack|recording|source|voice|model|entry|catalog|77/i);
   }
 });
 
@@ -296,7 +296,7 @@ test('a turn-counted wait cannot cover real hashing latency, which is why CI red
 test('exact recordings, verified cache reuse, cancellation and revoked URLs all survive slow WebCrypto hashing', async t => {
   const f = fixture();
   const {library} = await loaded(t, f);
-  // Slow only the audio-verification digest: the load path already hashed 75 lines
+  // Slow only the audio-verification digest: the load path already hashed 77 lines
   // against the manifest, and it is the per-recording digest that raced in CI.
   f.slowDigest(150);
   const endings = [], errors = [];

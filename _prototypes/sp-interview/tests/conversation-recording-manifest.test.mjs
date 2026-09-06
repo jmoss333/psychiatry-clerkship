@@ -16,7 +16,7 @@ const instructions = 'Synthetic instructions for manifest unit tests.';
 const plan = {
   schemaVersion: 1, caseId: catalog.caseId, packVersion: pack.version,
   packHash: digest(JSON.stringify(pack)), voice: 'marin', model: 'gpt-4o-mini-tts-2025-12-15',
-  instructions, instructionsHash: digest(instructions), expectedFiles: 75,
+  instructions, instructionsHash: digest(instructions), expectedFiles: 77,
   status: 'awaiting-api-credit', generatedFiles: 0,
 };
 // These bytes and inspector are unit-test data only; no pretend audio files are written.
@@ -31,14 +31,14 @@ function temporaryDirectory(t) {
   return dir;
 }
 
-test('all 75 inspections produce exact source identities and byte-derived audio integrity', async () => {
+test('all 77 inspections produce exact source identities and byte-derived audio integrity', async () => {
   const calls = [];
   const manifest = await createDanaRecordingManifest({pack, plan, generatedAt, inspect: async entry => {
     calls.push(entry.file); return inspected();
   }});
   assert.deepEqual(calls, catalog.entries.map(entry => entry.file));
   assert.equal(manifest.schemaVersion, 1);
-  assert.equal(manifest.entries.length, 75);
+  assert.equal(manifest.entries.length, 77);
   assert.equal(manifest.packHash, plan.packHash);
   assert.equal(manifest.instructionsHash, plan.instructionsHash);
   assert.equal(manifest.voice, 'marin');
@@ -76,10 +76,10 @@ test('a late missing recording leaves no partial manifest or temporary files', a
   const audioDir = temporaryDirectory(t);
   let count = 0;
   await assert.rejects(finalizeDanaRecordings({audioDir, pack, generatedAt, inspectFile() {
-    if (++count === 75) throw new Error('Missing final recording');
+    if (++count === 77) throw new Error('Missing final recording');
     return inspected();
   }}), /Missing final recording/);
-  assert.equal(count, 75);
+  assert.equal(count, 77);
   assert.deepEqual(fs.readdirSync(audioDir), ['generation-plan.json']);
 });
 

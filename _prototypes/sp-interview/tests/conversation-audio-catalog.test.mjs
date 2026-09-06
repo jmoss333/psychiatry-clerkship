@@ -13,17 +13,18 @@ const dana = pack.cases.find(c => c.id === 'sp_depression_gated_si_001');
 const digest = text => createHash('sha256').update(text, 'utf8').digest('hex');
 const cli = fileURLToPath(new URL('../dana-audio-catalog.mjs', import.meta.url));
 
-test('catalog covers exactly the 75 canonical Dana patient lines', () => {
+test('catalog covers exactly the 77 canonical Dana patient lines', () => {
   const catalog = createDanaAudioCatalog(pack);
   const responseLines = Object.values(dana.responses).flatMap(bank => Object.values(bank).flat());
   const gatedLines = dana.gated.flatMap(gate => Object.entries(gate)
     .filter(([key]) => ['reveal', 'repeatAsk', 'deflectLowRapport', 'deflectIfLocked', 'deflectEuphemism'].includes(key))
     .map(([, text]) => text));
   assert.equal(responseLines.length, 64);
-  assert.equal(gatedLines.length, 10);
+  // si_behavior_detail (WP-5m) contributes a reveal and a locked deflection.
+  assert.equal(gatedLines.length, 12);
   const expected = [dana.persona.opening, ...responseLines, ...gatedLines];
-  assert.equal(new Set(expected).size, 75);
-  assert.equal(catalog.entries.length, 75);
+  assert.equal(new Set(expected).size, 77);
+  assert.equal(catalog.entries.length, 77);
   assert.deepEqual(new Set(catalog.entries.map(entry => entry.sourceText)), new Set(expected));
   assert.equal(catalog.caseId, dana.id);
   assert.equal(catalog.packVersion, pack.version);
@@ -50,7 +51,7 @@ test('text identities are deterministic and independent of source ordering', () 
   const reordered = createDanaAudioCatalog(fixture);
   const identity = catalog => Object.fromEntries(catalog.entries.map(entry => [entry.sourceText, entry.id]));
   assert.deepEqual(identity(reordered), identity(first));
-  assert.equal(new Set(first.entries.map(entry => entry.file)).size, 75);
+  assert.equal(new Set(first.entries.map(entry => entry.file)).size, 77);
   for (const entry of first.entries) {
     assert.equal(entry.id, digest(entry.sourceText));
     assert.equal(entry.sha256, entry.id, 'sha256 identifies source text, not audio bytes');
@@ -86,7 +87,7 @@ test('CLI writes only to an explicitly requested output path', t => {
   t.after(() => fs.rmSync(dir, {recursive: true, force: true}));
   const inspect = spawnSync(process.execPath, [cli], {cwd: dir, encoding: 'utf8'});
   assert.equal(inspect.status, 0, inspect.stderr);
-  assert.match(inspect.stdout, /75/);
+  assert.match(inspect.stdout, /77/);
   assert.deepEqual(fs.readdirSync(dir), []);
   const output = path.join(dir, 'catalog.json');
   const write = spawnSync(process.execPath, [cli, '--out', output], {cwd: dir, encoding: 'utf8'});

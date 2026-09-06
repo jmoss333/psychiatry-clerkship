@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- [CLERKSHIP-META v1] tool="Post-Event Learning Huddle" version="0.1.0" built="2026-09-04" category="systems-practice" audience="resident" settings="inpatient" time="2min" reviewCadenceDays="365" evidenceThrough="n/a" status="reviewed" summary="A two-minute, resident-only learning huddle after one fictional agitation event at a shift change. Three structured choices — a patient question, a team signal, a system condition — and a deterministic debrief showing how the three lenses fit. Not a report, not an evaluation, not a policy statement. No free text, no storage, no requests, no doses, no instruments. Fictional composite; no PHI." -->
+<!-- [CLERKSHIP-META v1] tool="Post-Event Learning Huddle" version="0.2.0" built="2026-09-05" category="systems-practice" audience="resident" settings="inpatient" time="2min" reviewCadenceDays="365" evidenceThrough="n/a" status="draft-pending-attestation" summary="A two-minute, resident-only learning huddle after one of two fictional events — an agitation event at a shift change, or a discharge whose follow-up never reached the patient — chosen by ?event= in the URL. Three structured choices — a patient question, a team signal, a system condition — and a deterministic debrief showing how the three lenses fit. Not a report, not an evaluation, not a policy statement. No free text, no storage, no requests, no doses, no instruments. Fictional composite; no PHI." -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex,nofollow">
@@ -89,6 +89,12 @@ legend .n{display:inline-grid;place-items:center;width:22px;height:22px;border-r
 .pair a{color:var(--accent-dark)}
 .sig{color:var(--text-light);font-size:.78rem;text-align:center;margin-top:28px;line-height:1.5}
 .sr-only{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.evnav{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}
+.evnav a{display:inline-block;border:1px solid var(--border);border-radius:999px;padding:6px 14px;font-size:.9rem;color:var(--text);background:var(--surface);text-decoration:none}
+.evnav a:hover{background:var(--hover)}
+.evnav a[aria-current="page"]{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+[data-theme="dark"] .evnav a[aria-current="page"]{color:#1b1815}
+.evnav a:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 </style>
 </head>
 <body>
@@ -96,7 +102,9 @@ legend .n{display:inline-grid;place-items:center;width:22px;height:22px;border-r
   <p class="kicker">Resident · systems practice · about 2 minutes</p>
   <h1>Post-Event Learning Huddle</h1>
   <p class="lead">One fictional event. Three choices. A short debrief on how a patient question, a team signal and a system condition fit together. Nothing you choose here is saved, sent, or shown to anyone.</p>
-  <p class="meta">Fictional composite for teaching · no real patient, staff member, unit or date · your institution's own processes for safety and reporting are separate from this page and come first.</p>
+  <p class="meta">Fictional composites for teaching · no real patient, staff member, unit, clinic or date · your institution's own processes for safety and reporting are separate from this page and come first.</p>
+
+  <nav class="evnav" id="event-switch" aria-label="Choose an event"></nav>
 
   <section id="boundary" class="boundary" aria-labelledby="boundary-h">
     <h2 id="boundary-h" class="sr-only">Where this huddle sits</h2>
@@ -115,7 +123,7 @@ legend .n{display:inline-grid;place-items:center;width:22px;height:22px;border-r
     <h2 id="event-h" style="margin-top:0"></h2>
     <p id="event-setting" class="lead"></p>
     <ol class="timeline" id="event-timeline"></ol>
-    <blockquote class="voice" id="event-voice"><span data-slot="patient-voice"></span><span class="who">What he said to the night mental-health worker</span></blockquote>
+    <blockquote class="voice" id="event-voice"><span data-slot="patient-voice"></span><span class="who" id="event-voice-who"></span></blockquote>
   </section>
 
   <form id="picks" onsubmit="return false" aria-describedby="picks-help">
@@ -133,102 +141,272 @@ legend .n{display:inline-grid;place-items:center;width:22px;height:22px;border-r
   <p class="pair"><b>Pair with:</b>
     <a href="../index.html?page=agitation.md">Agitation &amp; Restraint</a> ·
     <a href="../index.html?page=systems_medlegal.md">Inpatient Systems &amp; Med-Legal</a> ·
+    <a href="../index.html?page=exp_family.md">Family &amp; Discharge</a> ·
+    <a href="../index.html?page=collateral_workflow.md">I Need Collateral</a> ·
     <a href="../index.html?page=doc_oral.md">Documentation &amp; Oral Presentation</a> ·
     <a href="../index.html?tool=communication-practice.html&amp;case=rupture_limit_setting_001">Repair after limit-setting</a>
   </p>
-  <p class="sig">Joshua Moss, MD · Psychiatrist · Educational; fictional composite only, no PHI. Reviewed and attested by Joshua Moss, MD (2026-09-04).</p>
+  <p class="sig">Joshua Moss, MD · Psychiatrist · Educational; fictional composites only, no PHI. Event 1 attested 2026-09-04; Event 2 pending faculty attestation.</p>
 </main>
 
 <script type="application/json" id="huddle-event">
 {
-  "event": {
-    "title": "Evening escalation at shift change — hospital day 2",
-    "setting": "Adult inpatient unit, voluntary admission. A 41-year-old man with schizoaffective disorder, admitted two days ago for worsening paranoia and several nights without sleep.",
-    "timeline": [
-      "<b>Day shift.</b> He told his primary nurse that noise and \"being crowded\" set him off, and that dim light and his own headphones help. It went into the progress-note narrative.",
-      "<b>About 19:00 — handoff.</b> A float nurse who had not met him took over. The handoff tool carried orders, observation level and PRN availability. The \"what helps\" line was not in it.",
-      "<b>About 19:30.</b> Bed management moved a new admission into his room. He learned of it when the stretcher reached the door.",
-      "<b>About 19:45.</b> He shouted, kicked the door frame and stood in the doorway. Staff cleared the hallway; the float nurse and a mental-health worker talked with him. The resident's page read: \"pt agitated come now\".",
-      "<b>About 20:00.</b> He accepted the already-ordered oral PRN and walked to the quiet room himself. No restraint or seclusion. No injuries. Vitals checked.",
-      "<b>Later.</b> No reassessment time was agreed; the resident assumed nursing had checked in with him, nursing assumed the resident had. Nobody on the evening team had met him before that shift."
-    ],
-    "patientVoice": "Nobody asked me what happened. They just decided I was dangerous.",
-    "alreadyHandled": [
-      "He was reassessed and is safe.",
-      "No injuries.",
-      "Orders and monitoring per unit practice.",
-      "Any notification or report your institution requires is a separate step through its own process."
-    ],
-    "thisHuddle": [
-      "Two minutes, three choices, no free text, nothing saved.",
-      "Not an evaluation of anyone. Not a policy statement.",
-      "After the left column, never instead of it."
-    ],
-    "boundaryStatement": "This page is not a report, does not know whether one was made, and cannot make one."
-  },
-  "lenses": [
+  "events": [
     {
-      "id": "patient",
-      "name": "Patient",
-      "prompt": "One question you would ask him first, next time you sit down",
-      "options": [
-        {"id": "a1", "label": "\"What did you notice first — before things got loud?\"",
-         "debrief": "Starts with his sequence, not ours. Early cues — the stretcher at the door, an unfamiliar face, the noise — are often known to the patient and invisible in the chart. It tells you which moment mattered to him. It leaves his preferences and his view of staff for later.",
-         "bridge": "His account of what came first is the only thing that can tell you which of the team signals actually mattered to him."},
-        {"id": "a2", "label": "\"What would have helped in that moment — and what made it worse?\"",
-         "debrief": "Asks for his de-escalation preferences in his own words, right after an event in which the team did not have them. It turns the day-shift note into something he owns. It does not by itself repair trust, and it does not explain why the information did not travel.",
-         "bridge": "Whatever he says would have helped is the content the team's information path needs to carry next time."},
-        {"id": "a3", "label": "\"How are you feeling about the staff and this unit now?\"",
-         "debrief": "Puts repair first. \"They just decided I was dangerous\" is an alliance rupture as much as an event; if it is not named, the next shift inherits it. It may surface fear, shame or anger. It gathers less about causes than the other questions.",
-         "bridge": "Repairing the alliance is what makes his answers to the other two lenses trustworthy rather than guarded."},
-        {"id": "a4", "label": "\"What do you want the team to know or do differently next time — and is it all right if we write it where the next shift can see it?\"",
-         "debrief": "Makes him the author of the plan and asks consent for where it lives. His preferences become clinical information, not a courtesy. The risk is moving to solutions before he has said what happened; some patients need the first or third question before this one.",
-         "bridge": "A plan in his words, placed where the next shift reads, is the shortest route from this event to the system condition you named."}
-      ]
+      "id": "shift-change",
+      "shortTitle": "Shift-change escalation",
+      "title": "Evening escalation at shift change — hospital day 2",
+      "setting": "Adult inpatient unit, voluntary admission. A 41-year-old man with schizoaffective disorder, admitted two days ago for worsening paranoia and several nights without sleep.",
+      "timeline": [
+        "<b>Day shift.</b> He told his primary nurse that noise and \"being crowded\" set him off, and that dim light and his own headphones help. It went into the progress-note narrative.",
+        "<b>About 19:00 — handoff.</b> A float nurse who had not met him took over. The handoff tool carried orders, observation level and PRN availability. The \"what helps\" line was not in it.",
+        "<b>About 19:30.</b> Bed management moved a new admission into his room. He learned of it when the stretcher reached the door.",
+        "<b>About 19:45.</b> He shouted, kicked the door frame and stood in the doorway. Staff cleared the hallway; the float nurse and a mental-health worker talked with him. The resident's page read: \"pt agitated come now\".",
+        "<b>About 20:00.</b> He accepted the already-ordered oral PRN and walked to the quiet room himself. No restraint or seclusion. No injuries. Vitals checked.",
+        "<b>Later.</b> No reassessment time was agreed; the resident assumed nursing had checked in with him, nursing assumed the resident had. Nobody on the evening team had met him before that shift."
+      ],
+      "patientVoice": "Nobody asked me what happened. They just decided I was dangerous.",
+      "patientVoiceWho": "What he said to the night mental-health worker",
+      "alreadyHandled": [
+        "He was reassessed and is safe.",
+        "No injuries.",
+        "Orders and monitoring per unit practice.",
+        "Any notification or report your institution requires is a separate step through its own process."
+      ],
+      "thisHuddle": [
+        "Two minutes, three choices, no free text, nothing saved.",
+        "Not an evaluation of anyone. Not a policy statement.",
+        "After the left column, never instead of it."
+      ],
+      "boundaryStatement": "This page is not a report, does not know whether one was made, and cannot make one.",
+      "lenses": [
+        {
+          "id": "patient",
+          "name": "Patient",
+          "prompt": "One question you would ask him first, next time you sit down",
+          "options": [
+            {
+              "id": "a1",
+              "label": "\"What did you notice first — before things got loud?\"",
+              "debrief": "Starts with his sequence, not ours. Early cues — the stretcher at the door, an unfamiliar face, the noise — are often known to the patient and invisible in the chart. It tells you which moment mattered to him. It leaves his preferences and his view of staff for later.",
+              "bridge": "His account of what came first is the only thing that can tell you which of the team signals actually mattered to him."
+            },
+            {
+              "id": "a2",
+              "label": "\"What would have helped in that moment — and what made it worse?\"",
+              "debrief": "Asks for his de-escalation preferences in his own words, right after an event in which the team did not have them. It turns the day-shift note into something he owns. It does not by itself repair trust, and it does not explain why the information did not travel.",
+              "bridge": "Whatever he says would have helped is the content the team's information path needs to carry next time."
+            },
+            {
+              "id": "a3",
+              "label": "\"How are you feeling about the staff and this unit now?\"",
+              "debrief": "Puts repair first. \"They just decided I was dangerous\" is an alliance rupture as much as an event; if it is not named, the next shift inherits it. It may surface fear, shame or anger. It gathers less about causes than the other questions.",
+              "bridge": "Repairing the alliance is what makes his answers to the other two lenses trustworthy rather than guarded."
+            },
+            {
+              "id": "a4",
+              "label": "\"What do you want the team to know or do differently next time — and is it all right if we write it where the next shift can see it?\"",
+              "debrief": "Makes him the author of the plan and asks consent for where it lives. His preferences become clinical information, not a courtesy. The risk is moving to solutions before he has said what happened; some patients need the first or third question before this one.",
+              "bridge": "A plan in his words, placed where the next shift reads, is the shortest route from this event to the system condition you named."
+            }
+          ]
+        },
+        {
+          "id": "team",
+          "name": "Team",
+          "prompt": "One team-communication or workflow signal that stood out",
+          "options": [
+            {
+              "id": "b1",
+              "label": "The \"what helps him\" line lived in a note narrative, not in the handoff.",
+              "debrief": "Information existed and did not travel. The right thing was documented; the handoff tool had no place to receive it. That is the usual shape of a handoff gap: nobody withheld anything, and the receiving nurse could not have known. It leaves the room move unexplained.",
+              "bridge": "This signal is about where information lived, not about who read it — it is a design fact, not a verdict on anyone on shift."
+            },
+            {
+              "id": "b2",
+              "label": "The room change happened without the patient or his nurse knowing in advance.",
+              "debrief": "A decision made off-unit reached the bedside as an event. For a patient whose stated trigger is being crowded, an unannounced roommate is close to the worst case. It is about coordination between bed flow and the clinical team, upstream of the escalation and mostly outside the evening team's reach.",
+              "bridge": "This signal points upstream of the evening team — a decision arrived at the bedside without a clinical check-in."
+            },
+            {
+              "id": "b3",
+              "label": "Nobody on the evening team had met him, and the page said only \"pt agitated come now\".",
+              "debrief": "The team was working from the fewest possible facts: an unfamiliar patient, a one-line page, no shared picture of what usually helps. Float coverage without a patient-level orientation turns every event into a first meeting. The page wording is a symptom — there was nothing else to say.",
+              "bridge": "This signal is about a team that had nothing in common yet — the fix is in what the shift starts with, not in anyone's judgement."
+            },
+            {
+              "id": "b4",
+              "label": "After the PRN, no reassessment time was agreed and each discipline assumed the other had spoken to him.",
+              "debrief": "The event was \"over\" for the team before it was over for him. A closed loop needs a named time and a named person; without them, \"somebody will check\" reliably becomes nobody. This signal produced the sentence he said later, and it is the cheapest to change on the next shift.",
+              "bridge": "This signal is what left his sentence unheard — the loop closed for the team before it closed for him."
+            }
+          ]
+        },
+        {
+          "id": "system",
+          "name": "System",
+          "prompt": "One system condition worth raising — and with whom",
+          "options": [
+            {
+              "id": "c1",
+              "label": "The handoff tool has no structured field for patient-stated de-escalation preferences.",
+              "debrief": "A field is a small change with a large reach: it makes a bedside observation a standing part of every handoff, for every patient. Worth raising with the nurse manager or the unit's quality group as a question, not a demand. It does not touch bed flow or reassessment.",
+              "bridge": "This condition is the durable home for what he says helps — a field outlives the shift and the rotation."
+            },
+            {
+              "id": "c2",
+              "label": "Room moves are decided off-unit without a clinical check-in.",
+              "debrief": "Bed pressure is real and the move may have been unavoidable; the condition worth discussing is whether there is a moment — a call, a flag, a question — before a move reaches a patient with a known trigger. Whoever owns bed flow on your unit is the person to ask how that moment could exist.",
+              "bridge": "This condition sits above the unit — raising it means asking how a decision could pause for a clinical question."
+            },
+            {
+              "id": "c3",
+              "label": "Evening coverage relies on float staff without a unit-specific orientation to current patients.",
+              "debrief": "A reality, not a complaint. The discussable part is what a float nurse receives at the start of a shift: a two-line \"who is this person and what helps\" for the patients most likely to need it. Raise it with nursing leadership — and model it at the physician handoff too.",
+              "bridge": "This condition is about what a shift begins with — it is the one a resident can also model at their own handoff."
+            },
+            {
+              "id": "c4",
+              "label": "A post-event check-in with the patient is not a standard step, so whether it happens depends on who is on.",
+              "debrief": "An absent step is invisible until someone notices it was skipped. Making \"someone talks with the patient afterwards, and says so\" a named expectation is how \"nobody asked me\" stops being predictable. Worth proposing at a team meeting; it is the condition most directly tied to his experience.",
+              "bridge": "This condition is the one his own words are asking for — a check-in that is expected, not incidental."
+            }
+          ]
+        }
+      ],
+      "synthesis": {
+        "intro": "Three lenses, one evening — each true on its own, and incomplete on its own.",
+        "close": "His answer tells you which signal mattered most; the signal tells you which condition to raise first; the condition is what changes the next patient's answer. One of each is the huddle — none of the other options was wrong."
+      }
     },
     {
-      "id": "team",
-      "name": "Team",
-      "prompt": "One team-communication or workflow signal that stood out",
-      "options": [
-        {"id": "b1", "label": "The \"what helps him\" line lived in a note narrative, not in the handoff.",
-         "debrief": "Information existed and did not travel. The right thing was documented; the handoff tool had no place to receive it. That is the usual shape of a handoff gap: nobody withheld anything, and the receiving nurse could not have known. It leaves the room move unexplained.",
-         "bridge": "This signal is about where information lived, not about who read it — it is a design fact, not a verdict on anyone on shift."},
-        {"id": "b2", "label": "The room change happened without the patient or his nurse knowing in advance.",
-         "debrief": "A decision made off-unit reached the bedside as an event. For a patient whose stated trigger is being crowded, an unannounced roommate is close to the worst case. It is about coordination between bed flow and the clinical team, upstream of the escalation and mostly outside the evening team's reach.",
-         "bridge": "This signal points upstream of the evening team — a decision arrived at the bedside without a clinical check-in."},
-        {"id": "b3", "label": "Nobody on the evening team had met him, and the page said only \"pt agitated come now\".",
-         "debrief": "The team was working from the fewest possible facts: an unfamiliar patient, a one-line page, no shared picture of what usually helps. Float coverage without a patient-level orientation turns every event into a first meeting. The page wording is a symptom — there was nothing else to say.",
-         "bridge": "This signal is about a team that had nothing in common yet — the fix is in what the shift starts with, not in anyone's judgement."},
-        {"id": "b4", "label": "After the PRN, no reassessment time was agreed and each discipline assumed the other had spoken to him.",
-         "debrief": "The event was \"over\" for the team before it was over for him. A closed loop needs a named time and a named person; without them, \"somebody will check\" reliably becomes nobody. This signal produced the sentence he said later, and it is the cheapest to change on the next shift.",
-         "bridge": "This signal is what left his sentence unheard — the loop closed for the team before it closed for him."}
-      ]
-    },
-    {
-      "id": "system",
-      "name": "System",
-      "prompt": "One system condition worth raising — and with whom",
-      "options": [
-        {"id": "c1", "label": "The handoff tool has no structured field for patient-stated de-escalation preferences.",
-         "debrief": "A field is a small change with a large reach: it makes a bedside observation a standing part of every handoff, for every patient. Worth raising with the nurse manager or the unit's quality group as a question, not a demand. It does not touch bed flow or reassessment.",
-         "bridge": "This condition is the durable home for what he says helps — a field outlives the shift and the rotation."},
-        {"id": "c2", "label": "Room moves are decided off-unit without a clinical check-in.",
-         "debrief": "Bed pressure is real and the move may have been unavoidable; the condition worth discussing is whether there is a moment — a call, a flag, a question — before a move reaches a patient with a known trigger. Whoever owns bed flow on your unit is the person to ask how that moment could exist.",
-         "bridge": "This condition sits above the unit — raising it means asking how a decision could pause for a clinical question."},
-        {"id": "c3", "label": "Evening coverage relies on float staff without a unit-specific orientation to current patients.",
-         "debrief": "A reality, not a complaint. The discussable part is what a float nurse receives at the start of a shift: a two-line \"who is this person and what helps\" for the patients most likely to need it. Raise it with nursing leadership — and model it at the physician handoff too.",
-         "bridge": "This condition is about what a shift begins with — it is the one a resident can also model at their own handoff."},
-        {"id": "c4", "label": "A post-event check-in with the patient is not a standard step, so whether it happens depends on who is on.",
-         "debrief": "An absent step is invisible until someone notices it was skipped. Making \"someone talks with the patient afterwards, and says so\" a named expectation is how \"nobody asked me\" stops being predictable. Worth proposing at a team meeting; it is the condition most directly tied to his experience.",
-         "bridge": "This condition is the one his own words are asking for — a check-in that is expected, not incidental."}
-      ]
+      "id": "discharge",
+      "shortTitle": "The follow-up that never arrived",
+      "title": "The follow-up that never arrived — nine days after discharge",
+      "setting": "Adult inpatient unit. A 28-year-old woman with bipolar I disorder, admitted for a manic episode, improved by hospital day nine and discharged to her sister's across town.",
+      "timeline": [
+        "<b>Discharge morning.</b> The resident booked a clinic follow-up six days out and wrote a 30-day prescription. She mentioned she had no working phone and was using her sister's. The sister's number went into the narrative of the discharge summary.",
+        "<b>Same morning — paperwork.</b> The clinic's scheduling system pulled her contact details from registration: her own old number, and the apartment she had just left.",
+        "<b>Day 3.</b> The clinic's reminder call and text went to the old number. The system recorded \"reminder sent\".",
+        "<b>Day 6.</b> She did not attend. The clinic recorded a no-show and posted a letter to the old address. Nothing came back to the inpatient team.",
+        "<b>Days 1–8 — the prescription.</b> It had gone electronically to the pharmacy on file, near her old apartment. She never collected it; no one knew.",
+        "<b>Day 9.</b> Her sister brought her to the emergency department: two nights without sleep, speech fast, off medication since discharge. She was assessed, found to be safe, and admitted for observation."
+      ],
+      "patientVoice": "I did everything you told me. Nobody called. I thought the appointment got cancelled.",
+      "patientVoiceWho": "What she said in the emergency department",
+      "alreadyHandled": [
+        "She was assessed in the emergency department and is safe.",
+        "Medications reconciled.",
+        "The clinic and her sister have been told.",
+        "Any notification or report your institution requires is a separate step through its own process."
+      ],
+      "thisHuddle": [
+        "Two minutes, three choices, no free text, nothing saved.",
+        "Not an evaluation of anyone. Not a policy statement.",
+        "After the left column, never instead of it."
+      ],
+      "boundaryStatement": "This page is not a report, does not know whether one was made, and cannot make one.",
+      "lenses": [
+        {
+          "id": "patient",
+          "name": "Patient",
+          "prompt": "One question you would ask her first, next time you sit down",
+          "options": [
+            {
+              "id": "a1",
+              "label": "\"When you left, what did you understand was going to happen next — and who did you think would call?\"",
+              "debrief": "Starts with her model of the plan, not ours. Most discharge plans are clear to the team and vague to the patient about who moves first. Her answer shows which step she was waiting on. It leaves her current contacts and her feelings about the return for later.",
+              "bridge": "Her picture of who was going to call is the only thing that can tell you which information path actually mattered to her."
+            },
+            {
+              "id": "a2",
+              "label": "\"Where do you get calls and pick up medication now — and who else should we tell?\"",
+              "debrief": "Asks the two practical questions the system did not ask. It treats her sister's phone and a pharmacy near her sister's home as clinical information, not clerical detail. It repairs nothing by itself, and it does not explain why the old details were still in use.",
+              "bridge": "Whatever she names here is the content the next handoff to the clinic and the pharmacy has to carry."
+            },
+            {
+              "id": "a3",
+              "label": "\"What was it like to be back in the emergency department after doing what we asked?\"",
+              "debrief": "Puts repair first. \"I did everything you told me\" is an alliance rupture as much as a relapse; unnamed, it follows her into the next admission. It may surface shame, anger or resignation. It gathers less about the mechanics than the other questions.",
+              "bridge": "Repairing the alliance is what makes her answers to the other two lenses usable rather than polite."
+            },
+            {
+              "id": "a4",
+              "label": "\"If we write the next plan together, what would make it one you could actually use — and where should a copy live?\"",
+              "debrief": "Makes her the author of the next attempt and asks where the plan should live — a sister's fridge is a system too. The risk is moving to the next plan before she has said what this one felt like; some patients need the third question first.",
+              "bridge": "A plan in her words, kept where she and her sister can see it, is the shortest route from this event to the condition you named."
+            }
+          ]
+        },
+        {
+          "id": "team",
+          "name": "Team",
+          "prompt": "One team-communication or workflow signal that stood out",
+          "options": [
+            {
+              "id": "b1",
+              "label": "Her sister's number lived in the discharge narrative; the clinic's reminders read registration.",
+              "debrief": "Information existed and did not travel. The resident wrote the right thing in the place they write things; the reminder system reads a different place. Neither side could see the other. It says nothing about the pharmacy or the no-show.",
+              "bridge": "This signal is about where a phone number lived, not who typed it — a design fact, not a verdict on anyone."
+            },
+            {
+              "id": "b2",
+              "label": "The prescription went to the pharmacy on file, near the apartment she had left.",
+              "debrief": "A default did the choosing. E-prescribing is fast precisely because it does not ask; here the unasked question was the one that mattered. It is upstream of the missed visit and independent of it — she would have been off medication even if the reminder had reached her.",
+              "bridge": "This signal points at a default that chose for her — the fix is a question at the moment of prescribing, not a person."
+            },
+            {
+              "id": "b3",
+              "label": "The no-show closed with a letter to an old address, and nothing came back to the team that discharged her.",
+              "debrief": "The loop closed on paper. A no-show is the clinic's most useful signal about a discharge, and it went to the one place she was not, then stopped. This signal produced the sentence she said in the emergency department.",
+              "bridge": "This signal is where the system stopped looking — the loop closed for the clinic before it closed for her."
+            },
+            {
+              "id": "b4",
+              "label": "The discharge conversation ended with the plan handed over, but no one said aloud who would call whom, and when.",
+              "debrief": "Each side assumed the other owned the first call: inpatient thought the clinic would remind; the clinic thought the patient would come. \"Someone will call\" reliably becomes nobody. It is the cheapest signal to change — one sentence at the bedside.",
+              "bridge": "This signal is the unspoken sentence — naming who calls whom, and when, is the smallest change with the largest reach."
+            }
+          ]
+        },
+        {
+          "id": "system",
+          "name": "System",
+          "prompt": "One system condition worth raising — and with whom",
+          "options": [
+            {
+              "id": "c1",
+              "label": "The discharge workflow has no step that confirms phone, address and pharmacy before the summary is signed.",
+              "debrief": "Three fields, one moment. Confirming them at discharge would have changed all three information paths in this story. Worth raising with the unit's discharge or quality group as a question — they will know what the workflow can hold and what it already tries to.",
+              "bridge": "This condition is the durable home for what she tells you about where she can be reached — a step outlives the shift and the rotation."
+            },
+            {
+              "id": "c2",
+              "label": "A clinic no-show after discharge has no route back to the discharging team or to a second contact.",
+              "debrief": "The signal exists; it has nowhere to go. The discussable part is whether a no-show in the first two weeks after discharge can reach the inpatient team, or a named second contact, before a letter goes out. Whoever owns the inpatient–clinic interface is the person to ask.",
+              "bridge": "This condition sits between two teams — raising it means asking how a signal from one side could reach the other."
+            },
+            {
+              "id": "c3",
+              "label": "No shared field says who owns the first contact after discharge — inpatient and clinic each assume the other.",
+              "debrief": "An ownership gap rather than a workload gap; both sides were doing their jobs. The condition worth discussing is a single visible answer to \"who calls first, and by when,\" carried on the summary and readable by the clinic. A resident can also model it in the discharge conversation.",
+              "bridge": "This condition is about what the handoff carries — it is the one a resident can also model at the bedside."
+            },
+            {
+              "id": "c4",
+              "label": "A check-in call in the first days after discharge is not a standard step, so whether it happens depends on who discharged her.",
+              "debrief": "An absent step is invisible until someone notices it was skipped. Making \"someone calls the number the patient chose, within the first days, and says so\" a named expectation is how \"nobody called\" stops being predictable. Worth proposing at a team meeting; it is the condition most directly tied to her experience.",
+              "bridge": "This condition is the one her own words are asking for — a call that is expected, not incidental."
+            }
+          ]
+        }
+      ],
+      "synthesis": {
+        "intro": "Three lenses, one discharge — each true on its own, and incomplete on its own.",
+        "close": "Her answer tells you which signal mattered most; the signal tells you which condition to raise first; the condition is what changes the next patient's answer. One of each is the huddle — none of the other options was wrong."
+      }
     }
   ],
-  "synthesis": {
-    "intro": "Three lenses, one evening — each true on its own, and incomplete on its own.",
-    "close": "His answer tells you which signal mattered most; the signal tells you which condition to raise first; the condition is what changes the next patient's answer. One of each is the huddle — none of the other options was wrong."
-  },
   "notDone": "It did not file a report, decide what your institution requires, evaluate anyone on that shift, or replace the debrief your unit may require after restraint or seclusion. It gave you one question, one signal and one condition to carry into tomorrow."
 }
 </script>
@@ -236,7 +414,7 @@ legend .n{display:inline-grid;place-items:center;width:22px;height:22px;border-r
 <script id="huddle-logic">
 /* Pure, deterministic. No DOM, no storage, no requests. Exposed on the global for the
    renderer below and for tests/post-event-huddle.test.mjs, which runs this block under
-   node:vm with an empty sandbox and checks all 64 pick combinations. */
+   node:vm with an empty sandbox and checks all 64 pick combinations of every event. */
 (function (root) {
   'use strict';
   var LENS_ORDER = ['patient', 'team', 'system'];
@@ -244,9 +422,18 @@ legend .n{display:inline-grid;place-items:center;width:22px;height:22px;border-r
     for (var i = 0; i < lens.options.length; i++) if (lens.options[i].id === id) return lens.options[i];
     throw new Error('unknown option "' + id + '" for lens "' + lens.id + '"');
   }
-  function buildDebrief(data, picks) {
+  /* The ?event= value selects an event by exact id; anything else (absent, empty,
+     unknown, wrong case) falls back to the first event. No error state, nothing stored. */
+  function selectEvent(events, param) {
+    if (!events || !events.length) throw new Error('no events');
+    if (typeof param === 'string') {
+      for (var i = 0; i < events.length; i++) if (events[i].id === param) return events[i];
+    }
+    return events[0];
+  }
+  function buildDebrief(event, picks, notDone) {
     var byId = {};
-    data.lenses.forEach(function (l) { byId[l.id] = l; });
+    event.lenses.forEach(function (l) { byId[l.id] = l; });
     var sections = LENS_ORDER.map(function (lid) {
       var lens = byId[lid];
       if (!lens) throw new Error('missing lens "' + lid + '"');
@@ -254,12 +441,12 @@ legend .n{display:inline-grid;place-items:center;width:22px;height:22px;border-r
       var opt = findOption(lens, picks[lid]);
       return { lens: lid, name: lens.name, optionId: opt.id, label: opt.label, debrief: opt.debrief, bridge: opt.bridge };
     });
-    var synthesis = [data.synthesis.intro]
+    var synthesis = [event.synthesis.intro]
       .concat(sections.map(function (s) { return s.bridge; }))
-      .concat([data.synthesis.close]);
-    return { patientVoice: data.event.patientVoice, sections: sections, synthesis: synthesis, notDone: data.notDone };
+      .concat([event.synthesis.close]);
+    return { patientVoice: event.patientVoice, sections: sections, synthesis: synthesis, notDone: notDone };
   }
-  root.HUDDLE = { LENS_ORDER: LENS_ORDER, buildDebrief: buildDebrief };
+  root.HUDDLE = { LENS_ORDER: LENS_ORDER, selectEvent: selectEvent, buildDebrief: buildDebrief };
 })(typeof window !== 'undefined' ? window : this);
 </script>
 
@@ -267,6 +454,8 @@ legend .n{display:inline-grid;place-items:center;width:22px;height:22px;border-r
 (function () {
   'use strict';
   var data = JSON.parse(document.getElementById('huddle-event').textContent);
+  var wanted = new URLSearchParams(location.search).get('event');
+  var ev = window.HUDDLE.selectEvent(data.events, wanted);
   var picks = {};
   function el(tag, attrs, children) {
     var n = document.createElement(tag);
@@ -282,16 +471,25 @@ legend .n{display:inline-grid;place-items:center;width:22px;height:22px;border-r
     var ul = document.getElementById(id);
     items.forEach(function (t) { ul.appendChild(el('li', { text: t })); });
   }
+  // ---- event switcher: plain links; the URL is the only state
+  var sw = document.getElementById('event-switch');
+  data.events.forEach(function (e) {
+    var a = el('a', { href: '?event=' + e.id, text: e.shortTitle });
+    if (e.id === ev.id) a.setAttribute('aria-current', 'page');
+    sw.appendChild(a);
+  });
   // ---- boundary panel
-  fill('already-handled', data.event.alreadyHandled);
-  document.getElementById('already-handled').appendChild(el('li', { class: 'firm', text: data.event.boundaryStatement }));
-  fill('this-huddle', data.event.thisHuddle);
+  fill('already-handled', ev.alreadyHandled);
+  document.getElementById('already-handled').appendChild(el('li', { class: 'firm', text: ev.boundaryStatement }));
+  fill('this-huddle', ev.thisHuddle);
   // ---- event
-  document.getElementById('event-h').textContent = data.event.title;
-  document.getElementById('event-setting').textContent = data.event.setting;
+  document.title = 'Post-Event Learning Huddle — ' + ev.shortTitle;
+  document.getElementById('event-h').textContent = ev.title;
+  document.getElementById('event-setting').textContent = ev.setting;
   var tl = document.getElementById('event-timeline');
-  data.event.timeline.forEach(function (step) { tl.appendChild(el('li', { html: step })); });
-  document.querySelector('#event-voice [data-slot="patient-voice"]').textContent = '“' + data.event.patientVoice + '”';
+  ev.timeline.forEach(function (step) { tl.appendChild(el('li', { html: step })); });
+  document.querySelector('#event-voice [data-slot="patient-voice"]').textContent = '“' + ev.patientVoice + '”';
+  document.getElementById('event-voice-who').textContent = ev.patientVoiceWho;
   // ---- lenses
   var lensesHost = document.getElementById('lenses');
   var showBtn = document.getElementById('show');
@@ -301,7 +499,7 @@ legend .n{display:inline-grid;place-items:center;width:22px;height:22px;border-r
     progress.textContent = n + ' of 3 chosen';
     showBtn.disabled = n < 3;
   }
-  data.lenses.forEach(function (lens, idx) {
+  ev.lenses.forEach(function (lens, idx) {
     var fs = el('fieldset');
     var lg = el('legend');
     lg.appendChild(el('span', { class: 'n', 'aria-hidden': 'true', text: String(idx + 1) }));
@@ -320,13 +518,13 @@ legend .n{display:inline-grid;place-items:center;width:22px;height:22px;border-r
   // ---- debrief
   var debrief = document.getElementById('debrief');
   function render() {
-    var out = window.HUDDLE.buildDebrief(data, picks);
+    var out = window.HUDDLE.buildDebrief(ev, picks, data.notDone);
     debrief.innerHTML = '';
     debrief.appendChild(el('p', { class: 'kicker', text: 'The debrief' }));
     debrief.appendChild(el('h2', { text: 'One question, one signal, one condition', style: 'margin-top:0' }));
     var voice = el('blockquote', { class: 'voice' });
     voice.appendChild(el('span', { 'data-slot': 'patient-voice', text: '“' + out.patientVoice + '”' }));
-    voice.appendChild(el('span', { class: 'who', text: 'Keep his sentence in the room while you read.' }));
+    voice.appendChild(el('span', { class: 'who', text: 'Keep this sentence in the room while you read.' }));
     debrief.appendChild(voice);
     out.sections.forEach(function (s) {
       var d = el('div', { class: 'lens', 'data-lens': s.lens });

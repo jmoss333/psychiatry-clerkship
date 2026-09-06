@@ -122,8 +122,9 @@ function fdRow(it, idx, doneMap, compact){
    projected path: its final week reviews itself rather than inventing another. */
 function fdContinue(index, state, wk, progress){
   var isComplete=progress.total>0&&progress.done===progress.total;
+  var suggested=index.path&&index.path.id==='ms3-six-week';
   var kickerCls=isComplete?'fd-continue__kicker is-complete':'fd-continue__kicker';
-  var kickerText=isComplete?('Week '+fdEsc(state.week)+' complete'):('Continue · Week '+fdEsc(state.week));
+  var kickerText=isComplete?('Week '+fdEsc(state.week)+(suggested?' activities complete':' complete')):('Continue · Week '+fdEsc(state.week));
   var ringPct=(typeof state.ringPct==='number'&&!isNaN(state.ringPct))?state.ringPct:0;
   var titleText, openAttrs;
   if(progress.next){
@@ -135,7 +136,7 @@ function fdContinue(index, state, wk, progress){
     titleText=(nextWeek?'Preview Week ':'Review Week ')+target;
     openAttrs=' data-fd-tab="path" data-fd-view-week="'+fdEsc(target)+'"';
   }
-  var done=state.done||{}, leftMin=0;
+  var done=fdProgressForWeek(index,state,state.week), leftMin=0;
   for(var i=0;i<wk.items.length;i++){
     if(done[wk.items[i].ref]!==true&&typeof wk.items[i].minutes==='number') leftMin+=wk.items[i].minutes;
   }
@@ -149,7 +150,7 @@ function fdContinue(index, state, wk, progress){
       '<span class="fd-continue__title">'+fdEsc(titleText)+' →</span>'+
     '</span>'+
     '<span class="fd-continue__meta">'+
-      '<span class="fd-continue__count">'+progress.done+' of '+progress.total+' done</span>'+
+      '<span class="fd-continue__count">'+progress.done+' of '+progress.total+(suggested?' activities done':' done')+'</span>'+
       '<span class="fd-continue__left">'+leftLabel+'</span>'+
     '</span>'+
   '</button>';
@@ -199,7 +200,7 @@ function fdKitCard(k){
 
 function fdProgressAccess(){
   return '<button type="button" class="fd-progresscard" data-fd-progress>'+
-    '<span class="fd-progresscard__title">Progress &amp; mastery</span>'+
+    '<span class="fd-progresscard__title">Learning activity &amp; review</span>'+
     '<span class="fd-progresscard__meta">Coverage · blueprint · calibration →</span>'+
   '</button>';
 }
@@ -276,7 +277,8 @@ function fdToday(index, state){
   var wk=(typeof st.week==='number'&&!isNaN(st.week))?fdFindWeek(idx, st.week):null;
   var hasWeek=!!wk;
   var wItems=hasWeek?fdItemsForWeek(idx, st.week):[];
-  var progress=fdTodayProgress(wItems, st.done);
+  var done=fdProgressForWeek(idx,st,st.week);
+  var progress=fdTodayProgress(wItems, done);
 
   var sub=hasWeek
     ?('Week '+fdEsc(st.week)+' · '+fdEsc(wk.title)+' · '+dayName)
@@ -305,14 +307,14 @@ function fdToday(index, state){
 
 
   if(hasWeek){
-    out+='<div class="fd-listhead"><h2 class="fd-sectionhead">This week</h2>'+
+    out+='<div class="fd-listhead"><h2 class="fd-sectionhead">'+(idx.path&&idx.path.id==='ms3-six-week'?'Suggested this week':'This week')+'</h2>'+
       '<span class="fd-listhead__theme">'+fdEsc(wk.theme)+'</span></div>';
     out+='<div class="fd-list">';
-    for(var i=0;i<wItems.length;i++){ out+=fdRow(wItems[i], i, st.done); }
+    for(var i=0;i<wItems.length;i++){ out+=fdRow(wItems[i], i, done); }
     out+='</div>';
   }
 
-  var daily=fdDailyPick(fdLibraryOnlyReads(idx), st.done, nowMs);
+  var daily=fdDailyPick(fdLibraryOnlyReads(idx), done, nowMs);
   if(daily) out+=fdPick(daily);
 
   out+=fdProgressAccess();

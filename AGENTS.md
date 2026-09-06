@@ -30,6 +30,13 @@ bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res   # → 
   not the code (2026-08-30 outage) — see `site_build/NETLIFY_LFS_RUNBOOK.md` "Incident pattern 2".
   `site_build/lfs_pull_cached.sh` pulls media inside the build from Netlify's persistent cache so
   a merge costs ~0 MB; it only takes effect once `GIT_LFS_ENABLED` is removed from the site's UI.
+- **`CLERKSHIP_ANALYTICS=off|ms3|res|both`** gates the usage-analytics emitter (`common.py`'s
+  `analytics_enabled_for()`), **default `off`**. Per the rollout in
+  `docs/superpowers/specs/2026-09-04-usage-analytics-design.md`, enabling it is the repo owner's
+  call, not a build default — set it in the Netlify UI per site when the owner decides to enable a
+  site (`res` first, then `both`), never as a repo-wide default. Off ships neither `analytics.js`
+  nor any `CW_SITE`/`CW_PAGE` tag; `check-static-site.mjs` §12 treats that as a clean, gated build,
+  not a failure.
 
 ## Validate & test
 ```bash
@@ -58,8 +65,12 @@ cd tests/smoke && npm ci && npx playwright test
 - `bin/verify.sh` is a **superset** of `ci.yml`, not a mirror: `bin/check-verify-coverage.py`
   enforces that every CI step has a local equivalent (or a recorded `ALLOWED` exemption), but
   verify.sh may run more. `bin/verify_spans.py` and `bin/check_qbank_coherence.py` run there and
-  not in CI — and both **exit 0 even when they flag rows**, so they surface findings at push time
-  without blocking. Read their output; a PASS line is not "nothing found".
+  not in CI — and both **exit 1 when they flag rows** (`return 1 if n_para else 0`,
+  `return 1 if out else 0`), so since verify.sh's `step` treats any non-zero as FAIL and verify.sh
+  is the pre-push hook, either one **can block a push**. They look harmless today only because
+  each currently finds nothing. Read their output; a PASS line is not "nothing found", and
+  verify_spans.py in particular prints "0 clean, 0 flagged, N uncached" and exits 0 when its cache
+  path is wrong — a silent pass, not a clean bill.
 - **A local gate failing while CI is green usually means bash 3.2**, not your change: the Mac's
   `/bin/bash` is 3.2.57 and CI's is >= 4.4. Under `set -u`, bash < 4.4 treats `"${ARR[@]}"` on an
   empty array as unbound and aborts with an empty message (PR #469). Write
@@ -111,6 +122,33 @@ cd tests/smoke && npm ci && npx playwright test
   (two question-bank items that teach different steps for the same scenario),
   `check_instrument_links.py` (dev-only; the recorded instrument routes still resolve —
   deliberately not in CI, external links are flaky and the build egress blocks those hosts).
+- **Egress is an allowlist, and which side of it a host falls on decides which tasks are possible
+  today.** `bin/probe_egress.py` reports that in the repo's own terms — not "itunes.apple.com is
+  unreachable" but "the podcast canonical backfill cannot run here". The SessionStart hook prints
+  a capped summary; run it directly for the full table, `--json` for a machine-readable one.
+  Report-only, exits 0 always, deliberately not in CI and not in `verify.sh` (a report that fails
+  a push is a report nobody keeps). Two traps it exists to prevent: a refused CONNECT tunnel and
+  a host's own 403 are **not** the same thing — one means you cannot get there, the other that you
+  need a credential — and reachability is a fact about the environment, never a content finding.
+  Results cache outside the repo for 6h and invalidate when the proxy changes;
+  `CLERKSHIP_SKIP_EGRESS_PROBE=1` turns it off.
+- **The queue that cannot rot.** `bin/what_can_i_do_today.py` joins the egress probe's capability
+  map to a per-task measurement of how much work is left, and ranks what is actually possible
+  *here, now*: ready / needs-a-key / blocked. Two rules make it trustworthy and both are pinned by
+  `tests/what-can-i-do-today.test.mjs`: a task whose count reaches zero **retires itself** (nobody
+  prunes a checklist), and a measurement that **fails reports `unknown`, never zero** — zero means
+  done and would silently retire real work. A metric nobody can drive to zero does not belong in
+  it: "topics with no book" and "unattributed claims" were both dropped for that, one a category
+  mismatch, the other gameable by renaming a heading. Report-only, exits 0, not a gate.
+- `docs/SILENT_SHRINK_CHECKLIST.md` — the failure mode every `bin/` tool exists for, as a
+  checklist: **a check reporting success over a set smaller than the one it claims to check.**
+  Twelve entries, each earned by a defect that actually shipped here (#480, #517, #534, #539,
+  #545, #548, the 2026-08-21 annotation pass) and none of them caught by a schema or a type,
+  because each item was individually valid and the corpus was jointly wrong. Run it when you
+  write or review a guard, and use §F to answer it by BREAKING the check rather than by
+  reasoning about it — including the step people skip, reverting the fix to prove the fix is
+  what made the difference. Only §D2 is mechanised (`bin/check_vacuity.py`); the rest is
+  judgment, which is why it is written down.
 - `docs/curriculum-review/findings/` — the review→remediation loop. `export_curriculum_review.py`
   produces the transcripts, a review pass writes `findings.json` (id · verbatim `quote` ·
   ready-to-paste `replacement` · `verification`), and remediation lands as small per-work-package
@@ -127,6 +165,14 @@ cd tests/smoke && npm ci && npx playwright test
 ## Conventions & gotchas
 - **localStorage keys must be namespaced `cw_*` (shared hub) or `rp_*` (resident).** The QA gate
   hard-fails any other prefix. Item-id collisions silently corrupt attestation (`cw_qbank_attest_v1`) and SRS state.
+- **Usage analytics store integers, never events.** `metrics/` is a separate Netlify site whose
+  one function accepts an allowlisted event key and increments a counter keyed by site + ISO week.
+  It stores no IP, user agent, session id, or timestamp finer than the week, and it does not log
+  requests. The allowlist is GENERATED from `shipped_pages.json` — regenerate with
+  `analytics_events.py --write` after adding a page or a tool step, or the freshness gate fails.
+  Cohorts here are 4-10 learners, so reported cells below n=5 are suppressed. Adding a metric is a
+  registry edit, never a free-text string: `check-static-site.mjs` hard-fails a computed or
+  unlisted `cwAnalytics.record()` argument.
 - **No hard-coded `/Users` or `/sessions` paths in tracked `.py`** — CI lints for this; derive from `__file__`.
 - Clinical tools are **single-file HTML** (Clinical Warm palette — build-injected from
   `13_Faculty_Resources/_automation/site_build/clinical-warm.css`). Dose literals

@@ -3813,11 +3813,11 @@
   },
   "welcome.md": {
     "read": 3,
-    "tldr": "Start with orientation, then use Today / Progress for repeat visits — the hub is meant to answer what to do before rounds, after rounds, before leaving, and before exam study.",
+    "tldr": "Start with the Six-Week Compass and Orientation Packet, then choose the resource relevant to the task you are preparing to discuss with your supervising team.",
     "points": [
-      "First visit: open the orientation packet and learn the safety/supervision boundaries before using bedside tools.",
-      "Repeat visits: use Today / Progress to choose one ward task, one practice drill, and one review item.",
-      "Nothing here replaces supervision; the hub should help you ask better questions and escalate earlier."
+      "The Compass is a wayfinding map, not a checklist, clinical protocol, or measure of readiness.",
+      "Review the Orientation Packet's safety and supervision boundaries before using bedside tools.",
+      "Use the optional captioned orientation overview when a narrated walkthrough helps; the transcript provides the non-video route."
     ],
     "workflowStages": [
       "encounter",

@@ -45,7 +45,7 @@
         if (field === 'reveal' || Object.prototype.hasOwnProperty.call(gate, field)) add(gate[field]);
       });
     });
-    if (lines.size !== 75) invalid('Dana’s recording catalog must contain all 75 scripted lines.');
+    if (lines.size !== 77) invalid('Dana’s recording catalog must contain all 77 scripted lines.');
     return lines;
   }
 
@@ -98,7 +98,7 @@
       invalid('Dana’s recording manifest does not match the current case pack. Choose a device voice.');
     }
     if (manifest.voice !== expectedVoice || manifest.model !== MODEL) invalid('The patient recording manifest has an unexpected voice or model.');
-    var expectedCount = openingOnly ? 1 : 75;
+    var expectedCount = openingOnly ? 1 : 77;
     if (!Array.isArray(manifest.entries) || manifest.entries.length !== expectedCount) invalid('The patient recording manifest has an unexpected entry count.');
     var entries = new Map();
     await Promise.all(manifest.entries.map(async function (entry) {

@@ -56,11 +56,11 @@ async function loadLibrary(root) {
   const pack = JSON.parse(packFile.bytes.toString('utf8'));
   const catalog = createDanaAudioCatalog(pack);
   const manifest = JSON.parse(manifestFile.bytes.toString('utf8'));
-  if (catalog.entries.length !== 75 || manifest.schemaVersion !== 1
+  if (catalog.entries.length !== 77 || manifest.schemaVersion !== 1
     || manifest.caseId !== catalog.caseId || manifest.packVersion !== pack.version
     || manifest.packHash !== digest(JSON.stringify(pack))
     || manifest.voice !== 'marin' || manifest.model !== 'gpt-4o-mini-tts-2025-12-15'
-    || !Array.isArray(manifest.entries) || manifest.entries.length !== 75) invalid();
+    || !Array.isArray(manifest.entries) || manifest.entries.length !== 77) invalid();
   const canonical = new Map(catalog.entries.map(entry => [entry.id, entry]));
   const entries = new Map(), seen = new Set();
   for (const entry of manifest.entries) {

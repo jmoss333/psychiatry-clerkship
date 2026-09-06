@@ -156,6 +156,48 @@ the three fixed defects actually live. That check is a human walkthrough; see th
 diagnostics note at the end of this file for how to read the result without
 recording anything.
 
+## WP-5m adopted — Dana's suicide-follow-up chain, 2026-09-06
+
+`main` carries `f94f987` (WP-5m, "the Interview Room taught a suicide chain the rest
+of the library does not"). It adds an `si_behavior` intent — past attempts and
+preparatory acts — with Dana's reply and its locked deflection, reframes her
+disclosure from active ideation to passive ideation with method contemplation, and
+flips the pack `status` from `reviewed` to `draft-pending-attestation`.
+
+Merging it made three pins fail closed, each by design and each rebound to the
+merged pack rather than edited by hand:
+
+| Pin | Where | Action |
+| --- | --- | --- |
+| `SOURCE_GATE` / `SOURCE_GATE_HASH` | `sp-interview.local-dana.js` | `unlocks` gains `si_behavior`; hash recomputed from the merged pack. Reveal, deflections and repeat-ask are unchanged from the reviewed text. |
+| `FACT_SOURCE_HASH` / `localDraftHash` | `dana-live-context.mjs` | Both recomputed through the module's own `groundingSources()` shape. |
+| Canonical line count, 75 → 77 | adapter, recorded-speech reader, four test suites | The catalog is now 64 response lines + 12 gated + 1 opening. |
+
+The overlay's own `scope` no longer calls the disclosure an "active-ideation
+response", which WP-5m specifically corrects.
+
+**Adoption decision.** Taken by the author on 2026-09-06, not inferred. The hosted
+preview is an engineering/faculty preview that already states it is not faculty
+approval; carrying `draft-pending-attestation` content is consistent with that, and
+the alternative — hosted Dana teaching a suicide chain the library has just
+corrected — is the defect WP-5m exists to fix.
+
+### Two lines have no archived recording
+
+WP-5m **added** two lines and removed or reworded none, so **all 75 existing
+recordings still verify and none were regenerated**:
+
+| SHA-256 (first 12) | Line |
+| --- | --- |
+| `2470b015eeb3` | "No. Never — not now, not when I was younger. Standing in the bathroom is the closest I have come…" |
+| `775682565bb7` | "Tried what? *frowns* I'm not sure what you're asking me." |
+
+This does **not** affect the hosted preview, which synthesises Marin per encounter
+through the speech model and never reads `output/speech/`. It affects the **local
+prototype's device mode only**, where the manifest must carry all 77 entries before
+recorded playback will load. Generating those two lines is a separate, deliberate
+act against the existing manifest tooling; nothing here does it implicitly.
+
 ## Material limits and next release work
 
 This hosted slice is Dana only. The full station UI, Morgan, Marcus, Ray, the

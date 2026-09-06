@@ -18,6 +18,7 @@ const make = new Function(`
   ${read('frontdoor/fd_state.js')}
   ${read('frontdoor/fd_data.js')}
   ${read('frontdoor/fd_today.js')}
+  ${read('frontdoor/fd_block.js')}
   ${readerSrc}
   return { fdReaderNeighbours: fdReaderNeighbours, fdReader: fdReader, fdBuildIndex: fdBuildIndex,
            fdItemsForWeek: fdItemsForWeek, fdTodayProgress: fdTodayProgress };
@@ -116,25 +117,17 @@ test('the Key points callout is omitted when points is empty, present when not',
 test('the "Try it now" launcher appears only when toolRef is set', () => {
   const withTool = F.fdReader(IDX, s({ ref: 'a.md' }), '');
   assert.match(withTool, /fd-trynow/);
-  assert.match(withTool, /Try it now · Tool T</);
+  assert.match(withTool, /Open tool · Tool T</);
   assert.doesNotMatch(F.fdReader(IDX, s({ ref: 'b.md' }), ''), /fd-trynow/);
 });
 
-// The branch contract fd_search.js's header states and fd_sheet.js's attribute table repeats:
-// data-fd-open="<ref>" NAVIGATES; the same attribute with a bare data-fd-sheet beside it opens a
-// preview side sheet instead. "Try it now" promises, in its own sub-copy, that the page stays put
-// -- so without the modifier the button navigated away from the page it had just promised not to
-// leave. Pinned as a pair (copy + attribute inside the SAME button) so the promise and the
-// mechanism that keeps it cannot drift apart again.
-test('"Try it now" carries data-fd-sheet, so the page it promises to keep really stays put', () => {
+test('the related-tool launcher opens the working tool directly', () => {
   const html = F.fdReader(IDX, s({ ref: 'a.md' }), '');
   const start = html.indexOf('class="fd-trynow"');
   assert.notEqual(start, -1, 'no .fd-trynow button found');
   const btn = html.slice(start, html.indexOf('</button>', start));
-  assert.match(btn, /data-fd-open="tool\.html" data-fd-sheet>/,
-    'data-fd-open alone means navigate -- the bare data-fd-sheet modifier is what selects the sheet');
-  assert.match(btn, /this page stays put/,
-    'the sub-copy making the promise must live in the same button as the attribute keeping it');
+  assert.match(btn, /data-fd-open="tool\.html">/);
+  assert.doesNotMatch(btn, /data-fd-sheet|side sheet|stays put/);
 });
 
 test('ordinary navigating targets keep a BARE data-fd-open -- the modifier is not blanket-applied', () => {
@@ -152,10 +145,46 @@ test('the "Try it now" title falls back to the raw ref when toolRef resolves to 
   const man = { tools: [], md: [['src/orphan.md', 'orphan.md', 'Orphan']] };
   const idx = F.fdBuildIndex(cur, meta, { tools: [] }, man);
   const html = F.fdReader(idx, s({ ref: 'orphan.md', week: 1, done: {} }), '');
-  assert.match(html, /Try it now · ghost\.html</);
+  assert.match(html, /Open tool · ghost\.html</);
 });
 
 // ---- desktop actions + mobile action bar: BOTH always emitted ------------------------------
+test('a block page names its promised question step in both primary actions', () => {
+  const block = { minutes: 5, steps: [
+    { kind: 'page', ref: 'a.md', title: 'Page A', min: 3 },
+    { kind: 'qb', ref: 'question-bank-practice.html', n: 2, min: 2, title: '2 practice questions' },
+  ] };
+  for (const done of [{}, { 'a.md': true }]) {
+    const html = F.fdReader(IDX, s({ ref: 'a.md', week: 1, block, done }), 'Reading body');
+    assert.equal((html.match(/Continue to your 2 questions →/g) || []).length, 2);
+    assert.doesNotMatch(html, /Mark done · Next:/);
+    assert.match(html, /Reading body/);
+  }
+  const ordinary = F.fdReader(IDX, s({ ref: 'b.md', week: 1, block, done: {} }), '');
+  assert.match(ordinary, /Mark done · Next:/);
+  assert.doesNotMatch(ordinary, /Continue to your 2 questions/,
+    'an unrelated page keeps ordinary weekly navigation');
+});
+
+test('the final page in a block offers a finish action', () => {
+  const block = { minutes: 5, steps: [{ kind: 'page', ref: 'a.md', title: 'Page A', min: 5 }] };
+  const html = F.fdReader(IDX, s({ ref: 'a.md', week: 1, block, done: {} }), '');
+  assert.equal((html.match(/Finish block →/g) || []).length, 2);
+});
+
+test('a Path reader uses the viewed week for its rail and practice completion', () => {
+  const index = { ...IDX, weeks: IDX.weeks.map((wk) => wk.n === 2
+    ? { ...wk, items: [...wk.items, IDX.byRef['tool.html']] } : wk) };
+  const html = F.fdReader(index, s({
+    ref: 'tool.html', week: 1, viewWeek: 2, fromTab: 'path', done: { 'tool.html': true },
+    progressRaw: { 'tool.html': { done: true, practiceWeeks: { 1: { done: true } } } },
+  }), '<iframe title="Tool"></iframe>');
+  assert.match(html, /Week 2 · Interactive tool/);
+  assert.match(html, /Week 2 · 0 of 2 done/);
+  assert.match(html, /data-fd-toggle="tool\.html" aria-pressed="false"/);
+  assert.match(html, /Mark done · Next: Page D →/);
+});
+
 //
 // The task brief's original Step 1 asked to cover "the desktop-only primary button absent when
 // desk: false". The controller superseded that mid-implementation (mirroring Task 4's

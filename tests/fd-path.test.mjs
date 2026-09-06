@@ -156,6 +156,29 @@ test('per-week counts render as done/total', () => {
   assert.match(rowFor(html, 1).body, /<span class="fd-timeline__count">0\/1<\/span>/);
 });
 
+test('repeated practice counters and selected detail read their own week from saved progress', () => {
+  const weeks = WEEK_DEFS.map((w) => ({ ...w, refs: [['practice.html', 'tool']] }));
+  const idx = F.fdBuildIndex(buildCurriculum(weeks), {}, {}, buildManifest(weeks));
+  const html = F.fdPath(idx, s({ week: 1, viewWeek: 2, done: { 'practice.html': true },
+    progressRaw: { 'practice.html': { done: true, practiceWeeks: { 1: { done: true, at: '2026-08-03' } } } },
+  }));
+  assert.match(rowFor(html, 1).body, /class="fd-timeline__count">1\/1/);
+  for (let n = 2; n <= 6; n++) assert.match(rowFor(html, n).body, /class="fd-timeline__count">0\/1/);
+  assert.match(html, /data-fd-toggle="practice.html"[^>]*aria-pressed="false"/);
+});
+
+test('weekly practice skills come from Orientation and are absent from other learning paths', () => {
+  const orientation = readFileSync(new URL('../14_Tracks/MS3/Student_Ready_Pack/01_orientation/MS3_orientation_packet.md', import.meta.url), 'utf8');
+  const sourceSkills = [...orientation.matchAll(/^\| ([1-6]) \| [^|]+ \| ([^|]+) \|$/gm)];
+  assert.equal(sourceSkills.length, 6);
+  const idx = { ...IDX, path: { id: 'ms3-six-week', weekCount: 6 } };
+  for (const [, n, skill] of sourceSkills) {
+    const html = F.fdPath(idx, s({ viewWeek: Number(n) }));
+    assert.ok(html.includes(skill), 'Week ' + n + ' preserves the skill in Orientation');
+  }
+  assert.doesNotMatch(F.fdPath(FOUR_INDEX, s({})), /class="fd-detail__practice"/);
+});
+
 // ---- detail card: "you are here" only for the current week ----------------------------
 
 test('the detail card shows "you are here" only when viewing the current week', () => {
